@@ -24,9 +24,9 @@ Gra **„The Game" (Civ)** jest dziś **grywalna end-to-end** (menu → mapa 3D 
 
 ### Git (gałęzie)
 
-- **main** — stabilny kanon (Gra-podglad.html); zmiany tylko po review **Opus 4.8** i merge przez MASTER.
-- **develop** — praca agentów (lane), buildy testowe; tu commituje Composer.
-- Maciej **nie musi** używać gita — szczegóły: docs/GIT-WORKFLOW.md.
+- **`main`** — stabilny kanon (`Gra-podglad.html`); zmiany tylko po review **Opus 4.8** i merge przez MASTER.
+- **`develop`** — praca agentów (lane), buildy testowe; tu commituje Composer.
+- Maciej **nie musi** używać gita — szczegóły: `docs/GIT-WORKFLOW.md`.
 
 ---
 
