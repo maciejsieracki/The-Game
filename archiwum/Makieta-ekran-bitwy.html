@@ -1,0 +1,1544 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Taktyczna Bitwa Heksagonalna</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:        #1b1f26;
+  --panel:     #262b33;
+  --panel2:    #2e3440;
+  --border:    #3c4450;
+  --text:      #e8ebf0;
+  --muted:     #9aa6b6;
+  --gold:      #e0b24a;
+  --green:     #6bbf59;
+  --red:       #d36b5e;
+  --blue:      #5a9bd4;
+  --blue-army: #4a90d4;
+  --red-army:  #c0392b;
+
+  /* terrain colours */
+  --t-plain:   #5a6e3a;
+  --t-grass:   #4a7c2e;
+  --t-forest:  #2d5a1f;
+  --t-hills:   #7a6040;
+  --t-river:   #2a5f8a;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, sans-serif;
+  font-size: 13px;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ═══════════════ TOP BAR ═══════════════ */
+.topbar {
+  background: var(--panel);
+  border-bottom: 2px solid var(--gold);
+  padding: 7px 16px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-shrink: 0;
+  z-index: 10;
+}
+.topbar-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--gold);
+  text-transform: uppercase;
+  letter-spacing: .5px;
+}
+.topbar-sub {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 1px;
+}
+.turn-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: 20px;
+}
+.turn-badge {
+  background: var(--gold);
+  color: #1b1f26;
+  font-size: 12px;
+  font-weight: 800;
+  padding: 4px 14px;
+  border-radius: 20px;
+  letter-spacing: .3px;
+  white-space: nowrap;
+}
+.phase-badge {
+  font-size: 11px;
+  color: var(--text);
+  background: rgba(255,255,255,.06);
+  border: 1px solid var(--border);
+  padding: 3px 12px;
+  border-radius: 20px;
+}
+.phase-badge .ph-dot {
+  display: inline-block;
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--green);
+  margin-right: 5px;
+  vertical-align: middle;
+}
+.spacer { flex: 1; }
+.army-score {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+}
+.score-blue { color: #7db8e0; font-weight: 700; }
+.score-sep  { color: var(--muted); font-size: 14px; }
+.score-red  { color: #e8897e; font-weight: 700; }
+.score-label { color: var(--muted); font-size: 10px; margin-top: 1px; }
+.score-col { text-align: center; }
+
+/* ═══════════════ BODY LAYOUT ═══════════════ */
+.body-wrap {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  min-height: 0;
+}
+
+/* ═══════════════ LEFT SIDEBAR: ROSTER ═══════════════ */
+.sidebar {
+  width: 200px;
+  flex-shrink: 0;
+  background: var(--panel);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.sidebar-section {
+  padding: 8px 0 6px;
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+}
+.sidebar-section:first-child {
+  border-bottom: 1px solid var(--border);
+}
+.sidebar-head {
+  padding: 0 10px 6px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .8px;
+}
+.sh-blue { color: #7db8e0; }
+.sh-red  { color: #e8897e; }
+
+.roster-row {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 4px 10px;
+  cursor: pointer;
+  border-radius: 5px;
+  margin: 0 4px 1px;
+  transition: background .1s;
+}
+.roster-row:hover { background: rgba(255,255,255,.05); }
+.roster-row.selected { background: rgba(224,178,74,.12); outline: 1px solid rgba(224,178,74,.3); }
+.roster-row.dead { opacity: .35; }
+.runit-icon {
+  font-size: 14px;
+  flex-shrink: 0;
+  width: 20px;
+  text-align: center;
+}
+.runit-info { flex: 1; min-width: 0; }
+.runit-name {
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--text);
+}
+.runit-hp-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 2px;
+}
+.runit-hp-bar {
+  flex: 1;
+  height: 4px;
+  background: rgba(255,255,255,.08);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.runit-hp-fill {
+  height: 100%;
+  border-radius: 2px;
+}
+.runit-hp-val {
+  font-size: 9px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.runit-str {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--gold);
+  flex-shrink: 0;
+  min-width: 18px;
+  text-align: right;
+}
+
+/* ═══════════════ CENTER: HEX MAP ═══════════════ */
+.map-center {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+  min-width: 0;
+}
+
+/* The scrollable area that holds the SVG — fills all remaining height */
+.map-scroll {
+  flex: 1;
+  overflow: auto;
+  position: relative;
+  min-height: 0;
+  min-width: 0;
+}
+
+/* Inner wrapper: sized by JS to match scaled SVG */
+.hex-grid-wrap {
+  position: relative;
+  /* width/height set dynamically by JS */
+}
+
+svg.hex-map {
+  display: block;
+  /* transform-origin set by JS */
+}
+
+/* unit tokens */
+.token-blue { fill: #1e3d6e; stroke: #7db8e0; stroke-width: 2; }
+.token-red  { fill: #6e1e1e; stroke: #e8897e; stroke-width: 2; }
+.token-blue.selected-token { stroke: var(--gold); stroke-width: 3; }
+.token-red.selected-token  { stroke: var(--gold); stroke-width: 3; }
+
+.token-text { font-size: 11px; font-weight: 700; fill: #fff; text-anchor: middle; dominant-baseline: middle; }
+.token-str  { font-size: 9px; font-weight: 800; fill: var(--gold); text-anchor: middle; }
+.token-icon { font-size: 12px; text-anchor: middle; }
+
+/* minimap */
+.minimap {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  width: 160px;
+  height: 100px;
+  background: rgba(26,31,38,.9);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  overflow: hidden;
+  z-index: 5;
+}
+.minimap-label {
+  position: absolute;
+  top: 4px;
+  left: 6px;
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--gold);
+  text-transform: uppercase;
+  letter-spacing: .4px;
+  z-index: 6;
+  pointer-events: none;
+}
+.minimap canvas, .minimap svg { display: block; width: 100%; height: 100%; }
+
+/* terrain legend strip */
+.terrain-strip {
+  background: var(--panel2);
+  border-top: 1px solid var(--border);
+  padding: 5px 12px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-shrink: 0;
+  overflow-x: auto;
+}
+.terrain-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+  font-size: 10px;
+  color: var(--muted);
+}
+.terrain-dot {
+  width: 10px; height: 10px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+.terrain-effect {
+  color: var(--gold);
+  font-size: 10px;
+}
+
+/* ═══════════════ RIGHT PANEL ═══════════════ */
+.right-panel {
+  width: 250px;
+  flex-shrink: 0;
+  background: var(--panel);
+  border-left: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* selected unit panel */
+.sel-panel {
+  padding: 10px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.sel-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.sel-icon { font-size: 22px; }
+.sel-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.2;
+}
+.sel-type {
+  font-size: 10px;
+  color: var(--muted);
+}
+.sel-army-badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 10px;
+  margin-left: auto;
+}
+.sel-army-badge.blue { background: rgba(90,155,212,.2); color: #7db8e0; border: 1px solid rgba(90,155,212,.4); }
+.sel-army-badge.red  { background: rgba(211,107,94,.2); color: #e8897e; border: 1px solid rgba(211,107,94,.4); }
+
+.sel-bars { margin-bottom: 8px; display: flex; flex-direction: column; gap: 5px; }
+.sel-bar-row { }
+.sel-bar-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  color: var(--muted);
+  margin-bottom: 2px;
+}
+.sel-bar-val { color: var(--text); font-weight: 600; }
+.sel-bar-track {
+  height: 6px;
+  background: rgba(255,255,255,.07);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.sel-bar-fill { height: 100%; border-radius: 3px; }
+
+.sel-stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 4px;
+}
+.sel-stat {
+  background: rgba(255,255,255,.04);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 5px 6px;
+  text-align: center;
+}
+.sel-stat-label {
+  font-size: 9px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: .3px;
+  margin-bottom: 2px;
+}
+.sel-stat-val {
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+/* terrain effect indicator */
+.terrain-indicator {
+  margin: 0 10px 0;
+  padding: 6px 10px;
+  background: rgba(224,178,74,.07);
+  border: 1px solid rgba(224,178,74,.2);
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+.ti-title {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--gold);
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  margin-bottom: 4px;
+}
+.ti-row {
+  font-size: 10px;
+  color: var(--muted);
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 2px;
+}
+.ti-bonus { font-weight: 600; }
+.ti-bonus.pos { color: var(--green); }
+.ti-bonus.neg { color: var(--red); }
+
+/* action bar */
+.action-bar {
+  border-top: 1px solid var(--border);
+  padding: 8px 10px;
+  flex-shrink: 0;
+  margin-top: auto;
+}
+.action-bar-title {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .6px;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+.action-btns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5px;
+}
+.action-btns .btn-full {
+  grid-column: 1 / -1;
+}
+.act-btn {
+  padding: 7px 5px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  border: 1px solid;
+  text-align: center;
+  transition: filter .1s, transform .1s;
+  letter-spacing: .2px;
+}
+.act-btn:hover { filter: brightness(1.2); transform: translateY(-1px); }
+.act-btn:active { transform: translateY(0); }
+.act-move    { background: rgba(107,191,89,.15); border-color: rgba(107,191,89,.5); color: #90d97f; }
+.act-attack  { background: rgba(211,107,94,.2);  border-color: rgba(211,107,94,.6); color: #e8897e; }
+.act-ranged  { background: rgba(224,178,74,.15); border-color: rgba(224,178,74,.5); color: var(--gold); }
+.act-charge  { background: rgba(211,107,94,.12); border-color: rgba(211,107,94,.4); color: #c87060; }
+.act-defend  { background: rgba(90,155,212,.12); border-color: rgba(90,155,212,.4); color: #7db8e0; }
+.act-wait    { background: rgba(255,255,255,.04); border-color: var(--border); color: var(--muted); }
+.act-btn.act-active { outline: 2px solid var(--gold); }
+
+/* battle log */
+.log-section {
+  border-top: 1px solid var(--border);
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  max-height: 160px;
+  flex-shrink: 0;
+}
+.log-head {
+  padding: 6px 10px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .7px;
+  color: var(--gold);
+  background: rgba(224,178,74,.06);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.log-body {
+  overflow-y: auto;
+  flex: 1;
+  padding: 6px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.log-entry {
+  display: flex;
+  gap: 6px;
+  align-items: flex-start;
+  font-size: 10px;
+  line-height: 1.45;
+  padding-bottom: 3px;
+  border-bottom: 1px solid rgba(60,68,80,.4);
+}
+.log-entry:last-child { border-bottom: none; }
+.log-badge {
+  font-size: 9px;
+  font-weight: 800;
+  padding: 1px 5px;
+  border-radius: 3px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.lb-turn { background: rgba(224,178,74,.15); color: var(--gold); border: 1px solid rgba(224,178,74,.3); }
+.lb-move { background: rgba(107,191,89,.12); color: #90d97f; border: 1px solid rgba(107,191,89,.3); }
+.lb-hit  { background: rgba(211,107,94,.15); color: #e8897e; border: 1px solid rgba(211,107,94,.3); }
+.log-text { color: var(--muted); }
+.log-text b { color: var(--text); }
+.log-text .hit    { color: var(--green); font-weight: 700; }
+.log-text .miss   { color: var(--red); font-weight: 700; }
+.log-text .dmg    { color: var(--red); font-weight: 700; }
+.log-text .morale { color: var(--blue); font-weight: 700; }
+.log-text .spec   { color: var(--gold); font-weight: 700; }
+
+/* scrollbars */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+/* zoom control */
+.zoom-ctrl {
+  position: absolute;
+  top: 8px;
+  right: 170px;
+  z-index: 6;
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+.zoom-btn {
+  width: 26px; height: 26px;
+  border-radius: 5px;
+  border: 1px solid var(--border);
+  background: var(--panel2);
+  color: var(--text);
+  font-size: 14px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: filter .1s;
+}
+.zoom-btn:hover { filter: brightness(1.3); }
+.zoom-label { font-size: 10px; color: var(--muted); min-width: 32px; text-align: center; }
+</style>
+</head>
+<body>
+
+<!-- ═══════════ TOP BAR ═══════════ -->
+<div class="topbar">
+  <div>
+    <div class="topbar-title">⚔ Taktyczna Bitwa Heksagonalna</div>
+    <div class="topbar-sub">Kampania: Podbój Italii · Pole bitwy: Równina rzeki Trebia</div>
+  </div>
+  <div class="turn-box">
+    <div class="turn-badge">TURA 3</div>
+    <div class="phase-badge"><span class="ph-dot"></span>Faza Ruchu</div>
+  </div>
+  <div class="spacer"></div>
+  <div class="army-score">
+    <div class="score-col">
+      <div class="score-blue">RZYM ⚔</div>
+      <div class="score-label">Armia Niebieska</div>
+    </div>
+    <div>
+      <div style="display:flex;gap:6px;align-items:center;margin-bottom:2px;">
+        <span style="color:#7db8e0;font-size:18px;font-weight:800;">11</span>
+        <span class="score-sep">:</span>
+        <span style="color:#e8897e;font-size:18px;font-weight:800;">9</span>
+      </div>
+      <div style="font-size:9px;color:var(--muted);text-align:center;">jednostki aktywne</div>
+    </div>
+    <div class="score-col">
+      <div class="score-red">⚔ KARTAGINA</div>
+      <div class="score-label">Armia Czerwona</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ BODY ═══════════ -->
+<div class="body-wrap">
+
+<!-- ═══ LEFT SIDEBAR: ROSTER ═══ -->
+<div class="sidebar">
+  <!-- Blue army -->
+  <div class="sidebar-section">
+    <div class="sidebar-head sh-blue">🔵 Rzym — Roster (11/15)</div>
+
+    <div class="roster-row selected" onclick="selectUnit('leg1',this)">
+      <div class="runit-icon">⚔️</div>
+      <div class="runit-info">
+        <div class="runit-name">Legioniści I</div>
+        <div class="runit-hp-row">
+          <div class="runit-hp-bar"><div class="runit-hp-fill" style="width:83%;background:var(--green)"></div></div>
+          <span class="runit-hp-val">62/75</span>
+        </div>
+      </div>
+      <div class="runit-str">88</div>
+    </div>
+    <div class="roster-row" onclick="selectUnit('leg2',this)">
+      <div class="runit-icon">⚔️</div>
+      <div class="runit-info">
+        <div class="runit-name">Legioniści II</div>
+        <div class="runit-hp-row">
+          <div class="runit-hp-bar"><div class="runit-hp-fill" style="width:100%;background:var(--green)"></div></div>
+          <span class="runit-hp-val">75/75</span>
+        </div>
+      </div>
+      <div class="runit-str">88</div>
+    </div>
+    <div class="roster-row" onclick="selectUnit('vel1',this)">
+      <div class="runit-icon">🏹</div>
+      <div class="runit-info">
+        <div class="runit-name">Weliści I</div>
+        <div class="runit-hp-row">
+          <div class="runit-hp-bar"><div class="runit-hp-fill" style="width:90%;background:var(--green)"></div></div>
+          <span class="runit-hp-val">54/60</span>
+        </div>
+      </div>
+      <div class="runit-str">55</div>
+    </div>
+    <div class="roster-row" onclick="selectUnit('vel2',this)">
+      <div class="runit-icon">🏹</div>
+      <div class="runit-info">
+        <div class="runit-name">Weliści II</div>
+        <div class="runit-hp-row">
+          <div class="runit-hp-bar"><div class="runit-hp-fill" style="width:70%;background:#e0975a"></div></div>
+          <span class="runit-hp-val">42/60</span>
+        </div>
+      </div>
+      <div class="runit-str">55</div>
+    </div>
+    <div class="roster-row" onclick="selectUnit('cav1',this)">
+      <div class="runit-icon">🐴</div>
+      <div class="runit-info">
+        <div class="runit-name">Kawaleria Sprzymierzona</div>
+        <div class="runit-hp-row">
+          <div class="runit-hp-bar"><div class="runit-hp-fill" style="width:100%;background:var(--green)"></div></div>
+          <span class="runit-hp-val">80/80</span>
+        </div>
+      </div>
+      <div class="runit-str">72</div>
+    </div>
+    <div class="roster-row" onclick="selectUnit('hast1',this)">
+      <div class="runit-icon">🛡️</div>
+      <div class="runit-info">
+        <div class="runit-name">Hastaci</div>
+        <div class="runit-hp-row">
+          <div class="runit-hp-bar"><div class="runit-hp-fill" style="width:60%;background:#e0975a"></div></div>
+          <span class="runit-hp-val">45/75</span>
+        </div>
+      </div>
+      <div class="runit-str">70</div>
+    </div>
+    <div class="roster-row" onclick="selectUnit('triar1',this)">
+      <div class="runit-icon">🛡️</div>
+      <div class="runit-info">
+        <div class="runit-name">Triarowie</div>
+        <div class="runit-hp-row">
+          <div class="runit-hp-bar"><div class="runit-hp-fill" style="width:100%;background:var(--green)"></div></div>
+          <span class="runit-hp-val">90/90</span>
+        </div>
+      </div>
+      <div class="runit-str">95</div>
+    </div>
+    <div class="roster-row" onclick="selectUnit('soc1',this)">
+      <div class="runit-icon">⚔️</div>
+      <div class="runit-info">
+        <div class="runit-name">Socii Piechota</div>
+        <div class="runit-hp-row">
+          <div class="runit-hp-bar"><div class="runit-hp-fill" style="width:80%;background:var(--green)"></div></div>
+          <span class="runit-hp-val">56/70</span>
+        </div>
+      </div>
+      <div class="runit-str">65</div>
+    </div>
+    <div class="roster-row" onclick="selectUnit('arc1',this)">
+      <div class="runit-icon">🏹</div>
+      <div class="runit-info">
+        <div class="runit-name">Łucznicy Kretańscy</div>
+        <div class="runit-hp-row">
+          <div class="runit-hp-bar"><div class="runit-hp-fill" style="width:55%;background:#e0975a"></div></div>
+          <span class="runit-hp-val">33/60</span>
+        </div>
+      </div>
+      <div class="runit-str">62</div>
+    </div>
+    <div class="roster-row" onclick="selectUnit('eng1',this)">
+      <div class="runit-icon">🔧</div>
+      <div class="runit-info">
+        <div class="runit-name">Balisty</div>
+        <div class="runit-hp-row">
+          <div class="runit-hp-bar"><div class="runit-hp-fill" style="width:100%;background:var(--green)"></div></div>
+          <span class="runit-hp-val">40/40</span>
+        </div>
+      </div>
+      <div class="runit-str">78</div>
+    </div>
+    <div class="roster-row" onclick="selectUnit('cav2',this)">
+      <div class="runit-icon">🐴</div>
+      <div class="runit-info">
+        <div class="runit-name">Equites Romani</div>
+        <div class="runit-hp-row">
+          <div class="runit-hp-bar"><div class="runit-hp-fill" style="width:85%;background:var(--green)"></div></div>
+          <span class="runit-hp-val">68/80</span>
+        </div>
+      </div>
+      <div class="runit-str">80</div>
+    </div>
+    <!-- Dead units -->
+    <div class="roster-row dead">
+      <div class="runit-icon">💀</div>
+      <div class="runit-info">
+        <div class="runit-name">Principes (pokonani)</div>
+        <div class="runit-hp-row">
+          <div class="runit-hp-bar"><div class="runit-hp-fill" style="width:0%;background:var(--red)"></div></div>
+          <span class="runit-hp-val">0/70</span>
+        </div>
+      </div>
+      <div class="runit-str" style="color:var(--muted)">0</div>
+    </div>
+  </div>
+
+  <!-- Red army -->
+  <div class="sidebar-section">
+    <div class="sidebar-head sh-red">🔴 Kartagina — Roster (9/15)</div>
+
+    <div class="roster-row" onclick="selectUnit('fal1',this)">
+      <div class="runit-icon">🔱</div>
+      <div class="runit-info">
+        <div class="runit-name">Falanga I</div>
+        <div class="runit-hp-row">
+          <div class="runit-hp-bar"><div class="runit-hp-fill" style="width:44%;background:#e0975a"></div></div>
+          <span class="runit-hp-val">44/100</span>
+        </div>
+      </div>
+      <div class="runit-str">82</div>
+    </div>
+    <div class="roster-row" onclick="selectUnit('fal2',this)">
+      <div class="runit-icon">🔱</div>
+      <div class="runit-info">
+        <div class="runit-name">Falanga II</div>
+        <div class="runit-hp-row">
+          <div class="runit-hp-bar"><div class="runit-hp-fill" style="width:80%;background:var(--green)"></div></div>
+          <span class="runit-hp-val">80/100</span>
+        </div>
+      </div>
+      <div class="runit-str">82</div>
+    </div>
+    <div class="roster-row" onclick="selectUnit('num1',this)">
+      <div class="runit-icon">🐴</div>
+      <div class="runit-info">
+        <div class="runit-name">Kawaleria Numidyjska</div>
+        <div class="runit-hp-row">
+          <div class="runit-hp-bar"><div class="runit-hp-fill" style="width:90%;background:var(--green)"></div></div>
+          <span class="runit-hp-val">72/80</span>
+        </div>
+      </div>
+      <div class="runit-str">85</div>
+    </div>
+    <div class="roster-row" onclick="selectUnit('iber1',this)">
+      <div class="runit-icon">⚔️</div>
+      <div class="runit-info">
+        <div class="runit-name">Iberyjczycy</div>
+        <div class="runit-hp-row">
+          <div class="runit-hp-bar"><div class="runit-hp-fill" style="width:65%;background:#e0975a"></div></div>
+          <span class="runit-hp-val">52/80</span>
+        </div>
+      </div>
+      <div class="runit-str">70</div>
+    </div>
+    <div class="roster-row" onclick="selectUnit('sling1',this)">
+      <div class="runit-icon">🏹</div>
+      <div class="runit-info">
+        <div class="runit-name">Procarze Balearyjscy</div>
+        <div class="runit-hp-row">
+          <div class="runit-hp-bar"><div class="runit-hp-fill" style="width:50%;background:#e0975a"></div></div>
+          <span class="runit-hp-val">30/60</span>
+        </div>
+      </div>
+      <div class="runit-str">58</div>
+    </div>
+    <div class="roster-row" onclick="selectUnit('eleph1',this)">
+      <div class="runit-icon">🐘</div>
+      <div class="runit-info">
+        <div class="runit-name">Słonie Bojowe</div>
+        <div class="runit-hp-row">
+          <div class="runit-hp-bar"><div class="runit-hp-fill" style="width:70%;background:#e0975a"></div></div>
+          <span class="runit-hp-val">105/150</span>
+        </div>
+      </div>
+      <div class="runit-str">99</div>
+    </div>
+    <div class="roster-row" onclick="selectUnit('gal1',this)">
+      <div class="runit-icon">⚔️</div>
+      <div class="runit-info">
+        <div class="runit-name">Galowie Ciężcy</div>
+        <div class="runit-hp-row">
+          <div class="runit-hp-bar"><div class="runit-hp-fill" style="width:40%;background:var(--red)"></div></div>
+          <span class="runit-hp-val">32/80</span>
+        </div>
+      </div>
+      <div class="runit-str">74</div>
+    </div>
+    <div class="roster-row" onclick="selectUnit('lib1',this)">
+      <div class="runit-icon">🛡️</div>
+      <div class="runit-info">
+        <div class="runit-name">Libijscy Weterani</div>
+        <div class="runit-hp-row">
+          <div class="runit-hp-bar"><div class="runit-hp-fill" style="width:100%;background:var(--green)"></div></div>
+          <span class="runit-hp-val">90/90</span>
+        </div>
+      </div>
+      <div class="runit-str">90</div>
+    </div>
+    <div class="roster-row" onclick="selectUnit('num2',this)">
+      <div class="runit-icon">🐴</div>
+      <div class="runit-info">
+        <div class="runit-name">Kawaleria Iberyjska</div>
+        <div class="runit-hp-row">
+          <div class="runit-hp-bar"><div class="runit-hp-fill" style="width:88%;background:var(--green)"></div></div>
+          <span class="runit-hp-val">70/80</span>
+        </div>
+      </div>
+      <div class="runit-str">77</div>
+    </div>
+    <!-- Dead units -->
+    <div class="roster-row dead">
+      <div class="runit-icon">💀</div>
+      <div class="runit-info">
+        <div class="runit-name">Piechota Libijska I (pokon.)</div>
+        <div class="runit-hp-row">
+          <div class="runit-hp-bar"><div class="runit-hp-fill" style="width:0%;background:var(--red)"></div></div>
+          <span class="runit-hp-val">0/80</span>
+        </div>
+      </div>
+      <div class="runit-str" style="color:var(--muted)">0</div>
+    </div>
+    <div class="roster-row dead">
+      <div class="runit-icon">💀</div>
+      <div class="runit-info">
+        <div class="runit-name">Procarze Libijscy (pokon.)</div>
+        <div class="runit-hp-row">
+          <div class="runit-hp-bar"><div class="runit-hp-fill" style="width:0%;background:var(--red)"></div></div>
+          <span class="runit-hp-val">0/60</span>
+        </div>
+      </div>
+      <div class="runit-str" style="color:var(--muted)">0</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ CENTER: HEX MAP ═══ -->
+<div class="map-center">
+  <div class="map-scroll" id="mapScroll">
+    <div class="hex-grid-wrap" id="hexWrap">
+      <!-- SVG hex map: 18 cols × 14 rows = 252 hexes, pointy-top, odd-r offset -->
+      <!-- SVG element sized and positioned by JS to fit container at 100% zoom -->
+      <svg class="hex-map" id="hexMap" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <filter id="glow-gold" x="-20%" y="-20%" width="140%" height="140%">
+            <feGaussianBlur stdDeviation="2" result="blur"/>
+            <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+          <filter id="shadow" x="-10%" y="-10%" width="120%" height="130%">
+            <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="rgba(0,0,0,.6)"/>
+          </filter>
+          <!-- hex polygon defined dynamically by JS -->
+          <polygon id="hp" points=""/>
+        </defs>
+        <!-- content generated by script -->
+        <g id="grid"></g>
+        <g id="highlights"></g>
+        <g id="tokens"></g>
+      </svg>
+    </div>
+  </div>
+
+  <!-- zoom controls -->
+  <div class="zoom-ctrl">
+    <button class="zoom-btn" onclick="setZoom(currentZoom - 0.1)">−</button>
+    <span class="zoom-label" id="zoomLabel">100%</span>
+    <button class="zoom-btn" onclick="setZoom(currentZoom + 0.1)">+</button>
+    <button class="zoom-btn" title="Reset" onclick="setZoom(1)">⊙</button>
+  </div>
+
+  <!-- MINIMAP -->
+  <div class="minimap">
+    <div class="minimap-label">Minimapa</div>
+    <canvas id="miniCanvas" width="160" height="100"></canvas>
+  </div>
+
+  <!-- terrain legend strip -->
+  <div class="terrain-strip">
+    <div class="terrain-item">
+      <div class="terrain-dot" style="background:var(--t-plain)"></div>
+      <span>Równina</span><span class="terrain-effect">— brak modyfikatorów</span>
+    </div>
+    <div class="terrain-item">
+      <div class="terrain-dot" style="background:var(--t-grass)"></div>
+      <span>Łąka</span><span class="terrain-effect">— Ruch ×1</span>
+    </div>
+    <div class="terrain-item">
+      <div class="terrain-dot" style="background:var(--t-forest)"></div>
+      <span>🌲 Las</span><span class="terrain-effect">— +25% Obrona, Ruch ×½</span>
+    </div>
+    <div class="terrain-item">
+      <div class="terrain-dot" style="background:var(--t-hills)"></div>
+      <span>⛰ Wzgórza</span><span class="terrain-effect">— +40% Obrona, +15% Atk Dyst. z góry, Ruch ×½</span>
+    </div>
+    <div class="terrain-item">
+      <div class="terrain-dot" style="background:var(--t-river)"></div>
+      <span>〰 Rzeka</span><span class="terrain-effect">— Ruch ×¼ przy przekraczaniu, −20% Atak</span>
+    </div>
+    <div class="terrain-item" style="margin-left:auto;">
+      <span style="color:rgba(107,191,89,.7)">■</span><span style="color:#90d97f;margin-left:4px">Zasięg ruchu</span>
+    </div>
+    <div class="terrain-item">
+      <span style="color:rgba(211,107,94,.7)">■</span><span style="color:#e8897e;margin-left:4px">Atak wręcz</span>
+    </div>
+    <div class="terrain-item">
+      <span style="color:rgba(224,178,74,.7)">■</span><span style="color:var(--gold);margin-left:4px">Atak dystansowy</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ RIGHT PANEL ═══ -->
+<div class="right-panel">
+
+  <!-- Selected unit panel -->
+  <div class="sel-panel">
+    <div class="sel-head">
+      <div class="sel-icon" id="selIcon">⚔️</div>
+      <div>
+        <div class="sel-name" id="selName">Legioniści I</div>
+        <div class="sel-type" id="selType">Ciężka Piechota · Epoka Żelaza</div>
+      </div>
+      <div class="sel-army-badge blue" id="selBadge">RZYM</div>
+    </div>
+
+    <div class="sel-bars">
+      <div class="sel-bar-row">
+        <div class="sel-bar-labels">
+          <span>Zdrowie (HP)</span>
+          <span class="sel-bar-val" id="selHpVal" style="color:var(--green)">62 / 75</span>
+        </div>
+        <div class="sel-bar-track">
+          <div class="sel-bar-fill" id="selHpBar" style="width:82.7%;background:var(--green)"></div>
+        </div>
+      </div>
+      <div class="sel-bar-row">
+        <div class="sel-bar-labels">
+          <span>Morale</span>
+          <span class="sel-bar-val" id="selMorVal" style="color:var(--blue)">85 / 100</span>
+        </div>
+        <div class="sel-bar-track">
+          <div class="sel-bar-fill" id="selMorBar" style="width:85%;background:var(--blue)"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sel-stats-grid">
+      <div class="sel-stat">
+        <div class="sel-stat-label">Atak</div>
+        <div class="sel-stat-val" style="color:var(--red)" id="statAtk">88</div>
+      </div>
+      <div class="sel-stat">
+        <div class="sel-stat-label">Obrona</div>
+        <div class="sel-stat-val" style="color:var(--blue)" id="statDef">72</div>
+      </div>
+      <div class="sel-stat">
+        <div class="sel-stat-label">Atk Dyst.</div>
+        <div class="sel-stat-val" style="color:var(--gold)" id="statRng">—</div>
+      </div>
+      <div class="sel-stat">
+        <div class="sel-stat-label">Zasięg Atk</div>
+        <div class="sel-stat-val" style="color:var(--gold)" id="statRngDist">1</div>
+      </div>
+      <div class="sel-stat">
+        <div class="sel-stat-label">Uderzenie</div>
+        <div class="sel-stat-val" style="color:var(--gold)" id="statStr">40</div>
+      </div>
+      <div class="sel-stat">
+        <div class="sel-stat-label">Ruch</div>
+        <div class="sel-stat-val" style="color:var(--green)" id="statMov">2</div>
+      </div>
+      <div class="sel-stat">
+        <div class="sel-stat-label">Widoczność</div>
+        <div class="sel-stat-val" style="color:var(--muted)" id="statVis">3</div>
+      </div>
+      <div class="sel-stat">
+        <div class="sel-stat-label">Pancerz</div>
+        <div class="sel-stat-val" style="color:var(--text)" id="statArmor">55</div>
+      </div>
+      <div class="sel-stat">
+        <div class="sel-stat-label">Siła</div>
+        <div class="sel-stat-val" style="color:var(--gold)" id="statPow">88</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- terrain effect on selected unit -->
+  <div class="terrain-indicator" id="terrainIndicator">
+    <div class="ti-title" id="tiTitle">Teren: Równina (kol 4, rz. 0)</div>
+    <!-- Current hex effects -->
+    <div class="ti-row">
+      <span>Obrona (bieżący)</span>
+      <span class="ti-bonus" id="tiDefCur" style="color:var(--muted)">±0%</span>
+    </div>
+    <div class="ti-row">
+      <span>Ruch (bieżący)</span>
+      <span class="ti-bonus pos" id="tiMovCur">×1 (normalny)</span>
+    </div>
+    <div class="ti-row">
+      <span>Atak Dyst. z góry</span>
+      <span class="ti-bonus" id="tiRngCur" style="color:var(--muted)">±0%</span>
+    </div>
+    <!-- Separator / target hex -->
+    <div class="ti-row" style="margin-top:4px;padding-top:4px;border-top:1px solid rgba(60,68,80,.5);">
+      <span style="color:var(--text);font-weight:600;">Cel (najechanego terenu):</span>
+    </div>
+    <div class="ti-row">
+      <span id="tiTargetLabel">Cel: —</span>
+    </div>
+    <div class="ti-row">
+      <span>Obrona celu</span>
+      <span class="ti-bonus" id="tiDefTgt" style="color:var(--muted)">—</span>
+    </div>
+    <div class="ti-row">
+      <span>Ruch przy wejściu</span>
+      <span class="ti-bonus" id="tiMovTgt" style="color:var(--muted)">—</span>
+    </div>
+    <div class="ti-row">
+      <span>Atak przy przekr. rzeki</span>
+      <span class="ti-bonus neg" id="tiRiverAtk">—</span>
+    </div>
+  </div>
+
+  <!-- Spacer -->
+  <div style="flex:1;min-height:8px;"></div>
+
+  <!-- Action bar -->
+  <div class="action-bar">
+    <div class="action-bar-title" id="actionBarTitle">Akcje — Legioniści I</div>
+    <div class="action-btns">
+      <button class="act-btn act-move act-active" onclick="setAction(this)">🦶 Ruch</button>
+      <button class="act-btn act-attack" onclick="setAction(this)">⚔ Atak</button>
+      <button class="act-btn act-ranged" onclick="setAction(this)" id="btnRanged">🏹 Atak Dyst.</button>
+      <button class="act-btn act-charge" onclick="setAction(this)">💨 Szarża</button>
+      <button class="act-btn act-defend" onclick="setAction(this)">🛡 Postawa Obronna</button>
+      <button class="act-btn act-wait" onclick="setAction(this)">⏸ Czekaj</button>
+    </div>
+  </div>
+
+  <!-- Battle log -->
+  <div class="log-section">
+    <div class="log-head">Dziennik Bitwy</div>
+    <div class="log-body">
+      <div class="log-entry">
+        <span class="log-badge lb-turn">T3·M</span>
+        <span class="log-text"><span class="spec">Faza Ruchu.</span> Tura gracza. Wybierz jednostkę.</span>
+      </div>
+      <div class="log-entry">
+        <span class="log-badge lb-hit">T2·A</span>
+        <span class="log-text"><b>Legioniści I</b> szarżują na <b>Galów Ciężkich</b>. <span class="hit">TRAFIENIE</span> — <span class="dmg">31 dmg</span>. HP: 80→<span class="dmg">49</span>. <span class="morale">Morale: −6</span>.</span>
+      </div>
+      <div class="log-entry">
+        <span class="log-badge lb-hit">T2·A</span>
+        <span class="log-text"><b>Balisty</b> ostrzeliwują <b>Falangę I</b> z zasięgu 4. <span class="hit">TRAFIENIE</span> — <span class="dmg">22 dmg</span>. HP: 66→<span class="dmg">44</span>.</span>
+      </div>
+      <div class="log-entry">
+        <span class="log-badge lb-move">T2·M</span>
+        <span class="log-text"><b>Kawaleria Numidyjska</b> wycofuje się na wzgórza. Ruch: 3 pola. Obrona +40%.</span>
+      </div>
+      <div class="log-entry">
+        <span class="log-badge lb-hit">T2·A</span>
+        <span class="log-text"><b>Słonie Bojowe</b> depczą <b>Hastaci</b>. <span class="hit">TRAFIENIE</span> — <span class="dmg">45 dmg</span>. HP: 90→<span class="dmg">45</span>. <span class="morale">Morale −12 (panika!).</span></span>
+      </div>
+      <div class="log-entry">
+        <span class="log-badge lb-hit">T1·A</span>
+        <span class="log-text"><b>Principes</b> atakują, <span class="miss">PUDŁO</span>. Kontratak <b>Libijskich Weteranów</b> — <span class="dmg">70 dmg</span>. Principes <span class="dmg">pokonani!</span></span>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /right-panel -->
+
+</div><!-- /body-wrap -->
+
+<script>
+/* ════════════════════════════════════════════════════════════
+   HEX GRID — 18 cols × 14 rows = 252 hexes, pointy-top, odd-r
+   Hex radius R is computed dynamically to fill the map container.
+   ════════════════════════════════════════════════════════════ */
+
+const COLS = 18, ROWS = 14;
+const PAD = 10;  // padding inside SVG (px at base R)
+
+// Terrain types for each cell [col][row]
+const TERRAIN_MAP = (function(){
+  const t = [];
+  for(let c=0;c<COLS;c++){
+    t[c]=[];
+    for(let r=0;r<ROWS;r++) t[c][r]='P';
+  }
+  for(let c=0;c<=2;c++) for(let r=0;r<ROWS;r++) t[c][r]='G';
+  for(let c=0;c<=1;c++) for(let r=7;r<=10;r++) t[c][r]='H';
+  for(let c=1;c<=2;c++) for(let r=10;r<ROWS;r++) t[c][r]='F';
+  t[0][11]='F'; t[0][12]='F'; t[0][13]='F';
+  for(let r=4;r<=11;r++) t[4][r]='R';
+  for(let r=8;r<=11;r++) t[3][r]='F';
+  for(let r=0;r<=2;r++){ t[6][r]='G'; t[7][r]='G'; }
+  for(let r=11;r<ROWS;r++){ t[6][r]='G'; t[7][r]='G'; }
+  for(let c=12;c<=14;c++) for(let r=3;r<=8;r++) t[c][r]='H';
+  for(let c=13;c<=15;c++) for(let r=1;r<=4;r++) t[c][r]='H';
+  for(let c=15;c<COLS;c++) for(let r=8;r<ROWS;r++) t[c][r]='F';
+  for(let c=16;c<COLS;c++) for(let r=6;r<ROWS;r++) t[c][r]='F';
+  for(let r=0;r<=3;r++){ t[16][r]='G'; t[17][r]='G'; }
+  for(let r=2;r<=9;r++) t[11][r]='R';
+  return t;
+})();
+
+const TERRAIN_INFO = {
+  P: { fill:'#5a6e3a', name:'Równina', def:0, movMul:1, rngBonus:0, icon:null },
+  G: { fill:'#4a7c2e', name:'Łąka',    def:0, movMul:1, rngBonus:0, icon:null },
+  F: { fill:'#2d5a1f', name:'Las',     def:25, movMul:0.5, rngBonus:0, icon:'🌲' },
+  H: { fill:'#7a6040', name:'Wzgórza', def:40, movMul:0.5, rngBonus:15, icon:'⛰' },
+  R: { fill:'#2a5f8a', name:'Rzeka',   def:0, movMul:0.25, rngBonus:0, atkPenalty:20, icon:'〰' },
+};
+
+// ── Compute hex size to fill the container ──
+// Returns R (circumradius) so that 18×14 board fits in (containerW × containerH).
+// Pointy-top, odd-r offset: total grid needs W*(COLS+0.5) × R*(1.5*ROWS+0.5)
+function computeR(containerW, containerH) {
+  const Rw = (containerW - PAD * 2) / (Math.sqrt(3) * (COLS + 0.5));
+  const Rh = (containerH - PAD * 2) / (1.5 * ROWS + 0.5);
+  return Math.max(8, Math.min(Rw, Rh));
+}
+
+// ── Pointy-top hex polygon points for given R ──
+// Corners at angle = (60*i − 30)° — same as city view
+function hexPoints(R) {
+  const pts = [];
+  for(let i=0;i<6;i++){
+    const a = Math.PI / 180 * (60*i - 30);
+    pts.push(`${(R*Math.cos(a)).toFixed(2)},${(R*Math.sin(a)).toFixed(2)}`);
+  }
+  return pts.join(' ');
+}
+
+// ── Hex pixel centre (pointy-top, odd-r: odd ROWS offset right by HW/2) ──
+// Matches city-view formula exactly:
+//   x = ORIGIN_X + col * HW + (row % 2) * (HW / 2)
+//   y = ORIGIN_Y + row * ROW_STEP            where ROW_STEP = 1.5*R
+function hexPos(col, row, R) {
+  const HW = Math.sqrt(3) * R;      // hex width  = sqrt(3)*R
+  const ROW_STEP = 1.5 * R;         // row spacing = 1.5*R  (hexes share the flat top/bottom edge)
+  const ORIGIN_X = HW / 2 + PAD;    // centre of hex [0,0]
+  const ORIGIN_Y = R     + PAD;
+  const x = ORIGIN_X + col * HW + (row % 2) * (HW / 2);
+  const y = ORIGIN_Y + row * ROW_STEP;
+  return {x, y};
+}
+
+// ── SVG total size to contain all hexes ──
+function svgSize(R) {
+  const HW = Math.sqrt(3) * R;
+  const W = Math.ceil(PAD + HW / 2 + PAD + (COLS - 1) * HW + HW / 2 + HW / 2 + PAD);
+  const H = Math.ceil(PAD + R + PAD + (ROWS - 1) * 1.5 * R + R + PAD);
+  return {W, H};
+}
+
+// Unit data
+const UNITS = {
+  leg1:  {icon:'⚔️', name:'Legioniści I',       type:'Ciężka Piechota · Żelazo',  army:'blue', str:88,  atk:88,  def:72,  rngAtk:null, rngDist:1,  mov:2, vis:3, armor:55, hp:62,  hpMax:75,  mor:85,  col:5,  row:1},
+  leg2:  {icon:'⚔️', name:'Legioniści II',       type:'Ciężka Piechota · Żelazo',  army:'blue', str:88,  atk:88,  def:72,  rngAtk:null, rngDist:1,  mov:2, vis:3, armor:55, hp:75,  hpMax:75,  mor:90,  col:4,  row:4},
+  vel1:  {icon:'🏹', name:'Weliści I',           type:'Lekka Piechota/Oszczep',    army:'blue', str:55,  atk:55,  def:40,  rngAtk:45,   rngDist:2,  mov:3, vis:4, armor:25, hp:54,  hpMax:60,  mor:75,  col:3,  row:2},
+  vel2:  {icon:'🏹', name:'Weliści II',          type:'Lekka Piechota/Oszczep',    army:'blue', str:55,  atk:55,  def:40,  rngAtk:45,   rngDist:2,  mov:3, vis:4, armor:25, hp:42,  hpMax:60,  mor:60,  col:2,  row:3},
+  cav1:  {icon:'🐴', name:'Kawaleria Sprzymierzona', type:'Lekka Kawaleria',      army:'blue', str:72,  atk:72,  def:50,  rngAtk:null, rngDist:1,  mov:4, vis:5, armor:35, hp:80,  hpMax:80,  mor:85,  col:1,  row:1},
+  hast1: {icon:'🛡️', name:'Hastaci',             type:'Piechota Liniowa',          army:'blue', str:70,  atk:70,  def:65,  rngAtk:null, rngDist:1,  mov:2, vis:3, armor:50, hp:45,  hpMax:75,  mor:55,  col:2,  row:1},
+  triar1:{icon:'🛡️', name:'Triarowie',           type:'Ciężka Piechota/Weteran',   army:'blue', str:95,  atk:75,  def:90,  rngAtk:null, rngDist:1,  mov:2, vis:3, armor:70, hp:90,  hpMax:90,  mor:95,  col:3,  row:0},
+  soc1:  {icon:'⚔️', name:'Socii Piechota',      type:'Piechota Sprzymierzona',    army:'blue', str:65,  atk:65,  def:60,  rngAtk:null, rngDist:1,  mov:2, vis:3, armor:40, hp:56,  hpMax:70,  mor:70,  col:1,  row:3},
+  arc1:  {icon:'🏹', name:'Łucznicy Kretańscy',  type:'Łucznicy Dystansowi',       army:'blue', str:62,  atk:40,  def:30,  rngAtk:62,   rngDist:3,  mov:2, vis:5, armor:20, hp:33,  hpMax:60,  mor:50,  col:0,  row:2},
+  eng1:  {icon:'🔧', name:'Balisty',             type:'Artyleria Oblężnicza',      army:'blue', str:78,  atk:30,  def:25,  rngAtk:78,   rngDist:4,  mov:1, vis:6, armor:30, hp:40,  hpMax:40,  mor:80,  col:0,  row:0},
+  cav2:  {icon:'🐴', name:'Equites Romani',      type:'Ciężka Kawaleria',          army:'blue', str:80,  atk:80,  def:60,  rngAtk:null, rngDist:1,  mov:4, vis:4, armor:55, hp:68,  hpMax:80,  mor:80,  col:5,  row:0},
+  fal1:  {icon:'🔱', name:'Falanga I',           type:'Ciężka Piechota/Falanga',   army:'red',  str:82,  atk:82,  def:85,  rngAtk:null, rngDist:1,  mov:1, vis:3, armor:65, hp:44,  hpMax:100, mor:60,  col:12, row:4},
+  fal2:  {icon:'🔱', name:'Falanga II',          type:'Ciężka Piechota/Falanga',   army:'red',  str:82,  atk:82,  def:85,  rngAtk:null, rngDist:1,  mov:1, vis:3, armor:65, hp:80,  hpMax:100, mor:80,  col:13, row:2},
+  num1:  {icon:'🐴', name:'Kawaleria Numidyjska',type:'Lekka Kawaleria',           army:'red',  str:85,  atk:85,  def:55,  rngAtk:null, rngDist:1,  mov:5, vis:5, armor:30, hp:72,  hpMax:80,  mor:85,  col:16, row:0},
+  iber1: {icon:'⚔️', name:'Iberyjczycy',         type:'Piechota Iberyjska',        army:'red',  str:70,  atk:70,  def:60,  rngAtk:null, rngDist:1,  mov:2, vis:3, armor:40, hp:52,  hpMax:80,  mor:65,  col:10, row:4},
+  sling1:{icon:'🏹', name:'Procarze Balearyjscy',type:'Lekka Piechota/Proca',      army:'red',  str:58,  atk:35,  def:30,  rngAtk:58,   rngDist:3,  mov:2, vis:4, armor:15, hp:30,  hpMax:60,  mor:50,  col:15, row:2},
+  eleph1:{icon:'🐘', name:'Słonie Bojowe',       type:'Elitarna Jednostka Specj.', army:'red',  str:99,  atk:99,  def:70,  rngAtk:null, rngDist:1,  mov:2, vis:4, armor:80, hp:105, hpMax:150, mor:70,  col:9,  row:3},
+  gal1:  {icon:'⚔️', name:'Galowie Ciężcy',      type:'Barbarzyńska Piechota',     army:'red',  str:74,  atk:74,  def:55,  rngAtk:null, rngDist:1,  mov:2, vis:3, armor:35, hp:32,  hpMax:80,  mor:40,  col:8,  row:2},
+  lib1:  {icon:'🛡️', name:'Libijscy Weterani',   type:'Ciężka Piechota/Weteran',   army:'red',  str:90,  atk:80,  def:85,  rngAtk:null, rngDist:1,  mov:2, vis:3, armor:70, hp:90,  hpMax:90,  mor:95,  col:14, row:1},
+  num2:  {icon:'🐴', name:'Kawaleria Iberyjska',  type:'Średnia Kawaleria',         army:'red',  str:77,  atk:77,  def:58,  rngAtk:null, rngDist:1,  mov:4, vis:4, armor:40, hp:70,  hpMax:80,  mor:80,  col:17, row:2},
+};
+
+let selectedUnit = 'leg1';
+let currentZoom  = 1.0;  // 1.0 = board fills container (fit-to-window)
+let baseR        = 24;   // recomputed on each layout
+
+// ── Compute base R from current container dimensions ──
+function getContainerSize() {
+  const scroll = document.getElementById('mapScroll');
+  return { W: scroll.clientWidth, H: scroll.clientHeight };
+}
+
+// ── Update the SVG polygon definition and rebuild ──
+function rebuildForSize() {
+  const {W, H} = getContainerSize();
+  baseR = computeR(W, H);
+  const {W: svgW, H: svgH} = svgSize(baseR);
+
+  // Update the reusable hex polygon
+  document.getElementById('hp').setAttribute('points', hexPoints(baseR));
+
+  const svg = document.getElementById('hexMap');
+  svg.setAttribute('width',   svgW);
+  svg.setAttribute('height',  svgH);
+  svg.setAttribute('viewBox', `0 0 ${svgW} ${svgH}`);
+  svg.style.transform = '';
+  svg.style.transformOrigin = 'top left';
+
+  // Outer wrapper matches natural SVG size (zoom applied via scale)
+  applyZoom(currentZoom, svgW, svgH);
+
+  buildGrid();
+  drawHighlights();
+  drawTokens();
+  drawMinimap();
+}
+
+// ── Apply zoom (capped at 1.0 = fit-to-window) ──
+function applyZoom(z, svgW, svgH) {
+  const svg   = document.getElementById('hexMap');
+  const wrap  = document.getElementById('hexWrap');
+  svg.style.transform       = `scale(${z})`;
+  svg.style.transformOrigin = 'top left';
+  wrap.style.width  = Math.round(svgW * z) + 'px';
+  wrap.style.height = Math.round(svgH * z) + 'px';
+  document.getElementById('zoomLabel').textContent = Math.round(z * 100) + '%';
+}
+
+function setZoom(z) {
+  // Allow zoom-out (≥0.3) but never above 100% (1.0 = fit-to-window)
+  currentZoom = Math.max(0.3, Math.min(1.0, z));
+  const {W: svgW, H: svgH} = svgSize(baseR);
+  applyZoom(currentZoom, svgW, svgH);
+}
+
+// ── Build SVG grid ──
+function buildGrid() {
+  const gGrid = document.getElementById('grid');
+  let html = '';
+  for(let c=0;c<COLS;c++){
+    for(let r=0;r<ROWS;r++){
+      const {x,y} = hexPos(c, r, baseR);
+      const ti = TERRAIN_INFO[TERRAIN_MAP[c][r]];
+      html += `<use href="#hp" transform="translate(${x.toFixed(1)},${y.toFixed(1)})" fill="${ti.fill}"/>`;
+      html += `<use href="#hp" transform="translate(${x.toFixed(1)},${y.toFixed(1)})" fill="none" stroke="rgba(0,0,0,.3)" stroke-width="0.8" data-col="${c}" data-row="${r}" class="hex-cell" onclick="onHexClick(${c},${r})"/>`;
+      if(ti.icon){
+        const iconSize = Math.max(9, Math.round(baseR * 0.55));
+        html += `<text x="${x.toFixed(1)}" y="${(y+baseR*0.18).toFixed(1)}" text-anchor="middle" dominant-baseline="middle" font-size="${iconSize}" opacity=".65" pointer-events="none">${ti.icon}</text>`;
+      }
+    }
+  }
+  gGrid.innerHTML = html;
+}
+
+// ── Hex distance (pointy-top offset coords odd-r) ──
+function hexDist(c1,r1,c2,r2){
+  function toCube(col,row){
+    const x = col;
+    const z = row - (col - (col&1))/2;
+    return {x, y:-x-z, z};
+  }
+  const a=toCube(c1,r1), b=toCube(c2,r2);
+  return Math.max(Math.abs(a.x-b.x), Math.abs(a.y-b.y), Math.abs(a.z-b.z));
+}
+
+// ── Draw highlights (move/attack/ranged) for selected unit ──
+function drawHighlights(){
+  const u = UNITS[selectedUnit];
+  if(!u) return;
+  const hl = document.getElementById('highlights');
+  let html = '';
+
+  const movRange = u.mov;
+  const rngRange = u.rngAtk ? (u.rngDist || 2) : 0;
+
+  for(let c=0;c<COLS;c++){
+    for(let r=0;r<ROWS;r++){
+      if(c===u.col && r===u.row) continue;
+      const d = hexDist(u.col, u.row, c, r);
+      const {x,y} = hexPos(c, r, baseR);
+      const t = TERRAIN_MAP[c][r];
+      const occupied = Object.values(UNITS).find(uu=>uu.col===c&&uu.row===r);
+
+      if(d <= movRange && !occupied && t!=='R'){
+        html += `<use href="#hp" transform="translate(${x.toFixed(1)},${y.toFixed(1)})" fill="rgba(107,191,89,.22)" stroke="rgba(107,191,89,.6)" stroke-width="1.5"/>`;
+      } else if(d === 1 && occupied && occupied.army !== u.army){
+        html += `<use href="#hp" transform="translate(${x.toFixed(1)},${y.toFixed(1)})" fill="rgba(211,107,94,.25)" stroke="rgba(211,107,94,.7)" stroke-width="1.5"/>`;
+      } else if(rngRange > 0 && d > 1 && d <= rngRange){
+        html += `<use href="#hp" transform="translate(${x.toFixed(1)},${y.toFixed(1)})" fill="rgba(224,178,74,.18)" stroke="rgba(224,178,74,.6)" stroke-width="1.3"/>`;
+      }
+    }
+  }
+  // Selected outline
+  const {x:sx,y:sy} = hexPos(u.col, u.row, baseR);
+  html += `<use href="#hp" transform="translate(${sx.toFixed(1)},${sy.toFixed(1)})" fill="none" stroke="#e0b24a" stroke-width="2.5" filter="url(#glow-gold)" pointer-events="none"/>`;
+  hl.innerHTML = html;
+}
+
+// ── Draw unit tokens ──
+function drawTokens(){
+  const gt = document.getElementById('tokens');
+  let html = '';
+  for(const [id, u] of Object.entries(UNITS)){
+    const {x,y} = hexPos(u.col, u.row, baseR);
+    const isSelected = id === selectedUnit;
+    const cls = u.army==='blue' ? 'token-blue' : 'token-red';
+    const selCls = isSelected ? ' selected-token' : '';
+
+    // Token radius scales with hex size; elephants a bit bigger
+    const tokR = Math.round(baseR * (u.army==='red' && id==='eleph1' ? 0.85 : 0.72));
+    const hpPct = u.hp / u.hpMax;
+    const hpColor = hpPct > 0.6 ? '#6bbf59' : hpPct > 0.3 ? '#e0975a' : '#d36b5e';
+
+    // HP/Morale bar width = about 1.2× token diameter, capped sensibly
+    const barW = Math.round(tokR * 2.2);
+    const hpW  = Math.round(barW * hpPct);
+    const morW = Math.round(barW * (u.mor/100));
+
+    const iconSize = Math.max(10, Math.round(baseR * 0.55));
+    const strSize  = Math.max(8,  Math.round(baseR * 0.38));
+    const barH     = Math.max(3, Math.round(baseR * 0.17));
+    const barGap   = Math.round(baseR * 0.22);
+
+    html += `<g filter="url(#shadow)" onclick="selectUnit('${id}',null)" style="cursor:pointer">`;
+    html += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${tokR}" class="${cls}${selCls}"/>`;
+    html += `<text x="${x.toFixed(1)}" y="${(y - baseR*0.18).toFixed(1)}" text-anchor="middle" dominant-baseline="middle" font-size="${iconSize}" pointer-events="none">${u.icon}</text>`;
+    html += `<text x="${x.toFixed(1)}" y="${(y + baseR*0.32).toFixed(1)}" text-anchor="middle" dominant-baseline="middle" font-size="${strSize}" font-weight="800" fill="#e0b24a" pointer-events="none">${u.str}</text>`;
+    // HP bar
+    html += `<rect x="${(x - barW/2).toFixed(1)}" y="${(y + tokR + barGap).toFixed(1)}" width="${barW}" height="${barH}" rx="${Math.ceil(barH/2)}" fill="rgba(0,0,0,.5)" pointer-events="none"/>`;
+    html += `<rect x="${(x - barW/2).toFixed(1)}" y="${(y + tokR + barGap).toFixed(1)}" width="${hpW}" height="${barH}" rx="${Math.ceil(barH/2)}" fill="${hpColor}" pointer-events="none"/>`;
+    // Morale bar
+    const morY = y + tokR + barGap + barH + 2;
+    html += `<rect x="${(x - barW/2).toFixed(1)}" y="${morY.toFixed(1)}" width="${barW}" height="${Math.max(2,barH-1)}" rx="${Math.ceil(barH/2)}" fill="rgba(0,0,0,.5)" pointer-events="none"/>`;
+    html += `<rect x="${(x - barW/2).toFixed(1)}" y="${morY.toFixed(1)}" width="${morW}" height="${Math.max(2,barH-1)}" rx="${Math.ceil(barH/2)}" fill="#5a9bd4" pointer-events="none"/>`;
+    html += `</g>`;
+  }
+  gt.innerHTML = html;
+}
+
+// ── Right-panel terrain indicator ──
+function updateTerrainIndicator(){
+  const u = UNITS[selectedUnit];
+  if(!u) return;
+  const ti = TERRAIN_INFO[TERRAIN_MAP[u.col][u.row]];
+
+  document.getElementById('tiTitle').textContent = `Teren: ${ti.name} (kol ${u.col}, rz. ${u.row})`;
+
+  const defEl = document.getElementById('tiDefCur');
+  defEl.textContent = ti.def > 0 ? `+${ti.def}%` : '±0%';
+  defEl.className = 'ti-bonus ' + (ti.def>0 ? 'pos' : '');
+
+  const movEl = document.getElementById('tiMovCur');
+  movEl.textContent = ti.movMul < 1 ? `×${ti.movMul} (spowolnienie)` : '×1 (normalny)';
+  movEl.className = 'ti-bonus ' + (ti.movMul < 1 ? 'neg' : 'pos');
+
+  const rngEl = document.getElementById('tiRngCur');
+  rngEl.textContent = ti.rngBonus > 0 ? `+${ti.rngBonus}% (wysokość)` : '±0%';
+  rngEl.className = 'ti-bonus ' + (ti.rngBonus > 0 ? 'pos' : '');
+  rngEl.style.color = ti.rngBonus > 0 ? '' : 'var(--muted)';
+
+  document.getElementById('tiTargetLabel').textContent = 'Cel: najedź na heks';
+  document.getElementById('tiDefTgt').textContent = '—';
+  document.getElementById('tiMovTgt').textContent = '—';
+  document.getElementById('tiRiverAtk').textContent = '—';
+  document.getElementById('tiRiverAtk').className = 'ti-bonus';
+  document.getElementById('tiRiverAtk').style.color = 'var(--muted)';
+}
+
+// ── Right-panel unit stats ──
+function updateUnitPanel(){
+  const u = UNITS[selectedUnit];
+  if(!u) return;
+
+  document.getElementById('selIcon').textContent  = u.icon;
+  document.getElementById('selName').textContent  = u.name;
+  document.getElementById('selType').textContent  = u.type;
+  const badge = document.getElementById('selBadge');
+  badge.textContent = u.army==='blue' ? 'RZYM' : 'KARTAGINA';
+  badge.className = 'sel-army-badge ' + u.army;
+
+  const hpPct = u.hp / u.hpMax;
+  const hpColor = hpPct > 0.6 ? 'var(--green)' : hpPct > 0.3 ? '#e0975a' : 'var(--red)';
+  document.getElementById('selHpVal').textContent = `${u.hp} / ${u.hpMax}`;
+  document.getElementById('selHpVal').style.color = hpColor;
+  document.getElementById('selHpBar').style.width = (hpPct*100)+'%';
+  document.getElementById('selHpBar').style.background = hpColor;
+
+  document.getElementById('selMorVal').textContent = `${u.mor} / 100`;
+  document.getElementById('selMorBar').style.width  = u.mor+'%';
+
+  document.getElementById('statAtk').textContent     = u.atk;
+  document.getElementById('statDef').textContent     = u.def;
+  document.getElementById('statRng').textContent     = u.rngAtk !== null ? u.rngAtk : '—';
+  document.getElementById('statRngDist').textContent = u.rngDist > 1 ? u.rngDist : (u.rngAtk ? u.rngDist : '1 (wręcz)');
+  document.getElementById('statStr').textContent     = u.str;
+  document.getElementById('statMov').textContent     = u.mov;
+  document.getElementById('statVis').textContent     = u.vis;
+  document.getElementById('statArmor').textContent   = u.armor;
+  document.getElementById('statPow').textContent     = u.str;
+
+  document.getElementById('actionBarTitle').textContent = `Akcje — ${u.name}`;
+  const btnR = document.getElementById('btnRanged');
+  btnR.disabled = u.rngAtk === null;
+  btnR.style.opacity = u.rngAtk === null ? '0.35' : '1';
+
+  updateTerrainIndicator();
+}
+
+// ── Hex hover: update target terrain info ──
+document.getElementById('hexMap').addEventListener('mousemove', function(e){
+  const el = e.target.closest('.hex-cell');
+  if(!el) return;
+  const c = parseInt(el.dataset.col), r = parseInt(el.dataset.row);
+  const u = UNITS[selectedUnit];
+  if(!u || (c===u.col && r===u.row)) return;
+  const ti = TERRAIN_INFO[TERRAIN_MAP[c][r]];
+
+  document.getElementById('tiTargetLabel').textContent = `Cel: ${ti.name} (kol ${c}, rz. ${r})`;
+  const defEl = document.getElementById('tiDefTgt');
+  defEl.textContent = ti.def > 0 ? `+${ti.def}%` : '±0%';
+  defEl.className = 'ti-bonus ' + (ti.def>0 ? 'pos' : '');
+  defEl.style.color = ti.def > 0 ? '' : 'var(--muted)';
+
+  const movEl = document.getElementById('tiMovTgt');
+  movEl.textContent = ti.movMul < 1 ? `×${ti.movMul} (spowolnienie)` : '×1 (normalny)';
+  movEl.className = 'ti-bonus ' + (ti.movMul < 1 ? 'neg' : 'pos');
+
+  const rvEl = document.getElementById('tiRiverAtk');
+  if(TERRAIN_MAP[c][r]==='R'){
+    rvEl.textContent = '−20% Atak przy przekraczaniu';
+    rvEl.className = 'ti-bonus neg';
+    rvEl.style.color = '';
+  } else {
+    rvEl.textContent = '—';
+    rvEl.className = 'ti-bonus';
+    rvEl.style.color = 'var(--muted)';
+  }
+});
+
+// ── Select unit ──
+function selectUnit(id, rowEl){
+  selectedUnit = id;
+  document.querySelectorAll('.roster-row').forEach(r => r.classList.remove('selected'));
+  if(rowEl) rowEl.classList.add('selected');
+  drawHighlights();
+  drawTokens();
+  updateUnitPanel();
+  drawMinimap();
+  document.querySelectorAll('.act-btn').forEach(b => b.classList.remove('act-active'));
+  document.querySelector('.act-move').classList.add('act-active');
+}
+
+function onHexClick(c, r){
+  const found = Object.entries(UNITS).find(([id,u])=>u.col===c&&u.row===r);
+  if(found){
+    selectUnit(found[0], null);
+    document.querySelectorAll('.roster-row').forEach(row=>{
+      if(row.getAttribute('onclick') && row.getAttribute('onclick').includes("'"+found[0]+"'")){
+        row.classList.add('selected');
+      }
+    });
+  }
+}
+
+function setAction(btn){
+  document.querySelectorAll('.act-btn').forEach(b=>b.classList.remove('act-active'));
+  btn.classList.add('act-active');
+}
+
+// ── Minimap ──
+function drawMinimap(){
+  const canvas = document.getElementById('miniCanvas');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const {W: svgW, H: svgH} = svgSize(baseR);
+  const scX = W / svgW, scY = H / svgH;
+
+  ctx.clearRect(0,0,W,H);
+  for(let c=0;c<COLS;c++){
+    for(let r=0;r<ROWS;r++){
+      const {x,y} = hexPos(c, r, baseR);
+      const ti = TERRAIN_INFO[TERRAIN_MAP[c][r]];
+      ctx.fillStyle = ti.fill;
+      ctx.beginPath();
+      ctx.arc(x*scX, y*scY, 3.5, 0, Math.PI*2);
+      ctx.fill();
+    }
+  }
+  for(const [id, u] of Object.entries(UNITS)){
+    const {x,y} = hexPos(u.col, u.row, baseR);
+    ctx.fillStyle = u.army==='blue' ? '#4a90d4' : '#c0392b';
+    ctx.beginPath();
+    ctx.arc(x*scX, y*scY, id===selectedUnit ? 5 : 3.5, 0, Math.PI*2);
+    ctx.fill();
+    if(id===selectedUnit){
+      ctx.strokeStyle = '#e0b24a';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.arc(x*scX, y*scY, 5.5, 0, Math.PI*2);
+      ctx.stroke();
+    }
+  }
+  ctx.strokeStyle = '#3c4450';
+  ctx.lineWidth = 1;
+  ctx.strokeRect(0,0,W,H);
+}
+
+// ── Init + resize ──
+let resizeTimer = null;
+function onResize(){
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => {
+    rebuildForSize();
+  }, 80);
+}
+
+window.addEventListener('resize', onResize);
+
+// Initial build: wait one frame so layout is complete and clientWidth is accurate
+requestAnimationFrame(() => {
+  rebuildForSize();
+  updateUnitPanel();
+});
+</script>
+</body>
+</html>

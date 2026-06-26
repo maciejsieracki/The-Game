@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="pl">
+  <head>
+    <script>
+      (function () {
+        function e(msg){var d=document.getElementById('__e__');if(!d){d=document.createElement('div');d.id='__e__';d.style.cssText='position:fixed;top:0;left:0;width:100%;background:rgba(180,0,0,.95);color:#fff;font:bold 13px/1.5 monospace;padding:16px;z-index:9;white-space:pre-wrap;';d.innerHTML='<b>OBLEZENIE — BOOT ERROR</b>\n';(document.body||document.documentElement).appendChild(d);}d.innerHTML+='\n'+String(msg);}
+        window.onerror=function(m,s,l,c,err){e((err?err.message:m)+' @'+s+':'+l+':'+c+(err&&err.stack?'\n'+err.stack:''));return false;};
+        window.addEventListener('unhandledrejection',function(ev){e('Rejection: '+String(ev.reason));});
+      })();
+    </script>
+    <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Oblezenie — 9 miast per cywilizacja</title>
+    <style>
+      *{margin:0;padding:0;box-sizing:border-box} html,body{width:100%;height:100%;overflow:hidden;background:#7ab8d8}
+      #c{display:block;width:100vw;height:100vh}
+      #hud{position:fixed;top:10px;left:10px;background:rgba(20,24,32,.72);color:#eaeefc;border:1px solid rgba(255,255,255,.18);border-radius:10px;padding:10px 12px;font-family:system-ui,Arial,sans-serif;max-width:340px}
+      #hud h1{font-size:14px;color:#ffd479;margin-bottom:4px} #hud .hint{font-size:11px;color:#8fa0c0;margin-top:6px;line-height:1.5}
+    </style>
+  </head>
+  <body>
+    <canvas id="c"></canvas>
+    <div id="hud">
+      <h1>Oblezenie — 9 miast (epoka brazu, z murami)</h1>
+      <div class="hint">Siatka 3x3: Grecja, Rzym, Chiny, Inka, Zulu, Egipt, Sumer, Celtowie, Germanie.<br>Czerwony stożek = brama. Przed kazda brama: 5 żołnierzy + taran + katapulta + wieza obleznicza.<br>Przeciagnij = obrot &middot; kolko = zoom &middot; WASD = przesuw.</div>
+    </div>
+    <script type="module" src="/src/siegepreview/main.ts"></script>
+  </body>
+</html>

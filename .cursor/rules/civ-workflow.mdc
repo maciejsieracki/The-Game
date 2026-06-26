@@ -1,0 +1,183 @@
+---
+description: Workflow Civ — MASTER (GLM 5.2) jedyny editor main.ts, Composer lane-only, Opus review, Maciej decydent gameplay ABC. Token rules + STAN files.
+globs:
+  - "**/*"
+alwaysApply: true
+---
+
+# Civ (The Game) — Workflow Cursor
+
+**Główny dokument operacyjny:** `docs/CURSOR-MASTER-PLAN-DOKONCZENIA.md` — **START TU** (rola Macieja, 3 role techniczne, 10 lane'ów, fazy A-F, decyzje ABC, prompty, harmonogram).
+Pełny playbook operacyjny: `PLAYBOOK-operacyjny-Civ.md` (root projektu) — źródło prawdy technik multi-agent.
+Source of truth stanu: `dyspozycje/DZIENNIK-MASTERA.md`.
+Pełny audyt + backlog: `docs/CURSOR-ARCHITEKTURA.md`, `docs/CURSOR-BACKLOG.md`, `docs/CURSOR-RAPORT-KONCOWY.md`.
+
+## 0. Złote reguły (zawsze)
+
+1. **Maciej = DECYDENT GAMEPLAY ONLY.** Decyduje w formacie ABC (A/B/C). Nie koduje, nie robi architektury, nie integruje `main.ts`.
+2. **MASTER (GLM 5.2) = JEDYNY editor `main.ts`** + jedyny PUBLIKUJE kanon `Gra-podglad.html` + deleguje zadania lane subagentom (Composer) + trzyma big picture.
+3. **Composer 2.5 = LANE IMPLEMENTATION ONLY.** Koduje w plikach swojego lane'a + testy własne. **NIGDY nie rusza `main.ts`** — dostarcza moduł + kontrakt w `dyspozycje/_handoff/`, MASTER wpina.
+4. **Opus 4.8 = REVIEW przed kanonem.** Tryb Ask (read-only). Sign-off APPROVE/BLOCK przed publikacją. Fix po review robi Composer (Agent), NIE Opus.
+5. **KAŻDA decyzja produktowa przez ABC** → Maciej akceptuje → DOPERO MASTER rozsyla dyspozycje do lane'ów (PLAYBOOK §17a). Wyjątek: czysto inżynierskie wpicie JUŻ zatwierdzonego modułu (build/test/kanon) — execution bez pytania.
+6. **Nowy chat przy zmianie roli.** Handoff: design doc + AC → implementacja → review → merge kanonu.
+
+## 1. 3 role techniczne + MASTER (mapping modeli)
+
+| Rola | Model (subagent) | Tryb Cursor | Edytuje `main.ts`? |
+|---|---|---|---|
+| **MASTER / Architekt** | **GLM 5.2** (`glm-5.2-max`) | Agent | **TAK — jedyny** |
+| **Lane worker / Implementer** | **Composer 2.5** (`composer-2.5-fast`) | Agent | **NIE** |
+| **Reviewer** | **Opus 4.8** (ręczny wybór w UI — brak subagenta) | **Ask** (review) / Agent (fix po zgodzie) | **NIE** |
+| **Decydent** | **Maciej** (człowiek) | — | **NIE** |
+
+- **Architekt/Planista (GLM 5.2):** koncepcja, GDD-lite, architektura, ADR, sprint planning, podział zadań, kontrakty cross-lane, mockupy UX, archetypy AI, balans/parametry ABC, **integracja `main.ts`**, **publikacja kanonu**, delegowanie lane'ów.
+- **Implementer (Composer 2.5):** kod, refaktor, testy, JSON export, poprawki po review. Tylko w obrębie swojego lane'a.
+- **Reviewer (Opus 4.8):** code review, adversarial verification, weryfikacja AC, release gate, bug triage, sign-off przed merge. **Ręczny wybór w UI** (brak subagenta). Tryb Ask = read-only.
+- **Decydent (Maciej):** decyzje ABC, playtest, priorytety biznesowe, sign-off v1.0.
+
+## 2. Mapowanie 10 lane'ów → role (stan 2026-06-26, kanon 2276ec0f)
+
+| Lane | % | Plan (GLM) | Implement (Composer) | Review (Opus) | Decyzje (Maciej) |
+|---|---|---|---|---|---|
+| **SILNIK** | ~75% | Refaktor main.ts, kolejka batchy, ADR | **Wpiecia do main.ts, build, kanon** | Adversarial bramka 17 suitów + smoke | D1 (HUD), D2 (plaster) |
+| **EKONOMIA** | ~72% | Model Wealth (W1-W6), formuły compound | economy.ts, upkeep, converters, wealth | Testy regresji wire/upkeep/currency | D3 (Wealth) |
+| **MIASTO** | ~88% | Schemat miasta v2, etap2 | production, cities, order, culture-religion, auto-manage | Panel UX | — |
+| **UNITS** | ~85% | UX bitwy spec Q2-Q7, model armii, kontrakty walki | combat, battleScene, siege kontrakty, units render | combat 6/6, oblezenie 27, battle-smoke | D5 (UX), D7 (panel), D8 (posiłki), D10 (Katapulta) |
+| **UI** | ~78% | Mockupy, flow, design system | cityPanel, hud, pickery, menu, panels | Wizualny review | D1 (6B HUD), D7 (mockup), D11 (drzewko), D15 (minimapa) |
+| **DANE** | scalone z CYW | Schema JSON | targeted export scripts, loader | Loader integrity | D14 (żelazo/stal) |
+| **AI** | ~70% | Heurystyki, balans archetypów 7→9, fight/flee | ai.ts, barbarians, params | ai-test 113+ | — |
+| **DYPLOMACJA** | ~68% | Model relacji v2 | diplomacy.ts | diplomacy-test 98 | — |
+| **MAPA** | ~72% | Generator spec, traversal, typ mapy | map/*, render/*, territory | Screenshot review | D1 (6B layout), D4 (ulepszenia), D12 (miasta BRAZU), D15 (minimapa) |
+| **CYWILIZACJE** | ~70% | Tier balance T1-T4, archetypy, bonusy | civs.json, archetypy, clusters, ai.ts | Tournament harness | D5 (bitwa), D8 (posiłki), D13 (defaulty startu) |
+
+**Średnia gotowość modułów:** ~76%. **Integracja:** ~75%. **Grywalność v1.0 (cel):** ~75% dziś → 100% po Fazie F (patrz MASTER-PLAN §6).
+
+## 3. Własność plików (twarda reguła — NIE ruszaj cudzego)
+
+| Lane | Wyłączne pliki |
+|---|---|
+| **SILNIK (MASTER)** | `gra/src/main.ts` (**JEDYNY editor!**), `Gra-podglad.html` (kanon) |
+| EKONOMIA | `economy.ts`, `turn-economy.ts`, `upkeep.ts`, `converters.ts`, `wealth.ts` |
+| MIASTO | `cities.ts`, `production.ts`, `order.ts`, `culture-religion.ts`, `auto-manage.ts` |
+| UNITS | `units/setup.ts`, `combat.ts`, `battle/*`, `siege.ts`, `manualBattle.ts` |
+| UI | `gra/src/ui/*` (cityPanel, preBattle, sciencePicker, mainMenu, newGameFlow, diplomacyPanel, hud) |
+| DANE/CYWILIZACJE | `gra/data/*` (civs.json, tech.json, units.json, buildings.json, *.json), `loader.ts`, `export-*.py` |
+| AI | `ai.ts`, `barbarians.ts`, `victory.ts` |
+| DYPLOMACJA | `diplomacy.ts` |
+| MAPA | `map/*` (generator, territory), `render/*` (scene, camera, hexutil, units, cities, resources) |
+| MASTER (ops) | `dyspozycje/*`, `DZIENNIK-MASTERA.md`, `_handoff/*`, `docs/CURSOR-*` |
+
+Cross-lane: `dyspozycje/_handoff/<OD>-do-<DO>_<temat>.md`. **NIGDY bezpośrednia edycja cudzego pliku.** Kolizja 2 agentów na 1 plik → worktree isolation.
+
+## 4. Kiedy edytować `main.ts` (KRYTYCZNE)
+
+- **`main.ts` = MASTER (GLM 5.2) only.** Jedyny editor — Composer w roli SILNIK (gated batch, po dyspozycji MASTER).
+- **Inne lane'y NIE ruszają `main.ts`** — dostarczają moduł + kontrakt w `_handoff/`, MASTER wpina.
+- **Każda zmiana `main.ts` = 1 batch** (jedna zmiana naraz) + build + bramka testów.
+- **Backup przed zmianą:** `cp gra/src/main.ts gra/src/main.ts.bak-SILNIK-<data>` (OneDrive jako VCS — do wdrożenia git).
+- **Po zmianie:** `npx vite build --outDir /tmp/civ-dist` → bramka testów → (po review Opus) skopiować do `Gra-podglad.html`.
+
+## 5. Token rules (chronią kontekst i koszty)
+
+Koszt = liczba zimnych startów × objętość kontekstu. Tekst tani; drogi nowy agent ładujący kontekst od zera.
+
+### 5.1 One lane per subagent chat
+- **1 lane = 1 subagent-chat = 1 zadanie z AC.** Nie ładuj 3 zadań na jednego workera.
+- Lane worker czyta: swój `<LANE>-STAN.md` (≤12 linii) + kontrakt `_handoff/` + AC. **NIE czyta całego `main.ts`** (~2827 l. — monopol MASTER).
+- Lane worker czyta TYLKO pliki swojego lane'a + `data/` + `types/`. Cross-lane koordynacja przez kontrakty, nie przez czytanie cudzego kodu.
+
+### 5.2 STAN files (progressive disclosure — do wdrożenia Faza A)
+| Warstwa | Plik | Kiedy czyta | Rozmiar |
+|---|---|---|---|
+| **STAN** | `dyspozycje/<LANE>-STAN.md` | ZAWSZE na starcie | ≤ 12 linii |
+| **Dyspozycja** | `dyspozycje/<LANE>.md` | Gdy STAN sygnalizuje nowe zadanie | ~60–100 linii |
+| **Historia** | `dyspozycje/<LANE>-DO-MASTERA.md` | Tylko na żądanie / eskalacja | ostatnie 10 wpisów → decay do `-arch.md` |
+
+Efekt: ~80% tańszy self-check lane'a. Dziś `<LANE>-STAN.md` jeszcze nie istnieją → wdrożyć w Fazie A (zadanie S1.6).
+
+### 5.3 Kiedy nowy chat, kiedy subagent
+- **Zmiana roli (GLM→Composer→Opus)** → nowy chat (czysty kontekst).
+- **MASTER planuje sprint** → 1 chat GLM (big picture).
+- **Lane worker 1 zadanie z AC** → subagent Composer (`composer-2.5-fast`, Task tool) — izolowany, raport wraca do MASTER.
+- **Review deliverable do kanonu** → Opus Ask (ręczny, nowy chat) — świeży sceptyk.
+- **Kilka NIEZALEŻNYCH lane'ów** → subagenci równolegle (multitask) — patrz `docs/CURSOR-WORKFLOW-SCHEMAT.md`.
+- **SILNIK integracja `main.ts`** → SEKWENCYJNIE (1 edytor naraz).
+
+### 5.4 Twarde limity (bezpieczniki)
+- Loop-until-done (build/testy): **MAX 3 przebiegi** → STOP + raport.
+- Verify-loop (worker→sędzia→poprawka): **MAX 2 cykle** → STOP + eskalacja.
+- Fan-out (równolegle subagenci): **pilot 2 itemy** → max 10 równoległych.
+- **MAX 12 wywołań subagentów** na jedno zadanie bez zgody MASTER → STOP + pytaj.
+- Tournament (balans): **MAX 6 rund**.
+
+### 5.5 Handoff format (między lane'ami i do MASTER)
+`dyspozycje/_handoff/<NADAWCA>-do-<ODBIORCA>_<temat>.md`:
+- **Co przesyłam** (API, typy, kontrakt, pliki).
+- **Co Odbiorca ma z tym zrobić** (wpiąć / zaimplementować / zweryfikować).
+- **Kiedy handoff jest gotowy** (flaga: GOTOWE / CZEKA).
+- **DoD** (kryteria akceptacji — co MASTER/Opus sprawdza).
+Nadawca dopisuje meldunek do `<LANE>-DO-MASTERA.md` (append-only, NIE nadpisuj). Master decyduje o wpieciu.
+
+## 6. Build commands (KRYTYCZNE: /tmp, NIE dist/ — OneDrive blokuje)
+
+```bash
+# Build kanonu (ZAWSZE /tmp/, NIE dist/, NIE npm run build)
+cd gra
+npx vite build --outDir /tmp/civ-dist   # Windows: $env:TEMP\civ-dist
+# wynik: /tmp/civ-dist/Gra-podglad.html → skopiować do root projektu
+
+# Typecheck
+npx tsc --noEmit
+
+# Dev server (do iteracji)
+npm run dev   # vite dev server
+
+# Testy (node w PATH; Cursor terminal lub worktree Composer)
+node tools/logic-test.cjs
+node tools/combat-test.cjs
+node tools/smoke.cjs
+node tools/battle-smoke.cjs
+# wszystkie: for %t in (tools\*.cjs) do node %t   (PowerShell)
+```
+
+**Bramka publikacji kanonu:** wszystkie 17 suitów ZIELONE oprócz `koszary-gate-test` (baseline-red, oczekiwane — Lazaret=Średniowiecze=przyszłość, decyzja Macieja 2026-06-26) + smoke/battle-smoke OK. **Kanon publikuje TYLKO MASTER, ZAWSZE po review Opus.**
+
+## 7. Bezpieczniki (PLAYBOOK)
+
+- Build: `npx vite build --outDir /tmp/civ-dist` — **NIE** `npm run build`, **NIE** `dist/` w OneDrive.
+- Export JSON: **targeted script per arkusz** — NIGDY pełny `export-data.py` (ryzyko nadpisania cudzych). MIASTO: `export-budynki.py` (tylko `buildings.json`).
+- Backup: `cp plik plik.bak-<LANE>-<data>` przed każdą zmianą (rolling — 1 backup = ostatnia ZIELONA).
+- Kolizja 2 agentów na 1 plik → worktree isolation.
+- Loop until done: **MAX 3 przebiegi** build/test.
+- Adversarial (Opus): **KAŻDY deliverable do kanonu PRZED publikacją** (osobny świeży agent-sceptyk wg DoD — bije self-preference).
+- `buildings.json` schema `przyrost` ZOSTAJE (czytane przez `economy.ts` + `siege.ts`).
+
+## 8. OneDrive (dehydratacja)
+
+- Dehydratacja → `Read` plik → wait 3-5s → retry. Po 3× → **zgłoś blokadę, NIE rekonstruuj ręcznie**.
+- `gra/` → „Always keep on this device" (Settings → OneDrive → zarządzaj miejscem).
+- Testy i build przez `/tmp/civ-dist` (NIE `gra/dist/`).
+- Po touch/dehydrate: rebuild + bramka testów przed publikacją kanonu.
+
+## 9. Protokół decyzji (PLAYBOOK §17a)
+
+- **KAŻDA decyzja produktowa** przez format ABC → Maciej akceptuje/koryguje → DOPERO MASTER rozsyla dyspozycje do lane'ów.
+- Wyjątek: czysto inżynierskie wpicie JUŻ zatwierdzonego modułu (build/test/kanon) — execution bez pytania.
+- Pytania lane → **Maciej w oknie lane'a** (NIE popup AskUserQuestion). Zwykły tekst + wpis do `<LANE>-DO-MASTERA.md`.
+- Otwarte decyzje Macieja: `docs/MACIEJ-KARTA-DECYZJI.md` + `docs/CURSOR-MASTER-PLAN-DOKONCZENIA.md` §8 (D1-D15).
+
+## 10. Workflow sesji (zalecane)
+
+1. **Start sesji:** czytaj `docs/CURSOR-MASTER-PLAN-DOKONCZENIA.md` (§0 TL;DR + §5 lane'y) + `dyspozycje/DZIENNIK-MASTERA.md` (REJESTR PRZEPŁYWÓW) + `docs/CURSOR-BACKLOG.md` (READY/BLOCKED).
+2. **Jeśli BLOCKED:** przypomnij Maciejowi o decyzji ABC (patrz `MACIEJ-KARTA-DECYZJI.md`).
+3. **Jeśli READY:** MASTER planuje (AC + zależności) → Composer implementuje (lane subagent) → Opus review → MASTER integruje + publikuje kanon.
+4. **Po batchu:** aktualizuj `DZIENNIK-MASTERA.md` + `docs/CURSOR-BACKLOG.md` (status) + `Status-projektu-The-Game.xlsx` (po sprincie) + `<LANE>-STAN.md`.
+5. **Kanon:** build do `/tmp/civ-dist` → bramka testów → review Opus → skopiuj `Gra-podglad.html` → md5 checkpoint.
+
+## 11. Język
+
+Dokumentacja i komunikacja z Maciejem: **polski**. Komentarze w kodzie: polski (istniejący styl projektu). Sekcje dla Macieja: prosty język, bez żargonu (patrz `MACIEJ-KARTA-DECYZJI.md`).
+
+## 12. Zakaz w sesjach dokumentacyjnych
+
+**NIE modyfikuj `gra/src` game code** bez wyraźnej dyspozycji implementacyjnej. Dokumentacja i rules only, chyba że user wprost prosi o kod. Wyjątek: trivial fix w dokumentacji/komentarzu.

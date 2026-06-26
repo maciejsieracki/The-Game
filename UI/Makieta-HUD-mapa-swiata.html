@@ -1,0 +1,1001 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>THE GAME — Makieta HUD</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --gold:#e8d88a;--gold-dim:#b8a85a;--gold-glow:rgba(232,216,138,0.35);
+  --bg-panel:rgba(12,18,35,0.88);--bg-panel2:rgba(8,14,28,0.92);
+  --bg-mid:rgba(20,32,55,0.80);--border:rgba(232,216,138,0.30);
+  --border-hi:rgba(232,216,138,0.65);--text:#d4cba0;--text-dim:#7a7055;
+  --text-hi:#f0e8b8;--red:#c84040;--green:#50b070;--blue:#4090c8;
+  --orange:#d08030;--teal:#30a0a0;--purple:#a060c0;
+  --font-main:'Georgia','Times New Roman',serif;
+  --font-ui:'Trebuchet MS','Verdana',sans-serif;
+  --r:6px;--r-lg:12px
+}
+html,body{width:100%;height:100%;overflow:hidden;background:#000;
+  font-family:var(--font-ui);color:var(--text);font-size:13px;user-select:none}
+
+/* TOGGLE BAR */
+#toggle-bar{position:fixed;top:0;left:0;right:0;z-index:9999;
+  display:flex;justify-content:center;gap:2px;padding:4px;
+  background:rgba(4,8,18,0.97);border-bottom:1px solid var(--border)}
+.toggle-btn{padding:4px 20px;background:rgba(20,30,55,0.9);
+  border:1px solid var(--border);color:var(--text-dim);
+  font-family:var(--font-ui);font-size:11px;letter-spacing:1.5px;
+  text-transform:uppercase;cursor:pointer;border-radius:3px;transition:all 0.2s}
+.toggle-btn.active{background:rgba(232,216,138,0.12);border-color:var(--gold);
+  color:var(--gold);box-shadow:0 0 8px var(--gold-glow)}
+.toggle-btn:hover:not(.active){border-color:var(--gold-dim);color:var(--text)}
+
+/* SCREENS */
+.screen{position:fixed;top:26px;left:0;right:0;bottom:0;display:none}
+.screen.active{display:block}
+
+/* ===== MENU GLOWNE ===== */
+#screen-menu{
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 40%,rgba(15,30,70,0.6) 0%,transparent 70%),
+    radial-gradient(ellipse 40% 30% at 20% 80%,rgba(50,20,80,0.3) 0%,transparent 60%),
+    radial-gradient(ellipse 30% 25% at 80% 70%,rgba(20,60,100,0.3) 0%,transparent 60%),
+    linear-gradient(160deg,#04060f 0%,#080d1e 40%,#06091a 70%,#02040c 100%);
+  overflow:hidden}
+#stars-canvas{position:absolute;inset:0;pointer-events:none}
+.menu-content{position:relative;z-index:2;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;height:100%;gap:0}
+.menu-title-wrap{text-align:center;margin-bottom:36px}
+.menu-title{font-family:var(--font-main);font-size:72px;font-weight:700;
+  letter-spacing:16px;color:var(--gold);
+  text-shadow:0 0 30px rgba(232,216,138,0.7),0 0 60px rgba(232,216,138,0.35),
+    0 0 100px rgba(232,216,138,0.15),2px 2px 0 rgba(0,0,0,0.8);line-height:1}
+.menu-subtitle{font-family:var(--font-ui);font-size:11px;letter-spacing:6px;
+  color:var(--gold-dim);text-transform:uppercase;margin-top:8px;opacity:0.7}
+.menu-divider{width:320px;height:1px;
+  background:linear-gradient(90deg,transparent,var(--gold-dim),transparent);
+  margin:16px auto 28px;box-shadow:0 0 8px var(--gold-glow)}
+.menu-buttons{display:flex;flex-direction:column;align-items:center;gap:8px;width:320px}
+.menu-btn{width:100%;padding:13px 28px;background:var(--bg-panel);
+  border:1px solid var(--border);color:var(--text-hi);font-family:var(--font-ui);
+  font-size:13px;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;
+  cursor:pointer;border-radius:var(--r);text-align:center;transition:all 0.2s;
+  position:relative;overflow:hidden}
+.menu-btn::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;
+  background:var(--gold);opacity:0;transition:opacity 0.2s}
+.menu-btn:hover{background:rgba(232,216,138,0.10);border-color:var(--gold);
+  color:var(--gold);box-shadow:0 0 16px var(--gold-glow),inset 0 0 20px rgba(232,216,138,0.05)}
+.menu-btn:hover::before{opacity:1}
+.menu-btn.disabled{opacity:0.35;cursor:not-allowed;border-style:dashed}
+.menu-btn .soon-tag{font-size:9px;letter-spacing:1px;color:var(--text-dim);
+  background:rgba(80,60,20,0.4);border:1px solid var(--gold-dim);
+  padding:1px 6px;border-radius:2px;margin-left:10px;vertical-align:middle}
+.menu-btn-primary{background:rgba(232,216,138,0.10);border-color:var(--gold-dim);
+  color:var(--gold);font-size:15px;letter-spacing:4px;padding:16px 28px;
+  box-shadow:0 0 20px rgba(232,216,138,0.12)}
+.menu-btn-primary::before{opacity:1}
+.menu-version{margin-top:32px;font-size:10px;color:var(--text-dim);
+  letter-spacing:2px;text-align:center;opacity:0.5}
+
+/* ===== MAPA SWIATA ===== */
+#screen-map{background:#1a2a1a;overflow:hidden}
+#map-backdrop{position:absolute;inset:0}
+#map-svg{width:100%;height:100%}
+.hud-layer{position:absolute;inset:0;pointer-events:none}
+.hud-layer>*{pointer-events:all}
+
+/* TOP BAR */
+#top-bar{position:absolute;top:0;left:0;right:0;height:64px;
+  background:linear-gradient(180deg,rgba(4,8,20,0.97) 0%,rgba(6,12,28,0.90) 80%,transparent 100%);
+  border-bottom:1px solid var(--border);display:flex;align-items:stretch;z-index:100}
+#resources-block{display:flex;align-items:center;padding:0 12px;
+  border-right:1px solid var(--border);flex-shrink:0}
+.res-group{display:flex;flex-direction:column;gap:3px;padding:6px 10px;
+  border-right:1px solid rgba(232,216,138,0.12)}
+.res-group:last-child{border-right:none}
+.res-row{display:flex;align-items:center;gap:5px;white-space:nowrap}
+.res-icon{font-size:13px;line-height:1}
+.res-val{font-size:12px;color:var(--text-hi);font-weight:600}
+.res-rate{font-size:10px;color:var(--green)}
+.res-label{font-size:9px;color:var(--text-dim);letter-spacing:0.5px;text-transform:uppercase;margin-left:2px}
+.res-limit{color:var(--text-dim)}
+.res-group-hdr{font-size:8px;color:var(--text-dim);letter-spacing:1px;text-transform:uppercase;margin-bottom:3px}
+
+#progress-block{display:flex;flex-direction:column;justify-content:center;
+  gap:5px;padding:6px 14px;border-right:1px solid var(--border);min-width:225px;flex-shrink:0}
+.prog-row{display:flex;align-items:center;gap:7px;width:100%}
+.prog-label{font-size:9.5px;color:var(--text-dim);text-transform:uppercase;
+  letter-spacing:0.5px;white-space:nowrap;width:72px;flex-shrink:0}
+.prog-bar-wrap{flex:1;height:7px;background:rgba(255,255,255,0.07);
+  border-radius:4px;overflow:hidden;border:1px solid rgba(255,255,255,0.08)}
+.prog-fill{height:100%;border-radius:4px}
+.prog-fill.gold{background:linear-gradient(90deg,#b87820,var(--gold));box-shadow:0 0 4px var(--gold-glow)}
+.prog-fill.blue{background:linear-gradient(90deg,#205090,#60a8e8);box-shadow:0 0 4px rgba(96,168,232,0.4)}
+.prog-fill.purple{background:linear-gradient(90deg,#5020a0,#c080e0);box-shadow:0 0 4px rgba(192,128,224,0.4)}
+.prog-pct{font-size:9px;color:var(--text-dim);width:26px;text-align:right;flex-shrink:0}
+#top-bar-spacer{flex:1}
+#top-right{display:flex;align-items:center;padding:0 10px;
+  border-left:1px solid var(--border);flex-shrink:0}
+.tura-info{display:flex;flex-direction:column;align-items:flex-end;gap:2px;
+  padding-right:12px;border-right:1px solid var(--border)}
+.tura-main{font-size:12px;color:var(--gold);font-weight:600;letter-spacing:0.5px}
+.tura-sub{font-size:10px;color:var(--text-dim)}
+.top-icon-btn{width:38px;height:44px;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:2px;cursor:pointer;
+  border-radius:4px;border:1px solid transparent;background:transparent;
+  transition:all 0.2s;margin-left:2px}
+.top-icon-btn:hover{background:rgba(232,216,138,0.08);border-color:var(--border)}
+.top-icon-btn .ico{font-size:16px}
+.top-icon-btn .ico-label{font-size:8px;color:var(--text-dim);letter-spacing:0.5px}
+
+/* CIV PANEL (9) */
+#civ-panel{position:absolute;top:64px;left:0;right:0;height:54px;
+  background:linear-gradient(180deg,rgba(6,10,22,0.95) 0%,rgba(6,10,22,0.80) 100%);
+  border-bottom:1px solid var(--border);display:flex;align-items:center;
+  padding:0 12px;gap:6px;z-index:90}
+.civ-label{font-size:9px;color:var(--text-dim);text-transform:uppercase;
+  letter-spacing:1px;white-space:nowrap;padding-right:10px;
+  border-right:1px solid var(--border);margin-right:4px;flex-shrink:0;line-height:1.4}
+.civ-banner{display:flex;flex-direction:column;align-items:center;gap:3px;
+  padding:5px 10px;background:var(--bg-panel);border:1px solid var(--border);
+  border-radius:var(--r);cursor:pointer;transition:all 0.2s;min-width:72px}
+.civ-banner:hover{border-color:var(--gold-dim);background:rgba(232,216,138,0.06)}
+.civ-banner.own{background:rgba(232,216,138,0.10);border-color:var(--gold);
+  box-shadow:0 0 10px var(--gold-glow)}
+.civ-emblem{width:22px;height:22px;border-radius:50%;display:flex;
+  align-items:center;justify-content:center;font-size:13px;
+  border:1.5px solid rgba(255,255,255,0.2)}
+.civ-name{font-size:9px;color:var(--text);letter-spacing:0.3px;text-align:center}
+.civ-status{display:flex;align-items:center;gap:3px;font-size:8px}
+.dot{width:7px;height:7px;border-radius:50%;display:inline-block}
+.dot.war{background:#c84040;box-shadow:0 0 4px #c84040}
+.dot.peace{background:#50b070;box-shadow:0 0 4px #50b070}
+.dot.alliance{background:#4090c8;box-shadow:0 0 4px #4090c8}
+.dot.neutral{background:#7a7055}
+.civ-panel-note{margin-left:auto;font-size:8.5px;color:var(--text-dim);
+  text-align:right;max-width:140px;line-height:1.4;
+  padding-left:10px;border-left:1px solid var(--border)}
+
+/* LEFT ICON STACK (3-6) */
+#left-icons{position:absolute;top:50%;left:10px;transform:translateY(-50%);
+  display:flex;flex-direction:column;gap:6px;z-index:80}
+.left-btn{width:48px;height:48px;border-radius:50%;background:var(--bg-panel2);
+  border:1.5px solid var(--border);display:flex;flex-direction:column;
+  align-items:center;justify-content:center;cursor:pointer;transition:all 0.2s;
+  position:relative;box-shadow:0 2px 8px rgba(0,0,0,0.5)}
+.left-btn:hover{background:rgba(232,216,138,0.10);border-color:var(--gold);
+  box-shadow:0 0 14px var(--gold-glow)}
+.left-btn .lb-ico{font-size:18px;line-height:1}
+.left-btn .lb-num{position:absolute;top:-4px;right:-4px;width:16px;height:16px;
+  background:var(--gold);color:#1a1000;font-size:9px;font-weight:700;
+  border-radius:50%;display:flex;align-items:center;justify-content:center;
+  border:1.5px solid #1a1000}
+.left-btn .lb-label{position:absolute;left:56px;white-space:nowrap;
+  background:var(--bg-panel2);color:var(--text-dim);font-size:9px;
+  letter-spacing:0.5px;padding:3px 7px;border-radius:3px;
+  border:1px solid var(--border);pointer-events:none;opacity:0;transition:opacity 0.15s}
+.left-btn:hover .lb-label{opacity:1}
+.left-btn-divider{width:24px;height:1px;background:var(--border);
+  align-self:center;margin:2px 0}
+
+/* MINIMAP (8) */
+#minimap-wrap{position:absolute;bottom:90px;left:70px;z-index:80;width:200px}
+#minimap{width:200px;height:130px;background:rgba(10,18,35,0.92);
+  border:1.5px solid var(--border);border-radius:var(--r);overflow:hidden;
+  position:relative;box-shadow:0 0 20px rgba(0,0,0,0.7)}
+.minimap-label{position:absolute;top:4px;left:6px;font-size:8px;
+  color:var(--text-dim);letter-spacing:1px;text-transform:uppercase;z-index:2}
+.minimap-num{position:absolute;top:4px;right:6px;font-size:9px;
+  color:var(--gold-dim);font-weight:700;z-index:2}
+.minimap-viewport{position:absolute;top:30%;left:35%;width:38%;height:42%;
+  border:1.5px solid rgba(255,255,255,0.8);
+  box-shadow:0 0 6px rgba(255,255,255,0.3);cursor:move}
+#dziennik{margin-top:4px;background:rgba(6,10,22,0.88);
+  border:1px solid var(--border);border-radius:var(--r);padding:6px 8px;max-height:70px;overflow:hidden}
+.dziennik-header{font-size:8.5px;color:var(--gold-dim);text-transform:uppercase;
+  letter-spacing:1px;margin-bottom:4px}
+.dziennik-line{font-size:9.5px;color:var(--text-dim);line-height:1.5;
+  display:flex;align-items:center;gap:5px}
+
+/* NOTIFICATIONS (11) */
+#notifications{position:absolute;top:134px;right:10px;z-index:80;
+  display:flex;flex-direction:column;gap:5px;width:218px}
+.notif-header{font-size:8.5px;color:var(--text-dim);text-transform:uppercase;
+  letter-spacing:1px;text-align:right;padding-right:4px;margin-bottom:2px}
+.notif-chip{background:var(--bg-panel);border:1px solid var(--border);
+  border-radius:var(--r);padding:7px 10px;display:flex;align-items:center;
+  gap:8px;cursor:pointer;transition:all 0.2s;box-shadow:0 2px 6px rgba(0,0,0,0.4)}
+.notif-chip:hover{border-color:var(--gold-dim);background:rgba(232,216,138,0.05)}
+.notif-chip .nc-ico{font-size:16px;width:22px;text-align:center;flex-shrink:0}
+.notif-chip .nc-text{flex:1;font-size:11px;color:var(--text);line-height:1.3}
+.notif-chip .nc-text .nc-sub{font-size:9.5px;color:var(--text-dim);margin-top:1px}
+.notif-chip .nc-close{font-size:10px;color:var(--text-dim);cursor:pointer}
+.notif-chip.notif-science{border-left:3px solid #60a8e8}
+.notif-chip.notif-culture{border-left:3px solid #c080e0}
+.notif-chip.notif-city{border-left:3px solid var(--green)}
+.notif-chip.notif-unit{border-left:3px solid var(--gold)}
+.notif-chip.notif-enemy{border-left:3px solid var(--red)}
+.notif-note{font-size:8.5px;color:var(--text-dim);text-align:right;
+  padding-right:4px;font-style:italic}
+
+/* SELECTED PANEL (bottom center) */
+#selected-panel{position:absolute;bottom:90px;left:50%;transform:translateX(-50%);
+  width:380px;z-index:80}
+.sel-card{background:var(--bg-panel);border:1.5px solid var(--border);
+  border-radius:var(--r-lg);overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.7)}
+.sel-card-header{background:linear-gradient(90deg,rgba(232,216,138,0.12) 0%,transparent 60%);
+  border-bottom:1px solid var(--border);padding:8px 14px;display:flex;align-items:center;gap:10px}
+.sel-avatar{width:36px;height:36px;border-radius:50%;background:rgba(232,216,138,0.15);
+  border:1.5px solid var(--gold-dim);display:flex;align-items:center;
+  justify-content:center;font-size:20px;flex-shrink:0}
+.sel-name{font-size:14px;font-weight:700;color:var(--gold);font-family:var(--font-main)}
+.sel-type{font-size:9.5px;color:var(--text-dim);text-transform:uppercase;
+  letter-spacing:1px;margin-top:1px}
+.sel-meta{margin-left:auto;text-align:right;font-size:10px;color:var(--text-dim)}
+.sel-card-body{padding:8px 14px;display:flex;gap:14px}
+.sel-stats{display:flex;gap:14px;flex:1}
+.sel-stat{display:flex;flex-direction:column;align-items:center;gap:2px}
+.sel-stat-val{font-size:18px;font-weight:700;color:var(--text-hi);line-height:1}
+.sel-stat-lbl{font-size:8.5px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.5px}
+.hp-bar-wrap{flex:1;align-self:center}
+.hp-label{font-size:9px;color:var(--text-dim);margin-bottom:3px}
+.hp-bar{height:8px;background:rgba(255,255,255,0.07);border-radius:4px;overflow:hidden}
+.hp-fill{height:100%;background:linear-gradient(90deg,#206040,#50b070);
+  border-radius:4px;width:78%;box-shadow:0 0 4px rgba(80,176,112,0.5)}
+.sel-actions{padding:8px 14px;border-top:1px solid var(--border);display:flex;gap:6px;flex-wrap:wrap}
+.sel-action-btn{padding:5px 12px;background:rgba(30,45,80,0.8);
+  border:1px solid var(--border);border-radius:4px;color:var(--text);
+  font-size:10.5px;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;gap:5px}
+.sel-action-btn:hover{border-color:var(--gold-dim);color:var(--gold);background:rgba(232,216,138,0.08)}
+.sab-ico{font-size:13px}
+
+/* END TURN (12) */
+#end-turn-wrap{position:absolute;bottom:24px;right:16px;z-index:90;
+  display:flex;flex-direction:column;align-items:center;gap:6px}
+.et-states{display:flex;flex-direction:column;gap:6px;align-items:center}
+.et-label-note{font-size:8.5px;color:var(--text-dim);text-align:center;letter-spacing:0.5px}
+.et-btn{width:100px;height:100px;border-radius:50%;border:3px solid;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  cursor:pointer;transition:all 0.25s;font-family:var(--font-ui);
+  box-shadow:0 4px 20px rgba(0,0,0,0.6);gap:4px}
+.et-btn.action{background:radial-gradient(circle,rgba(200,110,20,0.6),rgba(120,60,10,0.8));
+  border-color:#d08030;color:#f8d880}
+.et-btn.action:hover{transform:scale(1.05)}
+.et-btn.end{background:radial-gradient(circle,rgba(232,216,138,0.20),rgba(100,80,20,0.5));
+  border-color:var(--gold);color:var(--gold);
+  box-shadow:0 0 24px var(--gold-glow),0 4px 20px rgba(0,0,0,0.6)}
+.et-btn.end:hover{transform:scale(1.05);box-shadow:0 0 40px rgba(232,216,138,0.6),0 4px 20px rgba(0,0,0,0.6)}
+.et-btn .et-ico{font-size:24px;line-height:1}
+.et-btn .et-text{font-size:10px;font-weight:700;letter-spacing:1.5px;
+  text-transform:uppercase;text-align:center;line-height:1.2}
+.et-separator{width:80px;height:1px;background:var(--border);margin:4px 0}
+
+/* LEGEND */
+#legend{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);z-index:80;
+  background:rgba(4,8,18,0.85);border:1px solid var(--border);border-radius:var(--r);
+  padding:5px 12px;display:flex;gap:10px;flex-wrap:wrap;justify-content:center;max-width:700px}
+.leg-item{font-size:8.5px;color:var(--text-dim);white-space:nowrap;display:flex;align-items:center;gap:3px}
+.leg-num{background:rgba(232,216,138,0.15);color:var(--gold-dim);
+  border:1px solid rgba(232,216,138,0.3);border-radius:3px;padding:0px 4px;
+  font-size:8px;font-weight:700}
+
+/* ANIMATIONS */
+@keyframes pulse-ring{
+  0%,100%{box-shadow:0 0 24px rgba(208,128,48,0.5),0 4px 20px rgba(0,0,0,0.6)}
+  50%{box-shadow:0 0 50px rgba(208,128,48,0.9),0 4px 20px rgba(0,0,0,0.6)}
+}
+.et-btn.action{animation:pulse-ring 2.2s ease-in-out infinite}
+</style>
+</head>
+<body>
+
+<div id="toggle-bar">
+  <button class="toggle-btn active" id="btn-menu" onclick="showScreen('menu')">Menu Glowne</button>
+  <button class="toggle-btn" id="btn-map" onclick="showScreen('map')">Mapa Swiata</button>
+</div>
+
+<!-- SCREEN A: MENU GLOWNE -->
+<div id="screen-menu" class="screen active">
+  <canvas id="stars-canvas"></canvas>
+  <div class="menu-content">
+    <div class="menu-title-wrap">
+      <div class="menu-title">THE GAME</div>
+      <div class="menu-subtitle">Strategia 4X &bull; Ergo Imperium &bull; Wersja 0.1</div>
+    </div>
+    <div class="menu-divider"></div>
+    <div class="menu-buttons">
+      <button class="menu-btn menu-btn-primary" id="btn-nowa-gra">&#9654;&nbsp; Nowa Gra</button>
+      <button class="menu-btn disabled">&#128274;&nbsp; Multiplayer <span class="soon-tag">WKROTCE</span></button>
+      <button class="menu-btn">&#128214;&nbsp; Samouczek</button>
+      <button class="menu-btn">&#127942;&nbsp; Galeria Slawy</button>
+      <button class="menu-btn">&#128220;&nbsp; Civilopedia</button>
+      <button class="menu-btn">&#9881;&nbsp; Ustawienia</button>
+      <button class="menu-btn">&#128190;&nbsp; Zapis / Wczytaj</button>
+      <button class="menu-btn" style="color:#888;border-color:rgba(255,255,255,0.1);">&#10006;&nbsp; Wyjscie</button>
+    </div>
+    <div class="menu-version">v0.1 ALPHA &nbsp;|&nbsp; Epoka Kamienia &bull; Epoka Brazu &nbsp;|&nbsp; &copy; The Game 2025</div>
+  </div>
+</div>
+
+<!-- SCREEN B: MAPA SWIATA -->
+<div id="screen-map" class="screen">
+  <div id="map-backdrop">
+    <svg id="map-svg" viewBox="0 0 1400 760" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="ocean-grad" cx="50%" cy="50%" r="70%">
+          <stop offset="0%" stop-color="#1e4870"/>
+          <stop offset="100%" stop-color="#0e2840"/>
+        </radialGradient>
+        <filter id="terrain-shadow">
+          <feDropShadow dx="1" dy="2" stdDeviation="2" flood-color="rgba(0,0,0,0.4)"/>
+        </filter>
+      </defs>
+
+      <!-- Ocean -->
+      <rect width="1400" height="760" fill="url(#ocean-grad)"/>
+      <!-- Ocean shimmer lines -->
+      <line x1="0" y1="200" x2="1400" y2="180" stroke="rgba(100,160,220,0.08)" stroke-width="1"/>
+      <line x1="0" y1="350" x2="1400" y2="330" stroke="rgba(100,160,220,0.06)" stroke-width="1"/>
+      <line x1="0" y1="500" x2="1400" y2="480" stroke="rgba(100,160,220,0.08)" stroke-width="1"/>
+
+      <!-- ========== CONTINENT 1 (NW) ========== -->
+      <!-- Flat-top hexes: each group forms a landmass -->
+      <g filter="url(#terrain-shadow)">
+        <!-- row 1 -->
+        <polygon points="80,110 110,93 140,110 140,144 110,161 80,144"  fill="#3a6830" stroke="#2a4818" stroke-width="0.8"/>
+        <polygon points="123,85  153,68  183,85  183,119 153,136 123,119" fill="#607050" stroke="#405030" stroke-width="0.8"/>
+        <polygon points="166,110 196,93  226,110 226,144 196,161 166,144" fill="#3a6830" stroke="#2a4818" stroke-width="0.8"/>
+        <polygon points="209,85  239,68  269,85  269,119 239,136 209,119" fill="#6a7840" stroke="#4a5828" stroke-width="0.8"/>
+        <polygon points="252,110 282,93  312,110 312,144 282,161 252,144" fill="#2a4e20" stroke="#1a3810" stroke-width="0.8"/>
+        <polygon points="295,85  325,68  355,85  355,119 325,136 295,119" fill="#5a5060" stroke="#3a3040" stroke-width="0.8"/>
+        <polygon points="338,110 368,93  398,110 398,144 368,161 338,144" fill="#6a7840" stroke="#4a5828" stroke-width="0.8"/>
+        <!-- row 2 -->
+        <polygon points="80,160  110,143 140,160 140,194 110,211 80,194"  fill="#6a7840" stroke="#4a5828" stroke-width="0.8"/>
+        <polygon points="123,185 153,168 183,185 183,219 153,236 123,219" fill="#3a6830" stroke="#2a4818" stroke-width="0.8"/>
+        <polygon points="166,160 196,143 226,160 226,194 196,211 166,194" fill="#2a4e20" stroke="#1a3810" stroke-width="0.8"/>
+        <polygon points="209,185 239,168 269,185 269,219 239,236 209,219" fill="#8a7040" stroke="#6a5020" stroke-width="0.8"/>
+        <polygon points="252,160 282,143 312,160 312,194 282,211 252,194" fill="#3a6830" stroke="#2a4818" stroke-width="0.8"/>
+        <polygon points="295,185 325,168 355,185 355,219 325,236 295,219" fill="#6a7840" stroke="#4a5828" stroke-width="0.8"/>
+        <polygon points="338,160 368,143 398,160 398,194 368,211 338,194" fill="#2a4e20" stroke="#1a3810" stroke-width="0.8"/>
+        <polygon points="381,185 411,168 441,185 441,219 411,236 381,219" fill="#3a6830" stroke="#2a4818" stroke-width="0.8"/>
+        <!-- row 3 -->
+        <polygon points="80,210  110,193 140,210 140,244 110,261 80,244"  fill="#3a6830" stroke="#2a4818" stroke-width="0.8"/>
+        <polygon points="123,235 153,218 183,235 183,269 153,286 123,269" fill="#6a7840" stroke="#4a5828" stroke-width="0.8"/>
+        <polygon points="166,210 196,193 226,210 226,244 196,261 166,244" fill="#3a6830" stroke="#2a4818" stroke-width="0.8"/>
+        <polygon points="209,235 239,218 269,235 269,269 239,286 209,269" fill="#2a4e20" stroke="#1a3810" stroke-width="0.8"/>
+        <polygon points="252,210 282,193 312,210 312,244 282,261 252,244" fill="#5a5060" stroke="#3a3040" stroke-width="0.8"/>
+        <polygon points="295,235 325,218 355,235 355,269 325,286 295,269" fill="#8a7040" stroke="#6a5020" stroke-width="0.8"/>
+      </g>
+
+      <!-- ========== CONTINENT 2 (CENTRAL) ========== -->
+      <g filter="url(#terrain-shadow)">
+        <polygon points="480,180 510,163 540,180 540,214 510,231 480,214" fill="#6a7840" stroke="#4a5828" stroke-width="0.8"/>
+        <polygon points="523,155 553,138 583,155 583,189 553,206 523,189" fill="#3a6830" stroke="#2a4818" stroke-width="0.8"/>
+        <polygon points="566,180 596,163 626,180 626,214 596,231 566,214" fill="#2a4e20" stroke="#1a3810" stroke-width="0.8"/>
+        <polygon points="609,155 639,138 669,155 669,189 639,206 609,189" fill="#3a6830" stroke="#2a4818" stroke-width="0.8"/>
+        <polygon points="652,180 682,163 712,180 712,214 682,231 652,214" fill="#5a5060" stroke="#3a3040" stroke-width="0.8"/>
+        <polygon points="695,155 725,138 755,155 755,189 725,206 695,189" fill="#6a7840" stroke="#4a5828" stroke-width="0.8"/>
+        <polygon points="738,180 768,163 798,180 798,214 768,231 738,214" fill="#3a6830" stroke="#2a4818" stroke-width="0.8"/>
+        <polygon points="781,155 811,138 841,155 841,189 811,206 781,189" fill="#8a7040" stroke="#6a5020" stroke-width="0.8"/>
+        <polygon points="523,205 553,188 583,205 583,239 553,256 523,239" fill="#8a7040" stroke="#6a5020" stroke-width="0.8"/>
+        <polygon points="566,230 596,213 626,230 626,264 596,281 566,264" fill="#3a6830" stroke="#2a4818" stroke-width="0.8"/>
+        <polygon points="609,205 639,188 669,205 669,239 639,256 609,239" fill="#6a7840" stroke="#4a5828" stroke-width="0.8"/>
+        <polygon points="652,230 682,213 712,230 712,264 682,281 652,264" fill="#2a4e20" stroke="#1a3810" stroke-width="0.8"/>
+        <polygon points="695,205 725,188 755,205 755,239 725,256 695,239" fill="#3a6830" stroke="#2a4818" stroke-width="0.8"/>
+        <polygon points="738,230 768,213 798,230 798,264 768,281 738,264" fill="#8a7040" stroke="#6a5020" stroke-width="0.8"/>
+        <polygon points="480,230 510,213 540,230 540,264 510,281 480,264" fill="#2a4e20" stroke="#1a3810" stroke-width="0.8"/>
+        <polygon points="480,280 510,263 540,280 540,314 510,331 480,314" fill="#3a6830" stroke="#2a4818" stroke-width="0.8"/>
+        <polygon points="523,305 553,288 583,305 583,339 553,356 523,339" fill="#6a7840" stroke="#4a5828" stroke-width="0.8"/>
+        <polygon points="566,280 596,263 626,280 626,314 596,331 566,314" fill="#2a4e20" stroke="#1a3810" stroke-width="0.8"/>
+        <polygon points="609,305 639,288 669,305 669,339 639,356 609,339" fill="#5a5060" stroke="#3a3040" stroke-width="0.8"/>
+        <polygon points="652,280 682,263 712,280 712,314 682,331 652,314" fill="#3a6830" stroke="#2a4818" stroke-width="0.8"/>
+      </g>
+
+      <!-- ========== CONTINENT 3 (EAST) ========== -->
+      <g filter="url(#terrain-shadow)">
+        <polygon points="880,130 910,113 940,130 940,164 910,181 880,164" fill="#6a7840" stroke="#4a5828" stroke-width="0.8"/>
+        <polygon points="923,105 953,88  983,105 983,139 953,156 923,139" fill="#3a6830" stroke="#2a4818" stroke-width="0.8"/>
+        <polygon points="966,130 996,113 1026,130 1026,164 996,181 966,164" fill="#2a4e20" stroke="#1a3810" stroke-width="0.8"/>
+        <polygon points="1009,105 1039,88 1069,105 1069,139 1039,156 1009,139" fill="#5a5060" stroke="#3a3040" stroke-width="0.8"/>
+        <polygon points="1052,130 1082,113 1112,130 1112,164 1082,181 1052,164" fill="#6a7840" stroke="#4a5828" stroke-width="0.8"/>
+        <polygon points="1095,105 1125,88 1155,105 1155,139 1125,156 1095,139" fill="#3a6830" stroke="#2a4818" stroke-width="0.8"/>
+        <polygon points="1138,130 1168,113 1198,130 1198,164 1168,181 1138,164" fill="#8a7040" stroke="#6a5020" stroke-width="0.8"/>
+        <polygon points="1181,105 1211,88 1241,105 1241,139 1211,156 1181,139" fill="#3a6830" stroke="#2a4818" stroke-width="0.8"/>
+        <polygon points="880,180 910,163 940,180 940,214 910,231 880,214" fill="#3a6830" stroke="#2a4818" stroke-width="0.8"/>
+        <polygon points="923,205 953,188 983,205 983,239 953,256 923,239" fill="#8a7040" stroke="#6a5020" stroke-width="0.8"/>
+        <polygon points="966,180 996,163 1026,180 1026,214 996,231 966,214" fill="#3a6830" stroke="#2a4818" stroke-width="0.8"/>
+        <polygon points="1009,205 1039,188 1069,205 1069,239 1039,256 1009,239" fill="#6a7840" stroke="#4a5828" stroke-width="0.8"/>
+        <polygon points="1052,180 1082,163 1112,180 1112,214 1082,231 1052,214" fill="#3a6830" stroke="#2a4818" stroke-width="0.8"/>
+        <polygon points="1095,205 1125,188 1155,205 1155,239 1125,256 1095,239" fill="#2a4e20" stroke="#1a3810" stroke-width="0.8"/>
+        <polygon points="1138,180 1168,163 1198,180 1198,214 1168,231 1138,214" fill="#6a7840" stroke="#4a5828" stroke-width="0.8"/>
+        <polygon points="880,230 910,213 940,230 940,264 910,281 880,264" fill="#8a7040" stroke="#6a5020" stroke-width="0.8"/>
+        <polygon points="923,255 953,238 983,255 983,289 953,306 923,289" fill="#3a6830" stroke="#2a4818" stroke-width="0.8"/>
+        <polygon points="966,230 996,213 1026,230 1026,264 996,281 966,264" fill="#6a7840" stroke="#4a5828" stroke-width="0.8"/>
+        <polygon points="1009,255 1039,238 1069,255 1069,289 1039,306 1009,289" fill="#2a4e20" stroke="#1a3810" stroke-width="0.8"/>
+      </g>
+
+      <!-- ========== SOUTHERN LANDMASS ========== -->
+      <g filter="url(#terrain-shadow)">
+        <polygon points="380,380 410,363 440,380 440,414 410,431 380,414" fill="#8a7040" stroke="#6a5020" stroke-width="0.8"/>
+        <polygon points="423,405 453,388 483,405 483,439 453,456 423,439" fill="#3a6830" stroke="#2a4818" stroke-width="0.8"/>
+        <polygon points="466,380 496,363 526,380 526,414 496,431 466,414" fill="#6a7840" stroke="#4a5828" stroke-width="0.8"/>
+        <polygon points="509,405 539,388 569,405 569,439 539,456 509,439" fill="#2a4e20" stroke="#1a3810" stroke-width="0.8"/>
+        <polygon points="552,380 582,363 612,380 612,414 582,431 552,414" fill="#3a6830" stroke="#2a4818" stroke-width="0.8"/>
+        <polygon points="595,405 625,388 655,405 655,439 625,456 595,439" fill="#5a5060" stroke="#3a3040" stroke-width="0.8"/>
+        <polygon points="638,380 668,363 698,380 698,414 668,431 638,414" fill="#8a7040" stroke="#6a5020" stroke-width="0.8"/>
+        <polygon points="681,405 711,388 741,405 741,439 711,456 681,439" fill="#3a6830" stroke="#2a4818" stroke-width="0.8"/>
+        <polygon points="724,380 754,363 784,380 784,414 754,431 724,414" fill="#6a7840" stroke="#4a5828" stroke-width="0.8"/>
+        <polygon points="380,430 410,413 440,430 440,464 410,481 380,464" fill="#3a6830" stroke="#2a4818" stroke-width="0.8"/>
+        <polygon points="423,455 453,438 483,455 483,489 453,506 423,489" fill="#2a4e20" stroke="#1a3810" stroke-width="0.8"/>
+        <polygon points="466,430 496,413 526,430 526,464 496,481 466,464" fill="#3a6830" stroke="#2a4818" stroke-width="0.8"/>
+        <polygon points="509,455 539,438 569,455 569,489 539,506 509,489" fill="#6a7840" stroke="#4a5828" stroke-width="0.8"/>
+        <polygon points="552,430 582,413 612,430 612,464 582,481 552,464" fill="#3a6830" stroke="#2a4818" stroke-width="0.8"/>
+      </g>
+
+      <!-- ========== CITIES ========== -->
+      <!-- OUR capital: Ateny (highlighted gold) -->
+      <polygon points="209,235 239,218 269,235 269,269 239,286 209,269"
+        fill="#4a7040" stroke="#e8d88a" stroke-width="2.5"/>
+      <circle cx="239" cy="252" r="8" fill="#e8d88a" opacity="0.9"/>
+      <circle cx="239" cy="252" r="12" fill="none" stroke="#e8d88a" stroke-width="1" opacity="0.4">
+        <animate attributeName="r" values="12;18;12" dur="2.5s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0.4;0;0.4" dur="2.5s" repeatCount="indefinite"/>
+      </circle>
+      <text x="239" y="279" text-anchor="middle" font-size="9" fill="#e8d88a" font-family="Georgia" font-weight="bold">Ateny</text>
+
+      <!-- Enemy city: Roma (red) -->
+      <polygon points="652,230 682,213 712,230 712,264 682,281 652,264"
+        fill="#4e2020" stroke="#c84040" stroke-width="2"/>
+      <circle cx="682" cy="247" r="7" fill="#c84040" opacity="0.85"/>
+      <text x="682" y="272" text-anchor="middle" font-size="9" fill="#c84040" font-family="Georgia">Roma</text>
+
+      <!-- Allied city: Memfis (blue) -->
+      <polygon points="1009,205 1039,188 1069,205 1069,239 1039,256 1009,239"
+        fill="#203050" stroke="#4090c8" stroke-width="2"/>
+      <circle cx="1039" cy="222" r="7" fill="#4090c8" opacity="0.85"/>
+      <text x="1039" y="248" text-anchor="middle" font-size="9" fill="#4090c8" font-family="Georgia">Memfis</text>
+
+      <!-- Neutral city: Cuzco -->
+      <polygon points="509,405 539,388 569,405 569,439 539,456 509,439"
+        fill="#203020" stroke="#50b070" stroke-width="1.5"/>
+      <circle cx="539" cy="422" r="6" fill="#50b070" opacity="0.75"/>
+      <text x="539" y="448" text-anchor="middle" font-size="9" fill="#50b070" font-family="Georgia">Cuzco</text>
+
+      <!-- ========== UNITS ========== -->
+      <!-- Our warrior (selected) -->
+      <circle cx="295" cy="202" r="11" fill="rgba(232,216,138,0.20)" stroke="#e8d88a" stroke-width="2.5"/>
+      <text x="295" y="208" text-anchor="middle" font-size="14">&#9876;</text>
+      <!-- Movement range -->
+      <polygon points="252,210 282,193 312,210 312,244 282,261 252,244"
+        fill="rgba(80,176,112,0.07)" stroke="rgba(80,176,112,0.35)" stroke-width="1.2"/>
+      <polygon points="295,185 325,168 355,185 355,219 325,236 295,219"
+        fill="rgba(80,176,112,0.07)" stroke="rgba(80,176,112,0.35)" stroke-width="1.2"/>
+      <polygon points="338,210 368,193 398,210 398,244 368,261 338,244"
+        fill="rgba(80,176,112,0.07)" stroke="rgba(80,176,112,0.35)" stroke-width="1.2"/>
+
+      <!-- Selected hex highlight -->
+      <polygon points="295,185 325,168 355,185 355,219 325,236 295,219"
+        fill="rgba(232,216,138,0.06)" stroke="#e8d88a" stroke-width="2">
+        <animate attributeName="stroke-opacity" values="1;0.25;1" dur="1.6s" repeatCount="indefinite"/>
+      </polygon>
+
+      <!-- Our settler -->
+      <circle cx="166" cy="177" r="10" fill="rgba(80,176,112,0.20)" stroke="#50b070" stroke-width="2"/>
+      <text x="166" y="183" text-anchor="middle" font-size="13">&#128692;</text>
+
+      <!-- Enemy unit -->
+      <circle cx="609" cy="322" r="10" fill="rgba(200,64,64,0.20)" stroke="#c84040" stroke-width="2"/>
+      <text x="609" y="328" text-anchor="middle" font-size="13">&#9876;</text>
+
+      <!-- ========== RIVERS ========== -->
+      <path d="M239,270 Q270,310 310,360 Q350,410 390,450" stroke="#4090c8" stroke-width="1.8" fill="none" opacity="0.45"/>
+      <path d="M682,265 Q710,305 745,345 Q780,385 810,425" stroke="#4090c8" stroke-width="1.5" fill="none" opacity="0.4"/>
+
+      <!-- ========== FOG OF WAR ========== -->
+      <rect x="0" y="0" width="70" height="760" fill="rgba(0,0,0,0.65)"/>
+      <rect x="1330" y="0" width="70" height="760" fill="rgba(0,0,0,0.65)"/>
+      <ellipse cx="1260" cy="300" rx="190" ry="200" fill="rgba(0,0,0,0.55)"/>
+      <ellipse cx="120" cy="520" rx="160" ry="130" fill="rgba(0,0,0,0.60)"/>
+      <ellipse cx="820" cy="480" rx="120" ry="100" fill="rgba(0,0,0,0.40)"/>
+    </svg>
+  </div>
+
+  <!-- HUD OVERLAY -->
+  <div class="hud-layer">
+
+    <!-- TOP BAR: (7) Resources | (1)(2) Progress | (10) Menu -->
+    <div id="top-bar">
+      <!-- (7) GLOBALNE ZASOBY -->
+      <div id="resources-block">
+        <div class="res-group">
+          <div class="res-group-hdr">(7) Zasoby</div>
+          <div class="res-row">
+            <span class="res-icon">&#129689;</span>
+            <span class="res-val">1&#160;840</span>
+            <span class="res-rate">+253/t</span>
+            <span class="res-label">Zloto</span>
+          </div>
+          <div class="res-row">
+            <span class="res-icon">&#128293;</span>
+            <span class="res-val">724</span>
+            <span class="res-rate" style="color:var(--orange)">+88/t</span>
+            <span class="res-label">Praca</span>
+          </div>
+        </div>
+        <div class="res-group">
+          <div class="res-group-hdr">&nbsp;</div>
+          <div class="res-row">
+            <span class="res-icon">&#127895;</span>
+            <span class="res-val">+46</span>
+            <span class="res-label">Wplyw</span>
+          </div>
+          <div class="res-row">
+            <span class="res-icon">&#9883;</span>
+            <span class="res-val">+38</span>
+            <span class="res-label">Nauka</span>
+          </div>
+        </div>
+        <div class="res-group">
+          <div class="res-group-hdr">&nbsp;</div>
+          <div class="res-row">
+            <span class="res-icon">&#127932;</span>
+            <span class="res-val">+29</span>
+            <span class="res-label">Kultura</span>
+          </div>
+          <div class="res-row">
+            <span class="res-icon">&#128512;</span>
+            <span class="res-val">+12</span>
+            <span class="res-label">Zadowolenie</span>
+          </div>
+        </div>
+        <div class="res-group" style="border-right:none">
+          <div class="res-group-hdr">&nbsp;</div>
+          <div class="res-row">
+            <span class="res-icon">&#127962;</span>
+            <span class="res-val">6<span class="res-limit">/8</span></span>
+            <span class="res-label">Osiedla</span>
+          </div>
+          <div class="res-row">
+            <span class="res-icon">&#128081;</span>
+            <span class="res-val" style="color:var(--gold)">Grecy</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- (1)(2) PROGRESS + EPOKA -->
+      <div id="progress-block">
+        <div class="prog-row">
+          <span class="prog-label">Epoka:</span>
+          <span style="font-size:9px;color:var(--gold);font-weight:600;white-space:nowrap;flex-shrink:0">Epoka Brazu</span>
+          <div class="prog-bar-wrap" style="margin-left:4px"><div class="prog-fill gold" style="width:42%"></div></div>
+          <span class="prog-pct">42%</span>
+        </div>
+        <div class="prog-row">
+          <span class="prog-label">(1) Badania:</span>
+          <span style="font-size:9px;color:#80c0e8;white-space:nowrap;flex-shrink:0;width:66px;overflow:hidden;text-overflow:ellipsis">Metalurgia</span>
+          <div class="prog-bar-wrap"><div class="prog-fill blue" style="width:67%"></div></div>
+          <span class="prog-pct">67%</span>
+        </div>
+        <div class="prog-row">
+          <span class="prog-label">(2) Idee:</span>
+          <span style="font-size:9px;color:#c090e0;white-space:nowrap;flex-shrink:0;width:66px;overflow:hidden;text-overflow:ellipsis">Filozofia</span>
+          <div class="prog-bar-wrap"><div class="prog-fill purple" style="width:31%"></div></div>
+          <span class="prog-pct">31%</span>
+        </div>
+      </div>
+
+      <div id="top-bar-spacer"></div>
+
+      <!-- (10) TURA INFO + MENU ICONS -->
+      <div id="top-right">
+        <div class="tura-info">
+          <div class="tura-main">Tura 15 &nbsp;&bull;&nbsp; Epoka Brazu &nbsp;&bull;&nbsp; 1200 p.n.e.</div>
+          <div class="tura-sub" id="clock-display">Sobota, 21.06.2026 &nbsp; 14:08</div>
+        </div>
+        <div class="top-icon-btn" title="Menu glowne" onclick="showScreen('menu')">
+          <div class="ico">&#9776;</div><div class="ico-label">Menu</div>
+        </div>
+        <div class="top-icon-btn" title="Civilopedia">
+          <div class="ico">&#10068;</div><div class="ico-label">Pedia</div>
+        </div>
+        <div class="top-icon-btn" title="Konto gracza">
+          <div class="ico">&#128100;</div><div class="ico-label">Konto</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- (9) PANEL CYWILIZACJI -->
+    <div id="civ-panel">
+      <div class="civ-label">(9)<br>Dyplomacja</div>
+
+      <div class="civ-banner own" title="Nasza cywilizacja&#10;Lider: Perykles&#10;Sila: 32 | Tereny: 18">
+        <div class="civ-emblem" style="background:rgba(232,216,138,0.2);border-color:var(--gold)">&#127989;</div>
+        <div class="civ-name" style="color:var(--gold)">Grecy</div>
+        <div class="civ-status"><div class="dot peace"></div><span style="color:var(--text-dim);font-size:8px">My</span></div>
+      </div>
+      <div class="civ-banner" title="Stan: WOJNA&#10;Lider: Cezar&#10;Atak na turze 13!">
+        <div class="civ-emblem" style="background:rgba(200,64,64,0.15);border-color:#c84040">&#127987;</div>
+        <div class="civ-name">Rzymianie</div>
+        <div class="civ-status"><div class="dot war"></div><span style="color:#c84040;font-size:8px">Wojna</span></div>
+      </div>
+      <div class="civ-banner" title="Stan: SOJUSZ&#10;Lider: Qin Shi Huang&#10;Wymiana technologii">
+        <div class="civ-emblem" style="background:rgba(64,144,200,0.15);border-color:#4090c8">&#128988;</div>
+        <div class="civ-name">Chinczycy</div>
+        <div class="civ-status"><div class="dot alliance"></div><span style="color:#4090c8;font-size:8px">Sojusz</span></div>
+      </div>
+      <div class="civ-banner" title="Stan: Pokoj&#10;Lider: Pachacuti&#10;Neutralny">
+        <div class="civ-emblem" style="background:rgba(80,176,112,0.15);border-color:#50b070">&#127988;</div>
+        <div class="civ-name">Inkowie</div>
+        <div class="civ-status"><div class="dot peace"></div><span style="color:#50b070;font-size:8px">Pokoj</span></div>
+      </div>
+      <div class="civ-banner" title="Stan: Neutralni&#10;Lider: Shaka&#10;Nieznani">
+        <div class="civ-emblem" style="background:rgba(160,96,192,0.15);border-color:#a060c0">&#128981;</div>
+        <div class="civ-name">Zulusi</div>
+        <div class="civ-status"><div class="dot neutral"></div><span style="color:var(--text-dim);font-size:8px">Neutralni</span></div>
+      </div>
+      <div class="civ-banner" title="Stan: Pokoj&#10;Lider: Kleopatra&#10;Handel aktywny">
+        <div class="civ-emblem" style="background:rgba(208,160,48,0.15);border-color:#d0a030">&#127781;</div>
+        <div class="civ-name">Egipt</div>
+        <div class="civ-status"><div class="dot peace"></div><span style="color:#50b070;font-size:8px">Pokoj</span></div>
+      </div>
+      <div class="civ-banner" title="Stan: WOJNA&#10;Lider: Gilgamesz&#10;Sojusznik Rzymian!">
+        <div class="civ-emblem" style="background:rgba(48,160,160,0.15);border-color:#30a0a0">&#127758;</div>
+        <div class="civ-name">Sumerowie</div>
+        <div class="civ-status"><div class="dot war"></div><span style="color:#c84040;font-size:8px">Wojna</span></div>
+      </div>
+      <div class="civ-panel-note">Atrybuty liderow<br>i dyplomacja</div>
+    </div>
+
+    <!-- (3-6) LEFT ICON STACK -->
+    <div id="left-icons">
+      <div class="left-btn" title="Badania naukowe">
+        <div class="lb-ico">&#9883;</div>
+        <div class="lb-label">Badania naukowe</div>
+      </div>
+      <div class="left-btn" title="Drzewko idei">
+        <div class="lb-ico">&#128161;</div>
+        <div class="lb-label">Drzewko idei</div>
+      </div>
+      <div class="left-btn" title="Drzewko technologii">
+        <div class="lb-ico">&#128203;</div>
+        <div class="lb-label">Drzewko technologii</div>
+      </div>
+      <div class="left-btn-divider"></div>
+      <div class="left-btn" title="(3) Doktryny spoleczne">
+        <div class="lb-ico">&#128081;</div>
+        <div class="lb-num">3</div>
+        <div class="lb-label">(3) Doktryny spoleczne</div>
+      </div>
+      <div class="left-btn" title="(4) Panel zasobow">
+        <div class="lb-ico">&#129689;</div>
+        <div class="lb-num">4</div>
+        <div class="lb-label">(4) Panel zasobow</div>
+      </div>
+      <div class="left-btn" title="(5) Panel wielkich dziel">
+        <div class="lb-ico">&#127912;</div>
+        <div class="lb-num">5</div>
+        <div class="lb-label">(5) Panel wielkich dziel</div>
+      </div>
+      <div class="left-btn" title="(6) Elementy odblokowane">
+        <div class="lb-ico">&#127381;</div>
+        <div class="lb-num">6</div>
+        <div class="lb-label">(6) Elementy odblokowane</div>
+      </div>
+    </div>
+
+    <!-- (8) MINIMAP + DZIENNIK -->
+    <div id="minimap-wrap">
+      <div id="minimap">
+        <div class="minimap-label">(8) Miniatura mapy</div>
+        <div class="minimap-num">&#128506;</div>
+        <svg width="200" height="130" viewBox="0 0 200 130" xmlns="http://www.w3.org/2000/svg">
+          <rect width="200" height="130" fill="#1a3050"/>
+          <ellipse cx="40"  cy="55"  rx="30" ry="22" fill="#2a5030" opacity="0.9"/>
+          <ellipse cx="90"  cy="65"  rx="45" ry="28" fill="#2a5030" opacity="0.9"/>
+          <ellipse cx="155" cy="50"  rx="38" ry="25" fill="#2a5030" opacity="0.9"/>
+          <ellipse cx="130" cy="90"  rx="25" ry="15" fill="#2a5030" opacity="0.9"/>
+          <ellipse cx="55"  cy="95"  rx="20" ry="12" fill="#2a5030" opacity="0.9"/>
+          <ellipse cx="95"  cy="55"  rx="8"  ry="5"  fill="#3a3845" opacity="0.8"/>
+          <ellipse cx="160" cy="45"  rx="6"  ry="4"  fill="#3a3845" opacity="0.8"/>
+          <!-- city dots -->
+          <circle cx="55" cy="65" r="3"   fill="#e8d88a"/>
+          <circle cx="110" cy="62" r="2.5" fill="#c84040"/>
+          <circle cx="155" cy="50" r="2.5" fill="#4090c8"/>
+          <circle cx="75" cy="92" r="2"   fill="#50b070"/>
+          <!-- rivers -->
+          <path d="M60,70 Q80,82 100,90 Q115,100 130,105" stroke="#4090c8" stroke-width="1" fill="none" opacity="0.5"/>
+          <!-- fog -->
+          <rect x="0" y="0" width="18" height="130" fill="rgba(0,0,0,0.55)"/>
+          <rect x="182" y="0" width="18" height="130" fill="rgba(0,0,0,0.55)"/>
+          <ellipse cx="178" cy="38" rx="30" ry="35" fill="rgba(0,0,0,0.50)"/>
+        </svg>
+        <div class="minimap-viewport" id="minimap-vp"></div>
+      </div>
+      <div id="dziennik">
+        <div class="dziennik-header">Dziennik</div>
+        <div class="dziennik-line"><span style="color:var(--gold)">&#9883;</span><span>T14: Ukonczono Metalurgie (braz)</span></div>
+        <div class="dziennik-line"><span style="color:#c84040">&#9876;</span><span>T13: Rzymianie wypowiedzieli wojne</span></div>
+        <div class="dziennik-line"><span style="color:var(--green)">&#127962;</span><span>T12: Ateny — wzrost populacji</span></div>
+      </div>
+    </div>
+
+    <!-- (11) POWIADOMIENIA -->
+    <div id="notifications">
+      <div class="notif-header">(11) Powiadomienia</div>
+      <div class="notif-chip notif-science">
+        <div class="nc-ico">&#9883;</div>
+        <div class="nc-text">Ukonczono badanie!<div class="nc-sub">Metalurgia — odblokowano Braz</div></div>
+        <div class="nc-close" onclick="dismissNotif(this)">&#10005;</div>
+      </div>
+      <div class="notif-chip notif-enemy">
+        <div class="nc-ico">&#9876;</div>
+        <div class="nc-text">Ruch przeciwnika<div class="nc-sub">Legiony rzymskie zbliżają się</div></div>
+        <div class="nc-close" onclick="dismissNotif(this)">&#10005;</div>
+      </div>
+      <div class="notif-chip notif-city">
+        <div class="nc-ico">&#127962;</div>
+        <div class="nc-text">Miasto: wzrost populacji<div class="nc-sub">Ateny +1 mieszkaniec (3→4)</div></div>
+        <div class="nc-close" onclick="dismissNotif(this)">&#10005;</div>
+      </div>
+      <div class="notif-chip notif-unit">
+        <div class="nc-ico">&#9876;</div>
+        <div class="nc-text">Jednostka gotowa<div class="nc-sub">Wojownik czeka na rozkazy</div></div>
+        <div class="nc-close" onclick="dismissNotif(this)">&#10005;</div>
+      </div>
+      <div class="notif-chip notif-culture">
+        <div class="nc-ico">&#127932;</div>
+        <div class="nc-text">Nowa idea dostepna<div class="nc-sub">Mozna opracowac: Filozofia</div></div>
+        <div class="nc-close" onclick="dismissNotif(this)">&#10005;</div>
+      </div>
+      <div class="notif-note">Aktualizowane po turze przeciwnika</div>
+    </div>
+
+    <!-- SELECTED UNIT PANEL (bottom center) -->
+    <div id="selected-panel">
+      <div class="sel-card">
+        <div class="sel-card-header">
+          <div class="sel-avatar">&#9876;</div>
+          <div>
+            <div class="sel-name">Wojownik — Epoka Brazu</div>
+            <div class="sel-type">Jednostka militarna &bull; Grecy</div>
+          </div>
+          <div class="sel-meta">Pole: (14, 8)<br>Teren: Las</div>
+        </div>
+        <div class="sel-card-body">
+          <div class="sel-stats">
+            <div class="sel-stat">
+              <div class="sel-stat-val" style="color:#e84040">32</div>
+              <div class="sel-stat-lbl">Sila</div>
+            </div>
+            <div class="sel-stat">
+              <div class="sel-stat-val" style="color:#4090c8">2</div>
+              <div class="sel-stat-lbl">Ruchy</div>
+            </div>
+            <div class="sel-stat">
+              <div class="sel-stat-val" style="color:var(--gold)">+5</div>
+              <div class="sel-stat-lbl">Obrona</div>
+            </div>
+            <div class="sel-stat">
+              <div class="sel-stat-val" style="color:var(--text-dim)">1</div>
+              <div class="sel-stat-lbl">Zasieg</div>
+            </div>
+          </div>
+          <div class="hp-bar-wrap">
+            <div class="hp-label">Zdrowie: 78/100</div>
+            <div class="hp-bar"><div class="hp-fill"></div></div>
+          </div>
+        </div>
+        <div class="sel-actions">
+          <div class="sel-action-btn"><span class="sab-ico">&#9876;</span> Atak</div>
+          <div class="sel-action-btn"><span class="sab-ico">&#128692;</span> Fortyfikuj</div>
+          <div class="sel-action-btn"><span class="sab-ico">&#128065;</span> Zwiad</div>
+          <div class="sel-action-btn"><span class="sab-ico">&#128640;</span> Pomin</div>
+          <div class="sel-action-btn"><span class="sab-ico">&#128683;</span> Uspij</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- (12) KONIEC TURY -->
+    <div id="end-turn-wrap">
+      <div class="et-states">
+        <div class="et-label-note" style="color:var(--orange)">Stan: akcja oczekujaca</div>
+        <div class="et-btn action" id="et-action" title="Wykonaj akcje — kieruje do miejsca zdarzenia" onclick="executeAction()">
+          <div class="et-ico">&#9875;</div>
+          <div class="et-text">WYKONAJ</div>
+        </div>
+        <div class="et-separator"></div>
+        <div class="et-label-note">(12) Stan: gotowy</div>
+        <div class="et-btn end" id="et-end" title="Koniec tury — zatwierdz i przejdz do nastepnej" onclick="endTurn()">
+          <div class="et-ico">&#9654;</div>
+          <div class="et-text">KONIEC<br>TURY</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LEGENDA -->
+    <div id="legend">
+      <div class="leg-item"><span class="leg-num">1</span> Postep badan tech.</div>
+      <div class="leg-item"><span class="leg-num">2</span> Postep oprac. idei</div>
+      <div class="leg-item"><span class="leg-num">3</span> Doktryny spoleczne</div>
+      <div class="leg-item"><span class="leg-num">4</span> Panel zasobow</div>
+      <div class="leg-item"><span class="leg-num">5</span> Panel wielkich dziel</div>
+      <div class="leg-item"><span class="leg-num">6</span> Elementy odblokowane</div>
+      <div class="leg-item"><span class="leg-num">7</span> Globalne zasoby</div>
+      <div class="leg-item"><span class="leg-num">8</span> Miniatura mapy</div>
+      <div class="leg-item"><span class="leg-num">9</span> Panel cywilizacji</div>
+      <div class="leg-item"><span class="leg-num">10</span> Menu / tura</div>
+      <div class="leg-item"><span class="leg-num">11</span> Powiadomienia</div>
+      <div class="leg-item"><span class="leg-num">12</span> Koniec tury</div>
+    </div>
+
+  </div><!-- end hud-layer -->
+</div><!-- end screen-map -->
+
+<script>
+(function(){
+'use strict';
+
+/* SCREEN TOGGLE */
+function showScreen(which){
+  var sc=document.querySelectorAll('.screen');
+  sc.forEach(function(s){s.classList.remove('active')});
+  var btns=document.querySelectorAll('.toggle-btn');
+  btns.forEach(function(b){b.classList.remove('active')});
+  document.getElementById('screen-'+which).classList.add('active');
+  document.getElementById('btn-'+which).classList.add('active');
+}
+window.showScreen=showScreen;
+
+/* STAR FIELD */
+function initStars(){
+  var canvas=document.getElementById('stars-canvas');
+  if(!canvas)return;
+  var ctx=canvas.getContext('2d');
+  var W,H,stars=[];
+  function resize(){
+    W=canvas.width=canvas.offsetWidth;
+    H=canvas.height=canvas.offsetHeight;
+    buildStars();
+  }
+  function buildStars(){
+    stars=[];
+    var n=Math.floor(W*H/800);
+    for(var i=0;i<n;i++){
+      stars.push({
+        x:Math.random()*W,y:Math.random()*H,
+        r:Math.random()*1.7+0.2,
+        o:Math.random()*0.75+0.25,
+        ph:Math.random()*Math.PI*2,
+        sp:Math.random()*0.012+0.003
+      });
+    }
+  }
+  var t=0;
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    t+=0.016;
+    for(var i=0;i<stars.length;i++){
+      var s=stars[i];
+      var a=s.o*(0.4+0.6*Math.sin(s.ph+t*s.sp*60));
+      ctx.beginPath();
+      ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
+      if(i%7===0)ctx.fillStyle='rgba(200,220,255,'+a+')';
+      else if(i%11===0)ctx.fillStyle='rgba(255,240,200,'+a+')';
+      else ctx.fillStyle='rgba(255,255,255,'+a+')';
+      ctx.fill();
+    }
+    requestAnimationFrame(draw);
+  }
+  window.addEventListener('resize',resize);
+  resize();
+  requestAnimationFrame(draw);
+}
+
+/* CLOCK */
+function updateClock(){
+  var now=new Date();
+  var el=document.getElementById('clock-display');
+  if(el){
+    var days=['Niedziela','Poniedzialek','Wtorek','Sroda','Czwartek','Piatek','Sobota'];
+    var d=now.getDate().toString().padStart(2,'0');
+    var mo=(now.getMonth()+1).toString().padStart(2,'0');
+    var y=now.getFullYear();
+    var h=now.getHours().toString().padStart(2,'0');
+    var m=now.getMinutes().toString().padStart(2,'0');
+    el.textContent=days[now.getDay()]+', '+d+'.'+mo+'.'+y+'  '+h+':'+m;
+  }
+  setTimeout(updateClock,15000);
+}
+
+/* DISMISS NOTIFICATION */
+window.dismissNotif=function(closeBtn){
+  var chip=closeBtn.parentElement;
+  chip.style.transition='all 0.3s';
+  chip.style.opacity='0';
+  chip.style.transform='translateX(20px)';
+  setTimeout(function(){chip.remove()},300);
+};
+
+/* END TURN BUTTONS */
+window.executeAction=function(){
+  var btn=document.getElementById('et-action');
+  if(!btn)return;
+  btn.querySelector('.et-text').textContent='WYKONANO';
+  btn.style.borderColor='#50b070';
+  setTimeout(function(){
+    btn.style.opacity='0.35';
+    btn.style.pointerEvents='none';
+    btn.style.animation='none';
+  },700);
+};
+window.endTurn=function(){
+  var btn=document.getElementById('et-end');
+  if(!btn)return;
+  btn.querySelector('.et-text').innerHTML='PRZETW.<br>...';
+  btn.style.opacity='0.6';
+  setTimeout(function(){
+    btn.querySelector('.et-text').innerHTML='KONIEC<br>TURY';
+    btn.style.opacity='1';
+  },1400);
+};
+
+/* MINIMAP DRAG */
+function bindMinimapDrag(){
+  var vp=document.getElementById('minimap-vp');
+  var mm=document.getElementById('minimap');
+  if(!vp||!mm)return;
+  var drag=false,ox=0,oy=0;
+  vp.addEventListener('mousedown',function(e){
+    drag=true;
+    ox=e.clientX-vp.offsetLeft;
+    oy=e.clientY-vp.offsetTop;
+    e.preventDefault();
+  });
+  document.addEventListener('mousemove',function(e){
+    if(!drag)return;
+    var r=mm.getBoundingClientRect();
+    var nx=e.clientX-r.left-ox;
+    var ny=e.clientY-r.top-oy;
+    nx=Math.max(0,Math.min(r.width-vp.offsetWidth,nx));
+    ny=Math.max(0,Math.min(r.height-vp.offsetHeight,ny));
+    vp.style.left=nx+'px';
+    vp.style.top=ny+'px';
+  });
+  document.addEventListener('mouseup',function(){drag=false});
+}
+
+/* MENU NOWA GRA */
+function bindMenuBtns(){
+  var ng=document.getElementById('btn-nowa-gra');
+  if(ng)ng.addEventListener('click',function(){showScreen('map')});
+}
+
+/* LEFT BTN RIPPLE */
+function bindLeftBtns(){
+  document.querySelectorAll('.left-btn').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      btn.style.borderColor='var(--gold)';
+      btn.style.background='rgba(232,216,138,0.15)';
+      setTimeout(function(){
+        btn.style.borderColor='';
+        btn.style.background='';
+      },700);
+    });
+  });
+}
+
+/* INIT */
+document.addEventListener('DOMContentLoaded',function(){
+  initStars();
+  updateClock();
+  bindMinimapDrag();
+  bindMenuBtns();
+  bindLeftBtns();
+});
+
+})();
+</script>
+</body>
+</html>

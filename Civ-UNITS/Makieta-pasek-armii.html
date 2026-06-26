@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>THE GAME — Pasek Armii (Makieta)</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --gold:#e8d88a;--gold-dim:#b8a85a;--gold-glow:rgba(232,216,138,0.3);
+  --bg:#0b0e18;--bg-panel:rgba(10,15,28,0.96);--bg-panel2:rgba(16,22,38,0.92);
+  --bg-chip:rgba(18,25,42,0.95);
+  --border:rgba(232,216,138,0.28);--border-hi:rgba(232,216,138,0.65);
+  --border-dim:rgba(232,216,138,0.12);--text:#d4cba0;--text-dim:#6a6248;
+  --text-hi:#f0e8b8;--text-muted:#9a8f6a;
+  --red:#c84040;--green:#50b070;--blue:#4090c8;
+  --orange:#d08030;
+  --hp-green:#4aaa60;--hp-yellow:#d4a020;--hp-red:#c83030;
+  --font-main:'Georgia','Times New Roman',serif;
+  --font-ui:'Trebuchet MS','Verdana',sans-serif;
+  --r:4px;--r-lg:8px
+}
+html,body{width:100%;height:100%;background:var(--bg);font-family:var(--font-ui);
+  color:var(--text);font-size:13px;user-select:none;overflow:hidden}
+
+/* TOGGLE */
+#toggle-bar{position:fixed;top:0;left:0;right:0;z-index:9999;
+  display:flex;align-items:center;justify-content:center;gap:4px;padding:5px 8px;
+  background:rgba(4,6,14,0.98);border-bottom:1px solid var(--border)}
+.toggle-btn{padding:4px 22px;background:rgba(20,28,50,0.9);border:1px solid var(--border);
+  color:var(--text-dim);font-family:var(--font-ui);font-size:10px;letter-spacing:1.5px;
+  text-transform:uppercase;cursor:pointer;border-radius:3px;transition:all 0.15s}
+.toggle-btn.active{background:rgba(232,216,138,0.10);border-color:var(--gold);color:var(--gold)}
+.toggle-btn:hover:not(.active){border-color:var(--gold-dim);color:var(--text)}
+#toggle-bar .hint{margin-left:16px;font-size:9.5px;color:var(--text-dim);letter-spacing:0.5px}
+
+/* SCREENS */
+.screen{position:fixed;top:28px;left:0;right:0;bottom:0;display:none}
+.screen.active{display:block}
+
+/* MAP */
+.map-bg{position:absolute;inset:0;
+  background:radial-gradient(ellipse 60% 50% at 30% 40%,rgba(20,60,20,0.6) 0%,transparent 60%),
+    radial-gradient(ellipse 40% 35% at 70% 35%,rgba(30,70,25,0.5) 0%,transparent 55%),
+    radial-gradient(ellipse 35% 30% at 55% 65%,rgba(15,45,15,0.4) 0%,transparent 50%),
+    radial-gradient(ellipse 50% 40% at 20% 70%,rgba(18,50,80,0.5) 0%,transparent 55%),
+    linear-gradient(160deg,#08100a 0%,#0c1810 40%,#091208 70%,#050d06 100%);overflow:hidden}
+.map-hex-grid{position:absolute;inset:0;opacity:0.06}
+.map-hex-grid svg{width:100%;height:100%}
+.t-forest{position:absolute;border-radius:50%;background:rgba(30,80,20,0.35);border:1px solid rgba(50,120,30,0.2)}
+.t-water{position:absolute;border-radius:40% 60% 55% 45%;background:rgba(15,40,90,0.45);border:1px solid rgba(30,70,140,0.3)}
+.t-mtn{position:absolute;width:0;height:0;border-left:20px solid transparent;border-right:20px solid transparent;border-bottom:35px solid rgba(80,70,50,0.3)}
+
+/* UNIT MARKERS */
+.unit-marker{position:absolute;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer}
+.marker-flag{width:24px;height:20px;background:rgba(180,20,20,0.85);border:1px solid rgba(220,80,80,0.7);
+  border-radius:2px;display:flex;align-items:center;justify-content:center;font-size:10px;color:#fff;transition:all 0.15s}
+.unit-marker.hovered .marker-flag{background:rgba(220,180,50,0.90);border-color:var(--gold);color:#000}
+.marker-dot{width:6px;height:6px;border-radius:50%;background:rgba(200,60,60,0.8);border:1px solid rgba(255,100,100,0.6)}
+.unit-marker.hovered .marker-dot{background:var(--gold);border-color:#fff}
+.marker-label{background:rgba(4,6,14,0.85);border:1px solid var(--border-dim);border-radius:2px;
+  padding:1px 5px;font-size:8.5px;color:var(--text-muted);white-space:nowrap}
+.unit-marker.hovered .marker-label{color:var(--gold);border-color:var(--border)}
+.sel-ring{position:absolute;width:42px;height:42px;border-radius:50%;
+  border:2px dashed rgba(232,216,138,0.6);top:-9px;left:-9px;pointer-events:none;
+  animation:spin 4s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ARMY BAR */
+#army-bar{position:absolute;bottom:0;left:0;right:0;
+  background:linear-gradient(0deg,rgba(4,6,14,0.99) 0%,rgba(8,12,24,0.97) 70%,rgba(8,12,24,0.90) 100%);
+  border-top:1px solid var(--border);display:flex;align-items:stretch;min-height:74px;z-index:100}
+
+/* BAR LEFT */
+#bar-header{display:flex;align-items:center;border-right:1px solid var(--border);flex-shrink:0}
+.bar-portrait{width:74px;height:74px;flex-shrink:0;
+  background:linear-gradient(135deg,rgba(20,30,55,0.9),rgba(10,16,32,0.95));
+  border-right:1px solid var(--border-dim);
+  display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+.bar-portrait::before{content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse 70% 70% at 50% 40%,rgba(232,216,138,0.08) 0%,transparent 70%)}
+.bar-portrait-inner{position:relative;z-index:1;text-align:center}
+.bp-emoji{font-size:26px;line-height:1;display:block}
+.bp-dot{width:6px;height:6px;border-radius:50%;background:var(--gold);margin:3px auto 0;
+  box-shadow:0 0 4px var(--gold-glow)}
+.bar-army-info{padding:6px 10px;display:flex;flex-direction:column;justify-content:center;
+  gap:2px;min-width:130px}
+.bar-army-name{font-size:13px;font-weight:700;color:var(--gold);letter-spacing:0.5px;white-space:nowrap}
+.bar-army-meta{font-size:9.5px;color:var(--text-muted);letter-spacing:0.3px}
+.civ-tag-bar{display:inline-block;font-size:8px;font-weight:700;letter-spacing:0.5px;
+  border:1px solid rgba(180,40,40,0.6);background:rgba(120,20,20,0.35);
+  color:#ffaaaa;border-radius:2px;padding:1px 5px;margin-top:2px;text-transform:uppercase}
+.bar-army-count{display:inline-flex;align-items:center;gap:4px;
+  background:rgba(232,216,138,0.08);border:1px solid var(--border-dim);
+  border-radius:3px;padding:2px 6px;font-size:9px;color:var(--text-muted);margin-top:2px;white-space:nowrap}
+.bar-army-count strong{color:var(--gold);margin-right:1px}
+
+/* CHIPS */
+#bar-chips{flex:1;display:flex;align-items:center;padding:6px 8px;gap:6px;
+  overflow-x:auto;scrollbar-width:thin;scrollbar-color:rgba(232,216,138,0.2) transparent}
+#bar-chips::-webkit-scrollbar{height:3px}
+#bar-chips::-webkit-scrollbar-thumb{background:rgba(232,216,138,0.2);border-radius:2px}
+.unit-chip{display:flex;flex-direction:column;align-items:center;gap:3px;padding:5px 7px;
+  background:var(--bg-chip);border:1px solid var(--border-dim);border-radius:var(--r);
+  cursor:pointer;transition:all 0.12s;flex-shrink:0;min-width:62px;max-width:70px;position:relative}
+.unit-chip:hover{border-color:var(--border);background:rgba(24,34,58,0.98)}
+.unit-chip.selected{border-color:var(--gold);background:rgba(232,216,138,0.07)}
+.unit-chip.selected::after{content:'';position:absolute;bottom:-1px;left:10%;right:10%;height:2px;
+  background:var(--gold);border-radius:2px}
+.chip-icon{font-size:18px;line-height:1;width:28px;height:28px;display:flex;align-items:center;
+  justify-content:center;background:rgba(12,18,32,0.8);border:1px solid var(--border-dim);border-radius:3px}
+.chip-name{font-size:8.5px;color:var(--text-muted);text-align:center;line-height:1.1;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:64px;width:100%}
+.chip-name.hi{color:var(--text-hi)}
+.chip-hp-row{display:flex;align-items:center;gap:3px;width:100%}
+.chip-hp-bar{flex:1;height:3px;background:rgba(255,255,255,0.08);border-radius:2px;overflow:hidden}
+.chip-hp-fill{height:100%;border-radius:2px}
+.chip-hp-txt{font-size:7.5px;color:var(--text-dim);flex-shrink:0;line-height:1}
+.chip-pips{display:flex;gap:2px;justify-content:center}
+.pip{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.08)}
+.pip.g{background:var(--gold);border-color:rgba(232,216,138,0.6)}
+.pip.s{background:#b0c0d8;border-color:#8090b0}
+.pip.o{background:var(--orange);border-color:rgba(200,120,30,0.6)}
+.chip-str{position:absolute;top:3px;right:3px;font-size:7px;font-weight:700;color:var(--gold-dim);
+  background:rgba(8,12,22,0.9);border-radius:2px;padding:0 2px;letter-spacing:0.3px}
+.chip-move{position:absolute;top:3px;left:3px;width:5px;height:5px;border-radius:50%;
+  background:var(--hp-green);box-shadow:0 0 3px rgba(80,176,112,0.5)}
+.chip-move.ex{background:rgba(255,255,255,0.18);box-shadow:none}
+
+/* ACTIONS */
+#bar-actions{display:flex;align-items:center;padding:0 10px;border-left:1px solid var(--border);
+  flex-shrink:0;gap:6px;flex-direction:column;justify-content:center}
+.bar-btn{background:rgba(232,216,138,0.06);border:1px solid var(--border-dim);
+  color:var(--text-muted);font-family:var(--font-ui);font-size:10px;
+  letter-spacing:0.8px;text-transform:uppercase;padding:5px 12px;border-radius:3px;
+  cursor:pointer;transition:all 0.15s;white-space:nowrap}
+.bar-btn:hover{background:rgba(232,216,138,0.12);border-color:var(--gold);color:var(--gold)}
+.bar-btn.pri{background:rgba(232,216,138,0.12);border-color:var(--gold-dim);color:var(--gold);font-weight:700}
+.bar-btn.pri:hover{background:rgba(232,216,138,0.22);border-color:var(--gold)}
+.bar-mp-row{display:flex;align-items:center;gap:4px;font-size:8.5px;color:var(--text-dim)}
+.mp-dot{width:7px;height:7px;border-radius:50%;background:var(--green);border:1px solid rgba(80,176,112,0.4)}
+.mp-dot.used{background:rgba(255,255,255,0.10);border-color:rgba(255,255,255,0.06)}
+
+/* MISC */
+#turn-ind{position:absolute;top:8px;right:12px;background:rgba(4,6,14,0.9);
+  border:1px solid var(--border-dim);border-radius:3px;padding:3px 10px;
+  font-size:9px;color:var(--text-dim);letter-spacing:1px;text-transform:uppercase}
+#turn-ind strong{color:var(--gold-dim)}
+.tooltip{position:absolute;pointer-events:none;z-index:200;
+  background:rgba(10,14,26,0.97);border:1px solid var(--border);
+  border-radius:var(--r);padding:6px 10px;font-size:10px;color:var(--text);
+  display:none;white-space:nowrap}
+.tooltip .tt-name{font-weight:700;color:var(--gold);font-size:11px;margin-bottom:3px}
+.tooltip .tt-row{color:var(--text-muted);line-height:1.6}
+.tooltip .tt-row span{color:var(--text)}
+#details-hint{display:none;position:absolute;bottom:82px;right:14px;
+  background:rgba(10,15,28,0.97);border:1px solid var(--border);border-radius:var(--r-lg);
+  padding:10px 14px;font-size:10px;color:var(--text-muted);max-width:200px;z-index:150;
+  animation:fi 0.2s ease}
+@keyframes fi{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+#details-hint strong{color:var(--gold);display:block;margin-bottom:4px;font-size:11px}
+.hclose{float:right;cursor:pointer;color:var(--text-dim);font-size:10px;margin-left:6px}
+.empty-hint{display:flex;align-items:center;padding:0 12px;color:var(--text-dim);
+  font-size:9px;letter-spacing:0.5px;border-left:1px solid var(--border-dim);
+  margin-left:4px;line-height:1.5}
+</style>
+</head>
+<body>
+
+<div id="toggle-bar">
+  <button class="toggle-btn active" onclick="showS('single',this)">Stan 1: Jednostka pojedyncza</button>
+  <button class="toggle-btn" onclick="showS('army',this)">Stan 2: Pełna armia (stos)</button>
+  <span class="hint">Hover na markerze mapy = pasek się pojawia. Kliknij chip = zaznaczenie.</span>
+</div>
+
+<!-- ===== STAN 1: Pojedyncza jednostka ===== -->
+<div class="screen active" id="screen-single">
+<div class="map-bg">
+  <div class="map-hex-grid">
+    <svg viewBox="0 0 800 500" preserveAspectRatio="xMidYMid slice">
+      <defs><pattern id="h1" x="0" y="0" width="60" height="52" patternUnits="userSpaceOnUse">
+        <polygon points="30,1 58,16 58,36 30,51 2,36 2,16" fill="none" stroke="rgba(80,120,50,0.35)" stroke-width="0.5"/>
+      </pattern></defs>
+      <rect width="800" height="500" fill="url(#h1)"/>
+    </svg>
+  </div>
+  <div class="t-forest" style="top:18%;left:15%;width:100px;height:60px"></div>
+  <div class="t-forest" style="top:26%;left:22%;width:60px;height:38px;opacity:0.7"></div>
+  <div class="t-forest" style="top:38%;left:58%;width:90px;height:55px"></div>
+  <div class="t-water" style="top:55%;left:68%;width:140px;height:70px"></div>
+  <div class="t-mtn" style="top:30%;left:44%"></div>
+  <div class="t-mtn" style="top:35%;left:48%;transform:scale(0.8)"></div>
+
+  <!-- Hovered marker -->
+  <div class="unit-marker hovered" id="sm1" style="top:42%;left:32%">
+    <div class="sel-ring"></div>
+    <div class="marker-flag">⚔</div>
+    <div class="marker-dot"></div>
+    <div class="marker-label">Rzym · LEGIO VII</div>
+  </div>
+  <!-- Other units -->
+  <div class="unit-marker" style="top:22%;left:60%">
+    <div class="marker-flag">🏹</div><div class="marker-dot"></div>
+    <div class="marker-label">Rzym · Łucznik</div>
+  </div>
+  <div class="unit-marker" style="top:60%;left:25%">
+    <div class="marker-flag">⚔</div><div class="marker-dot"></div>
+    <div class="marker-label">Rzym · Konnica</div>
+  </div>
+
+  <div id="turn-ind">Tura <strong>14</strong> · Era Brązu</div>
+  <div class="tooltip" id="tt1"></div>
+
+  <!-- === ARMY BAR === -->
+  <div id="army-bar">
+    <div id="bar-header">
+      <div class="bar-portrait">
+        <div class="bar-portrait-inner">
+          <span class="bp-emoji">⚔️</span>
+          <div class="bp-dot"></div>
+        </div>
+      </div>
+      <div class="bar-army-info">
+        <div class="bar-army-name">Legionista</div>
+        <div class="bar-army-meta">Piechota Ciężka · Era Brązu</div>
+        <div class="civ-tag-bar">Rzym · LEGIO VII</div>
+        <div class="bar-army-count"><strong>1</strong> jednostka w stosie</div>
+      </div>
+    </div>
+
+    <div id="bar-chips">
+      <div class="unit-chip selected"
+           onmouseenter="tt(event,'tt1','Legionista','Atak: 14 · Obr: 12 · HP: 80/100','Przesuwa się: 2 pola','Poziom 2 — weteran')"
+           onmouseleave="htt('tt1')" onclick="sel(this)">
+        <div class="chip-move"></div>
+        <div class="chip-str">14 ATK</div>
+        <div class="chip-icon">⚔️</div>
+        <div class="chip-name hi">Legionista</div>
+        <div class="chip-hp-row">
+          <div class="chip-hp-bar"><div class="chip-hp-fill" style="width:80%;background:var(--hp-green)"></div></div>
+          <div class="chip-hp-txt">80</div>
+        </div>
+        <div class="chip-pips">
+          <div class="pip g"></div><div class="pip g"></div><div class="pip"></div>
+        </div>
+      </div>
+      <div class="empty-hint">
+        Brak innych jednostek w stosie.<br>Nawet 1 jednostka = 1 chip w pasku.
+      </div>
+    </div>
+
+    <div id="bar-actions">
+      <div class="bar-mp-row">
+        <div class="mp-dot"></div><div class="mp-dot"></div><div class="mp-dot used"></div>
+        <span style="margin-left:2px">Ruchy: 2/3</span>
+      </div>
+      <button class="bar-btn pri" onclick="sdh('dh1')">Szczegóły ↗</button>
+      <button class="bar-btn">Przesuń</button>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ===== STAN 2: Pełna armia ===== -->
+<div class="screen" id="screen-army">
+<div class="map-bg">
+  <div class="map-hex-grid">
+    <svg viewBox="0 0 800 500" preserveAspectRatio="xMidYMid slice">
+      <defs><pattern id="h2" x="0" y="0" width="60" height="52" patternUnits="userSpaceOnUse">
+        <polygon points="30,1 58,16 58,36 30,51 2,36 2,16" fill="none" stroke="rgba(80,120,50,0.35)" stroke-width="0.5"/>
+      </pattern></defs>
+      <rect width="800" height="500" fill="url(#h2)"/>
+    </svg>
+  </div>
+  <div class="t-forest" style="top:15%;left:10%;width:120px;height:70px"></div>
+  <div class="t-forest" style="top:22%;left:20%;width:80px;height:48px;opacity:0.7"></div>
+  <div class="t-forest" style="top:48%;left:60%;width:100px;height:60px"></div>
+  <div class="t-water" style="top:57%;left:70%;width:160px;height:80px"></div>
+  <div class="t-mtn" style="top:28%;left:48%"></div>
+  <div class="t-mtn" style="top:33%;left:52%;transform:scale(0.9)"></div>
+  <div class="t-mtn" style="top:38%;left:45%;transform:scale(0.7)"></div>
+
+  <!-- Army stack marker -->
+  <div class="unit-marker hovered" id="am1" style="top:37%;left:34%">
+    <div class="sel-ring"></div>
+    <div class="marker-flag" style="width:34px;font-size:11px">⚔×8</div>
+    <div class="marker-dot"></div>
+    <div class="marker-label">Rzym · Armia Cezara</div>
+  </div>
+  <div class="unit-marker" style="top:20%;left:65%">
+    <div class="marker-flag">🏹</div><div class="marker-dot"></div>
+    <div class="marker-label">Rzym · Łucznik</div>
+  </div>
+  <div class="unit-marker" style="top:62%;left:22%">
+    <div class="marker-flag">🛡</div><div class="marker-dot"></div>
+    <div class="marker-label">Rzym · Falanga</div>
+  </div>
+
+  <div id="turn-ind">Tura <strong>14</strong> · Era Brązu</div>
+  <div class="tooltip" id="tt2"></div>
+  <div id="details-hint" id="dh2">
+    <span class="hclose" onclick="this.parentElement.style.display='none'">✕</span>
+    <strong>Podgląd Armii ↗</strong>
+    Otworzy pełny panel: lista jednostek, macierz walki, status dezercji, reorganizacja stosu.
+  </div>
+
+  <!-- === ARMY BAR === -->
+  <div id="army-bar">
+    <div id="bar-header">
+      <!-- Portrait = najsilniejsza jednostka = Rydwan -->
+      <div class="bar-portrait">
+        <div class="bar-portrait-inner">
+          <span class="bp-emoji">🏇</span>
+          <div class="bp-dot"></div>
+        </div>
+      </div>
+      <div class="bar-army-info">
+        <div class="bar-army-name">Rydwan Wojenny</div>
+        <div class="bar-army-meta">Najsilniejsza · reprezentuje armię</div>
+        <div class="civ-tag-bar">Rzym · Armia Cezara</div>
+        <div class="bar-army-count"><strong>8</strong> jednostek w stosie</div>
+      </div>
+    </div>
+
+    <div id="bar-chips">
+
+      <!-- 1. Rydwan Wojenny — selected / strongest -->
+      <div class="unit-chip selected"
+           style="border-color:rgba(200,130,20,0.55);background:rgba(24,16,4,0.96)"
+           onmouseenter="tt(event,'tt2','Rydwan Wojenny','Atak: 18 · Obr: 8 · HP: 95/100','Szybkość: 4 · Szarża +4','Poziom 3 — elita')"
+           onmouseleave="htt('tt2')" onclick="sel(this)">
+        <div class="chip-move"></div>
+        <div class="chip-str" style="color:var(--orange)">18 ATK</div>
+        <div class="chip-icon" style="border-color:rgba(180,100,20,0.5)">🏇</div>
+        <div class="chip-name hi">Rydwan</div>
+        <div class="chip-hp-row">
+          <div class="chip-hp-bar"><div class="chip-hp-fill" style="width:95%;background:var(--hp-green)"></div></div>
+          <div class="chip-hp-txt">95</div>
+        </div>
+        <div class="chip-pips">
+          <div class="pip g"></div><div class="pip s"></div>
+          <div class="pip o"></div>
+        </div>
+      </div>
+
+      <!-- 2. Legionista -->
+      <div class="unit-chip"
+           onmouseenter="tt(event,'tt2','Legionista','Atak: 14 · Obr: 12 · HP: 80/100','Formacja: Testudo','Poziom 2 — weteran')"
+           onmouseleave="htt('tt2')" onclick="sel(this)">
+        <div class="chip-move"></div>
+        <div class="chip-str">14 ATK</div>
+        <div class="chip-icon">⚔️</div>
+        <div class="chip-name">Legionista</div>
+        <div class="chip-hp-row">
+          <div class="chip-hp-bar"><div class="chip-hp-fill" style="width:80%;background:var(--hp-green)"></div></div>
+          <div class="chip-hp-txt">80</div>
+        </div>
+        <div class="chip-pips"><div class="pip g"></div><div class="pip g"></div><div class="pip"></div></div>
+      </div>
+
+      <!-- 3. Falanga -->
+      <div class="unit-chip"
+           onmouseenter="tt(event,'tt2','Falanga','Atak: 12 · Obr: 14 · HP: 70/100','Bonus: Obrona na wzgórzu','Poziom 2 — weteran')"
+           onmouseleave="htt('tt2')" onclick="sel(this)">
+        <div class="chip-move"></div>
+        <div class="chip-str">12 ATK</div>
+        <div class="chip-icon">🛡️</div>
+        <div class="chip-name">Falanga</div>
+        <div class="chip-hp-row">
+          <div class="chip-hp-bar"><div class="chip-hp-fill" style="width:70%;background:var(--hp-green)"></div></div>
+          <div class="chip-hp-txt">70</div>
+        </div>
+        <div class="chip-pips"><div class="pip g"></div><div class="pip g"></div><div class="pip"></div></div>
+      </div>
+
+      <!-- 4. Konnica Lekka -->
+      <div class="unit-chip"
+           onmouseenter="tt(event,'tt2','Konnica Lekka','Atak: 13 · Obr: 7 · HP: 88/100','Szybkość: 3 · Rekonesans','Poziom 2 — weteran')"
+           onmouseleave="htt('tt2')" onclick="sel(this)">
+        <div class="chip-move"></div>
+        <div class="chip-str">13 ATK</div>
+        <div class="chip-icon">🐎</div>
+        <div class="chip-name">Konnica</div>
+        <div class="chip-hp-row">
+          <div class="chip-hp-bar"><div class="chip-hp-fill" style="width:88%;background:var(--hp-green)"></div></div>
+          <div class="chip-hp-txt">88</div>
+        </div>
+        <div class="chip-pips"><div class="pip g"></div><div class="pip g"></div><div class="pip"></div></div>
+      </div>
+
+      <!-- 5. Łucznik -->
+      <div class="unit-chip"
+           onmouseenter="tt(event,'tt2','Łucznik','Atak: 9 · Obr: 5 · HP: 55/100','Zasięg: 2 pola','Poziom 1 — rekrut')"
+           onmouseleave="htt('tt2')" onclick="sel(this)">
+        <div class="chip-move" style="background:var(--hp-yellow)"></div>
+        <div class="chip-str">9 ATK</div>
+        <div class="chip-icon">🏹</div>
+        <div class="chip-name">Łucznik</div>
+        <div class="chip-hp-row">
+          <div class="chip-hp-bar"><div class="chip-hp-fill" style="width:55%;background:var(--hp-yellow)"></div></div>
+          <div class="chip-hp-txt">55</div>
+        </div>
+        <div class="chip-pips"><div class="pip g"></div><div class="pip"></div><div class="pip"></div></div>
+      </div>
+
+      <!-- 6. Procarz -->
+      <div class="unit-chip"
+           onmouseenter="tt(event,'tt2','Procarz','Atak: 7 · Obr: 3 · HP: 40/100','Zasięg: 2 · Tani rekrut','Poziom 1 — rekrut')"
+           onmouseleave="htt('tt2')" onclick="sel(this)">
+        <div class="chip-move" style="background:var(--hp-red)"></div>
+        <div class="chip-str">7 ATK</div>
+        <div class="chip-icon">🪃</div>
+        <div class="chip-name">Procarz</div>
+        <div class="chip-hp-row">
+          <div class="chip-hp-bar"><div class="chip-hp-fill" style="width:40%;background:var(--hp-red)"></div></div>
+          <div class="chip-hp-txt">40</div>
+        </div>
+        <div class="chip-pips"><div class="pip g"></div><div class="pip"></div><div class="pip"></div></div>
+      </div>
+
+      <!-- 7. Oszczepnik -->
+      <div class="unit-chip"
+           onmouseenter="tt(event,'tt2','Oszczepnik','Atak: 10 · Obr: 6 · HP: 75/100','Rzut oszczepem przed walką','Poziom 1 — rekrut')"
+           onmouseleave="htt('tt2')" onclick="sel(this)">
+        <div class="chip-move"></div>
+        <div class="chip-str">10 ATK</div>
+        <div class="chip-icon">🗡️</div>
+        <div class="chip-name">Oszczepnik</div>
+        <div class="chip-hp-row">
+          <div class="chip-hp-bar"><div class="chip-hp-fill" style="width:75%;background:var(--hp-green)"></div></div>
+          <div class="chip-hp-txt">75</div>
+        </div>
+        <div class="chip-pips"><div class="pip g"></div><div class="pip"></div><div class="pip"></div></div>
+      </div>
+
+      <!-- 8. Katapulta — super-unit -->
+      <div class="unit-chip"
+           style="border-color:rgba(180,100,20,0.55);background:rgba(28,18,6,0.97)"
+           onmouseenter="tt(event,'tt2','Katapulta Brązowa','Atak: 20 · Obr: 2 · HP: 100/100','Oblężenie: niszczy mury','Słaba w boju bezpośrednim')"
+           onmouseleave="htt('tt2')" onclick="sel(this)">
+        <div class="chip-move" style="background:rgba(200,140,40,0.9)"></div>
+        <div class="chip-str" style="color:var(--orange)">20 ATK</div>
+        <div class="chip-icon" style="border-color:rgba(180,100,20,0.45)">⚙️</div>
+        <div class="chip-name" style="color:var(--orange)">Katapulta</div>
+        <div class="chip-hp-row">
+          <div class="chip-hp-bar"><div class="chip-hp-fill" style="width:100%;background:var(--orange)"></div></div>
+          <div class="chip-hp-txt" style="color:var(--orange)">100</div>
+        </div>
+        <div class="chip-pips">
+          <div class="pip o"></div><div class="pip o"></div><div class="pip o"></div>
+        </div>
+      </div>
+
+    </div><!-- /bar-chips -->
+
+    <div id="bar-actions">
+      <div class="bar-mp-row">
+        <div class="mp-dot"></div><div class="mp-dot"></div><div class="mp-dot used"></div>
+        <span style="margin-left:2px">Ruchy: 2/3</span>
+      </div>
+      <button class="bar-btn pri" onclick="sdh('dh2')">Szczegóły ↗</button>
+      <button class="bar-btn">Przesuń armię</button>
+    </div>
+  </div>
+</div>
+</div>
+
+<script>
+function showS(id,btn){
+  document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active')});
+  document.querySelectorAll('.toggle-btn').forEach(function(b){b.classList.remove('active')});
+  document.getElementById('screen-'+id).classList.add('active');
+  btn.classList.add('active');
+}
+function tt(e,tid,name,l1,l2,l3){
+  var el=document.getElementById(tid);if(!el)return;
+  el.innerHTML='<div class="tt-name">'+name+'</div>'
+    +'<div class="tt-row">'+l1+'</div>'
+    +(l2?'<div class="tt-row">'+l2+'</div>':'')
+    +(l3?'<div class="tt-row" style="color:var(--gold-dim)">'+l3+'</div>':'');
+  el.style.display='block';pos(el,e);
+}
+function htt(tid){var el=document.getElementById(tid);if(el)el.style.display='none';}
+function pos(el,e){
+  var x=e.clientX+12,y=e.clientY-40,w=el.offsetWidth||190;
+  if(x+w>window.innerWidth-10)x=e.clientX-w-12;
+  if(y<30)y=34;
+  el.style.left=x+'px';el.style.top=y+'px';
+}
+document.addEventListener('mousemove',function(e){
+  ['tt1','tt2'].forEach(function(id){
+    var el=document.getElementById(id);
+    if(el&&el.style.display==='block')pos(el,e);
+  });
+});
+function sdh(id){
+  var el=document.getElementById('details-hint');
+  if(el)el.style.display='block';
+}
+function sel(chip){
+  var bar=chip.closest('#army-bar');if(!bar)return;
+  bar.querySelectorAll('.unit-chip').forEach(function(c){
+    c.classList.remove('selected');
+    var n=c.querySelector('.chip-name');if(n)n.classList.remove('hi');
+  });
+  chip.classList.add('selected');
+  var nm=chip.querySelector('.chip-name');if(nm)nm.classList.add('hi');
+}
+</script>
+</body>
+</html>

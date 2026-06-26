@@ -1,0 +1,7639 @@
+/**
+ * units.ts
+ * Renders unit tokens and movement-range highlight discs on the hex map.
+ *
+ * Token visual: ROBLOX R6-style box avatar per category (~0.55*HEX_R tall).
+ * Categories: osadnik | miecznik | wlocznik | lucznik | procarz | oszczepnik |
+ *             maczuga | topor | konnica | rydwan | super | domyslny
+ *
+ * Base avatar (buildBaseAvatar):
+ *   - Box HEAD     (~0.13R cube)      skin tone, two dark eye dots
+ *   - Box TORSO    (0.18 x 0.22 x 0.10 R)  cloth/tunic color
+ *   - Box ARMS x2  (0.06 x 0.20 x 0.06 R)  cloth color
+ *   - Box LEGS x2  (0.07 x 0.20 x 0.07 R)  dark trousers
+ * Total height ~0.55*HEX_R; feet at y=0 of group.
+ *
+ * Per-category gear layered on top (boxes, low-poly) -- see buildUnitModel.
+ *
+ * Highlight visual:
+ *   A flat hexagonal disc (CylinderGeometry, 6 sides) with MeshBasicMaterial
+ *   transparent at 0.35 opacity, color 0x66ccff.
+ *
+ * Route visual:
+ *   TubeGeometry along CatmullRomCurve3 (gold 0xffe27a, opacity 0.9).
+ *   Intermediate dots: SphereGeometry. Destination: TorusGeometry ring.
+ */
+
+import * as THREE from 'three';
+import type { GameMap } from '../types/map';
+import type { Hex } from '../types/hex';
+import { TerenBazowy } from '../types/hex';
+import { axialToWorld, HEX_R } from './hexutil';
+import type { RuntimeUnit } from '../units/setup';
+
+// ---------------------------------------------------------------------------
+// Terrain top-Y table -- MUST match TERRAIN_VISUALS in scene.ts
+// ---------------------------------------------------------------------------
+
+interface TerrainTopY {
+  height: number;
+  yOffset: number;
+}
+
+const TERRAIN_TOP: Record<TerenBazowy, TerrainTopY> = {
+  [TerenBazowy.Morze]:    { height: 0.30, yOffset: 0.00 },
+  [TerenBazowy.Wybrzeze]: { height: 0.35, yOffset: 0.05 },
+  [TerenBazowy.Laka]:     { height: 0.40, yOffset: 0.05 },
+  [TerenBazowy.Rownina]:  { height: 0.45, yOffset: 0.08 },
+  [TerenBazowy.Pustynia]: { height: 0.40, yOffset: 0.05 },
+  [TerenBazowy.Wzgorza]:  { height: 0.70, yOffset: 0.15 },
+  [TerenBazowy.Gory]:     { height: 1.20, yOffset: 0.40 },
+};
+
+// Returns the Y coordinate of the TOP surface of the terrain prism.
+// In scene.ts the prism center sits at  y = height/2 + yOffset
+// => top face at (height/2 + yOffset) + height/2 = height + yOffset.  CONFIRMED CORRECT.
+// topYAt() delegates here; both return height + yOffset (not the center).
+function terrainTopY(hex: Hex): number {
+  const tv = TERRAIN_TOP[hex.terenBazowy];
+  return tv.height + tv.yOffset;
+}
+
+// ---------------------------------------------------------------------------
+// Owner color palette
+// ---------------------------------------------------------------------------
+
+const OWNER_COLORS: number[] = [
+  0xffd54a, // 0 = player (gold)
+  0xe53935, // 1 = red
+  0x43a047, // 2 = green
+  0x1e88e5, // 3 = blue
+  0xfb8c00, // 4 = orange
+  0x8e24aa, // 5 = purple
+  0x00acc1, // 6 = teal
+  0xf06292, // 7 = pink
+];
+
+function ownerColor(ownerId: number): number {
+  return OWNER_COLORS[ownerId % OWNER_COLORS.length]!;
+}
+
+// ---------------------------------------------------------------------------
+// Roblox R6 proportions (all in world units relative to HEX_R)
+// Feet at y=0 of the group; total height ~0.55*HEX_R.
+// ---------------------------------------------------------------------------
+
+const TOKEN_LIFT = 0.01 * HEX_R;
+
+// Avatar proportions -- stocky R6 style
+const AV_LEG_W   = 0.07  * HEX_R;  // leg box width & depth
+const AV_LEG_H   = 0.20  * HEX_R;  // leg height
+const AV_LEG_SEP = 0.045 * HEX_R;  // half-gap between legs (edge to center)
+
+const AV_TORSO_W = 0.18  * HEX_R;
+const AV_TORSO_H = 0.22  * HEX_R;
+const AV_TORSO_D = 0.10  * HEX_R;
+
+const AV_ARM_W   = 0.06  * HEX_R;
+const AV_ARM_H   = 0.20  * HEX_R;
+const AV_ARM_D   = 0.06  * HEX_R;
+
+const AV_NECK_W  = 0.04  * HEX_R;
+const AV_NECK_H  = 0.03  * HEX_R;
+const AV_NECK_D  = 0.04  * HEX_R;
+
+const AV_HEAD_S  = 0.13  * HEX_R;  // head box side
+
+// Derived Y positions (group origin = floor / feet)
+const AV_Y_LEG_BOT   = 0.0;
+const AV_Y_LEG_CTR   = AV_Y_LEG_BOT  + AV_LEG_H   * 0.5;
+const AV_Y_LEG_TOP   = AV_Y_LEG_BOT  + AV_LEG_H;
+const AV_Y_TORSO_BOT = AV_Y_LEG_TOP;
+const AV_Y_TORSO_CTR = AV_Y_TORSO_BOT + AV_TORSO_H * 0.5;
+const AV_Y_TORSO_TOP = AV_Y_TORSO_BOT + AV_TORSO_H;
+const AV_Y_NECK_CTR  = AV_Y_TORSO_TOP + AV_NECK_H  * 0.5;
+const AV_Y_NECK_TOP  = AV_Y_TORSO_TOP + AV_NECK_H;
+const AV_Y_HEAD_BOT  = AV_Y_NECK_TOP;
+const AV_Y_HEAD_CTR  = AV_Y_HEAD_BOT  + AV_HEAD_S  * 0.5;
+const AV_Y_HEAD_TOP  = AV_Y_HEAD_BOT  + AV_HEAD_S;
+// Arm center: vertically same as torso upper region
+const AV_Y_ARM_CTR   = AV_Y_TORSO_BOT + AV_TORSO_H * 0.55;
+// Arm X offset (outside torso edge)
+const AV_ARM_OFFSET_X = AV_TORSO_W * 0.5 + AV_ARM_W * 0.5 + 0.003 * HEX_R;
+
+// Colors
+const COLOR_SKIN      = 0xe0ac69;  // skin tone
+const COLOR_CLOTH     = 0xb5784a;  // neutral tunic/cloth brown
+const COLOR_TROUSERS  = 0x4a3828;  // dark brown trousers
+const COLOR_DARK_EYE  = 0x1a1008;  // near-black eyes
+const COLOR_STEEL     = 0xc2cad2;  // light polished steel grey (brightened)
+const COLOR_DARK_STEEL= 0x6a7278;  // darker steel for segment gaps
+const COLOR_BRONZE    = 0xcf9234;  // polished bronze armor (brighter, more golden)
+const COLOR_DARK_BRONZE=0x7a5020; // darker bronze gap
+const COLOR_WOOD      = 0x7a5c3a;  // wood handle
+const COLOR_LEATHER   = 0x6b4a28;  // leather straps
+const COLOR_HORSE     = 0x6b4c2a;  // horse body brown
+const COLOR_HAT_BROWN = 0x3e2a1a;  // wide-brim hat dark leather
+const COLOR_HAT_LIGHT = 0x8b6040;  // osadnik hat accent
+const COLOR_GOLD      = 0xd4a830;  // gold trim (super)
+const COLOR_POLE_GREY = 0x888888;  // banner pole grey
+const COLOR_CHARIOT   = 0x8b6a2a;  // chariot wood
+// --- Extended historical palette (rerender realism pass) ---
+const COLOR_SKIN_DARK = 0xc89058;  // weathered/tanned skin (tribal, scout)
+const COLOR_BRONZE_LT = 0xd0a050;  // polished bronze highlight (greaves, muscled cuirass)
+const COLOR_LINEN     = 0xe8e0c8;  // linothorax / off-white linen tunic
+const COLOR_ROMAN_RED = 0xa42a22;  // legionary tunic / Spartan cloak red
+const COLOR_MAIL      = 0x9098a0;  // iron mail / scale grey-steel
+const COLOR_FUR       = 0x7a6a52;  // fur/hide trim (axe, club warriors)
+const COLOR_FEATHER   = 0xf4f0e6;  // off-white feather/plume base
+const COLOR_HIDE_RED  = 0x8a3a26;  // reddish ox-hide / Zulu cowhide shield
+const COLOR_SAIL      = 0xe6ddc4;  // ship sail canvas
+const COLOR_SAND      = 0xcdb37a;  // straw hat / desert linen
+const COLOR_LEAF      = 0x4a6a2e;  // dark cloak/scout green
+
+// ---------------------------------------------------------------------------
+// VIVID DISTINCT PALETTE (colour-vividness pass)
+// The previous pass left most bodies on brown leather / off-white linen /
+// bronze, so adjacent tokens read as one "gray-brown mush".  These constants
+// give every CATEGORY a clearly different, MORE SATURATED tunic/cloak/shield
+// hue while staying within authentic ancient dye/pigment ranges (madder &
+// kermes reds, woad & Egyptian blue, malachite/verdigris greens & teals,
+// ochres, orpiment yellow, Tyrian-ish purples).  Skin, leather straps and
+// helmet metals stay realistic (metals merely brighter/polished).  The eye
+// should be able to tell a swordsman from a spearman from an archer at a
+// glance — the differences are carried mainly on cloth, not on metal.
+// ---------------------------------------------------------------------------
+const COLOR_RED_VIV   = 0xc0392b;  // vivid Roman/legionary red (kermes)        — legionista tunic/crest
+const COLOR_CRIMSON   = 0xa01f2e;  // deep crimson cloak (kermes/murex)         — super & cavalry cloak/tunic
+const COLOR_RUST      = 0xb5482f;  // bright rust/oxide red                      — generic swordsman tunic
+const COLOR_TERRACOTA = 0xc15a34;  // terracotta / burnt-ochre                   — javelin skirmisher tunic
+const COLOR_BURGUNDY  = 0x7e2a30;  // dark wine/burgundy                         — axe warrior tunic
+const COLOR_OCHRE     = 0xc8932e;  // golden ochre / mustard                     — slinger tunic, Inca accents
+const COLOR_FOREST    = 0x3f8a3a;  // vivid forest green (malachite/verdigris)   — archer tunic
+const COLOR_OLIVE     = 0x5d6b34;  // olive/sage drab                            — scout cloak (distinct from archer)
+const COLOR_TEAL      = 0x1f7a78;  // dark teal / verdigris                      — generic spearman tunic (Sumer)
+const COLOR_WOAD      = 0x2f5aa0;  // woad / Egyptian-blue                       — settler tunic, Greek cloak accent
+const COLOR_INDIGO    = 0x3a4a86;  // muted indigo                               — generic militia tunic
+const COLOR_HORSE_LT  = 0x8a6038;  // brighter chestnut horse                    — cavalry & chariot horses
+const COLOR_LACQUER   = 0xa8252a;  // lacquer red (Chinese/Egyptian chariot)     — chariot driver tunic
+const COLOR_GOLD_BR   = 0xe0b53a;  // brighter gilt gold trim                    — elite trim/accents
+const COLOR_PAINT_WHT = 0xeae3d2;  // bright white war-paint / cowhide white     — tribal accents
+
+// Highlight
+const HIGHLIGHT_RADIUS  = HEX_R * 0.88;
+const HIGHLIGHT_HEIGHT  = 0.015 * HEX_R;
+const HIGHLIGHT_LIFT    = 0.005 * HEX_R;
+const HIGHLIGHT_COLOR   = 0x66ccff;
+const HIGHLIGHT_OPACITY = 0.35;
+
+// Route
+const ROUTE_Y_LIFT  = 0.06 * HEX_R;
+const ROUTE_COLOR   = 0xffe27a;
+const ROUTE_OPACITY = 0.9;
+const TUBE_RADIUS   = 0.05 * HEX_R;
+const TUBE_SEGMENTS = 64;
+const DOT_RADIUS    = 0.07 * HEX_R;
+const DEST_TORUS_R  = 0.13 * HEX_R;
+const DEST_TUBE_R   = 0.035 * HEX_R;
+const DEST_COLOR    = 0xff8c00;
+
+// ---------------------------------------------------------------------------
+// Shared singleton geometries (base avatar parts)
+// ---------------------------------------------------------------------------
+
+// Base avatar body parts
+let geoAvLeg:   THREE.BoxGeometry | null = null;
+let geoAvTorso: THREE.BoxGeometry | null = null;
+let geoAvArm:   THREE.BoxGeometry | null = null;
+let geoAvNeck:  THREE.BoxGeometry | null = null;
+let geoAvHead:  THREE.BoxGeometry | null = null;
+let geoAvEye:   THREE.BoxGeometry | null = null;
+
+function getGeoAvLeg():   THREE.BoxGeometry { return (geoAvLeg   ||= new THREE.BoxGeometry(AV_LEG_W, AV_LEG_H, AV_LEG_W)); }
+function getGeoAvTorso(): THREE.BoxGeometry { return (geoAvTorso ||= new THREE.BoxGeometry(AV_TORSO_W, AV_TORSO_H, AV_TORSO_D)); }
+function getGeoAvArm():   THREE.BoxGeometry { return (geoAvArm   ||= new THREE.BoxGeometry(AV_ARM_W, AV_ARM_H, AV_ARM_D)); }
+function getGeoAvNeck():  THREE.BoxGeometry { return (geoAvNeck  ||= new THREE.BoxGeometry(AV_NECK_W, AV_NECK_H, AV_NECK_D)); }
+function getGeoAvHead():  THREE.BoxGeometry { return (geoAvHead  ||= new THREE.BoxGeometry(AV_HEAD_S, AV_HEAD_S, AV_HEAD_S)); }
+function getGeoAvEye():   THREE.BoxGeometry { return (geoAvEye   ||= new THREE.BoxGeometry(0.020 * HEX_R, 0.015 * HEX_R, 0.008 * HEX_R)); }
+
+// Highlight
+let geoHighlight: THREE.CylinderGeometry | null = null;
+function getGeoHighlight(): THREE.CylinderGeometry {
+  return (geoHighlight ||= new THREE.CylinderGeometry(HIGHLIGHT_RADIUS, HIGHLIGHT_RADIUS, HIGHLIGHT_HEIGHT, 6, 1));
+}
+
+// ---------------------------------------------------------------------------
+// Shared weapon / gear geometries (singletons)
+// ---------------------------------------------------------------------------
+
+// Hat (osadnik)
+let geoHatBrim:    THREE.BoxGeometry | null = null;
+let geoHatCrown:   THREE.BoxGeometry | null = null;
+let geoBackpack:   THREE.BoxGeometry | null = null;
+let geoSash:       THREE.BoxGeometry | null = null;
+
+// Armor (miecznik, wlocznik, super)
+let geoCuirassBox:    THREE.BoxGeometry | null = null;
+let geoCuirassGap:    THREE.BoxGeometry | null = null;
+let geoShoulderPad:   THREE.BoxGeometry | null = null;
+let geoHelmetDome:    THREE.CylinderGeometry | null = null;
+let geoHelmetCrest:   THREE.BoxGeometry | null = null;
+let geoHelmetSimple:  THREE.BoxGeometry | null = null;
+
+// Sword
+let geoSwordBlade:   THREE.BoxGeometry | null = null;
+let geoSwordCross:   THREE.BoxGeometry | null = null;
+let geoSwordGrip:    THREE.BoxGeometry | null = null;
+// Round shield (rim box + boss box)
+let geoShieldRim:    THREE.CylinderGeometry | null = null;
+let geoShieldBoss:   THREE.CylinderGeometry | null = null;
+// Small shield
+let geoSmallShield:  THREE.BoxGeometry | null = null;
+
+// Spear / javelin
+let geoSpearShaft:   THREE.BoxGeometry | null = null;
+let geoSpearTip:     THREE.BoxGeometry | null = null;
+let geoJavShaft:     THREE.BoxGeometry | null = null;
+let geoJavTip:       THREE.BoxGeometry | null = null;
+
+// Bow (segmented arc built from thin boxes -- shared via per-token build)
+// Quiver
+let geoQuiver:       THREE.BoxGeometry | null = null;
+
+// Sling + stone
+let geoSlingStone:   THREE.BoxGeometry | null = null;
+
+// Club / mace
+let geoClubHandle:   THREE.BoxGeometry | null = null;
+let geoClubKnob:     THREE.BoxGeometry | null = null;
+
+// Axe
+let geoAxeHandle:    THREE.BoxGeometry | null = null;
+let geoAxeBlade:     THREE.BoxGeometry | null = null;
+
+// Horse (konnica -- wider body, faces +X)
+let geoHorseBody:    THREE.BoxGeometry | null = null;
+let geoHorseNeck:    THREE.BoxGeometry | null = null;
+let geoHorseHead:    THREE.BoxGeometry | null = null;
+let geoHorseLeg:     THREE.BoxGeometry | null = null;
+
+// Horse shared (rydwan-style -- compact body, faces -Z, used by BOTH konnica and rydwan)
+let geoHorseBodyR:   THREE.BoxGeometry | null = null;  // 0.13 x 0.10 x 0.18
+let geoHorseLegR:    THREE.BoxGeometry | null = null;  // 0.038 x 0.14 x 0.038
+let geoHorseNeckR:   THREE.BoxGeometry | null = null;  // 0.065 x 0.11 x 0.065
+let geoHorseHeadR:   THREE.BoxGeometry | null = null;  // 0.065 x 0.06 x 0.09
+let geoHorseSnout:   THREE.BoxGeometry | null = null;  // 0.050 x 0.045 x 0.055
+let geoHorseManeR:   THREE.BoxGeometry | null = null;  // 0.020 x 0.095 x 0.020
+let geoHorseTail:    THREE.BoxGeometry | null = null;  // 0.022 x 0.075 x 0.022
+let geoHorseHarn:    THREE.BoxGeometry | null = null;  // 0.012 x 0.012 x 0.060
+
+// Chariot
+let geoCartBody:     THREE.BoxGeometry | null = null;
+let geoCartWheel:    THREE.CylinderGeometry | null = null;
+
+// Super elite extras
+let geoSuperCrestPlume: THREE.BoxGeometry | null = null;
+let geoSuperCape:       THREE.BoxGeometry | null = null;
+let geoBannerPole:      THREE.BoxGeometry | null = null;
+let geoBannerFlag:      THREE.BoxGeometry | null = null;
+let geoGildedTrim:      THREE.BoxGeometry | null = null;
+
+// --- Extended historical part geometries (rerender realism pass) ---
+let geoGreave:        THREE.BoxGeometry | null = null;
+let geoConicalHelm:   THREE.CylinderGeometry | null = null;
+let geoCorinthDome:   THREE.CylinderGeometry | null = null;
+let geoNoseGuard:     THREE.BoxGeometry | null = null;
+let geoCheekGuard:    THREE.BoxGeometry | null = null;
+let geoTransverseCrest: THREE.BoxGeometry | null = null;
+// Roman legionary galea (helmet): rounded bowl + domed top cap.
+let geoGaleaBowl:     THREE.CylinderGeometry | null = null;
+let geoGaleaCap:      THREE.SphereGeometry   | null = null;
+let geoAspisRim:      THREE.CylinderGeometry | null = null;
+let geoAspisFace:     THREE.CylinderGeometry | null = null;
+let geoScutumBody:    THREE.BoxGeometry | null = null;
+let geoScutumBoss:    THREE.BoxGeometry | null = null;
+let geoLoricaBand:    THREE.BoxGeometry | null = null;
+let geoPilumShaft:    THREE.BoxGeometry | null = null;
+let geoPilumHead:     THREE.BoxGeometry | null = null;
+let geoDoryShaft:     THREE.BoxGeometry | null = null;
+let geoSauroter:      THREE.BoxGeometry | null = null;
+let geoMailSkirt:     THREE.BoxGeometry | null = null;
+let geoGladius:       THREE.BoxGeometry | null = null;
+let geoScabbard:      THREE.BoxGeometry | null = null;
+let geoStrawBrim:     THREE.CylinderGeometry | null = null;
+let geoStrawCrown:    THREE.CylinderGeometry | null = null;
+let geoStaff:         THREE.BoxGeometry | null = null;
+let geoBedroll:       THREE.CylinderGeometry | null = null;
+let geoPickHandle:    THREE.BoxGeometry | null = null;
+let geoPickHead:      THREE.BoxGeometry | null = null;
+let geoHood:          THREE.BoxGeometry | null = null;
+let geoCloak:         THREE.BoxGeometry | null = null;
+let geoLoincloth:     THREE.BoxGeometry | null = null;
+let geoArrowFletch:   THREE.BoxGeometry | null = null;
+let geoSlingPouch:    THREE.BoxGeometry | null = null;
+let geoCowhideShield: THREE.BoxGeometry | null = null;
+let geoOvalShield:    THREE.CylinderGeometry | null = null;
+let geoSaddleBlanket: THREE.BoxGeometry | null = null;
+let geoShipHull:      THREE.BoxGeometry | null = null;
+let geoShipRam:       THREE.BoxGeometry | null = null;
+let geoShipMast:      THREE.BoxGeometry | null = null;
+let geoShipSail:      THREE.BoxGeometry | null = null;
+let geoOar:           THREE.BoxGeometry | null = null;
+// --- Realism polish pass: shared humanoid extras (boots, hands, belt) ---
+let geoBoot:          THREE.BoxGeometry | null = null;   // foot/boot block under each leg
+let geoHand:          THREE.BoxGeometry | null = null;   // skin hand block under each arm
+let geoBeltP:         THREE.BoxGeometry | null = null;   // generic waist belt
+let geoTunicHem:      THREE.BoxGeometry | null = null;   // short tunic skirt under torso
+let geoPlumeRidge:    THREE.BoxGeometry | null = null;   // tall mohawk-style crest block
+// Helmet-visibility pass: a generic rounded metal HELM BOWL that wraps the whole
+// head and stands clearly proud above the crown (used to make spearmen / basic
+// melee read as plainly helmeted from the gallery's distant 4 views).  Bigger
+// than the narrow conical helm so the metal cap is unmistakable.
+let geoMeleeHelm:     THREE.CylinderGeometry | null = null;  // wide rounded helm bowl
+let geoSkullCap:      THREE.CylinderGeometry | null = null;  // low hide/leather skull-cap (tribal)
+
+function getGeoHatBrim():      THREE.BoxGeometry      { return (geoHatBrim      ||= new THREE.BoxGeometry(0.22  * HEX_R, 0.025 * HEX_R, 0.22  * HEX_R)); }
+function getGeoHatCrown():     THREE.BoxGeometry      { return (geoHatCrown     ||= new THREE.BoxGeometry(0.13  * HEX_R, 0.08  * HEX_R, 0.13  * HEX_R)); }
+function getGeoBackpack():     THREE.BoxGeometry      { return (geoBackpack     ||= new THREE.BoxGeometry(0.08  * HEX_R, 0.10  * HEX_R, 0.04  * HEX_R)); }
+function getGeoSash():         THREE.BoxGeometry      { return (geoSash         ||= new THREE.BoxGeometry(0.10  * HEX_R, 0.04  * HEX_R, 0.012 * HEX_R)); }
+function getGeoCuirassBox():   THREE.BoxGeometry      { return (geoCuirassBox   ||= new THREE.BoxGeometry(0.21  * HEX_R, 0.24  * HEX_R, 0.13  * HEX_R)); }
+function getGeoCuirassGap():   THREE.BoxGeometry      { return (geoCuirassGap   ||= new THREE.BoxGeometry(0.21  * HEX_R, 0.008 * HEX_R, 0.14  * HEX_R)); }
+function getGeoShoulderPad():  THREE.BoxGeometry      { return (geoShoulderPad  ||= new THREE.BoxGeometry(0.07  * HEX_R, 0.05  * HEX_R, 0.07  * HEX_R)); }
+function getGeoHelmetDome():   THREE.CylinderGeometry { return (geoHelmetDome   ||= new THREE.CylinderGeometry(0.075 * HEX_R, 0.080 * HEX_R, 0.07 * HEX_R, 8, 1)); }
+function getGeoHelmetCrest():  THREE.BoxGeometry      { return (geoHelmetCrest  ||= new THREE.BoxGeometry(0.015 * HEX_R, 0.03  * HEX_R, 0.09  * HEX_R)); }
+function getGeoHelmetSimple(): THREE.BoxGeometry      { return (geoHelmetSimple ||= new THREE.BoxGeometry(0.14  * HEX_R, 0.07  * HEX_R, 0.14  * HEX_R)); }
+function getGeoSwordBlade():   THREE.BoxGeometry      { return (geoSwordBlade   ||= new THREE.BoxGeometry(0.022 * HEX_R, 0.20  * HEX_R, 0.012 * HEX_R)); }
+function getGeoSwordCross():   THREE.BoxGeometry      { return (geoSwordCross   ||= new THREE.BoxGeometry(0.07  * HEX_R, 0.018 * HEX_R, 0.018 * HEX_R)); }
+function getGeoSwordGrip():    THREE.BoxGeometry      { return (geoSwordGrip    ||= new THREE.BoxGeometry(0.022 * HEX_R, 0.06  * HEX_R, 0.022 * HEX_R)); }
+function getGeoShieldRim():    THREE.CylinderGeometry { return (geoShieldRim    ||= new THREE.CylinderGeometry(0.065 * HEX_R, 0.065 * HEX_R, 0.015 * HEX_R, 10, 1)); }
+function getGeoShieldBoss():   THREE.CylinderGeometry { return (geoShieldBoss   ||= new THREE.CylinderGeometry(0.022 * HEX_R, 0.022 * HEX_R, 0.022 * HEX_R, 6,  1)); }
+function getGeoSmallShield():  THREE.BoxGeometry      { return (geoSmallShield  ||= new THREE.BoxGeometry(0.07  * HEX_R, 0.09  * HEX_R, 0.014 * HEX_R)); }
+function getGeoSpearShaft():   THREE.BoxGeometry      { return (geoSpearShaft   ||= new THREE.BoxGeometry(0.015 * HEX_R, 0.40  * HEX_R, 0.015 * HEX_R)); }
+function getGeoSpearTip():     THREE.BoxGeometry      { return (geoSpearTip     ||= new THREE.BoxGeometry(0.022 * HEX_R, 0.055 * HEX_R, 0.022 * HEX_R)); }
+function getGeoJavShaft():     THREE.BoxGeometry      { return (geoJavShaft     ||= new THREE.BoxGeometry(0.012 * HEX_R, 0.26  * HEX_R, 0.012 * HEX_R)); }
+function getGeoJavTip():       THREE.BoxGeometry      { return (geoJavTip       ||= new THREE.BoxGeometry(0.018 * HEX_R, 0.040 * HEX_R, 0.018 * HEX_R)); }
+function getGeoQuiver():       THREE.BoxGeometry      { return (geoQuiver       ||= new THREE.BoxGeometry(0.025 * HEX_R, 0.09  * HEX_R, 0.025 * HEX_R)); }
+function getGeoSlingStone():   THREE.BoxGeometry      { return (geoSlingStone   ||= new THREE.BoxGeometry(0.028 * HEX_R, 0.028 * HEX_R, 0.028 * HEX_R)); }
+function getGeoClubHandle():   THREE.BoxGeometry      { return (geoClubHandle   ||= new THREE.BoxGeometry(0.030 * HEX_R, 0.16  * HEX_R, 0.030 * HEX_R)); }
+function getGeoClubKnob():     THREE.BoxGeometry      { return (geoClubKnob     ||= new THREE.BoxGeometry(0.055 * HEX_R, 0.055 * HEX_R, 0.055 * HEX_R)); }
+function getGeoAxeHandle():    THREE.BoxGeometry      { return (geoAxeHandle    ||= new THREE.BoxGeometry(0.016 * HEX_R, 0.18  * HEX_R, 0.016 * HEX_R)); }
+function getGeoAxeBlade():     THREE.BoxGeometry      { return (geoAxeBlade     ||= new THREE.BoxGeometry(0.08  * HEX_R, 0.065 * HEX_R, 0.018 * HEX_R)); }
+function getGeoHorseBody():    THREE.BoxGeometry      { return (geoHorseBody    ||= new THREE.BoxGeometry(0.22  * HEX_R, 0.12  * HEX_R, 0.11  * HEX_R)); }
+function getGeoHorseNeck():    THREE.BoxGeometry      { return (geoHorseNeck    ||= new THREE.BoxGeometry(0.06  * HEX_R, 0.12  * HEX_R, 0.06  * HEX_R)); }
+function getGeoHorseHead():    THREE.BoxGeometry      { return (geoHorseHead    ||= new THREE.BoxGeometry(0.07  * HEX_R, 0.06  * HEX_R, 0.06  * HEX_R)); }
+function getGeoHorseLeg():     THREE.BoxGeometry      { return (geoHorseLeg     ||= new THREE.BoxGeometry(0.04  * HEX_R, 0.14  * HEX_R, 0.04  * HEX_R)); }
+// Shared rydwan-style horse geometry singletons (used by both konnica and rydwan)
+function getGeoHorseBodyR():   THREE.BoxGeometry      { return (geoHorseBodyR   ||= new THREE.BoxGeometry(0.13  * HEX_R, 0.10  * HEX_R, 0.18  * HEX_R)); }
+function getGeoHorseLegR():    THREE.BoxGeometry      { return (geoHorseLegR    ||= new THREE.BoxGeometry(0.038 * HEX_R, 0.14  * HEX_R, 0.038 * HEX_R)); }
+function getGeoHorseNeckR():   THREE.BoxGeometry      { return (geoHorseNeckR   ||= new THREE.BoxGeometry(0.065 * HEX_R, 0.11  * HEX_R, 0.065 * HEX_R)); }
+function getGeoHorseHeadR():   THREE.BoxGeometry      { return (geoHorseHeadR   ||= new THREE.BoxGeometry(0.065 * HEX_R, 0.06  * HEX_R, 0.09  * HEX_R)); }
+function getGeoHorseSnout():   THREE.BoxGeometry      { return (geoHorseSnout   ||= new THREE.BoxGeometry(0.050 * HEX_R, 0.045 * HEX_R, 0.055 * HEX_R)); }
+function getGeoHorseManeR():   THREE.BoxGeometry      { return (geoHorseManeR   ||= new THREE.BoxGeometry(0.020 * HEX_R, 0.095 * HEX_R, 0.020 * HEX_R)); }
+function getGeoHorseTail():    THREE.BoxGeometry      { return (geoHorseTail    ||= new THREE.BoxGeometry(0.022 * HEX_R, 0.075 * HEX_R, 0.022 * HEX_R)); }
+function getGeoHorseHarn():    THREE.BoxGeometry      { return (geoHorseHarn    ||= new THREE.BoxGeometry(0.012 * HEX_R, 0.012 * HEX_R, 0.060 * HEX_R)); }
+function getGeoCartBody():     THREE.BoxGeometry      { return (geoCartBody     ||= new THREE.BoxGeometry(0.25  * HEX_R, 0.08  * HEX_R, 0.14  * HEX_R)); }
+function getGeoCartWheel():    THREE.CylinderGeometry { return (geoCartWheel    ||= new THREE.CylinderGeometry(0.065 * HEX_R, 0.065 * HEX_R, 0.020 * HEX_R, 10, 1)); }
+function getGeoSuperCrestPlume(): THREE.BoxGeometry   { return (geoSuperCrestPlume ||= new THREE.BoxGeometry(0.015 * HEX_R, 0.10  * HEX_R, 0.08  * HEX_R)); }
+function getGeoSuperCape():    THREE.BoxGeometry      { return (geoSuperCape    ||= new THREE.BoxGeometry(0.15  * HEX_R, 0.22  * HEX_R, 0.010 * HEX_R)); }
+function getGeoBannerPole():   THREE.BoxGeometry      { return (geoBannerPole   ||= new THREE.BoxGeometry(0.014 * HEX_R, 0.30  * HEX_R, 0.014 * HEX_R)); }
+function getGeoBannerFlag():   THREE.BoxGeometry      { return (geoBannerFlag   ||= new THREE.BoxGeometry(0.09  * HEX_R, 0.07  * HEX_R, 0.008 * HEX_R)); }
+function getGeoGildedTrim():   THREE.BoxGeometry      { return (geoGildedTrim   ||= new THREE.BoxGeometry(0.22  * HEX_R, 0.018 * HEX_R, 0.14  * HEX_R)); }
+
+// --- Extended historical part getters (rerender realism pass) ---
+function getGeoGreave():        THREE.BoxGeometry      { return (geoGreave        ||= new THREE.BoxGeometry(0.055 * HEX_R, 0.13  * HEX_R, 0.060 * HEX_R)); }
+function getGeoConicalHelm():   THREE.CylinderGeometry { return (geoConicalHelm   ||= new THREE.CylinderGeometry(0.030 * HEX_R, 0.085 * HEX_R, 0.090 * HEX_R, 8, 1)); }
+function getGeoCorinthDome():   THREE.CylinderGeometry { return (geoCorinthDome   ||= new THREE.CylinderGeometry(0.078 * HEX_R, 0.086 * HEX_R, 0.115 * HEX_R, 10, 1)); }
+function getGeoNoseGuard():     THREE.BoxGeometry      { return (geoNoseGuard     ||= new THREE.BoxGeometry(0.018 * HEX_R, 0.060 * HEX_R, 0.018 * HEX_R)); }
+function getGeoCheekGuard():    THREE.BoxGeometry      { return (geoCheekGuard    ||= new THREE.BoxGeometry(0.022 * HEX_R, 0.050 * HEX_R, 0.040 * HEX_R)); }
+function getGeoTransverseCrest(): THREE.BoxGeometry    { return (geoTransverseCrest ||= new THREE.BoxGeometry(0.135 * HEX_R, 0.045 * HEX_R, 0.020 * HEX_R)); }
+// Galea bowl: rounded metal helmet that wraps the whole head (slightly flared at the brim) and stands proud above it.
+function getGeoGaleaBowl():     THREE.CylinderGeometry { return (geoGaleaBowl     ||= new THREE.CylinderGeometry(0.082 * HEX_R, 0.090 * HEX_R, 0.105 * HEX_R, 12, 1)); }
+// Galea cap: domed crown sitting on top of the bowl (hemisphere).
+function getGeoGaleaCap():      THREE.SphereGeometry   { return (geoGaleaCap      ||= new THREE.SphereGeometry(0.082 * HEX_R, 12, 8, 0, Math.PI * 2, 0, Math.PI * 0.5)); }
+function getGeoAspisRim():      THREE.CylinderGeometry { return (geoAspisRim      ||= new THREE.CylinderGeometry(0.135 * HEX_R, 0.135 * HEX_R, 0.022 * HEX_R, 16, 1)); }
+function getGeoAspisFace():     THREE.CylinderGeometry { return (geoAspisFace     ||= new THREE.CylinderGeometry(0.110 * HEX_R, 0.122 * HEX_R, 0.020 * HEX_R, 16, 1)); }
+function getGeoScutumBody():    THREE.BoxGeometry      { return (geoScutumBody    ||= new THREE.BoxGeometry(0.150 * HEX_R, 0.230 * HEX_R, 0.020 * HEX_R)); }
+function getGeoScutumBoss():    THREE.BoxGeometry      { return (geoScutumBoss    ||= new THREE.BoxGeometry(0.045 * HEX_R, 0.045 * HEX_R, 0.022 * HEX_R)); }
+function getGeoLoricaBand():    THREE.BoxGeometry      { return (geoLoricaBand    ||= new THREE.BoxGeometry(0.215 * HEX_R, 0.030 * HEX_R, 0.135 * HEX_R)); }
+function getGeoPilumShaft():    THREE.BoxGeometry      { return (geoPilumShaft    ||= new THREE.BoxGeometry(0.014 * HEX_R, 0.42  * HEX_R, 0.014 * HEX_R)); }
+function getGeoPilumHead():     THREE.BoxGeometry      { return (geoPilumHead     ||= new THREE.BoxGeometry(0.010 * HEX_R, 0.10  * HEX_R, 0.010 * HEX_R)); }
+function getGeoDoryShaft():     THREE.BoxGeometry      { return (geoDoryShaft     ||= new THREE.BoxGeometry(0.016 * HEX_R, 0.62  * HEX_R, 0.016 * HEX_R)); }
+function getGeoSauroter():      THREE.BoxGeometry      { return (geoSauroter      ||= new THREE.BoxGeometry(0.020 * HEX_R, 0.045 * HEX_R, 0.020 * HEX_R)); }
+function getGeoMailSkirt():     THREE.BoxGeometry      { return (geoMailSkirt     ||= new THREE.BoxGeometry(0.205 * HEX_R, 0.075 * HEX_R, 0.125 * HEX_R)); }
+function getGeoGladius():       THREE.BoxGeometry      { return (geoGladius       ||= new THREE.BoxGeometry(0.026 * HEX_R, 0.135 * HEX_R, 0.012 * HEX_R)); }
+function getGeoScabbard():      THREE.BoxGeometry      { return (geoScabbard      ||= new THREE.BoxGeometry(0.026 * HEX_R, 0.140 * HEX_R, 0.020 * HEX_R)); }
+function getGeoStrawBrim():     THREE.CylinderGeometry { return (geoStrawBrim     ||= new THREE.CylinderGeometry(0.125 * HEX_R, 0.125 * HEX_R, 0.014 * HEX_R, 14, 1)); }
+function getGeoStrawCrown():    THREE.CylinderGeometry { return (geoStrawCrown    ||= new THREE.CylinderGeometry(0.058 * HEX_R, 0.070 * HEX_R, 0.060 * HEX_R, 12, 1)); }
+function getGeoStaff():         THREE.BoxGeometry      { return (geoStaff         ||= new THREE.BoxGeometry(0.016 * HEX_R, 0.52  * HEX_R, 0.016 * HEX_R)); }
+function getGeoBedroll():       THREE.CylinderGeometry { return (geoBedroll       ||= new THREE.CylinderGeometry(0.030 * HEX_R, 0.030 * HEX_R, 0.13 * HEX_R, 8, 1)); }
+function getGeoPickHandle():    THREE.BoxGeometry      { return (geoPickHandle    ||= new THREE.BoxGeometry(0.016 * HEX_R, 0.30  * HEX_R, 0.016 * HEX_R)); }
+function getGeoPickHead():      THREE.BoxGeometry      { return (geoPickHead      ||= new THREE.BoxGeometry(0.13  * HEX_R, 0.022 * HEX_R, 0.022 * HEX_R)); }
+function getGeoHood():          THREE.BoxGeometry      { return (geoHood          ||= new THREE.BoxGeometry(0.155 * HEX_R, 0.090 * HEX_R, 0.155 * HEX_R)); }
+function getGeoCloak():         THREE.BoxGeometry      { return (geoCloak         ||= new THREE.BoxGeometry(0.175 * HEX_R, 0.26  * HEX_R, 0.014 * HEX_R)); }
+function getGeoLoincloth():     THREE.BoxGeometry      { return (geoLoincloth     ||= new THREE.BoxGeometry(0.165 * HEX_R, 0.080 * HEX_R, 0.115 * HEX_R)); }
+function getGeoArrowFletch():   THREE.BoxGeometry      { return (geoArrowFletch   ||= new THREE.BoxGeometry(0.010 * HEX_R, 0.055 * HEX_R, 0.010 * HEX_R)); }
+function getGeoSlingPouch():    THREE.BoxGeometry      { return (geoSlingPouch    ||= new THREE.BoxGeometry(0.040 * HEX_R, 0.030 * HEX_R, 0.022 * HEX_R)); }
+function getGeoCowhideShield(): THREE.BoxGeometry      { return (geoCowhideShield ||= new THREE.BoxGeometry(0.115 * HEX_R, 0.230 * HEX_R, 0.016 * HEX_R)); }
+function getGeoOvalShield():    THREE.CylinderGeometry { return (geoOvalShield    ||= new THREE.CylinderGeometry(0.080 * HEX_R, 0.080 * HEX_R, 0.018 * HEX_R, 14, 1)); }
+function getGeoSaddleBlanket(): THREE.BoxGeometry      { return (geoSaddleBlanket ||= new THREE.BoxGeometry(0.150 * HEX_R, 0.020 * HEX_R, 0.130 * HEX_R)); }
+function getGeoShipHull():      THREE.BoxGeometry      { return (geoShipHull      ||= new THREE.BoxGeometry(0.20  * HEX_R, 0.11  * HEX_R, 0.62  * HEX_R)); }
+function getGeoShipRam():       THREE.BoxGeometry      { return (geoShipRam       ||= new THREE.BoxGeometry(0.055 * HEX_R, 0.050 * HEX_R, 0.13  * HEX_R)); }
+function getGeoShipMast():      THREE.BoxGeometry      { return (geoShipMast      ||= new THREE.BoxGeometry(0.022 * HEX_R, 0.40  * HEX_R, 0.022 * HEX_R)); }
+function getGeoShipSail():      THREE.BoxGeometry      { return (geoShipSail      ||= new THREE.BoxGeometry(0.012 * HEX_R, 0.26  * HEX_R, 0.34  * HEX_R)); }
+function getGeoOar():           THREE.BoxGeometry      { return (geoOar           ||= new THREE.BoxGeometry(0.012 * HEX_R, 0.012 * HEX_R, 0.22  * HEX_R)); }
+// --- Realism polish getters (boots, hands, belt, hem, plume ridge) ---
+function getGeoBoot():       THREE.BoxGeometry { return (geoBoot       ||= new THREE.BoxGeometry(AV_LEG_W * 1.18, 0.045 * HEX_R, AV_LEG_W * 1.55)); }
+function getGeoHand():       THREE.BoxGeometry { return (geoHand       ||= new THREE.BoxGeometry(AV_ARM_W * 1.05, 0.045 * HEX_R, AV_ARM_D * 1.05)); }
+function getGeoBeltP():      THREE.BoxGeometry { return (geoBeltP      ||= new THREE.BoxGeometry(AV_TORSO_W * 1.06, 0.030 * HEX_R, AV_TORSO_D * 1.10)); }
+function getGeoTunicHem():   THREE.BoxGeometry { return (geoTunicHem   ||= new THREE.BoxGeometry(AV_TORSO_W * 1.08, 0.070 * HEX_R, AV_TORSO_D * 1.10)); }
+function getGeoPlumeRidge(): THREE.BoxGeometry { return (geoPlumeRidge ||= new THREE.BoxGeometry(0.022 * HEX_R, 0.150 * HEX_R, 0.110 * HEX_R)); }
+// Wide rounded helm bowl: top radius 0.090, brim radius 0.098 (> head half-width
+// 0.065 so it clearly overhangs the skull), height 0.105 so it sits proud above
+// the crown.  Mirrors the galea bowl proportions but is the generic melee helm.
+function getGeoMeleeHelm(): THREE.CylinderGeometry { return (geoMeleeHelm ||= new THREE.CylinderGeometry(0.090 * HEX_R, 0.098 * HEX_R, 0.105 * HEX_R, 12, 1)); }
+// Low hide/leather skull-cap: short rounded cap that plainly covers the crown of
+// a bare-headed tribal warrior (radius > head half-width so no skin shows on top).
+function getGeoSkullCap(): THREE.CylinderGeometry { return (geoSkullCap ||= new THREE.CylinderGeometry(0.082 * HEX_R, 0.092 * HEX_R, 0.070 * HEX_R, 12, 1)); }
+
+// ---------------------------------------------------------------------------
+// Material factory -- MeshStandardMaterial per token (collected for disposal)
+// ---------------------------------------------------------------------------
+
+type MatFactory = (color: number, metalness?: number, roughness?: number, transparent?: boolean, opacity?: number) => THREE.MeshStandardMaterial;
+
+function makeMatFactory(mats: THREE.Material[]): MatFactory {
+  return function mat(
+    color: number,
+    metalness = 0.1,
+    roughness = 0.7,
+    transparent = false,
+    opacity = 1.0
+  ): THREE.MeshStandardMaterial {
+    const m = new THREE.MeshStandardMaterial({ color, metalness, roughness, transparent, opacity });
+    mats.push(m);
+    return m;
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Base avatar builder (Roblox R6 box style)
+// skin:  hex color for head skin
+// cloth: hex color for torso + arms
+// Returns group with all parts added; group origin = feet (y=0)
+// Also returns references to arm meshes so caller can add gear to them.
+// ---------------------------------------------------------------------------
+
+interface BaseAvatarResult {
+  group: THREE.Group;
+  mats:  THREE.Material[];
+  // Useful anchor Y values
+  torsoTopY:  number;
+  headTopY:   number;
+  armLMesh:   THREE.Mesh;
+  armRMesh:   THREE.Mesh;
+}
+
+function buildBaseAvatar(
+  skinColor:  number,
+  clothColor: number,
+  ownerCol:   number
+): BaseAvatarResult {
+  const group = new THREE.Group();
+  const mats: THREE.Material[] = [];
+  const mat = makeMatFactory(mats);
+
+  const mSkin    = mat(skinColor,  0.05, 0.80);
+  const mCloth   = mat(clothColor, 0.05, 0.85);
+  const mTrouse  = mat(COLOR_TROUSERS, 0.05, 0.85);
+  const mEye     = mat(COLOR_DARK_EYE, 0.02, 0.95);
+  // owner-color sash on the torso front (always visible)
+  const mSash    = mat(ownerCol,   0.08, 0.70);
+
+  // Left leg
+  const mLegL = new THREE.Mesh(getGeoAvLeg(), mTrouse);
+  mLegL.position.set(-(AV_LEG_SEP + AV_LEG_W * 0.5), AV_Y_LEG_CTR, 0);
+  group.add(mLegL);
+
+  // Right leg
+  const mLegR = new THREE.Mesh(getGeoAvLeg(), mTrouse);
+  mLegR.position.set( (AV_LEG_SEP + AV_LEG_W * 0.5), AV_Y_LEG_CTR, 0);
+  group.add(mLegR);
+
+  // Torso
+  const mTorso = new THREE.Mesh(getGeoAvTorso(), mCloth);
+  mTorso.position.set(0, AV_Y_TORSO_CTR, 0);
+  group.add(mTorso);
+
+  // Owner-color sash across the torso front
+  const mS = new THREE.Mesh(getGeoSash(), mSash);
+  mS.position.set(0, AV_Y_TORSO_CTR - 0.01 * HEX_R, AV_TORSO_D * 0.5 + 0.003 * HEX_R);
+  group.add(mS);
+
+  // Left arm
+  const mArmL = new THREE.Mesh(getGeoAvArm(), mCloth);
+  mArmL.position.set(-AV_ARM_OFFSET_X, AV_Y_ARM_CTR, 0);
+  group.add(mArmL);
+
+  // Right arm
+  const mArmR = new THREE.Mesh(getGeoAvArm(), mCloth);
+  mArmR.position.set( AV_ARM_OFFSET_X, AV_Y_ARM_CTR, 0);
+  group.add(mArmR);
+
+  // Neck
+  const mNeck = new THREE.Mesh(getGeoAvNeck(), mCloth);
+  mNeck.position.set(0, AV_Y_NECK_CTR, 0);
+  group.add(mNeck);
+
+  // Head
+  const mHead = new THREE.Mesh(getGeoAvHead(), mSkin);
+  mHead.position.set(0, AV_Y_HEAD_CTR, 0);
+  group.add(mHead);
+
+  // Eyes (two small dark boxes on the front face of the head)
+  const eyeZ = AV_HEAD_S * 0.5 + 0.003 * HEX_R;
+  const eyeY = AV_Y_HEAD_CTR + 0.010 * HEX_R;
+  const eyeXOff = 0.030 * HEX_R;
+
+  const mEyeL = new THREE.Mesh(getGeoAvEye(), mEye);
+  mEyeL.position.set(-eyeXOff, eyeY, eyeZ);
+  group.add(mEyeL);
+
+  const mEyeR = new THREE.Mesh(getGeoAvEye(), mEye);
+  mEyeR.position.set( eyeXOff, eyeY, eyeZ);
+  group.add(mEyeR);
+
+  return {
+    group,
+    mats,
+    torsoTopY: AV_Y_TORSO_TOP,
+    headTopY:  AV_Y_HEAD_TOP,
+    armLMesh:  mArmL,
+    armRMesh:  mArmR,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// buildHorse -- shared rydwan-style horse (used by konnica AND rydwan)
+//
+// Builds one horse and adds all its meshes directly to `group`.
+// Horse is positioned so hooves rest at local y = 0 in `group`-space.
+// Horse faces -Z (head toward -Z, tail toward +Z).
+//
+// Parameters:
+//   group       -- parent group to add meshes into
+//   mat         -- material factory (mats tracked externally)
+//   mHorse      -- horse-body material
+//   mMane       -- mane/tail material
+//   mHarn       -- harness material (pass null to skip harness)
+//   cx, cz      -- center offset within group (X and Z)
+//
+// Returns the Y coordinate of the horse-back (where a rider should sit).
+// All geometries used are shared singletons -- no per-token geo allocation.
+// ---------------------------------------------------------------------------
+
+// Horse layout constants (shared)
+const BH_LEG_H     = 0.14 * HEX_R;
+const BH_BODY_H    = 0.10 * HEX_R;
+const BH_BODY_CTR  = BH_LEG_H + 0.06 * HEX_R;  // 0.20 * HEX_R
+const BH_BODY_TOP  = BH_BODY_CTR + BH_BODY_H * 0.5;  // 0.25 * HEX_R -- horse back Y
+
+function buildHorse(
+  group:  THREE.Group,
+  mat:    MatFactory,
+  mHorse: THREE.MeshStandardMaterial,
+  mMane:  THREE.MeshStandardMaterial,
+  mHarn:  THREE.MeshStandardMaterial | null,
+  cx:     number,
+  cz:     number,
+): number {
+  const legCtr = BH_LEG_H * 0.5;
+
+  // Four legs (front-left, front-right, rear-left, rear-right relative to body center)
+  const legOffsets: [number, number][] = [
+    [ 0.055 * HEX_R,  0.04 * HEX_R],
+    [-0.055 * HEX_R,  0.04 * HEX_R],
+    [ 0.055 * HEX_R, -0.06 * HEX_R],
+    [-0.055 * HEX_R, -0.06 * HEX_R],
+  ];
+  for (const [lx, lz] of legOffsets) {
+    const mLeg = new THREE.Mesh(getGeoHorseLegR(), mHorse);
+    mLeg.position.set(cx + lx, legCtr, cz + lz);
+    group.add(mLeg);
+  }
+
+  // Body
+  const mBody = new THREE.Mesh(getGeoHorseBodyR(), mHorse);
+  mBody.position.set(cx, BH_BODY_CTR, cz);
+  group.add(mBody);
+
+  // Neck (angled toward -Z and upward)
+  const neckY = BH_BODY_CTR + 0.085 * HEX_R;
+  const neckZ = cz - 0.065 * HEX_R;
+  const mNeck = new THREE.Mesh(getGeoHorseNeckR(), mHorse);
+  mNeck.rotation.x = 0.35;
+  mNeck.position.set(cx, neckY, neckZ);
+  group.add(mNeck);
+
+  // Head
+  const headY = BH_BODY_CTR + 0.165 * HEX_R;
+  const headZ = cz - 0.135 * HEX_R;
+  const mHead = new THREE.Mesh(getGeoHorseHeadR(), mHorse);
+  mHead.position.set(cx, headY, headZ);
+  group.add(mHead);
+
+  // Snout
+  const mSnout = new THREE.Mesh(getGeoHorseSnout(), mHorse);
+  mSnout.position.set(cx, BH_BODY_CTR + 0.148 * HEX_R, cz - 0.200 * HEX_R);
+  group.add(mSnout);
+
+  // Mane strip along neck
+  const mManeM = new THREE.Mesh(getGeoHorseManeR(), mMane);
+  mManeM.rotation.x = 0.35;
+  mManeM.position.set(cx, BH_BODY_CTR + 0.092 * HEX_R, cz - 0.058 * HEX_R);
+  group.add(mManeM);
+
+  // Tail
+  const mTail = new THREE.Mesh(getGeoHorseTail(), mMane);
+  mTail.rotation.x = -0.45;
+  mTail.position.set(cx, BH_BODY_CTR + 0.01 * HEX_R, cz + 0.115 * HEX_R);
+  group.add(mTail);
+
+  // Harness (optional)
+  if (mHarn !== null) {
+    const mH = new THREE.Mesh(getGeoHorseHarn(), mHarn);
+    mH.position.set(cx, BH_BODY_CTR + 0.020 * HEX_R, cz + 0.065 * HEX_R);
+    group.add(mH);
+  }
+
+  return BH_BODY_TOP;  // caller uses this as rider seat Y
+}
+
+// ---------------------------------------------------------------------------
+// Shared gear sub-assemblies (rerender realism pass)
+// Each adds meshes to `group`; uses only shared singleton geometries.
+// ---------------------------------------------------------------------------
+
+/** Bronze greaves on both shins (covers the lower legs). */
+function addGreaves(group: THREE.Group, mBronze: THREE.MeshStandardMaterial): void {
+  const yc = AV_Y_LEG_BOT + 0.075 * HEX_R;
+  for (const sx of [-(AV_LEG_SEP + AV_LEG_W * 0.5), (AV_LEG_SEP + AV_LEG_W * 0.5)]) {
+    const g = new THREE.Mesh(getGeoGreave(), mBronze);
+    g.position.set(sx, yc, 0.004 * HEX_R);
+    group.add(g);
+  }
+}
+
+/** Pteruges / hanging skirt strips beneath a cuirass (leather or linen). */
+function addPteruges(group: THREE.Group, mStrip: THREE.MeshStandardMaterial): void {
+  const m = new THREE.Mesh(getGeoMailSkirt(), mStrip);
+  m.position.set(0, AV_Y_TORSO_BOT + 0.012 * HEX_R, 0);
+  group.add(m);
+}
+
+/**
+ * A short sword sheathed at the left hip (scabbard + pommel).
+ * Used by legionary / swordsman so a sword reads even when another weapon
+ * (pilum) is in hand.
+ */
+function addHipSword(group: THREE.Group, mScab: THREE.MeshStandardMaterial,
+                     mHilt: THREE.MeshStandardMaterial, side: number): void {
+  const x = side * (AV_TORSO_W * 0.5 + 0.030 * HEX_R);
+  const yc = AV_Y_TORSO_BOT + 0.02 * HEX_R;
+  const sc = new THREE.Mesh(getGeoScabbard(), mScab);
+  sc.rotation.z = side * 0.12;
+  sc.position.set(x, yc, 0.045 * HEX_R);
+  group.add(sc);
+  const hilt = new THREE.Mesh(getGeoSwordGrip(), mHilt);
+  hilt.position.set(x + side * 0.012 * HEX_R, yc + 0.085 * HEX_R, 0.045 * HEX_R);
+  group.add(hilt);
+}
+
+/**
+ * Boots/feet at the base of both legs -- turns the flat leg-stumps into a
+ * believable stance. The boot block is slightly wider and pushed forward so a
+ * toe reads in profile. Shared singleton geometry; no per-token alloc.
+ */
+function addBoots(group: THREE.Group, mBoot: THREE.MeshStandardMaterial): void {
+  for (const sx of [-(AV_LEG_SEP + AV_LEG_W * 0.5), (AV_LEG_SEP + AV_LEG_W * 0.5)]) {
+    const b = new THREE.Mesh(getGeoBoot(), mBoot);
+    b.position.set(sx, AV_Y_LEG_BOT + 0.022 * HEX_R, 0.018 * HEX_R);
+    group.add(b);
+  }
+}
+
+/** Skin-colour hands at the base of both arms (fists), so limbs do not end blunt. */
+function addHands(group: THREE.Group, mHand: THREE.MeshStandardMaterial): void {
+  const yc = AV_Y_ARM_CTR - AV_ARM_H * 0.5 + 0.022 * HEX_R;
+  for (const sx of [-AV_ARM_OFFSET_X, AV_ARM_OFFSET_X]) {
+    const h = new THREE.Mesh(getGeoHand(), mHand);
+    h.position.set(sx, yc, 0.004 * HEX_R);
+    group.add(h);
+  }
+}
+
+/** A simple waist belt at the bottom of the torso (owner trim or leather). */
+function addBelt(group: THREE.Group, mBelt: THREE.MeshStandardMaterial, dy = 0.025): void {
+  const b = new THREE.Mesh(getGeoBeltP(), mBelt);
+  b.position.set(0, AV_Y_TORSO_BOT + dy * HEX_R, 0);
+  group.add(b);
+}
+
+/** A short tunic skirt/hem hanging just below the torso (cloth colour). */
+function addTunicHem(group: THREE.Group, mHem: THREE.MeshStandardMaterial): void {
+  const m = new THREE.Mesh(getGeoTunicHem(), mHem);
+  m.position.set(0, AV_Y_TORSO_BOT - 0.018 * HEX_R, 0);
+  group.add(m);
+}
+
+// ---------------------------------------------------------------------------
+// Culture / variant resolution (name-driven, OPTIONAL)
+//
+// The renderer collapses ~36 named units into ~14 categories, so two units
+// with different names (e.g. the Zulu super "uThulwana" and the Roman super
+// "Evocati") used to render identically.  To differentiate WITHOUT touching
+// setup.ts/main.ts, buildUnitModel() takes an OPTIONAL unitName.  When given,
+// we resolve a CULTURE tag from the name (a small ASCII-substring lookup that
+// mirrors the units.json "Kultura" field) and apply name/culture-specific
+// material + headgear overrides.  When unitName is omitted, behaviour is
+// EXACTLY as before (so main.ts's existing 2-arg call is unaffected).
+// ---------------------------------------------------------------------------
+
+type Culture =
+  | 'rzym' | 'grecja' | 'chiny' | 'zulu' | 'inka' | 'egipt' | 'sumer' | 'neutral';
+
+/** ASCII-fold a Polish name for substring matching (matches setup.ts logic). */
+function normName(s: string): string {
+  const nfd = (s ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '');
+  return nfd.replace(/[Łł]/g, 'l').toLowerCase();
+}
+
+/**
+ * Resolve a culture tag from a unit NAME.  Uses the same distinctive name
+ * fragments that units.json carries in its "Kultura" rows.  Returns 'neutral'
+ * when the name carries no cultural marker (generic units).
+ */
+function cultureFromName(name: string | undefined): Culture {
+  if (!name) return 'neutral';
+  const n = normName(name);
+  // Super-units first (each name is unique and unambiguous).
+  if (n.includes('evocati') || n.includes('triarii') || n.includes('triari') || n.includes('legionist') || n.includes('hastati')) return 'rzym';
+  if (n.includes('hieros') || n.includes('zastep') || n.includes('falanga') || n.includes('hoplit')) return 'grecja';
+  if (n.includes('hu ben') || n.includes('tygrys') || n.includes('chins') || n.includes('kusznik')) return 'chiny';
+  if (n.includes('thulwana') || n.includes('biale tarcz') || n.includes('impi') ||
+      n.includes('izijula') || n.includes('zulu')) return 'zulu';
+  if (n.includes('krolewska gwardia') || n.includes('chaska') || n.includes('huaracoc') ||
+      n.includes('estolic') || n.includes('inka') || n.includes('ink')) return 'inka';
+  if (n.includes('medzaj') || n.includes('faraon') || n.includes('khopesh') ||
+      n.includes('egip')) return 'egipt';
+  if (n.includes('sumeru') || n.includes('sumer') || n.includes('qurub')) return 'sumer';
+  return 'neutral';
+}
+
+/**
+ * Map a CULTURE to its primary "house" colour (used for tunics/textiles when a
+ * regular culture-variant unit is differentiated).  Kept within the authentic
+ * ancient dye/pigment range already used by the palette above.
+ */
+function cultureHouseColor(c: Culture): number {
+  switch (c) {
+    case 'rzym':    return COLOR_RED_VIV;   // legionary red
+    case 'grecja':  return COLOR_WOAD;      // woad blue chiton
+    case 'chiny':   return COLOR_LACQUER;   // lacquer red
+    case 'zulu':    return COLOR_HIDE_RED;  // ox-hide / ochre body
+    case 'inka':    return COLOR_OCHRE;     // Andean ochre/gold
+    case 'egipt':   return COLOR_LINEN;     // white linen kilt
+    case 'sumer':   return COLOR_TEAL;      // copper/verdigris
+    default:        return 0x000000;        // sentinel: no override
+  }
+}
+
+// ---------------------------------------------------------------------------
+// buildUnitModel -- Roblox-style figure per category
+// ---------------------------------------------------------------------------
+
+/**
+ * Returns a THREE.Group representing a unit of the given category.
+ * Owner color appears on a clearly visible sash/shield/crest/cape per unit.
+ * All geometries are shared singletons; all materials are per-token (collected
+ * in group.userData['mats'] for disposal). Per-token unique geometries go into
+ * group.userData['perTokenGeos'].
+ *
+ * @param category   Model category key (see categoryOf in setup.ts).
+ * @param ownerColor_ Owner tint applied to sashes/shields/crests.
+ * @param unitName   OPTIONAL unit display name.  When provided, culture/name
+ *                   specific overrides are layered on top so that same-category
+ *                   units of different cultures (and the 7 super-units) look
+ *                   clearly DISTINCT.  When omitted, output is identical to the
+ *                   pre-existing 2-arg behaviour (no regression for main.ts).
+ */
+export function buildUnitModel(category: string, ownerColor_: number, unitName?: string): THREE.Group {
+  // Super-units dispatch to per-culture elite guards (visually distinct).
+  if (category === 'super' && unitName) {
+    return buildSuperUnit(cultureFromName(unitName), ownerColor_, unitName);
+  }
+  // NAME-keyed bespoke models for the new units (Celts, Germans, Bronze
+  // specials).  Dispatched by NAME (stable identity), NOT by epoch/category — so
+  // a unit keeps its model even if the human later moves it between epochs in
+  // the Excel.  Returns null when the name has no bespoke model (falls through
+  // to the category model below, so there is never a crash).
+  if (unitName) {
+    const named = buildNamedUnit(normName(unitName), ownerColor_);
+    if (named) return named;
+  }
+  // Build the base category model, then layer culture overrides if a name was given.
+  const group = buildCategoryModel(category, ownerColor_);
+  if (unitName) {
+    applyCultureOverrides(group, category, cultureFromName(unitName), ownerColor_);
+  }
+  return group;
+}
+
+// ===========================================================================
+// NAME-KEYED bespoke models for the NEW units.
+//
+// Each builder produces a historically-flavoured, visually distinct token,
+// reusing the existing primitive part-builders/geometries.  All per-token
+// BoxGeometry/CylinderGeometry allocations are pushed into perGeo and stored on
+// group.userData['perTokenGeos'] for disposal (matching every other builder);
+// materials go into group.userData['mats'].
+//
+// Dispatch is by NAME (ASCII-folded), so a unit keeps its model regardless of
+// which epoch it is in.  Returns null for unknown names (caller falls back to
+// the category model — no crash).
+// ===========================================================================
+
+// --- Shared helpers for the new tribal/bronze units ------------------------
+
+/** Bronze/gold neck-ring (Celtic/Germanic torc): an open ring at the throat. */
+function addTorc(group: THREE.Group, mTorc: THREE.MeshStandardMaterial, perGeo: THREE.BufferGeometry[]): void {
+  const gTorc = new THREE.TorusGeometry(0.052 * HEX_R, 0.012 * HEX_R, 6, 14, Math.PI * 1.7);
+  perGeo.push(gTorc);
+  const mRing = new THREE.Mesh(gTorc, mTorc);
+  mRing.rotation.x = Math.PI / 2;
+  mRing.position.set(0, AV_Y_TORSO_TOP - 0.004 * HEX_R, 0.004 * HEX_R);
+  group.add(mRing);
+  // Two terminal knobs at the open front.
+  for (const sx of [-1, 1]) {
+    const gKnob = new THREE.BoxGeometry(0.020 * HEX_R, 0.020 * HEX_R, 0.020 * HEX_R);
+    perGeo.push(gKnob);
+    const mKnob = new THREE.Mesh(gKnob, mTorc);
+    mKnob.position.set(sx * 0.040 * HEX_R, AV_Y_TORSO_TOP - 0.004 * HEX_R, 0.050 * HEX_R);
+    group.add(mKnob);
+  }
+}
+
+/**
+ * A tall OVAL body shield (Celtic / Germanic style) on the left arm: a tall
+ * squashed-cylinder face (planks colour) + a vertical spine + central boss.
+ */
+function addTallOvalShield(group: THREE.Group, mFace: THREE.MeshStandardMaterial,
+                           mSpine: THREE.MeshStandardMaterial, mBoss: THREE.MeshStandardMaterial,
+                           perGeo: THREE.BufferGeometry[], heightScale = 1.75): void {
+  const SH_X = -(AV_ARM_OFFSET_X + AV_ARM_W * 0.5 + 0.016 * HEX_R);
+  const mShield = new THREE.Mesh(getGeoOvalShield(), mFace);
+  mShield.rotation.z = Math.PI / 2;
+  mShield.scale.set(1.0, 0.92, heightScale);     // tall and narrow -> oval body shield
+  mShield.position.set(SH_X, AV_Y_TORSO_CTR, 0.012 * HEX_R);
+  group.add(mShield);
+  // Vertical wooden spine down the centre.
+  const gSpine = new THREE.BoxGeometry(0.022 * HEX_R, 0.255 * HEX_R, 0.020 * HEX_R);
+  perGeo.push(gSpine);
+  const mSp = new THREE.Mesh(gSpine, mSpine);
+  mSp.position.set(SH_X + 0.010 * HEX_R, AV_Y_TORSO_CTR, 0.012 * HEX_R);
+  group.add(mSp);
+  // Central boss.
+  const mB = new THREE.Mesh(getGeoShieldBoss(), mBoss);
+  mB.rotation.z = Math.PI / 2;
+  mB.position.set(SH_X + 0.018 * HEX_R, AV_Y_TORSO_CTR, 0.012 * HEX_R);
+  group.add(mB);
+}
+
+/** A long sword (blade + crossguard + grip) raised in the right hand. */
+function addLongSwordRight(group: THREE.Group, mBlade: THREE.MeshStandardMaterial,
+                           mHilt: THREE.MeshStandardMaterial, perGeo: THREE.BufferGeometry[],
+                           bladeLen = 0.30): void {
+  const X = AV_ARM_OFFSET_X + AV_ARM_W * 0.5 + 0.018 * HEX_R;
+  const gGrip = new THREE.BoxGeometry(0.022 * HEX_R, 0.060 * HEX_R, 0.022 * HEX_R);
+  perGeo.push(gGrip);
+  const mGrip = new THREE.Mesh(gGrip, mHilt);
+  mGrip.position.set(X, AV_Y_TORSO_CTR - 0.01 * HEX_R, 0.02 * HEX_R);
+  group.add(mGrip);
+  const mCross = new THREE.Mesh(getGeoSwordCross(), mHilt);
+  mCross.position.set(X, AV_Y_TORSO_CTR + 0.030 * HEX_R, 0.02 * HEX_R);
+  group.add(mCross);
+  const gBlade = new THREE.BoxGeometry(0.026 * HEX_R, bladeLen * HEX_R, 0.012 * HEX_R);
+  perGeo.push(gBlade);
+  const mBl = new THREE.Mesh(gBlade, mBlade);
+  mBl.position.set(X, AV_Y_TORSO_CTR + 0.030 * HEX_R + bladeLen * HEX_R * 0.5, 0.02 * HEX_R);
+  group.add(mBl);
+}
+
+/** A long thrusting/throwing spear in the right hand (shaft + leaf tip). */
+function addSpearRight(group: THREE.Group, mWood: THREE.MeshStandardMaterial,
+                       mTip: THREE.MeshStandardMaterial, perGeo: THREE.BufferGeometry[],
+                       shaftLen = 0.48): void {
+  const X = AV_ARM_OFFSET_X + AV_ARM_W * 0.5 + 0.014 * HEX_R;
+  const BOT = AV_Y_LEG_BOT + 0.01 * HEX_R;
+  const CTR = BOT + shaftLen * HEX_R * 0.5;
+  const TOP = BOT + shaftLen * HEX_R;
+  const gShaft = new THREE.BoxGeometry(0.015 * HEX_R, shaftLen * HEX_R, 0.015 * HEX_R);
+  perGeo.push(gShaft);
+  const mShaft = new THREE.Mesh(gShaft, mWood);
+  mShaft.position.set(X, CTR, 0.01 * HEX_R);
+  group.add(mShaft);
+  const mTipM = new THREE.Mesh(getGeoSpearTip(), mTip);
+  mTipM.position.set(X, TOP + 0.028 * HEX_R, 0.01 * HEX_R);
+  group.add(mTipM);
+}
+
+/** A drooping mustache block under the nose (bare-headed tribal warriors). */
+function addMustache(group: THREE.Group, mHair: THREE.MeshStandardMaterial, perGeo: THREE.BufferGeometry[]): void {
+  const gM = new THREE.BoxGeometry(0.075 * HEX_R, 0.022 * HEX_R, 0.012 * HEX_R);
+  perGeo.push(gM);
+  const m = new THREE.Mesh(gM, mHair);
+  m.position.set(0, AV_Y_HEAD_CTR - 0.028 * HEX_R, AV_HEAD_S * 0.5 + 0.004 * HEX_R);
+  group.add(m);
+}
+
+/** Long hair falling behind the head (tribal). */
+function addLongHair(group: THREE.Group, mHair: THREE.MeshStandardMaterial, perGeo: THREE.BufferGeometry[]): void {
+  const gH = new THREE.BoxGeometry(0.150 * HEX_R, 0.120 * HEX_R, 0.060 * HEX_R);
+  perGeo.push(gH);
+  const m = new THREE.Mesh(gH, mHair);
+  m.position.set(0, AV_Y_HEAD_CTR + 0.010 * HEX_R, -AV_HEAD_S * 0.5 - 0.018 * HEX_R);
+  group.add(m);
+}
+
+/**
+ * Mounts a culture-marker (small round shield + standard flag) on the side of a
+ * pre-built chariot group, and re-tints its car front-panel / driver tunic so
+ * the three chariot variants read distinctly.  Operates on the group returned
+ * by buildCategoryModel('rydwan', ...).
+ */
+function decorateChariot(group: THREE.Group, ownerColor_: number, accent: number,
+                         shieldColor: number): THREE.Group {
+  const mats = group.userData['mats'] as THREE.Material[];
+  const perGeo = (group.userData['perTokenGeos'] as THREE.BufferGeometry[]) ?? [];
+  const mat = makeMatFactory(mats);
+  // A round culture shield hung on the +X car side (in the chariot's local frame
+  // the car sits behind the team; group is spun 180deg, so we add into a small
+  // pre-spun sub-group to keep the shield on the visible flank).
+  const sub = new THREE.Group();
+  sub.rotation.y = Math.PI;
+  group.add(sub);
+  const mShield = new THREE.Mesh(getGeoOvalShield(), mat(shieldColor, 0.10, 0.72));
+  mShield.rotation.z = Math.PI / 2;
+  mShield.scale.set(1.0, 0.6, 1.0);
+  mShield.position.set(0.150 * HEX_R, 0.20 * HEX_R, 0.12 * HEX_R);
+  sub.add(mShield);
+  const mBoss = new THREE.Mesh(getGeoShieldBoss(), mat(accent, 0.30, 0.5));
+  mBoss.rotation.z = Math.PI / 2;
+  mBoss.position.set(0.162 * HEX_R, 0.20 * HEX_R, 0.12 * HEX_R);
+  sub.add(mBoss);
+  group.userData['perTokenGeos'] = perGeo;
+  return group;
+}
+
+// --- Dispatcher ------------------------------------------------------------
+
+function buildNamedUnit(n: string, ownerColor_: number): THREE.Group | null {
+  // CELTS -----------------------------------------------------------------
+  if (n.includes('wojownik celtycki') || (n.includes('celtyck') && n.includes('wojownik'))) return buildCeltWarrior(ownerColor_);
+  if (n.includes('gaesatae')) return buildGaesatae(ownerColor_);
+  if (n.includes('rydwan celtycki') || (n.includes('rydwan') && n.includes('celtyck'))) {
+    return decorateChariot(buildCategoryModel('rydwan', ownerColor_), ownerColor_, COLOR_GOLD_BR, COLOR_FOREST);
+  }
+  // GERMANS ---------------------------------------------------------------
+  if (n.includes('berserker germansk') || n.includes('berserk')) return buildBerserker(ownerColor_);
+  if (n.includes('wojownik germansk') || (n.includes('germansk') && n.includes('wojownik'))) return buildGermanWarrior(ownerColor_);
+  // BRONZE SPECIALS -------------------------------------------------------
+  if (n.includes('wojownik mykensk') || (n.includes('mykensk') && n.includes('wojownik'))) return buildMycenaeanWarrior(ownerColor_);
+  if (n.includes('rydwan mykensk') || (n.includes('rydwan') && n.includes('mykensk'))) {
+    return decorateChariot(buildCategoryModel('rydwan', ownerColor_), ownerColor_, COLOR_BRONZE, COLOR_WOAD);
+  }
+  if (n.includes('sherden')) return buildSherden(ownerColor_);
+  if (n.includes('halabardnik shang') || (n.includes('shang') && n.includes('halabard'))) return buildShangHalberdier(ownerColor_);
+  if (n.includes('rydwan shang') || (n.includes('rydwan') && n.includes('shang'))) {
+    return decorateChariot(buildCategoryModel('rydwan', ownerColor_), ownerColor_, COLOR_LACQUER, COLOR_LACQUER);
+  }
+  if (n.includes('lucznik akadyjski') || n.includes('akadyjsk') || n.includes('akkad')) return buildAkkadianArcher(ownerColor_);
+  // ENGLISH display-name aliases (battle now passes EN names in some paths) so a
+  // unit resolves the same bespoke model whether the EN or PL name is given.
+  if (n.includes('celtic warrior')) return buildCeltWarrior(ownerColor_);
+  if (n.includes('celtic chariot')) {
+    return decorateChariot(buildCategoryModel('rydwan', ownerColor_), ownerColor_, COLOR_GOLD_BR, COLOR_FOREST);
+  }
+  if (n.includes('germanic berserker')) return buildBerserker(ownerColor_);
+  if (n.includes('germanic warrior')) return buildGermanWarrior(ownerColor_);
+  if (n.includes('mycenaean warrior')) return buildMycenaeanWarrior(ownerColor_);
+  if (n.includes('mycenaean chariot')) {
+    return decorateChariot(buildCategoryModel('rydwan', ownerColor_), ownerColor_, COLOR_BRONZE, COLOR_WOAD);
+  }
+  if (n.includes('sherden warrior')) return buildSherden(ownerColor_);
+  if (n.includes('shang halberdier')) return buildShangHalberdier(ownerColor_);
+  if (n.includes('shang chariot')) {
+    return decorateChariot(buildCategoryModel('rydwan', ownerColor_), ownerColor_, COLOR_LACQUER, COLOR_LACQUER);
+  }
+  if (n.includes('akkadian archer')) return buildAkkadianArcher(ownerColor_);
+  // ZULU -------------------------------------------------------------------
+  if (n.includes('impi')) return buildImpi(ownerColor_);
+  if (n.includes('oszczepnik zulu') || n.includes('izijula') || n.includes('zulu javelineer') || n.includes('isijula')) return buildZuluJavelineer(ownerColor_);
+  // SUMER ------------------------------------------------------------------
+  if (n.includes('wlocznik sumeryjski') || n.includes('sumerian spearman')) return buildSumerianSpearman(ownerColor_);
+  if (n.includes('lucznik sumeryjski') || n.includes('sumerian archer')) return buildSumerianArcher(ownerColor_);
+  if (n.includes('rydwan sumeryjski') || n.includes('sumerian chariot')) return buildSumerianChariot(ownerColor_);
+  // EGIPT ------------------------------------------------------------------
+  if (n.includes('lucznik egipski') || n.includes('egyptian archer')) return buildEgyptianArcher(ownerColor_);
+  if (n.includes('wojownik z khopesh') || n.includes('khopesh warrior')) return buildKhopeshWarrior(ownerColor_);
+  if (n.includes('rydwan egipski') || n.includes('egyptian chariot')) return buildEgyptianChariot(ownerColor_);
+  // INKA -------------------------------------------------------------------
+  if (n.includes('oszczepnik') && (n.includes('estolic') || n.includes('estolic'))) return buildInkaJavelineer(ownerColor_);
+  if (n.includes('javelineer') && n.includes('estolica')) return buildInkaJavelineer(ownerColor_);
+  if (n.includes('procarz') && n.includes('huarac')) return buildInkaSlinger(ownerColor_);
+  if (n.includes('slinger') && n.includes('huara')) return buildInkaSlinger(ownerColor_);
+  // CHINY ------------------------------------------------------------------
+  if (n.includes('jezdziec chinski') || n.includes('chinese cavalry')) return buildChineseCavalry(ownerColor_);
+  // KUSZNIK (CROSSBOWMAN) --------------------------------------------------
+  if (n.includes('kusznik') || n.includes('crossbowman')) return buildCrossbowman(ownerColor_);
+  // MACHINY OBLĘŻNICZE -------------------------------------------------------
+  if (n.includes('taran') || n.includes('battering ram')) return buildBatteringRam(ownerColor_);
+  if (n.includes('katapulta') || n.includes('catapult')) return buildCatapult(ownerColor_);
+  if ((n.includes('wieza') && n.includes('oblezn')) || n.includes('siege tower')) return buildSiegeTower(ownerColor_);
+  // RZYM LUDY MORZA ------------------------------------------------------------
+  if (n.includes('wojownik tyrrenski') || n.includes('tyrrenski') || n.includes('tyrrhenian warrior') || n.includes('tyrrhenian')) return buildTyrrhenian(ownerColor_);
+  if (n.includes('wojownik szekelesz') || n.includes('szekelesz') || n.includes('shekelesh warrior') || n.includes('shekelesh')) return buildShekelesh(ownerColor_);
+  // RZYM ŻELAZO — Hastati (własny model republikański) -----------------------
+  if (n.includes('hastati')) return buildHastati(ownerColor_);
+  // RZYM KLASYCZNY — Legion (imperialny, rezerwa) → buildCategoryModel('legionista')
+  // Bespoke alias żeby przyszła jednostka "Legion" z buildNamedUnit dostawała własny model.
+  // Na razie delegujemy do kategorii legionista (lorica segmentata, rezerwa).
+  if (n.includes('legion') && !n.includes('hastati')) return null;  // fallthrough → 'legionista' category
+  // INKA — BESPOKE NAMED UNITS -------------------------------------------------
+  if (n.includes('wojownik z maczuga') || n.includes('chaska') || n.includes('mace warrior')) return buildMaceWarrior(ownerColor_);
+  if (n.includes('wojownik z toporem') && !n.includes('szekelesz') && !n.includes('mykensk') && !n.includes('germansk') && !n.includes('celtyck')) return buildAxeWarriorInka(ownerColor_);
+  // GRECJA — HIEROS LOCHOS (Święty Zastęp, tebański) ---------------------------
+  if (n.includes('hieros') || n.includes('swiety zastep') || n.includes('sacred band')) return buildHierosLochos(ownerColor_);
+  // EGIPT — MEDŻAJ (Gwardia Faraona) -------------------------------------------
+  if (n.includes('medzaj') || n.includes('medjay') || n.includes('gwardia faraona')) return buildMedjay(ownerColor_);
+  // SUMER — GWARDIA KRÓLEWSKA SUMERU (Sumerian Royal Guard) ------------------
+  // UWAGA: 'sumer' PRZED 'royal guard' żeby uniknąć kolizji z inkaskim Royal Guard.
+  if (n.includes('gwardia krolewska sumeru') || n.includes('sumerian royal guard') || n.includes('qurubuti')) return buildSumerianRoyalGuard(ownerColor_);
+  // CHINY — HU BEN WEI (Gwardia Tygrysa / Tiger Guard) ----------------------
+  if (n.includes('hu ben wei') || n.includes('tiger guard') || n.includes('gwardia tygrysa')) return buildHuBenWei(ownerColor_);
+  // ZULUS — uTHULWANA (Białe Tarcze / White Shields) ------------------------
+  if (n.includes('uthulwana') || n.includes('white shields') || n.includes('biale tarcze')) return buildUThulwana(ownerColor_);
+  // INKA — KRÓLEWSKA GWARDIA (Royal Guard) — po sumer żeby nie łapał sumeryjskiego -----
+  if ((n.includes('krolewska gwardia') || n.includes('royal guard')) && !n.includes('sumer')) return buildInkaRoyalGuard(ownerColor_);
+  return null;
+}
+
+
+
+// ---------------------------------------------------------------------------
+// BESPOKE NAMED UNITS — batch 2: Inka (Mace Warrior, Axe Warrior),
+//   Grecja (Hieros Lochos / Sacred Band), Egipt (Medżaj / Medjay)
+// ---------------------------------------------------------------------------
+
+// --- Inka: WOJOWNIK Z MACZUGĄ (Chaska / Mace Warrior) ---------------------
+/**
+ * Andyjski wojownik z gwiaździstą maczugą (macana).
+ * RÓŻNI SIĘ od inkaskiego super (buildSuperInca) brakiem plakietki pektoralnej
+ * i pióropuszu elitarnego — to zwykły wojownik epoki kamiennej.
+ * Wyposażenie: pikowana tunika (ichcahuipilli) z wzorem, MACZUGA z gwiaździstą
+ * głowicą (drzewce + kamienna gwiazda 6-ramienna), mała kwadratowa tarcza,
+ * opaska z kilkoma piórami na głowie, sandały. ownerColor na piórach i tarczy.
+ */
+function buildMaceWarrior(ownerColor_: number): THREE.Group {
+  const TUNIC_COLOR = COLOR_OCHRE;          // andyjska żółtawa tunika
+  const { group, mats } = buildBaseAvatar(COLOR_SKIN_DARK, TUNIC_COLOR, ownerColor_);
+  const mat = makeMatFactory(mats);
+  const perGeo: THREE.BufferGeometry[] = [];
+
+  const mOchre  = mat(COLOR_OCHRE,     0.06, 0.80);   // tunika
+  const mRed    = mat(COLOR_RED_VIV,   0.06, 0.78);   // wzór na tunice (czerwień)
+  const mTeal   = mat(COLOR_TEAL,      0.06, 0.78);   // wzór na tunice (teal)
+  const mStone  = mat(0x8a8680,        0.18, 0.72);   // kamienna głowica maczugi
+  const mWood   = mat(COLOR_WOOD,      0.05, 0.85);   // drzewce
+  const mFeath  = mat(COLOR_FEATHER,   0.03, 0.92);   // pióra (białe)
+  const mOwner  = mat(ownerColor_,     0.12, 0.68);   // ownerColor (pióra + tarcza)
+  const mLeath  = mat(COLOR_LEATHER,   0.06, 0.82);   // sandały/paski
+  const mSkin   = mat(COLOR_SKIN_DARK, 0.05, 0.80);
+
+  // --- PIKOWANA TUNIKA (ichcahuipilli) — wzór szachownicy na klatce ---
+  const mTunicBox = new THREE.Mesh(getGeoCuirassBox(), mOchre);
+  mTunicBox.scale.set(0.97, 0.98, 0.97);
+  mTunicBox.position.set(0, AV_Y_TORSO_CTR, 0);
+  group.add(mTunicBox);
+  // Szachownica 2×3 na klatce (czerwony / teal)
+  let ci2 = 0;
+  for (const dy of [0.06, 0.00, -0.06]) {
+    for (const dx of [-0.04, 0.04]) {
+      const gSq = new THREE.BoxGeometry(0.038 * HEX_R, 0.048 * HEX_R, 0.011 * HEX_R);
+      perGeo.push(gSq);
+      const mSq = new THREE.Mesh(gSq, (ci2++ % 2 === 0) ? mRed : mTeal);
+      mSq.position.set(dx * HEX_R, AV_Y_TORSO_CTR + dy * HEX_R, AV_TORSO_D * 0.5 + 0.006 * HEX_R);
+      group.add(mSq);
+    }
+  }
+  addTunicHem(group, mOchre);
+
+  // --- OPASKA Z PIÓRAMI (wiphala headband) ---
+  // Złota obwódka na głowie
+  const gBand = new THREE.BoxGeometry(0.148 * HEX_R, 0.026 * HEX_R, 0.148 * HEX_R);
+  perGeo.push(gBand);
+  const mBand = new THREE.Mesh(gBand, mat(COLOR_GOLD_BR, 0.50, 0.40));
+  mBand.position.set(0, AV_Y_HEAD_TOP + 0.002 * HEX_R, 0);
+  group.add(mBand);
+  // 3 pióra (środkowe białe, boczne ownerColor)
+  const featherAngles: [number, number, number][] = [
+    [-0.05 * HEX_R, 0.28, 0],
+    [ 0.00 * HEX_R, 0.00, 0],
+    [ 0.05 * HEX_R, -0.28, 0],
+  ];
+  for (let fi = 0; fi < 3; fi++) {
+    const [fdx, frz,] = featherAngles[fi]!;
+    const gF = new THREE.BoxGeometry(0.014 * HEX_R, 0.095 * HEX_R, 0.008 * HEX_R);
+    perGeo.push(gF);
+    const fCol = (fi === 1) ? mFeath : mOwner;
+    const mF = new THREE.Mesh(gF, fCol);
+    mF.rotation.z = frz;
+    mF.position.set(fdx + Math.sin(frz) * 0.032 * HEX_R, AV_Y_HEAD_TOP + 0.060 * HEX_R, -0.005 * HEX_R);
+    group.add(mF);
+  }
+
+  // --- MACZUGA GWIAŹDZISTA (macana) — prawa ręka ---
+  const M_X = AV_ARM_OFFSET_X + AV_ARM_W * 0.5 + 0.012 * HEX_R;
+  // Drzewce drewniane (wyżej niż torso)
+  const mHaft = new THREE.Mesh(getGeoClubHandle(), mWood);
+  mHaft.position.set(M_X, AV_Y_TORSO_CTR + 0.005 * HEX_R, 0.010 * HEX_R);
+  group.add(mHaft);
+  // Centralny hub głowicy (kamień)
+  const gHub = new THREE.BoxGeometry(0.042 * HEX_R, 0.042 * HEX_R, 0.042 * HEX_R);
+  perGeo.push(gHub);
+  const mHub = new THREE.Mesh(gHub, mStone);
+  const hubY = AV_Y_TORSO_CTR + 0.005 * HEX_R + 0.088 * HEX_R + 0.021 * HEX_R;
+  mHub.position.set(M_X, hubY, 0.010 * HEX_R);
+  group.add(mHub);
+  // 6 promieni gwiazdy (kamienne, w płaszczyźnie XY)
+  for (let ai = 0; ai < 6; ai++) {
+    const ang = (ai / 6) * Math.PI * 2;
+    const gPt = new THREE.BoxGeometry(0.048 * HEX_R, 0.014 * HEX_R, 0.014 * HEX_R);
+    perGeo.push(gPt);
+    const mPt = new THREE.Mesh(gPt, mStone);
+    mPt.rotation.z = ang;
+    mPt.position.set(
+      M_X + Math.cos(ang) * 0.028 * HEX_R,
+      hubY + Math.sin(ang) * 0.028 * HEX_R,
+      0.010 * HEX_R
+    );
+    group.add(mPt);
+  }
+
+  // --- MAŁA KWADRATOWA TARCZA (lewa ręka) ---
+  const SH_X = -(AV_ARM_OFFSET_X + AV_ARM_W * 0.5 + 0.012 * HEX_R);
+  const mSh = new THREE.Mesh(getGeoSmallShield(), mOwner);
+  mSh.position.set(SH_X, AV_Y_TORSO_CTR, 0.012 * HEX_R);
+  group.add(mSh);
+  // Mały brązowy boss na środku tarczy
+  const mBoss = new THREE.Mesh(getGeoShieldBoss(), mat(COLOR_BRONZE, 0.40, 0.45));
+  mBoss.rotation.z = Math.PI / 2;
+  mBoss.position.set(SH_X + 0.008 * HEX_R, AV_Y_TORSO_CTR, 0.020 * HEX_R);
+  group.add(mBoss);
+
+  // --- SANDAŁY (sandals) ---
+  addBoots(group, mLeath);
+  addHands(group, mSkin);
+  group.userData['mats'] = mats;
+  group.userData['perTokenGeos'] = perGeo;
+  return group;
+}
+
+// --- Inka: WOJOWNIK Z TOPOREM (Axe Warrior) ----------------------------------
+/**
+ * Andyjski wojownik z brązowym toporem (tumi / T-kształt).
+ * RÓŻNI SIĘ od Mace Warrior głównie bronią (topór zamiast maczugi)
+ * i detalami stroju (mniej geometryczny wzór, inne nakrycie głowy).
+ * Wyposażenie: prosta tunika, BRĄZOWY TOPÓR T-kształtny na drzewcu,
+ * mała tarcza, pojedyncze pióro na głowie. ownerColor na tarczy/piórze.
+ */
+function buildAxeWarriorInka(ownerColor_: number): THREE.Group {
+  const TUNIC_COLOR = COLOR_BURGUNDY;       // ciemno-winowa tunika (inna niż maczuga)
+  const { group, mats } = buildBaseAvatar(COLOR_SKIN_DARK, TUNIC_COLOR, ownerColor_);
+  const mat = makeMatFactory(mats);
+  const perGeo: THREE.BufferGeometry[] = [];
+
+  const mBurgundy = mat(COLOR_BURGUNDY,  0.05, 0.82);
+  const mOchre    = mat(COLOR_OCHRE,     0.06, 0.80);   // geometryczny pas na tunice
+  const mBronze   = mat(COLOR_BRONZE,    0.48, 0.40);   // brązowy topór
+  const mBronzL   = mat(COLOR_BRONZE_LT, 0.54, 0.32);   // jasny brąz krawędź topora
+  const mWood     = mat(COLOR_WOOD,      0.05, 0.85);   // drzewce
+  const mOwner    = mat(ownerColor_,     0.12, 0.68);   // ownerColor (tarcza + pióro)
+  const mLeath    = mat(COLOR_LEATHER,   0.06, 0.82);   // sandały/paski
+  const mSkin     = mat(COLOR_SKIN_DARK, 0.05, 0.80);
+
+  // --- TUNIKA z pasem ochry ---
+  const mTunicBox = new THREE.Mesh(getGeoCuirassBox(), mBurgundy);
+  mTunicBox.scale.set(0.96, 0.98, 0.96);
+  mTunicBox.position.set(0, AV_Y_TORSO_CTR, 0);
+  group.add(mTunicBox);
+  // Ochrowy pas poziomy na klatce
+  const gBand = new THREE.BoxGeometry(AV_TORSO_W * 1.02, 0.035 * HEX_R, AV_TORSO_D * 1.04);
+  perGeo.push(gBand);
+  const mBandM = new THREE.Mesh(gBand, mOchre);
+  mBandM.position.set(0, AV_Y_TORSO_CTR + 0.04 * HEX_R, 0);
+  group.add(mBandM);
+  addTunicHem(group, mBurgundy);
+
+  // --- NAKRYCIE GŁOWY: jedno duże pióro (ownerColor) na skórzanej opasce ---
+  const gHeadband = new THREE.BoxGeometry(0.148 * HEX_R, 0.022 * HEX_R, 0.148 * HEX_R);
+  perGeo.push(gHeadband);
+  const mHb = new THREE.Mesh(gHeadband, mLeath);
+  mHb.position.set(0, AV_Y_HEAD_TOP + 0.000 * HEX_R, 0);
+  group.add(mHb);
+  // Jedno duże pióro ownerColor (pochylone lekko w bok)
+  const gFeather = new THREE.BoxGeometry(0.016 * HEX_R, 0.130 * HEX_R, 0.010 * HEX_R);
+  perGeo.push(gFeather);
+  const mFeather = new THREE.Mesh(gFeather, mOwner);
+  mFeather.rotation.z = 0.20;
+  mFeather.position.set(0.010 * HEX_R, AV_Y_HEAD_TOP + 0.080 * HEX_R, -0.004 * HEX_R);
+  group.add(mFeather);
+
+  // --- TOPÓR T-KSZTAŁTNY (tumi) — prawa ręka ---
+  // Drzewce
+  const AX_X = AV_ARM_OFFSET_X + AV_ARM_W * 0.5 + 0.012 * HEX_R;
+  const gAxeShaft = new THREE.BoxGeometry(0.016 * HEX_R, 0.28 * HEX_R, 0.016 * HEX_R);
+  perGeo.push(gAxeShaft);
+  const mShaft = new THREE.Mesh(gAxeShaft, mWood);
+  mShaft.position.set(AX_X, AV_Y_TORSO_CTR + 0.02 * HEX_R, 0.010 * HEX_R);
+  group.add(mShaft);
+  // Głowica T — poziomy prostokąt brązowy (T-kształt, szeroki)
+  const gAxeHead = new THREE.BoxGeometry(0.115 * HEX_R, 0.028 * HEX_R, 0.018 * HEX_R);
+  perGeo.push(gAxeHead);
+  const mAH = new THREE.Mesh(gAxeHead, mBronze);
+  mAH.position.set(AX_X, AV_Y_TORSO_CTR + 0.170 * HEX_R, 0.010 * HEX_R);
+  group.add(mAH);
+  // Ostrze (dolna krawędź głowicy — skośna) — użyj węższego BoxGeometry lekko obrócona
+  const gAxeEdge = new THREE.BoxGeometry(0.100 * HEX_R, 0.040 * HEX_R, 0.012 * HEX_R);
+  perGeo.push(gAxeEdge);
+  const mAE = new THREE.Mesh(gAxeEdge, mBronzL);
+  mAE.rotation.z = 0.12;
+  mAE.position.set(AX_X + 0.006 * HEX_R, AV_Y_TORSO_CTR + 0.148 * HEX_R, 0.014 * HEX_R);
+  group.add(mAE);
+
+  // --- MAŁA TARCZA (lewa ręka, ownerColor) ---
+  const SH_X = -(AV_ARM_OFFSET_X + AV_ARM_W * 0.5 + 0.012 * HEX_R);
+  const mSh = new THREE.Mesh(getGeoSmallShield(), mOwner);
+  mSh.position.set(SH_X, AV_Y_TORSO_CTR, 0.012 * HEX_R);
+  group.add(mSh);
+  // Mały brązowy boss
+  const mBoss = new THREE.Mesh(getGeoShieldBoss(), mat(COLOR_BRONZE, 0.42, 0.44));
+  mBoss.rotation.z = Math.PI / 2;
+  mBoss.position.set(SH_X + 0.008 * HEX_R, AV_Y_TORSO_CTR, 0.020 * HEX_R);
+  group.add(mBoss);
+
+  addBoots(group, mLeath);
+  addHands(group, mSkin);
+  group.userData['mats'] = mats;
+  group.userData['perTokenGeos'] = perGeo;
+  return group;
+}
+
+// --- Grecja: HIEROS LOCHOS (Święty Zastęp / Sacred Band) -------------------
+/**
+ * Tebański elitarny hoplita — Święty Zastęp.
+ * RÓŻNI SIĘ od buildSuperGreece (Greka) tym, że:
+ *   - BRAK bannera standardowego (to para walczących, nie dowódca)
+ *   - SZKARŁATNY PŁASZCZ (scarlet cape) — charakterystyczna czerwień
+ *   - Pełna aspis z ownerColor na polu tarczy
+ *   - Koryncki hełm z czerwonym grzebieniem fore-aft
+ *   - Brązowy muscle cuirass, nagolenniki, dory (długa włócznia)
+ * ownerColor widoczny na aspis.
+ */
+function buildHierosLochos(ownerColor_: number): THREE.Group {
+  const { group, mats } = buildBaseAvatar(COLOR_SKIN, COLOR_CRIMSON, ownerColor_);
+  const mat = makeMatFactory(mats);
+  const perGeo: THREE.BufferGeometry[] = [];
+
+  const mBronze  = mat(COLOR_BRONZE,    0.42, 0.42);
+  const mBronzL  = mat(COLOR_BRONZE_LT, 0.56, 0.32);
+  const mSteel   = mat(COLOR_STEEL,     0.52, 0.38);
+  const mCrimson = mat(COLOR_CRIMSON,   0.08, 0.74);   // szkarłatny płaszcz/grzebień
+  const mOwner   = mat(ownerColor_,     0.14, 0.64);   // ownerColor na aspis
+  const mWood    = mat(COLOR_WOOD,      0.05, 0.85);   // dory (włócznia)
+  const mLeath   = mat(COLOR_LEATHER,   0.06, 0.82);
+
+  // --- SZKARŁATNY PŁASZCZ za plecami (charakterystyczna czerwień Tebańczyków) ---
+  const mCape = new THREE.Mesh(getGeoSuperCape(), mCrimson);
+  mCape.scale.set(1.08, 1.05, 1.0);
+  mCape.position.set(0, AV_Y_TORSO_CTR - 0.008 * HEX_R, -AV_TORSO_D * 0.5 - 0.007 * HEX_R);
+  mCape.rotation.x = 0.15;
+  group.add(mCape);
+
+  // --- BRĄZOWY MUSCLE CUIRASS (kirys mięśniowy) ---
+  const mCuir = new THREE.Mesh(getGeoCuirassBox(), mBronze);
+  mCuir.scale.set(1.0, 1.0, 1.0);
+  mCuir.position.set(0, AV_Y_TORSO_CTR, 0);
+  group.add(mCuir);
+  // Linia pektoralna (dekoracyjny pas brązowy-jasny)
+  const mPec = new THREE.Mesh(getGeoGildedTrim(), mBronzL);
+  mPec.position.set(0, AV_Y_TORSO_CTR + 0.032 * HEX_R, 0.001 * HEX_R);
+  group.add(mPec);
+  // Pteruges skórzane pod kirysem
+  addPteruges(group, mLeath);
+
+  // --- KORYNCKI HEŁM + CZERWONY GRZEBIEŃ FORE-AFT ---
+  const mHelm = new THREE.Mesh(getGeoCorinthDome(), mBronze);
+  mHelm.position.set(0, AV_Y_HEAD_CTR + 0.012 * HEX_R, 0);
+  group.add(mHelm);
+  // Wąska szczelina na oczy (dark)
+  const gSlit = new THREE.BoxGeometry(0.018 * HEX_R, 0.048 * HEX_R, 0.012 * HEX_R);
+  perGeo.push(gSlit);
+  const mSlit = new THREE.Mesh(gSlit, mat(0x1a100a, 0.05, 0.92));
+  mSlit.position.set(0, AV_Y_HEAD_CTR - 0.010 * HEX_R, AV_HEAD_S * 0.5 + 0.006 * HEX_R);
+  group.add(mSlit);
+  // Podstawa grzebienia (brązowy grzbiet)
+  const mCrBase = new THREE.Mesh(getGeoTransverseCrest(), mBronzL);
+  mCrBase.rotation.y = Math.PI / 2;  // fore-aft
+  mCrBase.position.set(0, AV_Y_HEAD_TOP + 0.030 * HEX_R, 0);
+  group.add(mCrBase);
+  // Czerwony grzebień (wyższy niż generic hoplita — elita)
+  const gCrest = new THREE.BoxGeometry(0.028 * HEX_R, 0.105 * HEX_R, 0.140 * HEX_R);
+  perGeo.push(gCrest);
+  const mCrest = new THREE.Mesh(gCrest, mCrimson);
+  mCrest.position.set(0, AV_Y_HEAD_TOP + 0.090 * HEX_R, 0);
+  group.add(mCrest);
+
+  // --- DUŻE DORY (DŁUGA WŁÓCZNIA) w prawej ręce ---
+  const SP_X = AV_ARM_OFFSET_X + AV_ARM_W * 0.5 + 0.012 * HEX_R;
+  const mDory = new THREE.Mesh(getGeoDoryShaft(), mWood);
+  mDory.position.set(SP_X, AV_Y_TORSO_CTR + 0.10 * HEX_R, 0.010 * HEX_R);
+  group.add(mDory);
+  const mTip = new THREE.Mesh(getGeoSpearTip(), mSteel);
+  mTip.position.set(SP_X, AV_Y_TORSO_CTR + 0.10 * HEX_R + 0.31 * HEX_R + 0.028 * HEX_R, 0.010 * HEX_R);
+  group.add(mTip);
+  // Sauroter (brązowy ostrokokoniec dolny)
+  const mSaur = new THREE.Mesh(getGeoSauroter(), mBronzL);
+  mSaur.position.set(SP_X, AV_Y_TORSO_CTR + 0.10 * HEX_R - 0.31 * HEX_R - 0.022 * HEX_R, 0.010 * HEX_R);
+  group.add(mSaur);
+
+  // --- DUŻA OKRĄGŁA ASPIS (lewa ręka) z ownerColor + brązowy rim ---
+  // Aspis Hierosa jest szersza / grubsza niż generic (prestiżowa)
+  const SH_X = -(AV_ARM_OFFSET_X + AV_ARM_W * 0.5 + 0.018 * HEX_R);
+  const mRim = new THREE.Mesh(getGeoAspisRim(), mBronzL);
+  mRim.rotation.z = Math.PI / 2;
+  mRim.scale.set(0.55, 1.0, 1.0);
+  mRim.position.set(SH_X - 0.006 * HEX_R, AV_Y_TORSO_CTR, 0.012 * HEX_R);
+  group.add(mRim);
+  // Pole tarczy ownerColor (emblem)
+  const mFace = new THREE.Mesh(getGeoAspisFace(), mOwner);
+  mFace.rotation.z = Math.PI / 2;
+  mFace.scale.set(0.55, 1.0, 1.0);
+  mFace.position.set(SH_X, AV_Y_TORSO_CTR, 0.012 * HEX_R);
+  group.add(mFace);
+  // Krzyż na polu tarczy (prosty emblemat Świętego Zastępu — ciemny na ownerColor)
+  const gCrossH = new THREE.BoxGeometry(0.100 * HEX_R, 0.014 * HEX_R, 0.012 * HEX_R);
+  perGeo.push(gCrossH);
+  const mCrossH = new THREE.Mesh(gCrossH, mBronze);
+  mCrossH.rotation.z = Math.PI / 2;
+  mCrossH.position.set(SH_X, AV_Y_TORSO_CTR, 0.024 * HEX_R);
+  group.add(mCrossH);
+  const gCrossV = new THREE.BoxGeometry(0.014 * HEX_R, 0.100 * HEX_R, 0.012 * HEX_R);
+  perGeo.push(gCrossV);
+  const mCrossV = new THREE.Mesh(gCrossV, mBronze);
+  mCrossV.rotation.z = Math.PI / 2;
+  mCrossV.position.set(SH_X, AV_Y_TORSO_CTR, 0.024 * HEX_R);
+  group.add(mCrossV);
+
+  // --- NAGOLENNIKI BRĄZOWE ---
+  addGreaves(group, mBronzL);
+  addBoots(group, mLeath);
+  addHands(group, mat(COLOR_SKIN, 0.05, 0.80));
+
+  group.userData['mats'] = mats;
+  group.userData['perTokenGeos'] = perGeo;
+  return group;
+}
+
+// --- Egipt: MEDŻAJ (Gwardia Faraona / Medjay) -------------------------------
+/**
+ * Egipski elitarny gwardzista Medżaj — ochrona faraona.
+ * RÓŻNI SIĘ od buildSuperEgypt (Gwardia Królewska) sposobem złożenia:
+ *   - BRAK bannera standardowego (jednostka bojowa, nie dowódca)
+ *   - Skóra LAMPARTA lub pasy nemes-like (pasiaste nakrycie głowy)
+ *   - KHOPESH (sierpowaty miecz) w prawej ręce
+ *   - OWALNA TARCZA hide (fig-8 / owalna skóra)
+ *   - Szeroki złoty kołnierz USEKH (ownerColor)
+ *   - Kilt lniany z brązowymi akcentami
+ * ownerColor widoczny na kołnierzu usekh i detalu nemes.
+ */
+function buildMedjay(ownerColor_: number): THREE.Group {
+  const { group, mats } = buildBaseAvatar(COLOR_SKIN, COLOR_LINEN, ownerColor_);
+  const mat = makeMatFactory(mats);
+  const perGeo: THREE.BufferGeometry[] = [];
+
+  const mLinen  = mat(COLOR_LINEN,     0.05, 0.84);
+  const mGold   = mat(COLOR_GOLD_BR,   0.55, 0.34);
+  const mBlue   = mat(COLOR_WOAD,      0.10, 0.68);   // nemes niebieskie pasy
+  const mBronze = mat(COLOR_BRONZE,    0.42, 0.44);
+  const mBronzL = mat(COLOR_BRONZE_LT, 0.52, 0.36);
+  const mHide   = mat(COLOR_HIDE_RED,  0.06, 0.84);   // tarcza skórzana
+  const mOwner  = mat(ownerColor_,     0.14, 0.64);   // ownerColor (kołnierz + nemes pasy)
+  const mWood   = mat(COLOR_WOOD,      0.05, 0.85);
+  const mLeath  = mat(COLOR_LEATHER,   0.06, 0.82);
+  const mLeoprd = mat(0x3a2808,        0.05, 0.88);   // ciemna skóra lamparta (kilt)
+
+  // --- KILT LNIANY z akcentami ---
+  const gKilt = new THREE.BoxGeometry(AV_TORSO_W * 1.12, 0.120 * HEX_R, AV_TORSO_D * 1.08);
+  perGeo.push(gKilt);
+  const mKiltM = new THREE.Mesh(gKilt, mLinen);
+  mKiltM.position.set(0, AV_Y_TORSO_BOT - 0.022 * HEX_R, 0);
+  group.add(mKiltM);
+  // Diagonalne cętki lamparta na kilcie (3 małe ciemne plamy)
+  const leopardSpots: [number, number][] = [[-0.04, -0.01], [0.00, -0.04], [0.04, -0.02]];
+  for (const [ldx, ldy] of leopardSpots) {
+    const gSpot = new THREE.BoxGeometry(0.022 * HEX_R, 0.018 * HEX_R, 0.013 * HEX_R);
+    perGeo.push(gSpot);
+    const mSpot = new THREE.Mesh(gSpot, mLeoprd);
+    mSpot.position.set(ldx * HEX_R, AV_Y_TORSO_BOT + ldy * HEX_R - 0.018 * HEX_R, AV_TORSO_D * 0.5 + 0.008 * HEX_R);
+    group.add(mSpot);
+  }
+  // Złoty pas lędźwiowy
+  addBelt(group, mGold, 0.018);
+
+  // --- SZEROKI KOŁNIERZ USEKH (ownerColor — dominujący akcent) ---
+  const gCollW = new THREE.BoxGeometry(AV_TORSO_W * 1.06, 0.048 * HEX_R, AV_TORSO_D * 1.04);
+  perGeo.push(gCollW);
+  const mCollW = new THREE.Mesh(gCollW, mOwner);
+  mCollW.position.set(0, AV_Y_TORSO_TOP - 0.018 * HEX_R, 0.003 * HEX_R);
+  group.add(mCollW);
+  // Złoty obrzeże kołnierza
+  const gCollEdge = new THREE.BoxGeometry(AV_TORSO_W * 1.10, 0.012 * HEX_R, AV_TORSO_D * 1.08);
+  perGeo.push(gCollEdge);
+  const mCollE = new THREE.Mesh(gCollEdge, mGold);
+  mCollE.position.set(0, AV_Y_TORSO_TOP - 0.042 * HEX_R, 0.002 * HEX_R);
+  group.add(mCollE);
+
+  // --- NAKRYCIE GŁOWY: pasiaste (nemes-like) z ownerColor pasami ---
+  // Główna tkanina głowy (lniano-niebieska, trochę szersza niż głowa)
+  const gNemes = new THREE.BoxGeometry(0.165 * HEX_R, 0.115 * HEX_R, 0.165 * HEX_R);
+  perGeo.push(gNemes);
+  const mNemesM = new THREE.Mesh(gNemes, mBlue);
+  mNemesM.position.set(0, AV_Y_HEAD_CTR + 0.018 * HEX_R, -0.003 * HEX_R);
+  group.add(mNemesM);
+  // Pasy ownerColor (3 pionowe poziome paski na czole)
+  for (let ni = 0; ni < 3; ni++) {
+    const gStripe = new THREE.BoxGeometry(0.165 * HEX_R, 0.014 * HEX_R, 0.012 * HEX_R);
+    perGeo.push(gStripe);
+    const mStripe = new THREE.Mesh(gStripe, (ni % 2 === 0) ? mOwner : mGold);
+    mStripe.position.set(0, AV_Y_HEAD_CTR + 0.050 * HEX_R - ni * 0.020 * HEX_R, AV_HEAD_S * 0.5 + 0.006 * HEX_R);
+    group.add(mStripe);
+  }
+  // Lapety nemes (opuszczające się na ramiona po bokach)
+  for (const sx of [-1, 1]) {
+    const gLap = new THREE.BoxGeometry(0.038 * HEX_R, 0.100 * HEX_R, 0.020 * HEX_R);
+    perGeo.push(gLap);
+    const mLap = new THREE.Mesh(gLap, mBlue);
+    mLap.position.set(sx * (AV_HEAD_S * 0.5 + 0.017 * HEX_R), AV_Y_HEAD_CTR - 0.038 * HEX_R, 0.025 * HEX_R);
+    group.add(mLap);
+  }
+  // Złoty uraeus na czole
+  const gUra = new THREE.BoxGeometry(0.020 * HEX_R, 0.028 * HEX_R, 0.016 * HEX_R);
+  perGeo.push(gUra);
+  const mUra = new THREE.Mesh(gUra, mGold);
+  mUra.position.set(0, AV_Y_HEAD_CTR + 0.048 * HEX_R, AV_HEAD_S * 0.5 + 0.010 * HEX_R);
+  group.add(mUra);
+
+  // --- KHOPESH (sierpowaty miecz) — prawa ręka ---
+  const KH_X = AV_ARM_OFFSET_X + AV_ARM_W * 0.5 + 0.012 * HEX_R;
+  const KH_Y_BASE = AV_Y_TORSO_CTR - 0.04 * HEX_R;
+  // Rękojeść
+  const mGrip = new THREE.Mesh(getGeoSwordGrip(), mWood);
+  mGrip.position.set(KH_X, KH_Y_BASE + 0.050 * HEX_R, 0.015 * HEX_R);
+  group.add(mGrip);
+  // Poprzeczka/guard
+  const gGuard = new THREE.BoxGeometry(0.050 * HEX_R, 0.013 * HEX_R, 0.015 * HEX_R);
+  perGeo.push(gGuard);
+  const mGuard = new THREE.Mesh(gGuard, mBronzL);
+  mGuard.position.set(KH_X, KH_Y_BASE + 0.100 * HEX_R, 0.015 * HEX_R);
+  group.add(mGuard);
+  // Prosta część klingi
+  const gShank = new THREE.BoxGeometry(0.020 * HEX_R, 0.120 * HEX_R, 0.010 * HEX_R);
+  perGeo.push(gShank);
+  const mShank = new THREE.Mesh(gShank, mBronze);
+  mShank.position.set(KH_X, KH_Y_BASE + 0.165 * HEX_R, 0.015 * HEX_R);
+  group.add(mShank);
+  // Sierpowaty hak (3 segmenty zakrzywione do przodu)
+  const hookSegs2: [number, number, number, number][] = [
+    [0.022, 0.202, -0.50, 0.062],
+    [0.050, 0.234, -1.05, 0.050],
+    [0.070, 0.234, -1.65, 0.038],
+  ];
+  for (const [dx, dy, rz, len] of hookSegs2) {
+    const gHk = new THREE.BoxGeometry(0.018 * HEX_R, len * HEX_R, 0.010 * HEX_R);
+    perGeo.push(gHk);
+    const mHk = new THREE.Mesh(gHk, mBronze);
+    mHk.rotation.z = rz;
+    mHk.position.set(KH_X + dx * HEX_R, KH_Y_BASE + dy * HEX_R, 0.015 * HEX_R);
+    group.add(mHk);
+  }
+
+  // --- OWALNA TARCZA HIDE (fig-8 / owalna skóra) — lewa ręka ---
+  // Symulacja fig-8 jako dwa nakładające się owale (dwa CylindreGeometry)
+  const SH_X = -(AV_ARM_OFFSET_X + AV_ARM_W * 0.5 + 0.018 * HEX_R);
+  // Górna część (okrągła, mniejsza)
+  const mShTop = new THREE.Mesh(getGeoOvalShield(), mHide);
+  mShTop.rotation.z = Math.PI / 2;
+  mShTop.scale.set(1.0, 0.92, 0.92);
+  mShTop.position.set(SH_X, AV_Y_TORSO_CTR + 0.080 * HEX_R, 0.012 * HEX_R);
+  group.add(mShTop);
+  // Dolna część (nieco większa)
+  const mShBot = new THREE.Mesh(getGeoOvalShield(), mHide);
+  mShBot.rotation.z = Math.PI / 2;
+  mShBot.scale.set(1.0, 1.05, 1.05);
+  mShBot.position.set(SH_X, AV_Y_TORSO_CTR - 0.060 * HEX_R, 0.012 * HEX_R);
+  group.add(mShBot);
+  // Brązowy boss pośrodku (ownerColor)
+  const mBoss = new THREE.Mesh(getGeoShieldBoss(), mBronzL);
+  mBoss.rotation.z = Math.PI / 2;
+  mBoss.position.set(SH_X + 0.010 * HEX_R, AV_Y_TORSO_CTR + 0.010 * HEX_R, 0.020 * HEX_R);
+  group.add(mBoss);
+
+  addBoots(group, mLeath);
+  addHands(group, mat(COLOR_SKIN, 0.05, 0.80));
+  group.userData['mats'] = mats;
+  group.userData['perTokenGeos'] = perGeo;
+  return group;
+}
+
+
+// ---------------------------------------------------------------------------
+// RZYM — HASTATI (Republika Rzymska, Epoka Żelaza)
+// ---------------------------------------------------------------------------
+/**
+ * Hastatus — piechota liniowa Republiki Rzymskiej (przed reformą Mariuszową).
+ * WIZUALNIE RÓŻNY od imperialnego Legionu (buildCategoryModel 'legionista'):
+ *   Legion:   lorica segmentata (stalowe pasy), hełm Galea (imperialny),
+ *             prostokątny scutum, grzebień transversus.
+ *   Hastati:  hełm Montefortino (brązowa miska + 2 pionowe pióra po bokach),
+ *             kolczuga lub napiersna (mail/pectorale) + pteruges na tunice,
+ *             OWALNY SCUTUM (czerwony pionowy), pilum + gladius, 1 nagolennik.
+ */
+function buildHastati(ownerColor_: number): THREE.Group {
+  // Tunika: biało-kremowa (linen) z czerwoną lamówką — republikańska
+  const TUNICA_COLOR = 0xe8e0c4;  // krem/len, nie krwisty czerwony Legionu
+  const { group, mats } = buildBaseAvatar(COLOR_SKIN, TUNICA_COLOR, ownerColor_);
+  const mat = makeMatFactory(mats);
+  const perGeo: THREE.BufferGeometry[] = [];
+
+  const mBronze  = mat(COLOR_BRONZE,     0.50, 0.40);   // brąz hełmu/napiersna
+  const mMail    = mat(COLOR_MAIL,       0.45, 0.50);   // kolczuga ciemno-stalowa
+  const mOwner   = mat(ownerColor_,      0.15, 0.65);   // ownerColor na tarczy/pióra
+  const mRed     = mat(COLOR_ROMAN_RED,  0.05, 0.80);   // głęboka czerwień scutum
+  const mWood    = mat(COLOR_WOOD,       0.05, 0.85);   // drzewce pilum
+  const mSteel   = mat(COLOR_STEEL,      0.55, 0.35);   // grot pilum/gladius
+  const mDark    = mat(COLOR_DARK_STEEL, 0.40, 0.55);   // żelazna część pilum
+  const mLeath   = mat(COLOR_LEATHER,    0.05, 0.82);   // skóra pochwy/butów
+  const mGold    = mat(COLOR_GOLD_BR,    0.55, 0.35);   // złoto umbo i akcentów
+  const mPurple  = mat(0x4a2060,         0.08, 0.85);   // purpurowe pióra (ciemne)
+  const mBronzeL = mat(COLOR_BRONZE_LT,  0.52, 0.38);   // jasny brąz – daszek/obwódka
+  const mLinen   = mat(COLOR_LINEN,      0.04, 0.88);   // pectoral backing / pteruges
+
+  // --- PANCERZ: kolczuga jako "mail cuirass" (prostokąt stalowy nad torsem) ---
+  const gMail = new THREE.BoxGeometry(0.210 * HEX_R, 0.200 * HEX_R, 0.120 * HEX_R);
+  perGeo.push(gMail);
+  const mMailMesh = new THREE.Mesh(gMail, mMail);
+  mMailMesh.position.set(0, AV_Y_TORSO_CTR, 0);
+  group.add(mMailMesh);
+
+  // Brązowa napiersna (pectorale) — mały prostokąt brązu na środku klatki
+  const gPect = new THREE.BoxGeometry(0.130 * HEX_R, 0.110 * HEX_R, 0.028 * HEX_R);
+  perGeo.push(gPect);
+  const mPect = new THREE.Mesh(gPect, mBronze);
+  mPect.position.set(0, AV_Y_TORSO_CTR + 0.020 * HEX_R, 0.065 * HEX_R);
+  group.add(mPect);
+
+  // Pteruges (skórzane frędzle pod torsem): addPteruges używa mStrip
+  addPteruges(group, mLinen);
+
+  // --- HEŁM MONTEFORTINO ---
+  // Miska hełmu: zaokrąglona misa brązowa (GaleaBowl, ale niżej osadzona)
+  const mHelm = new THREE.Mesh(getGeoGaleaBowl(), mBronze);
+  mHelm.position.set(0, AV_Y_HEAD_CTR + 0.010 * HEX_R, 0);
+  group.add(mHelm);
+  // Mała kulka/gałka na szczycie (charakterystyczna dla Montefortino)
+  const gKnob = new THREE.SphereGeometry(0.020 * HEX_R, 8, 6);
+  perGeo.push(gKnob);
+  const mKnob = new THREE.Mesh(gKnob, mBronzeL);
+  mKnob.position.set(0, AV_Y_HEAD_CTR + 0.010 * HEX_R + 0.078 * HEX_R, 0);
+  group.add(mKnob);
+  // Mały daszek karku (neck guard): krótki, mniej dramatyczny niż imperialny galea
+  const gNeck = new THREE.BoxGeometry(0.158 * HEX_R, 0.022 * HEX_R, 0.048 * HEX_R);
+  perGeo.push(gNeck);
+  const mNeckG = new THREE.Mesh(gNeck, mBronzeL);
+  mNeckG.rotation.x = -0.35;
+  mNeckG.position.set(0, AV_Y_HEAD_CTR - 0.016 * HEX_R, -(AV_HEAD_S * 0.5 + 0.018 * HEX_R));
+  group.add(mNeckG);
+  // Policzki: dwa prostokąty po bokach
+  for (const sx of [-1, 1]) {
+    const gCk = new THREE.BoxGeometry(0.020 * HEX_R, 0.042 * HEX_R, 0.032 * HEX_R);
+    perGeo.push(gCk);
+    const mCk = new THREE.Mesh(gCk, mBronze);
+    mCk.position.set(sx * (AV_HEAD_S * 0.5 + 0.002 * HEX_R), AV_Y_HEAD_CTR - 0.012 * HEX_R, 0.020 * HEX_R);
+    group.add(mCk);
+  }
+  // PIÓRA: 2 pionowe pióra po bokach hełmu (CHARAKTERYSTYCZNE dla Montefortino)
+  // Każde pióro = wąski prostokąt purpurowy stojący pionowo, z ownerColor jako żyłka
+  for (const sx of [-1, 1]) {
+    // Łodyżka pióra (brąz)
+    const gFQ = new THREE.BoxGeometry(0.010 * HEX_R, 0.055 * HEX_R, 0.010 * HEX_R);
+    perGeo.push(gFQ);
+    const mFQ = new THREE.Mesh(gFQ, mBronzeL);
+    mFQ.position.set(sx * 0.070 * HEX_R, AV_Y_HEAD_TOP + 0.055 * HEX_R, 0.004 * HEX_R);
+    group.add(mFQ);
+    // Samo pióro (ciemna purpura z ownerColor tint)
+    const gFP = new THREE.BoxGeometry(0.018 * HEX_R, 0.100 * HEX_R, 0.014 * HEX_R);
+    perGeo.push(gFP);
+    const mFP = new THREE.Mesh(gFP, mPurple);
+    mFP.position.set(sx * 0.070 * HEX_R, AV_Y_HEAD_TOP + 0.115 * HEX_R, 0.004 * HEX_R);
+    group.add(mFP);
+    // Ownercolor paseczek wzdłuż pióra (żyłka)
+    const gFO = new THREE.BoxGeometry(0.006 * HEX_R, 0.095 * HEX_R, 0.016 * HEX_R);
+    perGeo.push(gFO);
+    const mFO = new THREE.Mesh(gFO, mOwner);
+    mFO.position.set(sx * 0.070 * HEX_R, AV_Y_HEAD_TOP + 0.115 * HEX_R, 0.012 * HEX_R);
+    group.add(mFO);
+  }
+
+  // --- PILUM (prawa ręka) ---
+  // Drzewce drewniane
+  const PIL_X = AV_ARM_OFFSET_X + AV_ARM_W * 0.5 + 0.012 * HEX_R;
+  const mPilShaft = new THREE.Mesh(getGeoPilumShaft(), mWood);
+  mPilShaft.position.set(PIL_X, AV_Y_LEG_BOT + 0.21 * HEX_R, 0.01 * HEX_R);
+  group.add(mPilShaft);
+  // Żelazny trzonek (cienki, długi)
+  const mPilIron = new THREE.Mesh(getGeoPilumHead(), mDark);
+  mPilIron.position.set(PIL_X, AV_Y_LEG_BOT + 0.42 * HEX_R + 0.05 * HEX_R, 0.01 * HEX_R);
+  group.add(mPilIron);
+  // Grot pilum
+  const mPilTip = new THREE.Mesh(getGeoJavTip(), mSteel);
+  mPilTip.position.set(PIL_X, AV_Y_LEG_BOT + 0.42 * HEX_R + 0.10 * HEX_R + 0.02 * HEX_R, 0.01 * HEX_R);
+  group.add(mPilTip);
+
+  // --- GLADIUS u biodra (prawa strona) ---
+  addHipSword(group, mLeath, mGold, 1);
+
+  // --- SCUTUM OWALNY (lewa ręka): czerwony, pionowy, z umbo ---
+  // Scutum Hastati: OWALNY (nie prostokątny jak legionista imperialny)
+  // Używamy CylinderGeometry (oval shield) + obracamy pionowo
+  const SC_X = -(AV_ARM_OFFSET_X + AV_ARM_W * 0.5 + 0.014 * HEX_R);
+  const mScutum = new THREE.Mesh(getGeoOvalShield(), mRed);
+  mScutum.rotation.z = Math.PI / 2;  // obrót: cylinder z pionowego → tarcza pionowa
+  mScutum.scale.set(1.0, 0.82, 1.80);  // wyciągnij w górę → wysoka owalna tarcza
+  mScutum.position.set(SC_X, AV_Y_TORSO_CTR, 0.015 * HEX_R);
+  group.add(mScutum);
+  // Umbo (środkowa metalowa wybrzuszenie): ownerColor
+  const mScuBoss = new THREE.Mesh(getGeoScutumBoss(), mOwner);
+  mScuBoss.position.set(SC_X, AV_Y_TORSO_CTR, 0.030 * HEX_R);
+  group.add(mScuBoss);
+  // Obwódka tarczy (złota lub brązowa)
+  const gRim = new THREE.BoxGeometry(0.010 * HEX_R, 0.245 * HEX_R, 0.022 * HEX_R);
+  perGeo.push(gRim);
+  const mRimM = new THREE.Mesh(gRim, mGold);
+  mRimM.position.set(SC_X, AV_Y_TORSO_CTR, 0.014 * HEX_R);
+  group.add(mRimM);
+
+  // --- 1 nagolennik (lewa noga) ---
+  const gGreave = new THREE.BoxGeometry(0.055 * HEX_R, 0.095 * HEX_R, 0.062 * HEX_R);
+  perGeo.push(gGreave);
+  const mGreave = new THREE.Mesh(gGreave, mBronze);
+  mGreave.position.set(-(AV_LEG_W * 0.5 + 0.002 * HEX_R), AV_Y_LEG_CTR - 0.010 * HEX_R, 0.002 * HEX_R);
+  group.add(mGreave);
+
+  addBoots(group, mLeath);
+  addHands(group, mat(COLOR_SKIN, 0.05, 0.80));
+
+  group.userData['mats'] = mats;
+  group.userData['perTokenGeos'] = perGeo;
+  return group;
+}
+
+// --- ZULU SPECIALS ---------------------------------------------------------
+
+/**
+ * Impi — bare ochre torso (Zulu warrior), short iklwa stabbing spear, large
+ * oval cowhide shield (black-and-white), minimal kit.  Reads instantly Zulu.
+ */
+function buildImpi(ownerColor_: number): THREE.Group {
+  // skin = dark warm tone, cloth = ochre (bare torso)
+  const { group, mats } = buildBaseAvatar(0xb06030, COLOR_OCHRE, ownerColor_);
+  const mat = makeMatFactory(mats);
+  const perGeo: THREE.BufferGeometry[] = [];
+  const mHide   = mat(COLOR_HIDE_RED, 0.04, 0.90);   // cowhide red-brown
+  const mWhite  = mat(COLOR_PAINT_WHT,0.03, 0.92);   // white cowhide patches
+  const mOwner  = mat(ownerColor_,    0.10, 0.68);
+  const mWood   = mat(COLOR_WOOD,     0.05, 0.85);
+  const mBronze = mat(COLOR_BRONZE,   0.40, 0.48);
+  const mSkin   = mat(0xb06030,       0.05, 0.80);
+
+  // Bare torso feel — overlay ochre tunic with a loincloth (isidwaba) only.
+  const mLoin = new THREE.Mesh(getGeoLoincloth(), mat(0x3a2810, 0.05, 0.88));
+  mLoin.scale.set(0.90, 0.55, 0.95);
+  mLoin.position.set(0, AV_Y_TORSO_BOT - 0.008 * HEX_R, 0);
+  group.add(mLoin);
+
+  // Re-skin torso/arms to ochre bare flesh (overlay thin matching boxes).
+  for (const sx of [-(AV_LEG_SEP + AV_LEG_W * 0.5), (AV_LEG_SEP + AV_LEG_W * 0.5)]) {
+    const gLeg = new THREE.BoxGeometry(AV_LEG_W * 1.02, AV_LEG_H * 0.98, AV_LEG_W * 1.02);
+    perGeo.push(gLeg);
+    const mLeg = new THREE.Mesh(gLeg, mat(0xb06030, 0.05, 0.80));
+    mLeg.position.set(sx, AV_Y_LEG_CTR, 0);
+    group.add(mLeg);
+  }
+
+  // Head: no helmet, short black hair patch.
+  const gHair = new THREE.BoxGeometry(0.145 * HEX_R, 0.030 * HEX_R, 0.145 * HEX_R);
+  perGeo.push(gHair);
+  const mHair = new THREE.Mesh(gHair, mat(0x1a0c06, 0.04, 0.90));
+  mHair.position.set(0, AV_Y_HEAD_TOP + 0.006 * HEX_R, 0);
+  group.add(mHair);
+
+  // LARGE oval cowhide (isiHlangu) shield on the left arm.
+  // Two overlapping cylinders: red-brown body + white central stripe.
+  const SH_X = -(AV_ARM_OFFSET_X + AV_ARM_W * 0.5 + 0.016 * HEX_R);
+  const mSh = new THREE.Mesh(getGeoOvalShield(), mHide);
+  mSh.rotation.z = Math.PI / 2;
+  mSh.scale.set(1.0, 2.1, 2.1);   // tall oval — notably larger than generic
+  mSh.position.set(SH_X, AV_Y_TORSO_CTR + 0.01 * HEX_R, 0.010 * HEX_R);
+  group.add(mSh);
+  // White patch (centre stripe of cowhide pattern).
+  const gPatch = new THREE.BoxGeometry(0.025 * HEX_R, 0.200 * HEX_R, 0.022 * HEX_R);
+  perGeo.push(gPatch);
+  const mPatch = new THREE.Mesh(gPatch, mWhite);
+  mPatch.position.set(SH_X + 0.002 * HEX_R, AV_Y_TORSO_CTR + 0.01 * HEX_R, 0.022 * HEX_R);
+  group.add(mPatch);
+  // Owner-colour boss at centre of shield.
+  const mBoss = new THREE.Mesh(getGeoShieldBoss(), mOwner);
+  mBoss.rotation.z = Math.PI / 2;
+  mBoss.position.set(SH_X + 0.012 * HEX_R, AV_Y_TORSO_CTR + 0.01 * HEX_R, 0.022 * HEX_R);
+  group.add(mBoss);
+
+  // Short iklwa (stabbing spear): short shaft + broad leaf blade.
+  const SPEAR_X = AV_ARM_OFFSET_X + AV_ARM_W * 0.5 + 0.012 * HEX_R;
+  const SPEAR_BOT = AV_Y_TORSO_BOT + 0.02 * HEX_R;
+  const SHAFT_H = 0.25 * HEX_R;
+  const gShaft = new THREE.BoxGeometry(0.018 * HEX_R, SHAFT_H, 0.018 * HEX_R);
+  perGeo.push(gShaft);
+  const mShaft = new THREE.Mesh(gShaft, mWood);
+  mShaft.position.set(SPEAR_X, SPEAR_BOT + SHAFT_H * 0.5, 0.01 * HEX_R);
+  group.add(mShaft);
+  // Broader leaf blade (iklwa head is wide).
+  const gBlade = new THREE.BoxGeometry(0.035 * HEX_R, 0.075 * HEX_R, 0.012 * HEX_R);
+  perGeo.push(gBlade);
+  const mBlade = new THREE.Mesh(gBlade, mBronze);
+  mBlade.position.set(SPEAR_X, SPEAR_BOT + SHAFT_H + 0.038 * HEX_R, 0.010 * HEX_R);
+  group.add(mBlade);
+
+  addHands(group, mSkin);
+  group.userData['mats'] = mats;
+  group.userData['perTokenGeos'] = perGeo;
+  return group;
+}
+
+/**
+ * Oszczepnik Zulu (Izijula) — bundle of light throwing spears + small hide
+ * shield, ochre bare body identical to Impi silhouette but lighter kit.
+ */
+function buildZuluJavelineer(ownerColor_: number): THREE.Group {
+  const { group, mats } = buildBaseAvatar(0xb06030, COLOR_OCHRE, ownerColor_);
+  const mat = makeMatFactory(mats);
+  const perGeo: THREE.BufferGeometry[] = [];
+  const mHide  = mat(COLOR_HIDE_RED, 0.04, 0.90);
+  const mWhite = mat(COLOR_PAINT_WHT,0.03, 0.92);
+  const mOwner = mat(ownerColor_,    0.10, 0.68);
+  const mWood  = mat(COLOR_WOOD,     0.05, 0.85);
+  const mBronz = mat(COLOR_BRONZE,   0.38, 0.50);
+  const mSkin  = mat(0xb06030,       0.05, 0.80);
+
+  // Loincloth only (bare torso).
+  const mLoin = new THREE.Mesh(getGeoLoincloth(), mat(0x3a2810, 0.05, 0.88));
+  mLoin.scale.set(0.88, 0.50, 0.95);
+  mLoin.position.set(0, AV_Y_TORSO_BOT - 0.006 * HEX_R, 0);
+  group.add(mLoin);
+  // Bare legs.
+  for (const sx of [-(AV_LEG_SEP + AV_LEG_W * 0.5), (AV_LEG_SEP + AV_LEG_W * 0.5)]) {
+    const gLeg = new THREE.BoxGeometry(AV_LEG_W * 1.02, AV_LEG_H * 0.98, AV_LEG_W * 1.02);
+    perGeo.push(gLeg);
+    const mL = new THREE.Mesh(gLeg, mSkin);
+    mL.position.set(sx, AV_Y_LEG_CTR, 0);
+    group.add(mL);
+  }
+  // Short black hair patch.
+  const gHair = new THREE.BoxGeometry(0.145 * HEX_R, 0.028 * HEX_R, 0.145 * HEX_R);
+  perGeo.push(gHair);
+  const mHair = new THREE.Mesh(gHair, mat(0x1a0c06, 0.04, 0.90));
+  mHair.position.set(0, AV_Y_HEAD_TOP + 0.004 * HEX_R, 0);
+  group.add(mHair);
+
+  // Small round hide shield on left (smaller than Impi's isiHlangu).
+  const SH_X = -(AV_ARM_OFFSET_X + AV_ARM_W * 0.5 + 0.014 * HEX_R);
+  const mSh = new THREE.Mesh(getGeoOvalShield(), mHide);
+  mSh.rotation.z = Math.PI / 2;
+  mSh.scale.set(1.0, 1.30, 1.30);
+  mSh.position.set(SH_X, AV_Y_TORSO_CTR, 0.010 * HEX_R);
+  group.add(mSh);
+  const gWhtStripe = new THREE.BoxGeometry(0.018 * HEX_R, 0.115 * HEX_R, 0.018 * HEX_R);
+  perGeo.push(gWhtStripe);
+  const mWhtStripe = new THREE.Mesh(gWhtStripe, mWhite);
+  mWhtStripe.position.set(SH_X + 0.001 * HEX_R, AV_Y_TORSO_CTR, 0.020 * HEX_R);
+  group.add(mWhtStripe);
+  const mBoss = new THREE.Mesh(getGeoShieldBoss(), mOwner);
+  mBoss.rotation.z = Math.PI / 2;
+  mBoss.position.set(SH_X + 0.010 * HEX_R, AV_Y_TORSO_CTR, 0.020 * HEX_R);
+  group.add(mBoss);
+
+  // BUNDLE of three light throwing spears (isijula) on the right: thin shafts
+  // bundled together, fanning slightly, cocked overhead.
+  const JAV_X = AV_ARM_OFFSET_X + AV_ARM_W * 0.5 + 0.010 * HEX_R;
+  const JAV_BOT = AV_Y_LEG_BOT + 0.02 * HEX_R;
+  for (const [dx, dz, h] of [[-0.010 * HEX_R, 0.0, 0.32], [0.0, 0.012 * HEX_R, 0.34], [0.010 * HEX_R, -0.010 * HEX_R, 0.30]] as [number,number,number][]) {
+    const gJav = new THREE.BoxGeometry(0.012 * HEX_R, h * HEX_R, 0.012 * HEX_R);
+    perGeo.push(gJav);
+    const mJ = new THREE.Mesh(gJav, mWood);
+    mJ.position.set(JAV_X + dx, JAV_BOT + h * HEX_R * 0.5, dz);
+    group.add(mJ);
+    const gTip = new THREE.BoxGeometry(0.016 * HEX_R, 0.032 * HEX_R, 0.016 * HEX_R);
+    perGeo.push(gTip);
+    const mT = new THREE.Mesh(gTip, mBronz);
+    mT.position.set(JAV_X + dx, JAV_BOT + h * HEX_R + 0.016 * HEX_R, dz);
+    group.add(mT);
+  }
+
+  addHands(group, mSkin);
+  group.userData['mats'] = mats;
+  group.userData['perTokenGeos'] = perGeo;
+  return group;
+}
+
+// --- SUMER SPECIALS --------------------------------------------------------
+
+/**
+ * Włócznik sumeryjski — tall rectangular tower shield, bronze-tipped spear,
+ * fleece-trimmed lower garment (kaunakes), copper conical helm.
+ */
+function buildSumerianSpearman(ownerColor_: number): THREE.Group {
+  const { group, mats } = buildBaseAvatar(COLOR_SKIN, COLOR_TEAL, ownerColor_);
+  const mat = makeMatFactory(mats);
+  const perGeo: THREE.BufferGeometry[] = [];
+  const mBronze = mat(COLOR_BRONZE,   0.42, 0.45);
+  const mBronzL = mat(COLOR_BRONZE_LT,0.50, 0.38);
+  const mWood   = mat(COLOR_WOOD,     0.05, 0.85);
+  const mOwner  = mat(ownerColor_,    0.12, 0.66);
+  const mFleece = mat(0xd8c8a0,       0.04, 0.96);  // kaunakes fleece
+  const mLeath  = mat(COLOR_LEATHER,  0.06, 0.82);
+
+  // Kaunakes fleece fringe at lower torso/hem (stacked horizontal strips).
+  for (let i = 0; i < 3; i++) {
+    const fy = AV_Y_TORSO_BOT - 0.02 * HEX_R - i * 0.04 * HEX_R;
+    const fw = AV_TORSO_W * (1.12 - i * 0.04);
+    const gFleece = new THREE.BoxGeometry(fw, 0.030 * HEX_R, AV_TORSO_D * 1.08);
+    perGeo.push(gFleece);
+    const mFl = new THREE.Mesh(gFleece, mFleece);
+    mFl.position.set(0, fy, 0);
+    group.add(mFl);
+  }
+
+  // COPPER (bronze) conical helmet — taller cone than generic wlocznik.
+  const gHelm = new THREE.CylinderGeometry(0.024 * HEX_R, 0.090 * HEX_R, 0.110 * HEX_R, 8, 1);
+  perGeo.push(gHelm);
+  const mHelm = new THREE.Mesh(gHelm, mBronze);
+  mHelm.position.set(0, AV_Y_HEAD_CTR + 0.035 * HEX_R, 0);
+  group.add(mHelm);
+  // Bronze nasal guard.
+  const mNose = new THREE.Mesh(getGeoNoseGuard(), mBronzL);
+  mNose.position.set(0, AV_Y_HEAD_CTR - 0.010 * HEX_R, AV_HEAD_S * 0.5 + 0.006 * HEX_R);
+  group.add(mNose);
+
+  // Spear (tall, right hand).
+  addSpearRight(group, mWood, mBronzL, perGeo, 0.50);
+
+  // TALL RECTANGULAR tower shield on left — Sumerian block shield.
+  const SH_X = -(AV_ARM_OFFSET_X + AV_ARM_W * 0.5 + 0.012 * HEX_R);
+  const gTower = new THREE.BoxGeometry(0.100 * HEX_R, 0.280 * HEX_R, 0.018 * HEX_R);
+  perGeo.push(gTower);
+  const mTower = new THREE.Mesh(gTower, mOwner);
+  mTower.position.set(SH_X, AV_Y_TORSO_CTR + 0.01 * HEX_R, 0.012 * HEX_R);
+  group.add(mTower);
+  // Bronze rim around tower shield.
+  const gTwRim = new THREE.BoxGeometry(0.112 * HEX_R, 0.292 * HEX_R, 0.010 * HEX_R);
+  perGeo.push(gTwRim);
+  const mTwRim = new THREE.Mesh(gTwRim, mBronze);
+  mTwRim.position.set(SH_X - 0.004 * HEX_R, AV_Y_TORSO_CTR + 0.01 * HEX_R, 0.006 * HEX_R);
+  group.add(mTwRim);
+  // Central owner boss.
+  const mBoss = new THREE.Mesh(getGeoShieldBoss(), mBronzL);
+  mBoss.rotation.z = Math.PI / 2;
+  mBoss.position.set(SH_X + 0.010 * HEX_R, AV_Y_TORSO_CTR + 0.01 * HEX_R, 0.022 * HEX_R);
+  group.add(mBoss);
+
+  addBoots(group, mLeath);
+  addHands(group, mat(COLOR_SKIN, 0.05, 0.80));
+  group.userData['mats'] = mats;
+  group.userData['perTokenGeos'] = perGeo;
+  return group;
+}
+
+/**
+ * Łucznik sumeryjski — composite bow, fleece-trimmed kaunakes, copper conical
+ * helm.  Distinct from generic (green) archer via teal robe + copper helm.
+ */
+function buildSumerianArcher(ownerColor_: number): THREE.Group {
+  // Reuse AkkadianArcher as base and override colour/headgear slightly.
+  const { group, mats } = buildBaseAvatar(COLOR_SKIN, COLOR_TEAL, ownerColor_);
+  const mat = makeMatFactory(mats);
+  const perGeo: THREE.BufferGeometry[] = [];
+  const mWood   = mat(0x6e4a24,     0.05, 0.82);
+  const mBronze = mat(COLOR_BRONZE, 0.42, 0.45);
+  const mBronzL = mat(COLOR_BRONZE_LT, 0.50, 0.38);
+  const mString = mat(0xe8e0cc,     0.02, 0.95);
+  const mOwner  = mat(ownerColor_,  0.10, 0.70);
+  const mFleece = mat(0xd8c8a0,     0.04, 0.96);
+  const mLeath  = mat(COLOR_LEATHER,0.06, 0.82);
+
+  // Kaunakes fleece fringe (same as Sumerian Spearman).
+  for (let i = 0; i < 3; i++) {
+    const fy = AV_Y_TORSO_BOT - 0.02 * HEX_R - i * 0.04 * HEX_R;
+    const fw = AV_TORSO_W * (1.12 - i * 0.04);
+    const gFl = new THREE.BoxGeometry(fw, 0.028 * HEX_R, AV_TORSO_D * 1.08);
+    perGeo.push(gFl);
+    const mFl = new THREE.Mesh(gFl, mFleece);
+    mFl.position.set(0, fy, 0);
+    group.add(mFl);
+  }
+
+  // Copper conical helm.
+  const gHelm = new THREE.CylinderGeometry(0.024 * HEX_R, 0.088 * HEX_R, 0.105 * HEX_R, 8, 1);
+  perGeo.push(gHelm);
+  const mHelm = new THREE.Mesh(gHelm, mBronze);
+  mHelm.position.set(0, AV_Y_HEAD_CTR + 0.034 * HEX_R, 0);
+  group.add(mHelm);
+
+  // Composite recurve bow (identical mechanics to AkkadianArcher).
+  const BX = -(AV_ARM_OFFSET_X + AV_ARM_W * 0.5 + 0.010 * HEX_R);
+  const bowSegs: [number, number, number][] = [
+    [0.18, 0.0, 0.0], [0.14, 0.10, 0.30], [0.14, -0.10, 0.30],
+    [0.08, 0.175, 0.75], [0.08, -0.175, 0.75],
+  ];
+  for (const [h, dy, rot] of bowSegs) {
+    const gSeg = new THREE.BoxGeometry(0.016 * HEX_R, h * HEX_R, 0.016 * HEX_R);
+    perGeo.push(gSeg);
+    const mSeg = new THREE.Mesh(gSeg, mWood);
+    mSeg.rotation.x = rot;
+    mSeg.position.set(BX, AV_Y_TORSO_CTR + dy * HEX_R, 0.02 * HEX_R);
+    group.add(mSeg);
+  }
+  const gStr = new THREE.BoxGeometry(0.006 * HEX_R, 0.42 * HEX_R, 0.006 * HEX_R);
+  perGeo.push(gStr);
+  const mStr = new THREE.Mesh(gStr, mString);
+  mStr.position.set(BX + 0.018 * HEX_R, AV_Y_TORSO_CTR, 0.04 * HEX_R);
+  group.add(mStr);
+  // Quiver.
+  const mQuiver = new THREE.Mesh(getGeoQuiver(), mLeath);
+  mQuiver.rotation.x = -0.25;
+  mQuiver.position.set(0.05 * HEX_R, AV_Y_TORSO_CTR + 0.06 * HEX_R, -AV_TORSO_D * 0.5 - 0.02 * HEX_R);
+  group.add(mQuiver);
+  for (const dx of [-0.012 * HEX_R, 0.012 * HEX_R]) {
+    const mFl = new THREE.Mesh(getGeoArrowFletch(), mOwner);
+    mFl.position.set(0.05 * HEX_R + dx, AV_Y_TORSO_CTR + 0.13 * HEX_R, -AV_TORSO_D * 0.5 - 0.01 * HEX_R);
+    group.add(mFl);
+  }
+
+  addBoots(group, mLeath);
+  addHands(group, mat(COLOR_SKIN, 0.05, 0.80));
+  group.userData['mats'] = mats;
+  group.userData['perTokenGeos'] = perGeo;
+  return group;
+}
+
+/**
+ * Rydwan sumeryjski — heavy early chariot: SOLID disc wheels (no spokes),
+ * onager-pulled look (wide body), copper/fleece accents.  Reuses the chariot
+ * group but re-skins disc wheels and adds fleece kaunakes to the driver.
+ */
+function buildSumerianChariot(ownerColor_: number): THREE.Group {
+  const group = new THREE.Group();
+  const mats: THREE.Material[] = [];
+  const mat = makeMatFactory(mats);
+  const perGeo: THREE.BufferGeometry[] = [];
+
+  const mWood   = mat(0x6a5020,      0.05, 0.85);  // dark old wood
+  const mBronze = mat(COLOR_BRONZE,  0.42, 0.45);
+  const mBronzL = mat(COLOR_BRONZE_LT,0.50, 0.38);
+  const mOwner  = mat(ownerColor_,   0.10, 0.70);
+  const mHorse  = mat(0x7a5c30,      0.10, 0.80);  // muted dun = onager colour
+  const mMane   = mat(0x3a2c1a,      0.05, 0.85);
+  const mSkin   = mat(COLOR_SKIN,    0.05, 0.80);
+  const mCloth  = mat(COLOR_TEAL,    0.06, 0.80);  // Sumer teal driver
+  const mFleece = mat(0xd8c8a0,      0.04, 0.96);
+  const mDark   = mat(COLOR_TROUSERS,0.05, 0.85);
+
+  // SOLID disc wheels (no spokes) — the Sumerian hallmark.
+  const WHEEL_R = 0.090 * HEX_R;
+  const WHEEL_Y = WHEEL_R;
+  const AXLE_Y  = WHEEL_Y;
+  const CAR_FLOOR_Y = AXLE_Y + WHEEL_R * 0.30;
+
+  for (const [sx, sign] of [[0.190 * HEX_R, 1], [-0.190 * HEX_R, -1]] as [number,number][]) {
+    // Solid disc wheel.
+    const gW = new THREE.CylinderGeometry(WHEEL_R, WHEEL_R, 0.030 * HEX_R, 14, 1);
+    perGeo.push(gW);
+    const mW = new THREE.Mesh(gW, mWood);
+    mW.rotation.z = Math.PI / 2;
+    mW.position.set(sx, WHEEL_Y, -0.005 * HEX_R);
+    group.add(mW);
+    // Bronze rim.
+    const gRim = new THREE.CylinderGeometry(WHEEL_R, WHEEL_R, 0.036 * HEX_R, 14, 1, true);
+    perGeo.push(gRim);
+    const mRim = new THREE.Mesh(gRim, mBronze);
+    mRim.rotation.z = Math.PI / 2;
+    mRim.position.set(sx, WHEEL_Y, -0.005 * HEX_R);
+    group.add(mRim);
+    // Hub cap centre disc (solid wheel detail).
+    const gHub = new THREE.CylinderGeometry(0.025 * HEX_R, 0.025 * HEX_R, 0.040 * HEX_R, 8, 1);
+    perGeo.push(gHub);
+    const mHub = new THREE.Mesh(gHub, mBronzL);
+    mHub.rotation.z = Math.PI / 2;
+    mHub.position.set(sx + sign * 0.012 * HEX_R, WHEEL_Y, -0.005 * HEX_R);
+    group.add(mHub);
+  }
+
+  // Axle.
+  const gAxle = new THREE.BoxGeometry(0.40 * HEX_R, 0.020 * HEX_R, 0.020 * HEX_R);
+  perGeo.push(gAxle);
+  const mAxle = new THREE.Mesh(gAxle, mBronze);
+  mAxle.position.set(0, AXLE_Y, -0.005 * HEX_R);
+  group.add(mAxle);
+
+  // Heavier car body (wider, deeper box).
+  const gFloor = new THREE.BoxGeometry(0.30 * HEX_R, 0.022 * HEX_R, 0.28 * HEX_R);
+  perGeo.push(gFloor);
+  const mFloor = new THREE.Mesh(gFloor, mWood);
+  mFloor.position.set(0, CAR_FLOOR_Y, 0.07 * HEX_R);
+  group.add(mFloor);
+  // Front wall (owner colour).
+  const gFW = new THREE.BoxGeometry(0.30 * HEX_R, 0.12 * HEX_R, 0.022 * HEX_R);
+  perGeo.push(gFW);
+  const mFW = new THREE.Mesh(gFW, mOwner);
+  mFW.position.set(0, CAR_FLOOR_Y + 0.06 * HEX_R, -0.055 * HEX_R);
+  group.add(mFW);
+  // Side walls.
+  for (const sx of [0.140 * HEX_R, -0.140 * HEX_R]) {
+    const gSide = new THREE.BoxGeometry(0.022 * HEX_R, 0.10 * HEX_R, 0.28 * HEX_R);
+    perGeo.push(gSide);
+    const mSide = new THREE.Mesh(gSide, mWood);
+    mSide.position.set(sx, CAR_FLOOR_Y + 0.05 * HEX_R, 0.07 * HEX_R);
+    group.add(mSide);
+  }
+  // Bronze top trim on front wall.
+  const gTrim = new THREE.BoxGeometry(0.32 * HEX_R, 0.018 * HEX_R, 0.024 * HEX_R);
+  perGeo.push(gTrim);
+  const mTrim = new THREE.Mesh(gTrim, mBronze);
+  mTrim.position.set(0, CAR_FLOOR_Y + 0.118 * HEX_R, -0.055 * HEX_R);
+  group.add(mTrim);
+
+  // Draw pole + yoke.
+  const POLE_Z_START = -0.066 * HEX_R;
+  const POLE_Z_END   = -0.32  * HEX_R;
+  const POLE_LEN = Math.abs(POLE_Z_END - POLE_Z_START);
+  const gPole = new THREE.BoxGeometry(0.022 * HEX_R, 0.022 * HEX_R, POLE_LEN);
+  perGeo.push(gPole);
+  const mPole = new THREE.Mesh(gPole, mWood);
+  mPole.position.set(0, CAR_FLOOR_Y, (POLE_Z_START + POLE_Z_END) * 0.5);
+  group.add(mPole);
+  const gYoke = new THREE.BoxGeometry(0.28 * HEX_R, 0.022 * HEX_R, 0.022 * HEX_R);
+  perGeo.push(gYoke);
+  const mYoke = new THREE.Mesh(gYoke, mBronze);
+  mYoke.position.set(0, CAR_FLOOR_Y, POLE_Z_END);
+  group.add(mYoke);
+
+  // TWO onagers (horses with dun colouring) — same buildHorse helper.
+  const HORSE_Z = POLE_Z_END - 0.08 * HEX_R;
+  for (const hx of [0.10 * HEX_R, -0.10 * HEX_R]) {
+    buildHorse(group, mat, mHorse, mMane, mDark, hx, HORSE_Z);
+  }
+
+  // Driver (scaled down, teal + fleece fringe, conical helm).
+  const DRV_SCALE  = 0.82;
+  const DRV_LEG_H  = AV_LEG_H  * DRV_SCALE;
+  const DRV_TRS_H  = AV_TORSO_H * DRV_SCALE;
+  const DRV_TRS_W  = AV_TORSO_W * DRV_SCALE;
+  const DRV_TRS_D  = AV_TORSO_D * DRV_SCALE;
+  const DRV_ARM_W  = AV_ARM_W  * DRV_SCALE;
+  const DRV_ARM_H  = AV_ARM_H  * DRV_SCALE;
+  const DRV_ARM_D  = AV_ARM_D  * DRV_SCALE;
+  const DRV_HEAD_S = AV_HEAD_S * DRV_SCALE;
+  const DRV_ARM_OX = DRV_TRS_W * 0.5 + DRV_ARM_W * 0.5 + 0.002 * HEX_R;
+  const DRV_BASE   = CAR_FLOOR_Y + 0.008 * HEX_R;
+  const DRV_LEG_CTR  = DRV_BASE + DRV_LEG_H * 0.5;
+  const DRV_TRS_BOT  = DRV_BASE + DRV_LEG_H;
+  const DRV_TRS_CTR  = DRV_TRS_BOT + DRV_TRS_H * 0.5;
+  const DRV_TRS_TOP  = DRV_TRS_BOT + DRV_TRS_H;
+  const DRV_ARM_CTR  = DRV_TRS_BOT + DRV_TRS_H * 0.55;
+  const DRV_HEAD_CTR = DRV_TRS_TOP + AV_NECK_H * DRV_SCALE + DRV_HEAD_S * 0.5;
+
+  const driverGroup = new THREE.Group();
+  driverGroup.rotation.y = Math.PI;
+  group.add(driverGroup);
+
+  const gDLL = new THREE.BoxGeometry(AV_LEG_W * DRV_SCALE, DRV_LEG_H, AV_LEG_W * DRV_SCALE);
+  perGeo.push(gDLL);
+  const mDLL = new THREE.Mesh(gDLL, mDark);
+  mDLL.position.set(-(AV_LEG_SEP + AV_LEG_W * DRV_SCALE * 0.5), DRV_LEG_CTR, 0.03 * HEX_R);
+  driverGroup.add(mDLL);
+  const gDLR = new THREE.BoxGeometry(AV_LEG_W * DRV_SCALE, DRV_LEG_H, AV_LEG_W * DRV_SCALE);
+  perGeo.push(gDLR);
+  const mDLR = new THREE.Mesh(gDLR, mDark);
+  mDLR.position.set( (AV_LEG_SEP + AV_LEG_W * DRV_SCALE * 0.5), DRV_LEG_CTR, 0.03 * HEX_R);
+  driverGroup.add(mDLR);
+
+  const gDTrs = new THREE.BoxGeometry(DRV_TRS_W, DRV_TRS_H, DRV_TRS_D);
+  perGeo.push(gDTrs);
+  const mDTrs = new THREE.Mesh(gDTrs, mCloth);
+  mDTrs.position.set(0, DRV_TRS_CTR, 0.03 * HEX_R);
+  driverGroup.add(mDTrs);
+  // Fleece hem below torso.
+  const gFleeceH = new THREE.BoxGeometry(DRV_TRS_W * 1.08, 0.026 * HEX_R, DRV_TRS_D * 1.05);
+  perGeo.push(gFleeceH);
+  const mFleeceH = new THREE.Mesh(gFleeceH, mFleece);
+  mFleeceH.position.set(0, DRV_TRS_BOT - 0.014 * HEX_R, 0.03 * HEX_R);
+  driverGroup.add(mFleeceH);
+  // Owner sash.
+  const gDSash = new THREE.BoxGeometry(DRV_TRS_W * 0.85, DRV_TRS_H * 0.28, 0.012 * HEX_R);
+  perGeo.push(gDSash);
+  const mDSash = new THREE.Mesh(gDSash, mOwner);
+  mDSash.position.set(0, DRV_TRS_CTR, 0.03 * HEX_R + DRV_TRS_D * 0.5 + 0.002 * HEX_R);
+  driverGroup.add(mDSash);
+
+  for (const sx of [-1, 1]) {
+    const gArm = new THREE.BoxGeometry(DRV_ARM_W, DRV_ARM_H, DRV_ARM_D);
+    perGeo.push(gArm);
+    const mArm = new THREE.Mesh(gArm, mCloth);
+    mArm.position.set(sx * DRV_ARM_OX, DRV_ARM_CTR, 0.03 * HEX_R);
+    driverGroup.add(mArm);
+  }
+
+  const gDHead = new THREE.BoxGeometry(DRV_HEAD_S, DRV_HEAD_S, DRV_HEAD_S);
+  perGeo.push(gDHead);
+  const mDHead = new THREE.Mesh(gDHead, mSkin);
+  mDHead.position.set(0, DRV_HEAD_CTR, 0.03 * HEX_R);
+  driverGroup.add(mDHead);
+  // Eyes.
+  const dEyeZ = DRV_HEAD_S * 0.5 + 0.002 * HEX_R;
+  for (const [ex, ey] of [[-0.024, 0.008], [0.024, 0.008]] as [number,number][]) {
+    const gE = new THREE.BoxGeometry(0.015 * HEX_R, 0.011 * HEX_R, 0.008 * HEX_R);
+    perGeo.push(gE);
+    const mE = new THREE.Mesh(gE, mat(COLOR_DARK_EYE, 0.02, 0.95));
+    mE.position.set(ex * HEX_R, DRV_HEAD_CTR + ey * HEX_R, 0.03 * HEX_R + dEyeZ);
+    driverGroup.add(mE);
+  }
+  // Conical copper helm on driver.
+  const gHelm = new THREE.CylinderGeometry(0.020 * HEX_R * DRV_SCALE, 0.072 * HEX_R * DRV_SCALE, 0.085 * HEX_R * DRV_SCALE, 8, 1);
+  perGeo.push(gHelm);
+  const mHelm = new THREE.Mesh(gHelm, mBronze);
+  mHelm.position.set(0, DRV_HEAD_CTR + DRV_HEAD_S * 0.52, 0.03 * HEX_R);
+  driverGroup.add(mHelm);
+
+  // Reins.
+  const gRein = new THREE.BoxGeometry(0.12 * HEX_R, 0.008 * HEX_R, 0.008 * HEX_R);
+  perGeo.push(gRein);
+  const mRein = new THREE.Mesh(gRein, mDark);
+  mRein.rotation.y = Math.PI * 0.5;
+  mRein.position.set(0, DRV_ARM_CTR, 0.03 * HEX_R - DRV_TRS_D * 0.5 - 0.06 * HEX_R);
+  driverGroup.add(mRein);
+
+  group.userData['mats'] = mats;
+  group.userData['perTokenGeos'] = perGeo;
+  group.rotation.y = Math.PI;
+  return group;
+}
+
+// --- EGIPT SPECIALS --------------------------------------------------------
+
+/**
+ * Łucznik egipski — composite bow, white linen kilt, blue striped nemes
+ * headcloth (distinct from the green generic archer and the Akkadian).
+ */
+function buildEgyptianArcher(ownerColor_: number): THREE.Group {
+  const { group, mats } = buildBaseAvatar(COLOR_SKIN, COLOR_LINEN, ownerColor_);
+  const mat = makeMatFactory(mats);
+  const perGeo: THREE.BufferGeometry[] = [];
+  const mWood   = mat(0x6e4a24,     0.05, 0.82);
+  const mBronze = mat(COLOR_BRONZE, 0.42, 0.45);
+  const mString = mat(0xe8e0cc,     0.02, 0.95);
+  const mOwner  = mat(ownerColor_,  0.10, 0.70);
+  const mLinen  = mat(COLOR_LINEN,  0.05, 0.86);
+  const mBlue   = mat(COLOR_WOAD,   0.05, 0.75);   // nemes blue stripes
+  const mGold   = mat(COLOR_GOLD,   0.55, 0.38);   // gold collar
+  const mLeath  = mat(COLOR_LEATHER,0.06, 0.82);
+
+  // White linen kilt (short, Egyptian style) — re-skin legs to linen.
+  const gKilt = new THREE.BoxGeometry(AV_TORSO_W * 1.10, 0.130 * HEX_R, AV_TORSO_D * 1.08);
+  perGeo.push(gKilt);
+  const mKilt = new THREE.Mesh(gKilt, mLinen);
+  mKilt.position.set(0, AV_Y_TORSO_BOT - 0.025 * HEX_R, 0);
+  group.add(mKilt);
+  // Owner-colour waist band.
+  const gWaist = new THREE.BoxGeometry(AV_TORSO_W * 1.12, 0.022 * HEX_R, AV_TORSO_D * 1.10);
+  perGeo.push(gWaist);
+  const mWaist = new THREE.Mesh(gWaist, mOwner);
+  mWaist.position.set(0, AV_Y_TORSO_BOT + 0.01 * HEX_R, 0);
+  group.add(mWaist);
+  // Gold usekh collar at neck.
+  const gCollar = new THREE.BoxGeometry(AV_TORSO_W * 1.05, 0.028 * HEX_R, AV_TORSO_D * 1.04);
+  perGeo.push(gCollar);
+  const mCollar = new THREE.Mesh(gCollar, mGold);
+  mCollar.position.set(0, AV_Y_TORSO_TOP - 0.006 * HEX_R, 0);
+  group.add(mCollar);
+
+  // NEMES headcloth: a wide box covering crown + sides + falling lappets.
+  // Crown cloth (wide flat wrap).
+  const gNemesCrown = new THREE.BoxGeometry(0.155 * HEX_R, 0.040 * HEX_R, 0.155 * HEX_R);
+  perGeo.push(gNemesCrown);
+  const mNemesCrown = new THREE.Mesh(gNemesCrown, mLinen);
+  mNemesCrown.position.set(0, AV_Y_HEAD_CTR + 0.030 * HEX_R, 0);
+  group.add(mNemesCrown);
+  // Blue stripes over the crown (three thin strips).
+  for (let i = 0; i < 3; i++) {
+    const gStripe = new THREE.BoxGeometry(0.158 * HEX_R, 0.008 * HEX_R, 0.158 * HEX_R);
+    perGeo.push(gStripe);
+    const mStripe = new THREE.Mesh(gStripe, mBlue);
+    mStripe.position.set(0, AV_Y_HEAD_CTR + 0.055 * HEX_R - i * 0.018 * HEX_R, 0);
+    group.add(mStripe);
+  }
+  // Two lappets (cloth falling beside cheeks onto shoulders).
+  for (const sx of [-1, 1]) {
+    const gLap = new THREE.BoxGeometry(0.032 * HEX_R, 0.085 * HEX_R, 0.022 * HEX_R);
+    perGeo.push(gLap);
+    const mLap = new THREE.Mesh(gLap, mLinen);
+    mLap.position.set(sx * 0.068 * HEX_R, AV_Y_HEAD_CTR - 0.016 * HEX_R, AV_HEAD_S * 0.5 - 0.005 * HEX_R);
+    group.add(mLap);
+  }
+
+  // Composite recurve bow on the left.
+  const BX = -(AV_ARM_OFFSET_X + AV_ARM_W * 0.5 + 0.010 * HEX_R);
+  const bowSegs: [number, number, number][] = [
+    [0.18, 0.0, 0.0], [0.14, 0.10, 0.30], [0.14, -0.10, 0.30],
+    [0.08, 0.175, 0.75], [0.08, -0.175, 0.75],
+  ];
+  for (const [h, dy, rot] of bowSegs) {
+    const gSeg = new THREE.BoxGeometry(0.016 * HEX_R, h * HEX_R, 0.016 * HEX_R);
+    perGeo.push(gSeg);
+    const mSeg = new THREE.Mesh(gSeg, mWood);
+    mSeg.rotation.x = rot;
+    mSeg.position.set(BX, AV_Y_TORSO_CTR + dy * HEX_R, 0.02 * HEX_R);
+    group.add(mSeg);
+  }
+  const gStr = new THREE.BoxGeometry(0.006 * HEX_R, 0.42 * HEX_R, 0.006 * HEX_R);
+  perGeo.push(gStr);
+  const mStr = new THREE.Mesh(gStr, mString);
+  mStr.position.set(BX + 0.018 * HEX_R, AV_Y_TORSO_CTR, 0.04 * HEX_R);
+  group.add(mStr);
+  // Quiver.
+  const mQuiver = new THREE.Mesh(getGeoQuiver(), mLeath);
+  mQuiver.rotation.x = -0.25;
+  mQuiver.position.set(0.05 * HEX_R, AV_Y_TORSO_CTR + 0.06 * HEX_R, -AV_TORSO_D * 0.5 - 0.02 * HEX_R);
+  group.add(mQuiver);
+  for (const dx of [-0.012 * HEX_R, 0.012 * HEX_R]) {
+    const mFl = new THREE.Mesh(getGeoArrowFletch(), mOwner);
+    mFl.position.set(0.05 * HEX_R + dx, AV_Y_TORSO_CTR + 0.13 * HEX_R, -AV_TORSO_D * 0.5 - 0.01 * HEX_R);
+    group.add(mFl);
+  }
+
+  addBoots(group, mLeath);
+  addHands(group, mat(COLOR_SKIN, 0.05, 0.80));
+  group.userData['mats'] = mats;
+  group.userData['perTokenGeos'] = perGeo;
+  return group;
+}
+
+/**
+ * Wojownik z khopesh — curved sickle-sword (khopesh) + small round shield,
+ * Egyptian white linen kilt + nemes-style headcloth (same headgear family as
+ * Egyptian Archer but armed for melee).
+ */
+function buildKhopeshWarrior(ownerColor_: number): THREE.Group {
+  const { group, mats } = buildBaseAvatar(COLOR_SKIN, COLOR_LINEN, ownerColor_);
+  const mat = makeMatFactory(mats);
+  const perGeo: THREE.BufferGeometry[] = [];
+  const mBronze = mat(COLOR_BRONZE,  0.42, 0.45);
+  const mBronzL = mat(COLOR_BRONZE_LT,0.50, 0.38);
+  const mOwner  = mat(ownerColor_,   0.12, 0.66);
+  const mLinen  = mat(COLOR_LINEN,   0.05, 0.86);
+  const mBlue   = mat(COLOR_WOAD,    0.05, 0.75);
+  const mGold   = mat(COLOR_GOLD,    0.55, 0.38);
+  const mWood   = mat(COLOR_WOOD,    0.05, 0.85);
+  const mLeath  = mat(COLOR_LEATHER, 0.06, 0.82);
+
+  // Linen kilt.
+  const gKilt = new THREE.BoxGeometry(AV_TORSO_W * 1.10, 0.130 * HEX_R, AV_TORSO_D * 1.08);
+  perGeo.push(gKilt);
+  const kiltM = new THREE.Mesh(gKilt, mLinen);
+  kiltM.position.set(0, AV_Y_TORSO_BOT - 0.025 * HEX_R, 0);
+  group.add(kiltM);
+  // Owner waist band.
+  const gWaist = new THREE.BoxGeometry(AV_TORSO_W * 1.12, 0.022 * HEX_R, AV_TORSO_D * 1.10);
+  perGeo.push(gWaist);
+  const mWaist = new THREE.Mesh(gWaist, mOwner);
+  mWaist.position.set(0, AV_Y_TORSO_BOT + 0.012 * HEX_R, 0);
+  group.add(mWaist);
+  // Gold usekh collar.
+  const gCollar = new THREE.BoxGeometry(AV_TORSO_W * 1.04, 0.028 * HEX_R, AV_TORSO_D * 1.03);
+  perGeo.push(gCollar);
+  const mCollar = new THREE.Mesh(gCollar, mGold);
+  mCollar.position.set(0, AV_Y_TORSO_TOP - 0.006 * HEX_R, 0);
+  group.add(mCollar);
+
+  // Nemes headcloth (shared look with Egyptian Archer).
+  const gNC = new THREE.BoxGeometry(0.155 * HEX_R, 0.040 * HEX_R, 0.155 * HEX_R);
+  perGeo.push(gNC);
+  const mNC = new THREE.Mesh(gNC, mLinen);
+  mNC.position.set(0, AV_Y_HEAD_CTR + 0.030 * HEX_R, 0);
+  group.add(mNC);
+  for (let i = 0; i < 3; i++) {
+    const gS = new THREE.BoxGeometry(0.158 * HEX_R, 0.008 * HEX_R, 0.158 * HEX_R);
+    perGeo.push(gS);
+    const mS = new THREE.Mesh(gS, mBlue);
+    mS.position.set(0, AV_Y_HEAD_CTR + 0.055 * HEX_R - i * 0.018 * HEX_R, 0);
+    group.add(mS);
+  }
+  for (const sx of [-1, 1]) {
+    const gLap = new THREE.BoxGeometry(0.032 * HEX_R, 0.080 * HEX_R, 0.022 * HEX_R);
+    perGeo.push(gLap);
+    const mLap = new THREE.Mesh(gLap, mLinen);
+    mLap.position.set(sx * 0.068 * HEX_R, AV_Y_HEAD_CTR - 0.015 * HEX_R, AV_HEAD_S * 0.5 - 0.005 * HEX_R);
+    group.add(mLap);
+  }
+
+  // KHOPESH (curved sickle-sword): straight handle + curved forward hook.
+  // The hallmark is a forward-curving bronze "sickle" above the grip.
+  const KH_X = AV_ARM_OFFSET_X + AV_ARM_W * 0.5 + 0.012 * HEX_R;
+  const KH_Y_BASE = AV_Y_TORSO_CTR - 0.04 * HEX_R;
+  // Handle (grip).
+  const gGrip = new THREE.BoxGeometry(0.020 * HEX_R, 0.10 * HEX_R, 0.020 * HEX_R);
+  perGeo.push(gGrip);
+  const mGrip = new THREE.Mesh(gGrip, mWood);
+  mGrip.position.set(KH_X, KH_Y_BASE + 0.05 * HEX_R, 0.01 * HEX_R);
+  group.add(mGrip);
+  // Guard.
+  const gGuard = new THREE.BoxGeometry(0.055 * HEX_R, 0.014 * HEX_R, 0.016 * HEX_R);
+  perGeo.push(gGuard);
+  const mGuard = new THREE.Mesh(gGuard, mBronzL);
+  mGuard.position.set(KH_X, KH_Y_BASE + 0.10 * HEX_R, 0.010 * HEX_R);
+  group.add(mGuard);
+  // Straight portion of blade going up.
+  const gBladeStraight = new THREE.BoxGeometry(0.018 * HEX_R, 0.11 * HEX_R, 0.010 * HEX_R);
+  perGeo.push(gBladeStraight);
+  const mBS = new THREE.Mesh(gBladeStraight, mBronze);
+  mBS.position.set(KH_X, KH_Y_BASE + 0.165 * HEX_R, 0.010 * HEX_R);
+  group.add(mBS);
+  // Curved sickle hook — three angled segments curving forward.
+  const hookSegs: [number, number, number, number][] = [
+    // [dx, dy, rotZ, len]
+    [0.025, 0.20, -0.55, 0.065],
+    [0.055, 0.235, -1.1,  0.050],
+    [0.075, 0.235, -1.7,  0.040],
+  ];
+  for (const [dx, dy, rz, len] of hookSegs) {
+    const gHook = new THREE.BoxGeometry(0.018 * HEX_R, len * HEX_R, 0.010 * HEX_R);
+    perGeo.push(gHook);
+    const mHook = new THREE.Mesh(gHook, mBronze);
+    mHook.rotation.z = rz;
+    mHook.position.set(KH_X + dx * HEX_R, KH_Y_BASE + dy * HEX_R, 0.010 * HEX_R);
+    group.add(mHook);
+  }
+
+  // Small round shield on left arm.
+  const SH_X = -(AV_ARM_OFFSET_X + AV_ARM_W * 0.5 + 0.014 * HEX_R);
+  const mSh = new THREE.Mesh(getGeoOvalShield(), mOwner);
+  mSh.rotation.z = Math.PI / 2;
+  mSh.scale.set(1.0, 1.0, 1.0);
+  mSh.position.set(SH_X, AV_Y_TORSO_CTR, 0.012 * HEX_R);
+  group.add(mSh);
+  const mBoss = new THREE.Mesh(getGeoShieldBoss(), mBronzL);
+  mBoss.rotation.z = Math.PI / 2;
+  mBoss.position.set(SH_X + 0.010 * HEX_R, AV_Y_TORSO_CTR, 0.012 * HEX_R);
+  group.add(mBoss);
+
+  addBoots(group, mLeath);
+  addHands(group, mat(COLOR_SKIN, 0.05, 0.80));
+  group.userData['mats'] = mats;
+  group.userData['perTokenGeos'] = perGeo;
+  return group;
+}
+
+/**
+ * Rydwan egipski — light 2-horse chariot with ARCHER on board (bow raised),
+ * white linen + blue-striped nemes on driver, gold accents.
+ */
+function buildEgyptianChariot(ownerColor_: number): THREE.Group {
+  // Start from the generic chariot but override driver appearance.
+  const group = buildCategoryModel('rydwan', ownerColor_);
+  const mats = group.userData['mats'] as THREE.Material[];
+  const perGeo = (group.userData['perTokenGeos'] as THREE.BufferGeometry[]) ?? [];
+  const mat = makeMatFactory(mats);
+
+  // Add a composite bow on the front-right of the car (Egyptian archer carry).
+  const mWood   = mat(0x6e4a24,    0.05, 0.82);
+  const mString = mat(0xe8e0cc,    0.02, 0.95);
+  const mGold   = mat(COLOR_GOLD,  0.55, 0.38);
+  const mBlue   = mat(COLOR_WOAD,  0.05, 0.75);
+
+  // Car was built near Z=0, floor at ~WHEEL_R + WHEEL_R*0.3 above ground.
+  // We'll place a bow held upright on the right side of the car.
+  const WHEEL_R   = 0.085 * HEX_R;
+  const WHEEL_Y   = WHEEL_R;
+  const CAR_FLOOR_Y = WHEEL_Y + WHEEL_R * 0.30;
+
+  const BOW_X = 0.10 * HEX_R;
+  const BOW_Y_CTR = CAR_FLOOR_Y + 0.25 * HEX_R;
+
+  const bowSegs: [number, number, number][] = [
+    [0.18, 0.0, 0.0], [0.14, 0.10, 0.30], [0.14, -0.10, 0.30],
+  ];
+  for (const [h, dy, rot] of bowSegs) {
+    const gSeg = new THREE.BoxGeometry(0.015 * HEX_R, h * HEX_R, 0.015 * HEX_R);
+    perGeo.push(gSeg);
+    const mSeg = new THREE.Mesh(gSeg, mWood);
+    mSeg.rotation.x = rot;
+    mSeg.position.set(BOW_X, BOW_Y_CTR + dy * HEX_R, 0.06 * HEX_R);
+    group.add(mSeg);
+  }
+  const gBStr = new THREE.BoxGeometry(0.005 * HEX_R, 0.36 * HEX_R, 0.005 * HEX_R);
+  perGeo.push(gBStr);
+  const mBStr = new THREE.Mesh(gBStr, mString);
+  mBStr.position.set(BOW_X + 0.015 * HEX_R, BOW_Y_CTR, 0.08 * HEX_R);
+  group.add(mBStr);
+
+  // Gold trim strip on front wall (Egyptian gilt).
+  const gGoldTrim = new THREE.BoxGeometry(0.30 * HEX_R, 0.014 * HEX_R, 0.024 * HEX_R);
+  perGeo.push(gGoldTrim);
+  const mGoldTrimM = new THREE.Mesh(gGoldTrim, mGold);
+  mGoldTrimM.position.set(0, CAR_FLOOR_Y + 0.115 * HEX_R, -0.050 * HEX_R);
+  group.add(mGoldTrimM);
+
+  // Blue stripe on car front panel (over the ownerColor front wall).
+  const gBlueStripe = new THREE.BoxGeometry(0.28 * HEX_R, 0.016 * HEX_R, 0.022 * HEX_R);
+  perGeo.push(gBlueStripe);
+  const mBlueStripe = new THREE.Mesh(gBlueStripe, mBlue);
+  mBlueStripe.position.set(0, CAR_FLOOR_Y + 0.068 * HEX_R, -0.050 * HEX_R);
+  group.add(mBlueStripe);
+
+  group.userData['perTokenGeos'] = perGeo;
+  return group;
+}
+
+// --- INKA SPECIALS ---------------------------------------------------------
+
+/**
+ * Oszczepnik (Estólica) — Inca atlatl (spear-thrower) + darts, Andean tunic
+ * (uncu) in ochre/gold, colourful headband.
+ */
+function buildInkaJavelineer(ownerColor_: number): THREE.Group {
+  const { group, mats } = buildBaseAvatar(COLOR_SKIN, COLOR_OCHRE, ownerColor_);
+  const mat = makeMatFactory(mats);
+  const perGeo: THREE.BufferGeometry[] = [];
+  const mWood   = mat(COLOR_WOOD,    0.05, 0.85);
+  const mBronze = mat(COLOR_BRONZE,  0.40, 0.48);
+  const mOwner  = mat(ownerColor_,   0.10, 0.68);
+  const mGold   = mat(COLOR_GOLD_BR, 0.45, 0.40);
+  const mTunic  = mat(COLOR_OCHRE,   0.05, 0.86);
+  const mBand   = mat(0xc03530,      0.05, 0.75);  // red headband
+  const mLeath  = mat(COLOR_LEATHER, 0.06, 0.82);
+
+  // Andean uncu tunic hem with geometric border.
+  addTunicHem(group, mTunic);
+  const gBorder = new THREE.BoxGeometry(AV_TORSO_W * 1.10, 0.022 * HEX_R, AV_TORSO_D * 1.08);
+  perGeo.push(gBorder);
+  const mBorder = new THREE.Mesh(gBorder, mOwner);
+  mBorder.position.set(0, AV_Y_TORSO_BOT - 0.038 * HEX_R, 0);
+  group.add(mBorder);
+  // Gold collar trim.
+  const gCol = new THREE.BoxGeometry(AV_TORSO_W * 1.04, 0.024 * HEX_R, AV_TORSO_D * 1.03);
+  perGeo.push(gCol);
+  const mCol = new THREE.Mesh(gCol, mGold);
+  mCol.position.set(0, AV_Y_TORSO_TOP - 0.005 * HEX_R, 0);
+  group.add(mCol);
+
+  // Andean headband (llautu / wara) — horizontal strip around forehead.
+  const gHBand = new THREE.BoxGeometry(0.148 * HEX_R, 0.026 * HEX_R, 0.148 * HEX_R);
+  perGeo.push(gHBand);
+  const mHBand = new THREE.Mesh(gHBand, mBand);
+  mHBand.position.set(0, AV_Y_HEAD_CTR + 0.022 * HEX_R, 0);
+  group.add(mHBand);
+  // Small feather plume (owner-colour) rising from headband.
+  const gPlume = new THREE.BoxGeometry(0.012 * HEX_R, 0.075 * HEX_R, 0.022 * HEX_R);
+  perGeo.push(gPlume);
+  const mPlume = new THREE.Mesh(gPlume, mOwner);
+  mPlume.position.set(0, AV_Y_HEAD_TOP + 0.040 * HEX_R, 0);
+  group.add(mPlume);
+
+  // ATLATL spear-thrower in right hand: short board + hook at top.
+  const ATL_X = AV_ARM_OFFSET_X + AV_ARM_W * 0.5 + 0.010 * HEX_R;
+  const ATL_Y = AV_Y_TORSO_CTR;
+  const gBoard = new THREE.BoxGeometry(0.016 * HEX_R, 0.20 * HEX_R, 0.040 * HEX_R);
+  perGeo.push(gBoard);
+  const mBoard = new THREE.Mesh(gBoard, mWood);
+  mBoard.position.set(ATL_X, ATL_Y, 0.010 * HEX_R);
+  group.add(mBoard);
+  // Hook/spur at top of atlatl.
+  const gHook = new THREE.BoxGeometry(0.010 * HEX_R, 0.025 * HEX_R, 0.020 * HEX_R);
+  perGeo.push(gHook);
+  const mHook = new THREE.Mesh(gHook, mBronze);
+  mHook.position.set(ATL_X, ATL_Y + 0.112 * HEX_R, 0.026 * HEX_R);
+  group.add(mHook);
+
+  // Dart loaded on the atlatl: thin shaft + small tip, angled forward.
+  const gDart = new THREE.BoxGeometry(0.010 * HEX_R, 0.30 * HEX_R, 0.010 * HEX_R);
+  perGeo.push(gDart);
+  const mDart = new THREE.Mesh(gDart, mWood);
+  mDart.rotation.x = -0.35;
+  mDart.position.set(ATL_X, ATL_Y + 0.10 * HEX_R, 0.025 * HEX_R);
+  group.add(mDart);
+  const gDTip = new THREE.BoxGeometry(0.014 * HEX_R, 0.026 * HEX_R, 0.014 * HEX_R);
+  perGeo.push(gDTip);
+  const mDTip = new THREE.Mesh(gDTip, mBronze);
+  mDTip.rotation.x = -0.35;
+  mDTip.position.set(ATL_X, ATL_Y + 0.245 * HEX_R, -0.030 * HEX_R);
+  group.add(mDTip);
+
+  // Bundle of spare darts on the left (gripped against arm).
+  const SD_X = -(AV_ARM_OFFSET_X + AV_ARM_W * 0.5 + 0.008 * HEX_R);
+  for (const [dx, h] of [[-0.010 * HEX_R, 0.26], [0.0, 0.28], [0.010 * HEX_R, 0.24]] as [number,number][]) {
+    const gSD = new THREE.BoxGeometry(0.010 * HEX_R, h * HEX_R, 0.010 * HEX_R);
+    perGeo.push(gSD);
+    const mSD = new THREE.Mesh(gSD, mWood);
+    mSD.position.set(SD_X + dx, AV_Y_TORSO_CTR + 0.04 * HEX_R, 0.008 * HEX_R);
+    group.add(mSD);
+  }
+
+  addBelt(group, mLeath);
+  addBoots(group, mLeath);
+  addHands(group, mat(COLOR_SKIN, 0.05, 0.80));
+  group.userData['mats'] = mats;
+  group.userData['perTokenGeos'] = perGeo;
+  return group;
+}
+
+/**
+ * Procarz (Huaracoc) — Andean sling + stone pouch, colourful uncu tunic,
+ * ear ornaments, red headband.  Distinctly Inca vs generic ochre slinger.
+ */
+function buildInkaSlinger(ownerColor_: number): THREE.Group {
+  const { group, mats } = buildBaseAvatar(COLOR_SKIN, COLOR_OCHRE, ownerColor_);
+  const mat = makeMatFactory(mats);
+  const perGeo: THREE.BufferGeometry[] = [];
+  const mStone = mat(0x8a857c,     0.05, 0.95);
+  const mOwner = mat(ownerColor_,  0.08, 0.70);
+  const mGold  = mat(COLOR_GOLD_BR,0.45, 0.40);
+  const mRed   = mat(0xc03530,     0.05, 0.75);
+  const mLeath = mat(COLOR_LEATHER,0.05, 0.85);
+  const mStrap = mat(0x7a5034,     0.05, 0.85);
+
+  // Andean tunic hem + geometric border.
+  addTunicHem(group, mat(COLOR_OCHRE, 0.05, 0.86));
+  const gBorder = new THREE.BoxGeometry(AV_TORSO_W * 1.10, 0.022 * HEX_R, AV_TORSO_D * 1.08);
+  perGeo.push(gBorder);
+  const mBorder = new THREE.Mesh(gBorder, mOwner);
+  mBorder.position.set(0, AV_Y_TORSO_BOT - 0.040 * HEX_R, 0);
+  group.add(mBorder);
+  // Gold collar.
+  const gCol = new THREE.BoxGeometry(AV_TORSO_W * 1.04, 0.022 * HEX_R, AV_TORSO_D * 1.03);
+  perGeo.push(gCol);
+  const mColM = new THREE.Mesh(gCol, mGold);
+  mColM.position.set(0, AV_Y_TORSO_TOP - 0.005 * HEX_R, 0);
+  group.add(mColM);
+
+  // Red headband.
+  const gHB = new THREE.BoxGeometry(0.148 * HEX_R, 0.026 * HEX_R, 0.148 * HEX_R);
+  perGeo.push(gHB);
+  const mHB = new THREE.Mesh(gHB, mRed);
+  mHB.position.set(0, AV_Y_HEAD_CTR + 0.022 * HEX_R, 0);
+  group.add(mHB);
+  // Gold ear ornaments (Inca ear-spools = qinpu) -- two small gold discs.
+  for (const sx of [-1, 1]) {
+    const gEar = new THREE.BoxGeometry(0.010 * HEX_R, 0.020 * HEX_R, 0.020 * HEX_R);
+    perGeo.push(gEar);
+    const mEar = new THREE.Mesh(gEar, mGold);
+    mEar.position.set(sx * (AV_HEAD_S * 0.5 + 0.006 * HEX_R), AV_Y_HEAD_CTR - 0.010 * HEX_R, 0);
+    group.add(mEar);
+  }
+
+  // Huaraca (sling) in right hand: two cords + stone pocket (identical to
+  // generic slinger geometry but with Andean red strap colour).
+  const SL_HAND_X = AV_ARM_OFFSET_X;
+  const SL_HAND_Y = AV_Y_ARM_CTR - AV_ARM_H * 0.5 + 0.022 * HEX_R;
+  const SL_HAND_Z = AV_TORSO_D * 0.5 + 0.010 * HEX_R;
+  const SL_DROP   = 0.12 * HEX_R;
+  const SL_POUCH_Y = SL_HAND_Y - SL_DROP;
+  const SL_POUCH_Z = SL_HAND_Z + 0.018 * HEX_R;
+  const gCord = new THREE.CylinderGeometry(0.006 * HEX_R, 0.006 * HEX_R, SL_DROP * 1.04, 6, 1);
+  perGeo.push(gCord);
+  for (const dz of [-0.016 * HEX_R, 0.016 * HEX_R]) {
+    const topZ = SL_HAND_Z + dz;
+    const botZ = SL_POUCH_Z;
+    const mCord = new THREE.Mesh(gCord, mStrap);
+    mCord.rotation.x = Math.atan2(botZ - topZ, SL_DROP);
+    mCord.position.set(SL_HAND_X, (SL_HAND_Y + SL_POUCH_Y) * 0.5, (topZ + botZ) * 0.5);
+    group.add(mCord);
+  }
+  const mPocket = new THREE.Mesh(getGeoSlingPouch(), mLeath);
+  mPocket.position.set(SL_HAND_X, SL_POUCH_Y, SL_POUCH_Z);
+  group.add(mPocket);
+  const mPellet = new THREE.Mesh(getGeoSlingStone(), mStone);
+  mPellet.position.set(SL_HAND_X, SL_POUCH_Y, SL_POUCH_Z + 0.004 * HEX_R);
+  group.add(mPellet);
+
+  // Stone pouch on hip (owner-colour flap).
+  const mPouch = new THREE.Mesh(getGeoSlingPouch(), mLeath);
+  mPouch.position.set(-(AV_TORSO_W * 0.5 + 0.012 * HEX_R), AV_Y_TORSO_BOT + 0.02 * HEX_R, 0.03 * HEX_R);
+  group.add(mPouch);
+
+  addBoots(group, mLeath);
+  addHands(group, mat(COLOR_SKIN, 0.05, 0.80));
+  group.userData['mats'] = mats;
+  group.userData['perTokenGeos'] = [gBorder, gHB, gCord, ...perGeo];
+  return group;
+}
+
+// --- CHINY SPECIALS --------------------------------------------------------
+
+/**
+ * Jeździec chiński — lacquer-red lamellar armour horseman, dagger-axe (ge)
+ * held raised, Chinese rounded helm with a neck flap + owner pennon.
+ */
+function buildChineseCavalry(ownerColor_: number): THREE.Group {
+  // Start from the generic cavalry group — it provides horse + rider skeleton.
+  const group = buildCategoryModel('konnica', ownerColor_);
+  const mats  = group.userData['mats'] as THREE.Material[];
+  const perGeo = (group.userData['perTokenGeos'] as THREE.BufferGeometry[]) ?? [];
+  const mat = makeMatFactory(mats);
+
+  const mLac   = mat(COLOR_LACQUER, 0.10, 0.55);
+  const mBronz = mat(COLOR_BRONZE,  0.42, 0.45);
+  const mBronzL= mat(COLOR_BRONZE_LT,0.50, 0.38);
+  const mWood  = mat(COLOR_WOOD,    0.05, 0.85);
+  const mOwner = mat(ownerColor_,   0.10, 0.68);
+
+  // The rider in the konnica group sits at horseBackY above ground.
+  // From konnica builder we know:  RIDER_BOT = horseBackY; the horse is
+  // built by buildHorse() which returns horseBackY.
+  // Approximate horseBackY from the horse geometry constants:
+  const HORSE_BODY_H = 0.12 * HEX_R;
+  const HORSE_BODY_Y = 0.14 * HEX_R + HORSE_BODY_H * 0.5; // hoofH + legH + bodyCenter
+  const RIDER_BOT    = HORSE_BODY_Y + HORSE_BODY_H * 0.5;
+  const R_TRS_CTR    = RIDER_BOT + AV_TORSO_H * 0.5;
+  const R_TRS_TOP    = RIDER_BOT + AV_TORSO_H;
+  const R_HEAD_CTR   = R_TRS_TOP + AV_NECK_H + AV_HEAD_S * 0.5;
+  const R_ARM_CTR    = RIDER_BOT + AV_TORSO_H * 0.55;
+
+  // Overlay a lacquer lamellar coat on the torso (slightly larger than torso).
+  const gCoat = new THREE.BoxGeometry(AV_TORSO_W * 0.92, AV_TORSO_H * 0.78, AV_TORSO_D * 0.88);
+  perGeo.push(gCoat);
+  const mCoat = new THREE.Mesh(gCoat, mLac);
+  mCoat.position.set(0, R_TRS_CTR, 0);
+  group.add(mCoat);
+  // Two horizontal bronze lamellar band lines.
+  for (const dy of [0.04 * HEX_R, -0.04 * HEX_R]) {
+    const gBand = new THREE.BoxGeometry(AV_TORSO_W * 0.94, 0.012 * HEX_R, AV_TORSO_D * 0.90);
+    perGeo.push(gBand);
+    const mBand = new THREE.Mesh(gBand, mBronzL);
+    mBand.position.set(0, R_TRS_CTR + dy, 0.001 * HEX_R);
+    group.add(mBand);
+  }
+
+  // Chinese helm: replace the existing helmet — just add a new bronze dome +
+  // top spike + red neck flap over the rider head position.
+  const gHelm = new THREE.CylinderGeometry(0.046 * HEX_R, 0.054 * HEX_R, 0.048 * HEX_R, 8, 1);
+  perGeo.push(gHelm);
+  const mHelm = new THREE.Mesh(gHelm, mBronz);
+  mHelm.position.set(0, R_HEAD_CTR + AV_HEAD_S * 0.85 * 0.50 + 0.004 * HEX_R, 0);
+  group.add(mHelm);
+  const gSpike = new THREE.BoxGeometry(0.012 * HEX_R, 0.040 * HEX_R, 0.012 * HEX_R);
+  perGeo.push(gSpike);
+  const mSpike = new THREE.Mesh(gSpike, mBronzL);
+  mSpike.position.set(0, R_HEAD_CTR + AV_HEAD_S * 0.85 * 0.50 + 0.044 * HEX_R, 0);
+  group.add(mSpike);
+  const gFlap = new THREE.BoxGeometry(AV_HEAD_S * 0.85 * 1.22, 0.034 * HEX_R, 0.026 * HEX_R);
+  perGeo.push(gFlap);
+  const mFlap = new THREE.Mesh(gFlap, mat(COLOR_LACQUER, 0.08, 0.72));
+  mFlap.position.set(0, R_HEAD_CTR - AV_HEAD_S * 0.85 * 0.36, -AV_HEAD_S * 0.85 * 0.5 - 0.005 * HEX_R);
+  group.add(mFlap);
+
+  // DAGGER-AXE (ge) raised in right hand instead of lance.
+  // In the konnica group the figure faces +Z (after the group.rotation.y=Math.PI).
+  // We add into the group directly; the group spin will orient everything.
+  const ARM_OX = AV_ARM_OFFSET_X * 0.85 + AV_ARM_W * 0.4 + 0.012 * HEX_R;
+  const gPole  = new THREE.BoxGeometry(0.014 * HEX_R, 0.40 * HEX_R, 0.014 * HEX_R);
+  perGeo.push(gPole);
+  const mPole = new THREE.Mesh(gPole, mWood);
+  mPole.position.set(ARM_OX, R_ARM_CTR + 0.15 * HEX_R, 0.02 * HEX_R);
+  group.add(mPole);
+  // Sideways ge blade near the top.
+  const gGe = new THREE.BoxGeometry(0.016 * HEX_R, 0.028 * HEX_R, 0.10 * HEX_R);
+  perGeo.push(gGe);
+  const mGe = new THREE.Mesh(gGe, mBronzL);
+  mGe.position.set(ARM_OX, R_ARM_CTR + 0.32 * HEX_R, 0.060 * HEX_R);
+  group.add(mGe);
+  // Pole tip.
+  const mTip = new THREE.Mesh(getGeoSpearTip(), mBronz);
+  mTip.scale.set(0.7, 0.6, 0.7);
+  mTip.position.set(ARM_OX, R_ARM_CTR + 0.15 * HEX_R + 0.20 * HEX_R + 0.018 * HEX_R, 0.02 * HEX_R);
+  group.add(mTip);
+
+  group.userData['perTokenGeos'] = perGeo;
+  return group;
+}
+
+// --- KUSZNIK (CROSSBOWMAN) -------------------------------------------------
+
+/**
+ * Kusznik — Chinese-flavoured crossbowman: CROSSBOW (horizontal stock + prod
+ * bar across the front + a short bolt/quarrel loaded), lacquer-red lamellar
+ * coat, Chinese rounded helm with spike, quiver-box on back.
+ * Replaces the previous archer fallback — has a clearly horizontal weapon.
+ */
+function buildCrossbowman(ownerColor_: number): THREE.Group {
+  const { group, mats } = buildBaseAvatar(COLOR_SKIN, COLOR_LACQUER, ownerColor_);
+  const mat = makeMatFactory(mats);
+  const perGeo: THREE.BufferGeometry[] = [];
+  const mLac   = mat(COLOR_LACQUER,  0.10, 0.55);
+  const mBronze = mat(COLOR_BRONZE,  0.42, 0.45);
+  const mBronzL = mat(COLOR_BRONZE_LT,0.52, 0.38);
+  const mWood  = mat(COLOR_WOOD,     0.05, 0.85);
+  const mOwner = mat(ownerColor_,    0.10, 0.68);
+  const mLeath = mat(COLOR_LEATHER,  0.06, 0.82);
+  const mStr   = mat(0xe8e0cc,       0.02, 0.95);
+
+  // Lamellar coat.
+  const mCoat = new THREE.Mesh(getGeoCuirassBox(), mLac);
+  mCoat.scale.set(1.0, 1.04, 1.0);
+  mCoat.position.set(0, AV_Y_TORSO_CTR, 0);
+  group.add(mCoat);
+  for (const dy of [0.06, 0.0, -0.06]) {
+    const gBand = new THREE.BoxGeometry(0.215 * HEX_R, 0.016 * HEX_R, 0.135 * HEX_R);
+    perGeo.push(gBand);
+    const mBand = new THREE.Mesh(gBand, mBronzL);
+    mBand.position.set(0, AV_Y_TORSO_CTR + dy * HEX_R, 0.002 * HEX_R);
+    group.add(mBand);
+  }
+  addTunicHem(group, mat(COLOR_LACQUER, 0.06, 0.6));
+
+  // Chinese rounded helm + spike.
+  const mHelm = new THREE.Mesh(getGeoMeleeHelm(), mBronze);
+  mHelm.position.set(0, AV_Y_HEAD_CTR + 0.026 * HEX_R, 0);
+  group.add(mHelm);
+  const gSpike = new THREE.BoxGeometry(0.016 * HEX_R, 0.062 * HEX_R, 0.016 * HEX_R);
+  perGeo.push(gSpike);
+  const mSpike = new THREE.Mesh(gSpike, mBronzL);
+  mSpike.position.set(0, AV_Y_HEAD_TOP + 0.060 * HEX_R, 0);
+  group.add(mSpike);
+  const gFlap = new THREE.BoxGeometry(0.155 * HEX_R, 0.042 * HEX_R, 0.032 * HEX_R);
+  perGeo.push(gFlap);
+  const mFlap = new THREE.Mesh(gFlap, mOwner);
+  mFlap.position.set(0, AV_Y_HEAD_CTR - 0.030 * HEX_R, -AV_HEAD_S * 0.5 - 0.005 * HEX_R);
+  group.add(mFlap);
+
+  // CROSSBOW — held in both hands, weapon angled at chest height.
+  // The prod (bow-limb) is HORIZONTAL, the stock runs fore-aft (+Z) from
+  // the chest outward.  This is the defining silhouette difference from the archer.
+  const CB_X = 0.0;                                                // centred
+  const CB_Y = AV_Y_TORSO_CTR + 0.02 * HEX_R;                    // chest height
+  const CB_Z = AV_TORSO_D * 0.5 + 0.05 * HEX_R;                  // in front of torso
+
+  // Stock (tiller): a sturdy horizontal fore-aft bar.
+  const gStock = new THREE.BoxGeometry(0.028 * HEX_R, 0.024 * HEX_R, 0.28 * HEX_R);
+  perGeo.push(gStock);
+  const mStock = new THREE.Mesh(gStock, mWood);
+  mStock.position.set(CB_X, CB_Y, CB_Z + 0.04 * HEX_R);
+  group.add(mStock);
+
+  // Tiller grip/lock box (the nut/trigger housing sits mid-stock).
+  const gLock = new THREE.BoxGeometry(0.040 * HEX_R, 0.036 * HEX_R, 0.040 * HEX_R);
+  perGeo.push(gLock);
+  const mLock = new THREE.Mesh(gLock, mBronze);
+  mLock.position.set(CB_X, CB_Y, CB_Z + 0.02 * HEX_R);
+  group.add(mLock);
+
+  // PROD (bow-limb): HORIZONTAL bar crossing the stock at the front.
+  const gProd = new THREE.BoxGeometry(0.26 * HEX_R, 0.020 * HEX_R, 0.020 * HEX_R);
+  perGeo.push(gProd);
+  const mProd = new THREE.Mesh(gProd, mWood);
+  mProd.position.set(CB_X, CB_Y + 0.004 * HEX_R, CB_Z - 0.09 * HEX_R);
+  group.add(mProd);
+  // Prod string (horizontal, connecting the two tips of the prod).
+  const gPString = new THREE.BoxGeometry(0.25 * HEX_R, 0.006 * HEX_R, 0.006 * HEX_R);
+  perGeo.push(gPString);
+  const mPString = new THREE.Mesh(gPString, mStr);
+  mPString.position.set(CB_X, CB_Y + 0.014 * HEX_R, CB_Z - 0.09 * HEX_R);
+  group.add(mPString);
+  // Bronze tip caps on prod ends.
+  for (const px of [-0.120 * HEX_R, 0.120 * HEX_R]) {
+    const gCap = new THREE.BoxGeometry(0.016 * HEX_R, 0.024 * HEX_R, 0.024 * HEX_R);
+    perGeo.push(gCap);
+    const mCap = new THREE.Mesh(gCap, mBronzL);
+    mCap.position.set(px, CB_Y + 0.004 * HEX_R, CB_Z - 0.09 * HEX_R);
+    group.add(mCap);
+  }
+
+  // SHORT BOLT (quarrel) loaded in the groove on top of the stock.
+  const gBolt = new THREE.BoxGeometry(0.012 * HEX_R, 0.012 * HEX_R, 0.14 * HEX_R);
+  perGeo.push(gBolt);
+  const mBolt = new THREE.Mesh(gBolt, mWood);
+  mBolt.position.set(CB_X, CB_Y + 0.018 * HEX_R, CB_Z - 0.02 * HEX_R);
+  group.add(mBolt);
+  const gBoltTip = new THREE.BoxGeometry(0.014 * HEX_R, 0.014 * HEX_R, 0.030 * HEX_R);
+  perGeo.push(gBoltTip);
+  const mBoltTip = new THREE.Mesh(gBoltTip, mBronzL);
+  mBoltTip.position.set(CB_X, CB_Y + 0.018 * HEX_R, CB_Z - 0.09 * HEX_R);
+  group.add(mBoltTip);
+  const gBoltFletch = new THREE.BoxGeometry(0.030 * HEX_R, 0.016 * HEX_R, 0.020 * HEX_R);
+  perGeo.push(gBoltFletch);
+  const mBoltFletch = new THREE.Mesh(gBoltFletch, mat(COLOR_FEATHER, 0.03, 0.92));
+  mBoltFletch.position.set(CB_X, CB_Y + 0.020 * HEX_R, CB_Z + 0.10 * HEX_R);
+  group.add(mBoltFletch);
+
+  // Small bolt-quiver / magazine box on the back.
+  const gQBox = new THREE.BoxGeometry(0.050 * HEX_R, 0.080 * HEX_R, 0.040 * HEX_R);
+  perGeo.push(gQBox);
+  const mQBox = new THREE.Mesh(gQBox, mLeath);
+  mQBox.position.set(0.04 * HEX_R, AV_Y_TORSO_CTR + 0.04 * HEX_R, -AV_TORSO_D * 0.5 - 0.024 * HEX_R);
+  group.add(mQBox);
+  // A few bolt ends poking from the box (owner colour).
+  for (const bx of [-0.014 * HEX_R, 0.014 * HEX_R]) {
+    const gBE = new THREE.BoxGeometry(0.010 * HEX_R, 0.010 * HEX_R, 0.030 * HEX_R);
+    perGeo.push(gBE);
+    const mBE = new THREE.Mesh(gBE, mOwner);
+    mBE.position.set(0.04 * HEX_R + bx, AV_Y_TORSO_CTR + 0.06 * HEX_R, -AV_TORSO_D * 0.5 - 0.040 * HEX_R);
+    group.add(mBE);
+  }
+
+  addBoots(group, mLeath);
+  addHands(group, mat(COLOR_SKIN, 0.05, 0.80));
+  group.userData['mats'] = mats;
+  group.userData['perTokenGeos'] = perGeo;
+  return group;
+}
+
+// --- CELTS -----------------------------------------------------------------
+
+/**
+ * Wojownik celtycki — long iron sword, tall oval Celtic shield, tunic torso with
+ * a bronze torc, bare head with drooping mustache + long hair (no helmet),
+ * earthy striped tunic.
+ */
+function buildCeltWarrior(ownerColor_: number): THREE.Group {
+  const { group, mats } = buildBaseAvatar(COLOR_SKIN, COLOR_BURGUNDY, ownerColor_);
+  const mat = makeMatFactory(mats);
+  const perGeo: THREE.BufferGeometry[] = [];
+  const mIron  = mat(COLOR_STEEL,   0.55, 0.40);
+  const mWood  = mat(COLOR_WOOD,    0.05, 0.85);
+  const mBronz = mat(COLOR_BRONZE,  0.45, 0.42);
+  const mOwner = mat(ownerColor_,   0.12, 0.66);
+  const mHair  = mat(0xb8702a,      0.04, 0.86);   // reddish-blond Celtic hair
+  const mPlank = mat(0x6e4a26,      0.05, 0.85);
+
+  // Earthy striped tunic hem + belt.
+  addTunicHem(group, mat(COLOR_OCHRE, 0.05, 0.86));
+  addBelt(group, mat(COLOR_LEATHER, 0.06, 0.82));
+  // Vertical owner-colour stripe on the tunic (Celtic plaid hint).
+  const gStripe = new THREE.BoxGeometry(0.030 * HEX_R, AV_TORSO_H * 0.9, 0.010 * HEX_R);
+  perGeo.push(gStripe);
+  const mStripe = new THREE.Mesh(gStripe, mOwner);
+  mStripe.position.set(0.04 * HEX_R, AV_Y_TORSO_CTR, AV_TORSO_D * 0.5 + 0.004 * HEX_R);
+  group.add(mStripe);
+
+  // Bronze torc + bare head with mustache and long hair (NO helmet).
+  addTorc(group, mBronz, perGeo);
+  addMustache(group, mHair, perGeo);
+  addLongHair(group, mHair, perGeo);
+
+  // Long iron slashing sword, raised right hand.
+  addLongSwordRight(group, mIron, mWood, perGeo, 0.32);
+  // Tall oval Celtic shield, left arm (planks + owner blazon spine + iron boss).
+  addTallOvalShield(group, mOwner, mPlank, mIron, perGeo, 1.85);
+
+  addBoots(group, mat(COLOR_LEATHER, 0.05, 0.86));
+  addHands(group, mat(COLOR_SKIN, 0.05, 0.80));
+  group.userData['mats'] = mats;
+  group.userData['perTokenGeos'] = perGeo;
+  return group;
+}
+
+/**
+ * Gaesatae — NAKED Celtic shock warrior: skin-tone body (no tunic), bronze torc,
+ * tall oval shield + spear, bare head with mustache.  Reads as bare-skinned.
+ */
+function buildGaesatae(ownerColor_: number): THREE.Group {
+  // cloth == skin tone so the torso/arms read as bare flesh.
+  const { group, mats } = buildBaseAvatar(COLOR_SKIN, COLOR_SKIN, ownerColor_);
+  const mat = makeMatFactory(mats);
+  const perGeo: THREE.BufferGeometry[] = [];
+  const mBronz = mat(COLOR_GOLD_BR, 0.50, 0.40);
+  const mWood  = mat(COLOR_WOOD,    0.05, 0.85);
+  const mSteel = mat(COLOR_STEEL,   0.50, 0.42);
+  const mOwner = mat(ownerColor_,   0.12, 0.66);
+  const mHair  = mat(0xc98a2c,      0.04, 0.86);
+  const mPlank = mat(0x6e4a26,      0.05, 0.85);
+  const mSkinLeg = mat(COLOR_SKIN,  0.05, 0.80);
+
+  // Re-skin the dark trouser legs to bare flesh (overlay thin skin sleeves).
+  for (const sx of [-(AV_LEG_SEP + AV_LEG_W * 0.5), (AV_LEG_SEP + AV_LEG_W * 0.5)]) {
+    const gLeg = new THREE.BoxGeometry(AV_LEG_W * 1.02, AV_LEG_H * 0.98, AV_LEG_W * 1.02);
+    perGeo.push(gLeg);
+    const mLeg = new THREE.Mesh(gLeg, mSkinLeg);
+    mLeg.position.set(sx, AV_Y_LEG_CTR, 0);
+    group.add(mLeg);
+  }
+  // A small loincloth only (otherwise naked).
+  const mLoin = new THREE.Mesh(getGeoLoincloth(), mOwner);
+  mLoin.scale.set(0.8, 0.55, 0.95);
+  mLoin.position.set(0, AV_Y_TORSO_BOT - 0.01 * HEX_R, 0);
+  group.add(mLoin);
+
+  addTorc(group, mBronz, perGeo);
+  addMustache(group, mHair, perGeo);
+  addLongHair(group, mHair, perGeo);
+
+  // Spear raised + tall oval shield.
+  addSpearRight(group, mWood, mSteel, perGeo, 0.50);
+  addTallOvalShield(group, mPlank, mWood, mBronz, perGeo, 1.85);
+
+  addBoots(group, mat(COLOR_SKIN, 0.05, 0.82));   // bare feet (skin)
+  addHands(group, mat(COLOR_SKIN, 0.05, 0.80));
+  group.userData['mats'] = mats;
+  group.userData['perTokenGeos'] = perGeo;
+  return group;
+}
+
+// --- GERMANS ---------------------------------------------------------------
+
+/**
+ * Wojownik germański — framea (short throwing spear) + round/hexagonal wooden
+ * hide shield, fur cloak over a bare/blond torso, simple cap (no metal helm).
+ */
+function buildGermanWarrior(ownerColor_: number): THREE.Group {
+  const { group, mats } = buildBaseAvatar(COLOR_SKIN, COLOR_FUR, ownerColor_);
+  const mat = makeMatFactory(mats);
+  const perGeo: THREE.BufferGeometry[] = [];
+  const mFur   = mat(COLOR_FUR,     0.04, 0.92);
+  const mWood  = mat(COLOR_WOOD,    0.05, 0.85);
+  const mSteel = mat(COLOR_STEEL,   0.50, 0.42);
+  const mHide  = mat(0x7a5a34,      0.05, 0.86);
+  const mOwner = mat(ownerColor_,   0.12, 0.66);
+  const mHair  = mat(0xd8b25a,      0.04, 0.86);   // blond
+  const mLeath = mat(COLOR_LEATHER, 0.06, 0.82);
+
+  // Fur cloak across the shoulders/back.
+  const mCloak = new THREE.Mesh(getGeoCloak(), mFur);
+  mCloak.scale.set(0.95, 0.85, 1.0);
+  mCloak.position.set(0, AV_Y_TORSO_CTR - 0.01 * HEX_R, -AV_TORSO_D * 0.5 - 0.010 * HEX_R);
+  mCloak.rotation.x = 0.12;
+  group.add(mCloak);
+  // Fur shoulder mantle (front).
+  const gMantle = new THREE.BoxGeometry(0.22 * HEX_R, 0.06 * HEX_R, 0.14 * HEX_R);
+  perGeo.push(gMantle);
+  const mMantle = new THREE.Mesh(gMantle, mFur);
+  mMantle.position.set(0, AV_Y_TORSO_TOP - 0.02 * HEX_R, 0);
+  group.add(mMantle);
+  addBelt(group, mLeath);
+
+  // Bare blond head with long hair + mustache (no metal helmet).
+  addLongHair(group, mHair, perGeo);
+  addMustache(group, mHair, perGeo);
+
+  // Framea: a SHORT thrusting/throwing spear in the right hand.
+  addSpearRight(group, mWood, mSteel, perGeo, 0.40);
+
+  // Round/hexagonal wooden-hide shield on the left arm + iron boss + spokes.
+  const SH_X = -(AV_ARM_OFFSET_X + AV_ARM_W * 0.5 + 0.016 * HEX_R);
+  const mShield = new THREE.Mesh(getGeoOvalShield(), mHide);
+  mShield.rotation.z = Math.PI / 2;
+  mShield.scale.set(1.0, 1.35, 1.35);    // big round board
+  mShield.position.set(SH_X, AV_Y_TORSO_CTR, 0.012 * HEX_R);
+  group.add(mShield);
+  const mShRim = new THREE.Mesh(getGeoOvalShield(), mOwner);
+  mShRim.rotation.z = Math.PI / 2;
+  mShRim.scale.set(0.9, 1.45, 1.45);
+  mShRim.position.set(SH_X - 0.006 * HEX_R, AV_Y_TORSO_CTR, 0.012 * HEX_R);
+  group.add(mShRim);
+  const mBoss = new THREE.Mesh(getGeoShieldBoss(), mSteel);
+  mBoss.rotation.z = Math.PI / 2;
+  mBoss.position.set(SH_X + 0.014 * HEX_R, AV_Y_TORSO_CTR, 0.012 * HEX_R);
+  group.add(mBoss);
+
+  addBoots(group, mLeath);
+  addHands(group, mat(COLOR_SKIN, 0.05, 0.80));
+  group.userData['mats'] = mats;
+  group.userData['perTokenGeos'] = perGeo;
+  return group;
+}
+
+/**
+ * Berserker germański — bare-chested frenzied warrior wearing an animal pelt
+ * (wolf/bear head as a hood), an axe, NO shield, blond hair.
+ */
+function buildBerserker(ownerColor_: number): THREE.Group {
+  const { group, mats } = buildBaseAvatar(COLOR_SKIN, COLOR_SKIN, ownerColor_);  // bare chest = skin torso
+  const mat = makeMatFactory(mats);
+  const perGeo: THREE.BufferGeometry[] = [];
+  const mPelt  = mat(0x5a4630,      0.04, 0.94);   // dark brown animal pelt
+  const mPeltL = mat(0x7a6446,      0.04, 0.92);
+  const mWood  = mat(COLOR_WOOD,    0.05, 0.85);
+  const mIron  = mat(COLOR_STEEL,   0.55, 0.40);
+  const mOwner = mat(ownerColor_,   0.12, 0.66);
+  const mHair  = mat(0xd8b25a,      0.04, 0.86);
+  const mLeath = mat(COLOR_LEATHER, 0.06, 0.82);
+
+  // Animal pelt cloak down the back.
+  const mCloak = new THREE.Mesh(getGeoCloak(), mPelt);
+  mCloak.scale.set(1.0, 1.05, 1.0);
+  mCloak.position.set(0, AV_Y_TORSO_CTR - 0.02 * HEX_R, -AV_TORSO_D * 0.5 - 0.012 * HEX_R);
+  mCloak.rotation.x = 0.16;
+  group.add(mCloak);
+  // Small loincloth (otherwise bare-chested).
+  const mLoin = new THREE.Mesh(getGeoLoincloth(), mLeath);
+  mLoin.scale.set(0.85, 0.6, 0.95);
+  mLoin.position.set(0, AV_Y_TORSO_BOT - 0.01 * HEX_R, 0);
+  group.add(mLoin);
+  addLongHair(group, mHair, perGeo);
+
+  // WOLF/BEAR head worn as a hood over the warrior's head: a pelt hood block +
+  // a snout poking forward + two ears.
+  const mHood = new THREE.Mesh(getGeoHood(), mPelt);
+  mHood.scale.set(1.05, 1.1, 1.15);
+  mHood.position.set(0, AV_Y_HEAD_CTR + 0.020 * HEX_R, -0.004 * HEX_R);
+  group.add(mHood);
+  const gSnout = new THREE.BoxGeometry(0.060 * HEX_R, 0.050 * HEX_R, 0.075 * HEX_R);
+  perGeo.push(gSnout);
+  const mSnout = new THREE.Mesh(gSnout, mPeltL);
+  mSnout.position.set(0, AV_Y_HEAD_TOP + 0.020 * HEX_R, AV_HEAD_S * 0.5 + 0.010 * HEX_R);
+  group.add(mSnout);
+  for (const sx of [-1, 1]) {
+    const gEar = new THREE.BoxGeometry(0.028 * HEX_R, 0.045 * HEX_R, 0.022 * HEX_R);
+    perGeo.push(gEar);
+    const mEar = new THREE.Mesh(gEar, mPeltL);
+    mEar.position.set(sx * 0.055 * HEX_R, AV_Y_HEAD_TOP + 0.075 * HEX_R, -0.01 * HEX_R);
+    group.add(mEar);
+  }
+
+  // Big single-bladed axe raised in the right hand (handle + iron head).
+  const AX_X = AV_ARM_OFFSET_X + AV_ARM_W * 0.5 + 0.016 * HEX_R;
+  const gHandle = new THREE.BoxGeometry(0.018 * HEX_R, 0.30 * HEX_R, 0.018 * HEX_R);
+  perGeo.push(gHandle);
+  const mHandle = new THREE.Mesh(gHandle, mWood);
+  mHandle.position.set(AX_X, AV_Y_TORSO_CTR + 0.10 * HEX_R, 0.02 * HEX_R);
+  group.add(mHandle);
+  const gHead = new THREE.BoxGeometry(0.10 * HEX_R, 0.085 * HEX_R, 0.020 * HEX_R);
+  perGeo.push(gHead);
+  const mHead = new THREE.Mesh(gHead, mIron);
+  mHead.position.set(AX_X + 0.04 * HEX_R, AV_Y_TORSO_CTR + 0.22 * HEX_R, 0.02 * HEX_R);
+  group.add(mHead);
+
+  addBoots(group, mLeath);
+  addHands(group, mat(COLOR_SKIN, 0.05, 0.80));
+  group.userData['mats'] = mats;
+  group.userData['perTokenGeos'] = perGeo;
+  return group;
+}
+
+// --- BRONZE SPECIALS -------------------------------------------------------
+
+/**
+ * Wojownik mykeński — figure-8 / tower body shield, boar's-tusk helmet (rows of
+ * pale tusk plates), a long bronze spear, bronze scale corslet.
+ */
+function buildMycenaeanWarrior(ownerColor_: number): THREE.Group {
+  const { group, mats } = buildBaseAvatar(COLOR_SKIN, COLOR_OCHRE, ownerColor_);
+  const mat = makeMatFactory(mats);
+  const perGeo: THREE.BufferGeometry[] = [];
+  const mBronze = mat(COLOR_BRONZE,   0.42, 0.45);
+  const mBronzL = mat(COLOR_BRONZE_LT,0.52, 0.38);
+  const mWood   = mat(COLOR_WOOD,     0.05, 0.85);
+  const mTusk   = mat(0xeae0c4,       0.04, 0.80);   // pale boar's tusk
+  const mOwner  = mat(ownerColor_,    0.12, 0.66);
+  const mHide   = mat(0x7a5a34,       0.05, 0.86);
+  const mLeath  = mat(COLOR_LEATHER,  0.06, 0.82);
+
+  // Bronze corslet + pteruges.
+  const mCuir = new THREE.Mesh(getGeoCuirassBox(), mBronze);
+  mCuir.scale.set(0.98, 1.0, 0.98);
+  mCuir.position.set(0, AV_Y_TORSO_CTR, 0);
+  group.add(mCuir);
+  addPteruges(group, mLeath);
+
+  // BOAR'S-TUSK helmet: a leather cap covered in staggered pale tusk plates.
+  const gCap = new THREE.CylinderGeometry(0.082 * HEX_R, 0.090 * HEX_R, 0.105 * HEX_R, 12, 1);
+  perGeo.push(gCap);
+  const mCap = new THREE.Mesh(gCap, mLeath);
+  mCap.position.set(0, AV_Y_HEAD_CTR + 0.024 * HEX_R, 0);
+  group.add(mCap);
+  // Three staggered rows of tusk plates around the cap.
+  for (let row = 0; row < 3; row++) {
+    const ry = AV_Y_HEAD_CTR + 0.005 * HEX_R + row * 0.030 * HEX_R;
+    const n = 8;
+    for (let i = 0; i < n; i++) {
+      const ang = (i / n) * Math.PI * 2 + (row % 2 ? Math.PI / n : 0);
+      const gPl = new THREE.BoxGeometry(0.026 * HEX_R, 0.024 * HEX_R, 0.012 * HEX_R);
+      perGeo.push(gPl);
+      const mPl = new THREE.Mesh(gPl, mTusk);
+      mPl.position.set(Math.sin(ang) * 0.088 * HEX_R, ry, Math.cos(ang) * 0.088 * HEX_R);
+      mPl.rotation.y = ang;
+      group.add(mPl);
+    }
+  }
+  // Small bronze crest knob on top.
+  const gKnob = new THREE.BoxGeometry(0.030 * HEX_R, 0.040 * HEX_R, 0.030 * HEX_R);
+  perGeo.push(gKnob);
+  const mKnob = new THREE.Mesh(gKnob, mBronzL);
+  mKnob.position.set(0, AV_Y_HEAD_TOP + 0.060 * HEX_R, 0);
+  group.add(mKnob);
+
+  // Long bronze spear (overhand right).
+  addSpearRight(group, mWood, mBronzL, perGeo, 0.55);
+
+  // FIGURE-8 / tower body shield on the left arm: two stacked oval lobes.
+  const SH_X = -(AV_ARM_OFFSET_X + AV_ARM_W * 0.5 + 0.018 * HEX_R);
+  for (const dy of [0.07 * HEX_R, -0.07 * HEX_R]) {
+    const mLobe = new THREE.Mesh(getGeoOvalShield(), mHide);
+    mLobe.rotation.z = Math.PI / 2;
+    mLobe.scale.set(1.0, 0.9, 1.05);
+    mLobe.position.set(SH_X, AV_Y_TORSO_CTR + dy, 0.012 * HEX_R);
+    group.add(mLobe);
+  }
+  // Owner-colour rim down the waist of the figure-8.
+  const gWaist = new THREE.BoxGeometry(0.020 * HEX_R, 0.030 * HEX_R, 0.16 * HEX_R);
+  perGeo.push(gWaist);
+  const mWaist = new THREE.Mesh(gWaist, mOwner);
+  mWaist.position.set(SH_X + 0.010 * HEX_R, AV_Y_TORSO_CTR, 0.012 * HEX_R);
+  group.add(mWaist);
+
+  addGreaves(group, mBronzL);
+  addBoots(group, mLeath);
+  addHands(group, mat(COLOR_SKIN, 0.05, 0.80));
+  group.userData['mats'] = mats;
+  group.userData['perTokenGeos'] = perGeo;
+  return group;
+}
+
+/**
+ * Wojownik Sherden (Sea Peoples) — HORNED helmet (disc + two horns), round
+ * shield, straight bronze sword, bronze cuirass.
+ */
+function buildSherden(ownerColor_: number): THREE.Group {
+  const { group, mats } = buildBaseAvatar(COLOR_SKIN, COLOR_TEAL, ownerColor_);
+  const mat = makeMatFactory(mats);
+  const perGeo: THREE.BufferGeometry[] = [];
+  const mBronze = mat(COLOR_BRONZE,   0.42, 0.45);
+  const mBronzL = mat(COLOR_BRONZE_LT,0.52, 0.38);
+  const mSteel  = mat(COLOR_STEEL,    0.52, 0.40);
+  const mWood   = mat(COLOR_WOOD,     0.05, 0.85);
+  const mOwner  = mat(ownerColor_,    0.12, 0.66);
+  const mLeath  = mat(COLOR_LEATHER,  0.06, 0.82);
+
+  // Bronze cuirass.
+  const mCuir = new THREE.Mesh(getGeoCuirassBox(), mBronze);
+  mCuir.scale.set(0.97, 0.98, 0.97);
+  mCuir.position.set(0, AV_Y_TORSO_CTR, 0);
+  group.add(mCuir);
+  addBelt(group, mLeath);
+
+  // Rounded bronze helm bowl.
+  const mHelm = new THREE.Mesh(getGeoMeleeHelm(), mBronze);
+  mHelm.position.set(0, AV_Y_HEAD_CTR + 0.026 * HEX_R, 0);
+  group.add(mHelm);
+  // A small disc/knob on top + two curved HORNS.
+  const gDisc = new THREE.BoxGeometry(0.024 * HEX_R, 0.060 * HEX_R, 0.024 * HEX_R);
+  perGeo.push(gDisc);
+  const mDisc = new THREE.Mesh(gDisc, mBronzL);
+  mDisc.position.set(0, AV_Y_HEAD_TOP + 0.060 * HEX_R, 0);
+  group.add(mDisc);
+  for (const sx of [-1, 1]) {
+    const gHorn = new THREE.BoxGeometry(0.022 * HEX_R, 0.090 * HEX_R, 0.022 * HEX_R);
+    perGeo.push(gHorn);
+    const mHorn = new THREE.Mesh(gHorn, mBronzL);
+    mHorn.rotation.z = sx * 0.55;
+    mHorn.position.set(sx * 0.058 * HEX_R, AV_Y_HEAD_TOP + 0.070 * HEX_R, 0);
+    group.add(mHorn);
+  }
+
+  // Straight bronze sword raised in the right hand.
+  addLongSwordRight(group, mBronzL, mWood, perGeo, 0.24);
+
+  // Round shield on the left arm (owner blazon + boss).
+  const SH_X = -(AV_ARM_OFFSET_X + AV_ARM_W * 0.5 + 0.016 * HEX_R);
+  const mShield = new THREE.Mesh(getGeoOvalShield(), mOwner);
+  mShield.rotation.z = Math.PI / 2;
+  mShield.scale.set(1.0, 1.25, 1.25);
+  mShield.position.set(SH_X, AV_Y_TORSO_CTR, 0.012 * HEX_R);
+  group.add(mShield);
+  const mShRim = new THREE.Mesh(getGeoOvalShield(), mBronze);
+  mShRim.rotation.z = Math.PI / 2;
+  mShRim.scale.set(0.9, 1.35, 1.35);
+  mShRim.position.set(SH_X - 0.006 * HEX_R, AV_Y_TORSO_CTR, 0.012 * HEX_R);
+  group.add(mShRim);
+  const mBoss = new THREE.Mesh(getGeoShieldBoss(), mSteel);
+  mBoss.rotation.z = Math.PI / 2;
+  mBoss.position.set(SH_X + 0.014 * HEX_R, AV_Y_TORSO_CTR, 0.012 * HEX_R);
+  group.add(mBoss);
+
+  addGreaves(group, mBronzL);
+  addBoots(group, mLeath);
+  addHands(group, mat(COLOR_SKIN, 0.05, 0.80));
+  group.userData['mats'] = mats;
+  group.userData['perTokenGeos'] = perGeo;
+  return group;
+}
+
+
+// --- RZYM: LUDY MORZA -------------------------------------------------------
+
+/**
+ * Wojownik tyrreński (Ludy Morza — Tursza/Teresz, przodkowie Etrusków).
+ * Okrągła brązowa tarcza, oszczep w prawej ręce, miecz u biodra,
+ * CZUBATY helm z grzebieniem (pióropusz przód–tył), brązowy napierśnik,
+ * tunika w kolorze właściciela na grzebieniu/tarczy.
+ */
+function buildTyrrhenian(ownerColor_: number): THREE.Group {
+  const { group, mats } = buildBaseAvatar(COLOR_SKIN, COLOR_ROMAN_RED, ownerColor_);
+  const mat = makeMatFactory(mats);
+  const perGeo: THREE.BufferGeometry[] = [];
+  const mBronze = mat(COLOR_BRONZE,    0.42, 0.45);
+  const mBronzL = mat(COLOR_BRONZE_LT, 0.52, 0.38);
+  const mOwner  = mat(ownerColor_,     0.12, 0.66);
+  const mWood   = mat(COLOR_WOOD,      0.05, 0.85);
+  const mLeath  = mat(COLOR_LEATHER,   0.06, 0.82);
+  const mTunic  = mat(COLOR_ROMAN_RED, 0.06, 0.70);
+  const mDarkHair = mat(0x2a1a0a,      0.04, 0.88);
+
+  // Pancerz pasowy: brązowy napierśnik + pas skórzany + rąbek tuniki.
+  const mCuir = new THREE.Mesh(getGeoCuirassBox(), mBronze);
+  mCuir.scale.set(0.97, 0.98, 0.97);
+  mCuir.position.set(0, AV_Y_TORSO_CTR, 0);
+  group.add(mCuir);
+  addBelt(group, mLeath);
+  addTunicHem(group, mTunic);
+
+  // MEDALION na piersi — mały brązowy dysk.
+  const gMedal = new THREE.CylinderGeometry(0.018 * HEX_R, 0.018 * HEX_R, 0.014 * HEX_R, 8, 1);
+  perGeo.push(gMedal);
+  const mMedal = new THREE.Mesh(gMedal, mBronzL);
+  mMedal.rotation.x = Math.PI / 2;
+  mMedal.position.set(0, AV_Y_TORSO_CTR + 0.055 * HEX_R, AV_TORSO_D * 0.5 + 0.007 * HEX_R);
+  group.add(mMedal);
+
+  // CZUBATY HELM — brązowa misa + wysoki spiczasty czub (ownerColor).
+  const mHelm = new THREE.Mesh(getGeoMeleeHelm(), mBronze);
+  mHelm.position.set(0, AV_Y_HEAD_CTR + 0.026 * HEX_R, 0);
+  group.add(mHelm);
+  // Grzebień-podstawa.
+  const gCrestBase = new THREE.BoxGeometry(0.018 * HEX_R, 0.022 * HEX_R, 0.115 * HEX_R);
+  perGeo.push(gCrestBase);
+  const mCrestBase = new THREE.Mesh(gCrestBase, mBronzL);
+  mCrestBase.position.set(0, AV_Y_HEAD_TOP + 0.014 * HEX_R, 0);
+  group.add(mCrestBase);
+  // Spiczasty czub (ownerColor, wysoki wąski blok — wyraźnie stożkowy czub).
+  const gCrest = new THREE.BoxGeometry(0.016 * HEX_R, 0.075 * HEX_R, 0.016 * HEX_R);
+  perGeo.push(gCrest);
+  const mCrest = new THREE.Mesh(gCrest, mOwner);
+  mCrest.position.set(0, AV_Y_HEAD_TOP + 0.055 * HEX_R, 0);
+  group.add(mCrest);
+
+  // BRODA — ciemny blok pod dolną częścią twarzy.
+  const gBeardUpper = new THREE.BoxGeometry(0.090 * HEX_R, 0.030 * HEX_R, 0.018 * HEX_R);
+  perGeo.push(gBeardUpper);
+  const mBeardU = new THREE.Mesh(gBeardUpper, mDarkHair);
+  mBeardU.position.set(0, AV_Y_HEAD_CTR - 0.028 * HEX_R, AV_HEAD_S * 0.5 + 0.005 * HEX_R);
+  group.add(mBeardU);
+  const gBeardLower = new THREE.BoxGeometry(0.078 * HEX_R, 0.040 * HEX_R, 0.022 * HEX_R);
+  perGeo.push(gBeardLower);
+  const mBeardL = new THREE.Mesh(gBeardLower, mDarkHair);
+  mBeardL.position.set(0, AV_Y_HEAD_BOT - 0.004 * HEX_R, AV_HEAD_S * 0.5 + 0.003 * HEX_R);
+  group.add(mBeardL);
+
+  // JEDNORĘCZNY TOPÓR BOJOWY w prawej ręce (toporzysko + brązowa głowica + ownerColor akcent).
+  const AXE_X = AV_ARM_OFFSET_X + AV_ARM_W * 0.5 + 0.015 * HEX_R;
+  const gHaft = new THREE.BoxGeometry(0.016 * HEX_R, 0.22 * HEX_R, 0.016 * HEX_R);
+  perGeo.push(gHaft);
+  const mHaft = new THREE.Mesh(gHaft, mWood);
+  mHaft.position.set(AXE_X, AV_Y_TORSO_CTR + 0.05 * HEX_R, 0.015 * HEX_R);
+  group.add(mHaft);
+  // Głowica topora — brązowa, skierowana w bok.
+  const gAxeHead = new THREE.BoxGeometry(0.090 * HEX_R, 0.060 * HEX_R, 0.018 * HEX_R);
+  perGeo.push(gAxeHead);
+  const mAxeHead = new THREE.Mesh(gAxeHead, mBronze);
+  mAxeHead.position.set(AXE_X + 0.040 * HEX_R, AV_Y_TORSO_TOP + 0.040 * HEX_R, 0.015 * HEX_R);
+  group.add(mAxeHead);
+  // Ostrze (ownerColor akcent — jasna krawędź tnąca).
+  const gEdge = new THREE.BoxGeometry(0.012 * HEX_R, 0.055 * HEX_R, 0.020 * HEX_R);
+  perGeo.push(gEdge);
+  const mEdge = new THREE.Mesh(gEdge, mOwner);
+  mEdge.position.set(AXE_X + 0.084 * HEX_R, AV_Y_TORSO_TOP + 0.040 * HEX_R, 0.015 * HEX_R);
+  group.add(mEdge);
+  // Gniazdo osadzenia — ciemny blok.
+  const gSocket = new THREE.BoxGeometry(0.022 * HEX_R, 0.040 * HEX_R, 0.022 * HEX_R);
+  perGeo.push(gSocket);
+  const mSocket = new THREE.Mesh(gSocket, mBronzL);
+  mSocket.position.set(AXE_X, AV_Y_TORSO_TOP + 0.040 * HEX_R, 0.015 * HEX_R);
+  group.add(mSocket);
+
+  // OKRĄGŁA TARCZA w lewej ręce — ownerColor z brązowym rantem.
+  const SH_X = -(AV_ARM_OFFSET_X + AV_ARM_W * 0.5 + 0.010 * HEX_R);
+  const mShield = new THREE.Mesh(getGeoOvalShield(), mOwner);
+  mShield.rotation.z = Math.PI / 2;
+  mShield.scale.set(1.0, 1.0, 1.0);
+  mShield.position.set(SH_X, AV_Y_TORSO_CTR + 0.020 * HEX_R, 0.012 * HEX_R);
+  group.add(mShield);
+  const mShRim = new THREE.Mesh(getGeoOvalShield(), mBronze);
+  mShRim.rotation.z = Math.PI / 2;
+  mShRim.scale.set(0.88, 1.10, 1.10);
+  mShRim.position.set(SH_X - 0.006 * HEX_R, AV_Y_TORSO_CTR + 0.020 * HEX_R, 0.012 * HEX_R);
+  group.add(mShRim);
+  const mBoss = new THREE.Mesh(getGeoShieldBoss(), mBronzL);
+  mBoss.rotation.z = Math.PI / 2;
+  mBoss.position.set(SH_X + 0.014 * HEX_R, AV_Y_TORSO_CTR + 0.020 * HEX_R, 0.012 * HEX_R);
+  group.add(mBoss);
+
+  addGreaves(group, mBronzL);
+  addBoots(group, mLeath);
+  addHands(group, mat(COLOR_SKIN, 0.05, 0.80));
+  group.userData['mats'] = mats;
+  group.userData['perTokenGeos'] = perGeo;
+  return group;
+}
+
+/**
+ * Wojownik szekelesz (Ludy Morza — Szekelesz, pd. Italia).
+ * OKRĄGŁA tarcza, długa WŁÓCZNIA, helm z OPASKĄ/frędzlami (wyraźnie inny
+ * niż rogatczykarze Sherden — opaska + pionowe frędzie po bokach),
+ * brązowe naramienniki, tunika lniana.
+ */
+function buildShekelesh(ownerColor_: number): THREE.Group {
+  const { group, mats } = buildBaseAvatar(COLOR_SKIN, COLOR_LINEN, ownerColor_);
+  const mat = makeMatFactory(mats);
+  const perGeo: THREE.BufferGeometry[] = [];
+  const mBronze = mat(COLOR_BRONZE,    0.42, 0.45);
+  const mBronzL = mat(COLOR_BRONZE_LT, 0.52, 0.38);
+  const mOwner  = mat(ownerColor_,     0.12, 0.66);
+  const mWood   = mat(COLOR_WOOD,      0.05, 0.85);
+  const mLeath  = mat(COLOR_LEATHER,   0.06, 0.82);
+  const mLinen  = mat(COLOR_LINEN,     0.04, 0.88);
+  const mDarkHair = mat(0x2a1a0a,      0.04, 0.88);
+
+  // Lniana tunika + opasanie skórzane.
+  const mCoat = new THREE.Mesh(getGeoCuirassBox(), mLinen);
+  mCoat.scale.set(0.96, 1.01, 0.96);
+  mCoat.position.set(0, AV_Y_TORSO_CTR, 0);
+  group.add(mCoat);
+  addBelt(group, mLeath);
+  addTunicHem(group, mLinen);
+
+  // KILT z FRĘDZLAMI — szereg małych bloczków zwisających z dolnego rąbka (kilt/tunika).
+  for (let i = -3; i <= 3; i++) {
+    const gFr = new THREE.BoxGeometry(0.018 * HEX_R, 0.030 * HEX_R, 0.012 * HEX_R);
+    perGeo.push(gFr);
+    const mFr = new THREE.Mesh(gFr, mLinen);
+    mFr.position.set(i * 0.028 * HEX_R, AV_Y_TORSO_BOT - 0.036 * HEX_R, AV_TORSO_D * 0.5 + 0.004 * HEX_R);
+    group.add(mFr);
+  }
+
+  // MEDALION na piersi — mały brązowy dysk.
+  const gMedal = new THREE.CylinderGeometry(0.018 * HEX_R, 0.018 * HEX_R, 0.014 * HEX_R, 8, 1);
+  perGeo.push(gMedal);
+  const mMedal = new THREE.Mesh(gMedal, mBronzL);
+  mMedal.rotation.x = Math.PI / 2;
+  mMedal.position.set(0, AV_Y_TORSO_CTR + 0.055 * HEX_R, AV_TORSO_D * 0.5 + 0.007 * HEX_R);
+  group.add(mMedal);
+
+  // Brązowe naramienniki (shoulder guards) — dwa płaskie bloczki po bokach.
+  for (const sx of [-1, 1]) {
+    const gShoulder = new THREE.BoxGeometry(0.040 * HEX_R, 0.025 * HEX_R, 0.060 * HEX_R);
+    perGeo.push(gShoulder);
+    const mShoulder = new THREE.Mesh(gShoulder, mBronze);
+    mShoulder.position.set(sx * (AV_TORSO_W * 0.5 + 0.015 * HEX_R), AV_Y_TORSO_TOP - 0.012 * HEX_R, 0);
+    group.add(mShoulder);
+  }
+
+  // DŁUGIE WŁOSY — blok za głową, ciemne (opadające z tyłu).
+  addLongHair(group, mDarkHair, perGeo);
+
+  // HELM z OPASKĄ — okrągła misa brązowa + opaska (poziomy pas, ownerColor) + frędzie helmu.
+  const mHelm = new THREE.Mesh(getGeoMeleeHelm(), mBronze);
+  mHelm.position.set(0, AV_Y_HEAD_CTR + 0.026 * HEX_R, 0);
+  group.add(mHelm);
+  // Opaska — szeroki poziomy pas otaczający helm.
+  const gBand = new THREE.BoxGeometry(0.200 * HEX_R, 0.020 * HEX_R, 0.200 * HEX_R);
+  perGeo.push(gBand);
+  const mBand = new THREE.Mesh(gBand, mOwner);
+  mBand.position.set(0, AV_Y_HEAD_CTR + 0.030 * HEX_R, 0);
+  group.add(mBand);
+  // Frędzie helmu — 3 pionowe bloczki po bokach (różni od Sherden z rogami).
+  for (const sx of [-1, 0, 1]) {
+    for (const side of [-1, 1]) {
+      const gFringe = new THREE.BoxGeometry(0.012 * HEX_R, 0.035 * HEX_R, 0.012 * HEX_R);
+      perGeo.push(gFringe);
+      const mFringe = new THREE.Mesh(gFringe, mOwner);
+      mFringe.position.set(
+        side * (0.070 + sx * 0.020) * HEX_R,
+        AV_Y_HEAD_CTR + 0.008 * HEX_R,
+        0
+      );
+      group.add(mFringe);
+    }
+  }
+
+  // Długa WŁÓCZNIA w prawej ręce.
+  addSpearRight(group, mWood, mBronzL, perGeo, 0.52);
+
+  // OKRĄGŁA TARCZA z brązowym rantem i owner-boss.
+  const SH_X = -(AV_ARM_OFFSET_X + AV_ARM_W * 0.5 + 0.010 * HEX_R);
+  const mShield = new THREE.Mesh(getGeoOvalShield(), mOwner);
+  mShield.rotation.z = Math.PI / 2;
+  mShield.scale.set(1.0, 1.05, 1.05);
+  mShield.position.set(SH_X, AV_Y_TORSO_CTR + 0.010 * HEX_R, 0.012 * HEX_R);
+  group.add(mShield);
+  const mShRim = new THREE.Mesh(getGeoOvalShield(), mBronze);
+  mShRim.rotation.z = Math.PI / 2;
+  mShRim.scale.set(0.88, 1.16, 1.16);
+  mShRim.position.set(SH_X - 0.006 * HEX_R, AV_Y_TORSO_CTR + 0.010 * HEX_R, 0.012 * HEX_R);
+  group.add(mShRim);
+  const mBoss = new THREE.Mesh(getGeoShieldBoss(), mBronzL);
+  mBoss.rotation.z = Math.PI / 2;
+  mBoss.position.set(SH_X + 0.014 * HEX_R, AV_Y_TORSO_CTR + 0.010 * HEX_R, 0.012 * HEX_R);
+  group.add(mBoss);
+
+  addGreaves(group, mBronzL);
+  addBoots(group, mLeath);
+  addHands(group, mat(COLOR_SKIN, 0.05, 0.80));
+  group.userData['mats'] = mats;
+  group.userData['perTokenGeos'] = perGeo;
+  return group;
+}
+
+/**
+ * Halabardnik Shang — dagger-axe (ge) on a long pole (a sideways blade near the
+ * top), lacquer-red lamellar coat, a Chinese conical/round helm.
+ */
+function buildShangHalberdier(ownerColor_: number): THREE.Group {
+  const { group, mats } = buildBaseAvatar(COLOR_SKIN, COLOR_LACQUER, ownerColor_);
+  const mat = makeMatFactory(mats);
+  const perGeo: THREE.BufferGeometry[] = [];
+  const mLac    = mat(COLOR_LACQUER,  0.10, 0.55);   // lacquer red lamellar
+  const mBronze = mat(COLOR_BRONZE,   0.42, 0.45);
+  const mBronzL = mat(COLOR_BRONZE_LT,0.52, 0.38);
+  const mWood   = mat(COLOR_WOOD,     0.05, 0.85);
+  const mOwner  = mat(ownerColor_,    0.12, 0.66);
+  const mLeath  = mat(COLOR_LEATHER,  0.06, 0.82);
+
+  // Lamellar coat (lacquer-red cuirass) + horizontal lamellar bands.
+  const mCoat = new THREE.Mesh(getGeoCuirassBox(), mLac);
+  mCoat.scale.set(1.0, 1.04, 1.0);
+  mCoat.position.set(0, AV_Y_TORSO_CTR, 0);
+  group.add(mCoat);
+  for (const dy of [0.06, 0.0, -0.06]) {
+    const gBand = new THREE.BoxGeometry(0.215 * HEX_R, 0.018 * HEX_R, 0.135 * HEX_R);
+    perGeo.push(gBand);
+    const mBand = new THREE.Mesh(gBand, mBronzL);
+    mBand.position.set(0, AV_Y_TORSO_CTR + dy * HEX_R, 0.004 * HEX_R);
+    group.add(mBand);
+  }
+  addTunicHem(group, mat(COLOR_LACQUER, 0.06, 0.6));
+
+  // Chinese helm: a rounded bronze bowl + a top spike + owner-colour neck flap.
+  const mHelm = new THREE.Mesh(getGeoMeleeHelm(), mBronze);
+  mHelm.position.set(0, AV_Y_HEAD_CTR + 0.026 * HEX_R, 0);
+  group.add(mHelm);
+  const gSpike = new THREE.BoxGeometry(0.018 * HEX_R, 0.070 * HEX_R, 0.018 * HEX_R);
+  perGeo.push(gSpike);
+  const mSpike = new THREE.Mesh(gSpike, mBronzL);
+  mSpike.position.set(0, AV_Y_HEAD_TOP + 0.066 * HEX_R, 0);
+  group.add(mSpike);
+  const gFlap = new THREE.BoxGeometry(0.155 * HEX_R, 0.050 * HEX_R, 0.040 * HEX_R);
+  perGeo.push(gFlap);
+  const mFlap = new THREE.Mesh(gFlap, mOwner);
+  mFlap.position.set(0, AV_Y_HEAD_CTR - 0.034 * HEX_R, -AV_HEAD_S * 0.5 - 0.006 * HEX_R);
+  group.add(mFlap);
+
+  // DAGGER-AXE (ge): a tall pole on the right with a SIDEWAYS bronze blade near
+  // the top (the hallmark of the ge halberd).
+  const PX = AV_ARM_OFFSET_X + AV_ARM_W * 0.5 + 0.016 * HEX_R;
+  const gPole = new THREE.BoxGeometry(0.016 * HEX_R, 0.62 * HEX_R, 0.016 * HEX_R);
+  perGeo.push(gPole);
+  const mPole = new THREE.Mesh(gPole, mWood);
+  mPole.position.set(PX, AV_Y_TORSO_CTR + 0.16 * HEX_R, 0.01 * HEX_R);
+  group.add(mPole);
+  // Sideways ge blade jutting forward (+Z) near the top of the pole.
+  const gGe = new THREE.BoxGeometry(0.020 * HEX_R, 0.034 * HEX_R, 0.13 * HEX_R);
+  perGeo.push(gGe);
+  const mGe = new THREE.Mesh(gGe, mBronzL);
+  mGe.position.set(PX, AV_Y_TORSO_CTR + 0.40 * HEX_R, 0.075 * HEX_R);
+  group.add(mGe);
+  // Small bronze pole-cap tip.
+  const mTip = new THREE.Mesh(getGeoSpearTip(), mBronze);
+  mTip.scale.set(0.8, 0.7, 0.8);
+  mTip.position.set(PX, AV_Y_TORSO_CTR + 0.16 * HEX_R + 0.31 * HEX_R + 0.02 * HEX_R, 0.01 * HEX_R);
+  group.add(mTip);
+
+  addBoots(group, mLeath);
+  addHands(group, mat(COLOR_SKIN, 0.05, 0.80));
+  group.userData['mats'] = mats;
+  group.userData['perTokenGeos'] = perGeo;
+  return group;
+}
+
+/**
+ * Łucznik akadyjski — composite (recurve) bow, conical helmet, long robe; a
+ * quiver of arrows on the back.  Distinct from the green generic archer via a
+ * pale linen robe + bronze conical helm.
+ */
+function buildAkkadianArcher(ownerColor_: number): THREE.Group {
+  const { group, mats } = buildBaseAvatar(COLOR_SKIN, COLOR_LINEN, ownerColor_);
+  const mat = makeMatFactory(mats);
+  const perGeo: THREE.BufferGeometry[] = [];
+  const mWood   = mat(0x6e4a24,     0.05, 0.82);
+  const mBronze = mat(COLOR_BRONZE, 0.42, 0.45);
+  const mSteel  = mat(COLOR_STEEL,  0.50, 0.42);
+  const mString = mat(0xe8e0cc,     0.02, 0.95);
+  const mOwner  = mat(ownerColor_,  0.10, 0.70);
+  const mFeath  = mat(COLOR_FEATHER,0.03, 0.92);
+  const mRobe   = mat(COLOR_LINEN,  0.05, 0.86);
+  const mLeath  = mat(COLOR_LEATHER,0.06, 0.82);
+
+  // Long robe skirt to the shins (Mesopotamian style).
+  const gRobe = new THREE.BoxGeometry(AV_TORSO_W * 1.12, 0.20 * HEX_R, AV_TORSO_D * 1.15);
+  perGeo.push(gRobe);
+  const mRobeM = new THREE.Mesh(gRobe, mRobe);
+  mRobeM.position.set(0, AV_Y_TORSO_BOT - 0.06 * HEX_R, 0);
+  group.add(mRobeM);
+  // Owner-colour fringe band on the robe.
+  const gBand = new THREE.BoxGeometry(AV_TORSO_W * 1.14, 0.020 * HEX_R, AV_TORSO_D * 1.17);
+  perGeo.push(gBand);
+  const mBand = new THREE.Mesh(gBand, mOwner);
+  mBand.position.set(0, AV_Y_TORSO_BOT - 0.155 * HEX_R, 0);
+  group.add(mBand);
+
+  // Conical bronze helmet (Akkadian/Sumerian style) + small nasal.
+  const mHelm = new THREE.Mesh(getGeoConicalHelm(), mBronze);
+  mHelm.position.set(0, AV_Y_HEAD_CTR + 0.034 * HEX_R, 0);
+  group.add(mHelm);
+
+  // COMPOSITE recurve bow on the left (a curved stave from stacked boxes + string).
+  const BX = -(AV_ARM_OFFSET_X + AV_ARM_W * 0.5 + 0.010 * HEX_R);
+  const bowSegs: [number, number, number][] = [
+    [0.18, 0.0, 0.0], [0.14, 0.10, 0.30], [0.14, -0.10, 0.30],
+    [0.08, 0.175, 0.75], [0.08, -0.175, 0.75],
+  ];
+  for (const [h, dy, rot] of bowSegs) {
+    const gSeg = new THREE.BoxGeometry(0.016 * HEX_R, h * HEX_R, 0.016 * HEX_R);
+    perGeo.push(gSeg);
+    const mSeg = new THREE.Mesh(gSeg, mWood);
+    mSeg.rotation.x = rot;
+    mSeg.position.set(BX, AV_Y_TORSO_CTR + dy * HEX_R, 0.02 * HEX_R);
+    group.add(mSeg);
+  }
+  // Bowstring (a thin straight bar from tip to tip).
+  const gStr = new THREE.BoxGeometry(0.006 * HEX_R, 0.42 * HEX_R, 0.006 * HEX_R);
+  perGeo.push(gStr);
+  const mStr = new THREE.Mesh(gStr, mString);
+  mStr.position.set(BX + 0.018 * HEX_R, AV_Y_TORSO_CTR, 0.04 * HEX_R);
+  group.add(mStr);
+
+  // Quiver of arrows on the back (owner-colour fletch).
+  const mQuiver = new THREE.Mesh(getGeoQuiver(), mLeath);
+  mQuiver.rotation.x = -0.25;
+  mQuiver.position.set(0.05 * HEX_R, AV_Y_TORSO_CTR + 0.06 * HEX_R, -AV_TORSO_D * 0.5 - 0.02 * HEX_R);
+  group.add(mQuiver);
+  for (const dx of [-0.012 * HEX_R, 0.012 * HEX_R]) {
+    const mFl = new THREE.Mesh(getGeoArrowFletch(), mOwner);
+    mFl.position.set(0.05 * HEX_R + dx, AV_Y_TORSO_CTR + 0.13 * HEX_R, -AV_TORSO_D * 0.5 - 0.01 * HEX_R);
+    group.add(mFl);
+  }
+
+  addBoots(group, mLeath);
+  addHands(group, mat(COLOR_SKIN, 0.05, 0.80));
+  group.userData['mats'] = mats;
+  group.userData['perTokenGeos'] = perGeo;
+  return group;
+}
+
+// ===========================================================================
+// MACHINY OBLĘŻNICZE — NAME-KEYED bespoke siege machine models
+// Wszystkie "frontem" +Z (jak reszta jednostek).
+// Brak awatara humanoidalnego – bryły Box/Cylinder/Cone tworzą pojazd oblężniczy.
+// Kolory właściciela (ownerColor_) na dekoracjach tarczowych/banderach.
+// ===========================================================================
+
+/**
+ * Taran (Battering Ram) — niska drewniana rama na 4 kołach z dwuspadowym
+ * daszkiem osłonowym i zwieszoną belką-taranem.  Front +Z.
+ */
+function buildBatteringRam(ownerColor_: number): THREE.Group {
+  const group = new THREE.Group();
+  const mats: THREE.Material[] = [];
+  const mat = makeMatFactory(mats);
+  const perGeo: THREE.BufferGeometry[] = [];
+
+  const mWood    = mat(COLOR_WOOD,       0.06, 0.82);
+  const mDkWood  = mat(0x4a3018,         0.04, 0.88);  // ciemniejsze drewno dachu
+  const mIron    = mat(COLOR_STEEL,      0.55, 0.40);  // metal głowicy
+  const mLeather = mat(COLOR_LEATHER,    0.04, 0.92);  // skórzany pokrycie dachu
+  const mOwner   = mat(ownerColor_,      0.12, 0.70);
+
+  // === KOŁA (4 cylindry po bokach ramy) ===
+  const WHEEL_R  = 0.060 * HEX_R;
+  const WHEEL_Y  = WHEEL_R;
+  const AXLE_W   = 0.300 * HEX_R;
+  const wheelZs  = [-0.120 * HEX_R, 0.120 * HEX_R];
+  for (const wz of wheelZs) {
+    for (const wx of [AXLE_W * 0.5, -AXLE_W * 0.5]) {
+      const gW = new THREE.CylinderGeometry(WHEEL_R, WHEEL_R, 0.028 * HEX_R, 12, 1);
+      perGeo.push(gW);
+      const mW = new THREE.Mesh(gW, wx > 0 ? mWood : mDkWood);
+      mW.rotation.z = Math.PI / 2;
+      mW.position.set(wx, WHEEL_Y, wz);
+      group.add(mW);
+    }
+  }
+
+  // === RAMA / PODWOZIE ===
+  const FRAME_Y  = WHEEL_Y + WHEEL_R * 0.5;
+  const FRAME_W  = 0.280 * HEX_R;
+  const FRAME_D  = 0.320 * HEX_R;
+  const FRAME_H  = 0.040 * HEX_R;
+  const gFrame = new THREE.BoxGeometry(FRAME_W, FRAME_H, FRAME_D);
+  perGeo.push(gFrame);
+  const mFrM = new THREE.Mesh(gFrame, mWood);
+  mFrM.position.set(0, FRAME_Y, 0);
+  group.add(mFrM);
+
+  // Dwie belki boczne ramy (pełne)
+  for (const sx of [-FRAME_W * 0.5 + 0.022 * HEX_R, FRAME_W * 0.5 - 0.022 * HEX_R]) {
+    const gBeam = new THREE.BoxGeometry(0.040 * HEX_R, FRAME_H * 2.2, FRAME_D * 0.96);
+    perGeo.push(gBeam);
+    const mBm = new THREE.Mesh(gBeam, mDkWood);
+    mBm.position.set(sx, FRAME_Y + FRAME_H * 0.60, 0);
+    group.add(mBm);
+  }
+
+  // === BELKA-TARAN (poziomy cylinder) ===
+  const RAM_Y     = FRAME_Y + FRAME_H * 1.5;
+  const RAM_D     = FRAME_D * 0.82;
+  const gRam = new THREE.CylinderGeometry(0.030 * HEX_R, 0.028 * HEX_R, RAM_D, 10, 1);
+  perGeo.push(gRam);
+  const mRam = new THREE.Mesh(gRam, mDkWood);
+  mRam.rotation.x = Math.PI / 2;
+  mRam.position.set(0, RAM_Y, 0);
+  group.add(mRam);
+
+  // Metalowy łeb taranu (stożek-ostrosłup z przodu +Z)
+  const gHead = new THREE.ConeGeometry(0.040 * HEX_R, 0.080 * HEX_R, 8, 1);
+  perGeo.push(gHead);
+  const mRamHead = new THREE.Mesh(gHead, mIron);
+  mRamHead.rotation.x = Math.PI / 2;
+  mRamHead.position.set(0, RAM_Y, RAM_D * 0.5 + 0.040 * HEX_R);
+  group.add(mRamHead);
+
+  // Łańcuchy/liny zawieszenia (cienkie pionowe belki od ramy do belki)
+  for (const sx of [-0.06 * HEX_R, 0.06 * HEX_R]) {
+    const gChain = new THREE.BoxGeometry(0.014 * HEX_R, 0.070 * HEX_R, 0.014 * HEX_R);
+    perGeo.push(gChain);
+    const mCh = new THREE.Mesh(gChain, mIron);
+    mCh.position.set(sx, RAM_Y + 0.065 * HEX_R, 0);
+    group.add(mCh);
+  }
+
+  // === DASZEK DWUSPADOWY (dwie nachylone płaszczyzny + kaleniec) ===
+  const ROOF_BASE_Y = RAM_Y + 0.130 * HEX_R;
+  const ROOF_W = FRAME_W * 1.10;
+  const ROOF_D = FRAME_D * 0.95;
+  // Strona lewa (nachylona w lewo)
+  const gRoofL = new THREE.BoxGeometry(ROOF_W * 0.52, 0.024 * HEX_R, ROOF_D);
+  perGeo.push(gRoofL);
+  const mRL = new THREE.Mesh(gRoofL, mLeather);
+  mRL.rotation.z =  0.40;
+  mRL.position.set(-ROOF_W * 0.22, ROOF_BASE_Y + 0.022 * HEX_R, 0);
+  group.add(mRL);
+  // Strona prawa (nachylona w prawo)
+  const gRoofR = new THREE.BoxGeometry(ROOF_W * 0.52, 0.024 * HEX_R, ROOF_D);
+  perGeo.push(gRoofR);
+  const mRR = new THREE.Mesh(gRoofR, mLeather);
+  mRR.rotation.z = -0.40;
+  mRR.position.set( ROOF_W * 0.22, ROOF_BASE_Y + 0.022 * HEX_R, 0);
+  group.add(mRR);
+  // Kaleniec (pozioma belka na szczycie)
+  const gRidge = new THREE.BoxGeometry(0.036 * HEX_R, 0.036 * HEX_R, ROOF_D * 0.92);
+  perGeo.push(gRidge);
+  const mRidge = new THREE.Mesh(gRidge, mDkWood);
+  mRidge.position.set(0, ROOF_BASE_Y + 0.092 * HEX_R, 0);
+  group.add(mRidge);
+
+  // === OZDOBA WŁAŚCICIELA (banner na boku) ===
+  const gBanner = new THREE.BoxGeometry(0.010 * HEX_R, 0.060 * HEX_R, 0.070 * HEX_R);
+  perGeo.push(gBanner);
+  const mBannerM = new THREE.Mesh(gBanner, mOwner);
+  mBannerM.position.set(-FRAME_W * 0.52, ROOF_BASE_Y + 0.05 * HEX_R, 0);
+  group.add(mBannerM);
+
+  group.userData['mats'] = mats;
+  group.userData['perTokenGeos'] = perGeo;
+  return group;
+}
+
+/**
+ * Katapulta (Catapult) — drewniana podstawa-rama na kołach, pionowy stojak,
+ * ukośne ramię miotające z procą/kubłem i kamieniem na końcu.  Front +Z.
+ */
+function buildCatapult(ownerColor_: number): THREE.Group {
+  const group = new THREE.Group();
+  const mats: THREE.Material[] = [];
+  const mat = makeMatFactory(mats);
+  const perGeo: THREE.BufferGeometry[] = [];
+
+  const mWood    = mat(COLOR_WOOD,       0.06, 0.82);
+  const mDkWood  = mat(0x4a3018,         0.04, 0.88);
+  const mIron    = mat(COLOR_STEEL,      0.55, 0.40);
+  const mRope    = mat(0x9a8060,         0.04, 0.90);
+  const mStone   = mat(0x707878,         0.08, 0.85);
+  const mOwner   = mat(ownerColor_,      0.12, 0.70);
+
+  // === KOŁA (2 duże po bokach, tylne) ===
+  const WHEEL_R  = 0.070 * HEX_R;
+  const WHEEL_Y  = WHEEL_R;
+  for (const wx of [0.180 * HEX_R, -0.180 * HEX_R]) {
+    const gW = new THREE.CylinderGeometry(WHEEL_R, WHEEL_R, 0.030 * HEX_R, 12, 1);
+    perGeo.push(gW);
+    const mW = new THREE.Mesh(gW, mWood);
+    mW.rotation.z = Math.PI / 2;
+    mW.position.set(wx, WHEEL_Y, -0.080 * HEX_R);  // z tyłu (-Z)
+    group.add(mW);
+  }
+
+  // === PODSTAWA RAMY (poziomy prostokąt) ===
+  const BASE_Y   = WHEEL_Y + WHEEL_R * 0.20;
+  const gBase = new THREE.BoxGeometry(0.320 * HEX_R, 0.040 * HEX_R, 0.420 * HEX_R);
+  perGeo.push(gBase);
+  const mBaseM = new THREE.Mesh(gBase, mWood);
+  mBaseM.position.set(0, BASE_Y, 0.020 * HEX_R);
+  group.add(mBaseM);
+
+  // === PIONOWY STOJAK (z tyłu) ===
+  const STOJAK_Y  = BASE_Y + 0.040 * HEX_R;
+  const STOJAK_H  = 0.230 * HEX_R;
+  const gStojak = new THREE.BoxGeometry(0.200 * HEX_R, STOJAK_H, 0.040 * HEX_R);
+  perGeo.push(gStojak);
+  const mStojakM = new THREE.Mesh(gStojak, mDkWood);
+  mStojakM.position.set(0, STOJAK_Y + STOJAK_H * 0.5, -0.120 * HEX_R);
+  group.add(mStojakM);
+
+  // Poprzeczka osi ramienia (na górze stojaka)
+  const gAxle = new THREE.BoxGeometry(0.220 * HEX_R, 0.028 * HEX_R, 0.028 * HEX_R);
+  perGeo.push(gAxle);
+  const mAxle = new THREE.Mesh(gAxle, mIron);
+  mAxle.position.set(0, STOJAK_Y + STOJAK_H, -0.120 * HEX_R);
+  group.add(mAxle);
+
+  // === RAMIĘ MIOTAJĄCE (ukośny cylinder, obrócony ~-50° od pionu ku +Z) ===
+  const ARM_LEN  = 0.460 * HEX_R;
+  const ARM_ANGLE = -1.05;   // radiany: ~-60° od poziomej (załadowana pozycja)
+  const ARM_PIVOT_Y = STOJAK_Y + STOJAK_H;
+  const ARM_PIVOT_Z = -0.120 * HEX_R;
+  const gArm = new THREE.CylinderGeometry(0.022 * HEX_R, 0.018 * HEX_R, ARM_LEN, 8, 1);
+  perGeo.push(gArm);
+  const mArmM = new THREE.Mesh(gArm, mDkWood);
+  // Obrót wokół X: pozycja "załadowana" (ramię skierowane ku +Z i do góry)
+  mArmM.rotation.x = ARM_ANGLE;
+  // Środek ramienia = oś + połowa długości wzdłuż kierunku ramienia
+  mArmM.position.set(
+    0,
+    ARM_PIVOT_Y + Math.cos(ARM_ANGLE) * ARM_LEN * 0.5,
+    ARM_PIVOT_Z + Math.sin(-ARM_ANGLE) * ARM_LEN * 0.5,
+  );
+  group.add(mArmM);
+
+  // === PROCA / KUBEŁ na końcu ramienia ===
+  const BUCKET_Y = ARM_PIVOT_Y + Math.cos(ARM_ANGLE) * ARM_LEN + 0.010 * HEX_R;
+  const BUCKET_Z = ARM_PIVOT_Z + Math.sin(-ARM_ANGLE) * ARM_LEN;
+  const gBucket = new THREE.BoxGeometry(0.060 * HEX_R, 0.045 * HEX_R, 0.060 * HEX_R);
+  perGeo.push(gBucket);
+  const mBucket = new THREE.Mesh(gBucket, mWood);
+  mBucket.position.set(0, BUCKET_Y, BUCKET_Z);
+  group.add(mBucket);
+
+  // Kamień w kubłe (sphere = SphereGeometry)
+  const gStone = new THREE.SphereGeometry(0.042 * HEX_R, 8, 6);
+  perGeo.push(gStone);
+  const mStoneM = new THREE.Mesh(gStone, mStone);
+  mStoneM.position.set(0, BUCKET_Y + 0.042 * HEX_R, BUCKET_Z);
+  group.add(mStoneM);
+
+  // Liny / zawiesia (thin boxes łączące oś ze skrzynią)
+  for (const sx of [-0.060 * HEX_R, 0.060 * HEX_R]) {
+    const gRopeM = new THREE.BoxGeometry(0.010 * HEX_R, 0.160 * HEX_R, 0.010 * HEX_R);
+    perGeo.push(gRopeM);
+    const mRopeM = new THREE.Mesh(gRopeM, mRope);
+    mRopeM.rotation.x = 0.3;
+    mRopeM.position.set(sx, BASE_Y + 0.080 * HEX_R, -0.040 * HEX_R);
+    group.add(mRopeM);
+  }
+
+  // === OZDOBA WŁAŚCICIELA ===
+  const gOwnerBanner = new THREE.BoxGeometry(0.010 * HEX_R, 0.065 * HEX_R, 0.075 * HEX_R);
+  perGeo.push(gOwnerBanner);
+  const mOwnerBM = new THREE.Mesh(gOwnerBanner, mOwner);
+  mOwnerBM.position.set(0.175 * HEX_R, BASE_Y + 0.090 * HEX_R, 0.020 * HEX_R);
+  group.add(mOwnerBM);
+
+  group.userData['mats'] = mats;
+  group.userData['perTokenGeos'] = perGeo;
+  return group;
+}
+
+/**
+ * Wieża oblężnicza (Siege Tower) — wysoka drewniana wieża 3-kondygnacyjna na
+ * kołach, z opuszczanym pomostem od strony +Z u góry i osłoniętymi bokami.
+ * Front +Z.
+ */
+function buildSiegeTower(ownerColor_: number): THREE.Group {
+  const group = new THREE.Group();
+  const mats: THREE.Material[] = [];
+  const mat = makeMatFactory(mats);
+  const perGeo: THREE.BufferGeometry[] = [];
+
+  const mWood    = mat(COLOR_WOOD,       0.06, 0.82);
+  const mDkWood  = mat(0x4a3018,         0.04, 0.88);
+  const mIron    = mat(COLOR_STEEL,      0.55, 0.40);
+  const mOwner   = mat(ownerColor_,      0.12, 0.70);
+  const mPlanks  = mat(0x8a6840,         0.05, 0.80);  // jasne deski
+
+  // === KOŁA (4 cylindry – dwie osie) ===
+  const WHEEL_R = 0.058 * HEX_R;
+  const WHEEL_Y = WHEEL_R;
+  const wheelPositions: [number, number][] = [
+    [ 0.155 * HEX_R, -0.120 * HEX_R],
+    [-0.155 * HEX_R, -0.120 * HEX_R],
+    [ 0.155 * HEX_R,  0.120 * HEX_R],
+    [-0.155 * HEX_R,  0.120 * HEX_R],
+  ];
+  for (const [wx, wz] of wheelPositions) {
+    const gW = new THREE.CylinderGeometry(WHEEL_R, WHEEL_R, 0.028 * HEX_R, 10, 1);
+    perGeo.push(gW);
+    const mW = new THREE.Mesh(gW, mDkWood);
+    mW.rotation.z = Math.PI / 2;
+    mW.position.set(wx, WHEEL_Y, wz);
+    group.add(mW);
+  }
+
+  // === WIEŻA — trzy kondygnacje (prostokątny box) ===
+  const TWR_W = 0.240 * HEX_R;
+  const TWR_D = 0.220 * HEX_R;
+  const FLOOR_H = 0.145 * HEX_R;
+  const BASE_FLOOR_Y = WHEEL_Y + WHEEL_R * 0.5;
+
+  for (let floor = 0; floor < 3; floor++) {
+    const floorY = BASE_FLOOR_Y + floor * (FLOOR_H + 0.010 * HEX_R);
+
+    // Cztery ściany jako cienkie panele (kratownica uproszczona do płaskich ścian)
+    // Ściana tylna (-Z)
+    const gWallBack = new THREE.BoxGeometry(TWR_W, FLOOR_H, 0.022 * HEX_R);
+    perGeo.push(gWallBack);
+    new THREE.Mesh(gWallBack, mWood);
+    const mWBack = new THREE.Mesh(gWallBack, mWood);
+    mWBack.position.set(0, floorY + FLOOR_H * 0.5, -TWR_D * 0.5);
+    group.add(mWBack);
+
+    // Ściany boczne (L i P)
+    for (const sx of [-TWR_W * 0.5, TWR_W * 0.5]) {
+      const gWallSide = new THREE.BoxGeometry(0.022 * HEX_R, FLOOR_H, TWR_D);
+      perGeo.push(gWallSide);
+      const mWS = new THREE.Mesh(gWallSide, mWood);
+      mWS.position.set(sx, floorY + FLOOR_H * 0.5, 0);
+      group.add(mWS);
+    }
+
+    // Ściana przednia (+Z): pełna na dole, na górze otwarta strzelnica
+    const frontH = floor === 2 ? FLOOR_H * 0.45 : FLOOR_H;  // ostatnia kondygnacja ma port
+    const gWallFront = new THREE.BoxGeometry(TWR_W, frontH, 0.022 * HEX_R);
+    perGeo.push(gWallFront);
+    const mWF = new THREE.Mesh(gWallFront, floor < 2 ? mWood : mPlanks);
+    mWF.position.set(0, floorY + frontH * 0.5, TWR_D * 0.5);
+    group.add(mWF);
+
+    // Belka stropowa między kondygnacjami
+    if (floor < 2) {
+      const gFloorPlank = new THREE.BoxGeometry(TWR_W - 0.010 * HEX_R, 0.018 * HEX_R, TWR_D - 0.010 * HEX_R);
+      perGeo.push(gFloorPlank);
+      const mFP = new THREE.Mesh(gFloorPlank, mPlanks);
+      mFP.position.set(0, floorY + FLOOR_H + 0.009 * HEX_R, 0);
+      group.add(mFP);
+    }
+
+    // Poziome szpary / szczeliny strzeleckie na każdej kondygnacji (thin box)
+    for (let port = 0; port < 2; port++) {
+      const portY = floorY + FLOOR_H * (0.35 + port * 0.35);
+      const gPort = new THREE.BoxGeometry(0.048 * HEX_R, 0.020 * HEX_R, 0.030 * HEX_R);
+      perGeo.push(gPort);
+      const mPort = new THREE.Mesh(gPort, mDkWood);
+      mPort.position.set(0, portY, TWR_D * 0.5 + 0.006 * HEX_R);
+      group.add(mPort);
+    }
+  }
+
+  // Dach wieży (płaski)
+  const TOWER_TOP_Y = BASE_FLOOR_Y + 3 * FLOOR_H + 2 * 0.010 * HEX_R;
+  const gRoof = new THREE.BoxGeometry(TWR_W + 0.020 * HEX_R, 0.028 * HEX_R, TWR_D + 0.020 * HEX_R);
+  perGeo.push(gRoof);
+  const mRoofM = new THREE.Mesh(gRoof, mDkWood);
+  mRoofM.position.set(0, TOWER_TOP_Y, 0);
+  group.add(mRoofM);
+
+  // === OPADAJĄCY POMOST / RAMPA u góry od strony +Z ===
+  // Rampa pozioma (opuszczona do przodu)
+  const RAMP_W  = TWR_W * 0.70;
+  const RAMP_D  = 0.160 * HEX_R;
+  const gRamp = new THREE.BoxGeometry(RAMP_W, 0.018 * HEX_R, RAMP_D);
+  perGeo.push(gRamp);
+  const mRampM = new THREE.Mesh(gRamp, mPlanks);
+  // Rampa opuszczona lekko w dół pod kątem ~20° od ostatniej kondygnacji
+  mRampM.rotation.x = 0.30;
+  mRampM.position.set(
+    0,
+    TOWER_TOP_Y - 0.050 * HEX_R,
+    TWR_D * 0.5 + RAMP_D * 0.5 * Math.cos(0.30),
+  );
+  group.add(mRampM);
+
+  // Łańcuchy/liny rampy (dwa pionowe elementy po bokach)
+  for (const sx of [-RAMP_W * 0.40, RAMP_W * 0.40]) {
+    const gRopeR = new THREE.BoxGeometry(0.012 * HEX_R, 0.100 * HEX_R, 0.012 * HEX_R);
+    perGeo.push(gRopeR);
+    const mRopeR = new THREE.Mesh(gRopeR, mIron);
+    mRopeR.position.set(sx, TOWER_TOP_Y + 0.05 * HEX_R, TWR_D * 0.5 + 0.020 * HEX_R);
+    group.add(mRopeR);
+  }
+
+  // === OZDOBA WŁAŚCICIELA (na szczycie wieży) ===
+  const gOwnerFlag = new THREE.BoxGeometry(0.080 * HEX_R, 0.050 * HEX_R, 0.008 * HEX_R);
+  perGeo.push(gOwnerFlag);
+  const mOwnerFlagM = new THREE.Mesh(gOwnerFlag, mOwner);
+  mOwnerFlagM.position.set(-0.040 * HEX_R, TOWER_TOP_Y + 0.090 * HEX_R, 0);
+  group.add(mOwnerFlagM);
+  // Mały maszt flagi
+  const gFlagpole = new THREE.BoxGeometry(0.012 * HEX_R, 0.110 * HEX_R, 0.012 * HEX_R);
+  perGeo.push(gFlagpole);
+  const mFlagpoleM = new THREE.Mesh(gFlagpole, mWood);
+  mFlagpoleM.position.set(-0.040 * HEX_R, TOWER_TOP_Y + 0.055 * HEX_R, 0);
+  group.add(mFlagpoleM);
+
+  group.userData['mats'] = mats;
+  group.userData['perTokenGeos'] = perGeo;
+  return group;
+}
+
+/**
+ * Core per-category builder (the original buildUnitModel body).  Always returns
+ * the generic, culture-neutral model for the category.
+ */
+function buildCategoryModel(category: string, ownerColor_: number): THREE.Group {
+  switch (category) {
+
+    // -----------------------------------------------------------------------
+    case 'falanga': {
+      // Greek HOPLITE / phalanx: large round ASPIS on the left arm (owner
+      // blazon, bronze rim), Corinthian helmet with a transverse horsehair
+      // crest, a linothorax cuirass with pteruges, bronze greaves, and a very
+      // long DORY thrusting spear (overhand) with a bronze butt-spike.
+      // Vividness pass: deep WOAD-BLUE chiton (arms/legs) under a white
+      // linothorax + a CRIMSON horsehair crest + bright polished bronze.  Reads
+      // unmistakably Greek and very different from the red-tunic legionary.
+      const { group, mats } = buildBaseAvatar(COLOR_SKIN, COLOR_WOAD, ownerColor_);
+      const mat = makeMatFactory(mats);
+
+      const mLinen  = mat(COLOR_LINEN,     0.06, 0.82);
+      const mBronze = mat(COLOR_BRONZE,    0.35, 0.50);
+      const mBronzL = mat(COLOR_BRONZE_LT, 0.55, 0.35);
+      const mSteel  = mat(COLOR_STEEL,     0.50, 0.40);
+      const mOwner  = mat(ownerColor_,     0.16, 0.62);
+      const mWood   = mat(COLOR_WOOD,      0.05, 0.85);
+      const mCrest  = mat(COLOR_CRIMSON,   0.08, 0.74);
+      const mLeath  = mat(COLOR_LEATHER,   0.06, 0.82);
+
+      // Linothorax torso (linen cuirass) + shoulder yoke flaps
+      const mCuir = new THREE.Mesh(getGeoCuirassBox(), mLinen);
+      mCuir.scale.set(0.97, 1.0, 0.97);
+      mCuir.position.set(0, AV_Y_TORSO_CTR, 0);
+      group.add(mCuir);
+      const falExtraGeos: THREE.BoxGeometry[] = [];
+      for (const sx of [-1, 1]) {
+        const gFlap = new THREE.BoxGeometry(0.085 * HEX_R, 0.045 * HEX_R, 0.13 * HEX_R);
+        falExtraGeos.push(gFlap);
+        const mFlap = new THREE.Mesh(gFlap, mLinen);
+        mFlap.position.set(sx * 0.05 * HEX_R, AV_Y_TORSO_TOP - 0.005 * HEX_R, 0);
+        group.add(mFlap);
+      }
+      // Leather pteruges
+      addPteruges(group, mLeath);
+
+      // Corinthian helmet: dome that drops over the face (covers eyes), with a
+      // short vertical nasal slit suggested by a dark bar.
+      const mHelm = new THREE.Mesh(getGeoCorinthDome(), mBronze);
+      mHelm.position.set(0, AV_Y_HEAD_CTR + 0.012 * HEX_R, 0);
+      group.add(mHelm);
+      const gSlit = new THREE.BoxGeometry(0.018 * HEX_R, 0.05 * HEX_R, 0.012 * HEX_R);
+      const mSlit = new THREE.Mesh(gSlit, mat(0x20180f, 0.05, 0.9));
+      mSlit.position.set(0, AV_Y_HEAD_CTR - 0.01 * HEX_R, AV_HEAD_S * 0.5 + 0.006 * HEX_R);
+      group.add(mSlit);
+      // Transverse horsehair crest (side-to-side ridge) on a small base
+      const mCrestBase = new THREE.Mesh(getGeoTransverseCrest(), mBronzL);
+      mCrestBase.position.set(0, AV_Y_HEAD_TOP + 0.030 * HEX_R, 0);
+      group.add(mCrestBase);
+      const gCrestHair = new THREE.BoxGeometry(0.150 * HEX_R, 0.070 * HEX_R, 0.030 * HEX_R);
+      const mCrestHair = new THREE.Mesh(gCrestHair, mCrest);
+      mCrestHair.position.set(0, AV_Y_HEAD_TOP + 0.075 * HEX_R, 0);
+      group.add(mCrestHair);
+
+      // Very long dory held overhand on the right, head up, butt-spike down
+      const DORY_X = AV_ARM_OFFSET_X + AV_ARM_W * 0.5 + 0.012 * HEX_R;
+      const mDory = new THREE.Mesh(getGeoDoryShaft(), mWood);
+      mDory.position.set(DORY_X, AV_Y_TORSO_CTR + 0.10 * HEX_R, 0.01 * HEX_R);
+      group.add(mDory);
+      const mDoryTip = new THREE.Mesh(getGeoSpearTip(), mSteel);
+      mDoryTip.position.set(DORY_X, AV_Y_TORSO_CTR + 0.10 * HEX_R + 0.31 * HEX_R + 0.028 * HEX_R, 0.01 * HEX_R);
+      group.add(mDoryTip);
+      const mSauroter = new THREE.Mesh(getGeoSauroter(), mBronze);
+      mSauroter.position.set(DORY_X, AV_Y_TORSO_CTR + 0.10 * HEX_R - 0.31 * HEX_R - 0.022 * HEX_R, 0.01 * HEX_R);
+      group.add(mSauroter);
+
+      // Large round ASPIS on the left arm: owner-blazon face + bronze rim + boss
+      const ASPIS_X = -(AV_ARM_OFFSET_X + AV_ARM_W * 0.5 + 0.010 * HEX_R);
+      const mAspisRim = new THREE.Mesh(getGeoAspisRim(), mBronzL);
+      mAspisRim.rotation.z = Math.PI / 2;
+      mAspisRim.position.set(ASPIS_X - 0.006 * HEX_R, AV_Y_TORSO_CTR, 0.02 * HEX_R);
+      group.add(mAspisRim);
+      const mAspisFace = new THREE.Mesh(getGeoAspisFace(), mOwner);
+      mAspisFace.rotation.z = Math.PI / 2;
+      mAspisFace.position.set(ASPIS_X + 0.004 * HEX_R, AV_Y_TORSO_CTR, 0.02 * HEX_R);
+      group.add(mAspisFace);
+      const mAspisBoss = new THREE.Mesh(getGeoShieldBoss(), mBronze);
+      mAspisBoss.rotation.z = Math.PI / 2;
+      mAspisBoss.position.set(ASPIS_X + 0.018 * HEX_R, AV_Y_TORSO_CTR, 0.02 * HEX_R);
+      group.add(mAspisBoss);
+
+      addGreaves(group, mBronzL);
+      addBoots(group, mLeath);
+      addHands(group, mat(COLOR_SKIN, 0.05, 0.80));
+
+      group.userData['mats'] = mats;
+      group.userData['perTokenGeos'] = [gSlit, gCrestHair, ...falExtraGeos];
+      return group;
+    }
+
+    // -----------------------------------------------------------------------
+    case 'legion':        // imperialny model Legionu — rezerwa dla epoki Klasycznej
+    case 'legionary':     // EN alias
+    case 'legionista': {
+      // Roman LEGIONARY: lorica segmentata (stacked steel bands) over a red
+      // tunic, a galea helmet with a brow ridge + neck guard + cheek pieces, a
+      // large curved rectangular SCUTUM (owner field, yellow boss + wings), a
+      // heavy PILUM in the right hand, and a gladius sheathed on the right hip.
+      // Vividness pass: bright kermes-RED tunic + crest, brighter bronze galea.
+      const { group, mats } = buildBaseAvatar(COLOR_SKIN, COLOR_RED_VIV, ownerColor_);
+      const mat = makeMatFactory(mats);
+
+      const mSteel  = mat(COLOR_STEEL,      0.52, 0.38);
+      const mDark   = mat(COLOR_DARK_STEEL, 0.40, 0.55);
+      const mOwner  = mat(ownerColor_,      0.15, 0.65);
+      const mWood   = mat(COLOR_WOOD,       0.05, 0.85);
+      const mGold   = mat(COLOR_GOLD_BR,    0.55, 0.35);
+      const mLeath  = mat(COLOR_LEATHER,    0.06, 0.82);
+      const mRed    = mat(COLOR_RED_VIV,    0.08, 0.74);
+
+      // Lorica segmentata: 4 stacked steel torso bands
+      const bandYs = [-0.07, -0.025, 0.02, 0.065];
+      for (const dy of bandYs) {
+        const b = new THREE.Mesh(getGeoLoricaBand(), mSteel);
+        b.position.set(0, AV_Y_TORSO_CTR + dy * HEX_R, 0);
+        group.add(b);
+      }
+      // Dark gaps suggested by thin bands behind
+      for (const dy of [-0.048, -0.003, 0.043]) {
+        const g = new THREE.Mesh(getGeoCuirassGap(), mDark);
+        g.position.set(0, AV_Y_TORSO_CTR + dy * HEX_R, 0.001 * HEX_R);
+        group.add(g);
+      }
+      // Shoulder bands (pauldron stacks)
+      for (const sx of [-1, 1]) {
+        for (const dy of [0.0, 0.03]) {
+          const sp = new THREE.Mesh(getGeoShoulderPad(), mSteel);
+          sp.scale.set(1.0, 0.5, 1.0);
+          sp.position.set(sx * (AV_ARM_OFFSET_X - 0.004 * HEX_R), AV_Y_TORSO_TOP - 0.02 * HEX_R + dy * HEX_R, 0);
+          group.add(sp);
+        }
+      }
+      // Red tunic hem (pteruges-like) below the lorica
+      addPteruges(group, mRed);
+
+      // GALEA (Roman legionary helmet): a rounded BRONZE bowl that wraps the
+      // whole head and stands proud above it, a domed crown cap, a brow ridge at
+      // the front, a flared NECK GUARD at the back, CHEEK GUARDS on the sides,
+      // and a red transverse horsehair CREST (crista transversa) on top.
+      const mGalea = mat(COLOR_BRONZE,    0.45, 0.45);   // bronze helmet body
+      const mGaleaL = mat(COLOR_BRONZE_LT, 0.50, 0.40);  // polished bronze trim / crest base
+      // Bowl: covers the head, rises above the crown.
+      const mHelm = new THREE.Mesh(getGeoGaleaBowl(), mGalea);
+      mHelm.position.set(0, AV_Y_HEAD_CTR + 0.022 * HEX_R, 0);
+      group.add(mHelm);
+      // Domed crown cap on top of the bowl.
+      const mCap = new THREE.Mesh(getGeoGaleaCap(), mGalea);
+      mCap.position.set(0, AV_Y_HEAD_CTR + 0.022 * HEX_R + 0.0525 * HEX_R, 0);
+      group.add(mCap);
+      // Brow ridge across the forehead.
+      const gBrow = new THREE.BoxGeometry(0.165 * HEX_R, 0.022 * HEX_R, 0.030 * HEX_R);
+      const mBrow = new THREE.Mesh(gBrow, mGaleaL);
+      mBrow.position.set(0, AV_Y_HEAD_CTR + 0.010 * HEX_R, AV_HEAD_S * 0.5 + 0.006 * HEX_R);
+      group.add(mBrow);
+      // Flared neck guard at the BACK (the galea's defining rear flare).
+      const gNeck = new THREE.BoxGeometry(0.170 * HEX_R, 0.030 * HEX_R, 0.060 * HEX_R);
+      const mNeck = new THREE.Mesh(gNeck, mGalea);
+      mNeck.rotation.x = -0.55;
+      mNeck.position.set(0, AV_Y_HEAD_CTR - 0.028 * HEX_R, -(AV_HEAD_S * 0.5 + 0.024 * HEX_R));
+      group.add(mNeck);
+      // Cheek guards on both sides.
+      for (const sx of [-1, 1]) {
+        const ck = new THREE.Mesh(getGeoCheekGuard(), mGalea);
+        ck.position.set(sx * (AV_HEAD_S * 0.5 + 0.004 * HEX_R), AV_Y_HEAD_CTR - 0.010 * HEX_R, 0.028 * HEX_R);
+        group.add(ck);
+      }
+      // Red transverse crest (crista transversa) atop the bowl, mirroring the
+      // swordsman's: a bronze base + a side-to-side red horsehair block.
+      const mLegCrestB = new THREE.Mesh(getGeoTransverseCrest(), mGaleaL);
+      mLegCrestB.position.set(0, AV_Y_HEAD_TOP + 0.052 * HEX_R, 0);
+      group.add(mLegCrestB);
+      const gLegCrest = new THREE.BoxGeometry(0.140 * HEX_R, 0.080 * HEX_R, 0.026 * HEX_R);
+      const mLegCrest = new THREE.Mesh(gLegCrest, mRed);
+      mLegCrest.position.set(0, AV_Y_HEAD_TOP + 0.100 * HEX_R, 0);
+      group.add(mLegCrest);
+
+      // Pilum in the right hand (long, thin iron shank + small head)
+      const PIL_X = AV_ARM_OFFSET_X + AV_ARM_W * 0.5 + 0.012 * HEX_R;
+      const mPilShaft = new THREE.Mesh(getGeoPilumShaft(), mWood);
+      mPilShaft.position.set(PIL_X, AV_Y_LEG_BOT + 0.21 * HEX_R, 0.01 * HEX_R);
+      group.add(mPilShaft);
+      const mPilIron = new THREE.Mesh(getGeoPilumHead(), mDark);
+      mPilIron.position.set(PIL_X, AV_Y_LEG_BOT + 0.42 * HEX_R + 0.05 * HEX_R, 0.01 * HEX_R);
+      group.add(mPilIron);
+      const mPilTip = new THREE.Mesh(getGeoJavTip(), mSteel);
+      mPilTip.position.set(PIL_X, AV_Y_LEG_BOT + 0.42 * HEX_R + 0.10 * HEX_R + 0.02 * HEX_R, 0.01 * HEX_R);
+      group.add(mPilTip);
+
+      // Gladius sheathed on the RIGHT hip (Roman style)
+      addHipSword(group, mLeath, mGold, 1);
+
+      // Large curved rectangular SCUTUM on the left arm
+      const SC_X = -(AV_ARM_OFFSET_X + AV_ARM_W * 0.5 + 0.014 * HEX_R);
+      const mScu = new THREE.Mesh(getGeoScutumBody(), mOwner);
+      mScu.position.set(SC_X, AV_Y_TORSO_CTR, 0.02 * HEX_R);
+      group.add(mScu);
+      // Slight curvature suggested by two angled side panels
+      const legExtraGeos: THREE.BoxGeometry[] = [];
+      for (const sx of [-1, 1]) {
+        const gWing = new THREE.BoxGeometry(0.040 * HEX_R, 0.230 * HEX_R, 0.018 * HEX_R);
+        legExtraGeos.push(gWing);
+        const mWing = new THREE.Mesh(gWing, mOwner);
+        mWing.rotation.y = sx * 0.5;
+        mWing.position.set(SC_X + sx * 0.080 * HEX_R, AV_Y_TORSO_CTR, 0.012 * HEX_R);
+        group.add(mWing);
+      }
+      // Metal boss + gold lightning-wing motifs
+      const mScuBoss = new THREE.Mesh(getGeoScutumBoss(), mSteel);
+      mScuBoss.position.set(SC_X, AV_Y_TORSO_CTR, 0.034 * HEX_R);
+      group.add(mScuBoss);
+      for (const dy of [0.06, -0.06]) {
+        const gWingM = new THREE.BoxGeometry(0.10 * HEX_R, 0.018 * HEX_R, 0.012 * HEX_R);
+        legExtraGeos.push(gWingM);
+        const mWingM = new THREE.Mesh(gWingM, mGold);
+        mWingM.position.set(SC_X, AV_Y_TORSO_CTR + dy * HEX_R, 0.031 * HEX_R);
+        group.add(mWingM);
+      }
+
+      addBoots(group, mLeath);
+      addHands(group, mat(COLOR_SKIN, 0.05, 0.80));
+
+      group.userData['mats'] = mats;
+      group.userData['perTokenGeos'] = [gBrow, gNeck, gLegCrest, ...legExtraGeos];
+      return group;
+    }
+
+    // -----------------------------------------------------------------------
+    case 'osadnik': {
+      // Pioneer/settler: round straw sun-hat, linen tunic, walking staff,
+      // backpack with a rolled bedroll. No weapon. Owner colour on hat band + sash.
+      const { group, mats } = buildBaseAvatar(COLOR_SKIN, 0x2f5aa0, ownerColor_);
+      const mat = makeMatFactory(mats);
+
+      const mStraw = mat(COLOR_SAND,    0.03, 0.95);
+      const mPack  = mat(COLOR_LEATHER, 0.05, 0.85);
+      const mVest  = mat(0x274d8c,      0.05, 0.85);   // darker blue work vest
+      const mGreen = mat(0x3f6b3a,      0.05, 0.88);   // green work trousers
+      const mBootO = mat(0x4a3526,      0.05, 0.88);   // brown leather boots
+      const mWood  = mat(COLOR_WOOD,    0.05, 0.85);
+      const mRoll  = mat(0xb8784a,      0.04, 0.90);
+      const mBand2 = mat(ownerColor_,   0.08, 0.70);
+
+      // Round straw brim (wide disc) + low conical crown
+      const mBrim = new THREE.Mesh(getGeoStrawBrim(), mStraw);
+      mBrim.position.set(0, AV_Y_HEAD_TOP + 0.006 * HEX_R, 0);
+      group.add(mBrim);
+      const mCrown = new THREE.Mesh(getGeoStrawCrown(), mStraw);
+      mCrown.position.set(0, AV_Y_HEAD_TOP + 0.036 * HEX_R, 0);
+      group.add(mCrown);
+      // Owner-colour hat band around crown base
+      const gBand = new THREE.BoxGeometry(0.118 * HEX_R, 0.016 * HEX_R, 0.118 * HEX_R);
+      const mBand = new THREE.Mesh(gBand, mBand2);
+      mBand.position.set(0, AV_Y_HEAD_TOP + 0.012 * HEX_R, 0);
+      group.add(mBand);
+
+      // Backpack on the back
+      const mPk = new THREE.Mesh(getGeoBackpack(), mPack);
+      mPk.position.set(0, AV_Y_TORSO_CTR + 0.01 * HEX_R, -(AV_TORSO_D * 0.5 + 0.022 * HEX_R));
+      group.add(mPk);
+      // Rolled bedroll lashed horizontally atop the pack
+      const mRollM = new THREE.Mesh(getGeoBedroll(), mRoll);
+      mRollM.rotation.z = Math.PI / 2;
+      mRollM.position.set(0, AV_Y_TORSO_CTR + 0.075 * HEX_R, -(AV_TORSO_D * 0.5 + 0.030 * HEX_R));
+      group.add(mRollM);
+
+      // Walking staff in the right hand (tall, slightly outside the arm)
+      const STAFF_X = AV_ARM_OFFSET_X + AV_ARM_W * 0.5 + 0.012 * HEX_R;
+      const mStaff = new THREE.Mesh(getGeoStaff(), mWood);
+      mStaff.position.set(STAFF_X, AV_Y_LEG_BOT + 0.26 * HEX_R, 0.02 * HEX_R);
+      group.add(mStaff);
+
+      // Blue work-vest panel over the chest (darker than the tunic) + gold trim
+      const gVest = new THREE.BoxGeometry(0.135 * HEX_R, 0.20 * HEX_R, 0.115 * HEX_R);
+      const mVestM = new THREE.Mesh(gVest, mVest);
+      mVestM.position.set(0, AV_Y_TORSO_CTR, 0.004 * HEX_R);
+      group.add(mVestM);
+      const gVTrim = new THREE.BoxGeometry(0.020 * HEX_R, 0.20 * HEX_R, 0.012 * HEX_R);
+      const mVTrim = new THREE.Mesh(gVTrim, mBand2);
+      mVTrim.position.set(0, AV_Y_TORSO_CTR, AV_TORSO_D * 0.5 + 0.006 * HEX_R);
+      group.add(mVTrim);
+      // Green trouser overlays on both legs
+      const osGeos: THREE.BoxGeometry[] = [];
+      for (const sx of [-(AV_LEG_SEP + AV_LEG_W * 0.5), (AV_LEG_SEP + AV_LEG_W * 0.5)]) {
+        const gTr = new THREE.BoxGeometry(AV_LEG_W * 1.04, AV_LEG_H * 0.92, AV_LEG_W * 1.04);
+        osGeos.push(gTr);
+        const mTr = new THREE.Mesh(gTr, mGreen);
+        mTr.position.set(sx, AV_Y_LEG_CTR + 0.01 * HEX_R, 0);
+        group.add(mTr);
+      }
+      addBoots(group, mBootO);
+      addHands(group, mat(COLOR_SKIN, 0.05, 0.80));
+
+      group.userData['mats'] = mats;
+      group.userData['perTokenGeos'] = [gBand, gVest, gVTrim, ...osGeos];
+      return group;
+    }
+
+    // -----------------------------------------------------------------------
+    case 'miecznik': {
+      // Generic ancient infantry swordsman: iron scale/mail shirt with leather
+      // pteruges, conical helmet with nasal bar + cheek flaps, large oval body
+      // shield (owner blazon + boss), short gladius-style sword, light greaves.
+      // Vividness pass: RUST-red tunic (arms/legs) under the mail — clearly
+      // warmer/oranger than the legionary's bright red and unlike any other unit.
+      const { group, mats } = buildBaseAvatar(COLOR_SKIN, COLOR_RUST, ownerColor_);
+      const mat = makeMatFactory(mats);
+
+      const mMail   = mat(COLOR_MAIL,        0.55, 0.45);
+      const mDark   = mat(COLOR_DARK_STEEL,  0.40, 0.55);
+      const mSteel  = mat(COLOR_STEEL,       0.45, 0.45);
+      const mBronze = mat(COLOR_BRONZE,      0.35, 0.55);
+      const mOwner  = mat(ownerColor_,       0.15, 0.65);
+      const mWood   = mat(COLOR_WOOD,        0.05, 0.85);
+      const mLeath  = mat(COLOR_LEATHER,     0.05, 0.85);
+
+      // Mail shirt (cuirass box, iron-grey, slightly proud of torso)
+      const mShirt = new THREE.Mesh(getGeoCuirassBox(), mMail);
+      mShirt.scale.set(0.98, 1.0, 0.98);
+      mShirt.position.set(0, AV_Y_TORSO_CTR, 0);
+      group.add(mShirt);
+      // Leather pteruges skirt under the shirt
+      addPteruges(group, mLeath);
+
+      // Shoulder doubling (mail) on both shoulders
+      for (const sx of [-1, 1]) {
+        const sp = new THREE.Mesh(getGeoShoulderPad(), mMail);
+        sp.position.set(sx * (AV_ARM_OFFSET_X - 0.005 * HEX_R), AV_Y_TORSO_TOP - 0.015 * HEX_R, 0);
+        group.add(sp);
+      }
+
+      // Conical helmet (spangenhelm) + nasal bar + cheek guards
+      const mHelm = new THREE.Mesh(getGeoConicalHelm(), mSteel);
+      mHelm.position.set(0, AV_Y_HEAD_CTR + 0.030 * HEX_R, 0);
+      group.add(mHelm);
+      const mNose = new THREE.Mesh(getGeoNoseGuard(), mSteel);
+      mNose.position.set(0, AV_Y_HEAD_CTR - 0.005 * HEX_R, AV_HEAD_S * 0.5 + 0.004 * HEX_R);
+      group.add(mNose);
+      for (const sx of [-1, 1]) {
+        const ck = new THREE.Mesh(getGeoCheekGuard(), mSteel);
+        ck.position.set(sx * (AV_HEAD_S * 0.5 - 0.004 * HEX_R), AV_Y_HEAD_CTR - 0.012 * HEX_R, 0.030 * HEX_R);
+        group.add(ck);
+      }
+
+      // Gladius in the right hand (grip + guard + short broad blade)
+      const SWORD_X = AV_ARM_OFFSET_X + AV_ARM_W * 0.5 + 0.018 * HEX_R;
+      const mGrip = new THREE.Mesh(getGeoSwordGrip(), mWood);
+      mGrip.position.set(SWORD_X, AV_Y_TORSO_CTR - 0.02 * HEX_R, 0.02 * HEX_R);
+      group.add(mGrip);
+      const mCross = new THREE.Mesh(getGeoSwordCross(), mBronze);
+      mCross.position.set(SWORD_X, AV_Y_TORSO_CTR + 0.026 * HEX_R, 0.02 * HEX_R);
+      group.add(mCross);
+      const mBlade = new THREE.Mesh(getGeoGladius(), mSteel);
+      mBlade.position.set(SWORD_X, AV_Y_TORSO_CTR + 0.115 * HEX_R, 0.02 * HEX_R);
+      group.add(mBlade);
+
+      // Large oval body shield on the left arm (squashed cylinder, owner blazon)
+      const SHIELD_X = -(AV_ARM_OFFSET_X + AV_ARM_W * 0.5 + 0.018 * HEX_R);
+      const mShield = new THREE.Mesh(getGeoOvalShield(), mOwner);
+      mShield.rotation.z = Math.PI / 2;
+      mShield.scale.set(1.0, 0.95, 1.55);          // taller than wide -> body shield
+      mShield.position.set(SHIELD_X, AV_Y_TORSO_CTR, 0.01 * HEX_R);
+      group.add(mShield);
+      // Bronze rim ring (slightly larger, behind)
+      const mShRim = new THREE.Mesh(getGeoOvalShield(), mBronze);
+      mShRim.rotation.z = Math.PI / 2;
+      mShRim.scale.set(0.92, 1.08, 1.68);
+      mShRim.position.set(SHIELD_X - 0.006 * HEX_R, AV_Y_TORSO_CTR, 0.01 * HEX_R);
+      group.add(mShRim);
+      // Central boss
+      const mBoss = new THREE.Mesh(getGeoShieldBoss(), mSteel);
+      mBoss.rotation.z = Math.PI / 2;
+      mBoss.position.set(SHIELD_X + 0.012 * HEX_R, AV_Y_TORSO_CTR, 0.01 * HEX_R);
+      group.add(mBoss);
+
+      // Transverse RED crest atop the helmet (reads as a proper line-soldier)
+      const mCrestB = new THREE.Mesh(getGeoTransverseCrest(), mSteel);
+      mCrestB.position.set(0, AV_Y_HEAD_TOP + 0.060 * HEX_R, 0);
+      group.add(mCrestB);
+      const gMieCrest = new THREE.BoxGeometry(0.140 * HEX_R, 0.075 * HEX_R, 0.026 * HEX_R);
+      const mMieCrest = new THREE.Mesh(gMieCrest, mat(COLOR_RED_VIV, 0.08, 0.74));
+      mMieCrest.position.set(0, AV_Y_HEAD_TOP + 0.105 * HEX_R, 0);
+      group.add(mMieCrest);
+
+      // Light greaves + caligae boots + hands
+      addGreaves(group, mBronze);
+      addBoots(group, mLeath);
+      addHands(group, mat(COLOR_SKIN, 0.05, 0.80));
+
+      group.userData['mats'] = mats;
+      group.userData['perTokenGeos'] = [gMieCrest];
+      return group;
+    }
+
+    // -----------------------------------------------------------------------
+    case 'wlocznik': {
+      // Generic ancient spearman: leather/quilted cuirass, conical helmet with
+      // nasal, round owner-blazon shield held forward, a long thrusting spear,
+      // and light greaves. (The Greek phalanx is its own 'falanga' category.)
+      // Vividness pass: dark TEAL/verdigris tunic (arms/legs/hem) with a bronze
+      // pectoral — a Sumerian copper-and-teal feel, distinct from every red unit.
+      const { group, mats } = buildBaseAvatar(COLOR_SKIN, COLOR_TEAL, ownerColor_);
+      const mat = makeMatFactory(mats);
+
+      const mLeath  = mat(COLOR_LEATHER,    0.06, 0.82);
+      const mBronze = mat(COLOR_BRONZE,     0.32, 0.55);
+      const mSteel  = mat(COLOR_STEEL,      0.45, 0.45);
+      const mWood   = mat(COLOR_WOOD,       0.05, 0.85);
+      const mOwner  = mat(ownerColor_,      0.14, 0.66);
+      const mDark   = mat(COLOR_DARK_BRONZE,0.28, 0.62);
+
+      // Teal tunic hem peeking below the cuirass
+      addTunicHem(group, mat(COLOR_TEAL, 0.06, 0.85));
+      // Quilted/leather cuirass over the linen tunic
+      const mCuir = new THREE.Mesh(getGeoCuirassBox(), mLeath);
+      mCuir.scale.set(0.95, 0.96, 0.95);
+      mCuir.position.set(0, AV_Y_TORSO_CTR, 0);
+      group.add(mCuir);
+      // Bronze chest disc / pectoral
+      const gDisc = new THREE.BoxGeometry(0.10 * HEX_R, 0.10 * HEX_R, 0.012 * HEX_R);
+      const mDisc = new THREE.Mesh(gDisc, mBronze);
+      mDisc.position.set(0, AV_Y_TORSO_CTR + 0.02 * HEX_R, AV_TORSO_D * 0.5 + 0.006 * HEX_R);
+      group.add(mDisc);
+
+      // HELMET (visibility fix): a WIDE rounded bronze helm bowl that wraps the
+      // whole head and clearly overhangs the crown (was a narrow conical cap that
+      // read as a bare head from a distance), a small domed crown knob, a nasal
+      // guard, and a BRIGHT crest atop — so the spearman is unmistakably helmeted
+      // from all four gallery views (mirrors the swordsman's crested helm).
+      const mBrnzL = mat(COLOR_BRONZE_LT, 0.45, 0.42);
+      const mHelm = new THREE.Mesh(getGeoMeleeHelm(), mBronze);
+      mHelm.position.set(0, AV_Y_HEAD_CTR + 0.026 * HEX_R, 0);
+      group.add(mHelm);
+      // Domed crown cap sitting on top of the bowl.
+      const mHelmCap = new THREE.Mesh(getGeoGaleaCap(), mBronze);
+      mHelmCap.scale.set(1.05, 0.85, 1.05);
+      mHelmCap.position.set(0, AV_Y_HEAD_CTR + 0.026 * HEX_R + 0.050 * HEX_R, 0);
+      group.add(mHelmCap);
+      // Bronze brow ridge across the forehead (front contrast band).
+      const gWlBrow = new THREE.BoxGeometry(0.180 * HEX_R, 0.024 * HEX_R, 0.032 * HEX_R);
+      const mWlBrow = new THREE.Mesh(gWlBrow, mBrnzL);
+      mWlBrow.position.set(0, AV_Y_HEAD_CTR + 0.004 * HEX_R, AV_HEAD_S * 0.5 + 0.004 * HEX_R);
+      group.add(mWlBrow);
+      const mNose = new THREE.Mesh(getGeoNoseGuard(), mBronze);
+      mNose.position.set(0, AV_Y_HEAD_CTR - 0.012 * HEX_R, AV_HEAD_S * 0.5 + 0.006 * HEX_R);
+      group.add(mNose);
+      // Fore-aft horsehair crest on a bronze base (bright contrast so the helm
+      // reads as a helmet, not hair) — crimson on the teal/copper Sumerian feel.
+      const mWlCrestB = new THREE.Mesh(getGeoTransverseCrest(), mBrnzL);
+      mWlCrestB.rotation.y = Math.PI / 2;     // fore-aft ridge
+      mWlCrestB.position.set(0, AV_Y_HEAD_TOP + 0.066 * HEX_R, 0);
+      group.add(mWlCrestB);
+      const gWlCrest = new THREE.BoxGeometry(0.030 * HEX_R, 0.075 * HEX_R, 0.140 * HEX_R);
+      const mWlCrest = new THREE.Mesh(gWlCrest, mat(COLOR_CRIMSON, 0.08, 0.74));
+      mWlCrest.position.set(0, AV_Y_HEAD_TOP + 0.110 * HEX_R, 0);
+      group.add(mWlCrest);
+
+      // Long spear (right side, well above head) with butt + leaf head
+      const SPEAR_X = AV_ARM_OFFSET_X + AV_ARM_W * 0.5 + 0.014 * HEX_R;
+      const SPEAR_BOT = AV_Y_LEG_BOT + 0.01 * HEX_R;
+      const SPEAR_CTR = SPEAR_BOT + 0.48 * HEX_R * 0.5;
+      const SPEAR_TOP = SPEAR_BOT + 0.48 * HEX_R;
+      const gShaft = new THREE.BoxGeometry(0.015 * HEX_R, 0.48 * HEX_R, 0.015 * HEX_R);
+      const mShaft = new THREE.Mesh(gShaft, mWood);
+      mShaft.position.set(SPEAR_X, SPEAR_CTR, 0.01 * HEX_R);
+      group.add(mShaft);
+      const mTip = new THREE.Mesh(getGeoSpearTip(), mSteel);
+      mTip.position.set(SPEAR_X, SPEAR_TOP + 0.028 * HEX_R, 0.01 * HEX_R);
+      group.add(mTip);
+
+      // Round body shield (squashed cylinder) on the left arm, owner blazon
+      const SHIELD_X = -(AV_ARM_OFFSET_X + AV_ARM_W * 0.5 + 0.016 * HEX_R);
+      const mShield = new THREE.Mesh(getGeoOvalShield(), mOwner);
+      mShield.rotation.z = Math.PI / 2;
+      mShield.scale.set(1.0, 1.05, 1.05);
+      mShield.position.set(SHIELD_X, AV_Y_TORSO_CTR + 0.005 * HEX_R, 0.012 * HEX_R);
+      group.add(mShield);
+      const mShRim = new THREE.Mesh(getGeoOvalShield(), mDark);
+      mShRim.rotation.z = Math.PI / 2;
+      mShRim.scale.set(0.92, 1.16, 1.16);
+      mShRim.position.set(SHIELD_X - 0.006 * HEX_R, AV_Y_TORSO_CTR + 0.005 * HEX_R, 0.012 * HEX_R);
+      group.add(mShRim);
+      const mBoss = new THREE.Mesh(getGeoShieldBoss(), mBronze);
+      mBoss.rotation.z = Math.PI / 2;
+      mBoss.position.set(SHIELD_X + 0.012 * HEX_R, AV_Y_TORSO_CTR + 0.005 * HEX_R, 0.012 * HEX_R);
+      group.add(mBoss);
+
+      addGreaves(group, mBronze);
+      addBoots(group, mLeath);
+      addHands(group, mat(COLOR_SKIN, 0.05, 0.80));
+
+      group.userData['mats'] = mats;
+      group.userData['perTokenGeos'] = [gDisc, gShaft, gWlBrow, gWlCrest];
+      return group;
+    }
+
+    // -----------------------------------------------------------------------
+    case 'lucznik': {
+      // Light archer: soft tunic + leather cap, a tall recurve bow with a taut
+      // string held to the left, a leather bracer, and a full quiver of arrows
+      // (fletchings poking out) slung on the back. No body armour.
+      // Vividness pass: bright FOREST-GREEN tunic + leggings — the clearest
+      // "green" unit, separate from the scout's drabber olive cloak.
+      const { group, mats } = buildBaseAvatar(COLOR_SKIN, COLOR_FOREST, ownerColor_);
+      const mat = makeMatFactory(mats);
+
+      const mWood   = mat(0x6e4a24,    0.05, 0.82);  // bow stave
+      const mBootA  = mat(0x4a3526,    0.05, 0.88);  // leather boots
+      const mGreenD = mat(0x2f6f2c,    0.05, 0.88);  // deeper green leggings (still bright)
+      const mString = mat(0xe8e0cc,    0.02, 0.95);  // bowstring (pale)
+      const mOwner  = mat(ownerColor_, 0.08, 0.70);
+      const mCap    = mat(0x5a4020,    0.05, 0.88);
+      const mLeath  = mat(COLOR_LEATHER,0.05, 0.85);
+      const mFeath  = mat(COLOR_FEATHER,0.03, 0.92);
+
+      // Soft leather cap (slightly domed -> short cylinder)
+      const gCap = new THREE.CylinderGeometry(0.072 * HEX_R, 0.078 * HEX_R, 0.05 * HEX_R, 10, 1);
+      const mCapM = new THREE.Mesh(gCap, mCap);
+      mCapM.position.set(0, AV_Y_HEAD_TOP + 0.012 * HEX_R, 0);
+      group.add(mCapM);
+
+      // Recurve bow GRIPPED IN THE LEFT HAND at its MIDDLE/handle, held
+      // roughly VERTICAL and pushed slightly forward (+Z) so it reads in front
+      // of the closed fist rather than floating beside the body.  The arc bends
+      // in the Y-Z plane (vertical bow facing the camera); the handle sits at
+      // the left-hand position so the figure clearly grips the bow's centre.
+      const BOW_HAND_X = -AV_ARM_OFFSET_X;                       // left-hand X
+      const BOW_HAND_Y = AV_Y_ARM_CTR - AV_ARM_H * 0.5 + 0.06 * HEX_R; // fist height (grip)
+      const BOW_FWD_Z  = AV_TORSO_D * 0.5 + 0.055 * HEX_R;       // out in front of the fist
+      const BOW_X = BOW_HAND_X;
+      const BOW_R = 0.135 * HEX_R;   // tall bow
+      const BOW_CTR_Y = BOW_HAND_Y;  // bow MIDDLE coincides with the gripping hand
+      const BOW_SEGS = 7;
+      const BOW_ARC  = Math.PI * 0.92;
+      const BOW_START = -BOW_ARC * 0.5;
+      const gBowSeg = new THREE.BoxGeometry(0.016 * HEX_R, BOW_R * 2 * Math.sin(BOW_ARC / (BOW_SEGS * 2)) * 1.1, 0.016 * HEX_R);
+      for (let i = 0; i < BOW_SEGS; i++) {
+        const angle = BOW_START + (i + 0.5) * (BOW_ARC / BOW_SEGS);
+        const by = BOW_CTR_Y + Math.cos(angle) * BOW_R;
+        const bz = BOW_FWD_Z + Math.sin(angle) * BOW_R;
+        const mSeg = new THREE.Mesh(gBowSeg, mWood);
+        mSeg.position.set(BOW_X, by, bz);
+        mSeg.rotation.x = angle;       // arc bends in the Y-Z plane (faces forward)
+        group.add(mSeg);
+      }
+      // Bowstring: straight vertical chord between the two bow tips (string side
+      // toward the body, i.e. the chord that closes the arc's open span).
+      const stringH = 2 * BOW_R * Math.sin(BOW_ARC / 2);
+      const gString = new THREE.BoxGeometry(0.006 * HEX_R, stringH, 0.006 * HEX_R);
+      const mStr = new THREE.Mesh(gString, mString);
+      mStr.position.set(BOW_X, BOW_CTR_Y, BOW_FWD_Z);
+      group.add(mStr);
+      // Leather GRIP wrap at the bow's middle, inside the fist (reads as the
+      // handle the hand is holding).
+      const gGrip = new THREE.BoxGeometry(0.026 * HEX_R, 0.05 * HEX_R, 0.026 * HEX_R);
+      const mGrip = new THREE.Mesh(gGrip, mLeath);
+      mGrip.position.set(BOW_X, BOW_CTR_Y, BOW_FWD_Z);
+      group.add(mGrip);
+      // Leather bracer on the left (bow) forearm
+      const gBrac = new THREE.BoxGeometry(AV_ARM_W * 1.15, 0.05 * HEX_R, AV_ARM_D * 1.15);
+      const mBrac = new THREE.Mesh(gBrac, mLeath);
+      mBrac.position.set(-AV_ARM_OFFSET_X, AV_Y_ARM_CTR - 0.05 * HEX_R, 0);
+      group.add(mBrac);
+
+      // Quiver slung diagonally on the back, owner-colour, arrows poking out
+      const mQ = new THREE.Mesh(getGeoQuiver(), mOwner);
+      mQ.rotation.x = -0.30;
+      mQ.position.set(0.05 * HEX_R, AV_Y_TORSO_CTR + 0.04 * HEX_R, -(AV_TORSO_D * 0.5 + 0.018 * HEX_R));
+      group.add(mQ);
+      // A few ARROWS poking out of the quiver mouth: a short shaft + a light
+      // fletching tip for each, rising above the right shoulder.
+      const gArrShaft = new THREE.BoxGeometry(0.008 * HEX_R, 0.07 * HEX_R, 0.008 * HEX_R);
+      for (const ax of [-0.012 * HEX_R, 0.0, 0.012 * HEX_R]) {
+        const sh = new THREE.Mesh(gArrShaft, mWood);
+        sh.rotation.x = -0.30;
+        sh.position.set(0.05 * HEX_R + ax, AV_Y_TORSO_CTR + 0.10 * HEX_R, -(AV_TORSO_D * 0.5 + 0.026 * HEX_R));
+        group.add(sh);
+        const f = new THREE.Mesh(getGeoArrowFletch(), mFeath);
+        f.rotation.x = -0.30;
+        f.position.set(0.05 * HEX_R + ax, AV_Y_TORSO_CTR + 0.145 * HEX_R, -(AV_TORSO_D * 0.5 + 0.038 * HEX_R));
+        group.add(f);
+      }
+
+      // Leather belt over the green tunic
+      addBelt(group, mat(COLOR_LEATHER, 0.05, 0.85));
+      // Green leg wraps + leather boots + hands
+      const luGeos: THREE.BoxGeometry[] = [];
+      for (const sx of [-(AV_LEG_SEP + AV_LEG_W * 0.5), (AV_LEG_SEP + AV_LEG_W * 0.5)]) {
+        const gLw = new THREE.BoxGeometry(AV_LEG_W * 1.04, AV_LEG_H * 0.9, AV_LEG_W * 1.04);
+        luGeos.push(gLw);
+        const mLw = new THREE.Mesh(gLw, mGreenD);
+        mLw.position.set(sx, AV_Y_LEG_CTR + 0.01 * HEX_R, 0);
+        group.add(mLw);
+      }
+      addBoots(group, mBootA);
+      addHands(group, mat(COLOR_SKIN, 0.05, 0.80));
+
+      group.userData['mats'] = mats;
+      group.userData['perTokenGeos'] = [gCap, gBowSeg, gString, gGrip, gArrShaft, gBrac, ...luGeos];
+      return group;
+    }
+
+    // -----------------------------------------------------------------------
+    case 'procarz': {
+      // Light skirmisher slinger: simple knee-length tunic, NO armour, a head
+      // band, and a HANGING/LOWERED sling held in the right hand — two thin
+      // cords dropping from the fist to a small leather pouch (with a pellet)
+      // dangling below.  Both arms stay in their natural lowered position; a
+      // spare-stone pouch sits on the hip.
+      // Vividness pass: warm OCHRE/mustard tunic (Andean Huaracoc feel) — a
+      // clearly golden-yellow unit, unlike any armoured line soldier.
+      const { group, mats } = buildBaseAvatar(COLOR_SKIN, COLOR_OCHRE, ownerColor_);
+      const mat = makeMatFactory(mats);
+
+      const mStone = mat(0x8a857c,    0.05, 0.95);
+      const mOwner = mat(ownerColor_, 0.08, 0.70);
+      const mLeath = mat(COLOR_LEATHER,0.05, 0.85);
+      const mStrap = mat(0x6a5034,    0.05, 0.85);
+
+      // Owner-colour head band
+      const gBand = new THREE.BoxGeometry(0.145 * HEX_R, 0.022 * HEX_R, 0.145 * HEX_R);
+      const mBand = new THREE.Mesh(gBand, mOwner);
+      mBand.position.set(0, AV_Y_HEAD_CTR + 0.04 * HEX_R, 0);
+      group.add(mBand);
+
+      // HANGING SLING in the right hand: two thin leather CORDS dropping from
+      // the fist and converging on a small pouch (holding a pellet) that dangles
+      // below the hand.  Reads unmistakably as a lowered sling.
+      const SL_HAND_X = AV_ARM_OFFSET_X;                            // right-hand X
+      const SL_HAND_Y = AV_Y_ARM_CTR - AV_ARM_H * 0.5 + 0.022 * HEX_R; // fist height
+      const SL_HAND_Z = AV_TORSO_D * 0.5 + 0.010 * HEX_R;          // just in front of the fist
+      const SL_DROP   = 0.12 * HEX_R;                              // how far the pouch hangs
+      const SL_POUCH_Y = SL_HAND_Y - SL_DROP;
+      const SL_POUCH_Z = SL_HAND_Z + 0.018 * HEX_R;               // pouch tipped slightly forward
+
+      // Two cords (thin cylinders): top ends splayed apart in Z at the fist,
+      // bottom ends converging at the pouch -> a narrow hanging "V".
+      const procExtraGeos: THREE.BufferGeometry[] = [];
+      const gCord = new THREE.CylinderGeometry(0.006 * HEX_R, 0.006 * HEX_R, SL_DROP * 1.04, 6, 1);
+      procExtraGeos.push(gCord);
+      for (const dz of [-0.016 * HEX_R, 0.016 * HEX_R]) {
+        const topZ = SL_HAND_Z + dz;
+        const botZ = SL_POUCH_Z;
+        const mCord = new THREE.Mesh(gCord, mStrap);
+        // Tilt about X so the cord runs from the splayed top to the pouch below.
+        mCord.rotation.x = Math.atan2(botZ - topZ, SL_DROP);
+        mCord.position.set(SL_HAND_X, (SL_HAND_Y + SL_POUCH_Y) * 0.5, (topZ + botZ) * 0.5);
+        group.add(mCord);
+      }
+      // Small leather pouch (pocket) where the cords meet, holding a pellet.
+      const mPocket = new THREE.Mesh(getGeoSlingPouch(), mLeath);
+      mPocket.position.set(SL_HAND_X, SL_POUCH_Y, SL_POUCH_Z);
+      group.add(mPocket);
+      const mPellet = new THREE.Mesh(getGeoSlingStone(), mStone);
+      mPellet.position.set(SL_HAND_X, SL_POUCH_Y, SL_POUCH_Z + 0.004 * HEX_R);
+      group.add(mPellet);
+
+      // Spare-stone pouch on the left hip (owner-trim flap)
+      const mPouch = new THREE.Mesh(getGeoSlingPouch(), mLeath);
+      mPouch.position.set(-(AV_TORSO_W * 0.5 + 0.012 * HEX_R), AV_Y_TORSO_BOT + 0.02 * HEX_R, 0.03 * HEX_R);
+      group.add(mPouch);
+
+      // Sandalled feet + both hands (both arms are lowered; the right grips the sling)
+      addBoots(group, mLeath);
+      addHands(group, mat(COLOR_SKIN, 0.05, 0.80));
+
+      group.userData['mats'] = mats;
+      group.userData['perTokenGeos'] = [gBand, ...procExtraGeos];
+      return group;
+    }
+
+    // -----------------------------------------------------------------------
+    case 'oszczepnik': {
+      // Light javelin skirmisher: minimal leather chest strap, a small round
+      // buckler on the left, ONE javelin cocked overhead to throw and a bundle
+      // of two SPARE javelins gripped against the left arm.
+      // Vividness pass: TERRACOTTA / burnt-ochre tunic (was plain brown leather)
+      // — warm orange-red, distinct from the slinger's yellow and the swordsman's
+      // cooler rust.
+      const { group, mats } = buildBaseAvatar(COLOR_SKIN_DARK, COLOR_TERRACOTA, ownerColor_);
+      const mat = makeMatFactory(mats);
+
+      const mBronze = mat(COLOR_BRONZE,  0.30, 0.58);
+      const mSteel  = mat(COLOR_STEEL,   0.45, 0.45);
+      const mWood   = mat(COLOR_WOOD,    0.05, 0.85);
+      const mOwner  = mat(ownerColor_,   0.12, 0.68);
+      const mStrap  = mat(0x5a3a20,      0.05, 0.85);
+
+      // Crossed leather chest straps (X-baldric) instead of full plate
+      const oszExtraGeos: THREE.BoxGeometry[] = [];
+      for (const rot of [0.6, -0.6]) {
+        const gStrap = new THREE.BoxGeometry(0.022 * HEX_R, 0.24 * HEX_R, 0.012 * HEX_R);
+        oszExtraGeos.push(gStrap);
+        const mStrapM = new THREE.Mesh(gStrap, mStrap);
+        mStrapM.rotation.z = rot;
+        mStrapM.position.set(0, AV_Y_TORSO_CTR, AV_TORSO_D * 0.5 + 0.006 * HEX_R);
+        group.add(mStrapM);
+      }
+
+      // Cocked throwing javelin in the raised right hand (angled up/back)
+      const JAV_X = AV_ARM_OFFSET_X + AV_ARM_W * 0.5 + 0.012 * HEX_R;
+      const jAngle = -Math.PI / 6;
+      const gJShaft = new THREE.BoxGeometry(0.013 * HEX_R, 0.30 * HEX_R, 0.013 * HEX_R);
+      const mJShaft = new THREE.Mesh(gJShaft, mWood);
+      mJShaft.rotation.z = jAngle;
+      mJShaft.position.set(JAV_X + 0.02 * HEX_R, AV_Y_TORSO_CTR + 0.10 * HEX_R, 0.02 * HEX_R);
+      group.add(mJShaft);
+      const mJTip = new THREE.Mesh(getGeoJavTip(), mSteel);
+      const tipX = JAV_X + 0.02 * HEX_R - Math.sin(jAngle) * 0.16 * HEX_R;
+      const tipY = AV_Y_TORSO_CTR + 0.10 * HEX_R + Math.cos(jAngle) * 0.16 * HEX_R;
+      mJTip.rotation.z = jAngle;
+      mJTip.position.set(tipX, tipY, 0.02 * HEX_R);
+      group.add(mJTip);
+
+      // Two spare javelins held upright against the left side
+      const SPARE_X = -(AV_ARM_OFFSET_X + AV_ARM_W * 0.5 + 0.010 * HEX_R);
+      for (const dz of [-0.012 * HEX_R, 0.012 * HEX_R]) {
+        const gSp = new THREE.BoxGeometry(0.012 * HEX_R, 0.34 * HEX_R, 0.012 * HEX_R);
+        oszExtraGeos.push(gSp);
+        const mSp = new THREE.Mesh(gSp, mWood);
+        mSp.position.set(SPARE_X, AV_Y_TORSO_CTR + 0.07 * HEX_R, dz);
+        group.add(mSp);
+        const sTip = new THREE.Mesh(getGeoJavTip(), mSteel);
+        sTip.position.set(SPARE_X, AV_Y_TORSO_CTR + 0.07 * HEX_R + 0.19 * HEX_R, dz);
+        group.add(sTip);
+      }
+
+      // Owner-colour shoulder mark on the throwing arm
+      const gShoulder = new THREE.BoxGeometry(0.07 * HEX_R, 0.04 * HEX_R, 0.07 * HEX_R);
+      const mShoulder = new THREE.Mesh(gShoulder, mOwner);
+      mShoulder.position.set(JAV_X - 0.025 * HEX_R, AV_Y_TORSO_TOP, 0);
+      group.add(mShoulder);
+
+      // Small round buckler on the left forearm (owner blazon)
+      const mBuck = new THREE.Mesh(getGeoShieldRim(), mOwner);
+      mBuck.rotation.z = Math.PI / 2;
+      mBuck.scale.set(1.0, 0.85, 0.85);
+      mBuck.position.set(SPARE_X - 0.006 * HEX_R, AV_Y_TORSO_CTR + 0.01 * HEX_R, 0.03 * HEX_R);
+      group.add(mBuck);
+      const mBuckBoss = new THREE.Mesh(getGeoShieldBoss(), mBronze);
+      mBuckBoss.rotation.z = Math.PI / 2;
+      mBuckBoss.position.set(SPARE_X - 0.018 * HEX_R, AV_Y_TORSO_CTR + 0.01 * HEX_R, 0.03 * HEX_R);
+      group.add(mBuckBoss);
+
+      addBoots(group, mStrap);
+      addHands(group, mat(COLOR_SKIN_DARK, 0.05, 0.80));
+
+      group.userData['mats'] = mats;
+      group.userData['perTokenGeos'] = [gJShaft, gShoulder, ...oszExtraGeos];
+      return group;
+    }
+
+    // -----------------------------------------------------------------------
+    case 'maczuga': {
+      // Tribal club warrior: bare tanned torso with a diagonal war-paint stripe,
+      // fur loincloth, a knobbed wooden war-club raised high, and a small fan of
+      // feathers in an owner-colour head band.
+      const { group, mats } = buildBaseAvatar(COLOR_SKIN_DARK, COLOR_SKIN_DARK, ownerColor_);
+      const mat = makeMatFactory(mats);
+
+      // Vividness pass: bright RED war-paint + an OCHRE woven loincloth (Andean
+      // Chaska feel) so the tribal warrior reads colourful, not bare-brown.
+      const mWood   = mat(0x6b4a26,    0.05, 0.85);
+      const mStone  = mat(0x7a756c,    0.10, 0.85);
+      const mOwner  = mat(ownerColor_, 0.12, 0.68);
+      const mFur    = mat(COLOR_OCHRE, 0.05, 0.88);       // ochre woven loincloth (was brown fur)
+      const mPaint  = mat(COLOR_RED_VIV,   0.05, 0.78);   // vivid red war-paint
+      const mFeath  = mat(COLOR_PAINT_WHT, 0.03, 0.92);   // bright white feathers
+
+      // Fur loincloth around the hips
+      const mLoin = new THREE.Mesh(getGeoLoincloth(), mFur);
+      mLoin.position.set(0, AV_Y_TORSO_BOT + 0.02 * HEX_R, 0);
+      group.add(mLoin);
+
+      // Diagonal war-paint stripe across the chest
+      const gPaint = new THREE.BoxGeometry(0.026 * HEX_R, 0.22 * HEX_R, 0.012 * HEX_R);
+      const mPaintM = new THREE.Mesh(gPaint, mPaint);
+      mPaintM.rotation.z = 0.7;
+      mPaintM.position.set(0, AV_Y_TORSO_CTR, AV_TORSO_D * 0.5 + 0.005 * HEX_R);
+      group.add(mPaintM);
+
+      // HELMET (visibility fix): a hide/leather skull-cap covering the crown so
+      // the tribal warrior is no longer bare-headed (was just a band + feathers
+      // over exposed skin).  Leather is era-appropriate for a basic Stone-age
+      // melee unit; the owner band + feathers sit on top of it.
+      const mHide = mat(0x5a3a22, 0.05, 0.86);
+      const mCapM = new THREE.Mesh(getGeoSkullCap(), mHide);
+      mCapM.position.set(0, AV_Y_HEAD_CTR + 0.028 * HEX_R, 0);
+      group.add(mCapM);
+      const mCapDome = new THREE.Mesh(getGeoGaleaCap(), mHide);
+      mCapDome.scale.set(0.92, 0.62, 0.92);
+      mCapDome.position.set(0, AV_Y_HEAD_CTR + 0.028 * HEX_R + 0.032 * HEX_R, 0);
+      group.add(mCapDome);
+
+      // Owner-colour head band (over the cap)
+      const gBand = new THREE.BoxGeometry(0.150 * HEX_R, 0.024 * HEX_R, 0.150 * HEX_R);
+      const mBand = new THREE.Mesh(gBand, mOwner);
+      mBand.position.set(0, AV_Y_HEAD_CTR + 0.020 * HEX_R, 0);
+      group.add(mBand);
+      // Fan of three feathers rising from the band at the back
+      const macExtraGeos: THREE.BoxGeometry[] = [];
+      for (const a of [-0.35, 0.0, 0.35]) {
+        const gF = new THREE.BoxGeometry(0.016 * HEX_R, 0.085 * HEX_R, 0.009 * HEX_R);
+        macExtraGeos.push(gF);
+        const mF = new THREE.Mesh(gF, a === 0.0 ? mOwner : mFeath);
+        mF.rotation.z = a;
+        mF.position.set(Math.sin(a) * 0.03 * HEX_R, AV_Y_HEAD_TOP + 0.05 * HEX_R, -0.03 * HEX_R);
+        group.add(mF);
+      }
+
+      // War-club: thick wooden handle raised in the right hand + heavy stone knob
+      const CLUB_X = AV_ARM_OFFSET_X + AV_ARM_W * 0.5 + 0.018 * HEX_R;
+      const mHandle = new THREE.Mesh(getGeoClubHandle(), mWood);
+      mHandle.position.set(CLUB_X, AV_Y_TORSO_TOP + 0.02 * HEX_R, 0.01 * HEX_R);
+      group.add(mHandle);
+      const mKnob = new THREE.Mesh(getGeoClubKnob(), mStone);
+      mKnob.position.set(CLUB_X, AV_Y_TORSO_TOP + 0.175 * HEX_R + 0.028 * HEX_R, 0.01 * HEX_R);
+      group.add(mKnob);
+      // A couple of owner-colour studs on the knob
+      for (const dz of [-0.022 * HEX_R, 0.022 * HEX_R]) {
+        const gStud = new THREE.BoxGeometry(0.016 * HEX_R, 0.016 * HEX_R, 0.016 * HEX_R);
+        macExtraGeos.push(gStud);
+        const mStud = new THREE.Mesh(gStud, mOwner);
+        mStud.position.set(CLUB_X + 0.028 * HEX_R, AV_Y_TORSO_TOP + 0.20 * HEX_R, dz);
+        group.add(mStud);
+      }
+
+      // Bare tanned feet + hands
+      addBoots(group, mat(COLOR_SKIN_DARK, 0.05, 0.85));
+      addHands(group, mat(COLOR_SKIN_DARK, 0.05, 0.85));
+
+      group.userData['mats'] = mats;
+      group.userData['perTokenGeos'] = [gPaint, gBand, ...macExtraGeos];
+      return group;
+    }
+
+    // -----------------------------------------------------------------------
+    case 'topor': {
+      // Axe warrior: leather jerkin with a fur shoulder mantle, a fur-lined cap,
+      // and a heavy bearded battle-axe (broad steel head with a flared cutting
+      // edge) raised in the right hand.
+      // Vividness pass: deep BURGUNDY tunic (arms/legs) under the brown jerkin —
+      // a dark wine red that separates the axeman from the warmer terracotta
+      // javelin-man and the brighter reds of the sword/legion units.
+      const { group, mats } = buildBaseAvatar(COLOR_SKIN, COLOR_BURGUNDY, ownerColor_);
+      const mat = makeMatFactory(mats);
+
+      const mSteel  = mat(COLOR_STEEL,   0.50, 0.40);
+      const mDark   = mat(COLOR_DARK_STEEL,0.40, 0.55);
+      const mWood   = mat(0x6b4a26,      0.05, 0.85);
+      const mOwner  = mat(ownerColor_,   0.15, 0.65);
+      const mFur    = mat(COLOR_FUR,     0.04, 0.92);
+      const mLeath  = mat(0x5a3c22,      0.06, 0.82);
+
+      // Leather jerkin (chest) + fur mantle over the shoulders
+      const gChest = new THREE.BoxGeometry(0.195 * HEX_R, 0.20 * HEX_R, 0.125 * HEX_R);
+      const mChest = new THREE.Mesh(gChest, mLeath);
+      mChest.position.set(0, AV_Y_TORSO_CTR, 0);
+      group.add(mChest);
+      const gMantle = new THREE.BoxGeometry(0.26 * HEX_R, 0.06 * HEX_R, 0.16 * HEX_R);
+      const mMantle = new THREE.Mesh(gMantle, mFur);
+      mMantle.position.set(0, AV_Y_TORSO_TOP - 0.01 * HEX_R, 0);
+      group.add(mMantle);
+      // Owner-colour belt
+      const gBelt = new THREE.BoxGeometry(0.20 * HEX_R, 0.026 * HEX_R, 0.13 * HEX_R);
+      const mBelt = new THREE.Mesh(gBelt, mOwner);
+      mBelt.position.set(0, AV_Y_TORSO_BOT + 0.03 * HEX_R, 0);
+      group.add(mBelt);
+
+      // HELMET (visibility fix): a fur-trimmed leather war-cap seated DOWN over
+      // the crown (was perched above the head, reading as a hat) with a domed top
+      // and a bronze brow band for clear contrast — so the axeman plainly has
+      // headgear, not bare hair, from every gallery view.
+      const mBrnz  = mat(COLOR_BRONZE,  0.35, 0.50);
+      const gCap = new THREE.CylinderGeometry(0.086 * HEX_R, 0.096 * HEX_R, 0.080 * HEX_R, 12, 1);
+      const mCapM = new THREE.Mesh(gCap, mLeath);
+      mCapM.position.set(0, AV_Y_HEAD_CTR + 0.028 * HEX_R, 0);
+      group.add(mCapM);
+      // Fur roll around the cap base.
+      const gCapFur = new THREE.CylinderGeometry(0.100 * HEX_R, 0.100 * HEX_R, 0.030 * HEX_R, 12, 1);
+      const mCapFur = new THREE.Mesh(gCapFur, mFur);
+      mCapFur.position.set(0, AV_Y_HEAD_CTR - 0.006 * HEX_R, 0);
+      group.add(mCapFur);
+      // Domed crown on top of the cap.
+      const mCapDome = new THREE.Mesh(getGeoGaleaCap(), mLeath);
+      mCapDome.scale.set(0.94, 0.66, 0.94);
+      mCapDome.position.set(0, AV_Y_HEAD_CTR + 0.028 * HEX_R + 0.038 * HEX_R, 0);
+      group.add(mCapDome);
+      // Bronze brow band across the front.
+      const gToBrow = new THREE.BoxGeometry(0.180 * HEX_R, 0.024 * HEX_R, 0.032 * HEX_R);
+      const mToBrow = new THREE.Mesh(gToBrow, mBrnz);
+      mToBrow.position.set(0, AV_Y_HEAD_CTR + 0.006 * HEX_R, AV_HEAD_S * 0.5 + 0.004 * HEX_R);
+      group.add(mToBrow);
+
+      // Axe haft raised in the right hand
+      const AXE_X = AV_ARM_OFFSET_X + AV_ARM_W * 0.5 + 0.015 * HEX_R;
+      const gHaft = new THREE.BoxGeometry(0.018 * HEX_R, 0.24 * HEX_R, 0.018 * HEX_R);
+      const mHaft = new THREE.Mesh(gHaft, mWood);
+      mHaft.position.set(AXE_X, AV_Y_TORSO_CTR + 0.06 * HEX_R, 0.01 * HEX_R);
+      group.add(mHaft);
+      // Broad steel axe head: main blade + flared bearded lower lobe
+      const gHead = new THREE.BoxGeometry(0.10 * HEX_R, 0.085 * HEX_R, 0.020 * HEX_R);
+      const mHead = new THREE.Mesh(gHead, mSteel);
+      mHead.position.set(AXE_X + 0.045 * HEX_R, AV_Y_TORSO_TOP + 0.06 * HEX_R, 0.01 * HEX_R);
+      group.add(mHead);
+      const gBeard = new THREE.BoxGeometry(0.07 * HEX_R, 0.055 * HEX_R, 0.018 * HEX_R);
+      const mBeard = new THREE.Mesh(gBeard, mSteel);
+      mBeard.position.set(AXE_X + 0.060 * HEX_R, AV_Y_TORSO_TOP + 0.012 * HEX_R, 0.01 * HEX_R);
+      group.add(mBeard);
+      // Bright cutting edge
+      const gEdge = new THREE.BoxGeometry(0.014 * HEX_R, 0.135 * HEX_R, 0.022 * HEX_R);
+      const mEdge = new THREE.Mesh(gEdge, mat(COLOR_STEEL, 0.6, 0.30));
+      mEdge.position.set(AXE_X + 0.092 * HEX_R, AV_Y_TORSO_TOP + 0.035 * HEX_R, 0.01 * HEX_R);
+      group.add(mEdge);
+      // Dark socket band where head meets haft
+      const gSock = new THREE.BoxGeometry(0.024 * HEX_R, 0.05 * HEX_R, 0.024 * HEX_R);
+      const mSock = new THREE.Mesh(gSock, mDark);
+      mSock.position.set(AXE_X, AV_Y_TORSO_TOP + 0.06 * HEX_R, 0.01 * HEX_R);
+      group.add(mSock);
+
+      addBoots(group, mLeath);
+      addHands(group, mat(COLOR_SKIN, 0.05, 0.80));
+
+      group.userData['mats'] = mats;
+      group.userData['perTokenGeos'] = [gChest, gMantle, gBelt, gCap, gCapFur, gToBrow, gHaft, gHead, gBeard, gEdge, gSock];
+      return group;
+    }
+
+    // -----------------------------------------------------------------------
+    case 'konnica': {
+      // ONE horse (rydwan-style, shared buildHorse helper) + rider on top.
+      // Horse faces -Z; rider sits centered on horse back.
+      const group = new THREE.Group();
+      const mats: THREE.Material[] = [];
+      const mat = makeMatFactory(mats);
+
+      // Vividness pass: CRIMSON rider tunic on a brighter CHESTNUT horse, so the
+      // cavalryman reads as a bold red-cloaked rider rather than brown-on-brown.
+      const mHorse  = mat(COLOR_HORSE_LT, 0.10, 0.78);
+      const mMane   = mat(0x1a0e06,     0.05, 0.85);
+      const mSkin   = mat(COLOR_SKIN,   0.05, 0.80);
+      const mCloth  = mat(COLOR_CRIMSON,0.06, 0.78);
+      const mOwner  = mat(ownerColor_,  0.12, 0.68);
+      const mWood   = mat(COLOR_WOOD,   0.05, 0.85);
+      const mSteel  = mat(COLOR_STEEL,  0.40, 0.50);
+
+      // Build horse (all singleton geos, no per-token alloc)
+      // Horse centered at (0, 0, 0); hooves at y=0; body faces -Z.
+      const horseBackY = buildHorse(group, mat, mHorse, mMane, null, 0, 0);
+
+      // Rider seated on horse back
+      const RIDER_BOT  = horseBackY;
+      const R_TORSO_CTR = RIDER_BOT + AV_TORSO_H * 0.5;
+      const R_TORSO_TOP = RIDER_BOT + AV_TORSO_H;
+      const R_HEAD_CTR  = R_TORSO_TOP + AV_NECK_H + AV_HEAD_S * 0.5;
+      const R_ARM_CTR   = RIDER_BOT + AV_TORSO_H * 0.55;
+
+      const mRTorso = new THREE.Mesh(getGeoAvTorso(), mCloth);
+      mRTorso.scale.set(0.85, 0.75, 0.85);
+      mRTorso.position.set(0, R_TORSO_CTR, 0);
+      group.add(mRTorso);
+
+      // Rider sash (owner color)
+      const gRSash = new THREE.BoxGeometry(0.09 * HEX_R, 0.035 * HEX_R, 0.012 * HEX_R);
+      const mRSash = new THREE.Mesh(gRSash, mOwner);
+      mRSash.position.set(0, R_TORSO_CTR, AV_TORSO_D * 0.43 + 0.003 * HEX_R);
+      group.add(mRSash);
+
+      // Rider arms (straddling the horse)
+      const gRArmL = new THREE.BoxGeometry(AV_ARM_W * 0.8, AV_ARM_H * 0.75, AV_ARM_D * 0.8);
+      const mRArmL = new THREE.Mesh(gRArmL, mCloth);
+      mRArmL.position.set(-AV_ARM_OFFSET_X * 0.85, R_ARM_CTR, 0);
+      group.add(mRArmL);
+
+      const gRArmR = new THREE.BoxGeometry(AV_ARM_W * 0.8, AV_ARM_H * 0.75, AV_ARM_D * 0.8);
+      const mRArmR = new THREE.Mesh(gRArmR, mCloth);
+      mRArmR.position.set( AV_ARM_OFFSET_X * 0.85, R_ARM_CTR, 0);
+      group.add(mRArmR);
+
+      // Rider head
+      const gRHead = new THREE.BoxGeometry(AV_HEAD_S * 0.85, AV_HEAD_S * 0.85, AV_HEAD_S * 0.85);
+      const mRHead = new THREE.Mesh(gRHead, mSkin);
+      mRHead.position.set(0, R_HEAD_CTR, 0);
+      group.add(mRHead);
+
+      // Eye dots on rider (facing -Z, same direction as horse)
+      const rEyeZ = -(AV_HEAD_S * 0.85 * 0.5 + 0.002 * HEX_R);
+      const gREyeL = new THREE.BoxGeometry(0.016 * HEX_R, 0.012 * HEX_R, 0.008 * HEX_R);
+      const mREyeL = new THREE.Mesh(gREyeL, mat(COLOR_DARK_EYE, 0.02, 0.95));
+      mREyeL.position.set(-0.025 * HEX_R, R_HEAD_CTR + 0.008 * HEX_R, rEyeZ);
+      group.add(mREyeL);
+
+      const gREyeR = new THREE.BoxGeometry(0.016 * HEX_R, 0.012 * HEX_R, 0.008 * HEX_R);
+      const mREyeR = new THREE.Mesh(gREyeR, mat(COLOR_DARK_EYE, 0.02, 0.95));
+      mREyeR.position.set( 0.025 * HEX_R, R_HEAD_CTR + 0.008 * HEX_R, rEyeZ);
+      group.add(mREyeR);
+
+      // Bronze helmet on the rider (simple domed cap) + small red front-to-back crest
+      const gRHelm = new THREE.CylinderGeometry(0.052 * HEX_R, 0.060 * HEX_R, 0.055 * HEX_R, 8, 1);
+      const mRHelm = new THREE.Mesh(gRHelm, mSteel);
+      mRHelm.position.set(0, R_HEAD_CTR + AV_HEAD_S * 0.45, 0);
+      group.add(mRHelm);
+      const gRCrest = new THREE.BoxGeometry(0.020 * HEX_R, 0.055 * HEX_R, 0.085 * HEX_R);
+      const mRCrest = new THREE.Mesh(gRCrest, mat(COLOR_RED_VIV, 0.08, 0.74));
+      mRCrest.position.set(0, R_HEAD_CTR + AV_HEAD_S * 0.45 + 0.050 * HEX_R, 0);
+      group.add(mRCrest);
+
+      // Saddle blanket in owner colour draped over the horse back, under rider
+      const mBlanket = new THREE.Mesh(getGeoSaddleBlanket(), mOwner);
+      mBlanket.position.set(0, RIDER_BOT - 0.012 * HEX_R, 0.01 * HEX_R);
+      group.add(mBlanket);
+
+      // Couched cavalry lance held in the right hand, angled forward (toward -Z)
+      const RSPEAR_X = AV_ARM_OFFSET_X * 0.85 + AV_ARM_W * 0.4 + 0.012 * HEX_R;
+      const gLance = new THREE.BoxGeometry(0.016 * HEX_R, 0.56 * HEX_R, 0.016 * HEX_R);
+      const mLance = new THREE.Mesh(gLance, mWood);
+      mLance.rotation.x = Math.PI * 0.5 - 0.32;   // tilt forward over the horse head
+      mLance.position.set(RSPEAR_X, R_ARM_CTR + 0.02 * HEX_R, -0.14 * HEX_R);
+      group.add(mLance);
+      const mLanceTip = new THREE.Mesh(getGeoSpearTip(), mSteel);
+      mLanceTip.rotation.x = Math.PI * 0.5 - 0.32;
+      mLanceTip.position.set(RSPEAR_X, R_ARM_CTR + 0.20 * HEX_R, -0.40 * HEX_R);
+      group.add(mLanceTip);
+      // Owner-colour pennon just behind the lance head
+      const gPennon = new THREE.BoxGeometry(0.012 * HEX_R, 0.045 * HEX_R, 0.06 * HEX_R);
+      const mPennon = new THREE.Mesh(gPennon, mOwner);
+      mPennon.position.set(RSPEAR_X, R_ARM_CTR + 0.13 * HEX_R, -0.30 * HEX_R);
+      group.add(mPennon);
+
+      // Round shield on the rider's left arm (owner blazon + boss)
+      const RSHIELD_X = -(AV_ARM_OFFSET_X * 0.85 + AV_ARM_W * 0.4 + 0.010 * HEX_R);
+      const mRShield = new THREE.Mesh(getGeoOvalShield(), mOwner);
+      mRShield.rotation.z = Math.PI / 2;
+      mRShield.scale.set(1.0, 0.95, 0.95);
+      mRShield.position.set(RSHIELD_X, R_TORSO_CTR, 0.03 * HEX_R);
+      group.add(mRShield);
+      const mRBoss = new THREE.Mesh(getGeoShieldBoss(), mSteel);
+      mRBoss.rotation.z = Math.PI / 2;
+      mRBoss.position.set(RSHIELD_X - 0.012 * HEX_R, R_TORSO_CTR, 0.03 * HEX_R);
+      group.add(mRBoss);
+
+      group.userData['mats'] = mats;
+      group.userData['perTokenGeos'] = [gRSash, gRArmL, gRArmR, gRHead, gREyeL, gREyeR, gRHelm, gRCrest, gLance, gPennon];
+
+      // FACING FIX: the map camera looks toward -Z, so +Z faces the viewer
+      // (foot units have their eyes on +Z). The horse and rider were built
+      // facing -Z (head/eyes/lance toward -Z), i.e. their BACKS to the camera.
+      // The horse and rider face the SAME way, so a single 180 deg spin about Y
+      // turns BOTH the horse head and the rider's front toward the viewer. The
+      // rider stays seated (Y-rotation preserves the y=0 hooves and the seat).
+      group.rotation.y = Math.PI;
+      return group;
+    }
+
+    // -----------------------------------------------------------------------
+    case 'rydwan': {
+      // Roman-style chariot: TWO horses side-by-side at front, draw pole/yoke,
+      // two-wheeled open car behind, standing driver inside the car.
+      // Layout: horses face -Z (into scene), car at Z=0, horses at -Z offset.
+      // Wheels on X axis flanking the car. Driver stands on car floor.
+      const group = new THREE.Group();
+      const mats: THREE.Material[] = [];
+      const mat = makeMatFactory(mats);
+
+      // Vividness pass: LACQUER-RED driver tunic (Chinese/Egyptian chariot feel)
+      // on brighter CHESTNUT horses — a bold, clearly different vehicle rather
+      // than all-brown wood + brown driver. (Sash stays owner-colour for ID.)
+      const mWood   = mat(COLOR_CHARIOT,  0.05, 0.82);  // warm wood brown
+      const mOwner  = mat(ownerColor_,    0.10, 0.70);  // owner-color front panel
+      const mSteel  = mat(COLOR_STEEL,    0.45, 0.45);  // metal fittings / axle
+      const mBronze = mat(COLOR_BRONZE,   0.32, 0.52);  // bronze wheel rim / yoke
+      const mHorse  = mat(COLOR_HORSE_LT, 0.10, 0.78);  // brighter chestnut horse body
+      const mMane   = mat(0x1a0e06,       0.05, 0.85);  // near-black mane / tail
+      const mSkin   = mat(COLOR_SKIN,     0.05, 0.80);  // driver skin
+      const mCloth  = mat(COLOR_LACQUER,  0.06, 0.78);  // lacquer-red driver tunic
+      const mDark   = mat(COLOR_TROUSERS, 0.05, 0.85);  // driver legs
+
+      // ── CHARIOT CAR ───────────────────────────────────────────────────────
+      // Car sits on an axle; wheels on sides (X axis); car body slightly above
+      // wheels. The car is centered near Z=0 and extends to Z=+0.12 (rear open)
+      // and Z=-0.09 (front wall, toward horses).
+
+      // Wheel radius = 0.085 * HEX_R; wheel axle height = WHEEL_Y
+      const WHEEL_R  = 0.085 * HEX_R;
+      const WHEEL_Y  = WHEEL_R;                          // wheel center sits on ground
+      const AXLE_Y   = WHEEL_Y;
+      const CAR_FLOOR_Y = AXLE_Y + WHEEL_R * 0.30;      // floor slightly above axle
+
+      // Left wheel (at +X side, rotated so disk faces the X axis)
+      const gWheelL = new THREE.CylinderGeometry(WHEEL_R, WHEEL_R, 0.022 * HEX_R, 12, 1);
+      const mWheelL = new THREE.Mesh(gWheelL, mWood);
+      mWheelL.rotation.z = Math.PI / 2;
+      mWheelL.position.set( 0.185 * HEX_R, WHEEL_Y, -0.005 * HEX_R);
+      group.add(mWheelL);
+
+      // Left wheel bronze rim
+      const gRimL = new THREE.CylinderGeometry(WHEEL_R, WHEEL_R, 0.028 * HEX_R, 12, 1, true);
+      const mRimL = new THREE.Mesh(gRimL, mBronze);
+      mRimL.rotation.z = Math.PI / 2;
+      mRimL.position.set( 0.185 * HEX_R, WHEEL_Y, -0.005 * HEX_R);
+      group.add(mRimL);
+
+      // Right wheel
+      const gWheelR = new THREE.CylinderGeometry(WHEEL_R, WHEEL_R, 0.022 * HEX_R, 12, 1);
+      const mWheelR = new THREE.Mesh(gWheelR, mWood);
+      mWheelR.rotation.z = Math.PI / 2;
+      mWheelR.position.set(-0.185 * HEX_R, WHEEL_Y, -0.005 * HEX_R);
+      group.add(mWheelR);
+
+      // Right wheel bronze rim
+      const gRimR = new THREE.CylinderGeometry(WHEEL_R, WHEEL_R, 0.028 * HEX_R, 12, 1, true);
+      const mRimR = new THREE.Mesh(gRimR, mBronze);
+      mRimR.rotation.z = Math.PI / 2;
+      mRimR.position.set(-0.185 * HEX_R, WHEEL_Y, -0.005 * HEX_R);
+      group.add(mRimR);
+
+      // Spoke crosses (visual only - box X and box Y crossing in wheel plane)
+      // Spoke geos are per-token (size depends on WHEEL_R); collected for disposal.
+      const spokeGeos: THREE.BoxGeometry[] = [];
+      for (const sx of [0.185, -0.185]) {
+        const gSp1 = new THREE.BoxGeometry(0.018 * HEX_R, WHEEL_R * 2 * 0.92, 0.016 * HEX_R);
+        spokeGeos.push(gSp1);
+        const mSp1 = new THREE.Mesh(gSp1, mWood);
+        mSp1.rotation.z = Math.PI / 2;
+        mSp1.position.set(sx * HEX_R, WHEEL_Y, -0.005 * HEX_R);
+        group.add(mSp1);
+        const gSp2 = new THREE.BoxGeometry(0.018 * HEX_R, WHEEL_R * 2 * 0.92, 0.016 * HEX_R);
+        spokeGeos.push(gSp2);
+        const mSp2 = new THREE.Mesh(gSp2, mWood);
+        mSp2.rotation.z = Math.PI / 2;
+        mSp2.rotation.y = Math.PI / 2;
+        mSp2.position.set(sx * HEX_R, WHEEL_Y, -0.005 * HEX_R);
+        group.add(mSp2);
+      }
+
+      // Axle (horizontal rod between the two wheels)
+      const gAxle = new THREE.BoxGeometry(0.38 * HEX_R, 0.016 * HEX_R, 0.016 * HEX_R);
+      const mAxle = new THREE.Mesh(gAxle, mBronze);
+      mAxle.position.set(0, AXLE_Y, -0.005 * HEX_R);
+      group.add(mAxle);
+
+      // Car floor (thin plank)
+      const gFloor = new THREE.BoxGeometry(0.28 * HEX_R, 0.016 * HEX_R, 0.22 * HEX_R);
+      const mFloor = new THREE.Mesh(gFloor, mWood);
+      mFloor.position.set(0, CAR_FLOOR_Y, 0.06 * HEX_R);
+      group.add(mFloor);
+
+      // Front wall of car (owner color -- clearly visible)
+      const gFrontWall = new THREE.BoxGeometry(0.28 * HEX_R, 0.10 * HEX_R, 0.018 * HEX_R);
+      const mFrontWall = new THREE.Mesh(gFrontWall, mOwner);
+      mFrontWall.position.set(0, CAR_FLOOR_Y + 0.05 * HEX_R, -0.045 * HEX_R);
+      group.add(mFrontWall);
+
+      // Left side wall of car (wood trim)
+      const gSideL = new THREE.BoxGeometry(0.018 * HEX_R, 0.08 * HEX_R, 0.22 * HEX_R);
+      const mSideL = new THREE.Mesh(gSideL, mWood);
+      mSideL.position.set( 0.135 * HEX_R, CAR_FLOOR_Y + 0.04 * HEX_R, 0.06 * HEX_R);
+      group.add(mSideL);
+
+      // Right side wall
+      const gSideR = new THREE.BoxGeometry(0.018 * HEX_R, 0.08 * HEX_R, 0.22 * HEX_R);
+      const mSideR = new THREE.Mesh(gSideR, mWood);
+      mSideR.position.set(-0.135 * HEX_R, CAR_FLOOR_Y + 0.04 * HEX_R, 0.06 * HEX_R);
+      group.add(mSideR);
+
+      // Bronze trim strip on top of front wall
+      const gFwTrim = new THREE.BoxGeometry(0.30 * HEX_R, 0.014 * HEX_R, 0.020 * HEX_R);
+      const mFwTrim = new THREE.Mesh(gFwTrim, mBronze);
+      mFwTrim.position.set(0, CAR_FLOOR_Y + 0.098 * HEX_R, -0.045 * HEX_R);
+      group.add(mFwTrim);
+
+      // ── DRAW POLE / YOKE ─────────────────────────────────────────────────
+      // Pole runs from front-center of car floor forward to the horse yoke
+      // Horses are at Z = -0.36 * HEX_R (in front)
+      const POLE_Z_START = -0.054 * HEX_R;     // from front wall
+      const POLE_Z_END   = -0.32 * HEX_R;      // to yoke
+      const POLE_LEN     = Math.abs(POLE_Z_END - POLE_Z_START);
+      const POLE_Z_CTR   = (POLE_Z_START + POLE_Z_END) * 0.5;
+
+      const gPole = new THREE.BoxGeometry(0.018 * HEX_R, 0.018 * HEX_R, POLE_LEN);
+      const mPole = new THREE.Mesh(gPole, mWood);
+      mPole.position.set(0, CAR_FLOOR_Y - 0.005 * HEX_R, POLE_Z_CTR);
+      group.add(mPole);
+
+      // Yoke bar (horizontal, connecting pole to both horses)
+      const gYoke = new THREE.BoxGeometry(0.26 * HEX_R, 0.018 * HEX_R, 0.018 * HEX_R);
+      const mYoke = new THREE.Mesh(gYoke, mBronze);
+      mYoke.position.set(0, CAR_FLOOR_Y + 0.002 * HEX_R, POLE_Z_END);
+      group.add(mYoke);
+
+      // ── TWO HORSES (via shared buildHorse helper) ────────────────────────
+      // Placed symmetrically at X = +-0.10 * HEX_R, horses face -Z.
+      // buildHorse uses singleton geos -- no per-token alloc needed here.
+
+      const HORSE_Z = POLE_Z_END - 0.08 * HEX_R;   // horse body center Z
+
+      for (const hx of [0.10 * HEX_R, -0.10 * HEX_R]) {
+        buildHorse(group, mat, mHorse, mMane, mDark, hx, HORSE_Z);
+      }
+
+      // ── DRIVER (standing inside car) ─────────────────────────────────────
+      // Driver stands on car floor. Feet at CAR_FLOOR_Y + half-leg-height.
+      // Use reduced-scale avatar proportions consistent with konnica rider.
+
+      const DRV_SCALE  = 0.82;
+      const DRV_LEG_H  = AV_LEG_H  * DRV_SCALE;
+      const DRV_TRS_H  = AV_TORSO_H * DRV_SCALE;
+      const DRV_TRS_W  = AV_TORSO_W * DRV_SCALE;
+      const DRV_TRS_D  = AV_TORSO_D * DRV_SCALE;
+      const DRV_ARM_W  = AV_ARM_W  * DRV_SCALE;
+      const DRV_ARM_H  = AV_ARM_H  * DRV_SCALE;
+      const DRV_ARM_D  = AV_ARM_D  * DRV_SCALE;
+      const DRV_HEAD_S = AV_HEAD_S * DRV_SCALE;
+      const DRV_ARM_OX = DRV_TRS_W * 0.5 + DRV_ARM_W * 0.5 + 0.002 * HEX_R;
+
+      // Driver stands on top of car floor
+      const DRV_BASE   = CAR_FLOOR_Y + 0.008 * HEX_R;  // feet rest on floor
+      const DRV_LEG_CTR  = DRV_BASE + DRV_LEG_H * 0.5;
+      const DRV_TRS_BOT  = DRV_BASE + DRV_LEG_H;
+      const DRV_TRS_CTR  = DRV_TRS_BOT + DRV_TRS_H * 0.5;
+      const DRV_TRS_TOP  = DRV_TRS_BOT + DRV_TRS_H;
+      const DRV_ARM_CTR  = DRV_TRS_BOT + DRV_TRS_H * 0.55;
+      const DRV_HEAD_CTR = DRV_TRS_TOP + AV_NECK_H * DRV_SCALE + DRV_HEAD_S * 0.5;
+
+      // FACING FIX (rydwan): the whole chariot is spun 180 deg about Y at the
+      // end of this case so the horse team faces the viewer (+Z) and the car
+      // sits behind them. The driver was built facing +Z and must KEEP facing
+      // the viewer, so all driver meshes go into this sub-group which is itself
+      // pre-rotated 180 deg about Y. The two opposite spins cancel for the
+      // driver (net facing +Z, unchanged seat), while the vehicle parts get the
+      // single outer spin. Both spins are about Y => hooves/wheels stay at y=0.
+      const driverGroup = new THREE.Group();
+      driverGroup.rotation.y = Math.PI;
+      group.add(driverGroup);
+
+      // Left leg
+      const gDLegL = new THREE.BoxGeometry(AV_LEG_W * DRV_SCALE, DRV_LEG_H, AV_LEG_W * DRV_SCALE);
+      const mDLegL = new THREE.Mesh(gDLegL, mDark);
+      mDLegL.position.set(-(AV_LEG_SEP + AV_LEG_W * DRV_SCALE * 0.5), DRV_LEG_CTR, 0.03 * HEX_R);
+      driverGroup.add(mDLegL);
+
+      // Right leg
+      const gDLegR = new THREE.BoxGeometry(AV_LEG_W * DRV_SCALE, DRV_LEG_H, AV_LEG_W * DRV_SCALE);
+      const mDLegR = new THREE.Mesh(gDLegR, mDark);
+      mDLegR.position.set( (AV_LEG_SEP + AV_LEG_W * DRV_SCALE * 0.5), DRV_LEG_CTR, 0.03 * HEX_R);
+      driverGroup.add(mDLegR);
+
+      // Torso (cloth)
+      const gDTorso = new THREE.BoxGeometry(DRV_TRS_W, DRV_TRS_H, DRV_TRS_D);
+      const mDTorso = new THREE.Mesh(gDTorso, mCloth);
+      mDTorso.position.set(0, DRV_TRS_CTR, 0.03 * HEX_R);
+      driverGroup.add(mDTorso);
+
+      // Owner-color sash on torso front
+      const gDSash = new THREE.BoxGeometry(DRV_TRS_W * 0.85, DRV_TRS_H * 0.30, 0.012 * HEX_R);
+      const mDSash = new THREE.Mesh(gDSash, mOwner);
+      mDSash.position.set(0, DRV_TRS_CTR, 0.03 * HEX_R + DRV_TRS_D * 0.5 + 0.002 * HEX_R);
+      driverGroup.add(mDSash);
+
+      // Left arm (holding reins forward)
+      const gDArmL = new THREE.BoxGeometry(DRV_ARM_W, DRV_ARM_H, DRV_ARM_D);
+      const mDArmL = new THREE.Mesh(gDArmL, mCloth);
+      mDArmL.position.set(-DRV_ARM_OX, DRV_ARM_CTR, 0.03 * HEX_R);
+      driverGroup.add(mDArmL);
+
+      // Right arm (holding reins forward)
+      const gDArmR = new THREE.BoxGeometry(DRV_ARM_W, DRV_ARM_H, DRV_ARM_D);
+      const mDArmR = new THREE.Mesh(gDArmR, mCloth);
+      mDArmR.position.set( DRV_ARM_OX, DRV_ARM_CTR, 0.03 * HEX_R);
+      driverGroup.add(mDArmR);
+
+      // Head (skin)
+      const gDHead = new THREE.BoxGeometry(DRV_HEAD_S, DRV_HEAD_S, DRV_HEAD_S);
+      const mDHead = new THREE.Mesh(gDHead, mSkin);
+      mDHead.position.set(0, DRV_HEAD_CTR, 0.03 * HEX_R);
+      driverGroup.add(mDHead);
+
+      // Eyes
+      const dEyeZ = DRV_HEAD_S * 0.5 + 0.002 * HEX_R;
+      const dEyeY = DRV_HEAD_CTR + 0.008 * HEX_R;
+      const gDEyeL = new THREE.BoxGeometry(0.016 * HEX_R, 0.012 * HEX_R, 0.008 * HEX_R);
+      const mDEyeL = new THREE.Mesh(gDEyeL, mat(COLOR_DARK_EYE, 0.02, 0.95));
+      mDEyeL.position.set(-0.025 * HEX_R, dEyeY, 0.03 * HEX_R + dEyeZ);
+      driverGroup.add(mDEyeL);
+
+      const gDEyeR = new THREE.BoxGeometry(0.016 * HEX_R, 0.012 * HEX_R, 0.008 * HEX_R);
+      const mDEyeR = new THREE.Mesh(gDEyeR, mat(COLOR_DARK_EYE, 0.02, 0.95));
+      mDEyeR.position.set( 0.025 * HEX_R, dEyeY, 0.03 * HEX_R + dEyeZ);
+      driverGroup.add(mDEyeR);
+
+      // Helmet (simple bronze box) + small red crest (matches infantry/cavalry)
+      const gHelm = new THREE.BoxGeometry(DRV_HEAD_S * 1.15, DRV_HEAD_S * 0.65, DRV_HEAD_S * 1.10);
+      const mHelm = new THREE.Mesh(gHelm, mBronze);
+      mHelm.position.set(0, DRV_HEAD_CTR + DRV_HEAD_S * 0.55, 0.03 * HEX_R);
+      driverGroup.add(mHelm);
+      const gDCrest = new THREE.BoxGeometry(0.020 * HEX_R, 0.050 * HEX_R, 0.080 * HEX_R);
+      const mDCrest = new THREE.Mesh(gDCrest, mat(COLOR_RED_VIV, 0.08, 0.74));
+      mDCrest.position.set(0, DRV_HEAD_CTR + DRV_HEAD_S * 0.55 + 0.045 * HEX_R, 0.03 * HEX_R);
+      driverGroup.add(mDCrest);
+
+      // Reins: thin strips from hands forward to horses
+      const gRein = new THREE.BoxGeometry(0.12 * HEX_R, 0.008 * HEX_R, 0.008 * HEX_R);
+      const mRein = new THREE.Mesh(gRein, mDark);
+      mRein.rotation.y = Math.PI * 0.5;
+      mRein.position.set(0, DRV_ARM_CTR, 0.03 * HEX_R - DRV_TRS_D * 0.5 - 0.06 * HEX_R);
+      driverGroup.add(mRein);
+
+      // Bronze-age chariots carried a bow-case + quiver lashed to the car side.
+      const mQuiverC = mat(COLOR_LEATHER, 0.05, 0.85);
+      const gBowCase = new THREE.BoxGeometry(0.030 * HEX_R, 0.16 * HEX_R, 0.030 * HEX_R);
+      const mBowCase = new THREE.Mesh(gBowCase, mQuiverC);
+      mBowCase.rotation.z = 0.42;
+      mBowCase.position.set(0.150 * HEX_R, CAR_FLOOR_Y + 0.05 * HEX_R, 0.09 * HEX_R);
+      group.add(mBowCase);
+      // Arrow nocks poking from the case (owner-colour fletch)
+      const rydArrGeos: THREE.BoxGeometry[] = [];
+      for (const dz of [-0.010 * HEX_R, 0.010 * HEX_R]) {
+        const gArr = new THREE.BoxGeometry(0.008 * HEX_R, 0.05 * HEX_R, 0.008 * HEX_R);
+        rydArrGeos.push(gArr);
+        const mArr = new THREE.Mesh(gArr, mOwner);
+        mArr.rotation.z = 0.42;
+        mArr.position.set(0.175 * HEX_R, CAR_FLOOR_Y + 0.13 * HEX_R, 0.09 * HEX_R + dz);
+        group.add(mArr);
+      }
+
+      // Small owner-colour standard rising from the rear corner of the car
+      const gStdPole = new THREE.BoxGeometry(0.012 * HEX_R, 0.22 * HEX_R, 0.012 * HEX_R);
+      const mStdPole = new THREE.Mesh(gStdPole, mSteel);
+      mStdPole.position.set(-0.135 * HEX_R, CAR_FLOOR_Y + 0.11 * HEX_R, 0.15 * HEX_R);
+      group.add(mStdPole);
+      const gStdFlag = new THREE.BoxGeometry(0.07 * HEX_R, 0.055 * HEX_R, 0.008 * HEX_R);
+      const mStdFlag = new THREE.Mesh(gStdFlag, mOwner);
+      mStdFlag.position.set(-0.135 * HEX_R - 0.035 * HEX_R, CAR_FLOOR_Y + 0.19 * HEX_R, 0.15 * HEX_R);
+      group.add(mStdFlag);
+
+      group.userData['mats'] = mats;
+      group.userData['perTokenGeos'] = [
+        gWheelL, gRimL, gWheelR, gRimR, ...spokeGeos, gAxle, gFloor,
+        gFrontWall, gSideL, gSideR, gFwTrim,
+        gPole, gYoke, gRein, gBowCase, gStdPole, gStdFlag, ...rydArrGeos,
+        gDLegL, gDLegR, gDTorso, gDSash, gDArmL, gDArmR, gDHead, gDEyeL, gDEyeR, gHelm, gDCrest
+      ];
+
+      // FACING FIX (rydwan): spin the whole chariot 180 deg about Y so the
+      // horse team's heads point toward the viewer (+Z) and the open car sits
+      // behind them. The driver (in driverGroup, pre-spun 180 deg) cancels this
+      // and keeps facing the viewer. Y-rotation preserves the y=0 ground plane.
+      group.rotation.y = Math.PI;
+      return group;
+    }
+
+
+    // -----------------------------------------------------------------------
+    case 'super': {
+      // Elite royal guard: gilded muscled cuirass with gold trim + leather
+      // pteruges, a polished helmet crowned by a tall horsehair plume in the
+      // owner colour, a flowing crimson cloak, a round gold-rimmed guard shield
+      // and an upright spear, greaves, plus a tall owner standard.
+      // Vividness pass: deep CRIMSON tunic + flowing crimson cloak against
+      // BRIGHT GILT armour — a saturated royal red-and-gold that clearly outranks
+      // the line units.
+      const { group, mats } = buildBaseAvatar(COLOR_SKIN, COLOR_CRIMSON, ownerColor_);
+      const mat = makeMatFactory(mats);
+
+      const mGold   = mat(COLOR_GOLD_BR,   0.58, 0.32);
+      const mGoldLt = mat(COLOR_BRONZE_LT, 0.58, 0.32);
+      const mSteel  = mat(COLOR_STEEL,     0.50, 0.40);
+      const mCloak  = mat(COLOR_CRIMSON,   0.08, 0.74);
+      const mOwner  = mat(ownerColor_,     0.20, 0.55);
+      const mPoleM  = mat(COLOR_POLE_GREY, 0.35, 0.55);
+      const mWood   = mat(COLOR_WOOD,      0.05, 0.85);
+      const mLeath  = mat(0x5a3c22,        0.06, 0.82);
+
+      // Flowing crimson cloak FIRST (behind everything)
+      const mCape = new THREE.Mesh(getGeoSuperCape(), mCloak);
+      mCape.scale.set(1.15, 1.15, 1.0);
+      mCape.position.set(0, AV_Y_TORSO_CTR - 0.01 * HEX_R, -AV_TORSO_D * 0.5 - 0.008 * HEX_R);
+      mCape.rotation.x = 0.20;
+      group.add(mCape);
+
+      // Gilded muscled cuirass
+      const mCuir = new THREE.Mesh(getGeoCuirassBox(), mGold);
+      mCuir.scale.set(1.04, 1.04, 1.04);
+      mCuir.position.set(0, AV_Y_TORSO_CTR, 0);
+      group.add(mCuir);
+      // Sculpted pectoral lines (bright gold trim)
+      const mTrim = new THREE.Mesh(getGeoGildedTrim(), mGoldLt);
+      mTrim.position.set(0, AV_Y_TORSO_CTR + 0.03 * HEX_R, 0.001 * HEX_R);
+      group.add(mTrim);
+      const mTrim2 = new THREE.Mesh(getGeoGildedTrim(), mGoldLt);
+      mTrim2.scale.set(1.0, 0.6, 1.0);
+      mTrim2.position.set(0, AV_Y_TORSO_CTR - 0.04 * HEX_R, 0.001 * HEX_R);
+      group.add(mTrim2);
+      // Leather pteruges below
+      addPteruges(group, mLeath);
+
+      // Gold shoulder pads
+      for (const sx of [-1, 1]) {
+        const sp = new THREE.Mesh(getGeoShoulderPad(), mGold);
+        sp.position.set(sx * (AV_ARM_OFFSET_X - 0.005 * HEX_R), AV_Y_TORSO_TOP - 0.015 * HEX_R, 0);
+        group.add(sp);
+      }
+
+      // Polished helmet (conical) + gold brow band
+      const mHelm = new THREE.Mesh(getGeoConicalHelm(), mSteel);
+      mHelm.position.set(0, AV_Y_HEAD_CTR + 0.030 * HEX_R, 0);
+      group.add(mHelm);
+      const gHelmRim = new THREE.BoxGeometry(0.165 * HEX_R, 0.020 * HEX_R, 0.165 * HEX_R);
+      const mHelmRim = new THREE.Mesh(gHelmRim, mGold);
+      mHelmRim.position.set(0, AV_Y_HEAD_CTR + 0.005 * HEX_R, 0);
+      group.add(mHelmRim);
+      // Tall WHITE feather crest (mohawk ridge) with gold accent stripes, swept up
+      const mWhite = mat(COLOR_FEATHER, 0.03, 0.92);
+      const mPlume = new THREE.Mesh(getGeoPlumeRidge(), mWhite);
+      mPlume.position.set(0, AV_Y_HEAD_TOP + 0.090 * HEX_R, -0.004 * HEX_R);
+      mPlume.rotation.x = 0.10;
+      group.add(mPlume);
+      // Three gold vertical accent stripes within the crest
+      const supPlumeGeos: THREE.BoxGeometry[] = [];
+      for (const dz of [-0.034 * HEX_R, 0.0, 0.034 * HEX_R]) {
+        const gStr = new THREE.BoxGeometry(0.024 * HEX_R, 0.150 * HEX_R, 0.012 * HEX_R);
+        supPlumeGeos.push(gStr);
+        const mStr = new THREE.Mesh(gStr, mGoldLt);
+        mStr.rotation.x = 0.10;
+        mStr.position.set(0, AV_Y_HEAD_TOP + 0.090 * HEX_R, -0.004 * HEX_R + dz);
+        group.add(mStr);
+      }
+
+      // Upright guard spear in the right hand
+      const SPEAR_X = AV_ARM_OFFSET_X + AV_ARM_W * 0.5 + 0.012 * HEX_R;
+      const gSpear = new THREE.BoxGeometry(0.016 * HEX_R, 0.50 * HEX_R, 0.016 * HEX_R);
+      const mSpear = new THREE.Mesh(gSpear, mWood);
+      mSpear.position.set(SPEAR_X, AV_Y_LEG_BOT + 0.25 * HEX_R, 0.01 * HEX_R);
+      group.add(mSpear);
+      const mSpearTip = new THREE.Mesh(getGeoSpearTip(), mGoldLt);
+      mSpearTip.position.set(SPEAR_X, AV_Y_LEG_BOT + 0.50 * HEX_R + 0.028 * HEX_R, 0.01 * HEX_R);
+      group.add(mSpearTip);
+
+      // Round guard shield on the left arm (owner blazon, gold rim, gold boss)
+      const SHIELD_X = -(AV_ARM_OFFSET_X + AV_ARM_W * 0.5 + 0.016 * HEX_R);
+      const mShield = new THREE.Mesh(getGeoAspisFace(), mOwner);
+      mShield.rotation.z = Math.PI / 2;
+      mShield.scale.set(1.0, 0.78, 0.78);
+      mShield.position.set(SHIELD_X, AV_Y_TORSO_CTR, 0.012 * HEX_R);
+      group.add(mShield);
+      const mShRim = new THREE.Mesh(getGeoAspisRim(), mGold);
+      mShRim.rotation.z = Math.PI / 2;
+      mShRim.scale.set(0.9, 0.80, 0.80);
+      mShRim.position.set(SHIELD_X - 0.006 * HEX_R, AV_Y_TORSO_CTR, 0.012 * HEX_R);
+      group.add(mShRim);
+      const mBoss = new THREE.Mesh(getGeoShieldBoss(), mGold);
+      mBoss.rotation.z = Math.PI / 2;
+      mBoss.position.set(SHIELD_X + 0.014 * HEX_R, AV_Y_TORSO_CTR, 0.012 * HEX_R);
+      group.add(mBoss);
+
+      addGreaves(group, mGoldLt);
+
+      // Tall owner standard behind the left shoulder
+      const POLE_X = -(AV_ARM_OFFSET_X + AV_ARM_W * 0.5 + 0.030 * HEX_R);
+      const POLE_CTR_Y = AV_Y_LEG_BOT + 0.33 * HEX_R * 0.5;
+      const POLE_TOP_Y = AV_Y_LEG_BOT + 0.33 * HEX_R;
+      const mPole = new THREE.Mesh(getGeoBannerPole(), mPoleM);
+      mPole.scale.set(1.0, 1.1, 1.0);
+      mPole.position.set(POLE_X, POLE_CTR_Y, -0.02 * HEX_R);
+      group.add(mPole);
+      const mFlag = new THREE.Mesh(getGeoBannerFlag(), mOwner);
+      mFlag.position.set(POLE_X - 0.047 * HEX_R, POLE_TOP_Y - 0.036 * HEX_R, -0.02 * HEX_R);
+      group.add(mFlag);
+      const gFinial = new THREE.BoxGeometry(0.024 * HEX_R, 0.024 * HEX_R, 0.024 * HEX_R);
+      const mFinial = new THREE.Mesh(gFinial, mGold);
+      mFinial.position.set(POLE_X, POLE_TOP_Y + 0.012 * HEX_R, -0.02 * HEX_R);
+      group.add(mFinial);
+
+      addBoots(group, mLeath);
+      addHands(group, mat(COLOR_SKIN, 0.05, 0.80));
+
+      group.userData['mats'] = mats;
+      group.userData['perTokenGeos'] = [gHelmRim, gSpear, gFinial, ...supPlumeGeos];
+      return group;
+    }
+
+    // -----------------------------------------------------------------------
+    case 'zwiadowca': {
+      // Scout: light traveller in a hooded cloak (owner-tinted), soft leather
+      // boots, a short recurve bow and a small belt knife. No metal armour, so
+      // it reads as fast and unencumbered. One hand shades the eyes.
+      // Vividness pass: drabber OLIVE/sage cloak + tunic — clearly a different,
+      // yellower green from the archer's bright forest green so the two never
+      // read as the same unit.
+      const { group, mats } = buildBaseAvatar(COLOR_SKIN_DARK, COLOR_OLIVE, ownerColor_);
+      const mat = makeMatFactory(mats);
+
+      const mCloak = mat(COLOR_OLIVE,    0.05, 0.86);
+      const mHood  = mat(0x4a5526,       0.05, 0.86);
+      const mWood  = mat(0x6e4a24,       0.05, 0.82);
+      const mOwner = mat(ownerColor_,    0.10, 0.68);
+      const mLeath = mat(COLOR_LEATHER,  0.05, 0.85);
+      const mStr   = mat(0xe8e0cc,       0.02, 0.95);
+
+      // Back cloak panel + hood over the head
+      const mCloakM = new THREE.Mesh(getGeoCloak(), mCloak);
+      mCloakM.rotation.x = 0.10;
+      mCloakM.position.set(0, AV_Y_TORSO_CTR - 0.01 * HEX_R, -(AV_TORSO_D * 0.5 + 0.010 * HEX_R));
+      group.add(mCloakM);
+      const mHoodM = new THREE.Mesh(getGeoHood(), mHood);
+      mHoodM.position.set(0, AV_Y_HEAD_CTR + 0.012 * HEX_R, -0.012 * HEX_R);
+      group.add(mHoodM);
+      // Owner-colour shoulder clasp
+      const gClasp = new THREE.BoxGeometry(0.03 * HEX_R, 0.03 * HEX_R, 0.018 * HEX_R);
+      const mClasp = new THREE.Mesh(gClasp, mOwner);
+      mClasp.position.set(0.06 * HEX_R, AV_Y_TORSO_TOP - 0.01 * HEX_R, AV_TORSO_D * 0.5);
+      group.add(mClasp);
+      // Belt
+      const gBelt = new THREE.BoxGeometry(0.19 * HEX_R, 0.022 * HEX_R, 0.115 * HEX_R);
+      const mBelt = new THREE.Mesh(gBelt, mLeath);
+      mBelt.position.set(0, AV_Y_TORSO_BOT + 0.03 * HEX_R, 0);
+      group.add(mBelt);
+
+      // Short recurve bow slung over the LEFT shoulder/back (compact arc)
+      const BOW_X = -(AV_ARM_OFFSET_X + AV_ARM_W * 0.5 + 0.010 * HEX_R);
+      const BOW_R = 0.10 * HEX_R;
+      const BOW_SEGS = 5;
+      const BOW_ARC = Math.PI * 0.8;
+      const BOW_START = -BOW_ARC * 0.5;
+      const gBowSeg = new THREE.BoxGeometry(0.013 * HEX_R, BOW_R * 2 * Math.sin(BOW_ARC / (BOW_SEGS * 2)) * 1.1, 0.013 * HEX_R);
+      for (let i = 0; i < BOW_SEGS; i++) {
+        const a = BOW_START + (i + 0.5) * (BOW_ARC / BOW_SEGS);
+        const seg = new THREE.Mesh(gBowSeg, mWood);
+        seg.position.set(BOW_X, AV_Y_TORSO_CTR + Math.cos(a) * BOW_R, -(AV_TORSO_D * 0.5) - 0.01 * HEX_R + Math.sin(a) * BOW_R * 0.2);
+        seg.rotation.z = -a;
+        group.add(seg);
+      }
+      const gStr = new THREE.BoxGeometry(0.005 * HEX_R, 2 * BOW_R * Math.sin(BOW_ARC / 2), 0.005 * HEX_R);
+      const mStrM = new THREE.Mesh(gStr, mStr);
+      mStrM.position.set(BOW_X, AV_Y_TORSO_CTR, -(AV_TORSO_D * 0.5) - 0.01 * HEX_R);
+      group.add(mStrM);
+
+      // Walking/scout staff in the right hand
+      const STAFF_X = AV_ARM_OFFSET_X + AV_ARM_W * 0.5 + 0.012 * HEX_R;
+      const mStaff = new THREE.Mesh(getGeoStaff(), mWood);
+      mStaff.scale.set(1.0, 0.92, 1.0);
+      mStaff.position.set(STAFF_X, AV_Y_LEG_BOT + 0.24 * HEX_R, 0.02 * HEX_R);
+      group.add(mStaff);
+
+      addBoots(group, mLeath);
+      addHands(group, mat(COLOR_SKIN_DARK, 0.05, 0.80));
+
+      group.userData['mats'] = mats;
+      group.userData['perTokenGeos'] = [gClasp, gBelt, gBowSeg, gStr];
+      return group;
+    }
+
+    // -----------------------------------------------------------------------
+    case 'robotnik': {
+      // Worker/labourer: plain belted work tunic with rolled sleeves, a simple
+      // cloth cap, a tool belt, and a PICKAXE shouldered in the right hand.
+      // No weapon, no armour -- clearly a civilian builder.
+      // Vividness pass: a warmer, more saturated SIENNA/clay work-tunic (was a
+      // washed-out tan) so the worker reads as humble dyed cloth, plainly civilian
+      // and distinct from the blue-clad settler and every soldier.
+      const { group, mats } = buildBaseAvatar(COLOR_SKIN, 0xb46a30, ownerColor_);
+      const mat = makeMatFactory(mats);
+
+      const mWood  = mat(COLOR_WOOD,    0.05, 0.85);
+      const mSteel = mat(COLOR_STEEL,   0.45, 0.45);
+      const mOwner = mat(ownerColor_,   0.10, 0.68);
+      const mCap   = mat(0x8a6a40,      0.05, 0.88);
+      const mLeath = mat(COLOR_LEATHER, 0.05, 0.85);
+
+      // Cloth cap
+      const gCap = new THREE.BoxGeometry(0.145 * HEX_R, 0.045 * HEX_R, 0.145 * HEX_R);
+      const mCapM = new THREE.Mesh(gCap, mCap);
+      mCapM.position.set(0, AV_Y_HEAD_TOP + 0.012 * HEX_R, 0);
+      group.add(mCapM);
+
+      // Tool belt with owner-colour buckle
+      const gBelt = new THREE.BoxGeometry(0.195 * HEX_R, 0.026 * HEX_R, 0.115 * HEX_R);
+      const mBelt = new THREE.Mesh(gBelt, mLeath);
+      mBelt.position.set(0, AV_Y_TORSO_BOT + 0.03 * HEX_R, 0);
+      group.add(mBelt);
+      const gBuck = new THREE.BoxGeometry(0.03 * HEX_R, 0.03 * HEX_R, 0.014 * HEX_R);
+      const mBuck = new THREE.Mesh(gBuck, mOwner);
+      mBuck.position.set(0, AV_Y_TORSO_BOT + 0.03 * HEX_R, AV_TORSO_D * 0.5 + 0.006 * HEX_R);
+      group.add(mBuck);
+
+      // Pickaxe shouldered: angled handle resting on the right shoulder + head
+      const PX = AV_ARM_OFFSET_X + AV_ARM_W * 0.5 + 0.010 * HEX_R;
+      const mHandle = new THREE.Mesh(getGeoPickHandle(), mWood);
+      mHandle.rotation.z = -0.55;
+      mHandle.position.set(PX + 0.02 * HEX_R, AV_Y_TORSO_CTR + 0.10 * HEX_R, 0.02 * HEX_R);
+      group.add(mHandle);
+      // Pick head (crossing bar) up near the top of the handle
+      const headX = PX + 0.02 * HEX_R + Math.sin(0.55) * 0.15 * HEX_R;
+      const headY = AV_Y_TORSO_CTR + 0.10 * HEX_R + Math.cos(0.55) * 0.15 * HEX_R;
+      const mHead = new THREE.Mesh(getGeoPickHead(), mSteel);
+      mHead.rotation.z = -0.55 + Math.PI / 2;
+      mHead.position.set(headX, headY, 0.02 * HEX_R);
+      group.add(mHead);
+
+      addBoots(group, mLeath);
+      addHands(group, mat(COLOR_SKIN, 0.05, 0.80));
+
+      group.userData['mats'] = mats;
+      group.userData['perTokenGeos'] = [gCap, gBelt, gBuck];
+      return group;
+    }
+
+    // -----------------------------------------------------------------------
+    case 'galera': {
+      // Ancient war GALLEY (no foot soldier): a long low hull, a bronze ram at
+      // the bow, a single mast with a square owner-colour sail, a bank of oars
+      // along each side, and a row of round shields on the gunwale. Built so it
+      // sits low on the tile and faces -Z (consistent with horses/chariot).
+      const group = new THREE.Group();
+      const mats: THREE.Material[] = [];
+      const mat = makeMatFactory(mats);
+
+      const mHull  = mat(COLOR_CHARIOT,  0.05, 0.85);   // warm wood
+      const mDark  = mat(0x5a3c20,       0.05, 0.85);   // dark wood trim
+      const mBronze= mat(COLOR_BRONZE,   0.35, 0.55);   // ram
+      const mSail  = mat(COLOR_SAIL,     0.04, 0.90);   // canvas
+      const mOwner = mat(ownerColor_,    0.10, 0.68);   // sail stripe / shields
+      const mMast  = mat(0x6e4a24,       0.05, 0.82);
+      const mWater = mat(0x2b5a86,       0.05, 0.80);   // small bow wave hint
+
+      const HULL_Y = 0.10 * HEX_R;   // hull centre sits low on the tile
+
+      // Hull
+      const mHullM = new THREE.Mesh(getGeoShipHull(), mHull);
+      mHullM.position.set(0, HULL_Y, 0);
+      group.add(mHullM);
+      // Raised stern (curved up at +Z)
+      const gStern = new THREE.BoxGeometry(0.18 * HEX_R, 0.16 * HEX_R, 0.08 * HEX_R);
+      const mStern = new THREE.Mesh(gStern, mHull);
+      mStern.rotation.x = -0.4;
+      mStern.position.set(0, HULL_Y + 0.06 * HEX_R, 0.30 * HEX_R);
+      group.add(mStern);
+      // Dark gunwale strip along each side
+      const galExtraGeos: THREE.BoxGeometry[] = [];
+      for (const sx of [-1, 1]) {
+        const gGun = new THREE.BoxGeometry(0.018 * HEX_R, 0.03 * HEX_R, 0.60 * HEX_R);
+        galExtraGeos.push(gGun);
+        const mGun = new THREE.Mesh(gGun, mDark);
+        mGun.position.set(sx * 0.10 * HEX_R, HULL_Y + 0.07 * HEX_R, 0);
+        group.add(mGun);
+      }
+
+      // Bronze ram at the bow (toward -Z), low at the waterline
+      const mRam = new THREE.Mesh(getGeoShipRam(), mBronze);
+      mRam.position.set(0, HULL_Y - 0.03 * HEX_R, -(0.31 * HEX_R + 0.06 * HEX_R));
+      group.add(mRam);
+      // Small bow-wave hint at the ram
+      const gWave = new THREE.BoxGeometry(0.10 * HEX_R, 0.02 * HEX_R, 0.04 * HEX_R);
+      const mWaveM = new THREE.Mesh(gWave, mWater);
+      mWaveM.position.set(0, HULL_Y - 0.05 * HEX_R, -(0.31 * HEX_R + 0.10 * HEX_R));
+      group.add(mWaveM);
+
+      // Mast amidships + yard + square sail (owner stripe down the middle)
+      const mMastM = new THREE.Mesh(getGeoShipMast(), mMast);
+      mMastM.position.set(0, HULL_Y + 0.24 * HEX_R, 0.02 * HEX_R);
+      group.add(mMastM);
+      const gYard = new THREE.BoxGeometry(0.36 * HEX_R, 0.016 * HEX_R, 0.016 * HEX_R);
+      const mYard = new THREE.Mesh(gYard, mMast);
+      mYard.rotation.y = Math.PI / 2;
+      mYard.position.set(0, HULL_Y + 0.40 * HEX_R, 0.02 * HEX_R);
+      group.add(mYard);
+      const mSailM = new THREE.Mesh(getGeoShipSail(), mSail);
+      mSailM.position.set(0, HULL_Y + 0.27 * HEX_R, 0.02 * HEX_R);
+      group.add(mSailM);
+      const gStripe = new THREE.BoxGeometry(0.013 * HEX_R, 0.26 * HEX_R, 0.07 * HEX_R);
+      const mStripe = new THREE.Mesh(gStripe, mOwner);
+      mStripe.position.set(0.001 * HEX_R, HULL_Y + 0.27 * HEX_R, 0.02 * HEX_R);
+      group.add(mStripe);
+
+      // Oars: a slanted bank along each side
+      const oarGeos: THREE.BoxGeometry[] = [];
+      for (const sx of [-1, 1]) {
+        for (let i = 0; i < 5; i++) {
+          const oz = -0.20 * HEX_R + i * 0.10 * HEX_R;
+          const oar = new THREE.Mesh(getGeoOar(), mMast);
+          oar.rotation.z = sx * 0.6;
+          oar.rotation.x = 0.25;
+          oar.position.set(sx * 0.155 * HEX_R, HULL_Y - 0.02 * HEX_R, oz);
+          group.add(oar);
+        }
+      }
+      // Round shields hung on the gunwale (alternating owner/bronze)
+      for (const sx of [-1, 1]) {
+        for (let i = 0; i < 4; i++) {
+          const sz = -0.15 * HEX_R + i * 0.10 * HEX_R;
+          const sh = new THREE.Mesh(getGeoShieldRim(), (i % 2 === 0) ? mOwner : mBronze);
+          sh.rotation.x = Math.PI / 2;
+          sh.scale.set(0.9, 1.0, 0.9);
+          sh.position.set(sx * 0.108 * HEX_R, HULL_Y + 0.085 * HEX_R, sz);
+          group.add(sh);
+        }
+      }
+
+      group.userData['mats'] = mats;
+      group.userData['perTokenGeos'] = [gStern, gWave, gYard, gStripe, ...oarGeos, ...galExtraGeos];
+      return group;
+    }
+
+    // -----------------------------------------------------------------------
+    case 'obleznicza': {
+      // Kategoria fallback dla machin oblężniczych (trafia tu tylko gdy brak
+      // unitName; normalnie dispatch po nazwie w buildNamedUnit obsługuje to).
+      return buildBatteringRam(ownerColor_);
+    }
+
+    // -----------------------------------------------------------------------
+    case 'domyslny':
+    default: {
+      // Generic militiaman: plain tunic, a leather cap, a simple spear in the
+      // right hand and a small round owner-blazon shield on the left arm.
+      // Vividness pass: muted INDIGO tunic (was neutral brown) so the fallback
+      // militiaman still has a clear, cool colour of its own and never melts into
+      // the brown/leather units around it.
+      const { group, mats } = buildBaseAvatar(COLOR_SKIN, COLOR_INDIGO, ownerColor_);
+      const mat = makeMatFactory(mats);
+
+      const mWood  = mat(COLOR_WOOD,    0.05, 0.85);
+      const mSteel = mat(COLOR_STEEL,   0.45, 0.45);
+      const mOwner = mat(ownerColor_,   0.14, 0.66);
+      const mCap   = mat(0x5a4632,      0.05, 0.88);
+      const mDark  = mat(COLOR_DARK_STEEL,0.35, 0.55);
+      const mBrnz  = mat(COLOR_BRONZE,  0.35, 0.50);
+
+      // HELMET (visibility fix): a leather/hide war-cap that plainly covers the
+      // whole crown (was a thin disc that read like hair) + a bronze brow band so
+      // the basic warrior is clearly head-protected from every gallery view.
+      const gCap = new THREE.CylinderGeometry(0.084 * HEX_R, 0.094 * HEX_R, 0.080 * HEX_R, 12, 1);
+      const mCapM = new THREE.Mesh(gCap, mCap);
+      mCapM.position.set(0, AV_Y_HEAD_CTR + 0.030 * HEX_R, 0);
+      group.add(mCapM);
+      // Rounded crown knob on top of the cap.
+      const mCapDome = new THREE.Mesh(getGeoGaleaCap(), mCap);
+      mCapDome.scale.set(0.98, 0.70, 0.98);
+      mCapDome.position.set(0, AV_Y_HEAD_CTR + 0.030 * HEX_R + 0.038 * HEX_R, 0);
+      group.add(mCapDome);
+      // Bronze brow band across the front for clear contrast against the head.
+      const gDomBrow = new THREE.BoxGeometry(0.176 * HEX_R, 0.024 * HEX_R, 0.030 * HEX_R);
+      const mDomBrow = new THREE.Mesh(gDomBrow, mBrnz);
+      mDomBrow.position.set(0, AV_Y_HEAD_CTR + 0.006 * HEX_R, AV_HEAD_S * 0.5 + 0.004 * HEX_R);
+      group.add(mDomBrow);
+
+      // Simple spear (right side)
+      const SPEAR_X = AV_ARM_OFFSET_X + AV_ARM_W * 0.5 + 0.015 * HEX_R;
+      const SPEAR_CTR = AV_Y_LEG_BOT + 0.02 * HEX_R + 0.42 * HEX_R * 0.5;
+      const SPEAR_TOP = AV_Y_LEG_BOT + 0.02 * HEX_R + 0.42 * HEX_R;
+      const gShaft = new THREE.BoxGeometry(0.015 * HEX_R, 0.42 * HEX_R, 0.015 * HEX_R);
+      const mShaft = new THREE.Mesh(gShaft, mWood);
+      mShaft.position.set(SPEAR_X, SPEAR_CTR, 0.01 * HEX_R);
+      group.add(mShaft);
+      const mTip = new THREE.Mesh(getGeoSpearTip(), mSteel);
+      mTip.position.set(SPEAR_X, SPEAR_TOP + 0.028 * HEX_R, 0.01 * HEX_R);
+      group.add(mTip);
+
+      // Small round shield (left, owner blazon + boss)
+      const SHIELD_X = -(AV_ARM_OFFSET_X + AV_ARM_W * 0.5 + 0.016 * HEX_R);
+      const mShield = new THREE.Mesh(getGeoShieldRim(), mOwner);
+      mShield.rotation.z = Math.PI / 2;
+      mShield.position.set(SHIELD_X, AV_Y_TORSO_CTR + 0.01 * HEX_R, 0.012 * HEX_R);
+      group.add(mShield);
+      const mShRim = new THREE.Mesh(getGeoShieldRim(), mDark);
+      mShRim.rotation.z = Math.PI / 2;
+      mShRim.scale.set(0.9, 1.12, 1.12);
+      mShRim.position.set(SHIELD_X - 0.005 * HEX_R, AV_Y_TORSO_CTR + 0.01 * HEX_R, 0.012 * HEX_R);
+      group.add(mShRim);
+      const mBoss = new THREE.Mesh(getGeoShieldBoss(), mSteel);
+      mBoss.rotation.z = Math.PI / 2;
+      mBoss.position.set(SHIELD_X + 0.012 * HEX_R, AV_Y_TORSO_CTR + 0.01 * HEX_R, 0.012 * HEX_R);
+      group.add(mBoss);
+
+      addBelt(group, mat(COLOR_LEATHER, 0.05, 0.85));
+      addBoots(group, mat(0x4a3526, 0.05, 0.88));
+      addHands(group, mat(COLOR_SKIN, 0.05, 0.80));
+
+      group.userData['mats'] = mats;
+      group.userData['perTokenGeos'] = [gCap, gShaft, gDomBrow];
+      return group;
+    }
+  }
+}
+
+// ===========================================================================
+// SUPER-UNIT BUILDERS (per-culture elite guards) — visually DISTINCT
+//
+// All seven share the R6 avatar skeleton, a banner standard and consistent
+// proportions, but each gets a culture-specific body colour, headgear,
+// shield and primary weapon so e.g. the Zulu "uThulwana" and the Roman
+// "Evocati" are unmistakably different.  Only invoked when buildUnitModel is
+// called WITH a unitName (the gallery + any future named call); the no-name
+// path still uses the generic 'super' case for zero regression.
+// ===========================================================================
+
+/** Common helper: tall owner standard behind the left shoulder (shared geos). */
+function addSuperBanner(group: THREE.Group, mPole: THREE.MeshStandardMaterial,
+                        mFlag: THREE.MeshStandardMaterial, mFin: THREE.MeshStandardMaterial,
+                        perGeo: THREE.BufferGeometry[]): void {
+  const POLE_X = -(AV_ARM_OFFSET_X + AV_ARM_W * 0.5 + 0.030 * HEX_R);
+  const POLE_CTR_Y = AV_Y_LEG_BOT + 0.33 * HEX_R * 0.5;
+  const POLE_TOP_Y = AV_Y_LEG_BOT + 0.33 * HEX_R;
+  const mP = new THREE.Mesh(getGeoBannerPole(), mPole);
+  mP.scale.set(1.0, 1.1, 1.0);
+  mP.position.set(POLE_X, POLE_CTR_Y, -0.02 * HEX_R);
+  group.add(mP);
+  const mF = new THREE.Mesh(getGeoBannerFlag(), mFlag);
+  mF.position.set(POLE_X - 0.047 * HEX_R, POLE_TOP_Y - 0.036 * HEX_R, -0.02 * HEX_R);
+  group.add(mF);
+  const gFin = new THREE.BoxGeometry(0.024 * HEX_R, 0.024 * HEX_R, 0.024 * HEX_R);
+  perGeo.push(gFin);
+  const mFn = new THREE.Mesh(gFin, mFin);
+  mFn.position.set(POLE_X, POLE_TOP_Y + 0.012 * HEX_R, -0.02 * HEX_R);
+  group.add(mFn);
+}
+
+/**
+ * Dispatch a super-unit by culture.  Falls back to the generic super model
+ * (via buildCategoryModel) for an unrecognised culture so the function is
+ * always safe.
+ */
+function buildSuperUnit(culture: Culture, ownerColor_: number, _name: string): THREE.Group {
+  switch (culture) {
+    case 'rzym':   return buildSuperRome(ownerColor_);
+    case 'grecja': return buildSuperGreece(ownerColor_);
+    case 'chiny':  return buildSuperChina(ownerColor_);
+    case 'zulu':   return buildSuperZulu(ownerColor_);
+    case 'inka':   return buildSuperInca(ownerColor_);
+    case 'egipt':  return buildSuperEgypt(ownerColor_);
+    case 'sumer':  return buildSuperSumer(ownerColor_);
+    default:       return buildCategoryModel('super', ownerColor_);
+  }
+}
+
+// --- Evocati (Rome) -------------------------------------------------------
+// Roman red tunic, ornate BRONZE galea (bowl + domed cap + red transverse
+// crest), gold-trimmed rectangular SCUTUM, gladius in hand + sheathed sword.
+// --- Triari (Rome) ---
+function buildSuperRome(ownerColor_: number): THREE.Group {
+  const { group, mats } = buildBaseAvatar(COLOR_SKIN, COLOR_RED_VIV, ownerColor_);
+  const mat = makeMatFactory(mats);
+  const mBronze = mat(COLOR_BRONZE,    0.45, 0.40);
+  const mBronzL = mat(COLOR_BRONZE_LT, 0.58, 0.30);
+  const mSteel  = mat(COLOR_STEEL,     0.55, 0.35);
+  const mGold   = mat(COLOR_GOLD_BR,   0.58, 0.32);
+  const mRed    = mat(COLOR_RED_VIV,   0.08, 0.74);
+  const mOwner  = mat(ownerColor_,     0.18, 0.60);
+  const mWood   = mat(COLOR_WOOD,      0.05, 0.85);
+  const mLeath  = mat(0x5a3c22,        0.06, 0.82);
+  const mChain  = mat(0x4a4a4a,        0.35, 0.55);
+  const perGeo: THREE.BufferGeometry[] = [];
+
+  // Chainmail lorica: dark steel cuirass (kolczuga) + leather pteruges.
+  const mCuir = new THREE.Mesh(getGeoCuirassBox(), mChain);
+  mCuir.scale.set(1.02, 1.0, 1.02);
+  mCuir.position.set(0, AV_Y_TORSO_CTR, 0);
+  group.add(mCuir);
+  // Leather banded skirt strips (pteryges) instead of lorica bands.
+  for (const dy of [0.06, 0.0, -0.06]) {
+    const b = new THREE.Mesh(getGeoLoricaBand(), mLeath);
+    b.position.set(0, AV_Y_TORSO_CTR + dy * HEX_R, 0.004 * HEX_R);
+    group.add(b);
+  }
+  addPteruges(group, mLeath);
+  // Chainmail shoulder pads.
+  for (const sx of [-1, 1]) {
+    const sp = new THREE.Mesh(getGeoShoulderPad(), mChain);
+    sp.position.set(sx * (AV_ARM_OFFSET_X - 0.005 * HEX_R), AV_Y_TORSO_TOP - 0.015 * HEX_R, 0);
+    group.add(sp);
+  }
+
+  // Ornate galea: rounded bronze bowl + domed cap + gold brow band + cheek guards.
+  const mBowl = new THREE.Mesh(getGeoGaleaBowl(), mBronze);
+  mBowl.position.set(0, AV_Y_HEAD_CTR + 0.006 * HEX_R, 0);
+  group.add(mBowl);
+  const mCap = new THREE.Mesh(getGeoGaleaCap(), mBronzL);
+  mCap.position.set(0, AV_Y_HEAD_TOP - 0.004 * HEX_R, 0);
+  group.add(mCap);
+  const gBrow = new THREE.BoxGeometry(0.175 * HEX_R, 0.022 * HEX_R, 0.175 * HEX_R);
+  perGeo.push(gBrow);
+  const mBrow = new THREE.Mesh(gBrow, mGold);
+  mBrow.position.set(0, AV_Y_HEAD_CTR - 0.030 * HEX_R, 0);
+  group.add(mBrow);
+  for (const sx of [-1, 1]) {
+    const ck = new THREE.Mesh(getGeoCheekGuard(), mBronzL);
+    ck.position.set(sx * (AV_HEAD_S * 0.5 - 0.002 * HEX_R), AV_Y_HEAD_CTR - 0.016 * HEX_R, 0.030 * HEX_R);
+    group.add(ck);
+  }
+  // Transverse red horsehair crest (triarius style) on a bronze base.
+  const mCrB = new THREE.Mesh(getGeoTransverseCrest(), mBronzL);
+  mCrB.position.set(0, AV_Y_HEAD_TOP + 0.060 * HEX_R, 0);
+  group.add(mCrB);
+  const gCr = new THREE.BoxGeometry(0.150 * HEX_R, 0.080 * HEX_R, 0.028 * HEX_R);
+  perGeo.push(gCr);
+  const mCr = new THREE.Mesh(gCr, mRed);
+  mCr.position.set(0, AV_Y_HEAD_TOP + 0.108 * HEX_R, 0);
+  group.add(mCr);
+
+  // Hasta (long thrusting spear) in the right hand.
+  const SP_X = AV_ARM_OFFSET_X + AV_ARM_W * 0.5 + 0.014 * HEX_R;
+  const gHastaShaft = new THREE.BoxGeometry(0.016 * HEX_R, 0.60 * HEX_R, 0.016 * HEX_R);
+  perGeo.push(gHastaShaft);
+  const mHastaShaft = new THREE.Mesh(gHastaShaft, mWood);
+  mHastaShaft.position.set(SP_X, AV_Y_TORSO_CTR + 0.06 * HEX_R, 0.01 * HEX_R);
+  group.add(mHastaShaft);
+  const gHastaGrot = new THREE.BoxGeometry(0.024 * HEX_R, 0.070 * HEX_R, 0.018 * HEX_R);
+  perGeo.push(gHastaGrot);
+  const mHastaGrot = new THREE.Mesh(gHastaGrot, mSteel);
+  mHastaGrot.position.set(SP_X, AV_Y_TORSO_CTR + 0.06 * HEX_R + 0.30 * HEX_R + 0.035 * HEX_R, 0.01 * HEX_R);
+  group.add(mHastaGrot);
+  // Gladius at the hip (stays as secondary weapon).
+  addHipSword(group, mat(0x5a3c22, 0.06, 0.82), mGold, 1);
+
+  // Large RED SCUTUM on the left arm — gold frame + owner blazon accent.
+  const SH_X = -(AV_ARM_OFFSET_X + AV_ARM_W * 0.5 + 0.020 * HEX_R);
+  const mScu = new THREE.Mesh(getGeoScutumBody(), mRed);
+  mScu.scale.set(1.10, 1.10, 1.0);
+  mScu.position.set(SH_X, AV_Y_TORSO_CTR, 0.012 * HEX_R);
+  group.add(mScu);
+  // Gold rim frame (four thin bars).
+  for (const [w, h, ox, oy] of [
+    [0.150, 0.018, 0, 0.106], [0.150, 0.018, 0, -0.106],
+    [0.018, 0.212, 0.070, 0], [0.018, 0.212, -0.070, 0],
+  ] as const) {
+    const gBar = new THREE.BoxGeometry(w * 1.10 * HEX_R, h * HEX_R, 0.022 * HEX_R);
+    perGeo.push(gBar);
+    const mBar = new THREE.Mesh(gBar, mGold);
+    mBar.position.set(SH_X + ox * 1.10 * HEX_R, AV_Y_TORSO_CTR + oy * HEX_R, 0.016 * HEX_R);
+    group.add(mBar);
+  }
+  // Central gold boss.
+  const mBoss = new THREE.Mesh(getGeoScutumBoss(), mGold);
+  mBoss.position.set(SH_X, AV_Y_TORSO_CTR, 0.022 * HEX_R);
+  group.add(mBoss);
+  // Owner-colour blazon in the centre of the shield.
+  const gBlaz = new THREE.BoxGeometry(0.06 * HEX_R, 0.08 * HEX_R, 0.010 * HEX_R);
+  perGeo.push(gBlaz);
+  const mBlaz = new THREE.Mesh(gBlaz, mOwner);
+  mBlaz.position.set(SH_X, AV_Y_TORSO_CTR, 0.030 * HEX_R);
+  group.add(mBlaz);
+
+  addGreaves(group, mBronzL);
+  addSuperBanner(group, mat(COLOR_POLE_GREY, 0.35, 0.55), mOwner, mGold, perGeo);
+  addBoots(group, mLeath);
+  addHands(group, mat(COLOR_SKIN, 0.05, 0.80));
+
+  group.userData['mats'] = mats;
+  group.userData['perTokenGeos'] = perGeo;
+  return group;
+}
+
+// --- uThulwana (Zulu, White Shields) --------------------------------------
+// Ochre body, large WHITE/BLACK cowhide oval shield, tall OSTRICH-FEATHER
+// headdress, short iklwa stabbing spear.  No metal armour or helmet.
+function buildSuperZulu(ownerColor_: number): THREE.Group {
+  const { group, mats } = buildBaseAvatar(COLOR_SKIN_DARK, COLOR_HIDE_RED, ownerColor_);
+  const mat = makeMatFactory(mats);
+  const mOchre  = mat(COLOR_HIDE_RED,  0.05, 0.85);   // ochre-rubbed body/loin
+  const mWhite  = mat(COLOR_PAINT_WHT, 0.03, 0.92);   // white cowhide + plumes
+  const mBlack  = mat(0x201a14,        0.05, 0.85);   // black cowhide patches
+  const mWood   = mat(0x6b4a26,        0.05, 0.85);
+  const mSteel  = mat(COLOR_STEEL,     0.45, 0.42);
+  const mOwner  = mat(ownerColor_,     0.12, 0.66);
+  const perGeo: THREE.BufferGeometry[] = [];
+
+  // Ochre loincloth + a beaded owner-colour bandolier across the chest.
+  const mLoin = new THREE.Mesh(getGeoLoincloth(), mOchre);
+  mLoin.position.set(0, AV_Y_TORSO_BOT + 0.02 * HEX_R, 0);
+  group.add(mLoin);
+  const gBand = new THREE.BoxGeometry(0.028 * HEX_R, 0.24 * HEX_R, 0.012 * HEX_R);
+  perGeo.push(gBand);
+  const mBandM = new THREE.Mesh(gBand, mOwner);
+  mBandM.rotation.z = 0.7;
+  mBandM.position.set(0, AV_Y_TORSO_CTR, AV_TORSO_D * 0.5 + 0.006 * HEX_R);
+  group.add(mBandM);
+  // Cow-tail arm/leg bands (white fur tufts).
+  for (const sx of [-AV_ARM_OFFSET_X, AV_ARM_OFFSET_X]) {
+    const gT = new THREE.BoxGeometry(AV_ARM_W * 1.3, 0.05 * HEX_R, AV_ARM_D * 1.3);
+    perGeo.push(gT);
+    const mT = new THREE.Mesh(gT, mWhite);
+    mT.position.set(sx, AV_Y_ARM_CTR - AV_ARM_H * 0.5 + 0.07 * HEX_R, 0);
+    group.add(mT);
+  }
+
+  // OSTRICH-FEATHER headdress: a leather/owner browband + a tall fan of long
+  // white plumes (some black-tipped) rising and splaying from the head.
+  const gBrow = new THREE.BoxGeometry(0.150 * HEX_R, 0.030 * HEX_R, 0.150 * HEX_R);
+  perGeo.push(gBrow);
+  const mBrow = new THREE.Mesh(gBrow, mOwner);
+  mBrow.position.set(0, AV_Y_HEAD_TOP + 0.006 * HEX_R, 0);
+  group.add(mBrow);
+  for (const ax of [-0.45, -0.22, 0.0, 0.22, 0.45]) {
+    const gP = new THREE.BoxGeometry(0.020 * HEX_R, 0.150 * HEX_R, 0.012 * HEX_R);
+    perGeo.push(gP);
+    const tip = (ax === -0.45 || ax === 0.45);
+    const mP = new THREE.Mesh(gP, tip ? mBlack : mWhite);
+    mP.rotation.z = ax;
+    mP.position.set(Math.sin(ax) * 0.05 * HEX_R, AV_Y_HEAD_TOP + 0.090 * HEX_R, -0.01 * HEX_R);
+    group.add(mP);
+  }
+  // A central tall white plume standing straight up.
+  const gPC = new THREE.BoxGeometry(0.022 * HEX_R, 0.170 * HEX_R, 0.014 * HEX_R);
+  perGeo.push(gPC);
+  const mPC = new THREE.Mesh(gPC, mWhite);
+  mPC.position.set(0, AV_Y_HEAD_TOP + 0.105 * HEX_R, -0.012 * HEX_R);
+  group.add(mPC);
+
+  // Iklwa: short broad-bladed stabbing spear in the right hand.
+  const SP_X = AV_ARM_OFFSET_X + AV_ARM_W * 0.5 + 0.014 * HEX_R;
+  const gShaft = new THREE.BoxGeometry(0.018 * HEX_R, 0.34 * HEX_R, 0.018 * HEX_R);
+  perGeo.push(gShaft);
+  const mShaft = new THREE.Mesh(gShaft, mWood);
+  mShaft.position.set(SP_X, AV_Y_TORSO_CTR + 0.02 * HEX_R, 0.01 * HEX_R);
+  group.add(mShaft);
+  const gBlade = new THREE.BoxGeometry(0.040 * HEX_R, 0.11 * HEX_R, 0.012 * HEX_R);
+  perGeo.push(gBlade);
+  const mBlade = new THREE.Mesh(gBlade, mSteel);
+  mBlade.position.set(SP_X, AV_Y_TORSO_CTR + 0.02 * HEX_R + 0.17 * HEX_R + 0.055 * HEX_R, 0.01 * HEX_R);
+  group.add(mBlade);
+
+  // Large white-and-black cowhide OVAL shield (Nguni) on the left arm.
+  const SH_X = -(AV_ARM_OFFSET_X + AV_ARM_W * 0.5 + 0.020 * HEX_R);
+  const mShield = new THREE.Mesh(getGeoOvalShield(), mWhite);
+  mShield.rotation.z = Math.PI / 2;
+  mShield.scale.set(1.0, 1.25, 1.95);   // tall cowhide body shield
+  mShield.position.set(SH_X, AV_Y_TORSO_CTR, 0.012 * HEX_R);
+  group.add(mShield);
+  // Two black hide patches on the shield face.
+  for (const dy of [0.085, -0.085]) {
+    const gPatch = new THREE.BoxGeometry(0.026 * HEX_R, 0.075 * HEX_R, 0.020 * HEX_R);
+    perGeo.push(gPatch);
+    const mPatch = new THREE.Mesh(gPatch, mBlack);
+    mPatch.position.set(SH_X + 0.010 * HEX_R, AV_Y_TORSO_CTR + dy * HEX_R, 0.012 * HEX_R);
+    group.add(mPatch);
+  }
+  // Central wooden spine/stick down the shield.
+  const gSpine = new THREE.BoxGeometry(0.016 * HEX_R, 0.30 * HEX_R, 0.020 * HEX_R);
+  perGeo.push(gSpine);
+  const mSpine = new THREE.Mesh(gSpine, mWood);
+  mSpine.position.set(SH_X + 0.012 * HEX_R, AV_Y_TORSO_CTR, 0.012 * HEX_R);
+  group.add(mSpine);
+
+  addSuperBanner(group, mat(0x6b4a26, 0.10, 0.70), mOwner, mWhite, perGeo);
+  addBoots(group, mat(COLOR_SKIN_DARK, 0.05, 0.85));   // bare/ochre feet
+  addHands(group, mat(COLOR_SKIN_DARK, 0.05, 0.85));
+
+  group.userData['mats'] = mats;
+  group.userData['perTokenGeos'] = perGeo;
+  return group;
+}
+
+// --- Hieros Lochos (Greece, Sacred Band) ----------------------------------
+// Bronze hoplite panoply: Corinthian helm + TALL crimson crest, blue/crimson
+// cloak, large round bronze-rimmed ASPIS, long dory spear.
+function buildSuperGreece(ownerColor_: number): THREE.Group {
+  const { group, mats } = buildBaseAvatar(COLOR_SKIN, COLOR_WOAD, ownerColor_);
+  const mat = makeMatFactory(mats);
+  const mBronze = mat(COLOR_BRONZE,    0.40, 0.42);
+  const mBronzL = mat(COLOR_BRONZE_LT, 0.58, 0.30);
+  const mSteel  = mat(COLOR_STEEL,     0.50, 0.40);
+  const mCrest  = mat(COLOR_CRIMSON,   0.08, 0.74);
+  const mCloak  = mat(COLOR_WOAD,      0.08, 0.78);
+  const mOwner  = mat(ownerColor_,     0.16, 0.62);
+  const mWood   = mat(COLOR_WOOD,      0.05, 0.85);
+  const mLeath  = mat(COLOR_LEATHER,   0.06, 0.82);
+  const perGeo: THREE.BufferGeometry[] = [];
+
+  // Crimson-edged woad cloak behind, then a bronze muscled cuirass.
+  const mCape = new THREE.Mesh(getGeoSuperCape(), mCloak);
+  mCape.scale.set(1.12, 1.12, 1.0);
+  mCape.position.set(0, AV_Y_TORSO_CTR - 0.01 * HEX_R, -AV_TORSO_D * 0.5 - 0.008 * HEX_R);
+  mCape.rotation.x = 0.18;
+  group.add(mCape);
+  const mCuir = new THREE.Mesh(getGeoCuirassBox(), mBronze);
+  mCuir.scale.set(1.0, 1.0, 1.0);
+  mCuir.position.set(0, AV_Y_TORSO_CTR, 0);
+  group.add(mCuir);
+  // Muscled pectoral lines.
+  const mPec = new THREE.Mesh(getGeoGildedTrim(), mBronzL);
+  mPec.position.set(0, AV_Y_TORSO_CTR + 0.03 * HEX_R, 0.001 * HEX_R);
+  group.add(mPec);
+  addPteruges(group, mLeath);
+
+  // Corinthian helmet dropped over the face + dark eye slit.
+  const mHelm = new THREE.Mesh(getGeoCorinthDome(), mBronze);
+  mHelm.position.set(0, AV_Y_HEAD_CTR + 0.012 * HEX_R, 0);
+  group.add(mHelm);
+  const gSlit = new THREE.BoxGeometry(0.018 * HEX_R, 0.05 * HEX_R, 0.012 * HEX_R);
+  perGeo.push(gSlit);
+  const mSlit = new THREE.Mesh(gSlit, mat(0x20180f, 0.05, 0.9));
+  mSlit.position.set(0, AV_Y_HEAD_CTR - 0.01 * HEX_R, AV_HEAD_S * 0.5 + 0.006 * HEX_R);
+  group.add(mSlit);
+  // TALL fore-aft crimson crest on a bronze base (a head taller than the line hoplite).
+  const mCrB = new THREE.Mesh(getGeoTransverseCrest(), mBronzL);
+  mCrB.rotation.y = Math.PI / 2;          // fore-aft ridge
+  mCrB.position.set(0, AV_Y_HEAD_TOP + 0.034 * HEX_R, 0);
+  group.add(mCrB);
+  const gCr = new THREE.BoxGeometry(0.030 * HEX_R, 0.110 * HEX_R, 0.150 * HEX_R);
+  perGeo.push(gCr);
+  const mCr = new THREE.Mesh(gCr, mCrest);
+  mCr.position.set(0, AV_Y_HEAD_TOP + 0.095 * HEX_R, 0);
+  group.add(mCr);
+
+  // Long dory spear overhand on the right, butt-spike down.
+  const SP_X = AV_ARM_OFFSET_X + AV_ARM_W * 0.5 + 0.012 * HEX_R;
+  const mDory = new THREE.Mesh(getGeoDoryShaft(), mWood);
+  mDory.position.set(SP_X, AV_Y_TORSO_CTR + 0.10 * HEX_R, 0.01 * HEX_R);
+  group.add(mDory);
+  const mTip = new THREE.Mesh(getGeoSpearTip(), mSteel);
+  mTip.position.set(SP_X, AV_Y_TORSO_CTR + 0.10 * HEX_R + 0.31 * HEX_R + 0.028 * HEX_R, 0.01 * HEX_R);
+  group.add(mTip);
+  const mButt = new THREE.Mesh(getGeoSauroter(), mBronzL);
+  mButt.position.set(SP_X, AV_Y_TORSO_CTR + 0.10 * HEX_R - 0.31 * HEX_R - 0.022 * HEX_R, 0.01 * HEX_R);
+  group.add(mButt);
+
+  // Large round ASPIS on the left arm (owner blazon, bright bronze rim).
+  const SH_X = -(AV_ARM_OFFSET_X + AV_ARM_W * 0.5 + 0.018 * HEX_R);
+  const mRim = new THREE.Mesh(getGeoAspisRim(), mBronzL);
+  mRim.rotation.z = Math.PI / 2;
+  mRim.scale.set(0.55, 1.0, 1.0);
+  mRim.position.set(SH_X - 0.006 * HEX_R, AV_Y_TORSO_CTR, 0.012 * HEX_R);
+  group.add(mRim);
+  const mFace = new THREE.Mesh(getGeoAspisFace(), mOwner);
+  mFace.rotation.z = Math.PI / 2;
+  mFace.scale.set(0.55, 1.0, 1.0);
+  mFace.position.set(SH_X, AV_Y_TORSO_CTR, 0.012 * HEX_R);
+  group.add(mFace);
+
+  addGreaves(group, mBronzL);
+  addSuperBanner(group, mat(COLOR_POLE_GREY, 0.35, 0.55), mOwner, mBronzL, perGeo);
+  addBoots(group, mLeath);
+  addHands(group, mat(COLOR_SKIN, 0.05, 0.80));
+
+  group.userData['mats'] = mats;
+  group.userData['perTokenGeos'] = perGeo;
+  return group;
+}
+
+// --- Hu Ben Wei (China, Tiger Guard) --------------------------------------
+// Lacquer red/black lamellar, BRASS helm, tiger stripes, long dao/spear.
+function buildSuperChina(ownerColor_: number): THREE.Group {
+  const { group, mats } = buildBaseAvatar(COLOR_SKIN, COLOR_LACQUER, ownerColor_);
+  const mat = makeMatFactory(mats);
+  const mLac    = mat(COLOR_LACQUER,   0.20, 0.45);   // lacquer red lamellar
+  const mBlack  = mat(0x1c1712,        0.18, 0.55);   // black lacing/stripes
+  const mBrass  = mat(0xc9a23a,        0.55, 0.35);   // brass helm/trim
+  const mSteel  = mat(COLOR_STEEL,     0.55, 0.35);
+  const mGoldT  = mat(COLOR_OCHRE,     0.30, 0.45);   // tiger gold
+  const mOwner  = mat(ownerColor_,     0.16, 0.62);
+  const mWood   = mat(COLOR_WOOD,      0.05, 0.85);
+  const perGeo: THREE.BufferGeometry[] = [];
+
+  // Lamellar cuirass (lacquer red) with three black lacing bands.
+  const mCuir = new THREE.Mesh(getGeoCuirassBox(), mLac);
+  mCuir.scale.set(1.02, 1.02, 1.02);
+  mCuir.position.set(0, AV_Y_TORSO_CTR, 0);
+  group.add(mCuir);
+  for (const dy of [0.07, 0.0, -0.07]) {
+    const b = new THREE.Mesh(getGeoLoricaBand(), mBlack);
+    b.position.set(0, AV_Y_TORSO_CTR + dy * HEX_R, 0.004 * HEX_R);
+    group.add(b);
+  }
+  addPteruges(group, mBlack);
+  // Black lamellar skirt + gold tiger-face roundel on the chest.
+  const gTig = new THREE.BoxGeometry(0.10 * HEX_R, 0.10 * HEX_R, 0.012 * HEX_R);
+  perGeo.push(gTig);
+  const mTig = new THREE.Mesh(gTig, mGoldT);
+  mTig.position.set(0, AV_Y_TORSO_CTR + 0.02 * HEX_R, AV_TORSO_D * 0.5 + 0.008 * HEX_R);
+  group.add(mTig);
+  for (const dx of [-0.022 * HEX_R, 0.022 * HEX_R]) {
+    const gEye = new THREE.BoxGeometry(0.014 * HEX_R, 0.014 * HEX_R, 0.010 * HEX_R);
+    perGeo.push(gEye);
+    const mEye = new THREE.Mesh(gEye, mBlack);
+    mEye.position.set(dx, AV_Y_TORSO_CTR + 0.04 * HEX_R, AV_TORSO_D * 0.5 + 0.014 * HEX_R);
+    group.add(mEye);
+  }
+  // Shoulder lamellar (black).
+  for (const sx of [-1, 1]) {
+    const sp = new THREE.Mesh(getGeoShoulderPad(), mBlack);
+    sp.position.set(sx * (AV_ARM_OFFSET_X - 0.005 * HEX_R), AV_Y_TORSO_TOP - 0.015 * HEX_R, 0);
+    group.add(sp);
+  }
+
+  // Brass domed helm + tall red knob/plume + brass brow band.
+  const gDome = new THREE.CylinderGeometry(0.070 * HEX_R, 0.085 * HEX_R, 0.075 * HEX_R, 10, 1);
+  perGeo.push(gDome);
+  const mDome = new THREE.Mesh(gDome, mBrass);
+  mDome.position.set(0, AV_Y_HEAD_CTR + 0.020 * HEX_R, 0);
+  group.add(mDome);
+  const gBrow = new THREE.BoxGeometry(0.165 * HEX_R, 0.020 * HEX_R, 0.165 * HEX_R);
+  perGeo.push(gBrow);
+  const mBrow = new THREE.Mesh(gBrow, mGoldT);
+  mBrow.position.set(0, AV_Y_HEAD_CTR + 0.000 * HEX_R, 0);
+  group.add(mBrow);
+  const gKnob = new THREE.BoxGeometry(0.030 * HEX_R, 0.090 * HEX_R, 0.030 * HEX_R);
+  perGeo.push(gKnob);
+  const mKnob = new THREE.Mesh(gKnob, mLac);
+  mKnob.position.set(0, AV_Y_HEAD_TOP + 0.070 * HEX_R, 0);
+  group.add(mKnob);
+
+  // Long dao / spear in the right hand (straight pole + steel head).
+  const SP_X = AV_ARM_OFFSET_X + AV_ARM_W * 0.5 + 0.014 * HEX_R;
+  const gShaft = new THREE.BoxGeometry(0.016 * HEX_R, 0.52 * HEX_R, 0.016 * HEX_R);
+  perGeo.push(gShaft);
+  const mShaft = new THREE.Mesh(gShaft, mWood);
+  mShaft.position.set(SP_X, AV_Y_LEG_BOT + 0.27 * HEX_R, 0.01 * HEX_R);
+  group.add(mShaft);
+  const mHead = new THREE.Mesh(getGeoSpearTip(), mSteel);
+  mHead.scale.set(1.0, 1.4, 1.0);
+  mHead.position.set(SP_X, AV_Y_LEG_BOT + 0.54 * HEX_R + 0.034 * HEX_R, 0.01 * HEX_R);
+  group.add(mHead);
+  // Red tassel below the head.
+  const gTas = new THREE.BoxGeometry(0.030 * HEX_R, 0.05 * HEX_R, 0.030 * HEX_R);
+  perGeo.push(gTas);
+  const mTas = new THREE.Mesh(gTas, mLac);
+  mTas.position.set(SP_X, AV_Y_LEG_BOT + 0.50 * HEX_R, 0.01 * HEX_R);
+  group.add(mTas);
+
+  // Rectangular lacquer shield (owner blazon) on the left arm with tiger stripes.
+  const SH_X = -(AV_ARM_OFFSET_X + AV_ARM_W * 0.5 + 0.018 * HEX_R);
+  const gSh = new THREE.BoxGeometry(0.130 * HEX_R, 0.200 * HEX_R, 0.018 * HEX_R);
+  perGeo.push(gSh);
+  const mSh = new THREE.Mesh(gSh, mOwner);
+  mSh.position.set(SH_X, AV_Y_TORSO_CTR, 0.012 * HEX_R);
+  group.add(mSh);
+  for (const dy of [0.06, 0.0, -0.06]) {
+    const gStr = new THREE.BoxGeometry(0.130 * HEX_R, 0.016 * HEX_R, 0.020 * HEX_R);
+    perGeo.push(gStr);
+    const mStr = new THREE.Mesh(gStr, mBlack);
+    mStr.position.set(SH_X, AV_Y_TORSO_CTR + dy * HEX_R, 0.014 * HEX_R);
+    group.add(mStr);
+  }
+
+  addSuperBanner(group, mat(COLOR_POLE_GREY, 0.35, 0.55), mOwner, mGoldT, perGeo);
+  addBoots(group, mBlack);
+  addHands(group, mat(COLOR_SKIN, 0.05, 0.80));
+
+  group.userData['mats'] = mats;
+  group.userData['perTokenGeos'] = perGeo;
+  return group;
+}
+
+// --- Królewska Gwardia (Inca) ---------------------------------------------
+// Vivid Andean textiles (ochre + red), gold trim, FEATHERED helm, star-mace.
+function buildSuperInca(ownerColor_: number): THREE.Group {
+  const { group, mats } = buildBaseAvatar(COLOR_SKIN_DARK, COLOR_OCHRE, ownerColor_);
+  const mat = makeMatFactory(mats);
+  const mOchre  = mat(COLOR_OCHRE,     0.06, 0.80);   // tunic base
+  const mRed    = mat(COLOR_RED_VIV,   0.06, 0.78);   // textile red
+  const mTeal   = mat(COLOR_TEAL,      0.06, 0.78);   // textile teal accent
+  const mGold   = mat(COLOR_GOLD_BR,   0.58, 0.32);
+  const mStone  = mat(0x8a8680,        0.20, 0.70);   // stone mace head
+  const mFeath  = mat(COLOR_FEATHER,   0.03, 0.92);
+  const mOwner  = mat(ownerColor_,     0.16, 0.62);
+  const mWood   = mat(0x6b4a26,        0.05, 0.85);
+  const perGeo: THREE.BufferGeometry[] = [];
+
+  // Patterned tunic: ochre body + a red+teal checker band across the chest.
+  const mTunic = new THREE.Mesh(getGeoCuirassBox(), mOchre);
+  mTunic.scale.set(0.98, 1.0, 0.98);
+  mTunic.position.set(0, AV_Y_TORSO_CTR, 0);
+  group.add(mTunic);
+  let ci = 0;
+  for (const dx of [-0.06, -0.02, 0.02, 0.06]) {
+    const gSq = new THREE.BoxGeometry(0.036 * HEX_R, 0.06 * HEX_R, 0.012 * HEX_R);
+    perGeo.push(gSq);
+    const mSq = new THREE.Mesh(gSq, (ci++ % 2 === 0) ? mRed : mTeal);
+    mSq.position.set(dx * HEX_R, AV_Y_TORSO_CTR, AV_TORSO_D * 0.5 + 0.006 * HEX_R);
+    group.add(mSq);
+  }
+  // Gold pectoral disc above the band.
+  const gDisc = new THREE.CylinderGeometry(0.045 * HEX_R, 0.045 * HEX_R, 0.012 * HEX_R, 12, 1);
+  perGeo.push(gDisc);
+  const mDisc = new THREE.Mesh(gDisc, mGold);
+  mDisc.rotation.x = Math.PI / 2;
+  mDisc.position.set(0, AV_Y_TORSO_CTR + 0.07 * HEX_R, AV_TORSO_D * 0.5 + 0.010 * HEX_R);
+  group.add(mDisc);
+  addTunicHem(group, mRed);
+
+  // Feathered helm: a gold browband + a dense fan of colourful upright feathers.
+  const gBrow = new THREE.BoxGeometry(0.150 * HEX_R, 0.030 * HEX_R, 0.150 * HEX_R);
+  perGeo.push(gBrow);
+  const mBrow = new THREE.Mesh(gBrow, mGold);
+  mBrow.position.set(0, AV_Y_HEAD_TOP + 0.004 * HEX_R, 0);
+  group.add(mBrow);
+  let fi = 0;
+  for (const ax of [-0.4, -0.2, 0.0, 0.2, 0.4]) {
+    const gF = new THREE.BoxGeometry(0.018 * HEX_R, 0.120 * HEX_R, 0.010 * HEX_R);
+    perGeo.push(gF);
+    const col = (fi % 3 === 0) ? mRed : (fi % 3 === 1) ? mFeath : mTeal;
+    fi++;
+    const mF = new THREE.Mesh(gF, col);
+    mF.rotation.z = ax;
+    mF.position.set(Math.sin(ax) * 0.045 * HEX_R, AV_Y_HEAD_TOP + 0.080 * HEX_R, -0.008 * HEX_R);
+    group.add(mF);
+  }
+
+  // Star-headed mace (macana) raised in the right hand: wood haft + gold star knob.
+  const M_X = AV_ARM_OFFSET_X + AV_ARM_W * 0.5 + 0.016 * HEX_R;
+  const mHaft = new THREE.Mesh(getGeoClubHandle(), mWood);
+  mHaft.position.set(M_X, AV_Y_TORSO_TOP + 0.02 * HEX_R, 0.01 * HEX_R);
+  group.add(mHaft);
+  const gHub = new THREE.BoxGeometry(0.045 * HEX_R, 0.045 * HEX_R, 0.045 * HEX_R);
+  perGeo.push(gHub);
+  const mHub = new THREE.Mesh(gHub, mGold);
+  const hubY = AV_Y_TORSO_TOP + 0.175 * HEX_R + 0.022 * HEX_R;
+  mHub.position.set(M_X, hubY, 0.01 * HEX_R);
+  group.add(mHub);
+  // Six radiating star points.
+  for (const ang of [0, Math.PI / 3, (2 * Math.PI) / 3, Math.PI, (4 * Math.PI) / 3, (5 * Math.PI) / 3]) {
+    const gPt = new THREE.BoxGeometry(0.050 * HEX_R, 0.016 * HEX_R, 0.016 * HEX_R);
+    perGeo.push(gPt);
+    const mPt = new THREE.Mesh(gPt, mStone);
+    mPt.rotation.z = ang;
+    mPt.position.set(M_X + Math.cos(ang) * 0.030 * HEX_R, hubY + Math.sin(ang) * 0.030 * HEX_R, 0.01 * HEX_R);
+    group.add(mPt);
+  }
+
+  // Round shield (owner blazon) on the left arm with a gold rim.
+  const SH_X = -(AV_ARM_OFFSET_X + AV_ARM_W * 0.5 + 0.016 * HEX_R);
+  const mShield = new THREE.Mesh(getGeoShieldRim(), mOwner);
+  mShield.rotation.z = Math.PI / 2;
+  mShield.scale.set(1.0, 1.25, 1.25);
+  mShield.position.set(SH_X, AV_Y_TORSO_CTR + 0.005 * HEX_R, 0.012 * HEX_R);
+  group.add(mShield);
+  const mShRim = new THREE.Mesh(getGeoShieldRim(), mGold);
+  mShRim.rotation.z = Math.PI / 2;
+  mShRim.scale.set(0.9, 1.40, 1.40);
+  mShRim.position.set(SH_X - 0.006 * HEX_R, AV_Y_TORSO_CTR + 0.005 * HEX_R, 0.012 * HEX_R);
+  group.add(mShRim);
+
+  addSuperBanner(group, mat(0x6b4a26, 0.10, 0.70), mOwner, mGold, perGeo);
+  addBoots(group, mat(COLOR_SKIN_DARK, 0.05, 0.85));
+  addHands(group, mat(COLOR_SKIN_DARK, 0.05, 0.85));
+
+  group.userData['mats'] = mats;
+  group.userData['perTokenGeos'] = perGeo;
+  return group;
+}
+
+// --- Medżaj (Egypt, Pharaoh's Guard) --------------------------------------
+// White kilt + gold, BLUE-STRIPED nemes-style headdress, khopesh, hide shield.
+function buildSuperEgypt(ownerColor_: number): THREE.Group {
+  const { group, mats } = buildBaseAvatar(COLOR_SKIN, COLOR_LINEN, ownerColor_);
+  const mat = makeMatFactory(mats);
+  const mLinen  = mat(COLOR_LINEN,     0.05, 0.82);   // white kilt/tunic
+  const mGold   = mat(COLOR_GOLD_BR,   0.58, 0.32);
+  const mBlue   = mat(COLOR_WOAD,      0.10, 0.66);   // nemes blue stripes
+  const mBronze = mat(COLOR_BRONZE,    0.40, 0.45);
+  const mSteel  = mat(COLOR_STEEL,     0.50, 0.40);
+  const mHide   = mat(COLOR_HIDE_RED,  0.06, 0.82);   // cowhide shield
+  const mOwner  = mat(ownerColor_,     0.16, 0.62);
+  const mWood   = mat(COLOR_WOOD,      0.05, 0.85);
+  const perGeo: THREE.BufferGeometry[] = [];
+
+  // White linen tunic + broad gold collar (wesekh) + gold belt.
+  const mTunic = new THREE.Mesh(getGeoCuirassBox(), mLinen);
+  mTunic.scale.set(0.96, 1.0, 0.96);
+  mTunic.position.set(0, AV_Y_TORSO_CTR, 0);
+  group.add(mTunic);
+  const gCollar = new THREE.BoxGeometry(0.175 * HEX_R, 0.045 * HEX_R, 0.135 * HEX_R);
+  perGeo.push(gCollar);
+  const mCollar = new THREE.Mesh(gCollar, mGold);
+  mCollar.position.set(0, AV_Y_TORSO_TOP - 0.02 * HEX_R, 0.004 * HEX_R);
+  group.add(mCollar);
+  addBelt(group, mGold, 0.02);
+  addTunicHem(group, mLinen);
+  // A vertical gold stripe down the kilt front.
+  const gStripe = new THREE.BoxGeometry(0.030 * HEX_R, 0.10 * HEX_R, 0.012 * HEX_R);
+  perGeo.push(gStripe);
+  const mStripe = new THREE.Mesh(gStripe, mGold);
+  mStripe.position.set(0, AV_Y_TORSO_BOT - 0.01 * HEX_R, AV_TORSO_D * 0.5 + 0.008 * HEX_R);
+  group.add(mStripe);
+
+  // NEMES headdress: a striped cloth that wraps the head and falls onto the
+  // shoulders, built as a slightly oversized blue/gold striped block.
+  const gNemes = new THREE.BoxGeometry(0.170 * HEX_R, 0.130 * HEX_R, 0.170 * HEX_R);
+  perGeo.push(gNemes);
+  const mNemes = new THREE.Mesh(gNemes, mBlue);
+  mNemes.position.set(0, AV_Y_HEAD_CTR + 0.020 * HEX_R, -0.004 * HEX_R);
+  group.add(mNemes);
+  for (const dx of [-0.06, -0.02, 0.02, 0.06]) {
+    const gS = new THREE.BoxGeometry(0.018 * HEX_R, 0.130 * HEX_R, 0.012 * HEX_R);
+    perGeo.push(gS);
+    const mS = new THREE.Mesh(gS, mGold);
+    mS.position.set(dx * HEX_R, AV_Y_HEAD_CTR + 0.020 * HEX_R, AV_HEAD_S * 0.5 + 0.006 * HEX_R);
+    group.add(mS);
+  }
+  // Lappets falling to the shoulders on each side of the face.
+  for (const sx of [-1, 1]) {
+    const gLap = new THREE.BoxGeometry(0.040 * HEX_R, 0.110 * HEX_R, 0.020 * HEX_R);
+    perGeo.push(gLap);
+    const mLap = new THREE.Mesh(gLap, mBlue);
+    mLap.position.set(sx * (AV_HEAD_S * 0.5 + 0.018 * HEX_R), AV_Y_HEAD_CTR - 0.040 * HEX_R, 0.030 * HEX_R);
+    group.add(mLap);
+  }
+  // A small gold uraeus knob at the brow front.
+  const gUra = new THREE.BoxGeometry(0.022 * HEX_R, 0.030 * HEX_R, 0.018 * HEX_R);
+  perGeo.push(gUra);
+  const mUra = new THREE.Mesh(gUra, mGold);
+  mUra.position.set(0, AV_Y_HEAD_CTR + 0.050 * HEX_R, AV_HEAD_S * 0.5 + 0.010 * HEX_R);
+  group.add(mUra);
+
+  // Khopesh: sickle-sword in the right hand (grip + straight ricasso + curved tip).
+  const K_X = AV_ARM_OFFSET_X + AV_ARM_W * 0.5 + 0.016 * HEX_R;
+  const mGrip = new THREE.Mesh(getGeoSwordGrip(), mWood);
+  mGrip.position.set(K_X, AV_Y_TORSO_CTR + 0.02 * HEX_R, 0.02 * HEX_R);
+  group.add(mGrip);
+  const gShank = new THREE.BoxGeometry(0.020 * HEX_R, 0.13 * HEX_R, 0.012 * HEX_R);
+  perGeo.push(gShank);
+  const mShank = new THREE.Mesh(gShank, mBronze);
+  mShank.position.set(K_X, AV_Y_TORSO_CTR + 0.12 * HEX_R, 0.02 * HEX_R);
+  group.add(mShank);
+  const gHook = new THREE.BoxGeometry(0.075 * HEX_R, 0.022 * HEX_R, 0.012 * HEX_R);
+  perGeo.push(gHook);
+  const mHook = new THREE.Mesh(gHook, mBronze);
+  mHook.rotation.z = -0.7;
+  mHook.position.set(K_X + 0.030 * HEX_R, AV_Y_TORSO_CTR + 0.185 * HEX_R, 0.02 * HEX_R);
+  group.add(mHook);
+
+  // Tall hide shield (rounded-top) on the left arm — cowhide + gold trim.
+  const SH_X = -(AV_ARM_OFFSET_X + AV_ARM_W * 0.5 + 0.020 * HEX_R);
+  const mShield = new THREE.Mesh(getGeoOvalShield(), mHide);
+  mShield.rotation.z = Math.PI / 2;
+  mShield.scale.set(1.0, 1.15, 1.85);
+  mShield.position.set(SH_X, AV_Y_TORSO_CTR, 0.012 * HEX_R);
+  group.add(mShield);
+  const gTrim = new THREE.BoxGeometry(0.018 * HEX_R, 0.30 * HEX_R, 0.020 * HEX_R);
+  perGeo.push(gTrim);
+  const mTrim = new THREE.Mesh(gTrim, mGold);
+  mTrim.position.set(SH_X + 0.010 * HEX_R, AV_Y_TORSO_CTR, 0.012 * HEX_R);
+  group.add(mTrim);
+
+  addSuperBanner(group, mat(COLOR_POLE_GREY, 0.35, 0.55), mOwner, mGold, perGeo);
+  addBoots(group, mat(0x5a3c22, 0.06, 0.82));
+  addHands(group, mat(COLOR_SKIN, 0.05, 0.80));
+
+  group.userData['mats'] = mats;
+  group.userData['perTokenGeos'] = perGeo;
+  return group;
+}
+
+// --- Gwardia Królewska Sumeru (Sumer) -------------------------------------
+// COPPER lamellar, CONICAL helm, spear, large rectangular shield.
+function buildSuperSumer(ownerColor_: number): THREE.Group {
+  const { group, mats } = buildBaseAvatar(COLOR_SKIN, COLOR_TEAL, ownerColor_);
+  const mat = makeMatFactory(mats);
+  const mCopper = mat(0xb06a3a,        0.45, 0.40);   // copper lamellar
+  const mCopL   = mat(0xc8843e,        0.55, 0.32);   // bright copper trim
+  const mDark   = mat(0x6a3c20,        0.30, 0.60);   // dark lacing
+  const mSteel  = mat(COLOR_STEEL,     0.50, 0.40);
+  const mOwner  = mat(ownerColor_,     0.16, 0.62);
+  const mWood   = mat(COLOR_WOOD,      0.05, 0.85);
+  const mFelt   = mat(COLOR_TEAL,      0.06, 0.82);   // tufted teal cloak
+  const perGeo: THREE.BufferGeometry[] = [];
+
+  // Tufted (kaunakes-style) cloak behind, then a copper lamellar cuirass.
+  const mCape = new THREE.Mesh(getGeoSuperCape(), mFelt);
+  mCape.scale.set(1.10, 1.10, 1.0);
+  mCape.position.set(0, AV_Y_TORSO_CTR - 0.01 * HEX_R, -AV_TORSO_D * 0.5 - 0.008 * HEX_R);
+  mCape.rotation.x = 0.16;
+  group.add(mCape);
+  const mCuir = new THREE.Mesh(getGeoCuirassBox(), mCopper);
+  mCuir.scale.set(1.02, 1.0, 1.02);
+  mCuir.position.set(0, AV_Y_TORSO_CTR, 0);
+  group.add(mCuir);
+  for (const dy of [0.07, 0.0, -0.07]) {
+    const b = new THREE.Mesh(getGeoLoricaBand(), mDark);
+    b.position.set(0, AV_Y_TORSO_CTR + dy * HEX_R, 0.004 * HEX_R);
+    group.add(b);
+  }
+  addPteruges(group, mDark);
+  for (const sx of [-1, 1]) {
+    const sp = new THREE.Mesh(getGeoShoulderPad(), mCopL);
+    sp.position.set(sx * (AV_ARM_OFFSET_X - 0.005 * HEX_R), AV_Y_TORSO_TOP - 0.015 * HEX_R, 0);
+    group.add(sp);
+  }
+
+  // Tall CONICAL copper helm + bright copper brow band.
+  const mHelm = new THREE.Mesh(getGeoConicalHelm(), mCopper);
+  mHelm.scale.set(1.05, 1.15, 1.05);
+  mHelm.position.set(0, AV_Y_HEAD_CTR + 0.040 * HEX_R, 0);
+  group.add(mHelm);
+  const gBrow = new THREE.BoxGeometry(0.165 * HEX_R, 0.022 * HEX_R, 0.165 * HEX_R);
+  perGeo.push(gBrow);
+  const mBrow = new THREE.Mesh(gBrow, mCopL);
+  mBrow.position.set(0, AV_Y_HEAD_CTR + 0.005 * HEX_R, 0);
+  group.add(mBrow);
+
+  // Long spear (right side), copper leaf head + butt.
+  const SP_X = AV_ARM_OFFSET_X + AV_ARM_W * 0.5 + 0.014 * HEX_R;
+  const SP_BOT = AV_Y_LEG_BOT + 0.01 * HEX_R;
+  const gShaft = new THREE.BoxGeometry(0.016 * HEX_R, 0.52 * HEX_R, 0.016 * HEX_R);
+  perGeo.push(gShaft);
+  const mShaft = new THREE.Mesh(gShaft, mWood);
+  mShaft.position.set(SP_X, SP_BOT + 0.26 * HEX_R, 0.01 * HEX_R);
+  group.add(mShaft);
+  const mTip = new THREE.Mesh(getGeoSpearTip(), mCopL);
+  mTip.position.set(SP_X, SP_BOT + 0.52 * HEX_R + 0.028 * HEX_R, 0.01 * HEX_R);
+  group.add(mTip);
+
+  // Large rectangular SHIELD (owner blazon) with a copper rim.
+  const SH_X = -(AV_ARM_OFFSET_X + AV_ARM_W * 0.5 + 0.020 * HEX_R);
+  const gSh = new THREE.BoxGeometry(0.140 * HEX_R, 0.230 * HEX_R, 0.018 * HEX_R);
+  perGeo.push(gSh);
+  const mSh = new THREE.Mesh(gSh, mOwner);
+  mSh.position.set(SH_X, AV_Y_TORSO_CTR, 0.012 * HEX_R);
+  group.add(mSh);
+  // Copper frame bars.
+  for (const [w, h, ox, oy] of [
+    [0.140, 0.018, 0, 0.106], [0.140, 0.018, 0, -0.106],
+    [0.018, 0.230, 0.065, 0], [0.018, 0.230, -0.065, 0],
+  ] as const) {
+    const gBar = new THREE.BoxGeometry(w * HEX_R, h * HEX_R, 0.020 * HEX_R);
+    perGeo.push(gBar);
+    const mBar = new THREE.Mesh(gBar, mCopL);
+    mBar.position.set(SH_X + ox * HEX_R, AV_Y_TORSO_CTR + oy * HEX_R, 0.016 * HEX_R);
+    group.add(mBar);
+  }
+
+  addGreaves(group, mCopL);
+  addSuperBanner(group, mat(COLOR_POLE_GREY, 0.35, 0.55), mOwner, mCopL, perGeo);
+  addBoots(group, mat(0x5a3c22, 0.06, 0.82));
+  addHands(group, mat(COLOR_SKIN, 0.05, 0.80));
+
+  group.userData['mats'] = mats;
+  group.userData['perTokenGeos'] = perGeo;
+  return group;
+}
+
+// ===========================================================================
+// BESPOKE NAMED UNITS — batch 3: Sumer (Gwardia Królewska), Chiny (Hu Ben Wei),
+//   Zulus (uThulwana), Inka (Królewska Gwardia)
+// ===========================================================================
+
+// --- Sumeryjska Gwardia Królewska (Sumerian Royal Guard / Gwardia Królewska Sumeru) ---
+/**
+ * Elitarna gwardia qurubuti — cięższa od buildSuperSumer:
+ *  • wysoki STOŻKOWY hełm brązowo-miedziany (wyższy niż buildSuperSumer)
+ *  • DŁUGA WŁÓCZNIA z liściowatym grotem (dłuższa niż standardowa)
+ *  • PROSTOKĄTNA TARCZA WIEŻOWA (duża, ownerColor + miedziany obramek)
+ *  • PELERYNA kaunakes (tufts) — ownerColor zamiast tealu
+ *  • SIERPOWATY MIECZ (sappara) u biodra — unikalny detal
+ *  • naramienniki + nagolenniki miedziane
+ */
+function buildSumerianRoyalGuard(ownerColor_: number): THREE.Group {
+  const { group, mats } = buildBaseAvatar(COLOR_SKIN, 0xb06a3a, ownerColor_);
+  const mat = makeMatFactory(mats);
+  const mCopper = mat(0xb06a3a,        0.48, 0.38);   // copper
+  const mCopL   = mat(0xd09848,        0.58, 0.28);   // bright copper
+  const mDark   = mat(0x5a3010,        0.25, 0.65);
+  const mOwner  = mat(ownerColor_,     0.12, 0.66);
+  const mWood   = mat(COLOR_WOOD,      0.05, 0.85);
+  const mSteel  = mat(COLOR_STEEL,     0.50, 0.40);
+  const perGeo: THREE.BufferGeometry[] = [];
+
+  // PELERYNA kaunakes (tufted, ownerColor zamiast teal — wyróżnia od buildSuperSumer)
+  const gCape = new THREE.BoxGeometry(0.16 * HEX_R, 0.24 * HEX_R, 0.012 * HEX_R);
+  perGeo.push(gCape);
+  const mCape = new THREE.Mesh(gCape, mOwner);
+  mCape.position.set(0, AV_Y_TORSO_CTR - 0.01 * HEX_R, -AV_TORSO_D * 0.5 - 0.008 * HEX_R);
+  mCape.rotation.x = 0.14;
+  group.add(mCape);
+  // Tuft-pasy na pelerynie (ciemne poziome linie)
+  for (const dy of [0.09, 0.03, -0.03, -0.09]) {
+    const gT = new THREE.BoxGeometry(0.16 * HEX_R, 0.014 * HEX_R, 0.014 * HEX_R);
+    perGeo.push(gT);
+    const mT = new THREE.Mesh(gT, mDark);
+    mT.position.set(0, AV_Y_TORSO_CTR + dy * HEX_R, -AV_TORSO_D * 0.5 - 0.009 * HEX_R);
+    group.add(mT);
+  }
+
+  // Miedziany cuirass lamellarowy
+  const mCuir = new THREE.Mesh(getGeoCuirassBox(), mCopper);
+  mCuir.scale.set(1.04, 1.02, 1.04);
+  mCuir.position.set(0, AV_Y_TORSO_CTR, 0);
+  group.add(mCuir);
+  for (const dy of [0.07, 0.0, -0.07]) {
+    const b = new THREE.Mesh(getGeoLoricaBand(), mDark);
+    b.position.set(0, AV_Y_TORSO_CTR + dy * HEX_R, 0.004 * HEX_R);
+    group.add(b);
+  }
+  // Naramienniki
+  for (const sx of [-1, 1]) {
+    const sp = new THREE.Mesh(getGeoShoulderPad(), mCopL);
+    sp.position.set(sx * (AV_ARM_OFFSET_X - 0.005 * HEX_R), AV_Y_TORSO_TOP - 0.015 * HEX_R, 0);
+    group.add(sp);
+  }
+
+  // WYSOKI STOŻKOWY HEŁM miedziano-brązowy (wyższy niż w buildSuperSumer)
+  const mHelm = new THREE.Mesh(getGeoConicalHelm(), mCopper);
+  mHelm.scale.set(1.10, 1.45, 1.10);  // wyraźnie wyższy
+  mHelm.position.set(0, AV_Y_HEAD_CTR + 0.060 * HEX_R, 0);
+  group.add(mHelm);
+  const gBrow = new THREE.BoxGeometry(0.175 * HEX_R, 0.026 * HEX_R, 0.175 * HEX_R);
+  perGeo.push(gBrow);
+  const mBrow = new THREE.Mesh(gBrow, mCopL);
+  mBrow.position.set(0, AV_Y_HEAD_CTR + 0.006 * HEX_R, 0);
+  group.add(mBrow);
+
+  // DŁUGA WŁÓCZNIA (dłuższa od standardowej — pełna wysokość super+)
+  const SP_X = AV_ARM_OFFSET_X + AV_ARM_W * 0.5 + 0.016 * HEX_R;
+  const SP_BOT = AV_Y_LEG_BOT + 0.00 * HEX_R;
+  const gShaft = new THREE.BoxGeometry(0.016 * HEX_R, 0.60 * HEX_R, 0.016 * HEX_R);
+  perGeo.push(gShaft);
+  const mShaft = new THREE.Mesh(gShaft, mWood);
+  mShaft.position.set(SP_X, SP_BOT + 0.30 * HEX_R, 0.01 * HEX_R);
+  group.add(mShaft);
+  const mTip = new THREE.Mesh(getGeoSpearTip(), mCopL);
+  mTip.scale.set(1.2, 1.5, 1.2);
+  mTip.position.set(SP_X, SP_BOT + 0.62 * HEX_R, 0.01 * HEX_R);
+  group.add(mTip);
+  // Kolec stopki
+  const gButt = new THREE.BoxGeometry(0.012 * HEX_R, 0.030 * HEX_R, 0.012 * HEX_R);
+  perGeo.push(gButt);
+  const mButt = new THREE.Mesh(gButt, mCopper);
+  mButt.position.set(SP_X, SP_BOT - 0.015 * HEX_R, 0.01 * HEX_R);
+  group.add(mButt);
+
+  // SIERPOWATY MIECZ (sappara) u biodra — unikalny detal
+  const SWX = AV_ARM_OFFSET_X * 0.3;
+  const gBlade = new THREE.BoxGeometry(0.040 * HEX_R, 0.090 * HEX_R, 0.010 * HEX_R);
+  perGeo.push(gBlade);
+  const mBlade = new THREE.Mesh(gBlade, mSteel);
+  mBlade.rotation.z = -0.45;
+  mBlade.position.set(SWX, AV_Y_TORSO_BOT + 0.04 * HEX_R, AV_TORSO_D * 0.5 + 0.012 * HEX_R);
+  group.add(mBlade);
+
+  // PROSTOKĄTNA TARCZA WIEŻOWA (duża, ownerColor + miedziany obramek)
+  const SH_X = -(AV_ARM_OFFSET_X + AV_ARM_W * 0.5 + 0.022 * HEX_R);
+  const gSh = new THREE.BoxGeometry(0.148 * HEX_R, 0.270 * HEX_R, 0.018 * HEX_R);
+  perGeo.push(gSh);
+  const mSh = new THREE.Mesh(gSh, mOwner);
+  mSh.position.set(SH_X, AV_Y_TORSO_CTR + 0.02 * HEX_R, 0.014 * HEX_R);
+  group.add(mSh);
+  for (const [w, h, ox, oy] of [
+    [0.148, 0.018, 0,      0.126], [0.148, 0.018, 0, -0.126],
+    [0.018, 0.270, 0.065,  0   ], [0.018, 0.270, -0.065, 0  ],
+  ] as const) {
+    const gBar = new THREE.BoxGeometry(w * HEX_R, h * HEX_R, 0.022 * HEX_R);
+    perGeo.push(gBar);
+    const mBar = new THREE.Mesh(gBar, mCopL);
+    mBar.position.set(SH_X + ox * HEX_R, AV_Y_TORSO_CTR + 0.02 * HEX_R + oy * HEX_R, 0.018 * HEX_R);
+    group.add(mBar);
+  }
+
+  addGreaves(group, mCopL);
+  addSuperBanner(group, mat(COLOR_POLE_GREY, 0.35, 0.55), mOwner, mCopL, perGeo);
+  addBoots(group, mat(0x5a3c22, 0.06, 0.82));
+  addHands(group, mat(COLOR_SKIN, 0.05, 0.80));
+
+  group.userData['mats'] = mats;
+  group.userData['perTokenGeos'] = perGeo;
+  return group;
+}
+
+// --- Hu Ben Wei (China, Tiger Guard / Gwardia Tygrysa) -------------------
+/**
+ * Elitarna gwardia cesarska — bardziej ozdobna niż buildSuperChina:
+ *  • pancerz LAMELOWY z ciemnych płytek + CZERWONE wiązania (zamiast czarnych)
+ *  • motyw TYGRYSA: duży pomarańczowo-czarny pysk na tarczy
+ *  • HALABARDA ji (drzewce + szerokie ostrze + kolec) lub dao w prawej ręce
+ *  • hełm z PIÓROPUSZEM (czerwono-złoty) + złota obręcz
+ *  • paski tygrysie na ramionach (pomarańcz+czarny)
+ *  • ownerColor na naramiennikach i pióropuszu
+ */
+function buildHuBenWei(ownerColor_: number): THREE.Group {
+  const { group, mats } = buildBaseAvatar(COLOR_SKIN, COLOR_LACQUER, ownerColor_);
+  const mat = makeMatFactory(mats);
+  const mLac    = mat(COLOR_LACQUER,   0.22, 0.42);   // ciemnoczerwony lamellar
+  const mRed    = mat(COLOR_RED_VIV,   0.08, 0.76);   // czerwone wiązania (zamiast czarnych w superChina)
+  const mTigOr  = mat(0xe07820,        0.15, 0.72);   // tygrys-pomarańczowy
+  const mBlack  = mat(0x1c1712,        0.16, 0.58);   // czarne paski
+  const mBrass  = mat(0xc9a23a,        0.55, 0.34);   // mosiądz hełmu
+  const mSteel  = mat(COLOR_STEEL,     0.55, 0.34);
+  const mOwner  = mat(ownerColor_,     0.16, 0.62);
+  const mWood   = mat(COLOR_WOOD,      0.05, 0.85);
+  const perGeo: THREE.BufferGeometry[] = [];
+
+  // PANCERZ LAMELOWY — lamel ciemnoczerwony + czerwone wiązania
+  const mCuir = new THREE.Mesh(getGeoCuirassBox(), mLac);
+  mCuir.scale.set(1.04, 1.04, 1.04);
+  mCuir.position.set(0, AV_Y_TORSO_CTR, 0);
+  group.add(mCuir);
+  for (const dy of [0.07, 0.0, -0.07]) {
+    const b = new THREE.Mesh(getGeoLoricaBand(), mRed);  // czerwone wiązania
+    b.position.set(0, AV_Y_TORSO_CTR + dy * HEX_R, 0.005 * HEX_R);
+    group.add(b);
+  }
+  // Paski tygrysie na ramieniu (pomarańcz + czarne pasy)
+  for (const sx of [-1, 1]) {
+    const sp = new THREE.Mesh(getGeoShoulderPad(), mOwner);
+    sp.position.set(sx * (AV_ARM_OFFSET_X - 0.005 * HEX_R), AV_Y_TORSO_TOP - 0.015 * HEX_R, 0);
+    group.add(sp);
+    // dwa czarne paski na naramienniku
+    for (const dt of [-0.012, 0.012]) {
+      const gS = new THREE.BoxGeometry(0.07 * HEX_R, 0.012 * HEX_R, 0.072 * HEX_R);
+      perGeo.push(gS);
+      const mS = new THREE.Mesh(gS, mBlack);
+      mS.position.set(sx * (AV_ARM_OFFSET_X - 0.005 * HEX_R), AV_Y_TORSO_TOP - 0.015 * HEX_R + dt * HEX_R, 0);
+      group.add(mS);
+    }
+  }
+  addPteruges(group, mRed);
+
+  // HEŁM mosiężny + PIÓROPUSZ (ownerColor + złoto)
+  const gDome = new THREE.CylinderGeometry(0.070 * HEX_R, 0.088 * HEX_R, 0.080 * HEX_R, 10, 1);
+  perGeo.push(gDome);
+  const mDome = new THREE.Mesh(gDome, mBrass);
+  mDome.position.set(0, AV_Y_HEAD_CTR + 0.022 * HEX_R, 0);
+  group.add(mDome);
+  const gBrow = new THREE.BoxGeometry(0.168 * HEX_R, 0.022 * HEX_R, 0.168 * HEX_R);
+  perGeo.push(gBrow);
+  const mBrow = new THREE.Mesh(gBrow, mBrass);
+  mBrow.position.set(0, AV_Y_HEAD_CTR + 0.000 * HEX_R, 0);
+  group.add(mBrow);
+  // PIÓROPUSZ wysoki (ownerColor + pomarańcz)
+  for (const ax of [-0.30, 0.0, 0.30]) {
+    const gP = new THREE.BoxGeometry(0.022 * HEX_R, 0.130 * HEX_R, 0.012 * HEX_R);
+    perGeo.push(gP);
+    const col = (ax === 0) ? mOwner : mTigOr;
+    const mP = new THREE.Mesh(gP, col);
+    mP.rotation.z = ax;
+    mP.position.set(Math.sin(ax) * 0.04 * HEX_R, AV_Y_HEAD_TOP + 0.085 * HEX_R, -0.006 * HEX_R);
+    group.add(mP);
+  }
+
+  // HALABARDA JI — drzewce + poziome ostrze + pionowy kolec
+  const SP_X = AV_ARM_OFFSET_X + AV_ARM_W * 0.5 + 0.016 * HEX_R;
+  const gShaft = new THREE.BoxGeometry(0.016 * HEX_R, 0.56 * HEX_R, 0.016 * HEX_R);
+  perGeo.push(gShaft);
+  const mShaft = new THREE.Mesh(gShaft, mWood);
+  mShaft.position.set(SP_X, AV_Y_LEG_BOT + 0.28 * HEX_R, 0.01 * HEX_R);
+  group.add(mShaft);
+  // Główne ostrze halabardowe (poziome)
+  const gBlade = new THREE.BoxGeometry(0.010 * HEX_R, 0.085 * HEX_R, 0.010 * HEX_R);
+  perGeo.push(gBlade);
+  const mBlade = new THREE.Mesh(gBlade, mSteel);
+  mBlade.position.set(SP_X, AV_Y_LEG_BOT + 0.58 * HEX_R, 0.01 * HEX_R);
+  group.add(mBlade);
+  // Boczne ostrze halabardowe (poziomo, typowe dla ji)
+  const gSideBl = new THREE.BoxGeometry(0.060 * HEX_R, 0.018 * HEX_R, 0.010 * HEX_R);
+  perGeo.push(gSideBl);
+  const mSideBl = new THREE.Mesh(gSideBl, mSteel);
+  mSideBl.position.set(SP_X + 0.022 * HEX_R, AV_Y_LEG_BOT + 0.55 * HEX_R, 0.01 * HEX_R);
+  group.add(mSideBl);
+  // Czerwony tassel
+  const gTas = new THREE.BoxGeometry(0.028 * HEX_R, 0.046 * HEX_R, 0.028 * HEX_R);
+  perGeo.push(gTas);
+  const mTas = new THREE.Mesh(gTas, mRed);
+  mTas.position.set(SP_X, AV_Y_LEG_BOT + 0.52 * HEX_R, 0.01 * HEX_R);
+  group.add(mTas);
+
+  // TARCZA z MOTYWEM TYGRYSA — ownerColor tło + pomarańczowy pysk tygrysa
+  const SH_X = -(AV_ARM_OFFSET_X + AV_ARM_W * 0.5 + 0.020 * HEX_R);
+  const gSh = new THREE.BoxGeometry(0.130 * HEX_R, 0.210 * HEX_R, 0.018 * HEX_R);
+  perGeo.push(gSh);
+  const mSh = new THREE.Mesh(gSh, mOwner);
+  mSh.position.set(SH_X, AV_Y_TORSO_CTR, 0.012 * HEX_R);
+  group.add(mSh);
+  // Pysk tygrysa (pomarańczowy prostokąt + czarne paski)
+  const gFace = new THREE.BoxGeometry(0.080 * HEX_R, 0.080 * HEX_R, 0.014 * HEX_R);
+  perGeo.push(gFace);
+  const mFace = new THREE.Mesh(gFace, mTigOr);
+  mFace.position.set(SH_X, AV_Y_TORSO_CTR + 0.01 * HEX_R, 0.016 * HEX_R);
+  group.add(mFace);
+  for (const dy of [0.022, -0.022]) {
+    const gSt = new THREE.BoxGeometry(0.080 * HEX_R, 0.010 * HEX_R, 0.016 * HEX_R);
+    perGeo.push(gSt);
+    const mSt = new THREE.Mesh(gSt, mBlack);
+    mSt.position.set(SH_X, AV_Y_TORSO_CTR + dy * HEX_R + 0.01 * HEX_R, 0.018 * HEX_R);
+    group.add(mSt);
+  }
+
+  addSuperBanner(group, mat(COLOR_POLE_GREY, 0.35, 0.55), mOwner, mBrass, perGeo);
+  addBoots(group, mBlack);
+  addHands(group, mat(COLOR_SKIN, 0.05, 0.80));
+
+  group.userData['mats'] = mats;
+  group.userData['perTokenGeos'] = perGeo;
+  return group;
+}
+
+// --- uThulwana (Zulu, White Shields / Białe Tarcze) -----------------------
+/**
+ * Elitarny pułk uThulwana — bardziej ozdobny niż buildSuperZulu:
+ *  • DUŻA BIAŁA owalna tarcza isihlangu (większa niż standardowa Nguni)
+ *  • IKLWA (krótka, szeroka, kłująca) + KNOBKERRIE (maczuga knotted) u pasa
+ *  • opaska z futra (isigqoko) + PIÓRO ŻURAWIA (nkwe) na głowie
+ *  • ozdoby z KROWICH OGONÓW na ramionach i nogach (biało-brązowe tufty)
+ *  • ownerColor na bandolierze + uchwycie knobkerrie
+ */
+function buildUThulwana(ownerColor_: number): THREE.Group {
+  const { group, mats } = buildBaseAvatar(COLOR_SKIN_DARK, COLOR_HIDE_RED, ownerColor_);
+  const mat = makeMatFactory(mats);
+  const mOchre  = mat(COLOR_HIDE_RED,  0.06, 0.84);
+  const mWhite  = mat(COLOR_PAINT_WHT, 0.03, 0.94);
+  const mBlack  = mat(0x1e1610,        0.05, 0.86);
+  const mFur    = mat(COLOR_FUR,       0.08, 0.82);
+  const mWood   = mat(0x7a5030,        0.05, 0.85);
+  const mOwner  = mat(ownerColor_,     0.12, 0.66);
+  const perGeo: THREE.BufferGeometry[] = [];
+
+  // Lędźwiowy (ochre) + ownerColor bandolier skośny przez pierś
+  const mLoin = new THREE.Mesh(getGeoLoincloth(), mOchre);
+  mLoin.position.set(0, AV_Y_TORSO_BOT + 0.02 * HEX_R, 0);
+  group.add(mLoin);
+  const gBand = new THREE.BoxGeometry(0.030 * HEX_R, 0.260 * HEX_R, 0.012 * HEX_R);
+  perGeo.push(gBand);
+  const mBandM = new THREE.Mesh(gBand, mOwner);
+  mBandM.rotation.z = 0.65;
+  mBandM.position.set(0, AV_Y_TORSO_CTR, AV_TORSO_D * 0.5 + 0.007 * HEX_R);
+  group.add(mBandM);
+
+  // OZDOBY Z KROWICH OGONÓW — białe tufty na ramionach i kostkach
+  for (const sx of [-AV_ARM_OFFSET_X, AV_ARM_OFFSET_X]) {
+    // ramię — biały tuft
+    const gT = new THREE.BoxGeometry(AV_ARM_W * 1.4, 0.052 * HEX_R, AV_ARM_D * 1.4);
+    perGeo.push(gT);
+    const mT = new THREE.Mesh(gT, mWhite);
+    mT.position.set(sx, AV_Y_ARM_CTR - AV_ARM_H * 0.5 + 0.06 * HEX_R, 0);
+    group.add(mT);
+    // drugi tuft nad pierwszym
+    const gT2 = new THREE.BoxGeometry(AV_ARM_W * 1.2, 0.040 * HEX_R, AV_ARM_D * 1.2);
+    perGeo.push(gT2);
+    const mT2 = new THREE.Mesh(gT2, mFur);
+    mT2.position.set(sx, AV_Y_ARM_CTR - AV_ARM_H * 0.5 + 0.11 * HEX_R, 0);
+    group.add(mT2);
+  }
+  // kostki — tufty z ogonów
+  for (const lx of [-AV_LEG_SEP - AV_LEG_W * 0.5, AV_LEG_SEP + AV_LEG_W * 0.5]) {
+    const gA = new THREE.BoxGeometry(AV_LEG_W * 1.3, 0.046 * HEX_R, AV_LEG_W * 1.3);
+    perGeo.push(gA);
+    const mA = new THREE.Mesh(gA, mWhite);
+    mA.position.set(lx, AV_Y_LEG_BOT + 0.06 * HEX_R, 0);
+    group.add(mA);
+  }
+
+  // OPASKA FUTRA (isigqoko) + PIÓRO ŻURAWIA na głowie
+  const gHat = new THREE.BoxGeometry(0.152 * HEX_R, 0.032 * HEX_R, 0.152 * HEX_R);
+  perGeo.push(gHat);
+  const mHat = new THREE.Mesh(gHat, mFur);
+  mHat.position.set(0, AV_Y_HEAD_TOP + 0.006 * HEX_R, 0);
+  group.add(mHat);
+  // Pióro żurawia (nkwe) — wąskie, białe, lekko skośne ku tyłowi
+  const gPFeat = new THREE.BoxGeometry(0.016 * HEX_R, 0.190 * HEX_R, 0.010 * HEX_R);
+  perGeo.push(gPFeat);
+  const mPFeat = new THREE.Mesh(gPFeat, mWhite);
+  mPFeat.rotation.z = 0.12;
+  mPFeat.position.set(0.008 * HEX_R, AV_Y_HEAD_TOP + 0.120 * HEX_R, -0.018 * HEX_R);
+  group.add(mPFeat);
+  // Czarny czubek pióra
+  const gPTip = new THREE.BoxGeometry(0.014 * HEX_R, 0.040 * HEX_R, 0.008 * HEX_R);
+  perGeo.push(gPTip);
+  const mPTip = new THREE.Mesh(gPTip, mBlack);
+  mPTip.rotation.z = 0.12;
+  mPTip.position.set(0.010 * HEX_R, AV_Y_HEAD_TOP + 0.205 * HEX_R, -0.018 * HEX_R);
+  group.add(mPTip);
+
+  // IKLWA — krótka kłująca włócznia (prawa ręka)
+  const SP_X = AV_ARM_OFFSET_X + AV_ARM_W * 0.5 + 0.014 * HEX_R;
+  const gShaft = new THREE.BoxGeometry(0.018 * HEX_R, 0.30 * HEX_R, 0.018 * HEX_R);
+  perGeo.push(gShaft);
+  const mShaft = new THREE.Mesh(gShaft, mWood);
+  mShaft.position.set(SP_X, AV_Y_TORSO_CTR + 0.02 * HEX_R, 0.01 * HEX_R);
+  group.add(mShaft);
+  const gBlade = new THREE.BoxGeometry(0.042 * HEX_R, 0.115 * HEX_R, 0.014 * HEX_R);
+  perGeo.push(gBlade);
+  const mBlade = new THREE.Mesh(gBlade, mat(COLOR_STEEL, 0.50, 0.40));
+  mBlade.position.set(SP_X, AV_Y_TORSO_CTR + 0.02 * HEX_R + 0.152 * HEX_R + 0.058 * HEX_R, 0.01 * HEX_R);
+  group.add(mBlade);
+
+  // KNOBKERRIE (maczuga knotted) u pasa — lewa strona biodra
+  const KX = -(AV_ARM_OFFSET_X * 0.5);
+  const gKS = new THREE.BoxGeometry(0.014 * HEX_R, 0.120 * HEX_R, 0.014 * HEX_R);
+  perGeo.push(gKS);
+  const mKS = new THREE.Mesh(gKS, mWood);
+  mKS.rotation.z = 0.30;
+  mKS.position.set(KX, AV_Y_TORSO_BOT + 0.06 * HEX_R, 0.012 * HEX_R);
+  group.add(mKS);
+  const gKnob = new THREE.SphereGeometry(0.022 * HEX_R, 8, 6);
+  perGeo.push(gKnob);
+  const mKnob = new THREE.Mesh(gKnob, mOwner);
+  mKnob.position.set(KX + 0.016 * HEX_R, AV_Y_TORSO_BOT + 0.12 * HEX_R, 0.014 * HEX_R);
+  group.add(mKnob);
+
+  // DUŻA BIAŁA OWALNA TARCZA isihlangu (większa niż w buildSuperZulu)
+  const SH_X = -(AV_ARM_OFFSET_X + AV_ARM_W * 0.5 + 0.022 * HEX_R);
+  const mShield = new THREE.Mesh(getGeoOvalShield(), mWhite);
+  mShield.rotation.z = Math.PI / 2;
+  mShield.scale.set(1.0, 1.50, 2.30);   // wyraźnie większa
+  mShield.position.set(SH_X, AV_Y_TORSO_CTR + 0.02 * HEX_R, 0.012 * HEX_R);
+  group.add(mShield);
+  // Czarne plamy na skórze (wzór plemienny uThulwana)
+  for (const dy of [0.095, 0.0, -0.095]) {
+    const gPatch = new THREE.BoxGeometry(0.028 * HEX_R, 0.078 * HEX_R, 0.022 * HEX_R);
+    perGeo.push(gPatch);
+    const mPatch = new THREE.Mesh(gPatch, mBlack);
+    mPatch.position.set(SH_X + 0.010 * HEX_R, AV_Y_TORSO_CTR + 0.02 * HEX_R + dy * HEX_R, 0.014 * HEX_R);
+    group.add(mPatch);
+  }
+  // Drewniany kij (spine) tarczy
+  const gSpine = new THREE.BoxGeometry(0.018 * HEX_R, 0.32 * HEX_R, 0.022 * HEX_R);
+  perGeo.push(gSpine);
+  const mSpine = new THREE.Mesh(gSpine, mWood);
+  mSpine.position.set(SH_X + 0.014 * HEX_R, AV_Y_TORSO_CTR + 0.02 * HEX_R, 0.014 * HEX_R);
+  group.add(mSpine);
+
+  addSuperBanner(group, mat(0x6b4a26, 0.10, 0.70), mOwner, mWhite, perGeo);
+  addBoots(group, mat(COLOR_SKIN_DARK, 0.05, 0.85));
+  addHands(group, mat(COLOR_SKIN_DARK, 0.05, 0.85));
+
+  group.userData['mats'] = mats;
+  group.userData['perTokenGeos'] = perGeo;
+  return group;
+}
+
+// --- Inkaski Royal Guard (Królewska Gwardia Inkaów) -----------------------
+/**
+ * Królewska gwardia inkaskiego Sapa Inki — BOGATSZY niż buildSuperInca/buildMaceWarrior:
+ *  • PIÓROPUSZ-KORONA (kolorowe tropikalne pióra + złote elementy)
+ *  • ZŁOTY DYSK SŁOŃCA (Punchao) na piersi
+ *  • PIKOWANY PANCERZ z ZŁOTYMI PŁYTKAMI (ichcahuipilli ze złotem)
+ *  • MACZUGA z gwiaździstą głowicą ZŁOTĄ (zamiast kamiennej jak w buildSuperInca)
+ *  • TUMI (ofiarny nóż półksiężycowy) u pasa jako atrybut królewski
+ *  • prostokątna tarcza z GEOMETRYCZNYM WZOREM (tokapu) — ownerColor
+ *  • złoto i ownerColor dominują
+ */
+function buildInkaRoyalGuard(ownerColor_: number): THREE.Group {
+  const { group, mats } = buildBaseAvatar(COLOR_SKIN_DARK, COLOR_OCHRE, ownerColor_);
+  const mat = makeMatFactory(mats);
+  const mOchre  = mat(COLOR_OCHRE,     0.06, 0.80);
+  const mGold   = mat(COLOR_GOLD_BR,   0.62, 0.28);   // złoto jaśniejsze
+  const mRed    = mat(COLOR_RED_VIV,   0.06, 0.78);
+  const mTeal   = mat(COLOR_TEAL,      0.06, 0.78);
+  const mGreen  = mat(COLOR_FOREST,    0.06, 0.78);
+  const mFeath  = mat(COLOR_FEATHER,   0.03, 0.92);
+  const mOwner  = mat(ownerColor_,     0.16, 0.62);
+  const mWood   = mat(0x6b4a26,        0.05, 0.85);
+  const mSteel  = mat(COLOR_STEEL,     0.50, 0.40);
+  const perGeo: THREE.BufferGeometry[] = [];
+
+  // PIKOWANY PANCERZ (ichcahuipilli) — ochre z poziomymi złotymi pasami
+  const mTunic = new THREE.Mesh(getGeoCuirassBox(), mOchre);
+  mTunic.scale.set(1.02, 1.04, 1.02);
+  mTunic.position.set(0, AV_Y_TORSO_CTR, 0);
+  group.add(mTunic);
+  // Złote płytki-pasy na pancerzu
+  for (const dy of [0.07, 0.0, -0.07]) {
+    const gGP = new THREE.BoxGeometry(0.190 * HEX_R, 0.020 * HEX_R, 0.135 * HEX_R);
+    perGeo.push(gGP);
+    const mGP = new THREE.Mesh(gGP, mGold);
+    mGP.position.set(0, AV_Y_TORSO_CTR + dy * HEX_R, 0.003 * HEX_R);
+    group.add(mGP);
+  }
+  // Krawędź złota na ramionach
+  for (const sx of [-1, 1]) {
+    const sp = new THREE.Mesh(getGeoShoulderPad(), mGold);
+    sp.position.set(sx * (AV_ARM_OFFSET_X - 0.005 * HEX_R), AV_Y_TORSO_TOP - 0.015 * HEX_R, 0);
+    group.add(sp);
+  }
+
+  // ZŁOTY DYSK SŁOŃCA (Punchao) na piersi
+  const gDisc = new THREE.CylinderGeometry(0.052 * HEX_R, 0.052 * HEX_R, 0.014 * HEX_R, 14, 1);
+  perGeo.push(gDisc);
+  const mDisc = new THREE.Mesh(gDisc, mGold);
+  mDisc.rotation.x = Math.PI / 2;
+  mDisc.position.set(0, AV_Y_TORSO_CTR + 0.06 * HEX_R, AV_TORSO_D * 0.5 + 0.012 * HEX_R);
+  group.add(mDisc);
+  // Promienie słońca (8 krótkich złotych prostokątów radialnie)
+  for (let i = 0; i < 8; i++) {
+    const ang = (i * Math.PI * 2) / 8;
+    const gRay = new THREE.BoxGeometry(0.014 * HEX_R, 0.040 * HEX_R, 0.010 * HEX_R);
+    perGeo.push(gRay);
+    const mRay = new THREE.Mesh(gRay, mGold);
+    mRay.rotation.z = ang;
+    mRay.position.set(
+      Math.sin(ang) * 0.046 * HEX_R,
+      AV_Y_TORSO_CTR + 0.06 * HEX_R + Math.cos(ang) * 0.046 * HEX_R,
+      AV_TORSO_D * 0.5 + 0.012 * HEX_R
+    );
+    group.add(mRay);
+  }
+  addTunicHem(group, mGold);
+
+  // PIÓROPUSZ-KORONA (wysoki, kolorowy, z ZŁOTĄ PODSTAWĄ)
+  const gCrown = new THREE.BoxGeometry(0.165 * HEX_R, 0.038 * HEX_R, 0.165 * HEX_R);
+  perGeo.push(gCrown);
+  const mCrown = new THREE.Mesh(gCrown, mGold);
+  mCrown.position.set(0, AV_Y_HEAD_TOP + 0.010 * HEX_R, 0);
+  group.add(mCrown);
+  // Złote zęby korony
+  for (const px of [-0.048, -0.016, 0.016, 0.048]) {
+    const gTooth = new THREE.BoxGeometry(0.022 * HEX_R, 0.028 * HEX_R, 0.022 * HEX_R);
+    perGeo.push(gTooth);
+    const mTooth = new THREE.Mesh(gTooth, mGold);
+    mTooth.position.set(px * HEX_R, AV_Y_HEAD_TOP + 0.030 * HEX_R, 0);
+    group.add(mTooth);
+  }
+  // Pióra — gęsty wachlarz kolorowych piór
+  const featColors = [mRed, mTeal, mGreen, mFeath, mOwner, mRed, mTeal, mGreen];
+  for (let fi = 0; fi < 8; fi++) {
+    const ax = (fi - 3.5) * 0.16;
+    const gF = new THREE.BoxGeometry(0.016 * HEX_R, 0.140 * HEX_R, 0.010 * HEX_R);
+    perGeo.push(gF);
+    const mF = new THREE.Mesh(gF, featColors[fi]);
+    mF.rotation.z = ax;
+    mF.position.set(Math.sin(ax) * 0.050 * HEX_R, AV_Y_HEAD_TOP + 0.100 * HEX_R, -0.006 * HEX_R);
+    group.add(mF);
+  }
+
+  // MACZUGA ZŁOTA z gwiaździstą głowicą (w prawej ręce — jak buildSuperInca ale gold+)
+  const M_X = AV_ARM_OFFSET_X + AV_ARM_W * 0.5 + 0.018 * HEX_R;
+  const mHaft = new THREE.Mesh(getGeoClubHandle(), mWood);
+  mHaft.position.set(M_X, AV_Y_TORSO_TOP + 0.02 * HEX_R, 0.01 * HEX_R);
+  group.add(mHaft);
+  const gHub = new THREE.BoxGeometry(0.050 * HEX_R, 0.050 * HEX_R, 0.050 * HEX_R);
+  perGeo.push(gHub);
+  const mHub = new THREE.Mesh(gHub, mGold);
+  const hubY = AV_Y_TORSO_TOP + 0.175 * HEX_R + 0.025 * HEX_R;
+  mHub.position.set(M_X, hubY, 0.01 * HEX_R);
+  group.add(mHub);
+  for (const ang of [0, Math.PI/3, (2*Math.PI)/3, Math.PI, (4*Math.PI)/3, (5*Math.PI)/3]) {
+    const gPt = new THREE.BoxGeometry(0.054 * HEX_R, 0.018 * HEX_R, 0.018 * HEX_R);
+    perGeo.push(gPt);
+    const mPt = new THREE.Mesh(gPt, mGold);
+    mPt.rotation.z = ang;
+    mPt.position.set(M_X + Math.cos(ang) * 0.032 * HEX_R, hubY + Math.sin(ang) * 0.032 * HEX_R, 0.01 * HEX_R);
+    group.add(mPt);
+  }
+
+  // TUMI (nóż półksiężycowy) u pasa — unikalny atrybut królewski
+  const TUX = AV_ARM_OFFSET_X * 0.25;
+  const gTumi = new THREE.BoxGeometry(0.050 * HEX_R, 0.030 * HEX_R, 0.010 * HEX_R);
+  perGeo.push(gTumi);
+  const mTumi = new THREE.Mesh(gTumi, mGold);
+  mTumi.rotation.z = 0.25;
+  mTumi.position.set(-TUX, AV_Y_TORSO_BOT + 0.03 * HEX_R, AV_TORSO_D * 0.5 + 0.012 * HEX_R);
+  group.add(mTumi);
+  // Półksiężycowe ostrze (dolna część)
+  const gTBl = new THREE.BoxGeometry(0.042 * HEX_R, 0.040 * HEX_R, 0.010 * HEX_R);
+  perGeo.push(gTBl);
+  const mTBl = new THREE.Mesh(gTBl, mSteel);
+  mTBl.rotation.z = 0.25;
+  mTBl.position.set(-TUX + 0.002 * HEX_R, AV_Y_TORSO_BOT + 0.060 * HEX_R, AV_TORSO_D * 0.5 + 0.012 * HEX_R);
+  group.add(mTBl);
+
+  // TARCZA prostokątna z geometrycznym wzorem (tokapu) — ownerColor + złote pasy
+  const SH_X = -(AV_ARM_OFFSET_X + AV_ARM_W * 0.5 + 0.018 * HEX_R);
+  const gSh = new THREE.BoxGeometry(0.135 * HEX_R, 0.210 * HEX_R, 0.018 * HEX_R);
+  perGeo.push(gSh);
+  const mSh = new THREE.Mesh(gSh, mOwner);
+  mSh.position.set(SH_X, AV_Y_TORSO_CTR, 0.012 * HEX_R);
+  group.add(mSh);
+  // Złote pasy tokapu (geometryczny wzór)
+  for (const dy of [0.055, 0.0, -0.055]) {
+    const gP = new THREE.BoxGeometry(0.135 * HEX_R, 0.014 * HEX_R, 0.020 * HEX_R);
+    perGeo.push(gP);
+    const mP = new THREE.Mesh(gP, mGold);
+    mP.position.set(SH_X, AV_Y_TORSO_CTR + dy * HEX_R, 0.016 * HEX_R);
+    group.add(mP);
+  }
+  // Złoty rim
+  const gRim = new THREE.BoxGeometry(0.135 * HEX_R, 0.012 * HEX_R, 0.022 * HEX_R);
+  perGeo.push(gRim);
+  const mRim = new THREE.Mesh(gRim, mGold);
+  mRim.position.set(SH_X, AV_Y_TORSO_CTR + 0.100 * HEX_R, 0.018 * HEX_R);
+  group.add(mRim);
+  const gRimB = new THREE.BoxGeometry(0.135 * HEX_R, 0.012 * HEX_R, 0.022 * HEX_R);
+  perGeo.push(gRimB);
+  const mRimB = new THREE.Mesh(gRimB, mGold);
+  mRimB.position.set(SH_X, AV_Y_TORSO_CTR - 0.100 * HEX_R, 0.018 * HEX_R);
+  group.add(mRimB);
+
+  addSuperBanner(group, mat(0x6b4a26, 0.10, 0.70), mOwner, mGold, perGeo);
+  addBoots(group, mat(COLOR_SKIN_DARK, 0.05, 0.85));
+  addHands(group, mat(COLOR_SKIN_DARK, 0.05, 0.85));
+
+  group.userData['mats'] = mats;
+  group.userData['perTokenGeos'] = perGeo;
+  return group;
+}
+
+// ===========================================================================
+// CULTURE OVERRIDES for REGULAR (non-super) units
+//
+// Lightly differentiates obvious culture variants of a shared category so two
+// same-category units of different cultures are not identical.  Implemented as
+// SMALL ADDITIVE meshes (a distinguishing headgear / shield emblem / colour
+// patch) layered on top of the already-built generic model — never a rebuild.
+// Materials are appended to the model's tracked mats list and any new geometry
+// to perTokenGeos, so disposal still covers them.
+// ===========================================================================
+
+function applyCultureOverrides(group: THREE.Group, category: string, culture: Culture, ownerColor_: number): void {
+  if (culture === 'neutral') return;
+  // Mounted / naval models place their rider/body at non-standard anchors (and
+  // konnica is rotated 180° about Y), so the foot-soldier head/torso anchors
+  // used below would float.  Skip additive overrides for those categories;
+  // they keep the generic culture-neutral model (still correct, just not
+  // culture-tinted).  Foot units use the standard avatar anchors and are safe.
+  if (category === 'konnica' || category === 'rydwan' || category === 'galera') return;
+
+  const mats = (group.userData['mats'] as THREE.Material[]) ?? [];
+  const perGeo = (group.userData['perTokenGeos'] as THREE.BufferGeometry[]) ?? [];
+  const mat = makeMatFactory(mats);
+
+  // A small culture emblem patch on the torso front (house colour) — cheap,
+  // always-visible marker that the unit belongs to a specific culture.
+  const house = cultureHouseColor(culture);
+  if (house !== 0x000000) {
+    const gEm = new THREE.BoxGeometry(0.05 * HEX_R, 0.05 * HEX_R, 0.010 * HEX_R);
+    perGeo.push(gEm);
+    const mEm = new THREE.Mesh(gEm, mat(house, 0.10, 0.70));
+    mEm.position.set(0.045 * HEX_R, AV_Y_TORSO_CTR - 0.05 * HEX_R, AV_TORSO_D * 0.5 + 0.012 * HEX_R);
+    group.add(mEm);
+  }
+
+  // Per-culture distinguishing headgear / accent.  Kept tiny and additive so
+  // the silhouette stays category-correct; only the FLAVOUR changes.
+  switch (culture) {
+    case 'egipt': {
+      // A blue-and-gold striped brow cloth (nemes hint) sitting low on the head.
+      const mBlue = mat(COLOR_WOAD,   0.10, 0.66);
+      const mGold = mat(COLOR_GOLD_BR, 0.55, 0.34);
+      const gBrow = new THREE.BoxGeometry(0.150 * HEX_R, 0.040 * HEX_R, 0.150 * HEX_R);
+      perGeo.push(gBrow);
+      const mBrow = new THREE.Mesh(gBrow, mBlue);
+      mBrow.position.set(0, AV_Y_HEAD_CTR + 0.052 * HEX_R, 0);
+      group.add(mBrow);
+      for (const dx of [-0.04, 0.0, 0.04]) {
+        const gS = new THREE.BoxGeometry(0.014 * HEX_R, 0.040 * HEX_R, 0.012 * HEX_R);
+        perGeo.push(gS);
+        const mS = new THREE.Mesh(gS, mGold);
+        mS.position.set(dx * HEX_R, AV_Y_HEAD_CTR + 0.052 * HEX_R, AV_HEAD_S * 0.5 + 0.004 * HEX_R);
+        group.add(mS);
+      }
+      break;
+    }
+    case 'zulu': {
+      // A small white-feather tuft + a black cowhide patch on any shield-bearer.
+      const mWhite = mat(COLOR_PAINT_WHT, 0.03, 0.92);
+      const gP = new THREE.BoxGeometry(0.018 * HEX_R, 0.075 * HEX_R, 0.010 * HEX_R);
+      perGeo.push(gP);
+      const mP = new THREE.Mesh(gP, mWhite);
+      mP.position.set(0, AV_Y_HEAD_TOP + 0.050 * HEX_R, -0.01 * HEX_R);
+      group.add(mP);
+      break;
+    }
+    case 'chiny': {
+      // A small lacquer-red helmet knob / topknot cap.
+      const mLac = mat(COLOR_LACQUER, 0.20, 0.45);
+      const gK = new THREE.BoxGeometry(0.026 * HEX_R, 0.060 * HEX_R, 0.026 * HEX_R);
+      perGeo.push(gK);
+      const mK = new THREE.Mesh(gK, mLac);
+      mK.position.set(0, AV_Y_HEAD_TOP + 0.060 * HEX_R, 0);
+      group.add(mK);
+      break;
+    }
+    case 'inka': {
+      // A pair of small colourful feathers in an ochre band.
+      const mRed = mat(COLOR_RED_VIV, 0.06, 0.78);
+      const mTeal = mat(COLOR_TEAL,   0.06, 0.78);
+      for (const [ax, m] of [[-0.25, mRed], [0.25, mTeal]] as const) {
+        const gF = new THREE.BoxGeometry(0.016 * HEX_R, 0.075 * HEX_R, 0.010 * HEX_R);
+        perGeo.push(gF);
+        const mF = new THREE.Mesh(gF, m);
+        mF.rotation.z = ax;
+        mF.position.set(Math.sin(ax) * 0.03 * HEX_R, AV_Y_HEAD_TOP + 0.050 * HEX_R, -0.01 * HEX_R);
+        group.add(mF);
+      }
+      break;
+    }
+    case 'grecja': {
+      // A crimson crest accent atop whatever helm the category drew.
+      const mCr = mat(COLOR_CRIMSON, 0.08, 0.74);
+      const gC = new THREE.BoxGeometry(0.020 * HEX_R, 0.060 * HEX_R, 0.080 * HEX_R);
+      perGeo.push(gC);
+      const mC = new THREE.Mesh(gC, mCr);
+      mC.position.set(0, AV_Y_HEAD_TOP + 0.060 * HEX_R, 0);
+      group.add(mC);
+      break;
+    }
+    case 'rzym': {
+      // A short transverse red crest accent.
+      const mCr = mat(COLOR_RED_VIV, 0.08, 0.74);
+      const gC = new THREE.BoxGeometry(0.110 * HEX_R, 0.055 * HEX_R, 0.022 * HEX_R);
+      perGeo.push(gC);
+      const mC = new THREE.Mesh(gC, mCr);
+      mC.position.set(0, AV_Y_HEAD_TOP + 0.058 * HEX_R, 0);
+      group.add(mC);
+      break;
+    }
+    case 'sumer': {
+      // A bright copper brow band.
+      const mCop = mat(0xc8843e, 0.55, 0.32);
+      const gB = new THREE.BoxGeometry(0.150 * HEX_R, 0.020 * HEX_R, 0.150 * HEX_R);
+      perGeo.push(gB);
+      const mB = new THREE.Mesh(gB, mCop);
+      mB.position.set(0, AV_Y_HEAD_CTR + 0.048 * HEX_R, 0);
+      group.add(mB);
+      break;
+    }
+    default:
+      break;
+  }
+
+  // Persist the (possibly grown) tracking arrays back onto the group.
+  group.userData['mats'] = mats;
+  group.userData['perTokenGeos'] = perGeo;
+}
+
+// ---------------------------------------------------------------------------
+// UnitRenderer
+// ---------------------------------------------------------------------------
+
+export class UnitRenderer {
+  private scene: THREE.Scene;
+
+  /** Fast hex lookup by "q,r" key. */
+  private hexGrid: Map<string, Hex>;
+
+  /** Active unit tokens keyed by unit.id. */
+  private tokens: Map<string, THREE.Object3D> = new Map();
+
+  /** Materials created per token (stored for disposal). */
+  private tokenMaterials: Map<string, THREE.Material[]> = new Map();
+
+  /** Per-token unique geometries (stored for disposal -- not shared singletons). */
+  private tokenGeos: Map<string, THREE.BufferGeometry[]> = new Map();
+
+  /** Current highlight group (all discs live inside). */
+  private highlightGroup: THREE.Group | null = null;
+
+  /** Materials created for highlights (stored for disposal). */
+  private highlightMaterials: THREE.MeshBasicMaterial[] = [];
+
+  /** All Three.js objects in the current path route. */
+  private routeObjects: THREE.Object3D[] = [];
+
+  constructor(scene: THREE.Scene, map: GameMap) {
+    this.scene = scene;
+    this.hexGrid = new Map<string, Hex>(Object.entries(map.hexes));
+  }
+
+  // --------------------------------------------------------------------------
+  // Public API
+  // --------------------------------------------------------------------------
+
+  /**
+   * Synchronise rendered tokens with the current unit list.
+   * If a cached token's category differs from unit.category, rebuilds it.
+   * Stores category on group.userData['cat'] to detect changes.
+   */
+  sync(units: RuntimeUnit[]): void {
+    const presentIds = new Set<string>();
+
+    for (const unit of units) {
+      presentIds.add(unit.id);
+
+      const key = `${unit.q},${unit.r}`;
+      const hex = this.hexGrid.get(key);
+      const topY = hex ? terrainTopY(hex) : 0;
+      const yBase = topY + TOKEN_LIFT;
+
+      const cat = unit.category ?? 'domyslny';
+
+      if (this.tokens.has(unit.id)) {
+        const obj = this.tokens.get(unit.id)!;
+
+        // Rebuild if category changed
+        if (obj.userData['cat'] !== cat) {
+          this.scene.remove(obj);
+          this._disposeToken(unit.id, obj);
+          this.tokens.delete(unit.id);
+          this.tokenMaterials.delete(unit.id);
+          this.tokenGeos.delete(unit.id);
+
+          const color = ownerColor(unit.ownerId);
+          // Pass typeId so the model picks up per-culture / per-name distinctions
+          // (e.g. Legionista vs Falanga vs uThulwana). buildUnitModel falls back
+          // to the generic category model when the name carries no marker.
+          const group = buildUnitModel(cat, color, unit.typeId);
+          const { x, z } = axialToWorld(unit.q, unit.r, HEX_R);
+          group.position.set(x, yBase, z);
+          group.userData['unitId'] = unit.id;
+          group.userData['cat']    = cat;
+
+          this._registerToken(unit.id, group);
+          this.scene.add(group);
+        } else {
+          // Just reposition
+          const { x, z } = axialToWorld(unit.q, unit.r, HEX_R);
+          obj.position.set(x, yBase, z);
+        }
+      } else {
+        // Create new token
+        const color = ownerColor(unit.ownerId);
+        // Pass typeId so the model picks up per-culture / per-name distinctions
+        // (e.g. Legionista vs Falanga vs uThulwana). buildUnitModel falls back
+        // to the generic category model when the name carries no marker.
+        const group = buildUnitModel(cat, color, unit.typeId);
+
+        const { x, z } = axialToWorld(unit.q, unit.r, HEX_R);
+        group.position.set(x, yBase, z);
+        group.userData['unitId'] = unit.id;
+        group.userData['cat']    = cat;
+
+        this._registerToken(unit.id, group);
+        this.scene.add(group);
+      }
+    }
+
+    // Remove tokens whose units are gone
+    for (const [id, obj] of this.tokens) {
+      if (!presentIds.has(id)) {
+        this.scene.remove(obj);
+        this._disposeToken(id, obj);
+        this.tokens.delete(id);
+        this.tokenMaterials.delete(id);
+        this.tokenGeos.delete(id);
+      }
+    }
+  }
+
+  /**
+   * Move a unit token to an arbitrary world position.
+   * Used by the movement animator.
+   */
+  setTokenWorldPosition(id: string, x: number, y: number, z: number): void {
+    const obj = this.tokens.get(id);
+    if (obj) {
+      obj.position.set(x, y, z);
+    }
+  }
+
+  /**
+   * Return the terrain top Y for a hex at axial coordinates (q, r).
+   * Returns 0 if the hex does not exist in the grid.
+   */
+  topYAt(q: number, r: number): number {
+    const hex = this.hexGrid.get(`${q},${r}`);
+    return hex ? terrainTopY(hex) : 0;
+  }
+
+  /**
+   * Draw translucent hex discs over the given set of hexes.
+   * Replaces any previously drawn highlights.
+   */
+  setHighlight(hexes: Set<string>): void {
+    this.clearHighlight();
+
+    if (hexes.size === 0) return;
+
+    const group = new THREE.Group();
+    const mat = new THREE.MeshBasicMaterial({
+      color: HIGHLIGHT_COLOR,
+      transparent: true,
+      opacity: HIGHLIGHT_OPACITY,
+      depthWrite: false,
+    });
+    this.highlightMaterials.push(mat);
+
+    for (const key of hexes) {
+      const parts = key.split(',');
+      if (parts.length !== 2) continue;
+      const q = parseInt(parts[0]!, 10);
+      const r = parseInt(parts[1]!, 10);
+      if (isNaN(q) || isNaN(r)) continue;
+
+      const hex = this.hexGrid.get(key);
+      const topY = hex ? terrainTopY(hex) : 0;
+
+      const disc = new THREE.Mesh(getGeoHighlight(), mat);
+      const { x, z } = axialToWorld(q, r, HEX_R);
+      disc.position.set(x, topY + HIGHLIGHT_LIFT, z);
+      group.add(disc);
+    }
+
+    this.scene.add(group);
+    this.highlightGroup = group;
+  }
+
+  /** Remove all highlight discs. */
+  clearHighlight(): void {
+    if (this.highlightGroup) {
+      this.scene.remove(this.highlightGroup);
+      for (const m of this.highlightMaterials) {
+        m.dispose();
+      }
+      this.highlightMaterials = [];
+      this.highlightGroup = null;
+    }
+  }
+
+  /**
+   * Draw a movement route line from hexes[0] to hexes[hexes.length-1].
+   * Replaces any previously drawn route.
+   */
+  setPathRoute(hexes: { q: number; r: number }[]): void {
+    this.clearPathRoute();
+
+    if (hexes.length < 2) return;
+
+    const matGold = new THREE.MeshBasicMaterial({
+      color: ROUTE_COLOR,
+      transparent: true,
+      opacity: ROUTE_OPACITY,
+      depthWrite: false,
+    });
+    const matDest = new THREE.MeshBasicMaterial({
+      color: DEST_COLOR,
+      transparent: true,
+      opacity: ROUTE_OPACITY,
+      depthWrite: false,
+    });
+
+    const points: THREE.Vector3[] = hexes.map(({ q, r }) => {
+      const { x, z } = axialToWorld(q, r, HEX_R);
+      const y = this.topYAt(q, r) + ROUTE_Y_LIFT;
+      return new THREE.Vector3(x, y, z);
+    });
+
+    const curve = new THREE.CatmullRomCurve3(points);
+    const tubeGeo = new THREE.TubeGeometry(curve, TUBE_SEGMENTS, TUBE_RADIUS, 8, false);
+    const tube = new THREE.Mesh(tubeGeo, matGold);
+    tube.userData['routeGeoOwner'] = true;
+    tube.userData['routeMat'] = matGold;
+    this.scene.add(tube);
+    this.routeObjects.push(tube);
+
+    let dotGeo: THREE.SphereGeometry | null = null;
+    for (let i = 1; i < points.length - 1; i++) {
+      if (dotGeo === null) {
+        dotGeo = new THREE.SphereGeometry(DOT_RADIUS, 8, 6);
+      }
+      const dot = new THREE.Mesh(dotGeo, matGold);
+      dot.position.copy(points[i]!);
+      if (i === 1) {
+        dot.userData['routeGeoOwner'] = true;
+      }
+      this.scene.add(dot);
+      this.routeObjects.push(dot);
+    }
+
+    const torusGeo = new THREE.TorusGeometry(DEST_TORUS_R, DEST_TUBE_R, 8, 24);
+    const destMarker = new THREE.Mesh(torusGeo, matDest);
+    destMarker.position.copy(points[points.length - 1]!);
+    destMarker.rotation.x = Math.PI / 2;
+    destMarker.userData['routeGeoOwner'] = true;
+    destMarker.userData['routeMat'] = matDest;
+    this.scene.add(destMarker);
+    this.routeObjects.push(destMarker);
+  }
+
+  /**
+   * Remove the current path route from the scene and dispose all GPU resources.
+   */
+  clearPathRoute(): void {
+    if (this.routeObjects.length === 0) return;
+
+    const matsToDispose = new Set<THREE.Material>();
+
+    for (const obj of this.routeObjects) {
+      this.scene.remove(obj);
+      if (obj instanceof THREE.Mesh) {
+        if (obj.userData['routeGeoOwner'] === true) {
+          obj.geometry.dispose();
+        }
+        const mat = obj.userData['routeMat'] as THREE.Material | undefined;
+        if (mat !== undefined) {
+          matsToDispose.add(mat);
+        }
+      }
+    }
+
+    for (const m of matsToDispose) {
+      m.dispose();
+    }
+
+    this.routeObjects = [];
+  }
+
+  /** Remove all unit tokens and highlights; dispose all GPU resources. */
+  dispose(): void {
+    this.clearPathRoute();
+    this.clearHighlight();
+
+    for (const [id, obj] of this.tokens) {
+      this.scene.remove(obj);
+      this._disposeToken(id, obj);
+    }
+    this.tokens.clear();
+    this.tokenMaterials.clear();
+    this.tokenGeos.clear();
+
+    // Dispose shared singleton geometries
+    geoAvLeg?.dispose();    geoAvLeg    = null;
+    geoAvTorso?.dispose();  geoAvTorso  = null;
+    geoAvArm?.dispose();    geoAvArm    = null;
+    geoAvNeck?.dispose();   geoAvNeck   = null;
+    geoAvHead?.dispose();   geoAvHead   = null;
+    geoAvEye?.dispose();    geoAvEye    = null;
+
+    geoHighlight?.dispose(); geoHighlight = null;
+
+    geoHatBrim?.dispose();      geoHatBrim      = null;
+    geoHatCrown?.dispose();     geoHatCrown     = null;
+    geoBackpack?.dispose();     geoBackpack     = null;
+    geoSash?.dispose();         geoSash         = null;
+    geoCuirassBox?.dispose();   geoCuirassBox   = null;
+    geoCuirassGap?.dispose();   geoCuirassGap   = null;
+    geoShoulderPad?.dispose();  geoShoulderPad  = null;
+    geoHelmetDome?.dispose();   geoHelmetDome   = null;
+    geoHelmetCrest?.dispose();  geoHelmetCrest  = null;
+    geoHelmetSimple?.dispose(); geoHelmetSimple = null;
+    geoSwordBlade?.dispose();   geoSwordBlade   = null;
+    geoSwordCross?.dispose();   geoSwordCross   = null;
+    geoSwordGrip?.dispose();    geoSwordGrip    = null;
+    geoShieldRim?.dispose();    geoShieldRim    = null;
+    geoShieldBoss?.dispose();   geoShieldBoss   = null;
+    geoSmallShield?.dispose();  geoSmallShield  = null;
+    geoSpearShaft?.dispose();   geoSpearShaft   = null;
+    geoSpearTip?.dispose();     geoSpearTip     = null;
+    geoJavShaft?.dispose();     geoJavShaft     = null;
+    geoJavTip?.dispose();       geoJavTip       = null;
+    geoQuiver?.dispose();       geoQuiver       = null;
+    geoSlingStone?.dispose();   geoSlingStone   = null;
+    geoClubHandle?.dispose();   geoClubHandle   = null;
+    geoClubKnob?.dispose();     geoClubKnob     = null;
+    geoAxeHandle?.dispose();    geoAxeHandle    = null;
+    geoAxeBlade?.dispose();     geoAxeBlade     = null;
+    geoHorseBody?.dispose();    geoHorseBody    = null;
+    geoHorseNeck?.dispose();    geoHorseNeck    = null;
+    geoHorseHead?.dispose();    geoHorseHead    = null;
+    geoHorseLeg?.dispose();     geoHorseLeg     = null;
+    geoHorseBodyR?.dispose();   geoHorseBodyR   = null;
+    geoHorseLegR?.dispose();    geoHorseLegR    = null;
+    geoHorseNeckR?.dispose();   geoHorseNeckR   = null;
+    geoHorseHeadR?.dispose();   geoHorseHeadR   = null;
+    geoHorseSnout?.dispose();   geoHorseSnout   = null;
+    geoHorseManeR?.dispose();   geoHorseManeR   = null;
+    geoHorseTail?.dispose();    geoHorseTail    = null;
+    geoHorseHarn?.dispose();    geoHorseHarn    = null;
+    geoCartBody?.dispose();     geoCartBody     = null;
+    geoCartWheel?.dispose();    geoCartWheel    = null;
+    geoSuperCrestPlume?.dispose(); geoSuperCrestPlume = null;
+    geoSuperCape?.dispose();    geoSuperCape    = null;
+    geoBannerPole?.dispose();   geoBannerPole   = null;
+    geoBannerFlag?.dispose();   geoBannerFlag   = null;
+    geoGildedTrim?.dispose();   geoGildedTrim   = null;
+
+    // Extended historical part geometries (rerender realism pass)
+    geoGreave?.dispose();          geoGreave          = null;
+    geoConicalHelm?.dispose();     geoConicalHelm     = null;
+    geoCorinthDome?.dispose();     geoCorinthDome     = null;
+    geoNoseGuard?.dispose();       geoNoseGuard       = null;
+    geoCheekGuard?.dispose();      geoCheekGuard      = null;
+    geoTransverseCrest?.dispose(); geoTransverseCrest = null;
+    geoAspisRim?.dispose();        geoAspisRim        = null;
+    geoAspisFace?.dispose();       geoAspisFace       = null;
+    geoScutumBody?.dispose();      geoScutumBody      = null;
+    geoScutumBoss?.dispose();      geoScutumBoss      = null;
+    geoLoricaBand?.dispose();      geoLoricaBand      = null;
+    geoPilumShaft?.dispose();      geoPilumShaft      = null;
+    geoPilumHead?.dispose();       geoPilumHead       = null;
+    geoDoryShaft?.dispose();       geoDoryShaft       = null;
+    geoSauroter?.dispose();        geoSauroter        = null;
+    geoMailSkirt?.dispose();       geoMailSkirt       = null;
+    geoGladius?.dispose();         geoGladius         = null;
+    geoScabbard?.dispose();        geoScabbard        = null;
+    geoStrawBrim?.dispose();       geoStrawBrim       = null;
+    geoStrawCrown?.dispose();      geoStrawCrown      = null;
+    geoStaff?.dispose();           geoStaff           = null;
+    geoBedroll?.dispose();         geoBedroll         = null;
+    geoPickHandle?.dispose();      geoPickHandle      = null;
+    geoPickHead?.dispose();        geoPickHead        = null;
+    geoHood?.dispose();            geoHood            = null;
+    geoCloak?.dispose();           geoCloak           = null;
+    geoGaleaBowl?.dispose();       geoGaleaBowl       = null;
+    geoGaleaCap?.dispose();        geoGaleaCap        = null;
+    geoLoincloth?.dispose();       geoLoincloth       = null;
+    geoArrowFletch?.dispose();     geoArrowFletch     = null;
+    geoSlingPouch?.dispose();      geoSlingPouch      = null;
+    geoCowhideShield?.dispose();   geoCowhideShield   = null;
+    geoOvalShield?.dispose();      geoOvalShield      = null;
+    geoSaddleBlanket?.dispose();   geoSaddleBlanket   = null;
+    geoShipHull?.dispose();        geoShipHull        = null;
+    geoShipRam?.dispose();         geoShipRam         = null;
+    geoShipMast?.dispose();        geoShipMast        = null;
+    geoShipSail?.dispose();        geoShipSail        = null;
+    geoOar?.dispose();             geoOar             = null;
+
+    // Realism polish pass: shared humanoid extras
+    geoBoot?.dispose();            geoBoot            = null;
+    geoHand?.dispose();            geoHand            = null;
+    geoBeltP?.dispose();           geoBeltP           = null;
+    geoTunicHem?.dispose();        geoTunicHem        = null;
+    geoPlumeRidge?.dispose();      geoPlumeRidge      = null;
+    geoMeleeHelm?.dispose();       geoMeleeHelm       = null;
+    geoSkullCap?.dispose();        geoSkullCap        = null;
+  }
+
+  // --------------------------------------------------------------------------
+  // Private helpers
+  // --------------------------------------------------------------------------
+
+  /**
+   * Register token in tracking maps.
+   * Reads group.userData['mats'] and group.userData['perTokenGeos'] set by buildUnitModel.
+   */
+  private _registerToken(id: string, group: THREE.Group): void {
+    this.tokens.set(id, group);
+    this.tokenMaterials.set(id, (group.userData['mats'] as THREE.Material[]) ?? []);
+    this.tokenGeos.set(id, (group.userData['perTokenGeos'] as THREE.BufferGeometry[]) ?? []);
+  }
+
+  /**
+   * Dispose all per-token materials and unique geometries.
+   * Does NOT call scene.remove() -- caller is responsible for that.
+   */
+  private _disposeToken(id: string, _obj: THREE.Object3D): void {
+    const mats = this.tokenMaterials.get(id) ?? [];
+    for (const m of mats) {
+      m.dispose();
+    }
+    const geos = this.tokenGeos.get(id) ?? [];
+    for (const g of geos) {
+      g.dispose();
+    }
+  }
+}

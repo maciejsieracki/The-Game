@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zasieg miasta — populacja + kultura (r5/r10/r15 + 0..3 pierscienie kultury)</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #0d1117;
+    color: #e6c87a;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    padding: 16px 8px;
+  }
+  h1 {
+    font-size: 1.2rem;
+    color: #f0d060;
+    text-align: center;
+    margin-bottom: 8px;
+    text-shadow: 0 0 12px #f0d06088;
+    letter-spacing: 0.03em;
+  }
+  .subtitle {
+    font-size: 0.82rem;
+    color: #c0a040;
+    text-align: center;
+    margin-bottom: 12px;
+    max-width: 900px;
+  }
+  .tabs {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+  .tab-btn {
+    padding: 6px 18px;
+    border: 2px solid #3a3010;
+    border-radius: 6px;
+    background: #111820;
+    color: #c0a040;
+    font-size: 0.88rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: border-color 0.15s, color 0.15s, background 0.15s;
+  }
+  .tab-btn.active-pop  { border-color: #e8a820; color: #f0d060; background: #1e1608; }
+  .tab-btn.active-cul  { border-color: #b060ff; color: #d090ff; background: #120820; }
+  .tab-btn.active-both { border-color: #40e0c0; color: #70ffe0; background: #081418; }
+  .culture-controls {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 10px;
+    max-width: 900px;
+    width: 100%;
+  }
+  .culture-controls.visible { display: flex; }
+  .slider-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.85rem;
+    color: #c0a040;
+  }
+  input[type=range] { width: 240px; accent-color: #b060ff; }
+  #kultur-val {
+    min-width: 40px;
+    font-weight: bold;
+    color: #d090ff;
+    font-size: 0.95rem;
+  }
+  #kultur-tier {
+    color: #b060ff;
+    font-size: 0.88rem;
+    font-weight: bold;
+  }
+  #svg-wrap {
+    width: 100%;
+    max-width: 900px;
+    background: #111820;
+    border: 1px solid #3a3010;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  svg { display: block; width: 100%; height: auto; }
+  .legend {
+    max-width: 900px;
+    width: 100%;
+    background: #111820;
+    border: 1px solid #3a3010;
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin-top: 12px;
+    font-size: 0.88rem;
+    line-height: 1.6;
+    color: #d4b96a;
+  }
+  .legend strong { color: #f0d060; }
+  .swatch {
+    display: inline-block;
+    width: 14px; height: 14px;
+    border-radius: 3px;
+    vertical-align: middle;
+    margin-right: 4px;
+    border: 1px solid #888;
+  }
+  .legend-row { margin-bottom: 4px; }
+  .legend-section {
+    margin-top: 10px;
+    padding-top: 8px;
+    border-top: 1px solid #3a3010;
+    font-size: 0.82rem;
+    color: #a8a080;
+  }
+  .hex-count { color: #a0c8a0; font-size: 0.82rem; margin-top: 8px; }
+  .leg-pop, .leg-cul, .leg-both { display: none; }
+  body[data-tab="pop"]  .leg-pop  { display: block; }
+  body[data-tab="cul"]  .leg-cul  { display: block; }
+  body[data-tab="both"] .leg-both { display: block; }
+  body[data-tab="both"] .leg-pop  { display: block; }
+</style>
+</head>
+<body data-tab="pop">
+<h1>Zasieg miasta &mdash; populacja &amp; kultura</h1>
+<p class="subtitle">
+  Terytorium = zasieg-z-populacji (okolica robocza) + pierscienie kultury (granica polityczna).
+  Oba mechanizmy sumuja sie addytywnie: pop daje baze okolicy, kultura rozszerza granice polityczna poza te baze.
+</p>
+
+<div class="tabs">
+  <button class="tab-btn active-pop" onclick="setTab('pop',this)">Populacja (okolica)</button>
+  <button class="tab-btn" onclick="setTab('cul',this)">+Kultura (granica)</button>
+  <button class="tab-btn" onclick="setTab('both',this)">Oba naraz</button>
+</div>
+
+<div class="culture-controls" id="cul-ctrl">
+  <div class="slider-row">
+    <span>Punkty kultury:</span>
+    <input type="range" id="kultur-slider" min="0" max="600" step="10" value="0" oninput="onKulturaChange(this.value)">
+    <span id="kultur-val">0</span>
+    <span id="kultur-tier">&#8212; brak ekspansji (prog 1: 100 pkt)</span>
+  </div>
+</div>
+
+<div id="svg-wrap"></div>
+
+<div class="legend">
+  <div class="leg-pop">
+    <strong style="color:#e8a820;">POPULACJA &#8212; Okolica robocza (zasieg dzialania miasta)</strong>
+    <div class="legend-row" style="margin-top:6px">
+      <span class="swatch" style="background:#4a2e08; border-color:#e8a820;"></span>
+      <strong>r5 (pop &lt; 5): promien 5</strong> &#8212; 91 hexow; granica: <span style="color:#e8a820;">zlota</span>
+    </div>
+    <div class="legend-row">
+      <span class="swatch" style="background:#102a1c; border-color:#d0f040;"></span>
+      <strong>r10 (pop &ge; 5): promien 10</strong> &#8212; 331 hexow; granica: <span style="color:#d0f040;">zolto-zielona</span>
+    </div>
+    <div class="legend-row">
+      <span class="swatch" style="background:#101830; border-color:#60c8ff;"></span>
+      <strong>r15 (pop &ge; 10): promien 15</strong> &#8212; 721 hexow; granica: <span style="color:#60c8ff;">blekitna</span>
+    </div>
+    <div class="legend-row">
+      <span class="swatch" style="background:#7a5800; border-color:#f0d060;"></span>
+      <strong>Miasto</strong> &#8212; centrum
+    </div>
+    <div class="legend-row">
+      <span class="swatch" style="background:#1e4828; border-color:#60b068;"></span>
+      <strong>Obrabiane</strong> &#8212; przyklady pol roboczych
+    </div>
+    <p style="margin-top:8px; color:#c0a040;">
+      Zasieg rosnie z populacja: pop&lt;5 &rarr; r5 (91 pol), pop&ge;5 &rarr; r10 (331), pop&ge;10 &rarr; r15 (721).
+      Okolica robocza to pola, na ktorych mieszkancy produkuja zasoby i mozna tam budowac.
+    </p>
+  </div>
+
+  <div class="leg-cul">
+    <strong style="color:#b060ff;">KULTURA &#8212; Granica polityczna (cityBorderRadius)</strong>
+    <p style="margin-top:6px; color:#a090c0;">
+      cityBorderRadius(kultura) &rarr; 0|1|2|3 dodatkowych pierscieni (progi: 100 / 250 / 500 pkt).
+      Kultura NIE zmienia okolicy roboczej &#8212; rozszerza tylko granice polityczna poza r15.
+    </p>
+    <div class="legend-row" style="margin-top:6px">
+      <span class="swatch" style="background:#1a0c30; border-color:#b060ff; border-width:2px;"></span>
+      <strong style="color:#b060ff;">Pierscien kultury +1 (r16)</strong> &#8212; po 100 pkt kultury
+    </div>
+    <div class="legend-row">
+      <span class="swatch" style="background:#150a28; border-color:#d080ff; border-width:2px;"></span>
+      <strong style="color:#d080ff;">Pierscien kultury +2 (r17)</strong> &#8212; po 250 pkt kultury
+    </div>
+    <div class="legend-row">
+      <span class="swatch" style="background:#100820; border-color:#ff60ff; border-width:2px;"></span>
+      <strong style="color:#ff60ff;">Pierscien kultury +3 (r18)</strong> &#8212; po 500 pkt kultury (MAX)
+    </div>
+    <p style="margin-top:8px; color:#a090c0;">
+      Przesun suwak powyzej, by zobaczyc jak rozszerza sie granica kultury od r16 do r18.
+    </p>
+  </div>
+
+  <div class="leg-both">
+    <strong style="color:#40e0c0;">RAZEM &#8212; model addytywny: pop (okolica) + kultura (granica)</strong>
+    <p style="margin-top:6px; color:#80c0b0;">
+      Terytorium = promien-z-populacji (r5/r10/r15) PLUS pierscienie-z-kultury (+0..3).
+      Przyklad: pop&ge;5 (r10) + kultura&ge;250 (+2 pierscienie) = granica polityczna r12, ale okolica robocza nadal tylko r10.
+    </p>
+    <div class="legend-row" style="margin-top:6px">
+      <span class="swatch" style="background:#4a2e08; border-color:#e8a820;"></span> Strefa populacji (okolica robocza, baza)
+    </div>
+    <div class="legend-row">
+      <span class="swatch" style="background:#1a0c30; border-color:#b060ff;"></span>
+      <strong style="color:#b060ff;">Strefa kultury</strong> &#8212; hexe TYLKO w zasieg kultury (poza okolica robocza)
+    </div>
+    <div class="legend-row">
+      <span class="swatch" style="background:none; border: 2px solid #40e0c0;"></span>
+      <strong style="color:#40e0c0;">Linia granicy politycznej</strong> &#8212; zewnetrzna krawedz (pop+kult)
+    </div>
+  </div>
+
+  <div class="legend-section">
+    <strong>Roznica zasiegow:</strong>
+    Zasieg populacji (okolica robocza) to pola, na ktorych mieszkancy pracuja i moga budowac ulepszenia.
+    Zasieg kultury (granica polityczna) to dodatkowe pierscienie POZA ta okolica &#8212; terytorium bez prawa do pracy na polach, ale nalezy juz do miasta.
+  </div>
+  <p class="hex-count" id="hex-count"></p>
+</div>
+
+<script>
+(function() {
+  var SIZE = 14;
+  var SQRT3 = Math.sqrt(3);
+  var MAXR = 18;
+
+  var PROG1 = 100, PROG2 = 250, PROG3 = 500;
+  var currentTab = 'pop';
+  var kulturaPoints = 0;
+  var MAX_POP_R = 15;
+
+  function hexDist(q, r) {
+    return (Math.abs(q) + Math.abs(r) + Math.abs(q + r)) / 2;
+  }
+  function hexToXY(q, r) {
+    return [SIZE * SQRT3 * (q + r / 2), SIZE * 1.5 * r];
+  }
+  function cityBorderRadius(pts) {
+    if (pts >= PROG3) return 3;
+    if (pts >= PROG2) return 2;
+    if (pts >= PROG1) return 1;
+    return 0;
+  }
+
+  var hexes = [];
+  for (var q = -MAXR; q <= MAXR; q++) {
+    for (var r = -MAXR; r <= MAXR; r++) {
+      var d = hexDist(q, r);
+      if (d <= MAXR) hexes.push({ q: q, r: r, dist: d });
+    }
+  }
+
+  var workedSet = new Set(['1,0','0,1','-1,1','-1,0','0,-1','1,-1','2,0','-2,0','0,2','2,-1']);
+
+  var minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+  hexes.forEach(function(h) {
+    var xy = hexToXY(h.q, h.r);
+    var hw = SIZE * SQRT3 / 2;
+    if (xy[0] - hw < minX) minX = xy[0] - hw;
+    if (xy[0] + hw > maxX) maxX = xy[0] + hw;
+    if (xy[1] - SIZE < minY) minY = xy[1] - SIZE;
+    if (xy[1] + SIZE > maxY) maxY = xy[1] + SIZE;
+  });
+
+  var pad = 6;
+  var vw = maxX - minX + pad * 2;
+  var vh = maxY - minY + pad * 2;
+  var ox = -minX + pad;
+  var oy = -minY + pad;
+
+  function hexCorners(cx, cy) {
+    var pts = [];
+    for (var i = 0; i < 6; i++) {
+      var angle = Math.PI / 180 * (60 * i - 30);
+      pts.push((cx + SIZE * Math.cos(angle)).toFixed(2) + ',' + (cy + SIZE * Math.sin(angle)).toFixed(2));
+    }
+    return pts.join(' ');
+  }
+
+  function ringLabelPos(q, r) {
+    var xy = hexToXY(q, r);
+    return [xy[0] + ox, xy[1] + oy];
+  }
+
+  function render() {
+    var culturRings = cityBorderRadius(kulturaPoints);
+    var svgParts = [];
+    svgParts.push('<svg viewBox="0 0 ' + vw.toFixed(1) + ' ' + vh.toFixed(1) + '" xmlns="http://www.w3.org/2000/svg">');
+    svgParts.push('<defs>');
+    svgParts.push('<filter id="glow" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur in="SourceGraphic" stdDeviation="2" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>');
+    svgParts.push('<filter id="glow-strong" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur in="SourceGraphic" stdDeviation="4" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>');
+    svgParts.push('<filter id="glow-cult" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur in="SourceGraphic" stdDeviation="3" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>');
+    svgParts.push('</defs>');
+    svgParts.push('<rect width="' + vw.toFixed(1) + '" height="' + vh.toFixed(1) + '" fill="#0d1117"/>');
+
+    var showPop  = (currentTab === 'pop' || currentTab === 'both');
+    var showCult = (currentTab === 'cul' || currentTab === 'both');
+    var cultStart = MAX_POP_R;
+    var cultEnd   = MAX_POP_R + culturRings;
+
+    var cultFills   = ['#1a0c30','#150a28','#100820'];
+    var cultStrokes = ['#b060ff','#d080ff','#ff60ff'];
+
+    var normalHexes = [];
+    var borderR5 = [], borderR10 = [], borderR15 = [];
+    var workedHexes = [];
+    var cityHex = null;
+
+    hexes.forEach(function(h) {
+      var d = h.dist;
+      if (d > MAX_POP_R + culturRings) return;
+      var xy = hexToXY(h.q, h.r);
+      var cx = xy[0] + ox;
+      var cy = xy[1] + oy;
+      var key = h.q + ',' + h.r;
+      if (h.q === 0 && h.r === 0) { cityHex = { cx: cx, cy: cy }; return; }
+      var pts = hexCorners(cx, cy);
+      var inCultZone = (d > cultStart && d <= cultEnd);
+      var inPopZone  = (d <= MAX_POP_R);
+
+      if (workedSet.has(key) && d <= 5 && showPop) {
+        workedHexes.push({ pts: pts, cx: cx, cy: cy });
+        return;
+      }
+
+      if (inCultZone && showCult) {
+        var ringOffset = Math.max(0, Math.min(2, d - cultStart - 1));
+        normalHexes.push({ pts: pts, fill: cultFills[ringOffset], stroke: cultStrokes[ringOffset], strokeW: '0.5' });
+      } else if (inPopZone) {
+        var fill, stroke;
+        if (currentTab === 'cul') {
+          fill = '#111820'; stroke = '#2a3040';
+        } else if (d <= 5) {
+          fill = '#4a2e08'; stroke = '#8a5a10';
+        } else if (d <= 10) {
+          fill = '#102a1c'; stroke = '#1e6040';
+        } else {
+          fill = '#101830'; stroke = '#1e3060';
+        }
+        normalHexes.push({ pts: pts, fill: fill, stroke: stroke, strokeW: '0.4' });
+        if (currentTab !== 'cul') {
+          if (d === 5)  borderR5.push(pts);
+          if (d === 10) borderR10.push(pts);
+          if (d === 15) borderR15.push(pts);
+        }
+      }
+    });
+
+    normalHexes.forEach(function(h) {
+      svgParts.push('<polygon points="' + h.pts + '" fill="' + h.fill + '" stroke="' + h.stroke + '" stroke-width="' + h.strokeW + '"/>');
+    });
+
+    if (showPop) {
+      workedHexes.forEach(function(h) {
+        svgParts.push('<polygon points="' + h.pts + '" fill="#1e4828" stroke="#60b068" stroke-width="0.8"/>');
+        svgParts.push('<circle cx="' + h.cx.toFixed(1) + '" cy="' + h.cy.toFixed(1) + '" r="2" fill="#80d080" opacity="0.7"/>');
+      });
+    }
+
+    function drawBorderRing(borders, color) {
+      borders.forEach(function(pts) {
+        svgParts.push('<polygon points="' + pts + '" fill="none" stroke="' + color + '" stroke-width="1.8" opacity="0.85" filter="url(#glow)"/>');
+      });
+    }
+
+    if (currentTab === 'pop' || currentTab === 'both') {
+      drawBorderRing(borderR5,  '#e8a820');
+      drawBorderRing(borderR10, '#d0f040');
+      drawBorderRing(borderR15, '#60c8ff');
+    }
+
+    if (showCult && culturRings > 0) {
+      var cultColors = ['#b060ff','#d080ff','#ff60ff'];
+      for (var ci = 1; ci <= culturRings; ci++) {
+        var bw = (ci === culturRings) ? '2.2' : '1.2';
+        hexes.forEach(function(h) {
+          if (h.dist === cultStart + ci) {
+            var xy = hexToXY(h.q, h.r);
+            svgParts.push('<polygon points="' + hexCorners(xy[0]+ox, xy[1]+oy) + '" fill="none" stroke="' + cultColors[ci-1] + '" stroke-width="' + bw + '" opacity="0.9" filter="url(#glow-cult)"/>');
+          }
+        });
+      }
+    }
+
+    if (currentTab === 'both' && culturRings > 0) {
+      hexes.forEach(function(h) {
+        if (h.dist === MAX_POP_R + culturRings) {
+          var xy = hexToXY(h.q, h.r);
+          svgParts.push('<polygon points="' + hexCorners(xy[0]+ox, xy[1]+oy) + '" fill="none" stroke="#40e0c0" stroke-width="2.8" opacity="0.95" filter="url(#glow)"/>');
+        }
+      });
+    }
+
+    if (cityHex) {
+      var cpts = hexCorners(cityHex.cx, cityHex.cy);
+      svgParts.push('<polygon points="' + cpts + '" fill="#7a5800" stroke="#f0d060" stroke-width="2" filter="url(#glow-strong)"/>');
+      svgParts.push('<text x="' + cityHex.cx.toFixed(1) + '" y="' + (cityHex.cy - 3).toFixed(1) + '" text-anchor="middle" font-size="9" fill="#f0d060" font-weight="bold">&#127963;</text>');
+      svgParts.push('<text x="' + cityHex.cx.toFixed(1) + '" y="' + (cityHex.cy + 6).toFixed(1) + '" text-anchor="middle" font-size="4.5" fill="#f0d060" font-weight="bold">Miasto</text>');
+    }
+
+    if (currentTab === 'pop' || currentTab === 'both') {
+      var p5 = ringLabelPos(0, -5);
+      svgParts.push('<text x="' + p5[0].toFixed(1) + '" y="' + (p5[1]-SIZE-2).toFixed(1) + '" text-anchor="middle" font-size="6" fill="#e8a820" font-weight="bold" filter="url(#glow)">pop &lt; 5: r5 (91 pol)</text>');
+      var p10 = ringLabelPos(0, -10);
+      svgParts.push('<text x="' + p10[0].toFixed(1) + '" y="' + (p10[1]-SIZE-2).toFixed(1) + '" text-anchor="middle" font-size="6" fill="#d0f040" font-weight="bold" filter="url(#glow)">pop &ge;5: r10 (331 pol)</text>');
+      var p15 = ringLabelPos(0, -15);
+      svgParts.push('<text x="' + p15[0].toFixed(1) + '" y="' + (p15[1]-SIZE-2).toFixed(1) + '" text-anchor="middle" font-size="6" fill="#60c8ff" font-weight="bold" filter="url(#glow)">pop &ge;10: r15 (721 pol)</text>');
+    }
+
+    if (showCult && culturRings > 0) {
+      var cultLabelColors = ['#b060ff','#d080ff','#ff60ff'];
+      var cultThresholds = ['100','250','500'];
+      for (var ci2 = 1; ci2 <= culturRings; ci2++) {
+        var rr = MAX_POP_R + ci2;
+        var lp = ringLabelPos(0, -rr);
+        svgParts.push('<text x="' + lp[0].toFixed(1) + '" y="' + (lp[1]-SIZE-2).toFixed(1) + '" text-anchor="middle" font-size="6" fill="' + cultLabelColors[ci2-1] + '" font-weight="bold" filter="url(#glow-cult)">kultura +' + ci2 + ' (r' + rr + ', &ge;' + cultThresholds[ci2-1] + ' pkt)</text>');
+      }
+    }
+
+    if (showCult && culturRings === 0) {
+      var hints = [
+        [1,'#5a3a6a','r16 (+1, jesli >= 100 pkt kultury)'],
+        [2,'#4a2a5a','r17 (+2, jesli >= 250 pkt)'],
+        [3,'#3a1a4a','r18 (+3, jesli >= 500 pkt)']
+      ];
+      hints.forEach(function(h) {
+        var lp = ringLabelPos(0, -(MAX_POP_R + h[0]));
+        svgParts.push('<text x="' + lp[0].toFixed(1) + '" y="' + (lp[1]-SIZE-2).toFixed(1) + '" text-anchor="middle" font-size="5.5" fill="' + h[1] + '" opacity="0.55">' + h[2] + '</text>');
+      });
+    }
+
+    svgParts.push('</svg>');
+    document.getElementById('svg-wrap').innerHTML = svgParts.join('\n');
+    document.getElementById('hex-count').textContent =
+      'Narysowano hexow: pop r15=721; kultura +' + culturRings + ' pierscieni (r' + (MAX_POP_R+culturRings) + ').';
+  }
+
+  window.setTab = function(tab, btn) {
+    currentTab = tab;
+    document.body.setAttribute('data-tab', tab);
+    document.querySelectorAll('.tab-btn').forEach(function(b) { b.className = 'tab-btn'; });
+    btn.className = 'tab-btn active-' + tab;
+    var ctrl = document.getElementById('cul-ctrl');
+    ctrl.className = 'culture-controls' + (tab !== 'pop' ? ' visible' : '');
+    render();
+  };
+
+  window.onKulturaChange = function(val) {
+    kulturaPoints = parseInt(val, 10);
+    document.getElementById('kultur-val').textContent = kulturaPoints;
+    var rings = cityBorderRadius(kulturaPoints);
+    var tierText;
+    if (rings === 0) tierText = '— brak ekspansji (prog 1: 100 pkt)';
+    else if (rings === 1) tierText = '— +1 pierscien (prog 2: 250 pkt)';
+    else if (rings === 2) tierText = '— +2 pierscienie (prog 3: 500 pkt)';
+    else tierText = '— +3 pierscienie (MAX)';
+    document.getElementById('kultur-tier').textContent = tierText;
+    render();
+  };
+
+  render();
+})();
+</script>
+</body>
+</html>

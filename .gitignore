@@ -1,0 +1,41 @@
+# Dependencies
+node_modules/
+
+# Build outputs (OneDrive often blocks gra/dist/)
+gra/dist
+gra/dist/
+gra/dist-*/
+dist/
+
+# Local / temp
+gra/tmp/
+tmp/
+*.log
+
+# Vite cache artifacts
+vite.config.ts.timestamp-*.mjs
+*.timestamp-*.mjs
+
+# Rolling backups (playbook); keep canonical xlsx/html in repo
+*.bak-*
+
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+
+# OS / OneDrive
+.DS_Store
+Thumbs.db
+desktop.ini
+~$*
+*.tmp
+.____dirprobe/
+
+# Editor local
+*.swp
+*~

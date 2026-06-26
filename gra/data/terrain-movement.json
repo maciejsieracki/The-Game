@@ -1,0 +1,12 @@
+{
+  "costs": {
+    "Laka": 1,
+    "Rownina": 1,
+    "Pustynia": 2,
+    "Wybrzeze": 99,
+    "Wzgorza": 2,
+    "Gory": 99,
+    "Morze": 99
+  },
+  "forestExtra": 1
+}

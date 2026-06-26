@@ -1,0 +1,86 @@
+[
+  {
+    "Surowiec": "Żywność",
+    "Typ": "surowy",
+    "Źródło / budynek": "pola (wg terenu)",
+    "Uwagi": "konsumpcja: 1/ludnosc + 1/jednostke"
+  },
+  {
+    "Surowiec": "Drewno",
+    "Typ": "surowy",
+    "Źródło / budynek": "Las",
+    "Uwagi": "budulec; wejscie Tartaku i Mielerza"
+  },
+  {
+    "Surowiec": "Kamień",
+    "Typ": "surowy",
+    "Źródło / budynek": "Wzgórza/Góry + Kopalnia",
+    "Uwagi": "budulec"
+  },
+  {
+    "Surowiec": "Glina",
+    "Typ": "surowy",
+    "Źródło / budynek": "złoże Glina",
+    "Uwagi": "wejscie Cegielni i Garncarni"
+  },
+  {
+    "Surowiec": "Ruda",
+    "Typ": "surowy",
+    "Źródło / budynek": "złoże Ruda + Kopalnia",
+    "Uwagi": "wejscie Huty"
+  },
+  {
+    "Surowiec": "Bydło (krowa/wół)",
+    "Typ": "hodowla",
+    "Źródło / budynek": "złoże/handel (zarodek) + Pastwisko",
+    "Uwagi": "min. 1 sztuka ze złoża lub handlu uruchamia hodowle; +produkcja (x200%) gdy przypisane; Rydwan; NIEDOSTĘPNE u Majów/Ameryki Środkowej (brak w Nowym Świecie przed kontaktem europejskim)"
+  },
+  {
+    "Surowiec": "Owce",
+    "Typ": "hodowla",
+    "Źródło / budynek": "złoże/handel (zarodek) + Pastwisko",
+    "Uwagi": "+2 zywnosci gdy przypisane; tylko laki/rowniny/wzgorza; dostępne globalnie (Stary i Nowy Świat — Ameryka Pd.: owce andyjskie)"
+  },
+  {
+    "Surowiec": "Lama",
+    "Typ": "hodowla",
+    "Źródło / budynek": "złoże/handel (zarodek) + Pastwisko",
+    "Uwagi": "TYLKO Inkowie/Ameryka Środk.-Pd.; substytut Bydła — mniejszy bonus: +1 produkcja (vs +2 Bydło); transport surowców (ograniczony); brak Rydwanu (konne niedostępne); owce/lama = jedyne duże zwierzęta w Nowym Świecie"
+  },
+  {
+    "Surowiec": "Koń",
+    "Typ": "hodowla",
+    "Źródło / budynek": "złoże Konie / Stajnia (później)",
+    "Uwagi": "Konnica (Brąz) i rydwany konne; NIEDOSTĘPNY u Majów/Ameryki (konie wyginęły w Nowym Świecie ~10 000 p.n.e.)"
+  },
+  {
+    "Surowiec": "Deski",
+    "Typ": "przetworzony",
+    "Źródło / budynek": "Tartak (z drewna)",
+    "Uwagi": "budulec"
+  },
+  {
+    "Surowiec": "Paliwo (węgiel drzewny)",
+    "Typ": "przetworzony",
+    "Źródło / budynek": "Mielerz (z drewna)",
+    "Uwagi": "wejscie Cegielni, Garncarni i Huty"
+  },
+  {
+    "Surowiec": "Cegła",
+    "Typ": "przetworzony",
+    "Źródło / budynek": "Cegielnia (glina+paliwo)",
+    "Uwagi": "budulec"
+  },
+  {
+    "Surowiec": "Ceramika",
+    "Typ": "przetworzony (luksus)",
+    "Źródło / budynek": "Garncarnia (z gliny)",
+    "Uwagi": "+zadowolenie, +Zdrowie"
+  },
+  {
+    "Surowiec": "Brąz",
+    "Typ": "przetworzony",
+    "Źródło / budynek": "Huta (ruda+paliwo)",
+    "Uwagi": "budulec + jednostki brazowe"
+  }
+]

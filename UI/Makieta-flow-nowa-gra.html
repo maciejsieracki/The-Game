@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>THE GAME — Nowa Gra</title>
+<style>
+:root{
+  --gold:#C9A84C;--gold-light:#E8C97A;--gold-dim:#7A6030;--gold-faint:#2A2010;
+  --bg-deep:#0A0A0F;--bg-panel:#12121A;--bg-card:#1A1A26;--bg-card-hover:#222235;--bg-selected:#1E1A0A;
+  --border-subtle:rgba(201,168,76,0.18);--border-mid:rgba(201,168,76,0.38);--border-strong:rgba(201,168,76,0.65);
+  --text-primary:#F0E8D0;--text-secondary:#A09070;--text-muted:#554E3A;
+  --text-gold:#C9A84C;--text-gold-bright:#F0D080;
+  --radius:6px;--radius-lg:10px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{
+  font-family:'Palatino Linotype','Book Antiqua',Palatino,Georgia,serif;
+  background:var(--bg-deep);color:var(--text-primary);
+  min-height:100vh;display:flex;flex-direction:column;overflow-x:hidden;
+}
+body::before{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(201,168,76,0.06) 0%,transparent 70%),
+             radial-gradient(ellipse 60% 40% at 20% 80%,rgba(201,168,76,0.03) 0%,transparent 60%);
+}
+#app{position:relative;z-index:1;min-height:100vh;display:flex;flex-direction:column;}
+
+/* HEADER */
+#header{text-align:center;padding:2.2rem 2rem 1.2rem;border-bottom:1px solid var(--border-subtle);
+  background:linear-gradient(180deg,rgba(10,10,15,0.97) 0%,rgba(18,18,26,0.85) 100%);}
+#header .game-label{font-size:10px;letter-spacing:0.5em;text-transform:uppercase;color:var(--text-secondary);
+  margin-bottom:5px;font-family:Arial,sans-serif;}
+#header h1{font-size:36px;font-weight:400;letter-spacing:0.18em;color:var(--gold-light);
+  text-shadow:0 0 50px rgba(201,168,76,0.28);}
+.ornament{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:9px;}
+.orn-line{height:1px;width:60px;background:linear-gradient(90deg,transparent,var(--gold-dim));}
+.orn-line.r{background:linear-gradient(270deg,transparent,var(--gold-dim));}
+.orn-diamond{width:6px;height:6px;background:var(--gold-dim);transform:rotate(45deg);}
+
+/* STEP BAR */
+#stepbar{display:flex;align-items:center;justify-content:center;padding:1.1rem 2rem;
+  background:var(--bg-panel);border-bottom:1px solid var(--border-subtle);gap:0;flex-wrap:wrap;}
+.si{display:flex;align-items:center;gap:0;cursor:pointer;}
+.si-bubble{display:flex;align-items:center;gap:8px;padding:5px 14px;border-radius:20px;
+  border:1px solid transparent;transition:all .2s;}
+.si-num{width:22px;height:22px;border-radius:50%;border:1.5px solid var(--text-muted);
+  display:flex;align-items:center;justify-content:center;font-size:11px;
+  color:var(--text-muted);font-family:Arial,sans-serif;flex-shrink:0;}
+.si-lbl{font-size:11px;letter-spacing:0.07em;text-transform:uppercase;color:var(--text-muted);font-family:Arial,sans-serif;}
+.si.active .si-bubble{border-color:var(--border-mid);background:rgba(201,168,76,0.08);}
+.si.active .si-num{border-color:var(--gold);background:var(--gold);color:#0A0A0F;font-weight:700;}
+.si.active .si-lbl{color:var(--text-gold);}
+.si.done .si-num{border-color:var(--gold-dim);color:var(--gold-dim);}
+.si.done .si-lbl{color:var(--text-secondary);}
+.si.done .si-bubble:hover{background:rgba(201,168,76,0.05);border-color:var(--border-subtle);}
+.si-conn{width:26px;height:1px;background:var(--border-subtle);margin:0 3px;flex-shrink:0;}
+
+/* CONTENT */
+#content{flex:1;display:flex;flex-direction:column;padding:2rem 3rem;
+  max-width:1100px;width:100%;margin:0 auto;}
+.sp{display:none;flex-direction:column;flex:1;}
+.sp.active{display:flex;}
+
+/* STEP HEADING */
+.sh{text-align:center;margin-bottom:1.8rem;}
+.sh .ew{font-size:10px;letter-spacing:0.45em;text-transform:uppercase;color:var(--text-secondary);
+  margin-bottom:6px;font-family:Arial,sans-serif;}
+.sh h2{font-size:26px;font-weight:400;letter-spacing:0.1em;color:var(--gold-light);}
+.sh-div{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:10px;}
+.sh-line{height:1px;width:80px;background:linear-gradient(90deg,transparent,var(--border-mid));}
+.sh-line.r{background:linear-gradient(270deg,transparent,var(--border-mid));}
+.sh-dot{width:4px;height:4px;background:var(--gold-dim);border-radius:50%;}
+
+/* STEP 1 */
+#step1{justify-content:center;align-items:center;min-height:420px;text-align:center;gap:1.4rem;}
+.intro-emblem{width:90px;height:90px;border:2px solid var(--border-mid);border-radius:50%;
+  display:flex;align-items:center;justify-content:center;margin:0 auto;background:rgba(201,168,76,0.06);}
+.intro-emblem svg{width:52px;height:52px;}
+.intro-wrap{max-width:540px;}
+.big-title{font-size:46px;letter-spacing:0.2em;color:var(--gold-light);font-weight:400;
+  margin-bottom:.4rem;text-shadow:0 0 60px rgba(201,168,76,0.25);}
+.sub-title{font-size:11px;letter-spacing:0.4em;text-transform:uppercase;color:var(--text-secondary);
+  margin-bottom:1.4rem;font-family:Arial,sans-serif;}
+.intro-wrap p{font-size:15px;line-height:1.8;color:var(--text-secondary);font-style:italic;}
+.cta-btn{display:inline-block;padding:12px 44px;border:1.5px solid var(--gold-dim);color:var(--text-gold);
+  font-size:12px;letter-spacing:0.25em;text-transform:uppercase;cursor:pointer;background:transparent;
+  font-family:Arial,sans-serif;transition:all .2s;border-radius:var(--radius);margin-top:.5rem;}
+.cta-btn:hover{border-color:var(--gold);background:rgba(201,168,76,0.1);color:var(--gold-light);}
+
+/* STEP 2 */
+.civ-layout{display:grid;grid-template-columns:1fr 340px;gap:1.5rem;flex:1;}
+.civ-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(128px,1fr));gap:10px;align-content:start;}
+.civ-card{background:var(--bg-card);border:1.5px solid var(--border-subtle);border-radius:var(--radius-lg);
+  padding:16px 10px;text-align:center;cursor:pointer;transition:all .18s;
+  display:flex;flex-direction:column;align-items:center;gap:8px;}
+.civ-card:hover{border-color:var(--border-mid);background:var(--bg-card-hover);}
+.civ-card.sel{border-color:var(--gold);background:var(--bg-selected);
+  box-shadow:0 0 0 1px rgba(201,168,76,0.18),inset 0 0 20px rgba(201,168,76,0.05);}
+.civ-emblem{width:54px;height:54px;border-radius:50%;border:1.5px solid var(--border-mid);
+  display:flex;align-items:center;justify-content:center;font-size:26px;background:rgba(0,0,0,0.3);}
+.civ-card.sel .civ-emblem{border-color:var(--gold);background:rgba(201,168,76,0.1);}
+.civ-name{font-size:12px;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-secondary);
+  font-family:Arial,sans-serif;}
+.civ-card.sel .civ-name{color:var(--text-gold);}
+/* detail panel */
+.civ-detail{background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:var(--radius-lg);
+  padding:1.5rem;display:flex;flex-direction:column;gap:1rem;min-height:360px;}
+.civ-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;
+  color:var(--text-muted);gap:12px;font-size:13px;text-align:center;font-style:italic;}
+.civ-empty .arr{font-size:30px;opacity:.3;}
+.civ-dc{display:none;height:100%;flex-direction:column;gap:1rem;}
+.civ-dc.vis{display:flex;}
+.civ-dh{display:flex;align-items:center;gap:14px;padding-bottom:1rem;border-bottom:1px solid var(--border-subtle);}
+.civ-dem{width:60px;height:60px;border-radius:50%;border:2px solid var(--border-mid);
+  display:flex;align-items:center;justify-content:center;font-size:30px;background:rgba(201,168,76,0.08);}
+.civ-dn{font-size:20px;letter-spacing:.1em;color:var(--gold-light);}
+.civ-ds{display:flex;flex-direction:column;gap:6px;}
+.dlbl{font-size:10px;letter-spacing:.35em;text-transform:uppercase;color:var(--text-secondary);font-family:Arial,sans-serif;margin-bottom:2px;}
+.bonus{display:flex;align-items:flex-start;gap:8px;font-size:13px;color:var(--text-secondary);line-height:1.5;}
+.bdot{width:5px;height:5px;border-radius:50%;flex-shrink:0;margin-top:5px;}
+.bp .bdot{background:#4A8C60;}
+.bm .bdot{background:#7A4030;}
+.bd .bdot{background:var(--gold-dim);}
+.su-box{background:rgba(201,168,76,0.06);border:1px solid var(--border-mid);
+  border-radius:var(--radius);padding:10px 14px;}
+.su-lbl{font-size:10px;letter-spacing:.35em;text-transform:uppercase;color:var(--text-secondary);font-family:Arial,sans-serif;margin-bottom:3px;}
+.su-name{font-size:15px;color:var(--gold-light);letter-spacing:.05em;}
+
+/* STEP 3 */
+.epoch-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:14px;max-width:800px;margin:0 auto;}
+.ec{background:var(--bg-card);border:1.5px solid var(--border-subtle);border-radius:var(--radius-lg);
+  padding:22px 18px;text-align:center;cursor:pointer;transition:all .18s;
+  display:flex;flex-direction:column;gap:9px;align-items:center;}
+.ec.avail:hover{border-color:var(--border-mid);background:var(--bg-card-hover);}
+.ec.selep{border-color:var(--gold);background:var(--bg-selected);}
+.ec.locked{opacity:.35;cursor:not-allowed;}
+.ec-icon{font-size:36px;line-height:1;}
+.ec-name{font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-secondary);font-family:Arial,sans-serif;}
+.ec.selep .ec-name{color:var(--text-gold);}
+.ec.locked .ec-name{color:var(--text-muted);}
+.ec-badge{font-size:10px;letter-spacing:.2em;text-transform:uppercase;font-family:Arial,sans-serif;
+  padding:3px 10px;border-radius:12px;border:1px solid transparent;}
+.eb-avail{border-color:var(--gold-dim);color:var(--gold-dim);}
+.eb-sel{border-color:var(--gold);color:var(--gold-light);background:rgba(201,168,76,0.12);}
+.eb-lock{border-color:var(--text-muted);color:var(--text-muted);}
+.ec-flavor{font-size:12px;color:var(--text-secondary);font-style:italic;line-height:1.5;text-align:center;}
+.ec.locked .ec-flavor{color:var(--text-muted);}
+.epoch-note{text-align:center;font-size:12px;color:var(--text-muted);font-style:italic;
+  font-family:Arial,sans-serif;margin:1.2rem auto 0;padding:10px 18px;max-width:580px;
+  border:1px solid rgba(201,168,76,0.08);border-radius:var(--radius);}
+
+/* STEP 4 */
+.sett-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.1rem;max-width:720px;margin:0 auto;}
+.srow{background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:var(--radius-lg);padding:16px 18px;display:flex;flex-direction:column;gap:10px;}
+.slbl{font-size:10px;letter-spacing:.35em;text-transform:uppercase;color:var(--text-secondary);font-family:Arial,sans-serif;}
+.sctl{display:flex;align-items:center;gap:10px;}
+.arrbtn{width:28px;height:28px;border:1px solid var(--border-mid);background:transparent;
+  color:var(--text-gold);cursor:pointer;border-radius:4px;display:flex;align-items:center;
+  justify-content:center;font-size:15px;font-family:Arial,sans-serif;transition:all .15s;flex-shrink:0;}
+.arrbtn:hover{border-color:var(--gold);background:rgba(201,168,76,0.1);}
+.sval{flex:1;text-align:center;font-size:15px;color:var(--text-primary);letter-spacing:.04em;min-width:80px;}
+.sval .vdesc{font-size:10px;color:var(--text-muted);font-family:Arial,sans-serif;display:block;margin-top:2px;font-style:italic;}
+.sett-actions{max-width:720px;margin:1.5rem auto 0;display:flex;flex-direction:column;gap:10px;align-items:center;width:100%;}
+.btn-adv{background:transparent;border:1px solid var(--border-mid);color:var(--text-secondary);
+  font-size:12px;letter-spacing:.15em;text-transform:uppercase;padding:9px 28px;cursor:pointer;
+  border-radius:var(--radius);font-family:Arial,sans-serif;transition:all .15s;}
+.btn-adv:hover{color:var(--text-primary);background:rgba(255,255,255,0.03);}
+.btn-start{background:linear-gradient(135deg,rgba(201,168,76,0.22) 0%,rgba(201,168,76,0.1) 100%);
+  border:1.5px solid var(--gold);color:var(--gold-light);font-size:14px;letter-spacing:.3em;
+  text-transform:uppercase;padding:14px 60px;cursor:pointer;border-radius:var(--radius);
+  font-family:Arial,sans-serif;width:100%;max-width:400px;transition:all .18s;}
+.btn-start:hover{background:linear-gradient(135deg,rgba(201,168,76,0.36) 0%,rgba(201,168,76,0.18) 100%);
+  box-shadow:0 0 28px rgba(201,168,76,0.18);}
+
+/* STEP 5 */
+#step5{justify-content:center;align-items:center;min-height:420px;text-align:center;gap:1.6rem;}
+.loading-ring{width:80px;height:80px;border-radius:50%;border:2px solid var(--border-subtle);
+  border-top-color:var(--gold);animation:spin 1.4s linear infinite;margin:0 auto;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.gen-title{font-size:28px;color:var(--gold-light);letter-spacing:.12em;font-weight:400;}
+.gen-sub{font-size:11px;color:var(--text-secondary);letter-spacing:.15em;text-transform:uppercase;font-family:Arial,sans-serif;}
+.gen-bar{width:260px;height:3px;background:rgba(201,168,76,0.1);border-radius:2px;overflow:hidden;}
+.gen-bar-fill{height:100%;background:var(--gold);border-radius:2px;width:0%;
+  animation:prog 3.8s ease-in-out forwards;}
+@keyframes prog{0%{width:0%}55%{width:72%}80%{width:86%}100%{width:96%}}
+.gen-params{background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:var(--radius-lg);
+  padding:1.2rem 1.8rem;text-align:left;max-width:420px;width:100%;}
+.prow{display:flex;justify-content:space-between;padding:5px 0;
+  border-bottom:1px solid rgba(201,168,76,0.06);font-size:13px;gap:1rem;}
+.prow:last-child{border-bottom:none;}
+.pk{color:var(--text-secondary);font-family:Arial,sans-serif;}
+.pv{color:var(--text-gold);text-align:right;}
+
+/* NAV */
+#nav{padding:1.2rem 3rem;display:flex;justify-content:space-between;align-items:center;
+  border-top:1px solid var(--border-subtle);background:var(--bg-panel);
+  max-width:1100px;width:100%;margin:0 auto;}
+.navbtn{padding:10px 28px;border-radius:var(--radius);font-size:12px;letter-spacing:.2em;
+  text-transform:uppercase;font-family:Arial,sans-serif;cursor:pointer;transition:all .15s;}
+.btn-back{background:transparent;border:1px solid var(--border-mid);color:var(--text-secondary);}
+.btn-back:hover{border-color:var(--border-strong);color:var(--text-primary);}
+.btn-next{background:rgba(201,168,76,0.1);border:1.5px solid var(--border-strong);color:var(--gold-light);}
+.btn-next:hover{background:rgba(201,168,76,0.2);}
+.btn-next:disabled{opacity:.3;cursor:not-allowed;}
+.nav-info{font-size:11px;color:var(--text-muted);font-family:Arial,sans-serif;letter-spacing:.15em;text-transform:uppercase;}
+
+/* LEGEND */
+#legend{border-top:1px solid rgba(201,168,76,0.1);background:#0D0D13;
+  padding:2rem 3rem;max-width:1100px;width:100%;margin:0 auto;}
+.leg-title{font-size:10px;letter-spacing:.45em;text-transform:uppercase;color:var(--text-muted);
+  font-family:Arial,sans-serif;margin-bottom:1rem;}
+.leg-flow{display:flex;align-items:center;flex-wrap:wrap;gap:4px;margin-bottom:1.4rem;font-family:Arial,sans-serif;font-size:12px;}
+.lfi{color:var(--text-secondary);padding:3px 10px;border:1px solid rgba(201,168,76,0.13);border-radius:3px;}
+.lfa{color:var(--gold-dim);font-size:14px;}
+.leg-blocks{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px;}
+.lb{background:var(--bg-card);border:1px solid rgba(201,168,76,0.09);border-radius:var(--radius);padding:12px 14px;}
+.lb-step{font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:var(--gold-dim);font-family:Arial,sans-serif;margin-bottom:6px;}
+.lb ul{list-style:none;display:flex;flex-direction:column;gap:3px;}
+.lb li{font-size:12px;color:var(--text-secondary);font-family:Arial,sans-serif;padding-left:10px;position:relative;line-height:1.5;}
+.lb li::before{content:'·';position:absolute;left:2px;color:var(--gold-dim);}
+
+/* anim */
+.fade-in{animation:fi .35s ease;}
+@keyframes fi{from{opacity:0;transform:translateY(5px);}to{opacity:1;transform:none;}}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- HEADER -->
+<div id="header">
+  <div class="game-label">Kreator Nowej Gry &mdash; Makieta Przepływu</div>
+  <h1>THE GAME</h1>
+  <div class="ornament">
+    <div class="orn-line"></div>
+    <div class="orn-diamond"></div>
+    <div class="orn-line r"></div>
+  </div>
+</div>
+
+<!-- STEP BAR -->
+<div id="stepbar">
+  <div class="si active" id="si-1" onclick="gotoStep(1)">
+    <div class="si-bubble"><div class="si-num">1</div><span class="si-lbl">Intro</span></div>
+  </div>
+  <div class="si-conn"></div>
+  <div class="si" id="si-2" onclick="gotoStep(2)">
+    <div class="si-bubble"><div class="si-num">2</div><span class="si-lbl">Cywilizacja</span></div>
+  </div>
+  <div class="si-conn"></div>
+  <div class="si" id="si-3" onclick="gotoStep(3)">
+    <div class="si-bubble"><div class="si-num">3</div><span class="si-lbl">Epoka</span></div>
+  </div>
+  <div class="si-conn"></div>
+  <div class="si" id="si-4" onclick="gotoStep(4)">
+    <div class="si-bubble"><div class="si-num">4</div><span class="si-lbl">Ustawienia</span></div>
+  </div>
+  <div class="si-conn"></div>
+  <div class="si" id="si-5" onclick="gotoStep(5)">
+    <div class="si-bubble"><div class="si-num">5</div><span class="si-lbl">Start</span></div>
+  </div>
+</div>
+
+<!-- CONTENT -->
+<div id="content">
+
+  <!-- STEP 1 -->
+  <div class="sp active fade-in" id="step1">
+    <div class="intro-emblem">
+      <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="32,4 40,24 60,24 44,38 50,58 32,46 14,58 20,38 4,24 24,24"
+          stroke="#7A6030" stroke-width="1.5" fill="none"/>
+        <circle cx="32" cy="32" r="8" stroke="#7A6030" stroke-width="1.5"/>
+        <line x1="32" y1="24" x2="32" y2="40" stroke="#7A6030" stroke-width="1"/>
+        <line x1="24" y1="32" x2="40" y2="32" stroke="#7A6030" stroke-width="1"/>
+      </svg>
+    </div>
+    <div class="intro-wrap">
+      <div class="big-title">NOWA GRA</div>
+      <div class="sub-title">Gra Cywilizacyjna 4X &bull; Wersja 0.1 &bull; Kamie&#324; &amp; Br&#261;z</div>
+      <p>Wybierz sw&#243;j naród, epokę startową i reguły rozgrywki. Twoje decyzje ukształtują imperium — od prymitywnych osad do globalnej pot&#281;gi. Każda cywilizacja to inne bonusy, inna jednostka specjalna, inna droga do zwycięstwa.</p>
+    </div>
+    <button class="cta-btn" onclick="nextStep()">Rozpocznij Konfigurację &rarr;</button>
+  </div>
+
+  <!-- STEP 2 -->
+  <div class="sp" id="step2">
+    <div class="sh">
+      <div class="ew">Krok 2 z 5</div>
+      <h2>Wybór Cywilizacji</h2>
+      <div class="sh-div"><div class="sh-line"></div><div class="sh-dot"></div><div class="sh-line r"></div></div>
+    </div>
+    <div class="civ-layout">
+      <div class="civ-grid" id="civgrid"></div>
+      <div class="civ-detail">
+        <div class="civ-empty" id="civempty">
+          <span class="arr">&#8592;</span>
+          Wybierz cywilizację, aby zobaczyć szczegóły bonusów i jednostkę specjalną.
+        </div>
+        <div class="civ-dc" id="civdc"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 3 -->
+  <div class="sp" id="step3">
+    <div class="sh">
+      <div class="ew">Krok 3 z 5</div>
+      <h2>Epoka Startowa</h2>
+      <div class="sh-div"><div class="sh-line"></div><div class="sh-dot"></div><div class="sh-line r"></div></div>
+    </div>
+    <div class="epoch-grid" id="epochgrid"></div>
+    <div class="epoch-note">Wersja 0.1 udostępnia Epok&#281; Kamienia i Epok&#281; Br&#261;zu. Kolejne epoki będą odblokowywane w następnych aktualizacjach.</div>
+  </div>
+
+  <!-- STEP 4 -->
+  <div class="sp" id="step4">
+    <div class="sh">
+      <div class="ew">Krok 4 z 5</div>
+      <h2>Ustawienia Rozgrywki</h2>
+      <div class="sh-div"><div class="sh-line"></div><div class="sh-dot"></div><div class="sh-line r"></div></div>
+    </div>
+    <div class="sett-grid" id="settgrid"></div>
+    <div class="sett-actions">
+      <button class="btn-adv" onclick="showAdv()">&#9881;&nbsp; Zaawansowane Opcje</button>
+      <button class="btn-start" onclick="gotoStep(5)">&#9670;&nbsp; ROZPOCZNIJ GR&#280; &nbsp;&#9670;</button>
+    </div>
+  </div>
+
+  <!-- STEP 5 -->
+  <div class="sp" id="step5">
+    <div class="loading-ring"></div>
+    <div class="gen-title">Generowanie &#346;wiata&hellip;</div>
+    <div class="gen-sub" id="genstatus">Tworzenie kontynentów</div>
+    <div class="gen-bar"><div class="gen-bar-fill"></div></div>
+    <div class="gen-params" id="genparams"></div>
+  </div>
+
+</div><!-- /content -->
+
+<!-- NAV -->
+<div id="nav">
+  <button class="navbtn btn-back" id="btnback" onclick="prevStep()">&#8592; Wstecz</button>
+  <span class="nav-info" id="navinfo">Krok 1 z 5</span>
+  <button class="navbtn btn-next" id="btnnext" onclick="nextStep()">Dalej &#8594;</button>
+</div>
+
+<!-- LEGEND -->
+<div id="legend">
+  <div class="leg-title">Legenda przepływu &mdash; parametry konfiguracji nowej gry</div>
+  <div class="leg-flow">
+    <div class="lfi">Menu Główne</div><div class="lfa">&#8594;</div>
+    <div class="lfi">Nowa Gra</div><div class="lfa">&#8594;</div>
+    <div class="lfi">Wybór Cywilizacji</div><div class="lfa">&#8594;</div>
+    <div class="lfi">Epoka Startowa</div><div class="lfa">&#8594;</div>
+    <div class="lfi">Ustawienia Rozgrywki</div><div class="lfa">&#8594;</div>
+    <div class="lfi">Generowanie &#346;wiata</div><div class="lfa">&#8594;</div>
+    <div class="lfi">&#9670; Mapa &#346;wiata</div>
+  </div>
+  <div class="leg-blocks">
+    <div class="lb">
+      <div class="lb-step">Krok 1 &mdash; Intro</div>
+      <ul>
+        <li>Ekran powitalny; prezentacja tytułu gry</li>
+        <li>Wejście do kreatora (brak parametrów)</li>
+      </ul>
+    </div>
+    <div class="lb">
+      <div class="lb-step">Krok 2 &mdash; Cywilizacja</div>
+      <ul>
+        <li><code>civilization_id</code> — 7 opcji</li>
+        <li>Profil bonusów i kar cywilizacji</li>
+        <li><code>super_unit</code> — jednostka specjalna</li>
+      </ul>
+    </div>
+    <div class="lb">
+      <div class="lb-step">Krok 3 &mdash; Epoka</div>
+      <ul>
+        <li><code>starting_epoch</code> — Kamień / Brąz</li>
+        <li>Zestaw startowych technologii</li>
+        <li>Startowe jednostki i budynki</li>
+      </ul>
+    </div>
+    <div class="lb">
+      <div class="lb-step">Krok 4 &mdash; Ustawienia</div>
+      <ul>
+        <li><code>difficulty</code> — Łatwy / Normalny / Trudny</li>
+        <li><code>map_size</code> — Mała / Średnia / Duża</li>
+        <li><code>rival_count</code> — 6 / 8 / 10 rywali</li>
+        <li><code>game_speed</code> — Standardowa / Szybka</li>
+        <li><code>advanced_options</code> — tryb, typ zwycięstwa, dyplomacja</li>
+      </ul>
+    </div>
+    <div class="lb">
+      <div class="lb-step">Krok 5 &mdash; Generowanie</div>
+      <ul>
+        <li>Podsumowanie wszystkich parametrów</li>
+        <li><code>map_seed</code> — losowy zarodek mapy</li>
+        <li>Animacja generowania świata</li>
+        <li>Przejście do ekranu mapy świata</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+</div><!-- /app -->
+
+<script>
+(function(){
+'use strict';
+
+var CIVS=[
+  {id:'grecy',name:'Grecy',em:'&#127963;',
+   bonuses:[
+    {t:'bp',tx:'Falanga zamiast zwykłych włóczników — wysoka odporność w formacji'},
+    {t:'bp',tx:'+25% obrona piechoty na otwartym terenie'},
+    {t:'bp',tx:'+15% produkcja kultury w miastach z akademią'},
+    {t:'bm',tx:'Słabsza kawaleria; trudniejszy dostęp do łuczników'}
+   ],su:'Falanga Macedońska'},
+  {id:'rzymianie',name:'Rzymianie',em:'&#9876;',
+   bonuses:[
+    {t:'bp',tx:'Legionista (miecz + pilum) — najpotężniejsza wczesna piechota'},
+    {t:'bp',tx:'+20% prędkość budowy dróg i fortyfikacji'},
+    {t:'bp',tx:'Miasta rosną szybciej dzięki administracji prowincjonalnej'},
+    {t:'bm',tx:'Wysokie koszty utrzymania armii; słabsi na trudnym terenie'}
+   ],su:'Kohorta Pretoriańska'},
+  {id:'chinczycy',name:'Chińczycy',em:'&#129409;',
+   bonuses:[
+    {t:'bp',tx:'Łucznicy i konnica +30% zasięgu i celności'},
+    {t:'bp',tx:'+20% przyrost nauki w każdej erze'},
+    {t:'bp',tx:'Dostęp do prochu jako pierwsi w epoce Żelaza'},
+    {t:'bm',tx:'Słabsza dyplomacja; wyższe koszty ekspansji poza granice'}
+   ],su:'Kusznicy Cesarscy (Crossbow Elite)'},
+  {id:'inkowie',name:'Inkowie',em:'&#129422;',
+   bonuses:[
+    {t:'bp',tx:'Procarze i oszczepnicy — silne wojsko dystansowe na starcie'},
+    {t:'bp',tx:'Lamy: tanie jednostki logistyczne bez potrzeby dróg'},
+    {t:'bp',tx:'+40% produkcja na terenach górskich i wzgórzach'},
+    {t:'bm',tx:'Brak własnych koni; kawaleria dopiero po podboju'}
+   ],su:'Królewska Gwardia (Inti Wawqi)'},
+  {id:'zulusi',name:'Zulusi',em:'&#128737;',
+   bonuses:[
+    {t:'bp',tx:'Impi — najszybsza piechota v0.1'},
+    {t:'bp',tx:'+35% prędkość ruchu w dżungli i sawannie'},
+    {t:'bp',tx:'Szturm z flanki daje +20% obrażeń'},
+    {t:'bm',tx:'Słabi na oblężeniach; brak specjalistów budowlanych'}
+   ],su:'Impi Amabutho'},
+  {id:'egipt',name:'Egipt',em:'&#129481;',
+   bonuses:[
+    {t:'bp',tx:'Rydwany wojenne — wyjątkowo silne w epoce Brązu'},
+    {t:'bp',tx:'Łucznicy z platform rydwanów (+20% zasięg)'},
+    {t:'bp',tx:'+30% produkcja wzdłuż rzek; cuda 25% szybciej'},
+    {t:'bm',tx:'Słabi z dala od rzek; piechota gorsza niż u innych cyw.'}
+   ],su:'Medżaj (Straż Faraona)'},
+  {id:'sumerowie',name:'Sumerowie',em:'&#129521;',
+   bonuses:[
+    {t:'bp',tx:'Ciężka piechota z brązu — najlepsza obrona punktowa v0.1'},
+    {t:'bp',tx:'Łucznicy sumeryjscy: duże obrażenia na krótki dystans'},
+    {t:'bp',tx:'Mocne rydwany bojowe z hakami — łamią formacje piesze'},
+    {t:'bm',tx:'Powolne jednostki; trudność z szybkim manewrowaniem'}
+   ],su:'Gwardia Królewska Sumeru'}
+];
+
+var EPOCHS=[
+  {id:'kamien',name:'Epoka Kamienia',icon:'&#129704;',
+   flavor:'Pierwsze osady, domestykacja zwierząt, kamienne narzędzia. Zbuduj fundamenty imperium od podstaw.',
+   avail:true,badge:'Dostępna'},
+  {id:'braz',name:'Epoka Brązu',icon:'&#9874;',
+   flavor:'Metalurgia i pierwsze armie. Rydwany, mury obronne, wczesna dyplomacja.',
+   avail:true,badge:'Dostępna'},
+  {id:'zelazo',name:'Epoka Żelaza',icon:'&#9876;',
+   flavor:'Hartowane ostrza, potężne legiony, szlaki handlowe.',
+   avail:false,badge:'Wkrótce'},
+  {id:'klas',name:'Era Klasyczna',icon:'&#127994;',
+   flavor:'Filozofia, prawo, wielkie imperia śródziemnomorskie.',
+   avail:false,badge:'Wkrótce'},
+  {id:'sr',name:'Średniowiecze',icon:'&#127984;',
+   flavor:'Rycerze, feudalizm, kościoły i krucjaty.',
+   avail:false,badge:'Wkrótce'},
+  {id:'ren',name:'Renesans',icon:'&#9875;',
+   flavor:'Wielkie odkrycia, proch, ekspansja kolonialna.',
+   avail:false,badge:'Wkrótce'}
+];
+
+var SETT=[
+  {key:'difficulty',lbl:'Poziom trudności',
+   opts:['Łatwy','Normalny','Trudny'],idx:1,
+   descs:['Mniejsze AI; więcej zasobów startowych','Klasyczna rozgrywka 4X','Agresywne AI; kary za każdy błąd']},
+  {key:'map_size',lbl:'Rozmiar mapy',
+   opts:['Mała','Średnia','Duża'],idx:1,
+   descs:['~30×20 heksów','~50×35 heksów','~80×55 heksów']},
+  {key:'rival_count',lbl:'Liczba rywali',
+   opts:['6','8','10'],idx:1,
+   descs:['Mniej starć dyplomatycznych','Optymalna liczba frakcji','Gęsta mapa; szybkie wojny']},
+  {key:'game_speed',lbl:'Prędkość gry',
+   opts:['Standardowa','Szybka'],idx:0,
+   descs:['Pełny czas na decyzje (tur)','Skrócone tury; szybsza rozgrywka']}
+];
+
+var curStep=1, selCiv=null, selEpoch='kamien';
+
+/* ---- render civs ---- */
+function renderCivs(){
+  var g=document.getElementById('civgrid');
+  g.innerHTML='';
+  CIVS.forEach(function(c){
+    var d=document.createElement('div');
+    d.className='civ-card'+(selCiv===c.id?' sel':'');
+    d.innerHTML='<div class="civ-emblem">'+c.em+'</div><div class="civ-name">'+c.name+'</div>';
+    d.onclick=function(){selectCiv(c.id);};
+    g.appendChild(d);
+  });
+}
+
+function selectCiv(id){
+  selCiv=id;
+  renderCivs();
+  var c=CIVS.find(function(x){return x.id===id;});
+  document.getElementById('civempty').style.display='none';
+  var dc=document.getElementById('civdc');
+  dc.className='civ-dc vis';
+  var bHTML=c.bonuses.map(function(b){
+    return '<div class="bonus '+b.t+'"><div class="bdot"></div><span>'+b.tx+'</span></div>';
+  }).join('');
+  dc.innerHTML=
+    '<div class="civ-dh">'+
+      '<div class="civ-dem">'+c.em+'</div>'+
+      '<div><div class="civ-dn">'+c.name+'</div>'+
+      '<div style="font-size:10px;color:var(--text-muted);font-family:Arial,sans-serif;letter-spacing:.2em;text-transform:uppercase;margin-top:2px">Cywilizacja</div></div>'+
+    '</div>'+
+    '<div class="civ-ds"><div class="dlbl">Cechy &amp; Bonusy</div>'+bHTML+'</div>'+
+    '<div class="su-box"><div class="su-lbl">&#9670; Jednostka Specjalna</div><div class="su-name">'+c.su+'</div></div>';
+  updateNav();
+}
+
+/* ---- render epochs ---- */
+function renderEpochs(){
+  var g=document.getElementById('epochgrid');
+  g.innerHTML='';
+  EPOCHS.forEach(function(e){
+    var d=document.createElement('div');
+    var cls='ec'+(e.avail?' avail':' locked');
+    if(e.avail&&selEpoch===e.id) cls+=' selep';
+    d.className=cls;
+    var bc=e.avail?(selEpoch===e.id?'eb-sel':'eb-avail'):'eb-lock';
+    var fc='ec-flavor'+(e.avail?'':' locked');
+    d.innerHTML=
+      '<div class="ec-icon">'+e.icon+'</div>'+
+      '<div class="ec-name">'+e.name+'</div>'+
+      '<div class="ec-badge '+bc+'">'+e.badge+'</div>'+
+      '<div class="'+fc+'">'+e.flavor+'</div>';
+    if(e.avail){(function(eid){d.onclick=function(){selEpoch=eid;renderEpochs();updateNav();};})(e.id);}
+    g.appendChild(d);
+  });
+}
+
+/* ---- render settings ---- */
+function renderSett(){
+  var g=document.getElementById('settgrid');
+  g.innerHTML='';
+  SETT.forEach(function(s,i){
+    var r=document.createElement('div');
+    r.className='srow';
+    r.innerHTML=
+      '<div class="slbl">'+s.lbl+'</div>'+
+      '<div class="sctl">'+
+        '<button class="arrbtn" onclick="chSett('+i+',-1)">&#8249;</button>'+
+        '<div class="sval" id="sv'+i+'">'+s.opts[s.idx]+'<span class="vdesc">'+s.descs[s.idx]+'</span></div>'+
+        '<button class="arrbtn" onclick="chSett('+i+',1)">&#8250;</button>'+
+      '</div>';
+    g.appendChild(r);
+  });
+}
+
+window.chSett=function(i,d){
+  var s=SETT[i];
+  s.idx=(s.idx+d+s.opts.length)%s.opts.length;
+  var el=document.getElementById('sv'+i);
+  el.innerHTML=s.opts[s.idx]+'<span class="vdesc">'+s.descs[s.idx]+'</span>';
+};
+
+window.showAdv=function(){
+  alert('Zaawansowane opcje (w pełnej wersji):\n\n• Tryb rozgrywki: turowy / real-time\n• Typ zwycięstwa: militarne / kulturowe / naukowe / dyplomatyczne\n• Widoczność mapy: mgła wojenna / odkryta\n• Zasady dyplomacji: standardowe / agresywne / pacyfistyczne\n• Mnożnik zasobów startowych\n• Poziom szczegółowości bitew');
+};
+
+/* ---- render gen summary ---- */
+function renderGen(){
+  var civName=selCiv?CIVS.find(function(c){return c.id===selCiv;}).name:'(nie wybrano)';
+  var epName=EPOCHS.find(function(e){return e.id===selEpoch;}).name;
+  var rows=[
+    ['Cywilizacja',civName],
+    ['Epoka startowa',epName],
+    ['Poziom trudności',SETT[0].opts[SETT[0].idx]],
+    ['Rozmiar mapy',SETT[1].opts[SETT[1].idx]],
+    ['Liczba rywali',SETT[2].opts[SETT[2].idx]+' frakcji'],
+    ['Prędkość gry',SETT[3].opts[SETT[3].idx]],
+    ['Seed mapy','#'+Math.floor(Math.random()*999999).toString().padStart(6,'0')]
+  ];
+  var p=document.getElementById('genparams');
+  p.innerHTML=rows.map(function(r){
+    return '<div class="prow"><span class="pk">'+r[0]+'</span><span class="pv">'+r[1]+'</span></div>';
+  }).join('');
+}
+
+var genMsgs=['Tworzenie kontynentów','Rozmieszczanie rzek i gór','Generowanie zasobów surowcowych',
+  'Inicjalizacja frakcji AI','Rozmieszczanie cywilizacji','Ustawienie mgły wojennej','Finalizowanie parametrów…'];
+
+function startGen(){
+  var i=0, el=document.getElementById('genstatus');
+  var iv=setInterval(function(){
+    i++;
+    if(i<genMsgs.length){el.textContent=genMsgs[i];}
+    else{clearInterval(iv);el.textContent='Świat gotowy. Ładowanie mapy świata…';}
+  },550);
+}
+
+/* ---- navigation ---- */
+function updateNav(){
+  for(var i=1;i<=5;i++){
+    var si=document.getElementById('si-'+i);
+    si.className='si'+(i<curStep?' done':i===curStep?' active':'');
+  }
+  document.querySelectorAll('.sp').forEach(function(p){p.classList.remove('active');});
+  var p=document.getElementById('step'+curStep);
+  p.classList.add('active','fade-in');
+  setTimeout(function(){p.classList.remove('fade-in');},400);
+
+  document.getElementById('navinfo').textContent=
+    curStep===5?'Generowanie świata':'Krok '+curStep+' z 5';
+  document.getElementById('btnback').style.visibility=curStep===1?'hidden':'visible';
+  var nb=document.getElementById('btnnext');
+  nb.style.display=(curStep>=4)?'none':'';
+  nb.disabled=(curStep===2&&!selCiv);
+}
+
+window.nextStep=function(){
+  if(curStep===2&&!selCiv)return;
+  if(curStep<5){curStep++;updateNav();}
+  if(curStep===5){renderGen();startGen();}
+};
+window.prevStep=function(){if(curStep>1){curStep--;updateNav();}};
+window.gotoStep=function(n){if(n<curStep){curStep=n;updateNav();}};
+
+/* boot */
+renderCivs();
+renderEpochs();
+renderSett();
+updateNav();
+
+})();
+</script>
+</body>
+</html>

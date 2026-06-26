@@ -1,0 +1,168 @@
+'use strict';
+/**
+ * upkeep-test.cjs -- standalone Node test for src/game/economy-upkeep.ts.
+ * Run from gra/:  node tools/upkeep-test.cjs
+ *
+ * Self-contained: bundles upkeep.ts with esbuild to a temp CJS file, then
+ * requires it and runs assertions. upkeep.ts uses only `import type` (BuildingRecord
+ * from economy.ts), which esbuild erases -- so the bundle needs ONLY upkeep.ts.
+ * Pure logic; no DOM, no THREE. Assertions anchored to Spec-ekonomia.md s.6/s.7.
+ */
+
+const fs   = require('fs');
+const path = require('path');
+
+// --- esbuild ---------------------------------------------------------------
+const esbuild = (() => {
+  const apiPath = path.resolve(__dirname, '..', 'node_modules', 'esbuild');
+  try { return require(apiPath); }
+  catch (e) {
+    console.error('[upkeep-test] esbuild not found. Run: npm install (from gra/)');
+    process.exit(1);
+  }
+})();
+
+const ENTRY_FILE  = path.resolve(__dirname, '.upkeep-entry.ts');
+const BUNDLE_FILE = path.resolve(__dirname, '.upkeep-bundle.cjs');
+
+const ENTRY_TS = `
+export {
+  DEFAULT_STORAGE_PARAMS, loadStorageParams,
+  foodStorageCapacity, resourceStorageCapacityPerType,
+  clampStore, emptyCityStores, applyFood, applyResourceIntake,
+  globalResourceCapacityPerType, onCityLost, onCityConquered,
+  DEFAULT_UPKEEP_PARAMS, loadUpkeepParams,
+  buildingUpkeep, totalBuildingUpkeep,
+  DEFAULT_UNIT_UPKEEP_BY_CATEGORY, unitUpkeep, totalUnitUpkeep,
+  buildUnitUpkeepTable, militaryFoodConsumption, upkeepBalance,
+} from '../src/game/economy-upkeep';
+`;
+
+fs.writeFileSync(ENTRY_FILE, ENTRY_TS, 'utf8');
+
+try {
+  esbuild.buildSync({
+    entryPoints: [ENTRY_FILE],
+    bundle: true,
+    platform: 'node',
+    format: 'cjs',
+    target: 'node18',
+    outfile: BUNDLE_FILE,
+    logLevel: 'silent',
+  });
+} catch (e) {
+  console.error('[upkeep-test] esbuild bundling failed:\n', e.message || e);
+  process.exit(1);
+}
+
+const U = require(BUNDLE_FILE);
+
+// --- tiny assertion framework ----------------------------------------------
+let passed = 0;
+let failed = 0;
+function assert(cond, msg) {
+  if (cond) { passed++; }
+  else { failed++; console.error('  FAIL:', msg); }
+}
+function eq(a, b, msg) { assert(a === b, `${msg} (got ${JSON.stringify(a)}, want ${JSON.stringify(b)})`); }
+
+// ===========================================================================
+// A. STORAGE  (Spec s.7)
+// ===========================================================================
+const SP = U.DEFAULT_STORAGE_PARAMS;           // {20, 10, 5}
+eq(SP.bazaZywnosc, 20, 's7: default food base 20');
+eq(SP.bazaSurowce, 10, 's7: default resource base 10');
+eq(SP.mnoznikMagazynu, 5, 's7: default multiplier 5');
+
+// s.7.1 food capacity
+eq(U.foodStorageCapacity(false, SP), 20,  's7.1: food cap without Spichlerz = 20');
+eq(U.foodStorageCapacity(true,  SP), 100, 's7.1: food cap with Spichlerz = 100');
+// s.7.2 resource capacity per type
+eq(U.resourceStorageCapacityPerType(false, SP), 10, 's7.2: resource cap without Magazyn = 10');
+eq(U.resourceStorageCapacityPerType(true,  SP), 50, 's7.2: resource cap with Magazyn = 50');
+
+// clampStore: overflow lost, negatives floored
+let c = U.clampStore(120, 100);
+eq(c.stored, 100, 's7: clamp 120@100 -> stored 100'); eq(c.overflow, 20, 's7: clamp 120@100 -> overflow 20');
+c = U.clampStore(30, 100);  eq(c.stored, 30, 's7: clamp 30@100 stored'); eq(c.overflow, 0, 's7: clamp 30@100 no overflow');
+c = U.clampStore(-5, 100);  eq(c.stored, 0, 's7: negative floored to 0'); eq(c.overflow, 0, 's7: negative no overflow');
+
+// applyFood: net change then ceiling (s.7.1)
+let f = U.applyFood(90, 35, 100); eq(f.stored, 100, 's7.1: applyFood 90+35@100 -> 100'); eq(f.overflow, 25, 's7.1: applyFood overflow 25');
+f = U.applyFood(40, 8, 100);      eq(f.stored, 48, 's7.1: applyFood 40+8 -> 48'); eq(f.overflow, 0, 's7.1: applyFood no overflow');
+
+// applyResourceIntake: per-type cap, pure
+const r = U.applyResourceIntake({ zywnosc: 0, surowce: { Drewno: 48 } }, { Drewno: 5, Kamien: 3 }, 50);
+eq(r.stores.surowce.Drewno, 50, 's7.2: Drewno capped at 50'); eq(r.overflow.Drewno, 3, 's7.2: Drewno overflow 3');
+eq(r.stores.surowce.Kamien, 3, 's7.2: Kamien intake stored 3'); assert(r.overflow.Kamien === undefined, 's7.2: Kamien no overflow');
+
+// s.7.3 global capacity: 3 Magazyn (50 each) + 1 base (10) = 160 (spec example)
+eq(U.globalResourceCapacityPerType([true, true, true, false], SP), 160, 's7.3: global per-type = 160');
+
+// s.7.3 events
+const lost = U.onCityLost(); eq(lost.zywnosc, 0, 's7.3: lost city food 0'); eq(Object.keys(lost.surowce).length, 0, 's7.3: lost city resources empty');
+const conq = U.onCityConquered(
+  { zywnosc: 80, surowce: { Drewno: 40 } },
+  { zywnosc: 50, surowce: { Drewno: 30, Kamien: 10 } },
+  100, 50);
+eq(conq.stores.zywnosc, 100, 's7.3: conquered food 80+50 clamp 100'); eq(conq.overflow.zywnosc, 30, 's7.3: conquered food overflow 30');
+eq(conq.stores.surowce.Drewno, 50, 's7.3: conquered Drewno 40+30 clamp 50'); eq(conq.stores.surowce.Kamien, 10, 's7.3: conquered Kamien 10');
+
+// loadStorageParams: reads globalne group, falls back on missing
+const rawOk = { globalne: { magazyn_baza_zywnosc: { easy: 25, normal: 20, hard: 15 }, magazyn_baza_surowce: { normal: 10 }, magazyn_mnoznik_spichlerz: { normal: 5 } } };
+eq(U.loadStorageParams(rawOk, 'easy').bazaZywnosc, 25, 'load: storage easy food base 25');
+eq(U.loadStorageParams({}, 'normal').bazaZywnosc, 20, 'load: storage missing -> fallback 20');
+
+// ===========================================================================
+// B. MAINTENANCE  (Spec s.6)
+// ===========================================================================
+const UP = U.DEFAULT_UPKEEP_PARAMS;
+eq(UP.zywnoscJednostkaRuch, 1, 's6.3: default unit food marching 1');
+eq(UP.zywnoscJednostkaOboz, 0.5, 's6.3: default unit food camping 0.5');
+
+// s.6.1 building upkeep (flat override = v0.1 niezroznicowany)
+eq(U.buildingUpkeep({ utrzymanie: 1, przyrostUtrzymania: 0 }, 1, 1), 1, 's6.1: flat override 1');
+// without override: compound floor(utrzymanie * 1.10^(level-1)) [decyzja Naster, mirrors buildingValue]
+// level 1: floor(1 * 1.10^0) = 1; level 2: floor(1 * 1.10) = 1; level 3: floor(1 * 1.21) = 1
+eq(U.buildingUpkeep({ utrzymanie: 1, przyrostUtrzymania: 0.5 }, 1), 1, 's6.1: compound lvl1 = 1');
+eq(U.buildingUpkeep({ utrzymanie: 1, przyrostUtrzymania: 0.5 }, 3), 1, 's6.1: compound lvl3 = floor(1.21) = 1');
+// higher base: utrzymanie=10, level 3 -> floor(10 * 1.21) = 12
+eq(U.buildingUpkeep({ utrzymanie: 10, przyrostUtrzymania: 2 }, 3), 12, 's6.1: compound base10 lvl3 = floor(12.1) = 12');
+// 12 buildings flat 1 = 12 (spec s.8.4 example)
+const blds = Array.from({ length: 12 }, () => ({ record: { utrzymanie: 1, przyrostUtrzymania: 0 }, level: 1 }));
+eq(U.totalBuildingUpkeep(blds, 1), 12, 's8.4: 12 buildings * 1 = 12');
+
+// s.6.2 unit upkeep: typeId table > category default > standard
+const tbl = U.buildUnitUpkeepTable([{ Jednostka: 'Hetairoi', 'Utrzymanie (Pieniadz/ture)': 3 }]);
+eq(U.unitUpkeep({ typeId: 'Hetairoi', category: 'konnica' }, tbl, 1), 3, 's6.2: exact typeId from table = 3');
+eq(U.unitUpkeep({ typeId: 'X', category: 'falanga' }, {}, 1), 2, 's6.2: category falanga default = 2');
+eq(U.unitUpkeep({ typeId: 'X', category: 'super' }, {}, 1), 0, 's6.2: super-unit upkeep 0');
+eq(U.unitUpkeep({ typeId: 'X', category: 'nieznana' }, {}, 1), 1, 's6.2: unknown -> standard 1');
+
+// s.6.3 military food: 4 camping = 2; 4 marching = 4; mixed
+eq(U.militaryFoodConsumption([{camping:true},{camping:true},{camping:true},{camping:true}], UP), 2, 's6.3: 4 camping -> 2 food');
+eq(U.militaryFoodConsumption([{camping:false},{camping:false},{camping:false},{camping:false}], UP), 4, 's6.3: 4 marching -> 4 food');
+eq(U.militaryFoodConsumption([{camping:true},{camping:false}], UP), 1.5, 's6.3: 1 camp + 1 march -> 1.5');
+
+// s.6.4 / s.8.4 balance: income 8, 12 buildings (*1) + 5 units (lucznik=1) = 17 -> saldo -9, deficit
+const units5 = Array.from({ length: 5 }, () => ({ typeId: 'L', category: 'lucznik' }));
+const bal = U.upkeepBalance(8, blds, units5, {}, UP);
+eq(bal.utrzymanieBudynki, 12, 's8.4: building upkeep 12');
+eq(bal.utrzymanieJednostki, 5, 's8.4: unit upkeep 5');
+eq(bal.utrzymanieRazem, 17, 's8.4: total upkeep 17');
+eq(bal.saldo, -9, 's8.4: saldo 8-17 = -9');
+eq(bal.deficyt, true, 's8.4: deficit flagged');
+// surplus case: no deficit
+const balPlus = U.upkeepBalance(20, blds, units5, {}, UP);
+eq(balPlus.saldo, 3, 's6.4: surplus saldo 20-17 = 3'); eq(balPlus.deficyt, false, 's6.4: no deficit');
+
+// loadUpkeepParams: reads correct groups + fallback
+const rawUp = { ekonomia_miasta: { zywnosc_jednostka_oboz: { normal: 0.5 } }, budynki: { utrzymanie_budynek: { normal: 1, hard: 2 } }, globalne: { utrzymanie_jednostka_standard: { normal: 1 } } };
+eq(U.loadUpkeepParams(rawUp, 'hard').budynekUtrzymanieFlat, 2, 'load: building upkeep hard = 2');
+eq(U.loadUpkeepParams({}, 'normal').jednostkaUtrzymanieStd, 1, 'load: unit std missing -> fallback 1');
+
+// --- summary ---------------------------------------------------------------
+console.log(`\nupkeep-test: ${passed} passed, ${failed} failed`);
+try { fs.unlinkSync(ENTRY_FILE); } catch (e) {}
+try { fs.unlinkSync(BUNDLE_FILE); } catch (e) {}
+process.exit(failed ? 1 : 0);

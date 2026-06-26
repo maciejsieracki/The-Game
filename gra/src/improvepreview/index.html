@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="pl"><head>
+<script>(function(){function e(m){var d=document.getElementById('__e__');if(!d){d=document.createElement('div');d.id='__e__';d.style.cssText='position:fixed;top:0;left:0;width:100%;background:rgba(180,0,0,.95);color:#fff;font:bold 13px/1.5 monospace;padding:16px;z-index:9;white-space:pre-wrap;';(document.body||document.documentElement).appendChild(d);}d.innerHTML+='\n'+String(m);}window.onerror=function(m,s,l,c,err){e((err?err.message:m)+' @'+s+':'+l+':'+c+(err&&err.stack?'\n'+err.stack:''));return false;};window.addEventListener('unhandledrejection',function(ev){e('Rejection: '+String(ev.reason));});})();</script>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Ulepszenia terenu — podglad</title>
+<style>*{margin:0;padding:0;box-sizing:border-box}html,body{width:100%;height:100%;overflow:hidden;background:#9fcfe6}#c{display:block;width:100vw;height:100vh}
+#hud{position:fixed;top:10px;left:10px;background:rgba(20,24,32,.74);color:#eaeefc;border:1px solid rgba(255,255,255,.18);border-radius:10px;padding:10px 12px;font-family:system-ui,Arial,sans-serif;max-width:560px}
+#hud h1{font-size:14px;color:#ffd479;margin-bottom:6px}#hud .hint{font-size:11px;color:#8fa0c0;margin-top:8px;line-height:1.5}
+#imps{display:flex;flex-wrap:wrap;gap:5px}#imps a{font-size:11px;color:#dbe4ff;text-decoration:none;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.16);border-radius:7px;padding:3px 8px}#imps a.on{background:#ffd479;color:#23304a;border-color:#ffd479;font-weight:700}
+#legend{position:fixed;top:10px;right:10px;background:rgba(20,24,32,.74);color:#eaeefc;border:1px solid rgba(255,255,255,.18);border-radius:10px;padding:8px 11px;font-family:system-ui,Arial,sans-serif;font-size:11px;line-height:1.6;max-width:230px}</style>
+</head><body>
+<canvas id="c"></canvas>
+<div id="hud"><h1 id="title">Ulepszenia terenu</h1><div id="imps"></div>
+<div class="hint">Przeciagnij = obrot &middot; kolko = zoom &middot; WASD = przesuw. Kolumny = tereny (kolejnosc w legendzie).</div></div>
+<div id="legend"></div>
+<script type="module" src="/src/improvepreview/main.ts"></script>
+</body></html>

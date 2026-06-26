@@ -1,0 +1,579 @@
+{
+  "params": {
+    "handelZawarcie_zaufanie": 2,
+    "pomocSojusznikowi_zaufanie": 10,
+    "wspolnyWrogNawiazanie_zaufanie": 5,
+    "dar_zaufanie": 6,
+    "zlamanaPaktGracz_zaufanie": -40,
+    "zlamanaPaktAI_zaufanie": -20,
+    "zdrada_zaufanie": -50,
+    "szpiegWykryty_zaufanie": -15,
+    "rywalizacjaTenSamTyp_zaufanie": -20,
+    "roznicaKulturowa_zaufanie": -5,
+    "przewagaMilitarna_respekt": 15,
+    "slabszyMilitarnie_respekt": -10,
+    "wygraBitwa_respekt": 5,
+    "trybut_respekt": 10,
+    "wspolnyWrogAkceptacja_respekt": 10,
+    "handel_zaufanie_perTura": 1,
+    "aktywnyPakt_zaufanie_perTura": 1,
+    "dobraWola_zaufanie_perTura": 1,
+    "wspolnyWrog_zaufanie_perTura": 1,
+    "wspolnaReligia_zaufanie_perTura": 0.5,
+    "odmiennaReligia_zaufanie_perTura": -0.5,
+    "ekspansjaGranica_zaufanie_perTura": -2,
+    "urazyHistoryczne_zaufanie_perTura": -2,
+    "progSojuszZaufanie": 60,
+    "progWymianaTechZaufanie": 70,
+    "progWasalizacjaRespekt": 70,
+    "progWchloniecieRespekt": 90,
+    "progMinimalnyRelacja": 30,
+    "progSojuszRelacja": 120,
+    "startZaufanie": 20,
+    "startRespekt": 30,
+    "mnoznikZaufania": 1,
+    "mnoznikRespektu": 1,
+    "mnoznikPodarunku": 1,
+    "turyEfektuPodarunku": 5,
+    "progPoboczneAkceptacja": 60,
+    "progPoboczneHandel": 30,
+    "progPoboczneWojna": 15
+  },
+  "akcje_dyplomatyczne": [
+    {
+      "Akcja": "1. Nawiązanie kontaktu",
+      "Opis": "Pierwszy kontakt — otwiera okno dyplomatyczne. Bez tego żadne dalsze akcje nie są możliwe. Automatyczne przy spotkaniu jednostek lub aktywowane przez posłańca.",
+      "Dostępne: Główni rywale": "TAK",
+      "Dostępne: Poboczni": "TAK",
+      "Koszt": "Bezpłatny przy spotkaniu; Posłaniec: 5 Pieniędzy (lub 50 Pracy przed Walutą)",
+      "Efekt": "Odblokowanie wszystkich dostępnych akcji; pierwsze wrażenie (+/− Relacja zależnie od siły i archetypu)"
+    },
+    {
+      "Akcja": "2. Pakt o nieagresji",
+      "Opis": "Obie strony zobowiązują się nie atakować przez N tur. Złamanie: −30 Relacja, −20 Zaufanie, kara reputacyjna u sąsiadów.",
+      "Dostępne: Główni rywale": "TAK",
+      "Dostępne: Poboczni": "UPR",
+      "Koszt": "Brak kosztu walutowego; wartość polityczna",
+      "Efekt": "Flaga NAP aktywny na 10–20 tur (negocjowalne). UPR: automatyczny, stały czas 10 tur"
+    },
+    {
+      "Akcja": "3. Sojusz wojskowy",
+      "Opis": "Formalne przymierze: atak na jedną stronę = atak na obie. Wypowiedzenie: −25 Relacja, −20 Zaufanie.",
+      "Dostępne: Główni rywale": "TAK",
+      "Dostępne: Poboczni": "NIE",
+      "Koszt": "Negocjacja — może wymagać opłaty lub wymiany technologii jako gwarantu",
+      "Efekt": "Automatyczne wejście do wojen partnera (lub odmowa: −15 Zaufanie). Czas: bezterminowy"
+    },
+    {
+      "Akcja": "4. Otwarte granice / prawo przemarszu",
+      "Opis": "Zezwolenie na swobodny ruch jednostek cywilnych lub wojskowych. Nieautoryzowany przemarsz: −15 Relacja/tura.",
+      "Dostępne: Główni rywale": "TAK",
+      "Dostępne: Poboczni": "UPR",
+      "Koszt": "Cywilne: 10–30 Pieniędzy; Wojskowe: 20–60 Pieniędzy + wzajemność",
+      "Efekt": "Jednostki poruszają się swobodnie przez obce terytorium. UPR: tylko cywilne, bez negocjacji ceny"
+    },
+    {
+      "Akcja": "5. Umowa handlowa",
+      "Opis": "Regularny lub jednorazowy transfer surowców, Pracy lub Pieniędzy. Handel Pieniądzem wymaga Waluty u obu stron. Zerwanie: −15 Relacja, −10 Zaufanie.",
+      "Dostępne: Główni rywale": "TAK",
+      "Dostępne: Poboczni": "UPR",
+      "Koszt": "Określony w treści umowy (np. 10 Pieniędzy/tura za dostęp do rudy)",
+      "Efekt": "Transfer zasobów; +2 Relacja/tura, +1 Zaufanie/tura przy aktywnym handlu. UPR: jednorazowe transakcje"
+    },
+    {
+      "Akcja": "6. Wymiana / sprzedaż technologii",
+      "Opis": "Przekazanie wynalazku drugiej stronie — sprzedaż lub wymiana za inną technologię / surowce / Pieniądze. Wymiana bezpłatna: +5 Zaufanie.",
+      "Dostępne: Główni rywale": "TAK",
+      "Dostępne: Poboczni": "NIE",
+      "Koszt": "Sprzedaż: 50–300 Pieniędzy (zależnie od epoki); Wymiana: technologia o zbliżonej wartości",
+      "Efekt": "Kupujący zyskuje technologię natychmiast; sprzedający traci przewagę lecz zysk finansowy/reputacyjny"
+    },
+    {
+      "Akcja": "7. Wspólny wróg / namowa do wojny",
+      "Opis": "Prośba do cywilizacji, by wypowiedziała wojnę wskazanemu wrogowi. Skuteczność zależy od Respektu i Relacji.",
+      "Dostępne: Główni rywale": "TAK",
+      "Dostępne: Poboczni": "NIE",
+      "Koszt": "30–150 Pieniędzy (łapówka) lub zobowiązanie do ataku / oddanie surowców",
+      "Efekt": "Akceptacja: wskazana cyw. wypowiada wojnę + gracz: +10 Respekt, +5 Relacja z namówionym. Odmowa: brak skutku"
+    },
+    {
+      "Akcja": "8. Żądanie / oferta trybutu",
+      "Opis": "Silniejsza strona żąda płatności od słabszej. Można też odwrócić — zaoferować trybut, by uniknąć konfliktu.",
+      "Dostępne: Główni rywale": "TAK",
+      "Dostępne: Poboczni": "TAK",
+      "Koszt": "Żądanie: ≥10 Pieniędzy/tura; Oferta: dowolna kwota",
+      "Efekt": "Akceptacja żądania: płatności + +10 Respekt; Odmowa: −10 Relacja, casus belli. Oferta: +5 Relacja"
+    },
+    {
+      "Akcja": "9. Ultimatum / groźba",
+      "Opis": "Żądanie natychmiastowego spełnienia warunku (wycofanie wojsk, oddanie miasta itp.) pod groźbą wojny.",
+      "Dostępne: Główni rywale": "TAK",
+      "Dostępne: Poboczni": "UPR",
+      "Koszt": "Brak kosztu walutowego; wysokie ryzyko reputacyjne przy nieuzasadnionym użyciu",
+      "Efekt": "Spełnienie: warunek zrealizowany, −5 Relacja u adresata. Odmowa: casus belli. UPR: tylko poddanie się"
+    },
+    {
+      "Akcja": "10. Propozycja pokoju / zawieszenia broni",
+      "Opis": "Zakończenie aktywnej wojny pokojem (trwałym) lub rozejmem (tymczasowym). Może zawierać warunki: reparacje, cesja terytoriów.",
+      "Dostępne: Główni rywale": "TAK",
+      "Dostępne: Poboczni": "TAK",
+      "Koszt": "Reparacje: 50–500 Pieniędzy lub cesja terytoriów (opcjonalne)",
+      "Efekt": "Pokój: +5 Relacja po czasie. Rozejm: na 5–15 tur bez kary za wznowienie. Odrzucenie: brak skutku"
+    },
+    {
+      "Akcja": "11. Wypowiedzenie wojny",
+      "Opis": "Formalna deklaracja stanu wojennego. Z casus belli lub bez (agresja niesprowokowana = kara reputacyjna).",
+      "Dostępne: Główni rywale": "TAK",
+      "Dostępne: Poboczni": "TAK",
+      "Koszt": "Brak kosztu walutowego; koszt reputacyjny zależny od kontekstu",
+      "Efekt": "Z casus belli: −10 Relacja u wszystkich. Bez c.b.: −25 Relacja u wszystkich, −20 Zaufanie, flaga agresor"
+    },
+    {
+      "Akcja": "12. Wasalizacja / wchłonięcie",
+      "Opis": "Słabsza cywilizacja staje się wasalem (zachowuje terytorium, płaci trybut) lub zostaje w pełni wchłonięta przez gracza.",
+      "Dostępne: Główni rywale": "TAK",
+      "Dostępne: Poboczni": "TAK",
+      "Koszt": "Wasalizacja: 100–300 Pieniędzy gwarancji + zobowiązanie ochrony; Wchłonięcie: kary reputacyjne",
+      "Efekt": "Wasal: trybut, prawo przemarszu, zakaz sojuszy bez zgody. Wchłonięcie: miasta przechodzą, niezadowolenie N tur"
+    }
+  ],
+  "parametry_relacji": [
+    {
+      "Parametr": "Relacja ogólna",
+      "Zakres": "0 … 200",
+      "Wartość startowa": 50,
+      "Opis": "Suma Zaufania + Respektu (Relacja = Zaufanie + Respekt, zakres 0–200). Określa dźwignię negocjacyjną. Poniżej 30: dyplomacja niemal niemożliwa; powyżej 120: sojusze osiągalne."
+    },
+    {
+      "Parametr": "Respekt / Strach",
+      "Zakres": "0 … 100",
+      "Wartość startowa": 30,
+      "Opis": "CZYSTA MOC (hard power). Zależy WYŁĄCZNIE od: siły/wielkości armii, liczby wygranych bitew i punktów mocy cywilizacji (Power = wojsko + miasta + gospodarka + epoka). Liczony WZGLĘDEM partnera."
+    },
+    {
+      "Parametr": "Zaufanie",
+      "Zakres": "0 … 100",
+      "Wartość startowa": 20,
+      "Opis": "RELACJA MIĘKKA / goodwill. Zmienia się od działań (pakty, pomoc, handel, podarunki). Każde działanie ma znak +/−. Część zmian jednorazowa, część co turę. Darmowe podarunki podnoszą zaufanie z czasem."
+    }
+  ],
+  "zmiany_parametrów": [
+    {
+      "Zdarzenie / Działanie": "Aktywny handel (trwa umowa handlowa)",
+      "Parametr": "Zaufanie",
+      "Zmiana": "+1",
+      "Znak (+/−)": "+",
+      "Typ (co turę / jednorazowo)": "co turę",
+      "Uwagi": "Przez cały czas trwania umowy handlowej"
+    },
+    {
+      "Zdarzenie / Działanie": "Zawarcie umowy handlowej",
+      "Parametr": "Zaufanie",
+      "Zmiana": "+2",
+      "Znak (+/−)": "+",
+      "Typ (co turę / jednorazowo)": "jednorazowo",
+      "Uwagi": "Bonus przy podpisaniu nowej umowy"
+    },
+    {
+      "Zdarzenie / Działanie": "Dotrzymany pakt (NAP lub sojusz trwa)",
+      "Parametr": "Zaufanie",
+      "Zmiana": "+1",
+      "Znak (+/−)": "+",
+      "Typ (co turę / jednorazowo)": "co turę",
+      "Uwagi": "Pasywny bonus za każdą turę aktywnego paktu"
+    },
+    {
+      "Zdarzenie / Działanie": "Pomoc w wojnie sojusznikowi",
+      "Parametr": "Zaufanie",
+      "Zmiana": "+10",
+      "Znak (+/−)": "+",
+      "Typ (co turę / jednorazowo)": "jednorazowo",
+      "Uwagi": "Bonus po zakończeniu wspólnej kampanii"
+    },
+    {
+      "Zdarzenie / Działanie": "Wspólny wróg — nawiązanie kooperacji",
+      "Parametr": "Zaufanie",
+      "Zmiana": "+5",
+      "Znak (+/−)": "+",
+      "Typ (co turę / jednorazowo)": "jednorazowo",
+      "Uwagi": "Bonus przy ustanowieniu wspólnego wroga"
+    },
+    {
+      "Zdarzenie / Działanie": "Wspólny wróg (trwa aktywna kooperacja)",
+      "Parametr": "Zaufanie",
+      "Zmiana": "+1",
+      "Znak (+/−)": "+",
+      "Typ (co turę / jednorazowo)": "co turę",
+      "Uwagi": "Przez cały czas trwania współpracy"
+    },
+    {
+      "Zdarzenie / Działanie": "Podarunek surowca / Pieniądza (gratis)",
+      "Parametr": "Zaufanie",
+      "Zmiana": "+6",
+      "Znak (+/−)": "+",
+      "Typ (co turę / jednorazowo)": "jednorazowo",
+      "Uwagi": "Darmowy dar bez wymiany wzajemnej; goodwill jednorazowy"
+    },
+    {
+      "Zdarzenie / Działanie": "Podarunek surowca / Pieniądza (gratis)",
+      "Parametr": "Zaufanie",
+      "Zmiana": "+1",
+      "Znak (+/−)": "+",
+      "Typ (co turę / jednorazowo)": "co turę",
+      "Uwagi": "Efekt dobrej woli utrzymuje się kilka tur po podarunku"
+    },
+    {
+      "Zdarzenie / Działanie": "Wspólna religia",
+      "Parametr": "Zaufanie",
+      "Zmiana": "+0.5 (max +15)",
+      "Znak (+/−)": "+",
+      "Typ (co turę / jednorazowo)": "co turę",
+      "Uwagi": "Pasywny bonus gdy obie cywilizacje wyznają tę samą religię"
+    },
+    {
+      "Zdarzenie / Działanie": "Odmienna religia",
+      "Parametr": "Zaufanie",
+      "Zmiana": "-0.5 (max -10)",
+      "Znak (+/−)": "-",
+      "Typ (co turę / jednorazowo)": "co turę",
+      "Uwagi": "Pasywne tarcia; istotniejsze w epoce religijnej"
+    },
+    {
+      "Zdarzenie / Działanie": "Ekspansja / osadnictwo przy granicy",
+      "Parametr": "Zaufanie",
+      "Zmiana": "-2",
+      "Znak (+/−)": "-",
+      "Typ (co turę / jednorazowo)": "co turę",
+      "Uwagi": "Gracz lub AI zakłada miasto / przesuwa wojska przy granicy"
+    },
+    {
+      "Zdarzenie / Działanie": "Złamany pakt przez gracza",
+      "Parametr": "Zaufanie",
+      "Zmiana": "-40",
+      "Znak (+/−)": "-",
+      "Typ (co turę / jednorazowo)": "jednorazowo",
+      "Uwagi": "Informacja rozchodzi się do sąsiadów (-5 Relacja u każdego)"
+    },
+    {
+      "Zdarzenie / Działanie": "Złamany pakt przez AI",
+      "Parametr": "Zaufanie",
+      "Zmiana": "-20",
+      "Znak (+/−)": "-",
+      "Typ (co turę / jednorazowo)": "jednorazowo",
+      "Uwagi": "Gracz traci Zaufanie do tej cywilizacji"
+    },
+    {
+      "Zdarzenie / Działanie": "Zdrada / atak z zaskoczenia (na gracza)",
+      "Parametr": "Zaufanie",
+      "Zmiana": "-50",
+      "Znak (+/−)": "-",
+      "Typ (co turę / jednorazowo)": "jednorazowo",
+      "Uwagi": "Flaga 'agresor'; kara reputacyjna globalna"
+    },
+    {
+      "Zdarzenie / Działanie": "Szpiegostwo wykryte przez przeciwnika",
+      "Parametr": "Zaufanie",
+      "Zmiana": "-15",
+      "Znak (+/−)": "-",
+      "Typ (co turę / jednorazowo)": "jednorazowo",
+      "Uwagi": "Gdy szpieg gracza zostaje schwytany (epoka późna)"
+    },
+    {
+      "Zdarzenie / Działanie": "Rywalizacja tego samego typu (start gry)",
+      "Parametr": "Zaufanie",
+      "Zmiana": "-20",
+      "Znak (+/−)": "-",
+      "Typ (co turę / jednorazowo)": "jednorazowo",
+      "Uwagi": "Startowa korekta przy inicjalizacji mapy (Grecy vs Grecy itp.)"
+    },
+    {
+      "Zdarzenie / Działanie": "Duża różnica kulturowa (różny typ)",
+      "Parametr": "Zaufanie",
+      "Zmiana": "-5",
+      "Znak (+/−)": "-",
+      "Typ (co turę / jednorazowo)": "jednorazowo",
+      "Uwagi": "Bazowe tarcia między innymi archetypalnie cywilizacjami"
+    },
+    {
+      "Zdarzenie / Działanie": "Urazy historyczne (nagromadzone)",
+      "Parametr": "Zaufanie",
+      "Zmiana": "-10 … -40",
+      "Znak (+/−)": "-",
+      "Typ (co turę / jednorazowo)": "co turę",
+      "Uwagi": "Maleje powoli co 20 tur; trwała korekta za ataki/aneksje"
+    },
+    {
+      "Zdarzenie / Działanie": "Znacząca przewaga militarna gracza",
+      "Parametr": "Respekt",
+      "Zmiana": "+15",
+      "Znak (+/−)": "+",
+      "Typ (co turę / jednorazowo)": "jednorazowo",
+      "Uwagi": "Skok przy przekroczeniu progu siły (2× lub 5× wartość AI)"
+    },
+    {
+      "Zdarzenie / Działanie": "Gracz słabszy militarnie od partnera",
+      "Parametr": "Respekt",
+      "Zmiana": "-10",
+      "Znak (+/−)": "-",
+      "Typ (co turę / jednorazowo)": "jednorazowo",
+      "Uwagi": "Respekt spada; AI staje się asertywniejsze"
+    },
+    {
+      "Zdarzenie / Działanie": "Wygrana bitwa (historia bojowa)",
+      "Parametr": "Respekt",
+      "Zmiana": "+5",
+      "Znak (+/−)": "+",
+      "Typ (co turę / jednorazowo)": "jednorazowo",
+      "Uwagi": "Każda wygrana bitwa podnosi punkty mocy bojowej gracza"
+    },
+    {
+      "Zdarzenie / Działanie": "Próg: Sojusz dostępny gdy Zaufanie ≥",
+      "Parametr": "Zaufanie",
+      "Zmiana": 60,
+      "Znak (+/−)": "próg",
+      "Typ (co turę / jednorazowo)": "próg (stały)",
+      "Uwagi": "Poniżej progu opcja Sojusz wojskowy jest nieaktywna"
+    },
+    {
+      "Zdarzenie / Działanie": "Próg: Wymiana technologii gdy Zaufanie ≥",
+      "Parametr": "Zaufanie",
+      "Zmiana": 70,
+      "Znak (+/−)": "próg",
+      "Typ (co turę / jednorazowo)": "próg (stały)",
+      "Uwagi": "Poniżej progu akcja Wymiana technologii jest zablokowana"
+    }
+  ],
+  "respekt_-_czynniki": [
+    {
+      "Czynnik": "Wielkość armii (absolutna liczba jednostek bojowych)",
+      "Waga (%)": 28,
+      "Opis": "Główny sygnał hard power — widoczna siła militarna. Dominuje, bo Respekt = strach."
+    },
+    {
+      "Czynnik": "Wygrane bitwy (historia bojowa, skumulowana)",
+      "Waga (%)": 20,
+      "Opis": "Kumulatywna historia zwyciestw. Sygnalizuje doswiadczenie bojowe i agresywnosc; trudno podrobić."
+    },
+    {
+      "Czynnik": "Ludnosc (mieszkancy/jednostki w miastach)",
+      "Waga (%)": 18,
+      "Opis": "Potencjal mobilizacyjny — wiecej ludnosci = wiecej rekrutow i sily roboczej."
+    },
+    {
+      "Czynnik": "Liczba miast i kontrolowane terytorium",
+      "Waga (%)": 14,
+      "Opis": "Wieksze imperium = wiecej zasobow i zdolnosci produkcyjnych."
+    },
+    {
+      "Czynnik": "Gospodarka (skarbiec/dochod)",
+      "Waga (%)": 12,
+      "Opis": "Bogata nacja finansuje wojne i lapowki dyplomatyczne."
+    },
+    {
+      "Czynnik": "Epoka / postep technologiczny",
+      "Waga (%)": 8,
+      "Opis": "Wyzsza epoka = lepsza technologia wojskowa (Kamien=0, Braz=0.5, Zelazo=1.0 itp.)."
+    },
+    {
+      "Czynnik": "SUMA WAG →",
+      "Waga (%)": 100,
+      "Opis": "% (dostosuj wagi — powinny sumowac sie do 100%). Militaria (armia+bitwy) = 48%."
+    }
+  ],
+  "panel_sterowania": {
+    "A": {
+      "name": "WAGI KOMPONENTOW POTEGI NACJI (hard power — podstawa Respektu)",
+      "records": [
+        {
+          "Komponent Potegi": "Wielkość armii (absolutna liczba jednostek bojowych)",
+          "Klucz": "wielkoscArmii",
+          "Waga (%)": 28,
+          "Opis": "Glowny sygnal hard power — widoczna sila militarna"
+        },
+        {
+          "Komponent Potegi": "Wygrane bitwy (historia bojowa, skumulowana)",
+          "Klucz": "wygraneBitwy",
+          "Waga (%)": 20,
+          "Opis": "Kumulatywna historia zwyciestw; trudno podrobić"
+        },
+        {
+          "Komponent Potegi": "Ludnosc (mieszkancy/jednostki w miastach)",
+          "Klucz": "ludnosc",
+          "Waga (%)": 18,
+          "Opis": "Potencjal mobilizacyjny nacji"
+        },
+        {
+          "Komponent Potegi": "Liczba miast i kontrolowane terytorium",
+          "Klucz": "miasta",
+          "Waga (%)": 14,
+          "Opis": "Wieksze imperium = wiecej zasobow i rekrutacji"
+        },
+        {
+          "Komponent Potegi": "Gospodarka (skarbiec/dochod)",
+          "Klucz": "gospodarka",
+          "Waga (%)": 12,
+          "Opis": "Poziom ekonomiczny; dostep do surowcow strategicznych"
+        },
+        {
+          "Komponent Potegi": "Epoka / postep technologiczny",
+          "Klucz": "epoka",
+          "Waga (%)": 8,
+          "Opis": "Wyzsza epoka = lepsza technologia wojskowa"
+        },
+        {
+          "Komponent Potegi": "SUMA WAG →",
+          "Klucz": "—",
+          "Waga (%)": null,
+          "Opis": "Powinna wynosic 100. Militaria (armia+bitwy) = 48%."
+        }
+      ]
+    },
+    "B": {
+      "name": "STAŁE MODELU",
+      "records": [
+        {
+          "Parametr": "Formuła Relacji ogólnej",
+          "Wartość": "Zaufanie + Respekt",
+          "Opis": "Relacja = Zaufanie + Respekt; zakres 0–200"
+        },
+        {
+          "Parametr": "Waga Zaufania w dźwigni",
+          "Wartość": 1,
+          "Opis": "Mnożnik Zaufania przy liczeniu dźwigni (domyślnie 1.0)"
+        },
+        {
+          "Parametr": "Waga Respektu w dźwigni",
+          "Wartość": 1,
+          "Opis": "Mnożnik Respektu przy liczeniu dźwigni (domyślnie 1.0)"
+        },
+        {
+          "Parametr": "Maksymalna Relacja ogólna",
+          "Wartość": 200,
+          "Opis": "Maks. Zaufanie (100) + maks. Respekt (100)"
+        }
+      ]
+    },
+    "C": {
+      "name": "PROGI AKCJI DYPLOMATYCZNYCH",
+      "records": [
+        {
+          "Akcja / warunek": "Sojusz wojskowy gdy Zaufanie ≥",
+          "Próg": 60,
+          "Opis": "Poniżej progu opcja Sojusz jest nieaktywna"
+        },
+        {
+          "Akcja / warunek": "Wymiana technologii gdy Zaufanie ≥",
+          "Próg": 70,
+          "Opis": "Poniżej progu Wymiana technologii zablokowana"
+        },
+        {
+          "Akcja / warunek": "Wasalizacja gdy Respekt ≥",
+          "Próg": 70,
+          "Opis": "Próg Respektu dla żądania wasalizacji"
+        },
+        {
+          "Akcja / warunek": "Wchłonięcie gdy Respekt ≥",
+          "Próg": 90,
+          "Opis": "Próg Respektu dla żądania wchłonięcia"
+        },
+        {
+          "Akcja / warunek": "Dyplomacja możliwa gdy Relacja ≥",
+          "Próg": 30,
+          "Opis": "Poniżej AI odmawia większości akcji"
+        },
+        {
+          "Akcja / warunek": "Sojusze osiągalne gdy Relacja ≥",
+          "Próg": 120,
+          "Opis": "Powyżej sojusze są realistyczne"
+        }
+      ]
+    },
+    "D": {
+      "name": "BAZOWE TEMPO ZAUFANIA CO TURĘ",
+      "records": [
+        {
+          "Stan / zdarzenie ciągłe": "Aktywny handel",
+          "Δ Zaufanie/turę": 1,
+          "Uwagi": "+1/turę przez czas umowy"
+        },
+        {
+          "Stan / zdarzenie ciągłe": "Aktywny pakt NAP / sojusz",
+          "Δ Zaufanie/turę": 1,
+          "Uwagi": "+1/turę przez czas paktu"
+        },
+        {
+          "Stan / zdarzenie ciągłe": "Efekt dobrej woli (podarunek)",
+          "Δ Zaufanie/turę": 1,
+          "Uwagi": "+1/turę przez kilka tur po podarunku"
+        },
+        {
+          "Stan / zdarzenie ciągłe": "Wspólny wróg (kooperacja)",
+          "Δ Zaufanie/turę": 1,
+          "Uwagi": "+1/turę przez czas kooperacji"
+        },
+        {
+          "Stan / zdarzenie ciągłe": "Wspólna religia",
+          "Δ Zaufanie/turę": 0.5,
+          "Uwagi": "+0.5/turę biernie, gdy ta sama religia"
+        },
+        {
+          "Stan / zdarzenie ciągłe": "Odmienna religia",
+          "Δ Zaufanie/turę": -0.5,
+          "Uwagi": "−0.5/turę biernie przy innych religiach"
+        },
+        {
+          "Stan / zdarzenie ciągłe": "Ekspansja przy granicy",
+          "Δ Zaufanie/turę": -2,
+          "Uwagi": "−2/turę przy osadnictwie / wojskach przy granicy"
+        },
+        {
+          "Stan / zdarzenie ciągłe": "Urazy historyczne (zanikające)",
+          "Δ Zaufanie/turę": -2,
+          "Uwagi": "−2/turę; zanika co 20 tur"
+        }
+      ]
+    },
+    "E": {
+      "name": "GLOBALNE MNOŻNIKI",
+      "records": [
+        {
+          "Mnożnik / parametr": "Mnożnik globalny Zaufania",
+          "Wartość": 1,
+          "Opis": "Przemnóż, by przyspieszyć / zwolnić dynamikę Zaufania"
+        },
+        {
+          "Mnożnik / parametr": "Mnożnik globalny Respektu",
+          "Wartość": 1,
+          "Opis": "Przemnóż, by przyspieszyć / zwolnić dynamikę Respektu"
+        },
+        {
+          "Mnożnik / parametr": "Mnożnik łapówek (podarunek)",
+          "Wartość": 1,
+          "Opis": "Zwiększ, by podarunki miały większy wpływ (np. 1.5 = +50%)"
+        },
+        {
+          "Mnożnik / parametr": "Czas efektu podarunku (tury)",
+          "Wartość": 5,
+          "Opis": "Ile tur po podarunku trwa efekt +1 Zaufanie/turę"
+        }
+      ]
+    },
+    "F": {
+      "name": "KALKULATOR RELACJI I DŹWIGNI NEGOCJACYJNEJ",
+      "records": [
+        {
+          "DANE WEJŚCIOWE (żółte = edytowalne)": "Zaufanie (0–100)",
+          "WYNIKI (zielone = formuły)": "Relacja ogólna (0–200)"
+        },
+        {
+          "DANE WEJŚCIOWE (żółte = edytowalne)": "Respekt (0–100)",
+          "WYNIKI (zielone = formuły)": "Dźwignia negocjacyjna (0–100%)"
+        },
+        {
+          "DANE WEJŚCIOWE (żółte = edytowalne)": "LEGENDA: Żółte = edytowalne. Zielone = wyliczane formułami Excela. Zmień Zaufanie / Respekt → wyniki przeliczą się automatycznie.",
+          "WYNIKI (zielone = formuły)": null
+        }
+      ]
+    }
+  }
+}

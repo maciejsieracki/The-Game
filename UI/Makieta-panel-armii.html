@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Makieta — Panel zarządzania armią</title>
+<style>
+  :root {
+    --bg: #12151e;
+    --panel: rgba(20,24,32,0.97);
+    --border: rgba(224,178,74,0.28);
+    --gold: #e0b24a;
+    --gold-dim: rgba(224,178,74,0.55);
+    --text: #e8ebf0;
+    --muted: #9aa6b6;
+    --sub: #c0c8d4;
+    --card-bg: rgba(30,36,50,0.92);
+    --card-hover: rgba(42,50,68,0.95);
+    --card-drag: rgba(60,70,95,0.98);
+    --drop-target: rgba(224,178,74,0.15);
+    --btn-primary: rgba(224,178,74,0.85);
+    --btn-secondary: rgba(255,255,255,0.08);
+    --danger: rgba(211,55,55,0.82);
+    --hp-green: #4caf79;
+    --hp-yellow: #c8a730;
+    --hp-red: #d33737;
+    --col-bg-left: rgba(50,70,90,0.10);
+    --col-bg-right: rgba(90,50,70,0.10);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Consolas', 'Courier New', monospace;
+    font-size: 13px;
+    min-height: 100vh;
+    padding: 0;
+  }
+
+  /* === BANER MAKIETA === */
+  .mockup-banner {
+    background: rgba(211,120,30,0.92);
+    color: #fff;
+    font-size: 14px;
+    font-weight: 700;
+    text-align: center;
+    padding: 10px 20px;
+    letter-spacing: .04em;
+    border-bottom: 2px solid rgba(255,200,100,0.5);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  /* === NAGŁÓWEK PANELU === */
+  .panel-header {
+    background: rgba(15,18,26,0.98);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 24px 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .panel-title {
+    font-size: 0.92em;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: var(--gold);
+  }
+  .panel-subtitle {
+    font-size: 0.72em;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+  .panel-turn {
+    font-size: 0.72em;
+    color: var(--muted);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 3px 10px;
+  }
+
+  /* === SŁOWNICZEK === */
+  .glossary {
+    background: rgba(224,178,74,0.07);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    margin: 10px 16px 0;
+    padding: 8px 14px;
+    font-size: 0.72em;
+    color: var(--muted);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 18px;
+  }
+  .glossary strong { color: var(--gold); }
+
+  /* === GŁÓWNY UKŁAD === */
+  .main-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    padding: 12px 16px;
+  }
+
+  /* === SEKCJA DWU GENERAŁÓW === */
+  .generals-section {
+    display: flex;
+    gap: 0;
+    align-items: stretch;
+    min-height: 320px;
+  }
+
+  .general-col {
+    flex: 1;
+    padding: 12px 12px 14px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--col-bg-left);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    transition: background .2s;
+  }
+  .general-col:last-of-type {
+    background: var(--col-bg-right);
+    border-color: rgba(180,100,180,0.22);
+  }
+  .general-col.drag-over {
+    background: var(--drop-target);
+    border-color: var(--gold-dim);
+  }
+
+  .general-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 4px;
+  }
+  .general-name {
+    font-size: 0.85em;
+    font-weight: 700;
+    color: var(--gold);
+    letter-spacing: .05em;
+  }
+  .general-meta {
+    font-size: 0.68em;
+    color: var(--muted);
+  }
+  .general-badge {
+    font-size: 0.66em;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 1px 7px;
+    color: var(--sub);
+  }
+
+  /* === STRZAŁKA ŚRODKOWA === */
+  .arrow-divider {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 0 10px;
+    gap: 6px;
+    min-width: 56px;
+  }
+  .arrow-icon {
+    font-size: 22px;
+    color: var(--gold-dim);
+    line-height: 1;
+  }
+  .arrow-hint {
+    font-size: 0.62em;
+    color: var(--muted);
+    text-align: center;
+    line-height: 1.35;
+    max-width: 52px;
+  }
+
+  /* === KARTA JEDNOSTKI === */
+  .unit-card {
+    background: var(--card-bg);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 7px;
+    padding: 9px 11px;
+    cursor: grab;
+    transition: background .15s, border-color .15s, transform .1s, box-shadow .15s;
+    user-select: none;
+    position: relative;
+  }
+  .unit-card:hover {
+    background: var(--card-hover);
+    border-color: var(--gold-dim);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.4);
+  }
+  .unit-card.dragging {
+    opacity: 0.45;
+    cursor: grabbing;
+    transform: scale(0.97);
+  }
+  .unit-card-top {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 7px;
+  }
+  .unit-icon {
+    font-size: 18px;
+    line-height: 1;
+    min-width: 22px;
+  }
+  .unit-name {
+    font-size: 0.84em;
+    font-weight: 700;
+    color: var(--text);
+    flex: 1;
+  }
+  .unit-type {
+    font-size: 0.66em;
+    color: var(--muted);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 3px;
+    padding: 1px 6px;
+  }
+
+  /* HP bar */
+  .hp-bar-wrap {
+    height: 5px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-bottom: 7px;
+  }
+  .hp-bar {
+    height: 100%;
+    border-radius: 3px;
+    transition: width .3s;
+  }
+  .hp-high  { background: var(--hp-green); }
+  .hp-mid   { background: var(--hp-yellow); }
+  .hp-low   { background: var(--hp-red); }
+
+  /* staty */
+  .unit-stats {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    font-size: 0.68em;
+    color: var(--muted);
+  }
+  .unit-stat { white-space: nowrap; }
+  .unit-stat span { color: var(--sub); font-weight: 600; }
+
+  /* drag hint etykieta */
+  .drag-label {
+    font-size: 0.62em;
+    color: var(--muted);
+    text-align: center;
+    margin-top: 2px;
+    font-style: italic;
+    opacity: 0.7;
+  }
+
+  /* === SEKCJA POJEDYNCZYCH ODDZIAŁÓW === */
+  .singles-section {
+    margin-top: 14px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px 12px;
+    background: rgba(224,178,74,0.04);
+  }
+  .singles-header {
+    font-size: 0.78em;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: var(--gold);
+    margin-bottom: 4px;
+  }
+  .singles-hint {
+    font-size: 0.68em;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+  .singles-hint kbd {
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 3px;
+    padding: 0 4px;
+    font-family: inherit;
+    font-size: 0.9em;
+    color: var(--sub);
+  }
+  .singles-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .singles-row .unit-card {
+    flex: 0 0 180px;
+  }
+
+  /* === PASEK AKCJI === */
+  .actions-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    margin-top: 14px;
+    padding: 10px 14px;
+    background: rgba(15,18,26,0.7);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+  }
+  .actions-bar-title {
+    font-size: 0.7em;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: var(--muted);
+    margin-right: 4px;
+    white-space: nowrap;
+  }
+  .action-btn {
+    font-family: inherit;
+    font-size: 0.78em;
+    font-weight: 700;
+    cursor: pointer;
+    border-radius: 5px;
+    padding: 6px 14px;
+    transition: opacity .15s, background .15s;
+    white-space: nowrap;
+  }
+  .action-btn:hover { opacity: 0.8; }
+  .btn-merge-armies {
+    background: var(--btn-primary);
+    color: #111;
+    border: none;
+  }
+  .btn-merge-units {
+    background: rgba(80,160,100,0.80);
+    color: #e8f0eb;
+    border: none;
+  }
+  .btn-split {
+    background: var(--btn-secondary);
+    color: var(--sub);
+    border: 1px solid rgba(255,255,255,0.15);
+  }
+  .btn-reinf {
+    background: rgba(80,120,200,0.70);
+    color: #d0ddff;
+    border: none;
+  }
+  .btn-cancel {
+    background: transparent;
+    color: var(--muted);
+    border: 1px solid rgba(255,255,255,0.12);
+    margin-left: auto;
+  }
+
+  /* status-bar na dole */
+  .status-bar {
+    font-size: 0.68em;
+    color: var(--muted);
+    margin-top: 10px;
+    padding: 5px 14px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    display: flex;
+    gap: 20px;
+  }
+  .status-bar span { color: var(--sub); }
+</style>
+</head>
+<body>
+
+<div class="mockup-banner">&#9888; MAKIETA DO AKCEPTACJI — panel zarządzania armią (Total War)</div>
+
+<div class="panel-header">
+  <div>
+    <div class="panel-title">Zarządzanie armią — wymiana / transfer</div>
+    <div class="panel-subtitle">Przenieś kartę między generałami · Scal rannych oddziałów tego samego typu</div>
+  </div>
+  <div class="panel-turn">Tura 47 · Epoka Brązu</div>
+</div>
+
+<div class="glossary">
+  <span><strong>Połącz armie</strong> (Merge armies)</span>
+  <span><strong>Scal oddziały</strong> (Merge units)</span>
+  <span><strong>Podział armii</strong> (Split)</span>
+  <span><strong>Posiłki</strong> (Reinforcements)</span>
+  <span><strong>Karta jednostki</strong> (Unit card)</span>
+</div>
+
+<div class="main-layout">
+
+  <!-- === DWA GENERAŁÓW === -->
+  <div class="generals-section">
+
+    <!-- GENERAŁ A -->
+    <div class="general-col" id="col-a" ondragover="handleDragOver(event)" ondrop="handleDrop(event,'col-a')">
+      <div class="general-header">
+        <div>
+          <div class="general-name">&#9876; Generał A</div>
+          <div class="general-meta">Leonidas · VI Legia · Pozycja: Tessaloniki</div>
+        </div>
+        <span class="general-badge">4 oddziały</span>
+      </div>
+
+      <!-- Karta 1 -->
+      <div class="unit-card" draggable="true" ondragstart="handleDragStart(event,this)" ondragend="handleDragEnd(event,this)" data-unit="Hoplici">
+        <div class="unit-card-top">
+          <span class="unit-icon">&#9876;</span>
+          <span class="unit-name">Hoplici</span>
+          <span class="unit-type">Piesza · ciężka</span>
+        </div>
+        <div class="hp-bar-wrap"><div class="hp-bar hp-high" style="width:90%"></div></div>
+        <div class="unit-stats">
+          <span class="unit-stat">⚔ atak <span>14</span></span>
+          <span class="unit-stat">🛡 obrona <span>18</span></span>
+          <span class="unit-stat">👣 ruch <span>2</span></span>
+          <span class="unit-stat">HP <span>90/100</span></span>
+        </div>
+      </div>
+
+      <!-- Karta 2 -->
+      <div class="unit-card" draggable="true" ondragstart="handleDragStart(event,this)" ondragend="handleDragEnd(event,this)" data-unit="Łucznicy">
+        <div class="unit-card-top">
+          <span class="unit-icon">&#127993;</span>
+          <span class="unit-name">Łucznicy</span>
+          <span class="unit-type">Dystans · lekka</span>
+        </div>
+        <div class="hp-bar-wrap"><div class="hp-bar hp-mid" style="width:55%"></div></div>
+        <div class="unit-stats">
+          <span class="unit-stat">⚔ atak <span>11</span></span>
+          <span class="unit-stat">🛡 obrona <span>7</span></span>
+          <span class="unit-stat">👣 ruch <span>3</span></span>
+          <span class="unit-stat">HP <span>55/100</span></span>
+        </div>
+      </div>
+
+      <!-- Karta 3 -->
+      <div class="unit-card" draggable="true" ondragstart="handleDragStart(event,this)" ondragend="handleDragEnd(event,this)" data-unit="Jeźdźcy">
+        <div class="unit-card-top">
+          <span class="unit-icon">&#128014;</span>
+          <span class="unit-name">Jeźdźcy</span>
+          <span class="unit-type">Kawaleria · lekka</span>
+        </div>
+        <div class="hp-bar-wrap"><div class="hp-bar hp-high" style="width:100%"></div></div>
+        <div class="unit-stats">
+          <span class="unit-stat">⚔ atak <span>16</span></span>
+          <span class="unit-stat">🛡 obrona <span>9</span></span>
+          <span class="unit-stat">👣 ruch <span>5</span></span>
+          <span class="unit-stat">HP <span>100/100</span></span>
+        </div>
+      </div>
+
+      <!-- Karta 4 -->
+      <div class="unit-card" draggable="true" ondragstart="handleDragStart(event,this)" ondragend="handleDragEnd(event,this)" data-unit="Procarze">
+        <div class="unit-card-top">
+          <span class="unit-icon">&#9945;</span>
+          <span class="unit-name">Procarze</span>
+          <span class="unit-type">Dystans · lekka</span>
+        </div>
+        <div class="hp-bar-wrap"><div class="hp-bar hp-low" style="width:28%"></div></div>
+        <div class="unit-stats">
+          <span class="unit-stat">⚔ atak <span>8</span></span>
+          <span class="unit-stat">🛡 obrona <span>5</span></span>
+          <span class="unit-stat">👣 ruch <span>3</span></span>
+          <span class="unit-stat">HP <span>28/100</span></span>
+        </div>
+      </div>
+
+      <div class="drag-label">&#8592; przeciągnij kartę do Generała B &#8594;</div>
+    </div>
+
+    <!-- STRZAŁKA ŚRODKOWA -->
+    <div class="arrow-divider">
+      <div class="arrow-icon">&#8651;</div>
+      <div class="arrow-hint">przeciągnij kartę między generałami</div>
+    </div>
+
+    <!-- GENERAŁ B -->
+    <div class="general-col" id="col-b" ondragover="handleDragOver(event)" ondrop="handleDrop(event,'col-b')">
+      <div class="general-header">
+        <div>
+          <div class="general-name">&#9876; Generał B</div>
+          <div class="general-meta">Marcus Aurelius · XIV Legia · Pozycja: Ateny</div>
+        </div>
+        <span class="general-badge">3 oddziały</span>
+      </div>
+
+      <!-- Karta 1 -->
+      <div class="unit-card" draggable="true" ondragstart="handleDragStart(event,this)" ondragend="handleDragEnd(event,this)" data-unit="Legioniści">
+        <div class="unit-card-top">
+          <span class="unit-icon">&#128737;</span>
+          <span class="unit-name">Legioniści</span>
+          <span class="unit-type">Piesza · ciężka</span>
+        </div>
+        <div class="hp-bar-wrap"><div class="hp-bar hp-high" style="width:80%"></div></div>
+        <div class="unit-stats">
+          <span class="unit-stat">⚔ atak <span>15</span></span>
+          <span class="unit-stat">🛡 obrona <span>20</span></span>
+          <span class="unit-stat">👣 ruch <span>2</span></span>
+          <span class="unit-stat">HP <span>80/100</span></span>
+        </div>
+      </div>
+
+      <!-- Karta 2 -->
+      <div class="unit-card" draggable="true" ondragstart="handleDragStart(event,this)" ondragend="handleDragEnd(event,this)" data-unit="Balisty">
+        <div class="unit-card-top">
+          <span class="unit-icon">&#127993;</span>
+          <span class="unit-name">Balisty</span>
+          <span class="unit-type">Oblężenie · ciężka</span>
+        </div>
+        <div class="hp-bar-wrap"><div class="hp-bar hp-high" style="width:100%"></div></div>
+        <div class="unit-stats">
+          <span class="unit-stat">⚔ atak <span>22</span></span>
+          <span class="unit-stat">🛡 obrona <span>4</span></span>
+          <span class="unit-stat">👣 ruch <span>1</span></span>
+          <span class="unit-stat">HP <span>100/100</span></span>
+        </div>
+      </div>
+
+      <!-- Karta 3 -->
+      <div class="unit-card" draggable="true" ondragstart="handleDragStart(event,this)" ondragend="handleDragEnd(event,this)" data-unit="Tarczownicy">
+        <div class="unit-card-top">
+          <span class="unit-icon">&#128737;</span>
+          <span class="unit-name">Tarczownicy</span>
+          <span class="unit-type">Piesza · ciężka</span>
+        </div>
+        <div class="hp-bar-wrap"><div class="hp-bar hp-mid" style="width:60%"></div></div>
+        <div class="unit-stats">
+          <span class="unit-stat">⚔ atak <span>10</span></span>
+          <span class="unit-stat">🛡 obrona <span>25</span></span>
+          <span class="unit-stat">👣 ruch <span>2</span></span>
+          <span class="unit-stat">HP <span>60/100</span></span>
+        </div>
+      </div>
+
+      <div class="drag-label">&#8592; przeciągnij kartę do Generała A &#8594;</div>
+    </div>
+  </div>
+
+  <!-- === POJEDYNCZE ODDZIAŁY === -->
+  <div class="singles-section" id="singles-pool" ondragover="handleDragOver(event)" ondrop="handleDrop(event,'singles-pool')">
+    <div class="singles-header">&#9878; Pojedyncze oddziały</div>
+    <div class="singles-hint">
+      Scal rannych: przeciągnij kartę na taką samą jednostkę LUB naciśnij <kbd>M</kbd> · Możesz też przenieść do armii generała
+    </div>
+    <div class="singles-row" id="singles-row">
+
+      <div class="unit-card" draggable="true" ondragstart="handleDragStart(event,this)" ondragend="handleDragEnd(event,this)" data-unit="Łucznicy (ranny)">
+        <div class="unit-card-top">
+          <span class="unit-icon">&#127993;</span>
+          <span class="unit-name">Łucznicy</span>
+          <span class="unit-type">Dystans · lekka</span>
+        </div>
+        <div class="hp-bar-wrap"><div class="hp-bar hp-low" style="width:32%"></div></div>
+        <div class="unit-stats">
+          <span class="unit-stat">⚔ atak <span>11</span></span>
+          <span class="unit-stat">🛡 obrona <span>7</span></span>
+          <span class="unit-stat">👣 ruch <span>3</span></span>
+          <span class="unit-stat">HP <span>32/100</span></span>
+        </div>
+      </div>
+
+      <div class="unit-card" draggable="true" ondragstart="handleDragStart(event,this)" ondragend="handleDragEnd(event,this)" data-unit="Hoplici (ranny)">
+        <div class="unit-card-top">
+          <span class="unit-icon">&#9876;</span>
+          <span class="unit-name">Hoplici</span>
+          <span class="unit-type">Piesza · ciężka</span>
+        </div>
+        <div class="hp-bar-wrap"><div class="hp-bar hp-low" style="width:40%"></div></div>
+        <div class="unit-stats">
+          <span class="unit-stat">⚔ atak <span>14</span></span>
+          <span class="unit-stat">🛡 obrona <span>18</span></span>
+          <span class="unit-stat">👣 ruch <span>2</span></span>
+          <span class="unit-stat">HP <span>40/100</span></span>
+        </div>
+      </div>
+
+      <div class="unit-card" draggable="true" ondragstart="handleDragStart(event,this)" ondragend="handleDragEnd(event,this)" data-unit="Pionierzy">
+        <div class="unit-card-top">
+          <span class="unit-icon">&#9874;</span>
+          <span class="unit-name">Pionierzy</span>
+          <span class="unit-type">Wsparcie · lekka</span>
+        </div>
+        <div class="hp-bar-wrap"><div class="hp-bar hp-high" style="width:95%"></div></div>
+        <div class="unit-stats">
+          <span class="unit-stat">⚔ atak <span>6</span></span>
+          <span class="unit-stat">🛡 obrona <span>8</span></span>
+          <span class="unit-stat">👣 ruch <span>3</span></span>
+          <span class="unit-stat">HP <span>95/100</span></span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- === PASEK AKCJI === -->
+  <div class="actions-bar">
+    <span class="actions-bar-title">Akcje:</span>
+    <button class="action-btn btn-merge-armies" onclick="showToast('Połącz armie — decyzja #167; implementuje UNITS')">&#9866; Połącz armie</button>
+    <button class="action-btn btn-merge-units" onclick="showToast('Scal oddziały — scalenie rannych tego samego typu')">&#8652; Scal oddziały</button>
+    <button class="action-btn btn-split" onclick="showToast('Podział armii — oddziela wybrane karty')">&#9135; Podział armii</button>
+    <button class="action-btn btn-reinf" onclick="showToast('Posiłki — przywoła dostępne oddziały z pobliskiego miasta')">&#9878; Posiłki</button>
+    <button class="action-btn btn-cancel">&#10005; Anuluj</button>
+  </div>
+
+  <!-- status -->
+  <div class="status-bar">
+    <span>Zaznaczono: <span id="sel-count">0</span> kart</span>
+    <span>Generał A: <span id="cnt-a">4</span> oddz.</span>
+    <span>Generał B: <span id="cnt-b">3</span> oddz.</span>
+    <span>Pula: <span id="cnt-s">3</span> oddz.</span>
+    <span style="margin-left:auto;font-style:italic">MAKIETA — dane przykładowe</span>
+  </div>
+
+</div>
+
+<!-- Toast powiadomień -->
+<div id="toast" style="
+  position:fixed;bottom:26px;right:26px;z-index:999;
+  background:rgba(20,24,32,0.97);color:#e8ebf0;
+  border:1px solid rgba(224,178,74,0.4);border-radius:7px;
+  padding:10px 18px;font:12px monospace;
+  max-width:320px;opacity:0;transition:opacity .25s;
+  pointer-events:none;
+"></div>
+
+<script>
+  // === Drag & Drop ===
+  let draggedCard = null;
+  let draggedFrom = null;
+
+  function handleDragStart(e, el) {
+    draggedCard = el;
+    draggedFrom = el.closest('[id]');
+    el.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', el.dataset.unit || '');
+  }
+
+  function handleDragEnd(e, el) {
+    el.classList.remove('dragging');
+    document.querySelectorAll('.general-col').forEach(c => c.classList.remove('drag-over'));
+  }
+
+  function handleDragOver(e) {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    const col = e.currentTarget;
+    document.querySelectorAll('.general-col').forEach(c => c.classList.remove('drag-over'));
+    if (col.classList.contains('general-col')) col.classList.add('drag-over');
+  }
+
+  function handleDrop(e, targetId) {
+    e.preventDefault();
+    if (!draggedCard) return;
+    const target = document.getElementById(targetId);
+    if (!target || target === draggedFrom) {
+      document.querySelectorAll('.general-col').forEach(c => c.classList.remove('drag-over'));
+      return;
+    }
+    // wstaw przed drag-label jeśli jest
+    const label = target.querySelector('.drag-label');
+    if (label) {
+      target.insertBefore(draggedCard, label);
+    } else {
+      const singlesRow = target.querySelector('#singles-row');
+      if (singlesRow) {
+        singlesRow.appendChild(draggedCard);
+      } else {
+        target.appendChild(draggedCard);
+      }
+    }
+    document.querySelectorAll('.general-col').forEach(c => c.classList.remove('drag-over'));
+    updateCounts();
+    showToast('Przeniesiono: ' + (draggedCard.dataset.unit || 'jednostkę'));
+    draggedCard = null;
+    draggedFrom = null;
+  }
+
+  function updateCounts() {
+    const a = document.getElementById('col-a');
+    const b = document.getElementById('col-b');
+    const s = document.getElementById('singles-row');
+    document.getElementById('cnt-a').textContent = a ? a.querySelectorAll('.unit-card').length : 0;
+    document.getElementById('cnt-b').textContent = b ? b.querySelectorAll('.unit-card').length : 0;
+    document.getElementById('cnt-s').textContent = s ? s.querySelectorAll('.unit-card').length : 0;
+  }
+
+  // === Toast ===
+  let toastTimer = null;
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.style.opacity = '1';
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { t.style.opacity = '0'; }, 2800);
+  }
+
+  // === Klawiatura M = scal ===
+  document.addEventListener('keydown', e => {
+    if (e.key === 'M' || e.key === 'm') showToast('[M] Scal rannych oddziałów — do implementacji w UNITS');
+    if (e.key === 'Escape') showToast('[Esc] Anuluj — do implementacji');
+  });
+
+  updateCounts();
+</script>
+</body>
+</html>

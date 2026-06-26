@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Podgląd: Drzewko technologii (nauka) — interaktywne</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{
+  background:#0d0d0d;color:#e8d5a0;
+  font-family:'Georgia','Times New Roman',serif;
+  min-height:100vh;padding:0;}
+</style>
+</head>
+<body>
+<script>
+(function(){
+"use strict";
+
+// ================================================================
+//  TECH DATA (from tech.json — all 3 epochs)
+// ================================================================
+var TECHS=[
+  // Kamień
+  {id:"obrobka_drewna",    nazwa:"Obróbka drewna",   epoka:"Kamień",poziom:1,prereqIds:[],                                  odblokujeBudynek:"Tartak, Mielerz",           odblokujeSurowiec:"deski, paliwo", koszt:12, uwagi:null},
+  {id:"garncarstwo",       nazwa:"Garncarstwo",       epoka:"Kamień",poziom:1,prereqIds:[],                                  odblokujeBudynek:"Spichlerz, Cegielnia",      odblokujeSurowiec:"cegła",         koszt:10, uwagi:null},
+  {id:"murarstwo",         nazwa:"Murarstwo",         epoka:"Kamień",poziom:1,prereqIds:[],                                  odblokujeBudynek:"Mury, Kopalnia",            odblokujeSurowiec:"kamień",        koszt:14, uwagi:null},
+  {id:"lucznictwo",        nazwa:"Łucznictwo",        epoka:"Kamień",poziom:1,prereqIds:[],                                  odblokujeBudynek:"Łucznik",                   odblokujeSurowiec:"",              koszt:14, uwagi:null},
+  {id:"oswojenie_zwierzat",nazwa:"Oswojenie zwierząt",epoka:"Kamień",poziom:1,prereqIds:[],                                  odblokujeBudynek:"Pasterstwo",                odblokujeSurowiec:"krowa/byk, owce",koszt:12,uwagi:null},
+  {id:"mistycyzm",         nazwa:"Mistycyzm",         epoka:"Kamień",poziom:1,prereqIds:[],                                  odblokujeBudynek:"Świątynia",                 odblokujeSurowiec:"",              koszt:10, uwagi:null},
+  {id:"wymiana",           nazwa:"Wymiana",           epoka:"Kamień",poziom:1,prereqIds:["garncarstwo"],                     odblokujeBudynek:"Targowisko",                odblokujeSurowiec:"",              koszt:16, uwagi:null},
+  {id:"gospodarka_wodna",  nazwa:"Gospodarka wodna",  epoka:"Kamień",poziom:1,prereqIds:["garncarstwo"],                     odblokujeBudynek:"Studnia / Łaźnia",          odblokujeSurowiec:"",              koszt:18, uwagi:null},
+  {id:"kolo",              nazwa:"Koło",              epoka:"Kamień",poziom:2,prereqIds:["oswojenie_zwierzat"],              odblokujeBudynek:"Rydwan, Drogi",             odblokujeSurowiec:"krowa/byk",     koszt:22, uwagi:null},
+  {id:"brazownictwo",      nazwa:"Brązownictwo",      epoka:"Kamień",poziom:2,prereqIds:["garncarstwo"],                     odblokujeBudynek:"Huta, brąz, jedn. brązowe",odblokujeSurowiec:"",              koszt:45, uwagi:"kończy Epokę 1"},
+  // Brąz
+  {id:"zegluga",           nazwa:"Żegluga",           epoka:"Brąz",  poziom:2,prereqIds:["obrobka_drewna"],                 odblokujeBudynek:"Statki, Port",              odblokujeSurowiec:"",              koszt:40, uwagi:null},
+  {id:"pismo",             nazwa:"Pismo",             epoka:"Brąz",  poziom:3,prereqIds:["garncarstwo"],                    odblokujeBudynek:"Biblioteka",                odblokujeSurowiec:"",              koszt:45, uwagi:null},
+  {id:"religia",           nazwa:"Religia",           epoka:"Brąz",  poziom:3,prereqIds:["garncarstwo"],                    odblokujeBudynek:"Świątynia",                 odblokujeSurowiec:"",              koszt:48, uwagi:null},
+  {id:"jezdziectwo",       nazwa:"Jeździectwo",       epoka:"Brąz",  poziom:3,prereqIds:["kolo","brazownictwo"],            odblokujeBudynek:"Konnica",                   odblokujeSurowiec:"",              koszt:56, uwagi:null},
+  {id:"wojskowosc",        nazwa:"Wojskowość",        epoka:"Brąz",  poziom:3,prereqIds:["brazownictwo"],                   odblokujeBudynek:"Koszary",                   odblokujeSurowiec:"",              koszt:52, uwagi:null},
+  {id:"matematyka",        nazwa:"Matematyka",        epoka:"Brąz",  poziom:4,prereqIds:["pismo"],                          odblokujeBudynek:"(prereq Budownictwa)",      odblokujeSurowiec:"",              koszt:68, uwagi:null},
+  {id:"handel",            nazwa:"Handel",            epoka:"Brąz",  poziom:4,prereqIds:["pismo"],                          odblokujeBudynek:"Drogi handlowe → Waluta",   odblokujeSurowiec:"",              koszt:74, uwagi:null},
+  {id:"prawo_kodeks",      nazwa:"Prawo (Kodeks)",    epoka:"Brąz",  poziom:4,prereqIds:["pismo"],                          odblokujeBudynek:"Porządek / Sądy",           odblokujeSurowiec:"",              koszt:62, uwagi:null},
+  {id:"budownictwo",       nazwa:"Budownictwo",       epoka:"Brąz",  poziom:5,prereqIds:["matematyka","murarstwo"],         odblokujeBudynek:"Akwedukt",                  odblokujeSurowiec:"",              koszt:85, uwagi:null},
+  {id:"waluta",            nazwa:"Waluta",            epoka:"Brąz",  poziom:5,prereqIds:["handel","matematyka"],            odblokujeBudynek:"Pieniądz, Targowisko, Mennica",odblokujeSurowiec:"",           koszt:100,uwagi:"kończy Epokę 2 (Pieniądz)"},
+  // Żelazo
+  {id:"obrobka_zelaza",    nazwa:"Obróbka żelaza",    epoka:"Żelazo",poziom:6,prereqIds:["brazownictwo"],                   odblokujeBudynek:"Kuźnia żelaza",             odblokujeSurowiec:"żelazo",        koszt:120,uwagi:"otwiera Epokę 3"},
+  {id:"inzynieria",        nazwa:"Inżynieria",        epoka:"Żelazo",poziom:6,prereqIds:["budownictwo"],                    odblokujeBudynek:"Akwedukt (ulepszony), Fort",odblokujeSurowiec:"",              koszt:130,uwagi:null},
+  {id:"obleznictwo",       nazwa:"Oblężnictwo",       epoka:"Żelazo",poziom:6,prereqIds:["matematyka","wojskowosc"],        odblokujeBudynek:"Warsztat oblężniczy",       odblokujeSurowiec:"",              koszt:140,uwagi:null},
+  {id:"filozofia",         nazwa:"Filozofia",         epoka:"Żelazo",poziom:7,prereqIds:["pismo","religia"],                odblokujeBudynek:"Akademia, Teatr",           odblokujeSurowiec:"",              koszt:150,uwagi:null},
+  {id:"kodeks_prawa",      nazwa:"Kodeks prawa",      epoka:"Żelazo",poziom:7,prereqIds:["prawo_kodeks","pismo"],           odblokujeBudynek:"Sąd, Pretorium",            odblokujeSurowiec:"",              koszt:155,uwagi:null},
+  {id:"drogi_zelazne",     nazwa:"Drogi żelazne",     epoka:"Żelazo",poziom:7,prereqIds:["inzynieria","obrobka_zelaza"],    odblokujeBudynek:"Drogi brukowane",           odblokujeSurowiec:"",              koszt:170,uwagi:null},
+  {id:"medycyna",          nazwa:"Medycyna",          epoka:"Żelazo",poziom:7,prereqIds:["filozofia","gospodarka_wodna"],   odblokujeBudynek:"Łaźnia publiczna, Lazaret", odblokujeSurowiec:"",              koszt:162,uwagi:null},
+  {id:"hutnictwo_zelaza",  nazwa:"Hutnictwo żelaza",  epoka:"Żelazo",poziom:8,prereqIds:["obrobka_zelaza","inzynieria"],    odblokujeBudynek:"Wielka Kuźnia",             odblokujeSurowiec:"stal (prereq)", koszt:185,uwagi:null},
+  {id:"sztuka_wojenna",    nazwa:"Sztuka wojenna",    epoka:"Żelazo",poziom:8,prereqIds:["obleznictwo","obrobka_zelaza"],   odblokujeBudynek:"Akademia wojskowa",         odblokujeSurowiec:"",              koszt:200,uwagi:"kończy Epokę 3 (cap v0.1)"}
+];
+
+var byId={};
+TECHS.forEach(function(t){byId[t.id]=t;});
+
+// ================================================================
+//  SIMULATION STATE (example interactive state)
+// ================================================================
+var RESEARCHED=new Set([
+  "obrobka_drewna","garncarstwo","murarstwo","lucznictwo",
+  "oswojenie_zwierzat","mistycyzm","wymiana","kolo"
+]);
+var TARGET_ID="brazownictwo";
+var PULA=18;
+var KOSZT_CELU=45;
+var TURNS_LEFT=2;
+
+// ================================================================
+//  LAYOUT CONSTANTS (mirrored from sciencePicker.ts)
+// ================================================================
+var NW=162, NH=72, COL_STEP=260, ROW_STEP=100, PAD_L=36, PAD_T=90;
+var DIVIDER_GAP=52, CROSS_LANE_STEP=8, LANE_STEP=6;
+var EPOCH_ORDER=["Kamień","Brąz","Żelazo"];
+
+// ================================================================
+//  STATUS HELPERS
+// ================================================================
+function computeStatus(id){
+  if(RESEARCHED.has(id))return"researched";
+  if(id===TARGET_ID)return"target";
+  var avail=isAvailable(id);
+  return avail?"available":"locked";
+}
+function isAvailable(id){
+  if(RESEARCHED.has(id)||id===TARGET_ID)return false;
+  return byId[id].prereqIds.every(function(p){return RESEARCHED.has(p);});
+}
+
+// ================================================================
+//  EPOCH STYLE
+// ================================================================
+function epochStyle(epoka){
+  if(epoka==="Kamień")return{bg:"rgba(18,30,10,0.5)",border:"rgba(80,140,40,0.18)",label:"#6aaa38",nodeFill:"#243a14",nodeStroke:"#6aaa38",glowColor:"rgba(100,200,60,0.16)"};
+  if(epoka==="Brąz")  return{bg:"rgba(36,16,4,0.5)", border:"rgba(180,100,20,0.18)",label:"#d08030",nodeFill:"#3e2008",nodeStroke:"#d08030",glowColor:"rgba(210,130,40,0.16)"};
+  return{bg:"rgba(10,18,36,0.5)",border:"rgba(40,80,180,0.18)",label:"#60a0e0",nodeFill:"#0e1e38",nodeStroke:"#4080c0",glowColor:"rgba(60,120,220,0.16)"};
+}
+
+// ================================================================
+//  LAYOUT COMPUTATION
+// ================================================================
+function computeLayout(){
+  // Depth within zone
+  var depthMap={};
+  function computeDepth(id){
+    if(depthMap[id]!==undefined)return depthMap[id];
+    var node=byId[id];
+    if(!node){depthMap[id]=0;return 0;}
+    var same=node.prereqIds.filter(function(pid){
+      var p=byId[pid];return p&&p.epoka===node.epoka;
+    });
+    if(!same.length){depthMap[id]=0;return 0;}
+    var maxD=Math.max.apply(null,same.map(computeDepth));
+    depthMap[id]=maxD+1;
+    return maxD+1;
+  }
+  TECHS.forEach(function(t){t.zoneCol=computeDepth(t.id);});
+
+  // Zone X positions
+  var activeEpochs=EPOCH_ORDER.filter(function(ep){return TECHS.some(function(t){return t.epoka===ep;});});
+  var zoneInfos=[];
+  var dividers=[];
+  var curX=PAD_L;
+  for(var zi=0;zi<activeEpochs.length;zi++){
+    var ep=activeEpochs[zi];
+    var epNodes=TECHS.filter(function(t){return t.epoka===ep;});
+    var numCols=Math.max.apply(null,epNodes.map(function(t){return t.zoneCol;}))+1;
+    zoneInfos.push({epoch:ep,numCols:numCols,startX:curX});
+    curX+=numCols*COL_STEP;
+    if(zi<activeEpochs.length-1){
+      dividers.push(curX+Math.round(DIVIDER_GAP/2));
+      curX+=DIVIDER_GAP;
+    }
+  }
+
+  // Node X positions
+  TECHS.forEach(function(t){
+    var z=zoneInfos.find(function(z){return z.epoch===t.epoka;});
+    if(z)t.x=z.startX+t.zoneCol*COL_STEP;
+  });
+
+  // Group by zone+col
+  var groups={};
+  TECHS.forEach(function(t){
+    var key=t.epoka+"_"+t.zoneCol;
+    if(!groups[key])groups[key]=[];
+    groups[key].push(t);
+  });
+  Object.values(groups).forEach(function(grp){grp.forEach(function(t,i){t._row=i;});});
+
+  // Barycenter sort (3 passes)
+  for(var pass=0;pass<3;pass++){
+    Object.values(groups).forEach(function(grp){
+      grp.forEach(function(t){
+        var prev=t.prereqIds.filter(function(pid){
+          var p=byId[pid];
+          return p&&(p.epoka!==t.epoka||p.zoneCol<t.zoneCol);
+        });
+        if(!prev.length){t._bary=9999;return;}
+        var rowSum=prev.reduce(function(acc,pid){return acc+(byId[pid]?byId[pid]._row:0);},0);
+        t._bary=rowSum/prev.length;
+      });
+      grp.sort(function(a,b){return a._bary-b._bary;});
+      grp.forEach(function(t,i){t._row=i;});
+    });
+  }
+
+  // Assign Y
+  TECHS.forEach(function(t){t.y=PAD_T+t._row*ROW_STEP;});
+
+  // SVG dims
+  var lastZone=zoneInfos[zoneInfos.length-1];
+  var svgW=lastZone?lastZone.startX+lastZone.numCols*COL_STEP+NW+30:800;
+  var maxRows=Object.values(groups).reduce(function(m,g){return Math.max(m,g.length);},0);
+  var bottomLaneYStart=PAD_T+maxRows*ROW_STEP+20;
+  var svgH=bottomLaneYStart+80;
+
+  return{svgW:svgW,svgH:svgH,dividers:dividers,zoneInfos:zoneInfos,bottomLaneYStart:bottomLaneYStart};
+}
+
+// ================================================================
+//  EDGE ROUTING
+// ================================================================
+function routeEdges(zoneInfos,bottomLaneYStart){
+  var edges=[];
+  TECHS.forEach(function(t){
+    t.prereqIds.forEach(function(pid){
+      if(byId[pid])edges.push({src:byId[pid],dst:t});
+    });
+  });
+
+  var gutterLaneCounts={};
+  var crossLaneIdx=0;
+
+  return edges.map(function(e){
+    var src=e.src,dst=e.dst;
+    var sx=src.x+NW, sy=src.y+NH/2, dx=dst.x, dy=dst.y+NH/2;
+    var isCross=src.epoka!==dst.epoka;
+    var color,dashArr,d;
+
+    if(isCross){
+      color="#c09838"; dashArr="5,3";
+      var myLane=crossLaneIdx++;
+      var bottomY=bottomLaneYStart+myLane*CROSS_LANE_STEP;
+      var srcZInfo=zoneInfos.find(function(z){return z.epoch===src.epoka;});
+      var dividerX=srcZInfo?srcZInfo.startX+srcZInfo.numCols*COL_STEP+Math.round(DIVIDER_GAP/2):sx+20;
+      var entryX=dividerX+8+myLane*CROSS_LANE_STEP;
+      d="M "+r(sx)+" "+r(sy)+" H "+r(sx+12)+" V "+r(bottomY)+" H "+r(entryX)+" V "+r(dy)+" H "+r(dx);
+    }else{
+      var gc=dst.zoneCol;
+      var zInfo=zoneInfos.find(function(z){return z.epoch===dst.epoka;});
+      var zoneStartX=zInfo?zInfo.startX:PAD_L;
+      var gutterL=gc===0?zoneStartX:zoneStartX+(gc-1)*COL_STEP+NW;
+      var gutterR=gc===0?zoneStartX+COL_STEP:zoneStartX+gc*COL_STEP;
+      var gutterMid=(gutterL+gutterR)/2;
+      var laneKey=dst.epoka+"_g"+gc;
+      if(!gutterLaneCounts[laneKey])gutterLaneCounts[laneKey]=0;
+      var laneIdx2=gutterLaneCounts[laneKey]++;
+      var laneX=gutterMid+(laneIdx2%2===0?1:-1)*Math.ceil(laneIdx2/2)*LANE_STEP;
+      color=dst.epoka==="Kamień"?"#4a9030":dst.epoka==="Brąz"?"#b07028":"#4080c0";
+      dashArr=null;
+      d="M "+r(sx)+" "+r(sy)+" H "+r(laneX)+" V "+r(dy)+" H "+r(dx);
+    }
+    return{d:d,color:color,dashArr:dashArr,dy:dy,dx:dx};
+  });
+}
+
+function r(n){return Math.round(n*10)/10;}
+
+function esc(s){
+  return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+}
+
+// ================================================================
+//  WORD WRAP
+// ================================================================
+function wrapText(name){
+  var words=name.split(" "),lines=[],cur="";
+  words.forEach(function(w){
+    var test=cur?cur+" "+w:w;
+    if(test.length>17&&cur.length>0){lines.push(cur);cur=w;}else{cur=test;}
+  });
+  if(cur)lines.push(cur);
+  return lines.slice(0,2);
+}
+
+// ================================================================
+//  SVG BUILD
+// ================================================================
+function buildSVG(layout,routedEdges){
+  var svgW=layout.svgW,svgH=layout.svgH,dividers=layout.dividers,zoneInfos=layout.zoneInfos;
+  var lines=[];
+
+  lines.push('<svg id="tech-svg" width="'+svgW+'" height="'+svgH+'" viewBox="0 0 '+svgW+' '+svgH+'" xmlns="http://www.w3.org/2000/svg">');
+  lines.push('<defs>');
+  lines.push('<filter id="glow-k" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur in="SourceGraphic" stdDeviation="2.5" result="bl"/><feMerge><feMergeNode in="bl"/><feMergeNode in="SourceGraphic"/></feMerge></filter>');
+  lines.push('<filter id="glow-b" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur in="SourceGraphic" stdDeviation="2.5" result="bl"/><feMerge><feMergeNode in="bl"/><feMergeNode in="SourceGraphic"/></feMerge></filter>');
+  lines.push('<filter id="glow-z" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur in="SourceGraphic" stdDeviation="2.5" result="bl"/><feMerge><feMergeNode in="bl"/><feMergeNode in="SourceGraphic"/></feMerge></filter>');
+  lines.push('<filter id="glow-target" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur in="SourceGraphic" stdDeviation="4" result="bl"/><feMerge><feMergeNode in="bl"/><feMergeNode in="SourceGraphic"/></feMerge></filter>');
+  lines.push('</defs>');
+
+  // Zone backgrounds
+  for(var zi=0;zi<zoneInfos.length;zi++){
+    var z=zoneInfos[zi];
+    var st=epochStyle(z.epoch);
+    var zoneW=z.numCols*COL_STEP+(zi<zoneInfos.length-1?Math.round(DIVIDER_GAP*0.42):NW+16);
+    lines.push('<rect x="'+r(z.startX-16)+'" y="'+r(PAD_T-46)+'" width="'+r(zoneW)+'" height="'+r(svgH-(PAD_T-46)-4)+'" rx="8" fill="'+st.bg+'" stroke="'+st.border+'" stroke-width="1"/>');
+  }
+
+  // Dividers
+  dividers.forEach(function(divX){
+    lines.push('<line x1="'+r(divX)+'" y1="'+r(PAD_T-46)+'" x2="'+r(divX)+'" y2="'+r(svgH-4)+'" stroke="#8a6a00" stroke-width="3.5" stroke-linecap="square" stroke-opacity="0.85"/>');
+    lines.push('<line x1="'+r(divX)+'" y1="'+r(PAD_T-46)+'" x2="'+r(divX)+'" y2="'+r(svgH-4)+'" stroke="rgba(240,190,30,0.10)" stroke-width="10" stroke-linecap="butt"/>');
+  });
+
+  // Epoch labels
+  zoneInfos.forEach(function(z){
+    var st=epochStyle(z.epoch);
+    var labelX=z.startX+(z.numCols*COL_STEP)/2;
+    var labelRight=z.startX+z.numCols*COL_STEP-8;
+    var labelLeft=z.startX-8;
+    lines.push('<text x="'+r(labelX)+'" y="'+r(PAD_T-52)+'" text-anchor="middle" fill="'+st.label+'" font-size="14" font-family="Georgia,serif" font-weight="bold" letter-spacing="2">EPOKA '+esc(z.epoch.toUpperCase())+'</text>');
+    lines.push('<line x1="'+r(labelLeft)+'" y1="'+r(PAD_T-43)+'" x2="'+r(labelRight)+'" y2="'+r(PAD_T-43)+'" stroke="'+st.label+'" stroke-width="1" stroke-opacity="0.35"/>');
+  });
+
+  // Column labels
+  zoneInfos.forEach(function(z){
+    var st=epochStyle(z.epoch);
+    var prefix=z.epoch==="Kamień"?"K":z.epoch==="Brąz"?"B":"Z";
+    for(var c=0;c<z.numCols;c++){
+      var colX2=z.startX+c*COL_STEP+NW/2;
+      var lbl=c===0&&z.epoch==="Brąz"?prefix+"0 (Bramkowy)":prefix+c;
+      lines.push('<text x="'+r(colX2)+'" y="'+r(PAD_T-26)+'" text-anchor="middle" fill="'+st.label+'" font-size="9" font-family="monospace" opacity="0.55">'+esc(lbl)+'</text>');
+    }
+  });
+
+  // Gutter guides
+  zoneInfos.forEach(function(z){
+    for(var gc=1;gc<z.numCols;gc++){
+      var gutterMidX=z.startX+gc*COL_STEP-Math.round((COL_STEP-NW)/2);
+      lines.push('<line x1="'+r(gutterMidX)+'" y1="'+r(PAD_T-20)+'" x2="'+r(gutterMidX)+'" y2="'+r(layout.svgH-10)+'" stroke="rgba(70,50,10,0.12)" stroke-width="1" stroke-dasharray="2,8"/>');
+    }
+  });
+
+  // Edges
+  routedEdges.forEach(function(re){
+    var attrs='d="'+re.d+'" fill="none" stroke="'+re.color+'" stroke-width="1.9" stroke-opacity="0.80" stroke-linecap="round" stroke-linejoin="round"';
+    if(re.dashArr)attrs+=' stroke-dasharray="'+re.dashArr+'"';
+    lines.push('<path '+attrs+'/>');
+    var al=7,aw=3.5;
+    lines.push('<path d="M '+r(re.dx)+' '+r(re.dy)+' L '+r(re.dx-al)+' '+r(re.dy-aw)+' L '+r(re.dx-al)+' '+r(re.dy+aw)+' Z" fill="'+re.color+'" fill-opacity="0.90"/>');
+  });
+
+  // Nodes
+  TECHS.forEach(function(t){
+    var status=computeStatus(t.id);
+    var st=epochStyle(t.epoka);
+    var glowId=t.epoka==="Kamień"?"glow-k":t.epoka==="Brąz"?"glow-b":"glow-z";
+    var isClickable=status==="available"||status==="target";
+    var isResearched=status==="researched";
+    var isLocked=status==="locked";
+    var isTarget=status==="target";
+
+    var opacity=isResearched?"0.55":isLocked?"0.35":"1";
+    var cursor=isClickable?"cursor:pointer;":"cursor:default;";
+    var dataAttr=isClickable?' data-techid="'+esc(t.id)+'"':"";
+
+    lines.push('<g class="civ-sci-node" transform="translate('+r(t.x)+','+r(t.y)+')" style="'+cursor+'opacity:'+opacity+';"'+dataAttr+' id="snode-'+esc(t.id)+'">');
+    lines.push('<rect x="-3" y="-3" width="'+(NW+6)+'" height="'+(NH+6)+'" rx="10" fill="none" stroke="'+st.glowColor+'" stroke-width="7" filter="url(#'+glowId+')"/>');
+    if(isTarget){
+      lines.push('<rect x="-5" y="-5" width="'+(NW+10)+'" height="'+(NH+10)+'" rx="12" fill="none" stroke="#e0b24a" stroke-width="3" stroke-opacity="0.9" filter="url(#glow-target)"/>');
+    }
+    var boxStroke=isTarget?"#e0b24a":st.nodeStroke;
+    var boxStrokeW=isTarget?"2.5":"1.5";
+    lines.push('<rect x="0" y="0" width="'+NW+'" height="'+NH+'" rx="8" fill="'+st.nodeFill+'" stroke="'+boxStroke+'" stroke-width="'+boxStrokeW+'"/>');
+    lines.push('<rect x="1" y="1" width="'+(NW-2)+'" height="'+Math.round(NH*0.38)+'" rx="7" fill="rgba(255,255,255,0.05)"/>');
+    if(isResearched)lines.push('<text x="'+r(NW-8)+'" y="14" text-anchor="end" fill="#5ad05a" font-size="12" font-family="Georgia,serif">✓</text>');
+    if(isLocked)    lines.push('<text x="'+r(NW-8)+'" y="14" text-anchor="end" fill="#6a7585" font-size="11" font-family="Georgia,serif">🔒</text>');
+
+    var wlines=wrapText(t.nazwa);
+    var textBlockH=wlines.length*16;
+    var hasNote=!!t.uwagi;
+    var textY0=Math.round((NH-textBlockH)/2)+14-(hasNote?6:0);
+    var textFill=isTarget?"#f0e070":"#f2e5b8";
+    wlines.forEach(function(ln,li){
+      lines.push('<text x="'+r(NW/2)+'" y="'+r(textY0+li*16)+'" text-anchor="middle" fill="'+textFill+'" font-size="12.5" font-family="Georgia,serif" font-weight="bold" pointer-events="none">'+esc(ln)+'</text>');
+    });
+
+    if(hasNote){
+      var noteColor=t.epoka==="Kamień"?"#a0e060":t.epoka==="Brąz"?"#f0b840":"#80c0f0";
+      lines.push('<text x="'+r(NW/2)+'" y="'+r(NH-16)+'" text-anchor="middle" fill="'+noteColor+'" font-size="8" font-family="Georgia,serif" font-style="italic" pointer-events="none">★ '+esc(t.uwagi.substring(0,32))+'</text>');
+    }
+
+    var bw=56,bh=13;
+    lines.push('<rect x="'+r((NW-bw)/2)+'" y="'+r(NH-bh-2)+'" width="'+bw+'" height="'+bh+'" rx="3" fill="'+st.nodeFill+'" stroke="'+st.nodeStroke+'" stroke-width="0.6" fill-opacity="0.8"/>');
+    lines.push('<text x="'+r(NW/2)+'" y="'+r(NH-4)+'" text-anchor="middle" fill="'+st.nodeStroke+'" font-size="8.5" font-family="Georgia,serif" pointer-events="none">'+esc(t.epoka)+'</text>');
+
+    var prefix=t.epoka==="Kamień"?"K":t.epoka==="Brąz"?"B":"Z";
+    lines.push('<text x="4" y="11" fill="rgba(180,140,50,0.40)" font-size="7.5" font-family="monospace" pointer-events="none">'+prefix+t.zoneCol+'</text>');
+    lines.push('<text x="'+r(NW-4)+'" y="11" text-anchor="end" fill="rgba(120,180,90,0.45)" font-size="7.5" font-family="monospace" pointer-events="none">'+t.koszt+'PN</text>');
+    lines.push('</g>');
+  });
+
+  lines.push('</svg>');
+  return lines.join('\n');
+}
+
+// ================================================================
+//  TOOLTIP
+// ================================================================
+var tip=null;
+function showTip(e,t,status){
+  if(!tip)return;
+  var st=epochStyle(t.epoka);
+  var statusLabel={researched:"✓ Zbadana",target:"◉ Aktualny cel badań",available:"▶ Dostępna (kliknij aby wybrać)",locked:"🔒 Zablokowana"};
+  var h='<div class="tt-name" style="color:'+st.label+'">'+esc(t.nazwa)+'</div>';
+  h+='<div class="tt-meta">Epoka: <strong>'+esc(t.epoka)+'</strong> | Kolumna: '+(t.epoka==="Kamień"?"K":t.epoka==="Brąz"?"B":"Z")+t.zoneCol+'</div>';
+  h+='<div class="tt-cost">⚗ Koszt nauki: '+t.koszt+' PN</div>';
+  h+='<div style="margin-top:4px;font-size:0.73em;font-weight:700">'+statusLabel[status]+'</div>';
+  if(t.prereqIds.length){
+    var pnames=t.prereqIds.map(function(p){return byId[p]?byId[p].nazwa:p;});
+    h+='<div class="tt-section">Wymaga:</div><ul class="tt-items">'+pnames.map(function(n){return'<li>'+esc(n)+'</li>';}).join('')+'</ul>';
+  }
+  if(t.odblokujeBudynek){
+    h+='<div class="tt-section">Odblokowuje budynki:</div><ul class="tt-items">'+t.odblokujeBudynek.split(',').map(function(b){return'<li>'+esc(b.trim())+'</li>';}).join('')+'</ul>';
+  }
+  if(t.odblokujeSurowiec){
+    h+='<div class="tt-section">Odblokowuje surowce:</div><ul class="tt-items">'+t.odblokujeSurowiec.split(',').map(function(s){return'<li>'+esc(s.trim())+'</li>';}).join('')+'</ul>';
+  }
+  if(t.uwagi)h+='<div class="tt-star">★ '+esc(t.uwagi)+'</div>';
+  tip.innerHTML=h;
+  tip.style.display='block';
+  moveTip(e);
+}
+function moveTip(e){
+  if(!tip)return;
+  var x=e.clientX+16,y=e.clientY+12;
+  if(x+tip.offsetWidth>window.innerWidth-8)x=e.clientX-tip.offsetWidth-10;
+  if(y+tip.offsetHeight>window.innerHeight-8)y=e.clientY-tip.offsetHeight-10;
+  tip.style.left=x+'px'; tip.style.top=y+'px';
+}
+function hideTip(){if(tip)tip.style.display='none';}
+
+// ================================================================
+//  RENDER
+// ================================================================
+function draw(){
+  var layout=computeLayout();
+  var edges=routeEdges(layout.zoneInfos,layout.bottomLaneYStart);
+  var pct=Math.min(100,Math.round(PULA/KOSZT_CELU*100));
+  var tgt=byId[TARGET_ID];
+
+  var wrap=document.getElementById('wrap');
+  wrap.innerHTML=
+    '<div class="cs-header">'
+    +'<span class="cs-title">Drzewko technologii &#x2014; wybierz cel bada&#x0144;</span>'
+    +'<button class="cs-close">&#x2715;</button>'
+    +'</div>'
+    +'<div class="cs-progress">'
+    +(tgt?
+      '<div class="cs-prog-row"><span>&#x1F52C; Cel: <strong class="cs-val">'+esc(tgt.nazwa)+'</strong></span><span class="cs-eta">ETA: '+TURNS_LEFT+' tur</span></div>'
+      +'<div class="cs-prog-row"><span>Pula:</span><span class="cs-val">'+PULA+' / '+KOSZT_CELU+' PN</span></div>'
+      +'<div class="cs-bar"><div class="cs-bar-fill" style="width:'+pct+'%"></div></div>'
+      +'<div class="cs-prog-hint">Post&#x0119;p: '+pct+'% &middot; ETA: '+TURNS_LEFT+' tury</div>'
+    :
+      '<div class="cs-prog-row"><span>&#x1F52C; Wybierz technologi&#x0119;, klikaj&#x0105;c w&#x0119;ze&#x0142;</span></div>'
+      +'<div class="cs-bar"><div class="cs-bar-fill" style="width:0%"></div></div>'
+    )
+    +'</div>'
+    +'<div class="cs-legend">'
+    +'<strong style="color:#f0c840">Legenda:</strong>'
+    +'<div class="cs-li"><div class="ls" style="background:#243a14;border:1px solid #6aaa38"></div> Epoka Kamienia</div>'
+    +'<div class="cs-li"><div class="ls" style="background:#3e2008;border:1px solid #d08030"></div> Epoka Br&#x0105;zu</div>'
+    +'<div class="cs-li"><div class="ls" style="background:#0e1e38;border:1px solid #4080c0"></div> Epoka &#x17B;elaza</div>'
+    +'<div class="cs-li" style="color:#f0c840">&#x25CF; z&#x0142;ota = aktualny cel</div>'
+    +'<div class="cs-li" style="color:#5ad05a">&#x2713; zbadana</div>'
+    +'<div class="cs-li" style="color:#6a7585">&#x1F512; zablokowana</div>'
+    +'</div>'
+    +'<div class="cs-scroll"><div id="svg-container">'+buildSVG(layout,edges)+'</div></div>';
+
+  // Close button
+  wrap.querySelector('.cs-close').addEventListener('click',function(){
+    wrap.innerHTML='<div style="padding:24px;color:#907830;font-size:0.9em">Panel zamkni&#x0119;ty. Od&#x015B;wie&#x17C; stron&#x0119; aby ponownie otworzy&#x107;.</div>';
+  });
+
+  // Node clicks + tooltips
+  var nodeEls=wrap.querySelectorAll('[data-techid]');
+  nodeEls.forEach(function(el){
+    var id=el.getAttribute('data-techid');
+    var t=byId[id];
+    if(!t)return;
+    var status=computeStatus(id);
+
+    el.addEventListener('click',function(){
+      TARGET_ID=id;
+      KOSZT_CELU=t.koszt;
+      PULA=0;
+      TURNS_LEFT=Math.max(1,Math.ceil(t.koszt/25));
+      draw();
+    });
+    el.addEventListener('mouseenter',function(e){showTip(e,t,status);});
+    el.addEventListener('mousemove',moveTip);
+    el.addEventListener('mouseleave',hideTip);
+  });
+}
+
+// ================================================================
+//  INIT
+// ================================================================
+function init(){
+  // Inject styles
+  var css=`
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #0d0d0d; color: #e8d5a0; font-family: 'Georgia', serif; }
+#panel-wrap {
+  min-height: 100vh;
+  display: flex; flex-direction: column; align-items: center;
+  padding: 20px 10px 40px;
+}
+#header-bar {
+  background: linear-gradient(135deg, #130f00 0%, #221a00 50%, #130f00 100%);
+  border-bottom: 2px solid #b08a00;
+  padding: 14px 28px 12px;
+  text-align: center;
+  width: 100%;
+  margin-bottom: 18px;
+}
+#header-bar h1 { font-size: 1.6rem; color: #f0c840; text-shadow: 0 0 14px rgba(240,200,64,0.45); letter-spacing: 2px; }
+#header-bar p { font-size: 0.79rem; color: #907830; letter-spacing: 1px; margin-top: 4px; }
+#wrap {
+  width: 100%; max-width: 1400px;
+  background: rgba(10,8,2,0.97);
+  border: 1px solid rgba(224,178,74,0.3);
+  border-radius: 12px;
+  box-shadow: 0 12px 48px rgba(0,0,0,0.90);
+  display: flex; flex-direction: column;
+  font-family: 'Georgia', serif;
+}
+.cs-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 18px 11px;
+  border-bottom: 2px solid #b08a00;
+  background: linear-gradient(135deg, #130f00 0%, #221a00 50%, #130f00 100%);
+  border-radius: 12px 12px 0 0;
+}
+.cs-title { font-size: 1.05em; font-weight: 700; letter-spacing: 2px; color: #f0c840; text-shadow: 0 0 10px rgba(240,200,64,0.35); }
+.cs-close { background: none; border: none; color: #907830; font-size: 18px; cursor: pointer; padding: 0 3px; line-height: 1; }
+.cs-close:hover { color: #f0c840; }
+.cs-progress {
+  display: flex; flex-direction: column; gap: 5px;
+  padding: 10px 18px 9px;
+  border-bottom: 1px solid #302200;
+  background: #0e0c04;
+}
+.cs-prog-row { display: flex; justify-content: space-between; align-items: baseline; font-size: 0.82em; color: #c0a050; }
+.cs-val { color: #f0c840; font-weight: 700; }
+.cs-eta { color: #907830; font-size: 0.85em; }
+.cs-bar { height: 7px; background: rgba(50,35,0,0.8); border: 1px solid rgba(176,138,0,0.35); border-radius: 4px; overflow: hidden; }
+.cs-bar-fill { height: 100%; background: #f0c840; transition: width .35s ease; }
+.cs-prog-hint { font-size: 0.71em; color: #5a4820; font-style: italic; }
+.cs-legend {
+  display: flex; flex-wrap: wrap; gap: 8px 20px;
+  padding: 8px 18px; border-bottom: 1px solid #302200;
+  background: #0a0800; font-size: 0.73em; color: #907830; align-items: center;
+}
+.cs-li { display: flex; align-items: center; gap: 6px; }
+.ls { width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
+.cs-scroll { overflow-x: auto; padding: 18px 24px 48px; }
+/* Tooltip */
+#tooltip {
+  position: fixed; display: none;
+  background: #160e00; border: 1px solid #b08800; border-radius: 6px;
+  padding: 10px 13px; max-width: 300px; font-size: 0.77rem; color: #e0d098;
+  box-shadow: 0 4px 18px rgba(0,0,0,0.88); pointer-events: none; z-index: 1000; line-height: 1.55;
+  font-family: 'Georgia', serif;
+}
+#tooltip .tt-name { font-size: 0.91rem; font-weight: bold; margin-bottom: 3px; }
+#tooltip .tt-meta { color: #7a6028; font-size: 0.69em; margin-bottom: 3px; }
+#tooltip .tt-cost { color: #78b058; font-size: 0.73em; margin-bottom: 5px; }
+#tooltip .tt-section { margin-top: 6px; color: #907030; font-size: 0.68em; text-transform: uppercase; letter-spacing: 0.5px; }
+#tooltip .tt-items { margin-top: 2px; padding-left: 13px; color: #cebe70; }
+#tooltip .tt-items li { list-style: disc; margin: 1px 0; font-size: 0.74em; }
+#tooltip .tt-star { margin-top: 5px; color: #c09830; font-size: 0.71em; }
+/* SVG node hover */
+.civ-sci-node { transition: opacity 0.15s; }
+`;
+  var s=document.createElement('style');
+  s.textContent=css;
+  document.head.appendChild(s);
+
+  // DOM
+  var panelWrap=document.createElement('div');
+  panelWrap.id='panel-wrap';
+
+  var headerBar=document.createElement('div');
+  headerBar.id='header-bar';
+  headerBar.innerHTML='<h1>Podgl&#x0105;d: Drzewko technologii (nauka) &#x2014; interaktywne</h1>'
+    +'<p>Uk&#x0142;ad strefowy (Kamie&#x0144; | Br&#x0105;z | &#x17B;elazo) &bull; klik w w&#x0119;ze&#x0142; = wybiera cel bada&#x0144; &bull; porta sciencePicker.ts</p>';
+
+  var wrap=document.createElement('div');
+  wrap.id='wrap';
+
+  tip=document.createElement('div');
+  tip.id='tooltip';
+
+  panelWrap.appendChild(headerBar);
+  panelWrap.appendChild(wrap);
+  document.body.appendChild(panelWrap);
+  document.body.appendChild(tip);
+
+  draw();
+}
+
+if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",init);}else{init();}
+})();
+</script>
+</body>
+</html>

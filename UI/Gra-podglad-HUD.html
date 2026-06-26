@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<title>Podgląd UI — HUD + Bilans + Zadowolenie/Porządek (NIE kanon)</title>
+<style>
+  :root{--gold:#e0b24a;--orange:#d98a3a;--green:#6bbf59;--blue:#5a9bd4;--red:#d36b5e;--muted:#9aa6b6;--bd:rgba(224,178,74,0.25);}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{min-height:100vh;background:radial-gradient(120% 120% at 50% 0%,#22351f,#14201a 45%,#0a0f12);color:#e8ebf0;font-family:'Segoe UI',Tahoma,sans-serif;}
+  #banner{position:fixed;top:0;left:0;right:0;z-index:600;background:#3a1414;color:#f0d8c0;text-align:center;font-size:11px;padding:4px;}
+  /* HUD bar */
+  #hud{position:fixed;top:22px;left:0;right:0;z-index:310;background:linear-gradient(180deg,#1b1f26,#141820);border-bottom:2px solid rgba(224,178,74,.35);display:flex;align-items:center;gap:.6em;padding:6px 12px;flex-wrap:wrap;font-size:13px;}
+  .grp{display:flex;gap:.9em;padding:0 .8em;border-right:1px solid var(--bd);}
+  .res{display:flex;flex-direction:column;line-height:1.15;}
+  .res .top{display:flex;align-items:baseline;gap:.25em;}
+  .res .ic{font-size:1.05em;} .res .val{font-weight:700;} .res .rate{font-size:.75em;color:var(--green);} .res .rate.o{color:var(--orange);}
+  .res .lbl{font-size:.66em;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;} .res .lim{font-size:.7em;color:var(--muted);}
+  .epoch{display:flex;flex-direction:column;gap:3px;min-width:150px;padding:0 .6em;}
+  .epoch .e-l{font-size:.72em;color:var(--muted);} .epoch .e-b{height:5px;background:rgba(224,178,74,.15);border-radius:3px;overflow:hidden;} .epoch .e-f{height:100%;background:var(--gold);}
+  .right{margin-left:auto;display:flex;align-items:center;gap:.4em;}
+  .turn{font-size:.82em;color:var(--muted);} .turn b{color:var(--gold);}
+  #hud button{font-family:inherit;cursor:pointer;border-radius:4px;}
+  .b{background:rgba(224,178,74,.1);border:1px solid var(--bd);color:#e8ebf0;font-size:.8em;padding:5px 10px;}
+  .b:hover{background:rgba(224,178,74,.2);}
+  .end{background:linear-gradient(180deg,#c09030,#8a6418);border:1px solid #c0a040;color:#fff8e0;font-weight:700;font-size:.85em;padding:6px 16px;}
+  /* Bilans */
+  #bal{position:fixed;top:90px;left:12px;width:210px;z-index:320;background:rgba(20,24,32,.94);border:1px solid rgba(224,178,74,.3);border-radius:8px;padding:10px 12px;font:13px monospace;box-shadow:0 4px 20px rgba(0,0,0,.6);}
+  #bal .t,#ord .t{font-size:.78em;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--gold);border-bottom:1px solid rgba(224,178,74,.25);padding-bottom:4px;margin-bottom:6px;display:flex;justify-content:space-between;}
+  #bal .r,#ord .r{display:flex;justify-content:space-between;padding:2px 0;} #bal .l,#ord .l{color:var(--muted);}
+  #bal .tot{border-top:1px solid rgba(224,178,74,.2);margin-top:6px;padding-top:6px;font-size:.9em;}
+  .gold{color:var(--gold);}.green{color:var(--green);}.blue{color:var(--blue);}.red{color:var(--red);}
+  /* Order */
+  #ord{position:fixed;top:90px;right:12px;width:230px;z-index:320;background:rgba(20,24,32,.94);border:1px solid rgba(224,178,74,.3);border-radius:8px;padding:10px 12px;font:13px monospace;box-shadow:0 4px 20px rgba(0,0,0,.6);}
+  #ord .bar{height:8px;background:#111518;border:1px solid rgba(224,178,74,.2);border-radius:3px;overflow:hidden;margin:4px 0;} #ord .fill{height:100%;}
+  #ord .status{margin-top:7px;padding:5px 8px;border-radius:4px;font-size:.82em;font-weight:700;text-align:center;}
+  .ok{background:rgba(107,191,89,.15);color:var(--green);border:1px solid rgba(107,191,89,.4);}
+  .t1{background:rgba(217,138,58,.15);color:var(--orange);border:1px solid rgba(217,138,58,.4);}
+  .t2{background:rgba(211,107,94,.18);color:var(--red);border:1px solid rgba(211,107,94,.5);}
+  #ord .note{font-size:.72em;color:var(--muted);margin-top:5px;line-height:1.4;}
+  /* Minimapa */
+  #mini{position:fixed;right:12px;bottom:12px;width:200px;height:140px;z-index:310;
+    background:rgba(20,24,32,.92);border:1px solid rgba(224,178,74,.3);border-radius:6px;
+    overflow:hidden;box-shadow:0 4px 16px rgba(0,0,0,.6);cursor:crosshair;}
+  #mini canvas{display:block;width:200px;height:140px;}
+  #mini-label{position:absolute;bottom:3px;right:6px;font:9px monospace;color:rgba(224,178,74,.5);pointer-events:none;}
+  /* Info klik */
+  #click-info{position:fixed;right:218px;bottom:12px;z-index:320;background:rgba(20,24,32,.9);
+    border:1px solid rgba(224,178,74,.3);border-radius:5px;padding:4px 8px;
+    font:11px monospace;color:var(--gold);display:none;}
+  #ctrls{position:fixed;left:12px;bottom:12px;z-index:330;display:flex;gap:6px;}
+  #ctrls button{background:rgba(224,178,74,.12);border:1px solid var(--bd);color:#e8ebf0;border-radius:5px;padding:6px 11px;cursor:pointer;font:12px monospace;}
+</style>
+</head>
+<body>
+<div id="banner">PODGLĄD UI · HUD + Bilans + Zadowolenie/Porządek + MINIMAPA (UI plan 1A/1B/1C) · dane przykładowe · NIE kanon</div>
+<div id="hud"></div>
+<div id="bal"></div>
+<div id="ord"></div>
+<div id="mini"><canvas id="minicanvas" width="200" height="140"></canvas><div id="mini-label">minimapa (UI wariant B)</div></div>
+<div id="click-info"></div>
+<div id="ctrls">
+  <button onclick="endTurn()">Zakończ turę (N)</button>
+  <button onclick="cycleOrder()">Zmień nastrój miasta</button>
+  <button onclick="toggleViewport()">Viewport ON/OFF</button>
+</div>
+<script>
+// ---------------------------------------------------------------------------
+// Dane przykładowe HUD
+// ---------------------------------------------------------------------------
+var state={zloto:1840,zlotoRate:253,praca:724,pracaRate:88,wplyw:46,nauka:38,kultura:29,zadowolenie:12,osiedla:6,osiedlaMax:8,nacja:'Grecy',tura:42,epoka:'Brąz',epokaPostep:0.55,badana:'Brązownictwo'};
+var bal={praca:88,pieniadz:253,nauka:38,kultura:29,zywnosc:11};
+var player={skarbiec:1840,nauka:512,era:2,badana:'Brązownictwo'};
+var order={szczescie:7,porzadek:5,progT1:8,progT2:4,bunt:false};
+
+// ---------------------------------------------------------------------------
+// Mapa przykładowa dla minimapy (wariant B getMinimapData)
+// 20 kolumn × 14 wierszy heksów z różnymi terenami i właścicielami
+// ---------------------------------------------------------------------------
+var COLS=20, ROWS=14;
+var TERENY=['Morze','Morze','Wybrzeze','Laka','Rownina','Wzgorza','Gory','Pustynia'];
+var CIV_COLORS=['#e05050','#4e9de0','#60c060',null,null,null];
+
+// Deterministic pseudo-random
+function rng(seed){var x=Math.sin(seed+1)*10000;return x-Math.floor(x);}
+
+// Generuj siatkę z klastrami terenów i terytoriami cywilizacji
+var hexes=[];
+// Centra terytoriów (3 cywilizacje)
+var civCenters=[{q:4,r:4,c:'#e05050'},{q:14,r:3,c:'#4e9de0'},{q:9,r:10,c:'#60c060'}];
+
+for(var r=0;r<ROWS;r++){
+  for(var q=0;q<COLS;q++){
+    var idx=q+r*COLS;
+    // Teren: szum bazowy
+    var noise=rng(idx*7+13);
+    var teren;
+    // Linia brzegowa po lewej i prawej stronie mapy = morze
+    if(q<2||q>=COLS-2||r<1||r>=ROWS-1){
+      teren=(noise<0.6)?'Morze':'Wybrzeze';
+    } else {
+      // Wewnątrz kontynentu
+      var t=rng(idx*3+7);
+      if(t<0.04) teren='Gory';
+      else if(t<0.12) teren='Wzgorza';
+      else if(t<0.18) teren='Pustynia';
+      else if(t<0.25) teren='Rownina';
+      else teren='Laka';
+    }
+    // Właściciel: hex należy do cywilizacji jeśli w promieniu r≤4 od centrum
+    var ownerColor=null;
+    for(var ci=0;ci<civCenters.length;ci++){
+      var cx=civCenters[ci].q, cy=civCenters[ci].r;
+      var dq=q-cx, dr=r-cy;
+      var dist=Math.max(Math.abs(dq),Math.abs(dr),Math.abs(-dq-dr));
+      if(dist<=4){ownerColor=civCenters[ci].c;break;}
+    }
+    hexes.push({q:q,r:r,teren:teren,ownerColor:ownerColor});
+  }
+}
+
+// Viewport (prostokąt widoku kamery) — pozycja startowa
+var viewport={x:6,y:3,w:8,h:5};
+var showViewport=true;
+
+function getMinimapData(){
+  return {
+    cols:COLS, rows:ROWS,
+    hexes:hexes,
+    viewport:showViewport?viewport:undefined
+  };
+}
+function toggleViewport(){showViewport=!showViewport;renderMinimap();}
+
+// ---------------------------------------------------------------------------
+// Render minimapy (canvas)
+// ---------------------------------------------------------------------------
+var TEREN_KOLOR={
+  Laka:'#5a9e48', Rownina:'#9ab85c', Wzgorza:'#7b6e50',
+  Gory:'#8a8a8a', Wybrzeze:'#78b8c8', Morze:'#2a6080', Pustynia:'#c8b46a'
+};
+
+function renderMinimap(){
+  var canvas=document.getElementById('minicanvas');
+  var ctx=canvas.getContext('2d');
+  var W=200,H=140;
+  canvas.width=W; canvas.height=H;
+  var data=getMinimapData();
+  var cellW=W/data.cols, cellH=H/data.rows;
+
+  for(var i=0;i<data.hexes.length;i++){
+    var hex=data.hexes[i];
+    var px=hex.q*cellW, py=hex.r*cellH;
+    ctx.fillStyle=TEREN_KOLOR[hex.teren]||'#3a4450';
+    ctx.fillRect(Math.floor(px),Math.floor(py),Math.ceil(cellW)+1,Math.ceil(cellH)+1);
+    if(hex.ownerColor){
+      ctx.strokeStyle=hex.ownerColor;
+      ctx.lineWidth=1;
+      ctx.strokeRect(Math.floor(px)+0.5,Math.floor(py)+0.5,Math.ceil(cellW),Math.ceil(cellH));
+    }
+  }
+  // Centra miast
+  for(var ci=0;ci<civCenters.length;ci++){
+    var cx=civCenters[ci].q,cy=civCenters[ci].r;
+    ctx.fillStyle=civCenters[ci].c;
+    ctx.beginPath();
+    ctx.arc(Math.floor((cx+0.5)*cellW),Math.floor((cy+0.5)*cellH),3.5,0,Math.PI*2);
+    ctx.fill();
+    ctx.strokeStyle='#fff';ctx.lineWidth=0.8;ctx.stroke();
+  }
+  // Viewport
+  if(data.viewport){
+    var vp=data.viewport;
+    ctx.strokeStyle='rgba(255,255,255,0.75)';ctx.lineWidth=1.5;
+    ctx.strokeRect(Math.floor(vp.x*cellW)+0.5,Math.floor(vp.y*cellH)+0.5,Math.ceil(vp.w*cellW),Math.ceil(vp.h*cellH));
+  }
+}
+
+// Klik na minimapie — przesuń viewport
+document.getElementById('minicanvas').addEventListener('click',function(e){
+  var rect=this.getBoundingClientRect();
+  var px=e.clientX-rect.left, py=e.clientY-rect.top;
+  var q=Math.floor((px/rect.width)*COLS);
+  var r=Math.floor((py/rect.height)*ROWS);
+  // Przesuń środek viewportu na kliknięty punkt
+  viewport.x=Math.max(0,Math.min(COLS-viewport.w,q-Math.floor(viewport.w/2)));
+  viewport.y=Math.max(0,Math.min(ROWS-viewport.h,r-Math.floor(viewport.h/2)));
+  var info=document.getElementById('click-info');
+  info.textContent='klik: hex q='+q+' r='+r+' → onMinimapClick('+q+','+r+')';
+  info.style.display='block';
+  setTimeout(function(){info.style.display='none';},2000);
+  if(showViewport) renderMinimap();
+});
+
+// ---------------------------------------------------------------------------
+// HUD bar
+// ---------------------------------------------------------------------------
+function sgn(n){return (n>0?'+':'')+n;}
+function res(ic,val,lbl,rate,o){var r='<div class="res"><div class="top"><span class="ic">'+ic+'</span><span class="val">'+val+'</span>';if(rate)r+='<span class="rate'+(o?' o':'')+'">'+rate+'</span>';return r+'</div><span class="lbl">'+lbl+'</span></div>';}
+function renderHud(){var s=state;var pct=Math.round(Math.max(0,Math.min(1,s.epokaPostep))*100);
+  document.getElementById('hud').innerHTML=
+  '<div class="grp">'+res('\u{1FA99}',s.zloto,'Złoto',sgn(s.zlotoRate)+'/t')+res('\u{1F528}',s.praca,'Praca',sgn(s.pracaRate)+'/t',true)+'</div>'+
+  '<div class="grp">'+res('\u{1F3DB}️',sgn(s.wplyw),'Wpływ')+res('⚛️',sgn(s.nauka),'Nauka')+'</div>'+
+  '<div class="grp">'+res('\u{1F3BC}',sgn(s.kultura),'Kultura')+res('\u{1F600}',sgn(s.zadowolenie),'Zadowolenie')+'</div>'+
+  '<div class="grp">'+res('\u{1F3D8}️',s.osiedla+'<span class="lim">/'+s.osiedlaMax+'</span>','Osiedla')+res('\u{1F451}','<span class="gold">'+s.nacja+'</span>','Nacja')+'</div>'+
+  '<div class="epoch"><span class="e-l">Epoka: <b class="gold">'+s.epoka+'</b> · '+s.badana+'</span><div class="e-b"><div class="e-f" style="width:'+pct+'%"></div></div></div>'+
+  '<div class="right"><span class="turn">Tura <b>'+s.tura+'</b></span>'+
+  '<button class="b">\u{1F3D9} Miasta</button><button class="b">⚛️ Nauka</button><button class="b">\u{1F91D} Dyplomacja</button><button class="b">☰</button>'+
+  '<button class="end" onclick="endTurn()">Zakończ turę ▶</button></div>';}
+
+// ---------------------------------------------------------------------------
+// Bilans
+// ---------------------------------------------------------------------------
+function rrow(ic,l,v,c){return '<div class="r"><span class="l">'+ic+' '+l+'</span><span class="'+c+'" style="font-weight:700">'+sgn(v)+'</span></div>';}
+function renderBal(){var b=bal,p=player,fc=b.zywnosc>0?'green':b.zywnosc<0?'red':'';
+  document.getElementById('bal').innerHTML='<div class="t"><span>Bilans / turę</span><span class="l">T'+state.tura+'</span></div>'+
+  rrow('\u{1F528}','Praca',b.praca,'gold')+rrow('\u{1F4B1}','Pieniądz',b.pieniadz,'blue')+rrow('⚛️','Nauka',b.nauka,'blue')+rrow('\u{1F3AD}','Kultura',b.kultura,'gold')+rrow('\u{1F35E}','Żywność',b.zywnosc,fc)+
+  '<div class="tot"><div class="r"><span class="l">Skarbiec</span><span class="gold">'+p.skarbiec+'</span></div><div class="r"><span class="l">Nauka (zapas)</span><span class="blue">'+p.nauka+'</span></div><div class="r"><span class="l">Epoka</span><span>'+p.era+'</span></div><div class="r"><span class="l">Badana</span><span>'+p.badana+'</span></div></div>';}
+
+// ---------------------------------------------------------------------------
+// Zadowolenie / Porządek
+// ---------------------------------------------------------------------------
+function tier(s){var z=s.szczescie+s.porzadek; if(s.bunt||z<s.progT2)return 2; if(z<s.progT1)return 1; return 0;}
+function obar(v,mx,c){var p=Math.max(0,Math.min(100,Math.round(v/Math.max(1,mx)*100)));return '<div class="bar"><div class="fill" style="width:'+p+'%;background:'+c+'"></div></div>';}
+function renderOrd(){var s=order,z=s.szczescie+s.porzadek,sc=Math.max(z,s.progT1,1),tn=tier(s);
+  var st=tn===0?'<div class="status ok">✓ Spokój — miasto pracuje normalnie</div>':tn===1?'<div class="status t1">⚠ T1 — miasto pracuje gorzej</div>':'<div class="status t2">\u{1F525} T2 — BUNT</div>';
+  document.getElementById('ord').innerHTML='<div class="t">Zadowolenie / Porządek</div>'+
+  '<div class="r"><span class="l">\u{1F600} Szczęście</span><span>'+s.szczescie+'</span></div>'+obar(s.szczescie,sc,'var(--gold)')+
+  '<div class="r"><span class="l">⚖️ Porządek</span><span>'+s.porzadek+'</span></div>'+obar(s.porzadek,sc,'var(--green)')+
+  '<div class="r"><span class="l">Zadowolenie (suma)</span><span style="font-weight:700">'+z+'</span></div>'+
+  '<div class="r"><span class="l">Próg T1 / T2</span><span>'+s.progT1+' / '+s.progT2+'</span></div>'+st+
+  '<div class="note">Poniżej T1: kary do pracy. Poniżej T2: bunt. Szczęście z budynków/religii, Porządek z garnizonu/prawa.</div>';}
+
+// ---------------------------------------------------------------------------
+// Render wszystkiego
+// ---------------------------------------------------------------------------
+function renderAll(){renderHud();renderBal();renderOrd();renderMinimap();}
+function endTurn(){
+  state.tura++;
+  state.zloto+=state.zlotoRate;
+  state.praca=720+Math.floor(Math.random()*20);
+  bal.praca=state.praca-636;
+  player.skarbiec=state.zloto;
+  // Animuj viewport (symulacja ruchu kamery)
+  viewport.x=Math.min(COLS-viewport.w,viewport.x+Math.floor(Math.random()*3));
+  renderAll();
+}
+var moods=[{szczescie:7,porzadek:5,progT1:8,progT2:4,bunt:false},{szczescie:4,porzadek:3,progT1:8,progT2:4,bunt:false},{szczescie:2,porzadek:1,progT1:8,progT2:4,bunt:false}];
+var mi=0;
+function cycleOrder(){mi=(mi+1)%moods.length;order=moods[mi];renderOrd();}
+document.addEventListener('keydown',function(e){if(e.key&&e.key.toLowerCase()==='n')endTurn();});
+renderAll();
+</script>
+</body>
+</html>

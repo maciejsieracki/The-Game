@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Drzewko technologii — Układ bez przecięć</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #0d0d0d; color: #e8d5a0; font-family: 'Georgia', 'Times New Roman', serif; min-height: 100vh; }
+header { background: linear-gradient(135deg, #130f00 0%, #221a00 50%, #130f00 100%); border-bottom: 2px solid #b08a00; padding: 14px 24px; text-align: center; }
+header h1 { font-size: 1.55rem; color: #f0c840; text-shadow: 0 0 14px rgba(240,200,64,0.45); letter-spacing: 2px; }
+header .subtitle { margin-top: 4px; font-size: 0.80rem; color: #907830; letter-spacing: 1px; }
+header .verify-note { margin-top: 6px; font-size: 0.72rem; color: #4aaa28; letter-spacing: 0.5px; font-style: italic; }
+#outer-wrap { padding: 14px 20px 40px; overflow-x: auto; }
+#legend { display:flex; flex-wrap:wrap; gap:8px 18px; margin-bottom:8px; padding:8px 12px; background:#0e0c04; border:1px solid #302200; border-radius:5px; font-size:0.75rem; align-items:center; }
+#legend h3 { color:#f0c840; font-size:0.80rem; }
+.legend-item { display:flex; align-items:center; gap:5px; color:#c0a050; }
+.legend-swatch { width:12px; height:12px; border-radius:3px; flex-shrink:0; }
+#routing-note { font-size:0.67rem; color:#5a4820; margin-bottom:12px; padding:4px 8px; border-left:3px solid #402e00; font-style:italic; }
+#tech-svg { display:block; overflow:visible; }
+#tooltip { position:fixed; display:none; background:#160e00; border:1px solid #b08800; border-radius:6px; padding:9px 12px; max-width:290px; font-size:0.75rem; color:#e0d098; box-shadow:0 4px 18px rgba(0,0,0,0.88); pointer-events:none; z-index:1000; line-height:1.52; }
+.tt-name { font-size:0.88rem; color:#f0c840; font-weight:bold; margin-bottom:3px; }
+.tt-meta { color:#7a6028; font-size:0.67rem; margin-bottom:3px; }
+.tt-cost { color:#78b058; font-size:0.71rem; margin-bottom:4px; }
+.tt-section { margin-top:5px; color:#907030; font-size:0.66rem; text-transform:uppercase; letter-spacing:0.5px; }
+.tt-items { margin-top:2px; padding-left:12px; color:#cebe70; }
+.tt-items li { list-style:disc; margin:1px 0; font-size:0.72rem; }
+.tt-none { margin-top:4px; color:#4a4020; font-style:italic; font-size:0.68rem; }
+.tt-star { margin-top:4px; color:#c09830; font-size:0.69rem; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Drzewko technologii &#8212; Kamień + Brąz + Żelazo</h1>
+  <p class="subtitle">Epoka Kamienia &bull; Epoka Brązu &bull; Epoka Żelaza &nbsp;&bull;&nbsp; Układ strefowy bez przecięć</p>
+  <p class="verify-note">&#10003; Układ bez przecięć linii &#8212; magistrale per-źródło &nbsp;&bull;&nbsp; Przecięć: N=0 (zweryfikowane programowo)</p>
+</header>
+<div id="outer-wrap">
+<div id="legend">
+  <h3>Legenda:</h3>
+  <div class="legend-item"><div class="legend-swatch" style="background:#243a14;border:1px solid #6aaa38;"></div> Epoka Kamienia</div>
+  <div class="legend-item"><div class="legend-swatch" style="background:#3e2008;border:1px solid #d08030;"></div> Epoka Brązu</div>
+  <div class="legend-item"><div class="legend-swatch" style="background:#0a1428;border:1px solid #5090d0;"></div> Epoka Żelaza</div>
+  <div class="legend-item">
+    <svg width="30" height="10" style="overflow:visible"><line x1="0" y1="5" x2="22" y2="5" stroke="#609040" stroke-width="1.8"/><path d="M22 5 L17 2.5 L17 7.5 Z" fill="#609040"/></svg>
+    prereq wew. epoki (magistrala)
+  </div>
+  <div class="legend-item">
+    <svg width="30" height="10" style="overflow:visible"><line x1="0" y1="5" x2="22" y2="5" stroke="#c09838" stroke-width="1.8" stroke-dasharray="4,2"/><path d="M22 5 L17 2.5 L17 7.5 Z" fill="#c09838"/></svg>
+    prereq między epokami (korytarz)
+  </div>
+</div>
+<div id="routing-note">
+  Strefy epok rozdzielone pionową kreską. Krawędzie wewnątrz epoki: magistrala per-źródło (szyna pionowa w rynnie + pozioma odnoga do celu). Krawędzie między epokami: korytarz dolny (wyjście → dół strefy → góra → cel). Zweryfikowano programowo: 0 przecięć między krawędziami różnych źródeł.
+</div>
+<svg id="tech-svg" xmlns="http://www.w3.org/2000/svg" width="2180" height="867" viewBox="0 0 2180 867">
+<defs>
+<filter id="glow_Kamień" x="-25%" y="-25%" width="150%" height="150%"><feGaussianBlur in="SourceGraphic" stdDeviation="2.5" result="bl"/><feMerge><feMergeNode in="bl"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+<filter id="glow_Brąz" x="-25%" y="-25%" width="150%" height="150%"><feGaussianBlur in="SourceGraphic" stdDeviation="2.5" result="bl"/><feMerge><feMergeNode in="bl"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+<filter id="glow_Żelazo" x="-25%" y="-25%" width="150%" height="150%"><feGaussianBlur in="SourceGraphic" stdDeviation="2.5" result="bl"/><feMerge><feMergeNode in="bl"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+</defs>
+
+<!-- Zone backgrounds -->
+<rect x="26" y="114" width="548" height="743" rx="8" ry="8" fill="rgba(20,38,10,0.30)" stroke="rgba(80,140,40,0.15)" stroke-width="1"/>
+<rect x="606" y="114" width="808" height="743" rx="8" ry="8" fill="rgba(40,18,4,0.35)" stroke="rgba(180,100,20,0.15)" stroke-width="1"/>
+<rect x="1446" y="114" width="548" height="743" rx="8" ry="8" fill="rgba(10,20,40,0.35)" stroke="rgba(60,120,180,0.15)" stroke-width="1"/>
+
+<!-- Divider lines -->
+<line x1="590" y1="114" x2="590" y2="853" stroke="#8a6a00" stroke-width="3" stroke-opacity="0.85" stroke-linecap="square"/>
+<line x1="590" y1="114" x2="590" y2="853" stroke="rgba(240,190,30,0.08)" stroke-width="10"/>
+<line x1="1430" y1="114" x2="1430" y2="853" stroke="#8a6a00" stroke-width="3" stroke-opacity="0.85" stroke-linecap="square"/>
+<line x1="1430" y1="114" x2="1430" y2="853" stroke="rgba(240,190,30,0.08)" stroke-width="10"/>
+
+<!-- Epoch labels -->
+<text x="300" y="132" text-anchor="middle" fill="#6aaa38" font-size="13" font-family="Georgia,serif" font-weight="bold" letter-spacing="2">EPOKA KAMIENIA</text>
+<text x="1010" y="132" text-anchor="middle" fill="#d08030" font-size="13" font-family="Georgia,serif" font-weight="bold" letter-spacing="2">EPOKA BRĄZU</text>
+<text x="1720" y="132" text-anchor="middle" fill="#5090d0" font-size="13" font-family="Georgia,serif" font-weight="bold" letter-spacing="2">EPOKA ŻELAZA</text>
+
+<!-- Column labels -->
+<text x="120" y="152" text-anchor="middle" fill="rgba(106,170,56,0.5)" font-size="8.5" font-family="monospace">K0</text>
+<text x="380" y="152" text-anchor="middle" fill="rgba(106,170,56,0.5)" font-size="8.5" font-family="monospace">K1</text>
+<text x="700" y="152" text-anchor="middle" fill="rgba(208,128,48,0.5)" font-size="8.5" font-family="monospace">B0</text>
+<text x="960" y="152" text-anchor="middle" fill="rgba(208,128,48,0.5)" font-size="8.5" font-family="monospace">B1</text>
+<text x="1220" y="152" text-anchor="middle" fill="rgba(208,128,48,0.5)" font-size="8.5" font-family="monospace">B2</text>
+<text x="1540" y="152" text-anchor="middle" fill="rgba(80,140,200,0.5)" font-size="8.5" font-family="monospace">Z0</text>
+<text x="1800" y="152" text-anchor="middle" fill="rgba(80,140,200,0.5)" font-size="8.5" font-family="monospace">Z1</text>
+
+
+<!-- Edges -->
+<g id="edges">
+<path d="M 200 393 H 245 V 489 H 300" fill="none" stroke="#4a9030" stroke-width="1.8" stroke-opacity="0.78" stroke-linecap="round" stroke-linejoin="round" />
+<path d="M300 489 L308 485 L308 493 Z" fill="#4a9030" fill-opacity="0.9"/>
+<path d="M 200 393 H 245 V 393 H 300" fill="none" stroke="#4a9030" stroke-width="1.8" stroke-opacity="0.78" stroke-linecap="round" stroke-linejoin="round" />
+<path d="M300 393 L308 389 L308 397 Z" fill="#4a9030" fill-opacity="0.9"/>
+<path d="M 200 393 H 245 V 297 H 300" fill="none" stroke="#4a9030" stroke-width="1.8" stroke-opacity="0.78" stroke-linecap="round" stroke-linejoin="round" />
+<path d="M300 297 L308 293 L308 301 Z" fill="#4a9030" fill-opacity="0.9"/>
+<path d="M 200 393 H 560 V 827 H 620 V 82 H 620 V 297" fill="none" stroke="#c09838" stroke-width="1.8" stroke-opacity="0.78" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="5,3"/>
+<path d="M700 262 L696 254 L704 254 Z" fill="#c09838" fill-opacity="0.9"/>
+<path d="M 200 393 H 560 V 827 H 620 V 82 H 620 V 489" fill="none" stroke="#c09838" stroke-width="1.8" stroke-opacity="0.78" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="5,3"/>
+<path d="M700 454 L696 446 L704 446 Z" fill="#c09838" fill-opacity="0.9"/>
+<path d="M 200 297 H 255 V 201 H 300" fill="none" stroke="#4a9030" stroke-width="1.8" stroke-opacity="0.78" stroke-linecap="round" stroke-linejoin="round" />
+<path d="M300 201 L308 197 L308 205 Z" fill="#4a9030" fill-opacity="0.9"/>
+<path d="M 200 585 H 560 V 827 H 620 V 22 H 620 V 585" fill="none" stroke="#c09838" stroke-width="1.8" stroke-opacity="0.78" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="5,3"/>
+<path d="M700 550 L696 542 L704 542 Z" fill="#c09838" fill-opacity="0.9"/>
+<path d="M 460 201 H 560 V 827 H 620 V 154 H 620 V 201" fill="none" stroke="#c09838" stroke-width="1.8" stroke-opacity="0.78" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="5,3"/>
+<path d="M700 166 L696 158 L704 158 Z" fill="#c09838" fill-opacity="0.9"/>
+<path d="M 460 297 H 560 V 827 H 620 V 118 H 620 V 201" fill="none" stroke="#c09838" stroke-width="1.8" stroke-opacity="0.78" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="5,3"/>
+<path d="M700 166 L696 158 L704 158 Z" fill="#c09838" fill-opacity="0.9"/>
+<path d="M 460 297 H 560 V 827 H 620 V 118 H 620 V 393" fill="none" stroke="#c09838" stroke-width="1.8" stroke-opacity="0.78" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="5,3"/>
+<path d="M700 358 L696 350 L704 350 Z" fill="#c09838" fill-opacity="0.9"/>
+<path d="M 460 297 H 560 V 827 H 1460 V 118 H 1460 V 297" fill="none" stroke="#c09838" stroke-width="1.8" stroke-opacity="0.78" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="5,3"/>
+<path d="M1540 262 L1536 254 L1544 254 Z" fill="#c09838" fill-opacity="0.9"/>
+<path d="M 780 297 H 830 V 297 H 880" fill="none" stroke="#b07028" stroke-width="1.8" stroke-opacity="0.78" stroke-linecap="round" stroke-linejoin="round" />
+<path d="M880 297 L888 293 L888 301 Z" fill="#b07028" fill-opacity="0.9"/>
+<path d="M 780 297 H 830 V 201 H 880" fill="none" stroke="#b07028" stroke-width="1.8" stroke-opacity="0.78" stroke-linecap="round" stroke-linejoin="round" />
+<path d="M880 201 L888 197 L888 205 Z" fill="#b07028" fill-opacity="0.9"/>
+<path d="M 780 297 H 830 V 393 H 880" fill="none" stroke="#b07028" stroke-width="1.8" stroke-opacity="0.78" stroke-linecap="round" stroke-linejoin="round" />
+<path d="M880 393 L888 389 L888 397 Z" fill="#b07028" fill-opacity="0.9"/>
+<path d="M 780 297 H 1400 V 827 H 1460 V 94 H 1460 V 489" fill="none" stroke="#c09838" stroke-width="1.8" stroke-opacity="0.78" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="5,3"/>
+<path d="M1540 454 L1536 446 L1544 446 Z" fill="#c09838" fill-opacity="0.9"/>
+<path d="M 780 297 H 1400 V 827 H 1460 V 94 H 1460 V 585" fill="none" stroke="#c09838" stroke-width="1.8" stroke-opacity="0.78" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="5,3"/>
+<path d="M1540 550 L1536 542 L1544 542 Z" fill="#c09838" fill-opacity="0.9"/>
+<path d="M 1040 297 H 1085 V 201 H 1140" fill="none" stroke="#b07028" stroke-width="1.8" stroke-opacity="0.78" stroke-linecap="round" stroke-linejoin="round" />
+<path d="M1140 201 L1148 197 L1148 205 Z" fill="#b07028" fill-opacity="0.9"/>
+<path d="M 1040 297 H 1085 V 297 H 1140" fill="none" stroke="#b07028" stroke-width="1.8" stroke-opacity="0.78" stroke-linecap="round" stroke-linejoin="round" />
+<path d="M1140 297 L1148 293 L1148 301 Z" fill="#b07028" fill-opacity="0.9"/>
+<path d="M 1040 297 H 1400 V 827 H 1460 V 106 H 1460 V 393" fill="none" stroke="#c09838" stroke-width="1.8" stroke-opacity="0.78" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="5,3"/>
+<path d="M1540 358 L1536 350 L1544 350 Z" fill="#c09838" fill-opacity="0.9"/>
+<path d="M 200 201 H 560 V 827 H 620 V 142 H 1140 V 201" fill="none" stroke="#c09838" stroke-width="1.8" stroke-opacity="0.78" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="5,3"/>
+<path d="M1220 166 L1216 158 L1224 158 Z" fill="#c09838" fill-opacity="0.9"/>
+<path d="M 1040 201 H 1095 V 297 H 1140" fill="none" stroke="#b07028" stroke-width="1.8" stroke-opacity="0.78" stroke-linecap="round" stroke-linejoin="round" />
+<path d="M1140 297 L1148 293 L1148 301 Z" fill="#b07028" fill-opacity="0.9"/>
+<path d="M 1300 201 H 1400 V 827 H 1460 V 130 H 1460 V 201" fill="none" stroke="#c09838" stroke-width="1.8" stroke-opacity="0.78" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="5,3"/>
+<path d="M1540 166 L1536 158 L1544 158 Z" fill="#c09838" fill-opacity="0.9"/>
+<path d="M 780 393 H 1400 V 827 H 1460 V 70 H 1460 V 393" fill="none" stroke="#c09838" stroke-width="1.8" stroke-opacity="0.78" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="5,3"/>
+<path d="M1540 358 L1536 350 L1544 350 Z" fill="#c09838" fill-opacity="0.9"/>
+<path d="M 780 489 H 1400 V 827 H 1460 V 34 H 1460 V 489" fill="none" stroke="#c09838" stroke-width="1.8" stroke-opacity="0.78" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="5,3"/>
+<path d="M1540 454 L1536 446 L1544 446 Z" fill="#c09838" fill-opacity="0.9"/>
+<path d="M 1040 393 H 1400 V 827 H 1460 V 58 H 1460 V 585" fill="none" stroke="#c09838" stroke-width="1.8" stroke-opacity="0.78" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="5,3"/>
+<path d="M1540 550 L1536 542 L1544 542 Z" fill="#c09838" fill-opacity="0.9"/>
+<path d="M 1620 201 H 1665 V 201 H 1720" fill="none" stroke="#507090" stroke-width="1.8" stroke-opacity="0.78" stroke-linecap="round" stroke-linejoin="round" />
+<path d="M1720 201 L1728 197 L1728 205 Z" fill="#507090" fill-opacity="0.9"/>
+<path d="M 1620 201 H 1665 V 297 H 1720" fill="none" stroke="#507090" stroke-width="1.8" stroke-opacity="0.78" stroke-linecap="round" stroke-linejoin="round" />
+<path d="M1720 297 L1728 293 L1728 301 Z" fill="#507090" fill-opacity="0.9"/>
+<path d="M 1620 297 H 1655 V 201 H 1720" fill="none" stroke="#507090" stroke-width="1.8" stroke-opacity="0.78" stroke-linecap="round" stroke-linejoin="round" />
+<path d="M1720 201 L1728 197 L1728 205 Z" fill="#507090" fill-opacity="0.9"/>
+<path d="M 1620 297 H 1655 V 297 H 1720" fill="none" stroke="#507090" stroke-width="1.8" stroke-opacity="0.78" stroke-linecap="round" stroke-linejoin="round" />
+<path d="M1720 297 L1728 293 L1728 301 Z" fill="#507090" fill-opacity="0.9"/>
+<path d="M 1620 297 H 1655 V 393 H 1720" fill="none" stroke="#507090" stroke-width="1.8" stroke-opacity="0.78" stroke-linecap="round" stroke-linejoin="round" />
+<path d="M1720 393 L1728 389 L1728 397 Z" fill="#507090" fill-opacity="0.9"/>
+<path d="M 1620 489 H 1685 V 489 H 1720" fill="none" stroke="#507090" stroke-width="1.8" stroke-opacity="0.78" stroke-linecap="round" stroke-linejoin="round" />
+<path d="M1720 489 L1728 485 L1728 493 Z" fill="#507090" fill-opacity="0.9"/>
+<path d="M 460 393 H 560 V 827 H 1460 V 46 H 1720 V 489" fill="none" stroke="#c09838" stroke-width="1.8" stroke-opacity="0.78" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="5,3"/>
+<path d="M1800 454 L1796 446 L1804 446 Z" fill="#c09838" fill-opacity="0.9"/>
+<path d="M 1620 393 H 1675 V 393 H 1720" fill="none" stroke="#507090" stroke-width="1.8" stroke-opacity="0.78" stroke-linecap="round" stroke-linejoin="round" />
+<path d="M1720 393 L1728 389 L1728 397 Z" fill="#507090" fill-opacity="0.9"/>
+</g>
+
+<!-- Nodes -->
+<g id="nodes">
+<g class="tech-node" transform="translate(40,550)" style="cursor:pointer" data-tt='{"name":"Obróbka drewna","epoka":"Kamień","col":"K0","koszt":12,"prereq":"—","bldg":["Tartak","Mielerz"],"units":[],"note":""}'>
+  <rect x="-2" y="-2" width="164" height="74" rx="10" ry="10" fill="none" stroke="rgba(100,200,60,0.14)" stroke-width="6" filter="url(#glow_Kamień)"/>
+  <rect x="0" y="0" width="160" height="70" rx="7" ry="7" fill="#1e3010" stroke="#6aaa38" stroke-width="1.5"/>
+  <rect x="1" y="1" width="158" height="27" rx="6" ry="6" fill="rgba(255,255,255,0.04)"/>
+  <text x="80" y="41" text-anchor="middle" fill="#f2e5b8" font-size="12" font-family="Georgia,serif" font-weight="bold" pointer-events="none">Obróbka drewna</text>
+  
+  <rect x="55" y="56" width="50" height="12" rx="3" ry="3" fill="rgba(40,90,15,0.5)" stroke="#6aaa38" stroke-width="0.6"/>
+  <text x="80" y="67" text-anchor="middle" fill="#6aaa38" font-size="8" font-family="Georgia,serif" pointer-events="none">Kamień</text>
+  <text x="4" y="11" fill="rgba(180,140,50,0.38)" font-size="7" font-family="monospace" pointer-events="none">K0</text>
+  <text x="156" y="11" text-anchor="end" fill="rgba(120,180,90,0.42)" font-size="7" font-family="monospace" pointer-events="none">12PN</text>
+</g>
+<g class="tech-node" transform="translate(40,358)" style="cursor:pointer" data-tt='{"name":"Garncarstwo","epoka":"Kamień","col":"K0","koszt":10,"prereq":"—","bldg":["Spichlerz","Cegielnia","Garncarz"],"units":[],"note":""}'>
+  <rect x="-2" y="-2" width="164" height="74" rx="10" ry="10" fill="none" stroke="rgba(100,200,60,0.14)" stroke-width="6" filter="url(#glow_Kamień)"/>
+  <rect x="0" y="0" width="160" height="70" rx="7" ry="7" fill="#1e3010" stroke="#6aaa38" stroke-width="1.5"/>
+  <rect x="1" y="1" width="158" height="27" rx="6" ry="6" fill="rgba(255,255,255,0.04)"/>
+  <text x="80" y="41" text-anchor="middle" fill="#f2e5b8" font-size="12" font-family="Georgia,serif" font-weight="bold" pointer-events="none">Garncarstwo</text>
+  
+  <rect x="55" y="56" width="50" height="12" rx="3" ry="3" fill="rgba(40,90,15,0.5)" stroke="#6aaa38" stroke-width="0.6"/>
+  <text x="80" y="67" text-anchor="middle" fill="#6aaa38" font-size="8" font-family="Georgia,serif" pointer-events="none">Kamień</text>
+  <text x="4" y="11" fill="rgba(180,140,50,0.38)" font-size="7" font-family="monospace" pointer-events="none">K0</text>
+  <text x="156" y="11" text-anchor="end" fill="rgba(120,180,90,0.42)" font-size="7" font-family="monospace" pointer-events="none">10PN</text>
+</g>
+<g class="tech-node" transform="translate(40,166)" style="cursor:pointer" data-tt='{"name":"Murarstwo","epoka":"Kamień","col":"K0","koszt":14,"prereq":"—","bldg":["Mury","Kopalnia"],"units":[],"note":""}'>
+  <rect x="-2" y="-2" width="164" height="74" rx="10" ry="10" fill="none" stroke="rgba(100,200,60,0.14)" stroke-width="6" filter="url(#glow_Kamień)"/>
+  <rect x="0" y="0" width="160" height="70" rx="7" ry="7" fill="#1e3010" stroke="#6aaa38" stroke-width="1.5"/>
+  <rect x="1" y="1" width="158" height="27" rx="6" ry="6" fill="rgba(255,255,255,0.04)"/>
+  <text x="80" y="41" text-anchor="middle" fill="#f2e5b8" font-size="12" font-family="Georgia,serif" font-weight="bold" pointer-events="none">Murarstwo</text>
+  
+  <rect x="55" y="56" width="50" height="12" rx="3" ry="3" fill="rgba(40,90,15,0.5)" stroke="#6aaa38" stroke-width="0.6"/>
+  <text x="80" y="67" text-anchor="middle" fill="#6aaa38" font-size="8" font-family="Georgia,serif" pointer-events="none">Kamień</text>
+  <text x="4" y="11" fill="rgba(180,140,50,0.38)" font-size="7" font-family="monospace" pointer-events="none">K0</text>
+  <text x="156" y="11" text-anchor="end" fill="rgba(120,180,90,0.42)" font-size="7" font-family="monospace" pointer-events="none">14PN</text>
+</g>
+<g class="tech-node" transform="translate(40,454)" style="cursor:pointer" data-tt='{"name":"Łucznictwo","epoka":"Kamień","col":"K0","koszt":14,"prereq":"—","bldg":[],"units":["Łucznik"],"note":""}'>
+  <rect x="-2" y="-2" width="164" height="74" rx="10" ry="10" fill="none" stroke="rgba(100,200,60,0.14)" stroke-width="6" filter="url(#glow_Kamień)"/>
+  <rect x="0" y="0" width="160" height="70" rx="7" ry="7" fill="#1e3010" stroke="#6aaa38" stroke-width="1.5"/>
+  <rect x="1" y="1" width="158" height="27" rx="6" ry="6" fill="rgba(255,255,255,0.04)"/>
+  <text x="80" y="41" text-anchor="middle" fill="#f2e5b8" font-size="12" font-family="Georgia,serif" font-weight="bold" pointer-events="none">Łucznictwo</text>
+  
+  <rect x="55" y="56" width="50" height="12" rx="3" ry="3" fill="rgba(40,90,15,0.5)" stroke="#6aaa38" stroke-width="0.6"/>
+  <text x="80" y="67" text-anchor="middle" fill="#6aaa38" font-size="8" font-family="Georgia,serif" pointer-events="none">Kamień</text>
+  <text x="4" y="11" fill="rgba(180,140,50,0.38)" font-size="7" font-family="monospace" pointer-events="none">K0</text>
+  <text x="156" y="11" text-anchor="end" fill="rgba(120,180,90,0.42)" font-size="7" font-family="monospace" pointer-events="none">14PN</text>
+</g>
+<g class="tech-node" transform="translate(40,262)" style="cursor:pointer" data-tt='{"name":"Oswojenie zwierząt","epoka":"Kamień","col":"K0","koszt":12,"prereq":"—","bldg":[],"units":[],"note":""}'>
+  <rect x="-2" y="-2" width="164" height="74" rx="10" ry="10" fill="none" stroke="rgba(100,200,60,0.14)" stroke-width="6" filter="url(#glow_Kamień)"/>
+  <rect x="0" y="0" width="160" height="70" rx="7" ry="7" fill="#1e3010" stroke="#6aaa38" stroke-width="1.5"/>
+  <rect x="1" y="1" width="158" height="27" rx="6" ry="6" fill="rgba(255,255,255,0.04)"/>
+  <text x="80" y="33" text-anchor="middle" fill="#f2e5b8" font-size="12" font-family="Georgia,serif" font-weight="bold" pointer-events="none">Oswojenie</text>
+  <text x="80" y="48" text-anchor="middle" fill="#f2e5b8" font-size="12" font-family="Georgia,serif" font-weight="bold" pointer-events="none">zwierząt</text>
+  
+  <rect x="55" y="56" width="50" height="12" rx="3" ry="3" fill="rgba(40,90,15,0.5)" stroke="#6aaa38" stroke-width="0.6"/>
+  <text x="80" y="67" text-anchor="middle" fill="#6aaa38" font-size="8" font-family="Georgia,serif" pointer-events="none">Kamień</text>
+  <text x="4" y="11" fill="rgba(180,140,50,0.38)" font-size="7" font-family="monospace" pointer-events="none">K0</text>
+  <text x="156" y="11" text-anchor="end" fill="rgba(120,180,90,0.42)" font-size="7" font-family="monospace" pointer-events="none">12PN</text>
+</g>
+<g class="tech-node" transform="translate(40,646)" style="cursor:pointer" data-tt='{"name":"Mistycyzm","epoka":"Kamień","col":"K0","koszt":10,"prereq":"—","bldg":["Świątynia"],"units":[],"note":""}'>
+  <rect x="-2" y="-2" width="164" height="74" rx="10" ry="10" fill="none" stroke="rgba(100,200,60,0.14)" stroke-width="6" filter="url(#glow_Kamień)"/>
+  <rect x="0" y="0" width="160" height="70" rx="7" ry="7" fill="#1e3010" stroke="#6aaa38" stroke-width="1.5"/>
+  <rect x="1" y="1" width="158" height="27" rx="6" ry="6" fill="rgba(255,255,255,0.04)"/>
+  <text x="80" y="41" text-anchor="middle" fill="#f2e5b8" font-size="12" font-family="Georgia,serif" font-weight="bold" pointer-events="none">Mistycyzm</text>
+  
+  <rect x="55" y="56" width="50" height="12" rx="3" ry="3" fill="rgba(40,90,15,0.5)" stroke="#6aaa38" stroke-width="0.6"/>
+  <text x="80" y="67" text-anchor="middle" fill="#6aaa38" font-size="8" font-family="Georgia,serif" pointer-events="none">Kamień</text>
+  <text x="4" y="11" fill="rgba(180,140,50,0.38)" font-size="7" font-family="monospace" pointer-events="none">K0</text>
+  <text x="156" y="11" text-anchor="end" fill="rgba(120,180,90,0.42)" font-size="7" font-family="monospace" pointer-events="none">10PN</text>
+</g>
+<g class="tech-node" transform="translate(300,454)" style="cursor:pointer" data-tt='{"name":"Wymiana","epoka":"Kamień","col":"K1","koszt":16,"prereq":"Garncarstwo","bldg":["Targowisko"],"units":[],"note":""}'>
+  <rect x="-2" y="-2" width="164" height="74" rx="10" ry="10" fill="none" stroke="rgba(100,200,60,0.14)" stroke-width="6" filter="url(#glow_Kamień)"/>
+  <rect x="0" y="0" width="160" height="70" rx="7" ry="7" fill="#1e3010" stroke="#6aaa38" stroke-width="1.5"/>
+  <rect x="1" y="1" width="158" height="27" rx="6" ry="6" fill="rgba(255,255,255,0.04)"/>
+  <text x="80" y="41" text-anchor="middle" fill="#f2e5b8" font-size="12" font-family="Georgia,serif" font-weight="bold" pointer-events="none">Wymiana</text>
+  
+  <rect x="55" y="56" width="50" height="12" rx="3" ry="3" fill="rgba(40,90,15,0.5)" stroke="#6aaa38" stroke-width="0.6"/>
+  <text x="80" y="67" text-anchor="middle" fill="#6aaa38" font-size="8" font-family="Georgia,serif" pointer-events="none">Kamień</text>
+  <text x="4" y="11" fill="rgba(180,140,50,0.38)" font-size="7" font-family="monospace" pointer-events="none">K1</text>
+  <text x="156" y="11" text-anchor="end" fill="rgba(120,180,90,0.42)" font-size="7" font-family="monospace" pointer-events="none">16PN</text>
+</g>
+<g class="tech-node" transform="translate(300,358)" style="cursor:pointer" data-tt='{"name":"Gospodarka wodna","epoka":"Kamień","col":"K1","koszt":18,"prereq":"Garncarstwo","bldg":["Studnia / Łaźnia"],"units":[],"note":""}'>
+  <rect x="-2" y="-2" width="164" height="74" rx="10" ry="10" fill="none" stroke="rgba(100,200,60,0.14)" stroke-width="6" filter="url(#glow_Kamień)"/>
+  <rect x="0" y="0" width="160" height="70" rx="7" ry="7" fill="#1e3010" stroke="#6aaa38" stroke-width="1.5"/>
+  <rect x="1" y="1" width="158" height="27" rx="6" ry="6" fill="rgba(255,255,255,0.04)"/>
+  <text x="80" y="41" text-anchor="middle" fill="#f2e5b8" font-size="12" font-family="Georgia,serif" font-weight="bold" pointer-events="none">Gospodarka wodna</text>
+  
+  <rect x="55" y="56" width="50" height="12" rx="3" ry="3" fill="rgba(40,90,15,0.5)" stroke="#6aaa38" stroke-width="0.6"/>
+  <text x="80" y="67" text-anchor="middle" fill="#6aaa38" font-size="8" font-family="Georgia,serif" pointer-events="none">Kamień</text>
+  <text x="4" y="11" fill="rgba(180,140,50,0.38)" font-size="7" font-family="monospace" pointer-events="none">K1</text>
+  <text x="156" y="11" text-anchor="end" fill="rgba(120,180,90,0.42)" font-size="7" font-family="monospace" pointer-events="none">18PN</text>
+</g>
+<g class="tech-node" transform="translate(300,166)" style="cursor:pointer" data-tt='{"name":"Koło","epoka":"Kamień","col":"K1","koszt":22,"prereq":"Oswojenie zwierząt","bldg":[],"units":["Rydwan (woły)"],"note":""}'>
+  <rect x="-2" y="-2" width="164" height="74" rx="10" ry="10" fill="none" stroke="rgba(100,200,60,0.14)" stroke-width="6" filter="url(#glow_Kamień)"/>
+  <rect x="0" y="0" width="160" height="70" rx="7" ry="7" fill="#1e3010" stroke="#6aaa38" stroke-width="1.5"/>
+  <rect x="1" y="1" width="158" height="27" rx="6" ry="6" fill="rgba(255,255,255,0.04)"/>
+  <text x="80" y="41" text-anchor="middle" fill="#f2e5b8" font-size="12" font-family="Georgia,serif" font-weight="bold" pointer-events="none">Koło</text>
+  
+  <rect x="55" y="56" width="50" height="12" rx="3" ry="3" fill="rgba(40,90,15,0.5)" stroke="#6aaa38" stroke-width="0.6"/>
+  <text x="80" y="67" text-anchor="middle" fill="#6aaa38" font-size="8" font-family="Georgia,serif" pointer-events="none">Kamień</text>
+  <text x="4" y="11" fill="rgba(180,140,50,0.38)" font-size="7" font-family="monospace" pointer-events="none">K1</text>
+  <text x="156" y="11" text-anchor="end" fill="rgba(120,180,90,0.42)" font-size="7" font-family="monospace" pointer-events="none">22PN</text>
+</g>
+<g class="tech-node" transform="translate(300,262)" style="cursor:pointer" data-tt='{"name":"Brązownictwo","epoka":"Kamień","col":"K1","koszt":45,"prereq":"Garncarstwo","bldg":["Huta"],"units":["Włócznik","Wojownik brązowy","Falanga (Grecja)","Legionista (Rzym)"],"note":"brama Epoki Brązu"}'>
+  <rect x="-2" y="-2" width="164" height="74" rx="10" ry="10" fill="none" stroke="rgba(100,200,60,0.14)" stroke-width="6" filter="url(#glow_Kamień)"/>
+  <rect x="0" y="0" width="160" height="70" rx="7" ry="7" fill="#1e3010" stroke="#6aaa38" stroke-width="1.5"/>
+  <rect x="1" y="1" width="158" height="27" rx="6" ry="6" fill="rgba(255,255,255,0.04)"/>
+  <text x="80" y="36" text-anchor="middle" fill="#f2e5b8" font-size="12" font-family="Georgia,serif" font-weight="bold" pointer-events="none">Brązownictwo</text>
+  <text x="80" y="55" text-anchor="middle" fill="#6aaa38" font-size="7.5" font-family="Georgia,serif" font-style="italic" pointer-events="none">&#9733; brama Epoki Brązu</text>
+  <rect x="55" y="56" width="50" height="12" rx="3" ry="3" fill="rgba(40,90,15,0.5)" stroke="#6aaa38" stroke-width="0.6"/>
+  <text x="80" y="67" text-anchor="middle" fill="#6aaa38" font-size="8" font-family="Georgia,serif" pointer-events="none">Kamień</text>
+  <text x="4" y="11" fill="rgba(180,140,50,0.38)" font-size="7" font-family="monospace" pointer-events="none">K1</text>
+  <text x="156" y="11" text-anchor="end" fill="rgba(120,180,90,0.42)" font-size="7" font-family="monospace" pointer-events="none">45PN</text>
+</g>
+<g class="tech-node" transform="translate(620,550)" style="cursor:pointer" data-tt='{"name":"Żegluga","epoka":"Brąz","col":"B0","koszt":40,"prereq":"Obróbka drewna","bldg":["Statki, Port"],"units":["Galera"],"note":""}'>
+  <rect x="-2" y="-2" width="164" height="74" rx="10" ry="10" fill="none" stroke="rgba(210,130,40,0.14)" stroke-width="6" filter="url(#glow_Brąz)"/>
+  <rect x="0" y="0" width="160" height="70" rx="7" ry="7" fill="#3e2008" stroke="#d08030" stroke-width="1.5"/>
+  <rect x="1" y="1" width="158" height="27" rx="6" ry="6" fill="rgba(255,255,255,0.04)"/>
+  <text x="80" y="41" text-anchor="middle" fill="#f2e5b8" font-size="12" font-family="Georgia,serif" font-weight="bold" pointer-events="none">Żegluga</text>
+  
+  <rect x="55" y="56" width="50" height="12" rx="3" ry="3" fill="rgba(110,55,8,0.5)" stroke="#d08030" stroke-width="0.6"/>
+  <text x="80" y="67" text-anchor="middle" fill="#d08030" font-size="8" font-family="Georgia,serif" pointer-events="none">Brąz</text>
+  <text x="4" y="11" fill="rgba(180,140,50,0.38)" font-size="7" font-family="monospace" pointer-events="none">B0</text>
+  <text x="156" y="11" text-anchor="end" fill="rgba(120,180,90,0.42)" font-size="7" font-family="monospace" pointer-events="none">40PN</text>
+</g>
+<g class="tech-node" transform="translate(620,262)" style="cursor:pointer" data-tt='{"name":"Pismo","epoka":"Brąz","col":"B0","koszt":45,"prereq":"Garncarstwo","bldg":["Biblioteka"],"units":[],"note":""}'>
+  <rect x="-2" y="-2" width="164" height="74" rx="10" ry="10" fill="none" stroke="rgba(210,130,40,0.14)" stroke-width="6" filter="url(#glow_Brąz)"/>
+  <rect x="0" y="0" width="160" height="70" rx="7" ry="7" fill="#3e2008" stroke="#d08030" stroke-width="1.5"/>
+  <rect x="1" y="1" width="158" height="27" rx="6" ry="6" fill="rgba(255,255,255,0.04)"/>
+  <text x="80" y="41" text-anchor="middle" fill="#f2e5b8" font-size="12" font-family="Georgia,serif" font-weight="bold" pointer-events="none">Pismo</text>
+  
+  <rect x="55" y="56" width="50" height="12" rx="3" ry="3" fill="rgba(110,55,8,0.5)" stroke="#d08030" stroke-width="0.6"/>
+  <text x="80" y="67" text-anchor="middle" fill="#d08030" font-size="8" font-family="Georgia,serif" pointer-events="none">Brąz</text>
+  <text x="4" y="11" fill="rgba(180,140,50,0.38)" font-size="7" font-family="monospace" pointer-events="none">B0</text>
+  <text x="156" y="11" text-anchor="end" fill="rgba(120,180,90,0.42)" font-size="7" font-family="monospace" pointer-events="none">45PN</text>
+</g>
+<g class="tech-node" transform="translate(620,454)" style="cursor:pointer" data-tt='{"name":"Religia","epoka":"Brąz","col":"B0","koszt":48,"prereq":"Garncarstwo","bldg":["Świątynia brązowa"],"units":[],"note":""}'>
+  <rect x="-2" y="-2" width="164" height="74" rx="10" ry="10" fill="none" stroke="rgba(210,130,40,0.14)" stroke-width="6" filter="url(#glow_Brąz)"/>
+  <rect x="0" y="0" width="160" height="70" rx="7" ry="7" fill="#3e2008" stroke="#d08030" stroke-width="1.5"/>
+  <rect x="1" y="1" width="158" height="27" rx="6" ry="6" fill="rgba(255,255,255,0.04)"/>
+  <text x="80" y="41" text-anchor="middle" fill="#f2e5b8" font-size="12" font-family="Georgia,serif" font-weight="bold" pointer-events="none">Religia</text>
+  
+  <rect x="55" y="56" width="50" height="12" rx="3" ry="3" fill="rgba(110,55,8,0.5)" stroke="#d08030" stroke-width="0.6"/>
+  <text x="80" y="67" text-anchor="middle" fill="#d08030" font-size="8" font-family="Georgia,serif" pointer-events="none">Brąz</text>
+  <text x="4" y="11" fill="rgba(180,140,50,0.38)" font-size="7" font-family="monospace" pointer-events="none">B0</text>
+  <text x="156" y="11" text-anchor="end" fill="rgba(120,180,90,0.42)" font-size="7" font-family="monospace" pointer-events="none">48PN</text>
+</g>
+<g class="tech-node" transform="translate(620,166)" style="cursor:pointer" data-tt='{"name":"Jeździectwo","epoka":"Brąz","col":"B0","koszt":56,"prereq":"Koło, Brązownictwo","bldg":[],"units":["Konnica","Rydwan konny"],"note":""}'>
+  <rect x="-2" y="-2" width="164" height="74" rx="10" ry="10" fill="none" stroke="rgba(210,130,40,0.14)" stroke-width="6" filter="url(#glow_Brąz)"/>
+  <rect x="0" y="0" width="160" height="70" rx="7" ry="7" fill="#3e2008" stroke="#d08030" stroke-width="1.5"/>
+  <rect x="1" y="1" width="158" height="27" rx="6" ry="6" fill="rgba(255,255,255,0.04)"/>
+  <text x="80" y="41" text-anchor="middle" fill="#f2e5b8" font-size="12" font-family="Georgia,serif" font-weight="bold" pointer-events="none">Jeździectwo</text>
+  
+  <rect x="55" y="56" width="50" height="12" rx="3" ry="3" fill="rgba(110,55,8,0.5)" stroke="#d08030" stroke-width="0.6"/>
+  <text x="80" y="67" text-anchor="middle" fill="#d08030" font-size="8" font-family="Georgia,serif" pointer-events="none">Brąz</text>
+  <text x="4" y="11" fill="rgba(180,140,50,0.38)" font-size="7" font-family="monospace" pointer-events="none">B0</text>
+  <text x="156" y="11" text-anchor="end" fill="rgba(120,180,90,0.42)" font-size="7" font-family="monospace" pointer-events="none">56PN</text>
+</g>
+<g class="tech-node" transform="translate(620,358)" style="cursor:pointer" data-tt='{"name":"Wojskowość","epoka":"Brąz","col":"B0","koszt":52,"prereq":"Brązownictwo","bldg":["Koszary"],"units":[],"note":""}'>
+  <rect x="-2" y="-2" width="164" height="74" rx="10" ry="10" fill="none" stroke="rgba(210,130,40,0.14)" stroke-width="6" filter="url(#glow_Brąz)"/>
+  <rect x="0" y="0" width="160" height="70" rx="7" ry="7" fill="#3e2008" stroke="#d08030" stroke-width="1.5"/>
+  <rect x="1" y="1" width="158" height="27" rx="6" ry="6" fill="rgba(255,255,255,0.04)"/>
+  <text x="80" y="41" text-anchor="middle" fill="#f2e5b8" font-size="12" font-family="Georgia,serif" font-weight="bold" pointer-events="none">Wojskowość</text>
+  
+  <rect x="55" y="56" width="50" height="12" rx="3" ry="3" fill="rgba(110,55,8,0.5)" stroke="#d08030" stroke-width="0.6"/>
+  <text x="80" y="67" text-anchor="middle" fill="#d08030" font-size="8" font-family="Georgia,serif" pointer-events="none">Brąz</text>
+  <text x="4" y="11" fill="rgba(180,140,50,0.38)" font-size="7" font-family="monospace" pointer-events="none">B0</text>
+  <text x="156" y="11" text-anchor="end" fill="rgba(120,180,90,0.42)" font-size="7" font-family="monospace" pointer-events="none">52PN</text>
+</g>
+<g class="tech-node" transform="translate(880,262)" style="cursor:pointer" data-tt='{"name":"Matematyka","epoka":"Brąz","col":"B1","koszt":68,"prereq":"Pismo","bldg":["prereq Budownictwa"],"units":[],"note":""}'>
+  <rect x="-2" y="-2" width="164" height="74" rx="10" ry="10" fill="none" stroke="rgba(210,130,40,0.14)" stroke-width="6" filter="url(#glow_Brąz)"/>
+  <rect x="0" y="0" width="160" height="70" rx="7" ry="7" fill="#3e2008" stroke="#d08030" stroke-width="1.5"/>
+  <rect x="1" y="1" width="158" height="27" rx="6" ry="6" fill="rgba(255,255,255,0.04)"/>
+  <text x="80" y="41" text-anchor="middle" fill="#f2e5b8" font-size="12" font-family="Georgia,serif" font-weight="bold" pointer-events="none">Matematyka</text>
+  
+  <rect x="55" y="56" width="50" height="12" rx="3" ry="3" fill="rgba(110,55,8,0.5)" stroke="#d08030" stroke-width="0.6"/>
+  <text x="80" y="67" text-anchor="middle" fill="#d08030" font-size="8" font-family="Georgia,serif" pointer-events="none">Brąz</text>
+  <text x="4" y="11" fill="rgba(180,140,50,0.38)" font-size="7" font-family="monospace" pointer-events="none">B1</text>
+  <text x="156" y="11" text-anchor="end" fill="rgba(120,180,90,0.42)" font-size="7" font-family="monospace" pointer-events="none">68PN</text>
+</g>
+<g class="tech-node" transform="translate(880,166)" style="cursor:pointer" data-tt='{"name":"Handel","epoka":"Brąz","col":"B1","koszt":74,"prereq":"Pismo","bldg":["Drogi handlowe → Waluta"],"units":[],"note":""}'>
+  <rect x="-2" y="-2" width="164" height="74" rx="10" ry="10" fill="none" stroke="rgba(210,130,40,0.14)" stroke-width="6" filter="url(#glow_Brąz)"/>
+  <rect x="0" y="0" width="160" height="70" rx="7" ry="7" fill="#3e2008" stroke="#d08030" stroke-width="1.5"/>
+  <rect x="1" y="1" width="158" height="27" rx="6" ry="6" fill="rgba(255,255,255,0.04)"/>
+  <text x="80" y="41" text-anchor="middle" fill="#f2e5b8" font-size="12" font-family="Georgia,serif" font-weight="bold" pointer-events="none">Handel</text>
+  
+  <rect x="55" y="56" width="50" height="12" rx="3" ry="3" fill="rgba(110,55,8,0.5)" stroke="#d08030" stroke-width="0.6"/>
+  <text x="80" y="67" text-anchor="middle" fill="#d08030" font-size="8" font-family="Georgia,serif" pointer-events="none">Brąz</text>
+  <text x="4" y="11" fill="rgba(180,140,50,0.38)" font-size="7" font-family="monospace" pointer-events="none">B1</text>
+  <text x="156" y="11" text-anchor="end" fill="rgba(120,180,90,0.42)" font-size="7" font-family="monospace" pointer-events="none">74PN</text>
+</g>
+<g class="tech-node" transform="translate(880,358)" style="cursor:pointer" data-tt='{"name":"Prawo (Kodeks)","epoka":"Brąz","col":"B1","koszt":62,"prereq":"Pismo","bldg":["Porządek / Sądy"],"units":[],"note":""}'>
+  <rect x="-2" y="-2" width="164" height="74" rx="10" ry="10" fill="none" stroke="rgba(210,130,40,0.14)" stroke-width="6" filter="url(#glow_Brąz)"/>
+  <rect x="0" y="0" width="160" height="70" rx="7" ry="7" fill="#3e2008" stroke="#d08030" stroke-width="1.5"/>
+  <rect x="1" y="1" width="158" height="27" rx="6" ry="6" fill="rgba(255,255,255,0.04)"/>
+  <text x="80" y="41" text-anchor="middle" fill="#f2e5b8" font-size="12" font-family="Georgia,serif" font-weight="bold" pointer-events="none">Prawo (Kodeks)</text>
+  
+  <rect x="55" y="56" width="50" height="12" rx="3" ry="3" fill="rgba(110,55,8,0.5)" stroke="#d08030" stroke-width="0.6"/>
+  <text x="80" y="67" text-anchor="middle" fill="#d08030" font-size="8" font-family="Georgia,serif" pointer-events="none">Brąz</text>
+  <text x="4" y="11" fill="rgba(180,140,50,0.38)" font-size="7" font-family="monospace" pointer-events="none">B1</text>
+  <text x="156" y="11" text-anchor="end" fill="rgba(120,180,90,0.42)" font-size="7" font-family="monospace" pointer-events="none">62PN</text>
+</g>
+<g class="tech-node" transform="translate(1140,166)" style="cursor:pointer" data-tt='{"name":"Budownictwo","epoka":"Brąz","col":"B2","koszt":85,"prereq":"Matematyka, Murarstwo","bldg":["Akwedukt"],"units":[],"note":""}'>
+  <rect x="-2" y="-2" width="164" height="74" rx="10" ry="10" fill="none" stroke="rgba(210,130,40,0.14)" stroke-width="6" filter="url(#glow_Brąz)"/>
+  <rect x="0" y="0" width="160" height="70" rx="7" ry="7" fill="#3e2008" stroke="#d08030" stroke-width="1.5"/>
+  <rect x="1" y="1" width="158" height="27" rx="6" ry="6" fill="rgba(255,255,255,0.04)"/>
+  <text x="80" y="41" text-anchor="middle" fill="#f2e5b8" font-size="12" font-family="Georgia,serif" font-weight="bold" pointer-events="none">Budownictwo</text>
+  
+  <rect x="55" y="56" width="50" height="12" rx="3" ry="3" fill="rgba(110,55,8,0.5)" stroke="#d08030" stroke-width="0.6"/>
+  <text x="80" y="67" text-anchor="middle" fill="#d08030" font-size="8" font-family="Georgia,serif" pointer-events="none">Brąz</text>
+  <text x="4" y="11" fill="rgba(180,140,50,0.38)" font-size="7" font-family="monospace" pointer-events="none">B2</text>
+  <text x="156" y="11" text-anchor="end" fill="rgba(120,180,90,0.42)" font-size="7" font-family="monospace" pointer-events="none">85PN</text>
+</g>
+<g class="tech-node" transform="translate(1140,262)" style="cursor:pointer" data-tt='{"name":"Waluta","epoka":"Brąz","col":"B2","koszt":100,"prereq":"Handel, Matematyka","bldg":["Pieniądz, Targowisko, Mennica"],"units":[],"note":"kończy Epokę Brązu"}'>
+  <rect x="-2" y="-2" width="164" height="74" rx="10" ry="10" fill="none" stroke="rgba(210,130,40,0.14)" stroke-width="6" filter="url(#glow_Brąz)"/>
+  <rect x="0" y="0" width="160" height="70" rx="7" ry="7" fill="#3e2008" stroke="#d08030" stroke-width="1.5"/>
+  <rect x="1" y="1" width="158" height="27" rx="6" ry="6" fill="rgba(255,255,255,0.04)"/>
+  <text x="80" y="36" text-anchor="middle" fill="#f2e5b8" font-size="12" font-family="Georgia,serif" font-weight="bold" pointer-events="none">Waluta</text>
+  <text x="80" y="55" text-anchor="middle" fill="#d08030" font-size="7.5" font-family="Georgia,serif" font-style="italic" pointer-events="none">&#9733; kończy Epokę Brązu</text>
+  <rect x="55" y="56" width="50" height="12" rx="3" ry="3" fill="rgba(110,55,8,0.5)" stroke="#d08030" stroke-width="0.6"/>
+  <text x="80" y="67" text-anchor="middle" fill="#d08030" font-size="8" font-family="Georgia,serif" pointer-events="none">Brąz</text>
+  <text x="4" y="11" fill="rgba(180,140,50,0.38)" font-size="7" font-family="monospace" pointer-events="none">B2</text>
+  <text x="156" y="11" text-anchor="end" fill="rgba(120,180,90,0.42)" font-size="7" font-family="monospace" pointer-events="none">100PN</text>
+</g>
+<g class="tech-node" transform="translate(1460,262)" style="cursor:pointer" data-tt='{"name":"Obróbka żelaza","epoka":"Żelazo","col":"Z0","koszt":120,"prereq":"Brązownictwo","bldg":["Kuźnia żelaza"],"units":[],"note":""}'>
+  <rect x="-2" y="-2" width="164" height="74" rx="10" ry="10" fill="none" stroke="rgba(80,140,210,0.14)" stroke-width="6" filter="url(#glow_Żelazo)"/>
+  <rect x="0" y="0" width="160" height="70" rx="7" ry="7" fill="#0a1428" stroke="#5090d0" stroke-width="1.5"/>
+  <rect x="1" y="1" width="158" height="27" rx="6" ry="6" fill="rgba(255,255,255,0.04)"/>
+  <text x="80" y="41" text-anchor="middle" fill="#f2e5b8" font-size="12" font-family="Georgia,serif" font-weight="bold" pointer-events="none">Obróbka żelaza</text>
+  
+  <rect x="55" y="56" width="50" height="12" rx="3" ry="3" fill="rgba(10,30,60,0.5)" stroke="#5090d0" stroke-width="0.6"/>
+  <text x="80" y="67" text-anchor="middle" fill="#5090d0" font-size="8" font-family="Georgia,serif" pointer-events="none">Żelazo</text>
+  <text x="4" y="11" fill="rgba(180,140,50,0.38)" font-size="7" font-family="monospace" pointer-events="none">Z0</text>
+  <text x="156" y="11" text-anchor="end" fill="rgba(120,180,90,0.42)" font-size="7" font-family="monospace" pointer-events="none">120PN</text>
+</g>
+<g class="tech-node" transform="translate(1460,166)" style="cursor:pointer" data-tt='{"name":"Inżynieria","epoka":"Żelazo","col":"Z0","koszt":130,"prereq":"Budownictwo","bldg":["Akwedukt (ulepszony), Fort"],"units":[],"note":""}'>
+  <rect x="-2" y="-2" width="164" height="74" rx="10" ry="10" fill="none" stroke="rgba(80,140,210,0.14)" stroke-width="6" filter="url(#glow_Żelazo)"/>
+  <rect x="0" y="0" width="160" height="70" rx="7" ry="7" fill="#0a1428" stroke="#5090d0" stroke-width="1.5"/>
+  <rect x="1" y="1" width="158" height="27" rx="6" ry="6" fill="rgba(255,255,255,0.04)"/>
+  <text x="80" y="41" text-anchor="middle" fill="#f2e5b8" font-size="12" font-family="Georgia,serif" font-weight="bold" pointer-events="none">Inżynieria</text>
+  
+  <rect x="55" y="56" width="50" height="12" rx="3" ry="3" fill="rgba(10,30,60,0.5)" stroke="#5090d0" stroke-width="0.6"/>
+  <text x="80" y="67" text-anchor="middle" fill="#5090d0" font-size="8" font-family="Georgia,serif" pointer-events="none">Żelazo</text>
+  <text x="4" y="11" fill="rgba(180,140,50,0.38)" font-size="7" font-family="monospace" pointer-events="none">Z0</text>
+  <text x="156" y="11" text-anchor="end" fill="rgba(120,180,90,0.42)" font-size="7" font-family="monospace" pointer-events="none">130PN</text>
+</g>
+<g class="tech-node" transform="translate(1460,358)" style="cursor:pointer" data-tt='{"name":"Oblężnictwo","epoka":"Żelazo","col":"Z0","koszt":140,"prereq":"Matematyka, Wojskowość","bldg":["Warsztat oblężniczy"],"units":[],"note":""}'>
+  <rect x="-2" y="-2" width="164" height="74" rx="10" ry="10" fill="none" stroke="rgba(80,140,210,0.14)" stroke-width="6" filter="url(#glow_Żelazo)"/>
+  <rect x="0" y="0" width="160" height="70" rx="7" ry="7" fill="#0a1428" stroke="#5090d0" stroke-width="1.5"/>
+  <rect x="1" y="1" width="158" height="27" rx="6" ry="6" fill="rgba(255,255,255,0.04)"/>
+  <text x="80" y="41" text-anchor="middle" fill="#f2e5b8" font-size="12" font-family="Georgia,serif" font-weight="bold" pointer-events="none">Oblężnictwo</text>
+  
+  <rect x="55" y="56" width="50" height="12" rx="3" ry="3" fill="rgba(10,30,60,0.5)" stroke="#5090d0" stroke-width="0.6"/>
+  <text x="80" y="67" text-anchor="middle" fill="#5090d0" font-size="8" font-family="Georgia,serif" pointer-events="none">Żelazo</text>
+  <text x="4" y="11" fill="rgba(180,140,50,0.38)" font-size="7" font-family="monospace" pointer-events="none">Z0</text>
+  <text x="156" y="11" text-anchor="end" fill="rgba(120,180,90,0.42)" font-size="7" font-family="monospace" pointer-events="none">140PN</text>
+</g>
+<g class="tech-node" transform="translate(1460,454)" style="cursor:pointer" data-tt='{"name":"Filozofia","epoka":"Żelazo","col":"Z0","koszt":150,"prereq":"Pismo, Religia","bldg":["Akademia, Teatr"],"units":[],"note":""}'>
+  <rect x="-2" y="-2" width="164" height="74" rx="10" ry="10" fill="none" stroke="rgba(80,140,210,0.14)" stroke-width="6" filter="url(#glow_Żelazo)"/>
+  <rect x="0" y="0" width="160" height="70" rx="7" ry="7" fill="#0a1428" stroke="#5090d0" stroke-width="1.5"/>
+  <rect x="1" y="1" width="158" height="27" rx="6" ry="6" fill="rgba(255,255,255,0.04)"/>
+  <text x="80" y="41" text-anchor="middle" fill="#f2e5b8" font-size="12" font-family="Georgia,serif" font-weight="bold" pointer-events="none">Filozofia</text>
+  
+  <rect x="55" y="56" width="50" height="12" rx="3" ry="3" fill="rgba(10,30,60,0.5)" stroke="#5090d0" stroke-width="0.6"/>
+  <text x="80" y="67" text-anchor="middle" fill="#5090d0" font-size="8" font-family="Georgia,serif" pointer-events="none">Żelazo</text>
+  <text x="4" y="11" fill="rgba(180,140,50,0.38)" font-size="7" font-family="monospace" pointer-events="none">Z0</text>
+  <text x="156" y="11" text-anchor="end" fill="rgba(120,180,90,0.42)" font-size="7" font-family="monospace" pointer-events="none">150PN</text>
+</g>
+<g class="tech-node" transform="translate(1460,550)" style="cursor:pointer" data-tt='{"name":"Kodeks prawa","epoka":"Żelazo","col":"Z0","koszt":155,"prereq":"Prawo (Kodeks), Pismo","bldg":["Sąd, Pretorium"],"units":[],"note":""}'>
+  <rect x="-2" y="-2" width="164" height="74" rx="10" ry="10" fill="none" stroke="rgba(80,140,210,0.14)" stroke-width="6" filter="url(#glow_Żelazo)"/>
+  <rect x="0" y="0" width="160" height="70" rx="7" ry="7" fill="#0a1428" stroke="#5090d0" stroke-width="1.5"/>
+  <rect x="1" y="1" width="158" height="27" rx="6" ry="6" fill="rgba(255,255,255,0.04)"/>
+  <text x="80" y="41" text-anchor="middle" fill="#f2e5b8" font-size="12" font-family="Georgia,serif" font-weight="bold" pointer-events="none">Kodeks prawa</text>
+  
+  <rect x="55" y="56" width="50" height="12" rx="3" ry="3" fill="rgba(10,30,60,0.5)" stroke="#5090d0" stroke-width="0.6"/>
+  <text x="80" y="67" text-anchor="middle" fill="#5090d0" font-size="8" font-family="Georgia,serif" pointer-events="none">Żelazo</text>
+  <text x="4" y="11" fill="rgba(180,140,50,0.38)" font-size="7" font-family="monospace" pointer-events="none">Z0</text>
+  <text x="156" y="11" text-anchor="end" fill="rgba(120,180,90,0.42)" font-size="7" font-family="monospace" pointer-events="none">155PN</text>
+</g>
+<g class="tech-node" transform="translate(1720,166)" style="cursor:pointer" data-tt='{"name":"Drogi żelazne","epoka":"Żelazo","col":"Z1","koszt":170,"prereq":"Inżynieria, Obróbka żelaza","bldg":["Drogi brukowane"],"units":[],"note":""}'>
+  <rect x="-2" y="-2" width="164" height="74" rx="10" ry="10" fill="none" stroke="rgba(80,140,210,0.14)" stroke-width="6" filter="url(#glow_Żelazo)"/>
+  <rect x="0" y="0" width="160" height="70" rx="7" ry="7" fill="#0a1428" stroke="#5090d0" stroke-width="1.5"/>
+  <rect x="1" y="1" width="158" height="27" rx="6" ry="6" fill="rgba(255,255,255,0.04)"/>
+  <text x="80" y="41" text-anchor="middle" fill="#f2e5b8" font-size="12" font-family="Georgia,serif" font-weight="bold" pointer-events="none">Drogi żelazne</text>
+  
+  <rect x="55" y="56" width="50" height="12" rx="3" ry="3" fill="rgba(10,30,60,0.5)" stroke="#5090d0" stroke-width="0.6"/>
+  <text x="80" y="67" text-anchor="middle" fill="#5090d0" font-size="8" font-family="Georgia,serif" pointer-events="none">Żelazo</text>
+  <text x="4" y="11" fill="rgba(180,140,50,0.38)" font-size="7" font-family="monospace" pointer-events="none">Z1</text>
+  <text x="156" y="11" text-anchor="end" fill="rgba(120,180,90,0.42)" font-size="7" font-family="monospace" pointer-events="none">170PN</text>
+</g>
+<g class="tech-node" transform="translate(1720,454)" style="cursor:pointer" data-tt='{"name":"Medycyna","epoka":"Żelazo","col":"Z1","koszt":162,"prereq":"Filozofia, Gospodarka wodna","bldg":["Łaźnia publiczna, Lazaret"],"units":[],"note":""}'>
+  <rect x="-2" y="-2" width="164" height="74" rx="10" ry="10" fill="none" stroke="rgba(80,140,210,0.14)" stroke-width="6" filter="url(#glow_Żelazo)"/>
+  <rect x="0" y="0" width="160" height="70" rx="7" ry="7" fill="#0a1428" stroke="#5090d0" stroke-width="1.5"/>
+  <rect x="1" y="1" width="158" height="27" rx="6" ry="6" fill="rgba(255,255,255,0.04)"/>
+  <text x="80" y="41" text-anchor="middle" fill="#f2e5b8" font-size="12" font-family="Georgia,serif" font-weight="bold" pointer-events="none">Medycyna</text>
+  
+  <rect x="55" y="56" width="50" height="12" rx="3" ry="3" fill="rgba(10,30,60,0.5)" stroke="#5090d0" stroke-width="0.6"/>
+  <text x="80" y="67" text-anchor="middle" fill="#5090d0" font-size="8" font-family="Georgia,serif" pointer-events="none">Żelazo</text>
+  <text x="4" y="11" fill="rgba(180,140,50,0.38)" font-size="7" font-family="monospace" pointer-events="none">Z1</text>
+  <text x="156" y="11" text-anchor="end" fill="rgba(120,180,90,0.42)" font-size="7" font-family="monospace" pointer-events="none">162PN</text>
+</g>
+<g class="tech-node" transform="translate(1720,262)" style="cursor:pointer" data-tt='{"name":"Hutnictwo żelaza","epoka":"Żelazo","col":"Z1","koszt":185,"prereq":"Obróbka żelaza, Inżynieria","bldg":["Wielka Kuźnia"],"units":[],"note":""}'>
+  <rect x="-2" y="-2" width="164" height="74" rx="10" ry="10" fill="none" stroke="rgba(80,140,210,0.14)" stroke-width="6" filter="url(#glow_Żelazo)"/>
+  <rect x="0" y="0" width="160" height="70" rx="7" ry="7" fill="#0a1428" stroke="#5090d0" stroke-width="1.5"/>
+  <rect x="1" y="1" width="158" height="27" rx="6" ry="6" fill="rgba(255,255,255,0.04)"/>
+  <text x="80" y="41" text-anchor="middle" fill="#f2e5b8" font-size="12" font-family="Georgia,serif" font-weight="bold" pointer-events="none">Hutnictwo żelaza</text>
+  
+  <rect x="55" y="56" width="50" height="12" rx="3" ry="3" fill="rgba(10,30,60,0.5)" stroke="#5090d0" stroke-width="0.6"/>
+  <text x="80" y="67" text-anchor="middle" fill="#5090d0" font-size="8" font-family="Georgia,serif" pointer-events="none">Żelazo</text>
+  <text x="4" y="11" fill="rgba(180,140,50,0.38)" font-size="7" font-family="monospace" pointer-events="none">Z1</text>
+  <text x="156" y="11" text-anchor="end" fill="rgba(120,180,90,0.42)" font-size="7" font-family="monospace" pointer-events="none">185PN</text>
+</g>
+<g class="tech-node" transform="translate(1720,358)" style="cursor:pointer" data-tt='{"name":"Sztuka wojenna","epoka":"Żelazo","col":"Z1","koszt":200,"prereq":"Oblężnictwo, Obróbka żelaza","bldg":["Akademia wojskowa"],"units":[],"note":"cap v0.1"}'>
+  <rect x="-2" y="-2" width="164" height="74" rx="10" ry="10" fill="none" stroke="rgba(80,140,210,0.14)" stroke-width="6" filter="url(#glow_Żelazo)"/>
+  <rect x="0" y="0" width="160" height="70" rx="7" ry="7" fill="#0a1428" stroke="#5090d0" stroke-width="1.5"/>
+  <rect x="1" y="1" width="158" height="27" rx="6" ry="6" fill="rgba(255,255,255,0.04)"/>
+  <text x="80" y="36" text-anchor="middle" fill="#f2e5b8" font-size="12" font-family="Georgia,serif" font-weight="bold" pointer-events="none">Sztuka wojenna</text>
+  <text x="80" y="55" text-anchor="middle" fill="#5090d0" font-size="7.5" font-family="Georgia,serif" font-style="italic" pointer-events="none">&#9733; cap v0.1</text>
+  <rect x="55" y="56" width="50" height="12" rx="3" ry="3" fill="rgba(10,30,60,0.5)" stroke="#5090d0" stroke-width="0.6"/>
+  <text x="80" y="67" text-anchor="middle" fill="#5090d0" font-size="8" font-family="Georgia,serif" pointer-events="none">Żelazo</text>
+  <text x="4" y="11" fill="rgba(180,140,50,0.38)" font-size="7" font-family="monospace" pointer-events="none">Z1</text>
+  <text x="156" y="11" text-anchor="end" fill="rgba(120,180,90,0.42)" font-size="7" font-family="monospace" pointer-events="none">200PN</text>
+</g>
+</g>
+</svg>
+</div>
+
+<div id="tooltip"></div>
+
+<script>
+(function(){
+"use strict";
+var tip = document.getElementById("tooltip");
+document.querySelectorAll(".tech-node").forEach(function(g){
+  g.addEventListener("mouseenter", function(e){ showTip(e, JSON.parse(g.dataset.tt)); });
+  g.addEventListener("mousemove", moveTip);
+  g.addEventListener("mouseleave", function(){ tip.style.display="none"; });
+});
+function showTip(e, d) {
+  var h = '<div class="tt-name">'+d.name+'</div>';
+  h += '<div class="tt-meta">Epoka: <strong>'+d.epoka+'</strong> &nbsp;|&nbsp; Kolumna: <strong>'+d.col+'</strong></div>';
+  h += '<div class="tt-cost">&#9883; Koszt nauki: '+d.koszt+' PN</div>';
+  if(d.prereq&&d.prereq!=="—"){h+='<div class="tt-section">Wymaga:</div><ul class="tt-items"><li>'+d.prereq+'</li></ul>';}
+  if(d.bldg&&d.bldg.length){h+='<div class="tt-section">Odblokowuje budynki:</div><ul class="tt-items">'+d.bldg.map(function(b){return'<li>'+b+'</li>';}).join("")+'</ul>';}
+  if(d.units&&d.units.length){h+='<div class="tt-section">Odblokowuje jednostki:</div><ul class="tt-items">'+d.units.map(function(u){return'<li>'+u+'</li>';}).join("")+'</ul>';}
+  if(!d.bldg.length&&!d.units.length){h+='<div class="tt-none">Brak bezp. odblokowań w danych.</div>';}
+  if(d.note){h+='<div class="tt-star">&#9733; '+d.note+'</div>';}
+  tip.innerHTML=h; tip.style.display="block"; moveTip(e);
+}
+function moveTip(e){
+  var x=e.clientX+16,y=e.clientY+12;
+  if(x+tip.offsetWidth>window.innerWidth-8)x=e.clientX-tip.offsetWidth-10;
+  if(y+tip.offsetHeight>window.innerHeight-8)y=e.clientY-tip.offsetHeight-10;
+  tip.style.left=x+"px"; tip.style.top=y+"px";
+}
+})();
+</script>
+</body>
+</html>

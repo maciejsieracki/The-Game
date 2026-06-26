@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Drzewko technologii — Kamień + Brąz</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: #0d0d0d;
+  color: #e8d5a0;
+  font-family: 'Georgia', 'Times New Roman', serif;
+  min-height: 100vh;
+}
+
+header {
+  background: linear-gradient(135deg, #130f00 0%, #221a00 50%, #130f00 100%);
+  border-bottom: 2px solid #b08a00;
+  padding: 16px 28px;
+  text-align: center;
+}
+header h1 {
+  font-size: 1.75rem;
+  color: #f0c840;
+  text-shadow: 0 0 14px rgba(240,200,64,0.45);
+  letter-spacing: 2px;
+}
+header p.subtitle {
+  margin-top: 4px;
+  font-size: 0.82rem;
+  color: #907830;
+  letter-spacing: 1px;
+}
+
+#outer-wrap {
+  padding: 18px 24px 48px;
+  overflow-x: auto;
+}
+
+#legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 22px;
+  margin-bottom: 10px;
+  padding: 10px 14px;
+  background: #0e0c04;
+  border: 1px solid #302200;
+  border-radius: 5px;
+  font-size: 0.77rem;
+  align-items: center;
+}
+#legend h3 { color: #f0c840; font-size: 0.82rem; }
+.legend-item { display: flex; align-items: center; gap: 6px; color: #c0a050; }
+.legend-swatch { width: 13px; height: 13px; border-radius: 3px; flex-shrink: 0; }
+
+#routing-note {
+  font-size: 0.69rem;
+  color: #5a4820;
+  margin-bottom: 16px;
+  padding: 5px 10px;
+  border-left: 3px solid #402e00;
+  font-style: italic;
+}
+
+#tech-svg { display: block; overflow: visible; }
+
+#tooltip {
+  position: fixed;
+  display: none;
+  background: #160e00;
+  border: 1px solid #b08800;
+  border-radius: 6px;
+  padding: 10px 13px;
+  max-width: 300px;
+  font-size: 0.77rem;
+  color: #e0d098;
+  box-shadow: 0 4px 18px rgba(0,0,0,0.88);
+  pointer-events: none;
+  z-index: 1000;
+  line-height: 1.55;
+}
+#tooltip .tt-name { font-size: 0.91rem; color: #f0c840; font-weight: bold; margin-bottom: 3px; }
+#tooltip .tt-meta { color: #7a6028; font-size: 0.69rem; margin-bottom: 3px; }
+#tooltip .tt-cost { color: #78b058; font-size: 0.73rem; margin-bottom: 5px; }
+#tooltip .tt-section { margin-top: 6px; color: #907030; font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.5px; }
+#tooltip .tt-items { margin-top: 2px; padding-left: 13px; color: #cebe70; }
+#tooltip .tt-items li { list-style: disc; margin: 1px 0; font-size: 0.74rem; }
+#tooltip .tt-none { margin-top: 5px; color: #4a4020; font-style: italic; font-size: 0.70rem; }
+#tooltip .tt-star { margin-top: 5px; color: #c09830; font-size: 0.71rem; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Drzewko technologii &#8212; Kamie&#324; + Br&#261;z</h1>
+  <p class="subtitle">Epoka Kamienia &amp; Epoka Br&#261;zu &nbsp;&#8226;&nbsp; Uk&#322;ad strefowy wg epoki &nbsp;&#8226;&nbsp; Najedź kursorem na węzeł</p>
+</header>
+
+<div id="outer-wrap">
+  <div id="legend">
+    <h3>Legenda:</h3>
+    <div class="legend-item">
+      <div class="legend-swatch" style="background:#243a14;border:1px solid #6aaa38;"></div>
+      Epoka Kamienia
+    </div>
+    <div class="legend-item">
+      <div class="legend-swatch" style="background:#3e2008;border:1px solid #d08030;"></div>
+      Epoka Br&#261;zu
+    </div>
+    <div class="legend-item">
+      <svg width="32" height="10" style="overflow:visible">
+        <line x1="0" y1="5" x2="24" y2="5" stroke="#609040" stroke-width="1.8"/>
+        <path d="M24 5 L18 2.5 L18 7.5 Z" fill="#609040"/>
+      </svg>
+      prerekvizyt (wew. epoka)
+    </div>
+    <div class="legend-item">
+      <svg width="32" height="10" style="overflow:visible">
+        <line x1="0" y1="5" x2="24" y2="5" stroke="#c09838" stroke-width="1.8" stroke-dasharray="4,2"/>
+        <path d="M24 5 L18 2.5 L18 7.5 Z" fill="#c09838"/>
+      </svg>
+      prerekvizyt (między epokami)
+    </div>
+    <div class="legend-item" style="color:#5a5030;font-size:0.69rem;margin-left:6px;">
+      K0..K1 = kolumny Kamienia &nbsp;|&nbsp; B0..B3 = kolumny Brązu
+    </div>
+  </div>
+  <div id="routing-note">
+    Lewa strefa = Epoka Kamienia (K0–K1) | Prawa strefa = Epoka Brązu (B0–B3). Gruba pionowa linia dzieli strefy.
+    Krawędzie prowadzone prostopadle w rynnach między kolumnami — żadna linia nie przecina obcego węzła.
+    Krawędzie między epokami (Kamień → Brąz) przekraczają divider i prowadzone są dolnym korytarzem.
+  </div>
+  <svg id="tech-svg" xmlns="http://www.w3.org/2000/svg"></svg>
+</div>
+
+<div id="tooltip"></div>
+
+<script>
+(function(){
+"use strict";
+
+// ================================================================
+//  TECH DATA  (from tech.json + buildings.json + units.json)
+// ================================================================
+var TECHS = [
+  // Epoka Kamienia
+  { id:"obrobka",  name:"Obróbka drewna",       epoka:"Kamień", prereqs:[], koszt:10 },
+  { id:"garnc",    name:"Garncarstwo",            epoka:"Kamień", prereqs:[], koszt:12 },
+  { id:"murar",    name:"Murarstwo",              epoka:"Kamień", prereqs:[], koszt:14 },
+  { id:"lucz",     name:"Łucznictwo",             epoka:"Kamień", prereqs:[], koszt:10 },
+  { id:"oswoj",    name:"Oswojenie zwierząt",     epoka:"Kamień", prereqs:[], koszt:12 },
+  { id:"mist",     name:"Mistycyzm",              epoka:"Kamień", prereqs:[], koszt:12 },
+  { id:"wymiana",  name:"Wymiana",                epoka:"Kamień", prereqs:["garnc"], koszt:10 },
+  { id:"gosp",     name:"Gospodarka wodna",       epoka:"Kamień", prereqs:["garnc"], koszt:10 },
+  { id:"kolo",     name:"Koło",                   epoka:"Kamień", prereqs:["oswoj"], koszt:14 },
+  // Epoka Brązu
+  { id:"braz",     name:"Brązownictwo",           epoka:"Brąz", prereqs:["garnc"], koszt:24, note:"brama do Epoki Brązu" },
+  { id:"zegl",     name:"Żegluga",                epoka:"Brąz", prereqs:["obrobka"], koszt:22 },
+  { id:"pismo",    name:"Pismo",                  epoka:"Brąz", prereqs:["garnc"], koszt:18 },
+  { id:"relig",    name:"Religia",                epoka:"Brąz", prereqs:["garnc"], koszt:18 },
+  { id:"wojsk",    name:"Wojskowość",             epoka:"Brąz", prereqs:["braz"], koszt:18 },
+  { id:"jezd",     name:"Jeździectwo",            epoka:"Brąz", prereqs:["kolo","braz"], koszt:20 },
+  { id:"matem",    name:"Matematyka",             epoka:"Brąz", prereqs:["pismo"], koszt:22 },
+  { id:"handel",   name:"Handel",                 epoka:"Brąz", prereqs:["pismo"], koszt:26 },
+  { id:"prawo",    name:"Prawo (Kodeks)",         epoka:"Brąz", prereqs:["pismo"], koszt:20 },
+  { id:"budow",    name:"Budownictwo",            epoka:"Brąz", prereqs:["matem","murar"], koszt:26 },
+  { id:"waluta",   name:"Waluta",                 epoka:"Brąz", prereqs:["handel","matem"], koszt:50, note:"kończy Epokę Brązu" }
+];
+
+// Buildings unlocked per tech (from buildings.json techUnlock)
+var BLDG = {
+  "obrobka": ["Stolarnia"],
+  "murar":   ["Warsztat kamieniarski", "Stela / Pomnik"],
+  "braz":    ["Kuźnia"],
+  "wymiana": ["Targowisko (Rynek)"],
+  "zegl":    ["Port handlowy"],
+  "handel":  ["Karawanseraj", "Magazyn"],
+  "garnc":   ["Spichlerz"],
+  "mist":    ["Świątynia"],
+  "pismo":   ["Biblioteka"],
+  "gosp":    ["Studnia / Łaźnie"],
+  "budow":   ["Mury"],
+  "wojsk":   ["Koszary"]
+};
+
+// Units unlocked per tech (from units.json "Tech" field)
+var UNITS = {
+  "lucz":  ["Łucznik", "Łucznik egipski (Egipt)", "Łucznik sumeryjski (Sumerowie)"],
+  "braz":  ["Włócznik", "Wojownik z mieczem i tarczą", "Falanga (Grecja)",
+            "Legionista (Rzym)", "Impi (Zulusi)", "Wojownik z toporem (Inkowie)",
+            "Wojownik z khopesh (Egipt)", "Włócznik sumeryjski (Sumerowie)"],
+  "kolo":  ["Rydwan (woły)"],
+  "jezd":  ["Konnica", "Rydwan konny", "Jeździec chiński (Chiny)",
+            "Rydwan egipski (Egipt)", "Rydwan sumeryjski (Sumerowie)"],
+  "zegl":  ["Galera"]
+};
+
+// ================================================================
+//  ZONE LAYOUT
+//
+//  Kamień zone: columns K0, K1
+//    K0 (intra-depth 0): obrobka, garnc, murar, lucz, oswoj, mist
+//    K1 (intra-depth 1): wymiana, gosp, kolo
+//
+//  Brąz zone: columns B0, B1, B2, B3
+//    B0 (intra-depth 0): braz            ← gateway tech
+//    B1 (intra-depth 1): zegl, pismo, relig, wojsk
+//    B2 (intra-depth 2): jezd, matem, handel, prawo
+//    B3 (intra-depth 3): budow, waluta
+// ================================================================
+
+// Assign zone column (zoneCol) per tech
+var zoneColMap = {
+  "obrobka": 0, "garnc": 0, "murar": 0, "lucz": 0, "oswoj": 0, "mist": 0,
+  "wymiana": 1, "gosp": 1, "kolo": 1,
+  "braz": 0,
+  "zegl": 1, "pismo": 1, "relig": 1, "wojsk": 1,
+  "jezd": 2, "matem": 2, "handel": 2, "prawo": 2,
+  "budow": 3, "waluta": 3
+};
+
+var byId = {};
+TECHS.forEach(function(t){ byId[t.id] = t; t.zoneCol = zoneColMap[t.id]; });
+
+// ================================================================
+//  LAYOUT CONSTANTS
+// ================================================================
+var NW         = 162;   // node width
+var NH         = 72;    // node height
+var COL_STEP_K = 260;   // column step within Kamień zone (wider spacing)
+var COL_STEP_B = 260;   // column step within Brąz zone
+var ROW_STEP   = 100;   // vertical step between rows
+var PAD_L      = 36;
+var PAD_T      = 90;    // space for epoch label + column header
+
+var DIVIDER_GAP = 52;   // extra space for the thick divider line
+
+// Kamień zone: 2 columns (K0, K1)
+var K_NUM_COLS = 2;
+// Total Kamień zone width
+var K_ZONE_W = K_NUM_COLS * COL_STEP_K;
+
+// Brąz zone starts after Kamień zone + divider gap
+var B_ZONE_X = PAD_L + K_ZONE_W + DIVIDER_GAP;
+
+// Column X positions
+function colX(t) {
+  if (t.epoka === "Kamień") {
+    return PAD_L + t.zoneCol * COL_STEP_K;
+  } else {
+    return B_ZONE_X + t.zoneCol * COL_STEP_B;
+  }
+}
+
+// ================================================================
+//  ROW ASSIGNMENT — within each zone column, sort by barycenter
+// ================================================================
+
+// Group techs by zone and zoneCol
+var zoneColGroups = {};
+TECHS.forEach(function(t){
+  var key = t.epoka + "_" + t.zoneCol;
+  if (!zoneColGroups[key]) zoneColGroups[key] = [];
+  zoneColGroups[key].push(t);
+});
+
+// Initial row ordering (stable by array order)
+Object.keys(zoneColGroups).forEach(function(key){
+  zoneColGroups[key].forEach(function(t, i){ t._row = i; });
+});
+
+// Barycenter sort (3 passes) to reduce crossings
+for (var pass = 0; pass < 3; pass++) {
+  Object.keys(zoneColGroups).forEach(function(key){
+    var group = zoneColGroups[key];
+    group.forEach(function(t){
+      // Only sort by prereqs that are in a previous column (same zone or cross-zone)
+      var prevReqs = t.prereqs.filter(function(pid){
+        var p = byId[pid];
+        return p && (p.epoka !== t.epoka || p.zoneCol < t.zoneCol);
+      });
+      if (!prevReqs.length) { t._bary = 9999; return; }
+      var rowSum = prevReqs.reduce(function(acc, pid){
+        return acc + (byId[pid] ? byId[pid]._row : 0);
+      }, 0);
+      t._bary = rowSum / prevReqs.length;
+    });
+    group.sort(function(a, b){ return a._bary - b._bary; });
+    group.forEach(function(t, i){ t._row = i; });
+  });
+}
+
+// ================================================================
+//  COORDINATE ASSIGNMENT
+// ================================================================
+TECHS.forEach(function(t){
+  t.x = colX(t);
+  t.y = PAD_T + t._row * ROW_STEP;
+});
+
+// SVG dimensions
+var maxBrazZoneCol = 3;
+var SVG_W = B_ZONE_X + (maxBrazZoneCol + 1) * COL_STEP_B + NW + 30;
+
+var maxRowsK = Math.max.apply(null, [0,1].map(function(c){
+  var g = zoneColGroups["Kamień_" + c];
+  return g ? g.length : 0;
+}));
+var maxRowsB = Math.max.apply(null, [0,1,2,3].map(function(c){
+  var g = zoneColGroups["Brąz_" + c];
+  return g ? g.length : 0;
+}));
+var maxRows = Math.max(maxRowsK, maxRowsB);
+var BOTTOM_LANE_Y_START = PAD_T + maxRows * ROW_STEP + 20; // below all nodes
+var SVG_H = BOTTOM_LANE_Y_START + 80;
+
+// Divider X
+var DIVIDER_X = PAD_L + K_ZONE_W + Math.round(DIVIDER_GAP / 2);
+
+// ================================================================
+//  EDGE ROUTING
+//
+//  For edges within same zone (intra): orthogonal path via gutter
+//  between consecutive zone columns.
+//
+//  For edges crossing zones (Kamień prereq → Brąz dest): route via
+//  bottom routing lane (below all nodes), with per-edge lane offsets
+//  so lines don't overlap.
+//
+//  Gutter for intra-zone edge between zoneCol C-1 and C:
+//    Kamień gutter C: x range [PAD_L + (C-1)*COL_STEP_K + NW,  PAD_L + C*COL_STEP_K]
+//    Brąz   gutter C: x range [B_ZONE_X + (C-1)*COL_STEP_B + NW, B_ZONE_X + C*COL_STEP_B]
+// ================================================================
+var edges = [];
+TECHS.forEach(function(t){
+  t.prereqs.forEach(function(pid){
+    if (byId[pid]) edges.push({ src: byId[pid], dst: t });
+  });
+});
+
+// Lane occupancy for gutters
+var gutterLaneCounts = {};
+var LANE_STEP = 6;
+
+// Bottom-lane counter for cross-epoch edges
+var crossLaneIdx = 0;
+var CROSS_LANE_STEP = 8;
+
+var routedEdges = edges.map(function(e){
+  var src = e.src, dst = e.dst;
+  var sx = src.x + NW;
+  var sy = src.y + NH / 2;
+  var dx = dst.x;
+  var dy = dst.y + NH / 2;
+  var isCross = (src.epoka === "Kamień" && dst.epoka === "Brąz");
+  var color, dashArr, d;
+
+  if (isCross) {
+    // Cross-epoch: Kamień → Brąz
+    // Route: right stub → bottom lane → across divider → up to dest
+    color = "#c09838";
+    dashArr = "5,3";
+    var myLane = crossLaneIdx++;
+    var bottomY = BOTTOM_LANE_Y_START + myLane * CROSS_LANE_STEP;
+    var entryX = DIVIDER_X + 8 + myLane * CROSS_LANE_STEP;
+    d = "M " + r(sx) + " " + r(sy) +
+        " H " + r(sx + 12) +
+        " V " + r(bottomY) +
+        " H " + r(entryX) +
+        " V " + r(dy) +
+        " H " + r(dx);
+  } else {
+    // Intra-zone edge
+    color = src.epoka === "Kamień" ? "#4a9030" : "#b07028";
+    dashArr = null;
+    // Gutter between (dst.zoneCol - 1) and dst.zoneCol within dst's zone
+    var gc = dst.zoneCol; // gutter index = dst's zone column index
+    var gutterL, gutterR;
+    if (dst.epoka === "Kamień") {
+      gutterL = PAD_L + (gc - 1) * COL_STEP_K + NW;
+      gutterR = PAD_L + gc * COL_STEP_K;
+    } else {
+      gutterL = B_ZONE_X + (gc - 1) * COL_STEP_B + NW;
+      gutterR = B_ZONE_X + gc * COL_STEP_B;
+    }
+    var gutterMid = (gutterL + gutterR) / 2;
+    var laneKey = dst.epoka + "_g" + gc;
+    if (!gutterLaneCounts[laneKey]) gutterLaneCounts[laneKey] = 0;
+    var laneIdx2 = gutterLaneCounts[laneKey]++;
+    var laneX = gutterMid + (laneIdx2 % 2 === 0 ? 1 : -1) * Math.ceil(laneIdx2 / 2) * LANE_STEP;
+    d = "M " + r(sx) + " " + r(sy) +
+        " H " + r(laneX) +
+        " V " + r(dy) +
+        " H " + r(dx);
+  }
+
+  return { d: d, color: color, dashArr: dashArr, dy: dy, dx: dx };
+});
+
+// ================================================================
+//  RENDER
+// ================================================================
+function render() {
+  var svg = document.getElementById("tech-svg");
+  svg.setAttribute("width",   SVG_W);
+  svg.setAttribute("height",  SVG_H);
+  svg.setAttribute("viewBox", "0 0 " + SVG_W + " " + SVG_H);
+
+  // ---- DEFS ----
+  var defs = svgEl("defs");
+  [["gk","60,180,40"],["gb","200,130,40"]].forEach(function(pair){
+    var flt = svgEl("filter",{id:pair[0],x:"-20%",y:"-20%",width:"140%",height:"140%"});
+    flt.appendChild(svgEl("feGaussianBlur",{in:"SourceGraphic",stdDeviation:"2.5",result:"bl"}));
+    var feMerge = svgEl("feMerge");
+    feMerge.appendChild(svgEl("feMergeNode",{in:"bl"}));
+    feMerge.appendChild(svgEl("feMergeNode",{in:"SourceGraphic"}));
+    flt.appendChild(feMerge);
+    defs.appendChild(flt);
+  });
+  svg.appendChild(defs);
+
+  // ---- ZONE BACKGROUNDS ----
+  var bgG = svgEl("g");
+
+  // Kamień zone background
+  var kZoneW = K_ZONE_W + Math.round(DIVIDER_GAP * 0.42);
+  bgG.appendChild(svgEl("rect",{
+    x: r(PAD_L - 16), y: r(PAD_T - 46),
+    width: r(kZoneW), height: r(SVG_H - (PAD_T - 46) - 4),
+    rx:"8", ry:"8",
+    fill:"rgba(20,38,10,0.28)",
+    stroke:"rgba(80,140,40,0.12)","stroke-width":"1"
+  }));
+
+  // Brąz zone background
+  var bZoneX = B_ZONE_X - Math.round(DIVIDER_GAP * 0.42);
+  var bZoneW = SVG_W - bZoneX - 10;
+  bgG.appendChild(svgEl("rect",{
+    x: r(bZoneX), y: r(PAD_T - 46),
+    width: r(bZoneW), height: r(SVG_H - (PAD_T - 46) - 4),
+    rx:"8", ry:"8",
+    fill:"rgba(40,18,4,0.35)",
+    stroke:"rgba(180,100,20,0.12)","stroke-width":"1"
+  }));
+
+  svg.appendChild(bgG);
+
+  // ---- THICK DIVIDER LINE ----
+  var divG = svgEl("g");
+  divG.appendChild(svgEl("line",{
+    x1:r(DIVIDER_X), y1:r(PAD_T - 46),
+    x2:r(DIVIDER_X), y2:r(SVG_H - 4),
+    stroke:"#8a6a00","stroke-width":"3.5",
+    "stroke-linecap":"square",
+    "stroke-opacity":"0.85"
+  }));
+  // divider glow
+  divG.appendChild(svgEl("line",{
+    x1:r(DIVIDER_X), y1:r(PAD_T - 46),
+    x2:r(DIVIDER_X), y2:r(SVG_H - 4),
+    stroke:"rgba(240,190,30,0.10)","stroke-width":"10",
+    "stroke-linecap":"butt"
+  }));
+  svg.appendChild(divG);
+
+  // ---- EPOCH ZONE LABELS ----
+  var zoneG = svgEl("g");
+  // Kamień label
+  var kLabelX = PAD_L + K_ZONE_W / 2;
+  zoneG.appendChild(svgEl("text",{
+    x:r(kLabelX), y:r(PAD_T - 52),
+    "text-anchor":"middle",
+    fill:"#6aaa38","font-size":"14","font-family":"Georgia,serif",
+    "font-weight":"bold","letter-spacing":"2"
+  })).textContent;
+  var kLbl = svgEl("text",{
+    x:r(kLabelX), y:r(PAD_T - 52),
+    "text-anchor":"middle",
+    fill:"#6aaa38","font-size":"14","font-family":"Georgia,serif",
+    "font-weight":"bold","letter-spacing":"2"
+  });
+  kLbl.textContent = "EPOKA KAMIENIA";
+  zoneG.appendChild(kLbl);
+
+  // Brąz label
+  var bLabelX = B_ZONE_X + (maxBrazZoneCol + 1) * COL_STEP_B / 2;
+  var bLbl = svgEl("text",{
+    x:r(bLabelX), y:r(PAD_T - 52),
+    "text-anchor":"middle",
+    fill:"#d08030","font-size":"14","font-family":"Georgia,serif",
+    "font-weight":"bold","letter-spacing":"2"
+  });
+  bLbl.textContent = "EPOKA BRĄZU";
+  zoneG.appendChild(bLbl);
+
+  // Underlines below epoch labels
+  zoneG.appendChild(svgEl("line",{
+    x1:r(PAD_L - 8), y1:r(PAD_T - 43),
+    x2:r(DIVIDER_X - 6), y2:r(PAD_T - 43),
+    stroke:"rgba(106,170,56,0.35)","stroke-width":"1"
+  }));
+  zoneG.appendChild(svgEl("line",{
+    x1:r(DIVIDER_X + 6), y1:r(PAD_T - 43),
+    x2:r(SVG_W - 14), y2:r(PAD_T - 43),
+    stroke:"rgba(208,128,48,0.35)","stroke-width":"1"
+  }));
+
+  svg.appendChild(zoneG);
+
+  // ---- COLUMN LABELS ----
+  var colLblG = svgEl("g");
+
+  function addColLabel(labelStr, cx, color) {
+    var t = svgEl("text",{
+      x:r(cx + NW / 2), y:r(PAD_T - 26),
+      "text-anchor":"middle",
+      fill:color,"font-size":"9","font-family":"monospace"
+    });
+    t.textContent = labelStr;
+    colLblG.appendChild(t);
+  }
+
+  addColLabel("K0", PAD_L, "rgba(106,170,56,0.45)");
+  addColLabel("K1", PAD_L + COL_STEP_K, "rgba(106,170,56,0.45)");
+  addColLabel("B0 (Bramkowy)", B_ZONE_X, "rgba(208,128,48,0.55)");
+  addColLabel("B1", B_ZONE_X + COL_STEP_B, "rgba(208,128,48,0.45)");
+  addColLabel("B2", B_ZONE_X + 2 * COL_STEP_B, "rgba(208,128,48,0.45)");
+  addColLabel("B3", B_ZONE_X + 3 * COL_STEP_B, "rgba(208,128,48,0.45)");
+
+  svg.appendChild(colLblG);
+
+  // ---- GUTTER GUIDE LINES (very subtle) ----
+  var guideG = svgEl("g");
+  function addGuide(xpos) {
+    guideG.appendChild(svgEl("line",{
+      x1:r(xpos), y1:r(PAD_T - 20), x2:r(xpos), y2:r(SVG_H - 10),
+      stroke:"rgba(70,50,10,0.12)","stroke-width":"1","stroke-dasharray":"2,8"
+    }));
+  }
+  // Kamień gutters (between K0→K1, after K1)
+  addGuide(PAD_L + COL_STEP_K - Math.round((COL_STEP_K - NW) / 2));
+  // Brąz gutters
+  for (var gc = 1; gc <= 3; gc++) {
+    addGuide(B_ZONE_X + gc * COL_STEP_B - Math.round((COL_STEP_B - NW) / 2));
+  }
+  svg.appendChild(guideG);
+
+  // ---- EDGES ----
+  var edgeG = svgEl("g");
+  routedEdges.forEach(function(re){
+    var pathAttr = {
+      d: re.d, fill:"none", stroke: re.color,
+      "stroke-width":"1.9","stroke-opacity":"0.80",
+      "stroke-linecap":"round","stroke-linejoin":"round"
+    };
+    if (re.dashArr) pathAttr["stroke-dasharray"] = re.dashArr;
+    edgeG.appendChild(svgEl("path", pathAttr));
+    // Arrowhead at destination
+    var al = 7, aw = 3.5;
+    edgeG.appendChild(svgEl("path",{
+      d:"M "+r(re.dx)+" "+r(re.dy)+" L "+r(re.dx-al)+" "+r(re.dy-aw)+" L "+r(re.dx-al)+" "+r(re.dy+aw)+" Z",
+      fill:re.color,"fill-opacity":"0.90"
+    }));
+  });
+  svg.appendChild(edgeG);
+
+  // ---- NODES ----
+  var nodeG = svgEl("g");
+  TECHS.forEach(function(t){
+    var g = svgEl("g",{
+      transform:"translate("+r(t.x)+","+r(t.y)+")",
+      style:"cursor:pointer;"
+    });
+    var isK   = t.epoka === "Kamień";
+    var fill  = isK ? "#243a14" : "#3e2008";
+    var strk  = isK ? "#6aaa38" : "#d08030";
+    var glowId= isK ? "gk"      : "gb";
+
+    // Outer glow
+    g.appendChild(svgEl("rect",{x:"-3",y:"-3",
+      width:NW+6, height:NH+6, rx:"10", ry:"10",
+      fill:"none",
+      stroke:isK?"rgba(100,200,60,0.16)":"rgba(210,130,40,0.16)",
+      "stroke-width":"7", filter:"url(#"+glowId+")"}));
+
+    // Main box
+    g.appendChild(svgEl("rect",{x:"0",y:"0",
+      width:NW, height:NH, rx:"8", ry:"8",
+      fill:fill, stroke:strk, "stroke-width":"1.5"}));
+
+    // Top highlight
+    g.appendChild(svgEl("rect",{x:"1",y:"1",
+      width:NW-2, height:Math.round(NH*0.38), rx:"7", ry:"7",
+      fill:"rgba(255,255,255,0.05)"}));
+
+    // Name text (word-wrap, max 2 lines)
+    var words = t.name.split(" ");
+    var lines = [];
+    var cur = "";
+    words.forEach(function(w){
+      var test = cur ? cur + " " + w : w;
+      if (test.length > 17 && cur.length > 0) { lines.push(cur); cur = w; }
+      else { cur = test; }
+    });
+    if (cur) lines.push(cur);
+
+    var textBlockH = lines.length * 16;
+    var hasNote = !!t.note;
+    var textY0 = Math.round((NH - textBlockH) / 2) + 14 - (hasNote ? 6 : 0);
+
+    lines.forEach(function(ln, li){
+      var txt = svgEl("text",{
+        x:r(NW/2), y:r(textY0 + li * 16),
+        "text-anchor":"middle",
+        fill:"#f2e5b8",
+        "font-size":"12.5",
+        "font-family":"Georgia,serif",
+        "font-weight":"bold",
+        "pointer-events":"none"
+      });
+      txt.textContent = ln;
+      g.appendChild(txt);
+    });
+
+    // Note (epoch marker)
+    if (hasNote) {
+      var nt = svgEl("text",{
+        x:r(NW/2), y:r(NH - 16),
+        "text-anchor":"middle",
+        fill: isK ? "#a0e060" : "#f0b840",
+        "font-size":"8",
+        "font-family":"Georgia,serif",
+        "font-style":"italic",
+        "pointer-events":"none"
+      });
+      nt.textContent = "★ " + t.note;
+      g.appendChild(nt);
+    }
+
+    // Epoch badge bottom
+    var bw = 56, bh = 13;
+    g.appendChild(svgEl("rect",{
+      x:r((NW-bw)/2), y:r(NH-bh-2),
+      width:bw, height:bh, rx:"3", ry:"3",
+      fill:isK?"rgba(40,90,15,0.55)":"rgba(110,55,8,0.55)",
+      stroke:strk,"stroke-width":"0.6"
+    }));
+    var bTxt = svgEl("text",{
+      x:r(NW/2), y:r(NH-4),
+      "text-anchor":"middle",
+      fill:strk,
+      "font-size":"8.5",
+      "font-family":"Georgia,serif",
+      "pointer-events":"none"
+    });
+    bTxt.textContent = t.epoka;
+    g.appendChild(bTxt);
+
+    // Zone-column micro-label top-left
+    var colCode = (t.epoka === "Kamień" ? "K" : "B") + t.zoneCol;
+    var tl = svgEl("text",{x:"4",y:"11",
+      fill:"rgba(180,140,50,0.40)","font-size":"7.5",
+      "font-family":"monospace","pointer-events":"none"});
+    tl.textContent = colCode;
+    g.appendChild(tl);
+
+    // Cost top-right
+    var costLbl = svgEl("text",{x:r(NW-4),y:"11",
+      "text-anchor":"end",
+      fill:"rgba(120,180,90,0.45)","font-size":"7.5",
+      "font-family":"monospace","pointer-events":"none"});
+    costLbl.textContent = t.koszt + "PN";
+    g.appendChild(costLbl);
+
+    // Mouse events
+    g.addEventListener("mouseenter", function(e){ showTip(e, t); });
+    g.addEventListener("mousemove",  function(e){ moveTip(e); });
+    g.addEventListener("mouseleave", hideTip);
+
+    nodeG.appendChild(g);
+  });
+  svg.appendChild(nodeG);
+}
+
+// ================================================================
+//  TOOLTIP
+// ================================================================
+var tip = document.getElementById("tooltip");
+
+function showTip(e, t) {
+  var bldg  = BLDG[t.id]  || [];
+  var units = UNITS[t.id] || [];
+  var prereqNames = t.prereqs.map(function(pid){
+    return byId[pid] ? byId[pid].name : pid;
+  });
+  var colCode = (t.epoka === "Kamień" ? "K" : "B") + t.zoneCol;
+
+  var h = '<div class="tt-name">' + t.name + '</div>';
+  h += '<div class="tt-meta">Epoka: <strong>' + t.epoka + '</strong> &nbsp;|&nbsp; Kolumna: <strong>' + colCode + '</strong></div>';
+  h += '<div class="tt-cost">&#9883; Koszt nauki: ' + t.koszt + ' PN</div>';
+
+  if (prereqNames.length) {
+    h += '<div class="tt-section">Wymaga:</div>';
+    h += '<ul class="tt-items">' + prereqNames.map(function(n){ return '<li>' + n + '</li>'; }).join("") + '</ul>';
+  }
+  if (bldg.length) {
+    h += '<div class="tt-section">Odblokowuje budynki:</div>';
+    h += '<ul class="tt-items">' + bldg.map(function(b){ return '<li>' + b + '</li>'; }).join("") + '</ul>';
+  }
+  if (units.length) {
+    h += '<div class="tt-section">Odblokowuje jednostki:</div>';
+    h += '<ul class="tt-items">' + units.map(function(u){ return '<li>' + u + '</li>'; }).join("") + '</ul>';
+  }
+  if (!bldg.length && !units.length) {
+    h += '<div class="tt-none">Brak bezpośrednich odblokowań w danych.</div>';
+  }
+  if (t.note) {
+    h += '<div class="tt-star">&#9733; ' + t.note + '</div>';
+  }
+
+  tip.innerHTML = h;
+  tip.style.display = "block";
+  moveTip(e);
+}
+
+function moveTip(e) {
+  var x = e.clientX + 16, y = e.clientY + 12;
+  if (x + tip.offsetWidth  > window.innerWidth  - 8) x = e.clientX - tip.offsetWidth  - 10;
+  if (y + tip.offsetHeight > window.innerHeight - 8) y = e.clientY - tip.offsetHeight - 10;
+  tip.style.left = x + "px";
+  tip.style.top  = y + "px";
+}
+
+function hideTip() { tip.style.display = "none"; }
+
+// ================================================================
+//  HELPERS
+// ================================================================
+function r(n) { return Math.round(n * 10) / 10; }
+
+function svgEl(tag, attrs) {
+  var e = document.createElementNS("http://www.w3.org/2000/svg", tag);
+  if (attrs) {
+    Object.keys(attrs).forEach(function(k){ e.setAttribute(k, String(attrs[k])); });
+  }
+  return e;
+}
+
+// ================================================================
+//  BOOT
+// ================================================================
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", render);
+} else {
+  render();
+}
+
+})();
+</script>
+</body>
+</html>

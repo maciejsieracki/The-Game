@@ -1,0 +1,188 @@
+{
+  "_opis": "Panel sterowania UI (Civ-UI). Zrodlo: UI-parametry.xlsx -> ten JSON (eksport celowany). Czytane przez src/ui/uiParams.ts.",
+  "panel_miasta": {
+    "rush_cost_mnoznik": 0.8,
+    "okolica_promien": 2,
+    "okolica_hex_px": 30,
+    "font_scale": [
+      {
+        "label": "Maly",
+        "px": 13
+      },
+      {
+        "label": "Sredni",
+        "px": 14
+      },
+      {
+        "label": "Duzy",
+        "px": 16
+      },
+      {
+        "label": "B.Duzy",
+        "px": 18
+      }
+    ],
+    "font_scale_domyslna_px": 16
+  },
+  "menu": {
+    "wersja": "0.1 • Kamień & Brąz",
+    "ustawienia": [
+      {
+        "key": "muzyka",
+        "label": "Muzyka",
+        "opts": [
+          "Wył.",
+          "Cicho",
+          "Średnio",
+          "Głośno"
+        ],
+        "descs": [
+          "Bez muzyki",
+          "20%",
+          "55%",
+          "90%"
+        ],
+        "domyslny": 2
+      },
+      {
+        "key": "efekty",
+        "label": "Efekty dźwiękowe",
+        "opts": [
+          "Wył.",
+          "Cicho",
+          "Średnio",
+          "Głośno"
+        ],
+        "descs": [
+          "Bez efektów",
+          "20%",
+          "55%",
+          "90%"
+        ],
+        "domyslny": 2
+      },
+      {
+        "key": "grafika",
+        "label": "Jakość grafiki",
+        "opts": [
+          "Niska",
+          "Średnia",
+          "Wysoka"
+        ],
+        "descs": [
+          "Dla słabszych maszyn",
+          "Zbalansowana",
+          "Pełne detale"
+        ],
+        "domyslny": 1
+      },
+      {
+        "key": "jezyk",
+        "label": "Język",
+        "opts": [
+          "Polski",
+          "English"
+        ],
+        "descs": [
+          "Język polski",
+          "English (planowane)"
+        ],
+        "domyslny": 0
+      },
+      {
+        "key": "skala",
+        "label": "Skala interfejsu",
+        "opts": [
+          "Mała",
+          "Średnia",
+          "Duża",
+          "B. duża"
+        ],
+        "descs": [
+          "Więcej treści",
+          "Domyślna",
+          "Czytelniejsza",
+          "4K"
+        ],
+        "domyslny": 2
+      },
+      {
+        "key": "mgla",
+        "label": "Mgła wojny (domyślnie)",
+        "opts": [
+          "Włączona",
+          "Wyłączona"
+        ],
+        "descs": [
+          "Klasyczna eksploracja",
+          "Cała mapa odkryta"
+        ],
+        "domyslny": 0
+      }
+    ]
+  },
+  "nowa_gra": {
+    "ustawienia": [
+      {
+        "key": "difficulty",
+        "label": "Poziom trudności",
+        "opts": [
+          "Łatwy",
+          "Normalny",
+          "Trudny"
+        ],
+        "descs": [
+          "Łagodne AI",
+          "Klasyczna rozgrywka 4X",
+          "Agresywne AI"
+        ],
+        "domyslny": 1
+      },
+      {
+        "key": "map_size",
+        "label": "Rozmiar mapy",
+        "opts": [
+          "Mała",
+          "Średnia",
+          "Duża"
+        ],
+        "descs": [
+          "~30x20 hex",
+          "~50x35 hex",
+          "~80x55 hex"
+        ],
+        "domyslny": 1
+      },
+      {
+        "key": "rival_count",
+        "label": "Liczba rywali",
+        "opts": [
+          "6",
+          "8",
+          "10"
+        ],
+        "descs": [
+          "Mniej starć",
+          "Optymalna",
+          "Gęsta mapa"
+        ],
+        "domyslny": 1
+      },
+      {
+        "key": "game_speed",
+        "label": "Prędkość gry",
+        "opts": [
+          "Standardowa",
+          "Szybka",
+          "Długa"
+        ],
+        "descs": [
+          "Pełny czas na decyzje",
+          "Skrócone tury",
+          "5× czas badań"
+        ],
+        "domyslny": 0
+      }
+    ]
+  }
+}

@@ -1,0 +1,37 @@
+[
+  {
+    "Typ atakujący": "Włócznik",
+    "Cel (typ)": "Konnica/Rydwan",
+    "Bonus": "+50%",
+    "Rodzaj (Atak/Obrona)": "Atak",
+    "Status": "potwierdzone"
+  },
+  {
+    "Typ atakujący": "Włócznik",
+    "Cel (typ)": "Konnica/Rydwan",
+    "Bonus": "+50%",
+    "Rodzaj (Atak/Obrona)": "Obrona",
+    "Status": "potwierdzone"
+  },
+  {
+    "Typ atakujący": "Konnica/Rydwan",
+    "Cel (typ)": "Dystansowe (łucznik/oszczepnik/procarz)",
+    "Bonus": "+50%",
+    "Rodzaj (Atak/Obrona)": "Atak",
+    "Status": "potwierdzone"
+  },
+  {
+    "Typ atakujący": "Procarz",
+    "Cel (typ)": "Włócznik",
+    "Bonus": "+50%",
+    "Rodzaj (Atak/Obrona)": "Atak",
+    "Status": "potwierdzone"
+  },
+  {
+    "Typ atakujący": "Atak z flanki (z boku)",
+    "Cel (typ)": "Falanga, łucznicy",
+    "Bonus": "−50%",
+    "Rodzaj (Atak/Obrona)": "Obrona",
+    "Status": "potwierdzone"
+  }
+]

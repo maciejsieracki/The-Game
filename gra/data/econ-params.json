@@ -1,0 +1,404 @@
+{
+  "ekonomia_miasta": {
+    "próg_wzrostu_wspolczynnik": {
+      "easy": 6,
+      "normal": 8,
+      "hard": 10,
+      "jednostka": "per 1 ludności",
+      "opis": "Próg wzrostu populacji: Próg(N) = 10 + N × wartość. Większy = wolniejszy wzrost. [PT]"
+    },
+    "spichlerz_zachowanie_po_wzroscie": {
+      "easy": 0.62,
+      "normal": 0.5,
+      "hard": 0.38,
+      "jednostka": "%",
+      "opis": "Ułamek żywności zachowany w Spichlerzu po awansie populacji (0.50 = 50%). [PT]"
+    },
+    "akwedukt_prog_ludnosci": {
+      "easy": 8,
+      "normal": 6,
+      "hard": 4,
+      "jednostka": "ludność",
+      "opis": "Max populacja bez Akweduktu. Po jego budowie blokada zdjęta. [PT]"
+    },
+    "zywnosc_zuzytka_populacja": {
+      "easy": 1,
+      "normal": 1,
+      "hard": 2,
+      "jednostka": "żywność/turę/os.",
+      "opis": "Zużycie żywności na 1 punkt populacji na turę."
+    },
+    "zywnosc_jednostka_ruch": {
+      "easy": 1,
+      "normal": 1,
+      "hard": 2,
+      "jednostka": "żywność/turę",
+      "opis": "Zużycie żywności jednostki wojskowej w ruchu lub w garnizonie."
+    },
+    "zywnosc_jednostka_oboz": {
+      "easy": 0.38,
+      "normal": 0.5,
+      "hard": 0.62,
+      "jednostka": "żywność/turę",
+      "opis": "Zużycie żywności jednostki wojskowej obozującej (bez ruchu)."
+    },
+    "suwak_handel_nauka_domyslnie": {
+      "easy": 20,
+      "normal": 20,
+      "hard": 20,
+      "jednostka": "%",
+      "opis": "Domyślny udział strumienia Nauka (= BADANIA) w podziale Handlu netto. Default 20% (Maciej 2026-06-25)."
+    },
+    "suwak_handel_pieniadz_domyslnie": {
+      "easy": 70,
+      "normal": 70,
+      "hard": 70,
+      "jednostka": "%",
+      "opis": "Domyślny udział strumienia Pieniądz (= SKARBIEC/podatek) w podziale Handlu netto. Default 70% (Maciej 2026-06-25)."
+    },
+    "suwak_handel_luksus_domyslnie": {
+      "easy": 10,
+      "normal": 10,
+      "hard": 10,
+      "jednostka": "%",
+      "opis": "Domyślny udział strumienia Luksus (= WEALTH/rozwój) w podziale Handlu netto. Default 10% (Maciej 2026-06-25)."
+    },
+    "suwak_praca_budynki_domyslnie": {
+      "easy": 70,
+      "normal": 70,
+      "hard": 70,
+      "jednostka": "%",
+      "opis": "Domyślny udział strumienia Praca→Budynki w podziale Pracy netto. [PT]"
+    },
+    "suwak_praca_teren_domyslnie": {
+      "easy": 30,
+      "normal": 30,
+      "hard": 30,
+      "jednostka": "%",
+      "opis": "Domyślny udział strumienia Praca→Teren (ulepszenia heksów). [PT]"
+    },
+    "korupcja_wspolczynnik_dystansu": {
+      "easy": 1,
+      "normal": 2,
+      "hard": 3,
+      "jednostka": "per pole",
+      "opis": "Strata% += Dystans_od_Stolicy × wartość. Im większy, tym dotkliwsza korupcja. [PT]"
+    },
+    "korupcja_wspolczynnik_miast": {
+      "easy": 1,
+      "normal": 1,
+      "hard": 2,
+      "jednostka": "per miasto",
+      "opis": "Strata% += Liczba_Miast × wartość. Każde nowe miasto podnosi korupcję globalnie. [PT]"
+    },
+    "korupcja_cap": {
+      "easy": 38,
+      "normal": 50,
+      "hard": 62,
+      "jednostka": "%",
+      "opis": "Maksymalna strata z tytułu korupcji/marnotrawstwa (cap = 50%). [PT]"
+    }
+  },
+  "budynki": {
+    "budynek_mlyn_mnoznik_pracy": {
+      "easy": 3,
+      "normal": 2,
+      "hard": 1,
+      "jednostka": "×",
+      "opis": "Mnożnik Młyna na całą Pracę bazową miasta (Praca_brutto = Σ × wartość). [PT]"
+    },
+    "budynek_mlyn_bonus_pracy": {
+      "easy": 3,
+      "normal": 2,
+      "hard": 1,
+      "jednostka": "Praca/turę",
+      "opis": "Stały bonus Pracy dodawany przez Młyn po mnożniku. [PT]"
+    },
+    "budynek_cegielnia_bonus_pracy": {
+      "easy": 0.31,
+      "normal": 0.25,
+      "hard": 0.19,
+      "jednostka": "%",
+      "opis": "Premia Cegielni do lokalnej Pracy (+25% Pracy brutto). [PT]"
+    },
+    "budynek_targowisko_bonus_handlu": {
+      "easy": 0.62,
+      "normal": 0.5,
+      "hard": 0.38,
+      "jednostka": "%",
+      "opis": "Premia Targowiska do Handlu brutto (+50%). [PT]"
+    },
+    "budynek_mennica_mnoznik": {
+      "easy": 2,
+      "normal": 1,
+      "hard": 0,
+      "jednostka": "×",
+      "opis": "Mnożnik Mennicy (Handel→Pieniądz). Docelowo ×1,5–×2,0 po upgrade. [PT]"
+    },
+    "budynek_biblioteka_bonus_nauki": {
+      "easy": 0.62,
+      "normal": 0.5,
+      "hard": 0.38,
+      "jednostka": "%",
+      "opis": "Premia Biblioteki do Nauki lokalnie (+50%). [PT — do strojenia]"
+    },
+    "waluta_mnoznik": {
+      "easy": 2,
+      "normal": 2,
+      "hard": 2,
+      "jednostka": "×",
+      "opis": "Efekt 1 (Waluta tech): mnoznik na caly handelNetto miasta gdy walutaOdkryta=true (×2 na cala pule Handlu przed podzialem). Dotyczy wszystkich miast automatycznie po wynalezieniu Waluty."
+    },
+    "targowisko_praca_na_pieniadz_mnoznik": {
+      "easy": 2,
+      "normal": 2,
+      "hard": 2,
+      "jednostka": "×",
+      "opis": "Efekt 2 (Targowisko + Waluta): mnoznik konwersji puli-Pracy (doPuli) na Pieniadz. Aktywny per-miasto gdy maTargowisko=true i walutaOdkryta=true. pieniadzZPracy = floor(doPuli × mnoznik)."
+    },
+    "budynek_tartak_przepustowosc": {
+      "easy": 3,
+      "normal": 2,
+      "hard": 1,
+      "jednostka": "szt/turę",
+      "opis": "Maks konwersja Drewno→Deski w Tartaku na turę. [PT]"
+    },
+    "budynek_mielerz_przepustowosc": {
+      "easy": 3,
+      "normal": 2,
+      "hard": 1,
+      "jednostka": "szt/turę",
+      "opis": "Maks konwersja Drewno→Paliwo w Mielerzni na turę. [PT]"
+    },
+    "budynek_cegielnia_przepustowosc": {
+      "easy": 3,
+      "normal": 2,
+      "hard": 1,
+      "jednostka": "szt/turę",
+      "opis": "Maks konwersja (Glina+Paliwo)→Cegła w Cegielni na turę. [PT]"
+    },
+    "budynek_huta_przepustowosc": {
+      "easy": 2,
+      "normal": 1,
+      "hard": 0,
+      "jednostka": "szt/turę",
+      "opis": "Maks konwersja (Ruda+Paliwo)→Brąz w Hucie na turę. [PT]"
+    },
+    "budynek_garncarnia_przepustowosc": {
+      "easy": 2,
+      "normal": 1,
+      "hard": 0,
+      "jednostka": "szt/turę",
+      "opis": "Maks konwersja (Glina+Paliwo)→Ceramika w Garncarni na turę. [PT]"
+    },
+    "utrzymanie_budynek": {
+      "easy": 1,
+      "normal": 1,
+      "hard": 2,
+      "jednostka": "Pieniądz/turę",
+      "opis": "Koszt utrzymania każdego budynku (niezróżnicowany w v0.1). [PT]"
+    }
+  },
+  "teren_mapa": {
+    "teren_rzeka_zywnosc": {
+      "easy": 4,
+      "normal": 3,
+      "hard": 2,
+      "jednostka": "żywność/turę",
+      "opis": "Bonus żywności z nakładki Rzeka na pole bazowe. (Bazowe plony → Plony-terenow.xlsx)"
+    },
+    "teren_rzeka_praca": {
+      "easy": 3,
+      "normal": 2,
+      "hard": 1,
+      "jednostka": "Praca/turę",
+      "opis": "Bonus Pracy z nakładki Rzeka na pole bazowe."
+    },
+    "teren_rzeka_handel": {
+      "easy": 3,
+      "normal": 2,
+      "hard": 1,
+      "jednostka": "Handel/turę",
+      "opis": "Bonus Handlu z nakładki Rzeka na pole bazowe."
+    },
+    "teren_las_zywnosc": {
+      "easy": -0.75,
+      "normal": -1,
+      "hard": -1.25,
+      "jednostka": "żywność/turę",
+      "opis": "Modyfikator żywności z nakładki Las (kara — las utrudnia uprawy)."
+    },
+    "teren_las_handel": {
+      "easy": -0.75,
+      "normal": -1,
+      "hard": -1.25,
+      "jednostka": "Handel/turę",
+      "opis": "Modyfikator Handlu z nakładki Las (kara — las utrudnia ruch handlowy)."
+    },
+    "teren_las_drewno": {
+      "easy": 4,
+      "normal": 3,
+      "hard": 2,
+      "jednostka": "Drewno/turę",
+      "opis": "Bonus Drewna z nakładki Las."
+    },
+    "ulepszenie_farma_zywnosc": {
+      "easy": 3,
+      "normal": 2,
+      "hard": 1,
+      "jednostka": "żywność/turę",
+      "opis": "Bonus żywności z wybudowanej Farmy na polu (Łąka, Równina). [PT — do strojenia]"
+    },
+    "ulepszenie_irygacja_zywnosc": {
+      "easy": 4,
+      "normal": 3,
+      "hard": 2,
+      "jednostka": "żywność/turę",
+      "opis": "Bonus żywności z Irygacji (lepsze pola uprawne, wymaga tech). [PT — do strojenia]"
+    },
+    "ulepszenie_kopalnia_kamien": {
+      "easy": 3,
+      "normal": 2,
+      "hard": 1,
+      "jednostka": "Kamień/turę",
+      "opis": "Bonus Kamienia z Kopalni na Wzgórzach/Górach (wymaga tech Murarstwo). [PT — do strojenia]"
+    },
+    "ulepszenie_droga_ruch": {
+      "easy": 2,
+      "normal": 1,
+      "hard": 0,
+      "jednostka": "hex/turę bonus",
+      "opis": "Bonus szybkości ruchu jednostek na polach z Drogą (skrócenie kosztu ruchu). [PT — do strojenia]"
+    },
+    "ulepszenie_pastwisko_bydlo_produkcja": {
+      "easy": 3,
+      "normal": 2,
+      "hard": 1,
+      "jednostka": "×",
+      "opis": "Mnożnik Pracy/produkcji gdy bydło przypisane do Pastwiska (×200%). [PT — do strojenia]"
+    },
+    "ulepszenie_pastwisko_owce_zywnosc": {
+      "easy": 3,
+      "normal": 2,
+      "hard": 1,
+      "jednostka": "żywność/turę",
+      "opis": "Bonus żywności gdy owce przypisane do Pastwiska. [PT — do strojenia]"
+    }
+  },
+  "wealth": {
+    "wealth_cap_na_epoke": {
+      "easy": 10,
+      "normal": 10,
+      "hard": 10,
+      "jednostka": "poziom/epoka",
+      "opis": "Cap poziomu Wealth = epoka * wartosc. Epoka 1 -> 10, epoka 10 -> 100."
+    },
+    "wealth_prog_na_poziom": {
+      "easy": 3.5,
+      "normal": 4.5,
+      "hard": 6.0,
+      "jednostka": "srodki",
+      "opis": "Prog awansu L->L+1 = wartosc * (L+1) * epoka. Wyzszy = wolniejszy wzrost Wealth."
+    },
+    "wealth_mnoznik_na_poziom": {
+      "easy": 0.18,
+      "normal": 0.15,
+      "hard": 0.12,
+      "jednostka": "x per poziom",
+      "opis": "Mnoznik strumienia podatku = max(1, 1+(W-1)*wartosc). W=1 -> x1, W=10 -> x2.35 (normal)."
+    },
+    "wealth_utrzymanie_baza": {
+      "easy": 0.15,
+      "normal": 0.20,
+      "hard": 0.25,
+      "jednostka": "udzial pieniadza",
+      "opis": "Udzial pieniadza miasta potrzebny na utrzymanie przy W=0 (rownowaga bazowa)."
+    },
+    "wealth_utrzymanie_przy_cap": {
+      "easy": 0.35,
+      "normal": 0.40,
+      "hard": 0.50,
+      "jednostka": "udzial pieniadza",
+      "opis": "Udzial pieniadza miasta potrzebny na utrzymanie przy W=cap. Liniowa interpolacja miedzy baza a cap."
+    },
+    "wealth_zachowanie_po_awansie": {
+      "easy": 0.6,
+      "normal": 0.5,
+      "hard": 0.4,
+      "jednostka": "ulamek",
+      "opis": "Ulamek puli zachowany po awansie poziomu Wealth (jak Spichlerz po wzroscie populacji)."
+    },
+    "wealth_zadowolenie_na_10pkt": {
+      "easy": 1,
+      "normal": 1,
+      "hard": 1,
+      "jednostka": "zadowoleni/10 poz.",
+      "opis": "Ile zadowolonych mieszkancow daje kazde 10 poziomow Wealth (W10->+1, W20->+2, ...)."
+    },
+    "wealth_kara_zero": {
+      "easy": -1,
+      "normal": -2,
+      "hard": -3,
+      "jednostka": "zadowoleni",
+      "opis": "Kara zadowolenia gdy Wealth = 0 (bieda spoleczna). Wartosc ujemna."
+    }
+  },
+  "globalne": {
+    "kurs_pieniadz_praca": {
+      "easy": 1,
+      "normal": 1,
+      "hard": 1,
+      "jednostka": "1:1",
+      "opis": "Kurs bazowy: 1 Pieniądz = 1 Praca (używany do wykupu budynków za Pieniądz)."
+    },
+    "mennica_mnoznik_po_walucie": {
+      "easy": 1.88,
+      "normal": 1.5,
+      "hard": 1.12,
+      "jednostka": "×",
+      "opis": "Mnożnik Mennicy aktywny po odkryciu technologii Waluta. [PT — docelowo ×1,5–×2,0]"
+    },
+    "luksus_przelicznik_zadowolenie": {
+      "easy": 4,
+      "normal": 5,
+      "hard": 6,
+      "jednostka": "Luksus / +1 mieszk.",
+      "opis": "Ile jednostek Luksusu daje +1 zadowolony mieszkaniec. [PT]"
+    },
+    "magazyn_baza_zywnosc": {
+      "easy": 25,
+      "normal": 20,
+      "hard": 15,
+      "jednostka": "żywność",
+      "opis": "Bazowa pojemność Magazynu Żywności (bez Spichlerza). [PT]"
+    },
+    "magazyn_baza_surowce": {
+      "easy": 12,
+      "normal": 10,
+      "hard": 8,
+      "jednostka": "szt/typ surowca",
+      "opis": "Bazowa pojemność per typ surowca (bez Magazynu Surowców). [PT]"
+    },
+    "magazyn_mnoznik_spichlerz": {
+      "easy": 6,
+      "normal": 5,
+      "hard": 4,
+      "jednostka": "×",
+      "opis": "Mnożnik pojemności przy wybudowanym Spichlerzu / Magazynie Surowców. [PT]"
+    },
+    "utrzymanie_jednostka_standard": {
+      "easy": 1,
+      "normal": 1,
+      "hard": 2,
+      "jednostka": "Pieniądz/turę",
+      "opis": "Koszt utrzymania standardowej jednostki wojskowej. [PT]"
+    },
+    "skarbiec_centralny_lokalizacja": {
+      "easy": "stolica",
+      "normal": "stolica",
+    "hard": "stolica",
+      "jednostka": "miasto",
+      "opis": "Skarbiec zawsze w stolicy; utrata stolicy zeruje go do 0."
+    }
+  }
+}

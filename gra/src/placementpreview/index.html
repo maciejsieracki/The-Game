@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="pl">
+  <head>
+    <script>
+      /* BOOT ERROR CATCHER */
+      (function () {
+        function showBootErr(msg) {
+          var d = document.getElementById('__boot_err__');
+          if (!d) {
+            d = document.createElement('div');
+            d.id = '__boot_err__';
+            d.style.cssText =
+              'position:fixed;top:0;left:0;width:100%;background:rgba(180,0,0,0.95);color:#fff;' +
+              'font:bold 13px/1.5 monospace;padding:16px 20px;z-index:999999;white-space:pre-wrap;' +
+              'word-break:break-all;max-height:60vh;overflow-y:auto;border-bottom:3px solid #ff4444;';
+            d.innerHTML = '<b>PLACEMENT PREVIEW — BOOT ERROR</b>\n';
+            if (document.body) document.body.appendChild(d);
+            else document.addEventListener('DOMContentLoaded', function () { document.body.appendChild(d); });
+          }
+          d.innerHTML += '\n' + String(msg);
+        }
+        window.onerror = function (msg, src, line, col, err) {
+          showBootErr((err ? err.message : msg) + ' @' + src + ':' + line + ':' + col + (err && err.stack ? '\n' + err.stack : ''));
+          return false;
+        };
+        window.addEventListener('unhandledrejection', function (e) {
+          showBootErr('Unhandled rejection: ' + String(e.reason));
+        });
+      })();
+    </script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Placement UX — ulepszenia terenu (prototyp MAPA)</title>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 100%; height: 100%; overflow: hidden; background: #87ceeb; }
+      #map { display: block; width: 100vw; height: 100vh; }
+
+      /* -------- PANEL BOCZNY -------- */
+      #panel {
+        position: fixed; top: 0; right: 0; width: 230px; height: 100vh;
+        background: rgba(18, 22, 34, 0.88);
+        border-left: 1px solid rgba(255,255,255,0.14);
+        display: flex; flex-direction: column;
+        font-family: system-ui, "Segoe UI", Arial, sans-serif;
+        color: #eaeefc; z-index: 60;
+        backdrop-filter: blur(6px);
+      }
+      #panel h2 {
+        font-size: 13px; font-weight: 700; color: #ffd479;
+        padding: 12px 12px 6px; border-bottom: 1px solid rgba(255,255,255,0.1);
+      }
+      #panel .section-label {
+        font-size: 10px; font-weight: 700; color: #8fa0c0;
+        padding: 8px 12px 4px; text-transform: uppercase; letter-spacing: 0.06em;
+      }
+      #imp-list {
+        flex: 1; overflow-y: auto; padding: 4px 8px;
+      }
+      #imp-list::-webkit-scrollbar { width: 4px; }
+      #imp-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 2px; }
+      .imp-btn {
+        display: block; width: 100%; text-align: left;
+        padding: 5px 8px; margin-bottom: 3px; border-radius: 6px;
+        font-size: 11px; cursor: pointer; border: 1px solid transparent;
+        background: rgba(255,255,255,0.06); color: #d4daf2;
+        transition: background 0.12s;
+      }
+      .imp-btn:hover { background: rgba(255,255,255,0.13); }
+      .imp-btn.active { background: #ffd479; color: #1e2230; border-color: #ffd479; font-weight: 700; }
+      .imp-btn .epoka { font-size: 9px; opacity: 0.7; float: right; }
+      .imp-btn.e2 .epoka { color: #88ccff; }
+      .imp-btn.e3 .epoka { color: #ff9966; }
+      #btn-watch {
+        display: block; width: calc(100% - 16px); margin: 6px 8px;
+        padding: 6px; border-radius: 6px; font-size: 11px; font-weight: 700;
+        cursor: pointer; border: 1px solid rgba(255,255,255,0.25);
+        background: rgba(255,255,255,0.08); color: #8fa0c0;
+      }
+      #btn-watch.active { background: #4a7eb5; color: #fff; border-color: #4a7eb5; }
+
+      /* -------- HUD (LEWY GORNY) -------- */
+      #hud {
+        position: fixed; top: 10px; left: 10px; z-index: 50;
+        font-family: system-ui, "Segoe UI", Arial, sans-serif;
+        background: rgba(20, 24, 32, 0.78); color: #eaeefc;
+        border: 1px solid rgba(255,255,255,0.15); border-radius: 10px;
+        padding: 10px 13px; max-width: 310px;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+        backdrop-filter: blur(4px);
+      }
+      #hud h1 { font-size: 13px; font-weight: 700; color: #ffd479; margin-bottom: 4px; }
+      #hud .meta { font-size: 11px; color: #b8c0d8; margin-bottom: 6px; }
+      #hud .tool-info { font-size: 11px; color: #ffd479; font-weight: 700; min-height: 16px; }
+      #hud .hint { font-size: 10px; color: #8fa0c0; margin-top: 5px; line-height: 1.5; }
+      #hud button {
+        background: #ffd479; color: #2a2a18; border: none; border-radius: 6px;
+        padding: 5px 9px; font-size: 11px; font-weight: 700; cursor: pointer; margin: 3px 3px 0 0;
+      }
+      #hud button:hover { background: #ffe199; }
+      #hud button.alt { background: #557aaa; color: #fff; }
+      #hud button.alt:hover { background: #6b91c0; }
+      #counter { font-size: 11px; color: #a8e6b0; margin-top: 4px; }
+    </style>
+  </head>
+  <body>
+    <canvas id="map"></canvas>
+
+    <!-- PANEL PRAWA STRONA: lista ulepszeń -->
+    <div id="panel">
+      <h2>Ulepszenia terenu</h2>
+      <div class="section-label">Narzędzie</div>
+      <button id="btn-watch">👁 Oglądaj (brak narzędzia)</button>
+      <div class="section-label">Wybierz ulepszenie</div>
+      <div id="imp-list"></div>
+    </div>
+
+    <!-- HUD LEWY GORNY -->
+    <div id="hud">
+      <h1>Placement UX — prototyp MAPA</h1>
+      <div class="meta" id="meta">Wczytywanie…</div>
+      <div class="tool-info" id="tool-info">Tryb: Oglądaj</div>
+      <div id="counter">Postawione ulepszenia: 0</div>
+      <div style="margin-top:6px">
+        <button id="btn-seed">Nowy seed</button>
+        <button id="btn-reset" class="alt">Reset widoku</button>
+        <button id="btn-highlight" class="alt">Podświetl: on</button>
+      </div>
+      <div class="hint">
+        Drag = obrót · kółko = zoom · WASD = przesuw<br>
+        Zielone kafle = kwalifikują się · Klik = postaw / usuń<br>
+        Panel prawy = wybór narzędzia
+      </div>
+    </div>
+
+    <script type="module" src="/src/placementpreview/main.ts"></script>
+  </body>
+</html>

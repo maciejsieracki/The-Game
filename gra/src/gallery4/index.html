@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="pl">
+  <head>
+    <script>
+      /* BOOT ERROR CATCHER — runs before the main bundle; catches bundle-eval errors.
+         Mirrors the game's index.html catcher so the file:// page never dies silently. */
+      (function () {
+        function showBootErr(msg) {
+          var d = document.getElementById('__boot_err__');
+          if (!d) {
+            d = document.createElement('div');
+            d.id = '__boot_err__';
+            d.style.cssText =
+              'position:fixed;top:0;left:0;width:100%;background:rgba(180,0,0,0.95);color:#fff;' +
+              'font:bold 13px/1.5 monospace;padding:16px 20px;z-index:999999;white-space:pre-wrap;' +
+              'word-break:break-all;max-height:60vh;overflow-y:auto;border-bottom:3px solid #ff4444;';
+            d.innerHTML = '<b>GALERIA JEDNOSTEK — BOOT ERROR</b>\n';
+            if (document.body) document.body.appendChild(d);
+            else document.addEventListener('DOMContentLoaded', function () { document.body.appendChild(d); });
+          }
+          d.innerHTML += '\n' + String(msg);
+        }
+        window.onerror = function (msg, src, line, col, err) {
+          showBootErr((err ? err.message : msg) + ' @' + src + ':' + line + ':' + col + (err && err.stack ? '\n' + err.stack : ''));
+          return false;
+        };
+        window.addEventListener('unhandledrejection', function (e) {
+          showBootErr('Unhandled rejection: ' + String(e.reason));
+        });
+      })();
+    </script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Galeria jednostek — 4 widoki</title>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body {
+        background: #16161f;
+        color: #e8e8ef;
+        font-family: system-ui, "Segoe UI", Arial, sans-serif;
+        line-height: 1.4;
+      }
+      header {
+        position: sticky;
+        top: 0;
+        z-index: 50;
+        background: #1f1f2e;
+        border-bottom: 2px solid #3a3a55;
+        padding: 12px 20px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        flex-wrap: wrap;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+      }
+      header h1 { font-size: 18px; font-weight: 700; color: #ffd479; }
+      header .spacer { flex: 1; }
+      header .hint { font-size: 12px; color: #9a9ab0; }
+      button.act {
+        background: #ffd479;
+        color: #2a2a18;
+        border: none;
+        border-radius: 6px;
+        padding: 8px 14px;
+        font-size: 13px;
+        font-weight: 700;
+        cursor: pointer;
+      }
+      button.act:hover { background: #ffe199; }
+      button.act.alt { background: #6a93c0; color: #fff; }
+      button.act.alt:hover { background: #82a9d4; }
+      #wrap { max-width: 760px; margin: 0 auto; padding: 18px 14px 80px; }
+      .unit {
+        background: #20202e;
+        border: 1px solid #34344c;
+        border-radius: 10px;
+        margin-bottom: 22px;
+        padding: 14px 16px 16px;
+      }
+      .unit h2 { font-size: 17px; color: #ffe199; margin-bottom: 4px; }
+      .unit .cat { font-size: 11px; color: #8a8aa6; font-weight: 400; }
+      .params {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px 10px;
+        margin: 8px 0 12px;
+        font-size: 12.5px;
+      }
+      .params .p {
+        background: #2b2b3e;
+        border-radius: 5px;
+        padding: 3px 8px;
+        white-space: nowrap;
+      }
+      .params .p b { color: #ffd479; font-weight: 700; }
+      .params .p.era b { color: #87ceeb; }
+      .views {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+      .view {
+        text-align: center;
+        background: #87ceeb;
+        border-radius: 8px;
+        overflow: hidden;
+        border: 1px solid #2a2a3e;
+      }
+      .view .lbl {
+        font-size: 11px;
+        font-weight: 700;
+        color: #1c2733;
+        background: rgba(255, 255, 255, 0.55);
+        padding: 2px 0;
+      }
+      .view canvas { display: block; }
+      textarea.cmt {
+        width: 100%;
+        margin-top: 12px;
+        min-height: 54px;
+        background: #15151f;
+        color: #e8e8ef;
+        border: 1px solid #3a3a55;
+        border-radius: 6px;
+        padding: 8px 10px;
+        font-family: inherit;
+        font-size: 13px;
+        resize: vertical;
+      }
+      textarea.cmt:focus { outline: none; border-color: #ffd479; }
+      #status { font-size: 12px; color: #7fd18f; min-width: 60px; }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Galeria jednostek — 4 widoki</h1>
+      <span class="hint">Przewiń, aby renderować kolejne jednostki. Wpisz uwagi pod każdą.</span>
+      <span class="spacer"></span>
+      <span id="status"></span>
+      <button class="act" id="btn-copy">Kopiuj uwagi</button>
+      <button class="act alt" id="btn-download">Pobierz uwagi (.txt)</button>
+    </header>
+    <div id="wrap"></div>
+    <script type="module" src="/src/gallery4/main.ts"></script>
+  </body>
+</html>

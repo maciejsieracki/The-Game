@@ -1,0 +1,487 @@
+<!doctype html>
+<html lang="pl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Playbook operacyjny - The Game (Civ)</title>
+<style>
+:root{--bg:#0f1115;--ink:#e6e8ec;--mut:#9aa3b2;--acc:#5b9dff;--acc2:#ffb454;--line:#262b36;}
+*{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 -apple-system,Segoe UI,Roboto,Arial,sans-serif}
+.wrap{max-width:920px;margin:0 auto;padding:40px 24px 80px}
+h1{font-size:2rem;margin:0 0 .2em;border-bottom:3px solid var(--acc);padding-bottom:.3em}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;color:var(--acc);border-left:4px solid var(--acc);padding-left:.5em}
+h3{font-size:1.12rem;margin:1.6em 0 .4em;color:var(--acc2)}
+code{background:#0b0d11;border:1px solid var(--line);border-radius:4px;padding:.1em .4em;color:#cfe3ff}
+pre{background:#0b0d11;border:1px solid var(--line);border-radius:8px;padding:14px 16px;overflow:auto}
+pre code{border:0;padding:0} table{border-collapse:collapse;width:100%;margin:1em 0;font-size:.95em}
+th,td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+th{background:#1c2230;color:#fff} tr:nth-child(even) td{background:#13161d}
+blockquote{border-left:4px solid var(--acc2);margin:1em 0;padding:.2em 1em;background:#15171e;color:var(--mut)}
+a{color:var(--acc)} hr{border:0;border-top:1px solid var(--line);margin:2em 0} strong{color:#fff}
+.tag{display:inline-block;background:#1c2230;border:1px solid var(--line);border-radius:20px;padding:2px 12px;font-size:.8rem;color:var(--mut);margin-bottom:1.5em}
+@media print{body{background:#fff;color:#000}h2{color:#1149a8}h3{color:#a85a00}code,pre{background:#f4f5f7;color:#000}th{background:#e8ecf3;color:#000}tr:nth-child(even) td{background:#f7f8fa}}
+</style></head><body><div class="wrap">
+<div class="tag">Dokument operacyjny &middot; projekt The Game (Civ) &middot; multi-agent</div>
+<h1 id="playbook-operacyjny-the-game-civ-multi-agent">PLAYBOOK OPERACYJNY — The Game (Civ) / Multi-agent</h1>
+<p><em>Wersja 1.0 | 2026-06-24 | Język: polski | Zalążek przyszłego skilla</em></p>
+<hr />
+<h2 id="1-filozofia-os-kontrola-autonomia">1. FILOZOFIA: OŚ KONTROLA ↔ AUTONOMIA</h2>
+<p>Projekt Civ działa na osi „świadomy dobór narzędzia do zadania". Po lewej stronie osi jest pełna kontrola (Maciej zatwierdza każdy krok), po prawej — pełna autonomia (agent sam zamyka cel). Nikt nie siedzi domyślnie po jednej stronie: wybór trybu zależy <strong>wyłącznie od rodzaju zadania</strong>, nie od nastroju chwili.</p>
+<p>Dwa kluczowe reframe:
+- <strong>Pamięć = workflow = koszt tokenów.</strong> Każdy self-check (świeży agent bez historii sesji) ma jako „mózg" tylko pliki, które przeczyta na starcie. Ile musi przeczytać przy zimnym starcie — tyle kosztuje.
+- <strong>Master ma być chudy.</strong> Master deleguje i koordynuje; nie wciąga wszystkiego do swojego okna kontekstu. Im mniej master czyta przy każdym shadow-checku, tym taniej.</p>
+<hr />
+<h2 id="2-regua-doboru-trybu">2. REGUŁA DOBORU TRYBU</h2>
+<table>
+<thead>
+<tr>
+<th>Typ zadania</th>
+<th>Narzędzie</th>
+<th>Dlaczego</th>
+<th>Koszt</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Rutynowa praca lane (kod, JSON, analiza pliku)</td>
+<td><strong>Plikowy Ralph loop</strong> — self-check co godzinę</td>
+<td>Świeży agent czyta tylko swój <code>&lt;LANE&gt;.md</code> (~12–30 linii) + opcjonalnie <code>&lt;LANE&gt;-STAN.md</code>; zero gadania, zero koordynacji</td>
+<td>Najniższy — 1 zimny start/godz., wąski kontekst</td>
+</tr>
+<tr>
+<td>Research, kilka niezależnych zagadnień równolegle</td>
+<td><strong>Sub-agenci Haiku</strong></td>
+<td>Każdy w izolacji, żaden nie widzi drugiego, raport wraca do mastera; idealny do eksploracji bez ryzyka kolizji</td>
+<td>Niski — Haiku = 20× tańszy od Sonnet</td>
+</tr>
+<tr>
+<td>Zderzanie perspektyw, code review, decyzja sporna</td>
+<td><strong>Agent Team</strong> (celowo, krótko)</td>
+<td>Kilku agentów <strong>gadam ze sobą</strong> i konfrontuje znaleziska (np. security vs. wydajność vs. testy); wciąż eksperymentalne</td>
+<td>Drogi — 3 agenci × kontekst × czas; używać RZADKO i KRÓTKO</td>
+</tr>
+<tr>
+<td>Masowy batch: audyt wszystkich JSON, sweep spójności 165 tasków</td>
+<td><strong>Dynamic Workflow</strong> (JS-skrypt)</td>
+<td>Plan trzyma plik JS, nie sesja; działa bez człowieka w pętli; Haiku jako workery</td>
+<td>Bardzo drogi — zawsze PILOT 2 itemów przed pełnym biegiem + budżet tokenów</td>
+</tr>
+<tr>
+<td>„Dopchnij, aż czysto" (build/testy/balans)</td>
+<td><strong>/goal</strong> (pętla until done)</td>
+<td>Agent sam zapętla się, aż warunek sukcesu jest spełniony; max-iteracji jako bezpiecznik</td>
+<td>Średni/drogi — zależy od głębokości pętli</td>
+</tr>
+<tr>
+<td>Dwie lane'y edytują TEN SAM plik</td>
+<td><strong>Worktree isolation</strong></td>
+<td>Każdy agent pracuje na osobnym branchu; merge po zakończeniu; eliminuje kolizje i dehydrację OneDrive</td>
+<td>Koszt konfiguracji jednorazowy; eliminuje drogi manual-merge</td>
+</tr>
+</tbody>
+</table>
+<h3 id="szybka-heurystyka-decyzyjna">Szybka heurystyka decyzyjna</h3>
+<pre><code>Czy praca mieści się w 1 oknie kontekstu i należy do 1 lane?
+  TAK → Ralph loop (self-check godzinny)
+  NIE → Czy rozpada się na kawałki działające niezależnie?
+    TAK → Workflow (batch) lub Sub-agenci (research)
+    NIE → Czy trzeba zderzać perspektywy kilku ekspertów?
+      TAK → Agent Team (krótko)
+      NIE → Czy to pętla „aż czysto&quot;?
+        TAK → /goal
+        NIE → Standardowy prompt (najtaniej)
+</code></pre>
+<hr />
+<h2 id="3-zasady-kosztu-tokenow">3. ZASADY KOSZTU TOKENÓW</h2>
+<h3 id="31-gowny-lewar-zimne-starty-nie-ilosc-tekstu">3.1 Główny lewar: zimne starty, nie ilość tekstu</h3>
+<p>Koszt = <strong>liczba zimnych startów agenta × objętość kontekstu każdego startu.</strong>
+Tekst per se jest tani. Drogi jest każdy nowy agent, który musi załadować cały kontekst od zera.</p>
+<p>Konsekwencje:
+- <strong>Event-driven &gt; polling.</strong> Zamiast shadow-checku co 1 min — co 10 min (master) i co godzinę (lane). Zmiana z co-10-min na co-godzinę na 6 lane'ach = ~6× mniej zimnych startów.
+- <strong>Haiku dla workerów.</strong> Sub-agenci wykonujący rutynowe taski (JSON-audit, sweep) startują na Haiku, nie na Sonnet/Opus.
+- <strong>Budżet tokenów.</strong> Przy każdym workflowie i batch'u podać agentowi limit tokenów eksplicytnie (<code>max_tokens: N</code>); bez tego pętle nie mają hamulca.</p>
+<h3 id="32-progressive-disclosure-trojwarstwowy-kontekst-lanea">3.2 Progressive disclosure — trójwarstwowy kontekst lane'a</h3>
+<p>Zamiast czytać cały <code>&lt;LANE&gt;.md</code> przy każdym self-checku, warstwuj:</p>
+<table>
+<thead>
+<tr>
+<th>Warstwa</th>
+<th>Plik</th>
+<th>Kiedy self-check czyta</th>
+<th>Zawartość</th>
+<th>Docelowy rozmiar</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>STAN</strong></td>
+<td><code>&lt;LANE&gt;-STAN.md</code></td>
+<td>ZAWSZE (na starcie)</td>
+<td>Obecny krok, status (BLOK/OK/CZEKA), ostatnie 2 zdarzenia</td>
+<td>≤ 12 linii</td>
+</tr>
+<tr>
+<td><strong>Dyspozycja</strong></td>
+<td><code>&lt;LANE&gt;.md</code></td>
+<td>Gdy STAN sygnalizuje nowe zadanie</td>
+<td>Pełny plan lane'a, reguły, ścieżki plików</td>
+<td>~60–100 linii</td>
+</tr>
+<tr>
+<td><strong>Historia</strong></td>
+<td><code>&lt;LANE&gt;-DO-MASTERA.md</code></td>
+<td>Tylko na żądanie mastera lub przy eskalacji</td>
+<td>Pełny log Q&amp;A, raporty</td>
+<td>rosnący → decay</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Dziś:</strong> pliki <code>&lt;LANE&gt;-STAN.md</code> jeszcze nie istnieją — to punkt wdrożenia numer 1 (patrz sekcja 7).</p>
+<h3 id="33-decay-logow-do-mastera">3.3 Decay logów DO-MASTERA</h3>
+<p>Reguła: <code>&lt;LANE&gt;-DO-MASTERA.md</code> trzyma <strong>ostatnie ~10 wpisów</strong> widocznych na górze. Starsze wpisów (&gt; 2 tygodnie lub &gt; 20 wpisów) przesuwa się do <code>&lt;LANE&gt;-DO-MASTERA-arch.md</code>. Self-check <strong>nigdy nie czyta archiwum</strong> — tylko bieżący plik.</p>
+<p>Kto archiwizuje: master (shadow-check) robi decay przy regularnym przeglądzie, nie lane.</p>
+<hr />
+<h2 id="4-architektura-komunikacji-jak-to-dziaa-teraz">4. ARCHITEKTURA KOMUNIKACJI (jak to działa TERAZ)</h2>
+<pre><code>Maciej
+  └── Master (shadow-check co 10 min, chudy)
+        ├── pisze: dyspozycje/&lt;LANE&gt;.md     [master → lane]
+        └── czyta: dyspozycje/&lt;LANE&gt;-DO-MASTERA.md  [lane → master]
+              + DZIENNIK-MASTERA.md  [log zbiorczy dla Maciej]
+
+Lane (self-check co godzinę):
+  1. Czyta swój &lt;LANE&gt;.md (dyspozycja)
+  2. Wykonuje najnowszy krok
+  3. Dopisuje raport do &lt;LANE&gt;-DO-MASTERA.md (append-only, NIE kasuje)
+  4. To samo w czacie (transparentność dla Maciej)
+  5. Czyta plik od nowa → jeśli kolejny krok → bierze od razu (łańcuch)
+  6. Zatrzymuje się TYLKO przy blokadzie lub wyczerpaniu planu
+
+Handoff między lane'ami:
+  Przez _handoff/&lt;NADAWCA&gt;-do-&lt;ODBIORCA&gt;_&lt;temat&gt;.md
+  NIGDY bezpośrednia edycja cudzego lane'a
+</code></pre>
+<h3 id="wasnosc-plikow-twarda-regua">Własność plików (twarda reguła)</h3>
+<table>
+<thead>
+<tr>
+<th>Lane</th>
+<th>Pliki kodu (wyłączne)</th>
+<th>Uwaga</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SILNIK</td>
+<td><code>src/main.ts</code>, <code>Gra-podglad.html</code></td>
+<td>JEDYNY publisher kanonu</td>
+</tr>
+<tr>
+<td>EKONOMIA</td>
+<td><code>economy.ts</code>, <code>turn-economy.ts</code>, <code>upkeep.ts</code></td>
+<td></td>
+</tr>
+<tr>
+<td>MIASTO</td>
+<td><code>cities.ts</code>, <code>production.ts</code>, <code>order.ts</code>, <code>culture-religion.ts</code></td>
+<td></td>
+</tr>
+<tr>
+<td>UNITS</td>
+<td><code>units.ts</code>, <code>battle/</code> (wewnętrzne)</td>
+<td></td>
+</tr>
+<tr>
+<td>UI</td>
+<td><code>src/ui/</code></td>
+<td></td>
+</tr>
+<tr>
+<td>DANE</td>
+<td><code>src/data/</code>, JSON-y, Excele → JSON export</td>
+<td></td>
+</tr>
+<tr>
+<td>AI</td>
+<td><code>ai.ts</code></td>
+<td></td>
+</tr>
+<tr>
+<td>DYPLOMACJA</td>
+<td><code>diplomacy.ts</code></td>
+<td></td>
+</tr>
+<tr>
+<td>MAPA</td>
+<td><code>map.ts</code>, generator mapy</td>
+<td></td>
+</tr>
+<tr>
+<td>MASTER</td>
+<td><code>dyspozycje/*.md</code>, DZIENNIK</td>
+<td>Żaden lane nie pisze do cudzego <code>.md</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="5-zasady-autonomii-i-raportowania">5. ZASADY AUTONOMII I RAPORTOWANIA</h2>
+<h3 id="wdrazanie-dyspozycji">WDRAŻANIE DYSPOZYCJI</h3>
+<p>To, co master wpisze do <code>&lt;LANE&gt;.md</code> → wdraż od razu, bez pytania. Pytaj tylko gdy: brak danych do decyzji, blokada techniczna, lub master wprost prosi o potwierdzenie.</p>
+<h3 id="raportowanie-watku">RAPORTOWANIE WĄTKU</h3>
+<p>Gdy zadasz pytanie i master odpowie — zaraportuj <strong>trzy rzeczy</strong> (w czacie i w <code>&lt;LANE&gt;-DO-MASTERA.md</code>):
+1. Jakie pytanie zadałeś
+2. Co master odpowiedział
+3. Jaką metodę/decyzję przyjąłeś</p>
+<p>Maciej musi zawsze widzieć pełny wątek.</p>
+<h3 id="kana-pytan">KANAŁ PYTAŃ</h3>
+<p>Pytania ZAWSZE zwykłym tekstem w czacie + wpis do <code>&lt;LANE&gt;-DO-MASTERA.md</code>. <strong>Nigdy</strong> <code>AskUserQuestion</code> ani popup.</p>
+<hr />
+<h2 id="6-bezpieczniki">6. BEZPIECZNIKI</h2>
+<h3 id="61-max-iteracji-w-petlach">6.1 Max-iteracji w pętlach</h3>
+<p>Każda pętla agenta (Ralph loop, /goal, workflow) musi mieć jawny bezpiecznik maksymalnej liczby iteracji. Domyślne wartości:
+- Self-check godzinny: max 8 kroków per uruchomienie (potem zatrzymaj i raportuj)
+- /goal: max 20 iteracji, potem eskalacja do mastera
+- Workflow batch: max 50 sub-agentów per bieg; zacznij od pilota 2 itemów</p>
+<h3 id="62-pilot-przed-penym-biegiem">6.2 Pilot przed pełnym biegiem</h3>
+<p><strong>Twarda reguła:</strong> każdy workflow i każdy batch NIE startuje od razu na pełnej skali. Najpierw:
+1. Pilot 2 itemów → weryfikacja przez Maciej lub mastera
+2. Dopiero po OK → pełny bieg</p>
+<h3 id="63-izolacja-worktree-przy-kolizjach">6.3 Izolacja worktree przy kolizjach</h3>
+<p>Gdy 2 lub więcej lane'ów musi ruszyć ten sam plik równolegle:
+- Użyj <code>isolation: "worktree"</code> w Agent tool
+- Każdy agent na osobnym branchu
+- Merge po zakończeniu (master lub SILNIK w przypadku <code>main.ts</code>)</p>
+<p>To jest odpowiedź na problem dehydracji OneDrive + clobber przy równoległej edycji.</p>
+<h3 id="64-build-zawsze-przez-tmp">6.4 Build zawsze przez /tmp</h3>
+<p><code>npx vite build --outDir /tmp/civ-dist</code> (NIE <code>npm run build</code>, NIE <code>npx vite build</code> bez outDir — OneDrive blokuje <code>dist/</code>). Kanon publikuje <strong>tylko SILNIK</strong>, zawsze po przejściu testów smoke + battle-smoke + logic + combat.</p>
+<h3 id="65-regua-eksportu-json">6.5 Reguła eksportu JSON</h3>
+<p>Zmiany parametrów → Excel (panel Maciej) → targeted export TYLKO tego JSON-a (celowany skrypt na 1 arkusz). NIGDY <code>export-data.py</code> ani <code>npm run build</code> (regenerują wszystkie JSON-y → kasują cudzą pracę).</p>
+<hr />
+<h2 id="7-wspopraca-miedzy-laneami">7. WSPÓŁPRACA MIĘDZY LANE'AMI</h2>
+<h3 id="kiedy-przez-pliki-standard">Kiedy przez pliki (standard)</h3>
+<p>Większość handoffów: MIASTO pisze kontrakt do <code>_handoff/MIASTO-do-UI_kontrakt-produkcji.md</code>, SILNIK pobiera i wpina. Master koordynuje kolejność. Zero bezpośredniego gadania agentów.</p>
+<p>Wzorzec handoff:</p>
+<pre><code>_handoff/&lt;NADAWCA&gt;-do-&lt;ODBIORCA&gt;_&lt;temat&gt;.md
+  - Co przesyłam (API, typy, kontrakt)
+  - Co Odbiorca ma z tym zrobić
+  - Kiedy handoff jest gotowy (flaga: GOTOWE/CZEKA)
+</code></pre>
+<h3 id="kiedy-agent-team-wyjatek">Kiedy Agent Team (wyjątek)</h3>
+<p>Użyj Agent Team <strong>tylko</strong> gdy zadanie wymaga realnego zderzenia perspektyw w czasie rzeczywistym:
+- Code review z kilku kątów (security + wydajność + testy jednocześnie)
+- Decyzja projektowa z konfliktującymi trade-offami (np. balans units: szybkość vs. koszt vs. moc)
+- Wykrycie niespójności między 2–3 lane'ami (np. EKONOMIA vs. MIASTO vs. SILNIK mają sprzeczne założenia)</p>
+<p>Reguły Agent Team:
+- Krótko (&lt; 30 min sesji)
+- Max 3 agentów naraz (koszt rośnie kwadratowo)
+- Wynik → syntetyczny wpis do DZIENNIKA-MASTERA
+- Nie używaj do rutynowych zleceń (to zwykły sub-agent)</p>
+<h3 id="kiedy-adversarial-verification-osobny-weryfikator">Kiedy Adversarial Verification (osobny weryfikator)</h3>
+<p>Dla ważnych deliverables (nowy kanon Gra-podglad.html, nowa wersja mechaniki walki):
+- ODDZIELNY agent-sceptyk sprawdza wynik wg rubryki/DoD
+- NIE ten sam, co tworzył (bije self-preference)
+- Rubryka: lista checkboxów (testy przeszły / brak regresji / zachowane reguły lane)</p>
+<hr />
+<h2 id="8-specyfika-srodowiska-zagrozenia-znane">8. SPECYFIKA ŚRODOWISKA (zagrożenia znane)</h2>
+<h3 id="onedrive-dehydracja">OneDrive + dehydracja</h3>
+<p>OneDrive potrafi w sandbox-mount pokazywać ucięte pliki (plik cały w chmurze, mount zamrożony). Objawy: <code>Unexpected end of file</code>, plik ma N linii zamiast M.</p>
+<p>Zasady obrony:
+- Przed każdym buildem: <code>Read</code> (hydracja) → wait 3–5 s → retry
+- Jeśli 3 próby nie pomagają → <strong>nie rekonstruuj ręcznie</strong> → zgłoś blokadę masterowi
+- Długofalowo: folder <code>gra/</code> → „Always keep on this device" (zielony ptaszek w OneDrive)
+- Build i testy zawsze przez <code>/tmp</code> (nie przez folder OneDrive)</p>
+<h3 id="self-checki-a-kolejkowanie">Self-checki a kolejkowanie</h3>
+<p>6 self-checków co 10 min = 7 zadań w kolejce → opóźnienia + wyższy koszt. Rozwiązanie przyjęte: self-checki co godzinę, rozłożone w godzinie (np. min 13, 25, 34, 42, 48, 55). Nie zmieniać bez decyzji mastera.</p>
+<h3 id="kolizja-append-na-do-mastera">Kolizja append na DO-MASTERA</h3>
+<p><code>&lt;LANE&gt;-DO-MASTERA.md</code> jest append-only. Dwa agenty mogą pisać jednocześnie (rzadkie, bo lane mają osobne pliki). Przy wątpliwości: pisz z timestampem ISO na każdym wpisie.</p>
+<hr />
+<h2 id="9-przepyw-decyzji-krok-po-kroku-self-check-lanea">9. PRZEPŁYW DECYZJI: KROK PO KROKU (self-check lane'a)</h2>
+<pre><code>[START — co godzinę]
+  1. Wczytaj &lt;LANE&gt;-STAN.md (12 linii) — czy jest coś nowego?
+     NIE → zapisz „brak zmian&quot; + exit (1 zimny start, minimalne tokeny)
+     TAK → wczytaj pełny &lt;LANE&gt;.md
+  2. Znajdź najnowszą sekcję START / DO ZROBIENIA TERAZ / ODPOWIEDZ MASTERA
+  3. Wdroż krok (bez pytania)
+  4. Dopisz raport do &lt;LANE&gt;-DO-MASTERA.md (timestamp + treść)
+  5. To samo w czacie
+  6. Wczytaj &lt;LANE&gt;.md od nowa → kolejny krok? → idź do 3
+  7. Brak kolejnego kroku → zaktualizuj &lt;LANE&gt;-STAN.md → exit
+  BLOKADA w kroku 3 → raport + wpisz stan BLOK do &lt;LANE&gt;-STAN.md → exit
+</code></pre>
+<hr />
+<h2 id="10-co-wdrozyc-nastepnie-mapa-priorytetow">10. CO WDROŻYĆ NASTĘPNIE (mapa priorytetów)</h2>
+<table>
+<thead>
+<tr>
+<th>Priorytet</th>
+<th>Co</th>
+<th>Gdzie</th>
+<th>Efekt</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1 (wysoki)</td>
+<td>Warstwa <code>&lt;LANE&gt;-STAN.md</code> (12 linii) dla każdego lane</td>
+<td><code>dyspozycje/</code></td>
+<td>Self-check czyta ~12 linii gdy nic nowego → ~80% tańszy polling</td>
+</tr>
+<tr>
+<td>2 (wysoki)</td>
+<td>Jawny <code>MAX_ITER</code> w każdym self-checku</td>
+<td>Prompt self-checka</td>
+<td>Eliminuje nieskończone pętle</td>
+</tr>
+<tr>
+<td>3 (średni)</td>
+<td>Decay logów <code>&lt;LANE&gt;-DO-MASTERA.md</code> (ostatnie 10 wpisów widoczne, reszta do arch.)</td>
+<td>Master shadow-check</td>
+<td>Zapobiega rosnącemu kontekstowi</td>
+</tr>
+<tr>
+<td>4 (średni)</td>
+<td>Self-checki dla DYPLOMACJA, AI, MAPA (teraz brak)</td>
+<td>Scheduled tasks</td>
+<td>Pełne pokrycie lane'ów</td>
+</tr>
+<tr>
+<td>5 (niski)</td>
+<td>Adversarial verification dla każdego nowego kanonu (osobny agent-sceptyk wg rubryki)</td>
+<td>Przy każdym SILNIK→publish</td>
+<td>Eliminuje self-preference w code review</td>
+</tr>
+<tr>
+<td>6 (niski)</td>
+<td>Workflow template dla batch-auditów (audyt JSON, sweep 165 tasków)</td>
+<td><code>/workflows</code> + pilot</td>
+<td>Powtarzalne, tanie batch'e na żądanie</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="zaacznik-szybka-sciaga-dla-maciej">ZAŁĄCZNIK: Szybka ściąga dla Maciej</h2>
+<pre><code>CHCĘ:                              → UŻYJ:
+─────────────────────────────────────────────────
+Rutynowy krok w kodzie             → self-check (godzinny, tani)
+Kilka zagadnień naraz bez zależności → Sub-agenci Haiku (tanie, równoległe)
+Code review / decyzja sporna       → Agent Team (drogi, krótko, celowo)
+Audyt 100+ elementów               → Workflow + pilot 2 + Haiku
+„Buduj aż przejdą testy&quot;           → /goal + max-iter
+2 lane'y, 1 plik                   → Worktree isolation
+Pytanie lane → master              → czat + &lt;LANE&gt;-DO-MASTERA.md (tekst, nie popup)
+Wynik lane → SILNIK → kanon        → _handoff/&lt;NADAWCA&gt;-do-SILNIK_&lt;temat&gt;.md
+</code></pre>
+<h2 id="11-bezpieczniki-iteracji-twarde-limity-chronia-tokeny">11. BEZPIECZNIKI ITERACJI (twarde limity — chronia tokeny)</h2>
+<p>Kazda petla MA twardy limit. Po przekroczeniu: STOP + zglos blokade do mastera (nie miel dalej).
+- Loop-until-done (build/testy „az zielone"): <strong>MAX 3 przebiegi</strong>. Po 3 nieudanych -&gt; STOP + raport blokady.
+- Verify-loop (worker -&gt; sedzia -&gt; poprawka): <strong>MAX 2 cykle poprawek</strong> (3 wersje workera). Potem STOP + eskalacja.
+- Fan-out (rownolegle subagenty): ZAWSZE <strong>pilot 2 itemy</strong> najpierw; potem <strong>MAX 10 rownoleglych</strong>. Subagent = 1 przebieg, bez wlasnych petli.
+- Twardy bezpiecznik na ZADANIE: <strong>MAX 12 wywolan subagentow</strong> na jedno zadanie bez zgody mastera. Powyzej -&gt; STOP + pytaj.
+- Tournament: <strong>MAX 6 rund</strong>.
+- Subagenty robocze na HAIKU (chyba ze master wskaze inaczej).</p>
+<h2 id="12-wspolpraca-i-przekazywanie-plikow">12. WSPOLPRACA I PRZEKAZYWANIE PLIKOW</h2>
+<ul>
+<li>Kanal master&lt;-&gt;dzial: dyspozycje/<LANE>.md (master-&gt;dzial) + <LANE>-DO-MASTERA.md (dzial-&gt;master, APPEND-ONLY, nigdy nie nadpisuj).</li>
+<li>Dzial&lt;-&gt;dzial: NIGDY bezposrednio. Przekazujesz przez handoff: dyspozycje/<em>handoff/<OD>-do-<DO></em><temat>.md + meldunek masterowi w <LANE>-DO-MASTERA.md. Master decyduje o wpieciu.</li>
+<li>Wlasnosc plikow = twarda: edytujesz TYLKO pliki swojego dzialu. Cudzy plik -&gt; handoff + master.</li>
+<li>Dane wspoldzielone (czyta &gt;1 dzial) = definiowane RAZ w warstwie danych (DANE/JSON), reszta CZYTA. Nie duplikuj (Respekt, Profil AI cyw.).</li>
+<li>Integracja do silnika/kanonu = WYLACZNIE master. Dzial dostarcza modul + handoff z instrukcja wpiecia + DoD.</li>
+<li>Kolizja 2 agentow na 1 pliku -&gt; worktree isolation, potem merge.</li>
+<li>Pytania do mastera: w tresci czatu + dopis do <LANE>-DO-MASTERA.md (NIGDY popup/AskUserQuestion).</li>
+</ul>
+<h2 id="13-6-technik-kiedy-dzial-moze-uzyc">13. 6 TECHNIK — KIEDY DZIAL MOZE UZYC</h2>
+<table>
+<thead>
+<tr>
+<th>Technika</th>
+<th>Kiedy</th>
+<th>Limit</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>classify &amp; act</td>
+<td>NIE dzial — to master (routing)</td>
+<td>—</td>
+</tr>
+<tr>
+<td>fan-out &amp; synthesize</td>
+<td>masz &gt;1 niezalezny kawalek (audyt wielu plikow)</td>
+<td>pilot 2 -&gt; max 10, Haiku</td>
+</tr>
+<tr>
+<td>adversarial verification (sedzia)</td>
+<td>deliverable wysokiej stawki: do silnika/kanonu lub cross-lane</td>
+<td>max 2 cykle</td>
+</tr>
+<tr>
+<td>generate &amp; filter</td>
+<td>decyzje smakowe (nazwy, warianty); generator != sedzia</td>
+<td>—</td>
+</tr>
+<tr>
+<td>tournament</td>
+<td>rankingi/balans (starcia jednostek, warianty parametrow)</td>
+<td>max 6 rund</td>
+</tr>
+<tr>
+<td>loop until done</td>
+<td>„dopchnij az zielone" (build/testy)</td>
+<td>max 3 przebiegi</td>
+</tr>
+</tbody>
+</table>
+<p>Domyslnie rutyna = BEZ technik (zwykle wykonanie + wlasne testy). Techniki = do wiekszych/spornych zadan, z budzetem.</p>
+<h2 id="14-samoweryfikacja-sedzia-zakres">14. SAMOWERYFIKACJA (sedzia) — ZAKRES</h2>
+<ul>
+<li>TYLKO wysoka stawka: deliverable wpinany do silnika/kanonu ORAZ zmiana cross-lane -&gt; osobny SWIEZY agent-sedzia sprawdza wg jawnego DoD ZANIM zostanie przyjete.</li>
+<li>Rutyna w obrebie dzialu -&gt; wystarcza obiektywne testy wlasne (build/tsc/unit), bez sedziego.</li>
+<li>Sedzia != tworca. Wynik: PASS albo lista konkretnych usterek -&gt; poprawka (max 2 cykle) -&gt; STOP/eskalacja.</li>
+<li>Bramke do kanonu trzyma master.</li>
+</ul>
+<h2 id="15-zasada-backupu-rolling-1-backup-ostatnia-zielona-wersja">15. ZASADA BACKUPU (rolling — 1 backup = ostatnia ZIELONA wersja)</h2>
+<p>Przed KAZDA zmiana pliku: NAJPIERW backup pliku, ktory zmieniasz, POTEM edytuj.
+- <code>cp &lt;plik&gt; &lt;plik&gt;.bak-&lt;DZIAL&gt;</code> — backup = OSTATNIA ZIELONA wersja (przeszla testy + sedzia OK).
+- Pracujesz na pliku roboczym; backup zostaje nietkniety jako punkt przywrocenia.
+- Raportuj „zrobione" DOPIERO gdy: testy ZIELONE <strong>I</strong> sedzia OK (przy wysokiej stawce). Backup zawsze zostaje.
+- Nastepny cykl: backup NADPISUJESZ swiezym (z aktualnej dobrej wersji); nowe zmiany ida ZAWSZE do pliku roboczego — <strong>NIGDY</strong> nie pisz nowych zmian do backupu.
+- Cos padnie: <code>cp &lt;plik&gt;.bak-&lt;DZIAL&gt; &lt;plik&gt;</code> (revert do ostatniej dobrej) + zdiagnozuj roznice.
+- Trzymamy <strong>1 rolling backup per plik</strong> (ostatnia dobra) — zeby nie mnozyc plikow. Wyjatek: kanon (<code>Gra-podglad.html</code>) ma datowane lifeline-backupy w <code>gra/_backup/</code> i ich NIE nadpisujemy.</p>
+<h2 id="14a-sedzia-doprecyzowanie-maciej-2026-06-24">14a. SEDZIA — DOPRECYZOWANIE (Maciej 2026-06-24)</h2>
+<p>Bramka sedziego jest U MASTERA i obejmuje DWA przypadki:
+1. KAZDY deliverable dostarczony masterowi przez dzial (modul, plik, zadanie zakonczone) -&gt; master odpala sedziego (osobny SWIEZY agent wg jawnego DoD) ZANIM zaraportuje Maciej i ZANIM wpnie/wdrozy.
+2. WLASNE decyzje i dzialania mastera (integracja, wpiecia, zmiany silnika, publikacja kanonu) -&gt; tez przez sedziego.
+Zasada: nic nie trafia do Maciej ani do kanonu bez przejscia przez sedziego. Rutyna WEWNATRZ dzialu (przed dostarczeniem) = wlasne testy dzialu; sedzia wchodzi na BRAMCE mastera.</p>
+<h2 id="12a-kanal-pytan-korekta-2026-06-24">12a. KANAL PYTAN (korekta 2026-06-24)</h2>
+<p>Pytania DZIALU ida do MACIEJ w oknie tego dzialu (nie do mastera). Master nie rozstrzyga pytan projektowych dzialow.
+Tylko gdy Maciej sam nie zna odpowiedzi, przekazuje pytanie masterowi (lub miedzy dzialami przez mastera).
+Do mastera od dzialu ida: raporty statusu + handoffy gotowych modulow do wpiecia. Master = integracja + sedzia + kanon.</p>
+<h2 id="12b-routing-gdzie-co-definicja">12b. ROUTING — GDZIE CO (definicja)</h2>
+<ul>
+<li>PYTANIA dzialu -&gt; MACIEJ w oknie dzialu (czat). Nie do mastera.</li>
+<li>RAPORT ZMIAN/postepu -&gt; MACIEJ w oknie dzialu (czat).</li>
+<li>GOTOWE DO WPIECIA (handoff) -&gt; MASTER: dyspozycje/<em>handoff/<DZIAL>-do-MASTER</em><temat>.md + wpis w <LANE>-DO-MASTERA.md (tylko handoffy + status, nie pytania).
+Master = integracja + sedzia + kanon.</li>
+</ul>
+<h2 id="12c-protokol-zakladki-trigger-routing">12c. PROTOKOL ZAKLADKI (trigger + routing)</h2>
+<p>TRIGGER: Maciej pisze "SPRAWDZ" / "przeczytaj dyspozycje" -&gt; dzial czyta swoj <LANE>.md (nowe zadania + zmiany priorytetow) i dziala. Brak auto-petli.
+ROUTING: pytania wlasne/rozwojowe -&gt; Maciej (w oknie); skierowanie do innej zakladki -&gt; przez MASTER (handoff); gotowe do wpiecia/integracja -&gt; MASTER. Master = przepinanie + spinanie w silnik + sedzia + kanon.</p>
+<h2 id="12-routing-final-zastepuje-1212a12b12c">12-ROUTING (FINAL — zastepuje 12,12a,12b,12c)</h2>
+<p>Trzy tory pytan/komunikacji dzialu:
+1. OGOLNE / PROJEKTOWE / DECYZJE -&gt; MACIEJ (w oknie dzialu).
+2. DO INNEGO DZIALU -&gt; przez MASTERA (handoff); master rozdysponowuje.
+3. SPIECIE / INTEGRACJA SILNIKA -&gt; MASTER (handoff + DO-MASTERA); master wpina + sedzia + kanon + rozdziela dalej.
+Raport postepu -&gt; Maciej. Trigger re-czytania: "SPRAWDZ".
+Master = router miedzy dzialami + silnik + sedzia + kanon; nie rozstrzyga pytan projektowych.</p>
+<h2 id="16-tryb-modelu">16. TRYB MODELU</h2>
+<p>Dzialy = SONNET (domyslnie). Eskalacja "POTRZEBNY OPUS do <co>" tylko gdy Sonnet nie daje rady; Maciej przelacza okno recznie.
+Master = Opus (strategia/routing/werdykty); ciezka robota i tak idzie tanimi Sonnet-subagentami.</p>
+<h2 id="16a-tryb-wykonania-gdy-okna-nie-da-sie-przelaczyc-na-sonnet">16a. TRYB WYKONANIA (gdy okna nie da sie przelaczyc na Sonnet)</h2>
+<p>Dzial deleguje KAZDA istotna prace do SUBAGENTA na Sonnecie (Agent model:"sonnet"). Sesja-dzial = chuda (brief + odbior + raport). Drobiazgi inline. Eskalacja "POTRZEBNY OPUS do <co>" gdy Sonnet nie daje rady. Master juz tak robi (plastry integracji = Sonnet-subagenci).</p>
+<h2 id="17-protokol-decyzji-master-sugeruje-maciej-potwierdza-abc">17. PROTOKOL DECYZJI: MASTER SUGERUJE -&gt; MACIEJ POTWIERDZA (ABC)</h2>
+<p>Dzialy nie maja big picture i dzialaja bez kontekstu (minus rozbicia na taski). Big picture trzyma MASTER (REJESTR PRZEPLYWOW) + Maciej.
+Gdy master ma temat (komu oddac zadanie / jak zrouterowac / co zrobic cross-lane) -&gt; NIE decyduje sam. PROPONUJE Maciejowi z wlasna rekomendacja, ZAWSZE w formacie ABC. Maciej potwierdza/koryguje. Dopiero potem master rozsyla POTWIERDZONE dyspozycje do dzialow z pelnym kontekstem.
+Najpierw zrozum model gry, potem proponuj (nie wymyslaj rozwiazania bez kontekstu — patrz blad "nauka -&gt; EKONOMIA" zamiast "nauka = MIASTO").
+WYJATEK: czysto inzynierskie wpiecie JUZ zatwierdzonego modulu (build/test/kanon) — to robi master bez pytania.</p>
+<h2 id="17a-rozszerzenie-maciej-2026-06-25-kazda-decyzja-przez-abc-akceptacja-dopiero-do-dzialow">17a. ROZSZERZENIE (Maciej 2026-06-25): KAZDA decyzja przez ABC -&gt; akceptacja -&gt; dopiero do dzialow</h2>
+<p>Dotyczy KAZDEJ decyzji mastera, nie tylko routingu: design, zalozenia, wartosci, kto-co-robi, jak cos zrobic.
+SEKWENCJA: master proponuje ABC (z rekomendacja) -&gt; Maciej AKCEPTUJE/koryguje -&gt; DOPIERO WTEDY master rozsyla do dzialow.
+ZADNA decyzja nie idzie do zakladki przed akceptacja Macieja. Powod: master czasem sie myli; ABC = bramka, ktora to lapie.
+(Nadal wyjatek: czysto inzynierskie WPIECIE juz zatwierdzonego modulu = execution, nie decyzja.)</p>
+</div></body></html>

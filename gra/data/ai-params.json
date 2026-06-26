@@ -1,0 +1,382 @@
+{
+  "trudnosc_poziom1_bonus_produkcja": {
+    "wartosc": 0,
+    "sekcja": "§7 Trudność Lv1",
+    "opis": "Bonus do produkcji Pracy AI na poziomie Prostym (0 = brak; te same zasady co gracz)."
+  },
+  "trudnosc_poziom1_bonus_nauka": {
+    "wartosc": 0,
+    "sekcja": "§7 Trudność Lv1",
+    "opis": "Bonus punktów Nauki/turę AI na poziomie Prostym."
+  },
+  "trudnosc_poziom1_startowe_jednostki": {
+    "wartosc": 0,
+    "sekcja": "§7 Trudność Lv1",
+    "opis": "Dodatkowe jednostki startowe AI na poziomie Prostym."
+  },
+  "trudnosc_poziom1_startowe_miasta": {
+    "wartosc": 0,
+    "sekcja": "§7 Trudność Lv1",
+    "opis": "Dodatkowe miasta startowe AI na poziomie Prostym."
+  },
+  "trudnosc_poziom1_bonus_walka": {
+    "wartosc": 0,
+    "sekcja": "§7 Trudność Lv1",
+    "opis": "Bonus % do statystyk walki jednostek AI na poziomie Prostym."
+  },
+  "trudnosc_poziom2_bonus_produkcja": {
+    "wartosc": 0.1,
+    "sekcja": "§7 Trudność Lv2",
+    "opis": "Bonus do produkcji Pracy AI na poziomie Normalnym (+10%)."
+  },
+  "trudnosc_poziom2_bonus_nauka": {
+    "wartosc": 1,
+    "sekcja": "§7 Trudność Lv2",
+    "opis": "Bonus punktów Nauki/turę AI na poziomie Normalnym (+1/turę)."
+  },
+  "trudnosc_poziom2_startowe_jednostki": {
+    "wartosc": 1,
+    "sekcja": "§7 Trudność Lv2",
+    "opis": "Dodatkowe jednostki startowe AI na poziomie Normalnym."
+  },
+  "trudnosc_poziom2_startowe_miasta": {
+    "wartosc": 0,
+    "sekcja": "§7 Trudność Lv2",
+    "opis": "Dodatkowe miasta startowe AI na poziomie Normalnym."
+  },
+  "trudnosc_poziom2_bonus_walka": {
+    "wartosc": 0,
+    "sekcja": "§7 Trudność Lv2",
+    "opis": "Bonus % do statystyk walki jednostek AI na poziomie Normalnym."
+  },
+  "trudnosc_poziom3_bonus_produkcja": {
+    "wartosc": 0.25,
+    "sekcja": "§7 Trudność Lv3",
+    "opis": "Bonus do produkcji Pracy AI na poziomie Trudnym (+25%)."
+  },
+  "trudnosc_poziom3_bonus_nauka": {
+    "wartosc": 0,
+    "sekcja": "§7 Trudność Lv3",
+    "opis": "Bonus punktów Nauki/turę AI na poziomie Trudnym (0 = bez bonusu nauka)."
+  },
+  "trudnosc_poziom3_startowe_jednostki": {
+    "wartosc": 0,
+    "sekcja": "§7 Trudność Lv3",
+    "opis": "Dodatkowe jednostki startowe AI na poziomie Trudnym."
+  },
+  "trudnosc_poziom3_startowe_miasta": {
+    "wartosc": 1,
+    "sekcja": "§7 Trudność Lv3",
+    "opis": "Dodatkowe miasto startowe AI na poziomie Trudnym (+1 miasto)."
+  },
+  "trudnosc_poziom3_bonus_walka": {
+    "wartosc": 0.05,
+    "sekcja": "§7 Trudność Lv3",
+    "opis": "Bonus do statystyk walki jednostek AI na poziomie Trudnym (+5%)."
+  },
+  "archetype_grecy_wojsko_priorytet": {
+    "wartosc": 0,
+    "sekcja": "§8 Archetypy",
+    "opis": "Grecy: delta priorytetu wojsko (0 = bez zmiany; +1 = wyżej; −1 = niżej)."
+  },
+  "archetype_grecy_nauka_priorytet": {
+    "wartosc": 1,
+    "sekcja": "§8 Archetypy",
+    "opis": "Grecy: delta priorytetu nauka/biblioteka (+1 = Biblioteka i Koszary równorzędne)."
+  },
+  "archetype_grecy_ekonomia_priorytet": {
+    "wartosc": 0,
+    "sekcja": "§8 Archetypy",
+    "opis": "Grecy: delta priorytetu ekonomia."
+  },
+  "archetype_grecy_obrona_priorytet": {
+    "wartosc": 0,
+    "sekcja": "§8 Archetypy",
+    "opis": "Grecy: delta priorytetu obrona."
+  },
+  "archetype_rzym_wojsko_priorytet": {
+    "wartosc": 1,
+    "sekcja": "§8 Archetypy",
+    "opis": "Rzym: +1 priorytet Koszary i jednostki wojskowe."
+  },
+  "archetype_rzym_nauka_priorytet": {
+    "wartosc": 0,
+    "sekcja": "§8 Archetypy",
+    "opis": "Rzym: delta priorytetu nauka."
+  },
+  "archetype_rzym_ekonomia_priorytet": {
+    "wartosc": 0,
+    "sekcja": "§8 Archetypy",
+    "opis": "Rzym: delta priorytetu ekonomia."
+  },
+  "archetype_rzym_obrona_priorytet": {
+    "wartosc": 0,
+    "sekcja": "§8 Archetypy",
+    "opis": "Rzym: delta priorytetu obrona."
+  },
+  "archetype_chiny_wojsko_priorytet": {
+    "wartosc": -1,
+    "sekcja": "§8 Archetypy",
+    "opis": "Chiny: −1 priorytet wojsko (niechętnie budują armię na starcie)."
+  },
+  "archetype_chiny_nauka_priorytet": {
+    "wartosc": 1,
+    "sekcja": "§8 Archetypy",
+    "opis": "Chiny: +1 priorytet nauka."
+  },
+  "archetype_chiny_ekonomia_priorytet": {
+    "wartosc": 1,
+    "sekcja": "§8 Archetypy",
+    "opis": "Chiny: +1 priorytet ekonomia (budynki ekonomiczne wyżej)."
+  },
+  "archetype_chiny_obrona_priorytet": {
+    "wartosc": 0,
+    "sekcja": "§8 Archetypy",
+    "opis": "Chiny: delta priorytetu obrona."
+  },
+  "archetype_zulusi_wojsko_priorytet": {
+    "wartosc": 2,
+    "sekcja": "§8 Archetypy",
+    "opis": "Zulusi: +2 priorytet wojsko — jednostki zawsze #1."
+  },
+  "archetype_zulusi_nauka_priorytet": {
+    "wartosc": -1,
+    "sekcja": "§8 Archetypy",
+    "opis": "Zulusi: −1 priorytet nauka."
+  },
+  "archetype_zulusi_ekonomia_priorytet": {
+    "wartosc": -1,
+    "sekcja": "§8 Archetypy",
+    "opis": "Zulusi: −1 priorytet ekonomia."
+  },
+  "archetype_zulusi_obrona_priorytet": {
+    "wartosc": 0,
+    "sekcja": "§8 Archetypy",
+    "opis": "Zulusi: delta priorytetu obrona."
+  },
+  "archetype_inkowie_wojsko_priorytet": {
+    "wartosc": 0,
+    "sekcja": "§8 Archetypy",
+    "opis": "Inkowie: delta priorytetu wojsko."
+  },
+  "archetype_inkowie_nauka_priorytet": {
+    "wartosc": 0,
+    "sekcja": "§8 Archetypy",
+    "opis": "Inkowie: delta priorytetu nauka."
+  },
+  "archetype_inkowie_ekonomia_priorytet": {
+    "wartosc": 0,
+    "sekcja": "§8 Archetypy",
+    "opis": "Inkowie: delta priorytetu ekonomia."
+  },
+  "archetype_inkowie_obrona_priorytet": {
+    "wartosc": 1,
+    "sekcja": "§8 Archetypy",
+    "opis": "Inkowie: +1 priorytet obrona (Mury przy zagrożeniu)."
+  },
+  "archetype_egipt_wojsko_priorytet": {
+    "wartosc": 0,
+    "sekcja": "§8 Archetypy",
+    "opis": "Egipt: delta priorytetu wojsko."
+  },
+  "archetype_egipt_nauka_priorytet": {
+    "wartosc": 0,
+    "sekcja": "§8 Archetypy",
+    "opis": "Egipt: delta priorytetu nauka."
+  },
+  "archetype_egipt_ekonomia_priorytet": {
+    "wartosc": 1,
+    "sekcja": "§8 Archetypy",
+    "opis": "Egipt: +1 priorytet ekonomia i budynki kultury."
+  },
+  "archetype_egipt_obrona_priorytet": {
+    "wartosc": 0,
+    "sekcja": "§8 Archetypy",
+    "opis": "Egipt: delta priorytetu obrona."
+  },
+  "archetype_sumer_wojsko_priorytet": {
+    "wartosc": -1,
+    "sekcja": "§8 Archetypy",
+    "opis": "Sumerowie: −1 priorytet wojsko (dopiero po Koszarach)."
+  },
+  "archetype_sumer_nauka_priorytet": {
+    "wartosc": 2,
+    "sekcja": "§8 Archetypy",
+    "opis": "Sumerowie: +2 priorytet nauka — Nauka zawsze #1."
+  },
+  "archetype_sumer_ekonomia_priorytet": {
+    "wartosc": 0,
+    "sekcja": "§8 Archetypy",
+    "opis": "Sumerowie: delta priorytetu ekonomia."
+  },
+  "archetype_sumer_obrona_priorytet": {
+    "wartosc": 0,
+    "sekcja": "§8 Archetypy",
+    "opis": "Sumerowie: delta priorytetu obrona."
+  },
+  "dyplomacja_strach_prog_nap": {
+    "wartosc": 60,
+    "sekcja": "§6 Dyplomacja",
+    "opis": "Próg Respekt/Strach gracza wobec AI, po którym AI proponuje NAP lub trybut."
+  },
+  "dyplomacja_strach_prog_trybut": {
+    "wartosc": 60,
+    "sekcja": "§6 Dyplomacja",
+    "opis": "Próg Respekt/Strach AI wobec gracza, po którym AI może żądać trybutu."
+  },
+  "dyplomacja_relacja_handel": {
+    "wartosc": 30,
+    "sekcja": "§6 Dyplomacja",
+    "opis": "Minimalna Relacja ogólna (>30) wymagana do propozycji prostego handlu."
+  },
+  "dyplomacja_relacja_startowa_rywale": {
+    "wartosc": -20,
+    "sekcja": "§6 Dyplomacja",
+    "opis": "Startowa Relacja rywali tego samego archetypu (zawsze wroga, np. −20)."
+  },
+  "dyplomacja_relacja_prog_wojna": {
+    "wartosc": -40,
+    "sekcja": "§6 Dyplomacja",
+    "opis": "Relacja ≤ wartość → poboczna AI może wypowiedzieć wojnę."
+  },
+  "dyplomacja_max_propozycji_ture": {
+    "wartosc": 1,
+    "sekcja": "§6 Dyplomacja",
+    "opis": "Max liczba propozycji dyplomatycznych wysyłanych przez AI do jednego gracza/tury."
+  },
+  "dyplomacja_zdrowie_armii_pokój": {
+    "wartosc": 0.4,
+    "sekcja": "§6 Dyplomacja",
+    "opis": "Próg HP armii AI (% startowego) poniżej którego AI wysyła propozycję pokoju."
+  },
+  "ai_wycofanie_hp_prog": {
+    "wartosc": 0.3,
+    "sekcja": "§2 Ruch",
+    "opis": "Próg Health (% startowego) poniżej którego jednostka AI wycofuje się do obozu/miasta."
+  },
+  "ekspansja_min_dystans_miast": {
+    "wartosc": 5,
+    "sekcja": "§3 Ekspansja",
+    "opis": "Minimalna odległość (pola heksagonalne) między miastami AI przy zakładaniu nowego."
+  },
+  "ekspansja_zagroz_zasieg": {
+    "wartosc": 5,
+    "sekcja": "§3/§4 Ekspansja",
+    "opis": "Zasięg (pola) od miasta AI, przy którym ustawiana jest flaga ZAGROŻENIE."
+  },
+  "ekspansja_heurystyka_zywnosc_pkt": {
+    "wartosc": 3,
+    "sekcja": "§3 Ekspansja",
+    "opis": "Punkty za pole z Żywnością ≥ 3 przy heurystyce wyboru lokalizacji miasta."
+  },
+  "ekspansja_heurystyka_praca_pkt": {
+    "wartosc": 2,
+    "sekcja": "§3 Ekspansja",
+    "opis": "Punkty za pole z Pracą ≥ 2."
+  },
+  "ekspansja_heurystyka_handel_pkt": {
+    "wartosc": 1,
+    "sekcja": "§3 Ekspansja",
+    "opis": "Punkty za pole z Handlem ≥ 1."
+  },
+  "ekspansja_heurystyka_rzeka_pkt": {
+    "wartosc": 2,
+    "sekcja": "§3 Ekspansja",
+    "opis": "Punkty za sąsiedztwo rzeki."
+  },
+  "ekspansja_heurystyka_surowiec_pkt": {
+    "wartosc": 2,
+    "sekcja": "§3 Ekspansja",
+    "opis": "Punkty za dostęp do surowca (ruda, glina, kamień)."
+  },
+  "ekspansja_heurystyka_granica_kara": {
+    "wartosc": -3,
+    "sekcja": "§3 Ekspansja",
+    "opis": "Kara punktowa za bliskość granicy wroga < 5 pól."
+  },
+  "barbarzyncy_start_tura": {
+    "wartosc": 5,
+    "sekcja": "§5 Barbarzyncy",
+    "opis": "Pierwsza tura, od ktorej barbarzyncy sa aktywni (spawny/ruch)."
+  },
+  "barbarzyncy_max_obozy": {
+    "wartosc": 6,
+    "sekcja": "§5 Barbarzyncy",
+    "opis": "Maksymalna liczba obozow barbarzynskich na mapie naraz."
+  },
+  "barbarzyncy_min_dystans_miasto": {
+    "wartosc": 5,
+    "sekcja": "§5 Barbarzyncy",
+    "opis": "Min. odleglosc (heks) nowego obozu od dowolnego miasta."
+  },
+  "barbarzyncy_odstep_obozow": {
+    "wartosc": 6,
+    "sekcja": "§5 Barbarzyncy",
+    "opis": "Min. odleglosc (heks) miedzy obozami."
+  },
+  "barbarzyncy_interwal_spawnu": {
+    "wartosc": 6,
+    "sekcja": "§5 Barbarzyncy",
+    "opis": "Co ile tur oboz tworzy jednostke (reset po spawnie)."
+  },
+  "barbarzyncy_jednostek_na_oboz": {
+    "wartosc": 2,
+    "sekcja": "§5 Barbarzyncy",
+    "opis": "Limit zywych barbarzyncow liczony w promieniu kontroli obozu."
+  },
+  "barbarzyncy_zasieg_kontroli": {
+    "wartosc": 3,
+    "sekcja": "§5 Barbarzyncy",
+    "opis": "Promien (heks) liczenia jednostek nalezacych do obozu (limit)."
+  },
+  "barbarzyncy_zasieg_agresji": {
+    "wartosc": 6,
+    "sekcja": "§5 Barbarzyncy",
+    "opis": "Goni cele w tym promieniu (heks); dalej bezczynny przy obozie."
+  },
+  "barbarzyncy_prog_odwrotu_hp": {
+    "wartosc": 0.3,
+    "sekcja": "§5 Barbarzyncy",
+    "opis": "Ulamek HP (0..1) ponizej ktorego jednostka wraca do obozu."
+  },
+  "archetype_celtowie_wojsko_priorytet": {
+    "wartosc": 2,
+    "sekcja": "§8 Archetypy",
+    "opis": "Celtowie: +2 priorytet wojsko — szarże i najazdy (podobnie jak Zulusi)."
+  },
+  "archetype_celtowie_nauka_priorytet": {
+    "wartosc": -1,
+    "sekcja": "§8 Archetypy",
+    "opis": "Celtowie: −1 priorytet nauka (druydzi to wyjątek, nie reguła)."
+  },
+  "archetype_celtowie_ekonomia_priorytet": {
+    "wartosc": 0,
+    "sekcja": "§8 Archetypy",
+    "opis": "Celtowie: delta priorytetu ekonomia (oppida = handel lokalny, neutralny)."
+  },
+  "archetype_celtowie_obrona_priorytet": {
+    "wartosc": 1,
+    "sekcja": "§8 Archetypy",
+    "opis": "Celtowie: +1 priorytet obrona (oppida = warowne osady)."
+  },
+  "archetype_germanie_wojsko_priorytet": {
+    "wartosc": 2,
+    "sekcja": "§8 Archetypy",
+    "opis": "Germanie: +2 priorytet wojsko — furia bojowa, zawsze armia #1."
+  },
+  "archetype_germanie_nauka_priorytet": {
+    "wartosc": -1,
+    "sekcja": "§8 Archetypy",
+    "opis": "Germanie: −1 priorytet nauka (plemiona, nie cywilizacja uczona)."
+  },
+  "archetype_germanie_ekonomia_priorytet": {
+    "wartosc": -1,
+    "sekcja": "§8 Archetypy",
+    "opis": "Germanie: −1 priorytet ekonomia (gospodarka plemienna, barter)."
+  },
+  "archetype_germanie_obrona_priorytet": {
+    "wartosc": 0,
+    "sekcja": "§8 Archetypy",
+    "opis": "Germanie: delta priorytetu obrona (lasy = naturalna obrona, nie mury)."
+  }
+}
