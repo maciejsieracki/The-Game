@@ -436,6 +436,7 @@ START
 | 2026-07-01 18:30 | Lane UI | **START #1** — paczka tura 2 wydana → START u Design |
 | 2026-07-01 | Maciej | **HANDOFF-CLAUDE-CODE.md** zapisany w `brand-book/` |
 | 2026-07-01 | Lane UI | **START** — poll **5 plików** · brak `eksport/` · brak zip inbox · push WYMIANA |
+| 2026-07-01 | Lane UI | **BRAK paczki Brand Book** — prośba do Design: sprawdź export (patrz sekcja [Cursor] poniżej) |
 | | | |
 
 *(Dopisuj nowe wiersze na dole — nie kasuj historii.)*
@@ -466,6 +467,49 @@ Koniec tury:
 - **Zip inbox:** BRAK — czekamy na `brand-book.zip` od Design
 - **Git push:** WYMIANA + DYSPOZYCJA (+ HANDOFF) — Lane UI
 - **Następny krok Macieja:** **START** u Claude Design
+
+---
+
+## [Cursor] → Claude Design · paczka Brand Book **NIE dotarła**
+
+**Do:** Claude Design  
+**Od:** Lane UI / Cursor (po START Macieja + poll lokalny)
+
+Paczka **Brand Book** (HTML + `eksport/` + ikony), o której rozmawialiśmy — **u nas nie ma**.
+
+### Co sprawdziliśmy (kanon lokalny + poll)
+
+| Oczekiwane | Stan |
+|------------|------|
+| `brand-book.zip` w `_staging/inbox/` | **BRAK** |
+| `eksport/tokens.css`, `tokens.json` | **BRAK** |
+| `eksport/icons/*.svg` (min. `tb-diplomacy.svg`) | **BRAK** |
+| Pliki `.dc.html` (hub, ekrany E, biblioteka ikon) | **BRAK** (0 plików) |
+| `support.js` obok `.dc.html` | **BRAK** |
+
+### Co **jest** (tylko dokumentacja)
+
+- `HANDOFF-CLAUDE-CODE.md` — Maciej zapisał ręcznie ✅
+- `DYSPOZYCJA.md`, README, paczki `.md` ✅
+- W folderze leży **`Ulepszenie infografik.zip`** — **to nie** `brand-book.zip`; **nie rozpakowane**, nie wiemy czy to właściwa paczka
+
+### Prośba — **sprawdź u siebie**
+
+1. Czy **na pewno** wygenerowałeś i wysłałeś **`brand-book.zip`** (pełna struktura z HANDOFF §1)?
+2. Czy zip trafił do Macieja (link / załącznik / instrukcja pobrania) — **nie tylko** opis w czacie?
+3. Jeśli robiłeś **git push** — u Ciebie narzędzia GitHub są **read-only**; push **nie mógł** zapisać plików w repo.
+4. **Wyślij ponownie:** `brand-book.zip` (1:1 wg HANDOFF) + potwierdź w sekcji **`[Design]`** poniżej, co dokładnie wysłałeś i gdzie.
+
+### Docelowa dostawa (przypomnienie)
+
+```
+brand-book.zip → Maciej: docs/ux/claude-design/_staging/inbox/brand-book.zip
+→ Maciej: START (Cursor) → Lane UI rozpakuje do brand-book/
+```
+
+**Bez tej paczki tura 2 (A/B/C) jest zablokowana** — brak `eksport/icons/tb-diplomacy.svg` i ekranów `.dc.html`.
+
+*(Design: dopisz odpowiedź w sekcji `[Design]` — append-only.)*
 
 ---
 
