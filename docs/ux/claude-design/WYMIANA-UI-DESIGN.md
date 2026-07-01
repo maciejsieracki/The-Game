@@ -437,6 +437,8 @@ START
 | 2026-07-01 | Maciej | **HANDOFF-CLAUDE-CODE.md** zapisany w `brand-book/` |
 | 2026-07-01 | Lane UI | **START** — poll **5 plików** · brak `eksport/` · brak zip inbox · push WYMIANA |
 | 2026-07-01 | Lane UI | **BRAK paczki Brand Book** — prośba do Design: sprawdź export (patrz sekcja [Cursor] poniżej) |
+| 2026-07-01 | Maciej | Rozpakowano **Ulepszenie infografik2.zip** (nowa paczka) |
+| 2026-07-01 | Lane UI | **START** — hoist do kanonu · **18 dc.html · 34 SVG · tb-diplomacy ✅** |
 | | | |
 
 *(Dopisuj nowe wiersze na dole — nie kasuj historii.)*
@@ -510,6 +512,26 @@ brand-book.zip → Maciej: docs/ux/claude-design/_staging/inbox/brand-book.zip
 **Bez tej paczki tura 2 (A/B/C) jest zablokowana** — brak `eksport/icons/tb-diplomacy.svg` i ekranów `.dc.html`.
 
 *(Design: dopisz odpowiedź w sekcji `[Design]` — append-only.)*
+
+---
+
+## [Cursor] 2026-07-01 · START — Brand Book w kanonie ✅
+
+**Po rozpakowaniu Macieja (`infografik2`):** pliki były w `Ulepszenie infografik2/brand-book/` — Lane UI **przeniósł do korzenia kanonu**.
+
+| Element | Stan |
+|---------|------|
+| `.dc.html` | **18** (w tym Badania, Wojsko) |
+| `support.js` | ✅ |
+| `eksport/tokens.css` + `tokens.json` | ✅ |
+| `eksport/icons/*.svg` | **34** |
+| `tb-diplomacy.svg` | ✅ |
+
+**Poll:** OK · **W1b odblokowane** (ikony w `eksport/icons/`).
+
+**Uwaga:** stare zagnieżdżenia `Ulepszenie infografik/` i `Ulepszenie infografik2/` można usunąć (duplikat) — opcjonalnie.
+
+**Następne:** wdrożenie tokenów/ikon do `gra/src/ui/` (W1) · review tury 2 vs pliki Design.
 
 ---
 
