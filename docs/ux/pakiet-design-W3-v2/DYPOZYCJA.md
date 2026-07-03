@@ -6,10 +6,24 @@
 
 ---
 
-## Screenshoty baseline (w repo)
+## GDZIE SĄ PLIKI (Design — GitHub)
 
-**Folder:** `docs/ux/referencje-w3-screenshots/`  
-**Indeks:** `docs/ux/referencje-w3-screenshots/README.md`
+**Repo:** https://github.com/maciejsieracki/The-Game · branch **`main`**
+
+**START (otwórz pierwszy):**  
+https://github.com/maciejsieracki/The-Game/blob/main/docs/ux/DESIGN-W3-v2-GITHUB-START.md
+
+Tam są linki do screenshotów, dyspozycji, tokenów i HUD Kit.
+
+**Zip (cały pakiet):**  
+https://github.com/maciejsieracki/The-Game/raw/main/docs/ux/W3-miasto-design-pakiet-v2.zip
+
+---
+
+## Screenshoty baseline (GitHub)
+
+**Folder:** https://github.com/maciejsieracki/The-Game/tree/main/docs/ux/referencje-w3-screenshots  
+**Indeks:** https://github.com/maciejsieracki/The-Game/blob/main/docs/ux/referencje-w3-screenshots/README.md
 
 | # | Plik | Zakładka |
 |---|------|----------|
@@ -27,12 +41,65 @@ To **źródło prawdy wizualne** — mockup v2 ma odwzorować strukturę z tych 
 
 ## Dla Macieja — wklej designerowi (copy-paste)
 
-**Krok 1 — jedna wiadomość tekstowa** (całość poniżej, od `START` do końca bloku).
-
-**Krok 2 — załączniki:** jeśli designer **nie ma repo**, dołącz zip folderu `docs/ux/referencje-w3-screenshots/` (7 PNG + README).  
-Jeśli ma repo Civ — wystarczy ścieżka w wiadomości.
+Wklej **cały blok** poniżej (linki GitHub — działają bez dostępu do dysku Macieja):
 
 ```
+START — W3-miasto-zakladki-v2
+
+Projekt na GitHubie (branch main):
+https://github.com/maciejsieracki/The-Game
+
+OTWÓRZ PO KOLEI (linki — klikaj w przeglądarce):
+
+1) START — mapa wszystkich plików:
+https://github.com/maciejsieracki/The-Game/blob/main/docs/ux/DESIGN-W3-v2-GITHUB-START.md
+
+2) Instrukcja txt:
+https://github.com/maciejsieracki/The-Game/blob/main/docs/ux/pakiet-design-W3-v2/START-DESIGN-W3-v2.txt
+
+3) Dyspozycja (spec 7 zakładek + górny pasek B-02):
+https://github.com/maciejsieracki/The-Game/blob/main/dyspozycje/_handoff/UI-do-DESIGN_w3-miasto-zakladki-v2-2026-07-03.md
+
+4) Screenshoty z gry (baseline — folder):
+https://github.com/maciejsieracki/The-Game/tree/main/docs/ux/referencje-w3-screenshots
+
+   Zakładki prawego railu (7):
+   https://github.com/maciejsieracki/The-Game/blob/main/docs/ux/referencje-w3-screenshots/01-wzrost-ludnosci-spichlerz.png
+   https://github.com/maciejsieracki/The-Game/blob/main/docs/ux/referencje-w3-screenshots/02-podzial-handlu-zamoznosc.png
+   https://github.com/maciejsieracki/The-Game/blob/main/docs/ux/referencje-w3-screenshots/03-podzial-pracy.png
+   https://github.com/maciejsieracki/The-Game/blob/main/docs/ux/referencje-w3-screenshots/04-porzadek.png
+   https://github.com/maciejsieracki/The-Game/blob/main/docs/ux/referencje-w3-screenshots/05-zdrowie-miasta.png
+   https://github.com/maciejsieracki/The-Game/blob/main/docs/ux/referencje-w3-screenshots/06-kultura.png
+   https://github.com/maciejsieracki/The-Game/blob/main/docs/ux/referencje-w3-screenshots/07-religia.png
+
+   GÓRNY PASEK ZASOBÓW (B-02 — osobny screenshot):
+   https://github.com/maciejsieracki/The-Game/blob/main/docs/ux/referencje-w3-screenshots/08-gorny-pasek-zasobow-B02.png
+
+5) Styl 1E:
+   tokens: .../docs/ux/pakiet-design-W3-v2/styl-1E/tokens.css
+   HUD Kit: .../docs/ux/pakiet-design-W3-v2/styl-1E/HUD-Kit-1E.dc.html
+
+Opcjonalnie — pobierz cały zip:
+https://github.com/maciejsieracki/The-Game/raw/main/docs/ux/W3-miasto-design-pakiet-v2.zip
+
+ZADANIE: mockup v2 = ten sam układ co screenshoty + styl 1E. NIE wymyślaj gameplayu.
+Stare „Miasto Zakładki W3 cz1/cz2” — NIE używaj.
+
+DELIVERABLE:
+• The Game - Miasto Zakładki W3 v2 (1E).dc.html — 7 zakładek + stopka surowce
+• The Game - Miasto Gorny pasek B02 v2 (1E).dc.html — LUB osobna klatka w tym samym pliku
+• Górny pasek: chipy Praca / Skarbiec / Kultura / Religia / Nauka — SVG 1E, bez emoji
+• Zip zwrotny · NIE TypeScript
+
+Potwierdź start po otwarciu linku nr 1.
+```
+
+---
+
+## Stara wklejka (tylko ścieżki repo — NIE dla designera bez dostępu)
+
+<details>
+<summary>Rozwiń — wersja techniczna (lane / repo)</summary>
 START — W3-miasto-zakladki-v2
 
 Kontekst: panele miasta SĄ już w grze (Gra-podglad.html). Lane UI zaimplementował prawy panel
@@ -76,6 +143,8 @@ NIE koduj TypeScript. Po Twoim mockupie lane UI tylko dopasuje CSS w cityPanel.t
 Potwierdź start jednym zdaniem i idź krok po kroku przez dyspozycję.
 ```
 
+</details>
+
 ---
 
 ## Stan faktów (audyt 2026-07-03)
@@ -101,6 +170,41 @@ Potwierdź start jednym zdaniem i idź krok po kroku przez dyspozycję.
 - **Lewy rail (2):** budowa, rekrutacja → lewy panel produkcji  
 - **Prawy rail (7):** spichlerz, handel, praca, porządek, zdrowie, kultura, religia  
 - **Stopka stała** na każdej zakładce prawej: **SUROWCE W ZASIĘGU** (grid 2×2)
+
+---
+
+## B-02 · Górny pasek zasobów miasta (`renderCivResourceTopBar`)
+
+**Rejestr UX:** B-02 · **Screenshot:** `08-gorny-pasek-zasobow-B02.png`
+
+**GitHub:** https://github.com/maciejsieracki/The-Game/blob/main/docs/ux/referencje-w3-screenshots/08-gorny-pasek-zasobow-B02.png
+
+Lane UI (Cursor) zrobił **poziomy pasek chipów** u góry panelu miasta — działa, ale **bez polishu 1E** (emoji, kolory ad hoc). Design ma narysować wersję docelową **spójną z HUD Kit 6C**.
+
+### Co jest w grze dziś (baseline — nie zmieniaj semantyki)
+
+| Chip | Etykieta | Wartość główna | Dopiski (split) |
+|------|----------|----------------|-----------------|
+| 1 | **Praca** | suma /t miasta | złoty = budynki · niebieski = ulepszenia |
+| 2 | **Skarbiec** | netto 💰 /t | złoty = handel→skarb · fiolet = handel→zamożność (W) |
+| 3 | **Kultura** | /t miasta | — |
+| 4 | **Religia** | wierni /t | — |
+| 5 | **Nauka** | /t miasta | ikona sowy (SVG w kodzie) |
+
+- Pasek = **jeden segment** z separatorami pionowymi między chipami (jak na screenshotcie).
+- Każdy chip = **przycisk** (klik → karta szczegółów B-03…B-08) — w mockupie można pokazać `:hover`.
+- **Zero emoji** — ikony z `brand-book/eksport/icons/` (hammer, coin, masks, temple, science).
+- Kolory delt: zielony +, czerwony −, złoty/neutral, niebieski ulepszenia, fiolet W.
+
+### Co NIE wchodzi w ten pasek (W3)
+
+Żywność, ludność, garnizon, porządek — w layoucie W3 są **gdzie indziej** (badge miasta, okolica). **Nie dodawaj** ich do tego paska w mockupie.
+
+### Deliverable B-02
+
+- Osobna klatka **1920×120** (sam pasek na ciemnym tle) **lub** sekcja w pliku zakładek v2.
+- Wariant **hover** na chipie Praca (opcjonalnie).
+- Spójność z `HUD-Kit-1E.dc.html` (chipy mapy).
 
 ---
 
@@ -215,6 +319,7 @@ Grid **2×2** na każdej zakładce prawej:
 ## Checklist Design (samokontrola)
 
 - [ ] 7 klatek prawego panelu + stopka surowce identyczna
+- [ ] **B-02 górny pasek zasobów** (5 chipów + splity) — screenshot 08
 - [ ] Medallion rail W3 (okrągłe ikony cp-*) — aktywna złota obwódka
 - [ ] Wszystkie suwaki jak w HUD Kit / Grupa C (1E)
 - [ ] Zero emoji Unicode

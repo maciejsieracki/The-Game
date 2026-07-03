@@ -14,7 +14,9 @@
 | `05-zdrowie-miasta.png` | Zdrowie miasta | `zdrowie` |
 | `06-kultura.png` | Kultura | `kultura` |
 | `07-religia.png` | Religia | `religia` |
+| `08-gorny-pasek-zasobow-B02.png` | **Górny pasek zasobów** (B-02) | `renderCivResourceTopBar` |
 
-**Uwaga:** na każdym screenshocie widać wspólną stopkę **SUROWCE W ZASIĘGU** (grid 2×2).
+**Uwaga:** na screenshotach zakładek widać wspólną stopkę **SUROWCE W ZASIĘGU** (grid 2×2).  
+Screenshot **08** = osobno górny pasek chipów (Praca, Skarbiec, Kultura, Religia, Nauka).
 
 **Dyspozycja Design:** `dyspozycje/_handoff/UI-do-DESIGN_w3-miasto-zakladki-v2-2026-07-03.md`

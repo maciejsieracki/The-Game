@@ -16,9 +16,13 @@ KROK 1 — DYPOZYCJA
 ------------------
 https://github.com/maciejsieracki/The-Game/blob/main/dyspozycje/_handoff/UI-do-DESIGN_w3-miasto-zakladki-v2-2026-07-03.md
 
-KROK 2 — SCREENSHOTY (folder — 7 PNG)
+KROK 2 — SCREENSHOTY (folder)
 --------------------------------------
 https://github.com/maciejsieracki/The-Game/tree/main/docs/ux/referencje-w3-screenshots
+
+  • 01–07 = zakładki prawego railu
+  • 08 = GÓRNY PASEK ZASOBÓW (B-02):
+https://github.com/maciejsieracki/The-Game/blob/main/docs/ux/referencje-w3-screenshots/08-gorny-pasek-zasobow-B02.png
 
 KROK 3 — STYL 1E
 ----------------
