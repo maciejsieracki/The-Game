@@ -4,11 +4,797 @@ Append-only. Source of truth operacyjny projektu Civ.
 
 ---
 
-## [2026-07-04 ~08:00] SYNC-EKSPORT: MASTER-Work → eksport-pelny/MASTER-Work_KORESPONDENCJA.md (trigger: `reguły`)
+## [2026-07-04 ~21:28] MASTER · **ZIP POLE-BITWY v4** na dysku → port UI
+
+**Plik:** `docs/ux/claude-design/POLE-BITWY-HUD-v4-2026-07-04.zip` · rozpakowany do `claude-design/`  
+**Deliverables:** C06 v4 (3 klatki) · C09 v4 · DESIGN-do-UI · MANIFEST  
+**Następny:** lane UI port skin → review Opus → kanon POLE-BITWY
 
 ---
 
-## [2026-07-04 ~08:10] Maciej · **B+C+C** — wpięcie mockupów · push modal · START Design C
+**Plik:** `docs/ux/DESIGN-SPEC-POLE-BITWY-HUD-v4-2026-07-04.md`  
+**Kluczowe:** C06 3 klatki · C09 w kontekście mapy · panel ~368px · rail 56px · mapa B · minimapa TAK · log NIE  
+**Otwarte ABC:** Start walki czerwony vs złoty — playtest po ZIP  
+**Design:** praca w toku · lane UI STOP do ZIP
+
+---
+
+## [2026-07-04 ~20:52] Maciej · **POLE-BITWY / C-06 werdykt** ✅ → Design v4 START
+
+**Hak 1 treść OK:** lewy panel = roster (nie formacje) · F1/F2/F3 = dolny toolbar · deploy pasek TAK · bez LOGI/USTAWIENIA na deploy · Start walki CTA · oblężenie później  
+**Hak 2 wygląd A:** szkic funkcjonalny OK · Design v4 (1E) · v2/v3 archiwum  
+**ZLECENIE-ID:** `POLE-BITWY-HUD-v4-2026-07-04` · paczka 1 = deploy + AUTO + R + roster  
+**Archiwum:** `docs/archiwum-czatow/maciej-decyzje/POLE-BITWY-werdykt_2026-07-04.md`  
+**Następny:** Design (wklejka) → po ZIP lane UI port skin
+
+---
+
+## [2026-07-04 ~21:00] UI lane · **POLE-BITWY krok 1 review pack** → czeka Maciej Hak 2
+
+**Workflow:** review HTML (jak A-06) przed Design v4 · `docs/ux/export/C-POLE-BITWY-review-3stany.html`  
+**Meldunek:** `dyspozycje/UI-DO-MASTERA.md` → **GOTOWE**  
+**STOP:** Design · port skin — dopiero po werdykcie Macieja (Hak 1 treść już OK ~20:35)
+
+---
+
+## [2026-07-04 ~20:48] Maciej → MASTER · **CUDA G1 zamknięte** (ABC) ✅
+
+**Decyzje:** `docs/decyzje/D-CUD-G1A-G1D-ZAMK-2026-07-04.md`
+
+| ID | Werdykt |
+|----|---------|
+| **G1A** | **Własny** — budowa z **ulepszeń terenu**, hex w zasięgu, Praca/¤ (nie kolejka miasta) |
+| **G1B** | **B** — `wymagaTerenu` twarda bramka |
+| **G1C** | **A** — cud R = 100% bonusów |
+| **G1D** | **A** — ×3 `bonusy.miasto` |
+| **G1-ZAMK** | Faza1: utrzymanie + absolut + 50% + turystyka +10 handlu (najbliższe miasto); faza2: yield ×3 |
+
+**Handoffy:**
+- `dyspozycje/_handoff/MASTER-do-SILNIK_cuda-zamkniecie-2026-07-04.md`
+- `dyspozycje/_handoff/MASTER-do-EKONOMIA_CUDA-G2-2026-07-04.md`
+
+**Backlog:** lista ABC cuda nr 5–30 — **odłożona**
+
+**Następny:** MASTER → lane SILNIK (refaktor budowy) + EKONOMIA (G2 faza 1)
+
+---
+
+## [2026-07-04 ~20:45] Maciej · **Miasta 3D roster 15** — decyzja mapowania
+
+**Decyzja (zamknięta):**
+
+| Nacja | Model |
+|-------|-------|
+| Harappa, Babilonia, Asyria | = **Sumer** |
+| Hetyci, Fenicjanie | = **Hetyci** (nowy mesh, szary kamień) |
+| Słowianie | = **Germanie** |
+| Pozostałe 9 | bez zmian (dedykowane) |
+
+**Reguła epok:** brąz zostaje na żelazo (bez upgrade wizualnego).
+
+**Kod (reuse):** `IKONA_TO_BRONZE` — harappa, babilonia, asyria→sumer; slowianie→germanie (`gra/` + `gra-robocza`).
+
+**CZEKA MAPA:** ~~mesh `hetyci`~~ **GOTOWE v1** (2026-07-04) — sign-off Maciej + kanon
+
+---
+
+## [2026-07-04 ~20:35] Maciej · **POLE-BITWY sign-off** ✅ → dyspozycja Design 1E UI
+
+**Werdykt:** funkcjonalnie **OK** (AUTO/R, Taktyka, filtry, Grupuj, konnica).
+
+**Uwaga (backlog, nie P0):** walki trwają zbyt długo → **balans później** (UNITS/CYW), nie blokuje.
+
+**Handoff zamknięty:** `UI-do-SILNIK_pole-bitwy-ui-batch-20260704.md` → **ZAMKNIĘTE**
+
+**Nowa dyspozycja:** `MASTER-do-UI_pole-bitwy-design-1E-2026-07-04.md` → lane **UI** (port mockupów C-06/C-07/C-09)
+
+**Master:** czeka meldunek `UI-DO-MASTERA` → review → F (kanon)
+
+---
+
+## [2026-07-04 ~20:55] MASTER · batch MAPA fair-play → **gra-robocza**
+
+**Build:** vite → `$TEMP\civ-dist` · bramka: relief/rzeki/fair-play/smoke **ZIELONE**
+
+**Robocza md5:** `5cbb78351b9982405e36c2b0cff41713` · **Start:** `gra-robocza/START.html`
+
+**Kanon:** nie promowany (czeka Opus review MAPA batch)
+
+---
+
+## [2026-07-04 ~20:34] MAPA · siatki 15/25 (Maciej: woda+miedź / żelazo)
+
+**Decyzja:** woda + ruda brązu **15×15** (min 1 woda, min 2 wzgórza) · żelazo **25×25** (min 2 góry).
+
+**Kod:** `waterCoverageCellSize`, `copperCoverageCellSize`, `ironCoverageCellSize`, `topUpRiverGridCoverage`.
+
+**Testy:** relief 6/6 · rzeki 6/6 · fair-play 6/6.
+
+---
+
+## [2026-07-04 ~20:30] MAPA · fair play siatka — wszystkie zasoby (Maciej)
+
+**Cel:** koniec wielkich klastrów gór/wzgórz; równomiernie surowce, lasy, relief.
+
+**Kod:** `applyReliefToLandKeys` per komórka + rozstaw Poisson · `ensureDepositGridCoverage` · `ensureForestGridCoverage` · `docs/obieg/MAPA-FAIR-PLAY-SIATKA.md`
+
+**Testy:** relief 3/3 · fair-play 6/6 PASS · **kanon:** czeka build
+
+---
+
+## [2026-07-04 ~19:15] MAPA · siatka reliefu + spec (Maciej: fair play rud)
+
+**Problem:** góry/wzgórza w klastrach → część cywilizacji bez żelaza/miedzi.
+
+**Fix:** `ensureReliefGridCoverage` — co **25×25** hex min. Góry + Wzgórza; po finalnym lądzie, przed złożami.
+
+**Docs:** `docs/obieg/MAPA-RELIEF-SPEC.md` · test: `relief-grid-coverage-test.cjs` (3/3 PASS)
+
+**ABC:** relief A=20 · **B=25** · C=50 hex
+
+**Kanon md5:** **`24ad7deb581201cedfe64464fdce1835`**
+
+---
+
+## [2026-07-04 ~19:10] DOCS · spec rzek MAPA
+
+**Plik:** `docs/obieg/MAPA-RZEKI-SPEC.md` — siatka, krawędzie, S-meander, main/tributary, fair play, implementacja, testy.
+
+**Skrót:** `docs/obieg/MAPA-KANON-GENERATOR.md` § Rzeki → link do spec.
+
+---
+
+## [2026-07-04 ~19:07] MASTER · **PROMOCJA KANON** MAPA rzeki — delta (Maciej: siatka + krawędzie + dopływy)
+
+**Trigger:** Maciej — równomierna siatka co N hex; tylko krawędzie (Roblox); S nie serpentyna; bez stad; główny nurt gruby + dopływy 2× cieńsze (jak delta).
+
+**Fix:**
+- Siatka **14×14** — 1 główny nurt/komórkę; min. odstęp źródeł; bez dodatkowych klastrów reliefu
+- Render: obwód hex + **main 100% / tributary 50%** szerokości; `riverPathKinds`
+- A*: kara za prostą → łagodne S; dopływy dendrytyczne (max 2/długi nurt)
+
+**Kanon md5:** **`fe53661e98e25280a9726d4936ce8041`**
+
+**ABC:** A=10 · **B=14** · C=18 hex — potwierdź B
+
+---
+
+## [2026-07-04 ~19:01] MASTER · **PROMOCJA KANON** MAPA rzeki — bieg wzdłuż krawędzi (Maciej)
+
+**Trigger:** playtest — rzeki robią pętelki i skoki przez heksy zamiast naturalnego meandra w stronę morza.
+
+**Fix:**
+- `scene.ts` — renderer chodzi **obwodem heksa** (krawędzie), bez przekątnych przez pole
+- `gen-helpers.ts` — meandry rzadsze (max 3, tylko po 4+ prostych hex), **seaDist musi maleć**, bez pętli (sanitize)
+
+**Kanon md5:** **`cdf52bd6a3f6f7a8e9ada8cf746f06e9`**
+
+**Playtest:** Ctrl+F5 → **nowa gra Ziemia** — rzeki prostsze, S-krzywe na krawędziach, bez zygzaków
+
+---
+
+## [2026-07-04 ~18:55] MASTER · **PROMOCJA KANON** MAPA rzeki — siatka równomierna (Maciej)
+
+**Trigger:** playtest — rzeki nierównomierne; unfair (produkcja/jedzenie z rzeki).
+
+**Reguła:** kwadrat **14×14 hex** lądu → min. 1 źródło rzeki do morza (tier: Dużo=10, Mało=18).
+
+**Kanon md5:** **`682d4d7af8cd951dbb2d50890772ff3c`**
+
+**ABC do potwierdzenia:** A=10 · **B=14 (wdrożone)** · C=18 hex
+
+---
+
+## [2026-07-04 ~17:05] MASTER · **PROMOCJA KANON** MAPA rzeki 10× (realna gęstość)
+
+**Trigger:** Maciej — „10× rzeczek w generatorze nie widać”.
+
+**Diagnoza:** JSON Panel-A już 10× (5→50), ale algorytm blokował: mało źródeł górskich, duży minSep, brak źródeł nizinnych.
+
+**Fix:** `gen-helpers.ts` — źródła nizinne, 3 przebiegi + fill do maxRivers, mniejszy minSep; test: **390 tras / 1301 hex** (Standard).
+
+**Kanon md5:** **`b210ebfe8a4ecd178be68693e74bd25b`**
+
+**Playtest:** Ctrl+F5 → **nowa gra** (stara mapa = stara gęstość)
+
+---
+
+## [2026-07-04 ~17:00] MASTER · **PROMOCJA KANON** MAPA pustynia — wysokość wzgórza
+
+**Trigger:** playtest Macieja — pustynia „zamienia się w morze” (heks 69,27).
+
+**Fix:** `mapRenderStyle.ts` — pustynia = profil wzgórza (0.42/0.08) + `PUSTYNIA_EXTRA_Y_LIFT` 0.10; `scene.ts` — bez blendu koloru z morzem.
+
+**Kanon md5:** **`843674b974357cad3d73165f5a43f7e1`**
+
+**Playtest:** Ctrl+F5 → **nowa gra** → wyspy pustyni przy wodzie
+
+---
+
+## [2026-07-04 ~16:55] MASTER · **PROMOCJA KANON** MAPA rzeki ciągłe (playtest Macieja)
+
+**Trigger:** playtest — rzeki jako luźne kawałki zamiast ciągłego biegu.
+
+**Fix:** renderer `scene.ts` — wstęga po **całej** trasie `riverPaths` (rogach krawędzi); mniej dopływów w `gen-helpers.ts`.
+
+**Kanon md5:** **`7d4c1d9634cc0cd083e56d66beacca45`** · `gra-kanon/START.html`
+
+**Archiwum:** `gra-kanon_20260704-165514` (`89c372af…`)
+
+**Playtest:** Ctrl+F5 → **nowa gra**
+
+---
+
+## [2026-07-04 ~16:49] MASTER · **PROMOCJA KANON** MAPA rzeki + gęstość (Maciej `master`)
+
+**Trigger:** Maciej `master` (batch 2).
+
+**Zakres:** rzeki po krawędziach (`rzeka.krawedzie`) · gęstość ~10× · ląd +0,05 · doliny bez wody · spawn/skala z batch 1
+
+**Bramka:** river-density 125 tras/604 heksy (Standard) · river-adjacency 4116 · smoke OK
+
+**Kanon md5:** **`89c372afe188e66fc61fa770859770b9`** · `gra-kanon/START.html`
+
+**Archiwum:** `gra-kanon_20260704-164934` (`31c6db16…`)
+
+**Playtest:** Ctrl+F5 **`gra-kanon/START.html`** → **nowa gra**
+
+---
+
+## [2026-07-04 ~16:30] Maciej · **decyzja strategiczna: browser first, desktop później**
+
+**Kontekst:** wydajność mapy — niskie CPU/GPU przy muleniu; diagnoza: architektura przeglądarki, nie sprzęt.
+
+**Decyzja:**
+1. **Teraz:** optymalizacja **wersji browser** (SILNIK/MAPA — poza kolejką UX P1/P2).
+2. **Przyszłość:** twardy blok v1.0 → **desktop jako osobny tor** (rewrite/owijka); **bez** wycofania z HTML w połowie projektu.
+
+**Workflow:** bez zmian (kanon, lane’y, playtest Macieja).
+
+---
+
+## [2026-07-04 ~16:28] MASTER · **PROMOCJA KANON** MAPA spawn + skala kreatora (Maciej `master`)
+
+**Trigger:** Maciej `master`.
+
+**Zakres w kanonie:**
+- **MAPA:** spawn 3/5 hex + obcy klaster 3 hex (B) · mp max **9** · typy osobna skala (Ogromny 10 / Super 12) · złoża wybrzeże · rzeki adjacency · skala kreatora
+- **Pliki:** `clusters.ts`, `gen-helpers.ts`, `generator.ts`, `scene.ts`, `cities.ts`, `newGameMapDefaults.ts`, `e-start-params.json`, `main.ts` (`startCityState`)
+
+**Bramka:** map-scale-menu **32/32** · rozmiar-label **13/13** · cluster-start **129/131** (2× Qin baseline) · deposit-coast **20/20** · river-path **478/478** · smoke **OK**
+
+**Build:** `npx vite build --outDir $env:TEMP\civ-dist` → `publish-robocza-snapshot` → `publish-kanon-snapshot`
+
+**Kanon md5:** **`31c6db16e4baab67355ac093bf7bc034`** · `gra-kanon/START.html` · root `Gra-podglad.html`
+
+**Archiwum:** `gra-kanon-archiwum/gra-kanon_20260704-162823` (poprzedni `d1a61c24…`)
+
+**Handoffy:** `MAPA-do-MASTER_start-spawn-skala-2026-07-04.md` + `MAPA-do-MASTER_skala-kreator-mp9-2026-07-04.md` → **ZINTEGROWANE**
+
+**Playtest Macieja:** Ctrl+F5 **`gra-kanon/START.html`** → nowa gra → kreator (mp/typy) · rzeki · Kontynenty
+
+**Kolejka:** ocean przy **M** (ABC) · Qin test baseline · map-coast-buffer małe mapy
+
+---
+
+## [2026-07-04 ~16:25] MAPA · Skala kreatora: mp max 9 + typy (Maciej A)
+
+**Decyzja Macieja:** twardy sufit **9** miast-państw na klaster; typy cywilizacji **osobna** skala; boost **Ogromny** (dom. 10 typów) i **Super Huge** (dom. 12 typów). Naprawiono błędne 11/13/15 mp w Panel-E.
+
+**Handoff:** `dyspozycje/_handoff/MAPA-do-MASTER_skala-kreator-mp9-2026-07-04.md`
+
+**Pliki:** `e-start-params.json`, `newGameMapDefaults.ts`, `map-scale-menu-test.cjs`, `rozmiar-label-test.cjs`
+
+**Status:** kod w `gra/` — **ZINTEGROWANE kanon** md5 `31c6db16…` (MASTER 2026-07-04 ~16:28)
+
+---
+
+## [2026-07-04 ~16:30] MAPA · Start: skala typów/mp + odległości 3/5 hex (Maciej)
+
+**Decyzja Macieja:** gęstsza rozgrywka — miasta-państwa min **3 hex**; obce cywilizacje min **5 hex** od stolicy gracza (**tylko spawn**). Po starcie founding: **5 hex** (wyjątek: dystans do startowych mp = **3 hex**).
+
+**Skala domyślna (Panel-E):** Malenki 4/4 → Super Huge 12/8 (typy / miasta-państwa). **Max menu mp = 9** (patrz handoff mp9).
+
+**Handoff:** `dyspozycje/_handoff/MAPA-do-MASTER_start-spawn-skala-2026-07-04.md`
+
+**Pliki:** `clusters.ts`, `cities.ts`, `main.ts` (flaga `startCityState`), `e-start-params.json`, `map-gen-params.json`, `newGameMapDefaults.ts`
+
+**Status:** kod w `gra/` — **MASTER:** build + `cluster-start-test` + Opus → kanon
+
+---
+
+## [2026-07-04 ~15:15] MASTER · **PROMOCJA KANON** POLE-BITWY batch 2 (AUTO→RĘCZNY)
+
+**Trigger:** Maciej `master`.
+
+**Zakres w kanonie:**
+- **UI/UNITS:** `battleScene.ts` — Taktyka/Strategia po AUTO→RĘCZNY, filtry Konnica/Piechota/Grupa, split grup (◆ Grupuj), szturm konnicy, mapa równiny
+- **Bez** `main.ts`
+
+**Build POLE-BITWY:** `POLE-BITWY-20260704-manual-polish` · `Gra-podglad-POLE-BITWY.html`
+
+**Bramka:** battle-smoke boot OK · map-field-battle OK · logic-test **202/203** (baseline mapgen) · combat-test **0/6** (HP=0 harness — znany pre-existing, nie batch UI)
+
+**Kanon md5:** **`d1a61c24d4adca9327135c0dbdce6162`** · `gra-kanon/START.html` · root `Gra-podglad.html`
+
+**Archiwum:** `gra-kanon-archiwum/gra-kanon_20260704-151520` (poprzedni `A8DA1FCB…`)
+
+**Handoff:** `dyspozycje/_handoff/UI-do-SILNIK_pole-bitwy-ui-batch-20260704.md` → **ZINTEGROWANE**
+
+**Playtest Macieja:** Ctrl+F5 `Gra-podglad-POLE-BITWY.html` → AUTO → R → filtry + Grupuj + SPACJA
+
+**Kolejka:** Grupa C `działaj` (Soldurii/Gaesatae) · ocean przy **M** (ABC B/C) · combat-test harness fix (osobny ticket)
+
+---
+
+## [2026-07-04 ~15:02] MAPA · FoW **F/M** — sign-off Macieja ✅
+
+**Trigger:** Maciej — „f i m działa” (batony obok minimapy).
+
+**Zakres:** batony F/M · `toggleDevFogFull` / `toggleDevRevealAllLand` · `fogUiToolsEnabled` · sync `Gra-podglad*.html` w roboczej.
+
+**Status:** temat 1 w `docs/master/maciej/MACIEJ-TEMATY-MAPA-OTWARTE.md` → `[x]`. **Nie w kanonie** (część większego pakietu MAPA).
+
+**Następne:** playtest rzeki · ocean zoom · pustynia wyżej.
+
+---
+
+## [2026-07-04 ~15:05] MASTER · **tick hub** (Maciej `master`)
+
+**Stan kanonu (skan plików):** root · `gra-robocza/` · `gra-kanon/` — **ten sam md5** `A8DA1FCB1ADC733E5D112C8768C52900` (zsynchronizowane).
+
+**W kanonie już jest:** CELT-Q3 filtr Nacja · A-06 panel stosu · pakiet UI z dzisiaj.
+
+**Bramka:** logic-test 202/203 (baseline) · earth-template 2/2.
+
+**Kolejka — bez nowego batchu F:**
+
+| Pri | Co | Kto / trigger |
+|-----|-----|----------------|
+| 1 | Soldurii + Gaesatae + roster-6 **staty** | **Grupa C** · `działaj` · brief `CYW-do-GRUPA-C_jednostki-spec-brief-2026-07-04.md` |
+| 2 | UX **#5 A-27** (nast. po A-06) | lane UI → `→ MASTER: GOTOWE` |
+| 3 | Typ **Ziemia** playtest | Maciej: nowa gra → typ Ziemia (Ctrl+F5 `gra-kanon/START.html`) |
+| 4 | Ocean przy skrócie **M** | decyzja ABC B/C (otwarte) |
+
+**Master:** IDLE — brak oczekujących handoffów F do wpięcia. Promocja kanon **nie wymagana** (md5 spójny).
+
+---
+
+**Trigger:** Maciej `master`.
+
+**Zakres:** `earth-land-mask.ts` (bbox 360×200 bilinear) · `landMaskZiemia` · skróty **M**/ **F** · domyślne % lądu per typ · reszta pakietu roboczego (E-15, ocean zoom, dyplomacja 1E…).
+
+**Bramka:** `earth-template-test` 2/2 · `victory-screen-test` 11/11 · vite build OK.
+
+**Kanon md5:** **`c9ce73e073788e7a6a4f797a9281c31b`** · `gra-kanon/START.html` · root `Gra-podglad.html`
+
+**Archiwum:** `gra-kanon-archiwum/gra-kanon_20260704-145437` (poprzedni `2ebc4ee5…` E-15)
+
+**Playtest Macieja:** Ctrl+F5 **`gra-kanon/START.html`** → **nowa gra** → typ **Ziemia** (bbox + brzegi).
+
+**Otwarte:** ocean przy skrócie **M** (ABC B/C) · Opus review opcjonalnie przed kolejną promocją.
+
+---
+
+## [2026-07-04 ~15:00] MASTER · **CELT-Q3 wiring + kanon** (filtr Nacja produkcji)
+
+**Trigger:** Maciej `master` · handoff EKONOMIA nacja-filter.
+
+**Batch `main.ts` (SILNIK):**
+- `civKeyForOwnerId()` + `getCivKey` w obu `configureCityPanel`
+- auto-manage `ctx`: `epoch` per owner, `civBonusy`, `civUnitNacja`
+- import `unitNacjaForCivKey`
+
+**Nie w scope:** `units.json` (Grupa C — brief `CYW-do-GRUPA-C_jednostki-spec-brief-2026-07-04.md`)
+
+**Bramka:** logic-test **202/203** (baseline mapgen) · vite build OK
+
+**Kanon md5:** **`A8DA1FCB1ADC733E5D112C8768C52900`** · root `Gra-podglad.html`
+
+**Kolejka:** Grupa C `działaj` (Soldurii/Gaesatae + roster-6 staty) · Opus review opcjonalny (wiring czysty)
+
+---
+
+**Trigger:** Maciej — pusty dół mapy, prostokątne brzegi kontynentów na typie Ziemia.
+
+**Fix (1+2) wdrożony w `gra/` + `gra-robocza`:**
+- `earth-land-mask.ts` — bbox mockupu → playable area (Antarktyda/dół mapy)
+- maska **360×200** + próbkowanie bilinear (mniej schodków)
+- `landMaskZiemia` — **bez** `mapEdgeRectFade` / `landMaskBorderFade` (tylko szablon + szum brzegu)
+- `enforceEarthTemplateOnHexes` — twardy constraint poza maską
+
+**Test:** `node tools/earth-template-test.cjs` → 2/2
+
+**Fix (3) brzeg mapy + zoom oceanu:** już wcześniej (wpisy ~10:46 + ~14:05, handoff ocean-zoom) — patrz tabela poniżej.
+
+**Nie w kanonie** — wymaga rebuild F po playteście Macieja (nowa gra, typ Ziemia).  
+→ **Zamknięte:** promocja kanon ~14:54 md5 `c9ce73e0…`
+
+---
+
+## [2026-07-04 ~15:10] Maciej · workflow **hak po haku** (szkic → werdykt → ewent. design)
+
+**Ustalenie:** 1) szkic lane + PNG · 2) treść OK? · 3) wygląd A/B/C · 4) ewent. poprawki lane · 5) design tylko gdy A lub C · 6) lane v2.
+
+**A-06 PNG review:** `docs/ux/export/A-06-review-stary-vs-szkic.png` · checklist `A-06-REVIEW-MACIEJ.md`
+
+**Design A-06:** ⛔ STOP do werdyktu Macieja
+
+---
+
+**Feedback:** szkic lane wygląda jak twórca, nie designer — **nie zamykać** A-06 jako final UX.
+
+**Decyzja procesu:** Tor B — szkic w kanonie OK jako referencja; **następny krok = mockup Design 1E**, potem lane v2, dopiero wtedy sign-off.
+
+**Dokument:** `docs/ux/workflow/DESIGN-LANE-KOLEJNOSC.md`
+
+**Kolejka:** #4 A-06 → `[~] SZKIC` · DESIGN PENDING
+
+---
+
+## [2026-07-04 ~14:55] MASTER · **PROMOCJA KANON A-06** (szkic techniczny v0)
+
+**Trigger:** Maciej OK + `master` · screenshot w `docs/ux/export/A-06-panel-jednostki-1E-robocza.png`
+
+**Zakres:** `mapUnitHudSkin.ts` + `armyStackHud.ts` + `unitPanelHud.ts` — panel stosu armii 1E
+
+**Kanon md5:** **`a8da1fcb1adc733e5d112c8768c52900`** · `gra-kanon/START.html`
+
+**Archiwum:** `gra-kanon_20260704-145523` (`2ebc4ee5…`)
+
+**Kolejka:** #4 A-06 [x] · nast. **#5 A-27**
+
+---
+
+## [2026-07-04 ~14:37] MASTER · **PROMOCJA KANON E-15** ✅
+
+**Trigger:** Maciej `master` · playtest E-15 odłożony (gra niegrywalna).
+
+**Zakres:** `victoryScreen.ts` — pełnoekranowy layout 1E (win + lose E-15b) · pakiet poprzedni bez regresji.
+
+**Bramka:** `victory-screen-test` 11/11 · vite build OK.
+
+**Kanon md5:** **`2ebc4ee5fe907075de89dd75d18f8347`** · `gra-kanon/START.html` · root `Gra-podglad.html`
+
+**Archiwum:** `gra-kanon-archiwum/gra-kanon_20260704-143703` (`c10c7e85…`)
+
+**Kolejka:** #3 E-15 [x] · nast. **#4 A-06** · #2 Nauka HOLD
+
+---
+
+## [2026-07-04 ~15:35] UI · E-15 lane zamknięty · playtest odłożony
+
+**Maciej:** gra niegrywalna (brak realnej wygranej/przegranej) → **bez playtestu E-15** · ocena później.  
+**Lane:** `victoryScreen.ts` 1E cinematic · testy 11/11 · robocza `83ea8d99…`  
+**MASTER:** promocja kanonu bez czekania na playtest · meldunek `UI-DO-MASTERA.md`  
+**Kolejka:** #3 [x lane] · nast. **#4 A-06** · #2 Nauka nadal HOLD
+
+---
+
+## [2026-07-04 ~14:08] Maciej → MASTER · rejestr tematów MAPA (nie powtarzać)
+
+**Plik:** `docs/master/maciej/MACIEJ-TEMATY-MAPA-OTWARTE.md` + `dyspozycje/MAPA-STAN.md`  
+**Tematy:** (1) FoW M/F dev (2) ocean zoom out (3) rzeki po krawędziach (4) 5 wzgórz + 5 gór  
+**MASTER:** czytać przed każdą sesją playtest/MAPA · zamykać `[x]` po werdykcie Macieja
+
+---
+
+## [2026-07-04 ~14:05] MAPA · ocean znika przy zoom out — diagnoza + partial fix
+
+**Trigger:** Maciej — 10. zgłoszenie; ocean znika przy oddalaniu, wraca przy zbliżaniu.
+
+**Przyczyna:** (1) płaszczyzna oceanu za mała vs maxDist kamery, (2) THREE.Fog.far za blisko, (3) fog na materiale oceanu.
+
+**Fix roboczy:** `render/scene.ts` — większy padO, fog.far↑, oceanMat.fog=false, tło deepOcean.
+
+**Handoff:** `dyspozycje/_handoff/MAPA-do-MASTER_ocean-zoom-out_2026-07-04.md` → **PLAYTEST**
+
+**Otwarte ABC:** czy skrót **M** ma pokazywać niebieski ocean wokół wyspy (opcje B/C w handoff).
+
+**Maciej:** Ctrl+F5 `gra-robocza/START.html` → zoom max/min → werdykt.
+
+---
+
+**Zakres:** Maciej zatwierdził UX podglądu POLE-BITWY (pasek mocy, toolbar, Taktyka/Strategia, roster 6×5, zoom 2×).  
+**Handoff:** `dyspozycje/_handoff/UI-do-SILNIK_pole-bitwy-ui-batch-20260704.md` → **GOTOWE**  
+**Build test:** `POLE-BITWY-20260704-roster-grid6` · `Gra-podglad-POLE-BITWY.html`  
+**Integracja:** MASTER — merge `battleScene.ts` + `battleHudTheme.ts` → build kanon → Opus review  
+**Lane:** UI/UNITS (battle HUD) — **bez** main.ts w tej sesji
+
+---
+
+**Zakres:** reskin 1E · `diploUiSkin.ts` (nowy) · panel + lista + audiencja · **bez** main.ts/diplomacy.ts  
+**Testy:** diplomacy 143/143  
+**Robocza md5:** **`4acbc7e31ad32e5e2c7fd944211552d0`** · `gra-robocza/START.html`  
+**Integrator F:** **NIE** (lane zbudował robocza)  
+**Czeka:** playtest Macieja → promocja kanonu
+
+---
+
+## [2026-07-04 ~13:37] Maciej → MASTER · **„idź dyplo"** — P1 dyplomacja START
+
+**Dyspozycja:** lane UI · reskin 1E · `_handoff/MASTER-do-UI_P1-dyplomacja-1E-2026-07-04.md` → **ACTIVE**  
+**Integrator F:** **NIE** (brak main.ts) · F dopiero po meldunku UI (rebuild + bramka)  
+**Kolejka:** `KOLEJKA-UX-OCENY.md` #1 → [~] W TOKU  
+**Następny krok:** lane UI implementacja → `UI-DO-MASTERA.md` → playtest Macieja → promocja kanonu
+
+---
+
+## [2026-07-04 ~14:29] MASTER · **PROMOCJA KANON** sesja MAPA ocean + POLE-BITWY HUD
+
+**Trigger:** Maciej `master` (2× — delta od `55bdb2af…`)
+
+**Zakres w kanonie:**
+- **MAPA:** ocean przy zoom out — `render/scene.ts` (padO, fog.far, oceanMat.fog=false, tło deepOcean)
+- **UI/UNITS:** POLE-BITWY HUD batch — `battleScene.ts`, `battleHudTheme.ts` (Maciej OK)
+- **Pakiet:** P1 dyplomacja 1E (bez zmian vs poprzedni kanon dyplo)
+
+**Bramka:** diplomacy 143/143 · okolica 32/32 · wire 34/34 · smoke · koszary 21/21 · map-coast 109/115 (6 baseline) · build OK
+
+**Kanon md5:** **`c10c7e85e08d7dbca380c7ee4be70b7a`** · `gra-kanon/START.html` · root `Gra-podglad.html`
+
+**POLE-BITWY:** `Gra-podglad-POLE-BITWY.html` → root + `gra-kanon/` + `gra-robocza/`
+
+**Archiwum:** `gra-kanon-archiwum/gra-kanon_20260704-142904` (`55bdb2af…`)
+
+**Otwarte (Maciej):** ocean przy skrócie **M** — decyzja B/C w `MAPA-do-MASTER_ocean-zoom-out_2026-07-04.md`
+
+---
+
+## [2026-07-04 ~14:11] MASTER · **PROMOCJA KANON P1 dyplomacja 1E** ✅
+
+**Trigger:** Maciej `master` · handoff `MASTER-do-UI_P1-dyplomacja-1E-2026-07-04.md`
+
+**Zakres:** reskin dyplomacji 1E (`diploUiSkin` + 7 modułów UI) · logika bez zmian
+
+**Bramka:** diplomacy 143/143 · okolica 32/32 · wire 34/34 · smoke · koszary 21/21 · vite build OK
+
+**Kanon md5:** **`55bdb2af4f724f8a4f3da12e23156dc8`** · `gra-kanon/START.html` · root `Gra-podglad.html`
+
+**Archiwum:** `gra-kanon-archiwum/gra-kanon_20260704-141118` (poprzedni `42efefff…`)
+
+**Kolejka Macieja:** #1 dyplo ✅ · #2 nauka HOLD · #3 E-15
+
+---
+
+## [2026-07-04 ~13:29] MASTER · checkpoint przed P1 dyplomacja ✅
+
+**Trigger:** Maciej — kolejka UX + MASTER przed dyplomacją; nauka HOLD (przegląd).
+
+**Wykonane:**
+- Potwierdzono kanon md5 **`42efefffbcab5fd8b6ff4c07e862443d`**
+- Bramka batchu miasto+B-26: okolica 32/32 · wire 34/34 · smoke · diplomacy 143 · koszary 21/21
+- Baseline-red: logic 202/203 · combat · battle-smoke — **nie blokują** P1 dyplo
+- Kolejka odhaczania: `docs/ux/KOLEJKA-UX-OCENY.md`
+- Dyspozycja następna: `_handoff/MASTER-do-UI_P1-dyplomacja-1E-2026-07-04.md` (**QUEUED**)
+
+**Następny krok Macieja:** sygnał **„idź dyplo”** → lane UI P1 reskin 1E.
+
+**#2 Nauka + drzewko:** HOLD — dokładny przegląd Macieja przed implementacją.
+
+---
+
+## [2026-07-04 ~13:21] UI lane · **PROMOCJA KANON** B-26 okolica Tier6 + batch miasto W3
+
+**Trigger:** Maciej — gotowe wgrywać od razu; MASTER potwierdza bramkę.
+
+**Zakres:** B-26 toolbar „Zarządzanie polami” (SVG Tier6) · pakiet miasto W3 + modale C-04/C-05/A-19 (src bez zmian logiki okolicy).
+
+**Bramka:** okolica 32/32 · wire 34/34 · smoke · diplomacy 143 · koszary 21/21 · ⚠ logic 202/203 · combat 0/6 · battle-smoke FAIL (baseline).
+
+**Kanon md5:** **`42efefffbcab5fd8b6ff4c07e862443d`** · `gra-kanon/START.html` · root `Gra-podglad.html`
+
+**Archiwum:** `gra-kanon-archiwum/gra-kanon_20260704-132128` (poprzedni `7dfabe3a…`)
+
+**Handoff:** `_handoff/UI-do-MASTER_B-26-okolica-tier6-batch-2026-07-04.md`
+
+**Maciej ocena (tylko otwarte):** `docs/ux/BACKLOG-OCENA-MACIEJ-2026-07-04.md`
+
+---
+
+## [2026-07-04 ~11:43] MASTER — fix rzek (Maciej playtest)
+
+**Problem:** rzeki „zalały” całe heksy (niebieskie pola zamiast cienkich pasków na krawędziach).
+
+**Przyczyna:** (1) `riverScale` ~2,4× przy mapach 2× → wstęga szersza niż heks; (2) tint 62% koloru rzeki na całym heksie `rzeka.obecna`.
+
+**Fix `render/scene.ts`:** stała szerokość `R*0.085` · trasa tylko środki krawędzi · bez tintu heksu.
+
+**ROBOCZA md5:** `c40c42c00146f8f0dd577609c56e8507` · Ctrl+F5
+
+---
+
+## [2026-07-04 ~11:12] MASTER — bramka sesji 2026-07-04 · **STOP kanon** (regresje testów)
+
+**Trigger:** Maciej → `master`  
+**Backup:** `main.ts.bak-SESJA-2026-07-04`  
+**ROBOCZA odświeżona:** md5 **`b2f052edd8f42a355cf256275f60ec09`** · `gra-robocza/START.html`  
+**Kanon root (bez zmian):** md5 `15b7fac814b31ef1c016b7a92f6a471c`
+
+**Bramka wynik:**
+
+| Test | Wynik | Uwaga |
+|------|-------|-------|
+| wire-ekonomia | 34/34 | OK |
+| logic-test | **202/203** | **FAIL [92]** startPositions minPairDist 3–4 (wymagane ≥5) — prawdopod. mapy 2× |
+| combat-test | **0/6** | **FAIL** rounds=0 (6 scenariuszy) |
+| civ-bonusy | OK | |
+| diplomacy | OK | |
+| ai-test | 193/198 | 5× T2S baseline-red (oczekiwane) |
+| smoke | OK | |
+| battle-smoke | **FAIL** | szuka „Bitwa ręczna”, UI ma „Rozegraj ręcznie” |
+| vite build | OK | ~8.59 MB |
+
+**Decyzja MASTER:** **STOP kanon** do naprawy logic [92] + combat 6/6 + battle-smoke (label lub test). Opus po zielonej bramce.
+
+**Playtest Macieja:** ROBOCZA gotowa — mapa/zoom/drogi/panel heksu/miasto W3 w jednym bundle.
+
+**Handoffy w kolejce:** `F-do-MASTER_sesja-2026-07-04-map-ui-units.md` + `UI-do-MASTER_miasto-playtest-OK-promocja-2026-07-04.md`
+
+---
+
+## [2026-07-04 ~10:46] F → **MASTER: GOTOWE-ROBOCZA** — sesja mapa 2× + brzegi + zoom + drogi + panel heksu
+
+**Handoff:** `_handoff/F-do-MASTER_sesja-2026-07-04-map-ui-units.md`  
+**ROBOCZA md5:** `53ec508f48b7a9e13e152b1ba5d44644` · `gra-robocza/START.html` · Ctrl+F5
+
+**Zakres:** poszarpane brzegi · trim inland water · mapy 2× (76×52 … 672×476) · zoom 2× · drogi 3× · panel heksu D17 · usunięcie legacy pill 0/0 · lite forest fix
+
+**Testy map:** forest-parity 101/101 · coast-buffer 115/115 · continents-rivers 5/5
+
+**MASTER czeka:** playtest Macieja → bramka 17 suitów → Opus → kanon root `Gra-podglad.html`
+
+**Otwarte ABC:** liczba typów cywilizacji / miast na klastrze przy większych mapach (CYWILIZACJE — później)
+
+---
+
+## [2026-07-04 ~11:15] MASTER · **PROMOCJA KANON miasto W3** ✅
+
+**Trigger:** Maciej `master` · handoff `UI-do-MASTER_miasto-playtest-OK-promocja-2026-07-04.md`
+
+**Zakres:** panel miasto W3 (exit pod surowcami · okolica ręczna · chrome HUD) · modale C-04/C-05/A-19 (już w src)
+
+**Bramka (wybrane):**
+- ✅ `okolica-test` 32/32 · `wire-ekonomia` 34/34 · `smoke` OK · `diplomacy-test` OK · `koszary-gate` baseline-red OK
+- ⚠ `logic-test` 202/203 — mapgen minPairDist (MAPA 5 stref, nie UI miasto)
+- ⚠ `battle-smoke` FAIL — T w menu (pre-battle); poza zakresem batchu miasto · Maciej poprawia bitwę osobno
+- Opus: **FAST** (werdykt playtest Macieja w czacie)
+
+**Publikacja:**
+- `publish-robocza-snapshot` → robocza md5 **`7dfabe3a4566078e80de1de19ad805f5`**
+- `publish-kanon-snapshot` → **`gra-kanon/`** + root **`Gra-podglad.html`** (ten sam md5)
+- Archiwum poprzedniego kanonu: `gra-kanon-archiwum/gra-kanon_20260704-111537`
+
+**Playtest finalny Macieja:** `gra-kanon/START.html` Ctrl+F5 · miasto RZYM
+
+**STOP kolejne:** bitwa skin · HUD mapy D2 · menu E · Design W3.2
+
+---
+
+## [2026-07-04 ~10:40] Maciej → lane UI → **MASTER: PROMOCJA KANON miasto W3**
+
+**Werdykt:** playtest miasto **OK** · reszta UX (bitwa, HUD mapy, menu) **później**
+
+**Wpisan na stałe `gra/src/`:** `cityPanel.ts` · `cityUxFrame.ts` · `okolica.ts` · `main.ts` (hooks ręczna okolica)  
+**Backup:** `*.bak-UI-2026-07-04-promocja`  
+**Handoff:** `_handoff/UI-do-MASTER_miasto-playtest-OK-promocja-2026-07-04.md` · meldunek `UI-DO-MASTERA.md` **→ MASTER: GOTOWE**
+
+**ROBOCZA md5:** `0993be1929abc8e23c76b01e6f1ab7dd` · `gra-robocza/Gra-podglad.html`
+
+**MASTER czeka:** bramka 17 suitów + build → Opus (miasto) → `publish-kanon-snapshot.ps1` → root `Gra-podglad.html`
+
+**Uwaga OneDrive:** nie odpalać `publish-robocza-snapshot` przed promocją (nadpisuje roboczę); po kanonie sync OK.
+
+---
+
+## [2026-07-04 ~09:45] F ROBOCZA — generator 5 stref kontynentów (MAPA)
+
+**Decyzja Macieja:** Kontynenty = 5 mas (środek + 4 narożniki), nie pangea przy niskim lądzie.
+
+**Algorytm:** `buildFiveZoneContinentCenters` + Voronoi per strefa; `landMaskKontynenty` bez `mapCenterRadialBias` i bez max() centrów.
+
+**Test:** `map-continents-rivers-test` 5/5 · seed 42: **5 mas** kontynenty vs **1** pangea @ 20% lądu.
+
+**ROBOCZA md5:** `17bf6e849de2aab459483f7706fa96e8` · `gra-robocza/START.html`
+
+---
+
+## [2026-07-04 ~09:36] F ROBOCZA — reguła lewego menu toolbar (UI/SILNIK)
+
+**Reguła Macieja:** klik mapy → tylko odznacza; klik **innego** medalionu → odznacza stary + aktywuje nowy **jednym** kliknięciem.
+
+**Przyczyna:** `pointerdown` outside-dismiss zamykał panel przed `click` na toolbarze; `onOpenCities` miał błędne `return` po samym zamknięciu build/army.
+
+**Fix:** `hudPanelDismiss.ts` + `buildModeHud.ts` ignorują `.civ-map-toolbar`; `main.ts` — `closeAllMapToolbarModes()` + handlery activate/toggle.
+
+**ROBOCZA md5:** `ee9b658fc9a7551d88bb197e5523af81`
+
+---
+
+## [2026-07-04 ~09:32] HANDOFF MAPA → MASTER — sesja zamknięta (Maciej)
+
+**ROBOCZA:** md5 `ad5cc87c86b1f6988dd6245e7463f869` · szczegóły → `MAPA-DO-MASTERA.md` § 09:32
+
+**Czeka:** playtest Macieja (ocean/zoom + 20/80 + kontynenty) → potem Opus → kanon
+
+---
+
+## [2026-07-04 ~09:30] F ROBOCZA — ląd/morze 20/80 + kontynenty rozdzielone (Maciej)
+
+**Decyzja:** 20% lądu / 80% morza (korekta z 30/70). Kontynenty ≠ pangea przy małym lądzie.
+
+**Generator:** `sparseLand` — bez centrum 0.5/0.5, mniejsze masy, szersze cieśniny.
+
+**Test:** `land-sea-ratio-test.cjs` 9/9
+
+**ROBOCZA md5:** `ad5cc87c86b1f6988dd6245e7463f869` · `gra-robocza/START.html`
+
+**Handoff:** `MAPA-DO-MASTERA.md` § 2026-07-04 ~09:30
+
+---
+
+## [2026-07-04 ~09:12] F ROBOCZA — domyślny ląd/morze 30/70 (MAPA + UI, decyzja Macieja)
+
+**Decyzja:** standard **30% lądu / 70% morza** (Kontynenty, Pangea, Wyspy, Ziemia); suwak zaawansowany 20–80% bez zmian.
+
+**Kod:** `gen-helpers.ts` · `newGameFlow.ts` · `main.ts` · `MAPA-KANON-GENERATOR.md`
+
+**Test:** `land-sea-ratio-test.cjs` 9/9
+
+**ROBOCZA md5:** `30da5d342b44a7caa36d988e4202b043`
+
+**Handoff:** `dyspozycje/MAPA-DO-MASTERA.md` § 2026-07-04
+
+---
+
+## [2026-07-04 ~09:15] F ROBOCZA — fix prześwit oceanu przy zoomie (MAPA render)
+
+**Trigger:** Maciej playtest — niebieska tafla w środku lądu zależna od przybliżenia.
+
+**Przyczyna:** `hideRobloxWaterForOcean` ukrywał heksy Morze/Wybrzeże przy wyłączonej mgle → globalna płaszczyzna oceanu (~1.8 jednostki pod taflą) prześwitywała przez szczeliny heksów.
+
+**Fix (`render/scene.ts`):** (1) zawsze renderuj heksy wody; (2) tło oceanu głębiej (−14…−28); (3) `depthWrite: true`; (4) roblox overlap heksów R×1.008.
+
+**ROBOCZA md5:** `ba3e4207e8847f2af74829002a84ee07` · `gra-robocza/START.html`
+
+**Następny:** Maciej playtest Ctrl+F5 + Nowa gra → `playtest OK` / `BUG: …`
+
+---
+
+## [2026-07-04 ~08:16] F ROBOCZA — sync MAPA generator (bufor 10 hex + ląd od środka + rzeki)
+
+**Trigger:** Maciej `1+2 start` (sync src + rebuild robocza).
+
+**Kroki:** `map-coast-buffer-test` 115/115 · `vite build` → `$TEMP\civ-dist` · `publish-robocza-snapshot.ps1`
+
+**ROBOCZA md5:** `fd7ed0d6799cfb0f7447db3e890027d5` · `gra-robocza/START.html`
+
+**Sync:** `gra/src/map/*`, `render/scene.ts`, `main.ts` → `gra-robocza/src/`
+
+**Maciej playtest:** Ctrl+F5 → **Nowa gra** → bufor oceanu 10 hex · ląd wycentrowany · rzeki z gór · wybrzeże jasnoniebieskie
+
+**Kanon:** bez promocji (STOP P0 miasto)
+
+**Fix skryptu:** `publish-robocza-snapshot.ps1` — usunięto znaki em-dash psujące parser PS
+
+---
+
+---
+
+## [2026-07-04 ~08:20] Design · **C-04/C-05/A-19 modale mapy ✅**
+
+**Deliverables (brand-book):**
+- `C04 Atak miasto wybor v2 (1E).dc.html`
+- `C05 Panel oblezenie v2 (1E).dc.html`
+- `A19 Miasto zdobyte v2 (1E).dc.html`
+
+**Handoff:** `docs/ux/claude-design/DESIGN-do-UI_C04-C05-A19-v2.md`  
+**Paczka Design:** `C04-C05-A19-mapa-v2_2026-07-04.zip` ✅ w repo · lane port ✅ · robocza md5 `1503c9e040fe6354a4374f685163c5d9`  
+**Lane UI:** port `cityAttackChoice.ts` · `siegeMapPanel.ts` · `cityCaptureNotice.ts` — **GOTOWE** · czeka **playtest Macieja**
+
+**Osobno:** C-19/C-20 pole bitwy — handoff UNITS (map-v2 HUD już w repo).
+
+---
 
 **B — pole 3D map-v2:** mockupy `C04 Oblezenie v2` + `C05 Szturm muru v2` w `docs/ux/claude-design/` (HUD-only). Handoff lane: `_handoff/DESIGN-do-UNITS_C19-C20-port-map-v2-2026-07-04.md` · czeka **`START lane`**.
 

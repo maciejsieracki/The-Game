@@ -1,204 +1,200 @@
-## TWOJ PELNY KONTEKST (czytaj NAJPIERW)
-Jestes taskiem **Civ-UI**.
-TRIGGER: gdy Maciej napisze "start" (albo "sprawdz dyspozycje") -> przeczytaj TEN plik od nowa, wykonaj NAJNOWSZA sekcje (START / DO ZROBIENIA TERAZ / ODPOWIEDZ MASTERA) i raportuj (plik + czat).
-WDRAZANIE DYSPOZYCJI: to, co master wpisze Ci do tego pliku (ODPOWIEDZ MASTERA / START / DO ZROBIENIA), WDRAZAJ OD RAZU, BEZ PYTANIA. Pytaj tylko gdy: brak danych do decyzji, blokada, albo master wprost prosi o potwierdzenie.
-JESLI MASZ PYTANIE/WATPLIWOSC: zadaj je Maciej W CZACIE (tresc) ORAZ dopisz do dyspozycje/UI-DO-MASTERA.md na DOLE z godzina. NIE kasuj wczesniejszych wpisow -- to historia Q&A. NIE uzywaj narzedzia AskUserQuestion ani popupu wyboru -- pytania zadawaj WYLACZNIE zwyklym tekstem w czacie.
-AUTONOMIA (lancuch): po KAZDYM ukonczonym kroku -> raport (plik + czat) -> przeczytaj swoj plik OD NOWA; jesli jest kolejny krok lub nowa dyspozycja od mastera, bierz JE OD RAZU (bez czekania na nowe "start"). Zatrzymaj sie TYLKO przy pytaniu/blokadzie albo gdy caly plan wyczerpany (wtedy czekaj na "start").
-RAPORTOWANIE WATKU (transparentnosc): gdy zadasz pytanie i master odpowie, ZRAPORTUJ Maciej w CZACIE + dopisz do UI-DO-MASTERA.md trzy rzeczy: (1) jakie pytanie zadales, (2) co master odpowiedzial, (3) jaka metode/decyzje przyjales. Maciej ma zawsze widziec caly watek Twojej rozmowy z masterem.
-SZCZEGOLOWY ZAKRES TWOICH ZADAN JEST W EXCELU `Status-projektu-The-Game.xlsx` (folder Civ):
-- zakladka **Civ-UI** = Twoja lista krokow; po wykonaniu ustaw Status = "Zrobione" -> wiersz sie zazieleni.
-- "Status wg grup" = pelny spis (filtruj kolumne Task = Civ-UI).
-- "Podsumowanie" = statystyka; "Taski" = kto za co + pliki + panel sterowania.
-INSTRUKCJE OPERACYJNE + KANAL = TEN plik (dyspozycje/UI.md): za co odpowiadasz, PLAN DZIALANIA, pliki kodu,
-PANEL STEROWANIA (Excele-parametry). Pytania/raporty -> dyspozycje/UI-DO-MASTERA.md ORAZ to samo w czacie.
-ZASADY: dzialasz TYLKO na swoich plikach. Tylko Civ-SILNIK rusza main.ts i publikuje kanon Gra-podglad.html.
-Build do testu: `npx vite build --outDir /tmp/civ-dist` (zwykly `npx vite build` pada na blokadzie OneDrive `dist/`),
-potem `cp /tmp/civ-dist/index.html` do celu. NIGDY `npm run build` / `export-data.py`.
-KOLEJNOSC: najpierw zakladka w Excelu (co i w jakiej kolejnosci), potem szczegoly w tym pliku.
-Po kroku: odhacz w Excelu + raport do skrzynki i w czat.
+# UI (Grupa E) — dyspozycja lane
+
+**Trigger:** `start` → czytaj **DO ZROBIENIA TERAZ** → wykonaj → meldunek `UI-DO-MASTERA.md`.
+
+**Własność:** `gra/src/ui/*`, `gra/data/ui-params.json`, mockupy `UI/*`. **NIE** `main.ts`.
 
 ---
 
-# MAILBOX: Civ-UI (interfejs / panele / HUD / menu)  [TASK DO OTWARCIA]
-Lane: src/ui/*. Wpiecie do main.ts UZGADNIA z Civ-SILNIK. BUILD do osobnego podgladu. Kanal: UI-DO-MASTERA.md + czat.
+## [2026-07-02] **W1-hero** — tła PNG menu + intro kreatora ✅
 
-## PLAN DZIALANIA
-[ ] 1. Panel miasta: realne plony + kolejka produkcji + lista budynkow + przyciski Buduj/Ulepsz (dane od Civ-SILNIK).
-[ ] 2. Licznik bilansu zasobow co ture (panel "Bilans").
-[ ] 3. HUD w grze: pasek zasobow + minimapa + panele 1-12 (makieta Makieta-HUD).
-[ ] 4. Menu glowne + ustawienia (makieta gotowa).
-[ ] 5. Ekran nowej gry (flow startu -> parametry) -- UI czesc.
-[ ] 6. Panel Zadowolenia/Porzadku (progi T1/T2, bunt).
-(Gotowy element -> zglos Civ-SILNIK do wpiecia w main.ts.)
+**Zip:** `Ulepszenie infografik5.zip` · `hero-menu.png`, `hero-intro.png`.  
+**Kod:** `mainMenu.ts` (2-kolumnowy hero + gradienty) · `newGameFlow.ts` krok 1 (full-bleed, bez akapitu opisu).  
+**Assety:** `gra/src/ui/assets/hero/*.png` (import Vite `?url`).  
+**Kanon:** MD5 `a1476d02afd8433866b257f025db6bcb` · bundel ~7.6 MB (inline PNG).
+
+---
+
+## [2026-07-02] **infografik5** — hero PNG (Design) · ~~CZEKA decyzja Macieja~~ ✅ W1-hero
+
+**Zip:** `Ulepszenie infografik5.zip` (22:52) · **nie** SVG medalionów.  
+**Zawartość:** `hero-intro.png`, `hero-menu.png` + mockupy `.dc.html`.  
+**Archiwum:** `docs/ux/claude-design/01-propozycje-z-design/ekrany-hero/`  
+**Lane:** **NIE wpięte** (osobny batch — tło menu + intro kreatora, ~+4 MB bundla).  
+**Maciej ABC:** A=wpiąć · B=najpierw mockupy · C=zostaw w archiwum.
+
+---
+
+## [2026-07-02] **infografik4 FULL** — cały eksport brand-book → gra ✅
+
+**Problem:** sync tylko 13 SVG · **mapy JSON nie zsynchronizowane** (`setting-icon-map`, `icons-manifest`).  
+**Fix:** pełny `robocopy` infografik4 `eksport/` → `gra/.../brand/` (~250 ikon + 6× JSON + CSS).  
+**setting-icon-map:** klucze Design (`map-size`) + aliasy gry (`map_size`, `city_states_count`…).  
+**Kanon:** patrz meldunek UI-DO-MASTERA (najnowszy MD5).
+
+---
+
+## [2026-07-02] **W1f** — ikony ustawień krok 4 ✅
+
+**Zip:** `Ulepszenie infografik3.zip` → uzupełnione infografik4.  
+**Handoff:** `_handoff/UI-do-DESIGN_w1f-kreator-ustawienia-6ikon.md` · **GOTOWE** (Design + Lane).
+
+---
+
+## [2026-07-02] **Design zip2** — `Ulepszenie infografik2.zip` sync + kanon
+
+**Trigger Macieja:** nowe pliki w `docs/ux/claude-design/`.  
+**Sync (Lane, bez rysowania):** 16× civ + 3× epoch z zip → `gra/.../brand/` + eksport Design.  
+**Zmiany Design:** kamień=topór · brąz=miecz liściasty · Chiny=mianguan · Rzym=standard aquila (bez SPQR) · Sumer bez zmian.  
+→ **MASTER:** kanon po build.
+
+---
+
+## Reguła ikon brand (Maciej · 2026-07-02)
+
+**Lane/Cursor NIE przerysowuje SVG** (cyw., epoki, menu brand) gdy coś wizualnie nie gra.
+
+| Krok | Kto |
+|------|-----|
+| 1 | Maciej: playtest → „nie działa” **albo** od razu poprawka w **Claude Design** |
+| 2 | Claude Design: poprawka + zip → `docs/ux/claude-design/` |
+| 3 | Maciej: „mam zip / nowy plik” → **Lane tylko sync + kanon** |
+
+**Wyjątek:** Maciej wprost prosi „napraw teraz Lane, bez Design” (hotfix).
+
+---
 
 ## DO ZROBIENIA TERAZ
-Punkt 1.
 
-## HISTORIA
-- (nowy task)
+### **POLE-BITWY Design 1E** — **ACTIVE faza 2: Design v4** (2026-07-04)
 
+**Krok 1:** ✅ review pack · werdykt Macieja ~20:52  
+**Krok 2:** ✅ ZIP na dysku · rozpakowany `docs/ux/claude-design/`  
+**Krok 3 (TERAZ):** port skin · `battleScene.ts` / `battleHudTheme.ts` · handoff ACTIVE  
+**Maciej:** Hak 1 OK · Hak 2 **A** · paczka 1 = pole+roster · oblężenie później  
+**UI lane:** **NIE** portować przed ZIP v4
 
-## PLIKI + PANEL STEROWANIA (parametry dla Maciej)
-KOD: src/ui/*.
-PANEL STEROWANIA: BRAK wspolczynnikow gry (UI = prezentacja). Ewentualne ustawienia interfejsu nie ida do Exceli-parametrow.
+### **P1 dyplomacja reskin 1E** — **QUEUED** (2026-07-04)
 
-[MASTER 2026-06-23T00:03Z] Self-check przestawiony z co 10 min na CO GODZINE (cron ustawil master, rozlozony w godzinie). Nic nie musisz robic — chodzi dalej, tylko rzadziej.
+**Start:** po sygnale Macieja **„idź dyplo”** (MASTER checkpoint ✅).  
+**Handoff:** `_handoff/MASTER-do-UI_P1-dyplomacja-1E-2026-07-04.md`  
+**Kolejka:** `docs/ux/KOLEJKA-UX-OCENY.md` · **#1**  
+**Pliki:** `diplomacyPanel.ts`, `diploListHud.ts`, `diplomacyAudience.ts` · **NIE** `main.ts` · **NIE** `diplomacy.ts`  
+**Mockup:** `docs/ux/claude-design/.../The Game - Ekran Dyplomacja (1E).dc.html`  
+**AC:** zero emoji · `tb-diplomacy` uścisk dłoni · `diplomacy-test` 143/143
 
+### **P1 nauka + drzewko** — **HOLD**
 
-## [2026-06-24] DYSPOZYCJA MASTERA — model docelowy + decyzje
-OBOWIAZUJE CIE PLAYBOOK: Civ/PLAYBOOK-operacyjny-Civ.md, sekcje 11-14 (limity iteracji, wspolpraca/handoffy, 6 technik, sedzia). Pelne zasady czytaj stamtad.
-TWARDE LIMITY: loop max 3 przebiegi; verify max 2 cykle; fan-out pilot 2 -> max 10 (Haiku); max 12 subagentow/zadanie; tournament <=6 rund.
-WSPOLPRACA: dzial<->dzial NIGDY wprost -> handoff dyspozycje/_handoff/ + meldunek masterowi. Edytujesz TYLKO swoje pliki. Integracja do silnika/kanonu = WYLACZNIE master. Dane wspoldzielone = raz w DANE/JSON, reszta czyta.
-SEDZIA: tylko deliverable wysokiej stawki (do silnika/kanonu lub cross-lane) -> osobny swiezy agent wg DoD; rutyna = wlasne testy.
-TRYB: event-driven — ruszasz gdy Maciej Cie wywola; bez auto-petli.
-Kontynuuj: kreator nowej gry (newGameFlow) + regula 'miasta rywali read-only' (ownerId!=0 -> ukryj Buduj/Ulepsz/Wykup/kolejke). Hooki cityPanel wpina master. Reszta standby na wpiecie.
+Maciej: dokładny przegląd hub A-28 + B-33/B-34 **przed** dyspozycją implementacji.
 
+---
 
-## [2026-06-24] OGLOSZENIE: SILNIK = MASTER
-Dzial SILNIK zostal WCHLONIETY do mastera — to MASTER jest teraz silnikiem i integratorem. NIE ma osobnego okna Civ-SILNIK.
-WSZYSTKO zwiazane ze spinaniem/wpinaniem do silnika lub kanonu (moduly, kontrakty, instrukcje wpiecia + DoD) zglaszaj MASTEROWI:
-handoff w dyspozycje/_handoff/<TWOJ>-do-MASTER_<temat>.md + meldunek w <LANE>-DO-MASTERA.md. Master decyduje o wpieciu i publikuje kanon.
-Pliki SILNIK (Civ/SILNIK/) zostaja jako referencja.
+### ~~**P0 miasto**~~ — **ZAMKNIĘTE** (kanon `42efefff…`)
 
+---
 
-## [2026-06-24] REGULA: BACKUP PRZED ZMIANA (rolling)
-Przed KAZDA zmiana pliku: `cp <plik> <plik>.bak-<TWOJ_DZIAL>` (1 rolling backup = ostatnia ZIELONA wersja). Edytuj plik roboczy, backup zostaje. Raportuj „zrobione" DOPIERO po: testy zielone (+ sedzia OK przy wysokiej stawce). Nastepny cykl: nadpisz backup swiezym z aktualnej dobrej wersji; nowe zmiany ZAWSZE do pliku roboczego, NIGDY do backupu. Padnie -> `cp .bak -> plik` (revert).
+### **Design W3 v3 HUD — HOLD** (2026-07-03)
 
-## [2026-06-24] STATUS
-Bez nowych decyzji. Kontynuuj: kreator nowej gry + read-only miast AI. Hooki cityPanel wpina master.
+**Wklejka Design:** `docs/ux/WKLEJKA-DESIGN-START-W3-miasto-v3.md`  
+**Brief:** `docs/ux/DESIGN-BRIEF-W3-miasto-v3-HUD.md`  
+**Handoff:** `_handoff/UI-do-DESIGN_W3-miasto-v3-delta-2026-07-03.md`
 
+**Lane po deliverable:** tylko CSS polish vs mockup · **bez** logiki · **bez** kanonu bez OK Macieja  
+**Bitwa:** `gra/` nowsze — osobny tor C-06 · nie mieszać
 
-## [2026-06-24] KOREKTA MODELU: pytania -> do MACIEJ (w tym oknie)
-Pytania zadajesz MACIEJ bezposrednio w TYM oknie (zwykly tekst). NIE kierujesz pytan do mastera.
-Wczesniejsze reguly typu "pytaj mastera / dopisz pytanie do DO-MASTERA" SA NIEAKTUALNE dla PYTAN.
-Master = tylko integracja/spinanie. Tylko gdy Maciej sam nie zna odpowiedzi, MACIEJ przekaze pytanie masterowi.
-Do mastera nadal idą TYLKO: (1) RAPORT statusu (co zrobione / co nowego do wdrozenia), (2) HANDOFF gotowego modulu do wpiecia (+ instrukcja + DoD). Nie pytania projektowe.
+---
 
+### **[2026-07-03] C-06 v4 mapa bitwy** · START Design (osobny tor)
 
-## ROUTING — GDZIE CO (obowiazuje, zastepuje wczesniejsze reguly kierowania)
-- PYTANIA (decyzje projektowe, watpliwosci, opcje) -> MACIEJ, w TYM oknie (zwykly czat). NIGDY do mastera. (Tylko gdy Maciej sam nie wie, Maciej przekaze masterowi.)
-- RAPORT ZMIAN / POSTEPU (co zrobiles) -> MACIEJ, w TYM oknie (czat). Ty tu pracujesz z Maciej.
-- GOTOWE DO WPIECIA (modul/dane do integracji w silnik/kanon) -> MASTER: plik dyspozycje/_handoff/<DZIAL>-do-MASTER_<temat>.md + KROTKI wpis w <LANE>-DO-MASTERA.md. Ten plik = TYLKO handoffy + status integracji, NIE pytania.
-Master = integracja + sedzia + kanon. Nie rozstrzyga pytan projektowych dzialu.
+Brief: `DESIGN-BRIEF-C06-v4-map-redesign.md` · wklejka: `WKLEJKA-DESIGN-START-C06-v4.md`  
+**Nie mieszać** z miastem W3.
 
+---
 
-## PROTOKOL ZAKLADKI (aktualny — zastepuje wczesniejsze reguly triggera/kierowania)
+### **[2026-07-03] W3-W4 + UX Master** · ✅ **W KANONIE** · md5 `153fcda2…`
 
-TRIGGER (re-czytanie): gdy Maciej napisze "SPRAWDZ" (lub "przeczytaj dyspozycje") -> przeczytaj swoj <LANE>.md od ostatniego znacznika: sekcje DO ZROBIENIA / nowe zadania / ZMIANY PRIORYTETOW. Wykonaj. (Brak auto-petli — ruszasz na trigger Macieja.)
+Maciej: sesja Master = **ostateczne**. Lane W3-W4 zmergowany · reconcile 22:04.  
+**Playtest:** `gra-kanon/START.html` · Ctrl+F5
 
-ROUTING:
-- Pytania o TWOJE zmiany / rozwojowe / decyzje projektowe -> MACIEJ, w tym oknie (czat).
-- Chcesz cos skierowac do INNEJ zakladki/zadania -> przez MASTER: handoff dyspozycje/_handoff/<TWOJ>-do-MASTER_<temat>.md. NIGDY bezposrednio do innej zakladki.
-- Gotowe do wpiecia / integracja w silnik -> MASTER: handoff + krotki wpis w <LANE>-DO-MASTERA.md.
-MASTER = przepinanie miedzy zakladkami + spinanie w silnik + sedzia + kanon. Pytan projektowych dzialu NIE rozstrzyga.
+---
 
-## [2026-06-24] OD MIASTO (przez master): kontrakt produkcji gotowy
-MIASTO czeka na paczke zwrotna od Ciebie. Kontrakt: dyspozycje/_handoff/MIASTO-do-UI_kontrakt-produkcji.md (AKT 1+2). Addytywne API do cityPanel:
-- poziomy compound: buildingLevelForEpoch / buildingEffectAtLevel ('Ulepsz' = gating po epoce; NIE liczcie 1,10^ sami),
-- Wykup: rushCost / rushProduction,  - Wstrzymaj: setPaused + pole wstrzymana?,  - rekrutacja: populationCostOf.
-Odczyt {kolejka, postep} bez zmian. Twoja paczka zwrotna (lista importow z production.ts + czego brakuje) -> handoff do mastera.
+### **[2026-07-03] Grupa C batch 2** · ✅ **W KANONIE** (reconcile Master)
 
+C-06 mapa bitwy — **START Design v4** (sync kanon) · reszta Grupy C w kanonie.
 
-## =========================================================
-## ROUTING KOMUNIKACJI — WERSJA OSTATECZNA
-## (ZASTEPUJE wszystkie wczesniejsze reguly kierowania w tym pliku)
-## =========================================================
-1. PYTANIA OGOLNE / PROJEKTOWE / DECYZJE (kierunek, co i jak, akceptacje, balans) -> MACIEJ, w TYM oknie (zwykly czat). Tylko Maciej decyduje o merytoryce.
-2. PYTANIE LUB PROSBA DO INNEGO DZIALU (potrzebujesz czegos / odpowiedzi od innej zakladki) -> NIE pytasz jej wprost. Kierujesz do MASTERA: dyspozycje/_handoff/<TWOJ>-do-MASTER_<temat>.md + krotki wpis w <LANE>-DO-MASTERA.md. MASTER rozdysponowuje do wlasciwego dzialu i odsyla odpowiedz.
-3. SPIECIE / INTEGRACJA W SILNIK (modul gotowy do wpiecia, kanon, kontrakt wpiecia + DoD) -> MASTER (handoff + wpis <LANE>-DO-MASTERA.md). Master wpina, sedzia, kanon, i rozdziela dalej co trzeba.
-4. RAPORT POSTEPU (co zrobiles) -> MACIEJ w oknie.
+**Handoff:** `_handoff/MASTER-do-UI-UNITS_grupa-C-batch2-2026-07-03.md` · meldunek `_handoff/UI-UNITS-do-MASTER_grupa-C-batch2-2026-07-03.md`
 
-MASTER (silnik) = ROUTER miedzy dzialami + integracja w silnik + sedzia + kanon. Nigdy nie rozstrzyga pytan projektowych — te ida do Macieja.
-TRIGGER: Maciej pisze "SPRAWDZ" (lub "przeczytaj dyspozycje") -> czytasz swoj <LANE>.md (nowe zadania + zmiany priorytetow) i dzialasz. Bez auto-petli.
+Port Design KOMPLET: C-12 end · C-04/C-05 siege HUD · C-06 top · cmd SVG · C-01 preBattle SVG.
 
-## [2026-06-24] OD MASTERA: odpowiedzi (konwencje/silnik)
-1. prodMap (stan kolejek) -> OSOBNY modul game/productionState.ts, master go importuje do main.ts (nie pchaj do main.ts inline). Kontrakt uzgodnie przy wpieciu.
-2. Model poziomow budynku przy "Ulepsz" -> COMPOUND/epokowy (decyzja MIASTO: buildingLevelForEpoch/buildingEffectAtLevel; 'Ulepsz' = gating po epoce). Porzuc 1->2 na sztywno.
-3. Napisy polskie w kodzie UI -> literalny UTF-8 (jak main.ts). Zostaw jak masz.
-4. Makiety wspolne (Widok-miasta/HUD/flow) -> mozesz przeniesc do Civ/UI/; file-map (ARCHITEKTURA-PLIKI) uzgodnimy pozniej, niski prio.
+**MASTER (tor B):** bramka + `publish-kanon-snapshot.ps1` — **czeka komenda `master` od Macieja w hubie.**
 
+**Tor C (hub):** `The Game - Walka Hub Grupa-C (1E).dc.html` · `_handoff/UI-do-DESIGN_hub-walka-kafelki-2026-07-03.md`
 
-## [2026-06-24] TRYB MODELU: SONNET (oszczednosc tokenow)
-Pracuj DOMYSLNIE na Sonnecie. Wiekszosc Twojej roboty (wpinanie wg specow, implementacja, dane, testy, render) jest na Sonnecie w sam raz.
-ESKALACJA: jesli trafisz na problem, ktorego NIE ogarniasz na Sonnecie (zbyt zlozone rozumowanie/architektura/balans), NIE bruteforce —
-ZATRZYMAJ sie i napisz Maciejowi w czacie: "POTRZEBNY OPUS do: <co dokladnie>". Maciej przelaczy to okno na Opus na ten fragment, potem wracasz na Sonnet.
+**Tor D (A-08):** `_handoff/UI-do-DESIGN_A08-START-2026-07-03.md` · wklejka istnieje
 
+---
 
-## [2026-06-24] TRYB WYKONANIA: PRACA PRZEZ SONNET-SUBAGENTOW (OBOWIAZEK)
-Tego okna nie da sie przelaczyc na Sonnet, wiec: KAZDA istotna prace ZLECASZ SUBAGENTOWI na Sonnecie.
-- Narzedzie Agent/Task z parametrem model: "sonnet". Subagent robi: implementacje, edycje wielu plikow, wiekszy research/analize, render, testy, budowanie.
-- Sama sesja-dzial zostaje CHUDA: tylko (1) zbrief subagenta, (2) odbierz wynik, (3) zraportuj Maciejowi / zrob handoff do mastera. NIE rob ciezkiej roboty inline w tym oknie.
-- Drobiazgi (1-2 linijki, szybka odpowiedz) mozesz inline. Wszystko wieksze -> Sonnet-subagent.
-- Subagent ma trzymac sie Twoich regul (backup przed zmiana, testy, NIE publikuj kanonu, build do /tmp, NIGDY npm run build).
-- ESKALACJA: jesli subagent na Sonnecie nie ogarnia (zbyt zlozone) -> zglos Maciejowi "POTRZEBNY OPUS do: <co>" i czekaj.
+### **[2026-07-03] W-WIKI-1 — Wikipedia HUD polish** · **PRIORYTET** · Maciej OK funkcji
 
-## [2026-06-24] OD MASTERA: odpowiedzi kontrakt produkcji (E.2-E.5)
-- E.2 etaTurns: zostan przy lokalnym (niebloker); MIASTO wystawi eksport etaTurns przy okazji, wtedy podmienisz.
-- E.3 wstrzymana: TAK — zapis gry (save.ts gdy wpiety) serializuje pole wstrzymana?:boolean. Potwierdzone.
-- E.4 rushProduction vs onRushBuy: UI wola cfg.onRushBuy -> SILNIK realizuje (sprawdza skarbiec, wola rushProduction, konczy front). UI NIE wola rushProduction lokalnie. Jeden wlasciciel ukonczenia = silnik.
-- E.5 nazwyPoziomow: to dane budynkow (MIASTO/buildings.json) — przekazuje MIASTO; do tego czasu uzyj nazwy bazowej + nr poziomu.
+**Handoff:** `_handoff/MASTER-do-UI_wikipedia-polish.md` (czytaj w całości)  
+**Design (osobno):** `_handoff/UI-do-DESIGN_wikipedia-hud-mockup.md` — mockup mapy + miasta
 
-## [2026-06-24] DOMKNIECIE v0.1 — co Ci brakuje (od mastera). Rob przez Sonnet-subagenta.
-1. [ROB, WYSOKI] HUD W GRZE: pasek zasobow (Pieniadz/Praca/nauka/kultura) + minimapa + panele. To realnie brakuje do grania (#36).
-2. [ROB] Licznik BILANSU surowcow co ture (panel Bilans) (#15).
-3. [ROB] Panel produkcji: sfinalizuj wg moich odpowiedzi E.2-E.5 (onRushBuy->silnik konczy, wstrzymana, etaTurns lokalnie).
-4. [PRZYGOTUJ] Stub panelu DYPLOMACJI: panel relacji + etykiety statusu (5 tierow) — z propozycji Civ7; podlaczysz gdy CYWILIZACJE da dane.
+| Co | Plik | Akcja Lane |
+|----|------|------------|
+| Przycisk Wiki góra-prawo | `hud.ts` | dopasuj do `.b-menu`, stan `.on`, bez emoji |
+| Panel Poradnik/Encyklopedia | `wikiHubHud.ts` | styl jak science/diplo hub, PL gracza w meta |
+| Markdown | `markdownLite.ts` | tylko jeśli brakuje formatowania |
+| Treść | `wikiBundle.json` | regen: `node gra/tools/bundle-wiki-for-game.cjs` |
 
-## [2026-06-25] DECYZJE MACIEJA (przez master)
-- 8B: WIOSKI USPIONE w v0.1 (miasta zakladane z trybu budowania/mapy). Nie rob wiosek -> usun/placeholder w widoku. Wrocimy w przyszlosci.
-- 9A: NAGLOWEK miasta = WSZYSTKIE 3 akcje: Zarzadca automatyczny, Zmien nazwe, Widok artystyczny. Rob przyciski + wolaj callbacki. Logika: Zmien nazwe (proste, UI/silnik), Zarzadca automatyczny (auto-zarzadzanie = MIASTO/silnik), Widok artystyczny (widok miasta = MAPA/UI). Czego potrzebujesz od MIASTO/silnika -> handoff przez mastera.
+**Nie przywracać** Wiki na toolbarze lewym ani przy minimapie. **NIE** `main.ts`.
 
+**DoD:** smoke OK · meldunek `UI-DO-MASTERA.md` → `→ MASTER: master`
 
-## [2026-06-25] PYTANIE MASTERA (PILNE, odpisz w -DO-MASTERA): KOSZTY / SUBAGENCI
-Czy na pewno ciezka robote (kod/build/testy) realizujesz przez SUBAGENTOW na SONECIE (tanszy),
-czy nadal robisz wszystko w glownym oknie BEZ wywolania subagenta? Odpowiedz wprost: TAK-subagenci-Sonnet / NIE-glowne-okno.
-Jesli NIE: od teraz OBOWIAZKOWO deleguj kod do subagenta na Sonecie. Palimy limit za szybko.
+---
 
-## [2026-06-25] DECYZJE MACIEJA -> UI (relay)
-- 7A: HUD zaakceptowany; plaster EKONOMIA(miasto)+UI (splitPraca/kup-za-Pieniadz/gate terytorialny) wpina MASTER w batchu silnika. Po wpieciu dostosujesz cityPanel haczykami (bez nowego UX). Standby do sygnalu wpiecia.
+## DO ZROBIENIA PÓŹNIEJ (backlog)
 
+**START — paczka UI (Maciej · 2026-07-03)** — menu hero, intro, HUD mapy, ikony medalionów.
 
-## [2026-06-25] OBOWIAZEK: format pytan = ABC (polecenie Macieja)
-KAZDE pytanie do mastera/Macieja zadawaj ZAWSZE w formacie ponumerowanym z opcjami:
-1) <pytanie> -- A) ... B) ... (C) ...)  [oznacz rekomendacje]
-2) <pytanie> -- A) ... B) ... (C) ...)
-Najpierw ZNAJDZ kilka realnych rozwiazan/opcji, potem podaj jako 1 ABC / 2 ABC. Zero pytan otwartych, zero dowolnej formy. To OBOWIAZEK -- ujednolicamy obieg, bo kazdy pyta inaczej.
+| # | Element | Mockup / asset | Stan Lane | Uwagi |
+|---|---------|----------------|-----------|-------|
+| 1 | Menu główne | `Ekran Menu Hero (1E).dc.html` + `hero-menu.png` | ✅ W1-hero | `mainMenu.ts` · lewa kolumna + hero prawo |
+| 2 | Intro NOWA GRA | `Ekran Intro Hero (1E).dc.html` + `hero-intro.png` | ✅ W1-hero | `newGameFlow.ts` krok 1 · bez akapitu |
+| 3 | HUD mapy layout | `HUD Mapy layout (1E).dc.html` | ✅ **W2 batch 2** | floating chip + MOC pendant + dół-prawo · banery liderów = backlog |
+| 4 | Ikony medalionów | menu-emblem, epoch-*, civ-*, sett-* | ✅ sync | hash = brand-book · ramki/glow bez zmian |
+| — | Panel miasta W3 | cp-* zakładki | ✅ W3 lite | **Design CZEKA:** `START — W3-miasto-1E` → handoff `_handoff/UI-do-DESIGN_w3-miasto-1E-dane.md` |
 
-## [2026-06-25] DECYZJA -> UI: okno 'polacz armie' (relay Macieja)
-3 (stacking): gdy jednostka/armia wchodzi na ZAJETY heks -> OKNO WYBORU: [Polacz armie] / [Nie lacz]. Po 'nie lacz' jednostki stoja osobno na tym samym heksie (moze byc ich duzo). Bez nowego rozbudowanego UX poza tym oknem. Stan/model merge trzyma UNITS; Ty pytasz i zwracasz wybor.
+**Kanon bieżący:** MD5 **`153fcda2f71e1e9ab3a538d8b9c10f9e`** · `gra-kanon/START.html` (reconcile Master 2026-07-03 22:04)
 
-## [2026-06-25] DECYZJA -> UI: PANEL ZARZADZANIA ARMIA (wzorzec Total War)
-Maciej: zbuduj UX laczenia/zarzadzania armiami po jednostkach. Najpierw MOCKUP panelu transferu do akceptacji Macieja, potem implementacja. Logike daje UNITS (kontrakt transfer/split/mergeWounded/remove).
-- TRANSFER/LACZENIE ARMII: lewy klik na 1. armie -> prawy klik na 2. armie -> OKNO WYMIANY/TRANSFERU (dwie kolumny KART jednostek) -> DRAG&DROP kart miedzy armiami. Przeniesienie wszystkich -> 1. armia pusta.
-- LACZENIE RANNYCH ODDZIALOW: klawisz M (auto-scal pasujace ranne) ; Ctrl+M na zaznaczonych ; drag karty na karte.
-- PODZIAL ARMII: wydzielenie jednostek do nowej armii (drag na puste pole/mape).
-- KARTA JEDNOSTKI: nazwa/typ/liczebnosc(HP)/staty. Slowniczek: Merge armies=laczenie armii, Merge units=laczenie oddzialow, Unit card=karta jednostki, Reinforcements=posilki.
-- To rozszerza wczesniejsze okno #3 'polacz/nie lacz' w pelny panel transferu.
+**Inbox Design:** `docs/ux/claude-design/_staging/inbox/` — **pusty** (brak nowego zip). Ikony już w `brand-book/eksport/` = zsynchronizowane z `gra/src/ui/icons/brand/`.
 
-## [2026-06-25] UI: doprecyzowanie EKRANU WYMIANY (Maciej)
-- EKRAN WYMIANY (Exchange/Transfer) po P-kliku na 2. armie: panel podzielony na DWIE POLOWY (lewy general | prawy general). Przenoszenie jednostki = KLIK na karte LUB drag karty z jednej polowy do drugiej.
-- DOLNY PASEK = pojedyncze jednostki/oddzialy. Scalanie rannych: przeciagniecie karty rannego oddzialu na DRUGA TAKA SAMA karte (lub skrot M) -> scala zolnierzy w jeden pelny oddzial. Pokaz to na schemacie interfejsu armii.
+**Assety PNG:** `gra/src/ui/assets/hero/` (~4 MB) · brand-book jeszcze bez `assets/` — opcjonalnie skopiować przy kolejnym zip Design.
 
-## [2026-06-25] MASTER -> UI: PICKER BADAN (nauka sterowana graczem, decyzja 1a)
-Nauka sterowana przez gracza: gracz wybiera CEL badan. Potrzebny prosty UI wyboru technologii do badania (lista/drzewko dostepnych: prereqi spelnione, nie-ukonczone) -> wola setPlayerResearchTarget(techId) (silnik wystawi). Pokaz postep: pula nauki vs koszt celu. Silnik ustawia domyslny cel (pierwsza dostepna), Ty pozwalasz zmienic. Uzyj istniejacego drzewka tech jesli prosto; inaczej mockup -> akceptacja.
+| Batch | Co | Stan |
+|-------|-----|------|
+| **Playtest Macieja** | paczka UI 1–4 + W3 miasto + HUD layout | **CZEKA** |
+| **W2 HUD batch 2** | layout `HUD Mapy layout (1E)` | ✅ **2026-07-03** |
+| **W3 batch 2** | vertical rail B-01 | BACKLOG |
+| **W1-menu** | `menu-button-map.json` | **CZEKA Design** |
 
-## [2026-06-25] UI: HAKI nauki GOTOWE w silniku (uzyj tych nazw)
-Silnik wystawil na window (podlacz picker badan do nich):
-- window.__civ_setResearchTarget(techId) -> boolean (ustaw cel; waliduje prereqi/nieukonczona)
-- window.__civ_getResearchState(naukaPerTurn?) -> {pula, targetId, kosztCelu, postepFraction, turnsLeft}
-- window.__civ_getAvailableTechs() -> string[] (dostepne do wyboru)
-Domyslny cel ustawia silnik (pierwsza dostepna); Ty pozwalasz zmienic + pokazujesz postep (pula vs koszt).
+**Zamknięte dziś (Lane):** W1f · infografik4 (13 SVG) · layout kreator kroki 2–4 · Sumer ✅ (Maciej).
 
-## [2026-06-25] MASTER -> UI: okolica — czytanie danych
-Potwierdzony wariant B (jedno zrodlo prawdy: wspolny selektor stanu z EKONOMIA/SILNIK; nie dubluj hooków UI vs MAPA). Overlay v0.1 = A (tylko zaznaczone miasto). Render statyczny (range + pola obrabiane + linia granicy kultury) OK na v0.1.
+**Po lane:** meldunek `UI-DO-MASTERA.md` → `→ MASTER: master`.
 
-## [2026-06-25] MASTER -> UI: picker badan WPIETY (live w kanonie)
-sciencePicker.ts byl orphanem (poza buildem) -> silnik wpial go w main.ts + przycisk '🔬 Nauka' w HUD, podlaczony do hakow nauki. Nauka sterowana graczem dziala. Jakbys dopracowywal UX pickera — pracuj na sciencePicker.ts (juz w grafie kanonu).
+---
 
-## [2026-06-25] WLASNOSC STARTU: master ownuje, Wy = EKRANY (decyzja Macieja: A)
-Ekran startu = MASTER (inicjalizacja). Wy: same ekrany (mainMenu/newGameFlow) — pickery, render, zwrot wyborow. Master sklada wybory w gre.
+## Archiwum bieżące (W1 zamknięte)
 
-## [2026-06-26] MASTER WYKONAL (info): wpiete Wasze UI
-- sciencePicker.ts: przepiete configureSciencePicker na NOWE API (getResearchState/getResearchedTechs/getAvailableTechs:string[]/onSelectTarget) + window.__civ_getResearchedTechs. Drzewko pokazuje ZBADANE. Blad TS2322 naprawiony.
-- diplomacyPanel.ts: WPIETY (import + przycisk 'Dyplomacja' + notyfikacje zdarzen AI przez hint). Gracz widzi wojne/pokoj.
-- HUD: rozszerzony tekstowy HUD o Praca + Kultura (pelny hud.ts wciaz NIE wpiety — jak chcesz pelny HUD z ikonami/minimapa, to nastepny krok; daj sygnal).
+**[2026-06-26] W1 PACZKA FINAL** — tokeny, emblem menu, cityPanel SVG budynki/jednostki · kanon `ca118880…` · HUD W2 = osobny batch.
+
+---
+
+## Archiwum (P4 — zamknięte w kanonie)
+
+**[2026-06-28] E2 kreator** → `ORCHESTRATOR-DISPATCH-E2-2026-06-28.md` · wróci po P4
+
+---
+
+## Archiwum
+
+Starsze dyspozycje: `docs/archiwum/dyspozycje/UI.md`

@@ -1,6 +1,6 @@
 # MASTER → UI: port Design 1E — pole bitwy (C-06 / C-07 / C-09)
 
-**Status:** **ACTIVE — faza 2: Design v4** (port UI **CZEKA** ZIP)  
+**Status:** **ACTIVE — faza 4: port skin** (ZIP v4 na dysku ✅)  
 **Data:** 2026-07-04  
 **Trigger:** ✅ Maciej werdykt 2026-07-04 ~20:52 · Hak 1 OK · Hak 2 **A**
 
@@ -12,8 +12,8 @@
 |------|-----|-----|------|
 | **1** | **UI lane** | review pack 3 stany | ✅ **ZAMKNIĘTE** |
 | **2** | **Maciej** | Werdykt Hak 1 + Hak 2 | ✅ **2026-07-04** |
-| **3** | **Design** | ZIP `POLE-BITWY-HUD-v4-2026-07-04` | **→ TERAZ** |
-| **4** | **UI lane** | Port skin (ten handoff) | **CZEKA ZIP** |
+| **3** | **Design** | ZIP `POLE-BITWY-HUD-v4-2026-07-04` | ✅ **2026-07-04 ~21:25** |
+| **4** | **UI lane** | Port skin (ten handoff) | **→ TERAZ** |
 | **5** | **Master → F** | review · kanon | po krok 4 |
 
 **DELTA:** `docs/ux/MASTER-DELTA-POLE-BITWY-vs-mockupy.md`  
