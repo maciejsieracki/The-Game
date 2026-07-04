@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><style>html,body{margin:0;padding:0;background:#05060a}*{box-sizing:border-box}</style></helmet>
+<div style="position:relative;width:1920px;height:1080px;overflow:hidden;font-family:'Segoe UI',Tahoma,sans-serif;color:#e8e0c8;background:#0a0808;">
+
+  <!-- POLE 3D placeholder (szturm muru) -->
+  <div style="position:absolute;top:52px;left:60px;right:60px;bottom:190px;z-index:0;background:radial-gradient(760px 460px at 50% 65%,rgba(150,70,40,.24),transparent 68%),#0d0a08;display:flex;align-items:center;justify-content:center;"><span style="font-size:12px;letter-spacing:.3em;text-transform:uppercase;color:#4a3a30;">Szturm muru 3D · drabiny, wyłom, obrońcy · render silnika</span></div>
+
+  <!-- GÓRA -->
+  <div style="position:absolute;top:0;left:0;right:0;height:52px;z-index:5;display:flex;align-items:center;justify-content:space-between;padding:0 18px;background:linear-gradient(180deg,rgba(18,24,32,.96),rgba(8,10,16,.9));border-bottom:1px solid rgba(232,216,138,.25);">
+    <div style="display:flex;align-items:center;gap:12px;"><span style="font-family:Georgia,serif;font-size:16px;color:#e8d88a;">Szturm murów Kapui</span><span style="font-size:11px;font-weight:700;color:#2e2708;background:#c84040;border-radius:6px;padding:2px 8px;">Faza szturmu</span></div>
+    <div style="display:flex;align-items:center;gap:14px;">
+      <span style="display:inline-flex;align-items:center;gap:8px;"><span style="font-size:11px;color:#8fb6e0;letter-spacing:.1em;text-transform:uppercase;">Szturmujący</span><span style="width:90px;height:7px;border-radius:4px;background:rgba(255,255,255,.08);overflow:hidden;"><span style="display:block;width:80%;height:100%;background:linear-gradient(90deg,#3a6ad0,#5a9bd4);"></span></span></span>
+      <span style="font-family:Georgia,serif;font-size:16px;color:#e8d88a;">VS</span>
+      <span style="display:inline-flex;align-items:center;gap:8px;"><span style="width:90px;height:7px;border-radius:4px;background:rgba(255,255,255,.08);overflow:hidden;display:flex;justify-content:flex-end;"><span style="display:block;width:36%;height:100%;background:linear-gradient(90deg,#c05050,#8a3a3a);"></span></span><span style="font-size:11px;color:#e08a8a;letter-spacing:.1em;text-transform:uppercase;">Obrońcy muru</span></span>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;"><span style="height:32px;padding:0 14px;border:1px solid rgba(232,216,138,.3);border-radius:8px;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#e8d88a;display:flex;align-items:center;">Pomiń → wynik</span><span style="height:32px;padding:0 14px;border:1px solid rgba(200,64,64,.4);border-radius:8px;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#e08a8a;display:flex;align-items:center;">Wyjście</span></div>
+  </div>
+
+  <!-- LEWY: punkty szturmu (wyłomy/bramy) -->
+  <div style="position:absolute;top:72px;left:16px;z-index:5;width:250px;border:2px solid rgba(232,216,138,.4);border-radius:12px;overflow:hidden;background:linear-gradient(180deg,rgba(18,24,32,.96),rgba(8,10,16,.96));box-shadow:0 10px 26px rgba(0,0,0,.55);">
+    <div style="padding:12px 16px;border-bottom:1px solid rgba(232,216,138,.2);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#e8d88a;background:linear-gradient(90deg,rgba(232,216,138,.08),transparent);">Punkty szturmu</div>
+    <div style="padding:14px 16px;display:flex;flex-direction:column;gap:9px;">
+      <div style="display:flex;align-items:center;gap:11px;padding:10px 12px;border:2px solid #e8d88a;border-radius:9px;background:rgba(232,216,138,.06);box-shadow:0 0 14px rgba(232,216,138,.2);"><span style="width:34px;height:34px;flex:none;border-radius:50%;background:radial-gradient(circle at 38% 30%,#2a2416,#12100a);border:1.5px solid #e8d88a;display:flex;align-items:center;justify-content:center;color:#f4e6a8;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M6 20V8l6-3 6 3v12"/><path d="M9 20v-6h6v6"/></svg></span><div style="flex:1;"><div style="font-size:13px;color:#e8e0c8;">Wyłom bramy</div><div style="font-size:11px;color:#7ad0a0;">otwarty · szturm gotowy</div></div></div>
+      <div style="display:flex;align-items:center;gap:11px;padding:10px 12px;border:1px solid rgba(232,216,138,.2);border-radius:9px;background:rgba(255,255,255,.02);"><span style="width:34px;height:34px;flex:none;border-radius:50%;background:radial-gradient(circle at 38% 30%,#1a2230,#0a0d14);border:1.5px solid #a08030;display:flex;align-items:center;justify-content:center;color:#e8d88a;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M6 20V4M6 4l10 3-10 3"/></svg></span><div style="flex:1;"><div style="font-size:13px;color:#e8e0c8;">Drabiny (wsch.)</div><div style="font-size:11px;color:#8a8070;">mur 62% · trudny</div></div></div>
+      <div style="display:flex;align-items:center;gap:11px;padding:10px 12px;border:1px solid rgba(232,216,138,.2);border-radius:9px;background:rgba(255,255,255,.02);"><span style="width:34px;height:34px;flex:none;border-radius:50%;background:radial-gradient(circle at 38% 30%,#1a2230,#0a0d14);border:1.5px solid #a08030;display:flex;align-items:center;justify-content:center;color:#e8d88a;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M4 20V9l2-2 2 2 2-2 2 2 2-2 2 2 2-2 2 2v11Z"/></svg></span><div style="flex:1;"><div style="font-size:13px;color:#e8e0c8;">Wieża oblężnicza</div><div style="font-size:11px;color:#8a8070;">w drodze · 1 tura</div></div></div>
+    </div>
+  </div>
+
+  <!-- PRAWY: obrona muru -->
+  <div style="position:absolute;top:72px;right:16px;z-index:5;width:250px;border:2px solid rgba(200,64,64,.35);border-radius:12px;overflow:hidden;background:linear-gradient(180deg,rgba(24,14,14,.96),rgba(12,8,8,.96));box-shadow:0 10px 26px rgba(0,0,0,.55);">
+    <div style="padding:12px 16px;border-bottom:1px solid rgba(200,64,64,.25);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#e08a8a;background:linear-gradient(90deg,rgba(200,64,64,.1),transparent);">Obrona muru</div>
+    <div style="padding:16px;">
+      <div style="display:flex;justify-content:space-between;font-size:12px;color:#8a8070;margin-bottom:6px;"><span>Obrońcy na murach</span><span style="color:#e08a8a;">3 oddziały</span></div>
+      <div style="display:flex;justify-content:space-between;font-size:12px;color:#8a8070;margin-bottom:6px;"><span>Wrzący olej</span><span style="color:#e08a8a;">2 kotły</span></div>
+      <div style="display:flex;justify-content:space-between;font-size:12px;color:#8a8070;margin-bottom:12px;"><span>Łucznicy na blankach</span><span style="color:#e08a8a;">+30% obr.</span></div>
+      <div style="font-size:11px;color:#8a8070;line-height:1.6;border-top:1px solid rgba(255,255,255,.06);padding-top:10px;">Szturm przez wyłom omija bonus muru obrońcy.</div>
+    </div>
+  </div>
+
+  <!-- DÓŁ: akcje szturmu -->
+  <div style="position:absolute;bottom:0;left:0;right:0;height:170px;z-index:6;background:linear-gradient(0deg,rgba(18,24,32,.97),rgba(8,10,16,.9));border-top:2px solid rgba(232,216,138,.4);border-radius:16px 16px 0 0;display:flex;align-items:center;justify-content:center;gap:16px;padding:0 40px;">
+    <div style="flex:1;max-width:360px;font-size:13px;color:#8a8070;line-height:1.6;">Skieruj oddziały na wyłom, by uniknąć bonusu murów. Drabiny i wieże otwierają nowe punkty wejścia, ale kosztują straty.</div>
+    <button style="display:flex;flex-direction:column;align-items:center;gap:8px;padding:16px 24px;border:2px solid rgba(232,216,138,.3);border-radius:11px;background:rgba(255,255,255,.02);color:#e8d88a;cursor:pointer;"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M6 20V4M6 4l10 3-10 3"/></svg><span style="font-size:12px;letter-spacing:.12em;text-transform:uppercase;">Drabiny</span></button>
+    <button style="display:flex;flex-direction:column;align-items:center;gap:8px;padding:16px 24px;border:2px solid rgba(232,216,138,.3);border-radius:11px;background:rgba(255,255,255,.02);color:#e8d88a;cursor:pointer;"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M4 20V9l2-2 2 2 2-2 2 2 2-2 2 2 2-2 2 2v11Z"/></svg><span style="font-size:12px;letter-spacing:.12em;text-transform:uppercase;">Wieża</span></button>
+    <button style="display:inline-flex;align-items:center;gap:12px;background:linear-gradient(180deg,#d05050,#8a2424);border:1px solid #6a1818;border-top-color:#e07070;color:#fff0e8;font-size:17px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;padding:20px 52px;border-radius:11px;cursor:pointer;box-shadow:inset 0 1px 0 rgba(255,255,255,.25),0 6px 22px rgba(200,64,64,.4);"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4.5 5 14 14.5M14.5 15 17.5 18M15.6 14 13.6 16M19.5 5 10 14.5M9.5 15 6.5 18M8.4 14 10.4 16"/></svg>Szturm przez wyłom</button>
+  </div>
+
+  <div style="position:absolute;bottom:4px;right:14px;z-index:7;font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:#3f3b34;">The Game · C-05 Szturm muru · 1E</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{ &quot;$preview&quot;: { &quot;width&quot;: 1920, &quot;height&quot;: 1080 } }"></script>
+</body>
+</html>
