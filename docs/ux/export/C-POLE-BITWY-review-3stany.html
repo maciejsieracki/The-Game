@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<title>POLE-BITWY — 3 stany do review Macieja</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;padding:24px 28px 40px;background:#05060a;color:#e8e0c8;font-family:'Segoe UI',Tahoma,sans-serif}
+h1{font-family:Georgia,serif;font-weight:400;font-size:1.55rem;color:#e8d88a;margin:0 0 6px}
+.lead{font-size:13px;color:#8a8070;line-height:1.55;max-width:980px;margin-bottom:22px}
+.lead strong{color:#c8b898}
+.states{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;max-width:1440px}
+.state{background:#0a0d14;border:1px solid rgba(232,216,138,.22);border-radius:12px;padding:12px}
+.state h2{margin:0 0 2px;font-family:Georgia,serif;font-size:1rem;font-weight:400;color:#e8d88a}
+.state .tag{font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:#8a8070;margin-bottom:10px}
+.frame{aspect-ratio:16/10;border-radius:8px;overflow:hidden;border:1px solid rgba(232,216,138,.15);position:relative;background:#0c1018}
+.note{font-size:10px;color:#8a8070;margin-top:8px;line-height:1.45}
+.legend{margin-top:24px;padding:14px 16px;border:1px solid rgba(232,216,138,.2);border-radius:10px;background:rgba(18,24,32,.75);max-width:980px;font-size:12px;line-height:1.65;color:#c8b898}
+.legend h3{margin:0 0 8px;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#e8d88a}
+.footer{margin-top:18px;font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:#5a564c}
+/* --- mini HUD wireframe --- */
+.hud{width:100%;height:100%;display:grid;grid-template-rows:auto 1fr auto auto;position:relative;font-size:9px}
+.top{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:6px 8px;background:rgba(12,18,35,.92);border-bottom:1px solid rgba(232,216,138,.2)}
+.top-l,.top-r{display:flex;align-items:center;gap:6px}
+.top-c{text-align:center;font-family:Georgia,serif;color:#e8d88a;letter-spacing:.08em}
+.vs{font-size:11px;font-weight:700}
+.counts{display:inline-flex;gap:4px;font-size:8px}
+.counts span{display:inline-flex;align-items:center;gap:2px}
+.counts .m{color:#8fb6e0}.counts .p{color:#e8d88a}.counts .r{color:#c8a878}
+.btn-gold{padding:3px 8px;border:1px solid rgba(232,216,138,.35);border-radius:6px;color:#e8d88a;background:rgba(232,216,138,.08);font-size:7px;text-transform:uppercase;letter-spacing:.08em}
+.btn-red{padding:3px 8px;border:1px solid #6a1818;border-radius:6px;color:#fff0e8;background:linear-gradient(180deg,#d05050,#8a2424);font-size:7px;text-transform:uppercase}
+.mid{display:grid;grid-template-columns:var(--roster-w,0) 1fr var(--rail-w,36px);min-height:0}
+.roster{background:linear-gradient(180deg,rgba(18,24,32,.97),rgba(8,10,16,.97));border-right:2px solid rgba(232,216,138,.35);padding:6px;display:flex;flex-direction:column;gap:5px;overflow:hidden}
+.roster.hidden{display:none}
+.filters{display:flex;flex-wrap:wrap;gap:3px}
+.fchip{padding:2px 5px;border-radius:4px;border:1px solid rgba(232,216,138,.25);font-size:6px;text-transform:uppercase;color:#8a8070}
+.fchip.on{border-color:rgba(58,106,208,.6);color:#8fb6e0;background:rgba(58,106,208,.12)}
+.selbar{display:flex;gap:3px;align-items:center;font-size:6px;color:#c8b898;padding:3px 0;border-top:1px solid rgba(232,216,138,.12);border-bottom:1px solid rgba(232,216,138,.12)}
+.selbar .g{color:#e8d88a}
+.grid{display:grid;grid-template-columns:repeat(6,1fr);gap:2px;flex:1;align-content:start}
+.card{aspect-ratio:.72;border-radius:3px;border:1px solid rgba(232,216,138,.18);background:rgba(24,30,42,.9);position:relative}
+.card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--acc,#8fb6e0)}
+.card.m::before{background:#8fb6e0}.card.p::before{background:#e8d88a}.card.r::before{background:#c8a878}
+.card.on{box-shadow:0 0 6px rgba(232,216,138,.25);border-color:rgba(232,216,138,.5)}
+.map{background:linear-gradient(135deg,#1a2838 0%,#2a4030 40%,#3a2828 100%);position:relative;margin:4px;border:2px solid rgba(232,216,138,.45);border-radius:6px}
+.map::after{content:'';position:absolute;top:8%;bottom:8%;left:50%;width:2px;background:linear-gradient(180deg,rgba(58,106,208,.8),rgba(200,64,64,.8));transform:translateX(-50%)}
+.map-lbl{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:Georgia,serif;color:rgba(232,216,138,.35);font-size:14px;letter-spacing:.2em;text-transform:uppercase}
+.mini{position:absolute;left:calc(var(--roster-w,0) + 6px);bottom:52px;width:52px;height:52px;border:1px solid rgba(232,216,138,.3);border-radius:4px;background:rgba(8,12,20,.85);font-size:5px;display:flex;align-items:center;justify-content:center;color:#8a8070;text-transform:uppercase}
+.rail{display:flex;flex-direction:column;gap:3px;padding:4px 3px;background:rgba(8,10,16,.85);border-left:1px solid rgba(232,216,138,.2)}
+.rbtn{width:28px;height:26px;border-radius:5px;border:1px solid rgba(232,216,138,.2);display:flex;align-items:center;justify-content:center;color:#e8d88a;background:rgba(30,30,50,.85);font-size:7px;font-weight:700}
+.rbtn.r-on{background:rgba(100,30,10,.9);border-color:rgba(212,100,50,.7);color:#ffc8a0}
+.rsep{height:1px;background:rgba(232,216,138,.15);margin:2px 0}
+.power{display:grid;grid-template-columns:1fr 1fr;gap:0;padding:4px 8px;background:rgba(12,18,35,.88);border-top:1px solid rgba(232,216,138,.15)}
+.pbar{height:6px;border-radius:3px;background:rgba(0,0,0,.4);overflow:hidden;position:relative}
+.pfill{height:100%;border-radius:3px}
+.pfill.a{width:62%;background:linear-gradient(90deg,#2a5090,#3a6ad0)}
+.pfill.d{width:48%;background:linear-gradient(90deg,#8a2424,#c84040);margin-left:auto}
+.plbl{display:flex;justify-content:space-between;font-size:6px;color:#8a8070;margin-top:2px}
+.toolbar{display:grid;grid-template-columns:120px 1fr auto;gap:6px;padding:6px 8px;background:linear-gradient(180deg,rgba(24,20,12,.97),rgba(12,10,6,.97));border-top:2px solid rgba(232,216,138,.35);align-items:center}
+.toolbar.hidden{display:none}
+.chips{font-size:6px;color:#8a8070;line-height:1.4}
+.chips b{color:#e8d88a;display:block;font-size:7px;margin-bottom:2px}
+.tcenter{display:flex;flex-wrap:wrap;gap:4px;justify-content:center}
+.tbtn{padding:5px 8px;border:1px solid rgba(232,216,138,.25);border-radius:6px;color:#e8d88a;font-size:6px;text-transform:uppercase;letter-spacing:.06em;background:transparent}
+.tbtn.primary{background:linear-gradient(180deg,#f0dc88,#b99a28);color:#2e2708;border-color:#6a5212;font-weight:700}
+.tbtn.battle{background:linear-gradient(180deg,#d05050,#8a2424);color:#fff0e8;border-color:#6a1818;font-weight:700}
+.tright{display:flex;gap:4px}
+.badge-auto{position:absolute;top:42%;left:50%;transform:translate(-50%,-50%);padding:8px 14px;border:1px solid rgba(232,216,138,.3);border-radius:8px;background:rgba(12,18,35,.85);font-family:Georgia,serif;color:#e8d88a;font-size:11px;letter-spacing:.12em;text-transform:uppercase;z-index:2}
+.hint{position:absolute;bottom:58px;left:50%;transform:translateX(-50%);font-size:6px;color:#8a8070;letter-spacing:.1em;text-transform:uppercase}
+</style>
+</head>
+<body>
+<h1>POLE-BITWY · 3 stany — review przed Design v4</h1>
+<p class="lead">Krok <strong>1</strong> (jak A-06): oceniasz <strong>treść</strong> (Hak 1) i <strong>wygląd</strong> (Hak 2) kodu w <code>Gra-podglad-POLE-BITWY.html</code>. Design v4 dopiero po Twoim werdykcie. Wireframe poniżej = układ z kodu, nie mockup v3.</p>
+
+<div class="states">
+  <div class="state">
+    <h2>1 · Deploy</h2>
+    <div class="tag">faza rozstawiania · lewy roster · pełny toolbar</div>
+    <div class="frame">
+      <div class="hud" style="--roster-w:88px;--rail-w:36px">
+        <div class="top">
+          <div class="top-l"><span class="btn-gold">Tura 0</span><span style="color:#8a8070">×1</span></div>
+          <div class="top-c"><div class="vs">Deployment</div><div class="counts"><span class="m">◆ 18</span><span class="p">◆ 22</span><span class="r">◆ 10</span> · VS · <span class="m">◆ 12</span><span class="p">◆ 8</span><span class="r">◆ 5</span></div></div>
+          <div class="top-r" style="justify-content:flex-end"><span class="btn-red">Wycofaj się</span></div>
+        </div>
+        <div class="mid">
+          <div class="roster">
+            <div class="filters"><span class="fchip on">Konnica</span><span class="fchip">Piechota</span><span class="fchip">Łucznicy</span><span class="fchip">Wszystkie</span><span class="fchip">Gr.1</span><span class="fchip">Generał</span></div>
+            <div class="selbar"><span class="g">◆ Grupuj</span> · Rozgrupuj · Odznacz</div>
+            <div class="grid">
+              <div class="card m on"></div><div class="card m"></div><div class="card m"></div><div class="card p"></div><div class="card p"></div><div class="card r"></div>
+              <div class="card m"></div><div class="card m"></div><div class="card p"></div><div class="card p"></div><div class="card r"></div><div class="card r"></div>
+              <div class="card p"></div><div class="card p"></div><div class="card r"></div><div class="card m"></div><div class="card m"></div><div class="card p"></div>
+            </div>
+          </div>
+          <div class="map"><div class="map-lbl">Pole 3D</div></div>
+          <div class="rail"><div class="rbtn">P</div><div class="rbtn">V</div><div class="rbtn">R</div><div class="rsep"></div><div class="rbtn">M</div><div class="rbtn">MUZ</div><div class="rsep"></div><div class="rbtn">H</div><div class="rbtn">&gt;&gt;</div><div class="rbtn">✕</div></div>
+        </div>
+        <div class="mini">minimapa</div>
+        <div class="power"><div><div class="pbar"><div class="pfill a"></div></div><div class="plbl"><span>Ty</span><span>62%</span></div></div><div><div class="pbar"><div class="pfill d"></div></div><div class="plbl"><span>Wróg</span><span>48%</span></div></div></div>
+        <div class="toolbar">
+          <div class="chips"><b>Formacja</b>Grupa 1 · 6 jedn.</div>
+          <div class="tcenter">
+            <span class="tbtn">Formacja</span><span class="tbtn">Konnica</span><span class="tbtn">Linie</span>
+            <span class="tbtn">Taktyka</span><span class="tbtn">Strategia</span>
+            <span class="tbtn">Reset</span><span class="tbtn battle">Start walki</span>
+          </div>
+          <div class="tright"></div>
+        </div>
+      </div>
+    </div>
+    <p class="note">Lewy panel 6×5 · filtry · grupy · dolny toolbar pełny · Taktyka/Strategia widoczne.</p>
+  </div>
+
+  <div class="state">
+    <h2>2 · Walka AUTO</h2>
+    <div class="tag">po Start · bez R · toolbar ukryty · roster ukryty</div>
+    <div class="frame">
+      <div class="hud" style="--roster-w:0;--rail-w:36px">
+        <div class="top">
+          <div class="top-l"><span class="btn-gold">Tura 3</span><span style="color:#8a8070">×2</span></div>
+          <div class="top-c"><div class="vs">Bitwa — tura 3</div><div class="counts"><span class="m">◆ 14</span><span class="p">◆ 19</span><span class="r">◆ 8</span> · VS · <span class="m">◆ 9</span><span class="p">◆ 6</span><span class="r">◆ 3</span></div></div>
+          <div class="top-r" style="justify-content:flex-end"><span class="btn-red">Wycofaj się</span></div>
+        </div>
+        <div class="mid">
+          <div class="roster hidden"></div>
+          <div class="map"><div class="badge-auto">AUTO</div><div class="map-lbl">Pole 3D</div></div>
+          <div class="rail"><div class="rbtn">P</div><div class="rbtn">V</div><div class="rbtn r-on">R</div><div class="rsep"></div><div class="rbtn">M</div><div class="rbtn">MUZ</div><div class="rsep"></div><div class="rbtn">H</div><div class="rbtn">&gt;&gt;</div><div class="rbtn">✕</div></div>
+        </div>
+        <div class="power"><div><div class="pbar"><div class="pfill a" style="width:55%"></div></div><div class="plbl"><span>Ty</span><span>55%</span></div></div><div><div class="pbar"><div class="pfill d" style="width:41%"></div></div><div class="plbl"><span>Wróg</span><span>41%</span></div></div></div>
+        <div class="toolbar hidden"></div>
+      </div>
+    </div>
+    <p class="note">Brak dolnego toolbara · brak lewego rosteru · R na railu = przełącznik do stanu 3.</p>
+  </div>
+
+  <div class="state">
+    <h2>3 · Walka RĘCZNY + roster</h2>
+    <div class="tag">klawisz R · lewy panel · tylko Taktyka+Strategia</div>
+    <div class="frame">
+      <div class="hud" style="--roster-w:88px;--rail-w:36px">
+        <div class="top">
+          <div class="top-l"><span class="btn-gold">Tura 3</span><span style="color:#8a8070">×1</span></div>
+          <div class="top-c"><div class="vs">Bitwa — tura 3</div><div class="counts"><span class="m">◆ 14</span><span class="p">◆ 19</span><span class="r">◆ 8</span> · VS · <span class="m">◆ 9</span><span class="p">◆ 6</span><span class="r">◆ 3</span></div></div>
+          <div class="top-r" style="justify-content:flex-end"><span class="btn-red">Wycofaj się</span></div>
+        </div>
+        <div class="mid">
+          <div class="roster">
+            <div class="filters"><span class="fchip">Konnica</span><span class="fchip on">Piechota</span><span class="fchip">Łucznicy</span><span class="fchip">Wszystkie</span><span class="fchip on">Gr.2</span><span class="fchip">Generał</span></div>
+            <div class="selbar"><span>Grupa 2 · 4 zazn.</span> · <span class="g">◆ Grupuj</span> · Rozgrupuj</div>
+            <div class="grid">
+              <div class="card p on"></div><div class="card p on"></div><div class="card p"></div><div class="card r"></div><div class="card m"></div><div class="card m"></div>
+              <div class="card p on"></div><div class="card p on"></div><div class="card r"></div><div class="card m"></div><div class="card p"></div><div class="card r"></div>
+            </div>
+          </div>
+          <div class="map"><div class="map-lbl">Pole 3D</div><div class="hint">SPACJA — planuj turę</div></div>
+          <div class="rail"><div class="rbtn">P</div><div class="rbtn">V</div><div class="rbtn r-on">R</div><div class="rsep"></div><div class="rbtn">M</div><div class="rbtn">MUZ</div><div class="rsep"></div><div class="rbtn">H</div><div class="rbtn">&gt;&gt;</div><div class="rbtn">✕</div></div>
+        </div>
+        <div class="mini">minimapa</div>
+        <div class="power"><div><div class="pbar"><div class="pfill a" style="width:55%"></div></div><div class="plbl"><span>Ty</span><span>55%</span></div></div><div><div class="pbar"><div class="pfill d" style="width:41%"></div></div><div class="plbl"><span>Wróg</span><span>41%</span></div></div></div>
+        <div class="toolbar">
+          <div class="chips"><b>Grupa 2</b>4 zaznaczone · Piechota</div>
+          <div class="tcenter"><span class="tbtn">Taktyka</span><span class="tbtn">Strategia</span></div>
+          <div class="tright"></div>
+        </div>
+      </div>
+    </div>
+    <p class="note">Formacja/Konnica/Linie/Reset/Start ukryte · komendy P·V·R·M·MUZ·H·»·WYCOF w prawym railu.</p>
+  </div>
+</div>
+
+<div class="legend">
+  <h3>Checklist · otwórz też grę</h3>
+  <p><strong>Live:</strong> <code>Gra-podglad-POLE-BITWY.html</code> (Ctrl+F5) → deploy → Start → R.<br>
+  <strong>Porównanie z mockupami:</strong> <a href="C-POLE-BITWY-review-stary-vs-kod.html" style="color:#8fb6e0">C-POLE-BITWY-review-stary-vs-kod.html</a> (v3/v2 = archiwum).<br>
+  <strong>Checklist:</strong> <code>C-POLE-BITWY-REVIEW-MACIEJ.md</code></p>
+</div>
+
+<p class="footer">UI lane · krok 1 review · POLE-BITWY-HUD-v4-2026-07-04 · build manual-polish</p>
+</body>
+</html>

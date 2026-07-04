@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<title>POLE-BITWY — mockup v3/v2 vs kod (przestarzałe)</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;padding:24px;background:#05060a;color:#e8e0c8;font-family:'Segoe UI',Tahoma,sans-serif}
+h1{font-family:Georgia,serif;font-weight:400;font-size:1.5rem;color:#e8d88a;margin:0 0 8px}
+.lead{font-size:13px;color:#8a8070;line-height:1.55;max-width:960px;margin-bottom:24px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;max-width:1200px;margin-bottom:28px}
+.col{background:#0a0d14;border:1px solid rgba(232,216,138,.2);border-radius:12px;padding:14px}
+.col h2{margin:0 0 4px;font-family:Georgia,serif;font-size:1.05rem;font-weight:400}
+.col .tag{font-size:9px;letter-spacing:.18em;text-transform:uppercase;margin-bottom:12px}
+.col.old .tag{color:#8a8070}
+.col.new .tag{color:#a08030}
+.panel{min-height:220px;border-radius:8px;padding:10px;position:relative}
+.col.old .panel{background:linear-gradient(180deg,#1a1520,#0e0c12);border:1px solid rgba(140,120,80,.25)}
+.col.new .panel{background:linear-gradient(180deg,#121820,#080a10);border:1px solid rgba(232,216,138,.25)}
+/* stary C06 v3 — dolny dock roster */
+.old-top{height:28px;background:rgba(20,16,28,.9);border-bottom:1px solid rgba(140,120,80,.2);display:flex;align-items:center;justify-content:center;font-size:9px;color:#c8a878}
+.old-map{height:120px;background:linear-gradient(135deg,#2a3545,#3a5040);margin:8px;border:1px solid rgba(200,180,100,.2);display:flex;align-items:center;justify-content:center;font-size:10px;color:rgba(200,180,100,.4)}
+.old-roster-dock{margin-top:8px;padding:6px;background:rgba(16,14,22,.95);border-top:2px solid rgba(140,120,80,.3)}
+.old-roster-lbl{font-size:7px;color:#8a8070;text-transform:uppercase;letter-spacing:.12em;margin-bottom:4px}
+.old-cards{display:flex;gap:4px;overflow:hidden}
+.old-card{width:36px;height:44px;border-radius:4px;background:rgba(40,36,50,.9);border:1px solid rgba(140,120,80,.2);flex-shrink:0}
+.old-cmd{height:32px;margin-top:6px;display:flex;gap:4px;justify-content:center}
+.old-cmd span{padding:4px 8px;font-size:7px;border:1px solid rgba(140,120,80,.25);border-radius:4px;color:#c8a878}
+/* nowy kod */
+.new-layout{display:grid;grid-template-columns:72px 1fr 28px;grid-template-rows:24px 1fr 18px 36px;height:200px;gap:0}
+.new-top{grid-column:1/-1;background:rgba(12,18,35,.92);display:flex;align-items:center;justify-content:center;font-size:8px;color:#e8d88a;border-bottom:1px solid rgba(232,216,138,.2)}
+.new-roster{background:rgba(18,24,32,.97);border-right:2px solid rgba(232,216,138,.35);padding:4px;display:grid;grid-template-columns:repeat(2,1fr);gap:2px;align-content:start}
+.new-rc{aspect-ratio:.7;border-radius:2px;background:rgba(30,36,48,.9);border:1px solid rgba(232,216,138,.15)}
+.new-map{background:linear-gradient(135deg,#1a2838,#3a2828);position:relative}
+.new-map::after{content:'';position:absolute;top:10%;bottom:10%;left:50%;width:1px;background:rgba(200,64,64,.6)}
+.new-rail{display:flex;flex-direction:column;gap:2px;padding:2px;background:rgba(8,10,16,.9);border-left:1px solid rgba(232,216,138,.2)}
+.new-rb{flex:1;min-height:12px;border-radius:3px;background:rgba(30,30,50,.85);border:1px solid rgba(232,216,138,.15)}
+.new-power{grid-column:1/-1;background:rgba(12,18,35,.88);display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:3px 8px}
+.new-pbar{height:4px;background:rgba(0,0,0,.4);border-radius:2px}
+.new-pa{width:60%;height:100%;background:#3a6ad0;border-radius:2px}
+.new-pd{width:45%;height:100%;background:#c84040;border-radius:2px;margin-left:auto}
+.new-toolbar{grid-column:1/-1;background:linear-gradient(180deg,rgba(24,20,12,.97),rgba(12,10,6,.97));border-top:2px solid rgba(232,216,138,.35);display:flex;align-items:center;justify-content:center;gap:4px;padding:4px}
+.new-toolbar span{font-size:6px;padding:3px 6px;border:1px solid rgba(232,216,138,.25);border-radius:4px;color:#e8d88a}
+.delta{margin-top:8px;padding:12px 14px;border:1px solid rgba(232,216,138,.2);border-radius:10px;background:rgba(18,24,32,.7);max-width:960px}
+.delta h3{margin:0 0 10px;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#e8d88a}
+.delta ul{margin:0;padding-left:18px;font-size:12px;line-height:1.65;color:#c8b898}
+.links{font-size:11px;color:#8a8070;margin-top:16px;line-height:1.6}
+.links a{color:#8fb6e0}
+.footer{margin-top:20px;font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:#5a564c}
+</style>
+</head>
+<body>
+<h1>POLE-BITWY · stary Design vs kod (target v4)</h1>
+<p class="lead">Mockupy <strong>C06 v3</strong> i <strong>C09 v2</strong> są <strong>przestarzałe</strong> względem kodu zatwierdzonego przez Ciebie (~20:35). Design v4 ma sync z kolumną „KOD”, nie z lewą kolumną.</p>
+
+<div class="grid">
+  <div class="col old">
+    <h2>STARY · C06 v3 + C09 v2</h2>
+    <div class="tag">archiwum · nie target</div>
+    <div class="panel">
+      <div class="old-top">VS · morale pionowe boki (brief v4)</div>
+      <div class="old-map">mapa pełna</div>
+      <div class="old-roster-dock">
+        <div class="old-roster-lbl">Roster dolny · scroll poziomy (TW)</div>
+        <div class="old-cards">
+          <div class="old-card"></div><div class="old-card"></div><div class="old-card"></div><div class="old-card"></div><div class="old-card"></div><div class="old-card"></div><div class="old-card"></div>
+        </div>
+        <div class="old-cmd"><span>P</span><span>S</span><span>R</span><span>H</span><span>M</span><span>&gt;&gt;</span></div>
+      </div>
+    </div>
+    <p style="font-size:10px;color:#8a8070;margin:10px 0 0;line-height:1.45">Pliki: <code>claude-design/C06 Deployment v3</code> · <code>C09 Karty v2</code></p>
+  </div>
+
+  <div class="col new">
+    <h2>KOD · Gra-podglad-POLE-BITWY</h2>
+    <div class="tag">target Design v4 · paczka 1</div>
+    <div class="panel">
+      <div class="new-layout">
+        <div class="new-top">Tura · VS · K/P/Ł · Wycofaj</div>
+        <div class="new-roster"><div class="new-rc"></div><div class="new-rc"></div><div class="new-rc"></div><div class="new-rc"></div><div class="new-rc"></div><div class="new-rc"></div><div class="new-rc"></div><div class="new-rc"></div><div class="new-rc"></div><div class="new-rc"></div></div>
+        <div class="new-map"></div>
+        <div class="new-rail"><div class="new-rb"></div><div class="new-rb"></div><div class="new-rb"></div><div class="new-rb"></div><div class="new-rb"></div></div>
+        <div class="new-power"><div class="new-pbar"><div class="new-pa"></div></div><div class="new-pbar"><div class="new-pd"></div></div></div>
+        <div class="new-toolbar"><span>Taktyka</span><span>Strategia</span><span style="opacity:.5">Formacja…</span><span style="background:linear-gradient(180deg,#d05050,#8a2424);color:#fff;border-color:#6a1818">Start</span></div>
+      </div>
+    </div>
+    <p style="font-size:10px;color:#8a8070;margin:10px 0 0;line-height:1.45">Lewy roster 6×5 · rail prawy · pasek mocy poziomy · Taktyka/Strategia na dole</p>
+  </div>
+</div>
+
+<div class="delta">
+  <h3>Kluczowe DELTA (pełna lista w MASTER-DELTA)</h3>
+  <ul>
+    <li>Roster: <strong>lewy pionowy 6×5</strong>, nie dolny dock TW</li>
+    <li>Komendy: <strong>prawy rail P·V·R·M·MUZ·H·»·WYCOF</strong>, nie dolny pasek C-09</li>
+    <li>Taktyka/Strategia: <strong>dolny toolbar</strong> (deploy + tryb R), nie góra HUD</li>
+    <li>Moc armii: <strong>poziomy pasek</strong> pod top, nie pionowe morale na krawędziach</li>
+    <li>Filtry + ◆ Grupuj: <strong>w lewym panelu</strong></li>
+  </ul>
+</div>
+
+<p class="links">
+  <strong>3 stany do oceny:</strong> <a href="C-POLE-BITWY-review-3stany.html">C-POLE-BITWY-review-3stany.html</a><br>
+  <strong>Live build:</strong> <code>Gra-podglad-POLE-BITWY.html</code> · marker <code>POLE-BITWY-20260704-manual-polish</code><br>
+  <strong>Checklist:</strong> <code>C-POLE-BITWY-REVIEW-MACIEJ.md</code>
+</p>
+
+<p class="footer">Design v4 dopiero po werdykcie Macieja · ZLECENIE POLE-BITWY-HUD-v4-2026-07-04</p>
+</body>
+</html>
