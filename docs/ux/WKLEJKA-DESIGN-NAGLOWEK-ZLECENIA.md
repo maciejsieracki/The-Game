@@ -1,6 +1,8 @@
 # Nagłówek zlecenia — WKLEJ NA POCZĄTKU KAŻDEGO START u Designera
 
-**Obowiązuje od:** 2026-07-04 · **Maciej:** ten blok + treść zlecenia z konkretnej wklejki (C04, W3, …).
+**Obowiązuje od:** 2026-07-05 rev.2 · **Maciej:** ten blok + treść z [WKLEJKA-DESIGN-START-TOR-A-ONLY.md](https://github.com/maciejsieracki/The-Game/blob/main/docs/ux/WKLEJKA-DESIGN-START-TOR-A-ONLY.md) (rev.4).
+
+**Repo:** https://github.com/maciejsieracki/The-Game · gałąź `main`
 
 ---
 
@@ -8,15 +10,20 @@
 
 ```
 ═══════════════════════════════════════
-REGUŁA NAZEWNICTWA — OBOWIĄZKOWA
+REGUŁA NAZEWNICTWA + GITHUB — OBOWIĄZKOWA
 ═══════════════════════════════════════
 
-ZLECENIE-ID: {wpisz z briefu, np. C04-C05-A19-mapa-v2}
+REPO: https://github.com/maciejsieracki/The-Game  (gałąź main)
+Przed pracą: git pull origin main  (albo podłącz repo w Claude Design)
+Indeks haseł: szukaj w repo „TOR-A-ONLY" lub otwórz:
+  https://github.com/maciejsieracki/The-Game/blob/main/docs/ux/DESIGN-GITHUB-HASLA.md
+
+ZLECENIE-ID: {wpisz z briefu, np. JEDNOSTKI-INFOGRAFIKI-1E-2026-07-05}
 DATA ZLECENIA: YYYY-MM-DD  ← dzisiaj
 
 1) Każdy plik .dc.html — nazwa MUSI zawierać:
-   · ID ekranu (C04, C05, A19, W3, C06…)
-   · opis zlecenia (nie generyczne „Brand Book”)
+   · ID ekranu (C04, C05, A19, W3, C06, A21…)
+   · opis zlecenia (nie generyczne „Brand Book")
    · wersję v2/v3
    · DATĘ zlecenia YYYY-MM-DD
    · sufiks (1E)
@@ -27,9 +34,9 @@ DATA ZLECENIA: YYYY-MM-DD  ← dzisiaj
    Przykład:
    The Game - C04 Atak miasto wybor v2 2026-07-04 (1E).dc.html
 
-2) JEDEN plik ZIP do pobrania — nazwa:
+2) JEDEN plik ZIP do pobrania (jeśli Maciej pobiera ręcznie) — nazwa:
    {ZLECENIE-ID}_{DATA}.zip
-   Przykład: C04-C05-A19-mapa-v2_2026-07-04.zip
+   Przykład: JEDNOSTKI-INFOGRAFIKI-1E-2026-07-05_2026-07-05.zip
 
 3) W ZIP (korzeń, bez podfolderów):
    · wszystkie .dc.html tego zlecenia
@@ -40,7 +47,8 @@ DATA ZLECENIA: YYYY-MM-DD  ← dzisiaj
 
    ZLECENIE-ID: …
    DATA: YYYY-MM-DD
-   HASLO-GITHUB: …  (jeśli jest)
+   HASLO-GITHUB: …  (z briefu)
+   REPO: https://github.com/maciejsieracki/The-Game
 
    PLIKI:
    C04 | pełna nazwa pliku | co to jest
@@ -49,22 +57,29 @@ DATA ZLECENIA: YYYY-MM-DD  ← dzisiaj
 5) ZAKAZ:
    · ten sam tytuł dla wszystkich plików
    · numerowanie tylko 12, 13, 14 bez ID zlecenia
-   · „Brand Book” / „The Game” bez ID ekranu
+   · „Brand Book" / „The Game" bez ID ekranu
    · osobne zipy per plik (jeden zip = jedno zlecenie)
 
-Po gotowości napisz:
-„Paczka {ZLECENIE-ID}_{DATA}.zip gotowa” + lista plików.
+6) ODDANIE PRACY (preferowane — GitHub):
+   · wrzuć pliki do docs/ux/claude-design/
+   · git commit + push origin main
+   · dopisz wpis w docs/ux/claude-design/WYMIANA-UI-DESIGN.md
+   · workflow: https://github.com/maciejsieracki/The-Game/blob/main/docs/ux/claude-design/WORKFLOW-GITHUB-SYNC.md
 
-NAZWA POBRANIA (Maciej — obowiązkowe):
+Po gotowości napisz:
+„Paczka {ZLECENIE-ID}_{DATA}.zip gotowa" + lista plików + link do commita (jeśli push).
+
+NAZWA POBRANIA (Maciej — gdy zip zamiast push):
 Design NIE kontroluje nazwy pliku w przeglądarce (tytuł projektu Claude Design,
 np. „Ulepszenie infografik"). Przy każdej paczce Design podaje na końcu odpowiedzi
 POGRUBIONĄ nazwę do wklejenia w pole „Nazwa pliku" w oknie zapisu Windows.
-Przykład: C04-C05-A19-mapa-v2_2026-07-04.zip
+Przykład: JEDNOSTKI-INFOGRAFIKI-1E-2026-07-05_2026-07-05.zip
 
-Cursor rozpoznaje paczkę po: nazwie zip + MANIFEST.txt + prefiksach C04/C05/A19 w plikach.
+Cursor / lane rozpoznaje paczkę po: nazwie zip + MANIFEST.txt + ZLECENIE-ID w nazwach plików.
+Szukaj w repo po haśle z briefu — nie po cyfrach 12/13/14.
 
 ═══════════════════════════════════════
-TREŚĆ ZLECENIA (poniżej)
+TREŚĆ ZLECENIA (poniżej — TOR A rev.4)
 ═══════════════════════════════════════
 ```
 
@@ -72,4 +87,4 @@ TREŚĆ ZLECENIA (poniżej)
 
 ## Dla lane / Cursor
 
-Po otrzymaniu zip: rozpakuj do `docs/ux/claude-design/` · szukaj po **ZLECENIE-ID** i **dacie w nazwie pliku** · nie po cyfrach 12/13/14.
+Po otrzymaniu zip lub push: pliki w `docs/ux/claude-design/` · szukaj po **ZLECENIE-ID** i **dacie w nazwie pliku** · indeks: [DESIGN-GITHUB-HASLA.md](https://github.com/maciejsieracki/The-Game/blob/main/docs/ux/DESIGN-GITHUB-HASLA.md).

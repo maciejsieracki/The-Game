@@ -3,25 +3,25 @@
 **Repo:** https://github.com/maciejsieracki/The-Game  
 **Jak szukać:** w repozytorium wpisz w pole „Search this repository” hasło z kolumny poniżej (np. `TOR-A-ONLY`).
 
-**START Design (aktualny, 2026-07-05):** `docs/ux/WKLEJKA-DESIGN-START-TOR-A-ONLY.md` · hasło: **`TOR-A-ONLY`**  
-Master lista luk (TOR A / TOR B): `docs/ux/WKLEJKA-DESIGN-MASTER-LUKI-2026-07-05.md`
+**START Design (aktualny, rev.4 · GitHub):** [WKLEJKA-DESIGN-START-TOR-A-ONLY.md](https://github.com/maciejsieracki/The-Game/blob/main/docs/ux/WKLEJKA-DESIGN-START-TOR-A-ONLY.md) · hasło: **`TOR-A-ONLY`**  
+**Skład wklejki:** [NAGLOWEK](https://github.com/maciejsieracki/The-Game/blob/main/docs/ux/WKLEJKA-DESIGN-NAGLOWEK-ZLECENIA.md) + TOR A  
+Master lista luk: [WKLEJKA-DESIGN-MASTER-LUKI-2026-07-05.md](https://github.com/maciejsieracki/The-Game/blob/main/docs/ux/WKLEJKA-DESIGN-MASTER-LUKI-2026-07-05.md)
 
 ---
 
-## P0 — TOR A (6 paczek ZIP · rev.3)
+## P0 — TOR A (6 paczek ZIP · rev.4)
 
-| Hasło | Plik start | Zlecenie (spec) |
-|-------|------------|-----------------|
-| **`TOR-A-ONLY`** | `docs/ux/WKLEJKA-DESIGN-START-TOR-A-ONLY.md` | master wklejka |
-| **`JEDNOSTKI-INFOGRAFIKI-1E-2026-07-05`** | `docs/ux/WKLEJKA-DESIGN-START-JEDNOSTKI-INFOGRAFIKI.md` | `DESIGN-ZLECENIE-JEDNOSTKI-INFOGRAFIKI-2026-07-05.md` |
-| **`POLE-BITWY-v5-gap-2026-07-05`** | `docs/ux/WKLEJKA-DESIGN-START-POLE-BITWY-v5-GAP.md` | `DESIGN-ZLECENIE-POLE-BITWY-v5-GAP-2026-07-05.md` |
-| **`ARMY-MERGE-A18-2026-07-05`** | `docs/ux/WKLEJKA-DESIGN-START-ARMY-MERGE-A18.md` | `DESIGN-ZLECENIE-ARMY-MERGE-A18-2026-07-05.md` |
-| **`A21-CITY-UNIT-PICK-2026-07-05`** | `docs/ux/WKLEJKA-DESIGN-START-A21-CITY-UNIT-PICK.md` | `DESIGN-ZLECENIE-A21-CITY-UNIT-PICK-2026-07-05.md` |
-| **`HEX-CONTEXT-PANEL-2026-07-05`** | `docs/ux/WKLEJKA-DESIGN-START-HEX-CONTEXT-PANEL.md` | `DESIGN-ZLECENIE-HEX-CONTEXT-PANEL-2026-07-05.md` |
-| **`A08-ulepszenia-ikony`** | `docs/ux/WKLEJKA-DESIGN-START-A08-ulepszenia.md` | `DESIGN-BRIEF-A08-ulepszenia-ikony-i-panel.md` |
+| Hasło | Spec (GitHub) | Review PRZED |
+|-------|---------------|--------------|
+| **`TOR-A-ONLY`** | [wklejka master](https://github.com/maciejsieracki/The-Game/blob/main/docs/ux/WKLEJKA-DESIGN-START-TOR-A-ONLY.md) | — |
+| **`JEDNOSTKI-INFOGRAFIKI-1E-2026-07-05`** | [spec](https://github.com/maciejsieracki/The-Game/blob/main/docs/ux/DESIGN-ZLECENIE-JEDNOSTKI-INFOGRAFIKI-2026-07-05.md) · [katalog v1](https://github.com/maciejsieracki/The-Game/blob/main/docs/ux/claude-design/jednostki-infografiki-1E.html) | [GAP HTML](https://github.com/maciejsieracki/The-Game/blob/main/docs/ux/export/JEDNOSTKI-INFOGRAFIKI-GAP-DLA-DESIGN.html) |
+| **`POLE-BITWY-v5-gap-2026-07-05`** | [spec](https://github.com/maciejsieracki/The-Game/blob/main/docs/ux/DESIGN-ZLECENIE-POLE-BITWY-v5-GAP-2026-07-05.md) · [playtest](https://github.com/maciejsieracki/The-Game/blob/main/gra-kanon/Gra-podglad-POLE-BITWY.html) | [GAP HTML](https://github.com/maciejsieracki/The-Game/blob/main/docs/ux/export/C-POLE-BITWY-GAP-DLA-DESIGN.html) |
+| **`ARMY-MERGE-A18-2026-07-05`** | [spec](https://github.com/maciejsieracki/The-Game/blob/main/docs/ux/DESIGN-ZLECENIE-ARMY-MERGE-A18-2026-07-05.md) | [GAP HTML](https://github.com/maciejsieracki/The-Game/blob/main/docs/ux/export/A18-ARMY-MERGE-GAP-DLA-DESIGN.html) |
+| **`A21-CITY-UNIT-PICK-2026-07-05`** | [spec](https://github.com/maciejsieracki/The-Game/blob/main/docs/ux/DESIGN-ZLECENIE-A21-CITY-UNIT-PICK-2026-07-05.md) | [GAP](https://github.com/maciejsieracki/The-Game/blob/main/docs/ux/export/A21-CITY-UNIT-PICK-GAP-DLA-DESIGN.html) · [PNG](https://github.com/maciejsieracki/The-Game/blob/main/docs/ux/export/screenshots/A21-city-unit-pick-przed-2026-07-05.png) |
+| **`HEX-CONTEXT-PANEL-2026-07-05`** | [spec](https://github.com/maciejsieracki/The-Game/blob/main/docs/ux/DESIGN-ZLECENIE-HEX-CONTEXT-PANEL-2026-07-05.md) | [GAP](https://github.com/maciejsieracki/The-Game/blob/main/docs/ux/export/HEX-CONTEXT-PANEL-GAP-DLA-DESIGN.html) · [PNG](https://github.com/maciejsieracki/The-Game/blob/main/docs/ux/export/screenshots/HEX-context-panel-przed-2026-07-05.png) |
+| **`A08-ulepszenia-ikony`** | [brief](https://github.com/maciejsieracki/The-Game/blob/main/docs/ux/DESIGN-BRIEF-A08-ulepszenia-ikony-i-panel.md) | [handoff](https://github.com/maciejsieracki/The-Game/blob/main/dyspozycje/_handoff/UI-do-DESIGN_A08-START-2026-07-03.md) |
 
-Playtest pole bitwy (przed ZIP 2): `gra-kanon/Gra-podglad-POLE-BITWY.html`  
-Katalog jednostek v1 (referencja): `docs/ux/claude-design/jednostki-infografiki-1E.html`
+**Oddawanie pracy:** [WORKFLOW-GITHUB-SYNC.md](https://github.com/maciejsieracki/The-Game/blob/main/docs/ux/claude-design/WORKFLOW-GITHUB-SYNC.md) · log: [WYMIANA-UI-DESIGN.md](https://github.com/maciejsieracki/The-Game/blob/main/docs/ux/claude-design/WYMIANA-UI-DESIGN.md)
 
 ---
 
