@@ -4,6 +4,15 @@ Append-only. Source of truth operacyjny projektu Civ.
 
 ---
 
+## [2026-07-05 ~12:40] UNITS · Popupy Deploy v5 P0 ✅ (handoff Design)
+
+**Handoff:** `docs/ux/claude-design/HANDOFF-Cursor-Popupy-Deploy-v5.md`  
+**Kod:** `gra/src/battle/battleScene.ts` + `battleHudTheme.ts` (P0: Konnica SVG, Dystansowe, linie domyślnie 3, wiersze popup, Taktyka 2×2, tło .08)  
+**Cursor P1:** `dyspozycje/_handoff/MASTER-do-UNITS_deploy-popups-v5-P1.md` · commit `afe2220`  
+**Test:** `npm run dev` w `gra/` → playtest POLE-BITWY
+
+---
+
 ## [2026-07-05 ~12:08] BATCH 1 · A5 dirty-set FoW + C2b/C3 ✅ publish
 
 **Plan:** `MASTER-PLAN-GRYWALNOSC-SUPER-HUGE-2026-07-05.md` BATCH 1  
