@@ -99,7 +99,9 @@ Append-only. Source of truth operacyjny projektu Civ.
 - Review HTML: `docs/ux/export/A18-ARMY-MERGE-GAP-DLA-DESIGN.html`
 - Screenshoty: `screenshots/A06-stack-przed-2026-07-05.png` · `A18-merge-przed-2026-07-05.png`
 
-**ZLECENIE-ID:** `ARMY-MERGE-A18-2026-07-05` · **3 mockupy** (.dc.html): A-06 stos + A-18 merge + split · wspólna karta jednostki
+**ZLECENIE-ID:** `ARMY-MERGE-A18-2026-07-05` · **3 mockupy P0** + **A-20 toast P1** · wspólna karta jednostki
+
+**Update 2026-07-05:** dopisano **A-20 hint** („Połączono: 2 jedn…”) · DS-13 w tej samej paczce ZIP.
 
 ---
 

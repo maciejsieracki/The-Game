@@ -45,6 +45,10 @@ DELIVERABLES (3 mockupy .dc.html)
   2. A18 Polaczenie armii v1 (1E).dc.html
   3. A18 Rozdziel armie v1 (1E).dc.html
 
+  4. A20 Hint toast v1 (1E).dc.html          ← P1 · DS-13
+     · Połączono / Rozdzielono / błąd / Ufortyfikowano
+     · dół mapy · złota ramka · fade ~3s
+
   SVG: icon-merge-armies · icon-arrow-join · (icon-split-army)
   Karta jednostki IDENTYCZNA w A-06 i A-18
   Ikony jednostek = paczka JEDNOSTKI-INFOGRAFIKI (poziom B)
@@ -55,7 +59,7 @@ REGUŁY
   · ZERO emoji
   · Primary + toolbar outline = ZŁOTY 1E
   · HP bar ≠ neonowy zielony
-  · Toast „Połączono…” = osobny temat A-20 — nie w mockupie A-06
+  · Toast hint (A-20) = ten sam ZIP · DS-13
 
   DESIGN-do-UI_ARMY-MERGE-A18.md
   MELDUNEK-ARMY-MERGE-A18.md

@@ -32,7 +32,7 @@ Lane zrobił **szkic 1E v2** (`armyStackHud.ts`) — **Maciej odrzuca wizualnie*
 - **Rozdziel** = obrys **fioletowy** (`accent-violet`) · **Połącz** = **niebieski** disabled — **niespójne** ze złotym „Ruch” i zaznaczoną kartą
 - Pasek HP na karcie: **zielony** gradient (jak stary Civ, nie 1E)
 - Staty ATK/OBR/RUCH/ZAS: subtelne ramki — do doprecyzowania w mockupie
-- Toast pod panelem: „Połączono: 2 jedn…” — **osobny temat A-20** (hint); w mockupie A-06 **nie rysuj** toastu
+- Toast pod panelem: „Połączono: 2 jedn…” — **Maciej: też do Designera** (A-20 / DS-13) — patrz §3 P1 poniżej
 
 Powiązany **Split modal** (przycisk Rozdziel / **[H]**) — ten sam pakiet co A-18.
 
@@ -213,6 +213,44 @@ viewBox 24×24 · `stroke="currentColor"` · styl brand-book.
 
 ---
 
+### P1 — A-20 / DS-13 · Hint / toast (komunikat mapy)
+
+**Plik:** `The Game - A20 Hint toast v1 2026-07-05 (1E).dc.html`
+
+**Problem (screenshot Maciej):** po merge pod panelem A-06 widać czarny bubble **„Połączono: 2 jedn. na (48,31)”** — lane inline CSS w `main.ts` (`#civ-hint-toast`), **brak mockupu** (A-20 = ⬜ · DS-13 = ⬜).
+
+**Układ MUST:**
+
+```
+                    ┌─────────────────────────────────────┐
+                    │ Połączono: 2 jedn. na (48,31)       │  ← fixed bottom ~24px
+                    └─────────────────────────────────────┘
+     (ponad dolnym paskem mapy · z-index poniżej panelu A-06 · ~3 s · fade out)
+```
+
+**Stany w mockupie (min. 4):**
+
+| # | Tekst (z kodu — przykłady) | Kontekst |
+|---|---------------------------|----------|
+| 1 | `Połączono: 2 jedn. na (48,31)` | sukces merge A-18 |
+| 2 | `Rozdzielono: 1 jedn. → (47,31)` | sukces split |
+| 3 | `Brak wolnego sąsiedniego heksu na rozdzielenie.` | błąd split |
+| 4 | `Ufortyfikowano (ruch zużyty)` | akcja z panelu A-06 |
+
+**Reguły wizualne:**
+
+- Pozycja: **środek dolnej krawędzi** · `bottom: 24px` (nad paskiem mapy 56px; **pod** panelem A-06 gdy otwarty)
+- Ramka złota 1px · tło ciemne · **bez emoji** w tekście
+- Opcjonalnie: wariant **sukces** (neutralny złoty) vs **błąd** (obrys czerwony `#c84040`) — lane mapuje klasą
+- Animacja: fade in/out ~200ms (Design proponuje; lane portuje)
+- **NIE** mylić z toastem POLE-BITWY (osobny lane)
+
+**Kod:** `gra/src/main.ts` → `#civ-hint-toast` · `showHintMessage()`
+
+**W mockupie A-06:** możesz pokazać toast **jako osobny frame** obok panelu (stan „po merge”) — nie musi być na tym samym artboardzie co karty.
+
+---
+
 ## 4. Co lane zrobi po Twojej paczce
 
 1. Port CSS z `.dc.html` → `armyStackHud.ts` + `mapUnitHudSkin.ts` + `armyMergePanel.ts` + `armySplitPanel.ts`
@@ -232,6 +270,7 @@ ARMY-MERGE-A18-2026-07-05.zip
 ├── The Game - A06 Panel stosu armii v1 2026-07-05 (1E).dc.html    ← NOWY P0
 ├── The Game - A18 Polaczenie armii v1 2026-07-05 (1E).dc.html
 ├── The Game - A18 Rozdziel armie v1 2026-07-05 (1E).dc.html
+├── The Game - A20 Hint toast v1 2026-07-05 (1E).dc.html       ← P1 · DS-13
 ├── eksport/icons/map/
 │   ├── icon-merge-armies.svg
 │   ├── icon-arrow-join.svg
@@ -246,11 +285,11 @@ ARMY-MERGE-A18-2026-07-05.zip
 
 ## 6. Kryteria akceptacji (DoD)
 
-- [ ] **3 mockupy** `.dc.html`: A-06 stos + A-18 merge + A-18 split
+- [ ] **3 mockupy P0** + **A-20 toast P1** `.dc.html`
 - [ ] Zero emoji w mockupach i SVG
 - [ ] Primary CTA **złoty** · toolbar **złoty outline** (bez fiolet/niebieski)
 - [ ] Karty jednostek **identyczne** w A-06 i A-18 (SVG kategorii B)
-- [ ] 4 stany A-06 + 3 stany merge + 2 stany split
+- [ ] 4 stany A-06 + 3 stany merge + 2 stany split + **4 warianty toastu**
 - [ ] `DESIGN-do-UI` z mapowaniem klas CSS → selektory lane
 
 **Po gotowości napisz:**  
@@ -265,5 +304,6 @@ ARMY-MERGE-A18-2026-07-05.zip
 | `JEDNOSTKI-INFOGRAFIKI-1E-2026-07-05` | Ikony w wierszach jednostek (poziom B) |
 | `POLE-BITWY-v5-gap-2026-07-05` | Ten sam styl przycisków / paneli modalnych |
 | A-06 review | `docs/ux/export/A-06-REVIEW-MACIEJ.md` — treść OK · wygląd → Design |
+| DS-13 toast | Komponent globalny · ten sam styl dla merge/split/dyplo hints |
 
-**Rejestr UX:** `docs/ux/REJEST-UX-MASTER.md` · wiersze A-06, A-18.
+**Rejestr UX:** `docs/ux/REJEST-UX-MASTER.md` · wiersze A-06, A-18, A-20.
