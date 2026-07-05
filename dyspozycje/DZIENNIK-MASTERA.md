@@ -1,10 +1,390 @@
-# DZIENNIK MAESTERA — rejestr przepływów
+# DZIENNIK MASTERA — rejestr przepływów
 
 Append-only. Source of truth operacyjny projektu Civ.
 
 ---
 
-## [2026-07-04 ~21:28] MASTER · **ZIP POLE-BITWY v4** na dysku → port UI
+## [2026-07-05] DESIGN · zlecenie POLE-BITWY v5 GAP (Cursor → mockupy)
+
+**Cel:** pełna lista elementów lane Cursor bez mockupu Design — paczka do przygotowania przez Designera.
+
+**Dokumenty:**
+- Spec: `docs/ux/DESIGN-ZLECENIE-POLE-BITWY-v5-GAP-2026-07-05.md`
+- Wklejka: `docs/ux/WKLEJKA-DESIGN-START-POLE-BITWY-v5-GAP.md`
+- Review HTML: `docs/ux/export/C-POLE-BITWY-GAP-DLA-DESIGN.html`
+- Handoff szablon: `docs/ux/claude-design/DESIGN-do-UI_POLE-BITWY-v5-gap.md`
+
+**ZLECENIE-ID:** `POLE-BITWY-v5-gap-2026-07-05` · P0: C-23 Szczegóły + C-12 v3 replay/porażka · P1: popupy Formacja/Konnica/Linie/Taktyka
+
+---
+
+## [2026-07-05 ~01:43] Maciej · playtest perf mapy + pasek postępu odłożony
+
+**Feedback:** generowanie **akceptowalne** (wcześniej Standard ~1000 s). Efekt mapy OK.
+
+**Decyzja:** pasek postępu przy starcie gry — **później**, po śledzeniu (MASTER+UI, nie teraz).
+
+**Stan techniczny:** optymalizacja MAPA w roboczej md5 `88F3E2A…` · szczegóły `MAPA-DO-MASTERA.md` §perf 2026-07-05.
+
+---
+
+## [2026-07-05 ~01:45] Maciej · rzeki nie trafiają do morza (jutro)
+
+**Feedback:** wygląd rzek OK, minus — **ujścia wizualnie nie sięgają morza**. Podejrzenie: **bufor 2 hex** vs wymóg drenażu.
+
+**Decyzja:** naprawa **jutro** (MAPA). Pasek postępu nadal odłożony.
+
+---
+
+## [2026-07-05 ~01:51] Maciej · Super Huge timeout (~4 min)
+
+**Feedback:** **Super Huge** — przerwane po ~4 min „przywracania strony”. Standard/Ogromny OK.
+
+**Decyzja jutro:** ① **pasek postępu** (MASTER+UI, hook MAPA) ② **opt Super Huge** (~672×476) ③ rzeki→morze ④ strefy klimatyczne ABC.
+
+---
+
+## [2026-07-05 ~00:45] MASTER · **EKO-TECH P2–P5** → ROBOCZA ✅
+
+**Trigger:** Maciej **`działaj`**
+
+**Wdrożenie:**
+- Paczki **2–5** scalone w build (fort/spichlerz/popalnia · brąz AND-gate · hodowla ABC-18 · stadnina · panel surowców ABC-19)
+- **T-TECH-4:** tarasy po Rolnictwie — **wszystkie cywilizacje** (`improvement-build.ts`)
+- Testy: p1 9/9 · p2 9/9 · p3 10/10 · p4 10/10 · p5 11/11 · food-hodowla 26/26 · map-qualify 42/42 · smoke OK
+
+**ROBOCZA md5:** `395f12c3a22847cdfb0444acaee37ac4` · **Start:** `gra-robocza/START.html` (Ctrl+F5)
+
+**Kanon (`Gra-podglad.html`):** bez promocji — zgodnie z decyzją Macieja 2026-07-05 (robocza = aktywna wersja do gry; Opus przed kanonem).
+
+**Handoffy:** `_handoff/MASTER-do-INTEGRATOR_eko-tech-p4-2026-07-05.md` · `p5-2026-07-05.md`
+
+**Otwarte:** ABC-20…24 (`upgrade`) · ABC-15 handel ≥2 (v2 stock)
+
+---
+
+## [2026-07-05 ~00:50] Maciej · **upgrade jutro** + **pakiet budynków w mieście**
+
+**Decyzja:** upgrade budynków (**ABC-20…24**, UI listy) → **jutro** (hasło `upgrade`).
+
+**Kierunek projektowy (Maciej):**
+- Trzeba ustalić **jak budynki „siedzą” w mieście** (plan budowy + ewentualnie model na mapie).
+- Budynki **łączą się w pakiety** — np. **trójki**, **jeden po drugim w pakiecie** (łańcuch / dzielnica — do ABC jutro).
+
+**Przygotowanie MASTER na jutro:** paczka ABC = (1) logika upgrade JSON · (2) **UPG-UI** prezentacja · (3) **UPG-LOKALIZACJA** — pakiet trójek vs slot vs dzielnica.  
+**Plik roboczy:** `docs/decyzje/ODLOZONE-UPGRADE-BUDYNKOW-2026-07-04.md` (uzupełnić sekcję pakietów).
+
+---
+
+## [2026-07-04 ~23:45] MASTER · **KONIEC SESJI** · przypomnienie na jutro 📌
+
+**Maciej:** kończymy na dziś.
+
+**Dziś MAPA (robocza):** fix wysepek w oceanie (`finalizeLandMassAfterCoast`) · wysokości morze/ląd (morze 0.18, ląd min +0.35) · md5 `df7e25dc5fd753480b7e1b16a5495fdb`
+
+**JUTRO 2026-07-05 — PRZYPOMNIJ MACIEJOWI:** **strefy klimatyczne** (pas suchy / dżungla / umiarkowany) → decyzja ABC, potem lane MAPA.  
+**Zapis:** `docs/master/maciej/MACIEJ-TEMATY-MAPA-OTWARTE.md` §5 · `dyspozycje/MAPA-STAN.md`
+
+---
+
+## [2026-07-04] POLE-BITWY v4.1 · **KOMPLET** ✅
+
+**Marker:** `POLE-BITWY-20260704-poprawki-v4.1` · **MD5 końcowy:** `9eb46ad1b70f195868926b246053c7f3`  
+**Scope:** P0 Popup Strategia 1E (mockup) · P1 top-bar · `Grupa N · cnt` · puste sloty · UNITS grupowanie deploy  
+**Design:** `docs/ux/claude-design/` + `_dist/POLE-BITWY-poprawki-v4.1-2026-07-04/`  
+**Artefakt:** root + `gra-kanon/` + `gra-robocza/` · `Gra-podglad-POLE-BITWY.html` (osobny tor, nie `Gra-podglad.html`)  
+**Historia promote:** `master` ~23:18 (`253c91bc…`) → mockup pass ~23:30 (`9eb46ad1…`) — **stan końcowy zsynchronizowany**
+
+**Design meldunek (2026-07-04 ~23:36):** `MELDUNEK-POLE-BITWY-v4.1.md` w paczce ZIP + kopia do `brand-book/` (GitHub push) · paczka: 3× `.dc.html` · `support.js` · handoff · meldunek · lane UI **GOTOWE** ↔ Design **ZAMKNIĘTE**
+
+**Promote gry (2026-07-04 ~23:40):** rebuild + sync root/`gra-kanon`/`gra-robocza` · MD5 `a398720f…`
+
+---
+
+## [2026-07-04 ~23:35] MASTER · **MAPA fix pustynia w oceanie** → robocza ✅
+
+**Trigger:** Maciej — screen pustynia zalana wodą (hex 100,33 + żółte wysepki w morzu)  
+**Przyczyna:** `removeTinyLandIslands` tylko wcześnie w pipeline; po rebalance/jagged coast zostawały wysepki (rdzeń + pierścień wybrzeża ≥8 hex)  
+**Fix:** `finalizeLandMassAfterCoast` — tiny islands + `purgeOpenOceanLandSpecks` ×2 passy po finalnym wybrzeżu i przed rzekami  
+**Test:** `stranded-land-test.cjs` **18/18** · river-sea-buffer 6/6 · smoke OK  
+**Robocza md5:** `0b8a9a7fb7bcc7197de869f79b841016` · **Ctrl+F5** `gra-robocza/START.html` + **nowa gra**
+
+---
+
+## [2026-07-05 ~00:30] Maciej **`działaj później master`**
+
+**Decyzja:** robocza = aktywna wersja do gry · promocja kanonu **odłożona**  
+**Graj:** `gra-robocza/START.html` (Panel-C staty · md5 `5206766b…`)  
+**Kolejka MASTER (walka/jednostki):** pusta · czekam na playtest / `master` / tematy innych lane'ów
+
+---
+
+## [2026-07-05 ~00:25] Maciej **`eksportuj panel C`** · **Panel-C → gra** ✅
+
+**Eksport:** `python panele-sterowania/export-c.py`  
+**Zmiany:** staty=406 · macierz=45 · koszty=2 · moc_cache=78  
+**Bramka:** combat 6/6 · unit-power 6/6 · smoke OK  
+**Robocza:** md5 **`5206766b8f460173d12bcfd51552f923`** · `gra-robocza/START.html`  
+**Kanon:** bez zmian (promocja = **`master`**)
+
+---
+
+## [2026-07-05 ~00:12] MASTER · **audyt jednostki/walka/bitwa + panel sterowania** ✅
+
+**Wniosek:** kod lane C/UNITS **komplet** — roster-6 75 wpisów · kanon · POLE-BITWY v4.1  
+**Panel:** `docs/obieg/PANEL-MASTER.md` · `C-walka.md` · `UNITS-STAN.md` zaktualizowane  
+**Kolejka implementacji MASTER:** pusta (balans Excel = poza kodem)
+
+---
+
+## [2026-07-04 ~23:34] Maciej **`master`** · **KANON EKO-TECH P2 + units 75** ✅
+
+**MD5:** `0b8a9a7fb7bcc7197de869f79b841016` · **Start:** `gra-kanon/START.html` · root `Gra-podglad.html`  
+**Zakres:** EKO-TECH paczka 2 (Cytadela/Fort · Spichlerz 70% · popalnia na rudzie) + **units.json 75**  
+**Bramka:** eko-tech-p1 **9/9** · eko-tech-p2 **9/9** · combat **6/6** · smoke OK  
+**Archiwum:** `gra-kanon-archiwum/gra-kanon_20260704-233347`
+
+---
+
+## [2026-07-05 ~00:15] MASTER · **EKO-TECH Paczka 4** wdrożona lane 🟠
+
+**Decyzje:** ABC-16/17/18 = A → `PACZKA-4-EKO-TECH-ABC-2026-07-05.md`  
+**ABC-18:** Stadnina (Jeździectwo) · pastwisko/stadnina = bramka dostępu · brak plonów ze złoża bez budowy  
+**Test:** paczka4 **10/10** · food-hodowla **26/26**  
+**Następne ABC:** paczka **5/5** (ABC-19 panel surowców) — napisz `format`
+
+---
+
+## [2026-07-05 ~00:05] MASTER · **EKO-TECH P3 wire main.ts** 🟠
+
+**Trigger:** Maciej `działaj`  
+**Wpięcie:** `getPlacedImprovements` w cityPanel + autoManage · testy **28/28** (p1+p2+p3)  
+**Czeka F:** rebuild ROBOCZA/kanon · playtest łańcuch brązu
+
+---
+
+## [2026-07-04 ~23:55] MASTER · **EKO-TECH Paczka 3** wdrożona lane 🔵
+
+**Decyzje:** ABC-12=A, ABC-13=A+ łańcuch, ABC-15=A → `PACZKA-3-EKO-TECH-ABC-2026-07-04.md`  
+**Kod:** `braz-access.ts` · Piec hutniczy · bramka Popalnia+Piec · test **10/10**  
+**Handoff F:** `MASTER-do-INTEGRATOR_eko-tech-p3-2026-07-04.md` (wire `placedImprovements` w main.ts)  
+**Następne ABC:** paczka **4/5** (ABC-16, 17, 18)
+
+---
+
+## [2026-07-04 ~23:45] MASTER · **EKO-TECH Paczka 2** (ABC-10/11/14) 🔵
+
+**Trigger:** Maciej — `działaj` (rekomendacje A/A/A z paczki 2/3)  
+**Decyzje:** `docs/decyzje/PACZKA-2-EKO-TECH-ABC-2026-07-04.md`  
+**Wdrożenie lane:** Cytadela/Fort (JSON) · Spichlerz 70% · popalnia na rudzie (`improvement-build.ts`)  
+**Test:** `node tools/eko-tech-paczka2-test.cjs` — **7/7**  
+**Handoff F:** `dyspozycje/_handoff/MASTER-do-INTEGRATOR_eko-tech-p2-2026-07-04.md`  
+**Czeka:** ~~rebuild ROBOCZA~~ → **KANON** md5 `0b8a9a7…` (master ~23:34)
+
+---
+
+## [2026-07-04 ~23:31] MASTER · **KANON units.json 75 + rebuild główny** ✅
+
+**Trigger:** Maciej — „ciśnij do przodu, nie czekaj”  
+**units.json:** 75 wpisów (batch 0 Germanie + batch 3 ×8) · fix Thorakites `Nacja: Grecja`  
+**Kanon:** md5 `11d23be65ee6eaf8c5dabe5013eef2d8` · `gra-kanon/START.html` · root `Gra-podglad.html`  
+**POLE-BITWY:** rebuild + sync kanon  
+**Bramka:** combat 6/6 · smoke OK · `publish-robocza` + `publish-kanon`  
+**Archiwum:** `gra-kanon-archiwum/gra-kanon_20260704-232905`  
+**Produkcja Nacja:** już wired — playtest w mieście następny krok
+
+---
+
+## [2026-07-04 ~23:30] UNITS · **Batch 0 + Batch 3** ✅ · units.json **75** wpisów
+
+**Batch 0:** Wojownik germański → Super Brąz · **Batch 3:** +8 (Grecy/Rzym/Zulu/Inkowie/Egipt/Sumer/Celtowie)  
+**Sync:** `gra-kanon/data/units.json` + `gra-robocza/data/` · combat 6/6  
+**Czeka:** rebuild bundle główny (`master`) · produkcja miasta (EKONOMIA)
+
+---
+
+## [2026-07-04 ~23:31] Maciej **`działaj`** · **KANON MAPA bufor rzek** ✅
+
+**Tor:** F bramka → `GOTOWE-ROBOCZA` → review Master APPROVE → kanon  
+**MD5:** `11d23be65ee6eaf8c5dabe5013eef2d8` · `gra-kanon/START.html`  
+**Zakres:** rzeki min. 2 hex od morza · ujście ≤2 hex · gen. po wybrzeżu  
+**Bramka:** river-sea-buffer **6/6** · smoke OK  
+**Handoff F:** `F-do-MASTER_MAPA-river-sea-buffer-2026-07-04.md`  
+**Playtest:** Ctrl+F5 · **Nowa gra** · sprawdź ujścia rzek przy brzegu
+
+---
+
+## [2026-07-04 ~23:18] Maciej **`master`** · **KANON POLE-BITWY v4.1** ✅
+
+**Komenda:** `master` (po playteście v4.1)  
+**Review:** APPROVE Maciej · Opus pominięty (artifact POLE-BITWY)  
+**MD5:** `253c91bc916fa193d6d778c71cdabab08` · marker `POLE-BITWY-20260704-poprawki-v4.1`  
+**Promocja:** `Gra-podglad-POLE-BITWY.html` → `gra-kanon/` + `gra-robocza/` + root  
+**Src sync:** `battleScene.ts` · `battleHudTheme.ts`  
+**Bramka:** combat 6/6 ✅ · smoke OK ✅ · battle-smoke main bundle — stack overflow JSDOM (baseline, nie blokuje POLE-BITWY)  
+**Playtest:** Ctrl+F5 `gra-kanon/Gra-podglad-POLE-BITWY.html`
+
+---
+
+## [2026-07-04 ~23:15] UI lane · **POLE-BITWY poprawki v4.1** ✅ build roboczy
+
+**MD5:** `253c91bc916fa193d6d778c71cdabab08` · marker `POLE-BITWY-20260704-poprawki-v4.1`  
+**P0:** Strategia 1E · **P1:** top-bar skrzyżowane miecze · Grupa N·cnt · puste sloty  
+**UNITS:** fix grupowania deploy · **Czeka:** playtest Macieja → promote kanon POLE-BITWY
+
+---
+
+## [2026-07-04 ~22:59] Maciej **`działaj`** · **PROMOCJA KANON MAPA fair-play** ✅
+
+**MD5:** `afd8770db6baeeccc163899441d7633c` · **Start:** `gra-kanon/START.html` · root `Gra-podglad.html`  
+**Źródło:** robocza `afd8770…` (22:57) · archiwum poprzedniego kanonu: `gra-kanon-archiwum/gra-kanon_20260704-225912`  
+**Bramka Master:** relief 6/6 · river-grid 9/9 · river-path 994/994 · smoke OK · fair-play 6/2 (baseline gęstość wzgórz) · logic 202/203 (baseline startPositions)  
+**Zakres:** siatka rzek 10×10 · min. 25 hex · las min 1/10×10 · relief fair play · FoW F/M · brzeg C + delta A
+
+---
+
+## [2026-07-04 ~23:15] MASTER · **Rzeki bufor 2 hex od morza** ✅
+
+**Reguła Macieja:** ciało rzeki min. **2 hex** od morza; tylko **ujście** (≤2 hex) wpada w wybrzeże.  
+**Fix:** A* bez biegu wzdłuż plaży · brak krawędzi na oceanie · rzeki **po finalnym wybrzeżu** (nie przed rebalance).  
+**Robocza:** md5 `5e3e2c762f39b9a65979caa3523fdae3` · test `river-sea-buffer-test.cjs` 6/6
+
+---
+
+**MD5:** `afd8770db6baeeccc163899441d7633c` · **Start:** `gra-robocza/START.html` (Ctrl+F5)  
+**Zakres:** siatka rzek 10×10 · min. 25 hex · sufit liczby rzek usunięty · las min 1/10×10 · relief fair play  
+**Bramka:** smoke OK · river-grid 9/9 · **→ kanon 22:59**
+
+---
+
+## [2026-07-04] LANE UI · **POLE-BITWY poprawki v4.1** ✅ → `UI-DO-MASTERA.md`
+
+**MD5 POLE-BITWY:** `435aa61d6afca0fa9e0cbc44122f4012` · marker `POLE-BITWY-20260704-poprawki-v4.1`  
+**Zakres:** popup Strategia 1E (dropdown/checkbox/sticky/scroll) + P1 top-bar · `Grupa N · cnt` · puste sloty rosteru  
+**Playtest:** Ctrl+F5 `gra-kanon/Gra-podglad-POLE-BITWY.html` → potem `master POLE-BITWY`
+
+---
+
+**ZIP:** `POLE-BITWY-poprawki-v4.1-2026-07-04` (Maciej / Design)  
+**P0:** popup **Strategia** 1E — dropdowny złote, medaliony K/Ł/P, chevron SVG, scroll+sticky „Skopiuj z priorytetów armii”, checkbox 1E  
+**P1 (notatki):** top-bar cluster · nagłówki `Grupa N · liczba` · puste sloty rosteru → `DESIGN-do-UI_POLE-BITWY-poprawki-v4.1.md`  
+**Handoff UI:** `dyspozycje/_handoff/MASTER-do-UI_POLE-BITWY-poprawki-v4.1-2026-07-04.md`  
+**Docelowy folder:** `docs/ux/claude-design/_dist/POLE-BITWY-poprawki-v4.1-2026-07-04/` (ZIP **gotowy** · Maciej potwierdził nazwę pobierania 2026-07-04 · **jeszcze nie w repo**)
+
+---
+
+## [2026-07-04 ~22:22] MASTER · **POLE-BITWY v4 artifact** ✅ · `master POLE-BITWY`
+
+**Review:** APPROVE skin 1E · marker `POLE-BITWY-20260704-design-v4`  
+**MD5 POLE-BITWY:** `ea54bf61d9105f2cde3484d74c2cfc72` → `gra-kanon/` + `gra-robocza/`  
+**Osobny build** — kanon główny `Gra-podglad.html` bez zmian w tym kroku
+
+---
+
+## [2026-07-04 ~22:20] Maciej **`master`** · **PROMOCJA KANON** ✅
+
+**MD5:** `0163da510c807dcd86ced86d4ab328b2` · **Start:** `gra-kanon/START.html` · POLE-BITWY: `Gra-podglad-POLE-BITWY.html`  
+**Bramka:** eko-tech 9/9 · smoke OK · logic 202/203 · ai 227/232 · combat baseline  
+**Zakres:** POLE-BITWY v4 · EKO-TECH-P1 · miasta 3D · CYW AI roster-6 · MAPA sync
+
+---
+
+## [2026-07-04 ~22:18] MASTER · **dzialaj** — POLE-BITWY v4 skin + podglądy miast
+
+**UI:** port Design 1E → `Gra-podglad-POLE-BITWY.html` · meldunek `UI-DO-MASTERA` → GOTOWE  
+**MAPA:** podglądy miast odświeżone (brąz 11 + kamień per-cyw) w `Civ-MAPA/`  
+**Playtest:** POLE-BITWY · miasta · mapa START.html
+
+---
+
+## [2026-07-04 ~22:15] MASTER · **dyspozycja F + MAPA** (EKO-TECH-P1)
+
+**F P0:** `MASTER-do-INTEGRATOR_eko-tech-p1-2026-07-04.md` — bramka + ROBOCZA (Master **nie** builduje).  
+**MAPA P0:** `MAPA.md` — droga brukowana (+2 ruch).  
+**Uwaga procesu:** wpis ~22:10 (main.ts przez hub) = **wyjątek błędny** — od teraz tylko F.
+
+---
+
+## [2026-07-04 ~22:10] MASTER · **EKO-TECH-P1 wpinięte w main.ts** ✅
+
+**Batch SILNIK:** bramka `wymagany budynek` (gate z `cityBuilt`) + `applyCompletedBuildingIds` przy ukończeniu budynku.  
+**Build:** vite → `$TEMP\civ-dist` OK · **eko-tech-paczka1:** 9/9  
+**Kanon:** czeka Opus przed kopią do `Gra-podglad.html`  
+**Handoff:** `EKONOMIA-do-SILNIK_eko-tech-p1-integracja` → **GOTOWE**
+
+---
+
+## [2026-07-04 ~22:05] Maciej · **Master ≠ Integrator** 🔔
+
+**Reguła:** wdrożenia z lane'ów (A–E) → **dyspozycja Integrator F** → F build + `gra-robocza/` → `GOTOWE-ROBOCZA` → Master review + **tylko** promocja kanon.  
+**Master NIE:** `vite build` · `publish-robocza` · integracja kodu lane.  
+**Uwaga procesu:** roster-6 (~22:03) poszedł przez Master — **wyjątek błędny**; od teraz obowiązuje tor F.
+
+---
+
+## [2026-07-04 ~22:03] MASTER · **KANON roster-6 AI** ✅ · Opus wycofany
+
+**Decyzja Macieja (~22:00):** review = **Master w hubie** (bez Opus) → promocja kanon od razu po APPROVE.  
+**Batch:** CYW roster-6 · D-ROSTER-Q7=A · Hetyci nauka +2  
+**Kanon md5:** `dafa21f48be84501ad74145e8d65f9f4` · `gra-kanon/START.html`  
+**Archiwum:** `gra-kanon-archiwum/gra-kanon_20260704-220300`  
+**Review MASTER:** APPROVE (scope · T3e–h · build · bez main.ts)
+
+---
+
+## [2026-07-04 ~22:00] MASTER · **CYW roster-6 AI — bramka OK** · kanon CZEKA Opus
+
+**Handoff:** `CYWILIZACJE-do-MASTER_roster-6-archetypy-ai_2026-07-04.md`  
+**Pliki:** `ai-params.json` (+24) · `ai.ts` (`CIV_TO_ARCH` 6 własnych) · `ai-test.cjs` T3e–T3h  
+**Bramka:** T3e–T3h ✅ · ai-test 227/232 (5× T2S baseline) · vite build `/tmp` ✅ · tsc baseline-red  
+**Następny:** review Opus → Maciej **`master`** → `publish-kanon-snapshot.ps1`
+
+---
+
+## [2026-07-04 ~21:54] Maciej · **PRZYPOMNIENIE: upgrade budynków + UI panelu** 🔔
+
+**Odłożone do:** po paczkach EKO-TECH 2/3 · hasło **`upgrade`**  
+**Zakres:** lista **wybudowanych**, kolejka **Rozbuduj**, prezentacja **bonusów** (suma vs rozpiska)  
+**Plik:** `docs/decyzje/ODLOZONE-UPGRADE-BUDYNKOW-2026-07-04.md`  
+**Otwarte ABC:** 20–24 + UPG-UI (kult już częściowo T-TECH-8)
+
+---
+
+**Decyzje:** `docs/decyzje/D-EKO-TECH-PACZKA1-2026-07-04.md` · rejestr **EKO-TECH-P1**  
+**Handoffy:** CYWILIZACJE · EKONOMIA · MAPA · UI (kult lista — paczka 2)
+
+---
+
+## [2026-07-04 ~21:53] Maciej · **POLE-BITWY Design v4 wygląd AKCEPT** ✅
+
+**Następny:** lane port skin → playtest POLE-BITWY → `master POLE-BITWY` → kanon
+
+---
+
+## [2026-07-04 ~21:50] CYWILIZACJE → MASTER: **roster-6 archetypy AI** — GOTOWE
+
+**Handoff:** `dyspozycje/_handoff/CYWILIZACJE-do-MASTER_roster-6-archetypy-ai_2026-07-04.md`  
+**Pliki:** `ai-params.json` (+24 klucze) · `ai.ts` (`CIV_TO_ARCH` 6 własnych) · `ai-test.cjs` T3e–T3h  
+**Korekta Macieja:** Hetyci `nauka=+2` · Babilonia nauka +2 / wojsko −1  
+**MASTER:** brak `main.ts` · build `/tmp` + ai-test → kanon po Opus
+
+---
+
+## [2026-07-04 ~21:40] Maciej · **ABC max 3/paczka** ✅
+
+**Decyzja:** jedna wiadomość + jeden `AskQuestion` = **maks. 3** pytania ABC (nie 10).  
+**Powód:** paczki po 10 zerwają czat w połowie — utrata odpowiedzi.  
+**Reguły:** `abc-pelna-forma.mdc` · `_ABC-JAK-PYTASZ.md` · `ABC-FORMAT-KANON-MACIEJ.md` · `SZABLON-PYTANIA-ABC.md`
+
+---
+
+## [2026-07-04 ~21:34] Design · **C-01 sync sign-off** ✅ ZAMKNIĘTE
+
+**Wynik:** mockup v3 = kanon `preBattle.ts` · lane **NIE portuje** · referencja zamrożona  
+**Meldunek:** `docs/ux/claude-design/C-01 sync gotowy — meldunek sign-off..md`  
+**Osobno:** POLE-BITWY v4 → port UI (czeka `start POLE-BITWY`)
+
+---
 
 **Plik:** `docs/ux/claude-design/POLE-BITWY-HUD-v4-2026-07-04.zip` · rozpakowany do `claude-design/`  
 **Deliverables:** C06 v4 (3 klatki) · C09 v4 · DESIGN-do-UI · MANIFEST  
@@ -3817,3 +4197,7 @@ Krok 1 przyjmij · krok 2 wykonaj w tej samej turze. Pliki: `MASTER-ZADANIA.md` 
 **Usunięto z aktywnych kolejek:** P6-FIGMA (decyzja ⚪ ODRZUCONA pozostaje tylko w REJESTR).  
 **Zsynchronizowano:** `WYTYCZNE-FORMAT-ABC-MACIEJ.md` → format 5 kroków.  
 **Otwarte ABC u Macieja:** brak (B1-Q3-UI=A · MASTER-PT-01=C wdrożone).
+
+## [2026-07-05] MAPA → MASTER: fair play A w grze (kreator→generator)
+
+Ustalenia Macieja (lustro rzek: rzeki/góry/wzgórza/las) **prowadzą do gry** via `worldDensity` z kreatora → `generujSwiat`. Robocza `gra-robocza/START.html` md5 `7a644f…`. Raport: `dyspozycje/MAPA-DO-MASTERA.md` §2026-07-05. **Czeka:** Opus review → kanon root.

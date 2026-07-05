@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>POLE-BITWY v5 GAP — lista zadań dla Design</title>
+<style>
+  :root {
+    --gold: #e8d88a;
+    --gold-dim: #a08030;
+    --bg: #0a0c10;
+    --panel: #121820;
+    --text: #e8e0c8;
+    --dim: #8a8070;
+    --player: #8fb6e0;
+    --enemy: #e08a8a;
+    --p0: #ff7b7b;
+    --p1: #ffd54a;
+    --p2: #7ad0a0;
+    --p3: #8a8070;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, sans-serif;
+    background: radial-gradient(900px 600px at 50% 0%, rgba(232,216,138,.08), transparent 55%), var(--bg);
+    color: var(--text);
+    line-height: 1.55;
+  }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 32px 20px 80px; }
+  h1 {
+    font-family: Georgia, 'Times New Roman', serif;
+    font-weight: 400;
+    font-size: 2.2rem;
+    letter-spacing: .08em;
+    color: var(--gold);
+    margin: 0 0 8px;
+  }
+  .sub { color: var(--dim); font-size: .95rem; margin-bottom: 28px; }
+  .hero {
+    border: 2px solid rgba(232,216,138,.35);
+    border-radius: 14px;
+    background: linear-gradient(180deg, rgba(22,28,40,.96), rgba(8,10,16,.98));
+    padding: 22px 24px;
+    margin-bottom: 32px;
+  }
+  .hero strong { color: var(--gold); }
+  .hero code, .path {
+    background: rgba(0,0,0,.35);
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: .88em;
+    word-break: break-all;
+  }
+  .steps { display: grid; gap: 10px; margin: 16px 0 0; }
+  .steps a {
+    display: block;
+    padding: 12px 16px;
+    border-radius: 10px;
+    border: 1px solid rgba(232,216,138,.25);
+    background: rgba(255,255,255,.03);
+    color: var(--gold);
+    text-decoration: none;
+    font-weight: 600;
+  }
+  .steps a:hover { border-color: var(--gold); background: rgba(232,216,138,.06); }
+  h2 {
+    font-family: Georgia, serif;
+    font-weight: 400;
+    color: var(--gold-dim);
+    font-size: 1.35rem;
+    margin: 36px 0 14px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(232,216,138,.2);
+  }
+  .gap {
+    border: 1px solid rgba(232,216,138,.2);
+    border-radius: 12px;
+    background: var(--panel);
+    margin-bottom: 16px;
+    overflow: hidden;
+  }
+  .gap-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 18px;
+    border-bottom: 1px solid rgba(255,255,255,.06);
+    flex-wrap: wrap;
+  }
+  .gap-id { font-weight: 700; color: var(--gold); letter-spacing: .06em; }
+  .prio {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 20px;
+  }
+  .prio-p0 { background: rgba(255,123,123,.15); color: var(--p0); border: 1px solid rgba(255,123,123,.35); }
+  .prio-p1 { background: rgba(255,213,74,.12); color: var(--p1); border: 1px solid rgba(255,213,74,.3); }
+  .prio-p2 { background: rgba(122,208,160,.12); color: var(--p2); border: 1px solid rgba(122,208,160,.3); }
+  .prio-p3 { background: rgba(138,128,112,.15); color: var(--p3); border: 1px solid rgba(138,128,112,.3); }
+  .gap-body { padding: 16px 18px 18px; font-size: .94rem; }
+  .gap-body ul { margin: 8px 0; padding-left: 20px; }
+  .gap-body li { margin: 4px 0; }
+  .label { font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--dim); margin-top: 12px; }
+  .wire {
+    font-family: ui-monospace, Consolas, monospace;
+    font-size: 11px;
+    line-height: 1.45;
+    background: rgba(0,0,0,.4);
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: 8px;
+    padding: 12px 14px;
+    white-space: pre;
+    overflow-x: auto;
+    color: #c8c0b0;
+    margin-top: 8px;
+  }
+  .file { color: var(--player); }
+  .skip { opacity: .75; }
+  .footer {
+    margin-top: 48px;
+    text-align: center;
+    font-size: 11px;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    color: var(--dim);
+  }
+  table { width: 100%; border-collapse: collapse; font-size: .9rem; margin-top: 12px; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid rgba(255,255,255,.06); }
+  th { color: var(--gold-dim); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>POLE-BITWY v5 GAP</h1>
+  <p class="sub">Lista mockupów do przygotowania · ZLECENIE-ID: <strong style="color:var(--gold)">POLE-BITWY-v5-gap-2026-07-05</strong> · styl 1E · zero emoji</p>
+
+  <div class="hero">
+    <p><strong>Dla Designera:</strong> Paczka v4.1 (C06 Deploy, C09 Roster, Strategia, C12) jest bazą — <strong>nie psuj</strong>. Poniżej tylko elementy, które dziś robi lane Cursor w grze i które Maciej chce zamienić na Twoje mockupy.</p>
+    <p style="margin-top:12px"><strong>Pełna spec (Markdown):</strong><br><span class="path">docs/ux/DESIGN-ZLECENIE-POLE-BITWY-v5-GAP-2026-07-05.md</span></p>
+    <p style="margin-top:8px"><strong>Wklejka do skopiowania:</strong><br><span class="path">docs/ux/WKLEJKA-DESIGN-START-POLE-BITWY-v5-GAP.md</span></p>
+
+    <div class="label">Jak zrobić screenshot PRZED (stan gry)</div>
+    <div class="steps">
+      <a href="../../../gra-kanon/Gra-podglad-POLE-BITWY.html" target="_blank">1. Otwórz playtest: gra-kanon/Gra-podglad-POLE-BITWY.html (Ctrl+F5)</a>
+      <a href="../../../docs/ux/claude-design/The%20Game%20-%20C06%20Deployment%20v4%202026-07-04%20(1E).dc.html" target="_blank">2. Porównaj z mockupem DOBRYM: C06 Deployment v4</a>
+      <a href="#gap-01">3. Doprowadź bitwę do końca → Szczegóły bitwy → zrób screenshot (GAP-01)</a>
+      <a href="#gap-02">4. Ekran końca → zrób screenshot przycisków (GAP-02)</a>
+      <a href="#gap-03">5. Deploy → klik Formacja / Konnica / Linie / Taktyka → screenshot popupów (GAP-03–06)</a>
+    </div>
+  </div>
+
+  <h2>Co już jest z Design (nie ruszać)</h2>
+  <table>
+    <tr><th>Mockup</th><th>Status</th></tr>
+    <tr><td class="file">C06 Deployment v4 (1E)</td><td>✅ Deploy · AUTO · R + popup Taktyka przykład</td></tr>
+    <tr><td class="file">C09 Roster lewy panel v4 (1E)</td><td>✅ Lewy panel · filtry · Grupuj</td></tr>
+    <tr><td class="file">C06 Popup Strategia v4 (1E)</td><td>✅ Dropdowny 1E · checkbox</td></tr>
+    <tr><td class="file">C12 Koniec bitwy v2 (1E)</td><td>✅ Wieniec · karty · brak replay i C-23</td></tr>
+  </table>
+
+  <h2>P0 — MUST (brak mockupu)</h2>
+
+  <article class="gap" id="gap-01">
+    <div class="gap-head">
+      <span class="gap-id">GAP-01 · C-23</span>
+      <span class="prio prio-p0">P0</span>
+      <span>Szczegóły bitwy</span>
+    </div>
+    <div class="gap-body">
+      <p><strong>Problem:</strong> Ekran po kliknięciu „Szczegóły bitwy” — Cursor złożył overlay, Maciej: nie wygląda jak reszta 1E.</p>
+      <p><strong>Deliverable:</strong> <span class="file">The Game - C23 Szczegoly bitwy v1 2026-07-05 (1E).dc.html</span></p>
+      <div class="wire">Pełnoekranowy overlay (jak C-12, NIE mały modal)
+Tytuł: SZCZEGÓŁY BITWY · separator ◆
+2 kolumny: ATAKUJĄCY (niebieski) | OBROŃCA (czerwony)
+Każda kolumna:
+  · ZNISZCZONE (#ff7b7b) + liczba + lista (Horseman ×7)
+  · ZROOTOWANE (#ffd54a)
+  · OCALAŁE (#7ad0a0)
+Przyciski: ← Wróć do podsumowania · Rozegraj ponownie</div>
+      <p><strong>Screenshot PRZED:</strong> playtest → koniec bitwy → Szczegóły bitwy</p>
+    </div>
+  </article>
+
+  <article class="gap" id="gap-02">
+    <div class="gap-head">
+      <span class="gap-id">GAP-02 · C-12 v3</span>
+      <span class="prio prio-p0">P0</span>
+      <span>Koniec bitwy + Rozegraj ponownie + Porażka</span>
+    </div>
+    <div class="gap-body">
+      <p><strong>Problem:</strong> C-12 v2 ma 2 przyciski. Gra ma 3 (+ replay dodane przez Cursor).</p>
+      <p><strong>Deliverable:</strong> <span class="file">The Game - C12 Koniec bitwy v3 2026-07-05 (1E).dc.html</span> — 3 sekcje w 1 pliku:</p>
+      <ul>
+        <li><strong>ZWYCIĘSTWO</strong> — 3 CTA: Rozegraj ponownie (primary) · Szczegóły · Powrót do mapy</li>
+        <li><strong>PORAŻKA</strong> — ten sam układ, inny tytuł/kolorystyka</li>
+        <li>Podpowiedź nad przyciskami: <em>Ta sama armia · pełne HP · wynik na mapę dopiero po Powrocie</em></li>
+      </ul>
+    </div>
+  </article>
+
+  <h2>P1 — Popupy deploy (przyciski w C06 v4, treść = Cursor)</h2>
+
+  <article class="gap" id="gap-03">
+    <div class="gap-head"><span class="gap-id">GAP-03</span><span class="prio prio-p1">P1</span><span>Popup Formacja</span></div>
+    <div class="gap-body">
+      <p><span class="file">The Game - C06 Popup Formacja v1 2026-07-05 (1E).dc.html</span></p>
+      <p>Kontekst: deploy · toolbar · przycisk Formacja <strong>otwarty</strong>. Opcje: <strong>Dystans</strong> · <strong>Piechota</strong> · <strong>Oblężenie</strong>. Styl jak popup Taktyka w C06 v4.</p>
+    </div>
+  </article>
+
+  <article class="gap" id="gap-04">
+    <div class="gap-head"><span class="gap-id">GAP-04</span><span class="prio prio-p1">P1</span><span>Popup Konnica</span></div>
+    <div class="gap-body">
+      <p><span class="file">The Game - C06 Popup Konnica v1 2026-07-05 (1E).dc.html</span></p>
+      <p>Opcje: <strong>Z boku</strong> · <strong>Z tyłu</strong></p>
+    </div>
+  </article>
+
+  <article class="gap" id="gap-05">
+    <div class="gap-head"><span class="gap-id">GAP-05</span><span class="prio prio-p1">P1</span><span>Popup Linie</span></div>
+    <div class="gap-body">
+      <p><span class="file">The Game - C06 Popup Linie v1 2026-07-05 (1E).dc.html</span></p>
+      <p>Sekcja Piechota: przyciski <strong>1 · 2 · 3</strong> · Sekcja Łucznicy: <strong>1 · 2 · 3</strong></p>
+    </div>
+  </article>
+
+  <article class="gap" id="gap-06">
+    <div class="gap-head"><span class="gap-id">GAP-06</span><span class="prio prio-p1">P1</span><span>Popup Taktyka v2 (sync copy)</span></div>
+    <div class="gap-body">
+      <p><span class="file">The Game - C06 Popup Taktyka v2 2026-07-05 (1E).dc.html</span></p>
+      <p>Popraw copy vs C06 v4 przykład. Dokładnie 4 pozycje z gry:</p>
+      <ul><li>Obrona · Atak · Szturm · Ostrzał</li></ul>
+      <p>Nagłówek grupy np. „Grupa 1 · 20” + hint o postawie taktycznej.</p>
+    </div>
+  </article>
+
+  <h2>P2 — Doprecyzowanie v4.1</h2>
+
+  <article class="gap" id="gap-07">
+    <div class="gap-head"><span class="gap-id">GAP-07</span><span class="prio prio-p2">P2</span><span>C-09 Roster v5</span></div>
+    <div class="gap-body">
+      <p><span class="file">The Game - C09 Roster lewy panel v5 2026-07-05 (1E).dc.html</span></p>
+      <ul>
+        <li>Placeholder pustego slotu w siatce 6 kol</li>
+        <li>Karta padł (opacity, ✕) · karta routed (czerwony akcent)</li>
+        <li>Stopka: Zaznaczone: N · Grupa X</li>
+      </ul>
+    </div>
+  </article>
+
+  <article class="gap" id="gap-08">
+    <div class="gap-head"><span class="gap-id">GAP-08</span><span class="prio prio-p2">P2</span><span>Top bar cluster v5</span></div>
+    <div class="gap-body">
+      <p>Gap między ikoną SVG a liczbą · separatory · obie strony <strong>20·60·30·110</strong> · decyzja: strzałka ↓ przed „Ty”</p>
+    </div>
+  </article>
+
+  <article class="gap" id="gap-09">
+    <div class="gap-head"><span class="gap-id">GAP-09</span><span class="prio prio-p2">P2</span><span>Tooltip karty jednostki</span></div>
+    <div class="gap-body">
+      <p><span class="file">The Game - C09 Tooltip karta jednostki v1 2026-07-05 (1E).dc.html</span></p>
+      <p>Lekki tooltip hover (zamiast starego panelu „20 zaznaczonych”): nazwa · HP · morale · grupa · typ.</p>
+    </div>
+  </article>
+
+  <h2>P3 — opcjonalnie</h2>
+  <article class="gap" id="gap-10">
+    <div class="gap-head"><span class="gap-id">GAP-10</span><span class="prio prio-p3">P3</span><span>C-22 Baner flash</span></div>
+    <div class="gap-body">
+      <p>Krótki overlay przed C-12: „Zwycięstwo atakującego!” — bez przycisków.</p>
+    </div>
+  </article>
+
+  <h2 class="skip">Nie projektować</h2>
+  <ul class="skip">
+    <li>Stary panel Q3 (20 zaznaczonych, STOJ/WYC) — usuwamy w kodzie</li>
+    <li>Mapa 3D / proporcje paska mocy (logika gry)</li>
+    <li>Panel Generała — osobny temat</li>
+  </ul>
+
+  <h2>ZIP deliverable</h2>
+  <div class="wire">POLE-BITWY-v5-gap-2026-07-05.zip
+├── The Game - C23 Szczegoly bitwy v1 2026-07-05 (1E).dc.html
+├── The Game - C12 Koniec bitwy v3 2026-07-05 (1E).dc.html
+├── The Game - C06 Popup Formacja v1 … (1E).dc.html
+├── … (pozostałe z listy)
+├── DESIGN-do-UI_POLE-BITWY-v5-gap.md
+├── MELDUNEK-POLE-BITWY-v5-gap.md
+├── MANIFEST.txt
+└── support.js</div>
+
+  <p class="footer">The Game · POLE-BITWY v5 GAP · Design review · 2026-07-05</p>
+</div>
+</body>
+</html>
