@@ -1,10 +1,8 @@
 # UI — STAN (≤12 linii)
 
 **Kanon główny:** md5 `0b8a9a7f…` · `gra-kanon/START.html`
-**POLE-BITWY v4.1 komplet:** **GOTOWE** ✅ · marker `POLE-BITWY-20260705-end-details-1E`
-**Deploy popups v5 P0:** ✅ w `gra/src/battle/` (`afe2220`) · bundel HTML ⏳ nie przebudowany
-**MD5 POLE-BITWY (stary bundel):** `be17d8696b08523e5ce7e0cd93417485`
-**Playtest:** `gra-kanon/Gra-podglad-POLE-BITWY.html` · Ctrl+F5 · tooltip rosteru = marker
-**Design:** `POLE-BITWY-poprawki-v4.1.zip` (2026-07-05) + `MELDUNEK-POLE-BITWY-v4.1.md`
-**Dyplomacja 1E:** **KANON** ✅ · md5 `55bdb2af…`
-**Następne UI:** A-06 panel jednostki · nauka (HOLD)
+**POLE-BITWY bundel:** ✅ rebuild Deploy v5 P0–P2 · md5 `947ecf1013b2dcc75c7c7d8f3982e5b5`
+**Playtest:** `gra-kanon/Gra-podglad-POLE-BITWY.html` · Ctrl+F5 · hełm Konnica + chipy popup
+**Deploy popups v5:** P0+P1+P2 ✅ w src + kanon POLE-BITWY (2026-07-05 batch F)
+**Opus review:** ⏳ przed merge do START.html (osobny chat Ask)
+**Design:** mockup v5 + handoff GAP-03–06 DONE · v4.1 baza HUD ✅

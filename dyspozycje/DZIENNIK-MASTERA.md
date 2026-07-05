@@ -4,12 +4,54 @@ Append-only. Source of truth operacyjny projektu Civ.
 
 ---
 
+## [2026-07-05 ~13:35] MASTER · BATCH 3 płynność kamery A1+A4 ✅ (publish)
+
+**Zakres:** overlay diagnostyczny F9 · rzeki off LOD 3–4 · merge rzek do 3 meshy (land/coast/delta)  
+**Pliki:** `gra-robocza/src/render/perfDebugOverlay.ts` (nowy), `zoomLod.ts`, `scene.ts`, `main.ts`, `buildInfo.ts`  
+**Bramka:** `weryfikacja-mapy.cjs` standard PASS · vite build OK · strażnik publish PASS  
+**Publish:** md5 `6026f03811e0410984962fafa286a8aa` · stempel `2026-07-05 13:35 · c385e426e8a4`  
+**Playtest Macieja:** Ctrl+F5 → Super Huge → **F9** → pełne oddalenie i zbliżenie → raport FPS + draw calls → `OK BATCH 3` / `BUG: …`
+
+---
+
+## [2026-07-05 ~13:25] MASTER · pipeline działaj ✅
+
+**MAPA strefy klimat A wąski:** `climateZoneAt` + generator + render dżungli · sync `gra-kanon/` + `gra-robocza/`  
+**Bramka:** determinizm PASS · rzeki 881/881 PASS · timing standard 6.17s (baseline, nie blokuje)  
+**Robocza publish:** md5 **`4dde8743dec8355feb3bfd3ba7e79d29`** · `gra-robocza/START.html`  
+**POLE-BITWY deploy v5:** rebuild + sync root/`gra-kanon/`/`gra-robocza/` · md5 **`a48682a2b48738dc359bf7a4a7c3c7c5`**  
+**Kolejka Macieja:** (1) playtest stref klimatu Ctrl+F5 robocza (2) playtest `Gra-podglad-POLE-BITWY.html` deploy toolbar  
+**Kanon:** czeka sign-off + Opus (strefy klimat + POLE-BITWY osobno)
+
+---
+
+## [2026-07-05 ~13:22] MASTER · BATCH 2 generacja B1–B4 ✅ (publish)
+
+**Zakres:** optymalizacja generatora Super Huge — sanitizeCoast BFS, finalize early-exit, batch erozja, A* heap, test super 60 s  
+**Pliki:** `gra-robocza/src/map/gen-helpers.ts`, `generator.ts`, `tools/weryfikacja-mapy.ts`  
+**Bramka:** `weryfikacja-mapy.cjs` standard PASS · super metryki PASS · czas super ~84–121 s (baseline 126/169 s, cel 60 s ⚠)  
+**Publish:** md5 `0372cdcf4d66a8136a54c6669ce01de2` · stempel menu `2026-07-05 13:22 · 431b33ffc136`  
+**Kolejka:** Maciej playtest Super Huge (Ctrl+F5) → `OK BATCH 2` / czas z overlayu · ewentualnie B5 typed-arrays jeśli < 60 s
+
+---
+
 ## [2026-07-05] DESIGN · zlecenie BUDYNKI infografiki → GitHub
 
 **ZLECENIE-ID:** `BUDYNKI-INFOGRAFIKI-1E-2026-07-05`  
 **Problem:** 35 budynków · 13 ikon kategorii (duplikaty w panelu miasta).  
 **Paczka:** spec + GAP HTML + wklejka START → push `The-Game` main.  
 **Designer:** czyta tylko GitHub · hasło w `DESIGN-GITHUB-HASLA.md`.
+
+---
+
+## [2026-07-05 ~14:15] BATCH F · POLE-BITWY rebuild kanon ✅
+
+**Trigger:** Maciej playtest OK („start") · Deploy v5 P0–P2 w src  
+**Build:** `npx vite build --config vite.oblezenie-bitwa.config.ts`  
+**MD5:** `947ecf1013b2dcc75c7c7d8f3982e5b5` (było `be17d869…`)  
+**Pliki:** `gra-kanon/Gra-podglad-POLE-BITWY.html` · root + `gra-robocza/`  
+**Bramka:** battle-smoke main bundle — FAIL pre-existing (jsdom stack) · bundel POLE-BITWY OK  
+**Opus:** ⏳ review przed wpinięciem do START.html
 
 ---
 
