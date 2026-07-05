@@ -4,6 +4,39 @@ Append-only. Source of truth operacyjny projektu Civ.
 
 ---
 
+## [2026-07-05 ~09:15] Audyt Opus 5 → **dyspozycja F BLEDY-2026-07-05**
+
+**Źródło:** Maciej · raport `dyspozycje/BLEDY-DO-NAPRAWY-2026-07-05.md` (audyt zewnętrzny + test generatora Macieja)
+
+**Potwierdzone P0 MAPA:**
+- B0.1 rzeki bez ujścia (~28% na „ziemia") — purge po `generateRivers()` kasuje wodę
+- B0.2 wolna generacja (standard ~26 s) — 47% CPU `oceanConnectedWaterKeys` w pętli
+- B0.3 `TerenBazowy.Morse` literówka — wybrzeże tylko eroduje
+
+**Dyspozycja F:** `_handoff/MASTER-do-INTEGRATOR_BLEDY-2026-07-05.md`  
+**Kolejka:** `INTEGRATOR-kolejka.md` P0 · `INTEGRATOR-STAN.md` zaktualizowany  
+**P1:** 158 błędów `tsc` (crashe main.ts + reszta tabeli raportu)  
+**P2 BLOCKED:** podwójna szarża, wasalizacja, seed save — czeka ABC Macieja (F tylko raportuje)
+
+**Następny krok:** Integrator F `działaj` → meldunek `F-do-MASTER_BLEDY-2026-07-05.md` → Master review → promocja kanon po playteście MAPA
+
+---
+
+## [2026-07-05 ~09:30] F → MASTER · **P0 MAPA GOTOWE-ROBOCZA**
+
+**Meldunek:** `_handoff/F-do-MASTER_BLEDY-2026-07-05.md`  
+**md5 robocza:** `b468cadea475517b9bcc07194bdd5036` (kanon nadal `89a870fb…`)
+
+**Wyniki AC:**
+- B0.1: 0/877 głównych rzek bez ujścia (5 seedów × 4 typy)
+- B0.2: standard 26,4 s → **4,36 s** · duża **9,02 s**
+- B0.3: Morse→Morze
+- Test: `map-gen-regression-test.cjs` PASS · smoke OK
+
+**Otwarte:** P1 tsc **157** błędów (osobny batch F) · P2 BLOCKED ABC · playtest MAPA Macieja przed kanonem
+
+---
+
 ## [2026-07-05 ~08:42] CYWILIZACJE · **status ZAMKNIĘTY** — brak batchu MASTER
 
 **Lane meldunek:** roster-6 ✅ kanon · Panel-D sync ✅ · export NIE · CUDA G1 / jednostki / bonusy → inne lane'y  
@@ -51,6 +84,20 @@ Append-only. Source of truth operacyjny projektu Civ.
 **ROBOCZA md5:** `89a870fbecbc015cb96a2e90cba04511` · start: `gra-robocza/START.html`
 
 **Kanon:** czeka Opus przed `Gra-podglad.html`.
+
+---
+
+## [2026-07-05] DESIGN · zlecenie A-18 Połączenie / Rozdziel armii (mapa · gap Cursor)
+
+**Problem:** modal merge (screenshot Maciej) — emoji 🔗 ⚔️ · zielony CTA · brak mockupu brand-book (A-18 ⬜).
+
+**Dokumenty:**
+- Spec: `docs/ux/DESIGN-ZLECENIE-ARMY-MERGE-A18-2026-07-05.md`
+- Wklejka: `docs/ux/WKLEJKA-DESIGN-START-ARMY-MERGE-A18.md`
+- Review HTML: `docs/ux/export/A18-ARMY-MERGE-GAP-DLA-DESIGN.html`
+- Screenshot PRZED: `docs/ux/export/screenshots/A18-merge-przed-2026-07-05.png`
+
+**ZLECENIE-ID:** `ARMY-MERGE-A18-2026-07-05` · 2 mockupy (.dc.html) · SVG merge/arrow · sync ikon z JEDNOSTKI-INFOGRAFIKI
 
 ---
 
