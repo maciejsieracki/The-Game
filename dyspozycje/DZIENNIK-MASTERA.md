@@ -13,6 +13,15 @@ Append-only. Source of truth operacyjny projektu Civ.
 
 ---
 
+## [2026-07-05 ~13:42] DECYZJA Maciej · chipy popup Deploy — **B**
+
+**ABC:** chip 34×34 gradient w wierszach Formacja/Konnica  
+**Wybór:** **B** — dopnij przed kanonem (nie blokuje logiki)  
+**Lane:** P2 `MASTER-do-UNITS_deploy-popups-v5-P2.md` · mockup v5 linia 27–41  
+**Kolejka:** P2 → playtest popupy → Opus → batch F
+
+---
+
 ## [2026-07-05 ~13:40] MASTER · Deploy v5 P0+P1 — zamknięcie lane ✅
 
 **Zakres:** popupy Formacja/Konnica/Linie/Taktyka · handoff Design GAP-03–06  

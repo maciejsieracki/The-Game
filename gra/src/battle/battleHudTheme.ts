@@ -637,14 +637,24 @@ export function paintDeployPopupOption(btn: HTMLButtonElement, active: boolean):
   });
 }
 
-/** Wiersz popupu: ikona + tytuł + opcjonalny podpis (#8a8070) — mockup 1E v5. */
+/** Chip 34×34 wokół ikony — wiersze Formacja/Konnica (mockup v5 · decyzja Maciej B). */
+export function wrapDeployPopupIconChip(iconSvg: string): string {
+  return (
+    '<span style="width:34px;height:34px;border-radius:8px;flex-shrink:0;' +
+    'background:radial-gradient(circle at 38% 30%,#1a2230,#0a0d14);' +
+    'border:1px solid #a08030;display:flex;align-items:center;justify-content:center;' +
+    `color:${BATTLE_GOLD};line-height:0;">${iconSvg}</span>`
+  );
+}
+
+/** Wiersz popupu: chip ikony + tytuł + opcjonalny podpis (#8a8070) — mockup 1E v5. */
 export function buildDeployPopupRowHtml(iconSvg: string, title: string, subtitle?: string): string {
   const sub = subtitle
     ? `<span style="font-size:11px;color:#8a8070;line-height:1.2;">${subtitle}</span>`
     : '';
   return (
     '<span style="display:flex;align-items:center;gap:12px;width:100%;">' +
-    `<span style="display:inline-flex;flex-shrink:0;color:${BATTLE_GOLD};line-height:0;">${iconSvg}</span>` +
+    wrapDeployPopupIconChip(iconSvg) +
     '<span style="display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;">' +
     `<span style="font-size:14px;color:#e8e0c8;">${title}</span>${sub}` +
     '</span></span>'
