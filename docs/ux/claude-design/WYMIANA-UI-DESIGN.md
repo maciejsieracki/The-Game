@@ -5,7 +5,7 @@
 # Claude Design: czytaj na upload + dopisuj do `design` po deliverable
 
 version: 4
-updated: "2026-07-03"
+updated: "2026-07-05"
 phase: "brand_book_d1"
 kanon_sciezek: "docs/ux/claude-design/KANON-SCIEZEK.md"
 schemat_az: "docs/ux/SCHEMAT-AZ-UX-PIPELINE.md"
@@ -93,15 +93,53 @@ design:
   maciej_start: "2026-06-26 — START w czacie Lane UI · Design może realizować D1"
 
 lane_ui:
-  last_action: "2026-07-01 Maciej wybral GitHub — WORKFLOW-GITHUB-SYNC · czeka remote origin"
-  review: "W1 prep w kodzie · sync przez git pull po push Design"
-  next: "Po setup GitHub + tura 2 push: W1b iconRegistry"
+  last_action: "2026-07-06 — IMP-01 odpowiedź P1–P6 na GitHub (GITHUB-ISSUE-IMP-01-ODPOWIEDZ + hasło IMP-01-MOC-ODPOWIEDZ-2026-07-06)"
+  review: "Design mockup v1 Moc = 6 filarów BŁĄD · kanon = 9 składników · v2 wymagane"
+  next: "Design: git pull → szukaj IMP-01-MOC-ODPOWIEDZ-2026-07-06 → mockup v2 · równolegle B-P0 B1/B2/B4/B5"
+  github_odpowiedz_moc: "docs/ux/GITHUB-ISSUE-IMP-01-ODPOWIEDZ-DESIGN-2026-07-06.md"
+  blocked_on_design:
+    - "B1 A-08 Tryb budowy ulepszeń — emoji, brak imp-*, tekst nakłada się (Posterunek)"
+    - "B2 HEX-CONTEXT-PANEL — karta C1 heksu — plony/ulepszenia bez mockupu 1E"
+    - "B3 IMP-01 Panel Moc imperium (MASTER-do-UI_panel-moc-i-imperium.md)"
+    - "B4 PB-v5-01 C23 Szczegóły bitwy"
+    - "B5 PB-v5-02 C12 Koniec v3"
+    - "B6 Hub nauki — HOLD Macieja D11"
+    - "B7 A-06/A-10/A-27/Wiki — brak mockupów final"
+    - "B8 menu-button-map.json — backlog"
+  wklejka_pelna_lista_B: "docs/ux/WKLEJKA-DESIGN-B-P0-PELNE-MACIEJ-2026-07-06.md"
+  spec_B_P0: "docs/ux/DESIGN-ZLECENIE-B-P0-PELNE-2026-07-06.md"
+  ready_to_port_no_design:
+    - "BUDYNKI Poziom B karty (mockup 2026-07-05 już w repo)"
+    - "W4 v2 reszta zakładek (mockup już w repo)"
+    - "Popupy deploy v5 SVG (HANDOFF już w repo)"
 
 maciej:
   next_step: "1) GitHub remote 2) START Cursor 3) START Design"
   po_tura: "Design: git push · Lane UI: git pull przy nastepnym START Cursor"
 
 queue_design:
+  - id: A-08-ULEPSZENIA
+    priority: P0
+    status: next_start
+    from: lane_ui
+    date: "2026-07-03"
+    registered_wymiana: "2026-07-05"
+    text: "Panel budowy ulepszeń (prawy) — emoji→imp-* SVG · layout 1E · scroll · Posterunek tekst się nakłada"
+    wklejka: "docs/ux/WKLEJKA-DESIGN-START-A08-ulepszenia.md"
+    brief: "docs/ux/DESIGN-BRIEF-A08-ulepszenia-ikony-i-panel.md"
+    handoff: "dyspozycje/_handoff/UI-do-DESIGN_A08-START-2026-07-03.md"
+    screenshot_maciej: "2026-07-05 playtest — prawy panel: Miasto + Ulepszenia terenu + Cuda, Posterunek overlap"
+  - id: HEX-CONTEXT-PANEL
+    priority: P0
+    status: next_start
+    from: lane_ui
+    date: "2026-07-05"
+    registered_wymiana: "2026-07-05"
+    text: "Karta heksu (lewy/prawy panel D17=A) — plony SVG zamiast emoji/letter · lista ulepszeń z ikonami · mockup C1"
+    wklejka: "docs/ux/WKLEJKA-DESIGN-START-HEX-CONTEXT-PANEL.md"
+    brief: "docs/ux/DESIGN-ZLECENIE-HEX-CONTEXT-PANEL-2026-07-05.md"
+    review_html: "docs/ux/export/HEX-CONTEXT-PANEL-GAP-DLA-DESIGN.html"
+    screenshot_maciej: "2026-07-05 — Równina heks (79,68) · PLONY Ż/P/H · MOŻLIWE plain text"
   - id: REQ-001
     priority: P0
     status: done_design
@@ -196,6 +234,22 @@ queue_ui:
 Pełna Windows:
 
 `C:\Users\macie\OneDrive - NASTER S.A\_NOWA_STRUKTURA\06_Prywatne\Gry\Civ\docs\ux\claude-design\WYMIANA-UI-DESIGN.md`
+
+---
+
+## ▶ P0 Maciej — wklej do Design TERAZ (2026-07-05)
+
+**Problem:** Briefy A-08 (07-03) i HEX (07-05) były w repo, ale **nie trafiły do `queue_design`** — Design ich nie widział w WYMIANA.
+
+**Playtest Macieja ~23:05:** lewy panel heksu (plony, lista MOŻLIWE) + prawy panel budowy (emoji, przepełniony tekst, Posterunek overlap) — **nadal bez mockupu Design**.
+
+| START | Wklejka (cały blok) |
+|-------|---------------------|
+| **`START — A-08`** | `docs/ux/WKLEJKA-DESIGN-START-A08-ulepszenia.md` |
+| **`START — HEX-CONTEXT-PANEL`** | `docs/ux/WKLEJKA-DESIGN-START-HEX-CONTEXT-PANEL.md` |
+| **Oba naraz** | `docs/ux/WKLEJKA-DESIGN-P0-HEX-A08-MACIEJ-2026-07-05.md` |
+
+Po deliverable Design → Lane UI portuje `buildModeHud.ts` + `hexContextTooltip.ts` / `sidePanelHud.ts`.
 
 ---
 
@@ -657,6 +711,7 @@ START
 | 2026-07-01 | Lane UI | **BRAK paczki Brand Book** — prośba do Design: sprawdź export (patrz sekcja [Cursor] poniżej) |
 | 2026-07-01 | Maciej | Rozpakowano **Ulepszenie infografik2.zip** (nowa paczka) |
 | 2026-07-01 | Lane UI | **START** — hoist do kanonu · **18 dc.html · 34 SVG · tb-diplomacy ✅** |
+| 2026-07-05 ~23:10 | Lane UI | **P0 rejestracja:** A-08 + HEX-CONTEXT w `queue_design` — wcześniej tylko pliki repo, Maciej pytał ≥2× · wklejka `WKLEJKA-DESIGN-P0-HEX-A08-MACIEJ-2026-07-05.md` |
 | | | |
 
 *(Dopisuj nowe wiersze na dole — nie kasuj historii.)*

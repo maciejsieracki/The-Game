@@ -22,6 +22,15 @@ Master lista luk: [WKLEJKA-DESIGN-MASTER-LUKI-2026-07-05.md](https://github.com/
 | **`HEX-CONTEXT-PANEL-2026-07-05`** | [spec](https://github.com/maciejsieracki/The-Game/blob/main/docs/ux/DESIGN-ZLECENIE-HEX-CONTEXT-PANEL-2026-07-05.md) | [GAP](https://github.com/maciejsieracki/The-Game/blob/main/docs/ux/export/HEX-CONTEXT-PANEL-GAP-DLA-DESIGN.html) · [PNG](https://github.com/maciejsieracki/The-Game/blob/main/docs/ux/export/screenshots/HEX-context-panel-przed-2026-07-05.png) |
 | **`A08-ulepszenia-ikony`** | [brief](https://github.com/maciejsieracki/The-Game/blob/main/docs/ux/DESIGN-BRIEF-A08-ulepszenia-ikony-i-panel.md) | [handoff](https://github.com/maciejsieracki/The-Game/blob/main/dyspozycje/_handoff/UI-do-DESIGN_A08-START-2026-07-03.md) |
 
+---
+
+## P0 — B-P0 (2026-07-06)
+
+| Hasło | Spec / odpowiedź (GitHub) | Review PRZED |
+|-------|---------------------------|--------------|
+| **`IMP-01-MOC-ODPOWIEDZ-2026-07-06`** | **[ODPOWIEDŹ Design P1–P6](https://github.com/maciejsieracki/The-Game/blob/main/docs/ux/GITHUB-ISSUE-IMP-01-ODPOWIEDZ-DESIGN-2026-07-06.md)** · [zlecenie](https://github.com/maciejsieracki/The-Game/blob/main/docs/ux/DESIGN-ZLECENIE-IMP-01-MOC-2026-07-06.md) | [GAP HTML](https://github.com/maciejsieracki/The-Game/blob/main/docs/ux/export/IMP-01-MOC-PANEL-GAP-DLA-DESIGN.html) |
+| **`B-P0-PELNE-2026-07-06`** | [master spec B1–B5](https://github.com/maciejsieracki/The-Game/blob/main/docs/ux/DESIGN-ZLECENIE-B-P0-PELNE-2026-07-06.md) · [wklejka](https://github.com/maciejsieracki/The-Game/blob/main/docs/ux/WKLEJKA-DESIGN-B-P0-PELNE-MACIEJ-2026-07-06.md) | GAP per temat w spec |
+
 **Oddawanie pracy:** [WORKFLOW-GITHUB-SYNC.md](https://github.com/maciejsieracki/The-Game/blob/main/docs/ux/claude-design/WORKFLOW-GITHUB-SYNC.md) · log: [WYMIANA-UI-DESIGN.md](https://github.com/maciejsieracki/The-Game/blob/main/docs/ux/claude-design/WYMIANA-UI-DESIGN.md)
 
 ---
