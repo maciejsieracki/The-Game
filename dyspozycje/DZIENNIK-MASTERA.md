@@ -4,6 +4,69 @@ Append-only. Source of truth operacyjny projektu Civ.
 
 ---
 
+## [2026-07-05 ~08:42] CYWILIZACJE · **status ZAMKNIĘTY** — brak batchu MASTER
+
+**Lane meldunek:** roster-6 ✅ kanon · Panel-D sync ✅ · export NIE · CUDA G1 / jednostki / bonusy → inne lane'y  
+**MASTER:** **nic do roboty** w tym batchu CYW
+
+---
+
+## [2026-07-05 ~08:34] Maciej · **OK master** ✅ — sign-off kanon
+
+**Werdykt:** `ok master` — kanon zaakceptowany po playteście.
+
+**Checkpoint:** md5 `89a870fbecbc015cb96a2e90cba04511` · `Gra-podglad.html` = `gra-kanon/START.html`
+
+**Zamknięte w batchu:** POLE-BITWY v4/v4.1 · EKO-TECH-P1 · miasta 3D (11 brąz + kamień per-cyw) · CYW AI roster-6 · FoW F/M.
+
+**Otwarte (backlog, nie blokuje):** MAPA rzeki ujście/pustynia (playtest w roboczej) · wzgórza/góry · upgrade budynków (`upgrade`).
+
+---
+
+## [2026-07-05 ~08:35] CYWILIZACJE → MASTER: **Panel-D sync** — bez exportu (Maciej)
+
+**Panel:** `panele-sterowania/Panel-D.xlsx` wygenerowany z JSON (15 nacji, roster-6, archetypy Q7=A, Hetyci nauka=2).  
+**Maciej:** na razie **bez edycji Excela** → export **niepotrzebny** (Excel = JSON).  
+**Później:** edycja Wartosc → sygnał **eksportuj panel D**.  
+**Batch archetypy AI:** już w kanonie (handoff 2026-07-04, md5 `dafa21f4…`).
+
+---
+
+## [2026-07-05 ~08:33] MAPA → MASTER · rzeki ujście + pustynia bez „oceanów”
+
+**Deliverable:** `gen-helpers.ts`, `generator.ts`, `render/scene.ts` → **gra-robocza** (rebuild).
+
+**Czeka:** playtest Macieja (rzeki→morze, pustynia). Potem Opus → kanon.
+
+**Backlog MASTER (po sign-off):** pasek postępu (UI+hook+main.ts) · Super Huge perf.
+
+---
+
+**Hasło:** `upgrade` / `działaj` — **ZAMKNIĘTE** w ROBOCZA.
+
+**Zakres:** `buildings.json` (łańcuchy upgrade + merge staty), `tech.json` (Drogi brukowane), `terrain-improvements.json` (ABC-24: tylko +2 ruch), `building-upgrades.ts`, `production.ts` (Rozbuduj X→Y, ukrycie Teatru), `cityPanel.ts` (↗ + panel składu), `main.ts` (maMur po fort).
+
+**Test:** `node tools/upgrade-budynki-test.cjs` → **28/28 PASS**
+
+**ROBOCZA md5:** `89a870fbecbc015cb96a2e90cba04511` · start: `gra-robocza/START.html`
+
+**Kanon:** czeka Opus przed `Gra-podglad.html`.
+
+---
+
+## [2026-07-05] DESIGN · zlecenie Jednostki infografiki 1E (spójny kanon SVG)
+
+**Problem:** różne ikony tego samego typu w mieście / pre-bitwie / POLE-BITWY / Strategia.
+
+**Dokumenty:**
+- Spec: `docs/ux/DESIGN-ZLECENIE-JEDNOSTKI-INFOGRAFIKI-2026-07-05.md`
+- Wklejka: `docs/ux/WKLEJKA-DESIGN-START-JEDNOSTKI-INFOGRAFIKI.md`
+- Review HTML: `docs/ux/export/JEDNOSTKI-INFOGRAFIKI-GAP-DLA-DESIGN.html`
+
+**ZLECENIE-ID:** `JEDNOSTKI-INFOGRAFIKI-1E-2026-07-05` · Poziom A: 4 klasy · Poziom B: 18 kategorii · min. 22 SVG
+
+---
+
 ## [2026-07-05] DESIGN · zlecenie POLE-BITWY v5 GAP (Cursor → mockupy)
 
 **Cel:** pełna lista elementów lane Cursor bez mockupu Design — paczka do przygotowania przez Designera.
@@ -108,6 +171,15 @@ Append-only. Source of truth operacyjny projektu Civ.
 **Fix:** `finalizeLandMassAfterCoast` — tiny islands + `purgeOpenOceanLandSpecks` ×2 passy po finalnym wybrzeżu i przed rzekami  
 **Test:** `stranded-land-test.cjs` **18/18** · river-sea-buffer 6/6 · smoke OK  
 **Robocza md5:** `0b8a9a7fb7bcc7197de869f79b841016` · **Ctrl+F5** `gra-robocza/START.html` + **nowa gra**
+
+---
+
+## [2026-07-05 ~08:34] Maciej **`master`** · **KANON promocja** ✅
+
+**Bramka:** combat 6/6 · smoke OK  
+**Kanon md5:** **`89a870fbecbc015cb96a2e90cba04511`**  
+**Zakres:** Panel-C staty · units 75 · poprzedni kanon → archiwum `gra-kanon_20260705-083410`  
+**Start:** `gra-kanon/START.html` · root `Gra-podglad.html`
 
 ---
 
