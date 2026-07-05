@@ -4,6 +4,15 @@ Append-only. Source of truth operacyjny projektu Civ.
 
 ---
 
+## [2026-07-05] DESIGN · zlecenie BUDYNKI infografiki → GitHub
+
+**ZLECENIE-ID:** `BUDYNKI-INFOGRAFIKI-1E-2026-07-05`  
+**Problem:** 35 budynków · 13 ikon kategorii (duplikaty w panelu miasta).  
+**Paczka:** spec + GAP HTML + wklejka START → push `The-Game` main.  
+**Designer:** czyta tylko GitHub · hasło w `DESIGN-GITHUB-HASLA.md`.
+
+---
+
 ## [2026-07-05 ~13:40] MASTER · Deploy v5 P0+P1 — zamknięcie lane ✅
 
 **Zakres:** popupy Formacja/Konnica/Linie/Taktyka · handoff Design GAP-03–06  

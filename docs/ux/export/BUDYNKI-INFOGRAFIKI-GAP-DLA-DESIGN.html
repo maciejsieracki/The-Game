@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<title>Budynki — infografiki GAP dla Design</title>
+<style>
+  :root { --gold:#e8d88a; --dim:#8a8070; --text:#e8e0c8; --bg:#0a0c10; --panel:#121820; --bad:#ff7b7b; --ok:#7ad0a0; }
+  body { margin:0; font-family:'Segoe UI',Tahoma,sans-serif; background:var(--bg); color:var(--text); line-height:1.55; }
+  .wrap { max-width:980px; margin:0 auto; padding:28px 18px 64px; }
+  h1 { font-family:Georgia,serif; font-weight:400; color:var(--gold); letter-spacing:.06em; }
+  .hero { border:2px solid rgba(232,216,138,.35); border-radius:12px; padding:18px 20px; margin:20px 0; background:linear-gradient(180deg,rgba(22,28,40,.96),rgba(8,10,16,.98)); }
+  h2 { font-family:Georgia,serif; color:#a08030; font-size:1.2rem; margin-top:32px; border-bottom:1px solid rgba(232,216,138,.2); padding-bottom:6px; }
+  table { width:100%; border-collapse:collapse; font-size:.88rem; margin:12px 0; }
+  th,td { text-align:left; padding:6px 8px; border-bottom:1px solid rgba(255,255,255,.06); vertical-align:top; }
+  th { color:#a08030; font-size:10px; letter-spacing:.12em; text-transform:uppercase; }
+  .bad { color:var(--bad); }
+  .ok { color:var(--ok); }
+  code { background:rgba(0,0,0,.35); padding:2px 6px; border-radius:4px; font-size:.88em; }
+  a { color:var(--gold); }
+  ul { padding-left:20px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Infografiki budynków — GAP</h1>
+  <p style="color:var(--dim)">ZLECENIE-ID: <strong style="color:var(--gold)">BUDYNKI-INFOGRAFIKI-1E-2026-07-05</strong></p>
+
+  <div class="hero">
+    <p><strong>Problem:</strong> 35 budynków · tylko <strong>13</strong> ikon kategorii — Stolarnia = Piec hutniczy = Cegielnia.</p>
+    <p><strong>Cel:</strong> <strong>35 dedykowanych SVG</strong> + karty infografiki (panel miasta, ↗ upgrade).</p>
+    <p><strong>Pełna spec (GitHub):</strong><br>
+      <a href="https://github.com/maciejsieracki/The-Game/blob/main/docs/ux/DESIGN-ZLECENIE-BUDYNKI-INFOGRAFIKI-2026-07-05.md">DESIGN-ZLECENIE-BUDYNKI-INFOGRAFIKI-2026-07-05.md</a><br>
+      <a href="https://github.com/maciejsieracki/The-Game/blob/main/docs/ux/WKLEJKA-DESIGN-START-BUDYNKI-INFOGRAFIKI.md">WKLEJKA START (do skopiowania)</a>
+    </p>
+    <p><strong>ZIP:</strong> <code>BUDYNKI-INFOGRAFIKI-1E-2026-07-05.zip</code></p>
+    <p><strong>Repo:</strong> <a href="https://github.com/maciejsieracki/The-Game">github.com/maciejsieracki/The-Game</a> · gałąź <code>main</code></p>
+  </div>
+
+  <h2>Dziś w grze (duplikaty)</h2>
+  <table>
+    <tr><th>Ikona wspólna</th><th>Liczba</th><th>Przykłady</th></tr>
+    <tr><td><code>bld-production</code></td><td class="bad">10</td><td>Stolarnia, Mielerz, Cegielnia, Piec hutniczy…</td></tr>
+    <tr><td><code>bld-trade</code></td><td class="bad">5</td><td>Targowisko, Port, Port wielki, Mennica…</td></tr>
+    <tr><td><code>bld-health</code></td><td class="bad">4</td><td>Studnia, Akwedukt, Łaźnia, Lazaret</td></tr>
+    <tr><td><code>bld-defense</code></td><td class="bad">3</td><td>Mury, Cytadela, <span class="bad">Warsztat oblężniczy (błąd!)</span></td></tr>
+    <tr><td><code>bld-science</code></td><td class="bad">2</td><td>Biblioteka, Akademia</td></tr>
+    <tr><td><code>bld-military</code></td><td class="bad">2</td><td>Koszary, Akademia wojskowa</td></tr>
+    <tr><td><code>bld-culture</code></td><td class="bad">3</td><td>Kręgi, Świątynia, Teatr</td></tr>
+    <tr><td>pojedyncze</td><td class="ok">5</td><td>Spichlerz, Magazyn, Stela… — OK kategoria, brak charakteru</td></tr>
+  </table>
+
+  <h2>Wzór stylu (13 istniejących — GitHub)</h2>
+  <p>Folder: <code>docs/ux/claude-design/01-propozycje-z-design/brand-book/eksport/icons/buildings/</code></p>
+  <ul>
+    <li><code>bld-production.svg</code> — kowadło (generyczne)</li>
+    <li><code>bld-trade.svg</code> — moneta</li>
+    <li><code>bld-defense.svg</code> — tarcza</li>
+    <li>… + 10 innych kategorii</li>
+  </ul>
+  <p>Nowe ikony: <strong>ten sam stroke</strong>, viewBox 24×24, <code>currentColor</code>, zero emoji.</p>
+
+  <h2>Lista 35 — id · nazwa · motyw (skrót)</h2>
+  <table>
+    <tr><th>id</th><th>Nazwa PL</th><th>Motyw ikony</th><th>P</th></tr>
+    <tr><td>stolarnia</td><td>Stolarnia</td><td>piła + deski</td><td>P0</td></tr>
+    <tr><td>mielerz</td><td>Mielerz</td><td>węgiel drzewny + dym</td><td>P0</td></tr>
+    <tr><td>kamieniarski</td><td>Warsztat kamieniarski</td><td>dłuto + kamień</td><td>P0</td></tr>
+    <tr><td>kuznia</td><td>Kuźnia</td><td>kowadło brąz</td><td>P0</td></tr>
+    <tr><td>odlewnia_brazu</td><td>Piec hutniczy</td><td>piec + płomień</td><td>P0</td></tr>
+    <tr><td>odlewnia_zelaza</td><td>Odlewnia żelaza</td><td>wlew żelaza</td><td>P0</td></tr>
+    <tr><td>garncarnia</td><td>Garncarnia</td><td>amfora / koło</td><td>P0</td></tr>
+    <tr><td>cegielnia</td><td>Cegielnia</td><td>cegły</td><td>P0</td></tr>
+    <tr><td>kuznia_zelaza</td><td>Kuźnia żelaza</td><td>kowadło + iskry</td><td>P0</td></tr>
+    <tr><td>wielka_kuznia</td><td>Wielka Kuźnia</td><td>wielki piec (upgrade)</td><td>P1</td></tr>
+    <tr><td>targowisko</td><td>Targowisko</td><td>stragan + waga</td><td>P0</td></tr>
+    <tr><td>port</td><td>Port handlowy</td><td>kotwica</td><td>P0</td></tr>
+    <tr><td>port_wielki</td><td>Port wielki</td><td>duży port (upgrade)</td><td>P1</td></tr>
+    <tr><td>karawanseraj</td><td>Karawanseraj</td><td>karawana</td><td>P0</td></tr>
+    <tr><td>mennica</td><td>Mennica</td><td>moneta + stempel</td><td>P0</td></tr>
+    <tr><td>spichlerz</td><td>Spichlerz</td><td>spichlerz + kłos</td><td>P0</td></tr>
+    <tr><td>magazyn</td><td>Magazyn</td><td>skrzynie</td><td>P0</td></tr>
+    <tr><td>kamienne_kregi</td><td>Kamienne kręgi</td><td>krąg kamieni</td><td>P1</td></tr>
+    <tr><td>swiatynia</td><td>Świątynia</td><td>kolumny + ogień</td><td>P1</td></tr>
+    <tr><td>teatr</td><td>Teatr</td><td>maski</td><td>P2</td></tr>
+    <tr><td>stela</td><td>Stela</td><td>obelisk</td><td>P2</td></tr>
+    <tr><td>palac</td><td>Pałac</td><td>fasada</td><td>P2</td></tr>
+    <tr><td>biblioteka</td><td>Biblioteka</td><td>zwoje</td><td>P1</td></tr>
+    <tr><td>akademia</td><td>Akademia</td><td>akademia + zwoje (upgrade)</td><td>P1</td></tr>
+    <tr><td>studnia</td><td>Studnia</td><td>studnia</td><td>P2</td></tr>
+    <tr><td>akwedukt</td><td>Akwedukt</td><td>łuk wodny</td><td>P2</td></tr>
+    <tr><td>laznia_publiczna</td><td>Łaźnia</td><td>para</td><td>P2</td></tr>
+    <tr><td>lazaret</td><td>Lazaret</td><td>namiot med.</td><td>P2</td></tr>
+    <tr><td>mury</td><td>Mury</td><td>mur</td><td>P0</td></tr>
+    <tr><td>fort</td><td>Cytadela</td><td>warowna wieża</td><td>P1</td></tr>
+    <tr><td>koszary</td><td>Koszary</td><td>baraki / włócznie</td><td>P0</td></tr>
+    <tr><td>warsztat_oblezniczy</td><td>Warsztat oblężniczy</td><td class="bad">katapulta (NIE mur)</td><td>P0</td></tr>
+    <tr><td>akademia_wojskowa</td><td>Akademia wojskowa</td><td>tarcza + wieniec</td><td>P1</td></tr>
+    <tr><td>sad</td><td>Sąd</td><td>waga</td><td>P2</td></tr>
+    <tr><td>pretorium</td><td>Pretorium</td><td>fasces</td><td>P2</td></tr>
+  </table>
+
+  <h2>Karta infografiki (poziom B)</h2>
+  <ul>
+    <li>Ikona 40px + nazwa PL</li>
+    <li>Chip kategorii + 2–3 bonusy (praca, pieniądz, nauka…)</li>
+    <li>Badge epoki · opcjonalnie ↗ „z Murów”</li>
+  </ul>
+
+  <h2>Deliverable mockup</h2>
+  <p><code>The Game - Budynki infografiki kanon v1 2026-07-05 (1E).dc.html</code></p>
+
+  <p style="margin-top:40px;text-align:center;color:var(--dim);font-size:11px;letter-spacing:.2em;text-transform:uppercase">The Game · Budynki · Design review · 2026-07-05</p>
+</div>
+</body>
+</html>
