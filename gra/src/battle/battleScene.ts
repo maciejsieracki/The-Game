@@ -52,7 +52,7 @@
 import * as THREE from 'three';
 import {
   resolveCombat,
-  hitChance,
+  hitChanceTw,
   baseDamage,
   rangeDamage,
   counterMultiplier,
@@ -61,6 +61,9 @@ import {
   flankRearDefensePenalty,
 } from '../game/combat';
 import type { CombatUnit, CombatResult } from '../game/combat';
+import { combatUnitFromDef, unitRowStat } from '../game/combat';
+import type { CivBonusEntry } from '../game/civ-bonuses';
+import { applyMultiplier, civCombatStatMultipliers } from '../game/civ-bonuses';
 import { buildUnitModel } from '../render/units';
 import {
   BTerrain,
@@ -71,6 +74,98 @@ import {
 import { buildTestArmies } from './testBattle';
 import { buildSiegeWall, attachRowBreachPanels } from './siegeWall';
 import type { BronzeCiv } from '../render/bronzeCity';
+import {
+  drawBattleMinimap,
+  minimapPixelToTile,
+  MINIMAP_H,
+  MINIMAP_W,
+  type BattleMinimapData,
+  type BattleMinimapUnit,
+  type BattleMinimapViewport,
+} from './battleMinimap';
+import {
+  applyBtnOutline,
+  applyBtnPrimary,
+  applyBtnStartBattle,
+  applyDeployToolbarBar,
+  applyFilterChip1E,
+  applyGroupBadge1E,
+  applyMinimap1E,
+  applyModeHint1E,
+  applyRailBtn1E,
+  applyRosterFilterBar1E,
+  applyRosterActionBar1E,
+  applyRosterFooter1E,
+  applyRosterHeaderSection1E,
+  applyRosterPanel1E,
+  applySelectionActionBtn1E,
+  applyToolbarBtn1E,
+  applyTopBar1E,
+  applyUnitCardIconCircle,
+  groupBtnLabelHtml,
+  mkRosterBarTrack,
+  BATTLE_ENEMY,
+  BATTLE_ENEMY_TEXT,
+  BATTLE_FONT,
+  BATTLE_FONT_TITLE,
+  BATTLE_GOLD,
+  BATTLE_GOLD_DIM,
+  BATTLE_HUD_BG,
+  BATTLE_PANEL_BG,
+  BATTLE_PANEL_BORDER,
+  BATTLE_PLAYER,
+  BATTLE_PLAYER_BG,
+  BATTLE_PLAYER_TEXT,
+  BATTLE_TEXT,
+  BATTLE_TEXT_DIM,
+  FMT_SVG,
+  DEPLOY_KIND_LABEL,
+  DEPLOY_SCOPE_SVG,
+  DEPLOY_TACTIC_SVG,
+  DEPLOY_POPUP_INACTIVE_BG,
+  buildDeployPopupRowHtml,
+  paintDeployPopupOption,
+  hpBarGradient,
+  moraleBarGradient,
+  rosterCardBaseStyle,
+  rosterRowAccent,
+  applyTwRosterTrayStyle,
+  applyTwGroupTabStyle,
+  applyRosterGridStyle,
+  computeRosterGridMetrics,
+  applyBattleRosterScrollbar,
+  injectBattleRosterScrollbarStyles,
+  ROSTER_PANEL_FIXED_W,
+  rosterTypeCountsHtml,
+  topBarRosterCountsHtml,
+  applyDeployPopupItem1E,
+  type RosterGridMetrics,
+  ROSTER_CARD_W,
+  ROSTER_CARD_GAP,
+  ROSTER_MAX_COLS,
+  ROSTER_SCROLLBAR_RESERVE,
+  ROSTER_MELEE,
+  ROSTER_MOUNTED,
+  ROSTER_RANGED,
+  CMD_SVG,
+  DEPLOY_SIDE_SVG,
+  ROSTER_TYPE_SVG,
+  battleSideRoleSvg,
+  createBattlePrioritySelect1E,
+  createBattleClassTypeRow,
+  applyBattleStrategyOutlineBtn,
+  applyBattleStrategyGoldCta,
+  applyBattleCheckbox1E,
+  createRosterEmptySlotElement,
+  STRATEGY_HEADER_SVG,
+  type BattleClassKind,
+} from './battleHudTheme';
+import { civIconSvg } from '../ui/icons/brandAssets';
+import { showEndScreen1E } from './endScreen1E';
+import { showEndDetails1E } from './endDetails1E';
+import { disposeSiegeHud1E, mountSiegeHud1E, updateSiegeHud1E } from './siegeHud1E';
+
+export type { BattleMinimapData, BattleMinimapUnit, BattleMinimapViewport } from './battleMinimap';
 
 // ---------------------------------------------------------------------------
 // SQUARE-GRID FACING (4 directions: N / E / S / W)
@@ -213,12 +308,33 @@ export interface BattleOpts {
   siege?: SiegeOpts;
   /** Gdy true — faza rozstawiania poprzedza walke; gracz przesuwa jednostki atakujace. */
   deploy?: boolean;
+  /** RDY-01 / D4-Q3: bonusy cyw armii atakujacej (civs.json bonusy[]). */
+  attackerCivBonusy?: readonly CivBonusEntry[];
+  /** RDY-01 / D4-Q3: bonusy cyw armii broniacej. */
+  defenderCivBonusy?: readonly CivBonusEntry[];
+  /** Etykieta cywilizacji atakujacego (pasek mocy HUD). */
+  attackerCivLabel?: string;
+  /** Etykieta cywilizacji broniacego (pasek mocy HUD). */
+  defenderCivLabel?: string;
+  /** ikonaId cywilizacji atakujacego (emblemat UI). */
+  attackerCivIconId?: string;
+  /** ikonaId cywilizacji broniacego (emblemat UI). */
+  defenderCivIconId?: string;
 }
 
 export interface BattleResult {
-  winner: 'atakujacy' | 'obronca';
+  winner: 'atakujacy' | 'obronca' | 'remis';
   survivors: BattleUnit[];
   log: string[];
+}
+
+/** Kopia armii startowej do „Rozegraj ponownie” (pelne HP). */
+function cloneBattleUnitsForReplay(units: BattleUnit[]): BattleUnit[] {
+  return units.map(u => ({
+    ...u,
+    hp: u.maxHp,
+    stats: u.stats ? { ...(u.stats as Record<string, unknown>) } : u.stats,
+  }));
 }
 
 // ---------------------------------------------------------------------------
@@ -237,16 +353,70 @@ export interface BattleResult {
 // the ranks occupy and guarantees a passable clash corridor across the river
 // (see _carveBattleBox), so the lines stand on flat passable ground and can
 // reach each other, while terrain survives EVERYWHERE else as obstacles/scenery.
-const BF_COLS = 34;   // total columns (clash axis -- 3 ranks/side + terrain belt)
-const BF_ROWS = 78;   // total rows (tall rank axis -- +50 per Naster so all units fit; was 28)
+const BF_COLS = 68;   // pełne pole (2× poprzednie 34) — margines do przewijania kamery
+const BF_ROWS = 156;  // pełne pole (2× poprzednie 78)
 
-// Up to this many units deploy per side. The default test battle ("rzym_grecja"
-// preset) puts 84 per side: 40 lead infantry (MAIN_INFANTRY_COUNT) + 20 Oszczepnik
-// + 20 Lucznik + 2 Konnica + 2 Rydwan konny (the mounted units deploy on the
-// front-rank wings via arrangeFlankCavalry). Headroom is 84 so none of the flank
-// cavalry or rear-rank infantry is sliced off before deployment (the slice to
-// MAX_PER_SIDE in the builder must be >= the preset's per-side total).
-const MAX_PER_SIDE = 84;
+/** Strefa gry: ~50% powierzchni kafelków, wyśrodkowana (rozstaw + walka). */
+const PLAYABLE_COLS = Math.round(BF_COLS * Math.SQRT1_2);
+const PLAYABLE_ROWS = Math.round(BF_ROWS * Math.SQRT1_2);
+const PLAY_COL0 = Math.floor((BF_COLS - PLAYABLE_COLS) / 2);
+const PLAY_ROW0 = Math.floor((BF_ROWS - PLAYABLE_ROWS) / 2);
+const PLAY_COL1 = PLAY_COL0 + PLAYABLE_COLS - 1;
+const PLAY_ROW1 = PLAY_ROW0 + PLAYABLE_ROWS - 1;
+const PLAY_MID_COL = PLAY_COL0 + Math.floor((PLAYABLE_COLS - 1) / 2);
+const PLAY_MID_ROW = PLAY_ROW0 + Math.floor((PLAYABLE_ROWS - 1) / 2);
+
+function inPlayable(col: number, row: number): boolean {
+  return col >= PLAY_COL0 && col <= PLAY_COL1 && row >= PLAY_ROW0 && row <= PLAY_ROW1;
+}
+
+function clampPlayCol(c: number): number {
+  return Math.max(PLAY_COL0, Math.min(PLAY_COL1, c));
+}
+
+function clampPlayRow(r: number): number {
+  return Math.max(PLAY_ROW0, Math.min(PLAY_ROW1, r));
+}
+
+// --- HUD theme 1E (Design C — Ty niebieski / wróg czerwony) ---
+const HUD_BG         = BATTLE_HUD_BG;
+const HUD_GOLD       = BATTLE_GOLD;
+const HUD_GOLD_DIM   = BATTLE_GOLD_DIM;
+const HUD_TEXT       = BATTLE_TEXT;
+const HUD_TEXT_DIM   = BATTLE_TEXT_DIM;
+const HUD_FONT       = BATTLE_FONT;
+/** Gracz (Ty) atakuje w typowym flow — kolory z DECYZJA-C-kolory-stron-bitwa.md */
+const FACTION_ATK    = BATTLE_PLAYER;
+const FACTION_DEF    = BATTLE_ENEMY;
+const FACTION_ATK_TEXT = BATTLE_PLAYER_TEXT;
+const FACTION_DEF_TEXT = BATTLE_ENEMY_TEXT;
+const HOVER_TOOLTIP_MS = 300;
+
+/** C2-Q7 TW: kontekstowe kursory (luk / miecz) — SVG data-URL. */
+const CURSOR_BOW =
+  'url("data:image/svg+xml,' +
+  encodeURIComponent(
+    '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"><path fill="none" stroke="#e8d88a" stroke-width="2" d="M4 20c5-8 5-12 0-16"/><path fill="#e8d88a" d="M14 8l6-2-2 6z"/></svg>',
+  ) +
+  '") 4 20, crosshair';
+const CURSOR_SWORD =
+  'url("data:image/svg+xml,' +
+  encodeURIComponent(
+    '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"><path fill="#e8d88a" d="M11 2h2v14h-2z"/><path fill="#c84040" d="M9 16h6v2H9z"/></svg>',
+  ) +
+  '") 12 4, crosshair';
+const CURSOR_MOVE = 'crosshair';
+const CURSOR_DEFAULT = 'default';
+const ORDER_LINE_Y = 0.12;
+const ORDER_COLOR_MOVE = 0x3080ff;
+const ORDER_COLOR_ATTACK = 0xe04040;
+const ORDER_MOVE_OPACITY = 0.30;
+const ORDER_ATTACK_OPACITY = 0.45;
+
+// Up to this many units deploy per side. maciej_playtest (POLE-BITWY) fields 110
+// per side (60 infantry + 30 archers + 20 cavalry). Headroom 120 so nothing
+// is sliced before deployment.
+const MAX_PER_SIDE = 120;
 
 // How many figures stand shoulder-to-shoulder in ONE rank (a straight line).
 // 60 units => 3 even ranks of 20. Keep <= BF_ROWS minus a small margin so a
@@ -275,10 +445,67 @@ const TILE_S = 1.0;
 // <= 5 per the spec so melee is reached fast. Attacker front faces E (+X),
 // defender front faces W (-X).
 const FRONT_GAP = 5;                                       // <= 5: tiles between the two fronts (a terrain belt + river sit in this no-man's-land)
-const ATK_FRONT_COL = Math.floor((BF_COLS - FRONT_GAP) / 2); // attacker front (left of centre)
-const DEF_FRONT_COL = ATK_FRONT_COL + FRONT_GAP;             // defender front (right of centre)
+const ATK_FRONT_COL = PLAY_COL0 + Math.floor((PLAYABLE_COLS - FRONT_GAP) / 2);
+const DEF_FRONT_COL = ATK_FRONT_COL + FRONT_GAP;
 const ATK_COL_STEP  = -1;           // attacker rear ranks step LEFT (toward -X edge)
 const DEF_COL_STEP  = 1;            // defender rear ranks step RIGHT (toward +X edge)
+
+// Faza rozstawiania: lewa połowa STREFY GRY = ATK, prawa = DEF (mgła wojny).
+const DEPLOY_MID_COL       = PLAY_MID_COL;
+const DEPLOY_MAX_COL       = DEPLOY_MID_COL - 1;
+const DEPLOY_MIN_COL       = PLAY_COL0;
+const DEPLOY_ATK_FRONT_COL = DEPLOY_MAX_COL - 2;
+const DEPLOY_ATK_COL_STEP  = -1;
+const DEPLOY_MIN_ROW       = PLAY_ROW0;
+const DEPLOY_MAX_ROW       = PLAY_ROW1;
+/** Margines od prawej krawedzi strefy ATK (hexy). */
+const DEPLOY_EDGE_MARGIN   = 2;
+/** Wysokosc paska formacji / akcji deploy (min. — rosnie z chipami). */
+const DEPLOY_TOOLBAR_H         = 64;
+/** Odstep paska od dolnej krawedzi ekranu (~2 mm). */
+const DEPLOY_TOOLBAR_BOTTOM_GAP = 8;
+/** Laczna rezerwa UI na dole: pasek + odstep (roster, prawy rail). */
+const DEPLOY_TOOLBAR_RESERVE   = DEPLOY_TOOLBAR_H + DEPLOY_TOOLBAR_BOTTOM_GAP;
+/** Wysokosc dolnego paska GRUPY w walce recznej. */
+const BATTLE_GROUP_BAR_H   = 52;
+/** Dolny pasek mocy armii (zielony/czerwony) — pod paskiem fazy/statystyk. */
+const DEPLOY_POWER_BAR_H   = 38;
+/** Wysokosc gornego paska HUD (faza / straty / sklad armii). */
+const BATTLE_TOP_BAR_H     = 68;
+/** Laczna wysokosc naglowka: pasek fazy + pasek mocy. */
+const BATTLE_HEADER_H      = BATTLE_TOP_BAR_H + DEPLOY_POWER_BAR_H;
+/** Maks. szerokosc paska mocy wzgledem widoku (centrowany). */
+const BATTLE_POWER_BAR_MAX_W = '70%';
+/** Szerokosc kolumny kart w lewym panelu (tab + karta + odstep). */
+const ROSTER_COL_W         = ROSTER_PANEL_FIXED_W;
+/** Wysokość karty rosteru deploy — lewy panel pionowy. */
+const DEPLOY_ROSTER_CARD_H = 56;
+const BATTLE_ROSTER_CARD_H = 56;
+/** Wersja UI bitwy polowej — widoczna w panelu (weryfikacja buildu). */
+const BATTLE_UI_BUILD      = 'POLE-BITWY-20260705-end-replay';
+
+/** ikonaId z civs.json po nazwie wyswietlanej lub ikonaId. */
+function civIconIdFromLabel(civRows: readonly { Cywilizacja?: string; ikonaId?: string }[], label: string): string {
+  const key = String(label ?? '').trim().toLowerCase();
+  if (!key) return 'grecy';
+  for (const c of civRows) {
+    if (String(c.Cywilizacja ?? '').trim().toLowerCase() === key) return c.ikonaId ?? 'grecy';
+    if (String(c.ikonaId ?? '').trim().toLowerCase() === key) return c.ikonaId ?? 'grecy';
+  }
+  if (key.includes('rzym')) return 'rzymianie';
+  if (key.includes('grec')) return 'grecy';
+  return 'grecy';
+}
+
+/** Kotwica centrum formacji deploy — front (dc=-2) laduje przy prawej krawedzi z marginesem. */
+function deployFormationCentCol(): number {
+  return DEPLOY_MAX_COL - DEPLOY_EDGE_MARGIN - 2;
+}
+
+function inDeployAtkZone(col: number, row: number): boolean {
+  return col >= DEPLOY_MIN_COL && col <= DEPLOY_MAX_COL
+    && row >= DEPLOY_MIN_ROW && row <= DEPLOY_MAX_ROW;
+}
 
 const DEFAULT_BATTLE_MOVE  = 2;   // fallback "Ruch w bitwie" when missing/0
 const DEFAULT_RANGED_REACH = 2;   // reach for a shooter whose "Zasieg ataku (hex)" is missing
@@ -603,23 +830,10 @@ function normCounters(raw: any[]): any[] {
 
 function toCombatUnit(bu: BattleUnit): CombatUnit {
   const s: Record<string, unknown> = (bu.stats as Record<string, unknown>) ?? {};
-  return {
-    typNazwa:                    (s['Jednostka'] as string)       ?? bu.kategoria,
-    rola:                        (s['Rola (linia)'] as string)    ?? 'Wrecz',
-    Atak:                        norm(s['Atak'],                    5),
-    Obrona:                      norm(s['Obrona'],                  5),
-    Uderzenie:                   norm(s['Uderzenie'],               0),
-    Pancerz:                     norm(s['Pancerz'],                 0),
-    Przebicie:                   norm(s['Przebicie'],               0),
-    Health:                      bu.hp,
-    'Prog dezercji (% health)':  norm(statField(s, 'Prog dezercji (% health)', 'Próg dezercji (% health)'), 0.25),
-    'Atak dystansowy':           norm(s['Atak dystansowy'],         0),
-    'Zasieg ataku (hex)':        (statField(s, 'Zasieg ataku (hex)', 'Zasięg ataku (hex)') as (number | string | null)) ?? null,
-    'Ilosc pociskow':            (statField(s, 'Ilosc pociskow', 'Ilość pocisków') as (number | string | null)) ?? null,
-    'Ruch w bitwie (heksy)':     (s['Ruch w bitwie (heksy)'] as (number | string | null)) ?? null,
-    'Kara obrony z flanki (%)':  norm(s['Kara obrony z flanki (%)'], 50),
-    'Kara obrony z tylu (%)':    norm(statField(s, 'Kara obrony z tylu (%)', 'Kara obrony z tyłu (%)'), 80),
-  };
+  return combatUnitFromDef(s, {
+    typNazwa: (s['Jednostka'] as string) ?? bu.kategoria,
+    hp: bu.hp,
+  });
 }
 
 /** Battle movement points (tiles / turn). Default DEFAULT_BATTLE_MOVE, min 1. */
@@ -644,7 +858,7 @@ function movementPoints(bu: BattleUnit): number {
  */
 function attackRange(bu: BattleUnit): number {
   const s: Record<string, unknown> = (bu.stats as Record<string, unknown>) ?? {};
-  const dyst  = norm(s['Atak dystansowy'], 0);
+  const dyst  = norm(s['missileAttack'] ?? s['Atak dystansowy'], 0);
   const reach = norm(statField(s, 'Zasieg ataku (hex)', 'Zasięg ataku (hex)'), 0);
   if (reach >= 2) return Math.round(reach);               // explicit ranged reach
   if (dyst > 0)   return Math.max(DEFAULT_RANGED_REACH, Math.round(reach)); // shooter, default reach
@@ -1146,6 +1360,44 @@ interface RuntimeBattleUnit {
   perTokenGeos: THREE.BufferGeometry[];
 }
 
+/** Postawa taktyczna grupy gracza (auto-gra bez mikro). */
+type GroupDoctrine = 'defensive' | 'steady' | 'aggressive' | 'skirmish' | 'manual';
+type BattleUnitClass = 'mounted' | 'ranged' | 'melee';
+
+/** Ustawienie konnicy w formacji deploy: skrzydla lub linia z tylu. */
+type CavalryDeployMode = 'flanks' | 'rear';
+
+/** Liczba linii glebokosci (1–3) dla piechoty lub lucznikow w deploy. */
+type DeployLineCount = 1 | 2 | 3;
+
+interface GroupMeta {
+  doctrine: GroupDoctrine;
+  autoPlay: boolean;
+  rallyCol?: number;
+  rallyRow?: number;
+  /** Brak = uzyj aktywnego przycisku F1/F2/F3 z paska deploy. */
+  formation?: 'F1' | 'F2' | 'F3';
+  /** Konnica: boki (domyslnie) lub za liniami piechoty/lucznikow. */
+  cavalryMode?: CavalryDeployMode;
+  /** Linie glebokosci piechoty (1–3) w deploy. */
+  meleeLines?: DeployLineCount;
+  /** Linie glebokosci lucznikow (1–3) w deploy. */
+  archerLines?: DeployLineCount;
+  /** Własne priorytety celów grupy (per klasa atakującego). Brak = priorytety armii. */
+  groupTargetPriorities?: Partial<Record<BattleUnitClass, BattleUnitClass[]>>;
+  /** Gdy true — grupa używa groupTargetPriorities zamiast globalnych. */
+  useGroupPriorities?: boolean;
+}
+
+/** Ustawienia dowódcy (menu Generała). */
+interface GeneralSettings {
+  /** Nazwa / placeholder pod przyszłe umiejętności generała. */
+  commanderName: string;
+  /** Blokada linii — jednostki nie przekraczają tej kolumny (atak → wschód). */
+  blockadeActive: boolean;
+  blockadeCol: number | null;
+}
+
 // ---------------------------------------------------------------------------
 // Floating damage number
 // ---------------------------------------------------------------------------
@@ -1237,7 +1489,9 @@ export class BattleScene {
   private _ambNodes:    Array<{ stop?: () => void }> = []; // ambient oscillators/timers
   private _ambDrumTimer: ReturnType<typeof setInterval> | null = null;
   private _ambTimers:   Array<ReturnType<typeof setInterval>> = []; // all ambient schedulers
-  private _audioMuted   = false;             // M-key toggle (default ON => not muted)
+  private _audioMuted   = false;             // legacy M-key: toggles both buses
+  private _sfxMuted     = false;
+  private _musicMuted   = false;
   private _audioStarted = false;             // ambient started (after gesture)
   private _lastHitAt    = 0;                 // wall-time of last melee/ranged SFX (throttle)
   private _lastShotAt   = 0;
@@ -1251,31 +1505,140 @@ export class BattleScene {
   private camDir      = new THREE.Vector3(0, 0.92, 0.92).normalize();
   private camDist     = 30;   // current distance (eased)
   private camDistTarget = 30; // desired distance (set by wheel / +/- keys)
-  private camDistMin  = 6;    // closest zoom -- individual figures fill the view
+  private camDistMin  = 3;    // closest zoom (2× bliżej niż wcześniej)
   private camDistMax  = 70;   // farthest zoom -- whole field in shot
 
   // Drag-pan bookkeeping.
   private panning   = false;
   private panLastX  = 0;
   private panLastY  = 0;
+  /** Trzymane strzałki — przesuwanie widoku (jak drag myszą). */
+  private readonly _camPanKeys = { up: false, down: false, left: false, right: false };
 
   // --- Faza rozstawiania (deploy) ---
+  /** opts.deploy === true — start ATK w strefie 0..DEPLOY_MAX_COL zamiast ATK_FRONT_COL. */
+  private _deployMode = false;
   /** Tryb rozstawiania: gracz przesuwa jednostki przed walka. */
   private deployPhase = false;
   /** Zaznaczona jednostka atakujaca do przeniesienia. */
   private _deploySelected: RuntimeBattleUnit | null = null;
-  /** Meshe strefy startowej (podswietlenie kol 0-12). */
+  /** Meshe strefy startowej (podswietlenie polowy ATK + mgla DEF). */
   private _deployZoneMeshes: THREE.Mesh[] = [];
-  /** Overlay fazy rozstawiania. */
+  /** Grupa wizualizacji fazy deploy (jasna polowa / mgla / linia). */
+  private _deployVisualGroup: THREE.Group | null = null;
+  /** Etykiety HTML polow mapy w fazie deploy. */
+  private _deployHalfLabels: HTMLDivElement | null = null;
+  /** Overlay fazy rozstawiania (legacy — zastąpiony paskiem _deployToolbar). */
   private _deployOverlay: HTMLDivElement | null = null;
+  /** Naglowek nad rosterem w fazie deploy (licznik armii / zaznaczenia). */
+  private _deployRosterHeader: HTMLDivElement | null = null;
+  /** Fixed dock na dole ekranu — roster + naglowek (poza canvas, zawsze widoczny). */
+  private _deployRosterDock: HTMLDivElement | null = null;
+  /** Panel szczegolow zaznaczonej jednostki (Total War — lewa strona docku). */
+  private _deployDetailPanel: HTMLDivElement | null = null;
+  /** Kontenery rzędow rosteru deploy: konnica / piesza / lucznictwo. */
+  /** Jeden poziomy rzad kart (bez podzialu na konnica/piechota/lucznicy). */
+  private _deployUnitsRow: HTMLDivElement | null = null;
+  /** Pasek duzych przyciskow Grupa 1/2/3 w docku deploy. */
+  private _deployGroupsBar: HTMLDivElement | null = null;
+  /** Doktryny auto-bitwy dla zaznaczonej grupy (deploy). */
+  private _deployStrategyBar: HTMLDivElement | null = null;
+  /** @deprecated — stary uklad 3 rzedow; tylko recover DOM. */
+  private _deployRowUnits: { mounted: HTMLDivElement; melee: HTMLDivElement; ranged: HTMLDivElement } | null = null;
+  /** Przyciski szybkiego zaznaczenia (grupy / typy / wszystkie). */
+  private _deployQuickSelectBar: HTMLDivElement | null = null;
+  /** Pasek grup G1/G2… w fazie walki recznej (lewy panel). */
+  private _battleQuickSelectBar: HTMLDivElement | null = null;
+  /** Sygnatura stanu paska szybkiego zaznaczenia (unikaj rebuild co klatke). */
+  private _battleQuickSelectSig = '';
+  /** @deprecated Dolny pasek GRUPY — ukryty; grupy w lewym panelu rosteru. */
+  private _groupSelectorBar: HTMLDivElement | null = null;
+  /** Nagłówek lewego panelu rosteru walki. */
+  private _battleRosterHeader: HTMLDivElement | null = null;
+  /** Lewy panel walki: licznik jednostek. */
+  private _battleRosterCount: HTMLDivElement | null = null;
+  /** Lewy panel walki: pasek zaznaczenia (Odznacz / Rozgrupuj). */
+  private _battleSelBar: HTMLDivElement | null = null;
+  /** Lewy panel walki: komunikaty. */
+  private _battleRosterFeedback: HTMLDivElement | null = null;
+  /** Kolumna grup w rosterze walki. */
+  private _battleGroupsStrip: HTMLDivElement | null = null;
+  /** Kontener kart jednostek w rosterze walki. */
+  private _battleRosterCards: HTMLDivElement | null = null;
+  private _battleLooseCards: HTMLDivElement | null = null;
+  /** Zakładki grup w rosterze walki. */
+  private _battleGroupTabs = new Map<string, HTMLDivElement>();
+  /** Pasek ramek grup nad rosterem (karty zgrupowanych jednostek). */
+  private _deployGroupsStrip: HTMLDivElement | null = null;
+  /** Kontener siatki kart deploy (osobny od _rosterBar walki recznej). */
+  private _deployLooseCards: HTMLDivElement | null = null;
+  private _deployRosterGridEl: HTMLDivElement | null = null;
+  /** Zakładki grup w rosterze deploy (groupId → nagłówek zwijany). */
+  private _deployGroupTabs = new Map<string, HTMLDivElement>();
+  /** Bloki zwijanych grup w rosterze deploy. */
+  private _deployGroupBlocks = new Map<string, { wrapper: HTMLDivElement; header: HTMLDivElement; cards: HTMLDivElement }>();
+  /** Bloki zwijanych grup w rosterze walki. */
+  private _battleGroupBlocks = new Map<string, { wrapper: HTMLDivElement; header: HTMLDivElement; cards: HTMLDivElement }>();
+  /** Zwiniete grupy w rosterze (domyslnie po utworzeniu grupy). */
+  private _rosterGroupCollapsed = new Set<string>();
+  /** Aktywna grupa w deploy (doktryny / priorytety na lewym panelu). */
+  private _deployActiveGroupId: string | null = null;
+  /** Aktywny uklad formacji w fazie deploy (UI + logika). */
+  private _deployActiveFormation: 'F1' | 'F2' | 'F3' = 'F1';
+  /** Ustawienie konnicy w formacji deploy (osobny od F1/F2/F3). */
+  private _deployCavalryMode: CavalryDeployMode = 'flanks';
+  /** Linie glebokosci piechoty / lucznikow (1–3) — osobno od formacji F1/F2/F3. */
+  private _deployMeleeLines: DeployLineCount = 1;
+  private _deployArcherLines: DeployLineCount = 3;
+  /** Rząd przyciskow formacji w pasku deploy (nad rosterem). */
+  private _deployFmtRow: HTMLDivElement | null = null;
+  /** Przyciski ustawienia konnicy (boki / z tylu). */
+  private _deployCavRow: HTMLDivElement | null = null;
+  /** Lewy blok: wybrane formacja + konnica. */
+  private _deployToolbarStatus: HTMLDivElement | null = null;
+  /** Srodek paska: Formacja / Konnica / Strategia. */
+  private _deployToolbarCenter: HTMLDivElement | null = null;
+  /** Otwarty dropdown toolbara deploy. */
+  private _deployOpenDropdown: 'formation' | 'cavalry' | 'lines' | 'tactics' | 'strategy' | null = null;
+  /** Popupy dropdownow toolbara. */
+  private _deployDropdownPopups: Partial<Record<'formation' | 'cavalry' | 'lines' | 'tactics' | 'strategy', HTMLDivElement>> = {};
+  private _deployToolbarDocClick: ((e: MouseEvent) => void) | null = null;
+  /** Płaski pasek formacji + akcji nad rosterem. */
+  private _deployToolbar: HTMLDivElement | null = null;
+  /** Podpowiedz w pasku deploy (legacy — feedback w rosterze). */
+  private _deployHint: HTMLDivElement | null = null;
+  /** Lewy panel: licznik rozstawionych jednostek. */
+  private _deployRosterCount: HTMLDivElement | null = null;
+  /** Lewy panel: komunikaty (grupowanie, feedback). */
+  private _deployRosterFeedback: HTMLElement | null = null;
+  /** Zaznaczenie + Odznacz na pasku deploy (jeden panel sterowania). */
+  private _deploySelBar: HTMLDivElement | null = null;
+  /** Stopka rosteru deploy — „Zaznaczone: N · Grupa X” (C09 v4). */
+  private _deployRosterFooter: HTMLDivElement | null = null;
+  /** Ostatni klik — Ctrl/Shift do wielokrotnego zaznaczenia. */
+  private _lastClickModifiers = { ctrl: false, shift: false };
   /** Poczatek klikniecia — do rozrozniania klik vs pan. */
   private _pointerDownPos: { x: number; y: number } | null = null;
   // --- BOX-SELECT (ramka zaznaczenia) ---
   private _boxSelectDiv: HTMLDivElement | null = null;
   private _boxSelectStart: { x: number; y: number } | null = null;
+  /** Przeciaganie grupy w fazie deploy (kotwica + biezacy cel). */
+  private _deployDrag: { anchorCol: number; anchorRow: number; curCol: number; curRow: number } | null = null;
+  /** Poczatek kliku / drag przesuniecia w deploy (tylko LPM). */
+  private _deployMoveStart: { x: number; y: number; col: number; row: number } | null = null;
+  /** Jednostka ATK kliknieta LPM — obsluga na mouseup (toggle grupy / zaznacz). */
+  private _deployPickPending: RuntimeBattleUnit | null = null;
+  /** Duchy jednostek + ramka rozciagania na mapie. */
+  private _deployGhostGroup: THREE.Group | null = null;
+  private _deployGhostOwnedMats: THREE.Material[] = [];
+  private _deployGhostOwnedGeos: THREE.BufferGeometry[] = [];
   // --- STEROWANIE RECZNIE (faza walki) ---
-  /** Tryb recznego sterowania jednostkami gracza. Domyslnie false = AUTO. */
+  /** Tryb recznego sterowania jednostkami gracza. Domyslnie true = RECZNE (C2-FLOW). */
   private _manualMode = true;
+  /** Po Start walki: faza planowania (Spacja = rozpocznij turę). */
+  private _battleAwaitingOrders = false;
+  /** Jednostki z rozkazem odlozonym (Ctrl/Shift) — wykonaj na SPACJI. */
+  private _queuedOrderUnitIds = new Set<string>();
   /** Zaznaczone jednostki gracza (id). */
   private _selectedUnits = new Set<string>();
   /** Dolny pasek kart jednostek (roster). */
@@ -1289,8 +1652,30 @@ export class BattleScene {
   // --- GRUPY (zakres 1-5) ---
   /** Mapa groupId -> zbior id jednostek nalezacych do grupy. */
   private _groups = new Map<string, Set<string>>();
+  /** Doktryna / auto-gra per grupa. */
+  private _groupMeta = new Map<string, GroupMeta>();
+  /** Priorytety celu per klasa jednostki gracza (1→2→3). */
+  private static readonly DEFAULT_TARGET_PRIORITIES: Record<BattleUnitClass, BattleUnitClass[]> = {
+    mounted: ['mounted', 'ranged', 'melee'],
+    ranged:  ['ranged', 'mounted', 'melee'],
+    melee:   ['melee', 'ranged', 'mounted'],
+  };
+  private _targetPriorities: Record<BattleUnitClass, BattleUnitClass[]> = {
+    mounted: ['mounted', 'ranged', 'melee'],
+    ranged:  ['ranged', 'mounted', 'melee'],
+    melee:   ['melee', 'ranged', 'mounted'],
+  };
+  /** Panel Generała (doktryny + priorytety + blokada). */
+  private _generalPanel: HTMLDivElement | null = null;
+  private _generalSettings: GeneralSettings = {
+    commanderName: 'Dowódca armii',
+    blockadeActive: false,
+    blockadeCol: null,
+  };
   /** Licznik do generowania unikalnych groupId. */
   private _groupCounter = 0;
+  /** Zloty marker grupy na mapie (3D) per jednostka. */
+  private _groupFrameMarkers = new Map<string, THREE.Group>();
   // --- PROFESSIONAL HUD (TotalWar-style) ---
   /** Gorny pasek HUD (tura, predkosc, morale, straty). */
   private _topBar: HTMLDivElement | null = null;
@@ -1301,11 +1686,28 @@ export class BattleScene {
   /** Paski morale armii (gorny pasek). */
   private _topMoraleA: HTMLDivElement | null = null;
   private _topMoraleD: HTMLDivElement | null = null;
-  /** Label strat ATK / DEF. */
-  private _topCasA: HTMLSpanElement | null = null;
-  private _topCasD: HTMLSpanElement | null = null;
-  /** Panel zaznaczonej jednostki (srodek dolnej czesci). */
+  /** Sklad armii w gornym pasku (ikony typow + lacznie). */
+  private _topCasATxt: HTMLSpanElement | null = null;
+  private _topCasDTxt: HTMLSpanElement | null = null;
+  /** Q4: badge pauzy w gornym pasku. */
+  private _topPauseBadge: HTMLSpanElement | null = null;
+  /** Q2: minimap canvas (lewy-dolny rog). */
+  private _minimapCanvas: HTMLCanvasElement | null = null;
+  private _minimapWrap: HTMLDivElement | null = null;
+  private _minimapDragging = false;
+  private _minimapDragStart: { x: number; y: number; camX: number; camZ: number } | null = null;
+  /** Q3: hover tooltip (0.3 s delay). */
+  private _hoverTooltip: HTMLDivElement | null = null;
+  private _hoverTimer: ReturnType<typeof setTimeout> | null = null;
+  private _hoverUnit: RuntimeBattleUnit | null = null;
+  /** Panel zaznaczonej jednostki (prawy panel rozkazow). */
   private _selPanel: HTMLDivElement | null = null;
+  /** C2-Q7 TW: strzalki rozkazow na ziemi (niebieska=ruch, czerwona=atak). */
+  private _orderLinesGroup: THREE.Group | null = null;
+  private _orderPreviewGroup: THREE.Group | null = null;
+  private _queuedOrderArrows: THREE.Group[] = [];
+  /** Roster drag: scalanie rannych (Ctrl+M / drag karty). */
+  private _rosterDragSourceId: string | null = null;
   /** Mapa id->element karty rostera (per-unit, NIE per-typ). */
   private _unitCards = new Map<string, HTMLDivElement>();
   /** Licznik strat (padli + uciekli) per strona. */
@@ -1317,8 +1719,9 @@ export class BattleScene {
   private atk: RuntimeBattleUnit[] = [];
   private def: RuntimeBattleUnit[] = [];
   private occByKey = new Map<string, RuntimeBattleUnit>();
-  /** Oryginalne BattleUnit[] atakujacych — zapisane przy _placeUnits dla potrzeb Reset. */
+  /** Oryginalne BattleUnit[] — zapisane przy _placeUnits (Reset deploy + replay). */
   private _savedAtkBUs: BattleUnit[] = [];
+  private _savedDefBUs: BattleUnit[] = [];
 
   // --- Siege state ---
   /** The wall mesh group (siegeWall.ts output), or null in non-siege battles. */
@@ -1432,12 +1835,36 @@ export class BattleScene {
   private armyMoraleFillD:  HTMLDivElement | null = null;
   private armyMoraleLabelA: HTMLDivElement | null = null;
   private armyMoraleLabelD: HTMLDivElement | null = null;
+  /** Dolny pasek mocy: zielony (gracz) | czerwony (wróg), spotyka sie w srodku. */
+  private _bottomPowerBar: HTMLDivElement | null = null;
+  private _bottomPowerFillA: HTMLDivElement | null = null;
+  private _bottomPowerFillD: HTMLDivElement | null = null;
+  private _bottomPowerLblA: HTMLSpanElement | null = null;
+  private _bottomPowerLblD: HTMLSpanElement | null = null;
+  /** Prawy pionowy pasek ustawien (predkosc, auto, dzwiek). */
+  private _rightSettingsRail: HTMLDivElement | null = null;
+  private _rightSpeedLbl: HTMLSpanElement | null = null;
+  private _soundBtn: HTMLButtonElement | null = null;
+  private _musicBtn: HTMLButtonElement | null = null;
+  private _attackerCivLabel = 'Gracz';
+  private _defenderCivLabel = 'Przeciwnik';
+  private _attackerCivIconId = 'grecy';
+  private _defenderCivIconId = 'grecy';
+  /** Scroll kontener kart w lewym panelu deploy. */
+  private _deployRosterScroll: HTMLDivElement | null = null;
 
   private log:        string[]                            = [];
   private onFinishCb: ((r: BattleResult) => void) | null  = null;
   private onCancelCb: (() => void) | null                 = null;
   // TASK D end-of-battle freeze screen state.
   private _endScreenShown = false;
+  /** Ukrycie dolnego toolbara / raila pod ekranem zwycięstwa. */
+  private _battleChromeSuppressed = false;
+  /** Ekran podsumowania (endScreen1E) — ukrywany gdy otwarte Szczegoly. */
+  private _endScreenBackdrop: HTMLDivElement | null = null;
+  private _endScreenWrap: HTMLDivElement | null = null;
+  /** Overlay Szczegoly bitwy (jeden na raz). */
+  private _endDetailsOverlay: HTMLDivElement | null = null;
   private _endWinner: 'atakujacy' | 'obronca' | null = null;
   private _endSurvivors: BattleUnit[] = [];
 
@@ -1451,8 +1878,11 @@ export class BattleScene {
 
   // resolveCombat context
   private terrain:     string;
+  private _battleData: Record<string, unknown> = {};
   private terrainData: any[];
   private counters:    any[];
+  private attackerCivBonusy: readonly CivBonusEntry[] = [];
+  private defenderCivBonusy: readonly CivBonusEntry[] = [];
 
   // Procedural per-tile battle terrain (B8). Drives rendering, per-tile move
   // cost / passability and the per-tile defender terrain fed to the combat math.
@@ -1481,8 +1911,18 @@ export class BattleScene {
     this.onCancelCb  = opts.onCancel ?? null;
     this.terrain     = opts.teren;
     const d: any     = opts.data ?? {};
+    this._battleData = d;
     this.terrainData = d.terrainCombat ?? d.terrainData ?? [];
     this.counters    = normCounters(d.counters ?? []);
+    this.attackerCivBonusy = opts.attackerCivBonusy ?? [];
+    this.defenderCivBonusy = opts.defenderCivBonusy ?? [];
+    this._attackerCivLabel = opts.attackerCivLabel?.trim() || 'Gracz';
+    this._defenderCivLabel = opts.defenderCivLabel?.trim() || 'Przeciwnik';
+    const civRows: readonly { Cywilizacja?: string; ikonaId?: string }[] = d.cywilizacje ?? [];
+    this._attackerCivIconId = opts.attackerCivIconId
+      ?? civIconIdFromLabel(civRows, this._attackerCivLabel);
+    this._defenderCivIconId = opts.defenderCivIconId
+      ?? civIconIdFromLabel(civRows, this._defenderCivLabel);
 
     // Deterministic procedural terrain for the big square field. Seeded from the
     // battle terrain name so the same matchup terrain reproduces every run.
@@ -1496,6 +1936,7 @@ export class BattleScene {
     // even lines stand on flat, even ground and reach melee fast; terrain stays
     // on the flanks (top/bottom rows + outer columns) as a backdrop.
     this._carveBattleBox();
+    this._fencePlayableZone();
 
     // SIEGE MODE: carve wall tiles into terrainMap before the scene is built.
     if (opts.siege) {
@@ -1527,6 +1968,7 @@ export class BattleScene {
       letterSpacing: '0.04em',
     });
     titleBar.textContent = 'Bitwa Automatyczna -- ' + opts.teren;
+    titleBar.style.display = 'none';
     this.overlay.appendChild(titleBar);
 
     this.hint = document.createElement('div');
@@ -1540,6 +1982,7 @@ export class BattleScene {
       minHeight:  '16px',
     });
     this.hint.textContent = 'Armie ustawiaja sie naprzeciw siebie...';
+    this.hint.style.display = 'none';
     this.overlay.appendChild(this.hint);
 
     this.canvas = document.createElement('canvas');
@@ -1548,7 +1991,9 @@ export class BattleScene {
       width:    '100%',
       display:  'block',
       position: 'relative',
+      outline:  'none',
     });
+    this.canvas.tabIndex = 0;
     this.overlay.appendChild(this.canvas);
 
     // ALWAYS-VISIBLE on-map SPEED indicator (top-left HUD over the battlefield).
@@ -1558,8 +2003,9 @@ export class BattleScene {
     const speedHud = document.createElement('div');
     Object.assign(speedHud.style, {
       position:      'absolute',
-      top:           '56px',
+      top:           BATTLE_HEADER_H + 4 + 'px',
       left:          '14px',
+      display:       'none',
       padding:       '4px 12px',
       background:    'rgba(20,30,20,0.72)',
       color:         '#7be08a',
@@ -1579,7 +2025,7 @@ export class BattleScene {
     // PAUSE badge (hidden until P / Pauza button): a clear frozen-state indicator.
     const pauseHud = document.createElement('div');
     Object.assign(pauseHud.style, {
-      position: 'absolute', top: '56px', left: '50%', transform: 'translateX(-50%)',
+      position: 'absolute', top: BATTLE_HEADER_H + 4 + 'px', left: '50%', transform: 'translateX(-50%)',
       padding: '5px 16px', background: 'rgba(60,20,20,0.85)', color: '#ffd54a',
       fontFamily: 'sans-serif', fontSize: '17px', fontWeight: 'bold',
       borderRadius: '6px', border: '1px solid rgba(255,213,74,0.6)',
@@ -1594,7 +2040,8 @@ export class BattleScene {
     // actually starts after the first user gesture (autoplay policy).
     const muteHud = document.createElement('div');
     Object.assign(muteHud.style, {
-      position: 'absolute', top: '90px', left: '14px',
+      position: 'absolute', top: BATTLE_HEADER_H + 38 + 'px', left: '14px',
+      display: 'none',
       padding: '2px 10px', background: 'rgba(20,30,20,0.6)', color: '#9fb6c9',
       fontFamily: 'sans-serif', fontSize: '11px', borderRadius: '4px',
       border: '1px solid rgba(159,182,201,0.3)', textShadow: '0 1px 2px #000',
@@ -1612,10 +2059,10 @@ export class BattleScene {
     const clashLog = document.createElement('div');
     Object.assign(clashLog.style, {
       position:      'absolute',
-      top:           '56px',
-      right:         '14px',
-      width:         '180px',
-      maxHeight:     '46%',
+      top:           (BATTLE_HEADER_H + 6) + 'px',
+      right:         '52px',
+      width:         '168px',
+      maxHeight:     '42%',
       overflow:      'hidden',
       padding:       '6px 9px',
       background:    'rgba(12,12,16,0.66)',
@@ -1630,295 +2077,397 @@ export class BattleScene {
       zIndex:        '10005',
       whiteSpace:    'normal',
       wordBreak:     'break-word',
+      display:       'none',
     });
     this.overlay.appendChild(clashLog);
     this.clashLog = clashLog;
     this._renderClashLog(); // paint the empty-state header
 
-    // ARMY-MORALE BARS (TASK 5): a vertical meter on each screen EDGE. LEFT edge
-    // = the ATTACKER army with a RED frame; RIGHT edge = the DEFENDER army with a
-    // BLUE frame. Each is an outer faction-framed track with a bottom-anchored
-    // inner FILL whose height = the side's army-morale ratio and whose colour
-    // runs green -> red as it drops, plus a small "%"+label cap. Pinned to the
-    // overlay edges, non-interactive, updated live by _updateArmyMoraleBars.
-    const makeArmyMoraleBar = (
-      side: 'atk' | 'def',
-      frameHex: string,
-      label: string,
-    ): { fill: HTMLDivElement; pct: HTMLDivElement } => {
-      const track = document.createElement('div');
-      Object.assign(track.style, {
-        position:      'absolute',
-        top:           '56px',
-        bottom:        '64px',
-        width:         '24px',
-        [side === 'atk' ? 'left' : 'right']: '14px',
-        background:    'rgba(10,10,14,0.62)',
-        border:        '3px solid ' + frameHex,
-        borderRadius:  '7px',
-        boxShadow:     '0 0 8px ' + frameHex + '88',
-        overflow:      'hidden',
-        pointerEvents: 'none',
-        zIndex:        '10006',
-        display:       'flex',
-        flexDirection: 'column',
-        justifyContent:'flex-end',
-      });
-      const fill = document.createElement('div');
-      Object.assign(fill.style, {
-        width:      '100%',
-        height:     '100%',          // updated live (ratio)
-        background: '#4caf50',       // updated live (green -> red)
-        transition: 'height 160ms linear, background 160ms linear',
-      });
-      track.appendChild(fill);
-      // Caption: side label at the TOP of the track + a live percentage.
-      const cap = document.createElement('div');
-      Object.assign(cap.style, {
-        position:      'absolute',
-        top:           '2px',
-        left:          '0',
-        width:         '100%',
-        textAlign:     'center',
-        color:         '#fff',
-        fontFamily:    'sans-serif',
-        fontSize:      '9px',
-        fontWeight:    'bold',
-        textShadow:    '0 1px 2px #000',
-        letterSpacing: '0.02em',
-        pointerEvents: 'none',
-      });
-      cap.textContent = label;
-      track.appendChild(cap);
-      const pct = document.createElement('div');
-      Object.assign(pct.style, {
-        position:      'absolute',
-        bottom:        '2px',
-        left:          '0',
-        width:         '100%',
-        textAlign:     'center',
-        color:         '#fff',
-        fontFamily:    'sans-serif',
-        fontSize:      '10px',
-        fontWeight:    'bold',
-        textShadow:    '0 1px 2px #000',
-        pointerEvents: 'none',
-      });
-      pct.textContent = '100%';
-      track.appendChild(pct);
-      this.overlay.appendChild(track);
-      return { fill, pct };
-    };
-    const barA = makeArmyMoraleBar('atk', '#e53935', 'ATK');
-    const barD = makeArmyMoraleBar('def', '#1e88e5', 'OBR');
-    this.armyMoraleFillA  = barA.fill;
-    this.armyMoraleLabelA = barA.pct;
-    this.armyMoraleFillD  = barD.fill;
-    this.armyMoraleLabelD = barD.pct;
-
-    // =====================================================================
-    // PROFESSIONAL HUD — Total War style (ciemny + zlote akcenty)
-    // =====================================================================
-
-    // ----- GORNY PASEK: tura / predkosc / morale obu armii / straty -----
+    // GORNY PASEK: faza / predkosc / sklad armii (pelna szerokosc) — nad paskiem mocy.
     const topBar = document.createElement('div');
     Object.assign(topBar.style, {
-      position:       'absolute',
-      top:            '0',
-      left:           '0',
-      right:          '0',
-      height:         '48px',
-      background:     'rgba(12,10,8,0.88)',
-      borderBottom:   '1px solid #d4af37',
+      position:       'fixed',
+      top:            '8px',
+      left:           '20px',
+      right:          '88px',
+      height:         BATTLE_TOP_BAR_H + 'px',
       display:        'flex',
       alignItems:     'center',
       justifyContent: 'space-between',
-      padding:        '0 14px',
+      padding:        '8px 18px',
       zIndex:         '10010',
       pointerEvents:  'none',
       gap:            '8px',
+      fontFamily:     HUD_FONT,
+      boxSizing:      'border-box',
     });
+    applyTopBar1E(topBar);
     this.overlay.appendChild(topBar);
     this._topBar = topBar;
 
-    // Lewa czesc: tura + predkosc
+    // Lewa czesc: faza + predkosc
     const topLeft = document.createElement('div');
-    Object.assign(topLeft.style, { display: 'flex', alignItems: 'center', gap: '10px', minWidth: '180px' });
+    Object.assign(topLeft.style, { display: 'flex', alignItems: 'center', gap: '12px', minWidth: '220px' });
     topBar.appendChild(topLeft);
 
     const turnLbl = document.createElement('span');
-    Object.assign(turnLbl.style, { color: '#d4af37', fontFamily: 'sans-serif', fontSize: '13px', fontWeight: 'bold', letterSpacing: '0.04em' });
-    turnLbl.textContent = 'TURA 1';
+    Object.assign(turnLbl.style, {
+      color: HUD_GOLD, fontFamily: BATTLE_FONT_TITLE, fontSize: '18px', fontWeight: 'bold',
+      letterSpacing: '0.04em',
+    });
+    turnLbl.textContent = 'Przygotowanie';
     topLeft.appendChild(turnLbl);
     this._topTurnLbl = turnLbl;
 
+    const civEmblem = document.createElement('div');
+    civEmblem.id = 'battle-top-civ-emblem';
+    Object.assign(civEmblem.style, {
+      width: '40px', height: '40px', borderRadius: '50%', flexShrink: '0',
+      background: 'radial-gradient(circle at 38% 30%,#2a2416,#12100a)',
+      border: `2px solid ${BATTLE_GOLD}`,
+      display: 'none', alignItems: 'center', justifyContent: 'center',
+      color: '#f4e6a8', lineHeight: '0',
+    });
+    civEmblem.innerHTML = civIconSvg(this._attackerCivIconId, 24);
+    topLeft.insertBefore(civEmblem, turnLbl);
+
     const speedLbl = document.createElement('span');
-    Object.assign(speedLbl.style, { color: '#7be08a', fontFamily: 'sans-serif', fontSize: '12px', fontWeight: 'bold', background: 'rgba(0,60,20,0.5)', padding: '2px 7px', borderRadius: '3px', border: '1px solid rgba(123,224,138,0.35)' });
-    speedLbl.textContent = '1x';
+    Object.assign(speedLbl.style, {
+      color: HUD_TEXT, fontFamily: HUD_FONT, fontSize: '13px', fontWeight: 'bold',
+      background: 'rgba(0,0,0,0.35)', padding: '4px 10px', borderRadius: '8px',
+      border: '1px solid ' + HUD_GOLD_DIM,
+    });
+    speedLbl.textContent = 'x1';
     topLeft.appendChild(speedLbl);
     this._topSpeedLbl = speedLbl;
 
-    // Srodek: morale ATK | VS | morale DEF + straty
+    const pauseBadge = document.createElement('span');
+    Object.assign(pauseBadge.style, {
+      display: 'none', color: HUD_GOLD, fontFamily: HUD_FONT, fontSize: '11px', fontWeight: 'bold',
+      background: 'rgba(80,30,30,0.75)', padding: '2px 8px', borderRadius: '4px',
+      border: '1px solid ' + HUD_GOLD_DIM, letterSpacing: '0.06em',
+    });
+    pauseBadge.textContent = '|| PAUZA';
+    topLeft.appendChild(pauseBadge);
+    this._topPauseBadge = pauseBadge;
+
+    // Srodek: Ty + sklad | skrzyzowane miecze | sklad + Wróg — symetria wokół VS (= oś paska mocy)
     const topCenter = document.createElement('div');
-    Object.assign(topCenter.style, { display: 'flex', alignItems: 'center', gap: '12px', flex: '1', justifyContent: 'center' });
+    Object.assign(topCenter.style, {
+      position: 'absolute',
+      left: '50%',
+      transform: 'translateX(-50%)',
+      display: 'grid',
+      gridTemplateColumns: '1fr auto 1fr',
+      alignItems: 'center',
+      columnGap: '14px',
+      minWidth: '420px',
+      maxWidth: 'min(720px, calc(100% - 360px))',
+      pointerEvents: 'none',
+    });
     topBar.appendChild(topCenter);
 
-    const casA = document.createElement('span');
-    Object.assign(casA.style, { color: '#e57373', fontFamily: 'sans-serif', fontSize: '11px', minWidth: '80px', textAlign: 'right' });
-    casA.textContent = 'ATK: 0 strat';
-    topCenter.appendChild(casA);
-    this._topCasA = casA;
+    const leftCol = document.createElement('div');
+    Object.assign(leftCol.style, {
+      display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '8px',
+      whiteSpace: 'nowrap',
+    });
+    const atkIcon = document.createElement('span');
+    Object.assign(atkIcon.style, {
+      display: 'inline-flex', lineHeight: '0', color: FACTION_ATK_TEXT, flexShrink: '0',
+    });
+    atkIcon.title = 'Atakuj\u0105cy';
+    atkIcon.innerHTML = battleSideRoleSvg('atk');
+    leftCol.appendChild(atkIcon);
+    const atkLbl = document.createElement('span');
+    Object.assign(atkLbl.style, {
+      color: FACTION_ATK_TEXT, fontFamily: HUD_FONT, fontSize: '13px', fontWeight: '700',
+      letterSpacing: '0.06em', flexShrink: '0',
+    });
+    atkLbl.textContent = 'Ty';
+    leftCol.appendChild(atkLbl);
+    this._topCasATxt = document.createElement('span');
+    leftCol.appendChild(this._topCasATxt);
 
-    const moraleBlockA = document.createElement('div');
-    Object.assign(moraleBlockA.style, { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', minWidth: '64px' });
-    const moraleLblA = document.createElement('div');
-    Object.assign(moraleLblA.style, { color: '#e53935', fontFamily: 'sans-serif', fontSize: '10px', fontWeight: 'bold' });
-    moraleLblA.textContent = 'ATAKUJACY';
-    moraleBlockA.appendChild(moraleLblA);
-    const moraleTrackA = document.createElement('div');
-    Object.assign(moraleTrackA.style, { width: '64px', height: '8px', background: 'rgba(255,255,255,0.12)', borderRadius: '4px', border: '1px solid rgba(229,57,53,0.5)', overflow: 'hidden' });
-    const moraleFillA = document.createElement('div');
-    Object.assign(moraleFillA.style, { width: '100%', height: '100%', background: '#4caf50', transition: 'width 200ms linear, background 200ms linear' });
-    moraleTrackA.appendChild(moraleFillA);
-    moraleBlockA.appendChild(moraleTrackA);
-    topCenter.appendChild(moraleBlockA);
-    this._topMoraleA = moraleFillA;
+    const vsLbl = document.createElement('span');
+    Object.assign(vsLbl.style, {
+      color: BATTLE_GOLD, justifySelf: 'center',
+      display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+      lineHeight: '0', flexShrink: '0',
+    });
+    vsLbl.innerHTML = DEPLOY_SIDE_SVG.crossedSwords;
+    vsLbl.title = 'Starcie';
 
-    const vsLbl = document.createElement('div');
-    Object.assign(vsLbl.style, { color: '#d4af37', fontFamily: 'sans-serif', fontSize: '16px', fontWeight: 'bold', letterSpacing: '0.06em' });
-    vsLbl.textContent = 'VS';
+    const rightCol = document.createElement('div');
+    Object.assign(rightCol.style, {
+      display: 'flex', alignItems: 'center', justifyContent: 'flex-start', gap: '8px',
+      whiteSpace: 'nowrap',
+    });
+    this._topCasDTxt = document.createElement('span');
+    rightCol.appendChild(this._topCasDTxt);
+    const defLbl = document.createElement('span');
+    Object.assign(defLbl.style, {
+      color: FACTION_DEF_TEXT, fontFamily: HUD_FONT, fontSize: '13px', fontWeight: '700',
+      letterSpacing: '0.06em', flexShrink: '0',
+    });
+    defLbl.textContent = 'Wr\u00F3g';
+    rightCol.appendChild(defLbl);
+    const defIcon = document.createElement('span');
+    Object.assign(defIcon.style, {
+      display: 'inline-flex', lineHeight: '0', color: FACTION_DEF_TEXT, flexShrink: '0',
+    });
+    defIcon.title = 'Broni\u0105cy';
+    defIcon.innerHTML = battleSideRoleSvg('def');
+    rightCol.appendChild(defIcon);
+
+    topCenter.appendChild(leftCol);
     topCenter.appendChild(vsLbl);
+    topCenter.appendChild(rightCol);
+    this._topMoraleA = null;
+    this._topMoraleD = null;
 
-    const moraleBlockD = document.createElement('div');
-    Object.assign(moraleBlockD.style, { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', minWidth: '64px' });
-    const moraleLblD = document.createElement('div');
-    Object.assign(moraleLblD.style, { color: '#1e88e5', fontFamily: 'sans-serif', fontSize: '10px', fontWeight: 'bold' });
-    moraleLblD.textContent = 'OBRONCA';
-    moraleBlockD.appendChild(moraleLblD);
-    const moraleTrackD = document.createElement('div');
-    Object.assign(moraleTrackD.style, { width: '64px', height: '8px', background: 'rgba(255,255,255,0.12)', borderRadius: '4px', border: '1px solid rgba(30,136,229,0.5)', overflow: 'hidden' });
-    const moraleFillD = document.createElement('div');
-    Object.assign(moraleFillD.style, { width: '100%', height: '100%', background: '#4caf50', transition: 'width 200ms linear, background 200ms linear' });
-    moraleTrackD.appendChild(moraleFillD);
-    moraleBlockD.appendChild(moraleTrackD);
-    topCenter.appendChild(moraleBlockD);
-    this._topMoraleD = moraleFillD;
-
-    const casD = document.createElement('span');
-    Object.assign(casD.style, { color: '#64b5f6', fontFamily: 'sans-serif', fontSize: '11px', minWidth: '80px', textAlign: 'left' });
-    casD.textContent = 'OBR: 0 strat';
-    topCenter.appendChild(casD);
-    this._topCasD = casD;
-
-    // Prawa czesc (reserved for future controls)
+    // Prawa czesc: Wycofaj sie (Pomin jest na prawym pasku)
     const topRight = document.createElement('div');
-    Object.assign(topRight.style, { minWidth: '120px' });
+    Object.assign(topRight.style, {
+      display: 'flex', alignItems: 'center', gap: '8px', minWidth: '140px',
+      justifyContent: 'flex-end', pointerEvents: 'auto',
+    });
+    const mkTopBtn = (label: string, title: string, onClick: () => void): HTMLButtonElement => {
+      const b = document.createElement('button');
+      b.textContent = label;
+      b.title = title;
+      Object.assign(b.style, {
+        background: 'transparent',
+        color: BATTLE_ENEMY_TEXT,
+        border: '2px solid rgba(200,64,64,0.45)',
+        borderRadius: '8px',
+        padding: '4px 14px',
+        fontFamily: HUD_FONT,
+        fontSize: '11px',
+        letterSpacing: '0.12em',
+        textTransform: 'uppercase',
+        cursor: 'pointer',
+        fontWeight: 'bold',
+      });
+      b.onclick = onClick;
+      return b;
+    };
+    const btnTopExit = mkTopBtn('Wycofaj si\u0119', 'Wycofaj si\u0119 z bitwy', () => { this.dispose(); if (this.onCancelCb) this.onCancelCb(); });
+    topRight.appendChild(btnTopExit);
     topBar.appendChild(topRight);
 
-    // --- DOLNY KLASTER PRZYCISKOW (Total-War style, ikony + skroty) ---
-    const cmdBar = document.createElement('div');
-    Object.assign(cmdBar.style, {
-      position:       'absolute',
-      bottom:         '0',
-      left:           '50%',
-      transform:      'translateX(-50%)',
-      display:        'flex',
-      alignItems:     'center',
-      gap:            '4px',
-      padding:        '5px 14px 6px',
-      background:     'rgba(10,8,6,0.92)',
-      borderTop:      '1px solid #d4af37',
-      borderLeft:     '1px solid rgba(212,175,55,0.4)',
-      borderRight:    '1px solid rgba(212,175,55,0.4)',
-      borderRadius:   '10px 10px 0 0',
-      zIndex:         '10012',
-      boxShadow:      '0 -2px 18px rgba(0,0,0,0.7)',
+    // PASEK MOCY v4: cienki zielony/czerwony + etykieta „Ostatnie starcia".
+    const powerWrap = document.createElement('div');
+    powerWrap.id = 'battle-power-wrap';
+    Object.assign(powerWrap.style, {
+      position: 'fixed',
+      top: (BATTLE_TOP_BAR_H + 8) + 'px',
+      left: '50%',
+      transform: 'translateX(-50%)',
+      width: '520px',
+      maxWidth: BATTLE_POWER_BAR_MAX_W,
+      zIndex: '10009',
+      pointerEvents: 'none',
+      fontFamily: HUD_FONT,
     });
+
+    const powerBar = document.createElement('div');
+    powerBar.id = 'battle-power-bar';
+    Object.assign(powerBar.style, {
+      height: '24px',
+      display: 'flex',
+      borderRadius: '6px',
+      overflow: 'hidden',
+      border: '1px solid rgba(232,216,138,0.3)',
+      boxShadow: '0 2px 10px rgba(0,0,0,0.45)',
+    });
+    const mkHalf = (side: 'atk' | 'def'): { fill: HTMLDivElement; lbl: HTMLSpanElement } => {
+      const half = document.createElement('div');
+      Object.assign(half.style, {
+        flex: '1', position: 'relative', overflow: 'hidden',
+        background: side === 'atk' ? 'rgba(10,30,14,0.85)' : 'rgba(30,10,10,0.85)',
+        borderRight: side === 'atk' ? '1px solid rgba(255,255,255,0.12)' : 'none',
+      });
+      const fill = document.createElement('div');
+      Object.assign(fill.style, {
+        position: 'absolute', top: '0', bottom: '0',
+        width: '100%',
+        [side === 'atk' ? 'left' : 'right']: '0',
+        background: side === 'atk'
+          ? 'linear-gradient(90deg,#3a8a5a,#7ad0a0)'
+          : 'linear-gradient(90deg,#c05050,#8a3a3a)',
+        transition: 'width 180ms linear',
+      });
+      half.appendChild(fill);
+
+      const badge = document.createElement('div');
+      Object.assign(badge.style, {
+        position: 'absolute', top: '50%',
+        transform: 'translateY(-50%)',
+        [side === 'atk' ? 'left' : 'right']: '8px',
+        display: 'flex', alignItems: 'center', gap: '5px',
+        flexDirection: side === 'atk' ? 'row' : 'row-reverse',
+        zIndex: '3', pointerEvents: 'none',
+      });
+      const icon = document.createElement('div');
+      Object.assign(icon.style, {
+        lineHeight: '0', flexShrink: '0', display: 'flex',
+        color: side === 'atk' ? FACTION_ATK_TEXT : FACTION_DEF_TEXT,
+        filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.85))',
+      });
+      icon.innerHTML = battleSideRoleSvg(side);
+      const iconSvg = icon.querySelector('svg');
+      if (iconSvg) {
+        iconSvg.setAttribute('width', '16');
+        iconSvg.setAttribute('height', '16');
+      }
+      const name = document.createElement('span');
+      name.textContent = side === 'atk' ? this._attackerCivLabel : this._defenderCivLabel;
+      Object.assign(name.style, {
+        fontSize: '11px', fontWeight: 'bold', letterSpacing: '0.05em',
+        color: side === 'atk' ? FACTION_ATK_TEXT : FACTION_DEF_TEXT,
+        textShadow: '0 1px 2px #000', whiteSpace: 'nowrap', maxWidth: '88px',
+        overflow: 'hidden', textOverflow: 'ellipsis',
+      });
+      badge.appendChild(icon);
+      badge.appendChild(name);
+      half.appendChild(badge);
+
+      const lbl = document.createElement('span');
+      Object.assign(lbl.style, {
+        position: 'absolute', top: '50%',
+        transform: 'translateY(-50%)',
+        [side === 'atk' ? 'right' : 'left']: '8px',
+        fontSize: '11px', fontWeight: 'bold', letterSpacing: '0.06em',
+        color: '#fff', textShadow: '0 1px 2px #000', zIndex: '2',
+      });
+      lbl.textContent = '100%';
+      half.appendChild(lbl);
+      powerBar.appendChild(half);
+      return { fill, lbl };
+    };
+    const pA = mkHalf('atk');
+    const pD = mkHalf('def');
+    powerWrap.appendChild(powerBar);
+
+    const powerCaption = document.createElement('div');
+    Object.assign(powerCaption.style, {
+      textAlign: 'center',
+      fontSize: '10px',
+      letterSpacing: '0.2em',
+      textTransform: 'uppercase',
+      color: BATTLE_TEXT_DIM,
+      marginTop: '5px',
+    });
+    powerCaption.textContent = 'Ostatnie starcia';
+    powerWrap.appendChild(powerCaption);
+
+    this.overlay.appendChild(powerWrap);
+    this._bottomPowerBar = powerWrap;
+    this._bottomPowerFillA = pA.fill;
+    this._bottomPowerFillD = pD.fill;
+    this._bottomPowerLblA = pA.lbl;
+    this._bottomPowerLblD = pD.lbl;
+    requestAnimationFrame(() => this._syncRosterColumnLayout());
+    // Legacy side-bar refs (nie renderujemy pionowych paskow).
+    this.armyMoraleFillA = null;
+    this.armyMoraleFillD = null;
+    this.armyMoraleLabelA = null;
+    this.armyMoraleLabelD = null;
+
+    // --- PRAWY PIONOWY PASEK USTAWIEN (predkosc, auto, dzwiek/muzyka) ---
+    const cmdBar = document.createElement('div');
+    Object.assign(cmdBar.style, { display: 'none' });
     this.overlay.appendChild(cmdBar);
 
-    const makeIconBtn = (
-      icon: string,
+    const makeRailBtn = (
+      svgHtml: string,
       shortcut: string,
       tooltip: string,
-      bg: string,
       onClick: () => void,
+      opts?: { danger?: boolean },
     ): HTMLButtonElement => {
       const btn = document.createElement('button');
-      Object.assign(btn.style, {
-        display:        'flex',
-        flexDirection:  'column',
-        alignItems:     'center',
-        justifyContent: 'center',
-        width:          '48px',
-        height:         '52px',
-        background:     bg,
-        border:         '1px solid rgba(212,175,55,0.35)',
-        borderRadius:   '6px',
-        cursor:         'pointer',
-        padding:        '3px 2px 2px',
-        transition:     'filter 0.15s, border-color 0.15s',
-        boxShadow:      '0 1px 6px rgba(0,0,0,0.5)',
-      });
+      applyRailBtn1E(btn, opts);
       btn.title = tooltip;
       const iconEl = document.createElement('div');
-      Object.assign(iconEl.style, { fontSize: '20px', lineHeight: '1', userSelect: 'none' });
-      iconEl.textContent = icon;
+      Object.assign(iconEl.style, { lineHeight: '1', userSelect: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' });
+      iconEl.innerHTML = svgHtml;
       const keyEl = document.createElement('div');
-      Object.assign(keyEl.style, { fontSize: '9px', color: 'rgba(212,175,55,0.85)', fontFamily: 'sans-serif', letterSpacing: '0.06em', marginTop: '2px', userSelect: 'none' });
+      Object.assign(keyEl.style, {
+        fontSize: '9px', color: 'inherit', fontFamily: HUD_FONT, letterSpacing: '0.04em',
+        marginTop: '2px', userSelect: 'none', textAlign: 'center', fontWeight: '700',
+      });
       keyEl.textContent = shortcut;
       btn.appendChild(iconEl);
       btn.appendChild(keyEl);
-      btn.addEventListener('mouseenter', () => { btn.style.filter = 'brightness(1.35)'; btn.style.borderColor = '#d4af37'; });
-      btn.addEventListener('mouseleave', () => { btn.style.filter = ''; btn.style.borderColor = 'rgba(212,175,55,0.35)'; });
+      btn.addEventListener('mouseenter', () => { btn.style.filter = 'brightness(1.35)'; });
+      btn.addEventListener('mouseleave', () => { btn.style.filter = ''; applyRailBtn1E(btn, opts); });
       btn.addEventListener('mousedown', () => { btn.style.filter = 'brightness(0.75)'; });
       btn.addEventListener('mouseup',   () => { btn.style.filter = 'brightness(1.35)'; });
       btn.onclick = onClick;
       return btn;
     };
 
-    const sep = (): HTMLDivElement => {
-      const d = document.createElement('div');
-      Object.assign(d.style, { width: '1px', height: '40px', background: 'rgba(212,175,55,0.25)', margin: '0 4px', flexShrink: '0' });
-      return d;
-    };
-
-    // 1. PAUZA (P)
-    const btnPause = makeIconBtn('\u23F8', 'P', 'Pauza / Wznow (P)', 'rgba(60,30,90,0.85)', () => { this._togglePause(); });
-    cmdBar.appendChild(btnPause);
-    this.speedBtn = null;
-
-    // 2. Predkosc MINUS (S)
-    const btnSpeedDn = makeIconBtn('\u23EA', 'S-', 'Zmniejsz predkosc (S)', 'rgba(25,50,30,0.85)', () => {
-      this._setSpeedIdx(this.speedIdx - 1); this._flashSpeedHud();
+    const rail = document.createElement('div');
+    rail.id = 'battle-settings-rail';
+    Object.assign(rail.style, {
+      position:       'fixed',
+      top:            (BATTLE_HEADER_H + 8) + 'px',
+      right:          '16px',
+      bottom:         '0',
+      width:          '56px',
+      display:        'flex',
+      flexDirection:  'column',
+      alignItems:     'center',
+      gap:            '8px',
+      padding:        '0',
+      background:     'transparent',
+      border:         'none',
+      zIndex:         '100080',
+      boxShadow:      'none',
+      fontFamily:     HUD_FONT,
+      pointerEvents:  'auto',
+      overflowY:      'auto',
     });
-    cmdBar.appendChild(btnSpeedDn);
+    document.body.appendChild(rail);
+    this._rightSettingsRail = rail;
 
-    // 3. Predkosc PLUS (S)
-    const btnSpeedUp = makeIconBtn('\u23E9', 'S+', 'Zwieksz predkosc (S)', 'rgba(25,50,30,0.85)', () => {
-      this._setSpeedIdx(this.speedIdx + 1); this._flashSpeedHud();
+    const btnPause = makeRailBtn(CMD_SVG.pause, 'P', 'Pauza / Wznow (P)', () => { this._togglePause(); });
+    rail.appendChild(btnPause);
+
+    const btnSpeed = makeRailBtn(CMD_SVG.speed, 'V', 'Predkosc symulacji (V)', () => {
+      this._cycleSpeed(); this._flashSpeedHud();
     });
-    cmdBar.appendChild(btnSpeedUp);
+    const speedKeyEl = btnSpeed.children[1] as HTMLDivElement;
+    speedKeyEl.textContent = 'x1';
+    this._rightSpeedLbl = speedKeyEl;
+    rail.appendChild(btnSpeed);
+    this.speedBtn = btnSpeed;
 
-    cmdBar.appendChild(sep());
-
-    // 4. AUTO <-> RECZNE (R)
-    const btnManual = makeIconBtn('\u{1F3AE}', 'R', 'AUTO / Reczne sterowanie (R)', 'rgba(25,35,70,0.85)', () => { this._toggleManualMode(); });
-    cmdBar.appendChild(btnManual);
-    this._manualBtn = btnManual as unknown as HTMLButtonElement;
+    const btnManual = makeRailBtn(CMD_SVG.manual, 'R', 'AUTO / Reczne sterowanie (R)', () => { this._toggleManualMode(); });
+    rail.appendChild(btnManual);
+    this._manualBtn = btnManual;
     (btnManual as any)._iconEl = btnManual.children[0] as HTMLElement;
 
-    // 5. STOP / Bron pozycji
-    const btnHold = makeIconBtn('\u{1F6D1}', 'STOP', 'Stoj / Bron pozycji (zaznaczeni)', 'rgba(70,40,10,0.85)', () => { this._orderHoldSelected(); });
-    cmdBar.appendChild(btnHold);
+    const railSep = (): HTMLDivElement => {
+      const d = document.createElement('div');
+      Object.assign(d.style, { width: '32px', height: '1px', background: HUD_GOLD_DIM, margin: '2px 0', flexShrink: '0' });
+      return d;
+    };
+    rail.appendChild(railSep());
 
-    // 6. WYCOFAJ (W)
-    const btnRetreat = makeIconBtn('\u{1F3F3}', 'W', 'Wycofaj zaznaczonych', 'rgba(60,10,10,0.85)', () => { this._orderRetreatSelected(); });
-    cmdBar.appendChild(btnRetreat);
+    const btnSound = makeRailBtn(CMD_SVG.sound, 'M', 'Efekty dzwiekowe on/off (M)', () => { this._toggleSfx(); });
+    rail.appendChild(btnSound);
+    this._soundBtn = btnSound;
 
-    cmdBar.appendChild(sep());
+    const btnMusic = makeRailBtn(CMD_SVG.music, 'MUZ', 'Muzyka / ambient on/off', () => { this._toggleMusic(); });
+    rail.appendChild(btnMusic);
+    this._musicBtn = btnMusic;
 
-    // 7. PASKI on/off (H)
-    const btnBars = makeIconBtn('\u{1F4CA}', 'H', 'Paski HP/Morale on/off (H)', 'rgba(30,30,50,0.85)', () => {
+    rail.appendChild(railSep());
+
+    const btnBars = makeRailBtn(CMD_SVG.bars, 'H', 'Paski HP/Morale on/off (H)', () => {
       this.barsVisible = !this.barsVisible;
       for (const ru of [...this.atk, ...this.def]) {
         if (ru.dead || ru.removed) continue;
@@ -1926,69 +2475,61 @@ export class BattleScene {
       }
       btnBars.style.filter = this.barsVisible ? '' : 'grayscale(1) brightness(0.6)';
     });
-    cmdBar.appendChild(btnBars);
+    rail.appendChild(btnBars);
 
-    // 8. DZWIEK (M)
-    const btnSound = makeIconBtn('\u{1F50A}', 'M', 'Dzwiek on/off (M)', 'rgba(30,30,50,0.85)', () => {
-      const ev = new KeyboardEvent('keydown', { key: 'm', bubbles: true, cancelable: true });
-      window.dispatchEvent(ev);
-    });
-    cmdBar.appendChild(btnSound);
+    const btnSkip = makeRailBtn(CMD_SVG.skip, '>>', 'Pomin do wyniku', () => { if (!this.finished) this.skip(); });
+    rail.appendChild(btnSkip);
 
-    cmdBar.appendChild(sep());
-
-    // 9. POMIN -> wynik
-    const btnSkip = makeIconBtn('\u23ED', 'POMIN', 'Pomin do wyniku', 'rgba(100,60,0,0.85)', () => { if (!this.finished) this.skip(); });
-    cmdBar.appendChild(btnSkip);
-
-    // 10. WYJSCIE
-    const btnExit = makeIconBtn('\u274C', 'ESC', 'Wyjdz z bitwy', 'rgba(80,10,10,0.85)', () => {
+    const btnExit = makeRailBtn(CMD_SVG.retreat, 'WYC', 'Wycofaj si\u0119 z bitwy', () => {
       this.dispose();
       if (this.onCancelCb) this.onCancelCb();
-    });
-    cmdBar.appendChild(btnExit);
+    }, { danger: true });
+    rail.appendChild(btnExit);
 
     this._setSpeedIdx(this.speedIdx);
+    this._refreshAudioBtns();
+    this._syncManualRailHighlight();
 
-    // --- PANEL ZAZNACZONEJ JEDNOSTKI ---
+    // --- PANEL ZAZNACZONEJ JEDNOSTKI (Q3 — prawy panel rozkazow, szkielet) ---
     const selPanel = document.createElement('div');
     Object.assign(selPanel.style, {
       position:       'absolute',
-      bottom:         '170px',
+      bottom:         '160px',
       right:          '14px',
-      width:          '200px',
-      background:     'rgba(10,8,6,0.90)',
-      border:         '1px solid rgba(212,175,55,0.5)',
+      width:          '220px',
+      background:     HUD_BG,
+      border:         '1px solid ' + HUD_GOLD_DIM,
       borderRadius:   '8px',
       padding:        '10px 12px',
       zIndex:         '10011',
-      fontFamily:     'sans-serif',
-      color:          '#e8e0d0',
+      fontFamily:     HUD_FONT,
+      color:          HUD_TEXT,
       display:        'none',
       boxShadow:      '0 2px 16px rgba(0,0,0,0.7)',
     });
     this.overlay.appendChild(selPanel);
     this._selPanel = selPanel;
 
-    // Baner trybu AUTO/RECZNE (gorny srodek) — pozostaje dla kompatybilnosci
-    const modeBanner = document.createElement('div');
-    Object.assign(modeBanner.style, {
-      position: 'absolute',
-      top: '52px',
-      left: '50%',
-      transform: 'translateX(-50%)',
-      background: 'rgba(20,40,80,0.82)',
-      color: '#aaccff',
-      padding: '2px 14px',
-      borderRadius: '0 0 7px 7px',
-      fontSize: '12px',
-      fontWeight: 'bold',
-      pointerEvents: 'none',
-      display: 'none',
-      zIndex: '20',
+    // --- Q2: MINIMAPA (lewy-dolny rog, nad rosterem) ---
+    this._buildMinimapOverlay();
+
+    // --- Q3: hover tooltip (0.3 s) ---
+    const hoverTip = document.createElement('div');
+    Object.assign(hoverTip.style, {
+      position: 'fixed', display: 'none', pointerEvents: 'none', zIndex: '100020',
+      background: HUD_BG, border: '1px solid ' + HUD_GOLD_DIM, borderRadius: '6px',
+      padding: '8px 10px', minWidth: '140px', maxWidth: '220px',
+      fontFamily: HUD_FONT, color: HUD_TEXT, fontSize: '11px',
+      boxShadow: '0 4px 14px rgba(0,0,0,0.65)',
     });
-    modeBanner.textContent = 'TRYB: AUTO';
-    this.overlay.appendChild(modeBanner);
+    document.body.appendChild(hoverTip);
+    this._hoverTooltip = hoverTip;
+
+    // Hint trybu AUTO/R/SPACJA — dyskretny label 1E u dołu mapy (C06 v4).
+    const modeBanner = document.createElement('div');
+    applyModeHint1E(modeBanner);
+    modeBanner.style.display = 'none';
+    document.body.appendChild(modeBanner);
     this._modeBanner = modeBanner;
 
     this.renderer = new THREE.WebGLRenderer({ canvas: this.canvas, antialias: true });
@@ -2000,25 +2541,24 @@ export class BattleScene {
     this.scene.background = new THREE.Color(0x12100e);
     this.scene.fog = new THREE.FogExp2(0x12100e, 0.012);
 
-    // Camera centred on the SQUARE field. The field spans ~BF_COLS x BF_ROWS
-    // world units; frame the whole thing at the DEFAULT zoom, then let the
-    // player dolly in (wheel / + key) close enough to read individual figures
-    // or out (wheel / - key) to take in both armies. See _onWheel / _onKeyZoom.
-    const midCol = (BF_COLS - 1) / 2;
-    const midRow = (BF_ROWS - 1) / 2;
+    // Camera centred on the PLAYABLE zone (default zoom). Full BF_COLS×BF_ROWS
+    // map is larger — pan (strzałki / WASD) or drag to explore the margins.
+    const midCol = PLAY_MID_COL;
+    const midRow = PLAY_MID_ROW;
     const { x: cx, z: cz } = cellToWorld(midCol, midRow);
     const fieldWorldW = BF_COLS * TILE_S;
     const fieldWorldH = BF_ROWS * TILE_S;
     const fieldSpan   = Math.max(fieldWorldW, fieldWorldH);
+    const playWorldW  = PLAYABLE_COLS * TILE_S;
+    const playWorldH  = PLAYABLE_ROWS * TILE_S;
+    const playSpan    = Math.max(playWorldW, playWorldH);
 
     this.camTarget.set(cx, 0, cz);
-    // Default framing: whole field comfortably in view.
-    this.camDist       = fieldSpan * 1.05;
+    // Default: strefa gry wygodnie w kadrze; zoom-out pokazuje całe duże pole.
+    this.camDist       = playSpan * 1.08;
     this.camDistTarget = this.camDist;
-    // Clamp range: in close enough to fill the view with a few figures (units
-    // are ~1 unit tall) out to a touch beyond the full-field default.
-    this.camDistMin = Math.max(4, fieldSpan * 0.16);
-    this.camDistMax = fieldSpan * 1.5;
+    this.camDistMin = Math.max(2, playSpan * 0.07);
+    this.camDistMax = fieldSpan * 1.65;
 
     this.camera = new THREE.PerspectiveCamera(48, 1, 0.1, 4000);
     this._applyCamera();
@@ -2043,24 +2583,36 @@ export class BattleScene {
     // Softer fog so the far half of the big field doesn't grey out.
     this.scene.fog = new THREE.FogExp2(0x12100e, 0.006);
 
+    this._orderLinesGroup = new THREE.Group();
+    this._orderLinesGroup.name = 'orderLines';
+    this.scene.add(this._orderLinesGroup);
+    this._orderPreviewGroup = new THREE.Group();
+    this._orderPreviewGroup.name = 'orderPreview';
+    this._orderLinesGroup.add(this._orderPreviewGroup);
+
     this._buildBattlefield(opts.teren);
     if (opts.siege) {
       // SIEGE v2: prefer defCiv (defender's civilization) for the wall style.
       this._placeSiegeWall((opts.siege.defCiv ?? opts.siege.civ) ?? 'rzym');
     }
+    this._deployMode = opts.deploy === true;
     this._placeUnits(opts.attacker, opts.defender, opts.siege != null);
 
     // Inicjuj faze rozstawiania jesli opts.deploy === true
-    if (opts.deploy === true) {
+    if (this._deployMode) {
       this.deployPhase = true;
       this._buildDeployZone();
-      this._buildDeployOverlay();
+      this._buildDeployToolbar();
+      this._initDeployUI();
+      this._updateArmyMoraleBars();
     }
 
     window.addEventListener('resize', this._onResize);
     // Zoom: mouse wheel over the canvas + the +/- keys (B9).
     this.canvas.addEventListener('wheel', this._onWheel, { passive: false });
     window.addEventListener('keydown', this._onKeyZoom);
+    window.addEventListener('keydown', this._onKeyPanDown);
+    window.addEventListener('keyup', this._onKeyPanUp);
     // CHANGE1: "S" cycles battle speed (the on-screen button does not work for
     // the user); CHANGE2: "H" toggles all over-head stat bars. Both listen on
     // WINDOW so they work regardless of focus (there are no typing fields in the
@@ -2069,9 +2621,11 @@ export class BattleScene {
     window.addEventListener('keydown', this._onKeyToggleBars);
     window.addEventListener('keydown', this._onKeyPause);
     window.addEventListener('keydown', this._onKeyManual);
+    window.addEventListener('keydown', this._onKeyExecuteTurn);
     // AUDIO: "M" toggles all battle audio (SFX + ambient). Bound on WINDOW like
     // S/H/P, guarded by isEditableTarget; removed in dispose().
     window.addEventListener('keydown', this._onKeyMute);
+    window.addEventListener('keydown', this._onKeyMergeWounded);
     // AUDIO GESTURE INIT: the AudioContext is created lazily on the FIRST user
     // gesture (autoplay policy). The overlay receives the battle's pointer/key
     // events, so we init/resume on its first pointerdown/keydown. Capture phase +
@@ -2085,6 +2639,8 @@ export class BattleScene {
     window.addEventListener('pointerup', this._onPanUp);
     // Blokuj menu kontekstowe prawego przycisku na canvasie (uzywamy go do pana)
     this.canvas.addEventListener('contextmenu', (ev) => ev.preventDefault());
+    this.canvas.addEventListener('pointermove', this._onCanvasHoverMove);
+    this.canvas.addEventListener('pointerleave', this._onCanvasHoverLeave);
     this._startLoop();
   }
 
@@ -2096,7 +2652,7 @@ export class BattleScene {
     this.onFinishCb = onFinish;
     if (this.deployPhase) {
       // Walka nie startuje -- czeka na przycisk "Start" w overlaya rozstawiania
-      this.hint.textContent = 'FAZA ROZSTAWIANIA -- klikaj jednostki i pola strefy startowej, potem kliknij Start.';
+      this.hint.textContent = 'FAZA ROZSTAWIANIA — strefa gry (środek mapy). WASD / strzałki = przesuń widok · kółko = zoom.';
       return;
     }
     this._startBattle();
@@ -2107,10 +2663,86 @@ export class BattleScene {
     this.started    = true;
     this.roundNo    = 0;
     this.activeSide = 'atk';
-    this.hint.textContent = 'Bitwa! Co ture KAZDA jednostka rusza sie lub zadaje JEDEN cios. (Zoom: kolko/+- | S:predkosc H:paski P:pauza M:dzwiek)';
+    this._manualMode = true;
+    this._battleAwaitingOrders = true;
+    this._queuedOrderUnitIds.clear();
+    this._disposeAllOrderLines();
+    if (this._orderLinesGroup) this._orderLinesGroup.visible = true;
+    if (this._manualBtn) {
+      this._syncManualRailHighlight();
+    }
+    this.hint.textContent =
+      'TURA 1 — wydaj rozkazy (klik / G1-G3 / Generał) · SPACJA = start tury · R = AUTO';
+    this._syncAllGroupFrameMarkers();
     if (this._manualMode && !this._rosterBar) this._buildRosterBar();
     if (this._rosterBar) this._rosterBar.style.display = 'flex';
-    this._beginTurn();
+    this._initDeployGhostLayer();
+    this._ensureGroupSelectorBar();
+    this._updateBattleRosterHeader();
+    this._updateBattleQuickSelectBar();
+    this._rebuildBattleRosterGrid();
+    this._updateBattlePhaseBanner();
+    this._syncMinimapPosition();
+    this._syncBattleToolbarMode();
+  }
+
+  /** Wykonaj odłożone dyspozycje (Ctrl/Shift + SPACJA). */
+  private _executeQueuedOrders(): void {
+    if (this._queuedOrderUnitIds.size === 0) {
+      this._showOrderFeedback('Brak odlozonych dyspozycji (uzyj Ctrl/Shift przy kliku)');
+      return;
+    }
+    const ids = [...this._queuedOrderUnitIds];
+    this._queuedOrderUnitIds.clear();
+    this._executeUnitsImmediate(ids);
+    this._showOrderFeedback('Wykonano ' + ids.length + ' dyspozycji');
+  }
+
+  /** C2-FLOW: rozpoczyna turę po fazie planowania (Spacja) lub przełączeniu na AUTO. */
+  private _kickoffBattleTurn(): void {
+    if (!this.started || this.finished || !this._battleAwaitingOrders) return;
+    this._battleAwaitingOrders = false;
+    this._clearOrderPreview();
+    this._disposeQueuedOrderArrows();
+    this._updateBattlePhaseBanner();
+    this.hint.textContent =
+      'Tura ' + (this.roundNo + 1) + ' — klik: ruch/atak od razu · Ctrl/Shift: dyspozycja · SPACJA: wykonaj odlozone.';
+    if (this.roundNo === 0) {
+      this._beginTurn();
+    } else {
+      this._activateNext();
+    }
+  }
+
+  /** Baner fazy: planowanie / twoja tura / ruch przeciwnika — hint 1E u dołu (C06 v4). */
+  private _updateBattlePhaseBanner(activeUnit?: RuntimeBattleUnit | null): void {
+    if (!this._modeBanner || !this.started || this.finished) return;
+    const hint = this._modeBanner;
+    if (this.deployPhase) {
+      hint.style.display = 'none';
+      return;
+    }
+    if (!this._manualMode) {
+      hint.style.display = 'block';
+      hint.textContent = 'Tryb AUTO · walka rozstrzyga się automatycznie · roster i toolbar ukryte';
+      return;
+    }
+    hint.style.display = 'block';
+    if (this._battleAwaitingOrders) {
+      hint.textContent = 'SPACJA = następna tura';
+      return;
+    }
+    if (activeUnit?.side === 'def') {
+      hint.textContent = 'Ruch przeciwnika';
+      return;
+    }
+    hint.textContent = 'SPACJA = następna tura';
+  }
+
+  /** Podświetlenie rail R gdy tryb ręczny (C06 v4). */
+  private _syncManualRailHighlight(): void {
+    if (!this._manualBtn) return;
+    applyRailBtn1E(this._manualBtn, { active: this._manualMode });
   }
 
   skip(): void {
@@ -2123,12 +2755,21 @@ export class BattleScene {
       this.terrainData,
       this.counters,
       this.terrainMap,
+      this.attackerCivBonusy,
+      this.defenderCivBonusy,
     );
     for (const line of result.log) this.log.push(line);
-    this._showResultBanner(result.winner);
-    setTimeout(() => {
-      if (this.onFinishCb) this.onFinishCb({ winner: result.winner, survivors: result.survivors, log: this.log });
-    }, 1500);
+    this._endWinner = result.winner;
+    this._endSurvivors = result.survivors;
+    this._showEndScreen(result.winner);
+  }
+
+  /**
+   * Q2: minimap data contract for UI / battle overlay.
+   * { cols, rows, terrain[], units[{q,r,color}], viewport }.
+   */
+  getBattleMinimapData(): BattleMinimapData {
+    return this._collectMinimapData();
   }
 
   dispose(): void {
@@ -2140,11 +2781,15 @@ export class BattleScene {
     window.removeEventListener('resize', this._onResize);
     this.canvas.removeEventListener('wheel', this._onWheel);
     window.removeEventListener('keydown', this._onKeyZoom);
+    window.removeEventListener('keydown', this._onKeyPanDown);
+    window.removeEventListener('keyup', this._onKeyPanUp);
     window.removeEventListener('keydown', this._onKeySpeed);
     window.removeEventListener('keydown', this._onKeyToggleBars);
     window.removeEventListener('keydown', this._onKeyPause);
     window.removeEventListener('keydown', this._onKeyManual);
+    window.removeEventListener('keydown', this._onKeyExecuteTurn);
     window.removeEventListener('keydown', this._onKeyMute);
+    window.removeEventListener('keydown', this._onKeyMergeWounded);
     window.removeEventListener('pointerdown', this._onAudioGesture, true);
     window.removeEventListener('keydown', this._onAudioGesture, true);
     this.overlay.removeEventListener('pointerdown', this._onAudioGesture);
@@ -2154,6 +2799,17 @@ export class BattleScene {
     this.canvas.removeEventListener('pointerdown', this._onPanDown);
     window.removeEventListener('pointermove', this._onPanMove);
     window.removeEventListener('pointerup', this._onPanUp);
+    this.canvas.removeEventListener('pointermove', this._onCanvasHoverMove);
+    this.canvas.removeEventListener('pointerleave', this._onCanvasHoverLeave);
+    this._clearHoverTooltip();
+    if (this._hoverTooltip?.parentNode) this._hoverTooltip.parentNode.removeChild(this._hoverTooltip);
+    this._hoverTooltip = null;
+    this._clearOrderPreview();
+    this._disposeAllOrderLines();
+    if (this._orderLinesGroup) {
+      this.scene.remove(this._orderLinesGroup);
+      this._orderLinesGroup = null;
+    }
 
     for (const fl of this.floatLabels) {
       if (fl.elem.parentNode) fl.elem.parentNode.removeChild(fl.elem);
@@ -2177,8 +2833,28 @@ export class BattleScene {
     this.clashLog = null;
     this.clashLogEntries = [];
 
+    this._teardownDeployUI();
+    this._hideEndDetails();
+    if (this._endScreenBackdrop?.parentNode) {
+      this._endScreenBackdrop.parentNode.removeChild(this._endScreenBackdrop);
+    }
+    if (this._endScreenWrap?.parentNode) {
+      this._endScreenWrap.parentNode.removeChild(this._endScreenWrap);
+    }
+    this._endScreenBackdrop = null;
+    this._endScreenWrap = null;
+    this._endScreenShown = false;
+    this._battleChromeSuppressed = false;
+    if (this._deployRosterDock?.parentNode) {
+      this._deployRosterDock.parentNode.removeChild(this._deployRosterDock);
+    }
+    this._deployRosterDock = null;
+    disposeSiegeHud1E();
+    if (this._rightSettingsRail?.parentNode) {
+      this._rightSettingsRail.parentNode.removeChild(this._rightSettingsRail);
+    }
+    this._rightSettingsRail = null;
     if (this.overlay.parentNode) this.overlay.parentNode.removeChild(this.overlay);
-    // Wyczysc roster bar jesli istnieje (jest dzieckiem overlay, wiec juz usuniety, ale wyczysc ref)
     this._rosterBar = null;
     this._manualBtn = null;
     this._modeBanner = null;
@@ -2213,16 +2889,14 @@ export class BattleScene {
     const idx = (c: number, r: number) => r * BF_COLS + c;
     const inField = (c: number, r: number) => c >= 0 && c < BF_COLS && r >= 0 && r < BF_ROWS;
 
-    // Rows the centred rank band occupies (+1 row of slack each side).
-    const nLine = Math.max(1, Math.min(RANK_WIDTH, BF_ROWS));
-    const r0    = Math.floor((BF_ROWS - nLine) / 2);
-    const rLo   = Math.max(0, r0 - 1);
-    const rHi   = Math.min(BF_ROWS - 1, r0 + nLine);
+    // Pelna wysokosc strefy gry (skrzydla gora/dol — konnica tu staje).
+    const rLo = PLAY_ROW0;
+    const rHi = PLAY_ROW1;
 
-    // --- 1) Clear ONLY the rank columns to Plains (narrow bands, not a box). ---
-    // Attacker ranks step from its front toward the -X edge; defender toward +X.
+    // --- 1) Kolumny formacji + tyl konnicy (glebsze niz MAX_RANKS piechoty). ---
+    const DEPLOY_CLEAR_RANKS = Math.max(MAX_RANKS + 12, Math.ceil(MAX_PER_SIDE / 12) + 8);
     const rankCols = new Set<number>();
-    for (let k = 0; k < MAX_RANKS; k++) {
+    for (let k = 0; k < DEPLOY_CLEAR_RANKS; k++) {
       const ac = ATK_FRONT_COL + k * ATK_COL_STEP;
       const dc = DEF_FRONT_COL + k * DEF_COL_STEP;
       if (ac >= 0 && ac < BF_COLS) rankCols.add(ac);
@@ -2232,15 +2906,11 @@ export class BattleScene {
       for (const c of rankCols) tiles[idx(c, r)] = BTerrain.Plains;
     }
 
-    // --- 2) Clash corridor: deep River -> Ford on a few central rows, between
-    // the fronts (inclusive). Leaves forest/hills/rocks in place as obstacles. ---
-    const corridorHalf = 2; // +/- rows around mid-field that stay crossable
-    const midRow = Math.floor((BF_ROWS - 1) / 2);
-    const corLo = Math.max(rLo, midRow - corridorHalf);
-    const corHi = Math.min(rHi, midRow + corridorHalf);
+    // --- 2) Korytarz starcia: cala wysokosc strefy gry, rzeka -> bród. ---
+    const midRow = PLAY_MID_ROW;
     const gapLo = Math.min(ATK_FRONT_COL, DEF_FRONT_COL);
     const gapHi = Math.max(ATK_FRONT_COL, DEF_FRONT_COL);
-    for (let r = corLo; r <= corHi; r++) {
+    for (let r = rLo; r <= rHi; r++) {
       for (let c = gapLo; c <= gapHi; c++) {
         if (tiles[idx(c, r)] === BTerrain.River) tiles[idx(c, r)] = BTerrain.Ford;
       }
@@ -2271,8 +2941,23 @@ export class BattleScene {
       return false;
     };
     if (!reachable()) {
-      for (let c = 0; c < BF_COLS; c++) {
+      for (let c = PLAY_COL0; c <= PLAY_COL1; c++) {
         if (tiles[idx(c, midRow)] === BTerrain.River) tiles[idx(c, midRow)] = BTerrain.Ford;
+      }
+    }
+  }
+
+  /**
+   * Poza wyśrodkowaną strefą gry (~50% powierzchni) — teren nieprzejezdny
+   * (margines do przewijania kamery bez rozgrywki).
+   */
+  private _fencePlayableZone(): void {
+    const tiles = this.terrainMap.tiles;
+    if (!tiles) return;
+    const idx = (c: number, r: number) => r * BF_COLS + c;
+    for (let c = 0; c < BF_COLS; c++) {
+      for (let r = 0; r < BF_ROWS; r++) {
+        if (!inPlayable(c, r)) tiles[idx(c, r)] = BTerrain.River;
       }
     }
   }
@@ -2304,7 +2989,7 @@ export class BattleScene {
     this.siegeWallRowHi = rHi;
 
     // Brama: 2 rzedy szerokosci, posrodku pola (rzad ≈ BF_ROWS/2)
-    const midRow = Math.floor(BF_ROWS / 2);
+    const midRow = PLAY_MID_ROW;
     const gateRowLo = midRow - 1;
     const gateRowHi = midRow;
     this.siegeGateCol = wallCol;
@@ -2380,18 +3065,15 @@ export class BattleScene {
       );
     }
 
-    // --- HUD: pasek HP bramy i muru ---
+    // --- HUD oblężenia 1E (C-04 / C-05) ---
     const siegeHud = document.createElement('div');
-    Object.assign(siegeHud.style, {
-      position: 'absolute', top: '118px', left: '14px',
-      padding: '5px 12px', background: 'rgba(20,10,5,0.82)',
-      color: '#ffd070', fontFamily: 'monospace, sans-serif', fontSize: '12px',
-      borderRadius: '5px', border: '1px solid rgba(255,200,80,0.5)',
-      textShadow: '0 1px 2px #000', pointerEvents: 'none', zIndex: '10005',
-      lineHeight: '1.6', minWidth: '160px',
-    });
+    Object.assign(siegeHud.style, { display: 'none' });
     this.overlay.appendChild(siegeHud);
     this.siegeHudDiv = siegeHud;
+    mountSiegeHud1E(this.overlay, {
+      onSkip: () => { if (!this.finished) this.skip(); },
+      onExit: () => { this.dispose(); if (this.onCancelCb) this.onCancelCb(); },
+    });
     this._updateSiegeHud();
 
     // Register mesh resources for disposal
@@ -2946,19 +3628,64 @@ export class BattleScene {
     ground.receiveShadow = true;
     this.scene.add(ground);
 
-    // Side banners (left = attacker red, right = defender blue).
-    const stripH = worldH * 0.9;
+    // Subtelne znaczniki boku mapy (nie mury): lewo = TY niebieski, prawo = wróg czerwony.
+    const stripH = worldH * 0.72;
     const mkStrip = (color: number, xPos: number) => {
-      const sg = new THREE.BoxGeometry(0.20, 1.10, stripH);
-      const sm = new THREE.MeshLambertMaterial({ color });
+      const sg = new THREE.BoxGeometry(0.06, 0.18, stripH);
+      const sm = new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.55 });
       this.ownedGeos.push(sg);
       this.ownedMats.push(sm);
       const m  = new THREE.Mesh(sg, sm);
-      m.position.set(xPos, 0.50, mz);
+      m.position.set(xPos, 0.12, mz);
       this.scene.add(m);
     };
-    mkStrip(0xcc3010, cellToWorld(-1, midRow).x - TILE_S * 0.5);
-    mkStrip(0x1040c0, cellToWorld(BF_COLS, midRow).x + TILE_S * 0.5);
+    mkStrip(0x3a6ad0, cellToWorld(PLAY_COL0 - 1, PLAY_MID_ROW).x - TILE_S * 0.42);
+    mkStrip(0xc84040, cellToWorld(PLAY_COL1 + 1, PLAY_MID_ROW).x + TILE_S * 0.42);
+
+    this._buildPlayableMarginVisuals();
+  }
+
+  /** Przyciemnione marginesy poza strefą gry (wizualna granica 50% powierzchni). */
+  private _buildPlayableMarginVisuals(): void {
+    const mkMargin = (w: number, h: number, x: number, z: number): void => {
+      const g = new THREE.PlaneGeometry(w, h);
+      g.rotateX(-Math.PI / 2);
+      this.ownedGeos.push(g);
+      const m = new THREE.MeshBasicMaterial({
+        color: 0x080808, transparent: true, opacity: 0.62, depthWrite: false,
+      });
+      this.ownedMats.push(m);
+      const mesh = new THREE.Mesh(g, m);
+      mesh.position.set(x, 0.04, z);
+      this.scene.add(mesh);
+    };
+    const ts = TILE_S;
+    const leftW = PLAY_COL0 * ts;
+    const rightW = (BF_COLS - PLAY_COL1 - 1) * ts;
+    const topH = PLAY_ROW0 * ts;
+    const botH = (BF_ROWS - PLAY_ROW1 - 1) * ts;
+    const midZ = (PLAY_ROW0 + PLAY_ROW1 + 1) * ts * 0.5;
+    const midX = (PLAY_COL0 + PLAY_COL1 + 1) * ts * 0.5;
+    if (leftW > 0.1) mkMargin(leftW, PLAYABLE_ROWS * ts, leftW * 0.5, midZ);
+    if (rightW > 0.1) mkMargin(rightW, PLAYABLE_ROWS * ts, (PLAY_COL1 + 1) * ts + rightW * 0.5, midZ);
+    if (topH > 0.1) mkMargin(BF_COLS * ts, topH, BF_COLS * ts * 0.5, topH * 0.5);
+    if (botH > 0.1) mkMargin(BF_COLS * ts, botH, BF_COLS * ts * 0.5, (PLAY_ROW1 + 1) * ts + botH * 0.5);
+
+    // Obwódka strefy gry (złota linia)
+    const frameW = PLAYABLE_COLS * ts;
+    const frameH = PLAYABLE_ROWS * ts;
+    const { x: fx, z: fz } = cellToWorld(PLAY_MID_COL, PLAY_MID_ROW);
+    const frameGeo = new THREE.PlaneGeometry(frameW + ts * 0.12, frameH + ts * 0.12);
+    frameGeo.rotateX(-Math.PI / 2);
+    this.ownedGeos.push(frameGeo);
+    const frameMat = new THREE.MeshBasicMaterial({
+      color: 0xd4af37, transparent: true, opacity: 0.35, depthWrite: false,
+      side: THREE.DoubleSide,
+    });
+    this.ownedMats.push(frameMat);
+    const frame = new THREE.Mesh(frameGeo, frameMat);
+    frame.position.set(fx, 0.038, fz);
+    this.scene.add(frame);
   }
 
   // -------------------------------------------------------------------------
@@ -3016,10 +3743,15 @@ export class BattleScene {
       // MAX units per rank (row-axis). Each group is centred on midRow so all
       // groups share the same centre column -- NO wing spreading.
       const MAX_LINE = 12;
-      const midRow   = Math.floor(BF_ROWS / 2);
+      const midRow   = PLAY_MID_ROW;
 
       const layGroup = (list: number[], rankBase: number): number => {
         if (list.length === 0) return 0;
+        if (this._deployMode && side === 'atk') {
+          const col = clampCol(frontCol + rankBase * rankStep);
+          this._deploySpreadRank(list, col, idealRow, idealCol, clampRow, clampCol);
+          return 1;
+        }
         const per = Math.max(1, Math.min(list.length, MAX_LINE));
         const r0g = midRow - Math.floor(per / 2);
         list.forEach((ui, k) => {
@@ -3036,35 +3768,50 @@ export class BattleScene {
       const siegeRanks = layGroup(siegeI, rankBase); // NA KOŃCU: maszyny oblężnicze (katapulty/taran/wieże)
       const totalFootRanks = rankBase + siegeRanks;
 
-      // Mounted: CENTRED, ~5 ranks behind the infantry rear -- NOT on the wings.
-      const mountColOff = totalFootRanks + 5; // 5 ranks gap behind last foot rank
-      const mountPer    = Math.max(1, Math.min(mountIdx.length, MAX_LINE));
-      const mountR0     = midRow - Math.floor(mountPer / 2);
-      mountIdx.forEach((ui, k) => {
-        idealRow[ui] = clampRow(mountR0 + (k % mountPer));
-        idealCol[ui] = clampCol(frontCol + (mountColOff + Math.floor(k / mountPer)) * rankStep);
-      });
+      // Mounted: w deploy rozloz wzdłuż calej linii; w walce — za piechota
+      if (this._deployMode && side === 'atk') {
+        const mountCol = clampCol(frontCol + (totalFootRanks + 2) * rankStep);
+        this._deploySpreadRank(mountIdx, mountCol, idealRow, idealCol, clampRow, clampCol);
+      } else {
+        const mountColOff = totalFootRanks + 5;
+        const mountPer    = Math.max(1, Math.min(mountIdx.length, MAX_LINE));
+        const mountR0     = midRow - Math.floor(mountPer / 2);
+        mountIdx.forEach((ui, k) => {
+          idealRow[ui] = clampRow(mountR0 + (k % mountPer));
+          idealCol[ui] = clampCol(frontCol + (mountColOff + Math.floor(k / mountPer)) * rankStep);
+        });
+      }
 
       return units.map((bu, idx) => {
-        let row = idealRow[idx]!;
+        // Resolve collisions / impassable: prefer PLAINS (konnica nie startuje w lesie).
         let col = idealCol[idx]!;
-
-        // Resolve collisions / impassable tiles: try other rows in this unit's
-        // own column first, then step to rear columns scanning every row.
-        let key = cellKey(col, row);
-        if (!freeOk(col, row)) {
-          let placed = false;
-          const baseCol = col;
-          for (let rr = 0; rr < BF_ROWS && !placed; rr++) {
-            if (freeOk(baseCol, rr)) { col = baseCol; row = rr; key = cellKey(baseCol, rr); placed = true; }
-          }
-          for (let extra = 1; extra < BF_COLS && !placed; extra++) {
-            for (let rr = 0; rr < BF_ROWS && !placed; rr++) {
-              const cc = clampCol(baseCol + extra * rankStep);
-              if (freeOk(cc, rr)) { col = cc; row = rr; key = cellKey(cc, rr); placed = true; }
+        let row = idealRow[idx]!;
+        const tileScore = (c: number, r: number): number => {
+          if (!freeOk(c, r)) return -1;
+          let s = 100 - Math.abs(r - idealRow[idx]!) * 3 - Math.abs(c - idealCol[idx]!) * 2;
+          const kind = this.terrainMap.at(c, r);
+          if (kind === BTerrain.Plains) s += 40;
+          else if (kind === BTerrain.Ford) s += 20;
+          else if (kind === BTerrain.Forest) s -= 15;
+          return s;
+        };
+        let bestScore = -1;
+        for (let extra = 0; extra < 10; extra++) {
+          for (let rr = PLAY_ROW0; rr <= PLAY_ROW1; rr++) {
+            for (const cc of [
+              clampCol(idealCol[idx]! + extra * rankStep),
+              clampCol(idealCol[idx]! - extra * rankStep),
+            ]) {
+              const sc = tileScore(cc, rr);
+              if (sc > bestScore) {
+                bestScore = sc;
+                col = cc;
+                row = rr;
+              }
             }
           }
         }
+        const key = cellKey(col, row);
 
         const { x, z } = cellToWorld(col, row);
 
@@ -3183,8 +3930,9 @@ export class BattleScene {
     // trailing in a partial rear rank, so horse/chariots sit on the wings.
     const atkArr = arrangeFlankCavalry(attackers.slice(0, MAX_PER_SIDE));
     const defArr = arrangeFlankCavalry(defenders.slice(0, MAX_PER_SIDE));
-    // Zapisz oryginalne dane atakujacych dla potrzeb Reset w fazie deploy
-    this._savedAtkBUs = atkArr.slice();
+    // Zapisz oryginalne sklady (Reset deploy + Rozegraj ponownie)
+    this._savedAtkBUs = cloneBattleUnitsForReplay(atkArr);
+    this._savedDefBUs = cloneBattleUnitsForReplay(defArr);
     // SIEGE_ATK_FRONT_COL: kolumna frontu wrecz atakujacego (blisko krawedzi 0 = daleko od muru).
     // Wrecz sa z przodu (frontCol=2), za nimi oszczepnicy, lucznicy, a OSTATNIE szeregi to
     // maszyny obleznicze (siegeI). Step=+1 (rosnace kolumny = kierunek ku murowi).
@@ -3201,7 +3949,9 @@ export class BattleScene {
       this._repositionSiegeAttackers(); // no-op; zachowany dla kompatybilnosci
       this.def = this._placeSiegeDefenders(defArr);
     } else {
-      this.atk = place(atkArr, 'atk', ATK_FRONT_COL, ATK_COL_STEP, Dir.E);
+      const atkFront = this._deployMode ? DEPLOY_ATK_FRONT_COL : ATK_FRONT_COL;
+      const atkStep  = this._deployMode ? DEPLOY_ATK_COL_STEP  : ATK_COL_STEP;
+      this.atk = place(atkArr, 'atk', atkFront, atkStep, Dir.E);
       this.def = place(defArr, 'def', DEF_FRONT_COL, DEF_COL_STEP, Dir.W);
     }
   }
@@ -3236,6 +3986,7 @@ export class BattleScene {
 
   private _beginTurn(): void {
     if (this.finished) return;
+    if (this._battleAwaitingOrders) return;
     this._updateStallWatch();
     if (this._checkEnd()) return;
     this.roundNo++;
@@ -3247,12 +3998,17 @@ export class BattleScene {
     const a = this.atk.filter(u => !u.dead && !u.fadingOut && !u.removed);
     const d = this.def.filter(u => !u.dead && !u.fadingOut && !u.removed);
     const order: RuntimeBattleUnit[] = [];
-    const n = Math.max(a.length, d.length);
-    for (let i = 0; i < n; i++) {
-      const au = a[i];
-      const du = d[i];
-      if (au) order.push(au);
-      if (du) order.push(du);
+    if (this._manualMode) {
+      // Reczna walka: najpierw cala armia gracza, potem AI obroncy.
+      order.push(...a, ...d);
+    } else {
+      const n = Math.max(a.length, d.length);
+      for (let i = 0; i < n; i++) {
+        const au = a[i];
+        const du = d[i];
+        if (au) order.push(au);
+        if (du) order.push(du);
+      }
     }
 
     // Every unit acts this turn and gets fresh movement points.
@@ -3264,8 +4020,10 @@ export class BattleScene {
     this.turnOrder = order;
     this.turnIdx   = 0;
 
-    this.hint.textContent = 'Tura ' + this.roundNo + ' -- kazda jednostka wykonuje jedna akcje.';
+    this.hint.textContent =
+      'Tura ' + this.roundNo + ' — klik: ruch/atak od razu. Ctrl/Shift: dyspozycja · SPACJA: wykonaj odlozone.';
 
+    this._updateBattlePhaseBanner();
     this._activateNext();
   }
 
@@ -3275,6 +4033,7 @@ export class BattleScene {
    */
   private _activateNext(): void {
     if (this.finished) return;
+    if (this._battleAwaitingOrders) return;
     if (this._checkEnd()) return;
 
     // Find the next unit in the snapshot that is still alive and has not acted.
@@ -3295,8 +4054,14 @@ export class BattleScene {
     }
 
     const u = ru;
+    this._updateBattlePhaseBanner(u);
     this._activateUnit(u, () => {
-      u.acted = true;
+      const idlePlayerUnit =
+        this._manualMode
+        && u.side === 'atk'
+        && u.playerOrder.type === 'none'
+        && !(u.groupId && this._groupMeta.get(u.groupId)?.autoPlay);
+      if (!idlePlayerUnit) u.acted = true;
       // Light stagger so actions play in quick succession without freezing the
       // rest of the army.
       this._schedule(ACT_GAP_MS, () => this._activateNext());
@@ -3328,71 +4093,17 @@ export class BattleScene {
     // logic, so a broken unit only ever walks off the field.
     if (ru.routed) { this._fleeStep(ru, done); return; }
 
-    // STEROWANIE RECZNIE: jesli tryb RECZNY i jednostka gracza (atk),
-    // sprawdz rozkaz playerOrder PRZED logika AI.
+    // STEROWANIE RECZNIE: jesli tryb RECZNY i jednostka gracza (atk)
     if (this._manualMode && ru.side === 'atk') {
-      const ord = ru.playerOrder;
-      if (ord.type === 'hold') {
-        // Stoj — nie rob nic w tej turze
-        done();
-        return;
+      if (this._performPlayerOrder(ru, done)) return;
+    }
+
+    // AUTO bitwy: grupy z autoPlay wykonuja doktryne (Szturm, Atak, …)
+    if (ru.side === 'atk' && !this._manualMode) {
+      const meta = ru.groupId ? this._groupMeta.get(ru.groupId) : undefined;
+      if (meta?.autoPlay && meta.doctrine !== 'manual' && ru.playerOrder.type === 'none') {
+        if (this._executeGroupDoctrineStep(ru, meta, done)) return;
       }
-      if (ord.type === 'move') {
-        // Ruch na zadane pole
-        const tc = ord.col;
-        const tr = ord.row;
-        if (tc === ru.q && tr === ru.r) { done(); return; } // juz stoi
-        // Jeden krok w kierunku celu (reuz _doMove)
-        const dc = Math.sign(tc - ru.q);
-        const dr = Math.sign(tr - ru.r);
-        let nc = ru.q + dc;
-        let nr = ru.r + dr;
-        // Jesli pole zajete lub nieprzejezdne, sprobuj po kolumnie, potem po rzedzie
-        if (!this.terrainMap.passable(nc, nr) || this.occByKey.has(cellKey(nc, nr))) {
-          if (dc !== 0 && (this.terrainMap.passable(ru.q + dc, ru.r)) && !this.occByKey.has(cellKey(ru.q + dc, ru.r))) {
-            nc = ru.q + dc; nr = ru.r;
-          } else if (dr !== 0 && (this.terrainMap.passable(ru.q, ru.r + dr)) && !this.occByKey.has(cellKey(ru.q, ru.r + dr))) {
-            nc = ru.q; nr = ru.r + dr;
-          } else {
-            done(); return; // zablokowany
-          }
-        }
-        // Wyczysc rozkaz gdy dotarlimy na miejsce
-        if (nc === tc && nr === tr) ru.playerOrder = { type: 'none' };
-        this._doMove(ru, nc, nr, done);
-        return;
-      }
-      if (ord.type === 'attack') {
-        // Atak na konkretny cel
-        const tgt = [...this.def].find(u => u.bu.id === ord.targetId && !u.dead && !u.fadingOut);
-        if (!tgt) { ru.playerOrder = { type: 'none' }; /* cel martwy */ }
-        else {
-          const dist = manhattan(ru.q, ru.r, tgt.q, tgt.r);
-          if (dist <= Math.max(1, ru.range)) {
-            // Cel w zasiegu — atakuj
-            this._doAttack(ru, tgt, done);
-            return;
-          } else {
-            // Podejdz o jeden krok
-            const dc = Math.sign(tgt.q - ru.q);
-            const dr = Math.sign(tgt.r - ru.r);
-            let nc = ru.q + dc;
-            let nr = ru.r + dr;
-            if (!this.terrainMap.passable(nc, nr) || this.occByKey.has(cellKey(nc, nr))) {
-              nc = ru.q + dc; nr = ru.r;
-              if (!this.terrainMap.passable(nc, nr) || this.occByKey.has(cellKey(nc, nr))) {
-                nc = ru.q; nr = ru.r + dr;
-              }
-            }
-            if (nc !== ru.q || nr !== ru.r) this._doMove(ru, nc, nr, done);
-            else done();
-            return;
-          }
-        }
-      }
-      // ord.type === 'none' -> HOLD (stoj, nie przekazuj do AI)
-      done();
-      return;
     }
 
     // FACTOR 5 -- SURROUNDED: ONCE per unit, if >=3 enemies are adjacent
@@ -3726,6 +4437,15 @@ export class BattleScene {
       if (manhattan(ru.q, ru.r, e.q, e.r) === 1) { adjSpear = e; break; }
     }
     if (adjSpear) { this._doAttack(ru, adjSpear, done); return; }
+    // Ostatnia szansa: BFS / najlepszy krok szarzy (omijanie lasu i wlasnej linii).
+    const stepKey = this._bestChargeStepKey(ru, tgt);
+    if (stepKey && ru.moveLeft > 0) {
+      const comma = stepKey.indexOf(',');
+      const nc = parseInt(stepKey.slice(0, comma), 10);
+      const nr = parseInt(stepKey.slice(comma + 1), 10);
+      this._doMove(ru, nc, nr, done);
+      return;
+    }
     done();
   }
 
@@ -3749,19 +4469,17 @@ export class BattleScene {
       const nr = ru.r + dr;
       if (nc < 0 || nc >= BF_COLS || nr < 0 || nr >= BF_ROWS) continue;
       const nk = cellKey(nc, nr);
-      if (this.occByKey.has(nk)) continue;             // occupied
-      if (!this.terrainMap.passable(nc, nr)) continue; // deep river
+      if (this.occByKey.has(nk)) continue;
+      if (!this.terrainMap.passable(nc, nr)) continue;
 
       const dTgt = manhattan(nc, nr, tgt.q, tgt.r);
-      if (dTgt >= dNow) continue; // only steps that close on the chosen target
 
-      // Penalise tiles next to an enemy spear (we want to AVOID the spear wall).
       let spearAdj = false;
       for (const e of this._enemiesOf(ru)) {
         if (e.antiCavSpear && manhattan(nc, nr, e.q, e.r) === 1) { spearAdj = true; break; }
       }
-      // Closer-to-target dominates; staying clear of spears is a strong bonus.
-      const score = (dNow - dTgt) * 10 + (spearAdj ? 0 : 5);
+      // Prefer closing on target; if front blocked, allow flank/lateral (-dTgt still scores)
+      const score = (dNow - dTgt) * 12 - dTgt + (spearAdj ? 0 : 5);
       if (score > bestScore) { bestScore = score; best = nk; }
     }
 
@@ -4533,7 +5251,7 @@ export class BattleScene {
     if (this.gateOpen || this.siegeGateCol < 0) { done(); return; }
 
     // Damage: siege machine Uderzenie * 2 (Taran: 10*2=20/trafienie -> brama 200 w ~10)
-    const imp = Number((ru.bu.stats as any)?.['Uderzenie'] ?? (ru.bu.stats as any)?.['Atak'] ?? 8);
+    const imp = unitRowStat(ru.bu.stats as Record<string, unknown>, 'chargeBonus', 'Uderzenie', unitRowStat(ru.bu.stats as Record<string, unknown>, 'weaponDamage', 'Atak', 8));
     const dmg = Math.max(12, Math.round(imp * 2));
 
     // FIX 4: Animacja taranu (ruch do przodu i powrót) + SFX uderzenia
@@ -4639,8 +5357,8 @@ export class BattleScene {
    */
   private _attackWallTile(ru: RuntimeBattleUnit, wallRow: number, done: () => void): void {
     if (this.siegeWallCol < 0) { done(); return; }
-    const rng = Number((ru.bu.stats as any)?.['Atak dystansowy'] ?? 0);
-    const base = rng > 0 ? rng : Number((ru.bu.stats as any)?.['Atak'] ?? 8);
+    const rng = unitRowStat(ru.bu.stats as Record<string, unknown>, 'missileAttack', 'Atak dystansowy', 0);
+    const base = rng > 0 ? rng : unitRowStat(ru.bu.stats as Record<string, unknown>, 'weaponDamage', 'Atak', 8);
     const dmg = Math.max(16, Math.round(base * 2));
 
     // FIX 3: Animacja pocisku-kamienia katapulty (parabola) + SFX przy uderzeniu
@@ -4910,21 +5628,47 @@ export class BattleScene {
     });
   }
 
-  /** Odswierz HUD HP bramy i muru. */
+  /** Odswierz HUD oblężenia 1E (C-04 / C-05). */
   private _updateSiegeHud(): void {
-    if (!this.siegeHudDiv) return;
+    if (this.siegeWallCol < 0) return;
     const gMax = 400;
     const gCur = this.gateOpen ? 0 : Math.max(0, this.gateHp);
-    const gPct = Math.round(gCur / gMax * 100);
-    const gBar = '\u2588'.repeat(Math.round(gPct / 10)) + '\u2591'.repeat(10 - Math.round(gPct / 10));
-    let wallLine = '';
-    if (this.lastAttackedWallRow >= 0) {
-      const wCur = Math.max(0, this.wallTileHp.get(this.lastAttackedWallRow) ?? 0);
-      const wPct = Math.round(wCur / BattleScene.WALL_TILE_HP * 100);
-      const wBar = '\u2588'.repeat(Math.round(wPct / 10)) + '\u2591'.repeat(10 - Math.round(wPct / 10));
-      wallLine = `<br>Mur: ${wCur}/${BattleScene.WALL_TILE_HP} ${wBar}`;
+    let wallSum = 0;
+    let wallMax = 0;
+    for (const [, hp] of this.wallTileHp) {
+      wallSum += Math.max(0, hp);
+      wallMax += BattleScene.WALL_TILE_HP;
     }
-    this.siegeHudDiv.innerHTML = `Brama: ${gCur}/${gMax} ${gBar}${wallLine}`;
+    if (wallMax <= 0) wallMax = BattleScene.WALL_TILE_HP;
+    const wallPct = Math.round(wallSum / wallMax * 100);
+    const breachLabel = this.gateOpen
+      ? 'Wy\u0142om w bramie g\u0142\u00F3wnej'
+      : (this.lastAttackedWallRow >= 0 ? 'Uszkodzenie segmentu muru' : 'Mur miejski');
+    let catapults = 0, rams = 0, infantry = 0;
+    for (const u of this.atk) {
+      if (u.dead || u.removed) continue;
+      if (isSiegeUnit(u.bu)) {
+        if (this._isCatapult(u.bu)) catapults++;
+        else rams++;
+      } else infantry++;
+    }
+    let garrison = 0;
+    for (const u of this.def) {
+      if (!u.dead && !u.removed) garrison++;
+    }
+    const cityName = String(this._battleData?.cityName ?? 'Kapua');
+    updateSiegeHud1E({
+      cityName,
+      turn: Math.max(1, this.roundNo || 1),
+      wallIntegrityPct: Math.min(100, Math.max(0, wallPct)),
+      wallDeltaPerTurn: 8,
+      breachLabel,
+      catapults,
+      rams,
+      infantry,
+      garrison,
+      gateOpen: this.gateOpen,
+    });
   }
 
   /**
@@ -5360,13 +6104,40 @@ export class BattleScene {
       defender.facing, attacker.q, attacker.r, defender.q, defender.r,
     );
     const defPenaltyFrac = flankRearDefensePenalty(cuD, hitArc);
-    const defEffObrona   = Math.max(0, cuD.Obrona) * (1 - defPenaltyFrac);
 
+    const atkBonusy = attacker.side === 'atk' ? this.attackerCivBonusy : this.defenderCivBonusy;
+    const defBonusy = defender.side === 'def' ? this.defenderCivBonusy : this.attackerCivBonusy;
+
+    let isCharge = false;
+    if (!ranged) {
+      const key = attacker.bu.id + '>' + defender.bu.id;
+      const firstBlow = !this.engaged.has(key);
+      isCharge = firstBlow && !bracesAgainstCharge(defender.bu);
+      this.engaged.add(key);
+    }
+
+    const atkMods = civCombatStatMultipliers(atkBonusy, cuA, {
+      side: 'attacker',
+      terrain: defTerrain,
+      isChargeRound: isCharge,
+    });
+    const defMods = civCombatStatMultipliers(defBonusy, cuD, {
+      side: 'defender',
+      terrain: defTerrain,
+      isChargeRound: isCharge,
+    });
+
+    const defMeleeDef = applyMultiplier(cuD.meleeDefence, defMods.obrona);
+    const defEffObrona   = Math.max(0, defMeleeDef * (1 - defPenaltyFrac));
     const defFinalObrona = defEffObrona * terrDefMult;
-    const atkEffAtak     = cuA.Atak * terrRiverMlt;
+    const atkMelee       = applyMultiplier(cuA.meleeAttack, atkMods.atk) * terrRiverMlt;
+    const atkMissile     = applyMultiplier(cuA.missileAttack ?? 0, atkMods.rangedAtk);
+    const defArmor       = applyMultiplier(cuD.armor, defMods.pancerz);
+    const roundAtkCharge = applyMultiplier(cuA.chargeBonus, atkMods.uderzenie);
     const ctrAtkVsDef    = counterMultiplier(cuA.typNazwa, cuD.typNazwa, this.counters);
 
-    const hitPct = hitChance(atkEffAtak, defFinalObrona);
+    const chargeHitBonus = (!ranged && isCharge) ? roundAtkCharge : 0;
+    const hitPct = hitChanceTw(atkMelee, defFinalObrona, chargeHitBonus);
     const roll   = Math.random() * 100;
     if (roll >= hitPct) {
       this.log.push(attacker.bu.nazwa + ' chybia w ' + defender.bu.nazwa + ' (' + roll.toFixed(0) + '>=' + hitPct + '%).');
@@ -5376,16 +6147,16 @@ export class BattleScene {
     let rawDmg: number;
     let meleeCharge = false; // FACTOR 2 flag: this blow is a mounted charge's first blow
     if (ranged) {
-      const atkDyst = cuA['Atak dystansowy'] * terrRiverMlt;
-      rawDmg = rangeDamage(atkDyst, cuD.Pancerz);
+      rawDmg = rangeDamage(atkMissile, defArmor);
     } else {
-      // First blow of this engagement = charge (unless defender braces).
-      const key = attacker.bu.id + '>' + defender.bu.id;
-      const firstBlow = !this.engaged.has(key);
-      const isCharge  = firstBlow && !bracesAgainstCharge(defender.bu);
-      this.engaged.add(key);
       meleeCharge = isCharge; // FACTOR 2: mounted charge morale hit (set below)
-      rawDmg = baseDamage(cuA.Atak, cuD.Pancerz, cuA.Przebicie, cuA.Uderzenie, isCharge);
+      rawDmg = baseDamage(
+        cuA.weaponDamage,
+        defArmor,
+        cuA.piercing,
+        roundAtkCharge,
+        isCharge,
+      );
     }
     // BONUS vs TYPE (battle-lane wiring; combat.ts untouched). The attacker's
     // "Bonus vs <defender.Typ> %" column scales the dealt damage. This REPLACES
@@ -5621,11 +6392,16 @@ export class BattleScene {
       // W fazie rozstawiania zamrazamy zegar wirtualny — animacje 3D dzialaja,
       // ale jednostki nie sa aktywowane i czas bitwy nie plynie.
       if (this.deployPhase) {
+        this._clearOrderPreview();
+        if (this._orderLinesGroup) this._orderLinesGroup.visible = false;
         this._syncRendererSize();
         this._tickZoom();
+        this._tickCameraPanKeys();
+        this._updateArmyMoraleBars();
         for (const ru of [...this.atk, ...this.def]) {
           if (!ru.dead) ru.hpBarGroup.lookAt(this.camera.position);
         }
+        this._drawMinimap();
         this.renderer.render(this.scene, this.camera);
         return;
       }
@@ -5639,11 +6415,13 @@ export class BattleScene {
       const vt = this._now();
       this._syncRendererSize();
       this._tickZoom();
+      this._tickCameraPanKeys();
       this._tickProjectiles(vt);
       this._tickFades(vt);
       this._tickFloatLabels(t); // WALL time: damage numbers persist ~2s real regardless of speed
       this._updateArmyMoraleBars(); // TASK 5: live L/R army-morale meters
       if (this._manualMode) this._updateRosterBar(); // roster odswiezany co klatkę w trybie RECZNYM
+      this._drawMinimap();
       for (const ru of [...this.atk, ...this.def]) {
         if (!ru.dead) ru.hpBarGroup.lookAt(this.camera.position);
       }
@@ -5761,9 +6539,9 @@ export class BattleScene {
     this.speedIdx = ((idx % steps.length) + steps.length) % steps.length;
     this.speedMul = steps[this.speedIdx] ?? 1;
     const label = 'Predkosc: ' + this.speedMul + 'x';
-    if (this.speedBtn) this.speedBtn.textContent = label;
-    if (this.speedHud) this.speedHud.textContent = label; // live on-map indicator
-    if (this._topSpeedLbl) this._topSpeedLbl.textContent = this.speedMul + 'x';
+    if (this.speedHud) this.speedHud.textContent = label;
+    if (this._topSpeedLbl) this._topSpeedLbl.textContent = 'x' + this.speedMul;
+    if (this._rightSpeedLbl) this._rightSpeedLbl.textContent = 'x' + this.speedMul;
   }
 
   /** Cycle to the next speed step (1 -> 2 -> 4 -> 8 -> 16 -> 32 -> 64 -> 128 -> 1). Safe to call mid-battle. */
@@ -6213,6 +6991,36 @@ export class BattleScene {
     return cur / start;
   }
 
+  /** Konnica / piechota / lucznictwo — opcjonalnie tylko aktywne (w trakcie walki). */
+  private _sideTypeCounts(
+    arr: RuntimeBattleUnit[],
+    activeOnly: boolean,
+  ): { k: number; p: number; l: number } {
+    let k = 0, p = 0, l = 0;
+    for (const u of arr) {
+      if (u.removed) continue;
+      if (activeOnly && (u.dead || u.routed || u.fadingOut)) continue;
+      const kind = this._deployRowKind(u);
+      if (kind === 'mounted') k++;
+      else if (kind === 'ranged') l++;
+      else p++;
+    }
+    return { k, p, l };
+  }
+
+  /** HTML skladu armii w górnym pasku (cluster scalony z Ty/Wróg). */
+  private _renderSideRoster(
+    el: HTMLSpanElement,
+    side: 'atk' | 'def',
+    counts: { k: number; p: number; l: number },
+    _live: boolean,
+  ): void {
+    el.innerHTML = topBarRosterCountsHtml(
+      { mounted: counts.k, melee: counts.p, ranged: counts.l },
+      side === 'def' ? { mirror: true } : undefined,
+    );
+  }
+
   /**
    * Live refresh of the two screen-edge ARMY-MORALE bars (TASK 5). Each side's
    * fill height = its army-morale ratio (clamped 0..1) and the fill colour runs
@@ -6220,36 +7028,39 @@ export class BattleScene {
    * Cheap enough to call every frame.
    */
   private _updateArmyMoraleBars(): void {
-    const paint = (fill: HTMLDivElement | null, lbl: HTMLDivElement | null, ratio: number): void => {
-      if (!fill || !lbl) return;
-      const r = Math.max(0, Math.min(1, ratio));
-      fill.style.height = (r * 100).toFixed(1) + '%';
-      const hue = Math.round(120 * r);
-      fill.style.background = 'hsl(' + hue + ', 75%, 45%)';
-      lbl.textContent = Math.round(r * 100) + '%';
-    };
     const ratioA = this._armyMoraleRatio('atk');
     const ratioD = this._armyMoraleRatio('def');
-    paint(this.armyMoraleFillA, this.armyMoraleLabelA, ratioA);
-    paint(this.armyMoraleFillD, this.armyMoraleLabelD, ratioD);
-    // Top-bar morale fills
-    if (this._topMoraleA) {
-      const r = Math.max(0, Math.min(1, ratioA));
-      this._topMoraleA.style.width = (r * 100).toFixed(1) + '%';
-      this._topMoraleA.style.background = 'hsl(' + Math.round(120 * r) + ', 75%, 45%)';
+    const rA = Math.max(0, Math.min(1, ratioA));
+    const rD = Math.max(0, Math.min(1, ratioD));
+    if (this._bottomPowerFillA) {
+      this._bottomPowerFillA.style.width = (rA * 100).toFixed(1) + '%';
     }
-    if (this._topMoraleD) {
-      const r = Math.max(0, Math.min(1, ratioD));
-      this._topMoraleD.style.width = (r * 100).toFixed(1) + '%';
-      this._topMoraleD.style.background = 'hsl(' + Math.round(120 * r) + ', 75%, 45%)';
+    if (this._bottomPowerFillD) {
+      this._bottomPowerFillD.style.width = (rD * 100).toFixed(1) + '%';
     }
-    // Top-bar casualties
-    const deadA = this.atk.filter(u => u.dead || u.routed).length;
-    const deadD = this.def.filter(u => u.dead || u.routed).length;
-    if (this._topCasA) this._topCasA.textContent = 'ATK: ' + deadA + '/' + this.atk.length + ' strat';
-    if (this._topCasD) this._topCasD.textContent = 'OBR: ' + deadD + '/' + this.def.length + ' strat';
-    if (this._topTurnLbl) this._topTurnLbl.textContent = 'TURA ' + this.roundNo;
+    if (this._bottomPowerLblA) {
+      this._bottomPowerLblA.textContent = Math.round(rA * 100) + '%';
+    }
+    if (this._bottomPowerLblD) {
+      this._bottomPowerLblD.textContent = Math.round(rD * 100) + '%';
+    }
+    // Gorny pasek: sklad armii (przed walka = startowy; w walce = pozostali)
+    const live = this.started && !this.deployPhase;
+    const cA = this._sideTypeCounts(this.atk, live);
+    const cD = this._sideTypeCounts(this.def, live);
+    if (this._topCasATxt) this._renderSideRoster(this._topCasATxt, 'atk', cA, live);
+    if (this._topCasDTxt) this._renderSideRoster(this._topCasDTxt, 'def', cD, live);
+    if (this._topTurnLbl) {
+      if (this.deployPhase) this._topTurnLbl.textContent = 'Faza rozstawiania';
+      else if (!this.started) this._topTurnLbl.textContent = 'Przygotowanie';
+      else this._topTurnLbl.textContent = this._manualMode
+        ? ('Tura ' + this.roundNo + ' · Ręczne')
+        : ('Tura ' + this.roundNo);
+    }
+    const civEmblem = document.getElementById('battle-top-civ-emblem') as HTMLDivElement | null;
+    if (civEmblem) civEmblem.style.display = this.deployPhase ? 'inline-flex' : 'none';
     if (this.pauseHud) this.pauseHud.style.display = this.paused ? 'block' : 'none';
+    if (this._topPauseBadge) this._topPauseBadge.style.display = this.paused ? 'inline' : 'none';
   }
 
   private _checkEnd(): boolean {
@@ -6371,74 +7182,164 @@ export class BattleScene {
    * with three sections (destroyed / routed / survived), every unit listed by
    * name with its count. "Zamknij" closes it back to the summary.
    */
+  private _hideEndDetails(): void {
+    if (this._endDetailsOverlay?.parentNode) {
+      this._endDetailsOverlay.parentNode.removeChild(this._endDetailsOverlay);
+    }
+    this._endDetailsOverlay = null;
+    if (this._endScreenBackdrop) this._endScreenBackdrop.style.visibility = '';
+    if (this._endScreenWrap) this._endScreenWrap.style.visibility = '';
+  }
+
+  /** Usuwa overlay podsumowania (bez dispose calej sceny). */
+  private _hideEndScreen(): void {
+    this._hideEndDetails();
+    if (this._endScreenBackdrop?.parentNode) {
+      this._endScreenBackdrop.parentNode.removeChild(this._endScreenBackdrop);
+    }
+    if (this._endScreenWrap?.parentNode) {
+      this._endScreenWrap.parentNode.removeChild(this._endScreenWrap);
+    }
+    this._endScreenBackdrop = null;
+    this._endScreenWrap = null;
+    this._endScreenShown = false;
+    if (this._battleChromeSuppressed) this._setBattleChromeForEndScreen(false);
+  }
+
+  private _removeAllUnitsFromField(): void {
+    for (const fl of this.floatLabels) {
+      if (fl.elem.parentNode) fl.elem.parentNode.removeChild(fl.elem);
+    }
+    this.floatLabels = [];
+    for (const p of this.projectiles) {
+      for (const g of p.geos) g.dispose();
+      for (const m of p.mats) m.dispose();
+    }
+    this.projectiles = [];
+    for (const ru of [...this.atk, ...this.def]) {
+      if (ru.removed) continue;
+      this.occByKey.delete(cellKey(ru.q, ru.r));
+      this.scene.remove(ru.group);
+      this.scene.remove(ru.hpBarGroup);
+    }
+    this.atk = [];
+    this.def = [];
+    this.occByKey.clear();
+    this._groups.clear();
+    this._groupCounter = 0;
+    this._groupMeta.clear();
+    this._rosterGroupCollapsed.clear();
+    this._selectedUnits.clear();
+    this._deploySelected = null;
+    this._unitCards.clear();
+    this._selectionRings.clear();
+    this._disposeAllOrderLines();
+    this._clearOrderPreview();
+    this._disposeQueuedOrderArrows();
+  }
+
+  private _resetSiegeForReplay(): void {
+    if (this.siegeWallCol < 0) return;
+    this.gateHp = 400;
+    this.gateOpen = false;
+    this.towerAtWallRows.clear();
+    this.wallTileHp.clear();
+    const gateRowLo = this.siegeGateRow - 1;
+    const gateRowHi = this.siegeGateRow;
+    for (let r = this.siegeWallRowLo; r <= this.siegeWallRowHi; r++) {
+      if (r >= gateRowLo && r <= gateRowHi) continue;
+      this.wallTileHp.set(r, BattleScene.WALL_TILE_HP);
+    }
+  }
+
+  private _resetBattleRuntimeState(): void {
+    this.finished = false;
+    this.started = false;
+    this.busy = false;
+    this.roundNo = 0;
+    this.activeSide = 'atk';
+    this._manualMode = true;
+    this._battleAwaitingOrders = true;
+    this._endWinner = null;
+    this._endSurvivors = [];
+    this.log = [];
+    this.vTimers.length = 0;
+    this.engaged.clear();
+    this._stallTurns = 0;
+    this._stallSig = '';
+    this._stalled = false;
+    this._queuedOrderUnitIds.clear();
+    this.clashLogEntries = [];
+    this._renderClashLog();
+    this._routCountA = 0;
+    this._routCountD = 0;
+    this.turnOrder = [];
+    this.turnIdx = 0;
+    this.paused = false;
+    if (this.pauseHud) this.pauseHud.style.display = 'none';
+    if (this._topPauseBadge) this._topPauseBadge.style.display = 'none';
+    this._haltAutoBattleTurn();
+  }
+
+  /** Ta sama bitwa od poczatku — bez wyjscia na mape i bez onFinish (wygrana lub porazka). */
+  private _replayBattle(): void {
+    if (this._savedAtkBUs.length === 0 || this._savedDefBUs.length === 0) {
+      this._showOrderFeedback('Brak zapisu armii — nie mozna powtorzyc bitwy');
+      return;
+    }
+    this._hideEndScreen();
+    this._resetBattleRuntimeState();
+    this._removeAllUnitsFromField();
+    this._resetSiegeForReplay();
+    this._clearAllSelection();
+    if (this._modeBanner) this._modeBanner.style.display = 'none';
+
+    const siegeMode = this.siegeWallCol >= 0;
+    const atk = cloneBattleUnitsForReplay(this._savedAtkBUs);
+    const def = cloneBattleUnitsForReplay(this._savedDefBUs);
+    if (atk.length === 0 && def.length === 0) return;
+    this._placeUnits(atk, def, siegeMode);
+
+    if (this._deployMode) {
+      this.deployPhase = true;
+      this._setDeployZoneVisible(true);
+      this._buildDeployHalfLabels();
+      this._initDeployUI();
+      if (this._deployToolbar) this._deployToolbar.style.display = 'flex';
+      this._syncBattleToolbarMode();
+      this._closeDeployDropdowns();
+      this._updateArmyMoraleBars();
+      if (this._topTurnLbl) this._topTurnLbl.textContent = 'Faza rozstawiania';
+      this.hint.textContent =
+        'FAZA ROZSTAWIANIA — strefa gry (środek mapy). WASD / strzałki = przesuń widok · kółko = zoom.';
+      if (this._rosterBar) this._rosterBar.style.display = 'none';
+      this._showDeployFeedback('Bitwa od nowa — rozstaw armie');
+    } else {
+      this.deployPhase = false;
+      this._startBattle();
+      this.hint.textContent =
+        'TURA 1 — wydaj rozkazy (klik / G1-G3 / Generał) · SPACJA = start tury · R = AUTO';
+    }
+  }
+
   private _showEndDetails(): void {
-    const fA = this._sideUnitFates('atk');
-    const fD = this._sideUnitFates('def');
+    this._hideEndDetails();
 
-    const back = document.createElement('div');
-    Object.assign(back.style, {
-      position: 'absolute', top: '0', left: '0', width: '100%', height: '100%',
-      background: 'rgba(0,0,0,0.6)', zIndex: '10003',
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-    });
+    if (this._endScreenBackdrop) this._endScreenBackdrop.style.visibility = 'hidden';
+    if (this._endScreenWrap) this._endScreenWrap.style.visibility = 'hidden';
 
-    const panel = document.createElement('div');
-    Object.assign(panel.style, {
-      minWidth: '640px', maxWidth: '92%', maxHeight: '86%', overflowY: 'auto',
-      padding: '22px 24px', background: 'rgba(18,16,14,0.98)',
-      border: '2px solid #c8a050', borderRadius: '10px',
-      color: '#f0e8d0', fontFamily: 'serif',
-      boxShadow: '0 0 40px rgba(0,0,0,0.85)',
-    });
-
-    const head = document.createElement('div');
-    head.textContent = 'Szczegoly bitwy';
-    Object.assign(head.style, {
-      fontSize: '22px', fontWeight: 'bold', color: '#f0e060',
-      textAlign: 'center', marginBottom: '14px',
-    });
-    panel.appendChild(head);
-
-    const cols = document.createElement('div');
-    Object.assign(cols.style, { display: 'flex', gap: '24px', alignItems: 'flex-start' });
-
-    const section = (title: string, color: string, items: Array<{ name: string; n: number }>): string => {
-      const rows = items.length
-        ? items.map(it =>
-            '<div style="display:flex;justify-content:space-between;gap:12px;font-size:14px;padding:1px 0;">' +
-            '<span>' + escapeHtml(it.name) + '</span><b>x' + it.n + '</b></div>').join('')
-        : '<div style="opacity:.5;font-size:13px;">(brak)</div>';
-      const total = items.reduce((s, it) => s + it.n, 0);
-      return '<div style="margin:10px 0 4px;color:' + color +
-        ';font-weight:bold;border-bottom:1px solid rgba(255,255,255,.15);">' +
-        title + ' (' + total + ')</div>' + rows;
-    };
-
-    const colDiv = (label: string, color: string, f: ReturnType<typeof this._sideUnitFates>): HTMLDivElement => {
-      const d = document.createElement('div');
-      Object.assign(d.style, { flex: '1', minWidth: '280px' });
-      d.innerHTML =
-        '<div style="font-size:18px;font-weight:bold;color:' + color +
-        ';text-align:center;margin-bottom:6px;">' + label + '</div>' +
-        section('Zniszczone', '#ff6b6b', f.destroyed) +
-        section('Zrootowane', '#ffd54a', f.routed) +
-        section('Ocalale',    '#6ee87a', f.survived);
-      return d;
-    };
-
-    cols.appendChild(colDiv('ATAKUJACY', '#ff6b6b', fA));
-    cols.appendChild(colDiv('OBRONCA',   '#6ba8ff', fD));
-    panel.appendChild(cols);
-
-    const btnClose = document.createElement('button');
-    btnClose.textContent = 'Zamknij';
-    styleButton(btnClose, '#555', '#fff');
-    Object.assign(btnClose.style, { display: 'block', margin: '16px auto 0', fontSize: '15px' });
-    btnClose.onclick = () => { if (back.parentNode) back.parentNode.removeChild(back); };
-    panel.appendChild(btnClose);
-
-    back.appendChild(panel);
-    this.overlay.appendChild(back);
+    this._endDetailsOverlay = showEndDetails1E(
+      this.overlay,
+      {
+        atk: this._sideUnitFates('atk'),
+        def: this._sideUnitFates('def'),
+        battleTitle: 'Bitwa rozstrzygni\u0119ta',
+      },
+      {
+        onClose: () => { this._hideEndDetails(); },
+        onReplay: () => { this._replayBattle(); },
+      },
+    );
   }
 
   /**
@@ -6449,103 +7350,99 @@ export class BattleScene {
    * result through onFinish so the map state is updated. The scene stays frozen
    * until the player clicks it.
    */
+  /**
+   * Ukrywa pasek Taktyka/Strategia, rail i minimapę — mają z-index > overlay bitwy
+   * i zasłaniały panel zwycięstwa (endScreen1E na body @ 100500).
+   */
+  private _setBattleChromeForEndScreen(suppress: boolean): void {
+    this._battleChromeSuppressed = suppress;
+    const apply = (el: HTMLElement | null | undefined): void => {
+      if (!el) return;
+      if (suppress) {
+        if (el.dataset.battleChromePrevDisplay === undefined) {
+          el.dataset.battleChromePrevDisplay = el.style.display || '';
+        }
+        el.style.display = 'none';
+        el.style.pointerEvents = 'none';
+      } else {
+        const prev = el.dataset.battleChromePrevDisplay;
+        if (prev !== undefined) {
+          el.style.display = prev;
+          delete el.dataset.battleChromePrevDisplay;
+        }
+        el.style.pointerEvents = '';
+      }
+    };
+    apply(this._deployToolbar);
+    apply(this._rightSettingsRail);
+    apply(this._modeBanner);
+    apply(this._minimapWrap);
+    apply(this._deployRosterDock);
+    apply(this._rosterBar);
+    apply(this._selPanel);
+    if (!suppress) this._syncBattleToolbarMode();
+  }
+
   private _showEndScreen(winner: 'atakujacy' | 'obronca'): void {
     if (this._endScreenShown) return;
     this._endScreenShown = true;
-    this._sfxVictory(); // AUDIO: short rising fanfare at the end of the battle
+    this._hideEndDetails();
+    this._setBattleChromeForEndScreen(true);
+    this._sfxVictory();
 
     const sA = this._sideEndStats('atk');
     const sD = this._sideEndStats('def');
-    const winText = winner === 'atakujacy'
-      ? 'Zwyciestwo ATAKUJACEGO!'
-      : 'Zwyciestwo OBRONCY!';
-
-    const panel = document.createElement('div');
-    Object.assign(panel.style, {
-      position:      'absolute',
-      top:           '50%',
-      left:          '50%',
-      transform:     'translate(-50%, -50%)',
-      minWidth:      '420px',
-      padding:       '24px 28px',
-      background:    'rgba(18,16,14,0.96)',
-      border:        '2px solid #c8a050',
-      borderRadius:  '10px',
-      boxShadow:     '0 0 40px rgba(0,0,0,0.8)',
-      color:         '#f0e8d0',
-      fontFamily:    'serif',
-      textAlign:     'center',
-      zIndex:        '10002',
-    });
-
-    const title = document.createElement('div');
-    title.textContent = winText;
-    Object.assign(title.style, {
-      fontSize:    '30px',
-      fontWeight:  'bold',
-      color:       '#f0e060',
-      textShadow:  '0 0 16px #ff8800, 2px 2px 4px #000',
-      marginBottom:'18px',
-    });
-    panel.appendChild(title);
-
-    const sideRow = (label: string, color: string, s: ReturnType<typeof this._sideEndStats>): string =>
-      '<div style="margin:6px 0;">' +
-        '<span style="color:' + color + ';font-weight:bold;">' + label + '</span>' +
-        ' &mdash; padli/rozbici: <b>' + s.lost + '</b>' +
-        ', pozostali na polu: <b>' + s.remaining + '</b>' +
-        ' (z ' + s.total + ')' +
-        '<br><span style="opacity:.8;font-size:13px;">HP: ' +
-        Math.round(s.hp) + ' / ' + Math.round(s.hpMax) + '</span>' +
-      '</div>';
-
-    const stats = document.createElement('div');
-    Object.assign(stats.style, { fontSize: '16px', lineHeight: '1.5', marginBottom: '20px' });
-    stats.innerHTML =
-      sideRow('Atakujacy', '#ff6b6b', sA) +
-      sideRow('Obronca',   '#6ba8ff', sD);
-    panel.appendChild(stats);
-
-    const btnDetails = document.createElement('button');
-    btnDetails.textContent = 'Szczegoly';
-    styleButton(btnDetails, '#3a4a6a', '#fff');
-    Object.assign(btnDetails.style, { fontSize: '15px', padding: '10px 22px', marginRight: '12px' });
-    btnDetails.onclick = () => { this._showEndDetails(); };
-    panel.appendChild(btnDetails);
-
-    const btnEnd = document.createElement('button');
-    btnEnd.textContent = 'Zakoncz bitwe';
-    styleButton(btnEnd, '#2f6f4f', '#fff');
-    Object.assign(btnEnd.style, { fontSize: '16px', padding: '10px 26px' });
-    btnEnd.onclick = () => {
-      // Deliver the result (so the map applies the outcome), then tear down the
-      // scene via the SAME exit path as the "Wyjscie" button (dispose + onCancel).
-      if (this.onFinishCb) {
-        this.onFinishCb({ winner: this._endWinner ?? winner, survivors: this._endSurvivors, log: this.log });
+    const playerWon = winner === 'atakujacy';
+    const winSub = winner === 'atakujacy' ? 'Zwyci\u0119stwo atakuj\u0105cego!' : 'Zwyci\u0119stwo obro\u0144cy!';
+    const loot = playerWon ? Math.max(0, sD.lost * 20) : 0;
+    let heroLabel = '—';
+    for (const u of this.atk) {
+      if (!u.dead && !u.routed) {
+        heroLabel = String(u.bu.nazwa ?? u.bu.kategoria ?? 'Jednostka');
+        if (isMounted(u.bu)) break;
       }
-      this.dispose();
-      if (this.onCancelCb) this.onCancelCb();
-    };
-    panel.appendChild(btnEnd);
-
-    this.overlay.appendChild(panel);
+    }
+    const endUi = showEndScreen1E(this.overlay, {
+      playerWon,
+      winnerLabel: winSub,
+      battleTitle: 'Bitwa rozstrzygni\u0119ta',
+      atk: sA,
+      def: sD,
+      lootGold: loot,
+      lootNote: loot > 0 ? 'z\u0142ota' : 'brak \u0142up\u00F3w',
+      heroLabel,
+      heroPromo: playerWon ? 'Awans \u2192 Weteran' : '',
+    }, {
+      onDetails: () => { this._showEndDetails(); },
+      onReplay: () => { this._replayBattle(); },
+      onFinish: () => {
+        if (this.onFinishCb) {
+          this.onFinishCb({ winner: this._endWinner ?? winner, survivors: this._endSurvivors, log: this.log });
+        }
+        this.dispose();
+        if (this.onCancelCb) this.onCancelCb();
+      },
+    });
+    this._endScreenBackdrop = endUi.backdrop;
+    this._endScreenWrap = endUi.wrap;
   }
 
   private _showResultBanner(winner: 'atakujacy' | 'obronca'): void {
     const banner = document.createElement('div');
     banner.textContent = winner === 'atakujacy'
-      ? 'Zwyciestwo atakujacego!'
-      : 'Zwyciestwo obroncy!';
+      ? 'Zwyci\u0119stwo atakuj\u0105cego!'
+      : 'Zwyci\u0119stwo obro\u0144cy!';
     Object.assign(banner.style, {
       position:      'absolute',
-      top:           '40%',
+      top:           '38%',
       left:          '50%',
       transform:     'translate(-50%, -50%)',
-      color:         '#f0e060',
-      fontFamily:    'serif',
-      fontSize:      '36px',
-      fontWeight:    'bold',
-      textShadow:    '0 0 20px #ff8800, 2px 2px 4px #000',
+      color:         HUD_GOLD,
+      fontFamily:    BATTLE_FONT_TITLE,
+      fontSize:      '48px',
+      fontWeight:    '400',
+      letterSpacing: '0.08em',
+      textShadow:    '0 2px 20px rgba(0,0,0,0.8), 0 0 40px rgba(232,216,138,0.25)',
       pointerEvents: 'none',
       zIndex:        '10001',
     });
@@ -6604,22 +7501,70 @@ export class BattleScene {
     }
   };
 
+  /** Strzałki + WASD — przesuwanie kamery po dużym polu. */
+  private _setPanKey(code: string, down: boolean, e?: KeyboardEvent): void {
+    if (e && isEditableTarget(e.target)) return;
+    let handled = false;
+    switch (code) {
+      case 'ArrowLeft': case 'KeyA': this._camPanKeys.left = down; handled = true; break;
+      case 'ArrowRight': case 'KeyD': this._camPanKeys.right = down; handled = true; break;
+      case 'ArrowUp': case 'KeyW': this._camPanKeys.up = down; handled = true; break;
+      case 'ArrowDown': case 'KeyS': this._camPanKeys.down = down; handled = true; break;
+      default: break;
+    }
+    if (handled && e) e.preventDefault();
+  }
+
+  private readonly _onKeyPanDown = (e: KeyboardEvent): void => {
+    this._setPanKey(e.code, true, e);
+  };
+
+  private readonly _onKeyPanUp = (e: KeyboardEvent): void => {
+    this._setPanKey(e.code, false, e);
+  };
+
+  /** Ogranicza cel kamery do granic dużego pola (margines zależny od zoomu). */
+  private _clampCamTarget(): void {
+    const margin = Math.max(2, this.camDist * 0.28);
+    const minX = margin;
+    const maxX = (BF_COLS - 1) * TILE_S - margin;
+    const minZ = margin;
+    const maxZ = (BF_ROWS - 1) * TILE_S - margin;
+    this.camTarget.x = Math.max(minX, Math.min(maxX, this.camTarget.x));
+    this.camTarget.z = Math.max(minZ, Math.min(maxZ, this.camTarget.z));
+  }
+
+  /** Co klatkę: przesuń camTarget gdy trzymane strzałki / WASD. W/góra = -Z (North), S/dół = +Z (South). */
+  private _tickCameraPanKeys(): void {
+    const k = this._camPanKeys;
+    let dx = 0;
+    let dy = 0;
+    if (k.left) dx += 1;
+    if (k.right) dx -= 1;
+    if (k.up) dy -= 1;
+    if (k.down) dy += 1;
+    if (dx === 0 && dy === 0) return;
+    const h = Math.max(1, this.canvas.clientHeight);
+    const worldPerPx = (this.camDist * 1.2) / h;
+    const stepPx = 14;
+    this.camTarget.x -= dx * worldPerPx * stepPx;
+    this.camTarget.z += dy * worldPerPx * stepPx;
+    this._clampCamTarget();
+    this._applyCamera();
+  }
+
   /**
-   * CHANGE1: the "S" key cycles the battle speed 1 -> 2 -> 4 -> 8 -> 16 -> 1
-   * (the same factors / virtual-clock the overlay button drives). It is the
-   * REAL control because the on-screen button does not work for the user. Bound
-   * on WINDOW so it fires regardless of focus; the battle overlay has no typing
-   * fields, but we still bail if the event targets an editable element so it is
-   * safe everywhere. The always-visible "Predkosc: Nx" indicator is updated by
-   * _setSpeedIdx and briefly confirmed (a short HUD flash) on each change.
+   * "V" key cycles battle speed 1 -> 2 -> 4 -> 8 -> 16 -> 1
+   * (S = przesuń mapę w dół, jak WASD — bez konfliktu).
    */
   private readonly _onKeySpeed = (e: KeyboardEvent): void => {
-    if (e.key !== 's' && e.key !== 'S') return;
-    if (isEditableTarget(e.target)) return; // guard against typing fields (none in battle)
-    if (e.ctrlKey || e.metaKey || e.altKey) return; // leave browser shortcuts (e.g. Ctrl+S) alone
+    if (e.code !== 'KeyV' && e.key !== 'v' && e.key !== 'V') return;
+    if (this.deployPhase) return;
+    if (isEditableTarget(e.target)) return;
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
     e.preventDefault();
-    this._cycleSpeed();        // 1 -> 2 -> 4 -> 8 -> 16 -> 1 (updates the indicator)
-    this._flashSpeedHud();     // brief confirm on change
+    this._cycleSpeed();
+    this._flashSpeedHud();
   };
 
   /**
@@ -6658,6 +7603,7 @@ export class BattleScene {
   private _togglePause(): void {
     this.paused = !this.paused;
     if (this.pauseHud) this.pauseHud.style.display = this.paused ? 'block' : 'none';
+    if (this._topPauseBadge) this._topPauseBadge.style.display = this.paused ? 'inline' : 'none';
   }
 
   // =========================================================================
@@ -6673,15 +7619,60 @@ export class BattleScene {
     if (e.ctrlKey || e.metaKey || e.altKey) return;
     e.preventDefault();
     this._ensureAudio();
-    this._audioMuted = !this._audioMuted;
-    if (!this._audioMuted) this._startAmbient();
-    try {
-      // Duck both buses to 0 when muted (keeps ambient timers alive but silent).
-      if (this._masterGain) this._masterGain.gain.value = this._audioMuted ? 0 : 0.25;
-      if (this._ambGain)    this._ambGain.gain.value    = this._audioMuted ? 0 : this._ambBaseGain();
-    } catch { /* no-op */ }
-    if (this.muteHud) this.muteHud.textContent = this._audioMuted ? 'Dzwiek: WYL (M)' : 'Dzwiek: WL (M)';
+    const next = !(this._sfxMuted && this._musicMuted);
+    this._sfxMuted = next;
+    this._musicMuted = next;
+    this._audioMuted = next;
+    if (!this._musicMuted) this._startAmbient();
+    this._applyAudioGains();
+    this._refreshAudioBtns();
   };
+
+  private _toggleSfx(): void {
+    this._ensureAudio();
+    this._sfxMuted = !this._sfxMuted;
+    this._audioMuted = this._sfxMuted && this._musicMuted;
+    this._applyAudioGains();
+    this._refreshAudioBtns();
+  }
+
+  private _toggleMusic(): void {
+    this._ensureAudio();
+    this._musicMuted = !this._musicMuted;
+    this._audioMuted = this._sfxMuted && this._musicMuted;
+    if (!this._musicMuted) this._startAmbient();
+    this._applyAudioGains();
+    this._refreshAudioBtns();
+  }
+
+  private _applyAudioGains(): void {
+    try {
+      if (this._masterGain) this._masterGain.gain.value = this._sfxMuted ? 0 : 0.25;
+      if (this._ambGain)    this._ambGain.gain.value    = this._musicMuted ? 0 : this._ambBaseGain();
+    } catch { /* no-op */ }
+    if (this.muteHud) {
+      this.muteHud.textContent = (this._sfxMuted && this._musicMuted)
+        ? 'Dzwiek: WYL (M)' : 'Dzwiek: WL (M)';
+    }
+  }
+
+  private _refreshAudioBtns(): void {
+    if (this._soundBtn) {
+      this._soundBtn.style.filter = this._sfxMuted ? 'grayscale(1) brightness(0.55)' : '';
+    }
+    if (this._musicBtn) {
+      this._musicBtn.style.filter = this._musicMuted ? 'grayscale(1) brightness(0.55)' : '';
+    }
+  }
+
+  /** Dostosuj dolna krawedz prawego paska (nad toolbarem deploy / recznym). */
+  private _updateRightRailLayout(): void {
+    if (!this._rightSettingsRail) return;
+    const toolbarVisible = this._deployToolbar
+      && this._deployToolbar.style.display !== 'none'
+      && (this.deployPhase || (this.started && !this.finished && this._manualMode));
+    this._rightSettingsRail.style.bottom = (toolbarVisible ? DEPLOY_TOOLBAR_RESERVE : 0) + 'px';
+  }
 
   /** First-gesture handler: lazily create+resume the AudioContext, start ambient. */
   private readonly _onAudioGesture = (): void => {
@@ -6704,10 +7695,10 @@ export class BattleScene {
       if (!Ctor) return; // headless / no Web Audio -> silent
       const ac = new Ctor();
       const master = ac.createGain();
-      master.gain.value = this._audioMuted ? 0 : 0.25; // LOW SFX bus
+      master.gain.value = this._sfxMuted ? 0 : 0.25; // LOW SFX bus
       master.connect(ac.destination);
       const amb = ac.createGain();
-      amb.gain.value = this._audioMuted ? 0 : this._ambBaseGain();
+      amb.gain.value = this._musicMuted ? 0 : this._ambBaseGain();
       amb.connect(ac.destination);
       this._ac = ac; this._masterGain = master; this._ambGain = amb;
       try { if (ac.state === 'suspended') void ac.resume(); } catch { /* no-op */ }
@@ -6730,7 +7721,7 @@ export class BattleScene {
   private _cachedNoise: AudioBuffer | null = null;
 
   /** True if SFX should be skipped right now (muted / no context). */
-  private _sfxOff(): boolean { return this._audioMuted || !this._ac || !this._masterGain; }
+  private _sfxOff(): boolean { return this._sfxMuted || !this._ac || !this._masterGain; }
 
   /**
    * MELEE clash: short filtered-noise clack with a quick metallic decay and a
@@ -6901,7 +7892,7 @@ export class BattleScene {
       // ---- PAD via SWELLS: soft chord that fades in/out, overlapping into an
       //      evolving pad. NEVER a continuous held drone (that was the buzz).
       const playChord = (): void => {
-        if (this._audioMuted || !this._ac || !this._ambGain) return;
+        if (this._musicMuted || !this._ac || !this._ambGain) return;
         try {
           const a = this._ac; const t = a.currentTime;
           const atk = 1.5; const rel = 3.5;
@@ -6927,7 +7918,7 @@ export class BattleScene {
       // ---- MELODY: one soft pentatonic note, sparse, through delay (airy echo).
       let mStep = 0;
       const playNote = (): void => {
-        if (this._audioMuted || !this._ac || !this._ambGain) return;
+        if (this._musicMuted || !this._ac || !this._ambGain) return;
         try {
           const a = this._ac; const t = a.currentTime;
           // wander the pentatonic scale gently (random-ish but calm)
@@ -6993,20 +7984,693 @@ export class BattleScene {
     }, 160);
   }
 
-  // --- Drag-pan: PRAWY lub SRODKOWY przycisk myszy (lub LEWY poza trybem RECZNYM) ---
-  // W trybie RECZNYM LEWY button = box-select lub klik-zaznaczenie.
-  // W pozostalych sytuacjach LEWY = pan (faza deploy, auto, finished).
+  // -------------------------------------------------------------------------
+  // C2-Q7 TW: kursor kontekstowy, linie rozkazow, scalanie rannych
+  // -------------------------------------------------------------------------
+
+  private _isManualInputActive(): boolean {
+    return (
+      this.deployPhase
+      || (this.started && !this.finished && (this._manualMode || this._battleAwaitingOrders))
+    );
+  }
+
+  private _primarySelectedUnit(): RuntimeBattleUnit | null {
+    for (const id of this._selectedUnits) {
+      const u = this.atk.find(x => x.bu.id === id);
+      if (u && !u.dead && !u.removed && !u.routed) return u;
+    }
+    return null;
+  }
+
+  private _unitCanRangedAttack(ru: RuntimeBattleUnit, target: RuntimeBattleUnit): boolean {
+    if (!ru.shootingEnabled && ru.rangedBase) return false;
+    if (!(ru.rangedBase || ru.primaryRanged)) return false;
+    const dist = Math.abs(ru.q - target.q) + Math.abs(ru.r - target.r);
+    const rng = Math.max(2, Number((ru.bu.stats as any)?.['Zasieg ataku (hex)'] ?? 2));
+    return dist <= rng && dist > 1;
+  }
+
+  private _pickGroundTile(cx: number, cy: number): { col: number; row: number } | null {
+    const rect = this.canvas.getBoundingClientRect();
+    const ndcX = ((cx - rect.left) / rect.width) * 2 - 1;
+    const ndcY = -((cy - rect.top) / rect.height) * 2 + 1;
+    const raycaster = new THREE.Raycaster();
+    raycaster.setFromCamera(new THREE.Vector2(ndcX, ndcY), this.camera);
+    const ground = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+    const pt = new THREE.Vector3();
+    if (!raycaster.ray.intersectPlane(ground, pt)) return null;
+    const col = Math.round(pt.x / TILE_S);
+    const row = Math.round(pt.z / TILE_S);
+    if (col < 0 || col >= BF_COLS || row < 0 || row >= BF_ROWS) return null;
+    return { col, row };
+  }
+
+  private _worldAtTile(col: number, row: number): THREE.Vector3 {
+    const w = cellToWorld(col, row);
+    const y = tileTopY(this.terrainMap, col, row) + ORDER_LINE_Y;
+    return new THREE.Vector3(w.x, y, w.z);
+  }
+
+  private _unitWorldPos(ru: RuntimeBattleUnit): THREE.Vector3 {
+    const p = ru.group.position.clone();
+    p.y = tileTopY(this.terrainMap, ru.q, ru.r) + ORDER_LINE_Y;
+    return p;
+  }
+
+  private _disposeOrderArrowGroup(arrow: THREE.Group): void {
+    arrow.traverse(obj => {
+      if (obj instanceof THREE.Mesh) {
+        obj.geometry?.dispose();
+        const m = obj.material;
+        if (Array.isArray(m)) m.forEach(x => x.dispose());
+        else m?.dispose();
+      }
+    });
+  }
+
+  /** Gruba strzalka na ziemi (30% niebieski = ruch, czerwony = atak). */
+  private _makeOrderArrow(from: THREE.Vector3, to: THREE.Vector3, isAttack: boolean, preview = false): THREE.Group {
+    const g = new THREE.Group();
+    g.name = preview ? 'orderArrowPreview' : 'orderArrow';
+    const dir = new THREE.Vector3(to.x - from.x, 0, to.z - from.z);
+    const len = dir.length();
+    if (len < 0.08) return g;
+
+    const color = isAttack ? ORDER_COLOR_ATTACK : ORDER_COLOR_MOVE;
+    const opacity = preview
+      ? (isAttack ? 0.38 : 0.38)
+      : (isAttack ? ORDER_ATTACK_OPACITY : ORDER_MOVE_OPACITY);
+    const angle = Math.atan2(dir.x, dir.z);
+    const headLen = Math.min(0.48, len * 0.24);
+    const shaftLen = Math.max(0.06, len - headLen * 0.75);
+    const y = from.y;
+
+    const shaftGeo = new THREE.BoxGeometry(0.34, 0.05, shaftLen);
+    const shaftMat = new THREE.MeshBasicMaterial({
+      color, transparent: true, opacity, depthWrite: false,
+    });
+    const shaft = new THREE.Mesh(shaftGeo, shaftMat);
+    const mid = new THREE.Vector3(
+      (from.x + to.x) * 0.5,
+      y,
+      (from.z + to.z) * 0.5,
+    );
+    shaft.position.copy(mid);
+    shaft.rotation.y = angle;
+    g.add(shaft);
+
+    const coneGeo = new THREE.ConeGeometry(0.26, headLen, 12);
+    coneGeo.rotateX(Math.PI / 2);
+    const coneMat = new THREE.MeshBasicMaterial({
+      color, transparent: true, opacity: Math.min(0.55, opacity + 0.12), depthWrite: false,
+    });
+    const cone = new THREE.Mesh(coneGeo, coneMat);
+    const tip = new THREE.Vector3(from.x, y, from.z).add(dir.normalize().multiplyScalar(len));
+    cone.position.copy(tip);
+    cone.rotation.y = angle;
+    g.add(cone);
+
+    return g;
+  }
+
+  private _clearOrderPreview(): void {
+    if (!this._orderPreviewGroup) return;
+    while (this._orderPreviewGroup.children.length > 0) {
+      const ch = this._orderPreviewGroup.children[0] as THREE.Group;
+      this._orderPreviewGroup.remove(ch);
+      this._disposeOrderArrowGroup(ch);
+    }
+  }
+
+  private _disposeQueuedOrderArrows(): void {
+    if (!this._orderLinesGroup) return;
+    for (const arrow of this._queuedOrderArrows) {
+      this._orderLinesGroup.remove(arrow);
+      this._disposeOrderArrowGroup(arrow);
+    }
+    this._queuedOrderArrows = [];
+  }
+
+  private _disposeAllOrderLines(): void {
+    this._clearOrderPreview();
+    this._disposeQueuedOrderArrows();
+  }
+
+  /** Docelowe pole ruchu dla jednostki (z offsetem formacji grupy). */
+  private _moveTargetForUnit(u: RuntimeBattleUnit, col: number, row: number): { col: number; row: number } {
+    const off = u.formationOffset ?? { dc: 0, dr: 0 };
+    return {
+      col: Math.max(0, Math.min(BF_COLS - 1, col + off.dc)),
+      row: Math.max(0, Math.min(BF_ROWS - 1, row + off.dr)),
+    };
+  }
+
+  /** Docelowe pola ruchu dla biezacego zaznaczenia (grupy + wielokrotne bez grupy). */
+  private _moveDestinationsForSelection(
+    targetCol: number, targetRow: number,
+  ): Map<string, { col: number; row: number }> {
+    const out = new Map<string, { col: number; row: number }>();
+    const ids = this._collectOrderUnitIds();
+    const units = ids
+      .map(id => this.atk.find(u => u.bu.id === id))
+      .filter((u): u is RuntimeBattleUnit => !!u && !u.dead && !u.removed);
+    const processedGroups = new Set<string>();
+    const ungrouped: RuntimeBattleUnit[] = [];
+    for (const u of units) {
+      if (u.groupId) {
+        if (processedGroups.has(u.groupId)) continue;
+        processedGroups.add(u.groupId);
+        for (const mid of this._liveGroupMemberIds(u.groupId)) {
+          const mu = this.atk.find(x => x.bu.id === mid);
+          if (!mu || mu.dead) continue;
+          out.set(mid, this._moveTargetForUnit(mu, targetCol, targetRow));
+        }
+      } else {
+        ungrouped.push(u);
+      }
+    }
+    if (ungrouped.length === 1) {
+      out.set(ungrouped[0]!.bu.id, { col: targetCol, row: targetRow });
+    } else if (ungrouped.length > 1) {
+      const centCol = ungrouped.reduce((s, u) => s + u.q, 0) / ungrouped.length;
+      const centRow = ungrouped.reduce((s, u) => s + u.r, 0) / ungrouped.length;
+      for (const u of ungrouped) {
+        const dc = Math.round(u.q - centCol);
+        const dr = Math.round(u.r - centRow);
+        out.set(u.bu.id, {
+          col: Math.max(0, Math.min(BF_COLS - 1, Math.round(targetCol + dc))),
+          row: Math.max(0, Math.min(BF_ROWS - 1, Math.round(targetRow + dr))),
+        });
+      }
+    }
+    return out;
+  }
+
+  /** Marsz wielu jednostek — grupy z offsetem formacji, reszta z zachowaniem wzglednego ukladu. */
+  private _orderMoveForUnits(targetCol: number, targetRow: number, unitIds: string[]): void {
+    const units = unitIds
+      .map(id => this.atk.find(u => u.bu.id === id))
+      .filter((u): u is RuntimeBattleUnit => !!u && !u.dead && !u.removed);
+    const processedGroups = new Set<string>();
+    const ungrouped: RuntimeBattleUnit[] = [];
+    for (const u of units) {
+      if (u.groupId) {
+        if (!processedGroups.has(u.groupId)) {
+          processedGroups.add(u.groupId);
+          this._orderGroupMove(u.groupId, targetCol, targetRow);
+        }
+      } else {
+        ungrouped.push(u);
+      }
+    }
+    if (ungrouped.length === 1) {
+      ungrouped[0]!.playerOrder = { type: 'move', col: targetCol, row: targetRow };
+    } else if (ungrouped.length > 1) {
+      const dests = this._moveDestinationsForSelection(targetCol, targetRow);
+      for (const u of ungrouped) {
+        const d = dests.get(u.bu.id);
+        if (d) u.playerOrder = { type: 'move', col: d.col, row: d.row };
+      }
+    }
+  }
+
+  /** Odswieza niebieskie/czerwone strzalki aktywnych celow (trwale do dotarcia). */
+  private _refreshQueuedOrderVisuals(): void {
+    this._disposeQueuedOrderArrows();
+    if (!this._orderLinesGroup || !this.started || this.finished) return;
+    for (const ru of this.atk) {
+      if (ru.dead || ru.removed || ru.routed) continue;
+      const ord = ru.playerOrder;
+      const queued = this._queuedOrderUnitIds.has(ru.bu.id);
+      if (ord.type === 'move') {
+        const to = this._worldAtTile(ord.col, ord.row);
+        const arrow = this._makeOrderArrow(this._unitWorldPos(ru), to, false, queued);
+        this._orderLinesGroup.add(arrow);
+        this._queuedOrderArrows.push(arrow);
+      } else if (ord.type === 'attack') {
+        const tgt = this.def.find(d => d.bu.id === ord.targetId && !d.dead && !d.removed);
+        if (tgt) {
+          const arrow = this._makeOrderArrow(this._unitWorldPos(ru), this._unitWorldPos(tgt), true, queued);
+          this._orderLinesGroup.add(arrow);
+          this._queuedOrderArrows.push(arrow);
+        }
+      }
+    }
+  }
+
+  private _addOrderPreviewArrow(from: THREE.Vector3, to: THREE.Vector3, isAttack: boolean): void {
+    if (!this._orderPreviewGroup) return;
+    const arrow = this._makeOrderArrow(from, to, isAttack, true);
+    this._orderPreviewGroup.add(arrow);
+  }
+
+  private _updateBattleCursor(cx: number, cy: number): void {
+    if (!this._isManualInputActive() || this._selectedUnits.size === 0) {
+      this.canvas.style.cursor = CURSOR_DEFAULT;
+      return;
+    }
+    const sel = this._primarySelectedUnit();
+    if (!sel) {
+      this.canvas.style.cursor = CURSOR_DEFAULT;
+      return;
+    }
+    const hoverUnit = this._pickUnitAtScreen(cx, cy);
+    if (hoverUnit && hoverUnit.side === 'def' && !hoverUnit.dead && !hoverUnit.removed) {
+      this.canvas.style.cursor = this._unitCanRangedAttack(sel, hoverUnit) ? CURSOR_BOW : CURSOR_SWORD;
+      return;
+    }
+    const tile = this._pickGroundTile(cx, cy);
+    if (tile) {
+      const occ = this.occByKey.get(cellKey(tile.col, tile.row));
+      if (occ && occ.side === 'def' && !occ.dead) {
+        this.canvas.style.cursor = this._unitCanRangedAttack(sel, occ) ? CURSOR_BOW : CURSOR_SWORD;
+        return;
+      }
+    }
+    this.canvas.style.cursor = CURSOR_MOVE;
+  }
+
+  private _updateOrderPreview(cx: number, cy: number): void {
+    if (this.deployPhase) {
+      this._clearOrderPreview();
+      if (!this._deployDrag) this._updateDeployPlacementPreview(cx, cy);
+      return;
+    }
+    this._clearOrderPreview();
+    if (!this._isManualInputActive() || this._selectedUnits.size === 0) {
+      this._clearDeployGhosts();
+      return;
+    }
+
+    const hoverUnit = this._pickUnitAtScreen(cx, cy);
+    const tile = this._pickGroundTile(cx, cy);
+
+    if (hoverUnit && hoverUnit.side === 'def' && !hoverUnit.dead && !hoverUnit.removed) {
+      for (const id of this._selectedUnits) {
+        const u = this.atk.find(x => x.bu.id === id);
+        if (!u || u.dead || u.removed || u.routed) continue;
+        this._addOrderPreviewArrow(this._unitWorldPos(u), this._unitWorldPos(hoverUnit), true);
+      }
+      return;
+    }
+
+    if (!tile) {
+      this._clearDeployGhosts();
+      return;
+    }
+
+    const occ = this.occByKey.get(cellKey(tile.col, tile.row));
+    if (occ && occ.side === 'def' && !occ.dead) {
+      this._clearDeployGhosts();
+      for (const id of this._selectedUnits) {
+        const u = this.atk.find(x => x.bu.id === id);
+        if (!u || u.dead || u.removed || u.routed) continue;
+        this._addOrderPreviewArrow(this._unitWorldPos(u), this._unitWorldPos(occ), true);
+      }
+      return;
+    }
+
+    const issuedGroups = new Set<string>();
+    const destMap = this._moveDestinationsForSelection(tile.col, tile.row);
+    for (const id of this._selectedUnits) {
+      const u = this.atk.find(x => x.bu.id === id);
+      if (!u || u.dead || u.removed || u.routed) continue;
+      if (u.groupId) {
+        if (issuedGroups.has(u.groupId)) continue;
+        issuedGroups.add(u.groupId);
+        for (const mid of this._liveGroupMemberIds(u.groupId)) {
+          const mu = this.atk.find(x => x.bu.id === mid);
+          if (!mu || mu.dead || mu.removed) continue;
+          const dest = destMap.get(mid) ?? this._moveTargetForUnit(mu, tile.col, tile.row);
+          this._addOrderPreviewArrow(
+            this._unitWorldPos(mu),
+            this._worldAtTile(dest.col, dest.row),
+            false,
+          );
+        }
+      } else {
+        const dest = destMap.get(id) ?? { col: tile.col, row: tile.row };
+        this._addOrderPreviewArrow(
+          this._unitWorldPos(u),
+          this._worldAtTile(dest.col, dest.row),
+          false,
+        );
+      }
+    }
+    this._refreshBattleMoveGhosts(tile.col, tile.row);
+  }
+
+  private _unitsMergeCompatible(a: RuntimeBattleUnit, b: RuntimeBattleUnit): boolean {
+    if (a.bu.id === b.bu.id) return false;
+    if (a.dead || b.dead || a.removed || b.removed || a.routed || b.routed) return false;
+    const sameType =
+      a.bu.nazwa === b.bu.nazwa ||
+      String(a.bu.kategoria ?? '').toLowerCase() === String(b.bu.kategoria ?? '').toLowerCase();
+    if (!sameType) return false;
+    const wounded = a.bu.hp < a.bu.maxHp || b.bu.hp < b.bu.maxHp;
+    return wounded;
+  }
+
+  private _tryMergeWounded(sourceId: string, targetId: string): boolean {
+    const a = this.atk.find(u => u.bu.id === sourceId);
+    const b = this.atk.find(u => u.bu.id === targetId);
+    if (!a || !b) return false;
+    if (!this._unitsMergeCompatible(a, b)) {
+      this._showOrderFeedback('Scalanie: ten sam typ + co najmniej jedna ranna');
+      return false;
+    }
+    let target = a;
+    let source = b;
+    if (b.bu.hp > a.bu.hp) {
+      target = b;
+      source = a;
+    }
+    const room = Math.max(0, target.bu.maxHp - target.bu.hp);
+    if (room <= 0) {
+      this._showOrderFeedback('Scalanie: docelowa jednostka pelna HP');
+      return false;
+    }
+    const transfer = Math.min(room, Math.max(0, source.bu.hp));
+    if (transfer <= 0) {
+      this._showOrderFeedback('Scalanie: brak HP do przeniesienia');
+      return false;
+    }
+    target.bu.hp += transfer;
+    source.bu.hp -= transfer;
+    if (source.groupId) this._disbandGroup(source.groupId);
+    if (target.groupId) this._disbandGroup(target.groupId);
+    this._selectedUnits.delete(source.bu.id);
+    this._removeSelectionRing(source);
+    if (source.bu.hp <= 0 || source.bu.hp < source.bu.maxHp * 0.01) {
+      this._removeUnitFromScene(source);
+      const card = this._unitCards.get(source.bu.id);
+      if (card?.parentNode) card.parentNode.removeChild(card);
+      this._unitCards.delete(source.bu.id);
+    }
+    this._selectedUnits.add(target.bu.id);
+    this._addSelectionRing(target);
+    this._updateRosterBar();
+    this._updateSelectedPanel();
+    this._showOrderFeedback('SCALONO: +' + transfer + ' HP -> ' + target.bu.nazwa);
+    return true;
+  }
+
+  private _mergeSelectedWounded(): void {
+    const ids = [...this._selectedUnits].filter(id => {
+      const u = this.atk.find(x => x.bu.id === id);
+      return u && !u.dead && !u.removed && !u.routed;
+    });
+    if (ids.length !== 2) {
+      this._showOrderFeedback('Scalanie (Ctrl+M): zaznacz 2 jednostki tego samego typu');
+      return;
+    }
+    this._tryMergeWounded(ids[0]!, ids[1]!);
+  }
+
+  private readonly _onKeyMergeWounded = (e: KeyboardEvent): void => {
+    if (e.key.toLowerCase() !== 'm' || !(e.ctrlKey || e.metaKey)) return;
+    if (isEditableTarget(e.target)) return;
+    if (!this._isManualInputActive()) return;
+    e.preventDefault();
+    this._mergeSelectedWounded();
+  };
+
+  private _attachRosterMergeDrag(card: HTMLDivElement, ru: RuntimeBattleUnit): void {
+    card.addEventListener('pointerdown', (e: PointerEvent) => {
+      if (ru.dead || ru.removed || ru.routed) return;
+      if (e.button !== 0) return;
+      this._rosterDragSourceId = ru.bu.id;
+    });
+    card.addEventListener('pointerup', (e: PointerEvent) => {
+      if (!this._rosterDragSourceId || this._rosterDragSourceId === ru.bu.id) {
+        this._rosterDragSourceId = null;
+        return;
+      }
+      e.preventDefault();
+      this._tryMergeWounded(this._rosterDragSourceId, ru.bu.id);
+      this._rosterDragSourceId = null;
+    });
+    card.addEventListener('pointerleave', () => {
+      // zostaw source do pointerup na innej karcie
+    });
+  };
+
+  // -------------------------------------------------------------------------
+  // Q2 — MINIMAPA + Q3 — HOVER TOOLTIP
+  // -------------------------------------------------------------------------
+
+  /** Q2: build minimap canvas overlay (bottom-left, above roster). */
+  private _buildMinimapOverlay(): void {
+    const wrap = document.createElement('div');
+    Object.assign(wrap.style, {
+      position: 'absolute', left: '12px', bottom: '156px',
+      width: MINIMAP_W + 'px', height: MINIMAP_H + 'px',
+      zIndex: '10008', cursor: 'crosshair',
+    });
+    applyMinimap1E(wrap);
+    const canvas = document.createElement('canvas');
+    canvas.width = MINIMAP_W;
+    canvas.height = MINIMAP_H;
+    Object.assign(canvas.style, { display: 'block', width: '100%', height: '100%' });
+    wrap.appendChild(canvas);
+    applyMinimap1E(wrap);
+    this.overlay.appendChild(wrap);
+    this._minimapWrap = wrap;
+    this._minimapCanvas = canvas;
+
+    wrap.addEventListener('pointerdown', (e: PointerEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      this._minimapDragging = true;
+      this._minimapDragStart = {
+        x: e.clientX, y: e.clientY,
+        camX: this.camTarget.x, camZ: this.camTarget.z,
+      };
+      wrap.setPointerCapture(e.pointerId);
+    });
+    wrap.addEventListener('pointermove', (e: PointerEvent) => {
+      if (!this._minimapDragging || !this._minimapDragStart) return;
+      const dx = e.clientX - this._minimapDragStart.x;
+      const dy = e.clientY - this._minimapDragStart.y;
+      const worldW = BF_COLS * TILE_S;
+      const worldH = BF_ROWS * TILE_S;
+      this.camTarget.x = this._minimapDragStart.camX - (dx / MINIMAP_W) * worldW;
+      this.camTarget.z = this._minimapDragStart.camZ - (dy / MINIMAP_H) * worldH;
+      this._applyCamera();
+    });
+    wrap.addEventListener('pointerup', (e: PointerEvent) => {
+      if (!this._minimapDragStart) return;
+      const dx = e.clientX - this._minimapDragStart.x;
+      const dy = e.clientY - this._minimapDragStart.y;
+      if (dx * dx + dy * dy < 36) {
+        const rect = canvas.getBoundingClientRect();
+        const px = e.clientX - rect.left;
+        const py = e.clientY - rect.top;
+        const data = this._collectMinimapData();
+        const tile = minimapPixelToTile(px, py, data);
+        if (tile) {
+          const w = cellToWorld(tile.col, tile.row);
+          this.camTarget.x = w.x;
+          this.camTarget.z = w.z;
+          this._applyCamera();
+        }
+      }
+      this._minimapDragging = false;
+      this._minimapDragStart = null;
+      try { wrap.releasePointerCapture(e.pointerId); } catch { /* no-op */ }
+    });
+    this._drawMinimap();
+    this._syncMinimapPosition();
+  }
+
+  private _collectMinimapData(): BattleMinimapData {
+    const terrain: number[] = [];
+    const tiles = this.terrainMap.tiles;
+    for (let r = 0; r < BF_ROWS; r++) {
+      for (let c = 0; c < BF_COLS; c++) {
+        terrain.push(tiles ? (tiles[r * BF_COLS + c] ?? 0) : 0);
+      }
+    }
+    const units: BattleMinimapUnit[] = [];
+    for (const ru of [...this.atk, ...this.def]) {
+      if (ru.dead || ru.removed || ru.fadingOut) continue;
+      units.push({
+        q: ru.q,
+        r: ru.r,
+        color: ru.side === 'atk' ? FACTION_ATK : FACTION_DEF,
+      });
+    }
+    return {
+      cols: BF_COLS,
+      rows: BF_ROWS,
+      terrain,
+      units,
+      viewport: this._computeMinimapViewport(),
+    };
+  }
+
+  private _computeMinimapViewport(): BattleMinimapViewport {
+    const h = Math.max(1, this.canvas.clientHeight);
+    const w = Math.max(1, this.canvas.clientWidth);
+    const worldPerPx = (this.camDist * 1.2) / h;
+    const visibleW = w * worldPerPx;
+    const visibleH = h * worldPerPx;
+    const colCenter = this.camTarget.x / TILE_S;
+    const rowCenter = this.camTarget.z / TILE_S;
+    const colHalf = visibleW / TILE_S / 2;
+    const rowHalf = visibleH / TILE_S / 2;
+    return {
+      colMin: Math.max(0, Math.floor(colCenter - colHalf)),
+      rowMin: Math.max(0, Math.floor(rowCenter - rowHalf)),
+      colMax: Math.min(BF_COLS - 1, Math.ceil(colCenter + colHalf)),
+      rowMax: Math.min(BF_ROWS - 1, Math.ceil(rowCenter + rowHalf)),
+    };
+  }
+
+  private _drawMinimap(): void {
+    if (!this._minimapCanvas) return;
+    const ctx = this._minimapCanvas.getContext('2d');
+    if (!ctx) return;
+    drawBattleMinimap(ctx, this._collectMinimapData());
+  }
+
+  private _unitRoleLabel(ru: RuntimeBattleUnit): string {
+    if (ru.mounted) return 'Mounted';
+    if (ru.rangedBase || ru.primaryRanged) return 'Dystans';
+    return 'Frontalne';
+  }
+
+  private _pickUnitAtScreen(cx: number, cy: number): RuntimeBattleUnit | null {
+    const rect = this.canvas.getBoundingClientRect();
+    const ndcX = ((cx - rect.left) / rect.width) * 2 - 1;
+    const ndcY = -((cy - rect.top) / rect.height) * 2 + 1;
+    const raycaster = new THREE.Raycaster();
+    raycaster.setFromCamera(new THREE.Vector2(ndcX, ndcY), this.camera);
+    const allGroups = [...this.atk, ...this.def]
+      .filter(u => !u.dead && !u.fadingOut && !u.removed)
+      .map(u => u.group);
+    const hits = raycaster.intersectObjects(allGroups, true);
+    for (const h of hits) {
+      let obj: THREE.Object3D | null = h.object;
+      while (obj) {
+        const found = [...this.atk, ...this.def].find(u => u.group === obj);
+        if (found && !found.dead && !found.fadingOut && !found.removed) return found;
+        obj = obj.parent;
+      }
+    }
+    const ground = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+    const pt = new THREE.Vector3();
+    if (!raycaster.ray.intersectPlane(ground, pt)) return null;
+    const col = Math.round(pt.x / TILE_S);
+    const row = Math.round(pt.z / TILE_S);
+    const cellUnit = this.occByKey.get(cellKey(col, row));
+    if (cellUnit && !cellUnit.dead && !cellUnit.fadingOut && !cellUnit.removed) return cellUnit;
+    return null;
+  }
+
+  private _clearHoverTooltip(): void {
+    if (this._hoverTimer !== null) {
+      clearTimeout(this._hoverTimer);
+      this._hoverTimer = null;
+    }
+    this._hoverUnit = null;
+    if (this._hoverTooltip) this._hoverTooltip.style.display = 'none';
+  }
+
+  private _showHoverTooltip(ru: RuntimeBattleUnit, cx: number, cy: number): void {
+    const tip = this._hoverTooltip;
+    if (!tip) return;
+    const hpPct = ru.bu.maxHp > 0 ? Math.round(100 * Math.max(0, ru.bu.hp) / ru.bu.maxHp) : 0;
+    const morPct = ru.moraleMax > 0 ? Math.round(100 * Math.max(0, ru.morale) / ru.moraleMax) : 0;
+    const atkStat = unitRowStat(ru.bu.stats as Record<string, unknown>, 'meleeAttack', 'Atak', 0) || '?';
+    const defStat = unitRowStat(ru.bu.stats as Record<string, unknown>, 'meleeDefence', 'Obrona', 0) || '?';
+    const sideClr = ru.side === 'atk' ? FACTION_ATK : FACTION_DEF;
+    tip.innerHTML =
+      '<div style="color:' + HUD_GOLD + ';font-weight:bold;margin-bottom:4px;">' + escapeHtml(ru.bu.nazwa) + '</div>' +
+      '<div style="color:' + HUD_TEXT_DIM + ';font-size:10px;margin-bottom:4px;">' + this._unitRoleLabel(ru) + ' · ' + escapeHtml(String(ru.bu.kategoria ?? '')) + '</div>' +
+      '<div style="margin-bottom:3px;"><div style="display:flex;justify-content:space-between;font-size:9px;color:' + HUD_TEXT_DIM + ';"><span>HP</span><span>' + hpPct + '%</span></div>' +
+      '<div style="height:5px;background:rgba(255,255,255,0.1);border-radius:2px;overflow:hidden;"><div style="width:' + hpPct + '%;height:100%;background:' + sideClr + ';"></div></div></div>' +
+      '<div style="margin-bottom:3px;"><div style="display:flex;justify-content:space-between;font-size:9px;color:' + HUD_TEXT_DIM + ';"><span>Morale</span><span>' + morPct + '%</span></div>' +
+      '<div style="height:4px;background:rgba(255,255,255,0.08);border-radius:2px;overflow:hidden;"><div style="width:' + morPct + '%;height:100%;background:#9c27b0;"></div></div></div>' +
+      '<div style="font-size:9px;color:' + HUD_TEXT + ';">Atk ' + atkStat + ' · Obr ' + defStat + '</div>';
+    tip.style.display = 'block';
+    tip.style.left = (cx + 14) + 'px';
+    tip.style.top = (cy + 14) + 'px';
+  }
+
+  private readonly _onCanvasHoverMove = (e: PointerEvent): void => {
+    if (this.panning || this._boxSelectStart || this._minimapDragging || this._deployDrag) {
+      this._clearHoverTooltip();
+      this._clearOrderPreview();
+      this.canvas.style.cursor = CURSOR_DEFAULT;
+      return;
+    }
+    this._updateBattleCursor(e.clientX, e.clientY);
+    this._updateOrderPreview(e.clientX, e.clientY);
+    const ru = this._pickUnitAtScreen(e.clientX, e.clientY);
+    if (!ru) {
+      this._clearHoverTooltip();
+      return;
+    }
+    if (this._hoverUnit === ru && this._hoverTooltip?.style.display === 'block') {
+      if (this._hoverTooltip) {
+        this._hoverTooltip.style.left = (e.clientX + 14) + 'px';
+        this._hoverTooltip.style.top = (e.clientY + 14) + 'px';
+      }
+      return;
+    }
+    if (this._hoverUnit !== ru) {
+      this._clearHoverTooltip();
+      this._hoverUnit = ru;
+      this._hoverTimer = setTimeout(() => {
+        this._hoverTimer = null;
+        if (this._hoverUnit === ru) this._showHoverTooltip(ru, e.clientX, e.clientY);
+      }, HOVER_TOOLTIP_MS);
+    }
+  };
+
+  private readonly _onCanvasHoverLeave = (): void => {
+    this._clearHoverTooltip();
+    this._clearOrderPreview();
+    this.canvas.style.cursor = CURSOR_DEFAULT;
+  };
+
+  // --- Drag-pan: PPM/scroll w deploy; LPM = zaznacz / przesuń jednostki ---
   private readonly _onPanDown = (e: PointerEvent): void => {
-    // LEWY przycisk w trybie RECZNYM w fazie walki LUB w fazie rozstawiania → box-select (nie pan)
-    if (e.button === 0 && ((this._manualMode && !this.deployPhase && this.started && !this.finished) || this.deployPhase)) {
+    // LEWY przycisk w fazie rozstawiania — zaznaczenie i przesuwanie (NIE kamera)
+    if (e.button === 0 && this.deployPhase) {
+      this._pointerDownPos = { x: e.clientX, y: e.clientY };
+      this._deployMoveStart = null;
+      this._deployPickPending = null;
+      if (e.shiftKey) {
+        this._boxSelectStart = { x: e.clientX, y: e.clientY };
+        return;
+      }
+      const hitAtk = this._pickUnitAtScreen(e.clientX, e.clientY);
+      if (hitAtk && hitAtk.side === 'atk' && !hitAtk.dead && !hitAtk.removed) {
+        this._deployPickPending = hitAtk;
+        return;
+      }
+      if (this._selectedUnits.size > 0) {
+        const tile = this._pickGroundTile(e.clientX, e.clientY);
+        if (tile && inDeployAtkZone(tile.col, tile.row)) {
+          this._deployMoveStart = { x: e.clientX, y: e.clientY, col: tile.col, row: tile.row };
+          return;
+        }
+      }
+      this._boxSelectStart = { x: e.clientX, y: e.clientY };
+      return;
+    }
+    // LEWY przycisk w trybie RECZNYM w fazie walki → box-select (nie pan)
+    if (e.button === 0 && this._manualMode && !this.deployPhase && this.started && !this.finished) {
       this._pointerDownPos = { x: e.clientX, y: e.clientY };
       this._boxSelectStart = { x: e.clientX, y: e.clientY };
-      return; // panning=false, ale zaczyna box-select
+      return;
     }
-    // PRAWY (2) lub SRODKOWY (1) = pan; LEWY poza trybem recznym = pan
+    // PRAWY (2) lub SRODKOWY (1) = pan kamery; w deploy LPM nigdy nie przesuwa mapy
     if (e.button !== 0 && e.button !== 2 && e.button !== 1) return;
     if (e.button === 0) {
-      // lewy poza trybem recznym (deploy lub auto)
       this._pointerDownPos = { x: e.clientX, y: e.clientY };
     }
     this.panning  = true;
@@ -7016,7 +8680,37 @@ export class BattleScene {
   };
 
   private readonly _onPanMove = (e: PointerEvent): void => {
-    // Box-select ruch — lewy w manualMode
+    // LPM + zaznaczenie: po przesunieciu kursora start drag z duchami (deploy)
+    if (this.deployPhase && this._deployMoveStart && !this._deployDrag && e.buttons === 1) {
+      const dx = e.clientX - this._deployMoveStart.x;
+      const dy = e.clientY - this._deployMoveStart.y;
+      if (dx * dx + dy * dy >= 36) {
+        const tile = this._pickGroundTile(e.clientX, e.clientY);
+        if (tile && inDeployAtkZone(tile.col, tile.row)) {
+          const anchorCol = this._deployMoveStart?.col ?? tile.col;
+          const anchorRow = this._deployMoveStart?.row ?? tile.row;
+          this._deployDrag = {
+            anchorCol,
+            anchorRow,
+            curCol: tile.col,
+            curRow: tile.row,
+          };
+          this._deployMoveStart = null;
+          this._refreshDeployGhosts();
+        }
+      }
+    }
+    // Przeciaganie formacji deploy — duchy + rozciaganie (tylko LPM)
+    if (this._deployDrag && e.buttons === 1) {
+      const tile = this._pickGroundTile(e.clientX, e.clientY);
+      if (tile) {
+        this._deployDrag.curCol = Math.max(DEPLOY_MIN_COL, Math.min(DEPLOY_MAX_COL, tile.col));
+        this._deployDrag.curRow = Math.max(DEPLOY_MIN_ROW, Math.min(DEPLOY_MAX_ROW, tile.row));
+        this._refreshDeployGhosts();
+      }
+      return;
+    }
+    // Box-select ruch — lewy w manualMode / deploy+shift
     if (this._boxSelectStart && e.buttons === 1) {
       const dx = e.clientX - this._boxSelectStart.x;
       const dy = e.clientY - this._boxSelectStart.y;
@@ -7052,16 +8746,50 @@ export class BattleScene {
     this.panLastX = e.clientX;
     this.panLastY = e.clientY;
 
-    // World units per screen pixel scales with zoom distance so panning feels
-    // consistent. Screen-right -> field +X; screen-up -> field -Z (away).
+    // Screen-right -> field +X; screen-down -> field +Z (South / dół mapy).
     const h = Math.max(1, this.canvas.clientHeight);
     const worldPerPx = (this.camDist * 1.2) / h;
     this.camTarget.x -= dx * worldPerPx;
     this.camTarget.z -= dy * worldPerPx;
+    this._clampCamTarget();
     this._applyCamera();
   };
 
   private readonly _onPanUp = (e: PointerEvent): void => {
+    // LPM na jednostce ATK — zaznacz / odznacz (toggle grupy), bez box-select
+    if (this._deployPickPending && e.button === 0) {
+      const pending = this._deployPickPending;
+      this._deployPickPending = null;
+      if (!this._boxSelectDiv) {
+        this._lastClickModifiers = { ctrl: e.ctrlKey, shift: e.shiftKey };
+        this._handleDeployUnitPick(pending, this._lastClickModifiers.ctrl, this._lastClickModifiers.shift);
+      }
+      this._pointerDownPos = null;
+      return;
+    }
+    // Zakoncz przeciaganie formacji deploy (tylko LPM)
+    if (this._deployDrag && e.button === 0) {
+      const d = this._deployDrag;
+      this._deployDrag = null;
+      const units = this._getDeploySelectedUnits();
+      this._applyDeployPlacement(units, d.anchorCol, d.anchorRow, d.curCol, d.curRow);
+      this._clearDeployGhosts();
+      this._deployMoveStart = null;
+      this._pointerDownPos = null;
+      return;
+    }
+    // Krotki LPM na polu docelowym = przesun zaznaczone (klik, bez drag)
+    if (this._deployMoveStart && e.button === 0) {
+      const start = this._deployMoveStart;
+      this._deployMoveStart = null;
+      const distSq = (e.clientX - start.x) ** 2 + (e.clientY - start.y) ** 2;
+      if (distSq < 36) {
+        this._lastClickModifiers = { ctrl: e.ctrlKey, shift: e.shiftKey };
+        this._onDeployClick(e.clientX, e.clientY);
+      }
+      this._pointerDownPos = null;
+      return;
+    }
     // Zakoncz box-select
     if (this._boxSelectStart && e.button === 0) {
       const startX = this._boxSelectStart.x, startY = this._boxSelectStart.y;
@@ -7077,9 +8805,10 @@ export class BattleScene {
         this._boxSelectDiv = null;
       } else if (distSq < 36) {
         // Krotki klik — standardowe zaznaczanie
+        this._lastClickModifiers = { ctrl: e.ctrlKey, shift: e.shiftKey };
         if (this.deployPhase) {
           this._onDeployClick(e.clientX, e.clientY);
-        } else if (!this.deployPhase && this.started && !this.finished && this._manualMode) {
+        } else if (!this.deployPhase && this.started && !this.finished && (this._manualMode || this._battleAwaitingOrders)) {
           this._onBattleClick(e.clientX, e.clientY);
         }
       } else if (this.deployPhase) {
@@ -7092,13 +8821,27 @@ export class BattleScene {
     }
 
     this.panning = false;
+    // PPM — krotki klik: odznacz (mapa lub wlasna jednostka); drag = kamera
+    if (e.button === 2) {
+      if (this._isShortPointerClick(e) && this._selectionInputActive()) {
+        this._deselectOnRightClick();
+      }
+      this._pointerDownPos = null;
+      this._deployMoveStart = null;
+      return;
+    }
+    // PPM / scroll — tylko kamera (mouseup po dragu)
+    if (e.button !== 0) {
+      this._pointerDownPos = null;
+      this._deployMoveStart = null;
+      return;
+    }
     const isClick = this._pointerDownPos &&
       (() => { const dx = e.clientX - this._pointerDownPos!.x; const dy = e.clientY - this._pointerDownPos!.y; return dx*dx+dy*dy < 36; })();
-    // Jesli faza rozstawiania aktywna — sprawdz czy to byl klik (<6px)
     if (this.deployPhase && isClick) {
+      this._lastClickModifiers = { ctrl: e.ctrlKey, shift: e.shiftKey };
       this._onDeployClick(e.clientX, e.clientY);
     }
-    // Jesli faza walki i tryb RECZNY — obsluz zaznaczanie i rozkazy
     else if (!this.deployPhase && this.started && !this.finished && this._manualMode && isClick) {
       this._onBattleClick(e.clientX, e.clientY);
     }
@@ -7112,157 +8855,2690 @@ export class BattleScene {
   // -------------------------------------------------------------------------
 
   /**
-   * Buduje swiecace plaszczyznki strefy startowej (kol 0..12, wszystkie r,
-   * tylko pola przejezdne). Widoczne tylko gdy deployPhase === true.
+   * Buduje wizualizacje fazy rozstawiania:
+   * - lewa polowa: rozjasniona + niebieskie kafle (strefa ATK)
+   * - prawa polowa: mgla wojny (przyciemniona)
+   * - zlota linia podzialu na srodku mapy
    */
   private _buildDeployZone(): void {
-    const DEPLOY_MAX_COL = 12;
-    const geo = new THREE.PlaneGeometry(TILE_S * 0.92, TILE_S * 0.92);
-    geo.rotateX(-Math.PI / 2); // poziomo
-    this.ownedGeos.push(geo);
-    for (let col = 0; col <= DEPLOY_MAX_COL; col++) {
-      for (let row = 0; row < BF_ROWS; row++) {
+    const midCol   = DEPLOY_MID_COL;
+    const midRow   = PLAY_MID_ROW;
+    const worldH   = PLAYABLE_ROWS * TILE_S;
+    const atkCols  = midCol - PLAY_COL0;
+    const defCols  = PLAY_COL1 - midCol + 1;
+    const atkW     = atkCols * TILE_S;
+    const defW     = defCols * TILE_S;
+    const boundaryX = midCol * TILE_S - TILE_S * 0.5;
+    const zoneZ    = midRow * TILE_S;
+
+    const group = new THREE.Group();
+    group.name = 'deployVisuals';
+
+    const brightGeo = new THREE.PlaneGeometry(atkW, worldH);
+    brightGeo.rotateX(-Math.PI / 2);
+    this.ownedGeos.push(brightGeo);
+    const brightMat = new THREE.MeshBasicMaterial({
+      color: 0xc8e8ff,
+      transparent: true,
+      opacity: 0.16,
+      depthWrite: false,
+    });
+    this.ownedMats.push(brightMat);
+    const bright = new THREE.Mesh(brightGeo, brightMat);
+    bright.position.set(PLAY_COL0 * TILE_S + atkW * 0.5 - TILE_S * 0.5, 0.035, zoneZ);
+    group.add(bright);
+    this._deployZoneMeshes.push(bright);
+
+    const tileGeo = new THREE.PlaneGeometry(TILE_S * 0.94, TILE_S * 0.94);
+    tileGeo.rotateX(-Math.PI / 2);
+    this.ownedGeos.push(tileGeo);
+    for (let col = PLAY_COL0; col < midCol; col++) {
+      for (let row = PLAY_ROW0; row <= PLAY_ROW1; row++) {
         if (!this.terrainMap.passable(col, row)) continue;
         const mat = new THREE.MeshBasicMaterial({
-          color: 0x3399ff,
+          color: 0x44bbff,
           transparent: true,
-          opacity: 0.22,
+          opacity: 0.28,
           depthWrite: false,
         });
         this.ownedMats.push(mat);
-        const mesh = new THREE.Mesh(geo, mat);
+        const mesh = new THREE.Mesh(tileGeo, mat);
         const { x, z } = cellToWorld(col, row);
-        mesh.position.set(x, 0.02, z); // lekko nad ziemia
-        mesh.visible = true;
-        this.scene.add(mesh);
+        mesh.position.set(x, 0.045, z);
+        group.add(mesh);
         this._deployZoneMeshes.push(mesh);
       }
     }
+
+    // --- Mgla wojny — polowa wroga (przyciemniona) ---
+    const fogGeo = new THREE.PlaneGeometry(defW, worldH);
+    fogGeo.rotateX(-Math.PI / 2);
+    this.ownedGeos.push(fogGeo);
+    const fogMat = new THREE.MeshBasicMaterial({
+      color: 0x0a0a12,
+      transparent: true,
+      opacity: 0.58,
+      depthWrite: false,
+    });
+    this.ownedMats.push(fogMat);
+    const fog = new THREE.Mesh(fogGeo, fogMat);
+    fog.position.set(midCol * TILE_S + defW * 0.5 - TILE_S * 0.5, 0.055, zoneZ);
+    group.add(fog);
+    this._deployZoneMeshes.push(fog);
+
+    // --- Dodatkowa szara warstwa mgly (bardziej „zaszarzone”) ---
+    const fog2Mat = new THREE.MeshBasicMaterial({
+      color: 0x606878,
+      transparent: true,
+      opacity: 0.22,
+      depthWrite: false,
+    });
+    this.ownedMats.push(fog2Mat);
+    const fog2 = new THREE.Mesh(fogGeo, fog2Mat);
+    fog2.position.set(fog.position.x, 0.06, fog.position.z);
+    group.add(fog2);
+    this._deployZoneMeshes.push(fog2);
+
+    // --- Zlota linia podzialu ---
+    const lineGeo = new THREE.BoxGeometry(0.10, 0.18, worldH * 0.98);
+    this.ownedGeos.push(lineGeo);
+    const lineMat = new THREE.MeshBasicMaterial({
+      color: 0xd4af37,
+      transparent: true,
+      opacity: 0.92,
+    });
+    this.ownedMats.push(lineMat);
+    const line = new THREE.Mesh(lineGeo, lineMat);
+    line.position.set(boundaryX, 0.09, zoneZ);
+    group.add(line);
+    this._deployZoneMeshes.push(line);
+
+    // Obwodka linii podziału: niebieska po lewej (ATK/Ty), czerwona po prawej (OBR/wróg)
+    const mkEdge = (color: number, dx: number): void => {
+      const eg = new THREE.BoxGeometry(0.04, 0.12, worldH * 0.96);
+      this.ownedGeos.push(eg);
+      const em = new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.65 });
+      this.ownedMats.push(em);
+      const edge = new THREE.Mesh(eg, em);
+      edge.position.set(boundaryX + dx, 0.085, zoneZ);
+      group.add(edge);
+      this._deployZoneMeshes.push(edge);
+    };
+    mkEdge(0x3060c0, -0.12); // lewa — niebieski (Ty / ATK)
+    mkEdge(0xcc4030,  0.12); // prawa — czerwony (wróg / OBR)
+
+    this.scene.add(group);
+    this._deployVisualGroup = group;
+  }
+
+  /** @deprecated Etykiety frakcji na pasku mocy — nie nad mapą. */
+  private _buildDeployHalfLabels(): void {
+    this._removeDeployHalfLabels();
+  }
+
+  private _removeDeployHalfLabels(): void {
+    if (this._deployHalfLabels?.parentNode) {
+      this._deployHalfLabels.parentNode.removeChild(this._deployHalfLabels);
+    }
+    this._deployHalfLabels = null;
   }
 
   /** Ukrywa/pokazuje meshe strefy startowej. */
   private _setDeployZoneVisible(v: boolean): void {
+    if (this._deployVisualGroup) this._deployVisualGroup.visible = v;
     for (const m of this._deployZoneMeshes) m.visible = v;
+    if (this._deployHalfLabels) this._deployHalfLabels.style.display = v ? 'flex' : 'none';
   }
 
   /**
-   * Tworzy DOM overlay fazy rozstawiania z banerkiem, przyciskami
-   * Auto-ustaw / Reset / Start.
+   * Pasek deploy: jedna linia — chipy formacji + Formacja/Konnica/Linie/Strategia;
+   * po prawej Reset + Start walki. Jednostki/grupy w lewym panelu rosteru.
    */
-  private _buildDeployOverlay(): void {
-    const div = document.createElement('div');
-    div.id = 'deploy-overlay';
-    Object.assign(div.style, {
-      position:       'absolute',
-      left:           '50%',
-      bottom:         '70px',
-      transform:      'translateX(-50%)',
-      background:     'rgba(8,6,4,0.92)',
-      border:         '2px solid #d4af37',
-      borderRadius:   '10px',
-      padding:        '14px 22px',
+  private _buildDeployToolbar(): void {
+    if (this._deployToolbar) return;
+
+    const bar = document.createElement('div');
+    bar.id = 'deploy-toolbar';
+    Object.assign(bar.style, {
+      position:       'fixed',
+      left:           '0',
+      right:          '88px',
+      bottom:         '16px',
+      minHeight:      DEPLOY_TOOLBAR_H + 'px',
+      height:         'auto',
+      zIndex:         '100200',
       display:        'flex',
-      flexDirection:  'column',
       alignItems:     'center',
       gap:            '10px',
-      zIndex:         '10020',
-      fontFamily:     'sans-serif',
-      color:          '#f0d080',
-      boxShadow:      '0 0 24px rgba(212,175,55,0.45), 0 4px 20px rgba(0,0,0,0.8)',
+      boxSizing:      'border-box',
+      pointerEvents:  'auto',
+      overflow:       'visible',
+    });
+    applyDeployToolbarBar(bar);
+
+    const chipsCol = document.createElement('div');
+    Object.assign(chipsCol.style, {
+      display: 'none',
     });
 
-    const banner = document.createElement('h2');
-    banner.textContent = '\u2694 FAZA ROZSTAWIANIA — ustaw jednostki i kliknij Start';
-    Object.assign(banner.style, {
-      margin:      '0 0 2px',
-      fontSize:    '15px',
-      fontWeight:  'bold',
-      color:       '#d4af37',
-      textAlign:   'center',
-      textShadow:  '0 1px 4px #000',
-      letterSpacing: '0.04em',
+    const chips = document.createElement('div');
+    chips.id = 'deploy-toolbar-chips';
+    Object.assign(chips.style, {
+      display: 'flex', flexWrap: 'nowrap', gap: '4px', alignItems: 'center', flexShrink: '0',
     });
-    div.appendChild(banner);
+    this._deployToolbarStatus = chips;
+    chipsCol.appendChild(chips);
+    bar.appendChild(chipsCol);
+
+    const center = document.createElement('div');
+    Object.assign(center.style, {
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      gap: '10px', flexWrap: 'nowrap', pointerEvents: 'auto',
+      position: 'relative', zIndex: '3', flex: '1',
+    });
+    this._deployToolbarCenter = center;
+
+    const fmtDefs: Array<{ fmt: 'F1' | 'F2' | 'F3'; label: string; subtitle: string; icon: string; msg: string }> = [
+      { fmt: 'F1', label: 'Dystans', subtitle: '\u0141ucznicy z przodu', icon: FMT_SVG.f1, msg: '\u0141ucznicy z przodu' },
+      { fmt: 'F2', label: 'Piechota', subtitle: 'Zwarta linia z przodu', icon: FMT_SVG.f2, msg: 'Piechota z przodu' },
+      { fmt: 'F3', label: 'Obl\u0119\u017Cenie', subtitle: 'Machiny na skrzyd\u0142ach', icon: FMT_SVG.f3, msg: 'Machiny na skrzyd\u0142ach' },
+    ];
+    const fmtPopup = document.createElement('div');
+    Object.assign(fmtPopup.style, { minWidth: '220px' });
+    for (const fd of fmtDefs) {
+      const ob = document.createElement('button');
+      ob.type = 'button';
+      ob.dataset.deployFmtOption = fd.fmt;
+      ob.innerHTML = buildDeployPopupRowHtml(fd.icon, fd.label, fd.subtitle);
+      Object.assign(ob.style, {
+        padding: '8px 12px', borderRadius: '6px', cursor: 'pointer', fontFamily: HUD_FONT,
+        width: '100%', textAlign: 'left',
+        border: `1px solid rgba(232,216,138,0.2)`, background: DEPLOY_POPUP_INACTIVE_BG,
+      });
+      applyDeployPopupItem1E(ob);
+      ob.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this._setDeployActiveFormation(fd.fmt);
+        this._applyDeployArmyFormation(fd.fmt);
+        this._closeDeployDropdowns();
+        if (this._deployRosterFeedback) this._showDeployFeedback(fd.msg);
+      });
+      fmtPopup.appendChild(ob);
+    }
+    center.appendChild(this._makeDeployToolbarDropdown(
+      'Formacja', 'formation', fmtPopup,
+    ));
+    this._deployFmtRow = center;
+
+    const cavDefs: Array<{ mode: CavalryDeployMode; label: string; subtitle: string; icon: string; msg: string }> = [
+      { mode: 'flanks', label: 'Z boku', subtitle: 'Oskrzydlenie flanki', icon: FMT_SVG.cavFlanks, msg: 'Konnica na skrzyd\u0142ach' },
+      { mode: 'rear', label: 'Z ty\u0142u', subtitle: 'Uderzenie na ty\u0142y', icon: FMT_SVG.cavRear, msg: 'Konnica za liniami' },
+    ];
+    const cavPopup = document.createElement('div');
+    Object.assign(cavPopup.style, { minWidth: '220px' });
+    for (const cd of cavDefs) {
+      const ob = document.createElement('button');
+      ob.type = 'button';
+      ob.dataset.deployCavOption = cd.mode;
+      ob.innerHTML = buildDeployPopupRowHtml(cd.icon, cd.label, cd.subtitle);
+      Object.assign(ob.style, {
+        padding: '8px 12px', borderRadius: '6px', cursor: 'pointer', fontFamily: HUD_FONT,
+        width: '100%', textAlign: 'left',
+        border: `1px solid rgba(232,216,138,0.2)`, background: DEPLOY_POPUP_INACTIVE_BG,
+      });
+      applyDeployPopupItem1E(ob);
+      ob.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this._applyDeployCavalryMode(cd.mode);
+        this._closeDeployDropdowns();
+        if (this._deployRosterFeedback) this._showDeployFeedback(cd.msg);
+      });
+      cavPopup.appendChild(ob);
+    }
+    center.appendChild(this._makeDeployToolbarDropdown(
+      'Konnica', 'cavalry', cavPopup,
+    ));
+    this._deployCavRow = center;
+
+    const linesPopup = document.createElement('div');
+    linesPopup.id = 'deploy-lines-popup';
+    Object.assign(linesPopup.style, { minWidth: '240px' });
+    center.appendChild(this._makeDeployToolbarDropdown(
+      'Linie', 'lines', linesPopup,
+    ));
+
+    const tacticsPopup = document.createElement('div');
+    tacticsPopup.id = 'deploy-tactics-popup';
+    Object.assign(tacticsPopup.style, { minWidth: '300px' });
+    center.appendChild(this._makeDeployToolbarDropdown(
+      'Taktyka', 'tactics', tacticsPopup,
+    ));
+
+    const stratPopup = document.createElement('div');
+    stratPopup.id = 'deploy-strategy-popup';
+    Object.assign(stratPopup.style, { minWidth: '360px', maxWidth: '360px' });
+    center.appendChild(this._makeDeployToolbarDropdown(
+      'Strategia', 'strategy', stratPopup,
+    ));
+
+    bar.appendChild(center);
+
+    const actionRow = document.createElement('div');
+    Object.assign(actionRow.style, {
+      display: 'flex', gap: '10px', alignItems: 'center',
+      marginLeft: 'auto',
+      position: 'relative', zIndex: '3', flexShrink: '0',
+    });
+
+    const btnReset = document.createElement('button');
+    btnReset.id = 'deploy-toolbar-reset';
+    btnReset.type = 'button';
+    applyToolbarBtn1E(btnReset);
+    btnReset.style.color = '#c8b898';
+    btnReset.style.borderColor = 'rgba(232,216,138,0.25)';
+    btnReset.innerHTML = FMT_SVG.reset + ' Reset';
+    btnReset.onclick = (e) => {
+      e.stopPropagation();
+      this._resetDeployAttacker();
+      this._showDeployFeedback('Jednostki przywr\u00F3cone do domy\u015Blnego rozstawienia.');
+      this._updateDeployToolbarStatus();
+    };
+    actionRow.appendChild(btnReset);
+
+    const btnStart = document.createElement('button');
+    btnStart.id = 'deploy-toolbar-start';
+    btnStart.type = 'button';
+    applyBtnStartBattle(btnStart);
+    btnStart.style.flex = 'none';
+    btnStart.style.height = '52px';
+    btnStart.style.padding = '0 34px';
+    btnStart.style.fontSize = '14px';
+    btnStart.style.boxShadow = 'inset 0 1px 0 rgba(255,255,255,0.25),0 6px 20px rgba(200,64,64,0.4)';
+    btnStart.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 5 19 12 8 19Z"/></svg>Start walki';
+    btnStart.onclick = (e) => { e.stopPropagation(); this._endDeployPhase(); };
+    actionRow.appendChild(btnStart);
+
+    bar.appendChild(actionRow);
+    document.body.appendChild(bar);
+    this._deployToolbar = bar;
+
+    this._deployToolbarDocClick = (e: MouseEvent) => {
+      const t = e.target as Node | null;
+      if (!t) return;
+      if (this._deployToolbar?.contains(t)) return;
+      this._closeDeployDropdowns();
+    };
+    document.addEventListener('click', this._deployToolbarDocClick);
+
+    this._syncDeployFormationButtons();
+    this._syncDeployCavalryButtons();
+    const linesPop = this._deployDropdownPopups.lines;
+    if (linesPop) this._renderDeployLinesPopup(linesPop);
+    this._updateDeployToolbarStatus();
+    this._updateDeployToolbarSelection();
+    this._updateRightRailLayout();
+  }
+
+  /** Dropdown u gory nad przyciskiem glownym (Formacja / Konnica / Taktyka / Strategia). */
+  private _makeDeployToolbarDropdown(
+    label: string,
+    key: 'formation' | 'cavalry' | 'lines' | 'tactics' | 'strategy',
+    popupBody: HTMLDivElement,
+  ): HTMLDivElement {
+    const wrap = document.createElement('div');
+    Object.assign(wrap.style, { position: 'relative', flexShrink: '0' });
+
+    const popup = document.createElement('div');
+    popup.dataset.deployDropdown = key;
+    Object.assign(popup.style, {
+      position: 'absolute', bottom: '100%', left: '50%', transform: 'translateX(-50%)',
+      marginBottom: '8px', display: 'none', flexDirection: 'column', gap: '4px',
+      padding: '6px', borderRadius: '8px', zIndex: '100210',
+      background: 'linear-gradient(180deg,rgba(32,26,14,.98),rgba(18,14,8,.98))',
+      border: `1px solid ${BATTLE_GOLD_DIM}`,
+      boxShadow: '0 -4px 20px rgba(0,0,0,0.55)',
+      pointerEvents: 'auto',
+    });
+    popup.appendChild(popupBody);
+    this._deployDropdownPopups[key] = popup;
+
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.dataset.deployMainBtn = key;
+    applyToolbarBtn1E(btn);
+    btn.style.minWidth = '84px';
+    btn.textContent = label;
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      this._toggleDeployDropdown(key);
+    });
+
+    wrap.appendChild(popup);
+    wrap.appendChild(btn);
+    return wrap;
+  }
+
+  private _toggleDeployDropdown(key: 'formation' | 'cavalry' | 'lines' | 'tactics' | 'strategy'): void {
+    if (this._deployOpenDropdown === key) {
+      this._closeDeployDropdowns();
+      return;
+    }
+    this._closeDeployDropdowns();
+    this._deployOpenDropdown = key;
+    const popup = this._deployDropdownPopups[key];
+    if (popup) {
+      popup.style.display = 'flex';
+      if (key === 'tactics') this._renderDeployTacticsPopup(popup);
+      if (key === 'strategy') this._renderDeployStrategyPopup(popup);
+      if (key === 'lines') this._renderDeployLinesPopup(popup);
+    }
+    this._paintDeployMainButtons();
+  }
+
+  private _closeDeployDropdowns(): void {
+    this._deployOpenDropdown = null;
+    for (const popup of Object.values(this._deployDropdownPopups)) {
+      if (popup) popup.style.display = 'none';
+    }
+    this._paintDeployMainButtons();
+  }
+
+  private _paintDeployMainButtons(): void {
+    const paint = (key: string, open: boolean): void => {
+      const btn = this._deployToolbar?.querySelector(
+        `button[data-deploy-main-btn="${key}"]`,
+      ) as HTMLButtonElement | null;
+      if (!btn) return;
+      Object.assign(btn.style, {
+        border: open ? `2px solid ${BATTLE_GOLD}` : `1px solid ${BATTLE_GOLD_DIM}`,
+        background: open ? 'rgba(232,216,138,0.22)' : 'rgba(255,255,255,0.04)',
+        color: open ? '#fff8dc' : BATTLE_GOLD,
+        boxShadow: open ? '0 0 10px rgba(232,216,138,0.35)' : 'none',
+      });
+    };
+    paint('formation', this._deployOpenDropdown === 'formation');
+    paint('cavalry', this._deployOpenDropdown === 'cavalry');
+    paint('lines', this._deployOpenDropdown === 'lines');
+    paint('tactics', this._deployOpenDropdown === 'tactics');
+    paint('strategy', this._deployOpenDropdown === 'strategy');
+  }
+
+  private _deployFormationShortLabel(fmt: 'F1' | 'F2' | 'F3'): string {
+    if (fmt === 'F1') return 'Dystans';
+    if (fmt === 'F2') return 'Piechota';
+    return 'Obl\u0119\u017Cenie';
+  }
+
+  private _deployCavalryShortLabel(mode: CavalryDeployMode): string {
+    return mode === 'flanks' ? 'Konnica z boku' : 'Konnica z ty\u0142u';
+  }
+
+  /** Dolny pasek: chipy aktywnej formacji, linii i konnicy (jedna linia). */
+  private _updateDeployToolbarStatus(): void {
+    const el = this._deployToolbarStatus;
+    if (!el) return;
+    el.innerHTML = '';
+
+    const mkChip = (text: string): HTMLSpanElement => {
+      const c = document.createElement('span');
+      c.textContent = text;
+      Object.assign(c.style, {
+        fontSize: '9px', fontWeight: 'bold', letterSpacing: '0.05em',
+        padding: '2px 6px', borderRadius: '4px',
+        color: '#fff8dc', background: 'rgba(232,216,138,0.18)',
+        border: `1px solid ${BATTLE_GOLD}`,
+        whiteSpace: 'nowrap',
+      });
+      return c;
+    };
+
+    const groups = this._sortedGroupIds();
+    const gid = this._resolveDeployPopupGroupId();
+
+    if (!this.deployPhase && this.started) {
+      if (gid) {
+        const meta = this._ensureGroupMeta(gid);
+        el.appendChild(mkChip(this._groupDisplayLabel(gid)));
+        el.appendChild(mkChip(this._doctrineLabel(meta.doctrine)));
+        if (meta.autoPlay) el.appendChild(mkChip('AUTO'));
+        else el.appendChild(mkChip('RECZNY'));
+      }
+      return;
+    }
+
+    el.appendChild(mkChip(this._deployFormationShortLabel(this._deployActiveFormation)));
+    el.appendChild(mkChip('P: ' + this._deployMeleeLines + ' lin.'));
+    el.appendChild(mkChip('D: ' + this._deployArcherLines + ' lin.'));
+    el.appendChild(mkChip(this._deployCavalryShortLabel(this._deployCavalryMode)));
+
+    if (groups.length > 0 && gid) {
+      const doc = this._ensureGroupMeta(gid).doctrine;
+      if (doc !== 'manual') {
+        el.appendChild(mkChip(this._doctrineLabel(doc)));
+      }
+    }
+  }
+
+  /** Aktywna grupa w popupach Taktyka / Strategia. */
+  private _resolveDeployPopupGroupId(): string | null {
+    const groups = this._sortedGroupIds();
+    if (groups.length === 0) return null;
+    const selUnits = [...this._selectedUnits]
+      .map(id => this.atk.find(u => u.bu.id === id))
+      .filter((u): u is RuntimeBattleUnit => !!u && !u.dead && !u.removed);
+    const groupIds = [...new Set(selUnits.map(u => u.groupId).filter(Boolean))];
+    const singleGid = groupIds.length === 1 && selUnits.every(u => u.groupId === groupIds[0])
+      ? groupIds[0]! : null;
+    let gid = singleGid ?? this._deployActiveGroupId;
+    if (!gid || !groups.includes(gid)) gid = groups[0]!;
+    this._deployActiveGroupId = gid;
+    return gid;
+  }
+
+  private _priorityShortLabel(prefs: BattleUnitClass[]): string {
+    return prefs.map(c => c === 'mounted' ? 'K' : c === 'ranged' ? '\u0141' : 'P').join('\u2192');
+  }
+
+  private _appendDeployPriorityBlock(
+    parent: HTMLElement,
+    title: string,
+    getPrefs: (cls: BattleUnitClass) => BattleUnitClass[],
+    setPrefs: (cls: BattleUnitClass, prefs: BattleUnitClass[]) => void,
+    onChange: () => void,
+  ): void {
+    const hdr = document.createElement('div');
+    hdr.textContent = title;
+    Object.assign(hdr.style, {
+      fontFamily: BATTLE_FONT, fontWeight: '700', fontSize: '12px',
+      letterSpacing: '0.08em', textTransform: 'uppercase', color: BATTLE_GOLD,
+      marginBottom: '0', marginTop: '0',
+    });
+    parent.appendChild(hdr);
 
     const hint = document.createElement('div');
-    hint.textContent = 'Kliknij jednostke atakujaca, potem pole strefy (niebieskie).';
-    Object.assign(hint.style, { fontSize: '11px', color: '#aaa', marginBottom: '2px', textAlign: 'center' });
-    div.appendChild(hint);
+    hint.textContent = 'Kogo atakowa\u0107 w pierwszej kolejno\u015Bci (1\u21922\u21923):';
+    Object.assign(hint.style, {
+      fontSize: '11px', color: BATTLE_TEXT_DIM, margin: '3px 0 6px', lineHeight: '1.35',
+    });
+    parent.appendChild(hint);
 
-    // --- 3 FORMACJE ---
-    const fmtLbl = document.createElement('div');
-    fmtLbl.textContent = 'FORMACJA AUTO-USTAW:';
-    Object.assign(fmtLbl.style, { fontSize: '10px', color: '#d4af37', letterSpacing: '0.08em', alignSelf: 'flex-start' });
-    div.appendChild(fmtLbl);
+    const classOptions = ['mounted', 'ranged', 'melee'] as const;
+    const mkSelect = (
+      cls: BattleUnitClass, slot: number, prefs: BattleUnitClass[],
+    ): HTMLSelectElement => createBattlePrioritySelect1E(
+      prefs[slot]! as BattleClassKind,
+      classOptions,
+      (val) => {
+        const next = [...getPrefs(cls)];
+        const oldIdx = next.indexOf(val);
+        if (oldIdx >= 0 && oldIdx !== slot) next[oldIdx] = next[slot]!;
+        next[slot] = val;
+        setPrefs(cls, next);
+        onChange();
+      },
+    );
 
-    const fmtRow = document.createElement('div');
-    Object.assign(fmtRow.style, { display: 'flex', gap: '8px' });
-    div.appendChild(fmtRow);
+    for (const cls of classOptions) {
+      const prefs = getPrefs(cls);
+      parent.appendChild(createBattleClassTypeRow(cls));
+      for (let slot = 0; slot < 3; slot++) {
+        const row = document.createElement('div');
+        Object.assign(row.style, {
+          display: 'grid', gridTemplateColumns: '22px 1fr', alignItems: 'center',
+          gap: '8px', marginBottom: '6px',
+        });
+        const lbl = document.createElement('span');
+        lbl.textContent = (slot + 1) + '.';
+        Object.assign(lbl.style, {
+          fontFamily: BATTLE_FONT, fontWeight: '700', fontSize: '12px',
+          color: '#a08030', textAlign: 'center',
+        });
+        row.appendChild(lbl);
+        row.appendChild(mkSelect(cls, slot, prefs));
+        parent.appendChild(row);
+      }
+    }
+  }
 
-    const makeFmtBtn = (html: string, label: string, bg: string, msg: string): HTMLButtonElement => {
-      const b = document.createElement('button');
+  /** Popup Taktyka — doktryny grupy (Obrona / Atak / Szturm / Ostrzał). */
+  private _renderDeployTacticsPopup(popup: HTMLDivElement): void {
+    const body = popup.querySelector('#deploy-tactics-popup') as HTMLDivElement | null
+      ?? popup.firstElementChild as HTMLDivElement | null;
+    if (!body) return;
+    body.innerHTML = '';
+
+    const gid = this._resolveDeployPopupGroupId();
+    if (!gid) {
+      body.textContent = 'Brak grup \u2014 najpierw pogrupuj jednostki.';
+      Object.assign(body.style, { fontSize: '10px', color: BATTLE_TEXT_DIM, padding: '4px' });
+      return;
+    }
+
+    const meta = this._ensureGroupMeta(gid);
+    const doc = meta.doctrine;
+
+    const hdr = document.createElement('div');
+    hdr.textContent = this._groupDisplayLabel(gid);
+    Object.assign(hdr.style, {
+      fontSize: '10px', color: BATTLE_GOLD, fontWeight: 'bold', marginBottom: '4px',
+      letterSpacing: '0.06em',
+    });
+    body.appendChild(hdr);
+
+    const hint = document.createElement('div');
+    hint.textContent = this.deployPhase
+      ? 'Postawa taktyczna grupy w walce (auto):'
+      : 'Postawa taktyczna — grupa wykona ja na turze (SPACJA):';
+    Object.assign(hint.style, {
+      fontSize: '9px', color: BATTLE_TEXT_DIM, marginBottom: '6px', lineHeight: '1.35',
+    });
+    body.appendChild(hint);
+
+    const docRow = document.createElement('div');
+    Object.assign(docRow.style, {
+      display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px',
+    });
+
+    const mkDoc = (label: string, d: GroupDoctrine, icon: string): HTMLButtonElement => {
+      const active = doc === d;
+      const b = this._makeDeployQuickBtn(label, active, () => {
+        this._setGroupDoctrine(gid, d);
+        this._deployActiveGroupId = gid;
+        this._renderDeployTacticsPopup(popup);
+        this._updateDeployToolbarStatus();
+      }, { fullWidth: true });
+      b.innerHTML = buildDeployPopupRowHtml(icon, label);
       Object.assign(b.style, {
-        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px',
-        background: bg, border: '1px solid rgba(212,175,55,0.45)',
-        borderRadius: '6px', padding: '6px 10px', cursor: 'pointer', color: '#e8e0d0', minWidth: '82px',
+        padding: '8px 10px', width: '100%', textAlign: 'left', minHeight: '34px',
       });
-      b.innerHTML = html;
-      b.onclick = () => { this._resetDeployAttacker(); this._showDeployFmtFeedback(hint, msg); };
+      applyDeployPopupItem1E(b);
+      paintDeployPopupOption(b, active);
       return b;
     };
 
-    fmtRow.appendChild(makeFmtBtn(
-      '<div style="font-size:18px;">\u{1F3F9}\u{1F5E1}\u{1F40E}</div><div style="font-size:9px;color:#d4af37;">F1 Dystans-przod</div>',
-      'F1', 'rgba(30,50,30,0.85)',
-      'F1: Lucznicy przod / Melee srodek / Konnica boki'
-    ));
-    fmtRow.appendChild(makeFmtBtn(
-      '<div style="font-size:18px;">\u{1F5E1}\u{1F3F9}\u{1F40E}</div><div style="font-size:9px;color:#d4af37;">F2 Melee-przod</div>',
-      'F2', 'rgba(30,30,50,0.85)',
-      'F2: Melee przod / Dystansowe tyl / Konnica boki'
-    ));
-    fmtRow.appendChild(makeFmtBtn(
-      '<div style="font-size:18px;">\u{1F3F0}\u{1F3F9}\u{1F40E}</div><div style="font-size:9px;color:#d4af37;">F3 Oblezenie</div>',
-      'F3', 'rgba(50,20,10,0.85)',
-      'F3: Machiny przod / Lucznicy tyl / Konnica rezerwa'
-    ));
+    docRow.appendChild(mkDoc('Obrona', 'defensive', DEPLOY_TACTIC_SVG.defensive));
+    docRow.appendChild(mkDoc('Atak', 'steady', DEPLOY_TACTIC_SVG.steady));
+    docRow.appendChild(mkDoc('Szturm', 'aggressive', DEPLOY_TACTIC_SVG.aggressive));
+    docRow.appendChild(mkDoc('Ostrza\u0142', 'skirmish', DEPLOY_TACTIC_SVG.skirmish));
+    body.appendChild(docRow);
+  }
 
-    // --- Przyciski glowne ---
-    const btnRow = document.createElement('div');
-    Object.assign(btnRow.style, { display: 'flex', gap: '10px', marginTop: '2px' });
-    div.appendChild(btnRow);
+  /** Popup Strategia — priorytety celów armii i per grupa. */
+  private _renderDeployStrategyPopup(popup: HTMLDivElement): void {
+    const body = popup.querySelector('#deploy-strategy-popup') as HTMLDivElement | null
+      ?? popup.firstElementChild as HTMLDivElement | null;
+    if (!body) return;
+    body.innerHTML = '';
 
-    const btnReset = document.createElement('button');
-    btnReset.innerHTML = '\u21BA Reset';
-    styleDeployBtn(btnReset, 'rgba(70,40,8,0.88)', '#fff');
-    btnReset.onclick = () => { this._resetDeployAttacker(); hint.textContent = 'Jednostki przywrocone do domyslnego rozstawienia.'; };
-    btnRow.appendChild(btnReset);
+    const outer = popup.parentElement as HTMLDivElement | null;
+    if (outer?.dataset.deployDropdown === 'strategy') {
+      Object.assign(outer.style, {
+        padding: '0', background: 'transparent', border: 'none', boxShadow: 'none',
+      });
+    }
 
-    const btnGroup = document.createElement('button');
-    btnGroup.innerHTML = '&#x25C6; Grupuj';
-    styleDeployBtn(btnGroup, 'rgba(60,50,0,0.88)', '#ffd700');
-    btnGroup.style.border = '1px solid #ffd700';
-    btnGroup.title = 'Zaznacz >= 2 jednostki (box-select), potem kliknij Grupuj';
-    btnGroup.onclick = () => { this._groupSelected(); hint.textContent = 'Grupowanie zastosowane.'; };
-    btnRow.appendChild(btnGroup);
+    Object.assign(body.style, {
+      display: 'flex',
+      flexDirection: 'column',
+      width: '360px',
+      maxWidth: '360px',
+      maxHeight: 'min(480px, 62vh)',
+      overflow: 'hidden',
+      border: '2px solid rgba(232,216,138,0.5)',
+      borderRadius: '14px',
+      background: 'linear-gradient(180deg,rgba(22,28,38,.98),rgba(8,10,16,.98))',
+      boxShadow: '0 20px 50px rgba(0,0,0,0.7)',
+      color: BATTLE_TEXT,
+      fontFamily: BATTLE_FONT,
+    });
 
-    const btnStart = document.createElement('button');
-    btnStart.innerHTML = '\u25B6 Start walki';
-    styleDeployBtn(btnStart, 'rgba(80,15,15,0.95)', '#fff');
-    btnStart.style.border = '2px solid #d4af37';
-    btnStart.style.fontWeight = 'bold';
-    btnStart.onclick = () => { this._endDeployPhase(); };
-    btnRow.appendChild(btnStart);
+    const gid = this._resolveDeployPopupGroupId();
+    if (!gid) {
+      body.textContent = 'Brak grup \u2014 najpierw pogrupuj jednostki.';
+      Object.assign(body.style, {
+        fontSize: '10px', color: BATTLE_TEXT_DIM, padding: '12px',
+        display: 'block', maxHeight: 'none', border: 'none', boxShadow: 'none',
+      });
+      return;
+    }
 
-    this.overlay.appendChild(div);
-    this._deployOverlay = div;
+    const meta = this._ensureGroupMeta(gid);
+    const rerender = (): void => this._renderDeployStrategyPopup(popup);
+
+    const topHdr = document.createElement('div');
+    Object.assign(topHdr.style, {
+      padding: '14px 18px',
+      borderBottom: '1px solid rgba(232,216,138,0.22)',
+      background: 'linear-gradient(90deg,rgba(232,216,138,0.12),transparent)',
+      display: 'flex', alignItems: 'center', gap: '10px', flex: 'none',
+    });
+    const topIcon = document.createElement('span');
+    Object.assign(topIcon.style, { display: 'inline-flex', color: BATTLE_GOLD, lineHeight: '0' });
+    topIcon.innerHTML = STRATEGY_HEADER_SVG;
+    const topTitle = document.createElement('span');
+    topTitle.textContent = 'Strategia';
+    Object.assign(topTitle.style, {
+      fontFamily: BATTLE_FONT_TITLE, fontSize: '18px', letterSpacing: '0.08em', color: BATTLE_GOLD,
+    });
+    topHdr.appendChild(topIcon);
+    topHdr.appendChild(topTitle);
+    body.appendChild(topHdr);
+
+    const scroll = document.createElement('div');
+    Object.assign(scroll.style, {
+      flex: '1',
+      minHeight: '0',
+      overflowY: 'auto',
+      overflowX: 'hidden',
+      padding: '16px 18px',
+    });
+    applyBattleRosterScrollbar(scroll);
+    body.appendChild(scroll);
+
+    const stickyFoot = document.createElement('div');
+    Object.assign(stickyFoot.style, {
+      flexShrink: '0',
+      padding: '12px 18px',
+      borderTop: '1px solid rgba(232,216,138,0.22)',
+      background: 'linear-gradient(180deg,rgba(18,14,8,.92),rgba(12,10,6,.98))',
+    });
+    body.appendChild(stickyFoot);
+
+    this._appendDeployPriorityBlock(
+      scroll,
+      'Priorytety armii',
+      (cls) => [...this._targetPriorities[cls]],
+      (cls, prefs) => { this._targetPriorities[cls] = prefs; },
+      () => { rerender(); this._updateDeployToolbarStatus(); },
+    );
+
+    const resetArmy = document.createElement('button');
+    resetArmy.textContent = 'Przywr\u00F3\u0107 domy\u015Blne (armia)';
+    applyBattleStrategyOutlineBtn(resetArmy);
+    resetArmy.addEventListener('click', (e) => {
+      e.stopPropagation();
+      this._targetPriorities = {
+        mounted: [...BattleScene.DEFAULT_TARGET_PRIORITIES.mounted],
+        ranged:  [...BattleScene.DEFAULT_TARGET_PRIORITIES.ranged],
+        melee:   [...BattleScene.DEFAULT_TARGET_PRIORITIES.melee],
+      };
+      rerender();
+      this._updateDeployToolbarStatus();
+    });
+    scroll.appendChild(resetArmy);
+
+    const divider = document.createElement('div');
+    Object.assign(divider.style, {
+      height: '1px', background: 'rgba(232,216,138,0.2)', margin: '18px 0',
+    });
+    scroll.appendChild(divider);
+
+    const grpHdr = document.createElement('div');
+    grpHdr.textContent = 'Priorytety grupy: ' + this._groupDisplayLabel(gid);
+    Object.assign(grpHdr.style, {
+      fontFamily: BATTLE_FONT_TITLE, fontSize: '16px', color: BATTLE_GOLD,
+      marginBottom: '4px',
+    });
+    scroll.appendChild(grpHdr);
+
+    const useOwn = !!meta.useGroupPriorities;
+    const toggleRow = document.createElement('label');
+    Object.assign(toggleRow.style, {
+      display: 'flex', alignItems: 'center', gap: '9px',
+      fontSize: '13px', color: '#c8b898', margin: '10px 0 4px', cursor: 'pointer',
+    });
+    const toggle = document.createElement('input');
+    toggle.type = 'checkbox';
+    toggle.checked = useOwn;
+    applyBattleCheckbox1E(toggle);
+    toggle.addEventListener('change', () => {
+      meta.useGroupPriorities = toggle.checked;
+      if (toggle.checked && !meta.groupTargetPriorities) {
+        meta.groupTargetPriorities = {
+          mounted: [...this._targetPriorities.mounted],
+          ranged:  [...this._targetPriorities.ranged],
+          melee:   [...this._targetPriorities.melee],
+        };
+      }
+      rerender();
+      this._updateDeployToolbarStatus();
+    });
+    toggleRow.appendChild(toggle);
+    toggleRow.appendChild(document.createTextNode('W\u0142asne priorytety tej grupy'));
+    scroll.appendChild(toggleRow);
+
+    if (useOwn) {
+      if (!meta.groupTargetPriorities) {
+        meta.groupTargetPriorities = {
+          mounted: [...this._targetPriorities.mounted],
+          ranged:  [...this._targetPriorities.ranged],
+          melee:   [...this._targetPriorities.melee],
+        };
+      }
+      const gp = meta.groupTargetPriorities;
+      this._appendDeployPriorityBlock(
+        scroll,
+        'Kolejność celów grupy',
+        (cls) => [...(gp[cls] ?? this._targetPriorities[cls])],
+        (cls, prefs) => { gp[cls] = prefs; },
+        () => { rerender(); this._updateDeployToolbarStatus(); },
+      );
+      const resetGrp = document.createElement('button');
+      resetGrp.textContent = 'Skopiuj z priorytet\u00F3w armii';
+      applyBattleStrategyGoldCta(resetGrp);
+      resetGrp.addEventListener('click', (e) => {
+        e.stopPropagation();
+        meta.groupTargetPriorities = {
+          mounted: [...this._targetPriorities.mounted],
+          ranged:  [...this._targetPriorities.ranged],
+          melee:   [...this._targetPriorities.melee],
+        };
+        rerender();
+      });
+      stickyFoot.appendChild(resetGrp);
+    } else {
+      const note = document.createElement('div');
+      note.textContent = 'Grupa u\u017Cywa priorytet\u00F3w armii (powy\u017Cej).';
+      Object.assign(note.style, {
+        fontSize: '11px', color: BATTLE_TEXT_DIM, lineHeight: '1.35', marginBottom: '4px',
+      });
+      scroll.appendChild(note);
+    }
+  }
+
+  /** Popup Linie: piechota i dystansowe — osobno 1 / 2 / 3 linie glebokosci. */
+  private _renderDeployLinesPopup(popup: HTMLDivElement): void {
+    const body = popup.querySelector('#deploy-lines-popup') as HTMLDivElement | null
+      ?? popup.firstElementChild as HTMLDivElement | null;
+    if (!body) return;
+    body.innerHTML = '';
+
+    const mkSection = (
+      title: string,
+      kind: 'melee' | 'archer',
+      active: DeployLineCount,
+      headerIcon?: string,
+    ): void => {
+      const hdr = document.createElement('div');
+      if (headerIcon) {
+        hdr.innerHTML =
+          '<span style="display:inline-flex;align-items:center;gap:6px;">' +
+          `<span style="display:inline-flex;line-height:0;color:${BATTLE_GOLD};">${headerIcon}</span>` +
+          `<span>${title}</span></span>`;
+      } else {
+        hdr.textContent = title;
+      }
+      Object.assign(hdr.style, {
+        fontSize: '10px', color: BATTLE_GOLD, fontWeight: 'bold',
+        marginBottom: '4px', letterSpacing: '0.06em',
+      });
+      body.appendChild(hdr);
+
+      const row = document.createElement('div');
+      Object.assign(row.style, { display: 'flex', gap: '4px', marginBottom: '8px' });
+
+      for (const n of [1, 2, 3] as DeployLineCount[]) {
+        const on = active === n;
+        const b = this._makeDeployQuickBtn(String(n), on, () => {
+          if (kind === 'melee') this._setDeployMeleeLines(n);
+          else this._setDeployArcherLines(n);
+          this._applyDeployLineSettings();
+          this._renderDeployLinesPopup(popup);
+          this._updateDeployToolbarStatus();
+          const who = kind === 'melee' ? DEPLOY_KIND_LABEL.melee : DEPLOY_KIND_LABEL.ranged;
+          this._showDeployFeedback(who + ': ' + n + ' linie');
+        });
+        b.dataset.deployLinesKind = kind;
+        b.dataset.deployLinesCount = String(n);
+        Object.assign(b.style, {
+          flex: '1', padding: '0', fontSize: '11px', textAlign: 'center', minHeight: '34px',
+        });
+        applyDeployPopupItem1E(b);
+        paintDeployPopupOption(b, on);
+        row.appendChild(b);
+      }
+      body.appendChild(row);
+    };
+
+    mkSection(DEPLOY_KIND_LABEL.melee, 'melee', this._deployMeleeLines, ROSTER_TYPE_SVG.melee.replace(/width="14"/g, 'width="17"').replace(/height="14"/g, 'height="17"'));
+    mkSection(DEPLOY_KIND_LABEL.ranged, 'archer', this._deployArcherLines, DEPLOY_SCOPE_SVG);
+  }
+
+  /** Ikony typów + liczby dla bieżącego zaznaczenia. */
+  private _selectionTypeCountsHtml(units: RuntimeBattleUnit[]): string {
+    const counts = { mounted: 0, melee: 0, ranged: 0 };
+    for (const u of units) counts[this._deployRowKind(u)]++;
+    return rosterTypeCountsHtml(counts);
+  }
+
+  /** Lewy panel rosteru: licznik rozstawionych + zaznaczenie + Grupuj/Rozgrupuj. */
+  private _updateDeployRosterCountLine(): void {
+    if (!this._deployRosterCount || !this.deployPhase) return;
+    const live = this.atk.filter(u => !u.dead && !u.removed).length;
+    this._deployRosterCount.textContent = 'Rozstawiono: ' + live + ' jednostek';
+  }
+
+  /** Lewy panel rosteru: pasek zaznaczenia + Odznacz / Grupuj / Rozgrupuj (C09 v4 — zawsze widoczny). */
+  private _updateDeployToolbarSelection(): void {
+    this._updateDeployRosterCountLine();
+    const bar = this._deploySelBar;
+    if (!bar || !this.deployPhase) return;
+    bar.innerHTML = '';
+
+    const selUnits = [...this._selectedUnits]
+      .map(id => this.atk.find(u => u.bu.id === id))
+      .filter((u): u is RuntimeBattleUnit => !!u && !u.dead && !u.removed);
+
+    const groupIds = [...new Set(selUnits.map(u => u.groupId).filter(Boolean))];
+    const singleGid = groupIds.length === 1 && selUnits.every(u => u.groupId === groupIds[0])
+      ? groupIds[0]! : null;
+    const canGroup = selUnits.length >= 2 && !(
+      singleGid && selUnits.length === this._liveGroupMemberIds(singleGid).length
+    );
+    const canUngroup = groupIds.length > 0;
+
+    const mkBtn = (
+      text: string,
+      onClick: () => void,
+      gold: boolean,
+      group: boolean,
+      disabled: boolean,
+    ): HTMLButtonElement => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      if (group) {
+        b.innerHTML = groupBtnLabelHtml('Grupuj');
+        applySelectionActionBtn1E(b, true, disabled);
+      } else {
+        b.textContent = text;
+        applySelectionActionBtn1E(b, gold, disabled);
+      }
+      if (!disabled) {
+        b.addEventListener('click', (e) => { e.stopPropagation(); onClick(); });
+      }
+      return b;
+    };
+
+    bar.appendChild(mkBtn('Odznacz', () => this._clearDeploySelectionState(), true, false, selUnits.length === 0));
+    bar.appendChild(mkBtn('', () => this._groupSelected(), true, true, !canGroup));
+    bar.appendChild(mkBtn('Rozgrupuj', () => this._ungroupSelected(), false, false, !canUngroup));
+    this._updateDeployRosterFooter(selUnits, singleGid);
+  }
+
+  /** Stopka rosteru deploy — status zaznaczenia (C09 v4). */
+  private _updateDeployRosterFooter(
+    selUnits: RuntimeBattleUnit[],
+    singleGid: string | null,
+  ): void {
+    const footer = this._deployRosterFooter;
+    if (!footer) return;
+    const status = footer.querySelector('#deploy-roster-footer-status') as HTMLSpanElement | null;
+    if (!status) return;
+    const n = selUnits.length;
+    if (n === 0) {
+      status.textContent = 'Zaznaczone: 0';
+      status.style.color = BATTLE_TEXT_DIM;
+    } else if (singleGid) {
+      status.textContent = 'Zaznaczone: ' + n + ' \u00B7 ' + this._groupDisplayLabel(singleGid);
+      status.style.color = BATTLE_PLAYER_TEXT;
+    } else {
+      status.textContent = 'Zaznaczone: ' + n;
+      status.style.color = BATTLE_GOLD;
+    }
+  }
+
+  /** Przycisk formacji na pasku deploy. @deprecated — dropdown w toolbara deploy. */
+  private _makeDeployFmtButton(
+    svg: string, label: string, msg: string, fmt: 'F1' | 'F2' | 'F3',
+  ): HTMLButtonElement {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.dataset.deployFmt = fmt;
+    Object.assign(b.style, {
+      flex: '1', maxWidth: '200px', display: 'flex', flexDirection: 'column', alignItems: 'center',
+      gap: '4px', padding: '8px 6px', borderRadius: '8px', cursor: 'pointer',
+      color: BATTLE_GOLD, background: 'rgba(255,255,255,0.02)',
+      border: `1px solid ${BATTLE_GOLD_DIM}`, fontFamily: HUD_FONT,
+    });
+    b.innerHTML = svg + '<span style="font-size:9px;letter-spacing:0.05em;text-transform:uppercase;line-height:1.2;">'
+      + label + '</span>';
+    b.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      this._setDeployActiveFormation(fmt);
+      this._applyDeployArmyFormation(fmt);
+      this._showDeployFeedback(msg);
+    }, true);
+    return b;
+  }
+
+  /** Przycisk ustawienia konnicy (boki / z tylu) — osobno od F1/F2/F3. */
+  private _makeDeployCavButton(
+    svg: string, label: string, msg: string, mode: CavalryDeployMode,
+  ): HTMLButtonElement {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.dataset.deployCav = mode;
+    Object.assign(b.style, {
+      display: 'flex', flexDirection: 'column', alignItems: 'center',
+      gap: '2px', padding: '6px 10px', borderRadius: '8px', cursor: 'pointer',
+      color: BATTLE_GOLD, background: 'rgba(255,255,255,0.02)',
+      border: `1px solid ${BATTLE_GOLD_DIM}`, fontFamily: HUD_FONT, minWidth: '64px',
+    });
+    b.innerHTML = svg + '<span style="font-size:9px;letter-spacing:0.05em;text-transform:uppercase;line-height:1.2;">'
+      + label + '</span>';
+    b.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      this._applyDeployCavalryMode(mode);
+      this._showDeployFeedback(msg);
+    }, true);
+    return b;
   }
 
   /** Feedback formacji w fazie rozstawiania. */
   private _showDeployFmtFeedback(hintEl: HTMLElement, msg: string): void {
     hintEl.textContent = 'Formacja: ' + msg;
     hintEl.style.color = '#7be08a';
-    setTimeout(() => { hintEl.style.color = '#aaa'; hintEl.textContent = 'Kliknij jednostke atakujaca, potem pole strefy.'; }, 2500);
+    setTimeout(() => {
+      hintEl.style.color = BATTLE_TEXT_DIM;
+      hintEl.textContent = 'LPM: zaznacz \u00B7 PPM: odznacz \u00B7 drag: szeroko\u015B\u0107';
+    }, 2500);
+  }
+
+  /**
+   * UI fazy rozstawiania: fixed dock z kartami jednostek + panel zaznaczenia.
+   */
+  private _initDeployUI(): void {
+    document.querySelectorAll('#deploy-detail-panel').forEach(el => el.remove());
+    this._deployDetailPanel = null;
+    // Wymus odbudowe docku (jeden rzad + pasek grup w srodku panelu).
+    if (this._deployRosterDock) {
+      this._deployRosterDock.remove();
+      this._deployRosterDock = null;
+      this._deployUnitsRow = null;
+      this._deployGroupsBar = null;
+      this._deployStrategyBar = null;
+      this._deployQuickSelectBar = null;
+      this._deployRosterHeader = null;
+      this._deployGroupsStrip = null;
+      this._deployRowUnits = null;
+      this._deployGroupTabs.clear();
+    } else if (document.getElementById('deploy-roster-dock') && !document.getElementById('deploy-units-row')) {
+      document.getElementById('deploy-roster-dock')?.remove();
+    }
+
+    this._buildDeployRosterDock();
+
+    if (this._selPanel) {
+      this._selPanel.style.display = 'none';
+    }
+
+    this._groups.clear();
+    this._groupCounter = 0;
+    this._groupMeta.clear();
+    for (const u of this.atk) {
+      u.groupId = null;
+      u.formationOffset = null;
+    }
+
+    this._buildDeployHalfLabels();
+    this._initDeployGhostLayer();
+    this._autoGroupDeployByKind();
+    this._updateDeployRosterHeader();
+    this._updateDeployGroupsBar();
+    this._updateDeployStrategyBar();
+    this._updateDeployQuickSelectBar();
+    this._updateRosterBar();
+    this._updateSelectedPanel();
+    if (this._groupSelectorBar) this._groupSelectorBar.style.display = 'none';
+    if (this._rosterBar) this._rosterBar.style.display = 'none';
+  }
+
+  /** Start deploy: osobne grupy Konnica / Piechota / Łucznicy (playtest POLE-BITWY). */
+  private _autoGroupDeployByKind(): void {
+    const kinds: Array<'mounted' | 'melee' | 'ranged'> = ['mounted', 'melee', 'ranged'];
+    for (const kind of kinds) {
+      const units = this.atk.filter(u =>
+        !u.dead && !u.removed && this._deployRowKind(u) === kind,
+      );
+      if (units.length < 2) continue;
+      this._selectedUnits.clear();
+      for (const u of units) this._selectedUnits.add(u.bu.id);
+      this._groupSelected();
+    }
+    this._selectedUnits.clear();
+    for (const gid of this._sortedGroupIds()) {
+      this._rosterGroupCollapsed.delete(gid);
+    }
+    this._rebuildDeployRosterGrid();
+    this._refreshDeploySelectionVisuals();
+  }
+
+  /** Upewnij się, że dock ma pasek akcji + stopkę C09 (migracja ze starego DOM). */
+  private _ensureDeployC09Chrome(): void {
+    const dock = this._deployRosterDock
+      ?? document.getElementById('deploy-roster-dock') as HTMLDivElement | null;
+    if (!dock) return;
+    this._deployRosterDock = dock;
+
+    dock.querySelector('#deploy-roster-unit-bar')?.remove();
+
+    let actionBar = dock.querySelector('#deploy-roster-action-bar') as HTMLDivElement | null;
+    if (!actionBar) {
+      actionBar = document.createElement('div');
+      actionBar.id = 'deploy-roster-action-bar';
+      applyRosterActionBar1E(actionBar);
+      const quick = dock.querySelector('#deploy-quick-select');
+      const scroll = dock.querySelector('#deploy-roster-scroll');
+      if (quick?.nextSibling) dock.insertBefore(actionBar, quick.nextSibling);
+      else if (scroll) dock.insertBefore(actionBar, scroll);
+      else dock.appendChild(actionBar);
+    }
+    this._deploySelBar = actionBar;
+
+    let footer = dock.querySelector('#deploy-roster-footer') as HTMLDivElement | null;
+    if (!footer) {
+      footer = document.createElement('div');
+      footer.id = 'deploy-roster-footer';
+      applyRosterFooter1E(footer);
+      const status = document.createElement('span');
+      status.id = 'deploy-roster-footer-status';
+      status.textContent = 'Zaznaczone: 0';
+      footer.appendChild(status);
+      const hint = document.createElement('span');
+      hint.id = 'deploy-roster-footer-hint';
+      hint.textContent = 'Ctrl+LPM = wielokrotne';
+      hint.style.color = BATTLE_PLAYER_TEXT;
+      footer.appendChild(hint);
+      dock.appendChild(footer);
+    }
+    this._deployRosterFooter = footer;
+    this._deployRosterFeedback = footer.querySelector('#deploy-roster-footer-hint') as HTMLDivElement | null;
+    this._updateDeployToolbarSelection();
+  }
+
+  /** @deprecated — zastąpione przez _ensureDeployC09Chrome. */
+  private _ensureDeployRosterUnitBar(): void {
+    this._ensureDeployC09Chrome();
+  }
+
+  private _buildDeployRosterDock(): void {
+    if (this._deployRosterDock) {
+      this._deployRosterDock.style.bottom = '16px';
+      applyRosterPanel1E(this._deployRosterDock);
+      this._ensureDeployRosterUnitBar();
+      this._rebuildDeployRosterGrid();
+      this._syncRosterColumnLayout();
+      return;
+    }
+
+    const dock = document.createElement('div');
+    dock.id = 'deploy-roster-dock';
+    Object.assign(dock.style, {
+      position:       'fixed',
+      left:           '16px',
+      top:            (BATTLE_TOP_BAR_H + 8) + 'px',
+      bottom:         '16px',
+      width:          ROSTER_PANEL_FIXED_W + 'px',
+      minWidth:       ROSTER_PANEL_FIXED_W + 'px',
+      maxWidth:       ROSTER_PANEL_FIXED_W + 'px',
+      zIndex:         '100050',
+      pointerEvents:  'auto',
+      display:        'flex',
+      flexDirection:  'column',
+      padding:        '0',
+      boxSizing:      'border-box',
+      overflow:       'hidden',
+    });
+    applyRosterPanel1E(dock);
+
+    const hdr = document.createElement('div');
+    hdr.id = 'deploy-roster-header';
+    applyRosterHeaderSection1E(hdr);
+    Object.assign(hdr.style, {
+      display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+      padding: '12px 14px', marginBottom: '0', lineHeight: '1.15',
+    });
+    dock.appendChild(hdr);
+    this._deployRosterHeader = hdr;
+
+    const quickBar = document.createElement('div');
+    quickBar.id = 'deploy-quick-select';
+    applyRosterFilterBar1E(quickBar);
+    dock.appendChild(quickBar);
+    this._deployQuickSelectBar = quickBar;
+
+    const actionBar = document.createElement('div');
+    actionBar.id = 'deploy-roster-action-bar';
+    applyRosterActionBar1E(actionBar);
+    dock.appendChild(actionBar);
+    this._deploySelBar = actionBar;
+
+    const groupsBar = document.createElement('div');
+    groupsBar.id = 'deploy-groups-bar';
+    Object.assign(groupsBar.style, {
+      display: 'none',
+      flexShrink: '0',
+    });
+    dock.appendChild(groupsBar);
+    this._deployGroupsBar = groupsBar;
+
+    const strategyBar = document.createElement('div');
+    strategyBar.id = 'deploy-strategy-bar';
+    Object.assign(strategyBar.style, {
+      display: 'none', flexDirection: 'column', flexWrap: 'nowrap', alignItems: 'stretch', gap: '4px',
+      marginBottom: '6px', padding: '4px 6px', borderRadius: '6px',
+      background: 'rgba(20,30,40,0.5)', border: '1px solid rgba(90,155,212,0.25)',
+      flexShrink: '0',
+    });
+    dock.appendChild(strategyBar);
+    this._deployStrategyBar = strategyBar;
+
+    const scroll = document.createElement('div');
+    scroll.id = 'deploy-roster-scroll';
+    Object.assign(scroll.style, {
+      flex: '1', minHeight: '0', overflowY: 'auto', overflowX: 'hidden',
+      background: 'transparent',
+      position: 'relative',
+      boxSizing: 'border-box',
+      scrollbarGutter: 'stable',
+      padding: '12px 22px 12px 12px',
+    });
+    dock.appendChild(scroll);
+    applyBattleRosterScrollbar(scroll);
+    this._deployRosterScroll = scroll;
+
+    const unitsRow = document.createElement('div');
+    unitsRow.id = 'deploy-units-row';
+    Object.assign(unitsRow.style, {
+      display: 'flex', flexDirection: 'column', gap: '4px',
+      width: '100%', maxWidth: '100%', overflowX: 'hidden', boxSizing: 'border-box',
+    });
+    scroll.appendChild(unitsRow);
+    this._deployUnitsRow = unitsRow;
+    this._deployRosterGridEl = unitsRow;
+    this._deployLooseCards = null;
+    this._unitCards.clear();
+
+    const footer = document.createElement('div');
+    footer.id = 'deploy-roster-footer';
+    applyRosterFooter1E(footer);
+    const footerStatus = document.createElement('span');
+    footerStatus.id = 'deploy-roster-footer-status';
+    footerStatus.textContent = 'Zaznaczone: 0';
+    footer.appendChild(footerStatus);
+    const footerHint = document.createElement('span');
+    footerHint.id = 'deploy-roster-footer-hint';
+    footerHint.textContent = 'Ctrl+LPM = wielokrotne';
+    footerHint.style.color = BATTLE_PLAYER_TEXT;
+    footer.appendChild(footerHint);
+    dock.appendChild(footer);
+    this._deployRosterFooter = footer;
+    this._deployRosterFeedback = footerHint;
+
+    document.body.appendChild(dock);
+    this._deployRosterDock = dock;
+
+    if (!this._deployLayoutListener) {
+      this._deployLayoutListener = () => {
+        if (this.deployPhase) this._syncDeployPanelLayout();
+        else if (this._rosterBar) this._syncBattleRosterPanelLayout();
+      };
+      window.addEventListener('resize', this._deployLayoutListener);
+    }
+
+    this._rebuildDeployRosterGrid();
+    this._syncDeployToolbarOffset();
+    this._syncRosterColumnLayout();
+    this._updateDeployRosterHeader();
+    this._updateDeployToolbarSelection();
+    requestAnimationFrame(() => {
+      this._syncDeployPanelLayout();
+      requestAnimationFrame(() => this._syncDeployPanelLayout());
+    });
+  }
+
+  private _deployLayoutListener: (() => void) | null = null;
+
+  /**
+   * Metryki siatki + skalowanie kart w kontenerze rosteru.
+   * availH/W = obszar scrolla — chipy wypełniają panel (max 6×5, potem skala + scroll).
+   */
+  private _rosterScrollAvailH(deploy: boolean): number {
+    if (deploy && this._deployRosterScroll) {
+      return Math.max(80, this._deployRosterScroll.clientHeight);
+    }
+    if (!deploy && this._rosterBar) {
+      const scrollEl = this._rosterBar.querySelector('#battle-roster-scroll') as HTMLDivElement | null
+        ?? this._rosterBar.querySelector('[data-roster-scroll]') as HTMLDivElement | null;
+      if (scrollEl) return Math.max(80, scrollEl.clientHeight);
+    }
+    return 0;
+  }
+
+  private _rosterScrollAvailW(deploy: boolean): number {
+    if (deploy && this._deployRosterScroll) {
+      return Math.max(120, this._deployRosterScroll.clientWidth - 4);
+    }
+    if (!deploy && this._rosterBar) {
+      const scrollEl = this._rosterBar.querySelector('#battle-roster-scroll') as HTMLDivElement | null;
+      if (scrollEl) return Math.max(120, scrollEl.clientWidth - 4);
+    }
+    if (this._deployRosterDock) {
+      return Math.max(120, ROSTER_PANEL_FIXED_W - ROSTER_SCROLLBAR_RESERVE - 20);
+    }
+    return Math.max(120, ROSTER_PANEL_FIXED_W - ROSTER_SCROLLBAR_RESERVE - 20);
+  }
+
+  private _layoutRosterCardGrid(
+    container: HTMLDivElement,
+    unitCount: number,
+    deploy: boolean,
+    availH?: number,
+    availW?: number,
+  ): RosterGridMetrics {
+    const baseH = deploy ? DEPLOY_ROSTER_CARD_H : BATTLE_ROSTER_CARD_H;
+    const h = availH ?? this._rosterScrollAvailH(deploy);
+    const w = availW ?? this._rosterScrollAvailW(deploy);
+    const m = computeRosterGridMetrics(unitCount, ROSTER_CARD_W, baseH, ROSTER_MAX_COLS, h, w);
+    applyRosterGridStyle(container, m);
+    for (const child of Array.from(container.children)) {
+      const el = child as HTMLElement;
+      if (el.dataset.rosterEmpty) continue;
+      if (el.tagName === 'DIV' && el.dataset.unitId) {
+        this._applyRosterCardMetrics(el as HTMLDivElement, m);
+      }
+    }
+    this._syncRosterEmptySlots(container, unitCount, m);
+    return m;
+  }
+
+  /** Placeholdery pustych komórek w ostatnim rzędzie siatki 6 kol. */
+  private _syncRosterEmptySlots(
+    container: HTMLDivElement,
+    unitCount: number,
+    m: RosterGridMetrics,
+  ): void {
+    container.querySelectorAll('[data-roster-empty]').forEach(el => el.remove());
+    if (unitCount <= 0) return;
+    const filledInLastRow = unitCount % m.cols;
+    if (filledInLastRow === 0) return;
+    const emptyNeeded = m.cols - filledInLastRow;
+    for (let i = 0; i < emptyNeeded; i++) {
+      container.appendChild(createRosterEmptySlotElement(m.cardH));
+    }
+  }
+
+  /** Skaluje wymiary karty jednostki wg metryk siatki (6 kolumn × pełna szerokość). */
+  private _applyRosterCardMetrics(card: HTMLDivElement, m: RosterGridMetrics): void {
+    card.style.width = '100%';
+    card.style.maxWidth = '100%';
+    card.style.height = m.cardH + 'px';
+    card.style.boxSizing = 'border-box';
+    const hpTrack = card.firstElementChild as HTMLDivElement | null;
+    if (hpTrack) {
+      hpTrack.style.height = Math.max(2, Math.round(4 * m.scale)) + 'px';
+      hpTrack.style.marginBottom = Math.max(1, Math.round(3 * m.scale)) + 'px';
+    }
+    const iconEl = (card as { _iconEl?: HTMLDivElement })._iconEl
+      ?? card.querySelector(':scope > div:nth-child(2)') as HTMLDivElement | null;
+    if (iconEl) {
+      iconEl.style.transform = `scale(${Math.max(0.55, m.scale)})`;
+      iconEl.style.transformOrigin = 'center center';
+    }
+    const hpLbl = (card as { _hpLbl?: HTMLDivElement })._hpLbl;
+    if (hpLbl) {
+      hpLbl.style.fontSize = Math.max(6, Math.round(8 * m.scale)) + 'px';
+    }
+    const gBadge = (card as { _gBadge?: HTMLDivElement })._gBadge;
+    if (gBadge) {
+      const sz = Math.max(10, Math.round(14 * m.scale));
+      gBadge.style.minWidth = sz + 'px';
+      gBadge.style.height = sz + 'px';
+      gBadge.style.lineHeight = sz + 'px';
+      gBadge.style.fontSize = Math.max(7, Math.round(9 * m.scale)) + 'px';
+      gBadge.style.top = Math.max(3, Math.round(6 * m.scale)) + 'px';
+    }
+  }
+
+  /** Układ kart w panelu deploy — płaska siatka 6 kol. (C09 v4). */
+  private _syncDeployPanelLayout(): void {
+    const dock = this._deployRosterDock;
+    if (!dock) return;
+
+    const availH = this._rosterScrollAvailH(true);
+    const availW = this._rosterScrollAvailW(true);
+
+    if (this._deployLooseCards?.isConnected) {
+      const n = this._deployLooseCards.querySelectorAll('[data-unit-id]').length;
+      if (n > 0) {
+        this._layoutRosterCardGrid(this._deployLooseCards, n, true, availH, availW);
+      }
+    }
+
+    this._syncDeployToolbarOffset();
+    this._syncMinimapPosition();
+    this._syncRosterColumnLayout();
+  }
+
+  /**
+   * Lewa kolumna rosteru od razu pod paskiem fazy; pasek mocy tylko nad mapą (nie nad rosterem).
+   */
+  private _syncRosterColumnLayout(): void {
+    let rosterW = 0;
+    if (this.deployPhase && this._deployRosterDock) {
+      this._deployRosterDock.style.top = (BATTLE_TOP_BAR_H + 8) + 'px';
+      rosterW = this._deployRosterDock.offsetWidth + 16;
+    } else if (this._rosterBar && (this._manualMode || this.started)) {
+      this._rosterBar.style.top = (BATTLE_TOP_BAR_H + 8) + 'px';
+      rosterW = this._rosterBar.offsetWidth + 16;
+    }
+    if (this._bottomPowerBar) {
+      const railW = (this._rightSettingsRail?.offsetWidth ?? 56) + 16;
+      const powerTop = (BATTLE_TOP_BAR_H + 8) + 'px';
+      if (rosterW > 0) {
+        Object.assign(this._bottomPowerBar.style, {
+          top: powerTop,
+          left: rosterW + 'px',
+          right: railW + 'px',
+          transform: 'none',
+          width: 'auto',
+          maxWidth: 'none',
+        });
+      } else {
+        Object.assign(this._bottomPowerBar.style, {
+          top: powerTop,
+          left: '50%',
+          right: 'auto',
+          transform: 'translateX(-50%)',
+          width: '520px',
+          maxWidth: BATTLE_POWER_BAR_MAX_W,
+        });
+      }
+    }
+  }
+
+  /** Układ kart wewnątrz bloku grupy — stałe 6 kolumn, scroll w pionie. */
+  private _syncRosterGroupLayouts(deploy: boolean, availH = 0, availW = 0): number {
+    const blocks = deploy ? this._deployGroupBlocks : this._battleGroupBlocks;
+    const baseH = deploy ? DEPLOY_ROSTER_CARD_H : BATTLE_ROSTER_CARD_H;
+    const h = availH || this._rosterScrollAvailH(deploy);
+    const w = availW || this._rosterScrollAvailW(deploy);
+    let maxGridW = ROSTER_CARD_W;
+
+    for (const [gid, block] of blocks) {
+      if (block.wrapper.style.display === 'none') continue;
+      const collapsed = this._rosterGroupCollapsed.has(gid);
+      const n = this._liveGroupMemberIds(gid).length;
+
+      if (collapsed || n === 0) {
+        block.wrapper.style.width = '100%';
+        block.wrapper.style.maxWidth = '100%';
+        block.header.style.height = baseH + 'px';
+        continue;
+      }
+
+      const m = this._layoutRosterCardGrid(block.cards, n, deploy, h, w);
+      maxGridW = Math.max(maxGridW, m.gridW);
+
+      block.wrapper.style.width = '100%';
+      block.wrapper.style.maxWidth = '100%';
+      block.header.style.height = m.cardH + 'px';
+      block.header.style.fontSize = Math.max(9, Math.round(12 * m.scale)) + 'px';
+    }
+    return maxGridW;
+  }
+
+  /** Kontener kart poza grupami — siatka 4 kolumny w stałym panelu. */
+  private _ensureBattleLooseCardsContainer(): HTMLDivElement {
+    if (this._battleLooseCards?.isConnected) return this._battleLooseCards;
+    const looseWrap = document.createElement('div');
+    looseWrap.id = 'battle-loose-cards';
+    looseWrap.className = 'roster-loose-cards';
+    if (this._battleRosterCards) {
+      this._battleRosterCards.appendChild(looseWrap);
+    } else if (this._rosterBar) {
+      this._rosterBar.appendChild(looseWrap);
+    }
+    this._battleLooseCards = looseWrap;
+    return looseWrap;
+  }
+
+  /** Układ kart w panelu walki — stała szerokość, skala tylko chipów. */
+  private _syncBattleRosterPanelLayout(): void {
+    if (!this._rosterBar) return;
+    const availH = this._rosterScrollAvailH(false);
+    const availW = this._rosterScrollAvailW(false);
+    this._syncRosterGroupLayouts(false, availH, availW);
+    if (this._battleLooseCards) {
+      const n = this._battleLooseCards.querySelectorAll('[data-unit-id]').length;
+      if (n > 0) {
+        this._layoutRosterCardGrid(this._battleLooseCards, n, false, availH, availW);
+      }
+    }
+    if (this._battleRosterCards) {
+      this._battleRosterCards.style.width = '100%';
+      this._battleRosterCards.style.maxWidth = '100%';
+    }
+    this._syncMinimapPosition();
+    this._syncRosterColumnLayout();
+  }
+
+  /** Po teardown deploy — odswiez referencje do chipow i popupow (DOM zostaje). */
+  private _rebindDeployToolbarRefs(): void {
+    if (!this._deployToolbar) return;
+    const chips = this._deployToolbar.querySelector('#deploy-toolbar-chips') as HTMLDivElement | null;
+    if (chips) this._deployToolbarStatus = chips;
+    for (const key of ['formation', 'cavalry', 'lines', 'tactics', 'strategy'] as const) {
+      const popup = this._deployToolbar.querySelector(
+        `[data-deploy-dropdown="${key}"]`,
+      ) as HTMLDivElement | null;
+      if (popup) this._deployDropdownPopups[key] = popup;
+    }
+    if (!this._deployToolbarDocClick) {
+      this._deployToolbarDocClick = (e: MouseEvent) => {
+        const t = e.target as Node | null;
+        if (!t) return;
+        if (this._deployToolbar?.contains(t)) return;
+        this._closeDeployDropdowns();
+      };
+      document.addEventListener('click', this._deployToolbarDocClick);
+    }
+  }
+
+  /** Pokaz/ukryj dolny pasek Taktyka+Strategia (deploy + reczna walka). */
+  private _syncBattleToolbarMode(): void {
+    if (this._battleChromeSuppressed) return;
+    const battleManual = this.started && !this.deployPhase && !this.finished && this._manualMode;
+    const showToolbar = this.deployPhase || battleManual;
+
+    if (battleManual && !this._deployToolbar) {
+      this._buildDeployToolbar();
+    }
+    if (!this._deployToolbar) return;
+    this._rebindDeployToolbarRefs();
+
+    this._deployToolbar.style.display = showToolbar ? 'grid' : 'none';
+    this._deployToolbar.style.pointerEvents = showToolbar ? 'auto' : 'none';
+
+    const battleOnly = battleManual && !this.deployPhase;
+    for (const key of ['formation', 'cavalry', 'lines'] as const) {
+      const btn = this._deployToolbar.querySelector(`[data-deploy-main-btn="${key}"]`);
+      const wrap = btn?.parentElement as HTMLElement | null;
+      if (wrap) wrap.style.display = battleOnly ? 'none' : '';
+    }
+    const resetBtn = document.getElementById('deploy-toolbar-reset');
+    const startBtn = document.getElementById('deploy-toolbar-start');
+    if (resetBtn) resetBtn.style.display = battleOnly ? 'none' : '';
+    if (startBtn) startBtn.style.display = battleOnly ? 'none' : '';
+
+    if (showToolbar) {
+      this._syncDeployToolbarOffset();
+      this._updateDeployToolbarStatus();
+    }
+    this._updateGroupSelectorBarLayout();
+    this._updateRightRailLayout();
+    this._syncMinimapPosition();
+  }
+
+  /** Toolbar deploy zaczyna sie za lewym panelem rosteru. */
+  private _syncDeployToolbarOffset(): void {
+    let w = 0;
+    if (this.deployPhase && this._deployRosterDock) {
+      w = this._deployRosterDock.offsetWidth;
+    } else if (this._rosterBar && this._manualMode) {
+      w = this._rosterBar.offsetWidth;
+    } else if (this._deployRosterDock) {
+      w = this._deployRosterDock.offsetWidth;
+    }
+    if (this._deployToolbar) {
+      if (w > 0 && (this.deployPhase || this._manualMode)) {
+        this._deployToolbar.style.left = w + 'px';
+      } else {
+        this._deployToolbar.style.left = '0';
+      }
+    }
+  }
+
+  /** Minimapa: obok rosteru deploy / walki recznej. */
+  private _syncMinimapPosition(): void {
+    if (!this._minimapWrap) return;
+    let rosterW = 0;
+    if (this.deployPhase && this._deployRosterDock) {
+      rosterW = this._deployRosterDock.offsetWidth;
+    } else if (this._manualMode && this._rosterBar) {
+      rosterW = this._rosterBar.offsetWidth;
+    }
+    const leftOff = rosterW > 0 ? rosterW + 10 : 12;
+    const toolbarUp = this._deployToolbar
+      && this._deployToolbar.style.display !== 'none'
+      && (this.deployPhase || (this.started && !this.finished && this._manualMode));
+    const bottomOff = toolbarUp ? DEPLOY_TOOLBAR_RESERVE + 10 : (this.deployPhase ? 156 : 156);
+    Object.assign(this._minimapWrap.style, {
+      left: leftOff + 'px',
+      bottom: bottomOff + 'px',
+      zIndex: '100060',
+    });
+  }
+
+  /** Rząd rosteru deploy: konnica (0) → piesza (1) → lucznictwo (2). */
+  private _deployRowKind(ru: RuntimeBattleUnit): 'mounted' | 'melee' | 'ranged' {
+    if (ru.mounted || isMounted(ru.bu)) return 'mounted';
+    if (isPrimaryRanged(ru.bu)) {
+      const kat = normName(String(ru.bu.kategoria ?? ''));
+      if (kat.includes('oszczep') || kat === 'oszczepnik') return 'melee';
+      return 'ranged';
+    }
+    return 'melee';
+  }
+
+  /** Sortowanie w rzedzie: nazwa jednostki. */
+  private _sortedDeployUnits(): RuntimeBattleUnit[] {
+    return this.atk
+      .filter(u => !u.dead && !u.removed)
+      .sort((a, b) => {
+        const ra = this._deployRowKind(a);
+        const rb = this._deployRowKind(b);
+        const order = { mounted: 0, melee: 1, ranged: 2 };
+        if (order[ra] !== order[rb]) return order[ra] - order[rb];
+        return String(a.bu.nazwa).localeCompare(String(b.bu.nazwa), 'pl');
+      });
+  }
+
+  /** Odtwarza siatke rosteru deploy — płaska siatka 6 kol. (C09 v4, bez zwijanych bloków grup). */
+  private _rebuildDeployRosterGrid(): void {
+    if (!this._ensureDeployRowRefs()) {
+      if (this.deployPhase) {
+        this._recoverDeployRosterDock();
+        if (!this._ensureDeployRowRefs()) return;
+      } else {
+        return;
+      }
+    }
+    if (this._deployUnitsRow) this._deployUnitsRow.innerHTML = '';
+    this._deployGroupTabs.clear();
+    this._deployGroupBlocks.clear();
+    this._unitCards.clear();
+
+    const grid = document.createElement('div');
+    grid.id = 'deploy-roster-cards';
+    grid.className = 'deploy-roster-cards';
+    Object.assign(grid.style, {
+      display: 'grid', width: '100%', maxWidth: '100%', boxSizing: 'border-box',
+    });
+
+    for (const ru of this._sortedDeployUnits()) {
+      const card = this._createDeployRosterCard(ru);
+      grid.appendChild(card);
+      this._unitCards.set(ru.bu.id, card);
+    }
+    this._deployUnitsRow?.appendChild(grid);
+    this._deployLooseCards = grid;
+
+    this._updateDeployRowCounts();
+    this._updateRosterBar();
+    this._updateDeployGroupsBar();
+    this._updateDeployStrategyBar();
+    this._updateDeployQuickSelectBar();
+    requestAnimationFrame(() => this._syncDeployPanelLayout());
+    this._updateDeployToolbarSelection();
+  }
+
+  /** Liczba „slotów” pionowych w rosterze (zwinięta grupa = 1 slot). */
+  private _countRosterLayoutSlots(visibleOnly = false): number {
+    let filterGid: string | null = null;
+    if (visibleOnly) {
+      for (const gid of this._sortedGroupIds()) {
+        if (this._isDeploySelectionExactlyGroup(gid)) {
+          filterGid = gid;
+          break;
+        }
+      }
+    }
+
+    let slots = 0;
+    const inGroup = new Set<string>();
+    for (const gid of this._sortedGroupIds()) {
+      if (visibleOnly && filterGid && gid !== filterGid) continue;
+      const block = this._deployGroupBlocks.get(gid);
+      if (visibleOnly && block && block.wrapper.style.display === 'none') continue;
+      const ids = this._liveGroupMemberIds(gid);
+      if (ids.length === 0) continue;
+      for (const id of ids) inGroup.add(id);
+      slots += 1;
+    }
+    if (!visibleOnly || !filterGid) {
+      for (const ru of this.atk) {
+        if (ru.dead || ru.removed || inGroup.has(ru.bu.id)) continue;
+        slots += 1;
+      }
+    }
+    return Math.max(1, slots);
+  }
+
+  /** Blok zwijanej grupy: nagłówek (numer) + karty w środku. */
+  private _createRosterGroupBlock(
+    gid: string, deploy: boolean,
+  ): { wrapper: HTMLDivElement; header: HTMLDivElement; cards: HTMLDivElement } {
+    const cardH = deploy ? DEPLOY_ROSTER_CARD_H : BATTLE_ROSTER_CARD_H;
+    const wrapper = document.createElement('div');
+    wrapper.className = 'roster-group-block';
+    wrapper.dataset.groupId = gid;
+    Object.assign(wrapper.style, {
+      display: 'flex', flexDirection: 'column', alignItems: 'stretch',
+      width: '100%', maxWidth: '100%',
+      flex: 'none', flexShrink: '0',
+      gap: ROSTER_CARD_GAP + 'px', marginBottom: '2px',
+      overflow: 'hidden', boxSizing: 'border-box',
+    });
+
+    const header = document.createElement('div');
+    header.className = deploy ? 'deploy-group-tab' : 'battle-group-tab';
+    header.dataset.groupId = gid;
+    applyTwGroupTabStyle(header, cardH);
+    Object.assign(header.style, {
+      width: '100%', height: cardH + 'px', cursor: 'default',
+      flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+      fontSize: '12px', padding: '2px 4px', boxSizing: 'border-box',
+    });
+
+    const body = document.createElement('div');
+    body.className = 'roster-grp-select';
+    Object.assign(body.style, {
+      flex: '1', textAlign: 'center', lineHeight: '1.2', cursor: 'pointer',
+      whiteSpace: 'nowrap', userSelect: 'none', fontSize: '11px',
+    });
+    const chev = document.createElement('div');
+    chev.className = 'roster-grp-chev';
+    Object.assign(chev.style, {
+      width: '16px', flexShrink: '0', fontSize: '10px', opacity: '0.8',
+      textAlign: 'center', cursor: 'pointer', userSelect: 'none',
+    });
+    header.appendChild(body);
+    header.appendChild(chev);
+
+    body.addEventListener('click', (e: MouseEvent) => {
+      e.stopPropagation();
+      if (deploy) {
+        this._deployActiveGroupId = gid;
+        this._selectDeployGroupToggle(gid, true);
+      } else {
+        this._selectBattleGroupReplace(gid);
+      }
+    });
+    chev.addEventListener('click', (e: MouseEvent) => {
+      e.stopPropagation();
+      this._toggleRosterGroupCollapsed(gid, deploy);
+    });
+
+    const cards = document.createElement('div');
+    cards.className = 'roster-group-cards';
+    Object.assign(cards.style, {
+      overflowX: 'hidden', boxSizing: 'border-box', width: '100%', maxWidth: '100%',
+    });
+
+    header.addEventListener('click', (e: MouseEvent) => {
+      e.stopPropagation();
+    });
+
+    wrapper.appendChild(header);
+    wrapper.appendChild(cards);
+    this._updateRosterGroupHeaderLabel(header, gid);
+    return { wrapper, header, cards };
+  }
+
+  private _refreshDeployGroupHeaderLabels(): void {
+    for (const [gid, block] of this._deployGroupBlocks) {
+      this._updateRosterGroupHeaderLabel(block.header, gid);
+    }
+    this._paintTwGroupTabs(this._deployGroupTabs);
+  }
+
+  private _updateRosterGroupHeaderLabel(header: HTMLDivElement, gid: string): void {
+    const body = header.querySelector('.roster-grp-select') as HTMLDivElement | null;
+    const chev = header.querySelector('.roster-grp-chev') as HTMLDivElement | null;
+    const collapsed = this._rosterGroupCollapsed.has(gid);
+    const n = this._groupDisplayNum(gid);
+    const cnt = this._liveGroupMemberIds(gid).length;
+    const active = this._deployActiveGroupId === gid;
+    if (body) {
+      body.textContent = 'Grupa ' + (n != null ? String(n) : '?') + ' \u00B7 ' + cnt;
+      body.style.fontWeight = 'bold';
+      body.style.color = active ? '#ffe066' : '#fff8dc';
+    }
+    if (chev) chev.textContent = collapsed ? '\u25B6' : '\u25BC';
+    header.style.border = active
+      ? `2px solid ${BATTLE_GOLD}`
+      : `1px solid ${BATTLE_GOLD_DIM}`;
+    header.style.background = active ? 'rgba(232,216,138,0.28)' : 'rgba(255,255,255,0.08)';
+    header.title = 'Klik = zaznacz grupe \u00B7 strzalka = zwin/rozwin karty';
+  }
+
+  /** Deploy: wszystkie grupy rozwinięte — maks. powierzchnia na chipy jednostek. */
+  private _expandAllDeployGroups(): void {
+    for (const id of this._sortedGroupIds()) {
+      this._rosterGroupCollapsed.delete(id);
+    }
+    for (const id of this._sortedGroupIds()) {
+      this._applyRosterGroupCollapse(id, true);
+    }
+    this._refreshDeployGroupHeaderLabels();
+  }
+
+  /** Po zaznaczeniu: odśwież pasek akcji i siatkę (deploy = płaska siatka C09). */
+  private _syncDeployRosterGroupVisibility(): void {
+    if (!this.deployPhase || !this._ensureDeployRowRefs()) return;
+    this._updateDeployToolbarSelection();
+    requestAnimationFrame(() => this._syncDeployPanelLayout());
+  }
+
+  private _toggleRosterGroupCollapsed(gid: string, deploy: boolean): void {
+    if (this._rosterGroupCollapsed.has(gid)) this._rosterGroupCollapsed.delete(gid);
+    else this._rosterGroupCollapsed.add(gid);
+    this._applyRosterGroupCollapse(gid, deploy);
+  }
+
+  private _applyRosterGroupCollapse(gid: string, deploy: boolean): void {
+    const blocks = deploy ? this._deployGroupBlocks : this._battleGroupBlocks;
+    const block = blocks.get(gid);
+    if (!block) return;
+    const collapsed = this._rosterGroupCollapsed.has(gid);
+    block.cards.style.display = collapsed ? 'none' : 'grid';
+    this._updateRosterGroupHeaderLabel(block.header, gid);
+    const tabs = deploy ? this._deployGroupTabs : this._battleGroupTabs;
+    this._paintTwGroupTabs(tabs);
+    if (deploy) {
+      requestAnimationFrame(() => this._syncDeployPanelLayout());
+    } else {
+      requestAnimationFrame(() => this._syncBattleRosterPanelLayout());
+    }
+  }
+
+  /** @deprecated Użyj _createRosterGroupBlock. */
+  private _createTwGroupTab(gid: string, deploy: boolean): HTMLDivElement {
+    return this._createRosterGroupBlock(gid, deploy).header;
+  }
+
+  /** Podświetla zakładki grup wg zaznaczenia. */
+  private _paintTwGroupTabs(tabs: Map<string, HTMLDivElement>): void {
+    for (const [gid, tab] of tabs) {
+      const liveIds = this._liveGroupMemberIds(gid);
+      const allSel = liveIds.length > 0 && liveIds.every(id => this._selectedUnits.has(id));
+      const partialSel = !allSel && liveIds.some(id => this._selectedUnits.has(id));
+      tab.style.border = allSel
+        ? `2px solid ${BATTLE_PLAYER}`
+        : partialSel ? `2px solid ${BATTLE_GOLD}` : `1px solid ${BATTLE_GOLD_DIM}`;
+      tab.style.boxShadow = allSel
+        ? '0 0 12px rgba(58,106,208,0.55)'
+        : partialSel ? '0 0 8px rgba(232,216,138,0.4)' : 'inset 0 1px 0 rgba(255,255,255,0.15)';
+      tab.style.background = allSel
+        ? 'linear-gradient(180deg,rgba(58,106,208,0.65),rgba(40,70,160,0.55))'
+        : partialSel
+          ? 'linear-gradient(180deg,rgba(232,216,138,0.65),rgba(160,130,50,0.50))'
+          : 'linear-gradient(180deg,rgba(232,216,138,0.55),rgba(140,110,40,0.40))';
+      tab.style.color = allSel ? '#fff' : '#fff8dc';
+    }
+  }
+
+  /** Ustawia aktywny uklad formacji i odswieza pasek nad rosterem. */
+  private _setDeployActiveFormation(fmt: 'F1' | 'F2' | 'F3'): void {
+    this._deployActiveFormation = fmt;
+    this._syncDeployFormationButtons();
+    this._updateDeployToolbarStatus();
+  }
+
+  /** Ustawia tryb konnicy i odswieza przyciski. */
+  private _setDeployCavalryMode(mode: CavalryDeployMode): void {
+    this._deployCavalryMode = mode;
+    this._syncDeployCavalryButtons();
+    this._updateDeployToolbarStatus();
+  }
+
+  private _setDeployMeleeLines(n: DeployLineCount): void {
+    this._deployMeleeLines = n;
+    this._syncDeployLinesButtons();
+    this._updateDeployToolbarStatus();
+  }
+
+  private _setDeployArcherLines(n: DeployLineCount): void {
+    this._deployArcherLines = n;
+    this._syncDeployLinesButtons();
+    this._updateDeployToolbarStatus();
+  }
+
+  /** Liczba linii glebokosci dla roli w formacji deploy. */
+  private _deployLinesForRole(role: string): DeployLineCount {
+    if (role === 'archer') return this._deployArcherLines;
+    if (role === 'melee' || role === 'javelin') return this._deployMeleeLines;
+    return 1;
+  }
+
+  /** Podswietla aktywne liczby linii w popupie Linie. */
+  private _syncDeployLinesButtons(): void {
+    document.querySelectorAll('button[data-deploy-lines-kind]').forEach(el => {
+      const kind = (el as HTMLElement).dataset.deployLinesKind;
+      const cnt = Number((el as HTMLElement).dataset.deployLinesCount) as DeployLineCount;
+      const active = kind === 'melee' ? this._deployMeleeLines : this._deployArcherLines;
+      paintDeployPopupOption(el as HTMLButtonElement, cnt === active);
+    });
+  }
+
+  /**
+   * Stosuje ustawienia linii (piechota / lucznicy) do zaznaczenia lub calej armii.
+   */
+  private _applyDeployLineSettings(): void {
+    const live = this.atk.filter(u => !u.dead && !u.removed);
+    if (live.length === 0) return;
+
+    const targets = this._resolveDeployFormationTargets(live);
+    if (targets.length === 0) return;
+
+    const groupIds = [...new Set(targets.map(u => u.groupId).filter(Boolean))] as string[];
+    for (const g of groupIds) {
+      const meta = this._ensureGroupMeta(g);
+      meta.meleeLines = this._deployMeleeLines;
+      meta.archerLines = this._deployArcherLines;
+    }
+
+    const formation = this._formationForDeployUnits(targets);
+    const moved = this._applyFormationToUnits(targets, formation);
+    if (!moved) {
+      this._showOrderFeedback('Linie: brak wolnego miejsca w strefie');
+      return;
+    }
+    this._refreshDeploySelectionVisuals();
+    this._updateRosterBar();
+  }
+
+  /** Podswietla aktywna opcje w popupie formacji. */
+  private _syncDeployFormationButtons(): void {
+    const active = this._deployActiveFormation;
+    document.querySelectorAll('button[data-deploy-fmt-option]').forEach(el => {
+      paintDeployPopupOption(
+        el as HTMLButtonElement,
+        (el as HTMLElement).dataset.deployFmtOption === active,
+      );
+    });
+  }
+
+  /** Podswietla aktywna opcje w popupie konnicy. */
+  private _syncDeployCavalryButtons(): void {
+    const active = this._deployCavalryMode;
+    document.querySelectorAll('button[data-deploy-cav-option]').forEach(el => {
+      paintDeployPopupOption(
+        el as HTMLButtonElement,
+        (el as HTMLElement).dataset.deployCavOption === active,
+      );
+    });
+  }
+
+  /** Odtwarza referencje do rosteru deploy z DOM (po utracie referencji). */
+  private _ensureDeployRowRefs(): boolean {
+    if (this._deployUnitsRow?.isConnected) return true;
+    const dock = document.getElementById('deploy-roster-dock') as HTMLDivElement | null;
+    if (!dock) return false;
+    const unitsRow = dock.querySelector('#deploy-units-row') as HTMLDivElement | null;
+    if (!unitsRow) return false;
+    this._deployRosterDock = dock;
+    this._deployUnitsRow = unitsRow;
+    this._deployGroupsBar = dock.querySelector('#deploy-groups-bar') as HTMLDivElement | null;
+    this._deployStrategyBar = dock.querySelector('#deploy-strategy-bar') as HTMLDivElement | null;
+    this._deployRosterGridEl = unitsRow;
+    this._deployRosterHeader = dock.querySelector('#deploy-roster-header') as HTMLDivElement | null;
+    this._deployRosterCount = dock.querySelector('#deploy-roster-count') as HTMLDivElement | null;
+    this._deploySelBar = dock.querySelector('#deploy-roster-action-bar') as HTMLDivElement | null
+      ?? dock.querySelector('#deploy-roster-sel-bar') as HTMLDivElement | null;
+    this._deployRosterFooter = dock.querySelector('#deploy-roster-footer') as HTMLDivElement | null;
+    this._deployRosterFeedback = dock.querySelector('#deploy-roster-footer-hint') as HTMLDivElement | null;
+    this._deployQuickSelectBar = dock.querySelector('#deploy-quick-select') as HTMLDivElement | null;
+    this._deployRosterScroll = dock.querySelector('#deploy-roster-scroll') as HTMLDivElement | null;
+    if (this._deployRosterScroll) applyBattleRosterScrollbar(this._deployRosterScroll);
+    return true;
+  }
+
+  /** Pelna odbudowa docku deploy gdy referencje DOM rozjechane. */
+  private _recoverDeployRosterDock(): void {
+    document.getElementById('deploy-roster-dock')?.remove();
+    this._deployRosterDock = null;
+    this._deployUnitsRow = null;
+    this._deployGroupsBar = null;
+    this._deployStrategyBar = null;
+    this._deployRowUnits = null;
+    this._deployGroupsStrip = null;
+    this._deployRosterGridEl = null;
+    this._deployRosterHeader = null;
+    this._deployRosterCount = null;
+    this._deployRosterFeedback = null;
+    this._deploySelBar = null;
+    this._deployRosterFooter = null;
+    this._deployQuickSelectBar = null;
+    this._deployGroupTabs.clear();
+    this._deployGroupBlocks.clear();
+    this._buildDeployRosterDock();
+  }
+
+  /** Rozklada jednostki ATK w jednym szeregu wzdłuż calej wysokosci strefy deploy. */
+  private _deploySpreadRank(
+    list: number[],
+    col: number,
+    idealRow: number[],
+    idealCol: number[],
+    clampRow: (r: number) => number,
+    clampCol: (c: number) => number,
+  ): void {
+    const rowSpan = DEPLOY_MAX_ROW - DEPLOY_MIN_ROW;
+    list.forEach((ui, k) => {
+      idealCol[ui] = clampCol(col);
+      idealRow[ui] = clampRow(
+        list.length <= 1
+          ? PLAY_MID_ROW
+          : DEPLOY_MIN_ROW + Math.round((k * rowSpan) / Math.max(1, list.length - 1)),
+      );
+    });
+  }
+
+  private _updateDeployRowCounts(): void {
+    this._updateDeployRosterHeader();
+  }
+
+  /** Kompaktowa karta jednostki — styl C09 v4 (deploy roster). */
+  private _createDeployRosterCard(ru: RuntimeBattleUnit): HTMLDivElement {
+    const isDead = ru.dead || ru.removed;
+    const isRouted = ru.routed;
+    const isSel = this._selectedUnits.has(ru.bu.id);
+    const hpPct = ru.bu.maxHp > 0 ? Math.max(0, ru.bu.hp / ru.bu.maxHp) : 0;
+    const morPct = ru.moraleMax > 0 ? Math.max(0, ru.morale / ru.moraleMax) : hpPct;
+    const row = this._deployRowKind(ru);
+
+    const card = document.createElement('div');
+    card.className = 'deploy-roster-card';
+    card.dataset.unitId = ru.bu.id;
+    Object.assign(card.style, {
+      width: ROSTER_CARD_W + 'px', flex: 'none', height: DEPLOY_ROSTER_CARD_H + 'px',
+      borderRadius: '8px',
+      cursor: isDead ? 'default' : 'pointer',
+      display: 'flex', flexDirection: 'column', alignItems: 'center',
+      userSelect: 'none', flexShrink: '0',
+      opacity: isDead ? '0.4' : isRouted ? '0.5' : '1',
+      transition: 'border-color 0.12s, box-shadow 0.12s, background 0.12s',
+      position: 'relative', overflow: 'visible',
+      padding: '5px 4px 4px', textAlign: 'center', gap: '3px',
+      ...rosterCardBaseStyle(row, isSel),
+    });
+
+    if (ru.groupId && !isDead) {
+      const gBadge = document.createElement('div');
+      const gNum = this._groupDisplayNum(ru.groupId);
+      Object.assign(gBadge.style, {
+        position: 'absolute', top: '-5px', right: '-5px',
+        width: '16px', height: '16px', borderRadius: '50%',
+        background: BATTLE_GOLD, color: '#2e2708',
+        fontSize: '9px', fontWeight: 'bold', lineHeight: '16px',
+        textAlign: 'center', zIndex: '2',
+      });
+      gBadge.textContent = gNum != null ? String(gNum) : '';
+      card.appendChild(gBadge);
+      (card as { _gBadge?: HTMLDivElement })._gBadge = gBadge;
+    }
+
+    const iconEl = document.createElement('div');
+    applyUnitCardIconCircle(iconEl, row);
+    iconEl.innerHTML = row === 'mounted' ? ROSTER_TYPE_SVG.mounted
+      : row === 'ranged' ? ROSTER_TYPE_SVG.ranged
+      : ROSTER_TYPE_SVG.melee;
+    const iconSvg = iconEl.querySelector('svg');
+    if (iconSvg) {
+      iconSvg.setAttribute('width', '15');
+      iconSvg.setAttribute('height', '15');
+    }
+    card.appendChild(iconEl);
+    (card as { _iconEl?: HTMLDivElement })._iconEl = iconEl;
+
+    const mkBar = (pct: number, gradient: string): { track: HTMLDivElement; fill: HTMLDivElement } => {
+      const track = document.createElement('div');
+      Object.assign(track.style, {
+        width: '100%', height: '4px', borderRadius: '2px',
+        background: 'rgba(255,255,255,0.1)', overflow: 'hidden', flexShrink: '0',
+      });
+      const fill = document.createElement('div');
+      Object.assign(fill.style, {
+        width: (pct * 100).toFixed(0) + '%', height: '100%', background: gradient,
+      });
+      track.appendChild(fill);
+      return { track, fill };
+    };
+
+    const hpBar = mkBar(hpPct, hpBarGradient());
+    card.appendChild(hpBar.track);
+    (card as any)._hpFill = hpBar.fill;
+
+    const morBar = mkBar(isDead ? 0 : morPct, moraleBarGradient());
+    card.appendChild(morBar.track);
+    (card as any)._morFill = morBar.fill;
+
+    const hpLbl = document.createElement('div');
+    Object.assign(hpLbl.style, {
+      fontSize: '8px', fontWeight: '700', color: isDead ? '#8a5a5a' : isRouted ? BATTLE_ENEMY_TEXT : '#c8b898',
+      lineHeight: '1.1',
+    });
+    hpLbl.textContent = isDead ? 'pad\u0142' : isRouted ? 'rout' : String(Math.round(ru.bu.hp));
+    card.appendChild(hpLbl);
+    (card as { _hpLbl?: HTMLDivElement })._hpLbl = hpLbl;
+    (card as any)._grpLbl = null;
+
+    card.addEventListener('pointerdown', (e: PointerEvent) => { e.stopPropagation(); });
+    card.addEventListener('click', (e: MouseEvent) => {
+      if (ru.dead || ru.removed) return;
+      e.stopPropagation();
+      e.preventDefault();
+      this._handleDeployUnitPick(ru, e.ctrlKey || e.metaKey, e.shiftKey);
+    });
+
+    return card;
+  }
+
+  private _unitStatVal(bu: BattleUnit, key: string): string {
+    const v = (bu.stats as Record<string, unknown> | undefined)?.[key];
+    if (v == null || v === '') return '\u2014';
+    return String(v);
+  }
+
+  /** Panel szczegolow — wylaczony; zaznaczenie na pasku deploy (_deploySelBar). */
+  private _updateDeployDetailPanel(): void {
+    /* legacy no-op */
+  }
+
+  /** Nagłówek nad rosterem — C09 v4 (Roster + licznik N / N). */
+  private _updateDeployRosterHeader(): void {
+    if (!this._deployRosterHeader || !this.deployPhase) return;
+    const live = this.atk.filter(u => !u.dead && !u.removed).length;
+    let title = this._deployRosterHeader.querySelector('#deploy-roster-title') as HTMLSpanElement | null;
+    let count = this._deployRosterHeader.querySelector('#deploy-roster-header-count') as HTMLSpanElement | null;
+    if (!title || !count) {
+      this._deployRosterHeader.innerHTML = '';
+      applyRosterHeaderSection1E(this._deployRosterHeader);
+      Object.assign(this._deployRosterHeader.style, {
+        display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+        padding: '12px 14px',
+      });
+      title = document.createElement('span');
+      title.id = 'deploy-roster-title';
+      title.textContent = 'Roster';
+      count = document.createElement('span');
+      count.id = 'deploy-roster-header-count';
+      Object.assign(count.style, {
+        fontSize: '11px', color: BATTLE_TEXT_DIM, fontWeight: '400',
+        letterSpacing: '0', textTransform: 'none',
+      });
+      this._deployRosterHeader.appendChild(title);
+      this._deployRosterHeader.appendChild(count);
+    }
+    count.textContent = live + ' / ' + live;
+    this._deployRosterHeader.title = BATTLE_UI_BUILD;
+    this._updateDeployRosterCountLine();
+  }
+
+  /** Czy interakcja zaznaczenia (LPM/PPM) jest aktywna w tej fazie. */
+  private _selectionInputActive(): boolean {
+    if (this.deployPhase) return true;
+    return !!(this.started && !this.finished && (this._manualMode || this._battleAwaitingOrders));
+  }
+
+  /** Krotki klik wskaznika (bez drag / box-select). */
+  private _isShortPointerClick(e: PointerEvent): boolean {
+    const down = this._pointerDownPos;
+    if (!down) return false;
+    const dx = e.clientX - down.x;
+    const dy = e.clientY - down.y;
+    return dx * dx + dy * dy < 36;
+  }
+
+  /** PPM — odznacz biezace zaznaczenie (mapa lub jednostka). */
+  private _deselectOnRightClick(): void {
+    if (this._selectedUnits.size === 0) return;
+    if (this.deployPhase) {
+      this._clearDeploySelectionState();
+      this._showDeployFeedback('Odznaczono');
+    } else {
+      this._clearAllSelection();
+      this._showBattleRosterFeedback('Odznaczono');
+    }
+  }
+
+  private _clearDeploySelectionState(): void {
+    for (const id of this._selectedUnits) {
+      const u = this.atk.find(x => x.bu.id === id);
+      if (u) {
+        this._removeSelectionRing(u);
+        u.group.scale.setScalar(1.0);
+      }
+    }
+    this._selectedUnits.clear();
+    this._deploySelected = null;
+    this._clearDeployGhosts();
+    this._refreshDeploySelectionVisuals();
+    this._syncDeployRosterGroupVisibility();
+    this._updateDeployToolbarSelection();
+  }
+
+  /**
+   * Zaznaczenie jednostki w fazie deploy (mapa lub karta).
+   * LPM na zeton/karte = pojedyncza jednostka; Ctrl/Shift = multi-select.
+   * Cala grupe zaznacza naglowek grupy w rosterze (nie klik w zeton).
+   */
+  private _handleDeployUnitPick(ru: RuntimeBattleUnit, ctrl: boolean, shift: boolean): void {
+    if (ru.dead || ru.removed) return;
+    const additive = ctrl || shift;
+
+    if (ru.groupId && additive) {
+      if (this._selectedUnits.has(ru.bu.id)) {
+        this._selectedUnits.delete(ru.bu.id);
+        this._removeSelectionRing(ru);
+      } else {
+        this._selectedUnits.add(ru.bu.id);
+        this._addSelectionRing(ru);
+        this._refreshUnitRingColor(ru);
+      }
+      this._refreshDeploySelectionVisuals();
+      return;
+    }
+
+    if (additive) {
+      if (this._selectedUnits.has(ru.bu.id)) {
+        this._selectedUnits.delete(ru.bu.id);
+        this._removeSelectionRing(ru);
+        if (this._deploySelected === ru) this._deploySelected = null;
+      } else {
+        this._selectedUnits.add(ru.bu.id);
+        this._addSelectionRing(ru);
+      }
+    } else {
+      if (this._selectedUnits.size === 1 && this._selectedUnits.has(ru.bu.id)) return;
+      for (const id of [...this._selectedUnits]) {
+        const u = this.atk.find(x => x.bu.id === id);
+        if (u) {
+          this._removeSelectionRing(u);
+          u.group.scale.setScalar(1.0);
+        }
+      }
+      this._selectedUnits.clear();
+      this._selectedUnits.add(ru.bu.id);
+      this._addSelectionRing(ru);
+      this._deploySelected = ru;
+    }
+    this._refreshDeploySelectionVisuals();
+  }
+
+  /** Numer grupy do wyswietlania (1, 2, 3…) — groupId to licznik tekstowy. */
+  private _groupDisplayNum(gid: string | null): number | null {
+    if (!gid) return null;
+    const n = parseInt(gid, 10);
+    return Number.isFinite(n) && n > 0 ? n : null;
+  }
+
+  /** Etykieta „Grupa N” dla UI. */
+  private _groupDisplayLabel(gid: string | null): string {
+    const n = this._groupDisplayNum(gid);
+    return n != null ? 'Grupa ' + n : (gid ?? '');
+  }
+
+  /** Usuwa puste grupy z rejestru; NIGDY nie kasuje groupId na jednostkach. */
+  private _pruneStaleGroups(): void {
+    this._syncGroupRegistry();
+    for (const gid of [...this._groups.keys()]) {
+      const live = this.atk.filter(u => u.groupId === gid && !u.dead && !u.removed);
+      if (live.length === 0) {
+        this._groups.delete(gid);
+        this._groupMeta.delete(gid);
+      } else {
+        this._groups.set(gid, new Set(live.map(u => u.bu.id)));
+      }
+    }
+  }
+
+  /** Posortowane groupId (po numerze) — tylko grupy z >=1 zywym czlonkiem. */
+  private _sortedGroupIds(): string[] {
+    this._pruneStaleGroups();
+    const ids = new Set<string>();
+    for (const u of this.atk) {
+      if (u.groupId && !u.dead && !u.removed) ids.add(u.groupId);
+    }
+    return [...ids].sort((a, b) => {
+      const na = parseInt(a.match(/(\d+)$/)?.[1] ?? '0', 10);
+      const nb = parseInt(b.match(/(\d+)$/)?.[1] ?? '0', 10);
+      return na - nb || a.localeCompare(b);
+    });
+  }
+
+  /** Zywe id czlonkow grupy (fallback skan atk gdy mapa _groups rozjechana). */
+  private _liveGroupMemberIds(gid: string): string[] {
+    const fromMap = this._groups.get(gid);
+    let ids: string[];
+    if (fromMap && fromMap.size > 0) {
+      ids = [...fromMap].filter(id => {
+        const u = this.atk.find(x => x.bu.id === id);
+        return u && !u.dead && !u.removed;
+      });
+    } else {
+      ids = this.atk
+        .filter(u => u.groupId === gid && !u.dead && !u.removed)
+        .map(u => u.bu.id);
+      if (ids.length > 0) this._groups.set(gid, new Set(ids));
+    }
+    return ids;
+  }
+
+  /** Odtwarza mape _groups z groupId na jednostkach (po resecie / starym stanie). */
+  private _syncGroupRegistry(): void {
+    for (const u of this.atk) {
+      if (!u.groupId || u.dead || u.removed) continue;
+      let set = this._groups.get(u.groupId);
+      if (!set) { set = new Set(); this._groups.set(u.groupId, set); }
+      set.add(u.bu.id);
+    }
+  }
+
+  /** Zastepuje zaznaczenie podanymi jednostkami. */
+  private _selectDeployUnitsByIds(ids: string[]): void {
+    for (const id of [...this._selectedUnits]) {
+      const u = this.atk.find(x => x.bu.id === id);
+      if (u) {
+        this._removeSelectionRing(u);
+        u.group.scale.setScalar(1.0);
+      }
+    }
+    this._selectedUnits.clear();
+    for (const id of ids) {
+      const u = this.atk.find(x => x.bu.id === id);
+      if (u && !u.dead && !u.removed) {
+        this._selectedUnits.add(id);
+        this._addSelectionRing(u);
+        this._refreshUnitRingColor(u);
+      }
+    }
+    this._refreshDeploySelectionVisuals();
+  }
+
+  /** Zaznacz cala grupe (przycisk szybkiego wyboru). */
+  private _selectDeployGroupById(gid: string): void {
+    this._selectDeployUnitsByIds(this._liveGroupMemberIds(gid));
+  }
+
+  /** Zaznacz wszystkie jednostki danego typu (konnica / piechota / lucznicy). */
+  private _selectDeployByKind(kind: 'mounted' | 'melee' | 'ranged'): void {
+    const ids = this.atk
+      .filter(u => !u.dead && !u.removed && this._deployRowKind(u) === kind)
+      .map(u => u.bu.id);
+    this._selectDeployUnitsByIds(ids);
+  }
+
+  /** Toggle zaznaczenia typu (Konnica / Piechota / Lucznicy). */
+  private _selectDeployByKindToggle(kind: 'mounted' | 'melee' | 'ranged'): void {
+    const ids = this.atk
+      .filter(u => !u.dead && !u.removed && this._deployRowKind(u) === kind)
+      .map(u => u.bu.id);
+    if (ids.length === 0) return;
+    const allSel = ids.every(id => this._selectedUnits.has(id));
+    const onlyThis = allSel && this._selectedUnits.size === ids.length;
+    if (onlyThis) this._clearDeploySelectionState();
+    else this._selectDeployUnitsByIds(ids);
+  }
+
+  /** Zaznacz cala armie atakujaca. */
+  private _selectDeployAll(): void {
+    const ids = this.atk.filter(u => !u.dead && !u.removed).map(u => u.bu.id);
+    this._selectDeployUnitsByIds(ids);
+  }
+
+  /** Toggle zaznaczenia calej armii. */
+  private _selectDeployAllToggle(): void {
+    const ids = this.atk.filter(u => !u.dead && !u.removed).map(u => u.bu.id);
+    if (ids.length === 0) return;
+    const allSel = ids.every(id => this._selectedUnits.has(id));
+    const onlyAll = allSel && this._selectedUnits.size === ids.length;
+    if (onlyAll) {
+      this._deployActiveGroupId = null;
+      this._clearDeploySelectionState();
+    } else {
+      this._deployActiveGroupId = null;
+      this._selectDeployUnitsByIds(ids);
+    }
+  }
+
+  /**
+   * Klik na czlonka grupy bez Ctrl: zaznacz/odznacz cala grupe (replace).
+   * replace=false: toggle grupy w istniejacym zaznaczeniu.
+   */
+  private _selectDeployGroupToggle(gid: string, replace: boolean): void {
+    this._pruneStaleGroups();
+    const liveIds = this._liveGroupMemberIds(gid);
+    if (liveIds.length === 0) {
+      this._updateDeployQuickSelectBar();
+      this._showDeployFeedback('Grupa pusta — uzyj \u25C6 Grupuj, aby utworzyc nowa');
+      return;
+    }
+    const allSelected = liveIds.every(id => this._selectedUnits.has(id));
+    const onlyThisGroup = allSelected && this._selectedUnits.size === liveIds.length;
+
+    if (replace) {
+      if (onlyThisGroup) return;
+      this._deployActiveGroupId = gid;
+      this._selectDeployUnitsByIds(liveIds);
+      return;
+    }
+
+    if (allSelected) {
+      for (const id of liveIds) {
+        this._selectedUnits.delete(id);
+        const u = this.atk.find(x => x.bu.id === id);
+        if (u) this._removeSelectionRing(u);
+      }
+    } else {
+      for (const id of liveIds) {
+        if (this._selectedUnits.has(id)) continue;
+        const u = this.atk.find(x => x.bu.id === id);
+        if (u) {
+          this._selectedUnits.add(id);
+          this._addSelectionRing(u);
+          this._refreshUnitRingColor(u);
+        }
+      }
+    }
+    this._refreshDeploySelectionVisuals();
+  }
+
+  /** Czy zaznaczenie to dokladnie jedna grupa (bez obcych jednostek). */
+  private _isDeploySelectionExactlyGroup(gid: string): boolean {
+    const liveIds = this._liveGroupMemberIds(gid);
+    if (liveIds.length === 0) return false;
+    return liveIds.every(id => this._selectedUnits.has(id)) && this._selectedUnits.size === liveIds.length;
+  }
+
+  /** Jednostki dostepne do zaznaczenia (deploy lub walka reczna — bez wycofanych). */
+  private _selectableAtkUnits(): RuntimeBattleUnit[] {
+    const battleLive = this.started && !this.deployPhase;
+    return this.atk.filter(u => !u.dead && !u.removed && (!battleLive || !u.routed));
+  }
+
+  /** Czy zaznaczone sa wylacznie jednostki danego typu. */
+  private _isDeploySelectionExactlyKind(kind: 'mounted' | 'melee' | 'ranged'): boolean {
+    const ids = this._selectableAtkUnits()
+      .filter(u => this._deployRowKind(u) === kind)
+      .map(u => u.bu.id);
+    if (ids.length === 0) return false;
+    return ids.every(id => this._selectedUnits.has(id)) && this._selectedUnits.size === ids.length;
+  }
+
+  /** Czy zaznaczona cala armia. */
+  private _isDeploySelectionAll(): boolean {
+    const live = this._selectableAtkUnits();
+    return live.length > 0 && live.every(u => this._selectedUnits.has(u.bu.id));
+  }
+
+  /** Przycisk szybkiego zaznaczenia — chip filtra C09 v4. */
+  private _makeDeployQuickBtn(
+    label: string, active: boolean, onClick: () => void,
+    opts?: { fullWidth?: boolean; kind?: 'mounted' | 'melee' | 'ranged' | 'all' | 'group' },
+  ): HTMLButtonElement {
+    const fullWidth = opts?.fullWidth !== false;
+    const kind = opts?.kind ?? 'all';
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.textContent = label;
+    applyFilterChip1E(btn, active, kind);
+    if (!fullWidth) {
+      btn.style.flexShrink = '0';
+      btn.style.whiteSpace = 'nowrap';
+    } else {
+      btn.style.width = 'auto';
+    }
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      onClick();
+    });
+    return btn;
+  }
+
+  /** Odswieza pasek filtrów — C09 v4 (Wszystkie + typy + chipy grup). */
+  private _updateDeployQuickSelectBar(): void {
+    const bar = this._deployQuickSelectBar;
+    if (!bar || !this.deployPhase) return;
+    bar.innerHTML = '';
+
+    bar.appendChild(this._makeDeployQuickBtn(
+      'Wszystkie',
+      this._isDeploySelectionAll(),
+      () => this._selectDeployAllToggle(),
+      { kind: 'all', fullWidth: false },
+    ));
+    bar.appendChild(this._makeDeployQuickBtn(
+      'Konnica',
+      this._isDeploySelectionExactlyKind('mounted'),
+      () => this._selectDeployByKindToggle('mounted'),
+      { kind: 'mounted', fullWidth: false },
+    ));
+    bar.appendChild(this._makeDeployQuickBtn(
+      'Piechota',
+      this._isDeploySelectionExactlyKind('melee'),
+      () => this._selectDeployByKindToggle('melee'),
+      { kind: 'melee', fullWidth: false },
+    ));
+    bar.appendChild(this._makeDeployQuickBtn(
+      DEPLOY_KIND_LABEL.ranged,
+      this._isDeploySelectionExactlyKind('ranged'),
+      () => this._selectDeployByKindToggle('ranged'),
+      { kind: 'ranged', fullWidth: false },
+    ));
+    for (const gid of this._sortedGroupIds()) {
+      bar.appendChild(this._makeDeployQuickBtn(
+        this._groupDisplayLabel(gid),
+        this._isDeploySelectionExactlyGroup(gid),
+        () => this._selectDeployGroupToggle(gid, true),
+        { kind: 'group', fullWidth: false },
+      ));
+    }
+  }
+
+  /** @deprecated Górny pasek GRUPY usunięty — wybór tylko w blokach rosteru (scroll). */
+  private _updateDeployGroupsBar(): void {
+    if (this._deployGroupsBar) this._deployGroupsBar.style.display = 'none';
+  }
+
+  /** Doktryny — ukryty pasek w rosterze; taktyka/strategia w dropdownie toolbara. */
+  private _updateDeployStrategyBar(): void {
+    const bar = this._deployStrategyBar;
+    if (bar) bar.style.display = 'none';
+    if (this._deployOpenDropdown === 'tactics') {
+      const popup = this._deployDropdownPopups.tactics;
+      if (popup) this._renderDeployTacticsPopup(popup);
+    }
+    if (this._deployOpenDropdown === 'strategy') {
+      const popup = this._deployDropdownPopups.strategy;
+      if (popup) this._renderDeployStrategyPopup(popup);
+    }
+    this._updateDeployToolbarStatus();
+  }
+
+  /** @deprecated Dolny pasek GRUPY — zawsze ukryty (grupy w lewym panelu rosteru). */
+  private _ensureGroupSelectorBar(): void {
+    const existing = document.getElementById('group-selector-bar') as HTMLDivElement | null;
+    if (existing) {
+      existing.style.display = 'none';
+      this._groupSelectorBar = existing;
+      return;
+    }
+    if (this._groupSelectorBar?.isConnected) {
+      this._groupSelectorBar.style.display = 'none';
+      return;
+    }
+    if (this._groupSelectorBar) return;
+    const bar = document.createElement('div');
+    bar.id = 'group-selector-bar';
+    bar.style.display = 'none';
+    this.overlay.appendChild(bar);
+    this._groupSelectorBar = bar;
+  }
+
+  /** Pozycjonuje pasek grup — wyłączony; roster pełna wysokość. */
+  private _updateGroupSelectorBarLayout(): void {
+    if (this._groupSelectorBar) this._groupSelectorBar.style.display = 'none';
+    if (this._rosterBar) this._rosterBar.style.bottom = '0';
+    const toolbarVisible = !!this._deployToolbar
+      && this._deployToolbar.style.display !== 'none'
+      && (this.deployPhase || (this.started && !this.finished && this._manualMode));
+    if (this._selPanel) {
+      this._selPanel.style.bottom = (toolbarVisible ? DEPLOY_TOOLBAR_RESERVE + 14 : 14) + 'px';
+      this._selPanel.style.zIndex = toolbarVisible ? '100250' : '100065';
+    }
+  }
+
+  /** @deprecated Grupy w lewym panelu rosteru — ten pasek nie jest używany. */
+  private _updateGroupSelectorBar(): void {
+    this._updateGroupSelectorBarLayout();
+  }
+
+  /** Odtwarza roster walki — lewy panel pionowy (stała szerokość, 4 kolumny). */
+  private _rebuildBattleRosterGrid(): void {
+    if (this.deployPhase || !this._rosterBar) return;
+
+    if (!this._battleRosterCards?.isConnected) {
+      this._rosterBar = null;
+      this._battleRosterCards = null;
+      this._battleLooseCards = null;
+      this._buildRosterBar();
+      return;
+    }
+    this._battleRosterCards.innerHTML = '';
+    this._battleLooseCards = null;
+    this._unitCards.clear();
+    this._battleGroupTabs.clear();
+    this._battleGroupBlocks.clear();
+
+    const inGroup = new Set<string>();
+    for (const gid of this._sortedGroupIds()) {
+      const memberIds = this._liveGroupMemberIds(gid);
+      if (memberIds.length === 0) continue;
+      const block = this._createRosterGroupBlock(gid, false);
+      this._battleRosterCards?.appendChild(block.wrapper);
+      this._battleGroupTabs.set(gid, block.header);
+      this._battleGroupBlocks.set(gid, block);
+      for (const id of memberIds) {
+        const ru = this.atk.find(u => u.bu.id === id);
+        if (!ru || ru.dead || ru.removed || ru.routed) continue;
+        inGroup.add(id);
+        const card = this._createUnitCard(ru);
+        block.cards.appendChild(card);
+        this._unitCards.set(id, card);
+      }
+      this._applyRosterGroupCollapse(gid, false);
+    }
+
+    const ungrouped = this.atk.filter(u =>
+      !u.dead && !u.removed && !u.routed && !inGroup.has(u.bu.id),
+    );
+    this._battleLooseCards = null;
+    if (ungrouped.length > 0) {
+      const looseWrap = document.createElement('div');
+      looseWrap.id = 'battle-loose-cards';
+      looseWrap.className = 'roster-loose-cards';
+      for (const ru of ungrouped) {
+        const card = this._createUnitCard(ru);
+        looseWrap.appendChild(card);
+        this._unitCards.set(ru.bu.id, card);
+      }
+      this._battleRosterCards?.appendChild(looseWrap);
+      this._battleLooseCards = looseWrap;
+    }
+    this._updateRosterBar();
+    this._updateBattleRosterHeader();
+    this._updateBattleSelectionBar();
+    this._updateBattleQuickSelectBar();
+    this._updateGroupSelectorBar();
+    requestAnimationFrame(() => this._syncBattleRosterPanelLayout());
+  }
+
+  /** Odswieza karty, naglowek, panel i skale po zmianie zaznaczenia. */
+  private _refreshDeploySelectionVisuals(): void {
+    this._clearDeployGhosts();
+    const n = this._selectedUnits.size;
+    for (const u of this.atk) {
+      if (u.dead || u.removed) continue;
+      const sel = this._selectedUnits.has(u.bu.id);
+      if (sel) {
+        const ring = this._selectionRings.get(u.bu.id);
+        if (ring) ring.position.set(0, 0.03, 0);
+      }
+      if (n === 1 && sel) {
+        u.group.scale.setScalar(1.22);
+        this._deploySelected = u;
+      } else if (!sel) {
+        u.group.scale.setScalar(1.0);
+      } else {
+        u.group.scale.setScalar(1.08);
+      }
+    }
+    if (n !== 1) this._deploySelected = n > 0 ? this._primarySelectedUnit() : null;
+    this._updateRosterBar();
+    this._updateDeployRosterHeader();
+    this._updateDeployDetailPanel();
+    this._updateDeployQuickSelectBar();
+    this._updateDeployToolbarSelection();
+    this._updateDeployGroupsBar();
+    this._updateDeployStrategyBar();
+    this._syncDeployRosterGroupVisibility();
+  }
+
+  /** Sprzata UI specyficzne dla fazy deploy po starcie walki. */
+  private _teardownDeployUI(): void {
+    this._removeDeployHalfLabels();
+    if (this._deployDetailPanel?.parentNode) {
+      this._deployDetailPanel.parentNode.removeChild(this._deployDetailPanel);
+    }
+    if (this._deployRosterDock?.parentNode) {
+      this._deployRosterDock.parentNode.removeChild(this._deployRosterDock);
+    }
+    this._deployRosterDock = null;
+    this._deployRosterHeader = null;
+    this._deployRosterCount = null;
+    this._deployRosterFeedback = null;
+    this._deployDetailPanel = null;
+    this._deployQuickSelectBar = null;
+    this._deployGroupsStrip = null;
+    this._deployGroupTabs.clear();
+    this._deployGroupBlocks.clear();
+    this._deployFmtRow = null;
+    this._deployCavRow = null;
+    // Zachowaj dolny toolbar (Taktyka/Strategia) — tylko rebind referencji po usunieciu paneli deploy.
+    this._rebindDeployToolbarRefs();
+    this._deployOpenDropdown = null;
+    this._deployHint = null;
+    this._deploySelBar = null;
+    this._deployRosterFooter = null;
+    this._closeDeployDropdowns();
+    this._syncBattleToolbarMode();
+    this._deployUnitsRow = null;
+    this._deployLooseCards = null;
+    this._deployRosterScroll = null;
+    if (this._deployLayoutListener) {
+      window.removeEventListener('resize', this._deployLayoutListener);
+      this._deployLayoutListener = null;
+    }
+    this._deployGroupsBar = null;
+    this._deployStrategyBar = null;
+    this._deployRowUnits = null;
+    this._deployRosterGridEl = null;
+    this._rosterBar = null;
+    this._unitCards.clear();
+    this._deployDrag = null;
+    this._deployMoveStart = null;
+    this._deployPickPending = null;
+    this._clearDeployGhosts();
+    if (this._deployGhostGroup) {
+      this.scene.remove(this._deployGhostGroup);
+      this._deployGhostGroup = null;
+    }
+    this._updateGroupSelectorBarLayout();
   }
 
   /**
@@ -7306,7 +11582,7 @@ export class BattleScene {
         if (hitUnit) break;
       }
       if (hitUnit) {
-        this._setDeploySelection(hitUnit);
+        this._handleDeployUnitPick(hitUnit, this._lastClickModifiers.ctrl, this._lastClickModifiers.shift);
         return;
       }
     }
@@ -7320,39 +11596,848 @@ export class BattleScene {
     const col = Math.round(pt.x / TILE_S);
     const row = Math.round(pt.z / TILE_S);
 
-    const DEPLOY_MAX_COL = 12;
-
     // Fallback: sprawdz occByKey (na wypadek gdyby raycast 3D nie trafil —
     // np. jednostka bez mesha; dla bezpieczenstwa zachowujemy ten krok)
     const key = cellKey(col, row);
     const unitAtCell = this.occByKey.get(key);
     if (unitAtCell && unitAtCell.side === 'atk') {
-      this._setDeploySelection(unitAtCell);
+      this._handleDeployUnitPick(unitAtCell, this._lastClickModifiers.ctrl, this._lastClickModifiers.shift);
       return;
     }
 
-    // Jesli jest zaznaczona jednostka i kliknieto wolne pole w strefie
-    if (this._deploySelected) {
-      const inZone = col >= 0 && col <= DEPLOY_MAX_COL && row >= 0 && row < BF_ROWS;
-      const passable = this.terrainMap.passable(col, row);
-      const free = !this.occByKey.has(key);
-      if (inZone && passable && free) {
-        this._moveDeployUnit(this._deploySelected, col, row);
-        this._clearDeploySelection();
+    // LPM + zaznaczenie: przesun na wskazane pole (pojedynczo lub grupa)
+    const hasSelection = this._deploySelected != null || this._selectedUnits.size > 0;
+    const inZone = inDeployAtkZone(col, row);
+    const passable = this.terrainMap.passable(col, row);
+    if (hasSelection && inZone && passable) {
+      const units = this._getDeploySelectedUnits();
+      if (units.length > 0) {
+        this._applyDeployPlacement(units, col, row, col, row);
+        this._clearDeployGhosts();
+        return;
       }
-      // Klik poza strefa lub na zajete pole: jednostka pozostaje zaznaczona
-      // (nie znika, nie przenosi sie — gracz musi klikac dalej)
+    }
+    if (hasSelection) {
+      this._clearDeploySelectionState();
     }
   }
 
-  /** Zaznacza jednostke w fazie rozstawiania (wizualne scale 1.2). */
+  /** Przenosi zaznaczone jednostki (pojedynczo lub grupowo) w strefie deploy. */
+  private _moveDeploySelection(targetCol: number, targetRow: number): void {
+    const ids: string[] = this._selectedUnits.size > 0
+      ? [...this._selectedUnits]
+      : (this._deploySelected ? [this._deploySelected.bu.id] : []);
+    const units = ids
+      .map(id => this.atk.find(u => u.bu.id === id))
+      .filter((u): u is RuntimeBattleUnit => !!u && !u.dead && !u.removed);
+    if (units.length === 0) return;
+
+    const inDeployZone = (c: number, r: number): boolean =>
+      inDeployAtkZone(c, r)
+        && this.terrainMap.passable(c, r);
+
+    const isFree = (c: number, r: number, skipId?: string): boolean => {
+      const occ = this.occByKey.get(cellKey(c, r));
+      return !occ || occ.bu.id === skipId;
+    };
+
+    const tryMove = (u: RuntimeBattleUnit, c: number, r: number): boolean => {
+      if (!inDeployZone(c, r) || !isFree(c, r, u.bu.id)) return false;
+      this._moveDeployUnit(u, c, r);
+      return true;
+    };
+
+    if (units.length === 1) {
+      tryMove(units[0]!, targetCol, targetRow);
+      this._refreshDeploySelectionVisuals();
+      return;
+    }
+
+    const centCol = units.reduce((s, u) => s + u.q, 0) / units.length;
+    const centRow = units.reduce((s, u) => s + u.r, 0) / units.length;
+    const gid = units[0]!.groupId;
+    const sameGroup = !!gid && units.every(u => u.groupId === gid);
+
+    for (const u of units) {
+      let dc: number, dr: number;
+      if (sameGroup && u.formationOffset) {
+        dc = targetCol + u.formationOffset.dc;
+        dr = targetRow + u.formationOffset.dr;
+      } else {
+        dc = targetCol + Math.round(u.q - centCol);
+        dr = targetRow + Math.round(u.r - centRow);
+      }
+      if (!tryMove(u, dc, dr)) {
+        let placed = false;
+        for (let rad = 1; rad <= 4 && !placed; rad++) {
+          for (const [dx, dy] of [[0, rad], [rad, 0], [0, -rad], [-rad, 0]] as const) {
+            if (tryMove(u, dc + dx, dr + dy)) { placed = true; break; }
+          }
+        }
+      }
+    }
+    this._refreshDeploySelectionVisuals();
+  }
+
+  // -------------------------------------------------------------------------
+  // DEPLOY — duchy jednostek + rozciaganie formacji (Total War)
+  // -------------------------------------------------------------------------
+
+  private _initDeployGhostLayer(): void {
+    if (this._deployGhostGroup) return;
+    const stale = this.scene.getObjectByName('deployGhosts');
+    if (stale) this.scene.remove(stale);
+    const g = new THREE.Group();
+    g.name = 'deployGhosts';
+    g.renderOrder = 500;
+    this.scene.add(g);
+    this._deployGhostGroup = g;
+  }
+
+  private _getDeploySelectedUnits(): RuntimeBattleUnit[] {
+    return [...this._selectedUnits]
+      .map(id => this.atk.find(u => u.bu.id === id))
+      .filter((u): u is RuntimeBattleUnit => !!u && !u.dead && !u.removed);
+  }
+
+  private _clearDeployGhosts(): void {
+    if (!this._deployGhostGroup) return;
+    while (this._deployGhostGroup.children.length > 0) {
+      this._deployGhostGroup.remove(this._deployGhostGroup.children[0]!);
+    }
+    for (const m of this._deployGhostOwnedMats) m.dispose();
+    for (const g of this._deployGhostOwnedGeos) g.dispose();
+    this._deployGhostOwnedMats = [];
+    this._deployGhostOwnedGeos = [];
+  }
+
+  /** Podglad przy najechaniu / podczas drag rozciagania formacji. */
+  private _updateDeployPlacementPreview(cx: number, cy: number): void {
+    if (!this.deployPhase || this._selectedUnits.size === 0) {
+      this._clearDeployGhosts();
+      return;
+    }
+    if (this._deployDrag) {
+      this._refreshDeployGhosts();
+      return;
+    }
+    const tile = this._pickGroundTile(cx, cy);
+    if (!tile || !inDeployAtkZone(tile.col, tile.row)) {
+      this._clearDeployGhosts();
+      return;
+    }
+    this._refreshDeployGhostsAt(tile.col, tile.row);
+  }
+
+  /**
+   * Rozmieszczenie zaznaczonych jednostek: klik / krotki drag → formacja F1/F2/F3
+   * (lub zachowane offsety grupy); dlugi drag → rozciaganie linii (Total War).
+   */
+  private _computeDeployPlacementLayout(
+    units: RuntimeBattleUnit[],
+    anchorCol: number,
+    anchorRow: number,
+    dragCol: number,
+    dragRow: number,
+  ): Map<string, { col: number; row: number }> {
+    const n = units.length;
+    if (n === 0) return new Map();
+
+    if (n === 1) {
+      const out = new Map<string, { col: number; row: number }>();
+      out.set(units[0]!.bu.id, { col: dragCol, row: dragRow });
+      return out;
+    }
+
+    const isStretchDrag =
+      Math.abs(dragCol - anchorCol) > 1 || Math.abs(dragRow - anchorRow) > 1;
+    if (isStretchDrag) {
+      return this._computeDeployStretchLayout(units, anchorCol, anchorRow, dragCol, dragRow);
+    }
+
+    return this._computeFormationLayoutAt(
+      units, dragCol, dragRow, this._formationForDeployUnits(units),
+    );
+  }
+
+  /** Aktywny schemat formacji dla biezacego zaznaczenia deploy. */
+  private _formationForDeployUnits(units: RuntimeBattleUnit[]): 'F1' | 'F2' | 'F3' {
+    const gid = units[0]?.groupId;
+    if (gid && units.every(u => u.groupId === gid)) {
+      return this._ensureGroupMeta(gid).formation ?? this._deployActiveFormation;
+    }
+    return this._deployActiveFormation;
+  }
+
+  /** Ustawienie konnicy dla biezacego zaznaczenia deploy. */
+  private _cavalryModeForDeployUnits(units: RuntimeBattleUnit[]): CavalryDeployMode {
+    const gid = units[0]?.groupId;
+    if (gid && units.every(u => u.groupId === gid)) {
+      return this._ensureGroupMeta(gid).cavalryMode ?? this._deployCavalryMode;
+    }
+    return this._deployCavalryMode;
+  }
+
+  /** Rola jednostki w formacji deploy. */
+  private _deployRoleOf(u: RuntimeBattleUnit): 'mounted' | 'siege' | 'javelin' | 'archer' | 'melee' {
+    if (u.mounted || isMounted(u.bu)) return 'mounted';
+    if (isSiegeUnit(u.bu)) return 'siege';
+    if (!isPrimaryRanged(u.bu)) return 'melee';
+    const kat = normName(String(u.bu.kategoria ?? ''));
+    if (kat.includes('oszczep')) return 'javelin';
+    return 'archer';
+  }
+
+  /** Kolejnosc pasow (front → tyl) + konnica boki/tyl dla F1/F2/F3. */
+  private _deployFormationPlan(
+    units: RuntimeBattleUnit[],
+    formation: 'F1' | 'F2' | 'F3',
+    cavalryMode: CavalryDeployMode,
+  ): {
+    main: Array<{ role: string; units: RuntimeBattleUnit[] }>;
+    mountedFlank: RuntimeBattleUnit[];
+    mountedRear: RuntimeBattleUnit[];
+    flankAtRole: string;
+  } {
+    const byRole = (role: string): RuntimeBattleUnit[] =>
+      units.filter(u => this._deployRoleOf(u) === role);
+
+    const mounted = byRole('mounted');
+    const siege = byRole('siege');
+    const javelin = byRole('javelin');
+    const archers = byRole('archer');
+    const meleeUs = byRole('melee');
+
+    let main: Array<{ role: string; units: RuntimeBattleUnit[] }>;
+    let flankAtRole = 'melee';
+
+    if (formation === 'F1') {
+      main = [
+        { role: 'javelin', units: javelin },
+        { role: 'archer', units: archers },
+        { role: 'melee', units: meleeUs },
+        { role: 'siege', units: siege },
+      ];
+      flankAtRole = 'melee';
+    } else if (formation === 'F2') {
+      main = [
+        { role: 'melee', units: meleeUs },
+        { role: 'javelin', units: javelin },
+        { role: 'archer', units: archers },
+        { role: 'siege', units: siege },
+      ];
+      flankAtRole = 'melee';
+    } else {
+      main = [
+        { role: 'siege', units: siege },
+        { role: 'archer', units: archers },
+        { role: 'javelin', units: javelin },
+        { role: 'melee', units: meleeUs },
+      ];
+      flankAtRole = 'archer';
+    }
+
+    main = main.filter(b => b.units.length > 0);
+
+    return {
+      main,
+      mountedFlank: cavalryMode === 'flanks' ? mounted : [],
+      mountedRear: cavalryMode === 'rear' ? mounted : [],
+      flankAtRole,
+    };
+  }
+
+  /** @deprecated Glebokosc ustawiana przyciskiem Linie (piechota / lucznicy). */
+  private _computeRanksPerBandFromDepthSpan(_depthSpan: number): number {
+    return 1;
+  }
+
+  /** Dzieli jednostki pasu na rowne rzedy glebokosci. */
+  private _splitUnitsIntoRanks(units: RuntimeBattleUnit[], rankCount: number): RuntimeBattleUnit[][] {
+    if (units.length === 0) return [];
+    const ranks = Math.max(1, Math.min(rankCount, units.length));
+    const per = Math.ceil(units.length / ranks);
+    const out: RuntimeBattleUnit[][] = [];
+    for (let r = 0; r < ranks; r++) {
+      const slice = units.slice(r * per, (r + 1) * per);
+      if (slice.length > 0) out.push(slice);
+    }
+    return out;
+  }
+
+  /** Rozklad w poprzek (dr) — compact gdy waski drag, rozciagniety gdy szeroki. */
+  private _deployLateralRow(
+    index: number, count: number, centerRow: number, lateralSpan: number,
+  ): number {
+    if (count <= 1) return centerRow;
+    if (lateralSpan <= 2) {
+      return centerRow + index - Math.floor((count - 1) / 2);
+    }
+    const t = count === 1 ? 0.5 : index / (count - 1);
+    const half = Math.max(0, Math.floor(lateralSpan / 2));
+    return centerRow + Math.round((t - 0.5) * 2 * half);
+  }
+
+  private _colOffForFormation(side: 'atk' | 'def', dc: number): number {
+    return side === 'atk' ? -dc : dc;
+  }
+
+  private _clampDeployCell(col: number, row: number): { col: number; row: number } {
+    return {
+      col: Math.max(DEPLOY_MIN_COL, Math.min(DEPLOY_MAX_COL, col)),
+      row: Math.max(DEPLOY_MIN_ROW, Math.min(DEPLOY_MAX_ROW, row)),
+    };
+  }
+
+  private _clampDeployFormationAnchor(col: number, row: number, side: 'atk' | 'def'): { col: number; row: number } {
+    if (!this.deployPhase || side !== 'atk') return { col, row };
+    let c = Math.min(col, DEPLOY_MAX_COL - 2);
+    c = Math.max(c, DEPLOY_MIN_COL + 4);
+    const r = Math.max(DEPLOY_MIN_ROW + 6, Math.min(DEPLOY_MAX_ROW - 6, row));
+    return { col: c, row: r };
+  }
+
+  /** Docelowe pola deploy wg istniejacych offsetow formacji (grupa). */
+  private _deployDestinationsWithOffsets(
+    units: RuntimeBattleUnit[],
+    targetCol: number,
+    targetRow: number,
+  ): Map<string, { col: number; row: number }> {
+    const out = new Map<string, { col: number; row: number }>();
+    for (const u of units) {
+      const off = u.formationOffset ?? { dc: 0, dr: 0 };
+      const raw = { col: targetCol + off.dc, row: targetRow + off.dr };
+      out.set(u.bu.id, this._clampDeployCell(raw.col, raw.row));
+    }
+    return out;
+  }
+
+  /** Sloty formacji F1/F2/F3 — wspolne dla przycisku formacji i klikniecia na mape. */
+  private _formationSlotsForUnits(
+    units: RuntimeBattleUnit[],
+    formation: 'F1' | 'F2' | 'F3',
+  ): Array<[RuntimeBattleUnit, number, number]> {
+    const cavalryMode = this._cavalryModeForDeployUnits(units);
+    const plan = this._deployFormationPlan(units, formation, cavalryMode);
+    const slots: Array<[RuntimeBattleUnit, number, number]> = [];
+
+    const addBandLine = (list: RuntimeBattleUnit[], frontDc: number): void => {
+      if (list.length === 0) return;
+      const n = list.length;
+      list.forEach((u, i) => {
+        slots.push([u, frontDc, i - Math.floor((n - 1) / 2)]);
+      });
+    };
+
+    let dc = 0;
+    let flankDc = 0;
+    let maxHalfWidth = 0;
+
+    for (const band of plan.main) {
+      if (band.role === plan.flankAtRole) flankDc = dc;
+      const rankSlices = this._splitUnitsIntoRanks(
+        band.units, this._deployLinesForRole(band.role),
+      );
+      for (let r = 0; r < rankSlices.length; r++) {
+        const slice = rankSlices[r]!;
+        addBandLine(slice, dc + r);
+        maxHalfWidth = Math.max(maxHalfWidth, Math.ceil(slice.length / 2));
+      }
+      dc += rankSlices.length;
+    }
+
+    const wingBase = maxHalfWidth + 1;
+    plan.mountedFlank.forEach((u, i) => {
+      const side = i % 2 === 0 ? 1 : -1;
+      slots.push([u, flankDc, side * (wingBase + Math.floor(i / 2))]);
+    });
+    addBandLine(plan.mountedRear, dc);
+
+    const seen = new Set<string>();
+    const uniqueSlots: Array<[RuntimeBattleUnit, number, number]> = [];
+    for (const entry of slots) {
+      if (seen.has(entry[0].bu.id)) continue;
+      seen.add(entry[0].bu.id);
+      uniqueSlots.push(entry);
+    }
+    for (const u of units) {
+      if (!seen.has(u.bu.id)) uniqueSlots.push([u, 0, 0]);
+    }
+    return uniqueSlots;
+  }
+
+  /** Mapa pol docelowych formacji kotwiczona w punkcie klikniecia (bez przesuwania kotwicy). */
+  private _computeFormationLayoutAt(
+    units: RuntimeBattleUnit[],
+    anchorCol: number,
+    anchorRow: number,
+    formation: 'F1' | 'F2' | 'F3',
+  ): Map<string, { col: number; row: number }> {
+    const out = new Map<string, { col: number; row: number }>();
+    for (const [u, dc, dr] of this._formationSlotsForUnits(units, formation)) {
+      const colOff = this._colOffForFormation(u.side, dc);
+      out.set(u.bu.id, this._clampDeployCell(anchorCol + colOff, anchorRow + dr));
+    }
+    return out;
+  }
+
+  /** Kolejnosc jednostek w rozciaganej formacji (role F1/F2/F3 — przod → tyl). */
+  private _sortUnitsForDeployStretch(units: RuntimeBattleUnit[]): RuntimeBattleUnit[] {
+    const formation = this._formationForDeployUnits(units);
+    const slots = this._formationSlotsForUnits(units, formation);
+    const rank = new Map(slots.map(([u], i) => [u.bu.id, i]));
+    return [...units].sort(
+      (a, b) => (rank.get(a.bu.id) ?? 999) - (rank.get(b.bu.id) ?? 999),
+    );
+  }
+
+  /** Zapisuje offsety formacji przed ruchem (klik bez wczesniejszej formacji). */
+  private _persistFormationOffsets(units: RuntimeBattleUnit[], formation: 'F1' | 'F2' | 'F3'): void {
+    for (const [u, dc, dr] of this._formationSlotsForUnits(units, formation)) {
+      u.formationOffset = { dc: this._colOffForFormation(u.side, dc), dr };
+    }
+  }
+
+  /** Klik / drag na mape deploy — formacja lub rozciaganie. */
+  private _applyDeployPlacement(
+    units: RuntimeBattleUnit[],
+    anchorCol: number,
+    anchorRow: number,
+    dragCol: number,
+    dragRow: number,
+  ): void {
+    if (units.length === 0) return;
+
+    const isStretchDrag =
+      Math.abs(dragCol - anchorCol) > 1 || Math.abs(dragRow - anchorRow) > 1;
+
+    if (units.length === 1) {
+      units[0]!.formationOffset = { dc: 0, dr: 0 };
+    } else if (!isStretchDrag) {
+      this._persistFormationOffsets(units, this._formationForDeployUnits(units));
+    } else if (isStretchDrag && units.length > 1) {
+      const layout = this._computeDeployPlacementLayout(units, anchorCol, anchorRow, dragCol, dragRow);
+      for (const u of units) {
+        const pos = layout.get(u.bu.id);
+        if (pos) {
+          u.formationOffset = { dc: pos.col - anchorCol, dr: pos.row - anchorRow };
+        }
+      }
+      this._applyDeployLayout(layout);
+      return;
+    }
+
+    this._applyDeployLayout(
+      this._computeDeployPlacementLayout(units, anchorCol, anchorRow, dragCol, dragRow),
+    );
+  }
+
+  /**
+   * Rozciaganie: drag w bok = szerokosc linii; glebokosc (1–3 linie) z przycisku Linie.
+   * Kolejnosc pasow wg F1/F2/F3; konnica osobno (boki / tyl).
+   */
+  private _computeDeployStretchLayout(
+    units: RuntimeBattleUnit[],
+    anchorCol: number,
+    anchorRow: number,
+    dragCol: number,
+    dragRow: number,
+  ): Map<string, { col: number; row: number }> {
+    const formation = this._formationForDeployUnits(units);
+    const cavalryMode = this._cavalryModeForDeployUnits(units);
+    const plan = this._deployFormationPlan(units, formation, cavalryMode);
+    const out = new Map<string, { col: number; row: number }>();
+    if (units.length === 0) return out;
+
+    const absC = Math.abs(dragCol - anchorCol);
+    const absR = Math.abs(dragRow - anchorRow);
+    if (absC <= 1 && absR <= 1) {
+      return this._computeFormationLayoutAt(units, dragCol, dragRow, formation);
+    }
+
+    const side = units[0]?.side ?? 'atk';
+    const lateralSpan = Math.max(1, absC + 1);
+
+    const frontCol = side === 'atk'
+      ? Math.max(anchorCol, dragCol)
+      : Math.min(anchorCol, dragCol);
+    const centerRow = Math.round((anchorRow + dragRow) / 2);
+
+    let dcCursor = 0;
+    let flankDc = 0;
+    let maxHalfWidth = 0;
+
+    for (const band of plan.main) {
+      if (band.role === plan.flankAtRole) flankDc = dcCursor;
+      const rankSlices = this._splitUnitsIntoRanks(
+        band.units, this._deployLinesForRole(band.role),
+      );
+      for (let r = 0; r < rankSlices.length; r++) {
+        const rankUnits = rankSlices[r]!;
+        const rankDc = dcCursor + r;
+        const colOff = this._colOffForFormation(side, rankDc);
+        const rankCol = frontCol + colOff;
+        rankUnits.forEach((u, i) => {
+          const row = this._deployLateralRow(i, rankUnits.length, centerRow, lateralSpan);
+          out.set(u.bu.id, this._clampDeployCell(rankCol, row));
+        });
+        maxHalfWidth = Math.max(maxHalfWidth, Math.ceil(rankUnits.length / 2));
+      }
+      dcCursor += rankSlices.length;
+    }
+
+    const wingBase = maxHalfWidth + 1;
+    const flankColOff = this._colOffForFormation(side, flankDc);
+    const flankCol = frontCol + flankColOff;
+    plan.mountedFlank.forEach((u, i) => {
+      const sideSign = i % 2 === 0 ? 1 : -1;
+      const row = centerRow + sideSign * (wingBase + Math.floor(i / 2));
+      out.set(u.bu.id, this._clampDeployCell(flankCol, row));
+    });
+
+    if (plan.mountedRear.length > 0) {
+      const rearSlices = this._splitUnitsIntoRanks(plan.mountedRear, 1);
+      for (let r = 0; r < rearSlices.length; r++) {
+        const rankUnits = rearSlices[r]!;
+        const rankDc = dcCursor + r;
+        const colOff = this._colOffForFormation(side, rankDc);
+        const rankCol = frontCol + colOff;
+        rankUnits.forEach((u, i) => {
+          const row = this._deployLateralRow(i, rankUnits.length, centerRow, lateralSpan);
+          out.set(u.bu.id, this._clampDeployCell(rankCol, row));
+        });
+      }
+    }
+
+    for (const u of units) {
+      if (!out.has(u.bu.id)) {
+        out.set(u.bu.id, this._clampDeployCell(frontCol, centerRow));
+      }
+    }
+    return out;
+  }
+
+  /**
+   * Docelowe pola duchow deploy: formacja / offsety grupy / rozciaganie drag.
+   */
+  private _computeDeployGhostLayout(
+    units: RuntimeBattleUnit[],
+    anchorCol: number,
+    anchorRow: number,
+    dragCol: number,
+    dragRow: number,
+  ): Map<string, { col: number; row: number }> {
+    return this._computeDeployPlacementLayout(units, anchorCol, anchorRow, dragCol, dragRow);
+  }
+
+  private _isDeployCellOk(col: number, row: number, skipIds: Set<string>): boolean {
+    if (!inDeployAtkZone(col, row)) return false;
+    if (!this.terrainMap.passable(col, row)) return false;
+    const occ = this.occByKey.get(cellKey(col, row));
+    return !occ || skipIds.has(occ.bu.id);
+  }
+
+  private _resolveDeployCell(
+    wantCol: number,
+    wantRow: number,
+    skipIds: Set<string>,
+  ): [number, number] | null {
+    const tryCell = (c: number, r: number): [number, number] | null =>
+      this._isDeployCellOk(c, r, skipIds) ? [c, r] : null;
+    let hit = tryCell(wantCol, wantRow);
+    if (hit) return hit;
+    for (let rad = 1; rad <= 3; rad++) {
+      for (const [dx, dy] of [[0, rad], [rad, 0], [0, -rad], [-rad, 0],
+        [rad, rad], [rad, -rad], [-rad, rad], [-rad, -rad]] as const) {
+        hit = tryCell(wantCol + dx, wantRow + dy);
+        if (hit) return hit;
+      }
+    }
+    return null;
+  }
+
+  /** Fizyczne rozstawienie jednostek wg mapy pol (kolejnosc slotow formacji). */
+  private _placeDeployLayoutUnits(
+    units: RuntimeBattleUnit[],
+    layout: Map<string, { col: number; row: number }>,
+    slotOrder?: RuntimeBattleUnit[],
+  ): number {
+    if (units.length === 0) return 0;
+    const skipIds = new Set(units.map(u => u.bu.id));
+    const taken = new Set<string>();
+    for (const ru of [...this.atk, ...this.def]) {
+      if (!ru.dead && !ru.removed && !skipIds.has(ru.bu.id)) {
+        taken.add(cellKey(ru.q, ru.r));
+      }
+    }
+
+    const order = slotOrder ?? units;
+    let placed = 0;
+    for (const u of order) {
+      const want = layout.get(u.bu.id);
+      if (!want) continue;
+      taken.delete(cellKey(u.q, u.r));
+      let dest: [number, number] | null = null;
+      if (this._isDeployCellOk(want.col, want.row, skipIds) && !taken.has(cellKey(want.col, want.row))) {
+        dest = [want.col, want.row];
+      } else {
+        dest = this._resolveDeployCell(want.col, want.row, skipIds);
+        if (dest && taken.has(cellKey(dest[0], dest[1]))) dest = null;
+      }
+      if (!dest) continue;
+      const [col, row] = dest;
+      taken.add(cellKey(col, row));
+      this._moveDeployUnit(u, col, row);
+      placed++;
+    }
+    return placed;
+  }
+
+  private _applyDeployLayout(layout: Map<string, { col: number; row: number }>): void {
+    const units = this._getDeploySelectedUnits();
+    if (units.length === 0) return;
+    const formation = this._formationForDeployUnits(units);
+    const slotOrder = this._formationSlotsForUnits(units, formation).map(([u]) => u);
+    const n = this._placeDeployLayoutUnits(units, layout, slotOrder);
+    this._refreshDeploySelectionVisuals();
+    if (n > 0) this._showDeployFeedback('Rozstawiono ' + n + ' jednostek');
+  }
+
+  /** Rysuje duchy docelowe + ramke rozciagania na mapie. */
+  private _refreshDeployGhosts(): void {
+    this._initDeployGhostLayer();
+    this._clearDeployGhosts();
+    if (!this._deployGhostGroup || this._selectedUnits.size === 0) return;
+    this._deployGhostGroup.visible = true;
+
+    const units = this._getDeploySelectedUnits();
+    if (units.length === 0) return;
+
+    let anchorCol: number;
+    let anchorRow: number;
+    let dragCol: number;
+    let dragRow: number;
+
+    if (this._deployDrag) {
+      anchorCol = this._deployDrag.anchorCol;
+      anchorRow = this._deployDrag.anchorRow;
+      dragCol = this._deployDrag.curCol;
+      dragRow = this._deployDrag.curRow;
+    } else {
+      return;
+    }
+
+    const layout = this._computeDeployGhostLayout(
+      units, anchorCol, anchorRow, dragCol, dragRow,
+    );
+    const skipIds = new Set(units.map(u => u.bu.id));
+    const discGeo = new THREE.CircleGeometry(0.42, 24);
+    discGeo.rotateX(-Math.PI / 2);
+    this._deployGhostOwnedGeos.push(discGeo);
+    const ringGeo = new THREE.RingGeometry(0.38, 0.48, 24);
+    ringGeo.rotateX(-Math.PI / 2);
+    this._deployGhostOwnedGeos.push(ringGeo);
+
+    let minC = dragCol;
+    let maxC = dragCol;
+    let minR = dragRow;
+    let maxR = dragRow;
+
+    for (const u of units) {
+      const pos = layout.get(u.bu.id);
+      if (!pos) continue;
+      minC = Math.min(minC, pos.col);
+      maxC = Math.max(maxC, pos.col);
+      minR = Math.min(minR, pos.row);
+      maxR = Math.max(maxR, pos.row);
+      const ok = this._isDeployCellOk(pos.col, pos.row, skipIds);
+      const { x, z } = cellToWorld(pos.col, pos.row);
+      const topY = tileTopY(this.terrainMap, pos.col, pos.row);
+
+      const unitDiscGeo = discGeo.clone();
+      this._deployGhostOwnedGeos.push(unitDiscGeo);
+      const mat = new THREE.MeshBasicMaterial({
+        color: ok ? 0x44ffcc : 0xff5555,
+        transparent: true,
+        opacity: ok ? 0.55 : 0.45,
+        depthWrite: false,
+        side: THREE.DoubleSide,
+      });
+      this._deployGhostOwnedMats.push(mat);
+      const mesh = new THREE.Mesh(unitDiscGeo, mat);
+      mesh.position.set(x, topY + 0.06, z);
+      this._deployGhostGroup.add(mesh);
+
+      const unitRingGeo = ringGeo.clone();
+      this._deployGhostOwnedGeos.push(unitRingGeo);
+      const ringMat = new THREE.MeshBasicMaterial({
+        color: ok ? 0xd4af37 : 0xff8888,
+        transparent: true,
+        opacity: 0.85,
+        depthWrite: false,
+        side: THREE.DoubleSide,
+      });
+      this._deployGhostOwnedMats.push(ringMat);
+      const ring = new THREE.Mesh(unitRingGeo, ringMat);
+      ring.position.set(x, topY + 0.07, z);
+      this._deployGhostGroup.add(ring);
+    }
+
+    const y = 0.08;
+    const p0 = cellToWorld(minC, minR);
+    const p1 = cellToWorld(maxC, minR);
+    const p2 = cellToWorld(maxC, maxR);
+    const p3 = cellToWorld(minC, maxR);
+    const boxGeo = new THREE.BufferGeometry().setFromPoints([
+      new THREE.Vector3(p0.x, y, p0.z),
+      new THREE.Vector3(p1.x, y, p1.z),
+      new THREE.Vector3(p2.x, y, p2.z),
+      new THREE.Vector3(p3.x, y, p3.z),
+      new THREE.Vector3(p0.x, y, p0.z),
+    ]);
+    this._deployGhostOwnedGeos.push(boxGeo);
+    const boxMat = new THREE.LineBasicMaterial({
+      color: 0xffd700,
+      transparent: true,
+      opacity: 0.75,
+    });
+    this._deployGhostOwnedMats.push(boxMat);
+    const boxLine = new THREE.Line(boxGeo, boxMat);
+    this._deployGhostGroup.add(boxLine);
+
+    const anchorGeo = new THREE.RingGeometry(0.2, 0.32, 16);
+    anchorGeo.rotateX(-Math.PI / 2);
+    this._deployGhostOwnedGeos.push(anchorGeo);
+    const anchorMat = new THREE.MeshBasicMaterial({
+      color: 0xffffff, transparent: true, opacity: 0.9, depthWrite: false, side: THREE.DoubleSide,
+    });
+    this._deployGhostOwnedMats.push(anchorMat);
+    const ax = cellToWorld(anchorCol, anchorRow);
+    const ay = tileTopY(this.terrainMap, anchorCol, anchorRow);
+    const anchorMesh = new THREE.Mesh(anchorGeo, anchorMat);
+    anchorMesh.position.set(ax.x, ay + 0.09, ax.z);
+    this._deployGhostGroup.add(anchorMesh);
+  }
+
+  /** Odswieza duchy dla podgladu hover (bez aktywnego drag). */
+  private _refreshDeployGhostsAt(col: number, row: number): void {
+    if (!this.deployPhase || this._selectedUnits.size === 0 || this._deployDrag) return;
+    this._initDeployGhostLayer();
+    const units = this._getDeploySelectedUnits();
+    if (units.length === 0) return;
+
+    this._clearDeployGhosts();
+    if (this._deployGhostGroup) this._deployGhostGroup.visible = true;
+    const layout = this._computeDeployPlacementLayout(units, col, row, col, row);
+    const skipIds = new Set(units.map(u => u.bu.id));
+    const discGeo = new THREE.CircleGeometry(0.42, 24);
+    discGeo.rotateX(-Math.PI / 2);
+    this._deployGhostOwnedGeos.push(discGeo);
+
+    for (const u of units) {
+      const pos = layout.get(u.bu.id);
+      if (!pos) continue;
+      const ok = this._isDeployCellOk(pos.col, pos.row, skipIds);
+      const { x, z } = cellToWorld(pos.col, pos.row);
+      const topY = tileTopY(this.terrainMap, pos.col, pos.row);
+      const unitDiscGeo = discGeo.clone();
+      this._deployGhostOwnedGeos.push(unitDiscGeo);
+      const mat = new THREE.MeshBasicMaterial({
+        color: ok ? 0x44ffcc : 0xff5555,
+        transparent: true, opacity: ok ? 0.5 : 0.4,
+        depthWrite: false, side: THREE.DoubleSide,
+      });
+      this._deployGhostOwnedMats.push(mat);
+      const mesh = new THREE.Mesh(unitDiscGeo, mat);
+      mesh.position.set(x, topY + 0.06, z);
+      this._deployGhostGroup!.add(mesh);
+    }
+  }
+
+  /**
+   * Stosuje formacje F1/F2/F3 do zaznaczenia (lub calej armii gdy brak zaznaczenia).
+   */
+  private _applyDeployArmyFormation(formation: 'F1' | 'F2' | 'F3'): void {
+    const live = this.atk.filter(u => !u.dead && !u.removed);
+    if (live.length === 0) return;
+
+    const targets = this._resolveDeployFormationTargets(live);
+    if (targets.length === 0) return;
+
+    const groupIds = [...new Set(targets.map(u => u.groupId).filter(Boolean))] as string[];
+    for (const g of groupIds) {
+      this._ensureGroupMeta(g).formation = formation;
+    }
+
+    const moved = this._applyFormationToUnits(targets, formation);
+    if (!moved) {
+      this._showOrderFeedback('Formacja: brak wolnego miejsca w strefie');
+      return;
+    }
+    this._setDeployActiveFormation(formation);
+    this._refreshDeploySelectionVisuals();
+    this._updateRosterBar();
+    this._showOrderFeedback('Formacja ' + formation + ' zastosowana');
+  }
+
+  /**
+   * Ustawia konnice (boki / z tylu) i przelicza aktywna formacje zaznaczenia.
+   */
+  private _applyDeployCavalryMode(mode: CavalryDeployMode): void {
+    const live = this.atk.filter(u => !u.dead && !u.removed);
+    if (live.length === 0) return;
+
+    const targets = this._resolveDeployFormationTargets(live);
+    if (targets.length === 0) return;
+
+    const gid = targets[0]?.groupId;
+    if (gid && targets.every(u => u.groupId === gid)) {
+      this._ensureGroupMeta(gid).cavalryMode = mode;
+    }
+
+    this._setDeployCavalryMode(mode);
+    const formation = this._formationForDeployUnits(targets);
+    const moved = this._applyFormationToUnits(targets, formation);
+    if (!moved) {
+      this._showOrderFeedback('Konnica: brak wolnego miejsca w strefie');
+      return;
+    }
+    this._refreshDeploySelectionVisuals();
+    this._updateRosterBar();
+    this._showOrderFeedback(mode === 'flanks' ? 'Konnica: boki' : 'Konnica: z ty\u0142u');
+  }
+
+  /** Jednostki objete formacja: zaznaczenie / cala grupa / cala armia. */
+  private _resolveDeployFormationTargets(live: RuntimeBattleUnit[]): RuntimeBattleUnit[] {
+    const selLive = [...this._selectedUnits]
+      .map(id => live.find(u => u.bu.id === id))
+      .filter((u): u is RuntimeBattleUnit => !!u);
+
+    if (selLive.length === 0) return live;
+
+    const gids = [...new Set(selLive.map(u => u.groupId).filter(Boolean))] as string[];
+    if (gids.length === 1) {
+      const members = this._liveGroupMemberIds(gids[0]!)
+        .map(id => live.find(u => u.bu.id === id))
+        .filter((u): u is RuntimeBattleUnit => !!u);
+      if (members.length > 0) return members;
+    }
+    return selLive;
+  }
+
+  /** Zaznacza jednostke w fazie rozstawiania (wizualne scale 1.2 + ring). */
   private _setDeploySelection(ru: RuntimeBattleUnit): void {
-    // Odznacz poprzednia
-    if (this._deploySelected) {
+    this._clearAllSelection();
+    this._selectedUnits.add(ru.bu.id);
+    this._addSelectionRing(ru);
+    if (this._deploySelected && this._deploySelected !== ru) {
       this._deploySelected.group.scale.setScalar(1.0);
     }
     this._deploySelected = ru;
     ru.group.scale.setScalar(1.25);
+    this._updateRosterBar();
+    this._updateDeployRosterHeader();
+    this._updateSelectedPanel();
   }
 
   /** Odznacza aktualnie zaznaczona jednostke. */
@@ -7395,6 +12480,8 @@ export class BattleScene {
       this.scene.remove(ru.hpBarGroup);
     }
     this.atk = [];
+    this._groups.clear();
+    this._groupCounter = 0;
     // Ponownie wywolaj place dla atakujacych
     const siegeMode = this.siegeWallCol >= 0;
     // Potrzebujemy oryginalnych BattleUnit[] — pobierz z aktualnych def (dziala bo atk byly wyczyszczone)
@@ -7403,7 +12490,10 @@ export class BattleScene {
     // W tym celu uzyj istniejacych danych z runtime units obrońców
     // UWAGA: przy resecie wywolujemy _placeUnitsAtk — podzbiór _placeUnits
     this._placeUnitsAtkOnly(siegeMode);
+    this._clearAllSelection();
     this._clearDeploySelection();
+    this._rebuildDeployRosterGrid();
+    this._updateDeployRosterHeader();
   }
 
   /**
@@ -7414,18 +12504,19 @@ export class BattleScene {
   private _placeUnitsAtkOnly(siegeMode: boolean): void {
     if (this._savedAtkBUs.length === 0) {
       // Fallback: brak zapisanych danych — powiadom gracza
-      if (this._deployOverlay) {
-        const hint = this._deployOverlay.querySelector('div') as HTMLDivElement | null;
-        if (hint) hint.textContent = 'Brak danych do resetu — uzyj "Start".';
-      }
+      this._showDeployFeedback('Brak danych do resetu — uzyj Start walki.');
       return;
     }
 
     // Pomocnicze stale z _placeUnits (siege layout)
     const SIEGE_ATK_FRONT_COL = 2;
     const SIEGE_ATK_COL_STEP  = 1;
-    const frontCol = (siegeMode && this.siegeWallCol >= 0) ? SIEGE_ATK_FRONT_COL : ATK_FRONT_COL;
-    const rankStep = (siegeMode && this.siegeWallCol >= 0) ? SIEGE_ATK_COL_STEP  : ATK_COL_STEP;
+    const frontCol = (siegeMode && this.siegeWallCol >= 0)
+      ? SIEGE_ATK_FRONT_COL
+      : (this.deployPhase ? DEPLOY_ATK_FRONT_COL : ATK_FRONT_COL);
+    const rankStep = (siegeMode && this.siegeWallCol >= 0)
+      ? SIEGE_ATK_COL_STEP
+      : (this.deployPhase ? DEPLOY_ATK_COL_STEP : ATK_COL_STEP);
 
     const clampCol = (c: number): number => Math.max(0, Math.min(BF_COLS - 1, c));
     const clampRow = (r: number): number => Math.max(0, Math.min(BF_ROWS - 1, r));
@@ -7444,12 +12535,17 @@ export class BattleScene {
     });
 
     const MAX_LINE = 12;
-    const midRow = Math.floor(BF_ROWS / 2);
+    const midRow = PLAY_MID_ROW;
     const idealRow = new Array<number>(units.length);
     const idealCol = new Array<number>(units.length);
 
     const layGroup = (list: number[], rankBase: number): number => {
       if (list.length === 0) return 0;
+      if (this.deployPhase) {
+        const col = clampCol(frontCol + rankBase * rankStep);
+        this._deploySpreadRank(list, col, idealRow, idealCol, clampRow, clampCol);
+        return 1;
+      }
       const per = Math.max(1, Math.min(list.length, MAX_LINE));
       const r0g = midRow - Math.floor(per / 2);
       list.forEach((ui, k) => {
@@ -7465,13 +12561,18 @@ export class BattleScene {
     rankBase += arcRanks;
     const siegeRanks = layGroup(siegeI, rankBase);
     const totalFootRanks = rankBase + siegeRanks;
-    const mountColOff = totalFootRanks + 5;
-    const mountPer = Math.max(1, Math.min(mountIdx.length, MAX_LINE));
-    const mountR0 = midRow - Math.floor(mountPer / 2);
-    mountIdx.forEach((ui, k) => {
-      idealRow[ui] = clampRow(mountR0 + (k % mountPer));
-      idealCol[ui] = clampCol(frontCol + (mountColOff + Math.floor(k / mountPer)) * rankStep);
-    });
+    if (this.deployPhase) {
+      const mountCol = clampCol(frontCol + (totalFootRanks + 2) * rankStep);
+      this._deploySpreadRank(mountIdx, mountCol, idealRow, idealCol, clampRow, clampCol);
+    } else {
+      const mountColOff = totalFootRanks + 5;
+      const mountPer = Math.max(1, Math.min(mountIdx.length, MAX_LINE));
+      const mountR0 = midRow - Math.floor(mountPer / 2);
+      mountIdx.forEach((ui, k) => {
+        idealRow[ui] = clampRow(mountR0 + (k % mountPer));
+        idealCol[ui] = clampCol(frontCol + (mountColOff + Math.floor(k / mountPer)) * rankStep);
+      });
+    }
 
     const newAtk: RuntimeBattleUnit[] = [];
     for (let idx = 0; idx < units.length; idx++) {
@@ -7580,12 +12681,6 @@ export class BattleScene {
       newAtk.push(ru);
     }
     this.atk = newAtk;
-
-    // Powiadom gracza
-    if (this._deployOverlay) {
-      const hint = this._deployOverlay.querySelector('div') as HTMLDivElement | null;
-      if (hint) hint.textContent = 'Jednostki przywrocone do domyslnego rozstawienia.';
-    }
   }
 
   /**
@@ -7594,12 +12689,16 @@ export class BattleScene {
    */
   private _endDeployPhase(): void {
     this.deployPhase = false;
+    this._clearAllSelection();
     this._clearDeploySelection();
+    this._clearDeployGhosts();
+    this._clearOrderPreview();
+    this._disposeAllOrderLines();
+    this._syncGroupRegistry();
+    if (this._orderLinesGroup) this._orderLinesGroup.visible = true;
     this._setDeployZoneVisible(false);
-    if (this._deployOverlay && this._deployOverlay.parentNode) {
-      this._deployOverlay.parentNode.removeChild(this._deployOverlay);
-      this._deployOverlay = null;
-    }
+    this._teardownDeployUI();
+    this._updateRightRailLayout();
     // Zresetuj vLastWall zeby nie skoczyc czasu po dlugiej fazie deploy
     this.vLastWall = 0;
     this._startBattle();
@@ -7609,33 +12708,64 @@ export class BattleScene {
   // STEROWANIE RECZNIE -- tryb override (RECZNY/AUTO)
   // =========================================================================
 
+  /** Zatrzymaj zaplanowana auto-ture (przejscie AUTO -> RECZNY w trakcie bitwy). */
+  private _haltAutoBattleTurn(): void {
+    this.vTimers.length = 0;
+    this.busy = false;
+    this._battleAwaitingOrders = true;
+  }
+
   /** Przelacza miedzy trybem AUTO a RECZNYM. */
   private _toggleManualMode(): void {
     this._manualMode = !this._manualMode;
-    const label = this._manualMode ? 'RECZNE' : 'AUTO';
     if (this._manualBtn) {
-      const iconEl = (this._manualBtn as any)._iconEl as HTMLElement | undefined;
-      if (iconEl) iconEl.textContent = this._manualMode ? '\u{1F579}' : '\u{1F3AE}';
-      this._manualBtn.style.background = this._manualMode ? 'rgba(100,30,10,0.9)' : 'rgba(25,35,70,0.85)';
-      this._manualBtn.style.borderColor = this._manualMode ? 'rgba(212,100,50,0.7)' : 'rgba(212,175,55,0.35)';
-    }
-    if (this._modeBanner) {
-      this._modeBanner.textContent = 'TRYB: ' + label;
-      this._modeBanner.style.display = 'block';
-      this._modeBanner.style.background = this._manualMode
-        ? 'rgba(100,30,10,0.88)' : 'rgba(20,40,80,0.82)';
+      this._syncManualRailHighlight();
     }
     if (!this._manualMode) {
       this._clearAllSelection();
       for (const ru of this.atk) ru.playerOrder = { type: 'none' };
+      this._queuedOrderUnitIds.clear();
+      this._disposeQueuedOrderArrows();
+      for (const gid of this._sortedGroupIds()) {
+        const meta = this._ensureGroupMeta(gid);
+        if (meta.doctrine === 'manual') {
+          meta.doctrine = 'steady';
+          meta.autoPlay = true;
+        }
+      }
+      if (this._battleAwaitingOrders) {
+        this._kickoffBattleTurn();
+      } else if (this.started && !this.finished) {
+        this._battleAwaitingOrders = false;
+        this._activateNext();
+      }
+    } else {
+      this._haltAutoBattleTurn();
+      for (const ru of this.atk) {
+        if (ru.dead || ru.removed || ru.routed) continue;
+        ru.playerOrder = { type: 'none' };
+        ru.acted = false;
+      }
+      this._showBattleRosterFeedback(
+        'Tryb RECZNY — SPACJA = kontynuuj · Taktyka/Strategia = per grupa · zaznacz czesc armii + Grupuj = podzial',
+      );
     }
     if (this._manualMode && !this._rosterBar) this._buildRosterBar();
     if (this._rosterBar) this._rosterBar.style.display = this._manualMode ? 'flex' : 'none';
+    this._battleQuickSelectSig = '';
+    this._updateGroupSelectorBarLayout();
+    this._updateBattleRosterHeader();
+    this._updateBattleSelectionBar();
+    this._updateBattleQuickSelectBar();
     this._updateRosterBar();
     this._updateSelectedPanel();
+    this._updateBattlePhaseBanner();
+    this._syncManualRailHighlight();
+    this._syncMinimapPosition();
+    this._syncBattleToolbarMode();
   }
 
-  /** Klawisz R. */
+  /** Klawisz R — przełącz RECZNE / AUTO. */
   private readonly _onKeyManual = (e: KeyboardEvent): void => {
     if (e.key !== 'r' && e.key !== 'R') return;
     if (isEditableTarget(e.target)) return;
@@ -7643,6 +12773,20 @@ export class BattleScene {
     if (this.deployPhase || !this.started || this.finished) return;
     e.preventDefault();
     this._toggleManualMode();
+  };
+
+  /** SPACJA — start tury (planowanie) lub wykonaj odlozone dyspozycje. */
+  private readonly _onKeyExecuteTurn = (e: KeyboardEvent): void => {
+    if (e.code !== 'Space' && e.key !== ' ') return;
+    if (isEditableTarget(e.target)) return;
+    if (this.deployPhase || !this.started || this.finished) return;
+    if (!this._manualMode && !this._battleAwaitingOrders) return;
+    e.preventDefault();
+    if (this._battleAwaitingOrders) {
+      this._kickoffBattleTurn();
+      return;
+    }
+    this._executeQueuedOrders();
   };
 
   /**
@@ -7669,7 +12813,6 @@ export class BattleScene {
       if (sx >= x1 && sx <= x2 && sy >= y1 && sy <= y2) found.push(ru);
     }
     if (found.length === 0) {
-      // Puste zaznaczenie = odznacz wszystko
       this._clearAllSelection();
       return;
     }
@@ -7678,12 +12821,844 @@ export class BattleScene {
       this._selectedUnits.add(ru.bu.id);
       this._addSelectionRing(ru);
     }
-    this._updateRosterBar();
+    if (this.deployPhase) {
+      this._refreshDeploySelectionVisuals();
+      this._showDeployFeedback('Zaznaczono: ' + found.length);
+    } else {
+      this._updateRosterBar();
+      this._updateSelectedPanel();
+      this._showOrderFeedback('ZAZNACZONO: ' + found.length);
+      this._updateBattleQuickSelectBar();
+      this._updateBattleSelectionBar();
+    }
+  }
+
+  /** Wrog sasiedni (Manhattan 1) — auto-walka przy marszu. */
+  private _adjacentEnemy(ru: RuntimeBattleUnit): RuntimeBattleUnit | null {
+    const adj = this._pickAdjacentTargetByPriority(ru);
+    return adj;
+  }
+
+  private _unitBattleClass(ru: RuntimeBattleUnit): BattleUnitClass {
+    if (ru.mounted) return 'mounted';
+    if (ru.primaryRanged || ru.rangedBase) return 'ranged';
+    return 'melee';
+  }
+
+  private _battleClassLabel(c: BattleUnitClass): string {
+    return DEPLOY_KIND_LABEL[c];
+  }
+
+  private _prefsForUnit(ru: RuntimeBattleUnit): BattleUnitClass[] {
+    const ac = this._unitBattleClass(ru);
+    if (ru.groupId) {
+      const meta = this._groupMeta.get(ru.groupId);
+      if (meta?.useGroupPriorities) {
+        const gp = meta.groupTargetPriorities?.[ac];
+        if (gp && gp.length === 3) return gp;
+      }
+    }
+    return this._targetPriorities[ac];
+  }
+
+  private _priorityScore(ru: RuntimeBattleUnit, enemy: RuntimeBattleUnit): number {
+    const ac = this._unitBattleClass(ru);
+    const prefs = this._prefsForUnit(ru);
+    const ec = this._unitBattleClass(enemy);
+    const idx = prefs.indexOf(ec);
+    let score = idx >= 0 ? idx : prefs.length;
+    if (ac === 'mounted' && enemy.antiCavSpear) score += 0.45;
+    return score;
+  }
+
+  /** Najlepszy cel wg priorytetow gracza (dystans jako tie-break). */
+  private _pickTargetByPriority(ru: RuntimeBattleUnit): RuntimeBattleUnit | null {
+    const ac = this._unitBattleClass(ru);
+    let best: RuntimeBattleUnit | null = null;
+    let bestP = Infinity;
+    let bestD = Infinity;
+    for (const e of this._enemiesOf(ru)) {
+      const p = this._priorityScore(ru, e);
+      const d = manhattan(ru.q, ru.r, e.q, e.r);
+      if (p < bestP || (p === bestP && d < bestD)) {
+        bestP = p; bestD = d; best = e;
+      }
+    }
+    return best;
+  }
+
+  private _pickAdjacentTargetByPriority(ru: RuntimeBattleUnit): RuntimeBattleUnit | null {
+    const ac = this._unitBattleClass(ru);
+    let best: RuntimeBattleUnit | null = null;
+    let bestP = Infinity;
+    for (const e of this._enemiesOf(ru)) {
+      if (manhattan(ru.q, ru.r, e.q, e.r) !== 1) continue;
+      const p = this._priorityScore(ru, e);
+      if (p < bestP || (p === bestP && best && e.bu.hp < best.bu.hp)) {
+        bestP = p; best = e;
+      }
+    }
+    return best;
+  }
+
+  private _pickRangedTargetByPriority(ru: RuntimeBattleUnit): RuntimeBattleUnit | null {
+    let best: RuntimeBattleUnit | null = null;
+    let bestP = Infinity;
+    let bestD = Infinity;
+    for (const e of this._enemiesOf(ru)) {
+      const d = manhattan(ru.q, ru.r, e.q, e.r);
+      if (d > ru.range || d < 1) continue;
+      const p = this._priorityScore(ru, e);
+      if (p < bestP || (p === bestP && d < bestD)) {
+        bestP = p; bestD = d; best = e;
+      }
+    }
+    return best;
+  }
+
+  private _ensureGroupMeta(gid: string): GroupMeta {
+    let m = this._groupMeta.get(gid);
+    if (!m) {
+      m = { doctrine: 'steady', autoPlay: true };
+      this._groupMeta.set(gid, m);
+    }
+    return m;
+  }
+
+  private _groupCentroid(gid: string): { col: number; row: number } {
+    const ids = this._liveGroupMemberIds(gid);
+    let col = 0; let row = 0; let n = 0;
+    for (const id of ids) {
+      const u = this.atk.find(x => x.bu.id === id);
+      if (!u || u.dead || u.removed) continue;
+      col += u.q; row += u.r; n++;
+    }
+    if (n === 0) return { col: 0, row: 0 };
+    return { col: Math.round(col / n), row: Math.round(row / n) };
+  }
+
+  private _doctrineLabel(d: GroupDoctrine): string {
+    if (d === 'defensive') return 'OBRONA';
+    if (d === 'steady') return 'ATAK';
+    if (d === 'aggressive') return 'SZTURM';
+    if (d === 'skirmish') return 'OSTRZAL';
+    return 'RECZNIE';
+  }
+
+  /** Cel marszu formacji (Atak): centroid + krok do przodu, bez rozpadu linii. */
+  private _attackFormationRallyPoint(gid: string, meta: GroupMeta): { col: number; row: number } | null {
+    if (this._liveGroupMemberIds(gid).length === 0) return null;
+    const cent = this._groupCentroid(gid);
+    let col: number;
+    let row: number;
+    if (meta.rallyCol != null && meta.rallyRow != null) {
+      const dc = Math.sign(meta.rallyCol - cent.col);
+      const dr = Math.sign(meta.rallyRow - cent.row);
+      col = cent.col + (dc !== 0 ? dc : 1);
+      row = cent.row + dr;
+    } else {
+      col = cent.col + 1;
+      row = cent.row;
+      const lead = this.atk.find(u => u.groupId === gid && !u.dead && !u.removed);
+      const tgt = lead ? this._pickTargetByPriority(lead) : null;
+      if (tgt && row !== tgt.r) row += Math.sign(tgt.r - row);
+      if (tgt) col = Math.min(tgt.q, col);
+    }
+    return {
+      col: Math.max(0, Math.min(BF_COLS - 1, col)),
+      row: Math.max(0, Math.min(BF_ROWS - 1, row)),
+    };
+  }
+
+  /** Najlepszy krok szarzy — BFS, potem manewr (takze boczny gdy front zablokowany). */
+  private _bestChargeStepKey(ru: RuntimeBattleUnit, tgt?: RuntimeBattleUnit | null): string | null {
+    const target = tgt ?? this._pickTargetByPriority(ru);
+    if (target) {
+      const bfs = this._firstStepAlongPathToAttack(ru);
+      if (bfs) return bfs;
+      if (ru.mounted) {
+        const dNow = manhattan(ru.q, ru.r, target.q, target.r);
+        let best: string | null = null;
+        let bestScore = -Infinity;
+        for (const [dc, dr] of DIRS4) {
+          const nc = ru.q + dc;
+          const nr = ru.r + dr;
+          if (nc < 0 || nc >= BF_COLS || nr < 0 || nr >= BF_ROWS) continue;
+          const nk = cellKey(nc, nr);
+          if (this.occByKey.has(nk)) continue;
+          if (!this.terrainMap.passable(nc, nr)) continue;
+          const dTgt = manhattan(nc, nr, target.q, target.r);
+          let spearAdj = false;
+          for (const e of this._enemiesOf(ru)) {
+            if (e.antiCavSpear && manhattan(nc, nr, e.q, e.r) === 1) { spearAdj = true; break; }
+          }
+          const score = (dNow - dTgt) * 12 - dTgt + (spearAdj ? 0 : 4);
+          if (score > bestScore) { bestScore = score; best = nk; }
+        }
+        if (best) return best;
+        return this._stepToward(ru, target);
+      }
+      return this._stepToward(ru, target);
+    }
+    const nc = ru.q + 1;
+    if (nc >= BF_COLS) return null;
+    for (const r of [ru.r, ru.r - 1, ru.r + 1]) {
+      if (r < 0 || r >= BF_ROWS) continue;
+      const nk = cellKey(nc, r);
+      if (!this.occByKey.has(nk) && this.terrainMap.passable(nc, r)) return nk;
+    }
+    return null;
+  }
+
+  /** Cel ruchu Szturmu: kazda jednostka osobno, bez offsetu formacji. */
+  private _chargeMoveDest(ru: RuntimeBattleUnit): { col: number; row: number } | null {
+    const tgt = this._pickTargetByPriority(ru);
+    const stepKey = this._bestChargeStepKey(ru, tgt);
+    if (stepKey) {
+      const comma = stepKey.indexOf(',');
+      return {
+        col: parseInt(stepKey.slice(0, comma), 10),
+        row: parseInt(stepKey.slice(comma + 1), 10),
+      };
+    }
+    if (tgt) return null;
+    const nc = ru.q + 1;
+    if (nc >= BF_COLS) return null;
+    const tryCell = (c: number, r: number): { col: number; row: number } | null => {
+      if (r < 0 || r >= BF_ROWS) return null;
+      const nk = cellKey(c, r);
+      if (this.occByKey.has(nk) || !this.terrainMap.passable(c, r)) return null;
+      return { col: c, row: r };
+    };
+    return tryCell(nc, ru.r) ?? tryCell(nc, ru.r - 1) ?? tryCell(nc, ru.r + 1);
+  }
+
+  private _groupHasRanged(gid: string): boolean {
+    for (const id of this._liveGroupMemberIds(gid)) {
+      const u = this.atk.find(x => x.bu.id === id);
+      if (u && !u.dead && (u.primaryRanged || u.rangedBase || u.range > 1)) return true;
+    }
+    return false;
+  }
+
+  /** Czy cel ruchu nie lamie blokady linii. */
+  private _destAllowedByBlockade(ru: RuntimeBattleUnit, col: number): boolean {
+    if (!this._generalSettings.blockadeActive || this._generalSettings.blockadeCol == null) return true;
+    if (ru.side !== 'atk') return true;
+    return col <= this._generalSettings.blockadeCol;
+  }
+
+  private _applySkirmishFlags(gid: string): void {
+    for (const id of this._liveGroupMemberIds(gid)) {
+      const u = this.atk.find(x => x.bu.id === id);
+      if (!u || u.dead) continue;
+      if (u.primaryRanged || u.rangedBase || u.range > 1) {
+        u.rangedKite = true;
+        u.shootingEnabled = true;
+      }
+    }
+  }
+
+  /** Ustaw blokadę linii na kolumnie (front atakującego). */
+  private _setLineBlockade(col: number, active = true): void {
+    this._generalSettings.blockadeActive = active;
+    this._generalSettings.blockadeCol = active ? Math.max(0, Math.min(BF_COLS - 1, col)) : null;
+    this._showOrderFeedback(active
+      ? 'Blokada linii: kolumna ' + this._generalSettings.blockadeCol
+      : 'Blokada wylaczona');
+    if (this._generalPanel) this._refreshGeneralPanelBody();
     this._updateSelectedPanel();
-    this._showOrderFeedback('ZAZNACZONO: ' + found.length);
+  }
+
+  /** Blokada na froncie zaznaczonej grupy / armii. */
+  private _setLineBlockadeFromSelection(): void {
+    const cols: number[] = [];
+    for (const id of this._selectedUnits) {
+      const u = this.atk.find(x => x.bu.id === id);
+      if (u && !u.dead) cols.push(u.q);
+    }
+    if (cols.length === 0) {
+      for (const u of this.atk) {
+        if (!u.dead && !u.removed) cols.push(u.q);
+      }
+    }
+    if (cols.length === 0) return;
+    const front = Math.max(...cols);
+    this._setLineBlockade(front, true);
+    for (const gid of this._sortedGroupIds()) {
+      const meta = this._ensureGroupMeta(gid);
+      if (meta.doctrine === 'manual' || !meta.autoPlay) {
+        this._setGroupDoctrine(gid, 'defensive');
+      }
+    }
+  }
+
+  /** Ustaw doktryne grupy + formacja + auto-gra. */
+  private _setGroupDoctrine(gid: string, doctrine: GroupDoctrine): void {
+    const meta = this._ensureGroupMeta(gid);
+    meta.doctrine = doctrine;
+    if (doctrine === 'manual') {
+      meta.autoPlay = false;
+      this._showOrderFeedback('Grupa: recznie');
+      this._updateSelectedPanel();
+      if (!this.deployPhase) this._updateDeployToolbarStatus();
+      return;
+    }
+    // autoPlay per grupa: po wczesnym return dla manual — tu zawsze auto
+    meta.autoPlay = true;
+    if (doctrine === 'defensive') meta.formation = 'F2';
+    else meta.formation = 'F1';
+    this._applyGroupFormation(gid, meta.formation);
+    if (doctrine === 'skirmish') {
+      this._applySkirmishFlags(gid);
+      if (!this._groupHasRanged(gid)) {
+        this._showOrderFeedback('Ostrzal: brak lucznikow w grupie — dziala jak Atak');
+      }
+    }
+    if (doctrine === 'defensive') {
+      delete meta.rallyCol;
+      delete meta.rallyRow;
+    } else if (doctrine === 'aggressive') {
+      delete meta.rallyCol;
+      delete meta.rallyRow;
+    } else if (doctrine === 'skirmish') {
+      const cent = this._groupCentroid(gid);
+      meta.rallyCol = Math.min(BF_COLS - 1, cent.col + 2);
+      meta.rallyRow = cent.row;
+    } else if (doctrine === 'steady') {
+      const cent = this._groupCentroid(gid);
+      meta.rallyCol = Math.min(BF_COLS - 1, cent.col + 2);
+      meta.rallyRow = cent.row;
+    } else {
+      const cent = this._groupCentroid(gid);
+      const lead = this.atk.find(u => u.groupId === gid && !u.dead && !u.removed);
+      const tgt = lead ? this._pickTargetByPriority(lead) : null;
+      if (tgt) {
+        meta.rallyCol = tgt.q;
+        meta.rallyRow = tgt.r;
+      } else {
+        meta.rallyCol = Math.min(BF_COLS - 1, cent.col + 4);
+        meta.rallyRow = cent.row;
+      }
+    }
+    for (const id of this._liveGroupMemberIds(gid)) {
+      const u = this.atk.find(x => x.bu.id === id);
+      if (u && !u.dead) u.playerOrder = { type: 'none' };
+    }
+    this._refreshQueuedOrderVisuals();
+    this._showOrderFeedback(
+      'Doktryna: ' + this._doctrineLabel(doctrine)
+      + (this.deployPhase ? ' (auto)' : (meta.autoPlay ? ' · grupa AUTO' : ' · recznie')),
+    );
+    this._updateSelectedPanel();
+    if (this.deployPhase) this._updateDeployStrategyBar();
+    if (!this.deployPhase) this._updateDeployToolbarStatus();
+    if (this._generalPanel) this._refreshGeneralPanelBody();
+  }
+
+  private _doctrineMoveDest(ru: RuntimeBattleUnit, meta: GroupMeta): { col: number; row: number } | null {
+    if (meta.doctrine === 'skirmish' && (ru.primaryRanged || ru.rangedBase)) {
+      return null;
+    }
+    if (meta.doctrine === 'defensive') return null;
+
+    // Atak: cala grupa idzie do przodu, zachowujac offset formacji
+    if (meta.doctrine === 'steady' && ru.groupId) {
+      const rally = this._attackFormationRallyPoint(ru.groupId, meta);
+      if (!rally) return null;
+      const d = this._moveTargetForUnit(ru, rally.col, rally.row);
+      if (!this._destAllowedByBlockade(ru, d.col)) return null;
+      return d;
+    }
+
+    // Szturm: kazda jednostka osobno, maksymalnie do przodu (bez formacji)
+    if (meta.doctrine === 'aggressive') {
+      const d = this._chargeMoveDest(ru);
+      if (!d || (d.col === ru.q && d.row === ru.r)) return null;
+      if (!this._destAllowedByBlockade(ru, d.col)) return null;
+      return d;
+    }
+
+    if (meta.rallyCol != null && meta.rallyRow != null) {
+      const d = this._moveTargetForUnit(ru, meta.rallyCol, meta.rallyRow);
+      if (!this._destAllowedByBlockade(ru, d.col)) return null;
+      return d;
+    }
+    const tgt = this._pickTargetByPriority(ru);
+    if (!tgt) return null;
+    if (!this._destAllowedByBlockade(ru, tgt.q)) return null;
+    return { col: tgt.q, row: tgt.r };
+  }
+
+  /** Jeden krok auto-gra wg doktryny grupy. */
+  private _executeGroupDoctrineStep(ru: RuntimeBattleUnit, meta: GroupMeta, done: () => void): boolean {
+    if (meta.doctrine === 'skirmish') {
+      return this._executeSkirmishDoctrineStep(ru, meta, done);
+    }
+    // Szturm: konnica = pelna logika jazdy; reszta = BFS do wroga (omija wlasna linie)
+    if (meta.doctrine === 'aggressive') {
+      if (ru.mounted) {
+        this._cavalryAction(ru, done);
+        return true;
+      }
+      if (canShoot(ru) && ru.shootingEnabled !== false) {
+        const rt = this._pickRangedTargetByPriority(ru);
+        if (rt) {
+          this._doAttack(ru, rt, done);
+          return true;
+        }
+      }
+      const adjA = this._pickAdjacentTargetByPriority(ru);
+      if (adjA) {
+        this._doAttack(ru, adjA, done);
+        return true;
+      }
+      if (ru.moveLeft <= 0) {
+        done();
+        return true;
+      }
+      this._advanceStep(ru, done);
+      return true;
+    }
+    if (canShoot(ru) && ru.shootingEnabled !== false) {
+      const rt = this._pickRangedTargetByPriority(ru);
+      if (rt) {
+        this._doAttack(ru, rt, done);
+        return true;
+      }
+    }
+    const adj = this._pickAdjacentTargetByPriority(ru);
+    if (adj) {
+      this._doAttack(ru, adj, done);
+      return true;
+    }
+    const dest = this._doctrineMoveDest(ru, meta);
+    if (!dest || (dest.col === ru.q && dest.row === ru.r)) {
+      done();
+      return true;
+    }
+    ru.playerOrder = { type: 'move', col: dest.col, row: dest.row };
+    const finish = (): void => {
+      if (ru.q !== dest.col || ru.r !== dest.row) {
+        ru.playerOrder = { type: 'move', col: dest.col, row: dest.row };
+      } else {
+        ru.playerOrder = { type: 'none' };
+      }
+      this._refreshQueuedOrderVisuals();
+      done();
+    };
+    this._performPlayerOrder(ru, finish);
+    return true;
+  }
+
+  /** Ostrzał / kit — lucznicy strzelają i cofają się, piechota osłania linię. */
+  private _executeSkirmishDoctrineStep(
+    ru: RuntimeBattleUnit, meta: GroupMeta, done: () => void,
+  ): boolean {
+    const isRanged = ru.primaryRanged || ru.rangedBase || (ru.range > 1 && canShoot(ru));
+    if (isRanged && ru.shootingEnabled !== false) {
+      ru.rangedKite = true;
+      if (canShoot(ru)) {
+        this._rangedAction(ru, done);
+        return true;
+      }
+    }
+    const adj = this._pickAdjacentTargetByPriority(ru);
+    if (adj) {
+      this._doAttack(ru, adj, done);
+      return true;
+    }
+    const dest = this._doctrineMoveDest(ru, meta);
+    if (!dest || (dest.col === ru.q && dest.row === ru.r)) {
+      done();
+      return true;
+    }
+    if (!this._destAllowedByBlockade(ru, dest.col)) {
+      done();
+      return true;
+    }
+    ru.playerOrder = { type: 'move', col: dest.col, row: dest.row };
+    const finish = (): void => {
+      if (ru.q !== dest.col || ru.r !== dest.row) {
+        ru.playerOrder = { type: 'move', col: dest.col, row: dest.row };
+      } else {
+        ru.playerOrder = { type: 'none' };
+      }
+      this._refreshQueuedOrderVisuals();
+      done();
+    };
+    this._performPlayerOrder(ru, finish);
+    return true;
+  }
+
+  private _generalPanelSectionTitle(text: string): string {
+    return '<div style="font-size:10px;color:#ffd700;letter-spacing:0.08em;margin:12px 0 6px;text-transform:uppercase;border-bottom:1px solid rgba(232,216,138,0.25);padding-bottom:4px;">'
+      + text + '</div>';
+  }
+
+  private _generalDoctrineBtnHtml(gid: string, d: GroupDoctrine, label: string, active: boolean): string {
+    return '<button type="button" data-gen-gid="' + gid + '" data-gen-doc="' + d + '" style="flex:1;min-width:42px;padding:5px 2px;font-size:8px;border-radius:4px;cursor:pointer;'
+      + 'background:' + (active ? 'rgba(232,216,138,0.25)' : 'rgba(25,32,44,0.95)') + ';'
+      + 'color:' + (active ? '#ffd700' : '#ccc') + ';border:1px solid ' + (active ? BATTLE_GOLD : 'rgba(212,175,55,0.25)') + ';">'
+      + label + '</button>';
+  }
+
+  private _buildGeneralPanelBodyHtml(): string {
+    const gs = this._generalSettings;
+    const groups = this._sortedGroupIds();
+    let groupsHtml = '';
+    if (groups.length === 0) {
+      groupsHtml = '<div style="font-size:10px;color:#888;">Brak grup — najpierw grupuj jednostki w deploy.</div>';
+    } else {
+      for (const gid of groups) {
+        const meta = this._ensureGroupMeta(gid);
+        const n = this._groupDisplayNum(gid);
+        const lbl = this._groupDisplayLabel(gid);
+        const cnt = this._liveGroupMemberIds(gid).length;
+        const doc = meta.doctrine;
+        groupsHtml +=
+          '<div style="margin-bottom:10px;padding:8px;background:rgba(255,255,255,0.03);border-radius:6px;border:1px solid rgba(212,175,55,0.15);">'
+          + '<div style="display:flex;justify-content:space-between;margin-bottom:6px;">'
+          + '<span style="color:#ffd700;font-size:11px;font-weight:bold;">' + lbl + '</span>'
+          + '<span style="font-size:9px;color:#888;">' + cnt + ' · ' + this._doctrineLabel(doc) + '</span>'
+          + '</div>'
+          + '<div style="display:flex;gap:3px;flex-wrap:wrap;">'
+          + this._generalDoctrineBtnHtml(gid, 'defensive', 'Obrona', doc === 'defensive')
+          + this._generalDoctrineBtnHtml(gid, 'steady', 'Atak', doc === 'steady')
+          + this._generalDoctrineBtnHtml(gid, 'aggressive', 'Szturm', doc === 'aggressive')
+          + this._generalDoctrineBtnHtml(gid, 'skirmish', 'Ostrzał', doc === 'skirmish')
+          + this._generalDoctrineBtnHtml(gid, 'manual', 'Ręcznie', doc === 'manual')
+          + '</div></div>';
+      }
+    }
+    const mkSelect = (cls: BattleUnitClass, slot: number): string => {
+      const opts = (['mounted', 'ranged', 'melee'] as BattleUnitClass[]).map(c =>
+        '<option value="' + c + '"' + (this._targetPriorities[cls][slot] === c ? ' selected' : '') + '>'
+        + this._battleClassLabel(c) + '</option>',
+      ).join('');
+      return '<select data-tp-class="' + cls + '" data-tp-slot="' + slot + '" style="flex:1;font-size:11px;padding:4px;background:#1a2433;color:#e8e0d0;border:1px solid rgba(212,175,55,0.35);border-radius:4px;">' + opts + '</select>';
+    };
+    const prioRow = (cls: BattleUnitClass, icon: string): string =>
+      '<div style="margin-bottom:8px;">'
+      + '<div style="font-size:10px;color:#ccc;margin-bottom:4px;">' + icon + ' ' + this._battleClassLabel(cls) + '</div>'
+      + '<div style="display:flex;gap:4px;align-items:center;font-size:9px;color:#888;margin-bottom:3px;"><span style="width:22px;">1.</span>' + mkSelect(cls, 0) + '</div>'
+      + '<div style="display:flex;gap:4px;align-items:center;font-size:9px;color:#888;margin-bottom:3px;"><span style="width:22px;">2.</span>' + mkSelect(cls, 1) + '</div>'
+      + '<div style="display:flex;gap:4px;align-items:center;font-size:9px;color:#888;"><span style="width:22px;">3.</span>' + mkSelect(cls, 2) + '</div>'
+      + '</div>';
+    const blockadeInfo = gs.blockadeActive && gs.blockadeCol != null
+      ? '<span style="color:#7be08a;">AKTYWNA · kolumna ' + gs.blockadeCol + '</span>'
+      : '<span style="color:#888;">wyłączona</span>';
+    return ''
+      + this._generalPanelSectionTitle('Blokada linii')
+      + '<div style="font-size:9px;color:#aaa;margin-bottom:8px;line-height:1.45;">Armia nie przekracza wyznaczonej linii frontu (kolumna mapy). Przydatne do trzymania wąskiego gardła.</div>'
+      + '<div style="font-size:10px;margin-bottom:8px;">Status: ' + blockadeInfo + '</div>'
+      + '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:4px;">'
+      + '<button id="gen-blockade-set" type="button" style="flex:1;min-width:120px;padding:8px;border-radius:6px;cursor:pointer;font-size:10px;background:rgba(60,80,40,0.5);color:#dfe;border:1px solid rgba(120,180,80,0.45);">Ustaw na froncie zazn.</button>'
+      + '<button id="gen-blockade-off" type="button" style="padding:8px 12px;border-radius:6px;cursor:pointer;font-size:10px;background:rgba(40,20,20,0.6);color:#ccc;border:1px solid rgba(180,80,80,0.35);">Wyłącz</button>'
+      + '</div>'
+      + this._generalPanelSectionTitle('Doktryny grup (auto-gra)')
+      + '<div style="font-size:9px;color:#888;margin-bottom:8px;line-height:1.4;">Obrona=F2 stoi · Atak=formacja do przodu · Szturm=bez formacji · Ostrzał=kit+strzał · Ręcznie=klikasz sam</div>'
+      + groupsHtml
+      + this._generalPanelSectionTitle('Priorytety celów')
+      + '<div style="font-size:9px;color:#888;margin-bottom:8px;">Kogo atakować w pierwszej kolejności (1→2→3). Później: modyfikatory generała.</div>'
+      + prioRow('mounted', '\u{1F40E}') + prioRow('ranged', '\u{1F3F9}') + prioRow('melee', '\u{1F5E1}')
+      + '<button id="gen-prio-reset" type="button" style="width:100%;margin-top:6px;padding:8px;border-radius:6px;cursor:pointer;font-size:10px;background:rgba(255,255,255,0.06);color:#ccc;border:1px solid rgba(255,255,255,0.12);">Przywróć domyślne priorytety</button>';
+  }
+
+  private _wireGeneralPanelEvents(panel: HTMLDivElement): void {
+    panel.querySelectorAll('[data-gen-gid][data-gen-doc]').forEach(el => {
+      el.addEventListener('click', () => {
+        const gid = (el as HTMLElement).dataset.genGid!;
+        const doc = (el as HTMLElement).dataset.genDoc as GroupDoctrine;
+        this._setGroupDoctrine(gid, doc);
+      });
+    });
+    panel.querySelectorAll('select[data-tp-class]').forEach(el => {
+      el.addEventListener('change', () => {
+        const cls = (el as HTMLSelectElement).dataset.tpClass as BattleUnitClass;
+        const slot = parseInt((el as HTMLSelectElement).dataset.tpSlot ?? '0', 10);
+        const val = (el as HTMLSelectElement).value as BattleUnitClass;
+        const prefs = [...this._targetPriorities[cls]];
+        const oldIdx = prefs.indexOf(val);
+        if (oldIdx >= 0 && oldIdx !== slot) prefs[oldIdx] = prefs[slot]!;
+        prefs[slot] = val;
+        this._targetPriorities[cls] = prefs;
+      });
+    });
+    panel.querySelector('#gen-blockade-set')?.addEventListener('click', () => this._setLineBlockadeFromSelection());
+    panel.querySelector('#gen-blockade-off')?.addEventListener('click', () => this._setLineBlockade(0, false));
+    panel.querySelector('#gen-prio-reset')?.addEventListener('click', () => {
+      this._targetPriorities = {
+        mounted: [...BattleScene.DEFAULT_TARGET_PRIORITIES.mounted],
+        ranged:  [...BattleScene.DEFAULT_TARGET_PRIORITIES.ranged],
+        melee:   [...BattleScene.DEFAULT_TARGET_PRIORITIES.melee],
+      };
+      this._refreshGeneralPanelBody();
+    });
+  }
+
+  private _refreshGeneralPanelBody(): void {
+    if (!this._generalPanel) return;
+    const body = this._generalPanel.querySelector('#gen-panel-body') as HTMLDivElement | null;
+    if (!body) return;
+    body.innerHTML = this._buildGeneralPanelBodyHtml();
+    this._wireGeneralPanelEvents(body);
+  }
+
+  /** Menu Generała — doktryny, blokada, priorytety celów. */
+  private _toggleGeneralPanel(): void {
+    if (this._generalPanel) {
+      this._generalPanel.remove();
+      this._generalPanel = null;
+      this._updateBattleQuickSelectBar();
+      return;
+    }
+    const panel = document.createElement('div');
+    panel.id = 'battle-general-panel';
+    Object.assign(panel.style, {
+      position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)',
+      width: 'min(480px,94vw)', maxHeight: '85vh',
+      background: 'rgba(10,16,26,0.98)', border: `2px solid ${BATTLE_GOLD}`,
+      borderRadius: '12px', zIndex: this.deployPhase ? '100100' : '10020', fontFamily: HUD_FONT,
+      boxShadow: '0 12px 40px rgba(0,0,0,0.6)', display: 'flex', flexDirection: 'column',
+    });
+    panel.innerHTML =
+      '<div style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px 10px;border-bottom:1px solid rgba(212,175,55,0.2);">'
+      + '<div><div style="color:#ffd700;font-size:15px;font-weight:bold;">\u2694 Generał</div>'
+      + '<div style="font-size:9px;color:#888;margin-top:2px;">' + this._generalSettings.commanderName + ' · doktryny · blokada · cele</div></div>'
+      + '<button id="gen-close" type="button" style="background:transparent;border:none;color:#aaa;font-size:22px;cursor:pointer;line-height:1;">&times;</button>'
+      + '</div>'
+      + '<div id="gen-panel-body" style="overflow-y:auto;padding:8px 16px 16px;flex:1;"></div>';
+    panel.querySelector('#gen-close')?.addEventListener('click', () => this._toggleGeneralPanel());
+    this.overlay.appendChild(panel);
+    this._generalPanel = panel;
+    this._refreshGeneralPanelBody();
+    this._updateBattleQuickSelectBar();
+  }
+
+  /** @deprecated użyj _toggleGeneralPanel */
+  private _toggleTargetPriorityPanel(): void {
+    this._toggleGeneralPanel();
+  }
+
+  /**
+   * Wykonuje rozkaz gracza (ruch/atak/stoj) — wspolne dla tury i natychmiastowego kliku.
+   * @returns true gdy obsluzono (nie przechodz do AI).
+   */
+  private _performPlayerOrder(ru: RuntimeBattleUnit, done: () => void): boolean {
+    const ord = ru.playerOrder;
+    if (ord.type === 'hold') {
+      done();
+      return true;
+    }
+    if (ord.type === 'none') {
+      const meta = ru.groupId ? this._groupMeta.get(ru.groupId) : undefined;
+      if (meta?.autoPlay && meta.doctrine !== 'manual') {
+        return this._executeGroupDoctrineStep(ru, meta, done);
+      }
+      done();
+      return true;
+    }
+    if (ord.type === 'move') {
+      const tc = ord.col;
+      const tr = ord.row;
+      if (tc === ru.q && tr === ru.r) {
+        ru.playerOrder = { type: 'none' };
+        this._refreshQueuedOrderVisuals();
+        done();
+        return true;
+      }
+      const adj = this._adjacentEnemy(ru);
+      if (adj) {
+        this._doAttack(ru, adj, done);
+        return true;
+      }
+      const dc = Math.sign(tc - ru.q);
+      const dr = Math.sign(tr - ru.r);
+      let nc = ru.q + dc;
+      let nr = ru.r + dr;
+      if (!this.terrainMap.passable(nc, nr) || this.occByKey.has(cellKey(nc, nr))) {
+        if (dc !== 0 && this.terrainMap.passable(ru.q + dc, ru.r) && !this.occByKey.has(cellKey(ru.q + dc, ru.r))) {
+          nc = ru.q + dc; nr = ru.r;
+        } else if (dr !== 0 && this.terrainMap.passable(ru.q, ru.r + dr) && !this.occByKey.has(cellKey(ru.q, ru.r + dr))) {
+          nc = ru.q; nr = ru.r + dr;
+        } else {
+          done();
+          return true;
+        }
+      }
+      if (nc === tc && nr === tr) ru.playerOrder = { type: 'none' };
+      if (!this._destAllowedByBlockade(ru, nc)) {
+        done();
+        return true;
+      }
+      this._doMove(ru, nc, nr, () => {
+        this._refreshQueuedOrderVisuals();
+        done();
+      });
+      return true;
+    }
+    if (ord.type === 'attack') {
+      const tgt = this.def.find(u => u.bu.id === ord.targetId && !u.dead && !u.fadingOut);
+      if (!tgt) {
+        ru.playerOrder = { type: 'none' };
+        this._refreshQueuedOrderVisuals();
+        done();
+        return true;
+      }
+      const dist = manhattan(ru.q, ru.r, tgt.q, tgt.r);
+      if (dist <= Math.max(1, ru.range)) {
+        this._doAttack(ru, tgt, done);
+        return true;
+      }
+      const dc = Math.sign(tgt.q - ru.q);
+      const dr = Math.sign(tgt.r - ru.r);
+      let nc = ru.q + dc;
+      let nr = ru.r + dr;
+      if (!this.terrainMap.passable(nc, nr) || this.occByKey.has(cellKey(nc, nr))) {
+        nc = ru.q + dc; nr = ru.r;
+        if (!this.terrainMap.passable(nc, nr) || this.occByKey.has(cellKey(nc, nr))) {
+          nc = ru.q; nr = ru.r + dr;
+        }
+      }
+      if (nc !== ru.q || nr !== ru.r) this._doMove(ru, nc, nr, done);
+      else done();
+      return true;
+    }
+    done();
+    return true;
+  }
+
+  /** Natychmiastowe wykonanie rozkazow wybranych jednostek (po kolei). */
+  private _executeUnitsImmediate(unitIds: string[]): void {
+    const queue = unitIds.filter(id => {
+      const u = this.atk.find(x => x.bu.id === id);
+      return u && !u.dead && !u.removed && !u.routed && !u.acted
+        && !this._queuedOrderUnitIds.has(id);
+    });
+    const runNext = (idx: number): void => {
+      if (idx >= queue.length) {
+        this._refreshQueuedOrderVisuals();
+        return;
+      }
+      const u = this.atk.find(x => x.bu.id === queue[idx])!;
+      if (this.busy) {
+        this._schedule(40, () => runNext(idx));
+        return;
+      }
+      if (u.acted || u.dead || u.routed) {
+        runNext(idx + 1);
+        return;
+      }
+      this._performPlayerOrder(u, () => {
+        u.acted = true;
+        runNext(idx + 1);
+      });
+    };
+    runNext(0);
+  }
+
+  /** Zbiera id jednostek objetych rozkazem (grupy = calosc formacji). */
+  private _collectOrderUnitIds(): string[] {
+    const out = new Set<string>();
+    const doneGroups = new Set<string>();
+    for (const id of this._selectedUnits) {
+      const u = this.atk.find(x => x.bu.id === id);
+      if (!u || u.dead || u.removed) continue;
+      if (u.groupId) {
+        if (doneGroups.has(u.groupId)) continue;
+        doneGroups.add(u.groupId);
+        for (const mid of this._liveGroupMemberIds(u.groupId)) out.add(mid);
+      } else {
+        out.add(id);
+      }
+    }
+    return [...out];
+  }
+
+  /** Ruch / atak — domyslnie od razu; Ctrl/Shift = dyspozycja na pozniej. */
+  private _issueBattleAttack(targetId: string, queueOnly: boolean): void {
+    const ids = this._collectOrderUnitIds();
+    if (ids.length === 0) return;
+    for (const id of ids) {
+      const u = this.atk.find(x => x.bu.id === id);
+      if (!u || u.dead) continue;
+      u.playerOrder = { type: 'attack', targetId };
+      if (queueOnly) this._queuedOrderUnitIds.add(id);
+      else this._queuedOrderUnitIds.delete(id);
+    }
+    this._refreshQueuedOrderVisuals();
+    const tgt = this.def.find(d => d.bu.id === targetId);
+    this._showOrderFeedback(queueOnly ? 'Dyspozycja ATAK' : 'ATAK: ' + (tgt?.bu.nazwa ?? ''));
+    if (!queueOnly) {
+      this._executeUnitsImmediate(ids);
+      this._advanceToNextBattleUnit(new Set(ids));
+    }
+  }
+
+  private _issueBattleMove(col: number, row: number, queueOnly: boolean): void {
+    const ids = this._collectOrderUnitIds();
+    if (ids.length === 0) return;
+    this._orderMoveForUnits(col, row, ids);
+    for (const id of ids) {
+      if (queueOnly) this._queuedOrderUnitIds.add(id);
+      else this._queuedOrderUnitIds.delete(id);
+    }
+    this._refreshQueuedOrderVisuals();
+    this._showOrderFeedback(queueOnly ? 'Dyspozycja RUCH' : 'RUCH');
+    if (!queueOnly) {
+      const gids = new Set<string>();
+      for (const id of ids) {
+        const u = this.atk.find(x => x.bu.id === id);
+        if (u?.groupId) gids.add(u.groupId);
+      }
+      if (gids.size === 1) {
+        const meta = this._ensureGroupMeta([...gids][0]!);
+        if (meta.autoPlay) {
+          meta.rallyCol = col;
+          meta.rallyRow = row;
+        }
+      }
+      this._executeUnitsImmediate(ids);
+      this._advanceToNextBattleUnit(new Set(ids));
+    }
+  }
+
+  /** Duchy docelowej formacji grupy (podglad w walce). */
+  private _refreshBattleMoveGhosts(col: number, row: number): void {
+    if (!this._deployGhostGroup || this._selectedUnits.size === 0) return;
+    this._clearDeployGhosts();
+    const skipIds = new Set<string>();
+    for (const id of this._selectedUnits) skipIds.add(id);
+    const discGeo = new THREE.CircleGeometry(0.38, 20);
+    discGeo.rotateX(-Math.PI / 2);
+    this._deployGhostOwnedGeos.push(discGeo);
+    const destMap = this._moveDestinationsForSelection(col, row);
+    for (const [id, dest] of destMap) {
+      this._addBattleGhostDisc(discGeo, dest.col, dest.row, skipIds);
+    }
+  }
+
+  private _addBattleGhostDisc(
+    geo: THREE.BufferGeometry, col: number, row: number, skipIds: Set<string>,
+  ): void {
+    if (!this._deployGhostGroup) return;
+    const ok = this.terrainMap.passable(col, row)
+      && (!this.occByKey.has(cellKey(col, row)) || skipIds.has(this.occByKey.get(cellKey(col, row))!.bu.id));
+    const mat = new THREE.MeshBasicMaterial({
+      color: ok ? 0x44aaff : 0xff5555,
+      transparent: true, opacity: 0.38, depthWrite: false, side: THREE.DoubleSide,
+    });
+    this._deployGhostOwnedMats.push(mat);
+    const mesh = new THREE.Mesh(geo, mat);
+    const { x, z } = cellToWorld(col, row);
+    mesh.position.set(x, tileTopY(this.terrainMap, col, row) + 0.06, z);
+    this._deployGhostGroup.add(mesh);
   }
 
   private _onBattleClick(cx: number, cy: number): void {
+    const queueOnly = this._lastClickModifiers.ctrl || this._lastClickModifiers.shift
+      || (this._battleAwaitingOrders && this.roundNo < 1);
     const rect = this.canvas.getBoundingClientRect();
     const ndcX =  ((cx - rect.left) / rect.width)  * 2 - 1;
     const ndcY = -((cy - rect.top)  / rect.height) * 2 + 1;
@@ -7691,7 +13666,6 @@ export class BattleScene {
     const raycaster = new THREE.Raycaster();
     raycaster.setFromCamera(new THREE.Vector2(ndcX, ndcY), this.camera);
 
-    // Krok 1: Raycast3D na meshach jednostek
     const allGroups = [...this.atk, ...this.def]
       .filter(u => !u.dead && !u.fadingOut)
       .map(u => u.group);
@@ -7710,25 +13684,15 @@ export class BattleScene {
 
     if (hitUnit) {
       if (hitUnit.side === 'atk') {
-        // Zaznacz jednostke (lub cala grupe jesli jest w grupie; Ctrl = indywidualny rozkaz)
-        const individualMode = (window.event instanceof MouseEvent) && (window.event as MouseEvent).ctrlKey;
-        this._toggleSelectUnitOrGroup(hitUnit, individualMode);
+        this._handleBattleUnitPick(hitUnit, this._lastClickModifiers.ctrl, this._lastClickModifiers.shift);
         return;
       }
-      if (hitUnit.side === 'def') {
-        // Rozkaz Atak na wroga (dla wszystkich zaznaczonych)
-        if (this._selectedUnits.size > 0) {
-          for (const id of this._selectedUnits) {
-            const u = this.atk.find(u => u.bu.id === id);
-            if (u && !u.dead) u.playerOrder = { type: 'attack', targetId: hitUnit.bu.id };
-          }
-          this._showOrderFeedback('ATAK: ' + hitUnit.bu.nazwa);
-        }
+      if (hitUnit.side === 'def' && this._selectedUnits.size > 0) {
+        this._issueBattleAttack(hitUnit.bu.id, queueOnly);
         return;
       }
     }
 
-    // Krok 2: Raycast na plaszczyznę y=0 → col/row siatki
     const ground = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
     const pt = new THREE.Vector3();
     if (!raycaster.ray.intersectPlane(ground, pt)) return;
@@ -7736,49 +13700,23 @@ export class BattleScene {
     const row = Math.round(pt.z / TILE_S);
     if (col < 0 || col >= BF_COLS || row < 0 || row >= BF_ROWS) return;
 
-    // Krok 3: Fallback occByKey — jesli raycast3D nie trafile a jest jednostka w tym kaflu
     if (!hitUnit) {
       const cellUnit = this.occByKey.get(cellKey(col, row));
       if (cellUnit && !cellUnit.dead && !cellUnit.fadingOut) {
         if (cellUnit.side === 'atk') {
-          const individualMode2 = (window.event instanceof MouseEvent) && (window.event as MouseEvent).ctrlKey;
-          this._toggleSelectUnitOrGroup(cellUnit, individualMode2);
+          this._handleBattleUnitPick(cellUnit, this._lastClickModifiers.ctrl, this._lastClickModifiers.shift);
           return;
         }
         if (cellUnit.side === 'def' && this._selectedUnits.size > 0) {
-          for (const id of this._selectedUnits) {
-            const u = this.atk.find(u => u.bu.id === id);
-            if (u && !u.dead) u.playerOrder = { type: 'attack', targetId: cellUnit.bu.id };
-          }
-          this._showOrderFeedback('ATAK: ' + cellUnit.bu.nazwa);
+          this._issueBattleAttack(cellUnit.bu.id, queueOnly);
           return;
         }
       }
     }
 
-    // Krok 4: Puste pole — rozkaz Ruch
     if (this._selectedUnits.size > 0) {
-      // Wykryj grupy wsrod zaznaczonych, wydaj rozkaz grupowy (z formacja)
-      const issuedToGroups = new Set<string>();
-      const ids = [...this._selectedUnits];
-      const half = Math.floor(ids.length / 2);
-      for (let i = 0; i < ids.length; i++) {
-        const u = this.atk.find(u => u.bu.id === ids[i]);
-        if (!u || u.dead) continue;
-        if (u.groupId && !issuedToGroups.has(u.groupId)) {
-          // Rozkaz grupowy — zachowaj formacje
-          issuedToGroups.add(u.groupId);
-          this._orderGroupMove(u.groupId, col, row);
-        } else if (!u.groupId) {
-          // Jednostka bez grupy — offset w osi row
-          const offset = i - half;
-          const targetRow = Math.max(0, Math.min(BF_ROWS - 1, row + offset));
-          u.playerOrder = { type: 'move', col, row: targetRow };
-        }
-      }
-      this._showOrderFeedback('RUCH: (' + col + ',' + row + ')');
+      this._issueBattleMove(col, row, queueOnly);
     }
-    // Klik bez zaznaczenia — nic
   }
 
   /** Zaznacza / odznacza pojedyncza jednostke. */
@@ -7790,8 +13728,12 @@ export class BattleScene {
       this._selectedUnits.add(ru.bu.id);
       this._addSelectionRing(ru);
     }
-    this._updateRosterBar();
-    this._updateSelectedPanel();
+    if (this.deployPhase) {
+      this._refreshDeploySelectionVisuals();
+    } else {
+      this._updateRosterBar();
+      this._updateSelectedPanel();
+    }
   }
 
   /** Zaznacza cala grupe jednostek (np. z rostera). */
@@ -7803,8 +13745,12 @@ export class BattleScene {
         this._addSelectionRing(u);
       }
     }
-    this._updateRosterBar();
-    this._updateSelectedPanel();
+    if (this.deployPhase) {
+      this._refreshDeploySelectionVisuals();
+    } else {
+      this._updateRosterBar();
+      this._updateSelectedPanel();
+    }
   }
 
   /** Wyczysc calkowite zaznaczenie. */
@@ -7814,8 +13760,15 @@ export class BattleScene {
       if (u) this._removeSelectionRing(u);
     }
     this._selectedUnits.clear();
-    this._updateRosterBar();
-    this._updateSelectedPanel();
+    if (this.deployPhase) {
+      this._refreshDeploySelectionVisuals();
+    } else {
+      this._updateRosterBar();
+      this._updateSelectedPanel();
+      this._updateBattleQuickSelectBar();
+      this._updateBattleSelectionBar();
+      if (this.started) this._updateDeployToolbarStatus();
+    }
   }
 
   /** Dodaj swiecacy ring pod jednostka (PlaneGeometry, emissive). */
@@ -7829,8 +13782,7 @@ export class BattleScene {
     const mat = new THREE.MeshBasicMaterial({ color: ringColor, transparent: true, opacity: 0.85, depthWrite: false });
     this.ownedMats.push(mat);
     const ring = new THREE.Mesh(geo, mat);
-    ring.position.copy(ru.group.position);
-    ring.position.y = 0.03;
+    ring.position.set(0, 0.03, 0);
     ru.group.add(ring);
     this._selectionRings.set(ru.bu.id, ring);
   }
@@ -7850,14 +13802,34 @@ export class BattleScene {
       const u = this.atk.find(u => u.bu.id === id);
       if (u && !u.dead) u.playerOrder = { type: 'hold' };
     }
+    this._refreshQueuedOrderVisuals();
     this._showOrderFeedback('STOJ');
   }
 
   /** Krotki feedback tekstowy w hint. */
   private _showOrderFeedback(msg: string): void {
+    const full = '[RECZNE] ' + msg;
     const prev = this.hint.textContent;
-    this.hint.textContent = '[RECZNE] ' + msg;
-    setTimeout(() => { if (this.hint.textContent === '[RECZNE] ' + msg) this.hint.textContent = prev ?? ''; }, 1500);
+    this.hint.textContent = full;
+    setTimeout(() => { if (this.hint.textContent === full) this.hint.textContent = prev ?? ''; }, 1800);
+  }
+
+  /** Feedback w fazie deploy (stopka rosteru C09). */
+  private _showDeployFeedback(msg: string): void {
+    if (this.deployPhase && this._deployRosterFeedback) {
+      const el = this._deployRosterFeedback;
+      const prev = el.textContent;
+      el.textContent = msg;
+      el.style.color = '#7be08a';
+      setTimeout(() => {
+        if (el.textContent === msg) {
+          el.style.color = BATTLE_PLAYER_TEXT;
+          el.textContent = prev ?? 'Ctrl+LPM = wielokrotne';
+        }
+      }, 2800);
+      return;
+    }
+    this._showOrderFeedback(msg);
   }
 
   /** Rozkaz WYCOFAJ. */
@@ -7872,137 +13844,20 @@ export class BattleScene {
     this._showOrderFeedback('WYCOFAJ');
   }
 
-  /** Aktualizuje panel zaznaczonej jednostki/grupy. */
+  /** @deprecated Legacy Q3 — ukryty; sterowanie przez roster C09 + dolny toolbar. */
   private _updateSelectedPanel(): void {
     if (!this._selPanel) return;
-    if (!this._manualMode || this._selectedUnits.size === 0) {
-      this._selPanel.style.display = 'none'; return;
+    this._selPanel.style.display = 'none';
+    if (!this.deployPhase && this.started && this._manualMode && this._selectedUnits.size > 0) {
+      this._updateBattleSelectionBar();
     }
-    const selIds = [...this._selectedUnits];
-    const selUnits = selIds.map(id => this.atk.find(u => u.bu.id === id)).filter((u): u is RuntimeBattleUnit => !!u && !u.dead);
-    if (selUnits.length === 0) { this._selPanel.style.display = 'none'; return; }
-    this._selPanel.style.display = 'block';
-    const isSingle = selUnits.length === 1;
-    const ru = selUnits[0]!;
-    const totalHp = selUnits.reduce((s, u) => s + Math.max(0, u.bu.hp), 0);
-    const totalMaxHp = selUnits.reduce((s, u) => s + u.bu.maxHp, 0);
-    const hpPct = totalMaxHp > 0 ? Math.round(100 * totalHp / totalMaxHp) : 0;
-    const moraleVal: number = isSingle ? ((ru as any).morale ?? 100) : 100;
-    const moraleMax: number = isSingle ? ((ru as any).moraleMax ?? 100) : 100;
-    const morPct = moraleMax > 0 ? Math.round(100 * moraleVal / moraleMax) : 100;
-    const atkStat = (ru.bu.stats as any)?.['Atak'] ?? '?';
-    const defStat = (ru.bu.stats as any)?.['Obrona'] ?? '?';
-    const icon = this._unitTypeIcon(ru.bu);
-    const orderLbl = isSingle ? this._orderLabel(ru) : selUnits.length + ' jednostek';
-    // Czy unit jest dystansowy?
-    const isRangedUnit = isSingle && (ru.rangedBase || ru.range > 1);
-    const kiteOn = isSingle ? ru.rangedKite : true;
-    const shootOn = isSingle ? ru.shootingEnabled : true;
-    // Informacja o grupie
-    const groupIds = [...new Set(selUnits.map(u => u.groupId).filter((g): g is string => !!g))];
-    const inGroup = groupIds.length > 0;
-    const singleGroup = groupIds.length === 1 ? groupIds[0]! : null;
-    const groupLabel = singleGroup
-      ? ('<span style="color:#ffd700;font-size:9px;font-weight:bold;">◆ Grupa ' + singleGroup + '</span>')
-      : (groupIds.length > 1 ? '<span style="color:#ffd700;font-size:9px;">' + groupIds.length + ' grup</span>' : '');
-    const fmtBtnStyle = 'flex:1;background:rgba(30,30,30,0.88);color:#e8e0d0;border:1px solid rgba(212,175,55,0.3);border-radius:4px;padding:3px 2px;cursor:pointer;font-size:9px;';
-    this._selPanel.innerHTML =
-      '<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">' +
-        '<div style="font-size:22px;">' + icon + '</div>' +
-        '<div><div style="color:#d4af37;font-size:11px;font-weight:bold;">' +
-          (isSingle ? ru.bu.nazwa : selUnits.length + ' zaznaczonych') +
-        '</div><div style="color:#888;font-size:9px;">' + (isSingle ? ru.bu.kategoria : '') + '</div>' +
-        (groupLabel ? '<div>' + groupLabel + '</div>' : '') +
-        '</div>' +
-      '</div>' +
-      '<div style="margin-bottom:4px;">' +
-        '<div style="display:flex;justify-content:space-between;font-size:9px;color:#aaa;margin-bottom:2px;"><span>HP ' + totalHp + '/' + totalMaxHp + '</span><span>' + hpPct + '%</span></div>' +
-        '<div style="width:100%;height:6px;background:rgba(255,255,255,0.1);border-radius:3px;overflow:hidden;"><div style="width:' + hpPct + '%;height:100%;background:' + (hpPct > 50 ? '#4caf50' : hpPct > 25 ? '#ff9800' : '#f44336') + ';border-radius:3px;"></div></div>' +
-      '</div>' +
-      (isSingle ?
-        '<div style="margin-bottom:4px;"><div style="display:flex;justify-content:space-between;font-size:9px;color:#aaa;margin-bottom:2px;"><span>Morale</span><span>' + morPct + '%</span></div><div style="width:100%;height:5px;background:rgba(255,255,255,0.07);border-radius:3px;overflow:hidden;"><div style="width:' + morPct + '%;height:100%;background:' + (morPct > 50 ? '#9c27b0' : '#f44336') + ';border-radius:3px;"></div></div></div>' : '') +
-      '<div style="display:flex;gap:5px;font-size:9px;color:#ccc;margin-bottom:3px;"><span>Atk:' + atkStat + '</span><span>Obr:' + defStat + '</span></div>' +
-      '<div style="color:#888;font-size:9px;font-style:italic;margin-bottom:4px;">' + orderLbl + '</div>' +
-      '<div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:3px;">' +
-        '<button id="sp-stop" style="flex:1;min-width:38px;background:rgba(70,40,10,0.85);color:#e8e0d0;border:1px solid rgba(212,175,55,0.35);border-radius:4px;padding:3px 4px;cursor:pointer;font-size:10px;">STOJ</button>' +
-        '<button id="sp-ret" style="flex:1;min-width:38px;background:rgba(60,10,10,0.85);color:#e8e0d0;border:1px solid rgba(212,175,55,0.35);border-radius:4px;padding:3px 4px;cursor:pointer;font-size:10px;">WYC</button>' +
-      '</div>' +
-      (!isSingle ?
-        '<div style="display:flex;gap:3px;flex-wrap:wrap;margin-bottom:3px;">' +
-          '<button id="sp-group" style="flex:1;min-width:52px;background:rgba(60,50,0,0.88);color:#ffd700;border:1px solid #ffd700;border-radius:4px;padding:3px 4px;cursor:pointer;font-size:9px;font-weight:bold;">◆ Grupuj</button>' +
-          (inGroup ? '<button id="sp-ungroup" style="flex:1;min-width:52px;background:rgba(50,30,0,0.88);color:#cc9900;border:1px solid #cc9900;border-radius:4px;padding:3px 4px;cursor:pointer;font-size:9px;">Rozgrup.</button>' : '') +
-        '</div>' +
-        '<div style="display:flex;gap:3px;margin-bottom:3px;">' +
-          '<button id="sp-f1" title="F1: Lucznicy przod / Melee srodek / Konnica boki" style="' + fmtBtnStyle + '">\u{1F3F9} F1</button>' +
-          '<button id="sp-f2" title="F2: Melee przod / Dystans tyl / Konnica boki" style="' + fmtBtnStyle + '">\u{1F5E1} F2</button>' +
-          '<button id="sp-f3" title="F3: Machiny przod / Lucznicy tyl / Konnica tyl" style="' + fmtBtnStyle + '">\u{1F3F0} F3</button>' +
-        '</div>'
-      : '') +
-      (isRangedUnit ?
-        '<div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:3px;">' +
-          '<button id="sp-kite" title="Kitowanie: unit cofa sie gdy wrog sie zbliza" style="flex:1;min-width:60px;background:' + (kiteOn ? 'rgba(0,80,60,0.85)' : 'rgba(60,10,10,0.85)') + ';color:#e8e0d0;border:1px solid ' + (kiteOn ? '#00cc88' : 'rgba(212,100,50,0.5)') + ';border-radius:4px;padding:3px 4px;cursor:pointer;font-size:9px;">' +
-            (kiteOn ? 'Kituj ON' : 'Kituj OFF') +
-          '</button>' +
-          '<button id="sp-shoot" title="Strzela dystansowo (wylaczone = idzie wrecz)" style="flex:1;min-width:60px;background:' + (shootOn ? 'rgba(0,60,80,0.85)' : 'rgba(60,10,10,0.85)') + ';color:#e8e0d0;border:1px solid ' + (shootOn ? '#00aacc' : 'rgba(212,100,50,0.5)') + ';border-radius:4px;padding:3px 4px;cursor:pointer;font-size:9px;">' +
-            (shootOn ? 'Strzal ON' : 'Wrecz') +
-          '</button>' +
-        '</div>'
-      : '') ;
-    const stopBtn = this._selPanel.querySelector('#sp-stop') as HTMLButtonElement | null;
-    if (stopBtn) stopBtn.onclick = () => { this._orderHoldSelected(); };
-    const retBtn = this._selPanel.querySelector('#sp-ret') as HTMLButtonElement | null;
-    if (retBtn) retBtn.onclick = () => { this._orderRetreatSelected(); };
-    const groupBtn = this._selPanel.querySelector('#sp-group') as HTMLButtonElement | null;
-    if (groupBtn) groupBtn.onclick = () => { this._groupSelected(); };
-    const ungroupBtn = this._selPanel.querySelector('#sp-ungroup') as HTMLButtonElement | null;
-    if (ungroupBtn) ungroupBtn.onclick = () => { this._ungroupSelected(); };
-    const f1Btn = this._selPanel.querySelector('#sp-f1') as HTMLButtonElement | null;
-    if (f1Btn) f1Btn.onclick = () => {
-      if (singleGroup) { this._applyGroupFormation(singleGroup, 'F1'); }
-      else { this._groupSelected(); const ng = selUnits[0]?.groupId; if (ng) this._applyGroupFormation(ng, 'F1'); }
-    };
-    const f2Btn = this._selPanel.querySelector('#sp-f2') as HTMLButtonElement | null;
-    if (f2Btn) f2Btn.onclick = () => {
-      if (singleGroup) { this._applyGroupFormation(singleGroup, 'F2'); }
-      else { this._groupSelected(); const ng = selUnits[0]?.groupId; if (ng) this._applyGroupFormation(ng, 'F2'); }
-    };
-    const f3Btn = this._selPanel.querySelector('#sp-f3') as HTMLButtonElement | null;
-    if (f3Btn) f3Btn.onclick = () => {
-      if (singleGroup) { this._applyGroupFormation(singleGroup, 'F3'); }
-      else { this._groupSelected(); const ng = selUnits[0]?.groupId; if (ng) this._applyGroupFormation(ng, 'F3'); }
-    };
-    if (isRangedUnit) {
-      const kiteBtn = this._selPanel.querySelector('#sp-kite') as HTMLButtonElement | null;
-      if (kiteBtn) kiteBtn.onclick = () => {
-        if (isSingle) {
-          ru.rangedKite = !ru.rangedKite;
-          this._showOrderFeedback(ru.rangedKite ? 'KITUJ: ON' : 'KITUJ: OFF');
-        } else {
-          const newVal = !selUnits[0]!.rangedKite;
-          for (const u of selUnits) u.rangedKite = newVal;
-          this._showOrderFeedback(newVal ? 'KITUJ: ON (grupa)' : 'KITUJ: OFF (grupa)');
-        }
-        this._updateSelectedPanel();
-      };
-      const shootBtn = this._selPanel.querySelector('#sp-shoot') as HTMLButtonElement | null;
-      if (shootBtn) shootBtn.onclick = () => {
-        if (isSingle) {
-          ru.shootingEnabled = !ru.shootingEnabled;
-          this._showOrderFeedback(ru.shootingEnabled ? 'STRZAL: ON' : 'WRECZ');
-        } else {
-          const newVal = !selUnits[0]!.shootingEnabled;
-          for (const u of selUnits) u.shootingEnabled = newVal;
-          this._showOrderFeedback(newVal ? 'STRZAL: ON (grupa)' : 'WRECZ (grupa)');
-        }
-        this._updateSelectedPanel();
-      };
-    }
+    if (!this.deployPhase && this.started) this._updateDeployToolbarStatus();
   }
 
   /** Opis rozkazu. */
   private _orderLabel(ru: RuntimeBattleUnit): string {
     const o = ru.playerOrder;
-    if (!o || o.type === 'none') return 'Brak rozkazu (AI)';
+    if (!o || o.type === 'none') return this._manualMode ? 'Brak rozkazu' : 'Brak rozkazu (AI)';
     if (o.type === 'hold') return 'Stoj';
     if (o.type === 'move') return 'Ruch -> (' + o.col + ',' + o.row + ')';
     if (o.type === 'attack') return 'Atak -> ' + o.targetId;
@@ -8018,171 +13873,567 @@ export class BattleScene {
   private _unitTypeIcon(bu: BattleUnit | { kategoria: string; stats?: any }): string {
     const cat = String((bu as any).kategoria ?? '').toLowerCase().trim();
     if (cat === 'lucznik' || cat === 'kusznik') return '\u{1F3F9}';
-    if (cat === 'oszczepnik' || cat === 'procarz') return '\u{1FAE7}';
+    if (cat === 'procarz') return '\u{27BF}';
+    if (cat === 'oszczepnik') return '\u{27B6}';
     if (cat === 'konnica') return '\u{1F40E}';
     if (cat === 'rydwan') return '\u{1F6F5}';
     if (cat === 'falanga' || cat === 'wlocznik') return '\u{1F531}';
     if (cat === 'taran' || cat === 'katapulta' || cat === 'wieza') return '\u{1F3F0}';
     const n = String((bu as any).nazwa ?? '').toLowerCase();
     if (n.includes('luczn') || n.includes('archer') || n.includes('kusznik')) return '\u{1F3F9}';
+    if (n.includes('procarz') || n.includes('sling')) return '\u{27BF}';
+    if (n.includes('oszczep') || n.includes('javelin') || n.includes('atlatl')) return '\u{27B6}';
     if (n.includes('konn') || n.includes('jezdz')) return '\u{1F40E}';
-    if (n.includes('oszczep') || n.includes('procarz')) return '\u{1FAE7}';
     return '\u{1F5E1}';
   }
 
-  /** Buduje dolny pasek kart jednostek gracza — PER JEDNOSTKA (nie per typ). */
-  private _buildRosterBar(): void {
-    if (this._rosterBar) return;
-    const bar = document.createElement('div');
-    bar.id = 'player-roster-bar';
-    Object.assign(bar.style, {
-      position:       'absolute',
-      bottom:         '64px',
-      left:           '0',
-      right:          '0',
-      height:         '84px',
-      background:     'rgba(8,6,4,0.92)',
-      borderTop:      '1px solid rgba(212,175,55,0.5)',
-      display:        'flex',
-      flexDirection:  'row',
-      alignItems:     'center',
-      gap:            '4px',
-      padding:        '4px 10px',
-      zIndex:         '10009',
-      overflowX:      'auto',
-      overflowY:      'hidden',
+  /** Lewy panel walki: licznik rozstawionych jednostek. */
+  private _updateBattleRosterCountLine(): void {
+    if (!this._battleRosterCount || this.deployPhase || !this.started) return;
+    const live = this.atk.filter(u => !u.dead && !u.removed && !u.routed).length;
+    this._battleRosterCount.textContent = 'Na polu: ' + live + ' jednostek';
+  }
+
+  /** Lewy panel walki: zaznaczenie + Odznacz / Rozgrupuj. */
+  private _updateBattleSelectionBar(): void {
+    this._updateBattleRosterCountLine();
+    const bar = this._battleSelBar;
+    if (!bar || this.deployPhase || !this.started) return;
+    bar.innerHTML = '';
+    const n = this._selectedUnits.size;
+    const unitBar = this._rosterBar?.querySelector('#battle-roster-unit-bar') as HTMLDivElement | null;
+    if (unitBar) unitBar.style.display = n > 0 ? 'flex' : 'none';
+    if (n === 0) return;
+
+    const selUnits = [...this._selectedUnits]
+      .map(id => this.atk.find(u => u.bu.id === id))
+      .filter((u): u is RuntimeBattleUnit => !!u && !u.dead && !u.removed && !u.routed);
+    if (selUnits.length === 0) return;
+
+    const groupIds = [...new Set(selUnits.map(u => u.groupId).filter(Boolean))];
+    const singleGid = groupIds.length === 1 && selUnits.every(u => u.groupId === groupIds[0])
+      ? groupIds[0]! : null;
+    const lbl = document.createElement('span');
+    lbl.textContent = singleGid
+      ? this._groupDisplayLabel(singleGid) + ' \u00B7 ' + selUnits.length
+      : selUnits.length + ' zazn.';
+    Object.assign(lbl.style, {
+      fontSize: '11px', color: BATTLE_GOLD, letterSpacing: '0.06em', whiteSpace: 'nowrap',
     });
-    this.overlay.appendChild(bar);
-    this._rosterBar = bar;
-    this._unitCards.clear();
-    for (const ru of this.atk) {
-      const card = this._createUnitCard(ru);
-      bar.appendChild(card);
-      this._unitCards.set(ru.bu.id, card);
+    bar.appendChild(lbl);
+
+    const types = document.createElement('span');
+    types.innerHTML = this._selectionTypeCountsHtml(selUnits);
+    types.style.flexShrink = '0';
+    bar.appendChild(types);
+
+    const mkBtn = (text: string, onClick: () => void, gold = false, group = false): HTMLButtonElement => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      if (group) {
+        b.innerHTML = groupBtnLabelHtml('Grupuj');
+        applySelectionActionBtn1E(b, true);
+      } else {
+        b.textContent = text;
+        applySelectionActionBtn1E(b, gold);
+      }
+      b.addEventListener('click', (e) => { e.stopPropagation(); onClick(); });
+      return b;
+    };
+
+    bar.appendChild(mkBtn('Odznacz', () => this._clearAllSelection(), true));
+    const canGroup = selUnits.length >= 2 && !(
+      singleGid && selUnits.length === this._liveGroupMemberIds(singleGid).length
+    );
+    if (canGroup) {
+      bar.appendChild(mkBtn('', () => this._groupSelected(), true, true));
+    }
+    if (groupIds.length > 0) {
+      bar.appendChild(mkBtn('Rozgrupuj', () => this._ungroupSelected()));
     }
   }
 
-  /** Tworzy karte jednostki dla rostera. */
+  /** Nagłówek lewego panelu rosteru walki. */
+  private _updateBattleRosterHeader(): void {
+    if (!this._battleRosterHeader || this.deployPhase || !this.started) return;
+    const counts = { mounted: 0, melee: 0, ranged: 0 };
+    for (const ru of this.atk) {
+      if (ru.dead || ru.removed || ru.routed) continue;
+      counts[this._deployRowKind(ru)]++;
+    }
+    const total = counts.mounted + counts.melee + counts.ranged;
+    this._battleRosterHeader.innerHTML =
+      'Roster \u00B7 ' + total + (total === 1 ? ' jednostka' : ' jednostek');
+    this._battleRosterHeader.title = BATTLE_UI_BUILD;
+    this._updateBattleRosterCountLine();
+  }
+
+  /** Lewy panel pionowy — karty jednostek (walka ręczna). */
+  private _ensureBattleRosterChrome(): void {
+    const bar = this._rosterBar ?? document.getElementById('player-roster-bar') as HTMLDivElement | null;
+    if (!bar) return;
+    this._rosterBar = bar;
+    bar.style.top = BATTLE_TOP_BAR_H + 'px';
+    bar.style.padding = '2px 3px 4px 4px';
+
+    if (!bar.querySelector('#battle-roster-header')) {
+      const hdr = document.createElement('div');
+      hdr.id = 'battle-roster-header';
+      Object.assign(hdr.style, {
+        display: 'flex', flexDirection: 'column', gap: '1px',
+        marginBottom: '2px', fontSize: '10px', letterSpacing: '0.08em',
+        textTransform: 'uppercase', color: BATTLE_GOLD, flexShrink: '0',
+        lineHeight: '1.15',
+      });
+      bar.insertBefore(hdr, bar.firstChild);
+      this._battleRosterHeader = hdr;
+    } else {
+      this._battleRosterHeader = bar.querySelector('#battle-roster-header') as HTMLDivElement;
+    }
+
+    if (!bar.querySelector('#battle-roster-unit-bar')) {
+      const unitBar = document.createElement('div');
+      unitBar.id = 'battle-roster-unit-bar';
+      Object.assign(unitBar.style, {
+        display: 'none', flexDirection: 'column', gap: '2px',
+        marginBottom: '2px', flexShrink: '0', padding: '2px 4px', borderRadius: '4px',
+        background: 'rgba(40,32,12,0.35)', border: `1px solid ${BATTLE_GOLD_DIM}`,
+      });
+      const countEl = document.createElement('div');
+      countEl.id = 'battle-roster-count';
+      Object.assign(countEl.style, { fontSize: '9px', color: BATTLE_TEXT_DIM, letterSpacing: '0.04em', display: 'none' });
+      unitBar.appendChild(countEl);
+      const selBar = document.createElement('div');
+      selBar.id = 'battle-roster-sel-bar';
+      Object.assign(selBar.style, {
+        display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap',
+      });
+      unitBar.appendChild(selBar);
+      const feedback = document.createElement('div');
+      feedback.id = 'battle-roster-feedback';
+      Object.assign(feedback.style, {
+        fontSize: '9px', color: BATTLE_TEXT_DIM, lineHeight: '1.35', minHeight: '12px',
+      });
+      feedback.textContent = 'LPM: zaznacz \u00B7 PPM: odznacz \u00B7 R = AUTO/RECZNY';
+      unitBar.appendChild(feedback);
+      const insertAfter = this._battleRosterHeader ?? bar.firstChild;
+      if (insertAfter?.nextSibling) bar.insertBefore(unitBar, insertAfter.nextSibling);
+      else bar.appendChild(unitBar);
+      this._battleRosterCount = countEl;
+      this._battleSelBar = selBar;
+      this._battleRosterFeedback = feedback;
+    } else {
+      this._battleRosterCount = bar.querySelector('#battle-roster-count') as HTMLDivElement;
+      this._battleSelBar = bar.querySelector('#battle-roster-sel-bar') as HTMLDivElement;
+      this._battleRosterFeedback = bar.querySelector('#battle-roster-feedback') as HTMLDivElement;
+    }
+
+    let quickBar = bar.querySelector('#battle-quick-select') as HTMLDivElement | null;
+    if (!quickBar) {
+      quickBar = document.createElement('div');
+      quickBar.id = 'battle-quick-select';
+      Object.assign(quickBar.style, {
+        display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: '5px',
+        marginBottom: '0', flexShrink: '0',
+      });
+      applyRosterFilterBar1E(quickBar);
+      const scroll = bar.querySelector('#battle-roster-scroll')
+        ?? bar.querySelector('[data-roster-scroll]')
+        ?? bar.querySelector('#battle-roster-cards')?.parentElement;
+      if (scroll) bar.insertBefore(quickBar, scroll);
+      else bar.appendChild(quickBar);
+    }
+    this._battleQuickSelectBar = quickBar;
+
+    const orphanQuick = document.querySelector('#battle-quick-select');
+    if (orphanQuick && orphanQuick !== quickBar && orphanQuick.parentElement === this.overlay) {
+      orphanQuick.remove();
+    }
+    const orphanGroups = document.getElementById('group-selector-bar');
+    if (orphanGroups) orphanGroups.style.display = 'none';
+
+    const scrollEl = bar.querySelector('#battle-roster-scroll') as HTMLDivElement | null;
+    if (scrollEl) applyBattleRosterScrollbar(scrollEl);
+
+    this._updateBattleRosterHeader();
+    this._updateBattleSelectionBar();
+    this._updateBattleQuickSelectBar();
+  }
+
+  /** Lewy panel pionowy — karty jednostek (walka ręczna). */
+  private _buildRosterBar(): void {
+    if (this._rosterBar) {
+      this._ensureBattleRosterChrome();
+      return;
+    }
+    const bar = document.createElement('div');
+    bar.id = 'player-roster-bar';
+    Object.assign(bar.style, {
+      position:       'fixed',
+      left:           '16px',
+      top:            (BATTLE_TOP_BAR_H + 8) + 'px',
+      bottom:         '16px',
+      width:          ROSTER_PANEL_FIXED_W + 'px',
+      minWidth:       ROSTER_PANEL_FIXED_W + 'px',
+      maxWidth:       ROSTER_PANEL_FIXED_W + 'px',
+      display:        'flex',
+      flexDirection:  'column',
+      padding:        '0',
+      zIndex:         '100050',
+      overflow:       'hidden',
+      fontFamily:     HUD_FONT,
+      boxSizing:      'border-box',
+      pointerEvents:  'auto',
+    });
+    applyRosterPanel1E(bar);
+    this.overlay.appendChild(bar);
+    this._rosterBar = bar;
+
+    const hdr = document.createElement('div');
+    hdr.id = 'battle-roster-header';
+    Object.assign(hdr.style, {
+      display: 'flex', flexDirection: 'column', gap: '1px',
+      marginBottom: '0', fontSize: '12px', letterSpacing: '0.12em',
+      textTransform: 'uppercase', color: BATTLE_GOLD, flexShrink: '0',
+      lineHeight: '1.15',
+      padding: '12px 14px',
+      borderBottom: '1px solid rgba(232,216,138,0.2)',
+      background: 'linear-gradient(90deg,rgba(232,216,138,0.08),transparent)',
+      fontWeight: '700',
+    });
+    bar.appendChild(hdr);
+    this._battleRosterHeader = hdr;
+
+    const unitBar = document.createElement('div');
+    unitBar.id = 'battle-roster-unit-bar';
+    Object.assign(unitBar.style, {
+      display: 'none', flexDirection: 'column', gap: '2px',
+      marginBottom: '2px', flexShrink: '0', padding: '2px 4px', borderRadius: '4px',
+      background: 'rgba(40,32,12,0.35)', border: `1px solid ${BATTLE_GOLD_DIM}`,
+    });
+    const countEl = document.createElement('div');
+    countEl.id = 'battle-roster-count';
+    Object.assign(countEl.style, { fontSize: '9px', color: BATTLE_TEXT_DIM, letterSpacing: '0.04em', display: 'none' });
+    countEl.textContent = 'Na polu: 0 jednostek';
+    unitBar.appendChild(countEl);
+    this._battleRosterCount = countEl;
+
+    const selBar = document.createElement('div');
+    selBar.id = 'battle-roster-sel-bar';
+    Object.assign(selBar.style, {
+      display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap', minHeight: '0',
+    });
+    unitBar.appendChild(selBar);
+    this._battleSelBar = selBar;
+
+    const feedback = document.createElement('div');
+    feedback.id = 'battle-roster-feedback';
+    Object.assign(feedback.style, {
+      fontSize: '9px', color: BATTLE_TEXT_DIM, lineHeight: '1.25', minHeight: '0', display: 'none',
+    });
+    feedback.textContent = 'LPM: zaznacz \u00B7 PPM: odznacz \u00B7 R = AUTO/RECZNY';
+    unitBar.appendChild(feedback);
+    this._battleRosterFeedback = feedback;
+    bar.appendChild(unitBar);
+
+    const quickBar = document.createElement('div');
+    quickBar.id = 'battle-quick-select';
+      Object.assign(quickBar.style, {
+        display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: '5px',
+        marginBottom: '0', flexShrink: '0',
+      });
+    applyRosterFilterBar1E(quickBar);
+    bar.appendChild(quickBar);
+    this._battleQuickSelectBar = quickBar;
+
+    const scroll = document.createElement('div');
+    scroll.id = 'battle-roster-scroll';
+    Object.assign(scroll.style, {
+      flex: '1', minHeight: '0', overflowY: 'auto', overflowX: 'hidden',
+      background: 'rgba(8,10,16,1)', scrollbarGutter: 'stable', paddingRight: '2px',
+    });
+    bar.appendChild(scroll);
+    applyBattleRosterScrollbar(scroll);
+
+    const cardsRow = document.createElement('div');
+    cardsRow.id = 'battle-roster-cards';
+    Object.assign(cardsRow.style, {
+      display: 'flex', flexDirection: 'column', gap: '2px',
+      width: '100%', maxWidth: '100%', boxSizing: 'border-box',
+    });
+    scroll.appendChild(cardsRow);
+    this._battleRosterCards = cardsRow;
+
+    this._unitCards.clear();
+    if (!this.deployPhase) {
+      this._rebuildBattleRosterGrid();
+      this._ensureGroupSelectorBar();
+      if (!this._deployLayoutListener) {
+        this._deployLayoutListener = () => {
+          if (this.deployPhase) this._syncDeployPanelLayout();
+          else if (this._rosterBar) this._syncBattleRosterPanelLayout();
+        };
+        window.addEventListener('resize', this._deployLayoutListener);
+      }
+      requestAnimationFrame(() => this._syncBattleRosterPanelLayout());
+    }
+  }
+
+  /** Calkowicie odtwarza karty rostera (np. po resecie deploy). */
+  private _rebuildRosterBar(): void {
+    if (!this._rosterBar) return;
+    if (this.deployPhase) {
+      this._rebuildDeployRosterGrid();
+      return;
+    }
+    this._rebuildBattleRosterGrid();
+  }
+
+  /** Tworzy karte jednostki dla rostera — C09 v4. */
   private _createUnitCard(ru: RuntimeBattleUnit): HTMLDivElement {
-    const isDead = ru.dead || ru.fadingOut || ru.removed || ru.routed;
+    const isDead = ru.dead || ru.fadingOut || ru.removed;
+    const isRouted = ru.routed;
     const isSel = this._selectedUnits.has(ru.bu.id);
     const hpPct = ru.bu.maxHp > 0 ? Math.max(0, ru.bu.hp / ru.bu.maxHp) : 0;
-    const morPct = (ru as any).moraleMax > 0 ? Math.max(0, ((ru as any).morale ?? 100) / (ru as any).moraleMax) : hpPct;
+    const morPct = ru.moraleMax > 0 ? Math.max(0, ru.morale / ru.moraleMax) : hpPct;
+    const row = this._deployRowKind(ru);
 
     const card = document.createElement('div');
     Object.assign(card.style, {
-      minWidth:       '58px',
-      width:          '58px',
-      height:         '74px',
-      background:     isSel ? 'rgba(0,200,160,0.22)' : isDead ? 'rgba(20,10,10,0.7)' : 'rgba(18,20,32,0.92)',
-      border:         isSel ? '2px solid #00ffcc' : isDead ? '1px solid #333' : '1px solid rgba(212,175,55,0.28)',
-      borderRadius:   '6px',
+      minWidth:       ROSTER_CARD_W + 'px',
+      width:          ROSTER_CARD_W + 'px',
+      height:         BATTLE_ROSTER_CARD_H + 'px',
+      borderRadius:   '8px',
       cursor:         isDead ? 'default' : 'pointer',
       display:        'flex',
       flexDirection:  'column',
       alignItems:     'center',
       justifyContent: 'flex-start',
-      padding:        '4px 3px 3px',
+      padding:        '5px 4px 4px',
+      gap:            '3px',
       userSelect:     'none',
       flexShrink:     '0',
-      opacity:        isDead ? '0.38' : '1',
-      transition:     'border-color 0.15s, background 0.15s, opacity 0.3s',
+      opacity:        isDead ? '0.4' : isRouted ? '0.5' : '1',
+      transition:     'border-color 0.15s, box-shadow 0.15s, opacity 0.3s',
+      position:       'relative',
+      overflow:       'visible',
+      ...rosterCardBaseStyle(row, isSel),
     });
 
-    const iconEl = document.createElement('div');
-    Object.assign(iconEl.style, { fontSize: '18px', lineHeight: '1.1', marginBottom: '2px' });
-    iconEl.textContent = this._unitTypeIcon(ru.bu);
-    card.appendChild(iconEl);
-
-    const namEl = document.createElement('div');
-    Object.assign(namEl.style, {
-      fontSize: '8px', color: isDead ? '#666' : '#d4af37', fontFamily: 'sans-serif',
-      textAlign: 'center', lineHeight: '1.1', maxWidth: '54px', overflow: 'hidden',
-      textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-    });
-    namEl.textContent = ru.bu.nazwa;
-    card.appendChild(namEl);
-    // Wskaznik grupy: maly zloty label jezeli jednostka nalezy do grupy
     if (ru.groupId && !isDead) {
-      const grpLbl = document.createElement('div');
-      Object.assign(grpLbl.style, {
-        fontSize: '7px', color: '#ffd700', fontFamily: 'sans-serif',
-        textAlign: 'center', lineHeight: '1.0', marginTop: '1px',
+      const gBadge = document.createElement('div');
+      const gNum = this._groupDisplayNum(ru.groupId);
+      Object.assign(gBadge.style, {
+        position: 'absolute', top: '-5px', right: '-5px',
+        width: '16px', height: '16px', borderRadius: '50%',
+        background: BATTLE_GOLD, color: '#2e2708',
+        fontSize: '9px', fontWeight: 'bold', lineHeight: '16px',
+        textAlign: 'center', zIndex: '2',
       });
-      grpLbl.textContent = '◆ ' + ru.groupId;
-      card.appendChild(grpLbl);
-      (card as any)._grpLbl = grpLbl;
+      gBadge.textContent = gNum != null ? String(gNum) : '';
+      card.appendChild(gBadge);
+      (card as any)._gBadge = gBadge;
     }
 
+    const iconEl = document.createElement('div');
+    applyUnitCardIconCircle(iconEl, row);
+    iconEl.innerHTML = row === 'mounted' ? ROSTER_TYPE_SVG.mounted
+      : row === 'ranged' ? ROSTER_TYPE_SVG.ranged
+      : ROSTER_TYPE_SVG.melee;
+    const iconSvg = iconEl.querySelector('svg');
+    if (iconSvg) {
+      iconSvg.setAttribute('width', '15');
+      iconSvg.setAttribute('height', '15');
+    }
+    card.appendChild(iconEl);
+
     const hpTrack = document.createElement('div');
-    Object.assign(hpTrack.style, { width: '52px', height: '5px', background: 'rgba(255,255,255,0.1)', borderRadius: '2px', marginTop: '3px', overflow: 'hidden' });
+    Object.assign(hpTrack.style, { width: '100%', height: '4px', background: 'rgba(255,255,255,0.1)', borderRadius: '2px', overflow: 'hidden' });
     const hpFill = document.createElement('div');
-    Object.assign(hpFill.style, { width: (hpPct * 100).toFixed(1) + '%', height: '100%', background: hpPct > 0.5 ? '#4caf50' : hpPct > 0.25 ? '#ff9800' : '#f44336', transition: 'width 0.25s', borderRadius: '2px' });
+    Object.assign(hpFill.style, { width: (hpPct * 100).toFixed(1) + '%', height: '100%', background: hpBarGradient(), transition: 'width 0.25s', borderRadius: '2px' });
     hpTrack.appendChild(hpFill);
     card.appendChild(hpTrack);
     (card as any)._hpFill = hpFill;
 
     const morTrack = document.createElement('div');
-    Object.assign(morTrack.style, { width: '52px', height: '4px', background: 'rgba(255,255,255,0.07)', borderRadius: '2px', marginTop: '2px', overflow: 'hidden' });
+    Object.assign(morTrack.style, { width: '100%', height: '4px', background: 'rgba(255,255,255,0.1)', borderRadius: '2px', overflow: 'hidden' });
     const morFill = document.createElement('div');
-    Object.assign(morFill.style, { width: (morPct * 100).toFixed(1) + '%', height: '100%', background: morPct > 0.5 ? '#9c27b0' : '#f44336', transition: 'width 0.25s', borderRadius: '2px' });
+    Object.assign(morFill.style, {
+      width: (isDead ? 0 : morPct * 100).toFixed(1) + '%', height: '100%',
+      background: moraleBarGradient(), transition: 'width 0.25s', borderRadius: '2px',
+    });
     morTrack.appendChild(morFill);
     card.appendChild(morTrack);
     (card as any)._morFill = morFill;
 
     const hpLbl = document.createElement('div');
-    Object.assign(hpLbl.style, { fontSize: '8px', color: '#aaa', fontFamily: 'sans-serif', marginTop: '2px' });
-    hpLbl.textContent = Math.max(0, Math.round(ru.bu.hp)) + '/' + ru.bu.maxHp;
+    Object.assign(hpLbl.style, {
+      fontSize: '8px', fontWeight: '700', color: isDead ? '#8a5a5a' : isRouted ? BATTLE_ENEMY_TEXT : '#c8b898',
+    });
+    hpLbl.textContent = isDead ? 'pad\u0142' : isRouted ? 'rout' : String(Math.max(0, Math.round(ru.bu.hp)));
     card.appendChild(hpLbl);
     (card as any)._hpLbl = hpLbl;
+    (card as any)._grpLbl = null;
+    (card as any)._selBadge = null;
 
-    card.addEventListener('click', () => {
-      if (ru.dead || ru.removed) return;
-      this._toggleSelectUnit(ru);
+    card.addEventListener('pointerdown', (e: PointerEvent) => {
+      e.stopPropagation();
     });
+
+    card.addEventListener('click', (e: MouseEvent) => {
+      if (ru.dead || ru.removed) return;
+      e.stopPropagation();
+      if (this.deployPhase) {
+        this._handleDeployUnitPick(ru, e.ctrlKey || e.metaKey, e.shiftKey);
+        return;
+      }
+      this._handleBattleUnitPick(ru, e.ctrlKey || e.metaKey, e.shiftKey);
+    });
+
+    if (!this.deployPhase) {
+      this._attachRosterMergeDrag(card, ru);
+    }
 
     return card;
   }
 
   /** Odswiez WSZYSTKIE karty rostera (aktualizuj, nie odtwarzaj). */
   private _updateRosterBar(): void {
-    if (!this._rosterBar) return;
+    if (this.deployPhase) {
+      if (!this._ensureDeployRowRefs()) return;
+      let missingCards = false;
+      let wrongContainer = false;
+      for (const ru of this.atk) {
+        if (ru.dead || ru.removed) continue;
+        const card = this._unitCards.get(ru.bu.id);
+        if (!card) { missingCards = true; break; }
+        if (!this._deployUnitsRow?.contains(card)) {
+          wrongContainer = true;
+          break;
+        }
+      }
+      if (missingCards || wrongContainer || !this._ensureDeployRowRefs()) {
+        this._rebuildDeployRosterGrid();
+        return;
+      }
+      this._updateDeployRosterHeader();
+      for (const ru of this.atk) {
+        const card = this._unitCards.get(ru.bu.id);
+        if (!card) continue;
+        const isDead = ru.dead || ru.removed;
+        const isSel = this._selectedUnits.has(ru.bu.id);
+        const hpPct = ru.bu.maxHp > 0 ? Math.max(0, ru.bu.hp / ru.bu.maxHp) : 0;
+        const row = this._deployRowKind(ru);
+        card.style.opacity = isDead ? '0.35' : '1';
+        card.style.cursor = isDead ? 'default' : 'pointer';
+        Object.assign(card.style, rosterCardBaseStyle(row, isSel));
+        if (ru.groupId && !isSel && !isDead) {
+          card.style.border = '1px solid rgba(232,216,138,0.55)';
+          card.style.boxShadow = 'none';
+        }
+        const hpFill = (card as any)._hpFill as HTMLDivElement | undefined;
+        if (hpFill) {
+          hpFill.style.width = (hpPct * 100).toFixed(0) + '%';
+          hpFill.style.background = hpPct > 0.25 ? '#4caf50' : BATTLE_ENEMY;
+        }
+        const hpLbl = (card as any)._hpLbl as HTMLDivElement | undefined;
+        if (hpLbl) hpLbl.textContent = Math.round(ru.bu.hp) + '/' + ru.bu.maxHp;
+        let gBadge = (card as any)._gBadge as HTMLDivElement | undefined;
+        if (ru.groupId && !isDead) {
+          if (!gBadge) {
+            gBadge = document.createElement('div');
+            Object.assign(gBadge.style, {
+              position: 'absolute', top: '6px', right: '3px',
+              minWidth: '14px', height: '14px', borderRadius: '3px',
+              background: 'linear-gradient(180deg,#ffd700,#c9a020)',
+              color: '#1a1000',
+              fontSize: '9px', fontWeight: 'bold', lineHeight: '14px',
+              textAlign: 'center', padding: '0 2px',
+              boxShadow: '0 0 4px rgba(255,215,0,0.7)',
+            });
+            card.appendChild(gBadge);
+            (card as any)._gBadge = gBadge;
+          }
+          const gNum = this._groupDisplayNum(ru.groupId);
+          gBadge.textContent = gNum != null ? String(gNum) : '';
+          gBadge.style.display = 'block';
+        } else if (gBadge) {
+          gBadge.style.display = 'none';
+        }
+      }
+      this._paintTwGroupTabs(this._deployGroupTabs);
+      requestAnimationFrame(() => this._syncDeployPanelLayout());
+      return;
+    }
+    // Walka: karty płasko w battle-roster-cards
+    let needRebuild = false;
+    for (const ru of this.atk) {
+      if (ru.dead || ru.removed || ru.routed) continue;
+      const card = this._unitCards.get(ru.bu.id);
+      if (!card) { needRebuild = true; break; }
+      if (!this._battleRosterCards?.contains(card)) {
+        needRebuild = true;
+        break;
+      }
+    }
+    if (needRebuild || !this._battleRosterCards?.isConnected) {
+      this._rebuildBattleRosterGrid();
+      return;
+    }
     for (const ru of this.atk) {
       let card = this._unitCards.get(ru.bu.id);
       if (!card) {
         card = this._createUnitCard(ru);
-        this._rosterBar.appendChild(card);
+        const looseHost = this._ensureBattleLooseCardsContainer();
+        looseHost.appendChild(card);
         this._unitCards.set(ru.bu.id, card);
+        requestAnimationFrame(() => this._syncBattleRosterPanelLayout());
       }
-      const isDead = ru.dead || ru.fadingOut || ru.removed || ru.routed;
+      const isDead = ru.dead || ru.fadingOut || ru.removed;
+      const isRouted = ru.routed;
       const isSel = this._selectedUnits.has(ru.bu.id);
       const hpPct = ru.bu.maxHp > 0 ? Math.max(0, ru.bu.hp / ru.bu.maxHp) : 0;
-      const moraleVal: number = (ru as any).morale ?? (hpPct * 100);
-      const moraleMax: number = (ru as any).moraleMax ?? 100;
+      const moraleVal: number = ru.morale ?? (hpPct * 100);
+      const moraleMax: number = ru.moraleMax ?? 100;
       const morPct = moraleMax > 0 ? Math.max(0, moraleVal / moraleMax) : hpPct;
+      const row = this._deployRowKind(ru);
 
-      card.style.opacity    = isDead ? '0.32' : '1';
-      card.style.cursor     = isDead ? 'default' : 'pointer';
-      card.style.background = isSel ? 'rgba(0,200,160,0.22)' : isDead ? 'rgba(20,10,10,0.7)' : 'rgba(18,20,32,0.92)';
-      const inGrp = !isDead && !!ru.groupId;
-      card.style.border     = isSel ? '2px solid #00ffcc' : isDead ? '1px solid #333' : inGrp ? '1px solid rgba(255,215,0,0.5)' : '1px solid rgba(212,175,55,0.28)';
-      // Aktualizuj grpLbl jezeli istnieje
-      const grpLbl2 = (card as any)._grpLbl as HTMLDivElement | undefined;
-      if (grpLbl2) grpLbl2.textContent = ru.groupId ? ('◆ ' + ru.groupId) : '';
+      card.style.opacity = isDead ? '0.4' : isRouted ? '0.5' : '1';
+      card.style.cursor = isDead || isRouted ? 'default' : 'pointer';
+      Object.assign(card.style, rosterCardBaseStyle(row, isSel));
+      let gBadge = (card as any)._gBadge as HTMLDivElement | undefined;
+      if (ru.groupId && !isDead) {
+        if (!gBadge) {
+          gBadge = document.createElement('div');
+          applyGroupBadge1E(gBadge);
+          card.appendChild(gBadge);
+          (card as any)._gBadge = gBadge;
+        }
+        const gNum = this._groupDisplayNum(ru.groupId);
+        gBadge.textContent = gNum != null ? String(gNum) : '';
+        gBadge.style.display = 'block';
+      } else if (gBadge) {
+        gBadge.style.display = 'none';
+      }
 
       const hpFill = (card as any)._hpFill as HTMLDivElement | undefined;
       if (hpFill) {
-        hpFill.style.width = (hpPct * 100).toFixed(1) + '%';
-        hpFill.style.background = hpPct > 0.5 ? '#4caf50' : hpPct > 0.25 ? '#ff9800' : '#f44336';
+        hpFill.style.width = (hpPct * 100).toFixed(0) + '%';
+        hpFill.style.background = hpBarGradient();
       }
       const morFill = (card as any)._morFill as HTMLDivElement | undefined;
       if (morFill) {
-        morFill.style.width = (morPct * 100).toFixed(1) + '%';
-        morFill.style.background = morPct > 0.5 ? '#9c27b0' : morPct > 0.25 ? '#ff9800' : '#f44336';
+        morFill.style.width = (isDead ? 0 : morPct * 100).toFixed(0) + '%';
+        morFill.style.background = moraleBarGradient();
       }
       const hpLbl = (card as any)._hpLbl as HTMLDivElement | undefined;
-      if (hpLbl) hpLbl.textContent = Math.max(0, Math.round(ru.bu.hp)) + '/' + ru.bu.maxHp;
+      if (hpLbl) {
+        hpLbl.textContent = isDead ? 'pad\u0142' : isRouted ? 'rout' : String(Math.max(0, Math.round(ru.bu.hp)));
+        hpLbl.style.color = isDead ? '#8a5a5a' : isRouted ? BATTLE_ENEMY_TEXT : '#c8b898';
+      }
     }
+    this._paintTwGroupTabs(this._battleGroupTabs);
+    this._updateGroupSelectorBar();
   }
 
 
@@ -8191,31 +14442,50 @@ export class BattleScene {
   // =========================================================================
 
   /**
+   * Wycofuje jednostki z dotychczasowych grup (bez rozbijania calej grupy —
+   * pozostali czlonkowie zostaja w starej grupie).
+   */
+  private _detachUnitsFromGroups(units: RuntimeBattleUnit[]): void {
+    for (const ru of units) {
+      if (!ru.groupId) continue;
+      const gid = ru.groupId;
+      const set = this._groups.get(gid);
+      if (set) {
+        set.delete(ru.bu.id);
+        if (set.size === 0) {
+          this._groups.delete(gid);
+          this._groupMeta.delete(gid);
+          this._rosterGroupCollapsed.delete(gid);
+        }
+      }
+      ru.groupId = null;
+      ru.formationOffset = null;
+      this._refreshUnitRingColor(ru);
+      this._removeGroupFrameMarker(ru);
+    }
+    this._pruneStaleGroups();
+  }
+
+  /**
    * Tworzy TRWALA grupe z aktualnie zaznaczonych jednostek.
    * Nadaje im wspolne groupId, zapisuje wzgledne offsety od centroidu
    * (formacja pierwotna) i aktualizuje roster oraz panel.
    */
   private _groupSelected(): void {
     if (this._selectedUnits.size < 2) {
-      this._showOrderFeedback('Zaznacz >= 2 jednostki do grupowania');
+      this._showDeployFeedback('Zaznacz co najmniej 2 jednostki, potem kliknij \u25C6 Grupuj');
       return;
     }
     const selUnits = [...this._selectedUnits]
       .map(id => this.atk.find(u => u.bu.id === id))
       .filter((u): u is RuntimeBattleUnit => !!u && !u.dead && !u.removed && !u.routed);
     if (selUnits.length < 2) {
-      this._showOrderFeedback('Za malo zywych jednostek do grupowania');
+      this._showDeployFeedback('Za malo zywych jednostek do grupowania');
       return;
     }
 
-    // Odgrupuj wszystkich, ktorzy juz sa w grupach (czyszczenie starych grup)
-    const affectedGroups = new Set<string>();
-    for (const ru of selUnits) {
-      if (ru.groupId) affectedGroups.add(ru.groupId);
-    }
-    for (const gid of affectedGroups) {
-      this._disbandGroup(gid);
-    }
+    // Wycofaj tylko zaznaczone z dotychczasowych grup (reszta zostaje w starej grupie).
+    this._detachUnitsFromGroups(selUnits);
 
     // Wyznacz centroid (srednia pozycja) w chwili grupowania
     const centCol = selUnits.reduce((s, u) => s + u.q, 0) / selUnits.length;
@@ -8223,7 +14493,7 @@ export class BattleScene {
 
     // Nadaj nowe groupId
     this._groupCounter++;
-    const gid = 'G' + this._groupCounter;
+    const gid = String(this._groupCounter);
     const memberIds = new Set<string>();
 
     for (const ru of selUnits) {
@@ -8235,11 +14505,32 @@ export class BattleScene {
       memberIds.add(ru.bu.id);
       // Kolor obwodki: zloty dla grupy
       this._refreshUnitRingColor(ru);
+      this._updateGroupFrameMarker(ru);
     }
     this._groups.set(gid, memberIds);
-    this._showOrderFeedback('GRUPA ' + gid + ': ' + selUnits.length + ' jednostek');
-    this._updateRosterBar();
-    this._updateSelectedPanel();
+    const meta = this._ensureGroupMeta(gid);
+    if (this.deployPhase) {
+      this._setGroupDoctrine(gid, 'steady');
+    } else if (meta.doctrine === 'manual') {
+      meta.autoPlay = false;
+    } else {
+      meta.autoPlay = true;
+    }
+    if (!this.deployPhase) this._rosterGroupCollapsed.add(gid);
+    this._deployActiveGroupId = gid;
+    this._pruneStaleGroups();
+    this._showDeployFeedback('\u2713 ' + this._groupDisplayLabel(gid) + ': ' + selUnits.length + ' jednostek');
+    if (this.deployPhase) {
+      this._rebuildDeployRosterGrid();
+      this._refreshDeploySelectionVisuals();
+      this._selectDeployGroupToggle(gid, true);
+    } else {
+      this._rebuildBattleRosterGrid();
+      this._updateSelectedPanel();
+      this._updateGroupSelectorBar();
+      this._updateDeployToolbarStatus();
+      this._syncBattleToolbarMode();
+    }
   }
 
   /**
@@ -8247,35 +14538,52 @@ export class BattleScene {
    * Resetuje groupId i formationOffset wszystkich czlonkow.
    */
   private _disbandGroup(gid: string): void {
-    const members = this._groups.get(gid);
-    if (!members) return;
-    for (const id of members) {
+    const ids = this._liveGroupMemberIds(gid);
+    for (const id of ids) {
       const ru = this.atk.find(u => u.bu.id === id);
       if (!ru) continue;
       ru.groupId = null;
       ru.formationOffset = null;
       this._refreshUnitRingColor(ru);
+      this._removeGroupFrameMarker(ru);
     }
     this._groups.delete(gid);
+    this._groupMeta.delete(gid);
+    this._rosterGroupCollapsed.delete(gid);
   }
 
   /**
-   * Rozgrupowuje wszsytkie zaznaczone jednostki (kasuje ich grupy).
+   * Wycofuje zaznaczone jednostki z grup (bez rozwalania calej grupy, jesli zaznaczono podzbior).
    */
   private _ungroupSelected(): void {
-    const gids = new Set<string>();
-    for (const id of this._selectedUnits) {
-      const ru = this.atk.find(u => u.bu.id === id);
-      if (ru && ru.groupId) gids.add(ru.groupId);
-    }
-    if (gids.size === 0) {
-      this._showOrderFeedback('Zaznaczone jednostki nie sa w grupie');
+    const selUnits = [...this._selectedUnits]
+      .map(id => this.atk.find(u => u.bu.id === id))
+      .filter((u): u is RuntimeBattleUnit => !!u && !u.dead && !u.removed && !!u.groupId);
+    if (selUnits.length === 0) {
+      const msg = 'Zaznaczone jednostki nie sa w grupie';
+      if (this.deployPhase) this._showDeployFeedback(msg);
+      else this._showOrderFeedback(msg);
       return;
     }
-    for (const gid of gids) this._disbandGroup(gid);
-    this._showOrderFeedback('Rozgrupowano ' + gids.size + ' grup');
-    this._updateRosterBar();
-    this._updateSelectedPanel();
+    const gids = new Set(selUnits.map(u => u.groupId!));
+    this._detachUnitsFromGroups(selUnits);
+    this._pruneStaleGroups();
+    const msg = '\u2713 Wycofano ' + selUnits.length + ' z '
+      + gids.size + (gids.size === 1 ? ' grupy' : ' grup');
+    if (this.deployPhase) this._showDeployFeedback(msg);
+    else this._showOrderFeedback(msg);
+    if (this.deployPhase) {
+      this._rebuildDeployRosterGrid();
+      this._refreshDeploySelectionVisuals();
+      this._updateDeployGroupsBar();
+      this._updateDeployStrategyBar();
+    } else {
+      this._rebuildBattleRosterGrid();
+      this._updateSelectedPanel();
+      this._updateGroupSelectorBar();
+      this._updateDeployToolbarStatus();
+      this._syncBattleToolbarMode();
+    }
   }
 
   /**
@@ -8284,12 +14592,332 @@ export class BattleScene {
   private _refreshUnitRingColor(ru: RuntimeBattleUnit): void {
     const ring = this._selectionRings.get(ru.bu.id);
     if (!ring) return;
+    ring.position.set(0, 0.03, 0);
     const mat = ring.material as THREE.MeshBasicMaterial;
     if (ru.groupId) {
       mat.color.setHex(0xffd700); // zloty = grupa
     } else {
       mat.color.setHex(0x00ffcc); // cyjan = zwykle zaznaczenie
     }
+  }
+
+  /** Tekstura z numerem grupy (sprite nad jednostka). */
+  private _makeGroupNumberTexture(label: string): THREE.CanvasTexture {
+    const c = document.createElement('canvas');
+    c.width = 28;
+    c.height = 28;
+    const ctx = c.getContext('2d')!;
+    ctx.fillStyle = '#d4af37';
+    ctx.fillRect(2, 2, 24, 24);
+    ctx.strokeStyle = '#1a1408';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(2, 2, 24, 24);
+    ctx.fillStyle = '#1a1408';
+    ctx.font = 'bold 16px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(label, 14, 15);
+    const tex = new THREE.CanvasTexture(c);
+    tex.needsUpdate = true;
+    return tex;
+  }
+
+  /** Usuwa ramke grupy spod jednostki. */
+  private _removeGroupFrameMarker(ru: RuntimeBattleUnit): void {
+    const g = this._groupFrameMarkers?.get(ru.bu.id);
+    if (!g) return;
+    ru.group.remove(g);
+    g.traverse(obj => {
+      if (obj instanceof THREE.Mesh || obj instanceof THREE.Line || obj instanceof THREE.Sprite) {
+        obj.geometry?.dispose();
+        const m = obj.material;
+        if (Array.isArray(m)) m.forEach(x => x.dispose());
+        else m?.dispose();
+      }
+    });
+    this._groupFrameMarkers.delete(ru.bu.id);
+  }
+
+  /** Zloty kwadrat + numer grupy na mapie (widoczne caly czas). */
+  private _updateGroupFrameMarker(ru: RuntimeBattleUnit): void {
+    this._removeGroupFrameMarker(ru);
+    if (!ru.groupId || ru.dead || ru.removed) return;
+
+    const g = new THREE.Group();
+    g.name = 'groupFrame';
+    const hs = TILE_S * 0.44;
+    const y = 0.04;
+
+    const frameGeo = new THREE.BufferGeometry().setFromPoints([
+      new THREE.Vector3(-hs, y, -hs),
+      new THREE.Vector3( hs, y, -hs),
+      new THREE.Vector3( hs, y,  hs),
+      new THREE.Vector3(-hs, y,  hs),
+      new THREE.Vector3(-hs, y, -hs),
+    ]);
+    this.ownedGeos.push(frameGeo);
+    const frameMat = new THREE.LineBasicMaterial({
+      color: 0xffd700,
+      transparent: true,
+      opacity: 0.92,
+      depthWrite: false,
+    });
+    this.ownedMats.push(frameMat);
+    g.add(new THREE.Line(frameGeo, frameMat));
+
+    const num = this._groupDisplayNum(ru.groupId);
+    if (num != null) {
+      const tex = this._makeGroupNumberTexture(String(num));
+      const spriteMat = new THREE.SpriteMaterial({
+        map: tex,
+        transparent: true,
+        depthWrite: false,
+        depthTest: false,
+      });
+      this.ownedMats.push(spriteMat);
+      const sprite = new THREE.Sprite(spriteMat);
+      sprite.scale.set(0.55, 0.55, 1);
+      sprite.position.set(-hs * 0.85, 0.55, -hs * 0.85);
+      g.add(sprite);
+    }
+
+    ru.group.add(g);
+    this._groupFrameMarkers.set(ru.bu.id, g);
+  }
+
+  /** Odswieza ramki wszystkich jednostek ATK w grupach. */
+  private _syncAllGroupFrameMarkers(): void {
+    for (const ru of this.atk) {
+      if (ru.groupId && !ru.dead && !ru.removed) {
+        this._updateGroupFrameMarker(ru);
+      } else {
+        this._removeGroupFrameMarker(ru);
+      }
+    }
+  }
+
+  /** Kolejnosc jednostek na pasku rostera (zywe, nie wycofane). */
+  private _battleRosterOrder(): RuntimeBattleUnit[] {
+    return this.atk.filter(u => !u.dead && !u.removed && !u.routed);
+  }
+
+  /** Zastepuje zaznaczenie w walce recznej. */
+  private _selectBattleUnitsByIds(ids: string[]): void {
+    for (const id of [...this._selectedUnits]) {
+      const u = this.atk.find(x => x.bu.id === id);
+      if (u) this._removeSelectionRing(u);
+    }
+    this._selectedUnits.clear();
+    for (const id of ids) {
+      const u = this.atk.find(x => x.bu.id === id);
+      if (u && !u.dead && !u.removed && !u.routed) {
+        this._selectedUnits.add(id);
+        this._addSelectionRing(u);
+        this._refreshUnitRingColor(u);
+      }
+    }
+    this._updateRosterBar();
+    this._updateSelectedPanel();
+    this._updateBattleQuickSelectBar();
+    this._updateBattleSelectionBar();
+    if (!this.deployPhase && this.started) this._updateDeployToolbarStatus();
+  }
+
+  /** Toggle zaznaczenia calej grupy (przycisk w panelu — drugi klik odznacza). */
+  private _selectBattleGroupToggle(gid: string): void {
+    this._pruneStaleGroups();
+    const liveIds = this._liveGroupMemberIds(gid);
+    if (liveIds.length === 0) {
+      this._updateBattleQuickSelectBar();
+      this._showBattleRosterFeedback('Grupa pusta');
+      return;
+    }
+    const onlyThisGroup = liveIds.every(id => this._selectedUnits.has(id))
+      && this._selectedUnits.size === liveIds.length;
+    if (onlyThisGroup) {
+      this._clearAllSelection();
+      this._showBattleRosterFeedback('Odznaczono');
+    } else {
+      this._selectBattleUnitsByIds(liveIds);
+      this._showBattleRosterFeedback(this._groupDisplayLabel(gid) + ': ' + liveIds.length);
+    }
+    this._updateBattleSelectionBar();
+  }
+
+  /** Mapa / karta — przełącz na grupe (bez odznaczania ponownego kliku tej samej). */
+  private _selectBattleGroupReplace(gid: string): void {
+    this._pruneStaleGroups();
+    const liveIds = this._liveGroupMemberIds(gid);
+    if (liveIds.length === 0) {
+      this._showBattleRosterFeedback('Grupa pusta');
+      return;
+    }
+    const onlyThisGroup = liveIds.every(id => this._selectedUnits.has(id))
+      && this._selectedUnits.size === liveIds.length;
+    if (onlyThisGroup) return;
+    this._selectBattleUnitsByIds(liveIds);
+    this._updateBattleSelectionBar();
+  }
+
+  /** Po rozkazie — automatycznie zaznacz nastepna jednostke do recznego sterowania. */
+  private _advanceToNextBattleUnit(skipIds: Set<string>): void {
+    const order = this._battleRosterOrder();
+    if (order.length === 0) return;
+    let pivot = -1;
+    for (let i = 0; i < order.length; i++) {
+      if (skipIds.has(order[i]!.bu.id)) pivot = i;
+    }
+    const tryPick = (preferUnacted: boolean): RuntimeBattleUnit | null => {
+      if (pivot < 0) pivot = 0;
+      for (let step = 1; step <= order.length; step++) {
+        const u = order[(pivot + step) % order.length]!;
+        if (skipIds.has(u.bu.id)) continue;
+        if (!preferUnacted || !u.acted) return u;
+      }
+      return null;
+    };
+    const next = tryPick(true) ?? tryPick(false);
+    if (next) this._selectBattleUnitsByIds([next.bu.id]);
+    else this._clearAllSelection();
+  }
+
+  /** Klik na jednostke w walce — jak deploy C09: LPM = jedna jednostka; Ctrl/Shift = multi. */
+  private _handleBattleUnitPick(ru: RuntimeBattleUnit, ctrl: boolean, shift: boolean): void {
+    if (ru.dead || ru.removed || ru.routed) return;
+    const additive = ctrl || shift;
+
+    if (additive) {
+      if (this._selectedUnits.has(ru.bu.id)) {
+        this._selectedUnits.delete(ru.bu.id);
+        this._removeSelectionRing(ru);
+      } else {
+        this._selectedUnits.add(ru.bu.id);
+        this._addSelectionRing(ru);
+        this._refreshUnitRingColor(ru);
+      }
+      this._updateRosterBar();
+      this._updateSelectedPanel();
+      this._updateBattleQuickSelectBar();
+      this._updateBattleSelectionBar();
+      if (!this.deployPhase && this.started) this._updateDeployToolbarStatus();
+      return;
+    }
+
+    if (this._selectedUnits.size === 1 && this._selectedUnits.has(ru.bu.id)) return;
+    this._selectBattleUnitsByIds([ru.bu.id]);
+  }
+
+  /** Buduje pasek szybkiego zaznaczenia w lewym panelu rosteru walki. */
+  private _ensureBattleQuickSelectBar(): void {
+    if (this._battleQuickSelectBar?.isConnected || this.deployPhase) return;
+    if (this._rosterBar) return;
+    this._buildRosterBar();
+  }
+
+  /** Odswieza filtry typu + grupy + Generał w lewym panelu walki. */
+  private _updateBattleQuickSelectBar(): void {
+    const bar = this._battleQuickSelectBar;
+    if (!bar || this.deployPhase || !this.started || !this._manualMode) {
+      if (bar) bar.style.display = 'none';
+      this._battleQuickSelectSig = '';
+      return;
+    }
+    bar.style.display = 'flex';
+
+    const groups = this._sortedGroupIds();
+    const sig = [
+      [...this._selectedUnits].sort().join(','),
+      groups.join(','),
+      this._generalPanel ? '1' : '0',
+    ].join('|');
+    if (sig === this._battleQuickSelectSig && bar.childElementCount > 0) return;
+    this._battleQuickSelectSig = sig;
+
+    bar.innerHTML = '';
+
+    const mkKind = (label: string, kind: 'mounted' | 'melee' | 'ranged'): void => {
+      bar!.appendChild(this._makeDeployQuickBtn(
+        label,
+        this._isDeploySelectionExactlyKind(kind),
+        () => this._selectBattleByKindToggle(kind),
+        { kind, fullWidth: false },
+      ));
+    };
+    mkKind('Konnica', 'mounted');
+    mkKind('Piechota', 'melee');
+    mkKind(DEPLOY_KIND_LABEL.ranged, 'ranged');
+    bar.appendChild(this._makeDeployQuickBtn(
+      'Wszystkie',
+      this._isDeploySelectionAll(),
+      () => {
+        const ids = this._selectableAtkUnits().map(u => u.bu.id);
+        const allSel = ids.every(id => this._selectedUnits.has(id)) && this._selectedUnits.size === ids.length;
+        if (allSel) {
+          this._clearAllSelection();
+          this._showBattleRosterFeedback('Odznaczono');
+        } else {
+          this._selectBattleUnitsByIds(ids);
+          this._showBattleRosterFeedback('Wszystkie: ' + ids.length);
+        }
+      },
+      { kind: 'all', fullWidth: false },
+    ));
+
+    if (groups.length > 0) {
+      for (const gid of groups) {
+        bar.appendChild(this._makeDeployQuickBtn(
+          this._groupDisplayLabel(gid),
+          this._isDeploySelectionExactlyGroup(gid),
+          () => this._selectBattleGroupToggle(gid),
+          { kind: 'group', fullWidth: false },
+        ));
+      }
+    }
+
+    bar.appendChild(this._makeDeployQuickBtn(
+      'Genera\u0142',
+      !!this._generalPanel,
+      () => this._toggleGeneralPanel(),
+      { kind: 'group', fullWidth: false },
+    ));
+  }
+
+  /** Zaznacz / odznacz wszystkie jednostki danego typu (walka). */
+  private _selectBattleByKindToggle(kind: 'mounted' | 'melee' | 'ranged'): void {
+    const kindLbl = DEPLOY_KIND_LABEL[kind];
+    const ids = this._selectableAtkUnits()
+      .filter(u => this._deployRowKind(u) === kind)
+      .map(u => u.bu.id);
+    if (ids.length === 0) {
+      this._showBattleRosterFeedback(kindLbl + ': brak');
+      return;
+    }
+    const allSel = ids.every(id => this._selectedUnits.has(id)) && this._selectedUnits.size === ids.length;
+    if (allSel) {
+      this._clearAllSelection();
+      this._showBattleRosterFeedback('Odznaczono');
+    } else {
+      this._selectBattleUnitsByIds(ids);
+      this._showBattleRosterFeedback(kindLbl + ': ' + ids.length);
+    }
+  }
+
+  /** Komunikat w lewym panelu rosteru walki. */
+  private _showBattleRosterFeedback(msg: string): void {
+    if (!this._battleRosterFeedback || !this.started || this.deployPhase) {
+      this._showOrderFeedback(msg);
+      return;
+    }
+    const el = this._battleRosterFeedback;
+    const prev = el.textContent;
+    el.textContent = msg;
+    el.style.color = '#7be08a';
+    setTimeout(() => {
+      if (el.textContent === msg) {
+        el.style.color = BATTLE_TEXT_DIM;
+        el.textContent = prev ?? 'LPM: zaznacz \u00B7 PPM: odznacz \u00B7 R = AUTO/RECZNY';
+      }
+    }, 2800);
   }
 
   /**
@@ -8302,15 +14930,13 @@ export class BattleScene {
       const gid = ru.groupId;
       const alreadyAllSelected = this._isWholeGroupSelected(gid);
       if (alreadyAllSelected) {
-        // Odznacz cala grupe
-        const members = this._groups.get(gid) ?? new Set<string>();
+        const members = this._liveGroupMemberIds(gid);
         for (const id of members) {
           const u = this.atk.find(u => u.bu.id === id);
           if (u) { this._selectedUnits.delete(id); this._removeSelectionRing(u); }
         }
       } else {
-        // Zaznacz cala grupe (NIE czyszcz reszty — mozna zaznaczac wiele grup)
-        const members = this._groups.get(gid) ?? new Set<string>();
+        const members = this._liveGroupMemberIds(gid);
         for (const id of members) {
           const u = this.atk.find(u => u.bu.id === id);
           if (u && !u.dead && !u.removed) {
@@ -8324,14 +14950,18 @@ export class BattleScene {
       // Zwykly toggle (indywidualny lub jednostka bez grupy)
       this._toggleSelectUnit(ru);
     }
-    this._updateRosterBar();
-    this._updateSelectedPanel();
+    if (this.deployPhase) {
+      this._refreshDeploySelectionVisuals();
+    } else {
+      this._updateRosterBar();
+      this._updateSelectedPanel();
+    }
   }
 
   /** Sprawdza czy WSZYSTKIE zywe czlonkowie grupy sa zaznaczeni. */
   private _isWholeGroupSelected(gid: string): boolean {
-    const members = this._groups.get(gid);
-    if (!members) return false;
+    const members = this._liveGroupMemberIds(gid);
+    if (members.length === 0) return false;
     for (const id of members) {
       const u = this.atk.find(u => u.bu.id === id);
       if (u && !u.dead && !u.removed && !this._selectedUnits.has(id)) return false;
@@ -8344,111 +14974,74 @@ export class BattleScene {
    * Jednostki docieraja do targetCol/targetRow + ich formationOffset.
    */
   private _orderGroupMove(gid: string, targetCol: number, targetRow: number): void {
-    const members = this._groups.get(gid);
-    if (!members) return;
-    for (const id of members) {
+    const ids = this._liveGroupMemberIds(gid);
+    for (const id of ids) {
       const u = this.atk.find(u => u.bu.id === id);
       if (!u || u.dead || u.removed) continue;
-      const off = u.formationOffset ?? { dc: 0, dr: 0 };
-      const destCol = Math.max(0, Math.min(BF_COLS - 1, targetCol + off.dc));
-      const destRow = Math.max(0, Math.min(BF_ROWS - 1, targetRow + off.dr));
-      u.playerOrder = { type: 'move', col: destCol, row: destRow };
+      const dest = this._moveTargetForUnit(u, targetCol, targetRow);
+      u.playerOrder = { type: 'move', col: dest.col, row: dest.row };
     }
   }
 
   /**
-   * Stosuje formacje F1/F2/F3 do grupy o podanym gid.
-   * Przesuwa jednostki GRUPY (jesli jestesmy w fazie deploy: fizycznie;
-   * w walce: wydaje rozkazy RUCH do nowych pozycji) i aktualizuje formationOffset.
-   *
-   * Centroid = aktualna srednia pozycja czlonkow grupy.
-   * F1: lucznicy/oszczepnicy przod (min col), melee srodek, konnica boki
-   * F2: melee przod (min col), dystansowe tyl, konnica boki
-   * F3: machiny obleznicze przod, lucznicy tyl, konnica najdalej tyl
+   * Stosuje formacje F1/F2/F3 do grupy o podanym gid (walka reczna / legacy).
    */
   private _applyGroupFormation(gid: string, formation: 'F1' | 'F2' | 'F3'): void {
-    const members = this._groups.get(gid);
-    if (!members || members.size === 0) return;
-
-    const units = [...members]
+    const ids = this._liveGroupMemberIds(gid);
+    if (ids.length === 0) return;
+    const units = ids
       .map(id => this.atk.find(u => u.bu.id === id))
       .filter((u): u is RuntimeBattleUnit => !!u && !u.dead && !u.removed);
     if (units.length === 0) return;
+    this._applyFormationToUnits(units, formation);
+    if (this.deployPhase) {
+      this._updateRosterBar();
+      this._refreshDeploySelectionVisuals();
+    } else {
+      this._updateSelectedPanel();
+    }
+  }
 
-    // Centroid grupy
-    const centCol = Math.round(units.reduce((s, u) => s + u.q, 0) / units.length);
-    const centRow = Math.round(units.reduce((s, u) => s + u.r, 0) / units.length);
-    const midRow  = centRow;
+  /**
+   * Uklada podane jednostki w formacji F1/F2/F3.
+   * W deploy: fizyczny ruch; w walce: rozkazy move.
+   * @returns true gdy przynajmniej jedna jednostka zmienila pozycje lub slot.
+   */
+  private _applyFormationToUnits(units: RuntimeBattleUnit[], formation: 'F1' | 'F2' | 'F3'): boolean {
+    if (units.length === 0) return false;
 
-    // Klasyfikacja jednostek
-    const mounted  = units.filter(u => u.mounted);
-    const siege    = units.filter(u => !u.mounted && isSiegeUnit(u.bu));
-    const rangedUs = units.filter(u => !u.mounted && !isSiegeUnit(u.bu) && u.rangedBase);
-    const meleeUs  = units.filter(u => !u.mounted && !isSiegeUnit(u.bu) && !u.rangedBase);
+    const avgCol = Math.round(units.reduce((s, u) => s + u.q, 0) / units.length);
+    const avgRow = Math.round(units.reduce((s, u) => s + u.r, 0) / units.length);
+    const anchor = this._clampDeployFormationAnchor(avgCol, avgRow, units[0]?.side ?? 'atk');
+    const centCol = anchor.col;
+    const midRow = anchor.row;
 
-    // Przydziel sloty (col-offset, row-offset wzgledem centroidu)
-    const slots: Array<[RuntimeBattleUnit, number, number]> = [];
+    const uniqueSlots = this._formationSlotsForUnits(units, formation);
+    if (uniqueSlots.length === 0) return false;
 
-    const addLine = (list: RuntimeBattleUnit[], colOff: number): void => {
-      const n = list.length;
-      list.forEach((u, i) => {
-        const rowOff = i - Math.floor(n / 2);
-        slots.push([u, colOff, rowOff]);
-      });
-    };
-
-    if (formation === 'F1') {
-      // F1: dystansowe przod (col-2), melee srodek (col 0), konnica boki (col+2)
-      addLine(rangedUs, -2);
-      addLine(meleeUs,   0);
-      addLine(siege,     2);
-      // Konnica na bokach srodkowej linii
-      mounted.forEach((u, i) => {
-        const side = i % 2 === 0 ? 1 : -1;
-        const rowOff = side * (Math.floor(Math.max(rangedUs.length, meleeUs.length) / 2) + 1 + Math.floor(i / 2));
-        slots.push([u, 0, rowOff]);
-      });
-    } else if (formation === 'F2') {
-      // F2: melee przod (col-2), dystansowe tyl (col+1), konnica boki
-      addLine(meleeUs,  -2);
-      addLine(rangedUs,  1);
-      addLine(siege,     3);
-      mounted.forEach((u, i) => {
-        const side = i % 2 === 0 ? 1 : -1;
-        const rowOff = side * (Math.floor(Math.max(meleeUs.length, rangedUs.length) / 2) + 1 + Math.floor(i / 2));
-        slots.push([u, -2, rowOff]);
-      });
-    } else { // F3 oblezenie
-      // F3: machiny przod (col-2), lucznicy tyl (col 0), konnica najdalej tyl (col+2)
-      addLine(siege,    -2);
-      addLine(rangedUs,  0);
-      addLine(meleeUs,   1);
-      addLine(mounted,   3);
+    for (const [u, dc, dr] of uniqueSlots) {
+      const colOff = this._colOffForFormation(u.side, dc);
+      u.formationOffset = { dc: colOff, dr };
     }
 
-    // Zastosuj sloty: wydaj rozkazy ruchu (lub przesuń fizycznie w deploy)
-    for (const [u, dc, dr] of slots) {
-      const destCol = Math.max(0, Math.min(BF_COLS - 1, centCol + dc));
-      const destRow = Math.max(0, Math.min(BF_ROWS - 1, midRow  + dr));
-      // Zaktualizuj formationOffset (nowa formacja pierwotna)
-      u.formationOffset = { dc, dr };
-      if (this.deployPhase) {
-        // W fazie deploy: przesuń fizycznie (jak _moveDeployUnit)
-        const key = cellKey(u.q, u.r);
-        this.occByKey.delete(key);
-        u.q = destCol; u.r = destRow;
-        const { x, z } = cellToWorld(destCol, destRow);
-        const topY = tileTopY(this.terrainMap, destCol, destRow);
-        u.group.position.set(x, topY, z);
-        u.hpBarGroup.position.set(x, topY + HPBAR_Y, z);
-        this.occByKey.set(cellKey(destCol, destRow), u);
-      } else {
-        // W walce: wydaj rozkaz ruchu
-        u.playerOrder = { type: 'move', col: destCol, row: destRow };
-      }
+    if (this.deployPhase) {
+      const layout = this._computeFormationLayoutAt(units, centCol, midRow, formation);
+      const slotOrder = uniqueSlots.map(([u]) => u);
+      const placed = this._placeDeployLayoutUnits(units, layout, slotOrder);
+      return placed > 0;
     }
-    this._showOrderFeedback('Formacja ' + formation + ' zastosowana dla ' + gid);
-    this._updateSelectedPanel();
+
+    const clampPlayColFn = (c: number): number => clampPlayCol(c);
+    const clampPlayRowFn = (r: number): number => clampPlayRow(r);
+    let anyChange = false;
+    for (const [u, dc, dr] of uniqueSlots) {
+      const colOff = this._colOffForFormation(u.side, dc);
+      const destCol = clampPlayColFn(centCol + colOff);
+      const destRow = clampPlayRowFn(midRow + dr);
+      u.playerOrder = { type: 'move', col: destCol, row: destRow };
+      anyChange = true;
+    }
+    return anyChange || uniqueSlots.length > 0;
   }
 
 
@@ -8465,6 +15058,8 @@ function computeInstantResult(
   terrainData: any[],
   counters: any[],
   terrainMap?: BattleTerrainMap,
+  attackerCivBonusy: readonly CivBonusEntry[] = [],
+  defenderCivBonusy: readonly CivBonusEntry[] = [],
 ): { winner: 'atakujacy' | 'obronca'; survivors: BattleUnit[]; log: string[] } {
   const log: string[] = [];
 
@@ -8488,8 +15083,8 @@ function computeInstantResult(
 
       const cu_a = toCombatUnit(a.ru.bu);
       const cu_d = toCombatUnit(d.ru.bu);
-      cu_a.Health = a.hp;
-      cu_d.Health = d.hp;
+      cu_a.health = a.hp;
+      cu_d.health = d.hp;
 
       // FACING (SS5l) for the instant/skip resolve too: classify where the
       // attacker strikes relative to the defender's facing so flank/rear
@@ -8511,11 +15106,13 @@ function computeInstantResult(
         terrainData,
         counters,
         attackerPosition: arc,
+        attackerCivBonusy,
+        defenderCivBonusy,
       });
       for (const line of res.log) log.push(line);
 
-      a.hp = Math.max(0, a.hp - Math.max(0, cu_a.Health - res.attackerHpLeft));
-      d.hp = Math.max(0, d.hp - Math.max(0, cu_d.Health - res.defenderHpLeft));
+      a.hp = res.attackerHpLeft;
+      d.hp = res.defenderHpLeft;
     }
   }
 

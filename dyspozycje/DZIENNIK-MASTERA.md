@@ -4,6 +4,17 @@ Append-only. Source of truth operacyjny projektu Civ.
 
 ---
 
+## [2026-07-05 ~12:08] BATCH 1 · A5 dirty-set FoW + C2b/C3 ✅ publish
+
+**Plan:** `MASTER-PLAN-GRYWALNOSC-SUPER-HUGE-2026-07-05.md` BATCH 1  
+**A5:** dirty-set `setFog` (teren + dekor partial) · założenie miasta bez pełnego `rebuildResourceOverlays` · 1× `refreshFog`  
+**C2b:** faza x/7 · licznik Upłynęło · metryczka „Ziarno mapy: N · Super Huge (672×476 …)"  
+**Bramka:** tsc 0 · weryfikacja-mapy PASS · strażnik PASS  
+**MD5:** `ceb5ba4266cea98fb1ad8838162931fa` · profil FoW: `__CIV_FOG_PROFILE=true`  
+**Maciej:** Ctrl+F5 → playtest Super Huge (start, założenie miasta, pan/zoom) → OK BATCH 1
+
+---
+
 ## [2026-07-05 ~11:55] MAPA · **C2b overlay „widać że żyje"** ✅ publish
 
 **Dyspozycja:** `DYSPOZYCJA-WYDAJNOSC-MAPA-2026-07-05.md` §C2b  
