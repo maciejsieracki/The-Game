@@ -1,27 +1,44 @@
-# ZLECENIE Design — A-18 Połączenie / Rozdziel armii (mapa · styl 1E)
+# ZLECENIE Design — A-06 + A-18 Armia na mapie (stos · merge · split · styl 1E)
 
 **Od:** Maciej / Lane UI (MASTER)  
 **Do:** Design (brand-book 1E)  
 **Data:** 2026-07-05  
 **ZLECENIE-ID:** `ARMY-MERGE-A18-2026-07-05`  
-**Priorytet:** **P1** — modal w grze bez mockupu · emoji + zielony CTA · ikony ⚔️ zamiast infografik
+**Priorytet:** **P0** — 3 ekrany lane Cursor bez mockupu 1E · emoji · niespójne akcenty (fiolet/niebieski/zielony)
 
 ---
 
 ## 0. Problem (dla Designera)
 
-Gracz porusza wojskiem na heks z sojusznikami → pojawia się modal **„Połączenie armii”**. Lane Cursor złożył **makieta v1.0** — działa gameplayowo, ale **nie ma mockupu 1E** (w `brand-book-1E/DYSPOZYCJA.md` A-18 = ⬜).
+Maciej przesłał **2 screenshoty** (2026-07-05) — oba idą do Designera:
 
-**Screenshot PRZED (Maciej, 2026-07-05):**
+### A) A-18 · Modal „Połączenie armii”
 
-- Modal „POŁĄCZENIE ARMII” · Hastati · Na polu / Przybywa · Zostaw osobno / Połącz armie
-- Nagłówek: emoji **🔗** · wiersze jednostek: emoji **⚔️** (hardcode w kodzie)
-- Przycisk primary: **zielony gradient** (nie złoty 1E)
-- Strzałka środka: znak Unicode `→` (brak SVG brand-book)
+Gracz porusza wojskiem na heks z sojusznikami → modal merge. Lane Cursor **makieta v1.0** — brak mockupu (A-18 = ⬜).
 
-Powiązany ekran **Split** („Rozdziel armię”, klawisz **[H]** na stosie) — ten sam styl provizorki, **bez mockupu**.
+- Emoji **🔗** w nagłówku · **⚔️** przy jednostkach (hardcode `main.ts`)
+- Primary **zielony** „Połącz armie” (nie złoty 1E)
+- Strzałka `→` Unicode
+
+### B) A-06 · Panel stosu armii (dolny HUD)
+
+Klik stos na mapie → panel **„Armia · (48,31)”** · karty Hastati · staty · Ruch/Ufort./Pomiń.
+
+Lane zrobił **szkic 1E v2** (`armyStackHud.ts`) — **Maciej odrzuca wizualnie** i chce mockup Design (jak POLE-BITWY GAP).
+
+**Screenshot PRZED (Maciej):**
+
+- Nagłówek OK częściowo (SVG `tb-army`) · karty: emoji **⚔️**
+- **Rozdziel** = obrys **fioletowy** (`accent-violet`) · **Połącz** = **niebieski** disabled — **niespójne** ze złotym „Ruch” i zaznaczoną kartą
+- Pasek HP na karcie: **zielony** gradient (jak stary Civ, nie 1E)
+- Staty ATK/OBR/RUCH/ZAS: subtelne ramki — do doprecyzowania w mockupie
+- Toast pod panelem: „Połączono: 2 jedn…” — **osobny temat A-20** (hint); w mockupie A-06 **nie rysuj** toastu
+
+Powiązany **Split modal** (przycisk Rozdziel / **[H]**) — ten sam pakiet co A-18.
 
 **Review HTML:** `docs/ux/export/A18-ARMY-MERGE-GAP-DLA-DESIGN.html`
+
+**Werdykt Macieja:** treść panelu OK · wygląd → **Design mockup 1E** (nie zostawiamy szkicu lane).
 
 ---
 
@@ -29,15 +46,16 @@ Powiązany ekran **Split** („Rozdziel armię”, klawisz **[H]** na stosie) �
 
 | Ekran | Jak wejść | Plik playtest |
 |--------|-----------|---------------|
-| **A-18 Merge** | Ruch własną jednostką na heks z inną sojuszniczą jednostką | `gra-kanon/Gra-podglad.html` lub `Gra-podglad-ROBOCZA.html` |
-| **A-18 Split** | Zaznacz stos ≥2 jednostek → **[H]** → wybór jednostek + sąsiedni heks | j.w. |
-| **A-06 Stack HUD** | Klik stos na mapie — dolny pasek (już częściowo 1E) | j.w. — **nie redesignuj**, tylko spójność ikon |
+| **A-06 Stack HUD** | Klik stos ≥2 jednostek na heksie (lub jedna po merge) | `gra-kanon/Gra-podglad.html` |
+| **A-18 Merge** | Ruch własną jednostką na heks z inną sojuszniczą jednostką | j.w. |
+| **A-18 Split** | Panel A-06 → **Rozdziel** (lub **[H]** gdy zaznaczony stos) | j.w. |
 
 **Kod lane (referencja układu — nie zmieniaj pól):**
 
+- Stack HUD: `gra/src/ui/armyStackHud.ts` + `mapUnitHudSkin.ts`
 - Merge: `gra/src/ui/armyMergePanel.ts`
 - Split: `gra/src/ui/armySplitPanel.ts`
-- Wywołanie: `gra/src/main.ts` → `mergeUnitRow()` (dziś `icon: '⚔️'` hardcode)
+- Ikony hardcode: `gra/src/main.ts` → `mergeUnitRow()` + `buildArmyStackHudState()` (`icon: '⚔️'`)
 
 ---
 
@@ -51,14 +69,15 @@ Powiązany ekran **Split** („Rozdziel armię”, klawisz **[H]** na stosie) �
 | Body | Segoe UI 13px |
 | Panel | `linear-gradient(165deg, rgba(14,20,36,.97), rgba(8,12,24,.98))` · ramka 1–2px złota · radius 14px |
 | Overlay | `rgba(4,8,18,.58)` + blur 3px |
-| **Przycisk primary** | gradient **złoty** (jak C-01 „Powrót do mapy” / menu outline→fill) — **NIE zielony** |
-| **Przycisk secondary** | outline szary/złoty · przezroczyste tło |
-| Pasek wyniku | neutralny (złoty/szary) — **NIE zielony** „Stos: N jednostek…” |
+| **Przycisk primary** | gradient **złoty** (jak C-01 / DS-04 fill) — **NIE zielony / NIE niebieski** |
+| **Przycisk secondary / toolbar** | outline **złoty** — **NIE** `accent-violet` / **NIE** `accent-blue` (dziś Rozdziel fiolet · Połącz niebieski) |
+| **Przycisk disabled** | opacity ~35% · ten sam kształt co aktywny — bez osobnego koloru akcentu |
+| Pasek HP na karcie | brand-book 1E (doprecyzuj w mockupie) — **NIE** neonowy zielony `#50b070` |
 | Ikony jednostek | SVG z paczki **JEDNOSTKI-INFOGRAFIKI** (poziom B) — `unit-legion.svg` dla Hastati |
 | Ikona nagłówka merge | SVG **łańcuch / splecenie** (nowy `icon-merge-armies.svg`) — bez 🔗 |
 | Strzałka „dołącza” | SVG `icon-arrow-join.svg` lub ornament brand-book |
-| Format pliku | `The Game - A18 <opis> v1 2026-07-05 (1E).dc.html` |
-| ZIP | `ARMY-MERGE-A18-2026-07-05.zip` |
+| Format pliku | `The Game - A06|A18 <opis> v1 2026-07-05 (1E).dc.html` |
+| ZIP | `ARMY-MERGE-A18-2026-07-05.zip` (A-06 + A-18 w jednej paczce) |
 
 **Wzorzec przycisków:** `docs/ux/claude-design/01-propozycje-z-design/brand-book-1E/` · DS-04 outline · primary złoty.
 
@@ -67,6 +86,53 @@ Powiązany ekran **Split** („Rozdziel armię”, klawisz **[H]** na stosie) �
 ---
 
 ## 3. Deliverables — co narysować
+
+### P0 — A-06 · Panel stosu armii (dolny HUD)
+
+**Plik:** `The Game - A06 Panel stosu armii v1 2026-07-05 (1E).dc.html`
+
+**Układ MUST (treść z kodu):**
+
+```
+┌──────────────────────────────────────────────────────────────────────────┐
+│ [SVG armia] Armia · (48,31)          [≡ LISTA] [ROZDZIEL] [POŁĄCZ] [×] │
+│              2 jedn. na heksie                                            │
+├──────────────────────────────────────────────────────────────────────────┤
+│  ┌─────────┐  ┌─────────┐     ← karty jednostek (scroll poziomy >4)     │
+│  │[icon]   │  │[icon]   │                                               │
+│  │ Hastati │  │ Hastati │   * złota ramka = aktywna                       │
+│  │ ▓▓▓▓▓   │  │ ▓▓▓▓▓   │     HP bar                                      │
+│  │ 1/2 ruch│  │ 2/2 ruch│                                               │
+│  └─────────┘  └─────────┘                                               │
+├──────────────────────────────────────────────────────────────────────────┤
+│  ATAK   OBRONA   RUCH   ZASIĘG              [RUCH] [UFORT.] [POMIŃ]     │
+│   7       7        2       0                 primary  muted   muted      │
+└──────────────────────────────────────────────────────────────────────────┘
+     ↑ panel „wisi” nad dolnym paskiem mapy (56px od dołu)
+```
+
+**Stany do mockupu (min. 4):**
+
+1. **Stos 2 · aktywna karta 1** — jak screenshot Macieja (Połącz disabled)
+2. **Stos 2 · Połącz enabled** — sąsiednia armia do merge (obie akcje outline aktywne)
+3. **Stos 1** — ukryj **Połącz** i **Rozdziel** (tylko Lista + ×) — *lane już disabled; Design potwierdza układ*
+4. **Stos 4+** — scroll kart poziomy
+
+**MUST wizualne (poprawki vs szkic lane):**
+
+| Element | Dziś (źle) | Docelowo |
+|---------|------------|----------|
+| Ikona na karcie | ⚔️ emoji | SVG kategorii B (JEDNOSTKI-INFOGRAFIKI) |
+| Rozdziel / Połącz | fiolet + niebieski outline | **złoty outline 1E** (jak Lista) |
+| Ruch (akcja) | złoty — OK | zachowaj spójność z DS-04 |
+| HP bar karty | zielony `#50b070` | kolor z brand-book (pergamin/złoto/czerwień HP) |
+| Karta aktywna | złota ramka — OK | doprecyzuj cień / gradient |
+
+**Spójność:** karta jednostki w A-06 = wiersz w modalu A-18 merge (ten sam komponent wizualny).
+
+**Referencja szkicu lane (nie kopiuj 1:1):** `docs/ux/export/A-06-panel-jednostki-1E-preview.html`
+
+---
 
 ### P0 — A-18a · Połączenie armii (Merge modal)
 
@@ -149,12 +215,13 @@ viewBox 24×24 · `stroke="currentColor"` · styl brand-book.
 
 ## 4. Co lane zrobi po Twojej paczce
 
-1. Port CSS z `.dc.html` → `armyMergePanel.ts` + `armySplitPanel.ts`
-2. Podmiana emoji → SVG (`innerHTML` / `mapUnitBrandIconHtml` wzorzec z `armyStackHud.ts`)
-3. MASTER: `mergeUnitRow()` → `categoryOf(typeId)` + `unitIconSvg()` (po paczce JEDNOSTKI)
-4. Build + playtest merge/split na mapie
+1. Port CSS z `.dc.html` → `armyStackHud.ts` + `mapUnitHudSkin.ts` + `armyMergePanel.ts` + `armySplitPanel.ts`
+2. Usunięcie `accent-violet` / `accent-blue` z toolbaru stosu — jeden system outline 1E
+3. Podmiana emoji → SVG (`mapUnitBrandIconHtml` / `unitIconSvg`)
+4. MASTER: `mergeUnitRow()` + `buildArmyStackHudState()` → `categoryOf(typeId)` + ikony z paczki JEDNOSTKI
+5. Build + playtest: klik stos → merge modal → split modal
 
-**Lane NIE zmienia:** logiki merge/split, tekstów PL, skrótów Esc/Enter.
+**Lane NIE zmienia:** logiki merge/split, tekstów PL, skrótów Esc/Enter/H.
 
 ---
 
@@ -162,6 +229,7 @@ viewBox 24×24 · `stroke="currentColor"` · styl brand-book.
 
 ```
 ARMY-MERGE-A18-2026-07-05.zip
+├── The Game - A06 Panel stosu armii v1 2026-07-05 (1E).dc.html    ← NOWY P0
 ├── The Game - A18 Polaczenie armii v1 2026-07-05 (1E).dc.html
 ├── The Game - A18 Rozdziel armie v1 2026-07-05 (1E).dc.html
 ├── eksport/icons/map/
@@ -178,11 +246,11 @@ ARMY-MERGE-A18-2026-07-05.zip
 
 ## 6. Kryteria akceptacji (DoD)
 
+- [ ] **3 mockupy** `.dc.html`: A-06 stos + A-18 merge + A-18 split
 - [ ] Zero emoji w mockupach i SVG
-- [ ] Primary CTA **złoty** (merge + split)
-- [ ] Wiersze jednostek z **infografiką kategorii** (np. legionista dla Hastati) — nie ⚔️
-- [ ] Spójność z A-06 stack HUD (ten sam styl karty wiersza / ikony)
-- [ ] 3 stany merge + 2 stany split w `.dc.html`
+- [ ] Primary CTA **złoty** · toolbar **złoty outline** (bez fiolet/niebieski)
+- [ ] Karty jednostek **identyczne** w A-06 i A-18 (SVG kategorii B)
+- [ ] 4 stany A-06 + 3 stany merge + 2 stany split
 - [ ] `DESIGN-do-UI` z mapowaniem klas CSS → selektory lane
 
 **Po gotowości napisz:**  
@@ -196,6 +264,6 @@ ARMY-MERGE-A18-2026-07-05.zip
 |----|---------|
 | `JEDNOSTKI-INFOGRAFIKI-1E-2026-07-05` | Ikony w wierszach jednostek (poziom B) |
 | `POLE-BITWY-v5-gap-2026-07-05` | Ten sam styl przycisków / paneli modalnych |
-| A-06 `armyStackHud.ts` | Już 1E — utrzymuj spójność kart |
+| A-06 review | `docs/ux/export/A-06-REVIEW-MACIEJ.md` — treść OK · wygląd → Design |
 
-**Rejestr UX:** `docs/ux/REJEST-UX-MASTER.md` · wiersz A-18.
+**Rejestr UX:** `docs/ux/REJEST-UX-MASTER.md` · wiersze A-06, A-18.

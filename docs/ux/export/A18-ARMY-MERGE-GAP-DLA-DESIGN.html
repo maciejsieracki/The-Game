@@ -2,9 +2,9 @@
 <html lang="pl">
 <head>
 <meta charset="utf-8">
-<title>A-18 — Połączenie / Rozdziel armii GAP dla Design</title>
+<title>A-06 + A-18 — Armia na mapie GAP dla Design</title>
 <style>
-  :root { --gold:#e8d88a; --dim:#8a8070; --text:#e8e0c8; --bg:#0a0c10; --panel:#121820; --bad:#ff7b7b; --ok:#7ad0a0; --green:#50b070; }
+  :root { --gold:#e8d88a; --dim:#8a8070; --text:#e8e0c8; --bg:#0a0c10; --panel:#121820; --bad:#ff7b7b; --ok:#7ad0a0; --violet:#b08ce0; --blue:#6bc4e8; }
   body { margin:0; font-family:'Segoe UI',Tahoma,sans-serif; background:var(--bg); color:var(--text); line-height:1.55; }
   .wrap { max-width:960px; margin:0 auto; padding:28px 18px 64px; }
   h1 { font-family:Georgia,serif; font-weight:400; color:var(--gold); letter-spacing:.06em; }
@@ -18,97 +18,110 @@
   code { background:rgba(0,0,0,.35); padding:2px 6px; border-radius:4px; font-size:.88em; }
   ul { padding-left:20px; }
   pre { background:rgba(0,0,0,.4); border:1px solid rgba(232,216,138,.15); border-radius:8px; padding:14px; font-size:11px; overflow-x:auto; line-height:1.35; color:#c8c0b0; }
-  .shot { border:1px solid rgba(232,216,138,.25); border-radius:10px; overflow:hidden; margin:16px 0; max-width:520px; }
+  .shots { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin:16px 0; }
+  @media(max-width:720px){ .shots { grid-template-columns:1fr; } }
+  .shot { border:1px solid rgba(232,216,138,.25); border-radius:10px; overflow:hidden; }
   .shot img { display:block; width:100%; height:auto; }
   .shot figcaption { padding:10px 14px; font-size:11px; color:var(--dim); background:rgba(0,0,0,.3); }
-  .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin:16px 0; }
-  @media(max-width:640px){ .grid2 { grid-template-columns:1fr; } }
+  .grid3 { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin:16px 0; }
+  @media(max-width:720px){ .grid3 { grid-template-columns:1fr; } }
   .cell { border:1px solid rgba(232,216,138,.2); border-radius:8px; padding:12px; background:var(--panel); font-size:12px; }
   .cell b { display:block; color:var(--gold); margin-bottom:6px; font-size:10px; letter-spacing:.08em; text-transform:uppercase; }
 </style>
 </head>
 <body>
 <div class="wrap">
-  <h1>A-18 — Połączenie / Rozdziel armii</h1>
+  <h1>A-06 + A-18 — Armia na mapie</h1>
   <p style="color:var(--dim)">ZLECENIE-ID: <strong style="color:var(--gold)">ARMY-MERGE-A18-2026-07-05</strong></p>
 
   <div class="hero">
-    <p><strong>Problem:</strong> modal merge/split na mapie = <strong>makieta lane Cursor</strong>. Brak mockupu Design (A-18 ⬜ w brand-book).</p>
-    <p><strong>Cel:</strong> 2 mockupy 1E + SVG nagłówka · ikony jednostek z paczki JEDNOSTKI-INFOGRAFIKI.</p>
+    <p><strong>Problem:</strong> 3 ekrany armii na mapie = <strong>szkic lane Cursor</strong> bez mockupu Design. Maciej odrzucił wygląd (2 screenshoty 2026-07-05).</p>
+    <p><strong>Cel:</strong> <strong>3 mockupy 1E</strong> · wspólna karta jednostki · toolbar złoty (bez fiolet/niebieski).</p>
     <p><strong>Pełna spec:</strong> <code>docs/ux/DESIGN-ZLECENIE-ARMY-MERGE-A18-2026-07-05.md</code></p>
     <p><strong>ZIP:</strong> <code>ARMY-MERGE-A18-2026-07-05.zip</code></p>
   </div>
 
-  <h2>Screenshot PRZED (Maciej · 2026-07-05)</h2>
-  <figure class="shot">
-    <img src="screenshots/A18-merge-przed-2026-07-05.png" alt="Połączenie armii — stan PRZED">
-    <figcaption>Połączenie armii · Hastati · heks (48,31) · emoji 🔗 ⚔️ · zielony CTA</figcaption>
-  </figure>
+  <h2>Screenshoty PRZED (Maciej · 2026-07-05)</h2>
+  <div class="shots">
+    <figure class="shot">
+      <img src="screenshots/A06-stack-przed-2026-07-05.png" alt="Panel stosu A-06 — stan PRZED">
+      <figcaption><strong>A-06</strong> · Armia (48,31) · Rozdziel fiolet · Połącz szary · ⚔️ · HP zielony</figcaption>
+    </figure>
+    <figure class="shot">
+      <img src="screenshots/A18-merge-przed-2026-07-05.png" alt="Połączenie armii A-18 — stan PRZED">
+      <figcaption><strong>A-18</strong> · Połączenie armii · emoji 🔗 ⚔️ · zielony CTA</figcaption>
+    </figure>
+  </div>
 
-  <h2>Co jest źle dziś (lane Cursor)</h2>
+  <h2>A-06 — co jest źle (panel stosu)</h2>
   <table>
     <tr><th>Element</th><th>Stan dziś</th><th>Docelowo 1E</th></tr>
-    <tr><td>Nagłówek</td><td class="bad">Emoji 🔗</td><td class="ok">SVG <code>icon-merge-armies.svg</code></td></tr>
-    <tr><td>Ikona jednostki</td><td class="bad">Emoji ⚔️ (hardcode <code>main.ts</code>)</td><td class="ok">SVG kategorii B · np. legionista dla Hastati</td></tr>
-    <tr><td>Primary „Połącz armie”</td><td class="bad">Zielony gradient</td><td class="ok">Złoty primary (DS-04 / C-01)</td></tr>
-    <tr><td>Pasek „Stos: N…”</td><td class="bad">Zielone tło</td><td class="ok">Neutralny złoty/szary</td></tr>
-    <tr><td>Wyróżnienie „Przybywa”</td><td class="bad">Zielona ramka</td><td class="ok">Akcent gracza <code>#3a6ad0</code> lub złoty</td></tr>
-    <tr><td>Strzałka środka</td><td class="bad">Unicode →</td><td class="ok">SVG <code>icon-arrow-join.svg</code></td></tr>
-    <tr><td>Split „Rozdziel”</td><td class="bad">Niebieski CTA</td><td class="ok">Złoty primary · te same karty jednostek</td></tr>
+    <tr><td>Ikona na karcie</td><td class="bad">Emoji ⚔️</td><td class="ok">SVG kategorii B (JEDNOSTKI-INFOGRAFIKI)</td></tr>
+    <tr><td>Przycisk Rozdziel</td><td class="bad" style="color:var(--violet)">Outline fiolet (<code>accent-violet</code>)</td><td class="ok">Złoty outline jak Lista</td></tr>
+    <tr><td>Przycisk Połącz</td><td class="bad" style="color:var(--blue)">Outline niebieski / disabled</td><td class="ok">Złoty outline · disabled = opacity</td></tr>
+    <tr><td>Akcja Ruch</td><td class="ok">Złoty — OK</td><td class="ok">Spójny z resztą toolbaru</td></tr>
+    <tr><td>HP bar karty</td><td class="bad">Neonowy zielony</td><td class="ok">Kolor HP z brand-book 1E</td></tr>
+    <tr><td>Karta aktywna</td><td class="ok">Złota ramka — bazowo OK</td><td class="ok">Doprecyzuj w mockupie</td></tr>
   </table>
 
-  <h2>Dwa ekrany do mockupu</h2>
-  <div class="grid2">
+  <h2>A-18 — co jest źle (modale merge/split)</h2>
+  <table>
+    <tr><th>Element</th><th>Stan dziś</th><th>Docelowo 1E</th></tr>
+    <tr><td>Nagłówek merge</td><td class="bad">Emoji 🔗</td><td class="ok">SVG <code>icon-merge-armies.svg</code></td></tr>
+    <tr><td>Primary merge</td><td class="bad">Zielony gradient</td><td class="ok">Złoty primary</td></tr>
+    <tr><td>Primary split</td><td class="bad">Niebieski gradient</td><td class="ok">Złoty primary</td></tr>
+    <tr><td>Karta jednostki</td><td class="bad">⚔️ emoji</td><td class="ok"><strong>Ta sama</strong> co A-06</td></tr>
+  </table>
+
+  <h2>Trzy ekrany do mockupu</h2>
+  <div class="grid3">
+    <div class="cell">
+      <b>A-06 · Panel stosu</b>
+      Dolny HUD · karty · staty<br>
+      Lista · Rozdziel · Połącz<br>
+      Ruch · Ufort. · Pomiń
+    </div>
     <div class="cell">
       <b>A-18a · Merge</b>
-      Na polu (N) · → dołącza · Przybywa<br>
-      Stos: N jednostek na (q,r)<br>
-      Zostaw osobno · <strong>Połącz armie</strong>
+      Na polu · dołącza · Przybywa<br>
+      Zostaw osobno · Połącz armie
     </div>
     <div class="cell">
       <b>A-18b · Split</b>
-      Checkboxy jednostek<br>
-      Chipy sąsiednich heksów<br>
-      Anuluj · <strong>Rozdziel</strong>
+      Checkboxy · chipy heksów<br>
+      Anuluj · Rozdziel
     </div>
   </div>
 
   <h2>Playtest PRZED</h2>
   <ol>
-    <li>Otwórz <code>gra-kanon/Gra-podglad.html</code></li>
-    <li><strong>Merge:</strong> rusz własną jednostką na heks z sojusznikiem</li>
-    <li><strong>Split:</strong> zaznacz stos ≥2 → klawisz <strong>H</strong></li>
+    <li><code>gra-kanon/Gra-podglad.html</code></li>
+    <li><strong>A-06:</strong> klik stos ≥2 jednostek na heksie</li>
+    <li><strong>Merge:</strong> ruch wojska na heks z sojusznikiem</li>
+    <li><strong>Split:</strong> Rozdziel w panelu lub klawisz <strong>H</strong></li>
   </ol>
 
-  <h2>Układ merge (MUST — z kodu)</h2>
-  <pre>┌─────────────────────────────────────────────────────────────┐
-│  ─── [SVG łańcuch] ───                                      │
-│         POŁĄCZENIE ARMII                                    │
-│         Heks (48,31)                                        │
-├─────────────────────────────────────────────────────────────┤
-│  NA POLU (1)          [SVG →]          PRZYBYWA             │
-│  ┌─────────────┐      dołącza         ┌─────────────┐       │
-│  │[icon] Hastati│                      │[icon] Hastati│*     │
-│  │ 2/2 ruch     │                      │ 1/2 ruch     │      │
-│  └─────────────┘                      └─────────────┘       │
-├─────────────────────────────────────────────────────────────┤
-│  Stos: 2 jednostki na (48,31)                               │
-├─────────────────────────────────────────────────────────────┤
-│  [ Zostaw osobno ]              [ Połącz armie ]            │
-└─────────────────────────────────────────────────────────────┘</pre>
+  <h2>Układ A-06 (MUST — z kodu)</h2>
+  <pre>┌──────────────────────────────────────────────────────────────────────────┐
+│ [SVG] Armia · (48,31)              [LISTA] [ROZDZIEL] [POŁĄCZ] [×]       │
+│        2 jedn. na heksie                                                  │
+├──────────────────────────────────────────────────────────────────────────┤
+│  [karta Hastati*]  [karta Hastati]   ← ten sam komponent co w A-18 merge │
+├──────────────────────────────────────────────────────────────────────────┤
+│  ATAK  OBRONA  RUCH  ZASIĘG                    [RUCH] [UFORT.] [POMIŃ]   │
+└──────────────────────────────────────────────────────────────────────────┘</pre>
 
-  <h2>Zależność ikon</h2>
-  <p>Wiersze jednostek używają <strong>tego samego SVG</strong> co zlecenie <code>JEDNOSTKI-INFOGRAFIKI-1E-2026-07-05</code> (poziom B · 18 kategorii). Lane podmieni po obu paczkach.</p>
-
-  <h2>Deliverables ZIP</h2>
+  <h2>Deliverables ZIP (3 mockupy)</h2>
   <ul>
+    <li><code>The Game - A06 Panel stosu armii v1 2026-07-05 (1E).dc.html</code></li>
     <li><code>The Game - A18 Polaczenie armii v1 2026-07-05 (1E).dc.html</code></li>
     <li><code>The Game - A18 Rozdziel armie v1 2026-07-05 (1E).dc.html</code></li>
-    <li>SVG: merge · arrow-join · (opcjonalnie split)</li>
-    <li><code>DESIGN-do-UI_ARMY-MERGE-A18.md</code> · <code>MANIFEST.txt</code></li>
+    <li>SVG + <code>DESIGN-do-UI_ARMY-MERGE-A18.md</code></li>
   </ul>
 
-  <p style="margin-top:40px;text-align:center;color:var(--dim);font-size:11px;letter-spacing:.2em;text-transform:uppercase">The Game · A-18 Army merge/split · Design review · 2026-07-05</p>
+  <p style="margin-top:8px;color:var(--dim);font-size:12px">Toast „Połączono: 2 jedn…” = temat <strong>A-20</strong> (hint) — nie w mockupie A-06.</p>
+
+  <p style="margin-top:40px;text-align:center;color:var(--dim);font-size:11px;letter-spacing:.2em;text-transform:uppercase">The Game · A-06 + A-18 · Design review · 2026-07-05</p>
 </div>
 </body>
 </html>

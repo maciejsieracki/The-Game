@@ -87,17 +87,19 @@ Append-only. Source of truth operacyjny projektu Civ.
 
 ---
 
-## [2026-07-05] DESIGN · zlecenie A-18 Połączenie / Rozdziel armii (mapa · gap Cursor)
+## [2026-07-05] DESIGN · zlecenie A-06 + A-18 Armia na mapie (gap Cursor)
 
-**Problem:** modal merge (screenshot Maciej) — emoji 🔗 ⚔️ · zielony CTA · brak mockupu brand-book (A-18 ⬜).
+**Problem:** 2 screenshoty Macieja — (1) panel stosu A-06: fiolet Rozdziel, niebieski Połącz, ⚔️, zielony HP; (2) modal merge A-18: 🔗, zielony CTA.
+
+**Werdykt Macieja:** treść OK · wygląd → **Design mockup 1E** (nie zostawiamy szkicu lane).
 
 **Dokumenty:**
 - Spec: `docs/ux/DESIGN-ZLECENIE-ARMY-MERGE-A18-2026-07-05.md`
 - Wklejka: `docs/ux/WKLEJKA-DESIGN-START-ARMY-MERGE-A18.md`
 - Review HTML: `docs/ux/export/A18-ARMY-MERGE-GAP-DLA-DESIGN.html`
-- Screenshot PRZED: `docs/ux/export/screenshots/A18-merge-przed-2026-07-05.png`
+- Screenshoty: `screenshots/A06-stack-przed-2026-07-05.png` · `A18-merge-przed-2026-07-05.png`
 
-**ZLECENIE-ID:** `ARMY-MERGE-A18-2026-07-05` · 2 mockupy (.dc.html) · SVG merge/arrow · sync ikon z JEDNOSTKI-INFOGRAFIKI
+**ZLECENIE-ID:** `ARMY-MERGE-A18-2026-07-05` · **3 mockupy** (.dc.html): A-06 stos + A-18 merge + split · wspólna karta jednostki
 
 ---
 
