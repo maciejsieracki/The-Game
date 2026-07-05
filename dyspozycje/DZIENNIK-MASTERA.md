@@ -105,6 +105,18 @@ Append-only. Source of truth operacyjny projektu Civ.
 
 ---
 
+## [2026-07-05] Maciej · audyt C-04/C-05 oblężenie — **stare grafiki w grze**
+
+**Screenshot:** panel „Oblężenie” Ateny · emoji ⛺🏛🛡 · opis Szturm `preBattle · bitwa z murem`.
+
+**Werdykt audytu:** Design **v2 gotowy** (`C04-C05-A19-mapa-v2_2026-07-04`) — **lane NIE portował** do `siegeMapPanel.ts` / `cityAttackChoice.ts` / `cityCaptureNotice.ts` (w kodzie nadal emoji lane v1–v3).
+
+**Review:** `docs/ux/export/C04-C05-PREBITWA-AUDIT-STARE-GRAFIKI.html` · screenshot `screenshots/C05-siege-panel-przed-2026-07-05.png`
+
+**Następny krok:** dyspozycja lane UI **port C04-C05-A19 v2** (bez nowego zlecenia Design). Pre-bitwa C-01 = v3 OK layout · ikony → JEDNOSTKI-INFOGRAFIKI.
+
+---
+
 ## [2026-07-05] DESIGN · zlecenie Jednostki infografiki 1E (spójny kanon SVG)
 
 **Problem:** różne ikony tego samego typu w mieście / pre-bitwie / POLE-BITWY / Strategia.
