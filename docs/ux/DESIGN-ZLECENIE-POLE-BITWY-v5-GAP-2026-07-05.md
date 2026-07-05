@@ -33,6 +33,7 @@ Paczka **v4.1** (C06 Deploy, C09 Roster, C06 Strategia, C12 Koniec) jest **gotow
 | **Review stary vs kod** | `docs/ux/export/C-POLE-BITWY-review-stary-vs-kod.html` |
 | **Review GAP (lista zadań)** | `docs/ux/export/C-POLE-BITWY-GAP-DLA-DESIGN.html` ← **START TU** |
 | **Mockupy v4.1 (DOBRE — nie psuć)** | `docs/ux/claude-design/The Game - C06 Deployment v4 2026-07-04 (1E).dc.html` · `C09 Roster lewy panel v4` · `C06 Popup Strategia v4` · `C12 Koniec bitwy v2` |
+| **Mockup deploy popups v5 (zbiorczy)** | `docs/ux/claude-design/The Game - Popupy deploy v5 2026-07-05 (1E).dc.html` · handoff SVG: `HANDOFF-Cursor-Popupy-Deploy-v5.md` |
 
 **MD5 buildu POLE-BITWY (2026-07-05):** `be17d8696b08523e5ce7e0cd93417485`
 
@@ -168,7 +169,8 @@ W `C06 Deployment v4` są **przyciski** Formacja · Konnica · Linie · Taktyka 
 
 #### **GAP-03 · Popup Formacja**
 
-**Plik:** `The Game - C06 Popup Formacja v1 2026-07-05 (1E).dc.html`
+**Plik (osobny, opcjonalny):** `The Game - C06 Popup Formacja v1 2026-07-05 (1E).dc.html`  
+**Referencja kanon (2026-07-05):** sekcja Formacja w `The Game - Popupy deploy v5 2026-07-05 (1E).dc.html`
 
 **Kontekst:** Faza **deploy** · dolny toolbar · przycisk **Formacja** otwarty.
 
@@ -177,8 +179,8 @@ W `C06 Deployment v4` są **przyciski** Formacja · Konnica · Linie · Taktyka 
 | Opcja | Efekt (hint pod nagłówkiem, opcjonalnie) |
 |-------|------------------------------------------|
 | **Dystans** | Łucznicy z przodu |
-| **Piechota** | Piechota z przodu |
-| **Oblężenie** | Machiny z przodu |
+| **Piechota** | Zwarta linia z przodu |
+| **Oblężenie** | Machiny na skrzydłach |
 
 **Stan aktywny:** wiersz podświetlony (jak aktywna doktryna w popup Taktyka v4).
 
@@ -188,7 +190,8 @@ W `C06 Deployment v4` są **przyciski** Formacja · Konnica · Linie · Taktyka 
 
 #### **GAP-04 · Popup Konnica**
 
-**Plik:** `The Game - C06 Popup Konnica v1 2026-07-05 (1E).dc.html`
+**Plik (osobny, opcjonalny):** `The Game - C06 Popup Konnica v1 2026-07-05 (1E).dc.html`  
+**Referencja kanon:** sekcja Konnica w mockupie zbiorczym v5 (patrz wyżej)
 
 **Opcje (2 pozycje):**
 
@@ -201,12 +204,13 @@ W `C06 Deployment v4` są **przyciski** Formacja · Konnica · Linie · Taktyka 
 
 #### **GAP-05 · Popup Linie**
 
-**Plik:** `The Game - C06 Popup Linie v1 2026-07-05 (1E).dc.html`
+**Plik (osobny, opcjonalny):** `The Game - C06 Popup Linie v1 2026-07-05 (1E).dc.html`  
+**Referencja kanon:** sekcja Linie w mockupie zbiorczym v5 (patrz wyżej)
 
 **Układ:** dwie sekcje w jednym popupie:
 
-**Sekcja 1 — Piechota:** przyciski **`1` · `2` · `3`** (linie głębokości)  
-**Sekcja 2 — Łucznicy:** przyciski **`1` · `2` · `3`**
+**Sekcja 1 — Piechota:** przyciski **`1` · `2` · `3`** (linie głębokości) · domyślnie **1**  
+**Sekcja 2 — Dystansowe** *(było „Łucznicy"):* przyciski **`1` · `2` · `3`** · domyślnie **3**
 
 Aktywny numer = złote podświetlenie (jak chip aktywny).
 
@@ -216,7 +220,8 @@ Aktywny numer = złote podświetlenie (jak chip aktywny).
 
 #### **GAP-06 · Popup Taktyka v2 (sync z grą)**
 
-**Plik:** `The Game - C06 Popup Taktyka v2 2026-07-05 (1E).dc.html`
+**Plik (osobny, opcjonalny):** `The Game - C06 Popup Taktyka v2 2026-07-05 (1E).dc.html`  
+**Referencja kanon:** sekcja Taktyka w mockupie zbiorczym v5 (patrz wyżej)
 
 **Problem:** Mockup C06 v4 ma przykładowe nazwy (*Natarcie*, *Obrona / mur tarcz*, *Odwrót taktyczny*). **Gra ma inne 4 doktryny:**
 

@@ -4,6 +4,15 @@ Append-only. Source of truth operacyjny projektu Civ.
 
 ---
 
+## [2026-07-05 ~13:15] DESIGN · deliverable komplet Deploy v5 ✅
+
+**Handoff:** `HANDOFF-Cursor-Popupy-Deploy-v5.md` — SVG KANON (Formacja/Taktyka/Linie) + SYNC DOK  
+**Mockup:** `The Game - Popupy deploy v5 2026-07-05 (1E).dc.html` (P0 #1)  
+**Decyzja Maciej P0 #2:** **A — NIE rozbijaj** na 4 pliki; zbiorczy mockup wystarcza  
+**Lane UNITS P1:** 🟢 READY (hełm + podmiana SVG + pixel-perfect vs mockup)
+
+---
+
 ## [2026-07-05 ~13:10] DESIGN · handoff v5 patch — hełm Konnica ✅
 
 **Plik:** `docs/ux/claude-design/HANDOFF-Cursor-Popupy-Deploy-v5.md` — sekcja „Ikona HEŁMU" (GAP-04, linie 55–64)  

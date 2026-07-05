@@ -47,14 +47,13 @@ TWOJE ZADANIA (P1)
    git pull → docs/ux/claude-design/HANDOFF-Cursor-Popupy-Deploy-v5.md
    battleHudTheme.ts + _makeDeployToolbarDropdown('Konnica', …)
 
-2) PODMIANA SVG po push Design (watch repo) — ⏳ czeka sekcja „SVG KANON — KOD” + mockup HTML v5
-   battleHudTheme.ts:
-   · DEPLOY_TACTIC_SVG → kanon z Design
-   · FMT_SVG f1/f2/f3 jeśli Design poda nowe wersje
+2) PODMIANA SVG + PIXEL-PERFECT — ✅ READY (commit po pull)
+   Handoff sekcja „SVG KANON — KOD" (linie 102–177)
+   Mockup: docs/ux/claude-design/The Game - Popupy deploy v5 2026-07-05 (1E).dc.html
+   battleHudTheme.ts: DEPLOY_TACTIC_SVG · FMT_SVG · ikona Piechota w Linie
 
-3) PIXEL-PERFECT gdy mockup trafi na GitHub:
-   The Game - Popupy deploy v5 2026-07-05 (1E).dc.html
-   → padding, gap, hover, typografia wierszy
+3) PIXEL-PERFECT vs mockup zbiorczy v5 (ten sam batch co #2)
+   padding · gap · hover · typografia wierszy
 
 4) SPÓJNOŚĆ deploy + walka R (manual)
    Popup Taktyka identyczny po SPACJA→RĘCZNY

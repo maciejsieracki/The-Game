@@ -31,17 +31,16 @@ Handoff **GAP-04 · „Ikona HEŁMU"** — gotowe SVG w `HANDOFF-Cursor-Popupy-D
 **Nie melduj BLOCKED.** Wstaw na przycisk `_makeDeployToolbarDropdown('Konnica', …)` obok labela (jak Reset ma SVG).  
 Stała w `battleHudTheme.ts` (np. `DEPLOY_CAV_TOOLBAR_SVG`) — jeden string HTML z handoff.
 
-### 2 · Podmiana SVG po dostarczeniu przez Design ⏳
-Design zapowiada sekcję **„SVG KANON — KOD"** (Formacja ×3, Taktyka ×4, Piechota w Linie) + mockup HTML v5.  
-**Watch:** `git pull` → ten sam plik handoff + `The Game - Popupy deploy v5 2026-07-05 (1E).dc.html`.  
-Gdy pliki trafią na GitHub (`docs/ux/claude-design/`):
+### 2 · Podmiana SVG + pixel-perfect ✅ READY (Design 2026-07-05)
+**Handoff:** sekcja **„SVG KANON — KOD"** (linie 102–177) — Formacja ×3, Taktyka ×4, Piechota Linie, celownik wycentrowany.  
+**Mockup:** `docs/ux/claude-design/The Game - Popupy deploy v5 2026-07-05 (1E).dc.html`  
+`git pull` → podmień w `battleHudTheme.ts`:
 - `DEPLOY_TACTIC_SVG.*` → kanoniczne 4 ikony (Obrona/Atak/Szturm/Ostrzał)
 - `FMT_SVG.f1/f2/f3` → jeśli Design poda wersje ≠ obecne
 - ewent. dedykowany `DEPLOY_FORMATION_SVG` zamiast reuse FMT_SVG
 
-### 3 · Pixel-perfect vs mockup HTML
-Gdy pojawi się `The Game - Popupy deploy v5 2026-07-05 (1E).dc.html`:
-- padding wierszy · gap · font-size · letter-spacing · hover (jeśli w mockupie)
+### 3 · Pixel-perfect vs mockup HTML (ten sam batch co #2)
+Mockup zbiorczy v5 na GitHubie — dopasuj padding wierszy · gap · typografię · hover.
 - porównaj screenshot PRZED/PO z `docs/ux/export/` (dopisz PNG jeśli brak)
 
 ### 4 · Taktyka w fazie walki R (manual)
