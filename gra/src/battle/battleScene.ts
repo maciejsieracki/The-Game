@@ -164,7 +164,7 @@ import {
 import { civIconSvg } from '../ui/icons/brandAssets';
 import { showEndScreen1E } from './endScreen1E';
 import { showEndDetails1E } from './endDetails1E';
-import { disposeSiegeHud1E, mountSiegeHud1E, updateSiegeHud1E } from './siegeHud1E';
+import { disposeSiegeHud1E, mountSiegeHud1E, setSiegeHudVisible, updateSiegeHud1E } from './siegeHud1E';
 
 export type { BattleMinimapData, BattleMinimapUnit, BattleMinimapViewport } from './battleMinimap';
 
@@ -7381,6 +7381,7 @@ export class BattleScene {
     apply(this._deployRosterDock);
     apply(this._rosterBar);
     apply(this._selPanel);
+    if (suppress && this.siegeWallCol >= 0) setSiegeHudVisible(false);
     if (!suppress) this._syncBattleToolbarMode();
   }
 
@@ -10381,6 +10382,10 @@ export class BattleScene {
     if (showToolbar) {
       this._syncDeployToolbarOffset();
       this._updateDeployToolbarStatus();
+    }
+    if (this.siegeWallCol >= 0) {
+      // C-05 dolny pasek (Ostrzał/Szturm) vs toolbar deploy — tylko jeden naraz
+      setSiegeHudVisible(!showToolbar);
     }
     this._updateGroupSelectorBarLayout();
     this._updateRightRailLayout();
