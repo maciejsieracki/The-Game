@@ -42,12 +42,12 @@ JUŻ ZROBIONE — NIE DUPLIKUJ (commit afe2220)
 TWOJE ZADANIA (P1)
 ───────────────────────────────────────
 
-1) IKONA HEŁMU na przycisku toolbara „Konnica”
-   Handoff GAP-04: rotate(180 12 12)
-   Jeśli brak SVG w repo → meldunek BLOCKED: czekam Design
-   Kod: _makeDeployToolbarDropdown('Konnica', …)
+1) IKONA HEŁMU na przycisku toolbara „Konnica” — ✅ READY
+   Handoff GAP-04 · sekcja „Ikona HEŁMU” (linie 55–64)
+   git pull → docs/ux/claude-design/HANDOFF-Cursor-Popupy-Deploy-v5.md
+   battleHudTheme.ts + _makeDeployToolbarDropdown('Konnica', …)
 
-2) PODMIANA SVG po push Design (watch repo)
+2) PODMIANA SVG po push Design (watch repo) — ⏳ czeka sekcja „SVG KANON — KOD” + mockup HTML v5
    battleHudTheme.ts:
    · DEPLOY_TACTIC_SVG → kanon z Design
    · FMT_SVG f1/f2/f3 jeśli Design poda nowe wersje
@@ -63,7 +63,7 @@ TWOJE ZADANIA (P1)
 ───────────────────────────────────────
 DoD
 ───────────────────────────────────────
-□ Konnica toolbar: hełm LUB BLOCKED w UNITS-DO-MASTERA.md
+□ Konnica toolbar: hełm z handoff (GAP-04 · linie 55–64)
 □ 4 popupy spójne wizualnie (bez regresji logiki)
 □ npx tsc --noEmit w gra/ — OK
 □ Meldunek append: dyspozycje/UNITS-DO-MASTERA.md + screenshoty

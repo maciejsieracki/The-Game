@@ -4,6 +4,14 @@ Append-only. Source of truth operacyjny projektu Civ.
 
 ---
 
+## [2026-07-05 ~13:10] DESIGN · handoff v5 patch — hełm Konnica ✅
+
+**Plik:** `docs/ux/claude-design/HANDOFF-Cursor-Popupy-Deploy-v5.md` — sekcja „Ikona HEŁMU" (GAP-04, linie 55–64)  
+**Odblokowane:** UNITS P1 #1 (toolbar Konnica — bez BLOCKED)  
+**W drodze od Design:** sekcja „SVG KANON — KOD" (Formacja/Taktyka/Linie) + mockup `Popupy deploy v5 2026-07-05 (1E).dc.html`
+
+---
+
 ## [2026-07-05 ~13:00] MASTER · dyspozycje A+B wysłane do Macieja
 
 **A Design:** `docs/ux/WKLEJKA-DESIGN-Popupy-Deploy-v5-BRAKI.md` (mockup v5 + SVG braki)  

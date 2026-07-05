@@ -26,11 +26,14 @@
 
 ## DO ZROBIENIA (P1)
 
-### 1 · Ikona hełmu na przycisku toolbara „Konnica"
-Handoff GAP-04: hełm z `rotate(180 12 12)` — SVG od Design (czeka) LUB tymczasowo z brand-book.  
-Przycisk: `_makeDeployToolbarDropdown('Konnica', …)` — dodać ikonę obok labela (jak Reset ma SVG).
+### 1 · Ikona hełmu na przycisku toolbara „Konnica" ✅ READY (Design 2026-07-05)
+Handoff **GAP-04 · „Ikona HEŁMU"** — gotowe SVG w `HANDOFF-Cursor-Popupy-Deploy-v5.md` (linie 55–64).  
+**Nie melduj BLOCKED.** Wstaw na przycisk `_makeDeployToolbarDropdown('Konnica', …)` obok labela (jak Reset ma SVG).  
+Stała w `battleHudTheme.ts` (np. `DEPLOY_CAV_TOOLBAR_SVG`) — jeden string HTML z handoff.
 
-### 2 · Podmiana SVG po dostarczeniu przez Design
+### 2 · Podmiana SVG po dostarczeniu przez Design ⏳
+Design zapowiada sekcję **„SVG KANON — KOD"** (Formacja ×3, Taktyka ×4, Piechota w Linie) + mockup HTML v5.  
+**Watch:** `git pull` → ten sam plik handoff + `The Game - Popupy deploy v5 2026-07-05 (1E).dc.html`.  
 Gdy pliki trafią na GitHub (`docs/ux/claude-design/`):
 - `DEPLOY_TACTIC_SVG.*` → kanoniczne 4 ikony (Obrona/Atak/Szturm/Ostrzał)
 - `FMT_SVG.f1/f2/f3` → jeśli Design poda wersje ≠ obecne
@@ -53,7 +56,7 @@ Append `dyspozycje/UNITS-DO-MASTERA.md`:
 
 ## DoD (AC)
 
-- [ ] Przycisk „Konnica” ma ikonę hełmu (obróconą) lub wpis „BLOCKED: czekam SVG Design"
+- [ ] Przycisk „Konnica” ma ikonę hełmu z handoff (GAP-04 · linie 55–64)
 - [ ] Po podmianie SVG Design — diff tylko w `battleHudTheme.ts` constants
 - [ ] Deploy + walka R: 4 popupy spójne wizualnie (złota ramka `.08`, wiersze z ikoną)
 - [ ] `npx tsc --noEmit` w `gra/` — OK

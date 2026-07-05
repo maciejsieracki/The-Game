@@ -56,9 +56,7 @@ P1 — SVG (w handoff tylko opis słowny — proszę kod jak u Konnicy)
    · skrzyżowane miecze 17×17
    · Dystansowe / celownik — masz w handoff ✅
 
-6) Przycisk toolbara „Konnica” — ikona hełmu
-   · handoff: rotate(180 12 12) — bez zmian
-   · brak kodu SVG w handoff — proszę dopisać
+6) ~~Przycisk toolbara „Konnica” — ikona hełmu~~ ✅ w handoff (sekcja „Ikona HEŁMU”)
 
 ───────────────────────────────────────
 P1 — SYNC DOKUMENTACJI
