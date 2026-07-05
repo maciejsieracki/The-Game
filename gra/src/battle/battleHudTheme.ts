@@ -485,11 +485,27 @@ export function mkRosterBarTrack(fillPct: number, gradient: string): HTMLDivElem
   return track;
 }
 
-/** SVG formacji deploy (24px, stroke currentColor). */
+/** SVG formacji deploy (handoff v5 · GAP-03 kanon). */
 export const FMT_SVG = {
-  f1: '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M5 5c8 1 13 6 14 14"/><path d="M5 5v4M5 5h4"/><path d="M6 18 18 6"/></svg>',
-  f2: '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M4.5 5 14 14.5M14.5 15 17.5 18M15.6 14 13.6 16M19.5 5 10 14.5M9.5 15 6.5 18M8.4 14 10.4 16"/></svg>',
-  f3: '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="7" cy="17" r="2.5"/><circle cx="16" cy="17" r="2.5"/><path d="M6 14 18 9"/><path d="M9.5 17h4"/><path d="M18 9l1-3-3 1"/></svg>',
+  f1:
+    '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" ' +
+    'stroke-linecap="round" stroke-linejoin="round">' +
+    '<circle cx="16" cy="15" r="6"/><circle cx="16" cy="15" r="2.3"/>' +
+    '<path d="M-1 2 Q13 5 16 15" stroke-dasharray="0.1 3"/>' +
+    '<circle cx="16" cy="15" r="0.9" fill="currentColor" stroke="none"/></svg>',
+  f2:
+    '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">' +
+    '<path d="M4.5 5 14 14.5M14.5 15 17.5 18M15.6 14 13.6 16M19.5 5 10 14.5M9.5 15 6.5 18M8.4 14 10.4 16"/></svg>',
+  f3:
+    '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">' +
+    '<path d="M3 18h14l-3-9H6ZM6 9 5 5h4"/>' +
+    '<circle cx="7" cy="20" r="2"/><circle cx="14" cy="20" r="2"/></svg>',
+  /** Hełm konnicy — przycisk toolbara Deploy (handoff v5 · GAP-04). */
+  cavHelm:
+    '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">' +
+    '<g transform="rotate(180 12 12)">' +
+    '<path d="M7 20c-2-2.6-3-5.6-3-8.2a8 8 0 0 1 16 0c0 2.6-1 5.6-3 8.2M6.6 20.2 6 21.4M17.4 20.2 18 21.4M8.7 8.4v.01M15.3 8.4v.01M6.7 12.2v.01M17.3 12.2v.01"/>' +
+    '</g></svg>',
   /** Konnica Z boku — oskrzydlenie (handoff Deploy v5 · GAP-04). */
   cavFlanks:
     '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" ' +
@@ -621,17 +637,27 @@ export function paintDeployPopupOption(btn: HTMLButtonElement, active: boolean):
   });
 }
 
-/** Wiersz popupu: ikona + tytuł + opcjonalny podpis (#8a8070). */
+/** Wiersz popupu: ikona + tytuł + opcjonalny podpis (#8a8070) — mockup 1E v5. */
 export function buildDeployPopupRowHtml(iconSvg: string, title: string, subtitle?: string): string {
   const sub = subtitle
-    ? `<span style="font-size:9px;color:#8a8070;line-height:1.2;">${subtitle}</span>`
+    ? `<span style="font-size:11px;color:#8a8070;line-height:1.2;">${subtitle}</span>`
     : '';
   return (
-    '<span style="display:flex;align-items:center;gap:10px;width:100%;">' +
+    '<span style="display:flex;align-items:center;gap:12px;width:100%;">' +
     `<span style="display:inline-flex;flex-shrink:0;color:${BATTLE_GOLD};line-height:0;">${iconSvg}</span>` +
     '<span style="display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;">' +
-    `<span style="font-size:11px;color:#e8e0c8;letter-spacing:0.04em;">${title}</span>${sub}` +
+    `<span style="font-size:14px;color:#e8e0c8;">${title}</span>${sub}` +
     '</span></span>'
+  );
+}
+
+/** Komórka siatki Taktyka 2×2 — ikona wyśrodkowana + etykieta (mockup GAP-06). */
+export function buildDeployTacticCellHtml(iconSvg: string, title: string): string {
+  return (
+    '<span style="display:flex;flex-direction:column;align-items:center;width:100%;text-align:center;">' +
+    `<span style="display:inline-flex;color:${BATTLE_GOLD};line-height:0;margin-bottom:6px;">${iconSvg}</span>` +
+    `<span style="font-size:13px;color:#e8e0c8;">${title}</span>` +
+    '</span>'
   );
 }
 
@@ -642,24 +668,23 @@ export const DEPLOY_SCOPE_SVG =
   '<path d="M-2 -1 Q9 3 13 12" stroke-dasharray="0.1 3"/>' +
   '<circle cx="13" cy="12" r="1" fill="currentColor" stroke="none"/></svg>';
 
-/** Ikony doktryn — popup Taktyka v2 (handoff v5 · GAP-06). */
+/** Ikony doktryn — popup Taktyka v2 (handoff v5 · GAP-06 kanon, 22×22). */
 export const DEPLOY_TACTIC_SVG = {
   defensive:
-    '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" ' +
-    'stroke-linecap="round" stroke-linejoin="round">' +
+    '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">' +
     '<path d="M12 3 5 5.5v5c0 4.5 3 7.6 7 9 4-1.4 7-4.5 7-9v-5Z"/></svg>',
   steady:
-    '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" ' +
-    'stroke-linecap="round" stroke-linejoin="round">' +
-    '<path d="M4.5 5 14 14.5M14.5 15 17.5 18M19.5 5 10 14.5M9.5 15 6.5 18M8.4 14 10.4 16"/></svg>',
+    '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">' +
+    '<path d="M4.5 5 14 14.5M14.5 15 17.5 18M15.6 14 13.6 16M19.5 5 10 14.5M9.5 15 6.5 18M8.4 14 10.4 16"/></svg>',
   aggressive:
-    '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" ' +
-    'stroke-linecap="round" stroke-linejoin="round">' +
-    '<path d="M12 5v10"/><path d="M8 15h8"/><path d="M10 19h4"/></svg>',
+    '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">' +
+    '<path d="M12 3v14M6 11l6 6 6-6M5 20h14"/></svg>',
   skirmish:
-    '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" ' +
+    '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" ' +
     'stroke-linecap="round" stroke-linejoin="round">' +
-    '<path d="M5 5c8 1 13 6 14 14M5 5v4M5 5h4M6 18 18 6"/></svg>',
+    '<circle cx="16" cy="15" r="6"/><circle cx="16" cy="15" r="2.3"/>' +
+    '<path d="M-1 2 Q13 5 16 15" stroke-dasharray="0.1 3"/>' +
+    '<circle cx="16" cy="15" r="0.9" fill="currentColor" stroke="none"/></svg>',
 } as const;
 
 /** Wspólny styl pozycji popupów Formacja / Linie / Taktyka (~34 px). */

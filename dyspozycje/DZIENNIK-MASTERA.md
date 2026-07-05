@@ -4,6 +4,23 @@ Append-only. Source of truth operacyjny projektu Civ.
 
 ---
 
+## [2026-07-05 ~13:40] MASTER · Deploy v5 P0+P1 — zamknięcie lane ✅
+
+**Zakres:** popupy Formacja/Konnica/Linie/Taktyka · handoff Design GAP-03–06  
+**Lane:** P0 `afe2220` + P1 lokalnie (hełm, SVG kanon, pixel wierszy, deploy=R)  
+**Design:** handoff + mockup v5 na GitHub (`d55f212`) — zlecenie GAP-03–06 DONE  
+**Kolejka:** Maciej playtest (`npm run dev` → POLE-BITWY) → Opus Ask → batch F rebuild kanon
+
+---
+
+**Meldunek:** `dyspozycje/UNITS-DO-MASTERA.md` (~13:30)  
+**Pliki:** `battleScene.ts` · `battleHudTheme.ts` — hełm Konnica, SVG kanon, Taktyka 2×2, spójność deploy+R  
+**Bramka lane:** tsc OK w plikach battle · 5 starych błędów `wonderpreview/` (poza scope)  
+**Kolejka:** Maciej playtest dev → Opus review → batch F (POLE-BITWY rebuild)  
+**BLOCKED kanon:** czeka sign-off Macieja + Opus
+
+---
+
 ## [2026-07-05 ~13:15] DESIGN · deliverable komplet Deploy v5 ✅
 
 **Handoff:** `HANDOFF-Cursor-Popupy-Deploy-v5.md` — SVG KANON (Formacja/Taktyka/Linie) + SYNC DOK  
@@ -175,7 +192,17 @@ Append-only. Source of truth operacyjny projektu Civ.
 
 ---
 
-## [2026-07-05 ~12:43] Maciej **A** · galeria cudów 3D → **GOTOWE**
+## [2026-07-05 ~13:16] Maciej · **OK cuda 3D** ✅ → **KANON**
+
+**Werdykt:** „stan obecny w zupełności zadowalający" — sign-off wizualny galerii 19 cudów.
+
+**Poprawki w batchu:** etykiety galerii · piramida gładka · Kolos Rodyjski (Helios) · Koloseum (amfiteatr) · Roquepertuse (oppidum) · Osada Aschaffenburg (mur celtycki).
+
+**Kanon:** md5 **`bf21b17b6123af4a0f0bc56d967491eb`** · `Gra-podglad.html` = `gra-kanon/START.html`  
+**Podgląd:** `Civ-MAPA/Gra-podglad-CUDA-ROBLOX.html`  
+**Bramka:** smoke OK · logic 202/203 (baseline mapgen)
+
+---
 
 **Decyzja:** A — podgląd HTML 19 cudów + wariant ruina (sign-off wizualny).
 

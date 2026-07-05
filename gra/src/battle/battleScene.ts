@@ -124,6 +124,7 @@ import {
   DEPLOY_TACTIC_SVG,
   DEPLOY_POPUP_INACTIVE_BG,
   buildDeployPopupRowHtml,
+  buildDeployTacticCellHtml,
   paintDeployPopupOption,
   hpBarGradient,
   moraleBarGradient,
@@ -9051,7 +9052,7 @@ export class BattleScene {
       ob.dataset.deployFmtOption = fd.fmt;
       ob.innerHTML = buildDeployPopupRowHtml(fd.icon, fd.label, fd.subtitle);
       Object.assign(ob.style, {
-        padding: '8px 12px', borderRadius: '6px', cursor: 'pointer', fontFamily: HUD_FONT,
+        padding: '11px 13px', borderRadius: '9px', cursor: 'pointer', fontFamily: HUD_FONT,
         width: '100%', textAlign: 'left',
         border: `1px solid rgba(232,216,138,0.2)`, background: DEPLOY_POPUP_INACTIVE_BG,
       });
@@ -9082,7 +9083,7 @@ export class BattleScene {
       ob.dataset.deployCavOption = cd.mode;
       ob.innerHTML = buildDeployPopupRowHtml(cd.icon, cd.label, cd.subtitle);
       Object.assign(ob.style, {
-        padding: '8px 12px', borderRadius: '6px', cursor: 'pointer', fontFamily: HUD_FONT,
+        padding: '11px 13px', borderRadius: '9px', cursor: 'pointer', fontFamily: HUD_FONT,
         width: '100%', textAlign: 'left',
         border: `1px solid rgba(232,216,138,0.2)`, background: DEPLOY_POPUP_INACTIVE_BG,
       });
@@ -9096,7 +9097,7 @@ export class BattleScene {
       cavPopup.appendChild(ob);
     }
     center.appendChild(this._makeDeployToolbarDropdown(
-      'Konnica', 'cavalry', cavPopup,
+      'Konnica', 'cavalry', cavPopup, FMT_SVG.cavHelm,
     ));
     this._deployCavRow = center;
 
@@ -9184,6 +9185,7 @@ export class BattleScene {
     label: string,
     key: 'formation' | 'cavalry' | 'lines' | 'tactics' | 'strategy',
     popupBody: HTMLDivElement,
+    toolbarIcon?: string,
   ): HTMLDivElement {
     const wrap = document.createElement('div');
     Object.assign(wrap.style, { position: 'relative', flexShrink: '0' });
@@ -9192,8 +9194,8 @@ export class BattleScene {
     popup.dataset.deployDropdown = key;
     Object.assign(popup.style, {
       position: 'absolute', bottom: '100%', left: '50%', transform: 'translateX(-50%)',
-      marginBottom: '8px', display: 'none', flexDirection: 'column', gap: '4px',
-      padding: '6px', borderRadius: '8px', zIndex: '100210',
+      marginBottom: '8px', display: 'none', flexDirection: 'column', gap: '8px',
+      padding: '12px 14px', borderRadius: '8px', zIndex: '100210',
       background: 'linear-gradient(180deg,rgba(32,26,14,.98),rgba(18,14,8,.98))',
       border: `1px solid ${BATTLE_GOLD_DIM}`,
       boxShadow: '0 -4px 20px rgba(0,0,0,0.55)',
@@ -9207,7 +9209,9 @@ export class BattleScene {
     btn.dataset.deployMainBtn = key;
     applyToolbarBtn1E(btn);
     btn.style.minWidth = '84px';
-    btn.textContent = label;
+    btn.innerHTML = toolbarIcon
+      ? `<span style="display:inline-flex;line-height:0;">${toolbarIcon}</span>${label}`
+      : label;
     btn.addEventListener('click', (e) => {
       e.stopPropagation();
       this._toggleDeployDropdown(key);
@@ -9436,7 +9440,7 @@ export class BattleScene {
 
     const docRow = document.createElement('div');
     Object.assign(docRow.style, {
-      display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px',
+      display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px',
     });
 
     const mkDoc = (label: string, d: GroupDoctrine, icon: string): HTMLButtonElement => {
@@ -9447,9 +9451,10 @@ export class BattleScene {
         this._renderDeployTacticsPopup(popup);
         this._updateDeployToolbarStatus();
       }, { fullWidth: true });
-      b.innerHTML = buildDeployPopupRowHtml(icon, label);
+      b.innerHTML = buildDeployTacticCellHtml(icon, label);
       Object.assign(b.style, {
-        padding: '8px 10px', width: '100%', textAlign: 'left', minHeight: '34px',
+        padding: '12px 10px', width: '100%', textAlign: 'center',
+        justifyContent: 'center', borderRadius: '9px',
       });
       applyDeployPopupItem1E(b);
       paintDeployPopupOption(b, active);
