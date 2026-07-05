@@ -4,6 +4,17 @@ Append-only. Source of truth operacyjny projektu Civ.
 
 ---
 
+## [2026-07-05 ~14:18] MASTER · BATCH 4 rzeki-sieci ✅ (publish)
+
+**Zakres:** DESIGN-RZEKI-SIECI — rzadkie ujścia (stride 3), dopływy do sieci/morza, spójność BFS, testy, szerokość wstęgi  
+**Pliki:** `gra-robocza/src/map/gen-helpers.ts`, `tools/weryfikacja-mapy.ts`, `render/scene.ts`  
+**Metryki:** ujścia Super Huge ~135 (było ~1000) · sieroc=0 · medLen main 27–33 · standard PASS  
+**Publish:** md5 `60385d0f1dc549c4faad17e3ddd9f39c` · stempel `2026-07-05 14:18 · 99e188d0eb37`  
+**Playtest Macieja:** Ctrl+F5 → Super Huge → sieć rzek (mniej ujść, dopływy) → `OK BATCH 4` / `BUG: …`  
+**Uwaga:** czas generacji Super Huge ~153 s (cel 60 s — osobny follow-up, nie blokuje BATCH 4)
+
+---
+
 ## [2026-07-05 ~13:35] MASTER · BATCH 3 płynność kamery A1+A4 ✅ (publish)
 
 **Zakres:** overlay diagnostyczny F9 · rzeki off LOD 3–4 · merge rzek do 3 meshy (land/coast/delta)  
@@ -41,6 +52,16 @@ Append-only. Source of truth operacyjny projektu Civ.
 **Problem:** 35 budynków · 13 ikon kategorii (duplikaty w panelu miasta).  
 **Paczka:** spec + GAP HTML + wklejka START → push `The-Game` main.  
 **Designer:** czyta tylko GitHub · hasło w `DESIGN-GITHUB-HASLA.md`.
+
+---
+
+## [2026-07-05 ~14:20] DESIGN · BUDYNKI infografiki 35 ikon ✅ → integracja UI
+
+**Paczka:** `docs/ux/claude-design/icons-buildings-1E.zip` (Design)  
+**Integracja MASTER:** 35× `bld-{id}.svg` → `gra/src/ui/icons/brand/buildings/` · `building-icon-map.json` 1:1  
+**Handoff:** `docs/ux/claude-design/DESIGN-do-UI_BUDYNKI-INFOGRAFIKI.md` · mockup kanon v1 `.dc.html`  
+**Kod:** `brandAssets.ts` — usunięto heurystykę `BUILDING_ID_EXTRA`, mapa Design wystarcza  
+**Kolejka:** rebuild ROBOCZA/kanon (UI lane) · panel miasta playtest Maciej
 
 ---
 
