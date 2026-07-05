@@ -337,9 +337,17 @@ NIE edytuj innych plikow w dyspozycje/.
 **Bramka:** `npx tsc --noEmit` w `gra/` — **OK** (0 błędów)  
 **Test ręczny:** `cd gra && npm run dev` → POLE-BITWY → deploy toolbar + faza R (Taktyka) — **Maciej playtest**
 
-### Czeka na Design (opcjonalnie P2)
-- Chip 34×34 z gradientem w wierszach Formacja/Konnica (mockup 1E ma tło radialne na ikonie — obecnie ikona inline)
+### Czeka na Design (opcjonalnie)
+- ~~Chip 34×34~~ → **P2 DONE** (decyzja Maciej B · `426e0ff`)
 - Hover stan wierszy popup (mockup nie definiuje — domyślnie cursor:pointer)
 
 **Kolejka MASTER:** build/test po review Opus → wpine do kanonu (SILNIK batch)
+
+---
+## [2026-07-05 ~13:42] **→ MASTER: GOTOWE** — Popupy Deploy v5 · P2 chipy (Maciej B)
+
+**Dyspozycja:** `dyspozycje/_handoff/MASTER-do-UNITS_deploy-popups-v5-P2.md`  
+**Plik:** `battleHudTheme.ts` — `wrapDeployPopupIconChip()` w `buildDeployPopupRowHtml`  
+**Zakres:** Formacja 3 + Konnica 2 wiersze · 34×34 · gradient mockup v5 · border `#a08030`  
+**Commit:** `426e0ff` · Taktyka/Linie bez zmian
 
