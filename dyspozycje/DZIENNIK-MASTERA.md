@@ -4,6 +4,14 @@ Append-only. Source of truth operacyjny projektu Civ.
 
 ---
 
+## [2026-07-05 ~13:00] MASTER · dyspozycje A+B wysłane do Macieja
+
+**A Design:** `docs/ux/WKLEJKA-DESIGN-Popupy-Deploy-v5-BRAKI.md` (mockup v5 + SVG braki)  
+**B Cursor:** `docs/ux/WKLEJKA-CURSOR-Popupy-Deploy-v5-P1.md` (lane UNITS P1)  
+**Czeka:** Design deliverables · Cursor meldunek UNITS-DO-MASTERA
+
+---
+
 ## [2026-07-05 ~12:40] UNITS · Popupy Deploy v5 P0 ✅ (handoff Design)
 
 **Handoff:** `docs/ux/claude-design/HANDOFF-Cursor-Popupy-Deploy-v5.md`  
@@ -150,7 +158,17 @@ Append-only. Source of truth operacyjny projektu Civ.
 
 ---
 
-## [2026-07-05 ~08:34] Maciej · **OK master** ✅ — sign-off kanon
+## [2026-07-05 ~12:43] Maciej **A** · galeria cudów 3D → **GOTOWE**
+
+**Decyzja:** A — podgląd HTML 19 cudów + wariant ruina (sign-off wizualny).
+
+**Deliverable:** `Civ-MAPA/Gra-podglad-CUDA-ROBLOX.html`  
+**Kod:** `gra/src/wonderpreview/` · build: `gra/tools/build-wonderpreview.ps1`  
+**Widoki:** `?view=active` (domyślny) · `?view=ruiny` · `?view=compare` (aktywny vs ruina)
+
+**Czeka:** playtest wizualny Macieja → ewentualne poprawki sylwetek MAPA.
+
+---
 
 **Werdykt:** `ok master` — kanon zaakceptowany po playteście.
 
