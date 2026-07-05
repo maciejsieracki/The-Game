@@ -4,14 +4,17 @@
 # Lane UI: czyta + aktualizuje blok `lane_ui` po działaniu
 # Claude Design: czytaj na upload + dopisuj do `design` po deliverable
 
-version: 3
-updated: "2026-06-26"
+version: 4
+updated: "2026-07-03"
 phase: "brand_book_d1"
 kanon_sciezek: "docs/ux/claude-design/KANON-SCIEZEK.md"
 schemat_az: "docs/ux/SCHEMAT-AZ-UX-PIPELINE.md"
 design_start: true
 design_start_date: "2026-06-26"
 design_start_trigger: "Lane UI → START w brand-book/DYSPOZYCJA.md"
+w3_miasto_freeze: true
+w3_miasto_baseline_md5: "153fcda2f71e1e9ab3a538d8b9c10f9e"
+w3_miasto_delta: "dyspozycje/_handoff/MASTER-do-UI-DESIGN_miasto-baseline-2026-07-03.md"
 
 paths:
   # === JEDYNE MIEJSCE ZAPISU — Design SKOPIUJ do OneDrive (Maciej nie pobiera ręcznie) ===
@@ -39,10 +42,11 @@ paths:
   deprecated_brand_book_1E: "docs/ux/claude-design/01-propozycje-z-design/brand-book-1E/"
 
 status:
-  ustalenie: "2026-07-01 — Maciej: GitHub sync · dual-START"
-  sync_model: "github_wymiana_plus_zip"
-  sync_model_decyzja: "Git = WYMIANA + DYSPOZYCJA · pliki = brand-book.zip · Design read-only repo · Lane UI commit/push"
-  workflow_doc: "docs/ux/claude-design/WORKFLOW-GITHUB-SYNC.md"
+  ustalenie: "2026-06-26 — Maciej: sync **Wariant A** (Design = źródło, zip jednokierunkowy)"
+  sync_model: "design_cloud_zip_only"
+  sync_model_decyzja: "Design edytuje brand-book/ w swoim projekcie · Cursor NIE edytuje brand-book/ · po turze Design → zip → nadpisanie kanonu w repo · WYMIANA = tylko log Cursor (Design nie czyta repo)"
+  sync_model_deprecated: "github_wymiana_plus_zip — NIEaktualne (Design nie pushuje do GitHub)"
+  workflow_doc: "docs/ux/claude-design/KANON-SCIEZEK.md § Sync Wariant A"
   pull_script: "tools/sync-design-github.ps1"
   zip_script: "tools/pull-brand-book.ps1"
   github_remote: "https://github.com/maciejsieracki/The-Game.git"
@@ -195,6 +199,29 @@ Pełna Windows:
 
 ---
 
+## ⛔ STOP — W3 miasto (2026-07-03) → **UNFREEZE v3**
+
+**Maciej (2026-07-03):** kod miasta w kanonie = prawda · Designer robi **W3 v3 HUD** do gry.
+
+| Reguła | Treść |
+|--------|--------|
+| **Baseline** | **`gra-kanon/START.html`** md5 **`153fcda2…`** |
+| **START Design** | **`START — W3-miasto-v3-delta`** · wklejka `WKLEJKA-DESIGN-START-W3-miasto-v3.md` |
+| **Brief** | `docs/ux/DESIGN-BRIEF-W3-miasto-v3-HUD.md` |
+| **Handoff** | `dyspozycje/_handoff/UI-do-DESIGN_W3-miasto-v3-delta-2026-07-03.md` |
+| **Deliverable** | `The Game - Ekran Miasto W3 v3 (1E).dc.html` |
+| **NIE edytuj** | W3 (1E) 9-rail · START-W3-miasto-1E.md |
+| **Referencja polish** | W4 v2 zakładki (tylko czytaj) |
+| **Screenshoty** | `referencje-miasto-kanon-2026-07-03/` — opcjonalnie Macieja |
+
+**Lane miasto:** IDLE do deliverable Design · potem tylko CSS polish.
+
+**C-01 Pre-bitwa:** sync/sign-off · `WKLEJKA-DESIGN-START-C01-v3-sync.md` · **inny ekran niż screenshot „Atak na miasto”**  
+**C-04 Atak na miasto:** **START P0** · `WKLEJKA-DESIGN-START-C04-C05-oblęzenie.md` · to właśnie stary modal Macieja (emoji)  
+**C-06 v4 deployment:** **HOLD** · Maciej — bitwa później
+
+---
+
 ## ✅ DOGADANE (2026-07-01)
 
 | Strona | Zobowiązanie |
@@ -267,6 +294,105 @@ Potwierdź listę zapisanych plików. Maciej nie kopiuje ręcznie.
 
 Design **nie widzi** plików `SESJA-*.md` / `PACZKA-*.md` w swojej chmurze — **czytaj tylko ten plik**.
 
+---
+
+### ▶ DYSPOZYCJA AKTYWNA (2026-06-26) — **TYLKO TO WYKONUJ**
+
+**KANON / PACZKA FINAL = DONE.** Nie powtarzaj Tier 1–7, budynków, jednostek, tokenów.
+
+**Decyzja Macieja 2026-06-26:** **B** — pełny pakiet W1b od Design (15 SVG). Lane **nie** robi interim z mockupu.
+
+| Priorytet | Design wpisz | Co zrobić | DoD |
+|-----------|--------------|-----------|-----|
+| **1** | **`START — W1b`** | **15 ikon cywilizacji** + `civ-icon-map.json` | folder `eksport/icons/civilizations/` (16 plików z default) |
+| **2** | **`START — W1-menu-map`** | Mapa przycisk→ikona (SVG menu **już jest**) | `eksport/menu-button-map.json` + HANDOFF |
+
+Pełna checklist: [`brand-book/DYSPOZYCJA.md`](01-propozycje-z-design/brand-book/DYSPOZYCJA.md) sekcje **▶ START W1b** i **▶ START W1-menu-map**.
+
+---
+
+#### START — W1b (skrót w §5)
+
+**Deliverable:**
+
+1. `eksport/icons/civilizations/civ-{ikonaId}.svg` × 15 + `civ-default.svg` @24, 3C line
+2. `eksport/civ-icon-map.json`:
+
+```json
+{
+  "map": {
+    "grecy": "civ-grecy", "rzymianie": "civ-rzymianie", "chinczycy": "civ-chinczycy",
+    "inkowie": "civ-inkowie", "zulusi": "civ-zulusi", "egipt": "civ-egipt", "sumer": "civ-sumer",
+    "celtowie": "civ-celtowie", "germanie": "civ-germanie", "harappa": "civ-harappa",
+    "hetyci": "civ-hetyci", "slowianie": "civ-slowianie", "babilonia": "civ-babilonia",
+    "asyria": "civ-asyria", "fenicjanie": "civ-fenicjanie", "_default": "civ-default"
+  }
+}
+```
+
+3. `HANDOFF.md` — mapa plików repo (tabela w DYSPOZYCJA.md)
+
+**7 pierwszych** — skopiuj SVG z `Ekran Kreator (1E).dc.html` linie 40–46. **8 kolejnych** — nowe (opisy w DYSPOZYCJA.md).
+
+**NIE:** wpisy cyw. w `icons-manifest.json`.
+
+---
+
+#### START — W1-menu-map (skrót w §5)
+
+Paczka `icons/menu/` (**30 SVG**) **już scalona** — nie rób SVG od nowa.
+
+**Deliverable:** `eksport/menu-button-map.json` — mapowanie 1:1:
+
+| `icons-manifest` id | Slot w `mainMenu.ts` | Etykieta PL w grze |
+|--------------------|----------------------|-------------------|
+| `menu-play` | `btn_new_game_primary` | Rozpocznij grę |
+| `menu-campaign` | `btn_campaign_soon` | Kampania (wkrótce) |
+| `menu-multiplayer` | `btn_multiplayer_soon` | Multiplayer (wkrótce) |
+| `menu-settings` | `btn_settings` | Ustawienia |
+| `menu-more` | `btn_more_toggle` | Więcej |
+| `menu-load` | `btn_continue_or_load` | Kontynuuj / Wczytaj |
+| `menu-exit` | `btn_quit` | Wyjdź |
+| `menu-info` | `btn_about` | O grze |
+| `menu-emblem-mini` | opcjonalnie obok tytułu | — |
+
+Opcjonalnie w `settings_rows_optional`: `menu-audio`, `menu-controls`, `menu-language`.
+
++ update `HANDOFF.md` sekcja Menu.
+
+---
+
+#### Placeholdery — kto domyka (W1b)
+
+| Brak | Kto |
+|------|-----|
+| 15 SVG cyw. + `civ-icon-map.json` | **Design START W1b** |
+| `menu-button-map.json` | **Design START W1-menu-map** |
+| Wpięcie w grę (`newGameFlow`, `mainMenu`) | **Lane UI** (po zip) |
+| HUD Tier 1–2 | **Lane W2** (manifest jest) |
+| PDF · PACZKA 2 | **Backlog** — bez START |
+
+---
+
+#### Mapa ekran → plik repo (HANDOFF · Cursor 2026-06-26)
+
+| Makieta | `gra/src/ui/` |
+|---------|---------------|
+| Menu | `mainMenu.ts` |
+| Kreator | `newGameFlow.ts` |
+| HUD | `hud.ts`, `mapToolbarHud.ts`, `bottomBarHud.ts`, `minimapHud.ts` |
+| Miasto | `cityPanel.ts`, `cityUxFrame.ts` |
+| Dyplomacja | `diplomacyPanel.ts`, `diploListHud.ts` |
+| Walka | `preBattle.ts` |
+| Badania | `sciencePicker.ts`, `scienceHubHud.ts` |
+| Wojsko | `armyListHud.ts` |
+| Koniec gry | `victoryScreen.ts` |
+| Brand assets | `icons/brandAssets.ts` |
+| Icon registry HUD | `icons/iconRegistry.ts` |
+| Tokeny | `brandTokenVars.ts` |
+
+---
+
 ### DECYZJA Macieja 2026-06-26 — workflow
 
 | Reguła | Treść |
@@ -291,8 +417,100 @@ Design **nie widzi** plików `SESJA-*.md` / `PACZKA-*.md` w swojej chmurze — *
 | **4** | `START — D1-6` | HANDOFF v2 | `eksport/HANDOFF.md` |
 | **5** | `START — D1-7` | Freeze tokenów | `eksport/tokens.css` + `tokens.json` |
 | **6+** | `START — PACZKA 2 blok N` | Patrz §5 PACZKA 2 | jeden blok na START |
+| **7** | **`START — W1b`** | **Ikony 15 cywilizacji** · patrz §5 **START W1b** poniżej | `civilizations/` + `civ-icon-map.json` |
 
 *(D1-1 partial + D1-2 wchodzą w turę 2 — nie osobny START.)*
+
+---
+
+### ▶ START W1b — ikony cywilizacji (AKTYWNE · dyspozycja dla Design)
+
+**Design wpisz:** `START — W1b`  
+**Pełna checklist:** [`brand-book/DYSPOZYCJA.md`](01-propozycje-z-design/brand-book/DYSPOZYCJA.md) — sekcja **▶ START W1b**
+
+#### Co dostarczyć (jedna tura = zip lub zapis OneDrive)
+
+| # | Deliverable | Ścieżka |
+|---|-------------|---------|
+| 1 | **7 SVG z mockupu** (partenon, gladius, pagoda, słońce, tarcza, piramida, ziggurat) | `eksport/icons/civilizations/civ-{ikonaId}.svg` |
+| 2 | **8 SVG nowych** (celtowie…fenicjanie — opisy w DYSPOZYCJA) | j.w. |
+| 3 | **Fallback** | `civ-default.svg` |
+| 4 | **Manifest** | `eksport/civ-icon-map.json` (**NIE** `icons-manifest.json`) |
+| 5 | **HANDOFF** | zaktualizuj mapę plików repo (poniżej) |
+
+#### Mapa `ikonaId` → plik (`civ-icon-map.json`)
+
+```json
+{
+  "note": "ikonaId z gra/data/civs.json → plik w icons/civilizations/",
+  "map": {
+    "grecy": "civ-grecy",
+    "rzymianie": "civ-rzymianie",
+    "chinczycy": "civ-chinczycy",
+    "inkowie": "civ-inkowie",
+    "zulusi": "civ-zulusi",
+    "egipt": "civ-egipt",
+    "sumer": "civ-sumer",
+    "celtowie": "civ-celtowie",
+    "germanie": "civ-germanie",
+    "harappa": "civ-harappa",
+    "hetyci": "civ-hetyci",
+    "slowianie": "civ-slowianie",
+    "babilonia": "civ-babilonia",
+    "asyria": "civ-asyria",
+    "fenicjanie": "civ-fenicjanie",
+    "_default": "civ-default"
+  }
+}
+```
+
+#### 7 ikon — źródło w mockupie (kopiuj path 1:1)
+
+Plik: `The Game - Ekran Kreator (1E).dc.html` · siatka kart krok „Cywilizacja":
+
+| ikonaId | Linia ~ | Uwaga |
+|---------|---------|-------|
+| grecy | 40 | SVG partenon (kolumny + dach) |
+| rzymianie | 41 | SVG skrzyżowane miecze |
+| chinczycy | 42 | SVG pagoda |
+| inkowie | 43 | SVG koło + promienie |
+| zulusi | 44 | SVG tarcza |
+| egipt | 45 | SVG piramida |
+| sumer | 46 | SVG ziggurat |
+
+#### Placeholdery W1b — **kto domyka**
+
+| Element | Brak dziś | Kto |
+|---------|-----------|-----|
+| Ikony 15 cyw. w grze | monogramy liter | **Design W1b** → Lane integracja |
+| `menu-components.css` w menu | stare `.mbtn` | **Lane** (plik jest w eksport/) |
+| HUD Tier 1–2 SVG | emoji/stare placeholdery | **Lane W2** (manifest już jest) |
+| Baner cyw. dyplomacja | emoji / brak medalionu | **Lane W1c** po W1b (reuse `civIconSvg`) |
+
+#### Mapa ekran → plik repo (HANDOFF 1:1 · stan Cursor 2026-06-26)
+
+| Makieta | Plik `gra/src/ui/` | Uwagi integracji |
+|---------|-------------------|------------------|
+| Ekran Menu | `mainMenu.ts` | emblem OK · **brak** `menu-components.css` |
+| Kreator | `newGameFlow.ts` | **W1b:** `civIconSvg` + medalion |
+| HUD Kit | `hud.ts` + `mapToolbarHud.ts` + `bottomBarHud.ts` | W2 |
+| Miasto | `cityPanel.ts` | budynki/jednostki SVG ✅ |
+| Dyplomacja | `diplomacyPanel.ts` + `diploListHud.ts` | W1c banery cyw. |
+| Walka | `preBattle.ts` | — |
+| Badania | `sciencePicker.ts` + `scienceHubHud.ts` | — |
+| Wojsko | `armyListHud.ts` | — |
+| Koniec gry | `victoryScreen.ts` | tokeny ✅ |
+| Assety brand | **`icons/brandAssets.ts`** | czyta manifesty + glob SVG |
+| Rejestr HUD | `icons/iconRegistry.ts` | Tier 1–2 · **nie** cywilizacje |
+| Tokeny | `brandTokenVars.ts` | z `tokens.css` |
+
+**Po zip W1b:** Maciej → Cursor **START** → Lane W1b → MASTER kanon.
+
+#### Backlog na później (NIE w START W1b)
+
+- PACZKA 2 (DS-07, Tier 3 rail HTML, ekrany A…) — §5 poniżej
+- PDF Brand Book · WebM menu hero · Tier 3–5 warianty dodatkowe @40px
+- Osobne ikony **jednostek nazwanych** (Hastati itd.) — poza v1.0
 
 ---
 
@@ -532,6 +750,259 @@ brand-book.zip → Maciej: docs/ux/claude-design/_staging/inbox/brand-book.zip
 **Uwaga:** stare zagnieżdżenia `Ulepszenie infografik/` i `Ulepszenie infografik2/` można usunąć (duplikat) — opcjonalnie.
 
 **Następne:** wdrożenie tokenów/ikon do `gra/src/ui/` (W1) · review tury 2 vs pliki Design.
+
+---
+
+## [Cursor] 2026-07-01 · START — infografik8 (delta) · werdykt zamknięcia
+
+**Wejście:** `Ulepszenie infografik8.zip` (Maciej → kanon) · `git pull` = up to date.
+
+**Scalono:** 7 plików zmienionych (5× `.dc.html` flow, `eksport/HANDOFF.md`, `DYSPOZYCJA.md` — bez nowych plików).
+
+| Element | Stan po infografik8 |
+|---------|---------------------|
+| `.dc.html` | **18** (bez zmiany liczby) |
+| SVG `eksport/` | **62** (34 core + tier1/2) |
+| `tokens.css` / `tokens.json` | ❄ FROZEN v1.0 ✅ |
+| Poll | **210 OK** (`docs/obieg/_poll-claude-design-last.md`) |
+| Nawigacja flow | ✅ Menu→Przegląd · panele HUD→← HUD · Kreator→← Wstecz→Menu · Kreator Kroki→← Przegląd |
+| `HANDOFF.md` v2 changelog | pisze **„DESIGN ZAMKNIĘTY”** |
+
+### Checklist MUST (przed integracją W1) — **nie spełnione w całości**
+
+| # | Punkt | Werdykt |
+|---|--------|---------|
+| 1 | **HANDOFF** — mapa na prawdziwe pliki `.ts` w `gra/src/ui/` (nie `.tsx`) | ❌ nadal `MainMenu.tsx`, `CityPanel.tsx` itd. |
+| 2 | **DYSPOZYCJA.md** — status all DONE + „Design zamknięty” | ❌ nadal stary plan D1 TODO |
+| 3 | Nawigacja back-linki | ✅ (infografik8 domknął) |
+| 4 | Finalny **`brand-book-closed.zip`** (korzeń = pełny `brand-book/`) | ❌ brak; infografik8 = delta 86 plików |
+| 5 | D1-5 Badania/Wojsko vs repo | ⏸ makiety są; dopasowanie do `sciencePicker.ts` / `armyListHud.ts` = temat W1 |
+
+### Werdykt Lane UI
+
+**Design — prawie zamknięty, ale nie gotowy do sign-off integracji.**
+
+Design oznaczył zamknięcie w `HANDOFF.md`, lecz **nie zaktualizował mapy TS ani `DYSPOZYCJA.md`**. Lane UI może w W1 użyć **własnej mapy** (handoff `dyspozycje/_handoff/UI-do-MASTER_brand-book-w1.md`) — ale formalne zamknięcie wymaga **jednej poprawki od Design** albo **decyzji Macieja: „idziemy mimo HANDOFF .tsx”**.
+
+### Prośba do Design (ostatnia tura — 2 punkty)
+
+1. **`eksport/HANDOFF.md`** — podmień kolumnę „Komponent TS” na pliki z repo: `mainMenu.ts`, `newGameFlow.ts`, `hud.ts`, `cityPanel.ts`, `diplomacyPanel.ts`, `preBattle.ts`, `sciencePicker.ts`, `armyListHud.ts`, `victoryScreen.ts`, `icons/iconRegistry.ts`.
+2. **`DYSPOZYCJA.md`** — tabela D1: wszystkie kroki **DONE** (D1-4/D1-6 odłożone świadomie) + nagłówek **„DESIGN ZAMKNIĘTY · 2026-07-01”** + opcjonalnie pełny **`brand-book-closed.zip`**.
+
+**Maciej:** wrzuć kolejny zip gdy Design odpowie → **START** ponownie. Albo napisz **„W1 mimo HANDOFF”** — wtedy Lane UI startuje integrację bez czekania.
+
+---
+
+## [Cursor] 2026-07-01 · START — infografik11 · **Design zamknięty ✅ · W1 gotowe**
+
+**Wejście:** `Ulepszenie infografik11.zip` · `git pull` = up to date · inbox pusty.
+
+**Scalono:** 2 pliki — `eksport/HANDOFF.md`, `HANDOFF-CLAUDE-CODE.md` (infografik9 = duplikat kanonu, bez zmian).
+
+| Element | Stan |
+|---------|------|
+| `DYSPOZYCJA.md` | ✅ **DESIGN ZAMKNIĘTY** (infografik8/9) |
+| `eksport/HANDOFF.md` | ✅ `.tsx` usunięte · ścieżki `gra/src/ui/*.ts` |
+| Poll | **212 OK** |
+| Tokeny / SVG / 18× `.dc.html` | bez zmian · ❄ FROZEN v1.0 |
+
+### Uwaga integracyjna (Lane UI, nie Design)
+
+Mapa w `HANDOFF.md` używa **PascalCase** (`MainMenu.ts`, `TechTree.ts`…) — w repo są **camelCase** (`mainMenu.ts`, `sciencePicker.ts`, `newGameFlow.ts`…). To normalizuje **Lane UI w W1** wg `dyspozycje/_handoff/UI-do-MASTER_brand-book-w1.md` — **nie blokuje** integracji.
+
+### Werdykt
+
+**Design zamknięty.** Można ruszyć **W1** (tokeny + ikony SVG → `gra/src/ui/`). Kolejny krok: dyspozycja Lane UI / MASTER integracja po review.
+
+---
+
+## [Cursor] 2026-07-02 · START — `ostatnie/` · **PACZKA FINAL ✅ · W1 odblokowane**
+
+**Wejście Macieja:** `brand-book/ostatnie/Ulepszenie infografik.zip` (07-02 00:08) · `infografik2.zip` = duplikat po scaleniu · `git pull` up to date.
+
+**Folder drop Macieja (ustalone):**
+`...\brand-book\ostatnie\`
+
+**Scalono do kanonu** (`brand-book/` korzeń):
+- **+138 nowych** · **2 zmienione** · 84 bez zmian (vs poprzedni kanon)
+
+| Element | Stan |
+|---------|------|
+| `.dc.html` | **18** |
+| SVG `eksport/icons/` | **194** |
+| Tier 3–7 + manifest | ✅ `icons-manifest.json` |
+| Menu CSS/SVG | ✅ `menu-emblem`, `menu-background.css`, `motion.css`, `menu-components.css` |
+| Budynki | ✅ 13× `bld-*` + `building-icon-map.json` |
+| Jednostki | ✅ 12× `unit-*` + `unit-icon-map.json` |
+| Improvements + resources-map | ✅ 10 + 6 |
+| `HANDOFF.md` | ✅ camelCase (`mainMenu.ts`, `cityPanel.ts`…) |
+| `DYSPOZYCJA.md` | ✅ **PACZKA FINAL · DONE** |
+| Poll | **359 OK** |
+
+### Werdykt
+
+**PACZKA FINAL kompletna.** Design domknięty w 100%. **Można W1** — integracja tokenów, menu, ikon (w tym budynki/jednostki zamiast emoji) w `gra/src/ui/`.
+
+**Maciej:** kolejne zipy → `brand-book/ostatnie/` → **START**. Opcjonalnie posprzątać duplikaty `Ulepszenie infografik/` w korzeniu `brand-book/`.
+
+---
+
+## [Cursor] 2026-06-26 · W1 done — integracja PACZKA FINAL w lane UI
+
+**Trigger Macieja:** posprzątaj + W1.
+
+### Posprzątanie
+- Usunięto z korzenia `brand-book/`: foldery `Ulepszenie infografik2/` oraz zipy infografik3–11.
+- Zostawiono: kanon + archiwum `brand-book/ostatnie/`.
+
+### W1 — wdrożone (lane UI, bez `main.ts`)
+
+| Plik | Zmiana |
+|------|--------|
+| `gra/src/ui/icons/brand/` | ~200 assetów (SVG tier1–7, budynki, jednostki, manifesty, CSS) |
+| `gra/src/ui/icons/brandAssets.ts` | API: `brandIconSvg`, `buildingIconSvg`, `unitIconSvg`, menu CSS/emblem |
+| `gra/src/ui/icons/iconRegistry.ts` | Tier 1–2 z manifestu (zamiast placeholderów inline) |
+| `gra/src/ui/brandTokenVars.ts` | Sync FROZEN `tokens.css` + aliasy `--civ-*` |
+| `gra/src/ui/mainMenu.ts` | Emblem Design, `motion.css`, tło `menu-background.css` |
+| `gra/src/ui/cityPanel.ts` | Miniaturki budynków/jednostek: emoji → SVG (stela/stolarnia = CSS legacy) |
+
+### Testy lane
+- `victory-screen-test`: **11/11**
+- `smoke`: **OK**
+
+### Następny krok
+**MASTER:** build kanon → bramka testów → review Opus → `Gra-podglad.html`. Handoff: `dyspozycje/_handoff/UI-do-MASTER_brand-book-w1.md`.
+
+---
+
+## [Cursor] 2026-06-26 · **START W1b** — dyspozycja formalna (§5 + DYSPOZYCJA)
+
+**Poprzedni wpis W1b** był statusem Lane — **nie dyspozycją Design**. Poprawione.
+
+**Design:** wpisz `START — W1b` · czytaj **`brand-book/DYSPOZYCJA.md`** (sekcja ▶ START W1b) + **WYMIANA §5 START W1b**.
+
+**Deliverable:** `eksport/icons/civilizations/` (15 + default) · `eksport/civ-icon-map.json` · HANDOFF update · zip → `ostatnie/`.
+
+**NIE:** wpisy do `icons-manifest.json` (to HUD Tier 1–7).
+
+**Maciej:** po zip od Design → **START** u Cursor (Lane W1b integracja).
+
+---
+
+## [Cursor] 2026-06-26 · W1b — dyspozycja Design: ikony 15 cywilizacji (archiwum — zastąpione sekcją powyżej)
+
+**Trigger Macieja:** infografiki per cyw. w kreatorze (medalion + SVG, jak mockup).
+
+**Stan:** PACZKA FINAL **nie zawiera** `eksport/icons/civilizations/`. Mockup `Ekran Kreator (1E).dc.html` ma **7** ikon inline; w grze są monogramy liter.
+
+### Prośba do Design (tura W1b)
+
+1. **`eksport/icons/civilizations/`** — 15 plików SVG @24, styl 3C line, `currentColor`:
+   - `grecy`, `rzymianie`, `chinczycy`, `inkowie`, `zulusi`, `egipt`, `sumer` — **jak mockup kreatora**
+   - `celtowie`, `germanie`, `harappa`, `hetyci`, `slowianie`, `babilonia`, `asyria`, `fenicjanie` — **nowe**, ten sam styl
+   - opcjonalnie `civ-default.svg` fallback
+2. **`eksport/civ-icon-map.json`** — mapa `ikonaId` z `gra/data/civs.json` → nazwa pliku
+3. Zip → `brand-book/ostatnie/` · **START** (Cursor) → lane W1b integracja
+
+**Lane po dostawie:** `dyspozycje/_handoff/UI-do-MASTER_w1b-cyw-icons.md`
+
+**Maciej:** wrzuć zip gdy Design odpowie **albo** napisz **„W1b bez Design — 7 z mockupu + reszta placeholder”** — wtedy lane startuje od razu.
+
+---
+
+## [Cursor] 2026-06-26 · START — `Downloads/Ulepszenie infografik` · menu icons ✅ · W1b cyw. ❌
+
+**Wejście:** `c:\Users\macie\Downloads\Ulepszenie infografik\` → scalono do kanonu · archiwum: `brand-book/ostatnie/Ulepszenie infografik-menu-icons/`.
+
+| Element | Werdykt |
+|---------|---------|
+| `eksport/icons/menu/` | **+30 SVG** (15×24/40): play, campaign, multiplayer, settings, more, exit, load, save, credits, language, audio, controls, achievements, info, emblem-mini |
+| `icons-manifest.json` | **+15** wpisów `menu-*` |
+| `menu-icons-preview.html` | ✅ |
+| `civilizations/` + `civ-icon-map.json` | ❌ **BRAK** — **nie** START W1b |
+
+**Werdykt:** paczka = **ikony przycisków menu**, nie cywilizacje. W1b nadal czeka.
+
+**Design:** nadal potrzebny `START — W1b` (15 cyw.). Ta paczka ≠ W1b.
+
+**Opcje Macieja:** (1) Lane **W1-menu** — podpiąć ikony w `mainMenu.ts` · (2) czekać W1b cyw. · (3) oba.
+
+---
+
+---
+
+## § W3-miasto-1E — pełny ekran miasta (2026-07-03)
+
+> ⛔ **STOP 2026-07-03:** mockup **NIEAKTUALNY** względem kanonu (`153fcda2…`).  
+> **Nie edytuj** dopóki Maciej nie da ABC + hasło `START — W3-miasto-v3-delta`.  
+> **Delta:** `dyspozycje/_handoff/MASTER-do-UI-DESIGN_miasto-baseline-2026-07-03.md`
+
+**Hasło Design (ZAMROŻONE):** `START — W3-miasto-1E` — **NIE STARTUJ** bez unfreeze.
+
+**Design — pierwszy plik:**  
+`brand-book/START-W3-miasto-1E.md` (kroki 0→6, nie tylko hasło)
+
+**Dane w brand-book (bez repo):**  
+`brand-book/referencje-w3/BUDYNKI-tabela.md` · `DANE-MIASTO-skrot.md` · `JEDNOSTKI-skrot.md`
+
+**Edytuj:** `brand-book/The Game - Ekran Miasto (1E).dc.html`
+
+**Handoff repo:** `dyspozycje/_handoff/UI-do-DESIGN_w3-miasto-1E-dane.md`
+
+**Status:** **DONE Design — rail 9/9** (3 pliki mockup miasta + szata-sync komplet)
+
+| Mockup miasto | Zakładki |
+|---------------|----------|
+| `Ekran Miasto W3 (1E)` | Budowa + chrome |
+| `Miasto Zakładki W3 (1E)` | Rekrutacja · Handel · Porządek · Zdrowie |
+| `Miasto Zakładki W3 cz2 (1E)` | Spichlerz · Praca · Kultura · Religia |
+
+**Lane:** W-WIKI-2 + W3-full · **Design:** BACKLOG W1b
+
+---
+
+## § Wikipedia — HUD mapa + miasto (2026-07-03)
+
+**Sign-off Maciej:** panel Wiki działa · wejście ma być **górny pasek obok Menu** (nie toolbar lewy / minimapa).
+
+**Handoff repo:** `dyspozycje/_handoff/UI-do-DESIGN_wikipedia-hud-mockup.md`
+
+**Design — obowiązkowo w mockupach:**
+
+| Ekran | Wymaganie |
+|-------|-----------|
+| **Mapa świata** (1E / hub) | Przycisk **Wiki** prawy górny róg, przed **Menu** · panel boczny Poradnik/Encyklopedia |
+| **Miasto** (W3-miasto-1E) | **Ten sam** przycisk w tym samym miejscu · panel nad UI miasta |
+
+**Asset:** `eksport/icons/ui-wiki.svg` (@24/@40, 3C line)
+
+**Referencja w grze:** `Gra-podglad.html` · kod `gra/src/ui/hud.ts` (`.b-wiki`) + `wikiHubHud.ts`
+
+**Status:** CZEKA Design (mockup + ikona) · treść rev. E już w bundle
+
+---
+
+## § Szata sync HUD mapy (2026-07-03)
+
+**Hasło Design:** `START — szata-sync-2026-07-03`
+
+**Design — pierwszy plik:** `brand-book/START-szata-sync-2026-07-03.md`
+
+**Edytuj:** `HUD Mapy layout (1E).dc.html` · `HUD Kit (1E).dc.html` · `Ekran Miasto (1E).dc.html` (Wiki + brak dolnego chrome)
+
+**Handoff repo (Lane):** `dyspozycje/_handoff/UI-do-DESIGN_szata-sync-2026-07-03.md`
+
+**Decyzje Macieja:** D16=A banery OUT · D17=A kontekst tylko po wyborze · wydarzenia nad turą · Wiki obok Menu
+
+**Deliverable:** `ostatnie/HUD-map-sync-2026-07-03.zip` + **`The Game — HUD Panele stany (1E).dc.html`**
+
+**Status:** **DONE Design — komplet** (pliki 8+9 + layout + ui-wiki.svg) · **CZEKA:** sync OneDrive → Lane UI
+
+**Paczka:** `HUD-map-sync-2026-07-03 komplet` · plik **#9** = `Ekran Miasto (1E)` dim opaque + Wiki u góry
+
+**Tura 2:** `HUD Panele stany (1E)` — C0 · C1 · C2 · Wiki 340px
+
+**W3-miasto-1E:** nadal otwarte — pełna zawartość panelu (rail 9, budynki, okolica…) — **nie** mylić z plikiem #9 (tylko szata wejścia w miasto)
 
 ---
 

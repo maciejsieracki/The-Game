@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>THE GAME — Warstwa 1 · Decyzje ABC</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --gold:#e8d88a;--gold-dark:#a08030;--bg:#080a12;--panel:#121820;
+  --border:rgba(232,216,138,.22);--text:#e8e0c8;--muted:#8a8070;
+  --green:#50b070;--blue:#5a9bd4;--orange:#d08030;--red:#c84040;
+  --panel-bg:linear-gradient(180deg,rgba(14,18,28,.98),rgba(8,10,16,.95));
+  --btn-primary:linear-gradient(180deg,#c09030,#8a6418);
+  --font-ui:'Segoe UI',Tahoma,sans-serif;
+  --font-title:Georgia,'Times New Roman',serif;
+}
+body{font-family:var(--font-ui);background:var(--bg);color:var(--text);font-size:13px;line-height:1.45;padding:0 0 3rem}
+#banner{position:sticky;top:0;z-index:100;background:linear-gradient(90deg,#1a2840,#0a1428);border-bottom:2px solid rgba(90,155,212,.5);color:#a0c8f0;padding:.45rem 1rem;text-align:center;font-size:.82rem;font-weight:700}
+.wrap{max-width:960px;margin:0 auto;padding:1.25rem 1.25rem 0}
+h1{font-family:var(--font-title);font-size:1.75rem;color:var(--gold);letter-spacing:.05em;font-weight:400}
+.sub{font-size:11px;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;margin:.35rem 0 1rem}
+.lead{color:#b8a888;margin-bottom:1.25rem;max-width:780px}
+.howto{background:rgba(90,155,212,.08);border:1px solid rgba(90,155,212,.35);border-radius:8px;padding:1rem;margin-bottom:1.5rem}
+.howto h3{color:#a0c8f0;font-size:12px;margin-bottom:.5rem;letter-spacing:.08em;text-transform:uppercase}
+.howto p{font-size:12px;color:#c8b898;margin:.35rem 0}
+.howto code{background:rgba(0,0,0,.3);padding:2px 6px;border-radius:3px;color:var(--gold)}
+.topic{margin-bottom:2.25rem;scroll-margin-top:48px;border:1px solid rgba(255,255,255,.06);border-radius:10px;overflow:hidden;background:rgba(255,255,255,.015)}
+.topic-hdr{display:flex;align-items:flex-start;gap:.75rem;padding:.85rem 1rem;background:rgba(232,216,138,.06);border-bottom:1px solid var(--border)}
+.topic-num{flex-shrink:0;width:2rem;height:2rem;border-radius:50%;background:rgba(232,216,138,.15);border:2px solid var(--gold-dim);color:var(--gold);font-weight:700;font-size:14px;line-height:1.75rem;text-align:center}
+.topic-hdr h2{font-family:var(--font-title);font-size:1.1rem;color:var(--gold);font-weight:400;flex:1;padding-top:.15rem}
+.topic-body{padding:1rem}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:1rem;margin-bottom:.75rem}
+.grid-3{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:.75rem}
+.set-title{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;margin-bottom:.5rem}
+.set-a .set-title{color:#e8d88a}
+.set-b .set-title{color:#80c8a0}
+.set-c .set-title{color:#90b8e8}
+.icon-row{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:.65rem}
+.icon-cell{display:flex;flex-direction:column;align-items:center;gap:4px;width:64px}
+.icon-cell .ic{width:40px;height:40px;display:flex;align-items:center;justify-content:center;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08)}
+.icon-cell .ic svg{width:28px;height:28px}
+.icon-cell .lbl{font-size:9px;color:var(--muted);text-align:center}
+.tokens{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px}
+.token{border-radius:6px;padding:8px;font-size:10px;border:1px solid rgba(255,255,255,.1)}
+.token .sw{height:28px;border-radius:4px;margin-bottom:4px;border:1px solid rgba(0,0,0,.3)}
+.btn-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:.5rem}
+.btn-demo{padding:8px 16px;border-radius:6px;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;cursor:default;border:1px solid transparent}
+.btn-primary{background:var(--btn-primary);border-color:#c0a040;color:#fff8e0}
+.btn-secondary{background:rgba(255,255,255,.06);border-color:var(--border);color:var(--text)}
+.btn-danger{background:rgba(200,64,64,.2);border-color:rgba(255,80,80,.5);color:#ffb0b0}
+.btn-flat{background:linear-gradient(180deg,#d0a840,#906818);border-color:#e8d88a;color:#fff8e0}
+.btn-outline{background:transparent;border:2px solid var(--gold);color:var(--gold)}
+.panel-frame{max-width:320px;border:1px solid rgba(232,216,138,.28);border-radius:8px;overflow:hidden;background:var(--panel-bg);box-shadow:0 8px 28px rgba(0,0,0,.5)}
+.panel-frame.thin{border-color:rgba(232,216,138,.12);box-shadow:0 4px 12px rgba(0,0,0,.35)}
+.panel-frame.heavy{border:2px solid rgba(232,216,138,.45);box-shadow:0 12px 40px rgba(0,0,0,.65)}
+.panel-frame .ph{padding:10px 14px;border-bottom:1px solid rgba(232,216,138,.2);font-size:11px;font-weight:700;color:var(--gold);letter-spacing:.1em;text-transform:uppercase;background:rgba(255,255,255,.03)}
+.panel-frame .pb{padding:12px 14px;font-size:12px;color:#c8b898}
+.compare{width:100%;border-collapse:collapse;font-size:11px;margin-top:.5rem}
+.compare th,.compare td{border:1px solid rgba(255,255,255,.08);padding:6px 8px;text-align:left}
+.compare th{background:rgba(255,255,255,.04);color:var(--gold)}
+.emoji{font-size:22px;line-height:1}
+.nav-top{margin-bottom:1rem;display:flex;flex-wrap:wrap;gap:8px}
+.nav-top a{font-size:11px;padding:4px 10px;border:1px solid var(--border);border-radius:4px;color:var(--gold);text-decoration:none}
+.nav-top a:hover{background:rgba(232,216,138,.08)}
+.abc-box{margin-top:1rem;padding:.85rem 1rem;background:rgba(208,128,48,.08);border:2px solid rgba(208,128,48,.45);border-radius:8px}
+.abc-box .abc-title{font-size:12px;font-weight:700;color:#ffc080;letter-spacing:.06em;margin-bottom:.5rem}
+.abc-box .abc-q{font-size:13px;color:var(--text);margin-bottom:.55rem;font-weight:600}
+.abc-box ul{list-style:none;padding:0;margin:0}
+.abc-box li{font-size:12px;color:#d8ccb0;padding:.28rem 0 .28rem 1.5rem;position:relative}
+.abc-box li::before{content:'';position:absolute;left:0;top:.55rem;width:8px;height:8px;border-radius:2px;background:rgba(232,216,138,.3);border:1px solid var(--gold-dim)}
+.abc-box li strong{color:var(--gold)}
+.abc-box .reply-hint{margin-top:.65rem;font-size:11px;color:var(--muted);padding-top:.5rem;border-top:1px solid rgba(255,255,255,.08)}
+.summary-box{background:rgba(80,176,112,.08);border:2px solid rgba(80,176,112,.4);border-radius:8px;padding:1rem;margin-top:2rem}
+.summary-box h2{font-family:var(--font-title);font-size:1.1rem;color:var(--green);margin-bottom:.65rem}
+.summary-box pre{background:rgba(0,0,0,.35);padding:.75rem;border-radius:6px;font-size:12px;color:#a0e8b0;line-height:1.6;overflow-x:auto}
+.font-demo-a{font-family:'Segoe UI',Tahoma,sans-serif}
+.font-demo-b{font-family:Arial,Helvetica,sans-serif}
+.font-demo-c .title{font-family:Georgia,serif}.font-demo-c .ui{font-family:'Segoe UI',sans-serif}
+.chip-demo{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.05);border:1px solid rgba(232,216,138,.25);border-radius:4px;padding:4px 10px;font-size:12px}
+.chip-compact{padding:2px 6px;font-size:11px;gap:4px}
+.chip-large{padding:6px 14px;font-size:13px;gap:8px}
+.grid-2{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:.65rem}
+</style>
+</head>
+<body>
+<div id="banner">✅ DECYZJE ZAPISANE · 1B 2C 3C 4C 5C 6C 7A 8A · docs/ux/DECYZJE-WARSTWA1-MACIEJ.md · ikony: docs/ux/FIGMA-SPEC-IKONY.md</div>
+<div class="wrap">
+  <h1>Design System — karta decyzji</h1>
+  <p class="sub">8 pytań · po obejrzeniu każdej sekcji wybierz A, B lub C</p>
+  <p class="lead">
+    Ten plik pokazuje propozycję wyglądu całej gry (kolory, czcionki, ikony, przyciski, panele).
+    Przewiń sekcje <strong>1–8</strong>. Na końcu każdej — pytanie ABC.
+    Potem w czacie z MASTER wpisz odpowiedzi, np.: <code>1A, 2A, 3A, 4A, 5A, 6A, 7A, 8A</code>
+  </p>
+
+  <div class="howto">
+    <h3>Jak odpowiedzieć Maciejowi / w czacie</h3>
+    <p>1. Otwórz ten plik w przeglądarce (podwójne kliknięcie na pliku HTML).</p>
+    <p>2. Przejdź sekcje 1 → 8. Przy każdej wybierz <strong>A</strong>, <strong>B</strong> lub <strong>C</strong>.</p>
+    <p>3. Wklej w czat jedną linię, np.:</p>
+    <p><code>Decyzje Warstwa 1: 1A, 2A, 3A, 4A, 5A, 6A, 7B, 8A</code></p>
+    <p>Możesz też dopisać uwagi: <code>3A — ikony; reszta jak w propozycji</code></p>
+  </div>
+
+  <div class="nav-top">
+    <a href="#t1">1 Kolory</a>
+    <a href="#t2">2 Czcionki</a>
+    <a href="#t3">3 Ikony</a>
+    <a href="#t4">4 Przyciski</a>
+    <a href="#t5">5 Ramka panelu</a>
+    <a href="#t6">6 Chip HUD</a>
+    <a href="#t7">7 Figma</a>
+    <a href="#t8">8 Start</a>
+    <a href="#podsumowanie">Podsumowanie</a>
+  </div>
+
+  <!-- ========== 1 KOLORY ========== -->
+  <article class="topic" id="t1">
+    <div class="topic-hdr"><div class="topic-num">1</div><h2>Paleta kolorów (tokeny)</h2></div>
+    <div class="topic-body">
+      <p style="font-size:12px;color:#b8a888;margin-bottom:.75rem">Złoto, tło, panele i kolory zasobów — wspólne dla HUD, miasta, menu.</p>
+      <div class="grid-3">
+        <div class="card">
+          <div class="set-title" style="color:#e8d88a">A · Propozycja v1 (obecna)</div>
+          <div class="tokens">
+            <div class="token"><div class="sw" style="background:#e8d88a"></div>gold #e8d88a</div>
+            <div class="token"><div class="sw" style="background:#080a12"></div>bg #080a12</div>
+            <div class="token"><div class="sw" style="background:#121820"></div>panel #121820</div>
+            <div class="token"><div class="sw" style="background:#50b070"></div>+ zielony</div>
+            <div class="token"><div class="sw" style="background:#c84040"></div>wojna czerwony</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="set-title" style="color:#ffc080">B · Cieplejsze złoto</div>
+          <div class="tokens">
+            <div class="token"><div class="sw" style="background:#f0d890"></div>gold jaśniejsze</div>
+            <div class="token"><div class="sw" style="background:#0a0806"></div>bg cieplejsze</div>
+            <div class="token"><div class="sw" style="background:#1a1610"></div>panel brązawy</div>
+            <div class="token"><div class="sw" style="background:#58b878"></div>+ zielony</div>
+            <div class="token"><div class="sw" style="background:#d05050"></div>wojna</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="set-title" style="color:#90b8e8">C · Chłodniejsze / ciemniejsze</div>
+          <div class="tokens">
+            <div class="token"><div class="sw" style="background:#c8b868"></div>gold stonowane</div>
+            <div class="token"><div class="sw" style="background:#060810"></div>bg chłodne</div>
+            <div class="token"><div class="sw" style="background:#0e1218"></div>panel granat</div>
+            <div class="token"><div class="sw" style="background:#48a068"></div>+ zielony</div>
+            <div class="token"><div class="sw" style="background:#b83838"></div>wojna</div>
+          </div>
+        </div>
+      </div>
+      <div class="abc-box">
+        <div class="abc-title">PYTANIE 1 ABC</div>
+        <div class="abc-q">Którą paletę kolorów bierzemy jako podstawę design systemu?</div>
+        <ul>
+          <li><strong>A</strong> — Propozycja v1 (złoto #e8d88a, ciemne tło — jak w grze dziś, dopracowane)</li>
+          <li><strong>B</strong> — Cieplejsze, bardziej „pergamin / antyk”</li>
+          <li><strong>C</strong> — Chłodniejsze, bardziej granatowe, mniej żółtego</li>
+        </ul>
+        <div class="reply-hint">W czacie wpisz: <strong>1A</strong> lub <strong>1B</strong> lub <strong>1C</strong></div>
+      </div>
+    </div>
+  </article>
+
+  <!-- ========== 2 CZCIONKI ========== -->
+  <article class="topic" id="t2">
+    <div class="topic-hdr"><div class="topic-num">2</div><h2>Czcionki (tytuły vs tekst)</h2></div>
+    <div class="topic-body">
+      <div class="grid-3">
+        <div class="card font-demo-a">
+          <div class="set-title" style="color:#e8d88a">A · Segoe UI + Georgia (obecne)</div>
+          <p style="font-family:Georgia,serif;font-size:18px;color:var(--gold);margin:.5rem 0">THE GAME</p>
+          <p style="font-size:13px">Tekst panelu, liczby, przyciski — Segoe UI. Tytuły menu i nagłówki — Georgia.</p>
+        </div>
+        <div class="card font-demo-b">
+          <div class="set-title" style="color:#80c8a0">B · Same sans-serif (nowocześniej)</div>
+          <p style="font-family:Arial,sans-serif;font-size:18px;color:var(--gold);margin:.5rem 0">THE GAME</p>
+          <p style="font-size:13px">Wszystko Arial / Segoe — bez szeryfów. Czytelniej na małych ekranach.</p>
+        </div>
+        <div class="card font-demo-c">
+          <div class="set-title" style="color:#90b8e8">C · Więcej szeryfów (bardziej „strategia klasyczna”)</div>
+          <p class="title" style="font-family:Georgia,serif;font-size:18px;color:var(--gold);margin:.5rem 0">THE GAME</p>
+          <p class="ui" style="font-family:Georgia,serif;font-size:13px">Georgia także w panelach i HUD — spójny „dokument historyczny”.</p>
+        </div>
+      </div>
+      <div class="abc-box">
+        <div class="abc-title">PYTANIE 2 ABC</div>
+        <div class="abc-q">Jaki układ czcionek?</div>
+        <ul>
+          <li><strong>A</strong> — Segoe UI (tekst) + Georgia (tytuły) — rekomendacja</li>
+          <li><strong>B</strong> — Tylko sans-serif wszędzie</li>
+          <li><strong>C</strong> — Georgia dominuje (klasyczny styl)</li>
+        </ul>
+        <div class="reply-hint">W czacie wpisz: <strong>2A</strong> / <strong>2B</strong> / <strong>2C</strong></div>
+      </div>
+    </div>
+  </article>
+
+  <!-- ========== 3 IKONY ========== -->
+  <article class="topic" id="t3">
+    <div class="topic-hdr"><div class="topic-num">3</div><h2>Zestaw ikon (zamiast emoji)</h2></div>
+    <div class="topic-body">
+      <div class="card">
+        <p style="margin-bottom:.75rem;font-size:12px;color:#b8a888">Obecnie w grze — emoji (do wymiany):</p>
+        <div class="icon-row">
+          <div class="icon-cell"><span class="emoji">🪙</span><span class="lbl">Złoto</span></div>
+          <div class="icon-cell"><span class="emoji">🔨</span><span class="lbl">Praca</span></div>
+          <div class="icon-cell"><span class="emoji">🍞</span><span class="lbl">Żywność</span></div>
+          <div class="icon-cell"><span class="emoji">⚛️</span><span class="lbl">Nauka</span></div>
+          <div class="icon-cell"><span class="emoji">🎭</span><span class="lbl">Kultura</span></div>
+          <div class="icon-cell"><span class="emoji">🛕</span><span class="lbl">Religia</span></div>
+          <div class="icon-cell"><span class="emoji">👥</span><span class="lbl">Ludność</span></div>
+          <div class="icon-cell"><span class="emoji">⚔</span><span class="lbl">Wojsko</span></div>
+        </div>
+      </div>
+      <div class="grid-3">
+        <div class="card set-a">
+          <div class="set-title">A · Flat vector (Civ-like)</div>
+          <p style="font-size:11px;color:var(--muted);margin-bottom:.5rem">Ostre kształty, złote obrysy — najlepsze w gęstym HUD.</p>
+          <div class="icon-row" id="set-a-icons"></div>
+        </div>
+        <div class="card set-b">
+          <div class="set-title">B · Soft rounded</div>
+          <p style="font-size:11px;color:var(--muted);margin-bottom:.5rem">Zaokrąglone, gradienty — bardziej ilustrowane.</p>
+          <div class="icon-row" id="set-b-icons"></div>
+        </div>
+        <div class="card set-c">
+          <div class="set-title">C · Minimal line</div>
+          <p style="font-size:11px;color:var(--muted);margin-bottom:.5rem">Cienkie linie, monochrom + akcent gold.</p>
+          <div class="icon-row" id="set-c-icons"></div>
+        </div>
+      </div>
+      <table class="compare">
+        <thead><tr><th>Kryterium</th><th>A</th><th>B</th><th>C</th></tr></thead>
+        <tbody>
+          <tr><td>Czytelność w małym HUD</td><td>★★★★★</td><td>★★★★</td><td>★★★</td></tr>
+          <tr><td>Spójność ze złotym UI</td><td>★★★★★</td><td>★★★★</td><td>★★★★</td></tr>
+          <tr><td>Trudność wdrożenia</td><td>Niska</td><td>Średnia</td><td>Niska</td></tr>
+        </tbody>
+      </table>
+      <div class="abc-box">
+        <div class="abc-title">PYTANIE 3 ABC</div>
+        <div class="abc-q">Który styl ikon wdrażamy w całej grze (HUD, miasto, menu)?</div>
+        <ul>
+          <li><strong>A</strong> — Flat vector Civ-like (rekomendacja lane UI)</li>
+          <li><strong>B</strong> — Soft rounded (miększe, ilustrowane)</li>
+          <li><strong>C</strong> — Minimal line (najlżejsze wizualnie)</li>
+        </ul>
+        <div class="reply-hint">W czacie wpisz: <strong>3A</strong> / <strong>3B</strong> / <strong>3C</strong></div>
+      </div>
+    </div>
+  </article>
+
+  <!-- ========== 4 PRZYCISKI ========== -->
+  <article class="topic" id="t4">
+    <div class="topic-hdr"><div class="topic-num">4</div><h2>Przyciski</h2></div>
+    <div class="topic-body">
+      <div class="grid-3">
+        <div class="card">
+          <div class="set-title" style="color:#e8d88a">A · Gradient złoty (obecny styl)</div>
+          <div class="btn-row">
+            <button class="btn-demo btn-primary">Buduj</button>
+            <button class="btn-demo btn-secondary">Anuluj</button>
+            <button class="btn-demo btn-danger">Wojna</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="set-title" style="color:#80c8a0">B · Płaskie wypełnienie</div>
+          <div class="btn-row">
+            <button class="btn-demo btn-flat">Buduj</button>
+            <button class="btn-demo btn-secondary">Anuluj</button>
+            <button class="btn-demo btn-danger">Wojna</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="set-title" style="color:#90b8e8">C · Obrys (outline)</div>
+          <div class="btn-row">
+            <button class="btn-demo btn-outline">Buduj</button>
+            <button class="btn-demo btn-secondary">Anuluj</button>
+            <button class="btn-demo btn-danger">Wojna</button>
+          </div>
+        </div>
+      </div>
+      <div class="abc-box">
+        <div class="abc-title">PYTANIE 4 ABC</div>
+        <div class="abc-q">Styl głównego przycisku akcji (Buduj, Dalej, Koniec tury…)?</div>
+        <ul>
+          <li><strong>A</strong> — Gradient złoty (jak dziś w mockupach)</li>
+          <li><strong>B</strong> — Płaskie złote wypełnienie (prostsze)</li>
+          <li><strong>C</strong> — Obrys złoty, przezroczyste tło (minimal)</li>
+        </ul>
+        <div class="reply-hint">W czacie wpisz: <strong>4A</strong> / <strong>4B</strong> / <strong>4C</strong></div>
+      </div>
+    </div>
+  </article>
+
+  <!-- ========== 5 RAMKA PANELU ========== -->
+  <article class="topic" id="t5">
+    <div class="topic-hdr"><div class="topic-num">5</div><h2>Ramka panelu (okno w grze)</h2></div>
+    <div class="topic-body">
+      <div class="grid-3">
+        <div class="card">
+          <div class="set-title" style="color:#e8d88a">A · Standard (propozycja)</div>
+          <div class="panel-frame">
+            <div class="ph">Produkcja</div>
+            <div class="pb">Koszar · 45/80<br><span style="color:var(--green)">+12/t</span></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="set-title" style="color:#80c8a0">B · Cieńsza ramka</div>
+          <div class="panel-frame thin">
+            <div class="ph">Produkcja</div>
+            <div class="pb">Mniej cienia, subtelniejsza obwódka.</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="set-title" style="color:#90b8e8">C · Mocniejsza ramka</div>
+          <div class="panel-frame heavy">
+            <div class="ph">Produkcja</div>
+            <div class="pb">Grubsza złota obwódka, wyraźniejszy cień.</div>
+          </div>
+        </div>
+      </div>
+      <div class="abc-box">
+        <div class="abc-title">PYTANIE 5 ABC</div>
+        <div class="abc-q">Jak mają wyglądać ramki paneli (miasto, dyplomacja, listy)?</div>
+        <ul>
+          <li><strong>A</strong> — Standard — złota obwódka + umiarkowany cień (propozycja v1)</li>
+          <li><strong>B</strong> — Cienka, dyskretna — więcej miejsca na treść</li>
+          <li><strong>C</strong> — Mocna, „premium” — wyraźne złote obramowanie</li>
+        </ul>
+        <div class="reply-hint">W czacie wpisz: <strong>5A</strong> / <strong>5B</strong> / <strong>5C</strong></div>
+      </div>
+    </div>
+  </article>
+
+  <!-- ========== 6 CHIP HUD ========== -->
+  <article class="topic" id="t6">
+    <div class="topic-hdr"><div class="topic-num">6</div><h2>Chip zasobu na pasku HUD</h2></div>
+    <div class="topic-body">
+      <p style="font-size:12px;color:#b8a888;margin-bottom:.75rem">Mały prostokąt u góry mapy: ikona + liczba + przyrost/turę.</p>
+      <div class="grid-3">
+        <div class="card">
+          <div class="set-title" style="color:#e8d88a">A · Obecny rozmiar</div>
+          <div class="chip-demo"><span id="chip-a"></span><span style="color:var(--gold);font-weight:600">120</span><span style="color:var(--green);font-size:10px">+4/t</span></div>
+        </div>
+        <div class="card">
+          <div class="set-title" style="color:#80c8a0">B · Kompaktowy</div>
+          <div class="chip-demo chip-compact"><span id="chip-b"></span><span style="color:var(--gold);font-weight:600">120</span><span style="color:var(--green);font-size:9px">+4</span></div>
+        </div>
+        <div class="card">
+          <div class="set-title" style="color:#90b8e8">C · Większy (+ etykieta)</div>
+          <div class="chip-demo chip-large"><span id="chip-c"></span><span style="color:var(--muted);font-size:10px">Złoto</span><span style="color:var(--gold);font-weight:600">120</span><span style="color:var(--green);font-size:11px">+4/t</span></div>
+        </div>
+      </div>
+      <div class="abc-box">
+        <div class="abc-title">PYTANIE 6 ABC</div>
+        <div class="abc-q">Rozmiar i forma chipów na górnym pasku mapy?</div>
+        <ul>
+          <li><strong>A</strong> — Jak teraz — ikona + liczba + delta (bez etykiety słownej)</li>
+          <li><strong>B</strong> — Kompaktowe — mniejsze, więcej zasobów mieści się w rzędzie</li>
+          <li><strong>C</strong> — Większe — z krótką etykietą tekstową (Złoto, Nauka…)</li>
+        </ul>
+        <div class="reply-hint">W czacie wpisz: <strong>6A</strong> / <strong>6B</strong> / <strong>6C</strong></div>
+      </div>
+    </div>
+  </article>
+
+  <!-- ========== 7 FIGMA ========== -->
+  <article class="topic" id="t7">
+    <div class="topic-hdr"><div class="topic-num">7</div><h2>Figma — jak pracujemy dalej</h2></div>
+    <div class="topic-body">
+      <div class="card">
+        <p style="font-size:12px;color:#b8a888;margin-bottom:.65rem">Po Twoich decyzjach 1–6 lane UI zakłada wspólny plik Figmy. Grupy poprawiają swoje ekrany tylko z tej biblioteki. Mapa 3D zostaje w silniku — Figma dotyczy paneli 2D.</p>
+        <p style="font-size:11px;color:var(--muted)">Baseline „przed”: <code>docs/ux/baseline/</code> · workflow: <code>docs/ux/WORKFLOW-GRAFIKA-UI-v2.md</code></p>
+      </div>
+      <div class="abc-box">
+        <div class="abc-title">PYTANIE 7 ABC</div>
+        <div class="abc-q">Jak szybko idziemy w Figmę po Twoich decyzjach?</div>
+        <ul>
+          <li><strong>A</strong> — Od razu pełny plik Figma (Design System + strony A–E) — rekomendacja</li>
+          <li><strong>B</strong> — Najpierw wdrożyć w grze tokeny + ikony z tego HTML, Figma potem</li>
+          <li><strong>C</strong> — Wstrzymaj Figmę — tylko wdrożenie tego HTML do kodu, bez pliku Figma na razie</li>
+        </ul>
+        <div class="reply-hint">W czacie wpisz: <strong>7A</strong> / <strong>7B</strong> / <strong>7C</strong></div>
+      </div>
+    </div>
+  </article>
+
+  <!-- ========== 8 START ========== -->
+  <article class="topic" id="t8">
+    <div class="topic-hdr"><div class="topic-num">8</div><h2>Start wdrożenia w grze</h2></div>
+    <div class="topic-body">
+      <div class="card">
+        <p style="font-size:12px;color:#b8a888">Kolejność wdrożenia wyglądu w kodzie (po akceptacji):</p>
+        <ol style="margin:.5rem 0 .5rem 1.25rem;font-size:12px;color:#c8b898;line-height:1.7">
+          <li>Menu + kreator (E)</li>
+          <li>HUD mapy (A)</li>
+          <li>Panel miasta (B)</li>
+          <li>Dyplomacja (D)</li>
+          <li>Walka — pre-bitwa + HUD (C)</li>
+        </ol>
+      </div>
+      <div class="abc-box">
+        <div class="abc-title">PYTANIE 8 ABC</div>
+        <div class="abc-q">Czy zatwierdzasz start wdrożenia wg powyższej kolejności?</div>
+        <ul>
+          <li><strong>A</strong> — Tak — wdrażaj po moich decyzjach 1–7, kolejność E→A→B→D→C</li>
+          <li><strong>B</strong> — Tylko ikony i kolory globalnie na raz — panele pojedynczo później</li>
+          <li><strong>C</strong> — Stop — chcę najpierw zobaczyć Figmę, zanim cokolwiek trafi do gry</li>
+        </ul>
+        <div class="reply-hint">W czacie wpisz: <strong>8A</strong> / <strong>8B</strong> / <strong>8C</strong></div>
+      </div>
+    </div>
+  </article>
+
+  <!-- ========== PODSUMOWANIE ========== -->
+  <section class="summary-box" id="podsumowanie">
+    <h2>✅ Decyzje Macieja — zapisane 2026-06-26</h2>
+    <pre>Decyzje Warstwa 1: 1B, 2C, 3C, 4C, 5C, 6C, 7A, 8A
+
+1B — ciepłe złoto / pergamin
+2C — Georgia dominuje (tytuły)
+3C — ikony minimal line + lista semantyki (Praca = młotek, itd.)
+4C — przyciski outline
+5C — ramka panelu mocna / premium
+6C — chip HUD większy + etykieta tekstowa
+7A — pełny plik Figma DS + strony A–E od razu
+8A — wdrożenie E→A→B→D→C po Figmie</pre>
+    <p style="font-size:12px;color:#a0e8b0;margin-top:.65rem">Pełny zapis: <code>docs/ux/DECYZJE-WARSTWA1-MACIEJ.md</code> · spec ikon dla Figmy: <code>docs/ux/FIGMA-SPEC-IKONY.md</code></p>
+    <p style="font-size:11px;color:var(--muted);margin-top:.45rem">Następny krok lane UI: Figma wg <code>docs/ux/DYSPOZYCJA-FIGMA-DESIGN-SYSTEM.md</code></p>
+  </section>
+</div>
+
+<script>
+(function(){
+  var ICONS = [
+    {id:'gold',label:'Złoto'},{id:'work',label:'Praca'},{id:'food',label:'Żywność'},
+    {id:'science',label:'Nauka'},{id:'culture',label:'Kultura'},{id:'faith',label:'Religia'},
+    {id:'pop',label:'Ludność'},{id:'military',label:'Wojsko'},{id:'happy',label:'Szczęście'},
+    {id:'order',label:'Porządek'},{id:'cities',label:'Miasta'},{id:'build',label:'Budowa'}
+  ];
+  var A = {
+    gold:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="#e8c840" stroke="#a08020" stroke-width="1.2"/><text x="12" y="16" text-anchor="middle" fill="#5a4010" font-size="11" font-weight="bold">$</text></svg>',
+    work:'<svg viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="6" rx="1" fill="#8a5030" stroke="#e8d88a" stroke-width="1"/><path d="M8 10V7h3v3M13 10V6h3v4" stroke="#c0a060" stroke-width="1.5" fill="none"/></svg>',
+    food:'<svg viewBox="0 0 24 24"><ellipse cx="12" cy="14" rx="8" ry="5" fill="#c89050" stroke="#e8d88a" stroke-width="1"/><path d="M8 9 Q12 4 16 9" fill="#a06030" stroke="#e8d88a" stroke-width=".8"/></svg>',
+    science:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3" fill="#5a9bd4" stroke="#e8d88a" stroke-width="1"/><ellipse cx="12" cy="12" rx="10" ry="4" fill="none" stroke="#5a9bd4" stroke-width="1.2"/><ellipse cx="12" cy="12" rx="4" ry="10" fill="none" stroke="#5a9bd4" stroke-width="1.2"/></svg>',
+    culture:'<svg viewBox="0 0 24 24"><path d="M6 18 L12 6 L18 18 Z" fill="#9060a0" stroke="#e8d88a" stroke-width="1"/><circle cx="12" cy="14" r="2" fill="#e8d88a"/></svg>',
+    faith:'<svg viewBox="0 0 24 24"><path d="M12 4 L14 10 L20 10 L15 14 L17 20 L12 16 L7 20 L9 14 L4 10 L10 10 Z" fill="#d0a030" stroke="#e8d88a" stroke-width=".8"/></svg>',
+    pop:'<svg viewBox="0 0 24 24"><circle cx="9" cy="9" r="3" fill="#8090a0" stroke="#e8d88a" stroke-width=".8"/><circle cx="15" cy="9" r="3" fill="#8090a0" stroke="#e8d88a" stroke-width=".8"/><path d="M4 20 Q12 14 20 20" fill="#607080" stroke="#e8d88a" stroke-width=".8"/></svg>',
+    military:'<svg viewBox="0 0 24 24"><path d="M12 3 L14 9 L20 9 L15 13 L17 21 L12 17 L7 21 L9 13 L4 9 L10 9 Z" fill="#c84040" stroke="#e8d88a" stroke-width=".8"/></svg>',
+    happy:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="#50b070" stroke="#e8d88a" stroke-width="1"/><path d="M8 10 Q12 14 16 10" fill="none" stroke="#103020" stroke-width="1.2"/></svg>',
+    order:'<svg viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="2" fill="#406080" stroke="#e8d88a" stroke-width="1"/><path d="M9 12h6M12 9v6" stroke="#e8d88a" stroke-width="1.2"/></svg>',
+    cities:'<svg viewBox="0 0 24 24"><rect x="4" y="12" width="5" height="8" fill="#607090" stroke="#e8d88a" stroke-width=".8"/><rect x="10" y="8" width="5" height="12" fill="#7080a0" stroke="#e8d88a" stroke-width=".8"/><rect x="16" y="14" width="4" height="6" fill="#506080" stroke="#e8d88a" stroke-width=".8"/></svg>',
+    build:'<svg viewBox="0 0 24 24"><path d="M3 17 L12 6 L21 17 Z" fill="#806040" stroke="#e8d88a" stroke-width="1"/><rect x="8" y="17" width="8" height="4" fill="#605030" stroke="#e8d88a" stroke-width=".8"/></svg>'
+  };
+  var B = {
+    gold:'<svg viewBox="0 0 24 24"><defs><linearGradient id="g1" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#ffe880"/><stop offset="100%" stop-color="#c09020"/></linearGradient></defs><circle cx="12" cy="12" r="10" fill="url(#g1)"/></svg>',
+    work:'<svg viewBox="0 0 24 24"><rect x="5" y="9" width="14" height="8" rx="3" fill="#804030"/></svg>',
+    food:'<svg viewBox="0 0 24 24"><ellipse cx="12" cy="13" rx="9" ry="6" fill="#d0a060"/><ellipse cx="12" cy="10" rx="6" ry="4" fill="#e8c080"/></svg>',
+    science:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#4080c0" opacity=".35"/><circle cx="12" cy="12" r="4" fill="#80c0ff"/></svg>',
+    culture:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#8060a0" opacity=".4"/><path d="M8 16 Q12 8 16 16" fill="#b080c0"/></svg>',
+    faith:'<svg viewBox="0 0 24 24"><path d="M12 6 L13 11 L18 11 L14 14 L15 19 L12 16 L9 19 L10 14 L6 11 L11 11 Z" fill="#e8d060"/></svg>',
+    pop:'<svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="4" fill="#90a0b0"/><circle cx="16" cy="10" r="4" fill="#90a0b0"/><ellipse cx="13" cy="20" rx="9" ry="4" fill="#708090" opacity=".7"/></svg>',
+    military:'<svg viewBox="0 0 24 24"><path d="M12 5 L14 10 L19 10 L15 13 L16 19 L12 15 L8 19 L9 13 L5 10 L10 10 Z" fill="#e06060"/></svg>',
+    happy:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#40a060" opacity=".4"/><path d="M7 11 Q12 17 17 11" stroke="#80e0a0" stroke-width="2" fill="none"/></svg>',
+    order:'<svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="4" fill="#4060a0" opacity=".45"/></svg>',
+    cities:'<svg viewBox="0 0 24 24"><rect x="3" y="13" width="6" height="8" rx="2" fill="#607890"/><rect x="9" y="9" width="6" height="12" rx="2" fill="#8098b0"/></svg>',
+    build:'<svg viewBox="0 0 24 24"><path d="M4 18 L12 7 L20 18 Z" fill="#907050"/><rect x="9" y="18" width="6" height="4" fill="#705040"/></svg>'
+  };
+  var C = {
+    gold:'<svg viewBox="0 0 24 24" fill="none" stroke="#e8d88a" stroke-width="1.5"><circle cx="12" cy="12" r="8"/></svg>',
+    work:'<svg viewBox="0 0 24 24" fill="none" stroke="#e8d88a" stroke-width="1.5"><path d="M6 14h12v4H6zM9 14V9h2v5"/></svg>',
+    food:'<svg viewBox="0 0 24 24" fill="none" stroke="#e8d88a" stroke-width="1.5"><path d="M6 14c0-4 3-7 6-7s6 3 6 7"/></svg>',
+    science:'<svg viewBox="0 0 24 24" fill="none" stroke="#5a9bd4" stroke-width="1.3"><circle cx="12" cy="12" r="2"/><ellipse cx="12" cy="12" rx="9" ry="3.5"/></svg>',
+    culture:'<svg viewBox="0 0 24 24" fill="none" stroke="#b080c0" stroke-width="1.5"><path d="M6 18 L12 7 L18 18"/></svg>',
+    faith:'<svg viewBox="0 0 24 24" fill="none" stroke="#e8d88a" stroke-width="1.3"><path d="M12 5v14M8 9h8"/></svg>',
+    pop:'<svg viewBox="0 0 24 24" fill="none" stroke="#a0b0c0" stroke-width="1.3"><circle cx="9" cy="9" r="2.5"/><circle cx="15" cy="9" r="2.5"/><path d="M5 19c0-4 3.5-6 7-6s7 2 7 6"/></svg>',
+    military:'<svg viewBox="0 0 24 24" fill="none" stroke="#e06060" stroke-width="1.3"><path d="M12 4l2 6h6l-5 4 2 6-5-4-5 4 2-6-5-4h6z"/></svg>',
+    happy:'<svg viewBox="0 0 24 24" fill="none" stroke="#50b070" stroke-width="1.5"><circle cx="12" cy="12" r="8"/></svg>',
+    order:'<svg viewBox="0 0 24 24" fill="none" stroke="#e8d88a" stroke-width="1.3"><rect x="6" y="6" width="12" height="12"/></svg>',
+    cities:'<svg viewBox="0 0 24 24" fill="none" stroke="#8090a8" stroke-width="1.3"><rect x="4" y="13" width="4" height="7"/><rect x="10" y="9" width="4" height="11"/></svg>',
+    build:'<svg viewBox="0 0 24 24" fill="none" stroke="#c0a060" stroke-width="1.3"><path d="M4 17 L12 6 L20 17"/></svg>'
+  };
+  function renderSet(id, set, limit) {
+    var el = document.getElementById(id);
+    ICONS.slice(0, limit || 12).forEach(function(ic) {
+      var cell = document.createElement('div');
+      cell.className = 'icon-cell';
+      cell.innerHTML = '<div class="ic">' + (set[ic.id] || '') + '</div><span class="lbl">' + ic.label + '</span>';
+      el.appendChild(cell);
+    });
+  }
+  renderSet('set-a-icons', A, 8);
+  renderSet('set-b-icons', B, 8);
+  renderSet('set-c-icons', C, 8);
+  var svg = A.gold.replace('<svg', '<svg width="20" height="20"');
+  document.getElementById('chip-a').innerHTML = svg;
+  document.getElementById('chip-b').innerHTML = svg.replace('width="20" height="20"', 'width="16" height="16"');
+  document.getElementById('chip-c').innerHTML = svg;
+})();
+</script>
+</body>
+</html>

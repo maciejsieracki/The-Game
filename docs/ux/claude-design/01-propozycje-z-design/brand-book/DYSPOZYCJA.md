@@ -1,177 +1,175 @@
-# DYSPOZYCJA — Claude Design ↔ The Game (Civ)
+# DYSPOZYCJA — brand-book/
 
-> **Folder zapisu (JEDYNY):** `brand-book/`  
-> **Eksport:** `brand-book/eksport/`  
-> **Status/kolejka:** [`../WYMIANA-UI-DESIGN.md`](../WYMIANA-UI-DESIGN.md)  
-> **Checklist A→Z:** [`../../SCHEMAT-AZ-UX-PIPELINE.md`](../../SCHEMAT-AZ-UX-PIPELINE.md)  
-> **Decyzje (ZAMKNIĘTE):** 1B, 2C, 3C, 4C, 5C, 6C, 7A, 8A  
-> **Spec ikon:** `00-brand-book-pakiet/01-dokumenty/02-SPEC-IKONY.md`  
-> **Pełna lista deliverables (archiwum referencyjne):** `../brand-book-1E/DYSPOZYCJA.md` sekcje A1–A10  
-
-**Ostatnia aktualizacja:** 2026-07-01 · Lane UI · protokół **dual-START** (model B)
-
-**Protokół sync:** [`../WORKFLOW-GITHUB-SYNC.md`](../WORKFLOW-GITHUB-SYNC.md) · dual-START  
-**Archiwum zip:** [`../WORKFLOW-DUAL-START.md`](../WORKFLOW-DUAL-START.md)
+Log: `docs/ux/claude-design/WYMIANA-UI-DESIGN.md` · sekcje **§ szata-sync-2026-07-03**, **§ W3-miasto-1E**, **§ Wikipedia**.
 
 ---
 
-# Maciej — tylko dwa START na turę
+## ▶ START — szata-sync-2026-07-03 ✅ DONE (Design 2026-07-03)
 
-| Kolejność | Gdzie | Wpisz |
-|-----------|-------|-------|
-| **1** | **Cursor** (Lane UI) | `START` |
-| **2** | **Claude Design** (chmura) | `START` (jak w sekcji ▶ START poniżej) |
+**Status:** **ZAMKNIĘTE w całości** (komplet 2026-07-03) · Lane UI: integracja `ui-wiki.svg` po sync OneDrive.
 
-Lane UI przygotowuje paczkę w tym pliku. Design czyta ją (Link local code → odczyt OneDrive).
+**Deliverables Design (paczka `HUD-map-sync-2026-07-03 komplet`):**
+| # | Plik |
+|---|------|
+| — | `The Game - HUD Mapy layout (1E).dc.html` — tura 1 |
+| 8 | `The Game — HUD Panele stany (1E).dc.html` — C0/C1/C2 + Wiki 340px |
+| 9 | `The Game - Ekran Miasto (1E).dc.html` — dim opaque, chrome mapy ukryty, górny pasek + Wiki |
+| — | `eksport/icons/ui-wiki.svg` · `HANDOFF.md` § Szata sync |
+
+**Następny Design:** `START — W3-miasto-1E` — **reszta** ekranu miasta (9 rail, 6 chipów, okolica, porządek…) — **poza** szatą sync mapy.
 
 ---
 
-# ▶ START — tura 2 (AKTYWNA — od Lane UI)
+## ▶ START — W3-miasto-1E ✅ DONE (Design 2026-07-03)
 
-**Pełna spec:** [`../WYMIANA-UI-DESIGN.md`](../WYMIANA-UI-DESIGN.md) — sekcja **NASTĘPNY START tura 2**
+**Deliverable W3 — KOMPLET 9/9 (Design DONE):**
 
+| Plik | Zakładki rail |
+|------|----------------|
+| `The Game - Ekran Miasto W3 (1E).dc.html` | chrome + dim + **Budowa** |
+| `The Game - Miasto Zakładki W3 (1E).dc.html` | Rekrutacja · Handel · Porządek · Zdrowie |
+| `The Game - Miasto Zakładki W3 cz2 (1E).dc.html` | Spichlerz · Praca · Kultura · Religia |
+
+**Lane UI:** W-WIKI-2 → W3-full (`cityPanel.ts`) · mockupy = referencja wizualna
+
+**Design BACKLOG:** W1b (ikony cyw.) · opcjonalnie Okolica/heksy (osobny START)
+
+---
+
+## ▶ START — W3-miasto-1E (ARCHIWUM procedury)
+2. **`referencje-w3/BUDYNKI-tabela.md`** — 26 budynków, koszty, stany kart
+3. **`referencje-w3/DANE-MIASTO-skrot.md`** — plony, wzrost, porządek, akcje
+4. **`referencje-w3/JEDNOSTKI-skrot.md`** — rekrutacja, Koszary gate
+5. **`The Game - Ekran Miasto (1E).dc.html`** — **EDYTUJ**
+
+**Repo (opcjonalnie):** `dyspozycje/_handoff/UI-do-DESIGN_w3-miasto-1E-dane.md`
+
+### Co sprawdzić w mockupie (KROK 2 w START)
+
+Obecny `.dc.html` ma tylko **szkielet Budowy** — brakuje m.in.:
+- 6 chipów górnych (jest 3)
+- 9 ikon rail (jest 6)
+- zakładek: handel, porządek, okolica, zdrowie, kultura, religia
+- realnych kosztów (Spichlerz=**20**, Koszary=**25**, nie 60/80)
+- błędnego „Akwedukt" (nie ma w grze — użyj Studnia)
+- 4 stanów porządku (Spokój→Bunt skrajny)
+- siatki okolicy heksów
+- **przycisk Wiki** górny prawy róg (obok Menu) — patrz **`../WYMIANA-UI-DESIGN.md` § Wikipedia** + handoff repo `UI-do-DESIGN_wikipedia-hud-mockup.md`
+
+### Deliverable
+
+- [ ] `The Game - Ekran Miasto (1E).dc.html` — pełny ekran + 9 widoków rail + 4 demo porządku
+- [ ] `eksport/HANDOFF.md` — sekcja W3-miasto-1E
+- [ ] **`ostatnie/W3-miasto-1E.zip`** → Maciej
+
+**Lane po zipie:** `cityPanel.ts` — **nie Design**.
+
+---
+
+## ▶ START — W1b (BACKLOG)
+
+**Design wpisz:** `START — W1b`
+
+### Zadanie
+
+Dostarcz **15 ikon cywilizacji** (medalion kreatora) + manifest. **NIE** dodawaj do `icons-manifest.json`.
+
+### Deliverable (checklist)
+
+- [ ] Folder `eksport/icons/civilizations/` — pliki `@24` only, styl 3C line, `currentColor`:
+  - [ ] `civ-grecy.svg` — partenon (skopiuj path z `Ekran Kreator (1E).dc.html` linia ~40)
+  - [ ] `civ-rzymianie.svg` — skrzyżowane gladiusy (~41)
+  - [ ] `civ-chinczycy.svg` — pagoda (~42)
+  - [ ] `civ-inkowie.svg` — słońce/koło (~43)
+  - [ ] `civ-zulusi.svg` — tarcza (~44)
+  - [ ] `civ-egipt.svg` — piramida (~45)
+  - [ ] `civ-sumer.svg` — ziggurat (~46)
+  - [ ] `civ-celtowie.svg` — torc / węzel celtycki
+  - [ ] `civ-germanie.svg` — topór / rogaty hełm
+  - [ ] `civ-harappa.svg` — byk (pieczęć Harappy)
+  - [ ] `civ-hetyci.svg` — koło rydwanu
+  - [ ] `civ-slowianie.svg` — gromnica / dąb
+  - [ ] `civ-babilonia.svg` — brama / lew
+  - [ ] `civ-asyria.svg` — lamassu (uproszczony)
+  - [ ] `civ-fenicjanie.svg` — okręt
+  - [ ] `civ-default.svg` — fallback (korona)
+- [ ] **`eksport/civ-icon-map.json`** — mapa `ikonaId` → `civ-*` (szablon w WYMIANA §5)
+- [ ] **`eksport/HANDOFF.md`** — sekcja „Cywilizacje" + mapa plików repo (poniżej)
+- [ ] Zip → Maciej `brand-book/ostatnie/` · log 1 linia w WYMIANA
+
+### Mapa ekran → plik repo (HANDOFF — wklej 1:1)
+
+| Makieta | Plik `gra/src/ui/` |
+|---------|-------------------|
+| Ekran Menu | `mainMenu.ts` |
+| Kreator | `newGameFlow.ts` |
+| HUD | `hud.ts`, `mapToolbarHud.ts`, `bottomBarHud.ts` |
+| Miasto | `cityPanel.ts` |
+| Dyplomacja | `diplomacyPanel.ts`, `diploListHud.ts` |
+| Walka | `preBattle.ts` |
+| Badania | `sciencePicker.ts`, `scienceHubHud.ts` |
+| Wojsko | `armyListHud.ts` |
+| Koniec gry | `victoryScreen.ts` |
+| Assety SVG | `icons/brandAssets.ts` |
+| Rejestr HUD | `icons/iconRegistry.ts` |
+| Tokeny | `brandTokenVars.ts` |
+
+Integracja cyw.: `brandAssets.civIconSvg()` → **`newGameFlow.ts`** (medalion `.tg-medallion`).
+
+### DoD
+
+15 SVG + default + `civ-icon-map.json` + HANDOFF · **zero** wpisów cyw. w `icons-manifest.json`.
+
+---
+
+## ▶ START — W1-menu-map (AKTYWNE · PRIORYTET 2 · po W1b lub równolegle)
+
+**Design wpisz:** `START — W1-menu-map`
+
+**Kontekst:** paczka `icons/menu/` (30 SVG) **już w kanonie** — brakuje mapy przycisk → ikona.
+
+### Zadanie
+
+- [ ] Utwórz **`eksport/menu-button-map.json`** (nowy plik, **NIE** icons-manifest):
+
+```json
+{
+  "note": "id ikony menu → slot w mainMenu.ts (gra/src/ui/mainMenu.ts)",
+  "map": {
+    "menu-play": "btn_new_game_primary",
+    "menu-campaign": "btn_campaign_soon",
+    "menu-multiplayer": "btn_multiplayer_soon",
+    "menu-settings": "btn_settings",
+    "menu-more": "btn_more_toggle",
+    "menu-load": "btn_continue_or_load",
+    "menu-save": "btn_save_future",
+    "menu-exit": "btn_quit",
+    "menu-info": "btn_about",
+    "menu-emblem-mini": "header_emblem_optional"
+  },
+  "settings_rows_optional": {
+    "menu-audio": "settings_audio",
+    "menu-controls": "settings_controls",
+    "menu-language": "settings_language"
+  }
+}
 ```
-START — tura 2
-```
 
-| Krok | Zadanie |
-|------|---------|
-| A | A-02 toolbar HUD = **identyczny** `eksport/icons/tb-diplomacy.svg` |
-| B | E-15b porażka `#c84040` + link hub |
-| C | Linki `← Powrót do Przeglądu` na ekranach z kafelków tury 1 |
+- [ ] **`eksport/HANDOFF.md`** — sekcja „Menu button icons" + powyższa mapa
+- [ ] **NIE** twórz ponownie SVG menu (już są w `eksport/icons/menu/`)
 
-**NIE w tej turze:** Tier 3–5 · PDF · D1-3…D1-7 · PACZKA 2.
+### DoD
 
-### Koniec tury — Design (zip + log)
-
-1. **CZĘŚĆ E** — raport (append w WYMIANA lub pliku do wklejenia).
-2. **WYMIANA** — sekcja `[Design]`: `tura 2 done · zip ready`.
-3. **`brand-book.zip`** — pełna paczka (HTML + `eksport/` + ikony).
-4. Maciej: zip → `_staging/inbox/` **lub** link w czacie → **START (Cursor)**.
-5. Lane UI: rozpakowuje · commit/push · poll.
-
-Design **nie pushuje** git (read-only u Ciebie).
+`menu-button-map.json` + HANDOFF · Lane podpinie w `mainMenu.ts`.
 
 ---
 
-# ▶ START — ETAP D1 pełny (archiwum)
+## ✅ PACZKA FINAL — DONE (nie powtarzaj)
 
-**Trigger od Macieja / Lane UI:** **`START`**
+Tokeny · Tier 1–7 · budynki · jednostki · menu CSS/emblem · **menu SVG 30 plików** (2026-06-26).
 
-## Co robisz teraz (ETAP D1 — P0)
+## ⏸ BACKLOG (bez START)
 
-Realizuj **w tej kolejności**. Po każdym punkcie dopisz wiersz w **CZĘŚĆ E — Dyspozycje wychodzące** + zaktualizuj status w [`WYMIANA-UI-DESIGN.md`](../WYMIANA-UI-DESIGN.md) (`queue_design` → `done_design`).
+PDF Brand Book · PACZKA 2 · WebM hero · Tier 3–5 @40 dodatkowe.
 
-| Krok | ID | Zadanie | DoD (gotowe gdy…) |
-|------|-----|---------|-------------------|
-| **1** | D1-1 / REQ-003 | **`tb-diplomacy` = uścisk dłoni** wszędzie | Ten sam SVG w bibliotece, HUD, toolbarze; **usuń** pergamin+pióro |
-| **2** | D1-2 / REQ-002 | **E-15b — ekran porażki** | Layout = wygrana E-15; akcent **`#c84040`**; CTA outline 4C |
-| **3** | D1-3 | **Tier 1 komplet** — 9 ikon × 2 rozmiary (24+40 px) | Pliki w `eksport/icons/` wg SPEC (`res-food`…`res-settlements`) |
-| **4** | D1-4 | **Tier 2 komplet** — 5 ikon × 2 rozmiary | W tym poprawiony dyplomacja; `tb-build` = instancja `res-work` |
-| **5** | D1-5 | **Ekrany E final PO** | E-01, E-08…E-13, E-15 (win) — zgodne 1B–6C, **zero emoji** |
-| **6** | D1-6 | **`eksport/HANDOFF.md` v2** | Mapowanie ekran → plik TS · changelog · breaking changes |
-| **7** | D1-7 | **Freeze tokenów v1** | `eksport/tokens.css` + `tokens.json` — lane UI sync bez zgadywania |
-
-**NIE rób teraz (defer):** REQ-004 Tier 3–5 · REQ-005 hub kafelki · PDF · responsywność.
-
-## Gdzie zapisywać
-
-```
-docs/ux/claude-design/01-propozycje-z-design/brand-book/
-├── DYSPOZYCJA.md          ← ten plik
-├── eksport/
-│   ├── tokens.css
-│   ├── tokens.json
-│   ├── HANDOFF.md
-│   └── icons/*.svg
-├── The Game — Przegląd (1E).dc.html
-├── support.js
-└── *.html                 ← ekrany PO
-```
-
-**Nie twórz:** `brand-book-1E/`, `brand-book-2/`, inne foldery.
-
-## Sync — GitHub (dual-START)
-
-Design: **commit + push** tylko `docs/ux/claude-design/…`  
-Lane UI przy START Cursor: **`git pull`** (`tools/sync-design-github.ps1`)
-
-Szczegóły: [`../WORKFLOW-GITHUB-SYNC.md`](../WORKFLOW-GITHUB-SYNC.md)
-
-## Reguły (nie negocjuj bez ABC Macieja)
-
-- Ikony **3C:** konkretny przedmiot z SPEC (młotek, chleb, uścisk dłoni, sowa…).
-- Przyciski **4C:** outline złoty 2px, tło przezroczyste.
-- Panele **5C:** obwódka 2px + cień + nagłówek.
-- Chipy **6C:** ikona + liczba + **etykieta PL** (np. „Skarbiec”).
-- **Zakaz emoji** w finalnych ekranach gry.
-
-## Po START — pierwsze 3 minuty
-
-1. Otwórz [`WYMIANA-UI-DESIGN.md`](../WYMIANA-UI-DESIGN.md) — YAML `queue_design`.
-2. Otwórz hub `The Game — Przegląd (1E).dc.html` — sprawdź linki.
-3. Zacznij od **kroku 1** (dyplomacja = uścisk dłoni).
-
----
-
-# CZĘŚĆ C — DYSPOZYCJE PRZYCHODZĄCE (aktywne)
-
-| ID | Pri | Status | Tekst |
-|----|-----|--------|-------|
-| **D1-1** | P0 | **🟡 partial** | REQ-003 dyplomacja — SVG OK · HUD A-02 → tura 2 |
-| **D1-2** | P0 | **next** | REQ-002 — E-15b porażka `#c84040` (tura 2B) |
-| **D1-3** | P0 | open | Tier 1 SVG komplet → `eksport/icons/` |
-| **D1-4** | P0 | open | Tier 2 SVG komplet |
-| **D1-5** | P0 | open | Ekrany E final (menu + kreator + game over win) |
-| **D1-6** | P0 | open | HANDOFF.md v2 |
-| **D1-7** | P0 | open | Freeze tokens w `brand-book/eksport/` (zapis → OneDrive) |
-| REQ-005 | P2 | **✅ done** | Hub kafelki (tura 1) |
-
----
-
-# CZĘŚĆ D — STATUS ODPOWIEDZI (Design uzupełnia)
-
-| Temat | Status | Uwagi |
-|-------|--------|-------|
-| ETAP D1 — tura 1 | 🟡 | hub ✅ · dyplomacja SVG ✅ · HUD defer |
-| REQ-003 dyplomacja | 🟡 | eksport OK · A-02 tura 2 |
-| REQ-002 E-15b porażka | ⬜ | tura 2B |
-| REQ-005 hub kafelki | ✅ | tura 1 |
-| Tier 1+2 SVG | ⬜ | D1-3, D1-4 |
-| Sync plików | ⬜ | GitHub — czeka `remote origin` + autoryzacja Design |
-
----
-
-# CZĘŚĆ E — DYSPOZYCJE WYCHODZĄCE (Design dopisuje)
-
-| Data | Kto | Co |
-|------|-----|-----|
-| 2026-06-26 | Claude Design | **Tura 1:** hub kafelki · tb-diplomacy SVG · HUD toolbar defer |
-| 2026-06-26 | Lane UI | Wydano **START** · ETAP D1 · kolejność kroków 1–7 |
-
-*(Design: dopisuj każdy ukończony krok — append-only.)*
-
----
-
-# CZĘŚĆ F — PACZKI Lane UI (Lane UI dopisuje przed START u Design)
-
-| Data | Tura | Lane UI przygotował | Status Design |
-|------|------|---------------------|---------------|
-| 2026-07-01 18:30 | 2 | ▶ START tura 2 (A/B/C) + **git push** | ⬜ czeka GitHub setup |
-
-*(Lane UI: po odczytaniu CZĘŚĆ E „tura N done" + pull zip — wpisz następną paczkę ▶ START — tura N+1.)*
-
----
-
-# Prompt START (Design — wklej po Lane UI paczce)
-
-```
-START — tura 2
-
-Czytam brand-book/DYSPOZYCJA.md (▶ START — tura 2) + WYMIANA-UI-DESIGN.md.
-Realizuję kroki A→C. Decyzje: 1B 2C 3C 4C 5C 6C · zero emoji.
-
-Koniec:
-· CZĘŚĆ E + log WYMIANA „tura 2 done · pushed main"
-· git add + commit + push (tylko docs/ux/claude-design/) — patrz DYSPOZYCJA § Koniec tury
-```
+*Aktywne START: **W3-miasto-1E** · BACKLOG: W1b · W1-menu-map · 2026-07-03*

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><style>html,body{margin:0;padding:0;background:#0c1016}*{box-sizing:border-box}
+.sel1e{appearance:none;-webkit-appearance:none;width:100%;height:34px;padding:0 30px 0 12px;border-radius:8px;border:1px solid rgba(232,216,138,.4);background:linear-gradient(180deg,#161c28,#0a0d14);color:#e8e0c8;font:600 13px 'Segoe UI',sans-serif;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23e8d88a' stroke-width='1.8'><path d='M6 9l6 6 6-6'/></svg>");background-repeat:no-repeat;background-position:right 9px center}
+.rw{display:grid;grid-template-columns:22px 1fr;align-items:center;gap:8px;margin-bottom:6px}
+.rn{font:700 12px 'Segoe UI';color:#a08030;text-align:center}
+.typ{display:flex;align-items:center;gap:8px;margin:12px 0 7px}
+.med{width:26px;height:26px;border-radius:50%;background:radial-gradient(circle at 38% 30%,#2a2416,#12100a);border:1.5px solid #a08030;display:flex;align-items:center;justify-content:center;color:#e8d88a;flex:none}
+.tl{font:700 11px 'Segoe UI';letter-spacing:.1em;text-transform:uppercase;color:#c8b898}</style></helmet>
+<div style="width:360px;margin:20px auto;border:2px solid rgba(232,216,138,.5);border-radius:14px;overflow:hidden;background:linear-gradient(180deg,rgba(22,28,38,.98),rgba(8,10,16,.98));box-shadow:0 20px 50px rgba(0,0,0,.7);font-family:'Segoe UI',Tahoma,sans-serif;color:#e8e0c8;display:flex;flex-direction:column;max-height:760px">
+  <div style="padding:14px 18px;border-bottom:1px solid rgba(232,216,138,.22);background:linear-gradient(90deg,rgba(232,216,138,.12),transparent);display:flex;align-items:center;gap:10px;flex:none">
+    <span style="color:#e8d88a"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M4 9 12 4.5 20 9Z"/><path d="M6.5 11h11M7.5 11v6M16.5 11v6M5.5 17h13"/></svg></span>
+    <span style="font-family:Georgia,serif;font-size:18px;letter-spacing:.08em;color:#e8d88a">Strategia</span>
+  </div>
+  <div style="overflow:auto;padding:16px 18px">
+    <div style="font:700 12px 'Segoe UI';letter-spacing:.08em;text-transform:uppercase;color:#e8d88a">Priorytety armii</div>
+    <div style="font-size:11px;color:#8a8070;margin:3px 0 6px">Kogo atakować w pierwszej kolejności (1→2→3)</div>
+
+    <div class="typ"><span class="med"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M7 20c-2-2.6-3-5.6-3-8.2a8 8 0 0 1 16 0c0 2.6-1 5.6-3 8.2"/><path d="M6.6 20.2 6 21.4M17.4 20.2 18 21.4"/><path d="M8.7 8.4v.01M15.3 8.4v.01M6.7 12.2v.01M17.3 12.2v.01"/></svg></span><span class="tl">Konnica</span></div>
+    <div class="rw"><span class="rn">1.</span><select class="sel1e"><option>Konnica</option><option>Łucznicy</option><option>Piechota</option></select></div>
+    <div class="rw"><span class="rn">2.</span><select class="sel1e"><option>Łucznicy</option><option>Konnica</option><option>Piechota</option></select></div>
+    <div class="rw"><span class="rn">3.</span><select class="sel1e"><option>Piechota</option><option>Konnica</option><option>Łucznicy</option></select></div>
+
+    <div class="typ"><span class="med"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 5c8 1 13 6 14 14M5 5v4M5 5h4M6 18 18 6"/></svg></span><span class="tl">Łucznicy</span></div>
+    <div class="rw"><span class="rn">1.</span><select class="sel1e"><option>Łucznicy</option><option>Konnica</option><option>Piechota</option></select></div>
+    <div class="rw"><span class="rn">2.</span><select class="sel1e"><option>Konnica</option><option>Łucznicy</option><option>Piechota</option></select></div>
+    <div class="rw"><span class="rn">3.</span><select class="sel1e"><option>Piechota</option><option>Konnica</option><option>Łucznicy</option></select></div>
+
+    <div class="typ"><span class="med"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4.5 5 14 14.5M14.5 15 17.5 18M19.5 5 10 14.5M9.5 15 6.5 18"/></svg></span><span class="tl">Piechota</span></div>
+    <div class="rw"><span class="rn">1.</span><select class="sel1e"><option>Piechota</option><option>Konnica</option><option>Łucznicy</option></select></div>
+    <div class="rw"><span class="rn">2.</span><select class="sel1e"><option>Łucznicy</option><option>Konnica</option><option>Piechota</option></select></div>
+    <div class="rw"><span class="rn">3.</span><select class="sel1e"><option>Konnica</option><option>Łucznicy</option><option>Piechota</option></select></div>
+
+    <div style="display:flex;align-items:center;justify-content:center;height:40px;margin-top:12px;border:2px solid rgba(232,216,138,.4);border-radius:8px;background:linear-gradient(180deg,#161c28,#0a0d14);color:#e8d88a;font:600 12px 'Segoe UI';letter-spacing:.1em;text-transform:uppercase;cursor:pointer">Przywróć domyślne (armia)</div>
+
+    <div style="height:1px;background:rgba(232,216,138,.2);margin:18px 0"></div>
+
+    <div style="font-family:Georgia,serif;font-size:16px;color:#e8d88a">Priorytety grupy: Grupa 3</div>
+    <label style="display:flex;align-items:center;gap:9px;margin:10px 0 4px;cursor:pointer"><span style="width:18px;height:18px;border-radius:5px;border:1.5px solid #a08030;background:linear-gradient(180deg,#f0dc88,#b99a28);display:flex;align-items:center;justify-content:center;color:#2e2708"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12.5 10 17.5 19 6.5"/></svg></span><span style="font-size:13px;color:#c8b898">Własne priorytety tej grupy</span></label>
+    <div style="font:700 12px 'Segoe UI';letter-spacing:.08em;text-transform:uppercase;color:#e8d88a;margin-top:10px">Kolejność celów grupy</div>
+    <div style="font-size:11px;color:#8a8070;margin:3px 0 6px">Kogo atakować w pierwszej kolejności (1→2→3)</div>
+
+    <div class="typ"><span class="med"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M7 20c-2-2.6-3-5.6-3-8.2a8 8 0 0 1 16 0c0 2.6-1 5.6-3 8.2"/><path d="M6.6 20.2 6 21.4M17.4 20.2 18 21.4"/><path d="M8.7 8.4v.01M15.3 8.4v.01M6.7 12.2v.01M17.3 12.2v.01"/></svg></span><span class="tl">Konnica</span></div>
+    <div class="rw"><span class="rn">1.</span><select class="sel1e"><option>Konnica</option><option>Łucznicy</option><option>Piechota</option></select></div>
+    <div class="rw"><span class="rn">2.</span><select class="sel1e"><option>Łucznicy</option><option>Konnica</option><option>Piechota</option></select></div>
+    <div class="rw"><span class="rn">3.</span><select class="sel1e"><option>Piechota</option><option>Konnica</option><option>Łucznicy</option></select></div>
+
+    <div class="typ"><span class="med"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 5c8 1 13 6 14 14M5 5v4M5 5h4M6 18 18 6"/></svg></span><span class="tl">Łucznicy</span></div>
+    <div class="rw"><span class="rn">1.</span><select class="sel1e"><option>Łucznicy</option><option>Konnica</option><option>Piechota</option></select></div>
+    <div class="rw"><span class="rn">2.</span><select class="sel1e"><option>Konnica</option><option>Łucznicy</option><option>Piechota</option></select></div>
+    <div class="rw"><span class="rn">3.</span><select class="sel1e"><option>Piechota</option><option>Konnica</option><option>Łucznicy</option></select></div>
+
+    <div class="typ"><span class="med"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4.5 5 14 14.5M14.5 15 17.5 18M19.5 5 10 14.5M9.5 15 6.5 18"/></svg></span><span class="tl">Piechota</span></div>
+    <div class="rw"><span class="rn">1.</span><select class="sel1e"><option>Piechota</option><option>Konnica</option><option>Łucznicy</option></select></div>
+    <div class="rw"><span class="rn">2.</span><select class="sel1e"><option>Łucznicy</option><option>Konnica</option><option>Piechota</option></select></div>
+    <div class="rw"><span class="rn">3.</span><select class="sel1e"><option>Konnica</option><option>Łucznicy</option><option>Piechota</option></select></div>
+  </div>
+  <div style="padding:12px 18px;border-top:1px solid rgba(232,216,138,.22);flex:none"><div style="display:flex;align-items:center;justify-content:center;height:44px;background:linear-gradient(180deg,#f0dc88,#b99a28);border:1px solid #6a5212;border-top-color:#f8eea8;color:#2e2708;font:700 12px 'Segoe UI';letter-spacing:.1em;text-transform:uppercase;border-radius:8px;box-shadow:inset 0 1px 0 rgba(255,255,255,.4);cursor:pointer">Skopiuj z priorytetów armii</div></div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{ &quot;$preview&quot;: { &quot;width&quot;: 400, &quot;height&quot;: 800 } }"></script>
+</body>
+</html>

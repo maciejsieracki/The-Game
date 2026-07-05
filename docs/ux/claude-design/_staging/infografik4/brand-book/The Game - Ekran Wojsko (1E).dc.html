@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><style>html,body{margin:0;padding:0;background:#05060a}*{box-sizing:border-box}a{text-decoration:none}</style></helmet>
+<div style="position:relative;width:1920px;height:1080px;overflow:hidden;font-family:'Segoe UI',Tahoma,sans-serif;color:#e8e0c8;background:radial-gradient(1200px 800px at 50% 16%,rgba(232,216,138,.06),transparent 60%),#080a12">
+  <div style="position:absolute;inset:0;box-shadow:inset 0 0 280px 80px rgba(0,0,0,.75)"></div>
+
+  <a href="The Game — HUD Kit (1E).dc.html" style="position:absolute;top:26px;left:26px;z-index:5;font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:#c8b898;border:1px solid rgba(232,216,138,.3);border-radius:8px;padding:10px 18px">← HUD</a>
+  <div style="text-align:center;padding:30px 0 6px">
+    <div style="font-size:13px;letter-spacing:.4em;text-transform:uppercase;color:#8a8070">Dowództwo · Rzym</div>
+    <div style="font-family:Georgia,serif;font-size:36px;color:#e8d88a;margin-top:4px">Wojsko</div>
+  </div>
+
+  <!-- summary strip -->
+  <div style="display:flex;justify-content:center;gap:14px;margin:10px 0 20px">
+    <div style="display:inline-flex;align-items:center;gap:10px;padding:10px 18px;border-radius:10px;background:linear-gradient(180deg,rgba(22,28,40,.9),rgba(8,10,16,.92));border:1px solid rgba(232,216,138,.25)"><span style="font-family:Georgia,serif;font-size:22px;color:#e8d88a">14</span><span style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#8a8070">Jednostek</span></div>
+    <div style="display:inline-flex;align-items:center;gap:10px;padding:10px 18px;border-radius:10px;background:linear-gradient(180deg,rgba(22,28,40,.9),rgba(8,10,16,.92));border:1px solid rgba(232,216,138,.25)"><span style="font-family:Georgia,serif;font-size:22px;color:#e8d88a">3</span><span style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#8a8070">Armie</span></div>
+    <div style="display:inline-flex;align-items:center;gap:10px;padding:10px 18px;border-radius:10px;background:linear-gradient(180deg,rgba(22,28,40,.9),rgba(8,10,16,.92));border:1px solid rgba(232,216,138,.25)"><span style="font-family:Georgia,serif;font-size:22px;color:#7ad0a0">86%</span><span style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#8a8070">Gotowość</span></div>
+    <div style="display:inline-flex;align-items:center;gap:10px;padding:10px 18px;border-radius:10px;background:linear-gradient(180deg,rgba(40,18,4,.9),rgba(16,8,4,.92));border:1px solid rgba(208,128,48,.3)"><span style="font-family:Georgia,serif;font-size:22px;color:#e0a860">36</span><span style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#8a8070">Utrzymanie/t</span></div>
+  </div>
+
+  <!-- list + detail -->
+  <div style="display:flex;gap:22px;padding:0 40px;height:770px">
+    <!-- army list -->
+    <div style="flex:1.4;border:1px solid rgba(232,216,138,.16);border-radius:12px;background:rgba(255,255,255,.015);padding:8px;overflow:hidden">
+      <!-- group I Legion -->
+      <div style="padding:12px 16px 8px;display:flex;align-items:center;gap:10px"><span style="font-family:Georgia,serif;font-size:16px;color:#e8d88a">I Legion „Ferrata"</span><span style="font-size:11px;color:#8a8070">· 6 jednostek · przy Kartaginie</span></div>
+      <div style="display:flex;flex-direction:column;gap:6px;padding:0 8px 10px">
+        <div style="display:flex;align-items:center;gap:14px;padding:11px 14px;border:2px solid #e8d88a;border-radius:9px;background:linear-gradient(90deg,rgba(232,216,138,.08),transparent);box-shadow:0 0 18px rgba(232,216,138,.14)"><span style="width:42px;height:42px;border-radius:50%;background:radial-gradient(circle at 38% 30%,#2a2416,#12100a);border:2px solid #e8d88a;display:flex;align-items:center;justify-content:center;color:#f4e6a8"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M7 17 16 8M16 8 18.5 5.5M13.6 6.4 17.6 10.4M5 19l3-3"/></svg></span><div style="flex:1"><div style="font-family:Georgia,serif;font-size:16px;color:#e8e0c8">Legioniści</div><div style="font-size:11px;color:#8a8070">Ciężka piechota · szczebel III</div></div><div style="text-align:right;width:120px"><div style="font-size:11px;color:#8a8070">HP 88%</div><div style="height:5px;border-radius:3px;background:rgba(255,255,255,.08);margin-top:4px;overflow:hidden"><div style="width:88%;height:100%;background:linear-gradient(90deg,#3a8a5a,#7ad0a0)"></div></div></div></div>
+        <div style="display:flex;align-items:center;gap:14px;padding:11px 14px;border:1px solid rgba(232,216,138,.16);border-radius:9px"><span style="width:42px;height:42px;border-radius:50%;background:radial-gradient(circle at 38% 30%,#1a2230,#0a0d14);border:2px solid #a08030;display:flex;align-items:center;justify-content:center;color:#e8d88a"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M12 3 5 5.5v5c0 4.5 3 7.6 7 9 4-1.4 7-4.5 7-9v-5Z"/></svg></span><div style="flex:1"><div style="font-family:Georgia,serif;font-size:16px;color:#e8e0c8">Włócznicy</div><div style="font-size:11px;color:#8a8070">Piechota liniowa · szczebel II</div></div><div style="text-align:right;width:120px"><div style="font-size:11px;color:#8a8070">HP 100%</div><div style="height:5px;border-radius:3px;background:rgba(255,255,255,.08);margin-top:4px;overflow:hidden"><div style="width:100%;height:100%;background:linear-gradient(90deg,#3a8a5a,#7ad0a0)"></div></div></div></div>
+        <div style="display:flex;align-items:center;gap:14px;padding:11px 14px;border:1px solid rgba(232,216,138,.16);border-radius:9px"><span style="width:42px;height:42px;border-radius:50%;background:radial-gradient(circle at 38% 30%,#1a2230,#0a0d14);border:2px solid #a08030;display:flex;align-items:center;justify-content:center;color:#e8d88a"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M7 17 16 8M16 8 18.5 5.5M5 19l3-3"/></svg></span><div style="flex:1"><div style="font-family:Georgia,serif;font-size:16px;color:#e8e0c8">Łucznicy</div><div style="font-size:11px;color:#8a8070">Dystansowa · szczebel II</div></div><div style="text-align:right;width:120px"><div style="font-size:11px;color:#e0a860">HP 54%</div><div style="height:5px;border-radius:3px;background:rgba(255,255,255,.08);margin-top:4px;overflow:hidden"><div style="width:54%;height:100%;background:linear-gradient(90deg,#8a6a2a,#e0a860)"></div></div></div></div>
+      </div>
+      <!-- group II -->
+      <div style="padding:12px 16px 8px;display:flex;align-items:center;gap:10px;border-top:1px solid rgba(232,216,138,.1)"><span style="font-family:Georgia,serif;font-size:16px;color:#e8d88a">II Kawaleria</span><span style="font-size:11px;color:#8a8070">· 4 jednostki · odwód, Rzym</span></div>
+      <div style="display:flex;flex-direction:column;gap:6px;padding:0 8px 10px">
+        <div style="display:flex;align-items:center;gap:14px;padding:11px 14px;border:1px solid rgba(232,216,138,.16);border-radius:9px"><span style="width:42px;height:42px;border-radius:50%;background:radial-gradient(circle at 38% 30%,#1a2230,#0a0d14);border:2px solid #a08030;display:flex;align-items:center;justify-content:center;color:#e8d88a"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 20c0-6 2-9 6-10l1-3 3 1-1 3c3 1 4 4 4 9M9 11 6 9l-2 2M16 20v-3M9 20v-3"/></svg></span><div style="flex:1"><div style="font-family:Georgia,serif;font-size:16px;color:#e8e0c8">Konnica</div><div style="font-size:11px;color:#8a8070">Kawaleria · szczebel II</div></div><div style="text-align:right;width:120px"><div style="font-size:11px;color:#8a8070">HP 92%</div><div style="height:5px;border-radius:3px;background:rgba(255,255,255,.08);margin-top:4px;overflow:hidden"><div style="width:92%;height:100%;background:linear-gradient(90deg,#3a8a5a,#7ad0a0)"></div></div></div></div>
+        <div style="display:flex;align-items:center;gap:14px;padding:11px 14px;border:1px solid rgba(232,216,138,.16);border-radius:9px"><span style="width:42px;height:42px;border-radius:50%;background:radial-gradient(circle at 38% 30%,#1a2230,#0a0d14);border:2px solid #a08030;display:flex;align-items:center;justify-content:center;color:#e8d88a"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 20c0-6 2-9 6-10l1-3 3 1-1 3c3 1 4 4 4 9M9 11 6 9l-2 2M16 20v-3M9 20v-3"/></svg></span><div style="flex:1"><div style="font-family:Georgia,serif;font-size:16px;color:#e8e0c8">Rydwan konny</div><div style="font-size:11px;color:#8a8070">Kawaleria ciężka · szczebel I</div></div><div style="text-align:right;width:120px"><div style="font-size:11px;color:#8a8070">HP 100%</div><div style="height:5px;border-radius:3px;background:rgba(255,255,255,.08);margin-top:4px;overflow:hidden"><div style="width:100%;height:100%;background:linear-gradient(90deg,#3a8a5a,#7ad0a0)"></div></div></div></div>
+      </div>
+    </div>
+
+    <!-- detail panel -->
+    <div style="flex:1;border:2px solid rgba(232,216,138,.45);border-radius:12px;overflow:hidden;background:linear-gradient(180deg,rgba(18,24,32,.96),rgba(8,10,16,.96));box-shadow:0 16px 44px rgba(0,0,0,.6);align-self:flex-start">
+      <div style="display:flex;align-items:center;gap:16px;padding:22px 24px;border-bottom:1px solid rgba(232,216,138,.2);background:linear-gradient(90deg,rgba(232,216,138,.08),transparent)"><span style="width:58px;height:58px;border-radius:50%;background:radial-gradient(circle at 38% 30%,#2a2416,#12100a);border:2px solid #e8d88a;display:flex;align-items:center;justify-content:center;color:#f4e6a8"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M7 17 16 8M16 8 18.5 5.5M13.6 6.4 17.6 10.4M5 19l3-3"/></svg></span><div><div style="font-family:Georgia,serif;font-size:24px;color:#e8d88a">Legioniści</div><div style="font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#8a8070">Jednostka specjalna Rzymu</div></div></div>
+      <div style="padding:20px 24px">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px">
+          <div style="border:1px solid rgba(232,216,138,.2);border-radius:8px;padding:12px 14px"><div style="font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:#a08030">Atak</div><div style="font-family:Georgia,serif;font-size:26px;color:#e8e0c8">28</div></div>
+          <div style="border:1px solid rgba(232,216,138,.2);border-radius:8px;padding:12px 14px"><div style="font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:#a08030">Obrona</div><div style="font-family:Georgia,serif;font-size:26px;color:#e8e0c8">24</div></div>
+          <div style="border:1px solid rgba(232,216,138,.2);border-radius:8px;padding:12px 14px"><div style="font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:#a08030">Ruch</div><div style="font-family:Georgia,serif;font-size:26px;color:#e8e0c8">2</div></div>
+          <div style="border:1px solid rgba(232,216,138,.2);border-radius:8px;padding:12px 14px"><div style="font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:#a08030">Morale</div><div style="font-family:Georgia,serif;font-size:26px;color:#7ad0a0">wysokie</div></div>
+        </div>
+        <div style="font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:#a08030;margin-bottom:10px">Bonusy</div>
+        <div style="display:flex;flex-direction:column;gap:8px;font-size:13px;color:#c8b898;line-height:1.5">
+          <div style="display:flex;gap:10px"><span style="margin-top:6px;flex:none;width:5px;height:5px;border-radius:50%;background:#50b070"></span><span>+15% ataku i pancerza (cecha Rzymu)</span></div>
+          <div style="display:flex;gap:10px"><span style="margin-top:6px;flex:none;width:5px;height:5px;border-radius:50%;background:#50b070"></span><span>Dyscyplina bojowa: +morale w formacji</span></div>
+          <div style="display:flex;gap:10px"><span style="margin-top:6px;flex:none;width:5px;height:5px;border-radius:50%;background:#50b070"></span><span>Buduje drogi i umocnienia (inżynieria)</span></div>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:22px">
+          <a href="The Game — Ekran Walka (1E).dc.html" style="flex:1;display:flex;align-items:center;justify-content:center;gap:8px;background:linear-gradient(180deg,#f0dc88,#b99a28);border:1px solid #6a5212;border-top-color:#f8eea8;color:#2e2708;font-size:13px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;padding:13px;border-radius:8px;box-shadow:inset 0 1px 0 rgba(255,255,255,.4)">Rozkaż</a>
+          <button style="flex:1;background:linear-gradient(180deg,#161c28,#0a0d14);border:2px solid rgba(232,216,138,.4);color:#e8d88a;font-size:13px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;padding:13px;border-radius:8px;cursor:pointer">Umocnij</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="position:absolute;bottom:22px;left:50%;transform:translateX(-50%);font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:#5a564c">The Game · Wojsko · 1E</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{ &quot;$preview&quot;: { &quot;width&quot;: 1920, &quot;height&quot;: 1080 } }"></script>
+</body>
+</html>

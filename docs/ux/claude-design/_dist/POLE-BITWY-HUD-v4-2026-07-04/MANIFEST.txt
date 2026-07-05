@@ -1,0 +1,21 @@
+ZLECENIE: POLE-BITWY-HUD-v4-2026-07-04
+DATA: 2026-07-04
+HASLO: POLE-BITWY-HUD-v4-2026-07-04
+
+PLIKI:
+  C06 | The Game - C06 Deployment v4 2026-07-04 (1E).dc.html | 3 klatki: Deploy / AUTO / R+roster
+  C09 | The Game - C09 Roster lewy panel v4 2026-07-04 (1E).dc.html | lewy roster w kontekscie + mini-klatka scroll >30
+
+DOKUMENTY:
+  DESIGN-do-UI_POLE-BITWY-HUD-v4.md | mapowanie region -> battleScene.ts / battleHudTheme.ts + tooltips rail
+
+NIE JEST TO:
+  C04 Oblezenie v2 / C05 Szturm muru v2 (pole bitwy C-19/C-20 - poza paczka 1)
+
+DESTINATION (Maciej wrzuca do):
+  docs/ux/claude-design/
+
+LANE PORTUJE (nie Design):
+  battleScene.ts · battleHudTheme.ts
+
+STYL: 1E · Ty #3a6ad0 · wrog #c84040 · zloto #e8d88a · zero emoji

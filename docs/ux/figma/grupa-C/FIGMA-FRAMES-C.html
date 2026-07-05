@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<title>05 Screens C — redesign Warstwa 1 (Grupa C)</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --color-bg-deep:#080a12;--color-bg-panel:#121820;
+  --color-gold-primary:#e8d88a;--color-gold-dim:#a08030;
+  --color-parchment-text:#e8e0c8;--color-parchment-muted:#8a8070;
+  --color-semantic-green:#50b070;--color-semantic-blue:#5a9bd4;
+  --color-semantic-red:#c84040;--color-atk:#c84040;--color-def:#5a9bd4;
+  --font-title:Georgia,'Times New Roman',serif;
+  --font-ui:'Segoe UI',Tahoma,sans-serif;
+  --shadow-panel:0 12px 40px rgba(0,0,0,.65);
+  --r:6px;
+}
+body{background:#1a1a24;font-family:var(--font-ui);color:var(--color-parchment-text);padding:24px}
+.meta{max-width:1280px;margin:0 auto 20px;font-size:12px;color:var(--color-parchment-muted)}
+.meta h1{font-family:var(--font-title);color:var(--color-gold-primary);font-size:18px;margin-bottom:6px}
+.frame-wrap{margin:32px auto;max-width:1280px}
+.frame-label{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--color-gold-dim);margin-bottom:8px}
+.frame{
+  position:relative;width:1280px;height:800px;overflow:hidden;
+  background:var(--color-bg-deep);border:1px solid rgba(232,216,138,.15);
+}
+.frame .baseline{
+  position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
+  opacity:.38;pointer-events:none;filter:saturate(.85)
+}
+/* Panel 5C */
+.panel-5c{
+  background:linear-gradient(180deg,rgba(18,24,32,.97),rgba(8,10,18,.95));
+  border:2px solid var(--color-gold-primary);border-radius:var(--r);
+  box-shadow:var(--shadow-panel);
+}
+.panel-5c .ph{
+  padding:12px 18px;border-bottom:1px solid rgba(232,216,138,.22);
+  font-family:var(--font-title);font-size:13px;font-weight:700;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--color-gold-primary);
+}
+/* Button 4C */
+.btn-4c{
+  display:inline-flex;flex-direction:column;align-items:center;gap:4px;
+  padding:10px 14px;min-width:100px;background:transparent;
+  border:2px solid var(--color-gold-primary);border-radius:var(--r);
+  color:var(--color-gold-primary);font-family:var(--font-ui);
+  font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;cursor:default;
+}
+.btn-4c .sub{font-size:9px;font-weight:400;text-transform:none;letter-spacing:0;color:var(--color-parchment-muted)}
+.btn-4c.primary{border-color:var(--color-gold-primary);box-shadow:0 0 16px rgba(232,216,138,.15)}
+.btn-4c.green{border-color:var(--color-semantic-green);color:var(--color-semantic-green)}
+.btn-4c.red{border-color:var(--color-semantic-red);color:#ffb0b0}
+.btn-4c .ico{font-size:22px;line-height:1}
+/* Icons line 3C */
+.ico-line svg{stroke:currentColor;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+/* C-01 */
+.c01-scrim{position:absolute;inset:0;background:rgba(4,8,18,.55);backdrop-filter:blur(3px)}
+.c01-shell{position:absolute;inset:16px;display:flex;align-items:center;justify-content:center}
+.c01-panel{width:920px;max-height:760px;display:flex;flex-direction:column}
+.c01-panel .ph{text-align:center;font-size:15px;letter-spacing:.2em}
+.c01-gens{display:grid;grid-template-columns:1fr 72px 1fr;padding:14px 20px;border-bottom:1px solid rgba(232,216,138,.12)}
+.gen-side{display:flex;flex-direction:column;gap:4px}
+.gen-side.def{align-items:flex-end;text-align:right}
+.gen-name{font-family:var(--font-title);font-size:15px;color:var(--color-parchment-text)}
+.gen-role{font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:var(--color-parchment-muted)}
+.gen-civ{font-size:10px;color:var(--color-gold-dim)}
+.power-v{width:24px;height:90px;border:1px solid rgba(232,216,138,.25);border-radius:4px;margin:0 auto;overflow:hidden;display:flex;flex-direction:column-reverse}
+.power-v .a{height:58%;background:linear-gradient(180deg,#e8c840,#a88020)}
+.power-v .d{height:42%;background:linear-gradient(180deg,#802828,#c84040)}
+.c01-main{display:grid;grid-template-columns:1fr 260px 1fr;flex:1;min-height:0}
+.col-hdr{font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--color-gold-dim);padding:8px 12px;border-bottom:1px solid rgba(232,216,138,.1)}
+.unit-card{display:grid;grid-template-columns:28px 1fr;gap:8px;padding:8px 10px;margin:6px 8px;border:1px solid rgba(232,216,138,.18);border-radius:var(--r);background:rgba(255,255,255,.03);font-size:11px}
+.unit-card .ic{color:var(--color-gold-primary);display:flex;align-items:center;justify-content:center}
+.c01-center{padding:12px;display:flex;flex-direction:column;gap:10px;border-left:1px solid rgba(232,216,138,.1);border-right:1px solid rgba(232,216,138,.1)}
+.terrain-chip{padding:8px;border:1px solid rgba(232,216,138,.2);border-radius:var(--r);text-align:center;font-size:11px}
+.verdict{font-family:var(--font-title);font-size:12px;color:var(--color-gold-primary);text-align:center;margin-top:4px}
+.c01-foot{padding:14px 18px;border-top:1px solid rgba(232,216,138,.12);display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.c01-hint{width:100%;text-align:center;font-size:10px;color:var(--color-parchment-muted);margin-bottom:4px}
+/* Battle HUD shared */
+.hud-top{
+  position:absolute;top:0;left:0;right:0;height:56px;z-index:10;
+  display:flex;align-items:center;justify-content:space-between;padding:0 14px;
+  background:rgba(8,10,18,.88);border-bottom:2px solid rgba(232,216,138,.25);
+}
+.hud-top .title{font-family:var(--font-title);font-size:14px;letter-spacing:.1em;color:var(--color-gold-primary)}
+.hud-top .turn{font-family:var(--font-ui);font-size:12px;color:var(--color-parchment-text)}
+.hud-top .speed{padding:4px 10px;border:2px solid rgba(232,216,138,.35);border-radius:4px;font-size:11px;font-weight:700;color:var(--color-gold-primary)}
+.hud-top .cas{font-size:10px;color:var(--color-parchment-muted)}
+.hud-top .cas b.atk{color:var(--color-atk)} .hud-top .cas b.def{color:var(--color-def)}
+.hud-side{position:absolute;top:72px;bottom:100px;width:28px;z-index:8;border:2px solid rgba(232,216,138,.2);border-radius:4px;background:rgba(0,0,0,.35)}
+.hud-side.left{left:8px;border-color:rgba(200,64,64,.4)}
+.hud-side.right{right:8px;border-color:rgba(90,155,212,.4)}
+.hud-side .fill{position:absolute;bottom:0;left:0;right:0;height:85%;background:linear-gradient(180deg,var(--color-semantic-green),#308850);border-radius:2px}
+.hud-side .lbl{position:absolute;top:-18px;left:50%;transform:translateX(-50%);font-size:9px;font-weight:700;letter-spacing:.08em}
+.hud-log{
+  position:absolute;top:64px;right:12px;width:220px;max-height:140px;z-index:9;
+  padding:10px 12px;font-size:10px;color:var(--color-parchment-muted);
+  background:rgba(8,10,18,.85);border:2px solid rgba(232,216,138,.2);border-radius:var(--r);
+}
+.hud-log .lh{font-family:var(--font-title);font-size:10px;letter-spacing:.1em;color:var(--color-gold-dim);margin-bottom:6px;text-transform:uppercase}
+.hud-speed-box{
+  position:absolute;top:64px;left:12px;padding:8px 12px;z-index:9;
+  background:rgba(8,10,18,.85);border:2px solid rgba(232,216,138,.2);border-radius:var(--r);font-size:11px;
+}
+.hud-speed-box b{color:var(--color-gold-primary)}
+.siege-hud{
+  position:absolute;top:64px;left:50%;transform:translateX(-50%);z-index:11;
+  padding:8px 16px;background:rgba(8,10,18,.9);border:2px solid var(--color-gold-primary);
+  border-radius:var(--r);font-size:11px;min-width:280px;text-align:center;
+}
+.siege-hud .bar{height:8px;background:rgba(255,255,255,.1);border-radius:4px;margin-top:6px;overflow:hidden}
+.siege-hud .bar i{display:block;height:100%;width:72%;background:linear-gradient(90deg,#a88020,var(--color-gold-primary))}
+.cmd-bar{
+  position:absolute;bottom:0;left:0;right:0;height:72px;z-index:10;
+  display:flex;align-items:center;justify-content:center;gap:6px;padding:0 12px;
+  background:rgba(8,10,18,.92);border-top:2px solid rgba(232,216,138,.25);
+}
+.cmd-btn{
+  width:52px;height:52px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+  background:rgba(255,255,255,.04);border:2px solid rgba(232,216,138,.28);border-radius:var(--r);
+  font-size:8px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--color-parchment-text);
+}
+.cmd-btn .k{font-size:14px;color:var(--color-gold-primary)}
+.deploy-panel{
+  position:absolute;bottom:88px;left:50%;transform:translateX(-50%);z-index:12;
+  width:520px;padding:16px 20px;text-align:center;
+}
+.deploy-panel .ph2{font-family:var(--font-title);font-size:14px;color:var(--color-gold-primary);margin-bottom:8px}
+.deploy-panel .hint{font-size:10px;color:var(--color-parchment-muted);margin-bottom:12px}
+.fmt-row{display:flex;gap:8px;justify-content:center;margin-bottom:12px}
+.fmt-row .btn-4c{min-width:82px;padding:8px;font-size:9px}
+.end-modal{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:20;width:440px;padding:24px 28px;text-align:center;
+}
+.end-modal .win{font-family:var(--font-title);font-size:26px;color:var(--color-gold-primary);margin-bottom:16px;text-shadow:0 0 16px rgba(232,216,138,.25)}
+.end-modal .stats{font-size:14px;line-height:1.6;margin-bottom:20px;color:var(--color-parchment-text)}
+.end-modal .stats .atk{color:var(--color-atk)} .end-modal .stats .def{color:var(--color-def)}
+.end-modal .actions{display:flex;gap:12px;justify-content:center}
+</style>
+</head>
+<body>
+<div class="meta">
+  <h1>05 Screens C — redesign (Warstwa 1: 1B 2C 3C 4C 5C)</h1>
+  <p>Baseline 38% · tylko ramki UI · canvas 3D bez zmian · eksport PNG → <code>export/C-XX.png</code></p>
+</div>
+
+<!-- C-01 PRE-BITWA -->
+<div class="frame-wrap"><div class="frame-label">C-01 · Pre-bitwa · Panel 5C</div>
+<div class="frame" id="frame-C-01">
+  <img class="baseline" src="../../baseline/C/C-01_pre-bitwa.png" alt="">
+  <div class="c01-scrim"></div>
+  <div class="c01-shell">
+    <div class="panel-5c c01-panel">
+      <div class="ph">Uwarunkowania bitwy</div>
+      <div class="c01-gens">
+        <div class="gen-side"><div class="gen-name">Rzym (Legion)</div><div class="gen-role">Atakujący</div><div class="gen-civ">Rzym</div></div>
+        <div><div class="power-v"><div class="d"></div><div class="a"></div></div><div style="text-align:center;font-size:11px;color:var(--color-gold-primary);margin-top:4px">58%</div></div>
+        <div class="gen-side def"><div class="gen-name">Grecja (Falanga)</div><div class="gen-role">Obrońca</div><div class="gen-civ">Grecja</div></div>
+      </div>
+      <div class="c01-main">
+        <div><div class="col-hdr"><span class="ico-line" style="display:inline-flex;vertical-align:middle;margin-right:4px;color:var(--color-gold-primary)"><svg width="16" height="16" viewBox="0 0 24 24"><path d="M6 4l4 16M14 4l4 16M4 8h16M4 16h16"/></svg></span>Wojska atakujące</div>
+          <div class="unit-card"><div class="ic ico-line"><svg width="20" height="20" viewBox="0 0 24 24"><path d="M6 4l4 16M14 4l4 16"/></svg></div><div><b>Hastati</b><br><span style="color:var(--color-parchment-muted)">Atk 88 · HP 100%</span></div></div>
+          <div class="unit-card"><div class="ic ico-line"><svg width="20" height="20" viewBox="0 0 24 24"><path d="M6 4l4 16M14 4l4 16"/></svg></div><div><b>Hastati</b><br><span style="color:var(--color-parchment-muted)">Atk 88 · HP 100%</span></div></div></div>
+        <div class="c01-center"><div class="terrain-chip">Równina</div><div style="font-size:10px;color:var(--color-parchment-muted)">Szanse auto-rozstrzygnięcia</div><div class="verdict">Przewaga obrońcy</div></div>
+        <div><div class="col-hdr">Wojska broniące</div>
+          <div class="unit-card"><div class="ic ico-line"><svg width="20" height="20" viewBox="0 0 24 24"><path d="M8 12h8M12 8v8M6 4l4 16M14 4l4 16"/></svg></div><div><b>Falanga</b><br><span style="color:var(--color-parchment-muted)">Atk 48 · HP 100%</span></div></div></div>
+      </div>
+      <div class="c01-foot">
+        <div class="c01-hint">Enter = Bitwa ręczna · Escape = Wycofaj</div>
+        <button class="btn-4c green"><span class="ico">⚡</span>Auto<span class="sub">Wynik od razu</span></button>
+        <button class="btn-4c primary"><span class="ico ico-line"><svg width="22" height="22" viewBox="0 0 24 24"><path d="M6 4l4 16M14 4l4 16"/></svg></span>Bitwa ręczna<span class="sub">Pole 3D</span></button>
+        <button class="btn-4c red"><span class="ico">↩</span>Wycofaj<span class="sub">Anuluj atak</span></button>
+      </div>
+    </div>
+  </div>
+</div></div>
+
+<!-- C-06 DEPLOYMENT -->
+<div class="frame-wrap"><div class="frame-label">C-06 · Faza deploymentu</div>
+<div class="frame" id="frame-C-06">
+  <img class="baseline" src="../../baseline/C/C-06_deployment.png" alt="">
+  <div class="hud-top"><span class="turn">Tura — ustawianie</span><span class="title">Faza rozmieszczenia</span><span class="speed">×1</span></div>
+  <div class="panel-5c deploy-panel">
+    <div class="ph2">⚔ Faza rozmieszczenia — ustaw jednostki</div>
+    <div class="hint">Kliknij jednostkę atakującą, potem pole strefy (niebieskie).</div>
+    <div style="font-size:9px;letter-spacing:.1em;color:var(--color-gold-dim);margin-bottom:6px">FORMACJA AUTO-USTAW</div>
+    <div class="fmt-row">
+      <button class="btn-4c"><span>F1</span><span class="sub">Dystans-przód</span></button>
+      <button class="btn-4c"><span>F2</span><span class="sub">Melee-przód</span></button>
+      <button class="btn-4c"><span>F3</span><span class="sub">Oblężenie</span></button>
+    </div>
+    <button class="btn-4c primary" style="min-width:180px">▶ Start walki</button>
+  </div>
+</div></div>
+
+<!-- C-07 POLE BITWY -->
+<div class="frame-wrap"><div class="frame-label">C-07 · Pole bitwy 3D (HUD)</div>
+<div class="frame" id="frame-C-07">
+  <img class="baseline" src="../../baseline/C/C-07_pole-bitwy.png" alt="">
+  <div class="hud-top">
+    <div><span class="turn">Tura 1</span> · <span class="speed">×4</span></div>
+    <div class="title">Bitwa automatyczna</div>
+    <div class="cas"><b class="atk">ATK 0/33</b> · <b class="def">OBR 0/50</b></div>
+  </div>
+  <div class="hud-side left"><span class="lbl" style="color:var(--color-atk)">ATK</span><div class="fill"></div></div>
+  <div class="hud-side right"><span class="lbl" style="color:var(--color-def)">OBR</span><div class="fill"></div></div>
+  <div class="hud-speed-box">Prędkość: <b>×4</b></div>
+  <div class="hud-log"><div class="lh">Ostatnie starcia</div>(brak starć)</div>
+  <div class="cmd-bar">
+    <div class="cmd-btn"><span class="k">⏸</span>P</div>
+    <div class="cmd-btn"><span class="k">⏩</span>S</div>
+    <div class="cmd-btn"><span class="k">🎮</span>R</div>
+    <div class="cmd-btn"><span class="k">⏹</span>Stop</div>
+    <div class="cmd-btn"><span class="k">🏳</span>W</div>
+    <div class="cmd-btn"><span class="k">📊</span>H</div>
+    <div class="cmd-btn"><span class="k">🔊</span>M</div>
+    <div class="cmd-btn"><span class="k">⏭</span>Pomin</div>
+    <div class="cmd-btn"><span class="k">✕</span>Wyjście</div>
+  </div>
+</div></div>
+
+<!-- C-08 HUD GÓRA -->
+<div class="frame-wrap"><div class="frame-label">C-08 · Górny pasek HUD</div>
+<div class="frame" id="frame-C-08">
+  <img class="baseline" src="../../baseline/C/C-08_hud-gora-bitwa.png" alt="">
+  <div class="hud-top" style="height:72px;padding:0 20px">
+    <div><span class="turn" style="font-size:14px">TURA 12</span><span class="speed" style="margin-left:10px">×8</span></div>
+    <div style="text-align:center"><div class="title" style="font-size:16px">Atakujący vs Obrońca</div><div class="cas" style="margin-top:4px"><b class="atk">ATK: 4 strat</b> · <b class="def">OBR: 7 strat</b></div></div>
+    <div style="display:flex;gap:8px"><button class="btn-4c" style="min-width:auto;padding:6px 12px;font-size:9px">Pomiń</button><button class="btn-4c red" style="min-width:auto;padding:6px 12px;font-size:9px">Wyjście</button></div>
+  </div>
+</div></div>
+
+<!-- C-09 PASEK KOMEND -->
+<div class="frame-wrap"><div class="frame-label">C-09 · Dolny pasek komend</div>
+<div class="frame" id="frame-C-09">
+  <img class="baseline" src="../../baseline/C/C-09_pasek-komend.png" alt="">
+  <div class="cmd-bar" style="height:88px;border-top:2px solid var(--color-gold-primary)">
+    <div class="cmd-btn" style="width:58px;height:58px;border-color:var(--color-gold-dim)"><span class="k">⏸</span>Pauza</div>
+    <div class="cmd-btn"><span class="k">⏩</span>Prędkość</div>
+    <div class="cmd-btn"><span class="k">🎮</span>Auto/R</div>
+    <div class="cmd-btn"><span class="k">⏹</span>Stop</div>
+    <div class="cmd-btn"><span class="k">🏳</span>Wycofaj</div>
+    <div class="cmd-btn"><span class="k">📊</span>Paski</div>
+    <div class="cmd-btn"><span class="k">🔊</span>Dźwięk</div>
+    <div class="cmd-btn" style="border-color:var(--color-gold-primary)"><span class="k">⏭</span>Pomiń</div>
+  </div>
+</div></div>
+
+<!-- C-19 OBLĘŻENIE MUR -->
+<div class="frame-wrap"><div class="frame-label">C-19 · HUD muru i bramy</div>
+<div class="frame" id="frame-C-19">
+  <img class="baseline" src="../../baseline/C/C-19_oblezenie-mur-hud.png" alt="">
+  <div class="hud-top"><span class="turn">Tura 3 · oblężenie</span><span class="title">Szturm muru</span><span class="speed">×2</span></div>
+  <div class="siege-hud panel-5c" style="padding:12px 20px">
+    <div style="font-family:var(--font-title);font-size:12px;letter-spacing:.1em;color:var(--color-gold-primary)">Oblężenie — mur miejski</div>
+    <div style="margin-top:8px">Brama: <b style="color:var(--color-gold-primary)">720 / 1000</b></div>
+    <div class="bar"><i></i></div>
+    <div style="margin-top:8px;font-size:10px;color:var(--color-parchment-muted)">Segment muru (rząd 4): <b>480 / 640</b></div>
+    <div class="bar"><i style="width:75%"></i></div>
+  </div>
+  <div class="cmd-bar"><div class="cmd-btn"><span class="k">⏭</span>Pomin</div></div>
+</div></div>
+
+<!-- C-21 KONIEC BITWY -->
+<div class="frame-wrap"><div class="frame-label">C-21 · Ekran końca bitwy · Panel 5C</div>
+<div class="frame" id="frame-C-21">
+  <img class="baseline" src="../../baseline/C/C-21_ekran-konca-bitwy.png" alt="">
+  <div style="position:absolute;inset:0;background:rgba(4,8,18,.45)"></div>
+  <div class="panel-5c end-modal">
+    <div class="ph" style="border:none;padding:0;margin-bottom:8px">Koniec bitwy</div>
+    <div class="win">Zwycięstwo atakującego!</div>
+    <div class="stats">
+      <div><span class="atk">Atakujący</span> — padli: <b>0</b> · pozostali: <b>4/4</b> · HP 297/300</div>
+      <div style="margin-top:8px"><span class="def">Obrońca</span> — padli: <b>2</b> · pozostali: <b>2/4</b> · HP 114/400</div>
+    </div>
+    <div class="actions">
+      <button class="btn-4c" style="min-width:120px">Szczegóły</button>
+      <button class="btn-4c primary" style="min-width:160px">Zakończ bitwę</button>
+    </div>
+  </div>
+</div></div>
+
+</body>
+</html>

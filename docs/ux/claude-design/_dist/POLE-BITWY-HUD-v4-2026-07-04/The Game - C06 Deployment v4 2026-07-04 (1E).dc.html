@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><meta name="design_doc_mode" content="canvas"><style>html,body{margin:0;padding:0;background:#15171c}*{box-sizing:border-box}
+.hex{background-image:linear-gradient(60deg,rgba(255,255,255,.03) 1px,transparent 1px),linear-gradient(-60deg,rgba(255,255,255,.03) 1px,transparent 1px);background-size:66px 114px}
+.rail-b{width:44px;height:44px;border-radius:10px;border:1px solid rgba(232,216,138,.3);background:linear-gradient(180deg,#161c28,#0a0d14);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;color:#e8d88a;font:700 9px 'Segoe UI',sans-serif}
+.tbtn{display:inline-flex;align-items:center;gap:8px;height:46px;padding:0 18px;border-radius:9px;border:2px solid rgba(232,216,138,.4);background:linear-gradient(180deg,#161c28,#0a0d14);color:#e8d88a;font:600 12px 'Segoe UI',sans-serif;letter-spacing:.1em;text-transform:uppercase}
+.card{position:relative;width:52px;border-radius:8px;border:1px solid rgba(232,216,138,.22);background:linear-gradient(180deg,rgba(24,30,40,.96),rgba(10,13,20,.96));padding:5px 4px 4px;display:flex;flex-direction:column;align-items:center;gap:3px}
+.card.sel{border:2px solid #3a6ad0;box-shadow:0 0 10px rgba(58,106,208,.5)}
+.card .ic{width:26px;height:26px;border-radius:50%;background:radial-gradient(circle at 38% 30%,#2a2416,#12100a);border:1px solid #a08030;display:flex;align-items:center;justify-content:center;color:#e8d88a}
+.card .bar{width:100%;height:4px;border-radius:2px;background:rgba(255,255,255,.1);overflow:hidden}
+.badge{position:absolute;top:-5px;right:-5px;width:16px;height:16px;border-radius:50%;background:#e8d88a;color:#2e2708;font:700 9px sans-serif;display:flex;align-items:center;justify-content:center}</style></helmet>
+
+<!-- =================== A · DEPLOY =================== -->
+<section data-screen-label="C06 A Deploy" style="position:relative;width:1920px;height:1080px;overflow:hidden;font-family:'Segoe UI',Tahoma,sans-serif;color:#e8e0c8;background:#0a0c10;margin:0 auto 40px">
+  <div class="hex" style="position:absolute;inset:0;background-color:#0c1016"></div>
+  <div style="position:absolute;inset:0;box-shadow:inset 0 0 220px 60px rgba(0,0,0,.7)"></div>
+  <!-- podział pola nieb/czerw -->
+  <div style="position:absolute;top:150px;bottom:150px;left:50%;width:2px;background:linear-gradient(180deg,transparent,#e8d88a,transparent);opacity:.5"></div>
+  <div style="position:absolute;top:150px;bottom:150px;left:120px;right:50%;background:linear-gradient(90deg,rgba(58,106,208,.08),transparent)"></div>
+  <div style="position:absolute;top:150px;bottom:150px;right:74px;left:50%;background:linear-gradient(-90deg,rgba(200,64,64,.08),transparent)"></div>
+
+  <!-- sylwetki + ramki grup (wróg góra) -->
+  <div style="position:absolute;top:250px;left:1150px;width:180px;height:90px;border:1px solid rgba(200,64,64,.5);border-radius:8px;background:rgba(200,64,64,.06);display:flex;align-items:center;justify-content:center;gap:8px">
+    <span style="color:#e08a8a"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M4.5 5 14 14.5M19.5 5 10 14.5"/></svg></span>
+    <span style="color:#e08a8a"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M4.5 5 14 14.5M19.5 5 10 14.5"/></svg></span>
+    <span style="position:absolute;top:-9px;left:8px;font:700 10px sans-serif;color:#e08a8a;background:#1a0e0e;border:1px solid rgba(200,64,64,.5);border-radius:5px;padding:1px 6px">Wróg · Grupa A</span>
+  </div>
+  <!-- gracz dół, złota obwódka grupy -->
+  <div style="position:absolute;bottom:280px;left:560px;width:230px;height:96px;border:2px solid rgba(232,216,138,.6);border-radius:8px;background:rgba(232,216,138,.05);box-shadow:0 0 18px rgba(232,216,138,.2);display:flex;align-items:center;justify-content:center;gap:10px">
+    <span style="color:#8fb6e0"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M5 20c0-6 2-9 6-10l1-3 3 1-1 3c3 1 4 4 4 9"/></svg></span>
+    <span style="color:#e8d88a"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M12 3 5 5.5v5c0 4.5 3 7.6 7 9 4-1.4 7-4.5 7-9v-5Z"/></svg></span>
+    <span style="color:#e8d88a"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M4.5 5 14 14.5M19.5 5 10 14.5"/></svg></span>
+    <span style="position:absolute;top:-10px;left:8px;font:700 10px sans-serif;color:#2e2708;background:#e8d88a;border-radius:5px;padding:1px 7px">Twoja · Grupa 1</span>
+  </div>
+
+  <!-- TOP bar -->
+  <div style="position:absolute;top:16px;left:20px;right:88px;z-index:5;display:flex;align-items:center;justify-content:space-between;padding:9px 18px;border-radius:12px;background:linear-gradient(180deg,rgba(20,26,38,.95),rgba(8,10,16,.96));border:1px solid rgba(232,216,138,.3);box-shadow:0 6px 16px rgba(0,0,0,.5)">
+    <div style="display:flex;align-items:center;gap:16px">
+      <span style="width:40px;height:40px;border-radius:50%;background:radial-gradient(circle at 38% 30%,#2a2416,#12100a);border:2px solid #e8d88a;display:flex;align-items:center;justify-content:center;color:#f4e6a8"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M4 20V8l2-2 2 2 2-2 2 2 2-2 2 2 2-2 2 2v12Z"/><path d="M4 13h16"/></svg></span>
+      <div><div style="font-family:Georgia,serif;font-size:16px;color:#e8d88a;white-space:nowrap">Faza rozstawiania</div><div style="font-size:11px;color:#8a8070;white-space:nowrap">Rzym · przygotuj szyk</div></div>
+    </div>
+    <div style="display:flex;align-items:center;gap:14px">
+      <span style="display:inline-flex;align-items:center;gap:6px;color:#8fb6e0;font-weight:700"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M12 3 5 5.5v5c0 4.5 3 7.6 7 9 4-1.4 7-4.5 7-9v-5Z"/></svg>Ty</span>
+      <span style="font-family:Georgia,serif;font-size:18px;color:#c8b898">VS</span>
+      <span style="display:inline-flex;align-items:center;gap:6px;color:#e08a8a;font-weight:700">Wróg<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M4.5 5 14 14.5M19.5 5 10 14.5"/></svg></span>
+      <span style="width:1px;height:22px;background:rgba(232,216,138,.2)"></span>
+      <span style="display:inline-flex;gap:8px;color:#c8b898"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" title="Konnica"><path d="M5 20c0-6 2-9 6-10l1-3 3 1-1 3c3 1 4 4 4 9"/></svg><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M12 3 5 5.5v5c0 4.5 3 7.6 7 9 4-1.4 7-4.5 7-9v-5Z"/></svg><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M5 5c8 1 13 6 14 14M5 5v4M5 5h4"/></svg></span>
+      <span style="display:inline-flex;align-items:center;gap:7px;height:34px;padding:0 14px;border-radius:8px;border:2px solid rgba(200,64,64,.45);color:#e08a8a;font-size:11px;letter-spacing:.12em;text-transform:uppercase">Wycofaj się</span>
+    </div>
+  </div>
+
+  <!-- pasek mocy poziomy -->
+  <div style="position:absolute;top:80px;left:50%;transform:translateX(-50%);z-index:5;width:520px">
+    <div style="height:12px;border-radius:6px;overflow:hidden;display:flex;border:1px solid rgba(232,216,138,.3)"><div style="width:54%;background:linear-gradient(90deg,#3a8a5a,#7ad0a0)"></div><div style="width:46%;background:linear-gradient(90deg,#c05050,#8a3a3a)"></div></div>
+    <div style="text-align:center;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:#8a8070;margin-top:5px">Ostatnie starcia</div>
+  </div>
+
+  <!-- prawy rail 56px -->
+  <div style="position:absolute;top:150px;right:16px;z-index:6;width:56px;display:flex;flex-direction:column;gap:8px;align-items:center">
+    <div class="rail-b" title="Pauza"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M9 5v14M15 5v14"/></svg>P</div>
+    <div class="rail-b" title="Prędkość"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 5 12 12 4 19ZM13 5l8 7-8 7"/></svg>V</div>
+    <div class="rail-b" title="Auto / Ręczne"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 9a8 8 0 0 1 14-3M20 15a8 8 0 0 1-14 3"/><path d="M18 3v3h-3M6 21v-3h3"/></svg>R</div>
+    <div class="rail-b" title="Mapa / minimapa"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 4 4 6v14l5-2 6 2 5-2V4l-5 2Z"/><path d="M9 4v14M15 6v14"/></svg>M</div>
+    <div class="rail-b" title="Muzyka / dźwięk"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 9v6h4l5 4V5L9 9Z"/><path d="M17 9c1.2 1.5 1.2 4.5 0 6"/></svg>MUZ</div>
+    <div class="rail-b" title="Paski HP / morale"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 7h16M4 12h11M4 17h16"/></svg>H</div>
+    <div class="rail-b" title="Pomiń turę"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M5 5l7 7-7 7M13 5l7 7-7 7"/></svg>&gt;&gt;</div>
+    <div class="rail-b" title="Wycofaj" style="border-color:rgba(200,64,64,.5);color:#e08a8a"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>WYC</div>
+  </div>
+
+  <!-- minimapa lewy dół -->
+  <div style="position:absolute;bottom:96px;left:20px;z-index:5;width:210px;height:132px;border-radius:12px;overflow:hidden;background:#0a0f16;border:3px solid #6a5212;box-shadow:inset 0 0 0 2px rgba(232,216,138,.3),0 6px 16px rgba(0,0,0,.6)"><div style="position:absolute;left:20px;bottom:18px;width:80px;height:40px;background:radial-gradient(circle,rgba(58,106,208,.4),transparent 70%)"></div><div style="position:absolute;right:24px;top:16px;width:70px;height:36px;background:radial-gradient(circle,rgba(200,64,64,.4),transparent 70%)"></div></div>
+
+  <!-- dolny toolbar deploy -->
+  <div style="position:absolute;bottom:16px;left:250px;right:88px;z-index:6;display:flex;align-items:center;gap:10px;padding:12px 16px;border-radius:14px;background:linear-gradient(180deg,rgba(20,26,38,.96),rgba(8,10,16,.97));border:2px solid rgba(232,216,138,.4);box-shadow:0 12px 30px rgba(0,0,0,.6)">
+    <span class="tbtn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 7h16M4 12h16M4 17h16"/></svg>Formacja</span>
+    <span class="tbtn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 20c0-6 2-9 6-10l1-3 3 1-1 3c3 1 4 4 4 9"/></svg>Konnica</span>
+    <span class="tbtn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 8h16M4 12h16M4 16h16"/></svg>Linie</span>
+    <span class="tbtn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></svg>Taktyka</span>
+    <span class="tbtn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 9 12 4.5 20 9Z"/><path d="M6.5 11h11M7.5 11v6M16.5 11v6M5.5 17h13"/></svg>Strategia</span>
+    <span style="flex:1"></span>
+    <span class="tbtn" style="border-color:rgba(232,216,138,.25);color:#c8b898"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 9a8 8 0 0 1 14-3M18 3v3h-3"/><path d="M20 15a8 8 0 0 1-14 3M6 21v-3h3"/></svg>Reset</span>
+    <span style="display:inline-flex;align-items:center;gap:9px;height:52px;padding:0 34px;border-radius:9px;background:linear-gradient(180deg,#d05050,#8a2424);border:1px solid #6a1818;border-top-color:#e07070;color:#fff0e8;font:700 14px 'Segoe UI',sans-serif;letter-spacing:.14em;text-transform:uppercase;box-shadow:inset 0 1px 0 rgba(255,255,255,.25),0 6px 20px rgba(200,64,64,.4)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4.5 5 14 14.5M19.5 5 10 14.5"/></svg>Start walki</span>
+  </div>
+  <div style="position:absolute;bottom:2px;left:250px;z-index:6;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:#4a463e">Wariant B stopka: CTA złoty 1E (poniżej)</div>
+</section>
+
+<!-- =================== B · WALKA AUTO =================== -->
+<section data-screen-label="C06 B Walka AUTO" style="position:relative;width:1920px;height:1080px;overflow:hidden;font-family:'Segoe UI',Tahoma,sans-serif;color:#e8e0c8;background:#0a0c10;margin:0 auto 40px">
+  <div class="hex" style="position:absolute;inset:0;background-color:#0c1016"></div>
+  <div style="position:absolute;inset:0;box-shadow:inset 0 0 220px 60px rgba(0,0,0,.7)"></div>
+  <div style="position:absolute;top:150px;bottom:60px;left:50%;width:2px;background:linear-gradient(180deg,transparent,#e8d88a,transparent);opacity:.5"></div>
+  <!-- starcie w toku -->
+  <div style="position:absolute;top:44%;left:47%;color:#e8d88a;opacity:.9"><svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M4.5 5 14 14.5M14.5 15 17.5 18M19.5 5 10 14.5M9.5 15 6.5 18"/></svg></div>
+
+  <!-- TOP (jak deploy, bez emblematu akcji) -->
+  <div style="position:absolute;top:16px;left:20px;right:88px;z-index:5;display:flex;align-items:center;justify-content:space-between;padding:9px 18px;border-radius:12px;background:linear-gradient(180deg,rgba(20,26,38,.95),rgba(8,10,16,.96));border:1px solid rgba(232,216,138,.3)">
+    <div style="display:flex;align-items:center;gap:14px"><span style="font-family:Georgia,serif;font-size:16px;color:#e8d88a">Tura 3</span><span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;color:#c8b898;border:1px solid rgba(232,216,138,.3);border-radius:8px;padding:4px 10px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 5 12 12 4 19ZM13 5l8 7-8 7"/></svg>Prędkość ×4</span></div>
+    <div style="display:flex;align-items:center;gap:12px"><span style="color:#8fb6e0;font-weight:700">Ty</span><span style="font-family:Georgia,serif;color:#c8b898">VS</span><span style="color:#e08a8a;font-weight:700">Wróg</span></div>
+  </div>
+  <div style="position:absolute;top:80px;left:50%;transform:translateX(-50%);z-index:5;width:520px"><div style="height:12px;border-radius:6px;overflow:hidden;display:flex;border:1px solid rgba(232,216,138,.3)"><div style="width:62%;background:linear-gradient(90deg,#3a8a5a,#7ad0a0)"></div><div style="width:38%;background:linear-gradient(90deg,#c05050,#8a3a3a)"></div></div><div style="text-align:center;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:#8a8070;margin-top:5px">Ostatnie starcia</div></div>
+
+  <!-- rail (R bez podświetlenia) -->
+  <div style="position:absolute;top:150px;right:16px;z-index:6;width:56px;display:flex;flex-direction:column;gap:8px;align-items:center">
+    <div class="rail-b"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M9 5v14M15 5v14"/></svg>P</div>
+    <div class="rail-b"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 5 12 12 4 19ZM13 5l8 7-8 7"/></svg>V</div>
+    <div class="rail-b"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 9a8 8 0 0 1 14-3M20 15a8 8 0 0 1-14 3M18 3v3h-3M6 21v-3h3"/></svg>R</div>
+    <div class="rail-b"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 4 4 6v14l5-2 6 2 5-2V4l-5 2Z"/></svg>M</div>
+    <div class="rail-b"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 9v6h4l5 4V5L9 9Z"/></svg>MUZ</div>
+    <div class="rail-b"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 7h16M4 12h11M4 17h16"/></svg>H</div>
+    <div class="rail-b"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M5 5l7 7-7 7M13 5l7 7-7 7"/></svg>&gt;&gt;</div>
+    <div class="rail-b" style="border-color:rgba(200,64,64,.5);color:#e08a8a"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>WYC</div>
+  </div>
+  <div style="position:absolute;bottom:96px;left:20px;z-index:5;width:210px;height:132px;border-radius:12px;overflow:hidden;background:#0a0f16;border:3px solid #6a5212;box-shadow:inset 0 0 0 2px rgba(232,216,138,.3)"><div style="position:absolute;left:30px;bottom:24px;width:70px;height:34px;background:radial-gradient(circle,rgba(58,106,208,.4),transparent 70%)"></div><div style="position:absolute;right:30px;top:22px;width:60px;height:30px;background:radial-gradient(circle,rgba(200,64,64,.4),transparent 70%)"></div></div>
+  <div style="position:absolute;bottom:24px;left:50%;transform:translateX(-50%);z-index:5;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#8a8070;border:1px solid rgba(232,216,138,.2);border-radius:20px;padding:8px 20px;background:rgba(20,26,38,.8)">Tryb AUTO · walka rozstrzyga się automatycznie · roster i toolbar ukryte</div>
+</section>
+
+<!-- =================== C · WALKA R + ROSTER =================== -->
+<section data-screen-label="C06 C Walka R" style="position:relative;width:1920px;height:1080px;overflow:hidden;font-family:'Segoe UI',Tahoma,sans-serif;color:#e8e0c8;background:#0a0c10;margin:0 auto 40px">
+  <div class="hex" style="position:absolute;inset:0;background-color:#0c1016"></div>
+  <div style="position:absolute;inset:0;box-shadow:inset 0 0 220px 60px rgba(0,0,0,.7)"></div>
+  <div style="position:absolute;top:150px;bottom:60px;left:calc(50% + 184px);width:2px;background:linear-gradient(180deg,transparent,#e8d88a,transparent);opacity:.5"></div>
+
+  <!-- lewy ROSTER (scroll pionowy) -->
+  <div style="position:absolute;top:150px;left:16px;bottom:16px;z-index:6;width:368px;border:2px solid rgba(232,216,138,.4);border-radius:12px;background:linear-gradient(180deg,rgba(18,24,32,.97),rgba(8,10,16,.98));box-shadow:0 12px 30px rgba(0,0,0,.6);display:flex;flex-direction:column;overflow:hidden">
+    <div style="padding:12px 14px;border-bottom:1px solid rgba(232,216,138,.2);background:linear-gradient(90deg,rgba(232,216,138,.08),transparent)"><div style="font:700 12px 'Segoe UI';letter-spacing:.12em;text-transform:uppercase;color:#e8d88a">Roster · 18 jednostek</div></div>
+    <!-- filtry -->
+    <div style="display:flex;flex-wrap:wrap;gap:5px;padding:10px 12px;border-bottom:1px solid rgba(232,216,138,.14)">
+      <span style="font:600 10px sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#2e2708;background:#e8d88a;border-radius:12px;padding:4px 10px">Wszystkie</span>
+      <span style="font:600 10px sans-serif;text-transform:uppercase;color:#8fb6e0;border:1px solid rgba(58,106,208,.5);border-radius:12px;padding:4px 10px">Konnica</span>
+      <span style="font:600 10px sans-serif;text-transform:uppercase;color:#e8d0a8;border:1px solid rgba(232,216,138,.4);border-radius:12px;padding:4px 10px">Piechota</span>
+      <span style="font:600 10px sans-serif;text-transform:uppercase;color:#d8c8a0;border:1px solid rgba(200,180,120,.4);border-radius:12px;padding:4px 10px">Łucznicy</span>
+      <span style="font:600 10px sans-serif;text-transform:uppercase;color:#c8b898;border:1px solid rgba(232,216,138,.3);border-radius:12px;padding:4px 10px">Grupa 1</span>
+      <span style="font:600 10px sans-serif;text-transform:uppercase;color:#c8b898;border:1px solid rgba(232,216,138,.3);border-radius:12px;padding:4px 10px">Generał</span>
+    </div>
+    <!-- akcje zaznaczenia -->
+    <div style="display:flex;gap:6px;padding:8px 12px;border-bottom:1px solid rgba(232,216,138,.14)">
+      <span style="flex:1;text-align:center;font:600 10px sans-serif;text-transform:uppercase;color:#c8b898;border:1px solid rgba(232,216,138,.3);border-radius:7px;padding:6px 0">Odznacz</span>
+      <span style="flex:1;display:inline-flex;align-items:center;justify-content:center;gap:5px;font:600 10px sans-serif;text-transform:uppercase;color:#2e2708;background:#e8d88a;border-radius:7px;padding:6px 0"><svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3 21 12 12 21 3 12Z"/></svg>Grupuj</span>
+      <span style="flex:1;text-align:center;font:600 10px sans-serif;text-transform:uppercase;color:#c8b898;border:1px solid rgba(232,216,138,.3);border-radius:7px;padding:6px 0">Rozgrupuj</span>
+    </div>
+    <!-- siatka kart 6 kol -->
+    <div style="flex:1;overflow:hidden;padding:12px 22px 12px 12px;position:relative">
+      <div style="display:grid;grid-template-columns:repeat(6,52px);gap:4px;justify-content:start">
+        <!-- konnica -->
+        <div class="card sel"><div class="badge">1</div><div class="ic" style="border-color:#3a6ad0;color:#8fb6e0"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 20c0-6 2-9 6-10l1-3 3 1-1 3c3 1 4 4 4 9"/></svg></div><div class="bar"><div style="width:90%;height:100%;background:linear-gradient(90deg,#3a8a5a,#7ad0a0)"></div></div><div class="bar"><div style="width:80%;height:100%;background:linear-gradient(90deg,#a08030,#e8d88a)"></div></div><div style="font:700 8px sans-serif;color:#c8b898">90</div></div>
+        <div class="card sel"><div class="badge">1</div><div class="ic" style="border-color:#3a6ad0;color:#8fb6e0"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 20c0-6 2-9 6-10l1-3 3 1-1 3c3 1 4 4 4 9"/></svg></div><div class="bar"><div style="width:75%;height:100%;background:linear-gradient(90deg,#3a8a5a,#7ad0a0)"></div></div><div class="bar"><div style="width:70%;height:100%;background:linear-gradient(90deg,#a08030,#e8d88a)"></div></div><div style="font:700 8px sans-serif;color:#c8b898">75</div></div>
+        <div class="card"><div class="ic" style="border-color:#3a6ad0;color:#8fb6e0"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 20c0-6 2-9 6-10l1-3 3 1-1 3c3 1 4 4 4 9"/></svg></div><div class="bar"><div style="width:100%;height:100%;background:linear-gradient(90deg,#3a8a5a,#7ad0a0)"></div></div><div class="bar"><div style="width:88%;height:100%;background:linear-gradient(90deg,#a08030,#e8d88a)"></div></div><div style="font:700 8px sans-serif;color:#c8b898">100</div></div>
+        <!-- piechota -->
+        <div class="card"><div class="ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 3 5 5.5v5c0 4.5 3 7.6 7 9 4-1.4 7-4.5 7-9v-5Z"/></svg></div><div class="bar"><div style="width:88%;height:100%;background:linear-gradient(90deg,#3a8a5a,#7ad0a0)"></div></div><div class="bar"><div style="width:90%;height:100%;background:linear-gradient(90deg,#a08030,#e8d88a)"></div></div><div style="font:700 8px sans-serif;color:#c8b898">88</div></div>
+        <div class="card"><div class="ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 3 5 5.5v5c0 4.5 3 7.6 7 9 4-1.4 7-4.5 7-9v-5Z"/></svg></div><div class="bar"><div style="width:64%;height:100%;background:linear-gradient(90deg,#3a8a5a,#7ad0a0)"></div></div><div class="bar"><div style="width:60%;height:100%;background:linear-gradient(90deg,#a08030,#e8d88a)"></div></div><div style="font:700 8px sans-serif;color:#c8b898">64</div></div>
+        <div class="card"><div class="badge" style="background:#8fb6e0">2</div><div class="ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 18 18 6M18 6h-3.5M18 6v3.5"/></svg></div><div class="bar"><div style="width:100%;height:100%;background:linear-gradient(90deg,#3a8a5a,#7ad0a0)"></div></div><div class="bar"><div style="width:95%;height:100%;background:linear-gradient(90deg,#a08030,#e8d88a)"></div></div><div style="font:700 8px sans-serif;color:#c8b898">100</div></div>
+        <div class="card"><div class="ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 18 18 6M18 6h-3.5M18 6v3.5"/></svg></div><div class="bar"><div style="width:80%;height:100%;background:linear-gradient(90deg,#3a8a5a,#7ad0a0)"></div></div><div class="bar"><div style="width:78%;height:100%;background:linear-gradient(90deg,#a08030,#e8d88a)"></div></div><div style="font:700 8px sans-serif;color:#c8b898">80</div></div>
+        <div class="card"><div class="ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 3 5 5.5v5c0 4.5 3 7.6 7 9 4-1.4 7-4.5 7-9v-5Z"/></svg></div><div class="bar"><div style="width:55%;height:100%;background:linear-gradient(90deg,#3a8a5a,#7ad0a0)"></div></div><div class="bar"><div style="width:40%;height:100%;background:linear-gradient(90deg,#a08030,#e8d88a)"></div></div><div style="font:700 8px sans-serif;color:#c8b898">55</div></div>
+        <!-- łucznicy -->
+        <div class="card"><div class="ic" style="border-color:#c8b478;color:#d8c8a0"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 5c8 1 13 6 14 14M5 5v4M5 5h4M6 18 18 6"/></svg></div><div class="bar"><div style="width:70%;height:100%;background:linear-gradient(90deg,#3a8a5a,#7ad0a0)"></div></div><div class="bar"><div style="width:66%;height:100%;background:linear-gradient(90deg,#a08030,#e8d88a)"></div></div><div style="font:700 8px sans-serif;color:#c8b898">70</div></div>
+        <div class="card"><div class="ic" style="border-color:#c8b478;color:#d8c8a0"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 5c8 1 13 6 14 14M5 5v4M5 5h4M6 18 18 6"/></svg></div><div class="bar"><div style="width:82%;height:100%;background:linear-gradient(90deg,#3a8a5a,#7ad0a0)"></div></div><div class="bar"><div style="width:80%;height:100%;background:linear-gradient(90deg,#a08030,#e8d88a)"></div></div><div style="font:700 8px sans-serif;color:#c8b898">82</div></div>
+        <!-- martwy/routed -->
+        <div class="card" style="opacity:.4"><div class="ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 3 5 5.5v5c0 4.5 3 7.6 7 9 4-1.4 7-4.5 7-9v-5Z"/></svg></div><div class="bar"><div style="width:0%;height:100%"></div></div><div class="bar"><div style="width:0%;height:100%"></div></div><div style="font:700 8px sans-serif;color:#8a5a5a">✕</div></div>
+      </div>
+      <!-- scrollbar 1E -->
+      <div style="position:absolute;top:12px;bottom:12px;right:3px;width:5px;border-radius:3px;background:rgba(255,255,255,.06)"><div style="width:100%;height:44%;border-radius:3px;background:linear-gradient(180deg,#a08030,#e8d88a)"></div></div>
+    </div>
+  </div>
+
+  <!-- TOP -->
+  <div style="position:absolute;top:16px;left:400px;right:88px;z-index:5;display:flex;align-items:center;justify-content:space-between;padding:9px 18px;border-radius:12px;background:linear-gradient(180deg,rgba(20,26,38,.95),rgba(8,10,16,.96));border:1px solid rgba(232,216,138,.3)">
+    <div style="display:flex;align-items:center;gap:14px"><span style="font-family:Georgia,serif;font-size:16px;color:#e8d88a">Tura 3 · Ręczne</span><span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;color:#c8b898;border:1px solid rgba(232,216,138,.3);border-radius:8px;padding:4px 10px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 5 12 12 4 19ZM13 5l8 7-8 7"/></svg>×1</span></div>
+    <div style="display:flex;align-items:center;gap:12px"><span style="color:#8fb6e0;font-weight:700">Ty</span><span style="font-family:Georgia,serif;color:#c8b898">VS</span><span style="color:#e08a8a;font-weight:700">Wróg</span></div>
+  </div>
+  <div style="position:absolute;top:80px;left:calc(400px + ((100% - 488px)/2));transform:translateX(-50%);z-index:5;width:460px"><div style="height:12px;border-radius:6px;overflow:hidden;display:flex;border:1px solid rgba(232,216,138,.3)"><div style="width:58%;background:linear-gradient(90deg,#3a8a5a,#7ad0a0)"></div><div style="width:42%;background:linear-gradient(90deg,#c05050,#8a3a3a)"></div></div><div style="text-align:center;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:#8a8070;margin-top:5px">Ostatnie starcia</div></div>
+
+  <!-- rail -->
+  <div style="position:absolute;top:150px;right:16px;z-index:6;width:56px;display:flex;flex-direction:column;gap:8px;align-items:center">
+    <div class="rail-b"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M9 5v14M15 5v14"/></svg>P</div>
+    <div class="rail-b"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 5 12 12 4 19ZM13 5l8 7-8 7"/></svg>V</div>
+    <div class="rail-b" style="border-color:#e8d88a;box-shadow:0 0 12px rgba(232,216,138,.4)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 9a8 8 0 0 1 14-3M20 15a8 8 0 0 1-14 3M18 3v3h-3M6 21v-3h3"/></svg>R</div>
+    <div class="rail-b"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 4 4 6v14l5-2 6 2 5-2V4l-5 2Z"/></svg>M</div>
+    <div class="rail-b"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 9v6h4l5 4V5L9 9Z"/></svg>MUZ</div>
+    <div class="rail-b"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 7h16M4 12h11M4 17h16"/></svg>H</div>
+    <div class="rail-b"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M5 5l7 7-7 7M13 5l7 7-7 7"/></svg>&gt;&gt;</div>
+    <div class="rail-b" style="border-color:rgba(200,64,64,.5);color:#e08a8a"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>WYC</div>
+  </div>
+
+  <!-- toolbar R: tylko Taktyka + Strategia + popup Taktyka OTWARTY -->
+  <div style="position:absolute;bottom:16px;left:400px;z-index:6;display:flex;gap:10px;align-items:center;padding:12px 16px;border-radius:14px;background:linear-gradient(180deg,rgba(20,26,38,.96),rgba(8,10,16,.97));border:2px solid rgba(232,216,138,.4)">
+    <span class="tbtn" style="border-color:#e8d88a;color:#f4e6a8"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></svg>Taktyka</span>
+    <span class="tbtn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 9 12 4.5 20 9Z"/><path d="M6.5 11h11M7.5 11v6M16.5 11v6M5.5 17h13"/></svg>Strategia</span>
+  </div>
+  <!-- popup Taktyka -->
+  <div style="position:absolute;bottom:82px;left:400px;z-index:7;width:300px;border:2px solid rgba(232,216,138,.45);border-radius:12px;background:linear-gradient(180deg,rgba(22,28,38,.98),rgba(8,10,16,.98));box-shadow:0 16px 40px rgba(0,0,0,.7);overflow:hidden">
+    <div style="padding:10px 14px;border-bottom:1px solid rgba(232,216,138,.2);font:700 11px 'Segoe UI';letter-spacing:.12em;text-transform:uppercase;color:#e8d88a">Taktyka</div>
+    <div style="padding:8px">
+      <div style="display:flex;align-items:center;gap:10px;padding:9px 11px;border-radius:8px;background:rgba(232,216,138,.06);border:1px solid rgba(232,216,138,.2);margin-bottom:6px"><span style="color:#e8d88a"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 3v18M5 8l7-5 7 5"/></svg></span><span style="font-size:13px;color:#e8e0c8">Natarcie</span></div>
+      <div style="display:flex;align-items:center;gap:10px;padding:9px 11px;border-radius:8px;margin-bottom:6px"><span style="color:#c8b898"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 3 5 5.5v5c0 4.5 3 7.6 7 9 4-1.4 7-4.5 7-9v-5Z"/></svg></span><span style="font-size:13px;color:#c8b898">Obrona / mur tarcz</span></div>
+      <div style="display:flex;align-items:center;gap:10px;padding:9px 11px;border-radius:8px"><span style="color:#c8b898"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M19 12H5M11 6l-6 6 6 6"/></svg></span><span style="font-size:13px;color:#c8b898">Odwrót taktyczny</span></div>
+    </div>
+  </div>
+
+  <div style="position:absolute;bottom:96px;left:396px;z-index:5;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#8a8070;border:1px solid rgba(232,216,138,.2);border-radius:20px;padding:7px 18px;background:rgba(20,26,38,.85)">SPACJA = następna tura</div>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{ &quot;$preview&quot;: { &quot;width&quot;: 1920, &quot;height&quot;: 1080 } }"></script>
+</body>
+</html>

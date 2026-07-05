@@ -1,0 +1,64 @@
+/* The Game — Design System v1 (1E · Painted Imperial) — design tokens */
+:root {
+  /* color */
+  --tg-bg-deep:        #080a12; /* tło gry, ekrany pełne */
+  --tg-gold-primary:   #e8d88a; /* tytuły, ranty, akcenty */
+  --tg-gold-dim:       #a08030; /* ornamenty, ramki 2-rzędne */
+  --tg-text-primary:   #e8e0c8; /* tekst (pergamin) */
+  --tg-text-muted:     #8a8070; /* podtytuły, footery */
+  --tg-panel-bg:       #121820; /* tło paneli */
+  --tg-science-blue:   #5a9bd4; /* nauka, linki info */
+  --tg-green:          #50b070; /* sukces, przyrost */
+  --tg-red:            #c84040; /* wojna, alert */
+  --tg-orange:         #d08030; /* ostrzeżenia */
+
+  /* gradients / effects */
+  --tg-panel-grad:     linear-gradient(180deg, rgba(18,24,32,.96), rgba(8,10,16,.96));
+  --tg-btn-primary:    linear-gradient(180deg, #f0dc88, #b99a28);
+  --tg-medallion-bg:   radial-gradient(circle at 38% 30%, #1a2230, #0a0d14);
+  --tg-glow-gold:      0 0 24px rgba(232,216,138,.28);
+
+  /* type */
+  --tg-font-title: Georgia, 'Times New Roman', serif;   /* nagłówki, nazwy */
+  --tg-font-ui:    'Segoe UI', Tahoma, sans-serif;       /* UI, liczby, przyciski */
+
+  /* geometry */
+  --tg-radius-btn:   8px;
+  --tg-radius-panel: 12px;
+  --tg-border-gold:  2px solid rgba(232,216,138,.45);
+  --tg-rant:         2px solid var(--tg-gold-dim); /* rant medalionu domyślny */
+  --tg-rant-active:  2px solid var(--tg-gold-primary);
+}
+
+/* Medalion ikony (1E): stroke-only line icon w środku */
+.tg-medallion {
+  border-radius: 50%;
+  background: var(--tg-medallion-bg);
+  border: var(--tg-rant);
+  box-shadow: inset 0 2px 4px rgba(232,216,138,.16), 0 4px 12px rgba(0,0,0,.55);
+  color: var(--tg-gold-primary);
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.tg-medallion--active { border: var(--tg-rant-active); box-shadow: inset 0 2px 4px rgba(232,216,138,.22), var(--tg-glow-gold); color: #f4e6a8; }
+
+/* Przycisk primary (4C/1E) */
+.tg-btn-primary {
+  background: var(--tg-btn-primary);
+  border: 1px solid #6a5212; border-top-color: #f8eea8;
+  color: #2e2708; font-family: var(--tg-font-ui); font-weight: 700;
+  letter-spacing: .14em; text-transform: uppercase;
+  border-radius: var(--tg-radius-btn); cursor: pointer;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.4), 0 6px 18px rgba(232,216,138,.2);
+}
+.tg-btn-default {
+  background: linear-gradient(180deg,#161c28,#0a0d14);
+  border: 2px solid rgba(232,216,138,.4); color: var(--tg-gold-primary);
+  font-family: var(--tg-font-ui); font-weight: 600; letter-spacing: .14em;
+  text-transform: uppercase; border-radius: var(--tg-radius-btn); cursor: pointer;
+}
+
+/* Panel (5C) */
+.tg-panel {
+  border: var(--tg-border-gold); border-radius: var(--tg-radius-panel);
+  background: var(--tg-panel-grad); box-shadow: 0 12px 40px rgba(0,0,0,.6);
+}

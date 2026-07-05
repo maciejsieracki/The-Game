@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<title>02 Icons — preview Tier 1–5 · 3C (referencja brand book)</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--gold:#e8d88a;--muted:#8a8070;--bg:#080a12;--blue:#5a9bd4;--red:#c84040}
+body{background:var(--bg);color:#e8e0c8;font-family:'Segoe UI',Tahoma,sans-serif;padding:24px}
+h1{font-family:Georgia,serif;color:var(--gold);font-size:20px;font-weight:400;margin-bottom:4px}
+.sub{font-size:11px;color:var(--muted);margin-bottom:20px;max-width:900px;line-height:1.5}
+.tier{margin-bottom:28px;border:1px solid rgba(232,216,138,.12);border-radius:8px;padding:16px;background:rgba(255,255,255,.02)}
+.tier h2{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin-bottom:12px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}
+.cell{border:1px solid rgba(255,255,255,.08);border-radius:6px;padding:10px;text-align:center;background:rgba(0,0,0,.25)}
+.cell .sizes{display:flex;justify-content:center;gap:12px;margin-bottom:6px;color:var(--gold)}
+.cell svg{display:block;margin:0 auto}
+.cell .id{font-size:9px;color:var(--muted);font-family:monospace;margin-top:4px}
+.cell .pl{font-size:10px;color:#c8b898;margin-top:2px}
+.chip-demo{margin-top:24px;padding:16px;border:2px solid var(--gold);border-radius:8px}
+.chip-demo h2{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:10px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{display:inline-flex;align-items:center;gap:8px;padding:6px 12px;border:2px solid rgba(232,216,138,.35);border-radius:6px;font-size:12px;background:rgba(255,255,255,.04)}
+.chip .val{font-weight:700;color:var(--gold);min-width:2ch}
+.chip .lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+#export-sheet{width:1200px;padding:24px;background:var(--bg)}
+</style>
+</head>
+<body>
+<div id="export-sheet">
+<h1>Icons 3C — Tier 1–5 (referencja MASTER → lane UI / Grupa E)</h1>
+<p class="sub">Decyzja Macieja 3C · stroke-only · semantyka wg FIGMA-SPEC-IKONY.md · eksport: preview-tier1-5.png</p>
+
+<div class="tier" id="tier1">
+<h2>Tier 1 — Zasoby imperium (24 + 40)</h2>
+<div class="grid" id="g-tier1"></div>
+</div>
+<div class="tier" id="tier2">
+<h2>Tier 2 — Toolbar mapy (40)</h2>
+<div class="grid" id="g-tier2"></div>
+</div>
+<div class="tier" id="tier3">
+<h2>Tier 3 — Rail panelu miasta (40)</h2>
+<div class="grid" id="g-tier3"></div>
+</div>
+<div class="tier" id="tier4">
+<h2>Tier 4 — Chipy pomocnicze (24)</h2>
+<div class="grid" id="g-tier4"></div>
+</div>
+<div class="tier" id="tier5">
+<h2>Tier 5 — Dyplomacja + UI (24/40)</h2>
+<div class="grid" id="g-tier5"></div>
+</div>
+
+<div class="chip-demo">
+<h2>Chip 6C — przykład (ikona + wartość + etykieta PL)</h2>
+<div class="chips" id="chips6c"></div>
+</div>
+</div>
+
+<script>
+const STROKE = 'currentColor';
+const ICONS = {
+  'res-food': { pl:'Żywność', paths:'<path d="M5 15c0-5 3.5-8 7-8s7 3 7 8"/><path d="M7 15h10"/>' },
+  'res-work': { pl:'Praca', paths:'<path d="M5 16h14"/><path d="M8 16V8l2-2h4l2 2v8"/><path d="M10 8V6h4v2"/>' },
+  'res-treasury': { pl:'Skarbiec', paths:'<path d="M8 10c0-3 1.5-5 4-5s4 2 4 5v2H8v-2z"/><path d="M7 12h10v5H7z"/><path d="M12 7v-2"/>' },
+  'res-science': { pl:'Badania', paths:'<circle cx="10" cy="11" r="2.5"/><path d="M8 13l-2 4"/><path d="M12 13l2 4"/><path d="M14 9c2 0 3 1 3 3"/><circle cx="17" cy="8" r="1.5"/>' },
+  'res-culture': { pl:'Kultura', paths:'<path d="M7 16c0-4 2.5-7 5-7s5 3 5 7"/><circle cx="9" cy="10" r="1"/><circle cx="15" cy="10" r="1"/><path d="M10 13c.5.5 1.5.5 2 0"/>' },
+  'res-religion': { pl:'Religia', paths:'<path d="M6 17V9l6-4 6 4v8"/><path d="M9 17v-5h6v5"/><path d="M12 5v3"/>' },
+  'res-population': { pl:'Ludność', paths:'<circle cx="9" cy="9" r="2.5"/><circle cx="15" cy="9" r="2.5"/><path d="M5 19c0-3.5 3-5.5 7-5.5s7 2 7 5.5"/>' },
+  'res-influence': { pl:'Wpływ', paths:'<path d="M12 4l1.5 4.5H18l-3.7 2.7 1.4 4.5L12 14.5 8.3 15.7 9.7 11 6 9.5h4.5z"/>' },
+  'res-settlements': { pl:'Osiedla', paths:'<rect x="4" y="13" width="4" height="7"/><rect x="10" y="10" width="4" height="10"/><rect x="16" y="14" width="4" height="6"/>' },
+  'tb-cities': { pl:'Miasto', paths:'<path d="M5 18V10l3-2 3 2v8"/><path d="M11 18V7l3-2 3 2v11"/><path d="M5 18h14"/>' },
+  'tb-science': { pl:'Badania', reuse:'res-science' },
+  'tb-diplomacy': { pl:'Dyplomacja', paths:'<path d="M8 12c0-2 1.5-3.5 4-3.5s4 1.5 4 3.5"/><path d="M6 14c1.5 2 3 3 6 3s4.5-1 6-3"/><path d="M9 11l-2-2M15 11l2-2"/>' },
+  'tb-army': { pl:'Wojsko', paths:'<path d="M6 6l4 12M14 6l4 12M4 10h16M4 14h16"/>' },
+  'tb-build': { pl:'Budowa', reuse:'res-work' },
+  'cp-buildings': { pl:'Budowa tab', reuse:'tb-cities' },
+  'cp-recruit': { pl:'Rekrut', reuse:'tb-army' },
+  'cp-granary': { pl:'Spichlerz', reuse:'res-food' },
+  'cp-trade': { pl:'Handel', reuse:'res-treasury' },
+  'cp-labor': { pl:'Praca tab', reuse:'res-work' },
+  'cp-order': { pl:'Porządek', paths:'<path d="M6 17h12"/><path d="M8 17V9"/><path d="M16 17V9"/><path d="M8 9h8"/><circle cx="8" cy="9" r="2"/><circle cx="16" cy="9" r="2"/>' },
+  'cp-health': { pl:'Zdrowie', paths:'<path d="M12 4v16"/><path d="M8 8c0-2 1.5-3 4-3s4 1 4 3"/><path d="M6 12h12"/><path d="M8 16c1 1.5 2.5 2 4 2s3-.5 4-2"/>' },
+  'cp-culture': { pl:'Kultura tab', reuse:'res-culture' },
+  'cp-religion': { pl:'Religia tab', reuse:'res-religion' },
+  'chip-manpower': { pl:'Rekruci', paths:'<path d="M8 6l3 10M13 6l3 10M6 10h12"/>' },
+  'chip-order': { pl:'Porządek chip', reuse:'cp-order' },
+  'dip-alliance': { pl:'Sojusz', paths:'<circle cx="8" cy="12" r="3"/><circle cx="16" cy="12" r="3"/><path d="M11 12h2"/>' },
+  'dip-pact': { pl:'Pakt', paths:'<path d="M7 12h10"/><path d="M12 7v10"/><rect x="6" y="10" width="12" height="4" rx="1"/>' },
+  'dip-war': { pl:'Wojna', paths:'<path d="M6 6l4 12M14 6l4 12" stroke="#c84040"/><path d="M4 10h16M4 14h16" stroke="#c84040"/>' },
+  'ui-menu': { pl:'Menu', paths:'<path d="M5 7h14M5 12h14M5 17h14"/>' },
+  'ui-close': { pl:'Zamknij', paths:'<path d="M6 6l12 12M18 6L6 18"/>' },
+  'ui-check': { pl:'OK', paths:'<path d="M5 12l5 5 9-10"/>' },
+};
+
+const TIERS = {
+  tier1: ['res-food','res-work','res-treasury','res-science','res-culture','res-religion','res-population','res-influence','res-settlements'],
+  tier2: ['tb-cities','tb-science','tb-diplomacy','tb-army','tb-build'],
+  tier3: ['cp-buildings','cp-recruit','cp-granary','cp-trade','cp-labor','cp-order','cp-health','cp-culture','cp-religion'],
+  tier4: ['chip-manpower','chip-order'],
+  tier5: ['dip-alliance','dip-pact','dip-war','ui-menu','ui-close','ui-check'],
+};
+
+function svgIcon(id, size) {
+  let def = ICONS[id];
+  if (def.reuse) def = ICONS[def.reuse];
+  const sw = size >= 32 ? 2 : 1.5;
+  const col = id.startsWith('dip-war') ? '#c84040' : id.includes('science') || id==='tb-science' ? '#5a9bd4' : '#e8d88a';
+  return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${col}" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round">${def.paths}</svg>`;
+}
+
+function cell(id) {
+  const def = ICONS[id];
+  const pl = def.pl || id;
+  return `<div class="cell"><div class="sizes">${svgIcon(id,24)}${svgIcon(id,40)}</div><div class="id">${id}</div><div class="pl">${pl}</div></div>`;
+}
+
+Object.keys(TIERS).forEach(t => {
+  const gid = t === 'tier1' ? 'g-tier1' : t === 'tier2' ? 'g-tier2' : t === 'tier3' ? 'g-tier3' : t === 'tier4' ? 'g-tier4' : 'g-tier5';
+  document.getElementById(gid).innerHTML = TIERS[t].map(cell).join('');
+});
+
+const chipData = [
+  ['res-food','124','Żywność'],['res-work','86','Praca'],['res-treasury','42','Skarb'],
+  ['res-science','18','Badania'],['res-population','12','Ludność'],['tb-army','5','Rekruci']
+];
+document.getElementById('chips6c').innerHTML = chipData.map(([id,val,lbl]) =>
+  `<div class="chip">${svgIcon(id,24)}<span class="val">${val}</span><span class="lbl">${lbl}</span></div>`
+).join('');
+</script>
+</body>
+</html>

@@ -1,7 +1,9 @@
 # UI — STAN (≤12 linii)
 
-**Kanon:** md5 `a8da1fcb…` (E-15 + A-06 szkic)
-**POLE-BITWY:** ZIP v4 **OTRZYMANY** · rozpakowany `docs/ux/claude-design/`
-**UI lane:** **ACTIVE faza 4** — port skin · handoff `MASTER-do-UI_pole-bitwy-design-1E-2026-07-04.md`
-**Mockupy:** C06 v4 (3 klatki) + C09 v4 + `DESIGN-do-UI_POLE-BITWY-HUD-v4.md`
-**STOP:** kanon POLE-BITWY design — po lane + review Opus
+**Kanon główny:** md5 `0b8a9a7f…` · `gra-kanon/START.html`
+**POLE-BITWY v4.1 komplet:** **GOTOWE** ✅ · marker `POLE-BITWY-20260705-end-details-1E`
+**MD5 POLE-BITWY:** `be17d8696b08523e5ce7e0cd93417485`
+**Playtest:** `gra-kanon/Gra-podglad-POLE-BITWY.html` · Ctrl+F5 · tooltip rosteru = marker
+**Design:** `POLE-BITWY-poprawki-v4.1.zip` (2026-07-05) + `MELDUNEK-POLE-BITWY-v4.1.md`
+**Dyplomacja 1E:** **KANON** ✅ · md5 `55bdb2af…`
+**Następne UI:** A-06 panel jednostki · nauka (HOLD)

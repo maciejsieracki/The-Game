@@ -4,6 +4,77 @@ Append-only. Source of truth operacyjny projektu Civ.
 
 ---
 
+## [2026-07-05 ~11:55] MAPA · **C2b overlay „widać że żyje"** ✅ publish
+
+**Dyspozycja:** `DYSPOZYCJA-WYDAJNOSC-MAPA-2026-07-05.md` §C2b  
+**Fix:** sub-progres w generatorze (teren co ~5% wierszy, wybrzeża co etap) · overlay: `1/7 · faza` + **Upłynęło: M:SS** (tik co 1 s)  
+**MD5:** `872b4f30dde8077086f83e76d77d9b30` · strażnik PASS  
+**Uwaga Maciej:** po 100% generacji overlay **zostaje** — faza **7/7 Budowanie świata 3D** (C3 już w bundlu), nie regresja generatora
+
+---
+
+## [2026-07-05 ~11:45] PUBLISH ROBOCZA · B0.5 + B0.6 + C1/C2/C3 ✅
+
+**Przyczyna opóźnienia:** popołudniowe fixy były tylko w `gra-robocza/src` — **żaden** `Gra-podglad*.html` nie był przebudowany (grep: `civ-map-load-overlay` = 0 w starych bundlach). `tsc`/lane OK ≠ publish.
+
+**Publish:** `gra-robocza/tools/publish-robocza-bundle.ps1`  
+**Strażnik:** `verify-publish-markers.ps1` — overlay, frustumCulled, marker, brak PENDING  
+**MD5 bundla:** `a20687582f20a16a3c6805646e8fddf5`  
+**Stempel menu:** data · pierwsze 12 z md5 pre-stamp (widoczne pod „Wersja 0.1")  
+**Pliki:** `gra-robocza/Gra-podglad.html`, root `Gra-podglad-ROBOCZA.html`, PLAYTEST×6
+
+**Maciej:** Ctrl+F5 → playtest pustyni / ujść rzek / pasek Super Huge → potem B1–B4 → DESIGN rzeki dopływów
+
+---
+
+## [2026-07-05 ~12:00] MAPA · **C3 buildScene async + overlay do 1. klatki** ✅ ROBOCZA
+
+**Problem:** po workerze synchroniczny `buildScene` → dialog „Strona nie odpowiada" (Super Huge)  
+**Fix:** porcjowany `buildScene` + overlay do pierwszego renderu; ujednolicenie opisu Super Huge w kreatorze (672×476)  
+**tsc:** 0 · **playtest:** Maciej (Super Huge, ciągły pasek)
+
+---
+
+## [2026-07-05 ~11:10] MAPA · **B0.5 rzeki render + weryfikacja super** ✅
+
+**B0.5 (opcja A):** `landRiverRenderPath` — ciągła wstęga przez Wybrzeże; `buildRiverMouthSeaExtension` — ujście + lejek; bez `pathNearCoast` dla main  
+**Sign-off:** B0.6 culling · C worker+overlay (fallback main thread TODO etap B)  
+**Test:** `node tools/weryfikacja-mapy.cjs super` → **PASS** (22/22) · Super Huge kontynenty **125,7 s** · ziemia ~podobnie
+
+---
+
+
+**Dyspozycja:** `DYSPOZYCJA-WYDAJNOSC-MAPA-2026-07-05.md`  
+**C1+C2:** Web Worker generacji + overlay ładowania (nowa gra)  
+**A1a:** rzeki off przy LOD 3–4 (draw calls)  
+**Kolejka:** B1–B4 generator · strefy klimat · B0.5 delta render
+
+---
+
+
+**Diagnoza Macieja:** frustum culling InstancedMesh (panning przy zoom → ląd znika, dekor zostaje).  
+**Fix:** `frustumCulled = false` na InstancedMesh w `scene.ts` + `rangeOverlay.ts`  
+**Meldunek:** `MAPA-DO-MASTERA.md` · dyspozycja `BLAD-B0.6-ZALANE-WYBRZEZE-2026-07-05.md`  
+**Następny krok:** playtest Macieja (superogromna, pan/zoom) → rebuild robocza → potem B0.5 (ujście rzeki render)
+
+---
+
+## [2026-07-05 ~09:50] Maciej · playtest OK + ABC **A wąski** + **PROMOCJA KANON**
+
+**Playtest robocza (~5–10 min):** **OK rzeki** · **OK pustynia**
+
+**Decyzja ABC:** **A wąski** — strefy klimatyczne (pas suchy ~15% · dżungla nad/pod · umiarkowany dalej)  
+→ `docs/decyzje/MAPA-STREFY-KLIMAT-ABC-2026-07-05.md`  
+→ dyspozycja MAPA: `_handoff/MASTER-do-MAPA_strefy-klimat-A-waski-2026-07-05.md`
+
+**Promocja kanon:** `publish-kanon-snapshot.ps1`  
+**md5:** **`0fd96b6f5fb021fb3294dde29c5692ce`** · start: `gra-kanon/START.html`  
+**Poprzedni kanon:** archiwum `gra-kanon-archiwum/gra-kanon_20260705-095048` (md5 `89a870fb…`)
+
+**W batchu:** BLEDY P0 (rzeki, perf, Morse→Morze) · P1 tsc · panel zwycięstwa E-15
+
+---
+
 ## [2026-07-05 ~09:15] Audyt Opus 5 → **dyspozycja F BLEDY-2026-07-05**
 
 **Źródło:** Maciej · raport `dyspozycje/BLEDY-DO-NAPRAWY-2026-07-05.md` (audyt zewnętrzny + test generatora Macieja)
@@ -22,18 +93,33 @@ Append-only. Source of truth operacyjny projektu Civ.
 
 ---
 
-## [2026-07-05 ~09:30] F → MASTER · **P0 MAPA GOTOWE-ROBOCZA**
+## [2026-07-05 ~09:40] F → MASTER · **P1 TSC + panel zwycięstwa** ✅ GOTOWE-ROBOCZA
+
+**Trigger:** Maciej `działaj` · handoff `MASTER-do-INTEGRATOR_BLEDY-2026-07-05.md` (P0 done)
+
+**P1:** `npx tsc --noEmit` **158 → 0** · 35 plików · `vite-env.d.ts`  
+**Bramka:** smoke OK · combat **6/6**  
+**Rebuild:** panel zwycięstwa E-15 (`victoryScreen.ts`) w `Gra-podglad.html`
+
+**ROBOCZA md5:** **`0fd96b6f5fb021fb3294dde29c5692ce`** · `gra-robocza/START.html`  
+**Kanon:** bez promocji (`89a870fb…` sign-off wcześniejszy)
+
+**P2 BLOCKED ABC:** 6 punktów — bez zmian kodu (raport w meldunku F)
+
+**Handoff:** `_handoff/F-do-MASTER_BLEDY-2026-07-05.md` · raport: `BLEDY-DO-NAPRAWY-2026-07-05.md` § STATUS
+
+---
+
+## [2026-07-05 ~09:30] F → MASTER · **P0 MAPA** ✅ GOTOWE-ROBOCZA
 
 **Meldunek:** `_handoff/F-do-MASTER_BLEDY-2026-07-05.md`  
-**md5 robocza:** `b468cadea475517b9bcc07194bdd5036` (kanon nadal `89a870fb…`)
+**md5 robocza:** `b468cadea475517b9bcc07194bdd5036` (zastąpione przez P1 `0fd96b6f…`)
 
 **Wyniki AC:**
 - B0.1: 0/877 głównych rzek bez ujścia (5 seedów × 4 typy)
 - B0.2: standard 26,4 s → **4,36 s** · duża **9,02 s**
 - B0.3: Morse→Morze
 - Test: `map-gen-regression-test.cjs` PASS · smoke OK
-
-**Otwarte:** P1 tsc **157** błędów (osobny batch F) · P2 BLOCKED ABC · playtest MAPA Macieja przed kanonem
 
 ---
 
@@ -4332,6 +4418,58 @@ Krok 1 przyjmij · krok 2 wykonaj w tej samej turze. Pliki: `MASTER-ZADANIA.md` 
 **Usunięto z aktywnych kolejek:** P6-FIGMA (decyzja ⚪ ODRZUCONA pozostaje tylko w REJESTR).  
 **Zsynchronizowano:** `WYTYCZNE-FORMAT-ABC-MACIEJ.md` → format 5 kroków.  
 **Otwarte ABC u Macieja:** brak (B1-Q3-UI=A · MASTER-PT-01=C wdrożone).
+
+## [2026-07-05] DESIGN · rev.3 — TOR A (Design) vs TOR B (lane podmiana)
+
+**Maciej:** zleć Designowi **tylko to, czego Design jeszcze nie dostarczył** · reszta (v4.1, C04/C05/A19 v2, W4, C-01 layout) → **lane podmienia bez Design**.
+
+| TOR | Kto | Co |
+|-----|-----|-----|
+| **A** | Design | 6 ZIP: JEDNOSTKI · POLE-BITWY v5 gap · ARMY-MERGE · A21 · HEX · A-08 |
+| **B** | lane UI | Port C04/C05/A19 v2 · v4.1 · ikony C-01 po JEDNOSTKI |
+
+**Pliki:** `WKLEJKA-DESIGN-MASTER-LUKI-2026-07-05.md` rev.3 · `WKLEJKA-DESIGN-START-TOR-A-ONLY.md`
+
+## [2026-07-05] DESIGN · master wklejka rev.2 — szycie lane = poprawka Design od zera
+
+**Maciej:** wszystko sztukowane przez lane Cursor → **konkretne wytyczne dla Designera** (nie kopiuj kodu lane).
+
+**Plik:** `docs/ux/WKLEJKA-DESIGN-MASTER-LUKI-2026-07-05.md` (rev.2)
+
+**Nowe vs rev.1:**
+- Reguła **NIE kopiu j lane** · rejestr 15 ekranów szycia
+- Paczka **C04-C05-A19-REVIEW** — v2 w repo, gra = lane → Design **potwierdza v2 lub robi v3**
+- POLE-BITWY GAP: explicite **Cursor złożył / odrzucone wizualnie**
+
+## [2026-07-05] UI → Design: Panel heksu mapy (D17 · klatka C1 GAP 1E)
+
+**Maciej:** screenshot karta „Pole mapy — kliknięty heks” — emoji plony · ściana tekstu · lista ulepszeń bez ikon → **do Designera**.
+
+**ZLECENIE-ID:** `HEX-CONTEXT-PANEL-2026-07-05` · P1 · gameplay D17=A ✅ bez zmian.
+
+| Deliverable | Plik |
+|-------------|------|
+| Spec | `docs/ux/DESIGN-ZLECENIE-HEX-CONTEXT-PANEL-2026-07-05.md` |
+| Wklejka | `docs/ux/WKLEJKA-DESIGN-START-HEX-CONTEXT-PANEL.md` |
+| Review HTML | `docs/ux/export/HEX-CONTEXT-PANEL-GAP-DLA-DESIGN.html` |
+| Screenshot PRZED | `docs/ux/export/screenshots/HEX-context-panel-przed-2026-07-05.png` |
+
+**Kod dziś:** `hexContextTooltip.ts` + `sidePanelHud.ts` · emoji 🍞🔨💰🪵🪨. **Czeka:** ZIP Design → port lane UI. Powiązane: A-08 ikony ulepszeń.
+
+## [2026-07-05] UI → Design: A-21 Picker Miasto vs Jednostka (GAP 1E)
+
+**Maciej:** screenshot modal „Co wybierasz?” — 🏛/⚔ emoji · niebieski label Jednostka → **do Designera** (jak A-18).
+
+**ZLECENIE-ID:** `A21-CITY-UNIT-PICK-2026-07-05` · P1 · gameplay A2-Q5 ✅ bez zmian.
+
+| Deliverable | Plik |
+|-------------|------|
+| Spec | `docs/ux/DESIGN-ZLECENIE-A21-CITY-UNIT-PICK-2026-07-05.md` |
+| Wklejka | `docs/ux/WKLEJKA-DESIGN-START-A21-CITY-UNIT-PICK.md` |
+| Review HTML | `docs/ux/export/A21-CITY-UNIT-PICK-GAP-DLA-DESIGN.html` |
+| Screenshot PRZED | `docs/ux/export/screenshots/A21-city-unit-pick-przed-2026-07-05.png` |
+
+**Kod dziś:** `gra/src/ui/cityUnitPick.ts` — emoji + `.unit` niebieski akcent. **Czeka:** ZIP Design → port lane UI.
 
 ## [2026-07-05] MAPA → MASTER: fair play A w grze (kreator→generator)
 

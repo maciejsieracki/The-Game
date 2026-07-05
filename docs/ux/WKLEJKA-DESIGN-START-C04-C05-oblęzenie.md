@@ -7,7 +7,19 @@
 
 ## WKLEJ DO DESIGNERA (cały blok)
 
+> **Reguła nazw (obowiązkowa):** nagłówek z `WKLEJKA-DESIGN-NAGLOWEK-ZLECENIA.md` · pliki z **ID + DATA** w nazwie · jeden zip `{ZLECENIE-ID}_{DATA}.zip`.
+
 ```
+START — C04-C05-oblęzenie-mapa-v2
+
+ZLECENIE-ID: C04-C05-A19-mapa-v2
+DATA ZLECENIA: 2026-07-04
+
+REGUŁA NAZEWNICTWA (obowiązkowa):
+· Plik: The Game - {ID} {Opis} v2 {DATA} (1E).dc.html
+· Zip:  C04-C05-A19-mapa-v2_{DATA}.zip + MANIFEST.txt
+· NIE: ten sam tytuł · NIE: tylko cyfry 12/13/14 bez ID
+
 START — C04-C05-oblęzenie-mapa-v2
 
 ⚠️ To NIE jest C-01 Pre-bitwa (układ TW). To wcześniejszy krok:
@@ -26,19 +38,19 @@ C-01 pre-bitwa v3 jest osobno — pojawia się DOPIERO po wyborze Szturm.
    = dokładnie ten modal ze screenshota
 
 ✅ Deliverable 1 (P0):
-   NOWY: The Game - C04 Atak miasto wybor v2 (1E).dc.html
+   The Game - C04 Atak miasto wybor v2 {DATA} (1E).dc.html
    · SVG z brand-book · zero emoji
    · ornament ⚔ → SVG line · ikona miasta SVG · tagi Mur/Garnizon/Pop
    · 2 karty: Oblężaj (ciepły/brąz) · Szturm (#3a6ad0)
    · Anuluj · skróty 1/2/Esc
 
 ✅ Deliverable 2 (P1):
-   NOWY: The Game - C05 Panel oblezenie v2 (1E).dc.html
+   The Game - C05 Panel oblezenie v2 {DATA} (1E).dc.html
    · panel prawy · mapa świata WIDOCZNA w tle
    · Kontynuuj / Szturm / Odwrót · machiny · tura
 
 ✅ Deliverable 3 (P1 — drugi screenshot Macieja):
-   NOWY: The Game - A19 Miasto zdobyte v2 (1E).dc.html
+   The Game - A19 Miasto zdobyte v2 {DATA} (1E).dc.html
    · „Miasto zdobyte" + nazwa miasta + opis + Rozumiem/Enter
    · SVG zamiast 🏛 · ten sam styl modal co C-04
 
@@ -55,10 +67,9 @@ C-01 pre-bitwa v3 jest osobno — pojawia się DOPIERO po wyborze Szturm.
    C-06 deployment · C-07 pole bitwy
 
 Po gotowości:
-   „C-04 Atak miasto v2 gotowy" + ścieżka
-   „C-05 Panel oblezenie v2 gotowy" + ścieżka
-   „A-19 Miasto zdobyte v2 gotowy" + ścieżka
-   + krótki DESIGN-do-UI_C04-C05-A19-v2.md
+   „Paczka C04-C05-A19-mapa-v2_{DATA}.zip gotowa” + lista plików
+   + **pogrubiona nazwa do wklejenia przy zapisie** (Maciej — pole „Nazwa pliku")
+   (zip = 3× dc.html + MANIFEST.txt + DESIGN-do-UI_…md)
 ```
 
 ---

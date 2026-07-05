@@ -90,6 +90,12 @@ Medalion **46px** · aktywny = złota obwódka · SVG z `brand-book/` (zero emoj
 - Hint trybu auto/ręczny (mały tekst)
 - Overlay zasięgu — opcjonalna **osobna klatka** w pliku v3
 
+### Stopka surowców · **osobno od zakładek**
+
+- **`civ-v-right-foot`** — zawsze **na samym dole prawej kolumny**, pod scrollowaną treścią zakładki
+- **Nie** wewnątrz panelu Spichlerz ani Handel — to **wspólna warstwa** dla wszystkich 7 medalionów
+- **Handel** = tylko podział handlu (suwaki) w `cs-right-main`; surowce mapy = stopka, inna semantyka
+
 ### Polish W4 (już w grze — odwzoruj w mockupie)
 
 - Chipy **bez `/t`** w stopce surowców
@@ -104,11 +110,12 @@ Medalion **46px** · aktywny = złota obwódka · SVG z `brand-book/` (zero emoj
 | # | Nazwa klatki | Co pokazać |
 |---|--------------|------------|
 | K1 | **Panel pełny · Budowa** | mapa widoczna · 2+7 rail · lewy dock budowa · stopka Mapa |
-| K2 | **Panel · Spichlerz** | prawy rail aktywny · chipy W4 · stopka surowców |
+| K2 | **Panel · Spichlerz** | prawy rail aktywny · treść Wzrost (chipy, suwak) · **poniżej osobna stopka** surowców (`civ-v-right-foot`) |
+| K2b | **Panel · Handel** (zalecane) | podział handlu **bez** surowców w środku · ta sama stopka surowców na dole kolumny |
 | K3 | **Mapa 3D · chrome** | Wróć na mapę · tabliczka · toolbar okolica |
 | K4 | **Wyjście Esc** | stan po Esc — HUD mapy świata (skrót) |
 
-Możesz dodać K5: overlay zasięgu · K6: Handel ze suwakami.
+Możesz dodać K5: overlay zasięgu · K6: kolejne zakładki prawego railu.
 
 ---
 

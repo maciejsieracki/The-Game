@@ -1,0 +1,9 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><style>body{margin:0;background:#080a12;display:flex;gap:30px;padding:50px;font-family:sans-serif}.c{text-align:center}.m{width:130px;height:130px;border-radius:50%;background:radial-gradient(circle at 38% 30%,#1a2230,#0a0d14);border:2px solid #a08030;display:inline-flex;align-items:center;justify-content:center;color:#e8d88a}.m svg{width:74px;height:74px}.l{color:#c8b898;font-size:13px;margin-top:10px}</style></head><body>
+<div class="c"><div class="m" id="k"></div><div class="l">epoch-kamien (młot)</div></div>
+<div class="c"><div class="m" id="b"></div><div class="l">epoch-braz (miecz)</div></div>
+<div class="c"><div class="m" id="z"></div><div class="l">epoch-zelazo (miecze)</div></div>
+<script>
+fetch('icons/epochs/epoch-kamien.svg').then(r=>r.text()).then(s=>k.innerHTML=s);
+fetch('icons/epochs/epoch-braz.svg').then(r=>r.text()).then(s=>b.innerHTML=s);
+fetch('icons/epochs/epoch-zelazo.svg').then(r=>r.text()).then(s=>z.innerHTML=s);
+</script></body></html>

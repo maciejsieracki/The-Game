@@ -1,0 +1,18 @@
+ZLECENIE: C04-C05-A19-mapa-v2
+DATA: 2026-07-04
+HASLO: C04-C05-oblęzenie-mapa-v2
+
+PLIKI:
+  C04 | The Game - C04 Atak miasto wybor v2 (1E).dc.html | modal wybór ataku
+  C05 | The Game - C05 Panel oblezenie v2 (1E).dc.html   | panel oblężenia mapy
+  A19 | The Game - A19 Miasto zdobyte v2 (1E).dc.html    | zdobycie bez bitwy
+
+NIE JEST TO:
+  C04 Oblezenie v2 (pole bitwy)
+  C05 Szturm muru v2 (pole bitwy)
+
+DESTINATION (Maciej wrzuca do):
+  docs/ux/claude-design/
+
+LANE PORTUJE (nie Design):
+  cityAttackChoice.ts · siegeMapPanel.ts · cityCaptureNotice.ts
