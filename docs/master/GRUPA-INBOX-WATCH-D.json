@@ -1,0 +1,404 @@
+﻿{
+    "watchCount":  66,
+    "intervalSeconds":  900,
+    "grupa":  "D",
+    "files":  {
+                  "dyspozycje/_handoff/MASTER-do-CYWILIZACJE_D-START-kopie-pilne.md":  {
+                                                                                           "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-do-CYWILIZACJE_D-START-kopie-pilne.md",
+                                                                                           "mtime":  "2026-06-30T14:39:38.6353857Z",
+                                                                                           "flags":  "HANDOFF",
+                                                                                           "length":  932
+                                                                                       },
+                  "dyspozycje/_handoff/CYWILIZACJE-do-SILNIK_excel-5A-2A-export.md":  {
+                                                                                          "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\CYWILIZACJE-do-SILNIK_excel-5A-2A-export.md",
+                                                                                          "mtime":  "2026-06-30T14:39:38.9818405Z",
+                                                                                          "flags":  "HANDOFF",
+                                                                                          "length":  1588
+                                                                                      },
+                  "dyspozycje/_handoff/CYWILIZACJE-do-MASTER_mnoznik-handel-pole.md":  {
+                                                                                           "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\CYWILIZACJE-do-MASTER_mnoznik-handel-pole.md",
+                                                                                           "mtime":  "2026-06-25T07:20:15.2617562Z",
+                                                                                           "flags":  "HANDOFF",
+                                                                                           "length":  908
+                                                                                       },
+                  "dyspozycje/_handoff/CYWILIZACJE-do-INTEGRATOR_diplomacy-display-ui-batch.md":  {
+                                                                                                      "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\CYWILIZACJE-do-INTEGRATOR_diplomacy-display-ui-batch.md",
+                                                                                                      "mtime":  "2026-06-30T18:07:40.2838399Z",
+                                                                                                      "flags":  "HANDOFF",
+                                                                                                      "length":  2491
+                                                                                                  },
+                  "dyspozycje/_handoff/CYWILIZACJE-do-INTEGRATOR_wymiana-pn-zaufanie.md":  {
+                                                                                               "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\CYWILIZACJE-do-INTEGRATOR_wymiana-pn-zaufanie.md",
+                                                                                               "mtime":  "2026-06-30T22:11:24.6631040Z",
+                                                                                               "flags":  "HANDOFF",
+                                                                                               "length":  4832
+                                                                                           },
+                  "dyspozycje/_handoff/CYWILIZACJE-do-MASTER_waveAB-done.md":  {
+                                                                                   "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\CYWILIZACJE-do-MASTER_waveAB-done.md",
+                                                                                   "mtime":  "2026-06-25T18:15:39.4993745Z",
+                                                                                   "flags":  "",
+                                                                                   "length":  3088
+                                                                               },
+                  "dyspozycje/_handoff/CYWILIZACJE-do-UI_dyplomacja-D3Q1-modal.md":  {
+                                                                                         "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\CYWILIZACJE-do-UI_dyplomacja-D3Q1-modal.md",
+                                                                                         "mtime":  "2026-06-30T14:39:38.4563464Z",
+                                                                                         "flags":  "HANDOFF",
+                                                                                         "length":  1060
+                                                                                     },
+                  "dyspozycje/_handoff/CYWILIZACJE-do-UI_bonusy-wyswietlanie.md":  {
+                                                                                       "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\CYWILIZACJE-do-UI_bonusy-wyswietlanie.md",
+                                                                                       "mtime":  "2026-06-30T14:39:38.8527160Z",
+                                                                                       "flags":  "HANDOFF",
+                                                                                       "length":  1428
+                                                                                   },
+                  "dyspozycje/_handoff/CYWILIZACJE-do-EKONOMIA_v1.1-trybut-handel-tick.md":  {
+                                                                                                 "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\CYWILIZACJE-do-EKONOMIA_v1.1-trybut-handel-tick.md",
+                                                                                                 "mtime":  "2026-06-30T14:39:38.9803406Z",
+                                                                                                 "flags":  "HANDOFF",
+                                                                                                 "length":  2127
+                                                                                             },
+                  "dyspozycje/_handoff/CYWILIZACJE-do-EKONOMIA_bonusy-ekonomia-miasto.md":  {
+                                                                                                "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\CYWILIZACJE-do-EKONOMIA_bonusy-ekonomia-miasto.md",
+                                                                                                "mtime":  "2026-06-30T14:39:38.9137347Z",
+                                                                                                "flags":  "HANDOFF",
+                                                                                                "length":  1609
+                                                                                            },
+                  "dyspozycje/_handoff/CYWILIZACJE-do-SILNIK_victory-10A.md":  {
+                                                                                   "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\CYWILIZACJE-do-SILNIK_victory-10A.md",
+                                                                                   "mtime":  "2026-06-30T14:39:38.4568513Z",
+                                                                                   "flags":  "HANDOFF",
+                                                                                   "length":  1882
+                                                                               },
+                  "dyspozycje/_handoff/CYWILIZACJE-do-MASTER_bonusy-mechanizacja.md":  {
+                                                                                           "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\CYWILIZACJE-do-MASTER_bonusy-mechanizacja.md",
+                                                                                           "mtime":  "2026-06-26T06:28:19.3682547Z",
+                                                                                           "flags":  "",
+                                                                                           "length":  5701
+                                                                                       },
+                  "dyspozycje/_handoff/CYWILIZACJE-do-MASTER_bonusy-RDY01-delegacja.md":  {
+                                                                                              "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\CYWILIZACJE-do-MASTER_bonusy-RDY01-delegacja.md",
+                                                                                              "mtime":  "2026-06-30T14:39:38.6554144Z",
+                                                                                              "flags":  "HANDOFF",
+                                                                                              "length":  6114
+                                                                                          },
+                  "dyspozycje/_handoff/CYWILIZACJE-do-MASTER_odp-UI-dyplomacja-civs.md":  {
+                                                                                              "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\CYWILIZACJE-do-MASTER_odp-UI-dyplomacja-civs.md",
+                                                                                              "mtime":  "2026-06-25T11:46:25.4971912Z",
+                                                                                              "flags":  "HANDOFF",
+                                                                                              "length":  2492
+                                                                                          },
+                  "dyspozycje/_handoff/GRUPA-E-do-CYWILIZACJE_victory-10A-star.md":  {
+                                                                                         "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\GRUPA-E-do-CYWILIZACJE_victory-10A-star.md",
+                                                                                         "mtime":  "2026-06-30T14:39:38.9823405Z",
+                                                                                         "flags":  "HANDOFF",
+                                                                                         "length":  1429
+                                                                                     },
+                  "dyspozycje/_handoff/CYWILIZACJE-do-SILNIK_F-GRUPA-D-P0-integracja.md":  {
+                                                                                               "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\CYWILIZACJE-do-SILNIK_F-GRUPA-D-P0-integracja.md",
+                                                                                               "mtime":  "2026-06-30T14:39:38.6348857Z",
+                                                                                               "flags":  "HANDOFF",
+                                                                                               "length":  3707
+                                                                                           },
+                  "dyspozycje/_handoff/CYWILIZACJE-do-UI_handel-koszyk-pn.md":  {
+                                                                                    "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\CYWILIZACJE-do-UI_handel-koszyk-pn.md",
+                                                                                    "mtime":  "2026-06-30T22:11:24.6726048Z",
+                                                                                    "flags":  "HANDOFF",
+                                                                                    "length":  3739
+                                                                                },
+                  "dyspozycje/_handoff/CYWILIZACJE-do-MASTER_miasta-kopie-typu.md":  {
+                                                                                         "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\CYWILIZACJE-do-MASTER_miasta-kopie-typu.md",
+                                                                                         "mtime":  "2026-06-30T14:39:38.4232879Z",
+                                                                                         "flags":  "HANDOFF",
+                                                                                         "length":  2008
+                                                                                     },
+                  "dyspozycje/_handoff/CYWILIZACJE-do-EKONOMIA_transfer-tech-nauka.md":  {
+                                                                                             "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\CYWILIZACJE-do-EKONOMIA_transfer-tech-nauka.md",
+                                                                                             "mtime":  "2026-06-30T14:39:38.4568513Z",
+                                                                                             "flags":  "HANDOFF",
+                                                                                             "length":  1912
+                                                                                         },
+                  "dyspozycje/_handoff/CYWILIZACJE-do-INTEGRATOR_militaryRatio-army-m.md":  {
+                                                                                                "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\CYWILIZACJE-do-INTEGRATOR_militaryRatio-army-m.md",
+                                                                                                "mtime":  "2026-06-30T14:39:38.2710653Z",
+                                                                                                "flags":  "HANDOFF",
+                                                                                                "length":  2089
+                                                                                            },
+                  "dyspozycje/_handoff/EKONOMIA-do-CYWILIZACJE_budzet-AI.md":  {
+                                                                                   "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\EKONOMIA-do-CYWILIZACJE_budzet-AI.md",
+                                                                                   "mtime":  "2026-06-25T16:06:27.1064803Z",
+                                                                                   "flags":  "",
+                                                                                   "length":  1234
+                                                                               },
+                  "dyspozycje/_handoff/CYWILIZACJE-do-UNITS_katapulta-D10A.md":  {
+                                                                                     "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\CYWILIZACJE-do-UNITS_katapulta-D10A.md",
+                                                                                     "mtime":  "2026-06-30T14:39:38.6353857Z",
+                                                                                     "flags":  "HANDOFF",
+                                                                                     "length":  1812
+                                                                                 },
+                  "dyspozycje/_handoff/CYWILIZACJE-do-UNITS_przemarsz-kara-zaufanie.md":  {
+                                                                                              "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\CYWILIZACJE-do-UNITS_przemarsz-kara-zaufanie.md",
+                                                                                              "mtime":  "2026-06-30T21:52:48.5167805Z",
+                                                                                              "flags":  "HANDOFF",
+                                                                                              "length":  1865
+                                                                                          },
+                  "dyspozycje/_handoff/CYWILIZACJE-do-SILNIK_v1.1-traktaty-save-load.md":  {
+                                                                                               "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\CYWILIZACJE-do-SILNIK_v1.1-traktaty-save-load.md",
+                                                                                               "mtime":  "2026-06-30T14:39:38.4232879Z",
+                                                                                               "flags":  "HANDOFF",
+                                                                                               "length":  2234
+                                                                                           },
+                  "dyspozycje/_handoff/CYWILIZACJE-do-SILNIK_barbarians-11C.md":  {
+                                                                                      "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\CYWILIZACJE-do-SILNIK_barbarians-11C.md",
+                                                                                      "mtime":  "2026-06-30T14:39:38.4553432Z",
+                                                                                      "flags":  "HANDOFF",
+                                                                                      "length":  1684
+                                                                                  },
+                  "dyspozycje/_handoff/CYWILIZACJE-do-MASTER_zelazo-stal-D14A.md":  {
+                                                                                        "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\CYWILIZACJE-do-MASTER_zelazo-stal-D14A.md",
+                                                                                        "mtime":  "2026-06-30T14:39:38.9823405Z",
+                                                                                        "flags":  "HANDOFF",
+                                                                                        "length":  2367
+                                                                                    },
+                  "dyspozycje/_handoff/CYWILIZACJE-do-MASTER_start-pkt3.md":  {
+                                                                                  "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\CYWILIZACJE-do-MASTER_start-pkt3.md",
+                                                                                  "mtime":  "2026-06-26T06:20:12.9549603Z",
+                                                                                  "flags":  "",
+                                                                                  "length":  1572
+                                                                              },
+                  "dyspozycje/_handoff/CYWILIZACJE-do-SILNIK_status-audit-2026-06-28.md":  {
+                                                                                               "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\CYWILIZACJE-do-SILNIK_status-audit-2026-06-28.md",
+                                                                                               "mtime":  "2026-06-30T14:39:38.4548434Z",
+                                                                                               "flags":  "HANDOFF",
+                                                                                               "length":  4707
+                                                                                           },
+                  "dyspozycje/_handoff/CYWILIZACJE-do-INTEGRATOR_diplomacy-power-ready.md":  {
+                                                                                                 "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\CYWILIZACJE-do-INTEGRATOR_diplomacy-power-ready.md",
+                                                                                                 "mtime":  "2026-06-30T14:39:38.9803406Z",
+                                                                                                 "flags":  "HANDOFF",
+                                                                                                 "length":  1390
+                                                                                             },
+                  "dyspozycje/_handoff/CYWILIZACJE-do-SILNIK_bonusy-D4-Q3.md":  {
+                                                                                    "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\CYWILIZACJE-do-SILNIK_bonusy-D4-Q3.md",
+                                                                                    "mtime":  "2026-06-30T14:39:38.4142733Z",
+                                                                                    "flags":  "HANDOFF",
+                                                                                    "length":  2168
+                                                                                },
+                  "dyspozycje/_handoff/CYWILIZACJE-do-MASTER_nazwy-klastrow-pole.md":  {
+                                                                                           "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\CYWILIZACJE-do-MASTER_nazwy-klastrow-pole.md",
+                                                                                           "mtime":  "2026-06-24T22:48:03.8359295Z",
+                                                                                           "flags":  "HANDOFF",
+                                                                                           "length":  2019
+                                                                                       },
+                  "dyspozycje/_handoff/CYWILIZACJE-do-UNITS_bonusy-walka-bitwa-jednostki-spec.md":  {
+                                                                                                        "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\CYWILIZACJE-do-UNITS_bonusy-walka-bitwa-jednostki-spec.md",
+                                                                                                        "mtime":  "2026-06-30T14:39:38.3687104Z",
+                                                                                                        "flags":  "HANDOFF",
+                                                                                                        "length":  2580
+                                                                                                    },
+                  "dyspozycje/_handoff/CYWILIZACJE-do-MASTER_tempo-gry.md":  {
+                                                                                 "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\CYWILIZACJE-do-MASTER_tempo-gry.md",
+                                                                                 "mtime":  "2026-06-25T19:04:02.4982354Z",
+                                                                                 "flags":  "",
+                                                                                 "length":  1429
+                                                                             },
+                  "docs/obieg/REJESTR-DECYZJI.md":  {
+                                                        "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\docs\\obieg\\REJESTR-DECYZJI.md",
+                                                        "mtime":  "2026-06-30T23:17:58.3570219Z",
+                                                        "flags":  "DYPOZYCJA,HANDOFF",
+                                                        "length":  14768
+                                                    },
+                  "dyspozycje/_handoff/CYWILIZACJE-do-MASTER_nauka-tempo-od-EKONOMIA.md":  {
+                                                                                               "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\CYWILIZACJE-do-MASTER_nauka-tempo-od-EKONOMIA.md",
+                                                                                               "mtime":  "2026-06-25T06:43:47.1218372Z",
+                                                                                               "flags":  "",
+                                                                                               "length":  1205
+                                                                                           },
+                  "dyspozycje/_handoff/CYWILIZACJE-do-SILNIK_dyplomacja-kontakty-D3Q2.md":  {
+                                                                                                "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\CYWILIZACJE-do-SILNIK_dyplomacja-kontakty-D3Q2.md",
+                                                                                                "mtime":  "2026-06-30T14:39:38.4563464Z",
+                                                                                                "flags":  "HANDOFF",
+                                                                                                "length":  1990
+                                                                                            },
+                  "dyspozycje/_handoff/CYWILIZACJE-do-SILNIK_diplomacy-display-v2.md":  {
+                                                                                            "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\CYWILIZACJE-do-SILNIK_diplomacy-display-v2.md",
+                                                                                            "mtime":  "2026-06-30T14:39:38.2710653Z",
+                                                                                            "flags":  "HANDOFF",
+                                                                                            "length":  1334
+                                                                                        },
+                  "docs/obieg/D-cywilizacje.md":  {
+                                                      "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\docs\\obieg\\D-cywilizacje.md",
+                                                      "mtime":  "2026-06-30T22:46:09.1282540Z",
+                                                      "flags":  "HANDOFF",
+                                                      "length":  7377
+                                                  },
+                  "dyspozycje/_handoff/MASTER-do-CYWILIZACJE_P5-P6-dyplomacja.md":  {
+                                                                                        "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-do-CYWILIZACJE_P5-P6-dyplomacja.md",
+                                                                                        "mtime":  "2026-06-30T22:33:48.9729498Z",
+                                                                                        "flags":  "HANDOFF",
+                                                                                        "length":  1926
+                                                                                    },
+                  "dyspozycje/_handoff/CYWILIZACJE-do-MAPA_spawn-obcy-klaster.md":  {
+                                                                                        "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\CYWILIZACJE-do-MAPA_spawn-obcy-klaster.md",
+                                                                                        "mtime":  "2026-06-30T14:39:38.9813406Z",
+                                                                                        "flags":  "",
+                                                                                        "length":  899
+                                                                                    },
+                  "dyspozycje/_handoff/CYWILIZACJE-do-SILNIK_bonusy-display-wire.md":  {
+                                                                                           "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\CYWILIZACJE-do-SILNIK_bonusy-display-wire.md",
+                                                                                           "mtime":  "2026-06-30T14:39:38.8982192Z",
+                                                                                           "flags":  "HANDOFF",
+                                                                                           "length":  2001
+                                                                                       },
+                  "dyspozycje/_handoff/CYWILIZACJE-do-MASTER_defaulty-startu-D13A.md":  {
+                                                                                            "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\CYWILIZACJE-do-MASTER_defaulty-startu-D13A.md",
+                                                                                            "mtime":  "2026-06-30T14:39:38.2715667Z",
+                                                                                            "flags":  "HANDOFF",
+                                                                                            "length":  2406
+                                                                                        },
+                  "dyspozycje/_handoff/CYWILIZACJE-do-UI_diplomacy-params-GOTOWE.md":  {
+                                                                                           "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\CYWILIZACJE-do-UI_diplomacy-params-GOTOWE.md",
+                                                                                           "mtime":  "2026-06-30T18:07:42.2605264Z",
+                                                                                           "flags":  "HANDOFF",
+                                                                                           "length":  1069
+                                                                                       },
+                  "dyspozycje/_handoff/EKONOMIA-do-GRUPA-D_moc-respekt-GOTOWE.md":  {
+                                                                                        "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\EKONOMIA-do-GRUPA-D_moc-respekt-GOTOWE.md",
+                                                                                        "mtime":  "2026-06-30T14:39:38.6554144Z",
+                                                                                        "flags":  "HANDOFF",
+                                                                                        "length":  5641
+                                                                                    },
+                  "dyspozycje/_handoff/A1-do-GRUPA-D_power-konsument.md":  {
+                                                                               "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\A1-do-GRUPA-D_power-konsument.md",
+                                                                               "mtime":  "2026-06-30T14:39:38.3296481Z",
+                                                                               "flags":  "",
+                                                                               "length":  1020
+                                                                           },
+                  "dyspozycje/_handoff/CYWILIZACJE-do-SILNIK_roster-15-enum.md":  {
+                                                                                      "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\CYWILIZACJE-do-SILNIK_roster-15-enum.md",
+                                                                                      "mtime":  "2026-06-30T14:39:38.6353857Z",
+                                                                                      "flags":  "HANDOFF",
+                                                                                      "length":  2375
+                                                                                  },
+                  "dyspozycje/_handoff/CYWILIZACJE-do-UI_v1.1-audiencja-negocjacje.md":  {
+                                                                                             "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\CYWILIZACJE-do-UI_v1.1-audiencja-negocjacje.md",
+                                                                                             "mtime":  "2026-06-30T14:39:38.4538430Z",
+                                                                                             "flags":  "HANDOFF",
+                                                                                             "length":  2467
+                                                                                         },
+                  "dyspozycje/_handoff/CYWILIZACJE-do-UI_dyplomacy-relation-display-v2.md":  {
+                                                                                                 "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\CYWILIZACJE-do-UI_dyplomacy-relation-display-v2.md",
+                                                                                                 "mtime":  "2026-06-30T14:39:38.9823405Z",
+                                                                                                 "flags":  "",
+                                                                                                 "length":  4386
+                                                                                             },
+                  "dyspozycje/_handoff/CYWILIZACJE-do-MASTER_model-nauki-dla-MIASTO.md":  {
+                                                                                              "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\CYWILIZACJE-do-MASTER_model-nauki-dla-MIASTO.md",
+                                                                                              "mtime":  "2026-06-25T09:05:59.0134357Z",
+                                                                                              "flags":  "HANDOFF",
+                                                                                              "length":  2457
+                                                                                          },
+                  "dyspozycje/_handoff/CYWILIZACJE-do-SILNIK_E1-roster-startowy.md":  {
+                                                                                          "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\CYWILIZACJE-do-SILNIK_E1-roster-startowy.md",
+                                                                                          "mtime":  "2026-06-28T09:01:56.6549136Z",
+                                                                                          "flags":  "HANDOFF",
+                                                                                          "length":  1361
+                                                                                      },
+                  "dyspozycje/_handoff/CYWILIZACJE-do-UI_v1.1-CYW-logika-AI.md":  {
+                                                                                      "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\CYWILIZACJE-do-UI_v1.1-CYW-logika-AI.md",
+                                                                                      "mtime":  "2026-06-30T14:39:38.4563464Z",
+                                                                                      "flags":  "HANDOFF",
+                                                                                      "length":  1929
+                                                                                  },
+                  "dyspozycje/_handoff/CYWILIZACJE-do-SILNIK_delegacje-poza-lane-D.md":  {
+                                                                                             "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\CYWILIZACJE-do-SILNIK_delegacje-poza-lane-D.md",
+                                                                                             "mtime":  "2026-06-30T14:39:38.3697098Z",
+                                                                                             "flags":  "HANDOFF",
+                                                                                             "length":  6153
+                                                                                         },
+                  "dyspozycje/_handoff/CYWILIZACJE-do-INTEGRATOR_P5-P6-dyplomacja.md":  {
+                                                                                            "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\CYWILIZACJE-do-INTEGRATOR_P5-P6-dyplomacja.md",
+                                                                                            "mtime":  "2026-06-30T22:35:18.3581086Z",
+                                                                                            "flags":  "HANDOFF",
+                                                                                            "length":  4672
+                                                                                        },
+                  "dyspozycje/_handoff/CYWILIZACJE-do-MASTER_ai-wpiecie.md":  {
+                                                                                  "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\CYWILIZACJE-do-MASTER_ai-wpiecie.md",
+                                                                                  "mtime":  "2026-06-25T11:57:39.3145899Z",
+                                                                                  "flags":  "HANDOFF",
+                                                                                  "length":  4401
+                                                                              },
+                  "dyspozycje/_handoff/CYWILIZACJE-do-INTEGRATOR_T-TECH-1-2-3.md":  {
+                                                                                        "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\CYWILIZACJE-do-INTEGRATOR_T-TECH-1-2-3.md",
+                                                                                        "mtime":  "2026-06-30T14:39:38.4568513Z",
+                                                                                        "flags":  "HANDOFF",
+                                                                                        "length":  1747
+                                                                                    },
+                  "dyspozycje/_handoff/CYWILIZACJE-do-MASTER_testy-grupa-d-bramka.md":  {
+                                                                                            "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\CYWILIZACJE-do-MASTER_testy-grupa-d-bramka.md",
+                                                                                            "mtime":  "2026-06-30T14:39:38.6343802Z",
+                                                                                            "flags":  "HANDOFF",
+                                                                                            "length":  1529
+                                                                                        },
+                  "dyspozycje/_handoff/EKONOMIA+CYWILIZACJE-do-SILNIK_B2-Q12-rebelia.md":  {
+                                                                                               "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\EKONOMIA+CYWILIZACJE-do-SILNIK_B2-Q12-rebelia.md",
+                                                                                               "mtime":  "2026-06-29T05:56:26.5102141Z",
+                                                                                               "flags":  "HANDOFF",
+                                                                                               "length":  997
+                                                                                           },
+                  "dyspozycje/_handoff/CYWILIZACJE-do-MASTER_diplo-ai-api.md":  {
+                                                                                    "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\CYWILIZACJE-do-MASTER_diplo-ai-api.md",
+                                                                                    "mtime":  "2026-06-25T16:15:43.9054389Z",
+                                                                                    "flags":  "HANDOFF",
+                                                                                    "length":  4204
+                                                                                },
+                  "dyspozycje/_handoff/CYWILIZACJE-do-SILNIK_AI-defensywne-kopie.md":  {
+                                                                                           "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\CYWILIZACJE-do-SILNIK_AI-defensywne-kopie.md",
+                                                                                           "mtime":  "2026-06-30T14:39:38.6353857Z",
+                                                                                           "flags":  "HANDOFF",
+                                                                                           "length":  3703
+                                                                                       },
+                  "dyspozycje/_handoff/CYWILIZACJE-do-UI_dyplomacja-audiencja-D3Q2.md":  {
+                                                                                             "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\CYWILIZACJE-do-UI_dyplomacja-audiencja-D3Q2.md",
+                                                                                             "mtime":  "2026-06-30T14:39:38.9803406Z",
+                                                                                             "flags":  "HANDOFF",
+                                                                                             "length":  2064
+                                                                                         },
+                  "dyspozycje/_handoff/CYWILIZACJE-do-MASTER_turniej-ab.md":  {
+                                                                                  "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\CYWILIZACJE-do-MASTER_turniej-ab.md",
+                                                                                  "mtime":  "2026-06-25T07:09:09.8843236Z",
+                                                                                  "flags":  "",
+                                                                                  "length":  10818
+                                                                              },
+                  "dyspozycje/_handoff/GRUPA-E-do-CYWILIZACJE_barbarzyncy-buntownicy-11C-star.md":  {
+                                                                                                        "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\GRUPA-E-do-CYWILIZACJE_barbarzyncy-buntownicy-11C-star.md",
+                                                                                                        "mtime":  "2026-06-30T14:39:38.4553432Z",
+                                                                                                        "flags":  "HANDOFF",
+                                                                                                        "length":  1529
+                                                                                                    },
+                  "dyspozycje/_handoff/CYWILIZACJE-do-MASTER_decyzje-dyplomacja-AI.md":  {
+                                                                                             "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\CYWILIZACJE-do-MASTER_decyzje-dyplomacja-AI.md",
+                                                                                             "mtime":  "2026-06-25T15:51:01.4760811Z",
+                                                                                             "flags":  "HANDOFF",
+                                                                                             "length":  1897
+                                                                                         },
+                  "dyspozycje/_handoff/CYWILIZACJE-do-GRUPA-D_moc-jednostek-power.md":  {
+                                                                                            "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\CYWILIZACJE-do-GRUPA-D_moc-jednostek-power.md",
+                                                                                            "mtime":  "2026-06-30T14:39:38.9823405Z",
+                                                                                            "flags":  "HANDOFF",
+                                                                                            "length":  9648
+                                                                                        },
+                  "dyspozycje/_handoff/UI-do-CYWILIZACJE_dyplomacja-i-civs.md":  {
+                                                                                     "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\UI-do-CYWILIZACJE_dyplomacja-i-civs.md",
+                                                                                     "mtime":  "2026-06-25T11:29:49.4813795Z",
+                                                                                     "flags":  "HANDOFF",
+                                                                                     "length":  1351
+                                                                                 },
+                  "dyspozycje/_handoff/INTEGRATOR-do-CYWILIZACJE_unit-power-m-wpięte.md":  {
+                                                                                               "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\INTEGRATOR-do-CYWILIZACJE_unit-power-m-wpięte.md",
+                                                                                               "mtime":  "2026-06-30T14:39:38.9818405Z",
+                                                                                               "flags":  "",
+                                                                                               "length":  5209
+                                                                                           }
+              },
+    "lastTick":  "2026-06-30T23:19:19.4357673Z"
+}

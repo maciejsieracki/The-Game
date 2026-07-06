@@ -1,190 +1,586 @@
-# CYWILIZACJE -> MASTER : pytania i raporty
-ZASADA: pisz w czacie + tu (append-only).
+# CYWILIZACJE → MASTER / SILNIK (raporty Q&A)
+
+Zasada: append-only · najnowszy wpis na górze.
+
+**Od 2026-06-29:** dyspozycje wysyła **SILNIK** (manifest `SILNIK-ROZDYSponowANIE-LANE-2026-06-29.md`).
 
 ---
 
-## [2026-06-24 21:57] HANDOFF od zamykanej sesji DANE → dla CYWILIZACJE (przejmującej)
+### [2026-07-05 ~23:05] **→ MASTER: GOTOWE · JSON upgrade budynków (ABC-20…24)**
 
-### ✅ ZROBIONE (część DANE — gotowe, nie ruszać)
-- **Roster 9 typów** w `civs.json`: Grecy, Rzymianie, Chińczycy, Inkowie, Zulusi, Egipt, Sumerowie, Celtowie, Germanie — każdy z: styl, jednostka specjalna, bonus/minus (konkretne), **religia**, **`Typ główny`=true**. `loader.ts` tsc=0; zmieniany TYLKO `civs.json`.
-- **Religie 9** w `Spoleczenstwo-parametry.xlsx` → „Religie cywilizacji" (źródło). ⚠ `society-params.json` wciąż ma **7** → re-eksport = master/silnik.
-- **Jednostki (kierunek)** dla Units/Battle: `Civ-DANE/PACZKA-DLA-UNITS-od-DANE.md` + `Civ-DANE/Jednostki-specjalne-przeglad.xlsx` (Kamień/Brąz/Żelazo; Żelazo: 1 wyjątkowa/cyw. + 2. dla Chiny/Egipt/Sumer; Inkowie=elita brąz/miedź).
-- **Dokumentacja dev:** `Civ-DANE/DOKUMENTACJA-DANE-cywilizacje.md` + `Civ-DANE/INDEX.md`.
-- **Porządek:** katalog `Civ-DANE/` (dokumenty/analizy). Źródła (`Cywilizacje.xlsx`), plik gry (`gra/data/civs.json`) i kanał zostają na miejscu (powody w INDEX).
-
-### ⏳ DO WYKONANIA (przejmuje CYWILIZACJE)
-1. **Wypełnić 3 arkusze** w `Cywilizacje.xlsx` (szkielety gotowe, niebieskie komórki = wartości od Naster):
-   `AI-zachowanie` (11×9), `Parametry-cyw` (11×6), `Dyplomacja` (11×7). Profil AI/charakter per cyw: militarność, ekspansja, sojusze/lojalność, nauka-kultura-ekonomia, ryzyko, zapał religijny.
-2. **Re-eksport CELOWANY** (NIGDY export-data.py/npm build): `civ-ai.json` (BRAK), `civ-params.json` (BRAK), `diplomacy.json` (jest STARY — regen z nowego arkusza). `civs.json` aktualny.
-3. **Kod AI (przejęte z działu AI; ISTNIEJĄ, NIEwpięte do main.ts):**
-   - `gra/src/game/ai.ts` (610) — `decideAITurn(...)→AICommand[]`. Czyta `data.aiParams` + mapuje typ cyw→archetyp. **DO: podłączyć pod nowe arkusze AI-zachowanie + Parametry-cyw** (zamiast/oprócz sztywnych wartości).
-   - `gra/src/game/victory.ts` (223) — `checkVictory(input)`: dominacja typu + statek + eliminacja.
-   - `gra/src/game/barbarians.ts` (561) — `spawnCamps/tickCamps/decideBarbarianMoves/loadBarbParams/barbariansActive`. Czyta `ai-params.json` (ma FALLBACK).
-   - Testy: `gra/tools/barbarians-test.cjs`, `combat-test.cjs`, `logic-test.cjs` (sprawdzić ai/victory harness).
-4. **Handoff do mastera** (po podłączeniu/testach): „ai/victory/barbarians gotowe do wpięcia" + instrukcja (handler „N": `decideAITurn`→wykonać `AICommand[]`; `checkVictory` co turę; tick barbarzyńców) + DoD → `dyspozycje/_handoff/CYWILIZACJE-do-MASTER_ai-wpiecie.md` + meldunek tutaj.
-5. **Dyplomacja:** re-analiza założeń (a)/(b) turniejem (z dyspozycji DYPLOMACJA) — nadal aktualna.
-6. ⚠ **PILNE — self-check:** scheduled task **`civ-dane-self-check` czyta jeszcze martwy `DANE.md`** (baseline w `DANE-DO-MASTERA.md` = KOREKTA Q3; w DANE.md są NOWSZE wpisy 2026-06-24 → mógłby je przetwarzać w martwym kanale). **Repoint na `CYWILIZACJE.md` albo wyłączyć.** Nie zdążyłem przepiąć.
-
-### REGUŁY (zachować)
-Backup przed zmianą (`cp plik plik.bak-CYWILIZACJE`). Edytujesz tylko swoje pliki; wpięcie do main.ts/kanonu = master (handoff). Eksport CELOWANY per JSON. Pytania tekstem w czacie + append tu. Tryb event-driven.
-
-### GDZIE CO LEŻY
-Źródło: `Cywilizacje.xlsx` (5 arkuszy). Religie: `Spoleczenstwo-parametry.xlsx`→„Religie cywilizacji". Moje docs/analizy: `Civ-DANE/`. Gra: `gra/data/*.json`; kod AI: `gra/src/game/{ai,victory,barbarians}.ts`. Kanał: `CYWILIZACJE.md` (wsad) + ten plik (raporty).
-
-### OTWARTE DECYZJE (Naster)
-- Wartości do 3 arkuszy (AI/Dyplomacja/Parametry) — Naster podaje lub akceptuje propozycję.
-- Jednostki Żelaza (propozycja w `Civ-DANE/`) — czy zaakceptowane do przekazania Units/Battle.
+**Handoff:** `_handoff/EKONOMIA-do-MASTER_upgrade-2026-07-05.md` (sekcja JSON)  
+**Plik:** `gra/data/buildings.json` — `upgradeFrom`, łańcuchy (port→port_wielki, fort, akademia…), sumy bonusów per poziom  
+**Backup:** `.bak-*` jeśli lane zrobił przed edycją  
+**Test:** `upgrade-budynki-test.cjs` 28/28 · robocza md5 **`eac24a66`**  
+**Lane CYW:** dane tylko — logika w EKONOMIA/UI · **NIE** commitowane na GitHub (czeka Master)
 
 ---
-[2026-06-24 20:00] CYWILIZACJE: orientacja + PRZEGLAD modulow AI (read-only, brak zmian w kodzie).
-Potwierdzam przejecie zakresu z handoffu DANE (powyzej). Reguly PLAYBOOK przyjete (handoff/backup/limity/sedzia/event-driven).
-PRZEGLAD 3 modulow (wszystkie czyste, no DOM/THREE):
-- victory.ts — KOMPLETNY i poprawny dla v0.1 (dominacja/przegrana/nauka); potrzebuje TYLKO wpiecia.
-- barbarians.ts — logika OK, test 53/0 (zielony); klucze 'barbarzyncy_*' brak w panelu -> dziala na FALLBACK.
-- ai.ts — logika v0.1 OK (produkcja wg zagrozenia/fazy, marsz na miasto wroga = dominacja, osadnicy, ranged hold-back).
-  LUKI: (1) czyta STARY ai-params.json, NIE civ-ai.json / civ-params.json; (2) agresja/ekspansja/ryzyko NIE uzyte
-  w decyzjach (AI zawsze maszeruje na najblizsze miasto wroga); (3) brak wyboru trudnosci 1/2/3; (4) czyta tylko
-  entry.wartosc (z diakrytykiem) — ujednolicic z tolerancyjnym wartosc/wartość jak w barbarians.
-PROPOZYCJA ARCHITEKTURY: per-nacja (agresja/ekspansja/priorytety/ryzyko/preferowane budynki+jednostki) ->
-  civ-ai.json + civ-params.json (czyta ai.ts); globalne (trudnosc 1/2/3, 'barbarzyncy_*', heurystyki ekspansji)
-  -> ai-params.json. ai.ts laczy: per-nacja + globalne + trudnosc.
-DZIALANIE (pkt 6 PILNE z handoffu): scheduled task 'civ-dane-self-check' czytajacy martwy DANE.md ->
-  WYLACZYLEM (enabled=false), by nie dzialal w martwym kanale ani nie kolidowal z ta sesja. Jesli ma byc
-  self-check dla CYWILIZACJE — zalozyc swiadomie (godzinny wg PLAYBOOK), nie 10-min.
-PYTANIA DO NASTER (blokada na "uzupelnienie arkuszy"):
-  Q1: 3 arkusze (AI-zachowanie 11x9, Parametry-cyw 11x6, Dyplomacja 11x7) — mam zaprojektowac kolumny + wpisac
-      wartosci STARTOWE per nacja (Ty potem korygujesz), czy czekam az podasz wartosci?
-  Q2: priorytet nastepnego kroku — turniej (a)/(b) [autoryzowany] czy najpierw podlaczenie ai.ts pod arkusze?
+
+### [2026-07-04] **→ Maciej: Panel-D** — sync JSON → Excel (bez exportu)
+
+**Trigger:** Maciej — najpierw uzupełnij Panel-D, dopiero potem export.
+
+| Akcja | Wynik |
+|-------|--------|
+| `gen-panel-d.py` | `panele-sterowania/Panel-D.xlsx` — **14 arkuszy** |
+| Źródło | bieżące `civs.json`, `civ-ai.json`, `civ-params.json`, `diplomacy.json`, `ai-params.json` |
+
+**Zawartość (15 nacji):**
+- `Bonusy-cywilizacji` — 45 wierszy (3 bonusy × 15) · draft % z JSON
+- `AI-archetyp` — roster-6 własne klucze (Q7=A) · **Hetyci nauka=2**
+- `AI-per-nacja`, `Dyplomacja-per-nacja`, `Parametry-cyw`, `Cywilizacje-roster`
+
+**Export:** **NIE** uruchomiony — czeka edycja Macieja w Excelu (kolumna Wartosc) → sygnał **eksportuj panel D**.
 
 ---
-[2026-06-24 22:44] HANDOFF: nazwy klastrow -> civs.json. Szczegoly: _handoff/CYWILIZACJE-do-MASTER_nazwy-klastrow-pole.md
-- Pole dla MAPA: cywilizacje[i].nazwyKlastra (10 stringow, [0]=stolica). 9 typow x10, JSON OK, backup civs.json.bak-CYWILIZACJE.
-- RYZYKO: civs.json generuje TYLKO export-data.py (zakazany) -> edycja bezposrednia NIE w xlsx -> ponowny eksport skasuje pole.
-  Rekomendacja (moj lane): kolumna w Cywilizacje.xlsx + targeted export-civs.py. Czekam na zgode Macieja (pytanie w czacie).
-- Wykonane subagentem Sonnet (tryb: chude okno + delegacja).
+
+### [2026-07-04] **→ MASTER: KOREKTA** — Hetyci nauka +2 (Maciej)
+
+**Trigger:** Maciej — Hetyci i Babilonia: silna nauka na epokę; minus tylko na wojsku (Babilonia), nie na nauce.
+
+| Cywilizacja | Zmiana |
+|-------------|--------|
+| Hetyci | `nauka_priorytet` −1 → **+2** (biblioteki, pismo klinowe) |
+| Babilonia | bez zmiany wartości: nauka **+2**, wojsko **−1** (prawo/kapłani przed armią) |
 
 ---
-[2026-06-24 22:46] PYTANIE -> MASTER (Maciej przekierowal to pytanie do mastera):
-Jak trwale generowac civs.json bez utraty nazwyKlastra? Opcje A/B/C w
-_handoff/CYWILIZACJE-do-MASTER_nazwy-klastrow-pole.md. Rekomendacja A (targeted export-civs.py + kolumna w Cywilizacje.xlsx).
+
+### [2026-07-04] **→ MASTER: BATCH** — roster-6 archetypy AI (D-ROSTER-Q7=A)
+
+**Trigger:** Maciej — czerwone tematy CYW (własne archetypy zamiast fallbacków).
+
+| Plik | Zmiana |
+|------|--------|
+| `gra/data/ai-params.json` | +24 klucze `archetype_{harappa,hetyci,slowianie,babilonia,asyria,fenicjanie}_*` |
+| `gra/src/game/ai.ts` | `ArchKey` + `CIV_TO_ARCH` — 6 własnych kluczy (nie egipt/germanie/sumer/zulusi/chiny) |
+| `gra/tools/ai-test.cjs` | T3e–T3h: klucze JSON + behawior Harappa/Asyria + roundtrip 6 typów |
+
+**Backup:** `ai-params.json.bak-CYW-2026-07-04` · `ai.ts.bak-CYW-2026-07-04`
+
+**Wpięcie kanonu:** nie wymaga `main.ts` — loader czyta `ai-params.json` + `ai.ts` przy buildzie. MASTER: build + bramka `node tools/ai-test.cjs` przy następnym batchu.
+
+**DoD:** ai-test T3e–T3h ZIELONE · 15 typów ma unikalne archetypy produkcyjne.
 
 ---
-[2026-06-25 06:39] HANDOFF -> MASTER (dla EKONOMIA, decyzja 2a): prosba o tempo produkcji Nauki/ture (referencja do strojenia kosztow tech).
-Plik: _handoff/CYWILIZACJE-do-MASTER_nauka-tempo-od-EKONOMIA.md. Bez tego koszty tech (1a: zostaja) nie maja punktu odniesienia.
-STATUS PRAC (autonomicznie, subagentami Sonnet):
-- pkt1 fix wartosc<->wartość: ZIELONY (harness ai-test.cjs).
-- pkt2 trudnosc: AITurnOpts.poziomTrudnosci + loadDifficultyParams (zielony).
-- pkt4 archetypy 7->9: Celtowie/Germanie w ai.ts + AI-parametry.xlsx (8 kluczy, 76 total) + export-ai-params; wartosci do korekty Macieja.
-- pkt6 heurystyka nauki AI: chooseAIResearch (czysta funkcja; silnik wola w kroku §9.3) — research-test 33/0.
-- export-civs.py + export-tech.py: targeted eksporty gotowe (civs.json i tech.json regenerowalne z xlsx, bez export-data.py).
-ZOSTAJE BLOK: pkt3 (klaster ~9: format od MAPA) i pkt5 (budzet: kontrakt od EKONOMIA) — czekaja na mastera. Wpiecie ai/victory/barbarians = na Twoja decyzje (pytanie w _handoff/AI-do-MASTER_zaleznosci.md).
+
+### [2026-07-04] **→ GRUPA C: HANDOFF** — brief jednostek (CYW nie implementuje statów)
+
+**Trigger:** korekta Macieja — lane CYW = dane cyw + dyplomacja, **nie** `units.json`.
+
+| Deliverable | |
+|-------------|---|
+| Handoff | `dyspozycje/_handoff/CYW-do-GRUPA-C_jednostki-spec-brief-2026-07-04.md` |
+| Decyzje | CELT-Q1/Q2=A w `docs/decyzje/D-CELT-JEDNOSTKI-2026-07-04.md` |
+| Cofnięte | błędna edycja `units.json` przez CYW |
+
+**Grupa C:** trigger `działaj` · macierz TW + wpisy JSON. **EKONOMIA:** CELT-Q3 filtr Nacja (osobny handoff).
 
 ---
-[2026-06-25 07:00] FALA DOMKNIEC + nowe dane (autonomicznie, subagenci Sonnet):
-- Panel: 36 archetypow (9 nacji x4) sterowalne w AI-parametry.xlsx (opisy per wiersz + legenda w Eksport-README); wartosci NIEZMIENIONE (1A).
-- 3b fallback ruchu w ai.ts: jednostki bez celu nie stoja przy krawedzi (ku miastu/srodkowi). Harness ai-test 69/0.
-- 2b turniej (a)/(b): rekomendacja ZOSTAW OBA — start 50 (12/12), clamp 0..200 (11/12). Zero zmian kodu. Handoff: _handoff/CYWILIZACJE-do-MASTER_turniej-ab.md.
-- 3a HANDOFF WPIECIA: _handoff/CYWILIZACJE-do-MASTER_ai-wpiecie.md — ai.ts/victory.ts/barbarians.ts + chooseAIResearch + loadDifficultyParams GOTOWE DO WPIECIA (API + instrukcja handlera tury + DoD; testy ai 69/0, research 33/0, barb 53/0). Czeka na Twoja decyzje o integracji.
-- NOWE (dyrektywa 2026-06-25): mnoznikHandelPieniadz per cyw w civs.json (baza 2; do korekty Macieja). Durable: kolumna w Cywilizacje.xlsx + export-civs.py. Pole dla EKONOMIA: _handoff/CYWILIZACJE-do-MASTER_mnoznik-handel-pole.md.
+
+### [2026-07-03 ~22:45] **→ CYWILIZACJE/AI: INFO** — HP jednostek z TW `health`
+
+**Handoff zbiorczy:** `_handoff/MASTER-do-ALL-LANES_sync-TW-balans-2026-07-03.md`  
+**Kod:** `ai.ts` · `_unitMaxHealth` → `def.health ?? def.Health` (spójnie z pass balansu).  
+**Lane:** bez dalszych zmian; grep `def?.Health` w AI jeśli nowe miejsca.
 
 ---
-[2026-06-25 07:05] WATEK 2a ROZWIAZANY: EKONOMIA odpowiedziala (_handoff/EKONOMIA-do-MASTER_tempo-nauki.md).
-- Tempo nauki/ture: wczesna gra ~2-15 globalnie, srednia (3-5 miast + Biblioteki) ~15-60. Brak globalnego mnoznika tempa.
-- MOJA DECYZJA: koszty tech (10-50) SPOJNE z tempem (Kamien 10-14 ~2-7 tur; Braz 18-26 ~4-13 tur; Waluta 50 = bramka). ZOSTAWIAM (1a) — bez zmian.
-- DO DECYZJI MACIEJA (opcja, nie robie bez zgody): globalny mnoznik tempa nauki dla trudnosci (EKONOMIA proponuje 'nauka_tempo_mnoznik' w econ-params + hook w turn-economy).
+
+**Stan:** `completedWorldWonders` · toolbar Cuda (picker) · produkcja · save/load  
+**Bramka:** 7/7 wonder · logic 203 · smoke ✅  
+**Playtest:** Maciej — Grecy ep.3 + Inżynieria → Kolos  
+**KANON:** CZEKA Opus (`MASTER-do-OPUS_review-epoka-cuda-2026-07-03.md`)
 
 ---
-[2026-06-25 07:15] HANDOFF -> MASTER (rozdaj do MIASTO + EKONOMIA): model "nauka/ekonomia miasta" (suwak podzialu outputu miasta + magazyn nauki + wydawanie na tech).
-Plik: _handoff/CYWILIZACJE-do-MASTER_model-nauki-dla-MIASTO.md. Granice: MIASTO=mechanika per-miasto+magazyn; EKONOMIA=agregacja globalna; JA=tylko koszty tech (tech.json) + AI-wybor (chooseAIResearch).
-OPEN dla Macieja: magazyn nauki = wspolna PULA vs postep-pod-wybrana-tech (obecnie research.ts=postep). Dotyczy MIASTO + research.ts.
+
+### [2026-07-03] → MASTER: CUDA-G1 wonder-availability (moduł GOTOWE · wpicie CZEKA)
+
+**Handoff:** `dyspozycje/_handoff/CYWILIZACJE-do-MASTER_cuda-g1-wonder-availability.md`  
+**Test:** `wonder-availability-test.cjs` **7/7**  
+**API:** `evaluateWonderBuildGate` · `listBuildableWondersForCiv`  
+**MASTER:** stan `completedWorldWonders` + panel budowy + 1 batch `main.ts`
 
 ---
-[2026-06-25 07:20] DECYZJA MACIEJA: nauka = WSPOLNA PULA (zbierasz punkty -> wydajesz na dowolna tech spelniajaca prereqi).
-Zaktualizowany handoff: _handoff/CYWILIZACJE-do-MASTER_model-nauki-dla-MIASTO.md. Skutki: research.ts (postep->pula+kup), MIASTO (UI magazynu+zakup).
-MOJA CZESC: chooseAIResearch KOMPATYBILNY bez zmian (zwraca cel; silnik kupuje gdy pula>=koszt); tech.json koszty bez zmian. Do rozdania przez mastera: MIASTO + wlasciciel research.ts.
+
+### [2026-07-03] → MASTER: epoka wejścia państw + cuda Antyk (GOTOWE dane/testy · CZEKA kanon + silnik cudów)
+
+**Od:** sesja Maciej + lane CYWILIZACJE (kontekst MASTER)  
+**Handoff:** `dyspozycje/_handoff/CYWILIZACJE-do-MASTER_epoka-wejscia-cuda-2026-07-03.md`
+
+| Deliverable | Stan |
+|-------------|------|
+| Kaskada `epokaWejscia` (civs.json, kreator, AI roster) | ✅ |
+| Reguła tech cudów E + poprawki wonders.json | ✅ |
+| Testy `civ-entry-epoch` 11/11 · `wonder-civ-tech` 5/5 · `civ-roster` 14/14 | ✅ |
+| `main.ts` — filtr AI po `_menuEpochId` | ✅ (review MASTER) |
+| Gameplay budowy cudów (`wonders-data` → production/UI) | ❌ **MASTER ma zaimplementować** |
+| Kanon `Gra-podglad.html` | ✅ md5 `DB1F508B…` · **Opus CZEKA** |
+
+**Kluczowe korekty danych:** Fenicjanie **Brąz** (nie Żelazo); Kolos + Koloseum → **Inżynieria**, epoka cudu **3**.
 
 ---
-[2026-06-25 07:30] STATUS DLA MASTERA (na prosbe Macieja). Przyjeto korekte 135-136 (nauka w MIASTO; czekam na REFERENCJE tempa; kosztow tech nie zmieniam=1a; drzewko moje).
 
-A) ZROBIONE (moje, testy zielone, NIEwpiete):
-- Dyplomacja: model 90/0, panel params + export-diplomacy.py, docs, hub; turniej (a)/(b)=ZOSTAW (start 50, clamp 0..200).
-- AI: pkt1 fix wartosc (ai-test 69/0), pkt2 trudnosc (loadDifficultyParams), pkt4 archetypy 7->9 (Celtowie/Germanie), pkt6 chooseAIResearch (research-test 33/0), fallback ruchu (jednostki bez celu nie stoja).
-- Dane: nazwyKlastra (civs.json), export-civs.py + export-tech.py (regenerowalne bez export-data.py), mnoznikHandelPieniadz per cyw, panel archetypow uczytelniony (sterowalny przez Macieja).
-- Handoffy zlozone: _handoff/CYWILIZACJE-do-MASTER_ai-wpiecie.md, _model-nauki-dla-MIASTO.md (decyzja: PULA), _mnoznik-handel-pole.md (EKONOMIA), _turniej-ab.md.
+### [2026-07-02] → MASTER: GOTOWE — **P2 Panel-D export** (`start`)
 
-B) ZOSTALO MI (w lane, ZABLOKOWANE na innych dzialach):
-- pkt3 ekspansja klastrowa (~9 typu): czeka na format startowego rozmieszczenia od MAPA.
-- pkt5 kontrola budzetu produkcji AI (koszt vs skarbiec): czeka na kontrakt od EKONOMIA.
-- koszty tech: czekam na REFERENCJE tempa nauki (Twoja zapowiedz 135-136); do tego 1a (bez zmian).
-- barbarzyncy_* w panelu (drobne/addytywne; teraz FALLBACK).
-
-C) DECYZJE/AKCJE OD MASTERA (czekam):
-1. WPIECIE modulow AI do petli tury (ai-wpiecie.md = API + handler tury + DoD gotowe) — kiedy integrujemy.
-2. Rozdanie modelu nauki (PULA): MIASTO (mechanika per-miasto + magazyn) + wlasciciel research.ts (postep->pula+kup).
-3. REFERENCJA tempa nauki (zapowiedziana) -> potem ew. strojenie kosztow.
-4. Routing: pkt3->MAPA, pkt5->EKONOMIA; mnoznikHandelPieniadz->EKONOMIA (mechanika, gated Waluta+Mennica).
-
-D) DECYZJE OD MACIEJA (opcjonalne/korekty, NIE blokuja):
-- Korekta proponowanych liczb: mnozniki Handel->Pieniadz (1.7-2.4), bonusy trudnosci (0/0.1/0.25). Archetypy juz 1A-przyjete.
-- Czy dodac globalny mnoznik tempa nauki dla trudnosci (opcja od EKONOMII).
-
-PODSUMOWANIE: wszystko niezablokowane = zrobione i przetestowane. Glowne hamulce: (1) decyzja o wpieciu, (2) referencja tempa + kontrakty MAPA(pkt3)/EKONOMIA(pkt5).
+**Od:** Grupa D · **Trigger:** Maciej `start` · P1 victory → F ✅  
+**Eksport:** `export-d.py` — dip=80 · ai/bar=76 · bonusy/roster 15 · akcje 13 · **zmian=0** (Excel = JSON)  
+**Test:** `test-panel-d-roundtrip.py` **PASS**  
+**P1:** F meldunek `F-do-MASTER_VICTORY-E-P0-06-2026-07-02.md` · kanon md5 `188437eb…`  
+**Lane D:** **IDLE**
 
 ---
-[2026-06-25 07:45] ODPOWIEDZ DLA UI (Dyplomacja + civs.json) -> _handoff/CYWILIZACJE-do-MASTER_odp-UI-dyplomacja-civs.md.
-- Skala 5 tierow OFICJALNA: Wojna=STAN / Wrogi<30 / Neutralny<60 (start 50) / Przyjazny<120 / Sojusz>=120 lub traktat.
-- Mapuje SILNIK: dodalem kanoniczny relationTier(rel)->0..4 + TIER_NAMES w diplomacy.ts (diplomacy-test 98/0). UI dostaje GOTOWY tier z getRelations() (funkcja silnika), NIE czyta diplomacy.json dla tieru.
-- Panel v0.1 = PODGLAD (akcje wojna/pakt PO wpieciu modelu). civs.json kompletne dla UI (klucze: "Cywilizacja","Styl / charakter","Jednostka specjalna","Bonus startowy" + Religia/nazwyKlastra/mnoznikHandelPieniadz).
-- DO DECYZJI: (Q4) panel v0.1 podglad-only? (Q5) emblematy/ikony: dodac pole "ikonaId" w civs.json czy UI mapuje po nazwie? Assety = UI/RENDER.
+
+### [2026-07-02] → MASTER: GOTOWE — E-P0-06 ekran zwycięstwa (D+E)
+
+**Od:** Grupa D + E (cross-lane) · **Dyspozycja:** `MASTER-PILNE-2026-07-02.md` P1  
+**Warstwa:** 🟢 `victory.ts` + `victoryScreen.ts` · 🟡 wpięcie F (`main.ts`)  
+**Decyzja:** 10=A* — dominacja Power>50% + nauka (tech+rakieta)
+
+| Deliverable | Dowód |
+|-------------|--------|
+| Audit | Logika ✅ w `victory.ts` · UI ❌ brak modułu — był tylko inline `showGameOverOverlay` w `main.ts` |
+| `gra/src/ui/victoryScreen.ts` | **NOWY** — E-15: dominacja / nauka / przegrana + statystyki + „Nowa gra" |
+| `gra/tools/victory-screen-test.cjs` | **11/11** |
+| `gra/tools/victory-test.cjs` | **12/12** (bez regresji) |
+| Panel-D | `export-d.py` OK · `test-panel-d-roundtrip.py` **PASS** |
+| Handoff F | `CYWILIZACJE-do-INTEGRATOR_victory-screen-2026-07-02.md` |
+
+**Nie ruszone:** `main.ts` · `gra-kanon/`
+
+**Co sprawdzić po wpięciu (Integrator):** 3 warianty overlay (złoto dominacja/nauka, czerwień porażka) · Power % na dominacji · reload „Nowa gra".
 
 ---
-[2026-06-25 12:04] SESJA AUTONOMICZNA (polecenie Macieja: dzialaj sam ~1-2h). ZROBIONE (subagenci Sonnet, testy zielone):
-- Q5 ROZSTRZYGNIETE: ikonaId per cyw w civs.json (+ kolumna w Cywilizacje.xlsx + export-civs.py). Wartosc = lowercase nazwa (grecy, rzymianie, ...). UI mapuje ikone po ikonaId.
-- ai.ts: OPCJONALNE canAfford (pkt5 budzet) + clusterCenter/clusterRadius (pkt3 klaster) — domyslnie BEZ zmian zachowania; ai-test 88/0. Gotowe do podpiecia gdy EKONOMIA/MAPA dadza dane.
-- diplomacy.ts: relationTier()->0..4 + TIER_NAMES (5-tier dla UI/getRelations); diplomacy-test 98/0.
-- Dokumentacja: Civ-CYWILIZACJE/DOKUMENTACJA-DEV-CYWILIZACJE.md (skonsolidowany dev doc calego lane: dane+dyplomacja+AI).
-- Handoff wpięcia (ai-wpiecie.md) zaktualizowany o nowe opty (canAfford/clusterCenter).
-- Odpowiedzi dla UI (5 pytan) dostarczone (odp-UI-dyplomacja-civs.md).
 
-FLAGA SPOJNOSCI (do mastera, NIE robie sam — ripple cross-lane):
-  enum TypCywilizacji (src/types/player.ts) = 7 typow + DrobnaCywilizacja -> BRAK Celtowie/Germanie, mimo ze sa w civs.json / ai-params / CIV_TO_ARCH. Tabele Record<TypCywilizacji> (m.in. diplomacy.ts ARCHETYPE_AGGRESSION/TRADE) sa pelne dla 7, ale Celtow/Germanow nie roznicuja (fallback 0.40). Dodanie do enuma = zmiana WSPOLNYCH typow -> tsc-ripple w innych modulach -> koordynacja mastera.
+### [2026-07-02] → MASTER: ACK **SILNIK-D-V11** (review APPROVE)
 
-TESTY (ta sesja, zielone): diplomacy 98/0, ai 88/0, research 33/0, barbarians 53/0.
-STAN: wszystko niezablokowane w moim lane = domkniete. Hamulce (czekaja): pkt3 (MAPA klastry), pkt5 (EKONOMIA budzet), referencja tempa nauki, wpiecie modulow (master).
+**Od:** Grupa F · **Meldunek:** `F-do-MASTER_SILNIK-D-V11-wiring-2026-07-02.md`  
+**Bramka Master:** treaties 9/9 · economy 6/6 · proposal 31/31 · diplo 143/143 · smoke OK  
+**Kanon:** md5 **`de9b53e43997d8ec195f209054f46d3a`**  
+**Lane D / F:** **IDLE** · czeka playtest Maciej **PT-D3**
 
 ---
-[2026-06-25 12:20] WNIOSKI+DECYZJE (dyplomacja/AI/cyw) + START solo-buildow. Pelny dok: Civ-CYWILIZACJE/PROPOZYCJA-dyplomacja-AI-v0.1.md. Handoff: _handoff/CYWILIZACJE-do-MASTER_decyzje-dyplomacja-AI.md.
-TURNIEJE/REKOMENDACJE: T1 Respekt=A (computeRespekt+silnik agreguje), T2 zakres v0.1=C (rdzen dyplomacji AI: wojna/pokoj/trybut), T3 bonusy=A (schemat strukturalny), T4 trudnosc=C (bonusy v0.1, spryt v0.2). Decyzje 1ABC..4ABC -> Maciej (sekcja 5 dok).
-FLAGI: zerwanie handlu (-15 Rel szablon vs brak eventu -> dodaje zerwanie_handlu -10 Z); enum TypCywilizacji 7 vs 9 (cross-lane); Typ glowny martwy.
-BUILDY START (na polecenie Macieja, wg rekomendacji; czyste/NIEwpiete): diplomacy.ts computeRespekt+tickDiplomacy+zerwanie_handlu; potem ai.ts decideAIDiplomacy+swiadomosc szans; civs.json schemat bonusow.
+
+**Od:** Grupa D (CYWILIZACJE) · **Dyspozycja:** `MASTER-do-CYWILIZACJE_P5-P6-dyplomacja.md`  
+**Warstwa:** 🟢 izolowane moduły · 🟡 po wpięciu F (relacje, save)  
+**Decyzje:** `D3-przemarsz-kara-ABC.md` · W5-A tech Rel≥100 (handoff F)
+
+| Deliverable | Dowód |
+|-------------|--------|
+| `gra/src/game/diplomacy-border-march.ts` | `hasAuthorizedBorderCrossing` · `applyUnauthorizedBorderPenalties` · param JSON |
+| `gra/src/game/diplomacy-basket-transfer.ts` | `grantTechToOwner` · `grantSurowiecBooleanAccess` · `BasketTransferContext` |
+| Test P5 | `diplomacy-border-march-test.cjs` **9/9** |
+| Test P6 | `diplomacy-basket-transfer-test.cjs` **8/8** |
+| Handoff F | `CYWILIZACJE-do-INTEGRATOR_P5-P6-dyplomacja.md` |
+| Handoff UNITS (spec) | `CYWILIZACJE-do-UNITS_przemarsz-kara-zaufanie.md` (już był) |
+
+**Nie ruszone:** `main.ts` · `tech.json` · `gra-kanon/`
+
+**Co sprawdzić po wpięciu (Integrator):** endTurn −5 Zauf./para · sojusz/granice = 0 · tech/surowiec w koszyku realnie transferowane.
+
+**Slack:** ✅ outbox `SLACK-OUTBOX-P5-P6-2026-07-01.md` · #master #grupa-d (2026-07-01)
 
 ---
-[2026-06-25 12:35] ODP na PILNE (koszty/subagenci): **TAK-subagenci-Sonnet**. Cala ciezka robota (kod/build/testy/dane) idzie przez Agent model:sonnet; glowne okno = brief+odbior+handoff (chude).
+
+### [2026-06-30] Wymiana PN — handoff UI + Integrator (Maciej: deleguj + archiwum)
+
+**Decyzje:** D3-W1…W11 zamknięte · pakiet ABC w `docs/decyzje/D3-wymiana-OTWARTE-ABC.md`
+
+**Handoffy:**
+- `dyspozycje/_handoff/CYWILIZACJE-do-UI_handel-koszyk-pn.md` 🟢
+- `dyspozycje/_handoff/CYWILIZACJE-do-INTEGRATOR_wymiana-pn-zaufanie.md` 🟢
+
+**Archiwum:** `docs/archiwum-czatow/maciej-decyzje/D3-wymiana-PN-handel-dar_2026-06-30.md`
+
+**Kod lane D:** `diplomacy-value-catalog.ts` · test 41/41 · **bez main.ts**
+
+**Kolejność:** UI koszyk → Integrator 1 batch → review → kanon
 
 ---
-[2026-06-25 13:00] BUILDY DONE (solo, subagenci Sonnet, testy ZIELONE; czyste/NIEwpiete). Pelne API+wpiecie: **_handoff/CYWILIZACJE-do-MASTER_diplo-ai-api.md**.
-- diplomacy.ts: computeRespekt (T1=A, domyka Respekt) + tickDiplomacy (tura dyplomacji) + event zerwanie_handlu. diplomacy-test **119/0**.
-- ai.ts: decideAIReaction (fight/flee, decyzja 2) + decideAIReinforcements (posilki <=1 heks) + decideAIDiplomacy (T2=C: wojna/pokoj/trybut). ai-test **132/0**.
-- civs.json: mnoznikHandelPieniadz per-cyw 1.7-2.4 + bonusy[] strukturalne (T3=A, 27 efektow z polem "realizuje" -> walka/miasto/ekonomia). export-civs.py chroni pola. JSON OK.
-- tech.json: Koszt nauki dostrojony wg referencji tempa (PROPOZYCJA do akceptacji Macieja; gate Bronz=45/Waluta=100; monotonicznosc OK).
-DECYZJE Macieja: T1-T4 ABC (PROPOZYCJA-dyplomacja-AI-v0.1.md §5) + 4 pytania balansu kosztow tech. Wpiecie = master (API w handoffie).
+
+### [2026-06-30] Sojusz v1.2 — siła proponenta UŁATWIA pakt (decyzja Maciej)
+
+**Problem:** `partnerRw ∈ [0.4, 0.7]` blokował silnego gracza — odwrócona logika.
+
+**Nowy model:**
+- Usunięto blokadę „tylko równi partnerzy”
+- `diplomacyProposerStrengthEase()` — przewaga Mocy/Respektu **obniża progi** (Panel-D: `progSojuszPremia*`)
+- Słaby proponent (mil < 0.5) bez pełnej relacji → odrzucenie
+- `willingnessAlly` rośnie gdy rozmówca silniejszy
+
+**Testy:** proposal 17/17, diplomacy 140/140
 
 ---
-[2026-06-25 13:40] FALA A+B DONE (solo, subagenci Sonnet; testy ZIELONE: diplomacy 133/0, ai 175/0). Handoff: _handoff/CYWILIZACJE-do-MASTER_waveAB-done.md.
-- A (master polecil): enum TypCywilizacji wyrownany do 9 (+Celtowie/Germanie) + ARCHETYPE_* + usuniety "Typ glowny" + AiParamDef fix (TS7053). RIPPLE UI: src/ui/newGameFlow.ts czyta typGlowny -> master niech sprzatnie (poza moim lane, UI pomija bezpiecznie).
-- B (decyzje Macieja): T2=A PELNA dyplomacja AI (+sojusz +handel); T4=B spryt od trudnosci (agresjaMnoznik/dyplomacjaAktywnosc/celObranie); pkt5 budzet w chooseCityProduction (canAfford+itemCost; kontrakt EKONOMIA-do-CYWILIZACJE_budzet-AI.md, pkt5 ODBLOKOWANY).
-- Respekt (decyzja 1): SPEC-Respekt.md + computePotegaNacji/computeRespekt (ratio-share, 50=parytet; slaby ulega nie atakuje) — wzor DO AKCEPTACJI Macieja (4 pkt w SPEC).
+
+**Od:** Grupa D · **Do:** Integrator + UI
+
+| Deliverable | Status |
+|-------------|--------|
+| 20 progów propozycji → `diplomacy.json` + `getEffectiveDiplomacyParams()` | ✅ |
+| 9 progów AI → `ai-params.json` + `loadDefaultAIDiplomacyProgs()` | ✅ |
+| `dyplomacja_relacja_handel` podpięte (handel AI) | ✅ |
+| Opis `jednostka_wojskowa` = suma M | ✅ power-params.json |
+| BBBB display w grze | ⬜ handoff Integrator+UI |
+
+**Handoffy:**
+- `CYWILIZACJE-do-INTEGRATOR_diplomacy-display-ui-batch.md`
+- `CYWILIZACJE-do-UI_diplomacy-params-GOTOWE.md`
+
+**Testy:** diplomacy-proposal + diplomacy (uruchomione w sesji)
+
+**Następny:** UI audiencja v2 → Integrator main.ts → Opus → kanon
 
 ---
-[2026-06-25 14:00] RESPEKT ZATWIERDZONY przez Macieja (komponenty + wagi 28/20/18/14/12/8 + formula ratio-share). Wzor ZABLOKOWANY do wpiecia; wagi sterowalne w panelu (punkt startowy). computePotegaNacji + computeRespekt gotowe w diplomacy.ts. Master: przy wpieciu silnik liczy potege per nacja (komponenty z UNITS/MIASTO/EKONOMIA) -> Relation.respekt = computeRespekt(potSelf,potPartner). Status w SPEC-Respekt.md = ZATWIERDZONE.
+
+### [2026-06-30] → GRUPA D: M jednostki WPIĘTE w Power — **dyplomacja ma wpiąć**
+
+**Od:** Integrator F · **Do:** Grupa D (dyplomacja, AI, Panel-D)
+
+**Handoff:** `dyspozycje/_handoff/INTEGRATOR-do-CYWILIZACJE_unit-power-m-wpięte.md`
+
+| Co | Status |
+|----|--------|
+| M w JSON + `unit-power.ts` | ✅ UNITS |
+| Suma M → składnik Armia Power | ✅ Integrator (`sumArmyMForOwner` w main.ts) |
+| Respekt z objective Power | ✅ **automatycznie widzi M** |
+| `militaryRatio` (propozycje + AI) | ✅ suma M · batch `MILITARY-RATIO-M-v1` |
+| Panel-D progi po wyższym Power | ⬜ weryfikacja Grupa D |
+
+**Kanon:** md5 `3DAE1AA5C463CFD9E90F77C5D2DCFC76`
+
+**Hasło czatu D:** `start` → handoff powyżej · **nie** edytować `main.ts` bez handoffu Integratora
 
 ---
-[2026-06-25 14:20] KOSZTY TECH FINALNE + TEMPO GRY (decyzje Macieja, temat zamkniety). Handoff: _handoff/CYWILIZACJE-do-MASTER_tempo-gry.md.
-- 1a baza zostaje; 4b+zasada: koszty NARASTAJA progresywnie w kazdej epoce (monotonicznie), bramki na szczycie (Bronzownictwo 45/Waluta 100/Sztuka wojenna 200); Jezdziectwo(56)>Pismo/Religia (3b); Q2 zniknelo.
-- NOWE tempo_gry: mnoznik kosztu badan przy starcie (szybka ×0.2 / standard ×1 / dluga ×5). Helper gra/src/game/tech-tempo.ts applyTempoKoszt (test 9/9). DLA UI (wybor na ekranie nowej gry) + SILNIK (applyTempoKoszt do kosztu tech). tech.json baza niezmieniona.
+
+### [2026-06-30] Moc jednostki (M) → Power — handoff dla Grupy D
+
+- **Plik:** `dyspozycje/_handoff/CYWILIZACJE-do-GRUPA-D_moc-jednostek-power.md`
+- **M w JSON:** ✅ `fieldPower` / `siegePower` w `units.json`
+- **M w TS:** ✅ `gra/src/game/unit-power.ts` · test 6/6
+- **Panel-C:** ✅ Stale-moc + Moc-jednostek (formuły Excel)
+- **SILNIK handoff:** `UNITS-do-SILNIK_unit-power-moc.md` (wpięcie sumy M → Power)
+- **Hasło Macieja:** `Grupa D: odczytaj moc-jednostek-power`
 
 ---
-[2026-06-25 15:00] MACIEJ ZATWIERDZIL T1=A + T3=A. Wszystkie T1-T4 ZAMKNIETE: T1=A (Respekt ratio-share), T2=A (pelna dyplomacja AI), T3=A (bonusy strukturalne), T4=B (spryt od trudnosci). T3=A: schemat bonusy[] (dane=CYWILIZACJE) gotowy; MECHANIZACJA efektow per dzial -> handoff _handoff/CYWILIZACJE-do-MASTER_bonusy-mechanizacja.md.
-ts (l.362/2610/2704: c.typCywilizacji ?? c.ikonaId) -> lane MASTER.
-- pkt3 ODBLOKOWANY+ZROBIONY: ai.ts ekspansja klastrowa wg ClusterPlacement (MAPA); ai-test 188/0. Wpiecie: decideAITurn(..., {clusterCenter:tc.centrum, clusterRadius:placement.minDystans*2}).
-- Zelazo w v0.1 (decyzja 1A): bez blokera, tech.json Zelazo zostaje.
+
+### [2026-06-26] START D3-UX — `diplomacy-display.ts` 🟢
+
+**Moduł:** `gra/src/game/diplomacy-display.ts` — tagi, ratio Mocy, tooltip Respekt  
+**Test:** `diplomacy-display-test.cjs` **8/8**  
+**Handoff SILNIK:** `_handoff/CYWILIZACJE-do-SILNIK_diplomacy-display-v2.md`  
+**Czeka:** UI layout audiencji + SILNIK `getState()` (lane UI/SILNIK, nie CYW)
+
+---
+
+### [2026-06-26] D3-UX **ZAMKNIĘTE** — Maciej **BBBB**
+
+**Decyzja:** `docs/decyzje/D3-UX-relacja-parametry-ABC.md` — lista badge statusu · audiencja pełna · tagi PL · Moc+stosunek  
+**→ UI + SILNIK:** handoff `CYWILIZACJE-do-UI_dyplomacy-relation-display-v2.md`  
+**→ CYW:** `diplomacy-display.ts` (tagi) — można startować
+
+---
+
+### [2026-06-26] RAPORT SESJI — dyplomacja · Moc · Respekt · UX (Grupa D)
+
+**Zakres:** wyjaśnienia modelu, tuning v1, spec UX audiencji, backlog armia ważona.
+
+| Temat | Status | Dokument |
+|-------|--------|----------|
+| Moc P-A w silniku | ✅ wpięte | `P-A-power-kanon.md` |
+| Tuning progów 60/70/90 | ✅ **zostają** | `D3-moc-respekt-tuning-scenariusze.md` |
+| Wyjaśnienie Respekt (ratio) | ✅ w czacie + scenariusze | np. 4000:2000→67, 40k:2k→95/5 |
+| UX panel relacji audiencja | ⏳ **CZEKA ABC** Macieja | `D3-UX-relacja-parametry-ABC.md` |
+| Handoff integrator | 🟢 | `CYWILIZACJE-do-INTEGRATOR_diplomacy-power-ready.md` |
+| Armia flat 25 pkt/jedn. | 📋 **backlog P-C4** (bez kodu) | rekom. A: reuse `estimateUnitCombatStrength` |
+| JSON / `main.ts` | bez zmian w sesji | — |
+
+**Testy:** power 9/9 · diplomacy 135/135.
+
+**Decyzje czekające Macieja:** `D3-UX-1=B, D3-UX-2=B, D3-UX-3=B, D3-UX-4=B` (rekomendacja).
+
+**Następne:** SILNIK+UI batch audiencja (Moc obu stron) · opcj. P-C4 ABC (waga armii per typ).
+
+---
+
+### [2026-06-26] Tuning dyplomacji v1 (Moc P-A) — **ZAMKNIĘTY** · → INTEGRATOR 🟢
+
+**Wejście MASTER:** `EKONOMIA-do-GRUPA-D_moc-respekt-GOTOWE.md` + `EKONOMIA-POWER-RESPEKT-SPEC.md`
+
+| Wynik | Szczegóły |
+|-------|-----------|
+| **Progi Panel-D** | **Bez zmian JSON** — 60 (NAP AI) / **70** (wasal) / **90** (wchłonięcie) spójne z ratio Mocy |
+| **Scenariusze** | `docs/decyzje/D3-moc-respekt-tuning-scenariusze.md` (8 par + mapowanie 1,5:1 … 9:1) |
+| **Testy** | `power-objective-test.cjs` **9/9** · `diplomacy-test.cjs` **135/135** |
+| **Integrator** | `_handoff/CYWILIZACJE-do-INTEGRATOR_diplomacy-power-ready.md` 🟢 |
+| **UI** | D3-UX czeka ABC Macieja — bloker Power zdjęty |
+| **Legacy** | `respekt_-_czynniki` / Potęga 0–100 — **nie używać** |
+
+**Przykład kalibracji:** Moc 3020 vs 1295 → Respekt **70** (próg wasala). vs 336 → **90** (wchłonięcie).
+
+---
+
+### [2026-06-26] **→ GRUPA D: MOC GOTOWA** — liczcie dyplomację (Respekt = ratio Mocy)
+
+**Maciej:** Grupa D czekała na Power — **odblokowane**.
+
+| Co | Gdzie |
+|----|--------|
+| Handoff | `_handoff/EKONOMIA-do-GRUPA-D_moc-respekt-GOTOWE.md` |
+| Spec kanon | `_scalone/EKONOMIA/EKONOMIA-POWER-RESPEKT-SPEC.md` |
+| Wklejka czat D | `docs/grupa-d/OD-MASTERA-MOC-RESPEKT-GOTOWE.md` |
+| Moc (pkt) | Panel-B `Potega-P-A` |
+| Dyplo (progi) | Panel-D `Dyplomacja` |
+
+**NIE używać:** `diplomacy.json` → `panel_sterowania.A` (stare wagi Potęgi 0–100).  
+**D3-UX bloker Power:** zdjęty — można iść w UI relacji po tuningu Panel-D.
+
+---
+
+**Kontekst:** Respekt = ratio Mocy; wytyczne UX per nacja do plików.  
+**Decyzja:** `docs/decyzje/D3-UX-relacja-parametry-ABC.md` (D3-UX-1…4)  
+**Handoff UI:** `_handoff/CYWILIZACJE-do-UI_dyplomacy-relation-display-v2.md`  
+**Bloker integratora:** ~~eksport Panel-B Power~~ **ZDJĘTY** — tuning Panel-D + D3-UX możliwy  
+**Rekomendacja CYW:** lista lekka (B) · audiencja pełna (B) · tagi charakteru (B) · Moc para+stosunek (B)
+
+### [2026-06-26] D3-UX — panel relacji audiencja (Moc + dyplomacja) — CZEKA ABC (tylko decyzje UX)
+
+### [2026-07-01] D-ROSTER ABC — ZAMKNIĘTE (formularz)
+
+**Q1=A** Sumer/Babilonia osobno · **Q2=A** nazwy jednostek · **Q3=B** pula **15** typów do losowania (mapa=E1 bez zm.) · **Q4=B** Excel first · **Q5=A** Tyrski miecznik · **Q6=A** Tier2 zaraz po Tier1 · **Q7=A** nowe archetypy  
+**Dok:** `docs/decyzje/D-cyw-roster-6-REZERWA.md` · **Czeka:** Panel-D + eksport Macieja
+
+---
+
+**Tier 1 (wdrożyć pierwsze):** Harappa · Hetyci · Słowianie  
+**Tier 2 (rezerwa):** Babilonia · Asyria · Fenicjanie  
+**Dok:** `docs/decyzje/D-cyw-roster-6-REZERWA.md` · JSON draft `Civ-CYWILIZACJE/draft/roster-6-REZERWA.json`  
+**Zawartość:** charakterystyki, bonusy draft, AI, dyplomacja, nazwy jednostek spec. (+ W zamian za), plan wdrożenia, ABC Q1–Q7  
+**Gra:** **nie dotykana** — czeka decyzje + sygnał implementacji Tier 1
+
+---
+
+### [2026-07-01] Maciej — 3 brakujące cywilizacje v1 (backlog)
+
+**Decyzja:** dodać na początkowym etapie **Harappa** (Indusowie, ep. kamień) · **Hetyci** (ep. brąz) · **Słowianie** (ep. żelazo); reszta rosteru później.  
+**Uzupełnienie:** Indusowie → nazwa kanoniczna **Harappa** (Maciej 2026-07-01).  
+**Dok:** `docs/decyzje/D-cyw-brakujace-v1.md`  
+**Stan dziś:** 9 typów w `civs.json` → docelowo 12  
+**Implementacja:** czeka sygnał + opcjonalnie charakter/jednostka spec. per nacja  
+**Nie blokuje:** dyplo v1.1 kod ✅ · Figma D STOP · Power (osobny wątek)
+
+---
+
+### [2026-06-30] EKO + UI v1.1 — moduły dostarczone → **SILNIK-D-V11**
+
+**EKO:** `diplomacy-economy.ts` · test 5/5 · handoff tick T1A  
+**UI:** `diplomacyNegotiationModal.ts` · `diplomacyProposalBanner.ts` · audiencja payload  
+**Batch F:** `EKONOMIA+UI+CYW-do-SILNIK_v1.1-diplomacy-batch.md` · kolejka `F-KOLEJKA-P0.md`
+
+---
+
+### [2026-06-30] D3 v1.1 — **MODUŁ CYW DOMKNIĘTY** ✅
+
+**Decyzje:** T1A · T2 dwa sojusze · T3A · T4B — `docs/decyzje/D3-v1.1-MACIEJ-2026-06-30.md`  
+**Kod lane CYW (bez main.ts):**
+- `gra/src/game/diplomacy-treaties.ts` — traktaty, sojusze def/pełny, NAP expiry, wojna zerwie pakt, tributeDeals
+- `gra/src/game/diplomacy-proposals.ts` — `evaluateProposal`, `applyAcceptedProposal`, `aiCommandToPendingProposal`, pending AI  
+**Testy:** `diplomacy-treaties-test.cjs` **7/7** · `diplomacy-proposal-test.cjs` **15/15** · `diplomacy-test.cjs` **135/135**  
+**Handoffy → GOTOWE (moduł):**
+- `CYWILIZACJE-do-SILNIK_v1.1-traktaty-save-load.md`
+- `CYWILIZACJE-do-EKONOMIA_v1.1-trybut-handel-tick.md`
+- `CYWILIZACJE-do-UI_v1.1-audiencja-negocjacje.md`
+- `CYWILIZACJE-do-UI_v1.1-CYW-logika-AI.md`  
+**Następne:** F wpina storage/save · EKO tick · UI modale · potem odblokowanie kart audiencji w main
+
+---
+
+### [2026-06-30] D3 v1.1 — decyzje Macieja + start modułu traktatów
+
+**ABC:** `T1A` · T2 **dwa sojusze** (def+pełny, brak wojny=zryw) · `T3A` · `T4B` sprint  
+**Dok:** `docs/decyzje/D3-v1.1-MACIEJ-2026-06-30.md`  
+**Kod:** `gra/src/game/diplomacy-treaties.ts` · enum `SojuszDefensywny`/`SojuszPelny` · test `diplomacy-treaties-test.cjs`  
+**Następne:** EKO tick trybut · UI modale · F storage/save
+
+---
+
+**Od:** Grupa D · **Do:** F (`F-KOLEJKA-P0.md`, `SILNIK-DO-MASTERA.md`)  
+**Handoff:** `CYWILIZACJE-do-SILNIK_bonusy-display-wire.md`
+
+---
+
+**UI:** audiencja + lista 🤝 + panel legacy — hook `getCivBonusy`  
+**Handoff:** `CYWILIZACJE-do-SILNIK_bonusy-display-wire.md`  
+**Pre-battle:** już działa (Batch B, wcześniej wpięte)
+
+---
+
+**Integrator batch:** SILNIK-D-5A-1 + bramka CYW + P1 Panel-C w jednym buildzie  
+**5A:** `resolveArchetypeAggression` / `resolveArchetypeTrade` w main.ts ✅  
+**E-P0-06 / E2-11:** wpięcie wcześniejsze · bramka victory 12/12 · barbarians 55/55 ✅  
+**Kanon md5:** `9665790EE040660FC6615F8405D0DD0D` *(stary — aktualny kanon: `4602e752d7e4b21f3c2460e494e82a8f`)*  
+**Czeka:** Opus · playtest · `rakietaWystrzelona` (ścieżka nauki — osobny batch)
+
+---
+
+### [2026-06-29] UX-INWENTARZ — Grupa D (dyspozycja `DYSPOZYCJA-INWENTARYZACJA-UX-A-E.md`)
+
+**Rejestr:** `docs/ux/REJEST-UX-MASTER.md` § Grupa D — **15 wpisów** (D-01…D-15)  
+**Status:** UX-INWENTARZ GOTOWE · lane CYW  
+**Integrator:** nie wymagany (same docs)
+
+---
+
+**Zadanie PANEL (spec §3):** hub balansu D — **GOTOWE u lane** (czeka akceptacja Macieja → PANEL-2 w REJESTR).  
+**Dostarczone:** `gen-panel-d.py` · `export-d.py` (+ `--xlsx`/`--data-dir`) · `test-panel-d-roundtrip.py` · `Panel-D.xlsx` (7 arkuszy)  
+**Test:** round-trip OK (dyplomacja + barbarzyńcy) · dry-run: 38 + 60 param.  
+**Maciej:** otwórz `Panel-D.xlsx` → kręć **Wartość** → w czacie: **eksportuj panel**  
+**Integrator:** **NIE wymagany** (same JSON) · 🟢
+
+---
+
+### [2026-06-28] PANEL — Grupa D: gen + export + inwentaryzacja
+
+**Zadanie PANEL (spec §3):** hub balansu D dla Macieja.  
+**Dostarczone:** `panele-sterowania/gen-panel-d.py` · `export-d.py` · `docs/obieg/D-PANEL-INWENTARYZACJA.md`  
+**Maciej lokalnie:** `python panele-sterowania/gen-panel-d.py` → otwórz `Panel-D.xlsx`  
+**Integrator:** **NIE wymagany** (same JSON przez export) · 🟢 izolowana, chyba że nowy param w `.ts`
+
+---
+
+### [2026-06-29] Maciej — paczka v1.1 Tier 2–3 dyplomacji (spec + handoffy)
+
+**Spec ABC:** `docs/decyzje/D3-v1.1-TIER23-paczka.md` (T1–T4 czeka litery)  
+**Handoffy:** `…-do-EKONOMIA_v1.1-trybut-handel-tick.md` · `…-do-UI_v1.1-audiencja-negocjacje.md` · `…-do-SILNIK_v1.1-traktaty-save-load.md` · `…-do-UI_v1.1-CYW-logika-AI.md` (zakres CYW)
+
+---
+
+### [2026-06-29] `start` — bramka OK · lane bez roboty kodowej
+
+**Maciej dyspozycja:** bonusy walki + victory/barbarians = GOTOWE u lane · walka CYW **tylko** przy diplomacy FAIL · **NIE** preBattle (UI) · **NIE** battleScene (UNITS).
+
+| Test | Wynik | Akcja CYW |
+|------|-------|-----------|
+| diplomacy-test | **135/135** | **brak** — `diplomacy.ts` nietknięty |
+| civ-bonusy-test | **30/30** | **GOTOWE** (`civs.json` + `civ-bonusy.ts`) |
+| victory-test | **12/12** | **→ SILNIK: GOTOWE** (moduł lane) |
+| barbarians-test | **55/55** | **→ SILNIK: GOTOWE** (moduł lane) |
+
+**Handoffy na F:** `…-victory-10A.md` · `…-barbarians-11C.md` · reszta D (5A 1 linia) — patrz audit 2026-06-28.
+
+**Lane CYW:** **PUSTY** · **NIE** `main.ts` · **NIE** `preBattle.ts` · **NIE** `battleScene`
+
+---
+
+### [2026-06-29] CYW — start sesji: bramka diplomacy OK · kolejka lane pusta
+
+**Test:** `node tools/diplomacy-test.cjs` → **135/135 PASS** — **bez zmian** w `diplomacy.ts`
+
+**Potwierdzenie modułów (nie powtarzać):**
+| ID | Status | Test |
+|----|--------|------|
+| D-P0-01 | ✅ DONE | — |
+| E-P0-06 victory 10A | ✅ lane → **→ SILNIK: GOTOWE** | 12/12 |
+| E2-11 barbarians 11C | ✅ lane → **→ SILNIK: GOTOWE** | 55/55 |
+
+**Handoffy czekające na F/SILNIK (main.ts):**
+- `_handoff/CYWILIZACJE-do-SILNIK_victory-10A.md`
+- `_handoff/CYWILIZACJE-do-SILNIK_barbarians-11C.md`
+
+**Lane CYW:** brak nowej pracy kodowej · **NIE** `main.ts` · **CZEKA Macieja:** D3 audiencja (ABC)
+
+---
+
+### [2026-06-28] Maciej — routing: tech + nauka → Grupa B
+
+**Decyzja:** drzewko technologii i parametry nauki = **EKONOMIA/Miasto (Grupa B)**. CYW = dyplomacja + cywilizacje + AI + zwycięstwo/barbarzyńcy.
+
+**Dokument:** `docs/decyzje/ROUTING-tech-nauka-Grupa-B.md`  
+**Handoff:** `CYWILIZACJE-do-EKONOMIA_transfer-tech-nauka.md`  
+**CYW od dziś:** nie edytuje `tech.json` — tylko odczyt (`ai.ts`, `victory.ts`).
+
+---
+
+### [2026-06-29] SILNIK → CYW: status + wpiecenie F
+
+**Moduły GOTOWE (lane):** victory 10A · barbarians 11C · D-P0 bonusy — handoffy `CYWILIZACJE-do-SILNIK_*.md`  
+**SILNIK:** wpina do `main.ts` (sekcja A manifestu) — **CYW nie rusza main.ts**
+
+**Jeśli diplomacy-test FAIL:** napraw w `diplomacy.ts` + meldunek.
+
+---
+
+(historia archiwum: `docs/archiwum/dyspozycje/CYWILIZACJE-DO-MASTERA.md`)
+
+---
+
+### [2026-07-01] Roster 6 → Panel-D (Q4B pipeline)
+
+**Decyzje Macieja:** D-ROSTER ABC (Q1A sumer/babilonia osobno, Q3A pula 15, Q4B Excel first, Q6A Tier2 razem, Q7A archetypy AI).
+
+**Wykonano (lane D, bez gra/data):**
+- `merge-roster-6-panel-d.py` → `panele-sterowania/Panel-D.xlsx` (+6 nacji, Sumer ikonaId/typCywilizacji → sumer)
+- `import-roster-6-civs.py` gotowy (dry-run: 9→15 wpisów)
+
+**CZEKA Macieja:** otwórz Panel-D → popraw Wartości (bonusy, AI, dyplomacja) → w czacie: **eksportuj panel**
+
+**Potem agent:** `export-d.py` + `import-roster-6-civs.py` → handoff `_handoff/CYWILIZACJE-do-SILNIK_roster-15-enum.md`
+
+**NIE wdrożono:** `civs.json`, enum TS, archetypy diplomacy.ts (do eksportu)
+
+**Rejestr parametrów (globalny, bez haseł):** `docs/decyzje/D-cyw-REJESTR-PARAMETROW-GLOBAL.md` — ~78 slotów, propozycja `param_id` + Excel `Cyw-parametry`
+
+**Macierz liczb (118 params × 15 cyw, 12 zakladek):** `Cyw-macierz-REVIEW.xlsx` lub `Panel-D.xlsx` (Cyw-00-INFO … Cyw-12-POTEGA) · JSON `gra/data/civ-matrix.json` · `CYW-MACIERZ-README.md`
+
+---
+
+### [2026-06-30] start — M→Power wpięte · militaryRatio kontrakt
+
+**Handoff Integrator:** `INTEGRATOR-do-CYWILIZACJE_unit-power-m-wpięte.md` 🟢 (kanon md5 `3DAE1AA5…`)
+
+**Wykonano (lane D):**
+- `computeMilitaryRatioFromArmyM()` w `diplomacy.ts` + 5 asercji w `diplomacy-test.cjs`
+- Handoff: `CYWILIZACJE-do-INTEGRATOR_militaryRatio-army-m.md` (2 miejsca w `main.ts`)
+- Respekt bez zmian — już liczy M przez objective Power
+
+**Czeka Integrator:** podmiana headcount → M w `buildProposalEvalContext` + pętla AI
+
+**Panel-D:** progi 60/70/90 — ocena po playteście Macieja (bez zmian bez ABC)
+
+
+**Od:** Grupa C / UNITS · **Do:** SILNIK + Grupa D (weryfikacja po wpięciu)
+
+| Deliverable | Status |
+|-------------|--------|
+| `units.json` → `fieldPower` (50) + `siegePower` (3) | ✅ |
+| `gra/src/game/unit-power.ts` + test 6/6 | ✅ |
+| `combat-params.json` → `unit_power` | ✅ |
+| Panel-C Moc-jednostek + Stale-moc | ✅ |
+| Handoff Integrator balans TW v3 | ✅ |
+| Handoff SILNIK M→Power | ✅ `UNITS-do-SILNIK_unit-power-moc.md` |
+| Wpięcie `sumArmyFieldPower` w `main.ts` | ⬜ SILNIK |
+
+**Grupa D:** handoff zaktualizowany `CYWILIZACJE-do-GRUPA-D_moc-jednostek-power.md` · Respekt/AI bez zmian kodu do batchu SILNIK.
+
+---
+
+### [2026-07-01] **PANEL-P0 sprint · Grupa D — sync Panel-D → JSON**
+
+**Temat:** PANEL-P0-FIX · Excel ≠ JSON (dry-run ~76 zmian AI/barbarzyńcy)  
+**Warstwa:** 🟢 izolowana (tylko `gra/data/*.json` D) · **bez `main.ts`**
+
+**Panel-D.xlsx:** brakowało w repo → wygenerowano `gen-panel-d.py` (14 arkuszy)
+
+**Eksport:** `export-d.py` — **OK**
+| Cel | Wynik |
+|-----|-------|
+| `diplomacy.json` (params) | 80 parametrów |
+| `ai-params.json` (+ barbarzyńcy) | 76 parametrów |
+| `civs.json` (bonusy + roster) | 15 nacji |
+| `civ-params.json` | 15 nacji |
+| `civ-ai.json` | 15 nacji |
+| `diplomacy.json` (akcje + perNacja) | 13 akcji + 15 nacji |
+
+**Test:** `test-panel-d-roundtrip.py` — **PASS** (Dyplomacja `handelZawarcie_zaufanie` + Barbarzyńcy `barbarzyncy_start_tura`)
+
+**Blokery:** brak — sync wykonany; xlsx nie było w workspace — odświeżone generatorem (Maciej może nadpisać własną kopią z edycjami).
+
+**Co sprawdzić po wpięciu:** playtest dyplomacji/sojuszu v1.2 z nowymi progami z Excela.
+

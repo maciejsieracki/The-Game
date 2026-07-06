@@ -1,0 +1,96 @@
+{
+  "terrain_types": [
+    {
+      "Teren": "Łąka",
+      "Żywność": 4,
+      "Praca": 1,
+      "Handel": 1,
+      "Drewno": 1,
+      "Kamień": 0,
+      "Suma": 7,
+      "Uwagi": null
+    },
+    {
+      "Teren": "Równina",
+      "Żywność": 2,
+      "Praca": 1,
+      "Handel": 1,
+      "Drewno": 2,
+      "Kamień": 1,
+      "Suma": 7,
+      "Uwagi": null
+    },
+    {
+      "Teren": "Wzgórza",
+      "Żywność": 1,
+      "Praca": 2,
+      "Handel": 0,
+      "Drewno": 2,
+      "Kamień": 2,
+      "Suma": 7,
+      "Uwagi": "Kamień/Ruda po zbudowaniu Kopalni; +obrona"
+    },
+    {
+      "Teren": "Góry",
+      "Żywność": 0,
+      "Praca": 0,
+      "Handel": 0,
+      "Drewno": 2,
+      "Kamień": 5,
+      "Suma": 7,
+      "Uwagi": "Nieprzechodnie dla jednostek lądowych; Kamień/Ruda po Kopalni"
+    },
+    {
+      "Teren": "Wybrzeże",
+      "Żywność": 3,
+      "Praca": 2,
+      "Handel": 2,
+      "Drewno": 0,
+      "Kamień": 0,
+      "Suma": 7,
+      "Uwagi": "Teren morski przy lądzie (osobny od rzeki); pod port"
+    },
+    {
+      "Teren": "Morze",
+      "Żywność": 2,
+      "Praca": 0,
+      "Handel": 2,
+      "Drewno": 0,
+      "Kamień": 0,
+      "Suma": 4,
+      "Uwagi": "Otwarta woda; rybołówstwo"
+    },
+    {
+      "Teren": "Pustynia",
+      "Żywność": 0,
+      "Praca": 0,
+      "Handel": 1,
+      "Drewno": 0,
+      "Kamień": 0,
+      "Suma": 1,
+      "Uwagi": null
+    }
+  ],
+  "terrain_modifiers": [
+    {
+      "Modyfikator": "Rzeka",
+      "Żywność": 3,
+      "Praca": 2,
+      "Handel": 2,
+      "Drewno": 0,
+      "Kamień": 0,
+      "Suma": 7,
+      "Uwagi": "Dodaje bonus do DOWOLNEGO pola z rzeką (Twój opis); razem +7 — mocny, można stonować"
+    },
+    {
+      "Modyfikator": "Las (nakładka)",
+      "Żywność": -1,
+      "Praca": 0,
+      "Handel": -1,
+      "Drewno": 3,
+      "Kamień": 0,
+      "Suma": 1,
+      "Uwagi": "Pod lasem zawsze jest teren bazowy (łąka/równina/wzgórza itp.); las daje +drewno, redukuje żywność i handel"
+    }
+  ]
+}

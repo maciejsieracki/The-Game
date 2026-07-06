@@ -8,6 +8,7 @@
  *   WIRE 2: splitPraca (doBudynkow + doPuli == praca)
  *   WIRE 3: Luksus->Wealth (mnoznik > 1 przy zadowalajacym poziomie Wealth)
  *   Backward compat: toEconomyCity bez zdrowie param = 0
+ *   Per-city: podzialHandlu luksus 30% -> wyzszy strumien luksus
  */
 
 const fs   = require('fs');
@@ -23,7 +24,8 @@ const ENTRY_FILE = path.resolve(__dirname, '.wire-ekonomia-entry.ts');
 const BUNDLE_FILE = path.resolve(__dirname, '.wire-ekonomia-bundle.cjs');
 
 const ENTRY_TS = `
-export { toEconomyCity, buildEconParams } from '../src/game/turn-economy';
+export { toEconomyCity, buildEconParams, cityHasWaterAccess, computeCityHealthBreakdown } from '../src/game/turn-economy';
+export { cityYieldPerTurn } from '../src/game/economy';
 export { splitPraca } from '../src/game/production';
 export { advanceWealth, freshWealthState, loadWealthParams, wealthMnoznik, FALLBACK_WEALTH_PARAMS } from '../src/game/wealth';
 `;
@@ -56,6 +58,21 @@ function ok(cond, label) {
 }
 function eq(a, b, label) { ok(a === b, label + ' (' + a + ' === ' + b + ')'); }
 function near(a, b, eps, label) { ok(Math.abs(a - b) < eps, label + ' (' + a + ' ~= ' + b + ')'); }
+
+function makeTestParams(overrides) {
+  return Object.assign({
+    progWzrostuWspolczynnik: 8, spichlerzZachowaniePoPrzroscie: 0.5,
+    akweduktProgLudnosci: 6, zywnoscZuzytkaPopulacja: 1,
+    zdrowieModyfikatorWspolczynnik: 0.05, korupcjaWspolczynnikDystansu: 2,
+    korupcjaWspolczynnikMiast: 1, korupcjaCap: 0.5,
+    budynekMlynMnoznikPracy: 2, budynekMlynBonusPracy: 2,
+    budynekCegielniBonusPracy: 0.25, budynekTargowiskoBonusHandlu: 0.5,
+    budynekBibliotekaBonusNauki: 0.5, budynekMennicaMnoznik: 1,
+    walutaMnoznik: 2, targowiskoPracaMnoznik: 2,
+    suwaakHandelNaukaDefault: 20, suwaakHandelPieniadz: 70,
+    suwaakHandelLuksus: 10, suwaakPracaBudynki: 70, suwaakPracaTeren: 30,
+  }, overrides);
+}
 
 // --- WIRE 2: splitPraca ---
 console.log('\nWIRE 2: splitPraca');
@@ -112,26 +129,75 @@ console.log('\nWIRE 3: advanceWealth');
 // --- WIRE 1: toEconomyCity backward compat (zdrowie domyslnie 0) ---
 console.log('\nWIRE 1: toEconomyCity backward compat');
 {
-  // Minimalny EconParams proxy
-  const params = {
-    progWzrostuWspolczynnik: 8, spichlerzZachowaniePoPrzroscie: 0.5,
-    akweduktProgLudnosci: 6, zywnoscZuzytkaPopulacja: 1,
-    zdrowieModyfikatorWspolczynnik: 0.05, korupcjaWspolczynnikDystansu: 2,
-    korupcjaWspolczynnikMiast: 1, korupcjaCap: 0.5,
-    budynekMlynMnoznikPracy: 2, budynekMlynBonusPracy: 2,
-    budynekCegielniBonusPracy: 0.25, budynekTargowiskoBonusHandlu: 0.5,
-    budynekBibliotekaBonusNauki: 0.5, budynekMennicaMnoznik: 1,
-    suwaakHandelNaukaDefault: 60, suwaakHandelPieniadz: 30,
-    suwaakHandelLuksus: 10, suwaakPracaBudynki: 70, suwaakPracaTeren: 30,
-  };
+  const params = makeTestParams();
   const city = { id: 'c1', ownerId: 0, q: 0, r: 0, name: 'Test', population: 3 };
   const ec = M.toEconomyCity(city, params, true);
   eq(ec.zdrowie, 0, 'toEconomyCity bez zdrowie param -> zdrowie=0 (backward compat)');
   eq(ec.id, 'c1', 'id poprawne');
   eq(ec.ludnosc, 3, 'ludnosc poprawna');
+  eq(ec.podziałHandlu.procentLuksus, 10, 'brak podzialHandlu -> params default luksus 10%');
 
   const ec2 = M.toEconomyCity(city, params, true, 4);
   eq(ec2.zdrowie, 4, 'toEconomyCity z zdrowie=4 -> zdrowie=4');
+}
+
+// --- Per-city podzialHandlu: luksus 30% ---
+console.log('\nPer-city podzialHandlu: luksus 30%');
+{
+  const params = makeTestParams();
+  const cityBase = {
+    id: 'c1', ownerId: 0, q: 0, r: 0, name: 'Base', population: 1,
+    podzialHandlu: { procentNauka: 20, procentPieniadz: 70, procentLuksus: 10 },
+  };
+  const cityLux30 = {
+    id: 'c2', ownerId: 0, q: 1, r: 0, name: 'Lux', population: 1,
+    podzialHandlu: { procentNauka: 20, procentPieniadz: 50, procentLuksus: 30 },
+  };
+
+  const ecBase = M.toEconomyCity(cityBase, params, true);
+  const ecLux30 = M.toEconomyCity(cityLux30, params, true);
+  eq(ecBase.podziałHandlu.procentLuksus, 10, 'miasto z podzialHandlu luksus=10%');
+  eq(ecLux30.podziałHandlu.procentLuksus, 30, 'miasto z podzialHandlu luksus=30%');
+
+  const ROWNINA = { terenBazowy: 'rownina', nakladka: 'brak', maRzeke: false };
+  const worked10 = Array(10).fill(ROWNINA);
+  const ctx = {
+    wojskoZuzycieZywnosci: 0, strataFraction: 0,
+    maMlyn: false, maCegielnia: false, maTargowisko: false,
+    maBiblioteka: false, maMennica: false, mennicaMnoznik: 1, walutaOdkryta: false,
+  };
+  const yldBase = M.cityYieldPerTurn(ecBase, worked10, [], params, ctx);
+  const yldLux30 = M.cityYieldPerTurn(ecLux30, worked10, [], params, ctx);
+  eq(yldBase.luksus, 1, 'handel=10, luksus 10% -> luksus=1');
+  eq(yldLux30.luksus, 3, 'handel=10, luksus 30% -> luksus=3');
+  ok(yldLux30.luksus > yldBase.luksus, 'per-city luksus 30% > default 10%');
+}
+
+// --- WIRE 1 D17-A: cityHasWaterAccess (rzeka sąsiad vs brak wody) ---
+console.log('\nWIRE 1 D17-A: cityHasWaterAccess');
+{
+  const mapRiver = {
+    hexes: {
+      '0,0': { terenBazowy: 'rownina', nakladka: 'brak' },
+      '1,0': { terenBazowy: 'rownina', nakladka: 'brak' },
+      '5,0': { terenBazowy: 'piasek', nakladka: 'brak' },
+    },
+    riverPaths: [[{ q: 1, r: 0 }]],
+    szerokoscQ: 6,
+    wysokoscR: 1,
+    seed: 1,
+  };
+  const cityNearRiver = { id: 'c1', ownerId: 0, q: 0, r: 0, name: 'R', population: 1 };
+  const cityDesert = { id: 'c2', ownerId: 0, q: 5, r: 0, name: 'D', population: 1 };
+  ok(M.cityHasWaterAccess(cityNearRiver, mapRiver), 'sąsiad riverPaths -> dostęp do wody');
+  ok(!M.cityHasWaterAccess(cityDesert, mapRiver), 'pustynia bez wody -> brak dostępu');
+
+  const brNear = M.computeCityHealthBreakdown(1, [], [], {}, 'normal', { city: cityNearRiver, map: mapRiver });
+  ok(brNear.total >= 1, 'nad rzeką total >= +1 (rzeka + małe miasto)');
+  ok(!brNear.lines.some(l => l.label === 'Brak wody'), 'nad rzeką brak linii Brak wody');
+
+  const brDesert = M.computeCityHealthBreakdown(1, [], [], {}, 'normal', { city: cityDesert, map: mapRiver });
+  ok(brDesert.lines.some(l => l.label === 'Brak wody'), 'pustynia bez wody -> kara Brak wody');
 }
 
 // --- Podsumowanie ---

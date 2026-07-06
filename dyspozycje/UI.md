@@ -1,4 +1,4 @@
-# UI (Grupa E) — dyspozycja lane
+﻿# UI (Grupa E) — dyspozycja lane
 
 **Trigger:** `start` → czytaj **DO ZROBIENIA TERAZ** → wykonaj → meldunek `UI-DO-MASTERA.md`.
 
@@ -66,22 +66,15 @@
 
 ## DO ZROBIENIA TERAZ
 
-### **POLE-BITWY Design 1E** — **ACTIVE faza 2: Design v4** (2026-07-04)
+### ~~**POLE-BITWY poprawki v4.1**~~ — **ZAMKNIĘTE · KOMPLET** (2026-07-04)
 
-**Krok 1:** ✅ review pack · werdykt Macieja ~20:52  
-**Krok 2:** ✅ ZIP na dysku · rozpakowany `docs/ux/claude-design/`  
-**Krok 3 (TERAZ):** port skin · `battleScene.ts` / `battleHudTheme.ts` · handoff ACTIVE  
-**Maciej:** Hak 1 OK · Hak 2 **A** · paczka 1 = pole+roster · oblężenie później  
-**UI lane:** **NIE** portować przed ZIP v4
+**MD5 końcowy:** `a398720f4d0f6aafa3479a7750f6e82` · marker `POLE-BITWY-20260704-poprawki-v4.1`  
+**Design:** ZIP + mockup `C06 Popup Strategia v4` · handoff **ZAMKNIĘTY**  
+**Promocja:** rebuild ~23:41 → root + `gra-kanon/` + `gra-robocza/` · bramka diplomacy 143/143 OK
 
-### **P1 dyplomacja reskin 1E** — **QUEUED** (2026-07-04)
+### ~~**P1 dyplomacja reskin 1E**~~ — **ZAMKNIĘTE · KANON** (2026-07-04)
 
-**Start:** po sygnale Macieja **„idź dyplo”** (MASTER checkpoint ✅).  
-**Handoff:** `_handoff/MASTER-do-UI_P1-dyplomacja-1E-2026-07-04.md`  
-**Kolejka:** `docs/ux/KOLEJKA-UX-OCENY.md` · **#1**  
-**Pliki:** `diplomacyPanel.ts`, `diploListHud.ts`, `diplomacyAudience.ts` · **NIE** `main.ts` · **NIE** `diplomacy.ts`  
-**Mockup:** `docs/ux/claude-design/.../The Game - Ekran Dyplomacja (1E).dc.html`  
-**AC:** zero emoji · `tb-diplomacy` uścisk dłoni · `diplomacy-test` 143/143
+**Handoff:** `_handoff/MASTER-do-UI_P1-dyplomacja-1E-2026-07-04.md` · md5 kanon `55bdb2af…`
 
 ### **P1 nauka + drzewko** — **HOLD**
 

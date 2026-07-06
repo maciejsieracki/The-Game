@@ -1,0 +1,60 @@
+﻿Era,Rodzaj,Nazwa (EN),Efekt (EN),Dodatkowe odblokowanie (drzewo cywilizacji)
+Antyk,Cud świata,Angkor Wat,+3 Happiness; +1 Specialist Limit; must be adjacent to a River,Khmer
+Antyk,Cud świata,Colosseum,+3 Culture; +2 Happiness on Quarters; adjacent to a District,Rzym
+Antyk,Cud świata,Colossus,+3 Gold; +3 Resource Capacity; +1 Economic Attribute; Coast adjacent to land,—
+Antyk,Cud świata,Dur-Sharrukin,Fortified District; +3 CS to Fortified Districts; adjacent to a District,—
+Antyk,Cud świata,Emile Bell,Ginseng Agreement endeavor (Food to both capitals); +1 Diplomatic Attribute; Rough Terrain,—
+Antyk,Cud świata,Gate of All Nations,+2 Support on all wars; adjacent to a District,Persja
+Antyk,Cud świata,Great Stele,+200 Gold when you build a Wonder here; Flat Terrain,Aksum
+Antyk,Cud świata,Ha'amonga 'a Maui,+2 Culture; +1 Culture & Food on Fishing Boats; +1 Cultural Attribute; Grassland/Tropical adj. Coast,—
+Antyk,Cud świata,Hanging Gardens,+1 Food on Farms; +10% Growth all cities; +1 Expansionist Attribute; adjacent to a River,—
+Antyk,Cud świata,Mausoleum of Theodoric,+3 Production; +100% pillage yields/HP; +1 Militaristic Attribute; adjacent to Coast,—
+Antyk,Cud świata,Monks Mound,+3 Food; +4 Resource Capacity; adjacent to a River,Mississippian
+Antyk,Cud świata,Mundo Perdido,+1 Happiness & Science on Tropical; must be on Tropical,Majowie
+Antyk,Cud świata,Nalanda,+3 Science; +1 Codex; 2 Codex slots; +1 Scientific Attribute; Plains,—
+Antyk,Cud świata,Oracle,+2 Culture; +10 Culture per Age from Narrative Event rewards; Rough Terrain,Grecja
+Antyk,Cud świata,Petra,+2 Gold; +1 Gold & Production on Desert; must be on Desert,—
+Antyk,Cud świata,Pyramid of the Sun,+3 Culture; +2 Culture on Quarters; Flat Terrain adjacent to a District,—
+Antyk,Cud świata,Pyramids,+1 Gold & Production on Minor/Navigable River tiles; Desert adj. Navigable River,Egipt
+Antyk,Cud świata,Sanchi Stupa,+2 Happiness; +1 Culture per 5 excess Happiness; must be on Plains,—
+Antyk,Cud świata,Terracotta Army,+2 Production; free Army Commander; +25% Army XP; must be on Grassland,—
+Antyk,Cud świata,Weiyang Palace,+6 Influence; must be on Grassland,Chiny Han
+Eksploracja,Cud świata,Borobudur,+3 Happiness; +2 Food & Happiness on Quarters; adjacent to Coast,Majapahit
+Eksploracja,Cud świata,Brihadeeswarar Temple,+3 Influence; +1 Happiness adjacency with Navigable Rivers for all buildings,Chola
+Eksploracja,Cud świata,El Escorial,+3 Happiness; 3 Relic slots; +1 Settlement Limit; +4 Happiness to nearby cities; Rough Terrain,Hiszpania
+Eksploracja,Cud świata,Erdene Zuu,+4 Culture; Culture = 25% of Cavalry cost when created; Flat Desert/Plains/Tundra,Mongolia
+Eksploracja,Cud świata,Forbidden City,+2 Culture; +2 Culture & Gold on Fortification Buildings; adjacent to a District,—
+Eksploracja,Cud świata,Hale o Keawe,+2 Culture; Culture = 50% of building cost on Coast; 3 Relic slots; adj. Coast not adj. Tundra,Hawaje
+Eksploracja,Cud świata,House of Wisdom,+3 Science; 3 Relics; 3 Relic slots; +2 Science from Great Works; adjacent to a District,Abbasydzi
+Eksploracja,Cud świata,Machu Pikchu,+4 Gold; +2 Resource Capacity; +4 Culture & Gold to adjacent buildings; Tropical Mountain,Inkowie
+Eksploracja,Cud świata,Notre Dame,+4 Happiness; Specialists +3 Culture in Celebration; starts a Celebration; adj. River & District,—
+Eksploracja,Cud świata,Serpent Mound,+4 Influence; +3 Science & +2 Production to Unique Improvements; Grassland,Shawnee
+Eksploracja,Cud świata,Shwedagon Zedi Daw,+4 Science; +2 Science on Rural tiles with >=1 Happiness; +1 Wildcard Attribute; adjacent to Lake,—
+Eksploracja,Cud świata,Tomb of Askia,+2 Gold; +2 Resource Capacity; +2 Gold & +1 Production per Resource; must be on Desert,Songhaj
+Eksploracja,Cud świata,White Tower,+4 Happiness; +4 Happiness per Tradition slotted; adjacent to a City Hall,Normanowie
+Nowoczesność,Cud świata,Brandenburg Gate,+6 Production; no War Weariness penalties; +5 Happiness in conquered settlements; adj. District,Prusy
+Nowoczesność,Cud świata,Chengde Mountain Resort,+6 Gold; +5% Culture per civ with a Trade Route; adjacent to a Mountain,Chiny (Qing)
+Nowoczesność,Cud świata,Dogo Onsen,+4 Happiness; +1 Population each Celebration; adjacent to Coast,Japonia (Meiji)
+Nowoczesność,Cud świata,Doi Suthep,+4 Influence; +5 Culture & Gold per City-State Suzerain; Rough Terrain,Syjam
+Nowoczesność,Cud świata,Eiffel Tower,+5 Culture; +2 Culture & Happiness on Quarters; adjacent to a District,Francja
+Nowoczesność,Cud świata,Hermitage,+4 Culture; +10% Culture in cities with a Great Work; 3 Artifact slots; Tundra,Rosja
+Nowoczesność,Cud świata,Manhattan Project,+5 Science; grants a Nuclear Weapon,—
+Nowoczesność,Cud świata,Muzibu Azaala Mpanga,+4 Food; +2 Food on Lakes; +2 Culture & Happiness on Lake tiles; adjacent to a Lake,Buganda
+Nowoczesność,Cud świata,Oxford University,+4 Science; 2 free Technologies; +1 Wildcard Attribute; adjacent to a District,—
+Nowoczesność,Cud świata,Palacio de Bellas Artes,+5 Culture; +2 Happiness on Great Works; +10% Happiness; 3 Artifact slots; adj. District,Meksyk
+Nowoczesność,Cud świata,Red Fort,+4 Gold; Fortified District; +50 HP to tile & City Centers; adjacent to a District,Mogołowie
+Nowoczesność,Cud świata,Statue of Liberty,+6 Happiness; spawns 4 Migrants; Coast adjacent to land,Ameryka
+Nowoczesność,Cud świata,Taj Mahal,+5 Gold; +50% Celebration Duration; +1 Wildcard Attribute; must be on Plains,—
+Nowoczesność,Cud świata,World's Fair,Wins the Cultural Victory,—
+Cud naturalny,Cud naturalny,Grand Canyon,+2 Culture & +4 Happiness per Age; +2 Science on Flat Terrain,—
+Cud naturalny,Cud naturalny,Great Barrier Reef,+2 Food/Happiness/Science per Age; +2 Science on adjacent Marine,—
+Cud naturalny,Cud naturalny,Gullfoss,+6 Food per Age; +1 Culture & Production to adjacent Rural; Fresh Water,—
+Cud naturalny,Cud naturalny,Hoerikwaggo,+2 Culture & +4 Food per Age; +2 Happiness on adjacent Quarters,—
+Cud naturalny,Cud naturalny,Iguazu Falls,+2 Happiness & +4 Food per Age; +2 Production on adjacent Quarters; Fresh Water,—
+Cud naturalny,Cud naturalny,Mount Kilimanjaro,+2 Production & +4 Happiness per Age; Volcano Tiles,—
+Cud naturalny,Cud naturalny,Redwood Forest,+2 Food/Happiness/Production per Age; +1 Culture & Science on Vegetated,—
+Cud naturalny,Cud naturalny,Thera,+2 Happiness & +4 Culture per Age; Volcano Tiles,—
+Cud naturalny,Cud naturalny,Torres del Paine,+2 Food & +4 Happiness per Age; units ignore Rough Terrain after moving adjacent,—
+Cud naturalny,Cud naturalny,Uluru,+6 Happiness per Age; +2 Culture on Desert,—
+Cud naturalny,Cud naturalny,Valley of Flowers,+2 Food/Gold/Happiness per Age; +10 Land Trade Route Range,—
+Cud naturalny,Cud naturalny,Zhangjiajie,+2 Happiness & +4 Production per Age; +2 Culture on Rough Terrain,—

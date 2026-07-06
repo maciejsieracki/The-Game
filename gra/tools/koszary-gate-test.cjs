@@ -273,6 +273,48 @@ console.log('\n7. Lazaret niedostepny przy epoch=3 (epokaWejscia=5 po zmianie)')
   }
 }
 
+// --- Test: jeden typ budynku na miasto ------------------------------------
+console.log('\n-- jeden typ budynku (zbudowany / w kolejce) --');
+
+function testOneBuildingPerType() {
+  const stelaDef = {
+    id: 'stela', nazwa: 'Stela', kategoria: 'Kultura', epokaWejscia: 1,
+    maksPoziom: 10, nazwyPoziomow: [], techUnlock: 'Murarstwo',
+    kosztBudowy: 15, przyrostKosztu: 5, utrzymanie: 0, przyrostUtrzymania: 0,
+    wymagania: '', uwagi: '',
+    baza: { praca: 0, pieniadz: 0, zywnosc: 0, nauka: 0, kultura: 1, zadowolenie: 0, obrona: 0, mnoznik: 0 },
+    przyrost: { praca: 0, pieniadz: 0, zywnosc: 0, nauka: 0, kultura: 1, zadowolenie: 0, obrona: 0, mnoznik: 0 },
+  };
+  const spichlerzDef = {
+    id: 'spichlerz', nazwa: 'Spichlerz', kategoria: 'Zywnosc', epokaWejscia: 1,
+    maksPoziom: 10, nazwyPoziomow: [], techUnlock: '',
+    kosztBudowy: 20, przyrostKosztu: 10, utrzymanie: 1, przyrostUtrzymania: 0,
+    wymagania: '', uwagi: '',
+    baza: { praca: 0, pieniadz: 0, zywnosc: 2, nauka: 0, kultura: 0, zadowolenie: 0, obrona: 0, mnoznik: 0 },
+    przyrost: { praca: 0, pieniadz: 0, zywnosc: 1, nauka: 0, kultura: 0, zadowolenie: 0, obrona: 0, mnoznik: 0 },
+  };
+  const DATA = { buildings: [stelaDef, spichlerzDef], units: [] };
+  const TECHS = ['Murarstwo'];
+
+  assert(!availableProduction(CITY, DATA, TECHS, {
+    epoch: 2, builtBuildingIds: ['stela'],
+  }).some(i => i.id === 'stela'),
+    'stela znika gdy juz zbudowana');
+
+  assert(!availableProduction(CITY, DATA, TECHS, {
+    epoch: 2, builtBuildingIds: [],
+    productionQueue: [{ kind: 'budynek', id: 'stela', nazwa: 'Stela', koszt: 15 }],
+  }).some(i => i.id === 'stela'),
+    'stela znika gdy juz w kolejce (nawet 1 pozycja)');
+
+  assert(!availableProduction(CITY, DATA, TECHS, {
+    epoch: 2, builtBuildingIds: ['spichlerz'],
+  }).some(i => i.id === 'spichlerz'),
+    'spichlerz znika gdy zbudowany');
+}
+
+testOneBuildingPerType();
+
 // --- Summary ---------------------------------------------------------------
 console.log('');
 if (failed === 0) {

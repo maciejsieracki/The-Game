@@ -1,0 +1,120 @@
+﻿Era,Kategoria,Nazwa (EN),Typ / Cywilizacja,Efekt (EN)
+Antyk,Budynek,Academy,Standardowy,+4 Science; +1 per adjacent Resource & Wonder; 3 Codex slots (Antiquity Science)
+Antyk,Budynek,Altar,Standardowy,+2 Happiness; +1 per adjacent Wonder; extra benefits from Pantheons
+Antyk,Budynek,Amphitheater,Standardowy,+4 Culture; +1 per adjacent Mountain/Natural Wonder/Wonder; +10% Wonder production
+Antyk,Budynek,Ancient Bridge,Standardowy,+4 Gold; land units cross Navigable River without embarking; must be on a Navigable River
+Antyk,Budynek,Arena,Standardowy,+4 Happiness; +1 per adjacent Mountain/Natural Wonder/Wonder; +1 Happiness on Quarters
+Antyk,Budynek,Barracks,Standardowy,+2 Production; +1 per adjacent Resource/Wonder; land units spawn here; +10% land-unit production
+Antyk,Budynek,Bath,Standardowy,+4 Food; +1 per adjacent Navigable River/Wonder; +10% Growth; must be on a River
+Antyk,Budynek,Blacksmith,Standardowy,+3 Production; +1 per adjacent Resource/Wonder; +1 Production on Quarters
+Antyk,Budynek,Brickyard,Standardowy,+1 Production; +1 on Clay Pits/Mines/Quarries; Warehouse; Ageless
+Antyk,Budynek,Fishing Quay,Standardowy,+1 Food; +1 on Fishing Boats; Warehouse; Ageless; Coast/Lake/Navigable River
+Antyk,Budynek,Garden,Standardowy,+3 Food; +1 per adjacent Coast/Navigable River/Wonder
+Antyk,Budynek,Golden Age Academy,Standardowy (Złoty Wiek),+4 Culture; +1 per adjacent Mountain/Natural Wonder/Wonder
+Antyk,Budynek,Golden Age Amphitheater,Standardowy (Złoty Wiek),+4 Science; +1 per adjacent Resource/Wonder
+Antyk,Budynek,Granary,Standardowy,+1 Food; +1 on Farms/Pastures/Plantations; Warehouse; Ageless
+Antyk,Budynek,Gristmill,Standardowy,+4 Food; +1 on Farms/Pastures/Plantations; must be on a River
+Antyk,Budynek,Library,Standardowy,+2 Science; +1 per adjacent Resource/Wonder; 2 Codex slots
+Antyk,Budynek,Lighthouse,Standardowy,+3 Gold; +1 per adjacent Coast/Navigable River/Wonder; +2 Resources to settlement; must be on Coast
+Antyk,Budynek,Market,Standardowy,+2 Gold; +1 per adjacent Coast/Navigable River/Wonder; +1 Resource to settlement
+Antyk,Budynek,Monument,Standardowy,"+2 Culture, +1 Influence; +1 Culture per adjacent Mountain/Natural Wonder/Wonder"
+Antyk,Budynek,Observatory,Standardowy,+4 Science; +1 per adjacent Resource/Wonder (uwaga: wg źródła budynek nauki Ery Eksploracji)
+Antyk,Budynek,Saw Pit,Standardowy,+1 Production; +1 on Camps/Woodcutters; Warehouse; Ageless
+Antyk,Budynek,Sawmill,Standardowy,+3 Production; +1 on Camps/Woodcutters; must be on a River
+Antyk,Budynek,Stonecutter,Standardowy,+3 Production
+Antyk,Budynek,Villa,Standardowy,"+3 Happiness, +2 Influence; +1 Happiness per adjacent Mountain/Natural Wonder/Wonder"
+Antyk,Budynek,Mastaba,Unikalny: Egipt,+3 Culture; +1 Gold adjacency for Desert & Wonders; Ageless
+Antyk,Budynek,Mortuary Temple,Unikalny: Egipt,+4 Gold; +1 Happiness adjacency for Navigable Rivers & Wonders; Ageless
+Antyk,Budynek,Parthenon,Unikalny: Grecja,+4 Culture; +2 Influence if on Rough Terrain; +1 Culture adjacency for Wonders; Ageless
+Antyk,Budynek,Odeon,Unikalny: Grecja,+3 Happiness; +1 Culture adjacency for Quarters & Wonders; Ageless
+Antyk,Budynek,Dharamshala,Unikalny: Maurya,+3 Happiness; +1 Science adjacency for Quarters & Wonders; Ageless
+Antyk,Budynek,Vihara,Unikalny: Maurya,+Happiness; +1 Culture adjacency for Mountains & Wonders; Ageless
+Antyk,Budynek,Jalaw,Unikalny: Majowie,+3 Happiness; +1 Culture adjacency for Quarters & Wonders; Ageless
+Antyk,Budynek,K'uh Nah,Unikalny: Majowie,+3 Science; +2 if on Vegetation; +1 Science adjacency for Wonders; Ageless
+Antyk,Budynek,Temple of Jupiter,Unikalny: Rzym,+3 Happiness; +1 Culture adjacency for Happiness Buildings & Wonders; Ageless
+Antyk,Budynek,Basilica,Unikalny: Rzym,+4 Gold; +1 Influence adjacency for Culture Buildings & Wonders; Ageless
+Eksploracja,Budynek,Armorer,Standardowy,+4 Production; +1 per adjacent Resource/Wonder; military units spawn here; +10% land-unit production
+Eksploracja,Budynek,Bank,Standardowy,+5 Gold; +1 per adjacent Navigable River/Coast/Wonder; +1 Gold on Quarters
+Eksploracja,Budynek,Bazaar,Standardowy,+3 Gold; +1 per adjacent Coast/Navigable River/Wonder
+Eksploracja,Budynek,Dungeon,Standardowy,"+2 Influence, +3 Production; +1 Production per adjacent Resource/Wonder"
+Eksploracja,Budynek,Guildhall,Standardowy,"+2 Influence, +4 Gold; +1 Gold per adjacent Navigable River/Coast/Wonder"
+Eksploracja,Budynek,Hospital,Standardowy,+4 Food; +1 per adjacent Coast/Navigable River/Wonder; +15% Growth
+Eksploracja,Budynek,Inn,Standardowy,"+3 Food, +1 Happiness; +1 Food per adjacent Coast/Navigable River/Wonder"
+Eksploracja,Budynek,Kiln,Standardowy,+4 Culture; +1 per adjacent Mountain/Natural Wonder/Wonder; +10% Wonder production
+Eksploracja,Budynek,Medieval Bridge,Standardowy,+4 Gold; land units cross Navigable River without embarking; must be on Navigable River
+Eksploracja,Budynek,Menagerie,Standardowy,+5 Happiness; +1 per adjacent Mountain/Natural Wonder/Wonder; +1 Happiness on Camps/Pastures
+Eksploracja,Budynek,Palace,Standardowy (centrum stolicy),"+15 Food, +15 Production, +15 Happiness"
+Eksploracja,Budynek,Pavilion,Standardowy,+5 Culture; +1 per adjacent Mountain/Natural Wonder/Wonder; +1 Happiness on Quarters
+Eksploracja,Budynek,Shipyard,Standardowy,+5 Production; +1 per adjacent Resource/Wonder; naval units spawn here; must be on Coast adjacent to land
+Eksploracja,Budynek,Temple,Standardowy,+4 Happiness; +1 per adjacent Mountain/Natural Wonder/Wonder; 1 Relic slot; enables Missionaries
+Eksploracja,Budynek,University,Standardowy,+5 Science; +1 per adjacent Resource/Wonder; +1 Science on Quarters
+Eksploracja,Budynek,Wharf,Standardowy,+4 Food; +1 per adjacent Coast/Navigable River/Wonder; +2 Resources to settlement; must be on Coast/Navigable River
+Eksploracja,Budynek,Madrasa,Unikalny: Abbasydzi,+5 Science; +1 Science adjacency for Quarters/Science Buildings/Wonders; Ageless
+Eksploracja,Budynek,Mosque,Unikalny: Abbasydzi,+4 Happiness; +1 Culture adj. Happiness Buildings & Wonders; +1 Happiness adj. Culture Buildings & Wonders; unlocks founding a Religion; Ageless
+Eksploracja,Budynek,Manigramam,Unikalny: Chola,+4 Happiness; +1 Gold adj. Quarters & Wonders; +1 Happiness adj. Gold Buildings & Wonders; Ageless
+Eksploracja,Budynek,Anjuvannam,Unikalny: Chola,+5 Gold; +1 Gold adj. Coast/Navigable Rivers/Wonders; +50% naval-unit production; Ageless; adjacent to Coast
+Eksploracja,Budynek,Candi Bentar,Unikalny: Majapahit,+5 Culture; +1 Culture adj. Coast/Navigable Rivers/Wonders; Ageless
+Eksploracja,Budynek,Meru,Unikalny: Majapahit,+5 Happiness; +1 Happiness adj. Mountains & Wonders; +2 Happiness on Natural Wonders; Ageless
+Eksploracja,Budynek,Motte,Unikalny: Normanowie,+4 Happiness; +4 if on Rough Terrain; Happiness adjacency for Wonders; Ageless; fortified district
+Eksploracja,Budynek,Bailey,Unikalny: Normanowie,+4 Culture; +1 Culture adj. Medieval Wall & Wonders; Ageless; fortification
+Eksploracja,Budynek,Casa Consistorial,Unikalny: Hiszpania,+5 Culture; +1 Culture adj. Quarters & Wonders; Ageless; in Homelands adjacent to Coast
+Eksploracja,Budynek,Casa de Contratacion,Unikalny: Hiszpania,+5 Gold; +1 Gold adj. Navigable Rivers/Resources/Wonders; Ageless; in Homelands
+Nowoczesność,Budynek,Aerodrome,Standardowy,+8 Production; required to train Air Units; air units spawn here; full tile; on Flat Terrain
+Nowoczesność,Budynek,Cannery,Standardowy,+5 Food; +1 per adjacent Coast/Navigable River/Wonder; +10% Growth
+Nowoczesność,Budynek,City Hall,Standardowy (centrum osady),"+9 Food, +9 Production, +9 Happiness"
+Nowoczesność,Budynek,City Park,Standardowy,+4 Happiness; +1 per adjacent Mountain/Natural Wonder/Wonder
+Nowoczesność,Budynek,Department Store,Standardowy,+5 Happiness; +1 per adjacent Mountain/Natural Wonder/Wonder; +1 Resource to settlement
+Nowoczesność,Budynek,Factory,Standardowy,+6 Production; +1 per adjacent Resource; 1 Factory Resource slot; +1 Resource to settlement; needs Railroad to Capital
+Nowoczesność,Budynek,Grocer,Standardowy,+4 Food
+Nowoczesność,Budynek,Ironworks,Standardowy,+4 Production; +1 on Mines/Quarries/Woodcutters/Clay Pits; Warehouse; Ageless
+Nowoczesność,Budynek,Laboratory,Standardowy,+6 Science; +1 per adjacent Resource/Wonder; +1 Science on Quarters
+Nowoczesność,Budynek,Launch Pad,Standardowy,+8 Science; unlocks Launch Satellite Project; full tile; on Flat Terrain
+Nowoczesność,Budynek,Military Academy,Standardowy,+5 Production; +1 per adjacent Resource/Wonder; free level to new Commanders; military units spawn here
+Nowoczesność,Budynek,Modern Bridge,Standardowy,+5 Gold; land units cross Navigable River without embarking; unaffected by Floods
+Nowoczesność,Budynek,Museum,Standardowy,+5 Culture; +1 per adjacent Mountain/Natural Wonder/Wonder
+Nowoczesność,Budynek,Opera House,Standardowy,"+5 Culture, +3 Influence; +1 Culture per adjacent Mountain/Natural Wonder/Wonder"
+Nowoczesność,Budynek,Port,Standardowy,+5 Gold; +1 per adjacent Coast/Navigable River/Wonder; +2 Resources to city; naval units spawn here
+Nowoczesność,Budynek,Radio Station,Standardowy,"+4 Influence, +6 Happiness; +1 Happiness per adjacent Mountain/Natural Wonder/Wonder"
+Nowoczesność,Budynek,Rail Station,Standardowy,+8 Gold; +10% unit production in cities with Railroad; builds Railroads between Rail Stations; full tile
+Nowoczesność,Budynek,Schoolhouse,Standardowy,+5 Science; +1 per adjacent Resource/Wonder
+Nowoczesność,Budynek,Stock Exchange,Standardowy,+5 Gold; +1 per adjacent Coast/Navigable River/Wonder; +1 Gold on Quarters
+Nowoczesność,Budynek,Tenement,Standardowy,"+6 Food, +1 Happiness; +1 Food per adjacent Coast/Navigable River/Wonder"
+Nowoczesność,Budynek,Steel Mill,Unikalny: Ameryka,+6 Production; Gold adjacency for Resources & Wonders; Ageless
+Nowoczesność,Budynek,Railyard,Unikalny: Ameryka,+5 Production; +1 Production adjacency for Quarters & Wonders; Ageless
+Nowoczesność,Budynek,Jardin a la Francaise,Unikalny: Francja,+5 Culture; +1 Happiness adjacency for Culture Buildings & Wonders; Ageless
+Nowoczesność,Budynek,Salon,Unikalny: Francja,+5 Happiness; +1 Culture adjacency for Happiness Buildings & Wonders; Ageless
+Nowoczesność,Budynek,Ginko,Unikalny: Japonia (Meiji),+5 Gold; +1 Gold adjacency for Gold Buildings & Wonders; Ageless
+Nowoczesność,Budynek,Jukogyo,Unikalny: Japonia (Meiji),Production base; Production adjacency with Coast; increased Resource slots
+Nowoczesność,Budynek,Catedral,Unikalny: Meksyk,+5 Culture; +1 Happiness adjacency for Culture Buildings & Wonders; Ageless
+Nowoczesność,Budynek,Portal de Mercaderes,Unikalny: Meksyk,+5 Culture; +1 Gold adjacency for Gold Buildings & Wonders; Ageless
+Nowoczesność,Budynek,Shiguan,Unikalny: Chiny (Qing),+6 Science; +1 Happiness adjacency for Happiness Buildings & Wonders; Ageless
+Nowoczesność,Budynek,Qianzhuang,Unikalny: Chiny (Qing),+5 Gold; +1 Gold adjacency for Gold Buildings & Wonders; Ageless
+Antyk,Ulepszenie,Hawilt,Unikalny: Aksum,+2 Gold; +1 Culture per adjacent Hawilt & Wonder; Flat Terrain; Ageless
+Antyk,Ulepszenie,Great Wall,Unikalny: Chiny Han,+2 Culture; +1 Happiness per adjacent Great Wall; +6 CS defending; line only; Ageless
+Antyk,Ulepszenie,Baray,Unikalny: Khmer,+Food; increased Food on Floodplains in settlement; flat tile; one per settlement
+Antyk,Ulepszenie,Potkop,Unikalny: Mississippian,+1 Gold; +1 Food per adjacent Resource; flat terrain; Ageless
+Antyk,Ulepszenie,Pairidaeza,Unikalny: Persja,"+1 Culture, +1 Gold; not adjacent to another Pairidaeza; Ageless"
+Eksploracja,Ulepszenie,Lo'i Kalo,Unikalny: Hawaje,"+3 Food, +2 Production; adjacent Farms +1 Culture; Grassland/Tropical; Ageless"
+Eksploracja,Ulepszenie,Terrace Farm,Unikalny: Inkowie,Unique improvement; Rough Terrain adjacent to a Mountain; Ageless
+Eksploracja,Ulepszenie,Great Wall (Ming),Unikalny: Chiny Ming,+5 Culture; +1 Gold per adjacent Fortification; +6 CS defending; line only; Ageless
+Eksploracja,Ulepszenie,Ortoo,Unikalny: Mongolia,+5 Gold; restores movement to Mongol units; not on Rough/River/feature; Ageless
+Eksploracja,Ulepszenie,Mawaskawe Skote,Unikalny: Shawnee,+4 Food; +1 Gold per adjacent Resource; Vegetated Terrain; Ageless
+Eksploracja,Ulepszenie,Caravanserai,Unikalny: Songhaj,+5 Gold; +1 Gold per adjacent Resource; Desert/Plains; Ageless
+Nowoczesność,Ulepszenie,Kabaka's Lake,Unikalny: Buganda,+3 Happiness; receives Lake yield bonuses; Flat Terrain; one per settlement; Ageless
+Nowoczesność,Ulepszenie,Stepwell,Unikalny: Mogołowie,+2 Gold; +2 Food per adjacent Farm; Flat Terrain; not adjacent to another Stepwell; Ageless
+Nowoczesność,Ulepszenie,Staatseisenbahn,Unikalny: Prusy,Railroad replacement; increased Gold/Production on Rural tiles with it
+Nowoczesność,Ulepszenie,Obshchina,Unikalny: Rosja,+4 Food per adjacent Farm; +2 Culture on Tundra; not adjacent to another; Ageless
+Nowoczesność,Ulepszenie,Bang,Unikalny: Syjam,"+3 Culture, +3 Happiness; on Navigable River; Ageless"
+Eksploracja,Kwartał,Ulema,Unikalny: Abbasydzi,+1 Science to all Specialists in city (Madrasa + Mosque)
+Eksploracja,Kwartał,Five Hundred Lords,Unikalny: Chola,+5 land / +15 naval Trade Route range (Anjuvannam + Manigramam)
+Eksploracja,Kwartał,Pura,Unikalny: Majapahit,Receive 1 Relic when completed (Candi Bentar + Meru)
+Eksploracja,Kwartał,Donjon,Unikalny: Normanowie,Free Chevalier unit when completed (Bailey + Motte)
+Eksploracja,Kwartał,Plaza,Unikalny: Hiszpania,+2 Gold per settlement in Distant Lands (Casa Consistorial + Casa de Contratacion)
+Nowoczesność,Kwartał,Industrial Park,Unikalny: Ameryka,+2 Food per Resource assigned to city (Railyard + Steel Mill)
+Nowoczesność,Kwartał,Avenue,Unikalny: Francja,+2 Happiness on Quarters in city (Jardin + Salon)
+Nowoczesność,Kwartał,Zaibatsu,Unikalny: Japonia (Meiji),+1 Gold & Production on Buildings in adjacent District (Ginko + Jukogyo)
+Nowoczesność,Kwartał,Zocalo,Unikalny: Meksyk,+2 Culture per Tradition slotted (Catedral + Portal de Mercaderes)
+Nowoczesność,Kwartał,Huiguan,Unikalny: Chiny (Qing),+25% Influence in settlement (Qianzhuang + Shiguan)
+Antyk,Fortyfikacja,Ancient Walls,Standardowy,+100 HP & +15 CS defending; adjacent to another Fortified District
+Eksploracja,Fortyfikacja,Medieval Walls,Standardowy,+100 HP & +15 CS defending; adjacent to another Fortified District
+Nowoczesność,Fortyfikacja,Defensive Fortifications,Standardowy,+100 HP & +15 CS defending; adjacent to another Fortified District

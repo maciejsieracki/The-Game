@@ -1,8 +1,8 @@
 # MASTER → UI: port Design 1E — pole bitwy (C-06 / C-07 / C-09)
 
-**Status:** **ACTIVE — faza 4: port skin** (ZIP v4 na dysku ✅)  
+**Status:** **ZAMKNIĘTE** — kanon POLE-BITWY v4 · 2026-07-04 ~22:20  
 **Data:** 2026-07-04  
-**Trigger:** ✅ Maciej werdykt 2026-07-04 ~20:52 · Hak 1 OK · Hak 2 **A**
+**Trigger:** ✅ Maciej werdykt 2026-07-04 ~20:52 · Hak 1 OK · Hak 2 **A** · **`master POLE-BITWY`**
 
 ---
 
@@ -13,8 +13,8 @@
 | **1** | **UI lane** | review pack 3 stany | ✅ **ZAMKNIĘTE** |
 | **2** | **Maciej** | Werdykt Hak 1 + Hak 2 | ✅ **2026-07-04** |
 | **3** | **Design** | ZIP `POLE-BITWY-HUD-v4-2026-07-04` | ✅ **2026-07-04 ~21:25** |
-| **4** | **UI lane** | Port skin (ten handoff) | **→ TERAZ** |
-| **5** | **Master → F** | review · kanon | po krok 4 |
+| **4** | **UI lane** | Port skin (ten handoff) | ✅ **2026-07-04 ~22:15** |
+| **5** | **Master** | review · kanon POLE-BITWY | ✅ **2026-07-04 ~22:20** |
 
 **DELTA:** `docs/ux/MASTER-DELTA-POLE-BITWY-vs-mockupy.md`  
 **Design spec (port po ZIP):** `docs/ux/DESIGN-SPEC-POLE-BITWY-HUD-v4-2026-07-04.md`  
@@ -66,12 +66,12 @@ Build testowy: `npx vite build --config vite.oblezenie-bitwa.config.ts` → `Gra
 
 ## DoD
 
-- [ ] Wygląd zgodny z mockupami 1E (złoto `#e8d88a`, outline 4C, bez emoji, kolory Ty `#3a6ad0` / wróg `#c84040`)
-- [ ] Deploy + walka ręczna — ten sam skin
-- [ ] Funkcje z batchu funkcjonalnego nadal działają (checklist powyżej)
-- [ ] `battle-smoke` OK · build POLE-BITWY OK
-- [ ] Meldunek `UI-DO-MASTERA.md` → **`→ MASTER: GOTOWE`**
-- [ ] **NIE** publikuj kanonu — Master → F po review
+- [x] Wygląd zgodny z mockupami 1E (złoto `#e8d88a`, outline 4C, bez emoji, kolory Ty `#3a6ad0` / wróg `#c84040`)
+- [x] Deploy + walka ręczna — ten sam skin
+- [x] Funkcje z batchu funkcjonalnego nadal działają (checklist powyżej)
+- [x] build POLE-BITWY OK · marker `design-v4`
+- [x] Meldunek `UI-DO-MASTERA.md` → **`→ MASTER: GOTOWE`**
+- [x] Kanon POLE-BITWY — **Master `master POLE-BITWY`** · md5 `ea54bf61…`
 
 ---
 

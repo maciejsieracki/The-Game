@@ -11,10 +11,12 @@ Skrzynka z masterem pozostaje w `../dyspozycje/MAPA.md` i `../dyspozycje/MAPA-DO
 - **Gra-podglad-MAPA.html** — podgląd mapy świata (F1: teren, rzeki, biomy, miasta i surowce na mapie).
 - **Gra-podglad-MIASTA.html** — podgląd miast epoki kamienia (10 poziomów, z/bez murów).
 - **Gra-podglad-MIASTA-BRAZ.html** — podgląd miast epoki brązu (Grecja + Rzym; reszta cyw w toku).
-- **hex_A_unrotated.png / hex_B_rotated30.png** — referencja geometrii heksa (reguła: pointy-top, ZERO rotateY).
+- **Gra-podglad-ULEPSZENIA.html** — **START TU** — galeria 18 ulepszeń + warianty + wzgórze (Roblox, 2026-06-29). Opis: `docs/obieg/GALERIA-ULEPSZEN-TERENU.md`
+- **Gra-podglad-ULEPSZENIA-ROBLOX.html** — kopia tego samego pliku
+- **Gra-podglad-CUDA-ROBLOX.html** — galeria **19 cudów Antyku** 3D na heksie (aktywne / ruiny / porównanie). Decyzja Maciej A 2026-07-05.
 
 ## Zakres (wg MAPA-TASKOW)
 Civ-MAPA = `src/render/scene.ts` + `src/map/*` + `src/render/cities.ts` (+ stoneCity/bronzeCity/resources).
 Granica z Civ-MIASTO: MAPA = wizualne buildery miast; Civ-MIASTO = stan/logika (poziom, mury, produkcja).
 
-Aktualizacja: 24.06.2026.
+Aktualizacja: 05.07.2026 (galeria cudów 3D Roblox).

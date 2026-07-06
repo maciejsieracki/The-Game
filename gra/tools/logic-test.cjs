@@ -33,8 +33,8 @@ const BUNDLE_FILE = path.resolve(__dirname, '.logic-bundle.cjs');
 
 const ENTRY_TS = `
 import { generateMap, DEFAULT_WIDTH, DEFAULT_HEIGHT } from '../src/map/generator';
-import { placeStartingUnits, computeReachable, computePath, keyOf, hexDistance } from '../src/units/setup';
-import { computeVisible, DEFAULT_SIGHT } from '../src/game/visibility';
+import { computeStartPlacements, placeStartingUnits, computeReachable, computePath, keyOf, hexDistance } from '../src/units/setup';
+import { computeVisible, DEFAULT_SIGHT, computePlayerVisibility, buildUnitSightResolver, computeVisibleAt } from '../src/game/visibility';
 import { canFoundCity, foundCity, foundCityAt, cityName } from '../src/game/cities';
 import { loadGameData } from '../src/data/loader';
 import { advanceCityEconomy, buildEconParams, workedTilesForCity } from '../src/game/turn-economy';
@@ -54,9 +54,11 @@ import {
 } from '../src/game/siege';
 import {
   computeOrder, orderTier, orderEffects, loadOrderParams, evaluateOrder,
+  orderEffectsToYieldMults, pickRevoltMigrationTarget,
   FALLBACK_ORDER_PARAMS,
 } from '../src/game/order';
 import { isInTerritory } from '../src/map/territory';
+import { cityRangeForPopulation, citySightRadius } from '../src/game/okolica';
 import {
   loadCultureParams, FALLBACK_CULTURE_PARAMS, cultureThresholds,
   cityBorderRadius, accumulateCulture, cultureHappiness, convertCulture,
@@ -68,8 +70,8 @@ import civsRaw from '../data/civs.json';
 
 export {
   generateMap, DEFAULT_WIDTH, DEFAULT_HEIGHT,
-  placeStartingUnits, computeReachable, computePath, keyOf, hexDistance,
-  computeVisible, DEFAULT_SIGHT,
+  computeStartPlacements, placeStartingUnits, computeReachable, computePath, keyOf, hexDistance,
+  computeVisible, DEFAULT_SIGHT, computePlayerVisibility, buildUnitSightResolver, computeVisibleAt,
   canFoundCity, foundCity, foundCityAt, cityName,
   loadGameData,
   advanceCityEconomy, buildEconParams, workedTilesForCity,
@@ -82,8 +84,9 @@ export {
   wallParamsFromBuildings, siegeHitChance, siegeBaseDamage,
   WALL_BASE_OBRONA, WALL_PER_LEVEL_OBRONA, HILL_DEFENSE_MULT, MILITIA_POP_FRACTION,
   computeOrder, orderTier, orderEffects, loadOrderParams, evaluateOrder,
+  orderEffectsToYieldMults, pickRevoltMigrationTarget,
   FALLBACK_ORDER_PARAMS, societyParamsRaw,
-  isInTerritory,
+  isInTerritory, cityRangeForPopulation, citySightRadius,
   loadCultureParams, FALLBACK_CULTURE_PARAMS, cultureThresholds,
   cityBorderRadius, accumulateCulture, cultureHappiness, convertCulture,
   loadReligionParams, FALLBACK_RELIGION_PARAMS, civReligion, isKnownCiv,
@@ -118,8 +121,8 @@ console.log('[logic-test] Bundle written to', BUNDLE_FILE);
 
 const {
   generateMap, DEFAULT_WIDTH, DEFAULT_HEIGHT,
-  placeStartingUnits, computeReachable, computePath, keyOf, hexDistance,
-  computeVisible, DEFAULT_SIGHT,
+  computeStartPlacements, placeStartingUnits, computeReachable, computePath, keyOf, hexDistance,
+  computeVisible, DEFAULT_SIGHT, computePlayerVisibility, buildUnitSightResolver, computeVisibleAt,
   canFoundCity, foundCity, foundCityAt, cityName,
   loadGameData,
   advanceCityEconomy, buildEconParams, workedTilesForCity,
@@ -132,8 +135,9 @@ const {
   wallParamsFromBuildings, siegeHitChance, siegeBaseDamage,
   WALL_BASE_OBRONA, WALL_PER_LEVEL_OBRONA, HILL_DEFENSE_MULT, MILITIA_POP_FRACTION,
   computeOrder, orderTier, orderEffects, loadOrderParams, evaluateOrder,
+  orderEffectsToYieldMults, pickRevoltMigrationTarget,
   FALLBACK_ORDER_PARAMS, societyParamsRaw,
-  isInTerritory,
+  isInTerritory, cityRangeForPopulation, citySightRadius,
   loadCultureParams, FALLBACK_CULTURE_PARAMS, cultureThresholds,
   cityBorderRadius, accumulateCulture, cultureHappiness, convertCulture,
   loadReligionParams, FALLBACK_RELIGION_PARAMS, civReligion, isKnownCiv,
@@ -171,22 +175,31 @@ const map = generateMap(DEFAULT_WIDTH, DEFAULT_HEIGHT, 12345);
 const hexCount = Object.keys(map.hexes).length;
 assert('generateMap hexes > 100', hexCount > 100, `hexCount=${hexCount}`);
 
-// ── Test 2: placeStartingUnits ─────────────────────────────────────────────
+// ── Test 2: computeStartPlacements ─────────────────────────────────────────
 const data = loadGameData();
-const units = placeStartingUnits(map, data);
+const startPl = computeStartPlacements(map, data);
 
-assert('placeStartingUnits returns >= 4 units', units.length >= 4,
-  `units.length=${units.length}`);
+assert('computeStartPlacements has playerStart',
+  startPl.playerStart && Number.isFinite(startPl.playerStart.q),
+  `playerStart=${JSON.stringify(startPl.playerStart)}`);
 
-const playerUnits = units.filter(u => u.ownerId === 0);
-assert('at least one player (ownerId===0) unit', playerUnits.length >= 1,
-  `playerUnits.length=${playerUnits.length}`);
+assert('computeStartPlacements aiStarts >= 3', startPl.aiStarts.length >= 3,
+  `aiStarts.length=${startPl.aiStarts.length}`);
 
-const allHaveCategory = units.every(u => typeof u.category === 'string' && u.category.length > 0);
-assert('every unit has non-empty string category', allHaveCategory);
+assert('placeStartingUnits returns empty (A-START-01)', placeStartingUnits(map, data).length === 0);
 
-const settler = playerUnits[0];
-assert('player settler category === "osadnik"', settler.category === 'osadnik',
+const settler = {
+  id: 'test_settler',
+  ownerId: 0,
+  typeId: 'Osadnik',
+  category: 'osadnik',
+  q: startPl.playerStart.q,
+  r: startPl.playerStart.r,
+  ruch: 2,
+  ruchLeft: 2,
+};
+
+assert('synthetic settler category === "osadnik"', settler.category === 'osadnik',
   `category="${settler.category}"`);
 
 // ── Test 3: computeReachable ───────────────────────────────────────────────
@@ -222,6 +235,50 @@ assert('computeVisible includes settler own hex',
 
 const allVisInMap = [...vis].every(k => k in map.hexes);
 assert('every key in computeVisible exists in map.hexes', allVisInMap);
+
+// ── Test 5b: citySightRadius + computePlayerVisibility (B-zasieg-miasta-fog) ─
+assert('cityRangeForPopulation(4) === 5 (min start)', cityRangeForPopulation(4) === 5,
+  `got ${cityRangeForPopulation(4)}`);
+assert('cityRangeForPopulation(9) === 9', cityRangeForPopulation(9) === 9,
+  `got ${cityRangeForPopulation(9)}`);
+assert('cityRangeForPopulation(20) === 15 (cap)', cityRangeForPopulation(20) === 15,
+  `got ${cityRangeForPopulation(20)}`);
+assert('citySightRadius(9,0) === 9', citySightRadius(9, 0) === 9,
+  `got ${citySightRadius(9, 0)}`);
+assert('citySightRadius(1,0) === 5', citySightRadius(1, 0) === 5,
+  `got ${citySightRadius(1, 0)}`);
+
+const cityVis = computePlayerVisibility({
+  map,
+  playerUnits: [],
+  playerCities: [{ q: settler.q, r: settler.r, population: 9, kultura: 0 }],
+  unitSight: buildUnitSightResolver([]),
+});
+let cityVisDistMax = 0;
+for (const k of cityVis) {
+  const [cq, cr] = k.split(',').map(Number);
+  cityVisDistMax = Math.max(cityVisDistMax, hexDistance(settler.q, settler.r, cq, cr));
+}
+assert('computePlayerVisibility city pop9 radius <= 9', cityVisDistMax <= 9,
+  `maxDist=${cityVisDistMax}`);
+assert('computePlayerVisibility city pop9 radius >= 9 at edge',
+  cityVisDistMax >= 9, `maxDist=${cityVisDistMax}`);
+
+const startOnlyVis = computePlayerVisibility({
+  map,
+  playerUnits: [],
+  playerCities: [],
+  unitSight: buildUnitSightResolver([]),
+  startHex: { q: settler.q, r: settler.r },
+  startRevealRadius: 5,
+});
+let startDistMax = 0;
+for (const k of startOnlyVis) {
+  const [sq, sr] = k.split(',').map(Number);
+  startDistMax = Math.max(startDistMax, hexDistance(settler.q, settler.r, sq, sr));
+}
+assert('computePlayerVisibility start fallback radius <= 5', startDistMax <= 5,
+  `maxDist=${startDistMax}`);
 
 // ── Test 6: canFoundCity ───────────────────────────────────────────────────
 const cities = [];
@@ -302,11 +359,20 @@ assert('buildEconParams trade-science slider default === 20',
   econParams.suwaakHandelNaukaDefault === 20, // Maciej 2026-06-25: decyzja 70/20/10 (skarbiec/badania/luksus)
   `value=${econParams.suwaakHandelNaukaDefault}`);
 
-// Found a fresh city on the settler's land hex for an isolated economy test.
+// Found a fresh city on the player start hex for an isolated economy test.
 const econMap = generateMap(DEFAULT_WIDTH, DEFAULT_HEIGHT, 777);
-const econUnits = placeStartingUnits(econMap, data);
-const econSettler = econUnits.find(u => u.ownerId === 0 && u.category === 'osadnik');
-assert('economy: found a player settler', !!econSettler);
+const econStart = computeStartPlacements(econMap, data);
+const econSettler = {
+  id: 'econ_settler',
+  ownerId: 0,
+  typeId: 'Osadnik',
+  category: 'osadnik',
+  q: econStart.playerStart.q,
+  r: econStart.playerStart.r,
+  ruch: 2,
+  ruchLeft: 2,
+};
+assert('economy: player start hex resolved', Number.isFinite(econSettler.q));
 
 if (econSettler) {
   const econCity = foundCity(econSettler, [], econMap, cityName(0));
@@ -742,8 +808,8 @@ function makeRng(seed) {
 function warrior(hp) {
   return {
     typNazwa: 'Wojownik', rola: 'Wrecz',
-    Atak: 6, Obrona: 6, Uderzenie: 4, Pancerz: 4, Przebicie: 0,
-    Health: hp == null ? 30 : hp, progDezercji: 0.4,
+    Atak: 4, Obrona: 4, Uderzenie: 2, Pancerz: 2, Przebicie: 1, weaponDamage: 4,
+    Health: hp == null ? 17 : hp, progDezercji: 0.4,
   };
 }
 function makeCity(over) {
@@ -811,7 +877,7 @@ function makeCity(over) {
 // --- siege: a strong attacker overcomes a weak undefended-ish garrison; wins flagged ---
 {
   const bigAtk = { typNazwa: 'Oblegacz', rola: 'Wrecz', Atak: 30, Obrona: 20,
-    Uderzenie: 20, Pancerz: 10, Przebicie: 20, Health: 200, progDezercji: null, unbreakable: true };
+    Uderzenie: 20, Pancerz: 10, Przebicie: 20, weaponDamage: 30, Health: 200, progDezercji: null, unbreakable: true };
   const res = resolveSiegeAttack(bigAtk, makeCity({ wallLevel: 1, garrison: [warrior(10)] }),
     { rng: makeRng(7), useMilitia: false });
   assert('siege: an overwhelming attacker defeats the garrison defender',
@@ -971,12 +1037,28 @@ assert('order: orderTier returns neutral between T1 and T2',
 const eUnrest  = orderEffects('unrest', orderParams);
 const eNeutral = orderEffects('neutral', orderParams);
 const eOrder   = orderEffects('order', orderParams);
-assert('order: unrest effects penalise production+growth and carry revolt risk',
-  eUnrest.productionMult < 1 && eUnrest.growthMult < 1 && eUnrest.revoltRisk > 0,
+assert('order: unrest effects penalise production+growth+yields and carry revolt risk',
+  eUnrest.productionMult < 1 && eUnrest.growthMult < 1 && eUnrest.revoltRisk > 0 &&
+  eUnrest.pieniadzMult < 1 && eUnrest.naukaMult < 1 && eUnrest.kulturaMult < 1,
   JSON.stringify(eUnrest));
 assert('order: neutral effects are all-1 with no revolt risk',
   eNeutral.productionMult === 1 && eNeutral.growthMult === 1 &&
-  eNeutral.tradeMult === 1 && eNeutral.revoltRisk === 0);
+  eNeutral.tradeMult === 1 && eNeutral.revoltRisk === 0 &&
+  eNeutral.pieniadzMult === 1 && eNeutral.naukaMult === 1 && eNeutral.kulturaMult === 1);
+assert('order: orderEffectsToYieldMults maps trade bonus to pieniadz on order tier',
+  orderEffectsToYieldMults('order', eOrder).pieniadzMult === eOrder.tradeMult &&
+  orderEffectsToYieldMults('unrest', eUnrest).pieniadzMult === eUnrest.pieniadzMult);
+assert('order: pickRevoltMigrationTarget picks highest-order city of same owner',
+  pickRevoltMigrationTarget('a', 0, [
+    { id: 'a', ownerId: 0, population: 5 },
+    { id: 'b', ownerId: 0, population: 3 },
+    { id: 'c', ownerId: 0, population: 4 },
+  ], new Map([['b', 2], ['c', 8]])) === 'c');
+assert('order: pickRevoltMigrationTarget returns null when no other city',
+  pickRevoltMigrationTarget('a', 0, [{ id: 'a', ownerId: 0, population: 5 }], new Map()) === null);
+assert('order: loadOrderParams reads B2 unrest yield penalties from json',
+  orderParams.karaPieniadzT1 === -0.15 && orderParams.karaNaukaT1 === -0.10 &&
+  orderParams.ryzykoBuntuT1 === 0.05);
 assert('order: order-tier effects give a production+trade bonus and no risk',
   eOrder.productionMult > 1 && eOrder.tradeMult > 1 && eOrder.revoltRisk === 0,
   JSON.stringify(eOrder));
@@ -1121,7 +1203,7 @@ assert('religion: dominance is exclusive at exactly 50% (must EXCEED the thresho
 assert('religion: religionHappiness rewards our dominant religion and penalises a foreign one',
   religionHappiness({ counts: { Faith1: 9, Faith2: 1 } }, 'Faith1', religionParams) === religionParams.zadowolenieDominujaca &&
   religionHappiness({ counts: { Faith1: 9, Faith2: 1 } }, 'Faith2', religionParams) === religionParams.karaObca &&
-  religionHappiness({ counts: { A: 5, B: 5 } }, 'A', religionParams) === religionParams.karaBrakReligii);
+  religionHappiness({ counts: { A: 5, B: 5 } }, 'A', religionParams, true) === religionParams.karaBrakReligii);
 
 // REQUIRED: convertViaTemple shifts share toward the owner's religion; temple faster.
 const startState = { counts: { Pagan: 90, Owner: 10 } }; // owner religion minority
@@ -1228,26 +1310,14 @@ assert('religion: makeRng (culture-religion) is a deterministic [0,1) generator 
       `key=${fq},${fr}`);
   }
 
-  // Second city: territory check with pop=1 gives radius=1.
-  // Player can found second city only if a valid hex is far enough (>=5 hexes)
-  // AND within territory (radius=1). This combination is impossible so founding
-  // returns false -- this is the expected current behavior (territory bug noted).
+  // Second city: territory min radius 5 (B-zasieg, Maciej 2026-06-27).
   if (newCity) {
     const playerCityNodes1 = citiesArr.filter(c => c.ownerId === 0)
       .map(c => ({ q: c.q, r: c.r, pop: c.population, level: 1 }));
     assert('cityfix: after 1st city, playerCityNodes has 1 node', playerCityNodes1.length === 1,
       `length=${playerCityNodes1.length}`);
-    // territory radius for pop=1 = 1 hex; MIN_CITY_DISTANCE=5; no overlap possible
-    const anySecondOk = Object.entries(cityMap.hexes).some(([key, hex]) => {
-      const t = hex.terenBazowy;
-      if (t === 'morze' || t === 'wybrzeze' || t === 'gory') return false;
-      const [q, r] = key.split(',').map(Number);
-      const inTerritory = isInTerritory(q, r, playerCityNodes1);
-      const farEnough = canFoundCity(q, r, citiesArr, cityMap).ok;
-      return inTerritory && farEnough;
-    });
-    assert('cityfix: no second city location possible with pop=1 territory (expected limitation)',
-      !anySecondOk);
+    assert('cityfix: pop1 territory radius is 5 (B min start)',
+      cityRangeForPopulation(1) === 5, `got ${cityRangeForPopulation(1)}`);
   }
 }
 

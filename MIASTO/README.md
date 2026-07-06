@@ -1,18 +1,26 @@
 # MIASTO/ — pliki sesji Civ-MIASTO (miasto + produkcja + budynki + społeczeństwo)
-Wszystkie NIE-grające pliki, za które odpowiada MIASTO, w jednym miejscu (panele sterowania, dokumentacja, makiety).
+Wszystkie NIE-grające pliki, za które odpowiada MIASTO/EKONOMIA (Grupa B), w jednym miejscu (panele sterowania, dokumentacja, makiety).
+**Hub operacyjny Grupy B:** `docs/grupa-b/` (audyt, STAN, indeks handoffów).
 Pliki GRY (kod + JSON) zostają w `gra/` — patrz niżej. Pliki kanału (raporty/handoff) zostają w `dyspozycje/`.
 
-## Zawartość katalogu
+## Panel balansu (Grupa B)
+
+**Hub:** `panele-sterowania/Panel-B.xlsx` (zastępuje rozproszone Excel-e poniżej).  
+Instrukcja: `docs/grupa-b/PANEL-B-SPEC.md` · archiwum starych paneli: `docs/archiwum/panele-miasto-legacy/README.md`
+
+## Zawartość katalogu (legacy / dokumentacja)
 | Plik | Co to |
 |---|---|
 | `MIASTO-DOKUMENTACJA-DEWELOPERSKA.md` | Pełna dokumentacja deweloperska (architektura, moduły, reguły, parametry, zależności, interakcje z działami, komendy). |
-| `Panel-przeglad-danych.xlsx` | **Jedno źródło strojenia** — edytowalny panel WSZYSTKICH danych gry (moje zakładki: Budynki, Spoleczenstwo, Miasto-parametry). Eksport → JSON: `python3 gra/tools/export-panel.py`. |
+| `Panel-przeglad-danych.xlsx` | **LEGACY** — zastąpione przez `panele-sterowania/Panel-B.xlsx` |
 | `Panel-przeglad-danych.html` | Read-only dashboard (podgląd wszystkich JSON). Generuje: `python3 gra/tools/gen-dashboard.py` (zapis tutaj). |
 | `Budynki.xlsx` | Panel źródłowy budynków (→ `gra/data/buildings.json`). |
 | `Spoleczenstwo-parametry.xlsx` | Panel źródłowy społeczeństwa (zdrowie/szczęście/kultura/religia/porządek → `gra/data/society-params.json`). |
 | `Schemat-dzialania-miasta.md` | Specyfikacja ekranu/mechaniki miasta (źródło projektowe). |
 | `Spec-spoleczenstwo.md` | Specyfikacja społeczeństwa (szczęście/zadowolenie). |
 | `Widok-miasta.html` | Makieta wizualna ekranu miasta (referencja projektowa). |
+| `Ulepszenia-terenu.xlsx` | Panel 15 ulepszeń terenu (→ `gra/data/terrain-improvements.json`). **Decyzja A4-D4-Q1=A** (2026-06-27) — referencja, nie blokuje. Regeneracja: `python gra/tools/gen-ulepszenia-xlsx.py`. |
+| `Ulepszenia-terenu-spec.md` | Spec bonusów/kosztów ulepszeń (podział MAPA/MIASTO/SILNIK). |
 
 ## Pliki GRY (NIE w tym katalogu — część buildu)
 - Kod: `gra/src/game/cities.ts`, `production.ts`, `order.ts`, `culture-religion.ts`.

@@ -1,6 +1,6 @@
 # HANDOFF: UNITS → MAPA — podgląd miast (pełne modele) z murami
 
-**Data:** 2026-06-25 · **Od:** Civ-UNITS · **Do:** MAPA (render miast)
+**Data:** 2026-06-25 · **Od:** Grupa C · **Do:** MAPA (render miast)
 
 Przy pracy nad oblężeniem zrobiłem podgląd 9 PEŁNYCH MODELI MIAST per cywilizacja (z murami + bramą) — ale to jest materiał MAPY, nie bitwy. **Przekazuję go Wam.**
 
@@ -10,4 +10,4 @@ Przy pracy nad oblężeniem zrobiłem podgląd 9 PEŁNYCH MODELI MIAST per cywil
 
 **UNITS zostaje przy SWOIM:** na mapie BITWY dokładam tylko element **MURU** (sam mur + brama, styl per cyw) jako strukturę bitewną — nie całe miasto.
 
-— Civ-UNITS
+— Grupa C

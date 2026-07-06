@@ -1,6 +1,6 @@
 # HANDOFF: UNITS → MASTER — bonusy obronne za mapę/budowle
 
-**Data:** 2026-06-25 · **Od:** Civ-UNITS · **Do:** Master (silnik/mapa/oblężenia)
+**Data:** 2026-06-25 · **Od:** Grupa C · **Do:** Master (silnik/mapa/oblężenia)
 **Decyzja Naster.** Dane już wpisane przez UNITS; wymaga WPIĘCIA w kod combat/siege.
 
 ## Wartości (źródło prawdy = panel `Civ-UNITS/Bitwa-parametry.xlsx` → sekcja „Bonusy obronne za mapę/budowle")
@@ -27,4 +27,4 @@
 ## Założenie do potwierdzenia
 - Przyjąłem, że bonus fortu też wymaga trybu obozowania (spójnie z posterunkiem). Naster wprost powiedział o obozowaniu tylko przy posterunku — jeśli fort ma dawać +100% każdej jednostce na polu (bez obozowania), zmienię `fort.bonus_wymaga_obozowania` na `false`.
 
-— Civ-UNITS
+— Grupa C

@@ -1,6 +1,6 @@
 # HANDOFF: EKONOMIA przejmuje MIASTO (scalenie lane'ów)
 
-**Data:** 2026-06-25 · **Autor:** sesja Civ-EKONOMIA · **Status:** przejęcie wykonane; plan niżej.
+**Data:** 2026-06-25 · **Autor:** sesja Grupa B · **Status:** przejęcie wykonane; plan niżej.
 **Podstawa:** decyzja Maciej (czat) + Twój znacznik w `MIASTO.md` „SCALONE → EKONOMIA".
 
 > **AKTUALIZACJA 2026-06-25 (decyzja Maciela, czat):** zakres EKONOMIA poszerzony — **wszystko, co akumuluje się do użytku całej cywilizacji** (skarbiec, pula nauki, zapasy/dostęp surowców) **+ produkcja w miastach = EKONOMIA**. `playerState.ts` przechodzi do mnie. To **zamyka** decyzję „magazyn nauki" (opcja A): pula NAUKI jest MOJA. Wcześniejszy zapis „`playerState` = Twój" (pkt 3) = NIEAKTUALNY.

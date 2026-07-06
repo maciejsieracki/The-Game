@@ -5,11 +5,13 @@
 
 import type { BuildingDef, UnitDef } from '../../data/loader';
 import { categoryOf } from '../../units/setup';
+import { unitInfographicSvg } from '../unitInfographic';
 import buildingMapJson from './brand/building-icon-map.json';
 import civMapJson from './brand/civ-icon-map.json';
 import epochMapJson from './brand/epoch-icon-map.json';
 import settingMapJson from './brand/setting-icon-map.json';
 import iconsManifest from './brand/icons-manifest.json';
+import improvementMapJson from './brand/improvement-icon-map.json';
 import unitMapJson from './brand/unit-icon-map.json';
 import menuEmblemSvg from './brand/menu-emblem.svg?raw';
 import motionCss from './brand/motion.css?raw';
@@ -32,6 +34,7 @@ const unitMap = unitMapJson as IdMapRoot;
 const civMap = civMapJson as IdMapRoot;
 const epochMap = epochMapJson as IdMapRoot;
 const settingMap = settingMapJson as IdMapRoot;
+const improvementMap = improvementMapJson as IdMapRoot;
 
 function findSvgRaw(suffix: string): string {
   const norm = suffix.replace(/\\/g, '/');
@@ -92,6 +95,12 @@ function buildingBldId(def: BuildingDef | undefined, buildingId?: string): strin
   return buildingMap.map._default ?? 'bld-default';
 }
 
+/** SVG ulepszenia terenu (panel budowy A-08) z improvement-icon-map.json. */
+export function improvementIconSvg(key: string, size: BrandIconSize = 24): string {
+  const impId = improvementMap.map[key] ?? improvementMap.map._default ?? 'imp-farm';
+  return normalizeSvg(findSvgRaw(`improvements/${impId}.svg`), size);
+}
+
 /** SVG miniatury budynku @24. */
 export function buildingIconSvg(def: BuildingDef | undefined, buildingId?: string): string {
   const bld = buildingBldId(def, buildingId);
@@ -104,8 +113,10 @@ function unitCategoryKey(u: UnitDef | undefined, id?: string, isSuper?: boolean)
   return cat;
 }
 
-/** SVG miniatury jednostki @24. */
+/** SVG miniatury jednostki @24 — infografiki 1E, fallback plik brand-book. */
 export function unitIconSvg(u: UnitDef | undefined, id?: string): string {
+  const info = unitInfographicSvg(u, id, 24);
+  if (info) return info;
   const isSuper = u?.['Super-jednostka'] === 'TAK';
   const key = unitCategoryKey(u, id, isSuper);
   const unitId = unitMap.map[key] ?? unitMap.map._default ?? 'unit-default';

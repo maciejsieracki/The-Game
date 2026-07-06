@@ -1,6 +1,6 @@
 # HANDOFF: MAPA → MASTER — obrona + zasięgi budynków obronnych (dane od Macieja)
 
-**Data:** 25.06.2026 · **Od:** Civ-MAPA · **Status:** dane do rozdziału: liczby → MIASTO (terrain-improvements.json), bonusy walki → UNITS/walka. MAPA egzekwuje zasięgi na mapie.
+**Data:** 25.06.2026 · **Od:** Grupa A · **Status:** dane do rozdziału: liczby → MIASTO (terrain-improvements.json), bonusy walki → UNITS/walka. MAPA egzekwuje zasięgi na mapie.
 
 ## Wartości (od Macieja)
 | Element | Zasięg terytorium (rozszerza budowę) | Epoka dostępności | Bonus OBRONY |

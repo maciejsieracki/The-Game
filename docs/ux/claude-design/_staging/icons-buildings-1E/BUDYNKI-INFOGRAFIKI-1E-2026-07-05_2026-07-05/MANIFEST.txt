@@ -1,0 +1,63 @@
+ZLECENIE-ID: BUDYNKI-INFOGRAFIKI-1E-2026-07-05
+DATA: 2026-07-05
+HASLO-GITHUB: BUDYNKI-INFOGRAFIKI-1E-2026-07-05
+REPO: https://github.com/maciejsieracki/The-Game
+
+ZAWARTOSC:
+  35x SVG ikony budynkow @24 (styl 1E, stroke #e8d88a, viewBox 24, zero emoji)
+  building-icon-map.json (mapowanie 1:1 id -> bld-{id})
+  mockup .dc.html (siatka 35 + 3 karty Poziom B)
+  DESIGN-do-UI_BUDYNKI-INFOGRAFIKI.md (handoff)
+
+PLIKI:
+  MOCKUP | The Game - Budynki infografiki kanon v1 2026-07-05 (1E).dc.html | siatka 35 ikon + 3 karty infografiki (Spichlerz, Port wielki, Cytadela)
+  HANDOFF | DESIGN-do-UI_BUDYNKI-INFOGRAFIKI.md | integracja + tabela id->motyw + lancuchy upgrade
+  MAP | eksport/icons/buildings/building-icon-map.json | id budynku -> bld-{id}, _default fallback
+
+  --- IKONY (eksport/icons/buildings/) ---
+  Produkcja (10, P0):
+    bld-stolarnia.svg | pila + deski
+    bld-mielerz.svg | kopiec wegla + dym
+    bld-kamieniarski.svg | dluto + blok
+    bld-kuznia.svg | kowadlo + mlot
+    bld-odlewnia_brazu.svg | piec z plomieniem
+    bld-odlewnia_zelaza.svg | piec + spust zelaza (upgrade)
+    bld-garncarnia.svg | amfora
+    bld-cegielnia.svg | mur z cegiel
+    bld-kuznia_zelaza.svg | kowadlo + iskry
+    bld-wielka_kuznia.svg | wielki piec + kowadlo (upgrade)
+  Handel (5, P0):
+    bld-targowisko.svg | stragan z markiza
+    bld-port.svg | kotwica
+    bld-port_wielki.svg | 2 zagle (upgrade)
+    bld-karawanseraj.svg | brama z arkadami
+    bld-mennica.svg | moneta + stempel
+  Obrona/wojsko (5, P0):
+    bld-mury.svg | mur z blankami
+    bld-fort.svg | Cytadela - warowna wieza (upgrade)
+    bld-koszary.svg | tarcza + wlocznie
+    bld-warsztat_oblezniczy.svg | KATAPULTA (nie mur)
+    bld-akademia_wojskowa.svg | tarcza + wieniec (upgrade)
+  Zywnosc/magazyn (2):
+    bld-spichlerz.svg | spichlerz + klos
+    bld-magazyn.svg | skrzynie
+  Kultura/religia (5):
+    bld-kamienne_kregi.svg | trylity
+    bld-swiatynia.svg | kolumny + ogien (upgrade)
+    bld-teatr.svg | maski
+    bld-stela.svg | obelisk
+    bld-palac.svg | fasada z kopula
+  Nauka (2, P1):
+    bld-biblioteka.svg | polka + zwoj
+    bld-akademia.svg | portyk + ksiega (merge)
+  Zdrowie (4, P2):
+    bld-studnia.svg | studnia z wiadrem
+    bld-akwedukt.svg | luki + kanal
+    bld-laznia_publiczna.svg | kopula + para
+    bld-lazaret.svg | namiot + krzyz
+  Administracja (2, P2):
+    bld-sad.svg | waga + cokol
+    bld-pretorium.svg | fasces
+
+RAZEM: 35 ikon + 3 pliki (mockup, handoff, map) = 38 pozycji
+P0 (pierwszy zip): produkcja 10 + handel 5 + obrona 5 = 20 ikon (gotowe, komplet 35 tez w paczce)

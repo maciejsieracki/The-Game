@@ -28,6 +28,7 @@ const ENTRY_TS = `
 export {
   BARBARIAN_OWNER_ID, isBarbarian,
   FALLBACK_BARB_PARAMS, loadBarbParams, barbariansActive,
+  EPOKA_SREDNIOWIECZE_BARBARZY,
   spawnCamps, tickCamps, decideBarbarianMoves,
 } from '../src/game/barbarians';
 export { hexDistance } from '../src/units/setup';
@@ -54,6 +55,7 @@ const B = require(BUNDLE_FILE);
 const {
   BARBARIAN_OWNER_ID, isBarbarian,
   FALLBACK_BARB_PARAMS, loadBarbParams, barbariansActive,
+  EPOKA_SREDNIOWIECZE_BARBARZY,
   spawnCamps, tickCamps, decideBarbarianMoves,
   hexDistance,
 } = B;
@@ -139,6 +141,8 @@ assert(isBarbarian(3)  === false, 'isBarbarian(3) false (AI rival)');
 // ===========================================================================
 assert(barbariansActive(P.startTurn, P) === true,  'active at startTurn');
 assert(barbariansActive(P.startTurn - 1, P) === false, 'inactive before startTurn');
+assert(barbariansActive(P.startTurn, P, 3) === true, 'active era3 (v0.1 max)');
+assert(barbariansActive(P.startTurn, P, EPOKA_SREDNIOWIECZE_BARBARZY) === false, 'inactive from Sredniowiecze');
 
 // ===========================================================================
 // 4. spawnCamps

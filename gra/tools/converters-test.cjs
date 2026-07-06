@@ -35,11 +35,13 @@ function assert(cond, msg) { if (cond) passed++; else { failed++; console.error(
 function eq(a, b, msg) { assert(a === b, `${msg} (got ${JSON.stringify(a)}, want ${JSON.stringify(b)})`); }
 
 // recipes present
-eq(C.DEFAULT_CONVERTER_RECIPES.length, 5, 's1.5: 5 default converters');
+eq(C.DEFAULT_CONVERTER_RECIPES.length, 6, 's1.5: 6 default converters (huta + odlewnia_brazu)');
 eq(C.DEFAULT_CONVERTER_RECIPES[0].output, 'deski', 's1.5: tartak -> deski');
 
 const tartak = C.DEFAULT_CONVERTER_RECIPES.find(r => r.id === 'tartak');
 const huta   = C.DEFAULT_CONVERTER_RECIPES.find(r => r.id === 'huta');
+const odlewnia = C.DEFAULT_CONVERTER_RECIPES.find(r => r.id === 'odlewnia_brazu');
+assert(!!odlewnia && odlewnia.output === 'braz', 'ABC-7: odlewnia_brazu -> braz');
 
 // throughput-limited: 5 drewno, tput 2, cap 50 -> 2 deski
 let r = C.runConverter(tartak, { drewno: 5 }, 2, 50);

@@ -1,6 +1,6 @@
 # KONTRAKT: UNITS → MASTER — START OBLĘŻENIA
 
-**Data:** 2026-06-26 · Od: Civ-UNITS · Do: MASTER · Decyzje Naster (2, 3A). Konsumuje kontrakt EKONOMII (`EKONOMIA-do-UNITS_zapasy-oblezenie-kontrakt.md`: `city.oblegane`, `getCityFood()`, `city.garnizon`, `tick.obleganyGlod`).
+**Data:** 2026-06-26 · Od: Grupa C · Do: MASTER · Decyzje Naster (2, 3A). Konsumuje kontrakt EKONOMII (`EKONOMIA-do-UNITS_zapasy-oblezenie-kontrakt.md`: `city.oblegane`, `getCityFood()`, `city.garnizon`, `tick.obleganyGlod`).
 
 ## 1. JAK ZACZYNA SIĘ OBLĘŻENIE (decyzja 2)
 - **GRACZ atakuje miasto z murem:** ZAWSZE **jawna akcja „Oblężaj"** (gracz ją wybiera) → wejście w tryb oblężenia (plansza/szturm UNITS).
@@ -28,4 +28,4 @@ Brakujące elementy startu/akcji do wpięcia:
 - EKONOMIA: zapasy/populacja/garnizon (kontrakt).
 - UNITS: taktyczna bitwa oblężnicza + skład/rozstrzyganie (kontrakt walki).
 
-— Civ-UNITS
+— Grupa C

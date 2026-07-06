@@ -1,0 +1,28 @@
+{
+  "note": "Klucz gry (ImprovementKey) → plik imp-*.svg w improvements/. Brakujące typy: reuse najbliższej ikony do deliverable Design.",
+  "map": {
+    "farma": "imp-farm",
+    "irygacja": "imp-irrigation",
+    "pole_irygowane": "imp-irrigation",
+    "bydlo": "imp-pasture",
+    "owce": "imp-pasture",
+    "lama": "imp-pasture",
+    "stadnina": "imp-pasture",
+    "pastwisko": "imp-pasture",
+    "kopalnia": "imp-mine",
+    "popalnia_brazu": "imp-mine",
+    "kamieniolom": "imp-quarry",
+    "glinianka": "imp-quarry",
+    "oboz_lowiecki": "imp-outpost",
+    "wyrab": "imp-lumber",
+    "tartak": "imp-lumber",
+    "tarasy": "imp-farm",
+    "lodzie_rybackie": "imp-fishing",
+    "warzelnia_soli": "imp-quarry",
+    "droga": "imp-road",
+    "droga_brukowana": "imp-road",
+    "posterunek": "imp-outpost",
+    "fort": "imp-fort",
+    "_default": "imp-farm"
+  }
+}

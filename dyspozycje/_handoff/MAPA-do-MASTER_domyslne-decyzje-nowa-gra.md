@@ -1,6 +1,6 @@
 # HANDOFF: MAPA → MASTER (dla UI/menu „Nowa gra") — DOMYŚLNE DECYZJE
 
-**Data:** 26.06.2026 · **Od:** Civ-MAPA · Decyzja Macieja: ekran „Nowa gra" ma DOMYŚLNE wybory wstępnie zaznaczone; **NIE blokuje** przejścia — gracz klika „Dalej" na domyślnych albo zmienia, co chce.
+**Data:** 26.06.2026 · **Od:** Grupa A · Decyzja Macieja: ekran „Nowa gra" ma DOMYŚLNE wybory wstępnie zaznaczone; **NIE blokuje** przejścia — gracz klika „Dalej" na domyślnych albo zmienia, co chce.
 
 ## Domyślne — GENERACJA ŚWIATA (własność MAPA)
 | Wybór | DOMYŚLNA wartość | Opcje |

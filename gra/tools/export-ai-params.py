@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# DEPRECATED (2026-06-30 — PANEL-MERGE): Excel w docs/archiwum/panele-legacy/.
+# Kanon: panele-sterowania/Panel-{A..E}.xlsx + export-{a..e}.py — nie używać do nowych zmian.
 # export-ai-params.py -- BEZPIECZNY eksport panelu AI-parametry.xlsx -> gra/data/ai-params.json.
 # Dzial: Civ-AI. Wzorowane na export-panel.py (Civ-MIASTO).
 #
@@ -18,7 +20,7 @@ import openpyxl, json, os, sys, argparse
 HERE = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.normpath(os.path.join(HERE, "..", "data"))
 CIV_ROOT = os.path.normpath(os.path.join(HERE, "..", ".."))
-DEFAULT_XLSX = os.path.join(CIV_ROOT, "Civ-AI", "AI-parametry.xlsx")  # panel przeniesiony do Civ-AI/
+DEFAULT_XLSX = os.path.join(CIV_ROOT, "docs", "archiwum", "panele-legacy", "Civ-AI", "AI-parametry.xlsx")  # panel przeniesiony do Civ-AI/
 DEFAULT_JSON = os.path.join(DATA_DIR, "ai-params.json")
 SHEET = "AI-parametry"
 

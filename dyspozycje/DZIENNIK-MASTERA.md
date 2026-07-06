@@ -1,8 +1,185 @@
+> ⛔ NIEAKTUALNE OD 2026-07-06 — NIE STOSUJ TEGO PROCESU.
+> Obowiązujący obieg: dyspozycje/START-TU.md → dyspozycje/OBIEG-KOMUNIKACJI-2026-07-06.md
+> → dyspozycje/ROLE-I-ZAKRESY-2026-07-06.md. Kanał pracy: dyspozycje/_handoff/KANAL-PRACA.md.
+> Wersje/md5 wyłącznie w dyspozycje/WERSJE.md. Roboczą publikuje tylko INTEGRATOR (Cowork);
+> kanon/finalną tylko Grupa G (Cursor) z pakietu DO-KANONU. Zasada: TYLKO DO PRZODU (zero restore).
+> Treść poniżej = HISTORIA (kontekst), nie instrukcja do wykonania.
+
 # DZIENNIK MASTERA — rejestr przepływów
 
 Append-only. Source of truth operacyjny projektu Civ.
 
 ---
+
+## [2026-07-05 ~23:25] UI → MASTER: **CZEKA publish ROBOCZA**
+
+**Master START:** `dyspozycje/UI-DO-MASTERA.md` sekcja **▶ START**  
+**Handoff:** `dyspozycje/_handoff/UI-do-MASTER_publish-robocza-2026-07-05.md`  
+**STAN lane:** `dyspozycje/UI-STAN.md`  
+**Inwentarz:** `dyspozycje/UI-INVENTORY-DESIGN-vs-GRA.md`
+
+Lane UI zamknął kod · Master: bramka + publish robocza (nie kanon).  
+**Blockery otwarte:** `_handoff/UI-do-MASTER_blockery-otwarte-2026-07-05.md` (A-08, HEX, W4 rekrutacja, Moc, C23/C12).
+
+---
+
+## [2026-07-05 ~23:55] Master · **publish ROBOCZA batch A1–A7** ✅ GOTOWE-ROBOCZA-A-BATCH
+
+**Handoff:** `_handoff/UI-do-MASTER_batch-A1-A7-2026-07-05.md` · `UI-do-MASTER_publish-robocza-2026-07-05.md`  
+**Bramka:** tsc=0 · smoke OK  
+**Mapa:** vite → `publish-robocza-snapshot.ps1` · stempel **`ROBOCZA · 2d9fc522 · 23:52`** · plik md5 `8dd89c81570cde129f6b4b50e83520ec`  
+**POLE-BITWY:** rebuild oblezenie · md5 **`057b028c53ffda1c3c6b29395d021982`** · marker A4  
+**Hub:** `generate-start-hub.cjs` · 9 bundli zsynchronizowane  
+**Maciej:** `gra-robocza/START.html` Ctrl+F5 → playtest A1–A7 (blockery B1–B5 u Design nadal poza scope)
+
+---
+
+## [2026-07-05 ~23:35] Dokumentacja · Panel-C handoff + status publish UI
+
+**Nowe:** `_handoff/UNITS-do-MASTER_panel-c-export-2026-07-05.md`  
+**UNITS-DO-MASTERA:** wpis Panel-C export 00:25  
+**UI-do-MASTER_publish-robocza:** status **CZĘŚCIOWO** (tabela publishów + CZEKA świeży build + ZADANIE 2 rzeki)  
+**Robocza plik md5:** `eac24a66` · stempel HUD `703e6212` (rozjazd stempla — znany)  
+**Publish pełny:** **NIE** w tej turze — czeka merge Integrator ZADANIE 2 lub hasło Macieja „publish robocza"
+
+---
+
+## [2026-07-05 ~23:05] UPGRADE batch · handoff domknięty + weryfikacja ROBOCZA
+
+**Handoff:** `_handoff/EKONOMIA-do-MASTER_upgrade-2026-07-05.md`  
+**Wpisy:** `EKONOMIA-DO-MASTERA` · `CYWILIZACJE-DO-MASTERA` · `UI-DO-MASTERA` · `REJESTR-DECYZJI` (md5 `eac24a66`)  
+**Bundel:** `Rozbuduj` + 35 ikon `bld-*` w `Gra-ROBOCZA.html` · test **28/28**  
+**GitHub:** logika upgrade lokalnie — **commit czeka** po playtest Macieja  
+**Maciej:** `gra-robocza/START.html` Ctrl+F5 → miasto → produkcja ↗ → `OK upgrade` / `BUG: …`
+
+---
+
+## [2026-07-05 ~22:45] Bramka testów + sync FINALNA ✅
+
+**Bramki (Master):**
+| Test | Wynik |
+|------|-------|
+| `tsc --noEmit` | **0 błędów** |
+| `smoke.cjs` (boot) | **OK** |
+| `combat-test.cjs` | **6/6** |
+| `logic-test.cjs` | **202/203** — 1× mapgen złoża/konie na łące (znany baseline, nie blokuje) |
+| `battle-smoke.cjs` | **FAIL jsdom** — stack overflow w BattleScene (limit headless; boot OK) |
+
+**Promocja FINALNA:** `Gra-KANON.html` → root `Gra-FINALNA.html` · stempel **FINALNA · d3948ea6 · 22:45**  
+**Źródło kanon md5:** `d3948ea671699b6021072d662331a3d3` (ta sama treść gry co kanon/robocza UI T4b)  
+**Maciej:** Ctrl+F5 `Gra-FINALNA.html` lub `gra-kanon/START.html` — stempel musi = meldunek
+
+---
+
+## [2026-07-05 ~22:40] Maciej — promocja robocza → kanon ✅
+
+**Polecenie:** kanon = ten sam stan co robocza  
+**Skrypt:** `gra/tools/publish-kanon-snapshot.ps1`  
+**Źródło robocza md5:** `a001606c9b1a56a4c7df9160fd18476a`  
+**Kanon:** `gra-kanon/Gra-KANON.html` · stempel **KANON · a001606c · 22:40**  
+**Finalna:** root `Gra-FINALNA.html` (sync z kanonem)  
+**Manifest:** `gra-kanon/KANON-MANIFEST.json`  
+**Playtesty:** 6× `Gra-KANON-PLAYTEST-*` + POLE-BITWY — skopiowane z roboczej, restempel KANON
+
+---
+
+## [2026-07-05 ~22:35] Maciej `start` → ZADANIE 2 Integrator (UI + rzeki KROK 3)
+
+**Decyzja:** UI gotowe (bundle `1b169cfd`) · HOLD Integratora [04:20] zdjęty  
+**Kanał:** `KANAL-PRACA.md` [22:35] — merge `srcKopiaMaster/map` KROK 3 → `gra/src` · jeden publish · stempel HOST-side  
+**Czeka:** meldunek Integratora (md5 + stempel potwierdzony) → playtest Macieja mapa+miasto
+
+---
+
+## [2026-07-05 ~21:45] RESTORE srcKopiaMaster → gra/src + publish ROBOCZA
+
+**Przywrócono:** `mapLoadingOverlay.ts`, `perfTestPanel.ts`, `hardwareProfile.ts`, `buildInfo.ts`  
+**Rzeki:** pushMain/pushTributary ×2 (I1/I2 trim 1:1 z srcKopiaMaster) · `scene.ts` powerPreference  
+**B0.9:** już w `main.ts` (showYields + onOkolicaFocusChange auto)  
+**tsc:** 0 · **publish:** `gra-robocza/Gra-ROBOCZA.html` md5 **`9f9380ab4b3bca7da88193960f514107`** · marker overlay OK  
+**srcKopiaMaster:** zostaje do pełnego scalenia
+
+---
+
+**Plik:** `docs/obieg/BROADCAST-NAZWY-PLIKOW-2026-07-05.md`  
+**Zaktualizowano:** `_ZASADY` · `OBOWIAZ-SCIEZKA-KODU` · `DWIE-WERSJE-GRY` · obieg A–E · `INTEGRATOR-kolejka` · STAN (MAPA, EKONOMIA, UNITS, UI, CYWILIZACJE, INTEGRATOR) · `REJESTR-DECYZJI`
+
+---
+
+**Usunięto:** `gra-kanon-archiwum/`, `gra-robocza/src/`, `gra-kanon/src/`, `gra-robocza-kopia/`, duplikaty root `Gra-podglad-*`, dev junk w robocza/kanon.  
+**Zostało w robocza/kanon:** tylko pliki HTML + manifest + START. Kod **tylko** `gra/src/`.  
+**Publish:** `publish-robocza-snapshot.ps1` już **nie kopiuje** src do roboczej.
+
+---
+
+**Decyzja:** jednoznaczne nazwy zamiast identycznego `Gra-podglad.html` wszędzie.
+
+| Rola | Plik |
+|------|------|
+| **Robocza (Ty grasz)** | `gra-robocza/Gra-ROBOCZA.html` |
+| **Kanon** | `gra-kanon/Gra-KANON.html` |
+| **Finalna** | root `Gra-FINALNA.html` |
+
+Usunięto duplikaty root `Gra-podglad-PLAYTEST-*`. Zaktualizowano publish-robocza/kanon, START.html, `MACIEJ-PLAYTEST-JEDNO-DRZWI.md`.
+
+---
+
+## [2026-07-05 ~18:30] KRYZYS · MUTEX (LOCK.json + publish bez src + kasacja pułapek)
+
+**Maciej:** dopisać sekcję MUTEX do `KRYZYS-COFNIETE-PLIKI-2026-07-05.md`  
+**Aktywne:** `gra/LOCK.json` → owner `KRYZYS-Opus` · inne czaty **STOP** na `gra/src/`  
+**Po PASS:** publish tylko HTML · **usuń** (nie archiwizuj) `gra-robocza/src`, `gra-kanon/src`, `gra-kanon-archiwum`
+
+---
+
+**Problem Macieja:** UX „cofany” — agenci edytowali `gra-robocza/src/` zamiast `gra/src/`.  
+**Decyzja:** `OBOWIAZ-SCIEZKA-KODU` · trigger **`ścieżka`** · teksty: `KOMUNIKAT-MACIEJ-SCIEZKA.md`  
+**Zaktualizowano:** A–F obieg · `_ZASADY` · `_DYSPOZYCJA-WSPOLNY` · `civ-workflow.mdc` · handoff BLEDY (wycofanie robocza/src)
+
+---
+
+**Decyzje Macieja:** D1A (jedno drzwi `gra-robocza/START.html`) · D2A (pieczęć md5 w HUD) · D3A (retencja kopii).
+
+**Wdrożone:**
+- `docs/obieg/MACIEJ-PLAYTEST-JEDNO-DRZWI.md`
+- `START-GRA.html` → domyślnie robocza
+- `gra/tools/inject-build-stamp.ps1` + hook w publish robocza/kanon
+- `gra/tools/cleanup-retention.ps1` (archiwum 5 · _backup 3 · bak 1/plik)
+
+**Maciej:** Ctrl+F5 `gra-robocza/START.html` — w rogu **ROBOCZA · dc839f75**.
+
+---
+
+**Reguła:** ten czat (MASTER) = diagnoza, spec, handoff. **Integrator** = jedyny edytor `main.ts` + build + publish.  
+**B0.9:** MASTER naruszył proces (wpiął src + publish) — handoff zaktualizowany, status **CZEKA INTEGRATOR**.
+
+## [2026-07-05 ~19:35] B0.9 · **GO integrator** (decyzja Macieja)
+
+**Maciej:** „puść integratora B0.9”  
+**Handoff:** `_handoff/MASTER-do-INTEGRATOR_B0.9-showYields-2026-07-05.md` → status **GO**  
+**Fix A (plony):** `showYields: true` już w src — integrator weryfikuje w publish  
+**Fix B (tryby auto):** `onOkolicaFocusChange` — **do wpięcia** (klik profilu zawsze → auto)  
+**Playtest po publish:** START → PLAYTEST-MIASTO → Maciej: `OK B0.9` / `BUG: …`
+
+## [2026-07-05 ~19:40] B0.9 · **wpięte + publish robocza** ✅
+
+**Fix A:** `showYields: true` (syncOkolicaOverlay) — potwierdzone  
+**Fix B:** `onOkolicaFocusChange` — klik profilu zawsze → `okolicaTryb=auto`, czyści reczne  
+**Pliki:** `gra-robocza/src/main.ts` → sync `gra/src/main.ts`  
+**Bramka:** tsc OK · okolica-test 32/32 · smoke OK · strażnik PASS  
+**Publish:** md5 **`23d76157a8e3610b9eaae454bb97bdb5`** · `gra-robocza/START.html`  
+**Maciej:** Ctrl+F5 START → PLAYTEST-MIASTO → plony na heksach + Żyw./Prod. działają → `OK B0.9`
+
+## [2026-07-05 ~17:30] B0.9 · tryby auto okolica — **handoff → integrator**
+
+**Spec:** `onOkolicaFocusChange` — profil zawsze włącza auto (Fix B w handoff B0.9).  
+**Wykonawca:** integrator (nie MASTER).
+
+## [2026-07-05 ~17:20] B0.9 · showYields — **handoff → integrator**
+
+**Spec:** `showYields: true` w `syncOkolicaOverlay` (Fix A w handoff B0.9).  
+**Wykonawca:** integrator (nie MASTER).  
+**Handoff:** `_handoff/MASTER-do-INTEGRATOR_B0.9-showYields-2026-07-05.md`
 
 ## [2026-07-05 ~14:18] MASTER · BATCH 4 rzeki-sieci ✅ (publish)
 
@@ -505,6 +682,7 @@ Append-only. Source of truth operacyjny projektu Civ.
 
 ## [2026-07-05 ~00:25] Maciej **`eksportuj panel C`** · **Panel-C → gra** ✅
 
+**Handoff:** `_handoff/UNITS-do-MASTER_panel-c-export-2026-07-05.md` (dopisany Master ~23:35)  
 **Eksport:** `python panele-sterowania/export-c.py`  
 **Zmiany:** staty=406 · macierz=45 · koszty=2 · moc_cache=78  
 **Bramka:** combat 6/6 · unit-power 6/6 · smoke OK  

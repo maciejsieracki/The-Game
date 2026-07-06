@@ -1,0 +1,806 @@
+﻿{
+    "watchCount":  133,
+    "intervalSeconds":  900,
+    "grupa":  "F",
+    "files":  {
+                  "dyspozycje/_handoff/EKONOMIA-do-INTEGRATOR_p-c2-def-a.md":  {
+                                                                                   "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\EKONOMIA-do-INTEGRATOR_p-c2-def-a.md",
+                                                                                   "mtime":  "2026-06-30T22:48:55.9577450Z",
+                                                                                   "flags":  "HANDOFF",
+                                                                                   "length":  2148
+                                                                               },
+                  "dyspozycje/_handoff/CYWILIZACJE-do-SILNIK_excel-5A-2A-export.md":  {
+                                                                                          "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\CYWILIZACJE-do-SILNIK_excel-5A-2A-export.md",
+                                                                                          "mtime":  "2026-06-30T14:39:38.9818405Z",
+                                                                                          "flags":  "HANDOFF",
+                                                                                          "length":  1588
+                                                                                      },
+                  "dyspozycje/_handoff/C-do-INTEGRATOR_panel-C.md":  {
+                                                                         "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\C-do-INTEGRATOR_panel-C.md",
+                                                                         "mtime":  "2026-06-30T14:39:38.9813406Z",
+                                                                         "flags":  "HANDOFF",
+                                                                         "length":  1557
+                                                                     },
+                  "dyspozycje/_handoff/EKONOMIA+UI-do-SILNIK_raport-spieprzenia-2026-06-29.md":  {
+                                                                                                     "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\EKONOMIA+UI-do-SILNIK_raport-spieprzenia-2026-06-29.md",
+                                                                                                     "mtime":  "2026-06-28T11:06:15.6749406Z",
+                                                                                                     "flags":  "",
+                                                                                                     "length":  9131
+                                                                                                 },
+                  "dyspozycje/_handoff/MASTER-do-INTEGRATOR_D-sojusz-v12-2026-07-01.md":  {
+                                                                                              "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-do-INTEGRATOR_D-sojusz-v12-2026-07-01.md",
+                                                                                              "mtime":  "2026-06-30T21:34:54.0367354Z",
+                                                                                              "flags":  "HANDOFF",
+                                                                                              "length":  1931
+                                                                                          },
+                  "dyspozycje/_handoff/MASTER-do-INTEGRATOR_A2-Q5-city-unit-pick.md":  {
+                                                                                           "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-do-INTEGRATOR_A2-Q5-city-unit-pick.md",
+                                                                                           "mtime":  "2026-06-30T14:39:38.6554144Z",
+                                                                                           "flags":  "HANDOFF",
+                                                                                           "length":  1970
+                                                                                       },
+                  "dyspozycje/_handoff/INTEGRATOR-do-OPUS_F-PANEL-ROSTER-v1.md":  {
+                                                                                      "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\INTEGRATOR-do-OPUS_F-PANEL-ROSTER-v1.md",
+                                                                                      "mtime":  "2026-06-30T14:39:38.6554144Z",
+                                                                                      "flags":  "HANDOFF",
+                                                                                      "length":  1466
+                                                                                  },
+                  "dyspozycje/_handoff/MASTER-do-SILNIK_oblezenie-C3-batchy.md":  {
+                                                                                      "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-do-SILNIK_oblezenie-C3-batchy.md",
+                                                                                      "mtime":  "2026-06-30T14:39:38.6348857Z",
+                                                                                      "flags":  "HANDOFF",
+                                                                                      "length":  8560
+                                                                                  },
+                  "dyspozycje/_handoff/F-do-MASTER_E2-PLAYTEST-B2Q5-2026-06-30.md":  {
+                                                                                         "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\F-do-MASTER_E2-PLAYTEST-B2Q5-2026-06-30.md",
+                                                                                         "mtime":  "2026-06-30T18:59:08.0134134Z",
+                                                                                         "flags":  "HANDOFF",
+                                                                                         "length":  1444
+                                                                                     },
+                  "dyspozycje/_handoff/UI-do-INTEGRATOR_preBattle-bonusy-P0-D4.md":  {
+                                                                                         "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\UI-do-INTEGRATOR_preBattle-bonusy-P0-D4.md",
+                                                                                         "mtime":  "2026-06-30T14:39:38.3301486Z",
+                                                                                         "flags":  "HANDOFF",
+                                                                                         "length":  1555
+                                                                                     },
+                  "dyspozycje/_handoff/CYWILIZACJE-do-INTEGRATOR_diplomacy-display-ui-batch.md":  {
+                                                                                                      "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\CYWILIZACJE-do-INTEGRATOR_diplomacy-display-ui-batch.md",
+                                                                                                      "mtime":  "2026-06-30T18:07:40.2838399Z",
+                                                                                                      "flags":  "HANDOFF",
+                                                                                                      "length":  2491
+                                                                                                  },
+                  "dyspozycje/_handoff/MAPA-do-INTEGRATOR_ulepszenia-audit-P1-04.md":  {
+                                                                                           "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MAPA-do-INTEGRATOR_ulepszenia-audit-P1-04.md",
+                                                                                           "mtime":  "2026-06-30T14:39:38.6564177Z",
+                                                                                           "flags":  "HANDOFF",
+                                                                                           "length":  1452
+                                                                                       },
+                  "dyspozycje/_handoff/F-do-MASTER_D4-WYMIANA-PN-2026-06-30.md":  {
+                                                                                      "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\F-do-MASTER_D4-WYMIANA-PN-2026-06-30.md",
+                                                                                      "mtime":  "2026-06-30T22:20:55.6094884Z",
+                                                                                      "flags":  "HANDOFF",
+                                                                                      "length":  3811
+                                                                                  },
+                  "dyspozycje/_handoff/CYWILIZACJE-do-INTEGRATOR_wymiana-pn-zaufanie.md":  {
+                                                                                               "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\CYWILIZACJE-do-INTEGRATOR_wymiana-pn-zaufanie.md",
+                                                                                               "mtime":  "2026-06-30T22:11:24.6631040Z",
+                                                                                               "flags":  "HANDOFF",
+                                                                                               "length":  4832
+                                                                                           },
+                  "dyspozycje/_handoff/EKONOMIA-do-SILNIK_city-sight-zasieg-batch.md":  {
+                                                                                            "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\EKONOMIA-do-SILNIK_city-sight-zasieg-batch.md",
+                                                                                            "mtime":  "2026-06-28T09:01:56.6754184Z",
+                                                                                            "flags":  "HANDOFF",
+                                                                                            "length":  3329
+                                                                                        },
+                  "dyspozycje/_handoff/A-do-INTEGRATOR_A1-Q12-minimap-dblclick.md":  {
+                                                                                         "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\A-do-INTEGRATOR_A1-Q12-minimap-dblclick.md",
+                                                                                         "mtime":  "2026-06-30T19:25:12.4033984Z",
+                                                                                         "flags":  "HANDOFF",
+                                                                                         "length":  1956
+                                                                                     },
+                  "dyspozycje/_handoff/MASTER-do-SILNIK_E1-jakosc-preset-bundle.md":  {
+                                                                                          "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-do-SILNIK_E1-jakosc-preset-bundle.md",
+                                                                                          "mtime":  "2026-06-28T10:30:30.1747773Z",
+                                                                                          "flags":  "HANDOFF",
+                                                                                          "length":  2023
+                                                                                      },
+                  "dyspozycje/_handoff/F-do-MASTER_D-SOJUASZ-v12-2026-07-01.md":  {
+                                                                                      "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\F-do-MASTER_D-SOJUASZ-v12-2026-07-01.md",
+                                                                                      "mtime":  "2026-06-30T21:46:56.7130000Z",
+                                                                                      "flags":  "DYPOZYCJA,HANDOFF",
+                                                                                      "length":  2242
+                                                                                  },
+                  "dyspozycje/_handoff/F-do-MASTER_P5-P6-2026-07-01.md":  {
+                                                                              "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\F-do-MASTER_P5-P6-2026-07-01.md",
+                                                                              "mtime":  "2026-06-30T22:40:41.8226042Z",
+                                                                              "flags":  "HANDOFF",
+                                                                              "length":  2521
+                                                                          },
+                  "dyspozycje/_handoff/F-do-MASTER_C-ODSKOK-FANOUT-2026-07-01.md":  {
+                                                                                        "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\F-do-MASTER_C-ODSKOK-FANOUT-2026-07-01.md",
+                                                                                        "mtime":  "2026-06-30T21:33:05.2838710Z",
+                                                                                        "flags":  "DYPOZYCJA,HANDOFF",
+                                                                                        "length":  1523
+                                                                                    },
+                  "dyspozycje/_handoff/MASTER-do-SILNIK_AUDIT-START-2026-06-28.md":  {
+                                                                                         "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-do-SILNIK_AUDIT-START-2026-06-28.md",
+                                                                                         "mtime":  "2026-06-29T05:56:26.5017134Z",
+                                                                                         "flags":  "HANDOFF",
+                                                                                         "length":  4092
+                                                                                     },
+                  "docs/obieg/INTEGRATOR-kolejka.md":  {
+                                                           "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\docs\\obieg\\INTEGRATOR-kolejka.md",
+                                                           "mtime":  "2026-06-30T23:17:01.2242974Z",
+                                                           "flags":  "DYPOZYCJA",
+                                                           "length":  17107
+                                                       },
+                  "dyspozycje/_handoff/CYWILIZACJE-do-SILNIK_victory-10A.md":  {
+                                                                                   "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\CYWILIZACJE-do-SILNIK_victory-10A.md",
+                                                                                   "mtime":  "2026-06-30T14:39:38.4568513Z",
+                                                                                   "flags":  "HANDOFF",
+                                                                                   "length":  1882
+                                                                               },
+                  "dyspozycje/_handoff/UI-do-INTEGRATOR_E2-kreator-gestosc.md":  {
+                                                                                     "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\UI-do-INTEGRATOR_E2-kreator-gestosc.md",
+                                                                                     "mtime":  "2026-06-30T14:39:38.6353857Z",
+                                                                                     "flags":  "DYPOZYCJA,HANDOFF",
+                                                                                     "length":  1355
+                                                                                 },
+                  "dyspozycje/_handoff/MASTER-do-SILNIK_kanon-zywnosc-hodowla-integracja.md":  {
+                                                                                                   "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-do-SILNIK_kanon-zywnosc-hodowla-integracja.md",
+                                                                                                   "mtime":  "2026-06-30T14:39:38.6554144Z",
+                                                                                                   "flags":  "DYPOZYCJA,HANDOFF",
+                                                                                                   "length":  4513
+                                                                                               },
+                  "dyspozycje/_handoff/MAPA-do-INTEGRATOR_REMIND-START-A.md":  {
+                                                                                   "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MAPA-do-INTEGRATOR_REMIND-START-A.md",
+                                                                                   "mtime":  "2026-06-30T19:14:00.9080391Z",
+                                                                                   "flags":  "HANDOFF",
+                                                                                   "length":  1312
+                                                                               },
+                  "dyspozycje/_handoff/UI-do-SILNIK_v1.1-diplomacy-negocjacje.md":  {
+                                                                                        "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\UI-do-SILNIK_v1.1-diplomacy-negocjacje.md",
+                                                                                        "mtime":  "2026-06-30T14:39:38.3687104Z",
+                                                                                        "flags":  "HANDOFF",
+                                                                                        "length":  2842
+                                                                                    },
+                  "dyspozycje/_handoff/GRUPA-B-do-SILNIK_rozpoznanie-2026-06-29.md":  {
+                                                                                          "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\GRUPA-B-do-SILNIK_rozpoznanie-2026-06-29.md",
+                                                                                          "mtime":  "2026-06-29T05:56:26.7302460Z",
+                                                                                          "flags":  "DYPOZYCJA,HANDOFF",
+                                                                                          "length":  2390
+                                                                                      },
+                  "dyspozycje/_handoff/EKONOMIA+UI-do-SILNIK_B2-porzadek-komplet.md":  {
+                                                                                           "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\EKONOMIA+UI-do-SILNIK_B2-porzadek-komplet.md",
+                                                                                           "mtime":  "2026-06-29T05:56:26.5087131Z",
+                                                                                           "flags":  "HANDOFF",
+                                                                                           "length":  5246
+                                                                                       },
+                  "docs/obieg/SLACK-OUTBOX-A-R7-2026-07-01.md":  {
+                                                                     "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\docs\\obieg\\SLACK-OUTBOX-A-R7-2026-07-01.md",
+                                                                     "mtime":  "2026-06-30T23:17:31.0913698Z",
+                                                                     "flags":  "HANDOFF",
+                                                                     "length":  1329
+                                                                 },
+                  "dyspozycje/_handoff/SILNIK-do-MASTER_D-START-klaster.md":  {
+                                                                                  "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\SILNIK-do-MASTER_D-START-klaster.md",
+                                                                                  "mtime":  "2026-06-30T14:39:38.9808410Z",
+                                                                                  "flags":  "HANDOFF",
+                                                                                  "length":  2531
+                                                                              },
+                  "dyspozycje/_handoff/EKONOMIA+UI-do-SILNIK_PILNE-luki-2026-06-27.md":  {
+                                                                                             "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\EKONOMIA+UI-do-SILNIK_PILNE-luki-2026-06-27.md",
+                                                                                             "mtime":  "2026-06-29T05:56:26.5162181Z",
+                                                                                             "flags":  "HANDOFF",
+                                                                                             "length":  4546
+                                                                                         },
+                  "dyspozycje/_handoff/A-do-INTEGRATOR_A-R7-rebuild-kanon-2026-07-01.md":  {
+                                                                                               "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\A-do-INTEGRATOR_A-R7-rebuild-kanon-2026-07-01.md",
+                                                                                               "mtime":  "2026-06-30T23:16:22.3674084Z",
+                                                                                               "flags":  "HANDOFF",
+                                                                                               "length":  1685
+                                                                                           },
+                  "dyspozycje/_handoff/CYWILIZACJE-do-SILNIK_status-audit-2026-06-28.md":  {
+                                                                                               "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\CYWILIZACJE-do-SILNIK_status-audit-2026-06-28.md",
+                                                                                               "mtime":  "2026-06-30T14:39:38.4548434Z",
+                                                                                               "flags":  "HANDOFF",
+                                                                                               "length":  4707
+                                                                                           },
+                  "dyspozycje/_handoff/UNITS-do-INTEGRATOR_map-units-typeId-P1.md":  {
+                                                                                         "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\UNITS-do-INTEGRATOR_map-units-typeId-P1.md",
+                                                                                         "mtime":  "2026-06-30T14:39:38.9117344Z",
+                                                                                         "flags":  "HANDOFF",
+                                                                                         "length":  1417
+                                                                                     },
+                  "dyspozycje/_handoff/UI+UNITS+SILNIK-do-INTEGRATOR_C3-oblezenie-szturm-2026-06-30.md":  {
+                                                                                                              "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\UI+UNITS+SILNIK-do-INTEGRATOR_C3-oblezenie-szturm-2026-06-30.md",
+                                                                                                              "mtime":  "2026-06-30T14:39:38.6343802Z",
+                                                                                                              "flags":  "HANDOFF",
+                                                                                                              "length":  4034
+                                                                                                          },
+                  "dyspozycje/_handoff/C-do-INTEGRATOR_rebuild-playtest-2026-07-01.md":  {
+                                                                                             "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\C-do-INTEGRATOR_rebuild-playtest-2026-07-01.md",
+                                                                                             "mtime":  "2026-06-30T20:24:37.1609473Z",
+                                                                                             "flags":  "HANDOFF",
+                                                                                             "length":  1810
+                                                                                         },
+                  "dyspozycje/_handoff/CYWILIZACJE-do-SILNIK_F-GRUPA-D-P0-integracja.md":  {
+                                                                                               "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\CYWILIZACJE-do-SILNIK_F-GRUPA-D-P0-integracja.md",
+                                                                                               "mtime":  "2026-06-30T14:39:38.6348857Z",
+                                                                                               "flags":  "HANDOFF",
+                                                                                               "length":  3707
+                                                                                           },
+                  "dyspozycje/_handoff/MASTER-do-SILNIK_podzial-pracy-balance.md":  {
+                                                                                        "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-do-SILNIK_podzial-pracy-balance.md",
+                                                                                        "mtime":  "2026-06-30T14:39:38.4553432Z",
+                                                                                        "flags":  "HANDOFF",
+                                                                                        "length":  3288
+                                                                                    },
+                  "dyspozycje/_handoff/UNITS-do-SILNIK_unit-power-moc.md":  {
+                                                                                "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\UNITS-do-SILNIK_unit-power-moc.md",
+                                                                                "mtime":  "2026-06-30T14:39:38.4573512Z",
+                                                                                "flags":  "HANDOFF",
+                                                                                "length":  3777
+                                                                            },
+                  "dyspozycje/_handoff/EKONOMIA-do-SILNIK_B5-empire-food.md":  {
+                                                                                   "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\EKONOMIA-do-SILNIK_B5-empire-food.md",
+                                                                                   "mtime":  "2026-06-28T09:45:43.9152354Z",
+                                                                                   "flags":  "HANDOFF",
+                                                                                   "length":  1673
+                                                                               },
+                  "dyspozycje/_handoff/MASTER-do-INTEGRATOR_B5-spichlerz-SP-followup-2026-07-01.md":  {
+                                                                                                          "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-do-INTEGRATOR_B5-spichlerz-SP-followup-2026-07-01.md",
+                                                                                                          "mtime":  "2026-06-30T22:41:01.5890998Z",
+                                                                                                          "flags":  "HANDOFF",
+                                                                                                          "length":  1413
+                                                                                                      },
+                  "dyspozycje/_handoff/CYWILIZACJE-do-INTEGRATOR_militaryRatio-army-m.md":  {
+                                                                                                "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\CYWILIZACJE-do-INTEGRATOR_militaryRatio-army-m.md",
+                                                                                                "mtime":  "2026-06-30T14:39:38.2710653Z",
+                                                                                                "flags":  "HANDOFF",
+                                                                                                "length":  2089
+                                                                                            },
+                  "dyspozycje/_handoff/UNITS-do-SILNIK_milicja-szturm.md":  {
+                                                                                "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\UNITS-do-SILNIK_milicja-szturm.md",
+                                                                                "mtime":  "2026-06-30T14:39:38.6353857Z",
+                                                                                "flags":  "HANDOFF",
+                                                                                "length":  937
+                                                                            },
+                  "dyspozycje/_handoff/MIASTO-do-SILNIK_integracja.md":  {
+                                                                             "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MIASTO-do-SILNIK_integracja.md",
+                                                                             "mtime":  "2026-06-23T06:31:08.3295559Z",
+                                                                             "flags":  "HANDOFF",
+                                                                             "length":  9368
+                                                                         },
+                  "dyspozycje/_handoff/UNITS-do-SILNIK_EKSPORT-TW-v3-super-2026-06-30.md":  {
+                                                                                                "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\UNITS-do-SILNIK_EKSPORT-TW-v3-super-2026-06-30.md",
+                                                                                                "mtime":  "2026-06-30T14:39:38.6313755Z",
+                                                                                                "flags":  "HANDOFF",
+                                                                                                "length":  6039
+                                                                                            },
+                  "dyspozycje/_handoff/MAPA-do-SILNIK_mgla-miasto-minimapa.md":  {
+                                                                                     "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MAPA-do-SILNIK_mgla-miasto-minimapa.md",
+                                                                                     "mtime":  "2026-06-30T14:39:38.2440266Z",
+                                                                                     "flags":  "HANDOFF",
+                                                                                     "length":  1897
+                                                                                 },
+                  "dyspozycje/_handoff/EKONOMIA-do-SILNIK_tartak-drewno-access.md":  {
+                                                                                         "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\EKONOMIA-do-SILNIK_tartak-drewno-access.md",
+                                                                                         "mtime":  "2026-06-28T12:45:05.8073512Z",
+                                                                                         "flags":  "HANDOFF",
+                                                                                         "length":  1386
+                                                                                     },
+                  "dyspozycje/_handoff/MASTER-do-SILNIK_SIL-INT-batch-2026-06-27.md":  {
+                                                                                           "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-do-SILNIK_SIL-INT-batch-2026-06-27.md",
+                                                                                           "mtime":  "2026-06-30T14:39:38.6353857Z",
+                                                                                           "flags":  "DYPOZYCJA,HANDOFF",
+                                                                                           "length":  1722
+                                                                                       },
+                  "dyspozycje/_handoff/UI-do-INTEGRATOR_E1-epoka-przed-cyw.md":  {
+                                                                                     "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\UI-do-INTEGRATOR_E1-epoka-przed-cyw.md",
+                                                                                     "mtime":  "2026-06-30T14:39:38.9813406Z",
+                                                                                     "flags":  "HANDOFF",
+                                                                                     "length":  1264
+                                                                                 },
+                  "dyspozycje/_handoff/CYWILIZACJE-do-SILNIK_v1.1-traktaty-save-load.md":  {
+                                                                                               "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\CYWILIZACJE-do-SILNIK_v1.1-traktaty-save-load.md",
+                                                                                               "mtime":  "2026-06-30T14:39:38.4232879Z",
+                                                                                               "flags":  "HANDOFF",
+                                                                                               "length":  2234
+                                                                                           },
+                  "dyspozycje/_handoff/CYWILIZACJE-do-SILNIK_barbarians-11C.md":  {
+                                                                                      "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\CYWILIZACJE-do-SILNIK_barbarians-11C.md",
+                                                                                      "mtime":  "2026-06-30T14:39:38.4553432Z",
+                                                                                      "flags":  "HANDOFF",
+                                                                                      "length":  1684
+                                                                                  },
+                  "dyspozycje/_handoff/UNITS-do-SILNIK_AI-siege-3poziomy.md":  {
+                                                                                   "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\UNITS-do-SILNIK_AI-siege-3poziomy.md",
+                                                                                   "mtime":  "2026-06-30T14:39:38.2440266Z",
+                                                                                   "flags":  "HANDOFF",
+                                                                                   "length":  4246
+                                                                               },
+                  "dyspozycje/_handoff/CYWILIZACJE-do-SILNIK_roster-15-enum.md":  {
+                                                                                      "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\CYWILIZACJE-do-SILNIK_roster-15-enum.md",
+                                                                                      "mtime":  "2026-06-30T14:39:38.6353857Z",
+                                                                                      "flags":  "HANDOFF",
+                                                                                      "length":  2375
+                                                                                  },
+                  "dyspozycje/_handoff/MASTER-do-SILNIK_handoff-test-sesja-2026-06-28.md":  {
+                                                                                                "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-do-SILNIK_handoff-test-sesja-2026-06-28.md",
+                                                                                                "mtime":  "2026-06-30T14:39:38.8972143Z",
+                                                                                                "flags":  "DYPOZYCJA,HANDOFF",
+                                                                                                "length":  3724
+                                                                                            },
+                  "dyspozycje/_handoff/EKONOMIA-do-SILNIK-upkeep.md":  {
+                                                                           "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\EKONOMIA-do-SILNIK-upkeep.md",
+                                                                           "mtime":  "2026-06-24T20:11:24.5980683Z",
+                                                                           "flags":  "HANDOFF",
+                                                                           "length":  5171
+                                                                       },
+                  "dyspozycje/_handoff/MASTER-do-INTEGRATOR_A-P4-UI-2026-07-01.md":  {
+                                                                                         "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-do-INTEGRATOR_A-P4-UI-2026-07-01.md",
+                                                                                         "mtime":  "2026-06-30T21:34:55.1504132Z",
+                                                                                         "flags":  "HANDOFF",
+                                                                                         "length":  1497
+                                                                                     },
+                  "dyspozycje/_handoff/INTEGRATOR-do-CYWILIZACJE_unit-power-m-wpięte.md":  {
+                                                                                               "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\INTEGRATOR-do-CYWILIZACJE_unit-power-m-wpięte.md",
+                                                                                               "mtime":  "2026-06-30T14:39:38.9818405Z",
+                                                                                               "flags":  "",
+                                                                                               "length":  5209
+                                                                                           },
+                  "dyspozycje/_handoff/MASTER-do-INTEGRATOR_E1-F-CITY-HEX-batch.md":  {
+                                                                                          "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-do-INTEGRATOR_E1-F-CITY-HEX-batch.md",
+                                                                                          "mtime":  "2026-06-30T14:39:38.4232879Z",
+                                                                                          "flags":  "DYPOZYCJA,HANDOFF",
+                                                                                          "length":  4942
+                                                                                      },
+                  "docs/obieg/SLACK-OUTBOX-A-2026-07-01.md":  {
+                                                                  "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\docs\\obieg\\SLACK-OUTBOX-A-2026-07-01.md",
+                                                                  "mtime":  "2026-06-30T22:42:55.6738506Z",
+                                                                  "flags":  "HANDOFF",
+                                                                  "length":  1212
+                                                              },
+                  "dyspozycje/_handoff/EKONOMIA-do-SILNIK_v1.1-diplomacy-tick.md":  {
+                                                                                        "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\EKONOMIA-do-SILNIK_v1.1-diplomacy-tick.md",
+                                                                                        "mtime":  "2026-06-30T14:39:38.6353857Z",
+                                                                                        "flags":  "HANDOFF",
+                                                                                        "length":  2059
+                                                                                    },
+                  "dyspozycje/_handoff/CYWILIZACJE-do-INTEGRATOR_diplomacy-power-ready.md":  {
+                                                                                                 "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\CYWILIZACJE-do-INTEGRATOR_diplomacy-power-ready.md",
+                                                                                                 "mtime":  "2026-06-30T14:39:38.9803406Z",
+                                                                                                 "flags":  "HANDOFF",
+                                                                                                 "length":  1390
+                                                                                             },
+                  "dyspozycje/_handoff/CYWILIZACJE-do-SILNIK_bonusy-D4-Q3.md":  {
+                                                                                    "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\CYWILIZACJE-do-SILNIK_bonusy-D4-Q3.md",
+                                                                                    "mtime":  "2026-06-30T14:39:38.4142733Z",
+                                                                                    "flags":  "HANDOFF",
+                                                                                    "length":  2168
+                                                                                },
+                  "dyspozycje/_handoff/CYWILIZACJE-do-INTEGRATOR_P5-P6-dyplomacja.md":  {
+                                                                                            "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\CYWILIZACJE-do-INTEGRATOR_P5-P6-dyplomacja.md",
+                                                                                            "mtime":  "2026-06-30T22:35:18.3581086Z",
+                                                                                            "flags":  "HANDOFF",
+                                                                                            "length":  4672
+                                                                                        },
+                  "dyspozycje/_handoff/F-do-MASTER_B-B5-SPICHLERZ-2026-07-01.md":  {
+                                                                                       "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\F-do-MASTER_B-B5-SPICHLERZ-2026-07-01.md",
+                                                                                       "mtime":  "2026-06-30T21:51:23.5696471Z",
+                                                                                       "flags":  "DYPOZYCJA,HANDOFF",
+                                                                                       "length":  2716
+                                                                                   },
+                  "dyspozycje/_handoff/MAPA-do-INTEGRATOR_zloza-epoki-E-P0.md":  {
+                                                                                     "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MAPA-do-INTEGRATOR_zloza-epoki-E-P0.md",
+                                                                                     "mtime":  "2026-06-30T14:39:38.4568513Z",
+                                                                                     "flags":  "HANDOFF",
+                                                                                     "length":  1755
+                                                                                 },
+                  "dyspozycje/_handoff/MAPA-do-INTEGRATOR_map-gen-params.md":  {
+                                                                                   "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MAPA-do-INTEGRATOR_map-gen-params.md",
+                                                                                   "mtime":  "2026-06-30T14:39:38.6353857Z",
+                                                                                   "flags":  "HANDOFF",
+                                                                                   "length":  2064
+                                                                               },
+                  "dyspozycje/_handoff/MAPA-do-SILNIK_spawn-obcy-klaster.md":  {
+                                                                                   "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MAPA-do-SILNIK_spawn-obcy-klaster.md",
+                                                                                   "mtime":  "2026-06-30T14:39:38.3021051Z",
+                                                                                   "flags":  "HANDOFF",
+                                                                                   "length":  4643
+                                                                               },
+                  "docs/obieg/SLACK-OUTBOX-MASTER-2026-07-01.md":  {
+                                                                       "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\docs\\obieg\\SLACK-OUTBOX-MASTER-2026-07-01.md",
+                                                                       "mtime":  "2026-06-30T22:47:13.5863652Z",
+                                                                       "flags":  "DYPOZYCJA,HANDOFF",
+                                                                       "length":  1868
+                                                                   },
+                  "dyspozycje/_handoff/MAPA-do-SILNIK_kanon-zywnosc-hodowla.md":  {
+                                                                                      "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MAPA-do-SILNIK_kanon-zywnosc-hodowla.md",
+                                                                                      "mtime":  "2026-06-30T14:39:38.3296481Z",
+                                                                                      "flags":  "DYPOZYCJA,HANDOFF",
+                                                                                      "length":  2738
+                                                                                  },
+                  "dyspozycje/_handoff/EKONOMIA-do-INTEGRATOR_kanon-zywnosc-hodowla.md":  {
+                                                                                              "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\EKONOMIA-do-INTEGRATOR_kanon-zywnosc-hodowla.md",
+                                                                                              "mtime":  "2026-06-29T05:56:26.8927634Z",
+                                                                                              "flags":  "DYPOZYCJA,HANDOFF",
+                                                                                              "length":  2718
+                                                                                          },
+                  "dyspozycje/_handoff/MAPA-do-INTEGRATOR_E1-jakosc-las-parity.md":  {
+                                                                                         "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MAPA-do-INTEGRATOR_E1-jakosc-las-parity.md",
+                                                                                         "mtime":  "2026-06-30T14:39:38.9813406Z",
+                                                                                         "flags":  "DYPOZYCJA,HANDOFF",
+                                                                                         "length":  1371
+                                                                                     },
+                  "docs/obieg/REJESTR-DECYZJI.md":  {
+                                                        "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\docs\\obieg\\REJESTR-DECYZJI.md",
+                                                        "mtime":  "2026-06-30T23:19:54.8956313Z",
+                                                        "flags":  "DYPOZYCJA,HANDOFF",
+                                                        "length":  14822
+                                                    },
+                  "dyspozycje/_handoff/UNITS-do-SILNIK_C4-balans-macierz.md":  {
+                                                                                   "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\UNITS-do-SILNIK_C4-balans-macierz.md",
+                                                                                   "mtime":  "2026-06-30T14:39:38.9142355Z",
+                                                                                   "flags":  "HANDOFF",
+                                                                                   "length":  2154
+                                                                               },
+                  "dyspozycje/_handoff/EKONOMIA+UI-do-SILNIK_B2-society-pct-batch.md":  {
+                                                                                            "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\EKONOMIA+UI-do-SILNIK_B2-society-pct-batch.md",
+                                                                                            "mtime":  "2026-06-28T09:01:56.6549136Z",
+                                                                                            "flags":  "HANDOFF",
+                                                                                            "length":  5892
+                                                                                        },
+                  "dyspozycje/_handoff/MAPA+EKONOMIA-do-SILNIK_wyrab-tartak-tech.md":  {
+                                                                                           "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MAPA+EKONOMIA-do-SILNIK_wyrab-tartak-tech.md",
+                                                                                           "mtime":  "2026-06-29T05:56:26.3831953Z",
+                                                                                           "flags":  "HANDOFF",
+                                                                                           "length":  5582
+                                                                                       },
+                  "dyspozycje/_handoff/C1-do-SILNIK_batch-test.md":  {
+                                                                         "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\C1-do-SILNIK_batch-test.md",
+                                                                         "mtime":  "2026-06-28T09:01:56.6629132Z",
+                                                                         "flags":  "HANDOFF",
+                                                                         "length":  2808
+                                                                     },
+                  "dyspozycje/_handoff/MASTER-do-INTEGRATOR_P5-P6-dyplomacja-2026-07-01.md":  {
+                                                                                                  "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-do-INTEGRATOR_P5-P6-dyplomacja-2026-07-01.md",
+                                                                                                  "mtime":  "2026-06-30T22:33:53.9429772Z",
+                                                                                                  "flags":  "HANDOFF",
+                                                                                                  "length":  1481
+                                                                                              },
+                  "dyspozycje/_handoff/MASTER-do-SILNIK_batch-potwierdzone-2026-06-27.md":  {
+                                                                                                "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-do-SILNIK_batch-potwierdzone-2026-06-27.md",
+                                                                                                "mtime":  "2026-06-30T14:39:38.9808410Z",
+                                                                                                "flags":  "DYPOZYCJA,HANDOFF",
+                                                                                                "length":  2805
+                                                                                            },
+                  "dyspozycje/_handoff/CYWILIZACJE-do-SILNIK_dyplomacja-kontakty-D3Q2.md":  {
+                                                                                                "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\CYWILIZACJE-do-SILNIK_dyplomacja-kontakty-D3Q2.md",
+                                                                                                "mtime":  "2026-06-30T14:39:38.4563464Z",
+                                                                                                "flags":  "HANDOFF",
+                                                                                                "length":  1990
+                                                                                            },
+                  "dyspozycje/_handoff/MASTER-do-SILNIK_F-city-hex-czysty.md":  {
+                                                                                    "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-do-SILNIK_F-city-hex-czysty.md",
+                                                                                    "mtime":  "2026-06-30T14:39:38.9803406Z",
+                                                                                    "flags":  "HANDOFF",
+                                                                                    "length":  1481
+                                                                                },
+                  "dyspozycje/_handoff/F-do-MASTER_oblezenie-C3-silnik.md":  {
+                                                                                 "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\F-do-MASTER_oblezenie-C3-silnik.md",
+                                                                                 "mtime":  "2026-06-28T09:01:56.6644128Z",
+                                                                                 "flags":  "HANDOFF",
+                                                                                 "length":  2255
+                                                                             },
+                  "dyspozycje/_handoff/CYWILIZACJE-do-SILNIK_diplomacy-display-v2.md":  {
+                                                                                            "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\CYWILIZACJE-do-SILNIK_diplomacy-display-v2.md",
+                                                                                            "mtime":  "2026-06-30T14:39:38.2710653Z",
+                                                                                            "flags":  "HANDOFF",
+                                                                                            "length":  1334
+                                                                                        },
+                  "dyspozycje/_handoff/EKONOMIA-do-SILNIK-economy-edits.md":  {
+                                                                                  "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\EKONOMIA-do-SILNIK-economy-edits.md",
+                                                                                  "mtime":  "2026-06-22T22:46:19.1530235Z",
+                                                                                  "flags":  "HANDOFF",
+                                                                                  "length":  3001
+                                                                              },
+                  "docs/obieg/SLACK-OUTBOX-P5-P6-2026-07-01.md":  {
+                                                                      "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\docs\\obieg\\SLACK-OUTBOX-P5-P6-2026-07-01.md",
+                                                                      "mtime":  "2026-06-30T22:47:09.5684256Z",
+                                                                      "flags":  "DYPOZYCJA,HANDOFF",
+                                                                      "length":  2806
+                                                                  },
+                  "dyspozycje/_handoff/F-do-SILNIK_ui-flow-kanon.md":  {
+                                                                           "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\F-do-SILNIK_ui-flow-kanon.md",
+                                                                           "mtime":  "2026-06-28T09:01:56.4553977Z",
+                                                                           "flags":  "HANDOFF",
+                                                                           "length":  2180
+                                                                       },
+                  "dyspozycje/_handoff/MASTER-do-SILNIK_ROUTING-MASTER-WORK-2026-06-28.md":  {
+                                                                                                 "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-do-SILNIK_ROUTING-MASTER-WORK-2026-06-28.md",
+                                                                                                 "mtime":  "2026-06-30T14:39:38.6343802Z",
+                                                                                                 "flags":  "DYPOZYCJA",
+                                                                                                 "length":  4619
+                                                                                             },
+                  "dyspozycje/_handoff/MASTER-do-SILNIK_backlog-pilne-2026-06-27.md":  {
+                                                                                           "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-do-SILNIK_backlog-pilne-2026-06-27.md",
+                                                                                           "mtime":  "2026-06-30T14:39:38.4568513Z",
+                                                                                           "flags":  "DYPOZYCJA,HANDOFF",
+                                                                                           "length":  3437
+                                                                                       },
+                  "dyspozycje/_handoff/UI-do-SILNIK_E1-jakosc-bundle-params.md":  {
+                                                                                      "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\UI-do-SILNIK_E1-jakosc-bundle-params.md",
+                                                                                      "mtime":  "2026-06-30T14:39:38.2695659Z",
+                                                                                      "flags":  "HANDOFF",
+                                                                                      "length":  1506
+                                                                                  },
+                  "dyspozycje/_handoff/EKONOMIA-do-INTEGRATOR_moc-v1-GOTOWE.md":  {
+                                                                                      "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\EKONOMIA-do-INTEGRATOR_moc-v1-GOTOWE.md",
+                                                                                      "mtime":  "2026-06-30T14:39:38.6353857Z",
+                                                                                      "flags":  "HANDOFF",
+                                                                                      "length":  5696
+                                                                                  },
+                  "dyspozycje/_handoff/EKONOMIA-do-INTEGRATOR_power-manpower-v2.md":  {
+                                                                                          "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\EKONOMIA-do-INTEGRATOR_power-manpower-v2.md",
+                                                                                          "mtime":  "2026-06-30T14:39:38.9793405Z",
+                                                                                          "flags":  "HANDOFF",
+                                                                                          "length":  6524
+                                                                                      },
+                  "dyspozycje/_handoff/CYWILIZACJE-do-SILNIK_bonusy-display-wire.md":  {
+                                                                                           "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\CYWILIZACJE-do-SILNIK_bonusy-display-wire.md",
+                                                                                           "mtime":  "2026-06-30T14:39:38.8982192Z",
+                                                                                           "flags":  "HANDOFF",
+                                                                                           "length":  2001
+                                                                                       },
+                  "docs/obieg/SLACK-OUTBOX-D-2026-06-30.md":  {
+                                                                  "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\docs\\obieg\\SLACK-OUTBOX-D-2026-06-30.md",
+                                                                  "mtime":  "2026-06-30T18:57:59.7621188Z",
+                                                                  "flags":  "HANDOFF",
+                                                                  "length":  954
+                                                              },
+                  "dyspozycje/_handoff/MAPA-do-INTEGRATOR_oboz-3D-OBL-S6.md":  {
+                                                                                   "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MAPA-do-INTEGRATOR_oboz-3D-OBL-S6.md",
+                                                                                   "mtime":  "2026-06-30T14:39:38.9798405Z",
+                                                                                   "flags":  "HANDOFF",
+                                                                                   "length":  1615
+                                                                               },
+                  "dyspozycje/_handoff/MAPA-do-INTEGRATOR_hodowla-zloze-SILNIK.md":  {
+                                                                                         "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MAPA-do-INTEGRATOR_hodowla-zloze-SILNIK.md",
+                                                                                         "mtime":  "2026-06-30T14:39:38.2555345Z",
+                                                                                         "flags":  "HANDOFF",
+                                                                                         "length":  4066
+                                                                                     },
+                  "dyspozycje/_handoff/E-do-SILNIK_wpiecie-grywalne.md":  {
+                                                                              "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\E-do-SILNIK_wpiecie-grywalne.md",
+                                                                              "mtime":  "2026-06-30T14:39:38.9808410Z",
+                                                                              "flags":  "DYPOZYCJA,HANDOFF",
+                                                                              "length":  4917
+                                                                          },
+                  "docs/obieg/SLACK-OUTBOX-F-2026-07-01.md":  {
+                                                                  "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\docs\\obieg\\SLACK-OUTBOX-F-2026-07-01.md",
+                                                                  "mtime":  "2026-06-30T21:33:08.4023503Z",
+                                                                  "flags":  "HANDOFF",
+                                                                  "length":  762
+                                                              },
+                  "dyspozycje/_handoff/MAPA-do-SILNIK_E2-world-opts.md":  {
+                                                                              "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MAPA-do-SILNIK_E2-world-opts.md",
+                                                                              "mtime":  "2026-06-30T14:39:38.9818405Z",
+                                                                              "flags":  "HANDOFF",
+                                                                              "length":  826
+                                                                          },
+                  "docs/obieg/MASTER-WATCH.md":  {
+                                                     "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\docs\\obieg\\MASTER-WATCH.md",
+                                                     "mtime":  "2026-06-30T22:46:53.8173528Z",
+                                                     "flags":  "DYPOZYCJA,HANDOFF",
+                                                     "length":  8289
+                                                 },
+                  "dyspozycje/_handoff/EKONOMIA-do-SILNIK_kanon-zywnosc-hodowla.md":  {
+                                                                                          "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\EKONOMIA-do-SILNIK_kanon-zywnosc-hodowla.md",
+                                                                                          "mtime":  "2026-06-29T05:56:26.7307453Z",
+                                                                                          "flags":  "HANDOFF",
+                                                                                          "length":  3034
+                                                                                      },
+                  "dyspozycje/_handoff/UI-MAPA-do-SILNIK_D1B-A4-batch.md":  {
+                                                                                "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\UI-MAPA-do-SILNIK_D1B-A4-batch.md",
+                                                                                "mtime":  "2026-06-28T09:01:56.4558978Z",
+                                                                                "flags":  "",
+                                                                                "length":  3686
+                                                                            },
+                  "dyspozycje/INTEGRATOR-STAN.md":  {
+                                                        "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\INTEGRATOR-STAN.md",
+                                                        "mtime":  "2026-06-30T22:41:23.0478286Z",
+                                                        "flags":  "HANDOFF",
+                                                        "length":  367
+                                                    },
+                  "dyspozycje/_handoff/SILNIK-handover-do-MASTER_2026-06-24.md":  {
+                                                                                      "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\SILNIK-handover-do-MASTER_2026-06-24.md",
+                                                                                      "mtime":  "2026-06-24T20:11:25.3916881Z",
+                                                                                      "flags":  "HANDOFF",
+                                                                                      "length":  7417
+                                                                                  },
+                  "dyspozycje/_handoff/GRUPA-C-do-SILNIK_oblezenie-mapy-kanon.md":  {
+                                                                                        "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\GRUPA-C-do-SILNIK_oblezenie-mapy-kanon.md",
+                                                                                        "mtime":  "2026-06-28T09:01:56.6574135Z",
+                                                                                        "flags":  "HANDOFF",
+                                                                                        "length":  5326
+                                                                                    },
+                  "dyspozycje/_handoff/MASTER-do-INTEGRATOR_B-B5-spichlerz-2026-07-01.md":  {
+                                                                                                "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-do-INTEGRATOR_B-B5-spichlerz-2026-07-01.md",
+                                                                                                "mtime":  "2026-06-30T21:34:55.2809249Z",
+                                                                                                "flags":  "HANDOFF",
+                                                                                                "length":  1634
+                                                                                            },
+                  "dyspozycje/_handoff/MASTER-do-SILNIK_C3-reguly-szturm-obrona.md":  {
+                                                                                          "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-do-SILNIK_C3-reguly-szturm-obrona.md",
+                                                                                          "mtime":  "2026-06-30T14:39:38.6353857Z",
+                                                                                          "flags":  "HANDOFF",
+                                                                                          "length":  2968
+                                                                                      },
+                  "dyspozycje/_handoff/EKONOMIA+MAPA-do-SILNIK_B1-tech-sync-2026-06-29.md":  {
+                                                                                                 "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\EKONOMIA+MAPA-do-SILNIK_B1-tech-sync-2026-06-29.md",
+                                                                                                 "mtime":  "2026-06-28T09:40:23.8235005Z",
+                                                                                                 "flags":  "HANDOFF",
+                                                                                                 "length":  3285
+                                                                                             },
+                  "dyspozycje/_handoff/MAPA-do-SILNIK_B2-Q5-bunt-hex.md":  {
+                                                                               "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MAPA-do-SILNIK_B2-Q5-bunt-hex.md",
+                                                                               "mtime":  "2026-06-30T14:39:38.6554144Z",
+                                                                               "flags":  "HANDOFF",
+                                                                               "length":  1549
+                                                                           },
+                  "dyspozycje/_handoff/F-do-MASTER_A-P4-UI-2026-07-01.md":  {
+                                                                                "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\F-do-MASTER_A-P4-UI-2026-07-01.md",
+                                                                                "mtime":  "2026-06-30T21:49:14.0815876Z",
+                                                                                "flags":  "DYPOZYCJA,HANDOFF",
+                                                                                "length":  2435
+                                                                            },
+                  "dyspozycje/_handoff/MASTER-do-GRUPA-F_executor-only-2026-06-30.md":  {
+                                                                                            "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-do-GRUPA-F_executor-only-2026-06-30.md",
+                                                                                            "mtime":  "2026-06-30T18:08:49.1856669Z",
+                                                                                            "flags":  "HANDOFF",
+                                                                                            "length":  1611
+                                                                                        },
+                  "dyspozycje/_handoff/EKONOMIA+UI+CYW-do-SILNIK_v1.1-diplomacy-batch.md":  {
+                                                                                                "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\EKONOMIA+UI+CYW-do-SILNIK_v1.1-diplomacy-batch.md",
+                                                                                                "mtime":  "2026-06-30T14:39:38.2715667Z",
+                                                                                                "flags":  "HANDOFF",
+                                                                                                "length":  2023
+                                                                                            },
+                  "dyspozycje/_handoff/CYWILIZACJE-do-SILNIK_E1-roster-startowy.md":  {
+                                                                                          "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\CYWILIZACJE-do-SILNIK_E1-roster-startowy.md",
+                                                                                          "mtime":  "2026-06-28T09:01:56.6549136Z",
+                                                                                          "flags":  "HANDOFF",
+                                                                                          "length":  1361
+                                                                                      },
+                  "docs/obieg/SLACK-OUTBOX-GRUPA-B-2026-07-01.md":  {
+                                                                        "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\docs\\obieg\\SLACK-OUTBOX-GRUPA-B-2026-07-01.md",
+                                                                        "mtime":  "2026-06-30T22:41:59.2656109Z",
+                                                                        "flags":  "HANDOFF",
+                                                                        "length":  952
+                                                                    },
+                  "dyspozycje/_handoff/UNITS-do-INTEGRATOR_balans-tw-v3-2026-06-30.md":  {
+                                                                                             "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\UNITS-do-INTEGRATOR_balans-tw-v3-2026-06-30.md",
+                                                                                             "mtime":  "2026-06-30T14:39:38.6343802Z",
+                                                                                             "flags":  "HANDOFF",
+                                                                                             "length":  6133
+                                                                                         },
+                  "dyspozycje/_handoff/EKONOMIA+UI-do-MAPA+SILNIK_okolica-overlay-2026-06-26.md":  {
+                                                                                                       "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\EKONOMIA+UI-do-MAPA+SILNIK_okolica-overlay-2026-06-26.md",
+                                                                                                       "mtime":  "2026-06-29T05:56:26.5017134Z",
+                                                                                                       "flags":  "HANDOFF",
+                                                                                                       "length":  1863
+                                                                                                   },
+                  "dyspozycje/_handoff/F-do-SILNIK_mgla-ghost-start-batch.md":  {
+                                                                                    "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\F-do-SILNIK_mgla-ghost-start-batch.md",
+                                                                                    "mtime":  "2026-06-28T09:01:56.6039140Z",
+                                                                                    "flags":  "HANDOFF",
+                                                                                    "length":  3165
+                                                                                },
+                  "dyspozycje/_handoff/CYWILIZACJE-do-SILNIK_delegacje-poza-lane-D.md":  {
+                                                                                             "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\CYWILIZACJE-do-SILNIK_delegacje-poza-lane-D.md",
+                                                                                             "mtime":  "2026-06-30T14:39:38.3697098Z",
+                                                                                             "flags":  "HANDOFF",
+                                                                                             "length":  6153
+                                                                                         },
+                  "dyspozycje/_handoff/UI-do-SILNIK_D3-Q1-war-confirm.md":  {
+                                                                                "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\UI-do-SILNIK_D3-Q1-war-confirm.md",
+                                                                                "mtime":  "2026-06-30T14:39:38.2555345Z",
+                                                                                "flags":  "HANDOFF",
+                                                                                "length":  1435
+                                                                            },
+                  "dyspozycje/_handoff/UI-do-INTEGRATOR_panel-miasta-okolica-ux.md":  {
+                                                                                          "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\UI-do-INTEGRATOR_panel-miasta-okolica-ux.md",
+                                                                                          "mtime":  "2026-06-30T14:39:38.3311484Z",
+                                                                                          "flags":  "HANDOFF",
+                                                                                          "length":  2315
+                                                                                      },
+                  "dyspozycje/_handoff/UNITS-do-SILNIK_TW-v3-walka-rome2.md":  {
+                                                                                   "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\UNITS-do-SILNIK_TW-v3-walka-rome2.md",
+                                                                                   "mtime":  "2026-06-30T14:39:38.9067298Z",
+                                                                                   "flags":  "HANDOFF",
+                                                                                   "length":  4451
+                                                                               },
+                  "dyspozycje/_handoff/MASTER-do-INTEGRATOR_D4-wymiana-pn-2026-06-30.md":  {
+                                                                                               "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-do-INTEGRATOR_D4-wymiana-pn-2026-06-30.md",
+                                                                                               "mtime":  "2026-06-30T22:17:13.0497490Z",
+                                                                                               "flags":  "HANDOFF",
+                                                                                               "length":  2313
+                                                                                           },
+                  "dyspozycje/_handoff/CYWILIZACJE-do-INTEGRATOR_T-TECH-1-2-3.md":  {
+                                                                                        "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\CYWILIZACJE-do-INTEGRATOR_T-TECH-1-2-3.md",
+                                                                                        "mtime":  "2026-06-30T14:39:38.4568513Z",
+                                                                                        "flags":  "HANDOFF",
+                                                                                        "length":  1747
+                                                                                    },
+                  "dyspozycje/_handoff/MASTER-do-SILNIK_audyt-kolejka-2026-06-29.md":  {
+                                                                                           "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-do-SILNIK_audyt-kolejka-2026-06-29.md",
+                                                                                           "mtime":  "2026-06-30T14:39:38.4563464Z",
+                                                                                           "flags":  "DYPOZYCJA,HANDOFF",
+                                                                                           "length":  4275
+                                                                                       },
+                  "docs/obieg/SLACK-OUTBOX-C-2026-06-26.md":  {
+                                                                  "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\docs\\obieg\\SLACK-OUTBOX-C-2026-06-26.md",
+                                                                  "mtime":  "2026-06-30T22:40:35.3906806Z",
+                                                                  "flags":  "HANDOFF",
+                                                                  "length":  1235
+                                                              },
+                  "dyspozycje/_handoff/MASTER-do-INTEGRATOR_C-odskok-fanout-2026-07-01.md":  {
+                                                                                                 "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-do-INTEGRATOR_C-odskok-fanout-2026-07-01.md",
+                                                                                                 "mtime":  "2026-06-30T21:34:49.0335630Z",
+                                                                                                 "flags":  "HANDOFF",
+                                                                                                 "length":  2150
+                                                                                             },
+                  "dyspozycje/_handoff/EKONOMIA+CYWILIZACJE-do-SILNIK_B2-Q12-rebelia.md":  {
+                                                                                               "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\EKONOMIA+CYWILIZACJE-do-SILNIK_B2-Q12-rebelia.md",
+                                                                                               "mtime":  "2026-06-29T05:56:26.5102141Z",
+                                                                                               "flags":  "HANDOFF",
+                                                                                               "length":  997
+                                                                                           },
+                  "dyspozycje/_handoff/UNITS-do-INTEGRATOR_P5-P6.md":  {
+                                                                           "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\UNITS-do-INTEGRATOR_P5-P6.md",
+                                                                           "mtime":  "2026-06-30T22:35:21.4124400Z",
+                                                                           "flags":  "HANDOFF",
+                                                                           "length":  2649
+                                                                       },
+                  "dyspozycje/_handoff/CYWILIZACJE-do-SILNIK_AI-defensywne-kopie.md":  {
+                                                                                           "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\CYWILIZACJE-do-SILNIK_AI-defensywne-kopie.md",
+                                                                                           "mtime":  "2026-06-30T14:39:38.6353857Z",
+                                                                                           "flags":  "HANDOFF",
+                                                                                           "length":  3703
+                                                                                       },
+                  "dyspozycje/_handoff/C1-do-SILNIK_preBattle-wpiecie.md":  {
+                                                                                "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\C1-do-SILNIK_preBattle-wpiecie.md",
+                                                                                "mtime":  "2026-06-30T14:39:38.3026050Z",
+                                                                                "flags":  "HANDOFF",
+                                                                                "length":  1985
+                                                                            },
+                  "dyspozycje/_handoff/MASTER-do-SILNIK_E2-gestosc-wpiecie.md":  {
+                                                                                     "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-do-SILNIK_E2-gestosc-wpiecie.md",
+                                                                                     "mtime":  "2026-06-30T14:39:38.9793405Z",
+                                                                                     "flags":  "HANDOFF",
+                                                                                     "length":  1161
+                                                                                 },
+                  "dyspozycje/_handoff/UNITS-do-SILNIK_army-starvation-hp.md":  {
+                                                                                    "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\UNITS-do-SILNIK_army-starvation-hp.md",
+                                                                                    "mtime":  "2026-06-29T05:56:26.5167240Z",
+                                                                                    "flags":  "HANDOFF",
+                                                                                    "length":  1205
+                                                                                },
+                  "dyspozycje/_handoff/EKONOMIA+UI-do-SILNIK_GRUPA-B-batch-2026-06-27.md":  {
+                                                                                                "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\EKONOMIA+UI-do-SILNIK_GRUPA-B-batch-2026-06-27.md",
+                                                                                                "mtime":  "2026-06-28T09:01:56.7209238Z",
+                                                                                                "flags":  "HANDOFF",
+                                                                                                "length":  4858
+                                                                                            },
+                  "dyspozycje/_handoff/MAPA-do-SILNIK_fog-widok-pola-A-FOG-Q1B.md":  {
+                                                                                         "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MAPA-do-SILNIK_fog-widok-pola-A-FOG-Q1B.md",
+                                                                                         "mtime":  "2026-06-28T09:01:56.6039140Z",
+                                                                                         "flags":  "HANDOFF",
+                                                                                         "length":  3188
+                                                                                     }
+              },
+    "lastTick":  "2026-06-30T23:21:07.6035564Z"
+}

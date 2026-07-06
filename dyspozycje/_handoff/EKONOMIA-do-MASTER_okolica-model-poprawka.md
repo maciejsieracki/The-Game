@@ -1,7 +1,7 @@
 # EKONOMIA-do-MASTER: Model okolicy -- poprawka zasieg=pop, plony=przypisane pola
 
 **Data**: 2026-06-25  
-**Autor**: Civ-EKONOMIA (subagent)  
+**Autor**: Grupa B (subagent)  
 **Status**: KROK 1 wdrozony + zielony; KROK 2 wdrozony + zielony (okolica-test 16/16, wire-ekonomia-test 23/23)
 
 ---

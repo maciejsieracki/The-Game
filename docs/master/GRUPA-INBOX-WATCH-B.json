@@ -1,0 +1,566 @@
+﻿{
+    "watchCount":  93,
+    "intervalSeconds":  900,
+    "grupa":  "B",
+    "files":  {
+                  "dyspozycje/_handoff/CYWILIZACJE-do-MASTER_model-nauki-dla-MIASTO.md":  {
+                                                                                              "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\CYWILIZACJE-do-MASTER_model-nauki-dla-MIASTO.md",
+                                                                                              "mtime":  "2026-06-25T09:05:59.0134357Z",
+                                                                                              "flags":  "HANDOFF",
+                                                                                              "length":  2457
+                                                                                          },
+                  "dyspozycje/_handoff/EKONOMIA+UI-do-SILNIK_raport-spieprzenia-2026-06-29.md":  {
+                                                                                                     "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\EKONOMIA+UI-do-SILNIK_raport-spieprzenia-2026-06-29.md",
+                                                                                                     "mtime":  "2026-06-28T11:06:15.6749406Z",
+                                                                                                     "flags":  "",
+                                                                                                     "length":  9131
+                                                                                                 },
+                  "dyspozycje/_handoff/MIASTO-do-MASTER_zarzadca-automatyczny.md":  {
+                                                                                        "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MIASTO-do-MASTER_zarzadca-automatyczny.md",
+                                                                                        "mtime":  "2026-06-25T08:06:41.6835219Z",
+                                                                                        "flags":  "HANDOFF",
+                                                                                        "length":  3203
+                                                                                    },
+                  "dyspozycje/_handoff/EKONOMIA-do-MASTER_manpower-pobor-wplyw.md":  {
+                                                                                         "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\EKONOMIA-do-MASTER_manpower-pobor-wplyw.md",
+                                                                                         "mtime":  "2026-06-30T14:39:38.6348857Z",
+                                                                                         "flags":  "HANDOFF",
+                                                                                         "length":  1035
+                                                                                     },
+                  "dyspozycje/_handoff/UI-do-EKONOMIA_zasieg-okolicy.md":  {
+                                                                               "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\UI-do-EKONOMIA_zasieg-okolicy.md",
+                                                                               "mtime":  "2026-06-25T14:49:02.6569106Z",
+                                                                               "flags":  "HANDOFF",
+                                                                               "length":  1672
+                                                                           },
+                  "dyspozycje/_handoff/MASTER-do-EKONOMIA_F-city-hex-snapshot.md":  {
+                                                                                        "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-do-EKONOMIA_F-city-hex-snapshot.md",
+                                                                                        "mtime":  "2026-06-30T14:39:38.4548434Z",
+                                                                                        "flags":  "HANDOFF",
+                                                                                        "length":  1140
+                                                                                    },
+                  "dyspozycje/_handoff/EKONOMIA-do-SILNIK_city-sight-zasieg-batch.md":  {
+                                                                                            "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\EKONOMIA-do-SILNIK_city-sight-zasieg-batch.md",
+                                                                                            "mtime":  "2026-06-28T09:01:56.6754184Z",
+                                                                                            "flags":  "HANDOFF",
+                                                                                            "length":  3329
+                                                                                        },
+                  "dyspozycje/_handoff/MIASTO-do-UI_kontrakt-produkcji.md":  {
+                                                                                 "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MIASTO-do-UI_kontrakt-produkcji.md",
+                                                                                 "mtime":  "2026-06-24T20:11:24.6210781Z",
+                                                                                 "flags":  "HANDOFF",
+                                                                                 "length":  8391
+                                                                             },
+                  "dyspozycje/_handoff/EKONOMIA-zalozenia-i-wiazania.md":  {
+                                                                               "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\EKONOMIA-zalozenia-i-wiazania.md",
+                                                                               "mtime":  "2026-06-24T20:11:24.6045673Z",
+                                                                               "flags":  "HANDOFF",
+                                                                               "length":  4115
+                                                                           },
+                  "dyspozycje/_handoff/MIASTO-do-MASTER_zasieg-budowlany-MAPA.md":  {
+                                                                                        "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MIASTO-do-MASTER_zasieg-budowlany-MAPA.md",
+                                                                                        "mtime":  "2026-06-25T06:50:09.5815314Z",
+                                                                                        "flags":  "HANDOFF",
+                                                                                        "length":  2907
+                                                                                    },
+                  "dyspozycje/_handoff/EKONOMIA-do-MASTER_wpiecie-scalonej-tury.md":  {
+                                                                                          "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\EKONOMIA-do-MASTER_wpiecie-scalonej-tury.md",
+                                                                                          "mtime":  "2026-06-28T10:11:25.9657006Z",
+                                                                                          "flags":  "HANDOFF",
+                                                                                          "length":  6302
+                                                                                      },
+                  "dyspozycje/_handoff/MACIEJ-do-EKONOMIA_zywnosc-hybrid.md":  {
+                                                                                   "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MACIEJ-do-EKONOMIA_zywnosc-hybrid.md",
+                                                                                   "mtime":  "2026-06-30T14:39:34.8638260Z",
+                                                                                   "flags":  "HANDOFF",
+                                                                                   "length":  3193
+                                                                               },
+                  "dyspozycje/_handoff/CYWILIZACJE-do-EKONOMIA_v1.1-trybut-handel-tick.md":  {
+                                                                                                 "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\CYWILIZACJE-do-EKONOMIA_v1.1-trybut-handel-tick.md",
+                                                                                                 "mtime":  "2026-06-30T14:39:38.9803406Z",
+                                                                                                 "flags":  "HANDOFF",
+                                                                                                 "length":  2127
+                                                                                             },
+                  "dyspozycje/_handoff/CYWILIZACJE-do-EKONOMIA_bonusy-ekonomia-miasto.md":  {
+                                                                                                "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\CYWILIZACJE-do-EKONOMIA_bonusy-ekonomia-miasto.md",
+                                                                                                "mtime":  "2026-06-30T14:39:38.9137347Z",
+                                                                                                "flags":  "HANDOFF",
+                                                                                                "length":  1609
+                                                                                            },
+                  "dyspozycje/_handoff/EKONOMIA-do-MAPA_kanon-zywnosc-hodowla.md":  {
+                                                                                        "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\EKONOMIA-do-MAPA_kanon-zywnosc-hodowla.md",
+                                                                                        "mtime":  "2026-06-29T05:56:26.5102141Z",
+                                                                                        "flags":  "DYPOZYCJA,HANDOFF",
+                                                                                        "length":  4609
+                                                                                    },
+                  "dyspozycje/_handoff/GRUPA-B-do-SILNIK_rozpoznanie-2026-06-29.md":  {
+                                                                                          "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\GRUPA-B-do-SILNIK_rozpoznanie-2026-06-29.md",
+                                                                                          "mtime":  "2026-06-29T05:56:26.7302460Z",
+                                                                                          "flags":  "DYPOZYCJA,HANDOFF",
+                                                                                          "length":  2390
+                                                                                      },
+                  "dyspozycje/_handoff/EKONOMIA-do-MASTER_mnoznik-per-cyw.md":  {
+                                                                                    "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\EKONOMIA-do-MASTER_mnoznik-per-cyw.md",
+                                                                                    "mtime":  "2026-06-30T14:39:34.8643255Z",
+                                                                                    "flags":  "HANDOFF",
+                                                                                    "length":  1790
+                                                                                },
+                  "dyspozycje/_handoff/EKONOMIA+UI-do-SILNIK_B2-porzadek-komplet.md":  {
+                                                                                           "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\EKONOMIA+UI-do-SILNIK_B2-porzadek-komplet.md",
+                                                                                           "mtime":  "2026-06-29T05:56:26.5087131Z",
+                                                                                           "flags":  "HANDOFF",
+                                                                                           "length":  5246
+                                                                                       },
+                  "dyspozycje/_handoff/MIASTO-do-MASTER_decyzje-v0.1.md":  {
+                                                                               "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MIASTO-do-MASTER_decyzje-v0.1.md",
+                                                                               "mtime":  "2026-06-24T21:08:19.4977678Z",
+                                                                               "flags":  "HANDOFF",
+                                                                               "length":  4973
+                                                                           },
+                  "dyspozycje/_handoff/EKONOMIA-do-MASTER_przejecie-miasta.md":  {
+                                                                                     "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\EKONOMIA-do-MASTER_przejecie-miasta.md",
+                                                                                     "mtime":  "2026-06-28T10:11:25.9647026Z",
+                                                                                     "flags":  "",
+                                                                                     "length":  5485
+                                                                                 },
+                  "dyspozycje/_handoff/EKONOMIA+UI-do-SILNIK_PILNE-luki-2026-06-27.md":  {
+                                                                                             "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\EKONOMIA+UI-do-SILNIK_PILNE-luki-2026-06-27.md",
+                                                                                             "mtime":  "2026-06-29T05:56:26.5162181Z",
+                                                                                             "flags":  "HANDOFF",
+                                                                                             "length":  4546
+                                                                                         },
+                  "dyspozycje/_handoff/EKONOMIA-do-UI_porzadek-procent.md":  {
+                                                                                 "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\EKONOMIA-do-UI_porzadek-procent.md",
+                                                                                 "mtime":  "2026-06-29T05:56:26.5002077Z",
+                                                                                 "flags":  "HANDOFF",
+                                                                                 "length":  1454
+                                                                             },
+                  "dyspozycje/_handoff/MAPA+EKONOMIA-do-SILNIK_wyrab-tartak-tech.md":  {
+                                                                                           "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MAPA+EKONOMIA-do-SILNIK_wyrab-tartak-tech.md",
+                                                                                           "mtime":  "2026-06-29T05:56:26.3831953Z",
+                                                                                           "flags":  "HANDOFF",
+                                                                                           "length":  5582
+                                                                                       },
+                  "dyspozycje/_handoff/MIASTO-do-MASTER_moduly-gotowe.md":  {
+                                                                                "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MIASTO-do-MASTER_moduly-gotowe.md",
+                                                                                "mtime":  "2026-06-25T05:35:42.4515078Z",
+                                                                                "flags":  "HANDOFF",
+                                                                                "length":  2145
+                                                                            },
+                  "dyspozycje/_handoff/EKONOMIA-do-MASTER_model-dostepu-surowcow.md":  {
+                                                                                           "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\EKONOMIA-do-MASTER_model-dostepu-surowcow.md",
+                                                                                           "mtime":  "2026-06-25T08:02:04.9086749Z",
+                                                                                           "flags":  "HANDOFF",
+                                                                                           "length":  9255
+                                                                                       },
+                  "dyspozycje/_handoff/EKONOMIA-do-UNITS_zapasy-oblezenie-kontrakt.md":  {
+                                                                                             "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\EKONOMIA-do-UNITS_zapasy-oblezenie-kontrakt.md",
+                                                                                             "mtime":  "2026-06-28T10:11:25.9677028Z",
+                                                                                             "flags":  "HANDOFF",
+                                                                                             "length":  4067
+                                                                                         },
+                  "dyspozycje/_handoff/EKONOMIA-do-MASTER_podzial-per-city.md":  {
+                                                                                     "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\EKONOMIA-do-MASTER_podzial-per-city.md",
+                                                                                     "mtime":  "2026-06-30T14:39:38.9798405Z",
+                                                                                     "flags":  "HANDOFF",
+                                                                                     "length":  2800
+                                                                                 },
+                  "dyspozycje/_handoff/EKONOMIA-do-SILNIK_B5-empire-food.md":  {
+                                                                                   "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\EKONOMIA-do-SILNIK_B5-empire-food.md",
+                                                                                   "mtime":  "2026-06-28T09:45:43.9152354Z",
+                                                                                   "flags":  "HANDOFF",
+                                                                                   "length":  1673
+                                                                               },
+                  "dyspozycje/_handoff/CYWILIZACJE-do-EKONOMIA_transfer-tech-nauka.md":  {
+                                                                                             "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\CYWILIZACJE-do-EKONOMIA_transfer-tech-nauka.md",
+                                                                                             "mtime":  "2026-06-30T14:39:38.4568513Z",
+                                                                                             "flags":  "HANDOFF",
+                                                                                             "length":  1912
+                                                                                         },
+                  "dyspozycje/_handoff/MASTER-do-EKONOMIA_B5-spichlerz-SP-limit-2026-07-01.md":  {
+                                                                                                     "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-do-EKONOMIA_B5-spichlerz-SP-limit-2026-07-01.md",
+                                                                                                     "mtime":  "2026-06-30T22:40:54.7722148Z",
+                                                                                                     "flags":  "HANDOFF",
+                                                                                                     "length":  1706
+                                                                                                 },
+                  "dyspozycje/_handoff/MIASTO-do-SILNIK_integracja.md":  {
+                                                                             "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MIASTO-do-SILNIK_integracja.md",
+                                                                             "mtime":  "2026-06-23T06:31:08.3295559Z",
+                                                                             "flags":  "HANDOFF",
+                                                                             "length":  9368
+                                                                         },
+                  "dyspozycje/_handoff/EKONOMIA-do-CYWILIZACJE_budzet-AI.md":  {
+                                                                                   "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\EKONOMIA-do-CYWILIZACJE_budzet-AI.md",
+                                                                                   "mtime":  "2026-06-25T16:06:27.1064803Z",
+                                                                                   "flags":  "",
+                                                                                   "length":  1234
+                                                                               },
+                  "dyspozycje/_handoff/MAPA-do-SILNIK_mgla-miasto-minimapa.md":  {
+                                                                                     "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MAPA-do-SILNIK_mgla-miasto-minimapa.md",
+                                                                                     "mtime":  "2026-06-30T14:39:38.2440266Z",
+                                                                                     "flags":  "HANDOFF",
+                                                                                     "length":  1897
+                                                                                 },
+                  "dyspozycje/_handoff/EKONOMIA-do-SILNIK_tartak-drewno-access.md":  {
+                                                                                         "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\EKONOMIA-do-SILNIK_tartak-drewno-access.md",
+                                                                                         "mtime":  "2026-06-28T12:45:05.8073512Z",
+                                                                                         "flags":  "HANDOFF",
+                                                                                         "length":  1386
+                                                                                     },
+                  "dyspozycje/_handoff/A1-do-GRUPA-B_power-wyliczanie.md":  {
+                                                                                "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\A1-do-GRUPA-B_power-wyliczanie.md",
+                                                                                "mtime":  "2026-06-28T12:45:06.1814097Z",
+                                                                                "flags":  "HANDOFF",
+                                                                                "length":  3898
+                                                                            },
+                  "dyspozycje/_handoff/EKONOMIA-do-MASTER_tempo-nauki.md":  {
+                                                                                "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\EKONOMIA-do-MASTER_tempo-nauki.md",
+                                                                                "mtime":  "2026-06-25T07:19:24.5649821Z",
+                                                                                "flags":  "",
+                                                                                "length":  5091
+                                                                            },
+                  "dyspozycje/_handoff/EKONOMIA-do-SILNIK-upkeep.md":  {
+                                                                           "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\EKONOMIA-do-SILNIK-upkeep.md",
+                                                                           "mtime":  "2026-06-24T20:11:24.5980683Z",
+                                                                           "flags":  "HANDOFF",
+                                                                           "length":  5171
+                                                                       },
+                  "dyspozycje/_handoff/UI-do-EKONOMIA_okolica-jak-podejsc.md":  {
+                                                                                    "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\UI-do-EKONOMIA_okolica-jak-podejsc.md",
+                                                                                    "mtime":  "2026-06-25T14:50:38.0070967Z",
+                                                                                    "flags":  "HANDOFF",
+                                                                                    "length":  2243
+                                                                                },
+                  "dyspozycje/_handoff/EKONOMIA-do-UI_okolica-nastroje.md":  {
+                                                                                 "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\EKONOMIA-do-UI_okolica-nastroje.md",
+                                                                                 "mtime":  "2026-06-25T11:51:48.8462718Z",
+                                                                                 "flags":  "",
+                                                                                 "length":  3191
+                                                                             },
+                  "dyspozycje/_handoff/EKONOMIA-do-MASTER_model-nauki-gracza.md":  {
+                                                                                       "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\EKONOMIA-do-MASTER_model-nauki-gracza.md",
+                                                                                       "mtime":  "2026-06-25T16:06:18.6480747Z",
+                                                                                       "flags":  "HANDOFF",
+                                                                                       "length":  1579
+                                                                                   },
+                  "dyspozycje/_handoff/EKONOMIA-do-MASTER_tech-tree-zelazo.md":  {
+                                                                                     "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\EKONOMIA-do-MASTER_tech-tree-zelazo.md",
+                                                                                     "mtime":  "2026-06-25T17:48:31.7618916Z",
+                                                                                     "flags":  "HANDOFF",
+                                                                                     "length":  4745
+                                                                                 },
+                  "dyspozycje/_handoff/EKONOMIA-do-SILNIK_v1.1-diplomacy-tick.md":  {
+                                                                                        "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\EKONOMIA-do-SILNIK_v1.1-diplomacy-tick.md",
+                                                                                        "mtime":  "2026-06-30T14:39:38.6353857Z",
+                                                                                        "flags":  "HANDOFF",
+                                                                                        "length":  2059
+                                                                                    },
+                  "dyspozycje/_handoff/EKONOMIA-do-MASTER_power-objective-v2.md":  {
+                                                                                       "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\EKONOMIA-do-MASTER_power-objective-v2.md",
+                                                                                       "mtime":  "2026-06-30T14:39:38.6343802Z",
+                                                                                       "flags":  "HANDOFF",
+                                                                                       "length":  1446
+                                                                                   },
+                  "dyspozycje/_handoff/EKONOMIA-do-MASTER_wealth-minimal-D3C.md":  {
+                                                                                       "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\EKONOMIA-do-MASTER_wealth-minimal-D3C.md",
+                                                                                       "mtime":  "2026-06-30T14:39:38.6318756Z",
+                                                                                       "flags":  "HANDOFF",
+                                                                                       "length":  3152
+                                                                                   },
+                  "dyspozycje/_handoff/EKONOMIA-do-UI_okolica-pola-C.md":  {
+                                                                               "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\EKONOMIA-do-UI_okolica-pola-C.md",
+                                                                               "mtime":  "2026-06-29T05:56:26.5087131Z",
+                                                                               "flags":  "HANDOFF",
+                                                                               "length":  1731
+                                                                           },
+                  "dyspozycje/_handoff/MIASTO-do-MASTER_kontrakt-ulepszenia-granice.md":  {
+                                                                                              "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MIASTO-do-MASTER_kontrakt-ulepszenia-granice.md",
+                                                                                              "mtime":  "2026-06-24T22:39:13.3609966Z",
+                                                                                              "flags":  "",
+                                                                                              "length":  3560
+                                                                                          },
+                  "dyspozycje/_handoff/MACIEJ-do-UI_zadowolenie-per-miasto.md":  {
+                                                                                     "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MACIEJ-do-UI_zadowolenie-per-miasto.md",
+                                                                                     "mtime":  "2026-06-29T05:56:26.7932463Z",
+                                                                                     "flags":  "HANDOFF",
+                                                                                     "length":  1649
+                                                                                 },
+                  "dyspozycje/_handoff/EKONOMIA-do-INTEGRATOR_kanon-zywnosc-hodowla.md":  {
+                                                                                              "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\EKONOMIA-do-INTEGRATOR_kanon-zywnosc-hodowla.md",
+                                                                                              "mtime":  "2026-06-29T05:56:26.8927634Z",
+                                                                                              "flags":  "DYPOZYCJA,HANDOFF",
+                                                                                              "length":  2718
+                                                                                          },
+                  "docs/obieg/REJESTR-DECYZJI.md":  {
+                                                        "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\docs\\obieg\\REJESTR-DECYZJI.md",
+                                                        "mtime":  "2026-06-30T23:17:58.3570219Z",
+                                                        "flags":  "DYPOZYCJA,HANDOFF",
+                                                        "length":  14768
+                                                    },
+                  "dyspozycje/_handoff/EKONOMIA-do-MASTER_koszt-jednostek.md":  {
+                                                                                    "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\EKONOMIA-do-MASTER_koszt-jednostek.md",
+                                                                                    "mtime":  "2026-06-25T18:37:22.5066727Z",
+                                                                                    "flags":  "HANDOFF",
+                                                                                    "length":  3999
+                                                                                },
+                  "dyspozycje/_handoff/EKONOMIA-do-MASTER_currency-final.md":  {
+                                                                                   "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\EKONOMIA-do-MASTER_currency-final.md",
+                                                                                   "mtime":  "2026-06-25T21:26:58.8253731Z",
+                                                                                   "flags":  "",
+                                                                                   "length":  4589
+                                                                               },
+                  "dyspozycje/_handoff/EKONOMIA+UI-do-SILNIK_B2-society-pct-batch.md":  {
+                                                                                            "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\EKONOMIA+UI-do-SILNIK_B2-society-pct-batch.md",
+                                                                                            "mtime":  "2026-06-28T09:01:56.6549136Z",
+                                                                                            "flags":  "HANDOFF",
+                                                                                            "length":  5892
+                                                                                        },
+                  "dyspozycje/_handoff/CYWILIZACJE-do-MASTER_nauka-tempo-od-EKONOMIA.md":  {
+                                                                                               "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\CYWILIZACJE-do-MASTER_nauka-tempo-od-EKONOMIA.md",
+                                                                                               "mtime":  "2026-06-25T06:43:47.1218372Z",
+                                                                                               "flags":  "",
+                                                                                               "length":  1205
+                                                                                           },
+                  "dyspozycje/_handoff/EKONOMIA-do-MASTER_mapa-terytorium-wioski.md":  {
+                                                                                           "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\EKONOMIA-do-MASTER_mapa-terytorium-wioski.md",
+                                                                                           "mtime":  "2026-06-25T19:49:10.0594857Z",
+                                                                                           "flags":  "",
+                                                                                           "length":  1853
+                                                                                       },
+                  "dyspozycje/_handoff/MIASTO-do-MASTER_okolica.md":  {
+                                                                          "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MIASTO-do-MASTER_okolica.md",
+                                                                          "mtime":  "2026-06-25T06:07:01.9416376Z",
+                                                                          "flags":  "HANDOFF",
+                                                                          "length":  1417
+                                                                      },
+                  "dyspozycje/_handoff/EKONOMIA-do-MASTER_manpower-faza1.md":  {
+                                                                                   "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\EKONOMIA-do-MASTER_manpower-faza1.md",
+                                                                                   "mtime":  "2026-06-30T14:39:38.3026050Z",
+                                                                                   "flags":  "HANDOFF",
+                                                                                   "length":  1585
+                                                                               },
+                  "dyspozycje/_handoff/EKONOMIA-do-MASTER_religia-etap2.md":  {
+                                                                                  "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\EKONOMIA-do-MASTER_religia-etap2.md",
+                                                                                  "mtime":  "2026-06-25T12:07:31.3673486Z",
+                                                                                  "flags":  "HANDOFF",
+                                                                                  "length":  5876
+                                                                              },
+                  "dyspozycje/_handoff/EKONOMIA-do-UNITS_glod-8hp.md":  {
+                                                                            "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\EKONOMIA-do-UNITS_glod-8hp.md",
+                                                                            "mtime":  "2026-06-30T14:39:38.4553432Z",
+                                                                            "flags":  "",
+                                                                            "length":  7304
+                                                                        },
+                  "dyspozycje/_handoff/EKONOMIA-do-SILNIK-economy-edits.md":  {
+                                                                                  "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\EKONOMIA-do-SILNIK-economy-edits.md",
+                                                                                  "mtime":  "2026-06-22T22:46:19.1530235Z",
+                                                                                  "flags":  "HANDOFF",
+                                                                                  "length":  3001
+                                                                              },
+                  "docs/obieg/SLACK-OUTBOX-GRUPA-B-2026-07-01.md":  {
+                                                                        "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\docs\\obieg\\SLACK-OUTBOX-GRUPA-B-2026-07-01.md",
+                                                                        "mtime":  "2026-06-30T22:41:59.2656109Z",
+                                                                        "flags":  "HANDOFF",
+                                                                        "length":  952
+                                                                    },
+                  "dyspozycje/_handoff/EKONOMIA-do-INTEGRATOR_moc-v1-GOTOWE.md":  {
+                                                                                      "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\EKONOMIA-do-INTEGRATOR_moc-v1-GOTOWE.md",
+                                                                                      "mtime":  "2026-06-30T14:39:38.6353857Z",
+                                                                                      "flags":  "HANDOFF",
+                                                                                      "length":  5696
+                                                                                  },
+                  "dyspozycje/_handoff/EKONOMIA-do-INTEGRATOR_power-manpower-v2.md":  {
+                                                                                          "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\EKONOMIA-do-INTEGRATOR_power-manpower-v2.md",
+                                                                                          "mtime":  "2026-06-30T14:39:38.9793405Z",
+                                                                                          "flags":  "HANDOFF",
+                                                                                          "length":  6524
+                                                                                      },
+                  "dyspozycje/_handoff/EKONOMIA-do-MASTER_okolica-model-poprawka.md":  {
+                                                                                           "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\EKONOMIA-do-MASTER_okolica-model-poprawka.md",
+                                                                                           "mtime":  "2026-06-28T10:11:25.9637009Z",
+                                                                                           "flags":  "HANDOFF",
+                                                                                           "length":  4552
+                                                                                       },
+                  "dyspozycje/_handoff/EKONOMIA-do-GRUPA-A_zasieg-miasta-fog.md":  {
+                                                                                       "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\EKONOMIA-do-GRUPA-A_zasieg-miasta-fog.md",
+                                                                                       "mtime":  "2026-06-29T05:56:26.5147139Z",
+                                                                                       "flags":  "HANDOFF",
+                                                                                       "length":  2771
+                                                                                   },
+                  "dyspozycje/_handoff/EKONOMIA-do-GRUPA-D_moc-respekt-GOTOWE.md":  {
+                                                                                        "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\EKONOMIA-do-GRUPA-D_moc-respekt-GOTOWE.md",
+                                                                                        "mtime":  "2026-06-30T14:39:38.6554144Z",
+                                                                                        "flags":  "HANDOFF",
+                                                                                        "length":  5641
+                                                                                    },
+                  "dyspozycje/_handoff/MIASTO-do-MASTER_dynamiczny-zasieg-UX.md":  {
+                                                                                       "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MIASTO-do-MASTER_dynamiczny-zasieg-UX.md",
+                                                                                       "mtime":  "2026-06-25T07:05:05.9509452Z",
+                                                                                       "flags":  "HANDOFF",
+                                                                                       "length":  1723
+                                                                                   },
+                  "dyspozycje/_handoff/EKONOMIA-do-SILNIK_kanon-zywnosc-hodowla.md":  {
+                                                                                          "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\EKONOMIA-do-SILNIK_kanon-zywnosc-hodowla.md",
+                                                                                          "mtime":  "2026-06-29T05:56:26.7307453Z",
+                                                                                          "flags":  "HANDOFF",
+                                                                                          "length":  3034
+                                                                                      },
+                  "dyspozycje/_handoff/MIASTO-do-MASTER_split-output-nauka.md":  {
+                                                                                     "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MIASTO-do-MASTER_split-output-nauka.md",
+                                                                                     "mtime":  "2026-06-25T12:00:30.1961175Z",
+                                                                                     "flags":  "HANDOFF",
+                                                                                     "length":  3067
+                                                                                 },
+                  "dyspozycje/_handoff/MACIEJ-do-EKONOMIA_spichlerz-wzrost-ludnosci.md":  {
+                                                                                              "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MACIEJ-do-EKONOMIA_spichlerz-wzrost-ludnosci.md",
+                                                                                              "mtime":  "2026-06-29T05:56:26.3816955Z",
+                                                                                              "flags":  "HANDOFF",
+                                                                                              "length":  2188
+                                                                                          },
+                  "dyspozycje/_handoff/UNITS-do-EKONOMIA_zapasy-oblezenie.md":  {
+                                                                                    "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\UNITS-do-EKONOMIA_zapasy-oblezenie.md",
+                                                                                    "mtime":  "2026-06-28T10:11:25.9877001Z",
+                                                                                    "flags":  "HANDOFF",
+                                                                                    "length":  1702
+                                                                                },
+                  "dyspozycje/_handoff/EKONOMIA-do-UI_nauka-w-drzewku.md":  {
+                                                                                "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\EKONOMIA-do-UI_nauka-w-drzewku.md",
+                                                                                "mtime":  "2026-06-25T17:48:54.2286107Z",
+                                                                                "flags":  "HANDOFF",
+                                                                                "length":  1879
+                                                                            },
+                  "dyspozycje/_handoff/EKONOMIA-do-MASTER_koszary-gate-lazaret.md":  {
+                                                                                         "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\EKONOMIA-do-MASTER_koszary-gate-lazaret.md",
+                                                                                         "mtime":  "2026-06-25T20:47:35.8032684Z",
+                                                                                         "flags":  "HANDOFF",
+                                                                                         "length":  3241
+                                                                                     },
+                  "dyspozycje/_handoff/EKONOMIA+MAPA-do-SILNIK_B1-tech-sync-2026-06-29.md":  {
+                                                                                                 "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\EKONOMIA+MAPA-do-SILNIK_B1-tech-sync-2026-06-29.md",
+                                                                                                 "mtime":  "2026-06-28T09:40:23.8235005Z",
+                                                                                                 "flags":  "HANDOFF",
+                                                                                                 "length":  3285
+                                                                                             },
+                  "dyspozycje/_handoff/MASTER-do-EKONOMIA_kanon-zywnosc-hodowla.md":  {
+                                                                                          "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-do-EKONOMIA_kanon-zywnosc-hodowla.md",
+                                                                                          "mtime":  "2026-06-30T14:39:38.4548434Z",
+                                                                                          "flags":  "HANDOFF",
+                                                                                          "length":  2890
+                                                                                      },
+                  "dyspozycje/_handoff/EKONOMIA+UI+CYW-do-SILNIK_v1.1-diplomacy-batch.md":  {
+                                                                                                "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\EKONOMIA+UI+CYW-do-SILNIK_v1.1-diplomacy-batch.md",
+                                                                                                "mtime":  "2026-06-30T14:39:38.2715667Z",
+                                                                                                "flags":  "HANDOFF",
+                                                                                                "length":  2023
+                                                                                            },
+                  "dyspozycje/_handoff/EKONOMIA+UI-do-MAPA+SILNIK_okolica-overlay-2026-06-26.md":  {
+                                                                                                       "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\EKONOMIA+UI-do-MAPA+SILNIK_okolica-overlay-2026-06-26.md",
+                                                                                                       "mtime":  "2026-06-29T05:56:26.5017134Z",
+                                                                                                       "flags":  "HANDOFF",
+                                                                                                       "length":  1863
+                                                                                                   },
+                  "dyspozycje/_handoff/EKONOMIA-do-MASTER_plaster-D2A.md":  {
+                                                                                "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\EKONOMIA-do-MASTER_plaster-D2A.md",
+                                                                                "mtime":  "2026-06-30T14:39:38.2520353Z",
+                                                                                "flags":  "HANDOFF",
+                                                                                "length":  3530
+                                                                            },
+                  "dyspozycje/_handoff/EKONOMIA-do-UI_szczescie-procent.md":  {
+                                                                                  "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\EKONOMIA-do-UI_szczescie-procent.md",
+                                                                                  "mtime":  "2026-06-29T05:56:26.6997338Z",
+                                                                                  "flags":  "HANDOFF",
+                                                                                  "length":  1587
+                                                                              },
+                  "dyspozycje/_handoff/EKONOMIA-do-MASTER_budynki-zelazo.md":  {
+                                                                                   "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\EKONOMIA-do-MASTER_budynki-zelazo.md",
+                                                                                   "mtime":  "2026-06-25T18:25:41.8609040Z",
+                                                                                   "flags":  "HANDOFF",
+                                                                                   "length":  4533
+                                                                               },
+                  "docs/obieg/B-ekonomia.md":  {
+                                                   "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\docs\\obieg\\B-ekonomia.md",
+                                                   "mtime":  "2026-06-30T23:17:40.2461955Z",
+                                                   "flags":  "HANDOFF",
+                                                   "length":  13531
+                                               },
+                  "dyspozycje/_handoff/EKONOMIA-do-INTEGRATOR_p-c2-def-a.md":  {
+                                                                                   "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\EKONOMIA-do-INTEGRATOR_p-c2-def-a.md",
+                                                                                   "mtime":  "2026-06-30T22:48:55.9577450Z",
+                                                                                   "flags":  "HANDOFF",
+                                                                                   "length":  2148
+                                                                               },
+                  "dyspozycje/_handoff/EKONOMIA-do-UI_zywnosc-hud.md":  {
+                                                                            "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\EKONOMIA-do-UI_zywnosc-hud.md",
+                                                                            "mtime":  "2026-06-30T14:39:38.9813406Z",
+                                                                            "flags":  "HANDOFF",
+                                                                            "length":  5738
+                                                                        },
+                  "dyspozycje/_handoff/UI-do-EKONOMIA_nastroje-mieszkancow.md":  {
+                                                                                     "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\UI-do-EKONOMIA_nastroje-mieszkancow.md",
+                                                                                     "mtime":  "2026-06-25T11:29:49.4773694Z",
+                                                                                     "flags":  "",
+                                                                                     "length":  1007
+                                                                                 },
+                  "dyspozycje/_handoff/EKONOMIA-do-GRUPA-E_start-zasieg-fog.md":  {
+                                                                                      "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\EKONOMIA-do-GRUPA-E_start-zasieg-fog.md",
+                                                                                      "mtime":  "2026-06-29T05:56:26.5572247Z",
+                                                                                      "flags":  "HANDOFF",
+                                                                                      "length":  3008
+                                                                                  },
+                  "dyspozycje/_handoff/EKONOMIA+CYWILIZACJE-do-SILNIK_B2-Q12-rebelia.md":  {
+                                                                                               "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\EKONOMIA+CYWILIZACJE-do-SILNIK_B2-Q12-rebelia.md",
+                                                                                               "mtime":  "2026-06-29T05:56:26.5102141Z",
+                                                                                               "flags":  "HANDOFF",
+                                                                                               "length":  997
+                                                                                           },
+                  "dyspozycje/_handoff/EKONOMIA-do-MASTER_wealth.md":  {
+                                                                           "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\EKONOMIA-do-MASTER_wealth.md",
+                                                                           "mtime":  "2026-06-24T22:50:24.9702795Z",
+                                                                           "flags":  "HANDOFF",
+                                                                           "length":  3298
+                                                                       },
+                  "dyspozycje/_handoff/EKONOMIA-do-MASTER_growthmult-compound.md":  {
+                                                                                        "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\EKONOMIA-do-MASTER_growthmult-compound.md",
+                                                                                        "mtime":  "2026-06-25T12:20:06.4986588Z",
+                                                                                        "flags":  "HANDOFF",
+                                                                                        "length":  4042
+                                                                                    },
+                  "dyspozycje/_handoff/MASTER-do-EKONOMIA_D16-D17-playtest-start-2026-07-01.md":  {
+                                                                                                      "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-do-EKONOMIA_D16-D17-playtest-start-2026-07-01.md",
+                                                                                                      "mtime":  "2026-06-30T23:17:34.3530642Z",
+                                                                                                      "flags":  "HANDOFF",
+                                                                                                      "length":  3231
+                                                                                                  },
+                  "dyspozycje/_handoff/EKONOMIA-do-MASTER_B5-spichlerz-GOTOWE.md":  {
+                                                                                        "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\EKONOMIA-do-MASTER_B5-spichlerz-GOTOWE.md",
+                                                                                        "mtime":  "2026-06-30T21:30:10.6430045Z",
+                                                                                        "flags":  "HANDOFF",
+                                                                                        "length":  2252
+                                                                                    },
+                  "dyspozycje/_handoff/MIASTO-do-MASTER_ulepszenia-terenu.md":  {
+                                                                                    "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MIASTO-do-MASTER_ulepszenia-terenu.md",
+                                                                                    "mtime":  "2026-06-24T21:13:47.2421402Z",
+                                                                                    "flags":  "",
+                                                                                    "length":  1904
+                                                                                },
+                  "dyspozycje/_handoff/EKONOMIA+UI-do-SILNIK_GRUPA-B-batch-2026-06-27.md":  {
+                                                                                                "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\EKONOMIA+UI-do-SILNIK_GRUPA-B-batch-2026-06-27.md",
+                                                                                                "mtime":  "2026-06-28T09:01:56.7209238Z",
+                                                                                                "flags":  "HANDOFF",
+                                                                                                "length":  4858
+                                                                                            },
+                  "dyspozycje/_handoff/MIASTO-do-UI_widok-miasta-elementy.md":  {
+                                                                                    "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MIASTO-do-UI_widok-miasta-elementy.md",
+                                                                                    "mtime":  "2026-06-25T09:07:33.7225962Z",
+                                                                                    "flags":  "HANDOFF",
+                                                                                    "length":  4280
+                                                                                },
+                  "dyspozycje/_handoff/EKONOMIA-do-MASTER_waluta-targowisko-x2.md":  {
+                                                                                         "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\EKONOMIA-do-MASTER_waluta-targowisko-x2.md",
+                                                                                         "mtime":  "2026-06-25T21:12:25.5067848Z",
+                                                                                         "flags":  "HANDOFF",
+                                                                                         "length":  1852
+                                                                                     }
+              },
+    "lastTick":  "2026-06-30T23:19:22.3469200Z"
+}

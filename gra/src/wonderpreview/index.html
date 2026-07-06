@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <script>
+    (function () {
+      function showErr(msg) {
+        var d = document.getElementById('__boot_err__');
+        if (!d) {
+          d = document.createElement('div');
+          d.id = '__boot_err__';
+          d.style.cssText = 'position:fixed;top:0;left:0;width:100%;background:rgba(180,0,0,.95);color:#fff;font:bold 13px/1.5 monospace;padding:16px;z-index:999999;white-space:pre-wrap;';
+          (document.body || document.documentElement).appendChild(d);
+        }
+        d.innerHTML += '\n' + String(msg);
+      }
+      window.onerror = function (m, s, l, c, err) {
+        showErr((err ? err.message : m) + ' @' + s + ':' + l + ':' + c);
+        return false;
+      };
+      window.addEventListener('unhandledrejection', function (e) {
+        showErr('Rejection: ' + String(e.reason));
+      });
+    })();
+  </script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cuda świata — podgląd 3D (Roblox)</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --gold: #e8d88a;
+      --bg: #1a2438;
+      --panel: rgba(10, 14, 24, 0.88);
+      --text: #d4cba0;
+      --dim: #7a7055;
+      --accent: #50b070;
+    }
+    html, body { width: 100%; height: 100%; overflow: hidden; background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; }
+    #canvas-wrap { position: fixed; inset: 0; }
+    canvas { display: block; width: 100%; height: 100%; }
+    #ui { position: fixed; inset: 0; pointer-events: none; }
+    #hdr {
+      pointer-events: auto;
+      padding: 14px 18px;
+      background: linear-gradient(180deg, rgba(10,14,24,.95), transparent);
+      border-bottom: 1px solid rgba(232,216,138,.15);
+    }
+    #hdr h1 { font-family: Georgia, serif; color: var(--gold); font-size: 18px; letter-spacing: 1px; }
+    #hdr p { font-size: 11px; color: var(--dim); margin-top: 4px; max-width: 720px; line-height: 1.45; }
+    #tabs {
+      pointer-events: auto;
+      display: flex; gap: 8px; flex-wrap: wrap;
+      padding: 10px 18px 0;
+    }
+    .tab {
+      border: 1px solid rgba(232,216,138,.25);
+      background: rgba(255,255,255,.04);
+      color: var(--text);
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+    .tab.active { background: rgba(80,176,112,.22); border-color: var(--accent); color: #c8f0d0; }
+    #sidebar {
+      pointer-events: auto;
+      position: fixed; top: 120px; right: 12px; width: 240px; max-height: calc(100vh - 140px);
+      overflow-y: auto;
+      background: var(--panel);
+      border: 1px solid rgba(232,216,138,.18);
+      border-radius: 8px;
+      padding: 12px;
+      font-size: 11px;
+      line-height: 1.45;
+    }
+    #sidebar h2 { color: var(--gold); font-size: 12px; margin-bottom: 8px; }
+    #sidebar ul { list-style: none; }
+    #sidebar li { margin-bottom: 4px; }
+    #sidebar button {
+      width: 100%; text-align: left;
+      background: transparent; border: none; color: var(--text);
+      cursor: pointer; padding: 4px 6px; border-radius: 4px; font-size: 11px;
+    }
+    #sidebar button:hover { background: rgba(255,255,255,.06); }
+    #sidebar button.focused { background: rgba(80,176,112,.18); color: #c8f0d0; }
+    #hint {
+      pointer-events: none;
+      position: fixed; left: 18px; bottom: 14px;
+      font-size: 10px; color: var(--dim);
+      background: rgba(10,14,24,.7); padding: 8px 10px; border-radius: 6px;
+    }
+  </style>
+</head>
+<body>
+  <div id="canvas-wrap"></div>
+  <div id="ui">
+    <header id="hdr">
+      <h1>🏛 Cuda świata — podgląd 3D</h1>
+      <p>19 cudów Antyku na heksie mapy (styl Roblox). Cud stoi na osobnym polu w terytorium — nie w slocie miasta. Skala ×1,15, flaga właściciela (złoty gracz).</p>
+    </header>
+    <div id="tabs"></div>
+    <aside id="sidebar">
+      <h2>Skocz do cudu</h2>
+      <ul id="wonder-list"></ul>
+      <p style="margin-top:10px;color:var(--dim);font-size:10px;">5 parkowanych (Średniowiecze+): Nalanda, Angkor Wat, Wielki dzwon, Mauzoleum Teodoryka, Kopiec grobowy — bez modelu v1.</p>
+    </aside>
+    <div id="hint">Przeciągnij = obrót · kółko = zoom · klik nazwy = zbliżenie</div>
+  </div>
+  <script type="module" src="./main.ts"></script>
+</body>
+</html>

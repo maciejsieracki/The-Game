@@ -1,0 +1,127 @@
+﻿{
+    "watchCount":  21,
+    "intervalSeconds":  900,
+    "files":  {
+                  "dyspozycje/_handoff/MASTER-do-SILNIK_AUDIT-START-2026-06-28.md":  {
+                                                                                         "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-do-SILNIK_AUDIT-START-2026-06-28.md",
+                                                                                         "mtime":  "2026-06-29T05:56:26.5017134Z",
+                                                                                         "flags":  "GOTOWE",
+                                                                                         "length":  4092
+                                                                                     },
+                  "dyspozycje/_handoff/MASTER-do-SILNIK_audyt-kolejka-2026-06-29.md":  {
+                                                                                           "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-do-SILNIK_audyt-kolejka-2026-06-29.md",
+                                                                                           "mtime":  "2026-06-30T14:39:38.4563464Z",
+                                                                                           "flags":  "DYPOZYCJA",
+                                                                                           "length":  4275
+                                                                                       },
+                  "dyspozycje/_handoff/MASTER-do-SILNIK_podzial-pracy-balance.md":  {
+                                                                                        "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-do-SILNIK_podzial-pracy-balance.md",
+                                                                                        "mtime":  "2026-06-30T14:39:38.4553432Z",
+                                                                                        "flags":  "",
+                                                                                        "length":  3288
+                                                                                    },
+                  "dyspozycje/_handoff/MASTER-do-SILNIK_batch-potwierdzone-2026-06-27.md":  {
+                                                                                                "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-do-SILNIK_batch-potwierdzone-2026-06-27.md",
+                                                                                                "mtime":  "2026-06-30T14:39:38.9808410Z",
+                                                                                                "flags":  "DYPOZYCJA",
+                                                                                                "length":  2805
+                                                                                            },
+                  "dyspozycje/_handoff/MASTER-do-INTEGRATOR_E1-F-CITY-HEX-batch.md":  {
+                                                                                          "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-do-INTEGRATOR_E1-F-CITY-HEX-batch.md",
+                                                                                          "mtime":  "2026-06-30T14:39:38.4232879Z",
+                                                                                          "flags":  "DYPOZYCJA",
+                                                                                          "length":  4942
+                                                                                      },
+                  "dyspozycje/_handoff/MASTER-do-SILNIK_backlog-pilne-2026-06-27.md":  {
+                                                                                           "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-do-SILNIK_backlog-pilne-2026-06-27.md",
+                                                                                           "mtime":  "2026-06-30T14:39:38.4568513Z",
+                                                                                           "flags":  "DYPOZYCJA",
+                                                                                           "length":  3437
+                                                                                       },
+                  "dyspozycje/_handoff/MASTER-do-SILNIK_C3-reguly-szturm-obrona.md":  {
+                                                                                          "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-do-SILNIK_C3-reguly-szturm-obrona.md",
+                                                                                          "mtime":  "2026-06-30T14:39:38.6353857Z",
+                                                                                          "flags":  "KOLEJKA",
+                                                                                          "length":  2968
+                                                                                      },
+                  "dyspozycje/_handoff/MASTER-do-SILNIK_F-city-hex-czysty.md":  {
+                                                                                    "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-do-SILNIK_F-city-hex-czysty.md",
+                                                                                    "mtime":  "2026-06-30T14:39:38.9803406Z",
+                                                                                    "flags":  "",
+                                                                                    "length":  1481
+                                                                                },
+                  "docs/obieg/INTEGRATOR-kolejka.md":  {
+                                                           "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\docs\\obieg\\INTEGRATOR-kolejka.md",
+                                                           "mtime":  "2026-06-30T23:17:01.2242974Z",
+                                                           "flags":  "KOLEJKA,DYPOZYCJA,GOTOWE",
+                                                           "length":  17107
+                                                       },
+                  "dyspozycje/_handoff/MASTER-do-SILNIK_oblezenie-C3-batchy.md":  {
+                                                                                      "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-do-SILNIK_oblezenie-C3-batchy.md",
+                                                                                      "mtime":  "2026-06-30T14:39:38.6348857Z",
+                                                                                      "flags":  "",
+                                                                                      "length":  8560
+                                                                                  },
+                  "dyspozycje/_handoff/MASTER-do-INTEGRATOR_A2-Q5-city-unit-pick.md":  {
+                                                                                           "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-do-INTEGRATOR_A2-Q5-city-unit-pick.md",
+                                                                                           "mtime":  "2026-06-30T14:39:38.6554144Z",
+                                                                                           "flags":  "",
+                                                                                           "length":  1970
+                                                                                       },
+                  "dyspozycje/_handoff/MASTER-do-SILNIK_kanon-zywnosc-hodowla-integracja.md":  {
+                                                                                                   "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-do-SILNIK_kanon-zywnosc-hodowla-integracja.md",
+                                                                                                   "mtime":  "2026-06-30T14:39:38.6554144Z",
+                                                                                                   "flags":  "DYPOZYCJA,GOTOWE",
+                                                                                                   "length":  4513
+                                                                                               },
+                  "dyspozycje/_handoff/MASTER-do-SILNIK_handoff-test-sesja-2026-06-28.md":  {
+                                                                                                "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-do-SILNIK_handoff-test-sesja-2026-06-28.md",
+                                                                                                "mtime":  "2026-06-30T14:39:38.8972143Z",
+                                                                                                "flags":  "DYPOZYCJA,GOTOWE",
+                                                                                                "length":  3724
+                                                                                            },
+                  "dyspozycje/_handoff/MASTER-do-SILNIK_ROUTING-MASTER-WORK-2026-06-28.md":  {
+                                                                                                 "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-do-SILNIK_ROUTING-MASTER-WORK-2026-06-28.md",
+                                                                                                 "mtime":  "2026-06-30T14:39:38.6343802Z",
+                                                                                                 "flags":  "DYPOZYCJA",
+                                                                                                 "length":  4619
+                                                                                             },
+                  "dyspozycje/_handoff/MASTER-do-GRUPA-F_executor-only-2026-06-30.md":  {
+                                                                                            "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-do-GRUPA-F_executor-only-2026-06-30.md",
+                                                                                            "mtime":  "2026-06-30T18:08:49.1856669Z",
+                                                                                            "flags":  "GOTOWE",
+                                                                                            "length":  1611
+                                                                                        },
+                  "dyspozycje/_handoff/MASTER-do-SILNIK_SIL-INT-batch-2026-06-27.md":  {
+                                                                                           "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-do-SILNIK_SIL-INT-batch-2026-06-27.md",
+                                                                                           "mtime":  "2026-06-30T14:39:38.6353857Z",
+                                                                                           "flags":  "DYPOZYCJA",
+                                                                                           "length":  1722
+                                                                                       },
+                  "dyspozycje/_handoff/MASTER-do-SILNIK_E1-jakosc-preset-bundle.md":  {
+                                                                                          "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-do-SILNIK_E1-jakosc-preset-bundle.md",
+                                                                                          "mtime":  "2026-06-28T10:30:30.1747773Z",
+                                                                                          "flags":  "",
+                                                                                          "length":  2023
+                                                                                      },
+                  "dyspozycje/_handoff/MASTER-do-SILNIK_E2-gestosc-wpiecie.md":  {
+                                                                                     "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-do-SILNIK_E2-gestosc-wpiecie.md",
+                                                                                     "mtime":  "2026-06-30T14:39:38.9793405Z",
+                                                                                     "flags":  "",
+                                                                                     "length":  1161
+                                                                                 },
+                  "docs/czaty/DYSPOZYCJA-GRUPA-F.md":  {
+                                                           "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\docs\\czaty\\DYSPOZYCJA-GRUPA-F.md",
+                                                           "mtime":  "2026-06-30T21:02:17.4368087Z",
+                                                           "flags":  "KOLEJKA,GOTOWE",
+                                                           "length":  1830
+                                                       },
+                  "dyspozycje/SILNIK-DO-MASTERA.md":  {
+                                                          "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\SILNIK-DO-MASTERA.md",
+                                                          "mtime":  "2026-06-30T21:49:16.3919515Z",
+                                                          "flags":  "GOTOWE",
+                                                          "length":  18543
+                                                      }
+              },
+    "lastTick":  "2026-06-30T23:18:09.6763752Z"
+}

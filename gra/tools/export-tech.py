@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
-"""
+"""DEPRECATED (2026-06-30 — PANEL-MERGE):
+  Excel: docs/archiwum/panele-legacy/
+  Kanon: panele-sterowania/Panel-{A..E}.xlsx + export-{a..e}.py
+  Nie używać do nowych zmian balansu.
+
+
 export-tech.py -- TARGETED export: Technologie-drzewko.xlsx[arkusz "Technologie"] -> gra/data/tech.json
 
 Czyta arkusz technologii i regeneruje tech.json. Od 2026-06-25 tech.json ma format:
@@ -35,44 +40,44 @@ except ImportError:
     sys.exit("Wymagany openpyxl:  pip install openpyxl")
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-DEF_XLSX = os.path.normpath(os.path.join(HERE, "..", "..", "Technologie-drzewko.xlsx"))
+DEF_XLSX = os.path.normpath(os.path.join(HERE, "..", "..", "docs", "archiwum", "panele-legacy", "Technologie-drzewko.xlsx"))
 DEF_JSON = os.path.normpath(os.path.join(HERE, "..", "data", "tech.json"))
 SHEET = "Technologie"
-
-# Dokladne nazwy pol w tech.json (w tej kolejnosci)
-JSON_FIELDS = [
-    "Technologia",
-    "Epoka",
-    "Poziom",
-    "Dostep do surowca.",
-    "wymagany budynek",
-    "Wymaga (prereq)",
-    "Odblokowuje surowiec.",
-    "Odblokowuje budynek",
-    "Koszt nauki",
-    "Uwagi",
-]
 
 # Mapowanie: kluczowe pole JSON -> naglowek xlsx (po strip)
 # Potrzebne dla pol z diakrytykami, by porownac naglowki xlsx z polami JSON
 FIELD_TO_HDR = {
-    "Dostep do surowca.": "Dostep do surowca.",
+    "Dostęp do surowca.": "Dostęp do surowca.",
     "Odblokowuje surowiec.": "Odblokowuje surowiec.",
+    "Odblokowuje ulepszenie terenu": "Odblokowuje ulepszenie terenu",
 }
 
-# Rzeczywiste nazwy pol w JSON (z diakrytykami) - te sa zapisywane do JSON
+# Dokladne nazwy pol w JSON (z diakrytykami) - te sa zapisywane do JSON
 JSON_FIELD_NAMES = [
     "Technologia",
     "Epoka",
     "Poziom",
-    "Dostep do surowca.",
+    "Dostęp do surowca.",
     "wymagany budynek",
     "Wymaga (prereq)",
     "Odblokowuje surowiec.",
     "Odblokowuje budynek",
     "Koszt nauki",
     "Uwagi",
+    "Odblokowuje ulepszenie terenu",
 ]
+
+# Opcjonalne kolumny lustracyjne w xlsx (pomijane przy eksporcie)
+MIRROR_ONLY_HEADERS = {
+    "Odblokowuje jednostki",
+    "Odblokowuje cud (lustracja)",
+    "Slug (drzewko UI)",
+    "Koniec epoki gracza (TAK/NIE)",
+    "Odblokowuje epokę (1=Kamień 2=Brąz 3=Żelazo)",
+    "Bramka specjalna (AND tech)",
+    "Status (kanon/draft/placeholder)",
+    "Ostatnia zmiana",
+}
 
 DEFAULT_TEMPO_GRY = {
     "szybka": 0.2,

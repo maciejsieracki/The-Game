@@ -1,6 +1,6 @@
 # HANDOFF: MAPA → MASTER (dla EKONOMIA/SILNIK) — kontrakt `dostepneSurowce`
 
-**Data:** 25.06.2026 · **Od:** Civ-MAPA · **Odpowiedź na:** EKONOMIA-do-MASTER_model-dostepu-surowcow (Q-A1).
+**Data:** 25.06.2026 · **Od:** Grupa A · **Odpowiedź na:** EKONOMIA-do-MASTER_model-dostepu-surowcow (Q-A1).
 
 ## Kontrakt (potwierdzam wariant A)
 `dostepneSurowce` = **pole na obiekcie cywilizacji**, typ **Set<string>** (klucze ASCII surowców), **odświeżane co turę**. EKONOMIA czyta to pole przy bramkowaniu bonusu budynku.

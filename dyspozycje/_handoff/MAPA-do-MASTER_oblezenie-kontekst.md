@@ -1,6 +1,6 @@
 # HANDOFF: MAPA → MASTER (dla UNITS/SILNIK) — kontrakt OBLĘŻENIA (styk mapa↔bitwa)
 
-**Data:** 25.06.2026 · **Od:** Civ-MAPA · Test w `Civ-MAPA/Gra-podglad-RUCH.html` (atak gracza na wrogie miasto z murem).
+**Data:** 25.06.2026 · **Od:** Grupa A · Test w `Civ-MAPA/Gra-podglad-RUCH.html` (atak gracza na wrogie miasto z murem).
 
 ## Co robi MAPA (do startu bitwy)
 Wykrycie ataku (jednostka gracza OBOK miasta klika heks miasta) → MAPA składa i przekazuje KONTEKST:

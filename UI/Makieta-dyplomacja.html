@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>THE GAME — Dyplomacja</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --gold:#e8d88a;--gold-dim:#b8a85a;--border:rgba(232,216,138,.28);
+  --bg:#0a0e18;--panel:rgba(12,18,35,.96);--text:#d4cba0;--text-dim:#7a7055;--text-hi:#f0e8b8;
+  --red:#c84040;--green:#50b070;--blue:#4090c8;--orange:#d08030
+}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Segoe UI',Tahoma,sans-serif;font-size:13px}
+#embed-bar{display:none;background:rgba(4,8,20,.98);border-bottom:1px solid var(--border);padding:8px 16px;align-items:center;gap:12px}
+#embed-bar.show{display:flex}
+#embed-bar button{background:transparent;border:1px solid var(--border);color:var(--gold);padding:6px 14px;border-radius:5px;cursor:pointer;font-size:11px;font-weight:600}
+#embed-bar button:hover{border-color:var(--gold)}
+#embed-bar span{color:var(--text-dim);font-size:11px;letter-spacing:.4px;text-transform:uppercase}
+#root{display:flex;flex-direction:column;height:100vh}
+#hdr{padding:16px 24px 12px;border-bottom:1px solid var(--border);background:linear-gradient(180deg,rgba(8,14,28,.98),rgba(6,10,20,.95))}
+#hdr h1{font-family:Georgia,serif;font-size:22px;color:var(--gold);letter-spacing:3px;font-weight:700}
+#hdr p{font-size:11px;color:var(--text-dim);margin-top:4px}
+#main{flex:1;display:grid;grid-template-columns:280px 1fr;min-height:0}
+#nations{border-right:1px solid var(--border);overflow-y:auto;background:rgba(6,10,18,.6)}
+.nation{padding:12px 16px;border-bottom:1px solid rgba(255,255,255,.05);cursor:pointer;transition:background .15s}
+.nation:hover,.nation.active{background:rgba(232,216,138,.08)}
+.nation .row{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.nation .name{font-weight:600;color:var(--text-hi);font-size:13px}
+.nation .badge{font-size:9px;font-weight:700;padding:2px 8px;border-radius:3px;letter-spacing:.3px;text-transform:uppercase;flex-shrink:0}
+.t0{background:rgba(200,64,64,.25);color:#ffb0b0;border:1px solid rgba(255,80,80,.5)}
+.t1{background:rgba(200,100,40,.2);color:#ffc090;border:1px solid rgba(220,120,50,.45)}
+.t2{background:rgba(120,120,130,.2);color:#ccc;border:1px solid rgba(160,160,170,.35)}
+.t3{background:rgba(60,140,80,.2);color:#a0e0b0;border:1px solid rgba(80,180,100,.4)}
+.t4{background:rgba(40,100,60,.35);color:#c0ffd0;border:1px solid rgba(80,200,120,.55)}
+.nation .sub{font-size:10px;color:var(--text-dim);margin-top:4px}
+#detail{padding:20px 28px;overflow-y:auto}
+#detail-empty{color:var(--text-dim);text-align:center;padding:60px 20px;font-style:italic}
+.d-hdr{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:12px}
+.d-hdr h2{font-family:Georgia,serif;font-size:26px;color:var(--gold)}
+.d-meta{font-size:11px;color:var(--text-dim)}
+.stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px}
+.stat{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:6px;padding:12px}
+.stat .lbl{font-size:9px;text-transform:uppercase;color:var(--text-dim);letter-spacing:.4px}
+.stat .val{font-size:20px;font-weight:700;color:var(--text-hi);margin-top:4px}
+.stat .val.gold{color:var(--gold)}
+.sec{margin-bottom:18px}
+.sec h3{font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--gold-dim);margin-bottom:8px;padding-bottom:4px;border-bottom:1px solid rgba(232,216,138,.15)}
+.bar-row{display:flex;align-items:center;gap:10px;margin:6px 0;font-size:11px}
+.bar-row .lbl{width:90px;color:var(--text-dim)}
+.bar-row .bar{flex:1;height:8px;background:rgba(255,255,255,.07);border-radius:4px;overflow:hidden}
+.bar-row .bar i{display:block;height:100%;border-radius:4px}
+.bar-row .num{width:36px;text-align:right;color:var(--text-hi);font-weight:600}
+.trt-list{display:flex;flex-wrap:wrap;gap:8px}
+.trt{padding:6px 12px;border-radius:5px;font-size:11px;border:1px solid var(--border);background:rgba(255,255,255,.03)}
+.trt.war{border-color:rgba(255,80,80,.5);color:#ffb0b0;background:rgba(120,20,20,.2)}
+.trt.pact{border-color:rgba(80,200,140,.45);color:#b0ffd0;background:rgba(20,60,40,.25)}
+.trt.ally{border-color:rgba(100,170,255,.5);color:#c0e0ff;background:rgba(20,50,90,.25)}
+.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+.act{padding:8px 14px;border-radius:5px;border:1px solid var(--border);background:rgba(255,255,255,.04);color:var(--text);font-size:11px;cursor:pointer}
+.act:hover{border-color:var(--gold);color:var(--gold)}
+.act.disabled{opacity:.35;pointer-events:none}
+.note{font-size:10px;color:var(--text-dim);font-style:italic;margin-top:20px;padding:10px;background:rgba(232,216,138,.05);border-radius:5px;border-left:3px solid var(--gold-dim)}
+#wars-sec{margin-top:24px;padding-top:16px;border-top:1px solid rgba(255,80,80,.25)}
+.war-row{display:flex;align-items:center;gap:10px;padding:8px 0;font-size:12px;color:#ffd0cc}
+</style>
+</head>
+<body>
+<div id="root">
+  <header id="hdr">
+    <h1>🤝 Dyplomacja</h1>
+    <p>Relacje imperium · v0.1 podgląd (tier + Zaufanie + Respekt) · akcje w kolejnej iteracji</p>
+  </header>
+  <div id="main">
+    <div id="nations"></div>
+    <div id="detail"><div id="detail-empty">Wybierz cywilizację z listy po lewej</div></div>
+  </div>
+</div>
+<script>
+(function(){
+'use strict';
+var NATIONS=[
+  {id:'Persja',tier:0,zaufanie:12,respekt:58,power:71,status:'Wojna trwa',treaties:['Wojna od tury 12'],note:'Atak na granicy w Anatolii — blocking chip na mapie'},
+  {id:'Egipt',tier:0,zaufanie:8,respekt:42,power:55,status:'Wojna trwa',treaties:['Wojna od tury 9'],note:''},
+  {id:'Kartagina',tier:4,zaufanie:88,respekt:65,power:58,status:'Sojusznik',treaties:['Sojusz wojskowy','Handel +15%'],note:'Chip 🤝 na pasku [A]'},
+  {id:'Rzym',tier:3,zaufanie:72,respekt:60,power:64,status:'Pakt o nieagresji',treaties:['Pakt NAP do tury 40'],note:'Chip 🕊️ na pasku [A]'},
+  {id:'Babilon',tier:2,zaufanie:50,respekt:48,power:45,status:'Neutralny',treaties:[],note:'Start relacji = 50'},
+  {id:'Hunowie',tier:1,zaufanie:28,respekt:35,power:38,status:'Wrogi',treaties:[],note:''}
+];
+var TIER=['Wojna','Wrogi','Neutralny','Przyjazny','Sojusz'];
+function qs(k){var m=location.search.match(new RegExp('[?&]'+k+'=([^&]+)'));return m?decodeURIComponent(m[1]):''}
+function renderList(focus){
+  var el=document.getElementById('nations');el.innerHTML='';
+  NATIONS.forEach(function(n){
+    var d=document.createElement('div');
+    d.className='nation'+(n.id===focus?' active':'');
+    d.dataset.id=n.id;
+    d.innerHTML='<div class="row"><span class="name">'+n.id+'</span><span class="badge t'+n.tier+'">'+TIER[n.tier]+'</span></div><div class="sub">Respekt '+n.respekt+' · Zaufanie '+n.zaufanie+'</div>';
+    d.onclick=function(){
+      select(n.id);
+      var p='?focus='+encodeURIComponent(n.id);
+      if(/\bembed=1\b/.test(location.search))p+='&embed=1';
+      history.replaceState(null,'',p);
+    };
+    el.appendChild(d);
+  });
+}
+function select(id){
+  var n=NATIONS.find(function(x){return x.id===id});if(!n)return;
+  document.querySelectorAll('.nation').forEach(function(el){el.classList.toggle('active',el.dataset.id===id)});
+  var zCol=n.zaufanie>=60?'var(--green)':n.zaufanie>=40?'var(--orange)':'var(--red)';
+  var rCol=n.respekt>=60?'var(--green)':n.respekt>=40?'var(--gold)':'var(--red)';
+  var trtHtml=n.treaties.map(function(t){
+    var cls=t.indexOf('Wojna')>=0?'war':t.indexOf('Pakt')>=0?'pact':t.indexOf('Sojusz')>=0?'ally':'';
+    return '<span class="trt '+cls+'">'+t+'</span>';
+  }).join('')||'<span class="trt">Brak traktatów</span>';
+  document.getElementById('detail').innerHTML=
+    '<div class="d-hdr"><div><h2>'+n.id+'</h2><div class="d-meta">'+n.status+' · Power wroga/sojusznika: '+n.power+'</div></div>'+
+    '<span class="badge t'+n.tier+'" style="font-size:11px;padding:4px 12px">'+TIER[n.tier]+'</span></div>'+
+    '<div class="stat-grid">'+
+    '<div class="stat"><div class="lbl">Twój Respekt</div><div class="val gold">'+n.respekt+'</div><div class="lbl">względem '+n.id+'</div></div>'+
+    '<div class="stat"><div class="lbl">Zaufanie</div><div class="val">'+n.zaufanie+'</div><div class="lbl">0–100</div></div>'+
+    '<div class="stat"><div class="lbl">Twoja Power</div><div class="val">62</div><div class="lbl">vs '+n.power+'</div></div></div>'+
+    '<div class="sec"><h3>Relacja</h3>'+
+    '<div class="bar-row"><span class="lbl">Zaufanie</span><div class="bar"><i style="width:'+n.zaufanie+'%;background:'+zCol+'"></i></div><span class="num">'+n.zaufanie+'</span></div>'+
+    '<div class="bar-row"><span class="lbl">Respekt</span><div class="bar"><i style="width:'+n.respekt+'%;background:'+rCol+'"></i></div><span class="num">'+n.respekt+'</span></div></div>'+
+    '<div class="sec"><h3>Umowy i status</h3><div class="trt-list">'+trtHtml+'</div></div>'+
+    '<div class="sec"><h3>Akcje (v1.1+)</h3><div class="actions">'+
+    '<button type="button" class="act disabled">Zaproponuj handel</button>'+
+    '<button type="button" class="act disabled">Pakt o nieagresji</button>'+
+    '<button type="button" class="act disabled">Sojusz</button>'+
+    (n.tier===0?'<button type="button" class="act">Negocjuj pokój</button>':'<button type="button" class="act disabled">Wypowiedz wojnę</button>')+
+    '</div></div>'+
+    (n.note?'<p class="note">'+n.note+'</p>':'');
+}
+renderList(qs('focus')||'Persja');
+select(qs('focus')||'Persja');
+})();
+</script>
+<script src="mockup-embed.js"></script>
+</body>
+</html>

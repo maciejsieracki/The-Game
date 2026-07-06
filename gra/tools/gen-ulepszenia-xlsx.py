@@ -10,7 +10,7 @@ DATA = os.path.normpath(os.path.join(HERE, "..", "data", "terrain-improvements.j
 OUT  = os.path.normpath(os.path.join(HERE, "..", "..", "MIASTO", "Ulepszenia-terenu.xlsx"))
 
 d = json.load(open(DATA, encoding="utf-8"))
-rows = [(k, v) for k, v in d.items() if k != "_meta"]
+rows = [(k, v) for k, v in d.items() if k != "_meta" and not str(k).startswith("_")]
 
 # kolumny: id + nazwa + epoka + bonus_* (zebrane) + reszta skalarow
 bonus_keys = []

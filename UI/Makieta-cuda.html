@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>THE GAME — Cuda świata</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--gold:#e8d88a;--border:rgba(232,216,138,.28);--bg:#0a0e18;--text:#d4cba0;--text-dim:#7a7055;--text-hi:#f0e8b8;--green:#50b070;--orange:#d08030}
+body{background:var(--bg);color:var(--text);font-family:'Segoe UI',sans-serif;font-size:13px;min-height:100vh;padding:0}
+#embed-bar{display:none}
+#hdr{padding:20px 24px 14px;border-bottom:1px solid var(--border)}
+#hdr h1{font-family:Georgia,serif;color:var(--gold);font-size:20px;letter-spacing:2px}
+#hdr p{font-size:11px;color:var(--text-dim);margin-top:4px}
+#list{padding:16px 24px 32px;max-width:720px}
+.wonder{display:flex;gap:14px;padding:14px;margin-bottom:10px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:8px;align-items:flex-start}
+.wonder.done{border-color:rgba(80,176,112,.35);background:rgba(40,80,50,.12)}
+.wonder.building{border-color:rgba(208,128,48,.4);background:rgba(80,50,20,.1)}
+.w-ic{font-size:32px;line-height:1;flex-shrink:0}
+.w-body{flex:1;min-width:0}
+.w-name{font-weight:700;color:var(--text-hi);font-size:14px}
+.w-meta{font-size:10px;color:var(--text-dim);margin-top:2px}
+.w-prog{margin-top:8px;height:8px;background:rgba(255,255,255,.07);border-radius:4px;overflow:hidden}
+.w-prog i{display:block;height:100%;background:linear-gradient(90deg,#806020,var(--gold))}
+.w-pct{font-size:10px;color:var(--orange);margin-top:4px}
+.w-city{font-size:10px;color:var(--green);margin-top:4px}
+.w-badge{font-size:9px;padding:3px 8px;border-radius:3px;text-transform:uppercase;font-weight:700;flex-shrink:0}
+.b-done{background:rgba(80,176,112,.2);color:#a0e0b0;border:1px solid rgba(80,176,112,.4)}
+.b-build{background:rgba(208,128,48,.15);color:#ffc080;border:1px solid rgba(208,128,48,.4)}
+.b-avail{background:rgba(255,255,255,.06);color:var(--text-dim);border:1px solid var(--border)}
+.note{margin:16px 24px;font-size:10px;color:var(--text-dim);font-style:italic;padding:10px;border-left:3px solid var(--gold-dim)}
+</style>
+</head>
+<body>
+<header id="hdr"><h1>🏛 Cuda świata</h1><p>Postęp budowy · bonusy globalne · klik 🏛 w panelu [C]</p></header>
+<div id="list">
+  <div class="wonder done">
+    <span class="w-ic">🏛</span>
+    <div class="w-body"><div class="w-name">Koloseum</div><div class="w-meta">+2 Kultura/t · +5% morale wojska</div><div class="w-city">Ateny · ukończono turę 8</div></div>
+    <span class="w-badge b-done">Gotowe</span>
+  </div>
+  <div class="wonder building">
+    <span class="w-ic">🗿</span>
+    <div class="w-body"><div class="w-name">Posąg Zeusa</div><div class="w-meta">+4 Kultura/t · +1 slot wielkiego budynku</div><div class="w-prog"><i style="width:58%"></i></div><div class="w-pct">58% · 340 / 580 pracy · Sparta</div></div>
+    <span class="w-badge b-build">W budowie</span>
+  </div>
+  <div class="wonder">
+    <span class="w-ic">⚓</span>
+    <div class="w-body"><div class="w-name">Latarnia w Aleksandrii</div><div class="w-meta">+3 Złoto/t · widoczność morska +2</div><div class="w-meta">Wymaga: Metalurgia · Brzeg morza</div></div>
+    <span class="w-badge b-avail">Dostępne</span>
+  </div>
+  <div class="wonder">
+    <span class="w-ic">📚</span>
+    <div class="w-body"><div class="w-name">Biblioteka w Aleksandrii</div><div class="w-meta">+15% do badań · odblokowuje wielki projekt</div><div class="w-meta">Wymaga: Pismo · miasto ≥ 8 populacji</div></div>
+    <span class="w-badge b-avail">Zablokowane</span>
+  </div>
+</div>
+<p class="note">Pełny ekran z mapy: ikona 🏛 Cuda [C]. Budowa cudu → panel miasta, zakładka produkcja.</p>
+<script src="mockup-embed.js"></script>
+</body>
+</html>

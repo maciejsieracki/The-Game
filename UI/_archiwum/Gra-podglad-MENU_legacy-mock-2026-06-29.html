@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>THE GAME — Menu Główne (podgląd UI)</title>
+<style>
+:root{
+  --gold:#C9A84C;--gold-light:#E8C97A;--gold-dim:#7A6030;
+  --bg-deep:#0A0A0F;--bg-panel:#12121A;--bg-card:#1A1A26;--bg-card-hover:#222235;
+  --border-subtle:rgba(201,168,76,0.18);--border-mid:rgba(201,168,76,0.38);--border-strong:rgba(201,168,76,0.65);
+  --text-primary:#F0E8D0;--text-secondary:#A09070;--text-muted:#554E3A;--text-gold:#C9A84C;
+  --radius:6px;--radius-lg:10px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Palatino Linotype','Book Antiqua',Palatino,Georgia,serif;
+  background:var(--bg-deep);color:var(--text-primary);min-height:100vh;overflow-x:hidden;}
+
+/* Tło wideo (7=A) — placeholder animowany + overlay */
+#video-bg{position:fixed;inset:0;z-index:0;overflow:hidden;background:#050508;}
+#video-bg video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.55;}
+#video-bg .fallback{
+  position:absolute;inset:0;
+  background:
+    radial-gradient(ellipse 90% 70% at 50% 20%,rgba(201,168,76,0.12) 0%,transparent 55%),
+    radial-gradient(ellipse 60% 50% at 15% 85%,rgba(80,60,30,0.25) 0%,transparent 60%),
+    linear-gradient(180deg,#0a0a12 0%,#121018 40%,#0a0806 100%);
+  animation:bgpulse 12s ease-in-out infinite alternate;
+}
+@keyframes bgpulse{from{filter:brightness(.92)}to{filter:brightness(1.08)}}
+#video-bg .veil{position:absolute;inset:0;background:rgba(4,4,8,.62);pointer-events:none;}
+
+#preview-banner{position:fixed;top:0;left:0;right:0;z-index:50;background:#3a1414;color:#f0d8c0;
+  text-align:center;font-family:Arial,sans-serif;font-size:11px;letter-spacing:.04em;padding:5px;}
+#app{position:relative;z-index:1;min-height:100vh;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;padding:3.5rem 1.5rem 2rem;}
+
+.intro-emblem{width:96px;height:96px;border:2px solid var(--border-mid);border-radius:50%;
+  display:flex;align-items:center;justify-content:center;margin:0 auto 1.4rem;
+  background:rgba(201,168,76,0.08);box-shadow:0 0 40px rgba(201,168,76,0.12);}
+.intro-emblem svg{width:56px;height:56px;}
+.game-label{font-size:10px;letter-spacing:0.5em;text-transform:uppercase;color:var(--text-secondary);
+  margin-bottom:8px;font-family:Arial,sans-serif;text-align:center;}
+.big-title{font-size:60px;letter-spacing:0.22em;color:var(--gold-light);font-weight:400;text-align:center;
+  text-shadow:0 0 70px rgba(201,168,76,0.35);line-height:1;}
+.ornament{display:flex;align-items:center;justify-content:center;gap:14px;margin:14px 0 6px;}
+.orn-line{height:1px;width:90px;background:linear-gradient(90deg,transparent,var(--gold-dim));}
+.orn-line.r{background:linear-gradient(270deg,transparent,var(--gold-dim));}
+.orn-diamond{width:7px;height:7px;background:var(--gold-dim);transform:rotate(45deg);}
+.sub-title{font-size:11px;letter-spacing:0.34em;text-transform:uppercase;color:var(--text-secondary);
+  text-align:center;font-family:Arial,sans-serif;margin-bottom:2rem;}
+
+.menu{display:flex;flex-direction:column;gap:11px;width:100%;max-width:380px;}
+.mbtn{position:relative;background:rgba(10,10,15,0.55);border:1.5px solid var(--gold-dim);color:var(--text-gold);
+  font-family:Arial,sans-serif;font-size:13px;letter-spacing:0.22em;text-transform:uppercase;
+  padding:14px 22px;cursor:pointer;border-radius:var(--radius);transition:all .18s;text-align:center;
+  backdrop-filter:blur(4px);}
+.mbtn:hover:not(:disabled):not(.soon){border-color:var(--gold);background:rgba(201,168,76,0.14);color:var(--gold-light);
+  box-shadow:0 0 22px rgba(201,168,76,0.14);}
+.mbtn.primary{background:linear-gradient(135deg,rgba(201,168,76,0.28),rgba(201,168,76,0.1));
+  border-color:var(--gold);color:var(--gold-light);font-size:15px;padding:16px 22px;}
+.mbtn.primary:hover{background:linear-gradient(135deg,rgba(201,168,76,0.42),rgba(201,168,76,0.18));
+  box-shadow:0 0 30px rgba(201,168,76,0.22);}
+.mbtn:disabled,.mbtn.soon{opacity:.42;cursor:not-allowed;}
+.mbtn.soon:hover{border-color:var(--gold-dim);background:rgba(10,10,15,0.55);color:var(--text-gold);box-shadow:none;}
+.mbtn .hint{display:block;font-size:9px;letter-spacing:.1em;color:var(--text-muted);margin-top:3px;text-transform:none;}
+.mbtn .badge-soon{font-size:8px;letter-spacing:.18em;color:var(--text-muted);margin-left:6px;vertical-align:middle;}
+.footer{margin-top:2.2rem;font-family:Arial,sans-serif;font-size:10px;letter-spacing:.2em;color:var(--text-muted);text-align:center;}
+
+/* Podmenu Więcej (5=C) */
+#more-panel{display:none;width:100%;max-width:380px;margin-top:4px;
+  background:rgba(18,18,26,0.92);border:1px solid var(--border-mid);border-radius:var(--radius-lg);
+  padding:8px;gap:6px;flex-direction:column;backdrop-filter:blur(8px);}
+#more-panel.open{display:flex;}
+#more-panel .mbtn{font-size:12px;padding:11px 18px;letter-spacing:.18em;}
+
+.screen{display:none;width:100%;max-width:760px;animation:fi .3s ease;}
+.screen.active{display:block;}
+.menu-screen{display:flex;flex-direction:column;align-items:center;}
+.menu-screen.active{display:flex;}
+@keyframes fi{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+.sh{text-align:center;margin-bottom:1.8rem;}
+.sh h2{font-size:28px;font-weight:400;letter-spacing:0.1em;color:var(--gold-light);}
+.sh-div{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:10px;}
+.sh-line{height:1px;width:80px;background:linear-gradient(90deg,transparent,var(--border-mid));}
+.sh-line.r{background:linear-gradient(270deg,transparent,var(--border-mid));}
+.sh-dot{width:4px;height:4px;background:var(--gold-dim);border-radius:50%;}
+.sett-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.1rem;}
+.srow{background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:var(--radius-lg);
+  padding:16px 18px;display:flex;flex-direction:column;gap:10px;}
+.slbl{font-size:10px;letter-spacing:.35em;text-transform:uppercase;color:var(--text-secondary);font-family:Arial,sans-serif;}
+.sctl{display:flex;align-items:center;gap:10px;}
+.arrbtn{width:30px;height:30px;border:1px solid var(--border-mid);background:transparent;color:var(--text-gold);
+  cursor:pointer;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:16px;
+  font-family:Arial,sans-serif;transition:all .15s;flex-shrink:0;}
+.arrbtn:hover{border-color:var(--gold);background:rgba(201,168,76,0.1);}
+.sval{flex:1;text-align:center;font-size:15px;color:var(--text-primary);letter-spacing:.04em;}
+.sval .vdesc{font-size:10px;color:var(--text-muted);font-family:Arial,sans-serif;display:block;margin-top:2px;font-style:italic;}
+.back-row{display:flex;justify-content:center;margin-top:1.8rem;}
+.btn-back{background:transparent;border:1px solid var(--border-mid);color:var(--text-secondary);
+  font-family:Arial,sans-serif;font-size:12px;letter-spacing:.2em;text-transform:uppercase;
+  padding:10px 34px;cursor:pointer;border-radius:var(--radius);transition:all .15s;}
+.btn-back:hover{border-color:var(--border-strong);color:var(--text-primary);}
+#toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%);z-index:60;
+  background:var(--bg-card);border:1px solid var(--border-mid);color:var(--gold-light);
+  font-family:Arial,sans-serif;font-size:12px;letter-spacing:.05em;padding:10px 20px;border-radius:var(--radius);
+  opacity:0;transition:opacity .25s;pointer-events:none;box-shadow:0 6px 24px rgba(0,0,0,.6);}
+#toast.show{opacity:1;}
+#preview-banner.embed-hide{display:none}
+#embed-resume{display:none;position:fixed;top:0;left:0;right:0;z-index:60;background:rgba(4,8,20,.95);border-bottom:1px solid var(--border-mid);padding:8px 16px;text-align:center}
+#embed-resume.show{display:block}
+#embed-resume button{background:transparent;border:1px solid var(--border-mid);color:var(--text-gold);padding:6px 18px;border-radius:var(--radius);cursor:pointer;font-family:Arial,sans-serif;font-size:11px;letter-spacing:.15em}
+#embed-resume button:hover{border-color:var(--gold);color:var(--gold-light)}
+</style>
+</head>
+<body>
+<div id="video-bg">
+  <div class="fallback"></div>
+  <!-- W grze: plik wideo w pętli, wyciszony (7=A). Brak assetu → gradient fallback. -->
+  <div class="veil"></div>
+</div>
+
+<div id="embed-resume"><button type="button" id="btn-resume">← Wznów grę (mapa)</button></div>
+<div id="preview-banner">PODGLĄD UI · Menu hybryda 5=C · Kampania/Multi „Wkrótce" 6=A · tło wideo 7=A · sync Grupa E</div>
+<div id="app">
+
+  <!-- MENU GŁÓWNE -->
+  <div class="menu-screen active" id="screen-menu">
+    <div class="intro-emblem">
+      <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="32,4 40,24 60,24 44,38 50,58 32,46 14,58 20,38 4,24 24,24" stroke="#7A6030" stroke-width="1.5" fill="none"/>
+        <circle cx="32" cy="32" r="8" stroke="#7A6030" stroke-width="1.5"/>
+        <line x1="32" y1="24" x2="32" y2="40" stroke="#7A6030" stroke-width="1"/>
+        <line x1="24" y1="32" x2="40" y2="32" stroke="#7A6030" stroke-width="1"/>
+      </svg>
+    </div>
+    <div class="game-label">Cywilizacja · The Game</div>
+    <div class="big-title">THE GAME</div>
+    <div class="ornament"><div class="orn-line"></div><div class="orn-diamond"></div><div class="orn-line r"></div></div>
+    <div class="sub-title">Wersja 0.1 &bull; Kamień, Brąz &amp; Żelazo</div>
+
+    <div class="menu">
+      <button class="mbtn primary" id="btn-new-game">&#9670;&nbsp; Rozpocznij grę</button>
+      <button class="mbtn soon" id="btn-campaign">Kampania<span class="badge-soon">WKRÓTCE</span></button>
+      <button class="mbtn soon" id="btn-multi">Multiplayer<span class="badge-soon">WKRÓTCE</span></button>
+      <button class="mbtn" onclick="showSettings()">Ustawienia</button>
+      <button class="mbtn" id="btn-more" onclick="toggleMore()">Więcej &#9662;</button>
+    </div>
+
+    <div id="more-panel">
+      <button class="mbtn" id="btn-continue" disabled>Kontynuuj<span class="hint">brak zapisów (silnik)</span></button>
+      <button class="mbtn" id="btn-load" disabled>Wczytaj grę<span class="hint">brak zapisów</span></button>
+      <button class="mbtn" onclick="toast('O grze / Autorzy — wkrótce')">O grze</button>
+      <button class="mbtn" onclick="toast('Wyjście z gry (w grze: zamknięcie okna)')">Wyjdź</button>
+    </div>
+
+    <div class="footer">THE GAME · prototyp v0.1 · &copy; Naster</div>
+  </div>
+
+  <!-- USTAWIENIA -->
+  <div class="screen" id="screen-settings">
+    <div class="sh">
+      <h2>Ustawienia</h2>
+      <div class="sh-div"><div class="sh-line"></div><div class="sh-dot"></div><div class="sh-line r"></div></div>
+    </div>
+    <div class="sett-grid" id="settgrid"></div>
+    <div class="back-row"><button class="btn-back" onclick="showMenu()">&#8592; Wstecz do menu</button></div>
+  </div>
+
+</div>
+
+<div id="toast"></div>
+
+<script>
+(function(){
+'use strict';
+var SETT=[
+  {key:'muzyka',lbl:'Muzyka',opts:['Wył.','Cicho','Średnio','Głośno'],idx:2,
+   descs:['Bez muzyki','20%','55%','90%']},
+  {key:'efekty',lbl:'Efekty dźwiękowe',opts:['Wył.','Cicho','Średnio','Głośno'],idx:2,
+   descs:['Bez efektów','20%','55%','90%']},
+  {key:'grafika',lbl:'Jakość grafiki',opts:['Niska','Średnia','Wysoka'],idx:1,
+   descs:['Dla słabszych maszyn','Zbalansowana','Pełne detale i cienie']},
+  {key:'jezyk',lbl:'Język',opts:['Polski','English'],idx:0,
+   descs:['Język polski','English (planowane)']},
+  {key:'skala_ui',lbl:'Skala interfejsu',opts:['Mała','Średnia','Duża','B. duża'],idx:2,
+   descs:['Więcej treści','Domyślna','Czytelniejsza','4K / słaby wzrok']},
+  {key:'mgla',lbl:'Mgła wojny (domyślnie)',opts:['Włączona','Wyłączona'],idx:0,
+   descs:['Klasyczna eksploracja','Cała mapa odkryta']}
+];
+function renderSett(){
+  var g=document.getElementById('settgrid'); g.innerHTML='';
+  SETT.forEach(function(s,i){
+    var r=document.createElement('div'); r.className='srow';
+    r.innerHTML='<div class="slbl">'+s.lbl+'</div><div class="sctl">'+
+      '<button class="arrbtn" onclick="chSett('+i+',-1)">&#8249;</button>'+
+      '<div class="sval" id="sv'+i+'">'+s.opts[s.idx]+'<span class="vdesc">'+s.descs[s.idx]+'</span></div>'+
+      '<button class="arrbtn" onclick="chSett('+i+',1)">&#8250;</button></div>';
+    g.appendChild(r);
+  });
+}
+window.chSett=function(i,d){
+  var s=SETT[i]; s.idx=(s.idx+d+s.opts.length)%s.opts.length;
+  document.getElementById('sv'+i).innerHTML=s.opts[s.idx]+'<span class="vdesc">'+s.descs[s.idx]+'</span>';
+};
+window.showSettings=function(){
+  document.getElementById('screen-menu').classList.remove('active');
+  document.getElementById('screen-settings').classList.add('active');
+  closeMore();
+};
+window.showMenu=function(){
+  document.getElementById('screen-settings').classList.remove('active');
+  document.getElementById('screen-menu').classList.add('active');
+};
+function closeMore(){
+  document.getElementById('more-panel').classList.remove('open');
+  document.getElementById('btn-more').innerHTML='Więcej &#9662;';
+}
+window.toggleMore=function(){
+  var p=document.getElementById('more-panel');
+  var open=p.classList.toggle('open');
+  document.getElementById('btn-more').innerHTML=open?'Więcej &#9652;':'Więcej &#9662;';
+};
+var toastTimer=null;
+window.toast=function(msg){
+  var t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show');
+  if(toastTimer)clearTimeout(toastTimer);
+  toastTimer=setTimeout(function(){t.classList.remove('show');},2600);
+};
+renderSett();
+
+document.getElementById('btn-campaign').onclick=function(){toast('Kampania — wkrótce');};
+document.getElementById('btn-multi').onclick=function(){toast('Multiplayer — wkrótce');};
+
+if(/\bembed=1/.test(location.search)||window.parent!==window){
+  document.getElementById('embed-resume').classList.add('show');
+  document.getElementById('preview-banner').classList.add('embed-hide');
+  document.getElementById('btn-resume').onclick=function(){
+    if(window.parent!==window)window.parent.postMessage('civ-close-fs','*');
+  };
+}
+document.getElementById('btn-new-game').onclick=function(){
+  if(/\bembed=1/.test(location.search)){
+    window.parent.postMessage('civ-nav:Makieta-flow-nowa-gra.html','*');
+  }else{
+    window.location.href='Makieta-flow-nowa-gra.html';
+  }
+};
+})();
+</script>
+</body>
+</html>

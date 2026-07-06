@@ -1,0 +1,167 @@
+{
+  "_meta": {
+    "status": "REZERWA — NIE IMPORTOWAĆ do gra/data/",
+    "created": "2026-07-01",
+    "author": "Grupa D / Maciej",
+    "doc": "docs/decyzje/D-cyw-roster-6-REZERWA.md",
+    "tiers": {
+      "1_implement_first": ["Harappa", "Hetyci", "Słowianie"],
+      "2_reserve": ["Babilonia", "Asyria", "Fenicjanie"]
+    }
+  },
+  "cywilizacje": [
+    {
+      "tier": 1,
+      "Cywilizacja": "Harappa",
+      "Styl / charakter": "Miasta-plan; handel wewnętrzny; obrona murów; niska agresja ekspansji",
+      "Jednostka specjalna": "Strażnik bram Harappy",
+      "jednostka_specjalna_w_zamian_za": "Włócznik",
+      "Bonus startowy": "+Handel miejski; +obrona piechoty w terytorium",
+      "Bonusy/minusy (do dopracowania)": "Słabsza kawaleria wczesna",
+      "Religia": "Kultura indusko-dolinna",
+      "nazwyKlastra": ["Harappa", "Mohenjo-daro", "Dholavira", "Rakhigarhi", "Ganweriwala", "Kalibangan", "Lothal", "Banawali", "Kot Diji", "Amri"],
+      "mnoznikHandelPieniadz": 2.4,
+      "ikonaId": "harappa",
+      "typCywilizacji": "harappa",
+      "archetyp": "harappa",
+      "epokiStartowe": ["kamien"],
+      "epokaStartowaGracz": "kamien",
+      "bonusy": [
+        {"typ": "bonus_zloto", "cel": "handel", "wartosc": 0.15, "opis": "Szlaki lokalne: +15% złota z handlu w miastach", "realizuje": "ekonomia"},
+        {"typ": "bonus_obrona", "cel": "piechota", "wartosc": 0.15, "opis": "Obrona murów: +15% obrony piechoty w terytorium własnym", "realizuje": "walka"},
+        {"typ": "jednostka_specjalna", "cel": "piechota", "wartosc": "Strażnik bram Harappy", "opis": "Elitarna piechota bram miasta-plan", "realizuje": "walka"}
+      ],
+      "civAi": {"agresywnosc": 2, "priorytetEkonomia": 7, "priorytetNauka": 5, "priorytetMilitarny": 4, "profilMapy": "kopia_typu_obronna"},
+      "perNacja": {"sklonnoscSojusze": 7, "lojalnosc": 6, "progWojny": 2, "otwartoscHandel": 8, "nastawienieBazowe": 58}
+    },
+    {
+      "tier": 1,
+      "Cywilizacja": "Hetyci",
+      "Styl / charakter": "Charyotycy; fortyfikacje górskie; traktaty; obrona",
+      "Jednostka specjalna": "Rydwan Kapadokijski",
+      "jednostka_specjalna_w_zamian_za": "Rydwan",
+      "Bonus startowy": "+Rydwany; +obrona fortec",
+      "Bonusy/minusy (do dopracowania)": "Słabszy handel morski",
+      "Religia": "Politeizm hetycki",
+      "nazwyKlastra": ["Hattusa", "Alaca Höyük", "Kanesh", "Carchemish", "Aleppo", "Karkemish", "Sapinuwa", "Sarissa", "Kuşaklı", "Şapinuva"],
+      "mnoznikHandelPieniadz": 2.0,
+      "ikonaId": "hetyci",
+      "typCywilizacji": "hetyci",
+      "archetyp": "hetyci",
+      "epokiStartowe": ["braz"],
+      "epokaStartowaGracz": "braz",
+      "bonusy": [
+        {"typ": "bonus_walka", "cel": "rydwany", "wartosc": 0.2, "opis": "Rydwan hetycki: +20% ataku rydwanów", "realizuje": "walka"},
+        {"typ": "bonus_obrona", "cel": "piechota", "wartosc": 0.15, "opis": "Forteca Anatolii: +15% obrony w murach/górach", "realizuje": "walka"},
+        {"typ": "jednostka_specjalna", "cel": "rydwany", "wartosc": "Rydwan Kapadokijski", "opis": "Elitarny rydwan hetycki", "realizuje": "walka"}
+      ],
+      "civAi": {"agresywnosc": 5, "priorytetMilitarny": 6, "priorytetNauka": 4, "profilMapy": "kopia_typu_obronna"},
+      "perNacja": {"sklonnoscSojusze": 5, "lojalnosc": 6, "progWojny": 5, "otwartoscHandel": 5, "nastawienieBazowe": 52}
+    },
+    {
+      "tier": 1,
+      "Cywilizacja": "Słowianie",
+      "Styl / charakter": "Osady leśne; liczna piechota; ekspansja wschodnia",
+      "Jednostka specjalna": "Drużynnik",
+      "jednostka_specjalna_w_zamian_za": "Włócznik",
+      "Bonus startowy": "+Piechota w lesie; +regen poboru",
+      "Bonusy/minusy (do dopracowania)": "Wolniejsza nauka wczesna",
+      "Religia": "Pogaństwo słowiańskie",
+      "nazwyKlastra": ["Kiev", "Novgorod", "Kraków", "Wolin", "Gniezno", "Pskov", "Suzdal", "Belgrade", "Pliska", "Arkona"],
+      "mnoznikHandelPieniadz": 1.8,
+      "ikonaId": "slowianie",
+      "typCywilizacji": "slowianie",
+      "archetyp": "slowianie",
+      "epokiStartowe": ["zelazo"],
+      "epokaStartowaGracz": "zelazo",
+      "bonusy": [
+        {"typ": "bonus_walka", "cel": "piechota", "wartosc": 0.15, "opis": "Horda leśna: +15% ataku piechoty w lesie", "realizuje": "walka"},
+        {"typ": "bonus_pobor_regen", "cel": "rekruci", "wartosc": 0.1, "opis": "Wspólnota: +10% regen poboru", "realizuje": "ekonomia"},
+        {"typ": "jednostka_specjalna", "cel": "piechota", "wartosc": "Drużynnik", "opis": "Elitarny wojownik drużyny księcia", "realizuje": "walka"}
+      ],
+      "civAi": {"agresywnosc": 6, "priorytetMilitarny": 6, "sklonnoscDoPodboju": 3, "profilMapy": "kopia_typu_obronna"},
+      "perNacja": {"sklonnoscSojusze": 4, "lojalnosc": 5, "progWojny": 6, "otwartoscHandel": 4, "nastawienieBazowe": 48}
+    },
+    {
+      "tier": 2,
+      "Cywilizacja": "Babilonia",
+      "Styl / charakter": "Prawo, astronomia, kapłani; nauka i dyplomacja",
+      "Jednostka specjalna": "Gwardia Ishtar",
+      "jednostka_specjalna_w_zamian_za": "Wojownik z khopesh",
+      "Bonus startowy": "+Nauka; +handel rzeczny",
+      "Bonusy/minusy (do dopracowania)": "Wrażliwość na utratę stolicy",
+      "Religia": "Religia babilońska (Marduk)",
+      "nazwyKlastra": ["Babilon", "Ur", "Sippar", "Nippur", "Larsa", "Isin", "Uruk", "Eridu", "Kish", "Akkad"],
+      "mnoznikHandelPieniadz": 2.3,
+      "ikonaId": "babilonia",
+      "typCywilizacji": "babilonia",
+      "_uwaga": "KONFLIKT: Sumerowie używa typCywilizacji babilon — decyzja D-ROSTER-Q1",
+      "archetyp": "babilonia",
+      "epokiStartowe": ["braz"],
+      "epokaStartowaGracz": "braz",
+      "bonusy": [
+        {"typ": "bonus_nauka", "cel": "nauka", "wartosc": 0.15, "opis": "Kapłani-astronomowie: +15% nauki", "realizuje": "ekonomia"},
+        {"typ": "bonus_zloto", "cel": "handel", "wartosc": 0.1, "opis": "Rynek Euphratu: +10% złota", "realizuje": "ekonomia"},
+        {"typ": "jednostka_specjalna", "cel": "piechota", "wartosc": "Gwardia Ishtar", "opis": "Elitarna gwardia świątynna", "realizuje": "walka"}
+      ],
+      "perNacja": {"sklonnoscSojusze": 6, "lojalnosc": 5, "progWojny": 4, "otwartoscHandel": 6, "nastawienieBazowe": 55}
+    },
+    {
+      "tier": 2,
+      "Cywilizacja": "Asyria",
+      "Styl / charakter": "Imperium oblężnicze; łucznicy; podbój",
+      "Jednostka specjalna": "Łucznik asyryjski",
+      "jednostka_specjalna_w_zamian_za": "Łucznik",
+      "Bonus startowy": "+Łucznicy; +oblężenie",
+      "Bonusy/minusy (do dopracowania)": "Niskie zaufanie sąsiadów",
+      "Religia": "Religia asyryjska (Aszur)",
+      "nazwyKlastra": ["Ninive", "Assur", "Kalhu", "Dur-Sharrukin", "Harran", "Carchemish", "Arpad", "Imgur-Enlil", "Tushhan", "Nineveh"],
+      "mnoznikHandelPieniadz": 1.7,
+      "ikonaId": "asyria",
+      "typCywilizacji": "asyria",
+      "archetyp": "asyria",
+      "epokiStartowe": ["braz"],
+      "epokaStartowaGracz": "braz",
+      "bonusy": [
+        {"typ": "bonus_walka", "cel": "lukownicy", "wartosc": 0.2, "opis": "Łucznicy asyryjscy: +20% ataku dystansowego", "realizuje": "walka"},
+        {"typ": "bonus_walka", "cel": "obleczenie", "wartosc": 0.15, "opis": "Machiny oblężnicze: +15% oblężenia", "realizuje": "walka"},
+        {"typ": "jednostka_specjalna", "cel": "lukownicy", "wartosc": "Łucznik asyryjski", "opis": "Elitarny łucznik imperium", "realizuje": "walka"}
+      ],
+      "civAi": {"agresywnosc": 8, "sklonnoscDoPodboju": 5, "priorytetMilitarny": 8},
+      "perNacja": {"sklonnoscSojusze": 2, "lojalnosc": 4, "progWojny": 9, "otwartoscHandel": 3, "nastawienieBazowe": 38}
+    },
+    {
+      "tier": 2,
+      "Cywilizacja": "Fenicjanie",
+      "Styl / charakter": "Handel morski; kolonie; barter",
+      "Jednostka specjalna": "Tyrski miecznik",
+      "jednostka_specjalna_w_zamian_za": "Wojownik z mieczem i tarczą",
+      "Bonus startowy": "+Handel morski; porty",
+      "Bonusy/minusy (do dopracowania)": "Słaba piechota elit lądowa",
+      "Religia": "Religia fenicka (Ba'al)",
+      "nazwyKlastra": ["Tyr", "Sidon", "Byblos", "Carthage", "Utica", "Gadir", "Motya", "Tharros", "Kition", "Arwad"],
+      "mnoznikHandelPieniadz": 2.6,
+      "ikonaId": "fenicjanie",
+      "typCywilizacji": "fenicjanie",
+      "archetyp": "fenicjanie",
+      "epokiStartowe": ["zelazo"],
+      "epokaStartowaGracz": "zelazo",
+      "bonusy": [
+        {"typ": "bonus_zloto", "cel": "handel", "wartosc": 0.25, "opis": "Szlaki morskie: +25% złota z portów", "realizuje": "ekonomia"},
+        {"typ": "bonus_zloto", "cel": "handel", "wartosc": 0.1, "opis": "Purpura: +10% handlu", "realizuje": "ekonomia"},
+        {"typ": "jednostka_specjalna", "cel": "piechota", "wartosc": "Tyrski miecznik", "opis": "Elitarny wojownik fenicki", "realizuje": "walka"}
+      ],
+      "civAi": {"agresywnosc": 3, "priorytetEkonomia": 8, "tolerancjaRyzyka": 3},
+      "perNacja": {"sklonnoscSojusze": 5, "lojalnosc": 4, "progWojny": 3, "otwartoscHandel": 9, "nastawienieBazowe": 62}
+    }
+  ],
+  "decyzje_abc_oczekujace": [
+    "D-ROSTER-Q1: Sumerowie vs Babilonia (enum babilon zajęty)",
+    "D-ROSTER-Q2: Nazwy jednostek specjalnych",
+    "D-ROSTER-Q3: Roster max 12 vs 15",
+    "D-ROSTER-Q4: Wartości bonusów draft vs Excel",
+    "D-ROSTER-Q5: Fenicjanie ląd vs morze",
+    "D-ROSTER-Q6: Kiedy Tier 2",
+    "D-ROSTER-Q7: Archetypy AI nowe vs mapowanie"
+  ]
+}

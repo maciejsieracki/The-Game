@@ -1,6 +1,6 @@
 # HANDOFF: MAPA → MASTER (dla DANE) — nazwy miast w klastrach (10/typ)
 
-**Data:** 24.06.2026 · **Od:** Civ-MAPA · **Dla:** DANE (przez mastera)
+**Data:** 24.06.2026 · **Od:** Grupa A · **Dla:** DANE (przez mastera)
 **Kontekst:** Maciej chce, by 10 miast w klastrze danego typu miało REALNE nazwy historyczne (miasta-państwa / plemiona / klany), a nie „ASTEC01, ASTEC02...".
 **Status:** PROPOZYCJA do akceptacji. Dane nazw należą do DANE (`Cywilizacje.xlsx` → `civs.json`) — MAPA tylko proponuje, NIE nadpisuje. Render mapy te nazwy tylko czyta.
 

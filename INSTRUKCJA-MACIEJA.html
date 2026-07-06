@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Instrukcja obsługi — The Game (Civ) · Maciej</title>
+<style>
+  :root{
+    --bg:#0f1419; --panel:#1a212b; --panel2:#222c38; --ink:#e7edf3; --muted:#9fb0c0;
+    --acc:#4ea1ff; --acc2:#36d399; --warn:#ffb454; --bad:#ff6b6b; --line:#2c3744;
+    --chip:#2a3543;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 -apple-system,Segoe UI,Roboto,Arial,sans-serif}
+  .wrap{max-width:1000px;margin:0 auto;padding:24px 18px 80px}
+  h1{font-size:26px;margin:6px 0 2px}
+  h2{font-size:19px;margin:30px 0 12px;padding-bottom:8px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:9px}
+  h3{font-size:15px;margin:18px 0 8px;color:var(--acc)}
+  .sub{color:var(--muted);margin:0 0 18px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:12px 0}
+  .grid{display:grid;gap:10px}
+  .cmds{grid-template-columns:1fr 1fr}
+  @media(max-width:680px){.cmds{grid-template-columns:1fr}}
+  .cmd{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:11px 12px;display:flex;gap:11px;align-items:flex-start}
+  .cmd .k{font-family:ui-monospace,Consolas,monospace;background:#0c1117;color:var(--acc2);border:1px solid var(--line);border-radius:7px;padding:3px 9px;font-weight:700;white-space:nowrap;cursor:pointer;font-size:13px}
+  .cmd .k:hover{background:#0a0e13;border-color:var(--acc2)}
+  .cmd .d{color:var(--ink);font-size:13.5px}
+  .cmd .d small{color:var(--muted)}
+  .top{background:linear-gradient(180deg,#15324f,#142231);border:1px solid #244a6e}
+  .pill{display:inline-block;background:var(--chip);border:1px solid var(--line);border-radius:20px;padding:2px 10px;font-size:12px;color:var(--muted);margin:0 6px 6px 0}
+  table{width:100%;border-collapse:collapse;font-size:13.5px}
+  th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{color:var(--muted);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.4px}
+  code{font-family:ui-monospace,Consolas,monospace;background:#0c1117;border:1px solid var(--line);border-radius:5px;padding:1px 6px;color:var(--acc2);font-size:12.5px}
+  .flow{display:flex;flex-direction:column;gap:6px}
+  .flow .step{display:flex;gap:10px;align-items:center}
+  .flow .n{flex:none;width:24px;height:24px;border-radius:50%;background:var(--acc);color:#04121f;font-weight:800;display:grid;place-items:center;font-size:12px}
+  .flow .arrow{color:var(--muted);margin-left:11px}
+  .paste{position:relative;background:#0c1117;border:1px solid var(--line);border-radius:10px;padding:14px 14px 14px;margin:10px 0;white-space:pre-wrap;font-family:ui-monospace,Consolas,monospace;font-size:12.5px;color:#cfe0ef}
+  .copy{position:absolute;top:8px;right:8px;background:var(--acc);color:#04121f;border:0;border-radius:7px;padding:5px 11px;font-weight:700;cursor:pointer;font-size:12px}
+  .copy:hover{filter:brightness(1.08)}
+  .copy.done{background:var(--acc2)}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:680px){.two{grid-template-columns:1fr}}
+  .tag{font-size:11px;font-weight:700;padding:1px 7px;border-radius:5px}
+  .g{background:#123a2a;color:var(--acc2)} .y{background:#3a2f12;color:var(--warn)} .r{background:#3a1818;color:var(--bad)}
+  .note{color:var(--muted);font-size:12.5px;margin-top:8px}
+  .hint{font-size:11px;color:var(--muted);text-align:center;margin-top:-6px}
+  b.acc{color:var(--acc)}
+  a.xl{display:inline-block;background:var(--acc);color:#04121f;text-decoration:none;border-radius:7px;padding:5px 12px;font-weight:700;font-size:12.5px;white-space:nowrap}
+  a.xl:hover{filter:brightness(1.1)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>🎮 The Game (Civ) — instrukcja dla Macieja</h1>
+  <p class="sub">Skondensowana ściąga: hasła, role, przepływ, pliki, gotowce do przeklejenia. Klikaj <span class="pill">kliknij = kopiuj</span> na hasłach i blokach.</p>
+
+  <!-- ============ HASŁA ============ -->
+  <h2>⌨️ HASŁA — wpisz w czacie (klik = kopiuj)</h2>
+  <p class="hint">To Twoje główne narzędzie. Nic nie tłumaczysz — wpisujesz hasło, agent wie co robić.</p>
+
+  <div class="card top">
+    <h3>Codzienne (używasz najczęściej)</h3>
+    <div class="grid cmds">
+      <div class="cmd"><span class="k" onclick="cp(this)">zadanie</span><span class="d"><b>Rusza grupę do pracy.</b> Wpisz w czacie grupy → agent czyta swój task i zaczyna. <small>(aliasy: start, działaj · można <code>zadanie A</code>)</small></span></div>
+      <div class="cmd"><span class="k" onclick="cp(this)">format</span><span class="d"><b>Grupa zadała pytanie źle?</b> → natychmiast przepisuje na pełne ABC. <small>(alias: ABC)</small></span></div>
+      <div class="cmd"><span class="k" onclick="cp(this)">czaty</span><span class="d"><b>Master, przejmij routing.</b> Czytam kolejkę Integratora i ogarniam co dalej. <small>(alias: master)</small></span></div>
+      <div class="cmd"><span class="k" onclick="cp(this)">raport</span><span class="d">3 warstwy: ✅ wykonane · 🔜 otwarte · 📤 przekazane (u kogo wisi)</span></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Kontrola i status</h3>
+    <div class="grid cmds">
+      <div class="cmd"><span class="k" onclick="cp(this)">status</span><span class="d">Co z Twoich decyzji: zapisane / w trakcie / wdrożone / <b>zaległe</b></span></div>
+      <div class="cmd"><span class="k" onclick="cp(this)">pytania</span><span class="d">Tylko realnie otwarte pytania ABC (czekają Twojej decyzji)</span></div>
+      <div class="cmd"><span class="k" onclick="cp(this)">co dalej</span><span class="d">1 najważniejsza rzecz do zrobienia teraz + dlaczego</span></div>
+      <div class="cmd"><span class="k" onclick="cp(this)">sprawdź </span><span class="d">np. <code>sprawdź miasta-państwa</code> — czy zrobione, gdzie, status</span></div>
+      <div class="cmd"><span class="k" onclick="cp(this)">zasady</span><span class="d">Czy grupa ma aktualne reguły (ISO v1) <small>(alias: sprawdź zasady)</small></span></div>
+      <div class="cmd"><span class="k" onclick="cp(this)">archiwizuj czat</span><span class="d">Pełny eksport korespondencji do archiwum</span></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Po teście finalnej (gdy ja Ci dam wersję do grania)</h3>
+    <div class="grid cmds">
+      <div class="cmd"><span class="k" onclick="cp(this)">playtest OK</span><span class="d">Działa — promuj do kanonu</span></div>
+      <div class="cmd"><span class="k" onclick="cp(this)">BUG</span><span class="d">Coś nie gra — wraca do grupy-właściciela</span></div>
+      <div class="cmd"><span class="k" onclick="cp(this)">POMIŃ</span><span class="d">Pomiń ten punkt testu</span></div>
+    </div>
+  </div>
+
+  <!-- ============ ROLE ============ -->
+  <h2>👥 Kto co robi</h2>
+  <div class="card">
+    <table>
+      <tr><th>Rola</th><th>Gdzie</th><th>Co robi</th><th>main.ts?</th></tr>
+      <tr><td><b>Ty (Maciej)</b></td><td>czat</td><td>Decyzje gameplay (ABC) + finalny playtest. <b>Zero terminala, zero plików.</b></td><td>NIE</td></tr>
+      <tr><td><b>Grupy A–E</b></td><td>czaty tematyczne</td><td>Cała robota deweloperska swojego obszaru + pytania ABC do Ciebie</td><td>NIE</td></tr>
+      <tr><td><b>Integrator</b><br>(Grupa F)</td><td>osobny czat</td><td>Jedyny edytor <code>main.ts</code>. Wpina moduły, buduje, testuje, <b>ogląda wygląd</b>, publikuje <code>Gra-podglad-ROBOCZA.html</code></td><td><b>TAK</b></td></tr>
+      <tr><td><b>Master</b></td><td>czat orkiestracji</td><td>Routing, spójność, zapisywanie Twoich decyzji, promocja kanonu <code>Gra-podglad.html</code></td><td>NIE</td></tr>
+      <tr><td><b>Opus</b></td><td>osobny czat (Ask)</td><td>Review przed kanonem — na końcu łańcucha</td><td>NIE</td></tr>
+    </table>
+    <p class="note"><b>Obszary grup:</b> A = mapa świata + HUD · B = miasto + ekonomia + nauka · C = walka · D = cywilizacje + dyplomacja + AI · E = start + menu + kreator nowej gry · F = Integrator.</p>
+  </div>
+
+  <!-- ============ PRZEPŁYW ============ -->
+  <h2>🔄 Jak płynie praca</h2>
+  <div class="card">
+    <div class="flow">
+      <div class="step"><span class="n">1</span><div>Decydujesz (ABC w czacie grupy) → agent <b>zapisuje</b> Twoją decyzję (ECHO do rejestru)</div></div>
+      <div class="arrow">↓</div>
+      <div class="step"><span class="n">2</span><div>Wpisujesz <code>zadanie</code> → grupa robi swój moduł + <b>self-check</b> (kompilacja + testy)</div></div>
+      <div class="arrow">↓</div>
+      <div class="step"><span class="n">3</span><div>Grupa zgłasza <code>→ INTEGRATOR: GOTOWE</code> (z warstwą 🟢/🟡/🔴)</div></div>
+      <div class="arrow">↓</div>
+      <div class="step"><span class="n">4</span><div>Integrator wpina do <code>main.ts</code>, buduje, <b>ogląda</b> mapę/miasto/HUD → <code>Gra-podglad-ROBOCZA.html</code></div></div>
+      <div class="arrow">↓</div>
+      <div class="step"><span class="n">5</span><div>Wpisujesz <code>czaty</code> → ja (Master) weryfikuję → Opus → <b>kanon</b></div></div>
+      <div class="arrow">↓</div>
+      <div class="step"><span class="n">6</span><div>Gramy razem w finalną → <code>playtest OK</code> / <code>BUG</code></div></div>
+    </div>
+    <p class="note">⚠️ <b>main.ts po kolei, nie równolegle:</b> kilka grup może robić swoje moduły naraz, ale wpięcie do <code>main.ts</code> robi tylko Integrator i pojedynczo. Błąd na dowolnym etapie → wraca do <b>grupy-właściciela</b> (nie do Integratora).</p>
+  </div>
+
+  <!-- ============ ZASADY ============ -->
+  <h2>🛡️ Zasady bezpieczeństwa (żeby grupa nie psuła innym)</h2>
+  <div class="card">
+    <h3>Warstwy zmian — grupa oznacza każdą zmianę</h3>
+    <p><span class="tag g">🟢 izolowana</span> tylko własny moduł → Integrator scala szybko (batch).<br>
+       <span class="tag y">🟡 cross</span> dotyka wspólnego stanu / renderu / save → pełna kontrola Integratora + sprawdzenie wyglądu.<br>
+       <span class="tag r">🔴 duża</span> przebudowa / nowy system → najpierw kontrakt ze mną + osobna gałąź.</p>
+    <h3>Kto co testuje</h3>
+    <p><b>Grupa</b> → tylko czy jej kod się kompiluje + testy jej obszaru (sama, w czacie).<br>
+       <b>Integrator</b> → buduje całą grę i <b>patrzy</b> na mapę/miasto/HUD (łapie „wykrzaczoną mapę").<br>
+       <b>Ty</b> → finalny playtest gotowej wersji.</p>
+    <h3>Dwie żelazne reguły</h3>
+    <p>• <b>Ty = zero terminala.</b> Skrypty/budowanie to robota agentów.<br>
+       • <b>Ty ≠ listonosz.</b> Żaden agent nie prosi Cię „wklej to do innego czatu". Komunikacja między rolami idzie plikami; Ty co najwyżej wpisujesz jedno słowo (<code>czaty</code>).</p>
+  </div>
+
+  <!-- ============ GOTOWCE ============ -->
+  <h2>📋 Gotowce do przeklejenia</h2>
+
+  <h3>Wywołanie grupy do pracy</h3>
+  <p class="note">Najprościej: wejdź w czat grupy i wpisz po prostu <code>zadanie</code>. Jakby agent nie wiedział, która to grupa — użyj wersji z literą:</p>
+  <div class="paste"><button class="copy" onclick="cpb(this)">kopiuj</button>zadanie A</div>
+
+  <h3>Reset/odświeżenie zasad w grupie (gdy zapomina lub nowy czat)</h3>
+  <div class="paste"><button class="copy" onclick="cpb(this)">kopiuj</button>Zasady pracy (ISO + format pytań) — stosuj od teraz. Ustal swoją literę grupy (A/B/C/D/E).
+1. Pracujesz tylko na swoich plikach. Nigdy main.ts ani plików innych grup.
+2. Przed handoffem self-check: typecheck + testy swojego obszaru.
+3. Zgłaszasz → INTEGRATOR: GOTOWE z warstwą (🟢 izolowana / 🟡 cross / 🔴 duża) + „co sprawdzić po wpięciu".
+4. Pełnego buildu całej gry nie robisz — to rola Integratora.
+5. Pytania do Macieja TYLKO pełną formą ABC (3 opcje A/B/C z Za/Przeciw + rekomendacja + jeden formularz). Skrót = ja napiszę „format".
+Szczegóły: docs/obieg/WERSJE-TESTOWE.md, .cursor/rules/zmiany-izolacja.mdc, .cursor/rules/abc-pelna-forma.mdc. Potwierdź jednym zdaniem (podaj literę).</div>
+
+  <!-- ============ PANELE EXCEL ============ -->
+  <h2>📊 Panele sterowania — Twoje Excele balansu</h2>
+  <div class="card">
+    <p class="note">Klikasz panel → otwiera się Excel. Zmieniasz kolumnę <b>Wartość</b>, zapisujesz, a w czacie danej grupy wpisujesz <code>eksportuj panel</code> — agent wgra zmiany do gry. <b>Zero terminala.</b></p>
+    <table>
+      <tr><th>Panel</th><th>Czym kręcisz</th><th>Otwórz</th></tr>
+      <tr><td><b>A — Mapa</b></td><td>surowce, rzeki, las, ulepszenia terenu, rozmiar mapy</td><td><a class="xl" href="panele-sterowania/Panel-A.xlsx">📂 Panel-A.xlsx</a></td></tr>
+      <tr><td><b>B — Ekonomia</b></td><td>plony, koszty, szczęście, porządek, żywność, Wealth, technologie</td><td><a class="xl" href="panele-sterowania/Panel-B.xlsx">📂 Panel-B.xlsx</a></td></tr>
+      <tr><td><b>C — Walka</b></td><td>jednostki, stałe walki, oblężenie, kontry, teren walki</td><td><a class="xl" href="panele-sterowania/Panel-C.xlsx">📂 Panel-C.xlsx</a></td></tr>
+      <tr><td><b>D — Cywilizacje</b></td><td>bonusy nacji, dyplomacja, AI, barbarzyńcy, zwycięstwo</td><td><a class="xl" href="panele-sterowania/Panel-D.xlsx">📂 Panel-D.xlsx</a></td></tr>
+      <tr><td><b>E — Kreator</b></td><td>defaulty startu, kreator nowej gry, skala mapy, warunki zwycięstwa</td><td><a class="xl" href="panele-sterowania/Panel-E.xlsx">📂 Panel-E.xlsx</a></td></tr>
+    </table>
+    <p class="note">⚠️ Linki działają, dopóki ten plik (<code>INSTRUKCJA-MACIEJA.html</code>) i folder <code>panele-sterowania/</code> leżą obok siebie w głównym katalogu projektu. Jeśli przeniesiemy folder z Excelami — linki trzeba będzie zaktualizować. Zakładamy, że nie będziemy tym kręcić.</p>
+    <p class="note">💡 Niektóre przeglądarki zamiast otwierać plik <b>pobiorą</b> go (do „Pobrane") — wtedy otwórz pobrany Excel. Jeśli klik nic nie robi, otwórz folder <code>panele-sterowania/</code> ręcznie.</p>
+  </div>
+
+  <!-- ============ PLIKI ============ -->
+  <h2>📁 Pliki (dla orientacji — agenci je czytają, nie Ty)</h2>
+  <div class="card">
+    <table>
+      <tr><th>Plik</th><th>Co to</th></tr>
+      <tr><td><code>docs/ROADMAP.md</code></td><td>Cała gra w jednym miejscu: status, decyzje, co zrobione</td></tr>
+      <tr><td><code>docs/obieg/&lt;litera&gt;-*.md</code></td><td>Plik bieżący każdej grupy (A-mapa, B-ekonomia, C-walka, D-cywilizacje, E-start)</td></tr>
+      <tr><td><code>docs/obieg/INTEGRATOR-kolejka.md</code></td><td>Kolejka wpięć Integratora + co czeka na Mastera</td></tr>
+      <tr><td><code>docs/obieg/REJESTR-DECYZJI.md</code></td><td>Twoje decyzje: ID, status, dowód wdrożenia (żeby nic nie ginęło)</td></tr>
+      <tr><td><code>docs/obieg/KOMENDY-MACIEJA.md</code></td><td>Ta ściąga haseł (wersja tekstowa)</td></tr>
+      <tr><td><code>Gra-podglad-ROBOCZA.html</code></td><td>Wersja robocza (Integrator) — do podglądu</td></tr>
+      <tr><td><code>Gra-podglad.html</code></td><td>Kanon — wersja główna (Master po Opus)</td></tr>
+    </table>
+  </div>
+
+  <p class="note" style="margin-top:24px;text-align:center">The Game (Civ) · instrukcja operacyjna Macieja · trzymamy się haseł u góry 👆</p>
+
+</div>
+
+<script>
+  function flash(el){el.classList.add('done');const t=el.textContent;el.textContent='✓ skopiowano';setTimeout(()=>{el.classList.remove('done');el.textContent=t;},1100);}
+  function cp(el){const txt=el.textContent.trim();navigator.clipboard.writeText(txt).then(()=>flash(el));}
+  function cpb(btn){const block=btn.parentElement;const txt=block.textContent.replace(/^kopiuj/,'').replace(/^✓ skopiowano/,'').trim();navigator.clipboard.writeText(txt).then(()=>flash(btn));}
+</script>
+</body>
+</html>

@@ -1,0 +1,391 @@
+{
+  "note": "The Game 1E — mapa id→ścieżki SVG (24/40). FROZEN v1.0. + set menu (15).",
+  "frozen": true,
+  "icons": {
+    "res-food": {
+      "24": "eksport/icons/tier1/res-food-24.svg",
+      "40": "eksport/icons/tier1/res-food-40.svg",
+      "tier": "tier1"
+    },
+    "res-work": {
+      "24": "eksport/icons/tier1/res-work-24.svg",
+      "40": "eksport/icons/tier1/res-work-40.svg",
+      "tier": "tier1"
+    },
+    "res-treasury": {
+      "24": "eksport/icons/tier1/res-treasury-24.svg",
+      "40": "eksport/icons/tier1/res-treasury-40.svg",
+      "tier": "tier1"
+    },
+    "res-science": {
+      "24": "eksport/icons/tier1/res-science-24.svg",
+      "40": "eksport/icons/tier1/res-science-40.svg",
+      "tier": "tier1"
+    },
+    "res-culture": {
+      "24": "eksport/icons/tier1/res-culture-24.svg",
+      "40": "eksport/icons/tier1/res-culture-40.svg",
+      "tier": "tier1"
+    },
+    "res-religion": {
+      "24": "eksport/icons/tier1/res-religion-24.svg",
+      "40": "eksport/icons/tier1/res-religion-40.svg",
+      "tier": "tier1"
+    },
+    "res-population": {
+      "24": "eksport/icons/tier1/res-population-24.svg",
+      "40": "eksport/icons/tier1/res-population-40.svg",
+      "tier": "tier1"
+    },
+    "res-influence": {
+      "24": "eksport/icons/tier1/res-influence-24.svg",
+      "40": "eksport/icons/tier1/res-influence-40.svg",
+      "tier": "tier1"
+    },
+    "res-settlements": {
+      "24": "eksport/icons/tier1/res-settlements-24.svg",
+      "40": "eksport/icons/tier1/res-settlements-40.svg",
+      "tier": "tier1"
+    },
+    "res-cattle": {
+      "24": "res-cattle.svg",
+      "40": "res-cattle.svg",
+      "tier": "tier1"
+    },
+    "res-clay": {
+      "24": "res-clay.svg",
+      "40": "res-clay.svg",
+      "tier": "tier1"
+    },
+    "tb-cities": {
+      "24": "eksport/icons/tier2/tb-cities-24.svg",
+      "40": "eksport/icons/tier2/tb-cities-40.svg",
+      "tier": "tier2"
+    },
+    "tb-science": {
+      "24": "eksport/icons/tier2/tb-science-24.svg",
+      "40": "eksport/icons/tier2/tb-science-40.svg",
+      "tier": "tier2"
+    },
+    "tb-diplomacy": {
+      "24": "eksport/icons/tier2/tb-diplomacy-24.svg",
+      "40": "eksport/icons/tier2/tb-diplomacy-40.svg",
+      "tier": "tier2"
+    },
+    "tb-army": {
+      "24": "eksport/icons/tier2/tb-army-24.svg",
+      "40": "eksport/icons/tier2/tb-army-40.svg",
+      "tier": "tier2"
+    },
+    "tb-build": {
+      "24": "eksport/icons/tier2/tb-build-24.svg",
+      "40": "eksport/icons/tier2/tb-build-40.svg",
+      "tier": "tier2"
+    },
+    "cp-buildings": {
+      "24": "eksport/icons/tier3/cp-buildings-24.svg",
+      "40": "eksport/icons/tier3/cp-buildings-40.svg",
+      "tier": "tier3"
+    },
+    "cp-recruit": {
+      "24": "eksport/icons/tier3/cp-recruit-24.svg",
+      "40": "eksport/icons/tier3/cp-recruit-40.svg",
+      "tier": "tier3"
+    },
+    "cp-granary": {
+      "24": "eksport/icons/tier3/cp-granary-24.svg",
+      "40": "eksport/icons/tier3/cp-granary-40.svg",
+      "tier": "tier3"
+    },
+    "cp-trade": {
+      "24": "eksport/icons/tier3/cp-trade-24.svg",
+      "40": "eksport/icons/tier3/cp-trade-40.svg",
+      "tier": "tier3"
+    },
+    "cp-labor": {
+      "24": "eksport/icons/tier3/cp-labor-24.svg",
+      "40": "eksport/icons/tier3/cp-labor-40.svg",
+      "tier": "tier3"
+    },
+    "cp-order": {
+      "24": "eksport/icons/tier3/cp-order-24.svg",
+      "40": "eksport/icons/tier3/cp-order-40.svg",
+      "tier": "tier3"
+    },
+    "cp-health": {
+      "24": "eksport/icons/tier3/cp-health-24.svg",
+      "40": "eksport/icons/tier3/cp-health-40.svg",
+      "tier": "tier3"
+    },
+    "cp-culture": {
+      "24": "eksport/icons/tier3/cp-culture-24.svg",
+      "40": "eksport/icons/tier3/cp-culture-40.svg",
+      "tier": "tier3"
+    },
+    "cp-religion": {
+      "24": "eksport/icons/tier3/cp-religion-24.svg",
+      "40": "eksport/icons/tier3/cp-religion-40.svg",
+      "tier": "tier3"
+    },
+    "chip-manpower": {
+      "24": "eksport/icons/tier4/chip-manpower-24.svg",
+      "40": "eksport/icons/tier4/chip-manpower-40.svg",
+      "tier": "tier4"
+    },
+    "chip-order": {
+      "24": "eksport/icons/tier4/chip-order-24.svg",
+      "40": "eksport/icons/tier4/chip-order-40.svg",
+      "tier": "tier4"
+    },
+    "chip-happiness": {
+      "24": "eksport/icons/tier4/chip-happiness-24.svg",
+      "40": "eksport/icons/tier4/chip-happiness-40.svg",
+      "tier": "tier4"
+    },
+    "chip-garrison": {
+      "24": "eksport/icons/tier4/chip-garrison-24.svg",
+      "40": "eksport/icons/tier4/chip-garrison-40.svg",
+      "tier": "tier4"
+    },
+    "chip-warning": {
+      "24": "eksport/icons/tier4/chip-warning-24.svg",
+      "40": "eksport/icons/tier4/chip-warning-40.svg",
+      "tier": "tier4"
+    },
+    "chip-rebellion": {
+      "24": "eksport/icons/tier4/chip-rebellion-24.svg",
+      "40": "eksport/icons/tier4/chip-rebellion-40.svg",
+      "tier": "tier4"
+    },
+    "chip-death": {
+      "24": "eksport/icons/tier4/chip-death-24.svg",
+      "40": "eksport/icons/tier4/chip-death-40.svg",
+      "tier": "tier4"
+    },
+    "chip-heart": {
+      "24": "eksport/icons/tier4/chip-heart-24.svg",
+      "40": "eksport/icons/tier4/chip-heart-40.svg",
+      "tier": "tier4"
+    },
+    "chip-grain": {
+      "24": "eksport/icons/tier4/chip-grain-24.svg",
+      "40": "eksport/icons/tier4/chip-grain-40.svg",
+      "tier": "tier4"
+    },
+    "chip-crate": {
+      "24": "eksport/icons/tier4/chip-crate-24.svg",
+      "40": "eksport/icons/tier4/chip-crate-40.svg",
+      "tier": "tier4"
+    },
+    "chip-map": {
+      "24": "eksport/icons/tier4/chip-map-24.svg",
+      "40": "eksport/icons/tier4/chip-map-40.svg",
+      "tier": "tier4"
+    },
+    "chip-star": {
+      "24": "eksport/icons/tier4/chip-star-24.svg",
+      "40": "eksport/icons/tier4/chip-star-40.svg",
+      "tier": "tier4"
+    },
+    "chip-trend-up": {
+      "24": "eksport/icons/tier4/chip-trend-up-24.svg",
+      "40": "eksport/icons/tier4/chip-trend-up-40.svg",
+      "tier": "tier4"
+    },
+    "dip-alliance": {
+      "24": "eksport/icons/tier5/dip-alliance-24.svg",
+      "40": "eksport/icons/tier5/dip-alliance-40.svg",
+      "tier": "tier5"
+    },
+    "dip-pact": {
+      "24": "eksport/icons/tier5/dip-pact-24.svg",
+      "40": "eksport/icons/tier5/dip-pact-40.svg",
+      "tier": "tier5"
+    },
+    "dip-peace": {
+      "24": "eksport/icons/tier5/dip-peace-24.svg",
+      "40": "eksport/icons/tier5/dip-peace-40.svg",
+      "tier": "tier5"
+    },
+    "dip-war": {
+      "24": "eksport/icons/tier5/dip-war-24.svg",
+      "40": "eksport/icons/tier5/dip-war-40.svg",
+      "tier": "tier5"
+    },
+    "dip-war-strip": {
+      "24": "eksport/icons/tier5/dip-war-strip-24.svg",
+      "40": "eksport/icons/tier5/dip-war-strip-40.svg",
+      "tier": "tier5"
+    },
+    "ui-menu": {
+      "24": "eksport/icons/tier5/ui-menu-24.svg",
+      "40": "eksport/icons/tier5/ui-menu-40.svg",
+      "tier": "tier5"
+    },
+    "ui-wiki": {
+      "24": "eksport/icons/tier5/ui-wiki-24.svg",
+      "40": "eksport/icons/tier5/ui-wiki-40.svg",
+      "tier": "tier5"
+    },
+    "ui-close": {
+      "24": "eksport/icons/tier5/ui-close-24.svg",
+      "40": "eksport/icons/tier5/ui-close-40.svg",
+      "tier": "tier5"
+    },
+    "ui-play": {
+      "24": "eksport/icons/tier5/ui-play-24.svg",
+      "40": "eksport/icons/tier5/ui-play-40.svg",
+      "tier": "tier5"
+    },
+    "ui-pause": {
+      "24": "eksport/icons/tier5/ui-pause-24.svg",
+      "40": "eksport/icons/tier5/ui-pause-40.svg",
+      "tier": "tier5"
+    },
+    "ui-end-turn": {
+      "24": "eksport/icons/tier5/ui-end-turn-24.svg",
+      "40": "eksport/icons/tier5/ui-end-turn-40.svg",
+      "tier": "tier5"
+    },
+    "ui-check": {
+      "24": "eksport/icons/tier5/ui-check-24.svg",
+      "40": "eksport/icons/tier5/ui-check-40.svg",
+      "tier": "tier5"
+    },
+    "ui-lock": {
+      "24": "eksport/icons/tier5/ui-lock-24.svg",
+      "40": "eksport/icons/tier5/ui-lock-40.svg",
+      "tier": "tier5"
+    },
+    "ui-denied": {
+      "24": "eksport/icons/tier5/ui-denied-24.svg",
+      "40": "eksport/icons/tier5/ui-denied-40.svg",
+      "tier": "tier5"
+    },
+    "ui-accepted": {
+      "24": "eksport/icons/tier5/ui-accepted-24.svg",
+      "40": "eksport/icons/tier5/ui-accepted-40.svg",
+      "tier": "tier5"
+    },
+    "field-food": {
+      "24": "eksport/icons/tier6/field-food-24.svg",
+      "40": "eksport/icons/tier6/field-food-40.svg",
+      "tier": "tier6"
+    },
+    "field-production": {
+      "24": "eksport/icons/tier6/field-production-24.svg",
+      "40": "eksport/icons/tier6/field-production-40.svg",
+      "tier": "tier6"
+    },
+    "field-tax": {
+      "24": "eksport/icons/tier6/field-tax-24.svg",
+      "40": "eksport/icons/tier6/field-tax-40.svg",
+      "tier": "tier6"
+    },
+    "field-balanced": {
+      "24": "eksport/icons/tier6/field-balanced-24.svg",
+      "40": "eksport/icons/tier6/field-balanced-40.svg",
+      "tier": "tier6"
+    },
+    "terrain-plains": {
+      "24": "eksport/icons/tier7/terrain-plains-24.svg",
+      "40": "eksport/icons/tier7/terrain-plains-40.svg",
+      "tier": "tier7"
+    },
+    "terrain-hills": {
+      "24": "eksport/icons/tier7/terrain-hills-24.svg",
+      "40": "eksport/icons/tier7/terrain-hills-40.svg",
+      "tier": "tier7"
+    },
+    "terrain-mountains": {
+      "24": "eksport/icons/tier7/terrain-mountains-24.svg",
+      "40": "eksport/icons/tier7/terrain-mountains-40.svg",
+      "tier": "tier7"
+    },
+    "terrain-desert": {
+      "24": "eksport/icons/tier7/terrain-desert-24.svg",
+      "40": "eksport/icons/tier7/terrain-desert-40.svg",
+      "tier": "tier7"
+    },
+    "terrain-water": {
+      "24": "eksport/icons/tier7/terrain-water-24.svg",
+      "40": "eksport/icons/tier7/terrain-water-40.svg",
+      "tier": "tier7"
+    },
+    "menu-play": {
+      "24": "eksport/icons/menu/menu-play-24.svg",
+      "40": "eksport/icons/menu/menu-play-40.svg",
+      "tier": "menu"
+    },
+    "menu-campaign": {
+      "24": "eksport/icons/menu/menu-campaign-24.svg",
+      "40": "eksport/icons/menu/menu-campaign-40.svg",
+      "tier": "menu"
+    },
+    "menu-multiplayer": {
+      "24": "eksport/icons/menu/menu-multiplayer-24.svg",
+      "40": "eksport/icons/menu/menu-multiplayer-40.svg",
+      "tier": "menu"
+    },
+    "menu-settings": {
+      "24": "eksport/icons/menu/menu-settings-24.svg",
+      "40": "eksport/icons/menu/menu-settings-40.svg",
+      "tier": "menu"
+    },
+    "menu-more": {
+      "24": "eksport/icons/menu/menu-more-24.svg",
+      "40": "eksport/icons/menu/menu-more-40.svg",
+      "tier": "menu"
+    },
+    "menu-exit": {
+      "24": "eksport/icons/menu/menu-exit-24.svg",
+      "40": "eksport/icons/menu/menu-exit-40.svg",
+      "tier": "menu"
+    },
+    "menu-emblem-mini": {
+      "24": "eksport/icons/menu/menu-emblem-mini-24.svg",
+      "40": "eksport/icons/menu/menu-emblem-mini-40.svg",
+      "tier": "menu"
+    },
+    "menu-load": {
+      "24": "eksport/icons/menu/menu-load-24.svg",
+      "40": "eksport/icons/menu/menu-load-40.svg",
+      "tier": "menu"
+    },
+    "menu-save": {
+      "24": "eksport/icons/menu/menu-save-24.svg",
+      "40": "eksport/icons/menu/menu-save-40.svg",
+      "tier": "menu"
+    },
+    "menu-credits": {
+      "24": "eksport/icons/menu/menu-credits-24.svg",
+      "40": "eksport/icons/menu/menu-credits-40.svg",
+      "tier": "menu"
+    },
+    "menu-language": {
+      "24": "eksport/icons/menu/menu-language-24.svg",
+      "40": "eksport/icons/menu/menu-language-40.svg",
+      "tier": "menu"
+    },
+    "menu-audio": {
+      "24": "eksport/icons/menu/menu-audio-24.svg",
+      "40": "eksport/icons/menu/menu-audio-40.svg",
+      "tier": "menu"
+    },
+    "menu-controls": {
+      "24": "eksport/icons/menu/menu-controls-24.svg",
+      "40": "eksport/icons/menu/menu-controls-40.svg",
+      "tier": "menu"
+    },
+    "menu-achievements": {
+      "24": "eksport/icons/menu/menu-achievements-24.svg",
+      "40": "eksport/icons/menu/menu-achievements-40.svg",
+      "tier": "menu"
+    },
+    "menu-info": {
+      "24": "eksport/icons/menu/menu-info-24.svg",
+      "40": "eksport/icons/menu/menu-info-40.svg",
+      "tier": "menu"
+    }
+  }
+}

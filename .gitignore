@@ -12,6 +12,10 @@ gra/tmp/
 tmp/
 *.log
 
+# Zrzuty robocze sandboxow czatow (odtwarzalne; nie zasmiecac historii)
+_sandbox/
+gra-robocza/_sandbox/
+
 # Vite cache artifacts
 vite.config.ts.timestamp-*.mjs
 *.timestamp-*.mjs

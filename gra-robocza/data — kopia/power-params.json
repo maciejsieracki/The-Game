@@ -1,0 +1,109 @@
+{
+  "_opis": "Obiektywna Moc imperium (kod: Power) — kanon P-A (Maciej 2026-06-26). Suma surowych punktów BEZ mnożnika epoki. Respekt = stosunek Mocy dwóch nacji (dyplomacja).",
+  "_nazewnictwo": {
+    "pl_ui": "Moc",
+    "en": "Power",
+    "wycofane": "Wpływ 0–100 (normalizacja vs lider mapy) — nie używać w UI",
+    "decyzja": "P-C3 ZAMKNIĘTE 2026-06-26",
+    "modul_ts": "power-labels.ts · power-objective.ts"
+  },
+  "_formuly": {
+    "rekrutEkw": "floor(rekruci_biezacy / koszt_werbu[epoka])",
+    "powerBase": "suma składników × współczynnik (patrz skladniki)",
+    "power": "round(powerBase)",
+    "respekt": "round(100 × powerSelf / (powerSelf + powerPartner))"
+  },
+  "mnoznikEpoki": {
+    "_status": "ODRZUCONE (P-B) — wszystkie 1, silnik nie mnoży",
+    "1": 1,
+    "2": 1,
+    "3": 1,
+    "4": 1,
+    "5": 1,
+    "6": 1,
+    "7": 1,
+    "8": 1,
+    "9": 1,
+    "10": 1
+  },
+  "skladniki": {
+    "jednostka_wojskowa": {
+      "pkt": 25,
+      "opis": "Suma M_pole armii imperium × pkt (unit-power.ts). Oblężnicze = 0 w armii polowej."
+    },
+    "wygrana_bitwa": {
+      "pkt": 25,
+      "opis": "Legacy flat: liczba wygranych × pkt. P-C2-DEF A: model enemy_m — składnik = suma M_pole wroga (coeff 1)."
+    },
+    "ludek": {
+      "pkt": 5,
+      "opis": "Suma slotów populacji (ludki) we wszystkich miastach — NIE ludność absolutna. @10 miast typowo ~100 ludków."
+    },
+    "rekrut_ekw_jednostki": {
+      "pkt": 5,
+      "opis": "Ekwiwalent jednostek z puli Manpower: floor(rekruci / koszt_werbu[epoka]). Pełna pula ≈ ludki×10 szt. @ ep.1."
+    },
+    "miasto": {
+      "pkt": 50,
+      "opis": "Każde miasto imperium."
+    },
+    "heks_terytorium": {
+      "pkt": 0.5,
+      "opis": "Heks w zasięgu terytorium miast (isInTerritory)."
+    },
+    "budynki": {
+      "pkt": 5,
+      "opis": "Każdy wybudowany budynek we wszystkich miastach."
+    },
+    "tech_zbadane": {
+      "pkt": 20,
+      "opis": "Liczba zbadanych technologii imperium."
+    },
+    "ulepszenie_terenu": {
+      "pkt": 5,
+      "opis": "Ulepszenia terenu w terytorium imperium (farmy, drogi, hodowla…)."
+    }
+  },
+  "kalibracja": {
+    "scenariusz": "ep.1, ~10 miast, ~100 ludków (≥10/miasto), 10 jedn., 10 bitew, 8000 rekr. (80 ekw.), 500 heks., 60 budynków, 16 tech, 50 ulepszeń",
+    "powerOczekiwany": 3020,
+    "cel": "Żaden składnik nie dominuje (~8–17% bazy). Bez wag per-cyw — tylko globalne współczynniki."
+  },
+  "opcje": {
+    "liczy_osadnik_w_armii": {
+      "wartosc": true,
+      "typ": "bool",
+      "opis": "P-C1 WYCOFANE — osadnik usunięty z gry; opcja legacy w power-options.ts (no-op)."
+    },
+    "bitwa_wspolczynnik_flat": {
+      "wartosc": false,
+      "typ": "bool",
+      "opis": "Legacy: true = flat 25 pkt/bitwa. P-C2-DEF A: false + bitwa_power_model."
+    },
+    "bitwa_power_model": {
+      "wartosc": "enemy_m_pre_battle",
+      "typ": "string",
+      "opis": "P-C2-DEF A (2026-07-01): pkt/bitwa = suma M_pole pokonanego składu przed walką; bez bonusu underdog."
+    },
+    "hud_etykieta": {
+      "wartosc": "Moc",
+      "typ": "string",
+      "opis": "P-C3 ZAMKNIĘTE: etykieta HUD PL. EN = Power (power-labels.ts MOC_LABEL_EN)."
+    },
+    "hud_etykieta_en": {
+      "wartosc": "Power",
+      "typ": "string",
+      "opis": "P-C3: etykieta EN / docs / i18n."
+    },
+    "mnoznik_epoki_aktywny": {
+      "wartosc": false,
+      "typ": "bool",
+      "opis": "P-B ODRZUCONE — nie włączać (epoka nie mnoży Power)."
+    }
+  },
+  "uwagi": {
+    "power_vs_respekt": "HUD mapy: Moc (absolutna). Dyplomacja: RESPEKT % wobec rozmówcy.",
+    "stary_model": "Wpływ 0–100 (normalizacja vs lider) — wycofany.",
+    "panel_b": "Potega-P-A + Potega-opcje + Manpower-epoki → export-b.py"
+  }
+}

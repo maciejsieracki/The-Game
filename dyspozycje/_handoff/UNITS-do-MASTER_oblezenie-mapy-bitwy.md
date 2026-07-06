@@ -1,6 +1,6 @@
 # HANDOFF: UNITS → MASTER — oblężenie / taktyczne mapy bitwy w mieście
 
-**Data:** 2026-06-25 · **Od:** Civ-UNITS · **Do:** Master (siege.ts/silnik) + MAPA (wizualia miast)
+**Data:** 2026-06-25 · **Od:** Grupa C · **Do:** Master (siege.ts/silnik) + MAPA (wizualia miast)
 **Decyzja Naster.** Część po stronie bitwy robi UNITS; reguły mapy/oblężenia wpina Master.
 
 ## REGUŁY (Naster)
@@ -30,4 +30,4 @@
 - Machiny dostępne od Brązu (nie Kamienia) — historycznie; jeśli mają być od Kamienia, zmienię `Dostępna w epokach` + `Epoka`.
 - Balans machin prowizoryczny (do strojenia razem z resztą jednostek).
 
-— Civ-UNITS
+— Grupa C

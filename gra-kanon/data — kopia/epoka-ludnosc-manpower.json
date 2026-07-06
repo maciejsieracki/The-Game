@@ -1,0 +1,20 @@
+{
+  "_opis": "Skala ludności i Manpower per epoka imperium (wiersze 1–10). 1 ludek = ludność absolutna na slot population (1–10). manpowerNaLudka = 10% ludekNaLudka. manpowerNaJednostke = 10% manpowerNaLudka (koszt rekrutacji 1 jednostki).",
+  "_formuly": {
+    "ludnoscAbsolutna": "population × ludekNaLudka[epoka]",
+    "manpowerMax": "population × manpowerNaLudka[epoka]",
+    "kosztRekrutacji": "manpowerNaJednostke[epoka] per jednostka"
+  },
+  "epoki": [
+    { "epoka": 1, "ludekNaLudka": 10000, "manpowerNaLudka": 1000, "manpowerNaJednostke": 100 },
+    { "epoka": 2, "ludekNaLudka": 20000, "manpowerNaLudka": 2000, "manpowerNaJednostke": 200 },
+    { "epoka": 3, "ludekNaLudka": 40000, "manpowerNaLudka": 4000, "manpowerNaJednostke": 400 },
+    { "epoka": 4, "ludekNaLudka": 80000, "manpowerNaLudka": 8000, "manpowerNaJednostke": 800 },
+    { "epoka": 5, "ludekNaLudka": 160000, "manpowerNaLudka": 16000, "manpowerNaJednostke": 1600 },
+    { "epoka": 6, "ludekNaLudka": 320000, "manpowerNaLudka": 32000, "manpowerNaJednostke": 3200 },
+    { "epoka": 7, "ludekNaLudka": 640000, "manpowerNaLudka": 64000, "manpowerNaJednostke": 6400 },
+    { "epoka": 8, "ludekNaLudka": 1200000, "manpowerNaLudka": 120000, "manpowerNaJednostke": 12000 },
+    { "epoka": 9, "ludekNaLudka": 2400000, "manpowerNaLudka": 240000, "manpowerNaJednostke": 24000 },
+    { "epoka": 10, "ludekNaLudka": 4800000, "manpowerNaLudka": 480000, "manpowerNaJednostke": 48000 }
+  ]
+}

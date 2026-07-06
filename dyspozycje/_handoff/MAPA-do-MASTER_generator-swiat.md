@@ -1,4 +1,4 @@
-# HANDOFF: Generator Swiata — TYP + API (Civ-MAPA → MASTER)
+# HANDOFF: Generator Swiata — TYP + API (Grupa A → MASTER)
 
 Data: 2026-06-26
 

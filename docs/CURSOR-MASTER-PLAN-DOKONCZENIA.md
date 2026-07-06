@@ -1,5 +1,9 @@
 # MASTER-PLAN DOKOŃCZENIA — The Game (Civ)
 
+> **⚠️ ROLE §0–§2 SUPERSEDED (2026-06-30):** Model „MASTER edytuje main.ts" wycofany.
+> **Aktualne role:** [`docs/obieg/ROLE-2026-06-30.md`](obieg/ROLE-2026-06-30.md) + [`docs/obieg/_ZASADY.md`](obieg/_ZASADY.md).
+> Ten plik zostaje dla harmonogramu faz A–F, decyzji ABC §8 i backlogu historycznego.
+
 > **Główny dokument operacyjny dla Macieja.** Tu się zaczyna i kończy każda sesja.
 > Powstał na bazie pełnego audytu (RAPORT-KONCOWY, PLAN-DZIALANIA, BACKLOG, ARCHITEKTURA, DZIENNIK-MASTERA, analiza/06, PLAYBOOK, BACKLOG-PELNY).
 > **Data:** 2026-06-26. **Kanon:** `Gra-podglad.html` (md5 `2276ec0f`, grywalny end-to-end, ~762 testy zielone).
@@ -17,9 +21,9 @@ Gra **„The Game" (Civ)** jest dziś **grywalna end-to-end** (menu → mapa 3D 
 3. **Bitwy manualnej + oblężenia** (epik, kontrakty już dostarczone przez UNITS).
 4. **Wealth minimalny** + strojenie AI + polish UI.
 
-**Model pracy:** Ty decydujesz (ABC) → MASTER (GLM 5.2) planuje i deleguje → lane workerzy (Composer 2.5) kodują → MASTER integruje `main.ts` → Opus 4.8 robi review → kanon. **Nowy chat przy każdej zmianie roli.**
+**Model pracy (2026-06-30):** Ty decydujesz (ABC) → **Master Orkiestrator** (hub, bez kodu) planuje i deleguje → Grupy A–E kodują moduły → **Grupa F** wpina `main.ts` → Master weryfikuje → Opus 4.8 review → kanon. Szczegóły: [`docs/obieg/ROLE-2026-06-30.md`](obieg/ROLE-2026-06-30.md).
 
-**Najbliższy krok:** otwórz `docs/MACIEJ-KARTA-DECYZJI.md`, rozstrzygnij D1–D5 (odblokowują ~40% pracy), napisz w czacie: „D1=C, D2=A, D3=C, D4=A, D5=B" → MASTER rusza Sprint 1.
+**Najbliższy krok:** otwórz `docs/MACIEJ-DECYZJE-ROZWINIETE.md` (główna lektura — każde pytanie ABC tłumaczone prostym językiem: co zrobimy, co zobaczysz, plusy/minusy/czas), rozstrzygnij D1–D5 (odblokowują ~40% pracy), wpisz litery w skróconej tabeli `docs/MACIEJ-KARTA-DECYZJI.md`, napisz w czacie: „D1=C, D2=A, D3=C, D4=A, D5=B" → MASTER rusza Sprint 1. **Od 2026-06-26 wszystkie pytania ABC używają formatu z `MACIEJ-DECYZJE-ROZWINIETE.md`.**
 
 
 ### Git (gałęzie)
@@ -48,35 +52,29 @@ Gra **„The Game" (Civ)** jest dziś **grywalna end-to-end** (menu → mapa 3D 
 | Czego nie robisz | Kto to robi |
 |---|---|
 | Kod TypeScript / edycja `main.ts` / modułów `gra/src/*` | Composer 2.5 (lane worker) |
-| Architektura techniczna, kontrakty cross-lane, ADR | MASTER (GLM 5.2) |
-| Integracja modułów w silnik, publikacja kanonu | MASTER (GLM 5.2) — jedyny editor `main.ts` |
-| Build (`vite build`), uruchamianie testów | Composer / MASTER |
-| Review kodu, weryfikacja adversarial, sign-off techniczny | Opus 4.8 (tryb Ask) |
-| Export Excel → JSON | Composer (targeted script per arkusz) |
-| Refaktor, bug fixy techniczne | Composer (po review Opus) |
+| Integracja modułów w silnik, build ROBOCZA | **Grupa F** (osobny czat) — jedyny editor `main.ts` |
+| Plan, dyspozycje, weryfikacja, ACK kanonu | **Master Orkiestrator** (hub) — **bez kodu** |
+| Review przed ACK | **Subagent readonly** (Master wywołuje) — **Opus wycofany** |
+| Integracja `main.ts`, build, publish | **Grupa F** (osobny czat) — jedyny editor `main.ts` |
 
 **Nie musisz rozumieć kodu.** Twój język to „chcę bitwę ręczną", „HUD ma mieć minimapę", „Wealth ma być prosty". MASTER tłumaczy to na zadania techniczne.
 
 ---
 
-## 2. Model 3 ról technicznych + MASTER
+## 2. Model ról technicznych (SUPERSEDED — czytaj ROLE-2026-06-30)
 
-Projekt działa na **trójfazowym workflow** (zgodnie z `~/Projects/game-dev-playbook/AGENTS.md` i user-rule Macieja). Do tego dochodzi MASTER jako integrator.
+> **Nieaktualne:** poniższa tabela mówiła „MASTER = jedyny editor main.ts". **Od 2026-06-30:** [`docs/obieg/ROLE-2026-06-30.md`](obieg/ROLE-2026-06-30.md).
 
-| Rola | Model (subagent) | Tryb Cursor | Odpowiada za | Edytuje `main.ts`? |
-|---|---|---|---|---|
-| **MASTER / Architekt** | **GLM 5.2** (`glm-5.2-max`) | Agent | Plan, GDD-lite, architektura, ADR, sprint planning, kontrakty cross-lane, mockupy UX, archetypy AI, balans ABC, **integracja `main.ts`**, **publikacja kanonu**, delegowanie lane'ów | **TAK — jedyny** |
-| **Lane worker / Implementer** | **Composer 2.5** (`composer-2.5-fast`) | Agent | Kod w obrębie swojego lane'a (moduł + testy), refaktor, JSON export, poprawki po review | **NIE** (nigdy) |
-| **Reviewer** | **Opus 4.8** (ręczny wybór w UI — brak subagenta) | **Ask** (review, bez edycji) / Agent (tylko fix po zgodzie) | Code review, weryfikacja AC, adversarial verification, release gate, bug triage, sign-off przed merge | **NIE** (Ask = read-only) |
-| **Decydent** | **Maciej** (człowiek) | — | Decyzje ABC, playtest, priorytety, sign-off v1.0 | **NIE** |
+| Rola | Edytuje `main.ts`? |
+|------|---------------------|
+| Master Orkiestrator (hub) | **NIE** |
+| Grupa F Integrator-kod | **TAK — jedyny** |
+| Grupy A–E | NIE |
+| Opus 4.8 | NIE |
 
-### Kluczowe zasady ról
+---
 
-- **Nowy chat przy zmianie roli** — czysty kontekst, niższy koszt tokenów.
-- **Handoff:** design doc + AC (kryteria akceptacji) → implementacja → review → merge kanonu.
-- **Opus wybieraj ręcznie w UI** — nie ma subagenta Opus. Do review używaj trybu **Ask** (read-only). Fix po review robi Composer (Agent).
-- **MASTER = jedyny editor `main.ts`** — to twarda reguła (patrz §4, `civ-workflow.mdc`). Lane workerzy dostarczają moduł + kontrakt w `dyspozycje/_handoff/`, MASTER wpina.
-- **Lane worker NIGDY nie rusza cudzego pliku** — tylko pliki swojego lane'a (patrz §5, własność plików).
+## 2-legacy. Model 3 ról technicznych + MASTER (archiwum 2026-06-26)
 
 ---
 

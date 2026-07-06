@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# DEPRECATED (2026-06-30 — PANEL-MERGE): Excel w docs/archiwum/panele-legacy/.
+# Kanon: panele-sterowania/Panel-{A..E}.xlsx + export-{a..e}.py — nie używać do nowych zmian.
 # export-panel.py -- BEZPIECZNY eksport z Panel-przeglad-danych.xlsx z powrotem do JSON-ow.
 # Na razie TYLKO moje (Civ-MIASTO) zakladki: Budynki -> buildings.json, Spoleczenstwo -> society-params.json.
 # Zasada: nakladamy wartosci z Excela na ORYGINALNY JSON (zachowujemy strukture, typy, kolejnosc kluczy).
@@ -11,7 +13,7 @@ import openpyxl, json, os, sys, argparse
 HERE = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.normpath(os.path.join(HERE, "..", "data"))
 CIV_ROOT = os.path.normpath(os.path.join(HERE, "..", ".."))
-XLSX = os.path.join(CIV_ROOT, "MIASTO", "Panel-przeglad-danych.xlsx")
+XLSX = os.path.join(CIV_ROOT, "docs", "archiwum", "panele-legacy", "MIASTO", "Panel-przeglad-danych.xlsx")
 TOP = {"zdrowie", "szczescie", "kultura", "religia", "religie_cywilizacji"}
 
 def coerce(old, val):

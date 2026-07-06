@@ -1,6 +1,6 @@
 # HANDOFF: UNITS → MASTER/SILNIK — PĘTLA TURY OBLĘŻENIA
 
-**Data:** 2026-06-25 · **Od:** Civ-UNITS · **Do:** SILNIK (pętla tury) · Zatwierdzone przez Naster.
+**Data:** 2026-06-25 · **Od:** Grupa C · **Do:** SILNIK (pętla tury) · Zatwierdzone przez Naster.
 
 ## Stan oblężenia (gdy armia oblega miasto Z MUREM)
 Miasto bez muru = zdobycie z marszu (bez tego). Z murem → stan „oblężenie", obsługiwany co turę:
@@ -28,4 +28,4 @@ Miasto bez muru = zdobycie z marszu (bez tego). Z murem → stan „oblężenie"
 - Panel oblężenia + turniej atrycji: `UNITS_oblezenie-panel-i-atrycja.md`.
 - Dane zapasów: `UNITS-do-EKONOMIA_zapasy-oblezenie.md`.
 
-— Civ-UNITS
+— Grupa C

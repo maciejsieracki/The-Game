@@ -1,7 +1,7 @@
 # UI → MASTER: Minimapa HUD — współpraca z działem MAPA
 
 **Data:** 2026-06-26  
-**Od:** Civ-UI  
+**Od:** Grupa A  
 **Do:** MASTER → dział MAPA  
 **Status:** UI gotowe (obie ścieżki zaimplementowane), czekamy na wybór wariantu przez MAPĘ
 
@@ -73,7 +73,7 @@ interface MinimapData {
 
 Uzasadnienie z analizy istniejących plików MAPY:
 
-1. Handoff `MAPA-do-MASTER_placement-i-widok-glowny.md` wprost stwierdza: *„minimapa statyczna (narysowana raz) — do implementacji przez Civ-UI"* — MAPA zakładała, że UI rysuje.
+1. Handoff `MAPA-do-MASTER_placement-i-widok-glowny.md` wprost stwierdza: *„minimapa statyczna (narysowana raz) — do implementacji przez Grupa A"* — MAPA zakładała, że UI rysuje.
 2. `buildScene` (renderer 3D) jest ciężki (516 kB bundle z Three.js). Duplikowanie go w małym slocie 200×140 px tylko dla minimapy = kosztowne + ryzyko kolizji WebGL kontekstów.
 3. Dane `GameMap` (`hexes: Record<"q,r", Hex>` z `terenBazowy`, `wlasciciel`) są dostępne natywnie — wystarczy je spłaszczyć do `MinimapHexData[]`.
 4. MAPA ma już `wlasciciel: string | null` per hex oraz `TerenBazowy` enum — bezpośrednie mapowanie na kontrakt B.

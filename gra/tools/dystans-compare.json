@@ -1,0 +1,256 @@
+{
+  "headers": [
+    "Jednostka",
+    "Nazwa EN",
+    "Epoka",
+    "Rola (linia)",
+    "Zasięg (hex)",
+    "Ilość pocisków",
+    "Stary Atak dystansowy (ref)",
+    "missileAttack",
+    "wallAttack",
+    "Uwagi"
+  ],
+  "rows": [
+    {
+      "unit": "Hastati",
+      "excel": {
+        "zasięg": 2,
+        "pociski": 2,
+        "missileAttack": 15,
+        "wallAttack": null
+      },
+      "json": {
+        "zasięg": 2,
+        "pociski": 2,
+        "missileAttack": 15,
+        "wallAttack": null
+      },
+      "diff": {}
+    },
+    {
+      "unit": "Kusznik",
+      "excel": {
+        "zasięg": 4,
+        "pociski": 14,
+        "missileAttack": 15,
+        "wallAttack": null
+      },
+      "json": {
+        "zasięg": 4,
+        "pociski": 14,
+        "missileAttack": 15,
+        "wallAttack": null
+      },
+      "diff": {}
+    },
+    {
+      "unit": "Łucznik egipski",
+      "excel": {
+        "zasięg": 4,
+        "pociski": 12,
+        "missileAttack": 11,
+        "wallAttack": null
+      },
+      "json": {
+        "zasięg": 4,
+        "pociski": 12,
+        "missileAttack": 11,
+        "wallAttack": null
+      },
+      "diff": {}
+    },
+    {
+      "unit": "Łucznik akadyjski",
+      "excel": {
+        "zasięg": 4,
+        "pociski": 14,
+        "missileAttack": 10,
+        "wallAttack": null
+      },
+      "json": {
+        "zasięg": 4,
+        "pociski": 14,
+        "missileAttack": 10,
+        "wallAttack": null
+      },
+      "diff": {}
+    },
+    {
+      "unit": "Oszczepnik Zulu (Izijula)",
+      "excel": {
+        "zasięg": 2,
+        "pociski": 10,
+        "missileAttack": 9,
+        "wallAttack": null
+      },
+      "json": {
+        "zasięg": 2,
+        "pociski": 10,
+        "missileAttack": 9,
+        "wallAttack": null
+      },
+      "diff": {}
+    },
+    {
+      "unit": "Wojownik germański",
+      "excel": {
+        "zasięg": 2,
+        "pociski": 4,
+        "missileAttack": 9,
+        "wallAttack": null
+      },
+      "json": {
+        "zasięg": 2,
+        "pociski": 4,
+        "missileAttack": 9,
+        "wallAttack": null
+      },
+      "diff": {}
+    },
+    {
+      "unit": "Procarz",
+      "excel": {
+        "zasięg": 4,
+        "pociski": 15,
+        "missileAttack": 8,
+        "wallAttack": null
+      },
+      "json": {
+        "zasięg": 4,
+        "pociski": 15,
+        "missileAttack": 8,
+        "wallAttack": null
+      },
+      "diff": {}
+    },
+    {
+      "unit": "Oszczepnik",
+      "excel": {
+        "zasięg": 2,
+        "pociski": 6,
+        "missileAttack": 8,
+        "wallAttack": null
+      },
+      "json": {
+        "zasięg": 2,
+        "pociski": 6,
+        "missileAttack": 8,
+        "wallAttack": null
+      },
+      "diff": {}
+    },
+    {
+      "unit": "Procarz (Huaracoc)",
+      "excel": {
+        "zasięg": 5,
+        "pociski": 15,
+        "missileAttack": 8,
+        "wallAttack": null
+      },
+      "json": {
+        "zasięg": 5,
+        "pociski": 15,
+        "missileAttack": 8,
+        "wallAttack": null
+      },
+      "diff": {}
+    },
+    {
+      "unit": "Oszczepnik (Estólica)",
+      "excel": {
+        "zasięg": 2,
+        "pociski": 6,
+        "missileAttack": 8,
+        "wallAttack": null
+      },
+      "json": {
+        "zasięg": 2,
+        "pociski": 6,
+        "missileAttack": 8,
+        "wallAttack": null
+      },
+      "diff": {}
+    },
+    {
+      "unit": "Rydwan egipski",
+      "excel": {
+        "zasięg": 3,
+        "pociski": 14,
+        "missileAttack": 8,
+        "wallAttack": null
+      },
+      "json": {
+        "zasięg": 3,
+        "pociski": 14,
+        "missileAttack": 8,
+        "wallAttack": null
+      },
+      "diff": {}
+    },
+    {
+      "unit": "Łucznik sumeryjski",
+      "excel": {
+        "zasięg": 4,
+        "pociski": 14,
+        "missileAttack": 8,
+        "wallAttack": null
+      },
+      "json": {
+        "zasięg": 4,
+        "pociski": 14,
+        "missileAttack": 8,
+        "wallAttack": null
+      },
+      "diff": {}
+    },
+    {
+      "unit": "Katapulta",
+      "excel": {
+        "zasięg": 6,
+        "pociski": 10,
+        "missileAttack": 8,
+        "wallAttack": 16
+      },
+      "json": {
+        "zasięg": 6,
+        "pociski": 10,
+        "missileAttack": 8,
+        "wallAttack": 16
+      },
+      "diff": {}
+    },
+    {
+      "unit": "Łucznik",
+      "excel": {
+        "zasięg": 3,
+        "pociski": 12,
+        "missileAttack": 6,
+        "wallAttack": null
+      },
+      "json": {
+        "zasięg": 3,
+        "pociski": 12,
+        "missileAttack": 6,
+        "wallAttack": null
+      },
+      "diff": {}
+    },
+    {
+      "unit": "Medżaj (Gwardia Faraona)",
+      "excel": {
+        "zasięg": 2,
+        "pociski": 6,
+        "missileAttack": 6,
+        "wallAttack": null
+      },
+      "json": {
+        "zasięg": 2,
+        "pociski": 6,
+        "missileAttack": 6,
+        "wallAttack": null
+      },
+      "diff": {}
+    }
+  ]
+}

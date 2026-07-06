@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
-"""
+"""DEPRECATED (2026-06-30 — PANEL-MERGE):
+  Excel: docs/archiwum/panele-legacy/
+  Kanon: panele-sterowania/Panel-{A..E}.xlsx + export-{a..e}.py
+  Nie używać do nowych zmian balansu.
+
+
 export-diplomacy.py -- TARGETED export: Dyplomacja.xlsx[arkusz "params"] -> diplomacy.json["params"].
 
 Aktualizuje WYLACZNIE blok "params" w gra/data/diplomacy.json. NIE uruchamia globalnego
@@ -31,8 +36,8 @@ except ImportError:
 HERE = os.path.dirname(os.path.abspath(__file__))
 # xlsx: hub Civ/Dyplomacja/ (po reorganizacji) lub root Civ/ (przed) -- bierzemy ten, ktory istnieje.
 _XLSX_CANDIDATES = [
-    os.path.normpath(os.path.join(HERE, "..", "..", "Dyplomacja", "Dyplomacja.xlsx")),
-    os.path.normpath(os.path.join(HERE, "..", "..", "Dyplomacja.xlsx")),
+    os.path.normpath(os.path.join(HERE, "..", "..", "docs", "archiwum", "panele-legacy", "Dyplomacja", "Dyplomacja.xlsx")),
+    os.path.normpath(os.path.join(HERE, "..", "..", "docs", "archiwum", "panele-legacy", "Dyplomacja", "Dyplomacja.xlsx")),
 ]
 
 

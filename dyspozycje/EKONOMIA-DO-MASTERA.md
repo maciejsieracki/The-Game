@@ -1,369 +1,499 @@
-# EKONOMIA -> MASTER : pytania i raporty
-ZASADA: kazde pytanie/raport pisz DWA razy -- (1) tu na DOLE (krotko, z godzina) ORAZ (2) to samo w CZACIE do uzytkownika.
-Odpowiedzi czytaj w dyspozycje/EKONOMIA.md.
+# EKONOMIA → MASTER : pytania i raporty
 
 ---
 
-## 2026-06-22 ~22:10 -- RAPORT: pkt 1 (przeglad modelu ekonomii) ZROBIONY + 1 decyzja blokujaca
+### [2026-07-05 ~23:05] **→ MASTER: GOTOWE-ROBOCZA · batch UPGRADE (ABC-20…24)**
 
-ZROBIONE (pkt 1 z planu): przejrzalem economy.ts + turn-economy.ts vs PROJEKT-GRY-master
-sec.2/2a/8e i Spec-ekonomia.md. Znalazlem i naprawilem 3 rozbieznosci kod<->spec:
-  1. Strumien LUKSUS z suwaka Handlu byl gubiony (spec ss.2.1) -> dodany do wyniku
-     (CityYieldResult.luksus + agregat EconomyTickResult.totalLuksus). Karmi Zadowolenie
-     (konsumuje lane spoleczenstwa/order).
-  2. BIBLIOTEKA -> +Nauka% (master 2a + jest param w econ-params.json) nie byla uwzgledniana
-     -> dodane (ctx.maBiblioteka opcjonalne + params.budynekBibliotekaBonusNauki).
-  3. loadEconParams byl ZEPSUTY (czytal klucz ASCII zamiast 'prog' z diakrytykiem, nie znal
-     metadanych) -> przepisany na poprawny, odporny parser realnego econ-params.json.
-  + modyfikator zdrowia 0.05 [PT] wyniesiony z hardkodu do parametru (panel).
+**Handoff:** `_handoff/EKONOMIA-do-MASTER_upgrade-2026-07-05.md`  
+**Decyzje:** UPG-LOC / UPG-PROD / UPG-BONUS · łańcuchy w `buildings.json`
 
-PLIKI (moj lane): src/game/economy.ts, src/game/turn-economy.ts. main.ts NIE ruszany.
+| Plik | Zmiana |
+|------|--------|
+| `building-upgrades.ts` | **nowy** — łańcuch, `Rozbuduj X→Y`, tooltip |
+| `production.ts` | kolejka upgrade, merge bonusów |
+| `buildings.json` | `upgradeFrom`, suppressed (Teatr→Akademia ABC-21B) |
+| `upgrade-budynki-test.cjs` | **28/28** |
 
-WERYFIKACJA: logika 12/12 PASS w niezaleznym checku vs przyklady ze spec (ss.2.1: 5/2/0;
-ss.4.4: 0.9/0.75/0). ALE pelny tsc/vite/logic-test ZABLOKOWANE -> DEHYDRATACJA OneDrive:
-mount bash widzi economy.ts/turn-economy.ts (i wiele cudzych: battleScene, diplomacy,
-mappreview) jako UCIETE -> falszywe bledy tsc ('*/' expected na 590/278). Read pokazuje
-pliki w CALOSCI i poprawnie -> to NIE bledy kodu. PROSBA: Maciej ustaw caly folder Civ na
-"Always keep on this device" (lek z USTALENIA SILNIK pkt 1) -> odblokuje build/test wszystkim.
-
-HEADS-UP cross-lane (UI): cityPanel.ts (lane UI) konstruuje CityYieldContext. Zrobilem
-maBiblioteka POLEM OPCJONALNYM, wiec cityPanel.ts NIE wymaga zmian (wstecznie kompatybilne).
-UI moze pozniej wpiac Biblioteke przez istniejacy hook getCityBuildingFlags.
-
-DLA SILNIKA: po hydratacji -> rebuild kanonu + `node tools/logic-test.cjs` (Test 8 economy).
-Zmiany sa additive/backward-compat; nie wymagaja zmian w main.ts.
-
-PYTANIA/DECYZJE (czekam, zanim ruszę dalej):
-  Q1 [BLOKUJE pkt 2/A3]: nowy game/upkeep.ts CZY rozbudowa istniejacego player-economy.ts?
-     (brief kazal rozstrzygnac z Toba. player-economy.ts to obecnie orphan-dubel.)
-  Q2: regula awansu budynkow -- buildingValue jest LINIOWY (baza+(poziom-1)*przyrost).
-     Notatka projektu mowi o "+10% skladany (baza*1,10^(poziom-1))". Ktory kanon? (dotyka
-     produkcji/MIASTO -- nie zmieniam sam.)
-
-NASTEPNY KROK po Twojej decyzji Q1: upkeep.ts (magazyny+utrzymanie) + panel Ekonomia-parametry.xlsx
-/ Surowce.xlsx -> targeted JSON.
+**Robocza:** md5 **`eac24a666f3854290ba4ba241e979d46`** · marker „Rozbuduj" w bundlu ✅  
+**GitHub:** logika upgrade **nie wypchnięta** — commit po playtest Macieja  
+**→ MASTER:** playtest miasto/produkcja · potem commit batch
 
 ---
 
-## 2026-06-22 ~22:15 -- SELF-CHECK zalozony + wykryta nowa dyspozycja START
+### [2026-07-04] **→ MASTER: GOTOWE · EKO-TECH Paczka 1 (wdrożenie lane)**
 
-- Zalozylem scheduled task **civ-ekonomia-self-check** (co 10 min, cron */10) -> auto-monitoring
-  dyspozycje/EKONOMIA.md; przy nowej dyspozycji wdraza ja od razu i raportuje (plik + czat).
-- Przy re-readzie EKONOMIA.md wykrylem NOWA sekcje **START** (l.27): zielone na **upkeep.ts** +
-  przeglad Ekonomia-parametry.xlsx/Surowce.xlsx; **economy.ts/turn-economy.ts NA RAZIE tylko
-  czytac** (SILNIK wlasnie wpina ekonomie) -> zmiany w nich uzgadniac przez _handoff/.
+**Decyzje:** `docs/decyzje/D-EKO-TECH-PACZKA1-2026-07-04.md` · Maciej `działaj`
 
-WATEK (transparentnosc, wg RAPORTOWANIE WATKU):
-  (1) Pytanie: Q1 -- nowy upkeep.ts czy rozbudowa player-economy.ts?
-  (2) Master (sekcja START): "zacznij od upkeep.ts (NOWY plik, zero kolizji)" -> traktuje jako
-      wybor NOWEGO game/upkeep.ts. Q1 rozstrzygniete.
-  (3) Decyzja: pivot na upkeep.ts (Task 2) + przeglad parametrow. Moje edycje economy.ts/
-      turn-economy.ts z pkt 1 (zrobione ZANIM pojawil sie START "tylko czytac") NIE cofam --
-      sa additive/backward-compat (logika 12/12) -- oddaje je SILNIKowi do integracji/walidacji
-      przez handoff: dyspozycje/_handoff/EKONOMIA-do-SILNIK-economy-edits.md.
-  (4) Zajmuje sie: pisaniem game/upkeep.ts (magazyny zywnosci/surowcow + utrzymanie per budynek/
-      jednostka + test) oraz przegladem Ekonomia-parametry.xlsx / Surowce.xlsx.
+| Obszar | Pliki | Status |
+|--------|-------|--------|
+| JSON | `tech.json`, `buildings.json`, `terrain-improvements.json` | ✅ |
+| Logika | `research.ts`, `playerState.ts`, `production.ts`, `converters.ts`, `loader.ts` | ✅ |
+| Testy | `eko-tech-paczka1-test.cjs` **9/9**, `converters-test.cjs` **31/31** | ✅ |
+| Integracja runtime | `main.ts` — bramka + `applyCompletedBuildingIds` | ✅ SILNIK 2026-07-04 |
 
-OSTATNIO PRZETWORZONE (22:15): EKONOMIA.md -> sekcja START "zacznij od upkeep.ts" (l.27) + nowy naglowek regul; 2026-06-22 ~22:15.
+**Handoff integracji:** `dyspozycje/_handoff/EKONOMIA-do-SILNIK_eko-tech-p1-integracja-2026-07-04.md`  
+**MAPA:** `droga_brukowana` w JSON — lane MAPA czeka ruch +2  
+**UI:** T-TECH-8-UI (lista wybudowanych) — czeka decyzja Macieja
 
 ---
 
-## 2026-06-23 ~01:22 -- RAPORT: upkeep.ts NAPISANY (Plan task 2) + przeglad parametrow (task 3)
+### [2026-07-04] **→ MASTER: WPIĘTE · CELT-Q3 filtr Nacja**
 
-KONTEKST: self-check wykryl, ze wpis 22:15 ZADEKLAROWAL pisanie game/upkeep.ts, ale PLIK NIGDY
-NIE POWSTAL (brak src/game/upkeep.ts). Brak NOWEJ dyspozycji mastera, ale lancuch (AUTONOMIA /
-"stop dopiero gdy plan wyczerpany") NIE byl wyczerpany -> dokonczylem zielona dyspozycje START.
+**Handoff:** `EKONOMIA-do-MASTER_nacja-filter-wiring.md` — **DONE** · kanon opublikowany.
 
-ZROBIONE:
-1. src/game/upkeep.ts (NOWY, czysty modul; import tylko typu BuildingRecord z economy.ts):
-   - MAGAZYNY (Spec s.7): pojemnosc zywnosci (Spichlerz x5) + surowcow per typ (Magazyn x5),
-     przycinanie nadwyzki (przepada), pojemnosc globalna panstwa, zdarzenia podboj/utrata.
-   - UTRZYMANIE (Spec s.6): koszt budynkow/jednostek, zywnosc wojska (1 marsz / 0.5 oboz),
-     bilans skarbca + flaga deficytu (s.6.4).
-2. Przeglad parametrow (task 3): KOMPLET juz w econ-params.json (globalne.magazyn_baza_*,
-   magazyn_mnoznik_spichlerz, utrzymanie_jednostka_standard; budynki.utrzymanie_budynek;
-   ekonomia_miasta.zywnosc_jednostka_ruch/oboz). Excele panelu NIE wymagaja zmian.
-
-WERYFIKACJA: 33/33 PASS na REALNYM transpilowanym module + `tsc --strict` czyste (vs stub
-BuildingRecord). Pelny vite build NADAL blokuje DEHYDRACJA OneDrive (economy.ts itd. uciete dla
-bash -> falszywe TS1010 na economy.ts:590; Read widzi pliki w calosci). Prosba: folder Civ ->
-"Always keep on this device".
-
-LANE/HANDOFF: main.ts / render / battle / cudze pliki NIE ruszane. player-economy.ts (orphan)
-dubluje per-encje utrzymania -> upkeep.ts jest teraz kanoniczny; rekomendacja konsolidacji.
-player-economy.ts NIE edytowany (nie moj lane). Paczka dla SILNIK:
-dyspozycje/_handoff/EKONOMIA-do-SILNIK-upkeep.md (kontrakt wpiec: pulap magazynu zywnosci,
-zywnosc wojska, upkeepBalance; bez nowych kluczy param).
-
-PYTANIE DO MASTERA: brak (bylo dosc danych). Otwarte Q2 (awans budynkow: liniowy vs +10%
-skladany) NIE blokuje upkeep.ts -- dotyczy produkcji/MIASTO; czeka jak wczesniej.
-
-OSTATNIO PRZETWORZONE (01:22): dokonczona dyspozycja START -> napisany src/game/upkeep.ts (magazyny s.7
-+ utrzymanie s.6), 33/33 PASS + tsc strict, handoff do SILNIK; 2026-06-23 ~01:22.
+**Lane B:** IDLE. **Grupa C:** czeka `działaj` (jednostki).
 
 ---
 
-## 2026-06-23 ~01:25 (sesja interaktywna) -- dorzucony test upkeep + porzadki
+### [2026-07-02] **→ MASTER: GOTOWE · batch D18-BALANS-TRUDNOSC**
 
-Wpis 01:22 (bieg self-check) juz domknal Task 2 (upkeep.ts) + Task 3 (parametry) + handoff. Z sesji
-interaktywnej DOKLADAM, bez duplikowania:
-- gra/tools/upkeep-test.cjs (standalone, 51 asercji) -> **51/51 PASS** na realnym upkeep.ts -- drugie,
-  niezalezne pokrycie ponad 33/33 z 01:22 (s.6 utrzymanie + s.7 magazyny, incl. podboj/utrata miasta).
-- economy.ts/turn-economy.ts (pkt 1, edytowane w tej sesji) -> handoff do SILNIK:
-  _handoff/EKONOMIA-do-SILNIK-economy-edits.md (Luksus, Biblioteka->Nauka, fix loadEconParams, health param).
-- TASKI: 1,2,3,4 = DONE. Otwarte tylko Q2 (awans budynkow: liniowy vs +10% skladany) -- niblokujace,
-  czeka na mastera. Plan EKONOMIA wyczerpany -> czekam na "start"/nowa dyspozycje (self-check pilnuje).
+**Trigger:** Maciej `Master` · ABC formularz + START=Tak · lane B wdrożył.
 
-OSTATNIO PRZETWORZONE (01:25): jak 01:22 + dodany tools/upkeep-test.cjs (51/51) i handoff economy do SILNIK; 2026-06-23 ~01:25.
+| ID decyzji | Wybór |
+|------------|-------|
+| D18-0…6 | A · A · A · **B** · **A+C** · A · A |
 
----
+| Deliverable | |
+|-------------|---|
+| Handoff | `dyspozycje/_handoff/EKONOMIA-do-MASTER_D18-BALANS-GOTOWE.md` |
+| Integrator | `dyspozycje/_handoff/EKONOMIA-do-INTEGRATOR_d18-main-wiring.md` |
+| Testy | society-breakdown **26/26** · wealth **28/28** · culture-religion **51/51** |
+| JSON | wagi 55/45·50/50·45/55 · bunt 5/8/10% · grace 3/2/2 · osada 4/3/2 · immunitet W 10/5/3 |
 
-## 2026-06-23 ~01:35 -- AUTONOMIA: konwertery surowcow + zalozenia dla otwartych tematow
-
-Maciej: "przyjmij najlogiczniejsze zalozenia i dzialaj sam". Zrobione + spisane:
-
-ZROBIONE (moj lane, nowy plik, zero kolizji):
-- src/game/converters.ts + tools/converters-test.cjs -> **30/30 PASS**. Przetworstwo surowcow
-  Spec s.1.5 (Tartak/Mielerz/Cegielnia/Huta/Garncarnia, 1:1 do przepustowosci, pauza brak-wejscia/
-  pelny-magazyn, lancuch z kolejnoscia paliwo->reszta). Przepustowosc z econ-params (budynki.*).
-
-PRZYJETE ZALOZENIA (pelny opis: _handoff/EKONOMIA-zalozenia-i-wiazania.md):
-- Q2 awans budynkow: +10% SKLADANY (baza*1.10^(poziom-1)) zamiast liniowego -> czeka na AKCEPTACJE
-  mastera (balans, dotyka MIASTO); nie zmieniam economy sam.
-- Sufit magazynu zywnosci: nalozyc upkeep.foodStorageCapacity na magazynZywnosci (s.7.1) -- kontrakt
-  do turn-economy (read-only -> patch w handoffie).
-- Utrzymanie+zywnosc wojska w turze: wpiac upkeep.ts (militaryFoodConsumption->ctx; upkeepBalance->skarbiec).
-- Mennica/Waluta: przed Waluta mnoznik=1, po Walucie+Mennicy = param (gating z playerState) -- SILNIK.
-- Podatki [PT]: model minimalny floor(populacja*stawka), DOMYSLNIE 0 (neutralny) -> czeka na DECYZJE
-  mastera o formule; potem dodam param+funkcje.
-- Luksus->Zadowolenie [PT 5=+1]: lane SPOLECZENSTWO/ORDER (economy juz zwraca luksus) -- flaga zaleznosci.
-- player-economy.ts (orphan): rekomendacja konsolidacji do upkeep.ts (decyzja SILNIK/master).
-
-CZEKA NA CIEBIE (master): (1) Q2 +10% skladany OK? (2) podatki -- formula/zakres? (3) wciaz: folder
-Civ -> "Always keep on this device" (odblokuje build/test).
-
-OSTATNIO PRZETWORZONE (01:35): konwertery (30/30) + handoff zalozen EKONOMIA-zalozenia-i-wiazania.md; 2026-06-23 ~01:35.
+**Master:** playtest PT-Z05 (3 trudności) → `playtest OK` / `BUG:`  
+**Lane B:** **IDLE** — czeka ACK
 
 ---
 
-## 2026-06-23 ~02:00 -- DOKUMENTACJA DEWELOPERSKA + panel parametrow Excel
+### [2026-07-01] **→ MASTER: GOTOWE · paczka lane B (zbiorczy)**
 
-Na zlecenie Maciej (architekt). Dwa deliverables w folderze Civ:
-- **EKONOMIA-DOKUMENTACJA-DEWELOPERSKA.md** -- pelna dok.: zakres, pipeline tury, modul po module
-  (economy/turn-economy/upkeep/converters), reguly Spec s.1-8 -> mapowanie na kod, parametry,
-  zalozenia, stan integracji + kontrakty wpiec, INTERAKCJE z 9 dzialami + Master, testy, ryzyka, TODO.
-- **EKONOMIA-panel-parametrow.xlsx** -- 46 parametrow (4 grupy JSON) + 3 proponowane; kolumny:
-  grupa/klucz/easy/normal/hard/jednostka/konwencja/opis/uzywane-przez + SNIPPET gotowy do econ-params.json.
-  Arkusze: Parametry, Proponowane, Surowce-konwertery, Jak-uzywac. Niebieskie = inputy do edycji.
+**Trigger:** Maciej `start` → `master` · lane B bez nowej dyspozycji · self-check OK.
 
-INTERAKCJE (po zdjeciu od Maciej z lista sesji) zmapowane 1:1 na dzialy: Master, Silnik, MIASTO, UI,
-Dyplomacja (handel miedzycyw.: kupno Pracy/surowcow, trybut), Dane Cywilizacji (cechy ekon. cyw.),
-Units/Battle (utrzymanie+zywnosc), MAPA (teren), AI (rywale czytaja wyniki+upkeepBalance do decyzji).
+| Batch | Testy |
+|-------|-------|
+| D16-D17-START | 21 + 34 + 28 |
+| B5-SP-LIMIT | 16 + 9 |
+| B5-Spichlerz + FOOD-HODOWLA | 9 + 26 |
+| P-C2-DEF (moduł) | 12 |
 
-Bez zmian w kodzie. Otwarte decyzje bez zmian (Q2, podatki, lek OneDrive).
-
-OSTATNIO PRZETWORZONE (02:00): dokumentacja deweloperska + EKONOMIA-panel-parametrow.xlsx; interakcje z 9 dzialami; 2026-06-23 ~02:00.
+**Handoff:** `dyspozycje/_handoff/EKONOMIA-do-MASTER_paczka-lane-B-2026-07-01.md`  
+**Integrator:** `MASTER-do-INTEGRATOR_D16-D17-wiring-2026-07-01.md` · P-C2-DEF  
+**Lane B:** **IDLE** — czeka ACK Mastera
 
 ---
 
-## 2026-06-24 -- KONSOLIDACJA plikow EKONOMIA do katalogu + przeglad historyczny
+### [2026-07-01] **D16-D17-START** — łagodny start + woda/rzeka
 
-Na zlecenie Maciej zebralem nie-growe pliki ekonomii. UTWORZYLEM folder **Civ/EKONOMIA/** z indeksem
-`_INDEKS.md` (jeden punkt wejscia do WSZYSTKICH zasobow lane'u).
+**Maciej:** **D16-A + D17-A** (playtest: bunt T1 + „Brak wody” nad rzeką).
 
-PRZENIESIONE do EKONOMIA/ (czysto moje, zero referencji):
-- EKONOMIA-DOKUMENTACJA-DEWELOPERSKA.md
-- EKONOMIA-panel-parametrow.xlsx
+| Deliverable | Plik |
+|-------------|------|
+| D16-A kod | `society-breakdown.ts`, `wealth.ts`, `culture-religion.ts`, `cities.ts`, `turn-economy.ts` |
+| D17-A kod | `turn-economy.ts` (`cityHasWaterAccess`), `cityPanel.ts` |
+| JSON | `society-params.json` (`prawo_bonus_osada*`), `econ-params.json` (`wealth_kara_zero`, `wealth_immunitet_tur`) |
+| Testy | society-breakdown **21/21** · wire-ekonomia **34/34** · wealth **28/28** |
+| Handoff Master | `dyspozycje/_handoff/EKONOMIA-do-MASTER_D16-D17-START-GOTOWE.md` |
+| Handoff Integrator | `dyspozycje/_handoff/EKONOMIA-do-INTEGRATOR_d16-main-wiring.md` (3 linie main.ts) |
 
-NIE PRZENIOSLEM (swiadomie -- przeniesienie ZEPSULOBY referencje; wymaga Twojej zgody + aktualizacji):
-- **Spec-ekonomia.md** -- czyta SILNIK (DYSPOZYCJE-SESJI) + katalog ARCHITEKTURA-PLIKI.md.
-- **Ekonomia-parametry.xlsx** -- WSPOLDZIELONY: ma zakladki SPOLECZENSTWA (Zdrowie/Szczescie/Kultura/
-  Religia/Religie cyw.) + eksport export-data.py -> econ-params.json.
-- **Surowce.xlsx** -- twardo w export-data.py -> resources.json; ref w SILNIK.md, PROJEKT-GRY-master.md.
-  (Pelna lista referencji i co trzeba zaktualizowac -> EKONOMIA/_INDEKS.md sekcja "ZOSTAJA W MIEJSCU".)
-
-HISTORYCZNE/ARCHIWUM: przejrzalem caly Civ (archiwum/, _archiwum/, _backup/). BRAK osieroconych
-nie-growych plikow ekonomii do archiwizacji. Kopie _backup/gra_*/economy.ts (6 szt.) = snapshoty
-buildow (nie moje). player-economy.ts = orphan KODU (decyzja SILNIK, nie archiwizuje z mojego lane).
-
-PYTANIE: czy mam skoordynowac pelne przeniesienie Spec-ekonomia.md / paneli do EKONOMIA/ wraz z
-aktualizacja sciezek (export-data.py BASE_DIR + odniesienia w plikach mastera)? Domyslnie zostawiam
-je w miejscu (bezpiecznie).
-
-OSTATNIO PRZETWORZONE (konsolidacja): Civ/EKONOMIA/ (+_INDEKS.md); przeniesione 2 pliki, 3 zostawione (referencje), brak plikow do archiwum; 2026-06-24.
+→ MASTER: **GOTOWE** · batch D16-D17-START · **bez main.ts**
 
 ---
 
-## 2026-06-24 -- OTWARTE PYTANIA (format 1-ABC; rekomendacja = A)
+### [2026-07-01] **P-C2-DEF=A** — pkt bitew z M wroga
 
-1) Pelna konsolidacja 3 plikow referencjonowanych (Spec-ekonomia.md, Ekonomia-parametry.xlsx, Surowce.xlsx) do EKONOMIA/?
-   A) [REKOMEND.] Zostaw w miejscu (bezpiecznie, zlinkowane w _INDEKS.md)
-   B) Przenies wszystkie 3 + skoordynuj aktualizacje sciezek (export-data.py BASE_DIR + pliki mastera)
-   C) Przenies tylko Spec-ekonomia.md; panele zostaja (eksport + zakladki spoleczne)
+**Maciej:** **A** — suma M_pole pokonanego składu **przed walką**; bez bonusu underdog.
 
-2) Q2 -- wzor awansu budynkow (buildingValue)?
-   A) [REKOMEND.] +10% skladany: floor(baza*1,10^(poziom-1))
-   B) Zostaw liniowy: baza+(poziom-1)*przyrost
-   C) Inny mnoznik skladany -- podaj %
-
-3) Podatki (s.2a)?
-   A) [REKOMEND.] Minimalny floor(populacja*stawka), domyslnie wylaczony (0)
-   B) Inny model -- % od Handlu / globalny suwak podatkowy
-   C) Pomin w v0.1
-
-4) Lek na dehydratacje OneDrive (folder Civ -> "Always keep on this device")?
-   A) [REKOMEND.] Zrobisz teraz -- odblokuje build/test wszystkim sesjom
-   B) Pozniej -- na razie obejscie (kopia w outputs)
-   C) Pokaz mi jak to ustawic
+| Deliverable | Plik |
+|-------------|------|
+| Decyzja | `docs/decyzje/P-C2-DEF-wygrana-bitwa-2026-07-01.md` |
+| Kod lane B | `power-objective.ts` · `power-params.json` |
+| Test | `power-objective-test.cjs` **12/12** |
+| Integrator | `dyspozycje/_handoff/EKONOMIA-do-INTEGRATOR_p-c2-def-a.md` |
 
 ---
 
-## 2026-06-24 -- SYSTEM WEALTH: projekt zalozen + pytania (od Maciej, czat)
-
-ROZSTRZYGNIETE przez Maciej: podatki = ISTNIEJACY suwak (Nauka/Skarbiec/Spoleczenstwo), zostaje bez
-zmian (to zamyka pytanie 3 wyzej -- bez osobnego modulu podatkow). NOWOSC = system WEALTH.
-
-Spisalem pelny projekt: **EKONOMIA/EKONOMIA-wealth-projekt.md** (idea, poziomy/cap per epoka =
-epoka x10, akumulacja jak spichlerz, prog rosnacy, mnoznik=poziom x pieniadze, decay/spadek przy
-podwyzce podatkow, parametry, styk z dzialami, plan: nowy game/wealth.ts po decyzji).
-
-PYTANIA (pelne opcje 1-ABC w dokumencie projektowym; rekomendacja = A) -- prosze o odpowiedz TU:
-  W1) Wealth per miasto czy narodowy?  (rek. A: per miasto)
-  W2) Mnoznik mnozy co? (rek. A: cala "ilosc zebranych pieniedzy" miasta przed podzialem)
-  W3) Mnoznik przy Wealth 0/1? (rek. A: xmax(1,poziom))
-  W4) Pula po awansie? (rek. A: zostaje ~50% jak Spichlerz)
-  W5) Spadek poziomu kiedy? (rek. A: pula=0 mimo utrzymania -> -1)
-  W6) Relacja do rdzenia x10/x100/x1000? (rek. A: odrebny mnoznik miejski)
-
-STATUS: bez kodu -- czekam na decyzje (W1-W6), potem buduje game/wealth.ts + test + param do panelu.
-
-OSTATNIO PRZETWORZONE (projekt): WEALTH (EKONOMIA/EKONOMIA-wealth-projekt.md) + 6 pytan W1-W6; 2026-06-24.
+**Handoff:** `dyspozycje/_handoff/EKONOMIA-do-MASTER_B5-spichlerz-GOTOWE.md`  
+**Obieg:** `docs/obieg/B-ekonomia.md` § 🟠 U MASTERA  
+**Slack outbox:** `docs/obieg/SLACK-OUTBOX-GRUPA-B-2026-07-01.md`  
+**Testy:** spichlerz-wzrost 9/9 · empire-food-b5 16/16 · food-hodowla 26/26  
+**Maciej:** nie wkleja do hubu — pliki = prawda
 
 ---
 
-## 2026-06-24 -- WEALTH: ZBUDOWANY + HANDOFF do wpiecia (status integracji)
+### [2026-06-26] **P-C1 WYCOFANE** — osadnik nie w grze
 
-Maciej zatwierdzil model i kazal zbudowac + zglosic do wpiecia. ZROBIONE (przez Sonnet-subagenta, wg trybu):
-- gra/src/game/wealth.ts (czysty modul) + gra/tools/wealth-test.cjs -> **25/25 PASS**.
-- gra/data/econ-params.json: nowa grupa `wealth` (8 kluczy easy/normal/hard); poprawny JSON; backup .bak-EKONOMIA.
-- EKONOMIA/EKONOMIA-wealth-projekt.md (ZATWIERDZONY) + panel arkusz "Wealth".
+**Maciej:** brak osadnika → P-C1 nie dotyczy. Opcja Panel-B zostaje jako legacy (no-op).
 
-Decyzje Maciej (zamykaja W1-W6 wyzej, ze zmianami): per MIASTO; mnoznik TYLKO na podatek/skarbiec
-(=1+(W-1)*0.15, max x1); start W=1; S(=luksus) znika do puli; spadek bufor->poziom; pula po awansie 50%;
-zadowolenie z poziomu Wealth (W0 kara, co +10 -> +1) ZASTEPUJE luksus->happiness.
+**Backlog P-FUTURE:** siła armii wg statów bojowych — **scalone z P-ARMIA** (Maciej zaproponuje).
 
->> HANDOFF do wpiecia w silnik: **dyspozycje/_handoff/EKONOMIA-do-MASTER_wealth.md** (kontrakt tury,
-   punkt aplikacji mnoznika na podatek, cross-lane do MIASTO: Wealth->zadowolenie, DoD).
-   Master: wpina w petle tury (plaster EKONOMIA) + rozdziela zadowolenie do MIASTO.
+### [2026-06-26] **P-ARMIA + P-C2 OTWARTE** — nowe modele od Macieja
 
-OSTATNIO PRZETWORZONE: WEALTH zbudowany (test 25/25) + handoff EKONOMIA-do-MASTER_wealth.md; 2026-06-24.
-
+**Maciej:** zarówno składnik **Armia**, jak i **Bitwy** dostaną inne rozwiązania niż flat (v1 tymczasowo: jednostki×25, bitwy×25 w kodzie). Czekam na propozycję + powiązanie z mechaniką walki.
 
 ---
 
-## 2026-06-25 — MODEL DOSTĘPU v0.1 spisany + handoff
+**Maciej:** Moc gotowa · Panel-B wiążący · wpinamy w kanon.
 
-Model dostępu surowców (zatwierdzony przez Maciej 2026-06-25) udokumentowany i przekazany:
-- **Dokumentacja:** `EKONOMIA/EKONOMIA-analiza-surowce-budynki.md` — nowa sekcja na górze "MODEL DOSTĘPU v0.1 (ZATWIERDZONY 2026-06-25)"; stara analiza ilościowa zachowana jako "KONTEKST v0.2".
-- **Handoff cross-lane:** `dyspozycje/_handoff/EKONOMIA-do-MASTER_model-dostepu-surowcow.md` — podział zadań per lane (MAPA/SILNIK, DANE, MIASTO, EKONOMIA, DYPLOMACJA) z DoD i 3 pytaniami otwartymi Q-A1/A2/A3.
-- Kod nie ruszany. converters.ts / storage ilościowy = PARKOWANE (nie kasować).
+| Deliverable | |
+|-------------|---|
+| Handoff | `dyspozycje/_handoff/EKONOMIA-do-INTEGRATOR_moc-v1-GOTOWE.md` |
+| Panel-B | Potega-P-A, Potega-opcje, Manpower-epoki → `export-b.py` |
+| Kod | `power-objective.ts`, `power-options.ts`, `main.ts` (dominacja + armia P-C1) |
+| Testy | power-objective 9/9 · power-options 5/5 · manpower 22/22 |
 
----
-### 2026-06-25 — handoff: tempo nauki dla CYWILIZACJE
-
-Przygotowano referencję "tempo nauki" na żądanie lane CYWILIZACJE.
-Plik: `_handoff/EKONOMIA-do-MASTER_tempo-nauki.md`
-
-Kluczowe ustalenia:
-- Wzór: `Nauka = floor((floor(Handel_netto × %Nauka) + Nauka_budynkow) × BibliotekaMnoznik)`
-- Widelki wczesna gra: 1 miasto ~1–8 nauki/turę [PT], 5 miast ~5–40/turę [PT]
-- Biblioteka: ×1.5 na całą naukę miasta
-- Globalny mnożnik nauki: **NIE ISTNIEJE** — rekomendacja: param `nauka_tempo_mnoznik` w `econ-params.json/globalne` + hook w `advanceCityEconomy` przy agregacji `totalNauka`
+**Integrator:** build + Opus + `Gra-podglad.html` (checklist w handoff).
 
 ---
 
-## 2026-06-25 — SCALENIE: EKONOMIA przejmuje MIASTO
+### [2026-06-26] **P-C3 ZAMKNIĘTE** — nazwa **Moc** (PL) / **Power** (EN)
 
-Maciej: EKONOMIA wchłania MIASTO. Przejąłem pliki MIASTA (kod: `cities.ts`, `production.ts`,
-`order.ts`, `culture-religion.ts`, `okolica.ts`, `auto-manage.ts`; dane: `buildings.json`/Budynki.xlsx,
-`society-params.json`/Społeczeństwo-parametry.xlsx, `terrain-improvements.json`).
-Pełny raport + plan + granica (co NIE moje: `playerState`/pula nauki, `main.ts`, render/battle, civs/tech/ai):
-**`_handoff/EKONOMIA-do-MASTER_przejecie-miasta.md`**.
-**AKTUALIZACJA 2026-06-25 (decyzja Maciela):** skarbiec + pula nauki + wszystkie akumulacje civ-level + produkcja miejska = EKONOMIA.
-`playerState.ts` przejęty; magazyn nauki ROZSTRZYGNIĘTY (pula moja, `research.ts` orphan kasujemy). Granica „`playerState`=Twój" z tego wpisu = NIEAKTUALNA.
-Drzewko: koszty `tech.json` + wybór AI (`chooseAIResearch`) zostają CYWILIZACJE; ja owner puli + mechaniki wydania (`researchStep`).
-Zostają **2 decyzje** Maciela (zdrowie / „rozwój") do wspólnego dokumentu modelu. Master: proszę o dalszą integrację moich modułów (`main.ts` woła, ja owner modułu).
+**Maciej:** stary Wpływ → nowa metryka P-A; w UI **Moc**, w kodzie Power.
 
----
+| Deliverable | Plik |
+|-------------|------|
+| Decyzja | `docs/decyzje/P-C3-moc-power-nazwa.md` |
+| Kontrakt lane | `dyspozycje/_handoff/P-C3-moc-nazwa-KONTRAKT.md` |
+| UI | `power-labels.ts`, `hud.ts`, `powerOverlayHud.ts`, `newGameFlow.ts` |
+| JSON | `power-params.json` → `_nazewnictwo`, `hud_etykieta` |
 
-## 2026-06-25 — DECYZJE Maciela + dokument modelu scalonego
-
-Maciej rozstrzygnął: **1A** zdrowie = WIRE (podłączyć) · **2A** „rozwój" = Luksus→Wealth · **3A** nastroje = netto+tier (`getOrderState`, bez rozkładu).
-Founding-dokument: **`Civ/EKONOMIA/EKONOMIA-model-scalony.md`** (2 suwaki / 4 kubełki, przepływy strumieni, pula nauki = moja, zdrowie WIRE, lista wpięć).
-Realizacja przez Sonnet-subagenty: etap 1 = wpięcie zdrowie + `splitPraca` + Luksus→Wealth w `turn-economy`/`economy` (backup + testy, bez kanonu). Po zielonych testach handoff do Ciebie na wpięcie w `main.ts`.
-Kontrakt dla UI (okolica + nastroje): `_handoff/EKONOMIA-do-UI_okolica-nastroje.md` (3A potwierdzone).
+**Integrator:** przy następnym kanonie — brak „Wpływ”/„Power” w stringach PL.
 
 ---
 
-## 2026-06-25 — SESJA AUTONOMICZNA: wpięcia rdzenia + etap 2 + dane (WSZYSTKO ZIELONE)
+### [2026-06-26] **Korekta P-A** — ludki **5 pkt**, wagi per-cyw **WYŁĄCZONE**
 
-Maciej dał 1–2h autonomii. Zrobione przez Sonnet-subagentów (backup + testy, bez kanonu):
-- **RDZEŃ TURY** (`turn-economy`/`economy`/`economy-upkeep`): zdrowie WIRE · `splitPraca` · Luksus→Wealth (+mnożnik na podatek) · growthMult (przed `populationGrowth`) · compound +10% (`buildingValue` + `buildingUpkeep`). Testy: wire-ekonomia 23/23, wealth 25/25, upkeep 53/53, growthmult-compound 20/20, **logic-test 163/163, vite build OK (980 kB)**.
-- **ETAP 2 RELIGII** (`culture-religion`): `spreadReligion` (był) + nowy `cityTradeMultiplier`; test 43/43.
-- **DANE**: `terrain-improvements.json` v0.1 (15 ulepszeń + `surowiecOdblokowany` + zasięgi posterunek/fort).
+**Maciej:** przy 10 miastach ~100 ludków → 15 pkt/ludek za dużo. **5 pkt/ludek.** Cyw-12-POTEGA usunięte z macierzy.
 
-Handoffy do Ciebie: `_wpiecie-scalonej-tury.md`, `_growthmult-compound.md`, `_religia-etap2.md`, `_mapa-terytorium-wioski.md`.
+| Zmiana | Wartość |
+|--------|---------|
+| `ludek` | **5** pkt (było 15) |
+| Kalibracja | 100 ludków, **Power = 3020** |
+| Cyw-macierz | bez wag Power (113 params) |
 
-**MASTER (main.ts + cross-lane) — do wpięcia:**
-1. `advanceCityEconomy`: dodaj argumenty `cityBuilt` (lista budynków per miasto) + `player.era`.
-2. `growthMultByCity` z `evaluateOrder` → przekaż do tury.
-3. `wealthZadowolenie` → wlicz do `szczescie` per miasto (ZASTĘPUJE luksus→happiness).
-4. **USUŃ `research.ts`** (orphan, brak importerów; bash/OneDrive nie dał rady — ręcznie na Windows).
-5. Compound do migracji w `siege.ts`, `player-economy.ts` (inne lane).
-
-**BLOKER ŚRODOWISKO:** dehydratacja OneDrive utrudnia build w sandboxie (subagenty obeszły workflow build-from-outputs; ostatecznie logic-test 163/163 + build zielone). Trwały lek: folder Civ → „Always keep on this device".
+**Test:** `power-objective-test.cjs` **9/9 OK** · Panel-B + kalkulator Excel zregenerowane.
 
 ---
 
-## 2026-06-25 — AUDYT przed usunięciem sesji MIASTO: CZYSTO
+**Maciej:** parametry Power + Manpower + per-cyw w panelu sterowania.
 
-Maciej usuwa sesję MIASTO. Audyt (subagent, read-only): **BRAK clobberu** — MIASTO edytowało pierwsze (`production.ts`/`cities.ts`/`order.ts`), EKONOMIA budowało na tym (`cities.ts.bak-EKONOMIA` ma już `foundCityFromVillage`+`maMur`); aktualne pliki mają OBA wkłady, kompletne. Testy: **logic-test 163/163** + 15 modułowych zielonych (split 46, happiness 38, village 24, wire-ekonomia 23, wealth 25, upkeep 53, culture-religion 43, ai 88, diplomacy 98 …). Pliki/handoffy/docs/MIASTO-katalog zostają na dysku → **bezpiecznie usunąć sesję**.
-Pozycja do pogodzenia (moja, nie blokuje): `splitOutput` (MIASTO, niewpięty) vs kanon 2-suwakowy — `EKONOMIA-model-scalony.md` sekcja 9.
+| Panel | Arkusze | JSON |
+|-------|---------|------|
+| Panel-B | Potega-P-A, Potega-opcje, Manpower-epoki | power-params.json, epoka-ludnosc-manpower.json |
+| Panel-D / Cyw-12-POTEGA | 9 mnoznikow + bias + flagi | civ-matrix.json |
 
----
-
-## 2026-06-25 — odpowiedź na PILNE (koszty/subagenci) + przyjęcie nowych dyspozycji
-
-**TAK — subagenci na Sonnecie.** Cała ciężka robota (kod/build/testy) idzie przez Agent `model:sonnet`; główne okno = tylko brief + odbiór + handoff. Tak działam od scalenia (wpięcie tury, religia, terrain, audyt MIASTA — wszystko subagentami).
-Przyjmuję świeże dyspozycje: zdrowie (pełny model — moje WIRE ma bonusy+minusy, dostroję), podział Handel→Skarbiec/Wealth/Badania (= mój podziałHandlu, naming ujednolicę), podatek 10% default, mnożnik 1.7–2.4 (gotowy `cityTradeMultiplier`), nauka sterowana graczem (korekta 1a), terrain→Excel, oblężenie (UNITS).
-**ROZJAZD do Macieja (ABC, nie zgaduję):** default „70% skarbiec / 20% badania / 10% podatek" nie spina się z kubełkiem (skarbiec/wealth/badania) — brak `wealth`, jest `podatek`. Pytam Macieja, opis niżej w czacie.
+**Test:** `test-panel-b-roundtrip.py` OK (miasto + Potega-P-A) · regen Panel-B + Cyw-macierz OK.
 
 ---
 
-## 2026-06-25 (wieczór) — status + odpowiedź na dyspozycję zasięgu
+**Decyzja:** Punktacja wyjściowa P-A (9 składników, bez × epoka). Szczegóły: `docs/decyzje/P-A-power-kanon.md`
 
-ROZSTRZYGNIĘTE/DOWIEZIONE dziś (wszystko subagentami Sonnet, testy zielone, handoffy w _handoff/):
-- Default podziału Handlu = **70 Skarbiec / 20 Badania / 10 Wealth** (econ-params; „10% podatek" było pomyłką = Wealth).
-- **Okolica/plony:** `cityRangeForPopulation = min(pop, zasieg_okolicy_max=15)` (radius=pop) + plony TYLKO z pól z przypisanym obywatelem (N=pop, `assignWorkedTiles`), centrum bazowo. (okolica 16/16)
-- **Oblężenie** (turn-economy: flaga `oblegane`, getCityFood) — kontrakt do UNITS.
-- **Drzewko Żelaza** (tech.json +9 techów) + **11 budynków Żelaza** (buildings.json) + Excele do strojenia.
-- **Nauka sterowana graczem** w DRZEWKU (wytyczne do UI) — nie osobny panel.
-- **Koszt jednostek = zawsze skarbiec** (anulowany wyjątek Kamień=Praca). logic-test **180/180**.
+**Deliverable:**
 
-ODPOWIEDŹ na Twoją dyspozycję [l.229-230]: **radius=pop potwierdzone** (`min(pop,15)`), cap 15 OK, MAPA `territory.ts` ma używać `cityRangeForPopulation`. JEDEN niuans → Maciej: Twoje „okolica=terytorium" + cap 15 koliduje z wcześniejszym modelem terytorium = okolica + pierścienie kultury (+0..3, do r18). Pytam Macieja (ABC w czacie), czy kultura nadal rozszerza terytorium, czy v0.1 = terytorium = radius=pop. Do decyzji NIE ruszam MAPA-handoffa.
+| Plik | Zmiana |
+|------|--------|
+| `gra/data/power-params.json` | Współczynniki 25/25/15/5/50/0.5/5/20/5 |
+| `gra/src/game/power-objective.ts` | ludki, rekrut ekw., tech, ulepszenia; mnoznik=1 |
+| `gra/src/game/manpower.ts` | `rekrutUnitEquivalents`, `sumaLudkow` w `empirePoborTotals` |
+| `gra/src/main.ts` | `buildObjectivePowerForOwner` — tech + ulepszenia + nowe miary |
+| `gra/tools/power-objective-test.cjs` | Kalibracja 2670 — **9/9 OK** |
+| `dyspozycje/_scalone/EKONOMIA/EKONOMIA-POWER-RESPEKT-SPEC.md` | Sync kanon P-A |
+| `tools/build-power-kalkulator-xlsx.py` | Współczynniki + scenariusz kalibracyjny |
 
-**→ Maciej wybrał 1B (2026-06-25):** terytorium = bazowy zasięg (`min(pop,15)`) + zasięg kulturowy (`cityBorderRadius` +0..3), addytywnie (max 18). Pola obrabiane = bazowy zasięg sam. MAPA-handoff (`_mapa-terytorium-wioski.md`) ZAKTUALIZOWANY na tę formułę. Master: rozdaj MAPIE.
+**Prośba do MASTER:** build kanon + Opus review (HUD overlay breakdown 9 składników). Otwarte ABC: P-C1–C3.
+
+**Nie zrobiono:** migracja `computePotegaNacji` (stary model dominacji) — osobny batch SILNIK.
 
 ---
 
-## 2026-06-26 — odpowiedź na Twój batch (fix blokera + potwierdzenia)
+### [2026-06-30] v1.1 dyplomacja tick (T1A) — **→ SILNIK: GOTOWE**
 
-- **Lazaret / `koszary-gate-test` (BLOKER rebuildu) — NAPRAWIONE.** `buildings.json` lazaret `epokaWejscia=5` (Średniowiecze, kanon); test zsynchronizowany (asercje 4→5, dostępność epoch 4→5). Test powinien przejść → **możesz rebuildować kanon.**
-- **Warsztat oblężniczy → Średniowiecze (5)** — przeniesiony z Żelaza (epoka 3→5) wg Twojej dyspozycji [EKONOMIA.md l.244-245]. Zestaw Żelaza = teraz **8 budynków** (Kuźnia żelaza, Fort, Akademia, Teatr, Sąd, Pretorium, Łaźnia publiczna, Akademia wojskowa). Uwaga: `techUnlock` Warsztatu = „Oblężnictwo" (Żelazo) — niespójność epoka-budynek↔tech (parked, nieblokujące; do uzgodnienia gdy Katapulta=Średniowiecze, z UNITS/drzewkiem).
-- **Waluta ×2 = CAŁA pula Handlu — POTWIERDZAM** [l.258]. `economy.ts` mnoży `handelNetto` PRZED podziałem (`walutaMnoznik` na całość), więc Skarbiec + Badania + Wealth dostają ×2. Zero zmian w kodzie — już tak działa.
-- **Praca→Pieniądz z `doPuli` (nadwyżka) — POTWIERDZAM** [l.260]. Kod: `pieniadzZPracy = floor(doPuli × 2)` gdy Targowisko+Waluta.
-- **Dziękuję za wpięcie** `walutaOdkryta` + flag budynków z `builtIds` + `playerZbadane` w sygnaturze. Mój kod używa opcjonalnych pól ctx — kompatybilny.
-- **OTWARTE (nie u mnie pilne):** (a) surowce **żelazo/stal** do `resources.json` = DANE/MAPA (mój tech-handoff to flagował); (b) `mnoznikHandelPieniadz` per-cyw (1.7–2.4) — w nowym modelu Waluta=×2 jest głównym mnożnikiem, per-nacja = opcjonalna wariacja, niski priorytet — czekam na priorytet od Maciela.
+**Moduł:** `gra/src/game/diplomacy-economy.ts`  
+**Test:** `diplomacy-economy-test.cjs` **5/5**  
+**Handoff F:** `EKONOMIA-do-SILNIK_v1.1-diplomacy-tick.md` · batch `EKONOMIA+UI+CYW-do-SILNIK_v1.1-diplomacy-batch.md`  
+**Nie dotykano:** `main.ts`
 
-### KOREKTA (Maciej, 2026-06-26): Warsztat oblężniczy = ŻELAZO (3), nie Średniowiecze
-Cofam poprzedni ruch. **Warsztat oblężniczy → epoka 3 (Żelazo)**, z resztą budynków Iron. Powód: v0.1 = 3 epoki (Kamień/Brąz/Żelazo) i Żelazo wchodzi do v0.1 → Żelazo MUSI być epoką 3. Klasyczna(4) i Średniowiecze(5) są PO Żelazie. Zestaw Żelaza = **9 budynków** (z Warsztatem). Lazaret = 5 (Średniowiecze), Wielka Kuźnia = 4 (Klasyczna) — bez zmian. Testy: koszary-gate 18/18, **logic-test 191/191**. Kanon gotowy do rebuildu.
+---
+
+### [2026-06-26] **→ MASTER: GOTOWE Panel-B** (PANEL-EXEC Grupa B)
+
+**Od:** Maciej (czat lane B) · **Decyzja AB-KOLEJNOSC:** Panel-B przed FOOD-HODOWLA — **panel zamknięty**, FOOD = następny (kod, osobna dyspozycja).
+
+**Deliverable (🟢 izolowane — tylko JSON + skrypty, bez `main.ts`):**
+
+| Plik | Rola |
+|------|------|
+| `panele-sterowania/Panel-B.xlsx` | Hub balansu B (~186 param.) |
+| `gen-panel-b.py` / `export-b.py` / `test-panel-b-roundtrip.py` | gen · eksport · round-trip **OK** |
+| `docs/grupa-b/PANEL-B-SPEC.md` | instrukcja Macieja |
+| `docs/grupa-b/B-PANEL-INWENTARYZACJA.md` | inwentaryzacja + status 5 kroków ✅ |
+| `docs/archiwum/panele-miasto-legacy/README.md` | migracja ze starych Exceli MIASTO/ |
+
+**Arkusze:** Miasto, Ekonomia, Wealth, Globalne, Budynki-eco, Teren-bonus, Zdrowie, Szczescie, Kultura, Religia, Porzadek, **Zywnosc-kanon** → `terrain-improvements.json`
+
+**JSON zasilane:** `miasto-params.json`, `econ-params.json`, `society-params.json`, `terrain-improvements.json` (gra już czyta — **Integrator nie potrzebny** przy samym eksporcie panelu).
+
+**Uwaga techniczna:** przy pierwszym eksporcie Zywnosc-kanon dopisano `lodzie_rybackie.bonus.praca: 3` (kanon). Wiersze bydło/owce/lama w Excelu — eksport czeka na klucze JSON (FOOD-HODOWLA).
+
+**Obieg zaktualizowany:** `docs/obieg/B-ekonomia.md` § PANEL WYKONANE · `docs/ROADMAP.md` § Panele · `REJESTR-DECYZJI.md` PANEL-EXEC
+
+**Prośba do MASTER:**
+
+1. **Przyjąć zamknięcie Panel-B** (PANEL-EXEC / Grupa B) — bez kanonu, bez Opus (same JSON/skrypty).
+2. **Kolejka lane B:** FOOD-HODOWLA P2 — dyspozycja do subagenta Composer gdy Maciej powie „start FOOD-HODOWLA” (handoff już w `_handoff/MASTER-do-EKONOMIA_kanon-zywnosc-hodowla.md`).
+3. **Maciej kręci balans:** `Panel-B.xlsx` → w czacie **`eksportuj panel`** (agent odpala `export-b.py`).
+
+**Nie dotykano:** `main.ts`, `Gra-podglad.html`, kanon.
+
+---
+
+### [2026-06-29] Bugfix panel miasta — ręczne pola + bilans plonów
+
+**Maciej:** klik nie odznaczał 👤 · bilans plonów nie zgadzał się z przypisanymi polami  
+**Przyczyna:** panel używał przestarzałego `workedTilesForCity` (6 sąsiadów) zamiast `cityWorkedTilesForEconomy`  
+**Fix:** `cityPanel.ts` toggle klik + plon na heksie · `okolica.ts` toggle w API · test okolica 21/21  
+**→ INTEGRATOR:** wymaga rebuild ROBOCZA (lane UI+EKONOMIA, bez `main.ts`)
+
+---
+
+### [2026-06-29] EKO-P2-01 DONE → **→ INTEGRATOR: F-B5-EMPIRE-FOOD**
+
+**Lane:** WIRE 5 `turn-economy.ts` · `empire-food.ts` (tick pełny) · **NIE** `main.ts`  
+**Test:** `empire-food-b5-test.cjs` **9/9** · `grupa-b-lane-test.cjs` **38/38**  
+**Handoff:** `_handoff/EKONOMIA-do-SILNIK_B5-empire-food.md`  
+**Obieg:** `docs/obieg/B-ekonomia.md` § INTEGRATOR
+
+**Silnik:** weryfikacja istniejącego wywołania w `main.ts` + build ROBOCZA (bez patcha jeśli playtest OK)
+
+---
+
+### [2026-06-29] Lane DONE → **→ SILNIK: F-B-TECH-SYNC-29 TERAZ**
+
+**Test:** `grupa-b-lane-test.cjs` **37 pass, 0 fail**  
+**Kolejka F:** `dyspozycje/F-KOLEJKA-P0.md` § NASTĘPNY  
+**Silnik:** koszt miasta + HUD + fix `canFoundCity` (handoff § B)
+
+---
+
+### [2026-06-29] ABC domknięte — Q1B · FOUND A+B · FOUND-Q2A
+
+**Maciej:** `B1-Q1=B, B1-FOUND-Q1=A+B, B1-FOUND-Q2=A`  
+**Zapis:** `docs/decyzje/B1-tech-MACIEJ-2026-06-29.md`  
+**Lane:** `evaluateFoundCityAffordance` · `pickSourceCityForFounding`  
+**→ SILNIK: GOTOWE** — handoff `EKONOMIA+MAPA-do-SILNIK_B1-tech-sync-2026-06-29.md` (§ B zaktualizowany)
+
+---
+
+### [2026-06-29] B1 tech Maciej ABC → lane GOTOWE → SILNIK
+
+**→ SILNIK: GOTOWE** batch **F-B-TECH-SYNC-29**
+
+**Lane:** Rolnictwo/Łowiectwo · fort Wojskowosc · hover 🔒 · city-founding
+
+---
+
+### [2026-06-29] OKOLICA toggle — rebuild obu podglądów (lane)
+
+**Problem:** fix był tylko w źródle + ROBOCZA częściowo; `Gra-podglad.html` (kanon) **nie miał** stringa „odznacz” w bundlu.
+
+**Błąd lane (2026-06-29):** błędnie przywrócono **stary** `Gra-podglad.html` z git — bez ikon i bez ostatnich zmian. **Cofnięte:** oba pliki = **ten sam build co ROBOCZA** (md5 identyczne).
+
+**UX (Maciej 2026-06-29):** jeden plik **`Gra-podglad.html`**. Stary mock MENU/kreator → archiwum + redirect. ROBOCZA = redirect. Bramka publikuje kanon.
+
+---
+
+### [2026-06-29] → SILNIK: raport spieprzenia publikacji/UX (lane STOP)
+
+**Plik:** `dyspozycje/_handoff/EKONOMIA+UI-do-SILNIK_raport-spieprzenia-2026-06-29.md`
+
+Lane narobił bałaganu w HTML/UX (stary kanon z git, ROBOCZA=redirect, mock flow). **Okolica — fix Silnika zachować.** P0: `diplomaticContactEstablished` undeclared → BOOT ERROR. **Dalszą pracę robi tylko Silnik.**
+
+---
+
+### [2026-06-26] **→ SILNIK: GOTOWE** FOOD-HODOWLA P2 (EKONOMIA lane)
+
+**Od:** MASTER czat (Maciej: „p2 możesz robić”)  
+**Kanon:** `docs/decyzje/KANON-ULEPSZENIA-ZYWNOSC-HODOWLA.md`
+
+**Zrobione (lane EKONOMIA only — bez `main.ts`):**
+
+| AC | Wynik |
+|----|-------|
+| E1 | `terrain-improvements.json`: bydlo/owce/lama, usunięto pastwisko; tarasy Chińczycy+Inkowie |
+| E2 | `tileYield` suma warstw (`ulepszeniaKeys`, `improvementKeysForHex`) |
+| E3 | `livestock-unlock.ts` + `getResourceAccessForCity` z unlock imperium |
+| E4 | `isLivestockAllowed(civ, key, era)` — Inkowie ep&lt;3 |
+| E5 | `resources.json` — bez ×200%, opisy kanonu |
+| E6 | `node tools/food-hodowla-test.cjs` — **zielony** |
+
+**Handoff:** `dyspozycje/_handoff/EKONOMIA-do-SILNIK_kanon-zywnosc-hodowla.md`
+
+**Pliki:** `economy.ts`, `terrain-improvements.ts`, `turn-economy.ts`, `livestock-unlock.ts`, `resource-access.ts`, `terrain-improvements.json`, `resources.json`, `tools/food-hodowla-test.cjs`
+
+**Czeka:** MAPA lane (M1–M7 + Panel-A) + batch SILNIK F-FOOD-HODOWLA-01 (`main.ts`, model warstw Hex).
+
+**Handoffy cross-lane:**
+- → MAPA: `EKONOMIA-do-MAPA_kanon-zywnosc-hodowla.md`
+- → INTEGRATOR: `EKONOMIA-do-INTEGRATOR_kanon-zywnosc-hodowla.md` (blokada do MAPA GOTOWE)
+
+---
+
+### [2026-06-26] **→ MASTER: GOTOWE Manpower + Pobór we Wpływie + HUD rekruci**
+
+**Od:** EKONOMIA (Maciej kanon) · **Decyzja:** regen 10% globalnie; różnicowanie nacji przez `bonus_pobor_regen`; nazwa UI **rekruci**; składnik Wpływu **Pobór** = ludność abs. + rekruci.
+
+**Deliverable:**
+- `manpower.ts` — `civManpowerRegenMult`, `empirePoborTotals`, regen × cyw
+- `power.ts` — Pobór w slocie `ludnosc` (18% wagi)
+- `civs.json` — Grecy −15%, Rzymianie +35% regen
+- `hud.ts` — pod ⚜ Wpływ: `X rekruci`
+- `main.ts` — snapshoty + HUD (wpięte)
+- `EKONOMIA-manpower-pobor.md` + handoff `EKONOMIA-do-MASTER_manpower-pobor-wplyw.md`
+- `manpower-test.cjs` — **22/22 OK**
+
+**Czeka:** panel miasta (snapshot MP) — UI lane · kanon HTML po Opus.
+
+---
+
+### [2026-06-26] **→ MASTER: SPEC POWER obiektywny vs RESPEKT %**
+
+**Od:** Maciej — Power ≠ normalizacja vs inni; Respekt = stosunek Power w dyplomacji.
+
+**Deliverable:**
+- `EKONOMIA-POWER-RESPEKT-SPEC.md` — pełny algorytm + przykład 956 pkt
+- `power-params.json` + `power-objective.ts` + test 6/6
+- Handoff: `EKONOMIA-do-MASTER_power-objective-v2.md`
+
+**Czeka ABC:** współczynniki pkt, osadnik w armii, nazwa HUD; potem HUD Power (faza 3).
+
+---
+
+### [2026-06-26] **→ MASTER: WPIĘTE SILNIK Power v2 + panel rekruci**
+
+**Temat 2:** `battleWinsByOwner`, snapshot budynków/heksów/jednostek, epoka AI z tech, `refreshObjectivePowerCache`, Respekt z objective Power.  
+**Temat 5:** panel miasta — ⚔ rekruci na pasku + karta (pula, max, regen/t, koszt werb).  
+**Handoff:** `EKONOMIA-do-MASTER_power-objective-v2.md` (faza 3 = HUD Power).
+
+---
+
+### [2026-06-26] **→ INTEGRATOR: GOTOWE F-POWER-MANPOWER-01**
+
+**Paczka:** `dyspozycje/_handoff/EKONOMIA-do-INTEGRATOR_power-manpower-v2.md`
+
+**Co przekazane:** Manpower/rekruci (kanon + testy 22/22), POWER obiektywny v2 (spec + test 6/6), wpięcia silnika (battleWins, cache Power, Respekt AI), panel miasta rekruci.
+
+**Integrator domyka:** HUD Power zamiast Wpływ 0–100, overlay pkt obiektywnych, Respekt % w UI dyplomacji, kanon HTML po Opus.
+
+---
+
+(Historia: `docs/archiwum/dyspozycje/EKONOMIA-DO-MASTERA.md`)
+
+---
+
+### [2026-07-01] **→ MASTER: GOTOWE · batch B5-SP-LIMIT**
+
+**Decyzja:** SP6=C (cap 100×Spichlerze) · SP6-overflow=A (nadwyżka przepada) · SP3=A  
+**Warstwa:** 🟡 cross — `empire-food.ts`, `econ-params.json` · **bez `main.ts`**
+
+**Pliki:**
+| Plik | Zmiana |
+|------|--------|
+| `gra/src/game/empire-food.ts` | `maxZapasy = spichlerzCount × pojemność`; clamp overflow; `getEmpireFoodMaxCap()` |
+| `gra/data/econ-params.json` | `spichlerz_pojemnosc_zapasow_panstwa` (normal=100) |
+| `gra/tools/empire-food-b5-test.cjs` | +scenariusze cap (0/1/2 Spichlerze, 2-tury overflow) |
+
+**Testy:** `node gra/tools/empire-food-b5-test.cjs` — **16/16** · `spichlerz-wzrost-test.cjs` — **9/9** regresja  
+**Handoff UI:** `dyspozycje/_handoff/EKONOMIA-do-UI_spichlerz-cap-kontrakt.md`
+
+**Co sprawdzić po wpięciu F:** HUD mapy `142 / 200` gdy 2 Spichlerze; bez Spichlerza brak kumulacji.
+
+---
+
+### [2026-07-01] **PANEL-P0 sprint · Grupa B — B-M7 weryfikacja**
+
+**Temat:** PANEL-P0-FIX · duplikat FOOD / `terrain-improvements.json`  
+**Warstwa:** 🟢 izolowana (tylko skrypty panelu + JSON B) · **bez `main.ts`**
+
+**Weryfikacja `export-b.py`:**
+- ✅ **NIE** zapisuje do `terrain-improvements.json` (brak gałęzi w skrypcie)
+- ✅ **NIE** eksportuje arkusza `Zywnosc-kanon` (usunięty z `gen-panel-b.py`; arkusze: _INFO, Miasto, Ekonomia, … Technologie, _Eksporty — **bez FOOD**)
+- Źródło prawdy FOOD = **Panel-A** (`export-a.py`)
+
+**Panel-B.xlsx:** brakowało w repo → wygenerowano `gen-panel-b.py` (19 arkuszy, bez Zywnosc-kanon)
+
+**Eksport:** `export-b.py` → **0 zmian** (Wartość = JSON kanon)
+
+**Test:** `test-panel-b-roundtrip.py` — **PASS** (miasto + budynki + Potega-P-A)
+
+**Blokery:** brak — P0 B-M7 zamknięty w kodzie od 2026-06-30; xlsx nie było w workspace (OneDrive/gitignore?) — odświeżone generatorem.
+
+**Co sprawdzić po wpięciu:** Maciej edytuje Panel-B → `eksportuj panel` nie dotyka `terrain-improvements.json`.
+
+---
+
+### [2026-07-02] **→ MASTER: ACK review · B1-Q3 APPROVE**
+
+**Handoff:** `EKONOMIA-do-MASTER_B1-Q3-panel-B-2026-07-02.md`  
+**Review Master:** **APPROVE** · REJESTR B1-Q3 → 🟢 WDROŻONA  
+**F:** dyspozycja **`MASTER-do-INTEGRATOR_F-P1-01-map-attack-2026-07-02.md`** 🟢 START (map attack — osobny batch)  
+**Lane B:** **IDLE**
+
+---
+
+### [2026-07-02] **→ MASTER: GOTOWE · PILNE B1-Q3 + Panel-B**
+
+**Dyspozycja:** [`MASTER-PILNE-2026-07-02.md`](MASTER-PILNE-2026-07-02.md) · **warstwa 🟡** · **bez `main.ts`**
+
+**B1-Q3 (drzewko liniowe, Maciej B):**
+| Plik | Zmiana |
+|------|--------|
+| `gra/data/tech.json` | `drzewko_model: "liniowe"` |
+| `gra/src/game/tech-tree.ts` | moduł: kolejność w epoce, depth, chain, walidacja grafu |
+| `gra/src/game/economy.ts` | re-eksport API tech-tree |
+| `gra/tools/tech-tree-test.cjs` | **19/19 PASS** |
+
+**Panel-B:** arkusze Budynki/Surowce/Technologie OK w `export-b.py` · **dry-run 0 zmian** · **roundtrip PASS**
+
+**Handoff:** [`_handoff/EKONOMIA-do-MASTER_B1-Q3-panel-B-2026-07-02.md`](_handoff/EKONOMIA-do-MASTER_B1-Q3-panel-B-2026-07-02.md)
+
+**Regresja lane:** `grupa-b-lane-test.cjs` 41/42 (1 fail empire-food reserve — sprzed batcha)
+
+**Co sprawdzić po wpięciu F:** opcjonalnie `sciencePicker` → `orderedTechsInEpoch`; export Panel-B nie kasuje `drzewko_model`.
+
+---
+
+### [2026-07-02] **→ MASTER: GOTOWE · D-START-OSIEDLE (bonus malejący pop 1–4)**
+
+**Decyzja:** Maciej „ślij” · kanon `docs/decyzje/D-START-OSIEDLE.md`
+
+| Plik | Zmiana |
+|------|--------|
+| `gra/data/society-params.json` | `*_bonus_osiedle_pop` — tablice [pop1…pop4] per easy/normal/hard |
+| `gra/src/game/society-breakdown.ts` | `pickOsiedlePopBonus`, etykieta „Osiedle (N mieszk.)” w Sz/Prawo |
+| `gra/src/game/turn-economy.ts` | Zdrowie — ten sam model osiedla |
+| `gra/tools/society-breakdown-test.cjs` | regresja osiedle + PorPct ≥45% normal T1 |
+
+**Bez `main.ts`.** Playtest: załóż miasto pop=1 → panel Porządek powinien pokazać **Napięcie** (normal), linia „Osiedle (1 mieszk.)” w Prawie (+6).
+
+**Bramka:** `node tools/society-breakdown-test.cjs`
+
+---
+
+### [2026-07-02] **→ MASTER: ZAMKNIĘTE · D-START-OSIEDLE (Maciej final)**
+
+**Sign-off:** „Wdrażamy w takiej formie. Jest super.”
+
+**Kanon Excel → JSON** (`docs/balans/D-START-OSIEDLE-tuner.xlsx`):
+
+| | Easy P/Sz | Normal P/Sz | Hard P/Sz |
+|--|-----------|-------------|-----------|
+| pop1 | 9/4 | 7/3 | 5/1 |
+| pop2 | 7/3 | 5/2 | 3/1 |
+| pop3 | 5/2 | 3/1 | 2/0 |
+| pop4 | 3/1 | 1/0 | 1/0 |
+
+PorPct T1 pop=1 (kult+rel): **80% / 58% / 34%** (Spokój / Napięcie / Niepokój).
+
+**Import:** `python tools/import-osiedle-tuner-xlsx.py` · doc: `docs/decyzje/D-START-OSIEDLE.md`
+
+**Lane EKONOMIA:** IDLE (wdrożone, bez main.ts).
+

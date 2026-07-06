@@ -1,0 +1,237 @@
+---
+description: Komendy Macieja (raport / status / pytania / co dalej / sprawdź) — stały format odpowiedzi w każdym czacie.
+globs:
+  - "**/*"
+alwaysApply: true
+---
+
+> ⛔ REGUŁA HISTORYCZNA — ładuje się automatycznie, ale NIE OBOWIĄZUJE od 2026-07-06.
+> Ignoruj procedury ról/publish/komend/Slack/AskQuestion/eksportu opisane niżej.
+> Aktualny ład: dyspozycje/START-TU.md + OBIEG-KOMUNIKACJI-2026-07-06.md + ROLE-I-ZAKRESY-2026-07-06.md.
+> Produkcja: 3 czaty Cowork (MASTER/INTEGRATOR/UX) na gra-robocza; roboczą publikuje WYŁĄCZNIE
+> INTEGRATOR; kanon/finalną WYŁĄCZNIE Grupa G Cursor (pakiety DO-KANONU). Pytania do Macieja:
+> tekstem w kanale, max 3, format A/B/C, BEZ popupów. Wersje: tylko dyspozycje/WERSJE.md.
+
+# Komendy Macieja — stałe hasła, stały format (NIENEGOCJOWALNE)
+
+Gdy Maciej wpisze jedno z poniższych haseł, agent **natychmiast** odpowiada w zdefiniowanym formacie — bez dopytywania. Źródła: pliki obiegu (`docs/obieg/`), `REJESTR-DECYZJI.md`, `ROADMAP.md`, handoffy (`dyspozycje/_handoff/`).
+
+**Zasada zakresu:** w czacie grupy (A–E) komenda dotyczy **tej grupy**. W czacie Master — **zbiorczo wszystkie grupy** (per grupa).
+
+---
+
+## `raport` — Master hub (4 sekcje A·B·C·4)
+
+**Gdzie:** czat **Master** (orkiestracja). **Hasło Macieja:** wpisz **`raport`**.
+
+**Ten sam układ** stosuj też na końcu odpowiedzi po **`master`** (skan + wykonanie). **`start`** = krótszy skan; pełny status 4-sekcyjny na żądanie **`raport`**.
+
+Odpowiedz **zawsze** w czterech nagłówkach (pusta sekcja → „— (brak)"):
+
+### A — Grupy (do uzupełnienia)
+Per **Grupa A…E**: co ma wdrożyć / dokończyć (🎯 TERAZ, brak meldunku). IDLE = jedna linia.
+
+### B — Integrator F (wisi u F)
+Batchy z dyspozycją Mastera, **bez** meldunku `F-do-MASTER*`.
+
+### C — Master (wisi u Mastera)
+Review, promocja kanon, dyspozycje do F/grup, otwarte ABC czekające na Ciebie.
+
+### 4 — Playtesty (**tylko Master → Maciej**)
+
+**Lane A–F: ZAKAZ** informować Macieja o playtestach (także zaległych). Kandydaci → [`REJESTR-PLAYTESTOW.md`](docs/master/REJESTR-PLAYTESTOW.md) §2.
+
+W odpowiedzi **`start`/`raport` dla Macieja:** **pomiń** sekcję 4. Maciej pyta **`playtest lista`** → Master czyta §1 rejestru.
+
+---
+
+## `raport2` — czaty grup A–E (3 sekcje, NIE Master)
+
+**Hasło Macieja w czacie grupy:** **`raport2`** (alias: `audyt wdrożenia`).
+
+**OBOWIĄZ-ZAKRES:** tylko wpisy **tej grupy** z rejestru · **bez** statusu całej gry / innych lane'ów ([`OBOWIAZ-ZAKRES-RAPORTU.md`](docs/obieg/OBOWIAZ-ZAKRES-RAPORTU.md) · trigger **`zakres`**).
+
+Odpowiedz dokładnie w trzech sekcjach (krótkie punkty, bez lania wody):
+
+### 1. ✅ ABC wdrożone
+ID z `REJESTR-DECYZJI.md` tej grupy (🟢/✅) + dowód: plik/funkcja/test/md5.
+
+### 2. 🔜 Nie wdrożone / w toku
+ID + status rejestru + co blokuje.
+
+### 3. 📤 Przekazane Masterowi
+TAK/NIE: handoff `_handoff/*-do-MASTER*` · flaga `→ MASTER: GOTOWE` · Slack §7.1d.
+
+**Końcówka:** 1 linia `Gotowe u Mastera: TAK/NIE · brakuje: …`
+
+**ZAKAZ:** kończyć „wklej do Mastera". Brak handoffu → agent dopisuje sam.
+
+**Master hub:** `gra/tools/audyt-abc-handoff.ps1` · spec: `docs/obieg/RAPORT2-INSTRUKCJA.md`.
+
+---
+
+## `pytania` — otwarte ABC u Macieja (hub Master)
+
+**Gdzie:** czat **Master**. **Hasło Macieja:** wpisz **`pytania`**.
+
+**Format odpowiedzi (zawsze):**
+1. **Liczba** — ile realnie czeka (np. „0 pilnych · 2 odłożone post-v1.0”).
+2. **Lista** — tylko **OTWARTE** pytania: **ID** · **Grupa** · **jedno zdanie** · link `docs/decyzje/<ID>.md` jeśli jest.
+3. **Nie licz** — decyzji już zapisanych (🟡 ZAPISANA z literą A/B/C), wdrożenia w toku, playtestów, zadań operacyjnych Mastera/F.
+
+**Źródła (kolejność):**
+1. Sekcja **`❓ PYTANIA DO MACIEJA`** w `docs/obieg/<grupa>-*.md` (A–E)
+2. `docs/decyzje/MAPA-PYTAN-OPEN.md` — wiersze **OTWARTE** (po weryfikacji!)
+3. **`OBOWIĄZKOWO`** przed wpisem: `docs/decyzje/<ID>.md` — jeśli **ZAMKNIĘTE** → **nie pokazuj**
+
+**W czatach grup A–E:** to samo hasło **`pytania`**, ale tylko pytania **tej grupy**. **ZAKAZ** wymieniać ABC innych lane'ów ([`OBOWIAZ-ZAKRES-RAPORTU.md`](docs/obieg/OBOWIAZ-ZAKRES-RAPORTU.md)).
+
+**Powiązane:** **`format`** — gdy pytanie źle sformułowane · **`A`/`B`/`C`** — Twoja odpowiedź.
+
+---
+
+## `status` — wdrożenie Twoich decyzji
+
+**Grupy A–E:** tylko ABC + wdrożenie **tego lane'u** z `REJESTR-DECYZJI.md` (ZAPISANE / W TRAKCIE / WDROŻONE / **ZALEGŁE**). **Bez** playtestu — to Master (`playtest lista`).
+
+**Master (hub):** pełny status + opcjonalnie kolejka playtestów z REJESTR §1.
+
+Alias: `czego nie wdrożono?` = tylko otwarte (nie 🟢/✅). Patrz `.cursor/rules/decyzje-echo.mdc`.
+
+## `pytania` — co czeka Twojej decyzji
+Tylko **realnie** otwarte ABC. Źródło: „❓ PYTANIA DO MACIEJA" z pliku obiegu (+ `ROADMAP.md` w Master). **OBOWIĄZKOWO przed pokazaniem pytania jako otwartego — zweryfikuj w `docs/decyzje/<ID>.md`, że NIE ma statusu „ZAMKNIĘTE".** Nie ufaj samej liście (bywa nieaktualna). Jeśli zamknięte → nie pokazuj jako pytania; jeśli czeka tylko wdrożenia → to nie jest pytanie do Macieja. Każde realne: ID + jedno zdanie o co chodzi. Gdy zadajesz ABC — pełna forma `.cursor/rules/abc-pelna-forma.mdc` (**max 3 pytania**/paczka, jeden `AskQuestion`).
+
+**Hub Master:** pełna spec sekcji **`pytania`** w `.cursor/rules/komendy-raport.mdc` (format listy + źródła weryfikacji).
+
+## `co dalej` — rekomendacja priorytetu
+Master/agent podaje **1 najważniejszą rzecz** do zrobienia teraz + dlaczego (z „🎯 TERAZ" / blokad / kolejności w ROADMAP). Max 3 pozycje.
+
+## `sprawdź <temat>` — weryfikacja konkretu
+Agent sprawdza wskazany temat: czy zrobione, gdzie (plik/funkcja), jaki status w rejestrze, czy coś blokuje. Odpowiedź: stan + dowód + następny krok.
+
+---
+
+## `audyt wdrożenia` — alias `raport2`
+
+To samo co **`raport2`**. Preferuj **`raport2`** (krótsze).
+
+## `eksportuj panel` — Maciej zmienił Excel, agent aktualizuje grę
+Maciej wpisuje w czacie grupy po zmianie wartości w `panele-sterowania/Panel-X.xlsx`. Agent:
+1. Sam odpala `panele-sterowania/export-<x>.py` (instaluje `openpyxl`/zależności po cichu, jeśli trzeba) → aktualizuje `gra/data/*.json`.
+2. Jeśli zmiana wymaga odczytu w `.ts`/`main.ts` → handoff do Integratora; inaczej 🟢 izolowana.
+3. Raportuje **jedną linią**: „panel X wyeksportowany, gra zaktualizowana". **Nigdy** nie podaje Maciejowi komend terminala (`python`, `pip`, ścieżek, `--dry-run`). To łamie „Maciej zero terminala" → zakazane.
+
+## Hasła Macieja (A–E) — `.cursor/rules/decyzje-echo.mdc`
+
+| Hasło | Agent |
+|-------|-------|
+| **A / B / C** | ECHO → AskQuestion wdrażaj? / doprecyzujmy |
+| **`działaj`** | Wdrażaj u siebie (koniec balansu) |
+| **`przekaż do Mastera`** | Handoff + pliki + Slack #master + #grupa-X |
+| **`obowiaż`** | Stosuj [`KOMUNIKACJA-PLAYTEST-LANE.md`](docs/obieg/KOMUNIKACJA-PLAYTEST-LANE.md) — **ZERO** playtest w czacie Macieja |
+| **`rejestr`** | Dopisz [`REJESTR-PLAYTESTOW.md`](docs/master/REJESTR-PLAYTESTOW.md) §2 · potwierdź ciszę w czacie |
+| **`rejestr`** | Dopisz [`REJESTR-PLAYTESTOW.md`](docs/master/REJESTR-PLAYTESTOW.md) §2 · cisza w czacie |
+| **`zakres`** | Stosuj [`OBOWIAZ-ZAKRES-RAPORTU.md`](docs/obieg/OBOWIAZ-ZAKRES-RAPORTU.md) — raport **tylko własny lane** ABC + wdrożenie + Master |
+| **`raport2`** | 3 sekcje: ABC wdrożone · w toku · u Mastera (`RAPORT2-INSTRUKCJA.md`) |
+| **`format`** | Przepisz ABC (5 kroków) |
+| **`reguły`** | **Start dnia** — checklist obiegu (Slack, archiwum, ABC, handoff) · `komendy-raport.mdc` §`reguły` |
+| **`reguły mapa`** | Kanon gameplay MAPA (brzeg 10 hex, ląd od środka, rzeki) · **≠ `reguły`** |
+
+**ZAKAZ w czatach grup A–E (i Design):**
+
+- ❌ **`master`** od Macieja **≠** „przyjmuj rolę MASTER" — **nie** buduj kanonu, **nie** `publish-kanon-snapshot.ps1`, **nie** `Gra-podglad.html` root ([`LANE-NIE-MASTER.md`](docs/obieg/LANE-NIE-MASTER.md))
+- ❌ Flaga **`→ MASTER: master`** w meldunku = **adresat hub Master**, nie polecenie dla agenta lane
+- ✅ Po meldunku: **`→ MASTER: GOTOWE`** + handoff · **STOP** · Master w hubie robi resztę
+
+**ZAKAZ:** prosić Macieja o wklejanie meldunku w hubie Mastera.
+
+## `master` — TYLKO hub Master (orkiestracja)
+
+**Gdzie działa:** czat **Master Orkiestrator (hub)** — **nie** Grupa A–E, **nie** Design, **nie** F jako zamiennik `przekaż`.
+
+| Czat | Maciej wpisuje `master` | Agent |
+|------|-------------------------|-------|
+| **Hub Master** | ✅ | Skan meldunków → dyspozycja F → review → promocja kanon ([`MASTER-ZADANIA.md`](docs/obieg/MASTER-ZADANIA.md)) |
+| **Grupa A–E / Design** | ⚠️ pomyłka czatu | **NIE** orkiestruj · odpowiedz szablonem z [`LANE-NIE-MASTER.md`](docs/obieg/LANE-NIE-MASTER.md) · meldunek już w pliku |
+
+**Flaga w pliku `→ MASTER: master`** = „Master odbierz w hubie" — **nie** „teraz jesteś Masterem" (lane).
+
+---
+
+## `start` / `zadanie` — agent (Master dyspozycjonuje; NIE hasło Macieja w A–E)
+
+Master wpisuje **`start`** w czacie grupy **lub** grupa czyta 🎯 TERAZ po onboardingu. Agent:
+1. Czyta `docs/obieg/<litera>-*.md` — **🎯 TERAZ** + decyzje + handoff.
+2. Implementuje w swoich plikach (**nigdy** `main.ts`).
+
+**`zadanie panel`** / **`zadanie <temat>`** — tylko wskazany temat z obiegu (panel → `PANEL-STEROWANIA-SPEC.md`).
+
+Po **`przekaż do Mastera`** (Maciej): self-check PASS → `→ MASTER: GOTOWE` + warstwa 🟢/🟡/🔴 + Slack (§2d decyzje-echo).
+
+## `format` (alias: `ABC`) — wymuś poprawne pytanie
+Maciej pisze to, gdy grupa zadała pytanie **źle** (skrót, brak Sytuacja/Dlaczego/Cel, gołe opcje w Ask). Agent **natychmiast** przepisuje w **formacie 5 kroków** (`.cursor/rules/abc-pelna-forma.mdc`): **Sytuacja → Dlaczego → Cel → A/B/C pełne → krótki AskQuestion**. Bez tłumaczeń.
+
+## `zasady` (alias: `sprawdź zasady`) — czy grupa ma AKTUALNE reguły
+Aktualna wersja reguł zmian: **ISO v1 (2026-06-28)** — źródło: `.cursor/rules/zmiany-izolacja.mdc`.
+- W czacie grupy: agent czyta swój plik obiegu, sprawdza czy zawiera blok „📦 WŁASNA WERSJA TESTOWA (ISO-5)" + linię „POTWIERDZENIE ZASAD: ISO v1". Odpowiada: **stosuję ISO v1** (z literą grupy) lub czego brakuje.
+- W czacie Master: zbiorczo per grupa — która ma `POTWIERDZENIE ZASAD: ISO v1`, która nie (czyli wymaga ponownej wklejki/onboardingu).
+- Gdy grupa potwierdza po raz pierwszy — wpisuje `POTWIERDZENIE ZASAD: ISO v1 — stosuję (RRRR-MM-DD)` w swoim pliku obiegu (sekcja na górze).
+
+---
+
+## `reguły` (aliasy: `reguly`, `obieg`, `przypomnij zasady`) — **START DNIA / przypomnienie całego obiegu**
+
+**Hasło Macieja:** wpisz **`reguły`** na początku pracy w czacie (Grupa A–F **lub** Master hub).
+
+Agent **natychmiast** (bez dopytywania, przed inną pracą):
+
+1. **Checklist obiegu** — odpowiedź w formacie 8 punktów z [`AUDYT-OBIEG-PAMIEC-SLACK-2026-07-04.md`](docs/obieg/AUDYT-OBIEG-PAMIEC-SLACK-2026-07-04.md) §6 (PASS/FAIL per punkt).
+2. **Archiwum** — uruchom `python gra/tools/sync-chat-export.py --slot <SLOT> --chat-id <UUID> --mode auto` (slot z `REJESTR-CZATOW.md` lub transcript); dopisz `SYNC-EKSPORT:` do `DZIENNIK-MASTERA.md`.
+3. **Slack (Master hub):** odczyt MCP `#master` (hasło pomocnicze **`slack`**) · lane: potwierdź obowiązek §2d po `przekaż do Mastera`.
+4. **ABC Maciej:** potwierdź sekwencję ECHO → AskQuestion → `działaj` → `przekaż` (`.cursor/rules/decyzje-echo.mdc`).
+5. **Koniec:** jedna linia `→ Gotowy do pracy. Czekam na: działaj / przekaż / start / master`.
+
+**Rytuał dnia Macieja:** **`reguły`** w każdym aktywnym czacie → potem właściwe hasło pracy.
+
+**Różnica vs `zasady`:** `zasady` = tylko ISO testów · **`reguły` = Slack + archiwum + ABC + zakres + playtest gate + handoff.**
+
+**NIE mylić z `reguły mapa`** — to osobne hasło (kanon gameplay generatora, patrz niżej).
+
+---
+
+## `reguły mapa` (alias: `reguły rzeki`) — kanon MAPA (gameplay)
+
+**Hasło Macieja:** **`reguły mapa`** — przypomnienie **ustaleń generatora/renderu brzegu**, nie obiegu.
+
+Agent odpowiada **natychmiast** (skrót; pełny tekst: `docs/obieg/MAPA-KANON-GENERATOR.md`):
+
+| Temat | Reguła |
+|-------|--------|
+| Brzeg | min. **10 hex** oceanu od krawędzi mapy |
+| Ląd | od **środka**, równomiernie; kontynenty: centrum (0.5,0.5) + pierścień |
+| Rzeki | źródło: **Góry/Wzgórza** · A* do morza · **opływa** relief · meandry, nie długa prosta |
+| Quota rzek | per kontynent; tier Mało ~72 / Normalnie ~36 / Dużo ~22 hexów lądu na rzekę |
+| Wybrzeże | jasnoniebieskie `#82C8E0`; piasek tylko na **lądzie** przy brzegu |
+| Morze | płaska tafla, bez klifu w dół |
+| Playtest | **Ctrl+F5** + **Nowa gra** |
+
+**ZAKAZ:** odpowiadać tym formatem na samo **`reguły`** (bez „mapa").
+
+---
+
+## Zasady wspólne
+- Odpowiadaj **w czacie** (Maciej nie czyta plików). Zwięźle.
+- **Master hub** (`start` / `master` / `raport` w czacie Mastera): **4 sekcje** (Maciej 2026-07-02):
+  1. **A — Grupy (do uzupełnienia)** — per Grupa A…E: co agent ma wdrożyć / dokończyć (🎯 TERAZ, brak meldunku). Grupy IDLE = jedna linia „IDLE".
+  2. **B — Integrator F (wisi u F)** — batchy z dyspozycją, bez meldunku `F-do-MASTER`.
+  3. **C — Master (wisi u Mastera)** — review, promocja kanon, dyspozycje do F/grup, otwarte ABC do Twojej decyzji.
+  4. **Playtesty** — **pomiń** w `start`/`raport` dla Macieja. Informuje **tylko Master** (na prośbę: `playtest lista`).
+- Nie mieszaj z formatem **`raport2`** grup A–E (3 sekcje: wdrożone / w toku / u Mastera).
+- Jeśli sekcja pusta — napisz „— (brak)", nie pomijaj nagłówka.
+- Nie myl warstw: „przekazane" = u kogoś innego; „nie ruszone" = u tej grupy.
+- Po komendach **`raport` / `status` / `pytania` / `co dalej`** — najpierw raport, potem ewentualne pytanie „działać?".
+- Po **`start`** (Master) — od razu praca z 🎯 TERAZ.
+- Po Macieju **`działaj`** / **`przekaż do Mastera`** — reguła `decyzje-echo.mdc` §2c–2d.
+- Po Macieju **`plot code`** (Master hub) — skan dyspozycji → kod/handoff → **OBOWIĄZKOWO** na czacie: **`✅ Gotowe:`** / **`⏸️ Czeka:`** + wpis w [`MACIEJ-GOTOWE.md`](../docs/MACIEJ-GOTOWE.md) ([`PLOT-CODE-WORKFLOW.md`](../docs/obieg/PLOT-CODE-WORKFLOW.md), [`OBOWIAZ-POWIADOM-MACIEJA.md`](../docs/obieg/OBOWIAZ-POWIADOM-MACIEJA.md)).
+- **Po każdej przygotowanej paczce pracy** — Maciej: **`✅ Gotowe:`** w czacie **oraz** dopisek w **`docs/MACIEJ-GOTOWE.md`** (nie tylko dziennik).
+- Ściąga dla Macieja: `docs/obieg/KOMENDY-MACIEJA.md`.

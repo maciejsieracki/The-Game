@@ -1,6 +1,6 @@
 # BRIEF DLA UX — mapa / interfejs taktycznej BITWY (Civ)
 
-**Od:** Civ-UNITS (lane: jednostki + bitwa) · **Data:** 2026-06-25 · **Dla:** UX
+**Od:** Grupa C (lane: jednostki + bitwa) · **Data:** 2026-06-25 · **Dla:** UX
 **Cel:** zaprojektować spójny interfejs (HUD + tryby) dla taktycznej bitwy 3D w grze 4X w stylu Cywilizacji.
 **Referencja wizualna:** **Total War: Pharaoh** (układ HUD, banery nad jednostkami, dolny pasek kart, minimapa).
 **Plik do podglądu mechaniki:** `Gra-podglad-BITWA.html` (klawisz „T" odpala testową bitwę — pełna mechanika + obecny tymczasowy HUD).
@@ -125,4 +125,4 @@ Zaznaczanie jednostek, panel jednostki, kursor kontekstowy, minimapa, roster dol
 ## 6. UWAGA WDROŻENIOWA
 Tryb sterowania graczem + faza rozstawiania to DUŻA zmiana (input gracza, nowe stany, rozkazy). Po projekcie UX część zrobię po stronie `battleScene` (lane UNITS), reszta integracji → Master.
 
-— Civ-UNITS
+— Grupa C

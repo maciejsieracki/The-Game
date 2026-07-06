@@ -1,0 +1,49 @@
+﻿Era,Technologia (EN),Technologia (PL),Koszt (nauka),Odblokowuje,Mistrzostwo (Mastery)
+Antyk,Agriculture,Rolnictwo,1,Granary; +1 żywności na farmach,—
+Antyk,Pottery,Garncarstwo,70,Brickyard; +1 żywności na plantacjach; +1 produkcji w glinieniach,—
+Antyk,Sailing,Żeglarstwo,70,Fishing Quay; Galley; zaokrętowanie; +1 żywności na łowiskach,—
+Antyk,Animal Husbandry,Hodowla zwierząt,70,Saw Pit; Slinger; +1 produkcji w obozach i wyrębach; +1 żywności na pastwiskach,—
+Antyk,Writing,Pismo,125,Library; Great Stele (cud); Research Initiative,+1 nauki w budynkach nauki; +1 Kodeks; kradzież technologii przeciwnika
+Antyk,Irrigation,Nawadnianie,125,Garden; +1 do limitu osad; Hanging Gardens (cud),—
+Antyk,Masonry,Murarstwo,125,Ancient Walls; Monument; Pyramids (cud); +1 produkcji w kopalniach i kamieniołomach,+3 siły bojowej ufortyfikowanych dzielnic; +1 produkcji w budynkach produkcyjnych
+Antyk,Currency,Waluta,245,Bath; Market; +1 do limitu specjalistów,+1 złota w budynkach złota; +1 Kodeks
+Antyk,The Wheel,Koło,245,Villa; Ballista; Chariot; Military Infiltration,+1 Kodeks; +1 ruchu jednostek oblężniczych
+Antyk,Bronze Working,Obróbka brązu,255,Barracks; Spearman; Archer,+3 siły bojowej piechoty; +2 produkcji w budynkach wojskowych
+Antyk,Navigation,Nawigacja,430,Lighthouse; Ha'amonga 'a Maui (cud); Quadrireme,+1 Kodeks; +3 siły bojowej jednostek morskich; +1 żywności w budynkach żywności
+Antyk,Engineering,Inżynieria,430,Amphitheater; Blacksmith,Ancient Bridge; +1 kultury w budynkach kultury; +1 Kodeks
+Antyk,Military Training,Szkolenie wojskowe,430,Arena; odblokowuje flankowanie jednostek,—
+Antyk,Mathematics,Matematyka,738,Academy; Pyramid of the Sun (cud),+2 Kodeksy
+Antyk,Iron Working,Obróbka żelaza,738,Horseman; Phalanx,—
+Antyk,Future Tech,Technologia przyszłości (Antyk),1255,Powtarzalna: +1 pkt atrybutu (dzika karta); premia do startowej technologii następnej ery; +10 postępu ery,—
+Eksploracja,Astronomy,Astronomia,525,Serpent Mound (cud); Observatory; Fleet Commander,—
+Eksploracja,Machinery,Mechanika,525,Gristmill; Sawmill; Catapult,+1 produkcji w obozach i wyrębach
+Eksploracja,Cartography,Kartografia,b.d.,Wharf; jednostki cywilne i wsparcia mogą wpływać na głęboki ocean,+1 żywności w budynkach żywności i na łowiskach
+Eksploracja,Castles,Zamki,870,Dungeon; Medieval Walls; Crossbowman,+3 siły bojowej ufortyfikowanych dzielnic; Open the Gates; +1 produkcji w kamieniołomach
+Eksploracja,Feudalism,Feudalizm,870,Inn; +1 do limitu osad,"Medieval Bridge; +1 żywności na farmach, pastwiskach i plantacjach"
+Eksploracja,Guilds,Gildie,870,Guildhall; Kiln,+1 złota w budynkach złota; +1 produkcji w glinieniach i kopalniach
+Eksploracja,Heraldry,Heraldyka,870,Knight; Man-At-Arms; Mamluk,+3 siły bojowej piechoty; +1 zadowolenia w budynkach zadowolenia
+Eksploracja,Education,Edukacja,1300,University; Shwedagon Zedi Daw; +1 do limitu specjalistów,+1 nauki w budynkach nauki; +1 Relikt
+Eksploracja,Metallurgy,Metalurgia,1300,Armorer; Trebuchet,+3 siły bojowej jednostek dystansowych i oblężniczych; +2 produkcji w budynkach wojskowych
+Eksploracja,Architecture,Architektura,1900,Menagerie; Pavilion,+1 kultury w budynkach kultury; +1 Relikt
+Eksploracja,Metal Casting,Odlewnictwo,1900,Lancer; Pikeman; Mamluk,+3 siły bojowej kawalerii; +1 produkcji w budynkach produkcyjnych
+Eksploracja,Shipbuilding,Szkutnictwo,b.d.,Shipyard; Carrack; bezpieczna żegluga przez głęboki ocean,+3 siły bojowej morskiej; ulepszone jednostki lądowe mogą wpływać na głęboki ocean
+Eksploracja,Urban Planning,Urbanistyka,b.d.,Bank; Hospital; Machu Pikchu (cud); +1 do limitu specjalistów,—
+Eksploracja,Gunpowder,Proch strzelniczy,3625,Arquebusier; Bombard; Galleon,—
+Eksploracja,Future Tech,Technologia przyszłości (Eksploracja),b.d.,Powtarzalna: +1 pkt atrybutu; premia do startowej technologii następnej ery; +10 postępu ery,—
+Nowoczesność,Academics,Akademizm,b.d.,Schoolhouse; Oxford University (cud),—
+Nowoczesność,Steam Engine,Silnik parowy,b.d.,Ironworks; Port; Merchant; Ironclad,+1 produkcji w obozach; +1 żywności na farmach i plantacjach
+Nowoczesność,Military Science,Nauki wojskowe,b.d.,Defensive Fortifications; Military Academy; Red Fort (cud),—
+Nowoczesność,Electricity,Elektryczność,2425,Laboratory; Stock Exchange; +1 do limitu specjalistów,+1 złota w budynkach złota; +1 nauki w budynkach nauki
+Nowoczesność,Urbanization,Urbanizacja,b.d.,Department Store; Opera House; +1 do limitu osad,Modern Bridge; +1 produkcji w glinieniach i kamieniołomach
+Nowoczesność,Combustion,Spalanie,b.d.,Cruiser; Dreadnought; Landship,+3 siły bojowej kawalerii; +1 produkcji w budynkach produkcyjnych
+Nowoczesność,Industrialization,Industrializacja,b.d.,Rail Station; Field Gun; Howitzer; Rifle Infantry; Marine,+3 siły bojowej piechoty; +1 produkcji w kopalniach i wyrębach
+Nowoczesność,Computation,Informatyka (Obliczenia),b.d.,Do potwierdzenia (technologia dodana po premierze; brak danych z zablokowanego źródła),Do potwierdzenia
+Nowoczesność,Nuclear Fission,Rozszczepienie jądra atomowego,b.d.,Do potwierdzenia (technologia dodana po premierze; brak danych z zablokowanego źródła),Do potwierdzenia
+Nowoczesność,Radio,Radio,b.d.,Radio Station; Tenement; Eiffel Tower (cud),+1 kultury w budynkach kultury; +1 zadowolenia w budynkach zadowolenia
+Nowoczesność,Flight,Lotnictwo,b.d.,Aerodrome; Biplane; Trench Fighter; Bomber; Squadron Commander,+2 produkcji w budynkach wojskowych; +1 zasięgu przechwytywania myśliwców
+Nowoczesność,Mass Production,Produkcja masowa,b.d.,Cannery; Factory; +1 do limitu osad,+1 żywności w budynkach żywności oraz na łowiskach i pastwiskach; Sabotage Shipping
+Nowoczesność,Mobilization,Mobilizacja,b.d.,Aircraft Carrier; Battleship; Destroyer; Submarine,+3 siły bojowej jednostek morskich
+Nowoczesność,Armor,Broń pancerna,b.d.,AT Gun; Assault Gun; Infantry Company; Tank; Marine,+3 siły bojowej jednostek dystansowych i oblężniczych
+Nowoczesność,Aerodynamics,Aerodynamika,b.d.,Fighter; Dive Bomber; Heavy Bomber; Break the Sound Barrier,+3 siły bojowej jednostek powietrznych
+Nowoczesność,Rocketry,Rakietnictwo,b.d.,"Launch Pad; projekty kosmiczne (Launch Satellite, Staffed Space Flight, Sabotage Space Program)",—
+Nowoczesność,Future Tech,Technologia przyszłości (Nowoczesność),b.d.,Powtarzalna: +1 pkt atrybutu; +10 postępu ery,—

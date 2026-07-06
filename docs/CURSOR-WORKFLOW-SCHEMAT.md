@@ -278,4 +278,30 @@ Wynik lane → MASTER → kanon             → _handoff/<OD>-do-MASTER_<temat>.
 
 ---
 
-*Opracował MASTER (GLM 5.2), 2026-06-26. Powiązane: `docs/CURSOR-MASTER-PLAN-DOKONCZENIA.md` (główny), `.cursor/rules/civ-workflow.mdc` (reguły), `PLAYBOOK-operacyjny-Civ.md` (źródło prawdy).*
+## 10. Cykl życia czatu — archiwum (nowy krok)
+
+Każda sesja Cursor kończy się zapisem do `docs/archiwum-czatow/`. Chroni to przed utratą kontekstu przy summarization i przy zmianie roli.
+
+```mermaid
+flowchart LR
+    START[Nowy chat<br/>rola + model] --> PRACA[Praca w sesji<br/>STAN + dyspozycje]
+    PRACA --> CHECK{Kontekst >60%<br/>lub koniec sesji?}
+    CHECK -->|NIE| PRACA
+    CHECK -->|TAK| ARCH[Zapisz archiwum<br/>_szablon-eksportu.md]
+    ARCH --> DZIENNIK[Wskaźnik w<br/>DZIENNIK-MASTERA.md]
+    ARCH --> EXPORT[Maciej: opcjonalnie<br/>wklej pełny eksport UI]
+    DZIENNIK --> NEXT[Nowy chat<br/>czyta plik archiwum]
+```
+
+| Moment | Kto | Akcja |
+|--------|-----|-------|
+| Koniec sesji | Agent | Podsumowanie + decyzje → plik `{ROLA}-{TEMAT}_{data}.md` |
+| Kontekst >60% | Agent | To samo + propozycja nowego chatu |
+| Zamknięcie chatu | Maciej | Wklej eksport Cursor pod `<!-- PEŁNY EKSPORT PONIŻEJ -->` |
+| Start kolejnej sesji | Nowy agent | Czyta archiwum poprzednika + STAN + DZIENNIK |
+
+**Foldery:** `master/`, `maciej-decyzje/`, `lane/`, `ops/`. Szczegóły: `docs/archiwum-czatow/README.md`.
+
+---
+
+*Opracował MASTER (GLM 5.2), 2026-06-26. Powiązane: `docs/CURSOR-MASTER-PLAN-DOKONCZENIA.md` (główny), `.cursor/rules/civ-workflow.mdc` (reguły), `PLAYBOOK-operacyjny-Civ.md` (źródło prawdy), `docs/archiwum-czatow/` (archiwum czatów).*

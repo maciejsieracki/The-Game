@@ -12,7 +12,7 @@ Reorganizacja: 2026-06-24.
 - **Macierz-walki-analiza.md** — analiza tekstowa counterow walki (towarzyszy Macierz-walki.xlsx, ktora zostala w roocie).
 - **Galeria-jednostek-4widoki.html** — interaktywna galeria jednostek w 4 widokach (zywa, low-poly render).
 - **Makieta-pasek-armii.html** — makieta paska/HUD armii.
-- **Makieta-przed-bitwa.html** — makieta ekranu przed bitwa (styl dark+gold; src/ui/preBattle.ts wzoruje sie na niej tylko komentarzem, nie laduje pliku).
+- **Makieta-przed-bitwa.html** — przekierowanie do `UI/Makieta-preBattle.html` (mockup preBattle, styl TW + dark+gold).
 - **renders/** — PNG renderow typow jednostek (render_*.png): domyslny, konnica, lucznik, maczuga, miecznik, osadnik, oszczepnik, procarz, rydwan, super, topor, wlocznik.
 - **Referencje-jednostek/** — README-referencje.md (notatki referencyjne do projektowania jednostek).
 - **_archiwum/** — (pusty) na pliki historyczne/zastapione tego zakresu.

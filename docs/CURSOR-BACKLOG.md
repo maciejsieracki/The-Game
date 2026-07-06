@@ -6,7 +6,7 @@
 > Każde zadanie ma: **ID, lane, priorytet (P0-P3), status, przypisaną rolę (GLM/Composer/Opus/Maciej), zależności, kryteria akceptacji (AC)**.
 > Grupowanie: **BLOCKED (Maciej)**, **READY (można zacząć teraz)**, **IN PROGRESS**, **DONE**.
 >
-> **Data:** 2026-06-26. **Kanon:** `2276ec0f`. **Autor:** GLM 5.2 (Agent).
+> **Data:** 2026-06-26 (treść backlogu) · **Kanon zaktualizowany:** 2026-07-01. **AKTUALNY KANON:** `4602e752d7e4b21f3c2460e494e82a8f` (`2276ec0f` *(stary — patrz AKTUALNY KANON)*). **Autor:** GLM 5.2 (Agent).
 
 ---
 
@@ -366,7 +366,7 @@
 
 ---
 
-## ✅ DONE (zweryfikowane w kanonie 2276ec0f)
+## ✅ DONE (zweryfikowane historycznie · starsze batche · aktualny kanon: `4602e752…`)
 
 ### DN-01 — Ekonomia per-tura (M2)
 - **Lane:** EKONOMIA + SILNIK

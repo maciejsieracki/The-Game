@@ -1,0 +1,728 @@
+{
+  "_meta": {
+    "opis": "Cuda świata — epoka Antyk (v0.1). Kanon Maciej 2026-06-26.",
+    "dostep_E": "Wyłączny — tylko wskazane państwa; max 1 na świat; inni nie widzą cudu w panelu.",
+    "dostep_R": "Wyścig — każde państwo z listy cywilizacje (wszystkie 15) uczestniczy; max 1 na świat.",
+    "cuda_wyscigowe": ["wyrocznia", "hamonga", "brama_narodow"],
+    "cuda_wyscigowe_epoka": {
+      "1": { "id": "wyrocznia", "nazwa": "Wyrocznia", "epoka": "Kamień", "profil": "kultura, mistycyzm" },
+      "2": { "id": "hamonga", "nazwa": "Kamień Ha'amonga", "epoka": "Brąz", "profil": "kultura, morze, rybołówstwo" },
+      "3": { "id": "brama_narodow", "nazwa": "Brama wszystkich narodów", "epoka": "Żelazo", "profil": "wojna, handel imperium" }
+    },
+    "cuda_wyscigowe_uwaga": "Dokładnie 1 cud R na epokę Antyku; wszyscy 15 graczy widzą i mogą walczyć; max 1 egzemplarz na świat.",
+    "wszystkie_cywilizacje": [
+      "egipt", "sumer", "babilonia", "grecy", "hetyci", "celtowie", "harappa",
+      "fenicjanie", "germanie", "inkowie", "chinczycy", "rzymianie", "asyria",
+      "zulusi", "slowianie"
+    ],
+    "epoka": "1=Kamień, 2=Brąz, 3=Żelazo (Antyk); 4–6=Średniowiecze; 7+=Renesans i dalej",
+    "wieki": {
+      "antyk": { "epoki": [1, 2, 3], "opis": "Kamień–Brąz–Żelazo; budowa cudów E/R z tego pliku" },
+      "sredniowiecze": { "epoki": [4, 5, 6], "opis": "Cuda Antyku nadal dają bonusy; nowe cuda średniowieczne — osobny plik / era" },
+      "renesans_plus": { "epoki": [7, 8, 9, 10], "opis": "Po absolut — efekty cudów Antyku wygasły" }
+    },
+    "absolut": {
+      "opis": "Ostatnia epoka imperium (włącznie), w której aktywne są bonusy cudu. Od epoki absolut+1 efekt wygasa (jednorazowe przy budowie — bez absolut).",
+      "domyslnie_antyk": 6,
+      "koniec_sredniowiecza": 6,
+      "decyzja": "Maciej 2026-06-26: cuda Antyku + ich efekty znikają na koniec Średniowiecza (ep.6).",
+      "po_absolut": {
+        "decyzja": "Maciej D-CUD1: cud ZOSTAJE na mapie (nie zniszczony); wszystkie bonusy z JSON wygasają.",
+        "hex": "ruina/dekor — model widoczny",
+        "utrzymanie_wygasly": "50pct",
+        "utrzymanie_wygasly_opis": "Maciej D-CUD2=C: po absolut utrzymanie = floor(utrzymanie/2), min 0 (np. Piramidy 2→1)",
+        "jedyny_efekt": {
+          "typ": "handel_turystyka",
+          "wartosc": 10,
+          "opis": "+10 do handlu — cud jako atrakcja turystyczna (jedyny yield po absolut)"
+        }
+      },
+      "silnik": "player.era > absolut → wyłącz bonusy miasto/teren/hex/specjalne; zastosuj po_absolut.jedyny_efekt jeśli aktywny"
+    },
+    "budowa": "hex w terytorium (nie slot miasta)",
+    "harappa_v1": "Antyk: tylko Stupa w Sanchi (E). Nalanda + Angkor Wat → parkowane (epoka 4+).",
+    "chinczycy_v1": "Antyk: Terakotowa armia + Pałac Weiyang (E). Wielki dzwón → parkowany (epoka 5+).",
+    "celtowie_v1": "Antyk: Roquepertuse (E, epoka 3). Kopiec grobowy/Monks Mound → parkowany.",
+    "koszt_jednostka": "Praca (jak budynki i ulepszenia terenu); budowa z puli Pracy najbliższego miasta / skarbca.",
+    "bonus_miasto": "Yield +/turę × KAŻDE miasto (pieniadz, zywnosc, nauka, kultura, zadowolenie, praca, obrona_miejsca). Bez dzielnic Civ7.",
+    "bonus_cywilizacja": "Tylko imperium — NIE sumowane w karcie miasta. Patrz lista bonus_cywilizacja_typy.",
+    "bonus_cywilizacja_typy": {
+      "dyplomacja_wpływ": "Wpływ / Influence (traktaty, ambasady)",
+      "wojna_wsparcie": "Wsparcie we wszystkich wojnach",
+      "relacje_zaufanie": "Zaufanie bazowe wobec innych nacji",
+      "relacje_respekt": "Wynika z Mocy (odkrycia) — cuda NIE dają Mocy (decyzja Maciej 2026-06-26)",
+      "armia_xp": "Doświadczenie armii (%)",
+      "armia_morale": "Morale imperium po bitwie / stałe",
+      "walka_procent": "Atak/obrona/oblężenie (%) — jednostki poza miastem",
+      "pobor_regen": "Regeneracja Manpower imperium (%)",
+      "handel_procent": "Bonus % do tras handlowych / morskich",
+      "nauka_procent": "Bonus % nauki imperium (nie flat per miasto)",
+      "produkcja_procent": "Redukcja kosztu Pracy budynków/ulepszeń (%)",
+      "magazyn_pojemnosc": "Pojemność zapasów / trade capacity globalna",
+      "wzrost_ludnosci_procent": "Wzrost populacji we wszystkich miastach (%)",
+      "jednorazowe": "Złoto przy zdarzeniu, darmowa jednostka, kultura z wydarzeń narracyjnych",
+      "fortyfikacja_mapa": "Bonus obrony na heksach fortów (mapa, nie yield miasta)",
+      "handel_turystyka": "Po absolut: jedyny efekt wygasłego cudu — +N do handlu (atrakcja turystyczna)"
+    },
+    "bonus_zasieg": "hex = tylko pole cudu; teren = heksy danego typu w terytorium (plony → miasto właściciela pola). BEZ dzielnic / sasiad-dzielnica.",
+    "bonus_teren": "Modyfikator pól w terytorium (nie × każde miasto — tylko heksy spełniające warunek).",
+    "bonus_specjalne": "Implementacja bonus_cywilizacja — silnik cudów (v1.1+). Typ = klucz z bonus_cywilizacja_typy.",
+    "kanon_bonusow_2026": "Maciej: yield miejski ×3 vs v0.1 (× każde miasto). Wpływ, zaufanie, wojna, %, armia → cywilizacja. BEZ bonusu Mocy — Moc tylko z odkryć.",
+    "bonus_miasto_mnoznik": 3,
+    "bonus_moc": "USUNIĘTE — Moc (P-A) pochodzi wyłącznie z odkryć technologii; cuda nie dodają punktów Mocy (Maciej 2026-06-26).",
+    "kanon_tech_wejscie": "Maciej 2026-07-03: techUnlock cudu E — każdy wynalazek z epoki >= epokaWejscia państwa; późniejsze epoki OK; zakaz tech wcześniejszych niż debiut nacji."
+  },
+  "cuda": [
+    {
+      "id": "piramidy",
+      "nazwa": "Piramidy",
+      "dostep": "E",
+      "cywilizacje": ["egipt"],
+      "techUnlock": ["Murarstwo"],
+      "wymagaTerenu": ["pustynia", "rzeka_sasiad"],
+      "epokaWejscia": 1,
+      "absolut": 6,
+      "maxNaSwiecie": 1,
+      "kosztBudowy": 160,
+      "utrzymanie": 2,
+      "bonusy": {
+        "miasto": { "pieniadz": 3, "praca": 3 },
+        "teren": [
+          { "typTerenu": "pustynia", "pieniadz": 2, "praca": 2, "warunek": "hex_sasiad_rzeka" },
+          { "typTerenu": "rzeka_mala", "pieniadz": 2, "praca": 2 }
+        ],
+        "specjalne": [
+          { "typ": "kapital_pustynia", "wartosc": 3, "opis": "Stolica na pustyni: +3 Pieniądz/turę (cywilizacja)" },
+          { "typ": "dyplomacja_wpływ", "wartosc": 3, "opis": "+3 Wpływu — prestiż faraonów (cywilizacja)" }
+        ]
+      }
+    },
+    {
+      "id": "wielka_stela",
+      "nazwa": "Wielka stela",
+      "dostep": "E",
+      "cywilizacje": ["zulusi"],
+      "techUnlock": ["Pismo"],
+      "wymagaTerenu": ["rownina"],
+      "epokaWejscia": 2,
+      "absolut": 6,
+      "maxNaSwiecie": 1,
+      "kosztBudowy": 220,
+      "utrzymanie": 2,
+      "bonusy": {
+        "miasto": { "kultura": 3, "pieniadz": 3 },
+        "specjalne": [
+          { "typ": "jednorazowe", "cel": "zloto_przy_budowie_cudu", "wartosc": 200, "opis": "+200 Pieniądza przy ukończeniu kolejnego cudu (cywilizacja)" },
+          { "typ": "dyplomacja_wpływ", "wartosc": 4, "opis": "+4 Wpływu — handel aksumski (cywilizacja)" }
+        ]
+      }
+    },
+    {
+      "id": "wiszace_ogrody",
+      "nazwa": "Wiszące ogrody",
+      "dostep": "E",
+      "cywilizacje": ["babilonia"],
+      "techUnlock": ["Pismo"],
+      "wymagaTerenu": ["rzeka_sasiad"],
+      "epokaWejscia": 2,
+      "absolut": 6,
+      "maxNaSwiecie": 1,
+      "kosztBudowy": 150,
+      "utrzymanie": 2,
+      "bonusy": {
+        "miasto": { "zywnosc": 3 },
+        "teren": [
+          { "typTerenu": "farma", "zywnosc": 2, "warunek": "hex_sasiad_rzeka" }
+        ],
+        "specjalne": [
+          { "typ": "wzrost_ludnosci_procent", "wartosc": 0.15, "opis": "+15% wzrost populacji we wszystkich miastach (cywilizacja)" },
+          { "typ": "relacje_zaufanie", "wartosc": 2, "opis": "+2 bazowe Zaufanie wobec sąsiadów (cywilizacja)" }
+        ]
+      }
+    },
+    {
+      "id": "wyrocznia",
+      "nazwa": "Wyrocznia",
+      "dostep": "R",
+      "cywilizacje": [
+        "egipt", "sumer", "babilonia", "grecy", "hetyci", "celtowie", "harappa",
+        "fenicjanie", "germanie", "inkowie", "chinczycy", "rzymianie", "asyria",
+        "zulusi", "slowianie"
+      ],
+      "techUnlock": ["Mistycyzm"],
+      "wymagaTerenu": ["trudny_teren"],
+      "epokaWejscia": 1,
+      "absolut": 6,
+      "maxNaSwiecie": 1,
+      "kosztBudowy": 180,
+      "utrzymanie": 1,
+      "bonusy": {
+        "miasto": { "kultura": 3 },
+        "specjalne": [
+          { "typ": "jednorazowe", "cel": "kultura_wydarzenia", "wartosc": 15, "opis": "+15 Kultury za nagrody z wydarzeń narracyjnych (cywilizacja)" },
+          { "typ": "relacje_zaufanie", "wartosc": 3, "opis": "+3 Zaufanie — wyrocznia jako arbiter (cywilizacja)" },
+          { "typ": "dyplomacja_wpływ", "wartosc": 2, "opis": "+2 Wpływu (cywilizacja)" }
+        ]
+      },
+      "uwagi": "Jedyny cud wyścigowy epoki Kamienia; sanktuarium / wyrocznia (Delphi, Dodona…)"
+    },
+    {
+      "id": "roquepertuse",
+      "nazwa": "Roquepertuse",
+      "nazwaAlt": "Sanktuarium celtyckie — portyk z niszami na czaszki (Velaux, Galia)",
+      "dostep": "E",
+      "cywilizacje": ["celtowie"],
+      "techUnlock": ["Inżynieria"],
+      "wymagaTerenu": ["wzgorze", "trudny_teren"],
+      "epokaWejscia": 3,
+      "absolut": 6,
+      "maxNaSwiecie": 1,
+      "kosztBudowy": 290,
+      "utrzymanie": 2,
+      "bonusy": {
+        "miasto": { "kultura": 3, "zadowolenie": 3 },
+        "hex": { "kultura": 6 },
+        "specjalne": [
+          { "typ": "walka_procent", "cel": "piechota_szarza", "wartosc": 0.15, "opis": "+15% ataku piechoty przy pierwszym uderzeniu (cywilizacja)" },
+          { "typ": "armia_morale", "wartosc": 2, "opis": "Kult głów: +2 Morale imperium przez 3 tury po wygranej bitwie obronnej (cywilizacja)" },
+          { "typ": "jednorazowe", "cel": "kultura_wydarzenia", "wartosc": 10, "opis": "+10 Kultury za święta religijne (cywilizacja)" },
+          { "typ": "wojna_wsparcie", "wartosc": 1, "opis": "+1 Wsparcia we wszystkich wojnach (cywilizacja)" }
+        ]
+      },
+      "uwagi": "IV–III w. p.n.e.; Prowansja; centrum ceremonialne (bez stałej zabudowy mieszkalnej); zniszczone ~III w. p.n.e."
+    },
+    {
+      "id": "stupa_sanchi",
+      "nazwa": "Stupa w Sanchi",
+      "dostep": "E",
+      "cywilizacje": ["harappa"],
+      "techUnlock": ["Religia"],
+      "wymagaTerenu": ["rownina"],
+      "epokaWejscia": 2,
+      "absolut": 6,
+      "maxNaSwiecie": 1,
+      "kosztBudowy": 210,
+      "utrzymanie": 1,
+      "bonusy": {
+        "miasto": { "zadowolenie": 3, "kultura": 3 },
+        "specjalne": [
+          { "typ": "kultura_z_nadwyzka_zadowolenia", "wartosc": 2, "opis": "+2 Kultury/turę na każde 5 nadwyżki Zadowolenia w imperium (cywilizacja)" },
+          { "typ": "relacje_zaufanie", "wartosc": 4, "opis": "+4 bazowe Zaufanie — dharmiczny spokój (cywilizacja)" },
+          { "typ": "dyplomacja_wpływ", "wartosc": 2, "opis": "+2 Wpływu (cywilizacja)" }
+        ]
+      }
+    },
+    {
+      "id": "petra",
+      "nazwa": "Petra",
+      "dostep": "E",
+      "cywilizacje": ["fenicjanie"],
+      "techUnlock": ["Inżynieria"],
+      "wymagaTerenu": ["pustynia"],
+      "epokaWejscia": 2,
+      "absolut": 6,
+      "maxNaSwiecie": 1,
+      "kosztBudowy": 165,
+      "utrzymanie": 2,
+      "bonusy": {
+        "miasto": { "pieniadz": 3 },
+        "teren": [
+          { "typTerenu": "pustynia", "pieniadz": 2, "praca": 2 }
+        ],
+        "specjalne": [
+          { "typ": "magazyn_pojemnosc", "wartosc": 6, "opis": "+6 pojemność handlu/surowców (cywilizacja)" },
+          { "typ": "handel_procent", "cel": "handel", "wartosc": 0.15, "opis": "+15% Pieniądza z tras handlowych (cywilizacja)" },
+          { "typ": "dyplomacja_wpływ", "wartosc": 5, "opis": "+5 Wpływu — karawany Nabatejczyków (cywilizacja)" }
+        ]
+      }
+    },
+    {
+      "id": "hamonga",
+      "nazwa": "Kamień Ha'amonga",
+      "dostep": "R",
+      "cywilizacje": [
+        "egipt", "sumer", "babilonia", "grecy", "hetyci", "celtowie", "harappa",
+        "fenicjanie", "germanie", "inkowie", "chinczycy", "rzymianie", "asyria",
+        "zulusi", "slowianie"
+      ],
+      "techUnlock": ["Żegluga"],
+      "wymagaTerenu": ["wybrzeze"],
+      "epokaWejscia": 2,
+      "absolut": 6,
+      "maxNaSwiecie": 1,
+      "kosztBudowy": 220,
+      "utrzymanie": 1,
+      "bonusy": {
+        "miasto": { "kultura": 3, "zywnosc": 3 },
+        "teren": [
+          { "typTerenu": "lowie_rybackie", "kultura": 2, "zywnosc": 2 },
+          { "typTerenu": "laka", "kultura": 2, "warunek": "hex_sasiad_wybrzeze" }
+        ],
+        "specjalne": [
+          { "typ": "handel_procent", "cel": "handel_morski", "wartosc": 0.15, "opis": "+15% Pieniądza z handlu morskiego (cywilizacja)" },
+          { "typ": "dyplomacja_wpływ", "wartosc": 3, "opis": "+3 Wpływu (cywilizacja)" }
+        ]
+      },
+      "uwagi": "Jedyny cud wyścigowy epoki Brązu; megality nadmorskie, Żegluga"
+    },
+    {
+      "id": "kolos",
+      "nazwa": "Kolos Rodyjski",
+      "dostep": "E",
+      "cywilizacje": ["grecy"],
+      "techUnlock": ["Inżynieria"],
+      "wymagaTerenu": ["wybrzeze"],
+      "epokaWejscia": 3,
+      "absolut": 6,
+      "maxNaSwiecie": 1,
+      "kosztBudowy": 230,
+      "utrzymanie": 2,
+      "bonusy": {
+        "miasto": { "pieniadz": 3, "kultura": 3 },
+        "specjalne": [
+          { "typ": "magazyn_pojemnosc", "wartosc": 8, "opis": "+8 pojemność surowców / trade capacity (cywilizacja)" },
+          { "typ": "handel_procent", "cel": "handel_morski", "wartosc": 0.2, "opis": "+20% Pieniądza z portów (cywilizacja)" },
+          { "typ": "dyplomacja_wpływ", "wartosc": 6, "opis": "+6 Wpływu — Rhodos, węzeł morski (cywilizacja)" }
+        ]
+      }
+    },
+    {
+      "id": "osada_aschaffenburg",
+      "nazwa": "Osada Aschaffenburg (hala dębowa)",
+      "nazwaAlt": "Monumentalna budowla nad Menem, kultura lateńska",
+      "dostep": "E",
+      "cywilizacje": ["germanie"],
+      "techUnlock": ["Inżynieria"],
+      "wymagaTerenu": ["rzeka_sasiad"],
+      "epokaWejscia": 3,
+      "absolut": 6,
+      "maxNaSwiecie": 1,
+      "kosztBudowy": 300,
+      "utrzymanie": 2,
+      "bonusy": {
+        "miasto": { "praca": 3 },
+        "teren": [
+          { "typTerenu": "rzeka_sasiad", "praca": 2, "drewno": 2 }
+        ],
+        "specjalne": [
+          { "typ": "produkcja_procent", "cel": "ulepszenia_drewno", "wartosc": 0.15, "opis": "−15% kosztu Pracy ulepszeń drewnianych (cywilizacja)" },
+          { "typ": "walka_procent", "cel": "obrona_terytorium", "wartosc": 0.15, "opis": "+15% obrony jednostek na własnym terytorium (cywilizacja)" },
+          { "typ": "pobor_regen", "wartosc": 0.1, "opis": "+10% regeneracji Manpower (cywilizacja)" }
+        ]
+      },
+      "uwagi": "IV w. p.n.e.; potężne dębowe belki nad Menem (Bawaria); kultura lateńska"
+    },
+    {
+      "id": "ziggurat",
+      "nazwa": "Ziggurat / Piramida Słońca",
+      "dostep": "E",
+      "cywilizacje": ["sumer"],
+      "techUnlock": ["Matematyka"],
+      "wymagaTerenu": ["plaski_teren"],
+      "epokaWejscia": 2,
+      "absolut": 6,
+      "maxNaSwiecie": 1,
+      "kosztBudowy": 240,
+      "utrzymanie": 2,
+      "bonusy": {
+        "miasto": { "kultura": 6, "nauka": 3 },
+        "specjalne": [
+          { "typ": "nauka_procent", "cel": "nauka", "wartosc": 0.15, "opis": "+15% Nauki w imperium (cywilizacja)" },
+          { "typ": "dyplomacja_wpływ", "wartosc": 4, "opis": "+4 Wpływu — kapłani-astronomowie (cywilizacja)" }
+        ]
+      }
+    },
+    {
+      "id": "mundo_perdido",
+      "nazwa": "Świątynia Mundo Perdido",
+      "dostep": "E",
+      "cywilizacje": ["inkowie"],
+      "techUnlock": ["Matematyka", "Murarstwo"],
+      "wymagaTerenu": ["tropiki"],
+      "epokaWejscia": 2,
+      "absolut": 6,
+      "maxNaSwiecie": 1,
+      "kosztBudowy": 220,
+      "utrzymanie": 2,
+      "bonusy": {
+        "miasto": { "nauka": 3, "zadowolenie": 3 },
+        "teren": [
+          { "typTerenu": "tropiki", "nauka": 2, "zadowolenie": 2 }
+        ],
+        "specjalne": [
+          { "typ": "nauka_procent", "cel": "nauka", "wartosc": 0.2, "opis": "+20% Nauki w imperium — kalendarz Majów (cywilizacja)" },
+          { "typ": "dyplomacja_wpływ", "wartosc": 3, "opis": "+3 Wpływu (cywilizacja)" }
+        ]
+      }
+    },
+    {
+      "id": "terakotowa_armia",
+      "nazwa": "Terakotowa armia",
+      "dostep": "E",
+      "cywilizacje": ["chinczycy"],
+      "techUnlock": ["Wojskowosc"],
+      "wymagaTerenu": ["laka"],
+      "epokaWejscia": 3,
+      "absolut": 6,
+      "maxNaSwiecie": 1,
+      "kosztBudowy": 320,
+      "utrzymanie": 3,
+      "bonusy": {
+        "miasto": { "praca": 3 },
+        "specjalne": [
+          { "typ": "jednorazowe", "cel": "dowodca_armii", "wartosc": 1, "opis": "Darmowy Dowódca armii przy ukończeniu (cywilizacja)" },
+          { "typ": "armia_xp", "wartosc": 0.25, "opis": "+25% doświadczenia armii (cywilizacja)" },
+          { "typ": "walka_procent", "cel": "piechota", "wartosc": 0.15, "opis": "+15% ataku piechoty (cywilizacja)" },
+          { "typ": "wojna_wsparcie", "wartosc": 2, "opis": "+2 Wsparcia we wszystkich wojnach (cywilizacja)" }
+        ]
+      },
+      "uwagi": "Qin, ok. 246–208 p.n.e.; grobowiec Qin Shi Huanga"
+    },
+    {
+      "id": "koloseum",
+      "nazwa": "Koloseum",
+      "dostep": "E",
+      "cywilizacje": ["rzymianie"],
+      "techUnlock": ["Inżynieria"],
+      "wymagaTerenu": ["przy_miescie"],
+      "epokaWejscia": 3,
+      "absolut": 6,
+      "maxNaSwiecie": 1,
+      "kosztBudowy": 310,
+      "utrzymanie": 3,
+      "bonusy": {
+        "miasto": { "kultura": 3, "zadowolenie": 6 },
+        "specjalne": [
+          { "typ": "produkcja_procent", "cel": "budynki", "wartosc": 0.15, "opis": "−15% kosztu Produkcji budynków (cywilizacja)" },
+          { "typ": "relacje_zaufanie", "wartosc": 3, "opis": "+3 Zaufanie wewnętrzne — panem et circenses (cywilizacja)" },
+          { "typ": "dyplomacja_wpływ", "wartosc": 4, "opis": "+4 Wpływu — chwała Rzymu (cywilizacja)" }
+        ]
+      }
+    },
+    {
+      "id": "dur_sharrukin",
+      "nazwa": "Dur-Sharrukin",
+      "dostep": "E",
+      "cywilizacje": ["asyria"],
+      "techUnlock": ["Budownictwo", "Wojskowosc"],
+      "wymagaTerenu": ["przy_miescie"],
+      "epokaWejscia": 2,
+      "absolut": 6,
+      "maxNaSwiecie": 1,
+      "kosztBudowy": 260,
+      "utrzymanie": 3,
+      "bonusy": {
+        "miasto": { "obrona": 3 },
+        "specjalne": [
+          { "typ": "fortyfikacja_mapa", "cel": "fort", "wartosc": 5, "opis": "+5 Obrony na heksach fortyfikacji (cywilizacja)" },
+          { "typ": "walka_procent", "cel": "oblężenie", "wartosc": 0.15, "opis": "+15% skuteczności oblężenia (cywilizacja)" },
+          { "typ": "wojna_wsparcie", "wartosc": 2, "opis": "+2 Wsparcia we wszystkich wojnach (cywilizacja)" },
+          { "typ": "relacje_zaufanie", "wartosc": -2, "opis": "−2 Zaufanie u sąsiadów — strach przed Asyrią (cywilizacja)" }
+        ]
+      }
+    },
+    {
+      "id": "brama_narodow",
+      "nazwa": "Brama wszystkich narodów",
+      "dostep": "R",
+      "cywilizacje": [
+        "egipt", "sumer", "babilonia", "grecy", "hetyci", "celtowie", "harappa",
+        "fenicjanie", "germanie", "inkowie", "chinczycy", "rzymianie", "asyria",
+        "zulusi", "slowianie"
+      ],
+      "techUnlock": ["Inżynieria", "Wojskowosc"],
+      "wymagaTerenu": ["przy_miescie"],
+      "epokaWejscia": 3,
+      "absolut": 6,
+      "maxNaSwiecie": 1,
+      "kosztBudowy": 280,
+      "utrzymanie": 3,
+      "bonusy": {
+        "miasto": { "kultura": 3, "pieniadz": 3 },
+        "specjalne": [
+          { "typ": "wojna_wsparcie", "wartosc": 3, "opis": "+3 Wsparcia we wszystkich aktywnych wojnach (cywilizacja)" },
+          { "typ": "handel_procent", "cel": "handel", "wartosc": 0.15, "opis": "+15% Pieniądza z tras handlowych (cywilizacja)" },
+          { "typ": "dyplomacja_wpływ", "wartosc": 10, "opis": "+10 Wpływu — satrapie i goście narodów (cywilizacja)" },
+          { "typ": "relacje_zaufanie", "wartosc": 3, "opis": "+3 Zaufanie u państw z aktywnym handlem (cywilizacja)" }
+        ]
+      },
+      "uwagi": "Persepolis / brama satrapii; jedyny cud wyścigowy epoki Żelaza — odblokowanie po Inżynierii"
+    },
+    {
+      "id": "palac_weiyang",
+      "nazwa": "Pałac Weiyang",
+      "dostep": "E",
+      "cywilizacje": ["chinczycy"],
+      "techUnlock": ["Wymiana", "Murarstwo"],
+      "wymagaTerenu": ["laka"],
+      "epokaWejscia": 3,
+      "absolut": 6,
+      "maxNaSwiecie": 1,
+      "kosztBudowy": 290,
+      "utrzymanie": 3,
+      "bonusy": {
+        "miasto": { "kultura": 3, "zadowolenie": 3, "pieniadz": 3 },
+        "specjalne": [
+          { "typ": "dyplomacja_wpływ", "wartosc": 12, "opis": "+12 Wpływu — cesarski dwór Chang'an (cywilizacja)" },
+          { "typ": "handel_procent", "cel": "handel", "wartosc": 0.15, "opis": "+15% Pieniądza z handlu (cywilizacja)" },
+          { "typ": "relacje_zaufanie", "wartosc": 4, "opis": "+4 bazowe Zaufanie (cywilizacja)" }
+        ]
+      },
+      "uwagi": "Zachodnia Han, 200 p.n.e.; cesarz Gaozu"
+    },
+    {
+      "id": "yerkapi",
+      "nazwa": "Yerkapı (Brama w ziemi)",
+      "nazwaAlt": "Brama Sfinksów, Hattusa",
+      "dostep": "E",
+      "cywilizacje": ["hetyci"],
+      "techUnlock": ["Wojskowosc"],
+      "wymagaTerenu": ["wzgorze", "trudny_teren"],
+      "epokaWejscia": 2,
+      "absolut": 6,
+      "maxNaSwiecie": 1,
+      "kosztBudowy": 240,
+      "utrzymanie": 2,
+      "bonusy": {
+        "miasto": { "obrona": 3 },
+        "hex": { "obrona": 12 },
+        "specjalne": [
+          { "typ": "fortyfikacja_mapa", "cel": "fort", "wartosc": 5, "opis": "+5 Obrony na heksach fortyfikacji (cywilizacja)" },
+          { "typ": "walka_procent", "cel": "rydwany", "wartosc": 0.15, "opis": "+15% ataku rydwanów (cywilizacja)" },
+          { "typ": "wojna_wsparcie", "wartosc": 2, "opis": "+2 Wsparcia we wszystkich wojnach (cywilizacja)" },
+          { "typ": "relacje_zaufanie", "wartosc": 2, "opis": "+2 Zaufanie u sojuszników (cywilizacja)" }
+        ]
+      },
+      "uwagi": "Nasyp ziemny + tunel sklepiony + Brama Sfinksów; kompleks obronno-sakralny Hattusy"
+    },
+    {
+      "id": "posag_peruna",
+      "nazwa": "Posąg Peruna",
+      "dostep": "E",
+      "cywilizacje": ["slowianie"],
+      "techUnlock": ["Obróbka żelaza"],
+      "wymagaTerenu": ["wzgorze"],
+      "epokaWejscia": 3,
+      "absolut": 6,
+      "maxNaSwiecie": 1,
+      "kosztBudowy": 140,
+      "utrzymanie": 1,
+      "bonusy": {
+        "miasto": { "kultura": 3, "zadowolenie": 3 },
+        "hex": { "kultura": 3 },
+        "specjalne": [
+          { "typ": "pobor_regen", "wartosc": 0.15, "opis": "+15% regeneracji Manpower (cywilizacja)" },
+          { "typ": "walka_procent", "cel": "piechota_las", "wartosc": 0.15, "opis": "+15% ataku piechoty w lesie (cywilizacja)" },
+          { "typ": "relacje_zaufanie", "wartosc": 3, "opis": "+3 Zaufanie wśród plemion słowiańskich (cywilizacja)" },
+          { "typ": "dyplomacja_wpływ", "wartosc": 2, "opis": "+2 Wpływu — kult Peruna (cywilizacja)" }
+        ]
+      }
+    }
+  ],
+  "panstwa": {
+    "egipt": {
+      "nazwa": "Egipt",
+      "cuda": [
+        { "id": "piramidy", "dostep": "E", "kolejnosc": 1 },
+        { "id": "wyrocznia", "dostep": "R", "kolejnosc": 2 },
+        { "id": "hamonga", "dostep": "R", "kolejnosc": 3 },
+        { "id": "brama_narodow", "dostep": "R", "kolejnosc": 4 }
+      ]
+    },
+    "sumer": {
+      "nazwa": "Sumerowie",
+      "cuda": [
+        { "id": "ziggurat", "dostep": "E", "kolejnosc": 1 },
+        { "id": "wyrocznia", "dostep": "R", "kolejnosc": 2 },
+        { "id": "hamonga", "dostep": "R", "kolejnosc": 3 },
+        { "id": "brama_narodow", "dostep": "R", "kolejnosc": 4 }
+      ]
+    },
+    "babilonia": {
+      "nazwa": "Babilonia",
+      "cuda": [
+        { "id": "wiszace_ogrody", "dostep": "E", "kolejnosc": 1 },
+        { "id": "wyrocznia", "dostep": "R", "kolejnosc": 2 },
+        { "id": "hamonga", "dostep": "R", "kolejnosc": 3 },
+        { "id": "brama_narodow", "dostep": "R", "kolejnosc": 4 }
+      ]
+    },
+    "grecy": {
+      "nazwa": "Grecy",
+      "cuda": [
+        { "id": "kolos", "dostep": "E", "kolejnosc": 1 },
+        { "id": "wyrocznia", "dostep": "R", "kolejnosc": 2 },
+        { "id": "hamonga", "dostep": "R", "kolejnosc": 3 },
+        { "id": "brama_narodow", "dostep": "R", "kolejnosc": 4 }
+      ]
+    },
+    "hetyci": {
+      "nazwa": "Hetyci",
+      "cuda": [
+        { "id": "yerkapi", "dostep": "E", "kolejnosc": 1 },
+        { "id": "wyrocznia", "dostep": "R", "kolejnosc": 2 },
+        { "id": "hamonga", "dostep": "R", "kolejnosc": 3 },
+        { "id": "brama_narodow", "dostep": "R", "kolejnosc": 4 }
+      ]
+    },
+    "celtowie": {
+      "nazwa": "Celtowie",
+      "cuda": [
+        { "id": "roquepertuse", "dostep": "E", "kolejnosc": 1 },
+        { "id": "wyrocznia", "dostep": "R", "kolejnosc": 2 },
+        { "id": "hamonga", "dostep": "R", "kolejnosc": 3 },
+        { "id": "brama_narodow", "dostep": "R", "kolejnosc": 4 }
+      ]
+    },
+    "harappa": {
+      "nazwa": "Harappa",
+      "cuda": [
+        { "id": "stupa_sanchi", "dostep": "E", "kolejnosc": 1 },
+        { "id": "wyrocznia", "dostep": "R", "kolejnosc": 2 },
+        { "id": "hamonga", "dostep": "R", "kolejnosc": 3 },
+        { "id": "brama_narodow", "dostep": "R", "kolejnosc": 4 }
+      ]
+    },
+    "fenicjanie": {
+      "nazwa": "Fenicjanie",
+      "cuda": [
+        { "id": "petra", "dostep": "E", "kolejnosc": 1 },
+        { "id": "wyrocznia", "dostep": "R", "kolejnosc": 2 },
+        { "id": "hamonga", "dostep": "R", "kolejnosc": 3 },
+        { "id": "brama_narodow", "dostep": "R", "kolejnosc": 4 }
+      ]
+    },
+    "germanie": {
+      "nazwa": "Germanie",
+      "cuda": [
+        { "id": "osada_aschaffenburg", "dostep": "E", "kolejnosc": 1 },
+        { "id": "wyrocznia", "dostep": "R", "kolejnosc": 2 },
+        { "id": "hamonga", "dostep": "R", "kolejnosc": 3 },
+        { "id": "brama_narodow", "dostep": "R", "kolejnosc": 4 }
+      ]
+    },
+    "inkowie": {
+      "nazwa": "Inkowie",
+      "cuda": [
+        { "id": "mundo_perdido", "dostep": "E", "kolejnosc": 1 },
+        { "id": "wyrocznia", "dostep": "R", "kolejnosc": 2 },
+        { "id": "hamonga", "dostep": "R", "kolejnosc": 3 },
+        { "id": "brama_narodow", "dostep": "R", "kolejnosc": 4 }
+      ]
+    },
+    "chinczycy": {
+      "nazwa": "Chińczycy",
+      "cuda": [
+        { "id": "terakotowa_armia", "dostep": "E", "kolejnosc": 1 },
+        { "id": "palac_weiyang", "dostep": "E", "kolejnosc": 2 },
+        { "id": "wyrocznia", "dostep": "R", "kolejnosc": 3 },
+        { "id": "hamonga", "dostep": "R", "kolejnosc": 4 },
+        { "id": "brama_narodow", "dostep": "R", "kolejnosc": 5 }
+      ]
+    },
+    "rzymianie": {
+      "nazwa": "Rzymianie",
+      "cuda": [
+        { "id": "koloseum", "dostep": "E", "kolejnosc": 1 },
+        { "id": "wyrocznia", "dostep": "R", "kolejnosc": 2 },
+        { "id": "hamonga", "dostep": "R", "kolejnosc": 3 },
+        { "id": "brama_narodow", "dostep": "R", "kolejnosc": 4 }
+      ]
+    },
+    "asyria": {
+      "nazwa": "Asyria",
+      "cuda": [
+        { "id": "dur_sharrukin", "dostep": "E", "kolejnosc": 1 },
+        { "id": "wyrocznia", "dostep": "R", "kolejnosc": 2 },
+        { "id": "hamonga", "dostep": "R", "kolejnosc": 3 },
+        { "id": "brama_narodow", "dostep": "R", "kolejnosc": 4 }
+      ]
+    },
+    "zulusi": {
+      "nazwa": "Zulusi",
+      "cuda": [
+        { "id": "wielka_stela", "dostep": "E", "kolejnosc": 1 },
+        { "id": "wyrocznia", "dostep": "R", "kolejnosc": 2 },
+        { "id": "hamonga", "dostep": "R", "kolejnosc": 3 },
+        { "id": "brama_narodow", "dostep": "R", "kolejnosc": 4 }
+      ]
+    },
+    "slowianie": {
+      "nazwa": "Słowianie",
+      "cuda": [
+        { "id": "posag_peruna", "dostep": "E", "kolejnosc": 1 },
+        { "id": "wyrocznia", "dostep": "R", "kolejnosc": 2 },
+        { "id": "hamonga", "dostep": "R", "kolejnosc": 3 },
+        { "id": "brama_narodow", "dostep": "R", "kolejnosc": 4 }
+      ]
+    }
+  },
+  "parkowane_epoka4plus": [
+    {
+      "id": "nalanda",
+      "nazwa": "Nalanda",
+      "dostep": "E",
+      "cywilizacje": ["harappa"],
+      "techUnlock": ["Pismo", "Matematyka"],
+      "wymagaTerenu": ["rownina"],
+      "epokaDocelowa": 4,
+      "epokaDocelowaOpis": "V–XIII w. n.e. — średniowiecze; uniwersytet Guptów/Harszy",
+      "maxNaSwiecie": 1,
+      "aktywne": false,
+      "uwagi": "Przeniesione z Antyku 2026-06-26 — zbyt późne na Harappę/Indus"
+    },
+    {
+      "id": "angkor_wat",
+      "nazwa": "Angkor Wat",
+      "dostep": "E",
+      "cywilizacje": ["harappa"],
+      "techUnlock": ["Budownictwo"],
+      "wymagaTerenu": ["rzeka_sasiad"],
+      "epokaDocelowa": 5,
+      "epokaDocelowaOpis": "ok. 1113–1150 n.e. — Khmer; przypisanie państwa do ustalenia",
+      "maxNaSwiecie": 1,
+      "aktywne": false,
+      "uwagi": "Przeniesione z Antyku 2026-06-26 — średniowiecze"
+    },
+    {
+      "id": "wielki_dzwon",
+      "nazwa": "Wielki dzwón (Yongle / Emile Bell)",
+      "dostep": "E",
+      "cywilizacje": ["chinczycy"],
+      "techUnlock": ["Religia"],
+      "wymagaTerenu": ["trudny_teren"],
+      "epokaDocelowa": 6,
+      "epokaDocelowaOpis": "Dzwon Ming (1403–1424, Yongle); świątynia Qing (1733) — poza Antykiem",
+      "maxNaSwiecie": 1,
+      "aktywne": false,
+      "uwagi": "Przeniesione z Antyku 2026-06-26 — dynastie Ming/Qing"
+    },
+    {
+      "id": "mauzoleum_teodoryka",
+      "nazwa": "Mauzoleum Teodoryka",
+      "dostep": "E",
+      "cywilizacje": ["germanie"],
+      "techUnlock": ["Murarstwo"],
+      "wymagaTerenu": ["wybrzeze"],
+      "epokaDocelowa": 4,
+      "epokaDocelowaOpis": "VI w. n.e. — Ostrogoci, Ravenna; poza Antykiem",
+      "maxNaSwiecie": 1,
+      "aktywne": false,
+      "uwagi": "Zastąpione w Antyku przez Osadę Aschaffenburg (2026-06-26)"
+    },
+    {
+      "id": "kopiec_grobowy",
+      "nazwa": "Kopiec grobowy",
+      "nazwaAlt": "Monks Mound (Mississippian)",
+      "dostep": "E",
+      "cywilizacje": ["celtowie"],
+      "techUnlock": ["Rolnictwo", "Murarstwo"],
+      "wymagaTerenu": ["rzeka_sasiad"],
+      "epokaDocelowa": 1,
+      "epokaDocelowaOpis": "Kultura missisipiańska — historycznie nie Galowie",
+      "maxNaSwiecie": 1,
+      "aktywne": false,
+      "uwagi": "Zastąpione przez Roquepertuse (2026-06-26); placeholder Monks Mound"
+    }
+  ]
+}

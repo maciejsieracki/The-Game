@@ -1,0 +1,141 @@
+/**
+ * city-founding.ts — koszt założenia miasta z mapy (B1 Maciej 2026-06-29).
+ * Historyczny Osadnik: 20 Pracy + 1 ludność.
+ * B1-FOUND-Q1=A+B: ludność z największego miasta z pop ≥ 2 (min. 1 zostaje).
+ * B1-FOUND-Q2=A: pierwsze miasto gracza FREE.
+ */
+import miastoParams from '../../data/miasto-params.json';
+
+type ParamRow = { wartosc?: number };
+
+export interface FoundCitySourceCity {
+  id: string;
+  ownerId: number;
+  population: number;
+}
+
+function readParam(row: ParamRow | undefined, fallback: number): number {
+  const v = row?.wartosc;
+  return typeof v === 'number' && Number.isFinite(v) ? v : fallback;
+}
+
+/** Koszt Pracy (skarbiec/pula — jak applyBuildRequest). */
+export function foundCityWorkCost(): number {
+  return readParam(
+    (miastoParams as { zaloz_miasto_koszt_praca?: ParamRow }).zaloz_miasto_koszt_praca,
+    20,
+  );
+}
+
+/** Ludność pobierana z miasta-źródła. */
+export function foundCityPopulationCost(): number {
+  return readParam(
+    (miastoParams as { zaloz_miasto_koszt_ludnosci?: ParamRow }).zaloz_miasto_koszt_ludnosci,
+    1,
+  );
+}
+
+export interface FoundCityAffordance {
+  ok: boolean;
+  reason?: string;
+  kosztPraca: number;
+  kosztLudnosc: number;
+  /** Miasto, z którego SILNIK odejmie ludność (FOUND-Q1 A+B). */
+  sourceCityId?: string;
+}
+
+/** Czy gracz ma już co najmniej jedno miasto (FOUND-Q2=A → kolejne płatne). */
+export function isSubsequentFoundCity(playerCities: ReadonlyArray<{ ownerId: number }>, ownerId: number): boolean {
+  return playerCities.filter(c => c.ownerId === ownerId).length > 0;
+}
+
+/**
+ * B1-FOUND-Q1=A+B: największe miasto gracza z populacją ≥ 2 (po odjęciu zostaje min. 1).
+ */
+export function pickSourceCityForFounding(
+  cities: ReadonlyArray<FoundCitySourceCity>,
+  ownerId: number,
+): FoundCitySourceCity | null {
+  const popCost = foundCityPopulationCost();
+  const minPop = popCost + 1;
+  const eligible = cities.filter(c => c.ownerId === ownerId && c.population >= minPop);
+  if (eligible.length === 0) return null;
+  return eligible.reduce((best, c) => (c.population > best.population ? c : best));
+}
+
+/** Pełna ocena kosztu założenia miasta (SILNIK wywołuje przed foundCityAt). */
+export function evaluateFoundCityAffordance(
+  treasuryPraca: number,
+  cities: ReadonlyArray<FoundCitySourceCity>,
+  ownerId: number,
+): FoundCityAffordance {
+  const firstFree = !isSubsequentFoundCity(cities, ownerId);
+  const kosztPraca = firstFree ? 0 : foundCityWorkCost();
+  const kosztLudnosc = firstFree ? 0 : foundCityPopulationCost();
+
+  if (treasuryPraca < kosztPraca) {
+    return {
+      ok: false,
+      reason: 'Za mało Pracy (potrzeba ' + kosztPraca + ')',
+      kosztPraca,
+      kosztLudnosc,
+    };
+  }
+
+  if (firstFree) {
+    return { ok: true, kosztPraca, kosztLudnosc };
+  }
+
+  const source = pickSourceCityForFounding(cities, ownerId);
+  if (!source) {
+    return {
+      ok: false,
+      reason: 'Potrzebne miasto z co najmniej ' + (kosztLudnosc + 1) + ' ludności',
+      kosztPraca,
+      kosztLudnosc,
+    };
+  }
+
+  return {
+    ok: true,
+    kosztPraca,
+    kosztLudnosc,
+    sourceCityId: source.id,
+  };
+}
+
+/** @deprecated Użyj evaluateFoundCityAffordance — zostaje dla testów prostych. */
+export function canAffordFoundCity(
+  treasuryPraca: number,
+  sourceCityPopulation: number,
+  opts?: { firstCityFree?: boolean },
+): FoundCityAffordance {
+  const kosztPraca = opts?.firstCityFree ? 0 : foundCityWorkCost();
+  const kosztLudnosc = opts?.firstCityFree ? 0 : foundCityPopulationCost();
+
+  if (treasuryPraca < kosztPraca) {
+    return {
+      ok: false,
+      reason: 'Za mało Pracy (potrzeba ' + kosztPraca + ')',
+      kosztPraca,
+      kosztLudnosc,
+    };
+  }
+  if (!opts?.firstCityFree && sourceCityPopulation - kosztLudnosc < 1) {
+    return {
+      ok: false,
+      reason: 'Za mało ludności (potrzeba ' + kosztLudnosc + ')',
+      kosztPraca,
+      kosztLudnosc,
+    };
+  }
+  return { ok: true, kosztPraca, kosztLudnosc };
+}
+
+/** Etykieta kosztu do panelu Budowa. */
+export function foundCityCostLabel(firstCityFree = false): string {
+  if (firstCityFree) return 'FREE (pierwsze miasto)';
+  const p = foundCityWorkCost();
+  const pop = foundCityPopulationCost();
+  return p + ' P · ' + pop + ' 👤';
+}

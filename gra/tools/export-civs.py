@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
-"""
+"""DEPRECATED (2026-06-30 — PANEL-MERGE):
+  Excel: docs/archiwum/panele-legacy/
+  Kanon: panele-sterowania/Panel-{A..E}.xlsx + export-{a..e}.py
+  Nie używać do nowych zmian balansu.
+
+
 export-civs.py -- TARGETED export: Cywilizacje.xlsx[arkusz "Cywilizacje"] -> civs.json["nazwyKlastra", "mnoznikHandelPieniadz", "ikonaId"].
 
 Aktualizuje WYLACZNIE pola `nazwyKlastra`, `mnoznikHandelPieniadz` i `ikonaId` per cywilizacja w gra/data/civs.json.
@@ -38,7 +43,7 @@ except ImportError:
     sys.exit("Wymagany openpyxl:  pip install openpyxl --break-system-packages")
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-DEF_XLSX = os.path.normpath(os.path.join(HERE, "..", "..", "Cywilizacje.xlsx"))
+DEF_XLSX = os.path.normpath(os.path.join(HERE, "..", "..", "docs", "archiwum", "panele-legacy", "Cywilizacje.xlsx"))
 DEF_JSON = os.path.normpath(os.path.join(HERE, "..", "data", "civs.json"))
 SHEET = "Cywilizacje"
 KLASTER_COLS = 10  # Klaster_01..Klaster_10

@@ -1,6 +1,6 @@
 # HANDOFF: UNITS → MASTER — decyzja: zakładanie miast z MAPY, Osadnik do wycofania
 
-Data: 2026-06-24. Od: Civ-UNITS. Do: Master (silnik/integracja).
+Data: 2026-06-24. Od: Grupa C. Do: Master (silnik/integracja).
 
 ## DECYZJA MACIEJA
 Miasta będą zakładane z poziomu MAPY (nie jednostką). W związku z tym jednostka **Osadnik** (Settler) przestaje być potrzebna i ma zostać wycofana z gry.
@@ -23,4 +23,4 @@ Maciej wybrał A. **OSADNIK USUNIĘTY** z `gra/data/units.json` (47 -> 46) i z `
 - `data/units.json` ZMIENIONE (−Osadnik) → **przebuduj KANON** `Gra-podglad.html`.
 - Usuń/zmień wszystkie odwołania do „Osadnik"/Settler poza moim lane: `main.ts` (tworzenie jednostki startowej + akcja „B"/zakładanie), menu budowy, tutorial, ewentualnie civs. Inaczej runtime poleci na braku jednostki.
 
-— Civ-UNITS
+— Grupa C

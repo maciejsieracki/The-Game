@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>THE GAME — Katalog UX (rejestr A–E)</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --gold:#e8d88a;--gold-dim:#b8a85a;--bg:#080a12;--panel:#121820;--panel2:#0e1218;
+  --border:rgba(232,216,138,.22);--text:#e8e0c8;--muted:#8a8070;--green:#50b070;
+  --blue:#5a9bd4;--orange:#d08030;--red:#c84040;--violet:#9a7ad4;
+  --nav-w:300px;
+}
+html{scroll-behavior:smooth}
+body{font-family:'Segoe UI',Tahoma,sans-serif;background:var(--bg);color:var(--text);font-size:13px;line-height:1.45}
+a{color:var(--gold);text-decoration:none}
+a:hover{text-decoration:underline}
+code{font-family:Consolas,monospace;font-size:.92em;color:#c8b898}
+#top-banner{
+  position:sticky;top:0;z-index:1000;
+  background:linear-gradient(90deg,#1a1208,#0a1420);
+  border-bottom:2px solid var(--gold-dim);color:var(--gold);
+  padding:.45rem 1rem;text-align:center;font-size:.82rem;font-weight:700;letter-spacing:.04em;
+}
+.layout{display:flex;min-height:calc(100vh - 36px)}
+#nav{
+  width:var(--nav-w);flex-shrink:0;position:sticky;top:36px;height:calc(100vh - 36px);
+  overflow-y:auto;background:var(--panel2);border-right:1px solid var(--border);padding:.75rem .55rem;
+}
+#nav h2{font-size:10px;color:var(--gold);letter-spacing:.18em;text-transform:uppercase;margin:1rem .35rem .35rem}
+#nav h2:first-child{margin-top:.25rem}
+#nav a{display:block;padding:.26rem .45rem;border-radius:4px;font-size:11.5px;color:#c8b898;margin-bottom:1px}
+#nav a:hover{background:rgba(232,216,138,.08);color:var(--gold);text-decoration:none}
+#nav .sub{font-size:10px;color:var(--muted);padding-left:.45rem;margin-bottom:.35rem}
+#main{flex:1;min-width:0;padding:1.25rem 1.5rem 3rem;max-width:1280px}
+.hero{margin-bottom:1.25rem}
+.hero h1{font-family:Georgia,serif;font-size:1.85rem;color:var(--gold);letter-spacing:.06em;font-weight:400}
+.hero .sub{font-size:11px;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;margin-top:.35rem}
+.hero p{margin-top:.65rem;color:#b8a888;max-width:820px;font-size:13px}
+.alert{padding:.55rem .75rem;border-radius:6px;font-size:12px;margin:.65rem 0}
+.alert-warn{background:rgba(208,128,48,.1);border:1px solid rgba(208,128,48,.35);color:#ffc080}
+.alert-info{background:rgba(90,155,212,.08);border:1px solid rgba(90,155,212,.35);color:#a0c8f0}
+.alert-ok{background:rgba(80,176,112,.08);border:1px solid rgba(80,176,112,.35);color:#a0e8b0}
+.stats{display:flex;flex-wrap:wrap;gap:.5rem;margin:1rem 0}
+.stat{background:var(--panel);border:1px solid var(--border);border-radius:6px;padding:.45rem .75rem;font-size:11px;min-width:100px}
+.stat b{display:block;font-size:1.2rem;color:var(--gold);font-weight:700}
+.stat .lbl{color:var(--muted);font-size:10px;margin-top:2px}
+.stat.ok b{color:var(--green)}
+.stat.warn b{color:var(--orange)}
+.panel-block{margin-bottom:2rem;scroll-margin-top:48px}
+.panel-block h2{
+  font-family:Georgia,serif;font-size:1.25rem;color:var(--gold);
+  border-bottom:1px solid var(--border);padding-bottom:.35rem;margin-bottom:.55rem;
+}
+.panel-block h3{font-size:11px;color:var(--muted);letter-spacing:.14em;text-transform:uppercase;margin:1rem 0 .4rem}
+.grp-status{font-size:11px;margin-bottom:.65rem;padding:.35rem .55rem;border-radius:4px;display:inline-block}
+.grp-ok{background:rgba(80,176,112,.12);color:#a0e8b0;border:1px solid rgba(80,176,112,.3)}
+.grp-pending{background:rgba(208,128,48,.1);color:#ffc080;border:1px solid rgba(208,128,48,.3)}
+.grp-partial{background:rgba(154,122,212,.1);color:#c8b0f0;border:1px solid rgba(154,122,212,.3)}
+.master-table{width:100%;border-collapse:collapse;font-size:11px;margin:.5rem 0 1rem}
+.master-table th,.master-table td{border:1px solid rgba(255,255,255,.08);padding:5px 7px;text-align:left;vertical-align:top}
+.master-table th{background:rgba(255,255,255,.04);color:var(--gold);font-weight:600;position:sticky;top:36px;z-index:5}
+.master-table tr:nth-child(even){background:rgba(255,255,255,.015)}
+.master-table tr.grp-head td{background:rgba(232,216,138,.06);color:var(--gold);font-weight:700;font-size:10px;letter-spacing:.08em}
+.master-table .id{color:var(--muted);font-family:Consolas,monospace;white-space:nowrap}
+.master-table .mod{font-family:Consolas,monospace;font-size:10px;color:#a89878}
+.badge{font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap}
+.b-g{background:rgba(80,176,112,.2);color:#a0e8b0;border:1px solid rgba(80,176,112,.4)}
+.b-m{background:rgba(208,128,48,.15);color:#ffc080;border:1px solid rgba(208,128,48,.4)}
+.b-p{background:rgba(120,120,130,.15);color:#ccc;border:1px solid rgba(160,160,170,.3)}
+.b-q{background:rgba(154,122,212,.15);color:#c8b0f0;border:1px solid rgba(154,122,212,.35)}
+.b-gra{background:rgba(90,155,212,.18);color:#a0c8f0;border:1px solid rgba(90,155,212,.35)}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:8px;margin-bottom:.75rem;overflow:hidden}
+.card-hdr{display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:.5rem;padding:.6rem .8rem;border-bottom:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.02)}
+.card-hdr .title{font-weight:700;font-size:13px}
+.card-hdr .id{font-size:10px;color:var(--muted);font-family:Consolas,monospace}
+.card-body{padding:.6rem .8rem .7rem;font-size:11.5px}
+.meta{display:grid;grid-template-columns:90px 1fr;gap:.12rem .55rem;margin-bottom:.45rem}
+.meta dt{color:var(--muted)}
+.meta dd{color:#d8ccb0}
+.links{display:flex;flex-wrap:wrap;gap:.35rem;margin:.45rem 0}
+.links a{font-size:11px;padding:3px 8px;border:1px solid var(--border);border-radius:4px}
+.links a:hover{border-color:var(--gold);background:rgba(232,216,138,.06);text-decoration:none}
+.links a.primary{border-color:var(--gold);color:var(--gold)}
+.preview{border:1px solid rgba(255,255,255,.08);border-radius:6px;overflow:hidden;background:#060810;margin-top:.45rem}
+.preview iframe{display:block;width:100%;border:0;background:#060810}
+.preview-note{font-size:10px;color:var(--muted);padding:.3rem .5rem;background:rgba(0,0,0,.25);border-top:1px solid rgba(255,255,255,.05)}
+.grid-2{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:.65rem}
+.gap-list{font-size:12px;color:#b8a888}
+.gap-list li{margin:.25rem 0 .25rem 1.1rem}
+footer{margin-top:2rem;padding-top:1rem;border-top:1px solid var(--border);font-size:11px;color:var(--muted)}
+.filter-bar{display:flex;flex-wrap:wrap;gap:.4rem;margin:.65rem 0}
+.filter-bar button{font-size:10px;padding:4px 10px;border-radius:4px;border:1px solid var(--border);background:rgba(255,255,255,.04);color:var(--text);cursor:pointer}
+.filter-bar button.active{border-color:var(--gold);color:var(--gold);background:rgba(232,216,138,.08)}
+.filter-bar button:hover{border-color:var(--gold-dim)}
+@media(max-width:900px){.layout{flex-direction:column}#nav{width:100%;height:auto;position:relative;top:0}}
+</style>
+</head>
+<body>
+<div id="top-banner">KATALOG UX · REJESTR A–E · 2026-06-29 · 60 powierzchni · źródło: docs/ux/REJEST-UX-MASTER.md</div>
+<div class="layout">
+<nav id="nav">
+  <h2>Przegląd</h2>
+  <a href="#intro">Wprowadzenie + statystyki</a>
+  <a href="#luki">Luki i braki</a>
+  <a href="#tabela">Tabela master (60)</a>
+  <a href="#podglad-gry">Podglądy Gra-podglad*</a>
+  <h2>Grupy A–E</h2>
+  <a href="#grupa-a">A · Mapa / HUD <span style="color:var(--orange)">20</span></a>
+  <a href="#grupa-b">B · Miasto / nauka <span style="color:var(--orange)">15</span></a>
+  <a href="#grupa-c">C · Walka <span style="color:var(--violet)">5</span></a>
+  <a href="#grupa-d">D · Dyplomacja <span style="color:var(--green)">15 ✓</span></a>
+  <a href="#grupa-e">E · Menu / meta <span style="color:var(--orange)">5</span></a>
+  <h2>Podglądy statyczne</h2>
+  <a href="#mockupy">Makiety HTML (iframe)</a>
+  <a href="#warstwa1">Warstwa 1 · ikony</a>
+  <div class="sub">docs: REJEST-UX-MASTER.md</div>
+</nav>
+
+<main id="main">
+
+<section class="hero" id="intro">
+  <h1>Katalog wszystkich UX-ów</h1>
+  <p class="sub">Jeden plik · rejestr z docs/ux/REJEST-UX-MASTER.md · weryfikacja kompletności</p>
+  <div class="alert alert-warn">
+    <strong>Ważne:</strong> większość UX (panel miasta, docki hover, hub nauki, audiencja…) widać dopiero w <strong>grze</strong> — po Menu → Nowa gra → mapa → klik.
+    Ten katalog zbiera <em>wszystkie wpisy rejestru</em> + linki do buildów + iframe makiet statycznych.
+  </div>
+  <div class="stats" id="stats"></div>
+  <div class="alert alert-info">
+    Status inwentaryzacji grup: <strong>D = GOTOWE</strong> (2026-06-29) · A, B, E = szkic integratora (czeka na potwierdzenie grup) · C = częściowo.
+    Porównaj tabelę poniżej z tym, co dostajesz od grup — brakujące wiersze = luka.
+  </div>
+</section>
+
+<section class="panel-block" id="luki">
+  <h2>Znane luki (co nie widać w iframe)</h2>
+  <ul class="gap-list">
+    <li><strong>B-01…B-12</strong> — panel miasta: tylko <a href="../Gra-podglad.html">Gra-podglad.html</a> → klik miasto (lub <a href="../Gra-podglad-OKOLICA-UX.html">OKOLICA-UX</a>)</li>
+    <li><strong>B-04, B-05</strong> — dock hover: wymaga otwartego panelu miasta + najazdu na miniaturę</li>
+    <li><strong>B-13, B-14</strong> — nauka: toolbar 🦉 w grze, nie statyczny HTML</li>
+    <li><strong>A-01…A-20</strong> — HUD mapy: cały czas w <a href="../Gra-podglad.html">Gra-podglad.html</a></li>
+    <li><strong>D-03…D-08</strong> — audiencja / modal AI: flow 🤝 → cywilizacja (w grze)</li>
+    <li><strong>C-02, C-03</strong> — bitwa 3D: <a href="../Gra-podglad-BITWA.html">BITWA</a> / <a href="../Gra-podglad-OBLEZENIE-BITWA.html">OBLEZENIE-BITWA</a></li>
+  </ul>
+</section>
+
+<section class="panel-block" id="tabela">
+  <h2>Tabela master — wszystkie wpisy rejestru</h2>
+  <p style="font-size:12px;color:#b8a888;margin-bottom:.5rem">Filtruj grupę · klik ID w nawigacji grupy skacze do sekcji szczegółowej.</p>
+  <div class="filter-bar" id="filters"></div>
+  <div style="overflow-x:auto">
+    <table class="master-table" id="master-table">
+      <thead>
+        <tr>
+          <th>ID</th><th>Nazwa UX</th><th>Kiedy widoczny</th><th>Moduł</th><th>Mockup / build</th><th>St</th><th>Jak zobaczyć</th>
+        </tr>
+      </thead>
+      <tbody id="master-body"></tbody>
+    </table>
+  </div>
+</section>
+
+<section class="panel-block" id="podglad-gry">
+  <h2>Podglądy gry — bundel Vite (Gra-podglad*.html)</h2>
+  <p style="font-size:12px;color:#b8a888;margin-bottom:.65rem">Prawdziwe buildy gry — nie makiety UI/Makieta-*. Pełny indeks: <a href="../docs/ux/PODGLAD-GRY-INDEX.md">PODGLAD-GRY-INDEX.md</a></p>
+  <div class="grid-2">
+    <div class="card"><div class="card-hdr"><div class="title">Kanon + miasto</div><span class="badge b-g">PRIORYTET</span></div>
+      <div class="card-body"><div class="links">
+        <a class="primary" href="../Gra-podglad.html">◆ Gra-podglad.html — wszystko</a>
+        <a href="../Gra-podglad-OKOLICA-UX.html">OKOLICA-UX — panel miasta</a>
+        <a href="../Gra-podglad-ROBOCZA.html">ROBOCZA — dev</a>
+      </div></div></div>
+    <div class="card"><div class="card-hdr"><div class="title">Playtesty</div></div>
+      <div class="card-body"><div class="links">
+        <a href="../Gra-podglad-PLAYTEST-MIASTO.html">PLAYTEST-MIASTO</a>
+        <a href="../Gra-podglad-PLAYTEST-MAPA.html">PLAYTEST-MAPA</a>
+        <a href="../Gra-podglad-PLAYTEST-WALKA.html">PLAYTEST-WALKA</a>
+        <a href="../Gra-podglad-MAPA-SWIATA.html">MAPA-SWIATA</a>
+        <a href="../Gra-podglad-C.html">Gra-podglad-C</a>
+      </div></div></div>
+    <div class="card"><div class="card-hdr"><div class="title">Walka / oblężenie</div></div>
+      <div class="card-body"><div class="links">
+        <a href="../Gra-podglad-BITWA.html">BITWA</a>
+        <a href="../Gra-podglad-OBLEZENIE-BITWA.html">OBLEZENIE-BITWA</a>
+        <a href="../Gra-podglad-MUR-BITWA.html">MUR-BITWA</a>
+      </div></div></div>
+    <div class="card"><div class="card-hdr"><div class="title">Mapa / ulepszenia</div></div>
+      <div class="card-body"><div class="links">
+        <a href="../Gra-podglad-ULEPSZENIA.html">ULEPSZENIA</a>
+        <a href="../Gra-podglad-HODOWLA.html">HODOWLA</a>
+        <a href="../Civ-MAPA/Gra-podglad-ULEPSZENIA.html">Civ-MAPA/ULEPSZENIA</a>
+        <a href="../Civ-MAPA/Gra-podglad-MIASTA.html">Civ-MAPA/MIASTA</a>
+        <a href="../Civ-MAPA/Gra-podglad-OBLEZENIE.html">Civ-MAPA/OBLEZENIE</a>
+        <a href="../Civ-MAPA/Gra-podglad-JAKOSC-MAPY.html">JAKOSC-MAPY</a>
+      </div></div></div>
+  </div>
+</section>
+
+<section class="panel-block" id="grupa-a"><h2>Grupa A — Mapa / HUD</h2><div class="grp-status grp-pending">UX-INWENTARZ BRAK · szkic integratora · 20 wpisów</div><div id="cards-a"></div></section>
+<section class="panel-block" id="grupa-b"><h2>Grupa B — Miasto / ekonomia / nauka</h2><div class="grp-status grp-pending">UX-INWENTARZ BRAK · najwięcej brakuje w starym katalogu · 15 wpisów</div><div id="cards-b"></div></section>
+<section class="panel-block" id="grupa-c"><h2>Grupa C — Walka</h2><div class="grp-status grp-partial">UX-INWENTARZ CZĘŚCIOWO · 5 wpisów</div><div id="cards-c"></div></section>
+<section class="panel-block" id="grupa-d"><h2>Grupa D — Cywilizacje / dyplomacja</h2><div class="grp-status grp-ok">UX-INWENTARZ GOTOWE · 2026-06-29 · lane CYW · 15 wpisów</div><div id="cards-d"></div></section>
+<section class="panel-block" id="grupa-e"><h2>Grupa E — Meta / menu / start</h2><div class="grp-status grp-pending">UX-INWENTARZ BRAK · 5 wpisów</div><div id="cards-e"></div></section>
+
+<section class="panel-block" id="mockupy">
+  <h2>Makiety statyczne — podgląd iframe</h2>
+  <p style="font-size:12px;color:#b8a888;margin-bottom:.65rem">Design reference · nie zastępują gry. Reszta UX = tylko Gra-podglad.html.</p>
+  <div class="grid-2" id="mockup-iframes"></div>
+</section>
+
+<section class="panel-block" id="warstwa1">
+  <h2>Warstwa 1 — design system + ikony SVG</h2>
+  <p style="margin-bottom:.65rem;color:#b8a888">Decyzja Macieja A/B/C (zestaw ikon). Podgląd lokalny:</p>
+  <div class="links"><a class="primary" href="Warstwa1-Design-System-podglad.html">Warstwa1-Design-System-podglad.html</a></div>
+</section>
+
+<footer>
+  Wygenerowano: 2026-06-29 · źródło: <a href="../docs/ux/REJEST-UX-MASTER.md">docs/ux/REJEST-UX-MASTER.md</a> ·
+  moduły: <code>gra/src/ui/*.ts</code> (38) · dyspozycja grup: <a href="../docs/ux/DYSPOZYCJA-INWENTARYZACJA-UX-A-E.md">DYSPOZYCJA-INWENTARYZACJA-UX-A-E.md</a>
+</footer>
+</main>
+</div>
+
+<script>
+const REGISTRY = [
+  /* GRUPA A */
+  {g:"A",id:"A-01",name:"HUD mapy (orkiestrator)",trigger:"Cała rozgrywka na mapie",mod:"hud.ts",mock:"Gra-podglad.html",main:true,st:"G",see:"Gra-podglad po starcie gry",confirmed:false},
+  {g:"A",id:"A-02",name:"Toolbar lewy",trigger:"Mapa, zawsze",mod:"mapToolbarHud.ts",mock:"—",main:true,st:"G",see:"Ikony 🏙🦉🎭… po lewej",confirmed:false},
+  {g:"A",id:"A-03",name:"Dolny pasek WYKONAJ / tura",trigger:"Mapa",mod:"bottomBarHud.ts",mock:"—",main:true,st:"G",see:"Dół ekranu",confirmed:false},
+  {g:"A",id:"A-04",name:"Panel wydarzeń (chipy)",trigger:"Mapa, prawa strona",mod:"sidePanelHud.ts",mock:"—",main:true,st:"G",see:"Chipy po prawej",confirmed:false},
+  {g:"A",id:"A-05",name:"Minimapa",trigger:"HUD górny / embed",mod:"minimapHud.ts",mock:"—",main:true,st:"G",see:"Prawy górny róg HUD",confirmed:false},
+  {g:"A",id:"A-06",name:"Panel jednostki [H]",trigger:"Zaznaczenie własnej jednostki",mod:"unitPanelHud.ts",mock:"UI/Makieta-panel-jednostki.html",main:true,st:"G",see:"Klik jednostkę gracza",confirmed:false},
+  {g:"A",id:"A-07",name:"Stos armii (badge)",trigger:"Heks z wieloma jednostkami",mod:"armyStackHud.ts",mock:"—",main:true,st:"G",see:"Klik stos",confirmed:false},
+  {g:"A",id:"A-08",name:"Tryb budowy ulepszeń",trigger:"Toolbar 🏗",mod:"buildModeHud.ts",mock:"Gra-podglad-ULEPSZENIA.html",main:true,st:"G",see:"Toolbar → budowa",confirmed:false},
+  {g:"A",id:"A-09",name:"Lista miast",trigger:"Toolbar 🏙",mod:"cityListHud.ts",mock:"—",main:true,st:"G",see:"Toolbar → miasta",confirmed:false},
+  {g:"A",id:"A-10",name:"Lista armii",trigger:"Toolbar ⚔",mod:"armyListHud.ts",mock:"UI/Makieta-panel-armii.html",main:true,st:"M",see:"Toolbar → wojsko",confirmed:false},
+  {g:"A",id:"A-11",name:"Lista dyplomacji HUD",trigger:"Toolbar dyplo",mod:"diploListHud.ts",mock:"—",main:true,st:"G",see:"Toolbar 🤝",confirmed:false},
+  {g:"A",id:"A-12",name:"Overlay kultura / religia",trigger:"Toolbar / HUD",mod:"empireOverlayHud.ts",mock:"—",main:true,st:"G",see:"Toolbar 🎭/🛕",confirmed:false},
+  {g:"A",id:"A-13",name:"Overlay Power",trigger:"HUD (hook)",mod:"powerOverlayHud.ts",mock:"—",main:true,st:"P",see:"?",confirmed:false},
+  {g:"A",id:"A-14",name:"Bilans imperium",trigger:"HUD hook",mod:"empireBalance.ts",mock:"—",main:true,st:"G",see:"?",confirmed:false},
+  {g:"A",id:"A-15",name:"Kursor / tooltip jednostki",trigger:"Hover mapa",mod:"mapUnitCursor.ts",mock:"—",main:true,st:"G",see:"Najedź jednostkę",confirmed:false},
+  {g:"A",id:"A-16",name:"Pre-bitwa (wejście)",trigger:"Atak / obrona z mapy",mod:"preBattle.ts",mock:"UI/Makieta-preBattle.html",main:true,st:"G",see:"Atak na jednostkę",confirmed:false},
+  {g:"A",id:"A-17",name:"Oblężenie panel mapy C3",trigger:"Klik oblegane miasto",mod:"siegeMapPanel.ts, cityAttackChoice.ts",mock:"—",main:true,st:"G",see:"Oblężenie z murem",confirmed:false},
+  {g:"A",id:"A-18",name:"Merge / split armii",trigger:"Wejście na stos / menu",mod:"armyMergePanel.ts, armySplitPanel.ts",mock:"—",main:true,st:"G",see:"Merge przy ruchu",confirmed:false},
+  {g:"A",id:"A-19",name:"Powiadomienie zdobycia miasta",trigger:"Po capture",mod:"cityCaptureNotice.ts",mock:"—",main:true,st:"G",see:"Zdobycie miasta",confirmed:false},
+  {g:"A",id:"A-20",name:"Hint / toast",trigger:"Akcje gracza",mod:"main.ts showHintMessage",mock:"—",main:true,st:"G",see:"Wiele akcji",confirmed:false},
+  /* GRUPA B */
+  {g:"B",id:"B-01",name:"Ramka Civ V (city UX frame)",trigger:"Klik miasto",mod:"cityUxFrame.ts",mock:"Gra-podglad-OKOLICA-UX.html",main:true,st:"G",see:"Gra-podglad → klik miasto",confirmed:false},
+  {g:"B",id:"B-02",name:"Lewy panel — produkcja",trigger:"Panel miasta otwarty",mod:"cityPanel.ts",mock:"OKOLICA-UX",main:true,st:"G",see:"Zakładka produkcja",confirmed:false},
+  {g:"B",id:"B-03",name:"Pasek zasobów miasta (top bar)",trigger:"Panel miasta",mod:"cityPanel.ts",mock:"OKOLICA-UX",main:true,st:"G",see:"Góra panelu — ludność, plony",confirmed:false},
+  {g:"B",id:"B-04",name:"Dock hover budynku",trigger:"Hover miniatura budynku",mod:"hoverDetailDock.ts",mock:"— tylko w grze",main:true,st:"G",see:"Buduj → najedź ikonę",confirmed:false},
+  {g:"B",id:"B-05",name:"Dock hover jednostki + mini 3D",trigger:"Hover miniatura jednostki",mod:"unitMiniPreview.ts, hoverDetailDock.ts",mock:"— tylko w grze",main:true,st:"G",see:"Rekrut → najedź miniaturę",confirmed:false},
+  {g:"B",id:"B-06",name:"Lista budynków / Buduj / Kup",trigger:"Panel miasta",mod:"cityPanel.ts",mock:"—",main:true,st:"G",see:"Lewy panel zakładki",confirmed:false},
+  {g:"B",id:"B-07",name:"Kolejka produkcji / rekrutacji",trigger:"Panel miasta",mod:"cityPanel.ts",mock:"—",main:true,st:"G",see:"Produkcja + kolejka",confirmed:false},
+  {g:"B",id:"B-08",name:"Garnizon",trigger:"Panel miasta",mod:"cityPanel.ts",mock:"—",main:true,st:"G",see:"Sekcja garnizon",confirmed:false},
+  {g:"B",id:"B-09",name:"Okolica — siatka hex + 👤",trigger:"Panel miasta / mapa w środku",mod:"cityPanel.ts",mock:"OKOLICA-UX",main:true,st:"G",see:"Prawy panel / mapa",confirmed:false},
+  {g:"B",id:"B-10",name:"Społeczeństwo / porządek / zdrowie",trigger:"Panel miasta sekcje",mod:"cityPanel.ts, orderPanel.ts",mock:"—",main:true,st:"G",see:"Scroll lewy/prawy",confirmed:false},
+  {g:"B",id:"B-11",name:"Podział handlu / wealth",trigger:"Panel miasta",mod:"cityPanel.ts",mock:"—",main:true,st:"G",see:"Sekcje ekonomii",confirmed:false},
+  {g:"B",id:"B-12",name:"Manpower (rekruci) w pasku",trigger:"Panel miasta + hook",mod:"cityPanel.ts + manpower.ts",mock:"—",main:true,st:"G",see:"Pasek ⚔ rekruci",confirmed:false},
+  {g:"B",id:"B-13",name:"Hub badań",trigger:"Toolbar 🦉 (mapa)",mod:"scienceHubHud.ts",mock:"Gra-podglad.html",main:true,st:"G",see:"Mapa → nauka",confirmed:false},
+  {g:"B",id:"B-14",name:"Drzewko tech (docked)",trigger:"Z huba „pełne drzewko”",mod:"sciencePicker.ts",mock:"archiwum N=0 mockup",main:true,st:"G",see:"Hub → drzewko",confirmed:false},
+  {g:"B",id:"B-15",name:"Panel porządku (standalone)",trigger:"Hook order",mod:"orderPanel.ts",mock:"—",main:false,st:"P",see:"?",confirmed:false},
+  /* GRUPA C */
+  {g:"C",id:"C-01",name:"Pre-bitwa TW",trigger:"Przed walką",mod:"preBattle.ts",mock:"UI/Makieta-preBattle.html",main:true,st:"G",see:"Atak z mapy",confirmed:false},
+  {g:"C",id:"C-02",name:"Bitwa 3D UI",trigger:"Po „Na pole bitwy”",mod:"battle/battleScene.ts",mock:"Gra-podglad-BITWA.html",main:true,st:"G",see:"T w grze / bitwa",confirmed:false},
+  {g:"C",id:"C-03",name:"Oblężenie na polu bitwy",trigger:"C3 siege battle",mod:"battle/siegeWall.ts",mock:"Gra-podglad-OBLEZENIE-BITWA.html",main:true,st:"G",see:"Oblężenie + szturm",confirmed:false},
+  {g:"C",id:"C-04",name:"Panel armii (mockup)",trigger:"Plan D7",mod:"—",mock:"UI/Makieta-panel-armii.html",main:false,st:"M",see:"Osobny HTML",confirmed:false},
+  {g:"C",id:"C-05",name:"Pasek armii",trigger:"Plan",mod:"—",mock:"Civ-UNITS/Makieta-pasek-armii.html",main:false,st:"M",see:"—",confirmed:false},
+  /* GRUPA D — confirmed */
+  {g:"D",id:"D-01",name:"Panel relacji (legacy)",trigger:"Przycisk ⚔️ Dyplomacja góra-prawo",mod:"diplomacyPanel.ts",mock:"UI/Makieta-dyplomacja.html",main:true,st:"WPIĘTE",see:"Gra-podglad → Dyplomacja (prawy górny róg)",confirmed:true},
+  {g:"D",id:"D-02",name:"Lista dyplomacji (D1B)",trigger:"Toolbar 🤝",mod:"diploListHud.ts, mapToolbarHud.ts",mock:"—",main:true,st:"GOTOWE",see:"Toolbar 🤝 → lista cywilizacji",confirmed:true},
+  {g:"D",id:"D-03",name:"Audiencja dyplomatyczna",trigger:"Klik cyw. z D-02 lub Audiencja w D-01",mod:"diplomacyAudience.ts",mock:"—",main:true,st:"GOTOWE",see:"🤝 → wybierz cywilizację",confirmed:true},
+  {g:"D",id:"D-04",name:"Karty akcji audiencji (12)",trigger:"Wewnątrz D-03",mod:"diplomacyAudience.ts + main.ts",mock:"—",main:true,st:"GOTOWE",see:"Audiencja → aktywne akcje v1.0",confirmed:true},
+  {g:"D",id:"D-05",name:"Modal potwierdzenia wojny",trigger:"Akcja Wojna w audiencji",mod:"diplomacyAudience.ts",mock:"—",main:true,st:"GOTOWE",see:"Audiencja → Wojna → modal",confirmed:true},
+  {g:"D",id:"D-06",name:"Modal propozycji AI",trigger:"Koniec tury — diplo-pend-*",mod:"diplomacyPendingHud.ts",mock:"—",main:true,st:"GOTOWE",see:"Propozycja AI blokuje koniec tury",confirmed:true},
+  {g:"D",id:"D-07",name:"Chip dyplomacji (side panel)",trigger:"Tura: oczekująca propozycja",mod:"sidePanelHud.ts + main.ts",mock:"—",main:true,st:"GOTOWE",see:"Side panel → chip dyplomacji",confirmed:true},
+  {g:"D",id:"D-08",name:"Toasty dyplomacji",trigger:"Po akcji audiencji",mod:"main.ts showHintMessage",mock:"—",main:true,st:"GOTOWE",see:"Komunikat u dołu ~3–4 s",confirmed:true},
+  {g:"D",id:"D-09",name:"Sekcja wojen obcych",trigger:"Panel D-01 — wywiad",mod:"diplomacyPanel.ts",mock:"—",main:true,st:"GOTOWE",see:"D-01 → Wojny (wywiad)",confirmed:true},
+  {g:"D",id:"D-10",name:"Game Over (zwycięstwo/przegrana)",trigger:"checkVictory",mod:"main.ts + victory.ts",mock:"—",main:true,st:"WPIĘTE",see:"Cross E: overlay + Nowa gra",confirmed:true},
+  {g:"D",id:"D-11",name:"Wybór cywilizacji (kreator)",trigger:"Menu → Nowa gra krok 3",mod:"newGameFlow.ts + civs.json",mock:"Gra-podglad.html",main:true,st:"GOTOWE",see:"Cross E: krok 3 kreator",confirmed:true},
+  {g:"D",id:"D-12",name:"Podgląd klastra startowego",trigger:"Kreator krok 3–5",mod:"newGameFlow.ts",mock:"—",main:true,st:"GOTOWE",see:"Blok Start w klastrze typu",confirmed:true},
+  {g:"D",id:"D-13",name:"Barbarzyńcy / obozy",trigger:"Od tury startu — mapa 3D",mod:"barbarians.ts + render",mock:"—",main:true,st:"BRAK PANELU",see:"Brak dedykowanego UI",confirmed:true},
+  {g:"D",id:"D-14",name:"Bonusy cywilizacji w UI",trigger:"Plan: preBattle / panel miasta",mod:"civ-bonusy.ts (handoff)",mock:"—",main:false,st:"PLAN",see:"Cross UI — nie wpięte",confirmed:true},
+  {g:"D",id:"D-15",name:"Mockup dyplomacji (referencja)",trigger:"Osobny HTML",mod:"—",mock:"UI/Makieta-dyplomacja.html",main:false,st:"MOCKUP",see:"Design reference",confirmed:true},
+  /* GRUPA E */
+  {g:"E",id:"E-01",name:"Menu główne",trigger:"Start aplikacji",mod:"mainMenu.ts",mock:"Gra-podglad.html",main:true,st:"G",see:"Otwórz Gra-podglad",confirmed:false},
+  {g:"E",id:"E-02",name:"Kreator nowej gry",trigger:"Menu → Nowa gra",mod:"newGameFlow.ts",mock:"Gra-podglad.html",main:true,st:"G",see:"Nowa gra 5 kroków",confirmed:false},
+  {g:"E",id:"E-03",name:"Ustawienia globalne",trigger:"Menu",mod:"mainMenu.ts",mock:"—",main:true,st:"G",see:"Menu → ustawienia",confirmed:false},
+  {g:"E",id:"E-04",name:"Game Over / zwycięstwo",trigger:"Koniec gry",mod:"main.ts inline",mock:"—",main:true,st:"P",see:"Warunek zwycięstwa",confirmed:false},
+  {g:"E",id:"E-05",name:"Cuda świata (mockup)",trigger:"Plan toolbar",mod:"—",mock:"UI/Makieta-cuda.html",main:false,st:"M",see:"Osobny HTML",confirmed:false}
+];
+
+const MOCKUPS = [
+  {file:"Makieta-panel-jednostki.html",title:"Panel jednostki (A-06)",h:300},
+  {file:"Makieta-panel-armii.html",title:"Panel armii (A-10, C-04)",h:400},
+  {file:"Makieta-preBattle.html",title:"Pre-bitwa (A-16, C-01)",h:400},
+  {file:"Makieta-dyplomacja.html",title:"Dyplomacja legacy (D-01, D-15)",h:380},
+  {file:"Makieta-drzewko-uklad-bez-przeciec.html",title:"Drzewko N=0 layout (B-14 ref)",h:260},
+  {file:"Makieta-cuda.html",title:"Cuda świata (E-05)",h:260},
+  {file:"Makieta-HUD-D1B-preview.html",title:"HUD D1B preview (A-01 ref)",h:220},
+  {file:"Makieta-POROWNANIE-MAPY.html",title:"Porównanie mapy (MAPA ref)",h:280}
+];
+
+const ST_BADGE = s => {
+  const u = (s||"").toUpperCase();
+  if (u==="G"||u.startsWith("GOT")||u==="WPIĘTE") return `<span class="badge b-g">${s}</span>`;
+  if (u==="M"||u==="MOCKUP") return `<span class="badge b-m">${s}</span>`;
+  if (u==="P"||u==="PLAN"||u==="BRAK") return `<span class="badge b-p">${s}</span>`;
+  return `<span class="badge b-q">${s}</span>`;
+};
+
+function mockLink(m) {
+  if (!m || m==="—" || m.startsWith("—")) return `<span class="badge b-gra">tylko w grze</span>`;
+  if (m.startsWith("UI/")) return `<a href="${m.replace("UI/","../")}">${m}</a>`;
+  if (m.includes("OKOLICA")) return `<a href="../Gra-podglad-OKOLICA-UX.html">${m}</a>`;
+  if (m.startsWith("Gra-podglad")) return `<a href="../${m}">${m}</a>`;
+  if (m.startsWith("Civ-")) return `<a href="../${m}">${m}</a>`;
+  return m;
+}
+
+function renderStats() {
+  const total = REGISTRY.length;
+  const confirmed = REGISTRY.filter(r=>r.confirmed).length;
+  const pending = total - confirmed;
+  const inGame = REGISTRY.filter(r=>!r.mock || r.mock==="—" || r.mock.startsWith("—")).length;
+  const withMock = REGISTRY.filter(r=>r.mock && r.mock.startsWith("UI/")).length;
+  document.getElementById("stats").innerHTML = `
+    <div class="stat"><b>${total}</b><span class="lbl">wpisów rejestru</span></div>
+    <div class="stat ok"><b>${confirmed}</b><span class="lbl">potwierdzone (Grupa D)</span></div>
+    <div class="stat warn"><b>${pending}</b><span class="lbl">szkic / czeka na grupy</span></div>
+    <div class="stat"><b>${inGame}</b><span class="lbl">tylko w Gra-podglad</span></div>
+    <div class="stat"><b>${withMock}</b><span class="lbl">ma makieta HTML</span></div>
+    <div class="stat"><b>38</b><span class="lbl">modułów ui/*.ts</span></div>`;
+}
+
+function renderFilters() {
+  const groups = ["ALL","A","B","C","D","E"];
+  const bar = document.getElementById("filters");
+  groups.forEach((g,i)=>{
+    const btn = document.createElement("button");
+    btn.textContent = g==="ALL" ? "Wszystkie" : `Grupa ${g}`;
+    if (i===0) btn.classList.add("active");
+    btn.onclick = () => {
+      bar.querySelectorAll("button").forEach(b=>b.classList.remove("active"));
+      btn.classList.add("active");
+      renderTable(g);
+    };
+    bar.appendChild(btn);
+  });
+}
+
+function renderTable(filter) {
+  const tbody = document.getElementById("master-body");
+  tbody.innerHTML = "";
+  let lastG = "";
+  REGISTRY.filter(r=>filter==="ALL"||r.g===filter).forEach(r=>{
+    if (filter==="ALL" && r.g!==lastG) {
+      lastG = r.g;
+      const labels = {A:"Grupa A — Mapa / HUD",B:"Grupa B — Miasto / nauka",C:"Grupa C — Walka",D:"Grupa D — Dyplomacja ✓",E:"Grupa E — Menu / meta"};
+      const tr = document.createElement("tr");
+      tr.className = "grp-head";
+      tr.innerHTML = `<td colspan="7">${labels[r.g]} · ${REGISTRY.filter(x=>x.g===r.g).length} wpisów ${r.confirmed?"· POTWIERDZONE":""}</td>`;
+      tbody.appendChild(tr);
+    }
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td class="id"><a href="#${r.id.toLowerCase()}">${r.id}</a></td>
+      <td>${r.name}${r.confirmed?"":" <span style='color:var(--orange);font-size:9px'>SZKIC</span>"}</td>
+      <td>${r.trigger}</td>
+      <td class="mod">${r.mod}</td>
+      <td>${mockLink(r.mock)}</td>
+      <td>${ST_BADGE(r.st)}</td>
+      <td>${r.see}</td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+function renderCards() {
+  ["A","B","C","D","E"].forEach(g=>{
+    const el = document.getElementById("cards-"+g.toLowerCase());
+    REGISTRY.filter(r=>r.g===g).forEach(r=>{
+      const div = document.createElement("div");
+      div.className = "card";
+      div.id = r.id.toLowerCase();
+      const links = [];
+      if (r.mock && r.mock.startsWith("UI/")) links.push(`<a href="${r.mock.replace("UI/","../")}" target="_blank">Makieta</a>`);
+      if (r.mock && r.mock.includes("Gra-podglad")) links.push(`<a class="primary" href="../${r.mock.includes(".html")?r.mock:"Gra-podglad.html"}" target="_blank">Build gry</a>`);
+      else if (r.main) links.push(`<a class="primary" href="../Gra-podglad.html" target="_blank">◆ Gra-podglad.html</a>`);
+      if (r.mock && r.mock.includes("OKOLICA")) links.push(`<a href="../Gra-podglad-OKOLICA-UX.html" target="_blank">OKOLICA-UX</a>`);
+      div.innerHTML = `
+        <div class="card-hdr">
+          <div><div class="title">${r.name}</div><div class="id">${r.id} · ${r.mod}</div></div>
+          ${ST_BADGE(r.st)}
+        </div>
+        <div class="card-body">
+          <dl class="meta">
+            <dt>Trigger</dt><dd>${r.trigger}</dd>
+            <dt>Playtest</dt><dd>${r.see}</dd>
+            <dt>Mockup</dt><dd>${r.mock||"—"}</dd>
+          </dl>
+          ${links.length?`<div class="links">${links.join("")}</div>`:""}
+        </div>`;
+      el.appendChild(div);
+    });
+  });
+}
+
+function renderMockups() {
+  const el = document.getElementById("mockup-iframes");
+  MOCKUPS.forEach(m=>{
+    const div = document.createElement("div");
+    div.className = "card";
+    div.innerHTML = `
+      <div class="card-hdr"><div class="title">${m.title}</div><a href="${m.file}" target="_blank">↗ otwórz</a></div>
+      <div class="preview"><iframe src="${m.file}" title="${m.title}" height="${m.h}" loading="lazy"></iframe></div>
+      <div class="preview-note">${m.file}</div>`;
+    el.appendChild(div);
+  });
+}
+
+renderStats();
+renderFilters();
+renderTable("ALL");
+renderCards();
+renderMockups();
+</script>
+</body>
+</html>

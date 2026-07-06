@@ -1,6 +1,6 @@
 # MAPA → MASTER: Format rozmieszczenia klastrów (ClusterPlacement)
 
-**Własność:** Civ-MAPA rozmieszcza (`computeClusters`), SILNIK osadza w pętli tury, AI ekspanduje.  
+**Własność:** Grupa A rozmieszcza (`computeClusters`), SILNIK osadza w pętli tury, AI ekspanduje.  
 **Plik źródłowy:** `src/map/clusters.ts`
 
 ---
@@ -121,7 +121,7 @@ Klucze mapują się na pole `ikonaId` w `civs.json`. Nazwy klastrów miast: pole
 ## 8. Właściciel / przepływ
 
 ```
-computeClusters()   ← Civ-MAPA (właściciel formatu)
+computeClusters()   ← Grupa A (właściciel formatu)
         ↓
 ClusterPlacement    ← dane w playerState / gameState
         ↓

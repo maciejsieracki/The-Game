@@ -1,6 +1,6 @@
 # Oblężenie — PANEL oblężenia + ATRYCJA garnizonu (decyzje + spec)
 
-**Data:** 2026-06-25 · **Od:** Civ-UNITS · Dla: UX (panel) + SILNIK (tura oblężenia) + balans
+**Data:** 2026-06-25 · **Od:** Grupa C · Dla: UX (panel) + SILNIK (tura oblężenia) + balans
 
 ## 1. PANEL OBLĘŻENIA (gdy powstaje plansza oblężenia)
 Pojawia się, gdy gracz atakuje miasto **z murem** (bez muru = zdobycie z marszu). Panel zawiera:
@@ -67,4 +67,4 @@ Po turnieju Naster zatwierdził syntezę C+A: **zegar głodu na zapasach żywno�
 - EKONOMIA: format danych o zapasach żywności + blokada.
 - Balans: 8%/turę, próg upadku HP, koszt/tempo machin.
 
-— Civ-UNITS
+— Grupa C

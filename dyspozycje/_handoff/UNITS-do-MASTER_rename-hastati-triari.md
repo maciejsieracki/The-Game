@@ -1,6 +1,6 @@
 # HANDOFF: UNITS → MASTER — rename Legionista→Hastati, Evocati→Triari (ref w main.ts)
 
-**Data:** 2026-06-25 · **Od:** Civ-UNITS · **Do:** MASTER (silnik/kanon)
+**Data:** 2026-06-25 · **Od:** Grupa C · **Do:** MASTER (silnik/kanon)
 
 Naster zmienił nazwy 2 jednostek rzymskich. Zmienione w `data/units.json` (pole „Jednostka" + „Nazwa EN"):
 - „Legionista" → **„Hastati"**
@@ -17,4 +17,4 @@ Po poprawce: przebuduj KANON `Gra-podglad.html`. (units.json ma już 51 jednoste
 
 Uwaga: aliasy w units.ts (`legionista`/`legionary`→ ten sam model co `hastati`; `evocati`→ `triari`) zostawione, więc RENDER nie pęknie nawet przy starych nazwach; problem dotyczy tylko LOOKUPU po „Jednostka" w main.ts.
 
-— Civ-UNITS
+— Grupa C

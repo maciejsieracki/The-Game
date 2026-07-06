@@ -624,6 +624,131 @@ console.log('\n--- T3d: Germanie civType mapping (CIV_TO_ARCH roundtrip) ---');
 }
 
 // ============================================================================
+// TEST 10e: T3 — roster-6 (D-ROSTER-Q7=A) — własne archetypy, nie fallbacki
+// ============================================================================
+console.log('\n--- T3e: roster-6 ai-params.json keys exist ---');
+{
+  const realAiParams = JSON.parse(
+    fs.readFileSync(path.join(GRA_ROOT, 'data', 'ai-params.json'), 'utf8'),
+  );
+  const roster6 = ['harappa', 'hetyci', 'slowianie', 'babilonia', 'asyria', 'fenicjanie'];
+  const dims = ['wojsko', 'nauka', 'ekonomia', 'obrona'];
+  for (const civ of roster6) {
+    for (const dim of dims) {
+      const key = `archetype_${civ}_${dim}_priorytet`;
+      assert(
+        realAiParams[key] && typeof realAiParams[key].wartosc === 'number',
+        `ai-params: ${key} exists with wartosc`,
+      );
+    }
+  }
+}
+
+console.log('\n--- T3f: Harappa own archetype path (ekonomia discriminator) ---');
+{
+  const harappaParams = {
+    'archetype_harappa_wojsko_priorytet':   { wartosc: -1, sekcja: 'test', opis: '' },
+    'archetype_harappa_nauka_priorytet':    { wartosc: 0,  sekcja: 'test', opis: '' },
+    'archetype_harappa_ekonomia_priorytet': { wartosc: 5,  sekcja: 'test', opis: '' },
+    'archetype_harappa_obrona_priorytet':   { wartosc: 0,  sekcja: 'test', opis: '' },
+    'ekspansja_min_dystans_miast':          { wartosc: 4,  sekcja: 'test', opis: '' },
+    'ekspansja_zagroz_zasieg':              { wartosc: 5,  sekcja: 'test', opis: '' },
+    'trudnosc_poziom2_bonus_produkcja':     { wartosc: 0,  sekcja: 'test', opis: '' },
+    'trudnosc_poziom2_bonus_nauka':         { wartosc: 0,  sekcja: 'test', opis: '' },
+    'trudnosc_poziom2_startowe_jednostki':  { wartosc: 0,  sekcja: 'test', opis: '' },
+    'trudnosc_poziom2_startowe_miasta':     { wartosc: 0,  sekcja: 'test', opis: '' },
+    'trudnosc_poziom2_bonus_walka':         { wartosc: 0,  sekcja: 'test', opis: '' },
+  };
+  const citiesMid3 = [makeCity('h1', 1, 1, 1), makeCity('h2', 1, 5, 1), makeCity('h3', 1, 8, 1)];
+  const result = decideAITurn(1, [], citiesMid3, map, makeGameData(harappaParams), {
+    civType: 'harappa',
+    poziomTrudnosci: 2,
+    cityBuildings: {},
+  });
+  const buildCmds = result.filter(c => c.type === 'build');
+  assert(buildCmds.length > 0, 'Harappa: at least one build command');
+  const koszaryBuilds = buildCmds.filter(c => c.buildingId === 'Koszary');
+  const econBuilds    = buildCmds.filter(c => ECON_BUILDINGS.has(c.buildingId));
+  assert(
+    econBuilds.length >= koszaryBuilds.length,
+    `Harappa own arch (ekonomia=5): eko (${econBuilds.length}) >= Koszary (${koszaryBuilds.length})`,
+  );
+}
+
+console.log('\n--- T3g: Asyria wojsko>ekonomia (imperium oblężnicze) ---');
+{
+  const asyriaParams = {
+    'archetype_asyria_wojsko_priorytet':   { wartosc: 2,  sekcja: 'test', opis: '' },
+    'archetype_asyria_nauka_priorytet':    { wartosc: -1, sekcja: 'test', opis: '' },
+    'archetype_asyria_ekonomia_priorytet': { wartosc: -1, sekcja: 'test', opis: '' },
+    'archetype_asyria_obrona_priorytet':   { wartosc: 0,  sekcja: 'test', opis: '' },
+    'ekspansja_min_dystans_miast':         { wartosc: 4,  sekcja: 'test', opis: '' },
+    'ekspansja_zagroz_zasieg':             { wartosc: 5,  sekcja: 'test', opis: '' },
+    'trudnosc_poziom2_bonus_produkcja':    { wartosc: 0,  sekcja: 'test', opis: '' },
+    'trudnosc_poziom2_bonus_nauka':        { wartosc: 0,  sekcja: 'test', opis: '' },
+    'trudnosc_poziom2_startowe_jednostki': { wartosc: 0,  sekcja: 'test', opis: '' },
+    'trudnosc_poziom2_startowe_miasta':    { wartosc: 0,  sekcja: 'test', opis: '' },
+    'trudnosc_poziom2_bonus_walka':        { wartosc: 0,  sekcja: 'test', opis: '' },
+  };
+  const citiesMid3 = [makeCity('a1', 1, 1, 1), makeCity('a2', 1, 5, 1), makeCity('a3', 1, 8, 1)];
+  const result = decideAITurn(1, [], citiesMid3, map, makeGameData(asyriaParams), {
+    civType: 'asyria',
+    poziomTrudnosci: 2,
+    cityBuildings: {},
+  });
+  const buildCmds = result.filter(c => c.type === 'build');
+  assert(buildCmds.length > 0, 'Asyria: at least one build command');
+  const koszaryBuilds = buildCmds.filter(c => c.buildingId === 'Koszary');
+  const econBuilds    = buildCmds.filter(c => ECON_BUILDINGS.has(c.buildingId));
+  assert(
+    koszaryBuilds.length > econBuilds.length,
+    `Asyria wojsko=2: Koszary (${koszaryBuilds.length}) > eko (${econBuilds.length})`,
+  );
+}
+
+console.log('\n--- T3h: roster-6 CIV_TO_ARCH roundtrip (no throw) ---');
+{
+  const baseParams = {
+    'archetype_harappa_wojsko_priorytet':   { wartosc: -1, sekcja: 'test', opis: '' },
+    'archetype_harappa_nauka_priorytet':    { wartosc: 0,  sekcja: 'test', opis: '' },
+    'archetype_harappa_ekonomia_priorytet': { wartosc: 2,  sekcja: 'test', opis: '' },
+    'archetype_harappa_obrona_priorytet':   { wartosc: 2,  sekcja: 'test', opis: '' },
+    'archetype_hetyci_wojsko_priorytet':    { wartosc: 1,  sekcja: 'test', opis: '' },
+    'archetype_hetyci_nauka_priorytet':     { wartosc: 2,  sekcja: 'test', opis: '' },
+    'archetype_hetyci_ekonomia_priorytet':  { wartosc: 0,  sekcja: 'test', opis: '' },
+    'archetype_hetyci_obrona_priorytet':    { wartosc: 2,  sekcja: 'test', opis: '' },
+    'archetype_slowianie_wojsko_priorytet':   { wartosc: 2,  sekcja: 'test', opis: '' },
+    'archetype_slowianie_nauka_priorytet':    { wartosc: -1, sekcja: 'test', opis: '' },
+    'archetype_slowianie_ekonomia_priorytet': { wartosc: 0,  sekcja: 'test', opis: '' },
+    'archetype_slowianie_obrona_priorytet':   { wartosc: 1,  sekcja: 'test', opis: '' },
+    'archetype_babilonia_wojsko_priorytet':   { wartosc: -1, sekcja: 'test', opis: '' },
+    'archetype_babilonia_nauka_priorytet':    { wartosc: 2,  sekcja: 'test', opis: '' },
+    'archetype_babilonia_ekonomia_priorytet': { wartosc: 1,  sekcja: 'test', opis: '' },
+    'archetype_babilonia_obrona_priorytet':   { wartosc: 0,  sekcja: 'test', opis: '' },
+    'archetype_asyria_wojsko_priorytet':   { wartosc: 2,  sekcja: 'test', opis: '' },
+    'archetype_asyria_nauka_priorytet':    { wartosc: -1, sekcja: 'test', opis: '' },
+    'archetype_asyria_ekonomia_priorytet': { wartosc: -1, sekcja: 'test', opis: '' },
+    'archetype_asyria_obrona_priorytet':   { wartosc: 0,  sekcja: 'test', opis: '' },
+    'archetype_fenicjanie_wojsko_priorytet':   { wartosc: -2, sekcja: 'test', opis: '' },
+    'archetype_fenicjanie_nauka_priorytet':    { wartosc: 0,  sekcja: 'test', opis: '' },
+    'archetype_fenicjanie_ekonomia_priorytet': { wartosc: 2,  sekcja: 'test', opis: '' },
+    'archetype_fenicjanie_obrona_priorytet':   { wartosc: 0,  sekcja: 'test', opis: '' },
+  };
+  const dataR6 = makeGameData(baseParams);
+  const civTypes = ['harappa', 'hetyci', 'slowianie', 'babilonia', 'asyria', 'fenicjanie'];
+  for (const civType of civTypes) {
+    let threw = false;
+    try {
+      decideAITurn(1, [makeUnit('u1', 1, 2, 2)], [makeCity('c1', 1, 1, 1)], map, dataR6, { civType });
+    } catch (e) {
+      threw = true;
+      console.error(`  EXCEPTION for ${civType}:`, e.message || e);
+    }
+    assert(!threw, `civType='${civType}' does not throw — own CIV_TO_ARCH mapping`);
+  }
+}
+
+// ============================================================================
 // TEST 11: T4 - IDLE FALLBACK (a) — jednostka daleko od wszystkiego, ma własne miasto
 // Oczekiwany wynik: dostaje komendę 'move' ku własnemu miastu (NIE jest pomijana).
 // ============================================================================
@@ -1205,7 +1330,7 @@ console.log('\n--- T6f: ClusterPlacement mapping: centrum+minDystans*2 -> same b
 
   // Symulowany TypeCluster z ClusterPlacement
   const mockCluster = { typ: 'egipt', typIndex: 1, centrum: { q: 4, r: 4 }, miasta: [] };
-  const mockPlacement = { rozmiarMapy: 'mala', aktywneTypy: 3, minDystans: 4, playerTypIndex: 0, klastry: [
+  const mockPlacement = { rozmiarMapy: 'mala', aktywneTypy: 3, minDystansMiastaPanstwa: 4, minDystansObcyOdGracza: 5, playerTypIndex: 0, klastry: [
     { typ: 'grecy', typIndex: 0, centrum: { q: 15, r: 15 }, miasta: [] },
     mockCluster,
   ]};
@@ -1213,7 +1338,7 @@ console.log('\n--- T6f: ClusterPlacement mapping: centrum+minDystans*2 -> same b
   // Mapping (jak silnik powinien to robić):
   const tc = mockPlacement.klastry.find(k => k.typ === 'egipt');
   const clusterCenter6f = tc ? tc.centrum : undefined;
-  const clusterRadius6f = tc ? mockPlacement.minDystans * 2 : undefined; // 4*2=8
+  const clusterRadius6f = tc ? mockPlacement.minDystansMiastaPanstwa * 2 : undefined; // 4*2=8
 
   const settler6f = { id: 's6f', ownerId: 1, typeId: 'Osadnik', category: 'osadnik', q: 16, r: 16, ruch: 2, ruchLeft: 2 };
   const blockCity6f = makeCity('b6f', 2, 16, 16);
@@ -2029,6 +2154,91 @@ console.log('\n--- T5h: endTurn zawsze ostatni przy roznym canAfford ---');
     });
     eq(r[r.length - 1].type, 'endTurn', `T5h: endTurn ostatni (canAfford: ${canAffordFn.toString().slice(0,40)})`);
   }
+}
+
+// ---------------------------------------------------------------------------
+// TEST 19: T7D — D-START defensiveCopy (kopia_typu_obronna)
+// ---------------------------------------------------------------------------
+
+console.log('\n--- T7D-a: defensiveCopy -> brak foundCity i build ---');
+{
+  const map7 = makeMap(10, 10);
+  const settler = makeUnit('s1', 2, 5, 5, 'osadnik');
+  const warrior = makeUnit('w1', 2, 4, 5, 'miecznik');
+  const city = makeCity('c1', 2, 3, 3);
+  const result = decideAITurn(2, [settler, warrior], [city], map7, makeGameData(), {
+    defensiveCopy: true,
+    civType: 'chinczycy',
+  });
+  const found = result.filter(c => c.type === 'foundCity');
+  const builds = result.filter(c => c.type === 'build');
+  assert(found.length === 0, 'T7D-a: defensiveCopy nie emituje foundCity');
+  assert(builds.length === 0, 'T7D-a: defensiveCopy nie emituje build');
+  eq(result[result.length - 1].type, 'endTurn', 'T7D-a: endTurn na koncu');
+}
+
+console.log('\n--- T7D-b: defensiveCopy -> osadnik bez ruchu ekspansyjnego ---');
+{
+  const map7b = makeMap(10, 10);
+  const settler = makeUnit('s2', 3, 8, 8, 'osadnik');
+  const result = decideAITurn(3, [settler], [], map7b, makeGameData(), { defensiveCopy: true });
+  const moves = result.filter(c => c.type === 'move' && c.unitId === 's2');
+  const found = result.filter(c => c.type === 'foundCity');
+  assert(moves.length === 0, 'T7D-b: osadnik kopia_typu nie rusza sie');
+  assert(found.length === 0, 'T7D-b: osadnik kopia_typu nie zaklada miasta');
+}
+
+console.log('\n--- T7D-c: defensiveCopy -> riposta na sasiedniego wroga ---');
+{
+  const map7c = makeMap(10, 10);
+  const warrior = makeUnit('w2', 4, 5, 5, 'miecznik');
+  const enemy = makeUnit('e1', 0, 6, 5, 'miecznik');
+  const city = makeCity('c2', 4, 3, 3);
+  const result = decideAITurn(4, [warrior, enemy], [city], map7c, makeGameData(), { defensiveCopy: true });
+  const attacks = result.filter(c => c.type === 'attack' && c.unitId === 'w2');
+  assert(attacks.length === 1, 'T7D-c: atak na sasiedniego wroga');
+  eq(attacks[0].targetUnitId, 'e1', 'T7D-c: cel = sasiedni wróg');
+}
+
+console.log('\n--- T7D-d: defensiveCopy -> brak marszu na odlegle miasto wroga ---');
+{
+  const map7d = makeMap(15, 15);
+  const warrior = makeUnit('w3', 5, 2, 2, 'miecznik');
+  const ownCity = makeCity('c3', 5, 2, 2);
+  const enemyCity = makeCity('ec1', 0, 12, 12);
+  const result = decideAITurn(5, [warrior], [ownCity, enemyCity], map7d, makeGameData(), { defensiveCopy: true });
+  const moves = result.filter(c => c.type === 'move' && c.unitId === 'w3');
+  // Jednostka stoi przy miescie — brak powodu do marszu (zagr. tylko sasiedztwo)
+  assert(moves.length === 0, 'T7D-d: brak marszu na odlegle miasto wroga');
+}
+
+console.log('\n--- T7D-e: 20 tur defensiveCopy — zero foundCity (regresja D-START) ---');
+{
+  const map7e = makeMap(12, 12);
+  let units = [makeUnit('s20', 6, 6, 6, 'osadnik'), makeUnit('w20', 6, 5, 5, 'miecznik')];
+  const cities = [makeCity('c20', 6, 4, 4)];
+  let foundTotal = 0;
+  for (let t = 0; t < 20; t++) {
+    const cmds = decideAITurn(6, units, cities, map7e, makeGameData(), { defensiveCopy: true });
+    foundTotal += cmds.filter(c => c.type === 'foundCity').length;
+    // Symulacja: po ruchu aktualizuj pozycje (uproszczona)
+    for (const cmd of cmds) {
+      if (cmd.type === 'move') {
+        const u = units.find(x => x.id === cmd.unitId);
+        if (u) { u.q = cmd.toQ; u.r = cmd.toR; }
+      }
+    }
+  }
+  eq(foundTotal, 0, 'T7D-e: 20 tur bez foundCity dla kopia_typu_obronna');
+}
+
+console.log('\n--- T7D-f: bez defensiveCopy -> foundCity gdy osadnik moze (regresja) ---');
+{
+  const map7f = makeMap(10, 10);
+  const settler = makeUnit('sf', 7, 5, 5, 'osadnik');
+  const result = decideAITurn(7, [settler], [], map7f, makeGameData(), { civType: 'grecy' });
+  const found = result.filter(c => c.type === 'foundCity');
+  assert(found.length === 1, 'T7D-f: ekspansyjny AI zaklada miasto gdy canFound');
 }
 
 // --- summary ---------------------------------------------------------------

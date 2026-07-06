@@ -46,12 +46,30 @@ try {
   process.exit(1);
 }
 const combat = require(BUNDLE_PATH);
-const { resolveCombat } = combat;
+const { resolveCombat, hitChanceTw, damageTw, rangeDamageTw } = combat;
 if (typeof resolveCombat !== 'function') {
   console.error('resolveCombat not exported from bundle!');
   process.exit(1);
 }
 console.log('Bundle OK.\n');
+
+// TW v3 formula sanity (Hastati vs Falanga — docs/WALKA-TW-v3.md)
+var hitHF = hitChanceTw(8, 10);
+if (hitHF !== 38) {
+  console.error('hitChanceTw(8,10) expected 38, got ' + hitHF);
+  process.exit(1);
+}
+var dmgHF = damageTw(8, 8, 4, 0, false);
+if (dmgHF !== 4) {
+  console.error('damageTw(8,8,4,0,false) expected 4, got ' + dmgHF);
+  process.exit(1);
+}
+var pilumDmg = rangeDamageTw(15, 8);
+if (pilumDmg !== 7) {
+  console.error('rangeDamageTw(15,8) expected 7, got ' + pilumDmg);
+  process.exit(1);
+}
+console.log('TW v3 formulas OK (hit HF=38%, dmg=4, pilum=7).\n');
 
 // ---------------------------------------------------------------------------
 // Step 2: Load data
@@ -65,22 +83,32 @@ const terrainRaw  = JSON.parse(fs.readFileSync(TERRAIN_JSON,  'utf8'));
 // ---------------------------------------------------------------------------
 
 function adaptUnit(raw) {
+  var pociski = raw['Ilość pocisków'];
+  if (pociski === '—' || pociski === '---' || pociski === '' || pociski == null) pociski = '—';
+  var zasieg = raw['Zasięg ataku (hex)'];
+  if (zasieg === '—' || zasieg === '---' || zasieg === '' || zasieg == null) zasieg = '—';
+  var num = function(v, fb) {
+    if (v === null || v === undefined || v === '' || v === '—') return fb;
+    var n = Number(v);
+    return Number.isFinite(n) ? n : fb;
+  };
   return {
     typNazwa : raw['Jednostka'],
     rola     : raw['Rola (linia)'],
-    Atak     : raw['Atak'],
-    Obrona   : raw['Obrona'],
-    Uderzenie: raw['Uderzenie'],
-    Pancerz  : raw['Pancerz'],
-    Przebicie: raw['Przebicie'],
-    Health   : raw['Health'],
+    meleeAttack  : num(raw.meleeAttack, num(raw['Atak'], 0)),
+    meleeDefence : num(raw.meleeDefence, num(raw['Obrona'], 0)),
+    weaponDamage : num(raw.weaponDamage, num(raw['Uderzenie'], num(raw['Atak'], 0))),
+    armor        : num(raw.armor, num(raw['Pancerz'], 0)),
+    piercing     : num(raw.piercing, num(raw['Przebicie'], 0)),
+    chargeBonus  : num(raw.chargeBonus, num(raw['Uderzenie'], 0)),
+    health       : num(raw.health, num(raw['Health'], 30)),
     'Prog dezercji (% health)' : raw['Próg dezercji (% health)'],
-    'Atak dystansowy'          : raw['Atak dystansowy']   || 0,
-    'Zasieg ataku (hex)'       : raw['Zasięg ataku (hex)'] || '—',
-    'Ilosc pociskow'           : raw['Ilość pocisków']    || '—',
+    missileAttack              : num(raw.missileAttack, num(raw['Atak dystansowy'], 0)),
+    'Zasieg ataku (hex)'       : zasieg,
+    'Ilosc pociskow'           : pociski,
     'Ruch w bitwie (heksy)'    : raw['Ruch w bitwie (heksy)'] || '—',
     'Kara obrony z flanki (%)' : raw['Kara obrony z flanki (%)'] || '—',
-    'Kara obrony z tylu (%)'   : raw['Kara obrony z tyłu (%)']  || '—',
+    'Kara obrony z tyłu (%)'   : raw['Kara obrony z tyłu (%)']  || '—',
     'Super-jednostka'          : raw['Super-jednostka'],
   };
 }
@@ -163,11 +191,11 @@ function runBattle(label, attackerName, defenderName, terrain, extraOpts) {
   if (result.winner !== 'attacker' && result.winner !== 'defender' && result.winner !== 'draw') {
     errors.push('winner="' + result.winner + '" is invalid');
   }
-  if (result.attackerHpLeft < 0 || result.attackerHpLeft > attacker.Health) {
-    errors.push('attackerHpLeft=' + result.attackerHpLeft + ' out of [0, ' + attacker.Health + ']');
+  if (result.attackerHpLeft < 0 || result.attackerHpLeft > attacker.health) {
+    errors.push('attackerHpLeft=' + result.attackerHpLeft + ' out of [0, ' + attacker.health + ']');
   }
-  if (result.defenderHpLeft < 0 || result.defenderHpLeft > defender.Health) {
-    errors.push('defenderHpLeft=' + result.defenderHpLeft + ' out of [0, ' + defender.Health + ']');
+  if (result.defenderHpLeft < 0 || result.defenderHpLeft > defender.health) {
+    errors.push('defenderHpLeft=' + result.defenderHpLeft + ' out of [0, ' + defender.health + ']');
   }
   if (!Number.isInteger(result.rounds) || result.rounds <= 0) {
     errors.push('rounds=' + result.rounds + ' must be positive integer');
@@ -193,15 +221,15 @@ function runBattle(label, attackerName, defenderName, terrain, extraOpts) {
 
   console.log('------------------------------------------------------------------------');
   console.log('TEST: ' + label);
-  console.log('  Attacker : ' + attackerName + ' (HP ' + attacker.Health + ')');
-  console.log('  Defender : ' + defenderName + ' (HP ' + defender.Health + ')');
+  console.log('  Attacker : ' + attackerName + ' (HP ' + attacker.health + ')');
+  console.log('  Defender : ' + defenderName + ' (HP ' + defender.health + ')');
   console.log('  Terrain  : ' + (terrain || 'none'));
   if (extraOpts.attackerPosition && extraOpts.attackerPosition !== 'front') {
     console.log('  Position : ' + extraOpts.attackerPosition);
   }
   console.log('  WINNER   : ' + winnerLabel);
-  console.log('  ATK HP left : ' + result.attackerHpLeft + ' / ' + attacker.Health);
-  console.log('  DEF HP left : ' + result.defenderHpLeft + ' / ' + defender.Health);
+  console.log('  ATK HP left : ' + result.attackerHpLeft + ' / ' + attacker.health);
+  console.log('  DEF HP left : ' + result.defenderHpLeft + ' / ' + defender.health);
   console.log('  Rounds   : ' + result.rounds);
   console.log('  Routed   : ' + routedStr);
   console.log('  Log (first 6 lines):');
@@ -223,7 +251,7 @@ function runBattle(label, attackerName, defenderName, terrain, extraOpts) {
 // Step 6: The matchups
 // ---------------------------------------------------------------------------
 console.log('========================================================================');
-console.log('COMBAT TEST HARNESS — §5l canonical auto-resolve');
+console.log('COMBAT TEST HARNESS — TW v3 Rome 2 auto-resolve');
 console.log('========================================================================');
 console.log('');
 

@@ -1,0 +1,64 @@
+{
+  "_opis": "Panel-E (Grupa E): start, meta, generator E2, zwycięstwo, tempo. Źródło: panele-sterowania/Panel-E.xlsx → export-e.py. ui-params.json = etykiety kreatora; ten plik = liczby i reguły silnika (docelowo odczyt w TS — dziś sync z kodem).",
+  "defaulty": {
+    "player_civ_id": "rzymianie",
+    "start_epoch_id": "kamien",
+    "map_quality_default": "Średnia",
+    "render_quality_bundled": "medium"
+  },
+  "skala_mapy": {
+    "Malenki": { "rywale_ai": 2, "miasta_panstwa": 4, "typy_cywilizacji": 4, "hex_w": 76, "hex_h": 52 },
+    "Mały": { "rywale_ai": 3, "miasta_panstwa": 5, "typy_cywilizacji": 5, "hex_w": 108, "hex_h": 74 },
+    "Standardowy": { "rywale_ai": 6, "miasta_panstwa": 6, "typy_cywilizacji": 6, "hex_w": 168, "hex_h": 120 },
+    "Duży": { "rywale_ai": 7, "miasta_panstwa": 7, "typy_cywilizacji": 7, "hex_w": 240, "hex_h": 168 },
+    "Ogromny": { "rywale_ai": 8, "miasta_panstwa": 8, "typy_cywilizacji": 10, "hex_w": 336, "hex_h": 238 },
+    "Super Huge": { "rywale_ai": 10, "miasta_panstwa": 8, "typy_cywilizacji": 12, "hex_w": 672, "hex_h": 476 }
+  },
+  "generator_e2": {
+    "resource_mult_low": 0.6,
+    "resource_mult_normal": 1.0,
+    "resource_mult_high": 1.4,
+    "resource_baseline_rarity": 1.35,
+    "river_base_low": 20,
+    "river_base_normal": 50,
+    "river_base_high": 80,
+    "river_scale_mala": 1.0,
+    "river_scale_srednia": 1.35,
+    "river_scale_duza": 1.7,
+    "river_scale_ogromna": 2.1,
+    "desert_threshold_low": 0.68,
+    "desert_threshold_normal": 0.63,
+    "desert_threshold_high": 0.58,
+    "forest_threshold_low": 0.65,
+    "forest_threshold_normal": 0.58,
+    "forest_threshold_high": 0.5
+  },
+  "tempo_gry": {
+    "szybka": 0.2,
+    "standardowa": 1.0,
+    "dluga": 5.0
+  },
+  "zwyciestwo": {
+    "ostatnia_epoka_v1": 3,
+    "prog_dominacji_power": 0.5,
+    "dominacja_wymaga_ostatniej_epoki": true,
+    "nauka_wymaga_rakiety": true
+  },
+  "kreator_zaawansowane": {
+    "seed_mode_default": "random",
+    "manual_seed_default": 424242,
+    "barbarians_enabled_default": true,
+    "battle_always_manual_default": false,
+    "fog_debug_reveal_all_default": false,
+    "victory_power_and_dominance_default": true
+  },
+  "decyzje_kanon": {
+    "e1_reset_nowa_gra": true,
+    "e1_tech_kaskada_epok": true,
+    "e1_ziemia_preset_staly": true,
+    "e1_zloza_tylko_gory": true,
+    "e1_zloza_ukryte_do_epoki": true,
+    "e2_barbarzyncy_do_przed_sredniowiecza": true,
+    "e2_buntownicy_od_sredniowiecza": true
+  }
+}

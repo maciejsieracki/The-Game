@@ -97,8 +97,8 @@ const cityBase = {
 };
 
 // Prosta funkcja plonow: pole (2,0) -> zywnosc 99, reszta zywnosc 1
-// UWAGA: cityRangeForPopulation(2)=min(2,15)=2; (3,0) jest w odleglosci 3>2 -> poza zasiegiem.
-// Uzywamy (2,0) [odleglosc=2] ktore jest osiagalne przy pop=2 (decyzja Naster 2026-06-25: zasieg=pop).
+// UWAGA: cityRangeForPopulation(2)=max(5,2)=5; (3,0) dist=3 — w zasięgu.
+// (2,0) dist=2 też w zasięgu (Maciej 2026-06-27: min start r=5).
 function yieldOf(q, r) {
   if (q === 2 && r === 0) return { zywnosc: 99 };
   return { zywnosc: 1 };
@@ -148,7 +148,7 @@ console.log('\n2. Auto-przydial pol = populacja 2');
 eq(result1.workedTiles.length, 2, 'workedTiles.length === populacja(2)');
 
 // Test 3: najlepsze pole wybrane pierwsze (q=2,r=0 ma yield 99)
-// Zasieg okolicy: cityRangeForPopulation(2)=min(2,15)=2; (2,0) jest w zasięgu (dist=2). Decyzja Naster 2026-06-25.
+// Zasieg okolicy: cityRangeForPopulation(2)=max(5,2)=5; (2,0) w zasięgu (dist=2). Maciej 2026-06-27.
 console.log('\n3. Najlepsze pole wybrane pierwsze');
 assert(
   result1.workedTiles.some(t => t.q === 2 && t.r === 0),

@@ -24,7 +24,9 @@
 |-----------|--------|-----------------|----------|
 | `Cywilizacje.xlsx` | `Cywilizacje` | `export-civs.py` | `civs.json` (targeted: nazwyKlastra, mnoznikHandelPieniadz, ikonaId) |
 | `Technologie-drzewko.xlsx` | `Technologie` | `export-tech.py` | `tech.json` (pełna regeneracja) |
-| `Dyplomacja/Dyplomacja.xlsx` | `params` | `export-diplomacy.py` | `diplomacy.json["params"]` (targeted) |
+| `Civ-CYWILIZACJE/Panel-efekty-cyw-dyplomacja.xlsx` | `Bonusy cywilizacji` | `export-bonusy-cyw.py` | `civs.json["bonusy"]` (targeted) |
+| `Civ-CYWILIZACJE/Panel-efekty-cyw-dyplomacja.xlsx` | `Bonusy cywilizacji` | `sync-panel-efekty-from-json.py` | panel ← JSON (regeneracja) |
+| `Civ-CYWILIZACJE/Bonusy-cywilizacji-9x3.xlsx` | — | `gen-bonusy-cyw-xlsx.py` | wide 9×3 z JSON (generowalny) |
 | `Civ-AI/AI-parametry.xlsx` | `AI-parametry` | `export-ai-params.py` | `ai-params.json` (nałożenie wartości, nowe klucze dopisywane) |
 
 ### Kod
@@ -43,7 +45,9 @@
 - `export-civs.py` — targeted update 3 pól w civs.json (NIGDY nie zastępować `export-data.py`)
 - `export-tech.py` — pełna regeneracja tech.json (porównanie dry-run; zatrzymuje się przy różnicach)
 - `export-diplomacy.py` — targeted update bloku `params` w diplomacy.json
-- `export-ai-params.py` — nałożenie wartości z AI-parametry.xlsx na ai-params.json (nowe klucze dopisuje)
+- `export-bonusy-cyw.py` — targeted update `civs.json["bonusy"]` z Panel-efekty (27 wierszy)
+- `sync-panel-efekty-from-json.py` — JSON → arkusz Bonusy w Panel-efekty
+- `gen-bonusy-cyw-xlsx.py` — JSON → wide 9×3 Bonusy-cywilizacji-9x3.xlsx
 
 ### Testy (wszystkie w `gra/tools/`)
 

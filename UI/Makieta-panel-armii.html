@@ -37,7 +37,6 @@
     padding: 0;
   }
 
-  /* === BANER MAKIETA === */
   .mockup-banner {
     background: rgba(211,120,30,0.92);
     color: #fff;
@@ -705,10 +704,14 @@
   // === Klawiatura M = scal ===
   document.addEventListener('keydown', e => {
     if (e.key === 'M' || e.key === 'm') showToast('[M] Scal rannych oddziałów — do implementacji w UNITS');
-    if (e.key === 'Escape') showToast('[Esc] Anuluj — do implementacji');
+    if (e.key === 'Escape') {
+      if (window.civMockupClose) window.civMockupClose();
+      else showToast('[Esc] Anuluj — do implementacji');
+    }
   });
 
   updateCounts();
 </script>
+<script src="mockup-embed.js"></script>
 </body>
 </html>

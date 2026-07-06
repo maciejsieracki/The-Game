@@ -1,6 +1,6 @@
 # HANDOFF: EKONOMIA -> UNITS -- kontrakt oblezenia / zapasy zywnosci
 
-**Data:** 2026-06-25  **Od:** Civ-EKONOMIA  **Do:** UNITS/SILNIK  Zatwierdzone przez Naster.
+**Data:** 2026-06-25  **Od:** Grupa B  **Do:** UNITS/SILNIK  Zatwierdzone przez Naster.
 
 ## Odpowiedzi na 4 pytania UNITS
 
@@ -119,4 +119,4 @@ Regresja WIRE 1/2/3: `node tools/wire-ekonomia-test.cjs` -> **23 passed, 0 faile
 - `gra/src/game/turn-economy.ts.bak-EKONOMIA` -- kopia przed zmiana
 - `gra/src/game/cities.ts.bak-EKONOMIA` -- kopia przed zmiana
 
--- Civ-EKONOMIA
+-- Grupa B

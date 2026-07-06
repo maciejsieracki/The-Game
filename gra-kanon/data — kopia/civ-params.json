@@ -1,0 +1,127 @@
+{
+  "cywilizacje": [
+    {
+      "Cywilizacja": "Grecy",
+      "preferowaneBudynki": "Biblioteka",
+      "preferowaneJednostki": "piechota, elita",
+      "modWzrostu": 1,
+      "modEkonomii": 1.02,
+      "uwagi": "seed CYW 2026-06-27"
+    },
+    {
+      "Cywilizacja": "Rzymianie",
+      "preferowaneBudynki": "Koszary",
+      "preferowaneJednostki": "piechota, elita",
+      "modWzrostu": 1,
+      "modEkonomii": 1,
+      "uwagi": "seed CYW 2026-06-27"
+    },
+    {
+      "Cywilizacja": "Chińczycy",
+      "preferowaneBudynki": "Biblioteka, Rynek",
+      "preferowaneJednostki": "łucznicy, kawaleria lekka",
+      "modWzrostu": 1.05,
+      "modEkonomii": 1.03,
+      "uwagi": "seed CYW 2026-06-27"
+    },
+    {
+      "Cywilizacja": "Inkowie",
+      "preferowaneBudynki": "Mur",
+      "preferowaneJednostki": "piechota, elita",
+      "modWzrostu": 1,
+      "modEkonomii": 0.97,
+      "uwagi": "seed CYW 2026-06-27"
+    },
+    {
+      "Cywilizacja": "Zulusi",
+      "preferowaneBudynki": "Koszary",
+      "preferowaneJednostki": "piechota, elita",
+      "modWzrostu": 0.95,
+      "modEkonomii": 0.97,
+      "uwagi": "seed CYW 2026-06-27"
+    },
+    {
+      "Cywilizacja": "Egipt",
+      "preferowaneBudynki": "Rynek",
+      "preferowaneJednostki": "łucznicy, kawaleria lekka",
+      "modWzrostu": 1.05,
+      "modEkonomii": 1.01,
+      "uwagi": "seed CYW 2026-06-27"
+    },
+    {
+      "Cywilizacja": "Sumerowie",
+      "preferowaneBudynki": "Biblioteka",
+      "preferowaneJednostki": "rydwany, łucznicy",
+      "modWzrostu": 1,
+      "modEkonomii": 1.01,
+      "uwagi": "seed CYW 2026-06-27"
+    },
+    {
+      "Cywilizacja": "Celtowie",
+      "preferowaneBudynki": "Koszary, Mur",
+      "preferowaneJednostki": "piechota, elita",
+      "modWzrostu": 1,
+      "modEkonomii": 0.98,
+      "uwagi": "seed CYW 2026-06-27"
+    },
+    {
+      "Cywilizacja": "Germanie",
+      "preferowaneBudynki": "Koszary",
+      "preferowaneJednostki": "piechota, elita",
+      "modWzrostu": 0.95,
+      "modEkonomii": 0.98,
+      "uwagi": "seed CYW 2026-06-27"
+    },
+    {
+      "Cywilizacja": "Harappa",
+      "preferowaneBudynki": "Rynek, Mur",
+      "preferowaneJednostki": "piechota, łucznicy",
+      "modWzrostu": 1,
+      "modEkonomii": 1.04,
+      "uwagi": "draft roster-6 REZERWA tier=1"
+    },
+    {
+      "Cywilizacja": "Hetyci",
+      "preferowaneBudynki": "Mur, Koszary",
+      "preferowaneJednostki": "rydwany, piechota",
+      "modWzrostu": 1,
+      "modEkonomii": 1,
+      "uwagi": "draft roster-6 REZERWA tier=1"
+    },
+    {
+      "Cywilizacja": "Słowianie",
+      "preferowaneBudynki": "Koszary, Tartak",
+      "preferowaneJednostki": "piechota",
+      "modWzrostu": 1.03,
+      "modEkonomii": 1,
+      "uwagi": "draft roster-6 REZERWA tier=1"
+    },
+    {
+      "Cywilizacja": "Babilonia",
+      "preferowaneBudynki": "Biblioteka, Rynek",
+      "preferowaneJednostki": "piechota, łucznicy",
+      "modWzrostu": 1,
+      "modEkonomii": 1.03,
+      "uwagi": "draft roster-6 REZERWA tier=2"
+    },
+    {
+      "Cywilizacja": "Asyria",
+      "preferowaneBudynki": "Koszary, Kuźnia",
+      "preferowaneJednostki": "łucznicy, piechota",
+      "modWzrostu": 1,
+      "modEkonomii": 0.98,
+      "uwagi": "draft roster-6 REZERWA tier=2"
+    },
+    {
+      "Cywilizacja": "Fenicjanie",
+      "preferowaneBudynki": "Rynek",
+      "preferowaneJednostki": "piechota, łucznicy",
+      "modWzrostu": 1,
+      "modEkonomii": 1.05,
+      "uwagi": "draft roster-6 REZERWA tier=2"
+    }
+  ],
+  "_meta": {
+    "zrodlo": "Panel-D.xlsx/Parametry-cyw"
+  }
+}

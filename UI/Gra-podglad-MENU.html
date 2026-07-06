@@ -1,186 +1,24 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pl">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>THE GAME — Menu Główne (podgląd UI)</title>
+<title>THE GAME â€” przekierowanie</title>
+<meta http-equiv="refresh" content="0;url=../Gra-podglad.html">
+<script>location.replace('../Gra-podglad.html');</script>
 <style>
-:root{
-  --gold:#C9A84C;--gold-light:#E8C97A;--gold-dim:#7A6030;
-  --bg-deep:#0A0A0F;--bg-panel:#12121A;--bg-card:#1A1A26;--bg-card-hover:#222235;--bg-selected:#1E1A0A;
-  --border-subtle:rgba(201,168,76,0.18);--border-mid:rgba(201,168,76,0.38);--border-strong:rgba(201,168,76,0.65);
-  --text-primary:#F0E8D0;--text-secondary:#A09070;--text-muted:#554E3A;--text-gold:#C9A84C;
-  --radius:6px;--radius-lg:10px;
-}
-*{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:'Palatino Linotype','Book Antiqua',Palatino,Georgia,serif;
-  background:var(--bg-deep);color:var(--text-primary);min-height:100vh;overflow-x:hidden;}
-body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
-  background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(201,168,76,0.07) 0%,transparent 70%),
-             radial-gradient(ellipse 60% 40% at 20% 85%,rgba(201,168,76,0.04) 0%,transparent 60%);}
-#preview-banner{position:fixed;top:0;left:0;right:0;z-index:50;background:#3a1414;color:#f0d8c0;
-  text-align:center;font-family:Arial,sans-serif;font-size:11px;letter-spacing:.04em;padding:5px;}
-#app{position:relative;z-index:1;min-height:100vh;display:flex;flex-direction:column;align-items:center;
-  justify-content:center;padding:3rem 1.5rem 2rem;}
-
-/* ornament emblem */
-.intro-emblem{width:96px;height:96px;border:2px solid var(--border-mid);border-radius:50%;
-  display:flex;align-items:center;justify-content:center;margin:0 auto 1.4rem;background:rgba(201,168,76,0.06);}
-.intro-emblem svg{width:56px;height:56px;}
-.game-label{font-size:10px;letter-spacing:0.5em;text-transform:uppercase;color:var(--text-secondary);
-  margin-bottom:8px;font-family:Arial,sans-serif;text-align:center;}
-.big-title{font-size:60px;letter-spacing:0.22em;color:var(--gold-light);font-weight:400;text-align:center;
-  text-shadow:0 0 70px rgba(201,168,76,0.3);line-height:1;}
-.ornament{display:flex;align-items:center;justify-content:center;gap:14px;margin:14px 0 6px;}
-.orn-line{height:1px;width:90px;background:linear-gradient(90deg,transparent,var(--gold-dim));}
-.orn-line.r{background:linear-gradient(270deg,transparent,var(--gold-dim));}
-.orn-diamond{width:7px;height:7px;background:var(--gold-dim);transform:rotate(45deg);}
-.sub-title{font-size:11px;letter-spacing:0.34em;text-transform:uppercase;color:var(--text-secondary);
-  text-align:center;font-family:Arial,sans-serif;margin-bottom:2.4rem;}
-
-/* menu buttons */
-.menu{display:flex;flex-direction:column;gap:12px;width:100%;max-width:360px;}
-.mbtn{position:relative;background:transparent;border:1.5px solid var(--gold-dim);color:var(--text-gold);
-  font-family:Arial,sans-serif;font-size:13px;letter-spacing:0.22em;text-transform:uppercase;
-  padding:14px 22px;cursor:pointer;border-radius:var(--radius);transition:all .18s;text-align:center;}
-.mbtn:hover:not(:disabled){border-color:var(--gold);background:rgba(201,168,76,0.1);color:var(--gold-light);
-  box-shadow:0 0 22px rgba(201,168,76,0.12);}
-.mbtn.primary{background:linear-gradient(135deg,rgba(201,168,76,0.22),rgba(201,168,76,0.08));
-  border-color:var(--gold);color:var(--gold-light);font-size:15px;padding:16px 22px;}
-.mbtn.primary:hover{background:linear-gradient(135deg,rgba(201,168,76,0.36),rgba(201,168,76,0.16));
-  box-shadow:0 0 30px rgba(201,168,76,0.2);}
-.mbtn:disabled{opacity:.32;cursor:not-allowed;}
-.mbtn .hint{display:block;font-size:9px;letter-spacing:.12em;color:var(--text-muted);margin-top:3px;text-transform:none;}
-.footer{margin-top:2.6rem;font-family:Arial,sans-serif;font-size:10px;letter-spacing:.2em;color:var(--text-muted);text-align:center;}
-
-/* settings */
-.screen{display:none;width:100%;max-width:760px;animation:fi .3s ease;}
-.screen.active{display:block;}
-.menu-screen{display:flex;flex-direction:column;align-items:center;}
-.menu-screen.active{display:flex;}
-@keyframes fi{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
-.sh{text-align:center;margin-bottom:1.8rem;}
-.sh h2{font-size:28px;font-weight:400;letter-spacing:0.1em;color:var(--gold-light);}
-.sh-div{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:10px;}
-.sh-line{height:1px;width:80px;background:linear-gradient(90deg,transparent,var(--border-mid));}
-.sh-line.r{background:linear-gradient(270deg,transparent,var(--border-mid));}
-.sh-dot{width:4px;height:4px;background:var(--gold-dim);border-radius:50%;}
-.sett-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.1rem;}
-.srow{background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:var(--radius-lg);
-  padding:16px 18px;display:flex;flex-direction:column;gap:10px;}
-.slbl{font-size:10px;letter-spacing:.35em;text-transform:uppercase;color:var(--text-secondary);font-family:Arial,sans-serif;}
-.sctl{display:flex;align-items:center;gap:10px;}
-.arrbtn{width:30px;height:30px;border:1px solid var(--border-mid);background:transparent;color:var(--text-gold);
-  cursor:pointer;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:16px;
-  font-family:Arial,sans-serif;transition:all .15s;flex-shrink:0;}
-.arrbtn:hover{border-color:var(--gold);background:rgba(201,168,76,0.1);}
-.sval{flex:1;text-align:center;font-size:15px;color:var(--text-primary);letter-spacing:.04em;}
-.sval .vdesc{font-size:10px;color:var(--text-muted);font-family:Arial,sans-serif;display:block;margin-top:2px;font-style:italic;}
-.back-row{display:flex;justify-content:center;margin-top:1.8rem;}
-.btn-back{background:transparent;border:1px solid var(--border-mid);color:var(--text-secondary);
-  font-family:Arial,sans-serif;font-size:12px;letter-spacing:.2em;text-transform:uppercase;
-  padding:10px 34px;cursor:pointer;border-radius:var(--radius);transition:all .15s;}
-.btn-back:hover{border-color:var(--border-strong);color:var(--text-primary);}
-#toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%);z-index:60;
-  background:var(--bg-card);border:1px solid var(--border-mid);color:var(--gold-light);
-  font-family:Arial,sans-serif;font-size:12px;letter-spacing:.05em;padding:10px 20px;border-radius:var(--radius);
-  opacity:0;transition:opacity .25s;pointer-events:none;box-shadow:0 6px 24px rgba(0,0,0,.6);}
-#toast.show{opacity:1;}
+body{font-family:'Segoe UI',Tahoma,sans-serif;background:#0a0a0f;color:#e8d88a;
+  min-height:100vh;display:flex;align-items:center;justify-content:center;margin:0;padding:1.5rem;text-align:center}
+a{color:#e8d88a}
+p{color:#c8b898;line-height:1.5}
 </style>
 </head>
 <body>
-<div id="preview-banner">PODGLĄD UI · Menu główne + Ustawienia (UI zadanie 4) · styl wg Makieta-flow-nowa-gra.html · to NIE kanon</div>
-<div id="app">
-
-  <!-- MENU GŁÓWNE -->
-  <div class="menu-screen active" id="screen-menu">
-    <div class="intro-emblem">
-      <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <polygon points="32,4 40,24 60,24 44,38 50,58 32,46 14,58 20,38 4,24 24,24" stroke="#7A6030" stroke-width="1.5" fill="none"/>
-        <circle cx="32" cy="32" r="8" stroke="#7A6030" stroke-width="1.5"/>
-        <line x1="32" y1="24" x2="32" y2="40" stroke="#7A6030" stroke-width="1"/>
-        <line x1="24" y1="32" x2="40" y2="32" stroke="#7A6030" stroke-width="1"/>
-      </svg>
-    </div>
-    <div class="game-label">Gra Cywilizacyjna 4X</div>
-    <div class="big-title">THE GAME</div>
-    <div class="ornament"><div class="orn-line"></div><div class="orn-diamond"></div><div class="orn-line r"></div></div>
-    <div class="sub-title">Wersja 0.1 &bull; Kamień &amp; Brąz</div>
-
-    <div class="menu">
-      <button class="mbtn primary" onclick="toast('→ Kreator Nowej Gry (Makieta-flow-nowa-gra.html)')">&#9670;&nbsp; Nowa Gra</button>
-      <button class="mbtn" id="btn-continue" disabled>Kontynuuj<span class="hint">brak zapisów (system zapisu = silnik)</span></button>
-      <button class="mbtn" id="btn-load" disabled>Wczytaj Grę<span class="hint">brak zapisów</span></button>
-      <button class="mbtn" onclick="showSettings()">Ustawienia</button>
-      <button class="mbtn" onclick="toast('O grze / Autorzy — wkrótce')">O Grze</button>
-      <button class="mbtn" onclick="toast('Wyjście z gry (w grze: zamknięcie okna)')">Wyjdź</button>
-    </div>
-    <div class="footer">THE GAME · prototyp v0.1 · &copy; Naster</div>
-  </div>
-
-  <!-- USTAWIENIA -->
-  <div class="screen" id="screen-settings">
-    <div class="sh">
-      <h2>Ustawienia</h2>
-      <div class="sh-div"><div class="sh-line"></div><div class="sh-dot"></div><div class="sh-line r"></div></div>
-    </div>
-    <div class="sett-grid" id="settgrid"></div>
-    <div class="back-row"><button class="btn-back" onclick="showMenu()">&#8592; Wstecz do menu</button></div>
-  </div>
-
+<div>
+<p>Ten mockup HTML nie jest juĹĽ uĹĽywany.</p>
+<p>Gra (menu w silniku, ikony, kreator TS):</p>
+<p><a href="../Gra-podglad.html">Gra-podglad.html</a></p>
 </div>
-
-<div id="toast"></div>
-
-<script>
-(function(){
-'use strict';
-// Global settings (audio/video/UI) — main-menu scope; in-game-setup settings live in the new-game flow.
-var SETT=[
-  {key:'muzyka',lbl:'Muzyka',opts:['Wył.','Cicho','Średnio','Głośno'],idx:2,
-   descs:['Bez muzyki','20%','55%','90%']},
-  {key:'efekty',lbl:'Efekty dźwiękowe',opts:['Wył.','Cicho','Średnio','Głośno'],idx:2,
-   descs:['Bez efektów','20%','55%','90%']},
-  {key:'grafika',lbl:'Jakość grafiki',opts:['Niska','Średnia','Wysoka'],idx:1,
-   descs:['Dla słabszych maszyn','Zbalansowana','Pełne detale i cienie']},
-  {key:'jezyk',lbl:'Język',opts:['Polski','English'],idx:0,
-   descs:['Język polski','English (planowane)']},
-  {key:'skala_ui',lbl:'Skala interfejsu',opts:['Mała','Średnia','Duża','B. duża'],idx:2,
-   descs:['Więcej treści','Domyślna','Czytelniejsza','4K / słaby wzrok']},
-  {key:'mgla',lbl:'Mgła wojny (domyślnie)',opts:['Włączona','Wyłączona'],idx:0,
-   descs:['Klasyczna eksploracja','Cała mapa odkryta']}
-];
-function renderSett(){
-  var g=document.getElementById('settgrid'); g.innerHTML='';
-  SETT.forEach(function(s,i){
-    var r=document.createElement('div'); r.className='srow';
-    r.innerHTML='<div class="slbl">'+s.lbl+'</div><div class="sctl">'+
-      '<button class="arrbtn" onclick="chSett('+i+',-1)">&#8249;</button>'+
-      '<div class="sval" id="sv'+i+'">'+s.opts[s.idx]+'<span class="vdesc">'+s.descs[s.idx]+'</span></div>'+
-      '<button class="arrbtn" onclick="chSett('+i+',1)">&#8250;</button></div>';
-    g.appendChild(r);
-  });
-}
-window.chSett=function(i,d){
-  var s=SETT[i]; s.idx=(s.idx+d+s.opts.length)%s.opts.length;
-  document.getElementById('sv'+i).innerHTML=s.opts[s.idx]+'<span class="vdesc">'+s.descs[s.idx]+'</span>';
-};
-window.showSettings=function(){
-  document.getElementById('screen-menu').classList.remove('active');
-  document.getElementById('screen-settings').classList.add('active');
-};
-window.showMenu=function(){
-  document.getElementById('screen-settings').classList.remove('active');
-  document.getElementById('screen-menu').classList.add('active');
-};
-var toastTimer=null;
-window.toast=function(msg){
-  var t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show');
-  if(toastTimer)clearTimeout(toastTimer);
-  toastTimer=setTimeout(function(){t.classList.remove('show');},2600);
-};
-renderSett();
-})();
-</script>
 </body>
 </html>
+

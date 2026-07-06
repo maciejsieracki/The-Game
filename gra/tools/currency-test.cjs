@@ -31,6 +31,7 @@ const ENTRY_TS = `
 export {
   cityYieldPerTurn,
   loadEconParams,
+  mnoznikHandelPieniadzForCiv,
   tileYield,
   corruptionRate,
 } from '../src/game/economy';
@@ -269,6 +270,31 @@ const rawOverride = {
 const paramsOverride = E.loadEconParams(rawOverride, 'normal');
 eq(paramsOverride.walutaMnoznik, 3,          'loadEconParams: walutaMnoznik override = 3');
 eq(paramsOverride.targowiskoPracaMnoznik, 4, 'loadEconParams: targowiskoPracaMnoznik override = 4');
+
+// ---------------------------------------------------------------------------
+// H. per-cyw mnoznikHandelPieniadz (RDY-11, decyzja 5A)
+// ---------------------------------------------------------------------------
+const mockCivs = {
+  cywilizacje: [
+    { Cywilizacja: 'Grecy', ikonaId: 'grecy', mnoznikHandelPieniadz: 2.3 },
+    { Cywilizacja: 'Chinczycy', ikonaId: 'chinczycy', mnoznikHandelPieniadz: 2.4 },
+    { Cywilizacja: 'Zulusi', ikonaId: 'zulusi', mnoznikHandelPieniadz: 1.7 },
+  ],
+};
+eq(E.mnoznikHandelPieniadzForCiv('grecy', mockCivs, 2), 2.3, 'mnoznikHandelPieniadz: Grecy = 2.3');
+eq(E.mnoznikHandelPieniadzForCiv('chinczycy', mockCivs, 2), 2.4, 'mnoznikHandelPieniadz: Chinczycy = 2.4');
+eq(E.mnoznikHandelPieniadzForCiv('zulusi', mockCivs, 2), 1.7, 'mnoznikHandelPieniadz: Zulusi = 1.7');
+eq(E.mnoznikHandelPieniadzForCiv('unknown', mockCivs, 2), 2, 'mnoznikHandelPieniadz: unknown -> fallback 2');
+
+const workedTiles7 = [{ praca: 0, handel: 10, zywnosc: 0, pieniadz: 0, nauka: 0, kultura: 0, zadowolenie: 0 }];
+const ctxWalutaGrecy = {
+  wojskoZuzycieZywnosci: 0, strataFraction: 0,
+  maMlyn: false, maCegielnia: false, maTargowisko: false, maMennica: false, mennicaMnoznik: 1,
+  walutaOdkryta: true, walutaMnoznikOverride: 2.3,
+};
+const yldGrecy = E.cityYieldPerTurn(city, workedTiles7, noBuildings, params, ctxWalutaGrecy);
+// handelNetto = 10 * 2.3 = 23; nauka 20% = floor(4.6) = 4
+eq(yldGrecy.nauka, 4, 'Efekt 1 per-cyw: Grecy x2.3 -> nauka z handlu = 4 (nie x2 plaskie)');
 
 // --- summary ---------------------------------------------------------------
 console.log(`\ncurrency-test: ${passed} passed, ${failed} failed`);

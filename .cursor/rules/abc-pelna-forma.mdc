@@ -1,0 +1,136 @@
+---
+description: ABC do Macieja — pełny kontekst, pełne nazwy, Za/Przeciw, zawsze rekomendacja. Grupy A–E + Master.
+globs:
+  - "**/*"
+alwaysApply: true
+---
+
+> ⛔ REGUŁA HISTORYCZNA — ładuje się automatycznie, ale NIE OBOWIĄZUJE od 2026-07-06.
+> Ignoruj procedury ról/publish/komend/Slack/AskQuestion/eksportu opisane niżej.
+> Aktualny ład: dyspozycje/START-TU.md + OBIEG-KOMUNIKACJI-2026-07-06.md + ROLE-I-ZAKRESY-2026-07-06.md.
+> Produkcja: 3 czaty Cowork (MASTER/INTEGRATOR/UX) na gra-robocza; roboczą publikuje WYŁĄCZNIE
+> INTEGRATOR; kanon/finalną WYŁĄCZNIE Grupa G Cursor (pakiety DO-KANONU). Pytania do Macieja:
+> tekstem w kanale, max 3, format A/B/C, BEZ popupów. Wersje: tylko dyspozycje/WERSJE.md.
+
+# ABC do Macieja — format obowiązkowy (NIE negocjowalne)
+
+> ## ⛔ STOP — ZANIM ZADASZ MACIEJOWI JAKIEKOLWIEK PYTANIE
+> Dotyczy **Grup A–E** i **Mastera**. **Grupa F** — bez ABC gameplay.
+> **NIE MA** pytań poza formatem ABC. Sam formularz Ask, skróty, tak/nie, „A/B/C?" = **odrzucone**.
+> Maciej: **`format`** / **`ABC`** → natychmiast przepisz pytanie w pełnej formie.
+> **Kanon Macieja:** `docs/decyzje/ABC-FORMAT-KANON-MACIEJ.md` · **Obieg lane:** `docs/obieg/_ABC-JAK-PYTASZ.md`
+
+---
+
+## Kanon Macieja (2026-06-26) — każde pytanie
+
+Maciej musi dostać **kontekst + cel + opcje z za/przeciw + rekomendację**. Pełne nazwy, zero skrótów.
+
+| Krok | Sekcja | Co piszesz |
+|------|--------|------------|
+| **1** | **Sytuacja** | Opis sytuacyjny — pełne nazwy; **bez** skrótów (P2, lane, same ID techniczne) |
+| **2** | **Cel pytania** | Po co pytamy — jaki efekt ma mieć decyzja Macieja (1–2 zdania) |
+| **3** | **Dlaczego teraz** | Czemu akurat w tym momencie (1–3 zdania) |
+| **4** | **Opcje A / B / C** | Każda: **opis decyzji w grze** + **Za** (≥2) + **Przeciw** (≥2) |
+| **4b** | **Rekomendacja** | **Zawsze** litera **A**, **B** albo **C** + jedno zdanie dlaczego |
+| **5** | **Formularz Ask** | **Jeden** `AskQuestion` na końcu — **krótkie** etykiety A/B/C (bez Za/Przeciw) |
+
+**Nagłówek:** `[EKRAN: …]` (gameplay) lub `[TEMAT: …]` (operacyjne) + ID (`C-BAL-Q1`, `B2-Q7`).
+
+**Szablon:** `docs/decyzje/SZABLON-PYTANIA-ABC.md`
+
+---
+
+## Paczki ABC — **max 3 pytania** (Maciej 2026-07-04)
+
+**Powód:** paczki po 10 pytań **zerwają sesję w połowie** — Maciej traci odpowiedzi i musi zaczynać od nowa. Wolę **10× po 3**, nie **3× po 10**.
+
+| Reguła | Wartość |
+|--------|---------|
+| Max pytań w **jednej wiadomości** + **jednym** `AskQuestion` | **3** |
+| Więcej w kolejce | **Kolejne paczki** po 3 (np. `[PACZKA 2/4]`) |
+| Po paczce | **ECHO** wszystkich odpowiedzi → **START** (wdrażaj?) → **dopiero potem** następna paczka |
+
+**Nagłówek paczki:** `[PACZKA 1/4 — 3 pytania]` + lista ID (`B2-Q7`, `B2-Q8`, `B2-Q9`).
+
+**Końcówka wiadomości:** jedna linia — np. „Pozostało **7** pytań — następna paczka po Twojej odpowiedzi / **`działaj`**."
+
+**ZAKAZ:** 4+ pytań w jednym `AskQuestion` · 4+ pełnych ABC w jednej wiadomości bez podziału na paczki.
+
+---
+
+## Pełne nazwy — ZAKAZ skrótów
+
+- **TAK:** „Panel-C (macierz jednostek)", „Auto-walka na mapie świata", „ekran przed bitwą (preBattle)"
+- **NIE:** samo „Panel", „Auto", „3D", „F", „lane" bez kontekstu przy pierwszym użyciu
+- Nazwy ekranów, paneli, mechanik — **jak w grze**, nie jak w kodzie wewnętrznym
+
+---
+
+## Podział treść ↔ formularz (kanon Macieja)
+
+> **Pełen kontekst w tekście · krótkie pytania w formularzu Ask.**
+
+| Gdzie | Co |
+|-------|-----|
+| **Czat (najpierw)** | Sytuacja · Cel · Dlaczego teraz · A/B/C pełne · Rekomendacja |
+| **AskQuestion (na końcu)** | Krótkie etykiety A/B/C — **bez** kontekstu, **bez** Za/Przeciw |
+
+**ZAKAZ:** sam formularz · długie opisy w Ask.
+
+---
+
+## SELF-CHECK (wszystkie TAK przed wysłaniem)
+
+1. Nagłówek `[EKRAN: …]` lub `[TEMAT: …]` + ID pytania?
+2. Osobne sekcje **Sytuacja**, **Cel pytania**, **Dlaczego teraz**?
+3. **Pełne nazwy** — bez niejasnych skrótów?
+4. Dokładnie **3 opcje A, B, C** — każda: opis decyzji + **Za** (≥2) + **Przeciw** (≥2)?
+5. **Rekomendacja** — **zawsze** litera A/B/C + jedno zdanie?
+6. Max **3 pytania** w paczce (nagłówek `[PACZKA x/y]`)?
+7. **Jeden** `AskQuestion` na paczkę — **dopiero po** pełnym tekście?
+8. Po odpowiedzi → **ECHO → START** → **AKCJA** po **Tak** (`.cursor/rules/decyzje-echo.mdc`)?
+
+**Choć jedno NIE → nie wysyłaj.**
+
+---
+
+## Formularz Ask (krok 5 — ostatni)
+
+1. Pełny tekst w czacie **najpierw** — potem **jedno** `AskQuestion`.
+2. Tablica `questions`: po jednym wpisie na pytanie (**max 3** — więcej → następna paczka).
+3. Każdy wpis: `id` = ID · `prompt` = krótki tytuł · `options` = 3 krótkie etykiety.
+4. **ZAKAZ:** sam formularz bez Sytuacji/Celu/Opcji w czacie.
+5. **ZAKAZ:** osobny formularz na każde pytanie (zamiast jednego z max 3 wpisami).
+6. **ZAKAZ:** 4+ pytań w jednej paczce (historyczny błąd: max 10 — **wycofane** 2026-07-04).
+
+---
+
+## ZAKAZY (Maciej odrzuca)
+
+- Sam `AskQuestion` bez tekstu w czacie (jak na screenie „C-BAL-Q1")
+- Brak **Celu pytania** lub **opisu sytuacyjnego**
+- Skróty zamiast pełnych nazw (`ep. 7+`, `¤`, `P1` bez kontekstu)
+- Brak **Rekomendacji** (A, B albo C) **jako osobnej sekcji**
+- **Rekomendacja wklejona w opcję A** (np. „← rekomendacja MASTERa") — **ZAKAZ**
+- Opcje bez **Za** i **Przeciw** (min. 2+2) — sam opis A/B/C **odrzucone** (wzorzec błędu: **D-CUD2**)
+- „Kontekst + Pytanie" zamiast Sytuacja + Cel + Dlaczego teraz
+- „O co chodzi" jako jeden zlep
+- Za/Przeciw w formularzu Ask
+- Pytanie do Macieja bez self-check 8× TAK — **nie wysyłaj**; kanon gotowy: `docs/decyzje/D-CUD2-pytanie-KANON.md` (wzór naprawy)
+
+---
+
+## Po odpowiedzi Macieja
+
+1. **ECHO** — zapis (`.cursor/rules/decyzje-echo.mdc` §1)
+2. **START** — `AskQuestion`: **Tak — wdrażaj teraz** / **Jeszcze doprecyzujmy**
+3. Po **Tak** → **AKCJA** w tej samej sesji
+
+---
+
+## Kiedy czytać ponownie
+
+- Start sesji grupy · przed **każdą** paczką ABC
+- Otwórz: `ABC-FORMAT-KANON-MACIEJ.md` + `SZABLON-PYTANIA-ABC.md`
+- Maciej: **`format`** / **`ABC`**

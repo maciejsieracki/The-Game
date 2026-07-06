@@ -1,6 +1,6 @@
 # HANDOFF: UNITS → MAPA + SILNIK — model RUCHU PO MAPIE (specyfikacja)
 
-**Data:** 2026-06-25 · **Od:** Civ-UNITS · **Do:** MAPA (render/UI heksów) + SILNIK (pętla tury, pathfinding)
+**Data:** 2026-06-25 · **Od:** Grupa C · **Do:** MAPA (render/UI heksów) + SILNIK (pętla tury, pathfinding)
 **Ustalenie z Naster:** rozdzielamy „reguły" (UNITS) od „wykonania" (MAPA/SILNIK).
 
 ## 0. GRANICA LANE'ÓW — kiedy zaczyna się praca UNITS
@@ -50,4 +50,4 @@
 ## 8. OTWARTE DECYZJE (Naster/zespół)
 - Zasada „min. 1 pole"; ZoC dla wszystkich czy tylko bojowych; model stacku/armii (grupa vs pojedyncze); zaokrętowanie (kiedy).
 
-— Civ-UNITS
+— Grupa C

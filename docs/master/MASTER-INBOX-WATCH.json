@@ -1,0 +1,1370 @@
+﻿{
+    "lastMd5":  "CE71D449E004D8068ACFA8B7A5D3C9B1",
+    "watchCount":  227,
+    "lastTick":  "2026-07-03T12:30:11.6464289Z",
+    "intervalSeconds":  900,
+    "files":  {
+                  "dyspozycje/_handoff/→MASTER-AUTO-WALKA-v2b-ZAMKNIETE.md":  {
+                                                                                  "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\→MASTER-AUTO-WALKA-v2b-ZAMKNIETE.md",
+                                                                                  "mtime":  "2026-07-03T07:28:26.1182225Z",
+                                                                                  "flags":  "MASTER:GOTOWE-KANON,GOTOWE-KANON",
+                                                                                  "length":  2365
+                                                                              },
+                  "dyspozycje/_handoff/MAPA-do-MASTER_ulepszenia-D4A.md":  {
+                                                                               "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MAPA-do-MASTER_ulepszenia-D4A.md",
+                                                                               "mtime":  "2026-07-03T07:28:26.1137222Z",
+                                                                               "flags":  "",
+                                                                               "length":  3219
+                                                                           },
+                  "docs/obieg/INTEGRATOR-kolejka.md":  {
+                                                           "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\docs\\obieg\\INTEGRATOR-kolejka.md",
+                                                           "mtime":  "2026-07-03T12:29:51.7673912Z",
+                                                           "flags":  "md5:ED4C8E2B67AC86B7245B01FE9F2A20F9",
+                                                           "length":  18383
+                                                       },
+                  "docs/obieg/SLACK-OUTBOX-P5-P6-2026-07-01.md":  {
+                                                                      "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\docs\\obieg\\SLACK-OUTBOX-P5-P6-2026-07-01.md",
+                                                                      "mtime":  "2026-07-03T07:28:26.1142266Z",
+                                                                      "flags":  "MASTER:GOTOWE,GOTOWE-ROBOCZA",
+                                                                      "length":  2806
+                                                                  },
+                  "dyspozycje/_handoff/EKONOMIA-do-MASTER_manpower-faza1.md":  {
+                                                                                   "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\EKONOMIA-do-MASTER_manpower-faza1.md",
+                                                                                   "mtime":  "2026-07-03T07:28:26.1117224Z",
+                                                                                   "flags":  "",
+                                                                                   "length":  1585
+                                                                               },
+                  "dyspozycje/_handoff/UI-do-MASTER_okno-polacz-armie.md":  {
+                                                                                "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\UI-do-MASTER_okno-polacz-armie.md",
+                                                                                "mtime":  "2026-06-25T16:45:25.9876612Z",
+                                                                                "flags":  "",
+                                                                                "length":  1374
+                                                                            },
+                  "dyspozycje/_handoff/MAPA-do-MASTER_domyslne-decyzje-nowa-gra.md":  {
+                                                                                          "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MAPA-do-MASTER_domyslne-decyzje-nowa-gra.md",
+                                                                                          "mtime":  "2026-06-28T10:11:25.9702042Z",
+                                                                                          "flags":  "",
+                                                                                          "length":  1543
+                                                                                      },
+                  "docs/obieg/SLACK-OUTBOX-GRUPA-E-brand-book-w1-2026-06-26.md":  {
+                                                                                      "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\docs\\obieg\\SLACK-OUTBOX-GRUPA-E-brand-book-w1-2026-06-26.md",
+                                                                                      "mtime":  "2026-07-03T07:28:26.1147225Z",
+                                                                                      "flags":  "MASTER:GOTOWE",
+                                                                                      "length":  697
+                                                                                  },
+                  "dyspozycje/_handoff/MAPA-do-MASTER_obrona-i-zasiegi.md":  {
+                                                                                 "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MAPA-do-MASTER_obrona-i-zasiegi.md",
+                                                                                 "mtime":  "2026-06-28T10:11:25.9737017Z",
+                                                                                 "flags":  "",
+                                                                                 "length":  2020
+                                                                             },
+                  "dyspozycje/_handoff/MASTER-do-EKONOMIA_B5-spichlerz-SP-limit-2026-07-01.md":  {
+                                                                                                     "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-do-EKONOMIA_B5-spichlerz-SP-limit-2026-07-01.md",
+                                                                                                     "mtime":  "2026-07-03T07:28:26.4357371Z",
+                                                                                                     "flags":  "MASTER:GOTOWE",
+                                                                                                     "length":  1707
+                                                                                                 },
+                  "dyspozycje/_handoff/EKONOMIA-do-MASTER_mapa-terytorium-wioski.md":  {
+                                                                                           "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\EKONOMIA-do-MASTER_mapa-terytorium-wioski.md",
+                                                                                           "mtime":  "2026-06-25T19:49:10.0594857Z",
+                                                                                           "flags":  "",
+                                                                                           "length":  1853
+                                                                                       },
+                  "docs/obieg/SLACK-OUTBOX-F-2026-07-01.md":  {
+                                                                  "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\docs\\obieg\\SLACK-OUTBOX-F-2026-07-01.md",
+                                                                  "mtime":  "2026-07-03T07:28:26.4347368Z",
+                                                                  "flags":  "MASTER:GOTOWE-KANON,GOTOWE-KANON,md5:ED4C8E2B67AC86B7245B01FE9F2A20F9",
+                                                                  "length":  762
+                                                              },
+                  "dyspozycje/_handoff/MASTER-do-MASTER_P7-PREZENT-wiring-2026-07-02.md":  {
+                                                                                               "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-do-MASTER_P7-PREZENT-wiring-2026-07-02.md",
+                                                                                               "mtime":  "2026-07-03T07:28:26.1152220Z",
+                                                                                               "flags":  "",
+                                                                                               "length":  1151
+                                                                                           },
+                  "dyspozycje/_handoff/CYWILIZACJE-do-MASTER_decyzje-dyplomacja-AI.md":  {
+                                                                                             "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\CYWILIZACJE-do-MASTER_decyzje-dyplomacja-AI.md",
+                                                                                             "mtime":  "2026-06-25T15:51:01.4760811Z",
+                                                                                             "flags":  "",
+                                                                                             "length":  1897
+                                                                                         },
+                  "dyspozycje/_handoff/EKONOMIA-do-MASTER_plaster-D2A.md":  {
+                                                                                "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\EKONOMIA-do-MASTER_plaster-D2A.md",
+                                                                                "mtime":  "2026-07-03T07:28:25.9782045Z",
+                                                                                "flags":  "",
+                                                                                "length":  3530
+                                                                            },
+                  "dyspozycje/_handoff/MASTER-do-SILNIK_batch-potwierdzone-2026-06-27.md":  {
+                                                                                                "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-do-SILNIK_batch-potwierdzone-2026-06-27.md",
+                                                                                                "mtime":  "2026-07-03T07:28:26.9002809Z",
+                                                                                                "flags":  "",
+                                                                                                "length":  2805
+                                                                                            },
+                  "dyspozycje/_handoff/UNITS-do-MASTER_rename-hastati-triari.md":  {
+                                                                                       "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\UNITS-do-MASTER_rename-hastati-triari.md",
+                                                                                       "mtime":  "2026-06-28T10:11:25.9932015Z",
+                                                                                       "flags":  "",
+                                                                                       "length":  1296
+                                                                                   },
+                  "docs/obieg/SLACK-OUTBOX-A-R7-2026-07-01.md":  {
+                                                                     "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\docs\\obieg\\SLACK-OUTBOX-A-R7-2026-07-01.md",
+                                                                     "mtime":  "2026-07-03T07:28:26.1122224Z",
+                                                                     "flags":  "MASTER:GOTOWE",
+                                                                     "length":  1329
+                                                                 },
+                  "dyspozycje/_handoff/EKONOMIA-do-MASTER_paczka-lane-B-2026-07-01.md":  {
+                                                                                             "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\EKONOMIA-do-MASTER_paczka-lane-B-2026-07-01.md",
+                                                                                             "mtime":  "2026-07-03T07:28:26.1122224Z",
+                                                                                             "flags":  "MASTER:GOTOWE",
+                                                                                             "length":  1742
+                                                                                         },
+                  "dyspozycje/_handoff/UI-MAPA-do-MASTER_E1-defaulty-startu.md":  {
+                                                                                      "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\UI-MAPA-do-MASTER_E1-defaulty-startu.md",
+                                                                                      "mtime":  "2026-07-03T07:28:26.4392372Z",
+                                                                                      "flags":  "",
+                                                                                      "length":  3086
+                                                                                  },
+                  "dyspozycje/_handoff/UI-do-MASTER_okolica-render-mapa.md":  {
+                                                                                  "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\UI-do-MASTER_okolica-render-mapa.md",
+                                                                                  "mtime":  "2026-06-25T16:03:08.0022095Z",
+                                                                                  "flags":  "",
+                                                                                  "length":  2476
+                                                                              },
+                  "dyspozycje/_handoff/UI-do-MASTER_w3-pakiet-2026-07-03.md":  {
+                                                                                   "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\UI-do-MASTER_w3-pakiet-2026-07-03.md",
+                                                                                   "mtime":  "2026-07-03T12:23:29.8159165Z",
+                                                                                   "flags":  "md5:ce71d449e004d8068acfa8b7a5d3c9b1",
+                                                                                   "length":  3624
+                                                                               },
+                  "dyspozycje/_handoff/MASTER-do-MAPA_oboz-3D-OBL-S6.md":  {
+                                                                               "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-do-MAPA_oboz-3D-OBL-S6.md",
+                                                                               "mtime":  "2026-07-03T07:28:26.1117224Z",
+                                                                               "flags":  "",
+                                                                               "length":  700
+                                                                           },
+                  "dyspozycje/_handoff/CYWILIZACJE-do-MASTER_start-pkt3.md":  {
+                                                                                  "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\CYWILIZACJE-do-MASTER_start-pkt3.md",
+                                                                                  "mtime":  "2026-06-26T06:20:12.9549603Z",
+                                                                                  "flags":  "",
+                                                                                  "length":  1572
+                                                                              },
+                  "dyspozycje/_handoff/MASTER-do-INTEGRATOR_D-sojusz-v12-2026-07-01.md":  {
+                                                                                              "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-do-INTEGRATOR_D-sojusz-v12-2026-07-01.md",
+                                                                                              "mtime":  "2026-07-03T07:28:25.9782045Z",
+                                                                                              "flags":  "MASTER:GOTOWE,GOTOWE-ROBOCZA",
+                                                                                              "length":  1931
+                                                                                          },
+                  "dyspozycje/_handoff/MAPA-do-MASTER_format-rozmieszczenia-klastrow.md":  {
+                                                                                               "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MAPA-do-MASTER_format-rozmieszczenia-klastrow.md",
+                                                                                               "mtime":  "2026-06-28T10:11:25.9712010Z",
+                                                                                               "flags":  "",
+                                                                                               "length":  6131
+                                                                                           },
+                  "dyspozycje/_handoff/UI-do-MASTER_routing-blokery.md":  {
+                                                                              "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\UI-do-MASTER_routing-blokery.md",
+                                                                              "mtime":  "2026-06-25T09:07:47.3812128Z",
+                                                                              "flags":  "",
+                                                                              "length":  2104
+                                                                          },
+                  "dyspozycje/_handoff/EKONOMIA-do-MASTER_wealth.md":  {
+                                                                           "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\EKONOMIA-do-MASTER_wealth.md",
+                                                                           "mtime":  "2026-06-24T22:50:24.9702795Z",
+                                                                           "flags":  "",
+                                                                           "length":  3298
+                                                                       },
+                  "dyspozycje/_handoff/MIASTO-do-MASTER_moduly-gotowe.md":  {
+                                                                                "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MIASTO-do-MASTER_moduly-gotowe.md",
+                                                                                "mtime":  "2026-06-25T05:35:42.4515078Z",
+                                                                                "flags":  "",
+                                                                                "length":  2145
+                                                                            },
+                  "dyspozycje/_handoff/MASTER-do-MAPA_E1-jakosc-dekoracje-gameplay-safe.md":  {
+                                                                                                  "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-do-MAPA_E1-jakosc-dekoracje-gameplay-safe.md",
+                                                                                                  "mtime":  "2026-07-03T07:28:26.4377370Z",
+                                                                                                  "flags":  "",
+                                                                                                  "length":  2250
+                                                                                              },
+                  "dyspozycje/_handoff/MASTER-do-MAPA_kanon-zywnosc-hodowla.md":  {
+                                                                                      "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-do-MAPA_kanon-zywnosc-hodowla.md",
+                                                                                      "mtime":  "2026-07-03T07:28:26.1177223Z",
+                                                                                      "flags":  "",
+                                                                                      "length":  2912
+                                                                                  },
+                  "dyspozycje/_handoff/MIASTO-do-MASTER_okolica.md":  {
+                                                                          "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MIASTO-do-MASTER_okolica.md",
+                                                                          "mtime":  "2026-06-25T06:07:01.9416376Z",
+                                                                          "flags":  "",
+                                                                          "length":  1417
+                                                                      },
+                  "dyspozycje/_handoff/F-do-MASTER_VICTORY-E-P0-06-2026-07-02.md":  {
+                                                                                        "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\F-do-MASTER_VICTORY-E-P0-06-2026-07-02.md",
+                                                                                        "mtime":  "2026-07-03T07:28:26.4387377Z",
+                                                                                        "flags":  "MASTER:GOTOWE,GOTOWE-ROBOCZA",
+                                                                                        "length":  2546
+                                                                                    },
+                  "dyspozycje/_handoff/MACIEJ-do-MASTER_B5-spichlerz-SP-2026-07-01.md":  {
+                                                                                             "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MACIEJ-do-MASTER_B5-spichlerz-SP-2026-07-01.md",
+                                                                                             "mtime":  "2026-07-03T07:28:26.4362373Z",
+                                                                                             "flags":  "",
+                                                                                             "length":  2739
+                                                                                         },
+                  "dyspozycje/_handoff/UI-do-MASTER_brand-book-w1.md":  {
+                                                                            "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\UI-do-MASTER_brand-book-w1.md",
+                                                                            "mtime":  "2026-07-03T07:28:26.4382373Z",
+                                                                            "flags":  "",
+                                                                            "length":  2928
+                                                                        },
+                  "dyspozycje/_handoff/MASTER-do-SILNIK_ROUTING-MASTER-WORK-2026-06-28.md":  {
+                                                                                                 "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-do-SILNIK_ROUTING-MASTER-WORK-2026-06-28.md",
+                                                                                                 "mtime":  "2026-07-03T07:28:26.4357371Z",
+                                                                                                 "flags":  "",
+                                                                                                 "length":  4619
+                                                                                             },
+                  "dyspozycje/_handoff/UI-do-MASTER_B2-spoleczenstwo.md":  {
+                                                                               "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\UI-do-MASTER_B2-spoleczenstwo.md",
+                                                                               "mtime":  "2026-06-29T05:56:26.5167240Z",
+                                                                               "flags":  "",
+                                                                               "length":  2859
+                                                                           },
+                  "dyspozycje/_handoff/MASTER-E2-SMOKE-BRAMKA-2026-07-02.md":  {
+                                                                                   "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-E2-SMOKE-BRAMKA-2026-07-02.md",
+                                                                                   "mtime":  "2026-07-03T07:28:26.1157228Z",
+                                                                                   "flags":  "",
+                                                                                   "length":  981
+                                                                               },
+                  "dyspozycje/_handoff/UI-do-MASTER_hud-D1C.md":  {
+                                                                      "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\UI-do-MASTER_hud-D1C.md",
+                                                                      "mtime":  "2026-07-03T07:28:26.4392372Z",
+                                                                      "flags":  "",
+                                                                      "length":  4648
+                                                                  },
+                  "dyspozycje/_handoff/MAPA-do-MASTER_mapSize-reconcile.md":  {
+                                                                                  "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MAPA-do-MASTER_mapSize-reconcile.md",
+                                                                                  "mtime":  "2026-07-03T07:28:26.1147225Z",
+                                                                                  "flags":  "",
+                                                                                  "length":  3220
+                                                                              },
+                  "dyspozycje/EKONOMIA-DO-MASTERA.md":  {
+                                                            "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\EKONOMIA-DO-MASTERA.md",
+                                                            "mtime":  "2026-07-03T07:28:26.1122224Z",
+                                                            "flags":  "MASTER:GOTOWE",
+                                                            "length":  19618
+                                                        },
+                  "dyspozycje/_handoff/F-do-MASTER_D-SOJUASZ-v12-2026-07-01.md":  {
+                                                                                      "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\F-do-MASTER_D-SOJUASZ-v12-2026-07-01.md",
+                                                                                      "mtime":  "2026-07-03T07:28:26.4387377Z",
+                                                                                      "flags":  "MASTER:GOTOWE,GOTOWE-ROBOCZA",
+                                                                                      "length":  2242
+                                                                                  },
+                  "dyspozycje/_handoff/MASTER-do-MAPA_E2-gestosc-generator.md":  {
+                                                                                     "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-do-MAPA_E2-gestosc-generator.md",
+                                                                                     "mtime":  "2026-07-03T07:28:26.9012811Z",
+                                                                                     "flags":  "",
+                                                                                     "length":  2141
+                                                                                 },
+                  "dyspozycje/_handoff/CYWILIZACJE-do-MASTER_bonusy-RDY01-delegacja.md":  {
+                                                                                              "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\CYWILIZACJE-do-MASTER_bonusy-RDY01-delegacja.md",
+                                                                                              "mtime":  "2026-07-03T07:28:26.4377370Z",
+                                                                                              "flags":  "",
+                                                                                              "length":  6114
+                                                                                          },
+                  "dyspozycje/_handoff/MASTER-do-INTEGRATOR_A2-Q5-city-unit-pick.md":  {
+                                                                                           "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-do-INTEGRATOR_A2-Q5-city-unit-pick.md",
+                                                                                           "mtime":  "2026-07-03T07:28:26.4377370Z",
+                                                                                           "flags":  "md5:27B69A47A26787687666FFD013C8A3D9",
+                                                                                           "length":  1970
+                                                                                       },
+                  "dyspozycje/_handoff/MASTER-do-INTEGRATOR_P5-P6-dyplomacja-2026-07-01.md":  {
+                                                                                                  "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-do-INTEGRATOR_P5-P6-dyplomacja-2026-07-01.md",
+                                                                                                  "mtime":  "2026-07-03T07:28:26.4352370Z",
+                                                                                                  "flags":  "",
+                                                                                                  "length":  1481
+                                                                                              },
+                  "dyspozycje/_handoff/MAPA-do-MASTER_ulepszenia-terenu.md":  {
+                                                                                  "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MAPA-do-MASTER_ulepszenia-terenu.md",
+                                                                                  "mtime":  "2026-06-28T10:11:25.9762029Z",
+                                                                                  "flags":  "",
+                                                                                  "length":  3129
+                                                                              },
+                  "dyspozycje/_handoff/CYWILIZACJE-do-MASTER_defaulty-startu-D13A.md":  {
+                                                                                            "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\CYWILIZACJE-do-MASTER_defaulty-startu-D13A.md",
+                                                                                            "mtime":  "2026-07-03T07:28:26.1052235Z",
+                                                                                            "flags":  "",
+                                                                                            "length":  2406
+                                                                                        },
+                  "dyspozycje/_handoff/MAPA-do-MASTER_placement-i-widok-glowny.md":  {
+                                                                                         "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MAPA-do-MASTER_placement-i-widok-glowny.md",
+                                                                                         "mtime":  "2026-06-28T10:11:25.9742019Z",
+                                                                                         "flags":  "",
+                                                                                         "length":  2357
+                                                                                     },
+                  "dyspozycje/_handoff/CYWILIZACJE-do-MASTER_odp-UI-dyplomacja-civs.md":  {
+                                                                                              "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\CYWILIZACJE-do-MASTER_odp-UI-dyplomacja-civs.md",
+                                                                                              "mtime":  "2026-06-25T11:46:25.4971912Z",
+                                                                                              "flags":  "",
+                                                                                              "length":  2492
+                                                                                          },
+                  "dyspozycje/_handoff/CYWILIZACJE-do-MASTER_bonusy-mechanizacja.md":  {
+                                                                                           "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\CYWILIZACJE-do-MASTER_bonusy-mechanizacja.md",
+                                                                                           "mtime":  "2026-06-26T06:28:19.3682547Z",
+                                                                                           "flags":  "",
+                                                                                           "length":  5701
+                                                                                       },
+                  "dyspozycje/_handoff/MIASTO-do-MASTER_zarzadca-automatyczny.md":  {
+                                                                                        "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MIASTO-do-MASTER_zarzadca-automatyczny.md",
+                                                                                        "mtime":  "2026-06-25T08:06:41.6835219Z",
+                                                                                        "flags":  "",
+                                                                                        "length":  3203
+                                                                                    },
+                  "dyspozycje/_handoff/SILNIK-handover-do-MASTER_2026-06-24.md":  {
+                                                                                      "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\SILNIK-handover-do-MASTER_2026-06-24.md",
+                                                                                      "mtime":  "2026-06-24T20:11:25.3916881Z",
+                                                                                      "flags":  "",
+                                                                                      "length":  7417
+                                                                                  },
+                  "dyspozycje/_handoff/UNITS-do-MASTER_wejscie-miasta-garnizon.md":  {
+                                                                                         "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\UNITS-do-MASTER_wejscie-miasta-garnizon.md",
+                                                                                         "mtime":  "2026-07-03T07:28:26.4392372Z",
+                                                                                         "flags":  "",
+                                                                                         "length":  2932
+                                                                                     },
+                  "dyspozycje/_handoff/CYWILIZACJE-do-MASTER_diplo-ai-api.md":  {
+                                                                                    "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\CYWILIZACJE-do-MASTER_diplo-ai-api.md",
+                                                                                    "mtime":  "2026-06-25T16:15:43.9054389Z",
+                                                                                    "flags":  "",
+                                                                                    "length":  4204
+                                                                                },
+                  "dyspozycje/_handoff/F-do-MASTER_E2-PLAYTEST-B2Q5-2026-06-30.md":  {
+                                                                                         "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\F-do-MASTER_E2-PLAYTEST-B2Q5-2026-06-30.md",
+                                                                                         "mtime":  "2026-07-03T07:28:26.9007810Z",
+                                                                                         "flags":  "MASTER:GOTOWE-KANON,GOTOWE-KANON",
+                                                                                         "length":  1444
+                                                                                     },
+                  "dyspozycje/_handoff/MASTER-do-EKONOMIA_kanon-zywnosc-hodowla.md":  {
+                                                                                          "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-do-EKONOMIA_kanon-zywnosc-hodowla.md",
+                                                                                          "mtime":  "2026-07-03T07:28:26.1152220Z",
+                                                                                          "flags":  "",
+                                                                                          "length":  2890
+                                                                                      },
+                  "dyspozycje/_handoff/F-do-MASTER_P5-P6-2026-07-01.md":  {
+                                                                              "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\F-do-MASTER_P5-P6-2026-07-01.md",
+                                                                              "mtime":  "2026-07-03T07:28:26.1172232Z",
+                                                                              "flags":  "MASTER:GOTOWE,GOTOWE-ROBOCZA,md5:8f3c6004959c2308588c33cb47d956c4",
+                                                                              "length":  2521
+                                                                          },
+                  "dyspozycje/_handoff/MASTER-do-SILNIK_podzial-pracy-balance.md":  {
+                                                                                        "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-do-SILNIK_podzial-pracy-balance.md",
+                                                                                        "mtime":  "2026-07-03T07:28:26.1152220Z",
+                                                                                        "flags":  "",
+                                                                                        "length":  3288
+                                                                                    },
+                  "dyspozycje/_handoff/MASTER-do-GRUPA-F_executor-only-2026-06-30.md":  {
+                                                                                            "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-do-GRUPA-F_executor-only-2026-06-30.md",
+                                                                                            "mtime":  "2026-07-03T07:28:26.1117224Z",
+                                                                                            "flags":  "MASTER:GOTOWE,GOTOWE-ROBOCZA",
+                                                                                            "length":  1611
+                                                                                        },
+                  "dyspozycje/UI-DO-MASTERA.md":  {
+                                                      "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\UI-DO-MASTERA.md",
+                                                      "mtime":  "2026-07-03T12:29:44.6677586Z",
+                                                      "flags":  "MASTER:GOTOWE",
+                                                      "length":  47913
+                                                  },
+                  "dyspozycje/_handoff/MASTER-do-INTEGRATOR_P-C2-DEF-wiring-2026-07-01.md":  {
+                                                                                                 "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-do-INTEGRATOR_P-C2-DEF-wiring-2026-07-01.md",
+                                                                                                 "mtime":  "2026-07-03T07:28:26.1122224Z",
+                                                                                                 "flags":  "MASTER:GOTOWE,GOTOWE-ROBOCZA",
+                                                                                                 "length":  1088
+                                                                                             },
+                  "dyspozycje/_handoff/MASTER-do-GRUPA-C_panel-c-balans-kolejnosc.md":  {
+                                                                                            "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-do-GRUPA-C_panel-c-balans-kolejnosc.md",
+                                                                                            "mtime":  "2026-07-03T07:28:26.9012811Z",
+                                                                                            "flags":  "MASTER:GOTOWE",
+                                                                                            "length":  1259
+                                                                                        },
+                  "dyspozycje/_handoff/EKONOMIA-do-MASTER_podzial-per-city.md":  {
+                                                                                     "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\EKONOMIA-do-MASTER_podzial-per-city.md",
+                                                                                     "mtime":  "2026-07-03T07:28:26.4397372Z",
+                                                                                     "flags":  "",
+                                                                                     "length":  2800
+                                                                                 },
+                  "dyspozycje/_handoff/F-do-MASTER_P-C2-DEF-wiring-2026-07-01.md":  {
+                                                                                        "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\F-do-MASTER_P-C2-DEF-wiring-2026-07-01.md",
+                                                                                        "mtime":  "2026-07-03T07:28:26.9017806Z",
+                                                                                        "flags":  "MASTER:GOTOWE,GOTOWE-ROBOCZA,md5:d5e0f62de9d287be23d444d1f23e0e7b",
+                                                                                        "length":  1905
+                                                                                    },
+                  "dyspozycje/MAPA-DO-MASTERA.md":  {
+                                                        "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\MAPA-DO-MASTERA.md",
+                                                        "mtime":  "2026-07-03T11:29:11.9978956Z",
+                                                        "flags":  "",
+                                                        "length":  31800
+                                                    },
+                  "dyspozycje/_handoff/EKONOMIA-do-MASTER_religia-etap2.md":  {
+                                                                                  "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\EKONOMIA-do-MASTER_religia-etap2.md",
+                                                                                  "mtime":  "2026-06-25T12:07:31.3673486Z",
+                                                                                  "flags":  "",
+                                                                                  "length":  5876
+                                                                              },
+                  "dyspozycje/_handoff/MAPA-do-MASTER_generator-swiat.md":  {
+                                                                                "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MAPA-do-MASTER_generator-swiat.md",
+                                                                                "mtime":  "2026-06-28T10:11:25.9717007Z",
+                                                                                "flags":  "",
+                                                                                "length":  4362
+                                                                            },
+                  "dyspozycje/_handoff/F-do-MASTER_KANON-BATCH3-2026-07-02.md":  {
+                                                                                     "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\F-do-MASTER_KANON-BATCH3-2026-07-02.md",
+                                                                                     "mtime":  "2026-07-01T12:32:15.4523701Z",
+                                                                                     "flags":  "MASTER:GOTOWE,GOTOWE-ROBOCZA",
+                                                                                     "length":  1496
+                                                                                 },
+                  "dyspozycje/_handoff/CYWILIZACJE-do-MASTER_zelazo-stal-D14A.md":  {
+                                                                                        "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\CYWILIZACJE-do-MASTER_zelazo-stal-D14A.md",
+                                                                                        "mtime":  "2026-07-03T07:28:26.9017806Z",
+                                                                                        "flags":  "",
+                                                                                        "length":  2367
+                                                                                    },
+                  "dyspozycje/_handoff/MASTER-do-SILNIK_oblezenie-C3-batchy.md":  {
+                                                                                      "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-do-SILNIK_oblezenie-C3-batchy.md",
+                                                                                      "mtime":  "2026-07-03T07:28:26.4362373Z",
+                                                                                      "flags":  "",
+                                                                                      "length":  8560
+                                                                                  },
+                  "dyspozycje/_handoff/MASTER-do-INTEGRATOR_A-P4-UI-2026-07-01.md":  {
+                                                                                         "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-do-INTEGRATOR_A-P4-UI-2026-07-01.md",
+                                                                                         "mtime":  "2026-07-03T07:28:26.1132227Z",
+                                                                                         "flags":  "MASTER:GOTOWE,GOTOWE-ROBOCZA",
+                                                                                         "length":  1497
+                                                                                     },
+                  "dyspozycje/_handoff/F-do-MASTER_D18-wiring-2026-07-02.md":  {
+                                                                                   "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\F-do-MASTER_D18-wiring-2026-07-02.md",
+                                                                                   "mtime":  "2026-07-03T07:28:26.1132227Z",
+                                                                                   "flags":  "MASTER:GOTOWE,GOTOWE-ROBOCZA",
+                                                                                   "length":  768
+                                                                               },
+                  "dyspozycje/_handoff/CYWILIZACJE-do-MASTER_cuda-g1-wonder-availability.md":  {
+                                                                                                   "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\CYWILIZACJE-do-MASTER_cuda-g1-wonder-availability.md",
+                                                                                                   "mtime":  "2026-07-03T12:09:57.0296403Z",
+                                                                                                   "flags":  "",
+                                                                                                   "length":  2634
+                                                                                               },
+                  "dyspozycje/_handoff/MASTER-do-SILNIK_kanon-zywnosc-hodowla-integracja.md":  {
+                                                                                                   "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-do-SILNIK_kanon-zywnosc-hodowla-integracja.md",
+                                                                                                   "mtime":  "2026-07-03T07:28:26.4372372Z",
+                                                                                                   "flags":  "MASTER:GOTOWE,GOTOWE-ROBOCZA",
+                                                                                                   "length":  4513
+                                                                                               },
+                  "dyspozycje/_handoff/F-do-MASTER_F-P1-01-2026-07-02.md":  {
+                                                                                "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\F-do-MASTER_F-P1-01-2026-07-02.md",
+                                                                                "mtime":  "2026-07-03T07:28:26.4392372Z",
+                                                                                "flags":  "MASTER:GOTOWE,GOTOWE-ROBOCZA,md5:351d8ad65ab9c0e560961438cdd56d39",
+                                                                                "length":  2708
+                                                                            },
+                  "dyspozycje/_handoff/CYWILIZACJE-do-MASTER_miasta-kopie-typu.md":  {
+                                                                                         "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\CYWILIZACJE-do-MASTER_miasta-kopie-typu.md",
+                                                                                         "mtime":  "2026-07-03T07:28:26.1142266Z",
+                                                                                         "flags":  "",
+                                                                                         "length":  2008
+                                                                                     },
+                  "dyspozycje/_handoff/MASTER-do-SILNIK_E2-gestosc-wpiecie.md":  {
+                                                                                     "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-do-SILNIK_E2-gestosc-wpiecie.md",
+                                                                                     "mtime":  "2026-07-03T07:28:26.4397372Z",
+                                                                                     "flags":  "",
+                                                                                     "length":  1161
+                                                                                 },
+                  "dyspozycje/_handoff/CYWILIZACJE-do-MASTER_mnoznik-handel-pole.md":  {
+                                                                                           "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\CYWILIZACJE-do-MASTER_mnoznik-handel-pole.md",
+                                                                                           "mtime":  "2026-06-25T07:20:15.2617562Z",
+                                                                                           "flags":  "",
+                                                                                           "length":  908
+                                                                                       },
+                  "docs/obieg/SLACK-OUTBOX-D-2026-06-30.md":  {
+                                                                  "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\docs\\obieg\\SLACK-OUTBOX-D-2026-06-30.md",
+                                                                  "mtime":  "2026-07-03T07:28:26.9022814Z",
+                                                                  "flags":  "MASTER:GOTOWE",
+                                                                  "length":  954
+                                                              },
+                  "dyspozycje/_handoff/MASTER-do-UNITS-MAPA_P5-P6.md":  {
+                                                                            "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-do-UNITS-MAPA_P5-P6.md",
+                                                                            "mtime":  "2026-07-03T07:28:26.9002809Z",
+                                                                            "flags":  "MASTER:GOTOWE",
+                                                                            "length":  1550
+                                                                        },
+                  "dyspozycje/_handoff/EKONOMIA-do-MASTER_budynki-zelazo.md":  {
+                                                                                   "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\EKONOMIA-do-MASTER_budynki-zelazo.md",
+                                                                                   "mtime":  "2026-06-25T18:25:41.8609040Z",
+                                                                                   "flags":  "",
+                                                                                   "length":  4533
+                                                                               },
+                  "dyspozycje/_handoff/F-do-MASTER_KANON-SPRINT-2026-07-02.md":  {
+                                                                                     "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\F-do-MASTER_KANON-SPRINT-2026-07-02.md",
+                                                                                     "mtime":  "2026-07-03T07:28:26.1162219Z",
+                                                                                     "flags":  "MASTER:GOTOWE,GOTOWE-ROBOCZA",
+                                                                                     "length":  1968
+                                                                                 },
+                  "dyspozycje/_handoff/MASTER-do-EKONOMIA_F-city-hex-snapshot.md":  {
+                                                                                        "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-do-EKONOMIA_F-city-hex-snapshot.md",
+                                                                                        "mtime":  "2026-07-03T07:28:26.1147225Z",
+                                                                                        "flags":  "",
+                                                                                        "length":  1140
+                                                                                    },
+                  "dyspozycje/_handoff/UI-do-MASTER_akcje-naglowka.md":  {
+                                                                             "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\UI-do-MASTER_akcje-naglowka.md",
+                                                                             "mtime":  "2026-06-25T08:01:39.7612792Z",
+                                                                             "flags":  "",
+                                                                             "length":  1095
+                                                                         },
+                  "dyspozycje/_handoff/A-do-MASTER_C3-Q7-layout-2026-07-01.md":  {
+                                                                                     "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\A-do-MASTER_C3-Q7-layout-2026-07-01.md",
+                                                                                     "mtime":  "2026-07-03T07:28:26.9007810Z",
+                                                                                     "flags":  "MASTER:GOTOWE",
+                                                                                     "length":  1165
+                                                                                 },
+                  "dyspozycje/_handoff/MASTER-PLAN-E2-gestosc-swiat.md":  {
+                                                                              "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-PLAN-E2-gestosc-swiat.md",
+                                                                              "mtime":  "2026-07-03T07:28:26.1187232Z",
+                                                                              "flags":  "",
+                                                                              "length":  2035
+                                                                          },
+                  "docs/obieg/MASTER-WATCH.md":  {
+                                                     "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\docs\\obieg\\MASTER-WATCH.md",
+                                                     "mtime":  "2026-07-03T07:28:26.9017806Z",
+                                                     "flags":  "GOTOWE-ROBOCZA,md5:01490681afbc7e67d5182992989597df",
+                                                     "length":  10212
+                                                 },
+                  "dyspozycje/_handoff/MAPA-do-MASTER_miasta-brazu-D12A.md":  {
+                                                                                  "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MAPA-do-MASTER_miasta-brazu-D12A.md",
+                                                                                  "mtime":  "2026-07-03T07:28:26.4392372Z",
+                                                                                  "flags":  "",
+                                                                                  "length":  1577
+                                                                              },
+                  "dyspozycje/_handoff/MASTER-do-SILNIK_F-city-hex-czysty.md":  {
+                                                                                    "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-do-SILNIK_F-city-hex-czysty.md",
+                                                                                    "mtime":  "2026-07-03T07:28:26.8997811Z",
+                                                                                    "flags":  "",
+                                                                                    "length":  1481
+                                                                                },
+                  "docs/obieg/SLACK-OUTBOX-C-2026-06-26.md":  {
+                                                                  "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\docs\\obieg\\SLACK-OUTBOX-C-2026-06-26.md",
+                                                                  "mtime":  "2026-07-03T07:28:26.1147225Z",
+                                                                  "flags":  "MASTER:GOTOWE",
+                                                                  "length":  1235
+                                                              },
+                  "docs/obieg/SLACK-OUTBOX-A-2026-07-01.md":  {
+                                                                  "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\docs\\obieg\\SLACK-OUTBOX-A-2026-07-01.md",
+                                                                  "mtime":  "2026-07-03T07:28:26.9017806Z",
+                                                                  "flags":  "MASTER:GOTOWE",
+                                                                  "length":  1212
+                                                              },
+                  "dyspozycje/_handoff/C-do-MASTER_odskok-fanout-2026-07-01.md":  {
+                                                                                      "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\C-do-MASTER_odskok-fanout-2026-07-01.md",
+                                                                                      "mtime":  "2026-07-03T07:28:26.1177223Z",
+                                                                                      "flags":  "MASTER:GOTOWE",
+                                                                                      "length":  4183
+                                                                                  },
+                  "dyspozycje/_handoff/EKONOMIA-do-MASTER_B1-Q3-panel-B-2026-07-02.md":  {
+                                                                                             "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\EKONOMIA-do-MASTER_B1-Q3-panel-B-2026-07-02.md",
+                                                                                             "mtime":  "2026-07-03T07:28:26.9017806Z",
+                                                                                             "flags":  "MASTER:GOTOWE",
+                                                                                             "length":  3466
+                                                                                         },
+                  "dyspozycje/_handoff/CYWILIZACJE-do-MASTER_nazwy-klastrow-pole.md":  {
+                                                                                           "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\CYWILIZACJE-do-MASTER_nazwy-klastrow-pole.md",
+                                                                                           "mtime":  "2026-06-24T22:48:03.8359295Z",
+                                                                                           "flags":  "",
+                                                                                           "length":  2019
+                                                                                       },
+                  "dyspozycje/_handoff/A-do-MASTER_stan-lane-2026-07-02.md":  {
+                                                                                  "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\A-do-MASTER_stan-lane-2026-07-02.md",
+                                                                                  "mtime":  "2026-07-03T07:28:26.4382373Z",
+                                                                                  "flags":  "MASTER:GOTOWE",
+                                                                                  "length":  2434
+                                                                              },
+                  "dyspozycje/_handoff/F-do-MASTER_W-WIKI-2026-07-03.md":  {
+                                                                               "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\F-do-MASTER_W-WIKI-2026-07-03.md",
+                                                                               "mtime":  "2026-07-03T11:34:54.4372511Z",
+                                                                               "flags":  "MASTER:GOTOWE,GOTOWE-ROBOCZA",
+                                                                               "length":  2905
+                                                                           },
+                  "dyspozycje/_handoff/MASTER-do-GRUPY_PANEL-MERGE.md":  {
+                                                                             "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-do-GRUPY_PANEL-MERGE.md",
+                                                                             "mtime":  "2026-07-03T07:28:26.9002809Z",
+                                                                             "flags":  "",
+                                                                             "length":  6571
+                                                                         },
+                  "dyspozycje/_handoff/UI-do-MASTER_hud-D1B-mockupy.md":  {
+                                                                              "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\UI-do-MASTER_hud-D1B-mockupy.md",
+                                                                              "mtime":  "2026-07-03T07:28:26.9007810Z",
+                                                                              "flags":  "",
+                                                                              "length":  4065
+                                                                          },
+                  "dyspozycje/_handoff/MASTER-do-INTEGRATOR_D4-wymiana-pn-2026-06-30.md":  {
+                                                                                               "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-do-INTEGRATOR_D4-wymiana-pn-2026-06-30.md",
+                                                                                               "mtime":  "2026-07-03T07:28:26.4392372Z",
+                                                                                               "flags":  "MASTER:GOTOWE,GOTOWE-ROBOCZA",
+                                                                                               "length":  2313
+                                                                                           },
+                  "dyspozycje/_handoff/UNITS-do-MASTER_kontrakt-walka-multi.md":  {
+                                                                                      "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\UNITS-do-MASTER_kontrakt-walka-multi.md",
+                                                                                      "mtime":  "2026-06-28T10:11:25.9902018Z",
+                                                                                      "flags":  "",
+                                                                                      "length":  2505
+                                                                                  },
+                  "dyspozycje/UNITS-DO-MASTERA.md":  {
+                                                         "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\UNITS-DO-MASTERA.md",
+                                                         "mtime":  "2026-07-03T07:28:26.4372372Z",
+                                                         "flags":  "MASTER:GOTOWE-KANON,GOTOWE-KANON",
+                                                         "length":  11884
+                                                     },
+                  "dyspozycje/_handoff/MIASTO-do-MASTER_dynamiczny-zasieg-UX.md":  {
+                                                                                       "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MIASTO-do-MASTER_dynamiczny-zasieg-UX.md",
+                                                                                       "mtime":  "2026-06-25T07:05:05.9509452Z",
+                                                                                       "flags":  "",
+                                                                                       "length":  1723
+                                                                                   },
+                  "dyspozycje/_handoff/A-do-MASTER_A5-roblox-preview-2026-06-26.md":  {
+                                                                                          "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\A-do-MASTER_A5-roblox-preview-2026-06-26.md",
+                                                                                          "mtime":  "2026-07-03T07:28:26.8997811Z",
+                                                                                          "flags":  "MASTER:GOTOWE",
+                                                                                          "length":  2103
+                                                                                      },
+                  "dyspozycje/_handoff/UNITS-do-MASTER_auto-walka-v2b.md":  {
+                                                                                "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\UNITS-do-MASTER_auto-walka-v2b.md",
+                                                                                "mtime":  "2026-07-03T07:28:26.4382373Z",
+                                                                                "flags":  "MASTER:GOTOWE-KANON,GOTOWE-KANON",
+                                                                                "length":  4380
+                                                                            },
+                  "dyspozycje/_handoff/MIASTO-do-MASTER_split-output-nauka.md":  {
+                                                                                     "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MIASTO-do-MASTER_split-output-nauka.md",
+                                                                                     "mtime":  "2026-06-25T12:00:30.1961175Z",
+                                                                                     "flags":  "",
+                                                                                     "length":  3067
+                                                                                 },
+                  "docs/obieg/SLACK-OUTBOX-GRUPA-B-2026-07-01.md":  {
+                                                                        "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\docs\\obieg\\SLACK-OUTBOX-GRUPA-B-2026-07-01.md",
+                                                                        "mtime":  "2026-07-03T07:28:26.1162219Z",
+                                                                        "flags":  "MASTER:GOTOWE",
+                                                                        "length":  1876
+                                                                    },
+                  "dyspozycje/_handoff/CYWILIZACJE-do-MASTER_testy-grupa-d-bramka.md":  {
+                                                                                            "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\CYWILIZACJE-do-MASTER_testy-grupa-d-bramka.md",
+                                                                                            "mtime":  "2026-07-03T07:28:26.4357371Z",
+                                                                                            "flags":  "",
+                                                                                            "length":  1529
+                                                                                        },
+                  "dyspozycje/_handoff/MASTER-do-SILNIK_handoff-test-sesja-2026-06-28.md":  {
+                                                                                                "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-do-SILNIK_handoff-test-sesja-2026-06-28.md",
+                                                                                                "mtime":  "2026-07-03T07:28:26.4387377Z",
+                                                                                                "flags":  "MASTER:GOTOWE,GOTOWE-ROBOCZA",
+                                                                                                "length":  3724
+                                                                                            },
+                  "dyspozycje/_handoff/MASTER-do-INTEGRATOR_CUDA-G1-2026-07-03.md":  {
+                                                                                         "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-do-INTEGRATOR_CUDA-G1-2026-07-03.md",
+                                                                                         "mtime":  "2026-07-03T12:09:56.0540001Z",
+                                                                                         "flags":  "GOTOWE-ROBOCZA",
+                                                                                         "length":  1516
+                                                                                     },
+                  "dyspozycje/_handoff/SILNIK-do-MASTER_D-START-klaster.md":  {
+                                                                                  "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\SILNIK-do-MASTER_D-START-klaster.md",
+                                                                                  "mtime":  "2026-07-03T07:28:26.9002809Z",
+                                                                                  "flags":  "",
+                                                                                  "length":  2531
+                                                                              },
+                  "dyspozycje/_handoff/F-do-MASTER_B-B5-SPICHLERZ-2026-07-01.md":  {
+                                                                                       "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\F-do-MASTER_B-B5-SPICHLERZ-2026-07-01.md",
+                                                                                       "mtime":  "2026-07-03T07:28:26.1177223Z",
+                                                                                       "flags":  "MASTER:GOTOWE,GOTOWE-ROBOCZA",
+                                                                                       "length":  2716
+                                                                                   },
+                  "dyspozycje/_handoff/UNITS-do-MASTER_robotnik-ulepszenia-z-mapy.md":  {
+                                                                                            "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\UNITS-do-MASTER_robotnik-ulepszenia-z-mapy.md",
+                                                                                            "mtime":  "2026-06-28T10:11:25.9937006Z",
+                                                                                            "flags":  "",
+                                                                                            "length":  1733
+                                                                                        },
+                  "dyspozycje/_handoff/UI-do-MASTER_drzewko-nauki-rewire.md":  {
+                                                                                   "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\UI-do-MASTER_drzewko-nauki-rewire.md",
+                                                                                   "mtime":  "2026-06-25T19:57:08.2548108Z",
+                                                                                   "flags":  "",
+                                                                                   "length":  2332
+                                                                               },
+                  "dyspozycje/_handoff/C-do-MASTER_oblezenie-playtest-2026-06-26.md":  {
+                                                                                           "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\C-do-MASTER_oblezenie-playtest-2026-06-26.md",
+                                                                                           "mtime":  "2026-07-03T07:28:26.1187232Z",
+                                                                                           "flags":  "MASTER:GOTOWE",
+                                                                                           "length":  3760
+                                                                                       },
+                  "dyspozycje/_handoff/UI-do-MASTER_picker-badan.md":  {
+                                                                           "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\UI-do-MASTER_picker-badan.md",
+                                                                           "mtime":  "2026-06-25T16:45:12.5742482Z",
+                                                                           "flags":  "",
+                                                                           "length":  1667
+                                                                       },
+                  "dyspozycje/_handoff/MASTER-do-UNITS_C4-balans-CZEKA-ABC.md":  {
+                                                                                     "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-do-UNITS_C4-balans-CZEKA-ABC.md",
+                                                                                     "mtime":  "2026-07-03T07:28:26.1137222Z",
+                                                                                     "flags":  "",
+                                                                                     "length":  1095
+                                                                                 },
+                  "dyspozycje/_handoff/MASTER-do-UI_wikipedia-polish.md":  {
+                                                                               "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-do-UI_wikipedia-polish.md",
+                                                                               "mtime":  "2026-07-03T09:56:57.6700916Z",
+                                                                               "flags":  "",
+                                                                               "length":  5346
+                                                                           },
+                  "dyspozycje/_handoff/CYWILIZACJE-do-MASTER_model-nauki-dla-MIASTO.md":  {
+                                                                                              "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\CYWILIZACJE-do-MASTER_model-nauki-dla-MIASTO.md",
+                                                                                              "mtime":  "2026-06-25T09:05:59.0134357Z",
+                                                                                              "flags":  "",
+                                                                                              "length":  2457
+                                                                                          },
+                  "dyspozycje/_handoff/MASTER-do-A_astart-p0-maciej.md":  {
+                                                                              "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-do-A_astart-p0-maciej.md",
+                                                                              "mtime":  "2026-07-03T07:28:26.1117224Z",
+                                                                              "flags":  "",
+                                                                              "length":  978
+                                                                          },
+                  "dyspozycje/_handoff/MIASTO-do-MASTER_ulepszenia-terenu.md":  {
+                                                                                    "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MIASTO-do-MASTER_ulepszenia-terenu.md",
+                                                                                    "mtime":  "2026-06-24T21:13:47.2421402Z",
+                                                                                    "flags":  "",
+                                                                                    "length":  1904
+                                                                                },
+                  "dyspozycje/_handoff/CYWILIZACJE-do-MASTER_ai-wpiecie.md":  {
+                                                                                  "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\CYWILIZACJE-do-MASTER_ai-wpiecie.md",
+                                                                                  "mtime":  "2026-06-25T11:57:39.3145899Z",
+                                                                                  "flags":  "",
+                                                                                  "length":  4401
+                                                                              },
+                  "dyspozycje/_handoff/EKONOMIA-do-MASTER_mnoznik-per-cyw.md":  {
+                                                                                    "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\EKONOMIA-do-MASTER_mnoznik-per-cyw.md",
+                                                                                    "mtime":  "2026-07-03T07:28:23.0004731Z",
+                                                                                    "flags":  "",
+                                                                                    "length":  1790
+                                                                                },
+                  "dyspozycje/INTEGRATOR-STAN.md":  {
+                                                        "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\INTEGRATOR-STAN.md",
+                                                        "mtime":  "2026-07-03T12:29:44.4635992Z",
+                                                        "flags":  "",
+                                                        "length":  412
+                                                    },
+                  "dyspozycje/_handoff/MASTER-do-SILNIK_E1-jakosc-preset-bundle.md":  {
+                                                                                          "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-do-SILNIK_E1-jakosc-preset-bundle.md",
+                                                                                          "mtime":  "2026-06-28T10:30:30.1747773Z",
+                                                                                          "flags":  "",
+                                                                                          "length":  2023
+                                                                                      },
+                  "dyspozycje/_handoff/MASTER-do-GRUPA-E_E-01-referencja-brandbook.md":  {
+                                                                                             "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-do-GRUPA-E_E-01-referencja-brandbook.md",
+                                                                                             "mtime":  "2026-07-03T07:28:26.9007810Z",
+                                                                                             "flags":  "",
+                                                                                             "length":  1523
+                                                                                         },
+                  "dyspozycje/_handoff/F-do-MASTER_A-P4-UI-2026-07-01.md":  {
+                                                                                "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\F-do-MASTER_A-P4-UI-2026-07-01.md",
+                                                                                "mtime":  "2026-07-03T07:28:26.9002809Z",
+                                                                                "flags":  "MASTER:GOTOWE,GOTOWE-ROBOCZA",
+                                                                                "length":  2435
+                                                                            },
+                  "dyspozycje/_handoff/EKONOMIA-do-MASTER_manpower-pobor-wplyw.md":  {
+                                                                                         "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\EKONOMIA-do-MASTER_manpower-pobor-wplyw.md",
+                                                                                         "mtime":  "2026-07-03T07:28:26.4362373Z",
+                                                                                         "flags":  "",
+                                                                                         "length":  1035
+                                                                                     },
+                  "docs/obieg/SLACK-OUTBOX-A-2026-07-02.md":  {
+                                                                  "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\docs\\obieg\\SLACK-OUTBOX-A-2026-07-02.md",
+                                                                  "mtime":  "2026-07-03T07:28:26.1052235Z",
+                                                                  "flags":  "MASTER:GOTOWE",
+                                                                  "length":  3628
+                                                              },
+                  "dyspozycje/_handoff/EKONOMIA-do-MASTER_wealth-minimal-D3C.md":  {
+                                                                                       "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\EKONOMIA-do-MASTER_wealth-minimal-D3C.md",
+                                                                                       "mtime":  "2026-07-03T07:28:26.4347368Z",
+                                                                                       "flags":  "",
+                                                                                       "length":  3152
+                                                                                   },
+                  "dyspozycje/_handoff/UI-do-MASTER_elementy-miasta.md":  {
+                                                                              "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\UI-do-MASTER_elementy-miasta.md",
+                                                                              "mtime":  "2026-06-25T07:07:00.6119307Z",
+                                                                              "flags":  "",
+                                                                              "length":  2431
+                                                                          },
+                  "dyspozycje/_handoff/MASTER-do-UI_kreator-jakosc-mapy.md":  {
+                                                                                  "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-do-UI_kreator-jakosc-mapy.md",
+                                                                                  "mtime":  "2026-07-03T07:28:26.1162219Z",
+                                                                                  "flags":  "",
+                                                                                  "length":  2899
+                                                                              },
+                  "dyspozycje/_handoff/EKONOMIA-do-MASTER_power-objective-v2.md":  {
+                                                                                       "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\EKONOMIA-do-MASTER_power-objective-v2.md",
+                                                                                       "mtime":  "2026-07-03T07:28:26.4352370Z",
+                                                                                       "flags":  "",
+                                                                                       "length":  1446
+                                                                                   },
+                  "dyspozycje/_handoff/MAPA-do-MASTER_oblezenie-kontekst.md":  {
+                                                                                   "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MAPA-do-MASTER_oblezenie-kontekst.md",
+                                                                                   "mtime":  "2026-06-28T10:11:25.9732030Z",
+                                                                                   "flags":  "",
+                                                                                   "length":  1718
+                                                                               },
+                  "dyspozycje/_handoff/UNITS-do-MASTER_kontrakt-start-oblezenia.md":  {
+                                                                                          "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\UNITS-do-MASTER_kontrakt-start-oblezenia.md",
+                                                                                          "mtime":  "2026-06-28T10:11:25.9897019Z",
+                                                                                          "flags":  "",
+                                                                                          "length":  2234
+                                                                                      },
+                  "dyspozycje/_handoff/MASTER-do-UI_E1-jakosc-mapy-bundle.md":  {
+                                                                                    "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-do-UI_E1-jakosc-mapy-bundle.md",
+                                                                                    "mtime":  "2026-07-03T07:28:26.4397372Z",
+                                                                                    "flags":  "",
+                                                                                    "length":  2054
+                                                                                },
+                  "dyspozycje/_handoff/UNITS-do-MASTER_oblezenie-mapy-bitwy.md":  {
+                                                                                      "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\UNITS-do-MASTER_oblezenie-mapy-bitwy.md",
+                                                                                      "mtime":  "2026-06-28T10:11:25.9907012Z",
+                                                                                      "flags":  "",
+                                                                                      "length":  3066
+                                                                                  },
+                  "dyspozycje/_handoff/F-do-MASTER_oblezenie-C3-silnik.md":  {
+                                                                                 "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\F-do-MASTER_oblezenie-C3-silnik.md",
+                                                                                 "mtime":  "2026-06-28T09:01:56.6644128Z",
+                                                                                 "flags":  "MASTER:GOTOWE,GOTOWE-ROBOCZA",
+                                                                                 "length":  2255
+                                                                             },
+                  "dyspozycje/_handoff/EKONOMIA-do-MASTER_koszt-jednostek.md":  {
+                                                                                    "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\EKONOMIA-do-MASTER_koszt-jednostek.md",
+                                                                                    "mtime":  "2026-06-25T18:37:22.5066727Z",
+                                                                                    "flags":  "",
+                                                                                    "length":  3999
+                                                                                },
+                  "dyspozycje/_handoff/AI-do-MASTER_zaleznosci.md":  {
+                                                                         "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\AI-do-MASTER_zaleznosci.md",
+                                                                         "mtime":  "2026-06-24T21:16:09.6473644Z",
+                                                                         "flags":  "",
+                                                                         "length":  2869
+                                                                     },
+                  "dyspozycje/_handoff/MASTER-do-INTEGRATOR_D18-wiring-verify-2026-07-02.md":  {
+                                                                                                   "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-do-INTEGRATOR_D18-wiring-verify-2026-07-02.md",
+                                                                                                   "mtime":  "2026-07-03T07:28:26.1162219Z",
+                                                                                                   "flags":  "GOTOWE-ROBOCZA",
+                                                                                                   "length":  692
+                                                                                               },
+                  "dyspozycje/_handoff/UI-do-MASTER_paczka-produkcji.md":  {
+                                                                               "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\UI-do-MASTER_paczka-produkcji.md",
+                                                                               "mtime":  "2026-06-24T22:39:40.8466920Z",
+                                                                               "flags":  "",
+                                                                               "length":  9756
+                                                                           },
+                  "docs/obieg/SLACK-OUTBOX-MASTER-2026-07-01.md":  {
+                                                                       "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\docs\\obieg\\SLACK-OUTBOX-MASTER-2026-07-01.md",
+                                                                       "mtime":  "2026-07-03T07:28:26.4362373Z",
+                                                                       "flags":  "",
+                                                                       "length":  2320
+                                                                   },
+                  "dyspozycje/_handoff/MASTER-do-OPUS_review-epoka-cuda-2026-07-03.md":  {
+                                                                                             "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-do-OPUS_review-epoka-cuda-2026-07-03.md",
+                                                                                             "mtime":  "2026-07-03T11:59:10.8425974Z",
+                                                                                             "flags":  "",
+                                                                                             "length":  1408
+                                                                                         },
+                  "dyspozycje/_handoff/EKONOMIA-do-MASTER_D16-D17-START-GOTOWE.md":  {
+                                                                                         "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\EKONOMIA-do-MASTER_D16-D17-START-GOTOWE.md",
+                                                                                         "mtime":  "2026-07-03T07:28:26.1142266Z",
+                                                                                         "flags":  "",
+                                                                                         "length":  2066
+                                                                                     },
+                  "dyspozycje/_handoff/A-do-MASTER_stan-lane-2026-07-01.md":  {
+                                                                                  "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\A-do-MASTER_stan-lane-2026-07-01.md",
+                                                                                  "mtime":  "2026-07-03T07:28:26.4362373Z",
+                                                                                  "flags":  "MASTER:GOTOWE",
+                                                                                  "length":  1316
+                                                                              },
+                  "dyspozycje/_handoff/MASTER-do-EKONOMIA_D16-D17-playtest-start-2026-07-01.md":  {
+                                                                                                      "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-do-EKONOMIA_D16-D17-playtest-start-2026-07-01.md",
+                                                                                                      "mtime":  "2026-07-03T07:28:26.4357371Z",
+                                                                                                      "flags":  "MASTER:GOTOWE",
+                                                                                                      "length":  3232
+                                                                                                  },
+                  "dyspozycje/_handoff/EKONOMIA-do-MASTER_model-dostepu-surowcow.md":  {
+                                                                                           "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\EKONOMIA-do-MASTER_model-dostepu-surowcow.md",
+                                                                                           "mtime":  "2026-06-25T08:02:04.9086749Z",
+                                                                                           "flags":  "",
+                                                                                           "length":  9255
+                                                                                       },
+                  "dyspozycje/_handoff/UI-do-MASTER_A2-Q4-panel-jednostki.md":  {
+                                                                                    "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\UI-do-MASTER_A2-Q4-panel-jednostki.md",
+                                                                                    "mtime":  "2026-07-03T07:28:26.1132227Z",
+                                                                                    "flags":  "",
+                                                                                    "length":  1079
+                                                                                },
+                  "dyspozycje/_handoff/UI-do-MASTER_minimapa-wspolpraca-MAPA.md":  {
+                                                                                       "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\UI-do-MASTER_minimapa-wspolpraca-MAPA.md",
+                                                                                       "mtime":  "2026-06-28T10:11:25.9857005Z",
+                                                                                       "flags":  "",
+                                                                                       "length":  4636
+                                                                                   },
+                  "dyspozycje/_handoff/F-do-MASTER_CUDA-G1-2026-07-03.md":  {
+                                                                                "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\F-do-MASTER_CUDA-G1-2026-07-03.md",
+                                                                                "mtime":  "2026-07-03T12:11:22.1675170Z",
+                                                                                "flags":  "MASTER:GOTOWE,GOTOWE-ROBOCZA",
+                                                                                "length":  2938
+                                                                            },
+                  "dyspozycje/_handoff/F-do-MASTER_SILNIK-D-V11-2026-07-02.md":  {
+                                                                                     "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\F-do-MASTER_SILNIK-D-V11-2026-07-02.md",
+                                                                                     "mtime":  "2026-07-03T07:28:26.1122224Z",
+                                                                                     "flags":  "MASTER:GOTOWE,GOTOWE-ROBOCZA",
+                                                                                     "length":  2757
+                                                                                 },
+                  "dyspozycje/_handoff/CYWILIZACJE-do-MASTER_epoka-wejscia-cuda-2026-07-03.md":  {
+                                                                                                     "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\CYWILIZACJE-do-MASTER_epoka-wejscia-cuda-2026-07-03.md",
+                                                                                                     "mtime":  "2026-07-03T11:57:10.7146531Z",
+                                                                                                     "flags":  "",
+                                                                                                     "length":  6113
+                                                                                                 },
+                  "dyspozycje/_handoff/MASTER-do-SILNIK_audyt-kolejka-2026-06-29.md":  {
+                                                                                           "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-do-SILNIK_audyt-kolejka-2026-06-29.md",
+                                                                                           "mtime":  "2026-07-03T07:28:26.1172232Z",
+                                                                                           "flags":  "",
+                                                                                           "length":  4275
+                                                                                       },
+                  "dyspozycje/_handoff/UI-do-MASTER_widok-miasta-wpiecie.md":  {
+                                                                                   "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\UI-do-MASTER_widok-miasta-wpiecie.md",
+                                                                                   "mtime":  "2026-06-25T08:09:09.4850692Z",
+                                                                                   "flags":  "",
+                                                                                   "length":  1756
+                                                                               },
+                  "dyspozycje/_handoff/F-do-MASTER_C-ODSKOK-FANOUT-2026-07-01.md":  {
+                                                                                        "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\F-do-MASTER_C-ODSKOK-FANOUT-2026-07-01.md",
+                                                                                        "mtime":  "2026-07-03T07:28:25.9652065Z",
+                                                                                        "flags":  "MASTER:GOTOWE-KANON,GOTOWE-KANON",
+                                                                                        "length":  1523
+                                                                                    },
+                  "dyspozycje/_handoff/MASTER-do-UI_HUD-D1B-domkniecie.md":  {
+                                                                                 "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-do-UI_HUD-D1B-domkniecie.md",
+                                                                                 "mtime":  "2026-07-03T07:28:26.4397372Z",
+                                                                                 "flags":  "",
+                                                                                 "length":  675
+                                                                             },
+                  "dyspozycje/_handoff/MASTER-do-MAPA_F-city-hex-skip-dekor.md":  {
+                                                                                      "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-do-MAPA_F-city-hex-skip-dekor.md",
+                                                                                      "mtime":  "2026-07-03T07:28:26.9007810Z",
+                                                                                      "flags":  "",
+                                                                                      "length":  866
+                                                                                  },
+                  "dyspozycje/_handoff/EKONOMIA-do-MASTER_B5-spichlerz-GOTOWE.md":  {
+                                                                                        "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\EKONOMIA-do-MASTER_B5-spichlerz-GOTOWE.md",
+                                                                                        "mtime":  "2026-07-03T07:28:26.9007810Z",
+                                                                                        "flags":  "",
+                                                                                        "length":  2252
+                                                                                    },
+                  "dyspozycje/SILNIK-DO-MASTERA.md":  {
+                                                          "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\SILNIK-DO-MASTERA.md",
+                                                          "mtime":  "2026-07-03T12:11:22.3855534Z",
+                                                          "flags":  "MASTER:GOTOWE-KANON,GOTOWE-ROBOCZA,GOTOWE-KANON,md5:ED4C8E2B67AC86B7245B01FE9F2A20F9",
+                                                          "length":  18889
+                                                      },
+                  "dyspozycje/CYWILIZACJE-DO-MASTERA.md":  {
+                                                               "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\CYWILIZACJE-DO-MASTERA.md",
+                                                               "mtime":  "2026-07-03T12:10:16.1592888Z",
+                                                               "flags":  "MASTER:GOTOWE",
+                                                               "length":  22931
+                                                           },
+                  "dyspozycje/_handoff/MASTER-do-MAPA_brzeg-hybrid-C.md":  {
+                                                                               "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-do-MAPA_brzeg-hybrid-C.md",
+                                                                               "mtime":  "2026-07-03T12:17:20.5933274Z",
+                                                                               "flags":  "",
+                                                                               "length":  2836
+                                                                           },
+                  "docs/obieg/SLACK-OUTBOX-A-2026-06-26.md":  {
+                                                                  "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\docs\\obieg\\SLACK-OUTBOX-A-2026-06-26.md",
+                                                                  "mtime":  "2026-07-03T07:28:26.4392372Z",
+                                                                  "flags":  "MASTER:GOTOWE",
+                                                                  "length":  1827
+                                                              },
+                  "dyspozycje/_handoff/UNITS-do-MASTER_oblezenie-tura.md":  {
+                                                                                "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\UNITS-do-MASTER_oblezenie-tura.md",
+                                                                                "mtime":  "2026-06-28T10:11:25.9912018Z",
+                                                                                "flags":  "",
+                                                                                "length":  2122
+                                                                            },
+                  "dyspozycje/_handoff/EKONOMIA-do-MASTER_wpiecie-scalonej-tury.md":  {
+                                                                                          "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\EKONOMIA-do-MASTER_wpiecie-scalonej-tury.md",
+                                                                                          "mtime":  "2026-06-28T10:11:25.9657006Z",
+                                                                                          "flags":  "",
+                                                                                          "length":  6302
+                                                                                      },
+                  "dyspozycje/_handoff/MIASTO-do-MASTER_kontrakt-ulepszenia-granice.md":  {
+                                                                                              "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MIASTO-do-MASTER_kontrakt-ulepszenia-granice.md",
+                                                                                              "mtime":  "2026-06-24T22:39:13.3609966Z",
+                                                                                              "flags":  "",
+                                                                                              "length":  3560
+                                                                                          },
+                  "dyspozycje/_handoff/MASTER-do-CYWILIZACJE_P5-P6-dyplomacja.md":  {
+                                                                                        "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-do-CYWILIZACJE_P5-P6-dyplomacja.md",
+                                                                                        "mtime":  "2026-07-03T07:28:26.4377370Z",
+                                                                                        "flags":  "MASTER:GOTOWE",
+                                                                                        "length":  1926
+                                                                                    },
+                  "dyspozycje/_handoff/UNITS-do-MASTER_UX-bitwa.md":  {
+                                                                          "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\UNITS-do-MASTER_UX-bitwa.md",
+                                                                          "mtime":  "2026-06-28T10:11:25.9947004Z",
+                                                                          "flags":  "",
+                                                                          "length":  6305
+                                                                      },
+                  "dyspozycje/_handoff/MASTER-do-SILNIK_AUDIT-START-2026-06-28.md":  {
+                                                                                         "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-do-SILNIK_AUDIT-START-2026-06-28.md",
+                                                                                         "mtime":  "2026-06-29T05:56:26.5017134Z",
+                                                                                         "flags":  "MASTER:GOTOWE,GOTOWE-ROBOCZA",
+                                                                                         "length":  4092
+                                                                                     },
+                  "dyspozycje/_handoff/MASTER-do-UI_B5-spichlerz-SP-hud-2026-07-01.md":  {
+                                                                                             "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-do-UI_B5-spichlerz-SP-hud-2026-07-01.md",
+                                                                                             "mtime":  "2026-07-03T07:28:26.4347368Z",
+                                                                                             "flags":  "MASTER:GOTOWE",
+                                                                                             "length":  1689
+                                                                                         },
+                  "dyspozycje/_handoff/MASTER-do-INTEGRATOR_F-P1-01-map-attack-2026-07-02.md":  {
+                                                                                                    "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-do-INTEGRATOR_F-P1-01-map-attack-2026-07-02.md",
+                                                                                                    "mtime":  "2026-07-03T07:28:26.1157228Z",
+                                                                                                    "flags":  "GOTOWE-ROBOCZA",
+                                                                                                    "length":  1696
+                                                                                                },
+                  "dyspozycje/_handoff/UI-do-MASTER_map-layers-minimap-A1Q6.md":  {
+                                                                                      "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\UI-do-MASTER_map-layers-minimap-A1Q6.md",
+                                                                                      "mtime":  "2026-07-03T07:28:26.8997811Z",
+                                                                                      "flags":  "",
+                                                                                      "length":  1978
+                                                                                  },
+                  "dyspozycje/_handoff/MASTER-do-INTEGRATOR_B5-spichlerz-SP-followup-2026-07-01.md":  {
+                                                                                                          "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-do-INTEGRATOR_B5-spichlerz-SP-followup-2026-07-01.md",
+                                                                                                          "mtime":  "2026-07-03T07:28:26.4347368Z",
+                                                                                                          "flags":  "MASTER:GOTOWE,GOTOWE-ROBOCZA",
+                                                                                                          "length":  1413
+                                                                                                      },
+                  "dyspozycje/_handoff/MASTER-do-SILNIK_C3-reguly-szturm-obrona.md":  {
+                                                                                          "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-do-SILNIK_C3-reguly-szturm-obrona.md",
+                                                                                          "mtime":  "2026-07-03T07:28:26.4367365Z",
+                                                                                          "flags":  "",
+                                                                                          "length":  2968
+                                                                                      },
+                  "dyspozycje/_handoff/MASTER-do-INTEGRATOR_SILNIK-D-V11-2026-07-02.md":  {
+                                                                                              "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-do-INTEGRATOR_SILNIK-D-V11-2026-07-02.md",
+                                                                                              "mtime":  "2026-07-03T07:28:26.9007810Z",
+                                                                                              "flags":  "GOTOWE-ROBOCZA",
+                                                                                              "length":  1779
+                                                                                          },
+                  "dyspozycje/_handoff/EKONOMIA-do-MASTER_waluta-targowisko-x2.md":  {
+                                                                                         "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\EKONOMIA-do-MASTER_waluta-targowisko-x2.md",
+                                                                                         "mtime":  "2026-06-25T21:12:25.5067848Z",
+                                                                                         "flags":  "",
+                                                                                         "length":  1852
+                                                                                     },
+                  "dyspozycje/_handoff/UI-do-MASTER_warstwa1-w1-prep-2026-06-26.md":  {
+                                                                                          "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\UI-do-MASTER_warstwa1-w1-prep-2026-06-26.md",
+                                                                                          "mtime":  "2026-07-03T07:28:26.1052235Z",
+                                                                                          "flags":  "",
+                                                                                          "length":  1637
+                                                                                      },
+                  "dyspozycje/_handoff/MASTER-do-MASTER_D3-E2-audit-2026-07-02.md":  {
+                                                                                         "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-do-MASTER_D3-E2-audit-2026-07-02.md",
+                                                                                         "mtime":  "2026-07-03T07:28:26.1157228Z",
+                                                                                         "flags":  "",
+                                                                                         "length":  6149
+                                                                                     },
+                  "dyspozycje/_handoff/UNITS-do-MASTER_odp-subagenci-katapulta-kontrakty.md":  {
+                                                                                                   "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\UNITS-do-MASTER_odp-subagenci-katapulta-kontrakty.md",
+                                                                                                   "mtime":  "2026-06-28T10:11:25.9917011Z",
+                                                                                                   "flags":  "",
+                                                                                                   "length":  1451
+                                                                                               },
+                  "dyspozycje/_handoff/MASTER-do-SILNIK_SIL-INT-batch-2026-06-27.md":  {
+                                                                                           "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-do-SILNIK_SIL-INT-batch-2026-06-27.md",
+                                                                                           "mtime":  "2026-07-03T07:28:26.4367365Z",
+                                                                                           "flags":  "",
+                                                                                           "length":  1722
+                                                                                       },
+                  "dyspozycje/_handoff/UNITS-do-MASTER_osadnik-zakladanie-z-mapy.md":  {
+                                                                                           "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\UNITS-do-MASTER_osadnik-zakladanie-z-mapy.md",
+                                                                                           "mtime":  "2026-06-28T10:11:25.9927017Z",
+                                                                                           "flags":  "",
+                                                                                           "length":  2128
+                                                                                       },
+                  "dyspozycje/_handoff/EKONOMIA-do-MASTER_growthmult-compound.md":  {
+                                                                                        "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\EKONOMIA-do-MASTER_growthmult-compound.md",
+                                                                                        "mtime":  "2026-06-25T12:20:06.4986588Z",
+                                                                                        "flags":  "",
+                                                                                        "length":  4042
+                                                                                    },
+                  "dyspozycje/_handoff/A-do-MASTER_stan-lane-2026-06-26.md":  {
+                                                                                  "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\A-do-MASTER_stan-lane-2026-06-26.md",
+                                                                                  "mtime":  "2026-07-03T07:28:26.4387377Z",
+                                                                                  "flags":  "MASTER:GOTOWE",
+                                                                                  "length":  1602
+                                                                              },
+                  "dyspozycje/_handoff/MASTER-do-F_playtest-walka-mapa.md":  {
+                                                                                 "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-do-F_playtest-walka-mapa.md",
+                                                                                 "mtime":  "2026-07-03T07:28:26.1122224Z",
+                                                                                 "flags":  "MASTER:GOTOWE,GOTOWE-ROBOCZA",
+                                                                                 "length":  1391
+                                                                             },
+                  "dyspozycje/_handoff/D-do-MASTER_sojusz-v12-panel-params-display.md":  {
+                                                                                             "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\D-do-MASTER_sojusz-v12-panel-params-display.md",
+                                                                                             "mtime":  "2026-07-03T07:28:26.4367365Z",
+                                                                                             "flags":  "MASTER:GOTOWE",
+                                                                                             "length":  3875
+                                                                                         },
+                  "dyspozycje/_handoff/MAPA-do-MASTER_nazwy-klastrow.md":  {
+                                                                               "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MAPA-do-MASTER_nazwy-klastrow.md",
+                                                                               "mtime":  "2026-06-28T10:11:25.9727030Z",
+                                                                               "flags":  "",
+                                                                               "length":  3453
+                                                                           },
+                  "dyspozycje/_handoff/MASTER-do-INTEGRATOR_C-odskok-fanout-2026-07-01.md":  {
+                                                                                                 "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-do-INTEGRATOR_C-odskok-fanout-2026-07-01.md",
+                                                                                                 "mtime":  "2026-07-03T07:28:26.9002809Z",
+                                                                                                 "flags":  "MASTER:GOTOWE,GOTOWE-ROBOCZA",
+                                                                                                 "length":  2150
+                                                                                             },
+                  "dyspozycje/_handoff/UI-do-MASTER_makiety.md":  {
+                                                                      "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\UI-do-MASTER_makiety.md",
+                                                                      "mtime":  "2026-06-24T21:05:40.7493546Z",
+                                                                      "flags":  "",
+                                                                      "length":  1199
+                                                                  },
+                  "dyspozycje/_handoff/MASTER-do-INTEGRATOR_B-B5-spichlerz-2026-07-01.md":  {
+                                                                                                "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-do-INTEGRATOR_B-B5-spichlerz-2026-07-01.md",
+                                                                                                "mtime":  "2026-07-03T07:28:26.1157228Z",
+                                                                                                "flags":  "MASTER:GOTOWE,GOTOWE-ROBOCZA",
+                                                                                                "length":  1634
+                                                                                            },
+                  "dyspozycje/_handoff/MASTER-do-MASTER_F-P1-01-promocja-2026-07-02.md":  {
+                                                                                              "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-do-MASTER_F-P1-01-promocja-2026-07-02.md",
+                                                                                              "mtime":  "2026-07-03T07:28:26.1177223Z",
+                                                                                              "flags":  "",
+                                                                                              "length":  689
+                                                                                          },
+                  "dyspozycje/_handoff/MIASTO-do-MASTER_zasieg-budowlany-MAPA.md":  {
+                                                                                        "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MIASTO-do-MASTER_zasieg-budowlany-MAPA.md",
+                                                                                        "mtime":  "2026-06-25T06:50:09.5815314Z",
+                                                                                        "flags":  "",
+                                                                                        "length":  2907
+                                                                                    },
+                  "dyspozycje/_handoff/MIASTO-do-MASTER_decyzje-v0.1.md":  {
+                                                                               "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MIASTO-do-MASTER_decyzje-v0.1.md",
+                                                                               "mtime":  "2026-06-24T21:08:19.4977678Z",
+                                                                               "flags":  "",
+                                                                               "length":  4973
+                                                                           },
+                  "dyspozycje/_handoff/MASTER-do-EKONOMIA_D18-balans-trudnosc-2026-07-02.md":  {
+                                                                                                   "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-do-EKONOMIA_D18-balans-trudnosc-2026-07-02.md",
+                                                                                                   "mtime":  "2026-07-03T07:28:26.1142266Z",
+                                                                                                   "flags":  "MASTER:GOTOWE",
+                                                                                                   "length":  3384
+                                                                                               },
+                  "dyspozycje/_handoff/UI-do-MASTER_w1b-cyw-icons.md":  {
+                                                                            "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\UI-do-MASTER_w1b-cyw-icons.md",
+                                                                            "mtime":  "2026-07-03T07:28:26.4397372Z",
+                                                                            "flags":  "",
+                                                                            "length":  2669
+                                                                        },
+                  "dyspozycje/_handoff/UI-do-MASTER_wealth-suwaki.md":  {
+                                                                            "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\UI-do-MASTER_wealth-suwaki.md",
+                                                                            "mtime":  "2026-07-03T07:28:26.9017806Z",
+                                                                            "flags":  "",
+                                                                            "length":  4063
+                                                                        },
+                  "dyspozycje/_handoff/UNITS-do-MASTER_bonusy-obronne-mapa.md":  {
+                                                                                     "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\UNITS-do-MASTER_bonusy-obronne-mapa.md",
+                                                                                     "mtime":  "2026-06-28T10:11:25.9892045Z",
+                                                                                     "flags":  "",
+                                                                                     "length":  2673
+                                                                                 },
+                  "dyspozycje/_handoff/MASTER-do-CYWILIZACJE_D-START-kopie-pilne.md":  {
+                                                                                           "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-do-CYWILIZACJE_D-START-kopie-pilne.md",
+                                                                                           "mtime":  "2026-07-03T07:28:26.4372372Z",
+                                                                                           "flags":  "",
+                                                                                           "length":  932
+                                                                                       },
+                  "dyspozycje/_handoff/MASTER-do-SILNIK_backlog-pilne-2026-06-27.md":  {
+                                                                                           "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-do-SILNIK_backlog-pilne-2026-06-27.md",
+                                                                                           "mtime":  "2026-07-03T07:28:26.1177223Z",
+                                                                                           "flags":  "",
+                                                                                           "length":  3437
+                                                                                       },
+                  "dyspozycje/_handoff/EKONOMIA-do-MASTER_tempo-nauki.md":  {
+                                                                                "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\EKONOMIA-do-MASTER_tempo-nauki.md",
+                                                                                "mtime":  "2026-06-25T07:19:24.5649821Z",
+                                                                                "flags":  "",
+                                                                                "length":  5091
+                                                                            },
+                  "dyspozycje/_handoff/MAPA-do-MASTER_posterunki.md":  {
+                                                                           "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MAPA-do-MASTER_posterunki.md",
+                                                                           "mtime":  "2026-06-28T10:11:25.9752011Z",
+                                                                           "flags":  "",
+                                                                           "length":  2721
+                                                                       },
+                  "dyspozycje/_handoff/CYWILIZACJE-do-MASTER_tempo-gry.md":  {
+                                                                                 "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\CYWILIZACJE-do-MASTER_tempo-gry.md",
+                                                                                 "mtime":  "2026-06-25T19:04:02.4982354Z",
+                                                                                 "flags":  "",
+                                                                                 "length":  1429
+                                                                             },
+                  "dyspozycje/_handoff/MAPA-do-MASTER_dostepne-surowce.md":  {
+                                                                                 "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MAPA-do-MASTER_dostepne-surowce.md",
+                                                                                 "mtime":  "2026-06-28T10:11:25.9707030Z",
+                                                                                 "flags":  "",
+                                                                                 "length":  1493
+                                                                             },
+                  "dyspozycje/_handoff/GRUPA-E-do-MASTER_start-epoka-tech-B-star.md":  {
+                                                                                           "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\GRUPA-E-do-MASTER_start-epoka-tech-B-star.md",
+                                                                                           "mtime":  "2026-06-28T09:01:56.4283981Z",
+                                                                                           "flags":  "",
+                                                                                           "length":  2284
+                                                                                       },
+                  "dyspozycje/_handoff/EKONOMIA-do-MASTER_model-nauki-gracza.md":  {
+                                                                                       "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\EKONOMIA-do-MASTER_model-nauki-gracza.md",
+                                                                                       "mtime":  "2026-06-25T16:06:18.6480747Z",
+                                                                                       "flags":  "",
+                                                                                       "length":  1579
+                                                                                   },
+                  "dyspozycje/_handoff/CYWILIZACJE-do-MASTER_nauka-tempo-od-EKONOMIA.md":  {
+                                                                                               "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\CYWILIZACJE-do-MASTER_nauka-tempo-od-EKONOMIA.md",
+                                                                                               "mtime":  "2026-06-25T06:43:47.1218372Z",
+                                                                                               "flags":  "",
+                                                                                               "length":  1205
+                                                                                           },
+                  "dyspozycje/_handoff/EKONOMIA-do-MASTER_currency-final.md":  {
+                                                                                   "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\EKONOMIA-do-MASTER_currency-final.md",
+                                                                                   "mtime":  "2026-06-25T21:26:58.8253731Z",
+                                                                                   "flags":  "",
+                                                                                   "length":  4589
+                                                                               },
+                  "dyspozycje/_handoff/EKONOMIA-do-MASTER_koszary-gate-lazaret.md":  {
+                                                                                         "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\EKONOMIA-do-MASTER_koszary-gate-lazaret.md",
+                                                                                         "mtime":  "2026-06-25T20:47:35.8032684Z",
+                                                                                         "flags":  "",
+                                                                                         "length":  3241
+                                                                                     },
+                  "dyspozycje/_handoff/MASTER-do-GRUPA-D_D-CUD2-utrzymanie.md":  {
+                                                                                     "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-do-GRUPA-D_D-CUD2-utrzymanie.md",
+                                                                                     "mtime":  "2026-07-03T07:28:26.8952712Z",
+                                                                                     "flags":  "MASTER:GOTOWE",
+                                                                                     "length":  1082
+                                                                                 },
+                  "dyspozycje/_handoff/EKONOMIA-do-MASTER_okolica-model-poprawka.md":  {
+                                                                                           "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\EKONOMIA-do-MASTER_okolica-model-poprawka.md",
+                                                                                           "mtime":  "2026-06-28T10:11:25.9637009Z",
+                                                                                           "flags":  "",
+                                                                                           "length":  4552
+                                                                                       },
+                  "dyspozycje/_handoff/CYWILIZACJE-do-MASTER_turniej-ab.md":  {
+                                                                                  "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\CYWILIZACJE-do-MASTER_turniej-ab.md",
+                                                                                  "mtime":  "2026-06-25T07:09:09.8843236Z",
+                                                                                  "flags":  "",
+                                                                                  "length":  10818
+                                                                              },
+                  "dyspozycje/_handoff/F-do-MASTER_D4-WYMIANA-PN-2026-06-30.md":  {
+                                                                                      "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\F-do-MASTER_D4-WYMIANA-PN-2026-06-30.md",
+                                                                                      "mtime":  "2026-07-03T07:28:25.9712054Z",
+                                                                                      "flags":  "MASTER:GOTOWE,GOTOWE-ROBOCZA",
+                                                                                      "length":  3811
+                                                                                  },
+                  "dyspozycje/_handoff/UI-do-MASTER_hud-wojna-A1Q5.md":  {
+                                                                             "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\UI-do-MASTER_hud-wojna-A1Q5.md",
+                                                                             "mtime":  "2026-07-03T07:28:26.4357371Z",
+                                                                             "flags":  "",
+                                                                             "length":  1228
+                                                                         },
+                  "dyspozycje/_handoff/F-do-MASTER_D16-D17-wiring-2026-07-01.md":  {
+                                                                                       "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\F-do-MASTER_D16-D17-wiring-2026-07-01.md",
+                                                                                       "mtime":  "2026-07-03T07:28:26.1122224Z",
+                                                                                       "flags":  "MASTER:GOTOWE,GOTOWE-ROBOCZA,md5:7edba9cadfb011fd6c540fbc6bdedb72",
+                                                                                       "length":  1759
+                                                                                   },
+                  "dyspozycje/_handoff/UI-do-MASTER_wykonaj-endTurn-gate-A1Q9.md":  {
+                                                                                        "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\UI-do-MASTER_wykonaj-endTurn-gate-A1Q9.md",
+                                                                                        "mtime":  "2026-07-03T07:28:26.1137222Z",
+                                                                                        "flags":  "",
+                                                                                        "length":  2589
+                                                                                    },
+                  "dyspozycje/_handoff/MASTER-do-INTEGRATOR_E1-F-CITY-HEX-batch.md":  {
+                                                                                          "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-do-INTEGRATOR_E1-F-CITY-HEX-batch.md",
+                                                                                          "mtime":  "2026-07-02T20:17:58.1217792Z",
+                                                                                          "flags":  "",
+                                                                                          "length":  4942
+                                                                                      },
+                  "dyspozycje/_handoff/EKONOMIA-do-MASTER_D18-BALANS-GOTOWE.md":  {
+                                                                                      "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\EKONOMIA-do-MASTER_D18-BALANS-GOTOWE.md",
+                                                                                      "mtime":  "2026-07-03T07:28:26.0787108Z",
+                                                                                      "flags":  "",
+                                                                                      "length":  2667
+                                                                                  },
+                  "dyspozycje/DZIENNIK-MASTERA.md":  {
+                                                         "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\DZIENNIK-MASTERA.md",
+                                                         "mtime":  "2026-07-03T12:29:48.0141346Z",
+                                                         "flags":  "md5:ce71d449e004d8068acfa8b7a5d3c9b1",
+                                                         "length":  114123
+                                                     },
+                  "dyspozycje/_handoff/EKONOMIA-do-MASTER_przejecie-miasta.md":  {
+                                                                                     "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\EKONOMIA-do-MASTER_przejecie-miasta.md",
+                                                                                     "mtime":  "2026-06-28T10:11:25.9647026Z",
+                                                                                     "flags":  "",
+                                                                                     "length":  5485
+                                                                                 },
+                  "docs/obieg/SLACK-OUTBOX-MASTER-PILNE-2026-07-02.md":  {
+                                                                             "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\docs\\obieg\\SLACK-OUTBOX-MASTER-PILNE-2026-07-02.md",
+                                                                             "mtime":  "2026-07-03T07:28:26.4352370Z",
+                                                                             "flags":  "",
+                                                                             "length":  2860
+                                                                         },
+                  "dyspozycje/_handoff/MASTER-do-INTEGRATOR_D16-D17-wiring-2026-07-01.md":  {
+                                                                                                "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-do-INTEGRATOR_D16-D17-wiring-2026-07-01.md",
+                                                                                                "mtime":  "2026-07-03T07:28:26.1182225Z",
+                                                                                                "flags":  "MASTER:GOTOWE,GOTOWE-ROBOCZA",
+                                                                                                "length":  1052
+                                                                                            },
+                  "dyspozycje/_handoff/UNITS-do-MASTER-MAPA_model-ruchu-mapa.md":  {
+                                                                                       "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\UNITS-do-MASTER-MAPA_model-ruchu-mapa.md",
+                                                                                       "mtime":  "2026-06-28T10:11:25.9887036Z",
+                                                                                       "flags":  "",
+                                                                                       "length":  4231
+                                                                                   },
+                  "dyspozycje/_handoff/A-do-MASTER_PACZKA-P1-P4-2026-07-01.md":  {
+                                                                                     "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\A-do-MASTER_PACZKA-P1-P4-2026-07-01.md",
+                                                                                     "mtime":  "2026-07-03T07:28:26.1182225Z",
+                                                                                     "flags":  "MASTER:GOTOWE",
+                                                                                     "length":  2902
+                                                                                 },
+                  "dyspozycje/_handoff/CYWILIZACJE-do-MASTER_waveAB-done.md":  {
+                                                                                   "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\CYWILIZACJE-do-MASTER_waveAB-done.md",
+                                                                                   "mtime":  "2026-06-25T18:15:39.4993745Z",
+                                                                                   "flags":  "",
+                                                                                   "length":  3088
+                                                                               },
+                  "dyspozycje/_handoff/MASTER-do-E_integracja-grywalna.md":  {
+                                                                                 "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-do-E_integracja-grywalna.md",
+                                                                                 "mtime":  "2026-07-03T07:28:25.9712054Z",
+                                                                                 "flags":  "",
+                                                                                 "length":  7675
+                                                                             },
+                  "dyspozycje/_handoff/C-do-MASTER_auto-walka-v2b.md":  {
+                                                                            "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\C-do-MASTER_auto-walka-v2b.md",
+                                                                            "mtime":  "2026-07-03T07:28:26.1152220Z",
+                                                                            "flags":  "MASTER:GOTOWE",
+                                                                            "length":  2137
+                                                                        },
+                  "dyspozycje/_handoff/EKONOMIA-do-MASTER_tech-tree-zelazo.md":  {
+                                                                                     "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\EKONOMIA-do-MASTER_tech-tree-zelazo.md",
+                                                                                     "mtime":  "2026-06-25T17:48:31.7618916Z",
+                                                                                     "flags":  "",
+                                                                                     "length":  4745
+                                                                                 },
+                  "dyspozycje/_handoff/MASTER-do-INTEGRATOR_KANON-BATCH3-2026-07-02.md":  {
+                                                                                              "path":  "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\dyspozycje\\_handoff\\MASTER-do-INTEGRATOR_KANON-BATCH3-2026-07-02.md",
+                                                                                              "mtime":  "2026-07-03T07:28:26.9007810Z",
+                                                                                              "flags":  "",
+                                                                                              "length":  344
+                                                                                          }
+              }
+}

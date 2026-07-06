@@ -1,0 +1,401 @@
+/**
+ * diplomacy-value-catalog.ts — wspólny katalog PN (handel, dar, przekupstwo).
+ * Maciej D3-KATALOG-PN: jednostka=Pieniądz(koszt); surowiec boolean=min koszt_praca odblokowującego.
+ * Ulepszenia terenu i budynki miasta — NIE handlowalne.
+ */
+import diplomacyJson from '../../data/diplomacy.json';
+import techJson from '../../data/tech.json';
+import terrainImprovementsJson from '../../data/terrain-improvements.json';
+import unitsJson from '../../data/units.json';
+import buildingsJson from '../../data/buildings.json';
+import { diplomacyDepositBasePrice } from './diplomacy-deposit-trade';
+import { applyTempoKoszt, type TempoGry } from './tech-tempo';
+
+/** Typ pozycji w koszyku wymiany / daru (v1.0). Ulepszenia terenu — poza koszykiem. */
+export type WartoscPozycjaTyp =
+  | 'zloto'
+  | 'praca'
+  | 'zloze'
+  | 'tech'
+  | 'jednostka'
+  | 'surowiec_boolean'
+  | 'zywnosc';
+
+export type WartoscKatalogReguly = {
+  pn_zloto?: { skala?: number };
+  pn_praca?: { skala?: number };
+  pn_budynek_skalowanie?: number;
+  pn_zywnosc?: { jednostki_na_pn?: number };
+};
+
+const BUILDING_PN_FACTOR = 1.1;
+
+type JsonImprovement = {
+  koszt_praca?: number;
+  surowiecOdblokowany?: string | null;
+};
+
+type JsonUnit = {
+  Jednostka?: string;
+  'Pieniądz (koszt)'?: number;
+  'Rola (linia)'?: string;
+};
+
+type JsonBuilding = {
+  id?: string;
+  kosztBudowy?: number;
+};
+
+type JsonTech = {
+  Technologia?: string;
+  'Koszt nauki'?: number;
+};
+
+function loadReguly(): WartoscKatalogReguly {
+  const block = (diplomacyJson as { wartosc_katalog?: WartoscKatalogReguly }).wartosc_katalog;
+  return block ?? {};
+}
+
+const _reguly = loadReguly();
+
+function improvementMap(): Record<string, JsonImprovement> {
+  const raw = terrainImprovementsJson as Record<string, JsonImprovement | unknown>;
+  const out: Record<string, JsonImprovement> = {};
+  for (const [key, val] of Object.entries(raw)) {
+    if (key.startsWith('_') || typeof val !== 'object' || val == null) continue;
+    out[key] = val as JsonImprovement;
+  }
+  return out;
+}
+
+function buildResourceAccessIndex(): Map<string, number> {
+  const map = new Map<string, number>();
+  for (const row of Object.values(improvementMap())) {
+    const key = row.surowiecOdblokowany?.trim().toLowerCase();
+    const koszt = row.koszt_praca;
+    if (!key || typeof koszt !== 'number' || !Number.isFinite(koszt) || koszt <= 0) continue;
+    const prev = map.get(key);
+    if (prev == null || koszt < prev) map.set(key, koszt);
+  }
+  return map;
+}
+
+const _improvements = improvementMap();
+const _resourceAccessPn = buildResourceAccessIndex();
+
+const _units = (unitsJson as JsonUnit[]).filter(u => typeof u.Jednostka === 'string');
+const _buildings = (buildingsJson as JsonBuilding[]).filter(b => typeof b.id === 'string');
+
+const _techByName = new Map<string, number>();
+for (const row of (techJson as { technologie?: JsonTech[] }).technologie ?? []) {
+  const name = row.Technologia?.trim();
+  const koszt = row['Koszt nauki'];
+  if (name && typeof koszt === 'number' && Number.isFinite(koszt)) {
+    _techByName.set(name, koszt);
+  }
+}
+
+/** 1 PN = N ¤ (domyślnie 1:1). */
+export function diplomacyPnZloto(amount: number): number {
+  const skala = _reguly.pn_zloto?.skala ?? 1;
+  return Math.max(0, Math.round(amount * skala));
+}
+
+/** 1 PN = N Praca (domyślnie 1:1). */
+export function diplomacyPnPraca(amount: number): number {
+  const skala = _reguly.pn_praca?.skala ?? 1;
+  return Math.max(0, Math.round(amount * skala));
+}
+
+const DEFAULT_ZYWNOSC_NA_PN = 1;
+
+/** PN żywności ze spichlerza — floor(sztuki ÷ jednostki_na_pn). Maciej: 1 PN = 1 żywność. */
+export function diplomacyPnZywnosc(amount: number): number {
+  const perPn = _reguly.pn_zywnosc?.jednostki_na_pn ?? DEFAULT_ZYWNOSC_NA_PN;
+  if (perPn <= 0 || !Number.isFinite(amount) || amount <= 0) return 0;
+  return Math.floor(amount / perPn);
+}
+
+export function diplomacyZywnoscNaPn(): number {
+  return _reguly.pn_zywnosc?.jednostki_na_pn ?? DEFAULT_ZYWNOSC_NA_PN;
+}
+
+/** PN dostępu do złoża mineralnego (hex) — cennik handel_zloze. */
+export function diplomacyPnZloze(zlozeId: string): number | null {
+  return diplomacyDepositBasePrice(zlozeId);
+}
+
+/** PN technologii = Koszt nauki × tempo gry. */
+export function diplomacyPnTech(techName: string, tempo: TempoGry | number = 'standardowa'): number | null {
+  const base = _techByName.get(techName.trim());
+  if (base == null) return null;
+  return applyTempoKoszt(base, tempo);
+}
+
+/** @internal Cennik referencyjny — tylko do indeksu surowiec_boolean; nie pozycja handlu. */
+export function diplomacyPnUlepszenie(improvementId: string): number | null {
+  const row = _improvements[improvementId.trim().toLowerCase()];
+  const v = row?.koszt_praca;
+  if (typeof v !== 'number' || !Number.isFinite(v) || v < 0) return null;
+  return v;
+}
+
+/** PN jednostki = Pieniądz (koszt) z units.json. */
+export function diplomacyPnJednostka(unitName: string): number | null {
+  const row = _units.find(u => u.Jednostka === unitName.trim());
+  const v = row?.['Pieniądz (koszt)'];
+  if (typeof v !== 'number' || !Number.isFinite(v) || v <= 0) return null;
+  return v;
+}
+
+/** @internal — budynki miasta nie są pozycją handlu (D3-KAT-NO-BLD). */
+export function diplomacyPnBudynek(buildingId: string, level = 1): number | null {
+  const row = _buildings.find(b => b.id === buildingId.trim());
+  const base = row?.kosztBudowy;
+  if (typeof base !== 'number' || !Number.isFinite(base) || base <= 0) return null;
+  const lv = Math.max(1, Math.floor(level));
+  const factor = _reguly.pn_budynek_skalowanie ?? BUILDING_PN_FACTOR;
+  return Math.round(base * Math.pow(factor, lv - 1));
+}
+
+/** PN dostępu boolean do surowca = min koszt_praca ulepszeń z surowiecOdblokowany. */
+export function diplomacyPnSurowiecBoolean(surowiecKey: string): number | null {
+  const v = _resourceAccessPn.get(surowiecKey.trim().toLowerCase());
+  return v != null ? v : null;
+}
+
+/** Lista kluczy surowców z mapowaniem PN (debug / UI). */
+export function diplomacyResourceAccessCatalog(): Readonly<Record<string, number>> {
+  return Object.freeze(Object.fromEntries(_resourceAccessPn));
+}
+
+/** Suma PN pozycji w koszyku (null jeśli któraś pozycja nieznana). */
+export function diplomacySumPn(items: Array<{ typ: WartoscPozycjaTyp; id: string; ilosc?: number; level?: number; tempo?: TempoGry | number }>): number | null {
+  let sum = 0;
+  for (const item of items) {
+    const qty = item.ilosc ?? 1;
+    if (qty <= 0 || !Number.isFinite(qty)) continue;
+    let pn: number | null = null;
+    switch (item.typ) {
+      case 'zloto':
+        pn = diplomacyPnZloto(qty);
+        break;
+      case 'praca':
+        pn = diplomacyPnPraca(qty);
+        break;
+      case 'zywnosc':
+        pn = diplomacyPnZywnosc(qty);
+        break;
+      case 'zloze':
+        pn = diplomacyPnZloze(item.id);
+        break;
+      case 'tech':
+        pn = diplomacyPnTech(item.id, item.tempo ?? 'standardowa');
+        break;
+      case 'jednostka':
+        pn = diplomacyPnJednostka(item.id);
+        break;
+      case 'surowiec_boolean':
+        pn = diplomacyPnSurowiecBoolean(item.id);
+        break;
+      default:
+        return null;
+    }
+    if (pn == null) return null;
+    sum += pn * (item.typ === 'zloto' || item.typ === 'praca' || item.typ === 'zywnosc' ? 1 : qty);
+  }
+  return sum;
+}
+
+/**
+ * Czy deal jest fair @ Rel: partner oczekuje receivePn × (100/Rel) ≤ givePn
+ * (lub symetrycznie przy barterze: |give − receive×(100/Rel)| w tolerancji).
+ */
+export function diplomacyDealFairAtRel(
+  givePn: number,
+  receivePn: number,
+  relacja: number,
+  tolerance = 0.2,
+): boolean {
+  const rel = Math.max(1, relacja);
+  const adjustedReceive = receivePn * (100 / rel);
+  if (givePn <= 0 && adjustedReceive <= 0) return true;
+  const ratio = givePn / Math.max(adjustedReceive, 1);
+  return ratio >= 1 - tolerance && ratio <= 1 + tolerance;
+}
+
+// ---------------------------------------------------------------------------
+// PN → Zaufanie (handel: nadmiar; dar: cała wartość)
+// Maciej 2026-06-30: dar głównie W handlu; nadmiar poprawia relacje.
+// ---------------------------------------------------------------------------
+
+export type PnRelacjaParams = {
+  pn_na_zaufanie?: number;
+  max_zaufanie_na_ture?: number;
+  min_nadmiar_pn?: number;
+  prog_dar_relacja?: number;
+  dobra_wola_min_nadmiar_pn?: number;
+  dobra_wola_tur?: number;
+  dobra_wola_zaufanie_per_tura?: number;
+};
+
+const DEFAULT_PROG_DAR_RELACJA = 30;
+const DEFAULT_DOBRA_WOLA_MIN_PN = 100;
+const DEFAULT_DOBRA_WOLA_TUR = 3;
+
+const DEFAULT_PN_NA_ZAUFANIE = 100;
+const DEFAULT_MAX_ZAUFANIE_NA_TURE = 5;
+const DEFAULT_MIN_NADMIAR = 1;
+
+type PnRelacjaBlock = PnRelacjaParams & {
+  dobra_wola_po_wymianie?: boolean;
+  /** @deprecated użyj max_zaufanie_na_ture */
+  max_zaufanie_jednorazowo?: number;
+};
+
+type PnRelacjaLoaded = Required<PnRelacjaParams>;
+
+function loadPnRelacjaParams(): PnRelacjaLoaded {
+  const block = (diplomacyJson as { pn_relacja?: PnRelacjaBlock }).pn_relacja ?? {};
+  const maxNaTure =
+    typeof block.max_zaufanie_na_ture === 'number' && block.max_zaufanie_na_ture > 0
+      ? block.max_zaufanie_na_ture
+      : typeof block.max_zaufanie_jednorazowo === 'number' && block.max_zaufanie_jednorazowo > 0
+        ? block.max_zaufanie_jednorazowo
+        : DEFAULT_MAX_ZAUFANIE_NA_TURE;
+  return {
+    pn_na_zaufanie:
+      typeof block.pn_na_zaufanie === 'number' && block.pn_na_zaufanie > 0
+        ? block.pn_na_zaufanie
+        : DEFAULT_PN_NA_ZAUFANIE,
+    max_zaufanie_na_ture: maxNaTure,
+    min_nadmiar_pn:
+      typeof block.min_nadmiar_pn === 'number' && block.min_nadmiar_pn >= 0
+        ? block.min_nadmiar_pn
+        : DEFAULT_MIN_NADMIAR,
+    prog_dar_relacja:
+      typeof block.prog_dar_relacja === 'number' && block.prog_dar_relacja >= 0
+        ? block.prog_dar_relacja
+        : DEFAULT_PROG_DAR_RELACJA,
+    dobra_wola_min_nadmiar_pn:
+      typeof block.dobra_wola_min_nadmiar_pn === 'number' && block.dobra_wola_min_nadmiar_pn > 0
+        ? block.dobra_wola_min_nadmiar_pn
+        : DEFAULT_DOBRA_WOLA_MIN_PN,
+    dobra_wola_tur:
+      typeof block.dobra_wola_tur === 'number' && block.dobra_wola_tur > 0
+        ? block.dobra_wola_tur
+        : DEFAULT_DOBRA_WOLA_TUR,
+    dobra_wola_zaufanie_per_tura:
+      typeof block.dobra_wola_zaufanie_per_tura === 'number' && block.dobra_wola_zaufanie_per_tura > 0
+        ? block.dobra_wola_zaufanie_per_tura
+        : 1,
+  };
+}
+
+const _pnRelacja = loadPnRelacjaParams();
+
+/**
+ * Minimalna suma PN, którą oddajesz przy uczciwej wymianie @ Relacji
+ * (partner dostaje receivePn — ty musisz dać receivePn × 100/Rel).
+ */
+export function diplomacyFairGivePn(receivePn: number, relacja: number): number {
+  const rel = Math.max(1, relacja);
+  return Math.ceil(Math.max(0, receivePn) * (100 / rel));
+}
+
+/**
+ * Nadmiar PN po Twojej stronie w handlu: max(0, oddajesz − uczciwa wartość).
+ * Przy czystym darze: receivePn = 0 → nadmiar = cała wartość oddana.
+ */
+export function diplomacySurplusPn(
+  givePn: number,
+  receivePn: number,
+  relacja: number,
+): number {
+  const fair = diplomacyFairGivePn(receivePn, relacja);
+  return Math.max(0, givePn - fair);
+}
+
+/** Nadmiar PN → surowa zmiana Zaufania (floor); limit na turę stosuje silnik przez diplomacyClampTrustGainNaTure. */
+export function diplomacyPnToZaufanieDelta(
+  surplusPn: number,
+  params: PnRelacjaParams = _pnRelacja,
+): number {
+  const cfg = { ..._pnRelacja, ...params };
+  if (surplusPn < cfg.min_nadmiar_pn) return 0;
+  return Math.max(0, Math.floor(surplusPn / cfg.pn_na_zaufanie));
+}
+
+/**
+ * Limit na turę: handel + dary łącznie nie mogą dać więcej niż max Zaufania.
+ * @param alreadyGainedThisTurn ile już dodano w tej turze z PN (handel/dar)
+ */
+export function diplomacyClampTrustGainNaTure(
+  proposedDelta: number,
+  alreadyGainedThisTurn: number,
+  params: PnRelacjaParams = _pnRelacja,
+): number {
+  const cfg = { ..._pnRelacja, ...params };
+  const room = Math.max(0, cfg.max_zaufanie_na_ture - Math.max(0, alreadyGainedThisTurn));
+  return Math.min(Math.max(0, proposedDelta), room);
+}
+
+/** Nadmiar PN → ΔZaufanie z uwzględnieniem limitu na turę. */
+export function diplomacyTrustFromSurplus(
+  surplusPn: number,
+  alreadyGainedThisTurn: number,
+  params?: PnRelacjaParams,
+): { surplusPn: number; deltaZaufanieRaw: number; deltaZaufanie: number } {
+  const raw = diplomacyPnToZaufanieDelta(surplusPn, params);
+  return {
+    surplusPn,
+    deltaZaufanieRaw: raw,
+    deltaZaufanie: diplomacyClampTrustGainNaTure(raw, alreadyGainedThisTurn, params),
+  };
+}
+
+/** Handel zakończony: ΔZaufanie z nadmiaru (bonus zawarcia umowy — osobno w silniku). */
+export function diplomacyTradeTrustFromDeal(
+  givePn: number,
+  receivePn: number,
+  relacja: number,
+  alreadyGainedThisTurn = 0,
+  params?: PnRelacjaParams,
+): { surplusPn: number; deltaZaufanieRaw: number; deltaZaufanie: number } {
+  const surplusPn = diplomacySurplusPn(givePn, receivePn, relacja);
+  return diplomacyTrustFromSurplus(surplusPn, alreadyGainedThisTurn, params);
+}
+
+/** Czysty dar: cała wartość w PN → Zaufanie (ten sam kurs + limit na turę). */
+export function diplomacyGiftTrustFromPn(
+  givePn: number,
+  alreadyGainedThisTurn = 0,
+  params?: PnRelacjaParams,
+): { surplusPn: number; deltaZaufanieRaw: number; deltaZaufanie: number } {
+  return diplomacyTradeTrustFromDeal(givePn, 0, 100, alreadyGainedThisTurn, params);
+}
+
+export function diplomacyPnRelacjaParams(): Readonly<PnRelacjaLoaded> {
+  return _pnRelacja;
+}
+
+/** D3-W2-C: dobra wola +1/turę × 3 tury gdy nadmiar ≥ 100 PN. */
+export function diplomacyDobraWolaFromSurplus(
+  surplusPn: number,
+  params: PnRelacjaParams = _pnRelacja,
+): { active: boolean; tur: number; zaufaniePerTura: number } {
+  const cfg = { ..._pnRelacja, ...params };
+  if (surplusPn < cfg.dobra_wola_min_nadmiar_pn) {
+    return { active: false, tur: 0, zaufaniePerTura: 0 };
+  }
+  return {
+    active: true,
+    tur: cfg.dobra_wola_tur,
+    zaufaniePerTura: cfg.dobra_wola_zaufanie_per_tura,
+  };
+}
+
+/** D3-W3-B: minimalna Relacja na czysty dar. */
+export function diplomacyProgDarRelacja(params: PnRelacjaParams = _pnRelacja): number {
+  return { ..._pnRelacja, ...params }.prog_dar_relacja;
+}

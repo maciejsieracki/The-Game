@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
+# DEPRECATED (2026-06-30 — PANEL-MERGE): Excel w docs/archiwum/panele-legacy/.
+# Kanon: panele-sterowania/Panel-{A..E}.xlsx + export-{a..e}.py — nie używać do nowych zmian.
 # export-ulepszenia.py -- BEZPIECZNY eksport MIASTO/Ulepszenia-terenu.xlsx -> data/terrain-improvements.json.
 # Overlay na ORYGINALNY JSON (zachowuje strukture/typy/kolejnosc), puste komorki = brak zmiany, "Komentarz Naster" ignorowany.
 import openpyxl, json, os
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 DATA = os.path.normpath(os.path.join(HERE, "..", "data", "terrain-improvements.json"))
-XLSX = os.path.normpath(os.path.join(HERE, "..", "..", "MIASTO", "Ulepszenia-terenu.xlsx"))
+XLSX = os.path.normpath(os.path.join(HERE, "..", "..", "docs", "archiwum", "panele-legacy", "MIASTO", "Ulepszenia-terenu.xlsx"))
 
 def coerce(old, val):
     if val is None or (isinstance(val, str) and val.strip() == ""): return old

@@ -1,0 +1,70 @@
+---
+description: Playtest u Macieja — informuje WYŁĄCZNIE Master. Lane milczy w czacie; dopis REJESTR §2.
+globs:
+  - "**/*"
+alwaysApply: true
+---
+
+> ⛔ REGUŁA HISTORYCZNA — ładuje się automatycznie, ale NIE OBOWIĄZUJE od 2026-07-06.
+> Ignoruj procedury ról/publish/komend/Slack/AskQuestion/eksportu opisane niżej.
+> Aktualny ład: dyspozycje/START-TU.md + OBIEG-KOMUNIKACJI-2026-07-06.md + ROLE-I-ZAKRESY-2026-07-06.md.
+> Produkcja: 3 czaty Cowork (MASTER/INTEGRATOR/UX) na gra-robocza; roboczą publikuje WYŁĄCZNIE
+> INTEGRATOR; kanon/finalną WYŁĄCZNIE Grupa G Cursor (pakiety DO-KANONU). Pytania do Macieja:
+> tekstem w kanale, max 3, format A/B/C, BEZ popupów. Wersje: tylko dyspozycje/WERSJE.md.
+
+# OBOWIĄZ — playtest informuje tylko Master (2026-07-02)
+
+**Decyzja Macieja:** zaległe playtesty, checklisty, prośby o test = **tylko Master** w hubie.
+
+Pełna procedura: `docs/obieg/OBOWIAZ-PLAYTEST-REJESTR.md` · rejestr: `docs/master/REJESTR-PLAYTESTOW.md`
+
+---
+
+## Role
+
+| Rola | Playtest w czacie z Maciejem |
+|------|------------------------------|
+| **Grupy A–E** | **ZAKAZ** — zero słów |
+| **Integrator F** | **ZAKAZ** — meldunek techniczny bez playtestu |
+| **Master** | **Jedyny** informuje Macieja (po ~100% gry lub na prośbę `playtest lista`) |
+| **Maciej** | Odpowiada `playtest OK`/`BUG:` **tylko Masterowi** |
+
+---
+
+## Lane — po batchu w kanonie (cicho)
+
+1. Dopisz wiersz **`docs/master/REJESTR-PLAYTESTOW.md` §2** (⏸ KOLEJKA).
+2. W handoff do Mastera (Maciej nie czyta): `PLAYTEST-KANDYDAT: PT-XXX → rejestr §2`
+3. **NIE** dopisuj playtestu do Slacka jako zadania dla Macieja.
+
+---
+
+## ZAKAZY w odpowiedzi do Macieja (A–E, F)
+
+**Nigdy nie pisz** (ani wariantów):
+
+- playtest · przetestuj · sprawdź w grze · gotowe do testu
+- zaległy playtest · czeka playtest · OTWARTY · checklist PT-
+- F-AC7 · PT-F01 · scenariusz 1–5 · `playtest OK`?
+
+**W `start` / `raport2` / `status` / meldunku GOTOWE:** **brak sekcji Playtest**.
+
+**Dozwolone u grupy:** ABC · wdrożenie · **`przekaż do Mastera`** · **`raport2`** (3 sekcje bez playtestu).
+
+---
+
+## Master — w czacie z Maciejem
+
+- **`start` / `raport`:** **pomiń** sekcję playtest (chyba że Maciej pyta).
+- **`playtest lista`:** czytaj REJESTR §1.
+- **Prośba o test:** szablon `docs/master/SZABLON-PROŚBA-PLAYTEST.md` (tylko po §0).
+
+---
+
+## Self-check przed wysłaniem (lane A–F)
+
+Przeskanuj swoją odpowiedź: czy zawiera słowo **playtest**, **PT-**, **test w grze**, **scenariusz** gameplayu?
+
+→ **Usuń.** Playtest = tylko wpis §2 + Master.
+
+Trigger w czacie grupy: **`obowiaż`** · **`rejestr`**

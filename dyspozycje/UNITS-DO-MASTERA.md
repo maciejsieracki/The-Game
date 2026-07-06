@@ -6,6 +6,17 @@ NIE edytuj innych plikow w dyspozycje/.
 
 **Trigger Macieja:** `start` → czytaj `docs/obieg/C-walka.md` · 🎯 TERAZ · tylko lane C · **NIE** `main.ts`
 
+## [2026-07-05 ~00:25] **→ MASTER: GOTOWE-ROBOCZA** — Panel-C export (`eksportuj panel C`)
+
+**Handoff:** `_handoff/UNITS-do-MASTER_panel-c-export-2026-07-05.md`  
+**Eksport:** `python panele-sterowania/export-c.py` · staty=406 · macierz=45 · koszty=2 · moc_cache=78  
+**Bramka:** combat **6/6** · unit-power **6/6** · smoke OK  
+**Robocza po eksporcie:** md5 **`5206766b8f460173d12bcfd51552f923`**  
+**Kanon ~08:34:** `89a870fb` (Panel-C w kanonie) · **późniejsze publishy roboczej bez promocji kanonu**  
+**→ MASTER:** dane w grze przez łańcuch publishów roboczej · playtest walki · kanon HOLD
+
+---
+
 ## [2026-07-04 ~23:30] **→ MASTER: GOTOWE** — Batch 0 + Batch 3 (units.json komplet roster-6)
 
 **Plik:** `gra/data/units.json` — 67→**75** wpisów  

@@ -86,7 +86,7 @@ near(W.wealthMnoznik(0,   P), 1.0,   'mnoznik W=0   -> 1.0 (min)');
 // ===========================================================================
 // B. wealthZadowolenie: W=0->karaZero; else floor(W/10)*zadowolenieNa10pkt
 // ===========================================================================
-eq(W.wealthZadowolenie(0,   P), -2, 'zadowolenie W=0   -> -2 (kara)');
+eq(W.wealthZadowolenie(0,   P), 0, 'zadowolenie W=0   -> 0 (neutral, D16-A)');
 eq(W.wealthZadowolenie(9,   P),  0, 'zadowolenie W=9   -> 0');
 eq(W.wealthZadowolenie(10,  P),  1, 'zadowolenie W=10  -> +1');
 eq(W.wealthZadowolenie(100, P), 10, 'zadowolenie W=100 -> +10');
@@ -135,6 +135,18 @@ assert(wzrost.spadek === 0,     'advanceWealth WZROST: brak spadku');
 const spadek = W.advanceWealth({ poziom: 5, pula: 0 }, 2, 20, 1, P);
 eq(spadek.spadek,  1, 'advanceWealth SPADEK: spadek = 1');
 eq(spadek.poziom, 4, 'advanceWealth SPADEK: poziom = 4');
+
+// ===========================================================================
+// G2. D16-A: immunitet minPoziom=1 (start W=1, brak luksusu -> poziom nie spada)
+// ===========================================================================
+const immunitet = W.advanceWealth({ poziom: 1, pula: 0 }, 0, 20, 1, P, { minPoziom: 1 });
+eq(immunitet.spadek, 0, 'immunitet: brak spadku poziomu W');
+eq(immunitet.poziom, 1, 'immunitet: poziom zostaje 1');
+
+// ===========================================================================
+// G3. D16-A: wealthZadowolenie W=0 -> karaZero=0 (normal)
+// ===========================================================================
+eq(W.wealthZadowolenie(0, P), 0, 'W=0 -> zadowolenie 0 (karaZero=0, regresja D16-A)');
 
 // ===========================================================================
 // H. loadWealthParams

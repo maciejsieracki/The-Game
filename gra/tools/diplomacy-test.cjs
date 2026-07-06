@@ -38,7 +38,7 @@ export {
   DIPLOMACY_PARAMS, relationScore, applyDiplomaticEvent,
   aiDiplomacyStance, initialRelation, toRelation, loadDiplomacyParams,
   relationTier, TIER_NAMES,
-  computePotegaNacji, computeRespekt, DEFAULT_POTEGA_WAGI, tickDiplomacy,
+  computePotegaNacji, computeRespekt, computeMilitaryRatioFromArmyM, DEFAULT_POTEGA_WAGI, tickDiplomacy,
 } from ${JSON.stringify(SRC + '/game/diplomacy')};
 export { TypCywilizacji } from ${JSON.stringify(SRC + '/types/player')};
 export { StanWojny, RodzajTraktatu } from ${JSON.stringify(SRC + '/types/diplomacy')};
@@ -66,7 +66,7 @@ const {
   DIPLOMACY_PARAMS, relationScore, applyDiplomaticEvent,
   aiDiplomacyStance, initialRelation, toRelation, loadDiplomacyParams,
   relationTier, TIER_NAMES,
-  computePotegaNacji, computeRespekt, DEFAULT_POTEGA_WAGI, tickDiplomacy,
+  computePotegaNacji, computeRespekt, computeMilitaryRatioFromArmyM, DEFAULT_POTEGA_WAGI, tickDiplomacy,
   TypCywilizacji, StanWojny, RodzajTraktatu,
 } = B;
 
@@ -109,12 +109,15 @@ const ctx = (o = {}) => Object.assign(
 // ===========================================================================
 // 1. DIPLOMACY_PARAMS -- mirror of data/diplomacy.json (panel C/E + starts)
 // ===========================================================================
-eq(DIPLOMACY_PARAMS.progSojuszZaufanie,      60, 'prog Sojusz Zaufanie = 60');
+eq(DIPLOMACY_PARAMS.progSojuszZaufanie,      91, 'prog Sojusz Zaufanie = 91');
 eq(DIPLOMACY_PARAMS.progWymianaTechZaufanie, 70, 'prog Wymiana tech Zaufanie = 70');
 eq(DIPLOMACY_PARAMS.progWasalizacjaRespekt,  70, 'prog Wasalizacja Respekt = 70');
 eq(DIPLOMACY_PARAMS.progWchloniecieRespekt,  90, 'prog Wchloniecie Respekt = 90');
 eq(DIPLOMACY_PARAMS.progMinimalnyRelacja,    30, 'prog Minimalny Relacja = 30');
-eq(DIPLOMACY_PARAMS.progSojuszRelacja,      120, 'prog Sojusz Relacja = 120');
+eq(DIPLOMACY_PARAMS.progSojuszRelacja,      151, 'prog Sojusz Relacja = 151');
+eq(DIPLOMACY_PARAMS.progUmowaMinRelacja,    151, 'prog Umowa min Relacja = 151');
+eq(DIPLOMACY_PARAMS.progNapRelacja,        110, 'prog NAP Relacja = 110');
+eq(DIPLOMACY_PARAMS.progHandelRelacja,     100, 'prog Handel Relacja = 100');
 eq(DIPLOMACY_PARAMS.startZaufanie,           20, 'start Zaufanie = 20');
 eq(DIPLOMACY_PARAMS.startRespekt,            30, 'start Respekt = 30');
 eq(DIPLOMACY_PARAMS.turyEfektuPodarunku,      5, 'tury efektu podarunku = 5');
@@ -136,12 +139,12 @@ eq(relationScore(rel(0, 0)), 0,     'relationScore floor 0');
 const r0 = rel(20, 30);
 const r1 = applyDiplomaticEvent(r0, 'dar');
 eq(r0.zaufanie, 20, 'applyDiplomaticEvent does not mutate input');
-eq(r1.zaufanie, 26, 'dar returns new Relation +6');
+eq(r1.zaufanie, 20, 'dar returns +0 (PN trust in silnik)');
 
 // ---- one-shot Zaufanie bonuses ----
-eq(applyDiplomaticEvent(rel(20, 30), 'handel').zaufanie,            22, 'handel +2 Z');
+eq(applyDiplomaticEvent(rel(20, 30), 'handel').zaufanie,            20, 'handel +0 Z (W1-A PN)');
 eq(applyDiplomaticEvent(rel(20, 30), 'pomoc_sojusznikowi').zaufanie, 30, 'pomoc sojusznikowi +10 Z');
-eq(applyDiplomaticEvent(rel(20, 30), 'dar').zaufanie,              26, 'dar +6 Z');
+eq(applyDiplomaticEvent(rel(20, 30), 'dar').zaufanie,              20, 'dar +0 Z (PN w silniku)');
 eq(applyDiplomaticEvent(rel(20, 30), 'wspolna_religia').zaufanie,  21, 'wspolna religia seed +1 Z');
 {
   const r = applyDiplomaticEvent(rel(20, 30), 'wspolny_wrog');
@@ -182,11 +185,11 @@ eq(applyDiplomaticEvent(rel(20, 30), 'trybut_zaakceptowany').respekt, 40, 'trybu
 eq(applyDiplomaticEvent(rel(20, 30, 'pokoj'), 'handel').status, 'pokoj', 'handel preserves status');
 
 // ---- clamp bounds ----
-eq(applyDiplomaticEvent(rel(98, 30), 'dar').zaufanie,            100, 'Zaufanie clamps at 100');
+eq(applyDiplomaticEvent(rel(98, 30), 'dar').zaufanie,            98, 'dar +0 at high Zaufanie');
 eq(applyDiplomaticEvent(rel(20, 95), 'przewaga_militarna').respekt, 100, 'Respekt clamps at 100');
 
-// ---- params override (mnoznikPodarunku) ----
-eq(applyDiplomaticEvent(rel(20, 30), 'dar', { mnoznikPodarunku: 2 }).zaufanie, 32, 'dar x2 mnoznik = +12');
+// ---- params override (mnoznikPodarunku) — dar flat wyłączony (D4 PN) ----
+eq(applyDiplomaticEvent(rel(20, 30), 'dar', { mnoznikPodarunku: 2 }).zaufanie, 20, 'dar x2 mnoznik = +0 (PN)');
 
 // ---- NEW spec-faithful events (Dyplomacja-szablon.md section 1) ----
 {
@@ -211,17 +214,19 @@ eq(applyDiplomaticEvent(rel(20, 30), 'wymiana_tech_gratis').zaufanie,   25, 'wym
   const a = mkPlayer('a', TypCywilizacji.Grecy);
   const b = mkPlayer('b', TypCywilizacji.Grecy);
   const r = initialRelation(a, b);
-  eq(r.zaufanie, 0,  'same type: start 20 - 20 rywalizacja = 0');
+  // 20 + 2×nastawienie(Grecy 59→+4.5) - 20 rywalizacja = 9
+  eq(r.zaufanie, 9,  'same type: perNacja + rywalizacja tego samego typu');
   eq(r.respekt, 30,  'same type: start Respekt 30');
   eq(r.status, 'neutralni', 'initial status neutralni');
 }
 {
   const r = initialRelation(mkPlayer('a', TypCywilizacji.Grecy), mkPlayer('b', TypCywilizacji.Rzymianie));
-  eq(r.zaufanie, 15, 'diff main types: 20 - 5 roznica kulturowa = 15');
+  // 20 + 4.5(Grecy) - 3(Rzym 44) - 5 roznica = 16.5
+  eq(r.zaufanie, 16.5, 'diff main types: perNacja + roznica kulturowa');
 }
 {
   const r = initialRelation(mkPlayer('a', TypCywilizacji.Grecy), mkPlayer('b', TypCywilizacji.DrobnaCywilizacja));
-  eq(r.zaufanie, 20, 'main vs minor: no penalty = 20');
+  eq(r.zaufanie, 24.5, 'main vs minor: perNacja Grecy +4.5, minor bez korekty');
 }
 
 // ===========================================================================
@@ -254,13 +259,13 @@ eq(applyDiplomaticEvent(rel(20, 30), 'wymiana_tech_gratis').zaufanie,   25, 'wym
   eq(s.willingnessTrade, 0, 'main: trade 0 when Relacja(15) < 30');
 }
 {
-  // alliance gated by Zaufanie>=60 AND Relacja>=120
+  // alliance gated by Zaufanie>=91 AND Relacja>=151
   const sNo = aiDiplomacyStance(mkPlayer('g', TypCywilizacji.Grecy), mkPlayer('o', TypCywilizacji.Grecy),
                                 rel(50, 80), ctx());
-  eq(sNo.willingnessAlly, 0, 'main: ally 0 when Zaufanie(50) < 60 even if Relacja 130');
+  eq(sNo.willingnessAlly, 0, 'main: ally 0 when Zaufanie(50) < 91 even if Relacja 130');
   const sYes = aiDiplomacyStance(mkPlayer('g', TypCywilizacji.Grecy), mkPlayer('o', TypCywilizacji.Grecy),
-                                 rel(80, 50), ctx());
-  assert(sYes.willingnessAlly > 0 && sYes.willingnessAlly <= 1, 'main: ally > 0 when Zaufanie 80 & Relacja 130');
+                                 rel(96, 56), ctx());
+  assert(sYes.willingnessAlly > 0 && sYes.willingnessAlly <= 1, 'main: ally > 0 when Zaufanie 96 & Relacja 152');
 }
 {
   // archetype aggression: Zulusi more warlike than Chinczycy at equal low relation
@@ -326,7 +331,7 @@ eq(Object.keys(loadDiplomacyParams(undefined)).length,     0, 'loadDiplomacyPara
   eq(o.startRespekt,       40,        'loadDiplomacyParams czyta poprawny startRespekt');
 }
 eq(applyDiplomaticEvent(rel(20, 30), 'dar', loadDiplomacyParams({ params: { dar_zaufanie: 9 } })).zaufanie,
-   29, 'override z loadera wplywa na applyDiplomaticEvent (+9)');
+   20, 'dar override JSON ignorowany — PN w silniku (+0)');
 
 // ===========================================================================
 // 9. progPoboczneWojna remap -- galaz wojny drobnych osiagalna (skala 0-200)
@@ -352,8 +357,8 @@ eq(relationTier(rel(0, 0, 'sojusz')),     4, 'status=sojusz -> tier 4 (Sojusz), 
 // score-based tiers (status neutralni/pokoj)
 eq(relationTier(rel(10, 10)),  1, 'score=20 (< 30) -> tier 1 (Wrogi)');
 eq(relationTier(rel(25, 25)),  2, 'score=50 (>= 30, < 60) -> tier 2 (Neutralny; typowy start gry)');
-eq(relationTier(rel(50, 40)),  3, 'score=90 (>= 60, < 120) -> tier 3 (Przyjazny)');
-eq(relationTier(rel(70, 60)),  4, 'score=130 (>= 120) -> tier 4 (Sojusz)');
+eq(relationTier(rel(50, 40)),  3, 'score=90 (>= 60, < 151) -> tier 3 (Przyjazny)');
+eq(relationTier(rel(80, 72)),  4, 'score=152 (>= 151) -> tier 4 (Sojusz)');
 
 // granice (boundary values)
 eq(relationTier(rel(15, 15)),  2, 'score=30 DOKLADNIE >= progMinimalny(30) -> tier 2 (Neutralny), granica');
@@ -364,44 +369,44 @@ eq(relationTier(rel(15, 15)),  2, 'score=30 DOKLADNIE >= progMinimalny(30) -> ti
 // ===========================================================================
 {
   // Pelna dominacja: wszystkie komponenty = 1 -> Potega = 100
-  const k = { wielkoscArmii: 1, wygraneBitwy: 1, ludnosc: 1, miasta: 1, gospodarka: 1, epoka: 1 };
+  const k = { wielkoscArmii: 1, wygraneBitwy: 1, ludnosc: 1, rekruci: 1, miasta: 1, gospodarka: 1, epoka: 1 };
   eq(computePotegaNacji(k), 100, 'computePotegaNacji: pelna dominacja -> 100');
 }
 {
   // Pelna slabosc: wszystkie komponenty = 0 -> Potega = 0
-  const k = { wielkoscArmii: 0, wygraneBitwy: 0, ludnosc: 0, miasta: 0, gospodarka: 0, epoka: 0 };
+  const k = { wielkoscArmii: 0, wygraneBitwy: 0, ludnosc: 0, rekruci: 0, miasta: 0, gospodarka: 0, epoka: 0 };
   eq(computePotegaNacji(k), 0, 'computePotegaNacji: pelna slabosc -> 0');
 }
 {
   // Rownowaga: wszystkie komponenty = 0.5 -> Potega = round(0.5*100) = 50
-  const k = { wielkoscArmii: 0.5, wygraneBitwy: 0.5, ludnosc: 0.5, miasta: 0.5, gospodarka: 0.5, epoka: 0.5 };
+  const k = { wielkoscArmii: 0.5, wygraneBitwy: 0.5, ludnosc: 0.5, rekruci: 0.5, miasta: 0.5, gospodarka: 0.5, epoka: 0.5 };
   eq(computePotegaNacji(k), 50, 'computePotegaNacji: rownowaga (0.5) -> 50');
 }
 {
-  // Tylko wielkoscArmii=1 (waga 28), reszta 0 -> round(28) = 28
-  const k = { wielkoscArmii: 1, wygraneBitwy: 0, ludnosc: 0, miasta: 0, gospodarka: 0, epoka: 0 };
-  eq(computePotegaNacji(k), 28, 'computePotegaNacji: tylko wielkoscArmii=1 -> 28');
+  // Tylko wielkoscArmii=1 (waga 24), reszta 0 -> round(24) = 24
+  const k = { wielkoscArmii: 1, wygraneBitwy: 0, ludnosc: 0, rekruci: 0, miasta: 0, gospodarka: 0, epoka: 0 };
+  eq(computePotegaNacji(k), 24, 'computePotegaNacji: tylko wielkoscArmii=1 -> 24');
 }
 {
-  // Tylko wygraneBitwy=1 (waga 20), reszta 0 -> round(20) = 20
-  const k = { wielkoscArmii: 0, wygraneBitwy: 1, ludnosc: 0, miasta: 0, gospodarka: 0, epoka: 0 };
-  eq(computePotegaNacji(k), 20, 'computePotegaNacji: tylko wygraneBitwy=1 -> 20');
+  // Tylko wygraneBitwy=1 (waga 17), reszta 0 -> round(17) = 17
+  const k = { wielkoscArmii: 0, wygraneBitwy: 1, ludnosc: 0, rekruci: 0, miasta: 0, gospodarka: 0, epoka: 0 };
+  eq(computePotegaNacji(k), 17, 'computePotegaNacji: tylko wygraneBitwy=1 -> 17');
 }
 {
   // DEFAULT_POTEGA_WAGI suma = 100
-  const { wielkoscArmii, wygraneBitwy, ludnosc, miasta, gospodarka, epoka } = DEFAULT_POTEGA_WAGI;
-  eq(wielkoscArmii + wygraneBitwy + ludnosc + miasta + gospodarka + epoka, 100,
+  const { wielkoscArmii, wygraneBitwy, ludnosc, rekruci, miasta, gospodarka, epoka } = DEFAULT_POTEGA_WAGI;
+  eq(wielkoscArmii + wygraneBitwy + ludnosc + rekruci + miasta + gospodarka + epoka, 100,
      'DEFAULT_POTEGA_WAGI suma = 100');
 }
 {
-  // Militaria (armia+bitwy) = 48% wagi
-  eq(DEFAULT_POTEGA_WAGI.wielkoscArmii + DEFAULT_POTEGA_WAGI.wygraneBitwy, 48,
-     'DEFAULT_POTEGA_WAGI: militaria (armia+bitwy) = 48');
+  // Militaria (armia+bitwy) = 41% wagi
+  eq(DEFAULT_POTEGA_WAGI.wielkoscArmii + DEFAULT_POTEGA_WAGI.wygraneBitwy, 41,
+     'DEFAULT_POTEGA_WAGI: militaria (armia+bitwy) = 41');
 }
 {
   // Clamp: wynik nie przekracza 100 nawet gdy suma wag > 100
-  const k = { wielkoscArmii: 1, wygraneBitwy: 1, ludnosc: 1, miasta: 1, gospodarka: 1, epoka: 1 };
-  const overWagi = { wielkoscArmii: 30, wygraneBitwy: 25, ludnosc: 20, miasta: 20, gospodarka: 15, epoka: 15 };
+  const k = { wielkoscArmii: 1, wygraneBitwy: 1, ludnosc: 1, rekruci: 1, miasta: 1, gospodarka: 1, epoka: 1 };
+  const overWagi = { wielkoscArmii: 30, wygraneBitwy: 25, ludnosc: 20, rekruci: 20, miasta: 20, gospodarka: 15, epoka: 15 };
   // sum = 125; wynik = clamp(round(125), 0, 100) = 100
   eq(computePotegaNacji(k, overWagi), 100, 'computePotegaNacji: wynik klampuje do 100 gdy suma wag > 100');
 }
@@ -460,7 +465,20 @@ eq(relationTier(rel(15, 15)),  2, 'score=30 DOKLADNIE >= progMinimalny(30) -> ti
 }
 
 // ===========================================================================
-// 13. tickDiplomacy -- per-turowe przesunięcie (immutable, flags, expiry)
+// 13. computeMilitaryRatioFromArmyM — stosunek M armii (nie headcount)
+// ===========================================================================
+{
+  eq(computeMilitaryRatioFromArmyM(500, 500), 1, 'militaryRatio M: parytet 500/500 -> 1');
+  eq(computeMilitaryRatioFromArmyM(501.5, 500), 501.5 / 500, 'militaryRatio M: Triari vs Hastati');
+  eq(computeMilitaryRatioFromArmyM(100, 0), 2, 'militaryRatio M: partner 0, self>0 -> 2');
+  eq(computeMilitaryRatioFromArmyM(0, 0), 1, 'militaryRatio M: obie 0 -> 1');
+  // 10× włócznik (36) vs 10× Hastati (50): headcount=1, M≈0.72
+  const ratioWeak = computeMilitaryRatioFromArmyM(360, 500);
+  assert(ratioWeak < 1, `militaryRatio M: slabsza armia (${ratioWeak}) < 1`);
+}
+
+// ===========================================================================
+// 14. tickDiplomacy -- per-turowe przesunięcie (immutable, flags, expiry)
 // ===========================================================================
 function mkRdip(zaufanie, respekt, urazyHistoryczne = 0, traktaty = []) {
   return {
@@ -513,6 +531,13 @@ function mkRdip(zaufanie, respekt, urazyHistoryczne = 0, traktaty = []) {
   // Zanik urazów nie schodzi poniżej 0 (urazy=1 -> max(0, 1-2)=0)
   const r = tickDiplomacy(mkRdip(30, 20, 1), { turn: 20 });
   eq(r.urazyHistoryczne, 0, 'tickDiplomacy: zanik urazów nie schodzi poniżej 0');
+}
+{
+  // Slim Relation z main.ts (brak traktaty/urazy) — nie rzuca przy .filter
+  const slim = { zaufanie: 25, respekt: 30 };
+  const r = tickDiplomacy(slim, { turn: 1, aktywnyHandel: true });
+  eq(r.zaufanie, 26, 'tickDiplomacy: slim Relation bez traktaty — tick OK');
+  eq(r.traktaty.length, 0, 'tickDiplomacy: slim Relation — pusta lista traktatów');
 }
 
 // ===========================================================================

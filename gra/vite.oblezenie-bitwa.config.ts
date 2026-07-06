@@ -43,6 +43,11 @@ function copyHtmlToRoot(): Plugin {
         const dest = path.join(outDir, 'Gra-podglad-OBLEZENIE-BITWA.html');
         fs.copyFileSync(src, dest);
         console.log('[oblezenie-bitwa] Skopiowano:', dest);
+        // Root projektu — POLE-BITWY wykrywa pathname w oblezenie/main.ts (deploy ON, bez muru)
+        const root = path.resolve(__dirname, '..');
+        const poleDest = path.join(root, 'Gra-podglad-POLE-BITWY.html');
+        fs.copyFileSync(src, poleDest);
+        console.log('[oblezenie-bitwa] Skopiowano:', poleDest);
       }
     },
   };

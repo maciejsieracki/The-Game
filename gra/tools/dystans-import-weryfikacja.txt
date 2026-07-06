@@ -1,0 +1,17 @@
+Hastati	2	2	15	-	OK
+Kusznik	3	25	15	-	OK
+Łucznik egipski	5	40	11	-	OK
+Łucznik akadyjski	4	30	10	-	OK
+Oszczepnik Zulu (Izijula)	2	7	9	-	OK
+Wojownik germański	2	4	9	-	OK
+Procarz	6	45	8	-	OK
+Oszczepnik	2	6	8	-	OK
+Procarz (Huaracoc)	7	35	8	-	OK
+Oszczepnik (Estólica)	2	6	8	-	OK
+Rydwan egipski	5	50	8	-	OK
+Łucznik sumeryjski	4	40	8	-	OK
+Katapulta	10	50	8	16	OK
+Łucznik	4	30	6	-	OK
+Medżaj (Gwardia Faraona)	2	6	6	-	OK
+
+OK=15 BAD=0

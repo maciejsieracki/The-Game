@@ -1,24 +1,30 @@
-# Civ/UI/ — katalog dzialu Civ-UI (interfejs)
+# Civ/UI/ — katalog działu Civ-UI (interfejs)
 
-Wszystkie DOSTARCZANE pliki UI w jednym miejscu (master nie musi szukac po Civ root).
+## Gra (Maciej 2026-06-29)
 
-## Dokumentacja + panel sterowania
-- Spec-UI.md — pelna dokumentacja deweloperska UI.
-- UI-parametry.xlsx — panel parametrow UI (Naster/Maciej). Eksport celowany -> gra/data/ui-params.json.
+**Jeden plik:** [`../Gra-podglad.html`](../Gra-podglad.html) — menu w silniku, kreator TS, ikony HUD, mapa 3D.
 
-## Podglady (interaktywne, NIE kanon)
-- Gra-podglad-UI.html — widok miasta.
-- Gra-podglad-MENU.html — menu glowne + ustawienia.
-- Gra-podglad-HUD.html — HUD w grze + Bilans + Zadowolenie/Porzadek.
+Stary flow mockupów (MENU HTML → kreator HTML) **wycofany** — pliki przekierowują na silnik; oryginały w `_archiwum/`.
 
-## Makiety-zrodla UI (przeniesione tu — pyt. 5B)
-- Makieta-HUD-mapa-swiata.html — HUD w grze.
-- Makieta-flow-nowa-gra.html — kreator nowej gry.
-  (Handoff do mastera o aktualizacje ARCHITEKTURA-PLIKI.md + MAPA: dyspozycje/_handoff/UI-do-MASTER_makiety.md)
-- _archiwum/Makieta-widok-miasta.html — STARY mockup widoku miasta (historyczny).
-- Widok-miasta.html — NIE tutaj: lezy w Civ/MIASTO/ (przejete przez MIASTO). cityPanel.ts juz to implementuje.
+| Plik | Rola |
+|------|------|
+| **../Gra-podglad.html** | **gra** (jedyny build) |
+| **../Gra-podglad-ROBOCZA.html** | redirect → kanon (stare bookmarki) |
+| **Makieta-START.html** | hub linków |
+| **mockup-embed.js** | pasek ← Mapa (panele embed) |
 
-## CELOWO NIE w tym folderze
-- Kod gry (src/ui/*): cityPanel.ts, mainMenu.ts, newGameFlow.ts, hud.ts, empireBalance.ts,
-  orderPanel.ts, uiParams.ts, preBattle.ts + dane gra/data/ui-params.json. Zostaja w projekcie Vite.
-- Kanal: dyspozycje/UI.md + dyspozycje/UI-DO-MASTERA.md (czyta self-check + master).
+## Pojedyncze mockupy paneli (design only)
+
+**Nauka / drzewko:** w silniku (`scienceHubHud` + `sciencePicker`) — `Gra-podglad.html` → 🦉.  
+Archiwum layoutu N=0: `Makieta-drzewko-uklad-bez-przeciec.html`. ~~`Gra-podglad-NAUKA.html`~~ usunięty.
+
+**Panel miasta:** tylko w silniku — `../Gra-podglad-OKOLICA-UX.html` lub klik miasto w `Gra-podglad.html`.  
+Stary `Gra-podglad-MIASTO.html` (3 kolumny) **usunięty** 2026-06-26.
+
+## Przekierowania (stare bookmarki)
+
+| Stary plik | → |
+|------------|---|
+| `Gra-podglad-MENU.html` | `../Gra-podglad.html` |
+| `Makieta-flow-nowa-gra.html` | `../Gra-podglad.html` |
+| `Makieta-HUD-mapa-swiata.html` | `../Gra-podglad.html` |

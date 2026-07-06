@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>THE GAME — Uwarunkowania bitwy</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --gold:#e8d88a;--gold-dim:#C9A84C;--gold-faint:rgba(232,216,138,0.10);
+  --bg:rgba(4,6,15,0.88);--panel:rgba(12,18,35,0.92);--panel2:rgba(8,12,28,0.75);
+  --border:rgba(232,216,138,0.28);--border-hi:rgba(232,216,138,0.55);
+  --text:#d4cba0;--text-dim:#7a7055;--text-hi:#f0e8b8;--text-muted:#554e38;
+  --atk:#c84040;--def:#4090c8;--green:#50b070;--red:#c84040;
+  --font-ui:'Segoe UI',Tahoma,sans-serif;
+  --font-title:Georgia,'Times New Roman',serif;
+  --r:6px
+}
+html,body{width:100%;height:100%;overflow:hidden;font-family:var(--font-ui);color:var(--text);font-size:13px;user-select:none}
+
+#map-bg{
+  position:fixed;inset:0;z-index:0;
+  background:
+    linear-gradient(rgba(4,8,18,0.50),rgba(4,8,18,0.78)),
+    url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="960" height="640"><rect fill="%23142838" width="960" height="640"/><path d="M0 420 Q240 320 480 380 T960 340" stroke="%233a5a48" fill="none" stroke-width="48" opacity="0.45"/><path d="M120 200 Q360 120 600 180 T900 140" stroke="%232a4038" fill="none" stroke-width="32" opacity="0.35"/><circle cx="480" cy="300" r="56" fill="%23c84040" opacity="0.28"/><text x="480" y="308" fill="%23e8d88a" font-size="16" text-anchor="middle" font-family="serif">Termopile</text></svg>') center/cover;
+  filter:blur(2px) saturate(0.82)
+}
+
+#overlay{
+  position:fixed;inset:0;z-index:1;
+  display:grid;grid-template-rows:auto auto 1fr auto auto;
+  background:linear-gradient(180deg,rgba(4,8,18,0.68) 0%,rgba(8,12,28,0.80) 45%,rgba(4,8,18,0.90) 100%);
+}
+
+#topbar{
+  text-align:center;padding:10px 20px 8px;
+  border-bottom:1px solid var(--border);
+  background:rgba(4,8,18,0.55);backdrop-filter:blur(6px);
+}
+.top-kicker{font-size:9px;letter-spacing:4px;text-transform:uppercase;color:var(--text-dim);margin-bottom:4px}
+.top-title{font-family:var(--font-title);font-size:22px;font-weight:700;letter-spacing:6px;color:var(--gold);text-shadow:0 0 16px rgba(232,216,138,0.35)}
+.top-loc{font-size:10px;color:var(--gold-dim);margin-top:4px;letter-spacing:1px}
+
+#generals-row{
+  display:grid;grid-template-columns:1fr 1fr;gap:0;
+  padding:12px 24px 10px;align-items:end;
+  border-bottom:1px solid var(--border);
+  background:rgba(4,8,18,0.45);
+}
+.gen-block{display:flex;flex-direction:column;gap:5px}
+.gen-block.atk{align-items:flex-start;padding-left:8px}
+.gen-block.def{align-items:flex-end;padding-right:8px}
+.gen-portrait{
+  width:88px;height:88px;border-radius:50%;
+  border:3px solid var(--gold-dim);
+  display:flex;align-items:center;justify-content:center;font-size:38px;
+  background:radial-gradient(circle at 35% 30%,rgba(60,80,120,0.85),rgba(12,18,35,0.95));
+  box-shadow:0 0 18px rgba(232,216,138,0.2),inset 0 0 20px rgba(0,0,0,0.45)
+}
+.gen-block.atk .gen-portrait{border-color:var(--atk);box-shadow:0 0 16px rgba(200,64,64,0.3)}
+.gen-block.def .gen-portrait{border-color:var(--def);box-shadow:0 0 16px rgba(64,144,200,0.3)}
+.gen-name{font-family:var(--font-title);font-size:14px;font-weight:700;color:var(--text-hi)}
+.gen-role{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text-dim)}
+.gen-civ{font-size:10px;color:var(--gold-dim);margin-top:1px}
+
+#main{
+  display:grid;
+  grid-template-columns:minmax(200px,1fr) minmax(248px,288px) minmax(200px,1fr);
+  gap:0;min-height:0;overflow:hidden
+}
+.side{padding:12px 14px;overflow-y:auto;border-right:1px solid var(--border)}
+.side.def-side{border-right:none;border-left:1px solid var(--border)}
+.side-head{margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.side-role{font-size:9px;letter-spacing:3px;text-transform:uppercase;margin-bottom:3px}
+.side.atk-side .side-role{color:var(--atk)}
+.side.def-side .side-role{color:var(--def)}
+.side-total{display:flex;justify-content:space-between;align-items:center;margin-top:10px;padding-top:8px;border-top:1px solid var(--border);font-size:11px}
+.side-total-val{font-size:16px;font-weight:700;font-family:var(--font-title)}
+.side-total-val.atk{color:var(--atk)}.side-total-val.def{color:var(--def)}
+
+.unit-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+@media(max-width:920px){.unit-grid{grid-template-columns:1fr}#main{grid-template-columns:1fr;overflow-y:auto}}
+
+.u-card{
+  background:var(--panel);border:1px solid var(--border);border-radius:var(--r);
+  padding:7px 8px;display:flex;flex-direction:column;gap:3px;transition:border-color .15s
+}
+.u-card:hover{border-color:var(--border-hi)}
+.u-top{display:flex;gap:7px;align-items:flex-start}
+.u-icon{width:34px;height:34px;border-radius:4px;background:rgba(232,216,138,0.06);border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.u-meta{flex:1;min-width:0}
+.u-name{font-size:10px;font-weight:600;color:var(--text-hi);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.u-type{font-size:9px;color:var(--text-dim)}
+.u-hp{height:4px;background:rgba(255,255,255,0.08);border-radius:2px;overflow:hidden;margin-top:3px}
+.u-hp i{display:block;height:100%;border-radius:2px}
+.atk-side .u-hp i{background:linear-gradient(90deg,#8a2020,#d05050)}
+.def-side .u-hp i{background:linear-gradient(90deg,#2060a0,#50a0d8)}
+.u-stats{font-size:9px;color:var(--text-dim);display:flex;justify-content:space-between}
+
+#center{padding:12px 14px;overflow-y:auto;background:var(--panel2);border-left:1px solid var(--border);border-right:1px solid var(--border)}
+.parchment{
+  background:linear-gradient(165deg,rgba(24,20,14,0.96),rgba(18,14,10,0.98));
+  border:1px solid rgba(180,150,90,0.35);border-radius:var(--r);
+  padding:11px 13px;box-shadow:inset 0 0 18px rgba(0,0,0,0.4);margin-bottom:10px
+}
+.parch-title{font-family:var(--font-title);font-size:17px;color:var(--gold);text-align:center;margin-bottom:6px}
+.parch-loc{font-size:10px;text-align:center;color:var(--text-dim);margin-bottom:8px}
+.terrain-badge{
+  display:inline-flex;align-items:center;gap:6px;padding:5px 12px;
+  background:rgba(232,216,138,0.07);border:1px solid var(--border);border-radius:var(--r);
+  font-size:11px;color:var(--gold-dim);margin:0 auto 10px;width:fit-content
+}
+.center-section{margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid rgba(255,255,255,0.06)}
+.center-section:last-child{border:none;margin-bottom:0;padding-bottom:0}
+.center-label{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px}
+.mod-list{display:flex;flex-direction:column;gap:4px}
+.mod-item{display:flex;align-items:center;gap:6px;font-size:10px;color:var(--text-dim)}
+.mod-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.mod-dot.pos{background:var(--green)}.mod-dot.neg{background:var(--red)}.mod-dot.neu{background:var(--text-muted)}
+.mod-val{margin-left:auto;font-weight:600;font-size:10px}
+.mod-val.pos{color:var(--green)}.mod-val.neg{color:var(--red)}.mod-val.neu{color:var(--gold-dim)}
+.stat-row{display:flex;justify-content:space-between;font-size:11px;padding:3px 0}
+.stat-lbl{color:var(--text-dim)}.stat-val{font-weight:600;color:var(--text-hi)}
+.wc-bar{height:12px;border-radius:4px;overflow:hidden;background:rgba(255,255,255,0.06);border:1px solid var(--border);display:flex;margin:6px 0 4px}
+.wc-atk{background:linear-gradient(90deg,rgba(180,40,40,0.9),rgba(200,64,64,0.75))}
+.wc-def{flex:1;background:linear-gradient(90deg,rgba(40,100,160,0.75),rgba(64,144,200,0.9))}
+.wc-pct{display:flex;justify-content:space-between;font-size:10px;font-weight:600;margin-bottom:6px}
+.wc-pct .a{color:var(--atk)}.wc-pct .d{color:var(--def)}
+.verdict{text-align:center;padding:7px;font-size:10px;letter-spacing:1px;text-transform:uppercase;
+  color:var(--green);background:rgba(80,176,112,0.08);border-radius:var(--r);margin-top:6px}
+.prediction{font-size:10px;color:var(--text-dim);line-height:1.55;margin-top:8px}
+.prediction strong{color:var(--text-hi)}
+
+#actions{padding:12px 18px 14px;border-top:1px solid var(--border);background:rgba(4,8,18,0.92)}
+.actions-note{text-align:center;font-size:10px;color:var(--text-muted);margin-bottom:10px}
+.actions-note span{color:var(--gold-dim)}
+.btn-row{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;max-width:980px;margin:0 auto}
+.btn{
+  flex:1;min-width:130px;max-width:210px;padding:11px 12px;border-radius:var(--r);cursor:pointer;
+  border:1px solid var(--border);background:rgba(12,18,35,0.92);
+  display:flex;flex-direction:column;align-items:center;gap:2px;transition:all .15s;font-family:var(--font-ui)
+}
+.btn:hover{border-color:var(--border-hi);transform:translateY(-1px)}
+.btn:active{transform:scale(0.98)}
+.btn .b-ico{font-size:19px}
+.btn .b-lbl{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase}
+.btn .b-sub{font-size:9px;color:var(--text-dim);text-align:center;line-height:1.3}
+.btn-auto{border-color:rgba(80,176,112,0.45)}.btn-auto .b-lbl{color:var(--green)}
+.btn-auto:hover{box-shadow:0 0 14px rgba(80,176,112,0.18)}
+.btn-manual{border-color:var(--gold-dim);background:rgba(232,216,138,0.11);max-width:250px;flex:1.15}
+.btn-manual .b-lbl{color:var(--gold);font-size:12px}
+.btn-manual:hover{box-shadow:0 0 20px rgba(232,216,138,0.22)}
+.btn-retreat{border-color:rgba(200,64,64,0.35)}.btn-retreat .b-lbl{color:var(--red)}
+.btn-save{min-width:110px;max-width:150px;flex:0.55;border-color:rgba(100,140,200,0.35)}
+.btn-save .b-lbl{color:#80a8e0;font-size:10px;letter-spacing:1px}
+
+#footer{text-align:center;padding:5px;font-size:9px;letter-spacing:2px;color:var(--text-muted);
+  border-top:1px solid rgba(232,216,138,0.08);background:rgba(4,8,18,0.95)}
+</style>
+</head>
+<body>
+
+<div id="map-bg" aria-hidden="true"></div>
+
+<div id="overlay">
+
+  <header id="topbar">
+    <div class="top-kicker">The Game · v0.1 · Tura 15</div>
+    <div class="top-title">Uwarunkowania bitwy</div>
+    <div class="top-loc">Termopile · Heks (12, 7) · Wzgórza</div>
+  </header>
+
+  <header id="generals-row">
+    <div class="gen-block atk">
+      <div class="gen-portrait" title="Portret wodza">⚔</div>
+      <div class="gen-name">Leonidas</div>
+      <div class="gen-role">Atakujący</div>
+      <div class="gen-civ">Grecy</div>
+    </div>
+    <div class="gen-block def">
+      <div class="gen-portrait" title="Portret wodza">🛡</div>
+      <div class="gen-name">Kserkses</div>
+      <div class="gen-role">Obrońca</div>
+      <div class="gen-civ">Persja</div>
+    </div>
+  </header>
+
+  <main id="main">
+
+    <section class="side atk-side">
+      <div class="side-head">
+        <div class="side-role">Wojska atakujące</div>
+      </div>
+      <div class="unit-grid">
+        <div class="u-card"><div class="u-top"><div class="u-icon">🗡</div><div class="u-meta"><div class="u-name">Hoplita</div><div class="u-type">Frontalne · ×14</div></div></div><div class="u-hp"><i style="width:100%"></i></div><div class="u-stats"><span>Atk 8</span><span>HP 100%</span></div></div>
+        <div class="u-card"><div class="u-top"><div class="u-icon">🛡</div><div class="u-meta"><div class="u-name">Falanga</div><div class="u-type">Frontalne · ×10</div></div></div><div class="u-hp"><i style="width:92%"></i></div><div class="u-stats"><span>Atk 7</span><span>HP 92%</span></div></div>
+        <div class="u-card"><div class="u-top"><div class="u-icon">🏹</div><div class="u-meta"><div class="u-name">Łucznik</div><div class="u-type">Dystans · ×8</div></div></div><div class="u-hp"><i style="width:100%"></i></div><div class="u-stats"><span>Atk 5</span><span>HP 100%</span></div></div>
+        <div class="u-card"><div class="u-top"><div class="u-icon">🐎</div><div class="u-meta"><div class="u-name">Konnica</div><div class="u-type">Mounted · ×4</div></div></div><div class="u-hp"><i style="width:85%"></i></div><div class="u-stats"><span>Atk 9</span><span>HP 85%</span></div></div>
+        <div class="u-card"><div class="u-top"><div class="u-icon">🪖</div><div class="u-meta"><div class="u-name">Rydwan</div><div class="u-type">Specjalne · ×2</div></div></div><div class="u-hp"><i style="width:100%"></i></div><div class="u-stats"><span>Atk 10</span><span>HP 100%</span></div></div>
+      </div>
+      <div class="side-total"><span>Łączna siła</span><span class="side-total-val atk">247</span></div>
+    </section>
+
+    <section id="center">
+      <div class="parchment">
+        <div class="parch-title">Termopile</div>
+        <div class="parch-loc">Starcie na mapie świata · przed wejściem w pole bitwy (C2)</div>
+        <div style="text-align:center"><div class="terrain-badge"><span>🏔</span> Wzgórza</div></div>
+
+        <div class="center-section">
+          <div class="center-label">Region i teren</div>
+          <div class="mod-list">
+            <div class="mod-item"><span class="mod-dot neg"></span><span>Kara dla atakującego</span><span class="mod-val neg">−15%</span></div>
+            <div class="mod-item"><span class="mod-dot pos"></span><span>Premia obrońcy (teren)</span><span class="mod-val pos">+20%</span></div>
+            <div class="mod-item"><span class="mod-dot neu"></span><span>Kawaleria — ograniczenie</span><span class="mod-val neg">−10%</span></div>
+            <div class="mod-item"><span class="mod-dot pos"></span><span>Łucznicy — widoczność</span><span class="mod-val pos">+8%</span></div>
+          </div>
+        </div>
+
+        <div class="center-section">
+          <div class="center-label">Warunki dodatkowe</div>
+          <div class="mod-list">
+            <div class="mod-item"><span class="mod-dot neu"></span><span>Pora roku: Lato</span><span class="mod-val neu">brak kary</span></div>
+            <div class="mod-item"><span class="mod-dot pos"></span><span>Morale atakującego</span><span class="mod-val pos">Wysokie</span></div>
+            <div class="mod-item"><span class="mod-dot pos"></span><span>Zaopatrzenie obrońcy</span><span class="mod-val pos">Pełne</span></div>
+            <div class="mod-item"><span class="mod-dot neu"></span><span>Posiłki w zasięgu 1 heksu</span><span class="mod-val neu">0 / 0</span></div>
+          </div>
+        </div>
+
+        <div class="center-section">
+          <div class="center-label">Szanse auto-rozstrzygnięcia</div>
+          <div class="wc-pct"><span class="a">Grecy 58%</span><span class="d">Persja 42%</span></div>
+          <div class="wc-bar"><div class="wc-atk" style="width:58%"></div><div class="wc-def"></div></div>
+          <div class="stat-row"><span class="stat-lbl">Straty szacowane (auto)</span><span class="stat-val">~30–45 / ~55–70</span></div>
+          <div class="verdict">Szanse: umiarkowane — przewaga Greków</div>
+          <div class="prediction">
+            Silnik przewiduje <strong>zwycięstwo Greków</strong> przy stratach ok.
+            <strong>30–45 jednostek</strong>. Obrońca utrzyma linię 2–3 tury, zanim flanki się załamią.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="side def-side">
+      <div class="side-head">
+        <div class="side-role">Wojska broniące</div>
+      </div>
+      <div class="unit-grid">
+        <div class="u-card"><div class="u-top"><div class="u-icon">🛡</div><div class="u-meta"><div class="u-name">Immortal</div><div class="u-type">Frontalne · ×10</div></div></div><div class="u-hp"><i style="width:100%"></i></div><div class="u-stats"><span>Atk 9</span><span>HP 100%</span></div></div>
+        <div class="u-card"><div class="u-top"><div class="u-icon">🏹</div><div class="u-meta"><div class="u-name">Łucznik perski</div><div class="u-type">Dystans · ×8</div></div></div><div class="u-hp"><i style="width:100%"></i></div><div class="u-stats"><span>Atk 6</span><span>HP 100%</span></div></div>
+        <div class="u-card"><div class="u-top"><div class="u-icon">🐎</div><div class="u-meta"><div class="u-name">Konnica perska</div><div class="u-type">Mounted · ×6</div></div></div><div class="u-hp"><i style="width:85%"></i></div><div class="u-stats"><span>Atk 10</span><span>HP 85%</span></div></div>
+        <div class="u-card"><div class="u-top"><div class="u-icon">🗡</div><div class="u-meta"><div class="u-name">Sparabara</div><div class="u-type">Frontalne · ×9</div></div></div><div class="u-hp"><i style="width:95%"></i></div><div class="u-stats"><span>Atk 7</span><span>HP 95%</span></div></div>
+      </div>
+      <div class="side-total"><span>Łączna siła</span><span class="side-total-val def">213</span></div>
+    </section>
+
+  </main>
+
+  <footer id="actions">
+    <div class="actions-note">
+      <span>Auto</span> = silnik rozstrzyga &nbsp;·&nbsp;
+      <span>Bitwa ręczna</span> = pole 3D (C2) &nbsp;·&nbsp;
+      <span>Wycofaj</span> = odwrót bez walki &nbsp;·&nbsp;
+      <span>Zapisz</span> = quick-save przed bitwą
+    </div>
+    <div class="btn-row">
+      <button type="button" class="btn btn-auto" data-action="auto">
+        <span class="b-ico">⚡</span>
+        <span class="b-lbl">Auto-rozstrzygnij</span>
+        <span class="b-sub">Wynik w ~2 s</span>
+      </button>
+      <button type="button" class="btn btn-manual" data-action="manual">
+        <span class="b-ico">⚔</span>
+        <span class="b-lbl">Bitwa ręczna</span>
+        <span class="b-sub">Pole bitwy · deployment</span>
+      </button>
+      <button type="button" class="btn btn-retreat" data-action="retreat">
+        <span class="b-ico">↩</span>
+        <span class="b-lbl">Wycofaj się</span>
+        <span class="b-sub">Anuluj atak</span>
+      </button>
+      <button type="button" class="btn btn-save" data-action="save">
+        <span class="b-ico">💾</span>
+        <span class="b-lbl">Zapisz grę</span>
+        <span class="b-sub">Wróć do wyboru</span>
+      </button>
+    </div>
+  </footer>
+
+  <div id="footer">THE GAME · Grecy vs Persja · Tura 15 / 999 · v0.1 Kamień+Brąz</div>
+
+</div>
+
+<script>
+function pbToast(msg,color){
+  var t=document.createElement('div');
+  t.style.cssText='position:fixed;bottom:28px;left:50%;transform:translateX(-50%);z-index:99999;'+
+    'background:rgba(4,8,20,.97);border:1px solid '+(color||'#e8d88a')+';border-radius:8px;padding:10px 22px;'+
+    'font-size:12px;color:'+(color||'#e8d88a')+';pointer-events:none;font-family:Segoe UI,sans-serif';
+  t.textContent=msg;
+  document.body.appendChild(t);
+  setTimeout(function(){t.remove()},2200);
+}
+document.querySelectorAll('.btn[data-action]').forEach(function(btn){
+  btn.addEventListener('click',function(){
+    var lbl=btn.querySelector('.b-lbl');
+    var name=lbl?lbl.textContent:'';
+    if(window.parent!==window){
+      window.parent.postMessage('civ-resolve-blocking','*');
+      if(btn.dataset.action==='retreat'||btn.dataset.action==='save'){
+        window.parent.postMessage('civ-close-fs','*');
+        return;
+      }
+    }
+    var col=btn.dataset.action==='auto'?'#50b070':btn.dataset.action==='manual'?'#e8d88a':'#c84040';
+    pbToast('Pre-bitwa: '+name+' (mockup)',col);
+  });
+});
+</script>
+<script src="mockup-embed.js"></script>
+</body>
+</html>

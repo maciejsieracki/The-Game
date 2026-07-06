@@ -1,6 +1,6 @@
 # HANDOFF: UNITS → EKONOMIA — dane o ZAPASACH ŻYWNOŚCI dla oblężenia
 
-**Data:** 2026-06-25 · **Od:** Civ-UNITS · **Do:** EKONOMIA (dane miasta) · Zatwierdzone przez Naster.
+**Data:** 2026-06-25 · **Od:** Grupa C · **Do:** EKONOMIA (dane miasta) · Zatwierdzone przez Naster.
 
 ## Po co
 Model oblężenia (zatwierdzony) opiera głód miasta na **zapasach żywności**. UNITS/SILNIK potrzebują od EKONOMII danych o magazynie żywności miasta, żeby liczyć „zegar głodu".
@@ -20,4 +20,4 @@ Model oblężenia (zatwierdzony) opiera głód miasta na **zapasach żywności**
 - Gdzie trzymacie zapas żywności miasta (które pole/struktura danych, np. `econ-params`/stan miasta)? Podajcie nazwę pola, żeby SILNIK mógł je czytać w turze oblężenia.
 - Czy populacja i magazyn są już per-miasto w stanie gry? Jeśli nie — co trzeba dodać.
 
-— Civ-UNITS
+— Grupa C

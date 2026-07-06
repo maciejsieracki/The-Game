@@ -36,9 +36,12 @@ export {
   FALLBACK_TRADE_MULT,
   loadReligionParams,
   loadCultureParams,
-  dominantReligion,
-  religionHappiness,
   civReligion,
+  civReligionForKey,
+  resolveCityReligionState,
+  defaultCityReligionState,
+  isEmptyReligionState,
+  dominantReligion,
   spreadReligion,
   makeRng,
   cityTradeMultiplier,
@@ -265,6 +268,49 @@ const rD   = CR.spreadReligion(srcD, nbD, P, { hasSwiatynia: false, pressure: 1,
 rD.events[0].state.counts['TestRel'] = 999;
 // Original neighbour should be unaffected.
 eq(nbD[0].state.counts['TestRel'], undefined, 'D1: event state is independent of original neighbour');
+
+// ===========================================================================
+// E. T0 religion — resolveCityReligionState (luka UX przed turą 1)
+// ===========================================================================
+
+const mockSociety = {
+  religie_cywilizacji: [
+    { Cywilizacja: 'Rzymianie', 'Religia / wyznanie': 'Kult cesarski' },
+    { Cywilizacja: 'Grecy', 'Religia / wyznanie': 'Politeizm olimpijski' },
+  ],
+};
+const mockCivsRel = {
+  cywilizacje: [
+    { Cywilizacja: 'Rzymianie', ikonaId: 'rzymianie' },
+    { Cywilizacja: 'Grecy', ikonaId: 'grecy' },
+  ],
+};
+
+eq(
+  CR.civReligionForKey('rzymianie', mockSociety, mockCivsRel),
+  'Kult cesarski',
+  'E1: civReligionForKey resolves ikonaId -> religion',
+);
+eq(
+  CR.civReligionForKey('Rzymianie', mockSociety, mockCivsRel),
+  'Kult cesarski',
+  'E2: civReligionForKey accepts display name',
+);
+
+const empty = CR.resolveCityReligionState(undefined, 1, 'Kult cesarski');
+eq(empty.counts['Kult cesarski'], 1, 'E3: empty stored -> 100% own religion at pop 1');
+const domE = CR.dominantReligion(empty, CR.FALLBACK_RELIGION_PARAMS);
+eq(domE.status, 'dominant', 'E3b: T0 state is dominant');
+eq(domE.religion, 'Kult cesarski', 'E3c: dominant religion name');
+
+const mixedStored = { counts: { 'Obca wiara': 1, 'Kult cesarski': 1 } };
+eq(
+  CR.resolveCityReligionState(mixedStored, 2, 'Kult cesarski').counts['Obca wiara'],
+  1,
+  'E4: existing mixed state is preserved',
+);
+assert(CR.isEmptyReligionState({ counts: {} }), 'E5: empty counts -> isEmpty');
+assert(!CR.isEmptyReligionState(empty), 'E6: seeded state -> not empty');
 
 // ---------------------------------------------------------------------------
 // Summary

@@ -1,6 +1,6 @@
 # SPEC: FAZA ROZSTAWIANIA przed bitwą (UNITS — mechanika; UX — skin)
 
-**Od:** Civ-UNITS · **Data:** 2026-06-25 · Dla: UX (skin) + integracja. UNITS dostarcza mechanikę i hooki; UX może oskinować.
+**Od:** Grupa C · **Data:** 2026-06-25 · Dla: UX (skin) + integracja. UNITS dostarcza mechanikę i hooki; UX może oskinować.
 
 ## Cel
 Zanim ruszy symulacja bitwy, gracz USTAWIA swoje jednostki w strefie startowej, potem klika „Start".
@@ -35,4 +35,4 @@ Zanim ruszy symulacja bitwy, gracz USTAWIA swoje jednostki w strefie startowej, 
 - **Faza 1 (gray-box, robię teraz):** stan deploy + strefa podświetlona + klik-wybierz/klik-postaw w strefie + przyciski Auto/Reset/Start + zamrożenie do „Start".
 - **Faza 2:** drag&drop z duchem, dolny roster z kartami, dopieszczony skin.
 
-— Civ-UNITS
+— Grupa C

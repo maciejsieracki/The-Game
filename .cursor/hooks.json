@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "hooks": {
+    "preCompact": [
+      {
+        "command": "python .cursor/hooks/pre-compact-sync.py",
+        "timeout": 30
+      }
+    ]
+  }
+}

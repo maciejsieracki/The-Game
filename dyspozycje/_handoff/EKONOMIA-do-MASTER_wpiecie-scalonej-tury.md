@@ -1,7 +1,7 @@
 # HANDOFF: EKONOMIA -> MASTER -- wpiecie scalonej tury (WIRE 1+2+3)
 
 **Data:** 2026-06-25  
-**Sesja:** Civ-EKONOMIA (Sonnet-subagent)  
+**Sesja:** Grupa B (Sonnet-subagent)  
 **Status:** DOWIEZIONY + przetestowany (23/23 tests pass)  
 **Superseduje:** EKONOMIA-do-MASTER_wealth.md (wpiecie Wealth jest juz zrobione tutaj)
 

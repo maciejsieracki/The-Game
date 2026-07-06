@@ -94,6 +94,10 @@ import {
   applyModeHint1E,
   applyRailBtn1E,
   applyRosterFilterBar1E,
+  applyRosterChromeRow1E,
+  applyDeployGroupManagerBar1E,
+  applyDeployGroupManagerRail1E,
+  applyDeployGroupTab1E,
   applyRosterActionBar1E,
   applyRosterFooter1E,
   applyRosterHeaderSection1E,
@@ -121,11 +125,17 @@ import {
   FMT_SVG,
   DEPLOY_KIND_LABEL,
   DEPLOY_SCOPE_SVG,
+  DEPLOY_LINES_MELEE_SVG,
   DEPLOY_TACTIC_SVG,
-  DEPLOY_POPUP_INACTIVE_BG,
   buildDeployPopupRowHtml,
   buildDeployTacticCellHtml,
   paintDeployPopupOption,
+  paintDeployLineNumber,
+  applyDeployPopupShell1E,
+  applyDeployPopupHeader1E,
+  applyDeployPopupBodyWrap1E,
+  applyDeployPopupRowBtn1E,
+  applyDeployLineNumberChip1E,
   hpBarGradient,
   moraleBarGradient,
   rosterCardBaseStyle,
@@ -158,13 +168,17 @@ import {
   applyBattleStrategyGoldCta,
   applyBattleCheckbox1E,
   createRosterEmptySlotElement,
+  formatRosterGroupHeaderHtml,
   STRATEGY_HEADER_SVG,
   type BattleClassKind,
 } from './battleHudTheme';
 import { civIconSvg } from '../ui/icons/brandAssets';
 import { showEndScreen1E } from './endScreen1E';
 import { showEndDetails1E } from './endDetails1E';
-import { disposeSiegeHud1E, mountSiegeHud1E, setSiegeHudVisible, updateSiegeHud1E } from './siegeHud1E';
+import {
+  disposeSiegeHud1E, layoutSiegeHud1E, mountSiegeHud1E,
+  setSiegeHudVisible, updateSiegeHud1E,
+} from './siegeHud1E';
 
 export type { BattleMinimapData, BattleMinimapUnit, BattleMinimapViewport } from './battleMinimap';
 
@@ -465,8 +479,16 @@ const DEPLOY_EDGE_MARGIN   = 2;
 const DEPLOY_TOOLBAR_H         = 64;
 /** Odstep paska od dolnej krawedzi ekranu (~2 mm). */
 const DEPLOY_TOOLBAR_BOTTOM_GAP = 8;
+/** Belka wyboru grupy nad toolbarem deploy. */
+const DEPLOY_GROUP_RAIL_H      = 44;
+/** Odstep belki grup od toolbara. */
+const DEPLOY_GROUP_RAIL_GAP    = 4;
 /** Laczna rezerwa UI na dole: pasek + odstep (roster, prawy rail). */
 const DEPLOY_TOOLBAR_RESERVE   = DEPLOY_TOOLBAR_H + DEPLOY_TOOLBAR_BOTTOM_GAP;
+/** Rezerwa dolna gdy widoczna belka grup + toolbar. */
+const DEPLOY_GROUP_RAIL_RESERVE = DEPLOY_TOOLBAR_RESERVE + DEPLOY_GROUP_RAIL_H + DEPLOY_GROUP_RAIL_GAP;
+/** Odstęp rosteru od dolnej krawędzi ekranu (toolbar + opcj. belka grup). */
+const ROSTER_SCREEN_BOTTOM_GAP = 16;
 /** Wysokosc dolnego paska GRUPY w walce recznej. */
 const BATTLE_GROUP_BAR_H   = 52;
 /** Dolny pasek mocy armii (zielony/czerwony) — pod paskiem fazy/statystyk. */
@@ -483,7 +505,7 @@ const ROSTER_COL_W         = ROSTER_PANEL_FIXED_W;
 const DEPLOY_ROSTER_CARD_H = 56;
 const BATTLE_ROSTER_CARD_H = 56;
 /** Wersja UI bitwy polowej — widoczna w panelu (weryfikacja buildu). */
-const BATTLE_UI_BUILD      = 'POLE-BITWY-20260705-end-replay';
+const BATTLE_UI_BUILD      = 'POLE-BITWY-20260705-v4.1-A4';
 
 /** ikonaId z civs.json po nazwie wyswietlanej lub ikonaId. */
 function civIconIdFromLabel(civRows: readonly { Cywilizacja?: string; ikonaId?: string }[], label: string): string {
@@ -1542,6 +1564,8 @@ export class BattleScene {
   private _deployUnitsRow: HTMLDivElement | null = null;
   /** Pasek duzych przyciskow Grupa 1/2/3 w docku deploy. */
   private _deployGroupsBar: HTMLDivElement | null = null;
+  /** Dolna belka wyboru grupy (nad toolbarem Formacja/Taktyka). */
+  private _deployGroupManagerRail: HTMLDivElement | null = null;
   /** Doktryny auto-bitwy dla zaznaczonej grupy (deploy). */
   private _deployStrategyBar: HTMLDivElement | null = null;
   /** @deprecated — stary uklad 3 rzedow; tylko recover DOM. */
@@ -2605,6 +2629,7 @@ export class BattleScene {
       this._buildDeployZone();
       this._buildDeployToolbar();
       this._initDeployUI();
+      this._syncBattleToolbarMode();
       this._updateArmyMoraleBars();
     }
 
@@ -2723,9 +2748,15 @@ export class BattleScene {
       hint.style.display = 'none';
       return;
     }
+    this._syncModeHintPosition();
     if (!this._manualMode) {
+      // AUTO + oblężenie: bez dolnego mockupu C-05 — baner też nie nachodzi na UI
+      if (this.siegeWallCol >= 0) {
+        hint.style.display = 'none';
+        return;
+      }
       hint.style.display = 'block';
-      hint.textContent = 'Tryb AUTO · walka rozstrzyga się automatycznie · roster i toolbar ukryte';
+      hint.textContent = 'Tryb AUTO · walka rozstrzyga się automatycznie · R = ręczna';
       return;
     }
     hint.style.display = 'block';
@@ -2738,6 +2769,15 @@ export class BattleScene {
       return;
     }
     hint.textContent = 'SPACJA = następna tura';
+  }
+
+  /** Pozycja hintu trybu — nad toolbarem Taktyka/Strategia lub przy dolnej krawędzi w AUTO. */
+  private _syncModeHintPosition(): void {
+    if (!this._modeBanner) return;
+    const toolbarUp = !!this._deployToolbar
+      && this._deployToolbar.style.display !== 'none'
+      && (this.deployPhase || (this.started && !this.finished && this._manualMode));
+    this._modeBanner.style.bottom = (toolbarUp ? 96 : 18) + 'px';
   }
 
   /** Podświetlenie rail R gdy tryb ręczny (C06 v4). */
@@ -3076,6 +3116,8 @@ export class BattleScene {
       onExit: () => { this.dispose(); if (this.onCancelCb) this.onCancelCb(); },
     });
     this._updateSiegeHud();
+    this._syncSiegeHudChromeVisibility();
+    requestAnimationFrame(() => this._syncSiegeHudLayout());
 
     // Register mesh resources for disposal
     wallGroup.traverse(obj => {
@@ -3367,7 +3409,7 @@ export class BattleScene {
         dead: false, fadingOut: false, fadeStart: 0, acted: false,
         moveLeft: movementPoints(bu),
         // Defender catapult on wall walkway (kontrbateria) gets range 6 (cataRange 5 + 1 elevation).
-        range: (this._isCatapult(bu) ? 6 : attackRange(bu)),
+        range: (this._isCatapult(bu) ? Math.max(attackRange(bu), 6) : attackRange(bu)),
         ranged: (this._isCatapult(bu) ? true : isRanged(bu)),
         rangedBase: (this._isCatapult(bu) ? true : isRanged(bu)),
         primaryRanged: isPrimaryRanged(bu),
@@ -4247,7 +4289,7 @@ export class BattleScene {
         // Zamiast tego poruszaj się na tile (wallCol-1, bestRow) = tuż przed murem.
         // FIX 2: Gdy w zasięgu — stój i strzelaj (stop-and-fire), nie idź dalej.
         const wallCol = this.siegeWallCol;
-        const cataRange = 5; // zasięg katapulty (decyzja Naster)
+        const cataRange = this._siegeMachineRange(ru);
         let bestRow = -1, bestDist = Infinity;
         for (const [wr, hp] of this.wallTileHp) {
           if (hp <= 0) continue; // już wyburzony
@@ -5251,9 +5293,8 @@ export class BattleScene {
   private _attackGate(ru: RuntimeBattleUnit, done: () => void): void {
     if (this.gateOpen || this.siegeGateCol < 0) { done(); return; }
 
-    // Damage: siege machine Uderzenie * 2 (Taran: 10*2=20/trafienie -> brama 200 w ~10)
-    const imp = unitRowStat(ru.bu.stats as Record<string, unknown>, 'chargeBonus', 'Uderzenie', unitRowStat(ru.bu.stats as Record<string, unknown>, 'weaponDamage', 'Atak', 8));
-    const dmg = Math.max(12, Math.round(imp * 2));
+    // Damage: wallAttack TW (Taran 14, Katapulta 16) lub legacy Uderzenie/Atak
+    const dmg = this._siegeStructureDamage(ru);
 
     // FIX 4: Animacja taranu (ruch do przodu i powrót) + SFX uderzenia
     const gw = cellToWorld(this.siegeGateCol, this.siegeGateRow);
@@ -5352,6 +5393,24 @@ export class BattleScene {
     return n.includes('katapult') || n.includes('catapult') || n.includes('balist') || n.includes('onager');
   }
 
+  /** Obrażenia vs mur/bramę z units.json TW (`wallAttack`, fallback legacy). */
+  private _siegeStructureDamage(ru: RuntimeBattleUnit): number {
+    const s = ru.bu.stats as Record<string, unknown>;
+    const wall = unitRowStat(s, 'wallAttack', undefined, 0);
+    if (wall > 0) return Math.max(1, Math.round(wall));
+    const rng = unitRowStat(s, 'missileAttack', 'Atak dystansowy', 0);
+    if (rng > 0) return Math.max(1, Math.round(rng * 2));
+    const imp = unitRowStat(s, 'chargeBonus', 'Uderzenie', unitRowStat(s, 'weaponDamage', 'Atak', 8));
+    return Math.max(12, Math.round(imp * 2));
+  }
+
+  /** Zasięg machiny oblężniczej vs mur (hex) — z `Zasięg ataku (hex)` / TW. */
+  private _siegeMachineRange(ru: RuntimeBattleUnit): number {
+    const r = attackRange(ru.bu);
+    if (r >= 1) return r;
+    return this._isCatapult(ru.bu) ? 6 : 1;
+  }
+
   /**
    * Katapulta ostrzeliwuje kafel muru (wallRow). Zadaje damage kaflu.
    * Kafel HP <= 0 -> wyburzenie: kafel staje się BTerrain.Plains (przejezdny).
@@ -5359,8 +5418,9 @@ export class BattleScene {
   private _attackWallTile(ru: RuntimeBattleUnit, wallRow: number, done: () => void): void {
     if (this.siegeWallCol < 0) { done(); return; }
     const rng = unitRowStat(ru.bu.stats as Record<string, unknown>, 'missileAttack', 'Atak dystansowy', 0);
-    const base = rng > 0 ? rng : unitRowStat(ru.bu.stats as Record<string, unknown>, 'weaponDamage', 'Atak', 8);
-    const dmg = Math.max(16, Math.round(base * 2));
+    const wall = unitRowStat(ru.bu.stats as Record<string, unknown>, 'wallAttack', undefined, 0);
+    const base = wall > 0 ? wall : (rng > 0 ? rng * 2 : unitRowStat(ru.bu.stats as Record<string, unknown>, 'weaponDamage', 'Atak', 8));
+    const dmg = Math.max(1, Math.round(base));
 
     // FIX 3: Animacja pocisku-kamienia katapulty (parabola) + SFX przy uderzeniu
     const aw = cellToWorld(ru.q, ru.r);
@@ -5632,6 +5692,7 @@ export class BattleScene {
   /** Odswierz HUD oblężenia 1E (C-04 / C-05). */
   private _updateSiegeHud(): void {
     if (this.siegeWallCol < 0) return;
+    if (this.deployPhase) return;
     const gMax = 400;
     const gCur = this.gateOpen ? 0 : Math.max(0, this.gateHp);
     let wallSum = 0;
@@ -5662,7 +5723,7 @@ export class BattleScene {
       cityName,
       turn: Math.max(1, this.roundNo || 1),
       wallIntegrityPct: Math.min(100, Math.max(0, wallPct)),
-      wallDeltaPerTurn: 8,
+      wallDeltaPerTurn: 0,
       breachLabel,
       catapults,
       rams,
@@ -5670,6 +5731,18 @@ export class BattleScene {
       garrison,
       gateOpen: this.gateOpen,
     });
+    this._syncSiegeHudChromeVisibility();
+    requestAnimationFrame(() => this._syncSiegeHudLayout());
+  }
+
+  /**
+   * Widoczność HUD oblężenia vs deploy / ręczna / auto.
+   * Dolny pasek C-05 (Ostrzał/Szturm) = mockup auto — zawsze ukryty do implementacji.
+   */
+  private _syncSiegeHudChromeVisibility(): void {
+    if (this.siegeWallCol < 0) return;
+    const hideSides = this.deployPhase || !this.started || this.finished || this._battleChromeSuppressed;
+    setSiegeHudVisible(!hideSides);
   }
 
   /**
@@ -7381,7 +7454,13 @@ export class BattleScene {
     apply(this._deployRosterDock);
     apply(this._rosterBar);
     apply(this._selPanel);
-    if (suppress && this.siegeWallCol >= 0) setSiegeHudVisible(false);
+    if (this.siegeWallCol >= 0) {
+      if (suppress) {
+        setSiegeHudVisible(false);
+      } else {
+        this._syncSiegeHudChromeVisibility();
+      }
+    }
     if (!suppress) this._syncBattleToolbarMode();
   }
 
@@ -7669,11 +7748,7 @@ export class BattleScene {
 
   /** Dostosuj dolna krawedz prawego paska (nad toolbarem deploy / recznym). */
   private _updateRightRailLayout(): void {
-    if (!this._rightSettingsRail) return;
-    const toolbarVisible = this._deployToolbar
-      && this._deployToolbar.style.display !== 'none'
-      && (this.deployPhase || (this.started && !this.finished && this._manualMode));
-    this._rightSettingsRail.style.bottom = (toolbarVisible ? DEPLOY_TOOLBAR_RESERVE : 0) + 'px';
+    this._syncRosterBottomInset();
   }
 
   /** First-gesture handler: lazily create+resume the AudioContext, start ambient. */
@@ -9049,15 +9124,10 @@ export class BattleScene {
     Object.assign(fmtPopup.style, { minWidth: '220px' });
     for (const fd of fmtDefs) {
       const ob = document.createElement('button');
-      ob.type = 'button';
       ob.dataset.deployFmtOption = fd.fmt;
       ob.innerHTML = buildDeployPopupRowHtml(fd.icon, fd.label, fd.subtitle);
-      Object.assign(ob.style, {
-        padding: '11px 13px', borderRadius: '9px', cursor: 'pointer', fontFamily: HUD_FONT,
-        width: '100%', textAlign: 'left',
-        border: `1px solid rgba(232,216,138,0.2)`, background: DEPLOY_POPUP_INACTIVE_BG,
-      });
-      applyDeployPopupItem1E(ob);
+      applyDeployPopupRowBtn1E(ob);
+      paintDeployPopupOption(ob, fd.fmt === this._deployActiveFormation);
       ob.addEventListener('click', (e) => {
         e.stopPropagation();
         this._setDeployActiveFormation(fd.fmt);
@@ -9080,15 +9150,10 @@ export class BattleScene {
     Object.assign(cavPopup.style, { minWidth: '220px' });
     for (const cd of cavDefs) {
       const ob = document.createElement('button');
-      ob.type = 'button';
       ob.dataset.deployCavOption = cd.mode;
       ob.innerHTML = buildDeployPopupRowHtml(cd.icon, cd.label, cd.subtitle);
-      Object.assign(ob.style, {
-        padding: '11px 13px', borderRadius: '9px', cursor: 'pointer', fontFamily: HUD_FONT,
-        width: '100%', textAlign: 'left',
-        border: `1px solid rgba(232,216,138,0.2)`, background: DEPLOY_POPUP_INACTIVE_BG,
-      });
-      applyDeployPopupItem1E(ob);
+      applyDeployPopupRowBtn1E(ob);
+      paintDeployPopupOption(ob, cd.mode === this._deployCavalryMode);
       ob.addEventListener('click', (e) => {
         e.stopPropagation();
         this._applyDeployCavalryMode(cd.mode);
@@ -9187,6 +9252,7 @@ export class BattleScene {
     key: 'formation' | 'cavalry' | 'lines' | 'tactics' | 'strategy',
     popupBody: HTMLDivElement,
     toolbarIcon?: string,
+    headerIcon?: string,
   ): HTMLDivElement {
     const wrap = document.createElement('div');
     Object.assign(wrap.style, { position: 'relative', flexShrink: '0' });
@@ -9195,14 +9261,28 @@ export class BattleScene {
     popup.dataset.deployDropdown = key;
     Object.assign(popup.style, {
       position: 'absolute', bottom: '100%', left: '50%', transform: 'translateX(-50%)',
-      marginBottom: '8px', display: 'none', flexDirection: 'column', gap: '8px',
-      padding: '12px 14px', borderRadius: '8px', zIndex: '100210',
-      background: 'linear-gradient(180deg,rgba(32,26,14,.98),rgba(18,14,8,.98))',
-      border: `1px solid ${BATTLE_GOLD_DIM}`,
-      boxShadow: '0 -4px 20px rgba(0,0,0,0.55)',
+      marginBottom: '8px', display: 'none', zIndex: '100210',
       pointerEvents: 'auto',
     });
-    popup.appendChild(popupBody);
+
+    if (key === 'strategy') {
+      Object.assign(popup.style, {
+        flexDirection: 'column', gap: '8px',
+        padding: '0', background: 'transparent', border: 'none', boxShadow: 'none',
+      });
+      popup.appendChild(popupBody);
+    } else {
+      const card = document.createElement('div');
+      applyDeployPopupShell1E(card);
+      const hdr = document.createElement('div');
+      applyDeployPopupHeader1E(hdr, label, headerIcon ?? (key === 'cavalry' ? toolbarIcon : undefined));
+      const bodyWrap = document.createElement('div');
+      applyDeployPopupBodyWrap1E(bodyWrap, key === 'lines');
+      bodyWrap.appendChild(popupBody);
+      card.appendChild(hdr);
+      card.appendChild(bodyWrap);
+      popup.appendChild(card);
+    }
     this._deployDropdownPopups[key] = popup;
 
     const btn = document.createElement('button');
@@ -9317,6 +9397,7 @@ export class BattleScene {
     el.appendChild(mkChip(this._deployCavalryShortLabel(this._deployCavalryMode)));
 
     if (groups.length > 0 && gid) {
+      el.insertBefore(mkChip(this._groupDisplayLabel(gid)), el.firstChild);
       const doc = this._ensureGroupMeta(gid).doctrine;
       if (doc !== 'manual') {
         el.appendChild(mkChip(this._doctrineLabel(doc)));
@@ -9422,22 +9503,17 @@ export class BattleScene {
     const meta = this._ensureGroupMeta(gid);
     const doc = meta.doctrine;
 
-    const hdr = document.createElement('div');
-    hdr.textContent = this._groupDisplayLabel(gid);
-    Object.assign(hdr.style, {
-      fontSize: '10px', color: BATTLE_GOLD, fontWeight: 'bold', marginBottom: '4px',
-      letterSpacing: '0.06em',
+    const grpNote = document.createElement('div');
+    grpNote.textContent = this._groupDisplayLabel(gid) + ' · ' + (
+      this.deployPhase
+        ? 'postawa w walce auto'
+        : 'postawa na turze (SPACJA)'
+    );
+    Object.assign(grpNote.style, {
+      fontSize: '10px', color: BATTLE_TEXT_DIM, marginBottom: '8px',
+      letterSpacing: '0.06em', textTransform: 'uppercase',
     });
-    body.appendChild(hdr);
-
-    const hint = document.createElement('div');
-    hint.textContent = this.deployPhase
-      ? 'Postawa taktyczna grupy w walce (auto):'
-      : 'Postawa taktyczna — grupa wykona ja na turze (SPACJA):';
-    Object.assign(hint.style, {
-      fontSize: '9px', color: BATTLE_TEXT_DIM, marginBottom: '6px', lineHeight: '1.35',
-    });
-    body.appendChild(hint);
+    body.appendChild(grpNote);
 
     const docRow = document.createElement('div');
     Object.assign(docRow.style, {
@@ -9446,19 +9522,24 @@ export class BattleScene {
 
     const mkDoc = (label: string, d: GroupDoctrine, icon: string): HTMLButtonElement => {
       const active = doc === d;
-      const b = this._makeDeployQuickBtn(label, active, () => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.classList.add('civ-deploy-tactic-cell');
+      b.innerHTML = buildDeployTacticCellHtml(icon, label);
+      Object.assign(b.style, {
+        padding: '12px 10px', width: '100%', textAlign: 'center',
+        justifyContent: 'center', borderRadius: '9px', cursor: 'pointer',
+        boxSizing: 'border-box',
+      });
+      applyDeployPopupItem1E(b);
+      paintDeployPopupOption(b, active);
+      b.addEventListener('click', (e) => {
+        e.stopPropagation();
         this._setGroupDoctrine(gid, d);
         this._deployActiveGroupId = gid;
         this._renderDeployTacticsPopup(popup);
         this._updateDeployToolbarStatus();
-      }, { fullWidth: true });
-      b.innerHTML = buildDeployTacticCellHtml(icon, label);
-      Object.assign(b.style, {
-        padding: '12px 10px', width: '100%', textAlign: 'center',
-        justifyContent: 'center', borderRadius: '9px',
       });
-      applyDeployPopupItem1E(b);
-      paintDeployPopupOption(b, active);
       return b;
     };
 
@@ -9659,33 +9740,37 @@ export class BattleScene {
     if (!body) return;
     body.innerHTML = '';
 
-    const mkSection = (
+    const mkRow = (
       title: string,
       kind: 'melee' | 'archer',
       active: DeployLineCount,
-      headerIcon?: string,
-    ): void => {
-      const hdr = document.createElement('div');
-      if (headerIcon) {
-        hdr.innerHTML =
-          '<span style="display:inline-flex;align-items:center;gap:6px;">' +
-          `<span style="display:inline-flex;line-height:0;color:${BATTLE_GOLD};">${headerIcon}</span>` +
-          `<span>${title}</span></span>`;
-      } else {
-        hdr.textContent = title;
-      }
-      Object.assign(hdr.style, {
-        fontSize: '10px', color: BATTLE_GOLD, fontWeight: 'bold',
-        marginBottom: '4px', letterSpacing: '0.06em',
-      });
-      body.appendChild(hdr);
-
+      headerIcon: string,
+    ): HTMLDivElement => {
       const row = document.createElement('div');
-      Object.assign(row.style, { display: 'flex', gap: '4px', marginBottom: '8px' });
+      Object.assign(row.style, {
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+      });
+
+      const lbl = document.createElement('span');
+      lbl.innerHTML =
+        '<span style="display:inline-flex;align-items:center;gap:8px;font-size:13px;color:#c8b898;">' +
+        `<span style="display:inline-flex;line-height:0;color:${BATTLE_GOLD};">${headerIcon}</span>` +
+        `<span>${title}</span></span>`;
+
+      const chips = document.createElement('div');
+      Object.assign(chips.style, { display: 'flex', gap: '6px' });
 
       for (const n of [1, 2, 3] as DeployLineCount[]) {
         const on = active === n;
-        const b = this._makeDeployQuickBtn(String(n), on, () => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.textContent = String(n);
+        b.dataset.deployLinesKind = kind;
+        b.dataset.deployLinesCount = String(n);
+        applyDeployLineNumberChip1E(b);
+        paintDeployLineNumber(b, on);
+        b.addEventListener('click', (e) => {
+          e.stopPropagation();
           if (kind === 'melee') this._setDeployMeleeLines(n);
           else this._setDeployArcherLines(n);
           this._applyDeployLineSettings();
@@ -9694,20 +9779,27 @@ export class BattleScene {
           const who = kind === 'melee' ? DEPLOY_KIND_LABEL.melee : DEPLOY_KIND_LABEL.ranged;
           this._showDeployFeedback(who + ': ' + n + ' linie');
         });
-        b.dataset.deployLinesKind = kind;
-        b.dataset.deployLinesCount = String(n);
-        Object.assign(b.style, {
-          flex: '1', padding: '0', fontSize: '11px', textAlign: 'center', minHeight: '34px',
-        });
-        applyDeployPopupItem1E(b);
-        paintDeployPopupOption(b, on);
-        row.appendChild(b);
+        chips.appendChild(b);
       }
-      body.appendChild(row);
+
+      row.appendChild(lbl);
+      row.appendChild(chips);
+      return row;
     };
 
-    mkSection(DEPLOY_KIND_LABEL.melee, 'melee', this._deployMeleeLines, ROSTER_TYPE_SVG.melee.replace(/width="14"/g, 'width="17"').replace(/height="14"/g, 'height="17"'));
-    mkSection(DEPLOY_KIND_LABEL.ranged, 'archer', this._deployArcherLines, DEPLOY_SCOPE_SVG);
+    body.appendChild(mkRow(
+      DEPLOY_KIND_LABEL.melee, 'melee', this._deployMeleeLines, DEPLOY_LINES_MELEE_SVG,
+    ));
+
+    const divider = document.createElement('div');
+    Object.assign(divider.style, {
+      height: '1px', background: 'rgba(232,216,138,0.14)', margin: '12px 0',
+    });
+    body.appendChild(divider);
+
+    body.appendChild(mkRow(
+      DEPLOY_KIND_LABEL.ranged, 'archer', this._deployArcherLines, DEPLOY_SCOPE_SVG,
+    ));
   }
 
   /** Ikony typów + liczby dla bieżącego zaznaczenia. */
@@ -9724,8 +9816,14 @@ export class BattleScene {
     this._deployRosterCount.textContent = 'Rozstawiono: ' + live + ' jednostek';
   }
 
-  /** Lewy panel rosteru: pasek zaznaczenia + Odznacz / Grupuj / Rozgrupuj (C09 v4 — zawsze widoczny). */
+  /** Lewy panel rosteru: pasek zaznaczenia — ten sam co w walce (deploy też). */
   private _updateDeployToolbarSelection(): void {
+    if (this.deployPhase) {
+      this._updateBattleRosterHeader();
+      this._updateBattleSelectionBar();
+      this._updateBattleQuickSelectBar();
+      return;
+    }
     this._updateDeployRosterCountLine();
     const bar = this._deploySelBar;
     if (!bar || !this.deployPhase) return;
@@ -9749,9 +9847,12 @@ export class BattleScene {
       gold: boolean,
       group: boolean,
       disabled: boolean,
+      action: 'clear' | 'group' | 'ungroup',
     ): HTMLButtonElement => {
       const b = document.createElement('button');
       b.type = 'button';
+      b.dataset.rosterAction = action;
+      if (disabled) b.dataset.rosterMuted = '1';
       if (group) {
         b.innerHTML = groupBtnLabelHtml('Grupuj');
         applySelectionActionBtn1E(b, true, disabled);
@@ -9759,16 +9860,107 @@ export class BattleScene {
         b.textContent = text;
         applySelectionActionBtn1E(b, gold, disabled);
       }
-      if (!disabled) {
-        b.addEventListener('click', (e) => { e.stopPropagation(); onClick(); });
-      }
       return b;
     };
 
-    bar.appendChild(mkBtn('Odznacz', () => this._clearDeploySelectionState(), true, false, selUnits.length === 0));
-    bar.appendChild(mkBtn('', () => this._groupSelected(), true, true, !canGroup));
-    bar.appendChild(mkBtn('Rozgrupuj', () => this._ungroupSelected(), false, false, !canUngroup));
+    bar.appendChild(mkBtn('Odznacz', () => this._clearDeploySelectionState(), true, false, selUnits.length === 0, 'clear'));
+    bar.appendChild(mkBtn('', () => this._groupSelected(), true, true, !canGroup, 'group'));
+    bar.appendChild(mkBtn('Rozgrupuj', () => this._ungroupSelected(), false, false, !canUngroup, 'ungroup'));
     this._updateDeployRosterFooter(selUnits, singleGid);
+  }
+
+  /**
+   * Jeden listener (capture) na panelu rosteru — chipy grup/typów i Grupuj/Rozgrupuj
+   * działają nawet gdy innerHTML pasków jest odbudowywany co klatkę.
+   */
+  private _bindDeployRosterChromeClicks(dock: HTMLDivElement): void {
+    if (dock.dataset.rosterRoute === '1') return;
+    dock.dataset.rosterRoute = '1';
+    dock.addEventListener('click', (e: MouseEvent) => {
+      if (!this.deployPhase) return;
+      const hit = (e.target as HTMLElement).closest(
+        '[data-roster-chip],[data-roster-action]',
+      ) as HTMLElement | null;
+      if (!hit || !dock.contains(hit)) return;
+      e.preventDefault();
+      e.stopPropagation();
+
+      const action = hit.dataset.rosterAction;
+      if (action === 'clear') {
+        this._clearDeploySelectionState();
+        return;
+      }
+      if (action === 'group') {
+        if (hit.dataset.rosterMuted === '1') {
+          this._showDeployFeedback('Zaznacz co najmniej 2 jednostki, potem \u25C6 Grupuj');
+          return;
+        }
+        this._groupSelected();
+        return;
+      }
+      if (action === 'ungroup') {
+        if (hit.dataset.rosterMuted === '1') {
+          this._showDeployFeedback('Zaznacz jednostki z grupy (chip Grupa N lub karta)');
+          return;
+        }
+        this._ungroupSelected();
+        return;
+      }
+
+      const chip = hit.dataset.rosterChip;
+      if (chip === 'all') {
+        this._selectDeployAllToggle();
+        return;
+      }
+      if (chip === 'kind-mounted') {
+        this._selectDeployByKindToggle('mounted');
+        return;
+      }
+      if (chip === 'kind-melee') {
+        this._selectDeployByKindToggle('melee');
+        return;
+      }
+      if (chip === 'kind-ranged') {
+        this._selectDeployByKindToggle('ranged');
+        return;
+      }
+    }, true);
+  }
+
+  /** Klik zakładki grupy (belka rosteru lub dolna belka nad toolbarem). */
+  private _handleDeployGroupTabClick(gid: string): void {
+    this._deployActiveGroupId = gid;
+    if (this._isDeploySelectionExactlyGroup(gid)) {
+      this._clearDeploySelectionState();
+      this._deployActiveGroupId = gid;
+      this._updateDeployGroupsBar();
+      this._showDeployFeedback('Odznaczono \u00B7 nadal zarządzasz: ' + this._groupDisplayLabel(gid));
+    } else {
+      this._selectDeployGroupToggle(gid, true);
+      this._showDeployFeedback('Zarządzasz: ' + this._groupDisplayLabel(gid)
+        + ' (' + this._liveGroupMemberIds(gid).length + ' j.)');
+    }
+    this._updateDeployToolbarStatus();
+  }
+
+  /** Zakładka grupy na pasku zarządzania (deploy). */
+  private _makeDeployGroupTab(gid: string): HTMLButtonElement {
+    const cnt = this._liveGroupMemberIds(gid).length;
+    const selected = this._isDeploySelectionExactlyGroup(gid);
+    const managing = this._deployActiveGroupId === gid;
+    const active = selected || managing;
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.dataset.deployGroupTab = gid;
+    btn.textContent = this._groupDisplayLabel(gid) + ' \u00B7 ' + cnt;
+    applyDeployGroupTab1E(btn, active);
+    btn.title = 'Klik = zaznacz i zarządzaj grupą (Formacja, Taktyka)';
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      this._handleDeployGroupTabClick(gid);
+    });
+    return btn;
   }
 
   /** Stopka rosteru deploy — status zaznaczenia (C09 v4). */
@@ -9779,17 +9971,31 @@ export class BattleScene {
     const footer = this._deployRosterFooter;
     if (!footer) return;
     const status = footer.querySelector('#deploy-roster-footer-status') as HTMLSpanElement | null;
+    const hint = footer.querySelector('#deploy-roster-footer-hint') as HTMLSpanElement | null;
     if (!status) return;
     const n = selUnits.length;
+    const manageGid = this._deployActiveGroupId
+      && this._sortedGroupIds().includes(this._deployActiveGroupId)
+      ? this._deployActiveGroupId
+      : null;
     if (n === 0) {
-      status.textContent = 'Zaznaczone: 0';
-      status.style.color = BATTLE_TEXT_DIM;
+      status.textContent = manageGid
+        ? 'Zarządzasz: ' + this._groupDisplayLabel(manageGid)
+        : 'Zaznaczone: 0';
+      status.style.color = manageGid ? BATTLE_GOLD : BATTLE_TEXT_DIM;
     } else if (singleGid) {
       status.textContent = 'Zaznaczone: ' + n + ' \u00B7 ' + this._groupDisplayLabel(singleGid);
       status.style.color = BATTLE_PLAYER_TEXT;
     } else {
       status.textContent = 'Zaznaczone: ' + n;
       status.style.color = BATTLE_GOLD;
+    }
+    if (hint && manageGid && this._deployRosterFeedback === hint) {
+      const base = 'Formacja / Taktyka dotyczy ' + this._groupDisplayLabel(manageGid);
+      if (!hint.textContent || hint.textContent.includes('Ctrl+LPM') || hint.textContent.includes('Formacja /')) {
+        hint.textContent = base;
+        hint.style.color = BATTLE_TEXT_DIM;
+      }
     }
   }
 
@@ -9853,28 +10059,28 @@ export class BattleScene {
   }
 
   /**
-   * UI fazy rozstawiania: fixed dock z kartami jednostek + panel zaznaczenia.
+   * UI fazy rozstawiania — ten sam lewy panel co w walce (`player-roster-bar`).
    */
   private _initDeployUI(): void {
     document.querySelectorAll('#deploy-detail-panel').forEach(el => el.remove());
     this._deployDetailPanel = null;
-    // Wymus odbudowe docku (jeden rzad + pasek grup w srodku panelu).
-    if (this._deployRosterDock) {
-      this._deployRosterDock.remove();
-      this._deployRosterDock = null;
-      this._deployUnitsRow = null;
-      this._deployGroupsBar = null;
-      this._deployStrategyBar = null;
-      this._deployQuickSelectBar = null;
-      this._deployRosterHeader = null;
-      this._deployGroupsStrip = null;
-      this._deployRowUnits = null;
-      this._deployGroupTabs.clear();
-    } else if (document.getElementById('deploy-roster-dock') && !document.getElementById('deploy-units-row')) {
-      document.getElementById('deploy-roster-dock')?.remove();
-    }
+    document.getElementById('deploy-roster-dock')?.remove();
+    this._deployRosterDock = null;
+    this._deployUnitsRow = null;
+    this._deployGroupsBar = null;
+    this._deployStrategyBar = null;
+    this._deployQuickSelectBar = null;
+    this._deployRosterHeader = null;
+    this._deployGroupsStrip = null;
+    this._deployRowUnits = null;
+    this._deployGroupTabs.clear();
 
-    this._buildDeployRosterDock();
+    this._buildRosterBar();
+    this._ensureBattleRosterChrome();
+    if (this._rosterBar) {
+      this._rosterBar.style.display = 'flex';
+      this._rosterBar.style.visibility = 'visible';
+    }
 
     if (this._selPanel) {
       this._selPanel.style.display = 'none';
@@ -9886,19 +10092,82 @@ export class BattleScene {
     for (const u of this.atk) {
       u.groupId = null;
       u.formationOffset = null;
+      u.group.scale.setScalar(1.0);
     }
 
     this._buildDeployHalfLabels();
     this._initDeployGhostLayer();
     this._autoGroupDeployByKind();
-    this._updateDeployRosterHeader();
+    this._updateBattleRosterHeader();
     this._updateDeployGroupsBar();
     this._updateDeployStrategyBar();
-    this._updateDeployQuickSelectBar();
+    this._updateBattleQuickSelectBar();
+    this._updateBattleSelectionBar();
     this._updateRosterBar();
     this._updateSelectedPanel();
     if (this._groupSelectorBar) this._groupSelectorBar.style.display = 'none';
-    if (this._rosterBar) this._rosterBar.style.display = 'none';
+    this._syncRosterBottomInset();
+    this._syncBattleToolbarMode();
+    const fb = this._rosterBar?.querySelector('#battle-roster-feedback') as HTMLDivElement | null;
+    if (fb) {
+      fb.style.display = 'block';
+      fb.textContent = 'LPM: zaznacz \u00B7 Ctrl+LPM: wiele \u00B7 PPM: odznacz';
+    }
+  }
+
+  /** Dolny inset lewego panelu rosteru — nad toolbarem Taktyka/Strategia. */
+  private _rosterBottomInsetPx(): number {
+    const toolbarUp = !!this._deployToolbar
+      && this._deployToolbar.style.display !== 'none'
+      && (this.deployPhase || (this.started && !this.finished && this._manualMode));
+    if (!toolbarUp) return ROSTER_SCREEN_BOTTOM_GAP;
+    return ROSTER_SCREEN_BOTTOM_GAP + DEPLOY_TOOLBAR_RESERVE;
+  }
+
+  /** Ustawia bottom rosteru + minimapy + prawego raila względem dolnego toolbara. */
+  private _syncRosterBottomInset(): void {
+    const bottom = this._rosterBottomInsetPx() + 'px';
+    if (this._rosterBar) this._rosterBar.style.bottom = bottom;
+    if (this._deployRosterDock) this._deployRosterDock.style.bottom = bottom;
+    if (this._rightSettingsRail) {
+      const toolbarVisible = !!this._deployToolbar
+        && this._deployToolbar.style.display !== 'none'
+        && (this.deployPhase || (this.started && !this.finished && this._manualMode));
+      const railBottom = toolbarVisible ? DEPLOY_TOOLBAR_RESERVE : 0;
+      this._rightSettingsRail.style.bottom = railBottom + 'px';
+    }
+    this._syncSiegeHudLayout();
+    this._syncMinimapPosition();
+    this._syncDeployToolbarOffset();
+  }
+
+  /** Dolna krawędź paska mocy (Grecy/ %) — panele oblężenia zaczynają się poniżej. */
+  private _battlePowerStackBottomPx(): number {
+    const el = this._bottomPowerBar;
+    if (el?.isConnected) {
+      return el.offsetTop + el.offsetHeight + 10;
+    }
+    return BATTLE_HEADER_H + 8;
+  }
+
+  /** Panele oblężenia — poza rosterem, paskiem mocy (Grecy) i prawym railem. */
+  private _syncSiegeHudLayout(): void {
+    if (this.siegeWallCol < 0) return;
+    let rosterW = 0;
+    const rosterEl = (this.deployPhase && this._rosterBar?.isConnected)
+      ? this._rosterBar
+      : (this._rosterBar && (this._manualMode || this.started || this.deployPhase)
+        ? this._rosterBar
+        : this._deployRosterDock);
+    if (rosterEl?.isConnected) rosterW = rosterEl.offsetWidth + 16;
+    // 88px = ten sam inset co górny pasek (rail 56 + margines), żeby panel nie wchodził pod przyciski P/R/…
+    const railW = Math.max(88, (this._rightSettingsRail?.offsetWidth ?? 56) + 24);
+    layoutSiegeHud1E({
+      rosterLeftPx: rosterW > 0 ? rosterW : 16,
+      railRightPx: railW,
+      topPanelPx: this._battlePowerStackBottomPx(),
+      bottomReservePx: 0,
+    });
   }
 
   /** Start deploy: osobne grupy Konnica / Piechota / Łucznicy (playtest POLE-BITWY). */
@@ -9943,6 +10212,21 @@ export class BattleScene {
     }
     this._deploySelBar = actionBar;
 
+    let groupsBar = dock.querySelector('#deploy-groups-bar') as HTMLDivElement | null;
+    if (!groupsBar) {
+      groupsBar = document.createElement('div');
+      groupsBar.id = 'deploy-groups-bar';
+      applyDeployGroupManagerBar1E(groupsBar);
+      Object.assign(groupsBar.style, { display: 'none' });
+      const quick = dock.querySelector('#deploy-quick-select');
+      const scroll = dock.querySelector('#deploy-roster-scroll');
+      if (actionBar) dock.insertBefore(groupsBar, actionBar);
+      else if (scroll) dock.insertBefore(groupsBar, scroll);
+      else if (quick?.nextSibling) dock.insertBefore(groupsBar, quick.nextSibling);
+      else dock.appendChild(groupsBar);
+    }
+    this._deployGroupsBar = groupsBar;
+
     let footer = dock.querySelector('#deploy-roster-footer') as HTMLDivElement | null;
     if (!footer) {
       footer = document.createElement('div');
@@ -9959,9 +10243,40 @@ export class BattleScene {
       footer.appendChild(hint);
       dock.appendChild(footer);
     }
+    Object.assign(footer.style, {
+      flexDirection: 'column',
+      alignItems: 'flex-start',
+      gap: '4px',
+    });
+    const hintEl = footer.querySelector('#deploy-roster-footer-hint') as HTMLSpanElement | null;
+    if (hintEl) {
+      Object.assign(hintEl.style, {
+        whiteSpace: 'normal',
+        wordBreak: 'break-word',
+        maxWidth: '100%',
+        lineHeight: '1.35',
+      });
+    }
     this._deployRosterFooter = footer;
     this._deployRosterFeedback = footer.querySelector('#deploy-roster-footer-hint') as HTMLDivElement | null;
     this._updateDeployToolbarSelection();
+    this._normalizeDeployRosterChromeOrder(dock);
+    this._bindDeployRosterChromeClicks(dock);
+  }
+
+  /** Kolejność: filtry → grupy → akcje (przed scrollem kart). */
+  private _normalizeDeployRosterChromeOrder(dock: HTMLDivElement): void {
+    const quick = dock.querySelector('#deploy-quick-select');
+    const groups = dock.querySelector('#deploy-groups-bar');
+    const action = dock.querySelector('#deploy-roster-action-bar');
+    const scroll = dock.querySelector('#deploy-roster-scroll');
+    if (!quick || !groups || !action || !scroll) return;
+    let anchor: Element = scroll;
+    dock.insertBefore(action, anchor);
+    anchor = action;
+    dock.insertBefore(groups, anchor);
+    anchor = groups;
+    dock.insertBefore(quick, anchor);
   }
 
   /** @deprecated — zastąpione przez _ensureDeployC09Chrome. */
@@ -9974,6 +10289,8 @@ export class BattleScene {
       this._deployRosterDock.style.bottom = '16px';
       applyRosterPanel1E(this._deployRosterDock);
       this._ensureDeployRosterUnitBar();
+      this._normalizeDeployRosterChromeOrder(this._deployRosterDock);
+      this._bindDeployRosterChromeClicks(this._deployRosterDock);
       this._rebuildDeployRosterGrid();
       this._syncRosterColumnLayout();
       return;
@@ -10015,20 +10332,18 @@ export class BattleScene {
     dock.appendChild(quickBar);
     this._deployQuickSelectBar = quickBar;
 
+    const groupsBar = document.createElement('div');
+    groupsBar.id = 'deploy-groups-bar';
+    applyDeployGroupManagerBar1E(groupsBar);
+    Object.assign(groupsBar.style, { display: 'none' });
+    dock.appendChild(groupsBar);
+    this._deployGroupsBar = groupsBar;
+
     const actionBar = document.createElement('div');
     actionBar.id = 'deploy-roster-action-bar';
     applyRosterActionBar1E(actionBar);
     dock.appendChild(actionBar);
     this._deploySelBar = actionBar;
-
-    const groupsBar = document.createElement('div');
-    groupsBar.id = 'deploy-groups-bar';
-    Object.assign(groupsBar.style, {
-      display: 'none',
-      flexShrink: '0',
-    });
-    dock.appendChild(groupsBar);
-    this._deployGroupsBar = groupsBar;
 
     const strategyBar = document.createElement('div');
     strategyBar.id = 'deploy-strategy-bar';
@@ -10047,6 +10362,7 @@ export class BattleScene {
       flex: '1', minHeight: '0', overflowY: 'auto', overflowX: 'hidden',
       background: 'transparent',
       position: 'relative',
+      zIndex: '1',
       boxSizing: 'border-box',
       scrollbarGutter: 'stable',
       padding: '12px 22px 12px 12px',
@@ -10078,13 +10394,25 @@ export class BattleScene {
     footerHint.id = 'deploy-roster-footer-hint';
     footerHint.textContent = 'Ctrl+LPM = wielokrotne';
     footerHint.style.color = BATTLE_PLAYER_TEXT;
+    Object.assign(footerHint.style, {
+      whiteSpace: 'normal',
+      wordBreak: 'break-word',
+      maxWidth: '100%',
+      lineHeight: '1.35',
+    });
     footer.appendChild(footerHint);
+    Object.assign(footer.style, {
+      flexDirection: 'column',
+      alignItems: 'flex-start',
+      gap: '4px',
+    });
     dock.appendChild(footer);
     this._deployRosterFooter = footer;
     this._deployRosterFeedback = footerHint;
 
     document.body.appendChild(dock);
     this._deployRosterDock = dock;
+    this._bindDeployRosterChromeClicks(dock);
 
     if (!this._deployLayoutListener) {
       this._deployLayoutListener = () => {
@@ -10112,8 +10440,10 @@ export class BattleScene {
    * availH/W = obszar scrolla — chipy wypełniają panel (max 6×5, potem skala + scroll).
    */
   private _rosterScrollAvailH(deploy: boolean): number {
-    if (deploy && this._deployRosterScroll) {
-      return Math.max(80, this._deployRosterScroll.clientHeight);
+    if (deploy && (this._deployRosterScroll || this._rosterBar)) {
+      const scrollEl = this._deployRosterScroll
+        ?? this._rosterBar?.querySelector('#battle-roster-scroll') as HTMLDivElement | null;
+      if (scrollEl) return Math.max(80, scrollEl.clientHeight);
     }
     if (!deploy && this._rosterBar) {
       const scrollEl = this._rosterBar.querySelector('#battle-roster-scroll') as HTMLDivElement | null
@@ -10124,8 +10454,10 @@ export class BattleScene {
   }
 
   private _rosterScrollAvailW(deploy: boolean): number {
-    if (deploy && this._deployRosterScroll) {
-      return Math.max(120, this._deployRosterScroll.clientWidth - 4);
+    if (deploy && (this._deployRosterScroll || this._rosterBar)) {
+      const scrollEl = this._deployRosterScroll
+        ?? this._rosterBar?.querySelector('#battle-roster-scroll') as HTMLDivElement | null;
+      if (scrollEl) return Math.max(120, scrollEl.clientWidth - 4);
     }
     if (!deploy && this._rosterBar) {
       const scrollEl = this._rosterBar.querySelector('#battle-roster-scroll') as HTMLDivElement | null;
@@ -10208,13 +10540,20 @@ export class BattleScene {
     }
   }
 
-  /** Układ kart w panelu deploy — płaska siatka 6 kol. (C09 v4). */
+  /** Układ kart w panelu deploy — ten sam scroll co walka. */
   private _syncDeployPanelLayout(): void {
+    if (this.deployPhase && this._rosterBar) {
+      this._syncBattleRosterPanelLayout();
+      this._syncRosterBottomInset();
+      return;
+    }
     const dock = this._deployRosterDock;
     if (!dock) return;
 
     const availH = this._rosterScrollAvailH(true);
     const availW = this._rosterScrollAvailW(true);
+
+    this._syncRosterGroupLayouts(true, availH, availW);
 
     if (this._deployLooseCards?.isConnected) {
       const n = this._deployLooseCards.querySelectorAll('[data-unit-id]').length;
@@ -10226,6 +10565,7 @@ export class BattleScene {
     this._syncDeployToolbarOffset();
     this._syncMinimapPosition();
     this._syncRosterColumnLayout();
+    this._updateGroupSelectorBarLayout();
   }
 
   /**
@@ -10233,12 +10573,15 @@ export class BattleScene {
    */
   private _syncRosterColumnLayout(): void {
     let rosterW = 0;
-    if (this.deployPhase && this._deployRosterDock) {
-      this._deployRosterDock.style.top = (BATTLE_TOP_BAR_H + 8) + 'px';
-      rosterW = this._deployRosterDock.offsetWidth + 16;
-    } else if (this._rosterBar && (this._manualMode || this.started)) {
-      this._rosterBar.style.top = (BATTLE_TOP_BAR_H + 8) + 'px';
-      rosterW = this._rosterBar.offsetWidth + 16;
+    const rosterEl = (this.deployPhase && this._rosterBar)
+      ? this._rosterBar
+      : (this._rosterBar && (this._manualMode || this.started) ? this._rosterBar : this._deployRosterDock);
+    if (rosterEl) {
+      rosterEl.style.top = (BATTLE_TOP_BAR_H + 8) + 'px';
+      if (this.deployPhase || this._manualMode || this.started) {
+        rosterEl.style.bottom = this._rosterBottomInsetPx() + 'px';
+      }
+      rosterW = rosterEl.offsetWidth + 16;
     }
     if (this._bottomPowerBar) {
       const railW = (this._rightSettingsRail?.offsetWidth ?? 56) + 16;
@@ -10263,6 +10606,7 @@ export class BattleScene {
         });
       }
     }
+    this._syncSiegeHudLayout();
   }
 
   /** Układ kart wewnątrz bloku grupy — stałe 6 kolumn, scroll w pionie. */
@@ -10356,6 +10700,7 @@ export class BattleScene {
   /** Pokaz/ukryj dolny pasek Taktyka+Strategia (deploy + reczna walka). */
   private _syncBattleToolbarMode(): void {
     if (this._battleChromeSuppressed) return;
+    this._syncSiegeHudChromeVisibility();
     const battleManual = this.started && !this.deployPhase && !this.finished && this._manualMode;
     const showToolbar = this.deployPhase || battleManual;
 
@@ -10382,33 +10727,41 @@ export class BattleScene {
     if (showToolbar) {
       this._syncDeployToolbarOffset();
       this._updateDeployToolbarStatus();
+      this._updateDeployGroupsBar();
+      this._syncRosterBottomInset();
+    } else if (this._deployGroupManagerRail) {
+      this._deployGroupManagerRail.style.display = 'none';
     }
-    if (this.siegeWallCol >= 0) {
-      // C-05 dolny pasek (Ostrzał/Szturm) vs toolbar deploy — tylko jeden naraz
-      setSiegeHudVisible(!showToolbar);
-    }
+    this._syncModeHintPosition();
     this._updateGroupSelectorBarLayout();
     this._updateRightRailLayout();
     this._syncMinimapPosition();
   }
 
+  /** Prawa krawędź lewego panelu rosteru (px) — toolbar deploy zaczyna się za nią. */
+  private _deployRosterRightEdgePx(): number {
+    const el = this._rosterBar?.isConnected
+      ? this._rosterBar
+      : ((this.deployPhase && this._deployRosterDock)
+        ? this._deployRosterDock
+        : (this._rosterBar && (this._manualMode || this.started) ? this._rosterBar : this._deployRosterDock));
+    if (el?.isConnected) {
+      return Math.round(el.getBoundingClientRect().right);
+    }
+    return 16 + ROSTER_PANEL_FIXED_W;
+  }
+
   /** Toolbar deploy zaczyna sie za lewym panelem rosteru. */
   private _syncDeployToolbarOffset(): void {
-    let w = 0;
-    if (this.deployPhase && this._deployRosterDock) {
-      w = this._deployRosterDock.offsetWidth;
-    } else if (this._rosterBar && this._manualMode) {
-      w = this._rosterBar.offsetWidth;
-    } else if (this._deployRosterDock) {
-      w = this._deployRosterDock.offsetWidth;
-    }
+    const edge = this._deployRosterRightEdgePx();
     if (this._deployToolbar) {
-      if (w > 0 && (this.deployPhase || this._manualMode)) {
-        this._deployToolbar.style.left = w + 'px';
+      if (edge > 0 && (this.deployPhase || this._manualMode)) {
+        this._deployToolbar.style.left = edge + 'px';
       } else {
         this._deployToolbar.style.left = '0';
       }
     }
+    this._syncDeployGroupManagerRailLayout();
   }
 
   /** Minimapa: obok rosteru deploy / walki recznej. */
@@ -10424,7 +10777,7 @@ export class BattleScene {
     const toolbarUp = this._deployToolbar
       && this._deployToolbar.style.display !== 'none'
       && (this.deployPhase || (this.started && !this.finished && this._manualMode));
-    const bottomOff = toolbarUp ? DEPLOY_TOOLBAR_RESERVE + 10 : (this.deployPhase ? 156 : 156);
+    const bottomOff = toolbarUp ? DEPLOY_TOOLBAR_RESERVE + 10 : 156;
     Object.assign(this._minimapWrap.style, {
       left: leftOff + 'px',
       bottom: bottomOff + 'px',
@@ -10456,7 +10809,7 @@ export class BattleScene {
       });
   }
 
-  /** Odtwarza siatke rosteru deploy — płaska siatka 6 kol. (C09 v4, bez zwijanych bloków grup). */
+  /** Odtwarza siatke rosteru deploy — ten sam układ bloków grup co walka. */
   private _rebuildDeployRosterGrid(): void {
     if (!this._ensureDeployRowRefs()) {
       if (this.deployPhase) {
@@ -10466,32 +10819,59 @@ export class BattleScene {
         return;
       }
     }
-    if (this._deployUnitsRow) this._deployUnitsRow.innerHTML = '';
+    const container = this.deployPhase ? this._battleRosterCards : this._deployUnitsRow;
+    if (container) container.innerHTML = '';
     this._deployGroupTabs.clear();
     this._deployGroupBlocks.clear();
     this._unitCards.clear();
+    this._deployLooseCards = null;
 
-    const grid = document.createElement('div');
-    grid.id = 'deploy-roster-cards';
-    grid.className = 'deploy-roster-cards';
-    Object.assign(grid.style, {
-      display: 'grid', width: '100%', maxWidth: '100%', boxSizing: 'border-box',
-    });
-
-    for (const ru of this._sortedDeployUnits()) {
-      const card = this._createDeployRosterCard(ru);
-      grid.appendChild(card);
-      this._unitCards.set(ru.bu.id, card);
+    const inGroup = new Set<string>();
+    for (const gid of this._sortedGroupIds()) {
+      const memberIds = this._liveGroupMemberIds(gid);
+      if (memberIds.length === 0) continue;
+      const block = this._createRosterGroupBlock(gid, true);
+      container?.appendChild(block.wrapper);
+      this._deployGroupTabs.set(gid, block.header);
+      this._deployGroupBlocks.set(gid, block);
+      for (const id of memberIds) {
+        const ru = this.atk.find(u => u.bu.id === id);
+        if (!ru || ru.dead || ru.removed) continue;
+        inGroup.add(id);
+        const card = this._createUnitCard(ru);
+        block.cards.appendChild(card);
+        this._unitCards.set(id, card);
+      }
+      this._applyRosterGroupCollapse(gid, true);
     }
-    this._deployUnitsRow?.appendChild(grid);
-    this._deployLooseCards = grid;
 
+    const ungrouped = this.atk.filter(u =>
+      !u.dead && !u.removed && !inGroup.has(u.bu.id),
+    );
+    if (ungrouped.length > 0) {
+      const looseWrap = document.createElement('div');
+      looseWrap.id = 'deploy-loose-cards';
+      looseWrap.className = 'roster-loose-cards';
+      for (const ru of ungrouped) {
+        const card = this._createUnitCard(ru);
+        looseWrap.appendChild(card);
+        this._unitCards.set(ru.bu.id, card);
+      }
+      container?.appendChild(looseWrap);
+      this._deployLooseCards = looseWrap;
+    }
+
+    this._expandAllDeployGroups();
     this._updateDeployRowCounts();
     this._updateRosterBar();
     this._updateDeployGroupsBar();
     this._updateDeployStrategyBar();
-    this._updateDeployQuickSelectBar();
-    requestAnimationFrame(() => this._syncDeployPanelLayout());
+    this._updateBattleQuickSelectBar();
+    this._updateBattleSelectionBar();
+    requestAnimationFrame(() => {
+      this._syncDeployPanelLayout();
+      this._syncRosterBottomInset();
+    });
     this._updateDeployToolbarSelection();
   }
 
@@ -10602,7 +10982,6 @@ export class BattleScene {
     for (const [gid, block] of this._deployGroupBlocks) {
       this._updateRosterGroupHeaderLabel(block.header, gid);
     }
-    this._paintTwGroupTabs(this._deployGroupTabs);
   }
 
   private _updateRosterGroupHeaderLabel(header: HTMLDivElement, gid: string): void {
@@ -10611,17 +10990,33 @@ export class BattleScene {
     const collapsed = this._rosterGroupCollapsed.has(gid);
     const n = this._groupDisplayNum(gid);
     const cnt = this._liveGroupMemberIds(gid).length;
-    const active = this._deployActiveGroupId === gid;
+    const liveIds = this._liveGroupMemberIds(gid);
+    const allSel = liveIds.length > 0 && liveIds.every(id => this._selectedUnits.has(id));
+    const partialSel = !allSel && liveIds.some(id => this._selectedUnits.has(id));
+    const managing = this.deployPhase && this._deployActiveGroupId === gid;
+    const active = managing || allSel || partialSel;
     if (body) {
-      body.textContent = 'Grupa ' + (n != null ? String(n) : '?') + ' \u00B7 ' + cnt;
-      body.style.fontWeight = 'bold';
-      body.style.color = active ? '#ffe066' : '#fff8dc';
+      body.innerHTML = formatRosterGroupHeaderHtml(n, cnt);
+      body.style.color = managing ? '#ffe066' : allSel ? '#fff' : partialSel ? '#fff8dc' : '#fff8dc';
     }
     if (chev) chev.textContent = collapsed ? '\u25B6' : '\u25BC';
-    header.style.border = active
-      ? `2px solid ${BATTLE_GOLD}`
-      : `1px solid ${BATTLE_GOLD_DIM}`;
-    header.style.background = active ? 'rgba(232,216,138,0.28)' : 'rgba(255,255,255,0.08)';
+    header.style.border = allSel
+      ? `2px solid ${BATTLE_PLAYER}`
+      : managing || partialSel
+        ? `2px solid ${BATTLE_GOLD}`
+        : `1px solid ${BATTLE_GOLD_DIM}`;
+    header.style.boxShadow = allSel
+      ? '0 0 12px rgba(58,106,208,0.55)'
+      : managing
+        ? '0 0 10px rgba(232,216,138,0.45)'
+        : partialSel ? '0 0 8px rgba(232,216,138,0.4)' : 'inset 0 1px 0 rgba(255,255,255,0.15)';
+    header.style.background = allSel
+      ? 'linear-gradient(180deg,rgba(58,106,208,0.65),rgba(40,70,160,0.55))'
+      : managing
+        ? 'rgba(232,216,138,0.28)'
+        : partialSel
+          ? 'linear-gradient(180deg,rgba(232,216,138,0.65),rgba(160,130,50,0.50))'
+          : 'linear-gradient(180deg,rgba(232,216,138,0.55),rgba(140,110,40,0.40))';
     header.title = 'Klik = zaznacz grupe \u00B7 strzalka = zwin/rozwin karty';
   }
 
@@ -10730,7 +11125,7 @@ export class BattleScene {
       const kind = (el as HTMLElement).dataset.deployLinesKind;
       const cnt = Number((el as HTMLElement).dataset.deployLinesCount) as DeployLineCount;
       const active = kind === 'melee' ? this._deployMeleeLines : this._deployArcherLines;
-      paintDeployPopupOption(el as HTMLButtonElement, cnt === active);
+      paintDeployLineNumber(el as HTMLButtonElement, cnt === active);
     });
   }
 
@@ -10783,8 +11178,21 @@ export class BattleScene {
     });
   }
 
-  /** Odtwarza referencje do rosteru deploy z DOM (po utracie referencji). */
+  /** Odtwarza referencje do rosteru atk (deploy = ten sam panel co walka). */
   private _ensureDeployRowRefs(): boolean {
+    if (this.deployPhase) {
+      if (!this._rosterBar?.isConnected) this._buildRosterBar();
+      this._ensureBattleRosterChrome();
+      const scroll = this._rosterBar?.querySelector('#battle-roster-scroll') as HTMLDivElement | null;
+      const cards = this._rosterBar?.querySelector('#battle-roster-cards') as HTMLDivElement | null;
+      if (!scroll || !cards) return false;
+      this._battleRosterCards = cards;
+      this._deployUnitsRow = cards;
+      this._deployRosterScroll = scroll;
+      this._deployRosterGridEl = cards;
+      applyBattleRosterScrollbar(scroll);
+      return true;
+    }
     if (this._deployUnitsRow?.isConnected) return true;
     const dock = document.getElementById('deploy-roster-dock') as HTMLDivElement | null;
     if (!dock) return false;
@@ -10804,28 +11212,24 @@ export class BattleScene {
     this._deployQuickSelectBar = dock.querySelector('#deploy-quick-select') as HTMLDivElement | null;
     this._deployRosterScroll = dock.querySelector('#deploy-roster-scroll') as HTMLDivElement | null;
     if (this._deployRosterScroll) applyBattleRosterScrollbar(this._deployRosterScroll);
+    this._normalizeDeployRosterChromeOrder(dock);
+    this._bindDeployRosterChromeClicks(dock);
     return true;
   }
 
-  /** Pelna odbudowa docku deploy gdy referencje DOM rozjechane. */
+  /** Odbudowa lewego panelu gdy referencje DOM rozjechane (deploy). */
   private _recoverDeployRosterDock(): void {
     document.getElementById('deploy-roster-dock')?.remove();
     this._deployRosterDock = null;
     this._deployUnitsRow = null;
-    this._deployGroupsBar = null;
-    this._deployStrategyBar = null;
-    this._deployRowUnits = null;
-    this._deployGroupsStrip = null;
-    this._deployRosterGridEl = null;
-    this._deployRosterHeader = null;
-    this._deployRosterCount = null;
-    this._deployRosterFeedback = null;
-    this._deploySelBar = null;
-    this._deployRosterFooter = null;
-    this._deployQuickSelectBar = null;
     this._deployGroupTabs.clear();
     this._deployGroupBlocks.clear();
-    this._buildDeployRosterDock();
+    if (this.deployPhase) {
+      this._buildRosterBar();
+      this._ensureBattleRosterChrome();
+    } else {
+      this._buildDeployRosterDock();
+    }
   }
 
   /** Rozklada jednostki ATK w jednym szeregu wzdłuż calej wysokosci strefy deploy. */
@@ -10849,7 +11253,7 @@ export class BattleScene {
   }
 
   private _updateDeployRowCounts(): void {
-    this._updateDeployRosterHeader();
+    this._updateBattleRosterHeader();
   }
 
   /** Kompaktowa karta jednostki — styl C09 v4 (deploy roster). */
@@ -10959,20 +11363,26 @@ export class BattleScene {
     /* legacy no-op */
   }
 
-  /** Nagłówek nad rosterem — C09 v4 (Roster + licznik N / N). */
+  /** Nagłówek nad rosterem — C09 v4 (Roster + licznik + podsumowanie grup). */
   private _updateDeployRosterHeader(): void {
     if (!this._deployRosterHeader || !this.deployPhase) return;
     const live = this.atk.filter(u => !u.dead && !u.removed).length;
-    let title = this._deployRosterHeader.querySelector('#deploy-roster-title') as HTMLSpanElement | null;
+    let titleWrap = this._deployRosterHeader.querySelector('#deploy-roster-title-wrap') as HTMLDivElement | null;
     let count = this._deployRosterHeader.querySelector('#deploy-roster-header-count') as HTMLSpanElement | null;
-    if (!title || !count) {
+    let groupsLine = this._deployRosterHeader.querySelector('#deploy-roster-groups-line') as HTMLDivElement | null;
+    if (!titleWrap || !count) {
       this._deployRosterHeader.innerHTML = '';
       applyRosterHeaderSection1E(this._deployRosterHeader);
       Object.assign(this._deployRosterHeader.style, {
-        display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+        display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: '3px',
         padding: '12px 14px',
       });
-      title = document.createElement('span');
+      const row = document.createElement('div');
+      row.id = 'deploy-roster-title-wrap';
+      Object.assign(row.style, {
+        display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+      });
+      const title = document.createElement('span');
       title.id = 'deploy-roster-title';
       title.textContent = 'Roster';
       count = document.createElement('span');
@@ -10981,10 +11391,29 @@ export class BattleScene {
         fontSize: '11px', color: BATTLE_TEXT_DIM, fontWeight: '400',
         letterSpacing: '0', textTransform: 'none',
       });
-      this._deployRosterHeader.appendChild(title);
-      this._deployRosterHeader.appendChild(count);
+      row.appendChild(title);
+      row.appendChild(count);
+      this._deployRosterHeader.appendChild(row);
+      titleWrap = row;
+      groupsLine = document.createElement('div');
+      groupsLine.id = 'deploy-roster-groups-line';
+      Object.assign(groupsLine.style, {
+        fontSize: '10px', letterSpacing: '0.08em', textTransform: 'uppercase',
+        color: BATTLE_TEXT_DIM, lineHeight: '1.35',
+      });
+      this._deployRosterHeader.appendChild(groupsLine);
     }
-    count.textContent = live + ' / ' + live;
+    if (!groupsLine) {
+      groupsLine = this._deployRosterHeader.querySelector('#deploy-roster-groups-line') as HTMLDivElement | null;
+    }
+    count!.textContent = live + ' / ' + live;
+    const groupParts = this._sortedGroupIds().map(gid =>
+      this._groupDisplayLabel(gid) + ' \u00B7 ' + this._liveGroupMemberIds(gid).length,
+    );
+    if (groupsLine) {
+      groupsLine.textContent = groupParts.length > 0 ? groupParts.join(' \u00A0\u00B7\u00A0 ') : '';
+      groupsLine.style.display = groupParts.length > 0 ? 'block' : 'none';
+    }
     this._deployRosterHeader.title = BATTLE_UI_BUILD;
     this._updateDeployRosterCountLine();
   }
@@ -11232,7 +11661,12 @@ export class BattleScene {
     const onlyThisGroup = allSelected && this._selectedUnits.size === liveIds.length;
 
     if (replace) {
-      if (onlyThisGroup) return;
+      if (onlyThisGroup) {
+        this._deployActiveGroupId = gid;
+        this._clearDeploySelectionState();
+        this._updateDeployGroupsBar();
+        return;
+      }
       this._deployActiveGroupId = gid;
       this._selectDeployUnitsByIds(liveIds);
       return;
@@ -11289,13 +11723,25 @@ export class BattleScene {
   /** Przycisk szybkiego zaznaczenia — chip filtra C09 v4. */
   private _makeDeployQuickBtn(
     label: string, active: boolean, onClick: () => void,
-    opts?: { fullWidth?: boolean; kind?: 'mounted' | 'melee' | 'ranged' | 'all' | 'group' },
+    opts?: {
+      fullWidth?: boolean;
+      kind?: 'mounted' | 'melee' | 'ranged' | 'all' | 'group';
+      groupId?: string;
+    },
   ): HTMLButtonElement {
     const fullWidth = opts?.fullWidth !== false;
     const kind = opts?.kind ?? 'all';
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.textContent = label;
+    if (kind === 'group' && opts?.groupId) {
+      btn.dataset.rosterChip = 'group';
+      btn.dataset.groupId = opts.groupId;
+    } else if (kind === 'all') {
+      btn.dataset.rosterChip = 'all';
+    } else {
+      btn.dataset.rosterChip = 'kind-' + kind;
+    }
     applyFilterChip1E(btn, active, kind);
     if (!fullWidth) {
       btn.style.flexShrink = '0';
@@ -11303,25 +11749,28 @@ export class BattleScene {
     } else {
       btn.style.width = 'auto';
     }
+    btn.style.pointerEvents = 'auto';
+    btn.style.position = 'relative';
+    btn.style.zIndex = '2';
     btn.addEventListener('click', (e) => {
+      e.preventDefault();
       e.stopPropagation();
       onClick();
     });
     return btn;
   }
 
-  /** Odswieza pasek filtrów — C09 v4 (Wszystkie + typy + chipy grup). */
+  /** Odswieza pasek filtrów — C09 v4 (typy + grupy jak w walce recznej). */
   private _updateDeployQuickSelectBar(): void {
     const bar = this._deployQuickSelectBar;
     if (!bar || !this.deployPhase) return;
     bar.innerHTML = '';
+    Object.assign(bar.style, {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: '5px',
+    });
 
-    bar.appendChild(this._makeDeployQuickBtn(
-      'Wszystkie',
-      this._isDeploySelectionAll(),
-      () => this._selectDeployAllToggle(),
-      { kind: 'all', fullWidth: false },
-    ));
     bar.appendChild(this._makeDeployQuickBtn(
       'Konnica',
       this._isDeploySelectionExactlyKind('mounted'),
@@ -11340,19 +11789,79 @@ export class BattleScene {
       () => this._selectDeployByKindToggle('ranged'),
       { kind: 'ranged', fullWidth: false },
     ));
-    for (const gid of this._sortedGroupIds()) {
+    bar.appendChild(this._makeDeployQuickBtn(
+      'Wszystkie',
+      this._isDeploySelectionAll(),
+      () => this._selectDeployAllToggle(),
+      { kind: 'all', fullWidth: false },
+    ));
+
+    const groups = this._sortedGroupIds();
+    for (const gid of groups) {
+      const managing = this._deployActiveGroupId === gid;
+      const selected = this._isDeploySelectionExactlyGroup(gid);
       bar.appendChild(this._makeDeployQuickBtn(
         this._groupDisplayLabel(gid),
-        this._isDeploySelectionExactlyGroup(gid),
-        () => this._selectDeployGroupToggle(gid, true),
-        { kind: 'group', fullWidth: false },
+        managing || selected,
+        () => this._handleDeployGroupTabClick(gid),
+        { kind: 'group', groupId: gid, fullWidth: false },
       ));
     }
   }
 
-  /** @deprecated Górny pasek GRUPY usunięty — wybór tylko w blokach rosteru (scroll). */
+  /** Dolna belka „Zarządzaj grupą” — nad toolbarem Formacja/Taktyka. */
+  private _buildDeployGroupManagerRail(): void {
+    if (this._deployGroupManagerRail?.isConnected) return;
+    let rail = document.getElementById('deploy-group-manager-rail') as HTMLDivElement | null;
+    if (!rail) {
+      rail = document.createElement('div');
+      rail.id = 'deploy-group-manager-rail';
+      applyDeployGroupManagerRail1E(rail);
+      document.body.appendChild(rail);
+    }
+    this._deployGroupManagerRail = rail;
+  }
+
+  /** Pozycja i widoczność dolnej belki grup. */
+  private _syncDeployGroupManagerRailLayout(): void {
+    const rail = this._deployGroupManagerRail;
+    if (!rail) return;
+    const groups = this._sortedGroupIds();
+    const toolbarUp = !!this._deployToolbar
+      && this._deployToolbar.style.display !== 'none'
+      && this.deployPhase;
+    const show = toolbarUp && groups.length > 0;
+    rail.style.display = show ? 'flex' : 'none';
+    if (!show) return;
+    const edge = this._deployRosterRightEdgePx();
+    rail.style.left = (edge > 0 ? edge : 0) + 'px';
+    rail.style.bottom = (16 + DEPLOY_TOOLBAR_H + DEPLOY_GROUP_RAIL_GAP) + 'px';
+  }
+
+  /** Pasek zarządzania grupami — tylko stan aktywnej grupy (UI jak walka). */
   private _updateDeployGroupsBar(): void {
-    if (this._deployGroupsBar) this._deployGroupsBar.style.display = 'none';
+    if (!this.deployPhase) {
+      if (this._deployGroupManagerRail) {
+        this._deployGroupManagerRail.style.display = 'none';
+        this._deployGroupManagerRail.innerHTML = '';
+      }
+      return;
+    }
+    const groups = this._sortedGroupIds();
+    if (groups.length === 0) {
+      this._deployActiveGroupId = null;
+    } else if (!this._deployActiveGroupId || !groups.includes(this._deployActiveGroupId)) {
+      this._deployActiveGroupId = groups[0]!;
+    }
+    if (this._deployGroupManagerRail) {
+      this._deployGroupManagerRail.style.display = 'none';
+      this._deployGroupManagerRail.innerHTML = '';
+    }
+    if (this._deployGroupsBar) {
+      this._deployGroupsBar.style.display = 'none';
+      this._deployGroupsBar.innerHTML = '';
+    }
+    this._syncRosterBottomInset();
   }
 
   /** Doktryny — ukryty pasek w rosterze; taktyka/strategia w dropdownie toolbara. */
@@ -11468,35 +11977,31 @@ export class BattleScene {
     requestAnimationFrame(() => this._syncBattleRosterPanelLayout());
   }
 
-  /** Odswieza karty, naglowek, panel i skale po zmianie zaznaczenia. */
+  /** Odswieza karty, naglowek, panel po zmianie zaznaczenia (deploy = jak walka, bez skali 3D). */
   private _refreshDeploySelectionVisuals(): void {
     this._clearDeployGhosts();
-    const n = this._selectedUnits.size;
     for (const u of this.atk) {
       if (u.dead || u.removed) continue;
+      u.group.scale.setScalar(1.0);
       const sel = this._selectedUnits.has(u.bu.id);
       if (sel) {
         const ring = this._selectionRings.get(u.bu.id);
         if (ring) ring.position.set(0, 0.03, 0);
       }
-      if (n === 1 && sel) {
-        u.group.scale.setScalar(1.22);
-        this._deploySelected = u;
-      } else if (!sel) {
-        u.group.scale.setScalar(1.0);
-      } else {
-        u.group.scale.setScalar(1.08);
-      }
     }
-    if (n !== 1) this._deploySelected = n > 0 ? this._primarySelectedUnit() : null;
+    this._deploySelected = this._selectedUnits.size === 1
+      ? this._primarySelectedUnit()
+      : (this._selectedUnits.size > 0 ? this._primarySelectedUnit() : null);
     this._updateRosterBar();
-    this._updateDeployRosterHeader();
+    this._updateBattleRosterHeader();
     this._updateDeployDetailPanel();
-    this._updateDeployQuickSelectBar();
+    this._updateBattleQuickSelectBar();
     this._updateDeployToolbarSelection();
     this._updateDeployGroupsBar();
     this._updateDeployStrategyBar();
     this._syncDeployRosterGroupVisibility();
+    this._refreshDeployGroupHeaderLabels();
+    this._syncRosterBottomInset();
   }
 
   /** Sprzata UI specyficzne dla fazy deploy po starcie walki. */
@@ -11508,7 +12013,13 @@ export class BattleScene {
     if (this._deployRosterDock?.parentNode) {
       this._deployRosterDock.parentNode.removeChild(this._deployRosterDock);
     }
+    if (this._deployGroupManagerRail?.parentNode) {
+      this._deployGroupManagerRail.parentNode.removeChild(this._deployGroupManagerRail);
+    }
     this._deployRosterDock = null;
+    this._deployGroupManagerRail = null;
+    this._deployGroupsBar = null;
+    // player-roster-bar zostaje — ten sam panel w walce
     this._deployRosterHeader = null;
     this._deployRosterCount = null;
     this._deployRosterFeedback = null;
@@ -11530,15 +12041,12 @@ export class BattleScene {
     this._deployUnitsRow = null;
     this._deployLooseCards = null;
     this._deployRosterScroll = null;
-    if (this._deployLayoutListener) {
-      window.removeEventListener('resize', this._deployLayoutListener);
-      this._deployLayoutListener = null;
-    }
     this._deployGroupsBar = null;
     this._deployStrategyBar = null;
     this._deployRowUnits = null;
     this._deployRosterGridEl = null;
-    this._rosterBar = null;
+    this._deployGroupTabs.clear();
+    this._deployGroupBlocks.clear();
     this._unitCards.clear();
     this._deployDrag = null;
     this._deployMoveStart = null;
@@ -11549,6 +12057,8 @@ export class BattleScene {
       this._deployGhostGroup = null;
     }
     this._updateGroupSelectorBarLayout();
+    this._rebuildBattleRosterGrid();
+    this._syncRosterBottomInset();
   }
 
   /**
@@ -12435,19 +12945,13 @@ export class BattleScene {
     return selLive;
   }
 
-  /** Zaznacza jednostke w fazie rozstawiania (wizualne scale 1.2 + ring). */
+  /** Zaznacza jednostke w fazie deploy (ring only — bez skali 3D). */
   private _setDeploySelection(ru: RuntimeBattleUnit): void {
     this._clearAllSelection();
     this._selectedUnits.add(ru.bu.id);
     this._addSelectionRing(ru);
-    if (this._deploySelected && this._deploySelected !== ru) {
-      this._deploySelected.group.scale.setScalar(1.0);
-    }
     this._deploySelected = ru;
-    ru.group.scale.setScalar(1.25);
-    this._updateRosterBar();
-    this._updateDeployRosterHeader();
-    this._updateSelectedPanel();
+    this._refreshDeploySelectionVisuals();
   }
 
   /** Odznacza aktualnie zaznaczona jednostke. */
@@ -13824,8 +14328,22 @@ export class BattleScene {
     setTimeout(() => { if (this.hint.textContent === full) this.hint.textContent = prev ?? ''; }, 1800);
   }
 
-  /** Feedback w fazie deploy (stopka rosteru C09). */
+  /** Feedback w fazie deploy (ten sam element co walka). */
   private _showDeployFeedback(msg: string): void {
+    if (this.deployPhase && this._battleRosterFeedback) {
+      const el = this._battleRosterFeedback;
+      el.style.display = 'block';
+      const prev = el.textContent;
+      el.textContent = msg;
+      el.style.color = '#7be08a';
+      setTimeout(() => {
+        if (el.textContent === msg) {
+          el.style.color = BATTLE_TEXT_DIM;
+          el.textContent = prev ?? 'LPM: zaznacz \u00B7 Ctrl+LPM: wiele \u00B7 PPM: odznacz';
+        }
+      }, 2800);
+      return;
+    }
     if (this.deployPhase && this._deployRosterFeedback) {
       const el = this._deployRosterFeedback;
       const prev = el.textContent;
@@ -13904,25 +14422,45 @@ export class BattleScene {
     this._battleRosterCount.textContent = 'Na polu: ' + live + ' jednostek';
   }
 
-  /** Lewy panel walki: zaznaczenie + Odznacz / Rozgrupuj. */
+  /** Lewy panel: zaznaczenie + Odznacz / Grupuj / Rozgrupuj (deploy i walka). */
   private _updateBattleSelectionBar(): void {
     this._updateBattleRosterCountLine();
     const bar = this._battleSelBar;
-    if (!bar || this.deployPhase || !this.started) return;
+    const active = this.deployPhase || (this.started && this._manualMode);
+    if (!bar || !active) return;
     bar.innerHTML = '';
     const n = this._selectedUnits.size;
     const unitBar = this._rosterBar?.querySelector('#battle-roster-unit-bar') as HTMLDivElement | null;
-    if (unitBar) unitBar.style.display = n > 0 ? 'flex' : 'none';
-    if (n === 0) return;
+    if (unitBar) {
+      unitBar.style.display = 'flex';
+      unitBar.style.flexDirection = 'column';
+      unitBar.style.gap = '2px';
+    }
+    const feedback = this._battleRosterFeedback;
+    if (feedback) {
+      feedback.style.display = 'block';
+      if (this.deployPhase && !feedback.textContent) {
+        feedback.textContent = 'LPM: zaznacz \u00B7 Ctrl+LPM: wiele \u00B7 PPM: odznacz';
+      }
+    }
+    if (n === 0) {
+      if (unitBar) unitBar.style.display = this.deployPhase ? 'none' : 'none';
+      return;
+    }
+    if (unitBar) unitBar.style.display = 'flex';
 
     const selUnits = [...this._selectedUnits]
       .map(id => this.atk.find(u => u.bu.id === id))
-      .filter((u): u is RuntimeBattleUnit => !!u && !u.dead && !u.removed && !u.routed);
+      .filter((u): u is RuntimeBattleUnit => !!u && !u.dead && !u.removed
+        && (this.deployPhase || !u.routed));
     if (selUnits.length === 0) return;
 
     const groupIds = [...new Set(selUnits.map(u => u.groupId).filter(Boolean))];
     const singleGid = groupIds.length === 1 && selUnits.every(u => u.groupId === groupIds[0])
       ? groupIds[0]! : null;
+    const canGroup = selUnits.length >= 2 && !(
+      singleGid && selUnits.length === this._liveGroupMemberIds(singleGid).length
+    );
     const lbl = document.createElement('span');
     lbl.textContent = singleGid
       ? this._groupDisplayLabel(singleGid) + ' \u00B7 ' + selUnits.length
@@ -13951,10 +14489,10 @@ export class BattleScene {
       return b;
     };
 
-    bar.appendChild(mkBtn('Odznacz', () => this._clearAllSelection(), true));
-    const canGroup = selUnits.length >= 2 && !(
-      singleGid && selUnits.length === this._liveGroupMemberIds(singleGid).length
-    );
+    const clearFn = () => this.deployPhase
+      ? this._clearDeploySelectionState()
+      : this._clearAllSelection();
+    bar.appendChild(mkBtn('Odznacz', clearFn, true));
     if (canGroup) {
       bar.appendChild(mkBtn('', () => this._groupSelected(), true, true));
     }
@@ -13965,10 +14503,12 @@ export class BattleScene {
 
   /** Nagłówek lewego panelu rosteru walki. */
   private _updateBattleRosterHeader(): void {
-    if (!this._battleRosterHeader || this.deployPhase || !this.started) return;
+    if (!this._battleRosterHeader) return;
+    if (!this.deployPhase && (!this.started || !this._manualMode)) return;
     const counts = { mounted: 0, melee: 0, ranged: 0 };
     for (const ru of this.atk) {
-      if (ru.dead || ru.removed || ru.routed) continue;
+      if (ru.dead || ru.removed) continue;
+      if (!this.deployPhase && ru.routed) continue;
       counts[this._deployRowKind(ru)]++;
     }
     const total = counts.mounted + counts.melee + counts.ranged;
@@ -14175,18 +14715,27 @@ export class BattleScene {
     this._battleRosterCards = cardsRow;
 
     this._unitCards.clear();
-    if (!this.deployPhase) {
+    if (this.deployPhase) {
+      this._rebuildDeployRosterGrid();
+    } else {
       this._rebuildBattleRosterGrid();
-      this._ensureGroupSelectorBar();
-      if (!this._deployLayoutListener) {
-        this._deployLayoutListener = () => {
-          if (this.deployPhase) this._syncDeployPanelLayout();
-          else if (this._rosterBar) this._syncBattleRosterPanelLayout();
-        };
-        window.addEventListener('resize', this._deployLayoutListener);
-      }
-      requestAnimationFrame(() => this._syncBattleRosterPanelLayout());
     }
+    this._ensureGroupSelectorBar();
+    if (!this._deployLayoutListener) {
+      this._deployLayoutListener = () => {
+        if (this.deployPhase) this._syncDeployPanelLayout();
+        else if (this._rosterBar) this._syncBattleRosterPanelLayout();
+      };
+      window.addEventListener('resize', this._deployLayoutListener);
+    }
+    requestAnimationFrame(() => {
+      if (this.deployPhase) {
+        this._syncDeployPanelLayout();
+        this._syncRosterBottomInset();
+      } else {
+        this._syncBattleRosterPanelLayout();
+      }
+    });
   }
 
   /** Calkowicie odtwarza karty rostera (np. po resecie deploy). */
@@ -14326,7 +14875,7 @@ export class BattleScene {
         this._rebuildDeployRosterGrid();
         return;
       }
-      this._updateDeployRosterHeader();
+      this._updateBattleRosterHeader();
       for (const ru of this.atk) {
         const card = this._unitCards.get(ru.bu.id);
         if (!card) continue;
@@ -14371,7 +14920,7 @@ export class BattleScene {
           gBadge.style.display = 'none';
         }
       }
-      this._paintTwGroupTabs(this._deployGroupTabs);
+      this._refreshDeployGroupHeaderLabels();
       requestAnimationFrame(() => this._syncDeployPanelLayout());
       return;
     }
@@ -14824,10 +15373,11 @@ export class BattleScene {
     this._buildRosterBar();
   }
 
-  /** Odswieza filtry typu + grupy + Generał w lewym panelu walki. */
+  /** Odswieza filtry typu + grupy (+ Generał tylko w walce). */
   private _updateBattleQuickSelectBar(): void {
     const bar = this._battleQuickSelectBar;
-    if (!bar || this.deployPhase || !this.started || !this._manualMode) {
+    const active = this.deployPhase || (this.started && this._manualMode);
+    if (!bar || !active) {
       if (bar) bar.style.display = 'none';
       this._battleQuickSelectSig = '';
       return;
@@ -14836,8 +15386,10 @@ export class BattleScene {
 
     const groups = this._sortedGroupIds();
     const sig = [
+      this.deployPhase ? 'deploy' : 'battle',
       [...this._selectedUnits].sort().join(','),
       groups.join(','),
+      this._deployActiveGroupId ?? '',
       this._generalPanel ? '1' : '0',
     ].join('|');
     if (sig === this._battleQuickSelectSig && bar.childElementCount > 0) return;
@@ -14849,7 +15401,9 @@ export class BattleScene {
       bar!.appendChild(this._makeDeployQuickBtn(
         label,
         this._isDeploySelectionExactlyKind(kind),
-        () => this._selectBattleByKindToggle(kind),
+        () => this.deployPhase
+          ? this._selectDeployByKindToggle(kind)
+          : this._selectBattleByKindToggle(kind),
         { kind, fullWidth: false },
       ));
     };
@@ -14860,6 +15414,10 @@ export class BattleScene {
       'Wszystkie',
       this._isDeploySelectionAll(),
       () => {
+        if (this.deployPhase) {
+          this._selectDeployAllToggle();
+          return;
+        }
         const ids = this._selectableAtkUnits().map(u => u.bu.id);
         const allSel = ids.every(id => this._selectedUnits.has(id)) && this._selectedUnits.size === ids.length;
         if (allSel) {
@@ -14875,21 +15433,27 @@ export class BattleScene {
 
     if (groups.length > 0) {
       for (const gid of groups) {
+        const managing = this.deployPhase && this._deployActiveGroupId === gid;
+        const selected = this._isDeploySelectionExactlyGroup(gid);
         bar.appendChild(this._makeDeployQuickBtn(
           this._groupDisplayLabel(gid),
-          this._isDeploySelectionExactlyGroup(gid),
-          () => this._selectBattleGroupToggle(gid),
-          { kind: 'group', fullWidth: false },
+          managing || selected,
+          () => this.deployPhase
+            ? this._handleDeployGroupTabClick(gid)
+            : this._selectBattleGroupToggle(gid),
+          { kind: 'group', groupId: gid, fullWidth: false },
         ));
       }
     }
 
-    bar.appendChild(this._makeDeployQuickBtn(
-      'Genera\u0142',
-      !!this._generalPanel,
-      () => this._toggleGeneralPanel(),
-      { kind: 'group', fullWidth: false },
-    ));
+    if (!this.deployPhase) {
+      bar.appendChild(this._makeDeployQuickBtn(
+        'Genera\u0142',
+        !!this._generalPanel,
+        () => this._toggleGeneralPanel(),
+        { kind: 'group', fullWidth: false },
+      ));
+    }
   }
 
   /** Zaznacz / odznacz wszystkie jednostki danego typu (walka). */

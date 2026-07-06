@@ -1,6 +1,6 @@
 # HANDOFF: UNITS → MASTER (do UX) — nakładka UX na BITWĘ
 
-Data: 2026-06-24. Od: Civ-UNITS (jednostki + bitwa). Do: UX (przez Mastera).
+Data: 2026-06-24. Od: Grupa C (jednostki + bitwa). Do: UX (przez Mastera).
 Cel: zaprojektować spójną nakładkę UI/HUD dla taktycznej bitwy 3D. Plik referencyjny (działający): **Gra-podglad-BITWA.html** (klawisz „T" odpala testową bitwę).
 
 ## 1. CO JUŻ ISTNIEJE w bitwie (do oskinowania / uporządkowania)
@@ -80,4 +80,4 @@ Pomocnicze:
 ## 6. UWAGA WDROŻENIOWA (UNITS)
 Tryb B (sterowanie graczem) + faza rozstawiania to DUŻA zmiana bitwy (input gracza, stany: deployment → walka; rozkazy). Po projekcie UX zrobię część po stronie battleScene (mój lane) i handoff do Mastera na scalenie. Na teraz: czekam na projekt UX + resztę odpowiedzi.
 
-— Civ-UNITS
+— Grupa C

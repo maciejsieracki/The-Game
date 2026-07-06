@@ -579,7 +579,8 @@ node tools/smoke.cjs
 - **Dane = JSON** — brak runtime Excel; `loader.ts` czyta JSON, moduły konsumują.
 - **`window.__civ_*`** — public API dla UI/testów; stabilne haki.
 - **Kanon = `Gra-podglad.html`** — md5 jako checkpoint; dwuklik = grywalne.
+- **Archiwum czatów** — `docs/archiwum-czatow/` (jeden plik na sesję Cursor); uzupełnia `dyspozycje/` o pełną historię rozmów. Reguły: `docs/archiwum-czatow/README.md`, `.cursor/rules/civ-workflow.mdc` §13.
 
 ---
 
-*Opracowano przez GLM 5.2 (Agent, rola Architekt) na podstawie audytu kodu i dokumentacji Civ, 2026-06-26. Powiązane: `docs/CURSOR-PLAN-DZIALANIA.md`, `docs/CURSOR-BACKLOG.md`, `.cursor/rules/civ-workflow.mdc`.*
+*Opracowano przez GLM 5.2 (Agent, rola Architekt) na podstawie audytu kodu i dokumentacji Civ, 2026-06-26. Powiązane: `docs/CURSOR-PLAN-DZIALANIA.md`, `docs/CURSOR-BACKLOG.md`, `.cursor/rules/civ-workflow.mdc`, `docs/archiwum-czatow/`.*

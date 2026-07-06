@@ -1,6 +1,6 @@
 # HANDOFF: MAPA → MASTER — placement UX + widok główny + kontrakt granic
 
-**Data:** 24.06.2026 · **Od:** Civ-MAPA · **Status:** STATUS + KONTRAKT (do wykorzystania przy integracji; część do przekazania UX po akceptacji Macieja).
+**Data:** 24.06.2026 · **Od:** Grupa A · **Status:** STATUS + KONTRAKT (do wykorzystania przy integracji; część do przekazania UX po akceptacji Macieja).
 
 ## 1. Co gotowe (podglądy w Civ-MAPA/)
 - `Gra-podglad-WIDOK-GLOWNY.html` — główna plansza (HUD 13 elementów wg Civ7) nad żywą mapą 3D; ikona 🔨 Budowa → TRYB BUDOWA (panel 15 ulepszeń, kursor-młotek, ghost-chip, podświetlenie kwalifikujących heksów, **ghost-preview**: półprzezroczysty model na hover, solidny po kliku). Powrót do mapy. — MOCKUP UX (dane w HUD = placeholder).
@@ -20,7 +20,7 @@ isInTerritory(q, r): boolean   // czy heks należy do terytorium gracza
 - Powiązane reguły, których egzekwowanie trzyma MAPA: teren per ulepszenie (matryca), irygacja = sąsiad rzeki, droga = sieć miasto↔posterunek. Liczby/granice = MIASTO/ekonomia.
 
 ## 3. Do przekazania UX (po akceptacji układu przez Macieja)
-Widok główny to mockup do przejęcia przez Civ-UI. TODO dla UX:
+Widok główny to mockup do przejęcia przez Grupa A. TODO dla UX:
 - minimapa statyczna (narysowana raz), liczby zasobów = placeholder (podpiąć ekonomię), „Tura" kosmetyczna (podpiąć silnik),
 - pasek „TRYB BUDOWA" lekko nachodzi na górny pasek zasobów (margines),
 - modale toolbara 1–7 zablokowane w trybie Budowa (do decyzji UX),

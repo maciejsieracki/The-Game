@@ -1,0 +1,86 @@
+'use strict';
+/** Regresja menu skali kreatora (Maciej 2026-07-04: mp max 9, typy osobno). */
+
+const esbuild = require('esbuild');
+const path = require('path');
+const fs = require('fs');
+
+const GRA = path.resolve(__dirname, '..');
+const entry = path.join(__dirname, '.map-scale-menu-entry.ts');
+const bundle = path.join(__dirname, '.map-scale-menu-bundle.cjs');
+
+fs.writeFileSync(
+  entry,
+  `export {
+  MAX_MIAST_PANSTWA,
+  MAX_TYPY_CYWILIZACJI_MENU,
+  miastaPanstwaMenuForMapLabel,
+  civTypesMenuForMapLabel,
+  defaultMiastaPanstwaFromMapLabel,
+  defaultCivTypesFromMapLabel,
+} from '../src/map/newGameMapDefaults';`,
+  'utf8',
+);
+
+esbuild.buildSync({
+  entryPoints: [entry],
+  bundle: true,
+  platform: 'node',
+  format: 'cjs',
+  target: 'node18',
+  loader: { '.ts': 'ts', '.json': 'json' },
+  outfile: bundle,
+  absWorkingDir: GRA,
+  logLevel: 'silent',
+});
+
+const M = require(bundle);
+
+let passed = 0;
+let failed = 0;
+function assert(c, msg) {
+  if (c) { passed++; console.log('PASS:', msg); }
+  else { failed++; console.error('FAIL:', msg); }
+}
+
+const EXPECT = {
+  Malenki: { mp: [3, 4, 5], typy: [3, 4, 6] },
+  Mały: { mp: [4, 5, 6], typy: [4, 5, 8] },
+  Standardowy: { mp: [5, 6, 7], typy: [5, 6, 10] },
+  Duży: { mp: [6, 7, 8], typy: [6, 7, 11] },
+  Ogromny: { mp: [7, 8, 9], typy: [8, 10, 12] },
+  'Super Huge': { mp: [7, 8, 9], typy: [10, 12, 14] },
+};
+
+console.log('map-scale-menu-test (Panel-E + menu kreatora)\n');
+
+assert(M.MAX_MIAST_PANSTWA === 9, 'MAX_MIAST_PANSTWA=9');
+assert(M.MAX_TYPY_CYWILIZACJI_MENU === 14, 'MAX_TYPY_CYWILIZACJI_MENU=14');
+
+for (const [label, exp] of Object.entries(EXPECT)) {
+  const mp = M.miastaPanstwaMenuForMapLabel(label);
+  assert(
+    mp.opts.join(',') === exp.mp.join(','),
+    `${label} mp menu ${mp.opts.join('·')} (exp ${exp.mp.join('·')})`,
+  );
+  assert(
+    M.defaultMiastaPanstwaFromMapLabel(label) === exp.mp[1],
+    `${label} domyślne mp=${exp.mp[1]}`,
+  );
+
+  const typy = M.civTypesMenuForMapLabel(label);
+  assert(
+    typy.opts.join(',') === exp.typy.join(','),
+    `${label} typy menu ${typy.opts.join('·')} (exp ${exp.typy.join('·')})`,
+  );
+  assert(
+    M.defaultCivTypesFromMapLabel(label) === exp.typy[1],
+    `${label} domyślne typy=${exp.typy[1]}`,
+  );
+
+  const maxMp = parseInt(mp.opts[mp.opts.length - 1], 10);
+  assert(maxMp <= M.MAX_MIAST_PANSTWA, `${label} mp max ${maxMp} ≤ ${M.MAX_MIAST_PANSTWA}`);
+}
+
+console.log('\n' + passed + ' passed, ' + failed + ' failed');
+process.exit(failed > 0 ? 1 : 0);

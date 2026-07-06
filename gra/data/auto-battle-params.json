@@ -1,0 +1,18 @@
+{
+  "_opis": "Auto-walka v2b. Panel-C → Auto-walka → eksportuj panel C.",
+  "_maciej_kroki": [
+    "1. Panel-C.xlsx → Auto-walka",
+    "2. coef_* = ile krwi (skala) · p_atk/p_def = jak szybko rośnie/maleje z przewagą R (kształt)",
+    "3. Zapisz → eksportuj panel C"
+  ],
+  "kalibracja": "v2b-2026-06-30",
+  "straty": {
+    "L_MAX": 0.42,
+    "p_atk": 0.58,
+    "p_def": 0.58,
+    "L_MIN": 0.05,
+    "remis_pct": 0.4,
+    "coef_zwyciezca": 1.0,
+    "coef_przegrany": 1.0
+  }
+}

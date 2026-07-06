@@ -1,0 +1,38 @@
+---
+description: Routing modeli — drogi model decyduje, tani (composer-2.5-fast subagent) wykonuje. Oszczędność tokenów.
+globs:
+  - "**/*"
+alwaysApply: true
+---
+
+# Routing modeli — oszczędność tokenów (NIENEGOCJOWALNE)
+
+**Zasada (Maciej 2026-06-28):** mocny model myśli i decyduje, tani model wykonuje mechaniczną robotę. Każdą mechaniczną pracę wieloplikową **deleguj do subagenta `composer-2.5-fast`** — nie rób jej drogim modelem.
+
+## Podział
+
+| Warstwa | Kto | Zakres |
+|---|---|---|
+| **Diagnoza / decyzje / projekt / weryfikacja / routing** | **mocny model (Master, ja)** | analiza wąskich gardeł, architektura mechanizmów, decyzje ABC, ocena raportów, kierowanie ruchem |
+| **Wykonanie mechaniczne** | **subagent `composer-2.5-fast`** (Task) | masowe edycje wg wzoru, wpięcia wg kontraktu, refaktory, eksporty danych, przepisywanie wielu plików, powtarzalne poprawki |
+
+## Próg delegacji (kiedy OBOWIĄZKOWO subagent)
+
+Zanim zaczniesz wykonywać sam, sprawdź — jeśli **którekolwiek TAK** → najpierw odpal subagenta `composer-2.5-fast`:
+
+1. Edycja **> 3 plików** „wg wzoru" (ten sam typ zmiany w wielu miejscach)?
+2. **> ~50 linii** czystego wykonania bez decyzji po drodze?
+3. Zadanie samodzielne i odizolowane (da się opisać jako jedno zlecenie z AC)?
+
+## Kiedy NIE delegować (wyjątki — rób sam)
+
+- 1–3 drobne, **splecione z myśleniem** edycje, gdy pliki masz już w kontekście (koszt zimnego startu subagenta ≈ dokończenie na miejscu).
+- Praca, która na każdym kroku wymaga decyzji projektowej (wtedy delegacja = ciągłe odpytywanie, drożej).
+
+## Jak delegować
+
+- `Task` z `subagent_type` implementacyjnym, model `composer-2.5-fast`.
+- Daj subagentowi **pełny kontekst w prompcie** (nie zna historii czatu): pliki, wzór zmiany, AC, zakazy (np. NIE ruszaj `main.ts` jeśli to nie Integrator).
+- Po powrocie subagenta — **mocny model weryfikuje** wynik (spójność, AC) przed zamknięciem.
+
+**Skutek:** drogie tokeny idą na myślenie, nie na klepanie. Master = mózg, subagent = ręce.

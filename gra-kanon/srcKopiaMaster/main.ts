@@ -1,0 +1,10054 @@
+/**
+ * main.ts
+ * Punkt wejscia The Game -- M1 Step 1: 3D hex map renderer.
+ *
+ * Pipeline:
+ *   loadGameData() -> configureTerrainMovement (if data carries terrainMovement)
+ *   -> generateMap(seed) -> buildScene() -> CameraController -> render loop
+ */
+
+// Global Error Overlay
+// Catches any JS error or unhandled promise and shows it as a red overlay
+// so a black screen never silently hides what went wrong.
+
+function showErr(msg: string): void {
+  let el = document.getElementById('__err_overlay__') as HTMLDivElement | null;
+  if (!el) {
+    el = document.createElement('div');
+    el.id = '__err_overlay__';
+    el.style.cssText = [
+      'position:fixed', 'top:0', 'left:0', 'width:100%',
+      'background:rgba(180,0,0,0.92)', 'color:#fff',
+      'font:bold 13px/1.5 monospace', 'padding:16px 20px',
+      'z-index:99999', 'white-space:pre-wrap', 'word-break:break-all',
+      'max-height:50vh', 'overflow-y:auto',
+      'border-bottom:3px solid #ff4444',
+    ].join(';');
+    el.innerHTML = '<b>THE GAME \u2014 ERROR</b>\n';
+    document.body.appendChild(el);
+  }
+  el.innerHTML += '\n' + msg;
+  console.error('[TheGame]', msg);
+}
+
+window.addEventListener('error', (e) => {
+  showErr(e.message + ' @' + e.filename + ':' + e.lineno + ':' + e.colno);
+});
+window.addEventListener('unhandledrejection', (e) => {
+  showErr('Unhandled promise rejection: ' + String(e.reason));
+});
+
+// Imports
+
+import * as THREE from 'three';
+import { loadGameData } from './data/loader';
+import { generateMap, DEFAULT_WIDTH, DEFAULT_HEIGHT, rozmiarFromMenuLabel } from './map/generator';
+import { generujSwiatAsync } from './map/mapGenAsync';
+import type { TypSwiata } from './map/gen-helpers';
+import { typSwiataFromMenuLabel, aktywneTypyFromMapLabel, defaultCivTypesFromMapLabel, defaultMiastaPanstwaFromMapLabel, type WorldGenerationPreset, DEFAULT_WORLD_DENSITY } from './map/newGameMapDefaults';
+import { buildScene, getLastSetFogMs } from './render/scene';
+import {
+  CIV_PERF_DEBUG_MARKER,
+  isPerfDebugOverlayVisible,
+  togglePerfDebugOverlay,
+  updatePerfDebugOverlay,
+} from './render/perfDebugOverlay';
+import { CIV_PUBLISH_MARKERS } from './buildInfo';
+import { showMapLoadingOverlay } from './ui/mapLoadingOverlay';
+import { fogBrightnessForHex, applyFogDimToObject3D } from './render/fogDim';
+import { CameraController, type CameraControllerOptions } from './render/camera';
+import { HEX_R, axialToWorld, worldToAxial } from './render/hexutil';
+import { computeStartPlacements, computeReachable, computePath, listUnitTypes, pathCost, configureTerrainMovement, hexDistance, categoryOf, terrainMoveCost } from './units/setup';
+import type { RuntimeUnit } from './units/setup';
+import { UnitRenderer } from './render/units';
+// Import keyOf from picker only (avoids duplicate identifier with setup.ts keyOf)
+import { pixelToHex, unitAt, keyOf } from './input/picker';
+import { computeVisible, addExplored, allHexKeys, allRevealLandKeys, exploredSetForRender, DEFAULT_SIGHT, computeVisibleAt, buildUnitSightResolver } from './game/visibility';
+import { startRevealRadiusForDifficulty } from './map/startScoring';
+import { canFoundCity, foundCity, foundCityAt, cityName, ensureCitySaveDefaults, DEFAULT_PODZIAL_HANDLU, type City } from './game/cities';
+import { applyCityFoundingToHex } from './game/city-hex-clear';
+import {
+  evaluateFoundCityAffordance,
+  foundCityCostLabel,
+  isSubsequentFoundCity,
+} from './game/city-founding';
+import { assignAiCivTypes, civIdsAvailableAtGameEpoch } from './game/civ-roster';
+import {
+  evaluateWonderBuildGate,
+  listBuildableWondersForCiv,
+  buildTechEpochMap,
+} from './game/wonder-availability';
+import { getWondersForCiv, getWonderById, getWonderAbsolutEpoka, type WonderDef } from './game/wonders-data';
+import type { CivEntryEpochRow } from './game/civ-entry-epoch';
+import type { ProductionItem } from './game/production';
+import { resolveArchetypeAggression, resolveArchetypeTrade } from './game/civ-ai-data';
+import { buildClusterStartPlan } from './game/cluster-start';
+import { playerStartCityName } from './game/civ-names';
+import {
+  computeDiplomaticContacts,
+  defaultNeutralRelation,
+  diplomacyLayerForOwner,
+  filterDiplomacyCommandsForLayer,
+  playerDiplomacyActionAllowed,
+} from './game/diplomacy-layers';
+import { grantTechEpokWczesniejszych } from './game/research';
+import {
+  evaluateOrderFromBreakdown,
+  updateRevoltGrace,
+  loadRevoltParams,
+  revoltWarningMessage,
+  REBEL_FACTION_OWNER_ID,
+} from './game/society-breakdown';
+import {
+  buildPlaytestWalkaMapy,
+  PLAYTEST_WALKA_SEED,
+  collectPlaytestBattleRoster,
+  PLAYTEST_WALKA_HINT,
+  PLAYTEST_OBLEZ_HINT,
+  resolvePlaytestWalkaVariant,
+} from './game/playtestWalkaMapy';
+import {
+  buildPlaytestOdskok3v3,
+  buildPlaytestOdskokOblezenie,
+  PLAYTEST_ODSKOK_SEED,
+  PLAYTEST_ODSKOK_HINT,
+  PLAYTEST_ODSKOK_OBLEZENIE_HINT,
+  isPlaytestOdskokMode,
+  isPlaytestOdskokOblezenieMode,
+} from './game/playtestOdskok3v3';
+import {
+  buildPlaytestMiastoEkonomia,
+  PLAYTEST_MIASTO_SEED,
+  PLAYTEST_MIASTO_HINT,
+} from './game/playtestMiastoEkonomia';
+import {
+  buildPlaytestMapaSwiata,
+  PLAYTEST_MAPA_SEED,
+  PLAYTEST_MAPA_HINT,
+  resolvePlaytestMapaWorldDensity,
+} from './game/playtestMapaSwiata';
+import {
+  canInitiateSiege, classifyCityAttack, detectAutoSiegeOnCity,
+  type MapSiegeContext,
+} from './game/mapSiegeDetect';
+import { resolveEnemyCityClick } from './map/map-attack-city';
+import { launchFieldBattleFromMap } from './battle/mapFieldBattle';
+import { collectAtkRosterNearCity } from './units/battleRoster';
+import { hasCityDefenders, survivorsLiveSet } from './game/siegeDefenders';
+import { getCityFood } from './game/turn-economy';
+import { SiegeMarkerRenderer } from './render/siegeMarker';
+import {
+  showSiegeMapPanel, hideSiegeMapPanel, updateSiegeMapPanelTurn, isSiegeMapPanelOpen,
+  getActiveSiegeCityId, setSiegePanelBesiegerCount,
+} from './ui/siegeMapPanel';
+import { makeMilitia, type SiegeCity, type SiegeUnit } from './game/siege';
+import {
+  decideAISiegeStance,
+  EMPTY_SIEGE_AI_STATE,
+  type SiegeAiState,
+} from './game/siegeAi';
+import {
+  advanceSiegeMachineBuild,
+  clearSiegeMachines,
+  consumeReadyMachines,
+  ensureSiegeMachines,
+  queueSiegeMachine,
+  SIEGE_MACHINE_TYPE_ID,
+  type SiegeMachineKind,
+} from './game/siegeMachines';
+import { showCityAttackChoice, hideCityAttackChoice } from './ui/cityAttackChoice';
+import { showCityUnitPick, hideCityUnitPick, isCityUnitPickOpen } from './ui/cityUnitPick';
+import { showCityCaptureNotice } from './ui/cityCaptureNotice';
+import { showArmyMergePanel, hideArmyMergePanel, isArmyMergePanelOpen } from './ui/armyMergePanel';
+import { showArmySplitPanel, hideArmySplitPanel, isArmySplitPanelOpen } from './ui/armySplitPanel';
+import {
+  visibleStackOnHex,
+  computeStackDisplay,
+  unitAtRepresentative,
+  findAdjacentEmptyHexes,
+  findBounceHexFromOrigin,
+} from './game/armyMerge';
+import {
+  resolveMapUnitCursor,
+  CURSOR_MAP_DEFAULT,
+} from './ui/mapUnitCursor';
+import { isInTerritory, territoryOwnerAt } from './map/territory';
+import type { CityNode, TerritoryNode } from './map/territory';
+import {
+  advanceCityEconomy, type EconUnit,
+  computeCityHealthBreakdown, cityWorkedTilesForEconomy, workedHexCoordsForCity,
+} from './game/turn-economy';
+import {
+  createPlayerState,
+  researchStep,
+  availableTechs,
+  setPlayerResearchTarget,
+  getResearchState,
+  techCost,
+  type PlayerState,
+  type EmpireResearchGate,
+} from './game/playerState';
+import { CityRenderer, type CityRenderOptions, type CityMapOutlineKind } from './render/cities';
+import { WonderRenderer, type PlacedWonder } from './render/wonderRenderer';
+import { pickWonderHexForCity } from './map/wonder-placement';
+import {
+  GAME_MAP_RENDER_STYLE,
+  TERRAIN_SURFACE_Y,
+  DEFAULT_MAP_RENDER_OPTIONS,
+  galleryDecorSurfaceY,
+  type MapRenderOptions,
+} from './render/mapRenderStyle';
+import {
+  bundledMapQualityPreset,
+  qualityTierFromLabel,
+  qualityTierToLabel,
+  type QualityTier,
+} from './map/newGameMapDefaults';
+import { buildStyledResourceOverlay } from './render/styleResources';
+import { visibleZloze, ensureDepositEraMeta } from './map/deposit-era';
+import { machinesByCampHex, campOwnerByHex, readyMachinesForCity } from './render/siegeCampSync';
+import { TerenBazowy, Nakladka, Ulepszenie } from './types/hex';
+import { showCityPanel, hideCityPanel, isCityPanelOpen, refreshCityPanelIfOpen, getOpenCityPanelCityId } from './ui/cityPanel';
+import { syncCityOkolicaOverlay, disposeCityOkolicaOverlayGroup } from './render/cityOkolicaOverlay';
+import { isPointOverCityPanelUi } from './ui/cityUxFrame';
+import {
+  buildHexContextTooltipHtml,
+  buildUnitContextTooltipHtml,
+} from './ui/hexContextTooltip';
+import { showPreBattle, hidePreBattle, isPreBattleOpen, configurePreBattle } from './ui/preBattle';
+import {
+  showPostBattleSummary,
+  hidePostBattleSummary,
+  isPostBattleSummaryOpen,
+} from './ui/postBattleSummary';
+import {
+  buildPostBattleSummary,
+  type BattleUnitBeforeSnap,
+  type BattleSummaryWinner,
+} from './game/battle-summary';
+import type { PreBattleInfo, PreBattleUnit } from './ui/preBattle';
+import { showHud, updateHud as refreshD1bHud, hideHud } from './ui/hud';
+import {
+  createCityListHud,
+  hideCityListHud,
+  isCityListHudOpen,
+  showCityListHud,
+  toggleCityListHud,
+  type CityListEntry,
+} from './ui/cityListHud';
+import {
+  createArmyListHud,
+  hideArmyListHud,
+  isArmyListHudOpen,
+  setArmyListSelectedId,
+  toggleArmyListHud,
+  showArmyListHud,
+  type ArmyListEntry,
+} from './ui/armyListHud';
+import {
+  createDiploListHud,
+  hideDiploListHud,
+  isDiploListHudOpen,
+  showDiploListHud,
+  toggleDiploListHud,
+  diploListEntryFromRelation,
+  type DiploListEntry,
+} from './ui/diploListHud';
+import type { ArmyStackHudState } from './ui/armyStackHud';
+import type {
+  HudState, WarWithPlayer, SidePanelEvent,
+  PowerOverlayData, CultureOverlayData, ReligionOverlayData,
+} from './ui/hud';
+import { hideEmpireOverlay } from './ui/empireOverlayHud';
+import { hidePowerOverlay } from './ui/powerOverlayHud';
+import {
+  mountEmpireDetailPanel,
+  showEmpireDetailPanel,
+  hideEmpireDetailPanel,
+  refreshEmpireDetailPanel,
+  isEmpireDetailPanelOpen,
+} from './ui/empireDetailPanel';
+import type { EmpireDetailSnap } from './ui/empireDetailTypes';
+import {
+  collectCultureRangeHexKeys,
+  collectReligionRangeHexKeys,
+  type RangeCityInput,
+} from './map/range-hexes';
+import {
+  buildRangeOverlayGroup,
+  disposeRangeOverlayGroup,
+  CULTURE_RANGE_STYLE,
+  RELIGION_RANGE_STYLE,
+} from './render/rangeOverlay';
+import { showDiplomacyPendingModal } from './ui/diplomacyPendingHud';
+import { getMinimapData } from './map/minimap';
+import {
+  createImprovementBuildApi,
+  collectRoadKeys,
+  type ImprovementBuildRequest,
+  type ImprovementBuildCallbacks,
+} from './map/improvement-build';
+import type { ImprovementKey } from './render/improvements';
+import { buildImprovement, buildImprovementStack } from './render/improvements';
+import { improvementKeysForHex } from './game/terrain-improvements';
+import { ikonaIdToBronzeCiv, type BronzeCiv } from './render/bronzeCity';
+import { buildSettlementModel } from './render/settlementModel';
+import { BattleScene } from './battle/battleScene';
+import type { BattleResult, BattleUnit, BattleOpts } from './battle/battleScene';
+import { resolveCombat, combatUnitFromDef, terrainDefenseMultiplier } from './game/combat';
+import type { CombatUnit, TerrainEntry } from './game/combat';
+import terrainCombatData from '../data/terrain-combat.json';
+import {
+  resolveAutoBattleByPower,
+  sumRosterFieldM,
+  autoBattleWinPct,
+} from './game/auto-battle-power';
+import {
+  applyPostBattleMap,
+  snapshotRosterPositions,
+  findCityOnHex,
+  applyCityCaptureAfterBattle,
+  type MapBattleWinner,
+} from './game/post-battle-map';
+import { civBonusyForCivKey } from './game/economy';
+import { advanceProduction, rushProduction, rushCost, populationCostOf,
+  enqueueRecruitment, advanceRecruitment, advanceRecruitmentGated, unitProductionItem,
+  enqueue, buildingProductionItem, splitPraca,
+  buildingLevelForEpoch, buildingEffectAtLevel, frontItem, unitNacjaForCivKey, applyCompletedBuildingIds, type CityProduction } from './game/production';
+import {
+  tryDeductUnitSpawnCosts, empirePoborTotals, rekrutUnitEquivalents, formatManpower,
+  cityManpowerSnapshot, civManpowerRegenMult, cityManpowerMax, unitManpowerCost,
+} from './game/manpower';
+import { computeObjectivePower, battlePowerPointsFromDefeatedEnemy, type ObjectivePowerResult } from './game/power-objective';
+import { loadPowerOpcje } from './game/power-options';
+import { armyFieldPower } from './game/unit-power';
+import { loadOrderParams, orderEffectsToYieldMults, pickRevoltMigrationTarget, type OrderYieldMults } from './game/order';
+import { loadCultureParams, accumulateCulture, cultureHappiness, cityBorderRadius, cultureThresholds,
+         loadReligionParams, civReligion, civReligionForKey, religionHappiness, dominantReligion,
+         makeRng, type CultureCity, type ReligionState,
+         spreadReligion, type ReligionNeighbor,
+         aggregateReligionEmpire, resolveCityReligionState, defaultCityReligionState,
+         isEmptyReligionState, type CivsDataLike } from './game/culture-religion';
+import {
+  advanceEmpireFood, bindEmpireFoodRuntime, freshEmpireFoodState,
+  buildEmpireFoodParams, getLastEmpireFoodTick, getEmpireFoodReserve, getEmpireFoodMaxCap, getEmpireFoodSplit, isArmyStarving,
+  type EmpireFoodState,
+} from './game/empire-food';
+import { loadUpkeepParams } from './game/economy-upkeep';
+import { computePowerContributionsCityEconomy, buildPowerSnapshots, type PowerOwnerSnapshot } from './game/power';
+import { citySightRadius, toggleTileWorker, cityRangeForPopulation, yieldOfMapHex, resolveWorkedTiles, seedReczneFromAuto } from './game/okolica';
+import { getCityResourceAccessForCity } from './game/resource-access';
+import { isForeignReligionDominant, resolveOwnCultureShare, stolicaEasyBonusActive } from './game/society-inputs';
+import { loadWealthParams, type RawWealthParamsJson } from './game/wealth';
+import { applyArmyStarvationHpLoss } from './game/army-starvation';
+import {
+  freshClearingState,
+  isImprovementTechUnlocked,
+  tickHexClearing,
+  type HexClearingState,
+} from './game/improvement-tech';
+import {
+  aiDiplomacyStance, relationTier, loadDiplomacyParams,
+  applyDiplomaticEvent, computePotegaNacji, computeRespekt, tickDiplomacy,
+  ARCHETYPE_AGGRESSION, ARCHETYPE_TRADE, DEFAULT_POTEGA_WAGI,
+  type Relation, type AIDiplomacyContext, type PotegaKomponenty, type TickCtx,
+} from './game/diplomacy';
+import {
+  diplomacyPersonalityTags,
+  formatPowerRelationLine,
+} from './game/diplomacy-display';
+import type { Player } from './types/player';
+import { TypCywilizacji } from './types/player';
+import {
+  saveToLocal, loadFromLocal,
+  type SaveGame,
+} from './game/save';
+import { configureCityPanel } from './ui/cityPanel';
+import type { OrderState } from './ui/orderPanel';
+import {
+  configureSciencePicker,
+  showSciencePicker,
+  showSciencePickerDocked,
+  hideSciencePicker,
+  isSciencePickerOpen,
+  refreshSciencePickerIfOpen,
+  getScienceHubSnapshot,
+  techToSlug,
+  techNameFromSlug,
+} from './ui/sciencePicker';
+import {
+  createScienceHubHud,
+  hideScienceHubHud,
+  isScienceHubHudOpen,
+  refreshScienceHubIfOpen,
+  showScienceHubHud,
+  toggleScienceHubHud,
+} from './ui/scienceHubHud';
+import {
+  createWikiHubHud,
+  hideWikiHubHud,
+  isWikiHubHudOpen,
+  showWikiHubHud,
+  toggleWikiHubHud,
+} from './ui/wikiHubHud';
+import { decideAITurn, chooseAIResearch, decideAIDiplomacy, loadDifficultyParams } from './game/ai';
+import type { AITurnOpts, RelacjaWejscie, DiplomacjaInputs, AIDiplomacyCommand } from './game/ai';
+import { checkVictory, techIdsInGameScope, allTechInScopeResearched, OSTATNIA_EPOKA_GRY_V1, powerShare } from './game/victory';
+import type { VictoryPlayer, VictoryInput } from './game/victory';
+import {
+  showVictoryScreen,
+  buildVictoryScreenData,
+  formatVictoryTitle,
+} from './ui/victoryScreen';
+import {
+  loadBarbParams, barbariansActive, spawnCamps, tickCamps, decideBarbarianMoves,
+  scaleBarbParamsForLevel,
+  BARBARIAN_OWNER_ID, isBarbarian,
+} from './game/barbarians';
+import type { BarbCamp, BarbUnit } from './game/barbarians';
+import { autoManageCity } from './game/auto-manage';
+import { showMainMenu, hideMainMenu, isMainMenuOpen } from './ui/mainMenu';
+import { showPerfTestPanel } from './ui/perfTestPanel';
+import {
+  configureGamePauseMenu, hideGamePauseMenu,
+  toggleGamePauseMenu, isGamePauseMenuOpen,
+} from './ui/gamePauseMenu';
+import { showNewGameFlow, hideNewGameFlow, isNewGameFlowOpen, type NewGameParams, type NewGameAdvancedOptions } from './ui/newGameFlow';
+import { applyTempoKoszt, type TempoGry } from './game/tech-tempo';
+import {
+  showDiplomacyPanel, hideDiplomacyPanel, isDiplomacyPanelOpen, updateDiplomacyPanel,
+  type DiploRelation, type KnownWarBetweenCivs, type DiplomacyPanelConfig,
+} from './ui/diplomacyPanel';
+import {
+  showDiplomacyAudience, hideDiplomacyAudience, updateDiplomacyAudience, isDiplomacyAudienceOpen,
+  showWarConfirmModal, type AudienceAction, type NegotiationPayload,
+} from './ui/diplomacyAudience';
+import { showDiplomacyProposalBanner } from './ui/diplomacyProposalBanner';
+import { proposalActionIdFromPayload, actionNeedsNegotiation } from './ui/diplomacyNegotiationModal';
+import {
+  evaluateProposal, applyAcceptedProposal, aiCommandToPendingProposal,
+  evaluatePendingFromAI, type ProposalEvalContext, type ProposalPayload,
+} from './game/diplomacy-proposals';
+import {
+  type ActiveDeal, hasTreaty, expireTreaties, treatiesBrokenByWar,
+  removeTreatiesById, allianceObligationsForWarDeclaration, treatiesBrokenByRefusal,
+  normalizeTreatyKind, hydrateActiveDeals,
+} from './game/diplomacy-treaties';
+import {
+  activeDealsToPaymentDeals, tickDiplomacyPayments, applyOneShotGoldTransfer,
+  tributeBreakPairsFromDeals,
+} from './game/diplomacy-economy';
+import { RodzajTraktatu } from './types/diplomacy';
+import {
+  applyPnTrustToRelation,
+  diploPairKey,
+  freshDiploPairMeta,
+  relationTotal,
+  resolveProposalPn,
+  suspendZlozeGrantsForWar,
+  tickDobraWolaOnRelation,
+  type BasketItem,
+  type DiploPairMeta,
+  type ZlozeGrant,
+} from './game/diplomacy-pn-engine';
+import {
+  diplomacyPnZloto,
+  diplomacyPnPraca,
+  diplomacyProgDarRelacja,
+} from './game/diplomacy-value-catalog';
+import {
+  collectUnauthorizedBorderPairs,
+  defaultIsMilitaryUnit,
+} from './game/border-march-scan';
+import {
+  applyUnauthorizedBorderPenalties,
+  dedupeBorderMarchPairs,
+  loadBorderMarchParams,
+  type BorderMarchPair,
+} from './game/diplomacy-border-march';
+import {
+  createEmptyBasketTransferContext,
+  grantSurowiecBooleanAccess,
+  grantTechToOwner,
+  type BasketTransferContext,
+  type SurowiecBooleanGrant,
+} from './game/diplomacy-basket-transfer';
+import {
+  spawnTransferredUnit,
+} from './game/diplomacy-unit-transfer';
+
+// Bootstrap
+// Wrapped in boot() so we can defer execution until DOMContentLoaded.
+// Classic (non-module) scripts in <head> run before <body> is parsed --
+// without this guard, document.body is null and appendChild throws.
+function boot(): void {
+  try {
+    const data = loadGameData();
+    console.group('[The Game] Dane wczytane');
+    console.log(`Jednostki: ${data.units.length}, Technologie: ${data.tech.length}`);
+    console.groupEnd();
+
+    // Apply data-driven terrain movement costs if the loader provides them.
+    // The terrainMovement field is optional (added by a parallel loader edit);
+    // if absent we rely on the built-in defaults in setup.ts.
+    if ((data as any).terrainMovement) {
+      const tm = (data as any).terrainMovement;
+      configureTerrainMovement(
+        tm.costs as Partial<Record<string, number>> ?? {},
+        tm.forestExtra ?? 1,
+      );
+    }
+
+    const SEED = Math.floor(Math.random() * 1e9);
+    let _gameSeed = SEED;
+    const unitSight = buildUnitSightResolver(data.units, DEFAULT_SIGHT);
+
+    // --- Menu integration: mutable game params set by New Game flow ---
+    let _menuDifficulty: 'easy' | 'normal' | 'hard' = 'normal';
+    let _menuCivId: string = 'rzymianie'; // E1 default: Rzymianie
+    let _menuMapSize: string = 'Standardowy'; // E1 default map size
+    let _menuRivals: number = 6; // default rival count (skalowane w kreatorze)
+    let _menuCivTypesCount: number = 7;
+    let _menuCityStates: number = 6;
+    let _menuTypSwiata: TypSwiata = 'kontynenty';
+    let _menuEpochId: string = 'kamien';
+    let _menuAdvanced: NewGameAdvancedOptions | undefined;
+    let _menuWorldDensity: WorldGenerationPreset = { ...DEFAULT_WORLD_DENSITY };
+    let _currentRenderOptions: MapRenderOptions = { ...DEFAULT_MAP_RENDER_OPTIONS };
+
+    function mapQualityTierFromParams(params: NewGameParams): QualityTier {
+      return params.mapQuality ?? qualityTierFromLabel(params.mapQualityLabel ?? 'Średnia');
+    }
+
+    function mapRenderOptionsFromParams(params: NewGameParams): MapRenderOptions {
+      const bundle = bundledMapQualityPreset(mapQualityTierFromParams(params));
+      return {
+        style: GAME_MAP_RENDER_STYLE,
+        renderQuality: bundle.renderQuality,
+        mapDetailQuality: bundle.mapDetailQuality,
+      };
+    }
+
+    function mapQualityTierFromSave(saved: SaveGame): QualityTier {
+      if (saved.mapQuality) return saved.mapQuality;
+      return saved.mapDetailQuality ?? saved.renderQuality ?? 'medium';
+    }
+
+    function applyRenderOptionsFromSave(saved: SaveGame): void {
+      const bundle = bundledMapQualityPreset(mapQualityTierFromSave(saved));
+      _currentRenderOptions = {
+        style: GAME_MAP_RENDER_STYLE,
+        renderQuality: bundle.renderQuality,
+        mapDetailQuality: bundle.mapDetailQuality,
+      };
+    }
+
+    function mapQualityTierFromQuery(defaultTier: QualityTier = 'medium'): QualityTier {
+      if (typeof location === 'undefined') return defaultTier;
+      const raw = new URLSearchParams(location.search).get('mapQuality');
+      return raw ? qualityTierFromLabel(raw) : defaultTier;
+    }
+
+    document.body.style.margin   = '0';
+    document.body.style.padding  = '0';
+    document.body.style.overflow = 'hidden';
+    document.body.style.background = '#000';
+
+    // Canvas 3D -- full-window, sized by JS (not CSS vw/vh) so renderer.setSize works
+    const canvas = document.createElement('canvas');
+    canvas.style.display  = 'block';
+    canvas.style.position = 'fixed';
+    canvas.style.top      = '0';
+    canvas.style.left     = '0';
+    canvas.style.width    = '100%';
+    canvas.style.height   = '100%';
+    document.body.appendChild(canvas);
+
+    let map = generateMap(DEFAULT_WIDTH, DEFAULT_HEIGHT, SEED);
+    ensureDepositEraMeta(map.hexes);
+
+    // Krótkie komunikaty (toast) — bez stałego dolnego paska skrótów (legacy hint).
+    const hintToast = document.createElement('div');
+    hintToast.id = 'civ-hint-toast';
+    hintToast.style.cssText = [
+      'position:fixed', 'bottom:24px', 'left:50%', 'transform:translateX(-50%)',
+      'z-index:320', 'display:none', 'pointer-events:none',
+      'max-width:min(560px,calc(100vw - 48px))', 'padding:8px 14px', 'border-radius:8px',
+      'background:rgba(8,12,20,0.92)', 'color:#e8e0c8',
+      'border:1px solid rgba(232,216,138,0.35)',
+      'font:12px/1.45 Segoe UI,Tahoma,sans-serif', 'text-align:center',
+      'box-shadow:0 6px 20px rgba(0,0,0,0.45)',
+    ].join(';');
+    document.body.appendChild(hintToast);
+
+    let d1bHudActive = false;
+    /** Aktualnie otwarta audiencja dyplomatyczna (ownerId AI), null = zamknięta. */
+    let diplomacyAudienceOwnerId: number | null = null;
+
+    let { scene, camera, renderer, center, setFog, hideDecorAtHex, setZoomLod, getZoomLodLevel, dispose: disposeScene } = buildScene(map, canvas, _currentRenderOptions);
+
+    function cameraControllerOpts(): CameraControllerOptions {
+      const mapSpan = Math.max(map.szerokoscQ, map.wysokoscR) * HEX_R * 1.85;
+      // Poprzednio maxDist=160; 2× oddalenie + skala mapy (duże mapy = cały świat w kadrze).
+      const maxDist = Math.max(320, mapSpan * 1.2);
+      return {
+        minDist: 8 / 3,
+        maxDist,
+        keyPanSpeed: 0.3,
+        blockPointerAt: (x, y) => {
+          if (isPointOverCityPanelUi(x, y)) return true;
+          if (foundCityMode || (buildModeOpen && activeImprovementKey)) return true;
+          return false;
+        },
+      };
+    }
+
+    let camCtrl = new CameraController(camera, canvas, center, cameraControllerOpts());
+
+    // -----------------------------------------------------------------------
+    // Units
+    // -----------------------------------------------------------------------
+
+    const startPlacements = computeStartPlacements(map, data);
+    const units: RuntimeUnit[] = [];
+    let unitRenderer = new UnitRenderer(scene, map);
+
+    // -----------------------------------------------------------------------
+    // Cities
+    // -----------------------------------------------------------------------
+
+    const cities: City[] = [];
+    let cityRenderer = new CityRenderer(scene, map);
+    let siegeMarkerRenderer = new SiegeMarkerRenderer(scene, map);
+    let wonderRenderer = new WonderRenderer(scene, map);
+    const siegeTurnByCity = new Map<string, number>();
+    const siegeBesiegerByCity = new Map<string, number>();
+    const siegeAiStateByKey = new Map<string, SiegeAiState>();
+
+    function siegeAiKey(ownerId: number, cityId: string): string {
+      return ownerId + ':' + cityId;
+    }
+    const battlePowerPtsByOwner = new Map<number, number>();
+    const ownerEraByOwner = new Map<number, number>();
+    let objectivePowerByOwner = new Map<number, ObjectivePowerResult>();
+
+    const TECH_EPOKA_NUM: Record<string, number> = {
+      Kamień: 1, Kamien: 1, kamien: 1,
+      Brąz: 2, Braz: 2, braz: 2,
+      Żelazo: 3, Zelazo: 3, zelazo: 3,
+    };
+
+    function empireEpochForOwner(ownerId: number): number {
+      if (ownerId === 0) return player.era;
+      return ownerEraByOwner.get(ownerId) ?? 1;
+    }
+
+    function initOwnerEra(ownerId: number, era = 1): void {
+      if (ownerId === 0) return;
+      ownerEraByOwner.set(ownerId, Math.max(1, Math.min(10, era)));
+    }
+
+    function syncOwnerEraFromResearch(ownerId: number): void {
+      if (ownerId === 0) return;
+      const done = aiResearchDone.get(ownerId);
+      if (!done || done.size === 0) {
+        ownerEraByOwner.set(ownerId, 1);
+        return;
+      }
+      let maxE = 1;
+      for (const tname of done) {
+        const t = data.tech.find(row => row.Technologia === tname);
+        const epRaw = (t as { Epoka?: string; epoka?: string } | undefined)?.Epoka
+          ?? (t as { epoka?: string } | undefined)?.epoka;
+        const ep = typeof epRaw === 'string' ? (TECH_EPOKA_NUM[epRaw] ?? 1) : 1;
+        if (ep > maxE) maxE = ep;
+      }
+      ownerEraByOwner.set(ownerId, Math.min(10, maxE));
+    }
+
+    function sumRosterFieldMLocal(roster: RuntimeUnit[]): number {
+      let sum = 0;
+      for (const u of roster) sum += armyFieldPower(unitDefFor(u));
+      return sum;
+    }
+
+    function countBuildingsForOwner(ownerId: number): number {
+      let n = 0;
+      for (const [cid, blt] of cityBuilt.entries()) {
+        const c = cities.find(ct => ct.id === cid && ct.ownerId === ownerId);
+        if (c) n += blt.length;
+      }
+      return n;
+    }
+
+    function countTechForOwner(ownerId: number): number {
+      if (ownerId === 0) return player.zbadane.size;
+      return aiResearchDone.get(ownerId)?.size ?? 0;
+    }
+
+    function countImprovementsForOwner(ownerId: number): number {
+      const nodes = cityNodesForOwner(ownerId);
+      if (nodes.length === 0) return 0;
+      let n = 0;
+      for (const k of Object.keys(map.hexes)) {
+        const [qs, rs] = k.split(',');
+        if (!isInTerritory(Number(qs), Number(rs), nodes)) continue;
+        const hex = map.hexes[k];
+        if (!hex) continue;
+        n += improvementKeysForHex(hex).length;
+      }
+      return n;
+    }
+
+    function sumArmyMForOwner(ownerId: number): number {
+      const opcje = loadPowerOpcje();
+      let sum = 0;
+      for (const u of units) {
+        if (u.ownerId !== ownerId) continue;
+        if (!opcje.liczyOsadnikWArmii && u.category === 'osadnik') continue;
+        sum += armyFieldPower(unitDefFor(u));
+      }
+      return sum;
+    }
+
+    /** Stosunek siły wojskowej proposer/responder — suma M_pole (UNIT-POWER-M-v1). */
+    function militaryRatioFromArmyM(proposerArmyM: number, responderArmyM: number): number {
+      if (responderArmyM > 0) return proposerArmyM / responderArmyM;
+      return proposerArmyM > 0 ? 2 : 1;
+    }
+
+    function buildObjectivePowerForOwner(ownerId: number): ObjectivePowerResult {
+      const epoka = empireEpochForOwner(ownerId);
+      const pobor = empirePoborTotals(cities, ownerId, epoka);
+      return computeObjectivePower({
+        ownerId,
+        epoka,
+        jednostki: sumArmyMForOwner(ownerId),
+        bitwyPktSum: battlePowerPtsByOwner.get(ownerId) ?? 0,
+        wygraneBitwy: 0,
+        sumaLudkow: pobor.sumaLudkow,
+        rekrutEkw: rekrutUnitEquivalents(pobor.rekruci, epoka),
+        miasta: cities.filter(c => c.ownerId === ownerId).length,
+        heksyTerytorium: countTerritoryHexes(cityNodesForOwner(ownerId)),
+        budynki: countBuildingsForOwner(ownerId),
+        techZbadane: countTechForOwner(ownerId),
+        ulepszeniaTerenu: countImprovementsForOwner(ownerId),
+      });
+    }
+
+    function refreshObjectivePowerCache(): void {
+      objectivePowerByOwner = new Map<number, ObjectivePowerResult>();
+      for (const oid of allPowerOwnerIds()) {
+        objectivePowerByOwner.set(oid, buildObjectivePowerForOwner(oid));
+      }
+    }
+
+    function objectivePowerForOwner(ownerId: number): number {
+      return objectivePowerByOwner.get(ownerId)?.power ?? buildObjectivePowerForOwner(ownerId).power;
+    }
+
+    /** Respekt % (Power gracza vs partner) — kanon objective v2. */
+    function objectiveRespektPctToward(theirOwnerId: number): number {
+      return computeRespekt(objectivePowerForOwner(0), objectivePowerForOwner(theirOwnerId));
+    }
+    function unitCountOnHex(q: number, r: number): number {
+      let n = 0;
+      for (const u of units) {
+        if (u.q === q && u.r === r) n++;
+      }
+      return n;
+    }
+
+    /** Opcje renderowania miast — epoka i cywilizacja per właściciel. */
+    let cityFogVisible: ((city: City) => boolean) | undefined;
+    const _cityRenderOpts = (): CityRenderOptions => ({
+      getEra:   (ownerId: number) => empireEpochForOwner(ownerId),
+      getCiv:   (ownerId: number) => {
+        const civId = ownerId === 0
+          ? (player.civType as string || _menuCivId || 'grecja')
+          : (aiOwnerCivMap.get(ownerId) ?? 'grecja');
+        return ikonaIdToBronzeCiv(civId);
+      },
+      getLevel: (cityId: string) => {
+        const c = cities.find(x => x.id === cityId);
+        return c ? Math.max(1, Math.min(10, c.population ?? 1)) : 1;
+      },
+      getWalls: (cityId: string) => cities.find(c => c.id === cityId)?.maMur === true,
+      getRevolt: (cityId: string) => {
+        const st = cityOrderState.get(cityId);
+        return st?.bunt === true || st?.revoltWarning === true;
+      },
+      getUnitCountOnHex: (q, r) => unitCountOnHex(q, r),
+      getMapOutlineKind: (ownerId) => cityMapOutlineKindForOwner(ownerId),
+      isVisible: (city) => {
+        if (cityPanelViewCityId !== null) return city.id === cityPanelViewCityId;
+        return cityFogVisible?.(city) ?? true;
+      },
+      hideStatChips: isCityPanelOpen(),
+    });
+
+    cityRenderer.sync(cities, _cityRenderOpts());
+
+    /** Hex startowy gracza — widok mgly gdy brak jednostek (A-START-01). */
+    let playerStartHex: { q: number; r: number } | null = {
+      q: startPlacements.playerStart.q,
+      r: startPlacements.playerStart.r,
+    };
+    /** Pozycje startowe AI (miasta AI — osobny batch CYWILIZACJE/SILNIK). */
+    let aiStartHexes = startPlacements.aiStarts;
+    /** Promień oświetlenia startu (z trudności menu). */
+    let startRevealRadius = startRevealRadiusForDifficulty('normal');
+    let playerEverOwnedCity = false;
+    /** Tryb „Załóż miasto” w panelu budowy (A-START-01/05). */
+    let foundCityMode = false;
+
+    /** Nakładki surowcowe — synchronizowane z mgłą w refreshFog. */
+    const resourceOverlays: Array<{ group: THREE.Group; hexKey: string }> = [];
+    /** Epoka gracza dla widoczności złóż metali (E-P0); aktualizowana przy starcie / awansie. */
+    let overlayDepositEra = 1;
+
+    function isLivestockDepositNakladka(n: Nakladka | undefined): boolean {
+      return n === Nakladka.ZlozeBydla || n === Nakladka.ZlozeOwiec;
+    }
+
+    /** Warstwy gracza (bez złoża — złoże dodaje improvementKeysForHex). */
+    type PlacedLayers = string[];
+
+    function mergedImprovementLayers(hexKey: string): string[] {
+      const hex = map.hexes[hexKey];
+      if (!hex) return [];
+      const keys = new Set<string>(improvementKeysForHex(hex));
+      const placed = placedImprovements.get(hexKey);
+      if (placed) {
+        for (const k of placed) keys.add(k);
+      }
+      return [...keys];
+    }
+
+    function buildImprovementVisual(layers: readonly string[]): THREE.Group {
+      if (layers.length === 0) return new THREE.Group();
+      if (layers.length === 1) {
+        return buildImprovement(layers[0] as ImprovementKey, 0xffd54a);
+      }
+      return buildImprovementStack(layers, 0xffd54a);
+    }
+
+    function clearResourceOverlays(): void {
+      for (const { group } of resourceOverlays) scene.remove(group);
+      resourceOverlays.length = 0;
+    }
+
+    function rebuildResourceOverlays(): number {
+      clearResourceOverlays();
+      let count = 0;
+      for (const hex of Object.values(map.hexes)) {
+        const hexZ = hex as typeof hex & { zloze?: string };
+        if (hex.terenBazowy === TerenBazowy.Morze || hex.terenBazowy === TerenBazowy.Wybrzeze) continue;
+        const hasNakladka = hex.nakladka && hex.nakladka !== Nakladka.Brak && hex.nakladka !== Nakladka.Las;
+        const zlozeShown = visibleZloze(hexZ, overlayDepositEra);
+        if (!hasNakladka && !zlozeShown) continue;
+        const hexKey = keyOf(hex.coords.q, hex.coords.r);
+        if (isLivestockDepositNakladka(hex.nakladka)) continue;
+        if (improvementMeshes.has(hexKey)) continue;
+        try {
+          const ov = buildStyledResourceOverlay(hex.nakladka, GAME_MAP_RENDER_STYLE, zlozeShown);
+          if (!ov) continue;
+          const { x, z } = axialToWorld(hex.coords.q, hex.coords.r, HEX_R);
+          const baseY = TERRAIN_SURFACE_Y[hex.terenBazowy] ?? 0.45;
+          ov.position.set(x, baseY + 0.01, z);
+          ov.rotation.y = hex.coords.q * 1.3 + hex.coords.r * 0.7;
+          const hexKey = keyOf(hex.coords.q, hex.coords.r);
+          scene.add(ov);
+          resourceOverlays.push({ group: ov, hexKey });
+          count++;
+        } catch (err) {
+          console.warn('[main] buildStyledResourceOverlay error', hex.nakladka, err);
+        }
+      }
+      return count;
+    }
+
+    function syncResourceOverlayFog(vis: Set<string>, exploredKeys: Set<string>): void {
+      for (const { group, hexKey } of resourceOverlays) {
+        const hidden = !vis.has(hexKey) && !exploredKeys.has(hexKey);
+        group.visible = !hidden;
+        if (hidden) continue;
+        const bri = fogBrightnessForHex(hexKey, vis, exploredKeys, true);
+        applyFogDimToObject3D(group, bri);
+      }
+    }
+
+    /** Meshe ulepszeń / hodowli złoże (spawnImprovementMesh) — ta sama mgła co resourceOverlays. */
+    function syncImprovementMeshFog(vis: Set<string>, exploredKeys: Set<string>): void {
+      for (const [hexKey, group] of improvementMeshes) {
+        const hidden = !vis.has(hexKey) && !exploredKeys.has(hexKey);
+        group.visible = !hidden;
+        if (hidden) continue;
+        const bri = fogBrightnessForHex(hexKey, vis, exploredKeys, true);
+        applyFogDimToObject3D(group, bri);
+      }
+    }
+
+    // Resource overlays + hodowla złoże — init po placedImprovements (poniżej).
+
+    // --- Stan pomiędzy turami: produkcja / built / religia per miasto ---
+    const cityProd  = new Map<string, CityProduction>();
+    const cityBuilt = new Map<string, string[]>();
+    const cityRelig = new Map<string, ReligionState>();
+    const lastReligionSpreadByCity = new Map<string, number>();
+    let _lastReligionSpreadTotal = 0;
+
+    /** Union budynków imperium (dowolne miasto ownerId) — bramka badań T-TECH-7. */
+    function empireBuiltIdsForOwner(ownerId: number): Set<string> {
+      const ids = new Set<string>();
+      for (const [cid, blt] of cityBuilt.entries()) {
+        const c = cities.find(ct => ct.id === cid && ct.ownerId === ownerId);
+        if (!c) continue;
+        for (const bid of blt) ids.add(bid);
+      }
+      return ids;
+    }
+
+    function researchGateForOwner(ownerId: number): EmpireResearchGate {
+      return {
+        empireBuiltIds: empireBuiltIdsForOwner(ownerId),
+        buildings: data.buildings,
+      };
+    }
+
+    /** CUDA-G1: globalnie ukończone cuda świata (id z wonders.json). */
+    const WONDER_PROD_PREFIX = '__wonder__:';
+    let completedWorldWonders: string[] = [];
+    /** CUDA mapa: pozycje ukończonych cudów na heksach (nie w mieście). */
+    let placedWorldWonders: PlacedWonder[] = [];
+    const wonderTechEpochMap = buildTechEpochMap(data.tech as unknown as readonly { Technologia?: string; Epoka?: string | undefined }[]);
+    let wondersPickerEl: HTMLDivElement | null = null;
+
+    function civTypeForOwner(ownerId: number): string {
+      if (ownerId === 0) return String(player.civType || _menuCivId || 'grecy');
+      return aiOwnerCivMap.get(ownerId) ?? 'grecy';
+    }
+
+    function civRowForType(civType: string): CivEntryEpochRow {
+      const row = data.civs.cywilizacje.find(
+        (c: CivEntryEpochRow) => c.ikonaId === civType,
+      );
+      return row ?? { ikonaId: civType, epokaWejscia: 'kamien' };
+    }
+
+    function unlockedTechSetForOwner(ownerId: number): Set<string> {
+      if (ownerId === 0) return player.zbadane;
+      return aiResearchDone.get(ownerId) ?? new Set<string>();
+    }
+
+    function parseWonderProdId(id: string): string | null {
+      return id.startsWith(WONDER_PROD_PREFIX) ? id.slice(WONDER_PROD_PREFIX.length) : null;
+    }
+
+    function wonderProductionItem(w: WonderDef): ProductionItem {
+      return {
+        kind: 'budynek',
+        id: WONDER_PROD_PREFIX + w.id,
+        nazwa: `[Cud] ${w.nazwa}`,
+        koszt: w.kosztBudowy,
+      };
+    }
+
+    function listBuildableWondersForOwner(ownerId: number): WonderDef[] {
+      const civType = civTypeForOwner(ownerId);
+      return listBuildableWondersForCiv(
+        getWondersForCiv(civType),
+        civType,
+        civRowForType(civType),
+        empireEpochForOwner(ownerId),
+        unlockedTechSetForOwner(ownerId),
+        completedWorldWonders,
+        wonderTechEpochMap,
+      );
+    }
+
+    function wonderGateOk(ownerId: number, wonderId: string): boolean {
+      const w = getWonderById(wonderId);
+      if (!w) return false;
+      return evaluateWonderBuildGate({
+        wonder: w,
+        civType: civTypeForOwner(ownerId),
+        civRow: civRowForType(civTypeForOwner(ownerId)),
+        playerEra: empireEpochForOwner(ownerId),
+        unlockedTechs: unlockedTechSetForOwner(ownerId),
+        completedWonderIds: completedWorldWonders,
+        techMap: wonderTechEpochMap,
+      }).ok;
+    }
+
+    function playerWonderTargetCityId(): string | null {
+      const openId = getOpenCityPanelCityId();
+      if (openId) {
+        const openCity = cities.find(c => c.id === openId && c.ownerId === 0);
+        if (openCity) return openCity.id;
+      }
+      return cities.find(c => c.ownerId === 0)?.id ?? null;
+    }
+
+    function wonderIsRuin(wonderId: string, ownerId: number): boolean {
+      const w = getWonderById(wonderId);
+      if (!w) return false;
+      return empireEpochForOwner(ownerId) > getWonderAbsolutEpoka(w);
+    }
+
+    function placedWonderSnapshot(): PlacedWonder[] {
+      return placedWorldWonders.map(pw => ({
+        ...pw,
+        ruin: wonderIsRuin(pw.wonderId, pw.ownerId),
+      }));
+    }
+
+    function reapplyWonderHexDecorHides(): void {
+      for (const w of placedWorldWonders) hideDecorAtHex(keyOf(w.q, w.r));
+    }
+
+    function syncWonderRender(): void {
+      wonderRenderer.sync(placedWonderSnapshot());
+      reapplyWonderHexDecorHides();
+    }
+
+    function completeWonderBuilt(city: City, wonderId: string): void {
+      if (completedWorldWonders.includes(wonderId)) return;
+      completedWorldWonders.push(wonderId);
+
+      const hex = pickWonderHexForCity({
+        map,
+        city,
+        occupiedWonderHexes: placedWorldWonders,
+        cityHexes: cities.map(c => ({ q: c.q, r: c.r })),
+      });
+      if (hex) {
+        placedWorldWonders.push({
+          wonderId,
+          q: hex.q,
+          r: hex.r,
+          ownerId: city.ownerId,
+          ruin: false,
+        });
+        hideDecorAtHex(keyOf(hex.q, hex.r));
+        syncWonderRender();
+      } else {
+        console.warn(`[Cuda] Brak wolnego heksa w terytorium ${city.name} — cud bez modelu mapy`);
+      }
+
+      const w = getWonderById(wonderId);
+      const label = w?.nazwa ?? wonderId;
+      console.log(`[Cuda] Tura ${turn} ${city.name}: ukończono ${label}${hex ? ` @ ${hex.q},${hex.r}` : ''}`);
+      if (city.ownerId === 0) {
+        showHintMessage(`Cud ukończony: <b>${label}</b> (${city.name})`, 4500);
+      }
+      refreshCityPanelIfOpen();
+      refreshWondersPickerIfOpen();
+      refreshFog();
+    }
+
+    function applyProductionCompleted(
+      city: City,
+      cityId: string,
+      completed: ProductionItem,
+      prodAfterAdvance: CityProduction,
+    ): { prod: CityProduction; requeueManpower?: boolean } {
+      const wonderId = parseWonderProdId(completed.id);
+      if (wonderId) {
+        if (completedWorldWonders.includes(wonderId)) {
+          console.log(`[Cuda] ${city.name}: wyścig przegrany — ${wonderId} już na świecie`);
+          if (city.ownerId === 0) {
+            const w = getWonderById(wonderId);
+            showHintMessage(
+              `Cuda <b>${w?.nazwa ?? wonderId}</b> zbudowana przez innego — projekt anulowany`,
+              4000,
+            );
+          }
+        } else {
+          completeWonderBuilt(city, wonderId);
+        }
+        return { prod: prodAfterAdvance };
+      }
+      if (completed.kind === 'budynek') {
+        const blt = cityBuilt.get(cityId) ?? [];
+        cityBuilt.set(cityId, applyCompletedBuildingIds(blt, completed.id, data.buildings));
+        if (completed.id === 'mury' || completed.id === 'fort') city.maMur = true;
+        console.log(`[Produkcja] Tura ${turn} ${city.name}: budynek ${completed.id}`);
+        return { prod: prodAfterAdvance };
+      }
+      const ep = empireEpochForOwner(city.ownerId);
+      const d = tryDeductUnitSpawnCosts(city, ep, populationCostOf(completed));
+      if (!d.ok) {
+        console.log(`[Produkcja] Tura ${turn} ${city.name}: brak Manpower — odlozono ${completed.id}`);
+        return {
+          prod: {
+            ...prodAfterAdvance,
+            kolejka: [completed, ...prodAfterAdvance.kolejka],
+            postep: completed.koszt,
+          },
+          requeueManpower: true,
+        };
+      }
+      city.population = d.population;
+      city.manpower = d.manpower;
+      const def = lookupUnitDef(completed.id);
+      const ruch = normFieldVal(def['Ruch'], 2);
+      const role = String(def['Rola'] ?? def['Rola (linia)'] ?? '');
+      const isSuper = normFieldVal(def['Super'], 0) === 1;
+      units.push({
+        id: 'prod_' + turn + '_' + cityId + '_' + Math.random().toString(36).slice(2),
+        ownerId: city.ownerId,
+        typeId: completed.id,
+        category: categoryOf(completed.id, role, isSuper),
+        q: city.q,
+        r: city.r,
+        ruch,
+        ruchLeft: 0,
+      });
+      maybeHintArmyFoodOnFirstPlayerUnit(city.ownerId);
+      console.log(
+        `[Produkcja] Tura ${turn} ${city.name}: jednostka ${completed.id} @ (${city.q},${city.r}) (−${d.kosztManpower} MP)`,
+      );
+      return { prod: prodAfterAdvance };
+    }
+
+    function sanitizeProductionQueue(ownerId: number, prod: CityProduction): CityProduction {
+      const kolejka = prod.kolejka.filter((item) => {
+        const wid = parseWonderProdId(item.id);
+        if (!wid) return true;
+        return wonderGateOk(ownerId, wid);
+      });
+      if (kolejka.length === prod.kolejka.length) return prod;
+      return { ...prod, kolejka };
+    }
+
+    function setCityProduction(cityId: string, prod: CityProduction): void {
+      const city = cities.find(c => c.id === cityId);
+      const ownerId = city?.ownerId ?? 0;
+      const next = sanitizeProductionQueue(ownerId, { ...prod, kolejka: [...prod.kolejka] });
+      cityProd.set(cityId, next);
+    }
+
+    function wonderHudTargetLabel(): string | null {
+      const targetId = playerWonderTargetCityId();
+      if (!targetId) return 'Brak miasta — załóż stolicę';
+      return cities.find(c => c.id === targetId)?.name ?? null;
+    }
+
+    function wonderHudEntries() {
+      const targetId = playerWonderTargetCityId();
+      const prod = targetId ? cityProd.get(targetId) : undefined;
+      const queued = new Set(
+        (prod?.kolejka ?? [])
+          .map(it => parseWonderProdId(it.id))
+          .filter((id): id is string => id != null),
+      );
+      return listBuildableWondersForOwner(0).map(w => ({
+        id: w.id,
+        label: w.nazwa,
+        kosztPraca: w.kosztBudowy,
+        epokaWejscia: w.epokaWejscia,
+        dostep: w.dostep,
+        queued: queued.has(w.id),
+        lockHint: queued.has(w.id) ? 'Już w kolejce tego miasta' : null,
+      }));
+    }
+
+    function enqueueWonderForPlayer(wonderId: string): boolean {
+      const cityId = playerWonderTargetCityId();
+      if (!cityId) {
+        showHintMessage('Brak miasta gracza — załóż stolicę, aby budować cuda', 3500);
+        return false;
+      }
+      if (!wonderGateOk(0, wonderId)) {
+        showHintMessage('Ten cud nie jest teraz dostępny', 3000);
+        return false;
+      }
+      const w = getWonderById(wonderId);
+      if (!w) return false;
+      const prod0 = cityProd.get(cityId) ?? { kolejka: [], postep: 0 };
+      if (prod0.kolejka.some(it => parseWonderProdId(it.id) === wonderId)) {
+        showHintMessage('Ten cud jest już w kolejce tego miasta', 3000);
+        return false;
+      }
+      const item = wonderProductionItem(w);
+      cityProd.set(cityId, enqueue(prod0, item));
+      const city = cities.find(c => c.id === cityId);
+      showHintMessage(
+        `Kolejka: <b>${w.nazwa}</b> w ${city?.name ?? 'mieście'} (${w.kosztBudowy} Pracy)`,
+        4000,
+      );
+      refreshCityPanelIfOpen();
+      refreshWondersPickerIfOpen();
+      refreshD1bHud();
+      updateHud();
+      return true;
+    }
+
+    function hideWondersPicker(): void {
+      if (wondersPickerEl) wondersPickerEl.style.display = 'none';
+    }
+
+    function refreshWondersPickerIfOpen(): void {
+      if (!wondersPickerEl || wondersPickerEl.style.display === 'none') return;
+      renderWondersPickerContent();
+    }
+
+    function renderWondersPickerContent(): void {
+      if (!wondersPickerEl) return;
+      wondersPickerEl.innerHTML = '';
+      const hdr = document.createElement('div');
+      hdr.style.cssText = 'display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5em;';
+      const title = document.createElement('strong');
+      title.textContent = 'Cuda świata — dostępne do budowy';
+      hdr.appendChild(title);
+      const closeBtn = document.createElement('button');
+      closeBtn.type = 'button';
+      closeBtn.textContent = '×';
+      closeBtn.style.cssText = 'font-size:1.2em;line-height:1;padding:0 0.35em;cursor:pointer;';
+      closeBtn.addEventListener('click', () => hideWondersPicker());
+      hdr.appendChild(closeBtn);
+      wondersPickerEl.appendChild(hdr);
+
+      const targetId = playerWonderTargetCityId();
+      const targetCity = targetId ? cities.find(c => c.id === targetId) : undefined;
+      const sub = document.createElement('div');
+      sub.style.cssText = 'font-size:0.85em;opacity:0.85;margin-bottom:0.6em;';
+      sub.textContent = targetCity
+        ? `Kolejka produkcji: ${targetCity.name}`
+        : 'Brak miasta gracza — załóż stolicę.';
+      wondersPickerEl.appendChild(sub);
+
+      const list = listBuildableWondersForOwner(0);
+      if (list.length === 0) {
+        const empty = document.createElement('div');
+        empty.style.cssText = 'font-size:0.9em;opacity:0.8;';
+        empty.textContent = '(brak — zbadaj technologie / poczekaj na epokę)';
+        wondersPickerEl.appendChild(empty);
+        return;
+      }
+      for (const w of list) {
+        const row = document.createElement('button');
+        row.type = 'button';
+        row.style.cssText =
+          'display:block;width:100%;text-align:left;margin:0.25em 0;padding:0.45em 0.55em;' +
+          'cursor:pointer;border:1px solid rgba(255,255,255,0.2);border-radius:4px;background:rgba(0,0,0,0.35);color:inherit;';
+        const tag = w.dostep === 'R' ? ' [R]' : '';
+        row.textContent = `${w.nazwa}${tag} — ${w.kosztBudowy} Pracy · tech: ${(w.techUnlock ?? []).join(' + ')}`;
+        row.addEventListener('click', () => { enqueueWonderForPlayer(w.id); });
+        wondersPickerEl.appendChild(row);
+      }
+    }
+
+    function toggleWondersPicker(): void {
+      if (!wondersPickerEl) {
+        wondersPickerEl = document.createElement('div');
+        wondersPickerEl.id = 'civ-wonders-picker';
+        wondersPickerEl.style.cssText =
+          'position:fixed;top:72px;right:12px;z-index:9500;max-width:340px;max-height:60vh;' +
+          'overflow:auto;padding:0.75em 0.85em;background:rgba(18,14,10,0.94);' +
+          'border:1px solid rgba(212,175,95,0.45);border-radius:6px;color:#f5e6c8;font-size:0.92em;' +
+          'box-shadow:0 8px 28px rgba(0,0,0,0.55);';
+        document.body.appendChild(wondersPickerEl);
+      }
+      const open = wondersPickerEl.style.display !== 'none';
+      if (open) {
+        hideWondersPicker();
+        return;
+      }
+      wondersPickerEl.style.display = 'block';
+      renderWondersPickerContent();
+    }
+
+    function ownerCivKeyForReligion(ownerId: number): string | null {
+      if (ownerId === 0) {
+        const k = String(player.civType || _menuCivId || '');
+        return k.length > 0 ? k : null;
+      }
+      return aiOwnerCivMap.get(ownerId) ?? null;
+    }
+
+    function ownerReligionForOwnerId(ownerId: number): string | null {
+      return civReligionForKey(ownerCivKeyForReligion(ownerId), data.societyParams, data.civs as unknown as CivsDataLike);
+    }
+
+    function resolvedCityReligion(city: City): ReligionState {
+      return resolveCityReligionState(
+        cityRelig.get(city.id),
+        city.population,
+        ownerReligionForOwnerId(city.ownerId),
+      );
+    }
+
+    function seedCityReligionAtFounding(c: City): void {
+      const stored = cityRelig.get(c.id);
+      if (stored && !isEmptyReligionState(stored)) return;
+      cityRelig.set(c.id, defaultCityReligionState(c.population, ownerReligionForOwnerId(c.ownerId)));
+    }
+
+    function seedWealthImmunityAtFounding(c: City): void {
+      const wp = loadWealthParams(data.econParams as RawWealthParamsJson, _menuDifficulty);
+      c.wealthImmunityRemaining = Math.max(0, Math.floor(wp.immunitetTur));
+    }
+
+    /** growthMult per cityId (from order lane) -- updated each turn, applied next turn. */
+    const growthMultMap = new Map<string, number>();
+    const orderMultMap = new Map<string, OrderYieldMults>();
+    const orderValueMap = new Map<string, number>();
+    /** Per-city order state (szczescie/porzadek) — updated each turn for city panel B2 hooks. */
+    const cityOrderState = new Map<string, OrderState>();
+    /** OBL-S4: staty milicji szturmowej (ephemeral, nie w units[]). */
+    const militiaDefOverrides = new Map<string, Record<string, unknown>>();
+    const empireFoodStates = new Map<number, EmpireFoodState>();
+    let playerArmyFoodHintShown = false;
+    const lastCityKulturaTick = new Map<string, number>();
+    let powerSnapshotsForTurn: PowerOwnerSnapshot[] = [];
+
+    function cityNodesForOwner(ownerId: number): CityNode[] {
+      return cities
+        .filter(c => c.ownerId === ownerId)
+        .map(c => ({ q: c.q, r: c.r, pop: c.population, level: 1 }));
+    }
+
+    function buildAllTerritoryNodes(): TerritoryNode[] {
+      return cities.map(c => ({
+        q: c.q,
+        r: c.r,
+        pop: c.population,
+        level: 1,
+        ownerId: c.ownerId,
+      }));
+    }
+
+    function buildCapitalHexByOwner(): Map<number, { q: number; r: number }> {
+      const map = new Map<number, { q: number; r: number }>();
+      for (const c of cities) {
+        if (!map.has(c.ownerId)) map.set(c.ownerId, { q: c.q, r: c.r });
+      }
+      return map;
+    }
+
+    function syncBasketResearchFromEngine(): void {
+      const researched = new Map<number, ReadonlySet<string>>();
+      researched.set(0, new Set(player.zbadane));
+      for (const [oid, zbadane] of aiResearchDone) researched.set(oid, new Set(zbadane));
+      basketTransferCtx = { ...basketTransferCtx, researchedByOwner: researched, techCatalog: data.tech };
+    }
+
+    function allocateDipUnitId(): string {
+      _dipUnitSeq += 1;
+      return `dip_${turn}_${_dipUnitSeq}`;
+    }
+
+    function enrichBorderMarchPairsWithMilitary(
+      pairs: readonly BorderMarchPair[],
+      territoryNodes: readonly TerritoryNode[],
+    ): BorderMarchPair[] {
+      const militaryByPair = new Map<string, boolean>();
+      for (const unit of units) {
+        if (unit.inGarnizon) continue;
+        const ownerAt = territoryOwnerAt(unit.q, unit.r, territoryNodes);
+        if (ownerAt == null || ownerAt === unit.ownerId) continue;
+        const key = `${unit.ownerId}->${ownerAt}`;
+        if (defaultIsMilitaryUnit(unit)) militaryByPair.set(key, true);
+      }
+      return pairs.map(p => ({
+        ...p,
+        isMilitary: militaryByPair.get(`${p.intruderOwnerId}->${p.territoryOwnerId}`) ?? false,
+      }));
+    }
+
+    function applyBorderMarchPenaltiesEndTurn(): void {
+      const territoryNodes = buildAllTerritoryNodes();
+      const rawPairs = collectUnauthorizedBorderPairs(
+        units,
+        territoryNodes,
+        defaultIsMilitaryUnit,
+      );
+      const enriched = enrichBorderMarchPairsWithMilitary(
+        dedupeBorderMarchPairs(rawPairs),
+        territoryNodes,
+      );
+      const borderParams = loadBorderMarchParams();
+      const { relations, penalizedPairs } = applyUnauthorizedBorderPenalties(
+        enriched,
+        diplomacyRelations,
+        borderParams,
+        (pair) => ({
+          treaties: activeDeals,
+          isMilitary: pair.isMilitary === true,
+          relation: getDiploRelation(pair.intruderOwnerId, pair.territoryOwnerId),
+        }),
+      );
+      for (const [key, rel] of relations) diplomacyRelations.set(key, rel);
+      if (penalizedPairs > 0) {
+        showHintMessage(
+          `Nieautoryzowany przemarsz: −${borderParams.karaPrzemarszNieautoryzowany_zaufanie_perTura} Zauf./para`,
+          3500,
+        );
+      }
+    }
+
+    function countTerritoryHexes(nodes: CityNode[]): number {
+      if (nodes.length === 0) return 0;
+      let n = 0;
+      for (const k of Object.keys(map.hexes)) {
+        const [qs, rs] = k.split(',');
+        if (isInTerritory(Number(qs), Number(rs), nodes)) n++;
+      }
+      return n;
+    }
+
+    function buildPowerSnapshotsForTurn(econ: { perCity: Array<{ ownerId: number; pieniadz: number }> }): PowerOwnerSnapshot[] {
+      const ownerIds = new Set<number>([0]);
+      for (const c of cities) ownerIds.add(c.ownerId);
+      for (const a of aiStartHexes) ownerIds.add(a.ownerId);
+      const rows: PowerOwnerSnapshot[] = [];
+      for (const oid of ownerIds) {
+        const ownerCities = cities.filter(c => c.ownerId === oid);
+        const nodes = cityNodesForOwner(oid);
+        const ownerEpoka = empireEpochForOwner(oid);
+        const pobor = empirePoborTotals(cities, oid, ownerEpoka);
+        rows.push({
+          ownerId: oid,
+          population: ownerCities.reduce((s, c) => s + c.population, 0),
+          cityCount: ownerCities.length,
+          territoryHexCount: countTerritoryHexes(nodes),
+          pieniadzPerTurn: (econ.perCity ?? [])
+            .filter(t => t.ownerId === oid)
+            .reduce((s, t) => s + t.pieniadz, 0),
+          ludnoscAbsolutna: pobor.ludnoscAbsolutna,
+          rekruci: pobor.rekruci,
+        });
+      }
+      return buildPowerSnapshots(rows);
+    }
+
+    function initEmpireFoodStates(): void {
+      playerArmyFoodHintShown = false;
+      empireFoodStates.clear();
+      const efParams = buildEmpireFoodParams(data.econParams, _menuDifficulty);
+      empireFoodStates.set(0, freshEmpireFoodState(efParams.procentRozwojDefault));
+      for (const ai of aiStartHexes) {
+        if (!empireFoodStates.has(ai.ownerId)) {
+          empireFoodStates.set(ai.ownerId, freshEmpireFoodState(efParams.procentRozwojDefault));
+        }
+      }
+      bindEmpireFoodRuntime(empireFoodStates);
+    }
+
+    function empireFoodDefaultPct(): number {
+      return buildEmpireFoodParams(data.econParams, _menuDifficulty).procentRozwojDefault;
+    }
+
+    /** Miasto w trybie ręcznej okolicy na mapie 3D (po „Mapa” w panelu). */
+    let okolicaMapEditCityId: string | null = null;
+    let okolicaOverlayGroup: THREE.Group | null = null;
+    /** Izolacja widoku 3D przy panelu miasta — tylko okolica, bez mapy strategicznej. */
+    let cityPanelViewSaved: { x: number; z: number; dist: number } | null = null;
+    let cityPanelViewCityId: string | null = null;
+
+    function okolicaHexKeysForCity(city: City, pad = 1): Set<string> {
+      const keys = new Set<string>();
+      const rad = cityRangeForPopulation(city.population) + pad;
+      for (const key of Object.keys(map.hexes)) {
+        const hex = map.hexes[key];
+        if (!hex) continue;
+        const d = hexDistance(city.q, city.r, hex.coords.q, hex.coords.r);
+        if (d <= rad) keys.add(key);
+      }
+      return keys;
+    }
+
+    function applyCityPanelWorldView(active: boolean, city?: City): void {
+      if (active && city) {
+        if (cityPanelViewSaved === null) {
+          cityPanelViewSaved = camCtrl.getFocusState();
+        }
+        cityPanelViewCityId = city.id;
+        const { x, z } = axialToWorld(city.q, city.r, HEX_R);
+        const rad = cityRangeForPopulation(city.population);
+        const dist = Math.max(14, Math.min(42, 10 + rad * 3.8));
+        camCtrl.focusAt(x, z, dist);
+      } else {
+        if (cityPanelViewSaved !== null) {
+          const saved = cityPanelViewSaved;
+          camCtrl.focusAt(saved.x, saved.z, saved.dist);
+          cityPanelViewSaved = null;
+        }
+        cityPanelViewCityId = null;
+      }
+      refreshFog();
+      cityRenderer.sync(cities, _cityRenderOpts());
+      refreshRangeOverlays();
+    }
+
+    function okolicaHexWorkable(q: number, r: number): boolean {
+      const hex = map.hexes[keyOf(q, r)];
+      if (!hex) return false;
+      const t = hex.terenBazowy;
+      return t !== TerenBazowy.Morze && t !== TerenBazowy.Gory;
+    }
+
+    function okolicaWorkedKeySet(city: City): Set<string> {
+      const worked = resolveWorkedTiles(city, map, (q, rr) => yieldOfMapHex(map, q, rr), {
+        isWorkable: okolicaHexWorkable,
+      });
+      return new Set(worked.map(t => t.key));
+    }
+
+    function disposeOkolicaOverlay(): void {
+      if (!okolicaOverlayGroup) return;
+      try { scene.remove(okolicaOverlayGroup); } catch { /* scena może być już disposed */ }
+      disposeCityOkolicaOverlayGroup(okolicaOverlayGroup);
+      okolicaOverlayGroup = null;
+    }
+
+    function syncOkolicaOverlay(): void {
+      if (!isCityPanelOpen()) {
+        disposeOkolicaOverlay();
+        return;
+      }
+      const cityId = getOpenCityPanelCityId();
+      const city = cityId ? cities.find(c => c.id === cityId) : undefined;
+      if (!city || city.ownerId !== 0) {
+        disposeOkolicaOverlay();
+        return;
+      }
+      okolicaOverlayGroup = syncCityOkolicaOverlay(scene, okolicaOverlayGroup, map, {
+        cityQ: city.q,
+        cityR: city.r,
+        range: cityRangeForPopulation(city.population),
+        workedKeys: okolicaWorkedKeySet(city),
+        yieldOf: (q, rr) => yieldOfMapHex(map, q, rr),
+        showYields: true,
+      });
+    }
+
+    function hideCityPanelFull(): void {
+      hideCityPanel();
+      applyCityPanelWorldView(false);
+      disposeOkolicaOverlay();
+      updateHud();
+    }
+
+    function applyOkolicaTileAdjust(cityId: string, q: number, r: number, _delta: number): void {
+      const city = cities.find(c => c.id === cityId);
+      if (!city || city.ownerId !== 0) return;
+      const res = toggleTileWorker(city, map, q, r);
+      if (res.ok) {
+        city.okolicaReczne = res.reczne;
+        city.okolicaTryb = 'reczny';
+        updateHud();
+        refreshCityPanelIfOpen();
+        syncOkolicaOverlay();
+      } else {
+        const msg: Record<string, string> = {
+          limit_populacji: 'Brak wolnych obywateli — najpierw zabierz 👤 z innego pola.',
+          poza_zasiegiem: 'To pole jest poza zasięgiem okolicy.',
+          centrum_miasta: 'Centrum miasta nie przyjmuje 👤 — wybierz pole obok.',
+          brak_ludnosci: 'Miasto nie ma ludności do pracy w polu.',
+          brak_robotnika: 'Na tym polu nie ma przypisanego 👤.',
+        };
+        showHintMessage(msg[res.reason ?? ''] ?? 'Nie można zmienić przypisania pola.', 2800);
+      }
+    }
+
+    /** Lewy klik na mapie: toggle 👤 (przypisz / zabierz). */
+    function toggleOkolicaTileOnMap(cityId: string, q: number, r: number): void {
+      applyOkolicaTileAdjust(cityId, q, r, 0);
+    }
+
+    function enterOkolicaMapMode(cityId: string): void {
+      okolicaMapEditCityId = cityId;
+      const city = cities.find(c => c.id === cityId);
+      showHintMessage(
+        (city?.name ?? 'Miasto') +
+        ' — kliknij heks w okolicy, aby przypisać 👤 (panel pozostaje otwarty).',
+        5000,
+      );
+    }
+
+    function exitOkolicaMapMode(): void {
+      if (okolicaMapEditCityId === null) return;
+      okolicaMapEditCityId = null;
+    }
+
+    function isWorldMapUnitMode(): boolean {
+      if (isCityPanelOpen()) return false;
+      if (isPreBattleOpen()) return false;
+      if (isPostBattleSummaryOpen()) return false;
+      if (isArmyMergePanelOpen()) return false;
+      if (isArmySplitPanelOpen()) return false;
+      if (isSiegeMapPanelOpen()) return false;
+      if (isCityUnitPickOpen()) return false;
+      return true;
+    }
+
+    function hudHtmlEsc(raw: string): string {
+      return raw.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    /** D17=A: panel kontekstowy — pole mapy + opcjonalnie jednostka na tym heksie. */
+    function buildHexContextPanelMessage(): string | null {
+      if (!isWorldMapUnitMode() || lastBHex === null) return null;
+      const hex = map.hexes[keyOf(lastBHex.q, lastBHex.r)];
+      if (!hex) return null;
+      const cityOn = cities.find(c => c.q === lastBHex!.q && c.r === lastBHex!.r);
+      return buildHexContextTooltipHtml({
+        q: lastBHex.q,
+        r: lastBHex.r,
+        hex,
+        cityName: cityOn?.name ?? null,
+        currentEra: player.era,
+        esc: hudHtmlEsc,
+      });
+    }
+
+    function buildUnitContextPanelMessage(): string | null {
+      if (!isWorldMapUnitMode() || selectedId === null) return null;
+      const u = units.find(x => x.id === selectedId);
+      if (!u || u.ownerId !== 0) return null;
+      const def = lookupUnitDef(u.typeId);
+      const defName = String(def?.nazwa ?? def?.Nazwa ?? u.typeId);
+      return buildUnitContextTooltipHtml({
+        displayName: defName,
+        q: u.q,
+        r: u.r,
+        ruchLeft: u.ruchLeft,
+        ruchMax: u.ruch,
+        atak: unitAtak(def),
+        obrona: unitObrona(def),
+        hp: u.hp,
+        maxHp: unitHealth(def),
+        category: u.category,
+        inGarnizon: u.inGarnizon,
+        esc: hudHtmlEsc,
+      });
+    }
+
+    function buildContextPanelMessage(): string | null {
+      const hexMsg = buildHexContextPanelMessage();
+      const unitMsg = buildUnitContextPanelMessage();
+      if (hexMsg && unitMsg) {
+        const u = units.find(x => x.id === selectedId);
+        const sameHex = u && lastBHex && u.q === lastBHex.q && u.r === lastBHex.r;
+        if (sameHex) {
+          return hexMsg + '<div class="cp-sep"></div>' + unitMsg;
+        }
+      }
+      return hexMsg ?? unitMsg ?? null;
+    }
+
+    function clearPlayerUnitSelection(): void {
+      selectedId = null;
+      reachable = new Set<string>();
+      unitRenderer.clearHighlight();
+      unitRenderer.clearPathRoute();
+      unitRenderer.clearSelectionHex();
+      hoverKey = null;
+      setArmyListSelectedId(null);
+    }
+
+    /** Zamknij listy z lewego toolbaru (powrót na czystą mapę). */
+    function dismissToolbarSidePanels(): void {
+      if (isArmyListHudOpen()) hideArmyListHud();
+      if (isCityListHudOpen()) hideCityListHud();
+      if (isDiploListHudOpen()) hideDiploListHud();
+    }
+
+    /** Listy toolbaru + tryby mapy (budowa, zasięgi, pickery) — czysta mapa / wejście w miasto. */
+    function dismissMapOverlayModes(): void {
+      dismissToolbarSidePanels();
+      if (buildModeOpen) exitBuildMode();
+      if (cultureRangeVisible || religionRangeVisible) {
+        cultureRangeVisible = false;
+        religionRangeVisible = false;
+        refreshRangeOverlays();
+      }
+      hideWondersPicker();
+      hideEmpireOverlay();
+      hideEmpireDetailPanel();
+    }
+
+    function openCityPanelForPlayer(city: City): void {
+      hideScienceHubHud();
+      hideWikiHubHud();
+      hideSciencePicker();
+      if (isDiplomacyAudienceOpen()) {
+        hideDiplomacyAudience();
+        diplomacyAudienceOwnerId = null;
+      }
+      if (isDiplomacyPanelOpen()) hideDiplomacyPanel();
+      dismissMapOverlayModes();
+      exitOkolicaMapMode();
+      clearPlayerUnitSelection();
+      applyCityPanelWorldView(true, city);
+      showCityPanel(city, map, () => {
+        hideCityPanel();
+        applyCityPanelWorldView(false);
+        disposeOkolicaOverlay();
+        updateHud();
+      });
+      syncOkolicaOverlay();
+      updateHud();
+    }
+
+    function selectPlayerUnit(unitId: string, keepListOpen = false): void {
+      const u = units.find(x => x.id === unitId);
+      if (!u || u.ownerId !== 0) return;
+      if (isCityPanelOpen()) hideCityPanelFull();
+      exitOkolicaMapMode();
+      unitRenderer.clearPathRoute();
+      hoverKey = null;
+      selectedId = u.id;
+      lastBHex = { q: u.q, r: u.r };
+      if (isSiegeMapPanelOpen()) {
+        reachable = new Set<string>();
+        unitRenderer.clearHighlight();
+      } else {
+        reachable = u.ruchLeft > 0
+          ? reachableWithMergeTargets(u)
+          : new Set<string>();
+        unitRenderer.setHighlight(reachable);
+      }
+      unitRenderer.setSelectionHex(u.q, u.r);
+      setArmyListSelectedId(u.id);
+      if (!keepListOpen) hideArmyListHud();
+      refreshD1bHud();
+    }
+
+    function buildPlayerCityListEntries(): CityListEntry[] {
+      return cities
+        .filter(c => c.ownerId === 0)
+        .map(c => {
+          const prod = cityProd.get(c.id);
+          const front = prod ? frontItem(prod) : null;
+          const productionLine = front
+            ? `${front.nazwa} • ${prod?.postep ?? 0}/${front.koszt} 🔨`
+            : 'Kolejka pusta';
+          const gar = c.garnizon ?? 0;
+          return {
+            id: c.id,
+            name: c.name,
+            population: c.population,
+            productionLine,
+            metaLine: gar > 0 ? `Garnizon: ${gar}` : undefined,
+          };
+        });
+    }
+
+    function buildPlayerArmyListEntries(): ArmyListEntry[] {
+      const playerUnits = units.filter(u => u.ownerId === 0);
+      const stacks = new Map<string, typeof playerUnits>();
+      for (const u of playerUnits) {
+        const key = `${u.q},${u.r}`;
+        const arr = stacks.get(key);
+        if (arr) arr.push(u);
+        else stacks.set(key, [u]);
+      }
+      const out: ArmyListEntry[] = [];
+      for (const group of stacks.values()) {
+        const lead = group[0]!;
+        const types = [...new Set(group.map(u => u.typeId))];
+        const name = group.length === 1
+          ? lead.typeId
+          : types.length === 1
+            ? `${types[0]!} ×${group.length}`
+            : `Stos · ${group.length} jedn.`;
+        const ruchLeft = Math.min(...group.map(u => u.ruchLeft));
+        const ruchMax = Math.max(...group.map(u => u.ruch));
+        const ready = group.filter(u => u.ruchLeft > 0).length;
+        out.push({
+          id: lead.id,
+          name,
+          unitCount: group.length,
+          hexLabel: `(${lead.q}, ${lead.r})`,
+          detailLine: ready > 0
+            ? `Ruch: ${ruchLeft}/${ruchMax} · ${ready} got.`
+            : 'Ruch wykorzystany w tej turze',
+          metaLine: types.length > 1 ? types.join(', ') : undefined,
+        });
+      }
+      out.sort((a, b) => a.name.localeCompare(b.name, 'pl'));
+      return out;
+    }
+
+    function buildPlayerDiploRelations(): DiploRelation[] {
+      const contacted = getDiplomaticContacts();
+      const rels: DiploRelation[] = [];
+      for (const [key, rel] of diplomacyRelations.entries()) {
+        const parts = key.split('_');
+        const a = parseInt(parts[0] ?? '0', 10);
+        const b = parseInt(parts[1] ?? '0', 10);
+        if (a !== 0 && b !== 0) continue;
+        const otherId = a === 0 ? b : a;
+        if (!contacted.has(otherId)) continue;
+        const layer = diplomacyLayerForOwner(
+          otherId,
+          simplifiedDiplomacyOwners,
+          foreignTypeOwners,
+          contacted,
+        );
+        rels.push({
+          ownerId: otherId,
+          civ: ownerDiploLabel(otherId),
+          layer,
+          tier: relationTier(rel),
+          zaufanie: Math.round(Math.max(0, Math.min(100, rel.zaufanie ?? 0))),
+          respekt: objectiveRespektPctToward(otherId),
+          contactEstablished: diplomaticContactEstablished.has(otherId),
+        });
+      }
+      rels.sort((x, y) => x.civ.localeCompare(y.civ, 'pl'));
+      return rels;
+    }
+
+    function buildPlayerDiploListEntries(): DiploListEntry[] {
+      return buildPlayerDiploRelations()
+        .map(diploListEntryFromRelation)
+        .filter((e): e is DiploListEntry => e !== null);
+    }
+
+    function closeAllMapToolbarModes(): void {
+      if (buildModeOpen) exitBuildMode();
+      hideCityListHud();
+      hideArmyListHud();
+      hideDiploListHud();
+      hideScienceHubHud();
+      hideWikiHubHud();
+      hideSciencePicker();
+      hideEmpireDetailPanel();
+      if (isDiplomacyAudienceOpen()) {
+        hideDiplomacyAudience();
+        diplomacyAudienceOwnerId = null;
+      }
+      if (isDiplomacyPanelOpen()) hideDiplomacyPanel();
+      if (isCityPanelOpen()) hideCityPanelFull();
+    }
+
+    function toggleDiploListFromToolbar(): void {
+      clearPlayerUnitSelection();
+      if (isDiploListHudOpen()) {
+        hideDiploListHud();
+        refreshD1bHud();
+        return;
+      }
+      closeAllMapToolbarModes();
+      showDiploListHud();
+      refreshD1bHud();
+    }
+
+    function openScienceTreeDocked(focusTechId?: string): void {
+      if (!isScienceHubHudOpen()) showScienceHubHud();
+      showSciencePickerDocked(0, {
+        focusTechId,
+        onClose: () => refreshD1bHud(),
+      });
+      refreshScienceHubIfOpen();
+      refreshD1bHud();
+    }
+
+    function toggleScienceHubFromToolbar(): void {
+      clearPlayerUnitSelection();
+      if (isScienceHubHudOpen() || isSciencePickerOpen()) {
+        hideScienceHubHud();
+        hideSciencePicker();
+        refreshD1bHud();
+        return;
+      }
+      closeAllMapToolbarModes();
+      showScienceHubHud();
+      refreshD1bHud();
+    }
+
+    function toggleWikiFromToolbar(): void {
+      if (isWikiHubHudOpen()) {
+        hideWikiHubHud();
+        refreshD1bHud();
+        return;
+      }
+      clearPlayerUnitSelection();
+      hideCityListHud();
+      hideArmyListHud();
+      hideDiploListHud();
+      hideScienceHubHud();
+      hideSciencePicker();
+      if (isDiplomacyAudienceOpen()) {
+        hideDiplomacyAudience();
+        diplomacyAudienceOwnerId = null;
+      }
+      if (isDiplomacyPanelOpen()) hideDiplomacyPanel();
+      if (isCityPanelOpen()) hideCityPanelFull();
+      showWikiHubHud();
+      refreshD1bHud();
+    }
+
+    function selectPlayerResearchSlug(techSlug: string): void {
+      const techName = techNameFromSlug(techSlug) ?? techSlug;
+      const ok = setPlayerResearchTarget(player, techName, data.tech, researchGateForOwner(0));
+      if (ok) {
+        console.log('[Nauka] Gracz wybrał cel:', techName);
+        updateHud();
+        refreshScienceHubIfOpen();
+        refreshSciencePickerIfOpen();
+      } else {
+        console.warn('[Nauka] Nie można ustawić celu:', techSlug);
+      }
+    }
+
+    function extraCityPanelConfig() {
+      return {
+        getResourceAccess: (cityId: string) => {
+          const c = cities.find(x => x.id === cityId);
+          if (!c) return { potential: [], active: [] };
+          const builtIds = cityBuilt.get(cityId) ?? [];
+          return getCityResourceAccessForCity(
+            {
+              id: c.id,
+              q: c.q,
+              r: c.r,
+              population: c.population,
+              kulturaSkumulowana: (c as { kultura?: number }).kultura ?? 0,
+            },
+            map,
+            placedImprovements,
+            player.era,
+            { builtIds, ownerId: String(0) },
+          );
+        },
+        isAutoManageEnabled: (cityId: string) => autoManageCities.has(cityId),
+        getEmpireFoodState: (oid: number) => empireFoodStates.get(oid) ?? null,
+        getEmpireFoodTick: (oid: number) => getLastEmpireFoodTick(oid) ?? null,
+        onEmpireFoodSplitChange: (oid: number, pct: number) => {
+          const st = empireFoodStates.get(oid) ?? freshEmpireFoodState(empireFoodDefaultPct());
+          st.procentRozwoj = pct;
+          empireFoodStates.set(oid, st);
+        },
+        getCultureState: (cityId: string) => {
+          const city = cities.find(c => c.id === cityId);
+          if (!city) return null;
+          const kulturaSuma = (city as { kultura?: number }).kultura ?? 0;
+          const cp = loadCultureParams(data.societyParams, _menuDifficulty);
+          return {
+            kulturaSuma,
+            przyrost: lastCityKulturaTick.get(cityId) ?? 0,
+            borderRadius: cityBorderRadius(kulturaSuma, cp),
+            thresholds: cultureThresholds(cp),
+          };
+        },
+        getReligionState: (cityId: string) => {
+          const city = cities.find(c => c.id === cityId);
+          if (!city) return null;
+          const rp = loadReligionParams(data.societyParams, _menuDifficulty);
+          const ownRel = ownerReligionForOwnerId(city.ownerId);
+          const rel = resolvedCityReligion(city);
+          const dom = dominantReligion(rel, rp);
+          return {
+            dominujaca: dom.religion ?? '—',
+            udzialPct: Math.round(dom.share * 100),
+            wplywSzczescie: religionHappiness(rel, ownRel, rp),
+            przyrostWiernych: lastReligionSpreadByCity.get(cityId) ?? 0,
+          };
+        },
+        getEmpireHud: (oid: number) => {
+          if (oid !== 0) return null;
+          const hs = buildHudState();
+          const pc = cities.filter(c => c.ownerId === 0);
+          const stateRel = ownerReligionForOwnerId(0);
+          const relAgg = aggregateReligionEmpire(
+            pc.map(c => ({
+              state: resolvedCityReligion(c),
+              spreadDelta: lastReligionSpreadByCity.get(c.id) ?? 0,
+            })),
+            stateRel,
+          );
+          return {
+            pracaPool: hs.praca,
+            pracaRate: hs.pracaRate,
+            zloto: hs.zloto,
+            zlotoRate: hs.zlotoRate,
+            nauka: hs.nauka,
+            naukaRate: hs.naukaRate ?? 0,
+            zywnoscReserve: parseInt(hs.zywnoscLabel, 10) || 0,
+            zywnoscRate: hs.zywnoscRate ?? 0,
+            kulturaRate: hs.kulturaRate ?? 0,
+            religionStock: relAgg.stateAdherents,
+            religionRate: relAgg.spreadRateTotal,
+            stateReligion: stateRel,
+            religionSharePct: relAgg.sharePct,
+          };
+        },
+        getOkolicaState: (cityId: string) => {
+          const city = cities.find(c => c.id === cityId);
+          if (!city) return null;
+          return {
+            focus: city.okolicaFocus ?? 'zrownowazone',
+            tryb: city.okolicaTryb ?? 'auto',
+            reczne: city.okolicaReczne,
+          };
+        },
+        getCityWorkedRange: (cityId: string) => {
+          const city = cities.find(c => c.id === cityId);
+          if (!city) return undefined;
+          return cityRangeForPopulation(city.population);
+        },
+        getWorkedTiles: (cityId: string) => {
+          const city = cities.find(c => c.id === cityId);
+          if (!city) return undefined;
+          return workedHexCoordsForCity(city, map);
+        },
+        onOkolicaFocusChange: (cityId: string, focus: import('./game/cities').OkolicaFocus) => {
+          const city = cities.find(c => c.id === cityId);
+          if (!city) return;
+          city.okolicaFocus = focus;
+          city.okolicaTryb = 'auto';
+          delete city.okolicaReczne;
+          const labels: Record<string, string> = {
+            zywnosc: 'Żywność',
+            produkcja: 'Produkcja',
+            podatki: 'Podatki',
+            zrownowazone: 'Zrównoważone',
+          };
+          showHintMessage(
+            `${city.name}: auto · priorytet ${labels[focus] ?? focus} — pola przypisane automatycznie`,
+            3200,
+          );
+          updateHud();
+          refreshCityPanelIfOpen();
+          syncOkolicaOverlay();
+        },
+        onOkolicaEnterManual: (cityId: string) => {
+          const city = cities.find(c => c.id === cityId);
+          if (!city) return;
+          city.okolicaTryb = 'reczny';
+          const hasReczne = city.okolicaReczne && Object.values(city.okolicaReczne).some(n => n > 0);
+          if (!hasReczne) city.okolicaReczne = seedReczneFromAuto(city, map);
+          showHintMessage(
+            `${city.name}: tryb ręczny — klik heks = przypisz/zabierz 👤`,
+            3200,
+          );
+          updateHud();
+          refreshCityPanelIfOpen();
+          syncOkolicaOverlay();
+        },
+        onOkolicaRestoreAuto: (cityId: string) => {
+          const city = cities.find(c => c.id === cityId);
+          if (!city) return;
+          city.okolicaTryb = 'auto';
+          delete city.okolicaReczne;
+          refreshCityPanelIfOpen();
+          updateHud();
+          syncOkolicaOverlay();
+        },
+        onOkolicaTileAdjust: (cityId: string, q: number, r: number, delta: number) => {
+          applyOkolicaTileAdjust(cityId, q, r, delta);
+        },
+        onOpenMapForOkolica: (cityId: string) => {
+          enterOkolicaMapMode(cityId);
+        },
+        getUnitsAt: (q: number, r: number) => {
+          return units
+            .filter(u => u.q === q && u.r === r && u.inGarnizon === true)
+            .map(u => {
+              const def = lookupUnitDef(u.typeId);
+              const hpMax = unitHealth(def);
+              return {
+                nazwa: u.typeId,
+                category: u.category,
+                health: hpMax,
+                maxHealth: hpMax,
+              };
+            });
+        },
+      };
+    }
+
+    initEmpireFoodStates();
+
+    // -----------------------------------------------------------------------
+    // AI / Barbarians / Victory state
+    // -----------------------------------------------------------------------
+
+    /**
+     * Per-AI research state: Set of zbadane tech ids per ownerId.
+     * Seeded lazily; grows as chooseAIResearch + researchStep complete techs.
+     */
+    const aiResearchDone = new Map<number, Set<string>>();
+
+    /**
+     * Mapa ownerId -> civType (ikonaId z civs.json) dla AI rywali.
+     * Wypełniana przy starcie gry z aiStartHexes (bez osadników AI na mapie).
+     * Gracz (ownerId 0) zawsze dostaje typ z player.civType.
+     */
+    const aiOwnerCivMap = new Map<number, string>();
+    /** Etykieta UI per owner AI (N-2A: miasto rywala klastra). */
+    const ownerDisplayName = new Map<number, string>();
+    /** Ownerzy z uproszczoną dyplomacją (ten sam typ w klastrze). */
+    const simplifiedDiplomacyOwners = new Set<number>();
+    /** Obcy typ — pełna dyplomacja dopiero po kontakcie (D-START-3A). */
+    const foreignTypeOwners = new Set<number>();
+    /** Wszystkie miasta AI z klastra — profil kopia_typu_obronna (P0-05). */
+    const typCityCopyOwners = new Set<number>();
+    /** N-1A: nazwa pierwszego miasta gracza z nazwyKlastra[0]. */
+    let clusterPlayerStartCityName = playerStartCityName(data.civs, _menuCivId);
+
+    function fillAiOwnerCivMap(playerCivId: string, rosterSeed: number): void {
+      aiOwnerCivMap.clear();
+      const aiOwnerIds = aiStartHexes.map(a => a.ownerId);
+      const allCivIds = civIdsAvailableAtGameEpoch(
+        data.civs.cywilizacje as Parameters<typeof civIdsAvailableAtGameEpoch>[0],
+        _menuEpochId,
+      );
+      const aktywneTypy = _menuCivTypesCount || aktywneTypyFromMapLabel(_menuMapSize);
+      const aiMap = assignAiCivTypes({
+        allCivIds,
+        playerCivId,
+        aiOwnerIds,
+        aktywneTypy,
+        seed: rosterSeed,
+      });
+      for (const [oid, civ] of aiMap) {
+        aiOwnerCivMap.set(oid, civ);
+        initOwnerEra(oid, 1);
+      }
+    }
+
+    fillAiOwnerCivMap(_menuCivId, _gameSeed);
+
+    /** Klucz cywilizacji (typCywilizacji / ikonaId) per ownerId. */
+    function civKeyForOwnerId(ownerId: number): string {
+      return ownerId === 0
+        ? (player.civType || 'grecy')
+        : (aiOwnerCivMap.get(ownerId) ?? 'grecy');
+    }
+
+    /** Bonusy cyw z civs.json per ownerId (gracz: player.civBonusy; AI: lookup po aiOwnerCivMap). */
+    function civBonusyForOwnerId(ownerId: number) {
+      if (ownerId === 0 && player.civBonusy.length > 0) return player.civBonusy;
+      return civBonusyForCivKey(civKeyForOwnerId(ownerId), data.civs);
+    }
+
+    /**
+     * Diplomacy relations: Map of "a_b" (smaller id first) -> Relation.
+     * Initialized on first access (lazy). Updated each turn via aiDiplomacyStance.
+     */
+    const diplomacyRelations = new Map<string, Relation>();
+    /** D4-WYMIANA-PN: meta per para (limit PN/turę, dobra wola). */
+    const diplomacyPairMeta = new Map<string, DiploPairMeta>();
+    /** D4-W10-A+: trwały dostęp do złoża (active=false w wojnie). */
+    let zlozeGrants: ZlozeGrant[] = [];
+    /** D3-Q2: nacje, z którymi gracz nawiązał kontakt dyplomatyczny (save/load w meta). */
+    const diplomaticContactEstablished = new Set<number>();
+    /** v1.1: aktywne traktaty dyplomatyczne (save/load meta.diplomacyDeals). */
+    let activeDeals: ActiveDeal[] = [];
+    /** v1.1: skarbiec AI do ticka trybutu (T1A). */
+    const aiSkarbiecByOwner = new Map<number, number>();
+    /** P6: tech + surowiec boolean z koszyka PN (save/load meta.surowiecBooleanGrants). */
+    let basketTransferCtx: BasketTransferContext = createEmptyBasketTransferContext(data.tech);
+    let _dipUnitSeq = 0;
+    const _diplomacyParams = loadDiplomacyParams(
+      (data as any).diplomacyParams ?? {},
+    );
+    void _diplomacyParams; // loaded for future event use; stance uses DIPLOMACY_PARAMS internally
+
+    function getDiploRelation(a: number, b: number): Relation {
+      const key = a < b ? `${a}_${b}` : `${b}_${a}`;
+      if (!diplomacyRelations.has(key)) {
+        diplomacyRelations.set(key, defaultNeutralRelation());
+      }
+      return diplomacyRelations.get(key)!;
+    }
+
+    function ownerDiploLabel(ownerId: number): string {
+      return ownerDisplayName.get(ownerId)
+        ?? aiOwnerCivMap.get(ownerId)
+        ?? ('AI ' + ownerId);
+    }
+
+    function applyClusterStartPlan(
+      playerCivId: string,
+      seed: number,
+      rywaleNaKlaster: number,
+    ): void {
+      const plan = buildClusterStartPlan({
+        map,
+        civs: data.civs,
+        seed,
+        playerCivId,
+        rywaleNaKlaster,
+        aktywneTypy: _menuCivTypesCount || aktywneTypyFromMapLabel(_menuMapSize),
+      });
+
+      playerStartHex = { ...plan.playerStartHex };
+      aiStartHexes = plan.aiStartHexes.slice();
+      clusterPlayerStartCityName = plan.playerStartCityName;
+
+      aiOwnerCivMap.clear();
+      ownerDisplayName.clear();
+      simplifiedDiplomacyOwners.clear();
+      foreignTypeOwners.clear();
+      typCityCopyOwners.clear();
+      for (const [oid, civ] of plan.aiOwnerCivMap) aiOwnerCivMap.set(oid, civ);
+      for (const [oid, label] of plan.ownerDisplayName) ownerDisplayName.set(oid, label);
+      for (const oid of plan.simplifiedDiplomacyOwners) simplifiedDiplomacyOwners.add(oid);
+      for (const oid of plan.foreignTypeOwners) foreignTypeOwners.add(oid);
+      for (const oid of plan.typCityCopyOwners) typCityCopyOwners.add(oid);
+
+      diplomacyRelations.clear();
+      diplomaticContactEstablished.clear();
+      activeDeals = [];
+      aiSkarbiecByOwner.clear();
+      diplomacyPairMeta.clear();
+      zlozeGrants = [];
+      basketTransferCtx = createEmptyBasketTransferContext(data.tech);
+      _dipUnitSeq = 0;
+      for (const [oid, rel] of plan.startRelations) setDiploRelation(0, oid, rel);
+
+      for (const sc of plan.spawnCities) {
+        const c = foundCityAt(sc.q, sc.r, sc.ownerId, cities, map, sc.name);
+        if (c) {
+          if (plan.simplifiedDiplomacyOwners.has(sc.ownerId)) {
+            c.startCityState = true;
+          }
+          cities.push(c);
+          finalizeCityFounding(c, sc.q, sc.r);
+        }
+      }
+
+      refreshFog();
+      cityRenderer.sync(cities, _cityRenderOpts());
+
+      initEmpireFoodStates();
+      console.log(
+        '[ClusterStart] typ=' + playerCivId +
+        ' rywale=' + rywaleNaKlaster +
+        ' AI=' + plan.spawnCities.length +
+        ' typow=' + plan.placement.aktywneTypy,
+      );
+    }
+
+    function setDiploRelation(a: number, b: number, rel: Relation): void {
+      const key = a < b ? `${a}_${b}` : `${b}_${a}`;
+      diplomacyRelations.set(key, rel);
+      refreshCityMapOutlines();
+    }
+
+    function refreshCityMapOutlines(): void {
+      cityRenderer.syncMapOutlines(cities, _cityRenderOpts());
+    }
+
+    function getDiploPairMeta(a: number, b: number): DiploPairMeta {
+      const key = diploPairKey(a, b);
+      if (!diplomacyPairMeta.has(key)) {
+        diplomacyPairMeta.set(key, freshDiploPairMeta());
+      }
+      return diplomacyPairMeta.get(key)!;
+    }
+
+    function setDiploPairMeta(a: number, b: number, meta: DiploPairMeta): void {
+      diplomacyPairMeta.set(diploPairKey(a, b), meta);
+    }
+
+    function resetTrustPnGainedForPlayerTurn(): void {
+      for (const [key, meta] of diplomacyPairMeta.entries()) {
+        if (meta.trustPnGainedThisTurn !== 0) {
+          diplomacyPairMeta.set(key, { ...meta, trustPnGainedThisTurn: 0 });
+        }
+      }
+    }
+
+    function applyPnTrustForPair(
+      proposerId: number,
+      responderId: number,
+      givePn: number,
+      receivePn: number,
+      isGift: boolean,
+    ): void {
+      const cur = getDiploRelation(proposerId, responderId);
+      const meta = getDiploPairMeta(proposerId, responderId);
+      const applied = applyPnTrustToRelation(cur, meta, givePn, receivePn, isGift);
+      setDiploRelation(proposerId, responderId, applied.rel);
+      setDiploPairMeta(proposerId, responderId, applied.meta);
+      if (applied.dobraWolaStarted) {
+        showHintMessage('Dobra wola: +1 Zauf./turę × 3 (nadmiar ≥ 100 PN)', 3500);
+      }
+    }
+
+    function transferBasketItems(
+      fromOwnerId: number,
+      toOwnerId: number,
+      items: readonly BasketItem[] | undefined,
+    ): void {
+      if (!items?.length) return;
+      syncBasketResearchFromEngine();
+      const treasury = buildDiploTreasury();
+      for (const item of items) {
+        const qty = item.ilosc ?? 1;
+        switch (item.typ) {
+          case 'zloto': {
+            const gold = diplomacyPnZloto(qty);
+            if (gold > 0) applyOneShotGoldTransfer(fromOwnerId, toOwnerId, gold, treasury);
+            break;
+          }
+          case 'praca': {
+            const praca = diplomacyPnPraca(qty);
+            if (fromOwnerId === 0) {
+              playerPracaPool = Math.max(0, playerPracaPool - praca);
+              _lastPraca = playerPracaPool;
+            }
+            if (toOwnerId === 0) {
+              playerPracaPool += praca;
+              _lastPraca = playerPracaPool;
+            } else {
+              const cur = aiSkarbiecByOwner.get(toOwnerId) ?? 0;
+              aiSkarbiecByOwner.set(toOwnerId, cur + praca);
+            }
+            break;
+          }
+          case 'zywnosc': {
+            const fromSt = empireFoodStates.get(fromOwnerId);
+            if (fromSt) {
+              fromSt.zapasyPanstwa = Math.max(0, fromSt.zapasyPanstwa - qty);
+              empireFoodStates.set(fromOwnerId, fromSt);
+            }
+            const toSt = empireFoodStates.get(toOwnerId) ?? freshEmpireFoodState(empireFoodDefaultPct());
+            toSt.zapasyPanstwa += qty;
+            empireFoodStates.set(toOwnerId, toSt);
+            break;
+          }
+          case 'zloze': {
+            const hexKey = item.hexKey ?? item.id;
+            zlozeGrants.push({
+              granterOwnerId: fromOwnerId,
+              granteeOwnerId: toOwnerId,
+              partnerId: toOwnerId,
+              zlozeId: item.id,
+              hexKey,
+              active: true,
+            });
+            break;
+          }
+          case 'tech': {
+            const r = grantTechToOwner(item.id, toOwnerId, basketTransferCtx);
+            basketTransferCtx = r.context;
+            if (r.granted) {
+              if (toOwnerId === 0) {
+                for (const t of basketTransferCtx.researchedByOwner.get(0) ?? []) {
+                  player.zbadane.add(t);
+                }
+              } else {
+                aiResearchDone.set(
+                  toOwnerId,
+                  new Set(basketTransferCtx.researchedByOwner.get(toOwnerId) ?? []),
+                );
+                syncOwnerEraFromResearch(toOwnerId);
+              }
+            }
+            break;
+          }
+          case 'surowiec_boolean': {
+            const r = grantSurowiecBooleanAccess(item.id, fromOwnerId, toOwnerId, basketTransferCtx);
+            basketTransferCtx = r.context;
+            break;
+          }
+          case 'jednostka': {
+            const r = spawnTransferredUnit(item.id, toOwnerId, null, {
+              units,
+              capitalHexByOwner: buildCapitalHexByOwner(),
+              allocateUnitId: allocateDipUnitId,
+              getUnitDef: (typeId) => {
+                const def = data.units.find(u => u.Jednostka === typeId);
+                if (!def) return undefined;
+                return {
+                  Ruch: def.Ruch ?? undefined,
+                  'Rola (linia)': def['Rola (linia)'] ?? undefined,
+                  'Super-jednostka': def['Super-jednostka'] ?? undefined,
+                };
+              },
+            });
+            if (r.ok && r.unit) {
+              units.push(r.unit);
+              maybeHintArmyFoodOnFirstPlayerUnit(toOwnerId);
+              syncUnitsRender();
+            }
+            break;
+          }
+          default:
+            break;
+        }
+      }
+    }
+
+    function executePnDealTransfer(
+      proposerId: number,
+      responderId: number,
+      payload: ProposalPayload,
+    ): void {
+      const { giveItems, receiveItems } = payload;
+      if (giveItems?.length || receiveItems?.length) {
+        transferBasketItems(proposerId, responderId, giveItems);
+        transferBasketItems(responderId, proposerId, receiveItems);
+        return;
+      }
+      const gold = payload.goldOnce ?? 0;
+      if (gold > 0) {
+        applyOneShotGoldTransfer(proposerId, responderId, gold, buildDiploTreasury());
+      }
+    }
+
+    function suspendZlozeOnWar(a: number, b: number): void {
+      const before = zlozeGrants.filter(g => g.active).length;
+      zlozeGrants = suspendZlozeGrantsForWar(zlozeGrants, a, b);
+      const after = zlozeGrants.filter(g => g.active).length;
+      if (before > after) {
+        showHintMessage('Dostęp do złoża wygasł — wojna', 4000);
+      }
+    }
+
+    /**
+     * Cities with auto-manage enabled (by cityId).
+     * UI will toggle via a callback; currently starts empty.
+     * When enabled, autoManageCity sets workedTiles and enqueues production.
+     */
+    const autoManageCities = new Set<string>();
+
+    /** Barbarian camps on the map. */
+    let barbCamps: BarbCamp[] = [];
+    /** Barbarian params loaded from ai-params.json (with fallbacks). */
+    const barbParams = loadBarbParams(data);
+    /** Flag: game ended (victory or defeat). Prevents repeated end-game messages. */
+    let gameOver = false;
+
+    // -----------------------------------------------------------------------
+    // Fog of War state
+    // -----------------------------------------------------------------------
+
+    /** Hexes the player has ever seen (persists across turns). */
+    const explored = new Set<string>();
+    /** Whether fog of war is active (toggle with F — tylko dev build). */
+    let fogOn = true;
+    /** Dev/test: cały ląd jako explored (ocean nadal ukryty), FoW zostaje — toggle M. */
+    let revealAllLand = false;
+    /** Whether the unit gallery overlay is active (declared early: refreshFog reads it). */
+    let galleryOn = false;
+    /** Skróty F/M + batony minimapy — domyślnie ON; kanon prod: VITE_CIV_HIDE_FOG_UI=1. */
+    function fogUiToolsEnabled(): boolean {
+      const hide = import.meta.env.VITE_CIV_HIDE_FOG_UI;
+      if (hide === '1' || hide === 'true') return false;
+      return true;
+    }
+
+    /** Skróty F/M — dev server, build roboczy, ?playtest=* / ?dev=1 / plik PLAYTEST-*. */
+    function civFogShortcutsEnabled(): boolean {
+      if (!fogUiToolsEnabled()) return false;
+      if (import.meta.env.DEV) return true;
+      const envFlag = import.meta.env.VITE_CIV_PLAYTEST;
+      if (envFlag === '1' || envFlag === 'true') return true;
+      if (typeof location !== 'undefined') {
+        const q = new URLSearchParams(location.search);
+        if (q.has('playtest') || q.get('dev') === '1' || q.get('fogtools') === '1') return true;
+        const path = location.pathname || '';
+        if (/gra-robocza|PLAYTEST|playtest/i.test(path)) return true;
+      }
+      return true;
+    }
+    const FOG_DEV_SHORTCUTS = civFogShortcutsEnabled();
+    /** All hex keys on the map — odświeżane po regeneracji (doStartGame / load). */
+    let ALL_KEYS = new Set(allHexKeys(map));
+    /** Klucze lądu + wybrzeża (bez Morza) — skrót M. */
+    let ALL_LAND_KEYS = new Set(allRevealLandKeys(map));
+
+    function rebuildAllKeys(): void {
+      ALL_KEYS = new Set(allHexKeys(map));
+      ALL_LAND_KEYS = new Set(allRevealLandKeys(map));
+    }
+
+    /** Render-only explored (skrót M) — bez mutacji persistent `explored`. */
+    function fogExploredForRender(): Set<string> {
+      return exploredSetForRender(explored, ALL_LAND_KEYS, revealAllLand);
+    }
+
+    /** Po nowej grze: mgła ON, mapa nieodkryta (czarna) — explored rośnie tylko z widoku jednostek/miast. */
+    function seedStartingFog(): void {
+      fogOn = true;
+      revealAllLand = false;
+      explored.clear();
+    }
+
+    function isAwaitingFirstPlayerCity(): boolean {
+      return !playerEverOwnedCity && !cities.some(c => c.ownerId === 0);
+    }
+
+    function isInStartReveal(q: number, r: number): boolean {
+      if (!isAwaitingFirstPlayerCity() || playerStartHex === null) return true;
+      return hexDistance(q, r, playerStartHex.q, playerStartHex.r) <= startRevealRadius;
+    }
+
+    /** Opcje terytorium przy founding (D2=A plaster) — pierwsze miasto: tylko krąg startu. */
+    function foundingTerritoryOpts(ownerId: number): { withinTerritory?: (q: number, r: number) => boolean } {
+      if (ownerId === 0 && isAwaitingFirstPlayerCity()) return {};
+      const nodes = cityNodesForOwner(ownerId);
+      if (nodes.length === 0) return {};
+      return {
+        withinTerritory: (fq: number, fr: number) => isInTerritory(fq, fr, nodes),
+      };
+    }
+
+    /** Walidacja założenia miasta gracza (pierwsze miasto tylko w oświetlonym kręgu startu). */
+    function canFoundPlayerCityAt(q: number, r: number): { ok: boolean; reason: string } {
+      const base = canFoundCity(q, r, cities, map, foundingTerritoryOpts(0));
+      if (!base.ok) return base;
+      if (isAwaitingFirstPlayerCity() && !isInStartReveal(q, r)) {
+        return { ok: false, reason: 'poza oświetlonym obszarem startu' };
+      }
+      return base;
+    }
+
+    /** Widoczne heksy = zasięg jednostek/miast gracza; przed miastem = oświetlenie startu. */
+    function currentVisible(): Set<string> {
+      const visible = new Set<string>();
+      for (const u of units.filter(u => u.ownerId === 0)) {
+        const sight = unitSight(u);
+        for (const k of computeVisibleAt(u.q, u.r, map, sight)) visible.add(k);
+      }
+      for (const c of cities.filter(c => c.ownerId === 0)) {
+        const kultura = (c as { kultura?: number }).kultura ?? 0;
+        const sight = citySightRadius(c.population, kultura);
+        if (sight <= 0) continue;
+        for (const k of computeVisibleAt(c.q, c.r, map, sight)) visible.add(k);
+      }
+      if (visible.size > 0) return visible;
+      if (playerStartHex !== null) {
+        return computeVisibleAt(playerStartHex.q, playerStartHex.r, map, startRevealRadius);
+      }
+      return new Set<string>();
+    }
+
+    cityFogVisible = (city) => {
+      if (!fogOn) return true;
+      if (city.ownerId === 0) return true;
+      return currentVisible().has(keyOf(city.q, city.r));
+    };
+
+    /** Ukryta w garnizonie (po Ufort. w mieście) — niewidoczna na mapie świata. */
+    function isUnitInGarnizon(u: RuntimeUnit): boolean {
+      return u.inGarnizon === true;
+    }
+
+    function cityAtUnit(u: RuntimeUnit): City | undefined {
+      return cities.find(
+        c => c.ownerId === u.ownerId && c.q === u.q && c.r === u.r,
+      );
+    }
+
+    /**
+     * Return the subset of units to display under current visibility.
+     * Garnizon (inGarnizon) — niewidoczny na mapie.
+     */
+    function visibleUnitsList(vis: Set<string>): RuntimeUnit[] {
+      return units.filter(u => {
+        if (isUnitInGarnizon(u)) return false;
+        return u.ownerId === 0 || vis.has(keyOf(u.q, u.r));
+      });
+    }
+
+    /**
+     * Re-apply fog and unit visibility after any state change.
+     * Must NOT be called while gallery is active (gallery drives its own sync).
+     */
+    function refreshFog(): void {
+      if (galleryOn) return;
+      const vis = currentVisible();
+      addExplored(explored, vis);
+      const exploredForRender = fogExploredForRender();
+      const useFogRender = fogOn || revealAllLand;
+      if (useFogRender) {
+        setFog(vis, exploredForRender, { landReveal: revealAllLand });
+        syncResourceOverlayFog(vis, exploredForRender);
+        syncImprovementMeshFog(vis, exploredForRender);
+        syncUnitsRender(visibleUnitsList(vis));
+        cityRenderer.applyFogVisibility(vis, true, 0);
+        wonderRenderer.applyFogVisibility(vis, true);
+      } else {
+        setFog(ALL_KEYS, ALL_KEYS);
+        syncResourceOverlayFog(ALL_KEYS, ALL_KEYS);
+        syncImprovementMeshFog(ALL_KEYS, ALL_KEYS);
+        syncUnitsRender(visibleUnitsList(ALL_KEYS));
+        cityRenderer.applyFogVisibility(ALL_KEYS, false, 0);
+        wonderRenderer.applyFogVisibility(ALL_KEYS, false);
+      }
+      if (d1bHudActive) refreshD1bHud();
+    }
+
+    /** Dev/playtest: pełne wyłączenie FoW (F / baton obok minimapy). */
+    function toggleDevFogFull(): void {
+      if (galleryOn) return;
+      fogOn = !fogOn;
+      if (!fogOn) revealAllLand = false;
+      refreshFog();
+      showHintMessage(
+        fogOn
+          ? 'FoW włączony (F): normalna mgła'
+          : 'FoW wyłączony (F): cała mapa widoczna — wolniejsze',
+        3000,
+      );
+    }
+
+    /** Dev/playtest: odkryj cały ląd, ocean ukryty (M / baton obok minimapy). */
+    function toggleDevRevealAllLand(): void {
+      if (galleryOn) return;
+      revealAllLand = !revealAllLand;
+      if (revealAllLand) fogOn = true;
+      refreshFog();
+      showHintMessage(
+        revealAllLand
+          ? 'Ląd odkryty (M): cały kontynent widoczny, poza zasięgiem jednostek — FoW'
+          : 'Ląd zakryty (M): nieodkryte heksy lądu znów czarne',
+        3000,
+      );
+    }
+
+    /** Batony F/M obok minimapy — zawsze gdy fogUiToolsEnabled (nie zależy od URL). */
+    function minimapPlaytestFogHooks():
+      | {
+          onToggleFogFull: () => void;
+          onToggleLandReveal: () => void;
+          isFogFullOff: () => boolean;
+          isLandReveal: () => boolean;
+        }
+      | undefined {
+      if (!fogUiToolsEnabled()) return undefined;
+      return {
+        onToggleFogFull: () => toggleDevFogFull(),
+        onToggleLandReveal: () => toggleDevRevealAllLand(),
+        isFogFullOff: () => !fogOn,
+        isLandReveal: () => revealAllLand,
+      };
+    }
+
+    // Game state
+    let selectedId: string | null = null;
+    let reachable = new Set<string>();
+    /** Jednostka w animacji ruchu — widoczna mimo ukrycia w stosie. */
+    let forceVisibleUnitId: string | null = null;
+    let turn = 1;
+    /** Tryb ?playtest=walka — wiekszy sklad preBattle + T = preset maciej_playtest. */
+    let playtestWalkaActive = false;
+    /** Tryb ?playtest=miasto — sandbox jednego miasta (ekonomia / panel). */
+    let playtestMiastoActive = false;
+    /** Last hex the player explicitly clicked on the map (for B = found city). */
+    let lastBHex: { q: number; r: number } | null = null;
+
+    // --- Global player state (tasks 13B-finish + 7B) ---
+    // Holds the banked treasury (skarbiec) and science (nauka) plus the research
+    // progress (zbadane / badana / era).  Per-turn economy totals are banked into
+    // this object after each economy tick, and auto-research spends the science.
+    // See src/game/playerState.ts for the banking + research semantics.
+    const player: PlayerState = createPlayerState();
+    overlayDepositEra = player.era;
+    // P3a: Last-turn totals for HUD display (Praca, Kultura from economy; Porzadek from order)
+    /** Pula Pracy gracza (suma doPuli z miast — plaster D2=A). */
+    let playerPracaPool: number = 0;
+    let _lastPraca: number = 0;
+    let _lastKultura: number = 0;
+    let _lastPracaRate: number = 0;
+    let _lastKulturaRate: number = 0;
+    let _lastPieniadzRate: number = 0;
+    let _lastWealthLevel: number = 1;
+    let _lastWealthMnoznik: number = 1;
+    let _lastNaukaRate: number = 0;
+    let _lastLudnoscRate: number = 0;
+    let _lastBogactwoRate: number = 0;
+    /** Ostatni tick ekonomii per miasto gracza (HUD imperium). */
+    let _lastPlayerCityEcon: Array<{
+      cityId: string;
+      name: string;
+      pieniadz: number;
+      doPuli: number;
+      doBudynkow: number;
+      nauka: number;
+    }> = [];
+
+    /** A1-Q18: oczekujące propozycje dyplomatyczne AI (blocking). */
+    const pendingDiplomacyInbox: Array<{
+      id: string; ownerId: number; civName: string; cmdType: string; reason: string;
+    }> = [];
+
+    function unitAttackScore(u: RuntimeUnit): number {
+      return normFieldVal(lookupUnitDef(u.typeId)['meleeAttack'], 0);
+    }
+
+    /** Sync tokenów: 1 reprezentant/heks (najmocniejszy) + badge ×N. */
+    function syncUnitsRender(list?: RuntimeUnit[]): void {
+      if (isCityPanelOpen()) {
+        unitRenderer.setForceVisibleUnitId(null);
+        unitRenderer.sync([], { visibleIds: new Set(), badgeByRepId: new Map() });
+        cityRenderer.syncStatChips(cities, _cityRenderOpts());
+        return;
+      }
+      const src = list ?? units;
+      const display = computeStackDisplay(src, unitAttackScore);
+      if (forceVisibleUnitId) display.visibleIds.add(forceVisibleUnitId);
+      unitRenderer.setForceVisibleUnitId(forceVisibleUnitId);
+      unitRenderer.setCityHexKeys(new Set(cities.map(c => keyOf(c.q, c.r))));
+      unitRenderer.sync(src, display);
+      cityRenderer.syncStatChips(cities, _cityRenderOpts());
+    }
+
+    function isHexPassableForUnit(q: number, r: number): boolean {
+      const hk = keyOf(q, r);
+      const hex = map.hexes[hk];
+      if (!hex) return false;
+      return terrainMoveCost(hex) !== Infinity;
+    }
+
+    /** Set of occupied hex keys for all units except the given id. */
+    function occupiedExcept(id: string): Set<string> {
+      const occ = new Set<string>();
+      for (const u of units) {
+        if (u.id !== id) occ.add(keyOf(u.q, u.r));
+      }
+      return occ;
+    }
+
+    /** Zasięg ruchu + heksy własnych stosów osiągalne kosztem ruchu (merge). */
+    function reachableWithMergeTargets(unit: RuntimeUnit): Set<string> {
+      const occ = occupiedExcept(unit.id);
+      const reach = computeReachable(unit, map, occ);
+      if (unit.ruchLeft <= 0) return reach;
+
+      const seenStacks = new Set<string>();
+      for (const u of units) {
+        if (u.ownerId !== unit.ownerId || u.id === unit.id) continue;
+        const k = keyOf(u.q, u.r);
+        if (k === keyOf(unit.q, unit.r)) continue;
+        if (seenStacks.has(k)) continue;
+        seenStacks.add(k);
+
+        const path = computePath(unit, map, u.q, u.r, occ);
+        if (path.length === 0) continue;
+        if (pathCost(path, map) <= unit.ruchLeft) reach.add(k);
+      }
+      return reach;
+    }
+
+    function applyMapCanvasCursor(cursor: string): void {
+      if (canvas.style.cursor !== cursor) canvas.style.cursor = cursor;
+    }
+
+    function mergeUnitRow(u: RuntimeUnit): { id: string; name: string; icon: string; ruchLeft: number; ruchMax: number } {
+      const def = lookupUnitDef(u.typeId);
+      return {
+        id: u.id,
+        name: u.typeId,
+        icon: '\u2694\uFE0F',
+        ruchLeft: u.ruchLeft,
+        ruchMax: normFieldVal(def['Ruch'], u.ruch),
+      };
+    }
+
+    function promptMergeIfCoLocated(
+      movedId: string,
+      fromQ: number,
+      fromR: number,
+      moveCost: number,
+    ): void {
+      const u = units.find(x => x.id === movedId);
+      if (!u || u.ownerId !== 0) return;
+
+      const others = visibleStackOnHex(units, u.q, u.r, u.ownerId)
+        .filter(x => x.id !== u.id);
+      if (others.length === 0) return;
+
+      showArmyMergePanel({
+        hexLabel: '(' + u.q + ',' + u.r + ')',
+        existing: others.map(mergeUnitRow),
+        arriving: mergeUnitRow(u),
+        rejectFrom: { q: fromQ, r: fromR },
+        moveCost,
+        onMerge: () => {
+          showHintMessage(
+            'Po\u0142\u0105czono: ' + (others.length + 1) + ' jedn. na (' + u.q + ',' + u.r + ')',
+            3200,
+          );
+          syncUnitsRender();
+          refreshFog();
+          if (selectedId === u.id) {
+            unitRenderer.setSelectionHex(u.q, u.r);
+          }
+          refreshD1bHud();
+        },
+        onSeparate: () => {
+          const bounce = findBounceHexFromOrigin(units, fromQ, fromR, u.id, isHexPassableForUnit);
+          if (bounce) {
+            u.q = bounce.q;
+            u.r = bounce.r;
+          }
+          syncUnitsRender();
+          refreshFog();
+          if (selectedId === u.id) {
+            unitRenderer.setSelectionHex(u.q, u.r);
+            if (u.ruchLeft > 0) {
+              reachable = reachableWithMergeTargets(u);
+              unitRenderer.setHighlight(reachable);
+            } else {
+              reachable = new Set<string>();
+              unitRenderer.clearHighlight();
+            }
+          }
+          showHintMessage(
+            u.typeId + ' — osobno, obok stosu (' + u.q + ',' + u.r + ')',
+            2800,
+          );
+          refreshD1bHud();
+        },
+      });
+    }
+
+    function openSplitPanelForSelected(): void {
+      if (selectedId === null) return;
+      const active = units.find(x => x.id === selectedId);
+      if (!active || active.ownerId !== 0) return;
+      const stack = visibleStackOnHex(units, active.q, active.r, active.ownerId);
+      if (stack.length < 2) return;
+      const dests = findAdjacentEmptyHexes(units, active.q, active.r, isHexPassableForUnit);
+      if (dests.length === 0) {
+        showHintMessage('Brak wolnego s\u0105siedniego heksu na rozdzielenie.', 3500);
+        return;
+      }
+      const srcQ = active.q;
+      const srcR = active.r;
+      showArmySplitPanel({
+        hexLabel: '(' + srcQ + ',' + srcR + ')',
+        units: stack.map(mergeUnitRow),
+        destHexes: dests.map(d => ({
+          q: d.q,
+          r: d.r,
+          label: '(' + d.q + ',' + d.r + ')',
+        })),
+        onSplit: (ids, destQ, destR) => {
+          for (const id of ids) {
+            const u = units.find(x => x.id === id);
+            if (!u) continue;
+            u.q = destQ;
+            u.r = destR;
+            u.ruchLeft = 0;
+          }
+          refreshFog();
+          const movedSel = ids.includes(selectedId ?? '');
+          if (movedSel && ids.length === 1) {
+            selectPlayerUnit(ids[0]!, true);
+          } else {
+            const rep = unitAtRepresentative(srcQ, srcR, units, unitAttackScore);
+            if (rep) selectPlayerUnit(rep.id, true);
+          }
+          showHintMessage(
+            'Rozdzielono: ' + ids.length + ' jedn. \u2192 (' + destQ + ',' + destR + ')',
+            3200,
+          );
+          refreshD1bHud();
+        },
+        onCancel: () => refreshD1bHud(),
+      });
+    }
+
+    // --- D1B build mode (A4) + improvement placement ---
+    let buildModeOpen = false;
+    let activeImprovementKey: ImprovementKey | null = null;
+
+    // --- Warstwy zasięgu kultury / religii na mapie 3D (A1-Q12 + toolbar [C]) ---
+    let cultureRangeVisible = false;
+    let religionRangeVisible = false;
+    let cultureRangeGroup: THREE.Group | null = null;
+    let religionRangeGroup: THREE.Group | null = null;
+
+    function rangeCityInputs(): RangeCityInput[] {
+      return cities.map(c => ({
+        id: c.id,
+        q: c.q,
+        r: c.r,
+        ownerId: c.ownerId,
+        population: c.population,
+        kultura: (c as { kultura?: number }).kultura ?? 0,
+      }));
+    }
+
+    function clearRangeOverlay(kind: 'culture' | 'religion'): void {
+      if (kind === 'culture') {
+        if (cultureRangeGroup) {
+          scene.remove(cultureRangeGroup);
+          disposeRangeOverlayGroup(cultureRangeGroup);
+          cultureRangeGroup = null;
+        }
+      } else {
+        if (religionRangeGroup) {
+          scene.remove(religionRangeGroup);
+          disposeRangeOverlayGroup(religionRangeGroup);
+          religionRangeGroup = null;
+        }
+      }
+    }
+
+    function refreshRangeOverlays(): void {
+      clearRangeOverlay('culture');
+      clearRangeOverlay('religion');
+      if (isCityPanelOpen()) return;
+      if (cultureRangeVisible) {
+        const keys = collectCultureRangeHexKeys(map, rangeCityInputs(), 0);
+        if (keys.size > 0) {
+          cultureRangeGroup = buildRangeOverlayGroup(map, keys, CULTURE_RANGE_STYLE);
+          scene.add(cultureRangeGroup);
+        }
+      }
+      if (religionRangeVisible) {
+        const rp = loadReligionParams(data.societyParams, _menuDifficulty);
+        const stateRel = ownerReligionForOwnerId(0);
+        const keys = collectReligionRangeHexKeys(
+          map, rangeCityInputs(), cityRelig, stateRel, rp, 0,
+        );
+        if (keys.size > 0) {
+          religionRangeGroup = buildRangeOverlayGroup(map, keys, RELIGION_RANGE_STYLE);
+          scene.add(religionRangeGroup);
+        }
+      }
+    }
+
+    function toggleCultureRangeOnMap(): void {
+      cultureRangeVisible = !cultureRangeVisible;
+      hideEmpireOverlay();
+      refreshRangeOverlays();
+      refreshD1bHud();
+    }
+
+    function toggleReligionRangeOnMap(): void {
+      religionRangeVisible = !religionRangeVisible;
+      hideEmpireOverlay();
+      refreshRangeOverlays();
+      refreshD1bHud();
+    }
+
+    // Ghost preview — tryb budowy (ulepszenia + założenie miasta)
+    let ghostGroup: THREE.Group | null = null;
+    let ghostCityGroup: THREE.Group | null = null;
+    let lastGhostKey = '';
+    let lastGhostCityKey = '';
+    let lastMouseX = 0;
+    let lastMouseY = 0;
+    let chipOverCanvas = false;
+
+    const ghostChip = document.createElement('div');
+    ghostChip.id = 'civ-build-ghost-chip';
+    ghostChip.style.cssText = [
+      'position:fixed', 'z-index:400', 'display:none', 'pointer-events:none',
+      'align-items:center', 'gap:6px', 'padding:6px 10px', 'border-radius:6px',
+      'font:12px/1.2 Arial,sans-serif', 'color:#ffe8a0',
+      'background:rgba(30,34,50,0.92)', 'border:1px solid rgba(255,212,121,0.75)',
+      'box-shadow:0 4px 14px rgba(0,0,0,0.55)',
+    ].join(';');
+    document.body.appendChild(ghostChip);
+
+    const IMPROVEMENT_CHIP: Partial<Record<ImprovementKey, string>> = {
+      farma: '🌾', pastwisko: '🐑', kopalnia: '⛏', kamieniolom: '🪨',
+      oboz_lowiecki: '🏹', wyrab: '🪓', tartak: '🪚', lodzie_rybackie: '🎣', droga: '🛤',
+      posterunek: '🏰', irygacja: '💧', pole_irygowane: '🌾', glinianka: '🏺',
+      warzelnia_soli: '🧂', tarasy: '🏔', fort: '🛡',
+    };
+
+    function playerBronzeCiv(): BronzeCiv {
+      return ikonaIdToBronzeCiv(String(player.civType || _menuCivId || 'grecja'));
+    }
+
+    function applyGhostMaterial(g: THREE.Group, valid: boolean): void {
+      g.traverse((obj) => {
+        if ((obj as THREE.Mesh).isMesh) {
+          const mesh = obj as THREE.Mesh;
+          const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+          const cloned = mats.map((m) => {
+            const c = (m as THREE.MeshLambertMaterial).clone();
+            c.transparent = true;
+            c.opacity = valid ? 0.52 : 0.32;
+            c.depthWrite = false;
+            if ('emissive' in c) c.emissive.set(valid ? 0x224422 : 0x552222);
+            return c;
+          });
+          mesh.material = cloned.length === 1 ? cloned[0]! : cloned;
+          mesh.castShadow = false;
+        }
+      });
+    }
+
+    function removeBuildGhosts(): void {
+      if (ghostGroup) { scene.remove(ghostGroup); ghostGroup = null; }
+      if (ghostCityGroup) { scene.remove(ghostCityGroup); ghostCityGroup = null; }
+      lastGhostKey = '';
+      lastGhostCityKey = '';
+      ghostChip.style.display = 'none';
+    }
+
+    function removeGhostImprovement(): void {
+      if (ghostGroup) { scene.remove(ghostGroup); ghostGroup = null; }
+      lastGhostKey = '';
+    }
+
+    function removeGhostCity(): void {
+      if (ghostCityGroup) { scene.remove(ghostCityGroup); ghostCityGroup = null; }
+      lastGhostCityKey = '';
+    }
+
+    function updateBuildGhostChip(clientX: number, clientY: number, label: string, valid: boolean): void {
+      if (!chipOverCanvas || !buildModeOpen) {
+        ghostChip.style.display = 'none';
+        return;
+      }
+      ghostChip.innerHTML = '<span style="font-size:16px;line-height:1">' + label + '</span>'
+        + '<span>' + (valid ? 'Kliknij hex' : 'Niedozwolone') + '</span>';
+      ghostChip.style.borderColor = valid ? 'rgba(255,212,121,0.75)' : 'rgba(255,102,85,0.85)';
+      ghostChip.style.display = 'flex';
+      ghostChip.style.left = (clientX + 18) + 'px';
+      ghostChip.style.top = (clientY - 32) + 'px';
+    }
+
+    function showGhostImprovement(q: number, r: number): void {
+      if (!activeImprovementKey || !buildApi) { removeGhostImprovement(); return; }
+      const newKey = q + ',' + r + '|' + activeImprovementKey;
+      if (newKey === lastGhostKey) return;
+      removeGhostImprovement();
+      const hexes = buildApi.getQualifyingHexes(activeImprovementKey);
+      const ok = hexes.some(h => h.q === q && h.r === r);
+      if (!ok) return;
+      const hk = keyOf(q, r);
+      const preview = [...new Set([...mergedImprovementLayers(hk), activeImprovementKey])];
+      const g = buildImprovementVisual(preview);
+      const wp = axialToWorld(q, r, HEX_R);
+      g.position.set(wp.x, improvementMeshPlacement(q, r, preview), wp.z);
+      applyGhostMaterial(g, true);
+      scene.add(g);
+      ghostGroup = g;
+      lastGhostKey = newKey;
+    }
+
+    function showGhostCity(q: number, r: number): void {
+      const newKey = q + ',' + r + '|city';
+      if (newKey === lastGhostCityKey) return;
+      removeGhostCity();
+      const valid = canFoundPlayerCityAt(q, r).ok;
+      const hex = map.hexes[keyOf(q, r)];
+      if (!hex) return;
+      const civ = playerBronzeCiv();
+      const g = buildSettlementModel(player.era, civ, 1, 0xffd54a, false);
+      const wp = axialToWorld(q, r, HEX_R);
+      g.position.set(wp.x, unitRenderer.topYAt(q, r) + 0.01, wp.z);
+      applyGhostMaterial(g, valid);
+      scene.add(g);
+      ghostCityGroup = g;
+      lastGhostCityKey = newKey;
+    }
+
+    function handleBuildModeHover(e: MouseEvent): void {
+      lastMouseX = e.clientX;
+      lastMouseY = e.clientY;
+      if (!buildModeOpen) {
+        removeBuildGhosts();
+        return;
+      }
+      const hit = pixelToHex(e.clientX, e.clientY, canvas, camera, HEX_R);
+      if (!hit) {
+        removeBuildGhosts();
+        return;
+      }
+      lastBHex = { q: hit.q, r: hit.r };
+      if (foundCityMode) {
+        removeGhostImprovement();
+        if (isInStartReveal(hit.q, hit.r)) {
+          showGhostCity(hit.q, hit.r);
+          updateBuildGhostChip(e.clientX, e.clientY, '🏛', canFoundPlayerCityAt(hit.q, hit.r).ok);
+        } else {
+          removeGhostCity();
+          updateBuildGhostChip(e.clientX, e.clientY, '🏛', false);
+        }
+        return;
+      }
+      if (activeImprovementKey) {
+        removeGhostCity();
+        const hexes = buildApi?.getQualifyingHexes(activeImprovementKey) ?? [];
+        const ok = hexes.some(h => h.q === hit.q && h.r === hit.r);
+        if (ok) showGhostImprovement(hit.q, hit.r);
+        else removeGhostImprovement();
+        const ic = IMPROVEMENT_CHIP[activeImprovementKey] ?? '🔨';
+        updateBuildGhostChip(e.clientX, e.clientY, ic, ok);
+        return;
+      }
+      removeBuildGhosts();
+    }
+
+    canvas.addEventListener('mouseenter', () => { chipOverCanvas = true; });
+    canvas.addEventListener('mouseleave', () => {
+      chipOverCanvas = false;
+      ghostChip.style.display = 'none';
+    });
+    const placedImprovements = new Map<string, PlacedLayers>();
+    const improvementMeshes = new Map<string, THREE.Group>();
+    const hexClearingStates = new Map<string, HexClearingState>();
+    let buildApi: ImprovementBuildCallbacks | null = null;
+
+    /** F-CITY-HEX: wyczyść hex + ukryj dekoracje terenu pod miastem. */
+    function finalizeCityFounding(c: City, q: number, r: number): void {
+      applyCityFoundingToHex(c, map, q, r);
+      const hk = keyOf(q, r);
+      hideDecorAtHex(hk);
+      const oldMesh = improvementMeshes.get(hk);
+      if (oldMesh) {
+        scene.remove(oldMesh);
+        improvementMeshes.delete(hk);
+      }
+      placedImprovements.delete(hk);
+      hexClearingStates.delete(hk);
+      rebuildResourceOverlays();
+      seedCityReligionAtFounding(c);
+      seedWealthImmunityAtFounding(c);
+    }
+
+    function reapplyCityHexDecorHides(): void {
+      for (const c of cities) hideDecorAtHex(keyOf(c.q, c.r));
+    }
+
+    function playerCityNodes(): CityNode[] {
+      return cities
+        .filter(c => c.ownerId === 0)
+        .map(c => ({ q: c.q, r: c.r, pop: c.population, level: 1 }));
+    }
+
+    function syncLivestockAndPlacedMeshes(): void {
+      for (const hexKey of Object.keys(map.hexes)) {
+        const layers = mergedImprovementLayers(hexKey);
+        const hasDeposit = (map.hexes[hexKey]?.nakladka === Nakladka.ZlozeBydla
+          || map.hexes[hexKey]?.nakladka === Nakladka.ZlozeOwiec);
+        const hasPlaced = (placedImprovements.get(hexKey)?.length ?? 0) > 0;
+        if (layers.length > 0 && (hasDeposit || hasPlaced)) {
+          spawnImprovementMesh(hexKey);
+        }
+      }
+    }
+
+    function collectPlacedImprovementKeys(): Set<string> {
+      const keys = new Set(placedImprovements.keys());
+      for (const [hk, hex] of Object.entries(map.hexes)) {
+        if (hex.ulepszenie && hex.ulepszenie !== Ulepszenie.Brak) keys.add(hk);
+      }
+      return keys;
+    }
+
+    function improvementKeyToUlepszenie(key: ImprovementKey): Ulepszenie {
+      const m: Partial<Record<ImprovementKey, Ulepszenie>> = {
+        farma: Ulepszenie.Farma,
+        irygacja: Ulepszenie.Irygacja,
+        kopalnia: Ulepszenie.Kopalnia,
+        droga: Ulepszenie.Droga,
+        pastwisko: Ulepszenie.Pastwisko,
+        bydlo: Ulepszenie.Pastwisko,
+        owce: Ulepszenie.Pastwisko,
+        lama: Ulepszenie.Pastwisko,
+      };
+      return m[key] ?? Ulepszenie.Brak;
+    }
+
+    function syncHexUlepszenieFields(hexKey: string, playerLayers: PlacedLayers): void {
+      const hex = map.hexes[hexKey];
+      if (!hex) return;
+      const ext = hex as typeof hex & { ulepszenia?: string[]; improvementKey?: string };
+      if (playerLayers.length) {
+        ext.ulepszenia = [...playerLayers];
+        ext.improvementKey = playerLayers[playerLayers.length - 1];
+        const ul = improvementKeyToUlepszenie(playerLayers[playerLayers.length - 1] as ImprovementKey);
+        if (ul !== Ulepszenie.Brak) hex.ulepszenie = ul;
+      } else {
+        delete ext.ulepszenia;
+        delete ext.improvementKey;
+        hex.ulepszenie = Ulepszenie.Brak;
+      }
+    }
+
+    function refreshBuildApi(): void {
+      buildApi = createImprovementBuildApi(
+        {
+          map,
+          cityNodes: playerCityNodes(),
+          placedKeys: collectPlacedImprovementKeys(),
+          roadKeys: collectRoadKeys(map),
+          playerCivArchetype: String(player.civType || 'rzymianie'),
+          playerEra: player.era,
+          playerOwnerId: '0',
+          placedImprovements,
+          researchedTechs: player.zbadane,
+        },
+        {
+          activeKey: activeImprovementKey,
+          onSelect: (req) => applyBuildRequest(req),
+        },
+      );
+    }
+
+    function refreshBuildHighlight(): void {
+      if (foundCityMode) {
+        const qual = new Set<string>();
+        for (const hex of Object.values(map.hexes)) {
+          const { q, r } = hex.coords;
+          if (!isInStartReveal(q, r)) continue;
+          if (canFoundPlayerCityAt(q, r).ok) qual.add(keyOf(q, r));
+        }
+        unitRenderer.setHighlight(qual);
+        return;
+      }
+      if (!buildModeOpen || !activeImprovementKey || !buildApi) {
+        if (!buildModeOpen) unitRenderer.clearHighlight();
+        return;
+      }
+      const hexes = buildApi.getQualifyingHexes(activeImprovementKey);
+      unitRenderer.setHighlight(new Set(hexes.map(h => keyOf(h.q, h.r))));
+    }
+
+    function beginOnboardingFoundCity(): void {
+      if (cities.some(c => c.ownerId === 0)) return;
+      buildModeOpen = true;
+      foundCityMode = true;
+      activeImprovementKey = null;
+      refreshBuildApi();
+      refreshBuildHighlight();
+      refreshD1bHud();
+      if (playerStartHex) {
+        const focusPos = axialToWorld(playerStartHex.q, playerStartHex.r, HEX_R);
+        camCtrl.focusAt(focusPos.x, focusPos.z, 22);
+      }
+      showHintMessage(
+        'Załóż pierwsze miasto w oświetlonym obszarze (🔨 → Załóż miasto · B). Promień zależy od trudności.',
+        12000,
+      );
+    }
+
+    function resolveFoundCityName(): string | null {
+      const playerCityCount = cities.filter(c => c.ownerId === 0).length;
+      if (playerCityCount === 0) {
+        return clusterPlayerStartCityName || playerStartCityName(data.civs, _menuCivId);
+      }
+      const raw = window.prompt('Nazwij nowe miasto:', '');
+      if (raw === null) return null;
+      const trimmed = raw.trim();
+      if (trimmed.length === 0) {
+        showHintMessage('Nazwa nie może być pusta', 2500);
+        return null;
+      }
+      return trimmed.slice(0, 32);
+    }
+
+    function handleFoundCityMapClick(q: number, r: number): void {
+      const fc = canFoundPlayerCityAt(q, r);
+      if (fc.ok) {
+        tryFoundPlayerCityAt(q, r);
+      } else {
+        showHintMessage('Nie można założyć: ' + fc.reason, 2500);
+      }
+    }
+
+    function tryFoundPlayerCityAt(q: number, r: number): boolean {
+      const res = canFoundPlayerCityAt(q, r);
+      if (!res.ok) {
+        showHintMessage('Nie można założyć: ' + res.reason, 3000);
+        return false;
+      }
+      const playerCities = cities.filter(c => c.ownerId === 0);
+      const aff = evaluateFoundCityAffordance(playerPracaPool, playerCities, 0);
+      if (!aff.ok) {
+        showHintMessage(aff.reason ?? 'Nie stać', 3000);
+        return false;
+      }
+      const name = resolveFoundCityName();
+      if (name === null) {
+        showHintMessage('Anulowano — podaj nazwę miasta', 2500);
+        return false;
+      }
+      playerPracaPool -= aff.kosztPraca;
+      _lastPraca = playerPracaPool;
+      if (aff.sourceCityId) {
+        const src = cities.find(c => c.id === aff.sourceCityId);
+        if (src) src.population = Math.max(1, src.population - aff.kosztLudnosc);
+      }
+      const c = foundCityAt(q, r, 0, cities, map, name);
+      if (!c) {
+        showHintMessage('Nie udało się założyć miasta (hex zablokowany)', 3000);
+        return false;
+      }
+      ensureCitySaveDefaults(c);
+      cities.push(c);
+      finalizeCityFounding(c, q, r);
+      refreshFog();
+      cityRenderer.sync(cities, _cityRenderOpts());
+      playerEverOwnedCity = true;
+      exitBuildMode();
+      hideCityPanelFull();
+      clearPlayerUnitSelection();
+      lastBHex = null;
+      refreshFog();
+      updateHud();
+      refreshD1bHud();
+      showHintMessage('Miasto ' + c.name + ' założone!', 3000);
+      return true;
+    }
+
+    function exitBuildMode(): void {
+      buildModeOpen = false;
+      foundCityMode = false;
+      activeImprovementKey = null;
+      removeBuildGhosts();
+      refreshBuildApi();
+      refreshBuildHighlight();
+      refreshD1bHud();
+    }
+
+    function applyBuildRequest(req: ImprovementBuildRequest): void {
+      const hex = map.hexes[req.hexKey];
+      if (!hex) return;
+
+      if (req.action === 'wycinka') {
+        if (hex.nakladka !== Nakladka.Las) return;
+        if (hexClearingStates.has(req.hexKey)) return;
+        hex.nakladka = Nakladka.Brak;
+        rebuildResourceOverlays();
+        const clr = freshClearingState(req.key, 0);
+        if (clr) hexClearingStates.set(req.hexKey, clr);
+        showHintMessage('Wyrąb: +20 Pracy/turę przez 3 tury (łącznie 60)', 3500);
+        refreshBuildApi();
+        refreshBuildHighlight();
+        updateHud();
+        console.log('[BuildMode] wycinka', req.hexKey);
+        return;
+      }
+
+      if (!isImprovementTechUnlocked(req.key, player.zbadane)) {
+        showHintMessage('Wymaga technologii', 2500);
+        return;
+      }
+      if (playerPracaPool < req.kosztPraca) {
+        showHintMessage('Za mało Pracy (potrzeba ' + req.kosztPraca + ')', 3000);
+        return;
+      }
+      playerPracaPool -= req.kosztPraca;
+      _lastPraca = playerPracaPool;
+      const prev = placedImprovements.get(req.hexKey) ?? [];
+      if (prev.includes(req.key)) return;
+      const nextLayers: PlacedLayers = [...prev, req.key];
+      placedImprovements.set(req.hexKey, nextLayers);
+      syncHexUlepszenieFields(req.hexKey, nextLayers);
+
+      spawnImprovementMesh(req.hexKey);
+      rebuildResourceOverlays();
+
+      refreshBuildApi();
+      refreshBuildHighlight();
+      updateHud();
+      showHintMessage('Postawiono ulepszenie: ' + req.key, 2500);
+      console.log('[BuildMode]', req.key, req.hexKey, 'koszt=' + req.kosztPraca);
+    }
+
+    /** Solo hodowla na wzgórzu — zostaw naturalny kopiec (nie hideDecor). */
+    const SOLO_LIVESTOCK_KEYS = new Set(['bydlo', 'owce', 'lama']);
+
+    function isSoloLivestockLayers(layers: readonly string[]): boolean {
+      return layers.length > 0 && layers.every(k => SOLO_LIVESTOCK_KEYS.has(k));
+    }
+
+    /** Y osadzenia mesh ulepszenia — solo hodowla na wzgórzu: wierzchołek kopca (kopiec zostaje widoczny). */
+    function improvementMeshPlacement(q: number, r: number, layers: readonly string[]): number {
+      const hex = map.hexes[keyOf(q, r)];
+      const topY = unitRenderer.topYAt(q, r);
+      if (!hex) return topY + 0.01;
+      const teren = hex.terenBazowy;
+      const elevated = teren === TerenBazowy.Wzgorza || teren === TerenBazowy.Gory;
+      if (layers.includes('tarasy') && teren === TerenBazowy.Wzgorza) {
+        return topY;
+      }
+      if (elevated) {
+        return galleryDecorSurfaceY(teren, topY, layers) + 0.01;
+      }
+      return topY + 0.01;
+    }
+
+    function syncImprovementDecorForHex(hexKey: string, layers: readonly string[]): void {
+      if (layers.length === 0) return;
+      const hex = map.hexes[hexKey];
+      if (!hex) return;
+      const teren = hex.terenBazowy;
+      const elevated = teren === TerenBazowy.Wzgorza || teren === TerenBazowy.Gory;
+      if (layers.includes('tarasy')) {
+        hideDecorAtHex(hexKey);
+        return;
+      }
+      if (elevated && isSoloLivestockLayers(layers)) {
+        return;
+      }
+      if (elevated) {
+        hideDecorAtHex(hexKey);
+      }
+    }
+
+    function spawnImprovementMesh(hexKey: string): void {
+      const parts = hexKey.split(',');
+      if (parts.length !== 2) return;
+      const q = parseInt(parts[0]!, 10);
+      const r = parseInt(parts[1]!, 10);
+      if (isNaN(q) || isNaN(r)) return;
+      const layers = mergedImprovementLayers(hexKey);
+      const oldMesh = improvementMeshes.get(hexKey);
+      if (oldMesh) scene.remove(oldMesh);
+      if (layers.length === 0) {
+        improvementMeshes.delete(hexKey);
+        return;
+      }
+      syncImprovementDecorForHex(hexKey, layers);
+      const g = buildImprovementVisual(layers);
+      const wp = axialToWorld(q, r, HEX_R);
+      g.position.set(wp.x, improvementMeshPlacement(q, r, layers), wp.z);
+      scene.add(g);
+      improvementMeshes.set(hexKey, g);
+    }
+
+    function restorePlacedImprovementsFromSave(
+      entries: Array<[string, ImprovementKey | PlacedLayers]> | undefined,
+    ): void {
+      placedImprovements.clear();
+      for (const mesh of improvementMeshes.values()) scene.remove(mesh);
+      improvementMeshes.clear();
+      if (entries?.length) {
+        for (const [hexKey, raw] of entries) {
+          const layers = Array.isArray(raw) ? raw : [raw];
+          placedImprovements.set(hexKey, layers);
+          syncHexUlepszenieFields(hexKey, layers);
+        }
+      }
+      rebuildResourceOverlays();
+      syncLivestockAndPlacedMeshes();
+    }
+
+    function countBlockingEvents(): number {
+      return collectTurnEvents().filter(e => e.blocking).length;
+    }
+
+    function executeFirstBlockingEvent(): void {
+      const ev = collectTurnEvents().find(e => e.blocking);
+      if (!ev) return;
+      if (ev.id.startsWith('diplo-pend-')) {
+        openDiplomacyPendingById(ev.id);
+        return;
+      }
+      const cityId = cityIdFromRevoltEventId(ev.id)
+        ?? cityIdFromProdEmptyEventId(ev.id);
+      if (cityId) {
+        const city = cities.find(c => c.id === cityId);
+        if (city) openCityPanelForPlayer(city);
+      }
+    }
+
+    refreshBuildApi();
+
+    {
+      syncLivestockAndPlacedMeshes();
+      const _resCount = rebuildResourceOverlays();
+      console.log('[main] hodowla złoże meshes synced · resource overlays:', _resCount);
+    }
+
+    // Transient toast — krótkie komunikaty (bez stałego paska skrótów na dole).
+    let hintOverrideTimer: ReturnType<typeof setTimeout> | null = null;
+
+    function showHintMessage(msg: string, durationMs: number = 3000): void {
+      if (hintOverrideTimer !== null) {
+        clearTimeout(hintOverrideTimer);
+        hintOverrideTimer = null;
+      }
+      hintToast.innerHTML = msg;
+      hintToast.style.display = 'block';
+      hintOverrideTimer = setTimeout(() => {
+        hintToast.style.display = 'none';
+        hintOverrideTimer = null;
+      }, durationMs);
+    }
+
+    /** Po pierwszej jednostce gracza — przypomnienie o suwaku żywności armii (Maciej 2026-07-03). */
+    function maybeHintArmyFoodOnFirstPlayerUnit(ownerId: number): void {
+      if (ownerId !== 0 || playerArmyFoodHintShown) return;
+      playerArmyFoodHintShown = true;
+      const pctRozwoj = empireFoodStates.get(0)?.procentRozwoj ?? getEmpireFoodSplit(0);
+      if (pctRozwoj < 100) return;
+      showHintMessage(
+        'Masz wojsko — przesuń suwak żywności w stronę <b>Armia</b> (panel miasta). ' +
+        'Inaczej jednostki tracą 8% max HP co turę. Zapasy państwa wymagają budynku Spichlerz.',
+        8000,
+      );
+    }
+
+    /** Odśwież HUD D1B (+ panel imperium gdy otwarty). */
+
+    function cameraGroundTarget(): { targetX: number; targetZ: number; distance: number; fov: number; aspect: number } {
+      const dir = new THREE.Vector3();
+      camera.getWorldDirection(dir);
+      const hitT = Math.abs(dir.y) > 1e-6 ? -camera.position.y / dir.y : 40;
+      const targetX = camera.position.x + dir.x * hitT;
+      const targetZ = camera.position.z + dir.z * hitT;
+      const ground = new THREE.Vector3(targetX, 0, targetZ);
+      return {
+        targetX,
+        targetZ,
+        distance: camera.position.distanceTo(ground),
+        fov: (camera.fov * Math.PI) / 180,
+        aspect: camera.aspect,
+      };
+    }
+
+    function isPlayerAtWar(): boolean {
+      for (const [key, rel] of diplomacyRelations.entries()) {
+        if ((rel as { status?: string }).status !== 'wojna') continue;
+        const parts = key.split('_').map(Number);
+        if (parts.length !== 2) continue;
+        const [a, b] = parts;
+        if (a === 0 || b === 0) return true;
+      }
+      return false;
+    }
+
+    function garnizonCountForCity(city: City): number {
+      return units.filter(
+        u => u.ownerId === city.ownerId
+          && u.q === city.q
+          && u.r === city.r
+          && u.inGarnizon === true,
+      ).length;
+    }
+
+    function refreshSiegeMarkers(): void {
+      const oblegane = new Set(cities.filter(c => c.oblegane).map(c => c.id));
+      const positions = new Map(cities.map(c => [c.id, { q: c.q, r: c.r }]));
+      const campHexesByCity = new Map<string, string[]>();
+      const allMachinesByCamp = new Map<string, import('./game/siegeMachines').SiegeMachineKind[]>();
+      const allCampOwners = new Map<string, number>();
+      const ownerColorById = new Map<number, number>([[0, 0xffd54a]]);
+      for (const c of cities) {
+        if (!c.oblegane) continue;
+        const camps: string[] = [];
+        for (const u of units) {
+          if (u.ownerId === c.ownerId) continue;
+          if (hexDistance(u.q, u.r, c.q, c.r) === 1) {
+            camps.push(keyOf(u.q, u.r));
+            ownerColorById.set(u.ownerId, u.ownerId === 0 ? 0xffd54a : 0xc84040);
+          }
+        }
+        campHexesByCity.set(c.id, camps);
+        const ready = readyMachinesForCity(c);
+        for (const [hk, kinds] of machinesByCampHex(camps, ready)) {
+          const prev = allMachinesByCamp.get(hk) ?? [];
+          allMachinesByCamp.set(hk, [...prev, ...kinds]);
+        }
+        for (const [hk, oid] of campOwnerByHex(camps, units, keyOf, c.ownerId)) {
+          allCampOwners.set(hk, oid);
+          ownerColorById.set(oid, oid === 0 ? 0xffd54a : 0xc84040);
+        }
+      }
+      siegeMarkerRenderer.sync(oblegane, positions, {
+        getTopY: (q, r) => unitRenderer.topYAt(q, r),
+        campHexesByCity,
+        machinesByCampHex: allMachinesByCamp,
+        campOwnerByHex: allCampOwners,
+        ownerColorById,
+      });
+      refreshSiegeHtmlLabels();
+    }
+
+    /** Etykiety HTML nad obleganymi miastami (zawsze widoczne na ekranie). */
+    const siegeHtmlLabels: HTMLDivElement[] = [];
+    const siegeHtmlLabelAnchors: Array<{ x: number; y: number; z: number; name: string }> = [];
+
+    function clearSiegeHtmlLabels(): void {
+      for (const el of siegeHtmlLabels) el.remove();
+      siegeHtmlLabels.length = 0;
+      siegeHtmlLabelAnchors.length = 0;
+    }
+
+    function refreshSiegeHtmlLabels(): void {
+      clearSiegeHtmlLabels();
+      for (const city of cities) {
+        if (!city.oblegane) continue;
+        const pos = axialToWorld(city.q, city.r, HEX_R);
+        const topY = unitRenderer.topYAt(city.q, city.r);
+        siegeHtmlLabelAnchors.push({ x: pos.x, y: topY + 1.1, z: pos.z, name: city.name });
+        const el = document.createElement('div');
+        el.className = 'civ-siege-html-label';
+        el.innerHTML = '<span style="font-size:18px">\u2694</span> OB\u0141\u0118\u017bENIE<br><small>' + city.name + '</small>';
+        el.style.cssText = [
+          'position:fixed', 'z-index:340', 'pointer-events:none', 'transform:translate(-50%,-100%)',
+          'padding:4px 10px', 'border-radius:8px', 'text-align:center', 'line-height:1.25',
+          'font:bold 11px/1.3 Arial,sans-serif', 'color:#ffe8e8',
+          'background:rgba(140,20,20,0.88)', 'border:2px solid #ff5252',
+          'box-shadow:0 0 12px rgba(255,60,60,0.65)', 'white-space:nowrap',
+        ].join(';');
+        document.body.appendChild(el);
+        siegeHtmlLabels.push(el);
+      }
+    }
+
+    function updateSiegeHtmlLabels(): void {
+      if (siegeHtmlLabels.length === 0) return;
+      const cw = canvas.clientWidth || window.innerWidth;
+      const ch = canvas.clientHeight || window.innerHeight;
+      const wp = new THREE.Vector3();
+      for (let i = 0; i < siegeHtmlLabels.length; i++) {
+        const lbl = siegeHtmlLabels[i];
+        const a = siegeHtmlLabelAnchors[i];
+        if (!lbl || !a) continue;
+        wp.set(a.x, a.y, a.z);
+        wp.project(camera);
+        if (wp.z > 1) {
+          lbl.style.display = 'none';
+          continue;
+        }
+        const px = (wp.x * 0.5 + 0.5) * cw;
+        const py = (-wp.y * 0.5 + 0.5) * ch;
+        lbl.style.display = 'block';
+        lbl.style.left = Math.round(px) + 'px';
+        lbl.style.top = Math.round(py) + 'px';
+      }
+    }
+
+    function syncCityGarnizon(city: City): void {
+      city.garnizon = garnizonCountForCity(city);
+    }
+
+    function besiegerOwnerForCity(city: City): number | null {
+      if (city.oblegajacyOwnerId !== undefined) return city.oblegajacyOwnerId;
+      const stored = siegeBesiegerByCity.get(city.id);
+      if (stored !== undefined) return stored;
+      for (const u of units) {
+        if (u.ownerId === city.ownerId) continue;
+        if (hexDistance(u.q, u.r, city.q, city.r) === 1) return u.ownerId;
+      }
+      return null;
+    }
+
+    /** C3-Q3=B: pierwsze wyczerpanie zapasów → alert; następny tick → przejęcie. */
+    function handleSiegeCapitulationPhase(city: City): void {
+      if (city.siegeCapitulationPending) {
+        resolveSiegeSurrender(city.id);
+        return;
+      }
+      if (getCityFood(city) <= 0) {
+        city.siegeCapitulationPending = true;
+        showHintMessage(
+          city.name + ': magazyn wyczerpany — kapitulacja za 1 turę oblężenia!',
+          5500,
+        );
+        syncSiegePanelMeta(city);
+        updateSiegeMapPanelTurn(siegeTurnByCity.get(city.id) ?? 1, city);
+      }
+    }
+
+    function resolveSiegeSurrender(cityId: string): void {
+      const city = cities.find(c => c.id === cityId);
+      if (!city) {
+        endMapSiege(cityId);
+        return;
+      }
+      const newOwner = besiegerOwnerForCity(city);
+      if (newOwner !== null && newOwner !== city.ownerId) {
+        const oldOwner = city.ownerId;
+        city.ownerId = newOwner;
+        city.population = Math.max(1, city.population);
+        for (let i = units.length - 1; i >= 0; i--) {
+          const u = units[i]!;
+          if (u.q === city.q && u.r === city.r && u.ownerId === oldOwner) units.splice(i, 1);
+        }
+        syncCityGarnizon(city);
+        if (newOwner === 0) playerEverOwnedCity = true;
+        showHintMessage(
+          city.name + ' — kapitulacja z głodu! Miasto przejęte przez ' + civLabelForOwner(newOwner) + '.',
+          5500,
+        );
+      } else {
+        showHintMessage(city.name + ': głód — oblężenie zakończone bez przejęcia.', 4500);
+      }
+      endMapSiege(cityId);
+      syncUnitsRender();
+      cityRenderer.sync(cities, _cityRenderOpts());
+      refreshFog();
+      updateHud();
+      refreshD1bHud();
+    }
+
+    function endMapSiege(cityId: string): void {
+      const city = cities.find(c => c.id === cityId);
+      if (city) {
+        city.oblegane = false;
+        delete city.oblegajacyOwnerId;
+        city.siegeCapitulationPending = false;
+        clearSiegeMachines(city);
+        const bId = siegeBesiegerByCity.get(cityId);
+        if (bId !== undefined) siegeAiStateByKey.delete(siegeAiKey(bId, cityId));
+      }
+      for (const u of units) {
+        if (u.oblegaCityId === cityId) delete u.oblegaCityId;
+      }
+      siegeTurnByCity.delete(cityId);
+      siegeBesiegerByCity.delete(cityId);
+      refreshSiegeMarkers();
+      if (getActiveSiegeCityId() === cityId) hideSiegeMapPanel();
+    }
+
+    /** OBLEGAJ — wojsko zostaje przy murze, panel znika, gracz wraca do mapy. Postęp oblężenia = koniec tury N. */
+    function commitBesiege(cityId: string, opts?: { deselect?: boolean; hint?: boolean }): void {
+      const city = cities.find(c => c.id === cityId);
+      if (!city || !city.oblegane) return;
+      const bId = city.oblegajacyOwnerId ?? siegeBesiegerByCity.get(cityId);
+      if (bId === undefined) return;
+
+      let marked = 0;
+      for (const u of units) {
+        if (u.ownerId !== bId) continue;
+        if (hexDistance(u.q, u.r, city.q, city.r) !== 1) continue;
+        u.oblegaCityId = cityId;
+        u.ruchLeft = 0;
+        marked++;
+      }
+      if (marked === 0) {
+        showHintMessage(city.name + ': brak wojsk przy murze — oblężenie zniesione.', 4000);
+        endMapSiege(cityId);
+        return;
+      }
+
+      hideSiegeMapPanel();
+      reachable = new Set<string>();
+      unitRenderer.clearHighlight();
+      unitRenderer.clearPathRoute();
+
+      const deselect = opts?.deselect !== false;
+      if (deselect && selectedId !== null) {
+        const sel = units.find(u => u.id === selectedId);
+        if (sel?.oblegaCityId === cityId) clearPlayerUnitSelection();
+      }
+
+      syncUnitsRender();
+      refreshD1bHud();
+      if (opts?.hint !== false) {
+        showHintMessage(
+          city.name + ': oblężenie w toku (' + marked + ' jedn. przy murze). ' +
+          'Klik miasto → Szturm / Odwrót · postęp co turę (N).',
+          5500,
+        );
+      }
+    }
+
+    const siegePanelActions = {
+      onBesiege: (cityId: string) => commitBesiege(cityId),
+      onStorm: (ctx: MapSiegeContext) => launchSiegeStormFromMap(ctx),
+      onRetreat: (cityId: string) => {
+        endMapSiege(cityId);
+        if (selectedId !== null) {
+          const u = units.find(x => x.id === selectedId);
+          if (u && u.ownerId === 0 && u.ruchLeft > 0 && !u.oblegaCityId) {
+            reachable = reachableWithMergeTargets(u);
+            unitRenderer.setHighlight(reachable);
+          }
+        }
+        showHintMessage('Odwrót — oblężenie zakończone.', 3000);
+      },
+      onQueueMachine: (cityId: string, kind: SiegeMachineKind) => {
+        const city = cities.find(c => c.id === cityId);
+        if (!city?.oblegane) return;
+        if (queueSiegeMachine(city, kind)) {
+          showHintMessage('Kolejka machin: +' + (kind === 'taran' ? 'Taran' : 'Wieża'), 2500);
+          syncSiegePanelMeta(city);
+        } else {
+          showHintMessage('Kolejka machin pełna (max 4)', 2500);
+        }
+      },
+    };
+
+    function startMapSiege(ctx: MapSiegeContext): void {
+      if (ctx.tryb !== 'oblezenie') {
+        showHintMessage('Miasto bez muru — użyj preBattle (potyczka), nie oblężenia.', 4000);
+        return;
+      }
+      const city = ctx.city;
+      city.oblegane = true;
+      city.oblegajacyOwnerId = ctx.oblegajacyOwnerId;
+      city.siegeCapitulationPending = false;
+      ensureSiegeMachines(city);
+      syncCityGarnizon(city);
+      siegeTurnByCity.set(city.id, 1);
+      siegeBesiegerByCity.set(city.id, ctx.oblegajacyOwnerId);
+      refreshSiegeMarkers();
+      syncSiegePanelMeta(city);
+      if (ctx.oblegajacyOwnerId === 0) {
+        showSiegeMapPanel(ctx, siegePanelActions, 1);
+        selectPlayerUnit(ctx.atakujacy.id, true);
+        unitRenderer.clearPathRoute();
+        hoverKey = null;
+        showHintMessage(
+          'OBŁĘŻENIE: ' + city.name + ' — wybierz OBLEGAJ, Szturm lub Odwrót (ruch zablokowany).',
+          6000,
+        );
+      } else {
+        commitBesiege(city.id, { deselect: false, hint: false });
+      }
+      console.log('[Oblezenie] start', city.name, 'ownerId=', city.ownerId, 'atakujacy=', ctx.atakujacy.typeId);
+    }
+
+    /** C3-Q9: oblężenie kończy się gdy oblegający nie stoi obok miasta. */
+    function validateActiveSieges(): void {
+      for (const city of cities) {
+        if (!city.oblegane) continue;
+        const bId = city.oblegajacyOwnerId ?? siegeBesiegerByCity.get(city.id);
+        if (bId === undefined) {
+          endMapSiege(city.id);
+          continue;
+        }
+        const stillBesieging = units.some(
+          u => u.ownerId === bId && hexDistance(u.q, u.r, city.q, city.r) === 1,
+        );
+        if (!stillBesieging) {
+          endMapSiege(city.id);
+          showHintMessage(city.name + ': oblężenie zniesione — brak wojsk przy murach.', 4500);
+        }
+      }
+    }
+
+    /** OBL-MAP-01 + OBL-S7: AI obok miasta gracza z murem → decyzja 3-poziomowa. */
+    function scanAutoSiegesAfterAiTurn(): void {
+      validateActiveSieges();
+      for (const city of cities) {
+        if (city.oblegane || city.ownerId !== 0 || !city.maMur) continue;
+        const auto = detectAutoSiegeOnCity(city, units);
+        if (!auto) continue;
+
+        const atkUnits = collectSiegeAtkRoster(city, auto.atakujacy);
+        const siegeArmy = atkUnits.map(runtimeUnitToSiegeUnit);
+        const siegeCity = buildSiegeCityFromRuntime(city);
+        const aiKey = siegeAiKey(auto.oblegajacyOwnerId, city.id);
+        const persisted = siegeAiStateByKey.get(aiKey) ?? { ...EMPTY_SIEGE_AI_STATE };
+        const decision = decideAISiegeStance(siegeArmy, siegeCity, persisted);
+
+        console.log('[Oblezenie AI]', city.name, decision.stance, decision.powod);
+
+        if (decision.stance === 'retreat') continue;
+
+        if (decision.stance === 'assault') {
+          executeSilentSiegeStorm(auto);
+          continue;
+        }
+
+        if (decision.stance === 'siege_build' && !city.siegeMachines?.queue.length) {
+          queueSiegeMachine(city, 'taran');
+        }
+
+        startMapSiege(auto);
+        siegeAiStateByKey.set(aiKey, {
+          siegeTurn: 1,
+          machinesReady: city.siegeMachines?.ready.length ?? 0,
+        });
+        console.log('[Oblezenie] Auto AI →', city.name, decision.stance);
+      }
+    }
+
+    function maybeAiAssaultAfterMachines(city: City, siegeTurn: number): void {
+      const bId = city.oblegajacyOwnerId ?? siegeBesiegerByCity.get(city.id);
+      if (bId === undefined || bId === 0 || city.ownerId === bId) return;
+      const anchor = units.find(
+        u => u.ownerId === bId && hexDistance(u.q, u.r, city.q, city.r) === 1,
+      );
+      if (!anchor) return;
+
+      const atkUnits = collectSiegeAtkRoster(city, anchor);
+      const decision = decideAISiegeStance(
+        atkUnits.map(runtimeUnitToSiegeUnit),
+        buildSiegeCityFromRuntime(city),
+        {
+          siegeTurn,
+          machinesReady: city.siegeMachines?.ready.length ?? 0,
+        },
+      );
+      if (decision.stance !== 'assault') return;
+
+      const ctx = classifyCityAttack(anchor, city, units);
+      if (ctx.tryb !== 'oblezenie') return;
+      executeSilentSiegeStorm(ctx);
+    }
+
+    function offerCityAttackChoice(atakujacy: RuntimeUnit, city: City): boolean {
+      if (!canInitiateSiege(atakujacy, city)) return false;
+      const ctx = classifyCityAttack(atakujacy, city, units);
+      if (ctx.tryb !== 'oblezenie') return false;
+      hideCityAttackChoice();
+      showCityAttackChoice(ctx, {
+        onSiege: () => startMapSiege(ctx),
+        onStorm: () => launchSiegeStormFromMap(ctx),
+        onCancel: () => {},
+      });
+      return true;
+    }
+
+    function cityIdFromRevoltEventId(id: string): string | null {
+      if (id.startsWith('revolt-warn-')) return id.slice('revolt-warn-'.length);
+      if (id.startsWith('revolt-')) return id.slice('revolt-'.length);
+      return null;
+    }
+
+    function cityIdFromProdEmptyEventId(id: string): string | null {
+      if (id.startsWith('prod-empty-')) return id.slice('prod-empty-'.length);
+      return null;
+    }
+
+    function countBesiegersAdjacent(city: City): number {
+      const bId = city.oblegajacyOwnerId ?? siegeBesiegerByCity.get(city.id);
+      if (bId === undefined) return 0;
+      return units.filter(
+        u => u.ownerId === bId && hexDistance(u.q, u.r, city.q, city.r) === 1,
+      ).length;
+    }
+
+    function runtimeUnitToSiegeUnit(u: RuntimeUnit): SiegeUnit {
+      const def = unitDefFor(u);
+      const prog = def['Próg dezercji (% health)'] ?? def['Prog dezercji (% health)'];
+      // SiegeUnit legacy field names; values from TW v3 EN JSON (same as combat.ts).
+      return {
+        typNazwa: u.typeId,
+        rola: String(def['Rola (linia)'] ?? 'Wrecz'),
+        Atak: unitAtak(def),
+        Obrona: unitObrona(def),
+        Uderzenie: normFieldVal(def['chargeBonus'], 0),
+        Pancerz: normFieldVal(def['armor'], 0),
+        Przebicie: normFieldVal(def['piercing'], 0),
+        weaponDamage: normFieldVal(def['weaponDamage'], unitAtak(def)),
+        Health: unitHealth(def),
+        progDezercji: prog === null || prog === undefined ? null : normFieldVal(prog, 0.25),
+      };
+    }
+
+    function buildSiegeCityFromRuntime(city: City): SiegeCity {
+      const dHex = map.hexes[keyOf(city.q, city.r)];
+      const terrain = dHex ? String(dHex.terenBazowy) : 'Rownina';
+      const garrisonUnits = units.filter(
+        u => u.ownerId === city.ownerId && hexDistance(u.q, u.r, city.q, city.r) <= 1,
+      );
+      const garrison: SiegeUnit[] = garrisonUnits.map(runtimeUnitToSiegeUnit);
+      if (garrison.length === 0) {
+        const mil = makeMilitia(city.population ?? 0);
+        if (mil) garrison.push(mil);
+      }
+      return {
+        id: city.id,
+        ownerId: city.ownerId,
+        q: city.q,
+        r: city.r,
+        wallLevel: city.maMur ? 1 : 0,
+        garrison,
+        terrain,
+        population: city.population,
+      };
+    }
+
+    function tickSiegeMachinesForCity(city: City): void {
+      if (!city.oblegane) return;
+      const n = countBesiegersAdjacent(city);
+      const built = advanceSiegeMachineBuild(city, n);
+      if (built > 0) {
+        const bId = city.oblegajacyOwnerId ?? siegeBesiegerByCity.get(city.id);
+        if (bId !== undefined) {
+          const st = siegeAiStateByKey.get(siegeAiKey(bId, city.id)) ?? { ...EMPTY_SIEGE_AI_STATE };
+          st.machinesReady = city.siegeMachines?.ready.length ?? 0;
+          siegeAiStateByKey.set(siegeAiKey(bId, city.id), st);
+        }
+      }
+    }
+
+    function appendReadyMachinesToRoster(
+      roster: RuntimeUnit[],
+      city: City,
+      ownerId: number,
+    ): RuntimeUnit[] {
+      const kinds = consumeReadyMachines(city);
+      if (kinds.length === 0) return roster;
+      const out = roster.slice();
+      kinds.forEach((kind, i) => {
+        out.push({
+          id: 'siege-mach-' + city.id + '-' + turn + '-' + i,
+          ownerId,
+          typeId: SIEGE_MACHINE_TYPE_ID[kind],
+          category: 'obleznicza',
+          q: city.q,
+          r: city.r,
+          ruch: 0,
+          ruchLeft: 0,
+        });
+      });
+      return out;
+    }
+
+    function syncSiegePanelMeta(city: City): void {
+      setSiegePanelBesiegerCount(countBesiegersAdjacent(city));
+    }
+
+    function collectTurnEvents(): SidePanelEvent[] {
+      const events: SidePanelEvent[] = [];
+      for (const city of cities) {
+        if (city.ownerId !== 0) continue;
+        const st = cityOrderState.get(city.id);
+        if (st?.revoltWarning && st.revoltGraceRemaining != null && !st.bunt && !st.rebelState) {
+          events.push({
+            id: 'revolt-warn-' + city.id,
+            icon: '\u26a0\ufe0f',
+            title: 'KRYTYCZNE: ' + city.name,
+            subtitle: revoltWarningMessage(city.name, st.revoltGraceRemaining),
+            kind: 'city',
+            blocking: true,
+          });
+        }
+        if (st?.bunt) {
+          events.push({
+            id: 'revolt-' + city.id,
+            icon: '\u{1F525}',
+            title: 'Bunt: ' + city.name,
+            subtitle: 'Migracja mieszkańców',
+            kind: 'city',
+            blocking: true,
+          });
+        }
+        const prod = cityProd.get(city.id);
+        if (!prod || prod.kolejka.length === 0) {
+          events.push({
+            id: 'prod-empty-' + city.id,
+            icon: '\u2699\ufe0f',
+            title: 'Produkcja: ' + city.name,
+            subtitle: 'Kolejka pusta — wybierz budynek lub jednostkę',
+            kind: 'city',
+            blocking: true,
+          });
+        }
+      }
+      for (const p of pendingDiplomacyInbox) {
+        events.push({
+          id: p.id,
+          icon: '\u{1F91D}',
+          title: 'Dyplomacja: ' + p.civName,
+          subtitle: diploPendingTitle(p.cmdType) + (p.reason ? ' — ' + p.reason : ''),
+          kind: 'diplo',
+          blocking: true,
+        });
+      }
+      return events;
+    }
+
+    function collectDiploChipCounts(): { sojusze: number; pakty: number; wojny: number } {
+      const contacted = getDiplomaticContacts();
+      let sojusze = 0;
+      let pakty = 0;
+      let wojny = 0;
+      const sojuszPartners = new Set<number>();
+      const paktPartners = new Set<number>();
+      for (const d of activeDeals) {
+        if (!d.strony.includes(0)) continue;
+        const other = d.strony[0] === 0 ? d.strony[1] : d.strony[0];
+        if (!contacted.has(other)) continue;
+        if (isAllianceDealKind(d.rodzaj)) sojuszPartners.add(other);
+        else if (normalizeTreatyKind(d.rodzaj) === RodzajTraktatu.PaktNieagresji) paktPartners.add(other);
+      }
+      for (const oid of contacted) {
+        if (oid === 0) continue;
+        const rel = getDiploRelation(0, oid);
+        if (rel.status === 'wojna') wojny++;
+        else if (sojuszPartners.has(oid) || rel.status === 'sojusz') sojusze++;
+        else if (paktPartners.has(oid) || rel.status === 'pokoj') pakty++;
+      }
+      return { sojusze, pakty, wojny };
+    }
+
+    function allPowerOwnerIds(): number[] {
+      const ids = new Set<number>([0]);
+      for (const c of cities) ids.add(c.ownerId);
+      for (const a of aiStartHexes) ids.add(a.ownerId);
+      return Array.from(ids);
+    }
+
+    function civKeyForOwner(ownerId: number): string {
+      if (ownerId === 0) return String(player.civType || _menuCivId || 'gracz');
+      return aiOwnerCivMap.get(ownerId) ?? `oid-${ownerId}`;
+    }
+
+    function civDisplayNameForKey(civKey: string): string {
+      const row = data.civs.cywilizacje.find(
+        (c: { ikonaId?: string; typCywilizacji?: string; Cywilizacja?: string }) =>
+          c.ikonaId === civKey || c.typCywilizacji === civKey,
+      );
+      if (row?.Cywilizacja != null) return String(row.Cywilizacja);
+      if (civKey.startsWith('oid-')) {
+        const oid = Number(civKey.slice(4));
+        if (Number.isFinite(oid)) return ownerDiploLabel(oid);
+      }
+      return civKey;
+    }
+
+    /** Ranking Mocy po cywilizacjach (nie po każdym ownerId = nazwa miasta). */
+    function buildPowerRankingByCiv(): PowerOverlayData['ranking'] {
+      const byCiv = new Map<string, { label: string; power: number; isPlayer: boolean }>();
+      for (const oid of allPowerOwnerIds()) {
+        const civKey = civKeyForOwner(oid);
+        const label = civDisplayNameForKey(civKey);
+        const pwr = objectivePowerForOwner(oid);
+        const cur = byCiv.get(civKey);
+        if (cur) {
+          cur.power += pwr;
+          if (oid === 0) cur.isPlayer = true;
+        } else {
+          byCiv.set(civKey, { label, power: pwr, isPlayer: oid === 0 });
+        }
+      }
+      return Array.from(byCiv.values())
+        .sort((a, b) => b.power - a.power)
+        .map((row, i) => ({ civ: row.label, power: row.power, rank: i + 1, isPlayer: row.isPlayer }));
+    }
+
+    function computePotegaComponents(ownerId: number): PotegaKomponenty {
+      const snapshots = powerSnapshotsForTurn.length > 0
+        ? powerSnapshotsForTurn
+        : buildPowerSnapshotsForTurn({ perCity: [] });
+      const snap = snapshots.find(s => s.ownerId === ownerId)
+        ?? { ownerId, population: 0, cityCount: 0, territoryHexCount: 0, pieniadzPerTurn: 0 };
+      const unitCount = units.filter(u => u.ownerId === ownerId).length;
+      let maxUnits = 1;
+      for (const oid of allPowerOwnerIds()) {
+        maxUnits = Math.max(maxUnits, units.filter(u => u.ownerId === oid).length);
+      }
+      const ce = computePowerContributionsCityEconomy(snap, snapshots);
+      const epokaNorm = ownerId === 0
+        ? Math.min(1, Math.max(0, (player.era - 1) / 4))
+        : Math.min(1, Math.max(0, (player.era - 1) / 4));
+      return {
+        ...ce,
+        wielkoscArmii: unitCount / maxUnits,
+        wygraneBitwy: 0.5,
+        epoka: epokaNorm,
+      };
+    }
+
+    function buildPowerOverlayData(): PowerOverlayData {
+      const obj = objectivePowerByOwner.get(0) ?? buildObjectivePowerForOwner(0);
+      const power = obj.power;
+      const maxPts = Math.max(1, ...obj.components.map(c => c.points));
+      const components = obj.components.map(c => ({
+        key: c.key,
+        label: c.label,
+        weightPct: c.coefficient,
+        normalized: c.points / maxPts,
+        points: c.points,
+      }));
+      const ranking = buildPowerRankingByCiv();
+      let respektExample: PowerOverlayData['respektExample'];
+      const contacted = getDiplomaticContacts();
+      for (const oid of contacted) {
+        if (oid === 0) continue;
+        const theirPower = objectivePowerForOwner(oid);
+        respektExample = {
+          civ: civDisplayNameForKey(civKeyForOwner(oid)),
+          respekt: computeRespekt(power, theirPower),
+          playerPower: power,
+          theirPower,
+        };
+        break;
+      }
+      return { power, components, ranking, respektExample };
+    }
+
+    function buildCultureOverlayData(): CultureOverlayData {
+      const cp = loadCultureParams(data.societyParams, _menuDifficulty);
+      const pc = cities.filter(c => c.ownerId === 0);
+      const thresholds = [...cultureThresholds(cp)];
+      const cityRows = pc.map(c => {
+        const kultura = Math.floor((c as { kultura?: number }).kultura ?? 0);
+        return {
+          name: c.name,
+          kultura,
+          borderRadius: cityBorderRadius(kultura, cp),
+        };
+      });
+      const maxCityKultura = cityRows.reduce((m, c) => Math.max(m, c.kultura), 0);
+      let nextThreshold: number | null = null;
+      let pctToNext: number | undefined;
+      for (const t of thresholds) {
+        if (maxCityKultura < t) {
+          nextThreshold = t;
+          pctToNext = t > 0 ? Math.round((maxCityKultura / t) * 100) : 0;
+          break;
+        }
+      }
+      const lowHappy = pc.filter(c => {
+        const share = (c as { ownCultureShare?: number }).ownCultureShare ?? 1;
+        return cultureHappiness({ kulturaSkumulowana: 0, ownCultureShare: share }, cp) < 0;
+      }).length;
+      const happinessNote = lowHappy > 0
+        ? `${lowHappy} miast z obcą kulturą — kara do zadowolenia`
+        : 'Kultura własna we wszystkich miastach — bonus do zadowolenia';
+      const rate = Math.floor(_lastKulturaRate);
+      const sourcesNote = (rate >= 0 ? '+' : '') + rate + '/t · progi zasięgu: '
+        + thresholds.join(' / ') + ' pkt w mieście';
+      return {
+        kulturaTotal: Math.floor(_lastKultura),
+        kulturaRate: rate,
+        cityCount: pc.length,
+        cities: cityRows,
+        thresholds,
+        nextThreshold,
+        pctToNext,
+        happinessNote,
+        sourcesNote,
+      };
+    }
+
+    function buildEmpireDetailSnap(): EmpireDetailSnap {
+      const economy = buildHudState();
+      const cult = buildCultureOverlayData();
+      const powOverlay = buildPowerOverlayData();
+      const obj = objectivePowerByOwner.get(0) ?? buildObjectivePowerForOwner(0);
+      const totalPts = Math.max(1, obj.components.reduce((s, c) => s + c.points, 0));
+      const maxCompPts = Math.max(1, ...obj.components.map(c => c.points));
+      const powerNotes: Record<string, string> = {
+        armia: 'Suma siły bojowej armii (M_pole)',
+        bitwy: 'Pkt z pokonanych składów w bitwach',
+        ludki: 'Sloty populacji (ludki) we wszystkich miastach',
+        rekruci: 'Ekw. jednostek z puli rekrutów',
+        miasta: 'Każde miasto imperium',
+        terytorium: 'Heksy w zasięgu terytorium miast',
+        infra: 'Wybudowane budynki (suma)',
+        tech: 'Liczba zbadanych technologii',
+        ulepszenia: 'Ulepszenia terenu w terytorium',
+      };
+      const powerComponents = obj.components.map(c => ({
+        key: c.key,
+        label: c.label,
+        rawCount: c.rawCount,
+        weightPct: c.coefficient,
+        normalized: c.points / maxCompPts,
+        points: c.points,
+        sharePct: Math.round((c.points / totalPts) * 100),
+        formulaNote: powerNotes[c.key],
+      }));
+      const epoka = empireEpochForOwner(0);
+      const pobor = empirePoborTotals(cities, 0, epoka);
+      const civKey = String(player.civType || _menuCivId || 'grecy');
+      const civRow = data.civs.cywilizacje.find(
+        (c: { ikonaId?: string; typCywilizacji?: string }) =>
+          c.ikonaId === civKey || c.typCywilizacji === civKey,
+      );
+      const civName = civRow?.Cywilizacja != null
+        ? String(civRow.Cywilizacja)
+        : ownerDiploLabel(0);
+      const bonusy = (player.civBonusy.length > 0 ? player.civBonusy : civRow?.bonusy ?? [])
+        .map((b: { opis?: string; realizuje?: string }) => ({
+          opis: String(b.opis ?? ''),
+          realizuje: String(b.realizuje ?? ''),
+        }))
+        .filter(b => b.opis.length > 0);
+      const pc = cities.filter(c => c.ownerId === 0);
+      const regenMult = civManpowerRegenMult(civBonusyForOwnerId(0));
+      const cityEcon = pc.map(c => {
+        const tk = _lastPlayerCityEcon.find(t => t.cityId === c.id);
+        return {
+          name: c.name,
+          pieniadz: tk?.pieniadz ?? 0,
+          pracaPula: tk?.doPuli ?? 0,
+          pracaBudynki: tk?.doBudynkow ?? 0,
+          nauka: tk?.nauka ?? 0,
+        };
+      });
+      const cityPobor = pc.map(c => {
+        const mp = cityManpowerSnapshot(c, epoka, regenMult);
+        return {
+          name: c.name,
+          ludki: mp.ludki,
+          ludnoscAbsLabel: formatManpower(mp.ludnoscAbsolutna),
+          rekruci: mp.manpowerBiezacy,
+          rekruciMax: mp.manpowerMax,
+          regenPerTurn: mp.regenPerTurn,
+        };
+      });
+      let rekruciMax = 0;
+      for (const c of pc) rekruciMax += cityManpowerMax(c.population, epoka);
+      const unitsOnMap = units.filter(u => u.ownerId === 0 && u.category !== 'osadnik').length;
+      return {
+        global: {
+          civName,
+          civEmoji: '🏛️',
+          styl: String(civRow?.['Styl / charakter'] ?? '—'),
+          jednostkaSpec: String(civRow?.['Jednostka specjalna'] ?? '—'),
+          bonusStartowy: String(civRow?.['Bonus startowy'] ?? '—'),
+          religiaPanstwowa: ownerReligionForOwnerId(0) ?? String(civRow?.Religia ?? '—'),
+          bonusy,
+        },
+        economy,
+        kultura: {
+          total: cult.kulturaTotal,
+          rate: cult.kulturaRate,
+          thresholds: cult.thresholds ?? [],
+          nextThreshold: cult.nextThreshold ?? null,
+          pctToNext: cult.pctToNext ?? null,
+          happinessNote: cult.happinessNote ?? '',
+          cities: cult.cities,
+        },
+        power: {
+          power: obj.power,
+          powerBase: obj.powerBase,
+          components: powerComponents,
+          ranking: powOverlay.ranking,
+          respektExample: powOverlay.respektExample,
+          ludnoscLudki: economy.ludnosc,
+          ludnoscAbsLabel: economy.ludnoscAbsLabel ?? formatManpower(pobor.ludnoscAbsolutna),
+          rekruci: pobor.rekruci,
+          rekruciLabel: economy.rekruciLabel ?? formatManpower(pobor.rekruci),
+          rekrutEkw: rekrutUnitEquivalents(pobor.rekruci, epoka),
+          rekruciMax,
+          rekruciMaxLabel: formatManpower(rekruciMax),
+          unitsOnMap,
+          kosztJednostki: unitManpowerCost(epoka),
+        },
+        cityEcon,
+        cityPobor,
+        resources: [],
+      };
+    }
+
+    function openEmpireDetailFromHud(section?: string): void {
+      hideEmpireOverlay();
+      hidePowerOverlay();
+      hideScienceHubHud();
+      hideWikiHubHud();
+      hideSciencePicker();
+      hideCityListHud();
+      hideArmyListHud();
+      showEmpireDetailPanel(section);
+      refreshD1bHud();
+    }
+
+    function buildReligionOverlayData(): ReligionOverlayData {
+      const rp = loadReligionParams(data.societyParams, _menuDifficulty);
+      const pc = cities.filter(c => c.ownerId === 0);
+      const stateRel = ownerReligionForOwnerId(0) ?? '—';
+      let dominantCityCount = 0;
+      let foreignCityCount = 0;
+      const cityRows = pc.map(c => {
+        const rel = resolvedCityReligion(c);
+        const dom = dominantReligion(rel, rp);
+        if (dom.status === 'dominant') {
+          if (dom.religion === stateRel) dominantCityCount++;
+          else foreignCityCount++;
+        }
+        return {
+          name: c.name,
+          dominujaca: dom.religion ?? '—',
+          udzialPct: Math.round(dom.share * 100),
+        };
+      });
+      const relAgg = aggregateReligionEmpire(
+        pc.map(c => ({
+          state: resolvedCityReligion(c),
+          spreadDelta: lastReligionSpreadByCity.get(c.id) ?? 0,
+        })),
+        stateRel === '—' ? null : stateRel,
+      );
+      const spreadTotal = relAgg.spreadRateTotal;
+      const spreadNote = spreadTotal !== 0
+        ? 'Szerzenie: ' + (spreadTotal >= 0 ? '+' : '') + spreadTotal + ' wiernych/t w imperium'
+        : 'Brak netto szerzenia w tej turze';
+      const lowHappy = pc.filter(c => {
+        const rel = resolvedCityReligion(c);
+        return religionHappiness(rel, stateRel === '—' ? null : stateRel, rp) < 0;
+      }).length;
+      const happinessNote = lowHappy > 0
+        ? `${lowHappy} miast z obcą dominującą wiarą — kara do zadowolenia`
+        : 'Religia państwa dominuje lub brak silnej obcej presji';
+      return {
+        stateReligion: stateRel,
+        cityCount: pc.length,
+        cities: cityRows,
+        spreadNote,
+        dominanceThresholdPct: rp.progDominacjiPct,
+        dominantCityCount,
+        foreignCityCount,
+        happinessNote,
+      };
+    }
+
+    function diploPendingTitle(cmdType: string): string {
+      switch (cmdType) {
+        case 'zaproponuj_pokoj': return 'Propozycja pokoju';
+        case 'zaproponuj_sojusz': return 'Propozycja sojuszu';
+        case 'zaproponuj_handel': return 'Propozycja handlu';
+        case 'zadaj_trybut': return 'Żądanie trybutu';
+        case 'oferuj_trybut_za_pokoj': return 'Trybut za pokój';
+        default: return 'Propozycja dyplomatyczna';
+      }
+    }
+
+    function enqueueDiplomacyPending(ownerId: number, cmdType: string, reason: string): void {
+      const id = 'diplo-pend-' + ownerId + '-' + cmdType + '-' + turn + '-' + pendingDiplomacyInbox.length;
+      if (pendingDiplomacyInbox.some(p => p.ownerId === ownerId && p.cmdType === cmdType)) return;
+      pendingDiplomacyInbox.push({
+        id,
+        ownerId,
+        civName: ownerDiploLabel(ownerId),
+        cmdType,
+        reason,
+      });
+      showHintMessage('Dyplomacja: ' + ownerDiploLabel(ownerId) + ' — ' + diploPendingTitle(cmdType), 4500);
+      refreshD1bHud();
+    }
+
+    function resolvePendingDiplomacy(id: string, accept: boolean): void {
+      const idx = pendingDiplomacyInbox.findIndex(p => p.id === id);
+      if (idx < 0) return;
+      const p = pendingDiplomacyInbox[idx]!;
+      pendingDiplomacyInbox.splice(idx, 1);
+      const curRel = getDiploRelation(0, p.ownerId);
+      if (accept) {
+        if (p.cmdType === 'zaproponuj_pokoj') {
+          setDiploRelation(0, p.ownerId, applyDiplomaticEvent(curRel, 'pokoj'));
+          showHintMessage('Pokój z: ' + p.civName, 4000);
+        } else {
+          const cmd = { type: p.cmdType, powod: p.reason } as AIDiplomacyCommand;
+          const pending = aiCommandToPendingProposal(cmd, p.ownerId, 0, turn);
+          if (pending) {
+            const ctx = buildProposalEvalContext(p.ownerId, 0);
+            const result = evaluatePendingFromAI(pending, ctx);
+            applyProposalOutcome(p.ownerId, 0, result, pending.payload, pending.actionId);
+            if (result.accepted) showHintMessage('Przyjęto: ' + p.civName, 3500);
+          } else {
+            showHintMessage('Zaakceptowano: ' + p.civName, 3500);
+          }
+        }
+      } else {
+        if (p.cmdType === 'zadaj_trybut' || p.cmdType === 'oferuj_trybut_za_pokoj') {
+          setDiploRelation(0, p.ownerId, applyDiplomaticEvent(curRel, 'trybut_odmowa'));
+        }
+        showDiplomacyProposalBanner(false, 'Odrzucono propozycję');
+        showHintMessage('Odrzucono: ' + p.civName, 3000);
+      }
+      refreshD1bHud();
+      if (isDiplomacyPanelOpen()) updateDiplomacyPanel();
+    }
+
+    function openDiplomacyPendingById(id: string): void {
+      const p = pendingDiplomacyInbox.find(x => x.id === id);
+      if (!p) return;
+      showDiplomacyPendingModal(
+        {
+          id: p.id,
+          civName: p.civName,
+          title: p.civName + ': ' + diploPendingTitle(p.cmdType),
+          detail: p.reason || diploPendingTitle(p.cmdType),
+        },
+        () => resolvePendingDiplomacy(p.id, true),
+        () => resolvePendingDiplomacy(p.id, false),
+      );
+    }
+
+    /** A1-Q18: API inbox dla UI / testów. */
+    function getPendingDiplomacyDecisions(): ReadonlyArray<{
+      id: string; ownerId: number; civName: string; cmdType: string; reason: string;
+    }> {
+      return pendingDiplomacyInbox;
+    }
+
+    function buildHudState(): HudState {
+      let epokaPostep = 0;
+      if (player.badana !== null) {
+        const techDef = data.tech.find(t => t.Technologia === player.badana);
+        const koszt = techDef && typeof techDef['Koszt nauki'] === 'number'
+          ? applyTempoKoszt(techDef['Koszt nauki'], player.tempoGry ?? 'standardowa') : 0;
+        epokaPostep = koszt > 0 ? Math.min(1, player.nauka / koszt) : 0;
+      }
+      const pc = cities.filter(c => c.ownerId === 0);
+      const pop = pc.reduce((s, c) => s + c.population, 0);
+      const pobor = empirePoborTotals(cities, 0, player.era);
+      const chips = collectDiploChipCounts();
+      const power = objectivePowerForOwner(0);
+      const foodTick = getLastEmpireFoodTick(0);
+      const foodReserve = Math.floor(getEmpireFoodReserve(0));
+      const foodMaxCap = getEmpireFoodMaxCap(0);
+      const foodNetRate = foodTick
+        ? Math.floor(foodTick.doPanstwa - foodTick.kosztArmii)
+        : 0;
+      return {
+        zywnoscLabel: String(foodReserve),
+        zywnoscMax: foodMaxCap,
+        zywnoscRate: foodNetRate,
+        glodWojska: isArmyStarving(0),
+        zloto: Math.floor(player.skarbiec),
+        zlotoRate: Math.floor(_lastPieniadzRate),
+        praca: Math.floor(_lastPraca),
+        pracaRate: Math.floor(_lastPracaRate),
+        nauka: Math.floor(player.nauka),
+        naukaRate: Math.floor(_lastNaukaRate),
+        kultura: Math.floor(_lastKultura),
+        kulturaRate: Math.floor(_lastKulturaRate),
+        bogactwo: Math.floor(player.skarbiec),
+        bogactwoRate: Math.floor(_lastPieniadzRate),
+        ludnosc: pop,
+        ludnoscRate: Math.floor(_lastLudnoscRate),
+        rekruci: pobor.rekruci,
+        rekruciLabel: formatManpower(pobor.rekruci),
+        ludnoscAbsLabel: formatManpower(pobor.ludnoscAbsolutna),
+        power,
+        osiedla: pc.length,
+        osiedlaMax: 99,
+        tura: turn,
+        epoka: 'Epoka ' + player.era,
+        epokaPostep,
+        badana: player.badana,
+        sojusze: chips.sojusze,
+        pakty: chips.pakty,
+        wojny: chips.wojny,
+        civIconId: String(player.civType || _menuCivId || 'grecy'),
+      };
+    }
+
+    function collectWarsWithPlayer(): WarWithPlayer[] {
+      const contacted = getDiplomaticContacts();
+      const wars: WarWithPlayer[] = [];
+      for (const [key, rel] of diplomacyRelations.entries()) {
+        if ((rel as { status?: string }).status !== 'wojna') continue;
+        const parts = key.split('_').map(Number);
+        if (parts.length !== 2) continue;
+        const [a, b] = parts;
+        if (a !== 0 && b !== 0) continue;
+        const oid = a === 0 ? b! : a!;
+        if (!contacted.has(oid)) continue;
+        const civId = aiOwnerCivMap.get(oid);
+        wars.push({ civName: ownerDiploLabel(oid), civId });
+      }
+      return wars;
+    }
+
+    function collectKnownWarsBetweenOthers(): KnownWarBetweenCivs[] {
+      const contacted = getDiplomaticContacts();
+      const out: KnownWarBetweenCivs[] = [];
+      for (const [key, rel] of diplomacyRelations.entries()) {
+        if ((rel as { status?: string }).status !== 'wojna') continue;
+        const parts = key.split('_').map(Number);
+        if (parts.length !== 2) continue;
+        const [a, b] = parts;
+        if (a === 0 || b === 0) continue;
+        if (!contacted.has(a!) && !contacted.has(b!)) continue;
+        out.push({
+          civA: ownerDiploLabel(a!),
+          civB: ownerDiploLabel(b!),
+        });
+      }
+      return out;
+    }
+
+    function getDiplomaticContacts(): Set<number> {
+      return computeDiplomaticContacts(explored, cities, units);
+    }
+
+    const AUDIENCE_BASIC_IDS = new Set(['1', '2', '5', '10', '11']);
+
+    function buildDiploTreasury() {
+      return {
+        getPieniadze: (ownerId: number) =>
+          ownerId === 0 ? player.skarbiec : (aiSkarbiecByOwner.get(ownerId) ?? 0),
+        add: (ownerId: number, delta: number) => {
+          if (ownerId === 0) player.skarbiec += delta;
+          else aiSkarbiecByOwner.set(ownerId, Math.max(0, (aiSkarbiecByOwner.get(ownerId) ?? 0) + delta));
+        },
+      };
+    }
+
+    function isAllianceDealKind(rodzaj: ActiveDeal['rodzaj']): boolean {
+      const k = normalizeTreatyKind(rodzaj);
+      return k === 'sojusz_pelny' || k === 'sojusz_defensywny' || k === RodzajTraktatu.SojuszWojskowy;
+    }
+
+    /** Obwódka heksu miasta na mapie świata — kolor wg relacji z graczem (Maciej 2026-07-03). */
+    function cityMapOutlineKindForOwner(ownerId: number): CityMapOutlineKind {
+      if (ownerId === 0) return 'player';
+      const rel = getDiploRelation(0, ownerId);
+      if (rel.status === 'wojna') return 'war';
+      if (rel.status === 'sojusz') return 'ally';
+      for (const d of activeDeals) {
+        if (!isAllianceDealKind(d.rodzaj)) continue;
+        if (dealInvolvesOwners(d, 0, ownerId)) return 'ally';
+      }
+      return 'neutral';
+    }
+
+    function pairOwnerIds(a: number, b: number): [number, number] {
+      return a < b ? [a, b] : [b, a];
+    }
+
+    function dealInvolvesOwners(deal: ActiveDeal, a: number, b: number): boolean {
+      const [p0, p1] = pairOwnerIds(a, b);
+      return deal.strony[0] === p0 && deal.strony[1] === p1;
+    }
+
+    const EPOCH_LABELS_PL = ['Kamień', 'Brąz', 'Żelazo'] as const;
+
+    function epochLabelForOwner(ownerId: number): string {
+      const era = empireEpochForOwner(ownerId);
+      const idx = Math.max(0, Math.min(EPOCH_LABELS_PL.length - 1, Math.round(era) - 1));
+      return EPOCH_LABELS_PL[idx] ?? 'Kamień';
+    }
+
+    function treatyDisplayLabel(rodzaj: ActiveDeal['rodzaj']): string {
+      const k = normalizeTreatyKind(rodzaj);
+      switch (k) {
+        case RodzajTraktatu.PaktNieagresji: return 'Pakt nieagresji';
+        case 'sojusz_defensywny': return 'Sojusz defensywny';
+        case 'sojusz_pelny': return 'Sojusz pełny';
+        case RodzajTraktatu.UmowaHandlowa: return 'Umowa handlowa';
+        case RodzajTraktatu.OtwartGranice: return 'Otwarte granice';
+        case RodzajTraktatu.PrawoWojskowePrzemarszu: return 'Prawo przemarszu wojskowego';
+        case RodzajTraktatu.Wasalizacja: return 'Wasalizacja';
+        case RodzajTraktatu.Rozejm: return 'Rozejm';
+        default: return String(k);
+      }
+    }
+
+    function activeTreatiesForPair(a: number, b: number): { label: string; detail?: string }[] {
+      return activeDeals
+        .filter(d => dealInvolvesOwners(d, a, b))
+        .map(d => ({
+          label: treatyDisplayLabel(d.rodzaj),
+          detail: d.wygasaTura !== null ? `wygasa t.${d.wygasaTura}` : undefined,
+        }));
+    }
+
+    function syncRelationFromDeals(a: number, b: number): void {
+      const rel = getDiploRelation(a, b);
+      if (rel.status === 'wojna') return;
+      const hasSojusz = activeDeals.some(
+        d => dealInvolvesOwners(d, a, b) && isAllianceDealKind(d.rodzaj),
+      );
+      const hasNap = hasTreaty(activeDeals, a, b, RodzajTraktatu.PaktNieagresji);
+      if (hasSojusz) {
+        setDiploRelation(a, b, { ...rel, status: 'sojusz' });
+      } else if (hasNap) {
+        setDiploRelation(a, b, { ...rel, status: 'pokoj' });
+      }
+    }
+
+    function breakTreatiesOnWar(a: number, b: number, breakerIsPlayer: boolean): void {
+      suspendZlozeOnWar(a, b);
+      const brokenIds = treatiesBrokenByWar(activeDeals, a, b);
+      if (!brokenIds.length) return;
+      activeDeals = removeTreatiesById(activeDeals, brokenIds);
+      const cur = getDiploRelation(a, b);
+      const ev = breakerIsPlayer ? 'zlamana_obietnica' as const : 'zlamana_obietnica_ai' as const;
+      setDiploRelation(a, b, applyDiplomaticEvent(cur, ev));
+    }
+
+    function applyAllianceObligationsOnWar(attackerId: number, victimId: number): void {
+      const obligations = allianceObligationsForWarDeclaration(activeDeals, attackerId, victimId);
+      const joinedWarOwnerIds: number[] = [attackerId, victimId];
+
+      for (const ob of obligations) {
+        for (const allyId of ob.obligatedAllies) {
+          if (joinedWarOwnerIds.includes(allyId)) continue;
+          if (getDiploRelation(allyId, ob.mustDeclareWarOn).status === 'wojna') {
+            joinedWarOwnerIds.push(allyId);
+            continue;
+          }
+
+          if (allyId === 0) {
+            const targetLabel = ownerDiploLabel(ob.mustDeclareWarOn);
+            showHintMessage('Sojusznik wymaga wojny z: ' + targetLabel, 4500);
+          } else if (ob.mustDeclareWarOn === 0) {
+            showHintMessage(
+              '\u2694 Sojusznik ' + ownerDiploLabel(allyId) + ' dołącza do wojny z tobą!',
+              4500,
+            );
+          } else if (victimId === 0 || attackerId === 0) {
+            showHintMessage(
+              '\u2694 Sojusznik ' + ownerDiploLabel(allyId) + ' wchodzi do wojny z: ' + ownerDiploLabel(ob.mustDeclareWarOn),
+              4500,
+            );
+          }
+
+          breakTreatiesOnWar(allyId, ob.mustDeclareWarOn, allyId === 0);
+          setDiploRelation(
+            allyId,
+            ob.mustDeclareWarOn,
+            applyDiplomaticEvent(getDiploRelation(allyId, ob.mustDeclareWarOn), 'wojna_wypowiedziana'),
+          );
+          joinedWarOwnerIds.push(allyId);
+        }
+      }
+
+      const brokenTreatyIds = treatiesBrokenByRefusal(obligations, joinedWarOwnerIds);
+      if (brokenTreatyIds.length) {
+        const brokenSet = new Set(brokenTreatyIds);
+        const playerRefusalAllies = new Set<number>();
+        for (const deal of activeDeals) {
+          if (!brokenSet.has(deal.id)) continue;
+          if (deal.strony[0] === 0) playerRefusalAllies.add(deal.strony[1]);
+          else if (deal.strony[1] === 0) playerRefusalAllies.add(deal.strony[0]);
+        }
+        activeDeals = removeTreatiesById(activeDeals, brokenTreatyIds);
+        for (const allyId of playerRefusalAllies) {
+          showHintMessage(
+            'Sojusz zerwany — ' + ownerDiploLabel(allyId) + ' nie wszedł do wojny',
+            4500,
+          );
+          syncRelationFromDeals(0, allyId);
+        }
+      }
+    }
+
+    function runDiplomacyTurnTick(): void {
+      activeDeals = expireTreaties(activeDeals, turn);
+      const treasury = buildDiploTreasury();
+      const payDeals = activeDealsToPaymentDeals(activeDeals, turn);
+      const { broken, messages } = tickDiplomacyPayments(payDeals, treasury, turn);
+      const tributeBreaks = tributeBreakPairsFromDeals(activeDeals, broken);
+      for (const pair of tributeBreaks) {
+        const { payerOwnerId, receiverOwnerId } = pair;
+        const cur = getDiploRelation(payerOwnerId, receiverOwnerId);
+        setDiploRelation(payerOwnerId, receiverOwnerId, applyDiplomaticEvent(cur, 'trybut_odmowa'));
+        if (payerOwnerId === 0) {
+          showHintMessage('Trybut zerwany — brak środków w skarbcu', 3500);
+        } else if (receiverOwnerId === 0) {
+          showHintMessage(
+            'Trybut zerwany — casus belli przeciw ' + ownerDiploLabel(payerOwnerId),
+            3500,
+          );
+        }
+      }
+      for (const id of broken) {
+        activeDeals = removeTreatiesById(activeDeals, [id]);
+        if (!tributeBreaks.some(p => p.dealId === id)) {
+          showHintMessage('Trybut zerwany — brak środków w skarbcu', 3500);
+        }
+      }
+      for (const msg of messages) console.log('[Dyplomacja]', msg);
+      for (const oid of getDiplomaticContacts()) {
+        if (oid === 0) continue;
+        const meta = getDiploPairMeta(0, oid);
+        if (meta.dobraWolaRemainingTur > 0) {
+          const rel = getDiploRelation(0, oid);
+          const ticked = tickDobraWolaOnRelation(rel, meta);
+          setDiploRelation(0, oid, ticked.rel);
+          setDiploPairMeta(0, oid, ticked.meta);
+        }
+        syncRelationFromDeals(0, oid);
+      }
+      applyBorderMarchPenaltiesEndTurn();
+    }
+
+    function getKnownRivalsFor(partnerId: number): Array<{ ownerId: number; label: string }> {
+      const contacted = getDiplomaticContacts();
+      const out: Array<{ ownerId: number; label: string }> = [];
+      for (const oid of contacted) {
+        if (oid === partnerId || oid === 0) continue;
+        if (getDiploRelation(partnerId, oid).status === 'wojna') {
+          out.push({ ownerId: oid, label: ownerDiploLabel(oid) });
+        }
+      }
+      return out;
+    }
+
+    function getSellableTechForPlayer(): Array<{ id: string; label: string; suggestedPrice: number }> {
+      return Array.from(player.zbadane).map(slug => ({
+        id: slug,
+        label: techNameFromSlug(slug) ?? slug,
+        suggestedPrice: 50 + player.era * 20,
+      })).slice(0, 12);
+    }
+
+    function buildProposalEvalContext(proposerId: number, responderId: number): ProposalEvalContext {
+      const rel = getDiploRelation(proposerId, responderId);
+      const potProposer = objectivePowerByOwner.get(proposerId)?.power ?? 0;
+      const potResponder = objectivePowerByOwner.get(responderId)?.power ?? 0;
+      const proposerRespekt = computeRespekt(potProposer, potResponder);
+      const responderRespekt = computeRespekt(potResponder, potProposer);
+      const militaryRatio = militaryRatioFromArmyM(
+        sumArmyMForOwner(proposerId),
+        sumArmyMForOwner(responderId),
+      );
+      const potSum = potProposer + potResponder;
+      const respektWzgledny = potSum > 0 ? potProposer / potSum : 0.5;
+      const aiCivId = aiOwnerCivMap.get(responderId) ?? aiOwnerCivMap.get(proposerId) ?? 'grecy';
+      const proposerTyp = proposerId === 0
+        ? ((player.civType ?? 'rzymianie') as TypCywilizacji)
+        : ((aiOwnerCivMap.get(proposerId) ?? 'grecy') as TypCywilizacji);
+      const responderTyp = responderId === 0
+        ? ((player.civType ?? 'rzymianie') as TypCywilizacji)
+        : ((aiCivId) as TypCywilizacji);
+      return {
+        relation: rel,
+        stanWojny: rel.status === 'wojna',
+        turn,
+        epoka: player.era,
+        proposerRespekt,
+        responderRespekt,
+        militaryRatio,
+        respektWzgledny,
+        ekspansjaPrzyGranicy:
+          cities.filter(c => c.ownerId === responderId).length > 2 &&
+          cities.filter(c => c.ownerId === proposerId).length > 2,
+        fairTradeValue: 20,
+        activeDeals,
+        proposerPlayer: { ownerId: proposerId, typCywilizacji: proposerTyp } as unknown as Player,
+        responderPlayer: { ownerId: responderId, typCywilizacji: responderTyp } as unknown as Player,
+      };
+    }
+
+    function applyProposalOutcome(
+      proposerId: number,
+      responderId: number,
+      result: ReturnType<typeof evaluateProposal>,
+      payload: ProposalPayload,
+      cywAction: string,
+    ): void {
+      showDiplomacyProposalBanner(result.accepted, result.reason);
+      if (!result.accepted) {
+        if (cywAction === 'trybut_zadanie' || cywAction === 'trybut_oferta') {
+          const cur = getDiploRelation(proposerId, responderId);
+          setDiploRelation(proposerId, responderId, applyDiplomaticEvent(cur, 'trybut_odmowa'));
+        }
+        return;
+      }
+      if (result.deal) {
+        activeDeals = applyAcceptedProposal(activeDeals, result);
+        syncRelationFromDeals(proposerId, responderId);
+      }
+      if (result.oneShotTrade) {
+        executePnDealTransfer(proposerId, responderId, payload);
+        const { givePn, receivePn } = resolveProposalPn(payload);
+        const isGift = payload.isGift === true
+          || ((payload.giveItems?.length ?? 0) > 0 && !(payload.receiveItems?.length) && (payload.receivePn ?? 0) <= 0);
+        if (cywAction === 'handel') {
+          applyPnTrustForPair(proposerId, responderId, givePn, receivePn, isGift);
+          const cur = getDiploRelation(proposerId, responderId);
+          setDiploRelation(proposerId, responderId, applyDiplomaticEvent(cur, isGift ? 'dar' : 'handel'));
+        } else if (cywAction === 'trybut_oferta') {
+          const cur = getDiploRelation(proposerId, responderId);
+          setDiploRelation(proposerId, responderId, applyDiplomaticEvent(cur, 'trybut_oferta_przyjeta'));
+        }
+      } else if (cywAction === 'trybut_zadanie') {
+        const cur = getDiploRelation(proposerId, responderId);
+        setDiploRelation(proposerId, responderId, applyDiplomaticEvent(cur, 'trybut_zaakceptowany'));
+      }
+    }
+
+    function handleNegotiatedProposal(ownerId: number, payload: NegotiationPayload): void {
+      const cywAction = proposalActionIdFromPayload(payload);
+      const uiPayload: ProposalPayload = {
+        turns: payload.turns,
+        goldPerTurn: payload.goldPerTurn,
+        goldOnce: payload.goldOnce,
+        resource: payload.resource,
+        amount: payload.amount,
+        targetOwnerId: payload.targetOwnerId,
+        borderMilitary: payload.borderMilitary,
+        techId: payload.techId,
+        bribeGold: payload.bribeGold,
+        techPrice: payload.techId ? (payload.goldOnce ?? 50) : undefined,
+        givePn: (payload as NegotiationPayload & { givePn?: number }).givePn,
+        receivePn: (payload as NegotiationPayload & { receivePn?: number }).receivePn,
+        giveItems: (payload as NegotiationPayload & { giveItems?: BasketItem[] }).giveItems,
+        receiveItems: (payload as NegotiationPayload & { receiveItems?: BasketItem[] }).receiveItems,
+        isGift: (payload as NegotiationPayload & { isGift?: boolean }).isGift,
+      };
+      const proposal = {
+        actionId: cywAction as import('./game/diplomacy-proposals').ProposalActionId,
+        proposerOwnerId: 0,
+        responderOwnerId: ownerId,
+        payload: uiPayload,
+      };
+      const ctx = buildProposalEvalContext(0, ownerId);
+      const result = evaluateProposal(proposal, ctx);
+      applyProposalOutcome(0, ownerId, result, uiPayload, cywAction);
+    }
+
+    function diplomacyActionIdFromLabel(akcja: string): string {
+      const m = /^(\d+)/.exec(akcja);
+      return m ? m[1]! : akcja;
+    }
+
+    function buildAudienceActions(
+      ownerId: number,
+      layer: ReturnType<typeof diplomacyLayerForOwner>,
+    ): AudienceAction[] {
+      const rel = getDiploRelation(0, ownerId);
+      const tier = relationTier(rel);
+      const contact = diplomaticContactEstablished.has(ownerId);
+      const isSimplified = layer === 'simplified';
+      const akcje = (data.diplomacy as { akcje_dyplomatyczne?: Array<Record<string, string>> }).akcje_dyplomatyczne ?? [];
+      const out: AudienceAction[] = [];
+
+      for (const row of akcje) {
+        const raw = row['Akcja'] ?? '';
+        const id = diplomacyActionIdFromLabel(raw);
+        if (isSimplified && !AUDIENCE_BASIC_IDS.has(id)) continue;
+
+        const label = raw.replace(/^\d+\.\s*/, '');
+        let enabled = true;
+        let tooltip = row['Opis'] ?? '';
+
+        if (!contact && id !== '1') {
+          enabled = false;
+          tooltip = 'Najpierw nawiąż kontakt';
+        } else if (id === '1' && contact) {
+          enabled = false;
+          tooltip = 'Kontakt już nawiązany';
+        } else if (id === '11') {
+          if (tier === 0) { enabled = false; tooltip = 'Już w stanie wojny'; }
+          else if (!playerDiplomacyActionAllowed(layer, 'war')) {
+            enabled = false;
+            tooltip = 'Niedostępne';
+          }
+        } else if (id === '10') {
+          if (tier !== 0) { enabled = false; tooltip = 'Brak aktywnej wojny'; }
+        } else if (id === '5' && !playerDiplomacyActionAllowed(layer, 'trade')) {
+          enabled = false;
+          tooltip = 'Handel niedostępny';
+        } else if (id === '2') {
+          if (rel.status === 'wojna') { enabled = false; tooltip = 'Niedostępne w wojnie'; }
+          else if (((rel as { zaufanie?: number }).zaufanie ?? 0) < 40) {
+            enabled = false; tooltip = 'Wymagane zaufanie ≥ 40';
+          } else if (hasTreaty(activeDeals, 0, ownerId, RodzajTraktatu.PaktNieagresji)) {
+            enabled = false; tooltip = 'Pakt już obowiązuje';
+          }
+        } else if (id === '3') {
+          if (rel.status === 'wojna') { enabled = false; tooltip = 'Niedostępne w wojnie'; }
+          else if (((rel as { zaufanie?: number }).zaufanie ?? 0) < 60) {
+            enabled = false; tooltip = 'Wymagane zaufanie ≥ 60';
+          }
+        } else if (id === '4') {
+          if (rel.status === 'wojna') { enabled = false; tooltip = 'Niedostępne w wojnie'; }
+          else if (((rel as { zaufanie?: number }).zaufanie ?? 0) < 30) {
+            enabled = false; tooltip = 'Zbyt niskie zaufanie';
+          }
+        } else if (id === '6') {
+          if (getSellableTechForPlayer().length === 0) {
+            enabled = false; tooltip = 'Brak technologii do wymiany';
+          }
+        } else if (id === '7') {
+          if (((rel as { zaufanie?: number }).zaufanie ?? 0) < 50) {
+            enabled = false; tooltip = 'Wymagane zaufanie ≥ 50';
+          } else if (getKnownRivalsFor(ownerId).length === 0) {
+            enabled = false; tooltip = 'Brak znanych celów wojny';
+          }
+        } else if (id === '8') {
+          if (rel.status === 'wojna') { enabled = false; tooltip = 'Niedostępne w wojnie'; }
+        } else if (id === '9') {
+          if (rel.status === 'wojna') { enabled = false; tooltip = 'Ultimatum wymaga pokoju'; }
+        } else if (id === '12') {
+          if (rel.status === 'wojna') { enabled = false; tooltip = 'Niedostępne w wojnie'; }
+          else if (((rel as { zaufanie?: number }).zaufanie ?? 0) < 40) {
+            enabled = false; tooltip = 'Zbyt niskie zaufanie';
+          }
+        } else if (id === '13') {
+          if (rel.status === 'wojna') { enabled = false; tooltip = 'Dar niedostępny w wojnie'; }
+          else if (relationTotal(rel) < diplomacyProgDarRelacja()) {
+            enabled = false;
+            tooltip = 'Wymagana Relacja ≥ ' + diplomacyProgDarRelacja();
+          }
+        }
+
+        out.push({ id, label, enabled, tooltip, opis: row['Opis'] });
+      }
+      return out;
+    }
+
+    function applyAudienceAction(ownerId: number, actionId: string, payload?: NegotiationPayload): void {
+      const civName = ownerDiploLabel(ownerId);
+      const layer = diplomacyLayerForOwner(
+        ownerId,
+        simplifiedDiplomacyOwners,
+        foreignTypeOwners,
+        getDiplomaticContacts(),
+      );
+
+      if (payload) {
+        handleNegotiatedProposal(ownerId, payload);
+        updateDiplomacyAudience();
+        updateDiplomacyPanel();
+        updateHud();
+        return;
+      }
+      if (actionNeedsNegotiation(actionId)) return;
+
+      if (actionId === '11') {
+        showWarConfirmModal(civName, () => {
+          if (!playerDiplomacyActionAllowed(layer, 'war')) return;
+          breakTreatiesOnWar(0, ownerId, true);
+          applyAllianceObligationsOnWar(0, ownerId);
+          setDiploRelation(0, ownerId, applyDiplomaticEvent(getDiploRelation(0, ownerId), 'wojna_wypowiedziana'));
+          showHintMessage('\u2694 Wypowiedziałeś wojnę: ' + civName, 4500);
+          updateDiplomacyAudience();
+          updateDiplomacyPanel();
+          updateHud();
+        });
+        return;
+      }
+
+      switch (actionId) {
+        case '1':
+          diplomaticContactEstablished.add(ownerId);
+          showHintMessage('Nawiązano kontakt dyplomatyczny: ' + civName, 4000);
+          break;
+        case '10':
+          if (!playerDiplomacyActionAllowed(layer, 'peace')) return;
+          setDiploRelation(0, ownerId, applyDiplomaticEvent(getDiploRelation(0, ownerId), 'pokoj'));
+          showHintMessage('\u{1F54A} Pokój z: ' + civName, 4000);
+          break;
+        case '5':
+          if (!playerDiplomacyActionAllowed(layer, 'trade')) return;
+          showHintMessage('Handel — użyj formularza negocjacji', 3000);
+          break;
+        default:
+          showHintMessage('Akcja dyplomatyczna (wkrótce): ' + civName, 3000);
+      }
+      updateDiplomacyAudience();
+      updateDiplomacyPanel();
+      updateHud();
+    }
+
+    function openDiplomacyAudience(ownerId: number): void {
+      diplomacyAudienceOwnerId = ownerId;
+      const playerCivName = String(player.civType || 'Gracz');
+      showDiplomacyAudience({
+        ownerId,
+        getState: () => {
+          const contacted = getDiplomaticContacts();
+          if (!contacted.has(ownerId)) return null;
+          const rel = getDiploRelation(0, ownerId);
+          const layer = diplomacyLayerForOwner(
+            ownerId,
+            simplifiedDiplomacyOwners,
+            foreignTypeOwners,
+            contacted,
+          );
+          const zaufanieNorm = Math.round(Math.max(0, Math.min(100, rel.zaufanie ?? 0)));
+          const playerPower = objectivePowerForOwner(0);
+          const otherPower = objectivePowerForOwner(ownerId);
+          const powerLine = formatPowerRelationLine(playerPower, otherPower);
+          const respektNorm = powerLine.respekt;
+          const pairMeta = getDiploPairMeta(0, ownerId);
+          return {
+            playerTitle: 'Władca',
+            playerCivName,
+            otherTitle: 'Przedstawiciel',
+            otherCivName: ownerDiploLabel(ownerId),
+            zaufanie: zaufanieNorm,
+            respekt: respektNorm,
+            relacjaTotal: zaufanieNorm + respektNorm,
+            trustPnGainedThisTurn: pairMeta.trustPnGainedThisTurn,
+            progDarRelacja: diplomacyProgDarRelacja(),
+            playerPower,
+            otherPower,
+            powerRatioLabel: powerLine.ratioLabel,
+            personalityTags: diplomacyPersonalityTags(civKeyForOwner(ownerId)),
+            activeTreaties: activeTreatiesForPair(0, ownerId),
+            otherEpochLabel: epochLabelForOwner(ownerId),
+            thresholds: {
+              sojuszZaufanie: _diplomacyParams.progSojuszZaufanie,
+              techZaufanie: _diplomacyParams.progWymianaTechZaufanie,
+            },
+            tier: relationTier(rel),
+            layer: layer === 'pre_contact' ? 'full' : layer,
+            contactEstablished: diplomaticContactEstablished.has(ownerId),
+            actions: buildAudienceActions(ownerId, layer),
+          };
+        },
+        onAction: applyAudienceAction,
+        onBack: () => {
+          hideDiplomacyAudience();
+          diplomacyAudienceOwnerId = null;
+          if (d1bHudActive) {
+            showDiploListHud();
+            refreshD1bHud();
+          } else {
+            updateDiplomacyPanel();
+          }
+        },
+        getCivBonusy: civBonusyForOwnerId,
+        getNegotiationContext: () => ({
+          civName: ownerDiploLabel(ownerId),
+          rivalOptions: getKnownRivalsFor(ownerId),
+          techOptions: getSellableTechForPlayer(),
+          borderFeeCivil: 20,
+          borderFeeMilitary: 40,
+        }),
+      });
+    }
+
+    function buildDiplomacyPanelConfig(): DiplomacyPanelConfig {
+      return {
+        getRelations: () => buildPlayerDiploRelations(),
+        getKnownWarsBetweenOthers: collectKnownWarsBetweenOthers,
+        onOpenAudience: (ownerId: number) => openDiplomacyAudience(ownerId),
+        getCivBonusy: civBonusyForOwnerId,
+      };
+    }
+
+    const HEX_NEIGHBOR_DIRS: ReadonlyArray<readonly [number, number]> = [
+      [+1, 0], [-1, 0], [0, +1], [0, -1], [+1, -1], [-1, +1],
+    ];
+
+    function playerUnitsOnHex(q: number, r: number) {
+      return units.filter(u => u.ownerId === 0 && u.q === q && u.r === r);
+    }
+
+    function hasAdjacentPlayerArmy(q: number, r: number): boolean {
+      for (const [dq, dr] of HEX_NEIGHBOR_DIRS) {
+        if (playerUnitsOnHex(q + dq, r + dr).length > 0) return true;
+      }
+      return false;
+    }
+
+    function buildArmyStackHudState(): ArmyStackHudState | null {
+      if (selectedId === null) return null;
+      const active = units.find(x => x.id === selectedId);
+      if (!active || active.ownerId !== 0) return null;
+      const stack = playerUnitsOnHex(active.q, active.r);
+      const cards = stack.map(u => {
+        const udef = lookupUnitDef(u.typeId);
+        const hpMax = unitHealth(udef);
+        const movMax = normFieldVal(udef['Ruch'], 2);
+        return {
+          id: u.id,
+          name: u.typeId,
+          icon: '\u2694\uFE0F',
+          hp: hpMax,
+          hpMax,
+          ruchLeft: u.ruchLeft,
+          ruchMax: movMax,
+          active: u.id === selectedId,
+        };
+      });
+      const def = lookupUnitDef(active.typeId);
+      const siegeCity = active.oblegaCityId
+        ? cities.find(c => c.id === active.oblegaCityId)
+        : null;
+      const actions: ArmyStackHudState['actions'] = [];
+      if (siegeCity) {
+        actions.push({ id: 'siege-hold', label: 'Oblega', disabled: true });
+      } else if (active.ruchLeft > 0) {
+        actions.push({ id: 'move', label: 'Ruch', primary: true });
+      }
+      if (!siegeCity) {
+        actions.push({ id: 'fortify', label: 'Ufort.', disabled: active.ruchLeft <= 0 });
+      }
+      actions.push({ id: 'skip', label: 'Pomi\u0144', disabled: siegeCity !== null });
+      return {
+        hexLabel: siegeCity
+          ? '(' + active.q + ',' + active.r + ') \u00b7 Oblega ' + siegeCity.name
+          : '(' + active.q + ',' + active.r + ')',
+        unitCount: stack.length,
+        cards,
+        atk: unitAtak(def),
+        def: unitObrona(def),
+        mov: normFieldVal(def['Ruch'], 2),
+        rng: normFieldVal(def['Zasi\u0119g'] ?? def['Zasieg'], 0),
+        hp: unitHealth(def),
+        hpMax: unitHealth(def),
+        actions,
+      };
+    }
+
+    function hasAutosaveSlot(): boolean {
+      try { return !!loadFromLocal('autosave'); } catch { return false; }
+    }
+
+    function openStartupMainMenu(): void {
+      showMainMenu({
+        hasSave: hasAutosaveSlot,
+        onNewGame: () => {
+          hideMainMenu();
+          showNewGameFlow({
+            data,
+            onStart: (params: NewGameParams) => void doStartGame(params),
+            onCancel: () => { hideNewGameFlow(); showMainMenu(); },
+          });
+        },
+        onPlaytestWalka: () => doStartPlaytestWalkaMapy(),
+        onPlaytestMiasto: () => doStartPlaytestMiastoEkonomia(),
+        onPlaytestMapa: () => doStartPlaytestMapaSwiata(),
+        onContinue: () => doLoadGame(),
+        onLoad: () => doLoadGame(),
+        onAbout: () => { /* future */ },
+        onPerfTest: () => showPerfTestPanel(),
+        onQuit: () => { /* future - na stronie nie ma gdzie wyjść */ },
+      });
+    }
+
+    configureGamePauseMenu({
+      hasSave: hasAutosaveSlot,
+      onResume: () => { /* gra już widoczna pod overlayem */ },
+      onSave: () => { doQuickSave(true); },
+      onLoad: () => { doLoadGame(true); },
+      onNewGame: () => {
+        showNewGameFlow({
+          data,
+          onStart: (params: NewGameParams) => void doStartGame(params),
+          onCancel: () => { hideNewGameFlow(); },
+        });
+      },
+      onMainMenu: () => { openStartupMainMenu(); },
+    });
+
+    function mountD1bHud(): void {
+      d1bHudActive = true;
+      createCityListHud({
+        getCities: buildPlayerCityListEntries,
+        onSelectCity: (cityId) => {
+          const c = cities.find(x => x.id === cityId);
+          if (!c || c.ownerId !== 0) return;
+          hideArmyListHud();
+          openCityPanelForPlayer(c);
+          refreshD1bHud();
+        },
+        onClose: () => refreshD1bHud(),
+      });
+      createArmyListHud({
+        getArmies: buildPlayerArmyListEntries,
+        onSelectArmy: (unitId) => {
+          selectPlayerUnit(unitId);
+          refreshD1bHud();
+        },
+        onClose: () => refreshD1bHud(),
+      });
+      createDiploListHud({
+        getEntries: buildPlayerDiploListEntries,
+        onSelectEntry: (ownerId) => {
+          hideDiploListHud();
+          openDiplomacyAudience(ownerId);
+          refreshD1bHud();
+        },
+        onClose: () => refreshD1bHud(),
+        getCivBonusy: civBonusyForOwnerId,
+      });
+      createScienceHubHud({
+        getProgress: () => {
+          const snap = getScienceHubSnapshot(0);
+          const hs = buildHudState();
+          if (snap.progress) snap.progress.naukaRate = hs.naukaRate;
+          return snap.progress;
+        },
+        getEntries: () => getScienceHubSnapshot(0).entries,
+        onSelectTech: (techId) => {
+          selectPlayerResearchSlug(techId);
+          refreshD1bHud();
+        },
+        onOpenFullTree: () => openScienceTreeDocked(),
+        onShowInTree: (techId) => openScienceTreeDocked(techId),
+        onClose: () => {
+          hideSciencePicker();
+          refreshD1bHud();
+        },
+        isTreeOpen: () => isSciencePickerOpen(),
+      });
+      createWikiHubHud({
+        onClose: () => refreshD1bHud(),
+      });
+
+      showHud({
+        getState: buildHudState,
+        getPowerOverlay: buildPowerOverlayData,
+        getCultureOverlay: buildCultureOverlayData,
+        getReligionOverlay: buildReligionOverlayData,
+        getYearLabel: () => Math.max(0, 4000 - turn * 50) + ' p.n.e.',
+        onExecutePending: () => executeFirstBlockingEvent(),
+        canEndTurn: () => !playtestWalkaActive && countBlockingEvents() === 0,
+        hideEndTurn: () => playtestWalkaActive,
+        getBlockingCount: () => countBlockingEvents(),
+        onEndTurn: () => {
+          if (playtestWalkaActive) return;
+          window.dispatchEvent(new KeyboardEvent('keydown', { key: 'n', bubbles: true }));
+        },
+        onOpenMenu: () => {
+          if (isMainMenuOpen() || isNewGameFlowOpen()) return;
+          toggleGamePauseMenu();
+        },
+        onOpenDiplomacy: () => toggleDiploListFromToolbar(),
+        onDiploChip: () => toggleDiploListFromToolbar(),
+        onOpenScience: () => toggleScienceHubFromToolbar(),
+        onOpenEmpireDetail: (section) => openEmpireDetailFromHud(section),
+        onOpenWiki: () => toggleWikiFromToolbar(),
+        isWikiActive: () => isWikiHubHudOpen(),
+        mapToolbar: {
+          onOpenCities: () => {
+            clearPlayerUnitSelection();
+            if (isCityListHudOpen() && !isCityPanelOpen()) {
+              hideCityListHud();
+              refreshD1bHud();
+              return;
+            }
+            closeAllMapToolbarModes();
+            showCityListHud();
+            refreshD1bHud();
+          },
+          isCityListActive: () => isCityListHudOpen(),
+          onOpenScience: () => {
+            clearPlayerUnitSelection();
+            toggleScienceHubFromToolbar();
+          },
+          isScienceHubActive: () => isScienceHubHudOpen() || isSciencePickerOpen(),
+          onOpenCulture: () => {
+            clearPlayerUnitSelection();
+            toggleCultureRangeOnMap();
+          },
+          onOpenReligion: () => {
+            clearPlayerUnitSelection();
+            toggleReligionRangeOnMap();
+          },
+          onOpenWonders: () => {
+            clearPlayerUnitSelection();
+            hideWondersPicker();
+            if (buildModeOpen) {
+              exitBuildMode();
+              refreshD1bHud();
+              return;
+            }
+            closeAllMapToolbarModes();
+            buildModeOpen = true;
+            foundCityMode = false;
+            activeImprovementKey = null;
+            refreshBuildApi();
+            refreshBuildHighlight();
+            refreshD1bHud();
+          },
+          onOpenDiplomacy: () => {
+            clearPlayerUnitSelection();
+            toggleDiploListFromToolbar();
+          },
+          onOpenArmy: () => {
+            clearPlayerUnitSelection();
+            if (isArmyListHudOpen()) {
+              hideArmyListHud();
+              refreshD1bHud();
+              return;
+            }
+            closeAllMapToolbarModes();
+            showArmyListHud();
+            refreshD1bHud();
+          },
+          isArmyListActive: () => isArmyListHudOpen(),
+          isDiploListActive: () => isDiploListHudOpen(),
+          onOpenBuild: () => {
+            clearPlayerUnitSelection();
+            if (buildModeOpen) {
+              exitBuildMode();
+              refreshD1bHud();
+              return;
+            }
+            closeAllMapToolbarModes();
+            buildModeOpen = true;
+            if (isAwaitingFirstPlayerCity()) {
+              foundCityMode = true;
+              activeImprovementKey = null;
+            }
+            refreshBuildApi();
+            refreshBuildHighlight();
+            refreshD1bHud();
+          },
+          isCultureRangeActive: () => cultureRangeVisible,
+          isReligionRangeActive: () => religionRangeVisible,
+        },
+        buildMode: {
+          listTypes: () => buildApi?.listTypes() ?? [],
+          getActiveKey: () => activeImprovementKey,
+          onSelectType: (key) => {
+            foundCityMode = false;
+            activeImprovementKey = key;
+            refreshBuildApi();
+            refreshBuildHighlight();
+            refreshD1bHud();
+          },
+          onExit: () => exitBuildMode(),
+          isOpen: () => buildModeOpen,
+          canFoundCity: () => {
+            const pc = cities.filter(c => c.ownerId === 0);
+            if (pc.length === 0) return true;
+            return true;
+          },
+          getFoundCityCostLabel: () =>
+            foundCityCostLabel(!isSubsequentFoundCity(cities.filter(c => c.ownerId === 0), 0)),
+          getFoundCityLockHint: () => {
+            const pc = cities.filter(c => c.ownerId === 0);
+            if (pc.length === 0) return null;
+            const aff = evaluateFoundCityAffordance(playerPracaPool, pc, 0);
+            return aff.ok ? null : aff.reason ?? null;
+          },
+          isFoundCityActive: () => foundCityMode,
+          onSelectFoundCity: () => {
+            foundCityMode = true;
+            activeImprovementKey = null;
+            refreshBuildHighlight();
+            refreshD1bHud();
+          },
+          listWonders: () => wonderHudEntries(),
+          getWonderTargetLabel: () => wonderHudTargetLabel(),
+          onSelectWonder: (wonderId) => {
+            foundCityMode = false;
+            activeImprovementKey = null;
+            refreshBuildHighlight();
+            enqueueWonderForPlayer(wonderId);
+          },
+        },
+        armyStack: {
+          getStack: () => (isWorldMapUnitMode() ? buildArmyStackHudState() : null),
+          onSelectUnit: (id) => selectPlayerUnit(id, true),
+          onOpenArmyList: () => {
+            showArmyListHud();
+            refreshD1bHud();
+          },
+          canMerge: () => {
+            if (selectedId === null) return false;
+            const u = units.find(x => x.id === selectedId);
+            if (!u || u.ownerId !== 0) return false;
+            return hasAdjacentPlayerArmy(u.q, u.r);
+          },
+          onMerge: () => {
+            const u = selectedId !== null ? units.find(x => x.id === selectedId) : null;
+            if (!u || u.ruchLeft <= 0) return;
+            for (const [dq, dr] of HEX_NEIGHBOR_DIRS) {
+              const nq = u.q + dq;
+              const nr = u.r + dr;
+              const stack = visibleStackOnHex(units, nq, nr, u.ownerId);
+              if (stack.length === 0) continue;
+              if (reachable.has(keyOf(nq, nr))) {
+                beginMoveSelectedUnitTo(nq, nr);
+                return;
+              }
+            }
+            showHintMessage(
+              'Po\u0142\u0105czenie: klik s\u0105siedni\u0105 w\u0142asn\u0105 armi\u0119 (kursor spinacza)',
+              3500,
+            );
+          },
+          canSplit: () => {
+            if (selectedId === null) return false;
+            const u = units.find(x => x.id === selectedId);
+            if (!u || u.ownerId !== 0) return false;
+            const stack = visibleStackOnHex(units, u.q, u.r, u.ownerId);
+            if (stack.length < 2) return false;
+            return findAdjacentEmptyHexes(units, u.q, u.r, isHexPassableForUnit).length > 0;
+          },
+          onSplit: () => openSplitPanelForSelected(),
+          onAction: (actionId) => {
+            const u = selectedId !== null ? units.find(x => x.id === selectedId) : null;
+            if (!u) return;
+            if (actionId === 'skip') {
+              u.ruchLeft = 0;
+              reachable = new Set<string>();
+              unitRenderer.clearHighlight();
+              unitRenderer.clearPathRoute();
+              refreshD1bHud();
+            } else if (actionId === 'fortify') {
+              u.ruchLeft = 0;
+              reachable = new Set<string>();
+              unitRenderer.clearHighlight();
+              unitRenderer.clearPathRoute();
+              const city = cityAtUnit(u);
+              if (city !== undefined && u.ownerId === city.ownerId) {
+                u.inGarnizon = true;
+                syncGarnizonForCity(city);
+                refreshFog();
+                showHintMessage(
+                  u.typeId + ' w garnizonie \u2014 ' + city.name,
+                  2800,
+                );
+                clearPlayerUnitSelection();
+              } else {
+                showHintMessage('Ufortyfikowano (ruch zu\u017cyty)', 2000);
+              }
+              refreshD1bHud();
+            }
+          },
+          onClose: () => {
+            clearPlayerUnitSelection();
+            refreshD1bHud();
+          },
+        },
+        minimapLayers: {
+          onToggleCulture: () => toggleCultureRangeOnMap(),
+          onToggleReligion: () => toggleReligionRangeOnMap(),
+          isCultureActive: () => cultureRangeVisible,
+          isReligionActive: () => religionRangeVisible,
+        },
+        minimapPlaytestFog: minimapPlaytestFogHooks(),
+        getMinimapData: () => {
+          const vis = currentVisible();
+          return getMinimapData(
+            map,
+            cameraGroundTarget(),
+            cities.map(c => ({
+              q: c.q,
+              r: c.r,
+              ownerColor: c.ownerId === 0 ? '#ffd54a' : '#c84040',
+            })),
+            units.map(u => ({
+              q: u.q,
+              r: u.r,
+              ownerColor: u.ownerId === 0 ? '#6bc4e8' : '#e05050',
+            })),
+            { visible: vis, explored: fogExploredForRender() },
+          );
+        },
+        getWarsWithPlayer: collectWarsWithPlayer,
+        getEvents: collectTurnEvents,
+        getContextPanelMessage: () => buildContextPanelMessage(),
+        onEventClick: (id) => {
+          if (id.startsWith('diplo-pend-')) {
+            openDiplomacyPendingById(id);
+            return;
+          }
+          const prodCityId = cityIdFromProdEmptyEventId(id);
+          if (prodCityId) {
+            const city = cities.find(c => c.id === prodCityId);
+            if (city) openCityPanelForPlayer(city);
+            return;
+          }
+          if (!id.startsWith('revolt-')) return;
+          const cityId = cityIdFromRevoltEventId(id) ?? id.slice('revolt-'.length);
+          const city = cities.find(c => c.id === cityId);
+          if (city) {
+            const pos = axialToWorld(city.q, city.r, HEX_R);
+            camCtrl.focusAt(pos.x, pos.z, 22);
+            openCityPanelForPlayer(city);
+          }
+        },
+      });
+      mountEmpireDetailPanel(() => buildEmpireDetailSnap());
+    }
+
+    function updateHud(): void {
+      if (d1bHudActive) {
+        refreshD1bHud();
+        if (isEmpireDetailPanelOpen()) refreshEmpireDetailPanel();
+      }
+    }
+
+    // Initial HUD (D1B — moduł hud.ts)
+    mountD1bHud();
+    refreshObjectivePowerCache();
+    updateHud();
+
+    // Initial fog — cała mapa czarna dopóki jednostka/miasto nie odkryje (refreshFog).
+    refreshFog();
+
+    // --- Konfiguracja panelu miasta ---
+    configureCityPanel({
+      data,
+      difficulty: _menuDifficulty,
+      getCities: () => cities,
+      getEpoch: (ownerId: number) => empireEpochForOwner(ownerId),
+      getManpowerSnapshot: (cityId: string) => {
+        const c = cities.find(x => x.id === cityId);
+        if (!c) return null;
+        const ep = empireEpochForOwner(c.ownerId);
+        return cityManpowerSnapshot(c, ep, civManpowerRegenMult(civBonusyForOwnerId(c.ownerId)));
+      },
+      getOwnerColor: (ownerId: number) => (ownerId === 0 ? 0xffd54a : 0xc84040),
+      getUnlockedTechs: (_ownerId: number) => Array.from(player.zbadane),
+      getBuiltBuildingIds: (cityId: string) => cityBuilt.get(cityId) ?? [],
+      getPlacedImprovements: () => placedImprovements,
+      getProduction: (cityId: string) => {
+        const p = cityProd.get(cityId);
+        return p ? { ...p, kolejka: [...p.kolejka] } : null;
+      },
+      setProduction: (cityId: string, p: CityProduction) => {
+        setCityProduction(cityId, p);
+      },
+      getTreasury: (_ownerId: number) => player.skarbiec,
+      onRushBuy: (cityId: string, _item: any, koszt: number) => {
+        if (player.skarbiec >= koszt) {
+          player.skarbiec -= koszt;
+          const rBase = cityProd.get(cityId) ?? { kolejka: [], postep: 0 };
+          const r = rushProduction(rBase);
+          cityProd.set(cityId, r.prod);
+          if (r.completed) {
+            const rc = cities.find(ct => ct.id === cityId);
+            if (rc) {
+              const applied = applyProductionCompleted(rc, cityId, r.completed, r.prod);
+              if (applied.requeueManpower) {
+                player.skarbiec += koszt;
+                console.warn('[Rush] Brak Manpower — zwrot zlota, jednostka w kolejce');
+              }
+              cityProd.set(cityId, applied.prod);
+            }
+          }
+          updateHud();
+        }
+      },
+      onChange: (_cityId: string) => { updateHud(); },
+      onAutoManage: (cityId: string) => {
+        // Toggle auto-manage for this city (STEP D hook for UI toggle)
+        if (autoManageCities.has(cityId)) {
+          autoManageCities.delete(cityId);
+          console.log(`[AutoManage] Wylaczono dla ${cityId}`);
+        } else {
+          autoManageCities.add(cityId);
+          console.log(`[AutoManage] Wlaczono dla ${cityId}`);
+        }
+      },
+      getPodzialHandlu: (cityId: string) => cities.find(c => c.id === cityId)?.podzialHandlu ?? null,
+      getPodzialPracy: (cityId: string) => cities.find(c => c.id === cityId)?.podzialPracy ?? null,
+      onPodzialHandluChange: (cityId: string, split) => {
+        const c = cities.find(ct => ct.id === cityId);
+        if (c && c.ownerId === 0) {
+          c.podzialHandlu = { ...split };
+          updateHud();
+        }
+      },
+      onPodzialPracyChange: (cityId: string, split) => {
+        const c = cities.find(ct => ct.id === cityId);
+        if (c && c.ownerId === 0) {
+          c.podzialPracy = { procentBudynki: split.procentBudynki };
+          updateHud();
+        }
+      },
+      onPurchaseUnit: (cityId: string, itemId: string, koszt: number) => {
+        if (player.skarbiec < koszt) return;
+        const city = cities.find(ct => ct.id === cityId);
+        if (!city || city.ownerId !== 0) return;
+        const item = unitProductionItem(itemId, data);
+        if (!item) return;
+        player.skarbiec -= koszt;
+        const prod0 = cityProd.get(cityId) ?? { kolejka: [], postep: 0 };
+        cityProd.set(cityId, enqueueRecruitment(prod0, item));
+        updateHud();
+        console.log(`[Rekrutacja] ${city.name}: ${itemId} oplacone ${koszt} — kolejka`);
+      },
+      getCivBonusy: (ownerId: number) => civBonusyForOwnerId(ownerId),
+      getCivKey: (ownerId: number) => civKeyForOwnerId(ownerId),
+      getOrderState: (cityId: string) => cityOrderState.get(cityId) ?? null,
+      getTurn: () => turn,
+      getCityHealth: (cityId: string) => {
+        const city = cities.find(c => c.id === cityId);
+        if (!city) return null;
+        const builtIds = cityBuilt.get(cityId) ?? [];
+        const tiles = cityWorkedTilesForEconomy(city, map);
+        return computeCityHealthBreakdown(
+          city.population, tiles, builtIds, data.societyParams, _menuDifficulty,
+          { city, map },
+        );
+      },
+      ...extraCityPanelConfig(),
+    });
+
+    configurePreBattle({ getCivBonusy: civBonusyForOwnerId });
+
+    // --- Konfiguracja pickera badań (P1a: nowe API drzewka) ---
+    // window.__civ_getResearchedTechs: wymagany przez drzewko do oznaczenia zbadanych węzłów
+    (window as any).__civ_getResearchedTechs = () => Array.from(player.zbadane);
+
+    configureSciencePicker({
+      getResearchState: (_ownerId: number) => {
+        const st = getResearchState(player, data.tech, 0);
+        return {
+          pula:           st.pula,
+          targetId:       st.targetId ? techToSlug(st.targetId) : null,
+          kosztCelu:      st.kosztCelu,
+          postepFraction: st.postepFraction,
+          turnsLeft:      st.turnsLeft ?? 0,
+        };
+      },
+      getResearchedTechs: (_ownerId: number) => {
+        return Array.from(player.zbadane).map(techToSlug);
+      },
+      getAvailableTechs: (_ownerId: number) => {
+        return availableTechs(data.tech, player.zbadane, researchGateForOwner(0)).map(t =>
+          techToSlug((t.Technologia ?? '').trim()),
+        );
+      },
+      onSelectTarget: (techSlug: string) => {
+        selectPlayerResearchSlug(techSlug);
+      },
+      getPlayerEra: (_ownerId: number) => player.era,
+    });
+
+    // -----------------------------------------------------------------------
+    // Animation state
+    //
+    // TOKEN_LIFT mirrors the constant in units.ts (0.01 * HEX_R).
+    // sync() positions a token at:  topYAt(q,r) + TOKEN_LIFT
+    // topYAt() = terrainTopY(hex) = height + yOffset  (no lift included).
+    // We use the same formula for every waypoint so the token rests flush
+    // on the terrain surface at the start, each intermediate hex, and the
+    // final destination -- matching the snap position sync() would produce.
+    // -----------------------------------------------------------------------
+
+    /** Matches TOKEN_LIFT in units.ts exactly: 0.01 * HEX_R. */
+    const TOKEN_LIFT = 0.01 * HEX_R;
+
+    /** Duration of each per-hex glide segment in seconds. */
+    const ANIM_SEG_DUR = 0.14;
+
+    interface Waypoint { x: number; y: number; z: number; }
+
+    interface AnimState {
+      id: string;         // id of the unit being animated
+      destQ: number;      // logical destination (written to unit on completion)
+      destR: number;
+      fromQ: number;      // start hex (cofnięcie przy „Zostaw osobno”)
+      fromR: number;
+      pathLen: number;    // number of path steps (used for segment count in points)
+      cost: number;       // terrain-based movement cost (for ruchLeft deduction)
+      points: Waypoint[]; // world-space positions: [start, step1, ..., dest]
+      seg: number;        // active segment index; lerps points[seg]->points[seg+1]
+      t: number;          // interpolation param in [0,1) for the active segment
+    }
+
+    let anim: AnimState | null = null;
+    let isAnimating = false;
+
+    function syncGarnizonForCity(city: City): void {
+      city.garnizon = garnizonCountForCity(city);
+    }
+
+    function finishUnitEnterCityHex(unit: RuntimeUnit, city: City): void {
+      showHintMessage(
+        unit.typeId + ' w ' + city.name
+        + ' \u2014 Ufort., aby wesz\u0142a do garnizonu',
+        3200,
+      );
+      refreshD1bHud();
+    }
+
+    /** Animowany ruch zaznaczonej jednostki; zwraca false gdy brak ruchu / nieosiągalne. */
+    function beginMoveSelectedUnitTo(destQ: number, destR: number): boolean {
+      if (selectedId === null || isAnimating) return false;
+      if (isSiegeMapPanelOpen()) {
+        showHintMessage(
+          'Oblężenie — najpierw OBLEGAJ, Szturm lub Odwrót w panelu u dołu ekranu.',
+          3500,
+        );
+        return false;
+      }
+      if (isCityUnitPickOpen()) return false;
+      const u = units.find(x => x.id === selectedId);
+      if (!u || u.ownerId !== 0) return false;
+      if (u.oblegaCityId) {
+        const sc = cities.find(c => c.id === u.oblegaCityId);
+        showHintMessage(
+          (sc?.name ?? 'Miasto') + ': jednostka oblega — Odwrót lub Szturm (klik miasto).',
+          4000,
+        );
+        return false;
+      }
+
+      const occ = occupiedExcept(u.id);
+      const path = computePath(u, map, destQ, destR, occ);
+      if (path.length === 0) return false;
+
+      const startPl = unitRenderer.getTokenPlacement(u.q, u.r);
+      const startWP: Waypoint = {
+        x: startPl.x,
+        y: startPl.y,
+        z: startPl.z,
+      };
+      const stepWPs: Waypoint[] = path.map((hex) => {
+        const pl = unitRenderer.getTokenPlacement(hex.q, hex.r);
+        return { x: pl.x, y: pl.y, z: pl.z };
+      });
+
+      const cost = pathCost(path, map);
+      anim = {
+        id: u.id,
+        destQ,
+        destR,
+        fromQ: u.q,
+        fromR: u.r,
+        pathLen: path.length,
+        cost,
+        points: [startWP, ...stepWPs],
+        seg: 0,
+        t: 0,
+      };
+      isAnimating = true;
+      forceVisibleUnitId = u.id;
+      unitRenderer.setSelectionHex(destQ, destR);
+      syncUnitsRender();
+      unitRenderer.clearPathRoute();
+      hoverKey = null;
+      unitRenderer.clearHighlight();
+      reachable = new Set<string>();
+      return true;
+    }
+
+    // Hover route preview state: key of the hex currently under the cursor,
+    // or null when no preview is active.
+    let hoverKey: string | null = null;
+
+    // Delta-time source: track the previous frame timestamp in seconds.
+    let prevTime = performance.now() / 1000;
+    // Średnia FPS z okna ~1 s (A4 — stabilniejszy odczyt niż chwilowe 1/dt).
+    let fps1s = 60;
+    let fpsAccumFrames = 0;
+    let fpsAccumTime = 0;
+
+    window.addEventListener('keydown', (e: KeyboardEvent) => {
+      if (e.key !== 'F9') return;
+      e.preventDefault();
+      togglePerfDebugOverlay();
+    });
+    void CIV_PERF_DEBUG_MARKER;
+    (window as unknown as { __civPublishMarkers?: typeof CIV_PUBLISH_MARKERS }).__civPublishMarkers = CIV_PUBLISH_MARKERS;
+
+    // -----------------------------------------------------------------------
+    // Click vs Drag detection
+    // -----------------------------------------------------------------------
+
+    let mouseDownX = 0;
+    let mouseDownY = 0;
+    const DRAG_THRESHOLD = 6; // pixels
+
+    canvas.addEventListener('mousedown', (e: MouseEvent) => {
+      mouseDownX = e.clientX;
+      mouseDownY = e.clientY;
+    });
+
+    // -----------------------------------------------------------------------
+    // Hover route preview
+    // Shows a path preview arrow when the cursor enters a reachable hex.
+    // Recompute is skipped when the cursor stays within the same hex
+    // (hoverKey guard) -- one path computation per hex transition only.
+    // -----------------------------------------------------------------------
+
+    canvas.addEventListener('mousemove', (e: MouseEvent) => {
+      if (galleryOn) return;
+
+      // Tryb budowy — ghost miasta / ulepszenia + chip przy kursorze
+      if (buildModeOpen && (foundCityMode || activeImprovementKey)) {
+        handleBuildModeHover(e);
+        if (hoverKey !== null) { hoverKey = null; unitRenderer.clearPathRoute(); }
+        applyMapCanvasCursor(CURSOR_MAP_DEFAULT);
+        return;
+      }
+
+      const hitEarly = pixelToHex(e.clientX, e.clientY, canvas, camera, HEX_R);
+
+      // Kursory jednostek tylko na mapie świata (nie w panelu miasta / mockupie okolicy).
+      if (!isWorldMapUnitMode()) {
+        applyMapCanvasCursor(CURSOR_MAP_DEFAULT);
+        if (hoverKey !== null) { hoverKey = null; unitRenderer.clearPathRoute(); }
+        return;
+      }
+
+      // While animating or nothing selected: clear preview + domyślny kursor.
+      if (isAnimating || !selectedId) {
+        applyMapCanvasCursor(CURSOR_MAP_DEFAULT);
+        if (hoverKey !== null) { hoverKey = null; unitRenderer.clearPathRoute(); }
+        return;
+      }
+
+      const uSel = units.find(x => x.id === selectedId);
+      if (!uSel || uSel.ownerId !== 0) {
+        applyMapCanvasCursor(CURSOR_MAP_DEFAULT);
+        if (hoverKey !== null) { hoverKey = null; unitRenderer.clearPathRoute(); }
+        return;
+      }
+
+      if (!hitEarly) {
+        applyMapCanvasCursor(CURSOR_MAP_DEFAULT);
+        if (hoverKey !== null) { hoverKey = null; unitRenderer.clearPathRoute(); }
+        return;
+      }
+
+      applyMapCanvasCursor(resolveMapUnitCursor({
+        selected: uSel,
+        hoverQ: hitEarly.q,
+        hoverR: hitEarly.r,
+        reachable,
+        units,
+        cities,
+        hexDistance,
+        keyOf,
+      }));
+
+      const k = keyOf(hitEarly.q, hitEarly.r);
+      if (k === hoverKey) return;
+      hoverKey = k;
+      lastBHex = { q: hitEarly.q, r: hitEarly.r };
+
+      if (!reachable.has(k)) { unitRenderer.clearPathRoute(); return; }
+
+      const path = computePath(uSel, map, hitEarly.q, hitEarly.r, occupiedExcept(uSel.id));
+      if (path.length > 0) {
+        unitRenderer.setPathRoute([{ q: uSel.q, r: uSel.r }, ...path]);
+      } else {
+        unitRenderer.clearPathRoute();
+      }
+    });
+
+    canvas.addEventListener('mouseleave', () => {
+      applyMapCanvasCursor(CURSOR_MAP_DEFAULT);
+    });
+
+    canvas.addEventListener('mouseup', (e: MouseEvent) => {
+      const dx = e.clientX - mouseDownX;
+      const dy = e.clientY - mouseDownY;
+      const moveDist = Math.sqrt(dx * dx + dy * dy);
+      const placementClick = foundCityMode || (buildModeOpen && activeImprovementKey);
+      if (moveDist >= DRAG_THRESHOLD && !placementClick) return; // was a drag -- skip click logic
+
+      // Gallery mode: disable all unit interaction.
+      if (galleryOn) return;
+
+      // Lock all unit interaction while animation is running.
+      // Camera pan/zoom/WASD is NOT blocked (handled by CameraController
+      // which listens on its own events independent of this handler).
+      if (isAnimating) return;
+
+      if (isPostBattleSummaryOpen()) return;
+
+      if (isPointOverCityPanelUi(e.clientX, e.clientY)) return;
+      if (isCityUnitPickOpen()) return;
+
+      // Treat as a click at (e.clientX, e.clientY)
+      const hit = pixelToHex(e.clientX, e.clientY, canvas, camera, HEX_R);
+      if (!hit) {
+        if (foundCityMode) {
+          showHintMessage('Kliknij w heks lądu (podświetlony obszar startu)', 2500);
+          return;
+        }
+        if (!isCityPanelOpen()) {
+          dismissMapOverlayModes();
+          clearPlayerUnitSelection();
+          refreshD1bHud();
+        }
+        return;
+      }
+
+      if (isSiegeMapPanelOpen()) {
+        const clickedCity = cities.find(c => c.q === hit.q && c.r === hit.r);
+        if (clickedCity?.oblegane) {
+          const besieger = units.find(
+            u => u.ownerId !== clickedCity.ownerId &&
+              hexDistance(u.q, u.r, clickedCity.q, clickedCity.r) === 1,
+          );
+          if (besieger) {
+            syncSiegePanelMeta(clickedCity);
+            showSiegeMapPanel(
+              classifyCityAttack(besieger, clickedCity, units),
+              siegePanelActions,
+              siegeTurnByCity.get(clickedCity.id) ?? 1,
+            );
+          }
+        } else {
+          showHintMessage(
+            'Oblężenie — wybierz OBLEGAJ, Szturm lub Odwrót w panelu.',
+            2800,
+          );
+        }
+        return;
+      }
+
+      // Record the clicked hex so B (found city) can use it.
+      lastBHex = { q: hit.q, r: hit.r };
+
+      // Panel miasta (Civ V): klik heksu w okolicy = przypisz / zabierz 👤
+      if (isCityPanelOpen()) {
+        const panelCityId = getOpenCityPanelCityId();
+        const panelCity = panelCityId ? cities.find(c => c.id === panelCityId) : undefined;
+        if (panelCity && panelCity.ownerId === 0) {
+          const rad = cityRangeForPopulation(panelCity.population);
+          const d = hexDistance(panelCity.q, panelCity.r, hit.q, hit.r);
+          if (d > 0 && d <= rad && map.hexes[keyOf(hit.q, hit.r)]) {
+            toggleOkolicaTileOnMap(panelCity.id, hit.q, hit.r);
+            return;
+          }
+        }
+      }
+
+      // Panel miasta otwarty — klik w teren poza przypisaniem 👤 → powrót na mapę świata.
+      if (isCityPanelOpen()) {
+        hideCityPanelFull();
+        clearPlayerUnitSelection();
+        refreshD1bHud();
+        return;
+      }
+
+      // Załóż miasto — PRZED dismissMapOverlayModes (foundCityMode wystarczy)
+      if (foundCityMode) {
+        handleFoundCityMapClick(hit.q, hit.r);
+        return;
+      }
+      if (buildModeOpen && activeImprovementKey && buildApi?.handleHexClick) {
+        const req = buildApi.handleHexClick(hit.q, hit.r);
+        if (req) return;
+        exitBuildMode();
+        return;
+      }
+
+      // Klik w mapę świata — zamknij listy toolbaru i tryb budowy.
+      dismissMapOverlayModes();
+
+      // Tryb okolicy na mapie 3D (legacy — po „Mapa” w starym drawerze)
+      if (okolicaMapEditCityId) {
+        const okCity = cities.find(c => c.id === okolicaMapEditCityId);
+        if (okCity && okCity.ownerId === 0) {
+          const rad = cityRangeForPopulation(okCity.population);
+          const d = hexDistance(okCity.q, okCity.r, hit.q, hit.r);
+          if (d > 0 && d <= rad && map.hexes[keyOf(hit.q, hit.r)]) {
+            toggleOkolicaTileOnMap(okCity.id, hit.q, hit.r);
+            return;
+          }
+        }
+      }
+
+      if (buildModeOpen) {
+        if (isAwaitingFirstPlayerCity() && !foundCityMode) {
+          foundCityMode = true;
+          activeImprovementKey = null;
+          refreshBuildHighlight();
+          refreshD1bHud();
+          const fc = canFoundPlayerCityAt(hit.q, hit.r);
+          if (fc.ok) tryFoundPlayerCityAt(hit.q, hit.r);
+          else showHintMessage('Nie można założyć: ' + fc.reason, 2500);
+        } else {
+          showHintMessage('Wybierz «Załóż miasto» lub ulepszenie w panelu 🔨', 2500);
+        }
+        return;
+      }
+
+      // City click: panel tylko dla miast gracza; wrogie = podpowiedź (nie „twoje miasto”).
+      const clickedCity = cities.find(c => c.q === hit.q && c.r === hit.r);
+      if (clickedCity) {
+        const sel = selectedId !== null ? units.find(u => u.id === selectedId) : null;
+        const action = resolveEnemyCityClick({
+          city: clickedCity,
+          selectedUnit: sel ?? null,
+          units,
+          playerOwnerId: 0,
+        });
+        switch (action.kind) {
+          case 'siege_panel':
+            syncSiegePanelMeta(action.ctx.city);
+            showSiegeMapPanel(
+              action.ctx,
+              siegePanelActions,
+              siegeTurnByCity.get(action.ctx.city.id) ?? 1,
+            );
+            return;
+          case 'attack_choice':
+            hideCityAttackChoice();
+            showCityAttackChoice(action.ctx, {
+              onSiege: () => startMapSiege(action.ctx),
+              onStorm: () => launchSiegeStormFromMap(action.ctx),
+              onCancel: () => {},
+            });
+            return;
+          case 'field_battle':
+            launchFieldBattleFromMap(action, mapFieldBattleDeps);
+            return;
+          case 'capture_empty':
+            captureCityWithoutBattle(
+              action.ctx.city,
+              action.attacker,
+              collectAtkRosterNearCity(action.ctx.city, action.attacker, units),
+            );
+            return;
+          case 'hint_no_adjacent':
+            showHintMessage(
+              action.cityName + ' — miasto wrogie. Ustaw jednostkę na sąsiednim heksie i kliknij miasto.',
+              4500,
+            );
+            clearPlayerUnitSelection();
+            refreshD1bHud();
+            return;
+          case 'hint_pick_attacker':
+            showHintMessage(
+              action.cityName + ' — kilka jednostek obok. Zaznacz którą atakujesz, potem kliknij miasto.',
+              4500,
+            );
+            clearPlayerUnitSelection();
+            refreshD1bHud();
+            return;
+          case 'not_enemy':
+            break;
+        }
+        if (sel && sel.ownerId === 0 && sel.ruchLeft > 0
+            && reachable.has(keyOf(clickedCity.q, clickedCity.r))) {
+          if (beginMoveSelectedUnitTo(clickedCity.q, clickedCity.r)) return;
+        }
+        const stackOnCity = visibleStackOnHex(units, hit.q, hit.r, 0);
+        if (stackOnCity.length > 0) {
+          const rep = unitAtRepresentative(hit.q, hit.r, units, unitAttackScore) ?? stackOnCity[0]!;
+          showCityUnitPick({
+            cityName: clickedCity.name,
+            unitLabel: rep.typeId,
+            stackCount: stackOnCity.length,
+            onCity: () => openCityPanelForPlayer(clickedCity),
+            onUnit: () => selectPlayerUnit(rep.id),
+          });
+          return;
+        }
+        openCityPanelForPlayer(clickedCity);
+        return;
+      }
+
+      const cu = unitAtRepresentative(hit.q, hit.r, units, unitAttackScore);
+
+      if (cu && cu.ownerId === 0) {
+        const sel = selectedId !== null ? units.find(x => x.id === selectedId) : null;
+        const hitKey = keyOf(hit.q, hit.r);
+        if (sel && sel.id !== cu.id && sel.ruchLeft > 0 && reachable.has(hitKey)) {
+          beginMoveSelectedUnitTo(hit.q, hit.r);
+        } else {
+          selectPlayerUnit(cu.id);
+        }
+      } else if (selectedId !== null && cu !== null && cu.ownerId !== 0) {
+        // MAP PLAYER ATTACK: jednostka → jednostka (sąsiad) → preBattle C-01
+        const atkUnit = units.find(x => x.id === selectedId);
+        if (atkUnit && atkUnit.ownerId === 0 && atkUnit.ruchLeft > 0 &&
+            hexDistance(atkUnit.q, atkUnit.r, cu.q, cu.r) <= 1) {
+          // P4 / C1-Q4: preBattle z składem multi-unit (heks + sąsiedztwo 1)
+          const atkRoster = collectBattleRoster(atkUnit, units);
+          const defRoster = collectBattleRoster(cu, units);
+          const aDef4 = lookupUnitDef(atkUnit.typeId);
+          const dDef4 = lookupUnitDef(cu.typeId);
+          const dHexKey4 = keyOf(cu.q, cu.r);
+          const dHex4 = map.hexes[dHexKey4];
+          const dTeren4: string = dHex4 ? (dHex4.terenBazowy as string) : 'Rownina';
+          const dStructBonus4 = structureDefenseBonusFor(cu.q, cu.r);
+          const atkLeadDef = unitDefFor(atkRoster[0]!);
+          const szanse4 = preBattleSzanseAtkPct(atkRoster, defRoster, dTeren4, dStructBonus4);
+          const defCivId = aiOwnerCivMap.get(cu.ownerId);
+          const defCivLabel = defCivId ? defCivId + ' (AI ' + cu.ownerId + ')' : 'AI ' + cu.ownerId;
+          const pbInfo4: PreBattleInfo = {
+            atakujacy: preBattleSideFromRoster(
+              atkRoster,
+              atkRoster.length > 1 ? 'Skład (' + atkRoster.length + ')' : atkUnit.typeId,
+              'Gracz',
+            ),
+            obronca: preBattleSideFromRoster(
+              defRoster,
+              defRoster.length > 1 ? 'Skład (' + defRoster.length + ')' : cu.typeId,
+              defCivLabel,
+            ),
+            teren: dTeren4,
+            szanseAtkPct: szanse4,
+            miejsce: dTeren4,
+            lokacja: '(' + cu.q + ',' + cu.r + ')',
+            tura: turn,
+            canRetreat: true,
+          };
+
+          const atkRosterRef = atkRoster.slice();
+          const defRosterRef = defRoster.slice();
+          const atkStartSnap = snapshotRosterPositions(atkRosterRef);
+          const battleHex = { q: cu.q, r: cu.r };
+
+          function clearBattleUiState(): void {
+            clearPlayerUnitSelection();
+            refreshFog();
+            updateHud();
+            syncUnitsRender();
+          }
+
+          function rosterToBattleUnits(roster: RuntimeUnit[], color: number): BattleUnit[] {
+            return roster.map(u => runtimeToBattleUnit(u, lookupUnitDef(u.typeId), color));
+          }
+
+          function finishMapBattleUi(): void {
+            clearBattleUiState();
+          }
+
+          function mapBattleSummaryMeta(mode: 'auto' | 'manual') {
+            return {
+              mode,
+              atkLabel: pbInfo4.atakujacy.nazwa,
+              defLabel: pbInfo4.obronca.nazwa,
+              atkCivLabel: pbInfo4.atakujacy.cywilizacja,
+              defCivLabel: pbInfo4.obronca.cywilizacja,
+              teren: dTeren4,
+              placeLabel: pbInfo4.lokacja,
+            };
+          }
+
+          function doMapAutoResolve(): void {
+            try {
+              const atkLead = atkRosterRef[0]!;
+              const defLead = defRosterRef[0]!;
+              const aLeadDef = unitDefFor(atkLead);
+              const mAtk = rosterFieldPowerM(atkRosterRef);
+              const mDef = effectiveDefenderM(defRosterRef, dTeren4, dStructBonus4, aLeadDef);
+              const powerRes = resolveAutoBattleByPower({ mAtk, mDef });
+
+              if (powerRes.winner === 'none') {
+                showHintMessage('Atak: brak sił bojowych w składzie', 3000);
+                finishMapBattleUi();
+              } else if (powerRes.winner === 'tie') {
+                applyMapBattleOutcomeWithSummary(
+                  atkRosterRef, defRosterRef, 'remis', undefined,
+                  {
+                    lossAtkPct: powerRes.lossAtkPct,
+                    lossDefPct: powerRes.lossDefPct,
+                    battleQ: battleHex.q,
+                    battleR: battleHex.r,
+                    atkStart: atkStartSnap,
+                  },
+                  mapBattleSummaryMeta('auto'),
+                  finishMapBattleUi,
+                );
+              } else if (powerRes.winner === 'attacker') {
+                applyMapBattleOutcomeWithSummary(
+                  atkRosterRef, defRosterRef, 'atakujacy', undefined,
+                  {
+                    lossAtkPct: powerRes.lossAtkPct,
+                    lossDefPct: powerRes.lossDefPct,
+                    battleQ: battleHex.q,
+                    battleR: battleHex.r,
+                    atkStart: atkStartSnap,
+                  },
+                  mapBattleSummaryMeta('auto'),
+                  finishMapBattleUi,
+                );
+              } else {
+                applyMapBattleOutcomeWithSummary(
+                  atkRosterRef, defRosterRef, 'obronca', undefined,
+                  {
+                    lossAtkPct: powerRes.lossAtkPct,
+                    lossDefPct: powerRes.lossDefPct,
+                    battleQ: battleHex.q,
+                    battleR: battleHex.r,
+                    atkStart: atkStartSnap,
+                  },
+                  mapBattleSummaryMeta('auto'),
+                  finishMapBattleUi,
+                );
+              }
+            } catch (eBattle4) {
+              console.error('[Bitwa] Blad ataku gracza:', eBattle4);
+              finishMapBattleUi();
+            }
+          }
+
+          showPreBattle(pbInfo4, {
+            onAuto: () => { hidePreBattle(); doMapAutoResolve(); },
+            onBattlefield: () => {
+              hidePreBattle();
+              const atkLead = atkRosterRef[0]!;
+              const defLead = defRosterRef[0]!;
+              const atkBus = rosterToBattleUnits(atkRosterRef, 0xffd54a);
+              const defBus = rosterToBattleUnits(defRosterRef, 0xc84040);
+              const bs = new BattleScene({
+                attacker: atkBus,
+                defender: defBus,
+                teren: dTeren4,
+                data,
+                deploy: false,
+                attackerCivBonusy: civBonusyForOwnerId(atkLead.ownerId),
+                defenderCivBonusy: civBonusyForOwnerId(defLead.ownerId),
+              });
+              bs.play((res) => {
+                applyMapBattleOutcomeWithSummary(
+                  atkRosterRef, defRosterRef, res.winner, res.survivors,
+                  {
+                    battleQ: battleHex.q,
+                    battleR: battleHex.r,
+                    atkStart: atkStartSnap,
+                  },
+                  mapBattleSummaryMeta('manual'),
+                  () => {
+                    finishMapBattleUi();
+                    bs.dispose();
+                  },
+                );
+              });
+            },
+            onCancel: () => {
+              hidePreBattle();
+            },
+            onSave: () => {
+              if (doQuickSave(false)) {
+                showHintMessage('Zapis przed bitwa (tura ' + turn + ')', 2500);
+              } else {
+                showHintMessage('Zapis nieudany (brak localStorage?)', 2500);
+              }
+            },
+          }, { defaultAction: 'manual' });
+        } else if (atkUnit && atkUnit.ownerId === 0) {
+          if (atkUnit.ruchLeft <= 0) {
+            showHintMessage('Brak ruchu — zakończ turę lub wybierz inną jednostkę.', 3500);
+          } else {
+            showHintMessage(
+              'Za daleko — podejdź na sąsiedni heks (klik zielony), potem kliknij wroga.',
+              4500,
+            );
+          }
+        } else {
+          clearPlayerUnitSelection();
+          refreshD1bHud();
+        }
+      } else if (selectedId !== null && reachable.has(keyOf(hit.q, hit.r))) {
+        beginMoveSelectedUnitTo(hit.q, hit.r);
+      } else if (cu !== null && cu.ownerId !== 0) {
+        showHintMessage(
+          'Zaznacz swoją jednostkę obok wroga, potem kliknij wroga — pre-bitwa.',
+          4500,
+        );
+        clearPlayerUnitSelection();
+        refreshD1bHud();
+      } else {
+        clearPlayerUnitSelection();
+        refreshD1bHud();
+      }
+    });
+
+    // -----------------------------------------------------------------------
+    // Unit Gallery
+    // Toggle with 'G' key: displays one token per unit type in a flat grid,
+    // with a floating HTML label above each token.
+    // Camera pan/zoom/WASD continue to work in gallery mode.
+    // Click-to-select/move is disabled while gallery is open.
+    // -----------------------------------------------------------------------
+
+    /** RuntimeUnit instances used only in gallery mode (never added to `units`). */
+    let galleryUnits: RuntimeUnit[] = [];
+
+    /** World-space positions for each gallery token (for label projection). */
+    interface GalleryPos { x: number; y: number; z: number; }
+    let galleryPositions: GalleryPos[] = [];
+
+    /** HTML label <div> elements floating above each gallery token. */
+    let galleryLabels: HTMLDivElement[] = [];
+
+    /** Title overlay shown at top-center while gallery is open. */
+    let galleryTitle: HTMLDivElement | null = null;
+
+    /**
+     * Y lift above each token base for the floating name label.
+     * Approximates token height (0.45*HEX_R) plus a small gap.
+     */
+    const GALLERY_LABEL_LIFT = 0.8 * HEX_R;
+
+    /** Grid spacing between adjacent tokens (world units). */
+    const GALLERY_SPACING = 1.6 * HEX_R;
+
+    /** Enter gallery mode: build tokens, labels, title overlay. */
+    function enterGallery(): void {
+      clearPlayerUnitSelection();
+
+      // Build gallery RuntimeUnit list -- one per unit type.
+      const types = listUnitTypes(data);
+      const n = types.length;
+
+      // Grid layout: ceil(sqrt(n)) columns, centered on map center.
+      const cols = Math.ceil(Math.sqrt(n));
+      const rows = Math.ceil(n / cols);
+
+      galleryUnits = types.map((t, i): RuntimeUnit => ({
+        id: 'gal' + i,
+        ownerId: 0,
+        typeId: t.typeId,
+        q: 0,
+        r: 0,
+        ruch: 2,
+        ruchLeft: 2,
+        category: t.category,
+      }));
+
+      // Compute world-space grid positions centered on `center`.
+      // Each row is independently centered along X (last row may have fewer items).
+      galleryPositions = types.map((_, i) => {
+        const col = i % cols;
+        const row = Math.floor(i / cols);
+        const rowStart = row * cols;
+        const rowCount = Math.min(cols, n - rowStart);
+        const rowW = (rowCount - 1) * GALLERY_SPACING;
+        const gridH = (rows - 1) * GALLERY_SPACING;
+        const gx = center.x - rowW / 2 + col * GALLERY_SPACING;
+        const gz = center.z - gridH / 2 + row * GALLERY_SPACING;
+        // Each gallery slot floats over a real map tile; rest the token on
+        // that tile's TRUE top (height + yOffset) so units never sink into
+        // elevated terrain (Wzgorza/Gory). Falls back to the flat Rownina
+        // level only if the slot maps off the grid.
+        const { q: gq, r: gr } = worldToAxial(gx, gz, HEX_R);
+        const tileTop = unitRenderer.topYAt(gq, gr);
+        const gy = (tileTop > 0 ? tileTop : 0.45) + TOKEN_LIFT;
+        return { x: gx, y: gy, z: gz };
+      });
+
+      // Sync the unit renderer with gallery units (replaces real tokens).
+      // Fog must NOT be applied here -- gallery shows all unit types.
+      unitRenderer.sync(galleryUnits);
+
+      // Position each gallery token at its grid slot.
+      for (let i = 0; i < galleryUnits.length; i++) {
+        const p = galleryPositions[i]!;
+        unitRenderer.setTokenWorldPosition('gal' + i, p.x, p.y, p.z);
+      }
+
+      // Create floating HTML labels -- one per unit type.
+      galleryLabels = types.map((t, i) => {
+        const div = document.createElement('div') as HTMLDivElement;
+        div.style.cssText = [
+          'position:fixed',
+          'background:rgba(0,0,0,0.72)',
+          'color:#f0e6b0',
+          'font:bold 10px/1.3 monospace',
+          'padding:2px 5px',
+          'border-radius:3px',
+          'pointer-events:none',
+          'z-index:200',
+          'white-space:nowrap',
+          // Center div horizontally on the projected point; put above it.
+          'transform:translate(-50%,-100%)',
+          'display:none',
+        ].join(';');
+        // textContent: safe -- no HTML injection.
+        div.textContent = '[' + (i + 1) + '] ' + t.name;
+        document.body.appendChild(div);
+        return div;
+      });
+
+      // Title: GALERIA JEDNOSTEK (Polish via JS \uXXXX)
+      // \u2014 = em dash, \u015b = s+acute, \u0107 = c+acute
+      galleryTitle = document.createElement('div') as HTMLDivElement;
+      galleryTitle.style.cssText = [
+        'position:fixed',
+        'top:12px',
+        'left:50%',
+        'transform:translateX(-50%)',
+        'background:rgba(0,0,0,0.75)',
+        'color:#e8d88a',
+        'font:bold 14px/1.5 monospace',
+        'padding:6px 16px',
+        'border-radius:6px',
+        'border:1px solid rgba(232,216,138,0.4)',
+        'pointer-events:none',
+        'z-index:200',
+        'white-space:nowrap',
+      ].join(';');
+      galleryTitle.textContent = 'GALERIA JEDNOSTEK \u2014 \'G\' aby wyj\u015b\u0107';
+      document.body.appendChild(galleryTitle);
+    }
+
+    /** Exit gallery mode: remove labels/title, restore real unit tokens with fog. */
+    function exitGallery(): void {
+      // Remove all label divs.
+      for (const lbl of galleryLabels) {
+        lbl.remove();
+      }
+      galleryLabels = [];
+
+      // Remove title overlay.
+      if (galleryTitle !== null) {
+        galleryTitle.remove();
+        galleryTitle = null;
+      }
+
+      galleryUnits = [];
+      galleryPositions = [];
+
+      // Restore play view -- fog drives which units are shown.
+      refreshFog();
+    }
+
+    // -----------------------------------------------------------------------
+    // Battle helpers
+    // -----------------------------------------------------------------------
+
+    /**
+     * structureDefenseBonusFor (STEP E) -- bonusy obronne za mape/budowle.
+     *
+     * Zwraca najwyzszy bonus procentowy dla broniaceego sie (defender) na podanej
+     * pozycji (q, r). Hierarchia (najwyzszy wygrywa, nie kumuluja sie):
+     *   miasto z murem (City.maMur) -> 200%
+     *   fort (ulepszenie terenu 'fort') -> 100%
+     *   posterunek ('posterunek') -> 50%
+     *   brak struktury -> 0%
+     *
+     * Warunek trybu OBOZOWANIA (posterunek/fort) -- do czasu wdrozenia toggle
+     * "stand-by" traktujemy kazda jednostke na polu budowli we wlasnym
+     * terytorium jako obozujaca (zgodnie z ustaleniem w handoffie UNITS).
+     */
+    function structureDefenseBonusFor(q: number, r: number): number {
+      // Sprawdz czy bronicacy jest w miescie z murem
+      const cityOnHex = cities.find(c => c.q === q && c.r === r);
+      if (cityOnHex && (cityOnHex as any).maMur === true) {
+        return 200; // mur +200% (trojkrotnosc bazowej Obrony)
+      }
+
+      // Sprawdz ulepszenie terenu na tym heksie
+      const hk = keyOf(q, r);
+      const hex = map.hexes[hk];
+      if (hex) {
+        const ulepszenie = (hex as any).ulepszenie ?? (hex as any).improvement ?? null;
+        if (typeof ulepszenie === 'string') {
+          const ul = ulepszenie.toLowerCase();
+          if (ul === 'fort') return 100;      // fort +100%
+          if (ul === 'posterunek') return 50; // posterunek +50%
+        }
+      }
+
+      return 0; // brak bonusu
+    }
+
+    /**
+     * normFieldVal: read a numeric stat from a raw unit def record.
+     * Handles null, undefined, '---', '\u2014' (em dash), empty string.
+     */
+    function normFieldVal(v: unknown, fallback: number): number {
+      if (v === null || v === undefined || v === '---' || v === '\u2014' || v === '') return fallback;
+      const n = typeof v === 'string' ? parseFloat(v as string) : (v as number);
+      return isNaN(n) ? fallback : n;
+    }
+
+    /**
+     * Look up a unit type record in data.units by typeId (Jednostka field name).
+     * Falls back to a synthetic minimal combat record if not found.
+     */
+    function lookupUnitDef(typeId: string): any {
+      const direct = (data.units as any[]).find((u: any) => u['Jednostka'] === typeId);
+      if (direct) return direct;
+      // Fallback: a minimal warrior-equivalent record
+      return {
+        'Jednostka': typeId,
+        'Rola (linia)': 'Wrecz',
+        'Próg dezercji (% health)': 0.25,
+        meleeAttack: 5,
+        meleeDefence: 5,
+        chargeBonus: 2,
+        armor: 2,
+        piercing: 0,
+        health: 30,
+        weaponDamage: 4,
+        missileAttack: 0,
+        'Zasieg ataku (hex)': null,
+        'Ilosc pociskow': null,
+        'Ruch w bitwie (heksy)': 2,
+        'Kara obrony z flanki (%)': 50,
+        'Kara obrony z tylu (%)': 80,
+      };
+    }
+
+    function unitDefFor(u: RuntimeUnit): any {
+      const ov = militiaDefOverrides.get(String(u.id));
+      if (ov) return ov;
+      return lookupUnitDef(u.typeId);
+    }
+
+    /** Return max HP from a unit def (TW v3 `health`). */
+    function unitHealth(def: any): number {
+      return normFieldVal(def['health'] ?? def['Health'], 30);
+    }
+
+    /** Return meleeAttack from a unit def. */
+    function unitAtak(def: any): number {
+      return normFieldVal(def['meleeAttack'], 0);
+    }
+
+    /** Return meleeDefence from a unit def. */
+    function unitObrona(def: any): number {
+      return normFieldVal(def['meleeDefence'], 0);
+    }
+
+    function combatFromDef(def: Record<string, unknown>, typeId: string, hp?: number): CombatUnit {
+      return combatUnitFromDef(def, { typNazwa: typeId, hp });
+    }
+
+    /**
+     * Convert a RuntimeUnit + its stat record into a BattleUnit for BattleScene.
+     */
+    function runtimeToBattleUnit(u: RuntimeUnit, _def: any, ownerColor: number): BattleUnit {
+      const def = unitDefFor(u);
+      const maxHp = unitHealth(def);
+      const hp = u.hp != null ? Math.min(maxHp, Math.max(0, u.hp)) : maxHp;
+      return {
+        id: u.id,
+        nazwa: u.typeId,
+        kategoria: u.category,
+        ownerColor,
+        stats: def,
+        hp,
+        maxHp,
+      };
+    }
+
+    /** C1-Q4 / D8=A: heks kotwicy + własne jednostki w promieniu 1 heksa. */
+    function collectBattleRoster(anchor: RuntimeUnit, allUnits: RuntimeUnit[]): RuntimeUnit[] {
+      if (playtestWalkaActive) {
+        return collectPlaytestBattleRoster(anchor, allUnits);
+      }
+      const out: RuntimeUnit[] = [];
+      const seen = new Set<string | number>();
+      for (const u of allUnits) {
+        if (u.ownerId !== anchor.ownerId) continue;
+        if (hexDistance(anchor.q, anchor.r, u.q, u.r) > 1) continue;
+        if (seen.has(u.id)) continue;
+        seen.add(u.id);
+        out.push(u);
+      }
+      if (!out.some(x => x.id === anchor.id)) out.unshift(anchor);
+      return out;
+    }
+
+    function preBattleUnitFromRuntime(u: RuntimeUnit): PreBattleUnit {
+      const def = unitDefFor(u);
+      const hp = unitHealth(def);
+      return {
+        nazwa: u.typeId,
+        kategoria: u.category,
+        hp,
+        maxHp: hp,
+        atak: unitAtak(def),
+        moc: armyFieldPower(def),
+      };
+    }
+
+    /** Szanse preBattle = prognoza auto-walki M v2b (identyczny stos co Auto). */
+    function preBattleSzanseAtkPct(
+      atkRoster: RuntimeUnit[],
+      defRoster: RuntimeUnit[],
+      terrain: string,
+      structBonusPct: number,
+    ): number {
+      const aLeadDef = unitDefFor(atkRoster[0]!);
+      const mAtk = rosterFieldPowerM(atkRoster);
+      const mDef = effectiveDefenderM(defRoster, terrain, structBonusPct, aLeadDef);
+      return autoBattleWinPct(mAtk, mDef);
+    }
+
+    function preBattleSideFromRoster(roster: RuntimeUnit[], title: string, civLabel: string): PreBattleInfo['atakujacy'] {
+      return {
+        nazwa: title,
+        cywilizacja: civLabel,
+        ownerId: roster[0]?.ownerId,
+        units: roster.map(preBattleUnitFromRuntime),
+      };
+    }
+
+    function snapshotRosterForSummary(roster: RuntimeUnit[]): BattleUnitBeforeSnap[] {
+      return roster.map(u => {
+        const def = unitDefFor(u);
+        const maxHp = unitHealth(def);
+        const hp = u.hp ?? maxHp;
+        return {
+          id: String(u.id),
+          typeId: u.typeId,
+          kategoria: u.category ?? String(def['Rola (linia)'] ?? 'Wrecz'),
+          hp,
+          maxHp,
+        };
+      });
+    }
+
+    function makeHpLookupAfterBattle(): (id: string) => number | null {
+      return (id: string) => {
+        const u = units.find(x => String(x.id) === id);
+        if (!u) return null;
+        const def = unitDefFor(u);
+        return u.hp ?? unitHealth(def);
+      };
+    }
+
+    function presentPostBattleSummary(
+      input: Parameters<typeof buildPostBattleSummary>[0],
+      onContinue: () => void,
+    ): void {
+      showPostBattleSummary(buildPostBattleSummary(input), onContinue);
+    }
+
+    function applyMapBattleOutcomeWithSummary(
+      atkRoster: RuntimeUnit[],
+      defRoster: RuntimeUnit[],
+      winner: BattleResult['winner'] | 'remis',
+      survivors: BattleUnit[] | undefined,
+      opts: Parameters<typeof applyMapBattleOutcome>[4],
+      summary: {
+        mode: 'auto' | 'manual' | 'szturm';
+        atkLabel: string;
+        defLabel: string;
+        atkCivLabel?: string;
+        defCivLabel?: string;
+        teren?: string;
+        placeLabel?: string;
+      },
+      onContinue: () => void,
+    ): void {
+      const atkBefore = snapshotRosterForSummary(atkRoster);
+      const defBefore = snapshotRosterForSummary(defRoster);
+      applyMapBattleOutcome(atkRoster, defRoster, winner, survivors, opts);
+      presentPostBattleSummary({
+        winner: winner as BattleSummaryWinner,
+        atkLabel: summary.atkLabel,
+        defLabel: summary.defLabel,
+        atkCivLabel: summary.atkCivLabel,
+        defCivLabel: summary.defCivLabel,
+        teren: summary.teren,
+        placeLabel: summary.placeLabel,
+        mode: summary.mode,
+        atkBefore,
+        defBefore,
+        lookupHp: makeHpLookupAfterBattle(),
+      }, onContinue);
+    }
+
+    function mapHexPassableForUnit(q: number, r: number): boolean {
+      const hk = keyOf(q, r);
+      const hex = map.hexes[hk];
+      if (!hex) return false;
+      const t = hex.terenBazowy;
+      return t !== TerenBazowy.Morze && t !== TerenBazowy.Wybrzeze && t !== TerenBazowy.Gory;
+    }
+
+    function isOccupiedHex(q: number, r: number, exceptId?: string | number): boolean {
+      return units.some(u => u.q === q && u.r === r && u.id !== exceptId);
+    }
+
+    function rosterFieldPowerM(roster: RuntimeUnit[]): number {
+      return sumRosterFieldM(
+        roster.map(u => ({ typeId: u.typeId, def: unitDefFor(u) })),
+      );
+    }
+
+    function effectiveDefenderM(
+      defRoster: RuntimeUnit[],
+      terrain: string,
+      structBonusPct: number,
+      atkLeadDef: Record<string, unknown>,
+    ): number {
+      const raw = rosterFieldPowerM(defRoster);
+      const terrMult = terrainDefenseMultiplier(
+        terrain,
+        String(atkLeadDef['Rola (linia)'] ?? ''),
+        terrainCombatData as unknown as TerrainEntry[],
+      );
+      const structMult = 1 + structBonusPct / 100;
+      return Math.round(raw * terrMult * structMult * 10) / 10;
+    }
+
+    /** Auto-walka M v2b + wspólne skutki mapy (identyczne reguły ruchu co ręczna). */
+    function doAutoPowerMapBattle(
+      atkRoster: RuntimeUnit[],
+      defRoster: RuntimeUnit[],
+      battleQ: number,
+      battleR: number,
+      terrain: string,
+      structBonusPct: number,
+      atkStart?: Map<string | number, { q: number; r: number }>,
+    ): ReturnType<typeof resolveAutoBattleByPower> | null {
+      const start = atkStart ?? snapshotRosterPositions(atkRoster);
+      const aLeadDef = unitDefFor(atkRoster[0]!);
+      const mAtk = rosterFieldPowerM(atkRoster);
+      const mDef = effectiveDefenderM(defRoster, terrain, structBonusPct, aLeadDef);
+      const powerRes = resolveAutoBattleByPower({ mAtk, mDef });
+      if (powerRes.winner === 'none') return powerRes;
+
+      const winner: BattleResult['winner'] =
+        powerRes.winner === 'tie' ? 'remis'
+          : powerRes.winner === 'attacker' ? 'atakujacy'
+            : 'obronca';
+
+      applyMapBattleOutcome(atkRoster, defRoster, winner, undefined, {
+        lossAtkPct: powerRes.lossAtkPct,
+        lossDefPct: powerRes.lossDefPct,
+        battleQ,
+        battleR,
+        atkStart: start,
+      });
+      return powerRes;
+    }
+
+    function applyMapBattleOutcome(
+      atkRoster: RuntimeUnit[],
+      defRoster: RuntimeUnit[],
+      winner: BattleResult['winner'] | 'remis',
+      survivors?: BattleUnit[],
+      opts?: {
+        lossAtkPct?: number;
+        lossDefPct?: number;
+        battleQ?: number;
+        battleR?: number;
+        atkStart?: Map<string | number, { q: number; r: number }>;
+        /** true = szturm oblężniczy — UI zdobycia obsługuje finishSiegeStormBattle */
+        siegeContext?: boolean;
+      },
+    ): void {
+      const battleQ = opts?.battleQ ?? defRoster[0]?.q ?? atkRoster[0]?.q ?? 0;
+      const battleR = opts?.battleR ?? defRoster[0]?.r ?? atkRoster[0]?.r ?? 0;
+      const atkStart = opts?.atkStart ?? snapshotRosterPositions(atkRoster);
+      const mapWinner: MapBattleWinner =
+        winner === 'remis' ? 'remis'
+          : winner === 'atakujacy' ? 'atakujacy'
+            : 'obronca';
+
+      const cityOnHex = findCityOnHex(cities, battleQ, battleR) ?? null;
+      const cityOwnerBefore = cityOnHex?.ownerId;
+
+      if (mapWinner === 'atakujacy' || mapWinner === 'obronca') {
+        const winOid = mapWinner === 'atakujacy' ? atkRoster[0]?.ownerId : defRoster[0]?.ownerId;
+        const loserRoster = mapWinner === 'atakujacy' ? defRoster : atkRoster;
+        if (winOid !== undefined) {
+          const pts = battlePowerPointsFromDefeatedEnemy(
+            sumRosterFieldM(loserRoster.map(u => ({ typeId: u.typeId, def: unitDefFor(u) }))),
+          );
+          battlePowerPtsByOwner.set(winOid, (battlePowerPtsByOwner.get(winOid) ?? 0) + pts);
+        }
+      }
+
+      applyPostBattleMap({
+        units,
+        map,
+        cities,
+        battleQ,
+        battleR,
+        atkAnchor: atkRoster[0]!,
+        atkRoster,
+        defRoster,
+        atkStart,
+        winner: mapWinner,
+        lossAtkPct: opts?.lossAtkPct,
+        lossDefPct: opts?.lossDefPct,
+        manualSurvivors: survivors !== undefined
+          ? survivors.map(s => ({ id: String(s.id), hp: s.hp }))
+          : undefined,
+        getDef: u => unitDefFor(u),
+        maxHpOf: def => unitHealth(def),
+        isPassableHex: mapHexPassableForUnit,
+        isUnitAt: isOccupiedHex,
+        cityOnBattleHex: cityOnHex,
+      });
+
+      if (mapWinner === 'atakujacy' && cityOnHex && cityOnHex.ownerId !== atkRoster[0]?.ownerId) {
+        const atkOwner = atkRoster[0]!.ownerId;
+        applyCityCaptureToMap(cityOnHex, atkRoster, atkOwner);
+        if (!opts?.siegeContext && cityOwnerBefore !== undefined && cityOnHex.ownerId === atkOwner) {
+          const lead = units.find(u => u.id === atkRoster[0]?.id) ?? null;
+          refreshMapAfterCityCapture(lead);
+          if (atkOwner === 0) {
+            showCityCaptureNotice(cityOnHex.name, {
+              subtitle: 'Potyczka wygrana — wojsko weszło na heks miasta.',
+            });
+          }
+        }
+      }
+
+      if (mapWinner === 'obronca') selectedId = null;
+    }
+
+    function collectSiegeAtkRoster(city: City, anchor: RuntimeUnit): RuntimeUnit[] {
+      const out: RuntimeUnit[] = [];
+      const seen = new Set<string | number>();
+      for (const u of units) {
+        if (u.ownerId !== anchor.ownerId) continue;
+        if (hexDistance(u.q, u.r, city.q, city.r) > 1) continue;
+        if (seen.has(u.id)) continue;
+        seen.add(u.id);
+        out.push(u);
+      }
+      if (!out.some(x => x.id === anchor.id)) out.unshift(anchor);
+      return out;
+    }
+
+    function militiaDefRecord(m: ReturnType<typeof makeMilitia>): Record<string, unknown> {
+      return {
+        'Jednostka': 'Milicja',
+        meleeAttack: m!.Atak,
+        meleeDefence: m!.Obrona,
+        chargeBonus: m!.Uderzenie,
+        armor: m!.Pancerz,
+        piercing: m!.Przebicie,
+        health: m!.Health,
+        weaponDamage: Math.max(1, m!.weaponDamage ?? m!.Atak),
+        missileAttack: 0,
+        'Rola (linia)': m!.rola,
+        'Prog dezercji (% health)': null,
+        'Zasieg ataku (hex)': null,
+        'Ilosc pociskow': null,
+        'Ruch w bitwie (heksy)': 0,
+        'Kara obrony z flanki (%)': 50,
+        'Kara obrony z tylu (%)': 80,
+      };
+    }
+
+    /** C3-ST-1: kanon w siegeDefenders.ts — obrońcy = jednostki dist≤1 lub garnizon>0. */
+    function cityHasDefenders(city: City): boolean {
+      return hasCityDefenders(city, units);
+    }
+
+    function collectSiegeDefRoster(city: City): RuntimeUnit[] {
+      const roster = units.filter(
+        u => u.ownerId === city.ownerId &&
+          hexDistance(u.q, u.r, city.q, city.r) <= 1,
+      );
+      if (roster.length > 0) return roster;
+      if ((city.garnizon ?? 0) <= 0) return [];
+
+      const pop = city.population ?? 0;
+      const militia = makeMilitia(Math.max(pop, 5));
+      if (!militia) return [];
+      const id = 'militia-' + city.id;
+      militiaDefOverrides.set(id, militiaDefRecord(militia));
+      return [{
+        id,
+        ownerId: city.ownerId,
+        typeId: 'Milicja',
+        category: 'domyslny',
+        q: city.q,
+        r: city.r,
+        ruch: 0,
+        ruchLeft: 0,
+      }];
+    }
+
+    /** ST-2/ST-3: przejęcie miasta — tylko obrońca na centrum (B); pierścień zostaje. */
+    function applyCityCaptureToMap(
+      city: City,
+      atkRoster: RuntimeUnit[],
+      atkOwner: number,
+    ): RuntimeUnit | null {
+      const oldOwner = city.ownerId;
+      const lead = applyCityCaptureAfterBattle(city, atkRoster, atkOwner, units);
+      if (atkOwner === 0) playerEverOwnedCity = true;
+      syncCityGarnizon(city);
+      endMapSiege(city.id);
+      void oldOwner;
+      return lead;
+    }
+
+    function refreshMapAfterCityCapture(lead: RuntimeUnit | null): void {
+      reachable = new Set<string>();
+      unitRenderer.clearHighlight();
+      unitRenderer.clearPathRoute();
+      hoverKey = null;
+      if (lead) {
+        if (selectedId === lead.id || selectedId === null) selectedId = lead.id;
+        forceVisibleUnitId = lead.id;
+        unitRenderer.setSelectionHex(lead.q, lead.r);
+      }
+      syncUnitsRender();
+      cityRenderer.sync(cities, _cityRenderOpts());
+      refreshFog();
+      updateHud();
+      refreshD1bHud();
+      refreshSiegeMarkers();
+      if (lead?.ownerId === 0) {
+        const entryCity = cities.find(c => c.q === lead.q && c.r === lead.r);
+        if (entryCity) finishUnitEnterCityHex(lead, entryCity);
+      }
+      const leadId = lead?.id ?? null;
+      requestAnimationFrame(() => {
+        if (leadId && forceVisibleUnitId === leadId) forceVisibleUnitId = null;
+        syncUnitsRender();
+      });
+    }
+
+    /** Puste miasto — zdobycie bez preBattle / bitwy; jednostka wchodzi na heks miasta. */
+    function captureCityWithoutBattle(
+      city: City,
+      anchor: RuntimeUnit,
+      atkRoster: RuntimeUnit[],
+    ): void {
+      hideSiegeMapPanel();
+      hideCityAttackChoice();
+
+      const atkOwner = anchor.ownerId;
+      const lead = applyCityCaptureToMap(city, atkRoster, atkOwner);
+      refreshMapAfterCityCapture(lead ?? anchor);
+
+      showCityCaptureNotice(city.name, {
+        subtitle: 'Brak obrońców — wojsko weszło do miasta bez walki i bez strat.',
+      });
+    }
+
+    function clearMapBattleUiState(): void {
+      clearPlayerUnitSelection();
+      refreshFog();
+      updateHud();
+      syncUnitsRender();
+    }
+
+    const mapFieldBattleDeps = {
+      cities,
+      units,
+      get turn() { return turn; },
+      getTerrainAt: (q: number, r: number): string => {
+        const h = map.hexes[keyOf(q, r)];
+        return h ? String(h.terenBazowy) : 'Rownina';
+      },
+      getStructBonus: structureDefenseBonusFor,
+      unitDefFor,
+      unitHealth,
+      unitAtak,
+      civLabelForOwner,
+      civBonusyForOwnerId,
+      lookupUnitDef,
+      runtimeToBattleUnit,
+      terrainCombatData: terrainCombatData as unknown as readonly TerrainEntry[],
+      battleData: data,
+      showHint: showHintMessage,
+      showPreBattle,
+      hidePreBattle,
+      applyMapBattleOutcomeWithSummary,
+      clearBattleUiState: clearMapBattleUiState,
+      createBattleScene: (opts: BattleOpts) => new BattleScene(opts),
+      registerMilitiaDef: (id: string, def: Record<string, unknown>) => {
+        militiaDefOverrides.set(id, def);
+      },
+      onQuickSave: () => doQuickSave(false),
+    };
+
+    function civLabelForOwner(ownerId: number): string {
+      if (ownerId === 0) return String(player.civType || _menuCivId || 'Gracz');
+      return aiOwnerCivMap.get(ownerId) ?? ('AI ' + ownerId);
+    }
+
+    function finishSiegeStormBattle(
+      city: City,
+      atkRoster: RuntimeUnit[],
+      defRoster: RuntimeUnit[],
+      res: BattleResult,
+      opts?: {
+        atkStart?: Map<string | number, { q: number; r: number }>;
+        lossAtkPct?: number;
+        lossDefPct?: number;
+        summary?: {
+          mode: 'auto' | 'manual' | 'szturm';
+          atkLabel: string;
+          defLabel: string;
+          atkCivLabel?: string;
+          defCivLabel?: string;
+          teren?: string;
+        };
+        afterSummary?: () => void;
+      },
+    ): void {
+      const oldOwner = city.ownerId;
+      const atkStart = opts?.atkStart ?? snapshotRosterPositions(atkRoster);
+      const atkOwner = atkRoster[0]?.ownerId;
+      const showSummary = atkOwner === 0 && opts?.summary;
+
+      const afterSiegeUi = (): void => {
+        if (res.winner === 'atakujacy' && atkOwner !== undefined && city.ownerId === atkOwner && oldOwner !== atkOwner) {
+          const lead = units.find(u => u.id === atkRoster[0]?.id) ?? null;
+          refreshMapAfterCityCapture(lead);
+          const who = atkOwner === 0 ? 'Gracz' : ('AI ' + atkOwner);
+          showHintMessage('Szturm udany — ' + city.name + ' zdobyte przez ' + who + '!', 5000);
+        } else if (res.winner === 'obronca') {
+          showHintMessage('Szturm odparty — oblężenie trwa.', 4500);
+          syncUnitsRender();
+          cityRenderer.sync(cities, _cityRenderOpts());
+          refreshFog();
+          updateHud();
+          refreshD1bHud();
+          refreshSiegeMarkers();
+        } else if (res.winner === 'remis') {
+          showHintMessage('Szturm: remis — oblężenie trwa.', 3500);
+          syncUnitsRender();
+          cityRenderer.sync(cities, _cityRenderOpts());
+          refreshFog();
+          updateHud();
+          refreshD1bHud();
+          refreshSiegeMarkers();
+        }
+      };
+
+      const battleOpts = {
+        battleQ: city.q,
+        battleR: city.r,
+        atkStart,
+        lossAtkPct: opts?.lossAtkPct,
+        lossDefPct: opts?.lossDefPct,
+        siegeContext: true as const,
+      };
+
+      if (showSummary && opts?.summary) {
+        applyMapBattleOutcomeWithSummary(
+          atkRoster,
+          defRoster,
+          res.winner,
+          res.survivors,
+          battleOpts,
+          {
+            ...opts.summary,
+            placeLabel: city.name + ' (mur)',
+          },
+          () => {
+            afterSiegeUi();
+            opts?.afterSummary?.();
+          },
+        );
+      } else {
+        applyMapBattleOutcome(atkRoster, defRoster, res.winner, res.survivors, battleOpts);
+        afterSiegeUi();
+      }
+    }
+
+    /** AI szturm bez preBattle (C3-Q2 T1 / gotowe machiny). */
+    function executeSilentSiegeStorm(ctx: MapSiegeContext): void {
+      const city = cities.find(c => c.id === ctx.city.id);
+      const anchor = units.find(u => u.id === ctx.atakujacy.id);
+      if (!city || !anchor || !city.maMur) return;
+
+      let atkRoster = collectSiegeAtkRoster(city, anchor);
+      atkRoster = appendReadyMachinesToRoster(atkRoster, city, anchor.ownerId);
+      if (!cityHasDefenders(city)) {
+        captureCityWithoutBattle(city, anchor, atkRoster);
+        return;
+      }
+      const defRoster = collectSiegeDefRoster(city);
+      if (defRoster.length === 0) {
+        captureCityWithoutBattle(city, anchor, atkRoster);
+        return;
+      }
+
+      const dHexKey = keyOf(city.q, city.r);
+      const dHex = map.hexes[dHexKey];
+      const dTeren: string = dHex ? (dHex.terenBazowy as string) : 'Rownina';
+      const dStructBonus = structureDefenseBonusFor(city.q, city.r);
+
+      try {
+        const atkStartSnap = snapshotRosterPositions(atkRoster);
+        const aLeadDef = unitDefFor(atkRoster[0]!);
+        const mAtk = rosterFieldPowerM(atkRoster);
+        const mDef = effectiveDefenderM(defRoster, dTeren, dStructBonus, aLeadDef);
+        const powerRes = resolveAutoBattleByPower({ mAtk, mDef });
+        if (powerRes.winner === 'none') return;
+
+        const winner: BattleResult['winner'] =
+          powerRes.winner === 'tie' ? 'remis'
+            : powerRes.winner === 'attacker' ? 'atakujacy'
+              : 'obronca';
+
+        finishSiegeStormBattle(
+          city,
+          atkRoster,
+          defRoster,
+          { winner, log: [], survivors: [] },
+          {
+            atkStart: atkStartSnap,
+            lossAtkPct: powerRes.lossAtkPct,
+            lossDefPct: powerRes.lossDefPct,
+          },
+        );
+        console.log('[Oblezenie AI] szturm auto', city.name, winner);
+      } catch (e) {
+        console.error('[Oblezenie AI] szturm auto fail:', e);
+        startMapSiege(ctx);
+      }
+    }
+
+    /** C1: szturm z panelu oblężenia → preBattle → bitwa z murem (tylko oblegający gracz). */
+    function launchSiegeStormFromMap(ctx: MapSiegeContext): void {
+      if (ctx.oblegajacyOwnerId !== 0) {
+        showHintMessage(
+          'Szturm może rozpocząć tylko oblegający. To oblężenie wroga — broń miasta (OBLEGAJ / Kontynuuj turę).',
+          5000,
+        );
+        return;
+      }
+
+      const city = cities.find(c => c.id === ctx.city.id);
+      const anchor = units.find(u => u.id === ctx.atakujacy.id);
+      if (!city || !anchor) {
+        showHintMessage('Szturm: brak miasta lub jednostki atakującej na mapie.', 4000);
+        return;
+      }
+      if (!city.maMur) {
+        showHintMessage('Miasto bez muru — użyj zwykłej potyczki, nie szturmu.', 4000);
+        return;
+      }
+
+      const atkRoster = appendReadyMachinesToRoster(
+        collectSiegeAtkRoster(city, anchor),
+        city,
+        anchor.ownerId,
+      );
+      if (!cityHasDefenders(city)) {
+        captureCityWithoutBattle(city, anchor, atkRoster);
+        return;
+      }
+      const defRoster = collectSiegeDefRoster(city);
+      if (defRoster.length === 0) {
+        captureCityWithoutBattle(city, anchor, atkRoster);
+        return;
+      }
+
+      const dHexKey = keyOf(city.q, city.r);
+      const dHex = map.hexes[dHexKey];
+      const dTeren: string = dHex ? (dHex.terenBazowy as string) : 'Rownina';
+      const dStructBonus = structureDefenseBonusFor(city.q, city.r);
+
+      const atkLeadDef = unitDefFor(atkRoster[0]!);
+      const defSideTitle = defRoster[0]!.typeId === 'Milicja'
+        ? 'Milicja (~' + Math.floor((city.population ?? 0) * 0.2) + ')'
+        : (defRoster.length > 1 ? 'Garnizon (' + defRoster.length + ')' : defRoster[0]!.typeId);
+      const szanse = preBattleSzanseAtkPct(atkRoster, defRoster, dTeren, dStructBonus);
+
+      const atkCivLabel = civLabelForOwner(anchor.ownerId);
+      const defCivLabel = civLabelForOwner(city.ownerId);
+      const defCivId = city.ownerId === 0
+        ? (player.civType as string || _menuCivId || 'rzymianie')
+        : (aiOwnerCivMap.get(city.ownerId) ?? 'grecy');
+
+      const pbInfo: PreBattleInfo = {
+        atakujacy: preBattleSideFromRoster(
+          atkRoster,
+          atkRoster.length > 1 ? 'Szturm (' + atkRoster.length + ')' : anchor.typeId,
+          atkCivLabel,
+        ),
+        obronca: preBattleSideFromRoster(
+          defRoster,
+          defSideTitle,
+          defCivLabel,
+        ),
+        teren: dTeren,
+        szanseAtkPct: szanse,
+        miejsce: city.name + ' (mur)',
+        lokacja: '(' + city.q + ',' + city.r + ')',
+        tura: turn,
+        canRetreat: true,
+      };
+
+      const atkRosterRef = atkRoster.slice();
+      const defRosterRef = defRoster.slice();
+      const atkStartSnap = snapshotRosterPositions(atkRosterRef);
+
+      hideSiegeMapPanel();
+
+      function rosterToBattleUnits(roster: RuntimeUnit[], color: number): BattleUnit[] {
+        return roster.map(u => runtimeToBattleUnit(u, lookupUnitDef(u.typeId), color));
+      }
+
+      function clearBattleUiState(): void {
+        clearPlayerUnitSelection();
+        refreshFog();
+        updateHud();
+        syncUnitsRender();
+      }
+
+      function siegeSummaryMeta(mode: 'auto' | 'manual') {
+        return {
+          mode: 'szturm' as const,
+          atkLabel: pbInfo.atakujacy.nazwa,
+          defLabel: pbInfo.obronca.nazwa,
+          atkCivLabel: pbInfo.atakujacy.cywilizacja,
+          defCivLabel: pbInfo.obronca.cywilizacja,
+          teren: dTeren,
+        };
+      }
+
+      function doSiegeAutoResolve(): void {
+        try {
+          const atkLead = atkRosterRef[0]!;
+          const aLeadDef = unitDefFor(atkLead);
+          const mAtk = rosterFieldPowerM(atkRosterRef);
+          const mDef = effectiveDefenderM(defRosterRef, dTeren, dStructBonus, aLeadDef);
+          const powerRes = resolveAutoBattleByPower({ mAtk, mDef });
+          if (powerRes.winner === 'none') {
+            showHintMessage('Szturm: brak sił bojowych w składzie', 3000);
+            clearBattleUiState();
+            return;
+          }
+          const winner: BattleResult['winner'] =
+            powerRes.winner === 'tie' ? 'remis'
+              : powerRes.winner === 'attacker' ? 'atakujacy'
+                : 'obronca';
+          finishSiegeStormBattle(
+            city!,
+            atkRosterRef,
+            defRosterRef,
+            { winner, log: [], survivors: [] },
+            {
+              atkStart: atkStartSnap,
+              lossAtkPct: powerRes.lossAtkPct,
+              lossDefPct: powerRes.lossDefPct,
+              summary: siegeSummaryMeta('auto'),
+              afterSummary: clearBattleUiState,
+            },
+          );
+        } catch (e) {
+          console.error('[Oblezenie] auto szturm:', e);
+          clearBattleUiState();
+        }
+      }
+
+      showPreBattle(pbInfo, {
+        onAuto: () => { hidePreBattle(); doSiegeAutoResolve(); },
+        onBattlefield: () => {
+          hidePreBattle();
+          const bs = new BattleScene({
+            attacker: rosterToBattleUnits(atkRosterRef, 0xffd54a),
+            defender: rosterToBattleUnits(defRosterRef, 0xc84040),
+            teren: dTeren,
+            data,
+            deploy: false,
+            siege: { defCiv: ikonaIdToBronzeCiv(defCivId) },
+            attackerCivBonusy: civBonusyForOwnerId(atkRosterRef[0]?.ownerId ?? 0),
+            defenderCivBonusy: civBonusyForOwnerId(defRosterRef[0]?.ownerId ?? 0),
+          });
+          bs.play((res) => {
+            finishSiegeStormBattle(city, atkRosterRef, defRosterRef, res, {
+              atkStart: atkStartSnap,
+              summary: siegeSummaryMeta('manual'),
+              afterSummary: () => {
+                clearBattleUiState();
+                bs.dispose();
+              },
+            });
+          });
+        },
+        onCancel: () => {
+          hidePreBattle();
+          syncSiegePanelMeta(city);
+          showSiegeMapPanel(ctx, siegePanelActions, siegeTurnByCity.get(city.id) ?? 1);
+        },
+        onSave: () => {
+          if (doQuickSave(false)) {
+            showHintMessage('Zapis przed szturmem (tura ' + turn + ')', 2500);
+          }
+        },
+      }, { defaultAction: 'manual' });
+
+      console.log('[Oblezenie] szturm preBattle', city.name, 'atk=', atkRoster.length, 'def=', defRoster.length);
+    }
+
+    /**
+     * Build a synthetic BattleUnit from a units.json record (no matching
+     * RuntimeUnit -- used when synthesising sample armies).
+     */
+    function defToBattleUnit(def: any, idx: number, ownerColor: number): BattleUnit {
+      const name: string = def['Jednostka'] ?? 'Jednostka';
+      const role: string = def['Rola (linia)'] ?? '';
+      const isSuper: boolean = def['Super-jednostka'] === 'TAK';
+      const kat = categoryOf(name, role, isSuper);
+      const hp = unitHealth(def);
+      return {
+        id: 'synth_' + idx + '_' + name,
+        nazwa: name,
+        kategoria: kat,
+        ownerColor,
+        stats: def,
+        hp,
+        maxHp: hp,
+      };
+    }
+
+    /**
+     * Convert a BattleUnit into the CombatUnit shape expected by resolveCombat.
+     */
+    function battleUnitToCombatUnit(bu: BattleUnit): CombatUnit {
+      const s: Record<string, unknown> = (bu.stats as Record<string, unknown>) ?? {};
+      return combatUnitFromDef(s, {
+        typNazwa: (s['Jednostka'] as string) ?? bu.kategoria,
+        hp: bu.hp,
+      });
+    }
+
+    /**
+     * launchTestBattle -- triggered by the 'T' key.
+     *
+     * Canned battle: FOUR Hastati (Rome) vs FOUR Falanga (Greece).
+     * Looks up real stats from data.units. Falls back to first miecznik/wlocznik
+     * category unit if the named entry is not found.
+     */
+    function launchTestBattle(): void {
+      const PLAYER_COLOR  = 0xffd54a;
+      const ENEMY_COLOR   = 0xc84040;
+
+      if (playtestWalkaActive) {
+        showHintMessage('Playtest 1v1: uzyj kliku wroga na mapie (T = duza bitwa osobno)', 3500);
+        return;
+      }
+
+      // --- Look up Hastati and Falanga from data.units ---
+      // The 'Jednostka' field in the JSON is plain ASCII for these two units.
+      let legDef: any = (data.units as any[]).find((u: any) => u['Jednostka'] === 'Hastati');
+      let falDef: any = (data.units as any[]).find((u: any) => u['Jednostka'] === 'Falanga');
+
+      // Fallback: first unit whose category resolves to 'miecznik'
+      if (!legDef) {
+        legDef = (data.units as any[]).find((u: any) => {
+          const nm: string = u['Jednostka'] ?? '';
+          const rl: string = u['Rola (linia)'] ?? '';
+          const isSup: boolean = u['Super-jednostka'] === 'TAK';
+          return categoryOf(nm, rl, isSup) === 'miecznik';
+        });
+        console.warn('[launchTestBattle] Hastati not found, using fallback:', legDef?.['Jednostka'] ?? 'NONE');
+      }
+      // Fallback: first unit whose category resolves to 'wlocznik'
+      if (!falDef) {
+        falDef = (data.units as any[]).find((u: any) => {
+          const nm: string = u['Jednostka'] ?? '';
+          const rl: string = u['Rola (linia)'] ?? '';
+          const isSup: boolean = u['Super-jednostka'] === 'TAK';
+          return categoryOf(nm, rl, isSup) === 'wlocznik';
+        });
+        console.warn('[launchTestBattle] Falanga not found, using fallback:', falDef?.['Jednostka'] ?? 'NONE');
+      }
+
+      // Last-resort hardcoded stubs if data has neither
+      if (!legDef) {
+        legDef = {
+          'Jednostka': 'Hastati',
+          'Rola (linia)': 'Wręcz',
+          'Próg dezercji (% health)': 0.15,
+          'Zasięg ataku (hex)': 2,
+          'Ilość pocisków': 2,
+          'Ruch w bitwie (heksy)': 3,
+          'Kara obrony z flanki (%)': 15,
+          'Kara obrony z tyłu (%)': 30,
+          meleeAttack: 8, meleeDefence: 7, weaponDamage: 8,
+          armor: 9, piercing: 4, chargeBonus: 8, health: 19, missileAttack: 15,
+        };
+      }
+      if (!falDef) {
+        falDef = {
+          'Jednostka': 'Falanga',
+          'Rola (linia)': 'Wręcz',
+          'Próg dezercji (% health)': 0.2,
+          'Zasięg ataku (hex)': null,
+          'Ilość pocisków': null,
+          'Ruch w bitwie (heksy)': 3,
+          'Kara obrony z flanki (%)': 50,
+          'Kara obrony z tyłu (%)': 80,
+          meleeAttack: 5, meleeDefence: 10, weaponDamage: 5,
+          armor: 6, piercing: 2, chargeBonus: 6, health: 25, missileAttack: 0,
+        };
+      }
+
+      // --- Build 4 attacker BattleUnit (Hastati) ---
+      const legHp  = unitHealth(legDef);
+      const legAtk = unitAtak(legDef);
+      // categoryOf uses normalised name -- 'Hastati' matches 'hastati' -> 'legionista'
+      const legKat = 'miecznik';
+      const attackerUnits: BattleUnit[] = [0, 1, 2, 3].map((i): BattleUnit => ({
+        id: 'atk' + i,
+        nazwa: 'Hastati',
+        kategoria: legKat,
+        ownerColor: PLAYER_COLOR,
+        stats: legDef,
+        hp: legHp,
+        maxHp: legHp,
+      }));
+
+      // --- Build 4 defender BattleUnit (Falanga) ---
+      const falHp  = unitHealth(falDef);
+      const falAtk = unitAtak(falDef);
+      // categoryOf: 'Falanga' matches 'falanga' -> 'wlocznik'
+      const falKat = 'wlocznik';
+      const defenderUnits: BattleUnit[] = [0, 1, 2, 3].map((i): BattleUnit => ({
+        id: 'def' + i,
+        nazwa: 'Falanga',
+        kategoria: falKat,
+        ownerColor: ENEMY_COLOR,
+        stats: falDef,
+        hp: falHp,
+        maxHp: falHp,
+      }));
+
+      // --- TERRAIN: first player unit's hex, else 'Rownina' ---
+      const playerRaw = units.filter(u => u.ownerId === 0);
+      let teren = 'Rownina';
+      if (playerRaw.length > 0) {
+        const firstUnit = playerRaw[0]!;
+        const hexKey = keyOf(firstUnit.q, firstUnit.r);
+        const hex = map.hexes[hexKey];
+        if (hex && hex.terenBazowy) teren = hex.terenBazowy as string;
+      }
+
+      // --- szanseAtkPct: M armii (auto-walka v2b) ---
+      const mAtkDemo = armyFieldPower(legDef) * attackerUnits.length;
+      const mDefRaw = armyFieldPower(falDef) * defenderUnits.length;
+      const terrMultDemo = terrainDefenseMultiplier(
+        teren,
+        String(legDef['Rola (linia)'] ?? ''),
+        terrainCombatData as unknown as TerrainEntry[],
+      );
+      const mDefDemo = Math.round(mDefRaw * terrMultDemo * 10) / 10;
+      const szanseAtkPct = autoBattleWinPct(mAtkDemo, mDefDemo);
+
+      // --- PreBattleInfo ---
+      const pbInfo: PreBattleInfo = {
+        atakujacy: {
+          nazwa: 'Rzym (Legion)',
+          cywilizacja: 'Rzym',
+          units: attackerUnits.map((bu): PreBattleUnit => ({
+            nazwa:     bu.nazwa,
+            kategoria: bu.kategoria,
+            hp:        bu.hp,
+            maxHp:     bu.maxHp,
+            atak:      legAtk,
+            moc:       armyFieldPower(legDef),
+          })),
+        },
+        obronca: {
+          nazwa: 'Grecja (Falanga)',
+          cywilizacja: 'Grecja',
+          units: defenderUnits.map((bu): PreBattleUnit => ({
+            nazwa:     bu.nazwa,
+            kategoria: bu.kategoria,
+            hp:        bu.hp,
+            maxHp:     bu.maxHp,
+            atak:      falAtk,
+            moc:       armyFieldPower(falDef),
+          })),
+        },
+        teren,
+        szanseAtkPct,
+        miejsce: teren,
+        tura: turn,
+        canRetreat: true,
+      };
+
+      // --- Open pre-battle overlay ---
+      showPreBattle(pbInfo, {
+        onAuto: () => {
+          // Quick auto-resolve via resolveCombat on lead units
+          const atkLead = attackerUnits[0];
+          const defLead = defenderUnits[0];
+          if (atkLead && defLead) {
+            const cu_atk = battleUnitToCombatUnit(atkLead);
+            const cu_def = battleUnitToCombatUnit(defLead);
+            const result = resolveCombat(cu_atk, cu_def, {
+              defenderTerrain: teren,
+              attackerCivBonusy: civBonusyForOwnerId(0),
+              defenderCivBonusy: civBonusyForCivKey('grecy', data.civs),
+            });
+            const winnerLabel =
+              result.winner === 'attacker' ? pbInfo.atakujacy.nazwa :
+              result.winner === 'defender' ? pbInfo.obronca.nazwa   : 'Remis';
+            showHintMessage(
+              'Bitwa (auto): <b>' + winnerLabel + '</b> wygrywa' +
+              ' \xb7 Rundy: ' + result.rounds,
+              4000,
+            );
+          } else {
+            showHintMessage('Bitwa (auto): brak jednostek bojowych', 3000);
+          }
+        },
+        onBattlefield: () => {
+          const bs = new BattleScene({
+            attacker: attackerUnits,
+            defender: defenderUnits,
+            teren,
+            data,
+            deploy: true,
+            attackerCivBonusy: civBonusyForOwnerId(0),
+            defenderCivBonusy: civBonusyForOwnerId(1),
+          });
+          bs.play((res) => {
+            const winnerLabel =
+              res.winner === 'atakujacy' ? pbInfo.atakujacy.nazwa : pbInfo.obronca.nazwa;
+            showHintMessage('Bitwa: <b>' + winnerLabel + '</b> wygrywa', 4000);
+            bs.dispose();
+          });
+        },
+        onCancel: () => {
+          // preBattle hides itself on button click; nothing extra needed
+        },
+        onSave: () => {
+          if (doQuickSave(false)) {
+            showHintMessage('Zapis przed bitwa (tura ' + turn + ')', 2500);
+          } else {
+            showHintMessage('Zapis nieudany (brak localStorage?)', 2500);
+          }
+        },
+      }, { defaultAction: 'manual' });
+    }
+
+    /**
+     * Quick-save to localStorage slot 'autosave' (Ctrl+S and preBattle onSave).
+     * @param showHintOnSuccess — show HUD hint when save succeeds
+     */
+    function doQuickSave(showHintOnSuccess = true): boolean {
+      try {
+        const cityProdSave: Record<string, any> = {};
+        for (const [cid, prod] of cityProd.entries()) cityProdSave[cid] = prod;
+        const cityBuiltSave: Record<string, string[]> = {};
+        for (const [cid, blt] of cityBuilt.entries()) cityBuiltSave[cid] = blt.slice();
+        const aiResSave: Array<[number, string[]]> = [];
+        for (const [oid, zbadane] of aiResearchDone.entries()) aiResSave.push([oid, Array.from(zbadane)]);
+        const diploSave: Record<string, any> = {};
+        for (const [key, rel] of diplomacyRelations.entries()) diploSave[key] = rel;
+        const sg: SaveGame = {
+          wersja: 1,
+          tura: turn,
+          seed: SEED,
+          units: units.slice(),
+          cities: cities.slice(),
+          explored: Array.from(explored),
+          gracz: {
+            skarbiec: player.skarbiec,
+            nauka:    player.nauka,
+            era:      player.era,
+            zbadane:  Array.from(player.zbadane),
+            badana:   player.badana,
+          },
+          cityProd:       cityProdSave,
+          cityBuilt:      cityBuiltSave,
+          aiResearchDone: aiResSave,
+          diploRelations: diploSave,
+          meta: {
+            savedAt: new Date().toISOString(),
+            empireFoodStates: Array.from(empireFoodStates.entries()),
+            playerPracaPool,
+            siegeTurnByCity: Array.from(siegeTurnByCity.entries()),
+            siegeBesiegerByCity: Array.from(siegeBesiegerByCity.entries()),
+            siegeAiStateByKey: Array.from(siegeAiStateByKey.entries()),
+            pendingDiplomacyInbox: pendingDiplomacyInbox.slice(),
+            diplomaticContactEstablished: Array.from(diplomaticContactEstablished),
+            diplomacyDeals: activeDeals.slice(),
+            diplomacyPairMeta: Array.from(diplomacyPairMeta.entries()),
+            zlozeGrants: zlozeGrants.slice(),
+            surowiecBooleanGrants: basketTransferCtx.surowiecBooleanGrants,
+            battlePowerPtsByOwner: Array.from(battlePowerPtsByOwner.entries()),
+            ownerEraByOwner: Array.from(ownerEraByOwner.entries()),
+            placedImprovements: Array.from(placedImprovements.entries()),
+            hexClearingStates: Array.from(hexClearingStates.entries()),
+            completedWorldWonders: completedWorldWonders.slice(),
+            placedWorldWonders: placedWorldWonders.slice(),
+          },
+          mapQuality: _currentRenderOptions.renderQuality,
+          renderQuality: _currentRenderOptions.renderQuality,
+          mapDetailQuality: _currentRenderOptions.mapDetailQuality,
+        };
+        const ok = saveToLocal('autosave', sg);
+        if (ok) {
+          if (showHintOnSuccess) showHintMessage('Gra zapisana (tura ' + turn + ')', 3000);
+          console.log('[Save] zapisano slot=autosave tura=' + turn);
+        } else if (showHintOnSuccess) {
+          showHintMessage('Zapis nieudany (brak localStorage?)', 3000);
+        }
+        return ok;
+      } catch (eSave) {
+        console.error('[Save] Blad:', eSave);
+        if (showHintOnSuccess) showHintMessage('Blad zapisu gry', 3000);
+        return false;
+      }
+    }
+
+    // -----------------------------------------------------------------------
+    // End turn (N key) + Gallery toggle (G key) + Fog toggle (F key)
+    // + City founding (B key) + Test battle (T key)
+    // If animation is running, snap unit to destination first.
+    // -----------------------------------------------------------------------
+
+    window.addEventListener('keydown', (e: KeyboardEvent) => {
+      // --- Escape: close city panel / exit build mode ---
+      if (e.key === 'Escape') {
+        if (isGamePauseMenuOpen()) {
+          hideGamePauseMenu();
+          return;
+        }
+        if (okolicaMapEditCityId) {
+          exitOkolicaMapMode();
+          showHintMessage('Tryb okolicy zakończony.', 2500);
+          return;
+        }
+        if (buildModeOpen) {
+          exitBuildMode();
+          return;
+        }
+        hideCityPanelFull();
+        return;
+      }
+
+      // --- Gallery toggle ---
+      if (e.key.toLowerCase() === 'g') {
+        galleryOn = !galleryOn;
+        if (galleryOn) {
+          hideCityPanelFull();
+          enterGallery();
+        } else {
+          exitGallery();
+        }
+        return;
+      }
+
+      // --- F: pełne wyłączenie FoW (dev) — renderuje całą mapę, wolniejsze ---
+      if (e.code === 'KeyF' || e.key.toLowerCase() === 'f') {
+        if (e.repeat) return;
+        if (!FOG_DEV_SHORTCUTS) return;
+        if (galleryOn) return;
+        e.preventDefault();
+        toggleDevFogFull();
+        return;
+      }
+
+      // --- M: odkryj / zakryj ląd (test) — ocean ukryty, FoW przy jednostkach zostaje ---
+      if (e.code === 'KeyM' || (e.key.toLowerCase() === 'm' && !e.ctrlKey && !e.metaKey && !e.altKey)) {
+        if (e.repeat) return;
+        if (!FOG_DEV_SHORTCUTS) return;
+        if (galleryOn) return;
+        e.preventDefault();
+        toggleDevRevealAllLand();
+        return;
+      }
+
+      // --- B: Found a city on the last hovered/clicked hex ---
+      if (e.key.toLowerCase() === 'b') {
+        // Gallery mode: ignore.
+        if (galleryOn) return;
+
+        // Use the last hex the player hovered over or explicitly set (lastBHex).
+        // Fallback: if a unit is selected, use that unit's position.
+        let foundQ: number | null = null;
+        let foundR: number | null = null;
+
+        if (lastBHex !== null) {
+          foundQ = lastBHex.q;
+          foundR = lastBHex.r;
+        } else if (hoverKey !== null) {
+          const parts = hoverKey.split(',');
+          if (parts.length === 2) {
+            foundQ = parseInt(parts[0]!, 10);
+            foundR = parseInt(parts[1]!, 10);
+          }
+        } else if (selectedId !== null) {
+          const sel = units.find(x => x.id === selectedId);
+          if (sel && sel.ownerId === 0) {
+            foundQ = sel.q;
+            foundR = sel.r;
+          }
+        }
+
+        if (foundQ === null || foundR === null) {
+          showHintMessage('Nie wybrano heksu — najedz na pole i nacisnij B', 3000);
+          return;
+        }
+        tryFoundPlayerCityAt(foundQ, foundR);
+        return;
+      }
+
+      // --- T: Test battle ---
+      if (e.key.toLowerCase() === 't') {
+        if (galleryOn || isAnimating || isPreBattleOpen()) return;
+        launchTestBattle();
+        return;
+      }
+
+      // --- Ctrl+S: Save game (step K) ---
+      if ((e.key.toLowerCase() === 's') && (e.ctrlKey || e.metaKey)) {
+        e.preventDefault();
+        doQuickSave(true);
+        return;
+      }
+
+      // --- Ctrl+L: Load game (step K) ---
+      if ((e.key.toLowerCase() === 'l') && (e.ctrlKey || e.metaKey)) {
+        e.preventDefault();
+        try {
+          const saved = loadFromLocal('autosave');
+          if (!saved) {
+            showHintMessage('Brak zapisu do wczytania (slot: autosave)', 3000);
+          } else {
+            restoreGameFromSave(saved);
+            cityRenderer.sync(cities, _cityRenderOpts());
+            refreshFog();
+            updateHud();
+            showHintMessage('Wczytano zapis (tura ' + turn + ')', 3000);
+            console.log('[Load] wczytano slot=autosave tura=' + turn);
+          }
+        } catch (eLoad) {
+          console.error('[Load] Blad:', eLoad);
+          showHintMessage('Blad wczytywania gry', 3000);
+        }
+        return;
+      }
+
+      // --- N: End turn ---
+      if (e.key.toLowerCase() === 'n') {
+        if (playtestWalkaActive) return;
+        // Gallery mode: ignore end-turn key.
+        if (galleryOn) return;
+        // P3b: Block turns after game over.
+        if (gameOver) { showHintMessage('Gra zakonczona. Kliknij "Nowa gra" by zagrac ponownie.', 3000); return; }
+
+        // A1-Q9: brama — blocking wydarzenia przed końcem tury
+        const blockingN = countBlockingEvents();
+        if (blockingN > 0) {
+          showHintMessage('Rozstrzygnij wydarzenia (' + blockingN + ') — WYKONAJ lub panel miasta', 3500);
+          return;
+        }
+
+        // B2-Q5: wyczyść flagi buntu z poprzedniej tury (chip/ikona do końca tury).
+        for (const st of cityOrderState.values()) {
+          if (st.bunt) st.bunt = undefined;
+        }
+
+        // Snap any in-flight animation to its destination.
+        if (isAnimating && anim !== null) {
+          const u = units.find(x => x.id === anim!.id);
+          if (u) {
+            u.q = anim.destQ;
+            u.r = anim.destR;
+            u.ruchLeft = Math.max(0, u.ruchLeft - anim.cost);
+          }
+          anim = null;
+          isAnimating = false;
+        }
+        // Restore movement for all units
+        for (const u of units) {
+          u.ruchLeft = u.ruch;
+          if (u.oblegaCityId) u.ruchLeft = 0;
+        }
+        selectedId = null;
+        reachable = new Set<string>();
+        unitRenderer.clearHighlight();
+        unitRenderer.clearPathRoute();
+        hoverKey = null;
+        turn++;
+
+        resetTrustPnGainedForPlayerTurn();
+
+        try {
+          runDiplomacyTurnTick();
+        } catch (eDiploTick) {
+          console.error('[Dyplomacja] Blad ticku v1.1:', eDiploTick);
+        }
+
+        // --- Per-turn economy tick (task 13B) ---
+        // Advance every city's economy: terrain yields -> net food ->
+        // population growth/starvation, persisting the food store on the city.
+        // Wrapped defensively so a data anomaly can never break the turn loop.
+        try {
+          // Map runtime units to the minimal EconUnit shape for upkeep/food accounting.
+          const econUnits: EconUnit[] = units.map(u => ({
+            ownerId: u.ownerId,
+            typeId:  u.typeId,
+            camping: false,  // no camping state in v0.1; all units treated as marching
+          }));
+          const ownerCivMap = new Map<number, string>();
+          ownerCivMap.set(0, (player.civType as string) || 'grecy');
+          for (const [oid, civ] of aiOwnerCivMap) ownerCivMap.set(oid, civ);
+          const popBeforeTick = cities.filter(c => c.ownerId === 0).reduce((s, c) => s + c.population, 0);
+          const econ = advanceCityEconomy(cities, map, data, _menuDifficulty, econUnits, growthMultMap, cityBuilt, player.era, player.zbadane, ownerCivMap, orderMultMap);
+          powerSnapshotsForTurn = buildPowerSnapshotsForTurn(econ);
+          refreshObjectivePowerCache();
+          lastCityKulturaTick.clear();
+          for (const tk of econ.perCity) lastCityKulturaTick.set(tk.cityId, tk.kultura);
+          try {
+            const upkeepParams = loadUpkeepParams(data.econParams, _menuDifficulty);
+            const efParams = buildEmpireFoodParams(data.econParams, _menuDifficulty);
+            advanceEmpireFood(econ, econUnits, empireFoodStates, upkeepParams, efParams);
+            if (isArmyStarving(0)) {
+              showHintMessage('Głód wojska — zapasy państwa ujemne!', 3000);
+              const starv = applyArmyStarvationHpLoss(
+                units,
+                0,
+                efParams.glodWojskaHpFrac,
+                (typeId) => unitHealth(data.units.find(u => u.Jednostka === typeId) ?? {}),
+              );
+              if (starv.destroyedIds.length > 0) {
+                for (let i = units.length - 1; i >= 0; i--) {
+                  if (starv.destroyedIds.includes(units[i]!.id)) units.splice(i, 1);
+                }
+                syncUnitsRender();
+                showHintMessage(`Głód: utracono ${starv.destroyedIds.length} jednostek`, 3500);
+              }
+            }
+          } catch (errEf) {
+            console.error('[EmpireFood] Blad ticku:', errEf);
+          }
+          // P3a: update last-turn totals for HUD (Praca HUD = pula gracza, nie suma brutto miast)
+          playerPracaPool += econ.totalPracaPula;
+          _lastPraca   = playerPracaPool;
+          _lastKultura = econ.totalKultura;
+          _lastPracaRate = econ.totalPracaPula;
+          _lastKulturaRate = econ.totalKultura;
+          if (cultureRangeVisible || religionRangeVisible) refreshRangeOverlays();
+          for (const [hexKey, st] of hexClearingStates) {
+            if (st.ownerId !== 0) continue;
+            const { pracaGrant, expired } = tickHexClearing(st);
+            if (pracaGrant > 0) {
+              playerPracaPool += pracaGrant;
+              _lastPraca = playerPracaPool;
+              showHintMessage(
+                'Wyrąb: +' + pracaGrant + ' Pracy (pozostało ' + st.turnsLeft + ' tury)',
+                2000,
+              );
+            }
+            if (expired) hexClearingStates.delete(hexKey);
+          }
+          _lastPieniadzRate = econ.totalPieniadz;
+          _lastNaukaRate = econ.totalNauka;
+          _lastPlayerCityEcon = econ.perCity
+            .filter(tk => tk.ownerId === 0)
+            .map(tk => {
+              const c = cities.find(x => x.id === tk.cityId);
+              return {
+                cityId: tk.cityId,
+                name: c?.name ?? tk.cityId,
+                pieniadz: Math.round(tk.pieniadz),
+                doPuli: Math.round(tk.doPuli),
+                doBudynkow: Math.round(tk.doBudynkow),
+                nauka: Math.round(tk.nauka),
+              };
+            });
+          _lastLudnoscRate = cities.filter(c => c.ownerId === 0).reduce((s, c) => s + c.population, 0) - popBeforeTick;
+          {
+            const pc = cities.filter(c => c.ownerId === 0);
+            if (pc.length > 0) {
+              let sumW = 0;
+              let sumM = 0;
+              for (const c of pc) {
+                sumW += c.wealthState?.poziom ?? 1;
+                const tk = econ.perCity.find(t => t.cityId === c.id);
+                sumM += tk?.wealthMnoznik ?? 1;
+              }
+              _lastWealthLevel   = Math.round(sumW / pc.length);
+              _lastWealthMnoznik = sumM / pc.length;
+            }
+          }
+          if (cities.length > 0) {
+            console.log(
+              `[Ekonomia] Tura ${turn}: miasta=${econ.cities}` +
+              ` Praca=${econ.totalPraca} Pieniądz=${econ.totalPieniadz}` +
+              ` Nauka=${econ.totalNauka} Kultura=${econ.totalKultura}` +
+              ` Luksus=${econ.totalLuksus} WealthW=${_lastWealthLevel}` +
+              ` Żywność(netto)=${econ.totalZywnosc}` +
+              ` wzrost=${econ.growth} głód=${econ.starved}`,
+            );
+            // Surface population changes briefly so the economy is visible.
+            if (econ.growth > 0) {
+              showHintMessage('Wzrost populacji w ' + econ.growth + ' miastach', 2500);
+            } else if (econ.starved > 0) {
+              showHintMessage('Głód: spadek populacji w ' + econ.starved + ' miastach', 2500);
+            }
+            // Cities may have changed population -> refresh their labels.
+            cityRenderer.sync(cities, _cityRenderOpts());
+          }
+
+          // --- N3: TURA OBLEZENIA — atrycja garnizonu + kapitulacja z głodu (przejęcie miasta) ---
+          try {
+            for (const tick of econ.perCity) {
+              if (!tick.oblegany) continue;
+              const oblCity = cities.find(c => c.id === tick.cityId);
+              if (!oblCity) continue;
+
+              const garnizonBefore = oblCity.garnizon ?? 0;
+              if (garnizonBefore > 0) {
+                const atrycja = Math.max(1, Math.floor(garnizonBefore * 0.08));
+                oblCity.garnizon = Math.max(0, garnizonBefore - atrycja);
+                console.log(
+                  '[Oblezenie] Tura ' + turn + ' ' + oblCity.name +
+                  ': atrycja garnizonu ' + garnizonBefore + ' -> ' + oblCity.garnizon +
+                  ' (-' + atrycja + ')',
+                );
+              }
+
+              if (tick.obleganyGlod) {
+                handleSiegeCapitulationPhase(oblCity);
+              } else if (oblCity.siegeCapitulationPending) {
+                resolveSiegeSurrender(oblCity.id);
+              }
+
+              const siegeT = (siegeTurnByCity.get(oblCity.id) ?? 0) + 1;
+              siegeTurnByCity.set(oblCity.id, siegeT);
+              tickSiegeMachinesForCity(oblCity);
+              maybeAiAssaultAfterMachines(oblCity, siegeT);
+              if (getActiveSiegeCityId() === oblCity.id) {
+                syncSiegePanelMeta(oblCity);
+                updateSiegeMapPanelTurn(siegeT, oblCity);
+              }
+            }
+          } catch (errSiege) {
+            console.error('[Oblezenie] Blad atrycji:', errSiege);
+          }
+
+          // --- Bank treasury + science, then auto-research (13B-finish + 7B) ---
+          // Bank only the HUMAN player's (ownerId 0) share of this turn's yields.
+          // econ.totalPieniadz / totalNauka sum ALL owners (incl. AI), so we sum
+          // the player's own cities from perCity instead.  economy.ts already
+          // splits each city's trade into a money stream and a science stream
+          // every turn, so banking those two streams directly is consistent with
+          // economy semantics (see playerState.ts header for the rationale).
+          try {
+            let pieniadzGracza = 0;
+            let naukaGracza = 0;
+            for (const tk of econ.perCity) {
+              if (tk.ownerId === 0) {
+                pieniadzGracza += tk.pieniadz;
+                naukaGracza   += tk.nauka;
+              }
+            }
+            player.skarbiec += pieniadzGracza;
+            player.nauka    += naukaGracza;
+
+            // --- Subtract upkeep from treasury (economy-upkeep s.6.4) ---
+            const playerBalance = econ.upkeepByOwner.get(0);
+            if (playerBalance && playerBalance.utrzymanieRazem > 0) {
+              player.skarbiec -= playerBalance.utrzymanieRazem;
+              if (playerBalance.deficyt) {
+                console.warn(
+                  '[Ekonomia] Deficyt! Utrzymanie=' + playerBalance.utrzymanieRazem +
+                  ' Dochod=' + Math.round(pieniadzGracza) +
+                  ' Saldo=' + Math.round(playerBalance.saldo),
+                );
+              }
+            }
+
+            // Auto-research: spend banked science on the cheapest available tech.
+            const step = researchStep(player, data.tech, researchGateForOwner(0));
+            for (const done of step.completed) {
+              let msg = 'Zbadano: ' + done.id + ' (-' + done.koszt + ' nauki)';
+              if (done.awansEpoki) msg += ' \xb7 nowa epoka ' + done.era;
+              if (done.pieniadz)   msg += ' \xb7 Pieni\u0105dz \xd710';
+              console.log('[Nauka] Tura ' + turn + ': ' + msg);
+              showHintMessage(msg, 3500);
+            }
+            if (step.completed.length > 0) {
+              if (step.completed.some(d => d.awansEpoki)) {
+                overlayDepositEra = player.era;
+                rebuildResourceOverlays();
+              }
+              console.log(
+                '[Nauka] Skarbiec=' + player.skarbiec +
+                ' Nauka=' + player.nauka +
+                ' Epoka=' + player.era +
+                ' Zbadane=' + player.zbadane.size,
+              );
+              refreshSciencePickerIfOpen();
+            }
+          } catch (errBank) {
+            console.warn('[Nauka] B\u0142\u0105d bankowania/badania:', errBank);
+          }
+
+          // --- MIASTO: produkcja / porządek / kultura / religia ---
+          try {
+            const difficulty = _menuDifficulty;
+            const op  = loadOrderParams(data.societyParams, difficulty);
+            const cp  = loadCultureParams(data.societyParams, difficulty);
+            const rp  = loadReligionParams(data.societyParams, difficulty);
+            const rng = makeRng(turn);
+            lastReligionSpreadByCity.clear();
+            let religionSpreadThisTurn = 0;
+
+            for (const city of cities) {
+              const cid = city.id;
+
+              // Plony tej tury
+              const econTick    = econ.perCity.find(tk => tk.cityId === cid);
+              const pracaRaw    = econTick ? econTick.praca   : 0;
+              const kulturaTick = econTick ? econTick.kultura : 0;
+
+              const ownCultureShare = resolveOwnCultureShare(city as { ownCultureShare?: number; kulturaOwnShare?: number });
+
+              // KULTURA
+              const ccIn: CultureCity = { kulturaSkumulowana: (city as any).kultura ?? 0, ownCultureShare };
+              const acc = accumulateCulture(ccIn, kulturaTick, cp);
+              (city as any).kultura = acc.kulturaSkumulowana;
+              const ccOut: CultureCity = { kulturaSkumulowana: acc.kulturaSkumulowana, ownCultureShare };
+              const haKult = cultureHappiness(ccOut, cp);
+
+              const builtIds = cityBuilt.get(cid) ?? [];
+
+              // RELIGIA
+              const ownRel = ownerReligionForOwnerId(city.ownerId);
+              const curRel: ReligionState = resolvedCityReligion(city);
+              const haRel = religionHappiness(curRel, ownRel, rp, builtIds.includes('swiatynia'));
+              const foreignReligionDominant = isForeignReligionDominant(curRel, ownRel, rp);
+              cityRelig.set(cid, curRel);
+
+              // SPREAD RELIGION (step H): spread dominant faith to neighbours
+              {
+                const relNeighbors: ReligionNeighbor[] = [];
+                for (const oc of cities) {
+                  if (oc.id === cid) continue;
+                  const dist = hexDistance(oc.q, oc.r, city.q, city.r);
+                  if (dist <= (rp.szerzenieMaxDystans ?? 3)) {
+                    relNeighbors.push({
+                      id: oc.id,
+                      distance: dist,
+                      state: resolvedCityReligion(oc),
+                      population: oc.population,
+                    });
+                  }
+                }
+                if (relNeighbors.length > 0) {
+                  const hasSwiatynia = (cityBuilt.get(cid) ?? []).includes('swiatynia');
+                  const spreadRes = spreadReligion(curRel, relNeighbors, rp, {
+                    hasSwiatynia,
+                    pressure: 1,
+                    seed: (turn * 997 + city.q * 31 + city.r) >>> 0,
+                  });
+                  for (const ev of spreadRes.events) {
+                    cityRelig.set(ev.id, ev.state);
+                  }
+                  const spreadOut = spreadRes.events.reduce((s, ev) => s + ev.added, 0);
+                  lastReligionSpreadByCity.set(cid, spreadOut);
+                  religionSpreadThisTurn += spreadOut;
+                  if (spreadRes.reached > 0) {
+                    console.log(
+                      `[Religia] Tura ${turn} ${city.name}: szerzenie -> ${spreadRes.reached} miast`,
+                    );
+                  }
+                }
+              }
+
+              // SZCZĘŚCIE
+              let haBuildings = 0;
+              for (const bid of builtIds) {
+                const bdef = data.buildings.find(b => b.id === bid);
+                if (bdef && typeof bdef.baza.zadowolenie === 'number') {
+                  const lvl = buildingLevelForEpoch(bdef.epokaWejscia, player.era, bdef.maksPoziom);
+                  haBuildings += buildingEffectAtLevel(bdef.baza.zadowolenie, lvl);
+                }
+              }
+              const haWealth  = econTick ? econTick.wealthZadowolenie : 0;
+              const podzial = city.podzialHandlu ?? DEFAULT_PODZIAL_HANDLU;
+              const gCount = garnizonCountForCity(city);
+              const playerAtWar = city.ownerId === 0 && isPlayerAtWar();
+              const stolicaBonus = stolicaEasyBonusActive(difficulty, turn, city, cities);
+              const revoltParams = loadRevoltParams(data.societyParams, difficulty);
+
+              const ordPct = evaluateOrderFromBreakdown(
+                {
+                  difficulty,
+                  era: player.era,
+                  population: city.population,
+                  buildingZadowolenie: haBuildings,
+                  haKult,
+                  haRel,
+                  haWealth,
+                  podzialHandlu: podzial,
+                  atWar: playerAtWar,
+                  hasSwiatynia: builtIds.includes('swiatynia'),
+                  hasAmfiteatr: builtIds.includes('teatr') || builtIds.includes('akademia'),
+                  ownCultureShare,
+                  foreignReligionDominant,
+                  stolicaEasyBonus: stolicaBonus,
+                },
+                {
+                  difficulty,
+                  era: player.era,
+                  population: city.population,
+                  garnizonCount: gCount,
+                  hasRatusz: builtIds.includes('ratusz'),
+                  hasPretorium: builtIds.includes('pretorium'),
+                  hasSad: builtIds.includes('sad'),
+                  brakGarnizonuKara: city.population >= 6 && gCount === 0,
+                  stolicaEasyBonus: stolicaBonus,
+                },
+                data.societyParams,
+                difficulty,
+              );
+
+              const orderEff = ordPct.effects;
+              const tier = ordPct.tier;
+
+              const graceUpd = updateRevoltGrace(city.revoltGraceRemaining, ordPct.porPct, revoltParams);
+              city.revoltGraceRemaining = graceUpd.revoltGraceRemaining;
+              if (graceUpd.shouldTriggerRebellion && city.ownerId === 0 && !city.rebelState) {
+                city.rebelState = true;
+                city.ownerId = REBEL_FACTION_OWNER_ID;
+                console.log(`[Rebelia] Tura ${turn} ${city.name} → frakcja rebeliantów`);
+              }
+
+              let buntFlag = false;
+              if (tier !== 'neutral') {
+                console.log(
+                  `[Porzadek] Tura ${turn} ${city.name}: tier=${tier} porPct=${ordPct.porPct.toFixed(1)} szPct=${ordPct.sz.szPct.toFixed(1)}`,
+                );
+              }
+              if (!graceUpd.revoltWarning && !city.rebelState && orderEff.revoltRisk > 0 && rng() < orderEff.revoltRisk) {
+                const targetId = pickRevoltMigrationTarget(
+                  cid, city.ownerId, cities, orderValueMap,
+                );
+                if (targetId) {
+                  const target = cities.find(c => c.id === targetId);
+                  if (target && city.population > 1) {
+                    city.population -= 1;
+                    target.population += 1;
+                    buntFlag = true;
+                    console.log(`[Bunt] Tura ${turn} ${city.name} → migracja −1 do ${target.name} (risk=${orderEff.revoltRisk.toFixed(2)})`);
+                  }
+                }
+              }
+              cityOrderState.set(cid, {
+                szczescie: Math.round(ordPct.sz.netto * 10) / 10,
+                porzadek: ordPct.prawo.netto,
+                szPct: ordPct.sz.szPct,
+                prawPct: ordPct.prawo.prawPct,
+                porPct: ordPct.porPct,
+                bandLabel: ordPct.bandLabel,
+                szLines: ordPct.sz.lines,
+                prawLines: ordPct.prawo.lines,
+                progT1: op.progT1,
+                progT2: op.progT2,
+                bunt: buntFlag || undefined,
+                revoltGraceRemaining: graceUpd.graceTurnsLeft,
+                revoltWarning: graceUpd.revoltWarning,
+                rebelState: city.rebelState,
+              });
+
+              orderValueMap.set(cid, ordPct.porPct);
+              growthMultMap.set(cid, orderEff.growthMult);
+              orderMultMap.set(cid, orderEffectsToYieldMults(tier, orderEff));
+
+              // AUTO-MANAGE (STEP D): zastosuj decyzje auto-zarzadcy jesli wlaczony
+              const praca = pracaRaw;
+              let prod0 = cityProd.get(cid) ?? { kolejka: [], postep: 0 };
+              if (autoManageCities.has(cid)) {
+                try {
+                  const unlockedTechs = city.ownerId === 0
+                    ? Array.from(player.zbadane)
+                    : Array.from(aiResearchDone.get(city.ownerId) ?? new Set<string>());
+                  const builtForCity = cityBuilt.get(cid) ?? [];
+                  const amDecision = autoManageCity(
+                    city,
+                    map,
+                    prod0,
+                    data,
+                    {
+                      yieldOf: (_q: number, _r: number) => {
+                        // Minimal yield stub -- returns econ tick values aggregated
+                        // (full per-tile yield would need economy.ts tileYield access)
+                        const tick = econ.perCity.find(tk => tk.cityId === cid);
+                        return {
+                          zywnosc:  tick ? tick.zywnoscNetto / Math.max(1, city.population) : 0,
+                          praca:    tick ? tick.praca    / Math.max(1, city.population) : 0,
+                          pieniadz: tick ? tick.pieniadz / Math.max(1, city.population) : 0,
+                          nauka:    tick ? tick.nauka    / Math.max(1, city.population) : 0,
+                          kultura:  tick ? tick.kultura  / Math.max(1, city.population) : 0,
+                        };
+                      },
+                      cityPraca: praca,
+                      udzialBudynki: 0.7,
+                      unlockedTechs,
+                      ctx: {
+                        builtBuildingIds: builtForCity,
+                        productionQueue: prod0.kolejka,
+                        epoch: empireEpochForOwner(city.ownerId),
+                        civBonusy: civBonusyForOwnerId(city.ownerId),
+                        civUnitNacja: unitNacjaForCivKey(civKeyForOwnerId(city.ownerId)),
+                        placedImprovements,
+                      },
+                    },
+                  );
+                  // Apply auto-enqueue suggestion (only when queue is empty)
+                  if (amDecision.enqueue !== null) {
+                    prod0 = enqueue(prod0, amDecision.enqueue);
+                    cityProd.set(cid, prod0);
+                  }
+                } catch (eAM) {
+                  console.error(`[AutoManage] Blad dla miasta ${city.name}:`, eAM);
+                }
+              }
+
+              // PRODUKCJA (D2=A plaster: tylko doBudynkow idzie na kolejkę budynków)
+              const pracaBudynki = econTick ? econTick.doBudynkow : praca;
+              const { prod: prodPo, completed } = advanceProduction(prod0, pracaBudynki);
+              let prodFinal = prodPo;
+              cityProd.set(cid, prodPo);
+
+              if (completed) {
+                const applied = applyProductionCompleted(city, cid, completed, prodPo);
+                prodFinal = applied.prod;
+                cityProd.set(cid, prodFinal);
+              }
+
+              const recResult = advanceRecruitmentGated(
+                prodFinal, city, empireEpochForOwner(city.ownerId), 1,
+              );
+              prodFinal = recResult.prod;
+              city.population = recResult.population;
+              city.manpower = recResult.manpower;
+              cityProd.set(cid, prodFinal);
+              for (const rec of recResult.completed) {
+                const def = lookupUnitDef(rec.id);
+                const ruch = normFieldVal(def['Ruch'], 2);
+                const role = String(def['Rola'] ?? def['Rola (linia)'] ?? '');
+                const isSuper = normFieldVal(def['Super'], 0) === 1;
+                units.push({
+                  id: 'rec_' + turn + '_' + cid + '_' + Math.random().toString(36).slice(2),
+                  ownerId: city.ownerId,
+                  typeId: rec.id,
+                  category: categoryOf(rec.id, role, isSuper),
+                  q: city.q,
+                  r: city.r,
+                  ruch,
+                  ruchLeft: 0,
+                });
+                maybeHintArmyFoodOnFirstPlayerUnit(city.ownerId);
+                console.log(`[Rekrutacja] Tura ${turn} ${city.name}: ${rec.id} gotowa @ (${city.q},${city.r})`);
+              }
+            }
+            _lastReligionSpreadTotal = religionSpreadThisTurn;
+          } catch (errMiasto) {
+            console.error('[Miasto] Błąd tury MIASTO:', errMiasto);
+          }
+        } catch (err) {
+          console.error('[Ekonomia] Błąd w turze ekonomii:', err);
+        }
+
+        // ===================================================================
+        // AI TURN LOOP: execute commands for every AI rival (ownerId > 0)
+        // ===================================================================
+        try {
+          // Collect unique AI owner ids from the current unit/city pools.
+          const aiOwners = new Set<number>();
+          for (const u of units) { if (u.ownerId > 0) aiOwners.add(u.ownerId); }
+          for (const c of cities) { if (c.ownerId > 0) aiOwners.add(c.ownerId); }
+
+          for (const ownerId of aiOwners) {
+            const aiDiffLevel = (_menuDifficulty === 'hard' ? 3 : _menuDifficulty === 'easy' ? 1 : 2) as 1 | 2 | 3;
+            const contactedOwners = getDiplomaticContacts();
+            const opts: AITurnOpts = {
+              civType: aiOwnerCivMap.get(ownerId), // nacja AI z rostera civs.json
+              poziomTrudnosci: aiDiffLevel,
+              defensiveCopy: typCityCopyOwners.has(ownerId),
+              cityBuildings: Object.fromEntries(
+                [...cityBuilt.entries()].filter(([cid]) => cities.find(c => c.id === cid && c.ownerId === ownerId))
+              ),
+            };
+            let commands;
+            try {
+              commands = decideAITurn(ownerId, units, cities, map, data, opts);
+            } catch (eAI) {
+              console.error(`[AI] decideAITurn owner=${ownerId} error:`, eAI);
+              continue;
+            }
+
+            // --- AI Research: chooseAIResearch fills slot when empty (STEP B) ---
+            try {
+              if (!aiResearchDone.has(ownerId)) {
+                aiResearchDone.set(ownerId, new Set<string>());
+              }
+              const aiDone = aiResearchDone.get(ownerId)!;
+              const aiCitiesCount = cities.filter(c => c.ownerId === ownerId).length;
+              const allBuiltForAI: string[] = [];
+              for (const [cid, blt] of cityBuilt.entries()) {
+                const c = cities.find(ct => ct.id === cid && ct.ownerId === ownerId);
+                if (c) { for (const b of blt) allBuiltForAI.push(b); }
+              }
+              const aiTechChoice = chooseAIResearch(
+                data.tech as any,
+                aiDone,
+                { myCitiesCount: aiCitiesCount, allBuiltBuildings: allBuiltForAI },
+              );
+              if (aiTechChoice !== null && !aiDone.has(aiTechChoice)) {
+                aiDone.add(aiTechChoice);
+                syncOwnerEraFromResearch(ownerId);
+                console.log(`[AI ${ownerId}] Zbadano: ${aiTechChoice}`);
+              }
+            } catch (eAIRes) {
+              console.error(`[AI ${ownerId}] Blad wyboru technologii:`, eAIRes);
+            }
+
+            // --- Diplomacy stance + computeRespekt + decideAIDiplomacy ---
+            try {
+              const militaryRatio = militaryRatioFromArmyM(
+                sumArmyMForOwner(ownerId),
+                sumArmyMForOwner(0),
+              );
+              const rel = getDiploRelation(0, ownerId);
+              const dipCtx: AIDiplomacyContext = {
+                isMinorCiv: false,
+                militaryRatio,
+                currentTurn: turn,
+                turnsAtWar: rel.status === 'wojna' ? 1 : 0,
+              };
+              // ikonaId w civs.json === wartosci enum TypCywilizacji (np. 'grecy' === TypCywilizacji.Grecy)
+              const aiCivId = aiOwnerCivMap.get(ownerId) ?? 'grecy';
+              const aiTyp = (aiCivId as TypCywilizacji);
+              const plrTyp = ((player.civType ?? 'rzymianie') as TypCywilizacji);
+              const aiStub: Player = {
+                ownerId,
+                typCywilizacji: aiTyp,
+              } as unknown as Player;
+              const humanStub: Player = {
+                ownerId: 0,
+                typCywilizacji: plrTyp,
+              } as unknown as Player;
+              const stance = aiDiplomacyStance(aiStub, humanStub, rel, dipCtx);
+              const tier = relationTier(rel);
+
+              // --- computeRespekt: obiektywny POWER (power-objective v2) ---
+              const potPlr = objectivePowerByOwner.get(0)?.power ?? 0;
+              const potAI  = objectivePowerByOwner.get(ownerId)?.power ?? 0;
+              const respektAI = computeRespekt(potAI, potPlr);
+              // Update respekt in relation
+              const relWithRespekt = { ...rel, respekt: respektAI };
+              setDiploRelation(0, ownerId, relWithRespekt);
+
+              // --- tickDiplomacy: per-turn shift ---
+              const tickCtx: TickCtx = {
+                turn,
+                aktywnyHandel: activeDeals.some(
+                  d => dealInvolvesOwners(d, 0, ownerId)
+                    && normalizeTreatyKind(d.rodzaj) === RodzajTraktatu.UmowaHandlowa,
+                ),
+                aktywnyPakt: hasTreaty(activeDeals, 0, ownerId, RodzajTraktatu.PaktNieagresji)
+                  || activeDeals.some(d => dealInvolvesOwners(d, 0, ownerId) && isAllianceDealKind(d.rodzaj)),
+                dobraWolaAktywna: false,
+                wspolnyWrog: false,
+                wspolnaReligia: false,
+                odmiennaReligia: false,
+                ekspansjaPrzyGranicy:
+                  cities.filter(c => c.ownerId === ownerId).length > 2 &&
+                  cities.filter(c => c.ownerId === 0).length > 2,
+              };
+              const relTicked = tickDiplomacy(relWithRespekt as any, tickCtx);
+              setDiploRelation(0, ownerId, relTicked as unknown as Relation);
+
+              // --- decideAIDiplomacy: AI dyplomacja (war/peace/trybut) ---
+              const diffLevel = (_menuDifficulty === 'hard' ? 3 : _menuDifficulty === 'easy' ? 1 : 2) as 1|2|3;
+              const diffParams = loadDifficultyParams(data, diffLevel);
+              const respektWzgledny = (potAI + potPlr) > 0
+                ? potAI / (potAI + potPlr)
+                : 0.5;
+              const diploInp: DiplomacjaInputs = {
+                myPlayerId: String(ownerId),
+                relacje: [{
+                  partnerId: '0',
+                  relation: relTicked as unknown as Relation,
+                  respektWzgledny,
+                  stanWojny: (relTicked as any).status === 'wojna',
+                }],
+                agresja: resolveArchetypeAggression(aiTyp, ARCHETYPE_AGGRESSION[aiTyp] ?? 0.5),
+                handlowosc: resolveArchetypeTrade(aiTyp, ARCHETYPE_TRADE[aiTyp] ?? 0.5),
+                epoka: player.era,
+              };
+              const dipLayer = diplomacyLayerForOwner(
+                ownerId,
+                simplifiedDiplomacyOwners,
+                foreignTypeOwners,
+                contactedOwners,
+              );
+              const dipCmdsRaw = decideAIDiplomacy(diploInp, undefined, diffParams.agresjaMnoznik);
+              const dipCmds: AIDiplomacyCommand[] = filterDiplomacyCommandsForLayer(
+                Array.isArray(dipCmdsRaw) ? dipCmdsRaw : [],
+                dipLayer,
+              );
+              for (const cmd of dipCmds) {
+                try {
+                  const curRel = getDiploRelation(0, ownerId);
+                  if (cmd.type === 'wypowiedz_wojne') {
+                    breakTreatiesOnWar(0, ownerId, false);
+                    applyAllianceObligationsOnWar(ownerId, 0);
+                    const newRel = applyDiplomaticEvent(curRel, 'wojna_wypowiedziana');
+                    setDiploRelation(0, ownerId, newRel);
+                    console.log(`[Dyplomacja] AI${ownerId} wypowiada wojne: ${cmd.powod}`);
+                    showHintMessage('\u2694 AI ' + ownerDiploLabel(ownerId) + ' wypowiada wojne! (' + cmd.powod + ')', 4500);
+                    if (isDiplomacyPanelOpen()) updateDiplomacyPanel();
+                  } else if (cmd.type === 'zaproponuj_pokoj') {
+                    enqueueDiplomacyPending(ownerId, cmd.type, cmd.powod);
+                  } else if (cmd.type === 'zadaj_trybut') {
+                    enqueueDiplomacyPending(ownerId, cmd.type, cmd.powod);
+                  } else if (cmd.type === 'oferuj_trybut_za_pokoj') {
+                    enqueueDiplomacyPending(ownerId, cmd.type, cmd.powod);
+                  } else if (cmd.type === 'zaproponuj_sojusz') {
+                    enqueueDiplomacyPending(ownerId, cmd.type, cmd.powod);
+                  } else if (cmd.type === 'zaproponuj_handel') {
+                    enqueueDiplomacyPending(ownerId, cmd.type, cmd.powod);
+                  }
+                } catch (eCmdDiplo) {
+                  console.error(`[Dyplomacja] Blad komendy ${cmd.type}:`, eCmdDiplo);
+                }
+              }
+
+              if (tier !== 2) { // 2 = Neutralny -- log only non-neutral
+                console.log(
+                  `[Dyplomacja] Tura ${turn} AI${ownerId}: tier=${tier}` +
+                  ` war=${stance.willingnessWar.toFixed(2)}` +
+                  ` peace=${stance.willingnessPeace.toFixed(2)}` +
+                  ` respektAI=${respektAI}`,
+                );
+              }
+            } catch (eDiplo) {
+              console.error(`[Dyplomacja] Blad dyplomacji AI${ownerId}:`, eDiplo);
+            }
+
+            for (const cmd of commands) {
+              try {
+                if (cmd.type === 'endTurn') {
+                  // Nothing to do -- AI player signals end of its turn.
+                  continue;
+                }
+
+                if (cmd.type === 'move') {
+                  const u = units.find(x => x.id === cmd.unitId);
+                  if (!u || u.ownerId !== ownerId) continue;
+                  const path = computePath(u, map, cmd.toQ, cmd.toR, (() => {
+                    const occ = new Set<string>();
+                    for (const ou of units) { if (ou.id !== u.id) occ.add(keyOf(ou.q, ou.r)); }
+                    return occ;
+                  })());
+                  if (path.length > 0) {
+                    const last = path[path.length - 1]!;
+                    u.q = last.q;
+                    u.r = last.r;
+                    u.ruchLeft = 0;
+                  }
+                  continue;
+                }
+
+                if (cmd.type === 'foundCity') {
+                  const u = units.find(x => x.id === cmd.unitId);
+                  if (!u || u.ownerId !== ownerId) continue;
+                  const res = canFoundCity(u.q, u.r, cities, map);
+                  if (res.ok) {
+                    const c = foundCity(u, cities, map, cityName(cities.length));
+                    if (c) {
+                      c.ownerId = ownerId;
+                      cities.push(c);
+                      finalizeCityFounding(c, u.q, u.r);
+                      const idx = units.indexOf(u);
+                      if (idx >= 0) units.splice(idx, 1);
+                      cityRenderer.sync(cities, _cityRenderOpts());
+                      console.log(`[AI ${ownerId}] Zalozono miasto ${c.name} @ (${c.q},${c.r})`);
+                    }
+                  }
+                  continue;
+                }
+
+                if (cmd.type === 'attack') {
+                  const attacker = units.find(x => x.id === cmd.unitId);
+                  const defender = units.find(x => x.id === cmd.targetUnitId);
+                  if (!attacker || !defender || attacker.ownerId !== ownerId) continue;
+                  const atkRoster = collectBattleRoster(attacker, units);
+                  const defRoster = collectBattleRoster(defender, units);
+                  const hexKey = keyOf(defender.q, defender.r);
+                  const hexObj = map.hexes[hexKey];
+                  const teren: string = hexObj ? (hexObj.terenBazowy as string) : 'Rownina';
+                  const structBonusAI = structureDefenseBonusFor(defender.q, defender.r);
+                  const powerRes = doAutoPowerMapBattle(
+                    atkRoster,
+                    defRoster,
+                    defender.q,
+                    defender.r,
+                    teren,
+                    structBonusAI,
+                  );
+                  if (powerRes?.winner === 'attacker') {
+                    console.log(`[AI ${ownerId}] Atak: ${attacker.typeId} pokonal ${defender.typeId}`);
+                  } else if (powerRes?.winner === 'defender') {
+                    console.log(`[AI ${ownerId}] Atak: ${attacker.typeId} przegral z ${defender.typeId}`);
+                  } else if (powerRes?.winner === 'tie') {
+                    console.log(`[AI ${ownerId}] Atak: remis`);
+                  }
+                  continue;
+                }
+
+                if (cmd.type === 'build') {
+                  const city = cities.find(c => c.id === cmd.cityId && c.ownerId === ownerId);
+                  if (!city) continue;
+                  const buildingNames = new Set(data.buildings.map(b => b.nazwa));
+                  const isBuilding = buildingNames.has(cmd.buildingId);
+                  const prod0 = cityProd.get(cmd.cityId) ?? { kolejka: [], postep: 0 };
+                  // Don't re-enqueue if already in queue
+                  const alreadyQueued = prod0.kolejka.some(it => it.id === cmd.buildingId);
+                  if (!alreadyQueued) {
+                    const item = isBuilding
+                      ? buildingProductionItem(cmd.buildingId, data)
+                      : unitProductionItem(cmd.buildingId, data);
+                    if (item !== null) {
+                      cityProd.set(cmd.cityId, enqueue(prod0, item));
+                    } else {
+                      console.warn(`[AI ${ownerId}] Build no-op: nieznany ${cmd.buildingId}`);
+                    }
+                  }
+                  continue;
+                }
+
+                // Unknown command type -- safe no-op.
+                console.warn('[AI] Nieznany typ komendy:', (cmd as any).type);
+              } catch (eCMD) {
+                console.error(`[AI ${ownerId}] Blad wykonania komendy ${(cmd as any).type}:`, eCMD);
+              }
+            }
+          }
+          scanAutoSiegesAfterAiTurn();
+        } catch (eAILoop) {
+          console.error('[AI] Blad petli AI:', eAILoop);
+        }
+
+        // ===================================================================
+        // BARBARIANS TICK: spawn camps + move barbarian units
+        // ===================================================================
+        try {
+          const barbLevel = _menuAdvanced?.barbariansLevel ?? 'wielu';
+          const barbLive = scaleBarbParamsForLevel(barbParams, barbLevel);
+          if (barbariansActive(turn, barbLive, player.era, barbLevel)) {
+            // Spawn new camps if needed (seed from turn to vary each game).
+            const newCamps = spawnCamps(map, barbCamps, cities, barbLive, turn * 31337);
+            barbCamps = [...barbCamps, ...newCamps];
+            if (newCamps.length > 0) {
+              console.log(`[Barbarzyncy] Tura ${turn}: nowe obozy: ${newCamps.length}`);
+            }
+
+            // Tick camps: decrement cooldowns + collect spawns.
+            const barbUnitsNow = units.filter(u => isBarbarian(u.ownerId)) as BarbUnit[];
+            const tickRes = tickCamps(barbCamps, barbUnitsNow, units, map, barbLive);
+            barbCamps = tickRes.camps;
+
+            // Instantiate spawned barbarian units.
+            for (const spawn of tickRes.spawns) {
+              const def = (data.units as any[]).find((u: any) => u['Jednostka'] === spawn.typeId);
+              const ruch = def ? normFieldVal(def['Ruch'], 2) : 2;
+              const newUnit: RuntimeUnit = {
+                id: 'barb_' + turn + '_' + spawn.campId + '_' + Math.random().toString(36).slice(2),
+                ownerId: BARBARIAN_OWNER_ID,
+                typeId: spawn.typeId,
+                category: 'wojownik',
+                q: spawn.q,
+                r: spawn.r,
+                ruch,
+                ruchLeft: 0,
+              };
+              units.push(newUnit);
+              console.log(`[Barbarzyncy] Spawn: ${spawn.typeId} @ (${spawn.q},${spawn.r})`);
+            }
+
+            // Move barbarian units.
+            const barbUnitsAfterSpawn = units.filter(u => isBarbarian(u.ownerId)) as BarbUnit[];
+            const playerUnitsForBarbs = units.filter(u => !isBarbarian(u.ownerId));
+            const barbCmds = decideBarbarianMoves(barbUnitsAfterSpawn, playerUnitsForBarbs, cities, barbCamps, map, barbLive);
+            for (const bcmd of barbCmds) {
+              try {
+                const bu = units.find(u => u.id === bcmd.unitId);
+                if (!bu) continue;
+                if (bcmd.type === 'move') {
+                  bu.q = bcmd.toQ;
+                  bu.r = bcmd.toR;
+                  bu.ruchLeft = 0;
+                } else if (bcmd.type === 'attack') {
+                  const target = units.find(u => u.id === bcmd.targetUnitId);
+                  if (!target) continue;
+                  const atkRoster = collectBattleRoster(bu, units);
+                  const defRoster = collectBattleRoster(target, units);
+                  const hexKey2 = keyOf(target.q, target.r);
+                  const hexObj2 = map.hexes[hexKey2];
+                  const teren2: string = hexObj2 ? (hexObj2.terenBazowy as string) : 'Rownina';
+                  const structBonusBarb = structureDefenseBonusFor(target.q, target.r);
+                  doAutoPowerMapBattle(
+                    atkRoster,
+                    defRoster,
+                    target.q,
+                    target.r,
+                    teren2,
+                    structBonusBarb,
+                  );
+                }
+              } catch (eBarbCmd) {
+                console.error('[Barbarzyncy] Blad komendy:', eBarbCmd);
+              }
+            }
+          }
+        } catch (eBarb) {
+          console.error('[Barbarzyncy] Blad ticku:', eBarb);
+        }
+
+        // ===================================================================
+        // VICTORY CHECK: evaluate for human player (0) + AI owners
+        // ===================================================================
+        try {
+          if (!gameOver) {
+            // Build VictoryPlayer list from all non-barbarian owners.
+            const allOwners = new Set<number>([0]);
+            for (const u of units) { if (u.ownerId >= 0) allOwners.add(u.ownerId); }
+            for (const c of cities) { if (c.ownerId >= 0) allOwners.add(c.ownerId); }
+            const vPlayers: VictoryPlayer[] = [];
+            for (const oid of allOwners) {
+              vPlayers.push({
+                id: oid,
+                typCywilizacji: oid === 0 ? player.civType : (aiOwnerCivMap.get(oid) ?? 'grecy'),
+                ai: oid !== 0,
+              });
+            }
+
+            // Check player.
+            const settlersCount = units.filter(u => u.ownerId === 0 && u.category === 'osadnik').length;
+            refreshObjectivePowerCache();
+            const potegiWszystkich: number[] = [];
+            for (const oid of allOwners) {
+              potegiWszystkich.push(objectivePowerForOwner(oid));
+            }
+            const scopeIds = techIdsInGameScope(data.tech, OSTATNIA_EPOKA_GRY_V1);
+            const vInput: VictoryInput = {
+              players: vPlayers,
+              cities,
+              gracz: 0,
+              liczbaOsadnikow: settlersCount,
+              graczKiedysMialMiasto: playerEverOwnedCity,
+              potegaGracza: objectivePowerForOwner(0),
+              potegiWszystkich,
+              graczEra: player.era,
+              ostatniaEpoka: OSTATNIA_EPOKA_GRY_V1,
+              wszystkieTechZbadane: allTechInScopeResearched(player.zbadane, scopeIds),
+              rakietaWystrzelona: player.rakietaWystrzelona,
+              victoryMode: _menuAdvanced?.victoryMode ?? 'moc_i_dominacja',
+            };
+            const vResult = checkVictory(vInput);
+            if (vResult !== null) {
+              gameOver = true;
+              const isVictory2 = vResult.rodzaj !== 'przegrana';
+              const eraLabels = ['', 'Kamień', 'Brąz', 'Żelazo'];
+              const screenData = buildVictoryScreenData(vResult, {
+                turn,
+                powerShare: potegiWszystkich.length > 0
+                  ? powerShare(objectivePowerForOwner(0), potegiWszystkich)
+                  : undefined,
+                eraLabel: eraLabels[player.era] ?? ('Epoka ' + player.era),
+                civLabel: player.civType,
+              });
+              showVictoryScreen(screenData, () => location.reload());
+              if (isVictory2) {
+                showHintMessage('<b>' + formatVictoryTitle(vResult.rodzaj, turn) + '</b>', 4000);
+              }
+              console.log('[Victory] ' + formatVictoryTitle(vResult.rodzaj, turn) + ' gracz=0 rodzaj=' + vResult.rodzaj);
+            }
+          }
+        } catch (eVic) {
+          console.error('[Victory] Blad sprawdzania warunkow zwyciestwa:', eVic);
+        }
+
+        updateHud();
+        cityRenderer.sync(cities, _cityRenderOpts());
+        // Refresh fog after end-turn so new unit positions update visibility.
+        refreshFog();
+      }
+    });
+
+    // -----------------------------------------------------------------------
+    // Render loop
+    // -----------------------------------------------------------------------
+
+    function renderLoop() {
+      requestAnimationFrame(renderLoop);
+
+      // --- Delta time (capped at 100 ms to skip large jumps on tab switch) ---
+      const now = performance.now() / 1000;
+      const dt = Math.min(now - prevTime, 0.1);
+      prevTime = now;
+
+      // Średnia FPS z okna ~1 s (tanie: 2 dodawania/klatkę; A4 overlay F9).
+      fpsAccumFrames++;
+      fpsAccumTime += dt;
+      if (fpsAccumTime >= 1) {
+        fps1s = fpsAccumFrames / fpsAccumTime;
+        fpsAccumFrames = 0;
+        fpsAccumTime = 0;
+      }
+
+      // --- Drive animation (only outside gallery mode) ---
+      if (!galleryOn && isAnimating && anim !== null) {
+        anim.t += dt / ANIM_SEG_DUR;
+
+        // Advance through any fully elapsed segments.
+        while (anim.t >= 1 && anim.seg < anim.points.length - 2) {
+          anim.t -= 1;
+          anim.seg++;
+        }
+
+        const lastSeg = anim.points.length - 2; // index of the final segment
+
+        if (anim.seg >= lastSeg && anim.t >= 1) {
+          // --- Animation complete ---
+          const u = units.find(x => x.id === anim!.id);
+          if (u) {
+            u.q = anim.destQ;
+            u.r = anim.destR;
+            u.ruchLeft = Math.max(0, u.ruchLeft - anim.cost);
+          }
+          const finishedId = anim.id;
+          const destQ = anim.destQ;
+          const destR = anim.destR;
+          const fromQ = anim.fromQ;
+          const fromR = anim.fromR;
+          const moveCost = anim.cost;
+          anim = null;
+          isAnimating = false;
+          forceVisibleUnitId = null;
+
+          refreshFog();
+          validateActiveSieges();
+
+          const entryCity = u && cities.find(
+            c => c.q === destQ && c.r === destR && c.ownerId === u.ownerId,
+          );
+          if (entryCity && u) {
+            finishUnitEnterCityHex(u, entryCity);
+          }
+          promptMergeIfCoLocated(finishedId, fromQ, fromR, moveCost);
+          if (selectedId === finishedId) {
+            const sel = units.find(x => x.id === finishedId);
+            if (sel) {
+              unitRenderer.setSelectionHex(sel.q, sel.r);
+              if (sel.ruchLeft > 0 && !isArmyMergePanelOpen() && !isArmySplitPanelOpen()) {
+                reachable = reachableWithMergeTargets(sel);
+                unitRenderer.setHighlight(reachable);
+              } else if (!isArmyMergePanelOpen() && !isArmySplitPanelOpen()) {
+                reachable = new Set<string>();
+                unitRenderer.clearHighlight();
+              }
+            }
+          }
+          updateHud();
+          refreshD1bHud();
+        } else {
+          // --- Interpolate token along current segment ---
+          const tc = Math.min(Math.max(anim.t, 0), 1);
+          const p0 = anim.points[anim.seg]!;
+          const p1 = anim.points[anim.seg + 1]!;
+          unitRenderer.setTokenWorldPosition(
+            anim.id,
+            p0.x + (p1.x - p0.x) * tc,
+            p0.y + (p1.y - p0.y) * tc,
+            p0.z + (p1.z - p0.z) * tc,
+          );
+        }
+      }
+
+      // --- Gallery label projection ---
+      // Each frame in gallery mode: project each token's world position to
+      // screen space using THREE.Vector3.project(camera), then convert NDC
+      // coordinates to CSS pixels for the floating label div.
+      //
+      // Projection formula:
+      //   worldPt.project(camera)  -> NDC (x,y,z) in [-1,1]^3
+      //   px = (ndcX * 0.5 + 0.5) * canvasWidth   (left edge = 0)
+      //   py = (-ndcY * 0.5 + 0.5) * canvasHeight  (top edge = 0)
+      // If NDC z > 1: point is behind the camera near plane -> hide label.
+      if (galleryOn && galleryLabels.length > 0) {
+        const cw = canvas.clientWidth  || window.innerWidth;
+        const ch = canvas.clientHeight || window.innerHeight;
+
+        for (let i = 0; i < galleryLabels.length; i++) {
+          const lbl = galleryLabels[i];
+          if (!lbl) continue;
+          const pos = galleryPositions[i];
+          if (!pos) continue;
+
+          // Lift the label anchor above the token base.
+          const worldPt = new THREE.Vector3(pos.x, pos.y + GALLERY_LABEL_LIFT, pos.z);
+
+          // Project world -> NDC (in-place mutation of worldPt).
+          worldPt.project(camera);
+
+          // Behind camera: hide.
+          if (worldPt.z > 1.0) {
+            lbl.style.display = 'none';
+            continue;
+          }
+
+          // NDC -> CSS pixels.
+          const px = ( worldPt.x * 0.5 + 0.5) * cw;
+          const py = (-worldPt.y * 0.5 + 0.5) * ch;
+
+          lbl.style.display = 'block';
+          lbl.style.left    = Math.round(px) + 'px';
+          lbl.style.top     = Math.round(py) + 'px';
+        }
+      }
+
+      if (cities.some(c => c.oblegane)) {
+        siegeMarkerRenderer.pulse(now);
+        updateSiegeHtmlLabels();
+      }
+
+      // --- Camera and render (always run, even during animation) ---
+      camCtrl.update();
+      {
+        const { dist } = camCtrl.getFocusState();
+        const { minDist, maxDist } = camCtrl.getDistLimits();
+        setZoomLod(dist, minDist, maxDist);
+      }
+      renderer.info.reset();
+      renderer.render(scene, camera);
+      if (isPerfDebugOverlayVisible()) {
+        let meshCount = 0;
+        let instancedCount = 0;
+        scene.traverse((obj) => {
+          if (obj instanceof THREE.InstancedMesh) {
+            instancedCount += obj.count;
+            meshCount++;
+          } else if (obj instanceof THREE.Mesh) {
+            meshCount++;
+          }
+        });
+        const { dist } = camCtrl.getFocusState();
+        updatePerfDebugOverlay({
+          fps: fps1s,
+          drawCalls: renderer.info.render.calls,
+          triangles: renderer.info.render.triangles,
+          meshCount,
+          instancedCount,
+          zoomLod: getZoomLodLevel(),
+          cameraDist: dist,
+          fogMs: getLastSetFogMs(),
+        });
+      }
+    }
+    // -----------------------------------------------------------------------
+    // START SCREEN - Menu overlay (shown before game starts)
+    // Canvas + scene already initialized above so smoke test passes.
+    // Menu is a fixed overlay (z-index:500); game renders underneath.
+    // -----------------------------------------------------------------------
+
+    function applyMenuParams(params: NewGameParams): void {
+      const VALID_TYP: TypSwiata[] = ['kontynenty', 'pangea', 'wyspy', 'ziemia'];
+      const resolveTypSwiata = (): TypSwiata => {
+        const raw = params.typSwiata || typSwiataFromMenuLabel(params.worldType || 'Kontynenty');
+        return VALID_TYP.includes(raw as TypSwiata) ? (raw as TypSwiata) : 'kontynenty';
+      };
+      _menuTypSwiata = resolveTypSwiata();
+      _menuEpochId = params.epochId || 'kamien';
+
+      // Map UI difficulty string to engine difficulty key
+      const diffMap: Record<string, 'easy' | 'normal' | 'hard'> = {
+        'Łatwy': 'easy',
+        'Normalny': 'normal',
+        'Trudny': 'hard',
+        'easy': 'easy',
+        'normal': 'normal',
+        'hard': 'hard',
+      };
+      const diff = diffMap[params.difficulty] ?? 'normal';
+      _menuDifficulty = diff;
+      startRevealRadius = startRevealRadiusForDifficulty(diff);
+      _menuCivId = params.civId || 'rzymianie';
+      _menuMapSize = params.mapSize || 'Standardowy';
+      _menuCivTypesCount = params.civTypesCount || defaultCivTypesFromMapLabel(_menuMapSize);
+      _menuCityStates = params.cityStatesCount
+        || parseInt(String(params.rivals), 10)
+        || defaultMiastaPanstwaFromMapLabel(_menuMapSize);
+      _menuRivals = _menuCityStates;
+      _menuWorldDensity = params.worldDensity ?? { ...DEFAULT_WORLD_DENSITY };
+
+      // Epoka startowa z kreatora (Kamień=1, Brąz=2, Żelazo=3)
+      const ERA_MAP: Record<string, number> = { kamien: 1, braz: 2, zelazo: 3 };
+      player.era = ERA_MAP[params.epochId] ?? 1;
+
+      // Wepnij dane nacji gracza (civType + bonusy) z civs.json
+      {
+        const chosenCiv = (data.civs.cywilizacje as any[]).find(
+          (c: any) => (c.ikonaId ?? '') === _menuCivId,
+        );
+        if (chosenCiv) {
+          player.civType = _menuCivId;
+          player.civBonusy = Array.isArray(chosenCiv.bonusy) ? chosenCiv.bonusy : [];
+          console.log(
+            `[NewGame] Nacja gracza: ${chosenCiv.Cywilizacja} (${ _menuCivId})`,
+            `bonusy: ${player.civBonusy.length}`,
+          );
+        } else {
+          player.civType = _menuCivId;
+          player.civBonusy = [];
+          console.warn(`[NewGame] Nacja '${_menuCivId}' nie znaleziona w civs.json — brak bonusów`);
+        }
+        fillAiOwnerCivMap(_menuCivId, _gameSeed);
+        console.log(`[NewGame] AI nacje:`, Object.fromEntries(aiOwnerCivMap));
+      }
+
+      // Map UI speed string -> TempoGry
+      const tempoMap: Record<string, TempoGry> = {
+        'Szybka': 'szybka',
+        'Standardowa': 'standardowa',
+        'Długa': 'dluga',
+        'szybka': 'szybka',
+        'standardowa': 'standardowa',
+        'dluga': 'dluga',
+      };
+      player.tempoGry = tempoMap[params.speed] ?? 'standardowa';
+      _menuAdvanced = params.advanced ? { ...params.advanced } : undefined;
+      _currentRenderOptions = mapRenderOptionsFromParams(params);
+      const mqTier = mapQualityTierFromParams(params);
+      const mqBundle = bundledMapQualityPreset(mqTier);
+      console.log(
+        '[NewGame] tempoGry =', player.tempoGry,
+        '· epoka=', player.era, '(' + (params.epochId || 'kamien') + ')',
+        '· typSwiata=', _menuTypSwiata, '(' + (params.worldType || '') + ')',
+        '· jakoscMapy=', qualityTierToLabel(mqTier),
+        '→ render=' + mqBundle.renderQuality + ', mapDetail=' + mqBundle.mapDetailQuality,
+        _menuAdvanced ? ('· advanced=' + JSON.stringify(_menuAdvanced)) : '',
+      );
+      // Rebuild city panel config with new difficulty
+      configureCityPanel({
+        data,
+        difficulty: _menuDifficulty,
+        getCities: () => cities,
+        getEpoch: (ownerId: number) => empireEpochForOwner(ownerId),
+      getManpowerSnapshot: (cityId: string) => {
+        const c = cities.find(x => x.id === cityId);
+        if (!c) return null;
+        const ep = empireEpochForOwner(c.ownerId);
+        return cityManpowerSnapshot(c, ep, civManpowerRegenMult(civBonusyForOwnerId(c.ownerId)));
+      },
+      getOwnerColor: (ownerId: number) => (ownerId === 0 ? 0xffd54a : 0xc84040),
+        getUnlockedTechs: (_ownerId: number) => Array.from(player.zbadane),
+        getBuiltBuildingIds: (cityId: string) => cityBuilt.get(cityId) ?? [],
+        getPlacedImprovements: () => placedImprovements,
+        getProduction: (cityId: string) => {
+          const p = cityProd.get(cityId);
+          return p ? { ...p, kolejka: [...p.kolejka] } : null;
+        },
+        setProduction: (cityId: string, p: CityProduction) => {
+          setCityProduction(cityId, p);
+        },
+        getTreasury: (_ownerId: number) => player.skarbiec,
+        onRushBuy: (cityId: string, _item: any, koszt: number) => {
+          if (player.skarbiec >= koszt) {
+            player.skarbiec -= koszt;
+            const rBase = cityProd.get(cityId) ?? { kolejka: [], postep: 0 };
+            const r = rushProduction(rBase);
+            cityProd.set(cityId, r.prod);
+            if (r.completed) {
+              const rc = cities.find(ct => ct.id === cityId);
+              if (rc) {
+                const applied = applyProductionCompleted(rc, cityId, r.completed, r.prod);
+                if (applied.requeueManpower) {
+                  player.skarbiec += koszt;
+                  console.warn('[Rush] Brak Manpower — zwrot zlota, jednostka w kolejce');
+                }
+                cityProd.set(cityId, applied.prod);
+              }
+            }
+            updateHud();
+          }
+        },
+        onChange: (_cityId: string) => { updateHud(); },
+        onAutoManage: (cityId: string) => {
+          if (autoManageCities.has(cityId)) {
+            autoManageCities.delete(cityId);
+            console.log(`[AutoManage] Wylaczono dla ${cityId}`);
+          } else {
+            autoManageCities.add(cityId);
+            console.log(`[AutoManage] Wlaczono dla ${cityId}`);
+          }
+        },
+        getPodzialHandlu: (cityId: string) => cities.find(c => c.id === cityId)?.podzialHandlu ?? null,
+        getPodzialPracy: (cityId: string) => cities.find(c => c.id === cityId)?.podzialPracy ?? null,
+        onPodzialHandluChange: (cityId: string, split) => {
+          const c = cities.find(ct => ct.id === cityId);
+          if (c && c.ownerId === 0) {
+            c.podzialHandlu = { ...split };
+            updateHud();
+          }
+        },
+        onPodzialPracyChange: (cityId: string, split) => {
+          const c = cities.find(ct => ct.id === cityId);
+          if (c && c.ownerId === 0) {
+            c.podzialPracy = { procentBudynki: split.procentBudynki };
+            updateHud();
+          }
+        },
+        onPurchaseUnit: (cityId: string, itemId: string, koszt: number) => {
+          if (player.skarbiec < koszt) return;
+          const city = cities.find(ct => ct.id === cityId);
+          if (!city || city.ownerId !== 0) return;
+          const item = unitProductionItem(itemId, data);
+          if (!item) return;
+          player.skarbiec -= koszt;
+          const prod0 = cityProd.get(cityId) ?? { kolejka: [], postep: 0 };
+          cityProd.set(cityId, enqueueRecruitment(prod0, item));
+          updateHud();
+        },
+        getCivBonusy: (ownerId: number) => civBonusyForOwnerId(ownerId),
+        getCivKey: (ownerId: number) => civKeyForOwnerId(ownerId),
+        getOrderState: (cityId: string) => cityOrderState.get(cityId) ?? null,
+      getTurn: () => turn,
+        getCityHealth: (cityId: string) => {
+          const city = cities.find(c => c.id === cityId);
+          if (!city) return null;
+          const builtIds = cityBuilt.get(cityId) ?? [];
+          const tiles = cityWorkedTilesForEconomy(city, map);
+          return computeCityHealthBreakdown(
+            city.population, tiles, builtIds, data.societyParams, _menuDifficulty,
+            { city, map },
+          );
+        },
+        ...extraCityPanelConfig(),
+      });
+      configurePreBattle({ getCivBonusy: civBonusyForOwnerId });
+    }
+
+    async function doStartGame(params: NewGameParams): Promise<void> {
+      playtestWalkaActive = false;
+      playtestMiastoActive = false;
+      applyMenuParams(params);
+      hideMainMenu();
+      hideNewGameFlow();
+      hideGamePauseMenu();
+
+      // Reset gracza na nową grę (skarbiec/nauka/tech — era już z applyMenuParams)
+      player.skarbiec = 0;
+      player.nauka = 0;
+      player.zbadane = grantTechEpokWczesniejszych(data.tech, params.epochId || 'kamien');
+      player.badana = null;
+      player.pieniadzMnoznik = 1;
+      console.log('[NewGame] Tech wcześniejszych epok:', player.zbadane.size, '· epoka start=', params.epochId || 'kamien');
+
+      // Regenerate map with size + typ + seed from menu params
+      const rozmiar = rozmiarFromMenuLabel(_menuMapSize);
+      const newSeed = params.seed > 0 ? params.seed : Math.floor(Math.random() * 1e9);
+      _gameSeed = newSeed;
+      // C1/C2: generacja mapy asynchronicznie w Web Workerze + panel postępu „Tworzenie świata".
+      const loading = showMapLoadingOverlay({
+        seed: newSeed,
+        rozmiarLabel: _menuMapSize,
+        typLabel: params.worldType || _menuTypSwiata,
+      });
+      let newMap;
+      try {
+        newMap = await generujSwiatAsync(newSeed, rozmiar, _menuTypSwiata, {
+          worldDensity: _menuWorldDensity,
+          mapSizeMenuLabel: _menuMapSize,
+          landFraction: (params.landFractionPercent ?? 30) / 100,
+        }, (faza, pct, phaseNum, phaseTotal) => {
+          loading.setProgress(faza, pct, phaseNum, phaseTotal);
+        });
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        loading.showError(msg || 'Błąd generacji mapy', () => { loading.hide(); void doStartGame(params); });
+        return;
+      }
+      loading.hide();
+      map = newMap;
+      ensureDepositEraMeta(map.hexes);
+
+      // Rebuild scene with new map (dispose old scene first)
+      disposeOkolicaOverlay();
+      try { disposeScene(); } catch (_) { /* ignore if dispose fails */ }
+      const newSceneResult = buildScene(map, canvas, _currentRenderOptions);
+      scene = newSceneResult.scene;
+      camera = newSceneResult.camera;
+      renderer = newSceneResult.renderer;
+      center = newSceneResult.center;
+      setFog = newSceneResult.setFog;
+      hideDecorAtHex = newSceneResult.hideDecorAtHex;
+      setZoomLod = newSceneResult.setZoomLod;
+      getZoomLodLevel = newSceneResult.getZoomLodLevel;
+      disposeScene = newSceneResult.dispose;
+      cultureRangeGroup = null;
+      religionRangeGroup = null;
+
+      // Rebuild camera controller with new scene center
+      camCtrl = new CameraController(camera, canvas, center, cameraControllerOpts());
+
+      // Rebuild unit and city renderers
+      unitRenderer = new UnitRenderer(scene, map);
+      cityRenderer = new CityRenderer(scene, map);
+      hideSiegeMapPanel();
+      hideCityAttackChoice();
+      clearSiegeHtmlLabels();
+      siegeTurnByCity.clear();
+      siegeBesiegerByCity.clear();
+      siegeAiStateByKey.clear();
+      militiaDefOverrides.clear();
+      siegeMarkerRenderer = new SiegeMarkerRenderer(scene, map);
+      wonderRenderer = new WonderRenderer(scene, map);
+
+      // Reset stanu przed klastrem
+      cities.length = 0;
+      explored.clear();
+      rebuildAllKeys();
+      diplomacyRelations.clear();
+      diplomaticContactEstablished.clear();
+      activeDeals = [];
+      aiSkarbiecByOwner.clear();
+      basketTransferCtx = createEmptyBasketTransferContext(data.tech);
+      _dipUnitSeq = 0;
+      pendingDiplomacyInbox.length = 0;
+      units.length = 0;
+      playerEverOwnedCity = false;
+      turn = 1;
+      playerPracaPool = 0;
+      _lastPraca = 0;
+      _lastPlayerCityEcon = [];
+      cityBuilt.clear();
+      cityProd.clear();
+      completedWorldWonders = [];
+      placedWorldWonders = [];
+      cityOrderState.clear();
+      orderMultMap.clear();
+      orderValueMap.clear();
+      growthMultMap.clear();
+      lastCityKulturaTick.clear();
+      aiResearchDone.clear();
+      barbCamps = [];
+      gameOver = false;
+      selectedId = null;
+      reachable = new Set<string>();
+      hoverKey = null;
+      buildModeOpen = false;
+      activeImprovementKey = null;
+      removeBuildGhosts();
+      placedImprovements.clear();
+      hexClearingStates.clear();
+      for (const mesh of improvementMeshes.values()) scene.remove(mesh);
+      improvementMeshes.clear();
+
+      applyClusterStartPlan(_menuCivId, newSeed, _menuCityStates);
+
+      if (params.startPreview) {
+        console.log(
+          '[NewGame] StartPreview:',
+          params.startPreview.playerCapitalName,
+          '· rywale=',
+          params.startPreview.sameTypeRivalCount,
+          '· typy=',
+          params.startPreview.activeTypesOnMap,
+        );
+      }
+      seedStartingFog();
+      refreshBuildApi();
+
+      // Rebuild resource overlays for new map
+      overlayDepositEra = player.era;
+      rebuildResourceOverlays();
+      syncLivestockAndPlacedMeshes();
+
+      // Sync renderers with new state
+      syncUnitsRender();
+      cityRenderer.sync(cities, _cityRenderOpts());
+      refreshFog();
+      updateHud();
+
+      syncBasketResearchFromEngine();
+      console.log('[NewGame] Mapa: ' + map.szerokoscQ + 'x' + map.wysokoscR + ' seed=' + newSeed + ' typ=' + _menuTypSwiata + ' rywale=' + _menuCityStates + ' typy=' + _menuCivTypesCount);
+      beginOnboardingFoundCity();
+      renderLoop();
+    }
+
+    async function doStartPlaytestWalkaMapy(): Promise<void> {
+      playtestWalkaActive = true;
+      const odskokObl = isPlaytestOdskokOblezenieMode();
+      const odskok3v3 = !odskokObl && isPlaytestOdskokMode();
+      const playtestSeed = (odskok3v3 || odskokObl) ? PLAYTEST_ODSKOK_SEED : PLAYTEST_WALKA_SEED;
+      const mqTier = mapQualityTierFromQuery('high');
+      const mqBundle = bundledMapQualityPreset(mqTier);
+      const params: NewGameParams = {
+        civId: 'rzymianie',
+        civName: 'Rzymianie',
+        epoch: 'Epoka Brzu',
+        epochId: 'braz',
+        difficulty: 'Normalny',
+        mapSize: 'Maly',
+        rivals: '1',
+        speed: 'Normalna',
+        worldType: 'Kontynenty',
+        typSwiata: 'kontynenty',
+        seed: playtestSeed,
+        mapQualityLabel: qualityTierToLabel(mqTier),
+        mapQuality: mqTier,
+        renderQualityLabel: qualityTierToLabel(mqBundle.renderQuality),
+        mapDetailQualityLabel: qualityTierToLabel(mqBundle.mapDetailQuality),
+        renderQuality: mqBundle.renderQuality,
+        mapDetailQuality: mqBundle.mapDetailQuality,
+        civTypesCount: 3,
+        cityStatesCount: 1,
+        worldDensity: { ...DEFAULT_WORLD_DENSITY },
+        worldDensityLabels: {
+          resources: 'Normalnie',
+          rivers: 'Normalnie',
+          desert: 'Normalnie',
+          forest: 'Normalnie',
+          relief: 'Normalnie',
+        },
+        landFractionPercent: 50,
+      };
+      applyMenuParams(params);
+      hideMainMenu();
+      hideNewGameFlow();
+
+      player.skarbiec = 500;
+      player.nauka = 0;
+      player.zbadane = new Set<string>();
+      player.badana = null;
+      player.pieniadzMnoznik = 1;
+
+      const rozmiar = rozmiarFromMenuLabel('Maly');
+      // C1/C2: generacja mapy asynchronicznie + panel „Tworzenie świata" (overlay RAZ przed pętlą retry).
+      const loading = showMapLoadingOverlay({ seed: playtestSeed, rozmiarLabel: 'Maly', typLabel: 'Kontynenty' });
+      let newMap = await generujSwiatAsync(playtestSeed, rozmiar, 'kontynenty', undefined, (faza, pct, phaseNum, phaseTotal) => {
+        loading.setProgress(faza, pct, phaseNum, phaseTotal);
+      });
+      let preset = odskokObl
+        ? buildPlaytestOdskokOblezenie(newMap, data)
+        : odskok3v3
+          ? buildPlaytestOdskok3v3(newMap, data)
+          : buildPlaytestWalkaMapy(newMap, data, resolvePlaytestWalkaVariant());
+      if ((odskok3v3 || odskokObl) && !preset) {
+        for (let i = 1; i <= 64 && !preset; i++) {
+          const trySeed = playtestSeed + i;
+          loading.setProgress('Szukanie miejsca na mapie (próba ' + i + ')', Math.min(95, i * 1.5), 6, 7);
+          newMap = await generujSwiatAsync(trySeed, rozmiar, 'kontynenty', undefined, (faza, pct, phaseNum, phaseTotal) => {
+            loading.setProgress(faza, pct, phaseNum, phaseTotal);
+          });
+          preset = odskokObl
+            ? buildPlaytestOdskokOblezenie(newMap, data)
+            : buildPlaytestOdskok3v3(newMap, data);
+          if (preset) {
+            console.log('[PlaytestOdskok] seed fallback ' + trySeed);
+          }
+        }
+      }
+      loading.hide();
+      map = newMap;
+      ensureDepositEraMeta(map.hexes);
+      rebuildAllKeys();
+
+      disposeOkolicaOverlay();
+      try { disposeScene(); } catch (_) { /* ignore */ }
+      const newSceneResult = buildScene(map, canvas, _currentRenderOptions);
+      scene = newSceneResult.scene;
+      camera = newSceneResult.camera;
+      renderer = newSceneResult.renderer;
+      center = newSceneResult.center;
+      setFog = newSceneResult.setFog;
+      hideDecorAtHex = newSceneResult.hideDecorAtHex;
+      setZoomLod = newSceneResult.setZoomLod;
+      getZoomLodLevel = newSceneResult.getZoomLodLevel;
+      disposeScene = newSceneResult.dispose;
+      cultureRangeGroup = null;
+      religionRangeGroup = null;
+
+      camCtrl = new CameraController(camera, canvas, center, cameraControllerOpts());
+
+      unitRenderer = new UnitRenderer(scene, map);
+      cityRenderer = new CityRenderer(scene, map);
+      siegeMarkerRenderer = new SiegeMarkerRenderer(scene, map);
+      wonderRenderer = new WonderRenderer(scene, map);
+      siegeTurnByCity.clear();
+      siegeBesiegerByCity.clear();
+      siegeAiStateByKey.clear();
+
+      if (!preset) {
+        showHintMessage('Playtest walki: brak miejsca na mapie — sprobuj inny seed', 5000);
+        showMainMenu();
+        return;
+      }
+
+      units.length = 0;
+      for (const u of preset.units) units.push(u);
+
+      aiOwnerCivMap.clear();
+      aiOwnerCivMap.set(preset.aiOwnerId, 'grecy');
+      diplomacyRelations.clear();
+      diplomaticContactEstablished.clear();
+      setDiploRelation(0, preset.aiOwnerId, { zaufanie: 0, respekt: 30, status: 'wojna' });
+      playerEverOwnedCity = false;
+
+      cities.length = 0;
+      for (const c of preset.cities) {
+        ensureCitySaveDefaults(c);
+        cities.push(c);
+      }
+
+      explored.clear();
+      for (const k of preset.explored) explored.add(k);
+
+      turn = 1;
+      cityBuilt.clear();
+      cityProd.clear();
+      completedWorldWonders = [];
+      placedWorldWonders = [];
+      cityOrderState.clear();
+      orderMultMap.clear();
+      orderValueMap.clear();
+      growthMultMap.clear();
+      aiResearchDone.clear();
+      barbCamps = [];
+      gameOver = false;
+      selectedId = null;
+      reachable = new Set<string>();
+      hoverKey = null;
+      buildModeOpen = false;
+      activeImprovementKey = null;
+      placedImprovements.clear();
+      hexClearingStates.clear();
+      for (const mesh of improvementMeshes.values()) scene.remove(mesh);
+      improvementMeshes.clear();
+      refreshBuildApi();
+      overlayDepositEra = player.era;
+      rebuildResourceOverlays();
+      syncLivestockAndPlacedMeshes();
+      reapplyCityHexDecorHides();
+      syncWonderRender();
+
+      syncUnitsRender();
+      cityRenderer.sync(cities, {
+        getEra: (ownerId: number) => (ownerId === 0 ? player.era : 2),
+        getCiv: (ownerId: number) => ikonaIdToBronzeCiv(
+          ownerId === 0
+            ? (player.civType as string || _menuCivId || 'grecja')
+            : (aiOwnerCivMap.get(ownerId) ?? 'grecy'),
+        ),
+        getLevel: (cityId: string) => {
+          const c = cities.find(x => x.id === cityId);
+          return c ? Math.max(1, Math.min(10, c.population ?? 1)) : 1;
+        },
+        getWalls: (cityId: string) => cities.find(c => c.id === cityId)?.maMur === true,
+        getRevolt: (cityId: string) => {
+        const st = cityOrderState.get(cityId);
+        return st?.bunt === true || st?.revoltWarning === true;
+      },
+      });
+      refreshFog();
+      updateHud();
+      refreshD1bHud();
+
+      const playerCity = preset.playerCityId
+        ? cities.find(c => c.id === preset.playerCityId)
+        : undefined;
+      if (playerCity) {
+        const autoSiege = detectAutoSiegeOnCity(playerCity, units);
+        if (autoSiege) startMapSiege(autoSiege);
+        const romaPos = axialToWorld(playerCity.q, playerCity.r, HEX_R);
+        const playerPos = axialToWorld(preset.focusQ, preset.focusR, HEX_R);
+        camCtrl.focusAt(
+          (romaPos.x + playerPos.x) * 0.5,
+          (romaPos.z + playerPos.z) * 0.5,
+          26,
+        );
+      } else {
+        const focusPos = axialToWorld(preset.focusQ, preset.focusR, HEX_R);
+        const enemyCity = cities.find(c => c.id === preset.enemyCityId);
+        if (enemyCity) {
+          const cityPos = axialToWorld(enemyCity.q, enemyCity.r, HEX_R);
+          camCtrl.focusAt(
+            (focusPos.x + cityPos.x) * 0.5,
+            (focusPos.z + cityPos.z) * 0.5,
+            24,
+          );
+        } else {
+          camCtrl.focusAt(focusPos.x, focusPos.z, 22);
+        }
+      }
+
+      const enemyCity = preset.enemyCityId
+        ? cities.find(c => c.id === preset.enemyCityId)
+        : undefined;
+      const walkaHint = resolvePlaytestWalkaVariant() === 'oblez'
+        ? PLAYTEST_OBLEZ_HINT
+        : PLAYTEST_WALKA_HINT;
+      showHintMessage(
+        odskokObl ? PLAYTEST_ODSKOK_OBLEZENIE_HINT : odskok3v3 ? PLAYTEST_ODSKOK_HINT : walkaHint,
+        16000,
+      );
+      if (!odskok3v3 && !odskokObl && enemyCity) {
+        showHintMessage(
+          'Ateny (WRÓG, mur) — po walce / ruchu: klik miasto → Oblężaj (obóz 3D) lub Szturm.',
+          12000,
+        );
+      }
+      console.log(
+        '[PlaytestWalka] seed=' + playtestSeed +
+        ' tryb=' + (odskokObl ? 'odskok-obl' : odskok3v3 ? 'odskok3v3' : 'walka') +
+        ' jednostek=' + units.length +
+        ' miast=' + cities.length +
+        ' wrogie=' + (enemyCity?.name ?? '?') + ' ownerId=' + (enemyCity?.ownerId ?? '?'),
+      );
+      renderLoop();
+    }
+
+    async function doStartPlaytestMiastoEkonomia(): Promise<void> {
+      playtestWalkaActive = false;
+      playtestMiastoActive = true;
+      const mqTier = mapQualityTierFromQuery('high');
+      const mqBundle = bundledMapQualityPreset(mqTier);
+      applyMenuParams({
+        civId: 'rzymianie',
+        civName: 'Rzymianie',
+        epoch: 'Epoka Brzu',
+        epochId: 'braz',
+        difficulty: 'Normalny',
+        mapSize: 'Maly',
+        rivals: '0',
+        speed: 'Normalna',
+        worldType: 'Kontynenty',
+        typSwiata: 'kontynenty',
+        seed: PLAYTEST_MIASTO_SEED,
+        mapQualityLabel: qualityTierToLabel(mqTier),
+        mapQuality: mqTier,
+        renderQualityLabel: qualityTierToLabel(mqBundle.renderQuality),
+        mapDetailQualityLabel: qualityTierToLabel(mqBundle.mapDetailQuality),
+        renderQuality: mqBundle.renderQuality,
+        mapDetailQuality: mqBundle.mapDetailQuality,
+        civTypesCount: 3,
+        cityStatesCount: 0,
+        worldDensity: { ...DEFAULT_WORLD_DENSITY },
+        worldDensityLabels: {
+          resources: 'Normalnie',
+          rivers: 'Normalnie',
+          desert: 'Normalnie',
+          forest: 'Normalnie',
+          relief: 'Normalnie',
+        },
+      } as NewGameParams);
+      hideMainMenu();
+      hideNewGameFlow();
+
+      player.skarbiec = 5000;
+      player.nauka = 200;
+      player.pieniadzMnoznik = 1;
+      player.era = 2;
+
+      const rozmiar = rozmiarFromMenuLabel('Maly');
+      // C1/C2: generacja mapy asynchronicznie + panel „Tworzenie świata".
+      const loading = showMapLoadingOverlay({ seed: PLAYTEST_MIASTO_SEED, rozmiarLabel: 'Maly', typLabel: 'Kontynenty' });
+      const newMap = await generujSwiatAsync(PLAYTEST_MIASTO_SEED, rozmiar, 'kontynenty', undefined, (faza, pct, phaseNum, phaseTotal) => {
+        loading.setProgress(faza, pct, phaseNum, phaseTotal);
+      });
+      loading.hide();
+      map = newMap;
+      ensureDepositEraMeta(map.hexes);
+      rebuildAllKeys();
+
+      disposeOkolicaOverlay();
+      try { disposeScene(); } catch (_) { /* ignore */ }
+      const newSceneResult = buildScene(map, canvas, _currentRenderOptions);
+      scene = newSceneResult.scene;
+      camera = newSceneResult.camera;
+      renderer = newSceneResult.renderer;
+      center = newSceneResult.center;
+      setFog = newSceneResult.setFog;
+      hideDecorAtHex = newSceneResult.hideDecorAtHex;
+      setZoomLod = newSceneResult.setZoomLod;
+      getZoomLodLevel = newSceneResult.getZoomLodLevel;
+      disposeScene = newSceneResult.dispose;
+      cultureRangeGroup = null;
+      religionRangeGroup = null;
+
+      camCtrl = new CameraController(camera, canvas, center, cameraControllerOpts());
+
+      unitRenderer = new UnitRenderer(scene, map);
+      cityRenderer = new CityRenderer(scene, map);
+      siegeMarkerRenderer = new SiegeMarkerRenderer(scene, map);
+      wonderRenderer = new WonderRenderer(scene, map);
+      siegeTurnByCity.clear();
+      siegeBesiegerByCity.clear();
+      siegeAiStateByKey.clear();
+
+      const preset = buildPlaytestMiastoEkonomia(map, data);
+      if (!preset) {
+        showHintMessage('Playtest miasta: brak miejsca na mapie — sprobuj inny seed', 5000);
+        showMainMenu();
+        playtestMiastoActive = false;
+        return;
+      }
+
+      units.length = 0;
+      aiOwnerCivMap.clear();
+      diplomacyRelations.clear();
+      diplomaticContactEstablished.clear();
+      playerEverOwnedCity = true;
+
+      cities.length = 0;
+      for (const c of preset.cities) {
+        ensureCitySaveDefaults(c);
+        cities.push(c);
+      }
+
+      explored.clear();
+      for (const k of preset.explored) explored.add(k);
+
+      player.zbadane = new Set(preset.grantedTechIds);
+      player.badana = null;
+
+      turn = 1;
+      cityBuilt.clear();
+      cityProd.clear();
+      completedWorldWonders = [];
+      placedWorldWonders = [];
+      cityOrderState.clear();
+      orderMultMap.clear();
+      orderValueMap.clear();
+      growthMultMap.clear();
+      autoManageCities.clear();
+      aiResearchDone.clear();
+      barbCamps = [];
+      gameOver = false;
+      selectedId = null;
+      reachable = new Set<string>();
+      hoverKey = null;
+      buildModeOpen = false;
+      activeImprovementKey = null;
+      placedImprovements.clear();
+      hexClearingStates.clear();
+      for (const mesh of improvementMeshes.values()) scene.remove(mesh);
+      improvementMeshes.clear();
+
+      cityBuilt.set(preset.playerCityId, ['koszary']);
+      cityProd.set(preset.playerCityId, { ...preset.initialProduction, kolejka: [...preset.initialProduction.kolejka] });
+
+      const efParams = buildEmpireFoodParams(data.econParams, _menuDifficulty);
+      empireFoodStates.clear();
+      empireFoodStates.set(0, freshEmpireFoodState(efParams.procentRozwojDefault));
+      bindEmpireFoodRuntime(empireFoodStates);
+
+      foundCityMode = false;
+      refreshBuildApi();
+      overlayDepositEra = player.era;
+      rebuildResourceOverlays();
+      syncLivestockAndPlacedMeshes();
+      reapplyCityHexDecorHides();
+      syncWonderRender();
+
+      syncUnitsRender();
+      cityRenderer.sync(cities, _cityRenderOpts());
+      refreshFog();
+      updateHud();
+      refreshD1bHud();
+
+      const playerCity = cities.find(c => c.id === preset.playerCityId);
+      if (playerCity) {
+        const pos = axialToWorld(playerCity.q, playerCity.r, HEX_R);
+        camCtrl.focusAt(pos.x, pos.z, 22);
+        openCityPanelForPlayer(playerCity);
+      }
+
+      showHintMessage(PLAYTEST_MIASTO_HINT, 16000);
+      showHintMessage(
+        'Testpolis · pop 9 · skarbiec 5000 · Koszary OK · kolejka: Stolarnia. Panel otwarty.',
+        10000,
+      );
+      console.log(
+        '[PlaytestMiasto] seed=' + PLAYTEST_MIASTO_SEED +
+        ' miasto=' + (playerCity?.name ?? '?') +
+        ' pop=' + (playerCity?.population ?? 0),
+      );
+      renderLoop();
+    }
+
+    async function doStartPlaytestMapaSwiata(): Promise<void> {
+      playtestWalkaActive = false;
+      playtestMiastoActive = false;
+      const mqTier = mapQualityTierFromQuery('high');
+      const mqBundle = bundledMapQualityPreset(mqTier);
+      const ptMapDensity = resolvePlaytestMapaWorldDensity();
+      applyMenuParams({
+        civId: 'rzymianie',
+        civName: 'Rzymianie',
+        epoch: 'Epoka Brzu',
+        epochId: 'braz',
+        difficulty: 'Normalny',
+        mapSize: 'Maly',
+        rivals: '0',
+        speed: 'Normalna',
+        worldType: 'Kontynenty',
+        typSwiata: 'kontynenty',
+        seed: PLAYTEST_MAPA_SEED,
+        mapQualityLabel: qualityTierToLabel(mqTier),
+        mapQuality: mqTier,
+        renderQualityLabel: qualityTierToLabel(mqBundle.renderQuality),
+        mapDetailQualityLabel: qualityTierToLabel(mqBundle.mapDetailQuality),
+        renderQuality: mqBundle.renderQuality,
+        mapDetailQuality: mqBundle.mapDetailQuality,
+        civTypesCount: 3,
+        cityStatesCount: 0,
+        worldDensity: { ...ptMapDensity.preset },
+        worldDensityLabels: { ...ptMapDensity.labels },
+      } as NewGameParams);
+      hideMainMenu();
+      hideNewGameFlow();
+
+      player.skarbiec = 5000;
+      player.nauka = 200;
+      player.pieniadzMnoznik = 1;
+      player.era = 2;
+
+      const rozmiar = rozmiarFromMenuLabel('Maly');
+      // C1/C2: generacja mapy asynchronicznie + panel „Tworzenie świata".
+      const loading = showMapLoadingOverlay({ seed: PLAYTEST_MAPA_SEED, rozmiarLabel: 'Maly', typLabel: 'Kontynenty' });
+      const newMap = await generujSwiatAsync(PLAYTEST_MAPA_SEED, rozmiar, 'kontynenty', {
+        worldDensity: ptMapDensity.preset,
+        mapSizeMenuLabel: 'Maly',
+      }, (faza, pct, phaseNum, phaseTotal) => {
+        loading.setProgress(faza, pct, phaseNum, phaseTotal);
+      });
+      loading.hide();
+      map = newMap;
+      ensureDepositEraMeta(map.hexes);
+      rebuildAllKeys();
+
+      disposeOkolicaOverlay();
+      try { disposeScene(); } catch (_) { /* ignore */ }
+      const newSceneResult = buildScene(map, canvas, _currentRenderOptions);
+      scene = newSceneResult.scene;
+      camera = newSceneResult.camera;
+      renderer = newSceneResult.renderer;
+      center = newSceneResult.center;
+      setFog = newSceneResult.setFog;
+      hideDecorAtHex = newSceneResult.hideDecorAtHex;
+      setZoomLod = newSceneResult.setZoomLod;
+      getZoomLodLevel = newSceneResult.getZoomLodLevel;
+      disposeScene = newSceneResult.dispose;
+      cultureRangeGroup = null;
+      religionRangeGroup = null;
+
+      camCtrl = new CameraController(camera, canvas, center, cameraControllerOpts());
+
+      unitRenderer = new UnitRenderer(scene, map);
+      cityRenderer = new CityRenderer(scene, map);
+      siegeMarkerRenderer = new SiegeMarkerRenderer(scene, map);
+      wonderRenderer = new WonderRenderer(scene, map);
+      siegeTurnByCity.clear();
+      siegeBesiegerByCity.clear();
+      siegeAiStateByKey.clear();
+
+      const preset = buildPlaytestMapaSwiata(map, data);
+      if (!preset) {
+        showHintMessage('Playtest mapy: brak miejsca — sprobuj inny seed', 5000);
+        showMainMenu();
+        return;
+      }
+
+      units.length = 0;
+      for (const u of preset.units) units.push(u);
+
+      aiOwnerCivMap.clear();
+      aiOwnerCivMap.set(preset.aiOwnerId, 'grecy');
+      diplomacyRelations.clear();
+      diplomaticContactEstablished.clear();
+      diplomaticContactEstablished.add(preset.aiOwnerId);
+      setDiploRelation(0, preset.aiOwnerId, { zaufanie: 0, respekt: 30, status: 'wojna' });
+
+      playerEverOwnedCity = true;
+
+      cities.length = 0;
+      for (const c of preset.cities) {
+        ensureCitySaveDefaults(c);
+        cities.push(c);
+      }
+      reapplyCityHexDecorHides();
+      syncWonderRender();
+
+      explored.clear();
+      for (const k of preset.explored) explored.add(k);
+
+      player.zbadane = new Set(preset.grantedTechIds);
+      player.badana = 'Metalurgia Brązu';
+
+      turn = 1;
+      cityBuilt.clear();
+      cityProd.clear();
+      completedWorldWonders = [];
+      placedWorldWonders = [];
+      cityOrderState.clear();
+      orderMultMap.clear();
+      orderValueMap.clear();
+      growthMultMap.clear();
+      autoManageCities.clear();
+      aiResearchDone.clear();
+      barbCamps = [];
+      gameOver = false;
+      selectedId = null;
+      reachable = new Set<string>();
+      hoverKey = null;
+      buildModeOpen = false;
+      activeImprovementKey = null;
+      placedImprovements.clear();
+      hexClearingStates.clear();
+      for (const mesh of improvementMeshes.values()) scene.remove(mesh);
+      improvementMeshes.clear();
+
+      cityBuilt.set(preset.playerCityId, ['koszary', 'spichlerz']);
+      cityProd.set(preset.playerCityId, {
+        ...preset.initialProduction,
+        kolejka: [...preset.initialProduction.kolejka],
+      });
+
+      const efParams = buildEmpireFoodParams(data.econParams, _menuDifficulty);
+      empireFoodStates.clear();
+      empireFoodStates.set(0, freshEmpireFoodState(efParams.procentRozwojDefault));
+      bindEmpireFoodRuntime(empireFoodStates);
+
+      playerPracaPool = preset.pracaStart;
+      _lastPraca = playerPracaPool;
+      _lastPracaRate = preset.pracaRateStart;
+      _lastKultura = preset.cities[0]?.kulturaSkumulowana ?? 120;
+      _lastKulturaRate = 2;
+      _lastNaukaRate = 9;
+      _lastLudnoscRate = 1;
+      _lastBogactwoRate = 4;
+      _lastWealthLevel = preset.cities[0]?.wealthState?.pula ?? 5;
+      _lastPieniadzRate = 33;
+
+      foundCityMode = false;
+      refreshBuildApi();
+      overlayDepositEra = player.era;
+      rebuildResourceOverlays();
+      syncLivestockAndPlacedMeshes();
+
+      syncUnitsRender();
+      cityRenderer.sync(cities, _cityRenderOpts());
+      refreshFog();
+      updateHud();
+      refreshD1bHud();
+
+      const playerCity = cities.find(c => c.id === preset.playerCityId);
+      const playerUnit = units.find(u => u.ownerId === 0);
+      if (playerUnit) {
+        const pos = axialToWorld(playerUnit.q, playerUnit.r, HEX_R);
+        camCtrl.focusAt(pos.x, pos.z, 24);
+      } else if (playerCity) {
+        const pos = axialToWorld(playerCity.q, playerCity.r, HEX_R);
+        camCtrl.focusAt(pos.x, pos.z, 28);
+      }
+
+      showHintMessage(PLAYTEST_MAPA_HINT, 18000);
+      console.log(
+        '[PlaytestMapa] seed=' + PLAYTEST_MAPA_SEED +
+        ' miasto=' + (playerCity?.name ?? '?') +
+        ' wrog=' + preset.enemyCityId +
+        ' jednostek=' + units.length +
+        ' praca=' + _lastPraca,
+      );
+      renderLoop();
+    }
+
+    function doLoadGame(fromInGamePause = false): void {
+      try {
+        const saved = loadFromLocal('autosave');
+        if (!saved) {
+          showHintMessage(
+            fromInGamePause
+              ? 'Brak zapisu (slot: autosave).'
+              : 'Brak zapisu (slot: autosave). Uruchamiam nową grę.',
+            3000,
+          );
+          if (!fromInGamePause) openStartupMainMenu();
+          return;
+        }
+        hideGamePauseMenu();
+        hideMainMenu();
+        hideNewGameFlow();
+        restoreGameFromSave(saved);
+        for (const c of cities) {
+          if (!c.centerWorkedTile) {
+            const hex = map.hexes[`${c.q},${c.r}`];
+            if (hex && (hex.nakladka !== Nakladka.Brak || hex.ulepszenie !== Ulepszenie.Brak)) {
+              applyCityFoundingToHex(c, map, c.q, c.r);
+            }
+          }
+        }
+        reapplyCityHexDecorHides();
+        syncWonderRender();
+        rebuildResourceOverlays();
+        syncLivestockAndPlacedMeshes();
+        syncUnitsRender();
+        cityRenderer.sync(cities, _cityRenderOpts());
+        refreshSiegeMarkers();
+        refreshFog();
+        updateHud();
+        renderLoop();
+        showHintMessage('Wczytano zapis (tura ' + turn + ')', 3000);
+        console.log('[Load] menu wczytano slot=autosave tura=' + turn);
+      } catch (e) {
+        showHintMessage(
+          fromInGamePause
+            ? 'Błąd wczytywania zapisu.'
+            : 'Błąd wczytywania zapisu. Uruchamiam nową grę.',
+          3000,
+        );
+        if (!fromInGamePause) openStartupMainMenu();
+      }
+    }
+
+    /** Wspólna ścieżka wczytywania zapisu — Ctrl+L i doLoadGame (Grupa F: migracja podziału). */
+    function restoreGameFromSave(saved: SaveGame): void {
+      applyRenderOptionsFromSave(saved);
+      turn = saved.tura;
+      units.length = 0;
+      for (const u of saved.units) units.push(u);
+      cities.length = 0;
+      for (const c of saved.cities) {
+        ensureCitySaveDefaults(c);
+        if (c.maMur === undefined) {
+          const built = saved.cityBuilt?.[c.id];
+          if (built?.includes('mury') || built?.includes('fort')) c.maMur = true;
+        }
+        cities.push(c);
+      }
+      playerEverOwnedCity = cities.some(c => c.ownerId === 0);
+      explored.clear();
+      for (const k of saved.explored ?? []) explored.add(k);
+      revealAllLand = false;
+      if (saved.gracz) {
+        player.skarbiec = saved.gracz.skarbiec ?? 0;
+        player.nauka    = saved.gracz.nauka ?? 0;
+        player.era      = saved.gracz.era ?? 1;
+        player.badana   = saved.gracz.badana ?? null;
+        player.zbadane  = new Set<string>(saved.gracz.zbadane ?? []);
+      }
+      overlayDepositEra = player.era;
+      cityProd.clear();
+      if (saved.cityProd) {
+        for (const [cid, prod] of Object.entries(saved.cityProd)) cityProd.set(cid, prod as any);
+      }
+      cityBuilt.clear();
+      if (saved.cityBuilt) {
+        for (const [cid, blt] of Object.entries(saved.cityBuilt)) cityBuilt.set(cid, blt as string[]);
+      }
+      completedWorldWonders = Array.isArray(saved.meta?.completedWorldWonders)
+        ? (saved.meta.completedWorldWonders as string[]).slice()
+        : [];
+      placedWorldWonders = Array.isArray(saved.meta?.placedWorldWonders)
+        ? (saved.meta.placedWorldWonders as PlacedWonder[]).slice()
+        : [];
+      aiResearchDone.clear();
+      if (saved.aiResearchDone) {
+        for (const [oid, zbadane] of saved.aiResearchDone) aiResearchDone.set(oid, new Set(zbadane));
+      }
+      battlePowerPtsByOwner.clear();
+      const savedPts = saved.meta?.battlePowerPtsByOwner as Array<[number, number]> | undefined;
+      if (savedPts?.length) {
+        for (const [oid, n] of savedPts) battlePowerPtsByOwner.set(oid, n);
+      }
+      ownerEraByOwner.clear();
+      const savedEra = saved.meta?.ownerEraByOwner as Array<[number, number]> | undefined;
+      if (savedEra?.length) {
+        for (const [oid, e] of savedEra) ownerEraByOwner.set(oid, e);
+      } else {
+        for (const oid of aiOwnerCivMap.keys()) syncOwnerEraFromResearch(oid);
+      }
+      diplomacyRelations.clear();
+      diplomaticContactEstablished.clear();
+      if (saved.diploRelations) {
+        for (const [key, rel] of Object.entries(saved.diploRelations)) diplomacyRelations.set(key, rel as any);
+      }
+      empireFoodStates.clear();
+      const savedEf = saved.meta?.empireFoodStates as Array<[number, EmpireFoodState]> | undefined;
+      if (savedEf?.length) {
+        for (const [oid, st] of savedEf) empireFoodStates.set(oid, st);
+      } else {
+        initEmpireFoodStates();
+      }
+      bindEmpireFoodRuntime(empireFoodStates);
+      const savedPracaPool = saved.meta?.playerPracaPool as number | undefined;
+      playerPracaPool = typeof savedPracaPool === 'number' ? savedPracaPool : 0;
+      _lastPraca = playerPracaPool;
+      siegeTurnByCity.clear();
+      siegeBesiegerByCity.clear();
+      siegeAiStateByKey.clear();
+      siegeAiStateByKey.clear();
+      pendingDiplomacyInbox.length = 0;
+      const savedPending = saved.meta?.pendingDiplomacyInbox as typeof pendingDiplomacyInbox | undefined;
+      if (savedPending?.length) pendingDiplomacyInbox.push(...savedPending);
+      diplomaticContactEstablished.clear();
+      const savedContacts = saved.meta?.diplomaticContactEstablished as number[] | undefined;
+      if (savedContacts?.length) {
+        for (const oid of savedContacts) diplomaticContactEstablished.add(oid);
+      }
+      activeDeals = [];
+      aiSkarbiecByOwner.clear();
+      const savedDeals = saved.meta?.diplomacyDeals as ActiveDeal[] | undefined;
+      if (savedDeals?.length) activeDeals = hydrateActiveDeals(savedDeals);
+      diplomacyPairMeta.clear();
+      const savedPairMeta = saved.meta?.diplomacyPairMeta as Array<[string, DiploPairMeta]> | undefined;
+      if (savedPairMeta?.length) {
+        for (const [key, meta] of savedPairMeta) diplomacyPairMeta.set(key, meta);
+      }
+      zlozeGrants = [];
+      const savedZloze = saved.meta?.zlozeGrants as ZlozeGrant[] | undefined;
+      if (savedZloze?.length) zlozeGrants = savedZloze.slice();
+      basketTransferCtx = createEmptyBasketTransferContext(data.tech);
+      const savedSurowiecGrants = saved.meta?.surowiecBooleanGrants as SurowiecBooleanGrant[] | undefined;
+      if (savedSurowiecGrants?.length) {
+        basketTransferCtx = { ...basketTransferCtx, surowiecBooleanGrants: savedSurowiecGrants.slice() };
+      }
+      syncBasketResearchFromEngine();
+      _dipUnitSeq = 0;
+      for (const oid of diplomaticContactEstablished) {
+        if (oid !== 0) syncRelationFromDeals(0, oid);
+      }
+      const savedSiegeTurns = saved.meta?.siegeTurnByCity as Array<[string, number]> | undefined;
+      if (savedSiegeTurns?.length) {
+        for (const [cid, t] of savedSiegeTurns) siegeTurnByCity.set(cid, t);
+      }
+      const savedBesiegers = saved.meta?.siegeBesiegerByCity as Array<[string, number]> | undefined;
+      if (savedBesiegers?.length) {
+        for (const [cid, o] of savedBesiegers) {
+          siegeBesiegerByCity.set(cid, o);
+          const c = cities.find(x => x.id === cid);
+          if (c) c.oblegajacyOwnerId = o;
+        }
+      }
+      const savedAiSiege = saved.meta?.siegeAiStateByKey as Array<[string, SiegeAiState]> | undefined;
+      if (savedAiSiege?.length) {
+        for (const [k, st] of savedAiSiege) siegeAiStateByKey.set(k, st);
+      }
+      const savedImps = saved.meta?.placedImprovements as Array<[string, ImprovementKey]> | undefined;
+      restorePlacedImprovementsFromSave(savedImps);
+      hexClearingStates.clear();
+      const savedClr = saved.meta?.hexClearingStates as Array<[string, HexClearingState]> | undefined;
+      if (savedClr?.length) {
+        for (const [hk, st] of savedClr) hexClearingStates.set(hk, st);
+      }
+      for (const c of cities) {
+        if (c.oblegane && c.oblegajacyOwnerId === undefined) {
+          const o = siegeBesiegerByCity.get(c.id);
+          if (o !== undefined) c.oblegajacyOwnerId = o;
+        }
+      }
+      refreshObjectivePowerCache();
+      selectedId = null;
+      reachable = new Set<string>();
+      unitRenderer.clearHighlight();
+      unitRenderer.clearPathRoute();
+      hoverKey = null;
+      gameOver = false;
+    }
+
+    // Show main menu overlay; game is already initialized beneath it.
+    const playtestOdskokOblUrl = typeof location !== 'undefined' && isPlaytestOdskokOblezenieMode();
+    const playtestOdskokUrl = typeof location !== 'undefined' && !playtestOdskokOblUrl && (
+      (() => {
+        const pt = new URLSearchParams(location.search).get('playtest');
+        return pt === 'odskok';
+      })() ||
+      /PLAYTEST-ODSKOK/i.test(location.pathname || '')
+    );
+    const playtestWalkaUrl = typeof location !== 'undefined' && !playtestOdskokOblUrl && !playtestOdskokUrl && (
+      (() => {
+        const pt = new URLSearchParams(location.search).get('playtest');
+        return pt === 'walka' || pt === 'oblez';
+      })() ||
+      /PLAYTEST-WALKA/i.test(location.pathname || '')
+    );
+    const playtestMiastoUrl = typeof location !== 'undefined' && (
+      new URLSearchParams(location.search).get('playtest') === 'miasto' ||
+      /PLAYTEST-MIASTO/i.test(location.pathname || '')
+    );
+    const playtestMapaUrl = typeof location !== 'undefined' && (
+      (() => {
+        const pt = new URLSearchParams(location.search).get('playtest');
+        return pt === 'mapa' || pt === 'sandbox';
+      })() ||
+      /PLAYTEST-MAPA/i.test(location.pathname || '')
+    );
+    if (playtestOdskokOblUrl || playtestOdskokUrl || playtestWalkaUrl) {
+      void doStartPlaytestWalkaMapy();
+    } else if (playtestMapaUrl) {
+      void doStartPlaytestMapaSwiata();
+    } else if (playtestMiastoUrl) {
+      void doStartPlaytestMiastoEkonomia();
+    } else {
+      openStartupMainMenu();
+    }
+    // Note: renderLoop() is now called by doStartGame() / doLoadGame(), not here.
+    // For smoke test: the rAF loop starts immediately via the first render frame below.
+    // We schedule a single rAF to satisfy smoke's check (c).
+    requestAnimationFrame(() => {
+      camCtrl.update();
+      {
+        const { dist } = camCtrl.getFocusState();
+        const { minDist, maxDist } = camCtrl.getDistLimits();
+        setZoomLod(dist, minDist, maxDist);
+      }
+      renderer.render(scene, camera);
+    });
+
+  } catch (err) {
+    showErr('FATAL: ' + String(err) + (err instanceof Error ? '\n' + err.stack : ''));
+  }
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', boot);
+} else {
+  boot();
+}

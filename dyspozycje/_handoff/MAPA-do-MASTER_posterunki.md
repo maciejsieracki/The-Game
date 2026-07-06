@@ -1,6 +1,6 @@
 # HANDOFF (DRAFT): MAPA → MASTER — POSTERUNKI (outpost / strażnica)
 
-**Data:** 24.06.2026 · **Od:** Civ-MAPA · **Status:** PROPOZYCJA — NIE wpinać przed akceptacją Macieja (decyzja projektowa Jego).
+**Data:** 24.06.2026 · **Od:** Grupa A · **Status:** PROPOZYCJA — NIE wpinać przed akceptacją Macieja (decyzja projektowa Jego).
 **Kontekst:** master deleguje do MAPA definicję „posterunków". Spina się to z regułą zakładania miast („w zasięgu miast LUB po **Strażnicy**") i z „drogi tylko między miastami + posterunkami".
 
 ## 1. Czym jest posterunek

@@ -1,6 +1,6 @@
 # KONTRAKT: UNITS → MASTER — walka MULTI-UNIT + AUTO-rozstrzyganie
 
-**Data:** 2026-06-26 · Od: Civ-UNITS · Do: MASTER · Decyzje Naster (1=auto, 4=C/1-hex).
+**Data:** 2026-06-26 · Od: Grupa C · Do: MASTER · Decyzje Naster (1=auto, 4=C/1-hex).
 
 ## 1. SKŁAD BITWY (które jednostki biorą udział) — decyzja 4
 Do bitwy wchodzą jednostki z heksa ATAKUJĄCEGO + heksa OBROŃCY **oraz wszystkie jednostki w promieniu 1 HEKSA** od każdego z nich (posiłki). Czyli: dla atakującego — jego heks + 6 sąsiednich własnych; dla obrońcy — jego heks + 6 sąsiednich własnych. Dalsze heksy NIE biorą udziału.
@@ -20,4 +20,4 @@ Do bitwy wchodzą jednostki z heksa ATAKUJĄCEGO + heksa OBROŃCY **oraz wszystk
 ## 4. UWAGA
 AUTO-rozstrzyganie to świadomie osobny temat „do pełnego przemyślenia" (Naster) — powyższy algorytm to propozycja startowa; zestroimy wagi z `Macierz-walki.xlsx`. Spójność: ten sam model siły dla AI vs AI i dla podglądu „szybki wynik" gracza.
 
-— Civ-UNITS
+— Grupa C

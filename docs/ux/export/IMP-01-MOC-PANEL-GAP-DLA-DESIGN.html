@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<title>IMP-01 Panel Moc — GAP dla Design</title>
+<style>
+  :root { --gold:#e8d88a; --dim:#8a8070; --text:#e8e0c8; --bg:#0a0c10; --bad:#ff7b7b; --ok:#7ad0a0; }
+  body { margin:0; font-family:'Segoe UI',Tahoma,sans-serif; background:var(--bg); color:var(--text); line-height:1.55; }
+  .wrap { max-width:960px; margin:0 auto; padding:28px 18px 64px; }
+  h1 { font-family:Georgia,serif; font-weight:400; color:var(--gold); }
+  .hero { border:2px solid rgba(232,216,138,.35); border-radius:12px; padding:18px 20px; margin:20px 0; background:linear-gradient(180deg,rgba(22,28,40,.96),rgba(8,10,16,.98)); }
+  h2 { font-family:Georgia,serif; color:#a08030; font-size:1.2rem; margin-top:28px; border-bottom:1px solid rgba(232,216,138,.2); padding-bottom:6px; }
+  table { width:100%; border-collapse:collapse; font-size:.92rem; margin:12px 0; }
+  th,td { text-align:left; padding:8px 10px; border-bottom:1px solid rgba(255,255,255,.06); vertical-align:top; }
+  th { color:#a08030; font-size:10px; letter-spacing:.12em; text-transform:uppercase; }
+  .bad { color:var(--bad); } .ok { color:var(--ok); }
+  code { background:rgba(0,0,0,.35); padding:2px 6px; border-radius:4px; font-size:.88em; }
+  pre { background:rgba(0,0,0,.4); border:1px solid rgba(232,216,138,.15); border-radius:8px; padding:14px; font-size:11px; overflow-x:auto; line-height:1.35; color:#c8c0b0; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>IMP-01 · Panel Moc imperium + raporty 6C</h1>
+  <p style="color:var(--dim)">ZLECENIE-ID: <strong style="color:var(--gold)">IMP-01-MOC-2026-07-06</strong> · decyzja Macieja <strong>D16 = opcja A</strong> (slide-in z prawej)</p>
+
+  <div class="hero">
+    <p><strong>Cel:</strong> Klik <strong>Moc</strong> lub chip zasobu (Skarbiec, Praca, Nauka…) otwiera spójny panel 1E z tabelami — zamiast starego modala centrum.</p>
+    <p><strong>Pełna spec:</strong> <code>docs/ux/DESIGN-ZLECENIE-IMP-01-MOC-2026-07-06.md</code></p>
+    <p><strong>Deliverable:</strong> <code>The Game - Panel Moc imperium v1 2026-07-06 (1E).dc.html</code></p>
+  </div>
+
+  <h2>PRZED — screenshoty do zrobienia</h2>
+  <ol>
+    <li><code>gra-kanon/Gra-podglad.html</code> → gra kilka tur</li>
+    <li>Klik <strong>środek górnego paska — Moc</strong> → stary modal (<code>powerOverlayHud.ts</code>)</li>
+    <li>Klik chip <strong>Skarbiec</strong> / <strong>Praca</strong> → porównaj z slide-in (<code>empireDetailPanel.ts</code> — brzydki, ale dane OK)</li>
+  </ol>
+
+  <h2>Co jest źle</h2>
+  <table>
+    <tr><th>Trigger</th><th>PRZED</th><th>PO</th></tr>
+    <tr><td>Klik Moc (centrum HUD)</td><td class="bad">Stary modal centrum · pre-1E</td><td class="ok">Slide-in 420px · sekcja Moc</td></tr>
+    <tr><td>Chipy 6C (Skarbiec…)</td><td class="bad">Niespójny flow · brak tabel per miasto w 1E</td><td class="ok">Ten sam panel · scroll do sekcji zasobu</td></tr>
+    <tr><td>Ranking / Respekt</td><td class="bad">Brak lub ukryte</td><td class="ok">Widoczne w sekcji Moc</td></tr>
+    <tr><td>Ikony</td><td class="bad">Emoji w części wierszy</td><td class="ok">SVG brand <code>res-treasury</code>, <code>res-work</code>, …</td></tr>
+  </table>
+
+  <h2>Dane MUST (nie wymyślaj — z silnika)</h2>
+  <p>9 składników Mocy (ilość × współczynnik = pkt · % pasek):</p>
+  <table>
+    <tr><th>Składnik</th><th>× wsp.</th></tr>
+    <tr><td>Armia</td><td>25</td></tr>
+    <tr><td>Wygrane bitwy</td><td>1</td></tr>
+    <tr><td>Ludki (populacja)</td><td>5</td></tr>
+    <tr><td>Rekruci</td><td>5</td></tr>
+    <tr><td>Miasta</td><td>50</td></tr>
+    <tr><td>Terytorium</td><td>0.5</td></tr>
+    <tr><td>Budynki</td><td>5</td></tr>
+    <tr><td>Tech</td><td>20</td></tr>
+    <tr><td>Ulepszenia terenu</td><td>5</td></tr>
+  </table>
+  <p>Raport zasobu: <strong>suma imperium</strong> + <strong>tabela per miasto</strong> (kolumny: miasto · wartość · /t jeśli dotyczy).</p>
+
+  <h2>Stany w mockupie (min. 4 sekcje @1920)</h2>
+  <ol>
+    <li><strong>Moc</strong> — tabela 9 wierszy + ranking + Respekt</li>
+    <li><strong>Skarbiec</strong> — suma + tabela miast</li>
+    <li><strong>Praca</strong> — j.w.</li>
+    <li><strong>Rekruci</strong> — pasek puli + „można werbować X jedn."</li>
+  </ol>
+
+  <h2>Referencje</h2>
+  <ul>
+    <li><code>The Game - HUD Mapy layout (1E).dc.html</code> — górny pasek 6C</li>
+    <li><code>dyspozycje/_handoff/MASTER-do-UI_panel-moc-i-imperium.md</code></li>
+    <li>Kod: <code>gra/src/ui/empireDetailPanel.ts</code> (logika już jest — tylko szata)</li>
+  </ul>
+</div>
+</body>
+</html>

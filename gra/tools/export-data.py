@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
+DEPRECATED (2026-06-30 — PANEL-MERGE):
+  NIGDY nie uruchamiaj — nadpisuje wiele JSON naraz.
+  Kanon: panele-sterowania/Panel-{A..E}.xlsx + export-{a..e}.py
+
 export-data.py
 Converts Excel design files from Civ/ into UTF-8 JSON in gra/data/.
 """

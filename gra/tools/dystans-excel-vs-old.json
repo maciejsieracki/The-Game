@@ -1,0 +1,65 @@
+[
+  [
+    "Hastati",
+    {
+      "missileAttack": [
+        6,
+        15
+      ]
+    }
+  ],
+  [
+    "Kusznik",
+    {
+      "missileAttack": [
+        10,
+        15
+      ]
+    }
+  ],
+  [
+    "Łucznik egipski",
+    {
+      "missileAttack": [
+        10,
+        11
+      ]
+    }
+  ],
+  [
+    "Łucznik akadyjski",
+    {
+      "missileAttack": [
+        11,
+        10
+      ]
+    }
+  ],
+  [
+    "Wojownik germański",
+    {
+      "missileAttack": [
+        7,
+        9
+      ]
+    }
+  ],
+  [
+    "Katapulta",
+    {
+      "missileAttack": [
+        16,
+        8
+      ]
+    }
+  ],
+  [
+    "Łucznik",
+    {
+      "missileAttack": [
+        35,
+        6
+      ]
+    }
+  ]
+]

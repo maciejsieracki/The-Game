@@ -1,0 +1,108 @@
+/**
+ * The Game — Design tokens v1 (decyzje 1B, 2C, 4C, 5C, 6C)
+ * Źródło: docs/ux/claude-design/00-brand-book-pakiet/01-dokumenty/04-TOKENY-KOLORY.md
+ * Użycie: @import w mockupach HTML · docelowo gra/src/ui/*
+ */
+:root {
+  /* Tło */
+  --civ-bg-deep: #080a12;
+  --civ-panel-bg: #121820;
+  --civ-panel-gradient: linear-gradient(180deg, rgba(14, 18, 28, 0.98), rgba(8, 10, 16, 0.95));
+
+  /* Złoto / pergamin (1B) */
+  --civ-gold-primary: #e8d88a;
+  --civ-gold-dim: #a08030;
+  --civ-gold-border: rgba(232, 216, 138, 0.22);
+  --civ-gold-border-strong: rgba(232, 216, 138, 0.45);
+  --civ-gold-glow: radial-gradient(ellipse 70% 50% at 50% 38%, rgba(232, 216, 138, 0.08), transparent 70%);
+
+  /* Tekst */
+  --civ-text-primary: #e8e0c8;
+  --civ-text-muted: #8a8070;
+  --civ-text-pergament: #c8b898;
+
+  /* Semantyka */
+  --civ-science: #5a9bd4;
+  --civ-success: #50b070;
+  --civ-danger: #c84040;
+  --civ-warning: #d08030;
+
+  /* Typografia (2C) */
+  --civ-font-title: Georgia, 'Times New Roman', serif;
+  --civ-font-ui: 'Segoe UI', Tahoma, sans-serif;
+
+  /* Komponenty */
+  --civ-btn-outline: 2px solid var(--civ-gold-primary);
+  --civ-panel-border: 2px solid var(--civ-gold-border-strong);
+  --civ-radius-btn: 6px;
+  --civ-radius-panel: 8px;
+  --civ-shadow-panel: 0 12px 40px rgba(0, 0, 0, 0.65);
+  --civ-shadow-panel-light: 0 4px 12px rgba(0, 0, 0, 0.35);
+
+  /* Chip 6C */
+  --civ-chip-gap: 8px;
+  --civ-chip-padding: 6px 14px;
+  --civ-chip-font: 13px;
+}
+
+/* Przycisk outline 4C */
+.civ-btn-outline {
+  font-family: var(--civ-font-ui);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 10px 20px;
+  border-radius: var(--civ-radius-btn);
+  border: var(--civ-btn-outline);
+  background: transparent;
+  color: var(--civ-gold-primary);
+  cursor: pointer;
+}
+.civ-btn-outline:hover {
+  background: rgba(232, 216, 138, 0.08);
+}
+.civ-btn-outline:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* Panel 5C */
+.civ-panel-5c {
+  border: var(--civ-panel-border);
+  border-radius: var(--civ-radius-panel);
+  background: var(--civ-panel-gradient);
+  box-shadow: var(--civ-shadow-panel);
+  overflow: hidden;
+}
+.civ-panel-5c__hdr {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--civ-gold-border);
+  font-family: var(--civ-font-ui);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--civ-gold-primary);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+/* Chip 6C */
+.civ-chip-6c {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--civ-chip-gap);
+  padding: var(--civ-chip-padding);
+  font-family: var(--civ-font-ui);
+  font-size: var(--civ-chip-font);
+  color: var(--civ-text-primary);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--civ-gold-border);
+  border-radius: 4px;
+}
+.civ-chip-6c__label {
+  font-size: 10px;
+  color: var(--civ-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}

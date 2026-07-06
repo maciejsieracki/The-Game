@@ -1,6 +1,6 @@
 # HANDOFF (DRAFT): MAPA → MASTER — ULEPSZENIA TERENU + bonusy
 
-**Data:** 24.06.2026 · **Od:** Civ-MAPA · **Status:** PROPOZYCJA (lista do akceptacji Macieja).
+**Data:** 24.06.2026 · **Od:** Grupa A · **Status:** PROPOZYCJA (lista do akceptacji Macieja).
 **Podział:** MAPA = GDZIE wolno (teren/zasób + ograniczenia) + render + stan na heksie. MIASTO/ekonomia = KONKRETNE liczby bonusów + koszt w Produkcji. Silnik/master = przepływ tury.
 
 ## ZASADA KLUCZOWA (Maciej)

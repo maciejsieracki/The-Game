@@ -6,9 +6,9 @@
  * Exercises the full battle path:
  *   1. Boot the game (same as smoke.cjs)
  *   2. Dispatch keydown 'T' -> launchTestBattle -> showPreBattle overlay
- *   3. Click 'NA POLE BITWY' button -> new BattleScene(...) constructor runs
+ *   3. Click 'Bitwa ręczna' button -> new BattleScene(...) constructor runs
  *   4. Assert no errors (catches "styleButton is not defined" and similar)
- *   5. Click 'ROZEGRAJ AUTOMATYCZNIE' button -> onAuto path (bonus check)
+ *   5. Click 'Auto' button -> onAuto path (bonus check)
  *
  * SUCCESS: prints "BATTLE SMOKE OK" and exits 0
  * FAILURE: prints "BATTLE SMOKE FAIL" + error and exits 1
@@ -516,7 +516,7 @@ try {
 drainRAF(4, capturedErrors);
 
 // ---------------------------------------------------------------------------
-// 7. Find the pre-battle 'NA POLE BITWY' button
+// 7. Find the pre-battle 'Bitwa ręczna' button
 // ---------------------------------------------------------------------------
 function findButtonByText(root, searchText) {
   const upper = searchText.toUpperCase();
@@ -536,7 +536,8 @@ function findButtonByText(root, searchText) {
   return null;
 }
 
-const poleBitwyBtn = findButtonByText(document.body, 'POLE BITWY');
+const poleBitwyBtn = findButtonByText(document.body, 'BITWA R')
+  || findButtonByText(document.body, 'ROZEGRAJ');
 if (!poleBitwyBtn) {
   const allBtns = document.body.querySelectorAll('button');
   const btnTexts = Array.from(allBtns).map(function(b) {
@@ -544,16 +545,16 @@ if (!poleBitwyBtn) {
   });
   console.error('[battle-smoke] All buttons in DOM:', btnTexts.join(', ') || '(none)');
   console.error('');
-  console.error('BATTLE SMOKE FAIL - pre-battle "NA POLE BITWY" button not found after keydown T.');
+  console.error('BATTLE SMOKE FAIL - pre-battle "Bitwa ręczna" button not found after keydown T.');
   console.error('  launchTestBattle / showPreBattle did not fire, or the overlay was not appended.');
   process.exit(1);
 }
 console.log('[battle-smoke] Found pre-battle button:', JSON.stringify((poleBitwyBtn.textContent || '').trim().slice(0, 80)));
 
 // ---------------------------------------------------------------------------
-// 8. PHASE B: Click 'NA POLE BITWY' -> BattleScene constructor
+// 8. PHASE B: Click 'Bitwa ręczna' -> BattleScene constructor
 // ---------------------------------------------------------------------------
-console.log('[battle-smoke] Phase B: clicking NA POLE BITWY -> constructing BattleScene...');
+console.log('[battle-smoke] Phase B: clicking Bitwa ręczna -> constructing BattleScene...');
 
 capturedErrors.length = 0;
 
@@ -562,7 +563,7 @@ try {
 } catch (err) {
   const msg = err && err.message ? err.message : String(err);
   capturedErrors.push(err);
-  console.error('[battle-smoke] NA POLE BITWY click threw:', msg);
+  console.error('[battle-smoke] Bitwa ręczna click threw:', msg);
 }
 
 // Run several rAF frames so BattleScene constructor + first render frames execute
@@ -595,7 +596,7 @@ if (battleErrors.length > 0) {
 console.log('[battle-smoke] Phase B OK - BattleScene constructed without errors.');
 
 // ---------------------------------------------------------------------------
-// 10. PHASE C: ROZEGRAJ AUTOMATYCZNIE (auto path)
+// 10. PHASE C: Auto (auto path)
 //     The preBattle overlay was dismissed on click, so we re-open via T key.
 //     If isPreBattleOpen() guard fires, this is a no-op and we skip the check.
 // ---------------------------------------------------------------------------
@@ -616,13 +617,13 @@ try {
 
 drainRAF(4, capturedErrors);
 
-const autoBtn = findButtonByText(document.body, 'ROZEGRAJ AUTOMATYCZNIE');
+const autoBtn = findButtonByText(document.body, 'AUTO');
 if (!autoBtn) {
   const allBtns2 = document.body.querySelectorAll('button');
   const btnTexts2 = Array.from(allBtns2).map(function(b) {
     return JSON.stringify((b.textContent || '').trim().slice(0, 60));
   });
-  console.warn('[battle-smoke] WARN: ROZEGRAJ AUTOMATYCZNIE button not found (buttons:', btnTexts2.join(', ') || 'none', ')');
+  console.warn('[battle-smoke] WARN: Auto button not found (buttons:', btnTexts2.join(', ') || 'none', ')');
   console.warn('[battle-smoke] Skipping auto path check (BattleScene may still be open, blocking re-open via isPreBattleOpen guard).');
 } else {
   console.log('[battle-smoke] Found auto button:', JSON.stringify((autoBtn.textContent || '').trim().slice(0, 80)));

@@ -68,6 +68,10 @@ Zamiast czytać cały `<LANE>.md` przy każdym self-checku, warstwuj:
 
 Reguła: `<LANE>-DO-MASTERA.md` trzyma **ostatnie ~10 wpisów** widocznych na górze. Starsze wpisów (> 2 tygodnie lub > 20 wpisów) przesuwa się do `<LANE>-DO-MASTERA-arch.md`. Self-check **nigdy nie czyta archiwum** — tylko bieżący plik.
 
+### 3.4 Archiwum czatów Cursor (pamięć poza summarization)
+
+Przy wysokim % kontekstu czatu Cursor **kompresuje** historię. Pełne sesje zapisuj w `docs/archiwum-czatow/` — jeden czat = jeden plik `{ROLA}-{TEMAT}_{data}.md`. Agent dopisuje podsumowanie; Maciej wkleja pełny eksport z UI. Wskaźnik w `DZIENNIK-MASTERA.md`. Szczegóły: `docs/archiwum-czatow/README.md`, reguła: `.cursor/rules/civ-workflow.mdc` §13.
+
 Kto archiwizuje: master (shadow-check) robi decay przy regularnym przeglądzie, nie lane.
 
 ---
@@ -357,3 +361,10 @@ Dotyczy KAZDEJ decyzji mastera, nie tylko routingu: design, zalozenia, wartosci,
 SEKWENCJA: master proponuje ABC (z rekomendacja) -> Maciej AKCEPTUJE/koryguje -> DOPIERO WTEDY master rozsyla do dzialow.
 ZADNA decyzja nie idzie do zakladki przed akceptacja Macieja. Powod: master czasem sie myli; ABC = bramka, ktora to lapie.
 (Nadal wyjatek: czysto inzynierskie WPIECIE juz zatwierdzonego modulu = execution, nie decyzja.)
+
+## 18. ARCHIWUM CZATOW CURSOR
+Kazda sesja czatu = osobny plik w `docs/archiwum-czatow/` (podfoldery: master/, maciej-decyzje/, lane/, ops/).
+Nazwa: `{ROLA}-{TEMAT}_{YYYY-MM-DD}.md`. Agent zapisuje podsumowanie + decyzje na koncu sesji lub gdy kontekst >60%.
+Maciej moze wkleic pelny eksport z Cursor UI. Wskaznik w `dyspozycje/DZIENNIK-MASTERA.md`.
+Szczegoly: `docs/archiwum-czatow/README.md`, `.cursor/rules/civ-workflow.mdc` §13.
+Wzorzec ogolny (inne projekty): `~/Projects/game-dev-playbook/docs/chat-archive-workflow.md`.

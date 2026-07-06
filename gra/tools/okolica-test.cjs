@@ -30,6 +30,9 @@ export {
   tileScore,
   assignWorkedTiles,
   cityRangeForPopulation,
+  adjustTileWorker,
+  seedReczneFromAuto,
+  toggleTileWorker,
 } from '../src/game/okolica';
 `;
 
@@ -52,7 +55,7 @@ try {
 }
 
 const M = require(BUNDLE_FILE);
-const { OKOLICA_RADIUS, okolicaTiles, tileScore, assignWorkedTiles, cityRangeForPopulation } = M;
+const { OKOLICA_RADIUS, okolicaTiles, tileScore, assignWorkedTiles, cityRangeForPopulation, adjustTileWorker, seedReczneFromAuto, toggleTileWorker } = M;
 
 // --- test harness ----------------------------------------------------------
 let passed = 0;
@@ -135,15 +138,75 @@ const run2 = assignWorkedTiles(0, 0, 10, map, yieldOf);
 const same = run1.length === run2.length && run1.every(function(t, i) { return t.key === run2[i].key; });
 assert(same, 'two identical calls produce identical results');
 
-// Test 7: cityRangeForPopulation -- model liniowy: zasieg = min(pop, cap=15)
-// Decyzja Naster 2026-06-25: zastapil schodkowy (pop<5->5 / >=5->10 / >=10->15).
-console.log('\n7. cityRangeForPopulation (model liniowy: min(pop, cap=15))');
+// Test 7: cityRangeForPopulation -- max(5, pop), cap 15 (Maciej 2026-06-27)
+console.log('\n7. cityRangeForPopulation (min 5, rosnie z pop, cap 15)');
 eq(cityRangeForPopulation(0),  0,  'pop 0  -> 0');
-eq(cityRangeForPopulation(1),  1,  'pop 1  -> 1');
+eq(cityRangeForPopulation(1),  5,  'pop 1  -> 5 (min start)');
+eq(cityRangeForPopulation(4),  5,  'pop 4  -> 5 (min start)');
 eq(cityRangeForPopulation(5),  5,  'pop 5  -> 5');
+eq(cityRangeForPopulation(9),  9,  'pop 9  -> 9');
 eq(cityRangeForPopulation(10), 10, 'pop 10 -> 10');
 eq(cityRangeForPopulation(15), 15, 'pop 15 -> 15 (cap)');
 eq(cityRangeForPopulation(20), 15, 'pop 20 -> 15 (capped at max)');
+
+// Test 8: adjustTileWorker — przypisz / odznacz / toggle
+console.log('\n8. adjustTileWorker (reczny)');
+const cityManual = { q: 0, r: 0, population: 3, okolicaReczne: {}, okolicaTryb: 'reczny' };
+const a1 = adjustTileWorker(cityManual, map, 1, 0, 1);
+assert(a1.ok && a1.reczne['1,0'] === 1, 'assign worker to 1,0');
+const a2 = adjustTileWorker({ ...cityManual, okolicaReczne: a1.reczne }, map, 1, 0, -1);
+assert(a2.ok && a2.reczne['1,0'] === undefined, 'unassign worker from 1,0');
+const a3 = adjustTileWorker({ ...cityManual, okolicaTryb: 'reczny', okolicaReczne: { '1,0': 1 } }, map, 1, 0, 1);
+assert(a3.ok && a3.reczne['1,0'] === undefined, 'toggle off via delta +1 on occupied hex');
+
+// Test 9: auto → reczny seed (nie reset do 1 pola)
+console.log('\n9. seedReczneFromAuto');
+const cityAuto = { q: 0, r: 0, population: 3, okolicaFocus: 'zrownowazone', okolicaTryb: 'auto' };
+const seeded = seedReczneFromAuto(cityAuto, map);
+assert(Object.keys(seeded).length === 3, 'seed copies 3 auto tiles for pop 3');
+const firstKey = Object.keys(seeded)[0];
+const parts = firstKey.split(',');
+const tq = Number(parts[0]), tr = Number(parts[1]);
+const unassign = adjustTileWorker(cityAuto, map, tq, tr, -1);
+assert(unassign.ok && unassign.reczne[firstKey] === undefined, 'unassign from auto-seeded state');
+assert(Object.keys(unassign.reczne).length === 2, '2 tiles remain after unassign one');
+
+// Test 10: toggleTileWorker — klik wolne z auto (pop=1) przypisuje na wybrane pole
+console.log('\n10. toggleTileWorker empty click from auto assigns chosen tile');
+const cityPop1 = { q: 0, r: 0, population: 1, okolicaFocus: 'zrownowazone', okolicaTryb: 'auto' };
+const seeded1 = seedReczneFromAuto(cityPop1, map);
+assert(Object.keys(seeded1).length === 1, 'auto seeds 1 tile for pop 1');
+const oldKey = Object.keys(seeded1)[0];
+const alt = okolicaTiles(0, 0, 5, map).find(function(t) { return t.key !== oldKey; });
+assert(!!alt, 'find alternate tile in range');
+const tPick = toggleTileWorker(cityPop1, map, alt.q, alt.r);
+assert(tPick.ok && tPick.reczne[alt.key] === 1 && tPick.reczne[oldKey] === undefined,
+  'empty click from auto assigns worker on chosen tile (not blocked by auto elsewhere)');
+const tBlocked = toggleTileWorker(
+  { ...cityPop1, okolicaTryb: 'reczny', okolicaReczne: tPick.reczne },
+  map, Number(oldKey.split(',')[0]), Number(oldKey.split(',')[1]),
+);
+assert(!tBlocked.ok && tBlocked.reason === 'limit_populacji', 'full pool + empty click = no assign');
+const tOff = toggleTileWorker(
+  { ...cityPop1, okolicaTryb: 'reczny', okolicaReczne: tPick.reczne },
+  map, alt.q, alt.r,
+);
+assert(tOff.ok && tOff.reczne[alt.key] === undefined, 'toggle off occupied tile');
+const tCenter = toggleTileWorker(cityPop1, map, 0, 0);
+assert(!tCenter.ok && tCenter.reason === 'centrum_miasta', 'city center rejected');
+
+// Test 11: reczny z pustą pulą — można dodawać od zera (bez powrotu do auto)
+console.log('\n11. reczny empty pool — assign from scratch');
+const tEmpty = toggleTileWorker(
+  { q: 0, r: 0, population: 2, okolicaTryb: 'reczny', okolicaReczne: {} },
+  map, 1, 0,
+);
+assert(tEmpty.ok && tEmpty.reczne['1,0'] === 1, 'assign first worker from empty manual pool');
+const tRemove = toggleTileWorker(
+  { q: 0, r: 0, population: 2, okolicaTryb: 'reczny', okolicaReczne: tEmpty.reczne },
+  map, 1, 0,
+);
+assert(tRemove.ok && Object.keys(tRemove.reczne).length === 0, 'remove last worker leaves empty manual pool');
 
 // --- summary ---------------------------------------------------------------
 const total = passed + failed;

@@ -1,6 +1,6 @@
 # HANDOFF: UNITS → MASTER — Robotnik do wycofania (ulepszenia terenu z MAPY)
 
-**Data:** 2026-06-25 · **Od:** Civ-UNITS · **Do:** MASTER (silnik/integracja)
+**Data:** 2026-06-25 · **Od:** Grupa C · **Do:** MASTER (silnik/integracja)
 
 ## DECYZJA NASTER
 Budowa ULEPSZEŃ TERENU (farma, kopalnia, pastwisko, droga, posterunek/fort, itd.) będzie z poziomu MAPY (akcja na kaflu), nie jednostką. W związku z tym jednostka **Robotnik** (Worker) przestaje być potrzebna — analogicznie do wcześniej wycofanego Osadnika (miasta z mapy).
@@ -18,4 +18,4 @@ Budowa ULEPSZEŃ TERENU (farma, kopalnia, pastwisko, droga, posterunek/fort, itd
 ## STATUS
 Niebojowe po zmianie = tylko **Zwiadowca (Scout)**. Czy Scout zostaje? (Naster nie wspomniał o jego usunięciu — zakładam ZOSTAJE.)
 
-— Civ-UNITS
+— Grupa C
