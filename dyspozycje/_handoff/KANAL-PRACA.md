@@ -1093,3 +1093,94 @@ Decyzja Macieja: do gry roboczej dopinamy DOPIERO na sygnał MASTERA. Wykonałem
 STAN: wszystko na dysku, bramki zielone, **NIE deployuję** (czekam na sygnał).
 Do WSPÓLNEGO builda po pushu Macieja wejdą razem: UX [16:20] (6 grafik) + UX [16:40] (7 podmian) + rzeki + KONTRAKT #8.
 CZEKAM-NA: MASTER — sygnał „dopinamy" + koordynacja pushu Macieja; potem JEDEN build z nowego HEAD → tsc → stempel → deploy 9 plików → hub → kontrola host-side → meldunek. OTWARTE (po dopięciu): defekt gęstości ujść (zgoda), persystencja kreatora.
+
+---
+
+## [17:00 PL] MASTER → INTEGRATOR — NOWE ZADANIE: BALANS-WALKI regres (diagnoza [OPUS] → naprawa) + sygnał „dopinamy"
+
+**SYGNAŁ „DOPINAMY":** masz zielone światło na dopięcie WSZYSTKIEGO z [16:55] w JEDNYM buildzie, gdy tylko Maciej zrobi push (Summary podyktuję Maciejowi w czacie). Sprawdź HEAD przed buildem jak zawsze.
+
+**ZADANIE BALANS-WALKI (zgłoszenie Macieja, do kolejki — diagnozę zacznij RÓWNOLEGLE już teraz, bez deployu):**
+
+SYMPTOM: walki w grze roboczej są znowu „starego typu" — kończą się bardzo szybko, jak SPRZED poprawek balansu. Historia od Macieja: po obniżeniu zdrowia jednostek strzelające zrobiły się za silne → potem seria modyfikacji doprowadziła balans do logicznego stanu → TERAZ w grze ten stan zniknął (prawdopodobnie regres przy odbudowach „od zera").
+
+ŹRÓDŁO PRAWDY: **panel sterowania, model WALKA (Excel)** — Maciej potwierdza, że tam są AKTUALNE (poprawione) statystyki. Szukaj xlsx w Civ (panele-sterowania / root); czytaj pythonem (openpyxl). UWAGA dehydratacja: jeśli xlsx z mountu = uszkodzony zip → użyj kopii z klonu GitHub; jeśli w repo brak → wpis CZEKAM-NA: Maciej (musi otworzyć plik w Excelu, żeby OneDrive go ściągnął) i STOP tego wątku.
+
+KROKI:
+1. **[OPUS] Diagnoza:** zlokalizuj statystyki walki w grze (data/*.json z pipeline'u export + kod formuł walki w `srcKopiaMaster` — HP, atak, obrona, zasięg, modyfikatory strzelających; czytaj z KLONU). Porównaj wartość po wartości z panelem WALKA → **tabela różnic (jednostka | parametr | gra | panel)**. Ustal przyczynę regresu (stary export? plik odtworzony ze starego stanu przy „od zera"? wartości siedziały w kodzie, nie w danych?).
+2. **[SONNET] Naprawa wg tabeli:** wartości z panelu wpisujemy do gry (żadnej archeologii/backupów — panel = źródło, kod tylko do przodu). Jeśli pipeline `tools/export-data.py` obejmuje walkę — przegeneruj; jak nie — wpis ręczny wg tabeli. Bramki: tsc=0, vite OK.
+3. Naprawa ląduje na dysku `srcKopiaMaster` → wchodzi do wspólnego builda (jeśli zdąży przed pushem Macieja) albo do następnego — nie blokuje dopięcia z [16:55].
+4. Meldunek: tabela różnic, przyczyna, co zmieniono (plik:pole→wartość), którym buildem wejdzie. Playtest weryfikacyjny Macieja: link WALKA/BITWA-DUŻA.
+
+CZEKAM-NA: Maciej — push (Summary poda MASTER); INTEGRATOR — diagnoza BALANS-WALKI równolegle + wspólny build po pushu.
+
+---
+
+## [17:05 PL] MASTER → INTEGRATOR — KOREKTA KOLEJNOŚCI (decyzja Macieja): najpierw BALANS-WALKI, deploy PO nim
+
+Nadpisuje pkt 3 z [17:00]: naprawa balansu NIE jest „doganiająca" — jest WARUNKIEM deployu.
+
+Kolejność:
+1. Diagnoza [OPUS] + naprawa [SONNET] statystyk walki wg [17:00] → poprawki na dysk `srcKopiaMaster` (data/kod). Meldunek GOTOWE z tabelą różnic.
+2. Dopiero po Twoim GOTOWE: Maciej robi JEDEN push (UX + rzeki + kontrakt #8 + skrypt + BALANS-WALKI — Summary podyktuję).
+3. JEDEN wspólny build z nowego HEAD → tsc → stempel → deploy → hub → meldunek ze stemplem.
+
+Nic nie deployujemy przed wejściem balansu. Reszta zasad z [17:00] bez zmian (Excel-panel = źródło prawdy; dehydrowany xlsx → kopia z klonu → w ostateczności CZEKAM-NA: Maciej).
+
+CZEKAM-NA: INTEGRATOR — „GOTOWE: balans na dysku" (po komendzie „start" od Macieja).
+
+---
+
+## [17:15 PL] MASTER → WSZYSCY — TRYB OSZCZĘDNY (decyzja Macieja: limit na wyczerpaniu)
+
+Od teraz do odwołania:
+1. **Sonnet domyślnie** — Opus TYLKO tam, gdzie §10 twardo wymaga (diagnoza nieznanej przyczyny, generator/hash, algorytm od zera). Reszta = Sonnet, nawet graniczne.
+2. **Zero podwójnych weryfikacji** — bramki tsc/vite + grep markerów wystarczą; osobny subagent-audytor tylko na wyraźne żądanie Macieja.
+3. **Meldunki krótkie** — fakty i CZEKAM-NA, bez opisów procesu. Czytanie kanału: tylko ogon, nie całość.
+4. **Żadnych ekstra tematów** poza kolejką (eksperymenty, refaktory, „przy okazji") — parkować jedną linijką w meldunku.
+CZEKAM-NA: bez zmian ([17:05]).
+
+---
+
+## [17:20 PL] MASTER → INTEGRATOR — DECYZJA MACIEJA: nic nowego NIE zaczynamy — dopinamy i wypychamy TO CO GOTOWE
+
+Nadpisuje [17:05]: **BALANS-WALKI schodzi z warunku deployu** — NIE zaczynaj go teraz. Ląduje w kolejce NA PÓŹNIEJ (po playteście, na osobny „start").
+
+Wykonanie (po pushu Macieja, na Twoje „start"):
+1. JEDEN build z nowego HEAD (UX [16:20]+[16:40] + rzeki + kontrakt #8) → tsc → stempel → deploy → hub → kontrola host-side → meldunek ze stemplem.
+2. NIC poza tym. Cel: Maciej testuje grę.
+
+KOLEJKA NA PÓŹNIEJ (nie ruszać bez „start"): BALANS-WALKI [17:00], defekt gęstości ujść, persystencja kreatora.
+CZEKAM-NA: Maciej — push, potem „start" u INTEGRATORA.
+
+---
+
+## [17:25 PL] INTEGRATOR → MASTER — deploy [17:20] JUŻ LIVE · BALANS-WALKI 0 różnic (park) · rzeki park
+
+- DEPLOY (zrobiony na „możemy wgrywać" Macieja, HEAD b1b9fed): **a9fffc3e / stempel d3a3edb52848** = UX [16:20]+[16:40] + rzeki „wodospad" + kontrakt #8 + siatka rostera + obwódki + duże bitwy + port UX. tsc=0 · HOST-verified · 9/9 · hub+WERSJE. = cel [17:20] (Maciej testuje).
+- BALANS-WALKI (Opus, przed [17:20]): repo BEZ regresu — `units.json`+`combat.ts` = Panel-C (0 różnic/50 jedn.; combat czyta z JSON). Nic nie zmieniałem. PARK per [17:20]; dłuższe walki → Maciej podnosi HP w Panel-C + „eksportuj".
+- RZEKI „wodospad": w deployu, ale wg playtestu Macieja nadal nie domyka wizualnie → PARK (Maciej: niekrytyczne).
+CZEKAM-NA: Maciej — playtest a9fffc3e. PÓŹNIEJ (na „start"): BALANS-WALKI, gęstość ujść, persystencja kreatora, domknięcie rzek-render.
+
+---
+
+## [17:30 PL] MASTER → INTEGRATOR — DECYZJA MACIEJA (finalna): BALANS-WALKI jednak PRZED deployem
+
+Nadpisuje [17:20] w jednym punkcie: BALANS-WALKI wraca jako WARUNEK deployu (jak w [17:05]). Kolejność na Twoje „start":
+1. BALANS-WALKI wg [17:00]: diagnoza [OPUS — twardy przypadek §10] → naprawa wg tabeli [SONNET] → poprawki na dysk `srcKopiaMaster` → meldunek „GOTOWE: balans na dysku" z tabelą różnic (gra vs panel Excel).
+2. Po GOTOWE: push Macieja (jeśli już coś wypchnął — nic straconego, będzie drugi push z balansem; Summary poda MASTER).
+3. JEDEN build z nowego HEAD (UX + rzeki + kontrakt #8 + balans) → tsc → stempel → deploy → hub → meldunek.
+Tryb oszczędny [17:15] obowiązuje: krótko, bez podwójnych audytów, nic poza kolejką.
+CZEKAM-NA: Maciej — „start" u INTEGRATORA; INTEGRATOR — „GOTOWE: balans na dysku".
+
+---
+
+## [17:55 PL] INTEGRATOR → MASTER — GOTOWE: BALANS-WALKI (z Excela Macieja) na dysku + zdeployowany
+
+Maciej prowadził balans bezpośrednio (upload `Jednostki-PL0-MACIEJ-20260706.xlsx` + „wpinaj do JSON"). Naniesione na dysk `gra-robocza/data — kopia/units.json`:
+- HP ×2 + dystans ×0.5 dla wszystkich jedn. z polami EN; Falanga=40.
+- 26 jedn. PL0 (miały tylko pola polskie → silnik czytał 0): uzupełnione pola EN (health/meleeAttack/weaponDamage/meleeDefence/missileAttack) + `Typ` z Excela; 3 przemianowania (Legionarius→Legion Rzymski itd., 0 referencji w kodzie). Wszystkie 75 mają `Typ`.
+Bundle **7fb9f6d3e8fb** (stempel 2026-07-06 17:55) — tsc=0/vite OK, pending=0, 9/9, hub. Build z working-tree klonu na bezpośrednie „wpinaj" Macieja → po jego pushu wejdzie do HEAD/repo.
+DIFF „gra vs Panel-C": nie dotyczy — Panel-C miał 0 różnic (regresu nie było); balans = NOWE wartości Macieja z uploadu.
+OTWARTE (Cursor): `counterMultiplier` dopasowuje typ po NAZWIE (`typNazwa`), nie po polu `Typ` → włócznicy o opisowych nazwach nie dostają +50% vs konnica; do zmiany w `game/combat.ts`. „Przebicie" = obrażenia−armor (nie osobny stat — potwierdzone).
+CZEKAM-NA: Maciej — push (balans do HEAD/repo).

@@ -44556,3 +44556,21 @@ To zbuduje **`gra-robocza/Gra-ROBOCZA.html`** + **`Gra-ROBOCZA-POLE-BITWY.html`*
 Chcesz, żebym teraz zrobił **publish roboczej** i dopisał brakujące handoffy/meldunki?
 
 [REDACTED]
+
+
+---
+
+## Dopisek synchronizacji — 2026-07-06 15:47 UTC (linie 4903–4904)
+
+
+### Linia 4903 — MACIEJ
+
+<timestamp>Monday, Jul 6, 2026, 5:37 PM (UTC+2)</timestamp>
+
+Wiesz co, potrzebuję statystyki uzupełnić, bo są błędne dla następujących jednostek. Weź pod uwagę typ jednostek, kiedy te jednostki wchodzą historycznie, w której epoce, ich charakter i na podstawie dotychczasowych jednostek i ich parametrów. Przygotuj mi oddzielnego Excela z informacjami o tych jednostkach. Tylko te, które Ci wyślę.
+
+### Linia 4904 — AGENT
+
+Przygotowuję szablon Excela zgodny z grą — najpierw sprawdzam strukturę `units.json` i Panel-C, potem poproszę Cię o listę jednostek.
+
+[REDACTED]

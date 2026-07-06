@@ -5,7 +5,22 @@ nigdy nie kopiują (stary system miał 4 sprzeczne „aktualne" md5 — nigdy wi
 Format: data · md5 (pełne) · stempel z menu · co weszło (1 linia) · status.
 
 ## ROBOCZA (gra-robocza\Gra-ROBOCZA.html — wskazywana przez START.html)
-- 2026-07-06 13:47 · a76514621f02 · stempel: 2026-07-06 13:47 · bdc95d91be71 ·
+- 2026-07-06 17:55 · <plik-md5 dryfuje> · stempel: 2026-07-06 17:55 · 7fb9f6d3e8fb ·
+  BALANS-WALKI (wartości Macieja z uploadu Jednostki-PL0.xlsx): HP×2 + dystans×0.5 dla
+  jedn. z polami EN; Falanga=40; 26 jedn. PL0 uzupełnione pola EN + Typ; 3 przemianowania
+  (Legionarius→Legion Rzymski itd.); wszystkie 75 z Typ. + całość a9fffc3e (rzeki, KONTRAKT #8,
+  UX, roster, obwódki, duże bitwy). tsc=0/vite OK · pending=0 · 9/9 · hub. Build z klonu na
+  „wpinaj" Macieja; do repo po jego pushu · publikował INTEGRATOR · AKTUALNA (klucz = stempel)
+- 2026-07-06 16:52 · a9fffc3eeeb9 · stempel: 2026-07-06 16:52 · d3a3edb52848 · ZASTĄPIONA (→ 7fb9f6d3e8fb)
+  BUILD ZBIORCZY z GitHub HEAD b1b9fed (pierwszy build po migracji na GitHub): rzeki
+  „wodospad" (render-only, hash bezpieczny) + KONTRAKT #8 ikony jednostek (⚔️→SVG w
+  stosie armii / panelu [H] / scal-rozdziel) + grafiki UX [16:20] (ikony surowców mapy
+  + teren) + podmiany UX [16:40] (7× emoji→SVG) + całość d4d667d8 (siatka rostera 6 kol,
+  obwódki właściciela, tonięcie, zaznaczenie, duże bitwy, port UX). tsc=0 · HOST-verified
+  (stempel + owner-ring + resources-map + menu-save) · pending=0 · 9 plików spójne
+  (wewn. stempel d3a3edb52848) · hub odświeżony · publikował INTEGRATOR · AKTUALNA
+  (czeka na playtest Macieja). UWAGA: klucz wersji = WEWN. STEMPEL (md5 pliku dryfuje na OneDrive).
+- 2026-07-06 13:47 · a76514621f02 · stempel: 2026-07-06 13:47 · bdc95d91be71 · ZASTĄPIONA (→ a9fffc3eeeb9)
   #4 ROSTER bitwy: słupek → SIATKA 6 kolumn (wg kanonu C09 v4 + DESIGN-SPEC v4;
   gridTemplateColumns repeat(6,minmax(0,1fr)) + gap 4 na roster-group-cards). Reszta
   jak 7ffa2859 (port UX + rzeki + obwódki + tonięcie + zaznaczenie + duże bitwy).
