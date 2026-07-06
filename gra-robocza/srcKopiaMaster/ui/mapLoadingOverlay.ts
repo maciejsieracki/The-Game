@@ -11,12 +11,19 @@ export interface MapLoadingOverlayHandle {
   hide: () => void;
 }
 
+/** create = nowa gra / playtest; load = wczytywanie sejwu (mapa odtwarzana ze ziarna). */
+export type MapLoadingOverlayMode = 'create' | 'load';
+
 export interface MapLoadingOverlayOptions {
   seed: number;
   rozmiarLabel: string;
   typLabel: string;
   /** np. „Super Huge (672×476 · ~319 872 heksów)" */
   mapSizeMetric?: string;
+  /** Domyślnie create — przy load inny tytuł i opis (nie „Tworzenie świata”). */
+  mode?: MapLoadingOverlayMode;
+  /** Etykieta sejwu — tylko tryb load. */
+  saveLabel?: string;
 }
 
 const STYLE_ID = 'civ-map-loading-css';
@@ -62,6 +69,13 @@ function ensureStyles(): void {
   color:var(--text-muted);
   margin:0 0 .75rem;
 }
+.civ-map-load-hint{
+  font-size:.78rem;
+  color:var(--text-muted);
+  line-height:1.45;
+  margin:0 0 .65rem;
+  opacity:.92;
+}
 .civ-map-load-phase{
   font-size:.95rem;
   margin:0 0 .35rem;
@@ -95,7 +109,9 @@ function ensureStyles(): void {
   animation:civ-map-load-spin .85s linear infinite;
 }
 @keyframes civ-map-load-spin{to{transform:rotate(360deg)}}
-.civ-map-load-err{color:#f88;font-size:.9rem;margin:.75rem 0;}
+.civ-map-load-overlay--load{
+  background:rgba(4,6,10,.97);
+}
 .civ-map-load-retry{
   margin-top:.5rem;padding:.45rem 1.1rem;
   background:transparent;border:1px solid var(--border-mid);
@@ -107,16 +123,49 @@ function ensureStyles(): void {
   document.head.appendChild(style);
 }
 
+function escapeHtml(s: string): string {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function overlayCopy(opts: MapLoadingOverlayOptions): { title: string; meta: string; hint: string; phaseStart: string } {
+  const sizePart = opts.mapSizeMetric ?? opts.rozmiarLabel;
+  const mapLine = `${sizePart} · ${opts.typLabel} · ziarno ${opts.seed}`;
+  if (opts.mode === 'load') {
+    const savePart = opts.saveLabel?.trim()
+      ? `«${escapeHtml(opts.saveLabel.trim())}» · `
+      : '';
+    return {
+      title: 'Wczytywanie zapisu',
+      meta: `${savePart}${escapeHtml(mapLine)}`,
+      hint: 'Mapa nie jest w pliku zapisu — odtwarzamy ten sam świat ze ziarna, potem wczytujemy stan gry.',
+      phaseStart: 'Odtwarzanie mapy ze ziarna…',
+    };
+  }
+  return {
+    title: 'Tworzenie świata',
+    meta: `Ziarno mapy: ${opts.seed} · ${escapeHtml(sizePart)} · ${escapeHtml(opts.typLabel)}`,
+    hint: '',
+    phaseStart: 'Przygotowanie…',
+  };
+}
+
 export function showMapLoadingOverlay(opts: MapLoadingOverlayOptions): MapLoadingOverlayHandle {
   ensureStyles();
+  const copy = overlayCopy(opts);
   const root = document.createElement('div');
-  root.className = 'civ-map-load-overlay';
+  root.className = opts.mode === 'load'
+    ? 'civ-map-load-overlay civ-map-load-overlay--load'
+    : 'civ-map-load-overlay';
   root.setAttribute('aria-live', 'polite');
+  const hintHtml = copy.hint
+    ? `<p class="civ-map-load-hint">${copy.hint}</p>`
+    : '';
   root.innerHTML = `
     <div class="civ-map-load-panel">
-      <h2 class="civ-map-load-title">Tworzenie świata</h2>
-      <p class="civ-map-load-meta">Ziarno mapy: ${opts.seed} · ${opts.mapSizeMetric ?? opts.rozmiarLabel} · ${opts.typLabel}</p>
-      <p class="civ-map-load-phase" id="civ-map-load-phase">Przygotowanie…</p>
+      <h2 class="civ-map-load-title">${copy.title}</h2>
+      <p class="civ-map-load-meta">${copy.meta}</p>
+      ${hintHtml}
+      <p class="civ-map-load-phase" id="civ-map-load-phase">${copy.phaseStart}</p>
       <p class="civ-map-load-elapsed" id="civ-map-load-elapsed">Upłynęło: 0:00</p>
       <div class="civ-map-load-bar-wrap"><div class="civ-map-load-bar" id="civ-map-load-bar"></div></div>
       <div class="civ-map-load-spinner" id="civ-map-load-spin"></div>

@@ -22,6 +22,7 @@ import { HANDEL_ZLOZE_CENA_BAZA } from '../game/diplomacy-deposit-trade';
 import unitsJson from '../../data/units.json';
 import techJson from '../../data/tech.json';
 import { DIPLO_1E_SHARED_CSS, ensureDiploBrandScope } from './diploUiSkin';
+import { brandIconSvg } from './icons/brandAssets';
 
 export type TradeBasketMode = 'trade' | 'gift';
 
@@ -274,10 +275,10 @@ function summaryHtml(
         html += '<div>Dobra wola: <b>+' + dobraWola.zaufaniePerTura + ' Zauf./turę × ' + dobraWola.tur + '</div>';
       }
       if (givePn < fairMin) {
-        html += '<div class="cdb-warn">⚠ Oddajesz mniej niż fair min — partner może odrzucić (W4-A).</div>';
+        html += '<div class="cdb-warn">' + brandIconSvg('chip-warning', 14) + ' Oddajesz mniej niż fair min — partner może odrzucić (W4-A).</div>';
       }
     } else {
-      html += '<div class="cdb-warn">⚠ Nieznana wartość PN — sprawdź pozycje.</div>';
+      html += '<div class="cdb-warn">' + brandIconSvg('chip-warning', 14) + ' Nieznana wartość PN — sprawdź pozycje.</div>';
     }
   } else {
     html += '<div>SUMA daru: <b>' + (givePn ?? '—') + ' PN</b></div>';

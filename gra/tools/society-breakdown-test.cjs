@@ -25,6 +25,8 @@ export {
   updateRevoltGrace,
   happinessBucketsFromPct,
   loadRevoltParams,
+  isOsiedleRevoltImmune,
+  osiedlePopMax,
 } from '../src/game/society-breakdown';
 export { loadOrderParams } from '../src/game/order';
 `, 'utf8');
@@ -177,6 +179,14 @@ eq(buckets.zadowoleni + buckets.kontentni + buckets.niezadowoleni, 10, 'buckets 
   ok(ordStart.porPct >= 20, 'pop=1 start PorPct >= 20% (D16-A)');
   ok(ordStart.porPct >= 50, 'pop=1 start PorPct >= 50% (D-START-OSIEDLE normal)');
   ok(M.porPctBand(ordStart.porPct) !== 'bunt_skrajny', 'pop=1 start bez bandy bunt skrajny');
+}
+
+{
+  const society = require('../data/society-params.json');
+  ok(M.isOsiedleRevoltImmune(1, society, 'normal'), 'pop=1 -> immunitet buntu osiedle');
+  ok(M.isOsiedleRevoltImmune(4, society, 'normal'), 'pop=4 -> immunitet buntu osiedle');
+  ok(!M.isOsiedleRevoltImmune(5, society, 'normal'), 'pop=5 -> brak immunitetu osiedle');
+  eq(M.osiedlePopMax(society, 'normal'), 4, 'prog osiedla = 4');
 }
 
 console.log('\n[society-breakdown-test] ' + passed + ' OK, ' + failed + ' FAIL\n');

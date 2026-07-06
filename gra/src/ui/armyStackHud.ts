@@ -10,7 +10,7 @@ import {
   mapUnitCloseBtnHtml,
   MAP_UNIT_1E_SHARED_CSS,
 } from './mapUnitHudSkin';
-import { ensureUnitInfographicStyles, unitInfographicMedallionHtml } from './unitInfographic';
+import { unitIconSvg } from './icons/brandAssets';
 
 export interface ArmyStackCard {
   id: string;
@@ -59,7 +59,6 @@ const BOTTOM_BAR_H = 56;
 
 function ensureStyles(): void {
   ensureMapUnitBrandScope();
-  ensureUnitInfographicStyles();
   if (document.getElementById(STYLE_ID)) return;
   const css = `
 ${MAP_UNIT_1E_SHARED_CSS}
@@ -167,7 +166,7 @@ export function createArmyStackHud(config: ArmyStackHudConfig): ArmyStackHudApi 
     for (const c of st.cards) {
       const hpPct = c.hpMax > 0 ? Math.round((c.hp / c.hpMax) * 100) : 0;
       html += '<div class="ash-card' + (c.active ? ' on' : '') + '" data-unit="' + esc(c.id) + '" role="button" tabindex="0">'
-        + '<div class="ash-card-ic">' + (unitInfographicMedallionHtml(undefined, c.name, 20) || esc(c.icon)) + '</div>'
+        + '<div class="ash-card-ic">' + (c.icon || unitIconSvg(undefined)) + '</div>'
         + '<div class="ash-card-name">' + esc(c.name) + '</div>'
         + '<div class="ash-card-hp"><i style="width:' + hpPct + '%"></i></div>'
         + '<div class="ash-card-mv">' + c.ruchLeft + '/' + c.ruchMax + ' ruch</div>'

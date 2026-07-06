@@ -152,7 +152,9 @@ function ensureStyles(): void {
 .civ-menu .sh h2{font-size:28px;font-weight:400;letter-spacing:0.1em;color:var(--gold-light);}
 .civ-menu .sett-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.1rem;}
 .civ-menu .srow{background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:var(--radius-lg);padding:16px 18px;display:flex;flex-direction:column;gap:10px;}
-.civ-menu .slbl{font-size:10px;letter-spacing:.35em;text-transform:uppercase;color:var(--text-secondary);font-family:Arial,sans-serif;}
+.civ-menu .slbl{font-size:10px;letter-spacing:.35em;text-transform:uppercase;color:var(--text-secondary);font-family:Arial,sans-serif;display:flex;align-items:center;gap:8px;}
+.civ-menu .slbl-ic{display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--text-gold);}
+.civ-menu .slbl-ic svg{width:18px;height:18px;display:block;}
 .civ-menu .sctl{display:flex;align-items:center;gap:10px;}
 .civ-menu .arrbtn{width:30px;height:30px;border:1px solid var(--border-mid);background:transparent;color:var(--text-gold);cursor:pointer;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:16px;font-family:Arial,sans-serif;transition:all .15s;flex-shrink:0;}
 .civ-menu .arrbtn:hover{border-color:var(--gold);background:rgba(201,168,76,0.1);}
@@ -265,13 +267,27 @@ function toggleMore(): void {
   if (moreToggleEl) moreToggleEl.innerHTML = menuIconHtml('menu-more') + '<span class="mbtn-lbl">' + (moreOpen ? 'Więcej &#9652;' : 'Więcej &#9662;') + '</span>';
 }
 
+/** Menu icon for a settings row key (only keys with a matching brand icon). */
+const SETTING_ROW_ICON: Record<string, string> = {
+  muzyka: 'menu-audio',
+  efekty: 'menu-audio',
+  jezyk: 'menu-language',
+};
+
+function settingRowIconHtml(key: string): string {
+  const id = SETTING_ROW_ICON[key];
+  if (!id) return '';
+  const svg = menuIconSvg(id, 24);
+  return svg ? '<span class="slbl-ic">' + svg + '</span>' : '';
+}
+
 function renderSettings(grid: HTMLElement): void {
   grid.innerHTML = '';
   SETTINGS.forEach((s, i) => {
     const row = document.createElement('div');
     row.className = 'srow';
     const val = () => (s.opts[s.idx] ?? '') + '<span class="vdesc">' + (s.descs[s.idx] ?? '') + '</span>';
-    row.innerHTML = '<div class="slbl">' + s.label + '</div><div class="sctl"></div>';
+    row.innerHTML = '<div class="slbl">' + settingRowIconHtml(s.key) + s.label + '</div><div class="sctl"></div>';
     const ctl = row.querySelector('.sctl') as HTMLElement;
     const left = document.createElement('button'); left.className = 'arrbtn'; left.innerHTML = '&#8249;';
     const sval = document.createElement('div'); sval.className = 'sval'; sval.id = 'cm-sv-' + i; sval.innerHTML = val();
@@ -352,7 +368,7 @@ function build(): void {
     hasSave,
     () => { closeMore(); cfg.onLoad?.(); },
     '',
-    'menu-load',
+    'menu-save',
   ));
   morePanelEl.appendChild(btn('O grze', '', false, true, () => { closeMore(); cfg.onAbout?.(); }, '', 'menu-info'));
   morePanelEl.appendChild(btn('Wyjdź', '', false, true, () => { closeMore(); cfg.onQuit?.(); }, '', 'menu-exit'));

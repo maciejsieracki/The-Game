@@ -8,7 +8,7 @@ import {
   mapUnitCloseBtnHtml,
   MAP_UNIT_1E_SHARED_CSS,
 } from './mapUnitHudSkin';
-import { ensureUnitInfographicStyles, unitInfographicMedallionHtml } from './unitInfographic';
+import { unitIconSvg } from './icons/brandAssets';
 
 export interface UnitPanelAction {
   id: string;
@@ -47,7 +47,6 @@ const STYLE_ID = 'civ-unit-panel-hud-css-v2-1e';
 
 function ensureStyles(): void {
   ensureMapUnitBrandScope();
-  ensureUnitInfographicStyles();
   if (document.getElementById(STYLE_ID)) return;
   const css = `
 ${MAP_UNIT_1E_SHARED_CSS}
@@ -60,7 +59,7 @@ ${MAP_UNIT_1E_SHARED_CSS}
 .civ-unit-panel.open{display:block;}
 .civ-unit-panel .hdr{display:flex;align-items:center;gap:10px;padding:12px 14px;
   border-bottom:1px solid rgba(232,216,138,.18);background:rgba(8,10,16,.55);}
-.civ-unit-panel .hdr .ic{font-size:28px;line-height:1;min-width:32px;text-align:center;display:inline-flex;align-items:center;justify-content:center;}
+.civ-unit-panel .hdr .ic{font-size:28px;line-height:1;min-width:32px;text-align:center;}
 .civ-unit-panel .hdr .info{flex:1;min-width:0;}
 .civ-unit-panel .hdr h2{margin:0;font-family:var(--civ-font-title,Georgia,serif);font-size:1.05em;
   font-weight:400;color:var(--civ-gold-primary,#e8d88a);letter-spacing:.04em;}
@@ -96,9 +95,7 @@ export function createUnitPanelHud(config: UnitPanelHudConfig): UnitPanelHudApi 
     }
     el.classList.add('open');
     const hpPct = u.hpMax > 0 ? Math.round((u.hp / u.hpMax) * 100) : 0;
-    const icHtml = unitInfographicMedallionHtml(undefined, u.name, 24)
-      || esc(u.icon);
-    let html = '<div class="hdr"><span class="ic unit-ic-medallion">' + icHtml + '</span>'
+    let html = '<div class="hdr"><span class="ic">' + (u.icon || unitIconSvg(undefined)) + '</span>'
       + '<div class="info"><h2>' + esc(u.name) + '</h2><div class="sub">' + esc(u.subtitle) + '</div></div>'
       + mapUnitCloseBtnHtml('Zamknij panel')
       + '</div>'

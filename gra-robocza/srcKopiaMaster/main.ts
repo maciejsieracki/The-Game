@@ -370,7 +370,7 @@ import {
 import type { Player } from './types/player';
 import { TypCywilizacji } from './types/player';
 import {
-  saveToLocal, loadFromLocal,
+  saveToLocal, loadFromLocal, listSaves,
   type SaveGame,
 } from './game/save';
 import { configureCityPanel } from './ui/cityPanel';
@@ -423,6 +423,10 @@ import {
   configureGamePauseMenu, hideGamePauseMenu,
   toggleGamePauseMenu, isGamePauseMenuOpen,
 } from './ui/gamePauseMenu';
+import {
+  showSaveGameDialog, showLoadGameDialog, hideSaveLoadDialog,
+  isSaveLoadDialogOpen, saveContextLine,
+} from './ui/saveLoadDialog';
 import { showNewGameFlow, hideNewGameFlow, isNewGameFlowOpen, type NewGameParams, type NewGameAdvancedOptions } from './ui/newGameFlow';
 import { applyTempoKoszt, type TempoGry } from './game/tech-tempo';
 import {
@@ -524,6 +528,10 @@ async function boot(): Promise<void> {
     let _menuEpochId: string = 'kamien';
     let _menuAdvanced: NewGameAdvancedOptions | undefined;
     let _menuWorldDensity: WorldGenerationPreset = { ...DEFAULT_WORLD_DENSITY };
+    /** Ostatnie parametry kreatora — zapisywane w sejwie i używane przy wczytywaniu mapy. */
+    let _lastNewGameParams: NewGameParams | null = null;
+    /** Źródło sesji przy zapisie — odróżnia grę od playtestu w liście sejwów. */
+    let _saveOrigin: 'normal' | 'playtest' = 'normal';
     let _currentRenderOptions: MapRenderOptions = { ...DEFAULT_MAP_RENDER_OPTIONS };
 
     function mapQualityTierFromParams(params: NewGameParams): QualityTier {
@@ -5173,13 +5181,49 @@ async function boot(): Promise<void> {
       };
     }
 
-    function hasAutosaveSlot(): boolean {
-      try { return !!loadFromLocal('autosave'); } catch { return false; }
+    function hasAnySaveSlot(): boolean {
+      try { return listSaves().length > 0; } catch { return false; }
+    }
+
+    function openSaveGameDialog(): void {
+      showSaveGameDialog({
+        defaultLabel: `Zapis · tura ${turn}`,
+        turn,
+        onSave: (slotId, label) => {
+          const ok = persistSaveToSlot(slotId, label);
+          if (ok) {
+            showHintMessage(`Gra zapisana: «${label}» (tura ${turn})`, 3500);
+            console.log('[Save] slot=' + slotId + ' label=' + label + ' tura=' + turn);
+          } else {
+            showHintMessage('Zapis nieudany (brak localStorage?)', 3000);
+          }
+        },
+      });
+    }
+
+    function openLoadGameDialog(fromInGamePause = false): void {
+      if (!hasAnySaveSlot()) {
+        showHintMessage(
+          fromInGamePause
+            ? 'Brak zapisów na tym urządzeniu.'
+            : 'Brak zapisów. Zapisz grę w menu pauzy lub Ctrl+S.',
+          3500,
+        );
+        if (!fromInGamePause) openStartupMainMenu();
+        return;
+      }
+      if (!fromInGamePause) hideMainMenu();
+      showLoadGameDialog({
+        onLoad: (slotId) => { void loadGameFromSlot(slotId, fromInGamePause); },
+        onCancel: () => {
+          if (!fromInGamePause) openStartupMainMenu();
+        },
+      });
     }
 
     function openStartupMainMenu(): void {
       showMainMenu({
-        hasSave: hasAutosaveSlot,
+        hasSave: hasAnySaveSlot,
         onNewGame: () => {
           hideMainMenu();
           showNewGameFlow({
@@ -5191,8 +5235,11 @@ async function boot(): Promise<void> {
         onPlaytestWalka: () => doStartPlaytestWalkaMapy(),
         onPlaytestMiasto: () => doStartPlaytestMiastoEkonomia(),
         onPlaytestMapa: () => doStartPlaytestMapaSwiata(),
-        onContinue: () => doLoadGame(),
-        onLoad: () => doLoadGame(),
+        onContinue: () => {
+          hideMainMenu();
+          openLoadGameDialog(false);
+        },
+        onLoad: () => openLoadGameDialog(false),
         onAbout: () => { /* future */ },
         onPerfTest: () => showPerfTestPanel(),
         onQuit: () => { /* future - na stronie nie ma gdzie wyjść */ },
@@ -5200,10 +5247,10 @@ async function boot(): Promise<void> {
     }
 
     configureGamePauseMenu({
-      hasSave: hasAutosaveSlot,
+      hasSave: hasAnySaveSlot,
       onResume: () => { /* gra już widoczna pod overlayem */ },
-      onSave: () => { doQuickSave(true); },
-      onLoad: () => { doLoadGame(true); },
+      onSave: () => { openSaveGameDialog(); },
+      onLoad: () => { openLoadGameDialog(true); },
       onNewGame: () => {
         showNewGameFlow({
           data,
@@ -7361,11 +7408,8 @@ async function boot(): Promise<void> {
     }
 
     /**
-     * launchTestBattle -- triggered by the 'T' key.
-     *
-     * Canned battle: FOUR Hastati (Rome) vs FOUR Falanga (Greece).
-     * Looks up real stats from data.units. Falls back to first miecznik/wlocznik
-     * category unit if the named entry is not found.
+     * launchTestBattle — legacy dev preset (4× Hastati vs 4× Falanga).
+     * Skrót T usunięty 2026-07-06 — bitwy tylko z mapy / playtestów / preBattle.
      */
     /**
      * DUŻA bitwa z presetu → prosto do BattleScene (arena taktyczna, armia vs
@@ -7404,7 +7448,7 @@ async function boot(): Promise<void> {
       const ENEMY_COLOR   = 0xc84040;
 
       if (playtestWalkaActive) {
-        showHintMessage('Playtest 1v1: uzyj kliku wroga na mapie (T = duza bitwa osobno)', 3500);
+        showHintMessage('Playtest 1v1: użyj kliku wroga na mapie', 3500);
         return;
       }
 
@@ -7605,85 +7649,107 @@ async function boot(): Promise<void> {
     }
 
     /**
-     * Quick-save to localStorage slot 'autosave' (Ctrl+S and preBattle onSave).
-     * @param showHintOnSuccess — show HUD hint when save succeeds
+     * Snapshot stanu gry do SaveGame (bez zapisu na dysk).
      */
-    function doQuickSave(showHintOnSuccess = true): boolean {
+    function buildSaveGameSnapshot(label?: string): SaveGame {
+      const cityProdSave: Record<string, any> = {};
+      for (const [cid, prod] of cityProd.entries()) cityProdSave[cid] = prod;
+      const cityBuiltSave: Record<string, string[]> = {};
+      for (const [cid, blt] of cityBuilt.entries()) cityBuiltSave[cid] = blt.slice();
+      const aiResSave: Array<[number, string[]]> = [];
+      for (const [oid, zbadane] of aiResearchDone.entries()) aiResSave.push([oid, Array.from(zbadane)]);
+      const diploSave: Record<string, any> = {};
+      for (const [key, rel] of diplomacyRelations.entries()) diploSave[key] = rel;
+      const savedAt = new Date().toISOString();
+      return {
+        wersja: 1,
+        tura: turn,
+        seed: _gameSeed,
+        units: units.slice(),
+        cities: cities.slice(),
+        explored: Array.from(explored),
+        gracz: {
+          skarbiec: player.skarbiec,
+          nauka:    player.nauka,
+          era:      player.era,
+          zbadane:  Array.from(player.zbadane),
+          badana:   player.badana,
+        },
+        cityProd:       cityProdSave,
+        cityBuilt:      cityBuiltSave,
+        aiResearchDone: aiResSave,
+        diploRelations: diploSave,
+        meta: {
+          label: label ?? `Zapis · tura ${turn}`,
+          savedAt,
+          saveOrigin: _saveOrigin,
+          newGameParams: _lastNewGameParams
+            ? { ..._lastNewGameParams, seed: _gameSeed }
+            : undefined,
+          loadMapSize: _menuMapSize,
+          loadTypSwiata: _menuTypSwiata,
+          loadCivId: _menuCivId,
+          loadLandFraction: _lastNewGameParams?.landFractionPercent ?? 30,
+          empireFoodStates: Array.from(empireFoodStates.entries()),
+          playerPracaPool,
+          siegeTurnByCity: Array.from(siegeTurnByCity.entries()),
+          siegeBesiegerByCity: Array.from(siegeBesiegerByCity.entries()),
+          siegeAiStateByKey: Array.from(siegeAiStateByKey.entries()),
+          pendingDiplomacyInbox: pendingDiplomacyInbox.slice(),
+          diplomaticContactEstablished: Array.from(diplomaticContactEstablished),
+          diplomacyDeals: activeDeals.slice(),
+          diplomacyPairMeta: Array.from(diplomacyPairMeta.entries()),
+          zlozeGrants: zlozeGrants.slice(),
+          surowiecBooleanGrants: basketTransferCtx.surowiecBooleanGrants,
+          battlePowerPtsByOwner: Array.from(battlePowerPtsByOwner.entries()),
+          ownerEraByOwner: Array.from(ownerEraByOwner.entries()),
+          placedImprovements: Array.from(placedImprovements.entries()),
+          hexClearingStates: Array.from(hexClearingStates.entries()),
+          completedWorldWonders: completedWorldWonders.slice(),
+          placedWorldWonders: placedWorldWonders.slice(),
+        },
+        mapQuality: _currentRenderOptions.renderQuality,
+        renderQuality: _currentRenderOptions.renderQuality,
+        mapDetailQuality: _currentRenderOptions.mapDetailQuality,
+      };
+    }
+
+    function persistSaveToSlot(slotId: string, label: string): boolean {
       try {
-        const cityProdSave: Record<string, any> = {};
-        for (const [cid, prod] of cityProd.entries()) cityProdSave[cid] = prod;
-        const cityBuiltSave: Record<string, string[]> = {};
-        for (const [cid, blt] of cityBuilt.entries()) cityBuiltSave[cid] = blt.slice();
-        const aiResSave: Array<[number, string[]]> = [];
-        for (const [oid, zbadane] of aiResearchDone.entries()) aiResSave.push([oid, Array.from(zbadane)]);
-        const diploSave: Record<string, any> = {};
-        for (const [key, rel] of diplomacyRelations.entries()) diploSave[key] = rel;
-        const sg: SaveGame = {
-          wersja: 1,
-          tura: turn,
-          seed: SEED,
-          units: units.slice(),
-          cities: cities.slice(),
-          explored: Array.from(explored),
-          gracz: {
-            skarbiec: player.skarbiec,
-            nauka:    player.nauka,
-            era:      player.era,
-            zbadane:  Array.from(player.zbadane),
-            badana:   player.badana,
-          },
-          cityProd:       cityProdSave,
-          cityBuilt:      cityBuiltSave,
-          aiResearchDone: aiResSave,
-          diploRelations: diploSave,
-          meta: {
-            savedAt: new Date().toISOString(),
-            empireFoodStates: Array.from(empireFoodStates.entries()),
-            playerPracaPool,
-            siegeTurnByCity: Array.from(siegeTurnByCity.entries()),
-            siegeBesiegerByCity: Array.from(siegeBesiegerByCity.entries()),
-            siegeAiStateByKey: Array.from(siegeAiStateByKey.entries()),
-            pendingDiplomacyInbox: pendingDiplomacyInbox.slice(),
-            diplomaticContactEstablished: Array.from(diplomaticContactEstablished),
-            diplomacyDeals: activeDeals.slice(),
-            diplomacyPairMeta: Array.from(diplomacyPairMeta.entries()),
-            zlozeGrants: zlozeGrants.slice(),
-            surowiecBooleanGrants: basketTransferCtx.surowiecBooleanGrants,
-            battlePowerPtsByOwner: Array.from(battlePowerPtsByOwner.entries()),
-            ownerEraByOwner: Array.from(ownerEraByOwner.entries()),
-            placedImprovements: Array.from(placedImprovements.entries()),
-            hexClearingStates: Array.from(hexClearingStates.entries()),
-            completedWorldWonders: completedWorldWonders.slice(),
-            placedWorldWonders: placedWorldWonders.slice(),
-          },
-          mapQuality: _currentRenderOptions.renderQuality,
-          renderQuality: _currentRenderOptions.renderQuality,
-          mapDetailQuality: _currentRenderOptions.mapDetailQuality,
-        };
-        const ok = saveToLocal('autosave', sg);
-        if (ok) {
-          if (showHintOnSuccess) showHintMessage('Gra zapisana (tura ' + turn + ')', 3000);
-          console.log('[Save] zapisano slot=autosave tura=' + turn);
-        } else if (showHintOnSuccess) {
-          showHintMessage('Zapis nieudany (brak localStorage?)', 3000);
-        }
-        return ok;
+        return saveToLocal(slotId, buildSaveGameSnapshot(label));
       } catch (eSave) {
         console.error('[Save] Blad:', eSave);
-        if (showHintOnSuccess) showHintMessage('Blad zapisu gry', 3000);
         return false;
       }
     }
 
+    /**
+     * Szybki zapis (Ctrl+S, przed bitwą) — slot autosave bez okna dialogowego.
+     */
+    function doQuickSave(showHintOnSuccess = true): boolean {
+      const ok = persistSaveToSlot('autosave', `Szybki zapis · tura ${turn}`);
+      if (ok) {
+        if (showHintOnSuccess) showHintMessage('Szybki zapis (tura ' + turn + ')', 3000);
+        console.log('[Save] autosave tura=' + turn);
+      } else if (showHintOnSuccess) {
+        showHintMessage('Zapis nieudany (brak localStorage?)', 3000);
+      }
+      return ok;
+    }
+
     // -----------------------------------------------------------------------
     // End turn (N key) + Gallery toggle (G key) + Fog toggle (F key)
-    // + City founding (B key) + Test battle (T key)
+    // + City founding (B key)
     // If animation is running, snap unit to destination first.
     // -----------------------------------------------------------------------
 
     window.addEventListener('keydown', (e: KeyboardEvent) => {
       // --- Escape: close city panel / exit build mode ---
       if (e.key === 'Escape') {
+        if (isSaveLoadDialogOpen()) {
+          hideSaveLoadDialog();
+          return;
+        }
         if (isGamePauseMenuOpen()) {
           hideGamePauseMenu();
           return;
@@ -7768,13 +7834,6 @@ async function boot(): Promise<void> {
         return;
       }
 
-      // --- T: Test battle ---
-      if (e.key.toLowerCase() === 't') {
-        if (galleryOn || isAnimating || isPreBattleOpen()) return;
-        launchTestBattle();
-        return;
-      }
-
       // --- Ctrl+S: Save game (step K) ---
       if ((e.key.toLowerCase() === 's') && (e.ctrlKey || e.metaKey)) {
         e.preventDefault();
@@ -7782,25 +7841,10 @@ async function boot(): Promise<void> {
         return;
       }
 
-      // --- Ctrl+L: Load game (step K) ---
+      // --- Ctrl+L: Load game — wybór slotu ---
       if ((e.key.toLowerCase() === 'l') && (e.ctrlKey || e.metaKey)) {
         e.preventDefault();
-        try {
-          const saved = loadFromLocal('autosave');
-          if (!saved) {
-            showHintMessage('Brak zapisu do wczytania (slot: autosave)', 3000);
-          } else {
-            restoreGameFromSave(saved);
-            cityRenderer.sync(cities, _cityRenderOpts());
-            refreshFog();
-            updateHud();
-            showHintMessage('Wczytano zapis (tura ' + turn + ')', 3000);
-            console.log('[Load] wczytano slot=autosave tura=' + turn);
-          }
-        } catch (eLoad) {
-          console.error('[Load] Blad:', eLoad);
-          showHintMessage('Blad wczytywania gry', 3000);
-        }
+        openLoadGameDialog(true);
         return;
       }
 
@@ -9110,12 +9154,118 @@ async function boot(): Promise<void> {
         ...extraCityPanelConfig(),
       });
       configurePreBattle({ getCivBonusy: civBonusyForOwnerId });
+      _lastNewGameParams = {
+        ...params,
+        seed: params.seed > 0 ? params.seed : _gameSeed,
+      };
+    }
+
+    /** Parametry kreatora do odtworzenia mapy przy wczytywaniu (nowe i starsze sejwy). */
+    function newGameParamsForLoad(saved: SaveGame): NewGameParams | null {
+      const stored = saved.meta?.newGameParams;
+      if (stored && typeof stored === 'object' && typeof (stored as NewGameParams).civId === 'string') {
+        const p = stored as NewGameParams;
+        return { ...p, seed: saved.seed ?? p.seed ?? _gameSeed };
+      }
+      if (typeof saved.seed !== 'number') return null;
+      const typ = (saved.meta?.loadTypSwiata as TypSwiata) || _menuTypSwiata;
+      const typLabels: Record<TypSwiata, string> = {
+        kontynenty: 'Kontynenty', pangea: 'Pangea', wyspy: 'Wyspy', ziemia: 'Ziemia',
+      };
+      const era = saved.gracz?.era ?? 1;
+      const epochId = era >= 3 ? 'zelazo' : era >= 2 ? 'braz' : 'kamien';
+      const mq = mapQualityTierFromSave(saved);
+      const bundle = bundledMapQualityPreset(mq);
+      return {
+        civId: (saved.meta?.loadCivId as string) || _menuCivId,
+        civName: (saved.meta?.loadCivId as string) || _menuCivId,
+        epoch: epochId === 'zelazo' ? 'Epoka Żelaza' : epochId === 'braz' ? 'Epoka Brązu' : 'Epoka Kamienia',
+        epochId,
+        difficulty: _menuDifficulty === 'easy' ? 'Łatwy' : _menuDifficulty === 'hard' ? 'Trudny' : 'Normalny',
+        mapSize: (saved.meta?.loadMapSize as string) || _menuMapSize,
+        rivals: String(_menuCityStates),
+        speed: 'Standardowa',
+        worldType: typLabels[typ],
+        typSwiata: typ,
+        seed: saved.seed,
+        mapQualityLabel: qualityTierToLabel(mq),
+        mapQuality: mq,
+        renderQualityLabel: qualityTierToLabel(bundle.renderQuality as QualityTier),
+        mapDetailQualityLabel: qualityTierToLabel(bundle.mapDetailQuality as QualityTier),
+        renderQuality: bundle.renderQuality as QualityTier,
+        mapDetailQuality: bundle.mapDetailQuality as QualityTier,
+        civTypesCount: _menuCivTypesCount,
+        cityStatesCount: _menuCityStates,
+        worldDensity: _menuWorldDensity,
+        worldDensityLabels: {
+          resources: 'Średnia', rivers: 'Średnia', desert: 'Średnia', forest: 'Średnia', relief: 'Średnia',
+        },
+        landFractionPercent: (saved.meta?.loadLandFraction as number) ?? 30,
+      };
+    }
+
+    /** Regeneruje mapę + scenę 3D (bez resetu stanu gry — do wczytywania sejwu). */
+    async function regenerateWorldForLoad(
+      params: NewGameParams,
+      seed: number,
+      saveLabel?: string,
+    ): Promise<boolean> {
+      applyMenuParams({ ...params, seed });
+      _gameSeed = seed;
+      const rozmiar = rozmiarFromMenuLabel(_menuMapSize);
+      const loading = showMapLoadingOverlay({
+        seed,
+        rozmiarLabel: _menuMapSize,
+        typLabel: params.worldType || _menuTypSwiata,
+        mode: 'load',
+        saveLabel,
+      });
+      try {
+        map = await generujSwiatAsync(seed, rozmiar, _menuTypSwiata, {
+          worldDensity: _menuWorldDensity,
+          mapSizeMenuLabel: _menuMapSize,
+          landFraction: (params.landFractionPercent ?? 30) / 100,
+        }, (faza, pct, phaseNum, phaseTotal) => {
+          loading.setProgress(faza, pct, phaseNum, phaseTotal);
+        });
+        ensureDepositEraMeta(map.hexes);
+        disposeOkolicaOverlay();
+        try { disposeScene(); } catch { /* ignore */ }
+        const newSceneResult = await buildScene(map, canvas, _currentRenderOptions, (pct) => {
+          loading.setProgress('Przywracanie widoku mapy…', pct);
+        });
+        loading.hide();
+        scene = newSceneResult.scene;
+        camera = newSceneResult.camera;
+        renderer = newSceneResult.renderer;
+        center = newSceneResult.center;
+        setFog = newSceneResult.setFog;
+        hideDecorAtHex = newSceneResult.hideDecorAtHex;
+        setZoomLod = newSceneResult.setZoomLod;
+        getZoomLodLevel = newSceneResult.getZoomLodLevel;
+        disposeScene = newSceneResult.dispose;
+        cultureRangeGroup = null;
+        religionRangeGroup = null;
+        camCtrl = new CameraController(camera, canvas, center, cameraControllerOpts());
+        unitRenderer = new UnitRenderer(scene, map);
+        cityRenderer = new CityRenderer(scene, map);
+        siegeMarkerRenderer = new SiegeMarkerRenderer(scene, map);
+        wonderRenderer = new WonderRenderer(scene, map);
+        rebuildAllKeys();
+        refreshBuildApi();
+        return true;
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        loading.showError(msg || 'Błąd wczytywania zapisu', () => { loading.hide(); });
+        return false;
+      }
     }
 
     async function doStartGame(params: NewGameParams): Promise<void> {
       playtestWalkaActive = false;
       bitwaDuzaActive = false;
       playtestMiastoActive = false;
+      _saveOrigin = 'normal';
       applyMenuParams(params);
       hideMainMenu();
       hideNewGameFlow();
@@ -9266,6 +9416,7 @@ async function boot(): Promise<void> {
     }
 
     async function doStartPlaytestWalkaMapy(): Promise<void> {
+      _saveOrigin = 'playtest';
       playtestWalkaActive = true;
       // DUŻE bitwy mają pierwszeństwo (ich nazwy plików łapałaby regex oblężenia 3v3).
       const bitwaDuza = isPlaytestBitwaDuzaMode();
@@ -9532,6 +9683,7 @@ async function boot(): Promise<void> {
     }
 
     async function doStartPlaytestMiastoEkonomia(): Promise<void> {
+      _saveOrigin = 'playtest';
       playtestWalkaActive = false;
       bitwaDuzaActive = false;
       playtestMiastoActive = true;
@@ -9706,6 +9858,7 @@ async function boot(): Promise<void> {
     }
 
     async function doStartPlaytestMapaSwiata(): Promise<void> {
+      _saveOrigin = 'playtest';
       playtestWalkaActive = false;
       bitwaDuzaActive = false;
       playtestMiastoActive = false;
@@ -9897,22 +10050,50 @@ async function boot(): Promise<void> {
       renderLoop();
     }
 
-    function doLoadGame(fromInGamePause = false): void {
+    async function loadGameFromSlot(slotId: string, fromInGamePause = false): Promise<void> {
+      hideSaveLoadDialog();
       try {
-        const saved = loadFromLocal('autosave');
+        const saved = loadFromLocal(slotId);
         if (!saved) {
-          showHintMessage(
-            fromInGamePause
-              ? 'Brak zapisu (slot: autosave).'
-              : 'Brak zapisu (slot: autosave). Uruchamiam nową grę.',
-            3000,
-          );
+          showHintMessage('Nie można wczytać tego zapisu.', 3000);
           if (!fromInGamePause) openStartupMainMenu();
           return;
         }
         hideGamePauseMenu();
         hideMainMenu();
         hideNewGameFlow();
+
+        const loadParams = newGameParamsForLoad(saved);
+        const loadSeed = saved.seed ?? loadParams?.seed ?? _gameSeed;
+
+        if (!fromInGamePause && (!loadParams || loadSeed <= 0)) {
+          showHintMessage(
+            'Ten zapis nie ma parametrów mapy (stary lub uszkodzony). Usuń go i zapisz grę ponownie po nowej grze.',
+            5000,
+          );
+          if (!fromInGamePause) openStartupMainMenu();
+          return;
+        }
+
+        const mustRebuildMap = fromInGamePause
+          ? (loadParams != null && loadSeed > 0 && loadSeed !== _gameSeed)
+          : (loadParams != null && loadSeed > 0);
+
+        if (mustRebuildMap && loadParams) {
+          const saveLabel = (saved.meta?.label as string) || slotId;
+          canvas.style.visibility = 'hidden';
+          let ok = false;
+          try {
+            ok = await regenerateWorldForLoad(loadParams, loadSeed, saveLabel);
+          } finally {
+            canvas.style.visibility = '';
+          }
+          if (!ok) {
+            if (!fromInGamePause) openStartupMainMenu();
+            return;
+          }
+        }
+
         restoreGameFromSave(saved);
         for (const c of cities) {
           if (!c.centerWorkedTile) {
@@ -9932,17 +10113,26 @@ async function boot(): Promise<void> {
         refreshFog();
         updateHud();
         renderLoop();
-        showHintMessage('Wczytano zapis (tura ' + turn + ')', 3000);
-        console.log('[Load] menu wczytano slot=autosave tura=' + turn);
+        const label = (saved.meta?.label as string) || slotId;
+        showHintMessage(
+          `Wczytano: «${label}» (tura ${turn})<br><span style="opacity:.85;font-size:11px">${saveContextLine(saved)}</span>`,
+          4500,
+        );
+        console.log('[Load] slot=' + slotId + ' tura=' + turn);
       } catch (e) {
         showHintMessage(
           fromInGamePause
             ? 'Błąd wczytywania zapisu.'
-            : 'Błąd wczytywania zapisu. Uruchamiam nową grę.',
+            : 'Błąd wczytywania zapisu. Wracam do menu.',
           3000,
         );
         if (!fromInGamePause) openStartupMainMenu();
       }
+    }
+
+    /** @deprecated alias — użyj loadGameFromSlot / openLoadGameDialog */
+    function doLoadGame(fromInGamePause = false): void {
+      openLoadGameDialog(fromInGamePause);
     }
 
     /** Wspólna ścieżka wczytywania zapisu — Ctrl+L i doLoadGame (Grupa F: migracja podziału). */
@@ -10088,6 +10278,9 @@ async function boot(): Promise<void> {
       unitRenderer.clearPathRoute();
       hoverKey = null;
       gameOver = false;
+      if (saved.meta?.newGameParams) {
+        _lastNewGameParams = saved.meta.newGameParams as NewGameParams;
+      }
     }
 
     // Show main menu overlay; game is already initialized beneath it.

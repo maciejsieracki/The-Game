@@ -5,7 +5,15 @@ nigdy nie kopiują (stary system miał 4 sprzeczne „aktualne" md5 — nigdy wi
 Format: data · md5 (pełne) · stempel z menu · co weszło (1 linia) · status.
 
 ## ROBOCZA (gra-robocza\Gra-ROBOCZA.html — wskazywana przez START.html)
-- 2026-07-06 18:10 · <plik-md5 dryfuje> · stempel: 2026-07-06 18:10 · d744cd7956fb ·
+- 2026-07-06 20:41 · plik 0edbc91d5b5d… · stempel build 371151b5544247c1e66f93597770c2f8 · ROBOCZA · 371151b5 · 20:41 ·
+  SAVE/LOAD UX: dialog zapisu (nazwa sejwu) + dialog wczytywania (lista slotów, usuwanie);
+  wczytanie z menu regeneruje mapę z seeda zapisu (fix „randomowa gra"); z-index dialog nad menu;
+  Kontynuuj → wybór sejwu. tsc=0 · smoke OK · publish Cursor (wyjątek Macieja, bez Integratora) · AKTUALNA
+- 2026-07-06 18:35 · <plik-md5 dryfuje> · stempel: 2026-07-06 18:35 · e4d99a49b659 ·
+  FIX duplikatu „SUROWCE W ZASIĘGU" w panelu miasta (usunięte wywołanie `appendW4TabFooter` @6489 w
+  `ui/cityPanel.ts`). + całość d744 (balans, countery, rzeki, KONTRAKT #8, UX, roster, obwódki, duże bitwy).
+  tsc=0/vite OK · pending=0 · 9/9 · hub · HOST-verify. Build z klonu; do repo po pushu · AKTUALNA (klucz=stempel)
+- 2026-07-06 18:10 · <plik-md5 dryfuje> · stempel: 2026-07-06 18:10 · d744cd7956fb · ZASTĄPIONA (→ e4d99a49b659) ·
   COUNTERY po polu `Typ` (counterMultiplier czyta `counterTyp` z def['Typ']) — włócznicy o opisowych
   nazwach dostają +50% vs konnica; `game/combat.ts` + `battle/battleScene.ts`. + całość 7fb9f6d3e8fb
   (balans HP×2/dyst×0.5, rzeki, KONTRAKT #8, UX, roster, obwódki, duże bitwy). tsc=0/vite OK · pending=0 ·
@@ -77,8 +85,15 @@ Format: data · md5 (pełne) · stempel z menu · co weszło (1 linia) · status
   rozstawione na MAPIE ŚWIATA) — ZŁY POZIOM, Maciej chciał areny · ZASTĄPIONA (→ 486a65094ddb)
 
 ## KANON (gra-kanon\)
+- 2026-07-06 20:17 · **7856d3451a0cb3963bd3c50c032f5ad5** · stempel wewn.: **d744cd7956fb**
+  (2026-07-06 18:10) · promocja Cursor Grupa G z roboczej (Maciej: playtest OK + GitHub
+  bad0c7f). Zawartość: rzeki wodospad, KONTRAKT #8 ikony, UX emoji→SVG, siatka rostera
+  6 kol., obwódki właściciela, duże bitwy arena, port UX W4, balans HP×2/dyst×0.5,
+  countery po polu `Typ`, C3/B0.6/Test wydajności/A5/H1. gra/src zsynchronizowane ze
+  srcKopiaMaster. tsc=0 · smoke OK · publikował Cursor (publish-kanon-snapshot.ps1) · **AKTUALNA**
 - 2026-07-06 ~03:55 · skopiowany przez Cursora bundle f199c4c8 (ze stemplem PENDING) ·
-  DO NADPISANIA po poprawce stempla i playteście Macieja (pakiet #0 w DO-KANONU.md)
+  **ZASTĄPIONA** (→ 7856d345)
 
 ## FINALNA (root)
-- stan sprzed 2026-07-05 wieczór — bez zmian dzisiejszej nocy
+- 2026-07-06 20:17 · **7856d3451a0cb3963bd3c50c032f5ad5** · zsynchronizowana z kanonem
+  (Gra-FINALNA.html) · **AKTUALNA**

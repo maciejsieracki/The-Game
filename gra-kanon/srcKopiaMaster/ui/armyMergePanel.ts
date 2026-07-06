@@ -3,6 +3,8 @@
  * Dwa stosy → jeden stos na heksie. Styl spójny z cityAttackChoice / preBattle.
  */
 
+import { unitIconSvg } from './icons/brandAssets';
+
 export interface ArmyMergeUnitRow {
   id: string;
   name: string;
@@ -96,7 +98,7 @@ function unitRowHtml(u: ArmyMergeUnitRow, isNew: boolean): string {
     : '';
   return (
     '<div class="civ-amp-row' + (isNew ? ' new' : '') + '">' +
-      '<div class="civ-amp-row-ic">' + esc(u.icon ?? '\u2694\uFE0F') + '</div>' +
+      '<div class="civ-amp-row-ic">' + (u.icon || unitIconSvg(undefined)) + '</div>' +
       '<div class="civ-amp-row-meta">' +
         '<div class="civ-amp-row-name">' + esc(u.name) + '</div>' +
         (mv ? '<div class="civ-amp-row-mv">' + esc(mv) + '</div>' : '') +

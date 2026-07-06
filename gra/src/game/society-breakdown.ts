@@ -147,11 +147,6 @@ export function pickOsiedlePopBonus(
   return legacyFlatFallback;
 }
 
-export function osiedlePopLabel(pop: number): string {
-  const p = Math.max(1, Math.floor(pop));
-  return `Osiedle (${p} mieszk.)`;
-}
-
 function pickSociety(
   block: Record<string, RawParamRow> | undefined,
   key: string,
@@ -162,6 +157,36 @@ function pickSociety(
   if (!row) return fallback;
   const v = row[difficulty];
   return typeof v === 'number' && Number.isFinite(v) ? v : fallback;
+}
+
+export function osiedlePopLabel(pop: number): string {
+  const p = Math.max(1, Math.floor(pop));
+  return `Osiedle (${p} mieszk.)`;
+}
+
+/** Górny próg populacji bonusu osiedla (D-START-OSIEDLE, domyślnie 4). */
+export function osiedlePopMax(
+  society: SocietyParamsLike | null | undefined,
+  difficulty: Difficulty = 'normal',
+): number {
+  const prBlock = (society?.prawo ?? {}) as Record<string, RawParamRow>;
+  return Math.max(1, Math.floor(
+    pickSociety(prBlock, 'prawo_bonus_osada_prog', difficulty, 4),
+  ));
+}
+
+/**
+ * D-START-OSIEDLE: małe miasto (pop 1–4) — bonus Sz/Praw/Zdrowie + brak migracji/rebelii.
+ * Immunitet liczy się per miasto (nie tylko stolica).
+ */
+export function isOsiedleRevoltImmune(
+  population: number,
+  society: SocietyParamsLike | null | undefined = null,
+  difficulty: Difficulty = 'normal',
+): boolean {
+  const p = Math.floor(population);
+  if (p < 1) return false;
+  return p <= osiedlePopMax(society, difficulty);
 }
 
 export function loadRevoltParams(

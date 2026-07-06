@@ -10,6 +10,8 @@ import civMapJson from './brand/civ-icon-map.json';
 import epochMapJson from './brand/epoch-icon-map.json';
 import settingMapJson from './brand/setting-icon-map.json';
 import iconsManifest from './brand/icons-manifest.json';
+import improvementMapJson from './brand/improvement-icon-map.json';
+import mapResourceMapJson from './brand/resources-map-icon-map.json';
 import unitMapJson from './brand/unit-icon-map.json';
 import menuEmblemSvg from './brand/menu-emblem.svg?raw';
 import motionCss from './brand/motion.css?raw';
@@ -32,6 +34,8 @@ const unitMap = unitMapJson as IdMapRoot;
 const civMap = civMapJson as IdMapRoot;
 const epochMap = epochMapJson as IdMapRoot;
 const settingMap = settingMapJson as IdMapRoot;
+const improvementMap = improvementMapJson as IdMapRoot;
+const mapResourceMap = mapResourceMapJson as IdMapRoot;
 
 function findSvgRaw(suffix: string): string {
   const norm = suffix.replace(/\\/g, '/');
@@ -90,6 +94,74 @@ function buildingBldId(def: BuildingDef | undefined, buildingId?: string): strin
   if (k.includes('produkc')) return 'bld-production';
   if (k.includes('admin')) return 'bld-admin';
   return buildingMap.map._default ?? 'bld-default';
+}
+
+/** SVG ulepszenia terenu (panel budowy A-08) z improvement-icon-map.json. */
+export function improvementIconSvg(key: string, size: BrandIconSize = 24): string {
+  const impId = improvementMap.map[key] ?? improvementMap.map._default ?? 'imp-farm';
+  return normalizeSvg(findSvgRaw(`improvements/${impId}.svg`), size);
+}
+
+/**
+ * SVG surowca mapy / złoża (resources-map/) z resources-map-icon-map.json.
+ * Klucz = etykieta gry (np. 'Kamień', 'Ruda żelaza', 'Bydło (krowa/wół)').
+ * Dopasowanie case-insensitive: najpierw dokładne, potem substring (jak
+ * resourceBrandKey w cityPanel), by warianty etykiet trafiały w tę samą ikonę.
+ */
+export function mapResourceIconSvg(key: string, size: BrandIconSize = 24): string {
+  const n = (key ?? '').toLowerCase().trim();
+  const map = mapResourceMap.map;
+  let id = map[n];
+  if (!id) {
+    let best = '';
+    let bestLen = 0;
+    for (const mk of Object.keys(map)) {
+      if (mk === '_default') continue;
+      if (n.includes(mk) && mk.length > bestLen) {
+        best = map[mk]!;
+        bestLen = mk.length;
+      }
+    }
+    id = best || undefined;
+  }
+  const resId = id ?? map._default ?? 'res-stone';
+  return normalizeSvg(findSvgRaw(`resources-map/${resId}.svg`), size);
+}
+
+const TERRAIN_ICON_MAP: ReadonlyArray<{ match: string; id: string }> = [
+  { match: 'gór', id: 'terrain-mountains' },
+  { match: 'gor', id: 'terrain-mountains' },
+  { match: 'mountain', id: 'terrain-mountains' },
+  { match: 'wzgór', id: 'terrain-hills' },
+  { match: 'wzgor', id: 'terrain-hills' },
+  { match: 'hill', id: 'terrain-hills' },
+  { match: 'pustyn', id: 'terrain-desert' },
+  { match: 'desert', id: 'terrain-desert' },
+  { match: 'morz', id: 'terrain-water' },
+  { match: 'wybrze', id: 'terrain-water' },
+  { match: 'wod', id: 'terrain-water' },
+  { match: 'water', id: 'terrain-water' },
+  { match: 'ocean', id: 'terrain-water' },
+  { match: 'łąk', id: 'terrain-plains' },
+  { match: 'lak', id: 'terrain-plains' },
+  { match: 'równin', id: 'terrain-plains' },
+  { match: 'rownin', id: 'terrain-plains' },
+  { match: 'plain', id: 'terrain-plains' },
+  { match: 'grass', id: 'terrain-plains' },
+];
+
+/**
+ * SVG typu terenu (tier7 terrain-*) z manifestu. Przyjmuje enum TerenBazowy
+ * lub etykietę PL; dopasowanie substringowe → terrain-plains/hills/mountains/
+ * desert/water. Domyślnie terrain-plains.
+ */
+export function terrainIconSvg(terrainKey: string, size: BrandIconSize = 24): string {
+  const n = (terrainKey ?? '').toLowerCase().trim();
+  let id = 'terrain-plains';
+  for (const { match, id: tid } of TERRAIN_ICON_MAP) {
+    if (n.includes(match)) { id = tid; break; }
+  }
+  return brandIconSvg(id, size);
 }
 
 /** SVG miniatury budynku @24. */

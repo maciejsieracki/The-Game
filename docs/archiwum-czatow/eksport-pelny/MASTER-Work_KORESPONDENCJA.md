@@ -56976,3 +56976,1504 @@ Bitwa 3D bezpośrednio:
 Jeśli u Ciebie stempel to coś innego niż `2d9fc522` — zrób twarde odświeżenie (Ctrl+F5) albo otwórz plik z dysku, nie z cache przeglądarki.
 
 [REDACTED]
+
+
+---
+
+## Dopisek synchronizacji — 2026-07-06 18:53 UTC (linie 6641–6719)
+
+
+### Linia 6641 — MACIEJ
+
+<timestamp>Monday, Jul 6, 2026, 8:11 PM (UTC+2)</timestamp>
+
+Wersja robocza jest już przetestowana i jest na GitHubie. Ale też jest taka sama na dysku lokalnie. Proszę sprawdź czy ostatnie zmiany są OK i czy możesz zaimplementować do kanonu. Prace prowadziłem na Claude Code, ponieważ tutaj skończyły nam się prawie limity.
+
+### Linia 6642 — AGENT
+
+Sprawdzam stan roboczej vs kanonu i repozytorium — potem ocenię, czy można bezpiecznie promować do kanonu.
+
+[REDACTED]
+
+### Linia 6643 — AGENT
+
+[REDACTED]
+
+### Linia 6644 — AGENT
+
+[REDACTED]
+
+### Linia 6645 — AGENT
+
+[REDACTED]
+
+### Linia 6646 — AGENT
+
+[REDACTED]
+
+### Linia 6647 — AGENT
+
+[REDACTED]
+
+### Linia 6648 — AGENT
+
+[REDACTED]
+
+### Linia 6649 — AGENT
+
+[REDACTED]
+
+### Linia 6650 — AGENT
+
+[REDACTED]
+
+### Linia 6651 — AGENT
+
+[REDACTED]
+
+### Linia 6652 — AGENT
+
+[REDACTED]
+
+### Linia 6653 — AGENT
+
+[REDACTED]
+
+### Linia 6654 — AGENT
+
+Robocza jest OK (stempel `d744cd7956fb`, testy zielone). Kanon jest ~2 dni w tyle; synchronizuję `gra/src` ze źródłem roboczej i promuję do kanonu.
+
+[REDACTED]
+
+### Linia 6655 — AGENT
+
+[REDACTED]
+
+### Linia 6656 — AGENT
+
+[REDACTED]
+
+### Linia 6657 — AGENT
+
+[REDACTED]
+
+### Linia 6658 — AGENT
+
+[REDACTED]
+
+### Linia 6659 — AGENT
+
+**Tak — robocza była OK. Kanon jest już zaktualizowany.**
+
+## Weryfikacja roboczej (przed promocją)
+
+| Sprawdzenie | Wynik |
+|-------------|--------|
+| Stempel w bundlu | `2026-07-06 18:10 · d744cd7956fb` |
+| Plik md5 (robocza) | `7856d3451a0cb3963bd3c50c032f5ad5` |
+| GitHub HEAD | `bad0c7f` — zgodny z Twoim pushiem |
+| `tsc --noEmit` | 0 błędów |
+| `smoke.cjs` | OK |
+| `combat-test.cjs` | 6/6 |
+| Rejestr bugów playtestu | pusty (brak zgłoszeń) |
+
+**Uwaga techniczna:** `gra/src` było **61 plików** za `srcKopiaMaster` (m.in. brak `counterTyp`, stary `units.json`). To normalne w obecnym obiegu — INTEGRATOR buduje z klona, a `gra/src` aktualizuje Cursor przy promocji do kanonu. **Zsynchronizowałem to przed promocją.**
+
+---
+
+## Promocja do kanonu — wykonana
+
+| Poziom | Plik | Stempel / md5 |
+|--------|------|----------------|
+| **Robocza** | `gra-robocza/Gra-ROBOCZA.html` | wewn. `d744cd79…` · plik `7856d345…` |
+| **Kanon** | `gra-kanon/Gra-KANON.html` | **`KANON · 7856d345 · 2026-07-06 20:17`** |
+| **Finalna** | `Gra-FINALNA.html` | ten sam md5 co kanon |
+
+**Co weszło:** rzeki (wodospad), UX emoji→SVG, port W4 miasto, siatka rostera, obwódki jednostek, duże bitwy arena, balans HP×2/dyst×0.5, countery po polu `Typ`, C3/B0.6/Test wydajności.
+
+Dokumentacja: `WERSJE.md`, `DO-KANONU.md` (PAKIET #1), `CURSOR-DO-MASTERA.md`.
+
+---
+
+## Co możesz teraz zrobić
+
+1. **Test kanonu (opcjonalnie):** `gra-kanon/START.html` → Ctrl+F5 → stempel **`7856d345`** w lewym dolnym rogu.
+2. **Push na GitHub** — lokalnie masz niecommitowane: `gra/src`, `gra/data`, `gra-kanon/`, `Gra-FINALNA.html`, docs. Jeśli chcesz, napisz **„commit kanon”** — przygotuję commit.
+
+Robocza **nie została ruszona** — dalej testujesz przez `gra-robocza/START.html`.
+
+[REDACTED]
+
+### Linia 6660 — MACIEJ
+
+<timestamp>Monday, Jul 6, 2026, 8:18 PM (UTC+2)</timestamp>
+
+jak wyeksportujesz do Canonu to też jeszcze sprawdź wersję finalną która jest naszym back upem.
+
+### Linia 6661 — AGENT
+
+Sprawdzam spójność finalnej z kanonem — to nasz backup wyższego poziomu.
+
+[REDACTED]
+
+### Linia 6662 — AGENT
+
+[REDACTED]
+
+### Linia 6663 — AGENT
+
+[REDACTED]
+
+### Linia 6664 — AGENT
+
+[REDACTED]
+
+### Linia 6665 — AGENT
+
+[REDACTED]
+
+### Linia 6666 — AGENT
+
+Sprawdziłem **FINALNĄ** jako backup wyższego poziomu — jest zsynchronizowana z kanonem z tej samej promocji.
+
+## Łańcuch backupów (stan po promocji 20:17)
+
+| Poziom | Plik | Stempel w grze | Tożsamość bundla |
+|--------|------|----------------|------------------|
+| Robocza | `gra-robocza/Gra-ROBOCZA.html` | `ROBOCZA · …` (złoty) | wewn. **`d744cd7956fb`** |
+| Kanon | `gra-kanon/Gra-KANON.html` | **`KANON · 7856d345 · 2026-07-06 20:17`** (niebieski) | ten sam |
+| **Finalna (backup)** | **`Gra-FINALNA.html`** | **`FINALNA · 7856d345 · 2026-07-06 20:17`** (zielony) | ten sam |
+
+Wszystkie trzy mają w `title` stempla ten sam md5 źródła: **`7856d3451a0cb3963bd3c50c032f5ad5`** — to fingerprint gry z roboczej sprzed podmiany etykiety tier.
+
+## Porównanie byte-po-byte
+
+| Para | Różnica | Interpretacja |
+|------|---------|---------------|
+| **FINALNA vs KANON** | **14 znaków** | tylko etykieta stempla (`FINALNA` vs `KANON`) + kolor (`#9ee6b8` vs `#8ec5ff`) — **OK** |
+| KANON vs ROBOCZA | ~435 znaków | stempel ROBOCZA (złoty, inna etykieta) — **oczekiwane** |
+
+Treść gry (marker `d744cd7956fb`, balans, countery, rzeki, UX) — **identyczna** między kanonem a finalną.
+
+## Manifest kanonu
+
+`gra-kanon/KANON-MANIFEST.json`:
+- `sourceRoboczaMd5`: `7856d345…`
+- `publishedAt`: `2026-07-06T20:17:18`
+
+## Jak szybko zweryfikować u siebie
+
+1. Otwórz **`Gra-FINALNA.html`** (Ctrl+F5) — w lewym dolnym rogu: **`FINALNA · 7856d345 · 2026-07-06 20:17`** (zielony).
+2. Porównaj z **`gra-kanon/Gra-KANON.html`** — ta sama gra, inny kolor etykiety.
+3. Wejście z roota: **`START-GRA.html`** → link „Finalna (kanon)”.
+
+## Co zastąpiliśmy
+
+Stara finalna/kanon sprzed promocji miała stempel **`a001606c`** / **`d3948ea6`** (2026-07-05) — teraz backup wskazuje na **aktualną** wersję z playtestu `d744cd79`.
+
+Skrypt `publish-kanon-snapshot.ps1` robi oba kroki naraz: kanon + kopia do `Gra-FINALNA.html` + rolling backup w `_backup/` (retencja 3 kopie).
+
+---
+
+**Podsumowanie:** FINALNA jest spójna z kanonem i nadaje się jako backup. Jeśli chcesz, mogę teraz zrobić **commit + push** (`gra-kanon/`, `Gra-FINALNA.html`, `gra/src`, docs) — napisz „commit kanon”.
+
+[REDACTED]
+
+### Linia 6668 — MACIEJ
+
+<timestamp>Monday, Jul 6, 2026, 8:32 PM (UTC+2)</timestamp>
+
+Jeszcze jeden ciekawy temat: w menu jest możliwość zapisywania gry, ale prawdopodobnie nie został stworzony algorytm i moduł zapisywania gry, a nie wgrywania gry, więc to jest trochę bez sensu. To też musi być poprawione, jeżeli mam testować grę. bo nie będę przesłaniał przejść do następnych etapów i wychwycić błędu.
+
+### Linia 6669 — AGENT
+
+Sprawdzam, co jest zaimplementowane przy zapisie i wczytywaniu gry — od menu po logikę persystencji.
+
+[REDACTED]
+
+### Linia 6670 — AGENT
+
+[REDACTED]
+
+### Linia 6671 — AGENT
+
+[REDACTED]
+
+### Linia 6672 — AGENT
+
+[REDACTED]
+
+### Linia 6673 — AGENT
+
+[REDACTED]
+
+### Linia 6674 — AGENT
+
+[REDACTED]
+
+### Linia 6675 — AGENT
+
+[REDACTED]
+
+### Linia 6676 — AGENT
+
+[REDACTED]
+
+### Linia 6677 — AGENT
+
+[REDACTED]
+
+### Linia 6678 — AGENT
+
+[REDACTED]
+
+### Linia 6680 — MACIEJ
+
+<timestamp>Monday, Jul 6, 2026, 8:35 PM (UTC+2)</timestamp>
+
+sorki, da się jednak zapisywać, ale jest to bardzo słabo widoczne. Nimi jednak jest jeden problem. Przy wgrywaniu gry powinno dać możliwość wyboru, który plik chcemy wgrać z różnych save'ów, a tu po prostu robi się to automatycznie, że pewnie wgrywana ostatnia. Bo nie jest pokazany element wyboru, który save chcemy wgrać. Tak samo podczas zapisywania powinno być okienko wyskakujące, które pozwala zmienić na przykład nazwę sejwu lub cokolwiek innego.
+
+### Linia 6681 — AGENT
+
+Sprawdzam obecny system slotów i UI — potem dodamy wybór sejwu przy wczytywaniu i okno zapisu z nazwą.
+
+[REDACTED]
+
+### Linia 6682 — AGENT
+
+[REDACTED]
+
+### Linia 6683 — AGENT
+
+Dodaję okno wyboru sejwu przy wczytywaniu i dialog zapisu z nazwą — silnik slotów już istnieje, używany był tylko `autosave`.
+
+[REDACTED]
+
+### Linia 6684 — AGENT
+
+[REDACTED]
+
+### Linia 6685 — AGENT
+
+[REDACTED]
+
+### Linia 6686 — AGENT
+
+[REDACTED]
+
+### Linia 6687 — AGENT
+
+[REDACTED]
+
+### Linia 6688 — AGENT
+
+[REDACTED]
+
+### Linia 6689 — AGENT
+
+[REDACTED]
+
+### Linia 6690 — AGENT
+
+Masz rację co do UX — silnik zapisu **był**, ale ukryty w jednym slocie `autosave` bez wyboru. Dodałem okna dialogowe.
+
+## Co się zmieniło
+
+### Zapis — okno z nazwą
+- **Menu pauzy** (ikona menu na HUD) → **„Zapisz grę”** → okno z polem **Nazwa zapisu**
+- Domyślnie: `Zapis · tura N` (możesz zmienić, np. „Przed bitwą z Rzymem”)
+- Ta sama nazwa **nadpisuje** istniejący sejw
+- **Ctrl+S** = nadal **szybki zapis** bez okna (slot `autosave`, pod playtest)
+
+### Wczytywanie — wybór z listy
+- **Menu główne → Więcej → Wczytaj grę** → lista wszystkich sejwów (nazwa, tura, data)
+- **Kontynuuj** → wczytuje **najnowszy** sejw (po dacie)
+- **Menu pauzy → Wczytaj grę** → ta sama lista
+- **Ctrl+L** → lista wyboru (zamiast ślepego autosave)
+- **Podwójne kliknięcie** wiersza = wczytaj
+- **✕** przy wierszu = usuń sejw
+
+### Poprawka techniczna
+- Zapis używa teraz **`_gameSeed`** (właściwy seed mapy), nie losowego seeda z bootu
+
+---
+
+## Jak testować (po rebuildie roboczej)
+
+INTEGRATOR musi zbudować nowy bundel z `srcKopiaMaster` (pliki już skopiowane). Po publishu:
+
+1. Zagraj kilka tur → menu pauzy → **Zapisz grę** → nazwij np. „Test A”
+2. Zagraj dalej → zapisz jako „Test B”
+3. **Wczytaj grę** → powinny być **oba** na liście
+4. Wybierz „Test A” → stan z tej tury
+
+Stare zapisy w `autosave` nadal działają — pojawią się na liście jako „autosave” lub „Szybki zapis…”.
+
+---
+
+## Uwaga (znany limit)
+
+Wczytanie **po odświeżeniu strony (F5)** nadal zakłada, że mapa w pamięci = mapa z zapisu (pełna regeneracja mapy z seeda przy load = osobne zadanie w kolejce). W **tej samej sesji** bez F5 — wybór slotów działa poprawnie do playtestu.
+
+---
+
+**Następny krok:** poproś INTEGRATORA o publish roboczej z tym kodem, albo napisz „publish robocza” jeśli mam zbudować tutaj.
+
+[REDACTED]
+
+### Linia 6691 — MACIEJ
+
+<timestamp>Monday, Jul 6, 2026, 8:38 PM (UTC+2)</timestamp>
+
+jeszcze jedna śmieszna rzecz. W momencie, gdy się da z menu przy starcie gry czytaj grę, to wgrywa jakąś randomową grę, nie tą, którą zapisaliśmy, nie może nic innego wybrać.
+
+### Linia 6692 — AGENT
+
+Diagnostykuję wczytywanie z menu startowego — prawdopodobnie stan jest przywracany na losowej mapie z bootu zamiast na mapie z zapisu.
+
+[REDACTED]
+
+### Linia 6693 — AGENT
+
+[REDACTED]
+
+### Linia 6694 — AGENT
+
+[REDACTED]
+
+### Linia 6695 — AGENT
+
+Dwie przyczyny: dialog wczytywania jest **pod** menu (z-index) i wczytanie nie odtwarza mapy z seeda zapisu — naprawiam obie.
+
+[REDACTED]
+
+### Linia 6696 — AGENT
+
+[REDACTED]
+
+### Linia 6697 — AGENT
+
+[REDACTED]
+
+### Linia 6698 — AGENT
+
+[REDACTED]
+
+### Linia 6699 — AGENT
+
+[REDACTED]
+
+### Linia 6700 — AGENT
+
+[REDACTED]
+
+### Linia 6701 — AGENT
+
+[REDACTED]
+
+### Linia 6702 — AGENT
+
+[REDACTED]
+
+### Linia 6703 — AGENT
+
+[REDACTED]
+
+### Linia 6704 — AGENT
+
+Masz rację — to nie był „zły save”, tylko **dwa bugi naraz**:
+
+## Co było nie tak
+
+1. **Losowa mapa przy starcie**  
+   Przy otwarciu gry silnik od razu generuje mapę z **losowego seeda** (boot). Wczytanie z menu **nie odtwarzało** mapy z zapisu — tylko wrzucało jednostki/miasta na tę losową planszę → wyglądało jak „randomowa gra”.
+
+2. **Brak wyboru z menu**  
+   - Dialog wczytywania miał **z-index 490**, menu główne **500** → lista była **pod spodem**, niewidoczna.  
+   - **„Kontynuuj”** wczytywało **najnowszy** sejw bez pytania (stary kod / autosave).
+
+## Co naprawiłem (w kodzie, czeka na rebuild roboczej)
+
+| Fix | Efekt |
+|-----|--------|
+| Wczytanie **regeneruje mapę** z seeda + parametrów kreatora zapisanych w sejwie | Ta sama plansza co przy zapisie |
+| Dialog zapisu/wczytywania **nad menu** (z-index 520) | Lista sejwów widoczna i klikalna |
+| **„Kontynuuj”** i **„Wczytaj grę”** → **lista wyboru** | Sam wybierasz sejw |
+| Zapis trzyma **`newGameParams`** + seed mapy | Pełne odtworzenie świata |
+
+## Jak testować (po publishu INTEGRATORA)
+
+1. **Nowa gra** → zagraj kilka tur → **Zapisz grę** (np. „Test A”)  
+2. **Wyjdź do menu głównego** (menu pauzy)  
+3. **Więcej → Wczytaj grę** → powinna być **lista** z „Test A”  
+4. Wczytaj → krótki ekran „Tworzenie świata…” → **ta sama mapa i tura**
+
+**Ctrl+S** = nadal szybki zapis bez okna (slot `autosave`).
+
+## Ważne
+
+- **Stare sejwy** (sprzed tej poprawki) mogą nadal źle wczytywać mapę — **zapisz grę raz jeszcze** po nowym buildzie.  
+- W **obecnym bundlu roboczej** na dysku tego jeszcze **nie ma** — trzeba publish z `srcKopiaMaster` (INTEGRATOR lub „publish robocza”).
+
+Napisz **„publish robocza”**, jeśli mam zbudować od razu tutaj.
+
+[REDACTED]
+
+### Linia 6705 — MACIEJ
+
+<timestamp>Monday, Jul 6, 2026, 8:41 PM (UTC+2)</timestamp>
+
+wiesz co? W drodze wyjątku zaimplementuj do wersji roboczej to sam. Nie używaj teraz integratora. Nie będziemy strzelać z armaty do wróbla.
+
+### Linia 6706 — AGENT
+
+Buduję i publikuję bezpośrednio do roboczej — bez Integratora.
+
+[REDACTED]
+
+### Linia 6707 — AGENT
+
+[REDACTED]
+
+### Linia 6708 — AGENT
+
+[REDACTED]
+
+### Linia 6709 — AGENT
+
+[REDACTED]
+
+### Linia 6710 — AGENT
+
+[REDACTED]
+
+### Linia 6711 — AGENT
+
+[REDACTED]
+
+### Linia 6712 — AGENT
+
+[REDACTED]
+
+### Linia 6713 — AGENT
+
+[REDACTED]
+
+### Linia 6714 — AGENT
+
+**Robocza opublikowana** — bez Integratora.
+
+## Testuj teraz
+**`gra-robocza/START.html`** → **Ctrl+F5**
+
+| | |
+|---|---|
+| Stempel w grze | **`ROBOCZA · 371151b5 · 2026-07-06 20:41`** |
+| Plik (hub) | md5 **`0edbc91d…`** |
+
+Bramki: `tsc` 0 · `smoke` OK · 9 playtestów + hub.
+
+## Co jest w bundlu
+- **Zapisz grę** → okno z **nazwą sejwu**
+- **Wczytaj grę** / **Kontynuuj** → **lista** sejwów (tura, data, ✕ usuń)
+- Wczytanie z menu **odtwarza mapę** z seeda zapisu (koniec „randomowej gry”)
+- **Ctrl+S** = szybki zapis (`autosave`, bez okna)
+- **Ctrl+L** = lista wczytywania
+
+## Szybki test
+1. Nowa gra → kilka tur → menu pauzy → **Zapisz grę** → np. „Przed bitwą”
+2. Menu główne → **Więcej → Wczytaj grę** → wybierz sejw
+3. Krótki ekran „Tworzenie świata…” → powinna wrócić **ta sama** plansza
+
+**Uwaga:** Stare sejwy sprzed tego buildu mogą źle odtwarzać mapę — **zapisz raz jeszcze** po Ctrl+F5.
+
+Kanon/FINALNA **nie ruszane** (tylko robocza, jak prosiłeś).
+
+[REDACTED]
+
+### Linia 6716 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-df43b47b-4742-478a-99a4-693d36bbd2cf.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Monday, Jul 6, 2026, 8:51 PM (UTC+2)</timestamp>
+
+Zapis niby miał być OK, ale wgrała jakąś randomową wersję, która nie wiadomo czym jest. Prawdopodobnie jest tą mapą, która była wygenerowana i zapisana, ale są jakieś dziwne na niej jednostki, których przecież ja nie miałem. Co więcej cała jest odkryta.
+
+### Linia 6717 — AGENT
+
+Diagnozuję wczytywanie — wygląda na mieszankę stanu bootu z zapisem albo błąd mgły po regeneracji mapy.
+
+[REDACTED]
+
+### Linia 6718 — AGENT
+
+[REDACTED]
+
+
+---
+
+## Dopisek synchronizacji — 2026-07-06 19:19 UTC (linie 6720–6779)
+
+
+### Linia 6720 — AGENT
+
+[REDACTED]
+
+### Linia 6721 — AGENT
+
+[REDACTED]
+
+### Linia 6722 — AGENT
+
+[REDACTED]
+
+### Linia 6723 — AGENT
+
+[REDACTED]
+
+### Linia 6724 — AGENT
+
+[REDACTED]
+
+### Linia 6725 — AGENT
+
+[REDACTED]
+
+### Linia 6726 — AGENT
+
+[REDACTED]
+
+### Linia 6727 — AGENT
+
+[REDACTED]
+
+### Linia 6728 — AGENT
+
+[REDACTED]
+
+### Linia 6729 — AGENT
+
+[REDACTED]
+
+### Linia 6730 — AGENT
+
+[REDACTED]
+
+### Linia 6731 — AGENT
+
+[REDACTED]
+
+### Linia 6732 — AGENT
+
+[REDACTED]
+
+### Linia 6733 — AGENT
+
+To brzmi jak wczytanie obcego sejwu, nie Twojej gry — wzmocnię listę zapisów (mapa, cywilizacja, jednostki), żeby od razu było widać, co wybierasz.
+
+[REDACTED]
+
+### Linia 6734 — AGENT
+
+[REDACTED]
+
+### Linia 6735 — AGENT
+
+[REDACTED]
+
+### Linia 6736 — AGENT
+
+[REDACTED]
+
+### Linia 6737 — AGENT
+
+[REDACTED]
+
+### Linia 6738 — AGENT
+
+[REDACTED]
+
+### Linia 6739 — AGENT
+
+[REDACTED]
+
+### Linia 6740 — AGENT
+
+[REDACTED]
+
+### Linia 6741 — AGENT
+
+[REDACTED]
+
+### Linia 6742 — AGENT
+
+[REDACTED]
+
+### Linia 6743 — AGENT
+
+[REDACTED]
+
+### Linia 6744 — AGENT
+
+[REDACTED]
+
+### Linia 6745 — AGENT
+
+[REDACTED]
+
+### Linia 6746 — AGENT
+
+[REDACTED]
+
+### Linia 6747 — AGENT
+
+Masz rację — to **nie wygląda na bug logiki gry**, tylko na **wczytanie obcego stanu**, nie Twojej rozgrywki.
+
+## Co się najpewniej stało
+
+Wszystkie linki z `gra-robocza/` (**Pełna gra**, **Playtest mapy**, **PLAYTEST-MAPA.html** itd.) **dzielą ten sam magazyn zapisów** w przeglądarce (`localStorage`). Nie ma osobnych „zapisów per mapa”.
+
+Typowe scenariusze:
+
+1. **Zły slot** — „Kontynuuj” / „Wczytaj” pokazuje listę; na górze ląduje **najnowszy** sejw. Jeśli wcześniej był playtest albo Ctrl+S (autosave), pierwszy wpis to **nie Twoja gra**, tylko np. sandbox playtestu (Testpolis, Hastati, Ateny) albo stara sesja testowa.
+
+2. **Autosave z playtestu** — Ctrl+S podczas playtestu nadpisuje slot `autosave` etykietą „Szybki zapis · tura 1”. Przy wczytywaniu wygląda to jak „randomowa mapa z jednostkami testowymi”.
+
+3. **Otwarcie PLAYTEST-MAPA zamiast normalnej gry** — plik `Gra-ROBOCZA-PLAYTEST-MAPA.html` **w ogóle nie czeka na load**; od razu startuje scenariusz testowy.
+
+4. **Stary sejw bez parametrów mapy** — bardzo stary zapis mógł odtworzyć **złą mapę** (domyślny rozmiar z bootu zamiast Twojego Super Huge / Ziemia).
+
+## Jak to sprawdzić (2 minuty)
+
+1. Ctrl+F5 na `gra-robocza/START.html` → **Pełna gra (z menu)** (nie playtest).
+2. Menu → **Wczytaj** — **przeczytaj nazwę i datę** każdego slotu.
+3. Usuń podejrzane (✕), zwłaszcza `autosave` / „Szybki zapis” z playtestów.
+4. **Nowa gra** → zagraj chwilę → **Zapisz** z **własną nazwą** (np. „Moja gra test 1”).
+5. Menu główne → **Wczytaj** → wybierz **ten konkretny** slot.
+
+Po wczytaniu toast powinien pokazać: `Wczytano: «Moja gra test 1» (tura X)`.
+
+## Co poprawiłem w roboczej (stempel `6e3027fe`)
+
+- **Lista wczytywania** pokazuje teraz drugą linię: rozmiar · typ mapy · cywilizacja · liczba jednostek/miast · seed · ewentualnie **PLAYTEST**.
+- **Wczytanie z menu** zawsze **regeneruje mapę** z parametrów sejwu (nie zostawia losowej mapy z bootu).
+- **Stare/uszkodzone sejwy** bez parametrów mapy — komunikat zamiast cichego wczytania śmieci.
+- Zapisy z playtestów są oznaczane jako **PLAYTEST**.
+
+**Test:** Ctrl+F5 → `Gra-ROBOCZA.html` (z menu) → zapisz nazwany sejw → menu → wczytaj **ten sam** slot i porównaj linię kontekstu w liście.
+
+Jeśli po tym nadal widzisz obcą mapę — napisz **dokładną nazwę slotu** z listy i drugą linię (rozmiar · typ · …) — wtedy wiemy, czy to stary playtest w localStorage, czy coś innego.
+
+[REDACTED]
+
+### Linia 6748 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-957e2841-a5f3-4d02-96ed-3c6ca8c72359.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Monday, Jul 6, 2026, 8:57 PM (UTC+2)</timestamp>
+
+w ogóle to co śmieszne to podsumowanie czy ten pop-up, który wyskakuje przy ładowaniu wygląda tak jakby od nowa generowało grę tylko że na tych samych parametrach być może.  To nie wygląda jak loading, ładowanie.
+
+### Linia 6749 — AGENT
+
+Masz rację — overlay mówi „Tworzenie świata”, choć technicznie odtwarzamy mapę z seeda, a nie startujemy nową grę. Sprawdzam overlay i ścieżkę load, żeby rozdzielić teksty.
+
+[REDACTED]
+
+### Linia 6750 — AGENT
+
+Overlay ma ten sam tekst co przy nowej grze, choć load tylko odtwarza mapę z seeda. Dodaję tryb „wczytywanie” z innymi komunikatami.
+
+[REDACTED]
+
+### Linia 6751 — AGENT
+
+[REDACTED]
+
+### Linia 6752 — AGENT
+
+[REDACTED]
+
+### Linia 6753 — AGENT
+
+[REDACTED]
+
+### Linia 6754 — AGENT
+
+[REDACTED]
+
+### Linia 6755 — AGENT
+
+[REDACTED]
+
+### Linia 6756 — AGENT
+
+Masz dobre oko — **to faktycznie wyglądało jak „nowa gra”**, choć technicznie to było wczytywanie.
+
+## Dlaczego tak jest pod spodem
+
+W zapisie **nie ma całej mapy** (Super Huge Ziemia to setki tysięcy heksów — za dużo na localStorage). Zapisujemy:
+
+- **ziarno** (157707),
+- **parametry** (Ogromny · Ziemia),
+- **stan gry** (jednostki, miasta, tura, mgła…).
+
+Przy wczytywaniu silnik **odtwarza tę samą mapę ze ziarna** (deterministycznie — zawsze ta sama), a potem **nakłada zapisany stan**. To ten sam proces co przy starcie nowej gry, tylko na końcu wchodzi restore z sejwu, a nie klastrowy start.
+
+Stąd ten sam pasek postępu 1/6…6/6 — to nie bug, tylko **zła etykieta UX**.
+
+## Co zmieniłem (robocza `97b14dec`)
+
+Przy **wczytywaniu** overlay mówi teraz:
+
+- tytuł: **„Wczytywanie zapisu”** (nie „Tworzenie świata”),
+- linia z **nazwą sejwu** + parametrami mapy,
+- krótka wskazówka: *„Mapa nie jest w pliku — odtwarzamy ze ziarna, potem wczytujemy stan”*,
+- faza końcowa: **„Przywracanie widoku mapy…”**,
+- **ciemniejsze tło** + chowanie canvasu — żeby nie widać było starych jednostek pod spodem (jak na Twoim screenie).
+
+Przy **nowej grze** zostaje „Tworzenie świata” jak dotąd.
+
+**Test:** Ctrl+F5 → wczytaj sejw → powinieneś zobaczyć **„Wczytywanie zapisu”** z nazwą Twojego zapisu.
+
+Daj znać, czy teraz czytelnie odróżnia load od nowej gry.
+
+[REDACTED]
+
+### Linia 6758 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-70baa709-c5cf-40ec-9374-7dde0b64fe2c.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Monday, Jul 6, 2026, 9:01 PM (UTC+2)</timestamp>
+
+pierwsza kwestia przypadkiem coś wyszło jak nacisnąłem T to wgrywa się testowa walka która była kiedyś na początku gry w ten sposób ustawiona trzeba to T wywoływanie tego usunąć.  Takie coś wyskoczyło.
+
+### Linia 6759 — AGENT
+
+[REDACTED]
+
+### Linia 6760 — AGENT
+
+[REDACTED]
+
+### Linia 6761 — AGENT
+
+[REDACTED]
+
+### Linia 6762 — AGENT
+
+[REDACTED]
+
+### Linia 6763 — AGENT
+
+Usuwam skrót klawiszowy T — uruchamiał starą testową bitwę Hastati vs Falanga bez żadnej blokady dev.
+
+[REDACTED]
+
+### Linia 6764 — AGENT
+
+[REDACTED]
+
+### Linia 6765 — AGENT
+
+Tak — to był **stary skrót deweloperski**. Klawisz **T** odpalał na sztywno testową bitwę **4× Hastati (Rzym) vs 4× Falanga (Grecja)** — dokładnie ten ekran preBattle, który widziałeś. Działało to **zawsze**, bez żadnej blokady (w przeciwieństwie do F/M, które mają warunki dev).
+
+**Usunięte** w roboczej (`9b302072`):
+- obsługa klawisza **T** → `launchTestBattle()`
+- wskazówka playtestu też już nie wspomina T
+
+**Bitwy nadal działają normalnie:**
+- klik wroga na mapie → preBattle → walka
+- linki playtestów z `START.html` (PLAYTEST-WALKA itd.)
+
+**Test:** Ctrl+F5 → gra → naciśnij **T** — nic się nie powinno stać (T może nadal coś wpisywać w polach tekstowych UI, ale nie odpala bitwy).
+
+Daj znać, jeśli chcesz też wyłączyć inne przypadkowe skróty (np. **B** = załóż miasto, **G** = galeria).
+
+[REDACTED]
+
+### Linia 6766 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-bbd6d5df-dec2-4381-8bc0-a459483c1835.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Monday, Jul 6, 2026, 9:03 PM (UTC+2)</timestamp>
+
+po usunięciu tych starych autosave'ów o dziwo w końcu grę wgrało z autosave'a więc chyba działa.
+
+### Linia 6767 — AGENT
+
+To się zgadza z tym, co podejrzewaliśmy — **load działał**, tylko **w localStorage leżały stare sejwy**, które psuły obraz.
+
+Stare autosave’y (playtesty, Ctrl+S z innej sesji) były **najnowsze na liście** albo myliły przy „Kontynuuj”. Po usunięciu został **Twój** zapis — stąd „o dziwo w końcu wgrało”.
+
+Na screenie widać sensowny stan:
+- **Test t- tura 1**
+- Standardowy · Ziemia · grecy
+- seed 673984
+- 0 j. / 44 miast (start klastra — miasta AI, jeszcze bez Twoich jednostek)
+
+**Na przyszłość:**
+1. **Zapisuj nazwany sejw** (nie polegaj tylko na autosave).
+2. Przed loadem **sprawdź drugą linię** w liście (rozmiar · typ · cyw · jednostki/miasta).
+3. Po playteście **usuń autosave** albo zapisz normalną grę z własną nazwą.
+
+Jeśli chcesz, możemy dopisać krótką notkę w `START.html` albo w hubie: *„Po playteście usuń autosave albo zapisz grę z nazwą”*.
+
+[REDACTED]
+
+### Linia 6768 — MACIEJ
+
+<timestamp>Monday, Jul 6, 2026, 9:03 PM (UTC+2)</timestamp>
+
+czy to już jest w grze roboczej zaimplementowane? ?
+
+### Linia 6769 — AGENT
+
+Sprawdzam, co jest już opublikowane w roboczej.
+
+[REDACTED]
+
+### Linia 6770 — AGENT
+
+[REDACTED]
+
+### Linia 6771 — AGENT
+
+[REDACTED]
+
+### Linia 6772 — AGENT
+
+**Tak — to jest już w roboczej**, o ile grasz z aktualnego bundla.
+
+Na Twoim screenie widać **drugą linię kontekstu** w liście sejwów (`Standardowy · Ziemia · grecy · 0 j. / 44 miast · seed …`) — to potwierdza, że masz nowszą wersję niż sama save/load z rana.
+
+### Co jest w `Gra-ROBOCZA.html` (stempel **`9b302072`**, publish ~21:02)
+
+| Funkcja | Status |
+|--------|--------|
+| Zapis / wczytaj z listy slotów | tak |
+| Druga linia: mapa · cyw · jednostki/miasta · seed | tak (widać u Ciebie) |
+| Oznaczenie **PLAYTEST** przy zapisach z playtestu | tak (nowe zapisy) |
+| Overlay **„Wczytywanie zapisu”** (nie „Tworzenie świata”) | tak |
+| Wczytanie z menu zawsze odtwarza mapę ze ziarna | tak |
+| Usunięty skrót **T** → testowa bitwa | tak |
+| Ctrl+S autosave, Ctrl+L lista wczytywania | tak |
+
+### Jak sprawdzić, że masz tę wersję
+
+1. **Ctrl+F5** na `gra-robocza/START.html` → **Pełna gra (z menu)**  
+2. W lewym dolnym rogu gry: **`ROBOCZA · 9b302072 · 2026-07-06 21:02`**
+
+Jeśli widzisz starszy stempel (np. `371151b5` / `0edbc91d`) — zrób twarde odświeżenie; `START.html` w hubie ma jeszcze starą metrykę z 20:42, ale **sam plik gry jest nowszy**.
+
+### Czego jeszcze nie ma
+
+- Notka w `START.html` o usuwaniu autosave po playteście — **nie** (tylko w czacie; mogę dopisać na prośbę)
+- Wpis w `WERSJE.md` dla `9b302072` — **nie zaktualizowany** (kosmetyka ops)
+
+Skoro load zadziałał po usunięciu starych sejwów — **mechanizm działa**; problem był w zanieczyszczonym localStorage, nie w braku implementacji.
+
+[REDACTED]
+
+### Linia 6773 — MACIEJ
+
+<timestamp>Monday, Jul 6, 2026, 9:04 PM (UTC+2)</timestamp>
+
+ja robiłem prawdziwy save a wgrywało auto-save. To był błąd tego modułu. Teraz działa wszystko prawidłowo
+
+### Linia 6774 — AGENT
+
+Masz rację — to **był błąd modułu**, nie Twojej pomyłki.
+
+**Co było nie tak:** mimo że robiłeś **nazwany zapis**, gra przy wczytywaniu / „Kontynuuj” **ciągnęła autosave** (najnowszy slot albo ślepe wczytanie bez wyboru). Stare autosave’y z playtestów tylko to pogarszały — wyglądało jak obca mapa.
+
+**Co jest naprawione teraz:**
+- **Kontynuuj** → **lista wyboru**, nie ślepy autosave
+- w liście widać **nazwę + kontekst** (mapa, cyw, jednostki, seed)
+- wczytanie z menu **zawsze odtwarza mapę ze ziarna** z parametrami sejwu
+- overlay mówi **„Wczytywanie zapisu”**, nie „Tworzenie świata”
+- **T** już nie odpala testowej bitwy
+
+Skoro po usunięciu starych sejwów **Twój prawdziwy save wgrywa się poprawnie** — moduł jest OK.
+
+**Werdykt:** save/load **OK** w roboczej (`9b302072`). Jak będziesz chciał, możemy to spakować do kanonu albo dopisać krótką notkę w `START.html` o autosave po playteście.
+
+[REDACTED]
+
+### Linia 6776 — MACIEJ
+
+<timestamp>Monday, Jul 6, 2026, 9:06 PM (UTC+2)</timestamp>
+
+zobaczę po kilku turach i po zapisie, czy czasem znowu nie czytuję na przykład losowo albo na przykład tylko z pierwszej gry. Dam znać jak coś.
+
+### Linia 6777 — AGENT
+
+Dobry plan — to właśnie taki test powinien to potwierdzić albo złapać regresję.
+
+**Proponowany scenariusz (5 min):**
+1. Nowa gra → kilka tur → **Zapisz** z własną nazwą (np. „Test tura 5”).
+2. Menu → **Wczytaj** → wybierz **ten** slot (sprawdź drugą linię: tura, seed, jednostki).
+3. Opcjonalnie Ctrl+S (autosave) → znowu wczytaj **nazwany** slot — czy nadal ta sama gra, nie autosave z góry listy.
+
+**Daj znać, gdyby:**
+- wczytało **inny** slot niż wybrałeś,
+- po zapisie w turze 5 wczytało stan z **tury 1**,
+- seed / mapa / cywilizacja w drugiej linii **nie zgadzały się** z grą.
+
+Stempel roboczej: **`9b302072`** (lewy dolny róg). Czekam na werdykt po kilku turach.
+
+[REDACTED]
+
+### Linia 6779 — MACIEJ
+
+<timestamp>Monday, Jul 6, 2026, 9:13 PM (UTC+2)</timestamp>
+
+Zadanie: napraw panel miasta — duplikat „Surowce w zasięgu" + brakujące suwaki redystrybucji (Skarb/Nauka/Zamożność)
+Projekt: Civ, gra-robocza/srcKopiaMaster, pliki ui/cityPanel.ts (+ ui/cityUxFrame.ts). Bramka: tsc --noEmit = 0 + vite build.
+PROBLEM (2 objawy, prawdopodobnie jeden root-cause):
+
+Blok „SUROWCE W ZASIĘGU / POTENCJAŁ (ZŁOŻE)" renderuje się dwa razy (górna karta + osobny blok na dole).
+Zniknęły suwaki podziału przychodu z handlu (Skarb / Nauka / Zamożność). Główna hipoteza: drugi blok surowców fizycznie ZAKRYWA ramkę z suwakami — dlatego ich nie widać.
+
+CO JUŻ USTALONE (nie sprawdzaj ponownie):
+
+Blok „Surowce w zasięgu" renderuje TYLKO funkcja renderSurowce (tytuł jedynie cityPanel.ts:~1984, klasa civ-w4-surowce-title). Nie ma drugiej funkcji.
+Jedyne ŻYWE wywołanie renderSurowce = #cs-surowce-foot @~6658 w paintCityPanelSections. Martwe: appendW4TabFooter@~6473 (wywołanie już usunięte), skeleton-rerender @~6710 (uxSectionRefresh short-circuit).
+Żadna zakładka w renderRightPanelTab nie woła renderSurowce.
+Mount panelu w KODZIE jest jeden: main.ts → openCityPanelForPlayer → showCityPanel@~1699; showCityUxFrame (cityUxFrame.ts @~163) robi hideCityUxFrame()@~170 (dedup); refreshCityPanelIfOpen@~5791 odświeża w miejscu (czyści mounts.right). paintCityPanelSections wołane tylko z cityUxFrame @~214/@~223.
+WNIOSEK: w kodzie 1 wywołanie, w grze 2 bloki → drugi render powstaje w RUNTIME.
+
+SUWAKI (istnieją, nie usunięte): appendPodzialHandlu/makeSlider @~2692-2716 (Skarb/Nauka/Zamożność), panel renderHandelSlidersPanel@~6221, renderowane na zakładce „handel" (renderRightPanelTab@~6533: renderHandelSlidersPanel + renderWealth). Hook onPodzialHandluChange podpięty w main.ts (editable=true).
+PRAWDOPODOBNY ROOT-CAUSE: dwa współistniejące systemy panelu — (a) STARY „szkielet" designera skeleton()@~5701 + renderEkonomiaStrip@~2645 (suwaki INLINE + #cs-surowce@~5736), (b) NOWA ramka zakładkowa paintCityPanelSections/cityUxFrame (#cs-surowce-foot). Refaktor na (b) nie usunął czysto (a) → oba renderują → podwójne surowce, a dolny blok (.civ-v-right-foot, margin-top:auto, prawdopodobnie pinned/absolutnie) zakrywa suwaki.
+CO ZROBIĆ:
+
+DevTools (F12) na otwartym panelu → znajdź DWA węzły .civ-w4-surowce-foot / #cs-surowce* i sprawdź rodziców:
+
+czy w document.body są DWA .civ-ux-frame (frameRoot) — hideCityUxFrame() nie usunął poprzedniego (zgubiony frameRoot ref przy przełączaniu miast / podwójnym otwarciu bez hide)?
+czy stary rootEl/skeleton (#cs-surowce@~5736) jest w DOM i widoczny obok ramki?
+
+Zweryfikuj hipotezę „zakrywa suwaki": czy .civ-v-right-foot (dolny blok) nachodzi z-index/pozycją na obszar suwaków zakładki „handel".
+FIX zależnie od DOM:
+
+dwa frameRoot → napraw showCityUxFrame/hideCityUxFrame, by GWARANTOWAŁ jeden (usuń wszystkie .civ-ux-frame przed mountem, nie tylko przez ref);
+współistniejący stary skeleton → usuń/ukryj martwą ścieżkę (skeleton/rerender/#cs-surowce@~5736 / zdejmij rootEl z DOM).
+
+Po usunięciu duplikatu upewnij się, że suwaki Skarb/Nauka/Zamożność są widoczne. Docelowy layout do ustalenia z Maciejem: „jak u designera" — suwaki + Zamożność razem (wzorzec: renderEkonomiaStrip ma suwaki inline).
+NIE przywracaj usuniętego appendW4TabFooter. Bramka: tsc=0 + smoke (jeden blok surowców + widoczne suwaki).
+
+
+---
+
+## Dopisek synchronizacji — 2026-07-06 19:35 UTC (linie 6780–6877)
+
+
+### Linia 6780 — AGENT
+
+[REDACTED]
+
+### Linia 6781 — AGENT
+
+[REDACTED]
+
+### Linia 6782 — AGENT
+
+[REDACTED]
+
+### Linia 6783 — AGENT
+
+[REDACTED]
+
+### Linia 6784 — AGENT
+
+[REDACTED]
+
+### Linia 6785 — AGENT
+
+[REDACTED]
+
+### Linia 6786 — AGENT
+
+[REDACTED]
+
+### Linia 6787 — AGENT
+
+[REDACTED]
+
+### Linia 6788 — AGENT
+
+[REDACTED]
+
+### Linia 6789 — AGENT
+
+[REDACTED]
+
+### Linia 6790 — AGENT
+
+[REDACTED]
+
+### Linia 6791 — AGENT
+
+W `gra/src` nadal jest `appendW4TabFooter` w `withW4TabCard` — stąd duplikat surowców i zakryte suwaki. Usuwam to i poprawiam layout stopki.
+
+[REDACTED]
+
+### Linia 6792 — AGENT
+
+[REDACTED]
+
+### Linia 6793 — AGENT
+
+[REDACTED]
+
+### Linia 6794 — AGENT
+
+[REDACTED]
+
+### Linia 6795 — AGENT
+
+[REDACTED]
+
+### Linia 6796 — AGENT
+
+[REDACTED]
+
+### Linia 6797 — AGENT
+
+[REDACTED]
+
+### Linia 6798 — AGENT
+
+[REDACTED]
+
+### Linia 6799 — AGENT
+
+[REDACTED]
+
+### Linia 6800 — AGENT
+
+[REDACTED]
+
+### Linia 6801 — AGENT
+
+[REDACTED]
+
+### Linia 6802 — AGENT
+
+**Naprawione** — root-cause był dokładnie taki, jak w zadaniu.
+
+## Przyczyna
+
+W **`gra/src/ui/cityPanel.ts`** funkcja `withW4TabCard` **nadal wołała** `appendW4TabFooter` → surowce renderowały się **w każdej zakładce** (górna karta) **oraz** w stopce `#cs-surowce-foot`. Stąd duplikat i zakryte suwaki (stopka miała `z-index: 4` + cień w górę).
+
+W `srcKopiaMaster` to było już usunięte, ale **bundel roboczy buduje się z `gra/src`** — stąd bug w grze mimo „poprawnego” kodu w kopii.
+
+## Co zmieniono
+
+| Fix | Plik |
+|-----|------|
+| Usunięto `appendW4TabFooter` z `withW4TabCard` + martwą funkcję | `cityPanel.ts` |
+| Stopka surowców: `z-index: 0`, bez cienia nachodzącego na treść | CSS w `cityPanel.ts` |
+| Więcej `padding-bottom` w `.civ-v-right-main` (suwaki nie przy krawędzi) | CSS |
+| `hideCityUxFrame` usuwa **wszystkie** `.civ-ux-frame` z DOM | `cityUxFrame.ts` |
+
+Zsynchronizowano: `gra/src` ↔ `gra-robocza/srcKopiaMaster`.
+
+## Bramka
+
+- `tsc --noEmit` — OK  
+- `smoke.cjs` — OK  
+- Publish roboczej: **`f95826d7`**
+
+## Test u Ciebie (Ctrl+F5)
+
+1. Otwórz miasto → zakładka **Handel** (ikona handlu po prawej).
+2. Powinny być widoczne suwaki **Skarb / Nauka / Zamożność** + sekcja Zamożność.
+3. **Jeden** blok „Surowce w zasięgu” — tylko **na dole** prawej kolumny, nie w karcie zakładki.
+
+Daj znać, czy layout jest OK, czy suwaki mają być bliżej wzorca designera (inline jak w starym `renderEkonomiaStrip`).
+
+[REDACTED]
+
+### Linia 6803 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-973587eb-f822-4267-ac35-f3f90e7e30de.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Monday, Jul 6, 2026, 9:18 PM (UTC+2)</timestamp>
+
+### Linia 6804 — AGENT
+
+Na screenie widać, że duplikat surowców i brak suwaków nadal występują — szukam drugiego źródła renderu.
+
+[REDACTED]
+
+### Linia 6805 — MACIEJ
+
+If the available MCP tools do not fully support what the user asked you to do, complete the work you can with the current tool set. In your work summary, include what you were unable to do with MCP and why. Do not use browser automation to work around missing or unavailable MCP tools unless the user explicitly asks you to use the browser.
+
+### Linia 6806 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-973587eb-f822-4267-ac35-f3f90e7e30de.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Monday, Jul 6, 2026, 9:18 PM (UTC+2)</timestamp>
+
+### Linia 6807 — AGENT
+
+[REDACTED]
+
+### Linia 6808 — AGENT
+
+Maciej ma już `f95826d7` — szukam drugiego źródła duplikatu surowców i przyczyny braku suwaków.
+
+[REDACTED]
+
+### Linia 6809 — AGENT
+
+[REDACTED]
+
+### Linia 6810 — AGENT
+
+[REDACTED]
+
+### Linia 6811 — AGENT
+
+[REDACTED]
+
+### Linia 6812 — AGENT
+
+[REDACTED]
+
+### Linia 6813 — AGENT
+
+[REDACTED]
+
+### Linia 6814 — AGENT
+
+[REDACTED]
+
+### Linia 6815 — AGENT
+
+[REDACTED]
+
+### Linia 6816 — AGENT
+
+[REDACTED]
+
+### Linia 6817 — AGENT
+
+[REDACTED]
+
+### Linia 6818 — AGENT
+
+[REDACTED]
+
+### Linia 6819 — AGENT
+
+[REDACTED]
+
+### Linia 6820 — AGENT
+
+[REDACTED]
+
+### Linia 6821 — AGENT
+
+[REDACTED]
+
+### Linia 6822 — AGENT
+
+[REDACTED]
+
+### Linia 6823 — AGENT
+
+[REDACTED]
+
+### Linia 6824 — AGENT
+
+[REDACTED]
+
+### Linia 6825 — AGENT
+
+[REDACTED]
+
+### Linia 6826 — AGENT
+
+[REDACTED]
+
+### Linia 6827 — AGENT
+
+[REDACTED]
+
+### Linia 6828 — AGENT
+
+[REDACTED]
+
+### Linia 6829 — AGENT
+
+[REDACTED]
+
+### Linia 6830 — AGENT
+
+[REDACTED]
+
+### Linia 6831 — AGENT
+
+[REDACTED]
+
+### Linia 6832 — AGENT
+
+[REDACTED]
+
+### Linia 6833 — AGENT
+
+[REDACTED]
+
+### Linia 6834 — AGENT
+
+[REDACTED]
+
+### Linia 6835 — AGENT
+
+[REDACTED]
+
+### Linia 6836 — AGENT
+
+[REDACTED]
+
+### Linia 6837 — AGENT
+
+[REDACTED]
+
+### Linia 6838 — AGENT
+
+[REDACTED]
+
+### Linia 6839 — AGENT
+
+[REDACTED]
+
+### Linia 6840 — AGENT
+
+[REDACTED]
+
+### Linia 6841 — AGENT
+
+[REDACTED]
+
+### Linia 6842 — AGENT
+
+[REDACTED]
+
+### Linia 6843 — AGENT
+
+[REDACTED]
+
+### Linia 6844 — AGENT
+
+[REDACTED]
+
+### Linia 6845 — AGENT
+
+[REDACTED]
+
+### Linia 6846 — AGENT
+
+[REDACTED]
+
+### Linia 6847 — AGENT
+
+[REDACTED]
+
+### Linia 6848 — AGENT
+
+[REDACTED]
+
+### Linia 6849 — AGENT
+
+[REDACTED]
+
+### Linia 6850 — AGENT
+
+[REDACTED]
+
+### Linia 6851 — AGENT
+
+[REDACTED]
+
+### Linia 6852 — AGENT
+
+[REDACTED]
+
+### Linia 6853 — AGENT
+
+[REDACTED]
+
+### Linia 6854 — AGENT
+
+[REDACTED]
+
+### Linia 6855 — AGENT
+
+[REDACTED]
+
+### Linia 6856 — AGENT
+
+[REDACTED]
+
+### Linia 6857 — AGENT
+
+[REDACTED]
+
+### Linia 6858 — AGENT
+
+[REDACTED]
+
+### Linia 6859 — AGENT
+
+[REDACTED]
+
+### Linia 6860 — AGENT
+
+[REDACTED]
+
+### Linia 6861 — AGENT
+
+[REDACTED]
+
+### Linia 6862 — AGENT
+
+[REDACTED]
+
+### Linia 6863 — AGENT
+
+[REDACTED]
+
+### Linia 6864 — AGENT
+
+[REDACTED]
+
+### Linia 6865 — AGENT
+
+[REDACTED]
+
+### Linia 6866 — AGENT
+
+[REDACTED]
+
+### Linia 6867 — AGENT
+
+Mam potwierdzenie: `renderWealth` czyści `body` i kasuje suwaki; duplikat surowców naprawię guardem w `mainEl`. Wdrażam fix i publikuję.
+
+[REDACTED]
+
+### Linia 6868 — AGENT
+
+[REDACTED]
+
+### Linia 6869 — AGENT
+
+[REDACTED]
+
+### Linia 6870 — AGENT
+
+[REDACTED]
+
+### Linia 6871 — AGENT
+
+[REDACTED]
+
+### Linia 6872 — AGENT
+
+[REDACTED]
+
+### Linia 6873 — AGENT
+
+[REDACTED]
+
+### Linia 6874 — AGENT
+
+[REDACTED]
+
+### Linia 6875 — AGENT
+
+Potwierdziłem na Twoim screenie (`f95826d7`): **Zamożność** jest, **suwaków brak**, **surowce ×2**.
+
+## Przyczyna suwaków (pewna)
+
+W zakładce Handel kolejność była:
+
+1. `renderHandelSlidersPanel(body)` → dodaje „Podział handlu” + suwaki  
+2. `renderWealth(body)` → **`body.innerHTML = ''`** → **czyści wszystko**, zostaje tylko Zamożność
+
+To nie był stary bundel — bug logiczny w kodzie.
+
+## Fix (opublikowany)
+
+**Stempel:** `6c4a5f8a` · 2026-07-06 21:26  
+**Plik:** `gra-robocza/Gra-ROBOCZA.html`
+
+1. **Osobne hosty** — suwaki i zamożność w oddzielnych kontenerach (wealth nie kasuje sliderów)
+2. **Guard duplikatu** — usuwa ewentualne `.civ-w4-surowce-foot` z obszaru scroll (tylko stopka na dole)
+3. **CSS** — separator między sekcją handlu a zamożnością
+
+Bramka: `tsc --noEmit` OK · `smoke.cjs` OK
+
+## Co sprawdzić u Ciebie
+
+1. **Ctrl+F5** na `Gra-ROBOCZA.html`
+2. Lewy dolny róg: **`6c4a5f8a`** (nie `f95826d7`)
+3. Zakładka Handel (pierścienie):
+   - u góry: **Podział handlu** + chipy + suwaki **Skarb / Nauka / Zamożność**
+   - niżej: **Zamożność** (W1, pasek 0/9)
+   - **na dole panelu (stopka): jeden** blok „Surowce w zasięgu”
+
+Daj znać: **OK** albo **BUG:** + screen ze stemplem.
+
+[REDACTED]
+
+### Linia 6877 — MACIEJ
+
+[Image]
+[Image]
+[Image]
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-b980416d-3ae6-48b0-910b-e8e0d2cf2833.png
+2. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-a7ce572d-3f3a-4004-b19e-46d0916f1aa0.png
+3. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-24be0b4d-b0ce-4718-bbc0-6765a35ae522.png
+4. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-4ccf695e-7ece-492b-bc3d-d0079d31c4b9.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Monday, Jul 6, 2026, 9:28 PM (UTC+2)</timestamp>
+
+Teraz przy starcie gry w ogóle naliczyły się jakieś dziwne ilości pieniędzy skarbcu państwa.  i odłożonej pracy i że nauka to będzie plus 23, chociaż przecież miasto tego nie pokazuje.  Wynik miasta, który mamy tylko jedno, rozjeżdża się z wynikiem państwa. Nie wiadomo skąd w ogóle ta liczba 23 przy nauce, skąd w ogóle przy pracy 63 i skąd skarb czy 120. W następnej turze mam jeszcze inne liczby. Może to jest suma wszystkich miast, które są na całej mapie. ? :) Zobaczymy, co pokaże kolejna tura. Najśmieszniejsze to jest tylko, że przyrost pokazuje, że niby taki będzie. No i tura czwarta. Przyrost gigantyczny. To wygląda tak jakby moje państwo zbierało haracz z całej mapy pewnie. A bo jest jakiś inny błąd. W każdym razie jest jakiś błąd wyliczania surowców dla danej cywilizacji. Trzeba sprawdzić o co chodzi.

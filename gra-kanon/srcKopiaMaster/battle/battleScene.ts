@@ -6201,7 +6201,7 @@ export class BattleScene {
     const atkMissile     = applyMultiplier(cuA.missileAttack ?? 0, atkMods.rangedAtk);
     const defArmor       = applyMultiplier(cuD.armor, defMods.pancerz);
     const roundAtkCharge = applyMultiplier(cuA.chargeBonus, atkMods.uderzenie);
-    const ctrAtkVsDef    = counterMultiplier(cuA.typNazwa, cuD.typNazwa, this.counters);
+    const ctrAtkVsDef    = counterMultiplier(cuA.counterTyp, cuD.counterTyp, this.counters);
 
     const chargeHitBonus = (!ranged && isCharge) ? roundAtkCharge : 0;
     const hitPct = hitChanceTw(atkMelee, defFinalObrona, chargeHitBonus);
@@ -10943,6 +10943,8 @@ export class BattleScene {
     cards.className = 'roster-group-cards';
     Object.assign(cards.style, {
       overflowX: 'hidden', boxSizing: 'border-box', width: '100%', maxWidth: '100%',
+      gridTemplateColumns: `repeat(${ROSTER_MAX_COLS}, minmax(0, 1fr))`,
+      gap: ROSTER_CARD_GAP + 'px', justifyContent: 'start', alignContent: 'start',
     });
 
     header.addEventListener('click', (e: MouseEvent) => {

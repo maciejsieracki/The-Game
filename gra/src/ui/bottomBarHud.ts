@@ -1,6 +1,6 @@
 /**
  * bottomBarHud.ts — dolny pasek [I]/[I2]: WYKONAJ + Koniec tury (A1-Q9=A, A1-Q10).
- * Brama końca tury gdy blocking wydarzenia (canEndTurn).
+ * WYKONAJ = pierwsze oczekujące wydarzenie; koniec tury zawsze dostępny (Maciej 2026-07-06).
  */
 
 import { brandIconSvg } from './icons/brandAssets';
@@ -11,9 +11,9 @@ export interface BottomBarHudConfig {
   getYearLabel?: () => string;
   onExecutePending?: () => void;
   onEndTurn?: () => void;
-  /** false gdy blocking > 0 */
+  /** false tylko gdy playtest / game over (domyślnie true). */
   canEndTurn?: () => boolean;
-  /** Liczba blocking wydarzeń (do stanu WYKONAJ). */
+  /** Liczba oczekujących wydarzeń (do stanu WYKONAJ). */
   getBlockingCount?: () => number;
   /** Ukryj przycisk końca tury (playtest walki). */
   hideEndTurn?: () => boolean;
@@ -74,7 +74,7 @@ export function createBottomBarHud(config: BottomBarHudConfig): BottomBarHudApi 
   function render(): void {
     const blocking = config.getBlockingCount?.() ?? 0;
     const hideEnd = config.hideEndTurn?.() ?? false;
-    const canEnd = !hideEnd && (config.canEndTurn?.() ?? blocking === 0);
+    const canEnd = !hideEnd && (config.canEndTurn?.() ?? true);
     const wykOn = blocking > 0;
     const turn = config.getTurn();
     const year = config.getYearLabel?.() ?? '';
@@ -87,8 +87,7 @@ export function createBottomBarHud(config: BottomBarHudConfig): BottomBarHudApi 
     el.innerHTML = '<button type="button" class="wykonaj' + (wykOn ? ' on' : '') + '" data-wykonaj'
       + (wykOn ? '' : ' disabled') + '>Wykonaj</button>'
       + (hideEnd ? '' : (
-        '<button type="button" class="end-turn" data-end' + (canEnd ? '' : ' disabled')
-        + (canEnd ? '' : ' title="Rozstrzygnij wydarzenia po prawie"') + '>'
+        '<button type="button" class="end-turn" data-end>'
         + '<span class="et-action">' + arrowHtml + '<span>Zakończ turę</span></span></button>'
       ))
       + '<div class="et-turn-lbl">Tura ' + turn + (year ? ' · ' + year : '') + '</div>';

@@ -1,3 +1,6 @@
+# ⛔ 2026-07-06: ZAKAZ KOPIOWANIA DO ROOT — root = finalna (tylko Grupa G Cursor).
+# Skrypt ma publikowac WYLACZNIE do gra-robocza\. Cele $projRoot do usuniecia przez INTEGRATORA.
+# Obieg: dyspozycje/START-TU.md. Publisher = INTEGRATOR (Cowork).
 # Build gra-robocza/src → single-file bundle + publish do root i gra-robocza/
 # Wywołanie (z gra-robocza/): .\tools\publish-robocza-bundle.ps1
 # Pomija npm prebuild (export-data) — tylko vite singlefile.

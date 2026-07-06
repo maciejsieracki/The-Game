@@ -1207,3 +1207,39 @@ Maciej pyta, czy może pushować — **TAK**. Wszystko wgrane do gry roboczej (9
 - `srcKopiaMaster/battle/battleScene.ts` — `counterTyp` ✓ (×1)
 To JEDYNE zmiany ponad HEAD b1b9fed (UX/rzeki/KONTRAKT #8/roster/obwódki/duże bitwy już w repo z poprzedniego pushu). Po Commit+Push Macieja: repo HEAD = zdeployowany bundle **d744cd7956fb** → repo spójne z grą roboczą.
 CZEKAM-NA: Maciej — Commit+Push (GitHub Desktop).
+
+---
+
+## [18:35 PL] INTEGRATOR → MASTER — panel miasta: DUPLIKAT usunięty+deploy · SUWAKI+ZAPIS→Kursor · WERDYKT: nie wymiana UX
+
+Maciej (playtest, bez pusha): panel „ZAMOŻNOŚĆ" — (1) zdublowany blok „SUROWCE W ZASIĘGU", (2) brak suwaków podziału handlu. Diagnoza [OPUS, pełny klon+historia git]:
+- **WERDYKT:** żaden objaw NIE pochodzi z dzisiejszej wymiany UX ani integracji `main.ts`. Oba były już w migawce `f2df10f` (wcześniejszy refaktor panelu na zakładki `paintCityPanelSections`). `git diff f2df10f..HEAD` po liniach suwaków/surowców = pusty. Lane UX i integracja czyste → **push balans+countery bezpieczny**.
+- **DUPLIKAT (naprawione):** `renderSurowce` 2× — stopka KAŻDEJ karty zakładki (`appendW4TabFooter` @6473, z `withW4TabCard` @6489) + dedykowana stopka kolumny `#cs-surowce-foot` @6659. FIX: usunięte wywołanie `appendW4TabFooter(card,city)` @6489. Na dysku + w buildzie.
+- **SUWAKI:** NIE usunięte — są (`appendPodzialHandlu`/`makeSlider` w cityPanel.ts), ale refaktor wrzucił je na zakładkę „Podział handlu" (`handel`), osobno od karty Zamożność. Przywrócenie panelu designera = decyzja projektowa + skórka.
+- **ZAPIS GRY:** moduł ISTNIEJE (`game/save.ts`: serialize/deserialize/saveToLocal/loadFromLocal + „INTEGRATOR NOTE"), UI istnieje (gamePauseMenu/mainMenu) — BRAK podpięcia w `main.ts`. To integracja, nie pisanie od zera.
+DECYZJA MACIEJA: suwaki (panel) + zapis gry → **KURSOR** (oszczędność limitu). Pakiet: `dyspozycje/DO-KURSORA-panel-miasta-i-zapis.md` (pliki:linie, decyzja A/B layout, spec zapisu).
+DEPLOY: bundle **e4d99a49b659** (stempel 18:35) = d744 (balans+countery) + fix duplikatu. tsc=0/vite OK · pending=0 · 9/9 · hub · HOST-verify.
+CZEKAM-NA: Maciej — Commit+Push + decyzja layout panelu (A/B); Kursor — zad. 1+2 z pakietu.
+
+---
+
+## [18:55 PL] INTEGRATOR → MASTER — KOREKTA [18:35]: duplikat „surowce" NIE naprawiony (montuje się 2× w runtime)
+
+Playtest Macieja (po twardym refreshu): dubel „SUROWCE W ZASIĘGU" NADAL jest. Mój fix (usunięcie `appendW4TabFooter` @6489) trafił w martwy render. Ustalenie: blok renderuje tylko `renderSurowce` (1 żywe wywołanie `#cs-surowce-foot`), a widać 2 → panel renderuje się 2× w RUNTIME. W KODZIE mount jest jeden (main.ts 1× `showCityPanel`@1699; `showCityUxFrame` dedupuje @170; `refreshCityPanelIfOpen` odświeża w miejscu) → drugi render jest runtime'owy (druga ramka nieusunięta / stary `rootEl` widoczny). Hipoteza Macieja (UX mount + integrator podmount) trafna co do skutku. Wspólny root-cause z brakiem suwaków = dwa współistniejące systemy panelu. → Kursor z inspekcją DOM (DevTools); pakiet `DO-KURSORA-panel-miasta-i-zapis.md` zaktualizowany (findings + wykluczone ścieżki). Deploy e4d99a49b659 stoi (fix nieszkodliwy). Balans+countery niezależne, bezpieczne.
+CZEKAM-NA: Kursor — panel (duplikat+suwaki, DevTools); Maciej — decyzja layout A/B.
+
+---
+
+## [18:35 PL] MASTER → WSZYSCY — PUSH ZROBIONY · PAUZA do CZWARTKU 2026-07-09 (limity)
+
+Repo HEAD = deploy **d744cd7956fb** (spójne). Maciej testuje w międzyczasie; werdykt OK/BUG po powrocie.
+NIC nie robimy do czwartku (limit). Kolejka na powrót (na „start"): 1. werdykt playtestu → ew. BUGi, 2. audyt bonusów terenowych w bitwie [OPUS], 3. gęstość ujść głównych (zgoda na hash wymagana), 4. persystencja kreatora, 5. rzeki-render domknięcie wizualne.
+CZEKAM-NA: Maciej — czwartek, „raport" u MASTERA albo werdykt OK/BUG.
+
+---
+
+## [18:50 PL] MASTER → WSZYSCY — WYJĄTEK (decyzja Macieja): MODUŁ SEJWÓW zrobił STARY CURSOR
+
+Ze względu na kończący się limit Cowork Maciej w drodze JEDNORAZOWEGO wyjątku zlecił staremu Cursorowi przygotowanie modułu sejwów — WYKONANE (domyka to stary wątek „save.ts istnieje, niepodpięty w main.ts → Kursor"). Publikacja nastąpi za chwilę (poza normalnym obiegiem, na rękę Macieja).
+Dla INTEGRATORA na czwartek: przed następnym buildem sprawdź HEAD/dysk pod kątem zmian modułu sejwów od Cursora (main.ts + save.ts i okolice) i traktuj je jako OBOWIĄZUJĄCE — nie nadpisywać, wciągnąć do builda. Reguła „Cursor poza obiegiem" wraca w życie PO tej publikacji.
+CZEKAM-NA: Maciej — publikacja sejwów + dalej playtest (rejestr błędów u MASTERA).

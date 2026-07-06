@@ -89,7 +89,7 @@ import {
   UNIT_INFOGRAPHIC_CSS,
 } from './unitInfographic';
 import { buildUnitRecruitCard, UNIT_RECRUIT_CARD_CSS } from './unitRecruitCard';
-import { brandIconSvg, buildingIconSvg, unitIconSvg, type BrandIconSize } from './icons/brandAssets';
+import { brandIconSvg, buildingIconSvg, unitIconSvg, mapResourceIconSvg, type BrandIconSize } from './icons/brandAssets';
 import { ensureBrandRootTokens, CIV_BRAND_SCOPE_VARS } from './brandTokenVars';
 import {
   freshWealthState,
@@ -905,6 +905,7 @@ function ensureStyles(): void {
 .civ-cs .handel-w4-sliders input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#f4e6a8,#a9861f);border:1px solid #6a5212;cursor:pointer;}
 .civ-cs .handel-w4-sliders .slider-nauka input[type=range]::-webkit-slider-thumb{background:radial-gradient(circle at 40% 35%,#8fb6e0,#3a5f8a);border-color:#26456a;}
 .civ-cs .handel-w4-sliders .slider-nauka input[type=range]::-moz-range-thumb{background:radial-gradient(circle at 40% 35%,#8fb6e0,#3a5f8a);border-color:#26456a;}
+.civ-handel-wealth-host{margin-top:0.55em;padding-top:0.42em;border-top:1px solid rgba(212,175,90,0.22);}
 .civ-tab-indicators{gap:0.28em!important;margin:0.28em 0 0.38em!important;flex-wrap:wrap;}
 .civ-tab-indicators .chip{font-size:0.72em;padding:0.24em 0.55em;border-radius:7px;border-color:rgba(232,216,138,0.25);}
 .civ-tab-indicators .cl{font-size:0.92em;color:#c8b898;}
@@ -1474,17 +1475,15 @@ ${UNIT_RECRUIT_CARD_CSS}
 .civ-v-left-main::-webkit-scrollbar{width:5px;}
 .civ-v-left-main::-webkit-scrollbar-thumb{background:rgba(212,175,90,0.22);border-radius:3px;}
 .civ-v-left-main.civ-v-left-main-split{overflow:hidden;display:flex;flex-direction:column;padding-top:0;}
-.civ-v-right-main{flex:1 1 auto;min-height:0;overflow-y:auto;overflow-x:hidden;padding-right:0.06em;padding-top:0.12em;padding-bottom:0.72em;}
+.civ-v-right-main{flex:1 1 auto;min-height:0;overflow-y:auto;overflow-x:hidden;padding-right:0.06em;padding-top:0.12em;padding-bottom:0.85em;}
 .civ-v-right-main::-webkit-scrollbar{width:5px;}
 .civ-v-right-main::-webkit-scrollbar-thumb{background:rgba(212,175,90,0.22);border-radius:3px;}
 .civ-v-right-main > .panel:last-child{margin-bottom:0;}
 .civ-v-right-foot{flex:0 0 auto;margin-top:auto;margin-left:-0.36rem;margin-right:-0.36rem;margin-bottom:-0.42rem;
   padding:0.58em 0.36rem 0.5rem;border-top:2px solid rgba(212,175,90,0.58);
   background:linear-gradient(180deg,rgba(5,8,14,0.99) 0%,rgba(2,4,8,1) 100%);
-  position:relative;z-index:4;
-  box-shadow:0 -14px 32px rgba(0,0,0,0.58),inset 0 1px 0 rgba(232,216,138,0.18);}
-.civ-v-right-foot::before{content:'';position:absolute;left:0;right:0;top:-8px;height:8px;pointer-events:none;
-  background:linear-gradient(180deg,rgba(0,0,0,0.55),transparent);}
+  position:relative;z-index:0;
+  box-shadow:inset 0 1px 0 rgba(232,216,138,0.18);}
 .civ-v-right-foot .panel{background:transparent!important;border:none!important;padding:0!important;box-shadow:none!important;}
 .civ-w4-surowce-foot{padding:0.62em 0.72em;border:1px solid rgba(212,175,90,0.34);border-radius:10px;
   background:rgba(9,13,22,0.96);box-shadow:0 2px 10px rgba(0,0,0,0.4),inset 0 1px 0 rgba(255,255,255,0.05);}
@@ -2058,6 +2057,25 @@ function buildSurowceDetailCard(
   return card;
 }
 
+/**
+ * Czy etykieta to surowiec mapy (ma dedykowaną ikonę res-* w resources-map/).
+ * Reskin A-08: surowce mapy renderujemy przez mapResourceIconSvg, nie generyki.
+ */
+function isMapResourceLabel(n: string): boolean {
+  return (
+    n.includes('byd') || n.includes('glin') || n.includes('ceg') ||
+    n.includes('koń') || n.includes('kon') || n.includes('horse') ||
+    n.includes('sól') || n.includes('sol') || n.includes('salt') ||
+    n.includes('drewn') || n.includes('las') ||
+    n.includes('kamie') || n.includes('kamien') ||
+    n.includes('ruda') || n.includes('braz') || n.includes('brąz') ||
+    n.includes('żelaz') || n.includes('zelaz') ||
+    n.includes('złot') || n.includes('zlot') ||
+    n.includes('owc') || n.includes('lama') ||
+    n.includes('węgiel') || n.includes('wegiel') || n.includes('miedz') || n.includes('stal')
+  );
+}
+
 function resourceBrandKey(nazwa: string): string | null {
   const n = nazwa.toLowerCase();
   if (n.includes('byd')) return 'res-cattle';
@@ -2072,6 +2090,12 @@ function resourceBrandKey(nazwa: string): string | null {
 }
 
 function resourceBrandIconHtml(nazwa: string): string {
+  const n = nazwa.toLowerCase();
+  // Surowce mapy → dedykowana ikona res-* (resources-map/), reskin z generyków.
+  if (isMapResourceLabel(n)) {
+    const mapSvg = mapResourceIconSvg(nazwa, 18);
+    if (mapSvg) return `<span class="civ-w4-res-ic">${mapSvg}</span>`;
+  }
   const key = resourceBrandKey(nazwa) ?? 'chip-crate';
   const svg = brandIconSvg(key, 24);
   if (svg) {
@@ -6443,12 +6467,6 @@ function renderCityIconRail(
   mount.appendChild(rail);
 }
 
-function appendW4TabFooter(card: HTMLElement, city: City): void {
-  const foot = el('div', 'civ-w4-tab-foot');
-  renderSurowce(foot, city);
-  card.appendChild(foot);
-}
-
 function withW4TabCard(
   parent: HTMLElement,
   id: string | undefined,
@@ -6461,7 +6479,6 @@ function withW4TabCard(
   card.appendChild(body);
   parent.appendChild(card);
   render(body);
-  appendW4TabFooter(card, city);
 }
 
 function renderLeftPanelTab(
@@ -6507,8 +6524,12 @@ function renderRightPanelTab(
       break;
     case 'handel':
       withW4TabCard(mount, undefined, city, body => {
-        renderHandelSlidersPanel(body, city, view, data);
-        renderWealth(body, city, data, view);
+        const slidersHost = el('div', 'civ-handel-sliders-host');
+        const wealthHost = el('div', 'civ-handel-wealth-host');
+        body.appendChild(slidersHost);
+        body.appendChild(wealthHost);
+        renderHandelSlidersPanel(slidersHost, city, view, data);
+        renderWealth(wealthHost, city, data, view);
       });
       break;
     case 'praca':
@@ -6626,11 +6647,17 @@ export function paintCityPanelSections(
     mainEl.style.display = '';
     mainEl.style.flex = '1 1 auto';
     renderRightPanelTab(mainEl, activeCityPanelTab, city, map, view, data);
+    mainEl.querySelectorAll('.civ-w4-surowce-foot').forEach(node => {
+      node.closest('.panel')?.remove() ?? node.remove();
+    });
   }
 
   const footEl = el('div', 'civ-v-right-foot');
   footEl.id = 'cs-surowce-foot';
   rightScope.appendChild(footEl);
+  mounts.right.querySelectorAll('.civ-w4-surowce-foot').forEach(node => {
+    if (!footEl.contains(node)) node.remove();
+  });
   renderSurowce(appendPanel(footEl, 'cs-surowce'), city);
 }
 

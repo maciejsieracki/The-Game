@@ -11,5 +11,7 @@ export {
   updateRevoltGrace,
   happinessBucketsFromPct,
   loadRevoltParams,
+  isOsiedleRevoltImmune,
+  osiedlePopMax,
 } from '../src/game/society-breakdown';
 export { loadOrderParams } from '../src/game/order';

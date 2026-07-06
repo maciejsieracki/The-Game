@@ -47,16 +47,6 @@
       "40": "eksport/icons/tier1/res-settlements-40.svg",
       "tier": "tier1"
     },
-    "res-cattle": {
-      "24": "res-cattle.svg",
-      "40": "res-cattle.svg",
-      "tier": "tier1"
-    },
-    "res-clay": {
-      "24": "res-clay.svg",
-      "40": "res-clay.svg",
-      "tier": "tier1"
-    },
     "tb-cities": {
       "24": "eksport/icons/tier2/tb-cities-24.svg",
       "40": "eksport/icons/tier2/tb-cities-40.svg",

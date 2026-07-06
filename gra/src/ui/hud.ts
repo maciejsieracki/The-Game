@@ -159,7 +159,7 @@ export interface HudConfig {
    */
   getWarsWithPlayer?: () => WarWithPlayer[];
 
-  /** A1-Q9: WYKONAJ + brama końca tury (D1B dolny pasek). */
+  /** A1-Q9: WYKONAJ (przypomnienia) + koniec tury zawsze dostępny (D1B dolny pasek). */
   onExecutePending?: () => void;
   canEndTurn?: () => boolean;
   getBlockingCount?: () => number;
@@ -370,7 +370,7 @@ function powerCenterIconHtml(s: HudState): string {
 function recruitSideIconHtml(): string {
   const svg = brandIconSvg('cp-recruit', 20) || brandIconSvg('tb-army', 20);
   if (svg) return `<span class="p-recruit-ic" aria-hidden="true">${svg}</span>`;
-  return '<span class="p-recruit-ic" aria-hidden="true">' + (svg || brandIconSvg('tb-army', 20) || '') + '</span>';
+  return '<span class="p-recruit-ic" aria-hidden="true">⚔</span>';
 }
 
 function renderBarD1B(s: HudState): string {

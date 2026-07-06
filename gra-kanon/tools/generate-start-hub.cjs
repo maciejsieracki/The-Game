@@ -10,15 +10,16 @@ const crypto = require('crypto');
 const roboczaRoot = path.resolve(__dirname, '..');
 
 const entries = [
-  { file: 'Gra-ROBOCZA.html', query: '?skipMenuRedirect=1', label: 'Pe\u0142na gra ROBOCZA', note: 'Mapa, miasto, ekonomia, walka w grze \u2014 menu startowe pomini\u0119te', group: 'main' },
-  { file: 'Gra-ROBOCZA.html', query: '', label: 'Pe\u0142na gra (z menu)', note: 'Ten sam bundel \u2014 normalne menu g\u0142\u00f3wne', group: 'main' },
-  { file: 'Gra-ROBOCZA-PLAYTEST-MAPA.html', query: '', label: 'Playtest: mapa \u015bwiat', note: 'Auto-start sandboxu mapy', group: 'playtest' },
+  { file: 'Gra-ROBOCZA.html', query: '?skipMenuRedirect=1', label: 'Pełna gra ROBOCZA', note: 'Mapa, miasto, ekonomia, walka w grze — menu startowe pominięte', group: 'main' },
+  { file: 'Gra-ROBOCZA.html', query: '', label: 'Pełna gra (z menu)', note: 'Ten sam bundel — normalne menu główne', group: 'main' },
+  { file: 'Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html', query: '', label: 'Playtest: DUŻA bitwa (pole) — NOWE', note: 'Rzym 28 vs Grecja 28 — Hastati/Falanga + łucznicy + konnica na skrzydłach', group: 'playtest' },
+  { file: 'Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html', query: '', label: 'Playtest: DUŻE oblężenie (mur) — NOWE', note: 'Rzym 28 szturmuje Ateny (mur) — Grecja 28 + garnizon', group: 'playtest' },
+  { file: 'Gra-ROBOCZA-PLAYTEST-MAPA.html', query: '', label: 'Playtest: mapa świat', note: 'Auto-start sandboxu mapy', group: 'playtest' },
   { file: 'Gra-ROBOCZA-PLAYTEST-MIASTO.html', query: '', label: 'Playtest: miasto / ekonomia', note: 'Auto-start panelu miasta i bilansu', group: 'playtest' },
   { file: 'Gra-ROBOCZA-PLAYTEST-WALKA.html', query: '', label: 'Playtest: walka na mapie', note: 'Scenariusz preBattle + auto-walka', group: 'playtest' },
-  { file: 'Gra-ROBOCZA-PLAYTEST-ODSKOK.html', query: '', label: 'Playtest: odskok 3v3', note: 'Auto-walka \u2192 odskok obro\u0144c\u00f3w', group: 'playtest' },
-  { file: 'Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html', query: '', label: 'Playtest: odskok + obl\u0119\u017cenie', note: '3v3 z garnizonem w mie\u015bcie', group: 'playtest' },
-  { file: 'Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html', query: '', label: 'Playtest: obl\u0119\u017cenie 3v3', note: 'Scenariusz szturmu miasta', group: 'playtest' },
-  { file: 'Gra-ROBOCZA-POLE-BITWY.html', query: '', label: 'Pole bitwy / free battle', note: 'Osobny bundel (oblezenie/) \u2014 deploy, roster, HUD C-04', group: 'battle' },
+  { file: 'Gra-ROBOCZA-PLAYTEST-ODSKOK.html', query: '', label: 'Playtest: odskok 3v3', note: 'Auto-walka → odskok obrońców', group: 'playtest' },
+  { file: 'Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html', query: '', label: 'Playtest: odskok + oblężenie', note: '3v3 z garnizonem w mieście', group: 'playtest' },
+  { file: 'Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html', query: '', label: 'Playtest: oblężenie 3v3', note: 'Scenariusz szturmu miasta', group: 'playtest' },
 ];
 
 function bundleMeta(file) {
@@ -48,13 +49,12 @@ const rows = entries.map((e) => {
 
 const mainRow = rows.find((r) => r.group === 'main' && r.query === '?skipMenuRedirect=1');
 const mainMd5 = mainRow && !mainRow.meta.missing ? mainRow.meta.md5 : null;
-const generatedAt = new Date().toISOString().slice(0, 16).replace('T', ' ');
+const generatedAt = new Date().toLocaleString('sv-SE', { timeZone: 'Europe/Warsaw' }).slice(0, 16);
 const mainShort = mainMd5 ? mainMd5.slice(0, 8) : '????????';
 
 const groups = [
-  { id: 'main', title: 'Gra pe\u0142na' },
+  { id: 'main', title: 'Gra pełna' },
   { id: 'playtest', title: 'Playtesty (auto-start)' },
-  { id: 'battle', title: 'Pole bitwy' },
 ];
 
 let cards = '';
@@ -63,11 +63,11 @@ for (const g of groups) {
   for (const r of rows.filter((x) => x.group === g.id)) {
     const cls = r.meta.missing ? 'card missing' : 'card';
     const md5 = r.meta.missing ? 'BRAK PLIKU' : r.meta.md5.slice(0, 12);
-    const size = r.meta.missing ? '\u2014' : `${r.meta.sizeMb} MB`;
+    const size = r.meta.missing ? '—' : `${r.meta.sizeMb} MB`;
     cards += `    <a class="${cls}" href="${esc(r.href)}">
       <div class="card-title">${esc(r.label)}</div>
       <div class="card-note">${esc(r.note)}</div>
-      <div class="card-meta">${esc(r.href)} \u00b7 ${size} \u00b7 md5 ${md5}</div>
+      <div class="card-meta">${esc(r.href)} · ${size} · md5 ${md5}</div>
     </a>\n`;
   }
   cards += '  </section>\n';
@@ -78,7 +78,7 @@ const html = `<!DOCTYPE html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>The Game \u2014 START (ROBOCZA)</title>
+<title>The Game — START (ROBOCZA)</title>
 <style>
   :root { --bg:#0f1419; --panel:#1a2332; --gold:#d4af37; --text:#e8e4dc; --muted:#8a9bb0; --border:rgba(212,175,55,.25); }
   * { box-sizing:border-box; }
@@ -100,10 +100,25 @@ const html = `<!DOCTYPE html>
 </head>
 <body>
 <div class="wrap">
-  <h1>The Game \u2014 ROBOCZA</h1>
-  <p class="sub">Jedyny punkt wej\u015bcia do playtestu \u00b7 wygenerowano ${esc(generatedAt)} \u00b7 g\u0142\u00f3wny bundel <code>${mainShort}</code></p>
-  <div class="warn"><strong>Ctrl+F5</strong> po ka\u017cdym publishu. Nie testuj root <code>Gra-podglad.html</code> (stary kanon).</div>
-${cards}  <footer>Manifest: ROBOCZA-MANIFEST.json \u00b7 publish: tools/publish-robocza-bundle.ps1</footer>
+  <h1>The Game — ROBOCZA</h1>
+  <p class="sub">Jedyny punkt wejścia do playtestu · wygenerowano ${esc(generatedAt)} PL · główny bundel <code>${mainShort}</code></p>
+  <div class="warn"><strong>Ctrl+F5</strong> po każdym publishu. Nie testuj root <code>Gra-podglad.html</code> (stary kanon).</div>
+  <!-- KOMENDY-OBIEGU: stala sekcja panelu sterowania Macieja -->
+  <section>
+    <h2>LEGENDA — komendy obiegu (piszesz je czatom · pełny słownik: dyspozycje/KOMENDY.md)</h2>
+    <div class="card"><div class="card-title">start</div>
+      <div class="card-note">Wykonaj całą swoją kolejkę z kanału do końca; meldunki wpisami; na końcu wskaż następne ogniwo (CZEKAM-NA).</div></div>
+    <div class="card"><div class="card-title">master</div>
+      <div class="card-note">Zamelduj się do MASTERA WPISEM w kanale: co gotowe do wpięcia, co w toku, co blokuje. Bez wpisu w pliku komenda nie jest wykonana.</div></div>
+    <div class="card"><div class="card-title">raport</div>
+      <div class="card-note">Stan w 3 sekcjach: A = zrobione (A1, A2…), B = częściowo (B1…), C = wymaga działania (C1… + u kogo wisi) + „pierwszy ruch”.</div></div>
+    <div class="card"><div class="card-title">sprawdź</div>
+      <div class="card-note">Przeczytaj kanał teraz, zweryfikuj ostatni meldunek, powiedz co się zmieniło i kto następny.</div></div>
+    <div class="card"><div class="card-title">OK / BUG: opis</div>
+      <div class="card-note">Werdykt po playteście (do MASTERA). OK → pakiet do kanonu; BUG → MASTER robi z tego zadanie i wskazuje komu wpisać „start”.</div></div>
+    <div class="card-meta" style="margin-top:.4rem">Dzień w 3 słowach: MASTER „raport” → wskazany czat „start” → MASTER „sprawdź” → gra → „OK”/„BUG: …”. Kanał: dyspozycje/_handoff/KANAL-PRACA.md · wersje: dyspozycje/WERSJE.md</div>
+  </section>
+${cards}  <footer>Manifest: ROBOCZA-MANIFEST.json · publish: tools/publish-robocza-bundle.ps1</footer>
 </div>
 </body>
 </html>
@@ -136,4 +151,4 @@ const manifest = {
 };
 
 fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2), 'utf8');
-console.log('OK START hub + manifest', manifestBundles.length, 'bundles');
+console.log('OK START hub + manifest', manifestBundles.length, 'bundles + sekcja KOMENDY');

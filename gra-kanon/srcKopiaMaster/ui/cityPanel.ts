@@ -83,7 +83,13 @@ import { getEmpireFoodSplit, getEmpireFoodMaxCap } from '../game/empire-food';
 import type { CityManpowerSnapshot } from '../game/manpower';
 import { formatManpower } from '../game/manpower';
 import { defaultOwnerColor, mountUnitMiniPreview } from './unitMiniPreview';
-import { brandIconSvg, buildingIconSvg, unitIconSvg, type BrandIconSize } from './icons/brandAssets';
+import {
+  unitInfographicMedallionHtml,
+  unitInfographicSvg,
+  UNIT_INFOGRAPHIC_CSS,
+} from './unitInfographic';
+import { buildUnitRecruitCard, UNIT_RECRUIT_CARD_CSS } from './unitRecruitCard';
+import { brandIconSvg, buildingIconSvg, unitIconSvg, mapResourceIconSvg, type BrandIconSize } from './icons/brandAssets';
 import { ensureBrandRootTokens, CIV_BRAND_SCOPE_VARS } from './brandTokenVars';
 import {
   freshWealthState,
@@ -315,10 +321,15 @@ function moveQueueItem(prod: CityProduction, index: number, dir: -1 | 1): CityPr
 // Small helpers
 // ---------------------------------------------------------------------------
 
+const CP_EMOJI_DETECT =
+  /[\u{1F300}-\u{1FAFF}\u2600-\u27BF✓⚠★⚔⚖👤👥🍞🌾🔥💀😊⏱📈🛕🎭🏛🛠🛡]/u;
+
 function el<K extends keyof HTMLElementTagNameMap>(tag: K, cls?: string, html?: string): HTMLElementTagNameMap[K] {
   const n = document.createElement(tag);
   if (cls) n.className = cls;
-  if (html !== undefined) n.innerHTML = html;
+  if (html !== undefined) {
+    n.innerHTML = (cls?.includes('dc-h') || CP_EMOJI_DETECT.test(html)) ? cpInlineIcons(html) : html;
+  }
   return n;
 }
 function signed(n: number): string { return (n > 0 ? '+' : '') + String(n); }
@@ -728,10 +739,63 @@ function cityPanelChipIconWrap(id: string, size: BrandIconSize = 18): string {
   return ic ? `<span class="civ-cs-chip-ic-wrap">${ic}</span>` : '';
 }
 
+/** Emoji → brand SVG wraps in detail cards, notes, formulas (C1b). */
+const CP_INLINE_EMOJI_BRAND: Record<string, string> = {
+  '🔨': 'res-work',
+  '💰': 'res-treasury',
+  '🎭': 'res-culture',
+  '🛕': 'res-religion',
+  '👥': 'res-population',
+  '👤': 'chip-manpower',
+  '⚔': 'tb-army',
+  '🏛': 'cp-buildings',
+  '🛠': 'tb-build',
+  '📈': 'cp-trade',
+  '😊': 'chip-happiness',
+  '⏱': 'chip-map',
+  '🌾': 'chip-grain',
+  '✓': 'chip-star',
+  '⚠': 'chip-warning',
+  '🔥': 'chip-rebellion',
+  '💀': 'chip-death',
+  '⚖': 'cp-order',
+  '★': 'chip-star',
+  '🔒': 'ui-lock',
+  '🛡': 'chip-garrison',
+};
+
+function cpInlineIcons(text: string): string {
+  if (!text || (!CP_EMOJI_DETECT.test(text) && !text.includes('🍞'))) return text;
+  let out = text;
+  out = out.replace(/🍞/g, `<span class="civ-cs-inline-loaf">${loafIconHtml('civ-v-loaf-chip')}</span>`);
+  for (const [emoji, brandId] of Object.entries(CP_INLINE_EMOJI_BRAND)) {
+    const wrap = cityPanelChipIconWrap(brandId, 14);
+    if (wrap) out = out.split(emoji).join(wrap);
+  }
+  return out;
+}
+
+function setNoteHtml(note: HTMLElement, html: string): void {
+  note.style.fontStyle = 'normal';
+  note.innerHTML = cpInlineIcons(html);
+}
+
 function statChipBrand(iconId: string, label: string, value: string, cls: string): string {
   const ic = cityPanelChipIconWrap(iconId);
   const head = ic ? `${ic}<span>${label}</span>` : label;
   return `<span class="chip"><span class="cl">${head}</span><span class="cv ${cls}">${value}</span></span>`;
+}
+
+/** Chipy bilansu plonów (W4 / B-02) — zawsze SVG brand, bez emoji. */
+function plonyChipRowHtml(view: CityView): string {
+  const foodCls = view.zywnoscNetto > 0 ? 'green' : view.zywnoscNetto < 0 ? 'red' : 'gold';
+  return (
+    statChipBrand('res-food', 'Żyw.', signed(view.zywnoscNetto), foodCls) +
+    statChipBrand('res-work', 'Praca', signed(view.praca), 'gold') +
+    statChipBrand('res-treasury', 'Pieniądz', signed(view.pieniadz), 'blue') +
+    statChipBrand('res-science', 'Nauka', signed(view.nauka), 'blue') +
+    statChipBrand('res-culture', 'Kult.', signed(view.kultura), 'gold')
+  );
 }
 
 function pracaSplitBarLabelHtml(pctB: number, pctU: number, budAmt?: number, uleAmt?: number): string {
@@ -826,8 +890,21 @@ function ensureStyles(): void {
 .civ-cs .subhd{font-size:0.72em;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin:0.35em 0 0.2em;}
 .civ-cs .chip-row{display:flex;flex-wrap:wrap;gap:0.28em;align-items:center;}
 .civ-cs .handel-chip-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.32em;max-width:100%;margin-bottom:0.32em;}
-.civ-cs .handel-chip-grid .chip{display:flex;flex-direction:column;align-items:flex-start;gap:0.1em;padding:0.48em 0.58em;min-width:0;width:100%;box-sizing:border-box;border-radius:8px;border-color:rgba(232,216,138,0.18);background:rgba(255,255,255,0.02);}
+.civ-cs .handel-chip-grid .chip{display:flex;flex-direction:column;align-items:flex-start;gap:0.1em;padding:0.48em 0.58em;min-width:0;width:100%;box-sizing:border-box;border-radius:8px;border:1px solid rgba(232,216,138,0.18);background:rgba(255,255,255,0.02);}
+.civ-cs .handel-chip-grid .chip .cl{font-size:0.72em;color:#8a8070;letter-spacing:.02em;}
+.civ-cs .handel-chip-grid .chip .cv{font-size:0.82em;margin-top:0.04em;}
+.civ-cs .handel-chip-grid .handel-card-skarb{border-color:rgba(232,216,138,0.18);}
+.civ-cs .handel-chip-grid .handel-card-nauka{border-color:rgba(90,155,212,0.25);background:rgba(90,155,212,0.04);}
+.civ-cs .handel-chip-grid .handel-card-zam{border-color:rgba(232,216,138,0.18);}
 .civ-cs .handel-korupcja-chip{border-style:dashed;opacity:0.92;background:rgba(200,64,64,0.04)!important;border-color:rgba(200,64,64,0.25)!important;}
+.civ-cs .handel-w4-sliders{display:flex;flex-direction:column;gap:0.38em;max-width:100%;margin-top:0.12em;}
+.civ-cs .handel-w4-sliders .slider-row{margin-bottom:0;}
+.civ-cs .handel-w4-sliders .slider-row label{font-size:0.74em;margin-bottom:0.08em;}
+.civ-cs .handel-w4-sliders input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:8px;border-radius:5px;background:rgba(255,255,255,0.08);outline:none;}
+.civ-cs .handel-w4-sliders input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#f4e6a8,#a9861f);border:1px solid #6a5212;cursor:pointer;margin-top:0;}
+.civ-cs .handel-w4-sliders input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#f4e6a8,#a9861f);border:1px solid #6a5212;cursor:pointer;}
+.civ-cs .handel-w4-sliders .slider-nauka input[type=range]::-webkit-slider-thumb{background:radial-gradient(circle at 40% 35%,#8fb6e0,#3a5f8a);border-color:#26456a;}
+.civ-cs .handel-w4-sliders .slider-nauka input[type=range]::-moz-range-thumb{background:radial-gradient(circle at 40% 35%,#8fb6e0,#3a5f8a);border-color:#26456a;}
 .civ-tab-indicators{gap:0.28em!important;margin:0.28em 0 0.38em!important;flex-wrap:wrap;}
 .civ-tab-indicators .chip{font-size:0.72em;padding:0.24em 0.55em;border-radius:7px;border-color:rgba(232,216,138,0.25);}
 .civ-tab-indicators .cl{font-size:0.92em;color:#c8b898;}
@@ -903,14 +980,56 @@ function ensureStyles(): void {
 .civ-cs .food-split-g,.civ-cs .food-split-a{height:100%;min-width:0;flex-shrink:0;transition:width .12s ease;}
 .civ-cs .food-split-g{background:linear-gradient(90deg,#6a5018,#c89830);}
 .civ-cs .food-split-a{background:linear-gradient(90deg,#3a2830,#7a4048);}
-.civ-cs .food-split-range{width:100%;accent-color:var(--gold);height:0.55em;margin:0;cursor:pointer;opacity:0.9;}
+.civ-cs .food-split-range{width:100%;-webkit-appearance:none;appearance:none;height:8px;border-radius:5px;background:rgba(255,255,255,0.08);outline:none;margin:0.08em 0 0;cursor:pointer;}
+.civ-cs .food-split-range::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#f4e6a8,#a9861f);border:1px solid #6a5212;cursor:pointer;}
+.civ-cs .food-split-range::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#f4e6a8,#a9861f);border:1px solid #6a5212;cursor:pointer;}
 .civ-cs .food-split-labels{display:flex;justify-content:space-between;font-size:0.66em;color:var(--muted);margin-bottom:0.1em;}
-.civ-cs .praca-split-bar{display:flex;height:1.15em;background:#111518;border:1px solid var(--border);border-radius:2px;overflow:hidden;position:relative;}
-.civ-cs .praca-split-b,.civ-cs .praca-split-u{height:100%;min-width:0;flex-shrink:0;transition:width .12s ease;}
-.civ-cs .praca-split-b{background:linear-gradient(90deg,#6a5018,var(--gold));}
-.civ-cs .praca-split-u{background:linear-gradient(90deg,#2a5080,var(--blue));}
+.civ-cs .praca-split-bar{display:flex;height:26px;background:rgba(255,255,255,0.08);border:1px solid rgba(232,216,138,0.18);border-radius:7px;overflow:hidden;position:relative;margin-bottom:0.38em;}
+.civ-cs .praca-split-b{background:linear-gradient(90deg,#a08030,#e8d88a);display:flex;align-items:center;justify-content:center;font-size:0.72em;color:#2e2708;font-weight:700;}
+.civ-cs .praca-split-u{background:linear-gradient(90deg,#3a6ad0,#5a9bd4);display:flex;align-items:center;justify-content:center;font-size:0.72em;color:#08121e;font-weight:700;}
+.civ-cs .praca-w4-sliders{margin:0.08em 0 0.32em;}
+.civ-cs .praca-w4-sliders input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:8px;border-radius:5px;background:rgba(255,255,255,0.08);outline:none;}
+.civ-cs .praca-w4-sliders input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#f4e6a8,#a9861f);border:1px solid #6a5212;cursor:pointer;}
+.civ-cs .praca-w4-sliders input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#f4e6a8,#a9861f);border:1px solid #6a5212;cursor:pointer;}
+.civ-cs .civ-w4-order-banner{display:flex;align-items:center;justify-content:center;gap:0.55em;margin-top:0.42em;padding:0.68em 0.75em;border-radius:9px;font-size:0.82em;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;}
+.civ-cs .civ-w4-order-banner.ok{color:#7ad0a0;border:1px solid rgba(74,158,106,0.45);background:rgba(74,158,106,0.08);}
+.civ-cs .civ-w4-order-banner.warn{color:#e0a860;border:1px solid rgba(224,168,96,0.4);background:rgba(224,168,96,0.08);}
+.civ-cs .civ-w4-order-banner.crit{color:#ff8888;border:1px solid rgba(255,80,80,0.45);background:rgba(211,50,50,0.12);}
+.civ-cs .civ-w4-order-banner.rebel{color:#e08a8a;border:1px solid rgba(200,64,64,0.45);background:rgba(200,64,64,0.1);}
+.civ-cs .civ-breakdown-block .or-bar{height:8px;border-radius:5px;background:rgba(255,255,255,0.08);border:none;margin:0.12em 0 0.22em;}
 .civ-cs .praca-split-bar .fbtxt{pointer-events:none;z-index:1;}
-.civ-cs .praca-split-range{width:100%;accent-color:var(--gold);height:0.55em;margin:0.28em 0 0.08em;cursor:pointer;opacity:0.85;}
+.civ-cs .civ-w4-tab-card{border:2px solid rgba(232,216,138,.42);border-radius:14px;overflow:hidden;
+  background:linear-gradient(180deg,rgba(18,24,32,.97),rgba(8,10,16,.97));box-shadow:0 14px 36px rgba(0,0,0,.6);
+  width:100%;max-width:24em;}
+.civ-cs .civ-w4-tab-body{padding:0 0.85em 0.55em;}
+.civ-cs .civ-w4-tab-body .ptitle{margin:0 -0.85em 0.38em;padding-left:0.85em;padding-right:0.85em;width:calc(100% + 1.7em);}
+.civ-cs .civ-w4-tab-body > .panel,.civ-cs .civ-w4-tab-body > div.panel{border:none;border-radius:0;background:transparent;box-shadow:none;padding:0 0 0.12em;}
+.civ-cs .civ-w4-tab-body .ptitle{margin:0;border-radius:0;}
+.civ-cs .civ-w4-tab-foot{border-top:1px solid rgba(232,216,138,.16);background:rgba(255,255,255,.015);}
+.civ-cs .civ-w4-tab-foot .civ-w4-surowce-foot{border:none;border-radius:0;background:transparent;padding:0.55em 0.85em;margin:0;}
+.civ-cs .civ-w4-subhd{font-size:0.68em;letter-spacing:.14em;text-transform:uppercase;color:#a08030;margin-bottom:0.22em;
+  display:flex;justify-content:space-between;align-items:baseline;gap:0.35em;}
+.civ-cs .civ-w4-subhd-pct{color:#e8e0c8;font-weight:600;letter-spacing:normal;text-transform:none;flex-shrink:0;}
+.civ-cs .civ-w4-pct-bar{height:8px;border-radius:5px;background:rgba(255,255,255,.08);overflow:hidden;margin-bottom:0.28em;}
+.civ-cs .civ-w4-pct-fill{height:100%;border-radius:5px;}
+.civ-cs .civ-w4-inline-breakdown{font-size:0.74em;line-height:1.65;margin-bottom:0.55em;}
+.civ-cs .civ-w4-inline-breakdown.pos{color:#7ad0a0;}
+.civ-cs .civ-w4-inline-breakdown.neg{color:#e08a8a;}
+.civ-cs .civ-w4-inline-breakdown.muted{color:#8a8070;font-style:italic;}
+.civ-cs .civ-w4-section-hd{font-size:0.68em;letter-spacing:.14em;text-transform:uppercase;color:#a08030;
+  margin:0.55em 0 0.38em;padding-top:0.35em;border-top:1px solid rgba(232,216,138,.12);}
+.civ-cs .unit-w4-card{display:flex;align-items:center;gap:0.55em;border:1px solid rgba(232,216,138,.18);border-radius:8px;
+  padding:0.55em 0.65em;margin-bottom:0.38em;background:rgba(255,255,255,.02);}
+.civ-cs .unit-w4-card .unit-w4-thumb{width:2.75em;height:2.75em;flex:none;border-radius:8px;border:1px solid rgba(232,216,138,.28);
+  background:radial-gradient(circle at 38% 30%,#1a2230,#0a0d14);display:flex;align-items:center;justify-content:center;overflow:hidden;}
+.civ-cs .unit-w4-card .unit-w4-thumb .unit-infographic-medallion{width:100%;height:100%;border:none;border-radius:8px;}
+.civ-cs .unit-w4-card .unit-w4-thumb svg{width:1.35em;height:1.35em;display:block;}
+.civ-cs .unit-w4-card .unit-w4-body{flex:1;min-width:0;}
+.civ-cs .unit-w4-card .unit-w4-name{font-size:0.84em;font-weight:600;color:#e8e0c8;line-height:1.2;}
+.civ-cs .unit-w4-card .unit-w4-cost{font-size:0.7em;color:#8a8070;margin-top:0.12em;display:flex;align-items:center;gap:0.25em;}
+.civ-cs .unit-w4-scroll{max-height:calc(${RECRUIT_QUEUE_VISIBLE} * 4.6em);overflow-y:auto;scrollbar-width:thin;padding-right:0.1em;}
+.civ-cs .civ-w4-tab-body .civ-breakdown-block .subhd{font-size:0.68em;letter-spacing:.14em;text-transform:uppercase;color:#a08030;}
+.civ-cs .civ-w4-tab-body .civ-breakdown-block .muted{font-size:0.68em;letter-spacing:.1em;text-transform:uppercase;color:#8a8070;}
 .civ-cs .picon{width:3.4em;height:3.4em;border:2px solid var(--gold);border-radius:4px;background:var(--panel2);display:flex;align-items:center;justify-content:center;font-size:1.9em;flex-shrink:0;}
 .civ-cs .qitem{background:var(--panel2);border:1px solid var(--border);border-radius:3px;padding:0.1em 0.45em;font-size:0.8em;display:flex;align-items:center;gap:0.25em;}
 .civ-cs .hpb{height:0.4em;background:var(--panel2);border:1px solid var(--border);border-radius:2px;overflow:hidden;margin-top:0.15em;}
@@ -1018,6 +1137,20 @@ function ensureStyles(): void {
 .civ-cs .praca-split-chips{margin:0.28em 0 0.12em;}
 .civ-cs .civ-cs-chip-ic-wrap{display:inline-flex;align-items:center;vertical-align:middle;margin-right:0.1em;}
 .civ-cs .civ-cs-chip-ic{width:1em;height:1em;color:var(--gold);flex-shrink:0;}
+.civ-cs .civ-cs-inline-loaf{display:inline-flex;align-items:center;vertical-align:middle;margin-right:0.06em;}
+.civ-cs .civ-cs-inline-loaf .civ-v-loaf-ic{width:0.9em;height:0.95em;}
+.civ-detail-scope .detail-card .dc-v .civ-cs-chip-ic-wrap,
+.civ-detail-scope .detail-card .dc-note .civ-cs-chip-ic-wrap,
+.civ-detail-scope .detail-card .dc-formula .civ-cs-chip-ic-wrap,
+.civ-detail-scope .detail-card .dc-section .civ-cs-chip-ic-wrap,
+.civ-detail-scope .detail-card .dc-algo-step .civ-cs-chip-ic-wrap,
+.civ-cs .detail-card .dc-v .civ-cs-chip-ic-wrap,
+.civ-cs .detail-card .dc-note .civ-cs-chip-ic-wrap,
+.civ-cs .detail-card .dc-formula .civ-cs-chip-ic-wrap,
+.civ-cs .detail-card .dc-section .civ-cs-chip-ic-wrap,
+.civ-cs .detail-card .dc-algo-step .civ-cs-chip-ic-wrap,
+.civ-cs .or-status .civ-cs-chip-ic-wrap,
+.civ-cs .or-status .civ-cs-inline-loaf{display:inline-flex;align-items:center;vertical-align:middle;margin-right:0.08em;}
 .civ-cs .praca-split-bar .fbtxt{display:flex;align-items:center;justify-content:center;gap:0.08em;flex-wrap:wrap;}
 .civ-cs .praca-split-info .psi-lbl{display:inline-flex;align-items:center;gap:0.12em;}
 .civ-cs .chip .cl{display:inline-flex;align-items:center;gap:0.1em;}
@@ -1226,6 +1359,26 @@ function ensureStyles(): void {
 .civ-cs .bld-catalog-scroll{max-height:calc(${LIST_SCROLL_VISIBLE} * 3.4em);overflow-y:auto;scrollbar-width:thin;padding-right:0.1em;}
 .civ-cs .bld-catalog-scroll::-webkit-scrollbar{width:5px;}
 .civ-cs .bld-catalog-scroll::-webkit-scrollbar-thumb{background:var(--bord2);border-radius:3px;}
+.civ-cs .bld-infocard-wrap{margin-bottom:0.55em;}
+.civ-cs .bld-infocard{border:2px solid rgba(232,216,138,.4);border-radius:14px;overflow:hidden;background:linear-gradient(180deg,rgba(20,26,34,.98),rgba(8,10,16,.98));box-shadow:0 8px 24px rgba(0,0,0,.35);}
+.civ-cs .bld-infocard.is-catalog-locked{opacity:.78;}
+.civ-cs .bld-infocard-hd{padding:0.72em 0.85em;display:flex;align-items:center;gap:0.65em;border-bottom:1px solid rgba(232,216,138,.16);}
+.civ-cs .bld-infocard-ic{width:2.4em;height:2.4em;flex:none;border-radius:9px;border:1px solid #a08030;background:radial-gradient(circle at 38% 30%,#1a2230,#0a0d14);display:flex;align-items:center;justify-content:center;color:var(--gold);}
+.civ-cs .bld-infocard-ic .mini-thumb{width:100%;height:100%;border:none;background:transparent;}
+.civ-cs .bld-infocard-title{font-family:Georgia,serif;font-size:1.05em;color:#e8e0c8;line-height:1.15;font-weight:600;}
+.civ-cs .bld-infocard-cat{display:inline-flex;margin-top:0.28em;font-size:0.58em;letter-spacing:.1em;text-transform:uppercase;color:#0f1218;background:#c8b070;padding:0.18em 0.45em;border-radius:5px;}
+.civ-cs .bld-infocard-bd{padding:0.62em 0.85em 0.72em;display:flex;flex-direction:column;gap:0.45em;}
+.civ-cs .bld-infocard-chips{display:flex;flex-wrap:wrap;gap:0.35em;}
+.civ-cs .bld-infocard-chip{display:inline-flex;align-items:center;gap:0.28em;font-size:0.68em;color:#c8b898;border:1px solid rgba(232,216,138,.25);border-radius:20px;padding:0.22em 0.52em;}
+.civ-cs .bld-infocard-upg{display:flex;align-items:center;gap:0.42em;padding:0.42em 0.52em;background:rgba(232,216,138,.07);border:1px solid rgba(232,216,138,.22);border-radius:9px;font-size:0.68em;color:#d8cca8;}
+.civ-cs .bld-infocard-ft{display:flex;align-items:center;justify-content:space-between;padding-top:0.42em;border-top:1px solid rgba(232,216,138,.12);font-size:0.62em;color:#8a8478;}
+.civ-cs .bld-infocard-era{display:inline-flex;align-items:center;gap:0.35em;letter-spacing:.06em;text-transform:uppercase;color:#b7a06a;}
+.civ-cs .bld-infocard-era-dot{width:7px;height:7px;border-radius:50%;background:#c8b070;flex-shrink:0;}
+.civ-cs .bld-infocard-actions{display:flex;align-items:center;justify-content:space-between;gap:0.35em;margin-top:0.12em;flex-wrap:wrap;}
+.civ-cs .bld-infocard-cost{font-size:0.68em;color:var(--muted);}
+.civ-cs .bld-infocard-lock{font-size:0.68em;color:#d36b5e;line-height:1.35;}
+${UNIT_INFOGRAPHIC_CSS}
+${UNIT_RECRUIT_CARD_CSS}
 .civ-cs .item-wrap{margin-bottom:0.05em;}
 .civ-cs .detail-card{margin:0.08em 0 0.22em 0.2em;padding:0.38em 0.48em;background:rgba(0,0,0,0.28);
   border:1px solid var(--bord2);border-left:3px solid var(--gold);border-radius:4px;font-size:0.74em;line-height:1.38;}
@@ -1573,51 +1726,49 @@ function renderSpoleczenstwo(mount: HTMLElement, city: City, data: GameData): vo
   }
   appendTabIndicators(mount, orderChips);
 
-  appendPctBreakdownBlock(
+  appendW4PctMetricBlock(
     mount,
     pctSubheadHtml('chip-heart', 'Szczęście'),
     state.szPct,
-    'var(--gold)',
+    'linear-gradient(90deg,#3a8a5a,#7ad0a0)',
     state.szLines,
     'Brak składników wpływających na szczęście.',
   );
-  appendPctBreakdownBlock(
+  appendW4PctMetricBlock(
     mount,
     pctSubheadHtml('tb-army', 'Prawo'),
     state.prawPct,
-    'var(--green)',
+    'linear-gradient(90deg,#3a8a5a,#7ad0a0)',
     state.prawLines,
     'Brak składników wpływających na prawo.',
   );
 
-  const porBlock = el('div', 'civ-breakdown-block');
-  const porSub = el('div', 'subhd');
-  porSub.innerHTML = pctSubheadHtml('cp-order', 'Porządek łącznie');
-  porBlock.appendChild(porSub);
-  const porRow = el('div', 'or-r');
-  porRow.innerHTML = `<span class="or-l">${bandName}</span><span><b>${Math.round(por)}%</b></span>`;
-  porBlock.appendChild(porRow);
-  const porBar = el('div', 'or-bar');
-  const porFill = el('div', 'or-fill');
-  porFill.style.width = `${Math.max(0, Math.min(100, por))}%`;
-  porFill.style.background = 'var(--gold)';
-  porBar.appendChild(porFill);
-  porBlock.appendChild(porBar);
-  if (state.revoltWarning && state.revoltGraceRemaining != null) {
-    const st = el('div', 'or-status crit');
-    st.textContent = `⚠ Grozi bunt! ${state.revoltGraceRemaining} tur(y) na reakcję`;
-    porBlock.appendChild(st);
-  } else if (state.rebelState) {
-    const st = el('div', 'or-status t2');
-    st.textContent = 'Rebelia — miasto pod kontrolą rebeliantów';
-    porBlock.appendChild(st);
-  } else {
-    const tn = orderTierUi(state);
-    const st = el('div', `or-status ${tn === 0 ? 'ok' : tn === 1 ? 't1' : 't2'}`);
-    st.textContent = (tn === 0 ? '✓ ' : tn === 1 ? '⚠ ' : '🔥 ') + bandName;
-    porBlock.appendChild(st);
-  }
-  mount.appendChild(porBlock);
+  appendW4PctMetricBlock(
+    mount,
+    pctSubheadHtml('cp-order', 'Porządek łącznie'),
+    por,
+    'linear-gradient(90deg,#a08030,#e8d88a)',
+    undefined,
+    '',
+    (porBlock) => {
+      if (state.revoltWarning && state.revoltGraceRemaining != null) {
+        const st = el('div', 'civ-w4-order-banner crit');
+        st.innerHTML = `${cityPanelChipIconWrap('chip-warning', 16)}<span>Grozi bunt · ${state.revoltGraceRemaining} tur</span>`;
+        porBlock.appendChild(st);
+      } else if (state.rebelState) {
+        const st = el('div', 'civ-w4-order-banner rebel');
+        st.innerHTML = `${cityPanelChipIconWrap('chip-rebellion', 16)}<span>Rebelia aktywna</span>`;
+        porBlock.appendChild(st);
+      } else {
+        const tn = orderTierUi(state);
+        const cls = tn === 0 ? 'ok' : 'warn';
+        const ic = tn === 0 ? 'chip-star' : 'chip-warning';
+        const st = el('div', `civ-w4-order-banner ${cls}`);
+        st.innerHTML = `${cityPanelChipIconWrap(ic, 16)}<span>${bandName}</span>`;
+        porBlock.appendChild(st);
+      }
+    },
+  );
 }
 
 function buildPorzadekDetailCard(city: City, state: OrderState): HTMLDivElement {
@@ -1706,14 +1857,15 @@ function buildPorzadekDetailCard(city: City, state: OrderState): HTMLDivElement 
   appendDetailSection(card, 'Szybkie działania (gdy spada Porządek)');
   const actions = el('div', 'dc-note');
   actions.style.fontStyle = 'normal';
-  actions.innerHTML =
+  actions.innerHTML = cpInlineIcons(
     `<b>Podnieś Szczęście:</b> przesuń suwak handlu na <b>${HANDEL_ZAMOZNOSC_LABEL}</b> ` +
     `(obecnie ${podzial.procentLuksus}% — im wyżej, tym więcej zamożności z handlu zamiast skarbca/nauki). ` +
     'Długoterminowo: Teatr, Łaźnia, wyższe W.<br><br>' +
     `<b>Podnieś Prawo:</b> stacjonuj wojsko w mieście (obecnie ${gCount} jedn. w garnizonie) ` +
     'lub buduj Ratusz / Pretorium / Sąd.<br><br>' +
     '<span class="muted">Kompromis: więcej zamożności = mniej 💰 i nauki teraz, ale spokojniejsze miasto. ' +
-    'Wojsko w mieście = wyższe Prawo, ale koszt utrzymania armii.</span>';
+    'Wojsko w mieście = wyższe Prawo, ale koszt utrzymania armii.</span>',
+  );
   card.appendChild(actions);
 
   appendDetailAlgo(card, 'Co robi silnik co turę', [
@@ -1742,7 +1894,7 @@ function renderZdrowie(mount: HTMLElement, city: City, map: GameMap, data: GameD
   const healthChips: TabIndicatorChip[] = [
     {
       icon: cityPanelChipIcon('cp-health', 14),
-      label: 'Razem',
+      label: '= Razem',
       value: signed(total),
       cls: total >= 5 ? 'green' : total >= 0 ? 'gold' : 'red',
     },
@@ -1750,7 +1902,7 @@ function renderZdrowie(mount: HTMLElement, city: City, map: GameMap, data: GameD
     { icon: cityPanelChipIcon('chip-death', 14), label: 'Minusy', value: String(negSum), cls: negSum < 0 ? 'red' : 'muted' },
   ];
   appendTabIndicators(mount, healthChips);
-  appendSignedBreakdownSections(
+  appendW4SignedBreakdownSections(
     mount,
     pctSubheadHtml('chip-heart', 'Składniki zdrowia'),
     lines,
@@ -1773,8 +1925,8 @@ function buildZdrowieDetailCard(
   card.appendChild(intro);
   appendDetailSection(card, 'Podsumowanie');
   const g = appendDetailGrid(card);
-  gridDetailRow(g, 'Bonusy ♥', `${posSum >= 0 ? '+' + posSum : posSum}`);
-  gridDetailRow(g, 'Kary 💀', String(negSum));
+  gridDetailRow(g, 'Plusy', `${posSum >= 0 ? '+' + posSum : posSum}`);
+  gridDetailRow(g, 'Minusy', String(negSum));
   gridDetailRow(g, 'Razem', `${total >= 0 ? '+' + total : total}`);
   if (lines.length > 0) {
     appendDetailSection(card, 'Składniki');
@@ -1906,38 +2058,56 @@ function buildSurowceDetailCard(
   return card;
 }
 
+/**
+ * Czy etykieta to surowiec mapy (ma dedykowaną ikonę res-* w resources-map/).
+ * Reskin A-08: surowce mapy renderujemy przez mapResourceIconSvg, nie generyki.
+ */
+function isMapResourceLabel(n: string): boolean {
+  return (
+    n.includes('byd') || n.includes('glin') || n.includes('ceg') ||
+    n.includes('koń') || n.includes('kon') || n.includes('horse') ||
+    n.includes('sól') || n.includes('sol') || n.includes('salt') ||
+    n.includes('drewn') || n.includes('las') ||
+    n.includes('kamie') || n.includes('kamien') ||
+    n.includes('ruda') || n.includes('braz') || n.includes('brąz') ||
+    n.includes('żelaz') || n.includes('zelaz') ||
+    n.includes('złot') || n.includes('zlot') ||
+    n.includes('owc') || n.includes('lama') ||
+    n.includes('węgiel') || n.includes('wegiel') || n.includes('miedz') || n.includes('stal')
+  );
+}
+
 function resourceBrandKey(nazwa: string): string | null {
   const n = nazwa.toLowerCase();
   if (n.includes('byd')) return 'res-cattle';
   if (n.includes('glin') || n.includes('ceg')) return 'res-clay';
   if (n.includes('koń') || n.includes('kon') || n.includes('horse')) return 'res-horses';
   if (n.includes('sól') || n.includes('sol') || n.includes('salt')) return 'res-salt';
-  return null;
-}
-
-function resourceIconEmoji(nazwa: string): string {
-  const n = nazwa.toLowerCase();
-  if (n.includes('drewn')) return '\u{1FAB5}';
-  if (n.includes('kamie') || n.includes('kamien')) return '\u{1FAA8}';
-  if (n.includes('ruda') || n.includes('braz')) return '\u2699\uFE0F';
-  if (n.includes('owc')) return '\u{1F411}';
-  return '\u{1F4E6}';
+  if (n.includes('drewn')) return 'chip-crate';
+  if (n.includes('kamie') || n.includes('kamien')) return 'tb-build';
+  if (n.includes('ruda') || n.includes('braz')) return 'res-work';
+  if (n.includes('owc')) return 'res-cattle';
+  return 'chip-crate';
 }
 
 function resourceBrandIconHtml(nazwa: string): string {
-  const key = resourceBrandKey(nazwa);
-  if (key) {
-    const svg = brandIconSvg(key, 24);
-    if (svg) {
-      const sized = svg.replace('<svg ', '<svg width="18" height="18" ');
-      return `<span class="civ-w4-res-ic">${sized}</span>`;
-    }
+  const n = nazwa.toLowerCase();
+  // Surowce mapy → dedykowana ikona res-* (resources-map/), reskin z generyków.
+  if (isMapResourceLabel(n)) {
+    const mapSvg = mapResourceIconSvg(nazwa, 18);
+    if (mapSvg) return `<span class="civ-w4-res-ic">${mapSvg}</span>`;
   }
-  return `<span class="civ-w4-res-ic" style="font-size:1em;line-height:1">${resourceIconEmoji(nazwa)}</span>`;
+  const key = resourceBrandKey(nazwa) ?? 'chip-crate';
+  const svg = brandIconSvg(key, 24);
+  if (svg) {
+    const sized = svg.replace('<svg ', '<svg width="18" height="18" ');
+    return `<span class="civ-w4-res-ic">${sized}</span>`;
+  }
+  return `<span class="civ-w4-res-ic">${cityPanelChipIcon('chip-crate', 18)}</span>`;
 }
 
 function resourceIcon(nazwa: string): string {
-  return resourceIconEmoji(nazwa);
+  return resourceBrandIconHtml(nazwa);
 }
 
 function renderImperiumZywnosc(mount: HTMLElement, _city: City): void {
@@ -2077,7 +2247,7 @@ function renderKultura(mount: HTMLElement, city: City, view: CityView | null): v
   const cultChips: TabIndicatorChip[] = [
     {
       icon: cityPanelChipIcon('res-culture', 14),
-      label: '',
+      label: 'Przyrost',
       value: signed(Math.round(kultPerTurn)),
       cls: kultPerTurn > 0 ? 'gold' : 'muted',
     },
@@ -2091,19 +2261,26 @@ function renderKultura(mount: HTMLElement, city: City, view: CityView | null): v
       const remain = next - cultState.kulturaSuma;
       const etaC = Math.max(1, Math.ceil(remain / cultState.przyrost));
       cultChips.push({
-        icon: '⏱',
+        icon: cityPanelChipIcon('chip-map', 14),
         label: 'Progi',
         value: `~${etaC} ${tury(etaC)}`,
         cls: 'gold',
-        title: `Do kolejnego progu (${next} 🎭)`,
+        title: `Do kolejnego progu (${next} ${cityPanelChipIcon('res-culture', 14)})`,
       });
     }
     cultChips.push({
       icon: cityPanelChipIcon('chip-map', 14),
       label: 'Zasięg',
       value: `+${cultState.borderRadius}`,
-      cls: 'blue',
+      cls: 'green',
       title: 'Promień granic z kultury',
+    });
+  } else if (view && view.kultura !== 0) {
+    cultChips.push({
+      icon: cityPanelChipIcon('res-culture', 14),
+      label: 'Zasięg',
+      value: signed(view.kultura),
+      cls: 'gold',
     });
   }
 
@@ -2113,7 +2290,7 @@ function renderKultura(mount: HTMLElement, city: City, view: CityView | null): v
   if (kultLines.length === 0 && view && view.kultura !== 0) {
     kultLines.push({ label: 'Przyrost z miasta', value: view.kultura });
   }
-  appendSignedBreakdownSections(
+  appendW4SignedBreakdownSections(
     mount,
     pctSubheadHtml('res-culture', 'Kultura — składniki'),
     kultLines,
@@ -2135,13 +2312,13 @@ function renderKultura(mount: HTMLElement, city: City, view: CityView | null): v
     track.style.borderColor = '#503080';
     track.innerHTML =
       `<div class="food-grow-fill" style="width:${pct}%;background:linear-gradient(180deg,#c070ff,#6030a0);"></div>` +
-      `<span class="food-grow-loaf" aria-hidden="true">🎭</span>`;
+      `<span class="food-grow-loaf" aria-hidden="true">${cityPanelChipIconWrap('res-culture', 14)}</span>`;
     block.appendChild(track);
 
     const pair = el('div', 'food-stat-pair');
     const statK = el('div', 'food-stat');
     statK.innerHTML =
-      `<span class="food-stat-lbl">🎭 Kultura</span>` +
+      `<span class="food-stat-lbl">${cityPanelChipIconWrap('res-culture', 14)} Kultura</span>` +
       `<span class="food-stat-val gold">${cultState.kulturaSuma}${next !== undefined ? ` / ${next}` : ''}</span>`;
     const statG = el('div', 'food-stat');
     statG.style.textAlign = 'right';
@@ -2155,7 +2332,7 @@ function renderKultura(mount: HTMLElement, city: City, view: CityView | null): v
   } else {
     const kult = view ? view.kultura : 0;
     const row = el('div', 'rsb');
-    row.innerHTML = `<span class="gold">🎭 ${signed(kult)}</span><span class="muted">podgląd</span>`;
+    row.innerHTML = `<span class="gold">${cityPanelChipIconWrap('res-culture', 14)} ${signed(kult)}</span><span class="muted">podgląd</span>`;
     mount.appendChild(row);
   }
 }
@@ -2172,7 +2349,7 @@ function renderReligia(mount: HTMLElement, city: City, view: CityView | null): v
     () => {
       if (view) return buildTopBarReligiaDetailCard(city, view, empire, data);
       const card = el('div', 'detail-card');
-      card.appendChild(el('div', 'dc-h', '<span>🛕 Religia — szczegóły</span>'));
+      card.appendChild(el('div', 'dc-h', `<span>${cityPanelChipIconWrap('res-religion', 14)} Religia — szczegóły</span>`));
       if (relState) {
         const g = appendDetailGrid(card);
         gridDetailRow(g, 'Dominująca', relState.dominujaca);
@@ -2188,14 +2365,14 @@ function renderReligia(mount: HTMLElement, city: City, view: CityView | null): v
   const relChips: TabIndicatorChip[] = [];
   if (relState) {
     relChips.push({
-      icon: '🛕',
+      icon: cityPanelChipIcon('res-religion', 14),
       label: shortIndLabel(relState.dominujaca, 12),
       value: `${relState.udzialPct}%`,
       cls: 'gold',
       title: relState.dominujaca,
     });
     relChips.push({
-      icon: '😊',
+      icon: cityPanelChipIcon('chip-happiness', 14),
       label: 'Sz',
       value: `${relState.wplywSzczescie >= 0 ? '+' : ''}${relState.wplywSzczescie}`,
       cls: relState.wplywSzczescie >= 0 ? 'green' : 'red',
@@ -2211,7 +2388,7 @@ function renderReligia(mount: HTMLElement, city: City, view: CityView | null): v
     }
   } else if (empire.stateReligion) {
     relChips.push({
-      icon: '🛕',
+      icon: cityPanelChipIcon('res-religion', 14),
       label: 'Państwo',
       value: shortIndLabel(empire.stateReligion, 14),
       cls: 'gold',
@@ -2229,21 +2406,20 @@ function renderReligia(mount: HTMLElement, city: City, view: CityView | null): v
       relLines.push({ label: 'Szerzenie wiernych', value: relState.przyrostWiernych });
     }
   }
-  appendSignedBreakdownSections(
+  appendW4SignedBreakdownSections(
     mount,
-    '🛕 Religia — składniki',
+    pctSubheadHtml('res-religion', 'Religia — składniki'),
     relLines,
     'Brak rozpisanych składników religii w tym mieście.',
   );
 
   if (relState) {
-    const sum = el('div', 'rsb');
-    sum.style.cssText = 'margin-top:0.28em;font-size:0.82em;';
+    const sum = el('div', 'rsb civ-w4-rel-summary');
+    sum.style.cssText = 'margin-top:0.35em;font-size:0.82em;display:flex;justify-content:space-between;align-items:center;gap:0.35em;flex-wrap:wrap;';
     const szCls = relState.wplywSzczescie >= 0 ? 'green' : 'red';
     sum.innerHTML =
-      `<span>🛕 <b class="gold">${relState.dominujaca}</b></span>` +
-      `<span class="muted"> · ${relState.udzialPct}%</span>` +
-      `<span class="${szCls} val"> · Sz ${relState.wplywSzczescie >= 0 ? '+' : ''}${relState.wplywSzczescie}</span>`;
+      `<span style="color:#e8e0c8;">${relState.dominujaca} / kult państwa</span>` +
+      `<span class="${szCls} val">${relState.udzialPct}% · ${relState.wplywSzczescie >= 0 ? '+' : ''}${relState.wplywSzczescie}</span>`;
     mount.appendChild(sum);
   }
 }
@@ -2378,6 +2554,94 @@ function appendSignedBreakdownSections(
   mount.appendChild(block);
 }
 
+/** Rozpiska +/- w stylu W4 v2 (Zdrowie · Kultura · Religia). */
+function appendW4SignedBreakdownSections(
+  mount: HTMLElement,
+  titleHtml: string,
+  lines: BreakdownLine[],
+  emptyHint: string,
+): void {
+  const pos = lines.filter(l => l.value > 0);
+  const neg = lines.filter(l => l.value < 0);
+  const zero = lines.filter(l => l.value === 0);
+  const block = el('div', 'civ-breakdown-block');
+  const sub = el('div', 'civ-w4-subhd');
+  if (titleHtml.includes('<')) sub.innerHTML = titleHtml;
+  else sub.textContent = titleHtml;
+  block.appendChild(sub);
+  if (lines.length === 0) {
+    const empty = el('div', 'civ-w4-inline-breakdown');
+    empty.innerHTML = `<span class="muted">${emptyHint}</span>`;
+    block.appendChild(empty);
+  } else {
+    if (pos.length > 0) {
+      const plusHd = el('div', 'muted');
+      plusHd.style.cssText = 'font-size:0.68em;margin:0.08em 0 0.1em;text-transform:uppercase;letter-spacing:0.1em;';
+      plusHd.textContent = 'Na plus';
+      block.appendChild(plusHd);
+      appendBreakdownLines(block, pos, '');
+    }
+    if (neg.length > 0) {
+      const minusHd = el('div', 'muted');
+      minusHd.style.cssText = 'font-size:0.68em;margin:0.22em 0 0.1em;text-transform:uppercase;letter-spacing:0.1em;';
+      minusHd.textContent = 'Na minus';
+      block.appendChild(minusHd);
+      appendBreakdownLines(block, neg, '');
+    }
+    if (zero.length > 0) {
+      appendBreakdownLines(block, zero, '');
+    }
+  }
+  mount.appendChild(block);
+}
+
+function formatW4InlineBreakdown(lines: BreakdownLine[] | undefined, emptyHint: string): string {
+  if (!lines || lines.length === 0) {
+    return `<span class="muted">${emptyHint}</span>`;
+  }
+  return lines.map(l => {
+    const cls = l.value >= 0 ? 'pos' : 'neg';
+    return `<span class="${cls}">${l.label}: ${l.value >= 0 ? '+' : ''}${l.value}</span>`;
+  }).join(' · ');
+}
+
+/** Pasek procentowy W4 v2 (Szczęście / Prawo / Porządek) — mockup 1E. */
+function appendW4PctMetricBlock(
+  mount: HTMLElement,
+  titleHtml: string,
+  pct: number | undefined,
+  barGradient: string,
+  lines: BreakdownLine[] | undefined,
+  emptyHint: string,
+  afterBar?: (block: HTMLElement) => void,
+): void {
+  const block = el('div', 'civ-breakdown-block civ-w4-metric');
+  const sub = el('div', 'civ-w4-subhd');
+  if (pct != null) {
+    sub.innerHTML = `${titleHtml}<span class="civ-w4-subhd-pct">${Math.round(pct)}%</span>`;
+  } else if (titleHtml.includes('<')) {
+    sub.innerHTML = titleHtml;
+  } else {
+    sub.textContent = titleHtml;
+  }
+  block.appendChild(sub);
+  if (pct != null) {
+    const barWrap = el('div', 'civ-w4-pct-bar');
+    const fill = el('div', 'civ-w4-pct-fill');
+    fill.style.width = `${Math.max(0, Math.min(100, pct))}%`;
+    fill.style.background = barGradient;
+    barWrap.appendChild(fill);
+    block.appendChild(barWrap);
+  }
+  if ((lines && lines.length > 0) || emptyHint) {
+    const sumEl = el('div', 'civ-w4-inline-breakdown');
+    sumEl.innerHTML = formatW4InlineBreakdown(lines, emptyHint);
+    block.appendChild(sumEl);
+  }
+  if (afterBar) afterBar(block);
+  mount.appendChild(block);
+}
+
 function renderEkonomiaStrip(mount: HTMLElement, city: City, view: CityView | null, data: GameData | null): void {
   mount.innerHTML = '';
   mount.appendChild(el('div', 'ptitle', '<span>Plony i handel</span>'));
@@ -2388,12 +2652,7 @@ function renderEkonomiaStrip(mount: HTMLElement, city: City, view: CityView | nu
 
   const foodCls = view.zywnoscNetto > 0 ? 'green' : view.zywnoscNetto < 0 ? 'red' : 'gold';
   const plony = el('div', 'chip-row');
-  plony.innerHTML =
-    statChip('\u{1F35E}', 'Żyw.', signed(view.zywnoscNetto), foodCls) +
-    statChip('\u{1F528}', 'Praca', signed(view.praca), 'gold') +
-    statChip('\u{1F4B1}', '$', signed(view.pieniadz), 'blue') +
-    statChip('', 'Nauka', signed(view.nauka), 'blue') +
-    statChip('\u{1F3AD}', 'Kult.', signed(view.kultura), 'gold');
+  plony.innerHTML = plonyChipRowHtml(view);
   mount.appendChild(plony);
 
   appendPodzialHandlu(mount, city, view, data);
@@ -2419,17 +2678,19 @@ function appendPodzialHandlu(
 
   const grid = el('div', 'handel-chip-grid');
   grid.innerHTML =
-    statChip('\u{1F4B0}', 'Skarb', `+${est.skarb} · ${split.procentPieniadz}%`, 'gold') +
-    statChip('', 'Nauka', `+${est.nauka} · ${split.procentNauka}%`, 'blue') +
-    statChip('\u{1F604}', HANDEL_ZAMOZNOSC_LABEL, `+${est.zam} · ${split.procentLuksus}%`, 'happy') +
-    `<span class="chip handel-korupcja-chip" title="Placeholder — docelowo pełny model korupcji">` +
-    `<span class="cl">\u{1F573} Korupcja</span>` +
-    `<span class="cv red">−${est.korupcja} · ${HANDEL_KORUPCJA_PCT_PLACEHOLDER}%</span></span>`;
+    statChipBrand('res-treasury', 'Skarb', `+${est.skarb} · ${split.procentPieniadz}%`, 'gold')
+      .replace('<span class="chip">', '<span class="chip handel-card-skarb">') +
+    statChipBrand('res-science', 'Nauka', `+${est.nauka} · ${split.procentNauka}%`, 'blue')
+      .replace('<span class="chip">', '<span class="chip handel-card-nauka">') +
+    statChipBrand('chip-happiness', HANDEL_ZAMOZNOSC_LABEL, `+${est.zam} · ${split.procentLuksus}%`, 'happy')
+      .replace('<span class="chip">', '<span class="chip handel-card-zam">') +
+    statChipBrand('chip-warning', 'Korupcja', `−${est.korupcja} · ${HANDEL_KORUPCJA_PCT_PLACEHOLDER}%`, 'red')
+      .replace('<span class="chip">', '<span class="chip handel-korupcja-chip" title="Placeholder — docelowo pełny model korupcji">');
   mount.appendChild(grid);
 
-  const sliders = el('div', 'sliders-compact');
-  const makeSlider = (key: keyof PodzialHandluSplit, label: string, cls: string) => {
-    const row = el('div', 'slider-row');
+  const sliders = el('div', 'handel-w4-sliders');
+  const makeSlider = (key: keyof PodzialHandluSplit, label: string, cls: string, rowCls = '') => {
+    const row = el('div', `slider-row ${rowCls}`.trim());
     const lab = el('label');
     lab.innerHTML = `<span class="${cls}">${label}</span><span class="val ${cls}">${split[key]}%</span>`;
     row.appendChild(lab);
@@ -2451,7 +2712,7 @@ function appendPodzialHandlu(
     sliders.appendChild(row);
   };
   makeSlider('procentPieniadz', 'Skarb', 'gold');
-  makeSlider('procentNauka', 'Nauka', 'blue');
+  makeSlider('procentNauka', 'Nauka', 'blue', 'slider-nauka');
   makeSlider('procentLuksus', HANDEL_ZAMOZNOSC_LABEL, 'happy');
   mount.appendChild(sliders);
 
@@ -2512,9 +2773,9 @@ function renderWealth(mount: HTMLElement, city: City, data: GameData | null, vie
       cls: 'gold',
     },
     { icon: '×', label: 'Skarb', value: mnoz.toFixed(2), cls: 'blue', title: 'Mnożnik pieniądza ze zamożności' },
-    { icon: '😊', label: 'Sz', value: `+${Math.round(szBonus)}`, cls: 'happy', title: 'Bonus szczęścia z poziomu W' },
+    { icon: cityPanelChipIcon('chip-happiness', 14), label: 'Sz', value: `+${Math.round(szBonus)}`, cls: 'happy', title: 'Bonus szczęścia z poziomu W' },
     {
-      icon: '⏱',
+      icon: cityPanelChipIcon('chip-map', 14),
       label: 'Do W+1',
       value: atCap ? 'MAX' : (etaW != null ? `~${etaW} ${tury(etaW)}` : '—'),
       cls: atCap ? 'muted' : 'gold',
@@ -2527,7 +2788,7 @@ function renderWealth(mount: HTMLElement, city: City, data: GameData | null, vie
   const barLabel = atCap ? 'MAX' : `${ws.pula} / ${progRounded}`;
   track.innerHTML =
     `<div class="food-grow-fill" style="width:${pct}%"></div>` +
-    `<span class="food-grow-loaf" aria-hidden="true">💰</span>` +
+    `<span class="food-grow-loaf" aria-hidden="true">${cityPanelChipIconWrap('res-treasury', 14)}</span>` +
     `<span class="fbtxt">${barLabel}</span>`;
   block.appendChild(track);
   mount.appendChild(block);
@@ -2667,10 +2928,10 @@ function buildPracaDetailCard(
   card.appendChild(summary);
 
   const intro = el('div', 'dc-note');
-  intro.style.fontStyle = 'normal';
-  intro.textContent =
+  setNoteHtml(intro,
     'Praca 🔨 to surowiec z pól okolicy (👤 na heksach). Nie idzie wszystko w jedno miejsce — suwak dzieli ją między ' +
-    'kolejkę budowy/rekrutacji a ulepszenia terenu (farma, kamieniołom…). Razem zawsze 100%.';
+    'kolejkę budowy/rekrutacji a ulepszenia terenu (farma, kamieniołom…). Razem zawsze 100%.',
+  );
   card.appendChild(intro);
 
   appendDetailSection(card, 'Co widać w panelu');
@@ -2806,6 +3067,7 @@ function renderPodzialPracy(
   mount.appendChild(barWrap);
 
   if (player) {
+    const sliderWrap = el('div', 'praca-w4-sliders');
     const inp = document.createElement('input');
     inp.type = 'range';
     inp.className = 'praca-split-range';
@@ -2832,7 +3094,8 @@ function renderPodzialPracy(
       cfg.onPodzialPracyChange?.(city.id, { procentBudynki: v });
       rerender();
     });
-    mount.appendChild(inp);
+    sliderWrap.appendChild(inp);
+    mount.appendChild(sliderWrap);
   }
 
   appendPodzialPracyInfo(mount, city, view, data);
@@ -2846,14 +3109,8 @@ function renderBilans(mount: HTMLElement, view: CityView | null): void {
   mount.innerHTML = '';
   mount.appendChild(el('div', 'ptitle', '<span>Bilans plonów</span>'));
   if (!view) { mount.appendChild(el('div', 'muted', 'Brak danych gry')); return; }
-  const foodCls = view.zywnoscNetto > 0 ? 'green' : view.zywnoscNetto < 0 ? 'red' : 'gold';
   const row = el('div', 'chip-row');
-  row.innerHTML =
-    statChip('\u{1F35E}', 'Żyw.', signed(view.zywnoscNetto), foodCls) +
-    statChip('\u{1F528}', 'Praca', signed(view.praca), 'gold') +
-    statChip('\u{1F4B1}', '$', signed(view.pieniadz), 'blue') +
-    statChip('', 'Nauka', signed(view.nauka), 'blue') +
-    statChip('\u{1F3AD}', 'Kult.', signed(view.kultura), 'gold');
+  row.innerHTML = plonyChipRowHtml(view);
   mount.appendChild(row);
 }
 
@@ -2882,9 +3139,9 @@ function renderMagazyn(mount: HTMLElement, city: City, view: CityView | null): v
   const foodCls = view.zywnoscNetto > 0 ? 'green' : view.zywnoscNetto < 0 ? 'red' : 'gold';
 
   const spichlerzChips: TabIndicatorChip[] = [
-    { icon: '👥', label: 'Ludność', value: String(city.population), cls: 'gold' },
+    { icon: cityPanelChipIcon('res-population', 14), label: 'Ludność', value: String(city.population), cls: 'gold' },
     {
-      icon: '⏱',
+      icon: cityPanelChipIcon('chip-map', 14),
       label: 'Do +1',
       value: eta != null ? `~${eta} ${tury(eta)}` : '—',
       cls: eta != null ? 'green' : 'muted',
@@ -2894,12 +3151,12 @@ function renderMagazyn(mount: HTMLElement, city: City, view: CityView | null): v
     { icon: '→', label: 'Bufor', value: `${signed(doWzrostu)}`, cls: doWzrostu > 0 ? 'green' : 'red' },
   ];
   if (view.maSpichlerz) {
-    spichlerzChips.push({ icon: '🌾', label: 'Spichlerz', value: 'w mieście', cls: 'green' });
+    spichlerzChips.push({ icon: cityPanelChipIcon('chip-grain', 14), label: 'Spichlerz', value: 'w mieście', cls: 'green' });
   } else if (ownerHasSpichlerz(city.ownerId)) {
-    spichlerzChips.push({ icon: '🌾', label: 'Spichlerz', value: 'imperium', cls: 'gold' });
+    spichlerzChips.push({ icon: cityPanelChipIcon('chip-grain', 14), label: 'Spichlerz', value: 'imperium', cls: 'gold' });
   }
   if (starving) {
-    spichlerzChips.push({ icon: '⚠', label: 'Armia', value: 'głód', cls: 'red' });
+    spichlerzChips.push({ icon: cityPanelChipIcon('chip-warning', 14), label: 'Armia', value: 'głód', cls: 'red' });
   }
   appendTabIndicators(mount, spichlerzChips);
 
@@ -2925,7 +3182,7 @@ function renderMagazyn(mount: HTMLElement, city: City, view: CityView | null): v
   statA.style.textAlign = 'right';
   const armyCls = tick?.glodWojska ? 'red' : '';
   statA.innerHTML =
-    `<span class="food-stat-lbl">⚔ Armia</span>` +
+    `<span class="food-stat-lbl">${cityPanelChipIconWrap('tb-army', 14)} Armia</span>` +
     `<span class="food-stat-val ${armyCls}">+${doArmii}</span>`;
   pair.appendChild(statW);
   pair.appendChild(statA);
@@ -2934,7 +3191,7 @@ function renderMagazyn(mount: HTMLElement, city: City, view: CityView | null): v
 
   const splitWrap = el('div', 'food-split-wrap');
   const labels = el('div', 'food-split-labels');
-  labels.innerHTML = `<span>${loafIconHtml('civ-v-loaf-chip')} Wzrost</span><span>⚔ Armia</span>`;
+  labels.innerHTML = `<span>${loafIconHtml('civ-v-loaf-chip')} Wzrost</span><span>${cityPanelChipIconWrap('tb-army', 14)} Armia</span>`;
   splitWrap.appendChild(labels);
 
   const barWrap = el('div', 'food-split-bar');
@@ -2996,9 +3253,9 @@ function buildSpichlerzDetailCard(
   card.appendChild(head);
 
   const intro = el('div', 'dc-note');
-  intro.style.fontStyle = 'normal';
-  intro.textContent =
-    'Bufor 🍞 kumuluje się w każdym mieście osobno. Suwak imperium dzieli świeżą żywność między wzrost miast a zapasy armii.';
+  setNoteHtml(intro,
+    'Bufor 🍞 kumuluje się w każdym mieście osobno. Suwak imperium dzieli świeżą żywność między wzrost miast a zapasy armii.',
+  );
   card.appendChild(intro);
 
   appendDetailSection(card, 'Bufor wzrostu (to miasto)');
@@ -3531,7 +3788,7 @@ function appendBuildActionButtons(
   (bBuy as HTMLButtonElement).disabled = !canBuy || !stac;
   if (!canBuy) bBuy.title = 'Wymaga wpiecia onPurchaseBuilding przez silnik';
   else if (!stac) bBuy.title = `Za malo zlota (${skarb ?? 0}/${goldKoszt})`;
-  else bBuy.title = `Kup natychmiast za ${goldKoszt} 💰 (×2 kosztu Pracy)`;
+  else bBuy.title = `Kup natychmiast za ${goldKoszt} złota (×2 kosztu Pracy)`;
   bBuy.addEventListener('click', () => {
     cfg.onPurchaseBuilding?.(city.id, item, goldKoszt);
     rerender();
@@ -3539,7 +3796,7 @@ function appendBuildActionButtons(
   btnWrap.appendChild(bBuy);
 
   const bBuild = el('button', 'btn btn-sm btn-b', buildLabel);
-  bBuild.title = `Dodaj do kolejki · ${item.koszt} 🔨`;
+  bBuild.title = `Dodaj do kolejki · ${item.koszt} pracy`;
   bBuild.addEventListener('click', () => addItem(city, item, upgrade ? { upgrade: true } : undefined));
   btnWrap.appendChild(bBuild);
 }
@@ -3556,10 +3813,7 @@ function findUnitDef(data: GameData, id: string): UnitDef | undefined {
   return data.units.find(u => u.Jednostka === id);
 }
 
-function customBuildingIconClass(def: BuildingDef | undefined): string | null {
-  const id = def?.id?.toLowerCase();
-  if (id === 'stela') return 'obelisk-ic';
-  if (id === 'stolarnia') return 'planks-ic';
+function customBuildingIconClass(_def: BuildingDef | undefined): string | null {
   return null;
 }
 
@@ -3568,7 +3822,18 @@ function buildingIconHtml(def: BuildingDef | undefined, buildingId?: string): st
 }
 
 function unitIconHtml(u: UnitDef | undefined, id?: string): string {
-  return unitIconSvg(u, id ?? u?.Jednostka);
+  const key = id ?? u?.Jednostka;
+  const svg = unitInfographicSvg(u, key, 22);
+  if (svg) return svg;
+  return unitIconSvg(u, key);
+}
+
+function unitMedallionHtml(u: UnitDef | undefined, id?: string, size = 22): string {
+  const key = id ?? u?.Jednostka;
+  const medallion = unitInfographicMedallionHtml(u, key, size);
+  if (medallion) return medallion;
+  const svg = unitIconSvg(u, key);
+  return svg ? `<span class="unit-infographic-medallion" aria-hidden="true">${svg}</span>` : '';
 }
 
 function productionItemIconHtml(data: GameData | null, item: ProductionItem): string {
@@ -3594,21 +3859,10 @@ function makeMiniThumb(iconHtml: string): HTMLDivElement {
 }
 
 function makeBuildingThumb(def: BuildingDef | undefined): HTMLDivElement {
-  const custom = customBuildingIconClass(def);
-  if (custom) {
-    const t = el('div', `mini-thumb ${custom}`);
-    t.title = def?.nazwa ?? '';
-    return t;
-  }
   return makeMiniThumb(buildingIconHtml(def));
 }
 
 function appendBuildingInlineIcon(parent: HTMLElement, def: BuildingDef | undefined): void {
-  const custom = customBuildingIconClass(def);
-  if (custom) {
-    parent.appendChild(el('span', `bi ${custom}`));
-    return;
-  }
   const bi = el('span', 'bi');
   fillIconElement(bi, buildingIconHtml(def));
   parent.appendChild(bi);
@@ -3616,23 +3870,11 @@ function appendBuildingInlineIcon(parent: HTMLElement, def: BuildingDef | undefi
 
 function appendProductionPicon(parent: HTMLElement, data: GameData | null, item: ProductionItem): void {
   const iconEl = el('div', 'picon');
-  if (item.kind === 'budynek' && data) {
-    const custom = customBuildingIconClass(findBuildingDef(data, item.id));
-    if (custom) {
-      iconEl.classList.add(custom);
-      parent.appendChild(iconEl);
-      return;
-    }
-  }
   fillIconElement(iconEl, productionItemIconHtml(data, item));
   parent.appendChild(iconEl);
 }
 
 function productionQueueIconSpan(data: GameData | null, item: ProductionItem): HTMLElement {
-  if (item.kind === 'budynek' && data) {
-    const custom = customBuildingIconClass(findBuildingDef(data, item.id));
-    if (custom) return el('span', custom);
-  }
   const s = el('span');
   fillIconElement(s, productionItemIconHtml(data, item));
   return s;
@@ -3656,27 +3898,145 @@ function createScrollList(
   return sc;
 }
 
-const YIELD_LABELS: { key: keyof BuildingDef['baza']; icon: string; label: string }[] = [
-  { key: 'praca', icon: '\u{1F528}', label: 'Praca' },
-  { key: 'pieniadz', icon: '\u{1F4B0}', label: 'Pieniądz' },
-  { key: 'zywnosc', icon: '\u{1F35E}', label: 'Żywność' },
-  { key: 'nauka', icon: '\u{1F4D6}', label: 'Nauka' },
-  { key: 'kultura', icon: '\u{1F3AD}', label: 'Kultura' },
-  { key: 'zadowolenie', icon: '\u{1F642}', label: 'Zadowolenie' },
-  { key: 'obrona', icon: '\u{1F6E1}', label: 'Obrona' },
+const YIELD_BRAND: { key: keyof BuildingDef['baza']; brandId: string; label: string }[] = [
+  { key: 'praca', brandId: 'res-work', label: 'Praca' },
+  { key: 'pieniadz', brandId: 'res-treasury', label: 'Pieniądz' },
+  { key: 'zywnosc', brandId: 'loaf', label: 'Żywność' },
+  { key: 'nauka', brandId: 'science-owl', label: 'Nauka' },
+  { key: 'kultura', brandId: 'res-culture', label: 'Kultura' },
+  { key: 'zadowolenie', brandId: 'chip-happiness', label: 'Zadowolenie' },
+  { key: 'obrona', brandId: 'chip-garrison', label: 'Obrona' },
 ];
+
+function yieldBrandIconHtml(brandId: string, size: BrandIconSize = 14): string {
+  if (brandId === 'loaf') return `<span class="civ-cs-inline-loaf">${loafIconHtml('civ-v-loaf-chip')}</span>`;
+  if (brandId === 'science-owl') return `<span class="civ-cs-chip-ic-wrap">${scienceOwlIconHtml()}</span>`;
+  return cityPanelChipIconWrap(brandId, size);
+}
 
 function formatYieldLine(b: BuildingDef['baza'], p: BuildingDef['przyrost']): string {
   const parts: string[] = [];
-  for (const y of YIELD_LABELS) {
+  for (const y of YIELD_BRAND) {
     const base = b[y.key] ?? 0;
     const inc = p[y.key] ?? 0;
     if (base !== 0 || inc !== 0) {
       const incStr = inc !== 0 ? ` (+${inc}/poz.)` : '';
-      parts.push(`${base >= 0 ? '+' : ''}${base} ${y.icon}${incStr}`);
+      parts.push(`${base >= 0 ? '+' : ''}${base} ${yieldBrandIconHtml(y.brandId)}${incStr}`);
     }
   }
   return parts.join(' · ') || '—';
+}
+
+/** Chipy bonusów (max 3) — mockup Poziom B budynków 1E. */
+function buildingBonusChipsHtml(def: BuildingDef, max = 3): string {
+  const chips: string[] = [];
+  for (const y of YIELD_BRAND) {
+    if (chips.length >= max) break;
+    const base = def.baza[y.key] ?? 0;
+    const inc = def.przyrost[y.key] ?? 0;
+    if (base === 0 && inc === 0) continue;
+    const val = base !== 0 ? `${base >= 0 ? '+' : ''}${base}` : `+${inc}/poz.`;
+    chips.push(
+      `<span class="bld-infocard-chip">${yieldBrandIconHtml(y.brandId, 13)}${val} ${y.label.toLowerCase()}</span>`,
+    );
+  }
+  if (def.baza.mnoznik || def.przyrost.mnoznik) {
+    if (chips.length < max) {
+      chips.push(`<span class="bld-infocard-chip">×${def.baza.mnoznik ?? 1} mnożnik</span>`);
+    }
+  }
+  return chips.join('');
+}
+
+function parentBuildingName(data: GameData, upgradeFromId: string | undefined): string | null {
+  const id = upgradeFromId?.trim();
+  if (!id) return null;
+  return findBuildingDef(data, id)?.nazwa ?? id;
+}
+
+/** Karta infografiki budynku (Design Poziom B · 2026-07-05). */
+function buildBuildingInfocard(
+  def: BuildingDef,
+  data: GameData,
+  opts?: {
+    locked?: boolean;
+    lockHint?: string;
+    readyTag?: string;
+    item?: ProductionItem;
+    praca?: number;
+    skarb?: number;
+    buildLabel?: 'Buduj' | 'Ulepsz';
+    upgrade?: boolean;
+    city?: City;
+  },
+): HTMLDivElement {
+  const card = el('div', 'bld-infocard');
+  if (opts?.locked) card.classList.add('is-catalog-locked');
+
+  const hd = el('div', 'bld-infocard-hd');
+  const ic = el('div', 'bld-infocard-ic');
+  fillIconElement(ic, buildingIconHtml(def));
+  hd.appendChild(ic);
+  const titWrap = el('div');
+  titWrap.style.cssText = 'flex:1;min-width:0;';
+  titWrap.innerHTML = `<div class="bld-infocard-title">${def.nazwa}</div>`;
+  if (def.kategoria) {
+    const cat = el('span', 'bld-infocard-cat');
+    cat.textContent = def.kategoria;
+    titWrap.appendChild(cat);
+  }
+  hd.appendChild(titWrap);
+  card.appendChild(hd);
+
+  const bd = el('div', 'bld-infocard-bd');
+  const chipsHtml = buildingBonusChipsHtml(def);
+  if (chipsHtml) {
+    const chips = el('div', 'bld-infocard-chips');
+    chips.innerHTML = chipsHtml;
+    bd.appendChild(chips);
+  }
+
+  const parentName = parentBuildingName(data, def.upgradeFrom);
+  if (parentName) {
+    const upg = el('div', 'bld-infocard-upg');
+    upg.innerHTML = `<span style="color:var(--gold);font-size:1.1em;line-height:1;">↗</span>` +
+      `<span>Rozbudowa z <span style="color:var(--gold);">${parentName}</span></span>`;
+    bd.appendChild(upg);
+  }
+
+  const ft = el('div', 'bld-infocard-ft');
+  const era = el('span', 'bld-infocard-era');
+  era.innerHTML = `<span class="bld-infocard-era-dot"></span>Epoka ${epochLabelNum(def.epokaWejscia).toLowerCase()}`;
+  ft.appendChild(era);
+  const ftR = el('span');
+  ftR.textContent = def.maksPoziom > 1 ? `max ${def.maksPoziom} poz.` : 'bez upgrade';
+  if (parentName) ftR.textContent = def.techUnlock && !isEmptyDataVal(def.techUnlock) ? String(def.techUnlock) : '↗ upgrade';
+  ft.appendChild(ftR);
+  bd.appendChild(ft);
+
+  if (opts?.item && opts.city) {
+    const act = el('div', 'bld-infocard-actions');
+    const e = etaTurns(opts.item.koszt, 0, opts.praca ?? 0);
+    const workIc = cityPanelChipIconWrap('res-work', 12);
+    const cost = el('div', 'bld-infocard-cost');
+    cost.innerHTML = `${opts.item.koszt}${workIc}${e !== null ? ' · ~' + e + ' ' + tury(e) : ''}`;
+    act.appendChild(cost);
+    const btnWrap = el('div', 'civ-v-bld-btns');
+    appendBuildActionButtons(btnWrap, opts.city, opts.item, opts.skarb, opts.buildLabel ?? 'Buduj', opts.upgrade);
+    act.appendChild(btnWrap);
+    bd.appendChild(act);
+  } else if (opts?.readyTag) {
+    const tag = el('div', 'bld-catalog-ready-tag');
+    tag.textContent = opts.readyTag;
+    bd.appendChild(tag);
+  } else if (opts?.lockHint) {
+    const lock = el('div', 'bld-infocard-lock');
+    lock.textContent = opts.lockHint;
+    bd.appendChild(lock);
+  }
+
+  card.appendChild(bd);
+  return card;
 }
 
 const EPOCH_LABEL: Record<number, string> = { 1: 'Kamień', 2: 'Brąz', 3: 'Żelazo' };
@@ -3711,7 +4071,9 @@ function techPrereqChain(data: GameData, techName: string): string[] {
 }
 
 function appendDetailSection(card: HTMLElement, title: string): void {
-  card.appendChild(el('div', 'dc-section', title));
+  const s = el('div', 'dc-section');
+  s.innerHTML = cpInlineIcons(title);
+  card.appendChild(s);
 }
 
 function appendDetailGrid(card: HTMLElement): HTMLDivElement {
@@ -3722,22 +4084,26 @@ function appendDetailGrid(card: HTMLElement): HTMLDivElement {
 
 function gridDetailRow(grid: HTMLElement, label: string, val: string | null | undefined): void {
   if (!val || isEmptyDataVal(val)) return;
-  grid.appendChild(el('span', 'dc-l', label));
-  grid.appendChild(el('span', 'dc-v', val));
+  const lEl = el('span', 'dc-l');
+  lEl.innerHTML = cpInlineIcons(label);
+  grid.appendChild(lEl);
+  const vEl = el('span', 'dc-v');
+  vEl.innerHTML = cpInlineIcons(val);
+  grid.appendChild(vEl);
 }
 
 function appendDetailAlgo(card: HTMLElement, title: string, steps: string[]): void {
   appendDetailSection(card, title);
   for (let i = 0; i < steps.length; i++) {
     const line = el('div', 'dc-algo-step');
-    line.textContent = `${i + 1}. ${steps[i]}`;
+    line.innerHTML = cpInlineIcons(`${i + 1}. ${steps[i]}`);
     card.appendChild(line);
   }
 }
 
 function appendDetailFormula(card: HTMLElement, text: string): void {
   const f = el('div', 'dc-formula');
-  f.textContent = text;
+  f.innerHTML = cpInlineIcons(text);
   card.appendChild(f);
 }
 
@@ -3801,13 +4167,13 @@ function buildBuildingDetailCard(def: BuildingDef, data: GameData): HTMLDivEleme
   appendDetailSection(card, 'Plony i efekty');
   const gYield = appendDetailGrid(card);
   let anyYield = false;
-  for (const y of YIELD_LABELS) {
+  for (const y of YIELD_BRAND) {
     const base = def.baza[y.key] ?? 0;
     const inc = def.przyrost[y.key] ?? 0;
     if (base !== 0 || inc !== 0) {
       anyYield = true;
       const incStr = inc !== 0 ? ` (+${inc}/poz.)` : '';
-      gridDetailRow(gYield, y.label, `${base >= 0 ? '+' : ''}${base} ${y.icon}${incStr}`);
+      gridDetailRow(gYield, y.label, `${base >= 0 ? '+' : ''}${base} ${yieldBrandIconHtml(y.brandId)}${incStr}`);
     }
   }
   if (def.baza.mnoznik || def.przyrost.mnoznik) {
@@ -3818,10 +4184,10 @@ function buildBuildingDetailCard(def: BuildingDef, data: GameData): HTMLDivEleme
 
   appendDetailSection(card, 'Koszty');
   const gCost = appendDetailGrid(card);
-  gridDetailRow(gCost, 'Koszt budowy', `${def.kosztBudowy} 🔨`);
-  if (def.przyrostKosztu) gridDetailRow(gCost, 'Przyrost kosztu', `+${def.przyrostKosztu} 🔨 / poziom`);
-  gridDetailRow(gCost, 'Utrzymanie', `${def.utrzymanie} 💰`);
-  if (def.przyrostUtrzymania) gridDetailRow(gCost, 'Przyrost utrzym.', `+${def.przyrostUtrzymania} 💰 / poziom`);
+  gridDetailRow(gCost, 'Koszt budowy', `${def.kosztBudowy} ${cityPanelChipIconWrap('res-work', 14)}`);
+  if (def.przyrostKosztu) gridDetailRow(gCost, 'Przyrost kosztu', `+${def.przyrostKosztu} ${cityPanelChipIconWrap('res-work', 14)} / poziom`);
+  gridDetailRow(gCost, 'Utrzymanie', `${def.utrzymanie} ${cityPanelChipIconWrap('res-treasury', 14)}`);
+  if (def.przyrostUtrzymania) gridDetailRow(gCost, 'Przyrost utrzym.', `+${def.przyrostUtrzymania} ${cityPanelChipIconWrap('res-treasury', 14)} / poziom`);
 
   if (def.maksPoziom > 1) {
     appendDetailSection(card, 'Poziomy');
@@ -3851,7 +4217,9 @@ function buildBuildingDetailCard(def: BuildingDef, data: GameData): HTMLDivEleme
 function buildUnitDetailCard(u: UnitDef, data: GameData): HTMLDivElement {
   const card = el('div', 'detail-card');
   const head = el('div', 'dc-h');
-  head.appendChild(makeMiniThumb(unitIconHtml(u)));
+  const thumb = el('span');
+  thumb.innerHTML = unitInfographicMedallionHtml(u, u.Jednostka, 28);
+  head.appendChild(thumb);
   const ht = el('span');
   const role = u['Rola (linia)'] ?? '';
   ht.textContent = `${u.Jednostka}${role ? ' · ' + role : ''}`;
@@ -3899,7 +4267,9 @@ function buildUnitDetailCard(u: UnitDef, data: GameData): HTMLDivElement {
   appendDetailSection(card, 'Ekonomia');
   const gEco = appendDetailGrid(card);
   gridDetailRow(gEco, 'Koszt rekrutacji', u['Pieniądz (koszt)'] != null ? `${u['Pieniądz (koszt)']} 💰` : null);
-  gridDetailRow(gEco, 'Utrzymanie', u['Utrzymanie (Pieniądz/turę)'] != null ? `${u['Utrzymanie (Pieniądz/turę)']} 💰` : null);
+  gridDetailRow(gEco, 'Utrzymanie', u['Utrzymanie (Pieniądz/turę)'] != null
+    ? `${u['Utrzymanie (Pieniądz/turę)']} ${cityPanelChipIconWrap('res-treasury', 14)}`
+    : null);
   gridDetailRow(gEco, 'Żywność', u['żywność/turę'] != null ? `${u['żywność/turę']}` : null);
   gridDetailRow(gEco, 'Ludność', u.Ludność != null ? String(u.Ludność) : null);
   const surow = u.Surowiec;
@@ -3947,54 +4317,48 @@ function appendBuildableItemRow(
   data: GameData,
   opts: { praca: number; skarb: number | undefined; buildLabel: 'Buduj' | 'Ulepsz'; upgrade?: boolean },
 ): void {
-  const wrap = el('div', 'item-wrap');
-  const row = el('div', 'item-row');
+  const wrap = el('div', 'bld-infocard-wrap');
   const def = findBuildingDef(data, item.id);
-  const thumb = makeBuildingThumb(def);
-  row.appendChild(thumb);
-  if (def) attachHoverDetail(thumb, () => buildBuildingDetailCard(def, data), 300);
-  const info = el('div');
-  info.style.cssText = 'flex:1;min-width:0;';
-  const e = etaTurns(item.koszt, 0, opts.praca);
-  info.innerHTML =
-    `<div style="font-size:0.84em;font-weight:600;">${item.nazwa}</div>` +
-    `<div class="muted" style="font-size:0.7em;">${item.koszt}\u{1F528}${e !== null ? ' · ~' + e + 't' : ''}</div>`;
-  row.appendChild(info);
-  const btnWrap = el('div', 'civ-v-bld-btns');
-  appendBuildActionButtons(btnWrap, city, item, opts.skarb, opts.buildLabel, opts.upgrade);
-  row.appendChild(btnWrap);
-  wrap.appendChild(row);
+  if (def) {
+    wrap.appendChild(buildBuildingInfocard(def, data, {
+      item,
+      city,
+      praca: opts.praca,
+      skarb: opts.skarb,
+      buildLabel: opts.buildLabel,
+      upgrade: opts.upgrade,
+    }));
+  } else {
+    const row = el('div', 'item-row');
+    row.textContent = item.nazwa;
+    wrap.appendChild(row);
+  }
   scroll.appendChild(wrap);
 }
 
-function appendUnitItemRow(
-  scroll: HTMLElement,
+function appendUnitRecruitCard(
+  grid: HTMLElement,
   city: City,
   item: ProductionItem,
   data: GameData,
   skarb: number | undefined,
 ): void {
-  const wrap = el('div', 'item-wrap');
-  const row = el('div', 'item-row');
   const udef = findUnitDef(data, item.id);
-  attachUnitRowThumb(row, udef, item.id, data, city.ownerId);
-  const info = el('div');
-  info.style.cssText = 'flex:1;min-width:0;';
-  info.innerHTML =
-    `<div style="font-size:0.84em;font-weight:600;">${item.nazwa}</div>` +
-    `<div class="muted" style="font-size:0.7em;">${item.koszt} 💰</div>`;
-  row.appendChild(info);
-  const canBuy = !!cfg.onPurchaseUnit;
-  const stac = skarb === undefined ? true : skarb >= item.koszt;
-  const b = el('button', 'btn btn-sm btn-g', 'Rekrutuj');
-  (b as HTMLButtonElement).disabled = !canBuy || !stac;
-  if (!canBuy) b.title = 'Wymaga wpiecia onPurchaseUnit przez silnik';
-  else if (!stac) b.title = `Za mało złota (${skarb ?? 0}/${item.koszt})`;
-  else b.title = `Rekrutuj za ${item.koszt} ze skarbca`;
-  b.addEventListener('click', () => recruitUnit(city, item));
-  row.appendChild(b);
-  wrap.appendChild(row);
-  scroll.appendChild(wrap);
+  if (!udef) return;
+  const cardWrap = buildUnitRecruitCard({
+    udef,
+    item,
+    data,
+    skarb,
+    canPurchase: !!cfg.onPurchaseUnit,
+    treasuryIconHtml: cityPanelChipIconWrap('res-treasury', 14),
+    onRecruit: () => recruitUnit(city, item),
+  });
+  const card = cardWrap.querySelector('.unit-recruit-card');
+  if (card) {
+    attachHoverDetail(card as HTMLElement, () => buildUnitDetailCard(udef, data), 220);
+  }
+  grid.appendChild(cardWrap);
 }
 
 function recruitUnit(city: City, item: ProductionItem): void {
@@ -4011,14 +4375,21 @@ function recruitUnit(city: City, item: ProductionItem): void {
   rerender();
 }
 
-function appendRecruitmentQueue(mount: HTMLElement, city: City, player: boolean): void {
+function appendRecruitmentQueue(mount: HTMLElement, city: City, player: boolean, opts?: { w4?: boolean }): void {
   const prod = getProd(city.id);
   const rq = prod.rekrutacja ?? [];
   const data = gameData();
   const wrap = el('div');
-  wrap.style.cssText = 'margin-top:0.5em;border-top:1px solid var(--border);padding-top:0.35em;';
-  const qh = el('div', 'gold', 'Kolejka rekrutacji:');
-  qh.style.cssText = 'font-size:0.78em;font-weight:700;margin-bottom:0.22em;';
+  wrap.style.cssText = opts?.w4
+    ? 'margin-top:0.45em;padding-top:0.35em;border-top:1px solid rgba(232,216,138,.12);'
+    : 'margin-top:0.5em;border-top:1px solid var(--border);padding-top:0.35em;';
+  const qh = el('div', opts?.w4 ? 'civ-w4-section-hd' : 'gold');
+  if (opts?.w4) {
+    qh.textContent = 'Kolejka rekrutacji';
+  } else {
+    qh.textContent = 'Kolejka rekrutacji:';
+    qh.style.cssText = 'font-size:0.78em;font-weight:700;margin-bottom:0.22em;';
+  }
   wrap.appendChild(qh);
   if (rq.length === 0) {
     const none = el('span', 'muted', '— brak —');
@@ -4027,19 +4398,50 @@ function appendRecruitmentQueue(mount: HTMLElement, city: City, player: boolean)
   } else {
     const hint = el('div', 'muted');
     hint.style.cssText = 'font-size:0.7em;margin-bottom:0.3em;';
-    hint.textContent = 'Opłacone 💰 — max 1 jednostka gotowa na turę (v0.1).';
+    hint.innerHTML = cpInlineIcons(`Opłacone ${cityPanelChipIconWrap('res-treasury', 14)} — max 1 jednostka gotowa na turę (v0.1).`);
     wrap.appendChild(hint);
-    const sc = createScrollList('recruit-scroll', { visible: RECRUIT_QUEUE_VISIBLE, rowEm: 4.2 });
+    const sc = createScrollList(opts?.w4 ? 'unit-w4-scroll' : 'recruit-scroll', { visible: RECRUIT_QUEUE_VISIBLE, rowEm: 4.2 });
     for (let i = 0; i < rq.length; i++) {
       const it = rq[i]!;
       const udef = data ? findUnitDef(data, it.id) : undefined;
-      const icon = unitIconHtml(udef, it.id);
       const isFront = i === 0;
-      const block = el('div', 'recruit-prod');
-      block.style.position = 'relative';
       const badge = isFront
         ? '<span class="blue" style="font-size:0.72em;font-weight:600;margin-left:0.3em;">· nast. tura</span>'
         : `<span class="muted" style="font-size:0.68em;margin-left:0.3em;">#${i + 1}</span>`;
+      if (opts?.w4) {
+        const block = el('div', 'unit-w4-card');
+        const thumb = el('div', 'unit-w4-thumb');
+        thumb.innerHTML = unitMedallionHtml(udef, it.id, 20);
+        block.appendChild(thumb);
+        const body = el('div', 'unit-w4-body');
+        const name = el('div', 'unit-w4-name');
+        name.innerHTML = `${it.nazwa}${badge}`;
+        body.appendChild(name);
+        const cost = el('div', 'unit-w4-cost');
+        cost.innerHTML = `Opłacone ${it.koszt} ${cityPanelChipIconWrap('res-treasury', 14)}`;
+        body.appendChild(cost);
+        block.appendChild(body);
+        if (udef && data) {
+          attachHoverDetail(thumb, () => buildUnitDetailCard(udef, data), 180);
+        }
+        if (player) {
+          const x = el('button', 'btn btn-sm');
+          x.innerHTML = cityPanelChipIconWrap('ui-close', 14);
+          x.style.cssText = 'padding:0 0.35em;align-self:flex-start;flex:none;';
+          const idx = i;
+          x.title = 'Usuń z kolejki (bez zwrotu złota w prototypie)';
+          x.addEventListener('click', () => {
+            setProd(city.id, dequeueRecruitment(getProd(city.id), idx));
+            rerender();
+          });
+          block.appendChild(x);
+        }
+        sc.appendChild(block);
+        continue;
+      }
+      const icon = unitIconHtml(udef, it.id);
+      const block = el('div', 'recruit-prod');
+      block.style.position = 'relative';
       const iconEl = el('div', 'picon');
       fillIconElement(iconEl, icon);
       block.appendChild(iconEl);
@@ -4050,10 +4452,11 @@ function appendRecruitmentQueue(mount: HTMLElement, city: City, player: boolean)
       body.style.cssText = 'flex:1;min-width:0;';
       body.innerHTML =
         `<div style="font-size:0.92em;font-weight:700;" class="gold">${it.nazwa}${badge}</div>` +
-        `<div class="muted" style="font-size:0.74em;">Jednostka · Opłacone ${it.koszt} 💰</div>`;
+        `<div class="muted" style="font-size:0.74em;">Jednostka · Opłacone ${it.koszt} ${cityPanelChipIconWrap('res-treasury', 14)}</div>`;
       block.appendChild(body);
       if (player) {
-        const x = el('button', 'btn btn-sm', '✕');
+        const x = el('button', 'btn btn-sm');
+        x.innerHTML = cityPanelChipIconWrap('ui-close', 14);
         x.style.cssText = 'padding:0 0.35em;align-self:flex-start;';
         const idx = i;
         x.title = 'Usuń z kolejki (bez zwrotu złota w prototypie)';
@@ -4088,7 +4491,10 @@ function renderProd(mount: HTMLElement, city: City, view: CityView | null): void
     const paused = getProd(city.id).wstrzymana === true;
     const e = paused ? null : etaTurns(front.koszt, prod.postep, praca);
     const pct = front.koszt > 0 ? Math.round(Math.min(1, prod.postep / front.koszt) * 100) : 100;
-    const pauseBadge = paused ? ' <span style="font-size:0.7em;background:#7a4800;color:#ffd090;border:1px solid #c07020;border-radius:3px;padding:0 0.35em;vertical-align:middle;">⏸ wstrzymana</span>' : '';
+    const workIc = cityPanelChipIconWrap('res-work', 12);
+    const pauseBadge = paused
+      ? ' <span style="font-size:0.7em;background:#7a4800;color:#ffd090;border:1px solid #c07020;border-radius:3px;padding:0 0.35em;vertical-align:middle;">wstrzymana</span>'
+      : '';
     const row = el('div');
     row.style.cssText = 'display:flex;gap:0.55em;align-items:flex-start;';
     appendProductionPicon(row, data, front);
@@ -4096,11 +4502,11 @@ function renderProd(mount: HTMLElement, city: City, view: CityView | null): void
     body.style.flex = '1';
     body.innerHTML =
         `<div style="font-size:1.05em;font-weight:700;" class="gold">${front.nazwa}${pauseBadge}</div>` +
-        `<div class="muted" style="font-size:0.78em;">${front.kind === 'budynek' ? 'Budynek' : 'Jednostka'} • Koszt: ${front.koszt} \u{1F528}</div>` +
+        `<div class="muted" style="font-size:0.78em;">${front.kind === 'budynek' ? 'Budynek' : 'Jednostka'} • Koszt: ${front.koszt} ${workIc}</div>` +
         `<div class="rsb" style="font-size:0.78em;margin:0.22em 0 0.15em;">` +
-          `<span class="muted">Zebrana Praca: <span class="gold">${prod.postep} / ${front.koszt} \u{1F528}</span></span>` +
+          `<span class="muted">Zebrana Praca: <span class="gold">${prod.postep} / ${front.koszt}</span> ${workIc}</span>` +
           (paused
-            ? `<span style="color:#e08030;font-weight:600;">⏸ Wstrzymane — brak postępu</span>`
+            ? `<span style="color:#e08030;font-weight:600;">Wstrzymane — brak postępu</span>`
             : `<span class="blue">${e !== null ? '~' + e + ' ' + tury(e) : 'brak Pracy'}</span>`) +
         `</div>` +
         `<div class="bwrap"><div class="bfill" style="width:${pct}%;background:linear-gradient(90deg,#8a6418,var(--gold));"></div></div>`;
@@ -4114,14 +4520,15 @@ function renderProd(mount: HTMLElement, city: City, view: CityView | null): void
       const koszt = Math.ceil(Math.max(0, front.koszt - prod.postep) * UI_PARAMS.panel_miasta.rush_cost_mnoznik);
       const skarb = cfg.getTreasury(city.ownerId);
       const stac = skarb >= koszt;
-      const wykup = el('button', 'btn btn-g', `\u{1F4B0} Wykup (${koszt})`);
+      const wykup = el('button', 'btn btn-g');
+      wykup.innerHTML = `${cityPanelChipIconWrap('res-treasury', 14)} Wykup (${koszt})`;
       (wykup as HTMLButtonElement).disabled = !stac;
       wykup.title = stac ? 'Zaplac zlotem i ukoncz natychmiast' : 'Za malo zlota (' + skarb + '/' + koszt + ')';
       wykup.addEventListener('click', () => { cfg.onRushBuy?.(city.id, front, koszt); rerender(); });
       actions.appendChild(wykup);
     }
     // Wstrzymaj / Wznów — przełącza flagę wstrzymana dla pozycji w budowie.
-    const wstBtn = el('button', 'btn btn-sm', paused ? '▶ Wznów' : '⏸ Wstrzymaj');
+    const wstBtn = el('button', 'btn btn-sm', paused ? 'Wznów' : 'Wstrzymaj');
     wstBtn.title = paused ? 'Wznów produkcję' : 'Wstrzymaj produkcję (postęp zachowany)';
     wstBtn.addEventListener('click', () => {
       const cur = getProd(city.id);
@@ -4171,7 +4578,9 @@ function renderProd(mount: HTMLElement, city: City, view: CityView | null): void
     qWrap.appendChild(qi);
   }
   mount.appendChild(qWrap);
-  appendRecruitmentQueue(mount, city, player);
+  if (activeCityPanelTab !== 'rekrutacja') {
+    appendRecruitmentQueue(mount, city, player);
+  }
 }
 
 function missingTechSteps(data: GameData, techName: string, unlocked: ReadonlySet<string>): string[] {
@@ -4184,7 +4593,7 @@ function formatBuildingCatalogLockHint(
   data: GameData,
   unlockedTechs: readonly string[],
 ): string {
-  if (entry.status === 'built') return '✓ Już wybudowany w tym mieście';
+  if (entry.status === 'built') return 'Już wybudowany w tym mieście';
   if (entry.status === 'queued') return '⏳ W kolejce produkcji';
   if (entry.status === 'ready') return '';
 
@@ -4291,35 +4700,19 @@ function appendCatalogBuildingRow(
   lockHint: string,
   opts?: { forceLocked?: boolean },
 ): void {
-  const wrap = el('div', 'item-wrap');
-  const row = el('div', 'item-row');
+  const wrap = el('div', 'bld-infocard-wrap');
   const previewLocked = opts?.forceLocked === true;
-  if (!previewLocked && entry.status === 'ready') row.classList.add('is-catalog-ready');
-  else if (previewLocked || entry.status === 'locked') row.classList.add('is-catalog-locked');
-  else if (entry.status === 'built') row.classList.add('is-catalog-built');
-  else if (entry.status === 'queued') row.classList.add('is-catalog-queued');
-
-  const thumb = makeBuildingThumb(def);
-  row.appendChild(thumb);
-  if (def) attachHoverDetail(thumb, () => buildBuildingDetailCard(def, data), 280);
-
-  const info = el('div');
-  info.style.cssText = 'flex:1;min-width:0;';
-  const sub = el('div', 'bld-catalog-meta');
-  sub.textContent = `${entry.kategoria} · ${entry.koszt} 🔨`;
-  info.innerHTML = `<div style="font-size:0.82em;font-weight:600;">${entry.nazwa}</div>`;
-  info.appendChild(sub);
-  if (!previewLocked && entry.status === 'ready') {
-    const tag = el('div', 'bld-catalog-ready-tag');
-    tag.textContent = 'Można budować';
-    info.appendChild(tag);
-  } else if (lockHint) {
-    const lock = el('div', 'bld-catalog-lock');
-    lock.textContent = lockHint;
-    info.appendChild(lock);
+  if (def) {
+    wrap.appendChild(buildBuildingInfocard(def, data, {
+      locked: previewLocked || entry.status === 'locked',
+      lockHint: previewLocked || entry.status === 'locked' ? lockHint : undefined,
+      readyTag: !previewLocked && entry.status === 'ready' ? 'Można budować' : undefined,
+    }));
+  } else {
+    const row = el('div', 'item-row');
+    row.textContent = entry.nazwa;
+    wrap.appendChild(row);
   }
-  row.appendChild(info);
-  wrap.appendChild(row);
   scroll.appendChild(wrap);
 }
 
@@ -4433,37 +4826,98 @@ function renderBuildList(
   mount.appendChild(scroll);
 }
 
+function buildRecruitTabDetailCard(city: City, unitCount: number, skarb: number | undefined): HTMLDivElement {
+  const card = el('div', 'detail-card');
+  card.appendChild(el('div', 'dc-h', '<span>Rekrutacja — szczegóły</span>'));
+  const intro = el('div', 'dc-note');
+  intro.style.fontStyle = 'normal';
+  intro.textContent =
+    'Jednostki kupujesz za pieniądz ze skarbca imperium. Opłacone pozycje trafiają do kolejki — max 1 gotowa na turę (v0.1).';
+  card.appendChild(intro);
+  appendDetailSection(card, 'Stan');
+  const g = appendDetailGrid(card);
+  gridDetailRow(g, 'Dostępne jednostki', String(unitCount));
+  gridDetailRow(g, 'Skarb imperium', skarb != null ? String(skarb) : '—');
+  const rq = getProd(city.id).rekrutacja?.length ?? 0;
+  gridDetailRow(g, 'W kolejce', String(rq));
+  return card;
+}
+
 function renderPurchasableUnits(
   mount: HTMLElement,
   city: City,
   data: GameData | null,
-  opts?: { visibleRows?: number },
+  opts?: { visibleRows?: number; w4?: boolean },
 ): void {
   mount.innerHTML = '';
-  mount.appendChild(el('div', 'ptitle', '<span>Rekrutuj jednostkę (za Pieniądz)</span>'));
+  const w4 = opts?.w4 === true;
+  if (w4) {
+    appendSectionTitleWithDetails(
+      mount,
+      '<span>Rekrutacja</span>',
+      () => {
+        if (!data) {
+          const c = el('div', 'detail-card');
+          c.appendChild(el('div', 'dc-note', 'Brak danych gry'));
+          return c;
+        }
+        const techs = cfg.getUnlockedTechs?.(city.ownerId) ?? [];
+        const units = purchasableUnits(city, data, techs, productionCtxForCity(city));
+        return buildRecruitTabDetailCard(city, units.length, cfg.getTreasury?.(city.ownerId));
+      },
+    );
+  } else {
+    mount.appendChild(el('div', 'ptitle', '<span>Rekrutuj jednostkę (za Pieniądz)</span>'));
+  }
   if (!data) { mount.appendChild(el('div', 'muted', 'Brak danych gry')); return; }
   if (city.ownerId !== 0) {
     mount.appendChild(el('div', 'muted', 'Miasto rywala — zakup niedostępny (podgląd).'));
     return;
   }
-  const epoch = cfg.getEpoch?.(city.ownerId) ?? 1;
   const techs = cfg.getUnlockedTechs?.(city.ownerId) ?? [];
   const units = purchasableUnits(city, data, techs, productionCtxForCity(city));
   const skarb = cfg.getTreasury?.(city.ownerId);
+  const rqLen = getProd(city.id).rekrutacja?.length ?? 0;
+
+  if (w4) {
+    appendTabIndicators(mount, [
+      {
+        icon: cityPanelChipIcon('res-treasury', 14),
+        label: 'Skarb',
+        value: skarb != null ? String(skarb) : '—',
+        cls: 'gold',
+      },
+      {
+        icon: cityPanelChipIcon('cp-recruit', 14),
+        label: 'Dostępne',
+        value: String(units.length),
+        cls: units.length > 0 ? 'green' : 'muted',
+      },
+      {
+        icon: cityPanelChipIcon('tb-army', 14),
+        label: 'Kolejka',
+        value: String(rqLen),
+        cls: rqLen > 0 ? 'blue' : 'muted',
+      },
+    ]);
+  }
 
   if (units.length === 0) {
     mount.appendChild(el('div', 'muted', '(brak jednostek do kupienia — zbadaj technologie / Koszary)'));
+    if (w4) appendRecruitmentQueue(mount, city, true, { w4: true });
     return;
   }
 
-  const scroll = createScrollList(
-    'recruit-scroll',
-    opts?.visibleRows != null ? { visible: opts.visibleRows, rowEm: 4.2 } : undefined,
-  );
+  const visible = opts?.visibleRows ?? LIST_SCROLL_VISIBLE_CATALOG;
+  const scroll = el('div', 'unit-recruit-scroll');
+  scroll.style.setProperty('--unit-recruit-visible', String(visible));
+  const grid = el('div', 'unit-recruit-grid');
+  scroll.appendChild(grid);
   for (const it of units) {
-    appendUnitItemRow(scroll, city, it, data, skarb);
+    appendUnitRecruitCard(grid, city, it, data, skarb);
   }
   mount.appendChild(scroll);
+  if (w4) appendRecruitmentQueue(mount, city, true, { w4: true });
 }
 
 function buildUpgradeBonusDetailCard(
@@ -4540,7 +4994,7 @@ function renderBuildingsOwned(
     if (scroll) mount.appendChild(scroll);
   } else {
     ['Spichlerz', 'Cegielnia', 'Targowisko', 'Świątynia'].forEach(n =>
-      mount.appendChild(el('div', 'bld', `<span class="bi">\u{1F3DB}️</span><span class="bn">${n}</span>`)));
+      mount.appendChild(el('div', 'bld', `${cityPanelChipIconWrap('cp-buildings', 14)}<span class="bn">${n}</span>`)));
   }
 }
 
@@ -4590,7 +5044,7 @@ function renderTopBarGarrison(mount: HTMLElement, city: City): void {
     ? 'Garnizon pusty — brak wojska w mieście'
     : `Garnizon — ${count} jedn. w mieście`;
   const icon = el('span', 'civ-v-garrison-icon');
-  icon.textContent = '🛡';
+  icon.innerHTML = cityPanelChipIconWrap('chip-garrison', 18);
   label.appendChild(icon);
   const name = el('span');
   name.textContent = 'Garnizon';
@@ -4616,7 +5070,7 @@ function renderTopBarGarrison(mount: HTMLElement, city: City): void {
     const low = pct < 40;
     const chip = el('div', 'civ-v-garrison-chip');
     chip.innerHTML =
-      `<span class="gi">⚔</span><span class="gn">${u.nazwa}</span>` +
+      `<span class="gi">${cityPanelChipIconWrap('tb-army', 14)}</span><span class="gn">${u.nazwa}</span>` +
       `<span class="hpb"><span class="hpf ${low ? 'hpl' : ''}" style="width:${pct}%"></span></span>`;
     chip.title = `${u.nazwa} · ${hp}/${max} HP`;
     mount.appendChild(chip);
@@ -4666,10 +5120,10 @@ const TEREN_COL: Record<TerenBazowy, string> = {
   [TerenBazowy.Laka]: '#243a24', [TerenBazowy.Rownina]: '#3f3815',
   [TerenBazowy.Pustynia]: '#4a3a18', [TerenBazowy.Wzgorza]: '#3a2f18', [TerenBazowy.Gory]: '#2e2e2e',
 };
-const TEREN_ICON: Record<TerenBazowy, string> = {
-  [TerenBazowy.Morze]: '\u{1F30A}', [TerenBazowy.Wybrzeze]: '\u{1F30A}',
-  [TerenBazowy.Laka]: '\u{1F33F}', [TerenBazowy.Rownina]: '\u{1F33E}',
-  [TerenBazowy.Pustynia]: '\u{1F3DC}️', [TerenBazowy.Wzgorza]: '⛰️', [TerenBazowy.Gory]: '\u{1F3D4}️',
+const TEREN_LETTER: Record<TerenBazowy, string> = {
+  [TerenBazowy.Morze]: '~', [TerenBazowy.Wybrzeze]: '~',
+  [TerenBazowy.Laka]: 'Ł', [TerenBazowy.Rownina]: 'R',
+  [TerenBazowy.Pustynia]: 'P', [TerenBazowy.Wzgorza]: 'W', [TerenBazowy.Gory]: 'G',
 };
 function hexDist(q1: number, r1: number, q2: number, r2: number): number {
   const dq = q2 - q1, dr = r2 - r1;
@@ -4740,10 +5194,14 @@ function buildOkolicaDetailCard(
 
   const wN = workedCount !== undefined ? workedCount : '—';
   const rTxt = Rwork !== undefined ? `r${Rwork}` : 'r?';
-  const cultTxt = borderR > 0 ? `🎭 +${borderR}` : '🎭 0';
+  const cultTxt = borderR > 0
+    ? `${cityPanelChipIconWrap('res-culture', 14)} +${borderR}`
+    : `${cityPanelChipIconWrap('res-culture', 14)} 0`;
   const summary = el('div', 'dc-summary muted');
   summary.style.cssText = 'font-size:0.88em;margin-bottom:0.35em;';
-  summary.textContent = `👤 ${wN}/${city.population} · ${rTxt} · ${cultTxt}`;
+  summary.innerHTML = cpInlineIcons(
+    `${cityPanelChipIconWrap('chip-manpower', 14)} ${wN}/${city.population} · ${rTxt} · ${cultTxt}`,
+  );
   card.appendChild(summary);
 
   appendDetailSection(card, 'Zasięg i pola');
@@ -4767,10 +5225,10 @@ function buildOkolicaDetailCard(
   appendDetailSection(card, 'Profile i tryb');
   const g3 = appendDetailGrid(card);
   const focusLbl: Record<OkolicaFocus, string> = {
-    zywnosc: '🌾 Żywność',
-    produkcja: '🔨 Produkcja',
-    podatki: '💰 Podatki',
-    zrownowazone: '⚖ Zrównoważone',
+    zywnosc: `${cityPanelChipIconWrap('chip-grain', 14)} Żywność`,
+    produkcja: `${cityPanelChipIconWrap('res-work', 14)} Produkcja`,
+    podatki: `${cityPanelChipIconWrap('res-treasury', 14)} Podatki`,
+    zrownowazone: `${cityPanelChipIconWrap('cp-order', 14)} Zrównoważone`,
   };
   gridDetailRow(g3, 'Profil auto', focusLbl[focus] ?? focus);
   gridDetailRow(g3, 'Tryb', tryb === 'reczny' ? 'Ręczny 👤 na mapie' : 'Automatyczny');
@@ -4806,9 +5264,8 @@ function buildOkolicaDetailCard(
   );
 
   const note = el('div', 'dc-note');
-  note.style.fontStyle = 'normal';
-  note.textContent = clickHint.trim()
-    || 'Profile ustawiają priorytet pól (🌾 🔨 💰). Pełne statystyki i algorytm powyżej.';
+  setNoteHtml(note, clickHint.trim()
+    || `Profile ustawiają priorytet pól (${cityPanelChipIconWrap('chip-grain', 14)} ${cityPanelChipIconWrap('res-work', 14)} ${cityPanelChipIconWrap('res-treasury', 14)}). Pełne statystyki i algorytm powyżej.`);
   card.appendChild(note);
   return card;
 }
@@ -4849,9 +5306,9 @@ function tileYieldLabel(hex: Hex): string {
     ulepszenieKey: normalizeImprovementKey(String(hex.ulepszenie ?? 'brak')),
   });
   const parts: string[] = [];
-  if (y.zywnosc > 0) parts.push(`+${y.zywnosc} 🌾`);
-  if (y.praca > 0) parts.push(`+${y.praca} 🔨`);
-  if (y.handel > 0) parts.push(`+${y.handel} 💰`);
+  if (y.zywnosc > 0) parts.push(`+${y.zywnosc} ${cityPanelChipIconWrap('chip-grain', 12)}`);
+  if (y.praca > 0) parts.push(`+${y.praca} ${cityPanelChipIconWrap('res-work', 12)}`);
+  if (y.handel > 0) parts.push(`+${y.handel} ${cityPanelChipIconWrap('res-treasury', 12)}`);
   return parts.length ? parts.join(' ') : '0';
 }
 
@@ -4969,7 +5426,7 @@ function renderWorkedPreview(
     txt.setAttribute('text-anchor', 'middle'); txt.setAttribute('dominant-baseline', 'central');
     txt.setAttribute('font-size', String(Math.round(SIZE * 0.8)));
     txt.setAttribute('pointer-events', 'none');
-    txt.textContent = c.isCity ? '\u{1F3DB}️' : (c.hex ? (c.isLas ? '\u{1F332}' : (TEREN_ICON[c.teren] ?? '')) : '');
+    txt.textContent = c.isCity ? 'M' : (c.hex ? (c.isLas ? 'L' : (TEREN_LETTER[c.teren] ?? '')) : '');
     svg.appendChild(txt);
 
     if (c.hex && c.isCity) {
@@ -4996,15 +5453,16 @@ function renderWorkedPreview(
 
     const workers = c.isWorked ? (reczne?.[`${c.q},${c.r}`] ?? 1) : undefined;
     if (!c.isCity && workers !== undefined && workers > 0) {
-      const wtxt = document.createElementNS(ns, 'text');
-      wtxt.setAttribute('x', String(c.cx));
-      wtxt.setAttribute('y', String(c.cy + SIZE * 0.55));
-      wtxt.setAttribute('text-anchor', 'middle');
-      wtxt.setAttribute('font-size', String(Math.round(SIZE * 0.45)));
-      wtxt.setAttribute('fill', '#e0b24a');
-      wtxt.setAttribute('pointer-events', 'none');
-      wtxt.textContent = `👤${workers}`;
-      svg.appendChild(wtxt);
+      const fo = document.createElementNS(ns, 'foreignObject');
+      fo.setAttribute('x', String(c.cx - SIZE * 0.35));
+      fo.setAttribute('y', String(c.cy + SIZE * 0.15));
+      fo.setAttribute('width', String(SIZE * 0.9));
+      fo.setAttribute('height', String(SIZE * 0.55));
+      fo.setAttribute('pointer-events', 'none');
+      fo.innerHTML =
+        `<div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;align-items:center;justify-content:center;gap:0.06em;font-size:${Math.round(SIZE * 0.42)}px;color:#e0b24a;line-height:1">` +
+        `${cityPanelChipIconWrap('chip-manpower', 12)}<span>${workers}</span></div>`;
+      svg.appendChild(fo);
     }
     if (c.hex && c.isWorked) {
       const y = tileYield({
@@ -5046,8 +5504,8 @@ function renderWorkedPreview(
       btn.style.height = `${pctD}%`;
       const hasW = okolicaTileHasWorkerAt(city, c.q, c.r, tryb, reczne, workedSet, c.d);
       btn.title = hasW
-        ? `Zabierz 👤 · plon: ${tileYieldLabel(c.hex)}`
-        : `Przypisz 👤 · plon: ${tileYieldLabel(c.hex)}`;
+        ? `Zabierz pracownika · plon: ${tileYieldLabel(c.hex)}`
+        : `Przypisz pracownika · plon: ${tileYieldLabel(c.hex)}`;
       btn.addEventListener('click', (ev) => {
         ev.stopPropagation();
         ev.preventDefault();
@@ -5093,7 +5551,7 @@ function renderOkolica(root: HTMLElement, city: City, map: GameMap): void {
   const borderR = cfg.getCultureState?.(city.id)?.borderRadius ?? 0;
   const tilesInRange = Rwork !== undefined ? 1 + 3 * Rwork * (Rwork + 1) : undefined;
   const clickHint = cfg.onOkolicaTileAdjust
-    ? 'Klik heks = przypisz/zabierz 👤. Centrum daje plony bez pracownika. Scroll = zoom.'
+    ? 'Klik heks = przypisz/zabierz pracownika. Centrum daje plony bez pracownika. Scroll = zoom.'
     : '';
 
   const buildDetail = () => buildOkolicaDetailCard(city, {
@@ -5156,7 +5614,9 @@ function renderOkolica(root: HTMLElement, city: City, map: GameMap): void {
     } else {
       modeEl.style.display = '';
       modeEl.className = 'okolica-mode-hint';
-      modeEl.textContent = `${tryb === 'reczny' ? 'Ręczny' : 'Auto'} · ${worked?.length ?? 0}/${city.population} 👤`;
+      modeEl.innerHTML = cpInlineIcons(
+        `${tryb === 'reczny' ? 'Ręczny' : 'Auto'} · ${worked?.length ?? 0}/${city.population} ${cityPanelChipIconWrap('chip-manpower', 14)}`,
+      );
     }
   }
 
@@ -5174,13 +5634,13 @@ function renderOkolica(root: HTMLElement, city: City, map: GameMap): void {
     statsEl.innerHTML = [
       okStat('Zasięg roboczy', Rwork !== undefined ? `r${Rwork}` : '—', Rwork !== undefined ? rangeName(Rwork) : 'gdy silnik dostarczy'),
       okStat('Pól w zasięgu', tilesInRange !== undefined ? String(tilesInRange) : '—', 'heksów'),
-      okStat('Pól obrabianych', worked ? String(worked.length) : '—', `👤 max ${city.population} obok + 🏛 centrum`),
+      okStat('Pól obrabianych', worked ? String(worked.length) : '—', cpInlineIcons(`${cityPanelChipIconWrap('chip-manpower', 12)} max ${city.population} obok + ${cityPanelChipIconWrap('cp-buildings', 12)} centrum`)),
       okStat('Granica kultury', borderR > 0 ? `+${borderR}` : '0', borderR > 0 ? 'pierścień(e)' : 'brak'),
     ].join('');
     if (hintEl) {
       hintEl.classList.remove('is-collapsed');
       const fullClick = cfg.onOkolicaTileAdjust
-        ? ' 🏛 = plony z terenu (bez 👤). Max 👤 obok = ludność. Klik: przypisz/zabierz. Pełna pula + wolne pole = brak efektu. „↩ Przywróć auto”.'
+        ? cpInlineIcons(` ${cityPanelChipIconWrap('cp-buildings', 12)} = plony z terenu (bez ${cityPanelChipIconWrap('chip-manpower', 12)}). Max ${cityPanelChipIconWrap('chip-manpower', 12)} obok = ludność. Klik: przypisz/zabierz. Pełna pula + wolne pole = brak efektu. „↩ Przywróć auto”.`)
         : '';
       if (Rwork !== undefined) {
         const total = 1 + 3 * Rwork * (Rwork + 1) + (borderR > 0 ? ringsTiles(Rwork, borderR) : 0);
@@ -5305,8 +5765,8 @@ function skeleton(city: City, view: CityView | null): string {
               <div><span class="sw" style="background:#2e2e2e;"></span>Góry</div>
               <div><span class="sw" style="background:#0d2236;"></span>Woda</div>
               <div><span class="sw" style="outline:2px solid #66aaff;"></span>Centrum miasta</div>
-              <div style="margin-top:0.3em;"><span class="sw" style="outline:2px solid rgba(107,191,89,.9);"></span>Obrabiane (👤 = ludność N)</div>
-              <div><span class="sw" style="outline:2px solid #e0b24a;"></span>Centrum — plony z terenu (bez 👤)</div>
+              <div style="margin-top:0.3em;"><span class="sw" style="outline:2px solid rgba(107,191,89,.9);"></span>Obrabiane (W = ludność N)</div>
+              <div><span class="sw" style="outline:2px solid #e0b24a;"></span>Centrum — plony z terenu (bez W)</div>
             </div>
             <div id="cs-okhint" class="okhint"></div>
           </div>
@@ -5314,7 +5774,7 @@ function skeleton(city: City, view: CityView | null): string {
       `)}
     </div>
     <div id="ftr">
-      <button class="btn" title="Wróć do mapy" id="cs-mapbtn">\u{1F5FA} Mapa</button>
+      <button class="btn" title="Wróć do mapy" id="cs-mapbtn"><span class="hdr-ic">${cityPanelBrandIcon('chip-map', 18)}</span> Mapa</button>
       <div id="ftr-r"><span class="muted">Esc — zamknij</span><span>Skarb: <span class="gold">${PH()}</span></span></div>
     </div>
   </div>`;
@@ -5691,9 +6151,9 @@ function buildHandelDetailCard(
   card.appendChild(head);
 
   const intro = el('div', 'dc-note');
-  intro.style.fontStyle = 'normal';
-  intro.textContent =
-    `Handel z pól okolicy to osobny strumień 💰. Najpierw odejmujemy stratę (korupcję), potem suwaki dzielą resztę między skarbiec, naukę i ${HANDEL_ZAMOZNOSC_LABEL.toLowerCase()}. Suma suwaków = 100%, kroki 10%.`;
+  setNoteHtml(intro,
+    `Handel z pól okolicy to osobny strumień 💰. Najpierw odejmujemy stratę (korupcję), potem suwaki dzielą resztę między skarbiec, naukę i ${HANDEL_ZAMOZNOSC_LABEL.toLowerCase()}. Suma suwaków = 100%, kroki 10%.`,
+  );
   card.appendChild(intro);
 
   const todo = el('div', 'dc-note');
@@ -5766,16 +6226,16 @@ function renderHandelSlidersPanel(mount: HTMLElement, city: City, view: CityView
   if (view) {
     appendTabIndicators(mount, [
       {
-        icon: '📈',
+        icon: cityPanelChipIcon('cp-trade', 14),
         label: 'Handel',
         value: `${est.netto}`,
         cls: 'gold',
         title: `Brutto ~${est.brutto} · korupcja −${est.korupcja}`,
       },
-      { icon: '💰', label: 'Pieniądz', value: `${signed(view.pieniadz)}`, cls: 'blue' },
-      { icon: '', label: 'Nauka', value: `${signed(view.nauka)}`, cls: 'blue' },
+      { icon: cityPanelChipIcon('res-treasury', 14), label: 'Pieniądz', value: `${signed(view.pieniadz)}`, cls: 'blue' },
+      { icon: cityPanelChipIcon('res-science', 14), label: 'Nauka', value: `${signed(view.nauka)}`, cls: 'blue' },
       {
-        icon: '🎭',
+        icon: cityPanelChipIcon('res-culture', 14),
         label: 'Kultura',
         value: `${signed(view.kultura)}`,
         cls: 'gold',
@@ -5848,26 +6308,26 @@ function renderTopStatsBar(mount: HTMLElement, city: City, view: CityView | null
   const skarb = cfg.getTreasury?.(city.ownerId);
   const orderSt = cfg.getOrderState?.(city.id);
   const por = orderSt?.porPct;
-  const cell = (label: string, val: string, cls = '') =>
-    `<td class="civ-ux-td"><span class="civ-ux-tl">${label}</span><span class="civ-ux-tv ${cls}">${val}</span></td>`;
+  const cell = (iconId: string, label: string, val: string, cls = '') =>
+    `<td class="civ-ux-td"><span class="civ-ux-tl">${cityPanelChipIconWrap(iconId, 14)}<span>${label}</span></span><span class="civ-ux-tv ${cls}">${val}</span></td>`;
 
   const rows = view
     ? [
-        cell('👥 Ludność', String(city.population)),
-        cell('Epoka', String(epoch)),
-        cell('🍞 Żywność', signed(view.zywnoscNetto), view.zywnoscNetto >= 0 ? 'green' : 'red'),
-        cell('🔨 Praca', signed(view.praca), 'gold'),
-        cell('💰 Pieniądz', signed(view.pieniadz), 'blue'),
-        cell('Nauka', signed(view.nauka), 'blue'),
-        cell('🎭 Kultura', signed(view.kultura), 'gold'),
-        por != null ? cell('⚖ Porządek', `${por.toFixed(0)}%`, por >= 60 ? 'green' : por >= 30 ? 'gold' : 'red') : '',
-        skarb != null ? cell('Skarb', String(skarb), 'gold') : '',
+        cell('res-population', 'Ludność', String(city.population)),
+        cell('cp-order', 'Epoka', String(epoch)),
+        cell('field-food', 'Żywność', signed(view.zywnoscNetto), view.zywnoscNetto >= 0 ? 'green' : 'red'),
+        cell('res-work', 'Praca', signed(view.praca), 'gold'),
+        cell('res-treasury', 'Pieniądz', signed(view.pieniadz), 'blue'),
+        cell('res-science', 'Nauka', signed(view.nauka), 'blue'),
+        cell('res-culture', 'Kultura', signed(view.kultura), 'gold'),
+        por != null ? cell('cp-order', 'Porządek', `${por.toFixed(0)}%`, por >= 60 ? 'green' : por >= 30 ? 'gold' : 'red') : '',
+        skarb != null ? cell('res-treasury', 'Skarb', String(skarb), 'gold') : '',
       ].join('')
-    : cell('—', 'Brak danych', 'muted');
+    : cell('cp-order', '—', 'Brak danych', 'muted');
 
   mount.innerHTML =
     `<div class="civ-ux-top-bar">` +
-    `<span class="civ-ux-top-city">★ ${city.name}</span>` +
+    `<span class="civ-ux-top-city">${cityPanelChipIconWrap('chip-star', 14)} ${city.name}</span>` +
     `<table class="civ-ux-top-table"><tr>${rows}</tr></table>` +
     `<button type="button" class="civ-ux-top-close" id="civ-ux-close" title="Zamknij (Esc)">✕</button>` +
     `</div>`;
@@ -5886,7 +6346,6 @@ function appendSectionTitleWithDetails(
   buildDetail: () => HTMLElement,
 ): void {
   const head = el('div', 'ptitle');
-  head.style.cssText = 'display:flex;justify-content:space-between;align-items:baseline;gap:0.35em;';
   const left = el('span', '');
   left.innerHTML = titleHtml;
   head.appendChild(left);
@@ -6009,6 +6468,27 @@ function renderCityIconRail(
   mount.appendChild(rail);
 }
 
+function appendW4TabFooter(card: HTMLElement, city: City): void {
+  const foot = el('div', 'civ-w4-tab-foot');
+  renderSurowce(foot, city);
+  card.appendChild(foot);
+}
+
+function withW4TabCard(
+  parent: HTMLElement,
+  id: string | undefined,
+  city: City,
+  render: (body: HTMLElement) => void,
+): void {
+  const card = el('div', 'civ-w4-tab-card');
+  if (id) card.id = id;
+  const body = el('div', 'civ-w4-tab-body');
+  card.appendChild(body);
+  parent.appendChild(card);
+  render(body);
+  appendW4TabFooter(card, city);
+}
+
 function renderLeftPanelTab(
   mount: HTMLElement,
   tab: CityPanelProductionTab,
@@ -6024,12 +6504,12 @@ function renderLeftPanelTab(
       renderBuildSplitPanel(mount, city, data, view);
       break;
     case 'rekrutacja':
-      renderPurchasableUnits(
-        appendPanel(mount, 'cs-units'),
-        city,
-        data,
-        { visibleRows: LIST_SCROLL_VISIBLE_CATALOG },
-      );
+      withW4TabCard(mount, 'cs-units', city, body => {
+        renderPurchasableUnits(body, city, data, {
+          visibleRows: LIST_SCROLL_VISIBLE_CATALOG,
+          w4: true,
+        });
+      });
       break;
     default:
       mount.appendChild(el('div', 'muted', '—'));
@@ -6048,35 +6528,38 @@ function renderRightPanelTab(
   mount.innerHTML = '';
   switch (tab) {
     case 'spichlerz':
-      renderMagazyn(appendPanel(mount, 'cs-magazyn'), city, view);
+      withW4TabCard(mount, 'cs-magazyn', city, body => renderMagazyn(body, city, view));
       break;
-    case 'handel': {
-      renderHandelSlidersPanel(appendPanel(mount), city, view, data);
-      renderWealth(appendPanel(mount), city, data, view);
+    case 'handel':
+      withW4TabCard(mount, undefined, city, body => {
+        renderHandelSlidersPanel(body, city, view, data);
+        renderWealth(body, city, data, view);
+      });
       break;
-    }
-    case 'praca': {
-      const pracaPanel = appendPanel(mount, 'cs-praca');
-      if (cfg.onPodzialPracyChange) {
-        renderPodzialPracy(pracaPanel, city, view, data);
-      } else {
-        pracaPanel.appendChild(el('div', 'muted', 'Podział pracy niedostępny (brak hooka silnika).'));
-      }
+    case 'praca':
+      withW4TabCard(mount, 'cs-praca', city, body => {
+        if (cfg.onPodzialPracyChange) {
+          renderPodzialPracy(body, city, view, data);
+        } else {
+          body.appendChild(el('div', 'muted', 'Podział pracy niedostępny (brak hooka silnika).'));
+        }
+      });
       break;
-    }
     case 'porzadek':
-      if (data) renderSpoleczenstwo(appendPanel(mount, 'cs-spoleczenstwo'), city, data);
-      else mount.appendChild(el('div', 'muted', 'Brak danych społeczeństwa'));
+      if (data) {
+        withW4TabCard(mount, 'cs-spoleczenstwo', city, body => renderSpoleczenstwo(body, city, data));
+      } else mount.appendChild(el('div', 'muted', 'Brak danych społeczeństwa'));
       break;
     case 'zdrowie':
-      if (data) renderZdrowie(appendPanel(mount, 'cs-zdrowie'), city, map, data);
-      else mount.appendChild(el('div', 'muted', 'Brak danych zdrowia'));
+      if (data) {
+        withW4TabCard(mount, 'cs-zdrowie', city, body => renderZdrowie(body, city, map, data));
+      } else mount.appendChild(el('div', 'muted', 'Brak danych zdrowia'));
       break;
     case 'kultura':
-      renderKultura(appendPanel(mount, 'cs-kultura'), city, view);
+      withW4TabCard(mount, 'cs-kultura', city, body => renderKultura(body, city, view));
       break;
     case 'religia':
-      renderReligia(appendPanel(mount, 'cs-religia'), city, view);
+      withW4TabCard(mount, 'cs-religia', city, body => renderReligia(body, city, view));
       break;
     default:
       mount.appendChild(el('div', 'muted', '—'));

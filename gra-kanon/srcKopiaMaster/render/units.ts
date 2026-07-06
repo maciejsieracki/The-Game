@@ -59,6 +59,14 @@ function terrainTopY(hex: Hex): number {
   return spec.height + spec.yOffset;
 }
 
+/** Relief żetonu na podniesionym terenie — żeby jednostka nie tonęła w kopcu wzgórza
+ *  / szczycie góry (dekoracje są w centrum heksa PONAD pryzmem). Wartości strojone. */
+function unitTerrainRelief(t: TerenBazowy): number {
+  if (t === TerenBazowy.Wzgorza) return HEX_R * 0.22;
+  if (t === TerenBazowy.Gory)    return HEX_R * 0.34;
+  return 0;
+}
+
 // ---------------------------------------------------------------------------
 // Owner color palette
 // ---------------------------------------------------------------------------
@@ -212,6 +220,18 @@ const SELECTION_HEX_LIFT    = ROUTE_Y_LIFT;
 const SELECTION_HEX_COLOR   = 0xe0b24a;
 const SELECTION_HEX_OPACITY = 0.92;
 
+// UNITS OWN/ENEMY: delikatna obwódka właściciela ZAWSZE widoczna (niebieski=nasz,
+// czerwony=wróg). Zaznaczenie dokłada mocny setSelectionHex (gruby, złoty).
+// TODO: docelowo kolor z frakcji cywilizacji zamiast binarnie own/enemy.
+const OWNER_RING_OUTER   = HEX_R * 0.90;
+const OWNER_RING_WIDTH   = 0.045 * HEX_R;
+const OWNER_RING_INNER   = OWNER_RING_OUTER - OWNER_RING_WIDTH;
+const OWNER_RING_OPACITY = 0.42;
+const OWNER_RING_LIFT    = 0.006 * HEX_R;
+const OWNER_RING_COLOR_OWN   = 0x53a6ff;
+const OWNER_RING_COLOR_ENEMY = 0xe05a52;
+if (typeof globalThis !== 'undefined') { (globalThis as any).__CIV_OWNER_RING = 'civ-owner-ring'; }
+
 let geoSelectionHexRing: THREE.ShapeGeometry | null = null;
 function appendPointyTopHex(path: THREE.Path | THREE.Shape, radius: number, reverse: boolean): void {
   const order = reverse ? [5, 4, 3, 2, 1, 0] : [0, 1, 2, 3, 4, 5];
@@ -234,6 +254,18 @@ function getGeoSelectionHexRing(): THREE.ShapeGeometry {
   shape.holes.push(hole);
   geoSelectionHexRing = new THREE.ShapeGeometry(shape);
   return geoSelectionHexRing;
+}
+
+let geoOwnerHexRing: THREE.ShapeGeometry | null = null;
+function getGeoOwnerHexRing(): THREE.ShapeGeometry {
+  if (geoOwnerHexRing) return geoOwnerHexRing;
+  const shapeO = new THREE.Shape();
+  appendPointyTopHex(shapeO, OWNER_RING_OUTER, false);
+  const holeO = new THREE.Path();
+  appendPointyTopHex(holeO, OWNER_RING_INNER, true);
+  shapeO.holes.push(holeO);
+  geoOwnerHexRing = new THREE.ShapeGeometry(shapeO);
+  return geoOwnerHexRing;
 }
 
 // ---------------------------------------------------------------------------
@@ -7373,7 +7405,8 @@ export class UnitRenderer {
     const hex = this.hexGrid.get(key);
     const topY = hex ? terrainTopY(hex) : 0;
     const onCity = this.cityHexKeys.has(key);
-    const y = topY + TOKEN_LIFT + (onCity ? CITY_UNIT_EXTRA_LIFT : 0);
+    const relief = hex ? unitTerrainRelief(hex.terenBazowy) : 0;
+    const y = topY + TOKEN_LIFT + (onCity ? CITY_UNIT_EXTRA_LIFT : 0) + relief;
     const { x, z } = axialToWorld(q, r, HEX_R);
     if (!onCity) return { x, y, z };
     const a = CITY_UNIT_OFFSET_ANGLE;
@@ -7387,6 +7420,27 @@ export class UnitRenderer {
   private _applyCityTokenStyle(obj: THREE.Object3D, onCity: boolean): void {
     obj.scale.setScalar(onCity ? CITY_UNIT_SCALE : 1);
     obj.renderOrder = onCity ? 55 : 0;
+  }
+
+  /**
+   * Delikatna obwódka właściciela jako DZIECKO żetonu (podąża za ruchem/stackiem).
+   * ownerId 0 = gracz → niebieski; inaczej → czerwony. Materiał → userData['mats']
+   * (sprząta _disposeToken); geometria = współdzielony singleton (dispose w dispose()).
+   */
+  private _attachOwnerRing(group: THREE.Group, ownerId: number): void {
+    const ownMat = new THREE.MeshBasicMaterial({
+      color: ownerId === 0 ? OWNER_RING_COLOR_OWN : OWNER_RING_COLOR_ENEMY,
+      transparent: true,
+      opacity: OWNER_RING_OPACITY,
+      depthWrite: false,
+      side: THREE.DoubleSide,
+    });
+    const ownRing = new THREE.Mesh(getGeoOwnerHexRing(), ownMat);
+    ownRing.rotation.x = -Math.PI / 2;
+    ownRing.position.y = OWNER_RING_LIFT;
+    group.add(ownRing);
+    const mats = group.userData['mats'] as THREE.Material[] | undefined;
+    if (mats) mats.push(ownMat); else group.userData['mats'] = [ownMat];
   }
 
   /**
@@ -7424,6 +7478,7 @@ export class UnitRenderer {
           group.userData['cat']    = cat;
           group.userData['typeId'] = typeId;
 
+          this._attachOwnerRing(group, unit.ownerId);
           this._registerToken(unit.id, group);
           this.scene.add(group);
         } else {
@@ -7440,6 +7495,7 @@ export class UnitRenderer {
         group.userData['cat']    = cat;
         group.userData['typeId'] = typeId;
 
+        this._attachOwnerRing(group, unit.ownerId);
         this._registerToken(unit.id, group);
         this.scene.add(group);
       }
@@ -7589,12 +7645,15 @@ export class UnitRenderer {
   }
 
   /** Gruba złota heksagonalna obwódka na zaznaczonym polu armii (Q-ARMIA-1). */
-  setSelectionHex(q: number, r: number): void {
+  setSelectionHex(q: number, r: number, ownerId = 0): void {
     this.clearSelectionHex();
     const hex = this.hexGrid.get(`${q},${r}`);
     const topY = hex ? terrainTopY(hex) : 0;
+    const relief = hex ? unitTerrainRelief(hex.terenBazowy) : 0;
+    // Zaznaczenie w kolorze WŁAŚCICIELA (identyczny z obwódką bez zaznaczenia),
+    // tylko grubszy pierścień + wyższa nieprzezroczystość. own=niebieski / wróg=czerwony.
     const mat = new THREE.MeshBasicMaterial({
-      color: SELECTION_HEX_COLOR,
+      color: ownerId === 0 ? OWNER_RING_COLOR_OWN : OWNER_RING_COLOR_ENEMY,
       transparent: true,
       opacity: SELECTION_HEX_OPACITY,
       depthWrite: false,
@@ -7604,7 +7663,7 @@ export class UnitRenderer {
     const ring = new THREE.Mesh(getGeoSelectionHexRing(), mat);
     ring.rotation.x = -Math.PI / 2;
     const { x, z } = axialToWorld(q, r, HEX_R);
-    ring.position.set(x, topY + SELECTION_HEX_LIFT, z);
+    ring.position.set(x, topY + SELECTION_HEX_LIFT + relief, z);
     this.scene.add(ring);
     this.selectionRing = ring;
   }
@@ -7731,6 +7790,7 @@ export class UnitRenderer {
 
     geoHighlight?.dispose(); geoHighlight = null;
     geoSelectionHexRing?.dispose(); geoSelectionHexRing = null;
+    geoOwnerHexRing?.dispose(); geoOwnerHexRing = null;
 
     geoHatBrim?.dispose();      geoHatBrim      = null;
     geoHatCrown?.dispose();     geoHatCrown     = null;

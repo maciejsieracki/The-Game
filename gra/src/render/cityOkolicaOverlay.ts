@@ -1,6 +1,6 @@
 /**
  * cityOkolicaOverlay.ts — nakładka okolicy miasta na mapie 3D (Civ V style).
- * Warstwa renderu: siatka zasięgu, podświetlenie obrabianych pól, etykiety plonów + badge W.
+ * Warstwa renderu: siatka zasięgu, podświetlenie obrabianych pól, ikony plonów + 👤.
  * Używane przez okolicapreview; docelowo Integrator wpienie przy otwartym panelu miasta.
  */
 import * as THREE from 'three';
@@ -44,7 +44,7 @@ export interface CityOkolicaOverlayParams {
   cityQ: number;
   cityR: number;
   range: number;
-  /** Klucze heksów z przypisanym W (bez centrum miasta). */
+  /** Klucze heksów z przypisanym 👤 (bez centrum miasta). */
   workedKeys: Set<string>;
   yieldOf: (q: number, r: number) => TileYield;
   showYields?: boolean;
@@ -56,19 +56,13 @@ function hexTopY(map: GameMap, q: number, r: number, yOffset: number): number {
   return terrainSurfaceTopY(teren, GAME_MAP_RENDER_STYLE, yOffset);
 }
 
-type YieldLine = { tag: string; color: string; value: number };
-
-const YIELD_CANVAS: Record<'zywnosc' | 'praca' | 'handel', { tag: string; color: string }> = {
-  zywnosc: { tag: 'Ż', color: '#e8d88a' },
-  praca: { tag: 'P', color: '#d98a3a' },
-  handel: { tag: 'H', color: '#7ad0a0' },
-};
+type YieldLine = { emoji: string; value: number };
 
 function yieldLabelLines(y: TileYield): YieldLine[] {
   const lines: YieldLine[] = [];
-  if (y.zywnosc && y.zywnosc > 0) lines.push({ ...YIELD_CANVAS.zywnosc, value: y.zywnosc });
-  if (y.praca && y.praca > 0) lines.push({ ...YIELD_CANVAS.praca, value: y.praca });
-  if (y.handel && y.handel > 0) lines.push({ ...YIELD_CANVAS.handel, value: y.handel });
+  if (y.zywnosc && y.zywnosc > 0) lines.push({ emoji: '🍞', value: y.zywnosc });
+  if (y.praca && y.praca > 0) lines.push({ emoji: '🔨', value: y.praca });
+  if (y.handel && y.handel > 0) lines.push({ emoji: '💰', value: y.handel });
   return lines;
 }
 
@@ -76,17 +70,17 @@ function yieldLabelLines(y: TileYield): YieldLine[] {
 const YIELD_FONT_SCALE = 1.22;
 /** Skala w świecie 3D — lekko powyżej bazowej, ale mieści się na heksie. */
 const YIELD_WORLD_SCALE = 1.35 * 1.04;
-/** Złote cyfry tylko na polu z W (produkcyjnym); reszta — białe jak wcześniej. */
+/** Złote cyfry tylko na polu z 👤 (produkcyjnym); reszta — białe jak wcześniej. */
 const YIELD_NUMBER_GOLD = '#e0b24a';
 const YIELD_NUMBER_DEFAULT = '#fffef8';
-const YIELD_TAG_FONT = (px: number) =>
-  `bold ${px}px Arial, Helvetica, sans-serif`;
+const YIELD_EMOJI_FONT = (px: number) =>
+  `${px}px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif`;
 const YIELD_DIGIT_FONT = (px: number) =>
   `bold ${px}px Arial, Helvetica, sans-serif`;
 
-/** Powiększenie cyfr (i lekko tagów) na polu produkcyjnym z W. */
+/** Powiększenie cyfr (i lekko emoji) na polu produkcyjnym z 👤. */
 const YIELD_WORKED_DIGIT_SCALE = 1.28;
-const YIELD_WORKED_TAG_SCALE = 1.1;
+const YIELD_WORKED_EMOJI_SCALE = 1.1;
 
 function drawYieldLine(
   ctx: CanvasRenderingContext2D,
@@ -97,7 +91,7 @@ function drawYieldLine(
   worked: boolean,
 ): void {
   const numStr = String(line.value);
-  const tagPx = worked ? Math.round(fontPx * YIELD_WORKED_TAG_SCALE) : fontPx;
+  const emojiPx = worked ? Math.round(fontPx * YIELD_WORKED_EMOJI_SCALE) : fontPx;
   const digitPx = worked ? Math.round(fontPx * YIELD_WORKED_DIGIT_SCALE) : fontPx;
 
   ctx.textAlign = 'left';
@@ -105,16 +99,16 @@ function drawYieldLine(
   ctx.shadowColor = 'transparent';
   ctx.shadowBlur = 0;
 
-  ctx.font = YIELD_TAG_FONT(tagPx);
-  const tagW = ctx.measureText(line.tag).width;
+  ctx.font = YIELD_EMOJI_FONT(emojiPx);
+  const emojiW = ctx.measureText(line.emoji).width;
   ctx.font = YIELD_DIGIT_FONT(digitPx);
   const numW = ctx.measureText(numStr).width;
-  let x = cx - (tagW + numW) / 2;
+  let x = cx - (emojiW + numW) / 2;
 
-  ctx.font = YIELD_TAG_FONT(tagPx);
-  ctx.fillStyle = line.color;
-  ctx.fillText(line.tag, x, y);
-  x += tagW;
+  ctx.font = YIELD_EMOJI_FONT(emojiPx);
+  ctx.fillStyle = 'rgba(255,255,255,0.95)';
+  ctx.fillText(line.emoji, x, y);
+  x += emojiW;
 
   ctx.font = YIELD_DIGIT_FONT(digitPx);
   ctx.fillStyle = worked ? YIELD_NUMBER_GOLD : YIELD_NUMBER_DEFAULT;
@@ -155,7 +149,7 @@ function makeLabelSprite(lines: YieldLine[], worker: boolean): THREE.Sprite {
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillStyle = '#fff';
-    ctx.fillText('W', 64, badgeY + 1);
+    ctx.fillText('👤', 64, badgeY + 1);
   }
 
   ctx.font = YIELD_DIGIT_FONT(fontPx);

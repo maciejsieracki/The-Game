@@ -29,5 +29,30 @@ Zawartość funkcjonalna (już w roboczej, czeka na stempel + playtest):
   perf/hardwareProfile.ts, buildInfo.ts, map/genWorker.ts, map/mapGenAsync.ts.
 - Decyzja Macieja: OCZEKUJE (playtest po poprawce stempla).
 
-STATUS: OTWARTY
-CZEKAM-NA: integrator (stempel) → playtest Macieja → MASTER uzupełnia wpis → Cursor promuje
+STATUS: **ZASTĄPIONY przez PAKIET #1** (2026-07-06 20:17). Nie promować z tego wpisu.
+
+---
+
+## PAKIET #1 — 2026-07-06 20:17 ✅ PROMOWANY
+
+**Decyzja Macieja:** robocza przetestowana, na GitHubie (HEAD bad0c7f), promocja do kanonu.
+**Źródło robocza:** stempel wewn. `2026-07-06 18:10 · d744cd7956fb` · plik md5 `7856d3451a0cb3963bd3c50c032f5ad5`
+**Kanon po promocji:** stempel `KANON · 7856d345 · 2026-07-06 20:17` · `gra-kanon/Gra-KANON.html`
+**Finalna:** `Gra-FINALNA.html` (ten sam md5)
+
+Zawartość funkcjonalna (playtest Macieja 2026-07-06, rejestr bugów pusty):
+- Rzeki render wodospad + całość mapy C3/B0.6/B0.9/A5/H1/Batch7
+- UX: emoji→SVG (mapa, HUD, panel budowy imp-*), port W4 miasto, siatka rostera 6 kol.
+- KONTRAKT #8 ikony jednostek w stosie/panelu
+- Obwódki właściciela jednostek, tonięcie wzgórza, zaznaczenie, duże bitwy arena
+- Balans walki Macieja (Excel): HP×2, dystans×0.5, Falanga=40, 26 jedn. PL0 uzupełnione
+- Countery po polu `Typ` (counterTyp w combat.ts + battleScene.ts)
+
+Sync źródeł (Cursor przed promocją bundle):
+- `gra-robocza/srcKopiaMaster` → `gra/src` (61 plików)
+- `gra-robocza/data — kopia/units.json` (+ terrain-movement/yields) → `gra/data`
+
+Bramki: tsc=0 · smoke OK · combat 6/6
+Skrypt: `gra/tools/publish-kanon-snapshot.ps1`
+STATUS: **ZAMKNIĘTY**
+CZEKAM-NA: Maciej — opcjonalny test kanonu (`gra-kanon/START.html` Ctrl+F5)

@@ -881,7 +881,7 @@ function generateMap(width = DEFAULT_WIDTH, height = DEFAULT_HEIGHT, seed = 42, 
   purgeDesertEnclaveWater(hexes, width, height);
   const riversTier = genOpts?.worldDensity?.rivers ?? "medium";
   clearRiverMarks(hexes);
-  const { paths: riverPaths, kinds: riverPathKinds } = generateRivers(hexes, width, height, rand, {
+  let { paths: riverPaths, kinds: riverPathKinds } = generateRivers(hexes, width, height, rand, {
     minLen: wgn.riverTrace.minLen,
     maxLen: wgn.riverTrace.maxLen,
     margin: wgn.riverTrace.margin,
@@ -901,6 +901,7 @@ function generateMap(width = DEFAULT_WIDTH, height = DEFAULT_HEIGHT, seed = 42, 
   );
   stripRiverMarksFromOpenSea(hexes);
   stripDepositsFromWater(hexes);
+  ({ paths: riverPaths, kinds: riverPathKinds } = pruneOrphanRiverPaths(hexes, riverPaths, riverPathKinds, width, height));
   const startPositions = computeStartPositions(hexes, effectiveSeed, {
     minCount: 5,
     minDist: 5,
@@ -2831,6 +2832,7 @@ function mapHeightFromHexes(hexes) {
 }
 function sanitizeCoastHexes(hexes) {
   const valid = /* @__PURE__ */ new Set();
+  const queue = [];
   for (const [key, hex] of Object.entries(hexes)) {
     if (hex.terenBazowy !== "wybrzeze" /* Wybrzeze */) continue;
     const parts = key.split(",");
@@ -2840,25 +2842,22 @@ function sanitizeCoastHexes(hexes) {
       const nb = hexes[hexKey(q + dq, r + dr)];
       if (nb && isDryLandTerrain(nb.terenBazowy)) {
         valid.add(key);
+        queue.push(key);
         break;
       }
     }
   }
-  let propagated = true;
-  while (propagated) {
-    propagated = false;
-    for (const [key, hex] of Object.entries(hexes)) {
-      if (hex.terenBazowy !== "wybrzeze" /* Wybrzeze */ || valid.has(key)) continue;
-      const parts = key.split(",");
-      const q = Number(parts[0]);
-      const r = Number(parts[1]);
-      for (const [dq, dr] of HEX_DIRECTIONS) {
-        const nk = hexKey(q + dq, r + dr);
-        if (hexes[nk]?.terenBazowy === "wybrzeze" /* Wybrzeze */ && valid.has(nk)) {
-          valid.add(key);
-          propagated = true;
-          break;
-        }
+  while (queue.length > 0) {
+    const key = queue.pop();
+    const parts = key.split(",");
+    const q = Number(parts[0]);
+    const r = Number(parts[1]);
+    for (const [dq, dr] of HEX_DIRECTIONS) {
+      const nk = hexKey(q + dq, r + dr);
+      if (valid.has(nk)) continue;
+      if (hexes[nk]?.terenBazowy === "wybrzeze" /* Wybrzeze */) {
+        valid.add(nk);
+        queue.push(nk);
       }
     }
   }
@@ -3148,21 +3147,23 @@ function trimDeepOceanBays(hexes, width, height, _maxDepth) {
 }
 function finalizeCoastAndInlandWater(hexes, width, height, maxPasses = 3, opts) {
   for (let pass = 0; pass < maxPasses; pass++) {
+    let changed = 0;
     if (opts?.maxInlandPoolSize != null) {
-      removeSmallInlandWaterPools(hexes, width, height, opts.maxInlandPoolSize);
+      changed += removeSmallInlandWaterPools(hexes, width, height, opts.maxInlandPoolSize);
     } else {
-      removeInlandWaterPools(hexes, width, height);
+      changed += removeInlandWaterPools(hexes, width, height);
     }
-    applyDoubleCoastRing(hexes);
-    sanitizeCoastHexes(hexes);
+    changed += applyDoubleCoastRing(hexes);
+    changed += sanitizeCoastHexes(hexes);
     if (opts?.maxInlandPoolSize != null) {
-      removeSmallInlandWaterPools(hexes, width, height, opts.maxInlandPoolSize);
+      changed += removeSmallInlandWaterPools(hexes, width, height, opts.maxInlandPoolSize);
     } else {
-      removeInlandWaterPools(hexes, width, height);
+      changed += removeInlandWaterPools(hexes, width, height);
     }
     if (findInlandWaterHexes(hexes, width, height).length === 0 && findDryLandTouchingSea(hexes).length === 0) {
       break;
     }
+    if (changed === 0) break;
   }
 }
 function removeTinyLandIslands(hexes, minHexes) {
@@ -4159,6 +4160,71 @@ function buildOceanReachableRiverHexKeys(hexes, paths, kinds, width, height, oce
   }
   return reached;
 }
+function pruneOrphanRiverPaths(hexes, paths, kinds, width, height) {
+  let curPaths = paths.slice();
+  let curKinds = kinds.slice();
+  for (let iter = 0; iter < 10; iter++) {
+    const reached = buildOceanReachableRiverHexKeys(hexes, curPaths, curKinds, width, height);
+    const ocean = oceanConnectedWaterKeys(hexes, width, height);
+    const hexToPaths = /* @__PURE__ */ new Map();
+    for (let pi = 0; pi < curPaths.length; pi++) {
+      for (const c of curPaths[pi] ?? []) {
+        const k = hexKey(c.q, c.r);
+        let s = hexToPaths.get(k);
+        if (!s) {
+          s = /* @__PURE__ */ new Set();
+          hexToPaths.set(k, s);
+        }
+        s.add(pi);
+      }
+    }
+    const keptPaths = [];
+    const keptKinds = [];
+    let dropped = false;
+    for (let i = 0; i < curPaths.length; i++) {
+      const p = curPaths[i] ?? [];
+      if (p.length === 0) {
+        dropped = true;
+        continue;
+      }
+      const connected = p.every((c) => {
+        const h = hexes[hexKey(c.q, c.r)];
+        if (h?.terenBazowy === "morze" /* Morze */) return true;
+        return reached.has(hexKey(c.q, c.r));
+      });
+      if (!connected) {
+        dropped = true;
+        continue;
+      }
+      if (curKinds[i] === "tributary" && !pathEndsAtSea(hexes, p, width, height, ocean)) {
+        const end = p[p.length - 1];
+        const eh = hexes[hexKey(end.q, end.r)];
+        let closed = false;
+        for (const ei of eh?.rzeka?.krawedzie ?? []) {
+          const dir = HEX_DIRECTIONS[ei];
+          if (!dir) continue;
+          const owners = hexToPaths.get(hexKey(end.q + dir[0], end.r + dir[1]));
+          if (owners && [...owners].some((x) => x !== i)) {
+            closed = true;
+            break;
+          }
+        }
+        if (!closed) {
+          dropped = true;
+          continue;
+        }
+      }
+      keptPaths.push(p);
+      keptKinds.push(curKinds[i] ?? "main");
+    }
+    clearRiverMarks(hexes);
+    for (const p of keptPaths) markRiverPath(hexes, p);
+    curPaths = keptPaths;
+    curKinds = keptKinds;
+    if (!dropped) break;
+  }
+  return { paths: curPaths, kinds: curKinds };
+}
 function collectRiverPathHexKeys(paths) {
   const keys = /* @__PURE__ */ new Set();
   for (const path of paths) {
@@ -4295,6 +4361,7 @@ function generateRivers(hexes, width, height, rand, opts = {}) {
   const minSourceSep = Math.max(2, Math.floor(cellSize * 0.75));
   const pushMain = (path, sq, sr) => {
     const trimmed = trimRiverPathRings(hexes, path);
+    if (!pathEndsAtSea(hexes, trimmed, width, height, oceanConnected)) return false;
     riverPaths.push(trimmed);
     riverKinds.push("main");
     usedSources.add(hexKey(sq, sr));
@@ -4521,6 +4588,7 @@ function topUpRiverGridCoverage(hexes, width, height, riverPaths, riverKinds, ra
   const minSourceSep = Math.max(2, Math.floor(cellSize * 0.75));
   const pushMain = (path, sq, sr) => {
     const trimmed = trimRiverPathRings(hexes, path);
+    if (!pathEndsAtSea(hexes, trimmed, width, height, oceanConnected)) return false;
     riverPaths.push(trimmed);
     riverKinds.push("main");
     usedSources.add(hexKey(sq, sr));
@@ -4995,7 +5063,7 @@ function computeStartPositions(hexes, seed, opts = {}) {
 
 // src/map/clusters.ts
 var MIN_DIST_START_CITY_STATE = 3;
-var MIN_DIST_FOREIGN_FROM_PLAYER = 5;
+var MIN_DIST_FOREIGN_FROM_PLAYER = 12;
 var MIN_DIST_FOREIGN_IN_CLUSTER = MIN_DIST_START_CITY_STATE;
 var ROSTER_KLUCZE = [
   "grecy",

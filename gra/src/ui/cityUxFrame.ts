@@ -229,6 +229,7 @@ export function hideCityUxFrame(): void {
   frameRoot?.remove();
   frameRoot = null;
   mounts = null;
+  document.querySelectorAll('.civ-ux-frame').forEach(el => el.remove());
   document.getElementById('civ-ux-dim-full')?.remove();
   document.getElementById('civ-ux-map-mask')?.remove();
   document.getElementById('civ-ux-top-mask')?.remove();

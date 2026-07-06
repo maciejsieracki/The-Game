@@ -1,8 +1,11 @@
 /**
- * empireDetailPanel.ts — panel boczny imperium (HUD mapy): parametry + zasoby + kultura.
+ * empireDetailPanel.ts — panel boczny imperium (HUD mapy): parametry + Moc + zasoby + kultura.
+ * Wygląd: mockup „Panel Moc imperium v3" (1E, 2026-07-06) — RESKIN, nic nie usunięte.
+ * Dane: EmpireDetailSnap.
  */
 import type { EmpireDetailSnap } from './empireDetailTypes';
 import { mocLabel, mocWithValue } from './power-labels';
+import { brandIconSvg } from './icons/brandAssets';
 
 export type { EmpireDetailSnap } from './empireDetailTypes';
 
@@ -16,97 +19,95 @@ let pendingScrollSection: string | null = null;
 function ensureStyles(): void {
   if (document.getElementById(STYLE_ID)) return;
   const css = `
-.civ-emp-panel{position:fixed;top:0;right:0;bottom:0;width:min(420px,94vw);z-index:450;
-  background:linear-gradient(180deg,#1a2030 0%,#121820 100%);
-  border-left:2px solid rgba(224,178,74,0.35);
-  box-shadow:-8px 0 32px rgba(0,0,0,0.55);
-  font:13px 'Segoe UI',Tahoma,sans-serif;color:#e8ebf0;
+.civ-emp-panel{position:fixed;top:0;right:0;bottom:0;width:min(404px,94vw);z-index:450;
+  background:#141a24;border-left:1px solid #2b3543;color:#e8ebf0;
+  box-shadow:-18px 0 44px rgba(0,0,0,0.45);
+  font:13px/1.45 'Segoe UI',system-ui,-apple-system,sans-serif;
   display:flex;flex-direction:column;transform:translateX(100%);
   transition:transform .22s ease;pointer-events:none;}
 .civ-emp-panel.open{transform:translateX(0);pointer-events:auto;}
 .civ-emp-panel *{box-sizing:border-box;}
-.civ-emp-hdr{padding:14px 16px 10px;border-bottom:1px solid rgba(224,178,74,0.2);
-  background:rgba(224,178,74,0.05);flex-shrink:0;}
-.civ-emp-hdr-top{display:flex;align-items:center;gap:10px;}
-.civ-emp-civ-em{font-size:28px;line-height:1;}
-.civ-emp-civ-name{font-size:17px;font-weight:700;color:#e0b24a;letter-spacing:.04em;}
-.civ-emp-civ-sub{font-size:11px;color:#9aa6b6;margin-top:2px;}
-.civ-emp-close{margin-left:auto;background:none;border:1px solid rgba(255,255,255,0.2);
-  color:#9aa6b6;width:28px;height:28px;border-radius:6px;cursor:pointer;font-size:16px;line-height:1;}
-.civ-emp-close:hover{color:#fff;border-color:rgba(224,178,74,0.5);}
-.civ-emp-body{flex:1;overflow-y:auto;padding:12px 14px 20px;}
-.civ-emp-body::-webkit-scrollbar{width:5px;}
-.civ-emp-body::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.18);border-radius:3px;}
-.civ-emp-sect{margin-bottom:14px;scroll-margin-top:8px;}
-.civ-emp-sect-h{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
-  color:#9aa6b6;margin-bottom:8px;padding-bottom:4px;border-bottom:1px solid rgba(255,255,255,0.08);}
-.civ-emp-meta{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
-.civ-emp-chip{background:rgba(255,255,255,0.04);border:1px solid rgba(224,178,74,0.15);
-  border-radius:6px;padding:7px 9px;}
-.civ-emp-chip .k{font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:#9aa6b6;}
-.civ-emp-chip .v{font-size:13px;font-weight:600;color:#e8ebf0;margin-top:2px;}
-.civ-emp-chip .v.gold{color:#e0b24a;}
+.civ-emp-hdr{display:flex;align-items:flex-start;gap:12px;padding:16px 16px 14px;
+  border-bottom:1px solid #242c3a;background:#141a24;flex-shrink:0;}
+.civ-emp-hdr-ic{flex:none;width:34px;height:34px;border-radius:8px;background:#1d2634;
+  display:flex;align-items:center;justify-content:center;font-size:20px;line-height:1;}
+.civ-emp-hdr-tx{flex:1;min-width:0;}
+.civ-emp-civ-name{font-size:18px;font-weight:700;color:#e8ebf0;line-height:1.1;}
+.civ-emp-civ-sub{font-size:11.5px;color:#8a93a4;margin-top:3px;}
+.civ-emp-close{flex:none;width:30px;height:30px;border-radius:7px;border:1px solid #2f3947;
+  background:#1a2230;color:#9aa4b2;font-size:15px;cursor:pointer;line-height:1;}
+.civ-emp-close:hover{color:#e8ebf0;border-color:#3a4657;}
+.civ-emp-body{flex:1;overflow-y:auto;}
+.civ-emp-body::-webkit-scrollbar{width:10px;}
+.civ-emp-body::-webkit-scrollbar-thumb{background:#2b3543;border-radius:6px;}
+.civ-emp-body::-webkit-scrollbar-track{background:transparent;}
+.civ-emp-sect{padding:14px 16px 4px;scroll-margin-top:8px;}
+.civ-emp-sect.sep{margin-top:6px;border-top:1px solid #242c3a;padding-top:16px;}
+.civ-emp-eyebrow{font-size:11px;letter-spacing:1.4px;color:#7d8798;font-weight:600;}
+.civ-emp-title{font-size:14px;font-weight:700;color:#d9a441;margin-bottom:8px;}
+.civ-emp-meta{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;}
+.civ-emp-chip{border:1px solid #2b3543;border-radius:8px;padding:8px 10px;background:#171e2a;}
+.civ-emp-chip .k{font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:#7d8798;}
+.civ-emp-chip .v{font-size:13px;font-weight:600;color:#e8ebf0;margin-top:2px;word-break:break-word;}
+.civ-emp-chip .v.gold{color:#d9a441;}
 .civ-emp-chip.wide{grid-column:1/-1;}
-.civ-emp-bonus{font-size:12px;color:#b8c4d8;line-height:1.45;padding:6px 8px;
-  border-left:2px solid rgba(90,155,212,0.5);margin-bottom:5px;background:rgba(255,255,255,0.02);}
+.civ-emp-bonus{font-size:12px;color:#b8c4d8;line-height:1.45;padding:6px 8px;margin-top:6px;
+  border-left:2px solid #3a5572;background:#171e2a;border-radius:0 6px 6px 0;}
 .civ-emp-bonus .tag{font-size:9px;color:#7a8a9a;text-transform:uppercase;margin-left:6px;}
-.civ-emp-econ-row{display:flex;align-items:center;gap:8px;padding:6px 4px;
-  border-bottom:1px solid rgba(255,255,255,0.05);scroll-margin-top:8px;}
-.civ-emp-econ-row .ic{font-size:16px;width:22px;text-align:center;}
-.civ-emp-econ-row .lbl{flex:1;font-size:12px;color:#c8d0e0;}
-.civ-emp-econ-row .stock{font-weight:700;font-size:13px;min-width:52px;text-align:right;}
-.civ-emp-econ-row .rate{font-size:11px;color:#6bbf59;min-width:48px;text-align:right;}
-.civ-emp-econ-row .rate.neg{color:#e07070;}
-.civ-emp-econ-row .rate.z{color:#8a96a8;}
-.civ-emp-kult-sum{font-size:12px;color:#c8b0e8;margin-bottom:8px;line-height:1.45;}
-.civ-emp-kult-sum b{color:#e0c8ff;}
-.civ-emp-kult-table{width:100%;border-collapse:collapse;font-size:12px;margin-top:6px;}
-.civ-emp-kult-table th,.civ-emp-kult-table td{padding:4px 6px;text-align:left;
-  border-bottom:1px solid rgba(255,255,255,0.06);}
-.civ-emp-econ-detail{margin:4px 0 10px 30px;}
-.civ-emp-recruit-sum{font-size:12px;color:#c8d0e0;margin:8px 0 6px;line-height:1.45;}
-.civ-emp-recruit-sum b{color:#e0b24a;}
-.civ-emp-recruit-bar{height:10px;background:rgba(255,255,255,0.08);border-radius:5px;overflow:hidden;margin:0 0 10px;}
-.civ-emp-recruit-bar .fill{height:100%;background:linear-gradient(90deg,#4a6820,#8bc34a);}
-.civ-emp-recruit-bar .fill.warn{background:linear-gradient(90deg,#6a4010,#e0b24a);}
-.civ-emp-recruit-bar .fill.low{background:linear-gradient(90deg,#5a2020,#e07070);}
-.civ-emp-kult-note{font-size:11px;color:#9aa6b6;margin-top:8px;line-height:1.45;}
-.civ-emp-kult-prog{font-size:11px;color:#c080e0;margin:6px 0 0;}
-.civ-emp-pow-sum{font-size:14px;color:#e0b24a;font-weight:700;margin-bottom:8px;}
-.civ-emp-pow-row{display:flex;align-items:center;gap:8px;margin:6px 0;}
-.civ-emp-pow-row .lbl{flex:0 0 148px;font-size:12px;color:#c8d0e0;}
-.civ-emp-pow-row .bar{flex:1;height:8px;background:rgba(255,255,255,0.08);border-radius:4px;overflow:hidden;}
-.civ-emp-pow-row .fill{height:100%;background:linear-gradient(90deg,#8a6418,#e0b24a);}
-.civ-emp-pow-row .pts{flex:0 0 52px;text-align:right;font-size:11px;color:#9aa6b6;}
-.civ-emp-pow-rank{font-size:12px;line-height:1.55;margin-top:8px;color:#c8d0e0;}
-.civ-emp-pow-rank .you{color:#e0b24a;font-weight:600;}
-.civ-emp-pow-resp{margin-top:8px;padding:8px;background:rgba(224,178,74,0.08);border-radius:6px;font-size:12px;}
-.civ-emp-pow-table{width:100%;border-collapse:collapse;font-size:11px;margin:8px 0;}
-.civ-emp-pow-table th,.civ-emp-pow-table td{padding:5px 6px;text-align:left;
-  border-bottom:1px solid rgba(255,255,255,0.06);vertical-align:top;}
-.civ-emp-pow-table th{color:#9aa6b6;font-size:10px;text-transform:uppercase;letter-spacing:.06em;}
-.civ-emp-pow-table .num{text-align:right;font-variant-numeric:tabular-nums;}
-.civ-emp-pow-table .sum{font-weight:700;color:#e0b24a;}
-.civ-emp-pow-table .note{font-size:10px;color:#7a8494;max-width:140px;line-height:1.35;}
-.civ-emp-pow-total{font-size:12px;color:#c8d0e0;margin:6px 0 4px;}
-.civ-emp-pow-total b{color:#e0b24a;}
-.civ-emp-pobor{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px;}
-.civ-emp-pobor .box{background:rgba(255,255,255,0.04);border:1px solid rgba(224,178,74,0.18);
-  border-radius:6px;padding:8px 10px;}
-.civ-emp-pobor .box .k{font-size:9px;text-transform:uppercase;color:#9aa6b6;}
-.civ-emp-pobor .box .v{font-size:15px;font-weight:700;color:#f4e6a8;margin-top:3px;}
-.civ-emp-res-grid{display:flex;flex-direction:column;gap:4px;}
-.civ-emp-res{display:grid;grid-template-columns:22px 1fr auto auto;gap:6px;align-items:center;
-  padding:7px 8px;border-radius:6px;border:1px solid rgba(255,255,255,0.06);
-  background:rgba(255,255,255,0.02);}
-.civ-emp-res.off{opacity:.45;}
-.civ-emp-res .nm{font-size:12px;font-weight:600;}
-.civ-emp-res .sub{font-size:10px;color:#8a96a8;margin-top:1px;}
-.civ-emp-res .st{font-weight:700;text-align:right;font-size:12px;}
-.civ-emp-res .rt{font-size:10px;text-align:right;color:#6bbf59;}
-.civ-emp-res .rt.z{color:#8a96a8;}
-.civ-emp-hint{font-size:10px;color:#7a8494;line-height:1.45;margin-top:8px;font-style:italic;}
-.civ-emp-empty{font-size:12px;color:#8a96a8;padding:8px 4px;}
+.civ-emp-moc-big{font-size:20px;font-weight:800;color:#d9a441;margin-top:8px;}
+.civ-emp-moc-sub{font-size:12px;color:#9aa4b2;margin-top:3px;}
+.civ-emp-moc-sub b{color:#d9a441;}
+.civ-emp-two{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px;}
+.civ-emp-box{border:1px solid #2b3543;border-radius:8px;padding:10px 12px;background:#171e2a;}
+.civ-emp-box .k{font-size:10px;letter-spacing:1px;color:#7d8798;font-weight:600;}
+.civ-emp-box .v{font-size:14px;font-weight:700;margin-top:5px;color:#e8ebf0;}
+.civ-emp-tbl{margin-top:14px;}
+.civ-emp-tbl-h,.civ-emp-tbl-r{display:grid;grid-template-columns:1.35fr 0.5fr 0.55fr 0.5fr 0.5fr;
+  column-gap:6px;}
+.civ-emp-tbl-h{font-size:9.5px;letter-spacing:0.6px;color:#7d8798;font-weight:600;
+  padding:0 0 8px;border-bottom:1px solid #242c3a;}
+.civ-emp-tbl-h>div:not(:first-child){text-align:right;}
+.civ-emp-tbl-r{align-items:baseline;padding:9px 0;border-bottom:1px solid #1f2733;}
+.civ-emp-tbl-r .nm{font-size:12.5px;color:#e2e6ec;}
+.civ-emp-tbl-r .src{font-size:10.5px;color:#6f7889;margin-top:2px;line-height:1.3;}
+.civ-emp-tbl-r .qty{text-align:right;font-size:12.5px;color:#cfd5de;}
+.civ-emp-tbl-r .wsp{text-align:right;font-size:12.5px;color:#9aa4b2;}
+.civ-emp-tbl-r .pkt{text-align:right;font-size:12.5px;color:#d9a441;font-weight:700;}
+.civ-emp-tbl-r .pct{text-align:right;font-size:12px;color:#8a93a4;}
+.civ-emp-foot{font-size:10.5px;color:#6f7889;font-style:italic;line-height:1.4;margin-top:10px;}
+.civ-emp-rank{font-size:13px;color:#cfd5de;line-height:1.9;}
+.civ-emp-rank .you{display:flex;align-items:center;gap:6px;color:#d9a441;font-weight:700;margin-top:2px;}
+.civ-emp-resp{margin:12px 0 4px;padding:11px 14px;border-radius:8px;background:#1c2431;
+  border:1px solid #2b3543;font-size:12.5px;color:#cfd5de;}
+.civ-emp-resp b{color:#e8ebf0;}
+.civ-emp-zrow{display:flex;justify-content:space-between;align-items:baseline;padding:10px 0;
+  scroll-margin-top:8px;}
+.civ-emp-zrow.brd{border-bottom:1px solid #1f2733;}
+.civ-emp-zrow .lbl{font-size:13px;color:#e2e6ec;}
+.civ-emp-zrow .val{white-space:nowrap;}
+.civ-emp-zrow .val b{font-size:15px;color:#e8ebf0;}
+.civ-emp-zrow .val b.gold{color:#d9a441;}
+.civ-emp-zrow .val .d{margin-left:8px;}
+.civ-emp-zrow .val .d.pos{color:#78c95a;}
+.civ-emp-zrow .val .d.neg{color:#e07a7a;}
+.civ-emp-zrow .val .d.z{color:#6f7889;}
+.civ-emp-mini{border:1px solid #232b38;border-radius:7px;overflow:hidden;margin:2px 0 8px;
+  scroll-margin-top:8px;}
+.civ-emp-mini-h,.civ-emp-mini-r{display:grid;padding:7px 10px;}
+.civ-emp-mini-h{font-size:10px;letter-spacing:0.5px;color:#7d8798;font-weight:600;background:#1a2230;}
+.civ-emp-mini-r{font-size:12px;color:#cfd5de;}
+.civ-emp-mini-r+.civ-emp-mini-r{border-top:1px solid #1f2733;}
+.civ-emp-bar{height:10px;border-radius:6px;background:#1f2733;overflow:hidden;margin:2px 0 10px;}
+.civ-emp-bar .fill{height:100%;background:linear-gradient(90deg,#4e9a3f,#78c95a);}
+.civ-emp-bar .fill.warn{background:linear-gradient(90deg,#6a4010,#d9a441);}
+.civ-emp-bar .fill.low{background:linear-gradient(90deg,#5a2020,#e07a7a);}
+.civ-emp-note{font-size:11.5px;color:#9aa4b2;line-height:1.5;margin-bottom:8px;}
+.civ-emp-note b{color:#e8ebf0;}
+.civ-emp-kult-line{font-size:12.5px;color:#cfd5de;margin-bottom:4px;}
+.civ-emp-kult-line b{color:#e8ebf0;}
+.civ-emp-kult-line.muted{font-size:12px;color:#9aa4b2;}
+.civ-emp-kult-line.gold{font-size:12px;color:#d9a441;}
+.civ-emp-empty{font-size:12px;color:#8a93a4;padding:8px 0;}
 .civ-emp-backdrop{position:fixed;inset:0;z-index:449;background:rgba(0,0,0,0.35);
   opacity:0;pointer-events:none;transition:opacity .2s;}
 .civ-emp-backdrop.open{opacity:1;pointer-events:auto;}
@@ -121,9 +122,11 @@ function esc(s: string): string {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
-function signed(n: number): string {
-  if (n === 0) return '—';
-  return (n > 0 ? '+' : '') + String(n);
+/** Delta „+N / −N / —" ze stylem koloru (pos/neg/zero). */
+function deltaHtml(n: number): string {
+  if (!Number.isFinite(n) || n === 0) return '<span class="d z">—</span>';
+  const cls = n > 0 ? 'd pos' : 'd neg';
+  return `<span class="${cls}">${n > 0 ? '+' : ''}${n}</span>`;
 }
 
 function formatRawCount(n: number): string {
@@ -132,80 +135,79 @@ function formatRawCount(n: number): string {
   return Number.isInteger(r) ? String(r) : r.toFixed(1);
 }
 
-function cityEconTableSkarbiec(rows: EmpireDetailSnap['cityEcon']): string {
-  if (rows.length === 0) {
-    return '<div class="civ-emp-empty">Brak miast — dochód pojawi się po założeniu osiedli.</div>';
-  }
-  let h = '<table class="civ-emp-kult-table"><tr><th>Miasto</th><th>💰 /t</th></tr>';
-  for (const c of rows) {
-    h += `<tr><td>${esc(c.name)}</td><td>${signed(c.pieniadz)}</td></tr>`;
-  }
-  h += '</table>';
-  h += '<div class="civ-emp-hint">Suma wierszy = dochód miast. Utrzymanie budynków i wojska schodzi ze skarbca imperium osobno.</div>';
+function miniHeader(cols: string[], grid: string): string {
+  const cells = cols.map(c => `<div>${c}</div>`).join('');
+  return `<div class="civ-emp-mini-h" style="grid-template-columns:${grid}">${cells}</div>`;
+}
+
+function miniRow(cells: string[], grid: string): string {
+  const c = cells.map(x => `<div>${x}</div>`).join('');
+  return `<div class="civ-emp-mini-r" style="grid-template-columns:${grid}">${c}</div>`;
+}
+
+function cityEconMiniSkarbiec(rows: EmpireDetailSnap['cityEcon']): string {
+  if (rows.length === 0) return '<div class="civ-emp-empty">Brak miast — dochód pojawi się po założeniu osiedli.</div>';
+  const grid = '1fr 1fr';
+  let h = `<div class="civ-emp-mini">${miniHeader(['MIASTO', 'PIENIĄDZ'], grid)}`;
+  for (const c of rows) h += miniRow([esc(c.name), signedTxt(c.pieniadz)], grid);
+  h += '</div><div class="civ-emp-foot">Suma wierszy = dochód miast. Utrzymanie budynków i wojska schodzi ze skarbca imperium osobno.</div>';
   return h;
 }
 
-function cityEconTablePraca(rows: EmpireDetailSnap['cityEcon']): string {
-  if (rows.length === 0) {
-    return '<div class="civ-emp-empty">Brak miast.</div>';
-  }
-  let h = '<table class="civ-emp-kult-table"><tr><th>Miasto</th><th>Do puli</th><th>Do budynków</th></tr>';
-  for (const c of rows) {
-    h += `<tr><td>${esc(c.name)}</td><td>${signed(c.pracaPula)}</td><td>${signed(c.pracaBudynki)}</td></tr>`;
-  }
-  h += '</table>';
-  h += '<div class="civ-emp-hint">„Do puli” trafia do globalnej puli Pracy (górny pasek). „Do budynków” zasila kolejkę w mieście.</div>';
+function cityEconMiniPraca(rows: EmpireDetailSnap['cityEcon']): string {
+  if (rows.length === 0) return '<div class="civ-emp-empty">Brak miast.</div>';
+  const grid = '1fr 1fr 1fr';
+  let h = `<div class="civ-emp-mini">${miniHeader(['MIASTO', 'DO PULI', 'DO BUDYNKÓW'], grid)}`;
+  for (const c of rows) h += miniRow([esc(c.name), signedTxt(c.pracaPula), signedTxt(c.pracaBudynki)], grid);
+  h += '</div><div class="civ-emp-foot">„Do puli" trafia do globalnej puli Pracy (górny pasek). „Do budynków" zasila kolejkę w mieście.</div>';
   return h;
 }
 
-function cityEconTableNauka(rows: EmpireDetailSnap['cityEcon']): string {
-  if (rows.length === 0) {
-    return '<div class="civ-emp-empty">Brak miast.</div>';
-  }
-  let h = '<table class="civ-emp-kult-table"><tr><th>Miasto</th><th>🦉 /t</th></tr>';
-  for (const c of rows) {
-    h += `<tr><td>${esc(c.name)}</td><td>${signed(c.nauka)}</td></tr>`;
-  }
-  h += '</table>';
-  h += '<div class="civ-emp-hint">Nauka z miast trafia do banku badań. Hub badań — przycisk Nauka na lewym pasku.</div>';
+function cityEconMiniNauka(rows: EmpireDetailSnap['cityEcon']): string {
+  if (rows.length === 0) return '<div class="civ-emp-empty">Brak miast.</div>';
+  const grid = '1fr 1fr';
+  let h = `<div class="civ-emp-mini">${miniHeader(['MIASTO', 'NAUKA'], grid)}`;
+  for (const c of rows) h += miniRow([esc(c.name), signedTxt(c.nauka)], grid);
+  h += '</div><div class="civ-emp-foot">Nauka z miast trafia do banku badań. Hub badań — przycisk Nauka na lewym pasku.</div>';
   return h;
 }
 
-function cityPoborTableLudnosc(rows: EmpireDetailSnap['cityPobor']): string {
-  if (rows.length === 0) {
-    return '<div class="civ-emp-empty">Brak miast.</div>';
-  }
-  let h = '<table class="civ-emp-kult-table"><tr><th>Miasto</th><th>Ludki</th><th>Ludność abs.</th></tr>';
-  for (const c of rows) {
-    h += `<tr><td>${esc(c.name)}</td><td>${c.ludki}</td><td>${esc(c.ludnoscAbsLabel)}</td></tr>`;
-  }
-  h += '</table>';
-  h += '<div class="civ-emp-hint">Ludki to mieszkańcy miasta (1–10). Ludność absolutna rośnie z epoką imperium.</div>';
+function cityPoborMiniLudnosc(rows: EmpireDetailSnap['cityPobor']): string {
+  if (rows.length === 0) return '<div class="civ-emp-empty">Brak miast.</div>';
+  const grid = '1fr 1fr 1fr';
+  let h = `<div class="civ-emp-mini">${miniHeader(['MIASTO', 'LUDKI', 'LUDNOŚĆ ABS.'], grid)}`;
+  for (const c of rows) h += miniRow([esc(c.name), String(c.ludki), esc(c.ludnoscAbsLabel)], grid);
+  h += '</div><div class="civ-emp-foot">Ludki to mieszkańcy miasta (1–10). Ludność absolutna rośnie z epoką imperium.</div>';
   return h;
 }
 
-function cityPoborTableRekruci(
+function cityPoborMiniRekruci(
   rows: EmpireDetailSnap['cityPobor'],
   p: EmpireDetailSnap['power'],
 ): string {
   const pct = p.rekruciMax > 0 ? Math.round((p.rekruci / p.rekruciMax) * 100) : 0;
   const fillCls = pct >= 60 ? 'fill' : (pct >= 25 ? 'fill warn' : 'fill low');
-  let h = `<div class="civ-emp-recruit-sum">Pula rekrutów imperium: <b>${esc(p.rekruciLabel)}</b> / `
-    + `<b>${esc(p.rekruciMaxLabel)}</b> · można werbować: <b>${p.rekrutEkw}</b> jedn. `
+  let h = `<div class="civ-emp-note">Pula rekrutów imperium: <b style="color:#d9a441">${esc(p.rekruciLabel)}</b> / `
+    + `<b style="color:#d9a441">${esc(p.rekruciMaxLabel)}</b> · można werbować: <b>${p.rekrutEkw}</b> jedn. `
     + `(koszt ${p.kosztJednostki} rekr./szt.) · wojsko na mapie: <b>${p.unitsOnMap}</b></div>`;
-  h += `<div class="civ-emp-recruit-bar"><div class="${fillCls}" style="width:${pct}%"></div></div>`;
+  h += `<div class="civ-emp-bar"><div class="${fillCls}" style="width:${pct}%"></div></div>`;
   if (rows.length === 0) {
     h += '<div class="civ-emp-empty">Brak miast.</div>';
     return h;
   }
-  h += '<table class="civ-emp-kult-table"><tr><th>Miasto</th><th>Rekruci</th><th>Max</th><th>Odnowa/t</th></tr>';
+  const grid = '1fr 1fr 0.8fr 0.9fr';
+  h += `<div class="civ-emp-mini">${miniHeader(['MIASTO', 'REKRUCI', 'MAX', 'ODNOWA'], grid)}`;
   for (const c of rows) {
-    h += `<tr><td>${esc(c.name)}</td><td>${c.rekruci}</td><td>${c.rekruciMax}</td>`
-      + `<td>+${c.regenPerTurn}</td></tr>`;
+    h += miniRow([esc(c.name), String(c.rekruci), String(c.rekruciMax),
+      `<span style="color:#78c95a">+${c.regenPerTurn}</span>`], grid);
   }
-  h += '</table>';
-  h += '<div class="civ-emp-hint">Werb jednostki zużywa rekrutów z puli miasta. Pasek = wypełnienie puli względem maksimum imperium.</div>';
+  h += '</div><div class="civ-emp-foot">Werb jednostki zużywa rekrutów z puli miasta. Pasek = wypełnienie puli względem maksimum imperium.</div>';
   return h;
+}
+
+function signedTxt(n: number): string {
+  if (!Number.isFinite(n) || n === 0) return '—';
+  return (n > 0 ? '+' : '') + String(n);
 }
 
 function scrollToSection(section: string | null | undefined): void {
@@ -224,117 +226,12 @@ function render(): void {
   const ce = snap.cityEcon;
   const cp = snap.cityPobor;
 
+  // — PARAMETRY GLOBALNE (zachowane, reskin) —
   const bonusHtml = g.bonusy.map(b =>
     `<div class="civ-emp-bonus">${esc(b.opis)}<span class="tag">${esc(b.realizuje)}</span></div>`,
   ).join('');
-
-  type EconRow = { id: string; ic: string; lbl: string; stock: string; rate: number };
-  const econRows: EconRow[] = [
-    { id: 'zywnosc', ic: '🍞', lbl: 'Żywność armii (zapasy)', stock: e.zywnoscLabel + (e.zywnoscMax ? ` / ${e.zywnoscMax}` : ''), rate: e.zywnoscRate ?? 0 },
-    { id: 'praca', ic: '🔨', lbl: 'Praca (pula)', stock: String(e.praca), rate: e.pracaRate },
-    { id: 'skarbiec', ic: '💰', lbl: 'Skarbiec', stock: String(e.bogactwo), rate: e.bogactwoRate ?? 0 },
-    { id: 'nauka', ic: '🦉', lbl: 'Bank nauki', stock: String(Math.floor(e.nauka)), rate: e.naukaRate ?? 0 },
-    { id: 'kultura', ic: '🎭', lbl: 'Kultura (suma miast)', stock: String(e.kultura), rate: e.kulturaRate ?? 0 },
-    { id: 'religia', ic: '🛕', lbl: 'Wierni religii', stock: String(e.religionStock ?? '—'), rate: e.religionRate ?? 0 },
-    { id: 'ludnosc', ic: '👥', lbl: 'Ludność (ludki w miastach)', stock: String(e.ludnosc), rate: e.ludnoscRate ?? 0 },
-    { id: 'rekruci', ic: '⚔', lbl: 'Rekruci (pula werbu)', stock: e.rekruciLabel ?? String(p.rekruci), rate: 0 },
-  ];
-  const econHtml = econRows.map(r => {
-    const rtCls = r.rate === 0 ? 'rate z' : (r.rate < 0 ? 'rate neg' : 'rate');
-    let detail = '';
-    if (r.id === 'skarbiec') {
-      detail = `<div class="civ-emp-econ-detail" data-section="econ-skarbiec">${cityEconTableSkarbiec(ce)}</div>`;
-    } else if (r.id === 'praca') {
-      detail = `<div class="civ-emp-econ-detail" data-section="econ-praca">${cityEconTablePraca(ce)}</div>`;
-    } else if (r.id === 'nauka') {
-      detail = `<div class="civ-emp-econ-detail" data-section="econ-nauka">${cityEconTableNauka(ce)}</div>`;
-    } else if (r.id === 'ludnosc') {
-      detail = `<div class="civ-emp-econ-detail" data-section="econ-ludnosc">${cityPoborTableLudnosc(cp)}</div>`;
-    } else if (r.id === 'rekruci') {
-      detail = `<div class="civ-emp-econ-detail" data-section="econ-rekruci">${cityPoborTableRekruci(cp, p)}</div>`;
-    }
-    return `<div class="civ-emp-econ-row" data-section="econ-${r.id}">`
-      + `<span class="ic">${r.ic}</span><span class="lbl">${r.lbl}</span>`
-      + `<span class="stock">${esc(r.stock)}</span>`
-      + `<span class="${rtCls}">${signed(r.rate)}/t</span></div>${detail}`;
-  }).join('');
-
-  let kultHtml = `<div class="civ-emp-kult-sum">Imperium: <b>${k.total}</b> 🎭 · `
-    + `<b>${signed(k.rate)}</b>/t · ${k.cities.length} miast</div>`;
-  if (k.thresholds.length > 0) {
-    kultHtml += `<div class="civ-emp-kult-note">Progi zasięgu w mieście: ${k.thresholds.join(' · ')} pkt</div>`;
-  }
-  if (k.nextThreshold != null && k.pctToNext != null) {
-    kultHtml += `<div class="civ-emp-kult-prog">Najbliższy próg (${k.nextThreshold}): ${k.pctToNext}% (najsilniejsze miasto)</div>`;
-  }
-  kultHtml += `<div class="civ-emp-kult-note">${esc(k.happinessNote)}</div>`;
-  kultHtml += '<table class="civ-emp-kult-table"><tr><th>Miasto</th><th>🎭</th><th>Zasięg</th></tr>';
-  for (const c of k.cities) {
-    kultHtml += `<tr><td>${esc(c.name)}</td><td>${c.kultura}</td><td>+${c.borderRadius} hex</td></tr>`;
-  }
-  kultHtml += '</table>';
-  kultHtml += '<div class="civ-emp-hint">Szczegóły per miasto (źródła, progi) — panel miasta → zakładka Kultura. '
-    + 'Przycisk 🎭 na toolbarze = zasięg na mapie.</div>';
-
-  let powHtml = `<div class="civ-emp-pow-sum">⚜ ${esc(mocWithValue(p.power))}</div>`;
-  powHtml += `<div class="civ-emp-pow-total">Suma składników: <b>${Math.round(p.powerBase)}</b> pkt `
-    + `(kanon P-A · bez mnożnika epoki)</div>`;
-  powHtml += `<div class="civ-emp-pobor">`
-    + `<div class="box" data-section="econ-ludnosc"><div class="k">👥 Ludność</div>`
-    + `<div class="v">${e.ludnosc} ludki · ${esc(p.ludnoscAbsLabel)} abs.</div></div>`
-    + `<div class="box" data-section="econ-rekruci"><div class="k">⚔ Rekruci</div>`
-    + `<div class="v">${esc(p.rekruciLabel)} / ${esc(p.rekruciMaxLabel)} · ${p.rekrutEkw} werb.</div></div></div>`;
-  powHtml += '<table class="civ-emp-pow-table"><tr><th>Składnik</th><th class="num">Ilość</th>'
-    + '<th class="num">× wsp.</th><th class="num">= pkt</th><th class="num">%</th><th>Skąd</th></tr>';
-  for (const c of p.components) {
-    powHtml += `<tr><td>${esc(c.label)}</td>`
-      + `<td class="num">${formatRawCount(c.rawCount)}</td>`
-      + `<td class="num">${c.weightPct}</td>`
-      + `<td class="num sum">${Math.round(c.points)}</td>`
-      + `<td class="num">${c.sharePct}%</td>`
-      + `<td class="note">${esc(c.formulaNote ?? '—')}</td></tr>`;
-  }
-  powHtml += '</table>';
-  powHtml += '<div class="civ-emp-hint">Respekt w dyplomacji = stosunek Twojej Mocy do Mocy rozmówcy (nie to samo co % udziału w tabeli).</div>';
-  if (p.ranking.length > 0) {
-    powHtml += `<div class="civ-emp-pow-rank"><b style="color:#e0b24a">Ranking ${esc(mocLabel())}</b><br>`;
-    for (const r of p.ranking) {
-      const cls = r.isPlayer ? ' class="you"' : '';
-      powHtml += `<span${cls}>${r.isPlayer ? '▸ ' : '  '}#${r.rank} ${esc(r.civ)} — ${esc(mocWithValue(r.power))}</span><br>`;
-    }
-    powHtml += '</div>';
-  }
-  if (p.respektExample) {
-    const ex = p.respektExample;
-    powHtml += `<div class="civ-emp-pow-resp">Respekt wobec <b>${esc(ex.civ)}</b>: `
-      + `${ex.respekt}% (Twoja ${esc(mocLabel().toLowerCase())} ${ex.playerPower} vs ${ex.theirPower})</div>`;
-  }
-
-  let resBlock = '';
-  if (snap.resources.length > 0) {
-    const resHtml = snap.resources.map(r => {
-      const rt = r.ratePerTurn === 0
-        ? '<span class="rt z">—</span>'
-        : `<span class="rt">${signed(r.ratePerTurn)}/t</span>`;
-      const sub = [r.typ, r.assigned, r.dostep ? '' : 'brak dostępu'].filter(Boolean).join(' · ');
-      return `<div class="civ-emp-res${r.dostep ? '' : ' off'}">`
-        + `<span>${r.icon}</span>`
-        + `<div><div class="nm">${esc(r.label)}</div><div class="sub">${esc(sub)}</div></div>`
-        + `<span class="st">${r.stock}</span>${rt}</div>`;
-    }).join('');
-    resBlock = `<div class="civ-emp-sect" data-section="surowce">`
-      + `<div class="civ-emp-sect-h">Surowce strategiczne</div>`
-      + `<div class="civ-emp-res-grid">${resHtml}</div></div>`;
-  } else {
-    resBlock = `<div class="civ-emp-sect" data-section="surowce">`
-      + `<div class="civ-emp-sect-h">Surowce strategiczne</div>`
-      + `<div class="civ-emp-empty">Magazyny surowców per miasto — w panelu miasta (stopka). `
-      + `Tu pojawi się zbiorczy widok po podpięciu magazynów imperium.</div></div>`;
-  }
-
-  bodyEl.innerHTML =
-    `<div class="civ-emp-sect"><div class="civ-emp-sect-h">Parametry globalne</div>`
-    + `<div class="civ-emp-meta">`
+  const params = `<div class="civ-emp-sect" data-section="parametry">`
+    + `<div class="civ-emp-eyebrow">PARAMETRY GLOBALNE</div><div class="civ-emp-meta">`
     + `<div class="civ-emp-chip"><div class="k">Epoka</div><div class="v gold">${esc(e.epoka)}</div></div>`
     + `<div class="civ-emp-chip"><div class="k">Tura</div><div class="v">${e.tura}</div></div>`
     + `<div class="civ-emp-chip"><div class="k">Moc ⚜</div><div class="v gold">${e.power}</div></div>`
@@ -342,12 +239,125 @@ function render(): void {
     + `<div class="civ-emp-chip wide"><div class="k">Religia państwowa</div><div class="v">${esc(g.religiaPanstwowa)}</div></div>`
     + `<div class="civ-emp-chip wide"><div class="k">Badania</div><div class="v">${esc(e.badana ?? '—')}</div></div>`
     + `<div class="civ-emp-chip wide"><div class="k">Bonus startowy</div><div class="v">${esc(g.bonusStartowy)}</div></div>`
-    + `</div>${bonusHtml}</div>`
-    + `<div class="civ-emp-sect" data-section="moc"><div class="civ-emp-sect-h">${esc(mocLabel())} imperium</div>${powHtml}</div>`
-    + `<div class="civ-emp-sect" data-section="ekonomia"><div class="civ-emp-sect-h">Zasoby imperium (stan + /turę)</div>${econHtml}`
-    + `<div class="civ-emp-hint">Klik w górnym pasek zasobów przewija do tabeli per miasto. Duża liczba = stan · zielone = netto / turę.</div></div>`
-    + `<div class="civ-emp-sect" data-section="kultura"><div class="civ-emp-sect-h">Kultura imperium</div>${kultHtml}</div>`
-    + resBlock;
+    + `</div>${bonusHtml}</div>`;
+
+  // — MOC IMPERIUM —
+  let moc = `<div class="civ-emp-sect sep" data-section="moc">`
+    + `<div class="civ-emp-eyebrow">${esc(mocLabel().toUpperCase())} IMPERIUM</div>`
+    + `<div class="civ-emp-moc-big">${esc(mocWithValue(p.power))}</div>`
+    + `<div class="civ-emp-moc-sub">Suma składników: <b>${Math.round(p.powerBase)}</b> pkt (kanon P‑A · bez mnożnika epoki)</div>`
+    + `<div class="civ-emp-two">`
+    + `<div class="civ-emp-box" data-section="econ-ludnosc"><div class="k">LUDNOŚĆ</div>`
+    + `<div class="v">${e.ludnosc} ludki · ${esc(p.ludnoscAbsLabel)} abs.</div></div>`
+    + `<div class="civ-emp-box" data-section="econ-rekruci"><div class="k">REKRUCI</div>`
+    + `<div class="v">${esc(p.rekruciLabel)} / ${esc(p.rekruciMaxLabel)} · ${p.rekrutEkw} werb.</div></div>`
+    + `</div>`;
+  moc += `<div class="civ-emp-tbl"><div class="civ-emp-tbl-h">`
+    + `<div>SKŁADNIK</div><div>ILOŚĆ</div><div>×<br>WSP.</div><div>=<br>PKT</div><div>%</div></div>`;
+  for (const c of p.components) {
+    moc += `<div class="civ-emp-tbl-r">`
+      + `<div><div class="nm">${esc(c.label)}</div><div class="src">${esc(c.formulaNote ?? '—')}</div></div>`
+      + `<div class="qty">${formatRawCount(c.rawCount)}</div>`
+      + `<div class="wsp">${c.weightPct}</div>`
+      + `<div class="pkt">${Math.round(c.points)}</div>`
+      + `<div class="pct">${c.sharePct}%</div></div>`;
+  }
+  moc += `</div>`;
+  moc += `<div class="civ-emp-foot">Respekt w dyplomacji = stosunek Twojej Mocy do Mocy rozmówcy (nie to samo co % udziału w tabeli).</div>`;
+  if (p.ranking.length > 0) {
+    moc += `<div class="civ-emp-title" style="margin-top:12px">Ranking ${esc(mocLabel())}</div><div class="civ-emp-rank">`;
+    for (const r of p.ranking) {
+      if (r.isPlayer) {
+        moc += `<div class="you">▸ #${r.rank} ${esc(r.civ)} — ${esc(mocWithValue(r.power))}</div>`;
+      } else {
+        moc += `#${r.rank} ${esc(r.civ)} — ${esc(mocWithValue(r.power))}<br>`;
+      }
+    }
+    moc += `</div>`;
+  }
+  if (p.respektExample) {
+    const ex = p.respektExample;
+    moc += `<div class="civ-emp-resp">Respekt wobec <b>${esc(ex.civ)}</b>: `
+      + `${ex.respekt}% (Twoja moc ${ex.playerPower} vs ${ex.theirPower})</div>`;
+  }
+  moc += `</div>`;
+
+  // — ZASOBY IMPERIUM —
+  type EconRow = { id: string; lbl: string; stock: string; rate: number; gold?: boolean; noRate?: boolean };
+  const econRows: EconRow[] = [
+    { id: 'zywnosc', lbl: 'Żywność armii (zapasy)', stock: e.zywnoscLabel + (e.zywnoscMax ? ` / ${e.zywnoscMax}` : ''), rate: e.zywnoscRate ?? 0 },
+    { id: 'praca', lbl: 'Praca (pula)', stock: String(e.praca), rate: e.pracaRate },
+    { id: 'skarbiec', lbl: 'Skarbiec', stock: String(e.bogactwo), rate: e.bogactwoRate ?? 0 },
+    { id: 'nauka', lbl: 'Bank nauki', stock: String(Math.floor(e.nauka)), rate: e.naukaRate ?? 0 },
+    { id: 'kultura', lbl: 'Kultura (suma miast)', stock: String(e.kultura), rate: e.kulturaRate ?? 0 },
+    { id: 'religia', lbl: 'Wierni religii', stock: String(e.religionStock ?? '—'), rate: e.religionRate ?? 0 },
+    { id: 'ludnosc', lbl: 'Ludność (ludki w miastach)', stock: String(e.ludnosc), rate: e.ludnoscRate ?? 0, noRate: true },
+    { id: 'rekruci', lbl: 'Rekruci (pula werbu)', stock: e.rekruciLabel ?? String(p.rekruci), rate: 0, gold: true, noRate: true },
+  ];
+  const detailFor: Record<string, string> = {
+    skarbiec: cityEconMiniSkarbiec(ce),
+    praca: cityEconMiniPraca(ce),
+    nauka: cityEconMiniNauka(ce),
+    ludnosc: cityPoborMiniLudnosc(cp),
+    rekruci: cityPoborMiniRekruci(cp, p),
+  };
+  let zasoby = `<div class="civ-emp-sect sep" data-section="ekonomia">`
+    + `<div class="civ-emp-eyebrow" style="margin-bottom:8px">ZASOBY IMPERIUM (STAN + PRZYROST)</div>`;
+  for (const r of econRows) {
+    const detail = detailFor[r.id];
+    const val = r.noRate
+      ? `<b${r.gold ? ' class="gold"' : ''}>${esc(r.stock)}</b>`
+      : `<b>${esc(r.stock)}</b> ${deltaHtml(r.rate)}`;
+    zasoby += `<div class="civ-emp-zrow${detail ? '' : ' brd'}" data-section="econ-${r.id}">`
+      + `<span class="lbl">${r.lbl}</span><span class="val">${val}</span></div>`;
+    if (detail) zasoby += `<div data-section="econ-${r.id}">${detail}</div>`;
+  }
+  zasoby += `<div class="civ-emp-foot">Klik w górnym pasku zasobów przewija do tabeli per miasto. Duża liczba = stan · zielone = netto.</div></div>`;
+
+  // — KULTURA IMPERIUM —
+  let kult = `<div class="civ-emp-sect sep" data-section="kultura">`
+    + `<div class="civ-emp-title">Kultura imperium</div>`
+    + `<div class="civ-emp-kult-line">Imperium: <b>${k.total}</b> · ${signedTxt(k.rate)} · ${k.cities.length} miast</div>`;
+  if (k.thresholds.length > 0) {
+    kult += `<div class="civ-emp-kult-line muted">Progi zasięgu w mieście: ${k.thresholds.join(' · ')} pkt</div>`;
+  }
+  if (k.nextThreshold != null && k.pctToNext != null) {
+    kult += `<div class="civ-emp-kult-line gold">Najbliższy próg (${k.nextThreshold}): ${k.pctToNext}% (najsilniejsze miasto)</div>`;
+  }
+  kult += `<div class="civ-emp-note" style="font-style:italic">${esc(k.happinessNote)}</div>`;
+  if (k.cities.length > 0) {
+    const grid = '1fr 1fr 1fr';
+    kult += `<div class="civ-emp-mini">${miniHeader(['MIASTO', 'KULTURA', 'ZASIĘG'], grid)}`;
+    for (const c of k.cities) kult += miniRow([esc(c.name), String(c.kultura), `+${c.borderRadius} hex`], grid);
+    kult += `</div>`;
+  }
+  kult += `<div class="civ-emp-foot">Szczegóły per miasto (źródła, progi) — panel miasta → zakładka Kultura. Przycisk Kultura na toolbarze = zasięg na mapie.</div></div>`;
+
+  // — SUROWCE STRATEGICZNE —
+  let sur = `<div class="civ-emp-sect sep" data-section="surowce">`
+    + `<div class="civ-emp-eyebrow" style="margin-bottom:10px">SUROWCE STRATEGICZNE</div>`;
+  if (snap.resources.length > 0) {
+    const grid = '22px 1fr auto auto';
+    sur += `<div class="civ-emp-mini">`;
+    for (const r of snap.resources) {
+      const sub = [r.typ, r.assigned, r.dostep ? '' : 'brak dostępu'].filter(Boolean).join(' · ');
+      const rt = r.ratePerTurn === 0 ? '—' : signedTxt(r.ratePerTurn);
+      sur += miniRow([
+        esc(r.icon),
+        `<div style="color:${r.dostep ? '#e2e6ec' : '#6f7889'}">${esc(r.label)}</div>`
+          + `<div style="font-size:10px;color:#6f7889">${esc(sub)}</div>`,
+        `<span style="text-align:right;font-weight:700">${r.stock}</span>`,
+        `<span style="text-align:right;color:#78c95a">${rt}</span>`,
+      ], grid);
+    }
+    sur += `</div>`;
+  } else {
+    sur += `<div class="civ-emp-note" style="font-style:italic">Magazyny surowców per miasto — w panelu miasta (stopka). `
+      + `Tu pojawi się zbiorczy widok po podpięciu magazynów imperium.</div>`;
+  }
+  sur += `</div>`;
+
+  bodyEl.innerHTML = params + moc + zasoby + kult + sur;
 
   const scrollTarget = pendingScrollSection;
   pendingScrollSection = null;
@@ -369,12 +379,12 @@ function ensureDom(): void {
   if (root === null) {
     root = document.createElement('div');
     root.className = 'civ-emp-panel';
-    root.innerHTML = '<div class="civ-emp-hdr"><div class="civ-emp-hdr-top">'
-      + '<span class="civ-emp-civ-em" data-civ-em></span>'
-      + '<div><div class="civ-emp-civ-name" data-civ-name></div>'
+    root.innerHTML = '<div class="civ-emp-hdr">'
+      + '<div class="civ-emp-hdr-ic" data-civ-em></div>'
+      + '<div class="civ-emp-hdr-tx"><div class="civ-emp-civ-name" data-civ-name></div>'
       + '<div class="civ-emp-civ-sub" data-civ-sub></div></div>'
-      + '<button type="button" class="civ-emp-close" data-close aria-label="Zamknij">✕</button>'
-      + '</div></div><div class="civ-emp-body"></div>';
+      + `<button type="button" class="civ-emp-close" data-close aria-label="Zamknij">${brandIconSvg('ui-close', 16)}</button>`
+      + '</div><div class="civ-emp-body"></div>';
     bodyEl = root.querySelector('.civ-emp-body') as HTMLDivElement;
     root.querySelector('[data-close]')?.addEventListener('click', () => hideEmpireDetailPanel());
     document.body.appendChild(root);
@@ -398,7 +408,7 @@ export function mountEmpireDetailPanel(snapFn: () => EmpireDetailSnap): void {
   ensureDom();
 }
 
-/** section: np. kultura, ekonomia, econ-skarbiec, econ-praca, econ-ludnosc */
+/** section: np. parametry, moc, ekonomia, econ-skarbiec, econ-praca, econ-ludnosc, kultura, surowce */
 export function showEmpireDetailPanel(section?: string): void {
   ensureDom();
   pendingScrollSection = section ?? null;

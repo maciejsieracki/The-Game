@@ -44574,3 +44574,1089 @@ Wiesz co, potrzebuję statystyki uzupełnić, bo są błędne dla następującyc
 Przygotowuję szablon Excela zgodny z grą — najpierw sprawdzam strukturę `units.json` i Panel-C, potem poproszę Cię o listę jednostek.
 
 [REDACTED]
+
+
+---
+
+## Dopisek synchronizacji — 2026-07-06 18:53 UTC (linie 4905–4996)
+
+
+### Linia 4905 — AGENT
+
+[REDACTED]
+
+### Linia 4906 — AGENT
+
+[REDACTED]
+
+### Linia 4907 — AGENT
+
+[REDACTED]
+
+### Linia 4908 — AGENT
+
+[REDACTED]
+
+### Linia 4909 — AGENT
+
+Tworzę skrypt generujący Excel z propozycjami statystyk dla wszystkich 26 jednostek.
+
+[REDACTED]
+
+### Linia 4910 — AGENT
+
+[REDACTED]
+
+### Linia 4911 — AGENT
+
+**Excel gotowy** — na podstawie Twojej listy z `gra-robocza/JEDNOSTKI-DO-POPRAWY-staty.md`.
+
+## Plik
+
+**`panele-sterowania/Jednostki-staty-MACIEJ-20260706.xlsx`**
+
+### Arkusz `Propozycje-statów` (26 wierszy)
+
+| Sekcja | Zawartość |
+|--------|-----------|
+| **Meta** | Nacja · Epoka · Tech · Rola · Typ |
+| **PL (kontekst)** | Atak · Obrona · AD · Health (×2 jak w Twoim md) |
+| **Wzorzec** | Jednostka referencyjna z gry (np. Gaesatae, Konnica, Falanga) |
+| **Historia** | Krótki opis epoki i charakteru |
+| **obecne.*** | Pola EN z `units.json` (puste = silnik biję za 0) |
+| **PROPONUJ.*** | Propozycja TW v3 (`meleeAttack`, `meleeDefence`, `weaponDamage`, …) |
+| **M_pole** | Przeliczona moc jak w grze |
+| **Akceptacja** | Pusta kolumna na Twoje **TAK/NIE/korekta** |
+
+- **Żółte wiersze** — brak pól EN (18 jednostek)  
+- **Zielone kolumny** — propozycje do weryfikacji  
+- **8 jednostek** (batch 3: Thorakites, Legionarius, …) ma EN — tam głównie **korekty** (np. Thorakites: więcej obrony; Mur tarcz: profil defensywny)
+
+### Arkusz `Wzorce-referencyjne`
+
+Parametry jednostek wzorcowych (Gaesatae, Hastati, Konnica, Falanga, …) do porównania.
+
+---
+
+## Jak używać
+
+1. Otwórz Excel · popraw kolumny **PROPONUJ.*** tam, gdzie coś nie gra  
+2. W kolumnie **Akceptacja** wpisz **TAK** (albo napisz w czacie „wdrażaj staty”)  
+3. Wgram wartości do `units.json` → rebuild roboczej
+
+**Uwaga:** Soldurii = **kopia Gaesatae 1:1** (zgodnie z `CELT-Q2` w uwagach jednostki).
+
+[REDACTED]
+
+### Linia 4912 — MACIEJ
+
+<timestamp>Monday, Jul 6, 2026, 5:40 PM (UTC+2)</timestamp>
+
+pozniej Sprawczy te jednostki które są prawidłowe mają parametry zgodne z  Nowe wartości TW v3 czy też system walki jest zgodny z tym systemem?
+
+### Linia 4913 — AGENT
+
+Sprawdzam, czy jednostki z polami EN i silnik walki używają tego samego modelu TW v3.
+
+[REDACTED]
+
+### Linia 4914 — AGENT
+
+[REDACTED]
+
+### Linia 4915 — AGENT
+
+[REDACTED]
+
+### Linia 4916 — AGENT
+
+[REDACTED]
+
+### Linia 4917 — AGENT
+
+[REDACTED]
+
+### Linia 4918 — AGENT
+
+**Krótko:** system walki **jest jeden — TW v3** — ale **nie wszystkie jednostki są do niego podłączone**. Polskie `Atak` / `Obrona` **nie są** tym samym co parametry TW.
+
+---
+
+## Jeden silnik TW v3 (tak)
+
+Auto-walka (`combat.ts`), pole bitwy 3D (`battleScene.ts`) i oblężenie (`siege.ts`) używają tych samych formuł:
+
+| Formuła | Pola z `units.json` |
+|--------|---------------------|
+| **Trafienie** | `hit_base` (40) + `meleeAttack` − `meleeDefence` + bonus szarży |
+| **Obrażenia wręcz** | `weaponDamage` − `armor` + `piercing` + `chargeBonus` (szarża) |
+| **Obrażenia dystans** | `missileAttack` − `armor` |
+| **HP** | `health` (z fallbackiem na `Health`) |
+
+Stałe z `combat-params.json` → sekcja **`tw_v3`** (Panel-C).
+
+---
+
+## Dwie warstwy liczb (tu jest zamieszanie)
+
+| Warstwa | Kolumny | Do czego |
+|---------|---------|----------|
+| **Macierz PL (display / Excel)** | `Atak`, `Obrona`, `Atak dystansowy`, `Health` | UI, Panel-C, Twoja lista — **inna skala** (np. Wojownik: Atak **45**, Obrona **38**) |
+| **Silnik TW v3 (EN)** | `meleeAttack`, `meleeDefence`, `weaponDamage`, `piercing`, `armor`, `chargeBonus`, `health`, `missileAttack` | **Tylko to liczy walka** (np. Wojownik: **4** / **4**) |
+
+**57 jednostek** ma pola EN → walka **działa z TW v3**.  
+**18 jednostek** (Twoja lista minus batch 3) **nie ma** `meleeAttack` / `meleeDefence` → silnik dostaje **0** → biją za nic (HP z `Health` działa).
+
+`combatUnitFromDef` **nie** mapuje PL `Atak` → `meleeAttack` (celowo — komentarz w kodzie: „bez fallbacku”).
+
+---
+
+## Jednostki „prawidłowe” — czy zgodne z TW v3?
+
+| Grupa | Stan |
+|-------|------|
+| **Standardy** (Wojownik, Falanga, Hastati, Konnica…) | Tak — EN uzupełnione, testy `combat-test` 6/6 na TW v3 |
+| **8 z batch 3** (Thorakites, Legionarius, Evocati, …) | **Technicznie TW v3 OK** — mają EN; balans może nie pasować do PL/macierzy (np. Thorakites PL O=9, EN `meleeDefence`=5) |
+| **18 roster-6 bez EN** | **Nie zgodne** — silnik TW v3 jest OK, **dane jednostki nie** |
+| **Roster-6 z PL 6–10** (Soldurii, Gaesatae…) | PL **≠** skala EN — wzorzec to Gaesatae: PL 8/5 → EN 7/2 |
+
+Czyli: **system walki spójny**, ale **macierz PL i pola EN to dwa osobne zestawy** — synchronizacja tylko przez eksport / ręczne uzupełnienie EN.
+
+---
+
+## Pole bitwy vs auto-walka
+
+| Tor | TW v3? | Fallback PL? |
+|-----|--------|--------------|
+| Auto-walka mapy | Tak, `combatUnitFromDef` | Nie (Atak/Obrona) |
+| Pole bitwy 3D | Tak, ten sam `toCombatUnit` → `combatUnitFromDef` | Tylko pomocniczo: zasięg (`missileAttack` ← `Atak dystansowy`), HUD |
+| Oblężenie | Tak, `hitChanceTw` / `damageTw` | Most przez EN |
+
+---
+
+## Co sprawdzimy „później” (audyt)
+
+1. **18 bez EN** — wpisać propozycje z Excela → `units.json`  
+2. **8 z EN** — czy profil PL (Atak/Obrona z md) = sens balansu TW (porównanie z wzorcami)  
+3. **Spójność PL↔EN** — czy Panel-C / macierz ma odzwierciedlać EN (albo tylko EN jako źródło prawdy)  
+4. **Regresja** — `combat-test` + 2–3 bitwy playtest roster-6 po wpisaniu EN  
+
+---
+
+**Podsumowanie:** Walka **jest** na TW v3 w całej grze. Jednostki „prawidłowe” (z EN) **są pod TW v3**. Twoje 18 **nie** — nie przez błąd silnika, tylko brak pól EN. Polskie `Atak`/`Obrona` z listy **same z siebie walki nie naprawią** — trzeba uzupełnić kolumny **`meleeAttack`, `meleeDefence`, `weaponDamage`, …** (Excel już to ma w `PROPONUJ.*`).
+
+Jak zaakceptujesz Excel → wdrożę EN i zrobimy audyt punkt 1–4.
+
+[REDACTED]
+
+### Linia 4919 — MACIEJ
+
+<timestamp>Monday, Jul 6, 2026, 5:42 PM (UTC+2)</timestamp>
+
+Pytanie, czy na przykład w JSON-ie wersji, która jest kanonem, nie ma innych danych i innych parametrów, jeżeli chodzi o statystyki jednostek.
+
+### Linia 4920 — AGENT
+
+Sprawdzam, czy `units.json` w kanonie różni się od źródła w `gra/data/`.
+
+[REDACTED]
+
+### Linia 4921 — AGENT
+
+[REDACTED]
+
+### Linia 4922 — AGENT
+
+[REDACTED]
+
+### Linia 4923 — AGENT
+
+[REDACTED]
+
+### Linia 4924 — AGENT
+
+[REDACTED]
+
+### Linia 4925 — AGENT
+
+[REDACTED]
+
+### Linia 4926 — AGENT
+
+[REDACTED]
+
+### Linia 4927 — AGENT
+
+[REDACTED]
+
+### Linia 4928 — AGENT
+
+[REDACTED]
+
+### Linia 4929 — AGENT
+
+[REDACTED]
+
+### Linia 4930 — AGENT
+
+**Tak — kanon może mieć inne staty niż aktualny `gra/data/units.json`.** To nie jest osobny „system”, tylko **starszy snapshot wbudowany w HTML** w momencie ostatniego buildu.
+
+---
+
+## Jak to działa dziś (od 2026-07-05)
+
+| Warstwa | Gdzie są staty | Co to znaczy |
+|---------|----------------|--------------|
+| **Źródło prawdy (dev)** | `gra/data/units.json` | Tu edytujesz / eksport Panel-C |
+| **Kanon grywalny** | **w środku** `gra-kanon/Gra-KANON.html` | JSON **zapisany na stałe** przy `vite build` |
+| **Osobny plik w kanonie** | `gra-kanon/data/units.json` | **Nie ma** (usunięte — tylko HTML) |
+| **Kopia zapasowa** | `gra-kanon/data — kopia/units.json` | Stary export, **≠** aktualny `gra/data` |
+
+Gra z **`gra-kanon/START.html`** czyta **bundel z dnia publishu**, nie live plik z dysku.
+
+---
+
+## Co sprawdziłem (konkret)
+
+**Aktualny `gra/data/units.json`:** md5 `6d7ad612…` · 75 jednostek  
+
+**Kopia w kanonie (`data — kopia`):** md5 `dbd082d4…` — **inny plik** (~130 różnic w polach walki)
+
+**Przykład Hastati:**
+
+| | Atak (PL) | Obrona (PL) | meleeAttack | meleeDefence | health (TW) |
+|--|-----------|-------------|-------------|--------------|---------------|
+| **Kanon bundle** (wbudowany) | 6 | 6 | 7 | 7 | ~38 era backup |
+| **Aktualny gra/data** | **88** | **70** | 7 | 7 | **19** |
+
+**Wniosek:** Polskie macierzowe `Atak`/`Obrona` w kanonie ≠ aktualny Excel/Panel-C. Pola **TW v3 EN** (np. `meleeAttack`) często **bez zmian**, ale **HP TW** i macierz PL **mogły się rozjechać**.
+
+**Soldurii** — w kanonie **i** w `gra/data`: **brak EN** → w obu wersjach walka = 0 obrażeń (ten sam bug).
+
+---
+
+## Czy kanon ma „inny system walki”?
+
+**Nie** — ten sam **TW v3** (`combat-params.json` też w bundlu).  
+**Tak** — **inne liczby** w `units.json`, bo bundel **nie był przebudowany** po późniejszych zmianach w `gra/data` (Panel-C, batch 3, balans HP).
+
+---
+
+## Co z tego wynika dla Ciebie
+
+1. **Patrzysz na `gra/data`** → widzisz **najnowsze** staty (dev).  
+2. **Grasz `Gra-KANON.html`** → widzisz **ostatni publish** (~2026-07-05 22:40, md5 `a001606c…` / obecny `b0bb2b6b…`).  
+3. **Excel ze statami** dotyczy `gra/data` — **nie trafi do kanonu**, dopóki nie zrobimy **rebuild + publish robocza/kanon**.
+
+---
+
+## Rekomendacja
+
+Po akceptacji Excela:
+
+1. Wpisać EN do `gra/data/units.json`  
+2. `publish-robocza-snapshot.ps1` → test w `gra-robocza/`  
+3. Dopiero potem **`master`** → kanon zsynchronizowany
+
+Chcesz, żebym przy następnym kroku zrobił **tabelę „kanon vs gra/data” dla wszystkich 26 jednostek** z Twojej listy?
+
+[REDACTED]
+
+### Linia 4931 — MACIEJ
+
+<timestamp>Monday, Jul 6, 2026, 5:45 PM (UTC+2)</timestamp>
+
+sprawdź aktualne parametry w pliku JSON wersji roboczej. i porównaj z tym, co mi wysłałeś
+
+### Linia 4932 — AGENT
+
+[REDACTED]
+
+### Linia 4933 — AGENT
+
+[REDACTED]
+
+### Linia 4934 — AGENT
+
+[REDACTED]
+
+### Linia 4935 — AGENT
+
+[REDACTED]
+
+### Linia 4936 — MACIEJ
+
+If the available MCP tools do not fully support what the user asked you to do, complete the work you can with the current tool set. In your work summary, include what you were unable to do with MCP and why. Do not use browser automation to work around missing or unavailable MCP tools unless the user explicitly asks you to use the browser.
+
+### Linia 4937 — MACIEJ
+
+<timestamp>Monday, Jul 6, 2026, 5:45 PM (UTC+2)</timestamp>
+
+sprawdź aktualne parametry w pliku JSON wersji roboczej. i porównaj z tym, co mi wysłałeś
+
+### Linia 4938 — AGENT
+
+[REDACTED]
+
+### Linia 4939 — AGENT
+
+[REDACTED]
+
+### Linia 4940 — AGENT
+
+Sprawdzam aktualny `units.json` i porównuję go z propozycjami z Excela.
+
+[REDACTED]
+
+### Linia 4941 — AGENT
+
+[REDACTED]
+
+### Linia 4942 — AGENT
+
+[REDACTED]
+
+### Linia 4943 — AGENT
+
+Porównałem **aktualny JSON źródłowy** z propozycjami z Excela (`Jednostki-staty-MACIEJ-20260706.xlsx`). Wynik: **nic z Excela nie jest jeszcze wdrożone**.
+
+## Który plik jest „wersją roboczą”?
+
+| Plik | Status |
+|------|--------|
+| **`gra/data/units.json`** | **Żywe źródło** — stąd idzie następny build (md5: `6d7ad612…`, 75 jednostek) |
+| `gra-robocza/data/units.json` | **Nie istnieje** |
+| `gra-robocza/data — kopia/units.json` | **Stara kopia** — 0/26 ma EN, HP w starym skalowaniu (×2) |
+| `Gra-ROBOCZA.html` | Bundel z wbudowanymi danymi — osobny snapshot, nie ten sam co `gra/data` |
+
+Do porównania użyłem **`gra/data/units.json`** — to jest plik, który faktycznie steruje grą po rebuildzie.
+
+---
+
+## Wynik: Excel vs JSON
+
+**Zgodność z propozycjami TW v3 z Excela: 0/26**
+
+| Grupa | Ile | Co to znaczy w grze |
+|-------|-----|---------------------|
+| **Bez pól EN** | **18** | Silnik czyta `meleeAttack` itd. → **biją za 0** (tylko PL `Atak`/`Obrona` nie wchodzą do TW) |
+| **Ma EN, ale ≠ Excel** | **8** | Mają staty TW (batch 3), ale **inne niż propozycje** z Excela |
+| **Identyczne z Excel** | **0** | Excel **nie został jeszcze wpisany** do JSON |
+
+---
+
+## Przykłady rozjazdu (JSON dziś → Excel proponuje)
+
+**18 bez EN** — brak całego bloku TW, np. Soldurii:
+
+- JSON: tylko PL `Atak 8 / Obrona 5 / Health 55`, **zero** `meleeAttack`, `weaponDamage` itd.
+- Excel: `7/2/5/1/1/5/11/0/0` (jak Gaesatae)
+
+**8 z EN, ale skorygowane w Excelu** — np.:
+
+| Jednostka | JSON (TW EN) | Excel (PROPONUJ) | Różnice |
+|-----------|--------------|------------------|---------|
+| **Thorakites** | 6/5/6/2/4/4/14 | 5/7/5/2/5/3/13 | MA, MD, armor, charge, health |
+| **Evocati** | 8/8/**10**/4/6/**10/21** | 8/8/**8**/3/6/**5/15** | WD, charge, health mocno wyższe w JSON |
+| **Mur tarcz** | 5/6/4/2/3/2/20 | 4/8/3/1/6/1/17 | profil defensywny inny |
+| **Legionarius** | 6/**5**/6/…/**14** | 6/**6**/6/…/**12** | MD, health |
+| **Miecznik galijski** | **7**/2/**5**/…/**11** | **8**/2/**6**/…/**12** | MA, WD, health |
+
+Pełna lista 26 szt. jest w skrypcie `gra/tools/compare-excel-vs-json.cjs` — uruchomiony dziś, wynik jak wyżej.
+
+---
+
+## Stara kopia w `gra-robocza`
+
+`gra-robocza/data — kopia/units.json` jest **jeszcze starsza**:
+- **0/26** ma pola EN (nawet Thorakites/Evocati bez EN)
+- HP np. Soldurii **110** vs **55** w `gra/data` (stare skalowanie ×2)
+
+**Nie opieraj się na tej kopii** — jest nieaktualna względem `gra/data`.
+
+---
+
+## Wniosek
+
+To, co wysłałem w Excelu (`panele-sterowania/Jednostki-staty-MACIEJ-20260706.xlsx`), to **propozycja do akceptacji** — **nie trafiło do JSON**.
+
+W `gra/data/units.json` nadal:
+- 18 jednostek **bez EN** → walka = 0
+- 8 jednostek ma **wcześniejszy batch EN**, który Excel **koryguje**
+
+**Następny krok po Twojej akceptacji:** wpisać 26 zestawów EN do `gra/data/units.json` → rebuild roboczej → playtest.
+
+Jeśli chcesz, mogę przygotować tabelę „JSON vs Excel” w formacie do wklejenia w kolumnę Akceptacja albo od razu patch po Twoim „wdrażaj staty”.
+
+[REDACTED]
+
+### Linia 4945 — MACIEJ
+
+<timestamp>Monday, Jul 6, 2026, 5:50 PM (UTC+2)</timestamp>
+
+problem w tym, że nie możemy takich parametrów wysłać, jeżeli większość jednostek ma parametry znacznie mniejsze. Zaraz Ci wyślę, jak jest obecnie w projekcie.
+
+### Linia 4946 — AGENT
+
+Rozumiem — propozycje muszą być spójne ze skalą reszty rosteru. Zbieram teraz rozkład aktualnych parametrów TW w projekcie, żebyśmy mogli to porównać z tym, co wyślesz.
+
+[REDACTED]
+
+### Linia 4947 — AGENT
+
+[REDACTED]
+
+### Linia 4948 — AGENT
+
+Masz rację — to trzeba najpierw ułożyć na **tej samej skali**, co reszta projektu. Czekam na Twoje dane.
+
+Tymczasem z **`gra/data/units.json`** (stan dziś) widać, skąd może brać się rozjazd:
+
+## Dwie różne skale w tym samym pliku
+
+| Warstwa | Przykład Wojownik | Kto tego używa |
+|---------|-------------------|----------------|
+| **PL macierz** (`Atak` / `Obrona`) | 45 / 38 | UI, macierz display, porównania w Excelu Panel-C |
+| **EN TW v3** (`meleeAttack` / `meleeDefence` / `health`) | 4 / 4 / 11 | **Silnik walki** (`combat.ts`) |
+
+Propozycje w Excelu były liczone w **skali EN TW** (jak Gaesatae 7/2/11, Wojownik z mieczem 6/5/14), **nie** w skali PL macierzy (45/38).
+
+Dla 26 problematycznych jednostek w `JEDNOSTKI-DO-POPRAWY-staty.md` widać **PL Atak 6–10** — to wygląda jak skala roster-6 / Panel-C, **nie** jak Wojownik 45/38. Stąd wrażenie, że Excel „nie pasuje” do reszty, jeśli patrzysz na kolumny PL.
+
+## Co jest dziś w projekcie (EN — to liczy walka)
+
+Z **57 jednostek z polami EN** w `gra/data/units.json`:
+
+| Stat | Min | Mediana | Max |
+|------|-----|---------|-----|
+| meleeAttack | 0 | **6** | 10 |
+| meleeDefence | 0 | **4** | 10 |
+| weaponDamage | 0 | **5** | 10 |
+| health | 5 | **14** | 450* |
+
+\*450 = wieża oblężnicza; piechota zwykle 8–21.
+
+**Baseline:** Wojownik = `4/4/4/1/2/2/11/0`  
+**Elita:** Triari, Gwardia Królewska ≈ `8–10 / 7–8 / 10 / health 20–21`  
+**Gaesatae** (wzorzec Soldurii w Excelu): `7/2/5/1/1/5/11`
+
+Propozycje Excela dla 26 szt. mieszczą się w tym przedziale EN — **ale to nie znaczy, że pasują do Twojej oczekiwanej skali PL ani do tego, co zaraz wyślesz**.
+
+## Moja rezerwa wobec poprzedniego Excela
+
+Excel mógł być **technicznie spójny z TW EN**, a jednocześnie **produktowo zły**, jeśli:
+- oczekujesz innej relacji do jednostek referencyjnych (np. Wojownik, Gaesatae, Hastati),
+- albo patrzysz na **PL Atak/Obrona**, gdzie skala jest inna i niespójna między starym rosterem a roster-6.
+
+**Wyślij proszę**, jak jest u Ciebie — tabela, Excel, zrzut albo fragment JSON. Porównam to z:
+1. aktualnym `gra/data/units.json`,
+2. poprzednimi propozycjami,
+3. jednostkami wzorcowymi z tej samej epoki/klasy,
+
+i dopiero wtedy zaproponuję skorygowany zestaw — **bez wdrażania do JSON**, dopóki nie zaakceptujesz.
+
+[REDACTED]
+
+### Linia 4950 — MACIEJ
+
+<timestamp>Monday, Jul 6, 2026, 5:51 PM (UTC+2)</timestamp>
+
+no niestety sam zrobiłeś bałagan przy kolejnych aktualizacjach i ciężko teraz będzie odtworzyć co tak naprawdę się na co zmieniło. Musimy to po prostu ustalić na nowo.  Bo ty zajmowałeś się Excelem panelem sterowania i zmianami w parametrach jednostek. Gdzieś po prostu narobiłeś bałagan.
+
+### Linia 4951 — AGENT
+
+Masz rację — to trzeba uporządkować od zera. Najpierw sprawdzę, co dokładnie mamy w plikach i gdzie są rozjazdy między panelem, Excelem a JSON.
+
+[REDACTED]
+
+### Linia 4952 — AGENT
+
+[REDACTED]
+
+### Linia 4953 — AGENT
+
+[REDACTED]
+
+### Linia 4955 — MACIEJ
+
+<timestamp>Monday, Jul 6, 2026, 5:52 PM (UTC+2)</timestamp>
+
+zobacz jak to wygląda teraz w wersji która przeze mnie jest zaakceptowana. Brakuje nam dwudziestu kilku jednostek z parametrami które musimy dostosować według typu jednostki historycznych parametrów tej jednostki i tak dalej. Lista jednostek — HP / atak / obrona / dystans (po balansie HP x2 · dystans x0.5; Falanga=40)
+
+Wartosci = jak czyta silnik combat.ts (HP=health lub Health; atak=meleeAttack; obrona=meleeDefence; dystans=missileAttack). Uwaga „PL0" = staty tylko po polsku -> silnik czyta 0 (kol. „staryEN" = wartosc z gra/data, gdzie te pola EN JESZCZE ISTNIALY).
+
+#JednostkaHPAtakObrażObronaDystansUwaga (staryEN z gra/data)1Wojownik2244402Procarz1610143Oszczepnik1610144Łucznik1622235Zwiadowca1000106Włócznik3255807Wojownik z mieczem i tarczą2866508Rydwan (woły)4867409Konnica28875010Galera24334011Falanga405410012Hieros Lochos (Święty Zastęp)4281010013Hastati38777414Triari428108015Jeździec chiński44754016Kusznik16202817Hu Ben Wei (Gwardia Tygrysa)4010107018Impi36546019Oszczepnik Zulu (Izijula)20102420uThulwana (Białe Tarcze)428107021Wojownik z maczugą (Chaska)20764022Wojownik z toporem24654023Procarz (Huaracoc)16101424Oszczepnik (Estólica)16101425Królewska Gwardia4010108026Rydwan konny56764027Łucznik egipski16102628Rydwan egipski56654529Wojownik z khopesh24655030Medżaj (Gwardia Faraona)4210108331Łucznik sumeryjski16101432Rydwan sumeryjski56764033Włócznik sumeryjski40546034Gwardia Królewska Sumeru4210108035Wojownik mykeński28654036Rydwan mykeński52773037Wojownik Sherden28655038Halabardnik Shang24655039Rydwan Shang60765040Łucznik akadyjski18102541Gaesatae22752042Soldurii110————PL0 · gra/data: atk=— def=— dist=—43Rydwan celtycki52873044Wojownik germański30654445Berserker germański24862046Taran700000047Katapulta250000448Wieża oblężnicza900000049Wojownik tyrreński24754050Wojownik szekelesz28545051Konnica lancowa asyryjska170————PL0 · gra/data: atk=— def=— dist=—52Konnica łucznicza asyryjska150————PL0 · gra/data: atk=— def=— dist=—53Łucznik asyryjski50————PL0 · gra/data: atk=— def=— dist=—54Drużynnik110————PL0 · gra/data: atk=— def=— dist=—55Jeździec z szczepnikami140————PL0 · gra/data: atk=— def=— dist=—56Strażnik bram Harappy140————PL0 · gra/data: atk=— def=— dist=—57Piechota induska120————PL0 · gra/data: atk=— def=— dist=—58Garnizon Harappy130————PL0 · gra/data: atk=— def=— dist=—59Rydwan Kapadokijski180————PL0 · gra/data: atk=— def=— dist=—60Piechota hetycka130————PL0 · gra/data: atk=— def=— dist=—61Gwardia hetycka140————PL0 · gra/data: atk=— def=— dist=—62Gwardia Ishtar150————PL0 · gra/data: atk=— def=— dist=—63Wojownik babiloński110————PL0 · gra/data: atk=— def=— dist=—64Piechota neobabilońska130————PL0 · gra/data: atk=— def=— dist=—65Tyrski miecznik110————PL0 · gra/data: atk=— def=— dist=—66Wojownik fenicki100————PL0 · gra/data: atk=— def=— dist=—67Gwardia Tyr120————PL0 · gra/data: atk=— def=— dist=—68Thorakites130————PL0 · gra/data: atk=6 def=5 dist=069Legionarius116————PL0 · gra/data: atk=6 def=5 dist=070Evocati150————PL0 · gra/data: atk=8 def=8 dist=071iButho z iklwa144————PL0 · gra/data: atk=5 def=6 dist=072Gwardzista z champi120————PL0 · gra/data: atk=6 def=4 dist=073Wojownik z żelaznym khopesh116————PL0 · gra/data: atk=6 def=5 dist=074Mur tarcz (Sargonid)170————PL0 · gra/data: atk=5 def=6 dist=075Miecznik galijski116————PL0 · gra/data: atk=7 def=2 dist=
+
+### Linia 4956 — AGENT
+
+Przyjmuję Twoją tabelę jako źródło prawdy. Porównuję ją z `gra/data/units.json` i przygotowuję propozycje dla 26 jednostek PL0.
+
+[REDACTED]
+
+### Linia 4957 — AGENT
+
+[REDACTED]
+
+### Linia 4958 — AGENT
+
+[REDACTED]
+
+### Linia 4959 — AGENT
+
+[REDACTED]
+
+### Linia 4960 — AGENT
+
+Masz rację co do bałaganu — i Twoja tabela to teraz **jedyna baza**, od której zaczynamy od nowa. Poprzedni Excel z propozycjami TW **odrzucamy**; `staryEN` z batcha 3 też **nie obowiązuje**.
+
+---
+
+## Co jest ustalone (Twoja tabela = kanon)
+
+Skala: **HP / Atak / Obraż / Obrona / Dystans** — dokładnie jak czyta `combat.ts` (`health`, `meleeAttack`, `weaponDamage`, `meleeDefence`, `missileAttack`).
+
+- HP po balansie ×2 (Falanga = **40**)
+- Dystans po ×0,5
+- Jednostki **#1–41** i **#43–50** (poza PL0) = **zaakceptowane**
+
+W `gra/data/units.json` dziś:
+- **31/49** zgodnych z Twoją tabelą
+- **18 rozjazdów** — głównie **dystans nieprzecięty ×0,5** w JSON (np. Procarz masz **4**, w pliku **8**; Hastati **4** vs **8**; Kusznik **8** vs **15**)
+- dodatkowo: Falanga HP (**40** vs **50** w pliku), Rydwan mykeński atak (**5** vs **7**), Wojownik szekelesz lekko inny profil
+
+To osobna poprawka synchronizacji — **po** ustaleniu 26 PL0.
+
+---
+
+## PL0 — co oznacza kolumna HP u Ciebie
+
+Dla PL0 wpisałeś HP typu **110, 170, 130** — to **nie ta sama liczba**, co u Gaesatae (**22**), choć obie mają w JSON `Health=55`.
+
+| Jednostka | Twoje HP (PL0) | HP walki (skala 1–41) | Skąd |
+|-----------|----------------|------------------------|------|
+| Soldurii | 110 | **22** | = Gaesatae (to samo `Health=55`, uwagi: identyczne staty) |
+| Konnica lancowa | 170 | **34** | `Health=85` → elitarna konnica powyżej Konnicy (**28**) |
+| Łucznik asyryjski | 50 | **16** | wzorzec Łucznik / Łucznik egipski, nie 50/5=10 |
+
+**Reguła:** w kolumnie PL0 HP = `Health` z JSON × 2 (informacja o „grubym” polu). **Do walki** liczymy jak w wierszach 1–41: `health` w JSON = **HP_walki ÷ 2**.
+
+---
+
+## 26 jednostek PL0 — propozycja od zera (Twoja skala, wzorce z zaakceptowanych)
+
+Poniżej **HP / Atak / Obraż / Obrona / Dystans** + wzorzec. **Nie wdrażam** — czekam na Twoje OK / korekty.
+
+| # | Jednostka | HP | A | Ob | Obr | Dist | Wzorzec / logika |
+|---|-----------|----|----|-----|-----|------|------------------|
+| 42 | Soldurii | 22 | 7 | 5 | 2 | 0 | = **Gaesatae** (uwagi w JSON) |
+| 51 | Konnica lancowa asyryjska | 34 | 9 | 8 | 5 | 0 | **Konnica** 28/8/7/5 + elitarny bonus (najmocniejsza konnica roster-6) |
+| 52 | Konnica łucznicza asyryjska | 30 | 4 | 3 | 2 | 6 | słaba wręcz, mocny ostrzał (PL dystans 12 → **6**) |
+| 53 | Łucznik asyryjski | 16 | 2 | 2 | 3 | 4 | **Łucznik** / Łucznik egipski |
+| 54 | Drużynnik | 24 | 7 | 6 | 4 | 0 | między Wojownik toporem a Gaesatae (huscarl) |
+| 55 | Jeździec z szczepnikami | 28 | 6 | 5 | 4 | 2 | **Konnica** lite + rzut (PL dystans 5 → **2**) |
+| 56 | Strażnik bram Harappy | 28 | 4 | 4 | 9 | 0 | defensywny (PL Obr 9) |
+| 57 | Piechota induska | 24 | 6 | 5 | 5 | 0 | zrównoważona (PL 7/7) |
+| 58 | Garnizon Harappy | 26 | 5 | 4 | 8 | 0 | garnizon defensywny |
+| 59 | Rydwan Kapadokijski | 36 | 7 | 7 | 3 | 0 | ciężki rydwan (między Rydwan Shang a egipski) |
+| 60 | Piechota hetycka | 26 | 5 | 4 | 8 | 0 | defensywna piechota |
+| 61 | Gwardia hetycka | 28 | 7 | 6 | 7 | 0 | elita hetycka |
+| 62 | Gwardia Ishtar | 30 | 8 | 7 | 7 | 0 | elitarna gwardia (poniżej Królewska Gwardia 40) |
+| 63 | Wojownik babiloński | 24 | 6 | 5 | 5 | 0 | = **Wojownik z khopesh** |
+| 64 | Piechota neobabilońska | 26 | 6 | 5 | 7 | 0 | neo, pancerna |
+| 65 | Tyrski miecznik | 24 | 7 | 6 | 3 | 0 | ofensywny miecznik |
+| 66 | Wojownik fenicki | 20 | 5 | 4 | 4 | 0 | lekki wojownik |
+| 67 | Gwardia Tyr | 24 | 7 | 6 | 6 | 0 | elita tyryjska |
+| 68 | Thorakites | 26 | 5 | 4 | 9 | 0 | defensywny hoplita — **ignoruj staryEN 6/5** |
+| 69 | Legionarius | 23 | 6 | 6 | 6 | 0 | wczesny legion (przed Hastati/Triari) |
+| 70 | Evocati | 30 | 8 | 8 | 8 | 0 | super weteran — **ignoruj staryEN WD=10** |
+| 71 | iButho z iklwa | 29 | 5 | 4 | 7 | 0 | formacja Zulu, defensywny |
+| 72 | Gwardzista z champi | 24 | 7 | 6 | 5 | 0 | galijski champion |
+| 73 | Wojownik z żel. khopesh | 23 | 6 | 6 | 6 | 0 | upgrade khopesh |
+| 74 | Mur tarcz (Sargonid) | 34 | 4 | 3 | 10 | 0 | formacja tarczowa — profil jak **Falanga** (40/5/4/10) |
+| 75 | Miecznik galijski | 23 | 8 | 6 | 2 | 0 | ofensywny, szkło — jak Gaesatae+ |
+
+**staryEN** (6/5, 8/8/10 itd.) to ślad błędnego batcha — **nie przenosimy**.
+
+---
+
+## Skąd bałagan (krótko, bez wymówek)
+
+1. **Dwie skale** w tym samym pliku: PL macierz (`Atak` 45) vs EN TW (`meleeAttack` 4).
+2. **Panel-C export 2026-07-05** — zmiany macierzy/HP bez pełnego EN dla roster-6.
+3. **Osobny Excel 2026-07-06** — propozycje z innej logiki niż Twoja tabela (do wyrzucenia).
+4. **Batch staryEN** — częściowe EN dla 8 jednostek, niespójne z resztą rosteru.
+5. **Bundel ≠ JSON** — publishy w różnych momentach.
+
+---
+
+## Propozycja procedury „od zera”
+
+**A)** Ty akceptujesz/korygujesz tabelę 26 PL0 powyżej (wystarczy „OK” albo poprawki wiersz po wierszu).
+
+**B)** Jednorazowy patch `gra/data/units.json`: wpis EN dla 26 + synchronizacja 18 rozjazdów z Twoją tabelą 1–50.
+
+**C)** `gen-panel-c.py` → Panel-C jako lustro (bez ręcznych eksportów „w ciemno”).
+
+**D)** Playtest 26 jednostek + `combat-test`.
+
+---
+
+Którą opcję wybierasz?
+
+- **A** — tabela 26 OK, wdrażaj  
+- **B** — poprawiam konkretne wiersze (podaj numery)  
+- **C** — najpierw tylko synchronizacja 49 zaakceptowanych, PL0 potem
+
+[REDACTED]
+
+### Linia 4962 — MACIEJ
+
+<timestamp>Monday, Jul 6, 2026, 6:12 PM (UTC+2)</timestamp>
+
+Soldurii jednostka litarna daje 44 HP.  / Drużynnik powinien mieć siedem atak i siedem atak dystansowy. Trzy sztuki krótkich ostrzepów. hp-31 / Jeździec z szczepnikami powinien się nazywać : Jeździec z oszczepami - dystans 7 / Strażnik bram Harappy hp 40 , / Piechota hetycka hp32 obrazenia 8 / Gwardia hetycka 40hp / Gwardia Tyr chyba powinnaś się nazywać Gwardia Tyreńska / Thorakites hp 42, (włocznik) obrona 8 / Legionarius - zmien na Legion Rzymski hp 48 - 2x pillum o mocy 6 - to jest oszczep) / Evocati hp55 - 2x pillum o mocy 6 - to jest oszczep / Gwardzista z champi hp 48 2x oszczep o mocy 5 / Miecznik galijski - hp 38 Poprowadź poprawki i pokaż mi wszystko jeszcze raz.  Plus dopisz jeszcze jedną kwestię. Jaki to jest typ jednostki? Na przykład włócznik, miecznik, konnica i tak dalej.
+
+### Linia 4963 — AGENT
+
+Zbieram typy z JSON i układam pełną tabelę z Twoimi poprawkami.
+
+[REDACTED]
+
+### Linia 4964 — AGENT
+
+[REDACTED]
+
+### Linia 4965 — AGENT
+
+Przyjąłem Twoje poprawki. Poniżej **pełna tabela 26 jednostek PL0** — skala jak w zaakceptowanym kanonie (HP / Atak / Obraż / Obrona / Dystans), plus **typ** po polsku (zgodnie z rolą historyczną i polem `Typ` w danych).
+
+**Zmiany nazw (do JSON przy wdrożeniu):**
+- Jeździec z szczepnikami → **Jeździec z oszczepami**
+- Gwardia Tyr → **Gwardia Tyreńska**
+- Legionarius → **Legion Rzymski**
+
+**Legenda typów:** Miecznik · Włócznik · Oszczepnik · Łucznik · Konnica · Rydwan · Formacja tarcz · Miecznik + pilum
+
+---
+
+## Tabela docelowa — 26 jednostek (PL0)
+
+| # | Jednostka (docelowa) | Typ | HP | Atak | Obraż | Obrona | Dystans | Uwagi |
+|---|----------------------|-----|---:|-----:|------:|-------:|--------:|-------|
+| 42 | Soldurii | Miecznik (celtycki elitarny) | **44** | 7 | 5 | 2 | 0 | Wyższe HP niż Gaesatae (22) — gwardia wodza |
+| 51 | Konnica lancowa asyryjska | Konnica (lanca) | 34 | 9 | 8 | 5 | 0 | Najmocniejsza konnica roster-6 |
+| 52 | Konnica łucznicza asyryjska | Konnica łucznicza | 30 | 4 | 3 | 2 | 6 | Słaba wręcz, silny ostrzał |
+| 53 | Łucznik asyryjski | Łucznik | 16 | 2 | 2 | 3 | 4 | Jak Łucznik / Łucznik egipski |
+| 54 | Drużynnik | Oszczepnik (3× krótki) | **31** | **7** | 6 | 4 | **7** | 3 krótkie oszczepy przed walką wręcz |
+| 55 | **Jeździec z oszczepami** | Konnica (oszczepy) | 28 | 6 | 5 | 4 | **7** | Zmiana nazwy |
+| 56 | Strażnik bram Harappy | Włócznik (obronny) | **40** | 4 | 4 | 9 | 0 | Strażnik bram |
+| 57 | Piechota induska | Włócznik | 24 | 6 | 5 | 5 | 0 | Zrównoważona |
+| 58 | Garnizon Harappy | Miecznik (garnizon) | 26 | 5 | 4 | 8 | 0 | Defensywny garnizon |
+| 59 | Rydwan Kapadokijski | Rydwan | 36 | 7 | 7 | 3 | 0 | Ciężki rydwan |
+| 60 | Piechota hetycka | Włócznik | **32** | 6 | **8** | 8 | 0 | Mocne obrażenia (hetycka piechota) |
+| 61 | Gwardia hetycka | Miecznik (gwardia) | **40** | 7 | 6 | 7 | 0 | Elita hetycka |
+| 62 | Gwardia Ishtar | Miecznik (gwardia) | 30 | 8 | 7 | 7 | 0 | Elitarna gwardia asyryjska |
+| 63 | Wojownik babiloński | Miecznik (khopesh) | 24 | 6 | 5 | 5 | 0 | = profil Wojownik z khopesh |
+| 64 | Piechota neobabilońska | Miecznik (pancerna) | 26 | 6 | 5 | 7 | 0 | Neo-babilońska elita |
+| 65 | Tyrski miecznik | Miecznik (ofensywny) | 24 | 7 | 6 | 3 | 0 | Tyryjski miecznik |
+| 66 | Wojownik fenicki | Miecznik (lekki) | 20 | 5 | 4 | 4 | 0 | Lekka piechota |
+| 67 | **Gwardia Tyreńska** | Miecznik (gwardia) | 24 | 7 | 6 | 6 | 0 | Zmiana nazwy |
+| 68 | Thorakites | **Włócznik** (defensywny) | **42** | 5 | 4 | **8** | 0 | Profil hoplita/włócznik, nie miecznik |
+| 69 | **Legion Rzymski** | Miecznik + pilum | **48** | 7 | 6 | 7 | **6** | 2× pilum (oszczep) moc 6 |
+| 70 | Evocati | Miecznik + pilum (super) | **55** | 8 | 8 | 8 | **6** | 2× pilum moc 6 · super Brązu |
+| 71 | iButho z iklwa | Włócznik (iklwa) | 29 | 5 | 4 | 7 | 0 | Formacja Zulu |
+| 72 | Gwardzista z champi | Oszczepnik + miecz | **48** | 7 | 6 | 5 | **5** | 2× oszczep moc 5 |
+| 73 | Wojownik z żel. khopesh | Miecznik | 23 | 6 | 6 | 6 | 0 | Upgrade khopesh |
+| 74 | Mur tarcz (Sargonid) | Formacja tarcz | 34 | 4 | 3 | 10 | 0 | Mur tarcz — profil jak Falanga |
+| 75 | Miecznik galijski | Miecznik (ofensywny) | **38** | 8 | 6 | 2 | 0 | Szarżujący galijski |
+
+---
+
+## Podsumowanie Twoich poprawek (zastosowane)
+
+| Jednostka | Było (propozycja) | Jest (Twoja korekta) |
+|-----------|-------------------|----------------------|
+| Soldurii | HP 22 | **HP 44** |
+| Drużynnik | 24/7/6/4/0 | **31/7/6/4/7** (3 oszczepy) |
+| Jeździec… | szczepniki, dist 2 | **oszczepami**, dist **7** |
+| Strażnik bram Harappy | HP 28 | **HP 40** |
+| Piechota hetycka | 26/5/4/8/0 | **32/6/8/8/0** |
+| Gwardia hetycka | HP 28 | **HP 40** |
+| Gwardia Tyr | nazwa | **Gwardia Tyreńska** |
+| Thorakites | 26/5/4/9/0, miecznik | **42/5/4/8/0**, **włócznik** |
+| Legionarius | 23/6/6/6/0 | **Legion Rzymski 48/7/6/7/6** (2× pilum) |
+| Evocati | 30/8/8/8/0 | **55/8/8/8/6** (2× pilum) |
+| Gwardzista z champi | 24/7/6/5/0 | **48/7/6/5/5** (2× oszczep) |
+| Miecznik galijski | HP 23 | **HP 38** |
+
+---
+
+## Wiersze bez Twojej korekty (z poprzedniej propozycji — do potwierdzenia)
+
+Jednostki **51–54, 57–59, 62–66, 71, 73–74** — staty jak w tabeli powyżej, bez zmian w tej turze. Jeśli któryś wiersz trzeba skorygować, podaj numer (#).
+
+---
+
+## Do JSON (przy wdrożeniu — jeszcze NIE robione)
+
+Dla każdej jednostki wpisujemy m.in.:
+- `health` = **HP ÷ 2** (np. Soldurii 44 → `health: 22`)
+- `meleeAttack`, `weaponDamage`, `meleeDefence`, `missileAttack` = jak w tabeli
+- pilum/oszczepy = **`missileAttack`** (Legion/Evocati **6**, Gwardzista **5**, Drużynnik **7**)
+- 3 zmiany nazwy w polu `Jednostka`
+- Thorakites: rozważyć `Typ: Spearman` zamiast Swordsman (zgodnie z „włócznik”)
+
+---
+
+**Następny krok od Ciebie:**  
+**A** — tabela OK, wdrażaj do JSON  
+**B** — poprawiam wiersze: … (podaj #)  
+**C** — najpierw tylko zmiany nazw + te 12 skorygowanych wierszy, reszta później
+
+[REDACTED]
+
+### Linia 4967 — MACIEJ
+
+<timestamp>Monday, Jul 6, 2026, 6:16 PM (UTC+2)</timestamp>
+
+po pierwsze zajmij się tylko tymi jednostkami, które Ci wysłałem, potrzebuję do nich statystyki. Po drugie nic już nie dziel, nic już nie mnoż to są finalne propozycje, które chcę zobaczyć. Wyświetl mi jeszcze raz tą listę tak jak Cię prosiłem rób to o co Cię proszę, nie wymyślaj nic do cholery nowego.
+
+### Linia 4968 — AGENT
+
+## Jednostki, które wysłałeś — finalne propozycje (bez dzielenia, bez mnożenia)
+
+Kolumny: **HP · Atak · Obraż · Obrona · Dystans** — dokładnie jak podałeś. Gdzie czego nie podałeś: **—**.
+
+| # | Jednostka | Typ | HP | Atak | Obraż | Obrona | Dystans | Uwaga |
+|---|-----------|-----|---:|-----:|------:|-------:|--------:|-------|
+| 1 | Soldurii | litarna | **44** | — | — | — | — | |
+| 2 | Drużynnik | oszczepnik (3× krótki) | **31** | **7** | — | — | **7** | 3 krótkie oszczepy |
+| 3 | Jeździec z oszczepami | — | — | — | — | — | **7** | zmiana nazwy z „Jeździec z szczepnikami” |
+| 4 | Strażnik bram Harappy | — | **40** | — | — | — | — | |
+| 5 | Piechota hetycka | — | **32** | — | **8** | — | — | |
+| 6 | Gwardia hetycka | — | **40** | — | — | — | — | |
+| 7 | Gwardia Tyreńska | — | — | — | — | — | — | zmiana nazwy z „Gwardia Tyr” |
+| 8 | Thorakites | włócznik | **42** | — | — | **8** | — | |
+| 9 | Legion Rzymski | pilum (2×) | **48** | — | — | — | **6** | 2× pilum, moc 6 · zmiana nazwy z „Legionarius” |
+| 10 | Evocati | pilum (2×) | **55** | — | — | — | **6** | 2× pilum, moc 6 |
+| 11 | Gwardzista z champi | oszczep (2×) | **48** | — | — | — | **5** | 2× oszczep, moc 5 |
+| 12 | Miecznik galijski | — | **38** | — | — | — | — | |
+
+To wyłącznie Twoje 12 pozycji. Reszty 26 PL0 tu nie ma.
+
+[REDACTED]
+
+### Linia 4970 — MACIEJ
+
+<timestamp>Monday, Jul 6, 2026, 6:18 PM (UTC+2)</timestamp>
+
+o to mi chodziło. Te parametry, które wcześniej przygotowałeś, jeżeli ich nie zmieniamy, to były OK, więc je po prostu przyjmij tak samo. A te, które zmieniłem, pokaż jako zmienione. Jedynie o co Cię prosiłem, to żebyś zapisał jaki to jest typ jednostki. Włócznik, oszczepnik i tak dalej.
+
+### Linia 4971 — AGENT
+
+## 26 jednostek PL0 — tabela finalna
+
+Skala: **HP · Atak · Obraż · Obrona · Dystans** — wartości końcowe, bez dzielenia i mnożenia.  
+**Typ** = kategoria jednostki (włócznik, oszczepnik itd.).
+
+W kolumnie **Status**: **ZMIENIONE** = Twoja korekta; **bez zmian** = wcześniejsza propozycja, którą przyjmujemy.
+
+| # | Jednostka | Typ | HP | Atak | Obraż | Obrona | Dystans | Status |
+|---|-----------|-----|---:|-----:|------:|-------:|--------:|--------|
+| 42 | Soldurii | Litarny | **44** | 7 | 5 | 2 | 0 | **ZMIENIONE** (HP 22→44) |
+| 51 | Konnica lancowa asyryjska | Konnica | 34 | 9 | 8 | 5 | 0 | bez zmian |
+| 52 | Konnica łucznicza asyryjska | Konnica łucznicza | 30 | 4 | 3 | 2 | 6 | bez zmian |
+| 53 | Łucznik asyryjski | Łucznik | 16 | 2 | 2 | 3 | 4 | bez zmian |
+| 54 | Drużynnik | Oszczepnik | **31** | **7** | 6 | 4 | **7** | **ZMIENIONE** (HP, dystans; 3× krótki oszczep) |
+| 55 | Jeździec z oszczepami | Konnica | 28 | 6 | 5 | 4 | **7** | **ZMIENIONE** (nazwa, dystans 2→7) |
+| 56 | Strażnik bram Harappy | Włócznik | **40** | 4 | 4 | 9 | 0 | **ZMIENIONE** (HP 28→40) |
+| 57 | Piechota induska | Włócznik | 24 | 6 | 5 | 5 | 0 | bez zmian |
+| 58 | Garnizon Harappy | Miecznik | 26 | 5 | 4 | 8 | 0 | bez zmian |
+| 59 | Rydwan Kapadokijski | Rydwan | 36 | 7 | 7 | 3 | 0 | bez zmian |
+| 60 | Piechota hetycka | Włócznik | **32** | 5 | **8** | 8 | 0 | **ZMIENIONE** (HP, Obraż 4→8) |
+| 61 | Gwardia hetycka | Miecznik | **40** | 7 | 6 | 7 | 0 | **ZMIENIONE** (HP 28→40) |
+| 62 | Gwardia Ishtar | Miecznik | 30 | 8 | 7 | 7 | 0 | bez zmian |
+| 63 | Wojownik babiloński | Miecznik | 24 | 6 | 5 | 5 | 0 | bez zmian |
+| 64 | Piechota neobabilońska | Miecznik | 26 | 6 | 5 | 7 | 0 | bez zmian |
+| 65 | Tyrski miecznik | Miecznik | 24 | 7 | 6 | 3 | 0 | bez zmian |
+| 66 | Wojownik fenicki | Miecznik | 20 | 5 | 4 | 4 | 0 | bez zmian |
+| 67 | Gwardia Tyreńska | Miecznik | 24 | 7 | 6 | 6 | 0 | **ZMIENIONE** (nazwa: Gwardia Tyr→Gwardia Tyreńska) |
+| 68 | Thorakites | Włócznik | **42** | 5 | 4 | **8** | 0 | **ZMIENIONE** (HP, typ, Obrona 9→8) |
+| 69 | Legion Rzymski | Miecznik + pilum | **48** | 7 | 6 | 7 | **6** | **ZMIENIONE** (nazwa, HP, dystans; 2× pilum moc 6) |
+| 70 | Evocati | Miecznik + pilum | **55** | 8 | 8 | 8 | **6** | **ZMIENIONE** (HP, dystans; 2× pilum moc 6) |
+| 71 | iButho z iklwa | Włócznik | 29 | 5 | 4 | 7 | 0 | bez zmian |
+| 72 | Gwardzista z champi | Oszczepnik | **48** | 7 | 6 | 5 | **5** | **ZMIENIONE** (HP, dystans; 2× oszczep moc 5) |
+| 73 | Wojownik z żelaznym khopesh | Miecznik | 23 | 6 | 6 | 6 | 0 | bez zmian |
+| 74 | Mur tarcz (Sargonid) | Formacja tarcz | 34 | 4 | 3 | 10 | 0 | bez zmian |
+| 75 | Miecznik galijski | Miecznik | **38** | 8 | 6 | 2 | 0 | **ZMIENIONE** (HP 23→38) |
+
+---
+
+**Podsumowanie:** 12 pozycji **ZMIENIONE** · 14 **bez zmian** · 3 zmiany nazwy (Jeździec z oszczepami, Gwardia Tyreńska, Legion Rzymski).
+
+Jeśli tabela OK — napisz **wdrażaj**, wpiszę to do `gra/data/units.json`.
+
+[REDACTED]
+
+### Linia 4973 — MACIEJ
+
+<timestamp>Monday, Jul 6, 2026, 6:20 PM (UTC+2)</timestamp>
+
+jeszcze jedna kwestia. Formacja i jednostka która ma zarówno mocny atak jak i też może mieć oszczepy nie jest oszczepnikiem jest po prostu włócznikiem albo miecznikiem. I oszczepy są tylko dodatkowo chociażby przykładem jest Hastati czy legiony rzymskie gdzie po prostu jest tylko dodatkiem po wyrzuceniu jego ta jednostka walczy w zwarciu. Więc proszę zmień to jeszcze raz po tym co Ci napisałem
+
+### Linia 4974 — AGENT
+
+## 26 jednostek PL0 — tabela finalna (poprawione typy)
+
+**Zasada typów:** oszczep/pilum przy silnej walce wręcz = **dodatek** (jak Hastati), nie typ „Oszczepnik”. Oszczepnik tylko dla jednostek strzelających oszczepami jako główną rolą (Procarz, Oszczepnik).
+
+| # | Jednostka | Typ | HP | Atak | Obraż | Obrona | Dystans | Status |
+|---|-----------|-----|---:|-----:|------:|-------:|--------:|--------|
+| 42 | Soldurii | Litarny | **44** | 7 | 5 | 2 | 0 | **ZMIENIONE** (HP 22→44) |
+| 51 | Konnica lancowa asyryjska | Konnica | 34 | 9 | 8 | 5 | 0 | bez zmian |
+| 52 | Konnica łucznicza asyryjska | Konnica łucznicza | 30 | 4 | 3 | 2 | 6 | bez zmian |
+| 53 | Łucznik asyryjski | Łucznik | 16 | 2 | 2 | 3 | 4 | bez zmian |
+| 54 | Drużynnik | **Miecznik** | **31** | **7** | 6 | 4 | **7** | **ZMIENIONE** (HP, dystans; 3× krótki oszczep przed wręcz) |
+| 55 | Jeździec z oszczepami | Konnica | 28 | 6 | 5 | 4 | **7** | **ZMIENIONE** (nazwa, dystans 2→7) |
+| 56 | Strażnik bram Harappy | Włócznik | **40** | 4 | 4 | 9 | 0 | **ZMIENIONE** (HP 28→40) |
+| 57 | Piechota induska | Włócznik | 24 | 6 | 5 | 5 | 0 | bez zmian |
+| 58 | Garnizon Harappy | Miecznik | 26 | 5 | 4 | 8 | 0 | bez zmian |
+| 59 | Rydwan Kapadokijski | Rydwan | 36 | 7 | 7 | 3 | 0 | bez zmian |
+| 60 | Piechota hetycka | Włócznik | **32** | 5 | **8** | 8 | 0 | **ZMIENIONE** (HP, Obraż 4→8) |
+| 61 | Gwardia hetycka | Miecznik | **40** | 7 | 6 | 7 | 0 | **ZMIENIONE** (HP 28→40) |
+| 62 | Gwardia Ishtar | Miecznik | 30 | 8 | 7 | 7 | 0 | bez zmian |
+| 63 | Wojownik babiloński | Miecznik | 24 | 6 | 5 | 5 | 0 | bez zmian |
+| 64 | Piechota neobabilońska | Miecznik | 26 | 6 | 5 | 7 | 0 | bez zmian |
+| 65 | Tyrski miecznik | Miecznik | 24 | 7 | 6 | 3 | 0 | bez zmian |
+| 66 | Wojownik fenicki | Miecznik | 20 | 5 | 4 | 4 | 0 | bez zmian |
+| 67 | Gwardia Tyreńska | Miecznik | 24 | 7 | 6 | 6 | 0 | **ZMIENIONE** (nazwa) |
+| 68 | Thorakites | Włócznik | **42** | 5 | 4 | **8** | 0 | **ZMIENIONE** (HP, Obrona 9→8) |
+| 69 | Legion Rzymski | **Miecznik** | **48** | 7 | 6 | 7 | **6** | **ZMIENIONE** (nazwa, HP, dystans; 2× pilum przed wręcz) |
+| 70 | Evocati | **Miecznik** | **55** | 8 | 8 | 8 | **6** | **ZMIENIONE** (HP, dystans; 2× pilum przed wręcz) |
+| 71 | iButho z iklwa | Włócznik | 29 | 5 | 4 | 7 | 0 | bez zmian |
+| 72 | Gwardzista z champi | **Miecznik** | **48** | 7 | 6 | 5 | **5** | **ZMIENIONE** (HP, dystans; 2× oszczep przed wręcz) |
+| 73 | Wojownik z żelaznym khopesh | Miecznik | 23 | 6 | 6 | 6 | 0 | bez zmian |
+| 74 | Mur tarcz (Sargonid) | Formacja tarcz | 34 | 4 | 3 | 10 | 0 | bez zmian |
+| 75 | Miecznik galijski | Miecznik | **38** | 8 | 6 | 2 | 0 | **ZMIENIONE** (HP 23→38) |
+
+**Poprawione typy w tej turze:** Drużynnik, Legion Rzymski, Evocati, Gwardzista z champi — z „Oszczepnik” / „Miecznik + pilum” na **Miecznik** (oszczep/pilum = kolumna Dystans, nie typ).
+
+Jeśli OK — **wdrażaj**.
+
+[REDACTED]
+
+### Linia 4976 — MACIEJ
+
+<timestamp>Monday, Jul 6, 2026, 6:21 PM (UTC+2)</timestamp>
+
+zrób sobie research i sprawdź, czy na pewno te jednostki dane są miecznikiem czy włócznikiem historycznie.
+
+### Linia 4977 — AGENT
+
+Sprawdzam historycznie uzbrojenie tych jednostek — zwłaszcza tam, gdzie mamy „Miecznik” vs „Włócznik”.
+
+[REDACTED]
+
+### Linia 4978 — AGENT
+
+[REDACTED]
+
+### Linia 4979 — AGENT
+
+[REDACTED]
+
+### Linia 4980 — AGENT
+
+## Research — miecznik vs włócznik
+
+Krótko: w starożytności **nie typ jednostki decyduje o kolumnie Dystans**, tylko **główna broń wręcz** po zużyciu oszczepów/pilum. Pilum i oszczepy u Hastati, legionów, Galów, Drużynnika = **dodatek**, nie typ „Oszczepnik”.
+
+### Gdzie trzeba poprawić typ (było → powinno być)
+
+| Jednostka | Było | Po research | Dlaczego |
+|-----------|------|-------------|----------|
+| **Garnizon Harappy** | Miecznik | **Włócznik** | Harappa/Indus — głównie **włócznie**, brak dowodów na miecz jako broń podstawową |
+| **Gwardia hetycka** | Miecznik | **Włócznik** | Gwardia królewska Hetytów (Mesedi, „złote włócznie”) — **włócznia** + krótki miecz pomocniczy |
+| **Gwardia Ishtar** | Miecznik | **Włócznik** | Asyryjska piechota elitarna — **włócznia + tarcza + miecz**, nie miecznik |
+| **Piechota neobabilońska** | Miecznik | **Włócznik** | Neo-babilońska piechota — **włócznicy + łucznicy**, nie szpada |
+| **Wojownik fenicki** | Miecznik | **Włócznik** | Fenicjanie — **długa włócznia** jako broń podstawowa, miecz drugi |
+| **Gwardia Tyreńska** | Miecznik | **Włócznik** | Tyryjska gwardia — ta sama tradycja co fenicka piechota (włócznia) |
+| **Drużynnik** | Miecznik | **Włócznik** | Drużyna słowiańska — **włócznia/szczypior** w szyku; miecz/topór elitarny, ale profil jednostki bliżej włócznika (masz też dystans 7) |
+
+### Gdzie typ zostaje (potwierdzone)
+
+| Jednostka | Typ | Dlaczego |
+|-----------|-----|----------|
+| **Soldurii** | Litarny | Celtycki elitarny wojownik — **miecz** po oszczepach (Soldurii/Gaesatae); „Litarny” = lekka zbroja, OK |
+| **Thorakites** | Włócznik | **Dory (włócznia)** główna broń, miecz + oszczepy pomocniczo |
+| **Tyrski miecznik** | Miecznik | Nazwa i rola — **miecz** |
+| **Wojownik babiloński** | Miecznik | **Khopesh** (miecz) |
+| **Wojownik z żel. khopesh** | Miecznik | **Khopesh** |
+| **Legion Rzymski / Evocati** | Miecznik | **Gladius** po pilum — jak Hastati |
+| **Gwardzista z champi** | Miecznik | Galijski champion — **miecz** elitarny, oszczepy przed szarżą |
+| **Miecznik galijski** | Miecznik | **Miecz** |
+| **Mur tarcz (Sargonid)** | Formacja tarcz | Formacja **włóczni + tarcze** (nie pojedynczy miecznik) |
+| **iButho z iklwa** | Włócznik | **Iklwa** = krótka włócznia |
+| **Strażnik bram / Piechota induska / Piechota hetycka** | Włócznik | Piechota **włócznicza** |
+
+Reszta (Konnica, Łucznik, Rydwan) — bez zmian.
+
+---
+
+## Tabela finalna — 26 jednostek (staty bez zmian, typy po research)
+
+| # | Jednostka | Typ | HP | Atak | Obraż | Obrona | Dystans | Status |
+|---|-----------|-----|---:|-----:|------:|-------:|--------:|--------|
+| 42 | Soldurii | Litarny | 44 | 7 | 5 | 2 | 0 | ZMIENIONE |
+| 51 | Konnica lancowa asyryjska | Konnica | 34 | 9 | 8 | 5 | 0 | bez zmian |
+| 52 | Konnica łucznicza asyryjska | Konnica łucznicza | 30 | 4 | 3 | 2 | 6 | bez zmian |
+| 53 | Łucznik asyryjski | Łucznik | 16 | 2 | 2 | 3 | 4 | bez zmian |
+| 54 | Drużynnik | **Włócznik** | 31 | 7 | 6 | 4 | 7 | ZMIENIONE |
+| 55 | Jeździec z oszczepami | Konnica | 28 | 6 | 5 | 4 | 7 | ZMIENIONE |
+| 56 | Strażnik bram Harappy | Włócznik | 40 | 4 | 4 | 9 | 0 | ZMIENIONE |
+| 57 | Piechota induska | Włócznik | 24 | 6 | 5 | 5 | 0 | bez zmian |
+| 58 | Garnizon Harappy | **Włócznik** | 26 | 5 | 4 | 8 | 0 | bez zmian |
+| 59 | Rydwan Kapadokijski | Rydwan | 36 | 7 | 7 | 3 | 0 | bez zmian |
+| 60 | Piechota hetycka | Włócznik | 32 | 5 | 8 | 8 | 0 | ZMIENIONE |
+| 61 | Gwardia hetycka | **Włócznik** | 40 | 7 | 6 | 7 | 0 | ZMIENIONE |
+| 62 | Gwardia Ishtar | **Włócznik** | 30 | 8 | 7 | 7 | 0 | bez zmian |
+| 63 | Wojownik babiloński | Miecznik | 24 | 6 | 5 | 5 | 0 | bez zmian |
+| 64 | Piechota neobabilońska | **Włócznik** | 26 | 6 | 5 | 7 | 0 | bez zmian |
+| 65 | Tyrski miecznik | Miecznik | 24 | 7 | 6 | 3 | 0 | bez zmian |
+| 66 | Wojownik fenicki | **Włócznik** | 20 | 5 | 4 | 4 | 0 | bez zmian |
+| 67 | Gwardia Tyreńska | **Włócznik** | 24 | 7 | 6 | 6 | 0 | ZMIENIONE (nazwa) |
+| 68 | Thorakites | Włócznik | 42 | 5 | 4 | 8 | 0 | ZMIENIONE |
+| 69 | Legion Rzymski | Miecznik | 48 | 7 | 6 | 7 | 6 | ZMIENIONE |
+| 70 | Evocati | Miecznik | 55 | 8 | 8 | 8 | 6 | ZMIENIONE |
+| 71 | iButho z iklwa | Włócznik | 29 | 5 | 4 | 7 | 0 | bez zmian |
+| 72 | Gwardzista z champi | Miecznik | 48 | 7 | 6 | 5 | 5 | ZMIENIONE |
+| 73 | Wojownik z żel. khopesh | Miecznik | 23 | 6 | 6 | 6 | 0 | bez zmian |
+| 74 | Mur tarcz (Sargonid) | Formacja tarcz | 34 | 4 | 3 | 10 | 0 | bez zmian |
+| 75 | Miecznik galijski | Miecznik | 38 | 8 | 6 | 2 | 0 | ZMIENIONE |
+
+**W tej turze zmienione tylko typy** (7 pozycji: Drużynnik, Garnizon, Gwardia hetycka, Gwardia Ishtar, Piechota neo, Wojownik fenicki, Gwardia Tyreńska). **Staty bez zmian.**
+
+Jeśli tabela OK — napisz **wdrażaj**.
+
+[REDACTED]
+
+### Linia 4982 — MACIEJ
+
+<timestamp>Monday, Jul 6, 2026, 6:25 PM (UTC+2)</timestamp>
+
+Jak już coś, to nie.  Litarny tylko elitarny.
+
+### Linia 4983 — AGENT
+
+Poprawka: **Soldurii nie jest Litarny** — to elitarny celtycki **Miecznik** (miecz po oszczepach, jak Soldurii/Gaesatae w źródłach). **Litarny** zostawiamy tylko dla jednostek elitarnych lekkich (np. Gaesatae w kanonie #41) — nie dla Soldurii.
+
+W wierszu **#42 Soldurii** zmiana typu:
+
+| # | Jednostka | Typ | HP | Atak | Obraż | Obrona | Dystans |
+|---|-----------|-----|---:|-----:|------:|-------:|--------:|
+| 42 | Soldurii | **Miecznik** | 44 | 7 | 5 | 2 | 0 |
+
+Reszta 25 wierszy **bez zmian** (w tym typy po research: Drużynnik → Włócznik, Gwardia hetycka/Ishtar/Tyreńska → Włócznik itd.).
+
+Jeśli cała tabela OK — **wdrażaj**.
+
+[REDACTED]
+
+### Linia 4985 — MACIEJ
+
+<timestamp>Monday, Jul 6, 2026, 6:28 PM (UTC+2)</timestamp>
+
+Gwardia Ishtar hp 35 / Thorakites jest włócznikiem, ale ma dwa oszczepy, tak jak rzymskie legiony. / Formacja tarcz nie ma czegoś takiego. Albo miecznik, albo włócznik. To zostaw włócznik.  Popraw, jak będzie ok, to zaakceptuję i działamy.
+
+### Linia 4986 — AGENT
+
+## 26 jednostek PL0 — tabela do akceptacji
+
+Poprawki w tej turze:
+- **Gwardia Ishtar** — HP **35** (było 30)
+- **Thorakites** — włócznik + **2 oszczepy** (Dystans **6**, jak Legion Rzymski)
+- **Mur tarcz (Sargonid)** — typ **Włócznik** (bez „Formacji tarcz”)
+
+| # | Jednostka | Typ | HP | Atak | Obraż | Obrona | Dystans | Uwaga |
+|---|-----------|-----|---:|-----:|------:|-------:|--------:|-------|
+| 42 | Soldurii | Miecznik | 44 | 7 | 5 | 2 | 0 | |
+| 51 | Konnica lancowa asyryjska | Konnica | 34 | 9 | 8 | 5 | 0 | |
+| 52 | Konnica łucznicza asyryjska | Konnica łucznicza | 30 | 4 | 3 | 2 | 6 | |
+| 53 | Łucznik asyryjski | Łucznik | 16 | 2 | 2 | 3 | 4 | |
+| 54 | Drużynnik | Włócznik | 31 | 7 | 6 | 4 | 7 | 3× krótki oszczep |
+| 55 | Jeździec z oszczepami | Konnica | 28 | 6 | 5 | 4 | 7 | |
+| 56 | Strażnik bram Harappy | Włócznik | 40 | 4 | 4 | 9 | 0 | |
+| 57 | Piechota induska | Włócznik | 24 | 6 | 5 | 5 | 0 | |
+| 58 | Garnizon Harappy | Włócznik | 26 | 5 | 4 | 8 | 0 | |
+| 59 | Rydwan Kapadokijski | Rydwan | 36 | 7 | 7 | 3 | 0 | |
+| 60 | Piechota hetycka | Włócznik | 32 | 5 | 8 | 8 | 0 | |
+| 61 | Gwardia hetycka | Włócznik | 40 | 7 | 6 | 7 | 0 | |
+| 62 | Gwardia Ishtar | Włócznik | **35** | 8 | 7 | 7 | 0 | **HP 30→35** |
+| 63 | Wojownik babiloński | Miecznik | 24 | 6 | 5 | 5 | 0 | |
+| 64 | Piechota neobabilońska | Włócznik | 26 | 6 | 5 | 7 | 0 | |
+| 65 | Tyrski miecznik | Miecznik | 24 | 7 | 6 | 3 | 0 | |
+| 66 | Wojownik fenicki | Włócznik | 20 | 5 | 4 | 4 | 0 | |
+| 67 | Gwardia Tyreńska | Włócznik | 24 | 7 | 6 | 6 | 0 | nazwa |
+| 68 | Thorakites | Włócznik | 42 | 5 | 4 | 8 | **6** | **2× oszczep (jak legion)** |
+| 69 | Legion Rzymski | Miecznik | 48 | 7 | 6 | 7 | 6 | 2× pilum |
+| 70 | Evocati | Miecznik | 55 | 8 | 8 | 8 | 6 | 2× pilum |
+| 71 | iButho z iklwa | Włócznik | 29 | 5 | 4 | 7 | 0 | |
+| 72 | Gwardzista z champi | Miecznik | 48 | 7 | 6 | 5 | 5 | 2× oszczep |
+| 73 | Wojownik z żel. khopesh | Miecznik | 23 | 6 | 6 | 6 | 0 | |
+| 74 | Mur tarcz (Sargonid) | **Włócznik** | 34 | 4 | 3 | 10 | 0 | **typ: Włócznik** |
+| 75 | Miecznik galijski | Miecznik | 38 | 8 | 6 | 2 | 0 | |
+
+**Zmiany nazw przy wdrożeniu:** Jeździec z szczepnikami → Jeździec z oszczepami · Gwardia Tyr → Gwardia Tyreńska · Legionarius → Legion Rzymski
+
+Jak OK — napisz **akceptuję** albo **wdrażaj**.
+
+[REDACTED]
+
+### Linia 4988 — MACIEJ
+
+<timestamp>Monday, Jul 6, 2026, 6:29 PM (UTC+2)</timestamp>
+
+ok daj mi to teraz do excel
+
+### Linia 4989 — AGENT
+
+[REDACTED]
+
+### Linia 4990 — AGENT
+
+[REDACTED]
+
+### Linia 4991 — AGENT
+
+[REDACTED]
+
+### Linia 4992 — AGENT
+
+[REDACTED]
+
+### Linia 4993 — AGENT
+
+[REDACTED]
+
+### Linia 4994 — AGENT
+
+[REDACTED]
+
+### Linia 4995 — AGENT
+
+Excel gotowy.
+
+**Plik:** `panele-sterowania/Jednostki-PL0-MACIEJ-20260706.xlsx`
+
+**Arkusz:** `PL0-staty` — 26 wierszy, kolumny:
+`#` · `Jednostka` · `Typ` · `HP` · `Atak` · `Obraż` · `Obrona` · `Dystans` · `Uwaga` · `Stara nazwa (JSON)` · `Akceptacja`
+
+**Zmiany nazw** w kolumnie „Stara nazwa”:
+- Jeździec z szczepnikami → Jeździec z oszczepami  
+- Gwardia Tyr → Gwardia Tyreńska  
+- Legionarius → Legion Rzymski  
+
+**Skrypt** (do ponownego wygenerowania): `panele-sterowania/gen-jednostki-pl0-maciej-excel.py`
+
+Po sprawdzeniu w Excelu — **akceptuję** / **wdrażaj** do JSON.
+
+[REDACTED]

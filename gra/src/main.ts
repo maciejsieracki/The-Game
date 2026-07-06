@@ -97,6 +97,7 @@ import {
   updateRevoltGrace,
   loadRevoltParams,
   revoltWarningMessage,
+  isOsiedleRevoltImmune,
   REBEL_FACTION_OWNER_ID,
 } from './game/society-breakdown';
 import {
@@ -106,6 +107,13 @@ import {
   PLAYTEST_WALKA_HINT,
   PLAYTEST_OBLEZ_HINT,
   resolvePlaytestWalkaVariant,
+  buildBitwaDuzaPreset,
+  buildOblezenieDuzePreset,
+  isPlaytestBitwaDuzaMode,
+  isPlaytestOblezenieDuzeMode,
+  PLAYTEST_BITWA_DUZA_ROSTER_RADIUS,
+  PLAYTEST_BITWA_DUZA_HINT,
+  PLAYTEST_OBLEZENIE_DUZE_HINT,
 } from './game/playtestWalkaMapy';
 import {
   buildPlaytestOdskok3v3,
@@ -161,6 +169,7 @@ import { showCityUnitPick, hideCityUnitPick, isCityUnitPickOpen } from './ui/cit
 import { showCityCaptureNotice } from './ui/cityCaptureNotice';
 import { showArmyMergePanel, hideArmyMergePanel, isArmyMergePanelOpen } from './ui/armyMergePanel';
 import { showArmySplitPanel, hideArmySplitPanel, isArmySplitPanelOpen } from './ui/armySplitPanel';
+import { unitIconSvg } from './ui/icons/brandAssets';
 import {
   visibleStackOnHex,
   computeStackDisplay,
@@ -177,6 +186,8 @@ import type { CityNode, TerritoryNode } from './map/territory';
 import {
   advanceCityEconomy, type EconUnit,
   computeCityHealthBreakdown, cityWorkedTilesForEconomy, workedHexCoordsForCity,
+  sumEconomyForOwner,
+  sumEconomyForPlayerCities,
 } from './game/turn-economy';
 import {
   createPlayerState,
@@ -294,6 +305,8 @@ import { improvementKeysForHex } from './game/terrain-improvements';
 import { ikonaIdToBronzeCiv, type BronzeCiv } from './render/bronzeCity';
 import { buildSettlementModel } from './render/settlementModel';
 import { BattleScene } from './battle/battleScene';
+import { buildTestArmies, ensureSiegeMachines as ensureSiegeMachinesPreset } from './battle/testBattle';
+import type { PresetName } from './battle/testBattle';
 import type { BattleResult, BattleUnit, BattleOpts } from './battle/battleScene';
 import { resolveCombat, combatUnitFromDef, terrainDefenseMultiplier } from './game/combat';
 import type { CombatUnit, TerrainEntry } from './game/combat';
@@ -360,7 +373,7 @@ import {
 import type { Player } from './types/player';
 import { TypCywilizacji } from './types/player';
 import {
-  saveToLocal, loadFromLocal,
+  saveToLocal, loadFromLocal, listSaves,
   type SaveGame,
 } from './game/save';
 import { configureCityPanel } from './ui/cityPanel';
@@ -413,6 +426,10 @@ import {
   configureGamePauseMenu, hideGamePauseMenu,
   toggleGamePauseMenu, isGamePauseMenuOpen,
 } from './ui/gamePauseMenu';
+import {
+  showSaveGameDialog, showLoadGameDialog, hideSaveLoadDialog,
+  isSaveLoadDialogOpen, saveContextLine,
+} from './ui/saveLoadDialog';
 import { showNewGameFlow, hideNewGameFlow, isNewGameFlowOpen, type NewGameParams, type NewGameAdvancedOptions } from './ui/newGameFlow';
 import { applyTempoKoszt, type TempoGry } from './game/tech-tempo';
 import {
@@ -481,7 +498,7 @@ import {
 // Wrapped in boot() so we can defer execution until DOMContentLoaded.
 // Classic (non-module) scripts in <head> run before <body> is parsed --
 // without this guard, document.body is null and appendChild throws.
-function boot(): void {
+async function boot(): Promise<void> {
   try {
     const data = loadGameData();
     console.group('[The Game] Dane wczytane');
@@ -514,6 +531,10 @@ function boot(): void {
     let _menuEpochId: string = 'kamien';
     let _menuAdvanced: NewGameAdvancedOptions | undefined;
     let _menuWorldDensity: WorldGenerationPreset = { ...DEFAULT_WORLD_DENSITY };
+    /** Ostatnie parametry kreatora — zapisywane w sejwie i używane przy wczytywaniu mapy. */
+    let _lastNewGameParams: NewGameParams | null = null;
+    /** Źródło sesji przy zapisie — odróżnia grę od playtestu w liście sejwów. */
+    let _saveOrigin: 'normal' | 'playtest' = 'normal';
     let _currentRenderOptions: MapRenderOptions = { ...DEFAULT_MAP_RENDER_OPTIONS };
 
     function mapQualityTierFromParams(params: NewGameParams): QualityTier {
@@ -585,7 +606,9 @@ function boot(): void {
     /** Aktualnie otwarta audiencja dyplomatyczna (ownerId AI), null = zamknięta. */
     let diplomacyAudienceOwnerId: number | null = null;
 
-    let { scene, camera, renderer, center, setFog, hideDecorAtHex, setZoomLod, getZoomLodLevel, dispose: disposeScene } = buildScene(map, canvas, _currentRenderOptions);
+    // C3: buildScene jest asynchroniczny (budowa sceny porcjami/chunkami). Mapa startowa
+    // (domyślna, mała) budowana bez overlaya — po prostu await, bez callbacku postępu.
+    let { scene, camera, renderer, center, setFog, hideDecorAtHex, setZoomLod, getZoomLodLevel, dispose: disposeScene } = await buildScene(map, canvas, _currentRenderOptions);
 
     function cameraControllerOpts(): CameraControllerOptions {
       const mapSpan = Math.max(map.szerokoscQ, map.wysokoscR) * HEX_R * 1.85;
@@ -1712,7 +1735,7 @@ function boot(): void {
           : new Set<string>();
         unitRenderer.setHighlight(reachable);
       }
-      unitRenderer.setSelectionHex(u.q, u.r);
+      unitRenderer.setSelectionHex(u.q, u.r, u.ownerId);
       setArmyListSelectedId(u.id);
       if (!keepListOpen) hideArmyListHud();
       refreshD1bHud();
@@ -2110,11 +2133,9 @@ function boot(): void {
       });
       for (const [oid, civ] of aiMap) {
         aiOwnerCivMap.set(oid, civ);
-        initOwnerEra(oid, 1);
+        initOwnerEra(oid, player.era);
       }
     }
-
-    fillAiOwnerCivMap(_menuCivId, _gameSeed);
 
     /** Klucz cywilizacji (typCywilizacji / ikonaId) per ownerId. */
     function civKeyForOwnerId(ownerId: number): string {
@@ -2189,7 +2210,11 @@ function boot(): void {
       simplifiedDiplomacyOwners.clear();
       foreignTypeOwners.clear();
       typCityCopyOwners.clear();
-      for (const [oid, civ] of plan.aiOwnerCivMap) aiOwnerCivMap.set(oid, civ);
+      ownerEraByOwner.clear();
+      for (const [oid, civ] of plan.aiOwnerCivMap) {
+        aiOwnerCivMap.set(oid, civ);
+        initOwnerEra(oid, player.era);
+      }
       for (const [oid, label] of plan.ownerDisplayName) ownerDisplayName.set(oid, label);
       for (const oid of plan.simplifiedDiplomacyOwners) simplifiedDiplomacyOwners.add(oid);
       for (const oid of plan.foreignTypeOwners) foreignTypeOwners.add(oid);
@@ -2635,6 +2660,8 @@ function boot(): void {
     let turn = 1;
     /** Tryb ?playtest=walka — wiekszy sklad preBattle + T = preset maciej_playtest. */
     let playtestWalkaActive = false;
+    /** Tryb DUŻEJ bitwy (BITWA-DUZA / OBLEZENIE-DUZE): podnosi promień zbierania rosteru. */
+    let bitwaDuzaActive = false;
     /** Tryb ?playtest=miasto — sandbox jednego miasta (ekonomia / panel). */
     let playtestMiastoActive = false;
     /** Last hex the player explicitly clicked on the map (for B = found city). */
@@ -2647,6 +2674,7 @@ function boot(): void {
     // See src/game/playerState.ts for the banking + research semantics.
     const player: PlayerState = createPlayerState();
     overlayDepositEra = player.era;
+    fillAiOwnerCivMap(_menuCivId, _gameSeed);
     // P3a: Last-turn totals for HUD display (Praca, Kultura from economy; Porzadek from order)
     /** Pula Pracy gracza (suma doPuli z miast — plaster D2=A). */
     let playerPracaPool: number = 0;
@@ -2742,7 +2770,7 @@ function boot(): void {
       return {
         id: u.id,
         name: u.typeId,
-        icon: '\u2694\uFE0F',
+        icon: unitIconSvg(def, u.typeId),
         ruchLeft: u.ruchLeft,
         ruchMax: normFieldVal(def['Ruch'], u.ruch),
       };
@@ -2775,7 +2803,7 @@ function boot(): void {
           syncUnitsRender();
           refreshFog();
           if (selectedId === u.id) {
-            unitRenderer.setSelectionHex(u.q, u.r);
+            unitRenderer.setSelectionHex(u.q, u.r, u.ownerId);
           }
           refreshD1bHud();
         },
@@ -2788,7 +2816,7 @@ function boot(): void {
           syncUnitsRender();
           refreshFog();
           if (selectedId === u.id) {
-            unitRenderer.setSelectionHex(u.q, u.r);
+            unitRenderer.setSelectionHex(u.q, u.r, u.ownerId);
             if (u.ruchLeft > 0) {
               reachable = reachableWithMergeTargets(u);
               unitRenderer.setHighlight(reachable);
@@ -3430,11 +3458,11 @@ function boot(): void {
     }
 
     function countBlockingEvents(): number {
-      return collectTurnEvents().filter(e => e.blocking).length;
+      return collectTurnEvents().length;
     }
 
     function executeFirstBlockingEvent(): void {
-      const ev = collectTurnEvents().find(e => e.blocking);
+      const ev = collectTurnEvents()[0];
       if (!ev) return;
       if (ev.id.startsWith('diplo-pend-')) {
         openDiplomacyPendingById(ev.id);
@@ -4004,7 +4032,6 @@ function boot(): void {
             title: 'KRYTYCZNE: ' + city.name,
             subtitle: revoltWarningMessage(city.name, st.revoltGraceRemaining),
             kind: 'city',
-            blocking: true,
           });
         }
         if (st?.bunt) {
@@ -4014,7 +4041,6 @@ function boot(): void {
             title: 'Bunt: ' + city.name,
             subtitle: 'Migracja mieszkańców',
             kind: 'city',
-            blocking: true,
           });
         }
         const prod = cityProd.get(city.id);
@@ -4025,7 +4051,6 @@ function boot(): void {
             title: 'Produkcja: ' + city.name,
             subtitle: 'Kolejka pusta — wybierz budynek lub jednostkę',
             kind: 'city',
-            blocking: true,
           });
         }
       }
@@ -4036,7 +4061,6 @@ function boot(): void {
           title: 'Dyplomacja: ' + p.civName,
           subtitle: diploPendingTitle(p.cmdType) + (p.reason ? ' — ' + p.reason : ''),
           kind: 'diplo',
-          blocking: true,
         });
       }
       return events;
@@ -5121,7 +5145,7 @@ function boot(): void {
         return {
           id: u.id,
           name: u.typeId,
-          icon: '\u2694\uFE0F',
+          icon: unitIconSvg(udef, u.typeId),
           hp: hpMax,
           hpMax,
           ruchLeft: u.ruchLeft,
@@ -5159,13 +5183,49 @@ function boot(): void {
       };
     }
 
-    function hasAutosaveSlot(): boolean {
-      try { return !!loadFromLocal('autosave'); } catch { return false; }
+    function hasAnySaveSlot(): boolean {
+      try { return listSaves().length > 0; } catch { return false; }
+    }
+
+    function openSaveGameDialog(): void {
+      showSaveGameDialog({
+        defaultLabel: `Zapis · tura ${turn}`,
+        turn,
+        onSave: (slotId, label) => {
+          const ok = persistSaveToSlot(slotId, label);
+          if (ok) {
+            showHintMessage(`Gra zapisana: «${label}» (tura ${turn})`, 3500);
+            console.log('[Save] slot=' + slotId + ' label=' + label + ' tura=' + turn);
+          } else {
+            showHintMessage('Zapis nieudany (brak localStorage?)', 3000);
+          }
+        },
+      });
+    }
+
+    function openLoadGameDialog(fromInGamePause = false): void {
+      if (!hasAnySaveSlot()) {
+        showHintMessage(
+          fromInGamePause
+            ? 'Brak zapisów na tym urządzeniu.'
+            : 'Brak zapisów. Zapisz grę w menu pauzy lub Ctrl+S.',
+          3500,
+        );
+        if (!fromInGamePause) openStartupMainMenu();
+        return;
+      }
+      if (!fromInGamePause) hideMainMenu();
+      showLoadGameDialog({
+        onLoad: (slotId) => { void loadGameFromSlot(slotId, fromInGamePause); },
+        onCancel: () => {
+          if (!fromInGamePause) openStartupMainMenu();
+        },
+      });
     }
 
     function openStartupMainMenu(): void {
       showMainMenu({
-        hasSave: hasAutosaveSlot,
+        hasSave: hasAnySaveSlot,
         onNewGame: () => {
           hideMainMenu();
           showNewGameFlow({
@@ -5177,8 +5237,11 @@ function boot(): void {
         onPlaytestWalka: () => doStartPlaytestWalkaMapy(),
         onPlaytestMiasto: () => doStartPlaytestMiastoEkonomia(),
         onPlaytestMapa: () => doStartPlaytestMapaSwiata(),
-        onContinue: () => doLoadGame(),
-        onLoad: () => doLoadGame(),
+        onContinue: () => {
+          hideMainMenu();
+          openLoadGameDialog(false);
+        },
+        onLoad: () => openLoadGameDialog(false),
         onAbout: () => { /* future */ },
         onPerfTest: () => showPerfTestPanel(),
         onQuit: () => { /* future - na stronie nie ma gdzie wyjść */ },
@@ -5186,10 +5249,10 @@ function boot(): void {
     }
 
     configureGamePauseMenu({
-      hasSave: hasAutosaveSlot,
+      hasSave: hasAnySaveSlot,
       onResume: () => { /* gra już widoczna pod overlayem */ },
-      onSave: () => { doQuickSave(true); },
-      onLoad: () => { doLoadGame(true); },
+      onSave: () => { openSaveGameDialog(); },
+      onLoad: () => { openLoadGameDialog(true); },
       onNewGame: () => {
         showNewGameFlow({
           data,
@@ -5262,7 +5325,7 @@ function boot(): void {
         getReligionOverlay: buildReligionOverlayData,
         getYearLabel: () => Math.max(0, 4000 - turn * 50) + ' p.n.e.',
         onExecutePending: () => executeFirstBlockingEvent(),
-        canEndTurn: () => !playtestWalkaActive && countBlockingEvents() === 0,
+        canEndTurn: () => !playtestWalkaActive,
         hideEndTurn: () => playtestWalkaActive,
         getBlockingCount: () => countBlockingEvents(),
         onEndTurn: () => {
@@ -5498,13 +5561,6 @@ function boot(): void {
             })),
             { visible: vis, explored: fogExploredForRender() },
           );
-        },
-        onMinimapClick: (q, r) => {
-          if (q < 0 || r < 0) return;
-          const hex = map.hexes[`${q},${r}`];
-          if (!hex) return;
-          const pos = axialToWorld(q, r, HEX_R);
-          camCtrl.focusAt(pos.x, pos.z, 28);
         },
         getWarsWithPlayer: collectWarsWithPlayer,
         getEvents: collectTurnEvents,
@@ -5779,7 +5835,7 @@ function boot(): void {
       };
       isAnimating = true;
       forceVisibleUnitId = u.id;
-      unitRenderer.setSelectionHex(destQ, destR);
+      unitRenderer.setSelectionHex(destQ, destR, u.ownerId);
       syncUnitsRender();
       unitRenderer.clearPathRoute();
       hoverKey = null;
@@ -6583,7 +6639,9 @@ function boot(): void {
     /** C1-Q4 / D8=A: heks kotwicy + własne jednostki w promieniu 1 heksa. */
     function collectBattleRoster(anchor: RuntimeUnit, allUnits: RuntimeUnit[]): RuntimeUnit[] {
       if (playtestWalkaActive) {
-        return collectPlaytestBattleRoster(anchor, allUnits);
+        // DUŻA bitwa: klik jednej jednostki zbiera cały klaster armii (owner-filtered).
+        const radius = bitwaDuzaActive ? PLAYTEST_BITWA_DUZA_ROSTER_RADIUS : undefined;
+        return collectPlaytestBattleRoster(anchor, allUnits, radius);
       }
       const out: RuntimeUnit[] = [];
       const seen = new Set<string | number>();
@@ -6930,7 +6988,7 @@ function boot(): void {
       if (lead) {
         if (selectedId === lead.id || selectedId === null) selectedId = lead.id;
         forceVisibleUnitId = lead.id;
-        unitRenderer.setSelectionHex(lead.q, lead.r);
+        unitRenderer.setSelectionHex(lead.q, lead.r, lead.ownerId);
       }
       syncUnitsRender();
       cityRenderer.sync(cities, _cityRenderOpts());
@@ -7352,18 +7410,47 @@ function boot(): void {
     }
 
     /**
-     * launchTestBattle -- triggered by the 'T' key.
-     *
-     * Canned battle: FOUR Hastati (Rome) vs FOUR Falanga (Greece).
-     * Looks up real stats from data.units. Falls back to first miecznik/wlocznik
-     * category unit if the named entry is not found.
+     * launchTestBattle — legacy dev preset (4× Hastati vs 4× Falanga).
+     * Skrót T usunięty 2026-07-06 — bitwy tylko z mapy / playtestów / preBattle.
      */
+    /**
+     * DUŻA bitwa z presetu → prosto do BattleScene (arena taktyczna, armia vs
+     * armia), z pominięciem mapy świata. BITWA-DUZA = pole; OBLEZENIE-DUZE = mur.
+     */
+    function launchBigPresetBattle(preset: PresetName, siege: boolean): void {
+      let armies = buildTestArmies((data as any).units, preset);
+      if (siege) armies = ensureSiegeMachinesPreset(armies, (data as any).units);
+      if (armies.attacker.length === 0 || armies.defender.length === 0) {
+        showHintMessage('Duża bitwa: brak jednostek (sprawdź dane)', 4000);
+        return;
+      }
+      const bOpts: BattleOpts = {
+        attacker: armies.attacker,
+        defender: armies.defender,
+        teren: armies.teren,
+        data,
+        deploy: true,
+        attackerCivLabel: 'Rzym',
+        defenderCivLabel: 'Grecja',
+        attackerCivBonusy: civBonusyForOwnerId(0),
+        defenderCivBonusy: civBonusyForOwnerId(1),
+      };
+      if (siege) bOpts.siege = { defCiv: 'grecja' };
+      const bs = new BattleScene(bOpts);
+      bs.play((res) => {
+        const wl = res.winner === 'atakujacy' ? 'Rzym (atak)'
+                 : res.winner === 'obronca'  ? 'Grecja (obrona)' : 'Remis';
+        showHintMessage('Duża bitwa — wynik: <b>' + wl + '</b>', 6000);
+        bs.dispose();
+      });
+    }
+
     function launchTestBattle(): void {
       const PLAYER_COLOR  = 0xffd54a;
       const ENEMY_COLOR   = 0xc84040;
 
       if (playtestWalkaActive) {
-        showHintMessage('Playtest 1v1: uzyj kliku wroga na mapie (T = duza bitwa osobno)', 3500);
+        showHintMessage('Playtest 1v1: użyj kliku wroga na mapie', 3500);
         return;
       }
 
@@ -7564,85 +7651,107 @@ function boot(): void {
     }
 
     /**
-     * Quick-save to localStorage slot 'autosave' (Ctrl+S and preBattle onSave).
-     * @param showHintOnSuccess — show HUD hint when save succeeds
+     * Snapshot stanu gry do SaveGame (bez zapisu na dysk).
      */
-    function doQuickSave(showHintOnSuccess = true): boolean {
+    function buildSaveGameSnapshot(label?: string): SaveGame {
+      const cityProdSave: Record<string, any> = {};
+      for (const [cid, prod] of cityProd.entries()) cityProdSave[cid] = prod;
+      const cityBuiltSave: Record<string, string[]> = {};
+      for (const [cid, blt] of cityBuilt.entries()) cityBuiltSave[cid] = blt.slice();
+      const aiResSave: Array<[number, string[]]> = [];
+      for (const [oid, zbadane] of aiResearchDone.entries()) aiResSave.push([oid, Array.from(zbadane)]);
+      const diploSave: Record<string, any> = {};
+      for (const [key, rel] of diplomacyRelations.entries()) diploSave[key] = rel;
+      const savedAt = new Date().toISOString();
+      return {
+        wersja: 1,
+        tura: turn,
+        seed: _gameSeed,
+        units: units.slice(),
+        cities: cities.slice(),
+        explored: Array.from(explored),
+        gracz: {
+          skarbiec: player.skarbiec,
+          nauka:    player.nauka,
+          era:      player.era,
+          zbadane:  Array.from(player.zbadane),
+          badana:   player.badana,
+        },
+        cityProd:       cityProdSave,
+        cityBuilt:      cityBuiltSave,
+        aiResearchDone: aiResSave,
+        diploRelations: diploSave,
+        meta: {
+          label: label ?? `Zapis · tura ${turn}`,
+          savedAt,
+          saveOrigin: _saveOrigin,
+          newGameParams: _lastNewGameParams
+            ? { ..._lastNewGameParams, seed: _gameSeed }
+            : undefined,
+          loadMapSize: _menuMapSize,
+          loadTypSwiata: _menuTypSwiata,
+          loadCivId: _menuCivId,
+          loadLandFraction: _lastNewGameParams?.landFractionPercent ?? 30,
+          empireFoodStates: Array.from(empireFoodStates.entries()),
+          playerPracaPool,
+          siegeTurnByCity: Array.from(siegeTurnByCity.entries()),
+          siegeBesiegerByCity: Array.from(siegeBesiegerByCity.entries()),
+          siegeAiStateByKey: Array.from(siegeAiStateByKey.entries()),
+          pendingDiplomacyInbox: pendingDiplomacyInbox.slice(),
+          diplomaticContactEstablished: Array.from(diplomaticContactEstablished),
+          diplomacyDeals: activeDeals.slice(),
+          diplomacyPairMeta: Array.from(diplomacyPairMeta.entries()),
+          zlozeGrants: zlozeGrants.slice(),
+          surowiecBooleanGrants: basketTransferCtx.surowiecBooleanGrants,
+          battlePowerPtsByOwner: Array.from(battlePowerPtsByOwner.entries()),
+          ownerEraByOwner: Array.from(ownerEraByOwner.entries()),
+          placedImprovements: Array.from(placedImprovements.entries()),
+          hexClearingStates: Array.from(hexClearingStates.entries()),
+          completedWorldWonders: completedWorldWonders.slice(),
+          placedWorldWonders: placedWorldWonders.slice(),
+        },
+        mapQuality: _currentRenderOptions.renderQuality,
+        renderQuality: _currentRenderOptions.renderQuality,
+        mapDetailQuality: _currentRenderOptions.mapDetailQuality,
+      };
+    }
+
+    function persistSaveToSlot(slotId: string, label: string): boolean {
       try {
-        const cityProdSave: Record<string, any> = {};
-        for (const [cid, prod] of cityProd.entries()) cityProdSave[cid] = prod;
-        const cityBuiltSave: Record<string, string[]> = {};
-        for (const [cid, blt] of cityBuilt.entries()) cityBuiltSave[cid] = blt.slice();
-        const aiResSave: Array<[number, string[]]> = [];
-        for (const [oid, zbadane] of aiResearchDone.entries()) aiResSave.push([oid, Array.from(zbadane)]);
-        const diploSave: Record<string, any> = {};
-        for (const [key, rel] of diplomacyRelations.entries()) diploSave[key] = rel;
-        const sg: SaveGame = {
-          wersja: 1,
-          tura: turn,
-          seed: SEED,
-          units: units.slice(),
-          cities: cities.slice(),
-          explored: Array.from(explored),
-          gracz: {
-            skarbiec: player.skarbiec,
-            nauka:    player.nauka,
-            era:      player.era,
-            zbadane:  Array.from(player.zbadane),
-            badana:   player.badana,
-          },
-          cityProd:       cityProdSave,
-          cityBuilt:      cityBuiltSave,
-          aiResearchDone: aiResSave,
-          diploRelations: diploSave,
-          meta: {
-            savedAt: new Date().toISOString(),
-            empireFoodStates: Array.from(empireFoodStates.entries()),
-            playerPracaPool,
-            siegeTurnByCity: Array.from(siegeTurnByCity.entries()),
-            siegeBesiegerByCity: Array.from(siegeBesiegerByCity.entries()),
-            siegeAiStateByKey: Array.from(siegeAiStateByKey.entries()),
-            pendingDiplomacyInbox: pendingDiplomacyInbox.slice(),
-            diplomaticContactEstablished: Array.from(diplomaticContactEstablished),
-            diplomacyDeals: activeDeals.slice(),
-            diplomacyPairMeta: Array.from(diplomacyPairMeta.entries()),
-            zlozeGrants: zlozeGrants.slice(),
-            surowiecBooleanGrants: basketTransferCtx.surowiecBooleanGrants,
-            battlePowerPtsByOwner: Array.from(battlePowerPtsByOwner.entries()),
-            ownerEraByOwner: Array.from(ownerEraByOwner.entries()),
-            placedImprovements: Array.from(placedImprovements.entries()),
-            hexClearingStates: Array.from(hexClearingStates.entries()),
-            completedWorldWonders: completedWorldWonders.slice(),
-            placedWorldWonders: placedWorldWonders.slice(),
-          },
-          mapQuality: _currentRenderOptions.renderQuality,
-          renderQuality: _currentRenderOptions.renderQuality,
-          mapDetailQuality: _currentRenderOptions.mapDetailQuality,
-        };
-        const ok = saveToLocal('autosave', sg);
-        if (ok) {
-          if (showHintOnSuccess) showHintMessage('Gra zapisana (tura ' + turn + ')', 3000);
-          console.log('[Save] zapisano slot=autosave tura=' + turn);
-        } else if (showHintOnSuccess) {
-          showHintMessage('Zapis nieudany (brak localStorage?)', 3000);
-        }
-        return ok;
+        return saveToLocal(slotId, buildSaveGameSnapshot(label));
       } catch (eSave) {
         console.error('[Save] Blad:', eSave);
-        if (showHintOnSuccess) showHintMessage('Blad zapisu gry', 3000);
         return false;
       }
     }
 
+    /**
+     * Szybki zapis (Ctrl+S, przed bitwą) — slot autosave bez okna dialogowego.
+     */
+    function doQuickSave(showHintOnSuccess = true): boolean {
+      const ok = persistSaveToSlot('autosave', `Szybki zapis · tura ${turn}`);
+      if (ok) {
+        if (showHintOnSuccess) showHintMessage('Szybki zapis (tura ' + turn + ')', 3000);
+        console.log('[Save] autosave tura=' + turn);
+      } else if (showHintOnSuccess) {
+        showHintMessage('Zapis nieudany (brak localStorage?)', 3000);
+      }
+      return ok;
+    }
+
     // -----------------------------------------------------------------------
     // End turn (N key) + Gallery toggle (G key) + Fog toggle (F key)
-    // + City founding (B key) + Test battle (T key)
+    // + City founding (B key)
     // If animation is running, snap unit to destination first.
     // -----------------------------------------------------------------------
 
     window.addEventListener('keydown', (e: KeyboardEvent) => {
       // --- Escape: close city panel / exit build mode ---
       if (e.key === 'Escape') {
+        if (isSaveLoadDialogOpen()) {
+          hideSaveLoadDialog();
+          return;
+        }
         if (isGamePauseMenuOpen()) {
           hideGamePauseMenu();
           return;
@@ -7727,13 +7836,6 @@ function boot(): void {
         return;
       }
 
-      // --- T: Test battle ---
-      if (e.key.toLowerCase() === 't') {
-        if (galleryOn || isAnimating || isPreBattleOpen()) return;
-        launchTestBattle();
-        return;
-      }
-
       // --- Ctrl+S: Save game (step K) ---
       if ((e.key.toLowerCase() === 's') && (e.ctrlKey || e.metaKey)) {
         e.preventDefault();
@@ -7741,25 +7843,10 @@ function boot(): void {
         return;
       }
 
-      // --- Ctrl+L: Load game (step K) ---
+      // --- Ctrl+L: Load game — wybór slotu ---
       if ((e.key.toLowerCase() === 'l') && (e.ctrlKey || e.metaKey)) {
         e.preventDefault();
-        try {
-          const saved = loadFromLocal('autosave');
-          if (!saved) {
-            showHintMessage('Brak zapisu do wczytania (slot: autosave)', 3000);
-          } else {
-            restoreGameFromSave(saved);
-            cityRenderer.sync(cities, _cityRenderOpts());
-            refreshFog();
-            updateHud();
-            showHintMessage('Wczytano zapis (tura ' + turn + ')', 3000);
-            console.log('[Load] wczytano slot=autosave tura=' + turn);
-          }
-        } catch (eLoad) {
-          console.error('[Load] Blad:', eLoad);
-          showHintMessage('Blad wczytywania gry', 3000);
-        }
+        openLoadGameDialog(true);
         return;
       }
 
@@ -7770,13 +7857,6 @@ function boot(): void {
         if (galleryOn) return;
         // P3b: Block turns after game over.
         if (gameOver) { showHintMessage('Gra zakonczona. Kliknij "Nowa gra" by zagrac ponownie.', 3000); return; }
-
-        // A1-Q9: brama — blocking wydarzenia przed końcem tury
-        const blockingN = countBlockingEvents();
-        if (blockingN > 0) {
-          showHintMessage('Rozstrzygnij wydarzenia (' + blockingN + ') — WYKONAJ lub panel miasta', 3500);
-          return;
-        }
 
         // B2-Q5: wyczyść flagi buntu z poprzedniej tury (chip/ikona do końca tury).
         for (const st of cityOrderState.values()) {
@@ -7857,12 +7937,16 @@ function boot(): void {
           } catch (errEf) {
             console.error('[EmpireFood] Blad ticku:', errEf);
           }
-          // P3a: update last-turn totals for HUD (Praca HUD = pula gracza, nie suma brutto miast)
-          playerPracaPool += econ.totalPracaPula;
-          _lastPraca   = playerPracaPool;
-          _lastKultura = econ.totalKultura;
-          _lastPracaRate = econ.totalPracaPula;
-          _lastKulturaRate = econ.totalKultura;
+          // P3a: HUD + pula pracy — tylko miasta gracza (econ.total* = suma WSZYSTKICH cywilizacji).
+          const playerEcon = sumEconomyForPlayerCities(econ, cities);
+          const playerCityCount = cities.filter(c => c.ownerId === 0).length;
+          playerPracaPool += playerEcon.doPuli;
+          _lastPraca = playerPracaPool;
+          _lastPracaRate = playerEcon.doPuli;
+          _lastPieniadzRate = playerEcon.pieniadz;
+          _lastNaukaRate = playerEcon.nauka;
+          _lastKulturaRate = playerEcon.kultura;
+          _lastKultura = playerEcon.kultura;
           if (cultureRangeVisible || religionRangeVisible) refreshRangeOverlays();
           for (const [hexKey, st] of hexClearingStates) {
             if (st.ownerId !== 0) continue;
@@ -7877,8 +7961,6 @@ function boot(): void {
             }
             if (expired) hexClearingStates.delete(hexKey);
           }
-          _lastPieniadzRate = econ.totalPieniadz;
-          _lastNaukaRate = econ.totalNauka;
           _lastPlayerCityEcon = econ.perCity
             .filter(tk => tk.ownerId === 0)
             .map(tk => {
@@ -7909,13 +7991,22 @@ function boot(): void {
           }
           if (cities.length > 0) {
             console.log(
-              `[Ekonomia] Tura ${turn}: miasta=${econ.cities}` +
-              ` Praca=${econ.totalPraca} Pieniądz=${econ.totalPieniadz}` +
-              ` Nauka=${econ.totalNauka} Kultura=${econ.totalKultura}` +
-              ` Luksus=${econ.totalLuksus} WealthW=${_lastWealthLevel}` +
-              ` Żywność(netto)=${econ.totalZywnosc}` +
+              `[Ekonomia] Tura ${turn}: gracz(${playerCityCount} os.) ¤=${Math.round(playerEcon.pieniadz)}` +
+              ` N=${Math.round(playerEcon.nauka)} Praca=${Math.round(playerEcon.doPuli)}` +
+              ` | mapa(${econ.cities} os.) ¤=${Math.round(econ.totalPieniadz)}` +
+              ` N=${Math.round(econ.totalNauka)} Praca=${Math.round(econ.totalPracaPula)}` +
               ` wzrost=${econ.growth} głód=${econ.starved}`,
             );
+            if (
+              playerCityCount > 0 &&
+              playerEcon.pieniadz > 0 &&
+              Math.abs(playerEcon.pieniadz - econ.totalPieniadz) < 1 &&
+              econ.cities > playerCityCount
+            ) {
+              console.warn(
+                '[Ekonomia] HUD gracza = suma mapy — sprawdź ownerId miast lub wczytaj build ab92fa5c+',
+              );
+            }
             // Surface population changes briefly so the economy is visible.
             if (econ.growth > 0) {
               showHintMessage('Wzrost populacji w ' + econ.growth + ' miastach', 2500);
@@ -7964,21 +8055,9 @@ function boot(): void {
           }
 
           // --- Bank treasury + science, then auto-research (13B-finish + 7B) ---
-          // Bank only the HUMAN player's (ownerId 0) share of this turn's yields.
-          // econ.totalPieniadz / totalNauka sum ALL owners (incl. AI), so we sum
-          // the player's own cities from perCity instead.  economy.ts already
-          // splits each city's trade into a money stream and a science stream
-          // every turn, so banking those two streams directly is consistent with
-          // economy semantics (see playerState.ts header for the rationale).
           try {
-            let pieniadzGracza = 0;
-            let naukaGracza = 0;
-            for (const tk of econ.perCity) {
-              if (tk.ownerId === 0) {
-                pieniadzGracza += tk.pieniadz;
-                naukaGracza   += tk.nauka;
-              }
-            }
+            const pieniadzGracza = playerEcon.pieniadz;
+            const naukaGracza = playerEcon.nauka;
             player.skarbiec += pieniadzGracza;
             player.nauka    += naukaGracza;
 
@@ -7993,6 +8072,21 @@ function boot(): void {
                   ' Saldo=' + Math.round(playerBalance.saldo),
                 );
               }
+            }
+
+            // Bank skarbca AI — per owner (nie econ.total*)
+            const aiOwnerIds = new Set<number>();
+            for (const c of cities) {
+              if (c.ownerId > 0) aiOwnerIds.add(c.ownerId);
+            }
+            for (const oid of aiOwnerIds) {
+              const aiEcon = sumEconomyForOwner(econ, oid);
+              let aiSkarb = (aiSkarbiecByOwner.get(oid) ?? 0) + aiEcon.pieniadz;
+              const aiBalance = econ.upkeepByOwner.get(oid);
+              if (aiBalance && aiBalance.utrzymanieRazem > 0) {
+                aiSkarb -= aiBalance.utrzymanieRazem;
+              }
+              aiSkarbiecByOwner.set(oid, Math.max(0, aiSkarb));
             }
 
             // Auto-research: spend banked science on the cheapest available tech.
@@ -8144,21 +8238,43 @@ function boot(): void {
               const orderEff = ordPct.effects;
               const tier = ordPct.tier;
 
-              const graceUpd = updateRevoltGrace(city.revoltGraceRemaining, ordPct.porPct, revoltParams);
-              city.revoltGraceRemaining = graceUpd.revoltGraceRemaining;
-              if (graceUpd.shouldTriggerRebellion && city.ownerId === 0 && !city.rebelState) {
-                city.rebelState = true;
-                city.ownerId = REBEL_FACTION_OWNER_ID;
-                console.log(`[Rebelia] Tura ${turn} ${city.name} → frakcja rebeliantów`);
+              const osiedleImmune = isOsiedleRevoltImmune(
+                city.population, data.societyParams, difficulty,
+              );
+
+              let graceUpd;
+              if (osiedleImmune) {
+                city.revoltGraceRemaining = null;
+                graceUpd = {
+                  revoltGraceRemaining: null,
+                  revoltWarning: false,
+                  shouldTriggerRebellion: false,
+                  graceTurnsLeft: null,
+                };
+              } else {
+                graceUpd = updateRevoltGrace(city.revoltGraceRemaining, ordPct.porPct, revoltParams);
+                city.revoltGraceRemaining = graceUpd.revoltGraceRemaining;
+                if (graceUpd.shouldTriggerRebellion && city.ownerId === 0 && !city.rebelState) {
+                  city.rebelState = true;
+                  city.ownerId = REBEL_FACTION_OWNER_ID;
+                  console.log(`[Rebelia] Tura ${turn} ${city.name} → frakcja rebeliantów`);
+                }
               }
 
               let buntFlag = false;
               if (tier !== 'neutral') {
                 console.log(
-                  `[Porzadek] Tura ${turn} ${city.name}: tier=${tier} porPct=${ordPct.porPct.toFixed(1)} szPct=${ordPct.sz.szPct.toFixed(1)}`,
+                  `[Porzadek] Tura ${turn} ${city.name}: tier=${tier} porPct=${ordPct.porPct.toFixed(1)} szPct=${ordPct.sz.szPct.toFixed(1)}` +
+                  (osiedleImmune ? ' [osiedle: immunitet buntu]' : ''),
                 );
               }
-              if (!graceUpd.revoltWarning && !city.rebelState && orderEff.revoltRisk > 0 && rng() < orderEff.revoltRisk) {
+              if (
+                !osiedleImmune
+                && !graceUpd.revoltWarning
+                && !city.rebelState
+                && orderEff.revoltRisk > 0
+                && rng() < orderEff.revoltRisk
+              ) {
                 const targetId = pickRevoltMigrationTarget(
                   cid, city.ownerId, cities, orderValueMap,
                 );
@@ -8281,6 +8397,9 @@ function boot(): void {
                 console.log(`[Rekrutacja] Tura ${turn} ${city.name}: ${rec.id} gotowa @ (${city.q},${city.r})`);
               }
             }
+            _lastKultura = cities
+              .filter(c => c.ownerId === 0)
+              .reduce((s, c) => s + ((c as { kultura?: number }).kultura ?? 0), 0);
             _lastReligionSpreadTotal = religionSpreadThisTurn;
           } catch (errMiasto) {
             console.error('[Miasto] Błąd tury MIASTO:', errMiasto);
@@ -8782,7 +8901,7 @@ function boot(): void {
           if (selectedId === finishedId) {
             const sel = units.find(x => x.id === finishedId);
             if (sel) {
-              unitRenderer.setSelectionHex(sel.q, sel.r);
+              unitRenderer.setSelectionHex(sel.q, sel.r, sel.ownerId);
               if (sel.ruchLeft > 0 && !isArmyMergePanelOpen() && !isArmySplitPanelOpen()) {
                 reachable = reachableWithMergeTargets(sel);
                 unitRenderer.setHighlight(reachable);
@@ -9069,11 +9188,118 @@ function boot(): void {
         ...extraCityPanelConfig(),
       });
       configurePreBattle({ getCivBonusy: civBonusyForOwnerId });
+      _lastNewGameParams = {
+        ...params,
+        seed: params.seed > 0 ? params.seed : _gameSeed,
+      };
+    }
+
+    /** Parametry kreatora do odtworzenia mapy przy wczytywaniu (nowe i starsze sejwy). */
+    function newGameParamsForLoad(saved: SaveGame): NewGameParams | null {
+      const stored = saved.meta?.newGameParams;
+      if (stored && typeof stored === 'object' && typeof (stored as NewGameParams).civId === 'string') {
+        const p = stored as NewGameParams;
+        return { ...p, seed: saved.seed ?? p.seed ?? _gameSeed };
+      }
+      if (typeof saved.seed !== 'number') return null;
+      const typ = (saved.meta?.loadTypSwiata as TypSwiata) || _menuTypSwiata;
+      const typLabels: Record<TypSwiata, string> = {
+        kontynenty: 'Kontynenty', pangea: 'Pangea', wyspy: 'Wyspy', ziemia: 'Ziemia',
+      };
+      const era = saved.gracz?.era ?? 1;
+      const epochId = era >= 3 ? 'zelazo' : era >= 2 ? 'braz' : 'kamien';
+      const mq = mapQualityTierFromSave(saved);
+      const bundle = bundledMapQualityPreset(mq);
+      return {
+        civId: (saved.meta?.loadCivId as string) || _menuCivId,
+        civName: (saved.meta?.loadCivId as string) || _menuCivId,
+        epoch: epochId === 'zelazo' ? 'Epoka Żelaza' : epochId === 'braz' ? 'Epoka Brązu' : 'Epoka Kamienia',
+        epochId,
+        difficulty: _menuDifficulty === 'easy' ? 'Łatwy' : _menuDifficulty === 'hard' ? 'Trudny' : 'Normalny',
+        mapSize: (saved.meta?.loadMapSize as string) || _menuMapSize,
+        rivals: String(_menuCityStates),
+        speed: 'Standardowa',
+        worldType: typLabels[typ],
+        typSwiata: typ,
+        seed: saved.seed,
+        mapQualityLabel: qualityTierToLabel(mq),
+        mapQuality: mq,
+        renderQualityLabel: qualityTierToLabel(bundle.renderQuality as QualityTier),
+        mapDetailQualityLabel: qualityTierToLabel(bundle.mapDetailQuality as QualityTier),
+        renderQuality: bundle.renderQuality as QualityTier,
+        mapDetailQuality: bundle.mapDetailQuality as QualityTier,
+        civTypesCount: _menuCivTypesCount,
+        cityStatesCount: _menuCityStates,
+        worldDensity: _menuWorldDensity,
+        worldDensityLabels: {
+          resources: 'Średnia', rivers: 'Średnia', desert: 'Średnia', forest: 'Średnia', relief: 'Średnia',
+        },
+        landFractionPercent: (saved.meta?.loadLandFraction as number) ?? 30,
+      };
+    }
+
+    /** Regeneruje mapę + scenę 3D (bez resetu stanu gry — do wczytywania sejwu). */
+    async function regenerateWorldForLoad(
+      params: NewGameParams,
+      seed: number,
+      saveLabel?: string,
+    ): Promise<boolean> {
+      applyMenuParams({ ...params, seed });
+      _gameSeed = seed;
+      const rozmiar = rozmiarFromMenuLabel(_menuMapSize);
+      const loading = showMapLoadingOverlay({
+        seed,
+        rozmiarLabel: _menuMapSize,
+        typLabel: params.worldType || _menuTypSwiata,
+        mode: 'load',
+        saveLabel,
+      });
+      try {
+        map = await generujSwiatAsync(seed, rozmiar, _menuTypSwiata, {
+          worldDensity: _menuWorldDensity,
+          mapSizeMenuLabel: _menuMapSize,
+          landFraction: (params.landFractionPercent ?? 30) / 100,
+        }, (faza, pct, phaseNum, phaseTotal) => {
+          loading.setProgress(faza, pct, phaseNum, phaseTotal);
+        });
+        ensureDepositEraMeta(map.hexes);
+        disposeOkolicaOverlay();
+        try { disposeScene(); } catch { /* ignore */ }
+        const newSceneResult = await buildScene(map, canvas, _currentRenderOptions, (pct) => {
+          loading.setProgress('Przywracanie widoku mapy…', pct);
+        });
+        loading.hide();
+        scene = newSceneResult.scene;
+        camera = newSceneResult.camera;
+        renderer = newSceneResult.renderer;
+        center = newSceneResult.center;
+        setFog = newSceneResult.setFog;
+        hideDecorAtHex = newSceneResult.hideDecorAtHex;
+        setZoomLod = newSceneResult.setZoomLod;
+        getZoomLodLevel = newSceneResult.getZoomLodLevel;
+        disposeScene = newSceneResult.dispose;
+        cultureRangeGroup = null;
+        religionRangeGroup = null;
+        camCtrl = new CameraController(camera, canvas, center, cameraControllerOpts());
+        unitRenderer = new UnitRenderer(scene, map);
+        cityRenderer = new CityRenderer(scene, map);
+        siegeMarkerRenderer = new SiegeMarkerRenderer(scene, map);
+        wonderRenderer = new WonderRenderer(scene, map);
+        rebuildAllKeys();
+        refreshBuildApi();
+        return true;
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        loading.showError(msg || 'Błąd wczytywania zapisu', () => { loading.hide(); });
+        return false;
+      }
     }
 
     async function doStartGame(params: NewGameParams): Promise<void> {
       playtestWalkaActive = false;
+      bitwaDuzaActive = false;
       playtestMiastoActive = false;
+      _saveOrigin = 'normal';
       applyMenuParams(params);
       hideMainMenu();
       hideNewGameFlow();
@@ -9111,14 +9337,18 @@ function boot(): void {
         loading.showError(msg || 'Błąd generacji mapy', () => { loading.hide(); void doStartGame(params); });
         return;
       }
-      loading.hide();
       map = newMap;
       ensureDepositEraMeta(map.hexes);
 
       // Rebuild scene with new map (dispose old scene first)
       disposeOkolicaOverlay();
       try { disposeScene(); } catch (_) { /* ignore if dispose fails */ }
-      const newSceneResult = buildScene(map, canvas, _currentRenderOptions);
+      // C3: buildScene budowany porcjami (chunki) — overlay zostaje na ekranie i
+      // pokazuje „Budowanie sceny… N%"; ukryj DOPIERO po zbudowaniu sceny.
+      const newSceneResult = await buildScene(map, canvas, _currentRenderOptions, (pct) => {
+        loading.setProgress('Budowanie sceny…', pct);
+      });
+      loading.hide();
       scene = newSceneResult.scene;
       camera = newSceneResult.camera;
       renderer = newSceneResult.renderer;
@@ -9163,6 +9393,11 @@ function boot(): void {
       turn = 1;
       playerPracaPool = 0;
       _lastPraca = 0;
+      _lastPracaRate = 0;
+      _lastPieniadzRate = 0;
+      _lastNaukaRate = 0;
+      _lastKulturaRate = 0;
+      _lastLudnoscRate = 0;
       _lastPlayerCityEcon = [];
       cityBuilt.clear();
       cityProd.clear();
@@ -9174,6 +9409,7 @@ function boot(): void {
       growthMultMap.clear();
       lastCityKulturaTick.clear();
       aiResearchDone.clear();
+      ownerEraByOwner.clear();
       barbCamps = [];
       gameOver = false;
       selectedId = null;
@@ -9220,9 +9456,20 @@ function boot(): void {
     }
 
     async function doStartPlaytestWalkaMapy(): Promise<void> {
+      _saveOrigin = 'playtest';
       playtestWalkaActive = true;
-      const odskokObl = isPlaytestOdskokOblezenieMode();
-      const odskok3v3 = !odskokObl && isPlaytestOdskokMode();
+      // DUŻE bitwy mają pierwszeństwo (ich nazwy plików łapałaby regex oblężenia 3v3).
+      const bitwaDuza = isPlaytestBitwaDuzaMode();
+      const oblezDuze = !bitwaDuza && isPlaytestOblezenieDuzeMode();
+      bitwaDuzaActive = bitwaDuza || oblezDuze;
+      if (bitwaDuza || oblezDuze) {
+        // DUŻE bitwy = arena taktyczna (armia vs armia), NIE rozstawianie na mapie świata.
+        playtestWalkaActive = false;
+        launchBigPresetBattle(oblezDuze ? 'oblezenie_duze' : 'bitwa_duza_pole', oblezDuze);
+        return;
+      }
+      const odskokObl = !bitwaDuzaActive && isPlaytestOdskokOblezenieMode();
+      const odskok3v3 = !bitwaDuzaActive && !odskokObl && isPlaytestOdskokMode();
       const playtestSeed = (odskok3v3 || odskokObl) ? PLAYTEST_ODSKOK_SEED : PLAYTEST_WALKA_SEED;
       const mqTier = mapQualityTierFromQuery('high');
       const mqBundle = bundledMapQualityPreset(mqTier);
@@ -9272,34 +9519,47 @@ function boot(): void {
       let newMap = await generujSwiatAsync(playtestSeed, rozmiar, 'kontynenty', undefined, (faza, pct, phaseNum, phaseTotal) => {
         loading.setProgress(faza, pct, phaseNum, phaseTotal);
       });
-      let preset = odskokObl
-        ? buildPlaytestOdskokOblezenie(newMap, data)
-        : odskok3v3
-          ? buildPlaytestOdskok3v3(newMap, data)
-          : buildPlaytestWalkaMapy(newMap, data, resolvePlaytestWalkaVariant());
-      if ((odskok3v3 || odskokObl) && !preset) {
+      let preset = bitwaDuza
+        ? buildBitwaDuzaPreset(newMap, data)
+        : oblezDuze
+          ? buildOblezenieDuzePreset(newMap, data)
+          : odskokObl
+            ? buildPlaytestOdskokOblezenie(newMap, data)
+            : odskok3v3
+              ? buildPlaytestOdskok3v3(newMap, data)
+              : buildPlaytestWalkaMapy(newMap, data, resolvePlaytestWalkaVariant());
+      // Duże bitwy i odskok 3v3 potrzebują konkretnego układu — jeśli brak, próbuj kolejnych seedów.
+      if ((odskok3v3 || odskokObl || bitwaDuza || oblezDuze) && !preset) {
         for (let i = 1; i <= 64 && !preset; i++) {
           const trySeed = playtestSeed + i;
           loading.setProgress('Szukanie miejsca na mapie (próba ' + i + ')', Math.min(95, i * 1.5), 6, 7);
           newMap = await generujSwiatAsync(trySeed, rozmiar, 'kontynenty', undefined, (faza, pct, phaseNum, phaseTotal) => {
             loading.setProgress(faza, pct, phaseNum, phaseTotal);
           });
-          preset = odskokObl
-            ? buildPlaytestOdskokOblezenie(newMap, data)
-            : buildPlaytestOdskok3v3(newMap, data);
+          preset = bitwaDuza
+            ? buildBitwaDuzaPreset(newMap, data)
+            : oblezDuze
+              ? buildOblezenieDuzePreset(newMap, data)
+              : odskokObl
+                ? buildPlaytestOdskokOblezenie(newMap, data)
+                : buildPlaytestOdskok3v3(newMap, data);
           if (preset) {
-            console.log('[PlaytestOdskok] seed fallback ' + trySeed);
+            console.log('[PlaytestWalka] seed fallback ' + trySeed);
           }
         }
       }
-      loading.hide();
       map = newMap;
       ensureDepositEraMeta(map.hexes);
       rebuildAllKeys();
 
       disposeOkolicaOverlay();
       try { disposeScene(); } catch (_) { /* ignore */ }
-      const newSceneResult = buildScene(map, canvas, _currentRenderOptions);
+      // C3: buildScene budowany porcjami (chunki) — overlay „Budowanie sceny… N%"
+      // zostaje widoczny przez cały build; ukryj DOPIERO po jego zakończeniu.
+      const newSceneResult = await buildScene(map, canvas, _currentRenderOptions, (pct) => {
+        loading.setProgress('Budowanie sceny…', pct);
+      });
+      loading.hide();
       scene = newSceneResult.scene;
       camera = newSceneResult.camera;
       renderer = newSceneResult.renderer;
@@ -9431,19 +9691,30 @@ function boot(): void {
       const walkaHint = resolvePlaytestWalkaVariant() === 'oblez'
         ? PLAYTEST_OBLEZ_HINT
         : PLAYTEST_WALKA_HINT;
-      showHintMessage(
-        odskokObl ? PLAYTEST_ODSKOK_OBLEZENIE_HINT : odskok3v3 ? PLAYTEST_ODSKOK_HINT : walkaHint,
-        16000,
-      );
-      if (!odskok3v3 && !odskokObl && enemyCity) {
+      const primaryHint = bitwaDuza
+        ? PLAYTEST_BITWA_DUZA_HINT
+        : oblezDuze
+          ? PLAYTEST_OBLEZENIE_DUZE_HINT
+          : odskokObl
+            ? PLAYTEST_ODSKOK_OBLEZENIE_HINT
+            : odskok3v3
+              ? PLAYTEST_ODSKOK_HINT
+              : walkaHint;
+      showHintMessage(primaryHint, 16000);
+      if (!odskok3v3 && !odskokObl && !bitwaDuza && enemyCity) {
         showHintMessage(
           'Ateny (WRÓG, mur) — po walce / ruchu: klik miasto → Oblężaj (obóz 3D) lub Szturm.',
           12000,
         );
       }
+      const trybLog = bitwaDuza ? 'bitwa-duza'
+        : oblezDuze ? 'oblezenie-duze'
+        : odskokObl ? 'odskok-obl'
+        : odskok3v3 ? 'odskok3v3'
+        : 'walka';
       console.log(
         '[PlaytestWalka] seed=' + playtestSeed +
-        ' tryb=' + (odskokObl ? 'odskok-obl' : odskok3v3 ? 'odskok3v3' : 'walka') +
+        ' tryb=' + trybLog +
         ' jednostek=' + units.length +
         ' miast=' + cities.length +
         ' wrogie=' + (enemyCity?.name ?? '?') + ' ownerId=' + (enemyCity?.ownerId ?? '?'),
@@ -9452,7 +9723,9 @@ function boot(): void {
     }
 
     async function doStartPlaytestMiastoEkonomia(): Promise<void> {
+      _saveOrigin = 'playtest';
       playtestWalkaActive = false;
+      bitwaDuzaActive = false;
       playtestMiastoActive = true;
       const mqTier = mapQualityTierFromQuery('high');
       const mqBundle = bundledMapQualityPreset(mqTier);
@@ -9499,14 +9772,18 @@ function boot(): void {
       const newMap = await generujSwiatAsync(PLAYTEST_MIASTO_SEED, rozmiar, 'kontynenty', undefined, (faza, pct, phaseNum, phaseTotal) => {
         loading.setProgress(faza, pct, phaseNum, phaseTotal);
       });
-      loading.hide();
       map = newMap;
       ensureDepositEraMeta(map.hexes);
       rebuildAllKeys();
 
       disposeOkolicaOverlay();
       try { disposeScene(); } catch (_) { /* ignore */ }
-      const newSceneResult = buildScene(map, canvas, _currentRenderOptions);
+      // C3: buildScene budowany porcjami (chunki) — overlay „Budowanie sceny… N%"
+      // zostaje widoczny przez cały build; ukryj DOPIERO po jego zakończeniu.
+      const newSceneResult = await buildScene(map, canvas, _currentRenderOptions, (pct) => {
+        loading.setProgress('Budowanie sceny…', pct);
+      });
+      loading.hide();
       scene = newSceneResult.scene;
       camera = newSceneResult.camera;
       renderer = newSceneResult.renderer;
@@ -9621,7 +9898,9 @@ function boot(): void {
     }
 
     async function doStartPlaytestMapaSwiata(): Promise<void> {
+      _saveOrigin = 'playtest';
       playtestWalkaActive = false;
+      bitwaDuzaActive = false;
       playtestMiastoActive = false;
       const mqTier = mapQualityTierFromQuery('high');
       const mqBundle = bundledMapQualityPreset(mqTier);
@@ -9666,14 +9945,18 @@ function boot(): void {
       }, (faza, pct, phaseNum, phaseTotal) => {
         loading.setProgress(faza, pct, phaseNum, phaseTotal);
       });
-      loading.hide();
       map = newMap;
       ensureDepositEraMeta(map.hexes);
       rebuildAllKeys();
 
       disposeOkolicaOverlay();
       try { disposeScene(); } catch (_) { /* ignore */ }
-      const newSceneResult = buildScene(map, canvas, _currentRenderOptions);
+      // C3: buildScene budowany porcjami (chunki) — overlay „Budowanie sceny… N%"
+      // zostaje widoczny przez cały build; ukryj DOPIERO po jego zakończeniu.
+      const newSceneResult = await buildScene(map, canvas, _currentRenderOptions, (pct) => {
+        loading.setProgress('Budowanie sceny…', pct);
+      });
+      loading.hide();
       scene = newSceneResult.scene;
       camera = newSceneResult.camera;
       renderer = newSceneResult.renderer;
@@ -9807,22 +10090,50 @@ function boot(): void {
       renderLoop();
     }
 
-    function doLoadGame(fromInGamePause = false): void {
+    async function loadGameFromSlot(slotId: string, fromInGamePause = false): Promise<void> {
+      hideSaveLoadDialog();
       try {
-        const saved = loadFromLocal('autosave');
+        const saved = loadFromLocal(slotId);
         if (!saved) {
-          showHintMessage(
-            fromInGamePause
-              ? 'Brak zapisu (slot: autosave).'
-              : 'Brak zapisu (slot: autosave). Uruchamiam nową grę.',
-            3000,
-          );
+          showHintMessage('Nie można wczytać tego zapisu.', 3000);
           if (!fromInGamePause) openStartupMainMenu();
           return;
         }
         hideGamePauseMenu();
         hideMainMenu();
         hideNewGameFlow();
+
+        const loadParams = newGameParamsForLoad(saved);
+        const loadSeed = saved.seed ?? loadParams?.seed ?? _gameSeed;
+
+        if (!fromInGamePause && (!loadParams || loadSeed <= 0)) {
+          showHintMessage(
+            'Ten zapis nie ma parametrów mapy (stary lub uszkodzony). Usuń go i zapisz grę ponownie po nowej grze.',
+            5000,
+          );
+          if (!fromInGamePause) openStartupMainMenu();
+          return;
+        }
+
+        const mustRebuildMap = fromInGamePause
+          ? (loadParams != null && loadSeed > 0 && loadSeed !== _gameSeed)
+          : (loadParams != null && loadSeed > 0);
+
+        if (mustRebuildMap && loadParams) {
+          const saveLabel = (saved.meta?.label as string) || slotId;
+          canvas.style.visibility = 'hidden';
+          let ok = false;
+          try {
+            ok = await regenerateWorldForLoad(loadParams, loadSeed, saveLabel);
+          } finally {
+            canvas.style.visibility = '';
+          }
+          if (!ok) {
+            if (!fromInGamePause) openStartupMainMenu();
+            return;
+          }
+        }
+
         restoreGameFromSave(saved);
         for (const c of cities) {
           if (!c.centerWorkedTile) {
@@ -9842,17 +10153,26 @@ function boot(): void {
         refreshFog();
         updateHud();
         renderLoop();
-        showHintMessage('Wczytano zapis (tura ' + turn + ')', 3000);
-        console.log('[Load] menu wczytano slot=autosave tura=' + turn);
+        const label = (saved.meta?.label as string) || slotId;
+        showHintMessage(
+          `Wczytano: «${label}» (tura ${turn})<br><span style="opacity:.85;font-size:11px">${saveContextLine(saved)}</span>`,
+          4500,
+        );
+        console.log('[Load] slot=' + slotId + ' tura=' + turn);
       } catch (e) {
         showHintMessage(
           fromInGamePause
             ? 'Błąd wczytywania zapisu.'
-            : 'Błąd wczytywania zapisu. Uruchamiam nową grę.',
+            : 'Błąd wczytywania zapisu. Wracam do menu.',
           3000,
         );
         if (!fromInGamePause) openStartupMainMenu();
       }
+    }
+
+    /** @deprecated alias — użyj loadGameFromSlot / openLoadGameDialog */
+    function doLoadGame(fromInGamePause = false): void {
+      openLoadGameDialog(fromInGamePause);
     }
 
     /** Wspólna ścieżka wczytywania zapisu — Ctrl+L i doLoadGame (Grupa F: migracja podziału). */
@@ -9927,7 +10247,20 @@ function boot(): void {
       bindEmpireFoodRuntime(empireFoodStates);
       const savedPracaPool = saved.meta?.playerPracaPool as number | undefined;
       playerPracaPool = typeof savedPracaPool === 'number' ? savedPracaPool : 0;
+      const playerCityCountOnLoad = cities.filter(c => c.ownerId === 0).length;
+      const maxReasonablePracaPool = Math.max(50, playerCityCountOnLoad * 100);
+      if (playerPracaPool > maxReasonablePracaPool) {
+        console.warn(
+          `[Save] playerPracaPool=${playerPracaPool} zawyżone (stary bug map-total) — reset do 0`,
+        );
+        playerPracaPool = 0;
+      }
       _lastPraca = playerPracaPool;
+      _lastPieniadzRate = 0;
+      _lastPracaRate = 0;
+      _lastNaukaRate = 0;
+      _lastKulturaRate = 0;
+      _lastLudnoscRate = 0;
       siegeTurnByCity.clear();
       siegeBesiegerByCity.clear();
       siegeAiStateByKey.clear();
@@ -9998,18 +10331,25 @@ function boot(): void {
       unitRenderer.clearPathRoute();
       hoverKey = null;
       gameOver = false;
+      if (saved.meta?.newGameParams) {
+        _lastNewGameParams = saved.meta.newGameParams as NewGameParams;
+      }
     }
 
     // Show main menu overlay; game is already initialized beneath it.
-    const playtestOdskokOblUrl = typeof location !== 'undefined' && isPlaytestOdskokOblezenieMode();
-    const playtestOdskokUrl = typeof location !== 'undefined' && !playtestOdskokOblUrl && (
+    // DUŻE bitwy pierwsze — ich nazwy plików łapałby regex oblężenia 3v3.
+    const playtestBitwaDuzaUrl = typeof location !== 'undefined' && isPlaytestBitwaDuzaMode();
+    const playtestOblezenieDuzeUrl = typeof location !== 'undefined' && !playtestBitwaDuzaUrl && isPlaytestOblezenieDuzeMode();
+    const playtestBitwaDuzaAny = playtestBitwaDuzaUrl || playtestOblezenieDuzeUrl;
+    const playtestOdskokOblUrl = typeof location !== 'undefined' && !playtestBitwaDuzaAny && isPlaytestOdskokOblezenieMode();
+    const playtestOdskokUrl = typeof location !== 'undefined' && !playtestBitwaDuzaAny && !playtestOdskokOblUrl && (
       (() => {
         const pt = new URLSearchParams(location.search).get('playtest');
         return pt === 'odskok';
       })() ||
       /PLAYTEST-ODSKOK/i.test(location.pathname || '')
     );
-    const playtestWalkaUrl = typeof location !== 'undefined' && !playtestOdskokOblUrl && !playtestOdskokUrl && (
+    const playtestWalkaUrl = typeof location !== 'undefined' && !playtestBitwaDuzaAny && !playtestOdskokOblUrl && !playtestOdskokUrl && (
       (() => {
         const pt = new URLSearchParams(location.search).get('playtest');
         return pt === 'walka' || pt === 'oblez';
@@ -10027,7 +10367,7 @@ function boot(): void {
       })() ||
       /PLAYTEST-MAPA/i.test(location.pathname || '')
     );
-    if (playtestOdskokOblUrl || playtestOdskokUrl || playtestWalkaUrl) {
+    if (playtestBitwaDuzaAny || playtestOdskokOblUrl || playtestOdskokUrl || playtestWalkaUrl) {
       void doStartPlaytestWalkaMapy();
     } else if (playtestMapaUrl) {
       void doStartPlaytestMapaSwiata();
@@ -10055,7 +10395,7 @@ function boot(): void {
 }
 
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', boot);
+  document.addEventListener('DOMContentLoaded', () => { void boot(); });
 } else {
-  boot();
+  void boot();
 }

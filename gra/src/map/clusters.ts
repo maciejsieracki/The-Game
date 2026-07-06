@@ -20,7 +20,7 @@
  *
  * Odległości startu (Maciej 2026-07-04, tylko spawn):
  *   miasta-państwa w klastrze gracza → min 3 hexy
- *   miasta obcych typów od stolicy gracza → min 5 hexów
+ *   miasta obcych typów od stolicy gracza → min 12 hexów (poza oświetleniem startu)
  *   miasta-państwa w klastrze obcego typu → min 3 hexy (Maciej 2026-07-04)
  *
  * Własność: Civ-MAPA rozmieszcza (computeClusters), SILNIK osadza w pętli tury,
@@ -31,8 +31,11 @@ import { mulberry32, hexDistanceAxial } from './gen-helpers';
 
 /** Min odległość między startowymi miastami-państwami (ten sam typ co gracz). Tylko spawn. */
 export const MIN_DIST_START_CITY_STATE = 3;
-/** Min odległość miast obcych typów od hexu stolicy gracza. Tylko spawn. */
-export const MIN_DIST_FOREIGN_FROM_PLAYER = 5;
+/**
+ * Min odległość miast obcych typów od hexu stolicy gracza. Tylko spawn.
+ * 12 hex > promień oświetlenia startu (8 normal) — obce nacje nie widać przy założeniu miasta.
+ */
+export const MIN_DIST_FOREIGN_FROM_PLAYER = 12;
 /** Min odległość między miastami w klastrze obcego typu. Tylko spawn. */
 export const MIN_DIST_FOREIGN_IN_CLUSTER = MIN_DIST_START_CITY_STATE;
 import type { GameMap } from '../types/map';

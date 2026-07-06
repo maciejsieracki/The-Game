@@ -125,17 +125,11 @@ import {
   FMT_SVG,
   DEPLOY_KIND_LABEL,
   DEPLOY_SCOPE_SVG,
-  DEPLOY_LINES_MELEE_SVG,
   DEPLOY_TACTIC_SVG,
+  DEPLOY_POPUP_INACTIVE_BG,
   buildDeployPopupRowHtml,
   buildDeployTacticCellHtml,
   paintDeployPopupOption,
-  paintDeployLineNumber,
-  applyDeployPopupShell1E,
-  applyDeployPopupHeader1E,
-  applyDeployPopupBodyWrap1E,
-  applyDeployPopupRowBtn1E,
-  applyDeployLineNumberChip1E,
   hpBarGradient,
   moraleBarGradient,
   rosterCardBaseStyle,
@@ -168,7 +162,6 @@ import {
   applyBattleStrategyGoldCta,
   applyBattleCheckbox1E,
   createRosterEmptySlotElement,
-  formatRosterGroupHeaderHtml,
   STRATEGY_HEADER_SVG,
   type BattleClassKind,
 } from './battleHudTheme';
@@ -505,7 +498,7 @@ const ROSTER_COL_W         = ROSTER_PANEL_FIXED_W;
 const DEPLOY_ROSTER_CARD_H = 56;
 const BATTLE_ROSTER_CARD_H = 56;
 /** Wersja UI bitwy polowej — widoczna w panelu (weryfikacja buildu). */
-const BATTLE_UI_BUILD      = 'POLE-BITWY-20260705-v4.1-A4';
+const BATTLE_UI_BUILD      = 'POLE-BITWY-20260705-end-replay';
 
 /** ikonaId z civs.json po nazwie wyswietlanej lub ikonaId. */
 function civIconIdFromLabel(civRows: readonly { Cywilizacja?: string; ikonaId?: string }[], label: string): string {
@@ -6208,7 +6201,7 @@ export class BattleScene {
     const atkMissile     = applyMultiplier(cuA.missileAttack ?? 0, atkMods.rangedAtk);
     const defArmor       = applyMultiplier(cuD.armor, defMods.pancerz);
     const roundAtkCharge = applyMultiplier(cuA.chargeBonus, atkMods.uderzenie);
-    const ctrAtkVsDef    = counterMultiplier(cuA.typNazwa, cuD.typNazwa, this.counters);
+    const ctrAtkVsDef    = counterMultiplier(cuA.counterTyp, cuD.counterTyp, this.counters);
 
     const chargeHitBonus = (!ranged && isCharge) ? roundAtkCharge : 0;
     const hitPct = hitChanceTw(atkMelee, defFinalObrona, chargeHitBonus);
@@ -9124,10 +9117,15 @@ export class BattleScene {
     Object.assign(fmtPopup.style, { minWidth: '220px' });
     for (const fd of fmtDefs) {
       const ob = document.createElement('button');
+      ob.type = 'button';
       ob.dataset.deployFmtOption = fd.fmt;
       ob.innerHTML = buildDeployPopupRowHtml(fd.icon, fd.label, fd.subtitle);
-      applyDeployPopupRowBtn1E(ob);
-      paintDeployPopupOption(ob, fd.fmt === this._deployActiveFormation);
+      Object.assign(ob.style, {
+        padding: '11px 13px', borderRadius: '9px', cursor: 'pointer', fontFamily: HUD_FONT,
+        width: '100%', textAlign: 'left',
+        border: `1px solid rgba(232,216,138,0.2)`, background: DEPLOY_POPUP_INACTIVE_BG,
+      });
+      applyDeployPopupItem1E(ob);
       ob.addEventListener('click', (e) => {
         e.stopPropagation();
         this._setDeployActiveFormation(fd.fmt);
@@ -9150,10 +9148,15 @@ export class BattleScene {
     Object.assign(cavPopup.style, { minWidth: '220px' });
     for (const cd of cavDefs) {
       const ob = document.createElement('button');
+      ob.type = 'button';
       ob.dataset.deployCavOption = cd.mode;
       ob.innerHTML = buildDeployPopupRowHtml(cd.icon, cd.label, cd.subtitle);
-      applyDeployPopupRowBtn1E(ob);
-      paintDeployPopupOption(ob, cd.mode === this._deployCavalryMode);
+      Object.assign(ob.style, {
+        padding: '11px 13px', borderRadius: '9px', cursor: 'pointer', fontFamily: HUD_FONT,
+        width: '100%', textAlign: 'left',
+        border: `1px solid rgba(232,216,138,0.2)`, background: DEPLOY_POPUP_INACTIVE_BG,
+      });
+      applyDeployPopupItem1E(ob);
       ob.addEventListener('click', (e) => {
         e.stopPropagation();
         this._applyDeployCavalryMode(cd.mode);
@@ -9252,7 +9255,6 @@ export class BattleScene {
     key: 'formation' | 'cavalry' | 'lines' | 'tactics' | 'strategy',
     popupBody: HTMLDivElement,
     toolbarIcon?: string,
-    headerIcon?: string,
   ): HTMLDivElement {
     const wrap = document.createElement('div');
     Object.assign(wrap.style, { position: 'relative', flexShrink: '0' });
@@ -9261,28 +9263,14 @@ export class BattleScene {
     popup.dataset.deployDropdown = key;
     Object.assign(popup.style, {
       position: 'absolute', bottom: '100%', left: '50%', transform: 'translateX(-50%)',
-      marginBottom: '8px', display: 'none', zIndex: '100210',
+      marginBottom: '8px', display: 'none', flexDirection: 'column', gap: '8px',
+      padding: '12px 14px', borderRadius: '8px', zIndex: '100210',
+      background: 'linear-gradient(180deg,rgba(32,26,14,.98),rgba(18,14,8,.98))',
+      border: `1px solid ${BATTLE_GOLD_DIM}`,
+      boxShadow: '0 -4px 20px rgba(0,0,0,0.55)',
       pointerEvents: 'auto',
     });
-
-    if (key === 'strategy') {
-      Object.assign(popup.style, {
-        flexDirection: 'column', gap: '8px',
-        padding: '0', background: 'transparent', border: 'none', boxShadow: 'none',
-      });
-      popup.appendChild(popupBody);
-    } else {
-      const card = document.createElement('div');
-      applyDeployPopupShell1E(card);
-      const hdr = document.createElement('div');
-      applyDeployPopupHeader1E(hdr, label, headerIcon ?? (key === 'cavalry' ? toolbarIcon : undefined));
-      const bodyWrap = document.createElement('div');
-      applyDeployPopupBodyWrap1E(bodyWrap, key === 'lines');
-      bodyWrap.appendChild(popupBody);
-      card.appendChild(hdr);
-      card.appendChild(bodyWrap);
-      popup.appendChild(card);
-    }
+    popup.appendChild(popupBody);
     this._deployDropdownPopups[key] = popup;
 
     const btn = document.createElement('button');
@@ -9503,17 +9491,22 @@ export class BattleScene {
     const meta = this._ensureGroupMeta(gid);
     const doc = meta.doctrine;
 
-    const grpNote = document.createElement('div');
-    grpNote.textContent = this._groupDisplayLabel(gid) + ' · ' + (
-      this.deployPhase
-        ? 'postawa w walce auto'
-        : 'postawa na turze (SPACJA)'
-    );
-    Object.assign(grpNote.style, {
-      fontSize: '10px', color: BATTLE_TEXT_DIM, marginBottom: '8px',
-      letterSpacing: '0.06em', textTransform: 'uppercase',
+    const hdr = document.createElement('div');
+    hdr.textContent = this._groupDisplayLabel(gid);
+    Object.assign(hdr.style, {
+      fontSize: '10px', color: BATTLE_GOLD, fontWeight: 'bold', marginBottom: '4px',
+      letterSpacing: '0.06em',
     });
-    body.appendChild(grpNote);
+    body.appendChild(hdr);
+
+    const hint = document.createElement('div');
+    hint.textContent = this.deployPhase
+      ? 'Postawa taktyczna grupy w walce (auto):'
+      : 'Postawa taktyczna — grupa wykona ja na turze (SPACJA):';
+    Object.assign(hint.style, {
+      fontSize: '9px', color: BATTLE_TEXT_DIM, marginBottom: '6px', lineHeight: '1.35',
+    });
+    body.appendChild(hint);
 
     const docRow = document.createElement('div');
     Object.assign(docRow.style, {
@@ -9522,24 +9515,19 @@ export class BattleScene {
 
     const mkDoc = (label: string, d: GroupDoctrine, icon: string): HTMLButtonElement => {
       const active = doc === d;
-      const b = document.createElement('button');
-      b.type = 'button';
-      b.classList.add('civ-deploy-tactic-cell');
-      b.innerHTML = buildDeployTacticCellHtml(icon, label);
-      Object.assign(b.style, {
-        padding: '12px 10px', width: '100%', textAlign: 'center',
-        justifyContent: 'center', borderRadius: '9px', cursor: 'pointer',
-        boxSizing: 'border-box',
-      });
-      applyDeployPopupItem1E(b);
-      paintDeployPopupOption(b, active);
-      b.addEventListener('click', (e) => {
-        e.stopPropagation();
+      const b = this._makeDeployQuickBtn(label, active, () => {
         this._setGroupDoctrine(gid, d);
         this._deployActiveGroupId = gid;
         this._renderDeployTacticsPopup(popup);
         this._updateDeployToolbarStatus();
+      }, { fullWidth: true });
+      b.innerHTML = buildDeployTacticCellHtml(icon, label);
+      Object.assign(b.style, {
+        padding: '12px 10px', width: '100%', textAlign: 'center',
+        justifyContent: 'center', borderRadius: '9px',
       });
+      applyDeployPopupItem1E(b);
+      paintDeployPopupOption(b, active);
       return b;
     };
 
@@ -9740,37 +9728,33 @@ export class BattleScene {
     if (!body) return;
     body.innerHTML = '';
 
-    const mkRow = (
+    const mkSection = (
       title: string,
       kind: 'melee' | 'archer',
       active: DeployLineCount,
-      headerIcon: string,
-    ): HTMLDivElement => {
-      const row = document.createElement('div');
-      Object.assign(row.style, {
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+      headerIcon?: string,
+    ): void => {
+      const hdr = document.createElement('div');
+      if (headerIcon) {
+        hdr.innerHTML =
+          '<span style="display:inline-flex;align-items:center;gap:6px;">' +
+          `<span style="display:inline-flex;line-height:0;color:${BATTLE_GOLD};">${headerIcon}</span>` +
+          `<span>${title}</span></span>`;
+      } else {
+        hdr.textContent = title;
+      }
+      Object.assign(hdr.style, {
+        fontSize: '10px', color: BATTLE_GOLD, fontWeight: 'bold',
+        marginBottom: '4px', letterSpacing: '0.06em',
       });
+      body.appendChild(hdr);
 
-      const lbl = document.createElement('span');
-      lbl.innerHTML =
-        '<span style="display:inline-flex;align-items:center;gap:8px;font-size:13px;color:#c8b898;">' +
-        `<span style="display:inline-flex;line-height:0;color:${BATTLE_GOLD};">${headerIcon}</span>` +
-        `<span>${title}</span></span>`;
-
-      const chips = document.createElement('div');
-      Object.assign(chips.style, { display: 'flex', gap: '6px' });
+      const row = document.createElement('div');
+      Object.assign(row.style, { display: 'flex', gap: '4px', marginBottom: '8px' });
 
       for (const n of [1, 2, 3] as DeployLineCount[]) {
         const on = active === n;
-        const b = document.createElement('button');
-        b.type = 'button';
-        b.textContent = String(n);
-        b.dataset.deployLinesKind = kind;
-        b.dataset.deployLinesCount = String(n);
-        applyDeployLineNumberChip1E(b);
-        paintDeployLineNumber(b, on);
-        b.addEventListener('click', (e) => {
-          e.stopPropagation();
+        const b = this._makeDeployQuickBtn(String(n), on, () => {
           if (kind === 'melee') this._setDeployMeleeLines(n);
           else this._setDeployArcherLines(n);
           this._applyDeployLineSettings();
@@ -9779,27 +9763,20 @@ export class BattleScene {
           const who = kind === 'melee' ? DEPLOY_KIND_LABEL.melee : DEPLOY_KIND_LABEL.ranged;
           this._showDeployFeedback(who + ': ' + n + ' linie');
         });
-        chips.appendChild(b);
+        b.dataset.deployLinesKind = kind;
+        b.dataset.deployLinesCount = String(n);
+        Object.assign(b.style, {
+          flex: '1', padding: '0', fontSize: '11px', textAlign: 'center', minHeight: '34px',
+        });
+        applyDeployPopupItem1E(b);
+        paintDeployPopupOption(b, on);
+        row.appendChild(b);
       }
-
-      row.appendChild(lbl);
-      row.appendChild(chips);
-      return row;
+      body.appendChild(row);
     };
 
-    body.appendChild(mkRow(
-      DEPLOY_KIND_LABEL.melee, 'melee', this._deployMeleeLines, DEPLOY_LINES_MELEE_SVG,
-    ));
-
-    const divider = document.createElement('div');
-    Object.assign(divider.style, {
-      height: '1px', background: 'rgba(232,216,138,0.14)', margin: '12px 0',
-    });
-    body.appendChild(divider);
-
-    body.appendChild(mkRow(
-      DEPLOY_KIND_LABEL.ranged, 'archer', this._deployArcherLines, DEPLOY_SCOPE_SVG,
-    ));
+    mkSection(DEPLOY_KIND_LABEL.melee, 'melee', this._deployMeleeLines, ROSTER_TYPE_SVG.melee.replace(/width="14"/g, 'width="17"').replace(/height="14"/g, 'height="17"'));
+    mkSection(DEPLOY_KIND_LABEL.ranged, 'archer', this._deployArcherLines, DEPLOY_SCOPE_SVG);
   }
 
   /** Ikony typów + liczby dla bieżącego zaznaczenia. */
@@ -10966,6 +10943,8 @@ export class BattleScene {
     cards.className = 'roster-group-cards';
     Object.assign(cards.style, {
       overflowX: 'hidden', boxSizing: 'border-box', width: '100%', maxWidth: '100%',
+      gridTemplateColumns: `repeat(${ROSTER_MAX_COLS}, minmax(0, 1fr))`,
+      gap: ROSTER_CARD_GAP + 'px', justifyContent: 'start', alignContent: 'start',
     });
 
     header.addEventListener('click', (e: MouseEvent) => {
@@ -10996,7 +10975,8 @@ export class BattleScene {
     const managing = this.deployPhase && this._deployActiveGroupId === gid;
     const active = managing || allSel || partialSel;
     if (body) {
-      body.innerHTML = formatRosterGroupHeaderHtml(n, cnt);
+      body.textContent = 'Grupa ' + (n != null ? String(n) : '?') + ' \u00B7 ' + cnt;
+      body.style.fontWeight = 'bold';
       body.style.color = managing ? '#ffe066' : allSel ? '#fff' : partialSel ? '#fff8dc' : '#fff8dc';
     }
     if (chev) chev.textContent = collapsed ? '\u25B6' : '\u25BC';
@@ -11125,7 +11105,7 @@ export class BattleScene {
       const kind = (el as HTMLElement).dataset.deployLinesKind;
       const cnt = Number((el as HTMLElement).dataset.deployLinesCount) as DeployLineCount;
       const active = kind === 'melee' ? this._deployMeleeLines : this._deployArcherLines;
-      paintDeployLineNumber(el as HTMLButtonElement, cnt === active);
+      paintDeployPopupOption(el as HTMLButtonElement, cnt === active);
     });
   }
 

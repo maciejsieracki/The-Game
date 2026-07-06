@@ -147,7 +147,7 @@ for (const fcl of plan.foreignTypeClusters) {
   }
 }
 assert(plan.placement.minDystansMiastaPanstwa === 3, 'placement minDystansMiastaPanstwa=3');
-assert(plan.placement.minDystansObcyOdGracza === 5, 'placement minDystansObcyOdGracza=5');
+assert(plan.placement.minDystansObcyOdGracza === 12, 'placement minDystansObcyOdGracza=12');
 assert(M.MIN_DIST_FOREIGN_IN_CLUSTER === 3, 'MIN_DIST_FOREIGN_IN_CLUSTER=3');
 
 console.log('\n' + passed + ' passed, ' + failed + ' failed');

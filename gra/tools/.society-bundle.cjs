@@ -25,10 +25,12 @@ __export(society_entry_exports, {
   computeOrderPctBreakdown: () => computeOrderPctBreakdown,
   evaluateOrderFromBreakdown: () => evaluateOrderFromBreakdown,
   happinessBucketsFromPct: () => happinessBucketsFromPct,
+  isOsiedleRevoltImmune: () => isOsiedleRevoltImmune,
   loadOrderParams: () => loadOrderParams,
   loadRevoltParams: () => loadRevoltParams,
   luksusHappinessBonus: () => luksusHappinessBonus,
   orderEffectsFromPorPct: () => orderEffectsFromPorPct,
+  osiedlePopMax: () => osiedlePopMax,
   porPctBand: () => porPctBand,
   tierFromPorPct: () => tierFromPorPct,
   updateRevoltGrace: () => updateRevoltGrace
@@ -600,6 +602,17 @@ function osiedlePopLabel(pop) {
   const p = Math.max(1, Math.floor(pop));
   return `Osiedle (${p} mieszk.)`;
 }
+function osiedlePopMax(society, difficulty = "normal") {
+  const prBlock = society?.prawo ?? {};
+  return Math.max(1, Math.floor(
+    pickSociety(prBlock, "prawo_bonus_osada_prog", difficulty, 4)
+  ));
+}
+function isOsiedleRevoltImmune(population, society = null, difficulty = "normal") {
+  const p = Math.floor(population);
+  if (p < 1) return false;
+  return p <= osiedlePopMax(society, difficulty);
+}
 function pickSociety(block, key, difficulty, fallback) {
   const row = block?.[key];
   if (!row) return fallback;
@@ -935,10 +948,12 @@ function happinessBucketsFromPct(population, szPct) {
   computeOrderPctBreakdown,
   evaluateOrderFromBreakdown,
   happinessBucketsFromPct,
+  isOsiedleRevoltImmune,
   loadOrderParams,
   loadRevoltParams,
   luksusHappinessBonus,
   orderEffectsFromPorPct,
+  osiedlePopMax,
   porPctBand,
   tierFromPorPct,
   updateRevoltGrace

@@ -68,7 +68,7 @@ export interface BattlePreset {
 }
 
 /** The preset keys understood by buildTestArmies(). */
-export type PresetName = 'maly' | 'duzy' | 'rzym_grecja' | 'konnica' | 'oblezenie' | 'maciej_playtest';
+export type PresetName = 'maly' | 'duzy' | 'rzym_grecja' | 'konnica' | 'oblezenie' | 'maciej_playtest' | 'bitwa_duza_pole' | 'oblezenie_duze';
 
 /** The DEFAULT preset used by the "T" battle when none is named. */
 export const DEFAULT_PRESET: PresetName = 'rzym_grecja';
@@ -209,6 +209,39 @@ export const PRESETS: Readonly<Record<PresetName, BattlePreset>> = {
       { unitTypeId: 'Falanga', count: 60 },
       { unitTypeId: 'Łucznik', count: 30 },
       { unitTypeId: 'Konnica', count: 20 },
+    ],
+  },
+  // DUŻE BITWY (Maciej 2026-07-06): arena taktyczna, skład 10/10/8 na stronę.
+  bitwa_duza_pole: {
+    label: 'Duża bitwa: Rzym vs Grecja (pole)',
+    teren: 'Rownina',
+    attackerCivLabel: 'Rzym',
+    defenderCivLabel: 'Grecja',
+    attacker: [
+      { unitTypeId: 'Hastati', count: 10 },
+      { unitTypeId: 'Łucznik', count: 10 },
+      { unitTypeId: 'Konnica', count: 8 },
+    ],
+    defender: [
+      { unitTypeId: 'Falanga', count: 10 },
+      { unitTypeId: 'Łucznik', count: 10 },
+      { unitTypeId: 'Konnica', count: 8 },
+    ],
+  },
+  oblezenie_duze: {
+    label: 'Duże oblężenie: Rzym szturmuje Grecję (mur)',
+    teren: 'Rownina',
+    attackerCivLabel: 'Rzym',
+    defenderCivLabel: 'Grecja',
+    attacker: [
+      { unitTypeId: 'Hastati', count: 10 },
+      { unitTypeId: 'Łucznik', count: 10 },
+      { unitTypeId: 'Konnica', count: 8 },
+    ],
+    defender: [
+      { unitTypeId: 'Falanga', count: 10 },
+      { unitTypeId: 'Łucznik', count: 10 },
+      { unitTypeId: 'Konnica', count: 8 },
     ],
   },
 };

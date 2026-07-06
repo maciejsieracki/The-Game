@@ -106,6 +106,13 @@ import {
   PLAYTEST_WALKA_HINT,
   PLAYTEST_OBLEZ_HINT,
   resolvePlaytestWalkaVariant,
+  buildBitwaDuzaPreset,
+  buildOblezenieDuzePreset,
+  isPlaytestBitwaDuzaMode,
+  isPlaytestOblezenieDuzeMode,
+  PLAYTEST_BITWA_DUZA_ROSTER_RADIUS,
+  PLAYTEST_BITWA_DUZA_HINT,
+  PLAYTEST_OBLEZENIE_DUZE_HINT,
 } from './game/playtestWalkaMapy';
 import {
   buildPlaytestOdskok3v3,
@@ -161,6 +168,7 @@ import { showCityUnitPick, hideCityUnitPick, isCityUnitPickOpen } from './ui/cit
 import { showCityCaptureNotice } from './ui/cityCaptureNotice';
 import { showArmyMergePanel, hideArmyMergePanel, isArmyMergePanelOpen } from './ui/armyMergePanel';
 import { showArmySplitPanel, hideArmySplitPanel, isArmySplitPanelOpen } from './ui/armySplitPanel';
+import { unitIconSvg } from './ui/icons/brandAssets';
 import {
   visibleStackOnHex,
   computeStackDisplay,
@@ -294,6 +302,8 @@ import { improvementKeysForHex } from './game/terrain-improvements';
 import { ikonaIdToBronzeCiv, type BronzeCiv } from './render/bronzeCity';
 import { buildSettlementModel } from './render/settlementModel';
 import { BattleScene } from './battle/battleScene';
+import { buildTestArmies, ensureSiegeMachines as ensureSiegeMachinesPreset } from './battle/testBattle';
+import type { PresetName } from './battle/testBattle';
 import type { BattleResult, BattleUnit, BattleOpts } from './battle/battleScene';
 import { resolveCombat, combatUnitFromDef, terrainDefenseMultiplier } from './game/combat';
 import type { CombatUnit, TerrainEntry } from './game/combat';
@@ -481,7 +491,7 @@ import {
 // Wrapped in boot() so we can defer execution until DOMContentLoaded.
 // Classic (non-module) scripts in <head> run before <body> is parsed --
 // without this guard, document.body is null and appendChild throws.
-function boot(): void {
+async function boot(): Promise<void> {
   try {
     const data = loadGameData();
     console.group('[The Game] Dane wczytane');
@@ -585,7 +595,9 @@ function boot(): void {
     /** Aktualnie otwarta audiencja dyplomatyczna (ownerId AI), null = zamknięta. */
     let diplomacyAudienceOwnerId: number | null = null;
 
-    let { scene, camera, renderer, center, setFog, hideDecorAtHex, setZoomLod, getZoomLodLevel, dispose: disposeScene } = buildScene(map, canvas, _currentRenderOptions);
+    // C3: buildScene jest asynchroniczny (budowa sceny porcjami/chunkami). Mapa startowa
+    // (domyślna, mała) budowana bez overlaya — po prostu await, bez callbacku postępu.
+    let { scene, camera, renderer, center, setFog, hideDecorAtHex, setZoomLod, getZoomLodLevel, dispose: disposeScene } = await buildScene(map, canvas, _currentRenderOptions);
 
     function cameraControllerOpts(): CameraControllerOptions {
       const mapSpan = Math.max(map.szerokoscQ, map.wysokoscR) * HEX_R * 1.85;
@@ -1712,7 +1724,7 @@ function boot(): void {
           : new Set<string>();
         unitRenderer.setHighlight(reachable);
       }
-      unitRenderer.setSelectionHex(u.q, u.r);
+      unitRenderer.setSelectionHex(u.q, u.r, u.ownerId);
       setArmyListSelectedId(u.id);
       if (!keepListOpen) hideArmyListHud();
       refreshD1bHud();
@@ -2635,6 +2647,8 @@ function boot(): void {
     let turn = 1;
     /** Tryb ?playtest=walka — wiekszy sklad preBattle + T = preset maciej_playtest. */
     let playtestWalkaActive = false;
+    /** Tryb DUŻEJ bitwy (BITWA-DUZA / OBLEZENIE-DUZE): podnosi promień zbierania rosteru. */
+    let bitwaDuzaActive = false;
     /** Tryb ?playtest=miasto — sandbox jednego miasta (ekonomia / panel). */
     let playtestMiastoActive = false;
     /** Last hex the player explicitly clicked on the map (for B = found city). */
@@ -2742,7 +2756,7 @@ function boot(): void {
       return {
         id: u.id,
         name: u.typeId,
-        icon: '\u2694\uFE0F',
+        icon: unitIconSvg(def, u.typeId),
         ruchLeft: u.ruchLeft,
         ruchMax: normFieldVal(def['Ruch'], u.ruch),
       };
@@ -2775,7 +2789,7 @@ function boot(): void {
           syncUnitsRender();
           refreshFog();
           if (selectedId === u.id) {
-            unitRenderer.setSelectionHex(u.q, u.r);
+            unitRenderer.setSelectionHex(u.q, u.r, u.ownerId);
           }
           refreshD1bHud();
         },
@@ -2788,7 +2802,7 @@ function boot(): void {
           syncUnitsRender();
           refreshFog();
           if (selectedId === u.id) {
-            unitRenderer.setSelectionHex(u.q, u.r);
+            unitRenderer.setSelectionHex(u.q, u.r, u.ownerId);
             if (u.ruchLeft > 0) {
               reachable = reachableWithMergeTargets(u);
               unitRenderer.setHighlight(reachable);
@@ -5121,7 +5135,7 @@ function boot(): void {
         return {
           id: u.id,
           name: u.typeId,
-          icon: '\u2694\uFE0F',
+          icon: unitIconSvg(udef, u.typeId),
           hp: hpMax,
           hpMax,
           ruchLeft: u.ruchLeft,
@@ -5772,7 +5786,7 @@ function boot(): void {
       };
       isAnimating = true;
       forceVisibleUnitId = u.id;
-      unitRenderer.setSelectionHex(destQ, destR);
+      unitRenderer.setSelectionHex(destQ, destR, u.ownerId);
       syncUnitsRender();
       unitRenderer.clearPathRoute();
       hoverKey = null;
@@ -6576,7 +6590,9 @@ function boot(): void {
     /** C1-Q4 / D8=A: heks kotwicy + własne jednostki w promieniu 1 heksa. */
     function collectBattleRoster(anchor: RuntimeUnit, allUnits: RuntimeUnit[]): RuntimeUnit[] {
       if (playtestWalkaActive) {
-        return collectPlaytestBattleRoster(anchor, allUnits);
+        // DUŻA bitwa: klik jednej jednostki zbiera cały klaster armii (owner-filtered).
+        const radius = bitwaDuzaActive ? PLAYTEST_BITWA_DUZA_ROSTER_RADIUS : undefined;
+        return collectPlaytestBattleRoster(anchor, allUnits, radius);
       }
       const out: RuntimeUnit[] = [];
       const seen = new Set<string | number>();
@@ -6923,7 +6939,7 @@ function boot(): void {
       if (lead) {
         if (selectedId === lead.id || selectedId === null) selectedId = lead.id;
         forceVisibleUnitId = lead.id;
-        unitRenderer.setSelectionHex(lead.q, lead.r);
+        unitRenderer.setSelectionHex(lead.q, lead.r, lead.ownerId);
       }
       syncUnitsRender();
       cityRenderer.sync(cities, _cityRenderOpts());
@@ -7351,6 +7367,38 @@ function boot(): void {
      * Looks up real stats from data.units. Falls back to first miecznik/wlocznik
      * category unit if the named entry is not found.
      */
+    /**
+     * DUŻA bitwa z presetu → prosto do BattleScene (arena taktyczna, armia vs
+     * armia), z pominięciem mapy świata. BITWA-DUZA = pole; OBLEZENIE-DUZE = mur.
+     */
+    function launchBigPresetBattle(preset: PresetName, siege: boolean): void {
+      let armies = buildTestArmies((data as any).units, preset);
+      if (siege) armies = ensureSiegeMachinesPreset(armies, (data as any).units);
+      if (armies.attacker.length === 0 || armies.defender.length === 0) {
+        showHintMessage('Duża bitwa: brak jednostek (sprawdź dane)', 4000);
+        return;
+      }
+      const bOpts: BattleOpts = {
+        attacker: armies.attacker,
+        defender: armies.defender,
+        teren: armies.teren,
+        data,
+        deploy: true,
+        attackerCivLabel: 'Rzym',
+        defenderCivLabel: 'Grecja',
+        attackerCivBonusy: civBonusyForOwnerId(0),
+        defenderCivBonusy: civBonusyForOwnerId(1),
+      };
+      if (siege) bOpts.siege = { defCiv: 'grecja' };
+      const bs = new BattleScene(bOpts);
+      bs.play((res) => {
+        const wl = res.winner === 'atakujacy' ? 'Rzym (atak)'
+                 : res.winner === 'obronca'  ? 'Grecja (obrona)' : 'Remis';
+        showHintMessage('Duża bitwa — wynik: <b>' + wl + '</b>', 6000);
+        bs.dispose();
+      });
+    }
+
     function launchTestBattle(): void {
       const PLAYER_COLOR  = 0xffd54a;
       const ENEMY_COLOR   = 0xc84040;
@@ -8775,7 +8823,7 @@ function boot(): void {
           if (selectedId === finishedId) {
             const sel = units.find(x => x.id === finishedId);
             if (sel) {
-              unitRenderer.setSelectionHex(sel.q, sel.r);
+              unitRenderer.setSelectionHex(sel.q, sel.r, sel.ownerId);
               if (sel.ruchLeft > 0 && !isArmyMergePanelOpen() && !isArmySplitPanelOpen()) {
                 reachable = reachableWithMergeTargets(sel);
                 unitRenderer.setHighlight(reachable);
@@ -9066,6 +9114,7 @@ function boot(): void {
 
     async function doStartGame(params: NewGameParams): Promise<void> {
       playtestWalkaActive = false;
+      bitwaDuzaActive = false;
       playtestMiastoActive = false;
       applyMenuParams(params);
       hideMainMenu();
@@ -9104,14 +9153,18 @@ function boot(): void {
         loading.showError(msg || 'Błąd generacji mapy', () => { loading.hide(); void doStartGame(params); });
         return;
       }
-      loading.hide();
       map = newMap;
       ensureDepositEraMeta(map.hexes);
 
       // Rebuild scene with new map (dispose old scene first)
       disposeOkolicaOverlay();
       try { disposeScene(); } catch (_) { /* ignore if dispose fails */ }
-      const newSceneResult = buildScene(map, canvas, _currentRenderOptions);
+      // C3: buildScene budowany porcjami (chunki) — overlay zostaje na ekranie i
+      // pokazuje „Budowanie sceny… N%"; ukryj DOPIERO po zbudowaniu sceny.
+      const newSceneResult = await buildScene(map, canvas, _currentRenderOptions, (pct) => {
+        loading.setProgress('Budowanie sceny…', pct);
+      });
+      loading.hide();
       scene = newSceneResult.scene;
       camera = newSceneResult.camera;
       renderer = newSceneResult.renderer;
@@ -9214,8 +9267,18 @@ function boot(): void {
 
     async function doStartPlaytestWalkaMapy(): Promise<void> {
       playtestWalkaActive = true;
-      const odskokObl = isPlaytestOdskokOblezenieMode();
-      const odskok3v3 = !odskokObl && isPlaytestOdskokMode();
+      // DUŻE bitwy mają pierwszeństwo (ich nazwy plików łapałaby regex oblężenia 3v3).
+      const bitwaDuza = isPlaytestBitwaDuzaMode();
+      const oblezDuze = !bitwaDuza && isPlaytestOblezenieDuzeMode();
+      bitwaDuzaActive = bitwaDuza || oblezDuze;
+      if (bitwaDuza || oblezDuze) {
+        // DUŻE bitwy = arena taktyczna (armia vs armia), NIE rozstawianie na mapie świata.
+        playtestWalkaActive = false;
+        launchBigPresetBattle(oblezDuze ? 'oblezenie_duze' : 'bitwa_duza_pole', oblezDuze);
+        return;
+      }
+      const odskokObl = !bitwaDuzaActive && isPlaytestOdskokOblezenieMode();
+      const odskok3v3 = !bitwaDuzaActive && !odskokObl && isPlaytestOdskokMode();
       const playtestSeed = (odskok3v3 || odskokObl) ? PLAYTEST_ODSKOK_SEED : PLAYTEST_WALKA_SEED;
       const mqTier = mapQualityTierFromQuery('high');
       const mqBundle = bundledMapQualityPreset(mqTier);
@@ -9265,34 +9328,47 @@ function boot(): void {
       let newMap = await generujSwiatAsync(playtestSeed, rozmiar, 'kontynenty', undefined, (faza, pct, phaseNum, phaseTotal) => {
         loading.setProgress(faza, pct, phaseNum, phaseTotal);
       });
-      let preset = odskokObl
-        ? buildPlaytestOdskokOblezenie(newMap, data)
-        : odskok3v3
-          ? buildPlaytestOdskok3v3(newMap, data)
-          : buildPlaytestWalkaMapy(newMap, data, resolvePlaytestWalkaVariant());
-      if ((odskok3v3 || odskokObl) && !preset) {
+      let preset = bitwaDuza
+        ? buildBitwaDuzaPreset(newMap, data)
+        : oblezDuze
+          ? buildOblezenieDuzePreset(newMap, data)
+          : odskokObl
+            ? buildPlaytestOdskokOblezenie(newMap, data)
+            : odskok3v3
+              ? buildPlaytestOdskok3v3(newMap, data)
+              : buildPlaytestWalkaMapy(newMap, data, resolvePlaytestWalkaVariant());
+      // Duże bitwy i odskok 3v3 potrzebują konkretnego układu — jeśli brak, próbuj kolejnych seedów.
+      if ((odskok3v3 || odskokObl || bitwaDuza || oblezDuze) && !preset) {
         for (let i = 1; i <= 64 && !preset; i++) {
           const trySeed = playtestSeed + i;
           loading.setProgress('Szukanie miejsca na mapie (próba ' + i + ')', Math.min(95, i * 1.5), 6, 7);
           newMap = await generujSwiatAsync(trySeed, rozmiar, 'kontynenty', undefined, (faza, pct, phaseNum, phaseTotal) => {
             loading.setProgress(faza, pct, phaseNum, phaseTotal);
           });
-          preset = odskokObl
-            ? buildPlaytestOdskokOblezenie(newMap, data)
-            : buildPlaytestOdskok3v3(newMap, data);
+          preset = bitwaDuza
+            ? buildBitwaDuzaPreset(newMap, data)
+            : oblezDuze
+              ? buildOblezenieDuzePreset(newMap, data)
+              : odskokObl
+                ? buildPlaytestOdskokOblezenie(newMap, data)
+                : buildPlaytestOdskok3v3(newMap, data);
           if (preset) {
-            console.log('[PlaytestOdskok] seed fallback ' + trySeed);
+            console.log('[PlaytestWalka] seed fallback ' + trySeed);
           }
         }
       }
-      loading.hide();
       map = newMap;
       ensureDepositEraMeta(map.hexes);
       rebuildAllKeys();
 
       disposeOkolicaOverlay();
       try { disposeScene(); } catch (_) { /* ignore */ }
-      const newSceneResult = buildScene(map, canvas, _currentRenderOptions);
+      // C3: buildScene budowany porcjami (chunki) — overlay „Budowanie sceny… N%"
+      // zostaje widoczny przez cały build; ukryj DOPIERO po jego zakończeniu.
+      const newSceneResult = await buildScene(map, canvas, _currentRenderOptions, (pct) => {
+        loading.setProgress('Budowanie sceny…', pct);
+      });
+      loading.hide();
       scene = newSceneResult.scene;
       camera = newSceneResult.camera;
       renderer = newSceneResult.renderer;
@@ -9424,19 +9500,30 @@ function boot(): void {
       const walkaHint = resolvePlaytestWalkaVariant() === 'oblez'
         ? PLAYTEST_OBLEZ_HINT
         : PLAYTEST_WALKA_HINT;
-      showHintMessage(
-        odskokObl ? PLAYTEST_ODSKOK_OBLEZENIE_HINT : odskok3v3 ? PLAYTEST_ODSKOK_HINT : walkaHint,
-        16000,
-      );
-      if (!odskok3v3 && !odskokObl && enemyCity) {
+      const primaryHint = bitwaDuza
+        ? PLAYTEST_BITWA_DUZA_HINT
+        : oblezDuze
+          ? PLAYTEST_OBLEZENIE_DUZE_HINT
+          : odskokObl
+            ? PLAYTEST_ODSKOK_OBLEZENIE_HINT
+            : odskok3v3
+              ? PLAYTEST_ODSKOK_HINT
+              : walkaHint;
+      showHintMessage(primaryHint, 16000);
+      if (!odskok3v3 && !odskokObl && !bitwaDuza && enemyCity) {
         showHintMessage(
           'Ateny (WRÓG, mur) — po walce / ruchu: klik miasto → Oblężaj (obóz 3D) lub Szturm.',
           12000,
         );
       }
+      const trybLog = bitwaDuza ? 'bitwa-duza'
+        : oblezDuze ? 'oblezenie-duze'
+        : odskokObl ? 'odskok-obl'
+        : odskok3v3 ? 'odskok3v3'
+        : 'walka';
       console.log(
         '[PlaytestWalka] seed=' + playtestSeed +
-        ' tryb=' + (odskokObl ? 'odskok-obl' : odskok3v3 ? 'odskok3v3' : 'walka') +
+        ' tryb=' + trybLog +
         ' jednostek=' + units.length +
         ' miast=' + cities.length +
         ' wrogie=' + (enemyCity?.name ?? '?') + ' ownerId=' + (enemyCity?.ownerId ?? '?'),
@@ -9446,6 +9533,7 @@ function boot(): void {
 
     async function doStartPlaytestMiastoEkonomia(): Promise<void> {
       playtestWalkaActive = false;
+      bitwaDuzaActive = false;
       playtestMiastoActive = true;
       const mqTier = mapQualityTierFromQuery('high');
       const mqBundle = bundledMapQualityPreset(mqTier);
@@ -9492,14 +9580,18 @@ function boot(): void {
       const newMap = await generujSwiatAsync(PLAYTEST_MIASTO_SEED, rozmiar, 'kontynenty', undefined, (faza, pct, phaseNum, phaseTotal) => {
         loading.setProgress(faza, pct, phaseNum, phaseTotal);
       });
-      loading.hide();
       map = newMap;
       ensureDepositEraMeta(map.hexes);
       rebuildAllKeys();
 
       disposeOkolicaOverlay();
       try { disposeScene(); } catch (_) { /* ignore */ }
-      const newSceneResult = buildScene(map, canvas, _currentRenderOptions);
+      // C3: buildScene budowany porcjami (chunki) — overlay „Budowanie sceny… N%"
+      // zostaje widoczny przez cały build; ukryj DOPIERO po jego zakończeniu.
+      const newSceneResult = await buildScene(map, canvas, _currentRenderOptions, (pct) => {
+        loading.setProgress('Budowanie sceny…', pct);
+      });
+      loading.hide();
       scene = newSceneResult.scene;
       camera = newSceneResult.camera;
       renderer = newSceneResult.renderer;
@@ -9615,6 +9707,7 @@ function boot(): void {
 
     async function doStartPlaytestMapaSwiata(): Promise<void> {
       playtestWalkaActive = false;
+      bitwaDuzaActive = false;
       playtestMiastoActive = false;
       const mqTier = mapQualityTierFromQuery('high');
       const mqBundle = bundledMapQualityPreset(mqTier);
@@ -9659,14 +9752,18 @@ function boot(): void {
       }, (faza, pct, phaseNum, phaseTotal) => {
         loading.setProgress(faza, pct, phaseNum, phaseTotal);
       });
-      loading.hide();
       map = newMap;
       ensureDepositEraMeta(map.hexes);
       rebuildAllKeys();
 
       disposeOkolicaOverlay();
       try { disposeScene(); } catch (_) { /* ignore */ }
-      const newSceneResult = buildScene(map, canvas, _currentRenderOptions);
+      // C3: buildScene budowany porcjami (chunki) — overlay „Budowanie sceny… N%"
+      // zostaje widoczny przez cały build; ukryj DOPIERO po jego zakończeniu.
+      const newSceneResult = await buildScene(map, canvas, _currentRenderOptions, (pct) => {
+        loading.setProgress('Budowanie sceny…', pct);
+      });
+      loading.hide();
       scene = newSceneResult.scene;
       camera = newSceneResult.camera;
       renderer = newSceneResult.renderer;
@@ -9994,15 +10091,19 @@ function boot(): void {
     }
 
     // Show main menu overlay; game is already initialized beneath it.
-    const playtestOdskokOblUrl = typeof location !== 'undefined' && isPlaytestOdskokOblezenieMode();
-    const playtestOdskokUrl = typeof location !== 'undefined' && !playtestOdskokOblUrl && (
+    // DUŻE bitwy pierwsze — ich nazwy plików łapałby regex oblężenia 3v3.
+    const playtestBitwaDuzaUrl = typeof location !== 'undefined' && isPlaytestBitwaDuzaMode();
+    const playtestOblezenieDuzeUrl = typeof location !== 'undefined' && !playtestBitwaDuzaUrl && isPlaytestOblezenieDuzeMode();
+    const playtestBitwaDuzaAny = playtestBitwaDuzaUrl || playtestOblezenieDuzeUrl;
+    const playtestOdskokOblUrl = typeof location !== 'undefined' && !playtestBitwaDuzaAny && isPlaytestOdskokOblezenieMode();
+    const playtestOdskokUrl = typeof location !== 'undefined' && !playtestBitwaDuzaAny && !playtestOdskokOblUrl && (
       (() => {
         const pt = new URLSearchParams(location.search).get('playtest');
         return pt === 'odskok';
       })() ||
       /PLAYTEST-ODSKOK/i.test(location.pathname || '')
     );
-    const playtestWalkaUrl = typeof location !== 'undefined' && !playtestOdskokOblUrl && !playtestOdskokUrl && (
+    const playtestWalkaUrl = typeof location !== 'undefined' && !playtestBitwaDuzaAny && !playtestOdskokOblUrl && !playtestOdskokUrl && (
       (() => {
         const pt = new URLSearchParams(location.search).get('playtest');
         return pt === 'walka' || pt === 'oblez';
@@ -10020,7 +10121,7 @@ function boot(): void {
       })() ||
       /PLAYTEST-MAPA/i.test(location.pathname || '')
     );
-    if (playtestOdskokOblUrl || playtestOdskokUrl || playtestWalkaUrl) {
+    if (playtestBitwaDuzaAny || playtestOdskokOblUrl || playtestOdskokUrl || playtestWalkaUrl) {
       void doStartPlaytestWalkaMapy();
     } else if (playtestMapaUrl) {
       void doStartPlaytestMapaSwiata();
@@ -10048,7 +10149,7 @@ function boot(): void {
 }
 
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', boot);
+  document.addEventListener('DOMContentLoaded', () => { void boot(); });
 } else {
-  boot();
+  void boot();
 }

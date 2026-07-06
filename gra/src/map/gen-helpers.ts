@@ -2316,6 +2316,12 @@ function mapHeightFromHexes(hexes: Record<string, Hex>): number {
  */
 export function sanitizeCoastHexes(hexes: Record<string, Hex>): number {
   const valid = new Set<string>();
+  // BFS zamiast O(n²) while(propagated) — kolejka startuje od heksów Wybrzeże
+  // stykających się z suchym lądem, po czym rozlewa „ważność” po sąsiednich
+  // heksach Wybrzeże. Zbiór końcowy `valid` jest IDENTYCZNY z domknięciem
+  // przechodnim starej pętli (heks jest ważny wtw. istnieje ścieżka sąsiadujących
+  // heksów Wybrzeże do jakiegoś ziarna) — tylko liczony w czasie ~liniowym.
+  const queue: string[] = [];
 
   for (const [key, hex] of Object.entries(hexes)) {
     if (hex.terenBazowy !== TerenBazowy.Wybrzeze) continue;
@@ -2326,26 +2332,23 @@ export function sanitizeCoastHexes(hexes: Record<string, Hex>): number {
       const nb = hexes[hexKey(q + dq, r + dr)];
       if (nb && isDryLandTerrain(nb.terenBazowy)) {
         valid.add(key);
+        queue.push(key);
         break;
       }
     }
   }
 
-  let propagated = true;
-  while (propagated) {
-    propagated = false;
-    for (const [key, hex] of Object.entries(hexes)) {
-      if (hex.terenBazowy !== TerenBazowy.Wybrzeze || valid.has(key)) continue;
-      const parts = key.split(',');
-      const q = Number(parts[0]);
-      const r = Number(parts[1]);
-      for (const [dq, dr] of HEX_DIRECTIONS) {
-        const nk = hexKey(q + dq, r + dr);
-        if (hexes[nk]?.terenBazowy === TerenBazowy.Wybrzeze && valid.has(nk)) {
-          valid.add(key);
-          propagated = true;
-          break;
-        }
+  while (queue.length > 0) {
+    const key = queue.pop()!;
+    const parts = key.split(',');
+    const q = Number(parts[0]);
+    const r = Number(parts[1]);
+    for (const [dq, dr] of HEX_DIRECTIONS) {
+      const nk = hexKey(q + dq, r + dr);
+      if (valid.has(nk)) continue;
+      if (hexes[nk]?.terenBazowy === TerenBazowy.Wybrzeze) {
+        valid.add(nk);
+        queue.push(nk);
       }
     }
   }
@@ -2822,17 +2825,22 @@ export function finalizeCoastAndInlandWater(
   opts?: { maxInlandPoolSize?: number },
 ): void {
   for (let pass = 0; pass < maxPasses; pass++) {
+    // Licznik zmian w przebiegu — żaden z tych helperów nie pobiera rand(),
+    // więc gdy cały przebieg zmienia 0 heksów, mapa jest w punkcie stałym:
+    // kolejne (identyczne) przebiegi też zmieniłyby 0 → wynik BYTE-identyczny,
+    // tylko bez redundantnych powtórzeń. Stary warunek stopu zostaje bez zmian.
+    let changed = 0;
     if (opts?.maxInlandPoolSize != null) {
-      removeSmallInlandWaterPools(hexes, width, height, opts.maxInlandPoolSize);
+      changed += removeSmallInlandWaterPools(hexes, width, height, opts.maxInlandPoolSize);
     } else {
-      removeInlandWaterPools(hexes, width, height);
+      changed += removeInlandWaterPools(hexes, width, height);
     }
-    applyDoubleCoastRing(hexes);
-    sanitizeCoastHexes(hexes);
+    changed += applyDoubleCoastRing(hexes);
+    changed += sanitizeCoastHexes(hexes);
     if (opts?.maxInlandPoolSize != null) {
-      removeSmallInlandWaterPools(hexes, width, height, opts.maxInlandPoolSize);
+      changed += removeSmallInlandWaterPools(hexes, width, height, opts.maxInlandPoolSize);
     } else {
-      removeInlandWaterPools(hexes, width, height);
+      changed += removeInlandWaterPools(hexes, width, height);
     }
     if (
       findInlandWaterHexes(hexes, width, height).length === 0
@@ -2840,6 +2848,9 @@ export function finalizeCoastAndInlandWater(
     ) {
       break;
     }
+    // Early-exit B2: przebieg nic nie zmienił → punkt stały, dalsze powtórzenia
+    // byłyby no-opami (te helpery nie losują). Pomijamy je bez zmiany wyniku.
+    if (changed === 0) break;
   }
 }
 

@@ -705,146 +705,13 @@ export const DEPLOY_POPUP_INACTIVE_BORDER = 'rgba(232,216,138,0.2)';
 export const DEPLOY_POPUP_INACTIVE_BG = 'rgba(255,255,255,0.02)';
 export const DEPLOY_POPUP_ACTIVE_BG = 'rgba(232,216,138,0.08)';
 
-const DEPLOY_POPUP_SHELL_STYLE_ID = 'civ-battle-deploy-popup-styles';
-
-/** Wstrzykuje hover CSS popupów deploy (raz na dokument). */
-export function injectDeployPopupStyles(): void {
-  if (document.getElementById(DEPLOY_POPUP_SHELL_STYLE_ID)) return;
-  const style = document.createElement('style');
-  style.id = DEPLOY_POPUP_SHELL_STYLE_ID;
-  style.textContent = `
-    .civ-deploy-popup-row:not(.civ-deploy-popup-row--active):hover {
-      border-color: rgba(232,216,138,0.35) !important;
-      background: rgba(255,255,255,0.04) !important;
-    }
-    .civ-deploy-tactic-cell:not(.civ-deploy-popup-row--active):hover {
-      border-color: rgba(232,216,138,0.35) !important;
-      background: rgba(255,255,255,0.04) !important;
-    }
-    .civ-deploy-line-chip:not(.civ-deploy-line-chip--active):hover {
-      border-color: rgba(232,216,138,0.35) !important;
-    }
-  `;
-  document.head.appendChild(style);
-}
-
-/** Karta popupu deploy — mockup v5 1E (Formacja / Konnica / Linie / Taktyka). */
-export function applyDeployPopupShell1E(el: HTMLElement): void {
-  injectDeployPopupStyles();
-  Object.assign(el.style, {
-    border: '2px solid rgba(232,216,138,0.45)',
-    borderRadius: '12px',
-    overflow: 'hidden',
-    background: 'linear-gradient(180deg,rgba(20,26,34,0.98),rgba(8,10,16,0.98))',
-    boxShadow: '0 16px 40px rgba(0,0,0,0.6)',
-    fontFamily: BATTLE_FONT,
-    color: BATTLE_TEXT,
-  });
-}
-
-/** Nagłówek popupu deploy — Georgia + opcjonalna ikona (mockup v5). */
-export function applyDeployPopupHeader1E(
-  el: HTMLElement,
-  title: string,
-  iconSvg?: string,
-): void {
-  Object.assign(el.style, {
-    padding: '13px 16px',
-    borderBottom: '1px solid rgba(232,216,138,0.2)',
-    fontFamily: BATTLE_FONT_TITLE,
-    fontSize: '16px',
-    color: BATTLE_GOLD,
-    display: 'flex',
-    alignItems: 'center',
-    gap: iconSvg ? '9px' : '0',
-    letterSpacing: '0.04em',
-  });
-  if (iconSvg) {
-    el.innerHTML =
-      `<span style="display:inline-flex;line-height:0;color:${BATTLE_GOLD};">${iconSvg}</span>` +
-      `<span>${title}</span>`;
-  } else {
-    el.textContent = title;
-  }
-}
-
-/** Kontener treści popupu (wiersze opcji / siatka). */
-export function applyDeployPopupBodyWrap1E(el: HTMLElement, compact = false): void {
-  Object.assign(el.style, {
-    padding: compact ? '14px 16px' : '12px 14px',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: compact ? '0' : '8px',
-  });
-}
-
-/** Przycisk wiersza Formacja / Konnica — baza przed paintDeployPopupOption (~52 px, mockup v4.1). */
-export function applyDeployPopupRowBtn1E(btn: HTMLButtonElement): void {
-  btn.type = 'button';
-  btn.classList.add('civ-deploy-popup-row');
-  Object.assign(btn.style, {
-    minHeight: '52px',
-    height: 'auto',
-    padding: '8px 13px',
-    borderRadius: '9px',
-    cursor: 'pointer',
-    fontFamily: BATTLE_FONT,
-    width: '100%',
-    textAlign: 'left',
-    boxSizing: 'border-box',
-    display: 'flex',
-    alignItems: 'center',
-  });
-}
-
 /** Zaznaczona / nieaktywna opcja popupu deploy (handoff v5 · zasady wspólne). */
 export function paintDeployPopupOption(btn: HTMLButtonElement, active: boolean): void {
-  btn.classList.toggle('civ-deploy-popup-row--active', active);
   Object.assign(btn.style, {
     border: active ? `2px solid ${BATTLE_GOLD}` : `1px solid ${DEPLOY_POPUP_INACTIVE_BORDER}`,
     background: active ? DEPLOY_POPUP_ACTIVE_BG : DEPLOY_POPUP_INACTIVE_BG,
-    color: active ? BATTLE_TEXT : BATTLE_GOLD,
-    fontWeight: active ? '700' : '400',
-  });
-}
-
-/** Ikona Piechota — nagłówek sekcji w popupie Linie (handoff v5 · GAP-05 · 16×16). */
-export const DEPLOY_LINES_MELEE_SVG =
-  '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">' +
-  '<path d="M4.5 5 14 14.5M14.5 15 17.5 18M15.6 14 13.6 16M19.5 5 10 14.5M9.5 15 6.5 18M8.4 14 10.4 16"/></svg>';
-
-/** Przycisk numeru linii 1/2/3 — mockup v5 · 34×34. */
-export function applyDeployLineNumberChip1E(btn: HTMLButtonElement): void {
-  btn.type = 'button';
-  btn.classList.add('civ-deploy-line-chip');
-  Object.assign(btn.style, {
-    width: '34px',
-    height: '34px',
-    minWidth: '34px',
-    minHeight: '34px',
-    padding: '0',
-    borderRadius: '8px',
-    cursor: 'pointer',
-    fontFamily: BATTLE_FONT,
-    fontSize: '14px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    boxSizing: 'border-box',
-    flexShrink: '0',
-  });
-}
-
-/** Stan zaznaczenia chipu linii (mockup GAP-05). */
-export function paintDeployLineNumber(btn: HTMLButtonElement, active: boolean): void {
-  btn.classList.toggle('civ-deploy-line-chip--active', active);
-  Object.assign(btn.style, {
-    border: active
-      ? `2px solid ${BATTLE_GOLD}`
-      : '1px solid rgba(232,216,138,0.25)',
-    background: active ? 'rgba(232,216,138,0.1)' : DEPLOY_POPUP_INACTIVE_BG,
-    color: active ? BATTLE_GOLD : '#c8b898',
-    fontWeight: active ? '700' : '400',
+    color: active ? '#e8e0c8' : BATTLE_GOLD,
+    fontWeight: active ? 'bold' : 'normal',
   });
 }
 
@@ -908,26 +775,14 @@ export const DEPLOY_TACTIC_SVG = {
     '<circle cx="16" cy="15" r="0.9" fill="currentColor" stroke="none"/></svg>',
 } as const;
 
-/** Wspólny styl pozycji popupów Linie / Taktyka (pojedyncza linia ~34 px). */
+/** Wspólny styl pozycji popupów Formacja / Linie / Taktyka (~34 px). */
 export function applyDeployPopupItem1E(btn: HTMLButtonElement): void {
   Object.assign(btn.style, {
     minHeight: '34px',
-    height: '34px',
-    padding: '0 13px',
     boxSizing: 'border-box',
     display: 'flex',
     alignItems: 'center',
-    overflow: 'hidden',
   });
-}
-
-/** Nagłówek zwijanej grupy rosteru — „Grupa N · liczba" (mockup v4.1 P1). */
-export function formatRosterGroupHeaderHtml(groupNum: number | null, count: number): string {
-  const n = groupNum != null ? String(groupNum) : '?';
-  return (
-    '<span style="font-weight:700;font-size:11px;letter-spacing:0.04em;">Grupa ' + n + '</span>' +
-    '<span style="font-weight:400;font-size:10px;opacity:0.72;margin-left:2px;"> · ' + count + '</span>'
-  );
 }
 
 /** Ikony stron w fazie deploy: atakujacy = miecz, obroca = tarcza. */
@@ -1425,16 +1280,13 @@ export function createRosterEmptySlotElement(cardH: number): HTMLDivElement {
   ph.dataset.rosterEmpty = '1';
   Object.assign(ph.style, {
     width: '100%',
-    maxWidth: '100%',
     height: cardH + 'px',
-    minHeight: cardH + 'px',
     boxSizing: 'border-box',
     borderRadius: '6px',
     border: `1px dashed ${BATTLE_GOLD_DIM}`,
     background: 'rgba(255,255,255,0.03)',
     opacity: '0.42',
     pointerEvents: 'none',
-    flexShrink: '0',
   });
   return ph;
 }

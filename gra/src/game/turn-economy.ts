@@ -563,6 +563,62 @@ export interface EconomyTickResult {
   upkeepByOwner:  Map<number, UpkeepBalance>;
 }
 
+export interface OwnerEconomySum {
+  pieniadz: number;
+  nauka: number;
+  doPuli: number;
+  praca: number;
+  kultura: number;
+}
+
+/** Sum per-city tick yields for one owner (HUD / treasury — not econ.total*). */
+export function sumEconomyForOwner(
+  result: Pick<EconomyTickResult, 'perCity'>,
+  ownerId: number,
+): OwnerEconomySum {
+  let pieniadz = 0;
+  let nauka = 0;
+  let doPuli = 0;
+  let praca = 0;
+  let kultura = 0;
+  for (const tk of result.perCity) {
+    if (tk.ownerId !== ownerId) continue;
+    pieniadz += tk.pieniadz;
+    nauka += tk.nauka;
+    doPuli += tk.doPuli;
+    praca += tk.praca;
+    kultura += tk.kultura;
+  }
+  return { pieniadz, nauka, doPuli, praca, kultura };
+}
+
+/**
+ * HUD gracza — suma tylko z miast obecnych w `cities` (ownerId 0).
+ * Bezpieczniejsze niż sam ownerId w ticku (ochrona przed starymi save / rozjazdem).
+ */
+export function sumEconomyForPlayerCities(
+  result: Pick<EconomyTickResult, 'perCity'>,
+  cities: ReadonlyArray<{ id: string; ownerId: number }>,
+): OwnerEconomySum {
+  const playerCityIds = new Set(
+    cities.filter(c => c.ownerId === 0).map(c => c.id),
+  );
+  let pieniadz = 0;
+  let nauka = 0;
+  let doPuli = 0;
+  let praca = 0;
+  let kultura = 0;
+  for (const tk of result.perCity) {
+    if (!playerCityIds.has(tk.cityId)) continue;
+    pieniadz += tk.pieniadz;
+    nauka += tk.nauka;
+    doPuli += tk.doPuli;
+    praca += tk.praca;
+    kultura += tk.kultura;
+  }
+  return { pieniadz, nauka, doPuli, praca, kultura };
+}
+
 /**
  * Advance the economy for every city by one turn.
  *

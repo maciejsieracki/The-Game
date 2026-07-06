@@ -1,9 +1,11 @@
 /**
- * empireDetailPanel.ts — panel boczny imperium (HUD mapy): Moc + zasoby + kultura.
- * Wygląd: mockup „Panel Moc imperium v3" (1E, 2026-07-06). Dane: EmpireDetailSnap.
+ * empireDetailPanel.ts — panel boczny imperium (HUD mapy): parametry + Moc + zasoby + kultura.
+ * Wygląd: mockup „Panel Moc imperium v3" (1E, 2026-07-06) — RESKIN, nic nie usunięte.
+ * Dane: EmpireDetailSnap.
  */
 import type { EmpireDetailSnap } from './empireDetailTypes';
 import { mocLabel, mocWithValue } from './power-labels';
+import { brandIconSvg } from './icons/brandAssets';
 
 export type { EmpireDetailSnap } from './empireDetailTypes';
 
@@ -13,10 +15,6 @@ let bodyEl: HTMLDivElement | null = null;
 let getSnap: (() => EmpireDetailSnap) | null = null;
 let open = false;
 let pendingScrollSection: string | null = null;
-
-const HDR_ICON_SVG =
-  '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#d9a441" stroke-width="1.6">'
-  + '<path d="M3 21h18M4 21V10M20 21V10M12 3 3 8h18L12 3zM7 21V12M12 21V12M17 21V12"></path></svg>';
 
 function ensureStyles(): void {
   if (document.getElementById(STYLE_ID)) return;
@@ -32,7 +30,7 @@ function ensureStyles(): void {
 .civ-emp-hdr{display:flex;align-items:flex-start;gap:12px;padding:16px 16px 14px;
   border-bottom:1px solid #242c3a;background:#141a24;flex-shrink:0;}
 .civ-emp-hdr-ic{flex:none;width:34px;height:34px;border-radius:8px;background:#1d2634;
-  display:flex;align-items:center;justify-content:center;}
+  display:flex;align-items:center;justify-content:center;font-size:20px;line-height:1;}
 .civ-emp-hdr-tx{flex:1;min-width:0;}
 .civ-emp-civ-name{font-size:18px;font-weight:700;color:#e8ebf0;line-height:1.1;}
 .civ-emp-civ-sub{font-size:11.5px;color:#8a93a4;margin-top:3px;}
@@ -47,6 +45,15 @@ function ensureStyles(): void {
 .civ-emp-sect.sep{margin-top:6px;border-top:1px solid #242c3a;padding-top:16px;}
 .civ-emp-eyebrow{font-size:11px;letter-spacing:1.4px;color:#7d8798;font-weight:600;}
 .civ-emp-title{font-size:14px;font-weight:700;color:#d9a441;margin-bottom:8px;}
+.civ-emp-meta{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;}
+.civ-emp-chip{border:1px solid #2b3543;border-radius:8px;padding:8px 10px;background:#171e2a;}
+.civ-emp-chip .k{font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:#7d8798;}
+.civ-emp-chip .v{font-size:13px;font-weight:600;color:#e8ebf0;margin-top:2px;word-break:break-word;}
+.civ-emp-chip .v.gold{color:#d9a441;}
+.civ-emp-chip.wide{grid-column:1/-1;}
+.civ-emp-bonus{font-size:12px;color:#b8c4d8;line-height:1.45;padding:6px 8px;margin-top:6px;
+  border-left:2px solid #3a5572;background:#171e2a;border-radius:0 6px 6px 0;}
+.civ-emp-bonus .tag{font-size:9px;color:#7a8a9a;text-transform:uppercase;margin-left:6px;}
 .civ-emp-moc-big{font-size:20px;font-weight:800;color:#d9a441;margin-top:8px;}
 .civ-emp-moc-sub{font-size:12px;color:#9aa4b2;margin-top:3px;}
 .civ-emp-moc-sub b{color:#d9a441;}
@@ -212,14 +219,30 @@ function scrollToSection(section: string | null | undefined): void {
 function render(): void {
   if (root === null || bodyEl === null || getSnap === null) return;
   const snap = getSnap();
+  const g = snap.global;
   const e = snap.economy;
   const k = snap.kultura;
   const p = snap.power;
   const ce = snap.cityEcon;
   const cp = snap.cityPobor;
 
+  // — PARAMETRY GLOBALNE (zachowane, reskin) —
+  const bonusHtml = g.bonusy.map(b =>
+    `<div class="civ-emp-bonus">${esc(b.opis)}<span class="tag">${esc(b.realizuje)}</span></div>`,
+  ).join('');
+  const params = `<div class="civ-emp-sect" data-section="parametry">`
+    + `<div class="civ-emp-eyebrow">PARAMETRY GLOBALNE</div><div class="civ-emp-meta">`
+    + `<div class="civ-emp-chip"><div class="k">Epoka</div><div class="v gold">${esc(e.epoka)}</div></div>`
+    + `<div class="civ-emp-chip"><div class="k">Tura</div><div class="v">${e.tura}</div></div>`
+    + `<div class="civ-emp-chip"><div class="k">Moc ⚜</div><div class="v gold">${e.power}</div></div>`
+    + `<div class="civ-emp-chip"><div class="k">Osiedla</div><div class="v">${e.osiedla}/${e.osiedlaMax}</div></div>`
+    + `<div class="civ-emp-chip wide"><div class="k">Religia państwowa</div><div class="v">${esc(g.religiaPanstwowa)}</div></div>`
+    + `<div class="civ-emp-chip wide"><div class="k">Badania</div><div class="v">${esc(e.badana ?? '—')}</div></div>`
+    + `<div class="civ-emp-chip wide"><div class="k">Bonus startowy</div><div class="v">${esc(g.bonusStartowy)}</div></div>`
+    + `</div>${bonusHtml}</div>`;
+
   // — MOC IMPERIUM —
-  let moc = `<div class="civ-emp-sect" data-section="moc">`
+  let moc = `<div class="civ-emp-sect sep" data-section="moc">`
     + `<div class="civ-emp-eyebrow">${esc(mocLabel().toUpperCase())} IMPERIUM</div>`
     + `<div class="civ-emp-moc-big">${esc(mocWithValue(p.power))}</div>`
     + `<div class="civ-emp-moc-sub">Suma składników: <b>${Math.round(p.powerBase)}</b> pkt (kanon P‑A · bez mnożnika epoki)</div>`
@@ -334,7 +357,7 @@ function render(): void {
   }
   sur += `</div>`;
 
-  bodyEl.innerHTML = moc + zasoby + kult + sur;
+  bodyEl.innerHTML = params + moc + zasoby + kult + sur;
 
   const scrollTarget = pendingScrollSection;
   pendingScrollSection = null;
@@ -357,10 +380,10 @@ function ensureDom(): void {
     root = document.createElement('div');
     root.className = 'civ-emp-panel';
     root.innerHTML = '<div class="civ-emp-hdr">'
-      + `<div class="civ-emp-hdr-ic">${HDR_ICON_SVG}</div>`
+      + '<div class="civ-emp-hdr-ic" data-civ-em></div>'
       + '<div class="civ-emp-hdr-tx"><div class="civ-emp-civ-name" data-civ-name></div>'
       + '<div class="civ-emp-civ-sub" data-civ-sub></div></div>'
-      + '<button type="button" class="civ-emp-close" data-close aria-label="Zamknij">✕</button>'
+      + `<button type="button" class="civ-emp-close" data-close aria-label="Zamknij">${brandIconSvg('ui-close', 16)}</button>`
       + '</div><div class="civ-emp-body"></div>';
     bodyEl = root.querySelector('.civ-emp-body') as HTMLDivElement;
     root.querySelector('[data-close]')?.addEventListener('click', () => hideEmpireDetailPanel());
@@ -371,8 +394,10 @@ function ensureDom(): void {
 function renderHeader(): void {
   if (root === null || getSnap === null) return;
   const g = getSnap().global;
+  const em = root.querySelector('[data-civ-em]');
   const nm = root.querySelector('[data-civ-name]');
   const sub = root.querySelector('[data-civ-sub]');
+  if (em) em.textContent = g.civEmoji;
   if (nm) nm.textContent = g.civName;
   if (sub) sub.textContent = `${g.styl} · ${g.jednostkaSpec}`;
 }
@@ -383,7 +408,7 @@ export function mountEmpireDetailPanel(snapFn: () => EmpireDetailSnap): void {
   ensureDom();
 }
 
-/** section: np. moc, ekonomia, econ-skarbiec, econ-praca, econ-ludnosc, kultura, surowce */
+/** section: np. parametry, moc, ekonomia, econ-skarbiec, econ-praca, econ-ludnosc, kultura, surowce */
 export function showEmpireDetailPanel(section?: string): void {
   ensureDom();
   pendingScrollSection = section ?? null;

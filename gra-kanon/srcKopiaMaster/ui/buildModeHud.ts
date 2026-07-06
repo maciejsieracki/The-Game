@@ -5,6 +5,7 @@
  */
 
 import type { ImprovementKey } from '../render/improvements';
+import { improvementIconSvg } from './icons/brandAssets';
 
 export interface BuildTypeInfo {
   key: ImprovementKey;
@@ -64,12 +65,10 @@ export interface BuildModeHudApi {
 
 const STYLE_ID = 'civ-build-mode-hud-css';
 
-const ICONS: Partial<Record<ImprovementKey, string>> = {
-  farma: '🌾', bydlo: '🐄', owce: '🐑', lama: '🦙', kopalnia: '⛏️', kamieniolom: '🪨',
-  oboz_lowiecki: '🏕️', wyrab: '🪓', tartak: '🪚', lodzie_rybackie: '🎣', droga: '🛤️',
-  posterunek: '🗼', irygacja: '💧', glinianka: '🏺',
-  warzelnia_soli: '🧂', tarasy: '🌱', fort: '🏰',
-};
+function impIconHtml(key: ImprovementKey | string): string {
+  const svg = improvementIconSvg(key, 18);
+  return svg ? svg.replace('<svg ', '<svg class="civ-build-imp-ic" ') : '';
+}
 
 function ensureStyles(): void {
   if (document.getElementById(STYLE_ID)) return;
@@ -91,7 +90,8 @@ function ensureStyles(): void {
   border:1px solid transparent;color:#d4cba0;transition:background .15s,border-color .15s;}
 .civ-build-item:hover{background:rgba(232,216,138,.06);border-color:rgba(232,216,138,.25);}
 .civ-build-item.sel{background:rgba(232,216,138,.12);border-color:rgba(232,216,138,.5);color:#f0e8b8;}
-.civ-build-item .ic{font-size:16px;width:22px;text-align:center;}
+.civ-build-item .ic{display:flex;align-items:center;justify-content:center;width:22px;height:18px;flex-shrink:0;color:#e8d88a;}
+.civ-build-item .ic svg{display:block;}
 .civ-build-item .meta{font-size:9px;color:#7a7055;margin-left:auto;}
 .civ-build-item.disabled{opacity:.38;pointer-events:none;filter:grayscale(.85);}
 .civ-build-item.locked{opacity:.48;cursor:help;}
@@ -200,7 +200,7 @@ export function createBuildModeHud(config: BuildModeHudConfig): BuildModeHudApi 
     for (const t of types) {
       const locked = t.techUnlocked === false;
       const sel = t.key === active ? ' sel' : '';
-      const ic = ICONS[t.key] ?? '🔨';
+      const ic = impIconHtml(t.key);
       const costLabel = t.kosztPraca <= 0 ? 'FREE' : t.kosztPraca + ' P';
       const hint = locked ? (t.lockHint ?? (t.techLabel ? 'Technologia: «' + t.techLabel + '»' : 'Zablokowane')) : '';
       const techHint = locked ? ' · 🔒' : '';

@@ -4,6 +4,7 @@
  */
 
 import { bindHudPanelOutsideDismiss } from './hudPanelDismiss';
+import { brandIconSvg } from './icons/brandAssets';
 
 export interface ArmyListEntry {
   /** Id reprezentatywnej jednostki (do zaznaczenia). */
@@ -149,7 +150,7 @@ export function createArmyListHud(config: ArmyListHudConfig): ArmyListHudApi {
         row.title = 'Zaznacz ' + a.name;
         const ico = document.createElement('span');
         ico.className = 'al-ico';
-        ico.textContent = '\u2694\uFE0F';
+        ico.innerHTML = brandIconSvg('tb-army', 18);
         const body = document.createElement('div');
         body.className = 'al-body';
         const name = document.createElement('div');

@@ -19,6 +19,27 @@ import {
   hexHiddenDepositHint,
   labelsForImprovementUnlock,
 } from '../game/resource-access';
+import {
+  brandIconSvg,
+  mapResourceIconSvg,
+  terrainIconSvg,
+} from './icons/brandAssets';
+
+/** Ikona plonu jako inline-SVG (reskin emoji 🍞🔨💰🪵🪨 → brand). */
+function yieldIconSvg(key: YieldKey): string {
+  switch (key) {
+    case 'zywnosc': return brandIconSvg('res-food', 16);
+    case 'praca': return brandIconSvg('res-work', 16);
+    case 'handel': return brandIconSvg('res-treasury', 16);
+    case 'drewno': return mapResourceIconSvg('drewno', 16);
+    case 'kamien': return mapResourceIconSvg('kamień', 16);
+  }
+}
+
+/** Owija SVG plonu w span, by trzymał rozmiar i wyrównanie w linii tekstu. */
+function yieldIconHtml(key: YieldKey): string {
+  return `<span class="cp-yield-ic">${yieldIconSvg(key)}</span>`;
+}
 
 const TEREN_LABEL: Record<TerenBazowy, string> = {
   [TerenBazowy.Laka]: 'Łąka',
@@ -32,32 +53,24 @@ const TEREN_LABEL: Record<TerenBazowy, string> = {
 
 type YieldKey = keyof Pick<TileYield, 'zywnosc' | 'praca' | 'handel' | 'drewno' | 'kamien'>;
 
-const YIELD_TAGS: Record<YieldKey, { letter: string; color: string; label: string }> = {
-  zywnosc: { letter: 'Ż', color: '#e8d88a', label: 'Żywność' },
-  praca: { letter: 'P', color: '#d98a3a', label: 'Praca' },
-  handel: { letter: 'H', color: '#7ad0a0', label: 'Handel' },
-  drewno: { letter: 'D', color: '#a08050', label: 'Drewno' },
-  kamien: { letter: 'K', color: '#9aa6b6', label: 'Kamień' },
-};
-
-const YIELD_ROWS: ReadonlyArray<{ key: YieldKey; label: string }> = (
-  Object.entries(YIELD_TAGS) as Array<[YieldKey, (typeof YIELD_TAGS)[YieldKey]]>
-).map(([key, t]) => ({ key, label: t.label }));
-
-function yieldTagHtml(key: YieldKey): string {
-  const t = YIELD_TAGS[key];
-  return `<span class="cp-yield-tag" style="color:${t.color};font-weight:700">${t.letter}</span>`;
-}
+const YIELD_ROWS: ReadonlyArray<{ key: YieldKey; label: string }> = [
+  { key: 'zywnosc', label: 'Żywność' },
+  { key: 'praca', label: 'Praca' },
+  { key: 'handel', label: 'Handel' },
+  { key: 'drewno', label: 'Drewno' },
+  { key: 'kamien', label: 'Kamień' },
+];
 
 const RIVER_BONUS: TileYield = { zywnosc: 3, praca: 2, handel: 2, drewno: 0, kamien: 0 };
 const FOREST_BONUS: TileYield = { zywnosc: -1, praca: 0, handel: -1, drewno: 3, kamien: 0 };
 
 function formatYieldLine(y: TileYield, empty = '—'): string {
   const parts: string[] = [];
-  for (const { key } of YIELD_ROWS) {
-    const v = y[key] ?? 0;
-    if (v > 0) parts.push(`${yieldTagHtml(key)} ${v}`);
-  }
+  if ((y.zywnosc ?? 0) > 0) parts.push(`${yieldIconHtml('zywnosc')} ${y.zywnosc}`);
+  if ((y.praca ?? 0) > 0) parts.push(`${yieldIconHtml('praca')} ${y.praca}`);
+  if ((y.handel ?? 0) > 0) parts.push(`${yieldIconHtml('handel')} ${y.handel}`);
+  if ((y.drewno ?? 0) > 0) parts.push(`${yieldIconHtml('drewno')} ${y.drewno}`);
+  if ((y.kamien ?? 0) > 0) parts.push(`${yieldIconHtml('kamien')} ${y.kamien}`);
   return parts.length ? parts.join(' · ') : empty;
 }
 
@@ -139,6 +152,7 @@ function formatYieldBreakdownHtml(hex: Hex): string {
   const lines: string[] = [];
 
   for (const { key, label } of YIELD_ROWS) {
+    const icon = yieldIconHtml(key);
     const baseVal = parts[0]?.delta[key] ?? 0;
     const mods = parts.slice(1)
       .map(p => ({ label: p.label, v: p.delta[key] ?? 0 }))
@@ -147,12 +161,12 @@ function formatYieldBreakdownHtml(hex: Hex): string {
     if (sumVal === 0 && baseVal === 0 && mods.length === 0) continue;
 
     let text = `<b>${sumVal}</b>`;
-    text += ` <span class="cp-yield-detail">(${yieldTagHtml(key)} ${label}: ${baseVal}`;
+    text += ` <span class="cp-yield-detail">(${icon} ${label}: ${baseVal}`;
     for (const m of mods) {
       text += ` ${m.v > 0 ? '+' : ''}${m.v} ${m.label}`;
     }
     text += ')</span>';
-    lines.push(yieldDetailLine(`${yieldTagHtml(key)} ${label}`, text));
+    lines.push(yieldDetailLine(`${icon} ${label}`, text));
   }
 
   if (lines.length === 0) {
@@ -229,11 +243,16 @@ export function buildHexContextTooltipHtml(input: HexContextTooltipInput): strin
 
   const lines: string[] = [];
 
-  lines.push(`<div class="cp-hero-names">${esc(teren)}</div>`);
+  const terrainIc = `<span class="cp-terrain-ic">${terrainIconSvg(String(hex.terenBazowy), 18)}</span>`;
+  lines.push(`<div class="cp-hero-names">${terrainIc}${esc(teren)}</div>`);
   lines.push(`<div class="cp-hero-sub">heks (${q}, ${r})</div>`);
 
   if (resources.length > 0) {
-    lines.push(subLine('Surowce / zasoby', resources.map(r => esc(r)).join(' · ')));
+    const withIcons = resources.map((r) => {
+      const ic = `<span class="cp-res-ic">${mapResourceIconSvg(r, 16)}</span>`;
+      return `${ic}${esc(r)}`;
+    });
+    lines.push(subLine('Surowce / zasoby', withIcons.join(' · ')));
   } else {
     lines.push(subLine('Surowce / zasoby', 'brak złoża'));
   }
