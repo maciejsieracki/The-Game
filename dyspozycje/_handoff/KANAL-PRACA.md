@@ -1184,3 +1184,26 @@ Bundle **7fb9f6d3e8fb** (stempel 2026-07-06 17:55) — tsc=0/vite OK, pending=0,
 DIFF „gra vs Panel-C": nie dotyczy — Panel-C miał 0 różnic (regresu nie było); balans = NOWE wartości Macieja z uploadu.
 OTWARTE (Cursor): `counterMultiplier` dopasowuje typ po NAZWIE (`typNazwa`), nie po polu `Typ` → włócznicy o opisowych nazwach nie dostają +50% vs konnica; do zmiany w `game/combat.ts`. „Przebicie" = obrażenia−armor (nie osobny stat — potwierdzone).
 CZEKAM-NA: Maciej — push (balans do HEAD/repo).
+
+---
+
+## [18:10 PL] INTEGRATOR → MASTER — GOTOWE: countery po polu `Typ` + deploy · NOWY BACKLOG: audyt bonusów terenowych
+
+COUNTERY (Sonnet 5, na „rób countery" Macieja): `counterMultiplier` dopasowuje typ po polu **`Typ`**, nie po nazwie. Dodane `CombatUnit.counterTyp = def['Typ'] ?? typNazwa ?? Jednostka`; 2 wywołania podmienione (`game/combat.ts` ~638-639 + `battle/battleScene.ts` ~6204). `typNazwa` (wyświetlanie) nietknięte. Na dysku srcKopiaMaster (counterTyp ×4 w combat) + w buildzie.
+Weryfikacja (Sonnet, realny moduł): `counterMultiplier('Włócznik','Konnica')=1.5`; „Gwardia Ishtar" (Typ=Włócznik) counter 1.0→1.5. Trafienia na parach 75×75: 31→55, nowe = wyłącznie jedn. z opisowymi nazwami i polskim `Typ`. Stary system `Bonus vs <Typ> %` (`attackerBonusVsType`) NIETKNIĘTY.
+Odkrycie: kolumna `Typ` = 2 słowniki — 55 „starych" ang. (Swordsman/Spearman…) + 20 „nowych" pol. (Włócznik/Konnica…). Countery działają teraz dla obu przez counterTyp; ujednolicenie słownika = do przemyślenia (niepilne).
+DEPLOY: bundle **d744cd7956fb** (stempel 18:10) = balans 7fb9f6d3e8fb + countery. tsc=0/vite OK · pending=0 · 9/9 · hub · HOST-verify. Build z klonu → repo po pushu Macieja.
+
+**NOWY BACKLOG (Maciej — następny w kolejności, NIE teraz/limit):** AUDYT BONUSÓW TERENOWYCH I POZYCYJNYCH W BITWIE — zweryfikować, że realnie liczą się w walce: wzgórze, rzeka, flankowanie, mur (+200% obrony), fort/posterunek (obozowanie) i pozostałe modyfikatory pola; że każdy jest podpięty i faktycznie wpływa na wynik starcia. [OPUS — audyt per §10].
+CZEKAM-NA: Maciej — push (countery+balans do HEAD/repo) + playtest d744cd7956fb.
+
+---
+
+## [18:20 PL] INTEGRATOR → MASTER — ZIELONE ŚWIATŁO: Maciej pushuje (dysk = deploy d744cd7956fb)
+
+Maciej pyta, czy może pushować — **TAK**. Wszystko wgrane do gry roboczej (9/9, pending=0, HOST-verify) i na dysku. Host-side weryfikacja (app-Grep, dehydr.-safe) — 3 zmienione pliki gotowe do commita:
+- `data — kopia/units.json` — balans (Legion Rzymski ✓ = staty z Excela + HP×2/dyst×0.5, Falanga=40)
+- `srcKopiaMaster/game/combat.ts` — `counterTyp` ✓ (×4)
+- `srcKopiaMaster/battle/battleScene.ts` — `counterTyp` ✓ (×1)
+To JEDYNE zmiany ponad HEAD b1b9fed (UX/rzeki/KONTRAKT #8/roster/obwódki/duże bitwy już w repo z poprzedniego pushu). Po Commit+Push Macieja: repo HEAD = zdeployowany bundle **d744cd7956fb** → repo spójne z grą roboczą.
+CZEKAM-NA: Maciej — Commit+Push (GitHub Desktop).

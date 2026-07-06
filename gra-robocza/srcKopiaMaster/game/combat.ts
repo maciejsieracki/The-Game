@@ -54,6 +54,11 @@ export interface CombatUnit {
   /** "Jednostka" field in units.json - unit type name. */
   typNazwa: string;
 
+  /** "Typ" field in units.json (Miecznik/Wlocznik/Konnica/Lucznik/Rydwan...) used
+   *  for counter matching in counterMultiplier; falls back to typNazwa/Jednostka
+   *  when "Typ" is missing. Kept separate from typNazwa (display name). */
+  counterTyp: string;
+
   /** "Rola (linia)" field: 'Wrecz' | 'Dystans' | 'Flanka' | 'Wsparcie' | 'Morska' */
   rola: string;
 
@@ -164,6 +169,7 @@ export function combatUnitFromDef(
   const maxHp = combatNormField(def['health'] ?? def['Health'], 30);
   return {
     typNazwa: opts.typNazwa ?? String(def['Jednostka'] ?? ''),
+    counterTyp: String(def['Typ'] ?? opts.typNazwa ?? def['Jednostka'] ?? ''),
     rola: opts.rola ?? String(def['Rola (linia)'] ?? 'Wrecz'),
     meleeAttack: combatNormField(def['meleeAttack'], 0),
     meleeDefence: combatNormField(def['meleeDefence'], 0),
@@ -635,8 +641,8 @@ export function resolveCombat(
   const defEffObrona = Math.max(0, defObrona0 * (1 - defPenaltyFrac));
 
   // Counter multipliers
-  const ctrAtkVsDef = counterMultiplier(attacker.typNazwa, defender.typNazwa, counters);
-  const ctrDefVsAtk = counterMultiplier(defender.typNazwa, attacker.typNazwa, counters);
+  const ctrAtkVsDef = counterMultiplier(attacker.counterTyp, defender.counterTyp, counters);
+  const ctrDefVsAtk = counterMultiplier(defender.counterTyp, attacker.counterTyp, counters);
 
   // Terrain: defence multiplier for defender
   const terrDefMult = terrainDefenseMultiplier(defenderTerrain, attacker.rola, terrainData);

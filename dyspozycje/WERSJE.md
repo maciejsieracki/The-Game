@@ -5,12 +5,17 @@ nigdy nie kopiują (stary system miał 4 sprzeczne „aktualne" md5 — nigdy wi
 Format: data · md5 (pełne) · stempel z menu · co weszło (1 linia) · status.
 
 ## ROBOCZA (gra-robocza\Gra-ROBOCZA.html — wskazywana przez START.html)
-- 2026-07-06 17:55 · <plik-md5 dryfuje> · stempel: 2026-07-06 17:55 · 7fb9f6d3e8fb ·
+- 2026-07-06 18:10 · <plik-md5 dryfuje> · stempel: 2026-07-06 18:10 · d744cd7956fb ·
+  COUNTERY po polu `Typ` (counterMultiplier czyta `counterTyp` z def['Typ']) — włócznicy o opisowych
+  nazwach dostają +50% vs konnica; `game/combat.ts` + `battle/battleScene.ts`. + całość 7fb9f6d3e8fb
+  (balans HP×2/dyst×0.5, rzeki, KONTRAKT #8, UX, roster, obwódki, duże bitwy). tsc=0/vite OK · pending=0 ·
+  9/9 · hub · HOST-verify. Build z klonu; do repo po pushu Macieja · publikował INTEGRATOR · AKTUALNA (klucz=stempel)
+- 2026-07-06 17:55 · <plik-md5 dryfuje> · stempel: 2026-07-06 17:55 · 7fb9f6d3e8fb · ZASTĄPIONA (→ d744cd7956fb) ·
   BALANS-WALKI (wartości Macieja z uploadu Jednostki-PL0.xlsx): HP×2 + dystans×0.5 dla
   jedn. z polami EN; Falanga=40; 26 jedn. PL0 uzupełnione pola EN + Typ; 3 przemianowania
   (Legionarius→Legion Rzymski itd.); wszystkie 75 z Typ. + całość a9fffc3e (rzeki, KONTRAKT #8,
   UX, roster, obwódki, duże bitwy). tsc=0/vite OK · pending=0 · 9/9 · hub. Build z klonu na
-  „wpinaj" Macieja; do repo po jego pushu · publikował INTEGRATOR · AKTUALNA (klucz = stempel)
+  „wpinaj" Macieja; publikował INTEGRATOR
 - 2026-07-06 16:52 · a9fffc3eeeb9 · stempel: 2026-07-06 16:52 · d3a3edb52848 · ZASTĄPIONA (→ 7fb9f6d3e8fb)
   BUILD ZBIORCZY z GitHub HEAD b1b9fed (pierwszy build po migracji na GitHub): rzeki
   „wodospad" (render-only, hash bezpieczny) + KONTRAKT #8 ikony jednostek (⚔️→SVG w
