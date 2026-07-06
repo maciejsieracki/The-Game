@@ -5,13 +5,13 @@ nigdy nie kopiują (stary system miał 4 sprzeczne „aktualne" md5 — nigdy wi
 Format: data · md5 (pełne) · stempel z menu · co weszło (1 linia) · status.
 
 ## ROBOCZA (gra-robocza\Gra-ROBOCZA.html — wskazywana przez START.html)
-- 2026-07-06 13:47 · 63abbec55aef · stempel: 2026-07-06 13:47 · bdc95d91be71 ·
+- 2026-07-06 13:47 · a76514621f02 · stempel: 2026-07-06 13:47 · bdc95d91be71 ·
   #4 ROSTER bitwy: słupek → SIATKA 6 kolumn (wg kanonu C09 v4 + DESIGN-SPEC v4;
   gridTemplateColumns repeat(6,minmax(0,1fr)) + gap 4 na roster-group-cards). Reszta
   jak 7ffa2859 (port UX + rzeki + obwódki + tonięcie + zaznaczenie + duże bitwy).
   tsc=0 · roster-group-cards HOST-verified · pending=0 · 9 plików · hub odświeżony ·
   publikował INTEGRATOR · AKTUALNA (czeka na playtest Macieja — OBIEG §9)
-- 2026-07-06 12:46 · 7ffa28596769 · stempel: 2026-07-06 12:46 · c169df028365 · ZASTĄPIONA (→ 63abbec55aef)
+- 2026-07-06 12:46 · 7ffa28596769 · stempel: 2026-07-06 12:46 · c169df028365 · ZASTĄPIONA (→ a76514621f02)
   PORT UX wpięty (rebuild łączony): buildModeHud emoji→SVG (panel Ulepszeń) +
   brandAssets.improvementIconSvg + improvement-icon-map.json + cityPanel nowsza
   (karty budynków Poziom B + rekrutacja + ramka zakładek W4) + nowe unitRecruitCard.ts

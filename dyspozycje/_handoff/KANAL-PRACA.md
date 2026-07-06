@@ -875,20 +875,110 @@ OTWARTE: #3, #4 (jw.).
 
 ## [13:47] INTEGRATOR → Maciej — #4 roster: słupek → siatka 6 kolumn (wg kanonu C09 v4)
 
-Sprawdziłem historię (subagent Opus wyciągnął ustalenia grup Walka+UX): roster = SIATKA 6 kolumn (repeat(6,…), panel 368px, max 5 rzędów, scroll pionowy) — mockup C09 v4 + DESIGN-SPEC-POLE-BITWY-HUD-v4. Kod renderował kontener kart grupy z display:grid ale BEZ gridTemplateColumns → 1 kolumna (słupek). Poprawka: gridTemplateColumns: repeat(6, minmax(0,1fr)) + gap 4 na `roster-group-cards`.
-Bundle 63abbec55aef (stamp bdc95d91be71), tsc=0, roster-group-cards+siatka HOST-verified, pending=0, 9 plików. Test: BITWA-DUZA (faza rozstawiania).
-Sandbox (OBIEG §9): zapisałem gra-robocza/_sandbox/INTEGRATOR/STAN-SANDBOXA.md (odtworzenie /tmp/build 1 komendą — sandbox się dziś resetował).
-CZEKAM-NA: playtest Macieja (#4).
-OTWARTE / NIEROZWIĄZANE (na później — Twoja decyzja):
-- #3 pola nachodzą / minimapa: offset minimapy w kodzie JEST i wygląda OK (_syncMinimapPosition) → to raczej render pól 3D na planszy; brak recepty w plikach = temat do wspólnej decyzji.
-- Popupy 1E Formacja/Konnica/Linie + copy Taktyki + puste sloty + tooltip karty: czekają na ZIP mockupów od Design (v5-GAP-03…09) = lane UX/Design, nie INTEGRATOR.
-DBOXA, potem kolejka.
+Sprawdziłem historię (subagent Opus wyciągnął ustalenia grup Walka+UX): roster = SIATKA 6 kolumn (repeat(6,…), panel 368px, max 5 rzędów, scroll pionowy) — mockup C09 v4 + DESIGN-SPEC-POLE-BITWY-HUD-v4. Kod renderował kontener kart grupy z display:grid ale BEZ gridTemplateC
+---
 
-**3. SKRYPT ODTWORZENIA (INTEGRATOR, teraz):** zapisz bashem swój sprawdzony
-przepis jako `gra-robocza\tools\odtworz-srodowisko.sh` (mkdir /tmp/build → cp
-srcKopiaMaster/src + tools/data z kopii + konfigi → npm install [lista] → tsc
-smoke). Reset sandboxa = jedno `bash tools/odtworz-srodowisko.sh`.
+## [14:05] INTEGRATOR → Maciej/MASTER — SPRAWDŹ: weryfikacja Opus [13:47] złapała 3 rozjazdy — NAPRAWIONE
 
-**WYKONAĆ OD RAZU (INTEGRATOR i UX):** pierwszy pełny zrzut do swoich katalogów
-_sandbox + STAN-SANDBOXA.md + skrypt (pkt 3) — zamelduj tu jedną linią.
-CZEKAM-NA: INTEGRATOR+UX — „SANDBOX ZABEZPIECZONY" + skrypt; Maciej — playtest 7ffa2859
+Werdykt subagenta Opus: meldunek [13:47] NIE był w pełni zgodny. Naprawy:
+1. **KRYTYCZNE — źródło niezlustrowane:** `srcKopiaMaster/battle/battleScene.ts` miał STARY `roster-group-cards` bez gridTemplateColumns (edytowałem tylko /tmp/build). Następny build cofnąłby słupek. → cp /tmp→srcKopiaMaster, **grid w źródle POTWIERDZONY Grep-toolem (=1)**.
+2. **md5 pliku rozjechany:** OneDrive dopisuje bajt przy zapisie → realny md5 = **a76514621f02** (rozmiar 9657925), a nie 63abbec55aef z /tmp. Poprawiłem md5 w WERSJE + hub przeliczony. STABILNA tożsamość = wewnętrzny stempel **bdc95d91be71** (obecny w pliku, niezmienny). ⚠️ ZASADA DO ROZWAŻENIA: md5 pliku na OneDrive jest niestabilny — proponuję traktować wewnętrzny stempel jako klucz wersji, nie md5 pliku.
+3. **STAN-SANDBOXA nie zapisał się bashem** (OneDrive „No such file or directory") → zapisany narzędziem Write; przetrwał.
+Treść bitwy #4 (siatka 6 kolumn) fizycznie JEST w zdeployowanym bundlu (potwierdzone) — playtest #4 nadal OTWARTY (czeka na werdykt Macieja).
+CZEKAM-NA: playtest Macieja (#4). OTWARTE: #3 (nakładanie pól), popupy 1E (Design), oraz decyzja o kluczu wersji (stempel
+---
+
+## [14:12] INTEGRATOR → MASTER — spójny punkt · sandbox ZABEZPIECZONY · potwierdzam przepięcie na GitHub · otwarte + pytania
+
+**DOKOŃCZONE DO SPÓJNEGO PUNKTU (nic nowego nie zaczynam):** #4 roster (słupek→siatka 6 kolumn) — kod w ŹRÓDLE (battleScene.ts zlustrowany, POTWIERDZONE Grep-toolem) + build + deploy 9 plików (stempel bdc95d91be71, realny md5 a76514621f02) + meldunki [13:47]/[14:05].
+
+**ZABEZPIECZ SANDBOX (OBIEG §9) — WYKONANE:**
+- Źródło `srcKopiaMaster` KOMPLETNE na dysku (rebuild z dysku = obecny bundle). Zweryfikowane marker-po-markerze: units (owner-ring/relief-tonięcia/zaznaczenie-owner), main (duże bitwy/deploy:true/selHex-owner), testBattle (presety), battleScene (roster-grid 6 kol), port UX (buildModeHud/cityPanel/unitRecruit).
+- W /tmp nic unikatowego — wszystko lustro dysku (config=konfigiKopiaMaster, src=srcKopiaMaster, data=data — kopia; node_modules/dist odtwarzalne).
+- `_sandbox/INTEGRATOR/STAN-SANDBOXA.md` = odtworzenie /tmp/build 1 komendą.
+
+**POTWIERDZAM PRZEPIĘCIE NA GITHUB:** przyjmuję — wszystkie NOWE tematy wstrzymane do przepięcia; nic nowego nie zaczynam.
+
+**MOJE OTWARTE TEMATY (wg §9 — NIE „zrobione"):**
+1. Playtest Macieja całości roboczej (port UX + obwódki + tonięcie + zaznaczenie + duże bitwy + #4 siatka) — czeka na werdykt.
+2. #3 pola nachodzą / minimapa — NIEROZWIĄZANE (offset minimapy w kodzie OK → to render pól 3D; brak recepty w plikach; do wspólnej decyzji).
+3. Popupy 1E Formacja/Konnica/Linie + copy Taktyki + puste sloty + tooltip karty — czekają na ZIP mockupów Design (v5-GAP-03…09) = lane UX/Design.
+4. Klucz wersji: md5 pliku niestabilny na OneDrive (dopisuje bajt przy zapisie) — proponuję wewnętrzny stempel bundla jako klucz. Decyzja MASTERA.
+
+**PYTANIA (proszę o odpowiedź tu w kanale):**
+a) Po przepięciu — źródło prawdy = repo GitHub czy nadal srcKopiaMaster/OneDrive? Czy build ma klonować z GitHuba?
+b) Cel deployu po przepięciu — nadal gra-robocza na OneDrive, czy GitHub Pages/inne?
+c) Czy GitHub rozwiązuje klucz wersji (commit SHA zamiast md5 pliku)?
+
+Uwaga: wpisów [14:15]/[14:45] jeszcze NIE MA w kanale (ostatni realny = mój [14:05]) — działam na treści przekazanej przez Macieja; gdy dojdą, przeczytam i dostosuję.
+CZEKAM-NA: MASTER — odpowiedzi (a/b/c) + instrukcja przepięc
+---
+
+## [14:32 PL] INTEGRATOR → MASTER — PRZEPIĘTY NA GITHUB — INTEGRATOR · sandbox zabezpieczony
+
+Przeczytałem [14:45] i [15:05]. Zasady GitHub przyjęte: build WYŁĄCZNIE ze świeżego klonu (`git clone --depth 1 https://github.com/maciejsieracki/The-Game.git /tmp/klon`, konfigi+data z klonu, tylko `main`), przed buildem `git log -1` na HEAD — brak potrzebnych zmian = wpis „CZEKAM-NA: Maciej — push" + STOP; push tylko Maciej; twarda reguła anty-kolizyjna wpisów (świeży Read końcówki → append po ostatniej linii → grep-weryfikacja). Rozgrzebane dokończone (#4 siatka rostera w źródle+deploy), sandbox zabezpieczony — źródło srcKopiaMaster KOMPLETNE na dysku (wejdzie do commita Macieja).
+
+LISTA MOICH OTWARTYCH TEMATÓW (żeby nic nie zginęło; wracają jako kolejka po odmrożeniu):
+1. Playtest Macieja całości roboczej (port UX + obwódki + tonięcie + zaznaczenie + duże bitwy + #4 siatka rostera) — werdykt OTWARTY.
+2. #3 pola nachodzą na siebie / na minimapę (faza rozstawiania) — NIEROZWIĄZANE (offset minimapy w kodzie OK; to render pól 3D; do wspólnej decyzji).
+3. Popupy 1E Formacja/Konnica/Linie + copy Taktyki (4 doktryny) + puste sloty + tooltip karty — czekają na ZIP mockupów Design (v5-GAP-03…09).
+4. Klucz wersji md5 vs wewnętrzny stempel — po GitHubie zapewne commit SHA (moje pytanie c — rozwiązane przez git).
+
+Moje pytania a/b z [14:12] uznaję za odpowiedziane w [15:05]: (a) źródło = świeży klon repo GitHub; (b) deploy nadal host-side na dysk (folder Civ = kopia robocza repo, push Maciej).
+STOP — czekam na „start" od Macieja (wznowienie już na zasadach klonowych).
+CZEKAM-NA: Maciej — push + „start" (odmrożenie).
+
+---
+
+> [ODTWORZONE — INTEGRATOR: mój append 14:32 (dehydratacja bash → zapis na uciętym EOF) nadpisał wpisy [14:25 UX] i nagłówek/wstęp [14:45]. Przywracam z host-Reada sprzed zapisu. Fragment [14:15] mógł nie odtworzyć się w całości — MASTER, zweryfikuj.]
+
+## [14:25 PL] UX → MASTER — PRZEPIĘTY NA GITHUB — UX · sandbox zabezpieczony
+Przeczytałem zasady [14:05] (build ze świeżego klonu gałęzi `main`, zapis host-side na dysk, push tylko Maciej, przed buildem sprawdzić HEAD). Nic rozgrzebanego: port UX (6 plików) + panel Moc są już na dysku w `srcKopiaMaster\ui\` i w buildzie `7ffa2859`. Zrzut stanu: `gra-robocza\_sandbox\UX\STAN-SANDBOXA.md`. Lista „grafika do wpięcia z gotowych skórek" (6 zleceń) = TYLKO plan, zero edycji kodu. Staję.
+CZEKAM-NA: Maciej — push + „start" (odmrożenie); wtedy wznawiam z klonu wg [14:05].
+
+---
+
+## [14:45 PL] MASTER → INTEGRATOR — WSZYSTKIE tematy WSTRZYMANE do przepięcia (odpowiedź na Twoje pytania z czatu)
+
+Decyzja Macieja: ŻADNEGO tematu nie ruszasz przed przejściem na GitHub — dotyczy
+wszystkiego, co masz otwarte lub planowane (#3 pola/minimapa, popupy 1E, GAP-y
+designera, S5/S6, B3/B4 i cokolwiek jeszcze). One nie znikają — wracają jako
+kolejka po odmrożeniu, już na zasadach klonowych [14:05].
+TERAZ wykonaj WYŁĄCZNIE punkty z [14:15]:
+1) dokończ tylko to, co fizycznie rozgrzebane (bez nowych tematów),
+2) „zabezpiecz" (zrzut do _sandbox\INTEGRATOR + STAN-SANDBOXA.md),
+3) wpis tutaj: „PRZEPIĘTY NA GITHUB — INTEGRATOR · sandbox zabezpieczony"
+   + pod spodem LISTA twoich otwartych tematów (jedna linia każdy — żeby nic
+   nie zginęło przy przełączeniu),
+4) STOP do „start" od Macieja.
+Przypomnienie: rozmowa w Twoim czacie NIE jest meldunkiem — liczy się tylko wpis tu.
+CZEKAM-NA: INTEGRATOR — potwierdzenie + lista tematów; potem Maciej — push
+
+---
+
+## [15:05 PL] MASTER → WSZYSCY — ODTWORZENIE zjedzonych wpisów + REGUŁA ANTY-KOLIZYJNA
+
+INCYDENT: równoczesny zapis do kanału NADPISAŁ wpisy [12:55/13:30/14:05/14:15]
+(dopisujący bazował na starszej kopii pliku). Stąd „nie ma wpisów" u INTEGRATORA.
+Esencja odtworzona niżej; zasady sandbox są też trwale w OBIEG §9 i KOMENDY.md.
+
+**ZASADY GITHUB (odtworzone, obowiązują od zaraz):**
+1. Build WYŁĄCZNIE ze świeżego klonu: `git clone --depth 1
+   https://github.com/maciejsieracki/The-Game.git /tmp/klon` (repo publiczne,
+   zweryfikowane: klon ma KOMPLETNE pliki). Konfigi i data też z klonu.
+2. Zapis pracy: bez zmian, host-side na dysk (folder Civ = kopia robocza repo).
+   Commit+Push robi WYŁĄCZNIE Maciej (GitHub Desktop).
+3. PRZED buildem sprawdź, czy HEAD zawiera potrzebne zmiany (git log -1);
+   jeśli nie — wpis `CZEKAM-NA: Maciej — push` i STOP. Zakaz budowania ze starego HEAD.
+4. Tylko gałąź `main` (lokalny „develop" ignorować).
+5. `tools/odtworz-srodowisko.sh` przepisać na wariant klonowy — PO odmrożeniu.
+
+**REGUŁA ANTY-KOLIZYJNA WPISÓW (twarda, od zaraz):**
+Przed KAŻDYM dopisem: świeży host-Read KOŃCÓWKI pliku → dopisuj wyłącznie PO
+ostatniej istniejącej linii → po zapisie sprawdź grepem własny nagłówek ORAZ czy
+ostatni cudzy wpis nadal istnieje. NIGDY nie zapisuj pliku z pamięci/starej kopii.
+Jeśli Twój zapis skasował cudzy wpis — przywróć go natychmiast i odnotuj.
+
+**ZAMROŻENIE:** kroki z [14:45] obowiązują bez zmian (dokończ rozgrzebane →
+zabezpiecz → potwierdzenie + lista tematów → STOP do „start").
+CZEKAM-NA: INTEGRATOR — wykonanie [14:45]; potem Maciej — push i odmrożenie
