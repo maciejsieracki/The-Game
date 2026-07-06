@@ -559,7 +559,16 @@ function buildCoastalRiverPointChain(
   const seaInZ = seaEdge.z + (seaCenter.z - seaEdge.z) * tIn;
   pts.push(new THREE.Vector3(seaInX, riverMouthY, seaInZ));
 
-  return { pts, hexKeys };
+  // BUG-RZEKI-RENDER (wariant B): przerób ujście na plateau→wodospad→tafla. landPlateauY =
+  // wysokość wstęgi na OSTATNIM heksie lądu w łańcuchu (ten sam offset R*0.14 co edgePts),
+  // żeby korona wodospadu spinała się z lądową wstęgą, a nie wisiała w powietrzu.
+  let landPlateauY = riverMouthY;
+  for (const ph of chain) {
+    const y = riverHexSurfaceY(map, ph.q, ph.r, 'roblox', riverMouthY, R * 0.14, R);
+    if (y != null && y > landPlateauY) landPlateauY = y;
+  }
+  const shaped = applyCoastalWaterfall(pts, riverMouthY, landPlateauY, R);
+  return { pts: shaped, hexKeys };
 }
 
 function coastalRiverKeySet(map: GameMap, path: Array<{ q: number; r: number }>): Set<string> {
@@ -585,6 +594,56 @@ function riverVertexAtCoast(map: GameMap, v: Vtx, coastalKeys: Set<string>): boo
     if (h.rzeka?.obecna && hasWybrzezeNeighbor(map, h.coords.q, h.coords.r)) return true;
   }
   return false;
+}
+
+/**
+ * BUG-RZEKI-RENDER — wariant B „wodospad" (Maciej 2026-07-06). Przerabia listę punktów
+ * wstęgi ujścia tak, by NIGDY nie schodziła pod mesh lądu/wybrzeża:
+ *  - część nad lądem trzyma stały poziom lądu (plateau) do samej krawędzi wybrzeża,
+ *  - na styku ląd→morze wstęga spada stromo (prawie pionowo) do poziomu tafli (mouthY),
+ *  - dalej płynie płasko na mouthY (nad wierzchem pryzmu wybrzeża).
+ * Zamiast skosu, który interpolował Y pod ścianę pryzmu (efekt „rzeka tonie"), robimy
+ * pionowy próg. Pion realizujemy jako 2 punkty z małym przesunięciem poziomym (nudge),
+ * bo buildRibbonGeometry liczy przekrój z tangensu spłaszczonego do XZ — punkty o tym
+ * samym X/Z dałyby zdegenerowany (NaN) przekrój. RENDER-ONLY: zero wpływu na generację.
+ */
+function applyCoastalWaterfall(
+  pts: THREE.Vector3[],
+  mouthY: number,
+  landPlateauY: number,
+  R: number,
+): THREE.Vector3[] {
+  if (pts.length < 2 || !(landPlateauY > mouthY + 1e-4)) return pts;
+  // Próg klasyfikacji: punkt „morski" = Y bliżej mouthY niż lądowego plateau.
+  const seaThreshold = mouthY + (landPlateauY - mouthY) * 0.5;
+  let k = pts.length;
+  for (let i = 0; i < pts.length; i++) {
+    if (pts[i]!.y < seaThreshold) { k = i; break; }
+  }
+  if (k === 0) {
+    // Brak części lądowej — cała wstęga płaska na tafli.
+    return pts.map(p => new THREE.Vector3(p.x, mouthY, p.z));
+  }
+  if (k >= pts.length) {
+    // Sama część lądowa (nie powinno się zdarzyć dla ujścia) — trzymaj plateau.
+    return pts.map(p => new THREE.Vector3(p.x, landPlateauY, p.z));
+  }
+  const out: THREE.Vector3[] = [];
+  // Plateau lądowe płaskie do krawędzi (kasuje „obwis" uśrednionego środka krawędzi).
+  for (let i = 0; i < k; i++) out.push(new THREE.Vector3(pts[i]!.x, landPlateauY, pts[i]!.z));
+  const edge = pts[k - 1]!;
+  const sea = pts[k]!;
+  const dx = sea.x - edge.x;
+  const dz = sea.z - edge.z;
+  const len = Math.hypot(dx, dz) || 1;
+  const nudge = R * 0.06; // małe przesunięcie poziome — pion, ale ważny tangens dla wstęgi
+  const lipX = edge.x + (dx / len) * nudge;
+  const lipZ = edge.z + (dz / len) * nudge;
+  out.push(new THREE.Vector3(lipX, landPlateauY, lipZ));                 // korona wodospadu
+  out.push(new THREE.Vector3(lipX + (dx / len) * nudge, mouthY, lipZ + (dz / len) * nudge)); // stopa
+  // Część morska płaska na tafli.
+  for (let i = k; i < pts.length; i++) out.push(new THREE.Vector3(pts[i]!.x, mouthY, pts[i]!.z));
+  return out;
 }
 
 /** Lejek estuary — rozszerzenie wstęgi rzeki w stronę morza (trapez płaski). */
@@ -1805,12 +1864,14 @@ export async function buildScene(
 
   const seaVisForRiver = terrainVis(TerenBazowy.Morze, renderStyle);
   const seaTopY = seaVisForRiver.height + seaVisForRiver.yOffset;
-  // B0.8b (Z1): wstęga ujścia płynie NAD taflą capa Wybrzeża, nie pod nią. Wcześniej
-  // riverMouthY = seaTopY + R*0.026 (~0.206) leżało PONIŻEJ coastWaterCapTopY (~0.224) i
-  // lagunowej tafli delty (~0.240) → końcówka chowała się i wyglądała na uciętą na brzegu.
-  // Teraz: cap top + R*0.026 (~0.070 nad seaTop) — powyżej base/lagoon/tongue capa (≤0.060).
+  // BUG-RZEKI-RENDER (wariant B „wodospad", Maciej 2026-07-06): flat sea level wstęgi
+  // ujścia MUSI leżeć NAD wierzchem pryzmu Wybrzeża (~0.28), inaczej płaska końcówka chowa
+  // się w bloku wybrzeża (poprzednio riverMouthY≈0.250 < 0.280 → wstęga „tonęła" pod lądem).
+  // Sea level = wierzch capa Wybrzeża + margines; drop lądu→morze robi buildCoastalRiverPointChain
+  // pionowym progiem (wodospad), a nie skosem wchodzącym pod mesh.
   const capTopY = coastWaterCapTopY(renderStyle);
-  const riverMouthY = capTopY + R * 0.026;
+  const coastPrismTopY = terrainSurfaceTopY(TerenBazowy.Wybrzeze, renderStyle);
+  const riverMouthY = Math.max(capTopY + R * 0.026, coastPrismTopY + R * 0.035);
 
   // Wstęgi wzdłuż krawędzi hex (Roblox: proste odcinki obwodu, bez środka pola).
   const RIVER_MAIN_HALF_WIDTH = R * 0.052;

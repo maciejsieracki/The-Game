@@ -16,6 +16,10 @@ wiadomo, komu Maciej pisze następne słowo. Informowanie Macieja to tylko echo.
 | **OK / BUG: opis** | Werdykt playtestu (do MASTERA). OK → MASTER pakuje wersję do DO-KANONU i wskazuje następną robotę. BUG → MASTER natychmiast zamienia opis na zadanie w kanale + mówi komu wpisać „start". |
 | **zabezpiecz** | (przed zamknięciem aplikacji) Czat robi natychmiastowy zrzut roboczych plików swojego sandboxa do `gra-robocza\_sandbox\<ROLA>\` + aktualizuje `STAN-SANDBOXA.md` (co było w /tmp + JEDNA komenda odtworzenia) + wpis w kanale „SANDBOX ZABEZPIECZONY: [lista]". Po restarcie „start" najpierw odtwarza z tego stanu. |
 
+**PUSH (GitHub Desktop, robi tylko Maciej):** zawsze na hasło MASTERA („zrób Push").
+Summary dyktuje MASTER przy każdej prośbie (opis CO weszło, np. „rzeki — ujścia
+wodospadem"; BEZ daty/godziny — git stempluje czas i autora automatycznie).
+
 ## DZIEŃ MACIEJA (stary flow, trzy słowa)
 
 1. Do MASTERA: **raport** → stan + „wpisz start u X".

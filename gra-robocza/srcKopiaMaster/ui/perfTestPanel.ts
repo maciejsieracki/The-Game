@@ -17,6 +17,7 @@
 import * as THREE from 'three';
 import { UI_PARAMS } from './uiParams';
 import { CIV_BRAND_SCOPE_VARS, ensureBrandRootTokens } from './brandTokenVars';
+import { brandIconSvg } from './icons/brandAssets';
 import { generujSwiatAsync } from '../map/mapGenAsync';
 import {
   buildRecommendedPreset,
@@ -135,7 +136,11 @@ interface ReportRow {
   tip: string;
 }
 
-const STATUS_ICON: Record<Status, string> = { ok: '✅', warn: '⚠️', bad: '❌' };
+const STATUS_ICON: Record<Status, string> = {
+  ok: brandIconSvg('ui-check', 16),
+  warn: brandIconSvg('chip-warning', 16),
+  bad: brandIconSvg('ui-denied', 16),
+};
 const STATUS_CLASS: Record<Status, string> = { ok: 'ok', warn: 'warn', bad: 'bad' };
 
 function escapeHtml(s: string): string {

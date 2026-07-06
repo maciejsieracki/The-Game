@@ -168,6 +168,7 @@ import { showCityUnitPick, hideCityUnitPick, isCityUnitPickOpen } from './ui/cit
 import { showCityCaptureNotice } from './ui/cityCaptureNotice';
 import { showArmyMergePanel, hideArmyMergePanel, isArmyMergePanelOpen } from './ui/armyMergePanel';
 import { showArmySplitPanel, hideArmySplitPanel, isArmySplitPanelOpen } from './ui/armySplitPanel';
+import { unitIconSvg } from './ui/icons/brandAssets';
 import {
   visibleStackOnHex,
   computeStackDisplay,
@@ -2755,7 +2756,7 @@ async function boot(): Promise<void> {
       return {
         id: u.id,
         name: u.typeId,
-        icon: '\u2694\uFE0F',
+        icon: unitIconSvg(def, u.typeId),
         ruchLeft: u.ruchLeft,
         ruchMax: normFieldVal(def['Ruch'], u.ruch),
       };
@@ -5134,7 +5135,7 @@ async function boot(): Promise<void> {
         return {
           id: u.id,
           name: u.typeId,
-          icon: '\u2694\uFE0F',
+          icon: unitIconSvg(udef, u.typeId),
           hp: hpMax,
           hpMax,
           ruchLeft: u.ruchLeft,

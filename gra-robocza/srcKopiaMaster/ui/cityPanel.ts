@@ -89,7 +89,7 @@ import {
   UNIT_INFOGRAPHIC_CSS,
 } from './unitInfographic';
 import { buildUnitRecruitCard, UNIT_RECRUIT_CARD_CSS } from './unitRecruitCard';
-import { brandIconSvg, buildingIconSvg, unitIconSvg, type BrandIconSize } from './icons/brandAssets';
+import { brandIconSvg, buildingIconSvg, unitIconSvg, mapResourceIconSvg, type BrandIconSize } from './icons/brandAssets';
 import { ensureBrandRootTokens, CIV_BRAND_SCOPE_VARS } from './brandTokenVars';
 import {
   freshWealthState,
@@ -2058,6 +2058,25 @@ function buildSurowceDetailCard(
   return card;
 }
 
+/**
+ * Czy etykieta to surowiec mapy (ma dedykowaną ikonę res-* w resources-map/).
+ * Reskin A-08: surowce mapy renderujemy przez mapResourceIconSvg, nie generyki.
+ */
+function isMapResourceLabel(n: string): boolean {
+  return (
+    n.includes('byd') || n.includes('glin') || n.includes('ceg') ||
+    n.includes('koń') || n.includes('kon') || n.includes('horse') ||
+    n.includes('sól') || n.includes('sol') || n.includes('salt') ||
+    n.includes('drewn') || n.includes('las') ||
+    n.includes('kamie') || n.includes('kamien') ||
+    n.includes('ruda') || n.includes('braz') || n.includes('brąz') ||
+    n.includes('żelaz') || n.includes('zelaz') ||
+    n.includes('złot') || n.includes('zlot') ||
+    n.includes('owc') || n.includes('lama') ||
+    n.includes('węgiel') || n.includes('wegiel') || n.includes('miedz') || n.includes('stal')
+  );
+}
+
 function resourceBrandKey(nazwa: string): string | null {
   const n = nazwa.toLowerCase();
   if (n.includes('byd')) return 'res-cattle';
@@ -2072,6 +2091,12 @@ function resourceBrandKey(nazwa: string): string | null {
 }
 
 function resourceBrandIconHtml(nazwa: string): string {
+  const n = nazwa.toLowerCase();
+  // Surowce mapy → dedykowana ikona res-* (resources-map/), reskin z generyków.
+  if (isMapResourceLabel(n)) {
+    const mapSvg = mapResourceIconSvg(nazwa, 18);
+    if (mapSvg) return `<span class="civ-w4-res-ic">${mapSvg}</span>`;
+  }
   const key = resourceBrandKey(nazwa) ?? 'chip-crate';
   const svg = brandIconSvg(key, 24);
   if (svg) {

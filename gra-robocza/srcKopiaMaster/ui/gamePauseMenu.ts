@@ -3,6 +3,8 @@
  * Nie zastępuje mainMenu.ts — to warstwa pauzy nad sceną (z-index 480).
  */
 
+import { menuIconSvg, brandIconSvg } from './icons/brandAssets';
+
 export interface GamePauseMenuConfig {
   hasSave?: () => boolean;
   onResume: () => void;
@@ -31,7 +33,9 @@ function ensureStyles(): void {
 .civ-pause-btns{display:flex;flex-direction:column;gap:8px;}
 .civ-pause-btns button{width:100%;padding:10px 14px;border-radius:8px;cursor:pointer;
   font-size:13px;font-weight:600;border:1px solid rgba(224,178,74,0.28);background:rgba(30,34,46,0.9);color:#e8ebf0;
-  transition:background .15s,border-color .15s;}
+  transition:background .15s,border-color .15s;display:inline-flex;align-items:center;gap:10px;}
+.civ-pause-ic{display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;}
+.civ-pause-ic svg{width:20px;height:20px;display:block;}
 .civ-pause-btns button:hover:not(:disabled){background:rgba(224,178,74,0.14);border-color:rgba(224,178,74,0.5);}
 .civ-pause-btns button:disabled{opacity:.45;cursor:not-allowed;}
 .civ-pause-btns .civ-pause-primary{background:rgba(224,178,74,0.18);color:#f5e6b8;border-color:rgba(224,178,74,0.55);}
@@ -65,15 +69,19 @@ export function showGamePauseMenu(): void {
 
   const box = document.createElement('div');
   box.className = 'civ-pause-box';
+  const icSave = menuIconSvg('menu-save', 20);
+  const icLoad = menuIconSvg('menu-load', 20);
+  const icNew = menuIconSvg('menu-play', 20);
+  const icMain = brandIconSvg('ui-menu', 20);
   box.innerHTML =
     '<h2>Menu gry</h2>' +
     '<p class="civ-pause-sub">Gra jest wstrzymana. Wybierz akcję lub wróć do rozgrywki.</p>' +
     '<div class="civ-pause-btns">' +
     '<button type="button" class="civ-pause-primary" data-act="resume">Wróć do gry</button>' +
-    '<button type="button" data-act="save">💾 Zapisz grę</button>' +
-    '<button type="button" data-act="load"' + (hasSave ? '' : ' disabled title="Brak zapisu"') + '>📂 Wczytaj grę</button>' +
-    '<button type="button" data-act="new">🔄 Rozpocznij nową grę</button>' +
-    '<button type="button" class="civ-pause-danger" data-act="main">☰ Przejdź do menu głównego</button>' +
+    '<button type="button" data-act="save"><span class="civ-pause-ic">' + icSave + '</span> Zapisz grę</button>' +
+    '<button type="button" data-act="load"' + (hasSave ? '' : ' disabled title="Brak zapisu"') + '><span class="civ-pause-ic">' + icLoad + '</span> Wczytaj grę</button>' +
+    '<button type="button" data-act="new"><span class="civ-pause-ic">' + icNew + '</span> Rozpocznij nową grę</button>' +
+    '<button type="button" class="civ-pause-danger" data-act="main"><span class="civ-pause-ic">' + icMain + '</span> Przejdź do menu głównego</button>' +
     '</div>';
 
   root.appendChild(box);

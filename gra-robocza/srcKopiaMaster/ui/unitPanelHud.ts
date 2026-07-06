@@ -8,6 +8,7 @@ import {
   mapUnitCloseBtnHtml,
   MAP_UNIT_1E_SHARED_CSS,
 } from './mapUnitHudSkin';
+import { unitIconSvg } from './icons/brandAssets';
 
 export interface UnitPanelAction {
   id: string;
@@ -94,7 +95,7 @@ export function createUnitPanelHud(config: UnitPanelHudConfig): UnitPanelHudApi 
     }
     el.classList.add('open');
     const hpPct = u.hpMax > 0 ? Math.round((u.hp / u.hpMax) * 100) : 0;
-    let html = '<div class="hdr"><span class="ic">' + esc(u.icon) + '</span>'
+    let html = '<div class="hdr"><span class="ic">' + (u.icon || unitIconSvg(undefined)) + '</span>'
       + '<div class="info"><h2>' + esc(u.name) + '</h2><div class="sub">' + esc(u.subtitle) + '</div></div>'
       + mapUnitCloseBtnHtml('Zamknij panel')
       + '</div>'

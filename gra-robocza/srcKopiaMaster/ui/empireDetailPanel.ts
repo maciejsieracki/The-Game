@@ -5,6 +5,7 @@
  */
 import type { EmpireDetailSnap } from './empireDetailTypes';
 import { mocLabel, mocWithValue } from './power-labels';
+import { brandIconSvg } from './icons/brandAssets';
 
 export type { EmpireDetailSnap } from './empireDetailTypes';
 
@@ -382,7 +383,7 @@ function ensureDom(): void {
       + '<div class="civ-emp-hdr-ic" data-civ-em></div>'
       + '<div class="civ-emp-hdr-tx"><div class="civ-emp-civ-name" data-civ-name></div>'
       + '<div class="civ-emp-civ-sub" data-civ-sub></div></div>'
-      + '<button type="button" class="civ-emp-close" data-close aria-label="Zamknij">✕</button>'
+      + `<button type="button" class="civ-emp-close" data-close aria-label="Zamknij">${brandIconSvg('ui-close', 16)}</button>`
       + '</div><div class="civ-emp-body"></div>';
     bodyEl = root.querySelector('.civ-emp-body') as HTMLDivElement;
     root.querySelector('[data-close]')?.addEventListener('click', () => hideEmpireDetailPanel());

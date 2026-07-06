@@ -3,6 +3,7 @@
  */
 
 import type { ArmyMergeUnitRow } from './armyMergePanel';
+import { unitIconSvg } from './icons/brandAssets';
 
 export interface SplitDestOption {
   q: number;
@@ -116,7 +117,7 @@ export function showArmySplitPanel(opts: ArmySplitPanelOpts): void {
       const on = selected.has(u.id);
       uHtml += '<label class="civ-asp-u' + (on ? ' on' : '') + '">'
         + '<input type="checkbox"' + (on ? ' checked' : '') + ' data-uid="' + esc(u.id) + '">'
-        + '<span class="civ-asp-u-ic">' + esc(u.icon ?? '\u2694\uFE0F') + '</span>'
+        + '<span class="civ-asp-u-ic">' + (u.icon || unitIconSvg(undefined)) + '</span>'
         + '<span class="civ-asp-u-name">' + esc(u.name) + '</span></label>';
     }
     let dHtml = '';

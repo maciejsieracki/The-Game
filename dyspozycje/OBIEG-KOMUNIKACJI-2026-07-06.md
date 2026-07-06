@@ -102,6 +102,28 @@ wyłączyć komputer w każdej chwili. Dlatego:
 3. Po każdym resecie: odtworzenie wyłącznie ze STAN-SANDBOXA/skryptów — zero
    odtwarzania „z głowy".
 
+## 10. SUBAGENT DO KAŻDEGO MAŁEGO ZADANIA + ROUTING MODELI (decyzja Macieja 2026-07-06)
+Czat NIE wykonuje zadań sam — zapycha się jednym tematem, gdy 50 czeka. Zasady:
+1. KAŻDE małe zadanie = własny subagent; niezależne tematy = subagenci RÓWNOLEGLE
+   (podział plików wg §7: 1 subagent = 1 temat = 1 plik; pliki wspólne scala czat).
+2. Czat robi SAM wyłącznie: odczyt kanału/poleceń/plików, dyspozycje dla subagentów,
+   scalanie wyników, bramki+build+deploy, meldunki. Cała reszta = subagenci.
+3. ROUTING MODELI:
+   **SONNET 5 (tani) — zadania PROSTE = jest gotowa recepta, tylko wykonać:**
+   implementacja wg dokładnego specu/mockupu · typowe kodowanie wg wzorca (nowa
+   funkcja/komponent, restyle CSS, zmiana stałych/parametrów) · matematyka
+   i obliczenia · konwersje/generowanie danych (JSON, tabele) · port 1:1 gotowego
+   kodu · masowe drobne zmiany wg listy · test wg podanego wzoru · uruchomienie
+   bramek i raport · grep-inwentaryzacja wg listy markerów.
+   **OPUS 4.8 — zadania TRUDNE = receptę trzeba dopiero wymyślić:**
+   diagnoza bugów o nieznanej przyczynie · wszystko przy generatorze mapy dotykające
+   determinizmu/rand() · projektowanie algorytmu od zera · analiza zależności między
+   modułami / ryzykowne wpięcia w main.ts · audyty i weryfikacje krzyżowe · przegląd
+   historii/decyzji · zadania bez mechanicznie sprawdzalnego AC.
+4. Wątpliwość co do klasy → OPUS (taniej niż płacić dwa razy po Sonnecie).
+   Sonnet utknął albo wynik nie przechodzi bramek → NIE klepać w kółko, powtórka
+   od razu na Opusie.
+
 ## 9. NIC NIEDOKOŃCZONEGO NIE JEST „ZROBIONE" (reguła Macieja 2026-07-06)
 Coś, co nam uciekło/umknęło — przeoczony bug, luka, pole które się nie domknęło,
 temat którego nie wiemy jeszcze jak rozwiązać — jest **NIEWYKONANE**. Nie „zrobione",

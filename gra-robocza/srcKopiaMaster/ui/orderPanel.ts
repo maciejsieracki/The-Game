@@ -9,6 +9,7 @@
  */
 
 import type { SocietyLine } from '../game/society-breakdown';
+import { brandIconSvg } from './icons/brandAssets';
 
 export interface OrderState {
   /** Legacy pkt szczęścia (kompat). */
@@ -152,22 +153,22 @@ export function buildOrderSectionHtml(
     html += orderBarHtml(s.porPct ?? 0, 100, 'var(--gold)', pfx + 'bar', pfx + 'fill');
   } else {
     const scale = Math.max(s.szczescie + s.porzadek, s.progT1, s.progT2, 1);
-    html += '<div class="' + pfx + 'r"><span class="' + pfx + 'l">\u{1F600} Szczęście</span><span>' + s.szczescie + '</span></div>';
+    html += '<div class="' + pfx + 'r"><span class="' + pfx + 'l">' + brandIconSvg('chip-happiness', 16) + ' Szczęście</span><span>' + s.szczescie + '</span></div>';
     html += orderBarHtml(s.szczescie, scale, 'var(--gold)', pfx + 'bar', pfx + 'fill');
-    html += '<div class="' + pfx + 'r"><span class="' + pfx + 'l">⚖️ Prawo</span><span>' + s.porzadek + '</span></div>';
+    html += '<div class="' + pfx + 'r"><span class="' + pfx + 'l">' + brandIconSvg('cp-order', 16) + ' Prawo</span><span>' + s.porzadek + '</span></div>';
     html += orderBarHtml(s.porzadek, scale, 'var(--green)', pfx + 'bar', pfx + 'fill');
   }
 
   if (s.revoltWarning && s.revoltGraceRemaining != null && s.revoltGraceRemaining > 0) {
-    html += '<div class="' + pfx + 'status crit">⚠ Grozi bunt! ' + s.revoltGraceRemaining + ' tur(y) na reakcję</div>';
+    html += '<div class="' + pfx + 'status crit">' + brandIconSvg('chip-warning', 16) + ' Grozi bunt! ' + s.revoltGraceRemaining + ' tur(y) na reakcję</div>';
   } else if (s.rebelState) {
     html += '<div class="' + pfx + 'status t2">Rebelia — miasto pod kontrolą rebeliantów</div>';
   } else if (tn === 0) {
-    html += '<div class="' + pfx + 'status ok">✓ ' + (s.bandLabel ?? 'Spokój') + '</div>';
+    html += '<div class="' + pfx + 'status ok">' + brandIconSvg('ui-check', 16) + ' ' + (s.bandLabel ?? 'Spokój') + '</div>';
   } else if (tn === 1) {
-    html += '<div class="' + pfx + 'status t1">⚠ ' + (s.bandLabel ?? 'Napięcie') + '</div>';
+    html += '<div class="' + pfx + 'status t1">' + brandIconSvg('chip-warning', 16) + ' ' + (s.bandLabel ?? 'Napięcie') + '</div>';
   } else {
-    html += '<div class="' + pfx + 'status t2">\u{1F525} ' + (s.bandLabel ?? 'Bunt') + '</div>';
+    html += '<div class="' + pfx + 'status t2">' + brandIconSvg('chip-rebellion', 16) + ' ' + (s.bandLabel ?? 'Bunt') + '</div>';
   }
 
   if (!opts?.skipNote) {

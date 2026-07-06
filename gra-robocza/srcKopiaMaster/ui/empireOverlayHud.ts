@@ -2,6 +2,8 @@
  * empireOverlayHud.ts — overlaye imperium: Kultura + Religia (A1-Q16=A).
  */
 
+import { brandIconSvg } from './icons/brandAssets';
+
 export interface CultureOverlayData {
   kulturaTotal: number;
   kulturaRate: number;
@@ -92,8 +94,9 @@ export function showCultureOverlay(data: CultureOverlayData, onClose?: () => voi
   if (data.sourcesNote) {
     body += '<p style="font-size:11px;color:#7a8494;margin-top:8px">' + esc(data.sourcesNote) + '</p>';
   }
-  body += '<p style="font-size:11px;color:#7a8494;margin-top:8px">Klik 🎭 przy minimapie = zasięg na mapie · dblclick = ten panel.</p>';
-  mount('🎭 Kultura imperium', body, onClose);
+  body += '<p style="font-size:11px;color:#7a8494;margin-top:8px">Klik ' + brandIconSvg('res-culture', 14)
+    + ' przy minimapie = zasięg na mapie · dblclick = ten panel.</p>';
+  mount(brandIconSvg('res-culture', 18) + ' Kultura imperium', body, onClose);
 }
 
 export function showReligionOverlay(data: ReligionOverlayData, onClose?: () => void): void {
@@ -114,8 +117,9 @@ export function showReligionOverlay(data: ReligionOverlayData, onClose?: () => v
   for (const c of data.cities) {
     body += '<tr><td>' + esc(c.name) + '</td><td>' + esc(c.dominujaca) + '</td><td>' + c.udzialPct + '%</td></tr>';
   }
-  body += '</table><p style="font-size:11px;color:#7a8494;margin-top:8px">Klik ⛪ przy minimapie = zasięg na mapie · dblclick = ten panel.</p>';
-  mount('⛪ Religia imperium', body, onClose);
+  body += '</table><p style="font-size:11px;color:#7a8494;margin-top:8px">Klik ' + brandIconSvg('res-religion', 14)
+    + ' przy minimapie = zasięg na mapie · dblclick = ten panel.</p>';
+  mount(brandIconSvg('res-religion', 18) + ' Religia imperium', body, onClose);
 }
 
 export function hideEmpireOverlay(): void {
