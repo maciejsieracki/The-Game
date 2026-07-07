@@ -124,6 +124,21 @@ export function foodStorageCapacity(maSpichlerz: boolean, p: StorageParams): num
 }
 
 /**
+ * Bufor wzrostu (magazynZywnosci) — skalar >= 0.
+ * Migracja: stary zapis mógł trzymać obiekt { aktualny, pojemnosc } zamiast liczby.
+ */
+export function readCityFoodBuffer(magazynZywnosci: unknown): number {
+  if (typeof magazynZywnosci === 'number' && Number.isFinite(magazynZywnosci)) {
+    return Math.max(0, magazynZywnosci);
+  }
+  if (magazynZywnosci && typeof magazynZywnosci === 'object') {
+    const a = (magazynZywnosci as { aktualny?: number }).aktualny;
+    if (typeof a === 'number' && Number.isFinite(a)) return Math.max(0, a);
+  }
+  return 0;
+}
+
+/**
  * Per-type resource store capacity for one city (Spec s.7.2).
  *   without Magazyn: bazaSurowce
  *   with Magazyn:    bazaSurowce * mnoznikMagazynu
@@ -472,28 +487,67 @@ export function buildUnitUpkeepTable(
 // Military food consumption (Spec s.6.3)
 // ---------------------------------------------------------------------------
 
+/** typeId -> żywność/turę (units.json „żywność/turę"). Brak wpisu = domyślna stawka ruchu. */
+export type UnitFoodTable = Readonly<Record<string, number>>;
+
 /** A unit for food-consumption purposes: marching/garrison vs. camping. */
 export interface UnitFoodLike {
+  typeId?: string;
   /** true = the unit is camping (obozuje) this turn -> half food. */
   camping: boolean;
+}
+
+/**
+ * Koszt żywności jednej jednostki (Spec s.6.3 + units.json „żywność/turę").
+ * Zwiadowca i inne wyjątki = 0 w tabeli; brak wpisu → zywnoscJednostkaRuch/oboz.
+ */
+export function unitFoodPerTurn(
+  unit: UnitFoodLike,
+  p: UpkeepParams,
+  foodTable: UnitFoodTable = {},
+): number {
+  let base = p.zywnoscJednostkaRuch;
+  if (unit.typeId && typeof foodTable[unit.typeId] === 'number') {
+    base = foodTable[unit.typeId]!;
+  }
+  if (base <= 0) return 0;
+  if (unit.camping) {
+    const ratio = p.zywnoscJednostkaOboz / (p.zywnoscJednostkaRuch || 1);
+    return base * ratio;
+  }
+  return base;
+}
+
+/** Build typeId -> food/turn from units.json rows. */
+export function buildUnitFoodTable(
+  rows: ReadonlyArray<Record<string, unknown>>,
+): UnitFoodTable {
+  const out: Record<string, number> = {};
+  for (const row of rows) {
+    const name = row['Jednostka'];
+    if (typeof name !== 'string' || name.length === 0) continue;
+    const direct = row['żywność/turę'] ?? row['zywnosc/ture'];
+    if (typeof direct === 'number' && Number.isFinite(direct)) {
+      out[name] = Math.max(0, direct);
+    }
+  }
+  return out;
 }
 
 /**
  * Total military food consumption for a group of units this turn (Spec s.6.3):
  *   marching / garrison: zywnoscJednostkaRuch each (default 1),
  *   camping:             zywnoscJednostkaOboz each (default 0.5).
- *
- * Feed the result into economy.ts cityYieldPerTurn via
- * CityYieldContext.wojskoZuzycieZywnosci (turn-economy.ts passes 0 today, so
- * SILNIK wires this in when garrison-food accounting is enabled).
+ * Per-type override: units.json „żywność/turę" (np. Zwiadowca = 0).
  */
 export function militaryFoodConsumption(
   units: ReadonlyArray<UnitFoodLike>,
   p: UpkeepParams,
+  foodTable: UnitFoodTable = {},
 ): number {
   let sum = 0;
   for (const u of units) {
-    sum += u.camping ? p.zywnoscJednostkaOboz : p.zywnoscJednostkaRuch;
+    sum += unitFoodPerTurn(u, p, foodTable);
   }
   return sum;
 }

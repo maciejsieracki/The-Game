@@ -4,6 +4,7 @@
  * Dane: EmpireDetailSnap.
  */
 import type { EmpireDetailSnap } from './empireDetailTypes';
+import { formatObywateleLabel } from '../game/manpower';
 import { mocLabel, mocWithValue } from './power-labels';
 import { brandIconSvg } from './icons/brandAssets';
 
@@ -175,9 +176,9 @@ function cityEconMiniNauka(rows: EmpireDetailSnap['cityEcon']): string {
 function cityPoborMiniLudnosc(rows: EmpireDetailSnap['cityPobor']): string {
   if (rows.length === 0) return '<div class="civ-emp-empty">Brak miast.</div>';
   const grid = '1fr 1fr 1fr';
-  let h = `<div class="civ-emp-mini">${miniHeader(['MIASTO', 'LUDKI', 'LUDNOŚĆ ABS.'], grid)}`;
+  let h = `<div class="civ-emp-mini">${miniHeader(['MIASTO', 'OBYW.', 'LUDNOŚĆ ABS.'], grid)}`;
   for (const c of rows) h += miniRow([esc(c.name), String(c.ludki), esc(c.ludnoscAbsLabel)], grid);
-  h += '</div><div class="civ-emp-foot">Ludki to mieszkańcy miasta (1–10). Ludność absolutna rośnie z epoką imperium.</div>';
+  h += '</div><div class="civ-emp-foot">Obywatele to mieszkańcy miasta (1–10 slotów). Ludność absolutna rośnie z epoką imperium.</div>';
   return h;
 }
 
@@ -248,7 +249,7 @@ function render(): void {
     + `<div class="civ-emp-moc-sub">Suma składników: <b>${Math.round(p.powerBase)}</b> pkt (kanon P‑A · bez mnożnika epoki)</div>`
     + `<div class="civ-emp-two">`
     + `<div class="civ-emp-box" data-section="econ-ludnosc"><div class="k">LUDNOŚĆ</div>`
-    + `<div class="v">${e.ludnosc} ludki · ${esc(p.ludnoscAbsLabel)} abs.</div></div>`
+    + `<div class="v">${formatObywateleLabel(e.ludnosc)} · ${esc(p.ludnoscAbsLabel)} abs.</div></div>`
     + `<div class="civ-emp-box" data-section="econ-rekruci"><div class="k">REKRUCI</div>`
     + `<div class="v">${esc(p.rekruciLabel)} / ${esc(p.rekruciMaxLabel)} · ${p.rekrutEkw} werb.</div></div>`
     + `</div>`;
@@ -291,7 +292,7 @@ function render(): void {
     { id: 'nauka', lbl: 'Bank nauki', stock: String(Math.floor(e.nauka)), rate: e.naukaRate ?? 0 },
     { id: 'kultura', lbl: 'Kultura (suma miast)', stock: String(e.kultura), rate: e.kulturaRate ?? 0 },
     { id: 'religia', lbl: 'Wierni religii', stock: String(e.religionStock ?? '—'), rate: e.religionRate ?? 0 },
-    { id: 'ludnosc', lbl: 'Ludność (ludki w miastach)', stock: String(e.ludnosc), rate: e.ludnoscRate ?? 0, noRate: true },
+    { id: 'ludnosc', lbl: 'Ludność (obywatele w miastach)', stock: String(e.ludnosc), rate: e.ludnoscRate ?? 0, noRate: true },
     { id: 'rekruci', lbl: 'Rekruci (pula werbu)', stock: e.rekruciLabel ?? String(p.rekruci), rate: 0, gold: true, noRate: true },
   ];
   const detailFor: Record<string, string> = {
@@ -453,6 +454,7 @@ export function empireSectionFromHudAct(act: string): string | undefined {
     case 'power':
     case 'moc': return 'moc';
     case 'nauka': return 'econ-nauka';
+    case 'zywnosc': return 'econ-zywnosc';
     case 'religia': return 'econ-religia';
     case 'empire': return 'ekonomia';
     default: return undefined;

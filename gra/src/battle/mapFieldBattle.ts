@@ -25,7 +25,7 @@ import { snapshotRosterPositions } from '../game/post-battle-map';
 import type { RuntimeUnit } from '../units/setup';
 import { collectAtkRosterNearCity } from '../units/battleRoster';
 import type { PreBattleInfo, PreBattleCallbacks, PreBattleOptions } from '../ui/preBattle';
-import type { BattleResult, BattleUnit } from './battleScene';
+import type { BattleOpts, BattleResult, BattleUnit } from './battleScene';
 import type { CivBonusEntry } from '../game/civ-bonuses';
 
 export interface MapFieldBattleAction {
@@ -78,6 +78,7 @@ export interface MapFieldBattleLaunchDeps {
       atkStart: Map<string | number, { q: number; r: number }>;
       lossAtkPct?: number;
       lossDefPct?: number;
+      allowCityCapture?: boolean;
     },
     summary: {
       mode: 'auto' | 'manual';
@@ -91,15 +92,7 @@ export interface MapFieldBattleLaunchDeps {
     onContinue: () => void,
   ) => void;
   clearBattleUiState: () => void;
-  createBattleScene: (opts: {
-    attacker: BattleUnit[];
-    defender: BattleUnit[];
-    teren: string;
-    data: MapFieldBattleLaunchDeps['battleData'];
-    deploy: boolean;
-    attackerCivBonusy?: readonly CivBonusEntry[];
-    defenderCivBonusy?: readonly CivBonusEntry[];
-  }) => { play: (cb: (res: BattleResult) => void) => void; dispose: () => void };
+  createBattleScene: (opts: BattleOpts) => { play: (cb: (res: BattleResult) => void) => void; dispose: () => void };
   registerMilitiaDef?: (id: string, def: Record<string, unknown>) => void;
   onQuickSave?: () => boolean;
 }
@@ -361,6 +354,7 @@ export function launchFieldBattleFromMap(
           atkStart: atkStartSnap,
           lossAtkPct: powerRes.lossAtkPct,
           lossDefPct: powerRes.lossDefPct,
+          allowCityCapture: true,
         },
         summaryMeta('auto'),
         deps.clearBattleUiState,
@@ -388,6 +382,10 @@ export function launchFieldBattleFromMap(
         deploy: true,
         attackerCivBonusy: deps.civBonusyForOwnerId(atkLead.ownerId),
         defenderCivBonusy: deps.civBonusyForOwnerId(defLead.ownerId),
+        attackerCivLabel: pbInfo.atakujacy.cywilizacja,
+        defenderCivLabel: pbInfo.obronca.cywilizacja,
+        attackerSideLabel: pbInfo.atakujacy.nazwa,
+        defenderSideLabel: pbInfo.obronca.nazwa,
       });
       bs.play((res) => {
         deps.applyMapBattleOutcomeWithSummary(
@@ -399,6 +397,7 @@ export function launchFieldBattleFromMap(
             battleQ: plan.battleHex.q,
             battleR: plan.battleHex.r,
             atkStart: atkStartSnap,
+            allowCityCapture: true,
           },
           summaryMeta('manual'),
           () => {

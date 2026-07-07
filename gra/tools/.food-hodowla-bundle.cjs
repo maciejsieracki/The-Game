@@ -360,8 +360,8 @@ var terrain_improvements_default = {
     bonus: {},
     surowiecOdblokowany: null,
     teren: "Las",
-    warunek: "darmowa wycinka; +20 Pracy/tur\u0119 \xD7 3 tury (=60); potem teren bazowy bez lasu",
-    koszt_praca: 0,
+    warunek: "koszt 5 Pracy na start; +20 Pracy/tur\u0119 \xD7 3 tury (=60); potem teren bazowy bez lasu",
+    koszt_praca: 5,
     tech: null,
     wycinka: {
       praca_per_tura: 20,
@@ -606,7 +606,7 @@ var TERRAIN_YIELDS = {
   ["pustynia" /* Pustynia */]: { zywnosc: 0, praca: 0, handel: 1, drewno: 0, kamien: 0 }
 };
 var RIVER_MODIFIER = { zywnosc: 3, praca: 2, handel: 2, drewno: 0, kamien: 0 };
-var FOREST_MODIFIER = { zywnosc: -1, praca: 0, handel: -1, drewno: 3, kamien: 0 };
+var FOREST_MODIFIER = { zywnosc: -1, praca: 2, handel: -1, drewno: 3, kamien: 0 };
 var ZERO_YIELD = { zywnosc: 0, praca: 0, handel: 0, drewno: 0, kamien: 0 };
 function tileYield(tile) {
   const base = TERRAIN_YIELDS[tile.terenBazowy] ?? ZERO_YIELD;
@@ -617,6 +617,7 @@ function tileYield(tile) {
   let kamien = base.kamien;
   if (tile.nakladka === "las" /* Las */) {
     zywnosc += FOREST_MODIFIER.zywnosc;
+    praca += FOREST_MODIFIER.praca;
     handel += FOREST_MODIFIER.handel;
     drewno += FOREST_MODIFIER.drewno;
   }
@@ -812,10 +813,10 @@ var map_gen_params_default = {
     miedz: { rarity: 0.1 },
     zelazo: { rarity: 0.08 },
     glina: { rarity: 0.1 },
-    konie: { rarity: 0.1 },
+    konie: { rarity: 0.025 },
     wegiel: { rarity: 0.1 },
-    owce: { rarity: 0.08 },
-    bydlo: { rarity: 0.07 },
+    owce: { rarity: 0.14 },
+    bydlo: { rarity: 0.12 },
     lama: { rarity: 0.06 },
     luksus: { rarity: 0.06 },
     sol: { rarity: 0.12 }

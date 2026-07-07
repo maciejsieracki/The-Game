@@ -43,7 +43,7 @@ function assert(c, msg) {
 console.log('civ-names-test (D-START N-1A/N-3A/N-5B)\n');
 
 assert(M.NAZWY_KLASTRA_LEN === 10, '10 nazw per typ');
-assert(M.validateNazwyKlastra(civs).length === 0, 'civs.json: 9×10 nazwyKlastra');
+assert(M.validateNazwyKlastra(civs).length === 0, 'civs.json: 15×10 nazwyKlastra');
 assert(M.playerStartCityName(civs, 'grecy') === 'Ateny', 'N-1A Grecy → Ateny');
 assert(M.clusterRivalCityName(civs, 'grecy', 1) === 'Sparta', 'N-3A rywal [1] → Sparta');
 assert(M.clusterRivalCityName(civs, 'grecy', 2) === 'Korynt', 'N-3A rywal [2] → Korynt');

@@ -11,6 +11,18 @@ Append-only. Source of truth operacyjny projektu Civ.
 
 ---
 
+## [2026-07-07 ~22:20] INTEGRATOR F — E-map-worker-overlay → ROBOCZA eead06d7
+
+Overlay robotników na mapie świata (E-WORKER-1=A): toggle 👤 przy minimapie, ikonki na hexach z pracownikami ze wszystkich miast gracza, auto-włączenie przy trybie budowy. Pliki: `okolica.ts`, `workerFieldOverlay.ts`, `minimapHud.ts`, `hud.ts`, `main.ts`. Decyzja: `docs/decyzje/E-map-worker-overlay-2026-07-07.md`. tsc OK · publish `gra-robocza/Gra-ROBOCZA.html` md5 `eead06d7c5ea6c974b07eb02da706bf1`.
+
+---
+
+## [2026-07-07 ~16:44] AUTONOMOUS CLOSE — kreator tempo + asymetria trudności → ROBOCZA ae03f50d
+
+Domknięto subagenty 3615b014/3c1794f3/5d176733: wzrost ludności, asymetria kosztów i wzrostu, fix tsc (GameMap, duplikaty save). Testy zielone. Publish `gra-robocza/Gra-ROBOCZA.html` md5 `ae03f50d923a698f644302fdf07e1150`. Raport: `dyspozycje/RAPORT-DZIEN-2026-07-07.md`.
+
+---
+
 ## [2026-07-05 ~23:25] UI → MASTER: **CZEKA publish ROBOCZA**
 
 **Master START:** `dyspozycje/UI-DO-MASTERA.md` sekcja **▶ START**  
@@ -4815,3 +4827,36 @@ Krok 1 przyjmij · krok 2 wykonaj w tej samej turze. Pliki: `MASTER-ZADANIA.md` 
 ## [2026-07-05] MAPA → MASTER: fair play A w grze (kreator→generator)
 
 Ustalenia Macieja (lustro rzek: rzeki/góry/wzgórza/las) **prowadzą do gry** via `worldDensity` z kreatora → `generujSwiat`. Robocza `gra-robocza/START.html` md5 `7a644f…`. Raport: `dyspozycje/MAPA-DO-MASTERA.md` §2026-07-05. **Czeka:** Opus review → kanon root.
+
+## [2026-07-07] Integrator F: A3 marsz redesign — planned march + robocza
+
+**Maciej:** `działaj` — pełny A3-P0-REDESIGN + P0-2 + P0-3.
+
+| Bramka | Wynik |
+|--------|-------|
+| tsc | PASS |
+| planned-march-test | 11/11 |
+| vite build | PASS |
+| publish robocza | PASS |
+
+**Pliki:** `gra/src/game/planned-march.ts` (nowy) · `gra/src/main.ts` · `gra/src/render/units.ts` · `gra/src/game/save.ts` (SAVE_VERSION=2) · `gra/tools/planned-march-test.cjs`
+
+**MD5** `Gra-ROBOCZA.html`: `8fd0dbfc9a5f91a40229d1dcae7800bd` · wejście: `gra-robocza/START.html`
+
+**UX:** klik bez Shift = plan celu + podgląd trasy z markerami tur · segment po end-turn lub **Kontynuuj** · **Zatrzymaj** czyści · save/load `autoMarch` + `plannedMarches`.
+
+## [2026-07-07] Integrator F: build robocza — kolory cywilizacji B + batch dzienny
+
+**Maciej:** `build robocza` — publikacja `gra-robocza/` (bez kanonu).
+
+| Bramka | Wynik |
+|--------|-------|
+| tsc | PASS |
+| civ-visual-test | 54/54 |
+| city-names-pool-test | 10/10 |
+| smoke | OK |
+
+**MD5** `Gra-ROBOCZA.html`: `ee4355aff6356667a0318763ec6f9d6d` · `publishedAt`: 2026-07-07T21:45:30 · wejście: `gra-robocza/START.html`
+
+**Co sprawdzić wizualnie:** kolory państw na mapie (obwódka terytorium / jednostki) oraz spójność kolorów w panelu dyplomacji z `civs.json` (15 cywilizacji, `kolorHex`).
+

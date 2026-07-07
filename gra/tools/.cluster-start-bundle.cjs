@@ -25,11 +25,34 @@ __export(cluster_start_entry_exports, {
   MIN_DIST_START_CITY_STATE: () => MIN_DIST_START_CITY_STATE,
   buildClusterSpawnPlan: () => buildClusterSpawnPlan,
   buildClusterStartPlan: () => buildClusterStartPlan,
+  buildSameTypeRivalSlots: () => buildSameTypeRivalSlots,
+  clusterPackRadius: () => clusterPackRadius,
   generateMap: () => generateMap,
   groupForeignTypeClusters: () => groupForeignTypeClusters,
   hexDistanceAxial: () => hexDistanceAxial
 });
 module.exports = __toCommonJS(cluster_start_entry_exports);
+
+// src/game/city-names-pool.ts
+function poolEntry(pools, ikonaId) {
+  return pools[ikonaId];
+}
+function stateCityNameAt(pools, ikonaId, index, fallback) {
+  const pan = poolEntry(pools, ikonaId)?.miasta_panstwa;
+  if (pan && index >= 0 && index < pan.length && pan[index]) {
+    return pan[index];
+  }
+  return fallback;
+}
+function playerCapitalFromPool(pools, ikonaId) {
+  return stateCityNameAt(pools, ikonaId, 0, "Stolica");
+}
+function clusterRivalFromPool(pools, ikonaId, rivalIndex1Based) {
+  return stateCityNameAt(pools, ikonaId, rivalIndex1Based, `Rywal ${rivalIndex1Based}`);
+}
+function foreignCapitalFromPool(pools, ikonaId) {
+  return stateCityNameAt(pools, ikonaId, 0, ikonaId);
+}
 
 // src/game/civ-names.ts
 function findCivByIkonaId(civs, ikonaId) {
@@ -45,15 +68,24 @@ function nazwaKlastraAt(names, index, fallback) {
   }
   return fallback;
 }
-function playerStartCityName(civs, playerCivId) {
+function playerStartCityName(civs, playerCivId, pools) {
+  if (pools?.[playerCivId]) {
+    return playerCapitalFromPool(pools, playerCivId);
+  }
   const names = getNazwyKlastra(civs, playerCivId);
   return nazwaKlastraAt(names, 0, "Stolica");
 }
-function clusterRivalCityName(civs, playerCivId, rivalIndex1Based) {
+function clusterRivalCityName(civs, playerCivId, rivalIndex1Based, pools) {
+  if (pools?.[playerCivId]) {
+    return clusterRivalFromPool(pools, playerCivId, rivalIndex1Based);
+  }
   const names = getNazwyKlastra(civs, playerCivId);
   return nazwaKlastraAt(names, rivalIndex1Based, `Rywal ${rivalIndex1Based}`);
 }
-function foreignCapitalCityName(civs, typIkonaId) {
+function foreignCapitalCityName(civs, typIkonaId, pools) {
+  if (pools?.[typIkonaId]) {
+    return foreignCapitalFromPool(pools, typIkonaId);
+  }
   const names = getNazwyKlastra(civs, typIkonaId);
   return nazwaKlastraAt(names, 0, typIkonaId);
 }
@@ -148,10 +180,10 @@ var map_gen_params_default = {
     miedz: { rarity: 0.1 },
     zelazo: { rarity: 0.08 },
     glina: { rarity: 0.1 },
-    konie: { rarity: 0.1 },
+    konie: { rarity: 0.025 },
     wegiel: { rarity: 0.1 },
-    owce: { rarity: 0.08 },
-    bydlo: { rarity: 0.07 },
+    owce: { rarity: 0.14 },
+    bydlo: { rarity: 0.12 },
     lama: { rarity: 0.06 },
     luksus: { rarity: 0.06 },
     sol: { rarity: 0.12 }
@@ -308,9 +340,19 @@ var e_start_params_default = {
     forest_threshold_high: 0.5
   },
   tempo_gry: {
-    szybka: 0.2,
-    standardowa: 1,
-    dluga: 5
+    szybka: 1,
+    standardowa: 2,
+    dluga: 4
+  },
+  koszt_budynkow_pace: {
+    niski: 1,
+    normalny: 2,
+    wysoki: 4
+  },
+  koszt_jednostek_pace: {
+    niski: 1,
+    normalny: 2,
+    wysoki: 4
   },
   zwyciestwo: {
     ostatnia_epoka_v1: 3,
@@ -517,8 +559,8 @@ var terrain_improvements_default = {
     bonus: {},
     surowiecOdblokowany: null,
     teren: "Las",
-    warunek: "darmowa wycinka; +20 Pracy/tur\u0119 \xD7 3 tury (=60); potem teren bazowy bez lasu",
-    koszt_praca: 0,
+    warunek: "koszt 5 Pracy na start; +20 Pracy/tur\u0119 \xD7 3 tury (=60); potem teren bazowy bez lasu",
+    koszt_praca: 5,
     tech: null,
     wycinka: {
       praca_per_tura: 20,
@@ -4829,7 +4871,6 @@ var FAIR_PLAY_DEPOSIT_IDS = [
   "zelazo",
   "miedz",
   "glina",
-  "konie",
   "bydlo",
   "owce"
 ];
@@ -5065,6 +5106,7 @@ function computeStartPositions(hexes, seed, opts = {}) {
 var MIN_DIST_START_CITY_STATE = 3;
 var MIN_DIST_FOREIGN_FROM_PLAYER = 12;
 var MIN_DIST_FOREIGN_IN_CLUSTER = MIN_DIST_START_CITY_STATE;
+var CLUSTER_GROWTH_RESERVE = 1;
 var ROSTER_KLUCZE = [
   "grecy",
   "rzymianie",
@@ -5108,13 +5150,34 @@ function shuffleInPlace(arr, rand) {
     arr[j] = tmp;
   }
 }
+function clusterPackRadius(maxMiast, minDist) {
+  const rings = Math.max(2, Math.ceil(Math.sqrt(Math.max(1, maxMiast)) * 1.35));
+  return Math.max(minDist * 2, rings * minDist);
+}
+function landPoolNearCore(region, centrum, maxMiast, minDist) {
+  const packR = clusterPackRadius(maxMiast, minDist);
+  const near = region.map((c) => ({ c, d: hexDistanceAxial(c.q, c.r, centrum.q, centrum.r) })).filter((x) => x.d <= packR).sort((a, b) => a.d - b.d || a.c.q - b.c.q || a.c.r - b.c.r).map((x) => x.c);
+  if (near.length >= maxMiast) return near;
+  let expanded = packR + minDist;
+  while (near.length < maxMiast && expanded <= packR + minDist * 6) {
+    for (const c of region) {
+      if (near.some((p) => p.q === c.q && p.r === c.r)) continue;
+      if (hexDistanceAxial(c.q, c.r, centrum.q, centrum.r) <= expanded) near.push(c);
+      if (near.length >= maxMiast * 3) break;
+    }
+    expanded += minDist;
+  }
+  return near.length > 0 ? near : region;
+}
 function poissonPickCities(region, maxMiast, minDist, rand, opts) {
   const shuffledRegion = region.slice();
   shuffleInPlace(shuffledRegion, rand);
   const picked = [];
   const anchor = opts?.minDistFrom;
   const anchorMin = opts?.minDistFromValue ?? 0;
+  const exclude = opts?.excludeHex;
   function tooClose(c, limit) {
+    if (exclude != null && c.q === exclude.q && c.r === exclude.r) return true;
     if (anchor != null && hexDistanceAxial(c.q, c.r, anchor.q, anchor.r) < anchorMin) {
       return true;
     }
@@ -5134,22 +5197,107 @@ function poissonPickCities(region, maxMiast, minDist, rand, opts) {
   }
   return picked;
 }
-function buildClusterCities(region, centrum, maxMiast, minDist, rand, anchor) {
-  const picked = poissonPickCities(region, maxMiast, minDist, rand, anchor ? { minDistFrom: anchor, minDistFromValue: anchor.minDist } : void 0);
-  let capitalIdx = 0;
-  let capitalDist = Infinity;
-  for (let pi = 0; pi < picked.length; pi++) {
-    const d = hexDistanceAxial(picked[pi].q, picked[pi].r, centrum.q, centrum.r);
-    if (d < capitalDist) {
-      capitalDist = d;
-      capitalIdx = pi;
+function packRivalCitiesAroundCore(landHexes, core, rivalCount, minDist, seed) {
+  if (rivalCount <= 0) return [];
+  const rand = mulberry32((seed ^ 2654435769) >>> 0);
+  const pool = landPoolNearCore(landHexes, core, rivalCount, minDist);
+  return poissonPickCities(pool, rivalCount, minDist, rand, { excludeHex: core });
+}
+function centroidOf(hexes) {
+  if (hexes.length === 0) return { q: 0, r: 0 };
+  let sq = 0;
+  let sr = 0;
+  for (const h of hexes) {
+    sq += h.q;
+    sr += h.r;
+  }
+  return { q: sq / hexes.length, r: sr / hexes.length };
+}
+function isFarEnough(c, others, minDist) {
+  return others.every((o) => hexDistanceAxial(c.q, c.r, o.q, o.r) >= minDist);
+}
+function buildClusterLayoutWithEdgeCapital(region, centrum, stateCityCount, minDist, rand, anchor, growthReserve = CLUSTER_GROWTH_RESERVE) {
+  if (stateCityCount < 0) return null;
+  const interiorNeed = stateCityCount + growthReserve;
+  const packR = clusterPackRadius(Math.max(1, stateCityCount + 1), minDist);
+  const localPool = landPoolNearCore(region, centrum, interiorNeed + 2, minDist);
+  const interiorPicked = poissonPickCities(
+    localPool,
+    interiorNeed,
+    minDist,
+    rand,
+    anchor ? { minDistFrom: anchor, minDistFromValue: anchor.minDist } : void 0
+  );
+  const stateCities = interiorPicked.slice(0, stateCityCount);
+  const growthSlot = interiorPicked.length > stateCityCount ? interiorPicked[stateCityCount] ?? null : null;
+  const occupied = [...stateCities];
+  if (growthSlot) occupied.push(growthSlot);
+  const blobCenter = stateCities.length > 0 ? centroidOf(stateCities) : centrum;
+  const capitalCandidates = region.filter((c) => {
+    if (occupied.some((o) => o.q === c.q && o.r === c.r)) return false;
+    if (!isFarEnough(c, occupied, minDist)) return false;
+    if (anchor && hexDistanceAxial(c.q, c.r, anchor.q, anchor.r) < anchor.minDist) return false;
+    if (stateCities.length === 0) return true;
+    const nearestState = Math.min(
+      ...stateCities.map((s) => hexDistanceAxial(c.q, c.r, s.q, s.r))
+    );
+    return nearestState <= packR && nearestState >= minDist;
+  });
+  let capital = null;
+  let bestEdgeScore = -Infinity;
+  for (const c of capitalCandidates) {
+    const edgeDist = hexDistanceAxial(c.q, c.r, blobCenter.q, blobCenter.r);
+    const jitter = rand() * 0.01;
+    if (edgeDist + jitter > bestEdgeScore) {
+      bestEdgeScore = edgeDist + jitter;
+      capital = c;
     }
   }
-  return picked.map((pos, idx) => ({
-    q: pos.q,
-    r: pos.r,
-    isCapital: idx === capitalIdx
-  }));
+  if (!capital) {
+    const fallbackPool = region.filter((c) => {
+      if (occupied.some((o) => o.q === c.q && o.r === c.r)) return false;
+      if (anchor && hexDistanceAxial(c.q, c.r, anchor.q, anchor.r) < anchor.minDist) return false;
+      return isFarEnough(c, occupied, minDist);
+    });
+    if (fallbackPool.length === 0) return null;
+    fallbackPool.sort((a, b) => {
+      const da = hexDistanceAxial(a.q, a.r, blobCenter.q, blobCenter.r);
+      const db = hexDistanceAxial(b.q, b.r, blobCenter.q, blobCenter.r);
+      return db - da || a.q - b.q || a.r - b.r;
+    });
+    capital = fallbackPool[0];
+  }
+  return { capital, stateCities, growthSlot };
+}
+function layoutToClusterCities(layout) {
+  const cities = [{
+    q: layout.capital.q,
+    r: layout.capital.r,
+    isCapital: true
+  }];
+  for (const s of layout.stateCities) {
+    cities.push({ q: s.q, r: s.r, isCapital: false });
+  }
+  return cities;
+}
+function buildClusterCities(region, centrum, stateCityCount, minDist, rand, anchor) {
+  const layout = buildClusterLayoutWithEdgeCapital(
+    region,
+    centrum,
+    stateCityCount,
+    minDist,
+    rand,
+    anchor,
+    CLUSTER_GROWTH_RESERVE
+  );
+  if (!layout) {
+    return { cities: [], pendingStateSlots: [], growthSlot: null };
+  }
+  return {
+    cities: layoutToClusterCities(layout),
+    pendingStateSlots: layout.stateCities,
+    growthSlot: layout.growthSlot
+  };
 }
 function computeClusters(map, opts) {
   const seed = opts?.seed ?? 42;
@@ -5254,13 +5402,13 @@ function computeClusters(map, opts) {
     regiony[bestIdx].push(h);
   }
   const klastry = [];
-  const maxMiast = rywaleNaKlaster + 1;
+  const stateCityCount = rywaleNaKlaster;
   const playerCentrum = centrumy[0];
   const playerRegion = regiony[0];
-  const playerMiasta = buildClusterCities(
+  const playerLayout = buildClusterCities(
     playerRegion,
     playerCentrum,
-    maxMiast,
+    stateCityCount,
     minDystMiastaPanstwa,
     rand
   );
@@ -5268,17 +5416,19 @@ function computeClusters(map, opts) {
     typIndex: 0,
     typ: aktywneKlucze[0] ?? playerKlucz,
     centrum: playerCentrum,
-    miasta: playerMiasta
+    miasta: playerLayout.cities,
+    pendingStateSlots: playerLayout.pendingStateSlots,
+    growthSlot: playerLayout.growthSlot
   });
-  const playerCapital = playerMiasta.find((m) => m.isCapital) ?? playerMiasta[0];
+  const playerCapital = playerLayout.cities.find((m) => m.isCapital) ?? playerLayout.cities[0];
   const playerCapitalPos = playerCapital ? { q: playerCapital.q, r: playerCapital.r } : playerCentrum;
   for (let ci = 1; ci < centrumy.length; ci++) {
     const centrum = centrumy[ci];
     const region = regiony[ci];
-    const miasta = buildClusterCities(
+    const foreignLayout = buildClusterCities(
       region,
       centrum,
-      maxMiast,
+      stateCityCount,
       MIN_DIST_FOREIGN_IN_CLUSTER,
       rand,
       { q: playerCapitalPos.q, r: playerCapitalPos.r, minDist: minDystObcyOdGracza }
@@ -5287,15 +5437,16 @@ function computeClusters(map, opts) {
       typIndex: ci,
       typ: aktywneKlucze[ci] ?? `typ${ci}`,
       centrum,
-      miasta
+      miasta: foreignLayout.cities,
+      growthSlot: foreignLayout.growthSlot
     });
   }
   if (typeof console !== "undefined") {
     for (let ci = 0; ci < klastry.length; ci++) {
       const k = klastry[ci];
-      if (k.miasta.length < rywaleNaKlaster + 1) {
+      if (k.miasta.length < stateCityCount + 1) {
         console.warn(
-          `[clusters] Klaster '${k.typ}' (region ${ci}): tylko ${k.miasta.length}/${rywaleNaKlaster + 1} miast (region za ma\u0142y: ${regiony[ci].length} pol ladowych)`
+          `[clusters] Klaster '${k.typ}' (region ${ci}): tylko ${k.miasta.length}/${stateCityCount + 1} miast (region za ma\u0142y: ${regiony[ci].length} pol ladowych)`
         );
       }
     }
@@ -5311,6 +5462,38 @@ function computeClusters(map, opts) {
 }
 
 // src/map/cluster-spawn.ts
+function landHexesFromMap(map) {
+  const out = [];
+  for (const h of Object.values(map.hexes)) {
+    if (h.terenBazowy === "morze" /* Morze */ || h.terenBazowy === "gory" /* Gory */) continue;
+    out.push({ q: h.coords.q, r: h.coords.r });
+  }
+  return out;
+}
+function buildSameTypeRivalSlots(map, civs, core, playerTyp, rivalCount, seed, firstOwnerId, pools) {
+  if (rivalCount <= 0) return [];
+  const positions = packRivalCitiesAroundCore(
+    landHexesFromMap(map),
+    core,
+    rivalCount,
+    MIN_DIST_START_CITY_STATE,
+    seed
+  );
+  const slots = [];
+  let ownerId = firstOwnerId;
+  positions.forEach((pos, idx) => {
+    slots.push({
+      ownerId: ownerId++,
+      q: pos.q,
+      r: pos.r,
+      nazwaMiasta: clusterRivalCityName(civs, playerTyp, idx + 1, pools),
+      typ: playerTyp,
+      isSameTypeRival: true,
+      isPlayerCapital: false
+    });
+  });
+  return slots;
+}
 function capitalOf(klaster) {
   const cap = klaster.miasta.find((m) => m.isCapital) ?? klaster.miasta[0];
   return cap ? { q: cap.q, r: cap.r } : null;
@@ -5336,7 +5519,8 @@ function buildClusterSpawnPlan(input) {
     seed,
     playerTyp,
     rywaleNaKlaster,
-    aktywneTypy
+    aktywneTypy,
+    cityNamesPools
   } = input;
   const placement = computeClusters(map, {
     seed,
@@ -5349,29 +5533,21 @@ function buildClusterSpawnPlan(input) {
   if (!playerCluster || playerCluster.miasta.length === 0) {
     return {
       playerStartHex: fallbackHex,
-      playerStartCityName: playerStartCityName(civs, playerTyp),
+      playerStartCityName: playerStartCityName(civs, playerTyp, cityNamesPools),
       slots: [],
       foreignTypeClusters: [],
-      placement
+      placement,
+      pendingSameTypeRivals: rywaleNaKlaster,
+      pendingSameTypeRivalHexes: [],
+      clusterCapitalOwnerIds: []
     };
   }
   const capPos = capitalOf(playerCluster) ?? fallbackHex;
   const slots = [];
+  const clusterCapitalOwnerIds = [];
   let nextOwnerId = 1;
-  const rivalHexes = playerCluster.miasta.filter((m) => !m.isCapital).slice(0, rywaleNaKlaster);
-  rivalHexes.forEach((m, idx) => {
-    const ownerId = nextOwnerId++;
-    const nazwa = clusterRivalCityName(civs, playerTyp, idx + 1);
-    slots.push({
-      ownerId,
-      q: m.q,
-      r: m.r,
-      nazwaMiasta: nazwa,
-      typ: playerTyp,
-      isSameTypeRival: true,
-      isPlayerCapital: false
-    });
-  });
+  const pendingSameTypeRivals = rywaleNaKlaster;
+  const pendingSameTypeRivalHexes = playerCluster.pendingStateSlots?.slice() ?? [];
   for (const klaster of placement.klastry) {
     if (klaster.typIndex === placement.playerTypIndex) continue;
     let rivalIdx = 0;
@@ -5379,10 +5555,11 @@ function buildClusterSpawnPlan(input) {
       const ownerId = nextOwnerId++;
       let nazwa;
       if (m.isCapital) {
-        nazwa = foreignCapitalCityName(civs, klaster.typ);
+        nazwa = foreignCapitalCityName(civs, klaster.typ, cityNamesPools);
+        clusterCapitalOwnerIds.push(ownerId);
       } else {
         rivalIdx += 1;
-        nazwa = clusterRivalCityName(civs, klaster.typ, rivalIdx);
+        nazwa = clusterRivalCityName(civs, klaster.typ, rivalIdx, cityNamesPools);
       }
       slots.push({
         ownerId,
@@ -5391,16 +5568,20 @@ function buildClusterSpawnPlan(input) {
         nazwaMiasta: nazwa,
         typ: klaster.typ,
         isSameTypeRival: false,
-        isPlayerCapital: false
+        isPlayerCapital: false,
+        isClusterCapital: m.isCapital
       });
     }
   }
   return {
     playerStartHex: capPos,
-    playerStartCityName: playerStartCityName(civs, playerTyp),
+    playerStartCityName: playerStartCityName(civs, playerTyp, cityNamesPools),
     slots,
     foreignTypeClusters: groupForeignTypeClusters(slots),
-    placement
+    placement,
+    pendingSameTypeRivals,
+    pendingSameTypeRivalHexes,
+    clusterCapitalOwnerIds
   };
 }
 function displayLabelForSlot(_civs, slot) {
@@ -5633,7 +5814,8 @@ function buildClusterStartPlan(input) {
     seed: input.seed,
     playerTyp: input.playerCivId,
     rywaleNaKlaster: input.rywaleNaKlaster,
-    aktywneTypy: input.aktywneTypy
+    aktywneTypy: input.aktywneTypy,
+    cityNamesPools: input.cityNamesPools
   });
   const aiOwnerCivMap = /* @__PURE__ */ new Map();
   const ownerDisplayName = /* @__PURE__ */ new Map();
@@ -5648,7 +5830,7 @@ function buildClusterStartPlan(input) {
     ownerDisplayName.set(slot.ownerId, displayLabelForSlot(input.civs, slot));
     if (slot.isSameTypeRival) simplifiedDiplomacyOwners.add(slot.ownerId);
     else foreignTypeOwners.add(slot.ownerId);
-    typCityCopyOwners.add(slot.ownerId);
+    if (!slot.isClusterCapital) typCityCopyOwners.add(slot.ownerId);
     startRelations.set(slot.ownerId, startRelationForPair(slot.isSameTypeRival));
     spawnCities.push({
       q: slot.q,
@@ -5670,7 +5852,10 @@ function buildClusterStartPlan(input) {
     foreignTypeOwners,
     typCityCopyOwners,
     startRelations,
-    placement: spawnPlan.placement
+    placement: spawnPlan.placement,
+    pendingSameTypeRivals: spawnPlan.pendingSameTypeRivals,
+    pendingSameTypeRivalHexes: spawnPlan.pendingSameTypeRivalHexes,
+    clusterCapitalOwnerIds: spawnPlan.clusterCapitalOwnerIds
   };
 }
 // Annotate the CommonJS export names for ESM import in node:
@@ -5680,6 +5865,8 @@ function buildClusterStartPlan(input) {
   MIN_DIST_START_CITY_STATE,
   buildClusterSpawnPlan,
   buildClusterStartPlan,
+  buildSameTypeRivalSlots,
+  clusterPackRadius,
   generateMap,
   groupForeignTypeClusters,
   hexDistanceAxial

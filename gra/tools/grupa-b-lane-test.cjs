@@ -95,7 +95,17 @@ const yt = M.tileYield({
 });
 const tarBonus = M.improvementBonusForKey('tartak');
 ok(tarBonus.praca === 3 && tarBonus.drewno === undefined, 'tartak +3 praca only');
-ok(yt.praca >= 3, 'tartak tile praca bonus');
+ok(yt.praca >= 6, 'tartak + las: laka 1 + las 3 + tartak 3 praca');
+
+const yForestPlain = M.tileYield({
+  terenBazowy: M.TerenBazowy.Rownina,
+  nakladka: M.Nakladka.Las,
+  maRzeke: false,
+});
+ok(yForestPlain.zywnosc === 1, 'las rownina: zywnosc 2-1');
+ok(yForestPlain.handel === 0, 'las rownina: handel 1-1 floored');
+ok(yForestPlain.praca === 4, 'las rownina: praca 1+3');
+ok(yForestPlain.drewno === 5, 'las rownina: drewno 2+3');
 
 ok(M.resolveOwnCultureShare({ ownCultureShare: 0.4 }) === 0.4, 'culture share resolve');
 const rel = M.isForeignReligionDominant(
@@ -120,7 +130,7 @@ const efB5 = M.advanceEmpireFood(
 ok(efB5.byOwner.get(0).glodWojska === true, 'B5 glodWojska large army');
 
 const wyrMeta = M.getImprovementMeta('wyrab');
-ok(wyrMeta?.kosztPraca === 0 && wyrMeta?.typ === 'wycinka', 'wyrab free clearing');
+ok(wyrMeta?.kosztPraca === 5 && wyrMeta?.typ === 'wycinka', 'wyrab clearing start cost 5P');
 const tarMeta = M.getImprovementMeta('tartak');
 ok(tarMeta?.techId === 'Obróbka drewna', 'tartak tech');
 ok(!M.isImprovementTechUnlocked('tartak', new Set()), 'tartak locked without tech');
@@ -144,6 +154,12 @@ const cities = [
 ];
 const src = M.pickSourceCityForFounding(cities, 0);
 ok(src?.id === 'c2', 'FOUND Q1 A+B picks largest pop>=2');
+const tied = [
+  { id: 'c1', ownerId: 0, population: 4 },
+  { id: 'c2', ownerId: 0, population: 4 },
+];
+ok(M.pickSourceCityForFounding(tied, 0, () => 0)?.id === 'c1', 'FOUND tie rand low picks first tied');
+ok(M.pickSourceCityForFounding(tied, 0, () => 0.99)?.id === 'c2', 'FOUND tie rand high picks second tied');
 const aff = M.evaluateFoundCityAffordance(25, cities, 0);
 ok(aff.ok && aff.sourceCityId === 'c2', 'evaluate afford subsequent city');
 const affFirst = M.evaluateFoundCityAffordance(0, [], 0);

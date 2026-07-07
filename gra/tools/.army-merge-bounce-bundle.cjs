@@ -20,6 +20,7 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 // tools/.army-merge-bounce-entry.ts
 var army_merge_bounce_entry_exports = {};
 __export(army_merge_bounce_entry_exports, {
+  assignBounceHexesForUnits: () => assignBounceHexesForUnits,
   findBounceHexFromOrigin: () => findBounceHexFromOrigin
 });
 module.exports = __toCommonJS(army_merge_bounce_entry_exports);
@@ -185,8 +186,8 @@ var terrain_improvements_default = {
     bonus: {},
     surowiecOdblokowany: null,
     teren: "Las",
-    warunek: "darmowa wycinka; +20 Pracy/tur\u0119 \xD7 3 tury (=60); potem teren bazowy bez lasu",
-    koszt_praca: 0,
+    warunek: "koszt 5 Pracy na start; +20 Pracy/tur\u0119 \xD7 3 tury (=60); potem teren bazowy bez lasu",
+    koszt_praca: 5,
     tech: null,
     wycinka: {
       praca_per_tura: 20,
@@ -343,6 +344,9 @@ var IMPROVEMENT_KEYS = Object.keys(IMPROVEMENTS).filter((k) => !k.startsWith("_"
 var ROAD_MIN_MOVE_COST = 1 / 3;
 
 // src/units/setup.ts
+function keyOf(q, r) {
+  return `${q},${r}`;
+}
 var DEFAULT_TERRAIN_COSTS = {
   ["laka" /* Laka */]: 1,
   ["rownina" /* Rownina */]: 1,
@@ -363,6 +367,37 @@ var NEIGH = [
   [1, -1],
   [-1, 1]
 ];
+function assignBounceHexesForUnits(units, preferQ, preferR, unitIds, isPassable) {
+  const passable = (q, r) => isPassable ? isPassable(q, r) : true;
+  const out = /* @__PURE__ */ new Map();
+  const virtualOcc = /* @__PURE__ */ new Set();
+  const isOccupied = (q, r, exceptId) => {
+    const k = keyOf(q, r);
+    if (virtualOcc.has(k)) return true;
+    return units.some(
+      (u) => u.id !== exceptId && !unitIds.includes(u.id) && u.q === q && u.r === r && u.inGarnizon !== true
+    );
+  };
+  const trySpot = (exceptId) => {
+    if (!isOccupied(preferQ, preferR, exceptId) && passable(preferQ, preferR)) {
+      return { q: preferQ, r: preferR };
+    }
+    for (const [dq, dr] of NEIGH) {
+      const q = preferQ + dq;
+      const r = preferR + dr;
+      if (!passable(q, r)) continue;
+      if (!isOccupied(q, r, exceptId)) return { q, r };
+    }
+    return null;
+  };
+  for (const uid of unitIds) {
+    const spot = trySpot(uid);
+    if (!spot) continue;
+    out.set(uid, spot);
+    virtualOcc.add(keyOf(spot.q, spot.r));
+  }
+  return out;
+}
 function findBounceHexFromOrigin(units, fromQ, fromR, exceptUnitId, isPassable) {
   return findRejectHex(units, fromQ, fromR, exceptUnitId, isPassable);
 }
@@ -380,5 +415,6 @@ function findRejectHex(units, fromQ, fromR, exceptUnitId, isPassable) {
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
+  assignBounceHexesForUnits,
   findBounceHexFromOrigin
 });

@@ -73,7 +73,10 @@ export function getImprovementLockHint(
   if (meta.kosztPraca > 0) {
     parts.push('Koszt: ' + meta.kosztPraca + ' Pracy');
   } else if (meta.typ === 'wycinka') {
-    parts.push('Darmowa wycinka (' + (meta.clearing?.tury ?? 3) + ' tury)');
+    if (meta.kosztPraca > 0) {
+      parts.push('Koszt startu: ' + meta.kosztPraca + ' Pracy');
+    }
+    parts.push('Wycinka ' + (meta.clearing?.tury ?? 3) + ' tury (+' + (meta.clearing?.pracaPerTura ?? 20) + ' Pracy/turę)');
   }
   return parts.length > 0 ? parts.join(' · ') : 'Wymagania nieznane';
 }

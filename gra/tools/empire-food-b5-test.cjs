@@ -15,6 +15,7 @@ fs.writeFileSync(ENTRY, `
 export {
   advanceEmpireFood, freshEmpireFoodState, buildEmpireFoodParams,
   bindEmpireFoodRuntime, getEmpireFoodSplit, getEmpireFoodMaxCap, isArmyStarving,
+  computeEmpireFoodNetDelta, clearLastEmpireFoodTicks, computeEmpireFoodMaxCap,
 } from '../src/game/empire-food';
 export { advanceCityEconomy } from '../src/game/turn-economy';
 export { applyArmyStarvationHpLoss } from '../src/game/army-starvation';
@@ -45,7 +46,7 @@ const units1 = [{ ownerId: 0, typeId: 'woj', camping: false }];
 const ef = M.advanceEmpireFood(econ, units1, states, upkeep, params);
 const t0 = ef.byOwner.get(0);
 ok(t0.doPanstwa === 30, 'split 30% to state reserves');
-ok(states.get(0).zapasyPanstwa === 0, 'bez Spichlerza: nadwyżka wojska nie kumuluje (B5)');
+ok(states.get(0).zapasyPanstwa === 15, 'bez Spichlerza: 50% netto armii kumuluje round((30−1)×50%)=15');
 
 const statesSp = new Map([[0, M.freshEmpireFoodState(70)]]);
 const econSp = { perCity: [{ ownerId: 0, zywnoscNetto: 100, oblegany: false, maSpichlerz: true }] };
@@ -129,6 +130,18 @@ ok(states2t.get(0).zapasyPanstwa === 60, 'tura 2: +30 (łącznie 60)');
 M.advanceEmpireFood(econ50, [], states2t, upkeep, params);
 M.advanceEmpireFood(econ50, [], states2t, upkeep, params);
 ok(states2t.get(0).zapasyPanstwa === 100, 'tura 4+: cap 100, overflow przepada');
+
+// --- computeEmpireFoodNetDelta (HUD projection) ---
+ok(M.computeEmpireFoodNetDelta(11, 0, 100, 2, params) === 0,
+  '100% wzrost: 0 do armii mimo Spichlerza');
+ok(M.computeEmpireFoodNetDelta(11, 0, 0, 0, params) === 6,
+  '0% wzrost bez Spichlerza: round(11×50%)=6 (stary bug HUD)');
+ok(M.computeEmpireFoodNetDelta(100, 1, 70, 1, params) === 29,
+  'projekcja = tick ze Spichlerzem (29)');
+
+ok(M.computeEmpireFoodMaxCap(0, params) === 0, '0 Spichlerzy → brak limitu w HUD');
+ok(M.computeEmpireFoodMaxCap(1, params) === 100, '1 Spichlerz → max 100');
+ok(M.computeEmpireFoodMaxCap(2, params) === 200, '2 Spichlerze → max 200');
 
 console.log('empire-food-b5-test: ' + passed + ' pass, ' + failed + ' fail');
 process.exit(failed > 0 ? 1 : 0);

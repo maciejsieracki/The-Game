@@ -85,12 +85,12 @@
     {
       "Modyfikator": "Las (nakładka)",
       "Żywność": -1,
-      "Praca": 0,
+      "Praca": 3,
       "Handel": -1,
       "Drewno": 3,
       "Kamień": 0,
-      "Suma": 1,
-      "Uwagi": "Pod lasem zawsze jest teren bazowy (łąka/równina/wzgórza itp.); las daje +drewno, redukuje żywność i handel"
+      "Suma": 4,
+      "Uwagi": "Pod lasem zawsze jest teren bazowy; las: −żywność, −handel, +praca (+3), +drewno — bez względu na 👤/jednostkę"
     }
   ]
 }

@@ -14,6 +14,8 @@ export interface StackDisplayInfo {
   visibleIds: Set<string>;
   /** rep unit id → liczba jednostek na heksie (gdy > 1). */
   badgeByRepId: Map<string, number>;
+  /** MAP-Q1: rep token ids z chipem głodu (armia państwa głoduje). */
+  starvingRepIds?: Set<string>;
 }
 
 export function visibleStackOnHex(
@@ -101,6 +103,53 @@ export function findAdjacentEmptyHexes(
   return out;
 }
 
+/** Cofnięcie wielu jednostek (np. cały przybywający stos) — po jednym heksie każda. */
+export function assignBounceHexesForUnits(
+  units: RuntimeUnit[],
+  preferQ: number,
+  preferR: number,
+  unitIds: readonly string[],
+  isPassable?: (q: number, r: number) => boolean,
+): Map<string, { q: number; r: number }> {
+  const passable = (q: number, r: number): boolean =>
+    isPassable ? isPassable(q, r) : true;
+  const out = new Map<string, { q: number; r: number }>();
+  const virtualOcc = new Set<string>();
+
+  const isOccupied = (q: number, r: number, exceptId: string): boolean => {
+    const k = keyOf(q, r);
+    if (virtualOcc.has(k)) return true;
+    return units.some(
+      u => u.id !== exceptId
+        && !unitIds.includes(u.id)
+        && u.q === q
+        && u.r === r
+        && u.inGarnizon !== true,
+    );
+  };
+
+  const trySpot = (exceptId: string): { q: number; r: number } | null => {
+    if (!isOccupied(preferQ, preferR, exceptId) && passable(preferQ, preferR)) {
+      return { q: preferQ, r: preferR };
+    }
+    for (const [dq, dr] of NEIGH) {
+      const q = preferQ + dq;
+      const r = preferR + dr;
+      if (!passable(q, r)) continue;
+      if (!isOccupied(q, r, exceptId)) return { q, r };
+    }
+    return null;
+  };
+
+  for (const uid of unitIds) {
+    const spot = trySpot(uid);
+    if (!spot) continue;
+    out.set(uid, spot);
+    virtualOcc.add(keyOf(spot.q, spot.r));
+  }
+  return out;
+}
+
 /** Heks startowy ruchu (skąd przyszła) lub wolny sąsiad lądu — bez zwrotu punktów ruchu. */
 export function findBounceHexFromOrigin(
   units: RuntimeUnit[],
@@ -138,4 +187,65 @@ function findRejectHex(
 
 export function stackKey(q: number, r: number): string {
   return keyOf(q, r);
+}
+
+/** Wspólny pul ruchu stosu — minimum z członków (par. 6b: armia rusza łącznie). */
+export function stackRuchLeft(stack: ReadonlyArray<RuntimeUnit>): number {
+  if (stack.length === 0) return 0;
+  return Math.min(...stack.map(u => u.ruchLeft));
+}
+
+/** Ujednolic ruchLeft wszystkich członków stosu (domyślnie = min obecnych). */
+export function syncStackRuchLeft(stack: RuntimeUnit[], ruchLeft?: number): void {
+  if (stack.length === 0) return;
+  const v = ruchLeft ?? stackRuchLeft(stack);
+  for (const u of stack) u.ruchLeft = v;
+}
+
+/** Odejmij koszt ruchu od wspólnego pulu stosu. */
+export function deductStackRuchLeft(stack: RuntimeUnit[], cost: number): void {
+  syncStackRuchLeft(stack, Math.max(0, stackRuchLeft(stack) - cost));
+}
+
+/** Jednostka z ruchLeft = pul stosu (do pathfindingu). */
+export function unitWithStackRuch(
+  unit: RuntimeUnit,
+  stack: ReadonlyArray<RuntimeUnit>,
+): RuntimeUnit {
+  if (stack.length <= 1) return unit;
+  const pooled = stackRuchLeft(stack);
+  return pooled === unit.ruchLeft ? unit : { ...unit, ruchLeft: pooled };
+}
+
+/**
+ * Jednostki właściciela na heksie miasta → bonus Prawo (Porządek).
+ * Liczy stojące na polu miasta i ukryte w garnizonie (inGarnizon); pomija oblegających.
+ */
+export function countLawGarrisonOnCityHex(
+  units: ReadonlyArray<RuntimeUnit>,
+  cityQ: number,
+  cityR: number,
+  ownerId: number,
+): number {
+  return units.filter(
+    u => u.ownerId === ownerId
+      && u.q === cityQ
+      && u.r === cityR
+      && !u.oblegaCityId,
+  ).length;
+}
+
+/** Jednostki na heksie miasta (do panelu Porządek / lista garnizonu). */
+export function unitsOnCityHexForLaw(
+  units: ReadonlyArray<RuntimeUnit>,
+  cityQ: number,
+  cityR: number,
+  ownerId: number,
+): RuntimeUnit[] {
+  return units.filter(
+    u => u.ownerId === ownerId
+      && u.q === cityQ
+      && u.r === cityR
+      && !u.oblegaCityId,
+  );
 }

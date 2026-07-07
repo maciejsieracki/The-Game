@@ -5,8 +5,10 @@
 
 import type { CivsData } from '../data/loader';
 import type { GameMap } from '../types/map';
+import type { CityNamesPools } from './civ-names';
 import {
   buildClusterSpawnPlan,
+  buildSameTypeRivalSlots,
   displayLabelForSlot,
   type ClusterSpawnPlan,
   type ClusterSpawnSlot,
@@ -16,6 +18,7 @@ import { startRelationForPair } from './diplomacy-layers';
 import type { Relation } from './diplomacy';
 
 export type { ClusterSpawnSlot, ClusterSpawnPlan, ForeignTypeClusterGroup };
+export { buildSameTypeRivalSlots };
 
 export interface ClusterStartPlan {
   playerStartHex: { q: number; r: number };
@@ -33,6 +36,12 @@ export interface ClusterStartPlan {
   typCityCopyOwners: Set<number>;
   startRelations: Map<number, Relation>;
   placement: ClusterSpawnPlan['placement'];
+  /** Liczba miast-państw do spawnu wokół pierwszego miasta gracza. */
+  pendingSameTypeRivals: number;
+  /** Pre-planowane hexy państw gracza (klaster z mapgen). */
+  pendingSameTypeRivalHexes: Array<{ q: number; r: number }>;
+  /** Stolice klastrów obcych typów — ekspansyjna AI (faza 1). */
+  clusterCapitalOwnerIds: number[];
 }
 
 export interface BuildClusterStartInput {
@@ -42,6 +51,7 @@ export interface BuildClusterStartInput {
   playerCivId: string;
   rywaleNaKlaster: number;
   aktywneTypy?: number;
+  cityNamesPools?: CityNamesPools;
 }
 
 /** Pełny plan startu — konsumuje SILNIK w doStartGame(). */
@@ -53,6 +63,7 @@ export function buildClusterStartPlan(input: BuildClusterStartInput): ClusterSta
     playerTyp: input.playerCivId,
     rywaleNaKlaster: input.rywaleNaKlaster,
     aktywneTypy: input.aktywneTypy,
+    cityNamesPools: input.cityNamesPools,
   });
 
   const aiOwnerCivMap = new Map<number, string>();
@@ -69,7 +80,7 @@ export function buildClusterStartPlan(input: BuildClusterStartInput): ClusterSta
     ownerDisplayName.set(slot.ownerId, displayLabelForSlot(input.civs, slot));
     if (slot.isSameTypeRival) simplifiedDiplomacyOwners.add(slot.ownerId);
     else foreignTypeOwners.add(slot.ownerId);
-    typCityCopyOwners.add(slot.ownerId);
+    if (!slot.isClusterCapital) typCityCopyOwners.add(slot.ownerId);
     startRelations.set(slot.ownerId, startRelationForPair(slot.isSameTypeRival));
     spawnCities.push({
       q: slot.q,
@@ -93,5 +104,8 @@ export function buildClusterStartPlan(input: BuildClusterStartInput): ClusterSta
     typCityCopyOwners,
     startRelations,
     placement: spawnPlan.placement,
+    pendingSameTypeRivals: spawnPlan.pendingSameTypeRivals,
+    pendingSameTypeRivalHexes: spawnPlan.pendingSameTypeRivalHexes,
+    clusterCapitalOwnerIds: spawnPlan.clusterCapitalOwnerIds,
   };
 }

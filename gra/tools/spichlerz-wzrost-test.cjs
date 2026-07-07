@@ -18,7 +18,7 @@ const BUNDLE_FILE = path.resolve(__dirname, '.spichlerz-bundle.cjs');
 
 const ENTRY_TS = `
 export { populationGrowth } from '../src/game/economy';
-export { advanceEmpireFood, freshEmpireFoodState } from '../src/game/empire-food';
+export { advanceEmpireFood, freshEmpireFoodState, buildEmpireFoodParams } from '../src/game/empire-food';
 `;
 
 fs.writeFileSync(ENTRY_FILE, ENTRY_TS, 'utf8');
@@ -88,7 +88,10 @@ eq(rAcc.nowyMagazynZywnosci, 15, 'bez Spichlerza: bufor kumuluje między turami 
 console.log('\n--- advanceEmpireFood zapasy państwa ---');
 
 const upkeep = { jednostkaUtrzymanieStd: 1, zywnoscJednostkaRuch: 1, zywnoscJednostkaOboz: 0.5 };
-const efParams = { procentRozwojDefault: 70, glodWojskaHpFrac: 0.08 };
+const efParams = M.buildEmpireFoodParams({
+  suwak_zywnosc_rozwoj_domyslnie: { normal: 70 },
+  glod_wojska_hp_frac: { normal: 0.08 },
+});
 const states = new Map([[0, M.freshEmpireFoodState(70)]]);
 
 const econNoSpich = {
@@ -98,7 +101,7 @@ const econNoSpich = {
 };
 const resNoSpich = M.advanceEmpireFood(econNoSpich, [{ ownerId: 0 }], states, upkeep, efParams);
 const tickNo = resNoSpich.byOwner.get(0);
-eq(tickNo.zapasyPo, 0, 'bez Spichlerza: nadwyżka wojska przepada (30-1=29→0)');
+eq(tickNo.zapasyPo, 15, 'bez Spichlerza: 50% netto round((30−1)×50%)=15');
 ok(!tickNo.glodWojska, 'bez Spichlerza: wystarczy na armie 1 jednostkę');
 
 states.set(0, M.freshEmpireFoodState(70));

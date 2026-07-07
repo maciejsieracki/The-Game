@@ -19,6 +19,7 @@ import {
   type MinimapHexData,
   type MinimapLayerHooks,
   type MinimapPlaytestFogHooks,
+  type MinimapWorkerOverlayHooks,
 } from './minimapHud';
 import { naukaHudWordHtml } from './naukaLabel';
 import {
@@ -105,6 +106,8 @@ export interface HudState {
   stateReligion?: string | null;
   /** ikonaId cywilizacji gracza (medalion Mocy na HUD). */
   civIconId?: string;
+  /** kolorHex cywilizacji gracza (ramka medalionu). */
+  civKolorHex?: string;
 }
 
 export interface HudConfig {
@@ -144,6 +147,9 @@ export interface HudConfig {
 
   /** Playtest/dev: batony F/M obok minimapy (brak w produkcji). */
   minimapPlaytestFog?: MinimapPlaytestFogHooks;
+
+  /** E-map-worker-overlay: toggle 👤 na mapie świata. */
+  minimapWorkerOverlay?: MinimapWorkerOverlayHooks;
 
   /** D17=A: treść panelu kontekstowego (null = ukryty). */
   getContextPanelMessage?: () => string | null;
@@ -250,7 +256,8 @@ function ensureStyles(): void {
   display:flex;align-items:center;gap:12px;padding:10px 18px;max-width:min(calc(100vw - 380px),960px);
   border-radius:12px;background:linear-gradient(180deg,rgba(20,26,38,.94),rgba(8,10,16,.95));
   border:1px solid rgba(232,216,138,.3);box-shadow:inset 0 1px 0 rgba(232,216,138,.18),0 6px 18px rgba(0,0,0,.55);}
-.civ-hud .hud-chip-row{display:flex;align-items:center;gap:0;flex-wrap:wrap;}
+.civ-hud .hud-chip-row{display:flex;align-items:center;gap:0;flex-wrap:nowrap;}
+.civ-hud .hud-pop-chip{margin-left:4px;}
 .civ-hud .civ-hud-chip{display:inline-flex;align-items:center;gap:7px;white-space:nowrap;}
 .civ-hud .civ-hud-chip-click{cursor:pointer;border-radius:8px;padding:2px 4px;margin:-2px -4px;}
 .civ-hud .civ-hud-chip-click:hover{background:rgba(232,216,138,.06);}
@@ -291,11 +298,13 @@ function ensureStyles(): void {
   box-shadow:0 6px 22px rgba(0,0,0,.6),0 0 30px rgba(232,216,138,.18);}
 .civ-hud .power-center:hover{filter:brightness(1.06);}
 .civ-hud .power-center .p-row{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px;width:100%;}
-.civ-hud .power-center .p-side-left{justify-self:start;display:inline-flex;align-items:center;gap:6px;
+.civ-hud .power-center .p-side-left{justify-self:start;display:inline-flex;align-items:flex-start;
   cursor:pointer;border-radius:6px;padding:2px 6px;margin:-2px -6px;}
 .civ-hud .power-center .p-side-left:hover{background:rgba(232,216,138,.08);}
 .civ-hud .power-center .p-side-center{justify-self:center;display:inline-flex;align-items:center;justify-content:center;}
 .civ-hud .power-center .p-side-right{justify-self:end;display:flex;flex-direction:column;align-items:flex-end;gap:2px;}
+.civ-hud .power-center .p-stack{display:flex;flex-direction:column;align-items:flex-start;gap:3px;}
+.civ-hud .power-center .p-stack.p-stack-right{align-items:flex-end;}
 .civ-hud .power-center .p-val-num{font-family:var(--civ-font-title);font-size:24px;color:#f4e6a8;line-height:1;}
 .civ-hud .power-center .p-ic{display:inline-flex;align-items:center;justify-content:center;
   width:44px;height:44px;border-radius:50%;flex-shrink:0;
@@ -306,12 +315,16 @@ function ensureStyles(): void {
   border:1.5px solid rgba(160,128,48,0.6);box-shadow:0 0 12px rgba(160,128,48,.25);}
 .civ-hud .power-center .p-ic.p-ic-civ svg{width:30px;height:30px;}
 .civ-hud .power-center .p-recruit-ic{display:inline-flex;align-items:center;justify-content:center;color:#c8b888;}
-.civ-hud .power-center .p-recruit-ic svg{width:18px;height:18px;display:block;}
+.civ-hud .power-center .p-recruit-ic svg{width:20px;height:20px;display:block;}
+.civ-hud .power-center .p-power-ic{display:inline-flex;align-items:center;justify-content:center;color:#d4bc78;}
+.civ-hud .power-center .p-power-ic svg{width:20px;height:20px;display:block;}
+.civ-hud .power-center .p-power-fleur{font-size:17px;line-height:1;color:#d4bc78;}
 .civ-hud .power-center .p-recruit-val{font-size:15px;color:#f4e6a8;font-weight:700;font-family:var(--civ-font-title);}
 .civ-hud .power-center .p-lbl{font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:#a08030;}
 .civ-hud .power-center .p-sub{display:none;}
 .civ-hud.is-city-view .hud-left,
-.civ-hud.is-city-view .power-center{display:none!important;}
+.civ-hud.is-city-view .power-center,
+.civ-hud.is-city-view .hud-pop-chip{display:none!important;}
 .civ-hud.is-city-view .hud-meta{display:none!important;}
 .civ-hud.is-city-view .hud-right{top:10px;right:14px;z-index:5;}
 .civ-mini{position:fixed;left:20px;bottom:20px;width:${MINI_W}px;height:${MINI_H}px;z-index:309;display:none;}
@@ -348,7 +361,6 @@ function signed(n: number): string { return (n > 0 ? '+' : '') + String(n); }
 function formatFoodHudLabel(s: HudState): string {
   const max = s.zywnoscMax;
   if (max != null && max > 0) return `${s.zywnoscLabel} / ${max}`;
-  if (max === 0) return '—';
   return s.zywnoscLabel;
 }
 
@@ -360,21 +372,37 @@ function hudIc(id: IconId): string {
 function powerCenterIconHtml(s: HudState): string {
   const civId = s.civIconId ?? 'grecy';
   const civSvg = civIconSvg(civId, 28);
+  const border = s.civKolorHex ? ` style="border-color:${s.civKolorHex}"` : '';
   if (civSvg) {
-    return `<span class="p-ic p-ic-civ" aria-hidden="true">${civSvg}</span>`;
+    return `<span class="p-ic p-ic-civ"${border} aria-hidden="true">${civSvg}</span>`;
   }
   const fallback = brandIconSvg('res-influence', 32) || hudIc('res-influence');
   return `<span class="p-ic" aria-hidden="true">${fallback}</span>`;
 }
 
 function recruitSideIconHtml(): string {
-  const svg = brandIconSvg('cp-recruit', 20) || brandIconSvg('tb-army', 20);
+  const svg = brandIconSvg('tb-army', 22) || brandIconSvg('cp-recruit', 22);
   if (svg) return `<span class="p-recruit-ic" aria-hidden="true">${svg}</span>`;
   return '<span class="p-recruit-ic" aria-hidden="true">⚔</span>';
 }
 
+/** Symbol Mocy (cygnet / wpływ) — nad liczbą po prawej. */
+function powerSymbolHtml(): string {
+  const svg = brandIconSvg('res-influence', 22);
+  if (svg) return `<span class="p-power-ic" aria-hidden="true" title="Moc imperium">${svg}</span>`;
+  return '<span class="p-power-ic p-power-fleur" aria-hidden="true" title="Moc imperium">⚜</span>';
+}
+
 function renderBarD1B(s: HudState): string {
   const powerIconHtml = powerCenterIconHtml(s);
+  const ludnoscChip = chip6cHtml({
+    iconId: 'res-population',
+    label: 'Ludność',
+    value: String(s.ludnosc),
+    rate: signed(s.ludnoscRate ?? 0),
+    act: 'ludnosc',
+    title: 'Ludność imperium — klik po szczegóły',
+  });
   const chips: string[] = [
     chip6cHtml({
       iconId: 'res-treasury',
@@ -396,6 +424,16 @@ function renderBarD1B(s: HudState): string {
     }),
     chip6cSep(),
     chip6cHtml({
+      iconId: 'res-food',
+      label: 'Zaopatrzenie',
+      value: formatFoodHudLabel(s),
+      rate: signed(s.zywnoscRate ?? 0),
+      rateWarn: !!(s.glodWojska || (s.zywnoscRate ?? 0) < 0),
+      act: 'zywnosc',
+      title: 'Zaopatrzenie armii (Supply) — całe państwo — klik po szczegóły',
+    }),
+    chip6cSep(),
+    chip6cHtml({
       iconId: 'res-science',
       label: 'Nauka',
       value: String(Math.floor(s.nauka)),
@@ -414,15 +452,6 @@ function renderBarD1B(s: HudState): string {
       act: 'kultura',
       title: 'Kultura — kliknij po szczegóły imperium',
     }),
-    chip6cSep(),
-    chip6cHtml({
-      iconId: 'res-population',
-      label: 'Ludność',
-      value: String(s.ludnosc),
-      rate: signed(s.ludnoscRate ?? 0),
-      act: 'ludnosc',
-      title: 'Ludność imperium — klik po szczegóły',
-    }),
   ];
 
   const rekrLabel = s.rekruciLabel ?? '—';
@@ -432,11 +461,16 @@ function renderBarD1B(s: HudState): string {
   html += '<div class="power-center" data-act="power" title="Klik — składniki Mocy imperium">'
     + '<div class="p-row">'
     + `<span class="p-side p-side-left" data-act="rekruci" title="Rekruci (pula werbu) — klik po szczegóły">`
+    + '<span class="p-stack">'
     + recruitSideIconHtml()
-    + `<span class="p-recruit-val">${rekrLabel}</span></span>`
+    + `<span class="p-recruit-val">${rekrLabel}</span>`
+    + '</span></span>'
     + `<span class="p-side p-side-center">${powerIconHtml}</span>`
     + `<span class="p-side p-side-right">`
+    + '<span class="p-stack p-stack-right">'
+    + powerSymbolHtml()
     + `<span class="p-val-num">${s.power}</span>`
+    + '</span>'
     + `<span class="p-lbl">${mocLabel()}</span>`
     + `</span></div></div>`;
 
@@ -448,6 +482,7 @@ function renderBarD1B(s: HudState): string {
       + '<span>Wiki</span></button>'
     : '';
   html += '<div class="hud-right">'
+    + '<span class="hud-pop-chip">' + ludnoscChip + '</span>'
     + '<div class="hud-meta"><div class="hm-ep">' + escHtml(s.epoka) + '</div></div>'
     + wikiBtn
     + '<button type="button" class="b-menu" data-act="menu">'
@@ -494,7 +529,7 @@ function handleHudBarAction(act: string): void {
     const data = cfg.getReligionOverlay?.();
     if (data) showReligionOverlay(data);
   } else if (act === 'kultura' || act === 'skarbiec' || act === 'praca' || act === 'nauka'
-    || act === 'ludnosc' || act === 'rekruci') {
+    || act === 'ludnosc' || act === 'rekruci' || act === 'zywnosc') {
     hideEmpireOverlay();
     const section = empireSectionFromHudAct(act);
     if (cfg.onOpenEmpireDetail) cfg.onOpenEmpireDetail(section);
@@ -655,6 +690,7 @@ function mountMinimap(): void {
       onMinimapClick: cfg.onMinimapClick,
       layers: buildMinimapLayers(),
       playtestFog: cfg.minimapPlaytestFog,
+      workerOverlay: cfg.minimapWorkerOverlay,
       width: MINI_W,
       height: MINI_H,
     });
@@ -915,7 +951,7 @@ export function hideHud(): void {
 /** Czy HUD widoczny (sesja gry aktywna — niezależnie od panelu miasta). */
 export function isHudOpen(): boolean { return hudSessionActive; }
 
-export type { MinimapHexData, MinimapData, MinimapPlaytestFogHooks } from './minimapHud';
+export type { MinimapHexData, MinimapData, MinimapPlaytestFogHooks, MinimapWorkerOverlayHooks } from './minimapHud';
 export type { SidePanelEvent, SidePanelEventKind } from './sidePanelHud';
 export type { UnitPanelState } from './unitPanelHud';
 export type { BuildTypeInfo } from './buildModeHud';

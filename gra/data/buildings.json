@@ -864,8 +864,8 @@
       "pieniadz": 0,
       "zywnosc": 0,
       "nauka": 0,
-      "kultura": 3,
-      "zadowolenie": 1,
+      "kultura": 5,
+      "zadowolenie": 2,
       "obrona": 0,
       "mnoznik": 5
     },
@@ -874,7 +874,7 @@
       "pieniadz": 0,
       "zywnosc": 0,
       "nauka": 0,
-      "kultura": 2,
+      "kultura": 3,
       "zadowolenie": 1,
       "obrona": 0,
       "mnoznik": 0
@@ -884,7 +884,7 @@
     "utrzymanie": 2,
     "przyrostUtrzymania": 1,
     "wymagania": "-",
-    "uwagi": "1 na miasto (siedziba zarzadcy); glowne zrodlo kultury miasta",
+    "uwagi": "1 na miasto; glowne zrodlo kultury + Prawo (society-params prawo_palac)",
     "techUnlock": ""
   },
   {

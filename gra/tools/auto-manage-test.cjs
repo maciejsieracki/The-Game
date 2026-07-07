@@ -25,7 +25,7 @@ const ENTRY_FILE  = path.resolve(__dirname, '.auto-manage-entry.ts');
 const BUNDLE_FILE = path.resolve(__dirname, '.auto-manage-bundle.cjs');
 
 const ENTRY_TS = `
-export { autoManageCity } from '../src/game/auto-manage';
+export { autoManageCity, pickAutoBuildItem, prioritiesForBudowaFocus } from '../src/game/auto-manage';
 export { frontItem, enqueue as enqueueItem, buildableProduction, availableProduction } from '../src/game/production';
 export { cityRangeForPopulation, assignWorkedTiles } from '../src/game/okolica';
 `;
@@ -49,7 +49,7 @@ try {
 }
 
 const M = require(BUNDLE_FILE);
-const { autoManageCity, frontItem, enqueueItem, buildableProduction, cityRangeForPopulation } = M;
+const { autoManageCity, frontItem, enqueueItem, buildableProduction, cityRangeForPopulation, pickAutoBuildItem } = M;
 
 // --- test harness ----------------------------------------------------------
 let passed = 0;
@@ -94,6 +94,8 @@ const cityBase = {
   r: 0,
   name: 'Testowo',
   population: 2,
+  budowaTryb: 'auto',
+  budowaFocus: 'zrownowazone',
 };
 
 // Prosta funkcja plonow: pole (2,0) -> zywnosc 99, reszta zywnosc 1
@@ -231,6 +233,38 @@ const r13 = autoManageCity(cityBase, map, emptyProd, dataMinimal, { yieldOf, cit
 assert(r13.pracaSplit !== null, 'pracaSplit nie null');
 assert(Math.abs(r13.pracaSplit.doBudynkow - 14) < 1e-9, 'doBudynkow = 20*0.7 = 14');
 assert(Math.abs(r13.pracaSplit.doPuli - 6) < 1e-9, 'doPuli = 20*0.3 = 6');
+
+// Test 14: budowaTryb reczny -> brak auto-enqueue
+console.log('\n14. budowaTryb reczny -> enqueue null');
+const cityReczny = { ...cityBase, budowaTryb: 'reczny' };
+const r14 = autoManageCity(cityReczny, map, emptyProd, dataMinimal, { yieldOf });
+eq(r14.enqueue, null, 'reczny tryb -> brak auto-budowy');
+
+// Test 15: profil wojsko preferuje koszary
+console.log('\n15. Profil wojsko -> koszary przed stolarnia');
+const dataWojsko = {
+  buildings: [
+    { id: 'stolarnia', nazwa: 'Stolarnia', kategoria: 'Produkcja', epokaWejscia: 1, maksPoziom: 10, kosztBudowy: 15, techUnlock: '' },
+    { id: 'koszary', nazwa: 'Koszary', kategoria: 'Wojsko', epokaWejscia: 1, maksPoziom: 10, kosztBudowy: 25, techUnlock: '' },
+  ],
+  units: [],
+};
+const cityWojsko = { ...cityBase, budowaTryb: 'auto', budowaFocus: 'wojsko' };
+const r15 = pickAutoBuildItem(cityWojsko, emptyProd, dataWojsko, { unlockedTechs: [], ctx: { epoch: 1 } });
+eq(r15 && r15.id, 'koszary', 'wojsko -> koszary');
+
+// Test 16: profil wzrost preferuje zywnosc
+console.log('\n16. Profil wzrost -> spichlerz przed stolarnia');
+const dataWzrost = {
+  buildings: [
+    { id: 'stolarnia', nazwa: 'Stolarnia', kategoria: 'Produkcja', epokaWejscia: 1, maksPoziom: 10, kosztBudowy: 15, techUnlock: '' },
+    { id: 'spichlerz', nazwa: 'Spichlerz', kategoria: 'Zywnosc', epokaWejscia: 1, maksPoziom: 10, kosztBudowy: 20, techUnlock: '' },
+  ],
+  units: [],
+};
+const cityWzrost = { ...cityBase, budowaTryb: 'auto', budowaFocus: 'wzrost' };
+const r16 = pickAutoBuildItem(cityWzrost, emptyProd, dataWzrost, { unlockedTechs: [], ctx: { epoch: 1 } });
+eq(r16 && r16.id, 'spichlerz', 'wzrost -> spichlerz');
 
 // --- summary ---------------------------------------------------------------
 const total = passed + failed;

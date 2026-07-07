@@ -7,21 +7,22 @@
  *   Wybrane tempo zapisuje sie w stanie gry (np. GameData.tempoGry: TempoGry).
  *   UI/SILNIK wywoluja applyTempoKoszt(tech.koszt, gameData.tempoGry) dla KAZDEJ
  *   technologii przed wyswietleniem kosztu i przed sprawdzeniem, czy badanie jest
- *   skonczoe. NIE zmienia to bazowych kosztow w tech.json -- te sluza jako punkt
- *   odniesienia dla trybu "standardowa" (x1.0).
+ *   skonczoe. NIE zmienia to bazowych kosztow w tech.json — to tryb szybki (x1.0).
  *
- * Przyklad:
- *   applyTempoKoszt(100, 'szybka')     // => 20   (round(100 * 0.2))
- *   applyTempoKoszt(100, 'standardowa')// => 100  (round(100 * 1.0))
- *   applyTempoKoszt(100, 'dluga')      // => 500  (round(100 * 5.0))
- *   applyTempoKoszt(3, 'szybka')       // => 1    (round(3 * 0.2) = 1; min 1)
+ * Maciej 2026-07-07: wartosci z tech.json = tempo szybkie; normalne x2, dlugie x4.
+ *
+ * Przyklad (Obróbka drewna, bazowy koszt 12 PN):
+ *   applyTempoKoszt(12, 'szybka')      // => 12  (round(12 * 1.0))
+ *   applyTempoKoszt(12, 'standardowa') // => 24  (round(12 * 2.0))
+ *   applyTempoKoszt(12, 'dluga')       // => 48  (round(12 * 4.0))
+ *   applyTempoKoszt(1, 'dluga')        // => 4   (min 1 po zaokragleniu)
  *   applyTempoKoszt(50, 2.5)           // => 125  (mnoznik liczbowy)
  */
 
 export const TEMPO_GRY = {
-  szybka: 0.2,
-  standardowa: 1.0,
-  dluga: 5.0,
+  szybka: 1.0,
+  standardowa: 2.0,
+  dluga: 4.0,
 } as const;
 
 export type TempoGry = keyof typeof TEMPO_GRY;

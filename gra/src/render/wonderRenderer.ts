@@ -53,6 +53,8 @@ function ownerColor(ownerId: number): number {
 
 export interface WonderRenderOptions {
   isVisible?: (w: PlacedWonder) => boolean;
+  /** Kolor właściciela (baner cudu); domyślnie stara paleta OWNER_COLORS. */
+  ownerColorFn?: (ownerId: number) => number;
 }
 
 export class WonderRenderer {
@@ -91,7 +93,7 @@ export class WonderRenderer {
 
       const group = buildWonderModel(w.wonderId, {
         ruin: w.ruin ?? false,
-        ownerColor: ownerColor(w.ownerId),
+        ownerColor: (options?.ownerColorFn ?? ownerColor)(w.ownerId),
       });
       const { x, z } = axialToWorld(w.q, w.r, HEX_R);
       group.position.set(x, yBase, z);

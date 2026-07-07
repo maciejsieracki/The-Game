@@ -52,6 +52,8 @@ export interface ImprovementBuildState {
   placedImprovements?: ReadonlyMap<string, string | readonly string[]>;
   /** Zbadane technologie gracza (nazwy z tech.json). */
   researchedTechs?: ReadonlySet<string>;
+  /** Heksy z trwającą wycinką lasu (wyrąb) — blokada ponownego wyboru. */
+  clearingHexKeys?: ReadonlySet<string>;
 }
 
 export interface ImprovementTypeInfo {
@@ -447,6 +449,7 @@ function createQualifier(state: ImprovementBuildState) {
         return zloze === 'miedz' || zloze === 'zelazo' || zloze === 'wegiel' ||
           nakladka === Nakladka.ZlozeRudy;
       case 'wyrab':
+        if (state.clearingHexKeys?.has(hexKey)) return false;
         return nakladka === Nakladka.Las && isInTerritory(q, r, cityNodes);
       case 'tartak': {
         if (!isInTerritory(q, r, cityNodes)) return false;

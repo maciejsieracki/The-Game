@@ -42,7 +42,8 @@ import {
 } from './cityUxFrame';
 import { setMapHudChromeSuppressed } from './hud';
 import type { City } from '../game/cities';
-import type { OkolicaFocus, OkolicaTryb } from '../game/cities';
+import { formatCityMapLabel } from '../game/display-names';
+import type { OkolicaFocus, OkolicaTryb, BudowaFocus, BudowaTryb } from '../game/cities';
 import { HANDEL_PCT_STEP, normalizePodzialHandlu, snapHandelPct } from '../game/cities';
 import type { GameMap } from '../types/map';
 import { TerenBazowy, Nakladka } from '../types/hex';
@@ -60,6 +61,8 @@ import {
   buildingProductionItem,
   buildingLevelForEpoch,
   buildingEffectAtLevel,
+  buildingWorkCost,
+  itemCost,
   splitPraca,
   buildingGoldPurchaseCost,
   buildingTypeQueued,
@@ -107,6 +110,8 @@ import {
   cityWorkedTilesForEconomy,
   toEconomyCity,
   computeCityHealthBreakdown,
+  readCityFoodBufferFromCity,
+  growthFoodThreshold,
   type CityHealthLine,
   type Difficulty,
 } from '../game/turn-economy';
@@ -128,6 +133,7 @@ import {
 } from './orderPanel';
 import {
   cityYieldPerTurn,
+  cityPopulationCap,
   type CityYieldContext,
 } from '../game/economy';
 import { UI_PARAMS } from './uiParams';
@@ -206,6 +212,8 @@ export interface CityPanelConfig {
   } | null;
   /** B5-Q1=A — suwak split + zapasy państwa (global per owner). */
   getEmpireFoodState?: (ownerId: number) => EmpireFoodState | null;
+  /** Mnożnik wzrostu z Porządku (z poprzedniej tury — jak w silniku). */
+  getGrowthMult?: (cityId: string) => number;
   /** EKONOMIA — snapshot rekrutów (Manpower) per miasto. */
   getManpowerSnapshot?: (cityId: string) => CityManpowerSnapshot | null;
   getEmpireFoodTick?: (ownerId: number) => EmpireFoodTick | null;
@@ -222,6 +230,13 @@ export interface CityPanelConfig {
   onOkolicaTileAdjust?: (cityId: string, q: number, r: number, delta: number) => void;
   /** Otwórz mapę w trybie ręcznej okolicy (👤 na heksach). */
   onOpenMapForOkolica?: (cityId: string) => void;
+  /** Auto-budowa — profile + tryb ręczny. */
+  getBudowaState?: (cityId: string) => {
+    focus: BudowaFocus;
+    tryb: BudowaTryb;
+  } | null;
+  onBudowaFocusChange?: (cityId: string, focus: BudowaFocus) => void;
+  onBudowaEnterManual?: (cityId: string) => void;
   onArtView?: (cityId: string) => void;
   /** Surowce w zasięgu: aktywny dostęp (legacy string[]) lub split ABC-19 { potential, active }. */
   getResourceAccess?: (cityId: string) => string[] | { potential: string[]; active: string[] };
@@ -246,6 +261,8 @@ export interface CityPanelConfig {
   onPodzialPracyChange?: (cityId: string, split: PodzialPracySplit) => void;
   /** Kup jednostke za Pieniadz ze skarbca (purchasableUnits). */
   onPurchaseUnit?: (cityId: string, itemId: string, koszt: number) => void;
+  /** B11-A: anulowanie opłaconej pozycji w kolejce rekrutacji — pełny zwrot kosztu. */
+  onCancelRecruitment?: (cityId: string, koszt: number) => void;
   /** Kup budynek za Pieniadz (koszt 1:1 z kosztem Pracy — natychmiastowa budowa). */
   onPurchaseBuilding?: (cityId: string, item: ProductionItem, kosztGold: number) => void;
   /** Bonusy cywilizacji per owner (civs.json) — koszty budynkow/jednostek. */
@@ -262,6 +279,14 @@ export interface CityPanelConfig {
   getOwnerColor?: (ownerId: number) => number;
   /** Ulepszenia terenu imperium — bramka Popalnia brązu (ABC-13). */
   getPlacedImprovements?: () => ReadonlyMap<string, string | readonly string[]> | null;
+  /** Mnoznik kosztow budynkow z kreatora (globalny dla rozgrywki). */
+  getBuildingCostPace?: () => import('../game/building-cost-tempo').BuildingCostPace;
+  /** Mnoznik kosztow rekrutacji jednostek z kreatora (globalny dla rozgrywki). */
+  getKosztJednostekPace?: () => import('../game/unit-cost-tempo').KosztJednostekPace;
+  /** Mnoznik progu wzrostu ludnosci z kreatora (globalny dla rozgrywki). */
+  getWzrostLudnosciPace?: () => import('../game/population-growth-tempo').WzrostLudnosciPace;
+  /** Poziom trudnosci rozgrywki — asymetria kosztow budynkow/jednostek/badan. */
+  getDifficulty?: () => import('../game/difficulty-cost').GameDifficulty;
 }
 
 let cfg: CityPanelConfig = {};
@@ -315,6 +340,95 @@ function moveQueueItem(prod: CityProduction, index: number, dir: -1 | 1): CityPr
     wstrzymana: prod.wstrzymana,
     rekrutacja: prod.rekrutacja ? [...prod.rekrutacja] : undefined,
   };
+}
+
+function copyCityProduction(prod: CityProduction): CityProduction {
+  return {
+    kolejka: [...prod.kolejka],
+    postep: prod.postep,
+    wstrzymana: prod.wstrzymana,
+    rekrutacja: prod.rekrutacja ? [...prod.rekrutacja] : undefined,
+  };
+}
+
+/** Przenieś pozycję kolejki (indeks ≥ 1) na inny indeks w tej samej kolejce. */
+function reorderQueueItem(prod: CityProduction, fromIndex: number, toIndex: number): CityProduction {
+  const len = prod.kolejka.length;
+  if (fromIndex < 1 || toIndex < 1 || fromIndex >= len || toIndex >= len || fromIndex === toIndex) {
+    return copyCityProduction(prod);
+  }
+  const k = [...prod.kolejka];
+  const [moved] = k.splice(fromIndex, 1);
+  if (!moved) return copyCityProduction(prod);
+  k.splice(toIndex, 0, moved);
+  return {
+    kolejka: k,
+    postep: prod.postep,
+    wstrzymana: prod.wstrzymana,
+    rekrutacja: prod.rekrutacja ? [...prod.rekrutacja] : undefined,
+  };
+}
+
+function bindBuildQueueDragReorder(sc: HTMLElement, city: City): void {
+  let dragFromIndex: number | null = null;
+
+  const clearDropMarks = (): void => {
+    sc.querySelectorAll('.qitem.is-drop-target').forEach(node => node.classList.remove('is-drop-target'));
+    sc.querySelectorAll('.qitem.is-dragging').forEach(node => node.classList.remove('is-dragging'));
+  };
+
+  sc.querySelectorAll<HTMLElement>('.qitem[data-queue-idx]').forEach(row => {
+    row.setAttribute('draggable', 'true');
+
+    row.addEventListener('dragstart', (e) => {
+      if ((e.target as HTMLElement).closest('button')) {
+        e.preventDefault();
+        return;
+      }
+      const idx = Number(row.dataset.queueIdx);
+      if (!Number.isFinite(idx)) return;
+      dragFromIndex = idx;
+      row.classList.add('is-dragging');
+      e.dataTransfer?.setData('text/plain', String(idx));
+      if (e.dataTransfer) {
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.dropEffect = 'move';
+      }
+    });
+
+    row.addEventListener('dragend', () => {
+      dragFromIndex = null;
+      clearDropMarks();
+    });
+  });
+
+  sc.addEventListener('dragover', (e) => {
+    if (dragFromIndex === null) return;
+    e.preventDefault();
+    const row = (e.target as HTMLElement).closest<HTMLElement>('.qitem[data-queue-idx]');
+    clearDropMarks();
+    if (row) row.classList.add('is-drop-target');
+    if (e.dataTransfer) e.dataTransfer.dropEffect = 'move';
+  });
+
+  sc.addEventListener('drop', (e) => {
+    e.preventDefault();
+    if (dragFromIndex === null) return;
+    const row = (e.target as HTMLElement).closest<HTMLElement>('.qitem[data-queue-idx]');
+    if (!row) {
+      clearDropMarks();
+      return;
+    }
+    const toIndex = Number(row.dataset.queueIdx);
+    if (!Number.isFinite(toIndex) || toIndex === dragFromIndex) {
+      clearDropMarks();
+      return;
+    }
+    setProd(city.id, reorderQueueItem(getProd(city.id), dragFromIndex, toIndex));
+    dragFromIndex = null;
+    clearDropMarks();
+    rerender();
+  });
 }
 
 // ---------------------------------------------------------------------------
@@ -492,7 +606,16 @@ function adjustHandelSplit(
 
 interface CityView {
   praca: number; pieniadz: number; nauka: number; kultura: number;
-  zywnoscNetto: number; maSpichlerz: boolean; magazyn: number; progWzrostu: number;
+  zywnoscNetto: number; maSpichlerz: boolean; maAkwedukt: boolean;
+  magazyn: number; progWzrostu: number;
+  /** Max ludność bez Akweduktu (parametr gry). */
+  popCapBezAkweduktu: number;
+  /** Max ludność z Akweduktem (parametr gry, normal=15). */
+  popCapZAkweduktem: number;
+  /** Aktualny cap dla tego miasta. */
+  popCapAktualny: number;
+  /** Wzrost zablokowany — ludność ≥ aktualny cap. */
+  atPopCap: boolean;
   /** Żywność/turę idąca do bufora wzrostu (po suwaku imperium). */
   zywnoscDoWzrostu: number;
 }
@@ -529,8 +652,17 @@ function computeView(city: City, map: GameMap, data: GameData): CityView | null 
     const built = cfg.getBuiltBuildingIds?.(city.id) ?? [];
     const maSpichlerz = built.includes('spichlerz');
     const maAkwedukt = built.includes('akwedukt');
-    const econCity = toEconomyCity(city, params, isCapital(city), 0, { maSpichlerz, maAkwedukt });
     const worked = cityWorkedTilesForEconomy(city, map);
+    const healthBd = computeCityHealthBreakdown(
+      city.population,
+      worked,
+      built,
+      data.societyParams,
+      cfg.difficulty ?? 'normal',
+      { city, map },
+    );
+    const zdrowie = healthBd.total;
+    const econCity = toEconomyCity(city, params, isCapital(city), zdrowie, { maSpichlerz, maAkwedukt });
     const base: CityYieldContext = {
       wojskoZuzycieZywnosci: 0, strataFraction: 0,
       maMlyn: false, maCegielnia: false, maTargowisko: false, maMennica: false, mennicaMnoznik: 1,
@@ -538,13 +670,26 @@ function computeView(city: City, map: GameMap, data: GameData): CityView | null 
     const ctx: CityYieldContext = { ...base, ...(cfg.getCityBuildingFlags?.(city.id) ?? {}) };
     const y = cityYieldPerTurn(econCity, worked, [], params, ctx);
     const pctRozwoj = getEmpireFoodSplit(city.ownerId);
-    const zywnoscDoWzrostu = y.zywnosc * (pctRozwoj / 100);
-    const magazyn = city.magazynZywnosci ?? 0;
+    const growthMult = cfg.getGrowthMult?.(city.id) ?? 1;
+    const healthMod = Math.max(0, 1 + zdrowie * params.zdrowieModyfikatorWspolczynnik);
+    const zywnoscDoWzrostu = Math.floor(y.zywnosc * (pctRozwoj / 100) * growthMult * healthMod);
+    const magazyn = readCityFoodBufferFromCity(city);
+    const wzrostPace = cfg.getWzrostLudnosciPace?.() ?? 'wysoki';
+    const popCapBezAkweduktu = params.akweduktProgLudnosci;
+    const popCapZAkweduktem = params.akweduktMaxLudnosci;
+    const popCapAktualny = cityPopulationCap(maAkwedukt, params);
+    const atPopCap = city.population >= popCapAktualny;
     return {
       praca: y.praca, pieniadz: y.pieniadz, nauka: y.nauka, kultura: y.kultura,
-      zywnoscNetto: y.zywnosc, maSpichlerz,
+      zywnoscNetto: y.zywnosc, maSpichlerz, maAkwedukt,
       magazyn,
-      progWzrostu: 10 + city.population * params.progWzrostuWspolczynnik,
+      progWzrostu: growthFoodThreshold(
+        city.population, params, wzrostPace, city.ownerId, cfg.getDifficulty?.() ?? 'normal',
+      ),
+      popCapBezAkweduktu,
+      popCapZAkweduktem,
+      popCapAktualny,
+      atPopCap,
       zywnoscDoWzrostu,
     };
   } catch { return null; }
@@ -579,6 +724,13 @@ function cityPracaSplit(city: City, view: CityView, data: GameData | null): {
   };
 }
 
+/** Podział netto żywności miasta (suwak imperium: wzrost vs armia). */
+function cityFoodSplit(view: CityView): { total: number; doWzrostu: number; doArmii: number } {
+  const total = Math.round(view.zywnoscNetto);
+  const doWzrostu = Math.round(view.zywnoscDoWzrostu);
+  return { total, doWzrostu, doArmii: total - doWzrostu };
+}
+
 function resolveEmpireSnap(city: City, map: GameMap | null, data: GameData | null): EmpireHudSnap {
   const fromEngine = cfg.getEmpireHud?.(city.ownerId);
   if (fromEngine) return fromEngine;
@@ -604,12 +756,11 @@ function resolveEmpireSnap(city: City, map: GameMap | null, data: GameData | nul
   const foodTick = cfg.getEmpireFoodTick?.(city.ownerId);
   return {
     pracaRate,
-    pracaPool: pracaRate,
     zloto: cfg.getTreasury?.(city.ownerId),
     zlotoRate,
     naukaRate,
     zywnoscReserve: foodSt?.zapasyPanstwa,
-    zywnoscRate: foodTick != null ? foodTick.doPanstwa - foodTick.kosztArmii : zywnoscRate,
+    zywnoscRate: foodTick != null ? foodTick.zapasyPo - foodTick.zapasyPrzed : zywnoscRate,
     kulturaRate,
   };
 }
@@ -701,6 +852,8 @@ const CITY_PANEL_ICON_RAIL_VERT_EM = CITY_PANEL_ICON_GLYPH_EM * 0.5;
 const LIST_SCROLL_VISIBLE = 3;
 /** Kolejka rekrutacji w panelu Produkcja (lewa kolumna). */
 const RECRUIT_QUEUE_VISIBLE = 7;
+/** Kolejka budowy (pozycje po bieżącym projekcie) — max widocznych wierszy. */
+const BUILD_QUEUE_VISIBLE = 4;
 /** Panel Buduj / Rekrutacja — więcej pozycji na ekranie. */
 const LIST_SCROLL_VISIBLE_CATALOG = 8;
 const LIST_ROW_HEIGHT_EM = 2.75;
@@ -830,6 +983,33 @@ const OKOLICA_FOCUS_SHORT: Record<OkolicaFocus, string> = {
   zrownowazone: 'Zrówn.',
 };
 
+const BUDOWA_FOCUS_BRAND: Record<BudowaFocus, string> = {
+  wzrost: 'field-food',
+  wojsko: 'tb-army',
+  kultura: 'res-culture',
+  prawo: 'cp-order',
+  produkcja: 'res-work',
+  zrownowazone: 'field-balanced',
+};
+
+const BUDOWA_FOCUS_SHORT: Record<BudowaFocus, string> = {
+  wzrost: 'Wzrost',
+  wojsko: 'Wojsko',
+  kultura: 'Kultura',
+  prawo: 'Prawo',
+  produkcja: 'Prod.',
+  zrownowazone: 'Zrówn.',
+};
+
+const BUDOWA_FOCUS_TITLE: Record<BudowaFocus, string> = {
+  wzrost: 'Wzrost — żywność i zdrowie',
+  wojsko: 'Wojsko — koszary, obrona',
+  kultura: 'Kultura — pomniki i kultura',
+  prawo: 'Prawo — administracja i porządek',
+  produkcja: 'Produkcja — Praca i warsztaty',
+  zrownowazone: 'Zrównoważony rozwój',
+};
+
 function okolicaProfileIconHtml(iconId: string, size: BrandIconSize = 24): string {
   return cityPanelBrandIcon(iconId, size, 'okolica-profile-ic');
 }
@@ -905,7 +1085,9 @@ function ensureStyles(): void {
 .civ-cs .handel-w4-sliders input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#f4e6a8,#a9861f);border:1px solid #6a5212;cursor:pointer;}
 .civ-cs .handel-w4-sliders .slider-nauka input[type=range]::-webkit-slider-thumb{background:radial-gradient(circle at 40% 35%,#8fb6e0,#3a5f8a);border-color:#26456a;}
 .civ-cs .handel-w4-sliders .slider-nauka input[type=range]::-moz-range-thumb{background:radial-gradient(circle at 40% 35%,#8fb6e0,#3a5f8a);border-color:#26456a;}
-.civ-handel-wealth-host{margin-top:0.55em;padding-top:0.42em;border-top:1px solid rgba(212,175,90,0.22);}
+.civ-handel-wealth-host{margin-top:0.55em;padding-top:0.42em;border-top:1px solid rgba(212,175,90,0.22);padding-bottom:0.2em;}
+.civ-handel-sliders-host{padding-bottom:0.18em;}
+.civ-handel-tab-hint{font-size:0.68em;line-height:1.45;color:#8a8070;margin:0 0 0.42em;letter-spacing:.02em;}
 .civ-tab-indicators{gap:0.28em!important;margin:0.28em 0 0.38em!important;flex-wrap:wrap;}
 .civ-tab-indicators .chip{font-size:0.72em;padding:0.24em 0.55em;border-radius:7px;border-color:rgba(232,216,138,0.25);}
 .civ-tab-indicators .cl{font-size:0.92em;color:#c8b898;}
@@ -977,14 +1159,19 @@ function ensureStyles(): void {
 .civ-cs .food-stat-lbl{font-size:0.68em;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;}
 .civ-cs .food-stat-val{font-size:0.92em;font-weight:700;line-height:1.15;}
 .civ-cs .food-split-wrap{margin-top:0.28em;}
-.civ-cs .food-split-bar{display:flex;height:1.05em;background:#111518;border:1px solid var(--border);border-radius:2px;overflow:hidden;position:relative;margin-bottom:0.22em;}
+.civ-cs .food-split-bar{display:flex;height:1.35em;background:#111518;border:1px solid var(--border);border-radius:4px;overflow:hidden;position:relative;}
+.civ-cs .food-split-bar--interactive{overflow:visible;}
+.civ-cs .food-split-bar--interactive .food-split-g,.civ-cs .food-split-bar--interactive .food-split-a{border-radius:0;}
 .civ-cs .food-split-g,.civ-cs .food-split-a{height:100%;min-width:0;flex-shrink:0;transition:width .12s ease;}
-.civ-cs .food-split-g{background:linear-gradient(90deg,#6a5018,#c89830);}
-.civ-cs .food-split-a{background:linear-gradient(90deg,#3a2830,#7a4048);}
-.civ-cs .food-split-range{width:100%;-webkit-appearance:none;appearance:none;height:8px;border-radius:5px;background:rgba(255,255,255,0.08);outline:none;margin:0.08em 0 0;cursor:pointer;}
-.civ-cs .food-split-range::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#f4e6a8,#a9861f);border:1px solid #6a5212;cursor:pointer;}
-.civ-cs .food-split-range::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#f4e6a8,#a9861f);border:1px solid #6a5212;cursor:pointer;}
-.civ-cs .food-split-labels{display:flex;justify-content:space-between;font-size:0.66em;color:var(--muted);margin-bottom:0.1em;}
+.civ-cs .food-split-bar--ro{cursor:default;}
+.civ-cs .food-split-g{background:linear-gradient(180deg,#f0d878,#c89830 45%,#8a6018);}
+.civ-cs .food-split-a{background:linear-gradient(180deg,#5a3840,#3a2830);}
+.civ-cs .food-split-range{position:absolute;inset:0;width:100%;height:100%;margin:0;padding:0;-webkit-appearance:none;appearance:none;background:transparent;outline:none;cursor:ew-resize;z-index:3;}
+.civ-cs .food-split-range::-webkit-slider-runnable-track{height:100%;background:transparent;border:none;}
+.civ-cs .food-split-range::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:calc(100% + 6px);margin-top:-3px;border-radius:4px;background:linear-gradient(180deg,#faf0c8 0%,#e8d070 35%,#a9861f 100%);border:1px solid #6a5212;box-shadow:0 1px 6px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.35);cursor:ew-resize;}
+.civ-cs .food-split-range::-moz-range-track{height:100%;background:transparent;border:none;}
+.civ-cs .food-split-range::-moz-range-thumb{width:14px;height:calc(1.35em + 6px);border-radius:4px;background:linear-gradient(180deg,#faf0c8,#a9861f);border:1px solid #6a5212;box-shadow:0 1px 6px rgba(0,0,0,.55);cursor:ew-resize;}
+.civ-cs .food-split-labels{display:flex;justify-content:space-between;font-size:0.66em;color:var(--muted);margin-bottom:0.12em;}
 .civ-cs .praca-split-bar{display:flex;height:26px;background:rgba(255,255,255,0.08);border:1px solid rgba(232,216,138,0.18);border-radius:7px;overflow:hidden;position:relative;margin-bottom:0.38em;}
 .civ-cs .praca-split-b{background:linear-gradient(90deg,#a08030,#e8d88a);display:flex;align-items:center;justify-content:center;font-size:0.72em;color:#2e2708;font-weight:700;}
 .civ-cs .praca-split-u{background:linear-gradient(90deg,#3a6ad0,#5a9bd4);display:flex;align-items:center;justify-content:center;font-size:0.72em;color:#08121e;font-weight:700;}
@@ -1002,6 +1189,11 @@ function ensureStyles(): void {
 .civ-cs .civ-w4-tab-card{border:2px solid rgba(232,216,138,.42);border-radius:14px;overflow:hidden;
   background:linear-gradient(180deg,rgba(18,24,32,.97),rgba(8,10,16,.97));box-shadow:0 14px 36px rgba(0,0,0,.6);
   width:100%;max-width:24em;}
+.civ-cs .civ-w4-tab-card.civ-w4-tab-card--scroll{display:flex;flex-direction:column;max-height:min(72vh,calc(100vh - 220px));min-height:0;}
+.civ-cs .civ-w4-tab-card--scroll .civ-w4-tab-body--scroll{flex:1 1 auto;min-height:0;overflow-y:auto;overflow-x:hidden;
+  padding-bottom:0.65em;scrollbar-width:thin;}
+.civ-cs .civ-w4-tab-card--scroll .civ-w4-tab-body--scroll::-webkit-scrollbar{width:5px;}
+.civ-cs .civ-w4-tab-card--scroll .civ-w4-tab-body--scroll::-webkit-scrollbar-thumb{background:rgba(212,175,90,0.22);border-radius:3px;}
 .civ-cs .civ-w4-tab-body{padding:0 0.85em 0.55em;}
 .civ-cs .civ-w4-tab-body .ptitle{margin:0 -0.85em 0.38em;padding-left:0.85em;padding-right:0.85em;width:calc(100% + 1.7em);}
 .civ-cs .civ-w4-tab-body > .panel,.civ-cs .civ-w4-tab-body > div.panel{border:none;border-radius:0;background:transparent;box-shadow:none;padding:0 0 0.12em;}
@@ -1033,6 +1225,13 @@ function ensureStyles(): void {
 .civ-cs .civ-w4-tab-body .civ-breakdown-block .muted{font-size:0.68em;letter-spacing:.1em;text-transform:uppercase;color:#8a8070;}
 .civ-cs .picon{width:3.4em;height:3.4em;border:2px solid var(--gold);border-radius:4px;background:var(--panel2);display:flex;align-items:center;justify-content:center;font-size:1.9em;flex-shrink:0;}
 .civ-cs .qitem{background:var(--panel2);border:1px solid var(--border);border-radius:3px;padding:0.1em 0.45em;font-size:0.8em;display:flex;align-items:center;gap:0.25em;}
+.civ-cs .qitem.qitem-draggable .qitem-grip{cursor:grab;}
+.civ-cs .qitem.qitem-draggable{cursor:grab;}
+.civ-cs .qitem.qitem-draggable button{cursor:pointer;}
+.civ-cs .qitem.is-dragging{opacity:0.42;}
+.civ-cs .qitem.is-drop-target{border-color:var(--gold);box-shadow:0 0 0 1px rgba(232,216,138,0.35);}
+.civ-cs .qitem-grip{color:var(--muted);font-size:0.68em;letter-spacing:-0.14em;padding:0 0.12em;user-select:none;flex-shrink:0;line-height:1;opacity:0.75;}
+.civ-cs .qitem-grip:hover{color:var(--gold);opacity:1;}
 .civ-cs .hpb{height:0.4em;background:var(--panel2);border:1px solid var(--border);border-radius:2px;overflow:hidden;margin-top:0.15em;}
 .civ-cs .hpf{height:100%;border-radius:2px;background:var(--green);} .civ-cs .hpl{background:var(--red);}
 .civ-cs .rgrid{display:grid;grid-template-columns:1fr 1fr;gap:0.25em;}
@@ -1192,24 +1391,28 @@ function ensureStyles(): void {
   gap:0.5rem;padding:0 0.65rem;height:100%;min-height:0;box-sizing:border-box;
   background:linear-gradient(180deg,#0c121c,#060a10);border-bottom:1px solid rgba(212,175,90,0.32);}
 .civ-v-resource-bar.civ-v-resource-bar-w3{display:flex;align-items:center;justify-content:center;gap:0.65rem;
-  padding:0;background:transparent;border:none;height:auto;min-height:0;width:auto;max-width:100%;box-sizing:border-box;}
-.civ-v-top-stack{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;width:100%;gap:0.38rem;}
-.civ-v-top-line{display:flex;align-items:center;justify-content:center;gap:0.65rem;flex-wrap:nowrap;width:100%;}
+  padding:0;background:transparent;border:none;height:auto;min-height:0;width:100%;max-width:100%;min-width:0;box-sizing:border-box;}
+.civ-v-top-stack{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;width:100%;max-width:min(96vw,1120px);gap:0.38rem;padding:0 0.25rem;box-sizing:border-box;}
+.civ-v-top-line{display:flex;align-items:center;justify-content:center;gap:0.65rem;flex-wrap:wrap;width:100%;}
 .civ-v-exit-top-row{display:flex;flex-direction:column;align-items:center;gap:0.28em;pointer-events:auto;flex-shrink:0;}
 .civ-v-exit-top-row .civ-v-exit-map-btn{font-size:0.82em;padding:0.48em 1.05em 0.48em 0.85em;}
 .civ-v-exit-top-row .civ-v-exit-foot-hint{font-size:0.62em;color:#8b97a8;text-align:center;white-space:nowrap;}
 .civ-v-w3-bar-spacer{display:none;}
-.civ-v-w3-chips-city{margin-left:0;flex:0 1 auto;max-width:min(72vw,720px);}
+.civ-v-w3-chips-city{margin-left:0;flex:1 1 auto;width:100%;max-width:100%;min-width:0;}
 .civ-v-w3-city-badge{display:inline-flex;align-items:center;gap:0.55rem;padding:0.45rem 1.05rem 0.45rem 0.75rem;
   border-radius:24px;background:linear-gradient(180deg,#151b26,#0a0d14);border:1.5px solid #e8d88a;
-  box-shadow:0 5px 16px rgba(0,0,0,0.6);flex-shrink:0;}
+  box-shadow:0 5px 16px rgba(0,0,0,0.6);flex-shrink:0;max-width:100%;}
+.civ-v-w3-city-nav{background:none;border:none;color:#e8d88a;font-size:1.35em;line-height:1;padding:0 0.15em;
+  cursor:pointer;opacity:0.85;font-family:inherit;}
+.civ-v-w3-city-nav:hover:not(:disabled){opacity:1;color:#fff8e0;}
+.civ-v-w3-city-nav:disabled{opacity:0.25;cursor:default;}
 .civ-v-w3-city-name{font-family:var(--civ-font-title, Georgia, serif);font-size:1.35em;font-weight:700;
   color:#f0e6d0;letter-spacing:0.04em;text-transform:uppercase;line-height:1;}
 .civ-v-w3-city-pop{width:1.65em;height:1.65em;border-radius:50%;background:#e8d88a;color:#2a2208;
   font-size:0.72em;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-.civ-v-w3-chips{display:flex;align-items:center;gap:0.85rem;padding:0.48rem 1rem;border-radius:12px;
+.civ-v-w3-chips{display:flex;align-items:center;gap:0.65rem;padding:0.42rem 0.85rem;border-radius:12px;
   background:linear-gradient(180deg,rgba(22,28,40,0.94),rgba(8,10,16,0.95));border:1px solid rgba(232,216,138,0.32);
-  flex:0 1 auto;max-width:min(720px,52vw);overflow-x:auto;scrollbar-width:none;-ms-overflow-style:none;}
+  flex:1 1 auto;width:100%;max-width:100%;min-width:0;overflow-x:auto;scrollbar-width:none;-ms-overflow-style:none;}
 .civ-v-w3-chips::-webkit-scrollbar{display:none;}
 .civ-v-w3-chip{display:inline-flex;align-items:center;gap:0.42rem;white-space:nowrap;flex-shrink:0;
   font-size:0.78em;line-height:1;border:none;background:transparent;padding:0.12em 0.18em;margin:0;
@@ -1393,6 +1596,7 @@ ${UNIT_RECRUIT_CARD_CSS}
 .civ-cs .recruit-prod:last-child{border-bottom:none;}
 .civ-cs .recruit-prod .picon{width:2.75em;height:2.75em;font-size:1.45em;}
 .civ-cs .recruit-scroll{max-height:calc(${RECRUIT_QUEUE_VISIBLE} * 4.2em);overflow-y:auto;scrollbar-width:thin;padding-right:0.1em;}
+.civ-cs .build-queue-scroll{max-height:calc(${BUILD_QUEUE_VISIBLE} * 2.75em);overflow-y:auto;scrollbar-width:thin;padding-right:0.1em;}
 .civ-v-top-strip .civ-v-tag{color:#8b97a8;letter-spacing:0.06em;text-transform:uppercase;}
 .civ-v-top-close{background:linear-gradient(180deg,#5a3020,#3a1810);border:1px solid #a05040;
   color:#ffe8d0;font-size:0.85em;padding:0.15em 0.55em;border-radius:2px;cursor:pointer;font-weight:600;}
@@ -1466,6 +1670,8 @@ ${UNIT_RECRUIT_CARD_CSS}
 .civ-ux-panel-scope.civ-cs .ptitle{margin-bottom:0.22em;padding-bottom:0.14em;}
 .civ-ux-panel-scope.civ-cs .food-grow-block{margin:0.15em 0 0.22em;}
 .civ-ux-panel-scope.civ-cs .okolica-toolbar{margin:0.12em 0 0.18em;}
+.civ-ux-panel-scope.civ-cs .budowa-toolbar .okolica-toolbar-profiles{flex-wrap:wrap;gap:0.14em;}
+.civ-ux-panel-scope.civ-cs .budowa-toolbar .okolica-toolbar-profiles button{font-size:0.62em;padding:0.08em 0.22em;}
 .civ-ux-panel-scope.civ-cs .section-blurb,
 .civ-ux-panel-scope.civ-cs .civ-v-section-blurb{margin:0.08em 0 0.28em;}
 .civ-v-left-col{display:flex!important;flex-direction:column!important;flex:1;min-height:0;width:100%;gap:0;}
@@ -1586,8 +1792,12 @@ function resolveOrderState(city: City, data: GameData): { state: OrderState; fro
       state: {
         ...live,
         szLines: live.szLines?.length ? live.szLines : computed.state.szLines,
-        prawLines: live.prawLines?.length ? live.prawLines : computed.state.prawLines,
-        bandLabel: live.bandLabel ?? computed.state.bandLabel,
+        // Prawo/Porządek na żywo — wojsko na heksie miasta (getUnitsAt), nie tylko stan z końca tury.
+        prawPct: computed.state.prawPct,
+        prawLines: computed.state.prawLines,
+        porPct: computed.state.porPct,
+        bandLabel: computed.state.bandLabel,
+        porzadek: computed.state.porzadek,
       },
       fromEngine: true,
     };
@@ -1650,6 +1860,7 @@ function computeOrderStateLocal(city: City, data: GameData): { state: OrderState
       hasRatusz: builtIds.includes('ratusz'),
       hasPretorium: builtIds.includes('pretorium'),
       hasSad: builtIds.includes('sad'),
+      hasPalac: builtIds.includes('palac'),
       brakGarnizonuKara: !playtestSandbox && city.population >= 6 && gCount === 0,
       stolicaEasyBonus: stolicaBonus,
     },
@@ -3131,23 +3342,50 @@ function renderMagazyn(mount: HTMLElement, city: City, view: CityView | null): v
   const tick = cfg.getEmpireFoodTick?.(city.ownerId);
   const pctRozwoj = st?.procentRozwoj ?? getEmpireFoodSplit(city.ownerId);
   const pctArmia = 100 - pctRozwoj;
-  const doWzrostu = Math.round(view.zywnoscDoWzrostu);
-  const eta = etaTurns(prog, mag, Math.max(0, doWzrostu));
+  const foodSplit = cityFoodSplit(view);
+  const doWzrostu = foodSplit.doWzrostu;
+  const doArmii = foodSplit.doArmii;
+  const atPopCap = view.atPopCap;
+  const eta = atPopCap ? null : etaTurns(prog, mag, Math.max(0, doWzrostu));
   const reserve = st?.zapasyPanstwa;
   const starving = tick?.glodWojska ?? (reserve != null && reserve < 0);
-  const foodCls = view.zywnoscNetto > 0 ? 'green' : view.zywnoscNetto < 0 ? 'red' : 'gold';
+  const foodCls = foodSplit.total > 0 ? 'green' : foodSplit.total < 0 ? 'red' : 'gold';
 
   const spichlerzChips: TabIndicatorChip[] = [
     { icon: cityPanelChipIcon('res-population', 14), label: 'Ludność', value: String(city.population), cls: 'gold' },
     {
       icon: cityPanelChipIcon('chip-map', 14),
       label: 'Do +1',
-      value: eta != null ? `~${eta} ${tury(eta)}` : '—',
-      cls: eta != null ? 'green' : 'muted',
-      title: 'Szacunek przy obecnym napływie do bufora',
+      value: atPopCap ? 'Cap' : (eta != null ? `~${eta} ${tury(eta)}` : '—'),
+      cls: atPopCap ? 'red' : (eta != null ? 'green' : 'muted'),
+      title: atPopCap
+        ? (view.maAkwedukt
+          ? `Cap ${view.popCapAktualny} — max z Akweduktem; nadwyżka żywności idzie do armii lub przepada`
+          : `Bez Akweduktu max ${view.popCapBezAkweduktu} mieszk. — zbuduj Akwedukt, by rosnąć dalej`)
+        : 'Szacunek przy obecnym napływie do bufora',
     },
-    { icon: loafIconHtml('civ-v-loaf-chip'), label: 'Netto', value: `${signed(view.zywnoscNetto)}`, cls: foodCls },
-    { icon: '→', label: 'Bufor', value: `${signed(doWzrostu)}`, cls: doWzrostu > 0 ? 'green' : 'red' },
+    {
+      icon: loafIconHtml('civ-v-loaf-chip'),
+      label: 'Produkcja',
+      value: `${signed(foodSplit.total)}/t`,
+      cls: foodCls,
+      title: 'Netto żywności tego miasta na turę',
+    },
+    {
+      icon: loafIconHtml('civ-v-loaf-chip'),
+      label: 'Wzrost',
+      value: signed(doWzrostu),
+      cls: doWzrostu > 0 ? 'gold' : doWzrostu < 0 ? 'red' : 'muted',
+      title: 'Część produkcji idąca do bufora wzrostu ludności',
+    },
+    {
+      icon: cityPanelChipIcon('tb-army', 14),
+      label: 'Armia',
+      value: signed(doArmii),
+      cls: starving ? 'red' : doArmii > 0 ? 'blue' : doArmii < 0 ? 'red' : 'muted',
+      title: 'Część produkcji idąca do zapasów armii państwa',
+    },
+    { icon: '▣', label: 'Bufor', value: `${mag}/${prog}`, cls: 'gold', title: 'Stan bufora wzrostu w tym grodzie' },
   ];
   if (view.maSpichlerz) {
     spichlerzChips.push({ icon: cityPanelChipIcon('chip-grain', 14), label: 'Spichlerz', value: 'w mieście', cls: 'green' });
@@ -3157,11 +3395,27 @@ function renderMagazyn(mount: HTMLElement, city: City, view: CityView | null): v
   if (starving) {
     spichlerzChips.push({ icon: cityPanelChipIcon('chip-warning', 14), label: 'Armia', value: 'głód', cls: 'red' });
   }
+  if (atPopCap) {
+    spichlerzChips.push({
+      icon: cityPanelChipIcon('cp-buildings', 14),
+      label: 'Limit',
+      value: `max ${view.popCapAktualny}`,
+      cls: 'red',
+      title: view.maAkwedukt
+        ? `Cap ${view.popCapAktualny} z Akweduktem — wzrost zablokowany`
+        : `Bez Akweduktu miasto nie rośnie powyżej ${view.popCapBezAkweduktu} — zbuduj Akwedukt (Zdrowie)`,
+    });
+  } else if (view.maAkwedukt) {
+    spichlerzChips.push({
+      icon: cityPanelChipIcon('cp-buildings', 14),
+      label: 'Akwedukt',
+      value: `cap ${view.popCapZAkweduktem}`,
+      cls: 'green',
+      title: `Z Akweduktem miasto może rosnąć do ${view.popCapZAkweduktem} mieszkańców`,
+    });
+  }
   appendTabIndicators(mount, spichlerzChips);
 
-  const doArmii = tick != null
-    ? Math.round(tick.doPanstwa)
-    : Math.max(0, Math.round(view.zywnoscNetto - view.zywnoscDoWzrostu));
   const player = city.ownerId === 0;
   const sliderEditable = player && !!cfg.onEmpireFoodSplitChange && st != null;
 
@@ -3182,7 +3436,7 @@ function renderMagazyn(mount: HTMLElement, city: City, view: CityView | null): v
   const armyCls = tick?.glodWojska ? 'red' : '';
   statA.innerHTML =
     `<span class="food-stat-lbl">${cityPanelChipIconWrap('tb-army', 14)} Armia</span>` +
-    `<span class="food-stat-val ${armyCls}">+${doArmii}</span>`;
+    `<span class="food-stat-val ${armyCls}">${signed(doArmii)}/t</span>`;
   pair.appendChild(statW);
   pair.appendChild(statA);
   block.appendChild(pair);
@@ -3200,6 +3454,7 @@ function renderMagazyn(mount: HTMLElement, city: City, view: CityView | null): v
   splitWrap.appendChild(barWrap);
 
   if (sliderEditable) {
+    barWrap.classList.add('food-split-bar--interactive');
     const inp = document.createElement('input');
     inp.type = 'range';
     inp.className = 'food-split-range';
@@ -3218,10 +3473,11 @@ function renderMagazyn(mount: HTMLElement, city: City, view: CityView | null): v
       cfg.onEmpireFoodSplitChange?.(city.ownerId, v);
       rerender();
     });
-    splitWrap.appendChild(inp);
+    barWrap.appendChild(inp);
   } else if (st) {
+    barWrap.classList.add('food-split-bar--ro');
     const ro = el('div', 'muted');
-    ro.style.cssText = 'font-size:0.68em;text-align:center;';
+    ro.style.cssText = 'font-size:0.62em;text-align:center;padding:0.2em 0;';
     ro.textContent = player ? 'Suwak — po wpieciu silnika.' : 'Tylko podgląd.';
     splitWrap.appendChild(ro);
   }
@@ -3243,7 +3499,9 @@ function buildSpichlerzDetailCard(
   const eta = etaTurns(prog, mag, Math.max(0, view.zywnoscDoWzrostu));
   const hasSpichlerz = ownerHasSpichlerz(city.ownerId);
   const pctRozwoj = st?.procentRozwoj ?? getEmpireFoodSplit(city.ownerId);
+  const pctArmia = 100 - pctRozwoj;
   const reserve = st?.zapasyPanstwa;
+  const doArmii = Math.round(view.zywnoscNetto) - Math.round(view.zywnoscDoWzrostu);
   const starving = tick?.glodWojska ?? (reserve != null && reserve < 0);
 
   const card = el('div', 'detail-card');
@@ -3262,7 +3520,14 @@ function buildSpichlerzDetailCard(
   gridDetailRow(g1, 'Próg', `${city.population} → ${city.population + 1}: ${prog} 🍞`);
   gridDetailRow(g1, 'Bufor', `${mag} / ${prog}`);
   gridDetailRow(g1, 'Przyrost', `+${Math.round(view.zywnoscDoWzrostu)} 🍞`);
-  gridDetailRow(g1, 'ETA', eta != null ? `~${eta} ${tury(eta)}` : '—');
+  gridDetailRow(g1, 'ETA', view.atPopCap ? `Cap — max ${view.popCapAktualny}` : (eta != null ? `~${eta} ${tury(eta)}` : '—'));
+  gridDetailRow(
+    g1,
+    'Limit ludności',
+    view.maAkwedukt
+      ? `max ${view.popCapZAkweduktem} z Akweduktem${view.atPopCap ? ' (osiągnięty)' : ''}`
+      : `max ${view.popCapBezAkweduktu} bez Akweduktu${view.atPopCap ? ' (osiągnięty)' : ''}`,
+  );
   gridDetailRow(g1, 'Spichlerz w mieście', view.maSpichlerz ? `tak (po wzroście ${spichlerzKeep}% bufora)` : 'nie (po wzroście bufor=0)');
 
   appendDetailFormula(card, `Próg(N) = 10 + N × ${coeff}`);
@@ -3274,7 +3539,7 @@ function buildSpichlerzDetailCard(
     'effectiveFlow = zywnoscDoWzrostu × max(0, 1 + zdrowie × wsp_zdrowia).',
     'Bufor += floor(effectiveFlow). Gdy bufor ≥ próg i ludność < cap → +1 mieszkaniec.',
     'Deficyt: bufor maleje; bufor=0 i nadal deficyt → −1 ludność (min 1).',
-    'Cap ludności bez Akweduktu = próg z parametrów; z Akweduktem — bez limitu.',
+    'Cap bez Akweduktu = akwedukt_prog_ludnosci; z Akweduktem = akwedukt_max_ludnosci (normal 5 / 15).',
   ]);
 
   appendDetailSection(card, 'Armia (całe państwo)');
@@ -3292,17 +3557,18 @@ function buildSpichlerzDetailCard(
   appendDetailFormula(card, 'doRozwoju = Σ zywnoscNetto_miast × %wzrost');
   appendDetailFormula(card, 'doArmii = brutto − doRozwoju');
   appendDetailFormula(card, hasSpichlerz
-    ? `Zapasy += doArmii − kosztArmii (max ${getEmpireFoodMaxCap(city.ownerId)} 🍞; nadwyżka przepada)`
-    : 'Bez Spichlerza: wojsko je tylko z bieżącej tury; nadwyżka przepada');
+    ? 'Zapasy += 100% × (doArmii − kosztArmii); max = pojemność Spichlerzy'
+    : 'Zapasy += 50% × (doArmii − kosztArmii); bez limitu pojemności');
 
   appendDetailAlgo(card, 'Tick zapasów armii (advanceEmpireFood)', [
     'Brutto = suma dodatniej zywnoscNetto ze wszystkich miast (pomijane oblężone).',
     `doRozwoju = brutto × ${pctRozwoj}%; reszta idzie do armii w tej turze.`,
     'kosztArmii = militaryFoodConsumption(jednostki na mapie).',
     hasSpichlerz
-      ? 'Ze Spichlerzem w imperium: zapasy += doArmii − kosztArmii (może zejść poniżej 0 = głód wojska).'
-      : 'Bez Spichlerza: zapasy = doArmii − kosztArmii, ale nie więcej niż 0 — reszta przepada.',
-    'Nadwyżka poza buforem wzrostu miasta trafia do tego strumienia armii, nie do bufora.',
+      ? 'Ze Spichlerzem: odkłada 100% netto (doArmii − koszt); limit = 100 🍞 × liczba Spichlerzy.'
+      : 'Bez Spichlerza: odkłada 50% netto od startu gry; reszta przepada; brak limitu zapasów.',
+    'Ujemne zapasy = głód wojska (−HP co turę).',
+    'Spichlerz w mieście NIE wpływa na % odkładania — liczy się dowolny Spichlerz w imperium.',
   ]);
 
   return card;
@@ -3357,7 +3623,9 @@ function buildTopBarZywnoscDetailCard(
   const g2 = appendDetailGrid(card);
   gridDetailRow(g2, 'Bufor miasta', `${mag} / ${prog} 🍞 — liczy się tylko w tym grodzie`);
   gridDetailRow(g2, 'Próg wzrostu', `${prog} 🍞 na +1 mieszkańca (10 + ${city.population} × ${coeff})`);
-  gridDetailRow(g2, 'Spichlerz', view.maSpichlerz ? 'tak — część bufora zostaje po wzroście' : 'nie — po wzroście bufor zeruje się');
+  gridDetailRow(g2, 'Spichlerz', view.maSpichlerz
+    ? 'tak — po wzroście zostaje 50% bufora miasta'
+    : 'nie — po wzroście bufor zeruje się');
 
   appendDetailSection(card, 'Całe państwo (tick żywności)');
   const g3 = appendDetailGrid(card);
@@ -3369,15 +3637,15 @@ function buildTopBarZywnoscDetailCard(
     gridDetailRow(g3, 'Koszt wojska', `−${Math.round(tick.kosztArmii)}`);
   }
   gridDetailRow(g3, 'Spichlerz w imperium', hasSpichlerz
-    ? 'tak — nadwyżka karmi zapasy armii między turami'
-    : 'nie — wojsko je tylko z bieżącej produkcji');
+    ? 'tak — odkładasz 100% netto armii (limit pojemności)'
+    : 'nie — odkładasz 50% netto armii od startu (bez limitu)');
 
   appendDetailFormula(card, 'zywnoscNetto = plony_pól + budynki − utrzymanie_miasta');
   appendDetailFormula(card, `doWzrostu = zywnoscNetto × ${pctRozwoj}%`);
   appendDetailFormula(card, 'doArmii_miasto = zywnoscNetto − doWzrostu');
   appendDetailFormula(card, hasSpichlerz
-    ? 'zapasy_armii += doArmii − koszt_wojska (kumulacja)'
-    : 'bez Spichlerza: nadwyżka armii przepada co turę');
+    ? 'zapasy_armii += 100% × (doArmii − koszt_wojska); cap ze Spichlerzy'
+    : 'zapasy_armii += 50% × (doArmii − koszt_wojska); reszta przepada');
 
   appendDetailAlgo(card, 'Gdzie zarządzać', [
     'Prawa kolumna → „Spichlerz”: bufor 🍞 i suwak wzrost vs armia.',
@@ -3410,7 +3678,7 @@ function buildTopBarRekruciDetailCard(
   gridDetailRow(g, 'Koszt 1 jednostki', formatManpower(mp.kosztJednostki));
   gridDetailRow(g, 'Werb przy pełnej puli', String(mp.werbMaxPrzyPelnejPuli));
   gridDetailRow(g, 'Ludność abs.', formatManpower(mp.ludnoscAbsolutna));
-  gridDetailRow(g, 'Ludki', `${mp.ludki} · epoka ${mp.epoka}`);
+  gridDetailRow(g, 'Obywatele', `${mp.ludki} · epoka ${mp.epoka}`);
 
   appendDetailAlgo(card, 'Skąd bierze się pula', [
     'Max ≈ 10% ludności absolutnej miasta (tabela epok).',
@@ -3460,7 +3728,7 @@ function buildTopBarLudnoscDetailCard(
     gridDetailRow(g1, 'Próg +1', `${prog} 🍞 (10 + ${city.population} × ${coeff})`);
     gridDetailRow(g1, 'Przyrost', `+${Math.round(view.zywnoscDoWzrostu)} 🍞 idzie do bufora (po suwaku armii)`);
     gridDetailRow(g1, 'ETA wzrostu', eta != null ? `~${eta} ${tury(eta)}` : '— (brak nadwyżki żywności)');
-    gridDetailRow(g1, 'Spichlerz', view.maSpichlerz ? 'tak — część bufora zostaje po wzroście' : 'nie — bufor zeruje się po +1');
+    gridDetailRow(g1, 'Spichlerz', view.maSpichlerz ? 'tak — po wzroście zostaje 50% bufora' : 'nie — bufor zeruje się po +1');
   }
 
   if (health) {
@@ -4183,7 +4451,12 @@ function buildBuildingDetailCard(def: BuildingDef, data: GameData): HTMLDivEleme
 
   appendDetailSection(card, 'Koszty');
   const gCost = appendDetailGrid(card);
-  gridDetailRow(gCost, 'Koszt budowy', `${def.kosztBudowy} ${cityPanelChipIconWrap('res-work', 14)}`);
+  const pace = cfg.getBuildingCostPace?.() ?? 'niski';
+  const difficulty = cfg.getDifficulty?.() ?? 'normal';
+  const ownerId = 0;
+  const baseWork = itemCost('budynek', def.id, { buildings: data.buildings, units: data.units }, 1);
+  const workCost = buildingWorkCost(baseWork, undefined, pace, ownerId, difficulty);
+  gridDetailRow(gCost, 'Koszt budowy', `${workCost} ${cityPanelChipIconWrap('res-work', 14)}`);
   if (def.przyrostKosztu) gridDetailRow(gCost, 'Przyrost kosztu', `+${def.przyrostKosztu} ${cityPanelChipIconWrap('res-work', 14)} / poziom`);
   gridDetailRow(gCost, 'Utrzymanie', `${def.utrzymanie} ${cityPanelChipIconWrap('res-treasury', 14)}`);
   if (def.przyrostUtrzymania) gridDetailRow(gCost, 'Przyrost utrzym.', `+${def.przyrostUtrzymania} ${cityPanelChipIconWrap('res-treasury', 14)} / poziom`);
@@ -4428,8 +4701,9 @@ function appendRecruitmentQueue(mount: HTMLElement, city: City, player: boolean,
           x.innerHTML = cityPanelChipIconWrap('ui-close', 14);
           x.style.cssText = 'padding:0 0.35em;align-self:flex-start;flex:none;';
           const idx = i;
-          x.title = 'Usuń z kolejki (bez zwrotu złota w prototypie)';
+          x.title = 'Usuń z kolejki (zwrot opłaty do skarbca)';
           x.addEventListener('click', () => {
+            cfg.onCancelRecruitment?.(city.id, it.koszt);
             setProd(city.id, dequeueRecruitment(getProd(city.id), idx));
             rerender();
           });
@@ -4458,8 +4732,9 @@ function appendRecruitmentQueue(mount: HTMLElement, city: City, player: boolean,
         x.innerHTML = cityPanelChipIconWrap('ui-close', 14);
         x.style.cssText = 'padding:0 0.35em;align-self:flex-start;';
         const idx = i;
-        x.title = 'Usuń z kolejki (bez zwrotu złota w prototypie)';
+        x.title = 'Usuń z kolejki (zwrot opłaty do skarbca)';
         x.addEventListener('click', () => {
+          cfg.onCancelRecruitment?.(city.id, it.koszt);
           setProd(city.id, dequeueRecruitment(getProd(city.id), idx));
           rerender();
         });
@@ -4472,6 +4747,61 @@ function appendRecruitmentQueue(mount: HTMLElement, city: City, player: boolean,
   mount.appendChild(wrap);
 }
 
+/** Kolejka budynków (pozycje 2+ w kolejce produkcji). */
+function appendBuildQueueSection(mount: HTMLElement, city: City, player: boolean): void {
+  const prod = getProd(city.id);
+  const data = gameData();
+  const qWrap = el('div');
+  qWrap.style.cssText = 'margin-bottom:0.42em;padding-bottom:0.35em;border-bottom:1px solid var(--border);';
+  const qh = el('div', 'gold', 'Kolejka budowy:');
+  qh.style.cssText = 'font-size:0.78em;font-weight:700;margin-bottom:0.22em;';
+  qWrap.appendChild(qh);
+  if (prod.kolejka.length <= 1) {
+    const none = el('span', 'muted', '— brak dalszych pozycji —');
+    none.style.fontSize = '0.75em';
+    qWrap.appendChild(none);
+  } else {
+    const sc = createScrollList('build-queue-scroll', {
+      visible: BUILD_QUEUE_VISIBLE,
+      rowEm: 2.75,
+    });
+    for (let i = 1; i < prod.kolejka.length; i++) {
+      const it = prod.kolejka[i] as ProductionItem;
+      const qi = el('div', 'qitem');
+      qi.style.marginBottom = '0.15em';
+      qi.dataset.queueIdx = String(i);
+      if (player) qi.classList.add('qitem-draggable');
+      if (player) {
+        const grip = el('span', 'qitem-grip', '⋮⋮');
+        grip.title = 'Przeciągnij, aby zmienić kolejność';
+        qi.appendChild(grip);
+      }
+      qi.appendChild(productionQueueIconSpan(data, it));
+      const qLabel = el('span');
+      qLabel.style.flex = '1';
+      qLabel.textContent = it.nazwa;
+      qi.appendChild(qLabel);
+      const idx = i;
+      const up = el('button', 'btn btn-sm', '↑');
+      up.style.cssText = 'padding:0 0.35em;';
+      (up as HTMLButtonElement).disabled = i <= 1;
+      up.addEventListener('click', () => { setProd(city.id, moveQueueItem(getProd(city.id), idx, -1)); rerender(); });
+      const down = el('button', 'btn btn-sm', '↓');
+      down.style.cssText = 'padding:0 0.35em;';
+      (down as HTMLButtonElement).disabled = i >= prod.kolejka.length - 1;
+      down.addEventListener('click', () => { setProd(city.id, moveQueueItem(getProd(city.id), idx, 1)); rerender(); });
+      const x = el('button', 'btn btn-sm', '✕');
+      x.style.cssText = 'padding:0 0.35em;';
+      x.addEventListener('click', () => { setProd(city.id, dequeue(getProd(city.id), idx)); rerender(); });
+      if (player) { qi.appendChild(up); qi.appendChild(down); qi.appendChild(x); }
+      sc.appendChild(qi);
+    }
+    if (player) bindBuildQueueDragReorder(sc, city);
+    qWrap.appendChild(sc);
+  }
+  mount.appendChild(qWrap);
+}
+
 function renderProd(mount: HTMLElement, city: City, view: CityView | null): void {
   mount.innerHTML = '';
   mount.appendChild(el('div', 'ptitle', '<span>Produkcja</span>'));
@@ -4481,10 +4811,40 @@ function renderProd(mount: HTMLElement, city: City, view: CityView | null): void
   const player = city.ownerId === 0; // AI cities -> read-only (no build/queue controls)
   const data = gameData();
 
+  // B7: obie kolejki na górze sekcji Produkcja
+  appendBuildQueueSection(mount, city, player);
+  if (activeCityPanelTab !== 'rekrutacja') {
+    appendRecruitmentQueue(mount, city, player);
+  }
+
+  if (player && cfg.getBudowaState) {
+    const bState = cfg.getBudowaState(city.id);
+    if (bState) {
+      const bToolbar = el('div', 'okolica-toolbar budowa-toolbar');
+      bToolbar.style.cssText = 'margin:0.12em 0 0.35em;';
+      const bLabel = el('span', 'muted');
+      bLabel.style.cssText = 'font-size:0.72em;margin-right:0.35em;white-space:nowrap;';
+      bLabel.textContent = 'Auto budowa:';
+      bToolbar.appendChild(bLabel);
+      const bProfiles = el('div', 'okolica-toolbar-profiles');
+      appendBudowaToolbarProfiles(bProfiles, city, bState.focus, bState.tryb);
+      bToolbar.appendChild(bProfiles);
+      mount.appendChild(bToolbar);
+    }
+  }
+
   if (!front) {
     const empty = el('div', 'muted');
-    empty.innerHTML =
-      `Kolejka pusta — wybierz ${cityPanelChipIconWrap('cp-buildings', 14)} Buduj lub ${cityPanelChipIconWrap('cp-recruit', 14)} Rekrut.`;
+    const bTryb = cfg.getBudowaState?.(city.id)?.tryb;
+    if (bTryb === 'auto') {
+      const bf = cfg.getBudowaState?.(city.id)?.focus ?? 'zrownowazone';
+      empty.innerHTML =
+        `Auto budowa (${BUDOWA_FOCUS_TITLE[bf]}) — następny budynek wybierze zarządca` +
+        ' (pusta kolejka, uzupełnienie na końcu tury).';
+    } else {
+      empty.innerHTML =
+        `Kolejka pusta — wybierz ${cityPanelChipIconWrap('cp-buildings', 14)} Buduj lub ${cityPanelChipIconWrap('cp-recruit', 14)} Rekrut.`;
+    }
     mount.appendChild(empty);
   } else {
     const paused = getProd(city.id).wstrzymana === true;
@@ -4503,7 +4863,7 @@ function renderProd(mount: HTMLElement, city: City, view: CityView | null): void
         `<div style="font-size:1.05em;font-weight:700;" class="gold">${front.nazwa}${pauseBadge}</div>` +
         `<div class="muted" style="font-size:0.78em;">${front.kind === 'budynek' ? 'Budynek' : 'Jednostka'} • Koszt: ${front.koszt} ${workIc}</div>` +
         `<div class="rsb" style="font-size:0.78em;margin:0.22em 0 0.15em;">` +
-          `<span class="muted">Zebrana Praca: <span class="gold">${prod.postep} / ${front.koszt}</span> ${workIc}</span>` +
+          `<span class="muted">Zebrana Praca: <span class="gold">${Math.round(prod.postep)} / ${front.koszt}</span> ${workIc}</span>` +
           (paused
             ? `<span style="color:#e08030;font-weight:600;">Wstrzymane — brak postępu</span>`
             : `<span class="blue">${e !== null ? '~' + e + ' ' + tury(e) : 'brak Pracy'}</span>`) +
@@ -4539,46 +4899,6 @@ function renderProd(mount: HTMLElement, city: City, view: CityView | null): void
     usun.addEventListener('click', () => { setProd(city.id, dequeue(getProd(city.id), 0)); rerender(); });
     actions.appendChild(usun);
     if (player) mount.appendChild(actions);
-  }
-
-  // queue tail with reorder (budynki)
-  const qWrap = el('div');
-  qWrap.style.cssText = 'margin-top:0.42em;border-top:1px solid var(--border);padding-top:0.35em;';
-  const qh = el('div', 'gold', 'Kolejka budowy:');
-  qh.style.cssText = 'font-size:0.78em;font-weight:700;margin-bottom:0.22em;';
-  qWrap.appendChild(qh);
-  if (prod.kolejka.length <= 1) {
-    const none = el('span', 'muted', '— brak dalszych pozycji —');
-    none.style.fontSize = '0.75em';
-    qWrap.appendChild(none);
-  }
-  for (let i = 1; i < prod.kolejka.length; i++) {
-    const it = prod.kolejka[i] as ProductionItem;
-    const qi = el('div', 'qitem');
-    qi.style.marginBottom = '0.15em';
-    qi.appendChild(productionQueueIconSpan(data, it));
-    const qLabel = el('span');
-    qLabel.style.flex = '1';
-    qLabel.textContent = it.nazwa;
-    qi.appendChild(qLabel);
-    const idx = i;
-    const up = el('button', 'btn btn-sm', '↑');
-    up.style.cssText = 'padding:0 0.35em;';
-    (up as HTMLButtonElement).disabled = i <= 1;
-    up.addEventListener('click', () => { setProd(city.id, moveQueueItem(getProd(city.id), idx, -1)); rerender(); });
-    const down = el('button', 'btn btn-sm', '↓');
-    down.style.cssText = 'padding:0 0.35em;';
-    (down as HTMLButtonElement).disabled = i >= prod.kolejka.length - 1;
-    down.addEventListener('click', () => { setProd(city.id, moveQueueItem(getProd(city.id), idx, 1)); rerender(); });
-    const x = el('button', 'btn btn-sm', '✕');
-    x.style.cssText = 'padding:0 0.35em;';
-    x.addEventListener('click', () => { setProd(city.id, dequeue(getProd(city.id), idx)); rerender(); });
-    if (player) { qi.appendChild(up); qi.appendChild(down); qi.appendChild(x); }
-    qWrap.appendChild(qi);
-  }
-  mount.appendChild(qWrap);
-  if (activeCityPanelTab !== 'rekrutacja') {
-    appendRecruitmentQueue(mount, city, player);
   }
 }
 
@@ -4661,6 +4981,10 @@ function productionCtxForCity(city: City): AvailabilityContext {
     civBonusy: cfg.getCivBonusy?.(city.ownerId) ?? [],
     civUnitNacja: unitNacjaForCivKey(cfg.getCivKey?.(city.ownerId)),
     placedImprovements: cfg.getPlacedImprovements?.() ?? null,
+    buildingCostPace: cfg.getBuildingCostPace?.() ?? 'niski',
+    kosztJednostekPace: cfg.getKosztJednostekPace?.() ?? 'niski',
+    ownerId: city.ownerId,
+    difficulty: cfg.getDifficulty?.() ?? 'normal',
   };
 }
 
@@ -4764,7 +5088,15 @@ function renderBuildList(
       if (buildingTypeQueued(id, prodState.kolejka)) continue;
       const targetLevel = buildingLevelForEpoch(def.epokaWejscia, epoch, def.maksPoziom);
       if (targetLevel <= 1) continue;
-      const item = buildingProductionItem(id, data, targetLevel, civBonusy);
+      const item = buildingProductionItem(
+        id,
+        data,
+        targetLevel,
+        civBonusy,
+        cfg.getBuildingCostPace?.() ?? 'niski',
+        city.ownerId,
+        cfg.getDifficulty?.() ?? 'normal',
+      );
       if (!item) continue;
       const nazwaPoziom: string = (def.nazwyPoziomow[targetLevel - 1] ?? '');
       const levelLabel = nazwaPoziom.length > 0
@@ -5297,6 +5629,14 @@ function fireOkolicaTileToggle(city: City, q: number, r: number): void {
   cfg.onOkolicaTileAdjust(city.id, q, r, 0);
 }
 
+function formatTileYieldShort(y: { zywnosc: number; praca: number; handel: number }): string {
+  const parts: string[] = [];
+  if (y.zywnosc !== 0) parts.push(`${y.zywnosc > 0 ? '+' : ''}${y.zywnosc} ${cityPanelChipIconWrap('chip-grain', 12)}`);
+  if (y.praca !== 0) parts.push(`${y.praca > 0 ? '+' : ''}${y.praca} ${cityPanelChipIconWrap('res-work', 12)}`);
+  if (y.handel !== 0) parts.push(`${y.handel > 0 ? '+' : ''}${y.handel} ${cityPanelChipIconWrap('res-treasury', 12)}`);
+  return parts.length ? parts.join(' ') : '0';
+}
+
 function tileYieldLabel(hex: Hex): string {
   const y = tileYield({
     terenBazowy: hex.terenBazowy,
@@ -5304,11 +5644,35 @@ function tileYieldLabel(hex: Hex): string {
     maRzeke: !!(hex.rzeka && hex.rzeka.obecna),
     ulepszenieKey: normalizeImprovementKey(String(hex.ulepszenie ?? 'brak')),
   });
-  const parts: string[] = [];
-  if (y.zywnosc > 0) parts.push(`+${y.zywnosc} ${cityPanelChipIconWrap('chip-grain', 12)}`);
-  if (y.praca > 0) parts.push(`+${y.praca} ${cityPanelChipIconWrap('res-work', 12)}`);
-  if (y.handel > 0) parts.push(`+${y.handel} ${cityPanelChipIconWrap('res-treasury', 12)}`);
-  return parts.length ? parts.join(' ') : '0';
+  return formatTileYieldShort(y);
+}
+
+function appendOkolicaYieldLabel(
+  svg: SVGSVGElement,
+  c: { cx: number; cy: number; hex: Hex | null; isCity: boolean },
+  SIZE: number,
+  fontScale: number,
+): void {
+  if (!c.hex) return;
+  const y = tileYield({
+    terenBazowy: c.hex.terenBazowy,
+    nakladka: c.hex.nakladka ?? Nakladka.Brak,
+    maRzeke: !!(c.hex.rzeka && c.hex.rzeka.obecna),
+    ulepszenieKey: normalizeImprovementKey(String(c.hex.ulepszenie ?? 'brak')),
+  });
+  const ytxt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+  ytxt.setAttribute('x', String(c.cx));
+  ytxt.setAttribute('y', String(c.cy - SIZE * fontScale));
+  ytxt.setAttribute('text-anchor', 'middle');
+  ytxt.setAttribute('font-size', String(Math.round(SIZE * (fontScale === 0.35 ? 0.38 : 0.48))));
+  ytxt.setAttribute('fill', c.isCity ? '#e0b24a' : '#c8d0dc');
+  ytxt.setAttribute('pointer-events', 'none');
+  const short: string[] = [];
+  if (y.zywnosc !== 0) short.push(String(y.zywnosc));
+  if (y.praca !== 0) short.push(String(y.praca));
+  if (y.handel !== 0) short.push(String(y.handel));
+  ytxt.textContent = short.join('/') || '·';
+  svg.appendChild(ytxt);
 }
 
 /**
@@ -5428,26 +5792,8 @@ function renderWorkedPreview(
     txt.textContent = c.isCity ? 'M' : (c.hex ? (c.isLas ? 'L' : (TEREN_LETTER[c.teren] ?? '')) : '');
     svg.appendChild(txt);
 
-    if (c.hex && c.isCity) {
-      const y = tileYield({
-        terenBazowy: c.hex.terenBazowy,
-        nakladka: c.hex.nakladka ?? Nakladka.Brak,
-        maRzeke: !!(c.hex.rzeka && c.hex.rzeka.obecna),
-        ulepszenieKey: normalizeImprovementKey(String(c.hex.ulepszenie ?? 'brak')),
-      });
-      const ytxt = document.createElementNS(ns, 'text');
-      ytxt.setAttribute('x', String(c.cx));
-      ytxt.setAttribute('y', String(c.cy - SIZE * 0.35));
-      ytxt.setAttribute('text-anchor', 'middle');
-      ytxt.setAttribute('font-size', String(Math.round(SIZE * 0.38)));
-      ytxt.setAttribute('fill', '#e0b24a');
-      ytxt.setAttribute('pointer-events', 'none');
-      const short: string[] = [];
-      if (y.zywnosc > 0) short.push(String(y.zywnosc));
-      if (y.praca > 0) short.push(String(y.praca));
-      if (y.handel > 0) short.push(String(y.handel));
-      ytxt.textContent = short.join('/') || '·';
-      svg.appendChild(ytxt);
+    if (c.hex) {
+      appendOkolicaYieldLabel(svg, c, SIZE, c.isCity ? 0.35 : 0.35);
     }
 
     const workers = c.isWorked ? (reczne?.[`${c.q},${c.r}`] ?? 1) : undefined;
@@ -5462,27 +5808,6 @@ function renderWorkedPreview(
         `<div xmlns="http://www.w3.org/1999/xhtml" style="display:flex;align-items:center;justify-content:center;gap:0.06em;font-size:${Math.round(SIZE * 0.42)}px;color:#e0b24a;line-height:1">` +
         `${cityPanelChipIconWrap('chip-manpower', 12)}<span>${workers}</span></div>`;
       svg.appendChild(fo);
-    }
-    if (c.hex && c.isWorked) {
-      const y = tileYield({
-        terenBazowy: c.hex.terenBazowy,
-        nakladka: c.hex.nakladka ?? Nakladka.Brak,
-        maRzeke: !!(c.hex.rzeka && c.hex.rzeka.obecna),
-        ulepszenieKey: normalizeImprovementKey(String(c.hex.ulepszenie ?? 'brak')),
-      });
-      const ytxt = document.createElementNS(ns, 'text');
-      ytxt.setAttribute('x', String(c.cx));
-      ytxt.setAttribute('y', String(c.cy - SIZE * 0.35));
-      ytxt.setAttribute('text-anchor', 'middle');
-      ytxt.setAttribute('font-size', String(Math.round(SIZE * 0.48)));
-      ytxt.setAttribute('fill', '#e0b24a');
-      ytxt.setAttribute('pointer-events', 'none');
-      const short: string[] = [];
-      if (y.zywnosc > 0) short.push(String(y.zywnosc));
-      if (y.praca > 0) short.push(String(y.praca));
-      if (y.handel > 0) short.push(String(y.handel));
-      ytxt.textContent = short.join('/') || '·';
-      svg.appendChild(ytxt);
     }
   }
 
@@ -5669,6 +5994,11 @@ function ownerCities(city: City): City[] {
   return list.length > 0 ? list : [city];
 }
 
+/** Tytuł miasta w panelu — dopisek miasto-państwo dla obcych klastrowych (Maciej 2026-07-07). */
+function cityPanelTitle(city: City): string {
+  return formatCityMapLabel(city);
+}
+
 function switchCity(dir: -1 | 1): void {
   if (activeCity === null) return;
   const list = ownerCities(activeCity);
@@ -5712,7 +6042,7 @@ function skeleton(city: City, view: CityView | null): string {
     <div id="hdr">
       <button class="nav-arr" id="cs-prev" ${navDis} title="Poprzednie miasto">◀</button>
       <span class="hdr-ic">${cityPanelBrandIcon('chip-star', 18)}</span>
-      <span id="cname">${city.name}</span>
+      <span id="cname">${cityPanelTitle(city)}</span>
       <button class="nav-arr" id="cs-next" ${navDis} title="Następne miasto">▶</button>
       <div class="mbadge"><span class="hdr-ic">${cityPanelBrandIcon('res-population', 18)}</span> <b>${city.population}</b></div>
       <div class="era-b">Epoka ${epoch}</div>
@@ -5732,7 +6062,6 @@ function skeleton(city: City, view: CityView | null): string {
         <div class="panel panel-tight" id="cs-ekonomia"></div>
         <div class="panel panel-tight" id="cs-wealth"></div>
         <div class="panel panel-tight" id="cs-imperium"></div>
-        <div class="panel" id="cs-surowce"></div>
       `)}
       ${tabPanel('produkcja', `
         <div class="panel panel-tight" id="cs-praca"></div>
@@ -5870,6 +6199,14 @@ function buildCityOnlyW3StatItems(city: City, view: CityView, data: GameData | n
     w3SplitSpan(wealthHandel, 'purple', 'Handel → pula zamożności (W)', 'W') +
     `</span>`;
 
+  const foodSplit = cityFoodSplit(view);
+  const foodCls = foodSplit.total > 0 ? 'green' : foodSplit.total < 0 ? 'red' : '';
+  const foodSplits =
+    `<span class="civ-v-w3-chip-splits">` +
+    w3SplitSpan(foodSplit.doWzrostu, 'gold', 'Żywność → wzrost ludności (bufor miasta)') +
+    w3SplitSpan(foodSplit.doArmii, 'blue', 'Żywność → zapasy armii państwa') +
+    `</span>`;
+
   const kultCls = view.kultura > 0 ? 'gold' : view.kultura < 0 ? 'red' : '';
   const naukaCls = view.nauka > 0 ? 'blue' : view.nauka < 0 ? 'red' : 'blue';
 
@@ -5886,6 +6223,15 @@ function buildCityOnlyW3StatItems(city: City, view: CityView, data: GameData | n
       'praca',
       `Praca tego miasta · budynki ${signed(pracaSplit.doBudynkow)} · ulepszenia ${signed(pracaSplit.doUlepszen)}`,
       pracaSplits,
+    ),
+    w3CityChip(
+      loafIconHtml(),
+      'Żywność',
+      signed(foodSplit.total),
+      foodCls,
+      'zywnosc',
+      `Netto żywności tego miasta · wzrost ${signed(foodSplit.doWzrostu)} · armia ${signed(foodSplit.doArmii)}`,
+      foodSplits,
     ),
     w3CityChip(
       cityPanelChipIcon('res-treasury', 20),
@@ -6068,16 +6414,18 @@ function renderCivResourceTopBar(
   onClose?: () => void,
 ): void {
   const items = buildCityResourceStatItems(city, view, map, data, true);
+  const multi = ownerCities(city).length > 1;
+  const navDis = multi ? '' : 'disabled';
   mount.innerHTML =
     `<div class="civ-v-top-stack">` +
-    `<div class="civ-v-top-line">` +
     `<div class="civ-v-w3-city-badge">` +
-    `<span class="civ-v-w3-city-name">${city.name}</span>` +
+    `<button type="button" class="civ-v-w3-city-nav" id="civ-v-city-prev" ${navDis} title="Poprzednie miasto">‹</button>` +
+    `<span class="civ-v-w3-city-name">${cityPanelTitle(city)}</span>` +
+    `<button type="button" class="civ-v-w3-city-nav" id="civ-v-city-next" ${navDis} title="Następne miasto">›</button>` +
     `<span class="civ-v-w3-city-pop">${city.population}</span>` +
     `</div>` +
     `<div class="civ-v-resource-bar civ-v-resource-bar-w3">` +
     `<div class="civ-v-w3-chips civ-v-w3-chips-city">${items}</div>` +
-    `</div>` +
     `</div>` +
     `<div class="civ-v-exit-top-row">` +
     `<button type="button" class="civ-v-exit-map-btn" id="civ-v-map-close" title="Wróć na mapę świata (Esc)">` +
@@ -6088,6 +6436,8 @@ function renderCivResourceTopBar(
     `</div>` +
     `</div>`;
   mount.querySelector('#civ-v-map-close')?.addEventListener('click', () => closeCityView(onClose));
+  mount.querySelector('#civ-v-city-prev')?.addEventListener('click', () => switchCity(-1));
+  mount.querySelector('#civ-v-city-next')?.addEventListener('click', () => switchCity(1));
   wireTopBarStatDetails(mount, city, view, map, data);
 }
 
@@ -6302,6 +6652,36 @@ function appendOkolicaToolbarProfiles(
   }
 }
 
+function appendBudowaToolbarProfiles(
+  wrap: HTMLElement,
+  city: City,
+  focus: BudowaFocus,
+  tryb: BudowaTryb,
+): void {
+  const profiles: BudowaFocus[] = [
+    'wzrost', 'wojsko', 'kultura', 'prawo', 'produkcja', 'zrownowazone',
+  ];
+  for (const id of profiles) {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = tryb !== 'reczny' && id === focus ? 'on' : '';
+    setOkolicaProfileButtonContent(b, BUDOWA_FOCUS_BRAND[id], BUDOWA_FOCUS_SHORT[id]);
+    b.title = BUDOWA_FOCUS_TITLE[id];
+    b.disabled = !cfg.onBudowaFocusChange;
+    b.addEventListener('click', () => { cfg.onBudowaFocusChange?.(city.id, id); rerender(); });
+    wrap.appendChild(b);
+  }
+  if (cfg.onBudowaEnterManual) {
+    const recBtn = document.createElement('button');
+    recBtn.type = 'button';
+    recBtn.className = 'reczny' + (tryb === 'reczny' ? ' on' : '');
+    setOkolicaProfileButtonContent(recBtn, 'chip-manpower', 'Ręczny');
+    recBtn.title = 'Ręczny wybór budynków w kolejce';
+    recBtn.addEventListener('click', () => { cfg.onBudowaEnterManual?.(city.id); rerender(); });
+    wrap.appendChild(recBtn);
+  }
+}
+
 function renderTopStatsBar(mount: HTMLElement, city: City, view: CityView | null): void {
   const epoch = cfg.getEpoch?.(city.ownerId) ?? 1;
   const skarb = cfg.getTreasury?.(city.ownerId);
@@ -6326,7 +6706,7 @@ function renderTopStatsBar(mount: HTMLElement, city: City, view: CityView | null
 
   mount.innerHTML =
     `<div class="civ-ux-top-bar">` +
-    `<span class="civ-ux-top-city">${cityPanelChipIconWrap('chip-star', 14)} ${city.name}</span>` +
+    `<span class="civ-ux-top-city">${cityPanelChipIconWrap('chip-star', 14)} ${cityPanelTitle(city)}</span>` +
     `<table class="civ-ux-top-table"><tr>${rows}</tr></table>` +
     `<button type="button" class="civ-ux-top-close" id="civ-ux-close" title="Zamknij (Esc)">✕</button>` +
     `</div>`;
@@ -6383,7 +6763,7 @@ const CITY_PANEL_ICONS_LEFT: { id: CityPanelProductionTab; iconId: string; title
 
 const CITY_PANEL_ICONS_RIGHT: { id: CityPanelCityParamTab; iconId: string; title: string }[] = [
   { id: 'spichlerz', iconId: 'cp-granary', title: 'Spichlerz' },
-  { id: 'handel', iconId: 'cp-trade', title: 'Podział handlu i zamożność' },
+  { id: 'handel', iconId: 'cp-trade', title: 'Podział handlu i zamożność — suwaki Skarb / Nauka / Zamożność' },
   { id: 'praca', iconId: 'cp-labor', title: 'Podział pracy — budynki i ulepszenia' },
   { id: 'porzadek', iconId: 'cp-order', title: 'Społeczeństwo i porządek' },
   { id: 'zdrowie', iconId: 'cp-health', title: 'Zdrowie miasta' },
@@ -6472,10 +6852,13 @@ function withW4TabCard(
   id: string | undefined,
   city: City,
   render: (body: HTMLElement) => void,
+  opts?: { scrollable?: boolean },
 ): void {
-  const card = el('div', 'civ-w4-tab-card');
+  const cardCls = opts?.scrollable ? 'civ-w4-tab-card civ-w4-tab-card--scroll' : 'civ-w4-tab-card';
+  const card = el('div', cardCls);
   if (id) card.id = id;
-  const body = el('div', 'civ-w4-tab-body');
+  const bodyCls = opts?.scrollable ? 'civ-w4-tab-body civ-w4-tab-body--scroll' : 'civ-w4-tab-body';
+  const body = el('div', bodyCls);
   card.appendChild(body);
   parent.appendChild(card);
   render(body);
@@ -6524,13 +6907,16 @@ function renderRightPanelTab(
       break;
     case 'handel':
       withW4TabCard(mount, undefined, city, body => {
+        const hint = el('div', 'civ-handel-tab-hint');
+        hint.textContent = 'Suwaki podziału handlu (Skarb · Nauka · Zamożność) i poziom zamożności — przewiń, jeśli nie mieści się na ekranie.';
+        body.appendChild(hint);
         const slidersHost = el('div', 'civ-handel-sliders-host');
         const wealthHost = el('div', 'civ-handel-wealth-host');
         body.appendChild(slidersHost);
         body.appendChild(wealthHost);
         renderHandelSlidersPanel(slidersHost, city, view, data);
         renderWealth(wealthHost, city, data, view);
-      });
+      }, { scrollable: true });
       break;
     case 'praca':
       withW4TabCard(mount, 'cs-praca', city, body => {
@@ -6710,7 +7096,6 @@ function rerender(): void {
   renderOkolica(rootEl, city, map);
   const kult = q('cs-kultura'); if (kult) renderKultura(kult, city, view);
   const relig = q('cs-religia'); if (relig) renderReligia(relig, city, view);
-  const sur = q('cs-surowce'); if (sur) renderSurowce(sur, city);
 
   const close = q('cs-close'); if (close) close.addEventListener('click', () => { activeOnClose(); hideCityPanel(); });
   const mapbtn = q('cs-mapbtn');
@@ -6775,6 +7160,13 @@ export function hideCityPanel(): void {
   hideCityUxFrame();
   setMapHudChromeSuppressed(false);
   if (rootEl) rootEl.style.display = 'none';
+}
+
+/** Zamknij panel jeśli otwarty (Esc / skrót z mapy) — wywołuje ten sam onClose co przycisk „Wróć na mapę”. */
+export function closeCityPanelIfOpen(): boolean {
+  if (!isCityPanelOpen()) return false;
+  activeOnClose();
+  return true;
 }
 
 /** Return true if the city panel is currently visible. */

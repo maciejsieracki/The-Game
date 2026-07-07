@@ -4,6 +4,7 @@
  */
 
 import { scienceOwlIconHtml } from './icons/scienceOwlIcon';
+import { brandIconSvg } from './icons/brandAssets';
 import { bindHudPanelOutsideDismiss } from './hudPanelDismiss';
 
 export interface ScienceHubProgress {
@@ -96,7 +97,12 @@ function ensureStyles(): void {
 .civ-science-hub-hud .sh-item.on{border-color:rgba(224,178,74,0.55);background:rgba(224,178,74,0.08);}
 .civ-science-hub-hud .sh-item.locked{opacity:0.55;cursor:help;}
 .civ-science-hub-hud .sh-item.locked:hover{background:rgba(232,176,74,0.06);border-color:rgba(232,176,74,0.25);}
-.civ-science-hub-hud .sh-ico{font-size:1.2em;line-height:1;flex-shrink:0;}
+.civ-science-hub-hud .sh-ico{display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;width:1.35em;height:1.35em;}
+.civ-science-hub-hud .sh-ico svg{width:100%;height:100%;display:block;}
+.civ-science-hub-hud .sh-close-ic{display:inline-flex;align-items:center;justify-content:center;width:1.1em;height:1.1em;}
+.civ-science-hub-hud .sh-close-ic svg{width:100%;height:100%;display:block;}
+.civ-science-hub-hud .sh-tree-btn .sh-tree-ic{display:inline-flex;align-items:center;margin-right:0.35em;vertical-align:middle;}
+.civ-science-hub-hud .sh-tree-btn .sh-tree-ic svg{width:1.1em;height:1.1em;display:block;}
 .civ-science-hub-hud .sh-body{flex:1;min-width:0;}
 .civ-science-hub-hud .sh-name{font-size:0.98em;font-weight:700;color:var(--gold);line-height:1.2;}
 .civ-science-hub-hud .sh-cost{font-size:0.72em;color:var(--muted);margin-top:0.1em;}
@@ -184,11 +190,19 @@ export function createScienceHubHud(config: ScienceHubHudConfig): ScienceHubHudA
     closeBtn.className = 'sh-close';
     closeBtn.title = 'Zamknij (Esc)';
     closeBtn.setAttribute('aria-label', 'Zamknij hub badań');
-    closeBtn.textContent = '\u2715';
+    closeBtn.innerHTML = '<span class="sh-close-ic">' + brandIconSvg('ui-close', 20) + '</span>';
     closeBtn.addEventListener('click', (ev) => { ev.stopPropagation(); closeHub(); });
     titleRow.appendChild(closeBtn);
     head.appendChild(titleRow);
     head.appendChild(renderProgressBlock(prog));
+
+    const treeBtn = document.createElement('button');
+    treeBtn.type = 'button';
+    treeBtn.className = 'sh-tree-btn';
+    treeBtn.innerHTML = '<span class="sh-tree-ic">' + brandIconSvg('chip-map', 20) + '</span>Pełne drzewko technologii';
+    treeBtn.addEventListener('click', () => config.onOpenFullTree());
+    head.appendChild(treeBtn);
+
     scroll.appendChild(head);
 
     const listPanel = document.createElement('div');
@@ -221,17 +235,10 @@ export function createScienceHubHud(config: ScienceHubHudConfig): ScienceHubHudA
       }
     }
 
-    const treeBtn = document.createElement('button');
-    treeBtn.type = 'button';
-    treeBtn.className = 'sh-tree-btn';
-    treeBtn.textContent = '\u{1F5FA}\uFE0F Pełne drzewko technologii';
-    treeBtn.addEventListener('click', () => config.onOpenFullTree());
-
     const hint = document.createElement('div');
     hint.className = 'sh-hint';
     hint.textContent = 'Klik tech = ustaw cel. Drzewko pokazuje prereqy. Esc zamyka hub (najpierw drzewko).';
 
-    listPanel.appendChild(treeBtn);
     listPanel.appendChild(hint);
     scroll.appendChild(listPanel);
 
@@ -245,7 +252,7 @@ export function createScienceHubHud(config: ScienceHubHudConfig): ScienceHubHudA
       row.tabIndex = 0;
       const ico = document.createElement('span');
       ico.className = 'sh-ico';
-      ico.textContent = lockedRow ? '\u{1F512}' : '\u{1F52C}';
+      ico.innerHTML = lockedRow ? brandIconSvg('ui-lock', 20) : brandIconSvg('res-science', 20);
       const body = document.createElement('div');
       body.className = 'sh-body';
       const name = document.createElement('div');

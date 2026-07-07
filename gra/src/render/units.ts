@@ -220,16 +220,18 @@ const SELECTION_HEX_LIFT    = ROUTE_Y_LIFT;
 const SELECTION_HEX_COLOR   = 0xe0b24a;
 const SELECTION_HEX_OPACITY = 0.92;
 
-// UNITS OWN/ENEMY: delikatna obwódka właściciela ZAWSZE widoczna (niebieski=nasz,
-// czerwony=wróg). Zaznaczenie dokłada mocny setSelectionHex (gruby, złoty).
-// TODO: docelowo kolor z frakcji cywilizacji zamiast binarnie own/enemy.
+// Obwódka jednostki: kolor cywilizacji właściciela; w wojnie — cienki czerwony akcent.
+// Zaznaczenie dokłada mocny setSelectionHex (grubszy pierścień).
+export type UnitRingStance = 'own' | 'neutral' | 'hostile';
+
 const OWNER_RING_OUTER   = HEX_R * 0.90;
 const OWNER_RING_WIDTH   = 0.045 * HEX_R;
 const OWNER_RING_INNER   = OWNER_RING_OUTER - OWNER_RING_WIDTH;
 const OWNER_RING_OPACITY = 0.42;
 const OWNER_RING_LIFT    = 0.006 * HEX_R;
-const OWNER_RING_COLOR_OWN   = 0x53a6ff;
-const OWNER_RING_COLOR_ENEMY = 0xe05a52;
+const WAR_RING_COLOR     = 0xff4444;
+const WAR_RING_OPACITY   = 0.38;
+const WAR_RING_SCALE     = 1.1;
 if (typeof globalThis !== 'undefined') { (globalThis as any).__CIV_OWNER_RING = 'civ-owner-ring'; }
 
 let geoSelectionHexRing: THREE.ShapeGeometry | null = null;
@@ -7372,9 +7374,20 @@ export class UnitRenderer {
 
   /** Sprite ×N na reprezentancie stosu. */
   private stackBadgeSprites: Map<string, THREE.Sprite> = new Map();
+  /** MAP-Q1: chip głodu na reprezentancie stosu. */
+  private stackStarvingSprites: Map<string, THREE.Sprite> = new Map();
+  /** Etykieta „X tur” przy podglądzie trasy (A3 Shift). */
+  private pathTurnLabelSprite: THREE.Sprite | null = null;
 
   /** Heksy zajęte przez miasta — jednostki stoją wyżej i z boku zabudowy. */
   private cityHexKeys: Set<string> = new Set();
+
+  /** Kolor obwódki jednostki wg relacji z graczem (neutral=zielony, wrogi=czerwony). */
+  private ringStanceForOwner: (ownerId: number) => UnitRingStance = (ownerId) =>
+    ownerId === 0 ? 'own' : 'hostile';
+
+  /** Tint modelu jednostki; domyślnie stara paleta OWNER_COLORS. */
+  private ownerColorFn: (ownerId: number) => number = ownerColor;
 
   constructor(scene: THREE.Scene, map: GameMap) {
     this.scene = scene;
@@ -7393,6 +7406,24 @@ export class UnitRenderer {
   /** Aktualizuj heksy miast (przed sync). */
   setCityHexKeys(keys: Set<string>): void {
     this.cityHexKeys = keys;
+  }
+
+  /** Kolor obwódki jednostki wg relacji z graczem (neutral=zielony, wrogi=czerwony). */
+  setRingStanceResolver(fn: (ownerId: number) => UnitRingStance): void {
+    this.ringStanceForOwner = fn;
+  }
+
+  /** Tint modelu jednostki (kolorHex cywilizacji z silnika). */
+  setOwnerColorFn(fn: (ownerId: number) => number): void {
+    this.ownerColorFn = fn;
+  }
+
+  private _resolveOwnerColor(ownerId: number): number {
+    return this.ownerColorFn(ownerId);
+  }
+
+  private _ringColorForOwner(ownerId: number): number {
+    return this._resolveOwnerColor(ownerId);
   }
 
   /** Pozycja tokena na heksie (uwzględnia podbicie na polu miasta). */
@@ -7424,12 +7455,13 @@ export class UnitRenderer {
 
   /**
    * Delikatna obwódka właściciela jako DZIECKO żetonu (podąża za ruchem/stackiem).
-   * ownerId 0 = gracz → niebieski; inaczej → czerwony. Materiał → userData['mats']
-   * (sprząta _disposeToken); geometria = współdzielony singleton (dispose w dispose()).
+   * Materiał → userData['mats'] (sprząta _disposeToken).
    */
   private _attachOwnerRing(group: THREE.Group, ownerId: number): void {
+    const stance = this.ringStanceForOwner(ownerId);
+    const civColor = this._ringColorForOwner(ownerId);
     const ownMat = new THREE.MeshBasicMaterial({
-      color: ownerId === 0 ? OWNER_RING_COLOR_OWN : OWNER_RING_COLOR_ENEMY,
+      color: civColor,
       transparent: true,
       opacity: OWNER_RING_OPACITY,
       depthWrite: false,
@@ -7439,8 +7471,27 @@ export class UnitRenderer {
     ownRing.rotation.x = -Math.PI / 2;
     ownRing.position.y = OWNER_RING_LIFT;
     group.add(ownRing);
-    const mats = group.userData['mats'] as THREE.Material[] | undefined;
-    if (mats) mats.push(ownMat); else group.userData['mats'] = [ownMat];
+    if (stance === 'hostile') {
+      const warMat = new THREE.MeshBasicMaterial({
+        color: WAR_RING_COLOR,
+        transparent: true,
+        opacity: WAR_RING_OPACITY,
+        depthWrite: false,
+        side: THREE.DoubleSide,
+      });
+      const warRing = new THREE.Mesh(getGeoOwnerHexRing(), warMat);
+      warRing.rotation.x = -Math.PI / 2;
+      warRing.position.y = OWNER_RING_LIFT;
+      warRing.scale.setScalar(WAR_RING_SCALE);
+      group.add(warRing);
+      const mats = group.userData['mats'] as THREE.Material[] | undefined;
+      if (mats) mats.push(ownMat, warMat); else group.userData['mats'] = [ownMat, warMat];
+    } else {
+      const mats = group.userData['mats'] as THREE.Material[] | undefined;
+      if (mats) mats.push(ownMat); else group.userData['mats'] = [ownMat];
+    }
+    group.userData['ringStance'] = stance;
+    group.userData['ringOwnerId'] = ownerId;
   }
 
   /**
@@ -7459,18 +7510,24 @@ export class UnitRenderer {
 
       const cat = unit.category ?? 'domyslny';
       const typeId = unit.typeId ?? '';
+      const ringStance = this.ringStanceForOwner(unit.ownerId);
 
       if (this.tokens.has(unit.id)) {
         const obj = this.tokens.get(unit.id)!;
 
-        if (obj.userData['cat'] !== cat || obj.userData['typeId'] !== typeId) {
+        if (
+          obj.userData['cat'] !== cat ||
+          obj.userData['typeId'] !== typeId ||
+          obj.userData['ringStance'] !== ringStance ||
+          obj.userData['ringOwnerId'] !== unit.ownerId
+        ) {
           this.scene.remove(obj);
           this._disposeToken(unit.id, obj);
           this.tokens.delete(unit.id);
           this.tokenMaterials.delete(unit.id);
           this.tokenGeos.delete(unit.id);
 
-          const color = ownerColor(unit.ownerId);
+          const color = this._resolveOwnerColor(unit.ownerId);
           const group = buildUnitModel(cat, color, typeId);
           group.position.set(x, yBase, z);
           this._applyCityTokenStyle(group, onCity);
@@ -7486,7 +7543,7 @@ export class UnitRenderer {
           this._applyCityTokenStyle(obj, onCity);
         }
       } else {
-        const color = ownerColor(unit.ownerId);
+        const color = this._resolveOwnerColor(unit.ownerId);
         const group = buildUnitModel(cat, color, typeId);
 
         group.position.set(x, yBase, z);
@@ -7547,6 +7604,50 @@ export class UnitRenderer {
       obj.add(sprite);
       this.stackBadgeSprites.set(repId, sprite);
     }
+
+    const starving = stackDisplay?.starvingRepIds;
+    for (const [id, sprite] of this.stackStarvingSprites) {
+      const obj = this.tokens.get(id);
+      if (obj) obj.remove(sprite);
+      sprite.material.map?.dispose();
+      (sprite.material as THREE.SpriteMaterial).dispose();
+    }
+    this.stackStarvingSprites.clear();
+    if (starving) {
+      for (const repId of starving) {
+        const obj = this.tokens.get(repId);
+        if (!obj || !obj.visible) continue;
+        const sprite = this._makeStarvingChipSprite();
+        sprite.position.set(-0.28 * HEX_R, 0.58 * HEX_R, 0.18 * HEX_R);
+        obj.add(sprite);
+        this.stackStarvingSprites.set(repId, sprite);
+      }
+    }
+  }
+
+  private _makeStarvingChipSprite(): THREE.Sprite {
+    const canvas = document.createElement('canvas');
+    canvas.width = 48;
+    canvas.height = 48;
+    const ctx = canvas.getContext('2d')!;
+    ctx.fillStyle = 'rgba(120,20,20,0.92)';
+    ctx.beginPath();
+    ctx.arc(24, 24, 20, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#ff9090';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    ctx.fillStyle = '#ffe0e0';
+    ctx.font = 'bold 22px Segoe UI, Arial, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('\u2620', 24, 26);
+    const tex = new THREE.CanvasTexture(canvas);
+    const mat = new THREE.SpriteMaterial({ map: tex, transparent: true, depthTest: false });
+    const sp = new THREE.Sprite(mat);
+    sp.scale.set(0.32, 0.32, 1);
+    sp.renderOrder = 11;
+    return sp;
   }
 
   private _makeStackBadgeSprite(count: number): THREE.Sprite {
@@ -7650,10 +7751,9 @@ export class UnitRenderer {
     const hex = this.hexGrid.get(`${q},${r}`);
     const topY = hex ? terrainTopY(hex) : 0;
     const relief = hex ? unitTerrainRelief(hex.terenBazowy) : 0;
-    // Zaznaczenie w kolorze WŁAŚCICIELA (identyczny z obwódką bez zaznaczenia),
-    // tylko grubszy pierścień + wyższa nieprzezroczystość. own=niebieski / wróg=czerwony.
+    // Zaznaczenie w kolorze cywilizacji właściciela, grubszy pierścień.
     const mat = new THREE.MeshBasicMaterial({
-      color: ownerId === 0 ? OWNER_RING_COLOR_OWN : OWNER_RING_COLOR_ENEMY,
+      color: this._ringColorForOwner(ownerId),
       transparent: true,
       opacity: SELECTION_HEX_OPACITY,
       depthWrite: false,
@@ -7683,7 +7783,10 @@ export class UnitRenderer {
    * Draw a movement route line from hexes[0] to hexes[hexes.length-1].
    * Replaces any previously drawn route.
    */
-  setPathRoute(hexes: { q: number; r: number }[]): void {
+  setPathRoute(
+    hexes: { q: number; r: number }[],
+    opts?: { turnLabel?: string; turnStops?: { q: number; r: number; turn: number }[] },
+  ): void {
     this.clearPathRoute();
 
     if (hexes.length < 2) return;
@@ -7737,13 +7840,59 @@ export class UnitRenderer {
     destMarker.userData['routeMat'] = matDest;
     this.scene.add(destMarker);
     this.routeObjects.push(destMarker);
+
+    if (opts?.turnStops?.length) {
+      for (const stop of opts.turnStops) {
+        const idx = hexes.findIndex(h => h.q === stop.q && h.r === stop.r);
+        if (idx < 0) continue;
+        const pt = points[idx]!;
+        const labelSp = this._makePathTurnLabelSprite(String(stop.turn));
+        labelSp.position.set(pt.x, pt.y + 0.32 * HEX_R, pt.z);
+        this.scene.add(labelSp);
+        this.routeObjects.push(labelSp);
+      }
+    } else if (opts?.turnLabel) {
+      const last = points[points.length - 1]!;
+      const labelSp = this._makePathTurnLabelSprite(opts.turnLabel);
+      labelSp.position.set(last.x, last.y + 0.35 * HEX_R, last.z);
+      this.scene.add(labelSp);
+      this.pathTurnLabelSprite = labelSp;
+      this.routeObjects.push(labelSp);
+    }
+  }
+
+  private _makePathTurnLabelSprite(text: string): THREE.Sprite {
+    const canvas = document.createElement('canvas');
+    canvas.width = 128;
+    canvas.height = 48;
+    const ctx = canvas.getContext('2d')!;
+    ctx.fillStyle = 'rgba(8,12,22,0.88)';
+    ctx.strokeStyle = '#e0b24a';
+    ctx.lineWidth = 2;
+    const pad = 4;
+    ctx.beginPath();
+    ctx.roundRect(pad, pad, canvas.width - pad * 2, canvas.height - pad * 2, 6);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = '#f5e6b8';
+    ctx.font = 'bold 20px Segoe UI, Arial, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(text, canvas.width / 2, canvas.height / 2 + 1);
+    const tex = new THREE.CanvasTexture(canvas);
+    const mat = new THREE.SpriteMaterial({ map: tex, transparent: true, depthTest: false });
+    const sp = new THREE.Sprite(mat);
+    sp.scale.set(0.55, 0.22, 1);
+    sp.renderOrder = 12;
+    sp.userData['routeMat'] = mat;
+    return sp;
   }
 
   /**
    * Remove the current path route from the scene and dispose all GPU resources.
    */
   clearPathRoute(): void {
-    if (this.routeObjects.length === 0) return;
+    if (this.routeObjects.length === 0 && this.pathTurnLabelSprite === null) return;
 
     const matsToDispose = new Set<THREE.Material>();
 
@@ -7757,6 +7906,10 @@ export class UnitRenderer {
         if (mat !== undefined) {
           matsToDispose.add(mat);
         }
+      } else if (obj instanceof THREE.Sprite) {
+        const mat = obj.material as THREE.SpriteMaterial;
+        mat.map?.dispose();
+        matsToDispose.add(mat);
       }
     }
 
@@ -7765,6 +7918,7 @@ export class UnitRenderer {
     }
 
     this.routeObjects = [];
+    this.pathTurnLabelSprite = null;
   }
 
   /** Remove all unit tokens and highlights; dispose all GPU resources. */

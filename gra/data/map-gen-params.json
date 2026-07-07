@@ -87,10 +87,10 @@
     "miedz": { "rarity": 0.10 },
     "zelazo": { "rarity": 0.08 },
     "glina": { "rarity": 0.10 },
-    "konie": { "rarity": 0.10 },
+    "konie": { "rarity": 0.025 },
     "wegiel": { "rarity": 0.10 },
-    "owce": { "rarity": 0.08 },
-    "bydlo": { "rarity": 0.07 },
+    "owce": { "rarity": 0.14 },
+    "bydlo": { "rarity": 0.12 },
     "lama": { "rarity": 0.06 },
     "luksus": { "rarity": 0.06 },
     "sol": { "rarity": 0.12 }

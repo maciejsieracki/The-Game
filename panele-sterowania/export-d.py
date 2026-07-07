@@ -213,10 +213,14 @@ def export_roster(wb, data_dir, dry_run=False):
         ikona = str_val(rec.get("ikonaId"))
         if not ikona:
             return 0, f"brak ikonaId dla {cyw}"
+        kolor_hex = str_val(rec.get("kolorHex"))
+        baner = str_val(rec.get("baner"))
         xlsx_data[cyw] = {
             "klastry": nazwy,
             "mnoznikHandelPieniadz": float(mnoznik_raw),
             "ikonaId": ikona,
+            "kolorHex": kolor_hex or None,
+            "baner": baner or None,
         }
 
     path = os.path.join(data_dir, "civs.json")
@@ -230,6 +234,10 @@ def export_roster(wb, data_dir, dry_run=False):
             cyw_obj["nazwyKlastra"] = d["klastry"]
             cyw_obj["mnoznikHandelPieniadz"] = d["mnoznikHandelPieniadz"]
             cyw_obj["ikonaId"] = d["ikonaId"]
+            if d.get("kolorHex"):
+                cyw_obj["kolorHex"] = d["kolorHex"]
+            if d.get("baner"):
+                cyw_obj["baner"] = d["baner"]
             matched += 1
 
     if dry_run:

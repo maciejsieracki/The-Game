@@ -19,6 +19,7 @@ import {
   hexHiddenDepositHint,
   labelsForImprovementUnlock,
 } from '../game/resource-access';
+import { formatEntityDisplayName } from '../game/display-names';
 import {
   brandIconSvg,
   mapResourceIconSvg,
@@ -62,7 +63,7 @@ const YIELD_ROWS: ReadonlyArray<{ key: YieldKey; label: string }> = [
 ];
 
 const RIVER_BONUS: TileYield = { zywnosc: 3, praca: 2, handel: 2, drewno: 0, kamien: 0 };
-const FOREST_BONUS: TileYield = { zywnosc: -1, praca: 0, handel: -1, drewno: 3, kamien: 0 };
+const FOREST_BONUS: TileYield = { zywnosc: -1, praca: 3, handel: -1, drewno: 3, kamien: 0 };
 
 function formatYieldLine(y: TileYield, empty = '—'): string {
   const parts: string[] = [];
@@ -228,6 +229,8 @@ export interface HexContextTooltipInput {
   r: number;
   hex: Hex;
   cityName?: string | null;
+  /** Miasto-państwo klastra — dopisek w etykiecie (Maciej 2026-07-07). */
+  cityIsCityState?: boolean;
   currentEra?: number;
   esc: (raw: string) => string;
 }
@@ -294,7 +297,8 @@ export function buildHexContextTooltipHtml(input: HexContextTooltipInput): strin
   }
 
   if (cityName) {
-    lines.push(subLine('Miasto', esc(cityName)));
+    const label = formatEntityDisplayName({ baseName: cityName, isCityState: input.cityIsCityState });
+    lines.push(subLine('Miasto', esc(label)));
   }
 
   return lines.join('');

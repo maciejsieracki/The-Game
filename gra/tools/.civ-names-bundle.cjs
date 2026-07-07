@@ -27,6 +27,24 @@ __export(civ_names_entry_exports, {
 });
 module.exports = __toCommonJS(civ_names_entry_exports);
 
+// src/game/city-names-pool.ts
+function poolEntry(pools, ikonaId) {
+  return pools[ikonaId];
+}
+function stateCityNameAt(pools, ikonaId, index, fallback) {
+  const pan = poolEntry(pools, ikonaId)?.miasta_panstwa;
+  if (pan && index >= 0 && index < pan.length && pan[index]) {
+    return pan[index];
+  }
+  return fallback;
+}
+function playerCapitalFromPool(pools, ikonaId) {
+  return stateCityNameAt(pools, ikonaId, 0, "Stolica");
+}
+function clusterRivalFromPool(pools, ikonaId, rivalIndex1Based) {
+  return stateCityNameAt(pools, ikonaId, rivalIndex1Based, `Rywal ${rivalIndex1Based}`);
+}
+
 // src/game/civ-names.ts
 var NAZWY_KLASTRA_LEN = 10;
 function findCivByIkonaId(civs, ikonaId) {
@@ -42,11 +60,17 @@ function nazwaKlastraAt(names, index, fallback) {
   }
   return fallback;
 }
-function playerStartCityName(civs, playerCivId) {
+function playerStartCityName(civs, playerCivId, pools) {
+  if (pools?.[playerCivId]) {
+    return playerCapitalFromPool(pools, playerCivId);
+  }
   const names = getNazwyKlastra(civs, playerCivId);
   return nazwaKlastraAt(names, 0, "Stolica");
 }
-function clusterRivalCityName(civs, playerCivId, rivalIndex1Based) {
+function clusterRivalCityName(civs, playerCivId, rivalIndex1Based, pools) {
+  if (pools?.[playerCivId]) {
+    return clusterRivalFromPool(pools, playerCivId, rivalIndex1Based);
+  }
   const names = getNazwyKlastra(civs, playerCivId);
   return nazwaKlastraAt(names, rivalIndex1Based, `Rywal ${rivalIndex1Based}`);
 }

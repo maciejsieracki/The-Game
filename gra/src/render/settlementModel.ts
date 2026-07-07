@@ -20,8 +20,9 @@ export function buildSettlementModel(
   const L = Math.max(1, Math.min(10, Math.round(level)));
   if (style === 'roblox') {
     if (era >= 2) return buildBronzeCityRoblox(civ, L, ownerCol, withWalls);
-    return buildStoneAgeCityRoblox(civ, L, ownerCol, withWalls);
+    // A5-S2: epoka kamienia — jeden wspólny styl dla wszystkich cywilizacji.
+    return buildStoneAgeCityRoblox(L, ownerCol, withWalls);
   }
   if (era >= 2) return buildBronzeCity(civ, L, ownerCol, withWalls);
-  return buildStoneAgeCity(civ, L, ownerCol, withWalls);
+  return buildStoneAgeCity(L, ownerCol, withWalls);
 }

@@ -34,7 +34,8 @@ export {
   DEFAULT_UPKEEP_PARAMS, loadUpkeepParams,
   buildingUpkeep, totalBuildingUpkeep,
   DEFAULT_UNIT_UPKEEP_BY_CATEGORY, unitUpkeep, totalUnitUpkeep,
-  buildUnitUpkeepTable, militaryFoodConsumption, upkeepBalance,
+  buildUnitUpkeepTable, buildUnitFoodTable, unitFoodPerTurn,
+  militaryFoodConsumption, upkeepBalance,
 } from '../src/game/economy-upkeep';
 `;
 
@@ -143,6 +144,17 @@ eq(U.unitUpkeep({ typeId: 'X', category: 'nieznana' }, {}, 1), 1, 's6.2: unknown
 eq(U.militaryFoodConsumption([{camping:true},{camping:true},{camping:true},{camping:true}], UP), 2, 's6.3: 4 camping -> 2 food');
 eq(U.militaryFoodConsumption([{camping:false},{camping:false},{camping:false},{camping:false}], UP), 4, 's6.3: 4 marching -> 4 food');
 eq(U.militaryFoodConsumption([{camping:true},{camping:false}], UP), 1.5, 's6.3: 1 camp + 1 march -> 1.5');
+
+// s.6.3 per-type food (units.json): Zwiadowca = 0
+const foodTbl = U.buildUnitFoodTable([{ Jednostka: 'Zwiadowca', 'żywność/turę': 0 }, { Jednostka: 'Wojownik', 'żywność/turę': 1 }]);
+eq(U.militaryFoodConsumption([{ typeId: 'Zwiadowca', camping: false }], UP, foodTbl), 0, 'Zwiadowca: 0 food marching');
+eq(U.militaryFoodConsumption([{ typeId: 'Zwiadowca', camping: true }], UP, foodTbl), 0, 'Zwiadowca: 0 food camping');
+eq(U.militaryFoodConsumption([{ typeId: 'Wojownik', camping: false }], UP, foodTbl), 1, 'Wojownik: 1 food');
+eq(U.militaryFoodConsumption(
+  [{ typeId: 'Zwiadowca', camping: false }, { typeId: 'Wojownik', camping: false }],
+  UP,
+  foodTbl,
+), 1, 'scout + warrior = 1 food total');
 
 // s.6.4 / s.8.4 balance: income 8, 12 buildings (*1) + 5 units (lucznik=1) = 17 -> saldo -9, deficit
 const units5 = Array.from({ length: 5 }, () => ({ typeId: 'L', category: 'lucznik' }));

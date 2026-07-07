@@ -1,0 +1,1 @@
+export { evaluateOrderFromBreakdown } from '../src/game/society-breakdown';

@@ -141,6 +141,13 @@ export function cityLudnoscAbsolutna(ludki: number, epoka: number): number {
   return clampLudki(ludki) * row.ludekNaLudka;
 }
 
+/** Etykieta UI: slot populacji miasta → obywatel(e). */
+export function formatObywateleLabel(count: number): string {
+  const n = Math.max(0, Math.floor(count));
+  if (n === 1) return '1 obywatel';
+  return `${n} obywateli`;
+}
+
 /** Maksymalna pula Manpower przy danej liczbie ludków i epoce. */
 export function cityManpowerMax(ludki: number, epoka: number): number {
   const row = epokaManpowerRow(epoka);
@@ -273,6 +280,22 @@ export function tryDeductUnitSpawnCosts(
     manpower: cur - kosztManpower,
     kosztManpower,
   };
+}
+
+/**
+ * Odwrotność werbu — zwrot kosztu przy rozwiązaniu jednostki (disband).
+ * Ludność wraca do miasta docelowego; Manpower — do puli (clamp do max).
+ */
+export function refundUnitSpawnToCity(
+  city: Pick<City, 'population' | 'manpower'>,
+  epoka: number,
+  popCost = 1,
+): { population: number; manpower: number } {
+  const mpRefund = unitManpowerCost(epoka);
+  const population = city.population + popCost;
+  const max = cityManpowerMax(population, epoka);
+  const manpower = Math.min(max, cityManpowerCurrent(city, epoka) + mpRefund);
+  return { population, manpower };
 }
 
 /**

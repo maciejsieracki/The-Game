@@ -33,6 +33,7 @@ export {
   adjustTileWorker,
   seedReczneFromAuto,
   toggleTileWorker,
+  rebalanceWorkersAfterPopulationChange,
 } from '../src/game/okolica';
 `;
 
@@ -55,7 +56,7 @@ try {
 }
 
 const M = require(BUNDLE_FILE);
-const { OKOLICA_RADIUS, okolicaTiles, tileScore, assignWorkedTiles, cityRangeForPopulation, adjustTileWorker, seedReczneFromAuto, toggleTileWorker } = M;
+const { OKOLICA_RADIUS, okolicaTiles, tileScore, assignWorkedTiles, cityRangeForPopulation, adjustTileWorker, seedReczneFromAuto, toggleTileWorker, rebalanceWorkersAfterPopulationChange } = M;
 
 // --- test harness ----------------------------------------------------------
 let passed = 0;
@@ -207,6 +208,27 @@ const tRemove = toggleTileWorker(
   map, 1, 0,
 );
 assert(tRemove.ok && Object.keys(tRemove.reczne).length === 0, 'remove last worker leaves empty manual pool');
+
+// Test 12: wzrost populacji w trybie recznym — auto-przydział brakującego 👤
+console.log('\n12. rebalanceWorkersAfterPopulationChange (reczny growth)');
+const cityGrow = {
+  id: 'c0', ownerId: 0, q: 0, r: 0, name: 'T', population: 3,
+  okolicaTryb: 'reczny',
+  okolicaReczne: { '1,0': 1, '0,1': 1 },
+};
+rebalanceWorkersAfterPopulationChange(cityGrow, map, 2, 3);
+const assignedAfterGrow = Object.values(cityGrow.okolicaReczne ?? {}).filter(n => n > 0).length;
+eq(assignedAfterGrow, 3, 'reczny +1 pop → trzeci 👤 na wolnym polu');
+
+// Test 13: auto tryb — rebalance nie dotyka reczne
+console.log('\n13. rebalanceWorkersAfterPopulationChange (auto noop)');
+const cityAutoGrow = {
+  id: 'c1', ownerId: 0, q: 0, r: 0, name: 'A', population: 4,
+  okolicaTryb: 'auto',
+  okolicaReczne: undefined,
+};
+rebalanceWorkersAfterPopulationChange(cityAutoGrow, map, 3, 4);
+eq(cityAutoGrow.okolicaReczne, undefined, 'auto mode: no manual reczne written');
 
 // --- summary ---------------------------------------------------------------
 const total = passed + failed;

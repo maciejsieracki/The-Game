@@ -8,7 +8,8 @@
  * jest zewnetrzna (przekazana przez UI/silnik przez odpowiedni callback).
  */
 
-import type { City } from './cities';
+import type { City, BudowaFocus } from './cities';
+import { DEFAULT_BUDOWA_FOCUS, DEFAULT_BUDOWA_TRYB } from './cities';
 import type { GameMap } from '../types/map';
 import {
   assignWorkedTiles,
@@ -18,7 +19,6 @@ import {
   type TileYield,
 } from './okolica';
 import {
-  availableProduction,
   buildableProduction,
   frontItem,
   splitPraca,
@@ -32,7 +32,7 @@ import {
 // Auto-production heuristic
 // ---------------------------------------------------------------------------
 /**
- * Heurystyka auto-produkcji (priorytet malejacy):
+ * Heurystyka auto-produkcji (priorytet malejacy) — profil Zrównoważone:
  *  1. Budynki kat. "Zywnosc"   -- wzrost populacji (baza rozbudowy)
  *  2. Budynki kat. "Produkcja" -- wiecej Pracy = szybsza dalsza budowa
  *  3. Budynki kat. "Nauka"     -- odblokowanie technologii
@@ -64,11 +64,53 @@ const KATEGORIA_PRIORYTET: Record<string, number> = {
 const PRIORYTET_DEFAULT_BUDYNEK = 9;
 const PRIORYTET_JEDNOSTKA       = 10;
 
-function priorityForItem(item: ProductionItem, buildings: ProductionData['buildings']): number {
+/** Mapowanie kategorii budynku → priorytet wg profilu auto-budowy miasta. */
+export function prioritiesForBudowaFocus(focus: BudowaFocus): Record<string, number> {
+  switch (focus) {
+    case 'wzrost':
+      return {
+        'Zywnosc': 1,
+        'Zdrowie': 2,
+      };
+    case 'wojsko':
+      return {
+        'Wojsko': 1,
+        'Produkcja+Wojsko': 2,
+        'Obrona': 3,
+        'Zdrowie+Wojsko': 4,
+      };
+    case 'kultura':
+      return {
+        'Kultura': 1,
+        'Kultura/Administracja': 2,
+      };
+    case 'prawo':
+      return {
+        'Administracja': 1,
+        'Kultura/Administracja': 2,
+      };
+    case 'produkcja':
+      return {
+        'Produkcja': 1,
+        'Produkcja+Wojsko': 2,
+        'Produkcja+Pieniadz': 3,
+      };
+    case 'zrownowazone':
+    default:
+      return KATEGORIA_PRIORYTET;
+  }
+}
+
+function priorityForItem(
+  item: ProductionItem,
+  buildings: ProductionData['buildings'],
+  focus: BudowaFocus,
+): number {
   if (item.kind === 'budynek') {
     const def = buildings.find(b => b.id === item.id);
     const kat = def?.kategoria ?? '';
-    return KATEGORIA_PRIORYTET[kat] ?? PRIORYTET_DEFAULT_BUDYNEK;
+    const map = prioritiesForBudowaFocus(focus);
+    return map[kat] ?? PRIORYTET_DEFAULT_BUDYNEK;
   }
   return PRIORYTET_JEDNOSTKA;
 }
@@ -110,6 +152,42 @@ export interface AutoManageDecision {
 }
 
 // ---------------------------------------------------------------------------
+// pickAutoBuildItem — auto-kolejka budynkow wg profilu miasta
+// ---------------------------------------------------------------------------
+
+/**
+ * Wybiera nastepny budynek do kolejki gdy front jest pusty.
+ * PURE — nie mutuje argumentow.
+ */
+export function pickAutoBuildItem(
+  city: Readonly<City>,
+  prod: Readonly<CityProduction>,
+  data: ProductionData,
+  input: Pick<AutoManageInput, 'unlockedTechs' | 'ctx'>,
+): ProductionItem | null {
+  if (frontItem(prod) !== null) return null;
+  if ((city.budowaTryb ?? DEFAULT_BUDOWA_TRYB) !== 'auto') return null;
+
+  const focus = city.budowaFocus ?? DEFAULT_BUDOWA_FOCUS;
+  const unlockedTechs = input.unlockedTechs ?? [];
+  const ctx = input.ctx ?? {};
+  const candidates = buildableProduction(city, data, unlockedTechs, ctx);
+
+  if (candidates.length === 0) return null;
+
+  const scored = candidates.map(item => ({
+    item,
+    prio: priorityForItem(item, data.buildings, focus),
+  }));
+  scored.sort((a, b) => {
+    if (a.prio !== b.prio) return a.prio - b.prio;
+    if (a.item.koszt !== b.item.koszt) return a.item.koszt - b.item.koszt;
+    return a.item.nazwa.localeCompare(b.item.nazwa);
+  });
+  return (scored[0] as typeof scored[number]).item;
+}
+
+// ---------------------------------------------------------------------------
 // autoManageCity
 // ---------------------------------------------------------------------------
 
@@ -143,30 +221,8 @@ export function autoManageCity(
     { radius, isWorkable: input.isWorkable, wagi: wagiForFocus(focus) },
   );
 
-  // --- 2. Auto-produkcja: zaproponuj element jesli kolejka pusta -----------
-  let enqueue: ProductionItem | null = null;
-
-  if (frontItem(prod) === null) {
-    const unlockedTechs = input.unlockedTechs ?? [];
-    const ctx = input.ctx ?? {};
-
-    // buildableProduction = tylko budynki (wszystkie jednostki sa za Pieniadz, brak w kolejce Pracy)
-    const candidates = buildableProduction(city, data, unlockedTechs, ctx);
-
-    if (candidates.length > 0) {
-      // Sort by heuristic priority, then by cost ascending (deterministycznie)
-      const scored = candidates.map(item => ({
-        item,
-        prio: priorityForItem(item, data.buildings),
-      }));
-      scored.sort((a, b) => {
-        if (a.prio !== b.prio) return a.prio - b.prio;
-        if (a.item.koszt !== b.item.koszt) return a.item.koszt - b.item.koszt;
-        return a.item.nazwa.localeCompare(b.item.nazwa);
-      });
-      enqueue = (scored[0] as typeof scored[number]).item;
-    }
-  }
+  // --- 2. Auto-budowa: zaproponuj element jesli kolejka pusta i tryb auto ---
+  const enqueue = pickAutoBuildItem(city, prod, data, input);
 
   // --- 3. Auto-podzial Pracy -----------------------------------------------
   let pracaSplit: AutoManageDecision['pracaSplit'] = null;

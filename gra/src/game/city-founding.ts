@@ -50,17 +50,28 @@ export function isSubsequentFoundCity(playerCities: ReadonlyArray<{ ownerId: num
 }
 
 /**
- * B1-FOUND-Q1=A+B: największe miasto gracza z populacją ≥ 2 (po odjęciu zostaje min. 1).
+ * B1-FOUND-Q1=A+B: największe miasto cywilizacji z populacją ≥ koszt+1 (min. 1 zostaje).
+ * Przy remisie wielkości — losowe miasto spośród największych.
  */
 export function pickSourceCityForFounding(
   cities: ReadonlyArray<FoundCitySourceCity>,
   ownerId: number,
+  rand: () => number = Math.random,
 ): FoundCitySourceCity | null {
   const popCost = foundCityPopulationCost();
   const minPop = popCost + 1;
   const eligible = cities.filter(c => c.ownerId === ownerId && c.population >= minPop);
   if (eligible.length === 0) return null;
-  return eligible.reduce((best, c) => (c.population > best.population ? c : best));
+  const maxPop = Math.max(...eligible.map(c => c.population));
+  const tied = eligible.filter(c => c.population === maxPop);
+  if (tied.length === 1) return tied[0]!;
+  const idx = Math.min(tied.length - 1, Math.floor(rand() * tied.length));
+  return tied[idx]!;
+}
+
+export interface EvaluateFoundCityAffordanceOpts {
+  /** Losowanie remisu wielkości miast-źródeł (domyślnie Math.random). */
+  rand?: () => number;
 }
 
 /** Pełna ocena kosztu założenia miasta (SILNIK wywołuje przed foundCityAt). */
@@ -68,7 +79,9 @@ export function evaluateFoundCityAffordance(
   treasuryPraca: number,
   cities: ReadonlyArray<FoundCitySourceCity>,
   ownerId: number,
+  opts?: EvaluateFoundCityAffordanceOpts,
 ): FoundCityAffordance {
+  const rand = opts?.rand ?? Math.random;
   const firstFree = !isSubsequentFoundCity(cities, ownerId);
   const kosztPraca = firstFree ? 0 : foundCityWorkCost();
   const kosztLudnosc = firstFree ? 0 : foundCityPopulationCost();
@@ -86,7 +99,7 @@ export function evaluateFoundCityAffordance(
     return { ok: true, kosztPraca, kosztLudnosc };
   }
 
-  const source = pickSourceCityForFounding(cities, ownerId);
+  const source = pickSourceCityForFounding(cities, ownerId, rand);
   if (!source) {
     return {
       ok: false,

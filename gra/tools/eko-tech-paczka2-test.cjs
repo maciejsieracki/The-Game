@@ -63,10 +63,10 @@ function mkHex(q, r, teren, nakladka = NK.Brak, zloze) {
   ok(terrain.fort && terrain.fort.nazwa === 'Fort', 'ABC-10 ulepszenie mapy fort → nazwa Fort');
 }
 
-// ABC-11: bufor spichlerza 70% normal
+// ABC-11: bufor spichlerza 50% normal
 {
   const row = econParams.ekonomia_miasta.spichlerz_zachowanie_po_wzroscie;
-  ok(row && row.normal === 0.7, 'ABC-11 spichlerz_zachowanie normal=0.7');
+  ok(row && row.normal === 0.5, 'ABC-11 spichlerz_zachowanie normal=0.5');
 }
 
 // ABC-14: popalnia tylko na rudzie

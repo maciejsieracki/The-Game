@@ -41,6 +41,10 @@
 
 import type { TechDef, CivBonus, BuildingDef } from '../data/loader';
 import { applyTempoKoszt, type TempoGry } from './tech-tempo';
+import type { BuildingCostPace } from './building-cost-tempo';
+import type { KosztJednostekPace } from './unit-cost-tempo';
+import type { WzrostLudnosciPace } from './population-growth-tempo';
+import { scaledResearchCost, type GameDifficulty } from './difficulty-cost';
 import { buildingGateMet, type ResearchBuildingGate } from './research';
 
 // ---------------------------------------------------------------------------
@@ -85,6 +89,12 @@ export interface PlayerState {
   pieniadzMnoznik: number;
   /** Tempo gry (globalny mnoznik kosztu badan) — szybka/standardowa/dluga. */
   tempoGry: TempoGry;
+  /** Mnoznik kosztow budynkow z kreatora — niski/normalny/wysoki. */
+  buildingCostPace: BuildingCostPace;
+  /** Mnoznik kosztow rekrutacji jednostek z kreatora — niski/normalny/wysoki. */
+  kosztJednostekPace: KosztJednostekPace;
+  /** Tempo wzrostu ludnosci z kreatora — wysoki/normalny/wolny (prog zywnosci). */
+  wzrostLudnosciPace: WzrostLudnosciPace;
   /**
    * Typ cywilizacji gracza (ikonaId z civs.json, np. 'grecy', 'rzymianie').
    * Ustawiany w applyMenuParams przy starcie gry.
@@ -110,6 +120,9 @@ export function createPlayerState(): PlayerState {
     era: 1,
     pieniadzMnoznik: 1,
     tempoGry: 'standardowa',
+    buildingCostPace: 'niski',
+    kosztJednostekPace: 'niski',
+    wzrostLudnosciPace: 'wysoki',
     civType: 'grecy',    // default: Grecy; nadpisywany przez applyMenuParams
     civBonusy: [],       // puste do czasu startu gry
     rakietaWystrzelona: false,
@@ -246,6 +259,7 @@ export function researchStep(
   state: PlayerState,
   techs: TechDef[],
   gate?: EmpireResearchGate,
+  difficulty: GameDifficulty = 'normal',
 ): ResearchStepResult {
   const completed: ResearchCompletion[] = [];
   const byId = new Map<string, TechDef>();
@@ -288,7 +302,12 @@ export function researchStep(
     const def = byId.get(state.badana);
     if (!def) { state.badana = cheapestAvailable(techs, state.zbadane, gate); continue; }
 
-    const cost = applyTempoKoszt(techCost(def), state.tempoGry ?? 'standardowa');
+    const cost = scaledResearchCost(
+      techCost(def),
+      state.tempoGry ?? 'standardowa',
+      0,
+      difficulty,
+    );
     if (state.nauka < cost) break; // can't finish the current tech yet
 
     // T-TECH-7: nie badaj tech wymagajacej budynku bez bramki (jesli gate podany).
@@ -376,11 +395,19 @@ export function getResearchState(
   state: PlayerState,
   techs: TechDef[],
   naukaPerTurn: number,
+  difficulty: GameDifficulty = 'normal',
 ): ResearchStateInfo {
   // Effective target: explicit player choice, or current badana, or null.
   const targetId = state.playerResearchTargetId ?? state.badana;
   const def = targetId ? techs.find(t => (t.Technologia ?? '').trim() === targetId) : undefined;
-  const kosztCelu = def ? techCost(def) : 0;
+  const kosztCelu = def
+    ? scaledResearchCost(
+      techCost(def),
+      state.tempoGry ?? 'standardowa',
+      0,
+      difficulty,
+    )
+    : 0;
   const pula = state.nauka;
 
   let postepFraction = 0;

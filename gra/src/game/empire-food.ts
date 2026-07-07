@@ -2,7 +2,7 @@
  * empire-food.ts — implementacja ticku zapasów państwa (B5-Q1=A, B5-Q2=A).
  */
 import type { EconomyTickResult, EconUnit } from './turn-economy';
-import type { UpkeepParams } from './economy-upkeep';
+import type { UpkeepParams, UnitFoodTable } from './economy-upkeep';
 import { militaryFoodConsumption } from './economy-upkeep';
 
 export interface EmpireFoodState {
@@ -13,6 +13,10 @@ export interface EmpireFoodState {
 export interface EmpireFoodParams {
   procentRozwojDefault: number;
   glodWojskaHpFrac:     number;
+  /** Ułamek netto żywności armii odkładany bez Spichlerza w imperium (domyślnie 50%). */
+  armiaOdkladBezSpichlerza: number;
+  /** Ułamek netto żywności armii odkładany ze Spichlerzem (domyślnie 100%). */
+  armiaOdkladZeSpichlerzem: number;
   /** B5-SP: pojemność zapasów armii na 1 Spichlerz w imperium (domyślnie 100). */
   spichlerzPojemnoscZapasowPanstwa: number;
 }
@@ -47,6 +51,8 @@ export function buildEmpireFoodParams(
   raw: {
     suwak_zywnosc_rozwoj_domyslnie?: RawParamRow;
     glod_wojska_hp_frac?: RawParamRow;
+    armia_odklad_bez_spichlerza?: RawParamRow;
+    armia_odklad_ze_spichlerzem?: RawParamRow;
     spichlerz_pojemnosc_zapasow_panstwa?: RawParamRow;
   },
   difficulty: Difficulty = 'normal',
@@ -54,8 +60,50 @@ export function buildEmpireFoodParams(
   return {
     procentRozwojDefault: pick(raw.suwak_zywnosc_rozwoj_domyslnie, difficulty, 100),
     glodWojskaHpFrac:     pick(raw.glod_wojska_hp_frac, difficulty, 0.08),
+    armiaOdkladBezSpichlerza: pick(raw.armia_odklad_bez_spichlerza, difficulty, 0.5),
+    armiaOdkladZeSpichlerzem: pick(raw.armia_odklad_ze_spichlerzem, difficulty, 1),
     spichlerzPojemnoscZapasowPanstwa: pick(raw.spichlerz_pojemnosc_zapasow_panstwa, difficulty, 100),
   };
+}
+
+/** Netto zmiana zapasów armii po koszcie wojska i współczynniku odkładania. */
+function armyFoodDepositDelta(
+  doPanstwa: number,
+  kosztArmii: number,
+  depositFrac: number,
+): number {
+  const net = doPanstwa - kosztArmii;
+  if (net >= 0) return Math.round(net * depositFrac);
+  return net;
+}
+
+/**
+ * Projekcja Δ zapasów armii (ta sama formuła co advanceEmpireFood, bez zapisu stanu).
+ * HUD i panel miasta używają bieżącego suwaka — nie ostatniego ticku z poprzedniej tury/gry.
+ */
+export function computeEmpireFoodNetDelta(
+  brutto: number,
+  kosztArmii: number,
+  pctRozwoj: number,
+  spichlerzCount: number,
+  params: EmpireFoodParams,
+): number {
+  const pct = Math.min(100, Math.max(0, pctRozwoj));
+  const doPanstwa = brutto - brutto * (pct / 100);
+  const depositFrac = spichlerzCount > 0
+    ? params.armiaOdkladZeSpichlerzem
+    : params.armiaOdkladBezSpichlerza;
+  return armyFoodDepositDelta(doPanstwa, kosztArmii, depositFrac);
+}
+
+/** Max zapasów armii = pojemność × liczba Spichlerzy; 0 gdy brak Spichlerza. */
+export function computeEmpireFoodMaxCap(
+  spichlerzCount: number,
+  params: EmpireFoodParams,
+): number {
+  return spichlerzCount > 0
+    ? spichlerzCount * params.spichlerzPojemnoscZapasowPanstwa
+    : 0;
 }
 
 export function freshEmpireFoodState(procentRozwojDefault = 100): EmpireFoodState {
@@ -68,6 +116,7 @@ export function advanceEmpireFood(
   states: Map<number, EmpireFoodState>,
   upkeep: UpkeepParams,
   params: EmpireFoodParams,
+  foodTable: UnitFoodTable = {},
 ): EmpireFoodTickResult {
   const bruttoByOwner = new Map<number, number>();
   const spichlerzCountByOwner = new Map<number, number>();
@@ -102,22 +151,20 @@ export function advanceEmpireFood(
     const doPanstwa = brutto - doRozwoju;
 
     const ownerUnits = units.filter(u => u.ownerId === ownerId);
-    const kosztArmii = militaryFoodConsumption(ownerUnits, upkeep);
+    const kosztArmii = militaryFoodConsumption(ownerUnits, upkeep, foodTable);
 
     const zapasyPrzed = st.zapasyPanstwa;
     const spichlerzCount = spichlerzCountByOwner.get(ownerId) ?? 0;
-    const canStoreArmyFood = spichlerzCount > 0;
-    const maxZapasy = spichlerzCount * params.spichlerzPojemnoscZapasowPanstwa;
-    let zapasyPo: number;
-    if (canStoreArmyFood) {
-      zapasyPo = zapasyPrzed + doPanstwa - kosztArmii;
-      if (zapasyPo > maxZapasy) zapasyPo = maxZapasy;
-    } else {
-      // Bez Spichlerza w imperium: wojsko je tylko z tej tury; nadwyżka przepada.
-      zapasyPo = doPanstwa - kosztArmii;
-      if (zapasyPo > 0) zapasyPo = 0;
-    }
-    st.zapasyPanstwa  = zapasyPo;
+    const depositFrac = spichlerzCount > 0
+      ? params.armiaOdkladZeSpichlerzem
+      : params.armiaOdkladBezSpichlerza;
+    const maxZapasy = computeEmpireFoodMaxCap(spichlerzCount, params);
+    const maxZapasyFinite = maxZapasy > 0 ? maxZapasy : Number.POSITIVE_INFINITY;
+
+    let zapasyPo = zapasyPrzed + armyFoodDepositDelta(doPanstwa, kosztArmii, depositFrac);
+    if (Number.isFinite(maxZapasyFinite) && zapasyPo > maxZapasyFinite) zapasyPo = maxZapasyFinite;
+
+    st.zapasyPanstwa = zapasyPo;
     _maxCapByOwner.set(ownerId, maxZapasy);
 
     const tick: EmpireFoodTick = {
@@ -150,9 +197,10 @@ export function getEmpireFoodReserve(ownerId: number): number {
   return _statesRef.get(ownerId)?.zapasyPanstwa ?? 0;
 }
 
-/** B5-SP: max zapasów armii (100 × liczba Spichlerzy); 0 gdy brak Spichlerza. */
+/** B5-SP: max zapasów armii (100 × Spichlerze); 0 = brak limitu (imperium bez Spichlerza). */
 export function getEmpireFoodMaxCap(ownerId: number): number {
-  return _maxCapByOwner.get(ownerId) ?? 0;
+  const cap = _maxCapByOwner.get(ownerId) ?? 0;
+  return cap > 0 ? cap : 0;
 }
 
 export function getEmpireFoodSplit(ownerId: number): number {
@@ -161,7 +209,9 @@ export function getEmpireFoodSplit(ownerId: number): number {
 
 export function isArmyStarving(ownerId: number): boolean {
   const t = _lastTicks.get(ownerId);
-  return t?.glodWojska ?? false;
+  if (t?.glodWojska) return true;
+  const st = _statesRef.get(ownerId);
+  return (st?.zapasyPanstwa ?? 0) < 0;
 }
 
 export function getLastEmpireFoodTick(ownerId: number): EmpireFoodTick | undefined {
@@ -170,4 +220,10 @@ export function getLastEmpireFoodTick(ownerId: number): EmpireFoodTick | undefin
 
 export function _setLastEmpireFoodTicks(ticks: Map<number, EmpireFoodTick>): void {
   _lastTicks = ticks;
+}
+
+/** Nowa gra / reset — usuń ticki z poprzedniej sesji (inaczej HUD pokazuje stary +X/t). */
+export function clearLastEmpireFoodTicks(): void {
+  _lastTicks = new Map();
+  _maxCapByOwner = new Map();
 }

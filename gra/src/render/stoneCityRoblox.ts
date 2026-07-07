@@ -345,8 +345,8 @@ function cityWalls(civ: StoneCiv, spread: number, p: SP): THREE.Group {
   return hexWall(spread, p, p.stone);
 }
 
-/** Epoka kamienia — styl Roblox, per cywilizacja. */
-export function buildStoneAgeCityRoblox(
+/** Epoka kamienia — styl Roblox, per cywilizacja (podgląd / dev). */
+function buildStoneAgeCityRobloxPerCiv(
   civ: StoneCiv | BronzeCiv,
   level: number,
   ownerCol: number,
@@ -393,4 +393,79 @@ export function buildStoneAgeCityRoblox(
 
   if (withWalls) group.add(cityWalls(civ as StoneCiv, spread, p));
   return group;
+}
+
+/** A5-S2: jeden wspólny styl kamienia — lepianki + ogień, bez świątyń per cyw. */
+function buildStoneAgeCityRobloxUniversal(
+  level: number,
+  ownerCol: number,
+  withWalls = false,
+): THREE.Group {
+  const L = Math.max(1, Math.min(10, Math.round(level)));
+  const group = new THREE.Group();
+  const p = stonePalette('grecja', ownerCol);
+  const hutCount = [1, 2, 3, 5, 7, 9, 12, 15, 18, 22][L - 1]!;
+  const spread = 0.11 + L * 0.045;
+  const hutR = 0.055;
+  const platH = 0.025;
+
+  addCyl(group, spread * 1.05, spread * 1.08, platH, 0, 0, 0, p.mud, 6);
+
+  if (L >= 3) {
+    const center = firePit(platH, p);
+    center.position.y = platH;
+    group.add(center);
+  }
+
+  let placed = 0;
+  const rings: Array<[number, number]> = [[4, spread * 0.55], [7, spread * 0.82], [14, spread * 1.08]];
+  for (const [cap, ringR] of rings) {
+    const per = Math.min(hutCount - placed, cap);
+    for (let i = 0; i < per; i++) {
+      const ang = (i / per) * 6.2832 + rnd(placed, 1);
+      const rr = ringR * (0.82 + rnd(placed, 2) * 0.28);
+      const hut = lepianka(hutR * (0.9 + rnd(placed, 3) * 0.25), placed, p);
+      hut.position.set(Math.cos(ang) * rr, platH, Math.sin(ang) * rr);
+      hut.rotation.y = Math.round(rnd(placed, 4) * 4) * (Math.PI / 2);
+      group.add(hut);
+      placed++;
+    }
+    if (placed >= hutCount) break;
+  }
+
+  if (L >= 5) {
+    addCyl(group, 0.012, 0.014, 0.28, spread * 0.88, platH, spread * 0.15, p.wood, 6);
+    addBox(group, 0.055, 0.045, 0.002, spread * 0.88, platH + 0.3, spread * 0.18, p.owner);
+  }
+
+  if (withWalls) group.add(hexWall(spread, p, p.stone));
+  return group;
+}
+
+export function buildStoneAgeCityRoblox(level: number, ownerCol: number, withWalls?: boolean): THREE.Group;
+export function buildStoneAgeCityRoblox(
+  civ: StoneCiv | BronzeCiv,
+  level: number,
+  ownerCol: number,
+  withWalls?: boolean,
+): THREE.Group;
+export function buildStoneAgeCityRoblox(
+  civOrLevel: StoneCiv | BronzeCiv | number,
+  levelOrOwner: number,
+  ownerOrWalls?: number | boolean,
+  withWallsArg = false,
+): THREE.Group {
+  if (typeof civOrLevel === 'number') {
+    const lvl = civOrLevel;
+    const owner = levelOrOwner;
+    const walls = typeof ownerOrWalls === 'boolean' ? ownerOrWalls : false;
+    return buildStoneAgeCityRobloxUniversal(lvl, owner, walls);
+  }
+  const walls = typeof ownerOrWalls === 'boolean' ? ownerOrWalls : withWallsArg;
+  return buildStoneAgeCityRobloxPerCiv(
+    civOrLevel,
+    levelOrOwner,
+    ownerOrWalls as number,
+    walls,
+  );
 }

@@ -22,6 +22,7 @@
 
 import * as THREE from 'three';
 import type { City } from '../game/cities';
+import { formatCityMapLabel } from '../game/display-names';
 import type { GameMap } from '../types/map';
 import type { Hex } from '../types/hex';
 import { TerenBazowy } from '../types/hex';
@@ -37,6 +38,7 @@ import {
 import {
   buildCityMapOutline,
   disposeCityMapOutline,
+  placeCityMapOutline,
   type CityMapOutlineKind,
 } from './cityMapOutline';
 
@@ -260,6 +262,9 @@ export interface CityRenderOptions {
 
   /** Ukryj żetony 👥/⚔ nad miastem (np. panel miasta — liczby tylko w HUD miasta). */
   hideStatChips?: boolean;
+
+  /** Kolor właściciela (tint modelu osady); domyślnie stara paleta OWNER_COLORS. */
+  ownerColorFn?: (ownerId: number) => number;
 }
 
 // ---------------------------------------------------------------------------
@@ -286,7 +291,7 @@ export class CityRenderer {
 
   /** Delikatna obwódka heksu na mapie świata (poza panelem okolicy). */
   private mapOutlines: Map<string, THREE.Group> = new Map();
-  private mapOutlineKinds: Map<string, CityMapOutlineKind> = new Map();
+  private mapOutlineKeys: Map<string, string> = new Map();
 
   /** Per-model materials for disposal. */
   private modelMaterials: Map<string, THREE.Material[]> = new Map();
@@ -347,7 +352,7 @@ export class CityRenderer {
           this._syncStatChip(
             city.id,
             grp,
-            city.name,
+            formatCityMapLabel(city),
             city.population ?? 1,
             visible && !options?.hideStatChips,
           );
@@ -363,7 +368,7 @@ export class CityRenderer {
         this.modelMaterials.delete(city.id);
         this.modelGeos.delete(city.id);
       }
-      const col = ownerColor(ownerIndex);
+      const col = (options?.ownerColorFn ?? ownerColor)(ownerIndex);
       let group: THREE.Group;
       try {
         group = buildSettlementModel(era, civ, level, col, walls);
@@ -389,7 +394,7 @@ export class CityRenderer {
       this._syncStatChip(
         city.id,
         group,
-        city.name,
+        formatCityMapLabel(city),
         city.population ?? 1,
         visible && !options?.hideStatChips,
       );
@@ -420,7 +425,7 @@ export class CityRenderer {
       this._syncStatChip(
         city.id,
         grp,
-        city.name,
+        formatCityMapLabel(city),
         city.population ?? 1,
         visible && grp.visible && !options?.hideStatChips,
       );
@@ -585,7 +590,7 @@ export class CityRenderer {
     this.scene.remove(g);
     disposeCityMapOutline(g);
     this.mapOutlines.delete(cityId);
-    this.mapOutlineKinds.delete(cityId);
+    this.mapOutlineKeys.delete(cityId);
   }
 
   private _syncMapOutline(
@@ -602,16 +607,21 @@ export class CityRenderer {
       this._removeMapOutline(cityId);
       return;
     }
-    const prev = this.mapOutlineKinds.get(cityId);
-    if (prev === kind && this.mapOutlines.has(cityId)) {
-      this.mapOutlines.get(cityId)!.visible = true;
+    const civColor = (options?.ownerColorFn ?? ownerColor)(ownerId);
+    const atWar = kind === 'war';
+    const outlineKey = `${ownerId}:${kind}:${civColor}`;
+    const prev = this.mapOutlineKeys.get(cityId);
+    if (prev === outlineKey && this.mapOutlines.has(cityId)) {
+      const g = this.mapOutlines.get(cityId)!;
+      placeCityMapOutline(g, q, r, topY);
+      g.visible = true;
       return;
     }
     this._removeMapOutline(cityId);
-    const outline = buildCityMapOutline(q, r, topY, kind);
+    const outline = buildCityMapOutline(q, r, topY, civColor, atWar);
     this.scene.add(outline);
     this.mapOutlines.set(cityId, outline);
-    this.mapOutlineKinds.set(cityId, kind);
+    this.mapOutlineKeys.set(cityId, outlineKey);
   }
 
   /**

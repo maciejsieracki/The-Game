@@ -21,6 +21,14 @@ let overlayEl: HTMLDivElement | null = null;
 let keyHandler: ((e: KeyboardEvent) => void) | null = null;
 let styleInjected = false;
 
+/** Opcje wyświetlenia (pole bitwy: inny przycisk / z-index nad endScreen). */
+export interface PostBattleSummaryShowOptions {
+  continueLabel?: string;
+  zIndex?: string;
+  /** Nadpisuje „Werdykt” / „Wynik auto-walki” nad głównym tekstem. */
+  statusHeading?: string;
+}
+
 type StyleMap = { [K in keyof CSSStyleDeclaration]?: string };
 
 function css(el: HTMLElement, props: StyleMap): void {
@@ -299,7 +307,7 @@ function winnerColor(data: PostBattleSummaryData): string {
   return BATTLE_ENEMY_TEXT;
 }
 
-function buildCenterPanel(data: PostBattleSummaryData): HTMLElement {
+function buildCenterPanel(data: PostBattleSummaryData, statusHeading?: string): HTMLElement {
   const panel = el('div');
   css(panel, {
     position: 'absolute',
@@ -350,7 +358,8 @@ function buildCenterPanel(data: PostBattleSummaryData): HTMLElement {
     color: '#a08030',
     marginBottom: '6px',
   });
-  lbl.textContent = data.mode === 'auto' ? 'Wynik auto-walki' : 'Werdykt';
+  lbl.textContent = statusHeading
+    ?? (data.mode === 'auto' ? 'Wynik auto-walki' : 'Werdykt');
   body.appendChild(lbl);
 
   const big = el('div');
@@ -380,7 +389,7 @@ function buildCenterPanel(data: PostBattleSummaryData): HTMLElement {
   return panel;
 }
 
-function buildContinueButton(onContinue: () => void): HTMLElement {
+function buildContinueButton(onContinue: () => void, continueLabel = 'Kontynuuj'): HTMLElement {
   const wrap = el('footer');
   css(wrap, {
     position: 'absolute',
@@ -398,7 +407,7 @@ function buildContinueButton(onContinue: () => void): HTMLElement {
   applyBtnStartBattle(btn);
   btn.style.padding = '16px 48px';
   btn.style.fontSize = '15px';
-  btn.textContent = 'Kontynuuj';
+  btn.textContent = continueLabel;
   btn.addEventListener('click', () => {
     hidePostBattleSummary();
     onContinue();
@@ -407,13 +416,17 @@ function buildContinueButton(onContinue: () => void): HTMLElement {
   return wrap;
 }
 
-function buildOverlay(data: PostBattleSummaryData, onContinue: () => void): HTMLDivElement {
+function buildOverlay(
+  data: PostBattleSummaryData,
+  onContinue: () => void,
+  opts?: PostBattleSummaryShowOptions,
+): HTMLDivElement {
   ensureStyles();
   const overlay = el('div');
   css(overlay, {
     position: 'fixed',
     inset: '0',
-    zIndex: '10100',
+    zIndex: opts?.zIndex ?? '10100',
     background: 'radial-gradient(1200px 800px at 50% 36%, rgba(200,64,64,.12), transparent 60%), #0a0708',
     fontFamily: BATTLE_FONT,
     color: BATTLE_TEXT,
@@ -435,8 +448,8 @@ function buildOverlay(data: PostBattleSummaryData, onContinue: () => void): HTML
   overlay.appendChild(buildCommanderCorner(data.obronca, 'def'));
   overlay.appendChild(buildRosterColumn(data.atakujacy, 'atk'));
   overlay.appendChild(buildRosterColumn(data.obronca, 'def'));
-  overlay.appendChild(buildCenterPanel(data));
-  overlay.appendChild(buildContinueButton(onContinue));
+  overlay.appendChild(buildCenterPanel(data, opts?.statusHeading));
+  overlay.appendChild(buildContinueButton(onContinue, opts?.continueLabel));
 
   return overlay;
 }
@@ -463,9 +476,10 @@ function detachKeyboard(): void {
 export function showPostBattleSummary(
   data: PostBattleSummaryData,
   onContinue: () => void,
+  opts?: PostBattleSummaryShowOptions,
 ): void {
   hidePostBattleSummary();
-  overlayEl = buildOverlay(data, onContinue);
+  overlayEl = buildOverlay(data, onContinue, opts);
   document.body.appendChild(overlayEl);
   attachKeyboard(onContinue);
 }

@@ -203,6 +203,91 @@ export function seedReczneFromAuto(
   return reczne;
 }
 
+function countAssignedWorkers(reczne: Record<string, number>): number {
+  return Object.values(reczne).filter(n => n > 0).length;
+}
+
+/** Deterministyczny „los” — stabilny w testach, różny per miasto/turę. */
+function pickDeterministicIndex(seed: number, length: number): number {
+  if (length <= 0) return 0;
+  return ((seed % length) + length) % length;
+}
+
+/**
+ * Po wzroście/spadku populacji — uzupełnij lub zdejmij 👤 na polach okolicy.
+ * Auto: resolveWorkedTiles i tak liczy N pól co turę (bez zapisu reczne).
+ * Ręczny: nowy mieszkaniec → losowe wolne pole w zasięgu; spadek → zdejmij ze słabszych pól.
+ */
+export function rebalanceWorkersAfterPopulationChange(
+  city: City,
+  map: GameMap,
+  popBefore: number,
+  popAfter: number,
+): void {
+  const tryb = city.okolicaTryb ?? DEFAULT_OKOLICA_TRYB;
+  const pop = Math.max(0, Math.floor(popAfter));
+  if (popBefore === popAfter) return;
+
+  if (tryb !== 'reczny') {
+    return;
+  }
+
+  const radius = cityRangeForPopulation(pop);
+  const focus = city.okolicaFocus ?? DEFAULT_OKOLICA_FOCUS;
+  const wagi = wagiForFocus(focus);
+  const tiles = okolicaTiles(city.q, city.r, radius, map);
+  const yieldOf = (q: number, r: number) => yieldOfMapHex(map, q, r);
+
+  let reczne: Record<string, number> = { ...(city.okolicaReczne ?? {}) };
+
+  if (popAfter > popBefore) {
+    if (countAssignedWorkers(reczne) === 0 && pop > 0) {
+      city.okolicaReczne = seedReczneFromAuto({ ...city, population: pop }, map);
+      return;
+    }
+    let need = pop - countAssignedWorkers(reczne);
+    let salt = 0;
+    while (need > 0) {
+      const free = tiles.filter(t => (reczne[t.key] ?? 0) < 1);
+      if (free.length === 0) break;
+      const idx = pickDeterministicIndex(city.q * 997 + city.r * 991 + pop * 17 + salt, free.length);
+      reczne[free[idx]!.key] = 1;
+      need--;
+      salt++;
+    }
+    city.okolicaReczne = reczne;
+    return;
+  }
+
+  if (popAfter < popBefore) {
+    let excess = countAssignedWorkers(reczne) - pop;
+    while (excess > 0) {
+      const keys = Object.keys(reczne).filter(k => (reczne[k] ?? 0) > 0);
+      if (keys.length === 0) break;
+      let worstKey: string | null = null;
+      let worstScore = Infinity;
+      let worstDist = -1;
+      for (const key of keys) {
+        const t = tiles.find(x => x.key === key);
+        if (!t) {
+          delete reczne[key];
+          excess--;
+          continue;
+        }
+        const s = tileScore(yieldOf(t.q, t.r), wagi);
+        if (s < worstScore || (s === worstScore && t.dist > worstDist)) {
+          worstScore = s;
+          worstDist = t.dist;
+          worstKey = key;
+        }
+      }
+      if (worstKey) delete reczne[worstKey];
+      excess--;
+    }
+    city.okolicaReczne = reczne;
+  }
+}
+
 /** Walidowany delta 👤 na heksie (SILNIK/UI woła przy kliku). */
 export function adjustTileWorker(
   city: Pick<City, 'population' | 'okolicaReczne' | 'okolicaTryb' | 'okolicaFocus' | 'q' | 'r'>,
@@ -294,4 +379,21 @@ export function toggleTileWorker(
   }
 
   return { ok: false, reczne, reason: 'limit_populacji' };
+}
+
+/** Wszystkie heksy z przypisanym 👤 dla miast danego ownerId (E-WORKER-1=A: ownerId 0). */
+export function collectWorkedHexKeysForOwner(
+  cities: Array<Pick<City, 'q' | 'r' | 'population' | 'okolicaFocus' | 'okolicaTryb' | 'okolicaReczne' | 'ownerId'>>,
+  map: GameMap,
+  ownerId: number,
+  opts: { isWorkable?: (q: number, r: number) => boolean } = {},
+): Set<string> {
+  const keys = new Set<string>();
+  const yieldOf = (q: number, r: number) => yieldOfMapHex(map, q, r);
+  for (const city of cities) {
+    if (city.ownerId !== ownerId) continue;
+    const worked = resolveWorkedTiles(city, map, yieldOf, { isWorkable: opts.isWorkable });
+    for (const t of worked) keys.add(t.key);
+  }
+  return keys;
 }

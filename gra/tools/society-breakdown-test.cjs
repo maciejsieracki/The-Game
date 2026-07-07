@@ -72,6 +72,16 @@ eq(M.luksusHappinessBonus(70, null, 'normal'), 5, 'luksus 70% -> +5');
 const law = M.computeLawBreakdown({ garnizonCount: 5, era: 2 }, null);
 eq(law.prawPct, 100, '5 jednostek -> PrawPct 100%');
 
+// Pałac > 1 jednostka garnizonu (normal)
+const society = require('../data/society-params.json');
+const palacLaw = M.computeLawBreakdown({ garnizonCount: 0, hasPalac: true, era: 1 }, society);
+const oneUnitLaw = M.computeLawBreakdown({ garnizonCount: 1, era: 1 }, society);
+ok(
+  (palacLaw.lines.find(l => l.id === 'palac')?.value ?? 0) > (oneUnitLaw.lines.find(l => l.id === 'garnizon')?.value ?? 0),
+  'Pałac daje więcej pkt Prawa niż 1 jednostka garnizonu',
+);
+ok(oneUnitLaw.prawPct < 100, '1 jednostka garnizonu ≠ 100% Prawo (skala PT 2026-07)');
+
 // Happiness + order
 const sz = M.computeHappinessBreakdown({
   population: 6,
@@ -91,10 +101,12 @@ eq(M.tierFromPorPct(95), 'order', 'PorPct 95 -> order');
 eq(M.tierFromPorPct(50), 'neutral', 'PorPct 50 -> neutral');
 eq(M.tierFromPorPct(5), 'unrest', 'PorPct 5 -> unrest');
 
-// Revolt grace (default 10% / 2 tury)
+// Revolt grace (default 12% / 3 tury — PT 2026-07)
 let g = M.updateRevoltGrace(null, 5);
 eq(g.revoltWarning, true, 'grace start warning');
-eq(g.revoltGraceRemaining, 2, 'grace = 2');
+eq(g.revoltGraceRemaining, 3, 'grace = 3');
+g = M.updateRevoltGrace(3, 5);
+eq(g.revoltGraceRemaining, 2, 'grace tick 3->2');
 g = M.updateRevoltGrace(2, 5);
 eq(g.revoltGraceRemaining, 1, 'grace tick 2->1');
 g = M.updateRevoltGrace(1, 5);
@@ -102,8 +114,8 @@ eq(g.revoltGraceRemaining, 0, 'grace tick 1->0');
 g = M.updateRevoltGrace(0, 5);
 eq(g.shouldTriggerRebellion, true, 'grace exhausted -> rebel');
 
-g = M.updateRevoltGrace(2, 15);
-eq(g.revoltGraceRemaining, null, 'recovery PorPct>=10 reset');
+g = M.updateRevoltGrace(2, 18);
+eq(g.revoltGraceRemaining, null, 'recovery PorPct>=12 reset');
 
 // D18: easy próg 5% / grace 3
 const revoltEasy = M.loadRevoltParams({
@@ -129,7 +141,7 @@ eq(buckets.zadowoleni + buckets.kontentni + buckets.niezadowoleni, 10, 'buckets 
   const podzial = { procentNauka: 20, procentPieniadz: 70, procentLuksus: 10 };
   const base = { era: 1, population: 1, buildingZadowolenie: 0, podzialHandlu: podzial, garnizonCount: 0 };
   const scenarios = [
-    { diff: 'easy', haKult: 3, haRel: 3, target: 80, band: 'Spokój' },
+    { diff: 'easy', haKult: 3, haRel: 3, target: 72, band: 'Spokój' },
     { diff: 'normal', haKult: 2, haRel: 2, target: 58, band: 'Napięcie' },
     { diff: 'hard', haKult: 1, haRel: 1, target: 34, band: 'Niepokój' },
   ];

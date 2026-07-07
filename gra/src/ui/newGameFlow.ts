@@ -44,6 +44,9 @@ import {
   type WorldGenerationPreset,
 } from '../map/newGameMapDefaults';
 import { buildStartPreview, startPreviewSummaryRows, type StartPreview } from '../game/start-preview';
+import type { BuildingCostPace } from '../game/building-cost-tempo';
+import type { KosztJednostekPace } from '../game/unit-cost-tempo';
+import type { WzrostLudnosciPace } from '../game/population-growth-tempo';
 import { civIconSvg, epochIconSvg, newGameIntroEmblemSvg, settingIconSvg } from './icons/brandAssets';
 import heroIntroUrl from './assets/hero/hero-intro.png?url';
 
@@ -63,6 +66,8 @@ export interface CivOption {
   epokaWejscia: string;
   /** Legacy — min = epokaWejscia. */
   epokiStartowe: string[];
+  /** Kolor nacji (#RRGGBB) z civs.json. */
+  kolorHex?: string;
 }
 
 export interface NewGameParams {
@@ -120,6 +125,12 @@ export interface NewGameAdvancedOptions {
   barbariansLevel: BarbariansLevel;
   battleAlwaysManual: boolean;
   victoryMode: VictoryMode;
+  /** Koszty budynkow: niski x1 / normalny x2 / wysoki x4 (bazowy = niski). */
+  buildingCostPace: BuildingCostPace;
+  /** Koszty jednostek: niski x1 / normalny x2 / wysoki x4 (bazowy = niski). */
+  kosztJednostekPace: KosztJednostekPace;
+  /** Wzrost ludnosci: wysoki x1 / normalny x2 / wolny x4 (bazowy prog = wysoki). */
+  wzrostLudnosciPace: WzrostLudnosciPace;
   /** Procent lądu (20–80); reszta morze. */
   landFractionPercent: LandFractionPercent;
   /** Gdy false — przy zmianie typu świata ustaw domyślny udział lądu. */
@@ -130,6 +141,9 @@ const DEFAULT_ADVANCED: NewGameAdvancedOptions = {
   barbariansLevel: 'wielu',
   battleAlwaysManual: false,
   victoryMode: 'moc_i_dominacja',
+  buildingCostPace: 'niski',
+  kosztJednostekPace: 'niski',
+  wzrostLudnosciPace: 'wysoki',
   landFractionPercent: 30,
   landFractionCustom: false,
 };
@@ -179,6 +193,15 @@ function migrateAdvanced(raw: Record<string, unknown>): NewGameAdvancedOptions {
     base.victoryMode = 'dominacja';
   } else if (raw.victoryPowerAndDominance === true) {
     base.victoryMode = 'moc_i_dominacja';
+  }
+  if (raw.buildingCostPace === 'niski' || raw.buildingCostPace === 'normalny' || raw.buildingCostPace === 'wysoki') {
+    base.buildingCostPace = raw.buildingCostPace;
+  }
+  if (raw.kosztJednostekPace === 'niski' || raw.kosztJednostekPace === 'normalny' || raw.kosztJednostekPace === 'wysoki') {
+    base.kosztJednostekPace = raw.kosztJednostekPace;
+  }
+  if (raw.wzrostLudnosciPace === 'wysoki' || raw.wzrostLudnosciPace === 'normalny' || raw.wzrostLudnosciPace === 'wolny') {
+    base.wzrostLudnosciPace = raw.wzrostLudnosciPace;
   }
   return base;
 }
@@ -317,6 +340,7 @@ function civsFromData(data: GameData): CivOption[] {
       const legacyBonusy = [c['Bonus startowy'], c['Bonusy/minusy (do dopracowania)']]
         .filter((x): x is string => typeof x === 'string' && x.trim().length > 0);
       const epokiStartowe = parseEpokiStartowe(raw);
+      const kolorHex = typeof raw['kolorHex'] === 'string' ? raw['kolorHex'] : undefined;
       return {
         id: ikonaId,
         name: c.Cywilizacja,
@@ -327,6 +351,7 @@ function civsFromData(data: GameData): CivOption[] {
         typGlowny,
         epokaWejscia: parseEpokaWejscia(raw, epokiStartowe),
         epokiStartowe,
+        kolorHex,
       };
     });
 }
@@ -370,12 +395,18 @@ const EPOCHS: EpochOption[] = [
 ];
 
 /** Medalion cywilizacji (Brand Book W1b — SVG z civ-icon-map). */
-function civMedallionHtml(ikonaId: string, active: boolean, variant: 'card' | 'detail'): string {
+function civMedallionHtml(
+  ikonaId: string,
+  active: boolean,
+  variant: 'card' | 'detail',
+  kolorHex?: string,
+): string {
   const size = variant === 'detail' ? 28 : 24;
   const dim = variant === 'detail' ? 58 : 52;
   const cls = 'tg-medallion' + (active ? ' tg-medallion--active' : '');
+  const border = kolorHex ? `border-color:${kolorHex};` : '';
   const svg = civIconSvg(ikonaId, size);
-  return `<span class="${cls}" style="width:${dim}px;height:${dim}px;flex-shrink:0;">${svg}</span>`;
+  return `<span class="${cls}" style="width:${dim}px;height:${dim}px;flex-shrink:0;${border}">${svg}</span>`;
 }
 
 /** Medalion epoki (Brand Book W1e — SVG z epoch-icon-map). */
@@ -499,7 +530,11 @@ function ensureStyles(): void {
   background:var(--bg-deep);color:var(--tx);font-family:var(--civ-font-title);
   display:flex;flex-direction:column;}
 .civ-newgame *{box-sizing:border-box;}
-.civ-newgame .hdr{text-align:center;padding:1.8rem 2rem 1rem;border-bottom:1px solid var(--bd-sub);}
+.civ-newgame .hdr{text-align:center;padding:1.8rem 2rem 1rem;border-bottom:1px solid var(--bd-sub);position:relative;}
+.civ-newgame .hdr-menu-back{position:absolute;left:1.2rem;top:50%;transform:translateY(-50%);
+  background:transparent;border:1px solid var(--bd-mid);color:var(--tx2);padding:7px 14px;border-radius:var(--radius);
+  cursor:pointer;font-family:Arial,sans-serif;font-size:11px;letter-spacing:.12em;text-transform:uppercase;}
+.civ-newgame .hdr-menu-back:hover{border-color:var(--gold);color:var(--gold-light);background:rgba(201,168,76,.06);}
 .civ-newgame .hdr .lab{font-size:10px;letter-spacing:.5em;text-transform:uppercase;color:var(--tx2);font-family:Arial,sans-serif;}
 .civ-newgame .hdr h1{font-size:34px;font-weight:400;letter-spacing:.18em;color:var(--gold-light);text-shadow:0 0 50px rgba(201,168,76,.28);margin-top:4px;}
 .civ-newgame .stepbar{display:flex;align-items:center;justify-content:center;padding:1rem;background:#12121A;border-bottom:1px solid var(--bd-sub);flex-wrap:wrap;}
@@ -555,6 +590,10 @@ function ensureStyles(): void {
   font-size:16px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;border-radius:8px;cursor:pointer;font-family:var(--civ-font-ui);
   box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 8px 26px rgba(0,0,0,.5);}
 .civ-newgame.hero-flow .intro .cta-hero:hover{filter:brightness(1.05);}
+.civ-newgame.hero-flow .intro .cta-menu-back{display:inline-block;margin-top:14px;background:transparent;border:1px solid rgba(201,168,76,.35);
+  color:var(--tx2);padding:9px 22px;border-radius:var(--radius);cursor:pointer;font-family:Arial,sans-serif;
+  font-size:11px;letter-spacing:.14em;text-transform:uppercase;}
+.civ-newgame.hero-flow .intro .cta-menu-back:hover{border-color:var(--gold);color:var(--gold-light);}
 .civ-newgame .intro{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:280px;text-align:center;gap:1.2rem;}
 .civ-newgame .intro .em{width:72px;height:72px;border-radius:50%;border:2px solid var(--bd-mid);display:flex;align-items:center;justify-content:center;color:var(--gold-light);background:rgba(201,168,76,.08);box-shadow:0 0 28px rgba(201,168,76,.12);}
 .civ-newgame .intro .em svg{display:block;}
@@ -730,7 +769,7 @@ function renderCivStep(host: HTMLElement): void {
   const grid = el('div', 'civ-grid');
   for (const c of available) {
     const card = el('div', 'card' + (selCiv === c.id ? ' sel' : ''));
-    card.innerHTML = civMedallionHtml(c.id, selCiv === c.id, 'card') + '<div class="cn">' + c.name + '</div>';
+    card.innerHTML = civMedallionHtml(c.id, selCiv === c.id, 'card', c.kolorHex) + '<div class="cn">' + c.name + '</div>';
     card.addEventListener('click', () => { selCiv = c.id; saveNewGamePrefs(); render(); });
     grid.appendChild(card);
   }
@@ -745,7 +784,7 @@ function renderCivStep(host: HTMLElement): void {
     detail.appendChild(empty);
   } else {
     const head = el('div', 'civ-dh');
-    head.innerHTML = civMedallionHtml(c.id, true, 'detail') + '<div><div class="dn">' + c.name + '</div><div class="civ-dmeta">Cywilizacja</div></div>';
+    head.innerHTML = civMedallionHtml(c.id, true, 'detail', c.kolorHex) + '<div><div class="dn">' + c.name + '</div><div class="civ-dmeta">Cywilizacja</div></div>';
     detail.appendChild(head);
     const ds = el('div', 'civ-ds');
     ds.appendChild(el('div', 'dlbl', 'Cechy &amp; bonusy'));
@@ -920,6 +959,48 @@ function advancedSettingRows(): AdvSettingRow[] {
       opts: ['Automatyczne', 'Zawsze ręczna'],
       getIdx: () => (advOpts.battleAlwaysManual ? 1 : 0),
       setIdx: (i) => { advOpts.battleAlwaysManual = i === 1; },
+    },
+    {
+      key: 'buildingCostPace',
+      lbl: 'Koszty budynków',
+      hint: 'Mnożnik Pracy przy budowie — bazowe koszty z panelu = Niski (×1).',
+      opts: ['Niski', 'Normalny', 'Wysoki'],
+      getIdx: () => {
+        if (advOpts.buildingCostPace === 'normalny') return 1;
+        if (advOpts.buildingCostPace === 'wysoki') return 2;
+        return 0;
+      },
+      setIdx: (i) => {
+        advOpts.buildingCostPace = i === 1 ? 'normalny' : i === 2 ? 'wysoki' : 'niski';
+      },
+    },
+    {
+      key: 'kosztJednostekPace',
+      lbl: 'Koszty jednostek',
+      hint: 'Mnożnik złota rekrutacji — bazowe koszty z panelu = Niski (×1).',
+      opts: ['Niski', 'Normalny', 'Wysoki'],
+      getIdx: () => {
+        if (advOpts.kosztJednostekPace === 'normalny') return 1;
+        if (advOpts.kosztJednostekPace === 'wysoki') return 2;
+        return 0;
+      },
+      setIdx: (i) => {
+        advOpts.kosztJednostekPace = i === 1 ? 'normalny' : i === 2 ? 'wysoki' : 'niski';
+      },
+    },
+    {
+      key: 'wzrostLudnosciPace',
+      lbl: 'Wzrost ludności',
+      hint: 'Mnożnik progu 🍞 na +1 mieszkańca — bazowy = Wysoki (×1).',
+      opts: ['Wysoki', 'Normalny', 'Wolny'],
+      getIdx: () => {
+        if (advOpts.wzrostLudnosciPace === 'normalny') return 1;
+        if (advOpts.wzrostLudnosciPace === 'wolny') return 2;
+        return 0;
+      },
+      setIdx: (i) => {
+        advOpts.wzrostLudnosciPace = i === 1 ? 'normalny' : i === 2 ? 'wolny' : 'wysoki';
+      },
     },
   ];
 }
@@ -1133,10 +1214,28 @@ function renderGenStep(host: HTMLElement): void {
       : p.advanced.barbariansLevel === 'nieliczni'
         ? 'Nieliczni'
         : 'Wylaczeni';
+    const costLabel = p.advanced.buildingCostPace === 'normalny'
+      ? 'Normalny (x2)'
+      : p.advanced.buildingCostPace === 'wysoki'
+        ? 'Wysoki (x4)'
+        : 'Niski (x1)';
+    const unitCostLabel = p.advanced.kosztJednostekPace === 'normalny'
+      ? 'Normalny (x2)'
+      : p.advanced.kosztJednostekPace === 'wysoki'
+        ? 'Wysoki (x4)'
+        : 'Niski (x1)';
+    const growthPaceLabel = p.advanced.wzrostLudnosciPace === 'normalny'
+      ? 'Normalny (x2 prog)'
+      : p.advanced.wzrostLudnosciPace === 'wolny'
+        ? 'Wolny (x4 prog)'
+        : 'Wysoki (x1 prog)';
     rows.push(
       ['Barbarzyncy', bLabel],
       ['Bitwy', p.advanced.battleAlwaysManual ? 'Zawsze reczna' : 'Automatyczne'],
       ['Zwyciestwo', vLabel],
+      ['Koszty budynkow', costLabel],
+      ['Koszty jednostek', unitCostLabel],
+      ['Wzrost ludnosci', growthPaceLabel],
     );
   }
   if (p.startPreview) {
@@ -1161,6 +1260,18 @@ function mountHeroBackground(host: HTMLElement): void {
   host.appendChild(bg);
 }
 
+function cancelNewGameFlow(): void {
+  cfg?.onCancel?.();
+}
+
+function appendMenuBackButton(parent: HTMLElement, className = 'hdr-menu-back'): void {
+  if (!cfg?.onCancel) return;
+  const btn = el('button', className, '&#8592; Menu g&#322;&#243;wne') as HTMLButtonElement;
+  btn.type = 'button';
+  btn.addEventListener('click', cancelNewGameFlow);
+  parent.appendChild(btn);
+}
+
 function render(): void {
   if (rootEl === null) return;
   hideAdvancedModal();
@@ -1169,7 +1280,11 @@ function render(): void {
   rootEl.classList.add('hero-flow');
   mountHeroBackground(rootEl);
 
-  const hdr = el('div', 'hdr', '<div class="lab">Kreator Nowej Gry</div><h1>THE GAME</h1>');
+  const hdr = el('div', 'hdr');
+  if (curStep >= 1 && curStep <= 4) appendMenuBackButton(hdr);
+  const hdrInner = el('div');
+  hdrInner.innerHTML = '<div class="lab">Kreator Nowej Gry</div><h1>THE GAME</h1>';
+  hdr.appendChild(hdrInner);
   rootEl.appendChild(hdr);
 
   const bar = el('div', 'stepbar');
@@ -1194,6 +1309,9 @@ function render(): void {
     const cta = el('button', 'cta-hero', 'Rozpocznij konfigurację \u2192');
     cta.addEventListener('click', () => { curStep = 2; render(); });
     intro.appendChild(cta);
+    if (cfg?.onCancel) {
+      appendMenuBackButton(intro, 'cta-menu-back');
+    }
     content.appendChild(intro);
   } else if (curStep === 2) {
     content.appendChild(el('div', 'sh', '<h2>Epoka Startowa</h2>'));

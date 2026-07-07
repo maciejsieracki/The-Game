@@ -95,6 +95,32 @@ function ensureFrameStyles(): void {
 }
 
 let frameOnClose: (() => void) | null = null;
+let cityUxEscHandler: ((e: KeyboardEvent) => void) | null = null;
+
+function bindCityUxEscClose(): void {
+  unbindCityUxEscClose();
+  cityUxEscHandler = (e: KeyboardEvent) => {
+    if (e.key !== 'Escape' || frameRoot === null || frameOnClose === null) return;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    const close = frameOnClose;
+    close();
+  };
+  document.addEventListener('keydown', cityUxEscHandler, true);
+}
+
+function unbindCityUxEscClose(): void {
+  if (cityUxEscHandler === null) return;
+  document.removeEventListener('keydown', cityUxEscHandler, true);
+  cityUxEscHandler = null;
+}
+
+/** Zamknij panel miasta (Esc) — ten sam łańcuch co przycisk „Wróć na mapę”. */
+export function tryCloseCityUxFrameFromKeyboard(): boolean {
+  if (!isCityUxFrameOpen() || frameOnClose === null) return false;
+  frameOnClose();
+  return true;
+}
 
 export function getCityUxLayoutMetrics(): {
   topH: number;
@@ -212,6 +238,7 @@ export function showCityUxFrame(
     onClose();
   };
   paintCityPanelSections(mounts, city, map, paint, frameOnClose);
+  bindCityUxEscClose();
 }
 
 export function refreshCityUxFrame(
@@ -224,6 +251,7 @@ export function refreshCityUxFrame(
 }
 
 export function hideCityUxFrame(): void {
+  unbindCityUxEscClose();
   clearCityPanelUxMode();
   frameOnClose = null;
   frameRoot?.remove();

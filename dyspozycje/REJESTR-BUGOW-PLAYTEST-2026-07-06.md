@@ -15,7 +15,7 @@ zniknąć (kompaktowanie), plik zostaje. Wpis bez skopiowanego zdjęcia = niekom
 
 ## B1 [—] — Panel miasta: duplikat „Surowce w zasięgu" + zakryte suwaki podziału handlu
 
-STATUS: OTWARTY
+STATUS: CZĘŚCIOWO WDROŻONE (B1-Q1 + B2-Q1=B, 2026-07-07)
 
 - Objaw 1: blok „SUROWCE W ZASIĘGU / POTENCJAŁ (ZŁOŻE)" renderuje się DWA razy (górna karta + osobny dolny blok).
 - Objaw 2: zniknęły suwaki podziału przychodu z handlu (Skarb/Nauka/Zamożność). Hipoteza Macieja (mocna): dolny blok surowców ZAKRYWA ramkę z suwakami.
@@ -25,12 +25,15 @@ STATUS: OTWARTY
 
 **AKTUALIZACJA 2026-07-06 [20:56] (build 6e3027fe):** duplikat NADAL występuje. Dodatkowo w panelu PRODUKCJA blok „Surowce w zasięgu" pojawia się PO RAZ TRZECI — czyli trzecie, kolejne wystąpienie tego samego bloku, tym razem na dole panelu produkcji/lewego. Blok renderuje się wielokrotnie w różnych panelach, nie tylko w panelu miasta. Status nadal OTWARTY. U kogo: KURSOR/UX (inspekcja DOM).
 
+**AKTUALIZACJA 2026-07-07:** B1-Q1 wdrożone (jeden blok surowców w stopce). B2-Q1=**B** — zakładka handlu ze scrollem i hintem; suwaki na zakładce „Podział handlu i zamożność". Decyzja: `docs/decyzje/B2-Q1-panel-handlu-zakladki.md`. Do weryfikacji wizualnej po buildzie roboczym.
+
 ## B2 [—] — Kanon i finalna gra nadpisane wersją roboczą (brak punktu przywrócenia)
 
-STATUS: OTWARTY
+STATUS: OTWARTY (model handlu — zamknięty decyzją B2-Q1=B)
 
 - Maciej nadpisał zarówno kanon, jak i finalną grę ostatnią (roboczą) wersją (dawno nie były update'owane) → NIE MA skąd przywrócić panelu sprzed zmian UX.
 - Propozycja Macieja: przywrócić/odtworzyć TYLKO model „podział handlu i zamożność" sprzed zmian UX (nie cały panel).
+- **2026-07-07 B2-Q1=B:** Maciej wybrał układ zakładek (bez powrotu do szkieletu designera). Szczegóły: `docs/decyzje/B2-Q1-panel-handlu-zakladki.md`.
 - U kogo: do decyzji (Kursor przy naprawie panelu B1, bo ten sam obszar).
 
 ---
@@ -65,7 +68,7 @@ Podpunkty:
 
 ## B5 [12:00] — Wskaźnik/feedback końca tury
 
-STATUS: OTWARTY
+STATUS: WDROŻONE (B5-A, 2026-07-07)
 
 **Obszar:** UX/RENDER
 **Priorytet:** przyszłość
@@ -149,5 +152,24 @@ STATUS: OTWARTY
 **U kogo:** EKONOMIA (kolejka rekrutacji / refund przy anulowaniu).
 **Data:** 2026-07-06.
 **Build:** 6e3027fe.
+
+---
+
+## FEATURE 2026-07-07 — Klaster na krawędzi + AI faza 1 (nie bug)
+
+Wdrożono (Maciej): jeden klaster państw per cywilizacja (~3 hex), founding na obwodzie
+z +1 slotem wzrostu; stolice obcych typów (ekspansyjna AI) najpierw przejmują własne
+państwa w klastrze, potem ekspandują. Szczegóły: `docs/decyzje/CLUSTER-KRAWEDZ-AI-FAZA1-2026-07-07.md`.
+
+---
+
+## B12 [16:30] — Państwa-miasta startowały w Brązie zamiast Kamienia
+
+STATUS: WDROŻONE (2026-07-07)
+
+**Obszar:** SILNIK / render miast / epoka AI
+**Objaw:** przy starcie w Epokę Kamienia niektóre państwa-miasta pokazywały model/widok Brązu.
+**Przyczyna:** stary render `getEra → 2` dla AI oraz liczenie epoki z etykiety `Epoka` w tech (np. Żegluga=Brąz) bez uwzględnienia epoki startowej gry.
+**Fix:** `owner-epoch.ts` (`computeOwnerEraFromResearch` + tylko `isEraAdvanceTech`), `initOwnerEra`/`setupAiOwnerEpoch` per owner z `player.era`, render `_cityRenderOpts.getEra → empireEpochForOwner`. Test: `gra/tools/owner-epoch-test.cjs`.
 
 ---

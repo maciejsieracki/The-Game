@@ -19,6 +19,8 @@ export interface ArmyMergePanelOpts {
   existing: ArmyMergeUnitRow[];
   /** Jednostka, która właśnie weszła / ma dołączyć. */
   arriving: ArmyMergeUnitRow;
+  /** Liczba przybywających (gdy >1 — etykieta „Skład (N)”). */
+  arrivingCount?: number;
   /** Cofnięcie ruchu przy „Zostaw osobno”. */
   rejectFrom?: { q: number; r: number };
   moveCost?: number;
@@ -139,7 +141,8 @@ export function showArmyMergePanel(opts: ArmyMergePanelOpts): void {
   closePanel();
   ensureStyles();
 
-  const total = opts.existing.length + 1;
+  const arriveN = opts.arrivingCount ?? 1;
+  const total = opts.existing.length + arriveN;
   const resultLabel = 'Stos: ' + total + ' '
     + (total === 1 ? 'jednostka' : total < 5 ? 'jednostki' : 'jednostek')
     + ' na ' + opts.hexLabel;

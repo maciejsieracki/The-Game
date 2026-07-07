@@ -48,6 +48,12 @@
 
 import type { BuildingDef, UnitDef } from '../data/loader';
 import type { City } from './cities';
+import { applyBuildingCostPace, type BuildingCostPace } from './building-cost-tempo';
+import { applyUnitCostPace, type KosztJednostekPace } from './unit-cost-tempo';
+import {
+  applyDifficultyCostMultiplier,
+  type GameDifficulty,
+} from './difficulty-cost';
 import { buildingCostAfterCivDiscount } from './civ-bonuses';
 import { unitManpowerCost, tryDeductUnitSpawnCosts, cityManpowerCurrent } from './manpower';
 import {
@@ -272,6 +278,9 @@ export function buildingProductionItem(
   data: ProductionData,
   level = 1,
   civBonusy?: readonly CivBonusLite[],
+  buildingCostPace?: BuildingCostPace,
+  ownerId = 0,
+  difficulty: GameDifficulty = 'normal',
 ): ProductionItem | null {
   const b = findBuilding(data, id);
   if (!b) return null;
@@ -279,9 +288,12 @@ export function buildingProductionItem(
     kind: 'budynek',
     id: b.id,
     nazwa: b.nazwa,
-    koszt: buildingCostAfterCivDiscount(
+    koszt: buildingWorkCost(
       itemCost('budynek', b.id, data, level),
       civBonusy,
+      buildingCostPace,
+      ownerId,
+      difficulty,
     ),
   };
 }
@@ -290,14 +302,27 @@ export function buildingProductionItem(
  * Build a ProductionItem for a unit (by its Jednostka name).
  * Returns null when the unit name is unknown.
  */
-export function unitProductionItem(id: string, data: ProductionData): ProductionItem | null {
+export function unitProductionItem(
+  id: string,
+  data: ProductionData,
+  civBonusy?: readonly CivBonusLite[],
+  kosztJednostekPace?: KosztJednostekPace,
+  ownerId = 0,
+  difficulty: GameDifficulty = 'normal',
+): ProductionItem | null {
   const u = findUnit(data, id);
   if (!u) return null;
   return {
     kind: 'jednostka',
     id: u.Jednostka,
     nazwa: u.Jednostka,
-    koszt: itemCost('jednostka', u.Jednostka, data, 1),
+    koszt: unitMoneyCost(
+      itemCost('jednostka', u.Jednostka, data, 1),
+      civBonusy,
+      kosztJednostekPace,
+      ownerId,
+      difficulty,
+    ),
   };
 }
 
@@ -328,6 +353,44 @@ export interface AvailabilityContext {
   civUnitNacja?: string;
   /** Ulepszenia terenu imperium — bramka Popalnia brązu (ABC-13). */
   placedImprovements?: ReadonlyMap<string, string | readonly string[]> | null;
+  /** Mnoznik kosztow budynkow z kreatora (Niski x1 / Normalny x2 / Wysoki x4). */
+  buildingCostPace?: BuildingCostPace;
+  /** Mnoznik kosztow rekrutacji jednostek z kreatora (Niski x1 / Normalny x2 / Wysoki x4). */
+  kosztJednostekPace?: KosztJednostekPace;
+  /** ownerId miasta — asymetria trudnosci kosztow (0 = gracz). */
+  ownerId?: number;
+  /** Poziom trudnosci rozgrywki — latwa/normalna/trudna. */
+  difficulty?: GameDifficulty;
+}
+
+/** Koszt Pracy budynku: ulga cywilizacji + tempo kreatora + asymetria trudnosci. */
+export function buildingWorkCost(
+  baseCost: number,
+  civBonusy?: readonly CivBonusLite[],
+  pace?: BuildingCostPace,
+  ownerId = 0,
+  difficulty: GameDifficulty = 'normal',
+): number {
+  const afterCiv = buildingCostAfterCivDiscount(baseCost, civBonusy);
+  const afterPace = pace ? applyBuildingCostPace(afterCiv, pace) : afterCiv;
+  return applyDifficultyCostMultiplier(afterPace, ownerId, difficulty);
+}
+
+/** Koszt rekrutacji jednostki (Pieniadz): ulga cywilizacji + tempo + trudnosc. */
+export function unitMoneyCost(
+  baseCost: number,
+  civBonusy?: readonly CivBonusLite[],
+  pace?: KosztJednostekPace,
+  ownerId = 0,
+  difficulty: GameDifficulty = 'normal',
+): number {
+  let koszt = baseCost;
+  const recDisc = civRecruitmentDiscount(civBonusy);
+  if (recDisc > 0) {
+    koszt = Math.max(1, Math.floor(koszt * (1 - recDisc)));
+  }
+  const afterPace = pace ? applyUnitCostPace(koszt, pace) : koszt;
+  return applyDifficultyCostMultiplier(afterPace, ownerId, difficulty);
 }
 
 /** Minimalny ksztalt bonusy[] — bez importu economy (unikamy cyklu z production). */
@@ -527,6 +590,8 @@ export function availableProduction(
   const queue = ctx.productionQueue ?? [];
   const techs = new Set(unlockedTechs);
   const specTokens = civSpecialUnitNameTokens(ctx.civBonusy);
+  const ownerId = ctx.ownerId ?? 0;
+  const difficulty = ctx.difficulty ?? 'normal';
 
   const items: ProductionItem[] = [];
 
@@ -554,9 +619,12 @@ export function availableProduction(
       kind: 'budynek',
       id: b.id,
       nazwa: upgradeProductionDisplayName(b, data.buildings),
-      koszt: buildingCostAfterCivDiscount(
+      koszt: buildingWorkCost(
         itemCost('budynek', b.id, data, level),
         ctx.civBonusy,
+        ctx.buildingCostPace,
+        ownerId,
+        difficulty,
       ),
     });
   }
@@ -591,11 +659,13 @@ export function availableProduction(
       && !hasBrazAccess(ctx.placedImprovements, builtList)) {
       continue;
     }
-    let koszt = itemCost('jednostka', u.Jednostka, data, 1);
-    const recDisc = civRecruitmentDiscount(ctx.civBonusy);
-    if (recDisc > 0) {
-      koszt = Math.max(1, Math.floor(koszt * (1 - recDisc)));
-    }
+    const koszt = unitMoneyCost(
+      itemCost('jednostka', u.Jednostka, data, 1),
+      ctx.civBonusy,
+      ctx.kosztJednostekPace,
+      ownerId,
+      difficulty,
+    );
     items.push({
       kind: 'jednostka',
       id: u.Jednostka,
@@ -672,6 +742,8 @@ export interface AdvanceProductionResult {
   prod: CityProduction;
   /** The item finished this turn, or null when nothing completed. */
   completed: ProductionItem | null;
+  /** B10: nadwyżka Pracy gdy kolejka pusta po ukończeniu → pula imperium gracza. */
+  overflowToPool?: number;
 }
 
 /**
@@ -732,11 +804,17 @@ export function advanceProduction(
   // Front item completes this turn.
   const remainder = accumulated - front.koszt;
   const rest = prod.kolejka.slice(1);
-  const carry = rest.length > 0 ? remainder : 0;
+  if (rest.length > 0) {
+    return {
+      prod: { kolejka: rest, postep: remainder, wstrzymana: prod.wstrzymana, rekrutacja: rqCopy },
+      completed: front,
+    };
+  }
 
   return {
-    prod: { kolejka: rest, postep: carry, wstrzymana: prod.wstrzymana, rekrutacja: rqCopy },
+    prod: { kolejka: [], postep: 0, wstrzymana: prod.wstrzymana, rekrutacja: rqCopy },
     completed: front,
+    overflowToPool: remainder > 0 ? remainder : undefined,
   };
 }
 
@@ -938,13 +1016,11 @@ export function unitCostMode(_def: UnitDef): 'praca' | 'pieniadz' {
 export function unitPurchaseCost(
   def: UnitDef,
   civBonusy?: readonly CivBonusLite[],
+  kosztJednostekPace?: KosztJednostekPace,
+  ownerId = 0,
+  difficulty: GameDifficulty = 'normal',
 ): number {
-  let koszt = unitCostFromDef(def);
-  const recDisc = civRecruitmentDiscount(civBonusy);
-  if (recDisc > 0) {
-    koszt = Math.max(1, Math.floor(koszt * (1 - recDisc)));
-  }
-  return koszt;
+  return unitMoneyCost(unitCostFromDef(def), civBonusy, kosztJednostekPace, ownerId, difficulty);
 }
 
 /** Co miasto moze WYBUDOWAC w kolejce za Prace: TYLKO budynki.
@@ -995,14 +1071,19 @@ export function eraBuildingCatalog(
   const builtList = ctx.builtBuildingIds ?? [];
   const queue = ctx.productionQueue ?? [];
   const techs = new Set(unlockedTechs);
+  const ownerId = ctx.ownerId ?? 0;
+  const difficulty = ctx.difficulty ?? 'normal';
   const entries: BuildingCatalogEntry[] = [];
 
   for (const b of data.buildings) {
     if (b.epokaWejscia !== epoch) continue;
 
-    const koszt = buildingCostAfterCivDiscount(
+    const koszt = buildingWorkCost(
       itemCost('budynek', b.id, data, level),
       ctx.civBonusy,
+      ctx.buildingCostPace,
+      ownerId,
+      difficulty,
     );
     const tech = (b.techUnlock ?? '').trim();
     const techOk = tech.length === 0 || techs.has(tech);

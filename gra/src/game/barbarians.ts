@@ -30,6 +30,8 @@
 import type { GameMap } from '../types/map';
 import type { GameData } from '../data/loader';
 import { TerenBazowy } from '../types/hex';
+import type { City } from './cities';
+import { addForeignCityBlocks } from './city-hex-movement';
 import type { RuntimeUnit } from '../units/setup';
 import { hexDistance, computePath, keyOf } from '../units/setup';
 
@@ -299,8 +301,8 @@ function firstStep(
 // Camp spawning
 // ---------------------------------------------------------------------------
 
-/** A city-like input: only its hex position matters for spacing. */
-export type CityLike = HasQR;
+/** A city-like input for spacing / movement blocking. */
+export type CityLike = HasQR & { ownerId?: number };
 
 /**
  * Picks NEW camp sites and returns them (does not include `existing`).
@@ -504,8 +506,7 @@ function isFreeLand(q: number, r: number, map: GameMap, occupied: Set<string>): 
  *      camp (§2.3 retreat to regenerate). If already adjacent, no command.
  *   2. Adjacent enemy (player/AI) unit: attack it.
  *   3. A target (enemy unit or city) within params.aggroRadius: step toward
- *      the nearest such target. Moving onto / next to a city is a raid the
- *      engine resolves.
+ *      the nearest such target (zatrzymuje się obok miasta — nie wchodzi na heks).
  *   4. Otherwise idle: if more than 1 hex from the home camp, step back toward
  *      it; if no camps exist, no command.
  *
@@ -538,7 +539,11 @@ export function decideBarbarianMoves(
   for (const unit of barbUnits) {
     if (unit.ruchLeft <= 0) continue;
 
-    const occ = occupiedExcluding(allUnits, unit.id);
+    const occ = addForeignCityBlocks(
+      occupiedExcluding(allUnits, unit.id),
+      unit.ownerId,
+      cities as Pick<City, 'q' | 'r' | 'ownerId'>[],
+    );
 
     // 1. Retreat when wounded.
     if (unit.healthFrac !== undefined && unit.healthFrac < params.retreatHpFrac) {

@@ -27,9 +27,9 @@ module.exports = __toCommonJS(tt_entry_exports);
 
 // src/game/tech-tempo.ts
 var TEMPO_GRY = {
-  szybka: 0.2,
-  standardowa: 1,
-  dluga: 5
+  szybka: 1,
+  standardowa: 2,
+  dluga: 4
 };
 function applyTempoKoszt(bazowyKoszt, tempo) {
   const mnoznik = typeof tempo === "number" ? tempo : TEMPO_GRY[tempo];

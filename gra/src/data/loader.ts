@@ -16,6 +16,7 @@ import buildingsRaw   from '../../data/buildings.json';
 import resourcesRaw   from '../../data/resources.json';
 import techRaw        from '../../data/tech.json';
 import civsRaw        from '../../data/civs.json';
+import cityNamesPoolsRaw from '../../data/city-names-pools.json';
 import terrainYieldsRaw  from '../../data/terrain-yields.json';
 import terrainCombatRaw  from '../../data/terrain-combat.json';
 import countersRaw    from '../../data/counters.json';
@@ -28,6 +29,7 @@ import societyParamsRaw from '../../data/society-params.json';
 import terrainMovementRaw from '../../data/terrain-movement.json';
 import wondersRaw       from '../../data/wonders.json';
 import type { WondersData } from '../game/wonders-data';
+import type { CityNamesPools } from '../game/civ-names';
 
 // ─── Typy danych statycznych (wiersze z Excela) ───────────────────────────────
 
@@ -150,10 +152,16 @@ export interface CivDef {
   Uwagi: string | null;
   /** Klucz identyfikujący cywilizację (np. 'grecy', 'rzymianie') — odpowiada TypCywilizacji enum. */
   ikonaId?: string;
+  /** Kolor nacji (#RRGGBB) — jednostki, miasta, dyplomacja. */
+  kolorHex?: string;
+  /** Opcjonalny baner (ścieżka/asset); brak → powiększony civIconSvg. */
+  baner?: string;
   /** Mnoznik przychodu z handlu (Pieniadz). */
   mnoznikHandelPieniadz?: number;
-  /** Nazwy miast w klastrze tej cywilizacji. */
+  /** Nazwy miast w klastrze tej cywilizacji (10 — miasta-państwa). */
   nazwyKlastra?: string[];
+  /** 100 nazw founding — opcjonalnie zsynchronizowane z city-names-pools.json (Excel export). */
+  nazwyMiast?: string[];
   /** Bonusy/maliki tej cywilizacji do użycia przez systemy gry. */
   bonusy?: CivBonus[];
   /** Pierwsza epoka wejścia typu (kaskada w górę) — kanon D-CYW-EPOKA-WEJSCIA. */
@@ -307,6 +315,8 @@ export interface GameData {
   terrainMovement: TerrainMovementData;
   /** Cuda świata (Antyk) + indeks per państwo. */
   wonders: WondersData;
+  /** Pule nazw miast per cywilizacja (100 founding + 10 państw). */
+  cityNamesPools: CityNamesPools;
 }
 
 // ─── Loader ───────────────────────────────────────────────────────────────────
@@ -337,6 +347,7 @@ export function loadGameData(): GameData {
     societyParams: societyParamsRaw,
     terrainMovement: terrainMovementRaw as TerrainMovementData,
     wonders:           wondersRaw         as unknown as WondersData,
+    cityNamesPools:    cityNamesPoolsRaw  as CityNamesPools,
   };
 }
 

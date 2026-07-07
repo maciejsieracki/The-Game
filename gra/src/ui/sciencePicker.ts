@@ -13,6 +13,8 @@
 import type {} from '../../data/tech.json';
 import techData from '../../data/tech.json';
 import { terrainUnlockLabelsForTech } from '../game/improvement-tech';
+import type { TempoGry } from '../game/tech-tempo';
+import { scaledResearchCost, type GameDifficulty } from '../game/difficulty-cost';
 import { scienceOwlIconHtml } from './icons/scienceOwlIcon';
 import type { ScienceHubEntry, ScienceHubProgress } from './scienceHubHud';
 
@@ -68,6 +70,14 @@ export interface SciencePickerConfig {
    * Brak haka → pokaz wszystkie epoki (tryb podglądu).
    */
   getPlayerEra?: (ownerId: number) => number;
+  /**
+   * Tempo gry (szybka/standardowa/dluga) — mnoznik kosztu badan w UI drzewka.
+   */
+  getTempoGry?: (ownerId: number) => TempoGry;
+  /**
+   * Poziom trudnosci — asymetria kosztow badan (latwa/normalna/trudna).
+   */
+  getDifficulty?: (ownerId: number) => GameDifficulty;
 }
 
 // ---------------------------------------------------------------------------
@@ -239,7 +249,7 @@ export function getScienceHubSnapshot(ownerId: number): {
         id: node.id,
         name: node.nazwa,
         epoka: node.epoka,
-        koszt: node.koszt,
+        koszt: effectiveTechCost(node.koszt, ownerId),
         unlockLine: techUnlockSummary(node.id) || undefined,
         locked: false,
         isTarget: node.id === targetId,
@@ -249,7 +259,7 @@ export function getScienceHubSnapshot(ownerId: number): {
         id: node.id,
         name: node.nazwa,
         epoka: node.epoka,
-        koszt: node.koszt,
+        koszt: effectiveTechCost(node.koszt, ownerId),
         unlockLine: techUnlockSummary(node.id) || undefined,
         locked: true,
         isTarget: false,
@@ -820,8 +830,8 @@ function buildSVG(
     const prefix2 = node.epoka === 'Kamień' ? 'K' : node.epoka === 'Brąz' ? 'B' : 'Z';
     lines.push(`<text x="4" y="11" fill="rgba(180,140,50,0.40)" font-size="7.5" font-family="monospace" pointer-events="none">${esc(prefix2 + node.zoneCol)}</text>`);
 
-    // Cost top-right
-    lines.push(`<text x="${r(NW - 4)}" y="11" text-anchor="end" fill="rgba(120,180,90,0.45)" font-size="7.5" font-family="monospace" pointer-events="none">${node.koszt}PN</text>`);
+    // Cost top-right (po mnozniku tempa gry)
+    lines.push(`<text x="${r(NW - 4)}" y="11" text-anchor="end" fill="rgba(120,180,90,0.45)" font-size="7.5" font-family="monospace" pointer-events="none">${effectiveTechCost(node.koszt, activeOwner)}PN</text>`);
 
     lines.push('</g>');
   }
@@ -845,7 +855,7 @@ function buildTooltipHTML(node: TechNode, status: NodeStatus): string {
 
   let h = `<div class="tt-name" style="color:${st.label}">${esc(node.nazwa)}</div>`;
   h += `<div class="tt-meta" style="color:#7a6028">Epoka: <strong>${esc(node.epoka)}</strong> | Kolumna: ${node.epoka === 'Kamień' ? 'K' : node.epoka === 'Brąz' ? 'B' : 'Z'}${node.zoneCol}</div>`;
-  h += `<div class="tt-cost" style="color:#78b058">⚗ Koszt nauki: ${node.koszt} PN</div>`;
+  h += `<div class="tt-cost" style="color:#78b058">⚗ Koszt nauki: ${effectiveTechCost(node.koszt, activeOwner)} PN</div>`;
   h += `<div class="tt-status" style="margin-top:4px;font-size:0.73em;font-weight:700">${statusLabel[status]}</div>`;
 
   if (node.prereqIds.length > 0) {
@@ -877,6 +887,13 @@ function buildTooltipHTML(node: TechNode, status: NodeStatus): string {
 // ---------------------------------------------------------------------------
 
 let cfg: SciencePickerConfig = {};
+
+/** Koszt badania po mnozniku tempa gry + asymetrii trudnosci. */
+function effectiveTechCost(baseKoszt: number, ownerId = 0): number {
+  const tempo = cfg.getTempoGry?.(ownerId) ?? 'standardowa';
+  const difficulty = cfg.getDifficulty?.(ownerId) ?? 'normal';
+  return scaledResearchCost(baseKoszt, tempo, ownerId, difficulty);
+}
 let overlayEl: HTMLDivElement | null = null;
 let panelEl: HTMLDivElement | null = null;
 let dimBackdropEl: HTMLDivElement | null = null;

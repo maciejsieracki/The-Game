@@ -1,45 +1,28 @@
 /**
  * cityMapOutline.ts — delikatna obwódka heksu miasta na mapie świata (MAPA).
- * Nie dotyczy overlay okolicy w panelu miasta.
+ * Geometria pointy-top jak zaznaczenie armii (hexShape.ts / units.ts).
  */
 import * as THREE from 'three';
 import { axialToWorld, HEX_R } from './hexutil';
+import { hexRingPointsXZ } from './hexShape';
 
-/** Relacja względem gracza (owner 0). */
+/** Relacja względem gracza (owner 0) — do wykrycia wojny (czerwony akcent). */
 export type CityMapOutlineKind = 'player' | 'war' | 'neutral' | 'ally';
 
-export const CITY_MAP_OUTLINE_STYLE: Record<
-  CityMapOutlineKind,
-  { color: number; opacity: number; outerOpacity: number }
-> = {
-  /** Nasze miasto — jasnoniebieski (Maciej 2026-07-03). */
-  player:  { color: 0x7ec8e8, opacity: 0.92, outerOpacity: 0.52 },
-  /** Wojna — czerwony. */
-  war:     { color: 0xff4444, opacity: 0.92, outerOpacity: 0.55 },
-  /** Neutralni — zielony. */
-  neutral: { color: 0x5cb85c, opacity: 0.88, outerOpacity: 0.48 },
-  /** Sojusznik — ciemnoniebieski. */
-  ally:    { color: 0x1a4a8a, opacity: 0.90, outerOpacity: 0.52 },
-};
+const CIV_INNER_OPACITY = 0.92;
+const CIV_OUTER_OPACITY = 0.52;
+const WAR_ACCENT_COLOR = 0xff4444;
+const WAR_ACCENT_OPACITY = 0.55;
 
-function hexRingPoints(cx: number, y: number, cz: number, R: number): THREE.Vector3[] {
-  const verts: THREE.Vector3[] = [];
-  for (let i = 0; i < 6; i++) {
-    const a = (Math.PI / 3) * i;
-    verts.push(new THREE.Vector3(cx + R * Math.sin(a), y, cz + R * Math.cos(a)));
-  }
-  return verts;
-}
+const OUTLINE_LIFT = 0.085;
 
 function makeHexRing(
-  cx: number,
-  y: number,
-  cz: number,
   R: number,
   color: number,
   opacity: number,
+  y = 0,
 ): THREE.LineLoop {
-  const geo = new THREE.BufferGeometry().setFromPoints(hexRingPoints(cx, y, cz, R));
+  const geo = new THREE.BufferGeometry().setFromPoints(hexRingPointsXZ(R, y));
   const mat = new THREE.LineBasicMaterial({
     color,
     transparent: true,
@@ -51,21 +34,25 @@ function makeHexRing(
   return loop;
 }
 
-/** Podwójna obwódka: wewnętrzna wyraźniejsza + zewnętrzna miękka (czytelność na terenie). */
+/** Podwójna obwódka: kolor cywilizacji właściciela; w wojnie — czerwony akcent na zewnątrz. */
 export function buildCityMapOutline(
   q: number,
   r: number,
   topY: number,
-  kind: CityMapOutlineKind,
+  civColor: number,
+  atWar = false,
 ): THREE.Group {
-  const style = CITY_MAP_OUTLINE_STYLE[kind];
   const { x, z } = axialToWorld(q, r, HEX_R);
-  const y = topY + 0.085;
   const g = new THREE.Group();
-  g.userData['outlineKind'] = kind;
+  g.position.set(x, topY + OUTLINE_LIFT, z);
+  g.userData['outlineCivColor'] = civColor;
+  g.userData['outlineAtWar'] = atWar;
+  g.userData['outlineHex'] = { q, r };
 
-  const outer = makeHexRing(x, y, z, HEX_R * 1.06, style.color, style.outerOpacity);
-  const inner = makeHexRing(x, y + 0.004, z, HEX_R * 0.98, style.color, style.opacity);
+  const inner = makeHexRing(HEX_R * 0.98, civColor, CIV_INNER_OPACITY, 0.004);
+  const outerColor = atWar ? WAR_ACCENT_COLOR : civColor;
+  const outerOpacity = atWar ? WAR_ACCENT_OPACITY : CIV_OUTER_OPACITY;
+  const outer = makeHexRing(HEX_R * 1.06, outerColor, outerOpacity);
   g.add(outer, inner);
 
   g.userData['outlineMats'] = [
@@ -74,6 +61,18 @@ export function buildCityMapOutline(
   ];
   g.userData['outlineGeos'] = [outer.geometry, inner.geometry];
   return g;
+}
+
+/** Przesuń istniejącą obwódkę (np. po sync bez przebudowy geometrii). */
+export function placeCityMapOutline(
+  group: THREE.Group,
+  q: number,
+  r: number,
+  topY: number,
+): void {
+  const { x, z } = axialToWorld(q, r, HEX_R);
+  group.position.set(x, topY + OUTLINE_LIFT, z);
+  group.userData['outlineHex'] = { q, r };
 }
 
 export function disposeCityMapOutline(group: THREE.Group): void {

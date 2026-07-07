@@ -90,13 +90,15 @@ export interface LawBreakdownInput {
   hasRatusz?: boolean;
   hasPretorium?: boolean;
   hasSad?: boolean;
+  /** Pałac — główne źródło Prawa cywilizacyjnego (≠ garnizon). */
+  hasPalac?: boolean;
   brakGarnizonuKara?: boolean;
   /** D18-4: pierwsze miasto gracza na easy (T1–T10). */
   stolicaEasyBonus?: boolean;
 }
 
-export const REVOLT_CRITICAL_POR_PCT = 10;
-export const REVOLT_GRACE_TURNS = 2;
+export const REVOLT_CRITICAL_POR_PCT = 12;
+export const REVOLT_GRACE_TURNS = 3;
 
 /** Progi buntu skrajnego + grace (B2-D18, data-driven). */
 export interface RevoltParams {
@@ -111,8 +113,10 @@ export const FALLBACK_REVOLT_PARAMS: RevoltParams = {
 /** Id frakcji rebeliantów (SILNIK mapuje na ownerId). */
 export const REBEL_FACTION_OWNER_ID = -99;
 
-export const SZMAX_DEFAULTS: Readonly<Record<number, number>> = { 1: 12, 2: 18, 3: 24 };
-export const PRAWMAX_DEFAULTS: Readonly<Record<number, number>> = { 1: 12, 2: 18, 3: 24 };
+/** Skala % Sz — wyższa = łagodniejsze kary (PT 2026-07). */
+export const SZMAX_DEFAULTS: Readonly<Record<number, number>> = { 1: 14, 2: 20, 3: 28 };
+/** Skala % Prawo — 5× jednostka (20) = 100%; 1 jedn. ≠ pełne Prawo (PT 2026-07). */
+export const PRAWMAX_DEFAULTS: Readonly<Record<number, number>> = { 1: 50, 2: 75, 3: 100 };
 export const SZ_PCT_CAP = 120;
 export const PRAW_PCT_CAP = 100;
 
@@ -383,6 +387,10 @@ export function computeLawBreakdown(
   if (input.hasSad) {
     const v = pickSociety(prBlock, 'prawo_sad', diff, 2);
     if (v) lines.push({ id: 'sad', label: 'Sąd', value: v });
+  }
+  if (input.hasPalac) {
+    const v = pickSociety(prBlock, 'prawo_palac', diff, 35);
+    if (v) lines.push({ id: 'palac', label: 'Pałac', value: v });
   }
 
   if (input.brakGarnizonuKara) {

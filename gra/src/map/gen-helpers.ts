@@ -5694,9 +5694,9 @@ export function placeDeposits(
   return counts;
 }
 
-/** Pakiet surowców wymagany w każdej komórce siatki fair play (Maciej 2026-07-04). */
+/** Pakiet surowców wymagany w każdej komórce siatki fair play (Maciej 2026-07-04). Konie wyłączone — mają być rzadkie. */
 export const FAIR_PLAY_DEPOSIT_IDS: ReadonlyArray<DepositRule['id']> = [
-  'zelazo', 'miedz', 'glina', 'konie', 'bydlo', 'owce',
+  'zelazo', 'miedz', 'glina', 'bydlo', 'owce',
 ];
 
 function depositRuleById(id: DepositRule['id']): DepositRule {
@@ -5872,7 +5872,7 @@ export function depositGridCoverageRatio(
 }
 
 /**
- * Po placeDeposits: w każdej komórce N×N min. pakiet surowców (żelazo, miedź, glina, konie, bydło, owce).
+ * Po placeDeposits: w każdej komórce N×N min. pakiet surowców (żelazo, miedź, glina, bydło, owce).
  */
 export function ensureDepositGridCoverage(
   hexes: Record<string, Hex>,

@@ -198,8 +198,8 @@ var terrain_improvements_default = {
     bonus: {},
     surowiecOdblokowany: null,
     teren: "Las",
-    warunek: "darmowa wycinka; +20 Pracy/tur\u0119 \xD7 3 tury (=60); potem teren bazowy bez lasu",
-    koszt_praca: 0,
+    warunek: "koszt 5 Pracy na start; +20 Pracy/tur\u0119 \xD7 3 tury (=60); potem teren bazowy bez lasu",
+    koszt_praca: 5,
     tech: null,
     wycinka: {
       praca_per_tura: 20,
@@ -367,6 +367,28 @@ var DEFAULT_TERRAIN_COSTS = {
 };
 var _terrainCosts = { ...DEFAULT_TERRAIN_COSTS };
 
+// data/epoka-ludnosc-manpower.json
+var epoka_ludnosc_manpower_default = {
+  _opis: "Skala ludno\u015Bci i Manpower per epoka imperium (wiersze 1\u201310). 1 ludek = ludno\u015B\u0107 absolutna na slot population (1\u201310). manpowerNaLudka = 10% ludekNaLudka. manpowerNaJednostke = 10% manpowerNaLudka (koszt rekrutacji 1 jednostki).",
+  _formuly: {
+    ludnoscAbsolutna: "population \xD7 ludekNaLudka[epoka]",
+    manpowerMax: "population \xD7 manpowerNaLudka[epoka]",
+    kosztRekrutacji: "manpowerNaJednostke[epoka] per jednostka"
+  },
+  epoki: [
+    { epoka: 1, ludekNaLudka: 1e4, manpowerNaLudka: 1e3, manpowerNaJednostke: 100 },
+    { epoka: 2, ludekNaLudka: 2e4, manpowerNaLudka: 2e3, manpowerNaJednostke: 200 },
+    { epoka: 3, ludekNaLudka: 4e4, manpowerNaLudka: 4e3, manpowerNaJednostke: 400 },
+    { epoka: 4, ludekNaLudka: 8e4, manpowerNaLudka: 8e3, manpowerNaJednostke: 800 },
+    { epoka: 5, ludekNaLudka: 16e4, manpowerNaLudka: 16e3, manpowerNaJednostke: 1600 },
+    { epoka: 6, ludekNaLudka: 32e4, manpowerNaLudka: 32e3, manpowerNaJednostke: 3200 },
+    { epoka: 7, ludekNaLudka: 64e4, manpowerNaLudka: 64e3, manpowerNaJednostke: 6400 },
+    { epoka: 8, ludekNaLudka: 12e5, manpowerNaLudka: 12e4, manpowerNaJednostke: 12e3 },
+    { epoka: 9, ludekNaLudka: 24e5, manpowerNaLudka: 24e4, manpowerNaJednostke: 24e3 },
+    { epoka: 10, ludekNaLudka: 48e5, manpowerNaLudka: 48e4, manpowerNaJednostke: 48e3 }
+  ]
+};
+
 // data/miasto-params.json
 var miasto_params_default = {
   min_dystans_miast: {
@@ -486,6 +508,28 @@ var miasto_params_default = {
   }
 };
 
+// src/game/manpower.ts
+var ROWS = epoka_ludnosc_manpower_default.epoki;
+
+// src/game/production.ts
+var BUILDING_LEVEL_FACTOR = miasto_params_default.budynek_mnoznik_poziomu?.wartosc ?? 1.1;
+var DEFAULT_UNIT_COST = miasto_params_default.jednostka_koszt_domyslny?.wartosc ?? 10;
+var DEFAULT_COST_BY_ROLE = {
+  Wsparcie: miasto_params_default.jednostka_koszt_rola_wsparcie?.wartosc ?? 12,
+  Dystans: miasto_params_default.jednostka_koszt_rola_dystans?.wartosc ?? 8,
+  "Wr\u0119cz": miasto_params_default.jednostka_koszt_rola_wrecz?.wartosc ?? 10,
+  // melee role key
+  Wrecz: miasto_params_default.jednostka_koszt_rola_wrecz?.wartosc ?? 10,
+  Konnica: miasto_params_default.jednostka_koszt_rola_konnica?.wartosc ?? 16
+};
+var UNIT_POPULATION_COST = miasto_params_default.jednostka_koszt_ludnosci?.wartosc ?? 1;
+var DEFAULT_OUTPUT_SHARES = Object.freeze({
+  produkcja: miasto_params_default.udzial_output_produkcja?.wartosc ?? 0.4,
+  pieniadz: miasto_params_default.udzial_output_pieniadz?.wartosc ?? 0.3,
+  nauka: miasto_params_default.udzial_output_nauka?.wartosc ?? 0.2,
+  rozwoj: miasto_params_default.udzial_output_rozwoj?.wartosc ?? 0.1
+});
+
 // src/game/cities.ts
 var DEFAULT_PODZIAL_HANDLU = {
   procentNauka: 20,
@@ -575,14 +619,14 @@ function clamp01(x) {
 }
 
 // src/game/society-breakdown.ts
-var REVOLT_CRITICAL_POR_PCT = 10;
-var REVOLT_GRACE_TURNS = 2;
+var REVOLT_CRITICAL_POR_PCT = 12;
+var REVOLT_GRACE_TURNS = 3;
 var FALLBACK_REVOLT_PARAMS = {
   criticalPorPct: REVOLT_CRITICAL_POR_PCT,
   graceTurns: REVOLT_GRACE_TURNS
 };
-var SZMAX_DEFAULTS = { 1: 12, 2: 18, 3: 24 };
-var PRAWMAX_DEFAULTS = { 1: 12, 2: 18, 3: 24 };
+var SZMAX_DEFAULTS = { 1: 14, 2: 20, 3: 28 };
+var PRAWMAX_DEFAULTS = { 1: 50, 2: 75, 3: 100 };
 var SZ_PCT_CAP = 120;
 var PRAW_PCT_CAP = 100;
 function pickOsiedlePopBonus(block, key, pop, difficulty, legacyFlatFallback = 0) {
@@ -598,6 +642,12 @@ function pickOsiedlePopBonus(block, key, pop, difficulty, legacyFlatFallback = 0
   }
   return legacyFlatFallback;
 }
+function pickSociety(block, key, difficulty, fallback) {
+  const row = block?.[key];
+  if (!row) return fallback;
+  const v = row[difficulty];
+  return typeof v === "number" && Number.isFinite(v) ? v : fallback;
+}
 function osiedlePopLabel(pop) {
   const p = Math.max(1, Math.floor(pop));
   return `Osiedle (${p} mieszk.)`;
@@ -612,12 +662,6 @@ function isOsiedleRevoltImmune(population, society = null, difficulty = "normal"
   const p = Math.floor(population);
   if (p < 1) return false;
   return p <= osiedlePopMax(society, difficulty);
-}
-function pickSociety(block, key, difficulty, fallback) {
-  const row = block?.[key];
-  if (!row) return fallback;
-  const v = row[difficulty];
-  return typeof v === "number" && Number.isFinite(v) ? v : fallback;
 }
 function loadRevoltParams(society, difficulty = "normal") {
   const block = society?.porzadek ?? {};
@@ -776,6 +820,10 @@ function computeLawBreakdown(input, society = null) {
   if (input.hasSad) {
     const v = pickSociety(prBlock, "prawo_sad", diff, 2);
     if (v) lines.push({ id: "sad", label: "S\u0105d", value: v });
+  }
+  if (input.hasPalac) {
+    const v = pickSociety(prBlock, "prawo_palac", diff, 35);
+    if (v) lines.push({ id: "palac", label: "Pa\u0142ac", value: v });
   }
   if (input.brakGarnizonuKara) {
     const v = pickSociety(prBlock, "prawo_kara_brak_garnizonu", diff, -2);

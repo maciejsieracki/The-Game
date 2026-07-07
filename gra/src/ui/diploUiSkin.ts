@@ -48,23 +48,44 @@ export function resolveCivIconIdFromName(displayName: string): string {
 
 export function civPennantHtml(civName: string, tier: number, large = false): string {
   const iconId = resolveCivIconIdFromName(civName);
+  return civPennantHtmlById(iconId, undefined, tier, large);
+}
+
+/** Proporczyk z ikonaId + opcjonalnym kolorem nacji (ramka). */
+export function civPennantHtmlById(
+  iconId: string,
+  kolorHex: string | undefined,
+  tier: number,
+  large = false,
+): string {
   const svg = civIconSvg(iconId, 24);
   const ic = svg
     ? svg.replace('<svg ', '<svg class="dip-pennant-civ-ic" ')
     : dipBrandIconHtml('tb-diplomacy', 24, 'dip-pennant-civ-ic');
   const tone = pennantTone(tier);
   const cls = large ? 'dip-pennant dip-pennant-lg' : 'dip-pennant';
-  return `<span class="${cls} ${tone}"><span class="dip-pennant-inner">${ic}</span></span>`;
+  const borderStyle = kolorHex
+    ? ` style="border-color:${kolorHex};box-shadow:0 0 8px ${kolorHex}55"`
+    : '';
+  return `<span class="${cls} ${tone}"${borderStyle}><span class="dip-pennant-inner">${ic}</span></span>`;
 }
 
 /** Medalion lidera (mockup 1E — audiencja, hero 150px). */
 export function civLeaderMedallionHtml(civName: string): string {
   const iconId = resolveCivIconIdFromName(civName);
-  const svg = civIconSvg(iconId, 40);
+  return civLeaderMedallionHtmlById(iconId, undefined);
+}
+
+/** Hero audiencji — duży emblem + ramka w kolorHex nacji. */
+export function civLeaderMedallionHtmlById(iconId: string, kolorHex: string | undefined): string {
+  const svg = civIconSvg(iconId, 72);
   const ic = svg
     ? svg.replace('<svg ', '<svg class="dip-leader-ic" ')
-    : dipBrandIconHtml('tb-diplomacy', 40, 'dip-leader-ic');
-  return `<div class="dip-leader-medallion">${ic}</div>`;
+    : dipBrandIconHtml('tb-diplomacy', 72, 'dip-leader-ic');
+  const border = kolorHex ?? 'var(--tg-gold-primary,#e8d88a)';
+  const glow = kolorHex ? `${kolorHex}33` : 'rgba(232,216,138,.2)';
+  const style = ` style="border-color:${border};box-shadow:inset 0 3px 8px ${glow},0 0 40px ${glow}"`;
+  return `<div class="dip-leader-medallion"${style}>${ic}</div>`;
 }
 
 export function tierBadgeHtml(tier: number, label: string): string {

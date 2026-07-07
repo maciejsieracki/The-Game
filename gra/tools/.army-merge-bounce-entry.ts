@@ -1,2 +1,2 @@
-import { findBounceHexFromOrigin } from '../src/game/armyMerge';
-export { findBounceHexFromOrigin };
+import { findBounceHexFromOrigin, assignBounceHexesForUnits } from '../src/game/armyMerge';
+export { findBounceHexFromOrigin, assignBounceHexesForUnits };

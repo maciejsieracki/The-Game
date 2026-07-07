@@ -19,9 +19,15 @@
  *   ≥ 100000 → super → 10 typów
  *
  * Odległości startu (Maciej 2026-07-04, tylko spawn):
- *   miasta-państwa w klastrze gracza → min 3 hexy
+ *   miasta-państwa w klastrze gracza → min 3 hexy, skupisko wokół rdzenia (nie cały Voronoi)
  *   miasta obcych typów od stolicy gracza → min 12 hexów (poza oświetleniem startu)
- *   miasta-państwa w klastrze obcego typu → min 3 hexy (Maciej 2026-07-04)
+ *   miasta-państwa w klastrze obcego typu → min 3 hexy, też skupisko wokół centrum typu
+ *
+ * Pakowanie klastra (Maciej 2026-07-07): miasta w promieniu packRadius od centrum,
+ * nie po całym regionie Voronoi — duże puste przestrzenie między typami są OK.
+ *
+ * Krawędź klastra (Maciej 2026-07-07): stolica / founding spot na obwodzie skupiska,
+ * miasta-państwa w środku (~3 hex), +1 zarezerwowany slot wzrostu w klastrze.
  *
  * Własność: Civ-MAPA rozmieszcza (computeClusters), SILNIK osadza w pętli tury,
  *           AI ekspanduje rywali wewnątrz regionu swojego typu.
@@ -38,6 +44,8 @@ export const MIN_DIST_START_CITY_STATE = 3;
 export const MIN_DIST_FOREIGN_FROM_PLAYER = 12;
 /** Min odległość między miastami w klastrze obcego typu. Tylko spawn. */
 export const MIN_DIST_FOREIGN_IN_CLUSTER = MIN_DIST_START_CITY_STATE;
+/** Rezerwa pustego slotu na kolejne miasto w klastrze (Maciej 2026-07-07). */
+export const CLUSTER_GROWTH_RESERVE = 1;
 import type { GameMap } from '../types/map';
 import { TerenBazowy } from '../types/hex';
 
@@ -79,6 +87,10 @@ export interface TypeCluster {
   typ: string;                // klucz z civs.json (np. 'grecy', 'rzym')
   centrum: { q: number; r: number }; // środek regionu Voronoi (ziarno klastra)
   miasta: ClusterCity[];      // do rywaleNaKlaster+1 miast (1 stolica + rywale)
+  /** Pre-planowane sloty państw (gracz: spawn po founding). */
+  pendingStateSlots?: Array<{ q: number; r: number }>;
+  /** Zarezerwowany hex na +1 miasto w klastrze (nie spawnowany). */
+  growthSlot?: { q: number; r: number } | null;
 }
 
 /** Pełny wynik rozmieszczenia klastrów dla całej mapy. */
@@ -124,6 +136,39 @@ function shuffleInPlace<T>(arr: T[], rand: () => number): void {
   }
 }
 
+/** Promień skupiska miast wokół rdzenia (hexy) — ciasne paki, nie cały region Voronoi. */
+export function clusterPackRadius(maxMiast: number, minDist: number): number {
+  const rings = Math.max(2, Math.ceil(Math.sqrt(Math.max(1, maxMiast)) * 1.35));
+  return Math.max(minDist * 2, rings * minDist);
+}
+
+/** Pola lądowe w promieniu od rdzenia, posortowane od najbliższych (do ciasnego pakowania). */
+function landPoolNearCore(
+  region: Array<{ q: number; r: number }>,
+  centrum: { q: number; r: number },
+  maxMiast: number,
+  minDist: number,
+): Array<{ q: number; r: number }> {
+  const packR = clusterPackRadius(maxMiast, minDist);
+  const near = region
+    .map(c => ({ c, d: hexDistanceAxial(c.q, c.r, centrum.q, centrum.r) }))
+    .filter(x => x.d <= packR)
+    .sort((a, b) => a.d - b.d || a.c.q - b.c.q || a.c.r - b.c.r)
+    .map(x => x.c);
+  if (near.length >= maxMiast) return near;
+  // Za mało pól w pierwszym pierścieniu — rozszerz promień stopniowo.
+  let expanded = packR + minDist;
+  while (near.length < maxMiast && expanded <= packR + minDist * 6) {
+    for (const c of region) {
+      if (near.some(p => p.q === c.q && p.r === c.r)) continue;
+      if (hexDistanceAxial(c.q, c.r, centrum.q, centrum.r) <= expanded) near.push(c);
+      if (near.length >= maxMiast * 3) break;
+    }
+    expanded += minDist;
+  }
+  return near.length > 0 ? near : region;
+}
+
 function poissonPickCities(
   region: Array<{ q: number; r: number }>,
   maxMiast: number,
@@ -132,6 +177,8 @@ function poissonPickCities(
   opts?: {
     minDistFrom?: { q: number; r: number };
     minDistFromValue?: number;
+    /** Wyklucz dokładnie ten hex (np. stolica gracza). */
+    excludeHex?: { q: number; r: number };
   },
 ): Array<{ q: number; r: number }> {
   const shuffledRegion = region.slice();
@@ -140,8 +187,10 @@ function poissonPickCities(
   const picked: Array<{ q: number; r: number }> = [];
   const anchor = opts?.minDistFrom;
   const anchorMin = opts?.minDistFromValue ?? 0;
+  const exclude = opts?.excludeHex;
 
   function tooClose(c: { q: number; r: number }, limit: number): boolean {
+    if (exclude != null && c.q === exclude.q && c.r === exclude.r) return true;
     if (anchor != null && hexDistanceAxial(c.q, c.r, anchor.q, anchor.r) < anchorMin) {
       return true;
     }
@@ -165,33 +214,153 @@ function poissonPickCities(
   return picked;
 }
 
-function buildClusterCities(
+/**
+ * Miasta-państwa wokół wybranego rdzenia (po założeniu stolicy gracza).
+ * Deterministyczne dla seed; min 3 hex między miastami; rdzeń nie jest slotem rywala.
+ */
+export function packRivalCitiesAroundCore(
+  landHexes: Array<{ q: number; r: number }>,
+  core: { q: number; r: number },
+  rivalCount: number,
+  minDist: number,
+  seed: number,
+): Array<{ q: number; r: number }> {
+  if (rivalCount <= 0) return [];
+  const rand = mulberry32((seed ^ 0x9e3779b9) >>> 0);
+  const pool = landPoolNearCore(landHexes, core, rivalCount, minDist);
+  return poissonPickCities(pool, rivalCount, minDist, rand, { excludeHex: core });
+}
+
+/** Wynik planowania klastra: stolica na krawędzi, państwa w środku. */
+export interface ClusterLayoutPlan {
+  capital: { q: number; r: number };
+  stateCities: Array<{ q: number; r: number }>;
+  growthSlot: { q: number; r: number } | null;
+}
+
+
+function centroidOf(hexes: Array<{ q: number; r: number }>): { q: number; r: number } {
+  if (hexes.length === 0) return { q: 0, r: 0 };
+  let sq = 0;
+  let sr = 0;
+  for (const h of hexes) { sq += h.q; sr += h.r; }
+  return { q: sq / hexes.length, r: sr / hexes.length };
+}
+
+function isFarEnough(
+  c: { q: number; r: number },
+  others: Array<{ q: number; r: number }>,
+  minDist: number,
+): boolean {
+  return others.every(o => hexDistanceAxial(c.q, c.r, o.q, o.r) >= minDist);
+}
+
+/**
+ * Planuje klaster: państwa w środku (~minDist), stolica na obwodzie, +1 slot wzrostu.
+ * Deterministyczne dla rand().
+ */
+export function buildClusterLayoutWithEdgeCapital(
   region: Array<{ q: number; r: number }>,
   centrum: { q: number; r: number },
-  maxMiast: number,
+  stateCityCount: number,
   minDist: number,
   rand: () => number,
   anchor?: { q: number; r: number; minDist: number },
-): ClusterCity[] {
-  const picked = poissonPickCities(region, maxMiast, minDist, rand, anchor
-    ? { minDistFrom: anchor, minDistFromValue: anchor.minDist }
-    : undefined);
+  growthReserve = CLUSTER_GROWTH_RESERVE,
+): ClusterLayoutPlan | null {
+  if (stateCityCount < 0) return null;
+  const interiorNeed = stateCityCount + growthReserve;
+  const packR = clusterPackRadius(Math.max(1, stateCityCount + 1), minDist);
+  const localPool = landPoolNearCore(region, centrum, interiorNeed + 2, minDist);
 
-  let capitalIdx = 0;
-  let capitalDist = Infinity;
-  for (let pi = 0; pi < picked.length; pi++) {
-    const d = hexDistanceAxial(picked[pi]!.q, picked[pi]!.r, centrum.q, centrum.r);
-    if (d < capitalDist) {
-      capitalDist = d;
-      capitalIdx = pi;
+  const interiorPicked = poissonPickCities(
+    localPool,
+    interiorNeed,
+    minDist,
+    rand,
+    anchor ? { minDistFrom: anchor, minDistFromValue: anchor.minDist } : undefined,
+  );
+
+  const stateCities = interiorPicked.slice(0, stateCityCount);
+  const growthSlot = interiorPicked.length > stateCityCount
+    ? interiorPicked[stateCityCount] ?? null
+    : null;
+
+  const occupied = [...stateCities];
+  if (growthSlot) occupied.push(growthSlot);
+  const blobCenter = stateCities.length > 0 ? centroidOf(stateCities) : centrum;
+
+  const capitalCandidates = region.filter(c => {
+    if (occupied.some(o => o.q === c.q && o.r === c.r)) return false;
+    if (!isFarEnough(c, occupied, minDist)) return false;
+    if (anchor && hexDistanceAxial(c.q, c.r, anchor.q, anchor.r) < anchor.minDist) return false;
+    if (stateCities.length === 0) return true;
+    const nearestState = Math.min(
+      ...stateCities.map(s => hexDistanceAxial(c.q, c.r, s.q, s.r)),
+    );
+    return nearestState <= packR && nearestState >= minDist;
+  });
+
+  let capital: { q: number; r: number } | null = null;
+  let bestEdgeScore = -Infinity;
+  for (const c of capitalCandidates) {
+    const edgeDist = hexDistanceAxial(c.q, c.r, blobCenter.q, blobCenter.r);
+    const jitter = rand() * 0.01;
+    if (edgeDist + jitter > bestEdgeScore) {
+      bestEdgeScore = edgeDist + jitter;
+      capital = c;
     }
   }
 
-  return picked.map((pos, idx) => ({
-    q: pos.q,
-    r: pos.r,
-    isCapital: idx === capitalIdx,
-  }));
+  if (!capital) {
+    const fallbackPool = region.filter(c => {
+      if (occupied.some(o => o.q === c.q && o.r === c.r)) return false;
+      if (anchor && hexDistanceAxial(c.q, c.r, anchor.q, anchor.r) < anchor.minDist) return false;
+      return isFarEnough(c, occupied, minDist);
+    });
+    if (fallbackPool.length === 0) return null;
+    fallbackPool.sort((a, b) => {
+      const da = hexDistanceAxial(a.q, a.r, blobCenter.q, blobCenter.r);
+      const db = hexDistanceAxial(b.q, b.r, blobCenter.q, blobCenter.r);
+      return db - da || a.q - b.q || a.r - b.r;
+    });
+    capital = fallbackPool[0]!;
+  }
+
+  return { capital, stateCities, growthSlot };
+}
+
+function layoutToClusterCities(layout: ClusterLayoutPlan): ClusterCity[] {
+  const cities: ClusterCity[] = [{
+    q: layout.capital.q,
+    r: layout.capital.r,
+    isCapital: true,
+  }];
+  for (const s of layout.stateCities) {
+    cities.push({ q: s.q, r: s.r, isCapital: false });
+  }
+  return cities;
+}
+
+function buildClusterCities(
+  region: Array<{ q: number; r: number }>,
+  centrum: { q: number; r: number },
+  stateCityCount: number,
+  minDist: number,
+  rand: () => number,
+  anchor?: { q: number; r: number; minDist: number },
+): { cities: ClusterCity[]; pendingStateSlots: Array<{ q: number; r: number }>; growthSlot: { q: number; r: number } | null } {
+  const layout = buildClusterLayoutWithEdgeCapital(
+    region, centrum, stateCityCount, minDist, rand, anchor, CLUSTER_GROWTH_RESERVE,
+  );
+  if (!layout) {
+    return { cities: [], pendingStateSlots: [], growthSlot: null };
+  }
+  return {
+    cities: layoutToClusterCities(layout),
+    pendingStateSlots: layout.stateCities,
+    growthSlot: layout.growthSlot,
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -354,16 +523,16 @@ export function computeClusters(
     regiony[bestIdx]!.push(h);
   }
 
-  // --- MIASTA: klaster gracza (min 3 hex), obce typy min 5 od stolicy, mp obcych min 3 w klastrze ---
+  // --- MIASTA: klaster gracza (min 3 hex), obce typy min 12 od stolicy, mp obcych min 3 w klastrze ---
   const klastry: TypeCluster[] = [];
-  const maxMiast = rywaleNaKlaster + 1;
+  const stateCityCount = rywaleNaKlaster;
 
   const playerCentrum = centrumy[0]!;
   const playerRegion = regiony[0]!;
-  const playerMiasta = buildClusterCities(
+  const playerLayout = buildClusterCities(
     playerRegion,
     playerCentrum,
-    maxMiast,
+    stateCityCount,
     minDystMiastaPanstwa,
     rand,
   );
@@ -371,10 +540,12 @@ export function computeClusters(
     typIndex: 0,
     typ: aktywneKlucze[0] ?? playerKlucz,
     centrum: playerCentrum,
-    miasta: playerMiasta,
+    miasta: playerLayout.cities,
+    pendingStateSlots: playerLayout.pendingStateSlots,
+    growthSlot: playerLayout.growthSlot,
   });
 
-  const playerCapital = playerMiasta.find(m => m.isCapital) ?? playerMiasta[0];
+  const playerCapital = playerLayout.cities.find(m => m.isCapital) ?? playerLayout.cities[0];
   const playerCapitalPos = playerCapital
     ? { q: playerCapital.q, r: playerCapital.r }
     : playerCentrum;
@@ -382,10 +553,10 @@ export function computeClusters(
   for (let ci = 1; ci < centrumy.length; ci++) {
     const centrum = centrumy[ci]!;
     const region = regiony[ci]!;
-    const miasta = buildClusterCities(
+    const foreignLayout = buildClusterCities(
       region,
       centrum,
-      maxMiast,
+      stateCityCount,
       MIN_DIST_FOREIGN_IN_CLUSTER,
       rand,
       { q: playerCapitalPos.q, r: playerCapitalPos.r, minDist: minDystObcyOdGracza },
@@ -395,7 +566,8 @@ export function computeClusters(
       typIndex: ci,
       typ: aktywneKlucze[ci] ?? `typ${ci}`,
       centrum,
-      miasta,
+      miasta: foreignLayout.cities,
+      growthSlot: foreignLayout.growthSlot,
     });
   }
 
@@ -403,9 +575,9 @@ export function computeClusters(
   if (typeof console !== 'undefined') {
     for (let ci = 0; ci < klastry.length; ci++) {
       const k = klastry[ci]!;
-      if (k.miasta.length < rywaleNaKlaster + 1) {
+      if (k.miasta.length < stateCityCount + 1) {
         console.warn(
-          `[clusters] Klaster '${k.typ}' (region ${ci}): tylko ${k.miasta.length}/${rywaleNaKlaster + 1} miast` +
+          `[clusters] Klaster '${k.typ}' (region ${ci}): tylko ${k.miasta.length}/${stateCityCount + 1} miast` +
           ` (region za mały: ${regiony[ci]!.length} pol ladowych)`,
         );
       }

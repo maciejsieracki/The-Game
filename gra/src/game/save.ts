@@ -48,10 +48,16 @@ import type { City } from './cities';
  * Current save format version.  Bumped whenever the SaveGame shape changes in
  * a backward-incompatible way; deserializeGame() rejects unknown majors.
  */
-export const SAVE_VERSION = 1;
+export const SAVE_VERSION = 2;
 
 /** localStorage key prefix under which save slots are stored. */
 export const SAVE_PREFIX = 'thegame.save.';
+
+/** Meta-klucz: ostatnio wczytany / zapisany slot (Kontynuuj). */
+export const LAST_PLAYED_SLOT_KEY = 'thegame.save._lastPlayed';
+
+/** Slot szybkiego zapisu (Ctrl+S) — zawsze ten sam klucz, osobno od nazwanych sejwów. */
+export const AUTOSAVE_SLOT_ID = 'autosave';
 
 // ---------------------------------------------------------------------------
 // SaveGame -- the serializable snapshot
@@ -119,6 +125,15 @@ export interface SaveGame {
    * P6: Diplomacy relations (key "a_b" -> Relation serialized).
    */
   diploRelations?: Record<string, any>;
+
+  /**
+   * A3-P0-2: aktywny marsz (legacy — pierwszy / ostatni planowany).
+   * Pełna mapa w `plannedMarches` (SAVE_VERSION ≥ 2).
+   */
+  autoMarch?: { leaderId: string; destQ: number; destR: number };
+
+  /** A3: wszystkie zaplanowane marsze gracza (unitId → cel). */
+  plannedMarches?: Record<string, { destQ: number; destR: number }>;
 
   /** Optional free-form metadata: timestamp, label, map dimensions, etc. */
   meta?: any;
@@ -256,6 +271,8 @@ export function deserializeGame(json: string): SaveGame {
     cityBuilt:      obj2.cityBuilt,
     aiResearchDone: Array.isArray(obj2.aiResearchDone) ? obj2.aiResearchDone : undefined,
     diploRelations: obj2.diploRelations,
+    autoMarch: obj2.autoMarch,
+    plannedMarches: obj2.plannedMarches,
     meta: obj.meta,
     mapQuality: obj2.mapQuality,
     renderQuality: obj2.renderQuality,
@@ -371,4 +388,80 @@ export function deleteLocal(slot: string): boolean {
   } catch {
     return false;
   }
+}
+
+// ---------------------------------------------------------------------------
+// Last played slot (Kontynuuj)
+// ---------------------------------------------------------------------------
+
+export function getLastPlayedSlotId(): string | null {
+  const storage = getStorage();
+  if (storage === null) return null;
+  try {
+    const raw = storage.getItem(LAST_PLAYED_SLOT_KEY);
+    if (!raw || !raw.trim()) return null;
+    return loadFromLocal(raw) ? raw : null;
+  } catch {
+    return null;
+  }
+}
+
+export function setLastPlayedSlotId(slotId: string): void {
+  const storage = getStorage();
+  if (storage === null) return;
+  try {
+    storage.setItem(LAST_PLAYED_SLOT_KEY, slotId);
+  } catch {
+    /* ignore */
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Slot ID helpers
+// ---------------------------------------------------------------------------
+
+/** Bezpieczny klucz localStorage z etykiety gracza. */
+export function slotSlugFromLabel(label: string): string {
+  const trimmed = label.trim();
+  if (!trimmed) return `zapis-${Date.now()}`;
+  const base = trimmed
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 40);
+  return base || `zapis-${Date.now()}`;
+}
+
+/**
+ * Nowy slot — zawsze unikalny (nie nadpisuje innej gry o podobnej nazwie).
+ * Ten sam slug + timestamp zapobiega kolizji „Grecja tura 5" z dwóch sesji.
+ */
+export function uniqueSlotIdFromLabel(label: string): string {
+  return `${slotSlugFromLabel(label)}-${Date.now().toString(36)}`;
+}
+
+export interface SaveIntegrityIssue {
+  code: string;
+  message: string;
+}
+
+/** Sprawdza, czy zapis ma dane do odtworzenia mapy (bez stanu runtime). */
+export function checkSaveIntegrity(g: SaveGame): SaveIntegrityIssue[] {
+  const issues: SaveIntegrityIssue[] = [];
+  if (typeof g.seed !== 'number' || g.seed <= 0) {
+    issues.push({ code: 'no_seed', message: 'brak seed mapy' });
+  }
+  const meta = g.meta as Record<string, unknown> | undefined;
+  const ngp = meta?.newGameParams as { civId?: string; mapSize?: string; typSwiata?: string } | undefined;
+  const hasFullParams = ngp && typeof ngp.civId === 'string';
+  const hasLegacyMeta = typeof meta?.loadTypSwiata === 'string' && typeof meta?.loadMapSize === 'string';
+  if (!hasFullParams && !hasLegacyMeta) {
+    issues.push({ code: 'no_map_meta', message: 'brak parametrów mapy (stary zapis sprzed kreatora)' });
+  }
+  if (!Array.isArray(g.cities)) {
+    issues.push({ code: 'no_cities', message: 'brak miast w zapisie' });
+  }
+  return issues;
 }

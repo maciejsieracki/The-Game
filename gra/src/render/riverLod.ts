@@ -211,9 +211,7 @@ export function applyRiverLodVisibility(
  * Reguły (identyczne z inline'em scene.ts, marker zgodny):
  *   - LOD ukrywa rzeki (level >= próg)            → mesh.visible = false;
  *   - brak mgły na mapie (anyHidden === false)    → mesh.visible = true;
- *   - mesh scalony (merged)                       → widoczny, gdy DOWOLNY
- *       hex trasy jest visible lub explored;
- *   - mesh niescalony                             → widoczny, gdy ŻADEN
+ *   - mesh (scalony lub nie)                      → widoczny tylko gdy ŻADEN
  *       hex trasy nie jest ukryty (isHidden).
  *
  * Determinizm: brak losowości; zależy wyłącznie od argumentów.
@@ -243,20 +241,10 @@ export function applyRiverVisibility(
       e.mesh.visible = true;
       continue;
     }
-    let show = false;
-    if (e.merged) {
-      // Scalony: pokaż, gdy JAKIKOLWIEK hex trasy jest widoczny/odkryty.
+    let show = e.hexKeys.size > 0;
+    if (show) {
       for (const k of e.hexKeys) {
-        if (isVisible(k) || isExplored(k)) { show = true; break; }
-      }
-      show = show && e.hexKeys.size > 0;
-    } else {
-      // Niescalony: pokaż tylko, gdy ŻADEN hex trasy nie jest ukryty.
-      if (e.hexKeys.size > 0) {
-        show = true;
-        for (const k of e.hexKeys) {
-          if (!isVisible(k) && !isExplored(k)) { show = false; break; }
-        }
+        if (!isVisible(k) && !isExplored(k)) { show = false; break; }
       }
     }
     e.mesh.visible = show;

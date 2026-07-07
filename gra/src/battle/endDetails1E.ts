@@ -18,10 +18,22 @@ export interface EndDetailsUnitRow {
   n: number;
 }
 
+/** Pojedyncza jednostka w rosterze szczegółów (HP przed/po). */
+export interface EndDetailsUnitHpRow {
+  name: string;
+  fate: 'destroyed' | 'routed' | 'survived';
+  hpBeforePct: number;
+  hpAfterPct: number;
+  lossPct: number;
+  dead: boolean;
+}
+
 export interface EndDetailsSideFates {
   destroyed: EndDetailsUnitRow[];
   routed: EndDetailsUnitRow[];
   survived: EndDetailsUnitRow[];
+  /** Pełna lista jednostek z utratą HP (opcjonalnie — gdy brak, tylko agregaty). */
+  units?: EndDetailsUnitHpRow[];
 }
 
 export interface EndDetails1EParams {
@@ -74,11 +86,70 @@ function fateBlock(
   );
 }
 
+function unitHpRowHtml(
+  row: EndDetailsUnitHpRow,
+  barGrad: string,
+): string {
+  const fateLabel =
+    row.fate === 'destroyed' ? 'zniszczona'
+      : row.fate === 'routed' ? 'zrootowana'
+        : 'ocalała';
+  const fateColor =
+    row.fate === 'destroyed' ? '#ff7b7b'
+      : row.fate === 'routed' ? '#ffd54a'
+        : '#7ad0a0';
+  const hpTxt = row.dead
+    ? 'HP ' + row.hpBeforePct + '% \u2192 0%'
+    : 'HP ' + row.hpBeforePct + '% \u2192 ' + row.hpAfterPct + '%';
+  const lossTxt = row.dead ? '\u2212100%' : '\u2212' + row.lossPct + '%';
+  const lossColor =
+    row.dead || row.lossPct >= 50 ? '#ff7070'
+      : row.lossPct === 0 ? '#7ad0a0'
+        : BATTLE_TEXT_DIM;
+  const afterW = row.dead ? 0 : row.hpAfterPct;
+
+  return (
+    '<div style="margin-bottom:10px;padding:10px 11px;border-radius:8px;' +
+    'border:1px solid ' + (row.dead ? 'rgba(200,64,64,.45)' : 'rgba(255,255,255,.1)') + ';' +
+    'background:rgba(0,0,0,0.22);">' +
+    '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:6px;">' +
+    '<span style="font-size:13px;color:' + BATTLE_TEXT + ';line-height:1.25;">' + esc(row.name) + '</span>' +
+    '<span style="font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:' + fateColor + ';flex:none;">' +
+    fateLabel + '</span></div>' +
+    '<div style="height:6px;border-radius:4px;overflow:hidden;position:relative;background:rgba(255,255,255,.08);margin-bottom:5px;">' +
+    '<div style="position:absolute;inset:0;width:' + row.hpBeforePct + '%;background:rgba(255,255,255,.12);border-radius:4px;"></div>' +
+    '<div style="position:absolute;left:0;top:0;bottom:0;width:' + afterW + '%;background:' + barGrad + ';border-radius:4px;"></div>' +
+    '</div>' +
+    '<div style="display:flex;justify-content:space-between;font-size:10px;color:' + BATTLE_TEXT_DIM + ';">' +
+    '<span>' + hpTxt + '</span>' +
+    '<span style="font-weight:700;color:' + lossColor + ';">' + lossTxt + '</span>' +
+    '</div></div>'
+  );
+}
+
+function unitRosterBlock(
+  units: EndDetailsUnitHpRow[] | undefined,
+  accent: string,
+  barGrad: string,
+): string {
+  if (!units?.length) return '';
+  const rows = units.map(u => unitHpRowHtml(u, barGrad)).join('');
+  return (
+    '<div style="margin-top:20px;padding-top:16px;border-top:1px solid rgba(255,255,255,0.08);">' +
+    '<div style="font-size:11px;letter-spacing:0.16em;text-transform:uppercase;color:' + accent + ';margin-bottom:10px;">' +
+    'Stan jednostek \u00B7 ' + units.length + '</div>' +
+    '<div style="max-height:min(42vh,360px);overflow-y:auto;padding-right:4px;">' +
+    rows +
+    '</div></div>'
+  );
+}
+
 function sideColumn(
   label: string,
   accent: string,
   border: string,
   bg: string,
+  barGrad: string,
   f: EndDetailsSideFates,
 ): string {
   return (
@@ -91,6 +162,7 @@ function sideColumn(
     fateBlock('Zniszczone', '#ff7b7b', f.destroyed) +
     fateBlock('Zrootowane', '#ffd54a', f.routed) +
     fateBlock('Ocalałe', '#7ad0a0', f.survived) +
+    unitRosterBlock(f.units, accent, barGrad) +
     '</div>'
   );
 }
@@ -143,6 +215,7 @@ export function showEndDetails1E(
       BATTLE_PLAYER_TEXT,
       'rgba(90,155,212,0.4)',
       'linear-gradient(180deg,rgba(18,26,40,0.96),rgba(8,12,20,0.96))',
+      'linear-gradient(90deg,#3a6ad0,#5a9bd4)',
       p.atk,
     ) +
     sideColumn(
@@ -150,6 +223,7 @@ export function showEndDetails1E(
       BATTLE_ENEMY_TEXT,
       'rgba(200,64,64,0.4)',
       'linear-gradient(180deg,rgba(26,14,14,0.96),rgba(14,8,8,0.96))',
+      'linear-gradient(90deg,#c05050,#8a3a3a)',
       p.def,
     );
   Object.assign(cols.style, {

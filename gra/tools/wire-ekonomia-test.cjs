@@ -200,6 +200,29 @@ console.log('\nWIRE 1 D17-A: cityHasWaterAccess');
   ok(brDesert.lines.some(l => l.label === 'Brak wody'), 'pustynia bez wody -> kara Brak wody');
 }
 
+// --- WIRE 1: bonus zdrowia za las w okolicy (nie kara dżungli) ---
+console.log('\nWIRE 1 las: bonus zdrowia w okolicy');
+{
+  const mapForest = {
+    hexes: {
+      '0,0': { coords: { q: 0, r: 0 }, terenBazowy: 'rownina', nakladka: 'brak' },
+      '1,0': { coords: { q: 1, r: 0 }, terenBazowy: 'laka', nakladka: 'las' },
+      '10,0': { coords: { q: 10, r: 0 }, terenBazowy: 'pustynia', nakladka: 'brak' },
+    },
+    riverPaths: [[{ q: 0, r: 0 }]],
+    szerokoscQ: 6,
+    wysokoscR: 1,
+    seed: 1,
+  };
+  const cityForest = { id: 'cF', ownerId: 0, q: 0, r: 0, name: 'F', population: 1 };
+  const cityPlain = { id: 'cP', ownerId: 0, q: 10, r: 0, name: 'P', population: 1 };
+  const brForest = M.computeCityHealthBreakdown(1, [], [], {}, 'normal', { city: cityForest, map: mapForest });
+  ok(brForest.lines.some(l => l.label === 'Las w okolicy' && l.value > 0), 'las w zasięgu -> bonus +');
+  ok(!brForest.lines.some(l => l.label.includes('dżungl') || l.label.includes('Dżungl')), 'brak kary dżungli za las');
+  const brPlain = M.computeCityHealthBreakdown(1, [], [], {}, 'normal', { city: cityPlain, map: mapForest });
+  ok(!brPlain.lines.some(l => l.label === 'Las w okolicy'), 'pustynia bez lasu -> brak bonusu las');
+}
+
 // --- Podsumowanie ---
 console.log('\nwire-ekonomia-test: ' + passed + ' passed, ' + failed + ' failed');
 if (failed > 0) process.exit(1);

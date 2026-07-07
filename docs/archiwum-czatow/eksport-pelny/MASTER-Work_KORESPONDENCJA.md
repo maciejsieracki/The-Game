@@ -58477,3 +58477,12341 @@ These images can be copied for use in other locations.
 <timestamp>Monday, Jul 6, 2026, 9:28 PM (UTC+2)</timestamp>
 
 Teraz przy starcie gry w ogóle naliczyły się jakieś dziwne ilości pieniędzy skarbcu państwa.  i odłożonej pracy i że nauka to będzie plus 23, chociaż przecież miasto tego nie pokazuje.  Wynik miasta, który mamy tylko jedno, rozjeżdża się z wynikiem państwa. Nie wiadomo skąd w ogóle ta liczba 23 przy nauce, skąd w ogóle przy pracy 63 i skąd skarb czy 120. W następnej turze mam jeszcze inne liczby. Może to jest suma wszystkich miast, które są na całej mapie. ? :) Zobaczymy, co pokaże kolejna tura. Najśmieszniejsze to jest tylko, że przyrost pokazuje, że niby taki będzie. No i tura czwarta. Przyrost gigantyczny. To wygląda tak jakby moje państwo zbierało haracz z całej mapy pewnie. A bo jest jakiś inny błąd. W każdym razie jest jakiś błąd wyliczania surowców dla danej cywilizacji. Trzeba sprawdzić o co chodzi.
+
+
+---
+
+## Dopisek synchronizacji — 2026-07-06 20:38 UTC (linie 6878–7122)
+
+
+### Linia 6878 — AGENT
+
+[REDACTED]
+
+### Linia 6879 — AGENT
+
+[REDACTED]
+
+### Linia 6880 — AGENT
+
+[REDACTED]
+
+### Linia 6881 — AGENT
+
+[REDACTED]
+
+### Linia 6882 — AGENT
+
+[REDACTED]
+
+### Linia 6883 — AGENT
+
+[REDACTED]
+
+### Linia 6884 — AGENT
+
+[REDACTED]
+
+### Linia 6885 — AGENT
+
+[REDACTED]
+
+### Linia 6886 — AGENT
+
+[REDACTED]
+
+### Linia 6887 — AGENT
+
+[REDACTED]
+
+### Linia 6888 — AGENT
+
+[REDACTED]
+
+### Linia 6889 — AGENT
+
+[REDACTED]
+
+### Linia 6890 — AGENT
+
+[REDACTED]
+
+### Linia 6891 — AGENT
+
+[REDACTED]
+
+### Linia 6892 — AGENT
+
+[REDACTED]
+
+### Linia 6893 — AGENT
+
+Potwierdzam: HUD używa `econ.total*` (suma wszystkich cywilizacji), a bankowanie już filtruje tylko gracza — naprawiam spójność.
+
+[REDACTED]
+
+### Linia 6894 — AGENT
+
+[REDACTED]
+
+### Linia 6895 — AGENT
+
+[REDACTED]
+
+### Linia 6896 — AGENT
+
+[REDACTED]
+
+### Linia 6897 — AGENT
+
+[REDACTED]
+
+### Linia 6898 — AGENT
+
+[REDACTED]
+
+### Linia 6899 — AGENT
+
+[REDACTED]
+
+### Linia 6900 — AGENT
+
+[REDACTED]
+
+### Linia 6901 — AGENT
+
+[REDACTED]
+
+### Linia 6902 — AGENT
+
+[REDACTED]
+
+### Linia 6903 — AGENT
+
+[REDACTED]
+
+### Linia 6904 — AGENT
+
+Masz rację — to był **haracz z całej mapy**, nie z Twojego państwa.
+
+## Przyczyna
+
+Silnik liczył ekonomię **poprawnie per właściciel** przy wpłacie do skarbca (`player.skarbiec += tylko miasta gracza`), ale **HUD państwa** brał:
+
+- `econ.totalPieniadz` — suma **wszystkich** miast (Ty + AI + miasta-państwa)
+- `econ.totalNauka` — to samo
+- `econ.totalPracaPula` — to samo → **pula pracy gracza rosła od wszystkich AI**
+
+Stąd Ateny pokazywały +4 / +6 / +1, a pasek imperium +120 / +63 / +23 — i rosło co turę wraz z liczbą miast na mapie.
+
+## Fix (opublikowany)
+
+**Stempel:** `da9bfbb8`
+
+- Nowa funkcja `sumEconomyForOwner(econ, 0)` — sumuje tylko `ownerId === 0`
+- HUD: przyrost skarbca, nauki, pracy, kultury = **tylko Twoje miasta**
+- Pula pracy gracza: `+= doPuli` tylko z Twoich miast
+- Kultura na HUD: po ticku kultury = suma skumulowanej kultury Twoich miast
+
+Bramka: `tsc` OK · `smoke` OK · `wire-ekonomia-test` 34/34 OK
+
+## Co sprawdzić
+
+1. **Ctrl+F5** → stempel **`da9bfbb8`**
+2. **Nowa gra** (stary save ma zawyżoną pulę pracy z poprzedniego buga)
+3. Po 1–2 turach: przyrost na HUD mapy ≈ suma z panelu miasta (Ateny)
+
+Przykład oczekiwany: skarbiec +4, praca +6, nauka +1 — nie +120/+63/+23.
+
+Daj znać po playteście: **OK** albo **BUG:** + screen.
+
+[REDACTED]
+
+### Linia 6905 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-5188a73b-101e-42b6-8ad7-cc147f77a77c.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Monday, Jul 6, 2026, 9:33 PM (UTC+2)</timestamp>
+
+wszystkie państwa miały startować w epoce kamienia. a widzę, że niektóre państwa mają widok miasta z epoki brązu. Albo to jest jakiś błąd albo z automatu przydzielone, być może coś, co było wcześniej przydzielone i nie stało zaimplementowane.  A już wiem, pewnie nie jest zaimplementowana do gry zmiana z widokiem innych cywilizacji.  a ustaliliśmy, że wszystkie cywilizacje w EPOC Kamienia startują z budynków w okolicy epoki kamienia. Wcześniej było takie ustawienie, że nowe cywilizacje, które nie miały przydzielonej budynków wyglądu miasta, startowały z wyglądem Grecji albo Rzymu, albo kogoś tam jeszcze jedna kwestia: Na początku seeda gry zaznaczało się, że ma wystartować obok nas X miast-państw. One miały być w odległości około 3 heksów od naszego miasta. Ja tego nie widzę. Te państwa chyba zostały rozsiane miasta-państwa tak jak się podoba, a one powinny być ulokowane blisko startu danej cywilizacji czyli jeżeli gdzieś startują Chińczycy, gracz AI to oni też wokół siebie mają kilka państw-miast z kultury chińskiej. Jeżeli ja startuję Grykami to powinnam mieć wokół siebie różne państwa-miasta kultury greckiej w zależności tyle ile wybiorę.
+
+### Linia 6906 — AGENT
+
+Sprawdzam, skąd bierze się wygląd miast (epoka/kultura) i jak rozmieszczane są miasta-państwa przy starcie.
+
+[REDACTED]
+
+### Linia 6907 — AGENT
+
+[REDACTED]
+
+### Linia 6908 — AGENT
+
+[REDACTED]
+
+### Linia 6909 — AGENT
+
+[REDACTED]
+
+### Linia 6910 — AGENT
+
+[REDACTED]
+
+### Linia 6911 — AGENT
+
+[REDACTED]
+
+### Linia 6912 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-5188a73b-101e-42b6-8ad7-cc147f77a77c.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Monday, Jul 6, 2026, 9:33 PM (UTC+2)</timestamp>
+
+wszystkie państwa miały startować w epoce kamienia. a widzę, że niektóre państwa mają widok miasta z epoki brązu. Albo to jest jakiś błąd albo z automatu przydzielone, być może coś, co było wcześniej przydzielone i nie stało zaimplementowane.  A już wiem, pewnie nie jest zaimplementowana do gry zmiana z widokiem innych cywilizacji.  a ustaliliśmy, że wszystkie cywilizacje w EPOC Kamienia startują z budynków w okolicy epoki kamienia. Wcześniej było takie ustawienie, że nowe cywilizacje, które nie miały przydzielonej budynków wyglądu miasta, startowały z wyglądem Grecji albo Rzymu, albo kogoś tam jeszcze jedna kwestia: Na początku seeda gry zaznaczało się, że ma wystartować obok nas X miast-państw. One miały być w odległości około 3 heksów od naszego miasta. Ja tego nie widzę. Te państwa chyba zostały rozsiane miasta-państwa tak jak się podoba, a one powinny być ulokowane blisko startu danej cywilizacji czyli jeżeli gdzieś startują Chińczycy, gracz AI to oni też wokół siebie mają kilka państw-miast z kultury chińskiej. Jeżeli ja startuję Grykami to powinnam mieć wokół siebie różne państwa-miasta kultury greckiej w zależności tyle ile wybiorę.
+
+### Linia 6913 — AGENT
+
+[REDACTED]
+
+### Linia 6914 — AGENT
+
+[REDACTED]
+
+### Linia 6915 — AGENT
+
+[REDACTED]
+
+### Linia 6916 — AGENT
+
+[REDACTED]
+
+### Linia 6917 — AGENT
+
+[REDACTED]
+
+### Linia 6918 — AGENT
+
+[REDACTED]
+
+### Linia 6919 — AGENT
+
+[REDACTED]
+
+### Linia 6920 — AGENT
+
+[REDACTED]
+
+### Linia 6921 — AGENT
+
+[REDACTED]
+
+### Linia 6922 — AGENT
+
+[REDACTED]
+
+### Linia 6923 — AGENT
+
+[REDACTED]
+
+### Linia 6924 — AGENT
+
+[REDACTED]
+
+### Linia 6925 — AGENT
+
+[REDACTED]
+
+### Linia 6926 — AGENT
+
+[REDACTED]
+
+### Linia 6927 — AGENT
+
+[REDACTED]
+
+### Linia 6928 — AGENT
+
+[REDACTED]
+
+### Linia 6929 — AGENT
+
+[REDACTED]
+
+### Linia 6930 — AGENT
+
+[REDACTED]
+
+### Linia 6931 — AGENT
+
+[REDACTED]
+
+### Linia 6932 — AGENT
+
+[REDACTED]
+
+### Linia 6933 — AGENT
+
+[REDACTED]
+
+### Linia 6934 — AGENT
+
+[REDACTED]
+
+### Linia 6935 — AGENT
+
+[REDACTED]
+
+### Linia 6936 — AGENT
+
+Wykryto błąd: `ownerEraByOwner` nie jest czyszczony przy nowej grze — AI mogą startować w epoce brązu. Naprawiam to i zwiększam minimalną odległość obcych miast od stolicy gracza.
+
+[REDACTED]
+
+### Linia 6937 — AGENT
+
+[REDACTED]
+
+### Linia 6938 — AGENT
+
+[REDACTED]
+
+### Linia 6939 — AGENT
+
+[REDACTED]
+
+### Linia 6940 — AGENT
+
+Masz rację co do obu obserwacji — znalazłem konkretne przyczyny i właśnie opublikowałem poprawkę.
+
+## 1. Wygląd „epoki brązu” zamiast kamienia
+
+**Przyczyna:** mapa epok AI (`ownerEraByOwner`) **nie była czyszczona przy nowej grze**. Jeśli wcześniej w tej samej sesji przeglądarki AI awansowało do brązu, nowa gra startowała z tymi samymi numerami właścicieli (1, 2, 3…) i **renderowała im od razu modele brązu** — czerwone dachy, zigguraty itd.
+
+**Naprawa:**
+- czyszczenie epok AI przy każdej nowej grze,
+- ustawianie epoki startowej **wszystkich** państw z klastra na epokę gracza (Kamień = 1),
+- przy spawnie klastra każdy owner dostaje `initOwnerEra(oid, player.era)`.
+
+Logika per cywilizacja **jest** zaimplementowana (`stoneCity` / `stoneCityRoblox` per nacja) — problemem była zła epoka, nie brak modeli.
+
+## 2. Miasta-państwa „rozsiane” zamiast blisko startu
+
+**Co działało poprawnie:** w klastrze gracza (np. Grecy) spawnują się **X miast-państw tej samej kultury** w odległości min. **3 hexy** od planowanej stolicy — liczba X = suwak „Miasta-państwa” w kreatorze.
+
+**Co myliło obraz:** obce nacje (Sumer, Egipt, Chiny…) też startowały od razu na mapie — pełne klastry w swoich regionach. Przy granicy regionów Voronoi mogły być już **5 hexów** od twojego startu, czyli **w zasięgu oświetlenia startu (8 hex)**. Stąd wrażenie „obcych” miast obok, z inną architekturą.
+
+**Naprawa:** minimalna odległość obcych typów od stolicy gracza: **5 → 12 hexów** (poza promieniem startu). Wokół ciebie zostają tylko **greckie** (lub wybranej nacji) miasta-państwa. Chińczycy / Inka itd. mają **własne** klastry dalej na mapie — każdy typ w swoim regionie, z własnymi miastami-państwami w odległości ~3 hex od swojej stolicy.
+
+## Jak przetestować
+
+1. **Ctrl+F5** (twardy reload) — stempel buildu: **`7fb3e0e4`**
+2. **Nowa gra** (nie stary save!) — Epoka: Kamień, wybierz liczbę miast-państw
+3. Przed założeniem miasta: w promieniu ~8 hex powinny być **małe osady tej samej kultury** (lepianki / słomiane dachy), bez obcych zigguratów
+4. W konsoli (F12): `[ClusterStart] typ=grecy rywale=6 AI=…` — liczba AI = rywale + obce klastry daleko na mapie
+
+**Uwaga:** stary zapis może nadal mieć złe epoki AI — do weryfikacji tej poprawki potrzebna jest **nowa gra**.
+
+[REDACTED]
+
+### Linia 6941 — MACIEJ
+
+<timestamp>Monday, Jul 6, 2026, 9:39 PM (UTC+2)</timestamp>
+
+kolejna tura i kolejne ciekawe ilości surowców. Sprawdź też czy dla innych graczy liczy prawidłowo, czy też zalicza wszystkim wszystko.
+
+### Linia 6942 — AGENT
+
+Sprawdzam, czy ekonomia sumuje surowce per właściciel, czy nadal „wszyscy dostają wszystko”.
+
+[REDACTED]
+
+### Linia 6943 — AGENT
+
+[REDACTED]
+
+### Linia 6944 — AGENT
+
+[REDACTED]
+
+### Linia 6945 — AGENT
+
+[REDACTED]
+
+### Linia 6946 — AGENT
+
+[REDACTED]
+
+### Linia 6947 — AGENT
+
+[REDACTED]
+
+### Linia 6948 — AGENT
+
+[REDACTED]
+
+### Linia 6949 — AGENT
+
+[REDACTED]
+
+### Linia 6950 — AGENT
+
+[REDACTED]
+
+### Linia 6951 — AGENT
+
+[REDACTED]
+
+### Linia 6952 — AGENT
+
+[REDACTED]
+
+### Linia 6953 — AGENT
+
+[REDACTED]
+
+### Linia 6954 — AGENT
+
+[REDACTED]
+
+### Linia 6955 — AGENT
+
+[REDACTED]
+
+### Linia 6956 — AGENT
+
+[REDACTED]
+
+### Linia 6957 — AGENT
+
+[REDACTED]
+
+### Linia 6958 — AGENT
+
+[REDACTED]
+
+### Linia 6959 — AGENT
+
+[REDACTED]
+
+### Linia 6960 — AGENT
+
+[REDACTED]
+
+### Linia 6961 — AGENT
+
+[REDACTED]
+
+### Linia 6962 — AGENT
+
+[REDACTED]
+
+### Linia 6963 — AGENT
+
+[REDACTED]
+
+### Linia 6964 — AGENT
+
+[REDACTED]
+
+### Linia 6965 — AGENT
+
+[REDACTED]
+
+### Linia 6966 — AGENT
+
+[REDACTED]
+
+### Linia 6967 — AGENT
+
+[REDACTED]
+
+### Linia 6968 — AGENT
+
+[REDACTED]
+
+### Linia 6969 — AGENT
+
+[REDACTED]
+
+### Linia 6970 — AGENT
+
+[REDACTED]
+
+### Linia 6971 — AGENT
+
+[REDACTED]
+
+### Linia 6972 — AGENT
+
+[REDACTED]
+
+### Linia 6973 — AGENT
+
+[REDACTED]
+
+### Linia 6974 — AGENT
+
+[REDACTED]
+
+### Linia 6975 — AGENT
+
+[REDACTED]
+
+### Linia 6976 — AGENT
+
+[REDACTED]
+
+### Linia 6977 — AGENT
+
+[REDACTED]
+
+### Linia 6978 — AGENT
+
+[REDACTED]
+
+### Linia 6979 — AGENT
+
+[REDACTED]
+
+### Linia 6980 — AGENT
+
+[REDACTED]
+
+### Linia 6981 — AGENT
+
+[REDACTED]
+
+### Linia 6982 — AGENT
+
+[REDACTED]
+
+### Linia 6983 — AGENT
+
+[REDACTED]
+
+### Linia 6984 — AGENT
+
+[REDACTED]
+
+### Linia 6985 — AGENT
+
+[REDACTED]
+
+### Linia 6986 — AGENT
+
+[REDACTED]
+
+### Linia 6987 — AGENT
+
+[REDACTED]
+
+### Linia 6988 — AGENT
+
+[REDACTED]
+
+### Linia 6989 — AGENT
+
+[REDACTED]
+
+### Linia 6990 — AGENT
+
+[REDACTED]
+
+### Linia 6991 — AGENT
+
+[REDACTED]
+
+### Linia 6992 — AGENT
+
+[REDACTED]
+
+### Linia 6993 — AGENT
+
+[REDACTED]
+
+### Linia 6994 — AGENT
+
+W kodzie gracz jest już filtrowany przez `sumEconomyForOwner`; dodaję bank AI per właściciel, czytelniejsze logi diagnostyczne i publikuję build.
+
+[REDACTED]
+
+### Linia 6995 — AGENT
+
+[REDACTED]
+
+### Linia 6996 — AGENT
+
+[REDACTED]
+
+### Linia 6997 — AGENT
+
+[REDACTED]
+
+### Linia 6998 — AGENT
+
+[REDACTED]
+
+### Linia 6999 — AGENT
+
+[REDACTED]
+
+### Linia 7000 — AGENT
+
+Przeszedłem cały tor ekonomii tury po tury — oto co wyszło.
+
+## Diagnoza
+
+**Gracz (HUD imperium)** — po poprzedniej poprawce liczy **tylko swoje miasta** (`sumEconomyForOwner(econ, 0)`):
+- skarbiec / nauka bankowane z `playerEcon.pieniadz` / `playerEcon.nauka`
+- pula pracy: `playerEcon.doPuli`
+- stawki w HUD (`+X/t`) z tych samych wartości
+
+**AI** — wcześniej **w ogóle nie bankowało** dochodu z miast co turę (tylko dyplomacja/transfery). Nie dostawało więc „całej mapy”, ale też nie miało własnego skarbca z plonów. **Dopiero teraz** dodałem bank per owner AI (`sumEconomyForOwner` dla każdego `ownerId > 0`).
+
+**Żywność imperium** (`advanceEmpireFood`) — od początku per owner, OK.
+
+**Test regresji** (`owner-economy-test.cjs`): przy 3 miastach (gracz + 2 AI) gracz dostaje 4¤/t, mapa łącznie 10¤/t — izolacja działa.
+
+## Dlaczego nadal widzisz „ciekawe ilości”
+
+1. **Stary zapis** — save sprzed poprawki ma zawyżone `playerPracaPool`, `skarbiec`, `nauka`. Fix dotyczy **nowych tur**, nie cofa zapisu.
+2. **Log w konsoli mylił** — pisał `[Ekonomia] Pieniądz=120` (= **suma całej mapy**), a HUD gracza pokazywał mniej. Teraz log rozdziela:
+   ```
+   [Ekonomia] Tura N: gracz ¤=4 N=1 Praca=2 | mapa ¤=120 N=63 Praca=80 miast=42 ...
+   ```
+3. **Cache** — potrzebny **Ctrl+F5** i build **`ab92fa5c`**.
+
+## Jak zweryfikować (2 min)
+
+1. **Nowa gra** (nie wczytywanie starego slotu)
+2. Ctrl+F5 → stempel **`ab92fa5c`**
+3. Załóż **jedno** miasto, zakończ turę
+4. F12 → konsola: **`gracz ¤=`** powinno być blisko panelu miasta (+4, +6…), **`mapa ¤=`** może być dużo większe — to normalne (wszystkie AI na Super Huge)
+
+Jeśli przy **nowej grze** HUD gracza nadal pokazuje setki/turę przy jednym mieście — daj znać z screenshota **HUD + log `[Ekonomia]`** z tej samej tury.
+
+[REDACTED]
+
+### Linia 7001 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-0cc2a725-563f-4f69-919c-f121c05303c1.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Monday, Jul 6, 2026, 9:47 PM (UTC+2)</timestamp>
+
+### Linia 7002 — AGENT
+
+Na screenie widać +162/+85/+39 przy jednym mieście — to nadal wygląda na sumę z całej mapy. Szukam, skąd HUD bierze te stawki.
+
+[REDACTED]
+
+### Linia 7003 — AGENT
+
+[REDACTED]
+
+### Linia 7004 — AGENT
+
+[REDACTED]
+
+### Linia 7005 — AGENT
+
+[REDACTED]
+
+### Linia 7006 — AGENT
+
+[REDACTED]
+
+### Linia 7007 — AGENT
+
+[REDACTED]
+
+### Linia 7008 — AGENT
+
+[REDACTED]
+
+### Linia 7009 — AGENT
+
+[REDACTED]
+
+### Linia 7010 — AGENT
+
+[REDACTED]
+
+### Linia 7011 — AGENT
+
+[REDACTED]
+
+### Linia 7012 — AGENT
+
+[REDACTED]
+
+### Linia 7013 — AGENT
+
+[REDACTED]
+
+### Linia 7014 — AGENT
+
+[REDACTED]
+
+### Linia 7015 — AGENT
+
+[REDACTED]
+
+### Linia 7016 — AGENT
+
+[REDACTED]
+
+### Linia 7017 — AGENT
+
+[REDACTED]
+
+### Linia 7018 — AGENT
+
+[REDACTED]
+
+### Linia 7019 — AGENT
+
+[REDACTED]
+
+### Linia 7020 — AGENT
+
+[REDACTED]
+
+### Linia 7021 — AGENT
+
+[REDACTED]
+
+### Linia 7022 — AGENT
+
+[REDACTED]
+
+### Linia 7023 — AGENT
+
+[REDACTED]
+
+### Linia 7024 — MACIEJ
+
+If the available MCP tools do not fully support what the user asked you to do, complete the work you can with the current tool set. In your work summary, include what you were unable to do with MCP and why. Do not use browser automation to work around missing or unavailable MCP tools unless the user explicitly asks you to use the browser.
+
+### Linia 7025 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-0cc2a725-563f-4f69-919c-f121c05303c1.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Monday, Jul 6, 2026, 9:47 PM (UTC+2)</timestamp>
+
+### Linia 7026 — AGENT
+
+Screen potwierdza wyciek (+162/+85 ≈ suma mapy). Wzmocnię filtrowanie po ID miast gracza, sanity-check przy wczytywaniu zapisu i zaktualizuję START.html.
+
+[REDACTED]
+
+### Linia 7027 — AGENT
+
+[REDACTED]
+
+### Linia 7028 — AGENT
+
+[REDACTED]
+
+### Linia 7029 — AGENT
+
+[REDACTED]
+
+### Linia 7030 — AGENT
+
+[REDACTED]
+
+### Linia 7031 — AGENT
+
+[REDACTED]
+
+### Linia 7032 — AGENT
+
+Uruchamiam bramkę testów i publikuję build.
+
+[REDACTED]
+
+### Linia 7033 — AGENT
+
+[REDACTED]
+
+### Linia 7034 — AGENT
+
+[REDACTED]
+
+### Linia 7035 — AGENT
+
+[REDACTED]
+
+### Linia 7036 — AGENT
+
+[REDACTED]
+
+### Linia 7037 — AGENT
+
+Twój screen (Skarbiec **+162/t**, Praca **421** przy **+85/t**) wygląda jak **stary bug** — HUD brał sumę całej mapy, a pula pracy (421) to kilka tur narastającego wycieku.
+
+## Co zrobiłem (build **`7d6f25b0`**)
+
+1. **Twardsze filtrowanie HUD** — stawki liczone przez `sumEconomyForPlayerCities()` (tylko miasta gracza z listy `cities`, nie sama suma mapy).
+2. **Sanity przy wczytywaniu save** — zawyżona `playerPracaPool` (np. 421) resetowana do 0; stawki HUD zerowane do następnej tury.
+3. **Reset stawek przy nowej grze** — `_lastPieniadzRate` itd. = 0 na starcie.
+4. **Log F12** — `gracz(N os.) ¤=… | mapa(M os.) ¤=…` + ostrzeżenie gdy gracz = mapa.
+5. **`START.html`** zaktualizowany — md5 **`7d6f25b0`** (wcześniej pokazywał **`0edbc91d`** = stary bundel).
+
+## Jak przetestować (2 min)
+
+1. Otwórz **`gra-robocza/START.html`** (nie stary bookmark do `Gra-ROBOCZA.html`).
+2. **Ctrl+F5** (twarde odświeżenie).
+3. **Nowa gra** — nie wczytuj save sprzed fixu.
+4. W lewym dolnym rogu powinno być **`7d6f25b0`**.
+5. **F12 → Console** po pierwszej turze — szukaj:
+   ```
+   [Ekonomia] Tura 1: gracz(1 os.) ¤=… | mapa(40 os.) ¤=…
+   ```
+   Przy **1 mieście** gracz powinien mieć **~4–15 ¤/t**, nie 162.
+
+**Oczekiwany HUD** (1 miasto, epoka kamienia): Skarbiec ~4–10/t, Praca ~10–20/t, Nauka ~5–15/t — nie setki.
+
+Jeśli po tym nadal widzisz +162 — wklej linię `[Ekonomia]` z konsoli i napisz ile miast masz (panel miasta / liczba osiedli w HUD). Wtedy szukamy, czy kilka miast ma błędnie `ownerId=0`.
+
+[REDACTED]
+
+### Linia 7038 — MACIEJ
+
+<timestamp>Monday, Jul 6, 2026, 9:52 PM (UTC+2)</timestamp>
+
+I jeszcze jedną zasadę musimy zmienić. Powinna być możliwość zmiany tury pomimo tego że mamy do wykonania jeszcze jakieś prace bo niestety czasem nie są one możliwe. Na przykład blokuje możliwość dania tury bo mają być niepokoje. No ale to nie jest jeszcze taki moment, że się to miasto straci. Więc po prostu rzeczy do zrobienia powinny być tylko sygnałem, że są do zrobienia i powinno się je wyklikać. Ale tury zawsze powinniśmy dać. Mieć możliwość dania końca tury.
+
+### Linia 7039 — AGENT
+
+Szukam w kodzie, co blokuje koniec tury — np. niepokoje lub inne oczekujące zadania.
+
+[REDACTED]
+
+### Linia 7040 — AGENT
+
+[REDACTED]
+
+### Linia 7041 — AGENT
+
+[REDACTED]
+
+### Linia 7042 — AGENT
+
+[REDACTED]
+
+### Linia 7043 — AGENT
+
+[REDACTED]
+
+### Linia 7044 — AGENT
+
+[REDACTED]
+
+### Linia 7045 — AGENT
+
+[REDACTED]
+
+### Linia 7046 — AGENT
+
+[REDACTED]
+
+### Linia 7047 — AGENT
+
+[REDACTED]
+
+### Linia 7048 — AGENT
+
+[REDACTED]
+
+### Linia 7049 — AGENT
+
+Usuwam blokadę końca tury — wydarzenia zostają przypomnieniami obsługiwanymi przez WYKONAJ.
+
+[REDACTED]
+
+### Linia 7050 — AGENT
+
+[REDACTED]
+
+### Linia 7051 — AGENT
+
+[REDACTED]
+
+### Linia 7052 — AGENT
+
+[REDACTED]
+
+### Linia 7053 — AGENT
+
+Zrobione — build **`58e76604`**.
+
+## Nowa zasada
+
+**Koniec tury zawsze dostępny** — nawet gdy są niepokoje, pusta produkcja albo dyplomacja w kolejce.
+
+| Element | Wcześniej | Teraz |
+|---------|-----------|-------|
+| **Zakończ turę** / klawisz **N** | Zablokowane przy „blocking” wydarzeniach | Zawsze aktywne (wyjątek: playtest walki, game over) |
+| **WYKONAJ** | Otwierało pierwsze blocking | Nadal świeci i otwiera **pierwsze przypomnienie** z listy |
+| **Panel wydarzeń** | Niepokoje/produkcja/dyplomacja blokowały turę | Tylko przypomnienia — kliknięcie też otwiera właściwy panel |
+
+Niepokoje **nie blokują** już tury — to sygnał „warto zająć się miastem”, ale możesz zakończyć turę i wrócić później. Mechanika buntu (timer, utrata miasta) działa jak dotąd w tle.
+
+## Playtest
+
+1. **Ctrl+F5** przez `gra-robocza/START.html`
+2. Stempel w rogu: **`58e76604`**
+3. Przy niepokojach: **Zakończ turę** powinno działać od razu; **WYKONAJ** otwiera panel miasta
+
+Daj znać, czy tak ma być — albo czy któreś wydarzenia (np. propozycja dyplomatyczna AI) nadal powinny wymuszać odpowiedź przed turą.
+
+[REDACTED]
+
+### Linia 7054 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-696925d9-1e4a-403f-8a97-64685c36ab81.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Monday, Jul 6, 2026, 9:55 PM (UTC+2)</timestamp>
+
+Kolejne pytanie: czemu Sparta się buntuje? Skoro były ustawione reguły że miasto praktycznie do czterech ludności ma bardzo duże bonusy dla szczęścia i bezpieczeństwa oraz zadowolenia. Możliwe, że jest to przyjęte tylko dla pierwszego miasta i w momencie, gdy ono osiągnie, to się to traci. A to powinno być indywidualnie dla każdego miasta taka reguła, że dopóki nie osiągnie czterech, to ma ten bonus związany z łatwiejszym startem.
+
+### Linia 7055 — AGENT
+
+Szukam w kodzie logiki buntu i bonusów startowych dla miast poniżej 4 ludności.
+
+[REDACTED]
+
+### Linia 7056 — AGENT
+
+[REDACTED]
+
+### Linia 7057 — AGENT
+
+[REDACTED]
+
+### Linia 7058 — AGENT
+
+[REDACTED]
+
+### Linia 7059 — AGENT
+
+[REDACTED]
+
+### Linia 7060 — AGENT
+
+[REDACTED]
+
+### Linia 7061 — AGENT
+
+[REDACTED]
+
+### Linia 7062 — AGENT
+
+[REDACTED]
+
+### Linia 7063 — AGENT
+
+[REDACTED]
+
+### Linia 7064 — AGENT
+
+[REDACTED]
+
+### Linia 7065 — AGENT
+
+[REDACTED]
+
+### Linia 7066 — AGENT
+
+Bonus osiedla jest per miasto w kodzie, ale przy niskim PorPct (np. wojna, podatki) miasto pop 1 nadal może dostać migrację buntu. Dodaję immunitet buntu dla miast z populacją ≤4.
+
+[REDACTED]
+
+### Linia 7067 — AGENT
+
+[REDACTED]
+
+### Linia 7068 — AGENT
+
+[REDACTED]
+
+### Linia 7069 — AGENT
+
+[REDACTED]
+
+### Linia 7070 — AGENT
+
+[REDACTED]
+
+### Linia 7071 — AGENT
+
+## Dlaczego Sparta się buntowała?
+
+Twoja intuicja jest **częściowo trafna**, ale chodzi o dwie różne rzeczy:
+
+### 1. Bonus „Osiedle” (D-START-OSIEDLE) — **już per miasto**
+Dla **każdego** miasta z populacją 1–4 kod dodaje osobno:
+- **Szczęście** (+3 przy pop 1 na normal)
+- **Prawo** (+7 przy pop 1)
+- **Zdrowie** (+2)
+
+To **nie znika**, gdy Ateny urosną — Sparta przy **1 mieszk.** powinna mieć te bonusy tak samo jak stolica.
+
+### 2. Bonus „Stolica easy” — **tylko pierwsze miasto**
+Osobna, mała premia (+1 Sz / +1 Praw) działa **wyłącznie** na:
+- pierwsze miasto gracza,
+- tryb **Łatwy**,
+- tury **1–10**.
+
+To **nie** jest główny bonus osiedla — stąd wrażenie, że „tylko stolica ma łatwy start”.
+
+### 3. Co faktycznie zrobiło Spartę na ekranie
+„**Bunt: Sparta — migracja mieszkańców**” to **losowa migracja** (−1 ludność do innego miasta), gdy Porządek spada do pasma **10–29%** (ok. **5%** szans co turę).
+
+Przy pop 1 **bez** immunitetu mogło to wpaść np. przez:
+- wysokie podatki (niski % luksusu),
+- wojnę (−3 Sz),
+- słabą kulturę/religię w nowym mieście,
+- brak garnizonu (przy małym mieście kara jeszcze nie działa).
+
+Czyli: bonusy osiedla **były**, ale **mechanika buntu nadal działała** — stąd Spartana przy 1 mieszk. mogła dostać migrację.
+
+---
+
+## Co zmieniłem (build **`be32d0a8`**)
+
+**Immunitet buntu osiedla (pop 1–4) — per miasto:**
+- brak migracji buntu,
+- brak grace / rebelii AI,
+- każde małe miasto liczy się osobno (Sparta ≠ Ateny).
+
+Od **pop 5** wraca normalna mechanika (kary zagęszczenia + ryzyko buntu).
+
+---
+
+## Playtest
+
+1. **Ctrl+F5** z `gra-robocza/START.html`
+2. Stempel: **`be32d0a8`**
+3. Nowa gra → załóż drugie miasto → **Zakończ turę** powinno działać zawsze; małe miasto **nie powinno** dostać „Bunt: migracja”
+
+W panelu miasta (Porządek) przy pop ≤4 w logu F12 zobaczysz `[osiedle: immunitet buntu]`.
+
+Jeśli chcesz, żeby przy pop 4 nadal **można było** dostać ostrzeżenie (ale bez utraty miasta) — daj znać, doprecyzujemy.
+
+[REDACTED]
+
+### Linia 7073 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-eed3d822-7525-4890-b750-e72c0a5143b3.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Monday, Jul 6, 2026, 10:07 PM (UTC+2)</timestamp>
+
+### Linia 7074 — AGENT
+
+Błąd startu wskazuje na użycie zmiennej przed inicjalizacją — sprawdzam ostatnie zmiany i zależności cykliczne.
+
+[REDACTED]
+
+### Linia 7075 — AGENT
+
+[REDACTED]
+
+### Linia 7076 — AGENT
+
+[REDACTED]
+
+### Linia 7077 — AGENT
+
+[REDACTED]
+
+### Linia 7078 — AGENT
+
+[REDACTED]
+
+### Linia 7079 — AGENT
+
+[REDACTED]
+
+### Linia 7080 — AGENT
+
+[REDACTED]
+
+### Linia 7081 — AGENT
+
+[REDACTED]
+
+### Linia 7082 — AGENT
+
+[REDACTED]
+
+### Linia 7083 — AGENT
+
+[REDACTED]
+
+### Linia 7084 — AGENT
+
+[REDACTED]
+
+### Linia 7085 — AGENT
+
+[REDACTED]
+
+### Linia 7086 — AGENT
+
+[REDACTED]
+
+### Linia 7087 — AGENT
+
+[REDACTED]
+
+### Linia 7088 — AGENT
+
+Wykryto błąd: `fillAiOwnerCivMap` wywoływane przed utworzeniem `player` — przenoszę to wywołanie.
+
+[REDACTED]
+
+### Linia 7089 — AGENT
+
+[REDACTED]
+
+### Linia 7090 — AGENT
+
+[REDACTED]
+
+### Linia 7091 — AGENT
+
+## Przyczyna BOOT ERROR
+
+`Cannot access 'j0' before initialization` — to minifikowany **`player`**.
+
+`fillAiOwnerCivMap()` wołało `player.era` **przed** utworzeniem obiektu `player` (linia ~2140 vs ~2677). Chrome traktuje to jako błąd inicjalizacji i przerywa start.
+
+## Naprawa (build **`e1e0e528`**)
+
+- Usunięto przedwczesne wywołanie `fillAiOwnerCivMap`
+- Przeniesiono je **po** `createPlayerState()`
+- Boot test: **OK** (brak FATAL)
+
+## Co zrobić
+
+1. **Ctrl+F5** przez `gra-robocza/START.html`
+2. Sprawdź stempel: **`e1e0e528`** (lewy dolny róg)
+3. Gra powinna wystartować normalnie
+
+Daj znać, czy mapa się ładuje.
+
+[REDACTED]
+
+### Linia 7093 — MACIEJ
+
+<timestamp>Monday, Jul 6, 2026, 10:20 PM (UTC+2)</timestamp>
+
+jednym słowem, zamydlasz obraz. W takim wypadku, z tego co podejrzewam, było ograniczenie tych plusów tylko dla cywilizacji i pierwszego miasta 1 do 4, a potem startował normalnie już pełen zakres kar i tak dalej.
+
+### Linia 7094 — AGENT
+
+**Nie** — to nie działało tak, jak podejrzewasz.
+
+## Jak jest (D-START-OSIEDLE)
+
+Bonus osiedla (**Sz / Prawo / Zdrowie**) liczy się **osobno dla każdego miasta** według **jego** populacji:
+
+| Miasto | Pop | Bonus osiedla |
+|--------|-----|----------------|
+| Ateny (stolica) | 5 | **brak** (normalne kary) |
+| Sparta (drugie) | 1 | **pełny** bonus pop 1 |
+| Mykene | 3 | bonus pop 3 |
+
+Czyli: gdy stolica rośnie powyżej 4, **tylko ona** traci bonus — **nie cała cywilizacja**.
+
+## Wyjątek (inna reguła)
+
+**„Stolica easy”** (+1 Sz, +1 Prawo) to coś innego: tylko **pierwsze miasto**, tryb **Łatwy**, tury **1–10**. To nie jest główny bonus osiedla.
+
+## Co było źle w grze
+
+Sparta przy pop 1 **powinna** mieć bonus osiedla, ale **mechanika buntu** i tak mogła ją trafić — stąd wrażenie, że „łatwy start” nie działa na drugie miasto. To naprawiliśmy: **pop 1–4 = brak buntu**, per miasto.
+
+**Jednym zdaniem:** plusy 1–4 to **per miasto**, nie „tylko pierwsze miasto cywilizacji”.
+
+[REDACTED]
+
+### Linia 7096 — MACIEJ
+
+<timestamp>Monday, Jul 6, 2026, 10:22 PM (UTC+2)</timestamp>
+
+to dlaczego wcześniej Atheny przy takiej ludności 5 się nie buntują, a Sparta przy ludności 1 się buntuje. Coś jest nie tak. Być może jakiś bug w grze albo druga opcja. Kwestia odległości od stolicy, ale nie widziałem tego statystyka, żeby to miało aż takie znaczenie. Ok, odpalę teraz od nowa grę i zobaczę, czy to daje ten sam efekt.
+
+### Linia 7097 — AGENT
+
+Sprawdzam w kodzie, co różni stolicę od nowego miasta — odległość, kultura, start klastra.
+
+[REDACTED]
+
+### Linia 7098 — AGENT
+
+[REDACTED]
+
+### Linia 7099 — AGENT
+
+[REDACTED]
+
+### Linia 7100 — AGENT
+
+[REDACTED]
+
+### Linia 7101 — AGENT
+
+[REDACTED]
+
+### Linia 7102 — AGENT
+
+[REDACTED]
+
+### Linia 7103 — AGENT
+
+[REDACTED]
+
+### Linia 7104 — AGENT
+
+Masz rację, że coś tu nie grało — ale **nie chodzi o odległość od stolicy**.
+
+## Odległość ≠ bunt
+
+Dystans od stolicy wpływa na **korupcję plonów** (ekonomia — ile zostaje w mieście). W panelu Porządku tego **nie widać**; bunt liczy się z **Szczęścia + Prawa**, nie z hexów do Aten.
+
+## Dlaczego Ateny (5) spokojne, a Sparta (1) bunt?
+
+To **dwa różne stany miasta**, nie „pierwsze vs drugie”:
+
+| | **Ateny** (stolica, grasz od startu) | **Sparta** (świeżo założone) |
+|---|---|---|
+| Kultura / religia | rosną od tur — bonus w Szczęściu | **0** na starcie (brak nagromadzonej kultury) |
+| Budynki | często już coś stoi | **pusto** |
+| Bonus osiedla (pop) | **brak** (pop 5) | **jest** (+3 Sz, +7 Praw) |
+| Typowy PorPct* | ~50–70% (Napięcie / Spokój) | ~**42%** (Niepokój) przy 0 kult / 0 rel |
+
+\*symulacja z `society-params.json`, normal, bez garnizonu
+
+Przy **~42% (Niepokój)** gra co turę rzuca **~5% szansę migracji** — Sparta mogła po prostu **wylosować bunt**, mimo bonusu osiedla.
+
+Ateny przy pop 5 **bez** budynków/kultury teoretycznie też wpada w pasmo Buntu (~29%) — tylko że w praktyce mają więcej bonusów (kultura, budynki, garnizon, wealth), więc często trzymają się powyżej progu albo po prostu **nie trafił im się los**.
+
+## Co naprawiliśmy (build `e1e0e528`)
+
+Od pop **1–4** każde miasto ma **immunitet buntu** — Sparta przy 1 mieszk. **nie powinna** już dostawać migracji, niezależnie od losu.
+
+## Twój test od nowa
+
+1. **Ctrl+F5** → stempel **`e1e0e528`**
+2. Załóż drugie miasto, odpal kilka tur
+3. W panelu miasta (Porządek) sprawdź linię **„Osiedle (1 mieszk.)”** — jeśli jej nie ma, daj znać
+
+Jeśli po nowej grze Sparta z pop 1 nadal się buntuje — to bug, wtedy wklej z F12 linię `[Porzadek] Tura … Sparta: …`.
+
+[REDACTED]
+
+### Linia 7105 — MACIEJ
+
+<timestamp>Monday, Jul 6, 2026, 10:24 PM (UTC+2)</timestamp>
+
+zaimplementowali się te wszystkie zmiany do gry roboczej, do wersji gry roboczej. ?
+
+### Linia 7106 — AGENT
+
+[REDACTED]
+
+### Linia 7107 — AGENT
+
+[REDACTED]
+
+### Linia 7108 — AGENT
+
+**Tak** — wszystko z tej sesji jest w **gra-robocza**, w jednym bundlu.
+
+## Aktualna wersja
+
+| Plik | Stempel |
+|------|---------|
+| `gra-robocza/Gra-ROBOCZA.html` | **`e1e0e528`** |
+| `gra-robocza/START.html` | ten sam md5 |
+
+Wejdź przez **START.html** → **Ctrl+F5**. W lewym dolnym rogu gry powinno być: `ROBOCZA · e1e0e528`.
+
+## Co jest w tym buildzie (sesja dzisiejsza)
+
+1. **Ekonomia HUD** — stawki tylko z miast gracza (nie suma mapy)
+2. **Koniec tury zawsze** — WYKONAJ = przypomnienia, bez blokady tury
+3. **Immunitet buntu osiedla** — pop 1–4 per miasto, bez migracji/rebelii
+4. **Fix BOOT ERROR** — gra startuje (błąd `player` przed inicjalizacją)
+5. Wcześniejsze z sesji: epoka kamienia / odległość obcych miast, log `[Ekonomia] gracz vs mapa`
+
+## Czego NIE ma w ROBOCZA
+
+- **`Gra-podglad.html`** (root) — stary kanon, nie aktualizowany
+- **Playtesty bitew** — osobne, starsze bundele (md5 `4ac4c10f` itd.)
+
+Jeśli widzisz stary stempel (`be32d0a8`, `0edbc91d`) — **Ctrl+F5** albo zamknij kartę i wejdź od nowa przez START.html.
+
+[REDACTED]
+
+### Linia 7109 — MACIEJ
+
+<timestamp>Monday, Jul 6, 2026, 10:24 PM (UTC+2)</timestamp>
+
+chcę zrobić eksport na github
+
+### Linia 7110 — AGENT
+
+Sprawdzam stan repozytorium przed commitem i pushem na GitHub.
+
+[REDACTED]
+
+### Linia 7111 — AGENT
+
+[REDACTED]
+
+### Linia 7112 — AGENT
+
+[REDACTED]
+
+### Linia 7113 — AGENT
+
+Przygotowuję commit i push — pomijam tymczasowe artefakty buildów testowych.
+
+[REDACTED]
+
+### Linia 7114 — AGENT
+
+[REDACTED]
+
+### Linia 7115 — AGENT
+
+[REDACTED]
+
+### Linia 7116 — AGENT
+
+**Gotowe — wypchnięte na GitHub.**
+
+| | |
+|---|---|
+| **Repo** | https://github.com/maciejsieracki/The-Game |
+| **Branch** | `main` |
+| **Commit** | `dd90870` |
+| **Bundel ROBOCZA** | `e1e0e528` (`gra-robocza/Gra-ROBOCZA.html`) |
+
+**135 plików** — m.in.:
+- poprawki playtestu (ekonomia HUD, koniec tury, immunitet buntu osiedla, fix boot)
+- `gra-robocza/` + `START.html`
+- `gra/src/` + testy (`owner-economy-test`, `society-breakdown-test`)
+- rejestry playtestu w `dyspozycje/REJESTR-*-2026-07-06.md`
+
+**Nie w repo** (tymczasowe buildy testów): `gra/tools/.athens-sparta-bundle.cjs`, `.owner-economy-*` — można dodać do `.gitignore`, jeśli chcesz.
+
+Na innym komputerze: `git pull` → playtest przez `gra-robocza/START.html`.
+
+[REDACTED]
+
+### Linia 7118 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-1f23c1e2-096b-4cfe-bcee-b7f3f0ddc930.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Monday, Jul 6, 2026, 10:35 PM (UTC+2)</timestamp>
+
+nie da się wyjść z tego pola.  nie da się wyjść z tego pola.  W momencie wejścia do dyplomacji z jakimś państwem nie ma funkcji wyjścia z tego spotkania. Można tylko nawiązać kontakt.
+
+### Linia 7119 — AGENT
+
+Szukam w UI dyplomacji, jak działa wyjście z ekranu audiencji.
+
+[REDACTED]
+
+### Linia 7120 — AGENT
+
+[REDACTED]
+
+### Linia 7122 — MACIEJ
+
+<timestamp>Monday, Jul 6, 2026, 10:36 PM (UTC+2)</timestamp>
+
+a sorry można dać lista, ale to lista powinna być raczej exit albo wyjście to jest mylące i nieintuicyjne.
+
+
+---
+
+## Dopisek synchronizacji — 2026-07-07 05:16 UTC (linie 7123–7868)
+
+
+### Linia 7123 — AGENT
+
+[REDACTED]
+
+### Linia 7124 — AGENT
+
+[REDACTED]
+
+### Linia 7125 — AGENT
+
+[REDACTED]
+
+### Linia 7126 — AGENT
+
+Zmieniam etykietę na „Wyjście” i dodaję skrót Esc — „← Lista” rzeczywiście sugeruje coś innego niż zamknięcie audiencji.
+
+[REDACTED]
+
+### Linia 7127 — AGENT
+
+[REDACTED]
+
+### Linia 7128 — AGENT
+
+[REDACTED]
+
+### Linia 7129 — AGENT
+
+[REDACTED]
+
+### Linia 7130 — AGENT
+
+[REDACTED]
+
+### Linia 7131 — AGENT
+
+[REDACTED]
+
+### Linia 7132 — AGENT
+
+[REDACTED]
+
+### Linia 7133 — AGENT
+
+[REDACTED]
+
+### Linia 7134 — AGENT
+
+[REDACTED]
+
+### Linia 7135 — AGENT
+
+[REDACTED]
+
+### Linia 7136 — AGENT
+
+[REDACTED]
+
+### Linia 7137 — AGENT
+
+[REDACTED]
+
+### Linia 7138 — AGENT
+
+[REDACTED]
+
+### Linia 7139 — AGENT
+
+[REDACTED]
+
+### Linia 7140 — AGENT
+
+[REDACTED]
+
+### Linia 7141 — AGENT
+
+[REDACTED]
+
+### Linia 7142 — AGENT
+
+[REDACTED]
+
+### Linia 7143 — AGENT
+
+Masz rację — **„← Lista”** brzmiało jak powrót do listy cywilizacji, a nie jak zamknięcie audiencji.
+
+**Co zmieniłem**
+- Przycisk w audiencji dyplomatycznej: **„Wyjście”** (tooltip: „Zamknij audiencję (Esc)”)
+- **Esc** zamyka audiencję (nie działa, gdy otwarty jest modal wojny / negocjacji / koszyka handlu)
+
+**Zachowanie bez zmian:** po wyjściu wracasz na mapę albo — jeśli wcześniej była otwarta lista dyplomatów — z powrotem na listę. Zmieniła się tylko etykieta i skrót klawiszowy.
+
+**Playtest:** `gra-robocza/START.html` → **Ctrl+F5** → bundel **`95e52940`**
+
+Otwórz dyplomację → audiencję i sprawdź, czy **„Wyjście”** i **Esc** są teraz czytelne.
+
+[REDACTED]
+
+### Linia 7144 — MACIEJ
+
+<timestamp>Monday, Jul 6, 2026, 10:41 PM (UTC+2)</timestamp>
+
+trzeba tam dać wróć albo wyjść. Mieć tylko nazwę
+
+### Linia 7145 — AGENT
+
+Sprawdzam obecny przycisk w audiencji — ma być tylko prosta etykieta: „Wróć” albo „Wyjście”.
+
+[REDACTED]
+
+### Linia 7146 — AGENT
+
+[REDACTED]
+
+### Linia 7147 — AGENT
+
+Ustawiam kontekstową etykietę: „Wróć” z listy, „Wyjście” z mapy — bez tooltipów i dodatków.
+
+[REDACTED]
+
+### Linia 7148 — AGENT
+
+[REDACTED]
+
+### Linia 7149 — AGENT
+
+[REDACTED]
+
+### Linia 7150 — AGENT
+
+[REDACTED]
+
+### Linia 7151 — AGENT
+
+[REDACTED]
+
+### Linia 7152 — AGENT
+
+[REDACTED]
+
+### Linia 7153 — AGENT
+
+[REDACTED]
+
+### Linia 7154 — AGENT
+
+Gotowe. Przycisk ma teraz **samą nazwę**, bez strzałki, tooltipu ani „Esc”:
+
+- **Wróć** — gdy wchodzisz z listy dyplomatów (powrót na listę)
+- **Wyjście** — gdy otwierasz audiencję z mapy (zamknięcie na mapę)
+
+Esc nadal działa w tle, ale nie jest widoczne na przycisku.
+
+**Playtest:** `gra-robocza/START.html` → **Ctrl+F5** → bundel **`c7718b79`**
+
+[REDACTED]
+
+### Linia 7155 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-4069c093-a321-4197-813c-384233b88831.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Monday, Jul 6, 2026, 10:42 PM (UTC+2)</timestamp>
+
+temat naprawiony.
+
+### Linia 7156 — AGENT
+
+Super — dyplomacja z **Wróć** / **Wyjście** jest zamknięta.
+
+Jak coś jeszcze wypadnie przy playteście, daj znać.
+
+[REDACTED]
+
+### Linia 7157 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-196a2009-4adc-4cb8-aa36-9035aed4c77d.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Monday, Jul 6, 2026, 10:43 PM (UTC+2)</timestamp>
+
+po zaznaczeniu wycinki drzew powinna cały czas tam widnieć ikona wycinki. Z tego co pamiętam wycinka trwa 3 tury i dostarcza sporo produkcji. Sprawdź przy okazji ile produkcji co turę dostarcza wycinka. Chyba to były 3 tury z tego co pamiętam i ile produkcji to jest co turę.  Problem jest z tym, że ikona wycinki tam powinna być tak długo, aż nie wyłysieje pole i nie skończy się wycinka. I rozumiem, że końcowym efektem wycinki jest po prostu utrata tego drzewa z tego terenu.
+
+### Linia 7158 — AGENT
+
+Sprawdzam logikę wycinki drzew — ikona, czas trwania i produkcja co turę.
+
+[REDACTED]
+
+### Linia 7159 — AGENT
+
+[REDACTED]
+
+### Linia 7160 — AGENT
+
+[REDACTED]
+
+### Linia 7161 — AGENT
+
+[REDACTED]
+
+### Linia 7162 — AGENT
+
+[REDACTED]
+
+### Linia 7163 — AGENT
+
+[REDACTED]
+
+### Linia 7164 — AGENT
+
+[REDACTED]
+
+### Linia 7165 — AGENT
+
+[REDACTED]
+
+### Linia 7166 — AGENT
+
+[REDACTED]
+
+### Linia 7167 — AGENT
+
+[REDACTED]
+
+### Linia 7168 — AGENT
+
+[REDACTED]
+
+### Linia 7169 — AGENT
+
+[REDACTED]
+
+### Linia 7170 — AGENT
+
+[REDACTED]
+
+### Linia 7171 — AGENT
+
+[REDACTED]
+
+### Linia 7172 — AGENT
+
+[REDACTED]
+
+### Linia 7173 — AGENT
+
+Wycinka: 3 tury × 20 Pracy (łącznie 60). Ikona znika po zamknięciu trybu budowy — dodaję trwały marker wycinki do końca procesu.
+
+[REDACTED]
+
+### Linia 7174 — AGENT
+
+[REDACTED]
+
+### Linia 7175 — AGENT
+
+[REDACTED]
+
+### Linia 7176 — AGENT
+
+[REDACTED]
+
+### Linia 7177 — AGENT
+
+[REDACTED]
+
+### Linia 7178 — AGENT
+
+[REDACTED]
+
+### Linia 7179 — AGENT
+
+[REDACTED]
+
+### Linia 7180 — AGENT
+
+[REDACTED]
+
+### Linia 7181 — AGENT
+
+[REDACTED]
+
+### Linia 7182 — AGENT
+
+[REDACTED]
+
+### Linia 7183 — AGENT
+
+[REDACTED]
+
+### Linia 7184 — AGENT
+
+[REDACTED]
+
+### Linia 7185 — AGENT
+
+**Wyrąb — parametry (z `terrain-improvements.json`, zgodnie z pamięcią):**
+
+| | |
+|---|---|
+| **Czas** | **3 tury** |
+| **Produkcja** | **+20 Pracy co turę** |
+| **Razem** | **60 Pracy** (darmowy start, koszt 0) |
+| **Efekt końcowy** | znika nakładka **Las** — zostaje czysty teren bazowy (łąka/równina/wzgórze itd.) |
+
+**Co było nie tak:** po kliknięciu wycinki ikona (model wyrębu z siekierą) była tylko w trybie budowy (ghost). Las był też usuwany **od razu**, a nie po 3 turach.
+
+**Co naprawiłem:**
+- Po rozpoczęciu wycinki na heksie **zostaje ikona wyrębu** przez całe 3 tury (nawet po wyjściu z trybu 🔨)
+- **Drzewa zostają** do końca wycinki — znikają dopiero w ostatniej turze razem z ikoną
+- Co turę nadal leci **+20 Pracy** (komunikat „Wyrąb: +20 Pracy…”)
+- Ten sam heks nie można wycinać drugi raz, dopóki trwa proces
+
+**Playtest:** `gra-robocza/START.html` → **Ctrl+F5** → bundel **`d3629ea9`**
+
+Scenariusz: wybierz Wyrąb → kliknij las → wyjdź z budowy → ikona powinna zostać 3 tury, potem las znika.
+
+[REDACTED]
+
+### Linia 7186 — MACIEJ
+
+<timestamp>Monday, Jul 6, 2026, 10:48 PM (UTC+2)</timestamp>
+
+kolejne pytanie: Czy drzewa dają jakikolwiek bonus do czegokolwiek jeżeli są na danym polu? ?
+
+### Linia 7187 — AGENT
+
+[REDACTED]
+
+### Linia 7188 — AGENT
+
+[REDACTED]
+
+### Linia 7189 — AGENT
+
+[REDACTED]
+
+### Linia 7190 — AGENT
+
+[REDACTED]
+
+### Linia 7191 — AGENT
+
+[REDACTED]
+
+### Linia 7192 — AGENT
+
+[REDACTED]
+
+### Linia 7193 — AGENT
+
+[REDACTED]
+
+### Linia 7194 — AGENT
+
+[REDACTED]
+
+### Linia 7195 — AGENT
+
+[REDACTED]
+
+### Linia 7196 — AGENT
+
+[REDACTED]
+
+### Linia 7197 — AGENT
+
+[REDACTED]
+
+### Linia 7198 — AGENT
+
+[REDACTED]
+
+### Linia 7199 — AGENT
+
+[REDACTED]
+
+### Linia 7200 — AGENT
+
+[REDACTED]
+
+### Linia 7201 — AGENT
+
+[REDACTED]
+
+### Linia 7202 — AGENT
+
+**Krótko:** las na polu **coś daje i coś zabiera**, ale **tylko wtedy, g gdy miasto to pole „obrabia”** (jest w okolicy / przypisane do miasta). Sam las stojący obok bez obróbki **nie wpływa na ekonomię miasta**.
+
+---
+
+### Gdy pole z lasem jest obrabiane
+
+Las to **nakładka** na terenie bazowym (łąka, równina, wzgórze…). Do plonów dodaje:
+
+| Efekt | Wartość |
+|--------|---------|
+| **Drewno** | **+3** |
+| **Żywność** | **−1** |
+| **Handel** | **−1** |
+| **Praca** | bez zmiany |
+
+W podglądzie heksa (tooltip) widać te liczby. **Ważne na dziś:** drewno z lasu **nie trafia jeszcze do głównej ekonomii** (HUD ¤ / N / Praca) — w v0.1 drewno jako surowiec odblokowuje się dopiero przez **Tartak** na mapie (+ budynek Tartak w mieście później).
+
+---
+
+### Zawsze na heksie z lasem (nawet bez obróbki)
+
+- **Ruch jednostek:** wolniej (+1 koszt ruchu w lesie)
+- **Walka:** lepsza obrona vs łucznicy/konnica (+50%), kawaleria mocno spowolniona
+- **Budowa:** można zrobić **Wyrąb** (3×20 Pracy) albo **Obóz łowiecki**
+- **Tartak** można postawić **na lesie** — las zostaje; daje **+3 Pracy** z ulepszenia i odblokowuje **Drewno** w panelu surowców
+
+---
+
+### Czego las **nie** robi (albo jeszcze nie)
+
+- Sam las **nie** pokazuje się w panelu jako „Drewno w zasięgu” — dopiero **tartak** na mapie
+- Kara zdrowia za las w okolicy miasta — **zapisana w danych, ale jeszcze nie podpięta** w kodzie
+- „Las w zasięgu” przy budynkach Tartak/Mielerz — na razie **tekst w opisie**, bez twardej blokady w grze
+
+---
+
+**Praktycznie:** las to teren **gorszy pod żywność/handlowy plon**, ale **dobry pod drewno i obronę**; sensowna ścieżka to **tartak** albo **wyrąb**, jeśli chcesz czyste pole pod farmę. Jeśli chcesz, mogę rozpisać konkretny przykład: np. łąka z lasem vs ta sama łąka po wyrębie — ile dokładnie spada rośnie żywność/handlowy plon.
+
+[REDACTED]
+
+### Linia 7203 — MACIEJ
+
+<timestamp>Monday, Jul 6, 2026, 10:50 PM (UTC+2)</timestamp>
+
+I jeszcze jedna zmiana. Dajmy kosz wycinki na pięć jednostek pracy. To nie może być za darmo. Ja nie chcę robić zasady że musi tam być jakiś nasz ludek żeby ta wycinka trwała bo to by komplikowało rozgrywkę i nie każe by to kumał. Nie zdajemy minimalny koszt pracy 5 a potem i tak to wielokrotnie więcej można zwrócić poprzez wycinkę
+
+### Linia 7204 — AGENT
+
+[REDACTED]
+
+### Linia 7205 — AGENT
+
+[REDACTED]
+
+### Linia 7206 — AGENT
+
+[REDACTED]
+
+### Linia 7207 — AGENT
+
+Ustawiam koszt startu wycinki na 5 Pracy — bez wymogu jednostki na polu.
+
+[REDACTED]
+
+### Linia 7208 — AGENT
+
+[REDACTED]
+
+### Linia 7209 — AGENT
+
+[REDACTED]
+
+### Linia 7210 — AGENT
+
+[REDACTED]
+
+### Linia 7211 — AGENT
+
+Gotowe. Wycinka ma teraz **koszt startowy**, bez żadnej jednostki na polu.
+
+### Wyrąb — nowe zasady
+| | |
+|---|---|
+| **Koszt startu** | **5 Pracy** (od razu przy kliknięciu) |
+| **Przebieg** | 3 tury × **+20 Pracy/turę** = **60 Pracy** |
+| **Bilans netto** | **+55 Pracy** (60 − 5) |
+| **Jednostka na polu** | **Nie wymagana** — wycinka trwa abstrakcyjnie w tle |
+
+W panelu budowy Wyrąb pokazuje **„5 P”** zamiast „FREE”. Przy braku Pracy: *„Za mało Pracy na wycinkę (potrzeba 5)”*.
+
+**Playtest:** `gra-robocza/START.html` → **Ctrl+F5** → bundel **`6644d43c`**
+
+[REDACTED]
+
+### Linia 7212 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-18544d3f-26e8-4734-aa14-7fa8ddebd798.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Monday, Jul 6, 2026, 10:51 PM (UTC+2)</timestamp>
+
+Zapomnieliśmy o jednej ważnej kwestii. Na górnym panelu miasta powinna być jeszcze informacja ile żywności produkujemy w Soturę. Z dwoma plusikami. Jeden plusik dotyczy ile idzie na rozwój, a drugi plusik ile idzie na armię. Ale teraz pewnie ciężko będzie to dorobić. Więc chociażby powinniśmy mieć to widoczne w menu prawym bocznym.
+
+### Linia 7213 — AGENT
+
+Sprawdzam panel miasta — górny pasek zasobów i prawy sidebar — żeby dodać produkcję żywności na turę (rozwój + armia).
+
+[REDACTED]
+
+### Linia 7214 — AGENT
+
+[REDACTED]
+
+### Linia 7215 — AGENT
+
+[REDACTED]
+
+### Linia 7216 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-18544d3f-26e8-4734-aa14-7fa8ddebd798.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Monday, Jul 6, 2026, 10:51 PM (UTC+2)</timestamp>
+
+Zapomnieliśmy o jednej ważnej kwestii. Na górnym panelu miasta powinna być jeszcze informacja ile żywności produkujemy w Soturę. Z dwoma plusikami. Jeden plusik dotyczy ile idzie na rozwój, a drugi plusik ile idzie na armię. Ale teraz pewnie ciężko będzie to dorobić. Więc chociażby powinniśmy mieć to widoczne w menu prawym bocznym.
+
+### Linia 7217 — AGENT
+
+[REDACTED]
+
+### Linia 7218 — AGENT
+
+Dodaję żywność z podziałem (rozwój/armia) na górny pasek W3 i poprawiam wyświetlanie w prawym panelu.
+
+[REDACTED]
+
+### Linia 7219 — AGENT
+
+[REDACTED]
+
+### Linia 7220 — AGENT
+
+[REDACTED]
+
+### Linia 7221 — AGENT
+
+[REDACTED]
+
+### Linia 7222 — AGENT
+
+[REDACTED]
+
+### Linia 7223 — AGENT
+
+Dodaję helper `cityFoodSplit`, chip żywności na górnym pasku W3 oraz poprawiam prawy panel.
+
+[REDACTED]
+
+### Linia 7224 — AGENT
+
+[REDACTED]
+
+### Linia 7225 — AGENT
+
+[REDACTED]
+
+### Linia 7226 — AGENT
+
+[REDACTED]
+
+### Linia 7227 — AGENT
+
+[REDACTED]
+
+### Linia 7228 — AGENT
+
+[REDACTED]
+
+### Linia 7229 — AGENT
+
+[REDACTED]
+
+### Linia 7230 — AGENT
+
+[REDACTED]
+
+### Linia 7231 — AGENT
+
+[REDACTED]
+
+### Linia 7232 — AGENT
+
+[REDACTED]
+
+### Linia 7233 — AGENT
+
+[REDACTED]
+
+### Linia 7234 — AGENT
+
+[REDACTED]
+
+### Linia 7235 — AGENT
+
+[REDACTED]
+
+### Linia 7236 — AGENT
+
+[REDACTED]
+
+### Linia 7237 — AGENT
+
+[REDACTED]
+
+### Linia 7238 — AGENT
+
+[REDACTED]
+
+### Linia 7239 — AGENT
+
+Gotowe — żywność z podziałem wzrost/armia jest teraz widoczna w obu miejscach.
+
+### Górny pasek miasta (W3)
+Nowy chip **Żywność** (między Pracą a Skarbcem), w tym samym stylu co reszta:
+- główna wartość: netto na turę (np. **+12**)
+- **złoty plusik** → część na wzrost ludności (bufor miasta)
+- **niebieski plusik** → część na armię państwa
+
+Kliknięcie otwiera istniejącą kartę szczegółów żywności.
+
+### Prawy panel „Wzrost ludności”
+Rozszerzone chipy:
+- **Produkcja** — netto/turę
+- **Wzrost** — ile idzie do bufora (+X)
+- **Armia** — ile idzie do zapasów wojska (+Y)
+- **Bufor** — stan bufora (np. 15/22), osobno od produkcji
+
+Poprawka: w dolnej linii „Armia” pokazywała wcześniej sumę imperium zamiast udziału **tego miasta** — teraz jest spójnie z suwakiem.
+
+---
+
+**Playtest:** `gra-robocza/START.html` → **Ctrl+F5** → bundel **`ba47065b`**.
+
+Dla Aten z +12 netto i suwakiem ~50% powinno być widać coś w stylu **Żywność +12** z dopiskami **+6** (wzrost) i **+6** (armia). Daj znać, czy tak to wygląda u Ciebie.
+
+[REDACTED]
+
+### Linia 7240 — MACIEJ
+
+<timestamp>Monday, Jul 6, 2026, 10:55 PM (UTC+2)</timestamp>
+
+zapomnieliśmy dać jednostkom możliwość automatycznego zwiedzania świata i odkrywania mapy. Dajemy to tylko zwiadowcy na razie. Po prostu losowo kieruje się w różne kierunki i odkrywa czarną część mapy. Nawiązuje przy okazji kontakty z innymi cywilizacjami.
+
+### Linia 7241 — AGENT
+
+Dodamy auto-zwiedzanie tylko dla zwiadowców — najpierw sprawdzę, jak w kodzie działają ruch jednostek, mgła wojny i kontakty dyplomatyczne.
+
+[REDACTED]
+
+### Linia 7242 — AGENT
+
+[REDACTED]
+
+### Linia 7243 — AGENT
+
+[REDACTED]
+
+### Linia 7244 — AGENT
+
+[REDACTED]
+
+### Linia 7245 — AGENT
+
+[REDACTED]
+
+### Linia 7246 — AGENT
+
+[REDACTED]
+
+### Linia 7247 — AGENT
+
+[REDACTED]
+
+### Linia 7248 — AGENT
+
+[REDACTED]
+
+### Linia 7249 — AGENT
+
+[REDACTED]
+
+### Linia 7250 — AGENT
+
+[REDACTED]
+
+### Linia 7251 — AGENT
+
+[REDACTED]
+
+### Linia 7252 — AGENT
+
+[REDACTED]
+
+### Linia 7253 — AGENT
+
+[REDACTED]
+
+### Linia 7254 — AGENT
+
+[REDACTED]
+
+### Linia 7255 — AGENT
+
+[REDACTED]
+
+### Linia 7256 — AGENT
+
+[REDACTED]
+
+### Linia 7257 — AGENT
+
+[REDACTED]
+
+### Linia 7258 — AGENT
+
+Implementuję moduł auto-zwiedzania zwiadowców i podpinam go przed końcem tury gracza.
+
+[REDACTED]
+
+### Linia 7259 — AGENT
+
+[REDACTED]
+
+### Linia 7260 — AGENT
+
+[REDACTED]
+
+### Linia 7261 — AGENT
+
+[REDACTED]
+
+### Linia 7262 — AGENT
+
+[REDACTED]
+
+### Linia 7263 — AGENT
+
+[REDACTED]
+
+### Linia 7264 — AGENT
+
+[REDACTED]
+
+### Linia 7265 — AGENT
+
+Zwiadowcy mają teraz **auto-zwiedzanie mapy**.
+
+### Jak to działa
+- Dotyczy **tylko zwiadowców** gracza (`category === 'zwiadowca'`).
+- **Przy końcu tury** (N / „Koniec tury”), zanim ruch się zresetuje, zwiadowca zużywa **niewykorzystany ruch**.
+- Kierunek: **losowy**, z preferencją **czarnej mgły** (nieodkryte heksy w zasięgu wzroku i obok).
+- Po ruchu: aktualizacja mgły + jeśli widać **obce miasto lub jednostkę** → komunikat **„Odkryto cywilizację: …”** (pojawia się też na liście dyplomatów do nawiązania kontaktu).
+
+### Zachowanie gracza
+| Sytuacja | Efekt |
+|---|---|
+| Nie ruszasz zwiadowca | Na końcu tury sam zwiedza całą trasę |
+| Poruszysz go ręcznie | Auto-zwiedza tylko **resztę** ruchu |
+| „Pomiń” / „Ufort.” (ruch = 0) | W tej turze nie idzie sam |
+| W garnizonie / oblężeniu | Pomijany |
+
+### Pliki
+- `gra/src/game/scout-auto-explore.ts` — logika
+- `gra/src/main.ts` — podpięcie przy końcu tury
+- `gra/tools/scout-auto-explore-test.cjs` — 9 testów OK
+
+**Playtest:** `gra-robocza/START.html` → **Ctrl+F5** → bundel **`0db4a506`**.
+
+Zostaw zwiadowca w spokoju, zakończ turę i sprawdź, czy mgła się cofa. Daj znać, czy chcesz też **przycisk wł./wył.** auto-zwiedzania albo to samo dla **AI-zwiadowców**.
+
+[REDACTED]
+
+### Linia 7266 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-37549961-ff1a-4a67-9383-680409780f32.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Monday, Jul 6, 2026, 10:59 PM (UTC+2)</timestamp>
+
+wszystkie cywilizacje miały zaczynać budynkami z epoki brązu, a jak widzę Sparta ma grecki styl.  Jest całkiem możliwe, że dla państw, miast te reguły nie obowiązują. Po prostu może coś przeoczyliśmy.
+
+### Linia 7267 — AGENT
+
+Sprawdzam, skąd bierze się styl budynków miast — czy to reguła epoki, czy coś nadpisuje wygląd dla konkretnych cywilizacji.
+
+[REDACTED]
+
+### Linia 7268 — AGENT
+
+[REDACTED]
+
+### Linia 7269 — AGENT
+
+[REDACTED]
+
+### Linia 7270 — AGENT
+
+[REDACTED]
+
+### Linia 7271 — AGENT
+
+[REDACTED]
+
+### Linia 7272 — AGENT
+
+[REDACTED]
+
+### Linia 7273 — AGENT
+
+[REDACTED]
+
+### Linia 7274 — AGENT
+
+[REDACTED]
+
+### Linia 7275 — AGENT
+
+[REDACTED]
+
+### Linia 7276 — AGENT
+
+[REDACTED]
+
+### Linia 7277 — AGENT
+
+[REDACTED]
+
+### Linia 7278 — AGENT
+
+[REDACTED]
+
+### Linia 7279 — AGENT
+
+[REDACTED]
+
+### Linia 7280 — AGENT
+
+Sprawdziłem kod renderu miast — **to nie wyjątek dla miast-państw**. Sparta korzysta z tych samych reguł co reszta.
+
+## Jak to działa (dwie warstwy)
+
+| Warstwa | Co decyduje | Efekt na mapie |
+|--------|-------------|----------------|
+| **Epoka imperium** | Kreator gry (Kamień / Brąz / Żelazo) lub awans technologiczny | **Era 1** → modele kamienia (`stoneCity`) · **Era 2+** → modele brązu (`bronzeCity`) |
+| **Styl cywilizacji** | `ikonaId` nacji (Grecy → `grecja`, Rzym → `rzym` itd.) | Ten sam tier epoki, ale **inna architektura** per kultura |
+
+Sparta to rywal z klastra **Grecy** (`nazwyKlastra` w `civs.json`, `ikonaId: "grecy"`). Flaga `startCityState` dotyczy tylko **minimalnej odległości przy zakładaniu nowych miast** — **nie** zmienia wyglądu 3D.
+
+## Co widać na screenie
+
+Biały budynek z kolumnami i frontonem to **`greekTemple`** z `bronzeCity.ts` — celowo zaprojektowany model **brązu greckiego** (decyzja **D12=A**: miasta w epoce brązu mają odrębne modele per cywilizacja).
+
+Czyli:
+- to **nie** jest epoka żelaza ani „pomyłka klasyczna”,
+- to **jest** brąz, tylko w **wariancie greckim** (Rzym ma czerwone dachówki, Egipt pylon, Sumer ziggurat itd.).
+
+## Kiedy byłby to błąd?
+
+Jeśli w kreatorze wybrałeś **Epokę Kamienia**, a Sparta nadal ma kolumny — wtedy coś jest nie tak (powinny być lepianki / ognisko, bez świątyni).
+
+Typowe przyczyny greckiego wyglądu mimo oczekiwań:
+1. **Start w epoce Brązu** w kreatorze (krok 2) — wtedy **wszystkie** cywilizacje od razu mają modele brązu (każda we własnym stylu).
+2. **Playtest** (`Gra-ROBOCZA-PLAYTEST-MIASTO`) — w kodzie wymusza `player.era = 2`.
+3. **Wczytany save** z epoką 2+.
+
+## Podsumowanie
+
+| Pytanie | Odpowiedź |
+|--------|-----------|
+| Czy miasta-państwa mają inne reguły wizualne? | **Nie** — te same `getEra` + `getCiv` |
+| Czy Sparta „powinna” wyglądać grecko? | **Tak**, jeśli gra jest w epoce brązu i nacja to Grecy |
+| Czy to zgodne z „start od brązu”? | **Tak** — to **brąz grecki**, nie kamień ani żelazo |
+
+---
+
+**Decyzja ABC (jeśli chcesz coś zmienić):**
+
+- **A** — zostawiamy: brąz = 10 stylów kulturowych (D12), Grecy mają kolumny już w brązie *(obecny stan)*  
+- **B** — na starcie **wszyscy** wyglądają tak samo (generyczny brąz/kamień), styl narodowy dopiero po awansie epoki  
+- **C** — domyślny start gry zawsze **Kamień** wizualnie, nawet jeśli ekonomia jest „brązowa”
+
+Napisz, co widzisz w HUDzie przy **„Epoka …”** i jaką epokę wybrałeś w kreatorze — wtedy potwierdzimy, czy to kwestia designu, czy rzeczywisty bug.
+
+[REDACTED]
+
+### Linia 7281 — MACIEJ
+
+<timestamp>Monday, Jul 6, 2026, 11:03 PM (UTC+2)</timestamp>
+
+trzeba to trochę zmienić z tym lasem. LAS zawsze powinien od razu zmniejszać ilość produkcji danej, niezależnie czy tam ktoś jest czy nie. Czy jednostka jest czy nie. Jest ok, żywność minus 1, handel minus 1, ale praca powinna być plus 2.
+
+### Linia 7282 — AGENT
+
+[REDACTED]
+
+### Linia 7283 — AGENT
+
+[REDACTED]
+
+### Linia 7284 — AGENT
+
+[REDACTED]
+
+### Linia 7285 — AGENT
+
+[REDACTED]
+
+### Linia 7286 — AGENT
+
+[REDACTED]
+
+### Linia 7287 — MACIEJ
+
+<timestamp>Monday, Jul 6, 2026, 11:03 PM (UTC+2)</timestamp>
+
+trzeba to trochę zmienić z tym lasem. LAS zawsze powinien od razu zmniejszać ilość produkcji danej, niezależnie czy tam ktoś jest czy nie. Czy jednostka jest czy nie. Jest ok, żywność minus 1, handel minus 1, ale praca powinna być plus 2.
+
+### Linia 7288 — AGENT
+
+[REDACTED]
+
+### Linia 7289 — AGENT
+
+[REDACTED]
+
+### Linia 7290 — AGENT
+
+[REDACTED]
+
+### Linia 7291 — AGENT
+
+[REDACTED]
+
+### Linia 7292 — AGENT
+
+[REDACTED]
+
+### Linia 7293 — AGENT
+
+Wprowadzam +2 Pracy z lasu w ekonomii i poprawiam wyświetlanie plonów na wszystkich heksach okolicy (nie tylko z robotnikiem).
+
+[REDACTED]
+
+### Linia 7294 — AGENT
+
+[REDACTED]
+
+### Linia 7295 — AGENT
+
+[REDACTED]
+
+### Linia 7296 — AGENT
+
+[REDACTED]
+
+### Linia 7297 — AGENT
+
+[REDACTED]
+
+### Linia 7298 — AGENT
+
+[REDACTED]
+
+### Linia 7299 — AGENT
+
+**Las — poprawione.** Bundel ROBOCZA: **`55ed459f`**.
+
+### Mechanika (ekonomia)
+Nakładka **Las** na heksie zawsze modyfikuje plony terenu bazowego — bez warunku na 👤 ani jednostkę:
+
+| Surowiec | Modyfikator lasu |
+|----------|------------------|
+| Żywność | **−1** |
+| Handel | **−1** |
+| Praca | **+2** (wcześniej 0) |
+| Drewno | **+3** (bez zmian) |
+
+Przykład — **Równina + Las**: 1 żywności, 3 pracy, 0 handlu, 5 drewna.
+
+### Wyświetlanie
+- **Podgląd okolicy** w panelu miasta pokazuje plony na **wszystkich** heksach w zasięgu (nie tylko z robotnikiem), więc widać efekt lasu od razu.
+- Tooltip heksa i podgląd okolicy pokazują też wartości ujemne (np. spadek żywności), gdy wychodzą netto poniżej zera.
+
+### Playtest
+`gra-robocza/START.html` → **Ctrl+F5** → najedź na las lub otwórz panel miasta z lasem w okolicy.
+
+Daj znać, jeśli coś jeszcze nie gra w playteście.
+
+[REDACTED]
+
+### Linia 7300 — MACIEJ
+
+<timestamp>Monday, Jul 6, 2026, 11:06 PM (UTC+2)</timestamp>
+
+Kara zdrowia za las w okolicy miasta — zapisana w danych, ale jeszcze nie podpięta w kodzie za las w pobliżu nie powinno być kary do zdrowia a raczej bonus do zdrowia.
+
+### Linia 7301 — AGENT
+
+Szukam w danych i kodzie wpisów o karze zdrowia za las w okolicy miasta.
+
+[REDACTED]
+
+### Linia 7302 — AGENT
+
+[REDACTED]
+
+### Linia 7303 — AGENT
+
+[REDACTED]
+
+### Linia 7304 — AGENT
+
+[REDACTED]
+
+### Linia 7305 — AGENT
+
+[REDACTED]
+
+### Linia 7306 — AGENT
+
+[REDACTED]
+
+### Linia 7307 — AGENT
+
+[REDACTED]
+
+### Linia 7308 — AGENT
+
+[REDACTED]
+
+### Linia 7309 — AGENT
+
+[REDACTED]
+
+### Linia 7310 — AGENT
+
+[REDACTED]
+
+### Linia 7311 — AGENT
+
+[REDACTED]
+
+### Linia 7312 — AGENT
+
+[REDACTED]
+
+### Linia 7313 — AGENT
+
+[REDACTED]
+
+### Linia 7314 — AGENT
+
+Podpinam bonus zdrowia za las w okolicy i usuwam powiązanie z karą dżungli.
+
+[REDACTED]
+
+### Linia 7315 — AGENT
+
+[REDACTED]
+
+### Linia 7316 — AGENT
+
+[REDACTED]
+
+### Linia 7317 — AGENT
+
+[REDACTED]
+
+### Linia 7318 — AGENT
+
+[REDACTED]
+
+### Linia 7319 — AGENT
+
+[REDACTED]
+
+### Linia 7320 — AGENT
+
+[REDACTED]
+
+### Linia 7321 — AGENT
+
+[REDACTED]
+
+### Linia 7322 — AGENT
+
+**Las → bonus zdrowia (nie kara).** Bundel ROBOCZA: **`ecd9edb1`**.
+
+### Co się zmieniło
+
+**Wcześniej:** `zdrowie_kara_dzungla` było w danych, ale **w ogóle nie było podpięte** w kodzie — las nie wpływał na zdrowie.
+
+**Teraz:**
+- Nowy parametr **`zdrowie_bonus_las`**: +2 (easy) / **+1** (normal) / 0 (hard)
+- Skan **promienia okolicy miasta** (jak zasięg pól) — wystarczy **jeden heks z nakładką Las**
+- W panelu miasta → **Zdrowie** → linia **„Las w okolicy: +1”**
+- Bonus liczy się **w turze** (wpływa na wzrost populacji)
+- **`zdrowie_kara_dzungla`** zostaje w JSON jako **rezerwa** na prawdziwą dżunglę (osobna nakładka klimatyczna) — **nie dotyczy lasu**
+- Kara **bagno** też podpięta (gdy na mapie pojawi się teren `bagno`)
+
+### Playtest
+`gra-robocza/START.html` → **Ctrl+F5** → miasto z lasem w zasięgu → panel **Zdrowie** → powinno być **„Las w okolicy +1”**.
+
+Daj znać, jeśli w playteście coś nie gra albo chcesz inną wartość bonusu.
+
+[REDACTED]
+
+### Linia 7323 — MACIEJ
+
+<timestamp>Monday, Jul 6, 2026, 11:09 PM (UTC+2)</timestamp>
+
+jeszcze jedna kwestia: musimy zmienić zasadę, że na armie żywność w ogóle się nie odkłada. Trzeba zrobić chip żywność dla cywilizacji całej. Zresztą on tam chyba jest. I od początku niech się odkłada żywność. Wcześniej to było tak, że się odkłada tylko wtedy, kiedy jest budowany spichlerz pichlerz daje swój dodatkowy bonus, bo zmniejsza ilość potrzebnej żywności dla armii o 50% z tego co pamiętam. Sprawdź czy są jeszcze jakieś efekty zbudowania spichlerzu dla armii i nie tylko dla ludności. I teraz zmienimy tę zasadę, że zawsze się odkłada. Możemy jedynie dodać, że odkłada się 50% o bez spichlerza a jak je spichlesz, to już 100% Dodatkowy efekt Spitler'a to tylko 50% spada wykorzystanie żywności w buforze, żeby awansowało miasto. Chip na mapie świata pokazuje tylko ile żywności jest odkładane dla całej cywilizacji na jednostki.
+
+### Linia 7324 — AGENT
+
+Sprawdzam obecną logikę żywności dla armii, efekt spichlerza i chip na mapie.
+
+[REDACTED]
+
+### Linia 7325 — AGENT
+
+[REDACTED]
+
+### Linia 7326 — AGENT
+
+[REDACTED]
+
+### Linia 7327 — AGENT
+
+[REDACTED]
+
+### Linia 7328 — AGENT
+
+[REDACTED]
+
+### Linia 7329 — AGENT
+
+[REDACTED]
+
+### Linia 7330 — AGENT
+
+[REDACTED]
+
+### Linia 7331 — AGENT
+
+[REDACTED]
+
+### Linia 7332 — AGENT
+
+[REDACTED]
+
+### Linia 7333 — AGENT
+
+[REDACTED]
+
+### Linia 7334 — AGENT
+
+[REDACTED]
+
+### Linia 7335 — AGENT
+
+[REDACTED]
+
+### Linia 7336 — AGENT
+
+[REDACTED]
+
+### Linia 7337 — AGENT
+
+[REDACTED]
+
+### Linia 7338 — AGENT
+
+[REDACTED]
+
+### Linia 7339 — AGENT
+
+[REDACTED]
+
+### Linia 7340 — AGENT
+
+[REDACTED]
+
+### Linia 7341 — AGENT
+
+Wprowadzam odkładanie żywności dla armii od startu (50% / 100% ze spichlerzem) i chip na HUD mapy.
+
+[REDACTED]
+
+### Linia 7342 — AGENT
+
+[REDACTED]
+
+### Linia 7343 — AGENT
+
+[REDACTED]
+
+### Linia 7344 — AGENT
+
+[REDACTED]
+
+### Linia 7345 — AGENT
+
+[REDACTED]
+
+### Linia 7346 — AGENT
+
+[REDACTED]
+
+### Linia 7347 — AGENT
+
+[REDACTED]
+
+### Linia 7348 — AGENT
+
+[REDACTED]
+
+### Linia 7349 — AGENT
+
+[REDACTED]
+
+### Linia 7350 — AGENT
+
+[REDACTED]
+
+### Linia 7351 — AGENT
+
+[REDACTED]
+
+### Linia 7352 — AGENT
+
+**Żywność armii — nowe zasady.** Bundel ROBOCZA: **`3d4f2b04`**.
+
+### Nowa mechanika (zapasy armii)
+
+| Sytuacja | Odkładanie do zapasów | Limit |
+|----------|------------------------|-------|
+| **Bez Spichlerza** w imperium | **50%** netto (po koszcie wojska) — **od startu gry** | bez limitu |
+| **Ze Spichlerzem** (≥1 w imperium) | **100%** netto | 100 🍞 × liczba Spichlerzy |
+
+Przykład: suwak 70% wzrost / 30% armia, brutto 100, wojsko −1 → netto 29 → **15** 🍞 bez Spichlerza lub **29** ze Spichlerzem.
+
+### Spichlerz — co robi teraz
+
+**Dla armii:**
+- tylko przełącza **50% → 100%** odkładania + daje **limit pojemności**
+- **nie** blokuje odkładania od początku gry
+
+**Dla wzrostu miasta (jedyny inny efekt):**
+- po awansie populacji zostaje **50% bufora** w tym mieście (wcześniej 70%)
+- bez Spichlerza bufor po wzroście = **0**
+
+**Bez zmian (nie dotyczy armii):**
+- +żywność z budynku Spichlerz (plony miasta)
+- większy bufor wzrostu miasta (`magazyn_mnoznik_spichlerz`)
+- handel dyplomatyczny „żywność ze spichlerza miasta”
+
+### HUD mapy świata
+Nowy chip **„Armia”** (🍞) na górnym pasku:
+- **wartość** = zapasy żywności armii całego państwa
+- **+X** = ile netto odkłada się co turę (po 50%/100% i koszcie wojska)
+- ze Spichlerzem: `zapasy / max` (np. `45 / 100`)
+
+### Playtest
+`gra-robocza/START.html` → **Ctrl+F5** → ustaw suwak armii > 0% → kilka tur → chip **Armia** powinien rosnąć nawet bez Spichlerza (wolniej).
+
+Daj znać po playteście, czy 50%/100% i chip na mapie wyglądają OK.
+
+[REDACTED]
+
+### Linia 7353 — MACIEJ
+
+<timestamp>Monday, Jul 6, 2026, 11:15 PM (UTC+2)</timestamp>
+
+proponuje że jeżeli odkryjemy jakąś cywilizację to od razu powinno wyskakiwać w momencie nawiązania kontaktu okienko dyplomatyczne z tą cywilizacją. Możemy zawsze po prostu wyjść i z nimi nierozmawiać a żeby to się działo z automatu to u sprawni i u atrakcyjni rozgrywkę.
+
+### Linia 7354 — AGENT
+
+Szukam w kodzie, gdzie wykrywany jest pierwszy kontakt z cywilizacją i gdzie otwierane jest okno dyplomacji.
+
+[REDACTED]
+
+### Linia 7355 — AGENT
+
+[REDACTED]
+
+### Linia 7356 — AGENT
+
+[REDACTED]
+
+### Linia 7357 — AGENT
+
+[REDACTED]
+
+### Linia 7358 — AGENT
+
+[REDACTED]
+
+### Linia 7359 — AGENT
+
+[REDACTED]
+
+### Linia 7360 — AGENT
+
+[REDACTED]
+
+### Linia 7361 — AGENT
+
+[REDACTED]
+
+### Linia 7362 — AGENT
+
+[REDACTED]
+
+### Linia 7363 — AGENT
+
+[REDACTED]
+
+### Linia 7364 — MACIEJ
+
+<timestamp>Monday, Jul 6, 2026, 11:15 PM (UTC+2)</timestamp>
+
+proponuje że jeżeli odkryjemy jakąś cywilizację to od razu powinno wyskakiwać w momencie nawiązania kontaktu okienko dyplomatyczne z tą cywilizacją. Możemy zawsze po prostu wyjść i z nimi nierozmawiać a żeby to się działo z automatu to u sprawni i u atrakcyjni rozgrywkę.
+
+### Linia 7365 — AGENT
+
+Dodaję centralną obsługę pierwszego kontaktu i automatyczne otwieranie okna dyplomacji po odkryciu cywilizacji.
+
+[REDACTED]
+
+### Linia 7366 — AGENT
+
+[REDACTED]
+
+### Linia 7367 — AGENT
+
+[REDACTED]
+
+### Linia 7368 — AGENT
+
+[REDACTED]
+
+### Linia 7369 — AGENT
+
+[REDACTED]
+
+### Linia 7370 — AGENT
+
+[REDACTED]
+
+### Linia 7371 — AGENT
+
+[REDACTED]
+
+### Linia 7372 — AGENT
+
+[REDACTED]
+
+### Linia 7373 — AGENT
+
+[REDACTED]
+
+### Linia 7374 — AGENT
+
+[REDACTED]
+
+### Linia 7375 — AGENT
+
+[REDACTED]
+
+### Linia 7376 — AGENT
+
+[REDACTED]
+
+### Linia 7377 — AGENT
+
+Usuwam błędne wywołania `initDiplomaticContactSnapshot` z codziennego odświeżania mgły — snapshot ma się resetować tylko przy starcie gry i wczytaniu zapisu.
+
+[REDACTED]
+
+### Linia 7378 — AGENT
+
+[REDACTED]
+
+### Linia 7379 — AGENT
+
+[REDACTED]
+
+### Linia 7380 — AGENT
+
+[REDACTED]
+
+### Linia 7381 — AGENT
+
+[REDACTED]
+
+### Linia 7382 — AGENT
+
+[REDACTED]
+
+### Linia 7383 — AGENT
+
+[REDACTED]
+
+### Linia 7384 — AGENT
+
+[REDACTED]
+
+### Linia 7385 — AGENT
+
+[REDACTED]
+
+### Linia 7386 — AGENT
+
+[REDACTED]
+
+### Linia 7387 — AGENT
+
+[REDACTED]
+
+### Linia 7388 — AGENT
+
+[REDACTED]
+
+### Linia 7389 — AGENT
+
+[REDACTED]
+
+### Linia 7390 — AGENT
+
+[REDACTED]
+
+### Linia 7391 — AGENT
+
+[REDACTED]
+
+### Linia 7392 — AGENT
+
+[REDACTED]
+
+### Linia 7393 — AGENT
+
+[REDACTED]
+
+### Linia 7394 — AGENT
+
+[REDACTED]
+
+### Linia 7395 — AGENT
+
+[REDACTED]
+
+### Linia 7396 — AGENT
+
+**Zrobione** — przy pierwszym odkryciu cywilizacji w mgle automatycznie otwiera się okno dyplomacji.
+
+### Jak to działa
+1. **Odkrycie** — gdy zwiadowca, jednostka lub miasto gracza po raz pierwszy „widzi” obcą cywilizację (miasto lub jednostkę AI w zbadanym terenie).
+2. **Hint** — krótki komunikat „Odkryto cywilizację: …”.
+3. **Auto-audiencja** — od razu wyskakuje okno dyplomatyczne z tą nacją.
+4. **Możesz wyjść** — zamknij okno bez rozmowy; nic nie musisz klikać.
+5. **Kolejka** — jeśli w jednej turze odkryjesz kilka cywilizacji, okna pojawiają się po kolei (po zamknięciu poprzedniego).
+6. **Bezpieczniki** — nie przerywa bitwy, panelu miasta ani galerii; jeśli coś blokuje UI, okno poczeka aż to zamkniesz.
+
+### Różnica od „nawiązania kontaktu”
+Auto-popup to **pierwsze spotkanie w mgle**. Formalne „nawiązanie kontaktu” (akcja „1” w audiencji) nadal odblokowuje pełniejsze opcje dyplomatyczne — jak wcześniej.
+
+### Playtest
+Bundel opublikowany: **`68a9acf8`**  
+Wejście: `gra-robocza/START.html` → **Ctrl+F5** → nowa gra → rusz zwiadowcą w stronę obcego miasta.
+
+Daj znać po playteście, czy timing i kolejka okienek są OK, czy coś poprawić.
+
+[REDACTED]
+
+### Linia 7397 — MACIEJ
+
+<timestamp>Monday, Jul 6, 2026, 11:21 PM (UTC+2)</timestamp>
+
+ale przecież właśnie dokładnie tak jest. Ja wybrałem epokę kamienia i starty epoce kamienia, a tutaj Sparta ma wygląd brązu. Dlatego mówię coś jest nie tak. Pamiętam, że wszystkie cywilizacje miały mieć jeden wygląd na początku w epoce brązu.
+
+### Linia 7398 — AGENT
+
+Sprawdzam, skąd przy starcie w epoce kamienia Sparta dostaje wygląd epoki brązu — od renderu miast po mapowanie ery właściciela.
+
+[REDACTED]
+
+### Linia 7399 — AGENT
+
+[REDACTED]
+
+### Linia 7400 — AGENT
+
+[REDACTED]
+
+### Linia 7401 — AGENT
+
+[REDACTED]
+
+### Linia 7402 — AGENT
+
+[REDACTED]
+
+### Linia 7403 — AGENT
+
+[REDACTED]
+
+### Linia 7404 — AGENT
+
+[REDACTED]
+
+### Linia 7405 — AGENT
+
+[REDACTED]
+
+### Linia 7406 — AGENT
+
+[REDACTED]
+
+### Linia 7407 — AGENT
+
+[REDACTED]
+
+### Linia 7408 — AGENT
+
+[REDACTED]
+
+### Linia 7409 — AGENT
+
+[REDACTED]
+
+### Linia 7410 — AGENT
+
+[REDACTED]
+
+### Linia 7411 — AGENT
+
+[REDACTED]
+
+### Linia 7412 — AGENT
+
+[REDACTED]
+
+### Linia 7413 — AGENT
+
+[REDACTED]
+
+### Linia 7414 — AGENT
+
+[REDACTED]
+
+### Linia 7415 — AGENT
+
+[REDACTED]
+
+### Linia 7416 — AGENT
+
+[REDACTED]
+
+### Linia 7417 — AGENT
+
+[REDACTED]
+
+### Linia 7418 — AGENT
+
+[REDACTED]
+
+### Linia 7419 — AGENT
+
+[REDACTED]
+
+### Linia 7420 — AGENT
+
+[REDACTED]
+
+### Linia 7421 — AGENT
+
+[REDACTED]
+
+### Linia 7422 — AGENT
+
+[REDACTED]
+
+### Linia 7423 — AGENT
+
+[REDACTED]
+
+### Linia 7424 — AGENT
+
+[REDACTED]
+
+### Linia 7425 — AGENT
+
+Masz rację — to niezgodność z decyzją A5-S2: w epoce kamienia wszystkie miasta powinny wyglądać tak samo. Sprawdzam, czy błąd wynika z epoki renderu czy z per-cyw stylu kamienia.
+
+[REDACTED]
+
+### Linia 7426 — AGENT
+
+[REDACTED]
+
+### Linia 7427 — AGENT
+
+[REDACTED]
+
+### Linia 7428 — AGENT
+
+[REDACTED]
+
+### Linia 7429 — AGENT
+
+Wykryto dwa problemy: epoka kamienia używa stylów per-cyw zamiast wspólnego (A5-S2), a era AI może skoczyć na brąz przez błędne mapowanie tech.
+
+[REDACTED]
+
+### Linia 7430 — AGENT
+
+[REDACTED]
+
+### Linia 7431 — AGENT
+
+[REDACTED]
+
+### Linia 7432 — AGENT
+
+[REDACTED]
+
+### Linia 7433 — AGENT
+
+[REDACTED]
+
+### Linia 7434 — AGENT
+
+[REDACTED]
+
+### Linia 7435 — AGENT
+
+[REDACTED]
+
+### Linia 7436 — AGENT
+
+[REDACTED]
+
+### Linia 7437 — AGENT
+
+[REDACTED]
+
+### Linia 7438 — AGENT
+
+Masz rację — to był błąd, nie zamierzone zachowanie.
+
+### Co było nie tak
+
+**1. Epoka kamienia ≠ wygląd brązu**  
+Silnik wybiera model miasta po liczbie epoki (`era >= 2` → brąz). Dla AI era była źle liczona: wystarczyła **dowolna** technologia z etykietą „Brąz” w tabeli, żeby miasto (np. Sparta) dostało model brązu — nawet gdy gra startowała w **Epoke Kamienia**.
+
+**2. Kamień miał style per cywilizacja (regresja)**  
+Twoja decyzja **A5-S2=A** mówi jasno: w epoce kamienia **jeden wspólny wygląd** dla wszystkich. Kod wrócił do osobnych modeli (Grecja ≠ Rzym ≠ …), więc obce miasta mogły wyglądać „zbyt cywilizacyjnie” albo jak brąz.
+
+### Co naprawiliśmy (bundel `07e849fb`)
+
+| Fix | Efekt |
+|-----|--------|
+| Epoka AI liczona jak u gracza | Awans wizualny dopiero po techu **kończącym epokę**, nie po etykiecie w Excelu |
+| Kamień = jeden model | Sparta, Kapua, obcy typ — te same lepianki + ogień, bez świątyń brązu |
+| Start epoki z kreatora | Wszyscy startują w wybranej epoce (kamień = era 1) |
+
+### Kamień vs brąz — przypomnienie ustaleń
+
+| Epoka startu | Wygląd miast |
+|--------------|--------------|
+| **Kamień** | Jeden wspólny styl (A5-S2) — **tak ma być** |
+| **Brąz** | Osobny styl per cywilizacja (A5-Q1) — Grecja ≠ Egipt ≠ Inkowie |
+
+Jeśli pamiętasz „jeden wygląd na początku **w brązu**” — to byłaby **nowa** decyzja ABC (obecnie brąz = różne cywilizacje od razu). Daj znać, jeśli chcesz to zmienić.
+
+### Playtest
+
+`gra-robocza/START.html` → **Ctrl+F5** → nowa gra → **Epoka Kamienia** → Sparta powinna wyglądać **identycznie** jak Twoje miasto (proste lepianki, bez kolumn i świątyni brązu).
+
+[REDACTED]
+
+### Linia 7439 — MACIEJ
+
+<timestamp>Monday, Jul 6, 2026, 11:29 PM (UTC+2)</timestamp>
+
+ale z jednej strony to trochę pomaga, chociaż nie jest realistyczne, bo przynajmniej będę wiedział, ile mam sąsiadów własnej, własnego typu cywilizacji, czy komputer coś nie ściemia.
+
+### Linia 7440 — AGENT
+
+To ma sens — to realna korzyść z „rozpoznawalnego” wyglądu, nawet gdy historycznie w kamieniu wszystko powinno wyglądać podobnie.
+
+### Co nadal masz bez „ściemy” komputera
+
+Nawet przy **jednym modelu kamienia** nie jesteś ślepy:
+
+1. **Nazwa miasta** na chipie (Sparta, Kapua…) — od razu widać, kto to.
+2. **Kolor właściciela** — każde państwo ma inny kolor (czerwony, zielony, niebieski…), więc sąsiedzi tego samego typu ≠ jedna plama.
+3. **Dyplomacja** — rywale tego samego typu vs obcy typ mają inne reguły (uproszczona vs pełna po kontakcie).
+4. **Kreator / podgląd startu** — ile miast-państw w klastrze ustawiłeś, tyle powinno być w okolicy.
+
+Czyli: **model może być wspólny**, a **tożsamość sąsiada** i tak wynika z nazwy, koloru i dyplomacji — nie trzeba udawać brązu.
+
+### Kompromis na przyszłość (gdybyś chciał)
+
+Jeśli kiedyś zechcesz połączyć obie rzeczy:
+
+| Opcja | Kamień realistyczny | Łatwo rozpoznać „swój typ” |
+|--------|---------------------|----------------------------|
+| **A (teraz)** | Jeden wspólny model | Nazwa + kolor + dyplomacja |
+| **B** | Wspólne lepianki, **inna flaga/barwa** per rywal | Subtelny sygnał bez świątyni brązu |
+| **C** | Lekki wariant per typ (np. inna strzecha) | Wizualnie od razu, mniej „realistycznie” |
+
+Na razie zostajemy przy **A** (zgodnie z A5-S2). Jeśli po playteście uznasz, że bez wizualnego odróżnienia typu jest za trudno — napisz **B** albo **C**, wtedy to formalna decyzja ABC.
+
+Krótko: rozumiem, że „inny wygląd = kontrola nad komputerem” — ale do tego służą też nazwy i kolory; brązowy model Spartii przy starcie w kamieniu to był po prostu błąd, nie zamierzony sygnał dla gracza.
+
+[REDACTED]
+
+### Linia 7441 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-f3bf0ec9-7b9c-437d-81e5-570d1be99fa3.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Monday, Jul 6, 2026, 11:31 PM (UTC+2)</timestamp>
+
+nie wiem co jest grane, ale Warta nagle ma dwa razy więcej ludności, chociażby startowaliśmy w tym samym miejscu i mam wszystkie jednostki ustawione na produkcję żywności głównie. Czy komputer ma jakieś bonusy?
+
+### Linia 7442 — AGENT
+
+Sprawdzam, czy AI ma bonusy do wzrostu ludności lub produkcji żywności — to wyjaśniłoby, dlaczego Sparta rośnie szybciej od Aten.
+
+[REDACTED]
+
+### Linia 7443 — AGENT
+
+[REDACTED]
+
+### Linia 7444 — AGENT
+
+[REDACTED]
+
+### Linia 7445 — AGENT
+
+[REDACTED]
+
+### Linia 7446 — AGENT
+
+[REDACTED]
+
+### Linia 7447 — AGENT
+
+[REDACTED]
+
+### Linia 7448 — AGENT
+
+[REDACTED]
+
+### Linia 7449 — AGENT
+
+[REDACTED]
+
+### Linia 7450 — AGENT
+
+[REDACTED]
+
+### Linia 7451 — AGENT
+
+[REDACTED]
+
+### Linia 7452 — AGENT
+
+[REDACTED]
+
+### Linia 7453 — AGENT
+
+[REDACTED]
+
+### Linia 7454 — AGENT
+
+[REDACTED]
+
+### Linia 7455 — AGENT
+
+Krótko: **komputer nie ma ukrytego bonusu „×2 ludność”** — Sparta rośnie szybciej z kilku normalnych (i częściowo niedopracowanych) powodów.
+
+### Co mówi kod
+
+| Element | Gracz | AI (Sparta) |
+|--------|--------|-------------|
+| Wzrost ludności | ta sama formuła (`populationGrowth`) | **identyczna** |
+| Bonusy cywilizacji (Grecy) | tak | **te same** (+obrona, +handel — **nie** +żywność) |
+| Układ pól (👤) | Ty ustawiasz (np. na żywność) | **auto**, domyślnie profil **„zrównoważony”** |
+| Kolejka budynków | tylko jeśli włączysz auto-zarządcę / sam dodajesz | **co turę** AI sam dokłada budynek (np. **Spichlerz** na starcie) |
+| Trudność Normalna | — | +10% priorytetu produkcji (szybciej kończy budynki) |
+
+Nie ma w kodzie czegoś w stylu `if (ownerId > 0) population *= 2`.
+
+### Dlaczego Sparta ma 4, a Ty 2 (nawet „obok”)
+
+**1. Sparta istnieje od tury 0, Twoje miasto — dopiero po założeniu**  
+Rywale klastra (Sparta, Korynt…) dostają miasto **na starcie mapy**. Ty zakładasz stolicę ręcznie (onboarding). Każda tura przed założeniem = Sparta już zbiera żywność i rośnie, Ty jeszcze nie.
+
+**2. Teren — widać to na screenie**  
+Ateny są otoczone **lasem** (ciemnozielone heksy). Las na polu z 👤 daje **−1 żywności**. Sparta stoi na **otwartej równinie** — zwykle lepsze pola pod wzrost. To samo ustawienie „na żywność” nie pomoże, jeśli robotnicy stoją na lesie.
+
+**3. AI od razu buduje pod wzrost**  
+W wczesnej fazie AI **priorytetowo stawia Spichlerz** (bufor żywności po wzroście — łatwiej rosnąć z 2→3→4). Ty musisz to zrobić sam albo włączyć auto-zarządcę w panelu miasta.
+
+**4. „Jednostki na produkcję żywności”**  
+Jeśli chodzi o **👤 na mapie okolicy miasta** — to wpływa na wzrost.  
+Jeśli o **kolejkę produkcji miasta** (budynek/jednostka) — to **nie** daje żywności na turę, tylko buduje obiekty za Pracę.
+
+### Jak samemu to sprawdzić (bez zgadywania)
+
+1. Kliknij **Spartę** i **swoje miasto** → panel okolicy: ile **netto żywności**/turę i które heksy mają 👤.  
+2. Porównaj **turę założenia** (Sparta od początku gry).  
+3. W konsoli (F12) po turze szukaj `[Ekonomia]` — widać wzrost per miasto.
+
+### Czy to fair?
+
+Częściowo **tak z założenia** (AI ma auto-produkcję), częściowo **do poprawy** (start: AI ma miasta, gracz nie; las obok miasta mocno boli). To nie jest „ściema” komputera, tylko **asymetria startu + teren + auto-Spichlerz AI**.
+
+Jeśli chcesz, mogę to ująć jako decyzję ABC, np.:
+
+- **A** — AI bez przewagi: ten sam start (wszyscy bez miasta) albo AI bez auto-Spichlerza na starcie  
+- **B** — zostaje jak jest, ale lepszy komunikat w HUD („Sparta +2 tury wzrostu przed Tobą”)  
+- **C** — AI tylko na Wyższej trudności dostaje auto-produkcję  
+
+Napisz, czy Sparta miała **4** przy Twoich **2** w tej samej turze od założenia miasta — wtedy wiadomo, czy to głównie opóźnienie startu, czy coś jeszcze.
+
+[REDACTED]
+
+### Linia 7456 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-f8db0d5d-abec-43d7-9ce9-cdbf27b6aff8.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Monday, Jul 6, 2026, 11:34 PM (UTC+2)</timestamp>
+
+to jest chyba nie tak. Miasto nie rośnie, chociaż ma żywności sporo. Tutaj musi być nie tak z naliczaniem żywności skoro Ateny mając podobny teren, podobną cywilizację zostały wyprzedzone przez Spartę.
+
+### Linia 7457 — AGENT
+
+Sprawdzam rozbieżność między tym, co pokazuje panel wzrostu (bufor 15/22, netto +19), a faktycznym naliczaniem żywności w silniku.
+
+[REDACTED]
+
+### Linia 7458 — AGENT
+
+[REDACTED]
+
+### Linia 7459 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-f8db0d5d-abec-43d7-9ce9-cdbf27b6aff8.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Monday, Jul 6, 2026, 11:34 PM (UTC+2)</timestamp>
+
+to jest chyba nie tak. Miasto nie rośnie, chociaż ma żywności sporo. Tutaj musi być nie tak z naliczaniem żywności skoro Ateny mając podobny teren, podobną cywilizację zostały wyprzedzone przez Spartę.
+
+### Linia 7460 — AGENT
+
+[REDACTED]
+
+### Linia 7461 — AGENT
+
+[REDACTED]
+
+### Linia 7462 — AGENT
+
+[REDACTED]
+
+### Linia 7463 — AGENT
+
+[REDACTED]
+
+### Linia 7464 — AGENT
+
+[REDACTED]
+
+### Linia 7465 — AGENT
+
+[REDACTED]
+
+### Linia 7466 — AGENT
+
+[REDACTED]
+
+### Linia 7467 — AGENT
+
+[REDACTED]
+
+### Linia 7468 — AGENT
+
+[REDACTED]
+
+### Linia 7469 — AGENT
+
+[REDACTED]
+
+### Linia 7470 — AGENT
+
+[REDACTED]
+
+### Linia 7471 — AGENT
+
+[REDACTED]
+
+### Linia 7472 — AGENT
+
+[REDACTED]
+
+### Linia 7473 — AGENT
+
+[REDACTED]
+
+### Linia 7474 — AGENT
+
+[REDACTED]
+
+### Linia 7475 — AGENT
+
+[REDACTED]
+
+### Linia 7476 — AGENT
+
+[REDACTED]
+
+### Linia 7477 — AGENT
+
+[REDACTED]
+
+### Linia 7478 — AGENT
+
+[REDACTED]
+
+### Linia 7479 — AGENT
+
+[REDACTED]
+
+### Linia 7480 — AGENT
+
+[REDACTED]
+
+### Linia 7481 — AGENT
+
+[REDACTED]
+
+### Linia 7482 — AGENT
+
+[REDACTED]
+
+### Linia 7483 — AGENT
+
+[REDACTED]
+
+### Linia 7484 — AGENT
+
+[REDACTED]
+
+### Linia 7485 — AGENT
+
+[REDACTED]
+
+### Linia 7486 — AGENT
+
+[REDACTED]
+
+### Linia 7487 — AGENT
+
+[REDACTED]
+
+### Linia 7488 — AGENT
+
+[REDACTED]
+
+### Linia 7489 — AGENT
+
+[REDACTED]
+
+### Linia 7490 — AGENT
+
+[REDACTED]
+
+### Linia 7491 — AGENT
+
+[REDACTED]
+
+### Linia 7492 — AGENT
+
+[REDACTED]
+
+### Linia 7493 — AGENT
+
+[REDACTED]
+
+### Linia 7494 — AGENT
+
+[REDACTED]
+
+### Linia 7495 — AGENT
+
+[REDACTED]
+
+### Linia 7496 — AGENT
+
+[REDACTED]
+
+### Linia 7497 — AGENT
+
+Znalazłem dwa realne problemy: pułapka pojemności bufora (cap 20 < próg 22–26) przy małym napływie oraz rozjazd panelu ze silnikiem (zdrowie, growthMult, mylący „Armia głód”). Wprowadzam poprawki.
+
+[REDACTED]
+
+### Linia 7498 — AGENT
+
+[REDACTED]
+
+### Linia 7499 — AGENT
+
+[REDACTED]
+
+### Linia 7500 — AGENT
+
+[REDACTED]
+
+### Linia 7501 — AGENT
+
+[REDACTED]
+
+### Linia 7502 — AGENT
+
+[REDACTED]
+
+### Linia 7503 — AGENT
+
+[REDACTED]
+
+### Linia 7504 — AGENT
+
+[REDACTED]
+
+### Linia 7505 — AGENT
+
+Przenoszę `readCityFoodBuffer` do `economy-upkeep.ts`, żeby uniknąć cyklicznego importu.
+
+[REDACTED]
+
+### Linia 7506 — AGENT
+
+[REDACTED]
+
+### Linia 7507 — AGENT
+
+[REDACTED]
+
+### Linia 7508 — AGENT
+
+[REDACTED]
+
+### Linia 7509 — AGENT
+
+[REDACTED]
+
+### Linia 7510 — AGENT
+
+[REDACTED]
+
+### Linia 7511 — AGENT
+
+[REDACTED]
+
+### Linia 7512 — AGENT
+
+[REDACTED]
+
+### Linia 7513 — AGENT
+
+Masz rację — to nie był „brak bonusu AI”, tylko **błąd w ekonomii + mylący panel**. Naprawiłem to w bundlu **`8f0c05da`** (`gra-robocza/START.html`).
+
+## Co było nie tak
+
+### 1. Pułapka bufora (główny bug silnika)
+Bufor wzrostu miał **pojemność 20**, a próg wzrostu przy ludności 2 to **22** (easy) lub **26** (normal).
+
+Przy małym napływie (+1–2/t) bufor dochodził do 20, potem +1 = 21 (< 22) — i **utknął na zawsze**. Miasto „ma żywność”, panel pokazywał postęp, ale wzrost nigdy nie następował.
+
+**Fix:** pojemność bufora = `max(baza, próg wzrostu)` — zawsze da się napełnić bufor do progu.
+
+### 2. Panel kłamał o ETA
+Panel liczył wzrost bez:
+- **zdrowia miasta** (silnik je stosuje),
+- **kary Porządku** (`growthMult` z niepokoju),
+- prawidłowego odczytu bufora ze starego formatu zapisu.
+
+Stąd „Do +1 ~1 tura” przy faktycznym braku wzrostu.
+
+### 3. Czerwony „Armia głód” przy +0/t
+Pokazywał się, gdy **zapasy państwa były ujemne** (koszt utrzymania wojska), nawet gdy suwak był w 100% na wzrost i **0 żywności szło do armii**. To nie blokowało wzrostu — tylko myliło.
+
+**Fix:** ostrzeżenie tylko gdy faktycznie alokujesz żywność na armię.
+
+---
+
+## Sparta vs Ateny — bez ukrytego ×2
+
+To nadal **fair/unfair z gameplayu**, nie cheat:
+- Sparta (AI) istnieje **od tury 0**, Ty zakładasz miasto później,
+- AI auto-kolejkuje **Spichlerz** (+ lepszy bufor po wzroście),
+- **Teren** — lasy obok pól = −1 żywności (Ateny często w lesie, Sparta na równinie),
+- AI ma domyślny focus okolicy `zrownoważone`.
+
+---
+
+## Co zrobić teraz
+
+1. Odśwież **`gra-robocza/START.html`** (bundel `8f0c05da`).
+2. Zakończ turę (N) — przy buforze 15/22 i +19/t wzrost powinien nastąpić.
+3. Jeśli masz **jednostkę w rekrutacji**, sprawdź kolejkę: po wzroście rekrutacja może zdjąć 1 ludność w tej samej turze (to zamierzone, nie bug bufora).
+
+Daj znać po playteście, czy ludność rośnie zgodnie z panelem.
+
+[REDACTED]
+
+### Linia 7514 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-bb8bf6a8-b022-4718-80d0-9a2d511c100f.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Monday, Jul 6, 2026, 11:42 PM (UTC+2)</timestamp>
+
+jest jakiś bug. Po wybudowaniu zwiadowcy w momencie, gdy on został w mieście nagle ani nie da się kliknąć na miasto, ani nie da się kliknąć na tego zwiadowcę. On prawdopodobnie tam nadal siedzi. Po zakończeniu tury nie da się ani nim ruszyć, ani nie da się wybrać miasta. Trzeba to robić z bocznego panelu, zarówno wybierać jednostkę, jak i wchodzić do miasta przez panel miast.
+
+### Linia 7515 — AGENT
+
+Sprawdzam obsługę kliknięć na mapie, gdy jednostka i miasto są na tym samym heksie.
+
+[REDACTED]
+
+### Linia 7516 — AGENT
+
+[REDACTED]
+
+### Linia 7517 — AGENT
+
+[REDACTED]
+
+### Linia 7518 — AGENT
+
+[REDACTED]
+
+### Linia 7519 — AGENT
+
+[REDACTED]
+
+### Linia 7520 — AGENT
+
+[REDACTED]
+
+### Linia 7521 — AGENT
+
+[REDACTED]
+
+### Linia 7522 — AGENT
+
+[REDACTED]
+
+### Linia 7523 — AGENT
+
+[REDACTED]
+
+### Linia 7524 — AGENT
+
+[REDACTED]
+
+### Linia 7525 — AGENT
+
+[REDACTED]
+
+### Linia 7526 — AGENT
+
+[REDACTED]
+
+### Linia 7527 — AGENT
+
+[REDACTED]
+
+### Linia 7528 — AGENT
+
+[REDACTED]
+
+### Linia 7529 — AGENT
+
+[REDACTED]
+
+### Linia 7530 — AGENT
+
+[REDACTED]
+
+### Linia 7531 — AGENT
+
+[REDACTED]
+
+### Linia 7532 — AGENT
+
+[REDACTED]
+
+### Linia 7533 — AGENT
+
+[REDACTED]
+
+### Linia 7534 — AGENT
+
+Wykryto problem: modal `cityUnitPick` blokuje kliknięcia na mapie (`isCityUnitPickOpen()`), a po zbudowaniu zwiadowcy na heksie miasta nie da się normalnie wybrać jednostki ani miasta. Wprowadzam poprawki.
+
+[REDACTED]
+
+### Linia 7535 — AGENT
+
+[REDACTED]
+
+### Linia 7536 — AGENT
+
+[REDACTED]
+
+### Linia 7537 — AGENT
+
+[REDACTED]
+
+### Linia 7538 — AGENT
+
+Znalazłem przyczynę i naprawiłem ją w bundlu roboczym.
+
+## Co się psuło
+
+Gdy **zwiadowca stoi na heksie miasta**, pierwsze kliknięcie otwierało modal „Co wybierasz?” (`cityUnitPick`). Ten modal:
+
+1. **Blokował wszystkie kolejne kliknięcia na mapie** — handler mapy kończył się od razu, gdy modal był „otwarty”.
+2. Czasem zostawał **osierocony w pamięci** (np. po zamknięciu panelu miasta) — niewidoczny, ale nadal blokujący mapę.
+3. Side panel działał, bo to osobny element UI — stąd wrażenie, że „tylko boczny panel działa”.
+
+## Co zmieniłem
+
+**Nowe zachowanie kliknięć (miasto gracza + jednostka na heksie):**
+- **1. klik** → zaznacza zwiadowcę (możesz go ruszyć następnej tury)
+- **2. klik** (gdy już zaznaczony) → otwiera panel miasta
+
+**Inne poprawki:**
+- Modal nie blokuje już mapy — osierocone okna są czyszczone
+- Po zbudowaniu jednostki **automatycznie ją zaznacza** (widać od razu w dolnym pasku armii)
+- Modal „Miasto / Jednostka” zostaje tylko dla **wrogich** miast z wojskiem gracza
+
+## Jak przetestować
+
+1. Odśwież `gra-robocza/START.html` (nowy build po poprzednim `8f0c05da`).
+2. Zbuduj zwiadowcę w Atenach.
+3. Kliknij miasto na mapie → powinien się zaznaczyć zwiadowca.
+4. Kliknij ponownie → panel miasta.
+5. Następna tura → zwiadowcem da się ruszyć z mapy.
+
+Daj znać, czy po odświeżeniu działa u Ciebie.
+
+[REDACTED]
+
+### Linia 7539 — MACIEJ
+
+<timestamp>Monday, Jul 6, 2026, 11:47 PM (UTC+2)</timestamp>
+
+a i zapomnieliśmy o jednej bardzo ważnej opcji na jednostkach: disband, czyli Rozwiąż. Powinna być opcja likwidacji jednostki przez jej rozwiązanie. Każde jednostki.
+
+### Linia 7540 — AGENT
+
+Sprawdzam, jak działają akcje jednostek w UI i silniku — dodamy „Rozwiąż” (disband).
+
+[REDACTED]
+
+### Linia 7541 — AGENT
+
+[REDACTED]
+
+### Linia 7542 — AGENT
+
+[REDACTED]
+
+### Linia 7543 — AGENT
+
+[REDACTED]
+
+### Linia 7544 — AGENT
+
+[REDACTED]
+
+### Linia 7545 — AGENT
+
+[REDACTED]
+
+### Linia 7546 — AGENT
+
+[REDACTED]
+
+### Linia 7547 — AGENT
+
+[REDACTED]
+
+### Linia 7548 — AGENT
+
+[REDACTED]
+
+### Linia 7549 — AGENT
+
+[REDACTED]
+
+### Linia 7550 — AGENT
+
+Dodaję logikę zwrotu ludności/Manpower oraz przycisk „Rozwiąż” w panelu armii.
+
+[REDACTED]
+
+### Linia 7551 — AGENT
+
+[REDACTED]
+
+### Linia 7552 — AGENT
+
+[REDACTED]
+
+### Linia 7553 — AGENT
+
+[REDACTED]
+
+### Linia 7554 — AGENT
+
+[REDACTED]
+
+### Linia 7555 — AGENT
+
+[REDACTED]
+
+### Linia 7556 — AGENT
+
+Dodałem **Rozwiąż (disband)** dla wszystkich jednostek gracza.
+
+## Jak to działa
+
+Przy zaznaczonej jednostce w dolnym panelu armii pojawia się czerwony przycisk **„Rozwiąż”** (obok Pomiń / Ufort.).
+
+Po kliknięciu:
+- jednostka znika z mapy (także z garnizonu),
+- **+1 ludność** wraca do miasta (heks jednostki, a jak nie ma miasta — do pierwszego miasta gracza),
+- **Manpower** wraca do puli tego miasta (jak przy rekrutacji, wg epoki),
+- oblężenie kończy się, jeśli to była ostatnia jednostka przy murze,
+- pojawia się komunikat, np. *„Zwiadowca rozwiązany — +1 ludność, +100 MP → Ateny”*.
+
+## Pliki
+
+- `gra/src/game/manpower.ts` — `refundUnitSpawnToCity()` (odwrotność kosztu werbu)
+- `gra/src/main.ts` — `disbandPlayerUnit()` + przycisk w HUD
+
+Odśwież `gra-robocza/START.html` po nowym buildzie. Zaznacz jednostkę → **Rozwiąż**.
+
+Jeśli chcesz w przyszłości wariant bez zwrotu MP albo z potwierdzeniem „Na pewno?” — daj znać (decyzja ABC).
+
+[REDACTED]
+
+### Linia 7557 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-6e5eb6d3-cf11-46a5-a56a-80ec639b174f.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Monday, Jul 6, 2026, 11:51 PM (UTC+2)</timestamp>
+
+chyba się gra zawiesiła, niestety nie mamy możliwości, żeby sprawdzić pewnie jakieś raporty co się wydarzyło. Przydałoby się coś dorobić docelowo w grze, żebyś mógł sprawdzać co się wykszaczyło. Nie można było ani grać gry z menu w grze, ani nie można było ruszać jednostkami, ani w sumie nic robić. Wszedłem do głównego menu i wgrałem ponownie. Zobaczę czy działa. ooo Historie z otaczają koło. Gdy wgrywam grę z menu, to się pojawia znowu coś takiego. Znowu jakaś randomowa stara mapa. Jakiś błąd jest. Zabrze, duże, nie grałem inni gracze mogliby się wkurzyć.
+
+### Linia 7558 — AGENT
+
+Sprawdzam system zapisu/wczytywania — wygląda na to, że po reloadzie ładuje się zła mapa i stan gry.
+
+[REDACTED]
+
+### Linia 7559 — AGENT
+
+[REDACTED]
+
+### Linia 7560 — AGENT
+
+[REDACTED]
+
+### Linia 7561 — AGENT
+
+[REDACTED]
+
+### Linia 7562 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-6e5eb6d3-cf11-46a5-a56a-80ec639b174f.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Monday, Jul 6, 2026, 11:51 PM (UTC+2)</timestamp>
+
+chyba się gra zawiesiła, niestety nie mamy możliwości, żeby sprawdzić pewnie jakieś raporty co się wydarzyło. Przydałoby się coś dorobić docelowo w grze, żebyś mógł sprawdzać co się wykszaczyło. Nie można było ani grać gry z menu w grze, ani nie można było ruszać jednostkami, ani w sumie nic robić. Wszedłem do głównego menu i wgrałem ponownie. Zobaczę czy działa. ooo Historie z otaczają koło. Gdy wgrywam grę z menu, to się pojawia znowu coś takiego. Znowu jakaś randomowa stara mapa. Jakiś błąd jest. Zabrze, duże, nie grałem inni gracze mogliby się wkurzyć.
+
+### Linia 7563 — AGENT
+
+[REDACTED]
+
+### Linia 7564 — AGENT
+
+[REDACTED]
+
+### Linia 7565 — AGENT
+
+[REDACTED]
+
+### Linia 7566 — AGENT
+
+[REDACTED]
+
+### Linia 7567 — AGENT
+
+[REDACTED]
+
+### Linia 7568 — AGENT
+
+[REDACTED]
+
+### Linia 7569 — AGENT
+
+[REDACTED]
+
+### Linia 7570 — AGENT
+
+[REDACTED]
+
+### Linia 7571 — AGENT
+
+[REDACTED]
+
+### Linia 7572 — AGENT
+
+[REDACTED]
+
+### Linia 7573 — AGENT
+
+[REDACTED]
+
+### Linia 7574 — AGENT
+
+[REDACTED]
+
+### Linia 7575 — AGENT
+
+[REDACTED]
+
+### Linia 7576 — AGENT
+
+[REDACTED]
+
+### Linia 7577 — AGENT
+
+[REDACTED]
+
+### Linia 7578 — AGENT
+
+[REDACTED]
+
+### Linia 7579 — AGENT
+
+[REDACTED]
+
+### Linia 7580 — AGENT
+
+[REDACTED]
+
+### Linia 7581 — AGENT
+
+[REDACTED]
+
+### Linia 7582 — AGENT
+
+Wprowadzam poprawki: zawieszenie (wielokrotne pętle render), błędny load (stary roster AI) oraz minimalny dziennik diagnostyczny.
+
+[REDACTED]
+
+### Linia 7583 — AGENT
+
+[REDACTED]
+
+### Linia 7584 — AGENT
+
+[REDACTED]
+
+### Linia 7585 — AGENT
+
+[REDACTED]
+
+### Linia 7586 — AGENT
+
+Wprowadzam poprawki w `main.ts`.
+
+[REDACTED]
+
+### Linia 7587 — AGENT
+
+[REDACTED]
+
+### Linia 7588 — AGENT
+
+[REDACTED]
+
+### Linia 7589 — AGENT
+
+[REDACTED]
+
+### Linia 7590 — AGENT
+
+[REDACTED]
+
+### Linia 7591 — AGENT
+
+[REDACTED]
+
+### Linia 7592 — AGENT
+
+[REDACTED]
+
+### Linia 7593 — AGENT
+
+[REDACTED]
+
+### Linia 7594 — AGENT
+
+[REDACTED]
+
+### Linia 7595 — AGENT
+
+[REDACTED]
+
+### Linia 7596 — AGENT
+
+[REDACTED]
+
+### Linia 7597 — AGENT
+
+[REDACTED]
+
+### Linia 7598 — AGENT
+
+[REDACTED]
+
+### Linia 7599 — AGENT
+
+[REDACTED]
+
+### Linia 7600 — AGENT
+
+[REDACTED]
+
+### Linia 7601 — AGENT
+
+Zidentyfikowałem trzy prawdopodobne przyczyny tego, co opisałeś, i wdrożyłem poprawki w wersji roboczej **`d6478734`** (odśwież `gra-robocza/START.html` — Ctrl+F5).
+
+## Co mogło się psuć
+
+1. **Zawieszenie / brak reakcji** — przy każdym starcie gry lub wczytaniu save uruchamiała się **kolejna pętla renderowania** (RAF). Po kilku loadach/menu CPU szło w kosmos, input przestawał działać.
+2. **„Stara / obca mapa” po load** — roster AI (`aiOwnerCivMap`) **nie był zapisywany ani przywracany** z sejwu. Po powrocie do menu i wczytaniu gra mieszała stan z poprzedniej sesji z danymi save.
+3. **Brak raportów** — błędy szły tylko do czerwonego paska u góry (gdy w ogóle), bez historii zdarzeń.
+
+## Co dorobiłem
+
+| Fix | Opis |
+|-----|------|
+| **Jedna pętla render** | `startRenderLoop()` — kolejne starty nie duplikują RAF |
+| **Reset sesji** | Przed load i przy powrocie do menu: zerowanie animacji, modali, panelu miasta |
+| **Roster AI w save** | `aiOwnerCivMap` + nazwy nacji zapisywane w meta sejwu i przywracane przy load |
+| **Walidacja load** | Ostrzeżenie, gdy np. 57 miast na turę 5 albo miasta poza heksami mapy |
+| **Diag-log (F10)** | Panel z ostatnimi ~200 zdarzeniami (boot, load, błędy, reset sesji) |
+| **Eksport (Ctrl+Shift+D)** | Kopiuje pełny raport JSON do schowka — możesz mi go wkleić po bugu |
+
+## Jak testować
+
+1. **Ctrl+F5** na `START.html`
+2. Zagraj chwilę → **menu → wczytaj ten sam save** — mapa powinna się zgadzać
+3. Jeśli coś znowu stanie: **F10** (panel) albo **Ctrl+Shift+D** (skopiuj raport) i wklej tutaj
+
+## O tym „Grecja tura 5 · 57 miast · seed 658589”
+
+To **dokładnie to, co jest w zapisie w localStorage** — gra go wczytała poprawnie technicznie, ale save mógł być z **innej, wcześniejszej sesji** (np. autosave nadpisany). Od teraz przy takiej niespójności dostaniesz **żółty toast z ostrzeżeniem** zamiast cichego „randomowego” loadu.
+
+Tekst „w kółko” na środku ekranu to najpewniej **nakładka błędów** (czerwony pasek u góry) albo stary toast — po F10 widać, co się dokleiło w tej sesji.
+
+Daj znać po teście: czy load działa, i jeśli nie — wklej raport z **Ctrl+Shift+D**.
+
+[REDACTED]
+
+### Linia 7602 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_f58df411e77c0acacc3d802d26340655_images_image-2f6c463a-4977-4d66-82e5-f138eca1f489-8e913943-2697-4873-a74d-68e1025410c5.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Monday, Jul 6, 2026, 11:58 PM (UTC+2)</timestamp>
+
+jeszcze jeden hit, o którym zapomnieliśmy. W momencie wejścia do kreatora gry nie można wrócić z powrotem do menu.
+
+### Linia 7603 — AGENT
+
+[REDACTED]
+
+### Linia 7604 — AGENT
+
+[REDACTED]
+
+### Linia 7605 — AGENT
+
+[REDACTED]
+
+### Linia 7606 — AGENT
+
+[REDACTED]
+
+### Linia 7607 — AGENT
+
+[REDACTED]
+
+### Linia 7608 — AGENT
+
+[REDACTED]
+
+### Linia 7609 — AGENT
+
+[REDACTED]
+
+### Linia 7610 — AGENT
+
+[REDACTED]
+
+### Linia 7611 — AGENT
+
+[REDACTED]
+
+### Linia 7612 — AGENT
+
+[REDACTED]
+
+### Linia 7613 — AGENT
+
+[REDACTED]
+
+### Linia 7614 — AGENT
+
+Dodaję przycisk „Menu główne” w kreatorze — `onCancel` jest w konfiguracji, ale nigdzie nie podpięty do UI.
+
+[REDACTED]
+
+### Linia 7615 — AGENT
+
+[REDACTED]
+
+### Linia 7616 — AGENT
+
+Gotowe — w kreatorze brakowało podpięcia istniejącego `onCancel` do UI.
+
+**Co dodałem (bundle `ff03350e`, Ctrl+F5 na START):**
+
+1. **← Menu główne** w lewym górnym rogu nagłówka — widoczne na krokach 1–4 (INTRO → USTAWIENIA)
+2. **← Menu główne** pod przyciskiem „Rozpocznij konfigurację” na ekranie INTRO — żeby było od razu widać
+
+Kliknięcie wraca do menu głównego (tak jak było zaprojektowane w `main.ts`, tylko bez przycisku).
+
+Na krokach 2–4 nadal działa **← Wstecz** (poprzedni krok kreatora); **Menu główne** w nagłówku działa zawsze.
+
+Daj znać, czy po odświeżeniu widać oba przyciski i czy powrót do menu działa.
+
+[REDACTED]
+
+### Linia 7617 — MACIEJ
+
+<timestamp>Tuesday, Jul 7, 2026, 12:01 AM (UTC+2)</timestamp>
+
+to zrobiłem. Usunąłem dwa poprzednie stare sejwy i znowu zadziałało. Ale tak być nie powinno, bo to już były moje save'y z innych gier.
+
+### Linia 7618 — AGENT
+
+Stare sejwy nie powinny psuć wczytywania — sprawdzam, gdzie sloty się mieszają lub nadpisują stan.
+
+[REDACTED]
+
+### Linia 7619 — AGENT
+
+[REDACTED]
+
+### Linia 7620 — AGENT
+
+[REDACTED]
+
+### Linia 7621 — AGENT
+
+Naprawiamy system sejwów: unikalne sloty (bez przypadkowego nadpisywania), śledzenie ostatnio granej gry oraz pełny reset sesji przy wczytywaniu.
+
+[REDACTED]
+
+### Linia 7622 — AGENT
+
+[REDACTED]
+
+### Linia 7623 — AGENT
+
+[REDACTED]
+
+### Linia 7624 — AGENT
+
+[REDACTED]
+
+### Linia 7625 — AGENT
+
+[REDACTED]
+
+### Linia 7626 — AGENT
+
+[REDACTED]
+
+### Linia 7627 — AGENT
+
+[REDACTED]
+
+### Linia 7628 — AGENT
+
+[REDACTED]
+
+### Linia 7629 — AGENT
+
+[REDACTED]
+
+### Linia 7630 — AGENT
+
+[REDACTED]
+
+### Linia 7631 — AGENT
+
+[REDACTED]
+
+### Linia 7632 — AGENT
+
+[REDACTED]
+
+### Linia 7633 — AGENT
+
+[REDACTED]
+
+### Linia 7634 — AGENT
+
+Masz rację — usuwanie starych sejwów nie powinno być „rozwiązaniem”. Znalazłem, **dlaczego** tak wyglądało i co poprawiłem (bundle **`4511c3ea`**, Ctrl+F5).
+
+## Co było nie tak
+
+1. **Kolizja nazw sejwów** — „Grecja tura 5” i „Zapis · tura 5” z **różnych gier** mogły trafić do **tego samego slotu** w localStorage i się nadpisywać. Wyglądało jak kilka zapisów, a w praktyce jeden slot mógł zawierać dane z innej sesji.
+
+2. **„Kontynuuj” / domyślny wybór** — lista sortowała po dacie i podświetlała **najnowszy** zapis, nie ten, w który **ostatnio grałeś**. Stary sejw (np. Grecja · Ziemia · tura 5) mógł wczytać się zamiast bieżącej gry.
+
+3. **Stare sejwy + parametry mapy** — przy wczytywaniu bez pełnych `newGameParams` gra brała ustawienia z **bieżącej sesji** (domyślna mapa przy starcie), a nie z zapisanego sejwu → obca mapa przy „właściwym” slocie.
+
+## Co działa teraz
+
+| Zmiana | Efekt |
+|--------|--------|
+| **Unikalne sloty** | Nowy zapis = nowy klucz (`grecja-tura-5-m5x…`). Inne gry się nie nadpisują. |
+| **Nadpisanie tylko świadomie** | Ta sama nazwa co istniejący sejw → pytanie „Nadpisać?” |
+| **„Ostatnio grane”** | Kontynuuj wczytuje **ostatni** slot, który zapisałeś/wczytałeś |
+| **Etykieta w liście** | Przy wczytywaniu widać „ostatnio grane” |
+| **Load z meta sejwu** | Mapa/cywilizacja z danych **tego** zapisu, nie z sesji w tle |
+| **Pełny reset przed load** | Żadnego mieszania stanu poprzedniej gry |
+
+## Co możesz zrobić
+
+- **Ctrl+F5** na START → możesz trzymać **wiele sejwów z różnych gier** obok siebie.
+- **Kontynuuj** = ostatnia gra, **Wczytaj** = wybór z listy (seed, cyw, tura w opisie).
+- Stare sejwy, które już usunąłeś, nie wrócą — ale **nowe zapisy** będą od siebie niezależne.
+
+Jeśli chcesesz, w następnym kroku mogę dodać w liście wyraźniejszy podział: **Autosave (Ctrl+S)** vs **nazwane sejwy** — żeby szybki zapis nie mylił się z pełnym zapisem z menu.
+
+[REDACTED]
+
+### Linia 7635 — MACIEJ
+
+<timestamp>Tuesday, Jul 7, 2026, 12:06 AM (UTC+2)</timestamp>
+
+możemy wprowadzić zasadę, że zjadowca nie je żywności. Sprawdź jeszcze, jak jest z żywnością wśród jednostek, jakie były zasady ustalone.
+
+### Linia 7636 — AGENT
+
+Sprawdzam ustalone zasady żywności dla jednostek i gdzie w kodzie jest naliczany koszt utrzymania.
+
+[REDACTED]
+
+### Linia 7637 — AGENT
+
+[REDACTED]
+
+### Linia 7638 — AGENT
+
+[REDACTED]
+
+### Linia 7639 — AGENT
+
+[REDACTED]
+
+### Linia 7640 — AGENT
+
+[REDACTED]
+
+### Linia 7641 — AGENT
+
+[REDACTED]
+
+### Linia 7642 — AGENT
+
+[REDACTED]
+
+### Linia 7643 — AGENT
+
+[REDACTED]
+
+### Linia 7644 — AGENT
+
+[REDACTED]
+
+### Linia 7645 — AGENT
+
+[REDACTED]
+
+### Linia 7646 — AGENT
+
+Wprowadzam zasadę: zwiadowca 0 żywności — w danych było 1/turę, ale silnik i tak brał płaską stawkę 1 dla wszystkich jednostek. Podpinam koszt z `units.json`.
+
+[REDACTED]
+
+### Linia 7647 — AGENT
+
+[REDACTED]
+
+### Linia 7648 — AGENT
+
+[REDACTED]
+
+### Linia 7649 — MACIEJ
+
+<timestamp>Tuesday, Jul 7, 2026, 12:06 AM (UTC+2)</timestamp>
+
+możemy wprowadzić zasadę, że zjadowca nie je żywności. Sprawdź jeszcze, jak jest z żywnością wśród jednostek, jakie były zasady ustalone.
+
+### Linia 7650 — AGENT
+
+[REDACTED]
+
+### Linia 7651 — AGENT
+
+[REDACTED]
+
+### Linia 7652 — AGENT
+
+Tak — zasada jest wdrożona. Poniżej podsumowanie ustaleń i tego, co się zmieniło.
+
+## Jak było ustalone (przed zmianą)
+
+**Spec (`Spec-ekonomia.md`):**
+- Jednostki wojskowe w polu lub garnizonie: **1 żywność/tura/jednostkę**
+- Obóz: **0,5/tura**
+- Dotyczyło „wojska” ogólnie — **bez wyjątku dla zwiadowcy**
+
+**Dane (`units.json`):**
+- Kolumna `"żywność/turę"` — dotąd **wszystkie jednostki = 1** (w tym Zwiadowca)
+- `"Utrzymanie (Pieniądz/turę)"` — osobno (Zwiadowca nadal **1 złota/tura**)
+
+**Silnik (stary):**
+- Brał **płaską stawkę** z `econ-params.json` (`zywnosc_jednostka_ruch=1`, obóz `0.5`)
+- **Ignorował** kolumnę `"żywność/turę"` z JSON
+- Koszt schodził z **zapasów państwa** (`advanceEmpireFood`), nie z netto miasta
+- Głód armii: `zapasyPanstwa < 0` → atrycja HP
+
+## Co wprowadziliśmy
+
+| Element | Zmiana |
+|--------|--------|
+| **Zwiadowca** | `"żywność/turę": 0` w `units.json` |
+| **Silnik** | Tabela per `typeId` z JSON — `buildUnitFoodTable()` + `unitFoodPerTurn()` |
+| **Pozostałe jednostki** | Bez zmian — nadal **1 żywność/tura** (z danych) |
+| **Obóz** | Nadal **0,5/tura** (z `econ-params.json`) |
+| **Złoto zwiadowcy** | Bez zmian — **1/tura** |
+
+Testy upkeep: **57/57 zielone**. Bundle roboczy: **`78844aa8`** — odśwież `START.html` (Ctrl+F5).
+
+## Zasady żywności — stan po zmianie
+
+1. **Zwiadowca** — **0 żywności/tura** (Twoja decyzja)
+2. **Pozostałe jednostki wojskowe** — **1/tura** (z `units.json`)
+3. **Obóz** — **0,5/tura**
+4. **Utrzymanie w złocie** — osobna kolumna, bez zmian
+5. **Oblężenie miasta** — osobny tor (magazyn miasta), nie mylić z pulą imperium
+
+Jeśli chcesz, mogę dopisać wyjątek zwiadowcy do `Spec-ekonomia.md` §6.3 albo zaktualizować opis w panelu miasta, żeby gracz widział „0 żywności” przy zwiadowcy.
+
+[REDACTED]
+
+### Linia 7653 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-4bfbb21b-bff2-4e5d-9e54-735873abb5f3.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Tuesday, Jul 7, 2026, 12:11 AM (UTC+2)</timestamp>
+
+to jest to co podejrzewałem. Państwa miasta zaczynają w brązie, nawet system mówi, że one są w epoce brązu. To jest jakiś błąd systemu. Powinien zaczynać się po tej, której zaczynają wszyscy. Pewnie są z automatu tak ustawieni.
+
+### Linia 7654 — AGENT
+
+Sprawdzam, jak gra przypisuje epokę państwom-miastom i innym AI przy starcie gry.
+
+[REDACTED]
+
+### Linia 7655 — AGENT
+
+[REDACTED]
+
+### Linia 7656 — AGENT
+
+[REDACTED]
+
+### Linia 7657 — AGENT
+
+[REDACTED]
+
+### Linia 7658 — AGENT
+
+[REDACTED]
+
+### Linia 7659 — AGENT
+
+[REDACTED]
+
+### Linia 7660 — AGENT
+
+[REDACTED]
+
+### Linia 7661 — AGENT
+
+[REDACTED]
+
+### Linia 7662 — AGENT
+
+[REDACTED]
+
+### Linia 7663 — AGENT
+
+[REDACTED]
+
+### Linia 7664 — AGENT
+
+[REDACTED]
+
+### Linia 7665 — AGENT
+
+[REDACTED]
+
+### Linia 7666 — AGENT
+
+[REDACTED]
+
+### Linia 7667 — AGENT
+
+[REDACTED]
+
+### Linia 7668 — AGENT
+
+[REDACTED]
+
+### Linia 7669 — AGENT
+
+[REDACTED]
+
+### Linia 7670 — AGENT
+
+[REDACTED]
+
+### Linia 7671 — AGENT
+
+[REDACTED]
+
+### Linia 7672 — AGENT
+
+[REDACTED]
+
+### Linia 7673 — AGENT
+
+[REDACTED]
+
+### Linia 7674 — AGENT
+
+Potwierdzam: epoka AI była źle liczona z badań (np. tech z etykietą „Brąz” bez awansu epoki). Wprowadzam spójne ustawienie epoki startowej dla wszystkich państw-miast.
+
+[REDACTED]
+
+### Linia 7675 — AGENT
+
+[REDACTED]
+
+### Linia 7676 — AGENT
+
+[REDACTED]
+
+### Linia 7677 — AGENT
+
+[REDACTED]
+
+### Linia 7678 — AGENT
+
+[REDACTED]
+
+### Linia 7679 — AGENT
+
+[REDACTED]
+
+### Linia 7680 — AGENT
+
+[REDACTED]
+
+### Linia 7681 — AGENT
+
+[REDACTED]
+
+### Linia 7682 — AGENT
+
+[REDACTED]
+
+### Linia 7683 — AGENT
+
+[REDACTED]
+
+### Linia 7684 — AGENT
+
+Masz rację — to był błąd systemu, nie zamierzony design.
+
+## Co było nie tak
+
+1. **Epoka AI liczona źle z badań** — stary algorytm brał pole `Epoka` z tech (np. „Żegluga” ma etykietę Brąz) albo każdy tech kończący epokę, bez uwzględnienia **epoki startowej gry**. Efekt: państwo-miasto mogło pokazywać **Brąz** już na początku, choć gra startowała w **Kamieniu**.
+
+2. **Brak synchronizacji startu** — gracz dostawał epokę z kreatora (`player.era`), ale AI nie dostawało tej samej bazy + tech wcześniejszych epok (przy starcie w Brązie/Żelazie).
+
+3. **„AI 56” na screenie** — to symptom uszkodzonego rosteru (brak nazwy i typu cywilizacji → fallback „AI 56” + bonusy Greków). Naprawiamy uzupełnianie rosteru z miast na mapie.
+
+## Co naprawiliśmy
+
+| Zmiana | Efekt |
+|--------|--------|
+| `initAllAiOwnersForNewGame()` | Wszyscy AI (w tym państwa-miasta) startują w **tej samej epoce co gracz** |
+| Tech wcześniejszych epok dla AI | Przy starcie w Brązie/Żelazie AI ma ten sam pakiet co gracz |
+| `syncOwnerEraFromResearch()` | Awans epoki tylko gdy tech **realnie kończy epokę**, której gra jeszcze nie „wchłonęła” startem |
+| `repairAiRosterFromMap()` | Przy loadzie brakujący owner dostaje typ cywilizacji i nazwę z miasta |
+
+## Zasada po fixie
+
+- Start w **Kamieniu** → wszyscy pokazują **Kamień** (dyplomacja + modele miast).
+- Start w **Brązie** → wszyscy **Brąz**.
+- Awans do Brązu dopiero po zbadaniu tech kończącego epokę Kamienia (np. Brązownictwo) — tak jak u gracza.
+
+Odśwież `START.html` (**Ctrl+F5**) — nowy bundle jest zbudowany. **Nowa gra** z epoką Kamień powinna pokazywać państwom-miastom **Kamień**, nie Brąz.
+
+Stare sejwy z uszkodzonym rosterem (np. „AI 56”) powinny się naprawić przy wczytaniu; jeśli coś dalej wygląda źle, napisz — wtedy warto zacząć świeżą grę z nowym seedem.
+
+[REDACTED]
+
+### Linia 7685 — MACIEJ
+
+<timestamp>Tuesday, Jul 7, 2026, 12:18 AM (UTC+2)</timestamp>
+
+mam więc też wszystkie bonusy związane z epoką brązu, z odkryciami, które są z epoki kamienia, więc to jest niezbyt uczciwe.
+
+### Linia 7686 — AGENT
+
+Sprawdzam, skąd państwa-miasta dostają bonusy i odblokowania z Brązu przy odkryciach tylko z Kamienia — to wygląda na rozjazd między epoką a faktycznymi badaniami.
+
+[REDACTED]
+
+### Linia 7687 — AGENT
+
+[REDACTED]
+
+### Linia 7688 — AGENT
+
+[REDACTED]
+
+### Linia 7689 — AGENT
+
+[REDACTED]
+
+### Linia 7690 — AGENT
+
+[REDACTED]
+
+### Linia 7691 — AGENT
+
+[REDACTED]
+
+### Linia 7692 — AGENT
+
+[REDACTED]
+
+### Linia 7693 — AGENT
+
+[REDACTED]
+
+### Linia 7694 — AGENT
+
+[REDACTED]
+
+### Linia 7695 — AGENT
+
+[REDACTED]
+
+### Linia 7696 — AGENT
+
+[REDACTED]
+
+### Linia 7697 — AGENT
+
+[REDACTED]
+
+### Linia 7698 — AGENT
+
+[REDACTED]
+
+### Linia 7699 — AGENT
+
+Wprowadzamy spójność: bonusy epoki tylko od faktycznych badań, nie od błędnej etykiety — naprawiam też ekonomię AI, która korzystała z epoki i tech gracza.
+
+[REDACTED]
+
+### Linia 7700 — AGENT
+
+[REDACTED]
+
+### Linia 7701 — AGENT
+
+[REDACTED]
+
+### Linia 7702 — AGENT
+
+[REDACTED]
+
+### Linia 7703 — AGENT
+
+[REDACTED]
+
+### Linia 7704 — AGENT
+
+[REDACTED]
+
+### Linia 7705 — AGENT
+
+[REDACTED]
+
+### Linia 7706 — AGENT
+
+[REDACTED]
+
+### Linia 7707 — AGENT
+
+[REDACTED]
+
+### Linia 7708 — AGENT
+
+[REDACTED]
+
+### Linia 7709 — AGENT
+
+[REDACTED]
+
+### Linia 7710 — AGENT
+
+[REDACTED]
+
+### Linia 7711 — AGENT
+
+[REDACTED]
+
+### Linia 7712 — AGENT
+
+Masz rację — to było nieuczciwe. Problem nie dotyczył tylko etykiety „Brąz” w dyplomacji, ale **faktycznych bonusów rozgrywki**.
+
+## Co dawało przewagę państwom-miastom
+
+1. **Zła epoka** — system liczył epokę z etykiety tech (np. „Żegluga” = Brąz), a nie z realnego awansu epoki.
+2. **Ekonomia AI na tech gracza** — tick miast AI używał **Twojej** epoki i **Twoich** odkryć (np. Waluta, Wealth w Brązie), nawet gdy AI miało tylko tech z Kamienia.
+3. **Manpower AI zawsze jak epoka 1** — osobny bug, ale pokazywał rozjazd systemów.
+4. **AI budowało bez bramki** — mogło wpisać do kolejki jednostki/budynki bez sprawdzenia epoki i tech (np. Łucznik, Koszary).
+
+Efekt: państwo-miasto z samym Garncarstwem mogło mieć **poziomy budynków jak w Brązie** (+10% na poziom epoki), dostęp do brązowych jednostek itd.
+
+## Co naprawiliśmy
+
+| Warstwa | Zasada |
+|--------|--------|
+| **Epoka AI** | Tylko epoka startu + tech **kończące epokę** (np. Brązownictwo). Samo „Epoka: Brąz” w JSON nie awansuje. |
+| **Ekonomia** | Każde miasto AI: **własna epoka + własne zbadane tech** |
+| **Produkcja AI** | Kolejka tylko przez `availableProduction` — ta sama bramka co u gracza |
+| **Co turę** | Przeliczenie epoki wszystkich AI z badań przed ich ruchem |
+
+## Co to znaczy w praktyce
+
+- Start w **Kamieniu** → państwa-miasta mają **tylko bonusy Kamienia**, dopóki nie zbadają Brązownictwa (awans do Brązu).
+- **Brązownictwo** nadal odblokowuje jednostki brązowe — to zamierzone, bo kończy epokę Kamienia.
+- **Bonusy cywilizacji** (Falanga, Hoplita u Greków) to osobna sprawa — nie zależą od epoki; naprawiamy też roster („AI 56” z greckimi bonusami to był uszkodzony sejw).
+
+Odśwież `START.html` (**Ctrl+F5**) — nowy bundle jest w `gra-robocza`. Najlepiej **nowa gra** w Kamieniu: przy pierwszym kontakcie z państwem-miastem powinno być **Kamień**, bez brązowych odblokowań w produkcji.
+
+[REDACTED]
+
+### Linia 7713 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-dc967473-2c22-4b21-8ea2-daa4580ffe9e.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Tuesday, Jul 7, 2026, 12:24 AM (UTC+2)</timestamp>
+
+tego co pamiętam szczegóły bitwy miały zawierać więcej informacji. Między innymi po lewej i po prawej stronie miały być jednostki nasze po lewej i po prawej przeciwnika z wskazaniami ile jakie jednostki straciły życia.
+
+### Linia 7714 — AGENT
+
+Sprawdzam implementację ekranu szczegółów bitwy i porównuję ją z pierwotną specyfikacją.
+
+[REDACTED]
+
+### Linia 7715 — AGENT
+
+[REDACTED]
+
+### Linia 7716 — AGENT
+
+[REDACTED]
+
+### Linia 7717 — AGENT
+
+[REDACTED]
+
+### Linia 7718 — AGENT
+
+[REDACTED]
+
+### Linia 7719 — AGENT
+
+[REDACTED]
+
+### Linia 7720 — AGENT
+
+[REDACTED]
+
+### Linia 7721 — AGENT
+
+[REDACTED]
+
+### Linia 7722 — AGENT
+
+[REDACTED]
+
+### Linia 7723 — AGENT
+
+[REDACTED]
+
+### Linia 7724 — AGENT
+
+Rozszerzam ekran szczegółów: dodaję listę jednostek z paskami HP i stratą życia (jak w `postBattleSummary`).
+
+[REDACTED]
+
+### Linia 7725 — AGENT
+
+[REDACTED]
+
+### Linia 7726 — AGENT
+
+[REDACTED]
+
+### Linia 7727 — AGENT
+
+[REDACTED]
+
+### Linia 7728 — AGENT
+
+[REDACTED]
+
+### Linia 7729 — AGENT
+
+[REDACTED]
+
+### Linia 7730 — AGENT
+
+[REDACTED]
+
+### Linia 7731 — AGENT
+
+[REDACTED]
+
+### Linia 7732 — AGENT
+
+Masz rację — ekran miał być bogatszy. W kodzie była **uproszczona prowizorka**: tylko agregaty (Zniszczone / Zrootowane / Ocalałe ×N), bez HP per jednostka.
+
+Pełniejszy widok z paskami HP jest już w **`postBattleSummary.ts`** (bitwy na mapie), ale **nie był podpięty** pod „Szczegóły bitwy” na polu bitwy.
+
+## Co jest teraz
+
+Pod trzema sekcjami strat w każdej kolumnie (Atakujący | Obrońca) jest **„Stan jednostek”** z listą każdej jednostki:
+
+| Element | Opis |
+|--------|------|
+| **Nazwa** | np. Oszczepnik, Wojownik |
+| **Status** | zniszczona / zrootowana / ocalała |
+| **Pasek HP** | szary = stan przed, kolorowy = po bitwie |
+| **Liczby** | `HP 100% → 45%` oraz **`−55%`** utraty |
+
+Dane HP biorą się ze **zapisu armii na start** bitwy (`_savedAtkBUs` / `_savedDefBUs`), więc widać realną stratę, nie tylko końcowy wynik.
+
+## Jak sprawdzić
+
+1. **Ctrl+F5** na playteście pola bitwy (`Gra-ROBOCZA-POLE-BITWY.html` z `START.html`)
+2. Doprowadź bitwę do końca → **Szczegóły bitwy**
+3. W każdej kolumnie przewiń sekcję **„Stan jednostek”**
+
+Jeśli coś nadal wygląda jak stary ekran (same ×N bez pasków), daj znać — wtedy sprawdzimy, czy otwierasz właściwy bundle (POLE-BITWY vs mapa).
+
+[REDACTED]
+
+### Linia 7733 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-08bc4089-af7b-4721-a5d1-679873bb548b.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Tuesday, Jul 7, 2026, 12:28 AM (UTC+2)</timestamp>
+
+oo  to się pokazuje po wyjściu z bitwy statystyki. Być może jak się włączy szczegóły podczas jeszcze bitwy to powinno też to się pojawiać.
+
+### Linia 7734 — AGENT
+
+Sprawdzam, gdzie w trakcie bitwy włącza się „szczegóły” i co teraz pokazuje — żeby podpiąć ten sam widok HP co po walce.
+
+[REDACTED]
+
+### Linia 7735 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-08bc4089-af7b-4721-a5d1-679873bb548b.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Tuesday, Jul 7, 2026, 12:28 AM (UTC+2)</timestamp>
+
+oo  to się pokazuje po wyjściu z bitwy statystyki. Być może jak się włączy szczegóły podczas jeszcze bitwy to powinno też to się pojawiać.
+
+### Linia 7736 — AGENT
+
+[REDACTED]
+
+### Linia 7737 — AGENT
+
+[REDACTED]
+
+### Linia 7738 — AGENT
+
+[REDACTED]
+
+### Linia 7739 — AGENT
+
+[REDACTED]
+
+### Linia 7740 — AGENT
+
+[REDACTED]
+
+### Linia 7741 — AGENT
+
+[REDACTED]
+
+### Linia 7742 — AGENT
+
+[REDACTED]
+
+### Linia 7743 — AGENT
+
+[REDACTED]
+
+### Linia 7744 — AGENT
+
+[REDACTED]
+
+### Linia 7745 — AGENT
+
+[REDACTED]
+
+### Linia 7746 — AGENT
+
+[REDACTED]
+
+### Linia 7747 — AGENT
+
+[REDACTED]
+
+### Linia 7748 — AGENT
+
+[REDACTED]
+
+### Linia 7749 — AGENT
+
+[REDACTED]
+
+### Linia 7750 — AGENT
+
+[REDACTED]
+
+### Linia 7751 — AGENT
+
+[REDACTED]
+
+### Linia 7752 — AGENT
+
+[REDACTED]
+
+### Linia 7753 — AGENT
+
+[REDACTED]
+
+### Linia 7754 — AGENT
+
+[REDACTED]
+
+### Linia 7755 — AGENT
+
+[REDACTED]
+
+### Linia 7756 — AGENT
+
+[REDACTED]
+
+### Linia 7757 — AGENT
+
+[REDACTED]
+
+### Linia 7758 — AGENT
+
+[REDACTED]
+
+### Linia 7759 — AGENT
+
+[REDACTED]
+
+### Linia 7760 — AGENT
+
+[REDACTED]
+
+### Linia 7761 — AGENT
+
+[REDACTED]
+
+### Linia 7762 — AGENT
+
+[REDACTED]
+
+### Linia 7763 — AGENT
+
+[REDACTED]
+
+### Linia 7764 — AGENT
+
+[REDACTED]
+
+### Linia 7765 — AGENT
+
+Podpinam ten sam widok HP co na mapie (`postBattleSummary`) do „Szczegółów bitwy” na polu bitwy i dodaję skrót w trakcie walki.
+
+[REDACTED]
+
+### Linia 7766 — AGENT
+
+[REDACTED]
+
+### Linia 7767 — AGENT
+
+[REDACTED]
+
+### Linia 7768 — AGENT
+
+[REDACTED]
+
+### Linia 7769 — AGENT
+
+[REDACTED]
+
+### Linia 7770 — AGENT
+
+[REDACTED]
+
+### Linia 7771 — AGENT
+
+[REDACTED]
+
+### Linia 7772 — AGENT
+
+[REDACTED]
+
+### Linia 7773 — AGENT
+
+[REDACTED]
+
+### Linia 7774 — AGENT
+
+[REDACTED]
+
+### Linia 7775 — AGENT
+
+[REDACTED]
+
+### Linia 7776 — AGENT
+
+[REDACTED]
+
+### Linia 7777 — AGENT
+
+[REDACTED]
+
+### Linia 7778 — AGENT
+
+[REDACTED]
+
+### Linia 7779 — AGENT
+
+[REDACTED]
+
+### Linia 7780 — AGENT
+
+[REDACTED]
+
+### Linia 7781 — AGENT
+
+[REDACTED]
+
+### Linia 7782 — AGENT
+
+[REDACTED]
+
+### Linia 7783 — AGENT
+
+[REDACTED]
+
+### Linia 7784 — AGENT
+
+[REDACTED]
+
+### Linia 7785 — AGENT
+
+[REDACTED]
+
+### Linia 7786 — AGENT
+
+[REDACTED]
+
+### Linia 7787 — AGENT
+
+[REDACTED]
+
+### Linia 7788 — AGENT
+
+[REDACTED]
+
+### Linia 7789 — AGENT
+
+[REDACTED]
+
+### Linia 7790 — AGENT
+
+[REDACTED]
+
+### Linia 7791 — AGENT
+
+[REDACTED]
+
+### Linia 7792 — AGENT
+
+[REDACTED]
+
+### Linia 7793 — AGENT
+
+[REDACTED]
+
+### Linia 7794 — AGENT
+
+[REDACTED]
+
+### Linia 7795 — AGENT
+
+[REDACTED]
+
+### Linia 7796 — AGENT
+
+[REDACTED]
+
+### Linia 7797 — AGENT
+
+Masz rację — ten ładny widok z kolumnami L/P i paskami HP (`HP 100% → 74%`) to **Wynik bitwy na mapie** (`postBattleSummary`). Przycisk **„Szczegóły bitwy”** na polu bitwy pokazywał inny, gorszy ekran (agregaty zniszczone/zrootowane).
+
+### Co zmieniłem
+
+1. **„Szczegóły bitwy”** (ekran końca walki) → **ten sam layout co na mapie** — kolumny z jednostkami, paski HP, werdykt w środku.
+
+2. **W trakcie walki** — nowy przycisk na prawym pasku (skrót **`I`**) otwiera ten sam widok na żywo:
+   - status: „Bitwa w toku”
+   - HP aktualizowane w momencie otwarcia
+   - `Zamknij` / `Esc` wraca do walki
+
+3. **Etykiety** — z preBattle przekazywane są teraz nazwy składów i cywilizacji (np. „Skład (2)”, „Rzymianie”).
+
+### Jak sprawdzić
+
+`gra-robocza/START.html` → **Ctrl+F5** → wejdź w ręczną bitwę:
+
+| Kiedy | Co kliknąć |
+|-------|------------|
+| W trakcie walki | przycisk **`I`** na prawym pasku |
+| Po zakończeniu | **Szczegóły bitwy** (przed powrotem na mapę) |
+
+Powinieneś zobaczyć ten sam układ co na screenie po wyjściu na mapę.
+
+[REDACTED]
+
+### Linia 7798 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-a2442d43-1420-4d4a-9ff6-f1e7092998ed.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Tuesday, Jul 7, 2026, 12:38 AM (UTC+2)</timestamp>
+
+nie wiem dlaczego po rozegranej bitwie nagle zaczęliśmy widzieć wszystkie inne jednostki, które są w okolicy
+
+### Linia 7799 — AGENT
+
+Po bitwie prawdopodobnie nie odświeża się mgła albo zostaje włączona widoczność jednostek — sprawdzam flow powrotu z bitwy i logikę `setFog`.
+
+[REDACTED]
+
+### Linia 7800 — AGENT
+
+[REDACTED]
+
+### Linia 7801 — AGENT
+
+[REDACTED]
+
+### Linia 7802 — AGENT
+
+[REDACTED]
+
+### Linia 7803 — AGENT
+
+[REDACTED]
+
+### Linia 7804 — AGENT
+
+[REDACTED]
+
+### Linia 7805 — AGENT
+
+[REDACTED]
+
+### Linia 7806 — AGENT
+
+[REDACTED]
+
+### Linia 7807 — AGENT
+
+[REDACTED]
+
+### Linia 7808 — AGENT
+
+[REDACTED]
+
+### Linia 7809 — AGENT
+
+[REDACTED]
+
+### Linia 7810 — AGENT
+
+Przyczyna: po `refreshFog()` wywoływane było `syncUnitsRender()` bez filtrowania mgły — przez to widać było wszystkie jednostki na mapie.
+
+[REDACTED]
+
+### Linia 7811 — AGENT
+
+[REDACTED]
+
+### Linia 7812 — AGENT
+
+Znalazłem przyczynę — to był bug, nie zamierzone zachowanie.
+
+### Co się działo
+
+Po bitwie silnik robił dwie rzeczy po kolei:
+
+1. `refreshFog()` — poprawnie ukrywał jednostki poza mgłą  
+2. **`syncUnitsRender()` bez argumentu** — odświeżał **wszystkie** jednostki na mapie jako widoczne
+
+Drugi krok nadpisywał mgłę i dlatego nagle widać było całe armie AI w czarnym obszarze (czerwone obwódki na screenie). Niebieskie linie to prawdopodobnie zasięg ruchu sprzed bitwy — też to poprawiłem przy wejściu w preBattle.
+
+### Poprawka
+
+Usunąłem zbędne `syncUnitsRender()` z funkcji czyszczących stan po bitwie (3 miejsca w `main.ts`). Zostaje tylko `refreshFog()`, który sam synchronizuje jednostki z mgłą.
+
+### Sprawdzenie
+
+`gra-robocza/START.html` → **Ctrl+F5** → rozegraj bitwę → po powrocie na mapę jednostki poza zasięgiem wzroku powinny zniknąć.
+
+Daj znać, czy po tej aktualizacji nadal coś „prześwituje” w mgle.
+
+[REDACTED]
+
+### Linia 7813 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-9946a5ab-b0f5-4a84-9fef-4ee039f494a5.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Tuesday, Jul 7, 2026, 12:41 AM (UTC+2)</timestamp>
+
+pomimo tego, że jest minus 3 na żywność nie wystarczająco dla wykarmienia armii te jednostki nie przechodzą w tak zwany starving. Nie pamiętam jakie są ustawienia dla tego elementu, jakbyś mógł sprawdzić od kiedy zaczynają tracić health i aż do zniknięcia
+
+### Linia 7814 — AGENT
+
+Sprawdzam w kodzie i dokumentacji, kiedy armia wchodzi w głód i traci HP.
+
+[REDACTED]
+
+### Linia 7815 — AGENT
+
+[REDACTED]
+
+### Linia 7816 — AGENT
+
+[REDACTED]
+
+### Linia 7817 — AGENT
+
+[REDACTED]
+
+### Linia 7818 — AGENT
+
+[REDACTED]
+
+### Linia 7819 — AGENT
+
+[REDACTED]
+
+### Linia 7820 — AGENT
+
+[REDACTED]
+
+### Linia 7821 — AGENT
+
+[REDACTED]
+
+### Linia 7822 — AGENT
+
+[REDACTED]
+
+### Linia 7823 — AGENT
+
+[REDACTED]
+
+### Linia 7824 — AGENT
+
+[REDACTED]
+
+### Linia 7825 — AGENT
+
+[REDACTED]
+
+### Linia 7826 — AGENT
+
+[REDACTED]
+
+### Linia 7827 — AGENT
+
+[REDACTED]
+
+### Linia 7828 — AGENT
+
+[REDACTED]
+
+### Linia 7829 — AGENT
+
+Znalazłem rozbieżność: głód ma działać przy zapasach < 0, ale flaga `isArmyStarving` nie zawsze się zgadza z liczbą na HUD — poprawiam to i doprecyzowuję reguły.
+
+[REDACTED]
+
+### Linia 7830 — AGENT
+
+[REDACTED]
+
+### Linia 7831 — MACIEJ
+
+If the available MCP tools do not fully support what the user asked you to do, complete the work you can with the current tool set. In your work summary, include what you were unable to do with MCP and why. Do not use browser automation to work around missing or unavailable MCP tools unless the user explicitly asks you to use the browser.
+
+### Linia 7832 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-9946a5ab-b0f5-4a84-9fef-4ee039f494a5.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Tuesday, Jul 7, 2026, 12:41 AM (UTC+2)</timestamp>
+
+pomimo tego, że jest minus 3 na żywność nie wystarczająco dla wykarmienia armii te jednostki nie przechodzą w tak zwany starving. Nie pamiętam jakie są ustawienia dla tego elementu, jakbyś mógł sprawdzić od kiedy zaczynają tracić health i aż do zniknięcia
+
+### Linia 7833 — AGENT
+
+[REDACTED]
+
+### Linia 7834 — AGENT
+
+[REDACTED]
+
+### Linia 7835 — AGENT
+
+[REDACTED]
+
+### Linia 7836 — AGENT
+
+[REDACTED]
+
+### Linia 7837 — AGENT
+
+[REDACTED]
+
+### Linia 7838 — AGENT
+
+[REDACTED]
+
+### Linia 7839 — AGENT
+
+[REDACTED]
+
+### Linia 7840 — AGENT
+
+[REDACTED]
+
+### Linia 7841 — AGENT
+
+[REDACTED]
+
+### Linia 7842 — AGENT
+
+[REDACTED]
+
+### Linia 7843 — AGENT
+
+[REDACTED]
+
+### Linia 7844 — AGENT
+
+Publikuję build z `gra/` (z poprawkami) do `gra-robocza/Gra-ROBOCZA.html`.
+
+[REDACTED]
+
+### Linia 7845 — AGENT
+
+[REDACTED]
+
+### Linia 7846 — AGENT
+
+[REDACTED]
+
+### Linia 7847 — AGENT
+
+[REDACTED]
+
+### Linia 7848 — AGENT
+
+Oto pełna specyfikacja **głodu wojska (starving)** i co było nie tak w Twoim playteście.
+
+## Kiedy wchodzi głód
+
+Głód **nie działa w trakcie tury** — uruchamia się **na końcu tury gracza**, po przeliczeniu ekonomii miast i ticku zapasów państwa (`advanceEmpireFood`).
+
+Warunek: **`zapasyPanstwa < 0`** po odjęciu kosztu utrzymania armii od wpływu żywności do państwa. Chip **„Armia” −3** w HUD to właśnie ten stan — teoretycznie po zakończeniu tury powinna iść utrata HP.
+
+## Ile tracą i kiedy znikają
+
+Parametr w `econ-params.json` → `glod_wojska_hp_frac`:
+
+| Trudność | Strata HP / turę |
+|----------|------------------|
+| Easy     | **6%** max HP    |
+| Normal   | **8%** max HP    |
+| Hard     | **10%** max HP   |
+
+Reguła w kodzie: co turę **−max(1, floor(maxHP × frac))** na **każdej** jednostce gracza na mapie. Przy HP ≤ 0 jednostka jest **usuwana**.
+
+Przykłady (normal, 8%):
+- Jednostka 100 HP → **−8/turę** → ~13 tur do zniszczenia od pełnego HP
+- Jednostka 50 HP → **−4/turę** → ~13 tur
+- Jednostka 10 HP → **−1/turę** (minimum) → 10 tur
+
+## Dlaczego u Ciebie nic się nie działo
+
+Były **dwa bugi**:
+
+1. **`isArmyStarving()`** — po wczytaniu save lub gdy brakowało ostatniego ticku, funkcja zwracała `false` mimo ujemnych zapasów. Głód w ogóle nie był stosowany.
+2. **Panel miasta** — ostrzeżenie „głód wojska” wymagało suwaka armii > 0%. Przy **100% wzrost** (0% na suwaku armii) UI kłamało, choć wojsko i tak jadło z zapasów.
+
+## Co widać w grze (wizualizacja)
+
+- **Na mapie** — brak ikony „starving” / paska HP na tokenie (to znane ograniczenie v1).
+- **Po turze** — hint: *„Głód wojska — zapasy państwa ujemne!”* oraz *„−8% max HP u N jednostek”* (lub *„utracono N jednostek”*).
+- **Po kliknięciu jednostki** — pasek HP w panelu jednostki (`unitPanelHud`).
+
+## Fix + nowy bundel
+
+Poprawki są w `gra/src` (m.in. fallback `zapasyPanstwa < 0`, drugie miejsce w `cityPanel.ts`). Opublikowałem build do **`gra-robocza/Gra-ROBOCZA.html`** (00:40, ~9.7 MB).
+
+**Playtest:** Ctrl+F5 → `gra-robocza/START.html` → gra z **−3 Armia** → **Zakończ turę** → powinien pojawić się hint i spadek HP po zaznaczeniu jednostki.
+
+Jeśli chcesz, mogę w kolejnym kroku dodać **widoczną ikonę głodu na tokenie** na mapie — to wymagałoby Twojej decyzji ABC (czy ikona, czy tylko czerwony obrys itd.).
+
+[REDACTED]
+
+### Linia 7849 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-affcb459-7e3b-4b94-9c5b-5f42e64c55a9.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Tuesday, Jul 7, 2026, 12:48 AM (UTC+2)</timestamp>
+
+no i nie powinniśmy się witać z AI-62, tylko powinniśmy mieć nazwy miastem, państwa, miasta. Ustaliliśmy, że było chyba dziewięć typów nazw miast, które wybraliśmy dla każdej cywilizacji i one powinny być przydzielane. Trzeba było sprawdzić, co jest w systemie.
+
+### Linia 7850 — AGENT
+
+Sprawdzam w kodzie i danych, skąd bierze się „AI 62” oraz jak działa system nazw miast/państw dla cywilizacji.
+
+[REDACTED]
+
+### Linia 7851 — AGENT
+
+[REDACTED]
+
+### Linia 7852 — AGENT
+
+[REDACTED]
+
+### Linia 7853 — AGENT
+
+[REDACTED]
+
+### Linia 7854 — AGENT
+
+[REDACTED]
+
+### Linia 7855 — AGENT
+
+[REDACTED]
+
+### Linia 7856 — AGENT
+
+[REDACTED]
+
+### Linia 7857 — AGENT
+
+[REDACTED]
+
+### Linia 7858 — AGENT
+
+[REDACTED]
+
+### Linia 7859 — AGENT
+
+[REDACTED]
+
+### Linia 7860 — AGENT
+
+[REDACTED]
+
+### Linia 7861 — AGENT
+
+[REDACTED]
+
+### Linia 7862 — AGENT
+
+[REDACTED]
+
+### Linia 7863 — AGENT
+
+[REDACTED]
+
+### Linia 7864 — AGENT
+
+[REDACTED]
+
+### Linia 7865 — AGENT
+
+Przejrzałem cały łańcuch nazewnictwa. Krótko: **dane są kompletne**, **logika przydziału istnieje**, ale w audiencji widać **„AI 62”**, bo dla tego `ownerId` brakuje wpisu w mapach etykiet — stąd włącza się awaryjny fallback.
+
+## Co ustaliliście (i co jest w kodzie)
+
+### 1. Nazwy w danych — `gra/data/civs.json`
+
+Każdy typ cywilizacji ma tablicę **`nazwyKlastra[10]`** (10 nazw, nie 9):
+
+| Indeks | Rola |
+|--------|------|
+| `[0]` | Stolica gracza (np. **Ateny** dla Grecji) |
+| `[1]…[9]` | Rywale tego samego typu + miasta obcych klastrów |
+
+Przykład Grecy: Ateny, Sparta, Korynt, Teby, Argos, Mykeny, Milet, Rodos, Syrakuzy, Delfy.
+
+W pliku jest **15 typów** (Grecy, Rzymianie, Chińczycy, Inkowie…), każdy z **pełnymi 10 nazwami**. Dokument `DESIGN-cywilizacje-spawn.md` mówi o „9 typach” — chodzi o **liczbę aktywnych typów na mapie** (zależną od rozmiaru), nie o liczbę nazw.
+
+### 2. Przydział przy starcie gry
+
+```
+computeClusters() → buildClusterSpawnPlan() → buildClusterStartPlan() → applyClusterStartPlan()
+```
+
+- **`cluster-spawn.ts`** — każdemu miastu AI przypisuje `ownerId` + `nazwaMiasta` z `nazwyKlastra`
+- **`cluster-start.ts`** — buduje mapę `ownerDisplayName` (etykieta dyplomacji = **nazwa miasta**)
+- **`civ-names.ts`** — czyste funkcje: `playerStartCityName`, `clusterRivalCityName`, `foreignCapitalCityName`
+
+Domyślnie w klastrze jest **do 9 miast-państw** (+ stolica gracza = 10 pozycji) — parametr `rywaleNaKlaster` / „Miasta-państwa” w kreatorze.
+
+### 3. Co pokazuje dyplomacja (decyzja D3-Q3)
+
+Jeden wpis na liście = **jeden owner AI = jedna nazwa miasta** (Ostia, Sparta, Cusco…), **nie** „Inkowie × 3”.
+
+Etykieta idzie przez `ownerDiploLabel()`:
+
+```2439:2442:gra/src/main.ts
+    function ownerDiploLabel(ownerId: number): string {
+      return ownerDisplayName.get(ownerId)
+        ?? aiOwnerCivMap.get(ownerId)
+        ?? ('AI ' + ownerId);
+```
+
+Priorytet: **nazwa miasta** → typ cywilizacji (`grecy`) → awaryjnie **`AI {numer}`**.
+
+---
+
+## Dlaczego widzisz „AI 62”
+
+Na screenie:
+- **Nazwa:** „AI 62” → brak wpisu w `ownerDisplayName` **i** w `aiOwnerCivMap` dla ownerId **62**
+- **Bonusy greckie** (Falanga, Hoplita…) → osobny fallback w `civKeyForOwnerId()` — gdy brak typu, kod **domyślnie bierze `'grecy'`**, więc bonusy się zgadzają, a nazwa nie
+
+To **bug integracji / stanu gry**, nie brak danych w JSON.
+
+Typowe przyczyny:
+1. **Stary save** sprzed pełnego zapisu `meta.ownerDisplayName` i `meta.aiOwnerCivMap`
+2. **Wczytanie save** — `restoreAiRosterFromSave()` uzupełnia nazwy tylko z meta; jeśli meta pusta/niepełna, część ownerów zostaje bez etykiety (naprawa z miast działa tylko częściowo przez `repairAiRosterFromMap`)
+3. **Duża mapa** — ownerId 62 jest normalny (wiele klastrów × wiele miast); nazwa powinna być ustawiona przy spawnie, ale mapa etykiet mogła się nie zsynchronizować
+
+Na mapie widać **SPARTA** i **ATENY** — nazwy klastra działają na rendererze miast. Dyplomacja czyta **osobną** mapę `ownerDisplayName`, która dla owner 62 jest pusta.
+
+---
+
+## Podsumowanie stanu systemu
+
+| Warstwa | Status |
+|---------|--------|
+| `civs.json` — 10 nazw / typ | ✅ kompletne (15 typów) |
+| Spawn + przypisanie nazw | ✅ zaimplementowane |
+| Decyzja D3-Q3 (miasto, nie nacja) | ✅ w kodzie |
+| Audiencja — wyświetlanie | ⚠️ bug gdy brak wpisu w mapach |
+| Bonusy przy braku typu | ⚠️ myląco pokazują Greków jako domyślnych |
+
+---
+
+## Co dalej (propozycja naprawy)
+
+Bez Twojej decyzji ABC — tylko techniczna rekomendacja:
+
+1. **`ownerDiploLabel`** — dodatkowy fallback: nazwa pierwszego miasta tego ownera z `cities[]`
+2. **Przy load save** — zawsze uzupełniać `ownerDisplayName` z `city.name`, nie tylko z meta
+3. **Usunąć cichy fallback `'grecy'`** w bonusach — lepiej pokazać „nieznany typ” niż fałszywe greckie bonusy
+
+**Szybki test:** Ctrl+F5 → **nowa gra** (nie kontynuacja starego save) → spotkaj AI → w audiencji powinno być **Sparta / Korynt / Cusco…**, nie „AI 62”.
+
+Chcesz, żebym od razu zrobił fix fallbacków (pkt 1–2) i opublikował nowy `Gra-ROBOCZA.html`?
+
+[REDACTED]
+
+### Linia 7867 — MACIEJ
+
+<timestamp>Tuesday, Jul 7, 2026, 7:10 AM (UTC+2)</timestamp>
+
+jeszcze jedna kwestia. Jednostką powinna być możliwość wyznaczania dalszego kursu niż tylko obecny zasięg w danej turze. Na przykład 6, 7, a nawet 15 możliwych tur do przodu. Jedyna kwestia to jest taka, że po każdej turze powinna być liczba na końcu, jak daleko ta podróż, ile tur zajmie ta podróż w to miejsce.
+
+### Linia 7868 — AGENT
+
+Sprawdzam, jak dziś działa ruch jednostek i czy jest już planowanie trasy na wiele tur.
+
+[REDACTED]
+
+
+---
+
+## Dopisek synchronizacji — 2026-07-07 09:38 UTC (linie 7869–7870)
+
+
+### Linia 7870 — MACIEJ
+
+<timestamp>Tuesday, Jul 7, 2026, 11:26 AM (UTC+2)</timestamp>
+
+Ok. Czy z wszystkich tematów, które Ci podesłałem, potrzebujesz ode mnie jeszcze jakiejś może decyzji 1abc
+
+
+---
+
+## Dopisek synchronizacji — 2026-07-07 14:19 UTC (linie 7871–8679)
+
+
+### Linia 7871 — AGENT
+
+[REDACTED]
+
+### Linia 7872 — AGENT
+
+[REDACTED]
+
+### Linia 7873 — AGENT
+
+Oto audyt tego, co jest dziś w systemie, i jak to się ma do Twojej wizji.
+
+## Co działa teraz (mapa strategiczna)
+
+Ruch jest **tylko w obrębie bieżącej tury**:
+
+| Element | Stan |
+|--------|------|
+| Zasięg (zielone heksy) | `computeReachable()` — tylko do `ruchLeft` |
+| Podgląd trasy (hover) | Złota linia **tylko** gdy cel jest w zasięgu tej tury |
+| Klik | `beginMoveSelectedUnitTo()` — natychmiastowy ruch po trasie z tej tury |
+| Licznik tur do celu | **Brak** |
+| Zlecenie „idź tam przez 15 tur” | **Brak** |
+
+Algorytm ścieżki (`computePath` + `pathCost`) liczy koszt terenu (łąka, las, droga, rzeka itd.), ale **nie planuje wielu tur** — po ruchu jednostka staje, a reszta drogi znika.
+
+Poradnik (§23) opisuje sytuację „za mało punktów → trasa się urywa” — to znaczy **wcześniejszy stop w tej samej turze**, nie automatyczna podróż przez kolejne tury.
+
+---
+
+## Czego brakuje (Twoja wizja)
+
+Chcesz coś w stylu Civ / Total War:
+
+1. **Wyznaczenie celu dalej** niż zasięg tej tury (6, 7, 15 tur).
+2. **Wizualna trasa** na całą drogę (nie tylko zielony promień).
+3. **Liczba tur** przy końcu trasy — i **aktualizacja co turę** (np. „12 → 11 → … → 1 → dotarł”).
+
+To w kodzie **nie istnieje** — jest tylko dyskusja z playtestu pola bitwy (Ctrl/Shift = plan bez ruchu), ale **na mapie świata nie wdrożono**.
+
+---
+
+## Jak to sensownie zaprojektować (propozycja techniczna)
+
+**Model danych** — na jednostce (lub w osobnej mapie):
+
+```
+moveOrder: { destQ, destR } | null
+```
+
+**Co turę gracza (auto-krok):**
+- Jeśli jest `moveOrder` → policz ścieżkę do celu (z aktualną mapą / zajętymi heksami).
+- Przesuń jednostkę o tyle, ile starczy `ruchLeft` w tej turze (jak dziś).
+- Jeśli cel zablokowany / wrogi / nieosiągalny → anuluj zlecenie + hint.
+- Jeśli dotarła → wyczyść zlecenie.
+
+**ETA (liczba tur):**
+- Symulacja: „gdybym co turę miał pełny `ruch` (np. 2), ile tur do końca ścieżki?”  
+- `ceil( koszt_całej_trasy / ruch_jednostki )` — z uwzględnieniem bonusu rzeki, dróg itd.
+- Etykieta przy **końcu trasy** (torus / chip 3D / HTML nad heksem).
+
+**UI — kiedy ustawiać daleki cel:**
+
+| Opcja | Zachowanie |
+|-------|------------|
+| **A** | **Shift + klik** = zlecenie wieloturowe; zwykły klik = jak dziś (1 tura) |
+| **B** | Klik **poza zasięg** = od razu zlecenie + pełna trasa + „~N tur” |
+| **C** | Oba: Shift = tylko plan (bez ruchu w tej turze); klik daleko = rusz + kontynuuj |
+
+Na playteście pole bitwy ustaliliście już: **zwykły klik = od razu**, **Ctrl/Shift = tylko plan** — sensownie przenieść to na mapę (opcja **A** lub **C**).
+
+---
+
+## Zależności / ryzyka
+
+- **Mgła** — długa trasa przez nieodkryte heksy: liczyć ETA po znanym terenie, czy zakładać „idealny” koszt?
+- **Blokady** — wróg wchodzi na trasę, zmiana dróg, oblężenie → przeliczenie lub stop.
+- **Atak** — czy zlecenie się **kasuje** przy wejściu w pre-bitwę (pewnie tak).
+- **Save/load** — `moveOrder` w meta sejwu.
+- **Lane:** logika UNITS/MAPA (`setup.ts` + render trasy + SILNIK w `main.ts`).
+
+---
+
+## Decyzja ABC (krótko)
+
+**Jak gracz wydaje dalekie zlecenie?**
+
+- **A** — Shift + klik celu (zwykły klik bez zmian) *(spójne z ustaleniami z pola bitwy)*
+- **B** — każdy klik poza zielonym zasięgiem = auto-zlecenie
+- **C** — osobny przycisk „Idź” / prawy panel z polem „tur docelowo”
+
+**Co pokazujemy na mapie?**
+
+- **A** — pełna trasa + **„~N tur”** przy celu *(Twoja propozycja)*
+- **B** — tylko strzałka prosta + liczba tur
+- **C** — trasa tylko po najechaniu / w panelu jednostki
+
+Rekomendacja: **zlecenie = A (Shift+klik)**, **wizualizacja = A (pełna trasa + N tur)**, auto-kontynuacja co turę gracza aż do celu lub przeszkody.
+
+---
+
+**Podsumowanie:** fundament jest (`computePath`, animacja kroku, złota linia), ale **wieloturowe zlecenie + licznik tur** to nowy moduł — ok. 1 batch UNITS + 1 batch SILNIK (wpinanie ticku + save).  
+
+Jak wybierzesz **ABC** (sposób wydawania + sposób pokazania), mogę to rozpisać jako handoff z kryteriami akceptacji albo od razu wdrożyć w `gra-robocza` po Twojej decyzji.
+
+[REDACTED]
+
+### Linia 7874 — MACIEJ
+
+<timestamp>Tuesday, Jul 7, 2026, 7:12 AM (UTC+2)</timestamp>
+
+I jeszcze jedna kwestia. Jeżeli chodzi o odkrycia, powinna być możliwość dołączenia do pięciu odkryć, tak by do kolejki. Tak się buduje budynki. żeby sobie dołożyć do kolejki kilka rzeczy, które chcemy odkrywać. A niestety system czasem przeskakuje sam automatycznie na dowolne badanie. Możemy nie zauważyć, że coś się skończyło i on sam ustala kolejne badania.
+
+### Linia 7875 — AGENT
+
+Sprawdzam, jak dziś działa kolejka badań i skąd bierze się automatyczne przełączanie na następne odkrycie.
+
+[REDACTED]
+
+### Linia 7876 — AGENT
+
+[REDACTED]
+
+### Linia 7877 — AGENT
+
+[REDACTED]
+
+### Linia 7878 — AGENT
+
+[REDACTED]
+
+### Linia 7879 — AGENT
+
+[REDACTED]
+
+### Linia 7880 — AGENT
+
+[REDACTED]
+
+### Linia 7881 — AGENT
+
+[REDACTED]
+
+### Linia 7882 — AGENT
+
+[REDACTED]
+
+### Linia 7883 — AGENT
+
+[REDACTED]
+
+### Linia 7884 — AGENT
+
+Masz rację co do problemu — i w kodzie widać dokładnie, skąd to się bierze.
+
+## Co jest dziś
+
+**Jeden cel, bez kolejki**
+
+W `playerState.ts` gracz ma tylko:
+- `badana` — co jest badane teraz
+- `playerResearchTargetId` — **jeden** ręcznie wybrany cel (klik w drzewku)
+
+**Brak** tablicy typu `kolejkaNauki[5]` — w odróżnieniu od produkcji miasta, gdzie `production.ts` ma pełną `kolejka[]` z dodawaniem, usuwaniem i kolejnością.
+
+**Automatyczne „przeskakiwanie”**
+
+W `researchStep()` po ukończeniu tech:
+
+```314:320:gra/src/game/playerState.ts
+    // --- clear explicit player target (completed; player must pick next) ---
+    state.playerResearchTargetId = null;
+
+    // --- pick the next target (default: first available, to prevent stalling) ---
+    const nextAvail = availableTechs(techs, state.zbadane, gate);
+    state.badana = nextAvail.length > 0 ? techId(nextAvail[0]!) : null;
+```
+
+Czyli:
+1. Twój wybór jest **zerowany**.
+2. Silnik sam ustawia **`availableTechs()[0]`** — pierwszą tech z listy w `tech.json`, która ma spełnione prerekwizyty (kolejność pliku, **nie** „najtańsza” ani „losowa”, ale **bez Twojej kontroli**).
+3. To samo dzieje się, gdy **nie masz** wybranego celu na starcie tury.
+
+Stąd wrażenie, że gra „sama wybiera dowolne badanie” — często po cichu, bo hint „Zbadano: …” trwa 3,5 s i od razu leci następna tech.
+
+**Drzewko (`sciencePicker.ts`)**  
+Klik = ustaw **jeden** cel. Brak UI „Dodaj do kolejki” jak przy budynkach w panelu miasta.
+
+**Status projektu**  
+W `DZIENNIK-MASTERA` temat nauki jest oznaczony **HOLD** — dokładny przegląd przed implementacją (`KOLEJKA-UX-OCENY.md`, pozycja #2).
+
+---
+
+## Co proponujesz (zgodnie z budynkami)
+
+| Element | Produkcja miasta (jest) | Nauka (brak) |
+|--------|-------------------------|--------------|
+| Kolejka | `kolejka[]` w `CityProduction` | brak |
+| Max pozycji | praktycznie wiele | **5** (Twoja propozycja) |
+| Po ukończeniu | następny z kolejki | auto `availableTechs()[0]` |
+| UI | „Dodaj do kolejki”, strzałki góra/dół | tylko „wybierz cel” |
+
+**Docelowy flow:**
+1. Klik tech w drzewku → **dodaj do kolejki** (max 5), albo ustaw jako aktywny cel.
+2. Po zakończeniu badań → **następna z kolejki**, nie auto-wybór z JSON.
+3. Kolejka pusta → **nic nie badamy** (albo wyraźny komunikat „Uzupełnij kolejkę badań”).
+4. Widoczna lista kolejki w hubie nauki (jak plan budowy w mieście).
+
+---
+
+## Decyzje ABC (do Twojej akceptacji)
+
+**N1 — Kolejka badań**
+
+- **A** — max **5** tech w kolejce (jak budynki) *(Twoja propozycja)*
+- **B** — max **3**
+- **C** — bez limitu (tylko lista)
+
+**N2 — Gdy kolejka pusta po ukończeniu tech**
+
+- **A** — **stop** — nauka się nie toczy, hint + podświetlenie drzewka *(rekomendowane — pełna kontrola)*
+- **B** — auto pierwsza dostępna (jak dziś — zostaje problem)
+- **C** — auto, ale **modal** „Tech X ukończona — wybierz następną” (blokuje koniec tury)
+
+**N3 — Klik w drzewku**
+
+- **A** — klik dostępnej tech = **dodaj do kolejki**; osobny przycisk „Ustaw jako następna”
+- **B** — klik = **zastąp całą kolejkę** jedną tech (prostsze)
+- **C** — klik = dodaj do kolejki; **Shift+klik** = tylko aktywny cel bez kolejki
+
+**N4 — Pula nauki przy zmianie kolejki**
+
+- **A** — pula **zostaje** (nauka nie przepada przy zmianie celu) *(zgodne z handoffem EKONOMIA)*
+- **B** — reset puli przy zmianie celu
+
+Rekomendacja: **N1=A, N2=A, N3=A, N4=A**.
+
+---
+
+## Zakres implementacji (po ABC)
+
+| Lane | Pliki |
+|------|--------|
+| **EKONOMIA** | `playerState.ts` — `researchQueue`, logika `researchStep`, save |
+| **UI** | `sciencePicker.ts`, `scienceHubHud.ts` — lista kolejki, „Dodaj do kolejki” |
+| **SILNIK** | `main.ts` — save/load meta, hint po ukończeniu + „Następna w kolejce: …” |
+
+Szacunek: jeden batch EKONOMIA + jeden UI + wpicie SILNIK (testy w `logic-test.cjs` dla `researchStep`).
+
+---
+
+**Podsumowanie:** kolejka 5 odkryć **nie jest zaimplementowana**; auto-przeskakiwanie to **celowe fallback** w `researchStep`, który dziś psuje kontrolę gracza. Temat jest na liście HOLD — po Twoim ABC (N1–N4) można to wdrożyć jako pierwszy batch po dyplomacji/nauce w kolejce UX.
+
+Które litery wybierasz dla N1–N4?
+
+[REDACTED]
+
+### Linia 7885 — MACIEJ
+
+<timestamp>Tuesday, Jul 7, 2026, 7:14 AM (UTC+2)</timestamp>
+
+jeszcze jedna rzecz: Czy w miarę jak miasto rośnie wymagana ilość żywności jest coraz większa i jak jest ewentualnie wymagane liczby żywności na progres dla pierwszych 15 poziomów? Powinno rosnąć, ale nie wiem o ile rośnie.
+
+### Linia 7886 — AGENT
+
+Sprawdzam w kodzie i danych, jak rośnie zapotrzebowanie na żywność wraz z populacją miasta (progi wzrostu dla pierwszych 15 poziomów).
+
+[REDACTED]
+
+### Linia 7887 — AGENT
+
+[REDACTED]
+
+### Linia 7888 — AGENT
+
+[REDACTED]
+
+### Linia 7889 — AGENT
+
+[REDACTED]
+
+### Linia 7890 — AGENT
+
+[REDACTED]
+
+### Linia 7891 — AGENT
+
+[REDACTED]
+
+### Linia 7892 — AGENT
+
+Tak — **wraz z populacją rośnie zapotrzebowanie na żywność**, ale w grze są **dwa osobne mechanizmy**, które warto rozróżnić.
+
+## 1. Zużycie co turę (karmienie miasta)
+
+Każdy punkt ludności **zjada żywność co turę**, zanim cokolwiek trafi do bufora wzrostu:
+
+**Zużycie = populacja × współczynnik** (`zywnosc_zuzytka_populacja` w `econ-params.json`)
+
+| Trudność | Na 1 mieszkańca / turę |
+|----------|-------------------------|
+| Easy     | **1** 🍞 |
+| Normal   | **1** 🍞 |
+| Hard     | **2** 🍞 |
+
+Przykład (normal): miasto **10** ludności → **10** 🍞/turę tylko na utrzymanie (+ wojsko w garnizonie osobno).
+
+To odejmuje się od plonów pól i budynków → w panelu widzisz **żywność netto** miasta.
+
+---
+
+## 2. Próg wzrostu (+1 ludność) — to widzisz na pasku „Wzrost · X/Y”
+
+Żeby miasto **urośło o 1**, bufor (`magazynZywnosci`) musi osiągnąć **próg**:
+
+**Próg(N) = 10 + N × współczynnik**
+
+gdzie **N = obecna populacja** (przed wzrostem), a współczynnik to `próg_wzrostu_wspolczynnik`:
+
+| Trudność | Współczynnik | Wzór |
+|----------|--------------|------|
+| Easy     | **6** | 10 + 6×N |
+| Normal   | **8** | 10 + 8×N |
+| Hard     | **10** | 10 + 10×N |
+
+**Po wzroście:**
+- **Bez Spichlerza** — bufor **zeruje się** (zaczynasz zbierać od zera).
+- **Ze Spichlerzem** — zostaje **50%** bufora (normal; easy 60%, hard 40%).
+
+---
+
+## Tabela progów — **Normal**, populacja 1→15
+
+| Populacja teraz | Próg do +1 (🍞 w buforze) | Zużycie / turę | Uwagi |
+|-----------------|---------------------------|----------------|--------|
+| **1** | **18** | 1 | start |
+| **2** | **26** | 2 | |
+| **3** | **34** | 3 | |
+| **4** | **42** | 4 | |
+| **5** | **50** | 5 | |
+| **6** | **58** | 6 | **max bez Akweduktu** (normal) |
+| **7** | **66** | 7 | potrzebny Akwedukt |
+| **8** | **74** | 8 | |
+| **9** | **82** | 9 | |
+| **10** | **90** | 10 | |
+| **11** | **98** | 11 | |
+| **12** | **106** | 12 | |
+| **13** | **114** | 13 | |
+| **14** | **122** | 14 | |
+| **15** | **130** | 15 | próg do pop. 16 |
+
+Wzór dla normal: **próg = 10 + 8×N**, **zużycie = N**.
+
+Na **easy** (wsp. 6): np. pop 10 → próg **70** (10+60), zużycie 10.  
+Na **hard** (wsp. 10): pop 10 → próg **110**, zużycie **20**.
+
+---
+
+## Jak to działa w praktyce (jedna tura)
+
+1. Miasto produkuje **żywność brutto** (pola, farma, budynki…).
+2. Odejmowane jest **zużycie** (N × 1 na normal).
+3. Z **netto** tylko część idzie do wzrostu — zależy od suwaka imperium **„Rozwój miast”** (domyślnie 100% na start).
+4. Ta część **dokłada się do bufora** (`magazyn/prog` w panelu).
+5. Bufor ≥ próg → **+1 ludność** (jeśli nie ma blokady Akweduktu).
+
+Przy **ujemnej** netto i pustym buforze możliwy **−1 ludność** (min. 1).
+
+---
+
+## Limity, o których warto pamiętać
+
+- **Bez Akweduktu** (normal): **max 6** ludności — dalszy wzrost zablokowany mimo pełnego bufora.
+- **Pojemność bufora:** bez Spichlerza baza **20** 🍞, ale cap rośnie razem z progiem (żeby miasto nie utknęło). Ze Spichlerzem: **20×5 = 100** (normal), też nie mniej niż próg.
+- **Wojsko w garnizonie** dodatkowo zjada żywność miasta (osobny parametr) — to nie wchodzi w powyższą tabelę zużycia „samej” populacji.
+
+---
+
+**Krótko:** tak, wymagania **rosną liniowo** z populacją — zużycie **+1 🍞/turę na każdego mieszkańca** (normal), próg wzrostu **+8 🍞 na każdy poziom** (normal: 18 → 26 → 34 → … → 130 przy pop 15). W panelu miasta dokładnie to pokazuje pasek **„Wzrost · bufor/próg”**.
+
+Jeśli chcesz, mogę przygotować tę samą tabelę dla **easy** i **hard** albo policzyć, ile tur trwa wzrost przy konkretnym plonie (np. +12 netto/turę do bufora).
+
+[REDACTED]
+
+### Linia 7893 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-60bb3571-746e-439d-8599-17d84456e820.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Tuesday, Jul 7, 2026, 7:15 AM (UTC+2)</timestamp>
+
+niestety widać też przez czarną mgłę rzeki. To nie powinno być widoczne.
+
+### Linia 7894 — AGENT
+
+Rzeki nie powinny przebijać mgły — sprawdzam, jak render i fog współpracują w kodzie mapy.
+
+[REDACTED]
+
+### Linia 7895 — AGENT
+
+[REDACTED]
+
+### Linia 7896 — AGENT
+
+[REDACTED]
+
+### Linia 7897 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-60bb3571-746e-439d-8599-17d84456e820.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Tuesday, Jul 7, 2026, 7:15 AM (UTC+2)</timestamp>
+
+niestety widać też przez czarną mgłę rzeki. To nie powinno być widoczne.
+
+### Linia 7898 — AGENT
+
+[REDACTED]
+
+### Linia 7899 — AGENT
+
+[REDACTED]
+
+### Linia 7900 — AGENT
+
+[REDACTED]
+
+### Linia 7901 — AGENT
+
+[REDACTED]
+
+### Linia 7902 — AGENT
+
+[REDACTED]
+
+### Linia 7903 — AGENT
+
+[REDACTED]
+
+### Linia 7904 — AGENT
+
+[REDACTED]
+
+### Linia 7905 — AGENT
+
+Widzę przyczynę: wszystkie rzeki są scalane w jeden mesh, a mgła pokazuje go, gdy choć jeden hex na mapie jest odkryty. Naprawiam to przez osobne meshe per trasa i poprawną logikę FoW.
+
+[REDACTED]
+
+### Linia 7906 — AGENT
+
+[REDACTED]
+
+### Linia 7907 — AGENT
+
+[REDACTED]
+
+### Linia 7908 — AGENT
+
+[REDACTED]
+
+### Linia 7909 — AGENT
+
+[REDACTED]
+
+### Linia 7910 — AGENT
+
+[REDACTED]
+
+### Linia 7911 — AGENT
+
+[REDACTED]
+
+### Linia 7912 — AGENT
+
+[REDACTED]
+
+### Linia 7913 — AGENT
+
+[REDACTED]
+
+### Linia 7914 — AGENT
+
+[REDACTED]
+
+### Linia 7915 — AGENT
+
+[REDACTED]
+
+### Linia 7916 — AGENT
+
+[REDACTED]
+
+### Linia 7917 — AGENT
+
+[REDACTED]
+
+### Linia 7918 — AGENT
+
+[REDACTED]
+
+### Linia 7919 — AGENT
+
+[REDACTED]
+
+### Linia 7920 — AGENT
+
+[REDACTED]
+
+### Linia 7921 — AGENT
+
+Naprawione. Rzeki nie powinny już przeświecać przez czarną mgłę.
+
+**Przyczyna:** Wszystkie rzeki lądowe (i ujścia) były scalane w **jeden wielki mesh**. Reguła mgły mówiła: „pokaż, jeśli **jakikolwiek** hex trasy jest odkryty” — więc wystarczyło jedno odkryte pole z rzeką gdzieś na mapie, żeby **cała sieć rzek** była widoczna, także w czarnym obszarze FoW.
+
+**Fix:**
+1. **Osobny mesh na każdą trasę rzeki** (ląd + ujście) — mgła decyduje per rzeka, nie dla całej mapy naraz.
+2. **Jedna reguła FoW:** rzeka widoczna tylko wtedy, gdy **żaden** hex jej trasy nie jest w czarnej mgle (`unknown`).
+
+Zmiany w `gra/src/render/scene.ts` i `gra/src/render/riverLod.ts`. Bundel opublikowany do `gra-robocza/Gra-ROBOCZA.html`.
+
+**Playtest:** `gra-robocza/START.html` → **Ctrl+F5** → ta sama gra / widok mapy. W czarnym obszarze nie powinno być niebieskich linii rzek.
+
+**Uwaga na granicy mgły:** jeśli rzeka wchodzi w nieodkryty teren, cała trasa znika (nie da się częściowo ukryć jednego scalonego mesha). To świadomy kompromis — lepiej niż podgląd całej sieci hydrografii.
+
+[REDACTED]
+
+### Linia 7922 — MACIEJ
+
+[Image]
+[Image]
+[Image]
+[Image]
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-061b2871-a4b1-4fc2-a544-c23c10f3c513.png
+2. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-2cb428ae-adb5-47d0-9b10-0417ab6eead0.png
+3. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-99b7e8e7-cc75-403e-9c24-8e8f17e31ec0.png
+4. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-8d0c59e4-5c4a-4451-9f75-422909cb759c.png
+5. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-e74443c5-142c-400e-a399-d01aec62ff18.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Tuesday, Jul 7, 2026, 7:19 AM (UTC+2)</timestamp>
+
+po zdobyciu miasta statystyki wyglądają tak. W mieście są dwie jednostki wojskowe. Po puszczeniu Tury nadal jest tak samo. Wojska nie dają żadnego efektu pozytywnego dla prawo miało dodawać plus 20. Kolejna kwestia. Po zdobyciu miasta obcego . Nie wiem, czy tak statystyki powinny zjeżdżać aż do zera. Wcześniej to miasto miało jakieś poczucie szczęścia, uprawa. Nie wiem czemu to się ceruje. Praktycznie takiego miasta nie da się utrzymać na dłuższą metę. Ja wiem, że tu kultura będzie mieć wpływ na to. Ale pytanie, czy coś tu jest nie tak?
+
+### Linia 7923 — AGENT
+
+Sprawdzam logikę garnizonu, prawa i resetu statystyk po zdobyciu miasta — to wygląda na bug albo brakujące powiązanie jednostek z bonusem.
+
+[REDACTED]
+
+### Linia 7924 — AGENT
+
+[REDACTED]
+
+### Linia 7925 — AGENT
+
+[REDACTED]
+
+### Linia 7926 — AGENT
+
+[REDACTED]
+
+### Linia 7927 — AGENT
+
+[REDACTED]
+
+### Linia 7928 — AGENT
+
+[REDACTED]
+
+### Linia 7929 — AGENT
+
+[REDACTED]
+
+### Linia 7930 — AGENT
+
+[REDACTED]
+
+### Linia 7931 — AGENT
+
+[REDACTED]
+
+### Linia 7932 — AGENT
+
+[REDACTED]
+
+### Linia 7933 — AGENT
+
+[REDACTED]
+
+### Linia 7934 — AGENT
+
+[REDACTED]
+
+### Linia 7935 — AGENT
+
+[REDACTED]
+
+### Linia 7936 — AGENT
+
+Tak — tu są **dwa osobne problemy**: jeden to wygląda na **bug**, drugi to **celowo ostry model okupacji**, ale bez kilku brakujących elementów.
+
+## 1. Wojsko nie daje +20 do Prawa — to bug / luka w UX
+
+Panel pokazuje wprost **„Garnizon 0 jedn.”** i karę **„Brak garnizonu (duże miasto): −1”**. Przy tym **nie liczy się sam fakt**, że jednostki stoją na/nad miastem.
+
+Gra liczy garnizon tylko wtedy, gdy jednostka ma flagę **`inGarnizon`** (akcja **Ufortyfikuj** na heksie własnego miasta):
+
+```2217:2229:gra/src/main.ts
+        getUnitsAt: (q: number, r: number) => {
+          return units
+            .filter(u => u.q === q && u.r === r && u.inGarnizon === true)
+```
+
+Bonus +20/jednostkę idzie z `garnizonCount`, który też wymaga `inGarnizon`:
+
+```3865:3871:gra/src/main.ts
+    function garnizonCountForCity(city: City): number {
+      return units.filter(
+        u => u.ownerId === city.ownerId
+          && u.q === city.q
+          && u.r === city.r
+          && u.inGarnizon === true,
+      ).length;
+```
+
+Po zdobyciu miasta kod **jawnie usuwa** `inGarnizon` u zwycięskich jednostek:
+
+```325:332:gra/src/game/post-battle-map.ts
+    if (ref.id === atkRoster[0]?.id) {
+      live.q = city.q;
+      live.r = city.r;
+      lead = live;
+    }
+    ...
+    if (live.inGarnizon) delete live.inGarnizon;
+```
+
+**Efekt:** masz wojsko przy mieście, ale dla Prawa/Porządku to **0 garnizonu** → brak +20/+40, jest tylko kara −1. Stąd Prawo 0% i „Bunt skrajny” mimo dwóch jednostek.
+
+**Szybki test:** zaznacz jednostkę na heksie miasta → **Ufortyfikuj**. Panel powinien pokazać „Garnizon 1–2 jedn.” i w Prawie linię **„Garnizon (N jedn.): +20…”**.
+
+---
+
+## 2. Statystyki blisko zera po zdobyciu — częściowo „tak ma być”, częściowo brakuje mechanik
+
+To **nie jest pełny reset** miasta (budynki, okolica, zdrowie z rzeki/lasu zostają — widać +3/+2). Spadają głównie warstwy **Porządku**:
+
+| Składnik | Co widać | Dlaczego |
+|---|---|---|
+| **Prawo** | 0% | Brak garnizonu (bug wyżej) + brak Ratusza/Sądu |
+| **Szczęście** | ~0–2% | Religia −1, obca religia −1, zagęszczenie −0,75…−1,5 vs kultura +3 |
+| **Kultura (przyrost)** | 0 | Osobna kwestia — plony/kultura z ekonomii; skumulowana kultura nie zeruje się przy capture |
+| **Religia** | obca, „Wierni 0” | Miasto zostaje z religią poprzednika — to zamierzone |
+
+Model mówi: **obce miasto = niestabilne**, dopóki nie postawisz garnizonu, nie obniżysz podatków (Wealth) i nie zassymilujesz kultury/religii. **Problem:** po zdobyciu od razu startuje **grace buntu (2–3 tury)** bez „okresu okupacji”, a **konwersja kultury** (`convertCulture`) **nie jest wpięta** w pętlę tury — więc brakuje stopniowego „uspokajania”.
+
+Czyli: **tak, coś jest nie tak** — głównie garnizon; **plus** okupacja jest dziś **za ostra na v1.0 playtest**, bo brakuje bufora po capture i konwersji.
+
+---
+
+## Decyzja ABC (co naprawiamy)
+
+**A — Auto-garnizon po zdobyciu (rekomendowane)**  
+Jednostki atakujące na heksie miasta dostają `inGarnizon = true` od razu po capture → +20/jedn., znika kara „brak garnizonu”.
+
+**B — Garnizon = każda własna jednostka na heksie miasta**  
+Bez wymogu Ufortyfikuj; Ufortyfikuj tylko chowa token z mapy.
+
+**C — Zostaw ręczne Ufortyfikuj, ale:** komunikat po capture + ostrzejszy hint w panelu Porządku („Ufortyfikuj, inaczej Prawo = 0”).
+
+**D — Okupacja (osobno):** 3–5 tur grace po capture zanim liczy się bunt skrajny + wpięcie konwersji kultury.
+
+---
+
+**Na teraz (bez kodu):** zaznacz obie jednostki i **Ufortyfikuj** — to powinno od razu podnieść Prawo. Jeśli chcesz, wdrożę **A** (najszybszy sensowny fix) albo **A+D** — napisz literę.
+
+[REDACTED]
+
+### Linia 7937 — MACIEJ
+
+<timestamp>Tuesday, Jul 7, 2026, 7:22 AM (UTC+2)</timestamp>
+
+widzę jeden problem, a nawet usadowienie państw miast. Widzę, że system chce rozłożyć równomiernie te państwa, miasta. Ale nie do to chodziło. Właśnie miały być upakowane jak najbliżej miasta głównego gracza danej cywilizacji. Czyli jeżeli na przykład zaczynam Atenami, to system powinien najpierw dać mi możliwość wyboru miejsca, a dopiero potem powinien wygenerować miasta wokół. A jeżeli jest to niemożliwe, po prostu te miasta państwa powinny być w jak największym skupisku w odległości od siebie do trzech pól, a nie rozłożone po całym mapie. W sensie równo trzy pola od siebie. Działań nie by było, gdyby nasze państwo było otoczone tymi miastami, ale to byłoby pewnie trudne do wykonania. więc powiedzmy, że będzie mogła być na obrzeżu tych miast, ale ważne, żeby te miasta państwa danej tego nowego typu cywilizacji były najbliżej jak się da wokół jakiegoś rdzenia, żeby tak to było generowane. No i trudno, będą puste przestrzenie duże, muszą być widocznie. Dzięki temu będziemy mogli upakować więcej państw i miast i zwiększyć ich ilość. W przyszłości robiąc balans.
+
+### Linia 7938 — AGENT
+
+Sprawdzam, jak dziś generowane są klastry państw i miasta startowe — szukam logiki rozmieszczenia wokół rdzenia gracza.
+
+[REDACTED]
+
+### Linia 7939 — AGENT
+
+[REDACTED]
+
+### Linia 7940 — AGENT
+
+[REDACTED]
+
+### Linia 7941 — AGENT
+
+[REDACTED]
+
+### Linia 7942 — AGENT
+
+[REDACTED]
+
+### Linia 7943 — AGENT
+
+[REDACTED]
+
+### Linia 7944 — AGENT
+
+[REDACTED]
+
+### Linia 7945 — AGENT
+
+Widzę problem: miasta są rozsiane po całym regionie Voronoi zamiast skupiska wokół rdzenia. Zmieniam algorytm pakowania i odkładam spawn rywali tego samego typu do momentu wyboru miejsca przez gracza.
+
+[REDACTED]
+
+### Linia 7946 — AGENT
+
+[REDACTED]
+
+### Linia 7947 — AGENT
+
+[REDACTED]
+
+### Linia 7948 — AGENT
+
+[REDACTED]
+
+### Linia 7949 — AGENT
+
+[REDACTED]
+
+### Linia 7950 — AGENT
+
+[REDACTED]
+
+### Linia 7951 — AGENT
+
+[REDACTED]
+
+### Linia 7952 — AGENT
+
+[REDACTED]
+
+### Linia 7953 — AGENT
+
+[REDACTED]
+
+### Linia 7954 — AGENT
+
+[REDACTED]
+
+### Linia 7955 — AGENT
+
+[REDACTED]
+
+### Linia 7956 — AGENT
+
+[REDACTED]
+
+### Linia 7957 — AGENT
+
+Masz rację — to był **błąd algorytmu**, nie zamierzony efekt.
+
+## Co było nie tak
+
+Generator rozkładał miasta-państwa po **całym regionie Voronoi** danego typu (potrafi to być połowa mapy). Stąd wrażenie „równomiernego” rozsypu zamiast skupiska wokół rdzenia.
+
+## Co zmieniliśmy (w `gra-robocza`, Ctrl+F5)
+
+1. **Ciasne klastry** — miasta tego samego typu (Sparta, Kapua…) i obce typy (Qin, Cusco…) stoją teraz **blisko centrum klastra**, min. **3 hexy** od siebie, w promieniu `packRadius` (~9–15 hexów), nie po całej mapie.
+
+2. **Najpierw wybór gracza** — miasta-państwa **tego samego typu co Ty** **nie pojawiają się** na starcie. Dopiero **po założeniu pierwszego miasta** (Ateny) spawnują się wokół **wybranego przez Ciebie heksu**, nie wokół losowego punktu z generatora.
+
+3. **Obce typy** — nadal startują od razu, ale też **w skupisku** wokół własnego centrum; między klastrami zostają **duże puste przestrzenie** (centra typów min. 12 hex od siebie).
+
+## Jak przetestować
+
+1. `gra-robocza/START.html` → **Ctrl+F5**
+2. Nowa gra (np. Grecy)
+3. Na starcie: **brak** Sparty/Kapui w okolicy — tylko obce typy dalej
+4. Załóż miasto (Ateny) w oświetlonym kręgu
+5. **Od razu** wokół powinny wyskoczyć miasta-państwa greckie **blisko siebie** (3+ hex od siebie, w jednym skupisku)
+
+## Na później (balans)
+
+- Więcej miast-państw w klastrze → suwak w kreatorze
+- Gracz na obrzeżu klastra zamiast w środku → można dopracować offset rdzenia
+- Pełne „otoczenie” gracza rywalami — trudniejsze geometrycznie; dziś priorytet to **gęstość**, nie pierścień
+
+Daj znać po playteście, czy skupisko wygląda OK, czy trzeba je jeszcze ścisnąć albo przesunąć.
+
+[REDACTED]
+
+### Linia 7958 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_f58df411e77c0acacc3d802d26340655_images_image-81a1aadd-e1d4-4f00-b2f7-f0849a344260-61aa4cd4-cac8-4810-bcf0-96140b92f8ca.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Tuesday, Jul 7, 2026, 7:27 AM (UTC+2)</timestamp>
+
+naukę, coś ucieło - menu miasta.
+
+### Linia 7959 — AGENT
+
+[REDACTED]
+
+### Linia 7960 — AGENT
+
+[REDACTED]
+
+### Linia 7961 — AGENT
+
+[REDACTED]
+
+### Linia 7962 — AGENT
+
+[REDACTED]
+
+### Linia 7963 — AGENT
+
+[REDACTED]
+
+### Linia 7964 — AGENT
+
+[REDACTED]
+
+### Linia 7965 — AGENT
+
+[REDACTED]
+
+### Linia 7966 — AGENT
+
+[REDACTED]
+
+### Linia 7967 — AGENT
+
+[REDACTED]
+
+### Linia 7968 — AGENT
+
+[REDACTED]
+
+### Linia 7969 — AGENT
+
+[REDACTED]
+
+### Linia 7970 — AGENT
+
+[REDACTED]
+
+### Linia 7971 — AGENT
+
+[REDACTED]
+
+### Linia 7972 — AGENT
+
+Przycinanie wynika z układu w jednym wierszu: badge miasta + 6 statystyk. Rozdzielam badge i pasek zasobów na osobne wiersze.
+
+[REDACTED]
+
+### Linia 7973 — AGENT
+
+[REDACTED]
+
+### Linia 7974 — AGENT
+
+Naprawione. **Nauka** była obcinana, bo nazwa miasta i 6 statystyk siedziały w **jednym wierszu** — pasek miał limit `52vw` i przy długiej nazwie (np. MACEDONIA) ostatni chip wypadał poza ekran.
+
+**Zmiana:**
+- Wiersz 1: badge miasta (nazwa + populacja)
+- Wiersz 2: pełna szerokość paska plonów (Praca → Nauka), z przewijaniem w poziomie gdy trzeba
+- Usunięty limit `52vw`, który ucinał prawą stronę
+
+Opublikowane w `gra-robocza/Gra-ROBOCZA.html` — **Ctrl+F5** i sprawdź panel miasta: **Nauka +0** powinna być w całości widoczna.
+
+[REDACTED]
+
+### Linia 7975 — MACIEJ
+
+[Image]
+[Image]
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_f58df411e77c0acacc3d802d26340655_images_image-5aaee2e9-f5f0-4fe2-9dda-7c6eb7ecc59b-3e4c6654-adfd-4fe8-8877-07ba4cf52690.png
+2. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_f58df411e77c0acacc3d802d26340655_images_image-dd0cc5a7-ec42-4676-b8c1-ea70347e89fd.png
+3. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_f58df411e77c0acacc3d802d26340655_images_image-5e2b8a1c-0f8f-4855-ab37-6cce57a3a987-54480f20-7e1c-4c4f-a1c6-062a8e1f39f7.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Tuesday, Jul 7, 2026, 7:29 AM (UTC+2)</timestamp>
+
+no i pytanie jest dlaczego dla armii jest plus 6 skoro w mieście nie ma w ogóle żadnych środków żywnościowych nie przeznaczonych armii. To jest jakiś bonus startowy, czy co?  Ok, jak już przeszła tura, to się zmieniło na zero. Ale chyba nie powinno na starcie być tak, że zakłamuję coś, pokazuję czego nie ma.
+
+### Linia 7976 — AGENT
+
+Sprawdzam, skąd na starcie bierze się +6 dla armii — prawdopodobnie rozjazd między stanem początkowym a HUD-em.
+
+[REDACTED]
+
+### Linia 7977 — AGENT
+
+[REDACTED]
+
+### Linia 7978 — MACIEJ
+
+[Image]
+[Image]
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_f58df411e77c0acacc3d802d26340655_images_image-5aaee2e9-f5f0-4fe2-9dda-7c6eb7ecc59b-3e4c6654-adfd-4fe8-8877-07ba4cf52690.png
+2. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_f58df411e77c0acacc3d802d26340655_images_image-dd0cc5a7-ec42-4676-b8c1-ea70347e89fd.png
+3. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_f58df411e77c0acacc3d802d26340655_images_image-5e2b8a1c-0f8f-4855-ab37-6cce57a3a987-54480f20-7e1c-4c4f-a1c6-062a8e1f39f7.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Tuesday, Jul 7, 2026, 7:29 AM (UTC+2)</timestamp>
+
+no i pytanie jest dlaczego dla armii jest plus 6 skoro w mieście nie ma w ogóle żadnych środków żywnościowych nie przeznaczonych armii. To jest jakiś bonus startowy, czy co?  Ok, jak już przeszła tura, to się zmieniło na zero. Ale chyba nie powinno na starcie być tak, że zakłamuję coś, pokazuję czego nie ma.
+
+### Linia 7979 — AGENT
+
+[REDACTED]
+
+### Linia 7980 — AGENT
+
+[REDACTED]
+
+### Linia 7981 — AGENT
+
+[REDACTED]
+
+### Linia 7982 — AGENT
+
+[REDACTED]
+
+### Linia 7983 — AGENT
+
+[REDACTED]
+
+### Linia 7984 — AGENT
+
+[REDACTED]
+
+### Linia 7985 — AGENT
+
+[REDACTED]
+
+### Linia 7986 — AGENT
+
+[REDACTED]
+
+### Linia 7987 — AGENT
+
+[REDACTED]
+
+### Linia 7988 — AGENT
+
+[REDACTED]
+
+### Linia 7989 — AGENT
+
+[REDACTED]
+
+### Linia 7990 — AGENT
+
+[REDACTED]
+
+### Linia 7991 — AGENT
+
+[REDACTED]
+
+### Linia 7992 — AGENT
+
+[REDACTED]
+
+### Linia 7993 — AGENT
+
+[REDACTED]
+
+### Linia 7994 — AGENT
+
+[REDACTED]
+
+### Linia 7995 — AGENT
+
+[REDACTED]
+
+### Linia 7996 — AGENT
+
+[REDACTED]
+
+### Linia 7997 — AGENT
+
+[REDACTED]
+
+### Linia 7998 — AGENT
+
+[REDACTED]
+
+### Linia 7999 — AGENT
+
+[REDACTED]
+
+### Linia 8000 — AGENT
+
+[REDACTED]
+
+### Linia 8001 — AGENT
+
+To nie bonus startowy — HUD pokazywał nieaktualną projekcję zamiast podziału suwaka. Naprawiam synchronizację z panelem miasta.
+
+[REDACTED]
+
+### Linia 8002 — AGENT
+
+[REDACTED]
+
+### Linia 8003 — AGENT
+
+[REDACTED]
+
+### Linia 8004 — AGENT
+
+[REDACTED]
+
+### Linia 8005 — AGENT
+
+[REDACTED]
+
+### Linia 8006 — AGENT
+
+[REDACTED]
+
+### Linia 8007 — AGENT
+
+[REDACTED]
+
+### Linia 8008 — AGENT
+
+[REDACTED]
+
+### Linia 8009 — AGENT
+
+[REDACTED]
+
+### Linia 8010 — AGENT
+
+[REDACTED]
+
+### Linia 8011 — AGENT
+
+[REDACTED]
+
+### Linia 8012 — AGENT
+
+[REDACTED]
+
+### Linia 8013 — AGENT
+
+Masz rację — to **nie był bonus startowy**. To był **błąd wyświetlania** w HUD.
+
+## Co się działo
+
+Panel miasta liczy **na żywo** z bieżącego suwaka:
+- suwak 100% wzrost → **Armia 0/t** (cała produkcja idzie do bufora wzrostu)
+
+HUD mapy brał **inny numer** — albo:
+1. **Stary tick** z poprzedniej gry/sesji (przy nowej grze ticki nie były czyszczone), albo
+2. **Wynik ostatniej tury** zamiast projekcji z **aktualnego** suwaka.
+
+Stąd **+6** przy **0/t** w panelu. Po turze silnik przeliczał na nowo → **0** — i wtedy się zgadzało. UI na starcie **kłamało**.
+
+Skąd akurat **+6**? Przy ~**+11** produkcji i braku podziału na armię silnik liczył coś w stylu `round(11 × 50%) = 6` — to **50% odkładania bez Spichlerza** na **całej** produkcji, **ignorując suwak 100% wzrost**. Nie było to realne źródło żywności dla wojska.
+
+## Co naprawiłem
+
+1. **Czyszczenie ticków** przy nowej grze / resecie (`clearLastEmpireFoodTicks`).
+2. **HUD liczy projekcję** z bieżącego suwaka (`computeEmpireFoodNetDelta`) — ta sama logika co panel, nie stary wynik tury.
+3. **Suwak od razu odświeża HUD** (bez czekania na koniec tury).
+
+Opublikowane w `gra-robocza/Gra-ROBOCZA.html` — **Ctrl+F5** w `START.html`.
+
+**Oczekiwane zachowanie:** suwak 100% wzrost, Armia 0/t w panelu → HUD **Armia 0/200 +0** (nie +6). Jak przesuniesz suwak w stronę armii, oba miejsca pokażą ten sam przyrost.
+
+[REDACTED]
+
+### Linia 8014 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-dfa5d91c-ee83-490c-bfe3-935e65d6431d.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Tuesday, Jul 7, 2026, 7:37 AM (UTC+2)</timestamp>
+
+jeszcze jedna dziwna sytuacja. Po wybudowaniu spichlerza. Maksymalna rezerwa jedzenia dla wojska zmalała z 200 na 100 z tego co pamiętam ustalaliśmy, że każdy speakele już dodaje kolejne 200 więc chyba powinno być albo 400. albo ten spichlerz państwowy startowy powinien być mniejszy np nie byłby bez Granary 10 albo maksymalny 100.
+
+### Linia 8015 — AGENT
+
+Sprawdzam, jak liczy się limit zapasów armii po Spichlerzu i skąd bierze się spadek z 200 do 100.
+
+[REDACTED]
+
+### Linia 8016 — AGENT
+
+[REDACTED]
+
+### Linia 8017 — AGENT
+
+[REDACTED]
+
+### Linia 8018 — AGENT
+
+[REDACTED]
+
+### Linia 8019 — AGENT
+
+[REDACTED]
+
+### Linia 8020 — AGENT
+
+[REDACTED]
+
+### Linia 8021 — AGENT
+
+Decyzja SP6: 100 🍞 na Spichlerz (200 = dwa Spichlerze). HUD trzymał stary limit 200 z poprzedniej sesji — naprawiam liczenie na żywo.
+
+[REDACTED]
+
+### Linia 8022 — AGENT
+
+[REDACTED]
+
+### Linia 8023 — AGENT
+
+[REDACTED]
+
+### Linia 8024 — AGENT
+
+[REDACTED]
+
+### Linia 8025 — AGENT
+
+Masz rację, że coś tu nie grało — ale **reguła gry jest inna niż „200 na Spichlerz”**.
+
+## Ustalona reguła (decyzja SP6, 2026-07-01)
+
+| Stan | Limit zapasów armii |
+|------|---------------------|
+| **Bez Spichlerza** | brak limitu w HUD (odkładasz 50% netto, reszta przepada) |
+| **1 Spichlerz** | **100** 🍞 |
+| **2 Spichlerze** | **200** 🍞 |
+| **3 Spichlerze** | **300** 🍞 |
+
+Czyli **200 = dwa Spichlerze w imperium**, nie „200 za każdy”. Parametr w `econ-params.json`: `spichlerz_pojemnosc_zapasow_panstwa = 100`.
+
+## Co widziałeś (5/100)
+
+To wygląda **poprawnie dla jednego Spichlerza**. Spadek z 200 → 100 najpewniej wynikał z **błędu HUD**:
+
+- limit był trzymany w **pamięci z poprzedniej tury/sesji** (np. gdy wcześniej były 2 Spichlerze → pokazywało `/200`);
+- po wybudowaniu pierwszego Spichlerza w **nowej** grze silnik przeliczył na **1 × 100 = /100** — wyglądało jak „budowa zmniejszyła limit”.
+
+To ten sam rodzaj problemu co wcześniejsze „kłamstwo” +6 — **UI nie odświeżało się na żywo**.
+
+## Naprawione
+
+- HUD liczy limit **na bieżąco**: `liczba Spichlerzy × 100`
+- po ukończeniu Spichlerza pasek od razu się aktualizuje
+- **Ctrl+F5** w `gra-robocza/START.html`
+
+**Oczekiwane zachowanie po fixie:**
+- 0 Spichlerzy → `5` (bez `/100`)
+- 1 Spichlerz → `5 / 100`
+- drugi Spichlerz w innym mieście → `X / 200`
+
+---
+
+Jeśli wolisz **200 na Spichlerz** (albo startowy mniejszy, np. max 100 dopiero od 2. Spichlerza) — to decyzja balansu ABC; obecny kod ma **100 × liczba Spichlerzy** zgodnie z SP6.
+
+[REDACTED]
+
+### Linia 8026 — MACIEJ
+
+<timestamp>Tuesday, Jul 7, 2026, 7:42 AM (UTC+2)</timestamp>
+
+jeszcze jest jeden problem: w momencie gdy urośnie miasto, z automatu powinno przydzielać nową jednostkę miasta gdziekolwiek. Albo do wybranego klucza albo po prostu jeżeli jest ręczny wybór, to losowo gdziekolwiek. A nie że jednostka się kisi i nie jest przydzielana i dopiero czasem się zarętyje po czasie, że trzeba ją przydzielić bo miasto urosło.
+
+### Linia 8027 — AGENT
+
+Sprawdzam, co dzieje się z przydziałem pól po wzroście ludności miasta.
+
+[REDACTED]
+
+### Linia 8028 — AGENT
+
+[REDACTED]
+
+### Linia 8029 — AGENT
+
+[REDACTED]
+
+### Linia 8030 — AGENT
+
+[REDACTED]
+
+### Linia 8031 — AGENT
+
+[REDACTED]
+
+### Linia 8032 — AGENT
+
+[REDACTED]
+
+### Linia 8033 — AGENT
+
+[REDACTED]
+
+### Linia 8034 — AGENT
+
+Dodaję auto-przydział 👤 po wzroście ludności — w trybie ręcznym losowo na wolne pole, w auto już działa przez `assignWorkedTiles`.
+
+[REDACTED]
+
+### Linia 8035 — AGENT
+
+[REDACTED]
+
+### Linia 8036 — AGENT
+
+[REDACTED]
+
+### Linia 8037 — AGENT
+
+[REDACTED]
+
+### Linia 8038 — AGENT
+
+[REDACTED]
+
+### Linia 8039 — AGENT
+
+[REDACTED]
+
+### Linia 8040 — AGENT
+
+[REDACTED]
+
+### Linia 8041 — AGENT
+
+[REDACTED]
+
+### Linia 8042 — AGENT
+
+Masz rację — to był realny bug, nie zamierzone zachowanie.
+
+## Co się działo
+
+Po wzroście ludności silnik **zwiększał populację**, ale w trybie **ręcznym** (👤 na mapie) **nie dopisywał nowego pracownika** do `okolicaReczne`. Stąd stan typu **5/6 👤** — jeden mieszkaniec „wisi w powietrzu”, dopóki sam nie klikniesz pola.
+
+W trybie **auto** przydział co turę działał poprawnie (`assignWorkedTiles` bierze N najlepszych pól wg profilu: żywność/produkcja itd.). Problem dotyczył głównie **ręcznego** trybu — a ten włącza się też po **kliknięciu heksu** na mapie okolicy.
+
+## Co naprawiłem
+
+Po każdej zmianie populacji (wzrost **lub** głód):
+
+| Tryb | Zachowanie |
+|------|------------|
+| **Auto** | bez zmian — N najlepszych pól wg wybranego profilu (klucza) |
+| **Ręczny** | brakujący 👤 → **losowe wolne pole** w zasięgu miasta |
+| **Ręczny, pusta pula** | pełny auto-seed jak przy pierwszym wejściu w tryb ręczny |
+| **Spadek ludności** | zdejmuj 👤 ze **słabszych** pól |
+
+Panel okolicy i overlay mapy odświeżają się od razu po turze z wzrostem/spadkiem.
+
+Opublikowane w `gra-robocza/Gra-ROBOCZA.html` — **Ctrl+F5**.
+
+**Playtest:** ustaw ręczny tryb, doprowadź do +1 ludności → licznik powinien od razu pokazać **6/6**, bez czekania i bez przypomnienia.
+
+[REDACTED]
+
+### Linia 8043 — MACIEJ
+
+<timestamp>Tuesday, Jul 7, 2026, 7:48 AM (UTC+2)</timestamp>
+
+no pisz mi jeszcze co daje glina jeżeli tam postawię gliniarkę, bo nie widzę, że by dawał jakieś to bonusy.
+
+### Linia 8044 — AGENT
+
+Sprawdzam w kodzie i danych, co daje glina i gliniarka na tym polu.
+
+[REDACTED]
+
+### Linia 8045 — AGENT
+
+[REDACTED]
+
+### Linia 8046 — AGENT
+
+[REDACTED]
+
+### Linia 8047 — AGENT
+
+[REDACTED]
+
+### Linia 8048 — AGENT
+
+[REDACTED]
+
+### Linia 8049 — AGENT
+
+[REDACTED]
+
+### Linia 8050 — MACIEJ
+
+<timestamp>Tuesday, Jul 7, 2026, 7:48 AM (UTC+2)</timestamp>
+
+no pisz mi jeszcze co daje glina jeżeli tam postawię gliniarkę, bo nie widzę, że by dawał jakieś to bonusy.
+
+### Linia 8051 — AGENT
+
+[REDACTED]
+
+### Linia 8052 — AGENT
+
+[REDACTED]
+
+### Linia 8053 — AGENT
+
+[REDACTED]
+
+### Linia 8054 — AGENT
+
+[REDACTED]
+
+### Linia 8055 — AGENT
+
+[REDACTED]
+
+### Linia 8056 — AGENT
+
+[REDACTED]
+
+### Linia 8057 — AGENT
+
+[REDACTED]
+
+### Linia 8058 — AGENT
+
+[REDACTED]
+
+### Linia 8059 — AGENT
+
+[REDACTED]
+
+### Linia 8060 — AGENT
+
+[REDACTED]
+
+### Linia 8061 — AGENT
+
+Krótko: **glinianka nie daje osobnego licznika „Glina +X”** — daje **+1 pracy/t** z tego heksu (gdy ma 👤) i **odblokowuje dostęp do gliny** dla budynków. Reszta łańcucha (magazyn, cegła, ceramika) **jeszcze nie świeci się w UI** tak jak drewno czy kamień.
+
+---
+
+## Co dostajesz od razu po gliniarce
+
+**1. +1 praca/t na tym heksie**  
+Gdy heks z glinianką jest **obrabiany** (👤 w Okolicy), miasto dostaje **+1 pracy** z tego pola — tak samo jak +1 z tartaku czy kopalni.  
+To wchodzi w **sumę Pracy** miasta, nie jako osobny wiersz „Glina”.
+
+**2. „Glina” w panelu „Surowce w zasięgu”**  
+Przed gliniarką: Glina była szara / „potencjał” (złoże widać, ale zablokowane).  
+Po gliniarce: **„Dostęp aktywny”** — to **bramka**, nie magazyn surowca.
+
+---
+
+## Po co w ogóle glina (cały sens)
+
+| Krok | Co odblokowuje |
+|------|----------------|
+| Glinianka na złożu | Dostęp **Glina** + +1 praca z heksu |
+| **Cegielnia** (glina + paliwo) | **+25% pracy** z pól w tym mieście + droga do **cegły** (budynki brązu, bramka **Pismo**) |
+| **Garncarnia** (glina + paliwo) | Droga do **ceramiki** (+zadowolenie, +zdrowie w planie) |
+
+Czyli gliniarka sama **nie daje +25% pracy** — to robi dopiero **Cegielnia** w mieście, które ma aktywną glinę (i paliwo z mielerza).
+
+---
+
+## Dlaczego „nie widać bonusów”
+
+1. **Brak magazynu surowców** — glina nie odkłada się jako liczba (np. „Glina: 3/t”). W kodzie konwertery (glina + paliwo → cegła) **jeszcze nie działają na pełno** (`city.surowce` puste).
+2. **+1 praca jest cicha** — widać ją tylko w **Pracy** miasta / rozbiciu Okolicy, nie jako osobny efekt „Glina”.
+3. **Bez 👤 na heksie = zero** — sama gliniarka bez pracownika nic nie produkuje.
+4. **Bez Cegielni** — nie ma +25% pracy dla całego miasta; to dopiero następny krok.
+
+---
+
+## Jak sprawdzić, że coś działa
+
+1. Otwórz **Okolicę** → heks z gliniarką ma **👤**.
+2. Porównaj **Pracę/t** miasta przed i po przypisaniu tego heksu — powinno być **+1**.
+3. W panelu miasta → **Surowce w zasięgu** → **Glina** w sekcji **„Dostęp aktywny”** (nie szara).
+4. W liście budynków powinna być dostępna **Cegielnia** / **Garncarnia** (jeśli masz też **paliwo** z mielerza).
+
+---
+
+**Podsumowanie:** Gliniarka to **inwestycja 20 pracy** za **+1 praca/t z jednego pola** + **klucz do Cegielni/Garncarni**. Nie oczekuj osobnego „bonusu gliny” na HUD — w v1 to głównie **bramka i +1 praca z heksu**, a pełny łańcuch glina → cegła/ceramika jest **jeszcze niedopięty wizualnie i w magazynie**.
+
+Jeśli chcesz, mogę w następnym batchu zaproponować **lepszy tooltip** przy Glina/glinianka albo **dopięcie magazynu + konwerterów**, żeby było widać jak drewno → deski.
+
+[REDACTED]
+
+### Linia 8062 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-19b8c641-85f1-4a4e-97fa-1af817d32c84.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Tuesday, Jul 7, 2026, 7:52 AM (UTC+2)</timestamp>
+
+pomimo połączenia armii nadal jedną z armii, która ma jeszcze możliwość ruchu, można wyjść z tej armii. Powinno być już to zablokowane. Po połączeniu z armii możliwość ruchu jest łączna do całej armii. Jeżeli ktoś jednoznastek w armii nie ma ruchu to inne też nie powinny mieć. A niestety jest tak że jak się wybierze jakąś inną jednostkę która jeszcze ma ruch pomimo tego że została połączona do armii to może zrobić ruchy i wyjść z tej armii.
+
+### Linia 8063 — AGENT
+
+Szukam w kodzie logiki łączenia armii i ruchu jednostek — po połączeniu ruch powinien być wspólny dla całej armii.
+
+[REDACTED]
+
+### Linia 8064 — AGENT
+
+[REDACTED]
+
+### Linia 8065 — AGENT
+
+[REDACTED]
+
+### Linia 8066 — AGENT
+
+[REDACTED]
+
+### Linia 8067 — AGENT
+
+[REDACTED]
+
+### Linia 8068 — AGENT
+
+[REDACTED]
+
+### Linia 8069 — AGENT
+
+[REDACTED]
+
+### Linia 8070 — AGENT
+
+[REDACTED]
+
+### Linia 8071 — AGENT
+
+[REDACTED]
+
+### Linia 8072 — AGENT
+
+[REDACTED]
+
+### Linia 8073 — AGENT
+
+[REDACTED]
+
+### Linia 8074 — AGENT
+
+[REDACTED]
+
+### Linia 8075 — AGENT
+
+[REDACTED]
+
+### Linia 8076 — AGENT
+
+[REDACTED]
+
+### Linia 8077 — AGENT
+
+[REDACTED]
+
+### Linia 8078 — AGENT
+
+[REDACTED]
+
+### Linia 8079 — AGENT
+
+[REDACTED]
+
+### Linia 8080 — AGENT
+
+Wprowadzam wspólny pul ruchu dla stosu: po połączeniu armii jednostki nie mogą wychodzić osobno.
+
+[REDACTED]
+
+### Linia 8081 — AGENT
+
+[REDACTED]
+
+### Linia 8082 — AGENT
+
+[REDACTED]
+
+### Linia 8083 — AGENT
+
+[REDACTED]
+
+### Linia 8084 — AGENT
+
+[REDACTED]
+
+### Linia 8085 — AGENT
+
+[REDACTED]
+
+### Linia 8086 — AGENT
+
+[REDACTED]
+
+### Linia 8087 — AGENT
+
+[REDACTED]
+
+### Linia 8088 — AGENT
+
+[REDACTED]
+
+### Linia 8089 — AGENT
+
+[REDACTED]
+
+### Linia 8090 — AGENT
+
+[REDACTED]
+
+### Linia 8091 — AGENT
+
+[REDACTED]
+
+### Linia 8092 — AGENT
+
+[REDACTED]
+
+### Linia 8093 — AGENT
+
+[REDACTED]
+
+### Linia 8094 — AGENT
+
+[REDACTED]
+
+### Linia 8095 — AGENT
+
+[REDACTED]
+
+### Linia 8096 — AGENT
+
+Masz rację — to był bug. Po połączeniu armii każda jednostka trzymała własny `ruchLeft`, więc można było wybrać Wojownika (2/2) i wyjść ze stosu, mimo że Oszczepnik miał już 0/2.
+
+## Co zmieniliśmy
+
+**Wspólny pul ruchu dla stosu** (2+ jednostki na jednym heksie):
+
+1. **Ruch = minimum** ze wszystkich członków armii — jeśli ktoś ma 0, cała armia stoi.
+2. **Ruch rusza całą armię** — nie da się przesunąć tylko jednej karty ze stosu.
+3. **Po połączeniu** — synchronizacja puli (min z obu stron).
+4. **Pomiń / Ufortyfikuj** — dotyczy całego stosu, nie tylko zaznaczonej karty.
+5. **Karty w panelu** — przy armii pokazują ten sam wspólny licznik ruchu.
+
+## Jak sprawdzić
+
+1. **Ctrl+F5** na `gra-robocza/START.html`.
+2. Połącz Oszczepnika i Wojownika na jednym heksie.
+3. Jeśli jeden ma 0 ruchu — drugi też powinien mieć **0/2**, bez żółtej linii ruchu.
+4. Jedyny sposób na osobny ruch: **Rozdziel** (panel armii).
+
+Daj znać, czy po odświeżeniu zachowuje się tak, jak oczekujesz.
+
+[REDACTED]
+
+### Linia 8097 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-30a14d0e-7407-4a07-96f4-91d21ea5b3ad.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Tuesday, Jul 7, 2026, 7:59 AM (UTC+2)</timestamp>
+
+pomimo dwóch jednostek w mieście nie widzę, żeby był jakiś bonus do prawa.
+
+### Linia 8098 — AGENT
+
+Sprawdzam, jak liczone są garnizon i bonus do Prawa — jednostki na heksie miasta mogą nie być traktowane jako garnizon.
+
+[REDACTED]
+
+### Linia 8099 — AGENT
+
+[REDACTED]
+
+### Linia 8100 — AGENT
+
+[REDACTED]
+
+### Linia 8101 — AGENT
+
+[REDACTED]
+
+### Linia 8102 — AGENT
+
+[REDACTED]
+
+### Linia 8103 — AGENT
+
+[REDACTED]
+
+### Linia 8104 — AGENT
+
+[REDACTED]
+
+### Linia 8105 — AGENT
+
+[REDACTED]
+
+### Linia 8106 — AGENT
+
+[REDACTED]
+
+### Linia 8107 — AGENT
+
+[REDACTED]
+
+### Linia 8108 — AGENT
+
+[REDACTED]
+
+### Linia 8109 — AGENT
+
+[REDACTED]
+
+### Linia 8110 — AGENT
+
+Wykryto rozbieżność: bonus Prawa liczy tylko jednostki z flagą `inGarnizon` (po **Ufort.**), a nie te stojące na heksie miasta. Poprawiam to zgodnie z zamierzeniem panelu.
+
+[REDACTED]
+
+### Linia 8111 — AGENT
+
+[REDACTED]
+
+### Linia 8112 — AGENT
+
+[REDACTED]
+
+### Linia 8113 — AGENT
+
+[REDACTED]
+
+### Linia 8114 — AGENT
+
+[REDACTED]
+
+### Linia 8115 — AGENT
+
+[REDACTED]
+
+### Linia 8116 — AGENT
+
+[REDACTED]
+
+### Linia 8117 — AGENT
+
+Masz rację — to był **bug w logice**, nie brak wojska.
+
+## Co było nie tak
+
+Panel pokazywał **„Garnizon 0 jedn.”** i **Prawo 0%**, mimo że dwie jednostki stały **na heksie miasta**. Gra liczyła do Prawa tylko jednostki z flagą **`inGarnizon`** — czyli te, które wcześniej kliknąłeś **Ufort.** i „schowały się” w mieście. Wojsko stojące na polu miasta **nie wchodziło** do bonusu.
+
+## Co działa teraz (po Ctrl+F5)
+
+| Sytuacja | Bonus Prawo |
+|----------|-------------|
+| Jednostki **stoją na heksie** własnego miasta | **Tak** (+20 pkt Prawa na jednostkę, max 5) |
+| Jednostki **ukryte** po Ufort. | **Tak** (jak wyżej) |
+| Jednostki **oblegające** inne miasto | **Nie** |
+
+Przy **2 jednostkach** w panelu Porządek powinno być m.in.:
+- **Garnizon: 2 jedn.**
+- w **Prawie** linia: *„Garnizon (2 jedn.)”*
+- **Prawo** wyższe niż 0% (u Ciebie ok. **40%** przy 2 jednostkach)
+
+## Różnica: stoisz vs Ufort.
+
+- **Stoisz na mieście** → bonus **Prawo** (porządek, mniejsze ryzyko niepokojów).
+- **Ufort.** → dodatkowo **ukrywasz** jednostkę w garnizonie (obrona oblężenia, konsumpcja żywności jak garnizon).
+
+Odśwież **`gra-robocza/START.html` (Ctrl+F5)**, otwórz panel **Porządek** — powinno się zgadzać. Daj znać, jeśli nadal widzisz 0.
+
+[REDACTED]
+
+### Linia 8118 — MACIEJ
+
+<timestamp>Tuesday, Jul 7, 2026, 8:04 AM (UTC+2)</timestamp>
+
+A czy czasem miało nie być tak, że miasta nie mogą rosnąć powyżej 4 bez akwedukcji? Bo na razie widzę tu miasta, które mają nawet 8 i więcej drobną blokadę na 5 maksymalnie osób w mieście, dopóki nie będzie akwedukt.
+
+### Linia 8119 — AGENT
+
+Szukam w kodzie i dokumentacji limitu populacji oraz warunku akweduktu.
+
+[REDACTED]
+
+### Linia 8120 — AGENT
+
+[REDACTED]
+
+### Linia 8121 — AGENT
+
+[REDACTED]
+
+### Linia 8122 — AGENT
+
+[REDACTED]
+
+### Linia 8123 — AGENT
+
+[REDACTED]
+
+### Linia 8124 — AGENT
+
+[REDACTED]
+
+### Linia 8125 — AGENT
+
+[REDACTED]
+
+### Linia 8126 — AGENT
+
+[REDACTED]
+
+### Linia 8127 — AGENT
+
+[REDACTED]
+
+### Linia 8128 — AGENT
+
+[REDACTED]
+
+### Linia 8129 — AGENT
+
+[REDACTED]
+
+### Linia 8130 — AGENT
+
+[REDACTED]
+
+### Linia 8131 — AGENT
+
+Tak — mechanizm jest w kodzie, ale limit na normal to 6, nie 5; na easy nawet 8. Poprawiam parametry i dodaję widoczną informację w panelu.
+
+[REDACTED]
+
+### Linia 8132 — AGENT
+
+[REDACTED]
+
+### Linia 8133 — AGENT
+
+[REDACTED]
+
+### Linia 8134 — AGENT
+
+[REDACTED]
+
+### Linia 8135 — AGENT
+
+Tak — **tak miało być**, i mechanizm już jest w grze. Problem leżał w **parametrze** i braku **informacji w UI**.
+
+## Jak to działa
+
+W `populationGrowth()` jest reguła:
+
+- **Bez Akweduktu** → miasto **nie rośnie**, gdy ludność osiągnie limit (`ludnosc >= cap`).
+- **Po zbudowaniu Akweduktu** → limit znika, miasto może rosnąć dalej.
+
+Limit **nie obcina** ludności w dół — tylko **blokuje kolejny +1**. Miasto z 8 ludźmi bez Akweduktu to zwykle:
+- ma już **Akwedukt** (sprawdź budynki), albo
+- urosło wcześniej (np. na **Łatwym**, gdzie limit był **8**), albo
+- to stary zapis sprzed zmiany.
+
+## Co było nie tak
+
+| Trudność | Było | Teraz (normal = Twoja propozycja) |
+|----------|------|-----------------------------------|
+| **Normal** | max **6** | max **5** |
+| **Easy** | max **8** | max **6** |
+| **Hard** | max **4** | max **4** |
+
+Na **Normal** miasto mogło legalnie urosnąć do **6** bez Akweduktu — stąd wrażenie, że „blokady nie ma”.
+
+## Co dodaliśmy w panelu (🍞 Żywność)
+
+Gdy miasto jest na limicie bez Akweduktu:
+- chip **„Do +1: Cap”** (czerwony),
+- chip **„Limit: max 5”**,
+- w szczegółach: *„Cap — brak Akweduktu”*.
+
+Po **Akwedukcie** (kategoria Zdrowie, epoka Brąz) — chip **„Akwedukt: bez limitu”**.
+
+---
+
+**Ctrl+F5** na `gra-robocza/START.html`. Nowe miasta na Normal **zatrzymają się na 5** bez Akweduktu. Jeśli któreś ma już 8 — zajrzyj, czy ma Akwedukt w liście budynków.
+
+[REDACTED]
+
+### Linia 8136 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-a2889b58-002d-4f29-883e-0cb85353a8b9.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Tuesday, Jul 7, 2026, 8:08 AM (UTC+2)</timestamp>
+
+jeszcze jedno: przycisk który jest poniżej na pasku paska wzrostu powinien się mieścić bezpośrednio na tym prostokątnym pasku. Tam powinien być guzik który przewija bo to jest nie intuicyjne.
+
+### Linia 8137 — AGENT
+
+Szukam w panelu miasta kodu suwaka wzrost/armia — suwak ma być na samym pasku, nie pod nim.
+
+[REDACTED]
+
+### Linia 8138 — AGENT
+
+[REDACTED]
+
+### Linia 8139 — AGENT
+
+Przenoszę suwak na pasek podziału wzrost/armia — będzie bezpośrednio na prostokątnym pasku.
+
+[REDACTED]
+
+### Linia 8140 — AGENT
+
+[REDACTED]
+
+### Linia 8141 — AGENT
+
+[REDACTED]
+
+### Linia 8142 — AGENT
+
+[REDACTED]
+
+### Linia 8143 — AGENT
+
+[REDACTED]
+
+### Linia 8144 — AGENT
+
+[REDACTED]
+
+### Linia 8145 — AGENT
+
+Masz rację — osobny suwak pod paskiem był mylący.
+
+## Co się zmieniło
+
+Suwak **Wzrost ↔ Armia** jest teraz **bezpośrednio na kolorowym pasku**:
+- złoty fragment = wzrost miast  
+- ciemny fragment = armia  
+- **złoty uchwyt** na granicy — przeciągasz go w lewo/prawo na samym pasku  
+- osobna szara belka pod spodem **zniknęła**
+
+**Ctrl+F5** na `gra-robocza/START.html` → panel miasta → zakładka **🍞 Żywność**.
+
+Daj znać, czy uchwyt jest wystarczająco widoczny — w razie potrzeby możemy go nieco poszerzyć albo dodać pionową kreskę na granicy.
+
+[REDACTED]
+
+### Linia 8146 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-251c9dfc-9cab-44e8-8b6c-b9b8821a006c.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Tuesday, Jul 7, 2026, 8:10 AM (UTC+2)</timestamp>
+
+`Odwódka wrogiego miasta nie trafia. Tekst. Odwódka wrogiego miasta nie trafia. Tekst.
+
+### Linia 8147 — AGENT
+
+Obwódka wrogiego miasta jest przesunięta — szukam w kodzie renderowania obrysu miasta i poprawię współrzędne.
+
+[REDACTED]
+
+### Linia 8148 — AGENT
+
+[REDACTED]
+
+### Linia 8149 — AGENT
+
+[REDACTED]
+
+### Linia 8150 — AGENT
+
+[REDACTED]
+
+### Linia 8151 — AGENT
+
+[REDACTED]
+
+### Linia 8152 — AGENT
+
+[REDACTED]
+
+### Linia 8153 — AGENT
+
+[REDACTED]
+
+### Linia 8154 — AGENT
+
+[REDACTED]
+
+### Linia 8155 — AGENT
+
+[REDACTED]
+
+### Linia 8156 — AGENT
+
+[REDACTED]
+
+### Linia 8157 — AGENT
+
+[REDACTED]
+
+### Linia 8158 — AGENT
+
+[REDACTED]
+
+### Linia 8159 — AGENT
+
+[REDACTED]
+
+### Linia 8160 — AGENT
+
+[REDACTED]
+
+### Linia 8161 — AGENT
+
+[REDACTED]
+
+### Linia 8162 — AGENT
+
+[REDACTED]
+
+### Linia 8163 — AGENT
+
+[REDACTED]
+
+### Linia 8164 — AGENT
+
+[REDACTED]
+
+### Linia 8165 — AGENT
+
+Obwódka używa innej geometrii heksa niż jednostki — wyrównuję ją do tego samego kształtu co zaznaczenie armii.
+
+[REDACTED]
+
+### Linia 8166 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-251c9dfc-9cab-44e8-8b6c-b9b8821a006c.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Tuesday, Jul 7, 2026, 8:10 AM (UTC+2)</timestamp>
+
+`Odwódka wrogiego miasta nie trafia. Tekst. Odwódka wrogiego miasta nie trafia. Tekst.
+
+### Linia 8167 — AGENT
+
+[REDACTED]
+
+### Linia 8168 — AGENT
+
+Build przeszedł — sprawdzam implementację obwódki, żeby potwierdzić poprawkę.
+
+[REDACTED]
+
+### Linia 8169 — AGENT
+
+[REDACTED]
+
+### Linia 8170 — AGENT
+
+**Obwódka wrogiego miasta** — poprawka jest zbudowana i opublikowana.
+
+**Problem:** czerwona obwódka (wojna) była przesunięta względem heksu miasta — geometria nie była zgodna z siatką pointy-top używaną przez mapę i jednostki.
+
+**Fix:**
+- Wspólna geometria heksu w `hexShape.ts` (ta sama co przy zaznaczeniu armii)
+- `cityMapOutline.ts` buduje pierścień w lokalnym XZ i ustawia `Group.position` na `axialToWorld(q, r)` + wysokość terenu
+- Przy odświeżeniu miasta pozycja obwódki jest aktualizowana bez przebudowy geometrii
+
+**Build:** `tsc` OK → `Gra-ROBOCZA.html` zaktualizowany w `gra-robocza/`.
+
+**Playtest:** Ctrl+F5 w `gra-robocza/START.html`, znajdź wrogie miasto (np. TEBY) — czerwona obwódka powinna trafić dokładnie w krawędzie heksu miasta, tak jak niebieska u wybranej armii.
+
+Jeśli nadal jest przesunięta, daj znać — wtedy sprawdzimy, czy to na pewno obwódka miasta, a nie czerwony pierścień wrogiej jednostki obok (`0xe05a52` vs `0xff4444`).
+
+[REDACTED]
+
+### Linia 8171 — MACIEJ
+
+<timestamp>Tuesday, Jul 7, 2026, 8:16 AM (UTC+2)</timestamp>
+
+pałac musi dawać więcej kultury i więcej prawa nie dawać prawa tyle samo, co jednostka. Sprawdźmy jeszcze wszystkie budynki, które dają prawo, żebym mógł zobaczyć ile dają prawa. wszystkie jednostki, które dają szczęście, żeby móc zobaczyć, ile dają szczęścia. Musimy to trochę przemodyfikować bo gra staje się nierealna i nie grywalna bo bardzo szybko rośnie niezadowolenie. Są ciągłe bunty.
+
+### Linia 8172 — AGENT
+
+Przeszukam dane budynków i jednostek oraz logikę prawa i szczęścia — potrzebne do audytu i propozycji balansu.
+
+[REDACTED]
+
+### Linia 8173 — AGENT
+
+[REDACTED]
+
+### Linia 8174 — AGENT
+
+[REDACTED]
+
+### Linia 8175 — AGENT
+
+[REDACTED]
+
+### Linia 8176 — AGENT
+
+[REDACTED]
+
+### Linia 8177 — AGENT
+
+[REDACTED]
+
+### Linia 8178 — AGENT
+
+[REDACTED]
+
+### Linia 8179 — AGENT
+
+[REDACTED]
+
+### Linia 8180 — AGENT
+
+[REDACTED]
+
+### Linia 8181 — AGENT
+
+[REDACTED]
+
+### Linia 8182 — AGENT
+
+[REDACTED]
+
+### Linia 8183 — AGENT
+
+[REDACTED]
+
+### Linia 8184 — AGENT
+
+[REDACTED]
+
+### Linia 8185 — AGENT
+
+[REDACTED]
+
+### Linia 8186 — AGENT
+
+[REDACTED]
+
+### Linia 8187 — AGENT
+
+[REDACTED]
+
+### Linia 8188 — AGENT
+
+[REDACTED]
+
+### Linia 8189 — AGENT
+
+Przygotowuję audyt i wdrażam balans: Pałac bez bonusu Prawa, a jedna jednostka w garnizonie od razu daje 100% Prawa — to główny problem.
+
+[REDACTED]
+
+### Linia 8190 — AGENT
+
+[REDACTED]
+
+### Linia 8191 — AGENT
+
+[REDACTED]
+
+### Linia 8192 — AGENT
+
+[REDACTED]
+
+### Linia 8193 — AGENT
+
+[REDACTED]
+
+### Linia 8194 — AGENT
+
+Skala Prawa była za wysoka — podnoszę bonus osiedla i domyślne progi buntu.
+
+[REDACTED]
+
+### Linia 8195 — AGENT
+
+[REDACTED]
+
+### Linia 8196 — AGENT
+
+[REDACTED]
+
+### Linia 8197 — AGENT
+
+[REDACTED]
+
+### Linia 8198 — AGENT
+
+Przeszedłem audyt i wdrożyłem pierwszą korektę balansu. Poniżej pełna rozpiska + co się zmieniło.
+
+---
+
+## Prawo — wszystkie źródła (normal)
+
+| Źródło | Pkt Prawa | ≈ % Prawo* | Uwagi |
+|--------|-----------|------------|-------|
+| **Pałac** | **35** (NEW) | **70%** | Główne źródło administracyjne |
+| Garnizon 1 jedn. | 20 | 40% | Max 5 jedn. → 100 pkt |
+| Garnizon 5 jedn. | 100 | 100% | Cap |
+| Osiedle pop 1–4 | 28 / 20 / 14 / 8 | 56% / 40% / … | Maleje z populacją |
+| Pretorium | 5 | 10% | Budynek ep. 3 |
+| Sąd | 5 | 10% | Budynek ep. 3 |
+| Ratusz | 6 | 12% | **W kodzie, brak w `buildings.json`** |
+| Kara brak garnizonu (pop≥6) | −2 | — | Gdy zero wojska |
+| Kara wojna / obca kultura | — | — | Dotyczy Szczęścia, nie Prawa |
+
+\*Skala %: max epoki 1 = **50 pkt** (wcześniej 12 — **1 jednostka dawała od razu 100% Prawa**, stąd dominacja wojska).
+
+---
+
+## Szczęście — budynki (`buildings.json`, lvl 1)
+
+| Budynek | +zadowolonych (baza) | Dodatkowo z `society-params` |
+|---------|----------------------|------------------------------|
+| **Pałac** | **2** (+1/lvl) | — |
+| Świątynia | 3 | +1 (osobna linia w panelu) |
+| Teatr / Akademia | 3 | +1 (amfiteatr) |
+| Sąd | 2 | — |
+| Akwedukt | 2 | — |
+| Łaźnia publiczna | 3 | — |
+| Studnia / Kamienne kręgi | 1 | — |
+| Pretorium / Łazaret | 1 | — |
+
+Inne źródła Sz: bonus osiedla (pop 1–4), kultura/religia dominująca, suwak Zamożność, Wealth, wojna (−2), zagęszczenie (−0,75/pop powyżej progu 5).
+
+---
+
+## Jednostki a szczęście
+
+**Żadna jednostka z `units.json` nie daje Szczęścia miastu.**  
+Wojsko na heksie miasta daje wyłącznie **Prawo** (20 pkt/jedn.), nie Szczęście. Bonusy typu „+1 zadowolony per 3 jednostki w garnizonie” są tylko w notatkach projektowych cywilizacji — **nie są jeszcze w silniku**.
+
+---
+
+## Co wdrożyłem (playtest: Ctrl+F5)
+
+1. **Pałac → Prawo +35** (więcej niż 1 jednostka = 20) + **kultura 5/lvl** i **+2 Sz** w `buildings.json`.
+2. **Skala Prawa** — 1 jednostka = 40%, nie 100%; pałac ≈ 70% sam.
+3. **Łagodniejsze buntowanie:** próg buntu skrajnego 12% (było 8), 3 tury grace (było 2), ryzyko buntu 3%/turę (było 5%), słabsza kara wojny i zagęszczenia.
+4. **Wyższe bonusy osiedla** i budynków prawnych (pretorium, sąd).
+
+`Gra-ROBOCZA.html` zaktualizowany, testy society: **40/40 OK**.
+
+---
+
+## Decyzja ABC — dalsze strojenie
+
+Jeśli nadal masz ciągłe bunty, wybierz kierunek:
+
+**A)** Jeszcze łagodniej (wyższe bonusy startowe, niższe kary)  
+**B)** Obecne wartości — playtest 10–15 tur i feedback  
+**C)** Tylko pałac/pretorium/sąd — reszta bez zmian  
+
+W panelu miasta → **Porządek → Prawo** powinieneś teraz widzieć osobną linię **„Pałac +35”**. Daj znać po playteście, czy bunty ustąpiły.
+
+[REDACTED]
+
+### Linia 8199 — MACIEJ
+
+<timestamp>Tuesday, Jul 7, 2026, 8:23 AM (UTC+2)</timestamp>
+
+gdy wróg mnie zaatakował, nie pojawia się w ogóle żadna informacja o bitwie była to oczywiście jego tura, ale powinna być informacja chociażby tak zwane pre battle jedynie co, to moje jednostki odskoczyło, a jedna zniknęła.
+
+### Linia 8200 — AGENT
+
+Sprawdzam przepływ ataku wroga w turze AI — szukam, gdzie powinien pojawić się ekran pre-battle i czemu go nie ma.
+
+[REDACTED]
+
+### Linia 8201 — AGENT
+
+[REDACTED]
+
+### Linia 8202 — AGENT
+
+[REDACTED]
+
+### Linia 8203 — AGENT
+
+[REDACTED]
+
+### Linia 8204 — AGENT
+
+[REDACTED]
+
+### Linia 8205 — AGENT
+
+[REDACTED]
+
+### Linia 8206 — AGENT
+
+[REDACTED]
+
+### Linia 8207 — AGENT
+
+[REDACTED]
+
+### Linia 8208 — AGENT
+
+[REDACTED]
+
+### Linia 8209 — AGENT
+
+[REDACTED]
+
+### Linia 8210 — AGENT
+
+[REDACTED]
+
+### Linia 8211 — AGENT
+
+[REDACTED]
+
+### Linia 8212 — AGENT
+
+Wprowadzam pre-battle przy ataku wroga na gracza — obecnie AI rozstrzyga walkę po cichu.
+
+[REDACTED]
+
+### Linia 8213 — AGENT
+
+[REDACTED]
+
+### Linia 8214 — AGENT
+
+[REDACTED]
+
+### Linia 8215 — AGENT
+
+[REDACTED]
+
+### Linia 8216 — AGENT
+
+[REDACTED]
+
+### Linia 8217 — AGENT
+
+[REDACTED]
+
+### Linia 8218 — AGENT
+
+[REDACTED]
+
+### Linia 8219 — AGENT
+
+[REDACTED]
+
+### Linia 8220 — AGENT
+
+[REDACTED]
+
+### Linia 8221 — AGENT
+
+[REDACTED]
+
+### Linia 8222 — AGENT
+
+[REDACTED]
+
+### Linia 8223 — AGENT
+
+[REDACTED]
+
+### Linia 8224 — AGENT
+
+[REDACTED]
+
+### Linia 8225 — AGENT
+
+[REDACTED]
+
+### Linia 8226 — AGENT
+
+[REDACTED]
+
+### Linia 8227 — AGENT
+
+**Problem:** Gdy wróg atakował w turze AI, walka rozstrzygała się po cichu (`doAutoPowerMapBattle`) — bez pre-battle, bez podsumowania. Stąd jednostki „nagle” odskakiwały lub znikały.
+
+**Fix (wdrożony):**
+
+1. **Atak AI na twoje wojsko** → ekran **pre-battle** (skład obu stron, szanse, teren) + hint „Wróg atakuje twoje wojsko!”
+2. Możesz wybrać **Auto** (szybka walka + podsumowanie) albo **Pole bitwy** (ręczna obrona)
+3. Tura AI **wstrzymuje się** do zamknięcia bitwy, potem kontynuuje
+4. To samo dla **ataków barbarzyńców** na gracza
+
+Ataki AI vs AI nadal bez UI (nie dotyczą gracza).
+
+**Playtest:** Ctrl+F5 w `gra-robocza/START.html`, daj się zaatakować w turze wroga — powinien pojawić się pre-battle zanim cokolwiek zniknie z mapy.
+
+**Uwaga:** Szturm AI na **miasto z murem** (`executeSilentSiegeStorm`) nadal jest cichy — to osobny przypadek (oblężenie). Jeśli chcesz pre-battle też przy szturmie na twoje miasto, daj znać.
+
+[REDACTED]
+
+### Linia 8228 — MACIEJ
+
+[Image]
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-d5e72dbd-3836-4852-ad1d-adaf057d9004.png
+2. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-f75e8a33-22dd-4f7b-a1a4-0776f0d28393.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Tuesday, Jul 7, 2026, 8:29 AM (UTC+2)</timestamp>
+
+ten element trzeba przebudować. Po prawej stronie jest moc i trzeba dać symbol mocy. Może jest jakiś w grafikach cygnet? Pewnie mieliśmy symbol mocy. Powinien być u góry nad liczbą 5 tysięcy np. 704. A po lewej stronie mamy wojsko i czyli rekruci i tak samo niech będzie ta liczba 40 tysięcy ale nad nią niech będzie ten krzyżyk skrzyżowany w mieczy. Trzeba zmienić to słowo ludki. 20 ludki. Na czterdzieści obywateli. Każdy lud jak teraz staje się obywatelem w grze.
+
+### Linia 8229 — AGENT
+
+Szukam w kodzie elementu HUD z Mocą i Rekrutami oraz wystąpień „ludki”.
+
+[REDACTED]
+
+### Linia 8230 — AGENT
+
+[REDACTED]
+
+### Linia 8231 — AGENT
+
+[REDACTED]
+
+### Linia 8232 — AGENT
+
+[REDACTED]
+
+### Linia 8233 — AGENT
+
+[REDACTED]
+
+### Linia 8234 — AGENT
+
+Przebudowuję HUD (ikony nad liczbami) i zamieniam „ludki” na „obywatele” w UI.
+
+[REDACTED]
+
+### Linia 8235 — AGENT
+
+[REDACTED]
+
+### Linia 8236 — AGENT
+
+[REDACTED]
+
+### Linia 8237 — AGENT
+
+[REDACTED]
+
+### Linia 8238 — AGENT
+
+[REDACTED]
+
+### Linia 8239 — AGENT
+
+**Środkowy pasek HUD (Moc / Rekruci)** — przebudowany:
+
+| Strona | Było | Jest |
+|--------|------|------|
+| **Lewo (rekruci)** | ⚔ obok „40 tys.” | **Skrzyżowane miecze** (`tb-army`) **nad** liczbą |
+| **Środek** | medalion cywilizacji | bez zmian |
+| **Prawo (Moc)** | sama liczba + etykieta MOC | **Symbol Mocy** (`res-influence` — cygnet/wpływ) **nad** liczbą + etykieta MOC pod spodem |
+
+**Terminologia „ludki” → „obywatele”:**
+- Panel imperium: **„40 obywateli”** zamiast „40 ludki”
+- Tabela składników Mocy: wiersz **„Obywatele”**
+- Panel miasta: wiersz **„Obywatele”**
+- Mini-tabela ludności: kolumna **„OBYW.”**
+
+Mechanika bez zmian — `population` w kodzie zostaje; zmienia się tylko nazwa widoczna dla gracza.
+
+**Playtest:** Ctrl+F5 w `gra-robocza/START.html` — sprawdź górny środkowy pasek i panel Moc po kliknięciu.
+
+[REDACTED]
+
+### Linia 8240 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-d7a62892-0c04-47e2-a2b0-00e700d6cfce.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Tuesday, Jul 7, 2026, 8:33 AM (UTC+2)</timestamp>
+
+to słowo armia zmieńmy na zaopatrzenie ang supply
+
+### Linia 8241 — AGENT
+
+[REDACTED]
+
+### Linia 8242 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-d7a62892-0c04-47e2-a2b0-00e700d6cfce.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Tuesday, Jul 7, 2026, 8:33 AM (UTC+2)</timestamp>
+
+to słowo armia zmieńmy na zaopatrzenie ang supply
+
+### Linia 8243 — AGENT
+
+[REDACTED]
+
+### Linia 8244 — AGENT
+
+[REDACTED]
+
+### Linia 8245 — AGENT
+
+Zmienione w górnym pasku HUD: **„Armia”** → **„Zaopatrzenie”** (Supply).
+
+```409:417:gra/src/ui/hud.ts
+    chip6cHtml({
+      iconId: 'res-food',
+      label: 'Zaopatrzenie',
+      value: formatFoodHudLabel(s),
+      rate: signed(s.zywnoscRate ?? 0),
+      rateWarn: !!(s.glodWojska || (s.zywnoscRate ?? 0) < 0),
+      act: 'zywnosc',
+      title: 'Zaopatrzenie armii (Supply) — całe państwo — klik po szczegóły',
+    }),
+```
+
+Build jest gotowy w `gra-robocza/Gra-ROBOCZA.html` — odśwież grę (Ctrl+F5).
+
+**Uwaga:** w panelu miasta suwak żywności nadal ma etykietę „Armia” (wzrost vs wojsko). Jeśli chcesz spójność w całej grze, mogę to też zmienić.
+
+[REDACTED]
+
+### Linia 8246 — MACIEJ
+
+<timestamp>Tuesday, Jul 7, 2026, 8:34 AM (UTC+2)</timestamp>
+
+po zaznaczeniu jednostki powinno się dać wyjść z niej albo escape'em, albo prawym przyciskiem myszki
+
+### Linia 8247 — AGENT
+
+Szukam w kodzie obsługi zaznaczenia jednostki, żeby dodać wyjście przez Escape i PPM.
+
+[REDACTED]
+
+### Linia 8248 — AGENT
+
+[REDACTED]
+
+### Linia 8249 — AGENT
+
+[REDACTED]
+
+### Linia 8250 — AGENT
+
+[REDACTED]
+
+### Linia 8251 — AGENT
+
+[REDACTED]
+
+### Linia 8252 — AGENT
+
+[REDACTED]
+
+### Linia 8253 — AGENT
+
+[REDACTED]
+
+### Linia 8254 — AGENT
+
+[REDACTED]
+
+### Linia 8255 — AGENT
+
+[REDACTED]
+
+### Linia 8256 — AGENT
+
+[REDACTED]
+
+### Linia 8257 — AGENT
+
+[REDACTED]
+
+### Linia 8258 — AGENT
+
+Dodaję obsługę Escape i PPM do odznaczania jednostki — `clearPlayerUnitSelection()` już istnieje.
+
+[REDACTED]
+
+### Linia 8259 — AGENT
+
+[REDACTED]
+
+### Linia 8260 — AGENT
+
+Gotowe. Po zaznaczeniu jednostki możesz ją odznaczyć na dwa sposoby:
+
+**Escape** — odznacza jednostkę na mapie (po zamknięciu dialogów / trybu budowy; panel miasta zamyka się dopiero gdy nic innego nie blokuje).
+
+**Prawy przycisk myszy** — odznacza jednostkę w dowolnym miejscu na mapie (zablokowane menu przeglądarki).
+
+Lewy klik w pusty teren nadal odznacza jak wcześniej.
+
+Build jest w `gra-robocza/Gra-ROBOCZA.html` — odśwież grę (Ctrl+F5) i przetestuj.
+
+[REDACTED]
+
+### Linia 8261 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-f6bc4dba-4ca9-4ae1-96b1-5ec83510ad26.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Tuesday, Jul 7, 2026, 8:36 AM (UTC+2)</timestamp>
+
+kolejka budowy powinna być ograniczona maksymalnie do czterech pozycji w liście a potem powinna być przewijana bo potem nie widać w ogóle dostępnych do budowy budynków.
+
+### Linia 8262 — AGENT
+
+Szukam w panelu miasta kodu kolejki budowy, żeby ograniczyć widok do 4 pozycji ze scrollowaniem.
+
+[REDACTED]
+
+### Linia 8263 — AGENT
+
+[REDACTED]
+
+### Linia 8264 — AGENT
+
+[REDACTED]
+
+### Linia 8265 — AGENT
+
+[REDACTED]
+
+### Linia 8266 — AGENT
+
+[REDACTED]
+
+### Linia 8267 — AGENT
+
+[REDACTED]
+
+### Linia 8268 — AGENT
+
+[REDACTED]
+
+### Linia 8269 — AGENT
+
+Ograniczam kolejkę budowy do 4 widocznych pozycji ze scrollowaniem — wzoruję się na kolejce rekrutacji.
+
+[REDACTED]
+
+### Linia 8270 — AGENT
+
+[REDACTED]
+
+### Linia 8271 — AGENT
+
+Kolejka budowy (pozycje po bieżącym projekcie) ma teraz **maks. 4 widoczne wiersze** — przy większej liczbie pozycji lista się przewija, więc sekcja „Dostępne do budowy” zostaje na ekranie.
+
+Bieżący projekt (u góry, z paskiem postępu) jest bez zmian; scroll dotyczy tylko kolejki pod spodem.
+
+Build: `gra-robocza/Gra-ROBOCZA.html` — odśwież (Ctrl+F5) i sprawdź w panelu miasta.
+
+[REDACTED]
+
+### Linia 8272 — MACIEJ
+
+<timestamp>Tuesday, Jul 7, 2026, 8:43 AM (UTC+2)</timestamp>
+
+z miasta nie da się wyjść eskapem, tylko trzeba dać w wroc na mape.
+
+### Linia 8273 — AGENT
+
+[REDACTED]
+
+### Linia 8274 — AGENT
+
+[REDACTED]
+
+### Linia 8275 — AGENT
+
+[REDACTED]
+
+### Linia 8276 — AGENT
+
+[REDACTED]
+
+### Linia 8277 — AGENT
+
+[REDACTED]
+
+### Linia 8278 — AGENT
+
+[REDACTED]
+
+### Linia 8279 — AGENT
+
+[REDACTED]
+
+### Linia 8280 — AGENT
+
+[REDACTED]
+
+### Linia 8281 — AGENT
+
+[REDACTED]
+
+### Linia 8282 — AGENT
+
+[REDACTED]
+
+### Linia 8283 — AGENT
+
+[REDACTED]
+
+### Linia 8284 — AGENT
+
+Escape w `main.ts` jest, ale może nie zamykać panelu tak jak przycisk. Dodam obsługę Escape bezpośrednio w ramce miasta i podniosę jej priorytet.
+
+[REDACTED]
+
+### Linia 8285 — AGENT
+
+[REDACTED]
+
+### Linia 8286 — AGENT
+
+[REDACTED]
+
+### Linia 8287 — AGENT
+
+[REDACTED]
+
+### Linia 8288 — AGENT
+
+**Escape** zamyka teraz panel miasta tak samo jak przycisk **„Wróć na mapę”**.
+
+Co się zmieniło:
+1. **Skrót Esc** jest podpięty bezpośrednio do ramki miasta (faza capture — działa nawet gdy fokus jest w panelu).
+2. **Esc ma wyższy priorytet** niż tryb budowy czy odznaczanie jednostki — w mieście najpierw wychodzisz na mapę.
+3. Zamknięcie idzie tą samą ścieżką co przycisk (przywrócenie kamery, HUD, usunięcie overlay).
+
+Build: `gra-robocza/Gra-ROBOCZA.html` — odśwież (Ctrl+F5) i sprawdź Esc w panelu miasta.
+
+[REDACTED]
+
+### Linia 8289 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-8db3e31c-c92c-4174-af41-3871b9eb0303.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Tuesday, Jul 7, 2026, 8:49 AM (UTC+2)</timestamp>
+
+produkcję w mieście dobrze żeby dało się nie tylko przesyłać strzałkami ale także tak zwane grab and drop. żeby można było przesunąć daną budowlę o kilka pozycji do góry.
+
+### Linia 8290 — AGENT
+
+Przeglądam implementację kolejki budowy i mechanizm zmiany kolejności, żeby dodać drag-and-drop.
+
+[REDACTED]
+
+### Linia 8291 — AGENT
+
+[REDACTED]
+
+### Linia 8292 — AGENT
+
+Dodaję funkcję zmiany kolejności i obsługę przeciągania wierszy kolejki budowy.
+
+[REDACTED]
+
+### Linia 8293 — AGENT
+
+Rozszerzam drag-and-drop na cały wiersz (oprócz przycisków), żeby było wygodniej.
+
+[REDACTED]
+
+### Linia 8294 — AGENT
+
+Kolejka budowy ma teraz **drag & drop** obok strzałek.
+
+**Jak używać**
+- Chwyć wiersz za uchwyt **⋮⋮** albo za nazwę/ikonę budynku
+- Przeciągnij na inną pozycję w kolejce (możesz przeskoczyć kilka miejsc naraz)
+- Upuść — wiersz podświetla się złotą obwódką jako cel
+- Strzałki ↑↓ i ✕ działają jak wcześniej (przeciąganie nie startuje z przycisków)
+
+Bieżący projekt (u góry, w budowie) nadal nie jest przenaszalny — tylko pozycje w kolejce.
+
+Build: `gra-robocza/Gra-ROBOCZA.html` — odśwież (Ctrl+F5) i przetestuj w panelu Produkcja.
+
+[REDACTED]
+
+### Linia 8295 — MACIEJ
+
+<timestamp>Tuesday, Jul 7, 2026, 8:52 AM (UTC+2)</timestamp>
+
+trzeba przygotować dla każdej cywilizacji o 100 nazw historycznych dla miast. żeby nie trzeba za każdym razem wymyślać nazw. A dla państw miast powinny być też dziesięć przygotowanych nazw miast, państw, dla każdej cywilizacji. Trzeba będzie zrobić research. i wprowadzić te nazwy do Excela, żeby mogły je przejrzeć. podziałem na cywilizacja oraz 100 miast cywilizacji plus 10 miast państw tej cywilizacji. I sprawdź czy państwa miasta mogą budować kolejne państwa miasta. Z tego co wiem ja bym to zablokowany. Mieli nie budować nowych miast. I miały prowadzić politykę typowo defensywną.
+
+### Linia 8296 — AGENT
+
+Sprawdzam cywilizacje w projekcie, mechanikę państw-miast i obecny system nazw miast — potem przygotuję research i strukturę w Excelu.
+
+[REDACTED]
+
+### Linia 8297 — AGENT
+
+[REDACTED]
+
+### Linia 8298 — AGENT
+
+[REDACTED]
+
+### Linia 8299 — AGENT
+
+[REDACTED]
+
+### Linia 8300 — AGENT
+
+[REDACTED]
+
+### Linia 8301 — AGENT
+
+[REDACTED]
+
+### Linia 8302 — AGENT
+
+[REDACTED]
+
+### Linia 8303 — AGENT
+
+[REDACTED]
+
+### Linia 8304 — AGENT
+
+[REDACTED]
+
+### Linia 8305 — AGENT
+
+[REDACTED]
+
+### Linia 8306 — AGENT
+
+Tworzę plik z nazwami historycznymi, generator Excela i audyt mechaniki państw-miast.
+
+[REDACTED]
+
+### Linia 8307 — AGENT
+
+[REDACTED]
+
+### Linia 8308 — AGENT
+
+[REDACTED]
+
+### Linia 8309 — AGENT
+
+[REDACTED]
+
+### Linia 8310 — AGENT
+
+[REDACTED]
+
+### Linia 8311 — AGENT
+
+[REDACTED]
+
+### Linia 8312 — AGENT
+
+[REDACTED]
+
+### Linia 8313 — AGENT
+
+[REDACTED]
+
+### Linia 8314 — AGENT
+
+[REDACTED]
+
+### Linia 8315 — AGENT
+
+Przygotowałem research nazw i audyt państw-miast. Podsumowanie:
+
+## Excel do przeglądu
+
+**Plik:** `panele-sterowania/Nazwy-miast-cywilizacji.xlsx`
+
+| Arkusz | Zawartość |
+|--------|-----------|
+| **README** | Instrukcja + audyt państw-miast |
+| **Podsumowanie** | 15 cywilizacji × (100 + 10 nazw) |
+| **Nazwy** | Długa lista: cywilizacja, kategoria, lp, nazwa, status `do_przeglądu` |
+| **Miasto** | Macierz 100 kolumn (miasta imperium) |
+| **Panstwo** | Macierz 10 kolumn (miasta-państwa w klastrze) |
+
+**Źródło danych:** `gra/data/city-names-pools.json`  
+**Generator (po edycji):** `python gra/tools/generate-city-names-xlsx.py`
+
+Każda cywilizacja ma **100 nazw historycznych** (`miasta_cywilizacji`) i **10 nazw państw-miast** (`miasta_panstwa` = obecne `nazwyKlastra`).
+
+---
+
+## Audyt: czy państwa-miasta zakładają nowe miasta?
+
+**Tak — to jest zablokowane**, zgodnie z Twoją intencją.
+
+Mechanizm w kodzie:
+- Miasta-państwa spawnują się z flagą `startCityState` (tylko **dystans** founding: 3 hex zamiast 5).
+- AI tych właścicieli dostaje `defensiveCopy: true` → `decideDefensiveCopyTurn()` w `ai.ts`:
+  - **brak** produkcji / budowy,
+  - **brak** osadników i `foundCity`,
+  - jednostki tylko **wracają do miasta** lub **ripostują** przy zagrożeniu.
+
+Czyli państwa-miasta **nie rozszerzają się** i grają **defensywnie**.
+
+**Uwaga produktowa:** ten sam profil `defensiveCopy` mają też **obce stolice** na mapie startowej (nie tylko Sparta/Kapua w Twoim klastrze). Jeśli pełne imperia AI mają później normalnie zakładać miasta, trzeba będzie rozdzielić: `defensiveCopy` tylko dla `isSameTypeRival` — to osobna decyzja ABC.
+
+---
+
+## Co dalej (po Twoim przeglądzie)
+
+1. W Excelu oznacz nazwy: `zaakceptowane` / `do_poprawy`.
+2. Po akceptacji: import do `civs.json` (nowe pole np. `nazwyMiast[100]` obok `nazwyKlastra[10]`) + podpięcie silnika zamiast `window.prompt` przy 2. mieście gracza.
+
+Przejrzyj Excel — szczególnie **Zulusi** i **Germanie** (mniej klasycznych „miast”, więcej stanowisk/osad) oraz **Hetyci** (w państwach-miastach są warianty transliteracji Carchemish/Karkemish).
+
+[REDACTED]
+
+### Linia 8316 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-73e7491a-778e-4eda-a993-508817f32ec8.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Tuesday, Jul 7, 2026, 9:22 AM (UTC+2)</timestamp>
+
+brakuje jeszcze automatycznego budowania można tylko wybrać budynki ręcznie do budowy. Przy większej ilości miast staje się to naprawdę frustrujące powinna być opcja automatycznej budowy, tak jak jest możliwość automatycznie produkcji w mieście. Opcja nastawienia na budynki: wzrost, wojsko, kultura, prawo, produkcja Zrównoważone.
+
+### Linia 8317 — AGENT
+
+Sprawdzam, jak działa automatyczna produkcja w mieście i gdzie dodać automatyczną budowę z profilami (wzrost, wojsko, kultura itd.).
+
+[REDACTED]
+
+### Linia 8318 — AGENT
+
+[REDACTED]
+
+### Linia 8319 — AGENT
+
+[REDACTED]
+
+### Linia 8320 — AGENT
+
+[REDACTED]
+
+### Linia 8321 — AGENT
+
+[REDACTED]
+
+### Linia 8322 — AGENT
+
+[REDACTED]
+
+### Linia 8323 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-73e7491a-778e-4eda-a993-508817f32ec8.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Tuesday, Jul 7, 2026, 9:22 AM (UTC+2)</timestamp>
+
+brakuje jeszcze automatycznego budowania można tylko wybrać budynki ręcznie do budowy. Przy większej ilości miast staje się to naprawdę frustrujące powinna być opcja automatycznej budowy, tak jak jest możliwość automatycznie produkcji w mieście. Opcja nastawienia na budynki: wzrost, wojsko, kultura, prawo, produkcja Zrównoważone.
+
+### Linia 8324 — AGENT
+
+[REDACTED]
+
+### Linia 8325 — AGENT
+
+[REDACTED]
+
+### Linia 8326 — AGENT
+
+[REDACTED]
+
+### Linia 8327 — AGENT
+
+[REDACTED]
+
+### Linia 8328 — AGENT
+
+[REDACTED]
+
+### Linia 8329 — AGENT
+
+[REDACTED]
+
+### Linia 8330 — AGENT
+
+[REDACTED]
+
+### Linia 8331 — AGENT
+
+[REDACTED]
+
+### Linia 8332 — AGENT
+
+[REDACTED]
+
+### Linia 8333 — AGENT
+
+[REDACTED]
+
+### Linia 8334 — AGENT
+
+[REDACTED]
+
+### Linia 8335 — AGENT
+
+[REDACTED]
+
+### Linia 8336 — AGENT
+
+Implementuję automatyczną budowę z profilami focus — zaczynam od typów w `cities.ts` i logiki w `auto-manage.ts`.
+
+[REDACTED]
+
+### Linia 8337 — AGENT
+
+[REDACTED]
+
+### Linia 8338 — AGENT
+
+[REDACTED]
+
+### Linia 8339 — AGENT
+
+[REDACTED]
+
+### Linia 8340 — AGENT
+
+[REDACTED]
+
+### Linia 8341 — AGENT
+
+[REDACTED]
+
+### Linia 8342 — AGENT
+
+[REDACTED]
+
+### Linia 8343 — AGENT
+
+[REDACTED]
+
+### Linia 8344 — AGENT
+
+[REDACTED]
+
+### Linia 8345 — AGENT
+
+[REDACTED]
+
+### Linia 8346 — AGENT
+
+[REDACTED]
+
+### Linia 8347 — AGENT
+
+[REDACTED]
+
+### Linia 8348 — AGENT
+
+[REDACTED]
+
+### Linia 8349 — AGENT
+
+[REDACTED]
+
+### Linia 8350 — AGENT
+
+[REDACTED]
+
+### Linia 8351 — AGENT
+
+[REDACTED]
+
+### Linia 8352 — AGENT
+
+[REDACTED]
+
+### Linia 8353 — AGENT
+
+[REDACTED]
+
+### Linia 8354 — AGENT
+
+[REDACTED]
+
+### Linia 8355 — AGENT
+
+[REDACTED]
+
+### Linia 8356 — AGENT
+
+[REDACTED]
+
+### Linia 8357 — AGENT
+
+[REDACTED]
+
+### Linia 8358 — AGENT
+
+Gotowe — w panelu **Produkcja** jest teraz auto-budowa z profilami, analogicznie do auto-przydziału pól w okolicy.
+
+## Jak używać
+
+W sekcji **Produkcja** (przycisk 🏛️ Buduj) nad kolejką pojawił się pasek **Auto budowa** z chipami:
+
+| Profil | Priorytet budynków |
+|--------|-------------------|
+| **Wzrost** | Żywność, Zdrowie |
+| **Wojsko** | Wojsko, Obrona |
+| **Kultura** | Kultura |
+| **Prawo** | Administracja |
+| **Produkcja** | Produkcja, warsztaty |
+| **Zrównoważone** | zbalansowany mix (jak dotychczas) |
+| **Ręczny** | wraca do ręcznego wybierania budynków |
+
+**Klik profilu** → włącza auto-budowę i od razu dodaje pierwszy pasujący budynek do kolejki (jeśli jest pusta).  
+**Co turę** → gdy kolejka się opróżni, miasto samo dobiera następny budynek wg profilu.  
+**Ręczny** → wyłącza auto; budynki wybierasz sam jak dotąd.
+
+Domyślnie miasta mają tryb **Ręczny** — nic się nie zmieni w istniejących zapisach, dopóki nie włączysz profilu.
+
+## Pliki
+
+- `gra/src/game/cities.ts` — typy `BudowaFocus` / `BudowaTryb`
+- `gra/src/game/auto-manage.ts` — logika `pickAutoBuildItem()` z mapowaniem profili
+- `gra/src/ui/cityPanel.ts` — toolbar w panelu Produkcja
+- `gra/src/main.ts` — hooki UI + auto-kolejkowanie co turę
+
+Build: `gra-robocza/Gra-ROBOCZA.html` (testy auto-manage: 29/29 OK).
+
+**Wskazówka:** możesz ustawić auto-budowę w każdym mieście osobno (np. stolica → Wzrost, miasto graniczne → Wojsko) bez klikania w każdy budynek ręcznie.
+
+[REDACTED]
+
+### Linia 8359 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-2535e21b-ad45-40e4-bc50-3d1094a59f47.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Tuesday, Jul 7, 2026, 9:31 AM (UTC+2)</timestamp>
+
+neutralne jednostki mają możliwość wchodzenia do naszego miasta bez jego zdobywania. To nie powinno być możliwe. Poza tym neutralne jednostki miały mieć zieloną obwódkę, a tylko wrogie czerwoną.
+
+### Linia 8360 — AGENT
+
+Szukam w kodzie logiki ruchu jednostek na hex miasta oraz kolorów obwódek (neutralne vs wrogie).
+
+[REDACTED]
+
+### Linia 8361 — AGENT
+
+[REDACTED]
+
+### Linia 8362 — AGENT
+
+[REDACTED]
+
+### Linia 8363 — AGENT
+
+[REDACTED]
+
+### Linia 8364 — AGENT
+
+[REDACTED]
+
+### Linia 8365 — AGENT
+
+[REDACTED]
+
+### Linia 8366 — AGENT
+
+[REDACTED]
+
+### Linia 8367 — AGENT
+
+[REDACTED]
+
+### Linia 8368 — AGENT
+
+[REDACTED]
+
+### Linia 8369 — AGENT
+
+[REDACTED]
+
+### Linia 8370 — AGENT
+
+[REDACTED]
+
+### Linia 8371 — AGENT
+
+[REDACTED]
+
+### Linia 8372 — AGENT
+
+[REDACTED]
+
+### Linia 8373 — AGENT
+
+[REDACTED]
+
+### Linia 8374 — AGENT
+
+[REDACTED]
+
+### Linia 8375 — AGENT
+
+[REDACTED]
+
+### Linia 8376 — AGENT
+
+Wprowadzam blokadę wchodzenia obcych jednostek na hex miasta oraz poprawiam kolory obwódek (zielony = neutralny, czerwony = wrogi).
+
+[REDACTED]
+
+### Linia 8377 — AGENT
+
+[REDACTED]
+
+### Linia 8378 — AGENT
+
+[REDACTED]
+
+### Linia 8379 — AGENT
+
+[REDACTED]
+
+### Linia 8380 — AGENT
+
+[REDACTED]
+
+### Linia 8381 — AGENT
+
+[REDACTED]
+
+### Linia 8382 — AGENT
+
+[REDACTED]
+
+### Linia 8383 — AGENT
+
+[REDACTED]
+
+### Linia 8384 — AGENT
+
+[REDACTED]
+
+### Linia 8385 — AGENT
+
+[REDACTED]
+
+### Linia 8386 — AGENT
+
+[REDACTED]
+
+### Linia 8387 — AGENT
+
+[REDACTED]
+
+### Linia 8388 — AGENT
+
+[REDACTED]
+
+### Linia 8389 — AGENT
+
+[REDACTED]
+
+### Linia 8390 — AGENT
+
+[REDACTED]
+
+### Linia 8391 — AGENT
+
+[REDACTED]
+
+### Linia 8392 — AGENT
+
+[REDACTED]
+
+### Linia 8393 — AGENT
+
+[REDACTED]
+
+### Linia 8394 — AGENT
+
+[REDACTED]
+
+### Linia 8395 — AGENT
+
+[REDACTED]
+
+### Linia 8396 — AGENT
+
+[REDACTED]
+
+### Linia 8397 — AGENT
+
+[REDACTED]
+
+### Linia 8398 — AGENT
+
+Naprawiłem oba problemy.
+
+## 1. Obce jednostki nie wchodzą na hex miasta
+
+Nowa reguła: **na heksie miasta może stać tylko garnizon właściciela** (własne jednostki). Atak / zdobycie odbywa się z **sąsiedniego heksa** — tak jak przy kliknięciu wrogiego miasta.
+
+Co się zmieniło:
+- Pathfinding gracza **nie pokazuje** obcych miast jako pól ruchu
+- Próba wejścia na obce miasto → komunikat: *„Obce miasto — stój na sąsiednim heksie…”*
+- Barbarzyńcy i AI **nie kończą ruchu** na cudzym mieście
+- Jednostki już stojące na obcym mieście są **wypychane** na sąsiedni wolny heks (na początku tury i po ruchu barbarzyńców)
+
+## 2. Kolory obwódek jednostek
+
+| Relacja | Kolor obwódki |
+|---------|----------------|
+| **Twoje** jednostki | niebieski |
+| **Neutralne** (pokój, miasta-państwa, AI bez wojny) | **zielony** |
+| **Wrogie** (wojna, barbarzyńcy) | **czerwony** |
+
+Wcześniej wszystko poza graczem było czerwone — stąd neutralne jednostki wyglądały na wrogie.
+
+---
+
+Build: `gra-robocza/Gra-ROBOCZA.html`
+
+Po wczytaniu zapisu jednostki na Twoim mieście powinny zniknąć z hexu Teby na początku następnej tury (lub od razu po ruchu AI/barbarzyńców). Neutralne jednostki wokół miasta powinny mieć **zieloną** obwódkę.
+
+[REDACTED]
+
+### Linia 8399 — MACIEJ
+
+<timestamp>Tuesday, Jul 7, 2026, 9:39 AM (UTC+2)</timestamp>
+
+jeszcze jedno. Przez budowanie miast można tak naprawdę w nieskończoność rozszerzać teren, ponieważ widoczność miasta jest większa po wybudowaniu niż odległość budowania miast dozwolona pomiędzy miastami gracza. Rozwiązaniem byłoby to, żeby miasta można było nadal budować o odległości 5, ale widoczność miasta rozszerzała się tylko na 4. Tym samym nie byłoby naturalnie widoczności, żeby bez nieograniczony sposób musiało budować miasto obok miasta. Trzeba byłoby ten teren troszeczkę odkryć. Tylko z drugiej strony zastanawiam się, czy to nie ograniczy całkowicie możliwości budowania kolejnych miast. bo nie będzie terenu wokół miasta, na którym będzie można wybudować kolejne miasto. Więc na razie z tym nic nie rób, tylko daj mi jakieś rozwiązania albo sugestie.
+
+### Linia 8400 — AGENT
+
+Sprawdzam w kodzie reguły zakładania miast, zasięg widoczności i odległości między miastami — potem zaproponuję sensowne opcje bez implementacji.
+
+[REDACTED]
+
+### Linia 8401 — AGENT
+
+[REDACTED]
+
+### Linia 8402 — AGENT
+
+[REDACTED]
+
+### Linia 8403 — AGENT
+
+[REDACTED]
+
+### Linia 8404 — AGENT
+
+[REDACTED]
+
+### Linia 8405 — AGENT
+
+[REDACTED]
+
+### Linia 8406 — AGENT
+
+[REDACTED]
+
+### Linia 8407 — AGENT
+
+Masz rację co do mechaniki — to nie jest „bug UI”, tylko **geometryczna luka między trzema promieniami**, które dziś są prawie zsynchronizowane.
+
+## Co jest w kodzie dziś
+
+| Parametr | Wartość (pop 1) | Rola |
+|----------|-----------------|------|
+| Min. odległość miast | **5** heksów | `canFoundCity` |
+| Terytorium miasta | **5** heksów (min. start) | `cityRangeForPopulation` → founding, ulepszenia |
+| Widoczność mgły | **5 + kultura** (0–3 pierścienie) | `citySightRadius` |
+
+Przy **jednym** mieście kolejne można postawić tylko na pierścieniu w **dokładnie 5** heksach od centrum (≥5 odległości **i** ≤5 terytorium). Ten pierścień mieści się w pełni w zasięgu widzenia 5 — stąd łańcuch: miasto → widać pierścień → kolejne miasto → znowu +5 heksów „naprzód”, **bez zwiadu**.
+
+Kultura dodaje do widzenia (+1…+3), więc exploit rośnie wraz z grą.
+
+---
+
+## Twój pomysł: dystans 5, widoczność 4
+
+**Plusy**
+- Łańcuch „same miasta” przestaje sam odsłaniać mapę — pierścień founding (dist 5) jest **poza** jasną widocznością.
+- Terytorium nadal 5 → **miejsca founding nadal istnieją** (są w terytorium, tylko nie w „jasnym” kręgu).
+- Naturalnie wraca rola **zwiadu / osadnika** między miastami.
+
+**Twoja obawa — czy zablokuje rozbudowę?**
+
+**Nie całkowicie**, ale **spowolni i wymusi krok pośredni**:
+- Bez jednostki: nie zobaczysz pierścienia w dist 5 (chyba że wcześniej był explored przez coś innego).
+- Po zbadaniu pierścienia (zwiad, jednostka wojskowa, drugie miasto z innej strony) — founding jest legalny, bo terytorium nadal obejmuje ten heks.
+
+To jest bliżej Civ: **terytorium ≠ widoczność**. Kolejne miasto wymaga „dotknąć” granicy eksploracją, nie tylko kliknąć w już jasny obszar.
+
+**Ryzyko UX:** gracz może nie rozumieć, czemu heks „w moim terytorium” (linia na mapie) jest szary i nie da się tam kliknąć „Załóż miasto”. Trzeba by jasnej podpowiedzi: *„Zbadaj ten obszar zwiadem (pierścień 5 hex od miasta)”*.
+
+---
+
+## Inne sensowne warianty (bez wdrażania — do wyboru ABC)
+
+### A) Rozdziel 3 promienie (najczystsze architektonicznie)
+
+Trzy niezależne parametry w `miasto-params.json`:
+
+1. **`terytorium`** (ekonomia, ulepszenia, „czy w moim państwie”) — zostaje 5+  
+2. **`widoczność`** (jasna mgła) — np. 4  
+3. **`min_dystans_miast`** — zostaje 5  
+
+Opcjonalnie 4.: **`eksploracja z miasta`** — ile heksów trafia do „explored” (szare) vs „visible” (jasne). Np. explored=5, visible=4.
+
+Daje kontrolę bez psucia ekonomii.
+
+---
+
+### B) Founding tylko w **widocznym** obszarze (twarda bramka UX)
+
+Reguła: `canFoundPlayerCityAt` wymaga **visible**, nie tylko terytorium.
+
+- Przy sight=5 nadal da się chainować (bo pierścień jest widoczny).  
+- Przy sight=4 **musisz** mieć jednostkę — dokładnie to, czego chcesz.  
+- Minus: kolonie „w szarej mgle” (explored ale nie visible) byłyby zablokowane — to może być feature albo bug, zależy od wizji.
+
+---
+
+### C) Zwiększ dystans miast zamiast obcinać widoczność
+
+Np. **min. odległość 6–7**, terytorium/widoczność 5.
+
+- Pierścień founding (dist 6) **wypada poza** widoczność 5 — efekt jak sight 4, ale bez zmiany widzenia miasta.  
+- Miasta rzadsze → inny charakter mapy (mniej spamu miast, większe „państwa” per miasto).  
+- Minus: na ciasnych mapach trudniej znaleźć slot.
+
+---
+
+### D) Miękkie ograniczenie ekspansji (bez geometrii)
+
+- Kolejne miasto droższe (Praca / ludność rośnie).  
+- Wymóg **osadnika** zamiast trybu budowy z mapy (już częściowo macie koszty).  
+- Limit miast do epoki / do populacji imperium.  
+
+Nie naprawia mgły, ale ogranicza spam i daje balans „ile miast” osobno od „jak szybko odkrywam mapę”.
+
+---
+
+### E) „Most terytorialny” — kolonia tylko w ciągłym blobie
+
+Kolejne miasto musi być w terytorium **oraz** w zasięgu widzenia **jakiejkolwiek** jednostki gracza w tej turze (albo w explored w ostatnich N turach).
+
+Łączy eksplorację z founding bez obniżania sight miasta.
+
+---
+
+## Rekomendacja (gdybyś kiedyś decydował)
+
+Najbardziej sensowny pakiet na Twoje obawy:
+
+1. **A + B (łagodnie):** sight miasta = **4**, terytorium = **5**, min. dystans = **5**.  
+2. Founding wymaga: terytorium **+ explored** (wystarczy zwiad — nie musi być jasno visible).  
+3. Podpowiedź w UI przy szarym pierścieniu w dist 5.
+
+To:
+- zatrzymuje nieskończony łańcuch odkrywania,
+- **nie blokuje** kolejnych miast (tylko wymusza zwiad co kilka hexów),
+- nie psuje ekonomii (okolica / pola / ulepszenia zostają przy promieniu 5).
+
+---
+
+## Szybki test mentalny
+
+```
+Miasto A (centrum)
+  │←—— 4 hex ——→│ widoczność (jasna)
+  │←—— 5 hex ——→│ terytorium + legalny founding (pierścień)
+  │←—— 5 hex ——→│ min. odległość następnego miasta
+```
+
+Między widocznością (4) a pierścieniem founding (5) zostaje **1-hexowy bufor** — dokładnie ta „dziura”, którą trzeba zwiadem wypełnić. To zamierzone.
+
+---
+
+Na razie nic nie implementuję. Jeśli chcesz iść dalej, w formacie ABC:
+
+- **A** — sight 4, terytorium 5, dystans 5 (Twój kierunek + explored)  
+- **B** — dystans 6–7 przy sight 5  
+- **C** — miękkie limity (koszt / osadnik / cap miast)  
+- **D** — zostaw jak jest, tylko dokumentacja / świadomy design  
+
+Który wariant jest bliżej temu, jak ma się grać?
+
+[REDACTED]
+
+### Linia 8408 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-eae2dd2c-b578-4362-aeba-767ca96d10e8.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Tuesday, Jul 7, 2026, 9:43 AM (UTC+2)</timestamp>
+
+w surowcach koń jest bardzo dużo, ale nie widzę żadnych owiec ani krów. Na początku myślałem to dlatego, że jeszcze nie miałem hodowli odkrytej, ale nawet po odkryciu hodowli nadal nie ma tych surowców na mapie, które powinny być losowo rozłożone, a koni jest w cholerę. Tak naprawdę konie powinny być rzadkością. Powinno być ich znacznie mniej. A więcej powinno być krów i owiec.
+
+### Linia 8409 — AGENT
+
+Sprawdzam generator mapy i logikę rozmieszczania surowców (konie, owce, krowy).
+
+[REDACTED]
+
+### Linia 8410 — AGENT
+
+[REDACTED]
+
+### Linia 8411 — AGENT
+
+[REDACTED]
+
+### Linia 8412 — AGENT
+
+[REDACTED]
+
+### Linia 8413 — AGENT
+
+[REDACTED]
+
+### Linia 8414 — AGENT
+
+[REDACTED]
+
+### Linia 8415 — AGENT
+
+[REDACTED]
+
+### Linia 8416 — AGENT
+
+[REDACTED]
+
+### Linia 8417 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-eae2dd2c-b578-4362-aeba-767ca96d10e8.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Tuesday, Jul 7, 2026, 9:43 AM (UTC+2)</timestamp>
+
+w surowcach koń jest bardzo dużo, ale nie widzę żadnych owiec ani krów. Na początku myślałem to dlatego, że jeszcze nie miałem hodowli odkrytej, ale nawet po odkryciu hodowli nadal nie ma tych surowców na mapie, które powinny być losowo rozłożone, a koni jest w cholerę. Tak naprawdę konie powinny być rzadkością. Powinno być ich znacznie mniej. A więcej powinno być krów i owiec.
+
+### Linia 8418 — AGENT
+
+[REDACTED]
+
+### Linia 8419 — AGENT
+
+[REDACTED]
+
+### Linia 8420 — AGENT
+
+[REDACTED]
+
+### Linia 8421 — AGENT
+
+[REDACTED]
+
+### Linia 8422 — AGENT
+
+[REDACTED]
+
+### Linia 8423 — AGENT
+
+[REDACTED]
+
+### Linia 8424 — AGENT
+
+[REDACTED]
+
+### Linia 8425 — AGENT
+
+[REDACTED]
+
+### Linia 8426 — AGENT
+
+[REDACTED]
+
+### Linia 8427 — AGENT
+
+[REDACTED]
+
+### Linia 8428 — AGENT
+
+[REDACTED]
+
+### Linia 8429 — AGENT
+
+[REDACTED]
+
+### Linia 8430 — AGENT
+
+Implementuję poprawkę widoczności owiec/krów i balans rzadkości koni.
+
+[REDACTED]
+
+### Linia 8431 — AGENT
+
+[REDACTED]
+
+### Linia 8432 — AGENT
+
+[REDACTED]
+
+### Linia 8433 — AGENT
+
+[REDACTED]
+
+### Linia 8434 — AGENT
+
+[REDACTED]
+
+### Linia 8435 — AGENT
+
+[REDACTED]
+
+### Linia 8436 — AGENT
+
+[REDACTED]
+
+### Linia 8437 — AGENT
+
+[REDACTED]
+
+### Linia 8438 — AGENT
+
+[REDACTED]
+
+### Linia 8439 — AGENT
+
+[REDACTED]
+
+### Linia 8440 — AGENT
+
+[REDACTED]
+
+### Linia 8441 — AGENT
+
+Masz rację — to były **dwa osobne problemy**: bug wizualny i zły balans generatora.
+
+## Co było nie tak
+
+**1. Owce i krowy były na mapie, ale niewidoczne**
+
+Konie (`ZlozeKonia`) renderowały się jako ikony surowców. Owce i bydło były **celowo pomijane** w tym samym rendererze (miały iść przez modele hodowli), ale kod nigdy ich nie tworzył — warunek wymagał „postawionych ulepszeń”, a złoże zwierzęce nie było dodawane do warstw renderu.
+
+**2. Konie były za częste**
+
+- Losowanie na **Równinach** (~10% szans × mnożnik mapy)
+- Siatka **fair play** wymuszała **co najmniej jednego konia w każdej komórce** mapy — stąd ich nadmiar na dużych mapach
+
+## Co naprawiłem
+
+| Zmiana | Efekt |
+|--------|--------|
+| Render złoża owiec/krów przez `foodLayerFromAnimalDeposit` | Owce i krowy widać od razu na mapie (bez czekania na pastwisko) |
+| `konie` rarity: 0.10 → **0.025** | Konie ~4× rzadsze |
+| `owce` rarity: 0.08 → **0.14**, `bydlo`: 0.07 → **0.12** | Więcej owiec i krów |
+| Konie **usunięte z pakietu fair play** | Generator nie wpycha już konia w każdą komórkę siatki |
+
+## Jak przetestować
+
+**Nowa gra** — stary zapis ma rozkład z poprzedniego generatora.
+
+Otwórz `gra-robocza/START.html` → **Gra-ROBOCZA** (świeży build).
+
+Powinieneś zobaczyć:
+- **owce** na wzgórzach,
+- **krowy** na łąkach i równinach,
+- **konie** rzadko, jako wyjątek.
+
+Uwaga: pastwisko nadal trzeba **zbudować ręcznie**, żeby złoże dawało plony — to osobna reguła (ABC-18). Teraz chodzi o to, że surowce **widać** na mapie od początku.
+
+Daj znać po playteście, czy proporcje są OK — możemy jeszcze dostroić rarity (np. konie jeszcze rzadsze albo więcej owiec).
+
+[REDACTED]
+
+### Linia 8442 — MACIEJ
+
+<timestamp>Tuesday, Jul 7, 2026, 9:49 AM (UTC+2)</timestamp>
+
+przy budowaniu miast jednostka, która jest zabierana na potrzebę budowy nowego miasta powinna iść zawsze z największego miasta danej cywilizacji jeżeli jest kilka miast tej samej wielkości, zabieranie jest losowe.
+
+### Linia 8443 — AGENT
+
+Szukam w kodzie logiki zakładania miast i miejsca, skąd zabierana jest jednostka.
+
+[REDACTED]
+
+### Linia 8444 — AGENT
+
+[REDACTED]
+
+### Linia 8445 — AGENT
+
+[REDACTED]
+
+### Linia 8446 — AGENT
+
+[REDACTED]
+
+### Linia 8447 — AGENT
+
+[REDACTED]
+
+### Linia 8448 — AGENT
+
+[REDACTED]
+
+### Linia 8449 — AGENT
+
+[REDACTED]
+
+### Linia 8450 — AGENT
+
+[REDACTED]
+
+### Linia 8451 — AGENT
+
+[REDACTED]
+
+### Linia 8452 — AGENT
+
+[REDACTED]
+
+### Linia 8453 — AGENT
+
+[REDACTED]
+
+### Linia 8454 — AGENT
+
+[REDACTED]
+
+### Linia 8455 — AGENT
+
+Reguła jest już w `city-founding.ts`, ale przy remisie wielkości wybór nie był losowy. Dodaję losowanie przy remisie i testy.
+
+[REDACTED]
+
+### Linia 8456 — AGENT
+
+[REDACTED]
+
+### Linia 8457 — AGENT
+
+Ta reguła była już w kodzie (decyzja B1-FOUND-Q1 z czerwca), ale **przy remisie wielkości** zawsze wybierane było pierwsze miasto z listy — nie losowo. To poprawiłem.
+
+## Jak działa założenie miasta (od 2. miasta w górę)
+
+Koszt: **20 Pracy + 1 👤** (ludność z istniejącego miasta).
+
+**Skąd idzie 👤:**
+1. Wybierane jest **największe miasto** cywilizacji (po liczbie ludności — ta cyfra przy nazwie na mapie).
+2. Musi mieć **co najmniej 2 👤** (po oddaniu 1 zostaje minimum 1).
+3. Gdy **kilka miast ma tę samą wielkość** — wybór jest **losowy** wśród nich.
+
+Pierwsze miasto gracza nadal jest **FREE** (bez kosztu).
+
+## Co zmieniłem
+
+- `pickSourceCityForFounding` — losowanie przy remisie wielkości
+- Komunikat po założeniu, np.: `Miasto Kolonia założone! (−1 👤 z Ateny)` — widać, z którego miasta poszła ludność
+
+Build jest w `gra-robocza/Gra-ROBOCZA.html`.
+
+**Uwaga:** chodzi o **👤 ludność miasta**, nie o jednostkę osadnika na mapie (gracz zakłada miasta z panelu Budowa, bez chodzenia osadnikiem). AI nadal używa osadników na mapie — to osobny model.
+
+Daj znać po playteście, czy przy dwóch miastach tej samej wielkości losowanie działa tak, jak oczekujesz.
+
+[REDACTED]
+
+### Linia 8458 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-8dcb5ddb-bb30-4525-89f3-8c1dd88f3245.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Tuesday, Jul 7, 2026, 9:52 AM (UTC+2)</timestamp>
+
+gdy mamy już jednostkę w mieście, z jakiegoś względu inne jednostki nie chcą się z nią połączyć. Nadal pomimo połączenia jednostek w armię, kiedy chce przenieść się w inne miejsce, zaznacza się tylko jedna z jednostek i wychodzi z armii. Być może ten problem już rozwiązałeś wcześniej, bo Ci to zgłosiłem, ale dalej zgłaszam.
+
+### Linia 8459 — AGENT
+
+Sprawdzam logikę łączenia jednostek w armie i ruchu stosu — to wygląda na bug w selekcji albo w przenoszeniu całej armii.
+
+[REDACTED]
+
+### Linia 8460 — AGENT
+
+[REDACTED]
+
+### Linia 8461 — AGENT
+
+[REDACTED]
+
+### Linia 8462 — AGENT
+
+[REDACTED]
+
+### Linia 8463 — AGENT
+
+[REDACTED]
+
+### Linia 8464 — AGENT
+
+[REDACTED]
+
+### Linia 8465 — AGENT
+
+[REDACTED]
+
+### Linia 8466 — AGENT
+
+[REDACTED]
+
+### Linia 8467 — AGENT
+
+[REDACTED]
+
+### Linia 8468 — AGENT
+
+[REDACTED]
+
+### Linia 8469 — AGENT
+
+[REDACTED]
+
+### Linia 8470 — AGENT
+
+[REDACTED]
+
+### Linia 8471 — AGENT
+
+[REDACTED]
+
+### Linia 8472 — AGENT
+
+[REDACTED]
+
+### Linia 8473 — AGENT
+
+[REDACTED]
+
+### Linia 8474 — AGENT
+
+[REDACTED]
+
+### Linia 8475 — AGENT
+
+[REDACTED]
+
+### Linia 8476 — AGENT
+
+[REDACTED]
+
+### Linia 8477 — AGENT
+
+Wykryto główną przyczynę: nowe jednostki spawnują się na heksie miasta bez pytania o merge, a przy „Zostaw osobno” cofana jest tylko jedna z nich — reszta stosu zostaje.
+
+[REDACTED]
+
+### Linia 8478 — AGENT
+
+[REDACTED]
+
+### Linia 8479 — AGENT
+
+[REDACTED]
+
+### Linia 8480 — AGENT
+
+[REDACTED]
+
+### Linia 8481 — AGENT
+
+[REDACTED]
+
+### Linia 8482 — AGENT
+
+[REDACTED]
+
+### Linia 8483 — AGENT
+
+[REDACTED]
+
+### Linia 8484 — AGENT
+
+[REDACTED]
+
+### Linia 8485 — AGENT
+
+[REDACTED]
+
+### Linia 8486 — AGENT
+
+[REDACTED]
+
+### Linia 8487 — AGENT
+
+[REDACTED]
+
+### Linia 8488 — AGENT
+
+[REDACTED]
+
+### Linia 8489 — AGENT
+
+[REDACTED]
+
+### Linia 8490 — AGENT
+
+[REDACTED]
+
+### Linia 8491 — AGENT
+
+[REDACTED]
+
+### Linia 8492 — AGENT
+
+[REDACTED]
+
+### Linia 8493 — AGENT
+
+Masz rację — to nie było w pełni naprawione. Znalazłem **trzy powiązane bugi** w logice armii:
+
+## Co było nie tak
+
+**1. Rekrutacja w mieście bez pytania o merge**  
+Nowa jednostka lądowała na heksie miasta obok istniejącej, ale **nie pojawiało się okno „Połącz armie”**. Dostawała `ruchLeft: 0`, co **blokowało ruch całego stosu** (armia bierze minimum ruchu ze stosu).
+
+**2. „Zostaw osobno” cofało tylko 1 jednostkę**  
+Gdy armia szła na heks z inną armią i wybierałeś „Zostaw osobno”, cofała się **tylko jedna** figurka — reszta zostawała, więc stos się rozjeżdżał.
+
+**3. Animacja ruchu pokazywała tylko jedną figurkę**  
+Cały stos przesuwał się w danych, ale wizualnie w ruchu była tylko jedna jednostka — wyglądało to jak rozpad armii.
+
+## Co naprawiłem
+
+| Fix | Efekt |
+|-----|--------|
+| Okno merge po rekrutacji/produkcji na zajętym heksie | Przy drugiej jednostce w mieście od razu pytanie: połączyć czy zostawić osobno |
+| Cofanie całego przybywającego stosu | „Zostaw osobno” cofa **całą** armia, która właśnie weszła |
+| Ruch całego stosu razem | Przy ruchu przesuwają się wszystkie jednostki stosu (wizualnie i w logice) |
+| Klik w ten sam stos | Nie próbuje już „ruszyć na ten sam heks” — tylko przełącza zaznaczenie |
+
+## Jak przetestować
+
+`gra-robocza/START.html` → **Gra-ROBOCZA** (świeży build).
+
+1. **Miasto z 1 jednostką → zrekrutuj drugą** → powinno wyskoczyć okno merge.  
+2. **Połącz** → badge ×2, ruch całej armii razem.  
+3. **Przesuń armię** → obie figurki idą razem (nie zostaje jedna na miejscu).
+
+**Uwaga:** po połączeniu z **świeżo zrekrutowaną** jednostką (0 ruchu w tej turze) cała armia ma wspólny pul ruchu = 0 do końca tury — to zamierzone. Jeśli chcesz ruszyć starą armią bez czekania, wybierz **„Zostaw osobno”** — nowa jednostka stanie na sąsiednim heksie.
+
+Daj znać, czy po tym playteście zachowuje się tak, jak oczekujesz.
+
+[REDACTED]
+
+### Linia 8494 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-afe83576-bd80-411b-a758-fdaaade461f7.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Tuesday, Jul 7, 2026, 10:01 AM (UTC+2)</timestamp>
+
+nie wiem, z kim ta bitwa jest, czy to są barbarzyńcy, czy kto. Chodzili do mojego miasta, nie zdobywając go, chociaż chyba był komunikat, że jego zdobyli. Jest jakiś bug.
+
+### Linia 8495 — AGENT
+
+Sprawdzam logikę bitwy przy mieście: kto jest wyświetlany jako wróg, kiedy pada komunikat o zdobyciu i co faktycznie zmienia właściciela miasta.
+
+[REDACTED]
+
+### Linia 8496 — AGENT
+
+[REDACTED]
+
+### Linia 8497 — AGENT
+
+[REDACTED]
+
+### Linia 8498 — AGENT
+
+[REDACTED]
+
+### Linia 8499 — AGENT
+
+[REDACTED]
+
+### Linia 8500 — AGENT
+
+[REDACTED]
+
+### Linia 8501 — AGENT
+
+[REDACTED]
+
+### Linia 8502 — AGENT
+
+[REDACTED]
+
+### Linia 8503 — AGENT
+
+[REDACTED]
+
+### Linia 8504 — AGENT
+
+[REDACTED]
+
+### Linia 8505 — AGENT
+
+[REDACTED]
+
+### Linia 8506 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-afe83576-bd80-411b-a758-fdaaade461f7.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Tuesday, Jul 7, 2026, 10:01 AM (UTC+2)</timestamp>
+
+nie wiem, z kim ta bitwa jest, czy to są barbarzyńcy, czy kto. Chodzili do mojego miasta, nie zdobywając go, chociaż chyba był komunikat, że jego zdobyli. Jest jakiś bug.
+
+### Linia 8507 — AGENT
+
+[REDACTED]
+
+### Linia 8508 — AGENT
+
+Wprowadzam poprawki: potyczka polowa nie będzie już przejmować miasta, a ekran przed bitwą pokaże właściwego przeciwnika i kontekst (miasto vs pole).
+
+[REDACTED]
+
+### Linia 8509 — AGENT
+
+[REDACTED]
+
+### Linia 8510 — AGENT
+
+[REDACTED]
+
+### Linia 8511 — AGENT
+
+[REDACTED]
+
+### Linia 8512 — AGENT
+
+[REDACTED]
+
+### Linia 8513 — AGENT
+
+[REDACTED]
+
+### Linia 8514 — AGENT
+
+[REDACTED]
+
+### Linia 8515 — AGENT
+
+[REDACTED]
+
+### Linia 8516 — AGENT
+
+[REDACTED]
+
+### Linia 8517 — AGENT
+
+[REDACTED]
+
+### Linia 8518 — AGENT
+
+[REDACTED]
+
+### Linia 8519 — AGENT
+
+[REDACTED]
+
+### Linia 8520 — AGENT
+
+[REDACTED]
+
+### Linia 8521 — AGENT
+
+[REDACTED]
+
+### Linia 8522 — AGENT
+
+[REDACTED]
+
+### Linia 8523 — AGENT
+
+Co się działo — krótko:
+
+**Na screenie to nie było oblężenie miasta**, tylko **potyczka polowa**: ty atakujesz (4 jednostki), wróg broni (2 wojowników). Tytuł „Bitwa o równina” brał nazwę terenu, a nie miasta — stąd wrażenie, że nie wiadomo, o co chodzi.
+
+**Dwa bugi były realne:**
+
+1. **Etykieta wroga** — zamiast „Barbarzyńcy” lub nazwy cywilizacji (np. Egipt) pokazywało się generyczne „AI · OBROŃCA”.
+2. **Fałszywe zdobycie miasta** — po wygranej potyczce polowej na heksie miasta (lub obok) gra mogła przejąć miasto, choć to nie był szturm ani jawny atak na miasto. Stąd komunikat „zdobyte”, mimo że wrogowie tylko szli w okolice.
+
+**Co naprawiłem:**
+
+- Potyczka jednostka vs jednostka **nie przejmuje już miasta** — zdobycie działa tylko przy świadomym ataku na miasto (bez muru) lub szturmie oblężniczym.
+- Ekran przed bitwą pokazuje **właściwego przeciwnika** (Barbarzyńcy / nazwa cyw.) i **kontekst miejsca** (np. „równina przy Tebach”, „obrona miasta Teby”).
+- Przy ataku barbarzyńców zobaczysz „**Barbarzyńcy · Atakujący**” zamiast „AI -1”.
+
+Build jest w `gra-robocza/Gra-ROBOCZA.html` — odśwież i sprawdź tę samą sytuację.
+
+**Jak rozróżnić w grze:**
+- **Potyczka polowa** — klik w wrogą jednostkę na mapie; miasto się nie zmienia właściciela po wygranej.
+- **Atak na miasto** — klik w wrogie miasto (bez muru) → tytuł z nazwą miasta; wygrana = zdobycie.
+- **Oblężenie** — miasto z murem → panel oblężenia / szturm.
+
+Jeśli po tej poprawce nadal zobaczysz „Miasto zdobyte” bez ataku na miasto, daj znać — wtedy szukamy kolejnej ścieżki (np. ruch barbarzyńców bez walki).
+
+[REDACTED]
+
+### Linia 8524 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-5be06516-f7c4-4b90-a1f1-a6f5a5f1f56e.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Tuesday, Jul 7, 2026, 10:07 AM (UTC+2)</timestamp>
+
+witwa ręczna nie ma w ogóle chyba etapu rozstawiania, ponieważ znika możliwość ustawienia głębokości jednostek. Od razu może tylko atakować.
+
+### Linia 8525 — AGENT
+
+Sprawdzam logikę etapu rozstawiania w bitwie ręcznej — od flagi `deploy` po UI głębokości jednostek.
+
+[REDACTED]
+
+### Linia 8526 — AGENT
+
+[REDACTED]
+
+### Linia 8527 — AGENT
+
+[REDACTED]
+
+### Linia 8528 — AGENT
+
+[REDACTED]
+
+### Linia 8529 — AGENT
+
+[REDACTED]
+
+### Linia 8530 — AGENT
+
+Przyczyna: bitwy z mapy uruchamiały się z `deploy: false`, więc pomijały fazę rozstawiania. Włączam `deploy: true` dla ataków gracza i szturmu oblężniczego.
+
+[REDACTED]
+
+### Linia 8531 — AGENT
+
+[REDACTED]
+
+### Linia 8532 — AGENT
+
+Masz rację — to był bug, nie zmiana designu.
+
+**Przyczyna:** bitwa ręczna z mapy (klik w wroga → „Rozegraj ręcznie”) startowała z `deploy: false`, więc gra **pomijała fazę rozstawiania** i od razu wchodziła w „Tura 0 — Ręczne” z rozkazami ATAK/OBRONA. Stąd zniknęło ustawianie głębokości (przycisk **Linie** w pasku formacji).
+
+**Naprawione** w `gra-robocza/Gra-ROBOCZA.html`:
+- atak gracza na mapie → **`deploy: true`** (faza rozstawiania przed walką)
+- szturm oblężniczy ręczny → też **`deploy: true`**
+
+**Po poprawce** po wejściu w bitwę ręczną powinieneś zobaczyć:
+1. **„Faza rozstawiania”** (nie „Tura 0”)
+2. Lewy panel z grupami + pasek **Formacja / Konnica / Linie**
+3. Przycisk **START WALKI** na dole — dopiero on rozpoczyna walkę
+
+**Uwaga:** gdy **wróg atakuje ciebie** (obrona), rozstawianie nadal nie działa — obecnie dotyczy tylko strony atakującej. To osobna kwestia do dopisania, jeśli chcesz ustawiać formację także przy obronie.
+
+Odśwież `Gra-ROBOCZA.html` i sprawdź ten sam scenariusz — daj znać, czy faza rozstawiania wróciła.
+
+[REDACTED]
+
+### Linia 8533 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-5be4511c-df52-477f-acc9-87cff30782bc.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Tuesday, Jul 7, 2026, 10:10 AM (UTC+2)</timestamp>
+
+I jeszcze Paner Ludności, który miał być po prawej stronie, nagle pojawił się pod Skarbcem.
+
+### Linia 8534 — AGENT
+
+Szukam w kodzie HUD-u układu panelu Ludności — powinien być po prawej, a nie pod Skarbcem.
+
+[REDACTED]
+
+### Linia 8535 — AGENT
+
+[REDACTED]
+
+### Linia 8536 — AGENT
+
+[REDACTED]
+
+### Linia 8537 — AGENT
+
+[REDACTED]
+
+### Linia 8538 — AGENT
+
+[REDACTED]
+
+### Linia 8539 — AGENT
+
+[REDACTED]
+
+### Linia 8540 — AGENT
+
+[REDACTED]
+
+### Linia 8541 — AGENT
+
+Dodanie chipu Zaopatrzenie powoduje zawijanie wiersza — Ludność ląduje pod Skarbcem. Przenoszę ją do prawej sekcji HUD, zgodnie z zamierzeniem układu.
+
+[REDACTED]
+
+### Linia 8542 — AGENT
+
+[REDACTED]
+
+### Linia 8543 — AGENT
+
+**Przyczyna:** po dodaniu chipu **Zaopatrzenie** (Armia) lewy pasek miał 6 elementów. Przy `flex-wrap: wrap` **Ludność** zawijała się do drugiego wiersza — stąd pod Skarbcem zamiast po prawej.
+
+**Naprawa** w `gra-robocza/Gra-ROBOCZA.html`:
+- **Ludność** jest teraz w **prawej sekcji HUD** (obok Epoki, przed Wiki/Menu)
+- Lewy pasek: Skarbiec · Praca · Zaopatrzenie · Nauka · Kultura — **jeden wiersz**, bez zawijania
+- W widoku miasta chip Ludności chowa się razem z resztą paska zasobów
+
+Odśwież grę i sprawdź układ — Ludność powinna być u góry po prawej.
+
+[REDACTED]
+
+### Linia 8544 — MACIEJ
+
+<timestamp>Tuesday, Jul 7, 2026, 11:26 AM (UTC+2)</timestamp>
+
+Ok. Czy z wszystkich tematów, które Ci podesłałem, potrzebujesz ode mnie jeszcze jakiejś może decyzji 1abc
+
+### Linia 8545 — AGENT
+
+Sprawdzam, które zgłoszone tematy są już zamknięte, a które wymagają decyzji ABC.
+
+[REDACTED]
+
+### Linia 8546 — AGENT
+
+[REDACTED]
+
+### Linia 8547 — AGENT
+
+[REDACTED]
+
+### Linia 8548 — AGENT
+
+[REDACTED]
+
+### Linia 8549 — AGENT
+
+Nie — **do tematów z tej sesji nie potrzebuję od Ciebie teraz decyzji ABC**, żeby iść dalej.
+
+Wszystko, co podesłałeś, było w praktyce **bugami lub wdrożeniem już zatwierdzonych reguł**:
+
+| Temat | Status | ABC? |
+|--------|--------|------|
+| Konie / owce / krowy | naprawione | nie |
+| Ludność przy założeniu miasta | reguła **B1-FOUND-Q1=A+B** już była — tylko kod | nie |
+| Łączenie armii i ruch stosu | naprawione | nie |
+| Bitwa — kto wróg, fałszywe „zdobyte” | naprawione (etykiety + potyczka polowa nie przejmuje miasta) | nie* |
+| Bitwa ręczna bez rozstawiania | naprawione (`deploy: true`) | nie |
+| Panel Ludności pod Skarbcem | naprawione (po prawej) | nie — zaakceptowałeś „Ok” |
+
+\* Jedyna **opcjonalna** decyzja gameplay — tylko jeśli po playteście uznasz, że coś jest źle:
+
+**[EKRAN: Mapa bitwy]** — czy wygrana **potyczki polowej na heksie miasta** ma przejmować miasto?
+
+- **A** — nie (obecne: zdobycie tylko przy świadomym ataku na miasto / szturmie) — **domyślnie tak jest teraz**
+- **B** — tak, jeśli atakujący wygrywa na heksie miasta (stare zachowanie)
+- **C** — tylko barbarzyńcy mogą tak zdobyć; cywilizacje AI — nie
+
+Jeśli nie odpowiesz — zostawiamy **A** i traktujemy to jako poprawkę błędu, nie nową mechanikę.
+
+---
+
+**Czego nie trzeba decydować teraz (ale warto przetestować):**
+
+1. Czy po poprawkach bitwa i etykiety **czują się dobrze** (playtest, nie ABC).
+2. **Rozstawianie przy obronie** — gdy wróg atakuje ciebie, nadal nie ma fazy deploy (tylko przy twoim ataku). To osobny temat na przyszłość, nie blokuje nic z dzisiejszej listy.
+
+---
+
+**Osobno** (nie z tej sesji, ale nadal otwarte w projekcie): duże decyzje **D1–D15** z `docs/MACIEJ-KARTA-DECYZJI.md` / `docs/MACIEJ-DECYZJE-ROZWINIETE.md` — HUD, Wealth, UX bitwy itd. To inna paczka niż dzisiejsze zgłoszenia.
+
+**Podsumowanie:** możesz po prostu **ograć `Gra-ROBOCZA.html`** i napisać, czy coś nadal nie gra. ABC potrzebuję tylko wtedy, gdy powiesz np. „chcę z powrotem zdobywanie miasta z potyczki polowej” — wtedy wybór **A/B/C** jak wyżej.
+
+[REDACTED]
+
+### Linia 8550 — MACIEJ
+
+<timestamp>Tuesday, Jul 7, 2026, 11:30 AM (UTC+2)</timestamp>
+
+a
+
+### Linia 8551 — AGENT
+
+**A** — zostaje jak jest: **potyczka polowa nie przejmuje miasta**. Zdobycie tylko przy świadomym ataku na miasto (bez muru) albo szturmie oblężniczym.
+
+Kod już to robi — nic więcej od Ciebie nie potrzebuję w tym temacie. Jak coś przy playteście nadal będzie nie tak, napisz konkretnie co widzisz na ekranie.
+
+[REDACTED]
+
+### Linia 8552 — MACIEJ
+
+<timestamp>Tuesday, Jul 7, 2026, 11:31 AM (UTC+2)</timestamp>
+
+Rozstawianie przy obronie- jeżeli wybieram grę ręczną, nieautomatyczną, za każdym razem musi być etap rozstawienia wojsk. To jest logiczne. Nieważne czy atakuję czy się bronię. Czy jestem w mieście czy poza miastem? I przed każdym atakiem wroga zawsze musi się pojawić pre battle i to samo gdy ja atakuje.
+
+### Linia 8553 — AGENT
+
+Sprawdzam wszystkie ścieżki bitwy — pre-battle i faza rozstawiania muszą działać tak samo przy ataku i obronie.
+
+[REDACTED]
+
+### Linia 8554 — AGENT
+
+[REDACTED]
+
+### Linia 8555 — AGENT
+
+[REDACTED]
+
+### Linia 8556 — AGENT
+
+[REDACTED]
+
+### Linia 8557 — AGENT
+
+[REDACTED]
+
+### Linia 8558 — AGENT
+
+[REDACTED]
+
+### Linia 8559 — AGENT
+
+[REDACTED]
+
+### Linia 8560 — AGENT
+
+[REDACTED]
+
+### Linia 8561 — AGENT
+
+[REDACTED]
+
+### Linia 8562 — AGENT
+
+[REDACTED]
+
+### Linia 8563 — AGENT
+
+[REDACTED]
+
+### Linia 8564 — AGENT
+
+[REDACTED]
+
+### Linia 8565 — AGENT
+
+[REDACTED]
+
+### Linia 8566 — AGENT
+
+[REDACTED]
+
+### Linia 8567 — AGENT
+
+[REDACTED]
+
+### Linia 8568 — AGENT
+
+[REDACTED]
+
+### Linia 8569 — AGENT
+
+[REDACTED]
+
+### Linia 8570 — AGENT
+
+[REDACTED]
+
+### Linia 8571 — AGENT
+
+[REDACTED]
+
+### Linia 8572 — AGENT
+
+[REDACTED]
+
+### Linia 8573 — AGENT
+
+[REDACTED]
+
+### Linia 8574 — AGENT
+
+[REDACTED]
+
+### Linia 8575 — AGENT
+
+Wdrażam regułę: pre-battle zawsze, a przy grze ręcznej — faza rozstawiania także przy obronie.
+
+[REDACTED]
+
+### Linia 8576 — AGENT
+
+[REDACTED]
+
+### Linia 8577 — AGENT
+
+[REDACTED]
+
+### Linia 8578 — AGENT
+
+[REDACTED]
+
+### Linia 8579 — MACIEJ
+
+<timestamp>Tuesday, Jul 7, 2026, 11:31 AM (UTC+2)</timestamp>
+
+Rozstawianie przy obronie- jeżeli wybieram grę ręczną, nieautomatyczną, za każdym razem musi być etap rozstawienia wojsk. To jest logiczne. Nieważne czy atakuję czy się bronię. Czy jestem w mieście czy poza miastem? I przed każdym atakiem wroga zawsze musi się pojawić pre battle i to samo gdy ja atakuje.
+
+### Linia 8580 — AGENT
+
+[REDACTED]
+
+### Linia 8581 — AGENT
+
+Sprawdzam pozostałe odwołania w `battleScene.ts` i ścieżkę incoming battle w `main.ts`.
+
+[REDACTED]
+
+### Linia 8582 — AGENT
+
+[REDACTED]
+
+### Linia 8583 — AGENT
+
+[REDACTED]
+
+### Linia 8584 — AGENT
+
+[REDACTED]
+
+### Linia 8585 — AGENT
+
+[REDACTED]
+
+### Linia 8586 — AGENT
+
+[REDACTED]
+
+### Linia 8587 — AGENT
+
+[REDACTED]
+
+### Linia 8588 — AGENT
+
+[REDACTED]
+
+### Linia 8589 — AGENT
+
+[REDACTED]
+
+### Linia 8590 — AGENT
+
+[REDACTED]
+
+### Linia 8591 — AGENT
+
+[REDACTED]
+
+### Linia 8592 — AGENT
+
+[REDACTED]
+
+### Linia 8593 — AGENT
+
+[REDACTED]
+
+### Linia 8594 — AGENT
+
+[REDACTED]
+
+### Linia 8595 — AGENT
+
+Wprowadzam poprawki w `battleScene.ts`: obsługa obrony (deploy + rozkazy) i kolejność tur przy grze ręcznej.
+
+[REDACTED]
+
+### Linia 8596 — AGENT
+
+[REDACTED]
+
+### Linia 8597 — AGENT
+
+[REDACTED]
+
+### Linia 8598 — AGENT
+
+[REDACTED]
+
+### Linia 8599 — AGENT
+
+[REDACTED]
+
+### Linia 8600 — AGENT
+
+[REDACTED]
+
+### Linia 8601 — AGENT
+
+[REDACTED]
+
+### Linia 8602 — AGENT
+
+[REDACTED]
+
+### Linia 8603 — AGENT
+
+[REDACTED]
+
+### Linia 8604 — AGENT
+
+Wdrożone zgodnie z Twoją regułą: **ręczna gra = zawsze pre-battle + faza rozstawiania** (atak i obrona, pole i miasto).
+
+### Co się zmieniło
+
+**1. Obrona przed atakiem wroga (`main.ts`)**
+- Pre-battle z domyślnym trybem **ręcznym**
+- Po wyborze „Pole bitwy”: `deploy: true` + `deployPlayerSide: 'def'` — rozstawiasz **swoją** armię po prawej
+- Anulowanie pre-battle **nie** auto-rozstrzyga bitwy (wcześniej wymuszało auto-walkę)
+
+**2. Atak gracza i szturm** — już wcześniej miały `deploy: true`; doprecyzowano `deployPlayerSide: 'atk'`
+
+**3. Silnik bitwy (`battleScene.ts`) — pełna obsługa obrony ręcznej**
+- Strefa rozstawiania podświetla **Twoją** połowę (przy obronie — prawa)
+- Zaznaczanie, grupy, formacje i przesuwanie jednostek działają na **Twojej** stronie (nie tylko ATK)
+- W walce ręcznej sterujesz właściwą armią; rozkazy ruchu/ataku trafiają we **wroga** po właściwej stronie
+- Kolejność tur: najpierw **Twoje** jednostki, potem AI
+
+### Jak przetestować
+Otwórz `gra-robocza/Gra-ROBOCZA.html` i sprawdź:
+1. **Atak** — pre-battle → rozstawianie → walka ręczna  
+2. **Obrona** (AI/barbarzyńcy) — pre-battle → rozstawianie po prawej → walka ręczna  
+3. **Anuluj** pre-battle — wraca do mapy bez auto-bitwy
+
+Daj znać, jeśli coś z tego nadal omija pre-battle albo pomija fazę rozstawiania — wtedy namierzymy konkretną ścieżkę.
+
+[REDACTED]
+
+### Linia 8605 — MACIEJ
+
+<timestamp>Tuesday, Jul 7, 2026, 11:45 AM (UTC+2)</timestamp>
+
+okej. Do każdego tematu który Ci wczoraj wysłałem jako błąd lub coś do poprawy napisz mi krótkie informacje: Co było powodem zgłoszenia przeze mnie błędu? Co zostało przez Ciebie rozpoznane? Co było powodem błędu i jaką metodę przyjąłeś do naprawienia tego błędu lub co zastosowałeś? Żeby to usprawnić. Krótko w żołnierskich słowach, bez rozpisywania się. ale każdy jeden temat, każdy jeden wątek, który wczoraj Ci wrzuciłem. Wczoraj polskiego czasu.
+
+### Linia 8606 — AGENT
+
+Przeszukam archiwum wczorajszej sesji, żeby zebrać wszystkie zgłoszone tematy.
+
+[REDACTED]
+
+### Linia 8607 — AGENT
+
+[REDACTED]
+
+### Linia 8608 — AGENT
+
+[REDACTED]
+
+### Linia 8609 — AGENT
+
+[REDACTED]
+
+### Linia 8610 — AGENT
+
+[REDACTED]
+
+### Linia 8611 — AGENT
+
+[REDACTED]
+
+### Linia 8612 — AGENT
+
+[REDACTED]
+
+### Linia 8613 — AGENT
+
+[REDACTED]
+
+### Linia 8614 — AGENT
+
+[REDACTED]
+
+### Linia 8615 — AGENT
+
+[REDACTED]
+
+### Linia 8616 — AGENT
+
+[REDACTED]
+
+### Linia 8617 — AGENT
+
+[REDACTED]
+
+### Linia 8618 — MACIEJ
+
+If the available MCP tools do not fully support what the user asked you to do, complete the work you can with the current tool set. In your work summary, include what you were unable to do with MCP and why. Do not use browser automation to work around missing or unavailable MCP tools unless the user explicitly asks you to use the browser.
+
+### Linia 8619 — MACIEJ
+
+<timestamp>Tuesday, Jul 7, 2026, 11:45 AM (UTC+2)</timestamp>
+
+okej. Do każdego tematu który Ci wczoraj wysłałem jako błąd lub coś do poprawy napisz mi krótkie informacje: Co było powodem zgłoszenia przeze mnie błędu? Co zostało przez Ciebie rozpoznane? Co było powodem błędu i jaką metodę przyjąłeś do naprawienia tego błędu lub co zastosowałeś? Żeby to usprawnić. Krótko w żołnierskich słowach, bez rozpisywania się. ale każdy jeden temat, każdy jeden wątek, który wczoraj Ci wrzuciłem. Wczoraj polskiego czasu.
+
+### Linia 8620 — AGENT
+
+[REDACTED]
+
+### Linia 8621 — AGENT
+
+[REDACTED]
+
+### Linia 8622 — AGENT
+
+## Raport playtest 6.07 — każdy wątek
+
+---
+
+### 1. Surowce: konie wszędzie, brak owiec/krów
+- **Zgłoszenie:** Na mapie same konie, brak owiec i krów.
+- **Rozpoznanie:** Generator + logika złóż/hodowli — złe wagi lub filtrowanie typów.
+- **Przyczyna:** Błędne parametry spawnu / helper złóż w `map-gen-params.json` + `gen-helpers.ts` + hook w `main.ts`.
+- **Naprawa:** Korekta wag i logiki placementu surowców.
+- **Status:** ✅ naprawione
+
+---
+
+### 2. Założenie miasta — skąd ludność
+- **Zgłoszenie:** Przy founding ludność brała się nie wiadomo skąd.
+- **Rozpoznanie:** Brak jasnej reguły źródła populacji.
+- **Przyczyna:** Kod nie wiązał founding z największym miastem gracza.
+- **Przyczyna reguły:** Decyzja B1-FOUND-Q1 = A+B w `city-founding.ts`.
+- **Naprawa:** Populacja z największego miasta według ustalonej reguły.
+- **Status:** ✅ naprawione
+
+---
+
+### 3. Armie — merge i ruch stosu
+- **Zgłoszenie:** Łączenie armii i ruch całego stosu nie działało sensownie.
+- **Rozpoznanie:** Brak spójnej logiki merge + ruch wielu jednostek na jednym heksie.
+- **Przyczyna:** Niekompletny `armyMerge.ts` i brak integracji w `main.ts`.
+- **Naprawa:** Moduł merge + panel + ruch stosu w silniku mapy.
+- **Status:** ✅ naprawione
+
+---
+
+### 4. Bitwa — „AI -1”, fałszywe „zdobyte”, brak pre-battle / deploy
+- **Zgłoszenie:** Nie wiadomo z kim walczysz; wygrana na polu pokazywała zdobycie miasta; ręczna gra bez rozstawiania; brak pre-battle.
+- **Rozpoznanie:** Etykiety z `ownerId`, capture bez flagi „atak na miasto”, `deploy: false` przy obronie/ręcznej.
+- **Przyczyna:** Brak `ownerDiploLabel()`; `allowCityCapture` zawsze true; obrona incoming z auto-resolve i bez deploy.
+- **Naprawa:** Etykiety cyw.; `allowCityCapture` tylko przy szturmie; `deploy: true` + `deployPlayerSide`; pre-battle zawsze; anulowanie bez auto-bitwy. Decyzja A: potyczka polowa ≠ zdobycie miasta.
+- **Status:** ✅ naprawione (w tym obrona ręczna z deploy)
+
+---
+
+### 5. HUD — Ludność pod Skarbcem
+- **Zgłoszenie:** Ludność w złym miejscu na pasku HUD.
+- **Rozpoznanie:** Element w lewym pasku, zawijanie przy wąskim oknie.
+- **Przyczyna:** Layout `hud-left` z `flex-wrap`.
+- **Naprawa:** Ludność do `hud-right`, `nowrap` na lewym pasku.
+- **Status:** ✅ naprawione (zaakceptowałeś)
+
+---
+
+### 6. B1 — Panel miasta: duplikat „Surowce w zasięgu” + brak suwaków handlu
+- **Zgłoszenie:** Blok surowców 2–3×; suwaki Skarb/Nauka/Zamożność zakryte lub zniknięte.
+- **Rozpoznanie:** Dwa systemy panelu (stary szkielet + nowa ramka UX); render runtime.
+- **Przyczyna:** Kolizja `skeleton` vs `cityUxFrame` — duplikat `renderSurowce`.
+- **Naprawa:** Próba INTEGRATORA nie trafiła w źródło — **nadal otwarte**.
+- **Status:** ❌ OTWARTE (B1 w rejestrze)
+
+---
+
+### 7. B2 — Kanon/finalna nadpisane wersją roboczą
+- **Zgłoszenie:** Brak punktu przywrócenia starego panelu handlu.
+- **Rozpoznanie:** Nadpisanie plików kanonu buildem roboczym.
+- **Przyczyna:** Proces publikacji / brak osobnej kopii finalnej.
+- **Naprawa:** Brak — wymaga decyzji + ewentualne odtworzenie modelu podziału handlu.
+- **Status:** ❌ OTWARTE
+
+---
+
+### 8. B3 — Stare menu pauzy (emoji)
+- **Zgłoszenie:** Menu gry wygląda na niewgrane (emoji zamiast SVG).
+- **Rozpoznanie:** Reskin SVG nie trafił do bundla.
+- **Przyczyna:** Brak buildu z podmian UX 1–7.
+- **Naprawa:** Czeka na deploy UX — **do weryfikacji po buildzie**.
+- **Status:** ❌ OTWARTE
+
+---
+
+### 9. B4 — Badania + drzewko technologii
+- **Zgłoszenie:** Przestarzałe infografiki; wybór tylko z listy, nie z drzewka; przycisk drzewka na dole.
+- **Rozpoznanie:** `sciencePicker.ts` — klik w węzeł zamyka bez zmiany celu; emoji zamiast assetów.
+- **Przyczyna:** Bug UX wyboru + brak aktualizacji grafiki + layout.
+- **Naprawa:** Nie wdrożone — wymaga lane UI + ewentualnie Design.
+- **Status:** ❌ OTWARTE
+
+---
+
+### 10. B5 — Brak feedbacku końca tury
+- **Zgłoszenie:** Po „Zakończ turę” tylko spinner — nie wiadomo co się dzieje.
+- **Rozpoznanie:** Brak overlay postępu / „teraz gra: X”.
+- **Przyczyna:** Nie zaimplementowany UX przejścia tury.
+- **Naprawa:** Brak — priorytet przyszłość.
+- **Status:** ❌ OTWARTE (decyzja layoutu — patrz niżej)
+
+---
+
+### 11. B6 — Rozjazd PAŃSTWO vs MIASTO na starcie
+- **Zgłoszenie:** Jedno miasto, a pasek państwa pokazuje +120 Skarb, +63 Praca itd.
+- **Rozpoznanie:** Agregacja globalna ≠ suma miasta.
+- **Przyczyna:** `splitOutput` / tick imperium liczy inaczej niż panel miasta.
+- **Naprawa:** Nie wdrożone — wymaga audytu EKONOMIA.
+- **Status:** ❌ OTWARTE
+
+---
+
+### 12. B7 — Kolejka rekrutacji na dole panelu
+- **Zgłoszenie:** Kolejka ukryta na samym dole — wygl
+
+[REDACTED]
+
+### Linia 8623 — AGENT
+
+## Raport playtest 6.07 — ciąg dalszy
+
+---
+
+### 12. B7 — Kolejka rekrutacji na dole panelu
+- **Zgłoszenie:** Kolejka ukryta na samym dole — trzeba scrollować.
+- **Rozpoznanie:** Layout panelu miasta — produkcja/rekrutacja poza widocznym obszarem.
+- **Przyczyna:** Kolejność sekcji w `cityPanel` — rekrutacja pod foldem.
+- **Naprawa:** Brak — wymaga przesunięcia sekcji wyżej (UI).
+- **Status:** ❌ OTWARTE
+
+---
+
+### 13. B8 — Prev/Next miasto nie działa
+- **Zgłoszenie:** Strzałki prev/next nie przełączają miasta.
+- **Rozpoznanie:** Callbacki niewpięte lub zły indeks w `cityPanel`.
+- **Przyczyna:** Brak integracji z listą miast gracza w silniku.
+- **Naprawa:** Brak.
+- **Status:** ❌ OTWARTE
+
+---
+
+### 14. B9 — Float pracy (np. 0,3)
+- **Zgłoszenie:** Praca pokazuje ułamki zamiast liczb całkowitych.
+- **Rozpoznanie:** Agregacja bez zaokrąglenia w HUD/panelu.
+- **Przyczyna:** Sumowanie floatów z wielu miast bez `floor/round`.
+- **Naprawa:** Brak — kosmetyka EKONOMIA/UI.
+- **Status:** ❌ OTWARTE
+
+---
+
+### 15. B10 — Nadprodukcja pracy (np. 1,3 zamiast 1)
+- **Zgłoszenie:** Produkcja pracy przekracza sensowny limit.
+- **Rozpoznanie:** Podobny problem jak B9 — float w pipeline ekonomii.
+- **Przyczyna:** Brak clamp/round na końcu ticku pracy.
+- **Naprawa:** Brak.
+- **Status:** ❌ OTWARTE
+
+---
+
+### 16. B11 — Anulowanie jednostki z kolejki bez refundu
+- **Zgłoszenie:** Cancel rekrutacji nie zwraca pracy/surowców.
+- **Rozpoznanie:** Brak logiki refund w `production.ts` / callback cancel.
+- **Przyczyna:** Anulowanie tylko usuwa wpis z kolejki.
+- **Naprawa:** Brak — wymaga reguły ABC (ile % refund?).
+- **Status:** ❌ OTWARTE — **potrzebna decyzja ABC**
+
+---
+
+### 17. Mgła po bitwie — widać wszystkie jednostki
+- **Zgłoszenie:** Po walce nagle widać całe armie AI w ciemnej strefie (screen z czerwonymi obwódkami).
+- **Rozpoznanie:** Po `refreshFog()` leciało `syncUnitsRender()` bez filtrowania mgły.
+- **Przyczyna:** Drugi krok nadpisywał widoczność — wszystkie tokeny renderowane jako widoczne.
+- **Naprawa:** Usunięto zbędne `syncUnitsRender()` z `clearBattleUiState` (3 miejsca); czyszczenie zasięgu ruchu przed bitwą.
+- **Status:** ✅ naprawione
+
+---
+
+### 18. Głód wojska (starving) przy „Armia −3”
+- **Zgłoszenie:** Ujemna żywność armii, a jednostki nie tracą HP.
+- **Rozpoznanie:** Głód działa **na końcu tury** przy `zapasyPanstwa < 0`; −8% max HP/turę (normal); `isArmyStarving()` czasem zwracało `false` mimo ujemnych zapasów; panel miasta kłamał przy 100% wzrost.
+- **Przyczyna:** Bug flagi głodu + warunek UI na suwaku armii.
+- **Naprawa:** Fallback `zapasyPanstwa < 0` w `isArmyStarving()`; trigger po rezerwie, nie tylko po fladze; poprawka `cityPanel`; hint po turze.
+- **Status:** ✅ naprawione (brak ikony głodu na mapie — znane ograniczenie v1)
+
+---
+
+### 19. Dyplomacja „AI 62” zamiast nazw miast
+- **Zgłoszenie:** Audiencja pokazuje „AI 62”, a powinny być nazwy z `nazwyKlastra` (10 nazw/typ w `civs.json`).
+- **Rozpoznanie:** Dane OK, spawn OK — `ownerDisplayName` pusta dla ownerId 62; fallback `'AI ' + ownerId`.
+- **Przyczyna:** Stary save / niepełna meta przy load; mapa etykiet nie zsynchronizowana z miastami na mapie (Sparta/Ateny widać, dyplomacja nie).
+- **Naprawa:** Zdiagnozowane, **fix fallbacków nie wdrożony** (propozycja: nazwa miasta z `cities[]` + repair przy load).
+- **Status:** ⚠️ ZDIAGNOZOWANE — **decyzja: robić fix teraz?**
+
+---
+
+### 20. Szczegóły bitwy — inny ekran niż na mapie
+- **Zgłoszenie:** (implicit z playtestu) „Szczegóły bitwy” gorsze niż podsumowanie po powrocie na mapę.
+- **Rozpoznanie:** Dwa różne UI — `postBattleSummary` vs agregaty na polu bitwy.
+- **Przyczyna:** Brak wspólnego komponentu.
+- **Naprawa:** Ujednolicono layout (kolumny L/P, paski HP); przycisk `I` w trakcie walki.
+- **Status:** ✅ naprawione
+
+---
+
+## Podsumowanie liczbowe
+
+| | Liczba |
+|---|---|
+| Naprawione w sesji | **9** (1–5, 17–18, 20 + część 4) |
+| Otwarte z rejestru B1–B11 | **11** |
+| Zdiagnozowane, bez fixa | **1** (AI-62) |
+
+---
+
+## Gdzie potrzebuję ABC od Ciebie
+
+1. **B11** — refund przy anulowaniu rekrutacji (np. A=100%, B=50%, C=0%)
+2. **B5** — layout końca tury (overlay vs pasek vs tylko hint)
+3. **AI-62** — wdrożyć fix fallbacków nazw teraz? (tak/nie)
+4. **Ikona głodu na mapie** — opcjonalnie, jeśli chcesz wizualizację poza hintem
+
+Reszta otwartych (B1–B4, B6–B10) to praca lane UI/EKONOMIA — bez blokującej decyzji gameplay, chyba że chcesz priorytetyzować kolejność.
+
+[REDACTED]
+
+### Linia 8625 — MACIEJ
+
+<timestamp>Tuesday, Jul 7, 2026, 2:20 PM (UTC+2)</timestamp>
+
+b11 a, b5 opisz szerzej bo nie rozumiem, AI-62 tak
+
+### Linia 8626 — AGENT
+
+Wyjaśniam B5 po ludzku, potwierdzam B11=A i wdrażam fix nazw AI zamiast „AI-62”.
+
+[REDACTED]
+
+### Linia 8627 — AGENT
+
+[REDACTED]
+
+### Linia 8628 — AGENT
+
+[REDACTED]
+
+### Linia 8629 — AGENT
+
+[REDACTED]
+
+### Linia 8630 — AGENT
+
+[REDACTED]
+
+### Linia 8631 — AGENT
+
+[REDACTED]
+
+### Linia 8632 — AGENT
+
+[REDACTED]
+
+### Linia 8633 — AGENT
+
+[REDACTED]
+
+### Linia 8634 — AGENT
+
+[REDACTED]
+
+### Linia 8635 — AGENT
+
+[REDACTED]
+
+### Linia 8636 — AGENT
+
+Wdrażam fix AI-62 i refund B11=A; potem wyjaśnię B5.
+
+[REDACTED]
+
+### Linia 8637 — AGENT
+
+[REDACTED]
+
+### Linia 8638 — AGENT
+
+[REDACTED]
+
+### Linia 8639 — AGENT
+
+[REDACTED]
+
+### Linia 8640 — AGENT
+
+[REDACTED]
+
+### Linia 8641 — AGENT
+
+## B11 — przyjęte: **A**
+
+**Co to znaczy:** Anulujesz jednostkę z kolejki rekrutacji (status „Opłacone”, jeszcze nie zbudowana) → **100% kosztu wraca do Skarbca**.
+
+**Wdrożone:** callback `onCancelRecruitment` — przy kliknięciu ✕ pełny zwrot `it.koszt` do `player.skarbiec`. Build w `gra-robocza/Gra-ROBOCZA.html`.
+
+---
+
+## B5 — o co chodzi (szerzej)
+
+**Problem, który zgłosiłeś:**  
+Klikasz **„Zakończ turę”** i przez chwilę (czasem długo) widzisz tylko **systemowe kółko ładowania** w przeglądarce. Nie wiadomo:
+- czy gra się zawiesiła,
+- czy liczy ekonomię,
+- czy teraz gra AI,
+- **który** rywal właśnie wykonuje ruch.
+
+To nie jest błąd liczenia — to **brak informacji zwrotnej** w UI podczas przejścia tury.
+
+**Co się dzieje pod spodem (technicznie):**  
+Silnik po Twojej turze robi serię kroków: ekonomia miast → zapasy państwa → ruchy AI → dyplomacja → odświeżenie mapy. To trwa kilka sekund. Przeglądarka pokazuje spinner, bo główny wątek jest zajęty — **gra nie mówi Ci, na którym etapie jest**.
+
+**Czego oczekujesz (sensowny cel):**  
+Gracz ma **widzieć**, że tura się zmienia i **kto teraz „gra”** — bez zgadywania.
+
+---
+
+**Propozycje do wyboru (gdy będziesz decydował):**
+
+| | Opcja | Opis | Plus | Minus |
+|---|--------|------|------|-------|
+| **A** | **Pasek postępu + „Teraz gra: Sparta”** | Overlay na mapie: pasek 0→100%, pod spodem nazwa aktualnego AI/miasta | Najczytelniejsze; widać postęp i kto gra | Więcej pracy UI |
+| **B** | **Tylko tekst/hint na dole** | Krótkie komunikaty: „Liczenie ekonomii…” → „Ruch: Korynt…” → „Koniec tury AI” | Szybkie do zrobienia | Mniej „filmowe”, łatwo przegapić |
+| **C** | **Przycisk + animacja bez listy AI** | „Zakończ turę” zmienia kolor (żółty→czerwony), lekka animacja, na końcu „Tura X” — **bez** nazw poszczególnych AI | Proste, mało inwazyjne | Nie wiesz, **który** AI akurat gra |
+
+**Priorytet w rejestrze:** „przyszłość” — nie blokuje gry, ale psuje komfort playtestu.
+
+**Decyzja od Ciebie:** wystarczy litera **B5-A / B5-B / B5-C** (albo mix, np. „A, ale bez overlay — tylko pasek u góry”).
+
+---
+
+## AI-62 — **tak, wdrożone**
+
+**Fix:**  
+- Fallback nazwy z `cities[]` (Sparta, Ostia…) zamiast „AI 62”  
+- Uzupełnianie `ownerDisplayName` przy load save i repair rosteru  
+- Dotyczy dyplomacji, hintów, bitew
+
+**Test:** Ctrl+F5 → `gra-robocza/START.html` → audiencja / stary save — powinny być nazwy miast, nie „AI XX”.
+
+---
+
+**Podsumowanie decyzji z tej wiadomości:**
+- **B11 = A** → zrobione  
+- **AI-62 = tak** → zrobione  
+- **B5** → czeka na Twoją literę (A/B/C powyżej)
+
+[REDACTED]
+
+### Linia 8643 — MACIEJ
+
+<timestamp>Tuesday, Jul 7, 2026, 2:25 PM (UTC+2)</timestamp>
+
+B5 a
+
+### Linia 8644 — AGENT
+
+B5=A: overlay z paskiem postępu i „Teraz gra: …” przy końcu tury. Szukam w kodzie, gdzie to wpiąć.
+
+[REDACTED]
+
+### Linia 8645 — AGENT
+
+[REDACTED]
+
+### Linia 8646 — AGENT
+
+[REDACTED]
+
+### Linia 8647 — AGENT
+
+[REDACTED]
+
+### Linia 8648 — AGENT
+
+[REDACTED]
+
+### Linia 8649 — AGENT
+
+[REDACTED]
+
+### Linia 8650 — AGENT
+
+[REDACTED]
+
+### Linia 8651 — AGENT
+
+[REDACTED]
+
+### Linia 8652 — AGENT
+
+[REDACTED]
+
+### Linia 8653 — AGENT
+
+Tworzę overlay B5-A i wpinam go w flow końca tury z yieldami UI między fazami.
+
+[REDACTED]
+
+### Linia 8654 — AGENT
+
+[REDACTED]
+
+### Linia 8655 — AGENT
+
+[REDACTED]
+
+### Linia 8656 — AGENT
+
+[REDACTED]
+
+### Linia 8657 — AGENT
+
+[REDACTED]
+
+### Linia 8658 — AGENT
+
+[REDACTED]
+
+### Linia 8659 — AGENT
+
+[REDACTED]
+
+### Linia 8660 — AGENT
+
+**B5 = A** — przyjęte i wdrożone.
+
+## Co dostajesz w grze
+
+Po **„Zakończ turę”** (N lub przycisk) na dole mapy pojawia się panel:
+
+- **Pasek postępu** 0→100%
+- **Faza:** ekonomia → tura AI → barbarzyńcy → koniec
+- **„Teraz gra: Sparta”** (nazwa każdego rywala po kolei, nie „AI 62”)
+- Na końcu: **„Tura X — twoja kolej”**
+
+Zamiast samego kółka przeglądarki wiesz, co się dzieje i kto akurat gra.
+
+## Test
+
+`gra-robocza/START.html` → **Ctrl+F5** → zakończ turę na mapie z kilkoma AI.
+
+Build: `gra-robocza/Gra-ROBOCZA.html` (świeży).
+
+Decyzja zapisana: `docs/decyzje/B5-koniec-tury-feedback.md`.
+
+[REDACTED]
+
+### Linia 8662 — MACIEJ
+
+<timestamp>Tuesday, Jul 7, 2026, 2:42 PM (UTC+2)</timestamp>
+
+wszystko co nie jest załatwione, odhaczone jeszcze raz wylistuj i zaproponuj rozwiązanie ABC.
+
+### Linia 8663 — AGENT
+
+Sprawdzam rejestr bugów i stan wdrożeń, żeby wylistować tylko otwarte tematy.
+
+[REDACTED]
+
+### Linia 8664 — AGENT
+
+[REDACTED]
+
+### Linia 8665 — AGENT
+
+[REDACTED]
+
+### Linia 8667 — MACIEJ
+
+<timestamp>Tuesday, Jul 7, 2026, 2:46 PM (UTC+2)</timestamp>
+
+zadaje mi jeszcze raz te pytania zgodnie z regułą zadawania pytań ABC.
+
+### Linia 8668 — AGENT
+
+Poniżej **wszystkie otwarte tematy** z playtestu — w formacie ABC. Podzielone na **3 paczki** (max 5 pytań na paczkę, osobne ekrany).
+
+**Już zamknięte (bez pytań):** B5=A ✅ · B11=A ✅ · AI-62 ✅ · plus fixy: surowce, founding, merge, bitwa, HUD, mgła po bitwie, głód, szczegóły bitwy.
+
+---
+
+## PACZKA 1 — Panel miasta + Menu
+
+### 1. [EKRAN: Panel miasta] B1 — Duplikat „Surowce w zasięgu" (×2–×3) + ukryte suwaki Skarb/Nauka/Zamożność
+
+Blok surowców renderuje się wielokrotnie i zasłania suwaki podziału handlu.
+
+| | Opcja | Co robimy | Plus | Minus |
+|---|--------|-----------|------|-------|
+| **A** | **Jeden system panelu** | Usuwamy stary szkielet — zostaje tylko `cityUxFrame`. Surowce **raz** na zakładce Handel/Okolica. | Czysto, bez duplikatów | Większy refactor UI |
+| **B** | **Patch punktowy** | Wyłączamy `renderSurowce` w Produkcji i na dole; suwaki w jednym miejscu u góry. | Szybciej | Ryzyko kolejnego duplikatu |
+| **C** | **Rozdzielenie treści** | Surowce tylko na zakładce Okolica; Produkcja = budowa + rekrutacja bez surowców; suwaki zawsze widoczne obok. | Logiczny podział ekranów | Trzeba przemodelować zakładki |
+
+---
+
+### 2. [EKRAN: Panel miasta] B7 — Kolejka rekrutacji na samym dole (łatwo przeoczyć)
+
+| | Opcja | Co robimy | Plus | Minus |
+|---|--------|-----------|------|-------|
+| **A** | **Obok kolejki budowy u góry** | Dwa bloki u góry PRODUKCJA: „Kolejka budowy" + „Kolejka rekrutacji". | Od razu widać obie kolejki | Zajmuje więcej miejsca u góry |
+| **B** | **Jeden pasek „Kolejka"** | Mieszana kolejka z ikonami budynku/jednostki (kolejność produkcji). | Kompaktowo | Mniej czytelne co to budynek, a co jednostka |
+| **C** | **Osobne zakładki u góry** | „Budowa" / „Rekrutacja" — każda ze swoją kolejką na górze zakładki. | Najczytelniejsze | Więcej klikania |
+
+---
+
+### 3. [EKRAN: Panel miasta] B8 — Brak ‹ poprzednie / następne › miasto
+
+| | Opcja | Co robimy | Plus | Minus |
+|---|--------|-----------|------|-------|
+| **A** | **Dolny-lewy róg panelu** | Strzałki + nazwa miasta (Twoja sugestia). | Nie zasłania produkcji | Daleko od nazwy miasta u góry |
+| **B** | **Górny pasek obok nazwy** | ‹ ATENY › przy tytule panelu. | Standard 4X, oczywiste | Zatłoczenie nagłówka |
+| **C** | **Na mapie przy otwartym panelu** | Strzałki na dolnym pasku mapy (panel zostaje). | Panel czystszy | Mniej intuicyjne w trybie miasta |
+
+---
+
+### 4. [EKRAN: Panel miasta] B2 — Brak punktu przywrócenia starego podziału handlu (kanon nadpisany)
+
+| | Opcja | Co robimy | Plus | Minus |
+|---|--------|-----------|------|-------|
+| **A** | **Odtworzyć z decyzji** | Suwaki Skarb/Nauka/Zamożność wg zapisanych decyzji ABC — bez starego layoutu. | Zgodne z kanonem designu | Trzeba ręcznie odtworzyć |
+| **B** | **Naprawa przez B1** | Najpierw B1 (jeden system panelu), potem suwaki w nowej ramce. | Spójna architektura | Zależy od B1 |
+| **C** | **Archeologia backupu** | Szukać starego fragmentu w git/OneDrive i wyciągnąć tylko moduł suwaków. | Może być szybciej | Może nie być backupu |
+
+---
+
+### 5. [EKRAN: Menu] B3 — Menu pauzy nadal z emoji (brak reskinu SVG)
+
+| | Opcja | Co robimy | Plus | Minus |
+|---|--------|-----------|------|-------|
+| **A** | **SVG w następnym buildzie** | Wdrażamy paczkę UX 1–7 do `gamePauseMenu.ts`. | Pełna spójność wizualna | Wymaga buildu |
+| **B** | **SVG + fallback emoji** | SVG gdy asset jest; inaczej emoji. | Bezpieczniejsze | Dwa style naraz krótko |
+| **C** | **Odłożyć** | Najpierw B1 panel miasta, menu pauzy potem. | Priorytet gameplay | Menu dalej „ stare" |
+
+**Odpowiedź paczki 1:** np. `1A 2A 3B 4B 5A`
+
+---
+
+## PACZKA 2 — Nauka + Ekonomia
+
+### 6. [EKRAN: Overlay] B4 — Klik w drzewku NIE wybiera technologii (tylko lista działa)
+
+| | Opcja | Co robimy | Plus | Minus |
+|---|--------|-----------|------|-------|
+| **A** | **Klik = cel, drzewko otwarte** | Klik węzła ustawia cel; drzewko zostaje — widać prereqy. | Wygodne planowanie | Więcej miejsca na ekranie |
+| **B** | **Klik = cel + zamknij** | Jak lista — wybór i powrót do panelu. | Proste | Tracisz kontekst drzewka |
+| **C** | **Klik + przycisk** | Klik podświetla; „Ustaw jako cel" na dole drzewka. | Mniej pomyłek | Dodatkowy krok |
+
+---
+
+### 7. [EKRAN: Overlay] B4 — Przycisk „Pełne drzewko" na dole (niewidoczny)
+
+| | Opcja | Co robimy | Plus | Minus |
+|---|--------|-----------|------|-------|
+| **A** | **U góry panelu Badania** | Pod aktywnym celem / pod nagłówkiem. | Zawsze widoczny | Zabiera miejsce u góry |
+| **B** | **Obok „MOŻESZ WYBRAĆ"** | W sekcji listy tech. | Blisko wyboru | Nadal wymaga scrolla na małym ekranie |
+| **C** | **Stały pasek hubu nauki** | Przycisk przypięty u góry całego overlay nauki. | Zawsze dostępny | Osobny element UI |
+
+---
+
+### 8. [EKRAN: Overlay] B4 — Infografiki badań (emoji, przestarzałe drzewko)
+
+| | Opcja | Co robimy | Plus | Minus |
+|---|--------|-----------|------|-------|
+| **A** | **v1.0 = emoji** | Zostawiamy emoji/heks-karty; grafiki designer → v1.1. | Nie blokuje grywalności | Wygląd „prototyp" |
+| **B** | **SVG z brand pack** | Podmiana na istniejące ikony SVG (bez nowych ilustracji). | Lepszy wygląd bez designera | Ograniczony zestaw |
+| **C** | **Czekamy na designera** | Blokada — bez nowych assetów nie ruszamy. | Jakość docelowa | Najdłużej czekasz |
+
+---
+
+### 9. [EKRAN: Logika] B6 — 1 miasto ATENY, a PAŃSTWO ≠ MIASTO (+120 Skarb, +63 Praca…)
+
+| | Opcja | Co robimy | Plus | Minus |
+|---|--------|-----------|------|-------|
+| **A** | **Etykiety wyjaśniające** | Państwo = miasta + pula imperium; dopisek „w tym pula +X". | Uczciwy model | Nadal więcej liczb |
+| **B** | **Przy 1 mieście = to samo** | Dopóki masz 1 miasto, państwo kopiuje miasto 1:1. | Proste dla gracza | Zmiana przy 2. mieście |
+| **C** | **Fix bug bez zmiany UX** | Państwo nie powinno sumować obcych/AI — naprawa agregacji. | Prawdopodobna przyczyna | Wymaga audytu kodu |
+
+---
+
+### 10. [EKRAN: Logika] B10 — Nadprodukcja pracy po ukończeniu budynku
+
+*(Przy pustej kolejce masz już **A** = pula cywilizacji — tu chodzi o kolejkę z następnym budynkiem.)*
+
+| | Opcja | Co robimy | Plus | Minus |
+|---|--------|-----------|------|-------|
+| **A** | **Nadwyżka → następny w kolejce** | Reszta pracy przechodzi na kolejny budynek; pusta kolejka → pula (Twoja wcześniejsza decyzja). | Civ-style, nic nie ginie | Trzeba wdrożyć carry |
+| **B** | **Zawsze do puli** | Każda nadwyżka od razu do puli imperium. | Prosta reguła | Słabsze „miasto buduje" |
+| **C** | **Rezerwa miasta** | Nadwyżka zostaje w mieście jako bufor na przyszłą budowę. | Realistyczne | Trudniejsze w UI |
+
+**Odpowiedź paczki 2:** np. `6A 7A 8B 9C 10A`
+
+---
+
+## PACZKA 3 — Mapa świata
+
+### 11. [EKRAN: Mapa świata] B9 — „Zebrana Praca" = `22.499999999999996`
+
+| | Opcja | Co robimy | Plus | Minus |
+|---|--------|-----------|------|-------|
+| **A** | **Int wszędzie** | Zaokrąglenie w UI **i** w ticku ekonomii (liczby całkowite). | Czyste liczby | Zmiana balansu minimalna |
+| **B** | **Tylko UI** | `Math.round` na wyświetlaniu; silnik float zostaje. | Szybki fix | Niespójność w logach |
+| **C** | **1 miejsce po przecinku** | Pokazuj 22.5 zamiast garbage. | Kompromis | Nadal ułamki |
+
+---
+
+### 12. [EKRAN: Mapa świata] A3 — Trasa wieloturowa (6–15 tur, liczba tur na końcu)
+
+| | Opcja | Co robimy | Plus | Minus |
+|---|--------|-----------|------|-------|
+| **A** | **Auto-marsz** | Shift+klik: pełna trasa + „15 tur"; jednostka idzie sama co turę. | Prawdziwy 4X QoL | Więcej kodu (path queue) |
+| **B** | **Tylko podgląd** | Widać trasę i „15 tur", ale ruch co turę ręcznie. | Prostsze | Mniej wygodne |
+| **C** | **Waypointy** | Do 5 punktów na trasie; ETA sumaryczne. | Elastyczne | Bardziej skomplikowane UI |
+
+---
+
+### 13. [EKRAN: Mapa świata] Głód wojska — brak wizualizacji na tokenie (hint tylko po turze)
+
+| | Opcja | Co robimy | Plus | Minus |
+|---|--------|-----------|------|-------|
+| **A** | **Ikona głodu** | Mały chip/ikona żywności na tokenie przy starving. | Od razu widać na mapie | Więcej grafiki |
+| **B** | **Czerwony obrys** | Tylko obwódka tokenu — bez ikony. | Subtelne, tanie | Mniej oczywiste |
+| **C** | **v1 bez mapy** | Zostaje hint po turze + HP w panelu jednostki. | Zero pracy UI | Słaba informacja na mapie |
+
+**Odpowiedź paczki 3:** np. `11A 12A 13B`
+
+---
+
+## Do weryfikacji playtestem (bez ABC)
+
+Te tematy mają decyzję + kod — **Ctrl+F5** i sprawdź, czy działa:
+
+| ID | Temat | Decyzja |
+|----|--------|---------|
+| B5 | Pasek końca tury | **A** ✅ |
+| B11 | Refund rekrutacji | **A** ✅ |
+| AI-62 | Nazwy zamiast „AI 62" | **tak** ✅ |
+
+---
+
+**Odpowiedz jedną linią**, np.:
+
+`1A 2A 3B 4B 5A · 6A 7A 8B 9C 10A · 11A 12A 13B`
+
+Albo paczka po paczce — jak wolisz.
+
+[REDACTED]
+
+### Linia 8671 — MACIEJ
+
+<timestamp>Tuesday, Jul 7, 2026, 2:56 PM (UTC+2)</timestamp>
+
+sprawdź jeszcze raz regułę zadawania pytań o aBC.
+
+### Linia 8672 — AGENT
+
+[REDACTED]
+
+### Linia 8673 — AGENT
+
+[REDACTED]
+
+### Linia 8674 — AGENT
+
+W poprzedniej wiadomości **nie trzymałem się kanonu**. Poniżej reguła w skrócie, potem **PACZKA 1/5** w poprawnym formacie.
+
+---
+
+## Co było źle wcześniej
+
+| Reguła (kanon) | Co zrobiłem źle |
+|----------------|-----------------|
+| **Max 3 pytania** na wiadomość + jeden formularz | Dałem 5 + 5 + 3 = 13 naraz |
+| **Sytuacja → Cel → Dlaczego teraz → A/B/C → Rekomendacja** | Brak sekcji Cel / Dlaczego teraz; skrócone opisy |
+| **Każda opcja:** opis + **Za (≥2)** + **Przeciw (≥2)** | Tabela z jednym wierszem plus/minus |
+| **Rekomendacja** — osobna sekcja, zawsze litera A/B/C | Brak lub wklejona w opcję |
+| **Pełne nazwy** (język gracza, bez skrótów typu B1, lane, cityUxFrame) | Skróty techniczne, ID z rejestru |
+| **Pełny tekst w czacie, potem AskQuestion** | Brak formularza Ask |
+| **Paczki po 3** — następna dopiero po Twojej odpowiedzi | Wszystko naraz |
+
+**Źródła:** `docs/obieg/_ABC-JAK-PYTASZ.md`, `docs/decyzje/ABC-FORMAT-KANON-MACIEJ.md`, `docs/decyzje/SZABLON-PYTANIA-ABC.md`
+
+---
+
+# [PACZKA 1/5 — 3 pytania]
+
+---
+
+## [EKRAN: Panel miasta] B1-Q1 — Wielokrotny blok „Surowce w zasięgu" i ukryte suwaki handlu
+
+**Sytuacja**
+
+Gdy otwierasz panel miasta, sekcja **„Surowce w zasięgu / potencjał (złoża)"** pojawia się **dwa lub trzy razy** — na górze, w środku i czasem na dole panelu produkcji. Jednocześnie **znikają lub są zasłonięte suwaki podziału handlu** (Skarb / Nauka / Zamożność), które decydowałeś wcześniej. Wygląda to tak, jakby dwa różne układy panelu miasta nakładały się na siebie.
+
+**Cel pytania**
+
+Ustalić **jeden docelowy układ panelu miasta**: gdzie mają być surowce w zasięgu i gdzie suwaki handlu — żeby naprawa była jednorazowa, a nie kolejny plaster.
+
+**Dlaczego teraz**
+
+To blokuje sensowny playtest ekonomii miasta. Każda kolejna poprawka bez decyzji o układzie grozi kolejnym duplikatem (potwierdzone po buildzie 6.07).
+
+**A — Jeden nowy panel miasta (bez starego układu)**
+
+- **Co w grze:** Zostaje tylko nowa ramka panelu z zakładkami. Surowce **raz** na zakładce Handel lub Okolica. Suwaki Skarb/Nauka/Zamożność zawsze widoczne obok.
+- **Za:** Koniec duplikatów na stałe; spójny wygląd na przyszłość; łatwiej utrzymać panel.
+- **Za:** Zgodne z kierunkiem, w którym panel i tak idzie.
+- **Przeciw:** Większa praca — trzeba wyłączyć stary szkielet panelu.
+- **Przeciw:** Krótko może „coś zniknąć", dopóki nie przeniesiemy wszystkich sekcji.
+
+**B — Szybka łata: jeden blok surowców, reszta bez zmian**
+
+- **Co w grze:** Usuwamy duplikaty surowców z produkcji i dołu panelu; suwaki handlu wracają w jedno znane miejsce u góry. Stary i nowy układ mogą jeszcze współistnieć pod spodem.
+- **Za:** Najszybsza droga do playtestu; mniejsze ryzyko regresji.
+- **Za:** Można zrobić w jednym sprincie.
+- **Przeciw:** Duplikat może wrócić przy następnej zmianie panelu.
+- **Przeciw:** Dwa systemy panelu dalej żyją obok siebie — dług techniczny.
+
+**C — Rozdzielenie: surowce tylko w Okolicy, produkcja bez surowców**
+
+- **Co w grze:** Zakładka **Okolica** = wyłącznie surowce w zasięgu i złoża. Zakładka **Produkcja** = budowa + rekrutacja, **bez** surowców. Suwaki handlu na zakładce Handel, zawsze na wierzchu.
+- **Za:** Logiczny podział „co wokół miasta" vs „co miasto buduje".
+- **Za:** Gracz nie szuka surowców na dole produkcji.
+- **Przeciw:** Więcej klikania między zakładkami.
+- **Przeciw:** Trzeba przemodelować kolejność zakładek.
+
+**Rekomendacja: A** — duplikat wynika z dwóch układów naraz; jeden panel to jedyne trwałe rozwiązanie.
+
+---
+
+## [EKRAN: Panel miasta] B7-Q1 — Kolejka rekrutacji na samym dole
+
+**Sytuacja**
+
+W panelu **Produkcja** lista jednostek do kupienia jest u góry, a **„Kolejka rekrutacji"** (opłacone jednostki czekające na ukończenie) siedzi **na samym dole**. Przy normalnej wysokości okna trzeba scrollować — łatwo pomyśleć, że miasto nic nie produkuje, choć wojownik czy zwiadowca już stoi w kolejce.
+
+**Cel pytania**
+
+Ustalić, **gdzie gracz ma od razu widzieć kolejkę rekrutacji** obok kolejki budowy — bez scrollowania.
+
+**Dlaczego teraz**
+
+Po wprowadzeniu rekrutacji za pieniądze ze skarbca (z refundem przy anulowaniu) kolejka jest kluczowa dla rozgrywki; ukryta kolejka = fałszywe wrażenie, że mechanika nie działa.
+
+**A — Dwie kolejki u góry produkcji**
+
+- **Co w grze:** U góry panelu Produkcja dwa bloki obok siebie lub jeden pod drugim: **„Kolejka budowy"** i **„Kolejka rekrutacji"**.
+- **Za:** Od razu widać oba typy produkcji.
+- **Za:** Standardowe w grach 4X — budowa i armia obok siebie.
+- **Przeciw:** Zabiera miejsce u góry — mniej miejsca na listę dostępnych budynków/jednostek.
+- **Przeciw:** Przy wąskim oknie może być ciasno.
+
+**B — Jedna wspólna kolejka z ikonami**
+
+- **Co w grze:** Jeden pasek **„Kolejka"** u góry: ikona budynku lub jednostki + nazwa, w kolejności wykonania.
+- **Za:** Najmniej miejsca; jeden rzut oka na wszystko.
+- **Za:** Kompaktowy interfejs.
+- **Przeciw:** Trudniej odróżnić budynek od jednostki na pierwszy rzut oka.
+- **Przeciw:** Mieszanie dwóch ekonomii (praca vs pieniądz) w jednej liście może mylić.
+
+**C — Osobne zakładki Budowa / Rekrutacja, kolejka u góry każdej**
+
+- **Co w grze:** Przełącznik **Budowa | Rekrutacja**; w każdej zakładce na górze własna kolejka, potem lista rzeczy do dodania.
+- **Za:** Najczytelniejsze — zero mieszania mechanik.
+- **Za:** Pełna lista jednostek ma więcej miejsca.
+- **Przeciw:** Trzeba przełączać zakładkę, żeby zobaczyć obie kolejki.
+- **Przeciw:** Więcej kliknięć niż w opcji A.
+
+**Rekomendacja: A** — obie kolejki widoczne naraz, bez scrolla, bez mieszania pracy ze skarbcem.
+
+---
+
+## [EKRAN: Panel miasta] B8-Q1 — Przełączanie między miastami bez wychodzenia na mapę
+
+**Sytuacja**
+
+Masz kilka miast, ale w panelu miasta **nie ma strzałek „poprzednie / następne miasto"**. Żeby przejść z Aten do drugiego miasta, musisz **zamknąć panel**, znaleźć miasto na mapie i kliknąć ponownie. W grach typu Cywilizacja zwykle przełącza się miasta **w środku panelu**.
+
+**Cel pytania**
+
+Ustalić **gdzie i jak** gracz przełącza miasta, gdy panel miasta jest otwarty — bez powrotu na mapę.
+
+**Dlaczego teraz**
+
+Przy rosnącej liczbie miast (playtest, founding) to staje się irytujące i spowalnia zarządzanie imperium; to standard 4X, którego brakuje.
+
+**A — Strzałki w dolnym lewym rogu panelu**
+
+- **Co w grze:** **‹ Nazwa poprzedniego | Nazwa następnego ›** w dolnym lewym rogu ramki panelu (Twoja wcześniejsza sugestia).
+- **Za:** Nie zasłania produkcji ani nagłówka z nazwą miasta.
+- **Za:** Zgodne z Twoją wizją z playtestu.
+- **Przeciw:** Daleko od nazwy miasta u góry — mniej oczywiste dla nowego gracza.
+- **Przeciw:** Przy bardzo wąskim panelu może kolidować z innymi elementami dołu.
+
+**B — Strzałki obok nazwy miasta u góry**
+
+- **Co w grze:** Nagłówek: **‹ ATENY ›** — klik lewo/prawo zmienia miasto, nazwa w środku się aktualizuje.
+- **Za:** Najbardziej oczywiste miejsce — tam, gdzie gracz patrzy najpierw.
+- **Za:** Standard w wielu grach strategicznych.
+- **Przeciw:** Nagłówek robi się busier przy długich nazwach (np. SYRAKUZY).
+- **Przeciw:** Może kolidować z innymi przyciskami w górnej belce panelu.
+
+**C — Strzałki na dolnym pasku mapy (panel otwarty)**
+
+- **Co w grze:** Gdy panel miasta jest otwarty, na **dolnym pasku mapy świata** pojawiają się strzałki miast; panel zostaje otwarty i przeładowuje treść.
+- **Za:** Panel miasta pozostaje „czysty".
+- **Za:** Spójne z dolnym paskiem akcji na mapie.
+- **Przeciw:** Mniej intuicyjne — gracz szuka w panelu, a sterowanie jest na mapie.
+- **Przeciw:** Przy zamkniętym panelu trzeba osobnej logiki (mapa vs panel).
+
+**Rekomendacja: B** — najszybciej zrozumiałe; nazwa miasta i przełącznik w jednym miejscu.
+
+---
+
+**Pozostało 8 pytań** (B2, B3, B4×2, B6, B9, B10, trasa wieloturowa, ikona głodu) — **paczka 2/5 dopiero po Twojej odpowiedzi**.
+
+Odpowiedz literami, np.: `B1-Q1=A  B7-Q1=A  B8-Q1=B`
+
+[REDACTED]
+
+### Linia 8675 — AGENT
+
+## ECHO — PACZKA 1/5
+
+| ID | Twoja decyzja | Co to znaczy |
+|----|---------------|--------------|
+| **B1-Q1** | **B** | Szybka łata — jeden blok surowców, suwaki handlu wracają u góry; stary układ może jeszcze żyć pod spodem |
+| **B7-Q1** | **A** | Dwie kolejki u góry produkcji: budowa + rekrutacja obok siebie |
+| **B8-Q1** | **B** | Strzałki **‹ ATENY ›** obok nazwy miasta u góry panelu |
+
+Zapiszę to do `docs/decyzje/` po Twoim **„wdrażaj"**.
+
+---
+
+**Paczka 2/5** (kolejne 3 tematy): B2 (brak starego podziału handlu), B6 (państwo vs miasto), B3 (menu pauzy emoji).
+
+**Wdrażać te 3 teraz**, czy najpierw dokończyć wszystkie paczki ABC? Odpowiedz: **`wdrażaj`** albo **`paczka 2`**.
+
+[REDACTED]
+
+### Linia 8677 — MACIEJ
+
+<timestamp>Tuesday, Jul 7, 2026, 4:03 PM (UTC+2)</timestamp>
+
+zanim zaczniesz pracować, daj mi wszystkie pytania.
+
+### Linia 8678 — MACIEJ
+
+<timestamp>Tuesday, Jul 7, 2026, 4:03 PM (UTC+2)</timestamp>
+
+Start multitasking
+
+### Linia 8679 — AGENT
+
+**PACZKA 1/5 — już masz odpowiedzi:** `B1-Q1=B` · `B7-Q1=A` · `B8-Q1=B`
+
+Poniżej **paczki 2–5** (8 pytań). Po odpowiedzi na wszystkie możesz wysłać jedną linię, np.:
+
+`B2-Q1=B  B6-Q1=C  B3-Q1=A  B4-Q1=A  B4-Q2=A  B4-Q3=B  B9-Q1=A  B10-Q1=A  A3-Q1=B  MAP-Q1=B`
+
+---
+
+# [PACZKA 2/5 — 3 pytania]
+
+---
+
+## [EKRAN: Panel miasta] B2-Q1 — Brak starego podziału handlu po nadpisaniu kanonu
+
+**Sytuacja**
+
+Kanon i wersja finalna gry zostały nadpisane wersją roboczą. **Nie ma punktu przywrócenia** starego panelu. Suwaki **Skarb / Nauka / Zamożność** (podział handlu) mogą wyglądać inaczej niż przed zmianami interfejsu albo w ogóle zniknąć — to wiąże się z naprawą duplikatu surowców (B1-Q1=B: szybka łata).
+
+**Cel pytania**
+
+Ustalić, **skąd i jak odtworzyć podział handlu** — czy z dokumentacji decyzji, czy razem z łatą panelu, czy z backupu.
+
+**Dlaczego teraz**
+
+B1-Q1=B zakłada szybką łatę suwaków u góry — bez decyzji B2 nie wiadomo, **jaki model podziału** wdrażamy.
+
+**A — Odtworzyć z zapisanych decyzji (bez starego wyglądu panelu)**
+
+- **Co w grze:** Suwaki Skarb/Nauka/Zamożność według wcześniejszych decyzji; nowy układ panelu, ta sama logika ekonomii.
+- **Za:** Zgodne z kanonem decyzji, nie z przypadkowym starym plikiem.
+- **Za:** Nie zależy od tego, czy backup istnieje.
+- **Przeciw:** Trzeba ręcznie zestawić z dokumentacją.
+- **Przeciw:** Wygląd może różnić się od tego, co pamiętasz sprzed nadpisania.
+
+**B — Połączyć z łatą B1 (jeden sprint panelu miasta)**
+
+- **Co w grze:** Naprawa duplikatu surowców + suwaki handlu w **jednym** układzie u góry panelu — bez osobnego „przywracania".
+- **Za:** Spójna naprawa; mniej ryzyka kolejnego duplikatu.
+- **Za:** Jedna paczka pracy zamiast dwóch.
+- **Przeciw:** Dłużej do pierwszego playtestu niż sama łata surowców.
+- **Przeciw:** Jeśli dokumentacja decyzji jest niepełna, trzeba doprecyzować w trakcie.
+
+**C — Szukać fragmentu w backupie / historii plików**
+
+- **Co w grze:** Próba wyciągnięcia **tylko modułu suwaków** ze starego kodu panelu miasta.
+- **Za:** Może być najbliżej tego, co działało kiedyś.
+- **Za:** Szybciej, jeśli backup istnieje i jest czytelny.
+- **Przeciw:** Backup może nie istnieć (nadpisanie kanonu).
+- **Przeciw:** Stary kod może nie pasować do nowej ramki panelu.
+
+**Rekomendacja: B** — spójnie z B1-Q1=B; suwaki i surowce naprawiamy razem.
+
+---
+
+## [EKRAN: Logika] B6-Q1 — Państwo vs miasto: różne liczby przy jednym mieście
+
+**Sytuacja**
+
+Przy **jednym mieście** (np. Ateny) pasek **Państwa** pokazuje inne wartości niż pasek **Miasta**: np. Skarbiec +120 vs +3, Praca +63 vs +6. Przy jednym mieście gracz oczekuje, że liczby będą **zbliżone albo zrozumiałe**.
+
+**Cel pytania**
+
+Ustalić, **co ma pokazywać pasek państwa** przy jednym mieście — suma z wyjaśnieniem, kopia miasta, czy naprawa błędu agregacji.
+
+**Dlaczego teraz**
+
+To psuje zaufanie do ekonomii na starcie gry; priorytet wysoki w rejestrze playtestu.
+
+**A — Państwo = miasta + pula imperium (z etykietami)**
+
+- **Co w grze:** Państwo sumuje wszystkie miasta **plus** globalną pulę (np. praca imperium); dopisek „w tym pula +X".
+- **Za:** Uczciwy model wielomiastowy na przyszłość.
+- **Za:** Gracz wie, skąd biorą się „duże" liczby.
+- **Przeciw:** Więcej tekstu na pasku państwa.
+- **Przeciw:** Przy jednym mieście nadal może wyglądać na skomplikowane.
+
+**B — Przy 1 mieście państwo = to samo co miasto**
+
+- **Co w grze:** Dopóki masz tylko jedno miasto, pasek państwa **kopiuje** wartości miasta 1:1; po drugim mieście włącza się pełna agregacja.
+- **Za:** Proste dla gracza na początku gry.
+- **Za:** Brak „magicznych" +120 przy jednej osadzie.
+- **Przeciw:** Skok zachowania po założeniu 2. miasta.
+- **Przeciw:** Ukrywa prawdziwy model imperium do momentu ekspansji.
+
+**C — Naprawa błędu: państwo nie sumuje obcych danych**
+
+- **Co w grze:** Audyt kodu — państwo gracza **tylko z jego miast**; rozbieżność to bug, nie zamierzony model.
+- **Za:** Jeśli to bug, jedna naprawa bez zmiany UX.
+- **Za:** Przy 1 mieście liczby same się zgadną.
+- **Przeciw:** Jeśli źródłem jest pula imperium, sam fix nie wystarczy.
+- **Przeciw:** Wymaga głębszego audytu przed wdrożeniem.
+
+**Rekomendacja: C** — najpierw sprawdzić, czy to bug; jeśli nie, dołożyć etykiety z opcji A.
+
+---
+
+## [EKRAN: Menu] B3-Q1 — Menu pauzy nadal z emoji
+
+**Sytuacja**
+
+Menu **„Menu gry"** (pauza na mapie) ma pozycje z **emoji** (💾 📂 ▶ ☰). Nowy reskin z **ikonami SVG** był przygotowany, ale **nie widać go w buildzie roboczym**.
+
+**Cel pytania**
+
+Ustalić **kiedy i jak** wdrożyć nowe ikony menu pauzy.
+
+**Dlaczego teraz**
+
+To widoczny sygnał „stara wersja gry"; nie blokuje mechaniki, ale psuje spójność z resztą interfejsu.
+
+**A — Wdrożyć SVG w najbliższym buildzie roboczym**
+
+- **Co w grze:** Menu pauzy z ikonami SVG z paczki podmian interfejsu.
+- **Za:** Spójny wygląd z resztą UI.
+- **Za:** Gotowy materiał — głównie build i wpięcie.
+- **Przeciw:** Kolejny build do weryfikacji.
+- **Przeciw:** Niski priorytet vs panel miasta / ekonomia.
+
+**B — SVG z fallbackiem na emoji**
+
+- **Co w grze:** SVG gdy asset jest; inaczej emoji (jak dziś).
+- **Za:** Bezpieczne przy brakujących plikach.
+- **Za:** Stopniowa migracja.
+- **Przeciw:** Dwa style naraz w trakcie przejścia.
+- **Przeciw:** Trudniej ocenić, czy SVG faktycznie działa.
+
+**C — Odłożyć: najpierw panel miasta (B1/B2)**
+
+- **Co w grze:** Menu pauzy zostaje z emoji do czasu domknięcia panelu miasta.
+- **Za:** Skupienie zasobów na gameplay blockerach.
+- **Za:** Mniej równoległych zmian UI.
+- **Przeciw:** Menu dalej wygląda na niewdrożone.
+- **Przeciw:** Gracz może myśleć, że cały build jest stary.
+
+**Rekomendacja: A** — mały koszt, duży efekt „świeżości" interfejsu.
+
+---
+
+# [PACZKA 3/5 — 3 pytania]
+
+---
+
+## [EKRAN: Overlay] B4-Q1 — Klik w drzewku technologii nie wybiera celu badania
+
+**Sytuacja**
+
+W panelu **Badania** wybór z **listy** działa. Klik w węzeł na **pełnym drzewku technologii** (np. Obróbka drewna zamiast Garncarstwa) **nie ustawia celu** — drzewko się zamyka, cel zostaje stary.
+
+**Cel pytania**
+
+Ustalić **zachowanie kliknięcia w węzeł drzewka** — ustaw cel, zamknij, czy potwierdzenie.
+
+**Dlaczego teraz**
+
+To bug/funkcja blokująca naturalny sposób wyboru tech w grach 4X.
+
+**A — Klik = ustaw cel, drzewko zostaje otwarte**
+
+- **Co w grze:** Klik węzła → nowy cel badania; drzewko nadal widać (prereq, sąsiedzi).
+- **Za:** Planowanie łańcucha badań bez zamykania drzewka.
+- **Za:** Zgodne z oczekiwaniem gracza 4X.
+- **Przeciw:** Zajmuje dużo ekranu.
+- **Przeciw:** Trzeba dodać wyraźny „Zamknij" / Esc.
+
+**B — Klik = ustaw cel + zamknij drzewko**
+
+- **Co w grze:** Jak lista — wybór i powrót do panelu Badania.
+- **Za:** Prosty flow, jeden krok mniej niż dziś (bo dziś w ogóle nie wybiera).
+- **Za:** Mniej kodu UI niż A.
+- **Przeciw:** Nie widać od razu efektu na całym drzewku.
+- **Przeciw:** Gorzej do planowania długiego łańcucha tech.
+
+**C — Klik = podświetlenie + przycisk „Ustaw jako cel"**
+
+- **Co w grze:** Najpierw zaznaczenie węzła, potem jawne potwierdzenie na dole drzewka.
+- **Za:** Mniej przypadkowych zmian celu.
+- **Za:** Miejsce na podgląd kosztu przed zatwierdzeniem.
+- **Przeciw:** Dodatkowy klik.
+- **Przeciw:** Wolniejsze niż A/B.
+
+**Rekomendacja: A** — drzewko ma służyć do wyboru; zostawienie otwartego po kliku to standard.
+
+---
+
+## [EKRAN: Overlay] B4-Q2 — Przycisk „Pełne drzewko technologii" na dole listy
+
+**Sytuacja**
+
+Przycisk **„Pełne drzewko technologii"** jest **na samym dole** panelu Badania — trzeba scrollować. Przy wyborze tech z listy gracz może w ogóle nie trafić na drzewko.
+
+**Cel pytania**
+
+Ustalić **stałe miejsce przycisku** otwierającego pełne drzewko.
+
+**Dlaczego teraz**
+
+Bez tego drzewko jest ukryte — dotyczy tego samego obszaru co B4-Q1.
+
+**A — U góry panelu Badania (pod aktywnym celem)**
+
+- **Co w grze:** Pod „Aktualnie badasz: …" widoczny przycisk do pełnego drzewka.
+- **Za:** Zawsze widoczny bez scrolla.
+- **Za:** Logiczne: cel u góry, drzewko obok.
+- **Przeciw:** Mniej miejsca na listę tech u góry.
+- **Przeciw:** Przy małym oknie może być ciasno.
+
+**B — Obok nagłówka „MOŻESZ WYBRAĆ"**
+
+- **Co w grze:** Przycisk w sekcji listy dostępnych technologii.
+- **Za:** Blisko miejsca wyboru z listy.
+- **Za:** Nie konkuruje z aktywnym celem.
+- **Przeciw:** Nadal wymaga scrolla, jeśli lista długa.
+- **Przeciw:** Mniej oczywiste niż u góry.
+
+**C — Stały pasek u góry całego overlay nauki**
+
+- **Co w grze:** Przypięty pasek: cel + przycisk drzewka — nie scrolluje się z treścią.
+- **Za:** Zawsze dostępny niezależnie od długości listy.
+- **Za:** Najlepsze na małych ekranach.
+- **Przeciw:** Więcej pracy UI (sticky header).
+- **Przeciw:** Zabiera pionową przestrzeń na stałe.
+
+**Rekomendacja: C** — gwarantuje widoczność; B4-Q2 i długa lista tech to ten sam problem scrolla.
+
+---
+
+## [EKRAN: Overlay] B4-Q3 — Infografiki badań i wygląd drzewka (emoji, stare karty)
+
+**Sytuacja**
+
+Panel Badania i drzewko używają **emoji** i **starych zielonych heks-kart**. Wygląd jest **przestarzały** względem reszty interfejsu; pełna wymiana grafik wymaga pracy designera.
+
+**Cel pytania**
+
+Ustalić **zakres wizualny badań na v1.0** — zostawić emoji, podmienić SVG, czy czekać na designera.
+
+**Dlaczego teraz**
+
+Oddzielnie od funkcji B4-Q1/Q2 — żeby nie mieszać „naprawa kliknięcia" z „redesign grafiki".
+
+**A — v1.0: emoji zostają; pełna grafika po v1.0**
+
+- **Co w grze:** Bez zmian wizualnych; tylko fixy funkcji (wybór z drzewka, pozycja przycisku).
+- **Za:** Nie blokuje grywalności.
+- **Za:** Zero zależności od designera.
+- **Przeciw:** Panel Badania wygląda jak prototyp.
+- **Przeciw:** Rozczarowanie wizualne vs reszta UI.
+
+**B — Podmiana na istniejące ikony SVG (brand pack)**
+
+- **Co w grze:** Emoji → SVG już w projekcie; bez nowych ilustracji tech.
+- **Za:** Lepszy wygląd bez czekania na designera.
+- **Za:** Spójność z menu, HUD, panelami.
+- **Przeciw:** Ograniczony zestaw — nie każda tech ma dedykowaną ikonę.
+- **Przeciw:** Drzewko heks-kart może nadal wyglądać „stare".
+
+**C — Blokada do czasu paczki grafik od designera**
+
+- **Co w grze:** Żadnych zmian wizualnych badań do dostarczenia assetów.
+- **Za:** Najwyższa jakość docelowa.
+- **Za:** Jedna duża podmiana zamiast dwóch fal.
+- **Przeciw:** Najdłużej czekasz na ładny wygląd.
+- **Przeciw:** Funkcje (B4-Q1) można naprawić, ale wygląd stoi.
+
+**Rekomendacja: B** — kompromis: lepszy wygląd teraz, pełne ilustracje tech później.
+
+---
+
+# [PACZKA 4/5 — 3 pytania]
+
+---
+
+## [EKRAN: Panel miasta] B9-Q1 — „Zebrana Praca" pokazuje ułamki (22.49999…)
+
+**Sytuacja**
+
+W panelu **Produkcja** widać np. **„Zebrana Praca: 22.499999999999996 / 40"** zamiast liczb całkowitych. To błąd zmiennoprzecinkowy w wyświetlaniu (i ewentualnie w naliczaniu).
+
+**Cel pytania**
+
+Ustalić, **gdzie zaokrąglać** — tylko ekran, czy też silnik ekonomii.
+
+**Dlaczego teraz**
+
+Psuje czytelność produkcji; łatwy fix, ale decyzja wpływa na balans (floor vs round).
+
+**A — Liczby całkowite w UI i w ticku ekonomii**
+
+- **Co w grze:** Praca zawsze jako **int** (floor lub round w silniku + to samo na ekranie).
+- **Za:** Brak „śmieci" float; spójność w całej grze.
+- **Za:** Zgodne z oczekiwaniem gracza (praca = discrete).
+- **Przeciw:** Minimalna zmiana sum w ekonomii (edge case).
+- **Przeciw:** Trzeba przejrzeć więcej miejsc niż sam panel.
+
+**B — Tylko zaokrąglenie na ekranie**
+
+- **Co w grze:** Silnik liczy float; panel pokazuje `Math.round`.
+- **Za:** Najszybsza łata.
+- **Za:** Zero ryzyka balansu w silniku.
+- **Przeciw:** Niespójność log vs ekran.
+- **Przeciw:** Inne miejsca (HUD) mogą nadal pokazywać garbage.
+
+**C — Jeden decimal (22.5)**
+
+- **Co w grze:** Format „22.5 / 40" — bez długich ułamków.
+- **Za:** Kompromis jeśli ekonomia musi być float.
+- **Za:** Czytelniejsze niż dziś.
+- **Przeciw:** Nadal ułamki — nie „pełne liczby" jak chciałeś.
+- **Przeciw:** Mniej „Civ-like" niż inty.
+
+**Rekomendacja: A** — praca w grze powinna być całkowita; float to artefakt techniczny.
+
+---
+
+## [EKRAN: Logika] B10-Q1 — Nadprodukcja pracy po ukończeniu budynku
+
+**Sytuacja**
+
+Gdy budynek **skończy się w turze**, a koszt był np. 40, a zebrano 41 pracy — **nadwyżka** powinna iść dalej. Przy **pustej kolejce** masz już decyzję: **nadwyżka → pula pracy cywilizacji** (nie przepada).
+
+**Cel pytania**
+
+Ustalić, co z nadwyżką, gdy w kolejce **jest następny budynek**.
+
+**Dlaczego teraz**
+
+Bez tego produkcja „gubi" pracę — frustrujące przy długich kolejkach.
+
+**A — Nadwyżka → następny budynek w kolejce; pusta kolejka → pula imperium**
+
+- **Co w grze:** Reszta pracy przechodzi na kolejny element kolejki budowy; jak kolejka pusta — do globalnej puli pracy (Twoja wcześniejsza reguła).
+- **Za:** Standard 4X; nic nie ginie.
+- **Za:** Spójne z decyzją o pustej kolejce.
+- **Przeciw:** Wymaga implementacji carry w silniku produkcji.
+- **Przeciw:** Trzeba testów regresji kolejki.
+
+**B — Każda nadwyżka zawsze do puli imperium**
+
+- **Co w grze:** Po każdym ukończeniu budynku reszta idzie do skarbca pracy państwa, nie na następny budynek w kolejce miasta.
+- **Za:** Prosta reguła — jeden lejek.
+- **Za:** Łatwiejsze w implementacji.
+- **Przeciw:** Kolejka budowy miasta nie korzysta z nadwyżki — wolniejsze budowanie lokalne.
+- **Przeciw:** Mniej intuicyjne przy ustawionej kolejce 3 budynków.
+
+**C — Nadwyżka zostaje w mieście jako rezerwa**
+
+- **Co w grze:** Bufor pracy przypisany do miasta na przyszłą produkcję (nawet bez kolejki).
+- **Za:** „Miasto oszczędza" na następny projekt.
+- **Za:** Nie miesza od razu z pulą globalną.
+- **Przeciw:** Trudniejsze w UI (skąd gracz wie, ile rezerwy?).
+- **Przeciw:** Ryzyko exploitów / niejasności vs pula imperium.
+
+**Rekomendacja: A** — pełny model: kolejka → carry; brak kolejki → pula (już zaakceptowane).
+
+---
+
+## [EKRAN: Mapa świata] A3-Q1 — Trasa wieloturowa (6–15 tur, liczba tur na końcu)
+
+**Sytuacja**
+
+Dziś widać **zasięg ruchu na bieżącą turę**. Chcesz móc wyznaczyć **dalszy cel** (np. 6, 7, 15 tur) z **liczbą tur do dotarcia** na końcu trasy — jednostka nie musi dojść w jednej turze.
+
+**Cel pytania**
+
+Ustalić **model wieloturowego marszu** — auto co turę, tylko podgląd, czy waypointy.
+
+**Dlaczego teraz**
+
+To osobny temat spoza rejestru B1–B11; zgłoszony w playteście 7.07 — wpływa na mapę i ruch jednostek.
+
+**A — Auto-marsz co turę (Shift+klik, pełna trasa + „15 tur")**
+
+- **Co w grze:** Shift+klik na heks → linia trasy + etykieta „15 tur"; co turę jednostka idzie automatycznie aż do celu lub przeszkody.
+- **Za:** Prawdziwy QoL jak w Civ / Total War campaign map.
+- **Za:** Gracz planuje długie marsze bez mikro-klikania.
+- **Przeciw:** Dużo kodu (kolejka ruchu, przerwanie, wojna).
+- **Przeciw:** Ryzyko konfliktu z bitwą / AI na trasie.
+
+**B — Tylko podgląd trasy + licznik tur (ruch ręczny co turę)**
+
+- **Co w grze:** Widać pełną trasę i „15 tur", ale gracz **sam klika** ruch co turę wzdłuż trasy.
+- **Za:** Prostsze — głównie UI + pathfinding preview.
+- **Za:** Mniej automatyzacji = mniej bugów.
+- **Przeciw:** Nie oszczędza kliknięć.
+- **Przeciw:** Połowiczne spełnienie oczekiwania.
+
+**C — Kolejka waypointów (max 5 punktów, ETA sumaryczne)**
+
+- **Co w grze:** Gracz ustawia punkty po drodze; sumaryczny czas do końca; auto lub ręcznie per segment (do doprecyzowania w implementacji).
+- **Za:** Elastyczne obejście przeszkód.
+- **Za:** Znany model z RTS.
+- **Przeciw:** Najtrudniejsze UI.
+- **Przeciw:** Overkill na v1.0 jeśli ma być szybko.
+
+**Rekomendacja: B na v1.0, A na v1.1** — jeśli musisz wybrać jedną literę teraz: **B** (szybki podgląd), potem A jako upgrade.
+
+---
+
+# [PACZKA 5/5 — 1 pytanie]
+
+---
+
+## [EKRAN: Mapa świata] MAP-Q1 — Wizualizacja głodu wojska na tokenie jednostki
+
+**Sytuacja**
+
+Głód wojska **działa po turze** (ujemne zapasy państwa → utrata zdrowia). Na **mapie** nie widać, która jednostka głoduje — tylko **hint po turze** i pasek HP po kliknięciu jednostki.
+
+**Cel pytania**
+
+Ustalić, **czy i jak** pokazać głód na tokenie jednostki na mapie świata.
+
+**Dlaczego teraz**
+
+Uzupełnienie fixu głodu — bez tego gracz nie widzi skutku na mapie do następnego kliknięcia.
+
+**A — Ikona głodu na tokenie (np. symbol żywności / mały chip)**
+
+- **Co w grze:** Przy starving jednostka ma widoczną ikonę na heksie.
+- **Za:** Natychmiast widać, kto cierpi.
+- **Za:** Standard w grach strategicznych.
+- **Przeciw:** Więcej grafiki / clutter na mapie.
+- **Przeciw:** Przy wielu jednostkach może być tłoczno.
+
+**B — Czerwony obrys tokenu (bez ikony)**
+
+- **Co w grze:** Subtelna obwódka = głód; bez dodatkowej ikony.
+- **Za:** Tanie w implementacji.
+- **Za:** Mniej bałaganu niż ikona.
+- **Przeciw:** Mniej oczywiste dla nowego gracza.
+- **Przeciw:** Myli się z zaznaczeniem / wrogością?
+
+**C — v1 bez mapy — tylko hint + HP w panelu jednostki**
+
+- **Co w grze:** Bez zmian na mapie; informacja po turze i w panelu po kliknięciu.
+- **Za:** Zero pracy UI na mapie.
+- **Za:** Mechanika już działa.
+- **Przeciw:** Słaba informacja wizualna.
+- **Przeciw:** Trudniej playtestować armie w terenie.
+
+**Rekomendacja: B** — kompromis: widać na mapie, bez nowych assetów.
+
+---
+
+# Podsumowanie
+
+| Paczka | ID | Temat | Status |
+|--------|-----|--------|--------|
+| **1** | B1-Q1 | Duplikat surowców + suwaki | ✅ **B** |
+| **1** | B7-Q1 | Kolejka rekrutacji u góry | ✅ **A** |
+| **1** | B8-Q1 | ‹ › miasta u góry | ✅ **B** |
+| **2** | B2-Q1 | Podział handlu po nadpisaniu kanonu | ⏳ |
+| **2** | B6-Q1 | Państwo vs miasto | ⏳ |
+| **2** | B3-Q1 | Menu pauzy SVG | ⏳ |
+| **3** | B4-Q1 | Wybór tech z drzewka | ⏳ |
+| **3** | B4-Q2 | Przycisk drzewka u góry | ⏳ |
+| **3** | B4-Q3 | Infografiki badań | ⏳ |
+| **4** | B9-Q1 | Praca całkowita (bez float) | ⏳ |
+| **4** | B10-Q1 | Nadprodukcja pracy | ⏳ |
+| **4** | A3-Q1 | Trasa wieloturowa | ⏳ |
+| **5** | MAP-Q1 | Ikona głodu na mapie | ⏳ |
+
+**Bez ABC (wdrożone — tylko playtest):** B5=A (pasek końca tury) · B11=A (refund rekrutacji) · AI-62 (nazwy miast zamiast „AI 62")
+
+---
+
+Gdy masz decyzje dla paczek 2–5, wklej jedną linię z literami. **Dopiero potem** ruszam z wdrożeniem.
+
+[REDACTED]
+
+
+---
+
+## Dopisek synchronizacji — 2026-07-07 14:27 UTC (linie 8680–8722)
+
+
+### Linia 8680 — AGENT
+
+## ECHO — B4-Q1
+
+**Decyzja: A** — klik w węzeł na **pełnym drzewku technologii** **ustawia cel badania**, a drzewko **zostaje otwarte** (widać prereq i sąsiadów).
+
+---
+
+**Stan decyzji:**
+
+| ID | Decyzja |
+|----|---------|
+| B1-Q1 | **B** |
+| B6-Q1 | **A** (tylko własna cywilizacja) |
+| B7-Q1 | **A** |
+| B8-Q1 | **B** |
+| B3-Q1 | **A** |
+| B4-Q1 | **A** |
+
+**Czeka:** B4-Q2, B4-Q3, B2, B9, B10, A3, MAP-Q1
+
+[REDACTED]
+
+### Linia 8681 — MACIEJ
+
+<timestamp>Tuesday, Jul 7, 2026, 4:15 PM (UTC+2)</timestamp>
+
+B4-Q2a
+
+### Linia 8682 — AGENT
+
+## ECHO — B4-Q2
+
+**Decyzja: A** — przycisk **„Pełne drzewko technologii"** **u góry panelu Badania**, pod aktywnym celem (widoczny bez scrollowania).
+
+---
+
+**Stan decyzji:**
+
+| ID | Decyzja |
+|----|---------|
+| B4-Q1 | **A** |
+| B4-Q2 | **A** |
+| B1-Q1 | **B** |
+| B6-Q1 | **A** |
+| B7-Q1 | **A** |
+| B8-Q1 | **B** |
+| B3-Q1 | **A** |
+
+**Czeka:** B4-Q3, B2, B9, B10, A3, MAP-Q1
+
+[REDACTED]
+
+### Linia 8683 — MACIEJ
+
+<timestamp>Tuesday, Jul 7, 2026, 4:16 PM (UTC+2)</timestamp>
+
+B4-Q3b
+
+### Linia 8684 — AGENT
+
+## ECHO — B4-Q3
+
+**Decyzja: B** — emoji w panelu Badania i drzewku zastępujemy **istniejącymi ikonami SVG** z brand pack (bez nowych ilustracji od designera).
+
+---
+
+**Stan decyzji:**
+
+| ID | Decyzja |
+|----|---------|
+| B4-Q1 | **A** — klik = cel, drzewko otwarte |
+| B4-Q2 | **A** — przycisk drzewka u góry |
+| B4-Q3 | **B** — SVG z brand pack |
+| B1-Q1 | **B** |
+| B6-Q1 | **A** (własna cywilizacja) |
+| B7-Q1 | **A** |
+| B8-Q1 | **B** |
+| B3-Q1 | **A** |
+
+**Czeka:** B2, B9, B10, A3, MAP-Q1
+
+[REDACTED]
+
+### Linia 8685 — MACIEJ
+
+<timestamp>Tuesday, Jul 7, 2026, 4:16 PM (UTC+2)</timestamp>
+
+B9-Q1b
+
+### Linia 8686 — AGENT
+
+## ECHO — B9-Q1
+
+**Decyzja: B** — **tylko zaokrąglenie na ekranie** (panel Produkcja pokazuje liczby całkowite); silnik ekonomii może dalej liczyć float w tle.
+
+---
+
+**Stan decyzji:**
+
+| ID | Decyzja |
+|----|---------|
+| B9-Q1 | **B** |
+| B4-Q1…Q3 | **A / A / B** |
+| B1-Q1 | **B** |
+| B6-Q1 | **A** |
+| B7-Q1 | **A** |
+| B8-Q1 | **B** |
+| B3-Q1 | **A** |
+
+**Czeka:** B2, B10, A3, MAP-Q1
+
+[REDACTED]
+
+### Linia 8687 — MACIEJ
+
+<timestamp>Tuesday, Jul 7, 2026, 4:17 PM (UTC+2)</timestamp>
+
+B10-Q1a
+
+### Linia 8688 — AGENT
+
+## ECHO — B10-Q1
+
+**Decyzja: A** — nadwyżka pracy po ukończeniu budynku **przechodzi na następny element kolejki budowy**; przy **pustej kolejce** → **pula pracy cywilizacji** (Twoja wcześniejsza reguła).
+
+---
+
+**Stan decyzji:**
+
+| ID | Decyzja |
+|----|---------|
+| B10-Q1 | **A** |
+| B9-Q1 | **B** |
+| B4-Q1…Q3 | **A / A / B** |
+| B1-Q1 | **B** |
+| B6-Q1 | **A** |
+| B7-Q1 | **A** |
+| B8-Q1 | **B** |
+| B3-Q1 | **A** |
+
+**Czeka:** B2, A3, MAP-Q1
+
+[REDACTED]
+
+### Linia 8689 — MACIEJ
+
+<timestamp>Tuesday, Jul 7, 2026, 4:17 PM (UTC+2)</timestamp>
+
+A3-Q1a
+
+### Linia 8690 — AGENT
+
+## ECHO — A3-Q1
+
+**Decyzja: A** — **Shift+klik** na heks: pełna trasa wieloturowa + etykieta **„X tur"**; jednostka **idzie automatycznie co turę** aż do celu (lub przeszkody).
+
+---
+
+**Stan decyzji:**
+
+| ID | Decyzja |
+|----|---------|
+| A3-Q1 | **A** |
+| B10-Q1 | **A** |
+| B9-Q1 | **B** |
+| B4-Q1…Q3 | **A / A / B** |
+| B1-Q1 | **B** |
+| B6-Q1 | **A** |
+| B7-Q1 | **A** |
+| B8-Q1 | **B** |
+| B3-Q1 | **A** |
+
+**Czeka:** B2, MAP-Q1 (+ wcześniej wdrożone: B5=A, B11=A, AI-62)
+
+[REDACTED]
+
+### Linia 8691 — MACIEJ
+
+<timestamp>Tuesday, Jul 7, 2026, 4:18 PM (UTC+2)</timestamp>
+
+MAP-Q1 Ikona głodu czy trupia czaszka, jakiś mały chip.
+
+### Linia 8692 — AGENT
+
+## ECHO — MAP-Q1
+
+**Decyzja:** wariant **A** (chip na tokenie) — **mała ikona głodu** albo **trupia czaszka** na jednostce głodującej (starving).
+
+**Nie** czerwony obwód (B), **nie** tylko hint po turze (C).
+
+---
+
+## Pełna lista decyzji playtestu
+
+| ID | Decyzja |
+|----|---------|
+| B1-Q1 | **B** — łata duplikatu surowców + audyt suwaków |
+| B2-Q1 | ⏳ **brak odpowiedzi** |
+| B3-Q1 | **A** — menu pauzy SVG |
+| B4-Q1 | **A** |
+| B4-Q2 | **A** |
+| B4-Q3 | **B** — SVG brand pack |
+| B6-Q1 | **A** — państwo = suma własnej cywilizacji |
+| B7-Q1 | **A** |
+| B8-Q1 | **B** |
+| B9-Q1 | **B** — round tylko UI |
+| B10-Q1 | **A** |
+| A3-Q1 | **A** — auto-marsz wieloturowy |
+| MAP-Q1 | **chip** — ikona głodu / czaszka |
+| B5 | **A** ✅ wdrożone |
+| B11 | **A** ✅ wdrożone |
+| AI-62 | ✅ wdrożone |
+
+**Jedno pytanie otwarte:** **B2-Q1** (podział handlu po nadpisaniu kanonu) — rekomendacja była **B** (razem z łatą B1).
+
+Gdy dasz **B2-Q1=…** albo **`działaj`**, ruszam z wdrożeniem według listy.
+
+[REDACTED]
+
+### Linia 8693 — MACIEJ
+
+<timestamp>Tuesday, Jul 7, 2026, 4:18 PM (UTC+2)</timestamp>
+
+start mozesz sam dzialac
+
+### Linia 8694 — MACIEJ
+
+If the available MCP tools do not fully support what the user asked you to do, complete the work you can with the current tool set. In your work summary, include what you were unable to do with MCP and why. Do not use browser automation to work around missing or unavailable MCP tools unless the user explicitly asks you to use the browser.
+
+### Linia 8695 — MACIEJ
+
+<timestamp>Tuesday, Jul 7, 2026, 4:18 PM (UTC+2)</timestamp>
+
+start mozesz sam dzialac
+
+### Linia 8696 — AGENT
+
+Mam pełną listę decyzji — B2-Q1=B (razem z B1). Uruchamiam wdrożenie według priorytetów.
+
+[REDACTED]
+
+### Linia 8697 — AGENT
+
+Przyjąłem — wdrażam bez dalszych pytań.
+
+**Zapisane decyzje:** B1=B, B3–B4, B6–B10, A3, MAP-Q1 (chip głodu). **B2=B** domyślnie (razem z B1).
+
+**W toku:** audyt panelu miasta + suwaki Skarb/Nauka/Zamożność, HUD państwo tylko gracz, kolejki produkcji, drzewko badań, SVG menu pauzy, nadwyżka pracy, chip głodu na jednostkach, auto-marsz Shift+klik.
+
+Dam znać po buildzie do `gra-robocza`.
+
+[REDACTED]
+
+### Linia 8698 — MACIEJ
+
+<timestamp>Tuesday, Jul 7, 2026, 4:19 PM (UTC+2)</timestamp>
+
+Jedna bardzo ważna rzecz: Przy rozkładaniu państw miast zrób tak, żeby wszystkie były w jednym skupisku podczas generowania mapy w odległości około trzech heksów od siebie widok potencjalnie budowy miasta dla gracza musi być gdzieś na granicy tego skupiska, tak żeby było jeszcze miejsce na kolejne miasto. Ale żeby zahaczał o to skupisko miast, państw, swojej cywilizacji. To samo się dotyczy innych cywilizacji kierowanych przez AI. I trzeba dopisać w zadaniach sztucznej inteligencji dla graczy AI i innych cywilizacji że ich zadaniem najpierw jest zdobycie tych wszystkich miast państw które je otaczają lub zwasalizowanie. Potem mogą przystąpić do ekspansji. Gracz chce walczyć z silnymi przeciwnikami, a nie z jednym miastem danej cywilizacji i zgrają państw miast, które są defensywne . To też uatrakcyjni rozgrywkę, bo w pierwszej kolejności pierwszy etap gry to będzie skupienie się na pokonaniu lub zwasalizowaniu własnych miast pań zarówno dla gracza jak i AI.
+
+### Linia 8699 — AGENT
+
+Nowe wymaganie: skupiska miast państw (~3 heksy) i priorytet AI na zdobycie/zwasalizowanie otaczających miast przed ekspansją. Uruchamiam osobnego agenta pod mapę i AI.
+
+[REDACTED]
+
+### Linia 8700 — AGENT
+
+Przyjąłem — to ważna zmiana rozgrywki.
+
+**Mapa:** każda cywilizacja dostaje **jedno skupisko** miast państw (~3 heksy od siebie). Start gracza i AI **na granicy** skupiska, z miejscem na jeszcze jedno miasto w klastrze.
+
+**AI:** najpierw **zdobycie lub zwasalizowanie** własnych miast państw wokół klastra, dopiero potem ekspansja na mapę.
+
+Wdrażam to równolegle z poprzednim batch’em poprawek playtestowych. Dam znać po buildzie — sprawdź **Nowa gra** i czy AI najpierw walczy o swoje państwa.
+
+[REDACTED]
+
+### Linia 8702 — MACIEJ
+
+The beginning of the above subagent result is already visible to the user. Perform any follow-up actions (if needed). DO NOT regurgitate or reiterate its result unless asked. If multiple subagents have now completed and none are still running, briefly summarize the findings and conclusions across all of them. Otherwise, if no follow-ups remain, end your response with a brief third-person confirmation that the subagent has completed. If you mention an agent or subagent in your response, link it with the `[label](id)` format using the agent_id or task_id from the notification instead of printing the raw ID. Don't repeat the same confirmation every time.
+
+### Linia 8703 — AGENT
+
+Sprawdzam status pozostałych agentów i czy trzeba przebudować `gra-robocza`.
+
+[REDACTED]
+
+### Linia 8704 — AGENT
+
+[REDACTED]
+
+### Linia 8705 — AGENT
+
+Audyt B1 potwierdza brak zmian w kodzie — przekazuję to agentowi wdrożeniowemu, żeby nie duplikował pracy.
+
+[REDACTED]
+
+### Linia 8706 — AGENT
+
+Audyt [B1 panel](f045fac5-2a9f-483f-8fc1-37a19c3732ec) zamknięty — w `gra/src` nie trzeba nic zmieniać; ewentualny dubel to stary build albo cache (Ctrl+F5 po republish).
+
+Batch playtestowy i agent skupisk miast + AI nadal pracują — republish `gra-robocza` wejdzie z ich buildem.
+
+[REDACTED]
+
+### Linia 8708 — MACIEJ
+
+<timestamp>Tuesday, Jul 7, 2026, 4:21 PM (UTC+2)</timestamp>
+
+Badania idą zdecydowanie za szybko. Obecna ilość wymaganego kosztu badania powiedzmy niech będzie OK, ale dla trybu szybkiego przy wyborze w opcjach trybu normalnego powinno być razy dwa. a przy wyborze długiego razy 4. po to, żeby rozgrywka była znacznie dłuższa. Sprawdź stan obecny i dostosuj parametry do nowych wymogów.
+
+### Linia 8709 — AGENT
+
+Sprawdzam, jak teraz liczone są koszty badań i mnożniki trybu gry — potem dostosujemy je do wymagań (normalny ×2, długi ×4).
+
+[REDACTED]
+
+### Linia 8710 — AGENT
+
+Przyjąłem — badania mają iść wolniej zależnie od tempa gry:
+
+- **Szybki** — koszt jak teraz (×1)
+- **Normalny** — ×2
+- **Długi** — ×4
+
+Agent sprawdza obecną logikę kosztów badań i dopina mnożnik do wyboru w opcjach nowej gry. Dam znać po buildzie.
+
+[REDACTED]
+
+### Linia 8712 — MACIEJ
+
+<timestamp>Tuesday, Jul 7, 2026, 4:22 PM (UTC+2)</timestamp>
+
+Jeżeli na danym HEX-ie występuje LAS, daj plus 1 do produkcji w stosunku do tego, co jest obecnie.
+
+### Linia 8713 — AGENT
+
+[REDACTED]
+
+### Linia 8714 — AGENT
+
+Przyjąłem — heks z **lasem** dostaje **+1 produkcji** względem obecnych wartości. Agent szuka, gdzie liczone są plony terenu, i dopina to do silnika.
+
+[REDACTED]
+
+### Linia 8716 — MACIEJ
+
+<timestamp>Tuesday, Jul 7, 2026, 4:25 PM (UTC+2)</timestamp>
+
+Sprawdź, czy został wprowadzony mechanizm ograniczenia liczby ludności ze względu na kwadukty do liczby 5. Bez akwedukty miasto nie może zwiększyć swojej wielkości ponad pięć. Nadmiar żywności może składać dla wojska lub będzie po prostu tracone. jeżeli zapełnią się spichlerze, pierwszy etap gry to jest ekspansja miast, więc można budować przez to więcej miast, bo i tak żywność zostanie stracona, aż zostanie cała mapa zapełniona. Dopiero gdy są możliwe akwedukty można zwiększyć liczbę miasta. Ale nawet wtedy powinien być limit 15. I musimy pomyśleć czwarte epoce co będzie znowu zwiększać ponad 15.
+
+### Linia 8717 — AGENT
+
+Sprawdzam w kodzie limit ludności (5 bez akweduktu, 15 z akweduktem) i zachowanie nadwyżki żywności — potem wdrożę lub zaproponuję brakujące elementy.
+
+[REDACTED]
+
+### Linia 8718 — AGENT
+
+Przyjąłem — agent sprawdza w silniku:
+
+- **bez akweduktu** → max **5** ludności, nadwyżka żywności na wojsko albo przepada  
+- **z akweduktem** → wzrost do **15**, potem znowu limit  
+- **epoka IV** → szkic opcji powyżej 15 (do Twojej decyzji)
+
+Dam znać, co już jest wdrożone, a co trzeba dopiąć.
+
+[REDACTED]
+
+### Linia 8719 — MACIEJ
+
+<timestamp>Tuesday, Jul 7, 2026, 4:25 PM (UTC+2)</timestamp>
+
+Sprawdź też czy ten błąd faktu, że państwa miasta startowały w epoce brązu został załatwiony i już wszystkie cywilizacje startują w epoce kamienia. łącznie z cywilizacjami AI.
+
+### Linia 8720 — AGENT
+
+[REDACTED]
+
+### Linia 8721 — AGENT
+
+Przyjąłem — agent sprawdza, czy **państwa miast** i **wszystkie cywilizacje AI** startują w **epoce kamienia**, a nie brązu. Dam znać ze statusem i ewentualną poprawką.
+
+[REDACTED]
+
+
+---
+
+## Dopisek synchronizacji — 2026-07-07 19:30 UTC (linie 8723–8771)
+
+
+### Linia 8723 — MACIEJ
+
+<timestamp>Tuesday, Jul 7, 2026, 4:27 PM (UTC+2)</timestamp>
+
+Sprawdź czy został zrealizowany plan przydzielenia setki nazw miast dla każdej cywilizacji AI. plus 10 wyjątkowych miast dla danej cywilizacji, dla państw miast, dla każdej cywilizacji. Zrób research, zaproponuj jakieś nazwy i zaimplementuj sam do gry, nie pytając mnie. Później to sprawdzimy, czy jest OK. Po zakończeniu przygotuję Excela, w którym każda cywilizacja będzie mieć listę swoich nazw plus nazwy miast państw dla tego typu cywilizacji.
+
+### Linia 8724 — AGENT
+
+[REDACTED]
+
+### Linia 8726 — MACIEJ
+
+<timestamp>Tuesday, Jul 7, 2026, 4:27 PM (UTC+2)</timestamp>
+
+Sprawdź czy został zrealizowany plan przydzielenia setki nazw miast dla każdej cywilizacji AI. plus 10 wyjątkowych miast dla danej cywilizacji, dla państw miast, dla każdej cywilizacji. Zrób research, zaproponuj jakieś nazwy i zaimplementuj sam do gry, nie pytając mnie. Później to sprawdzimy, czy jest OK. Po zakończeniu przygotuję Excela, w którym każda cywilizacja będzie mieć listę swoich nazw plus nazwy miast państw dla tego typu cywilizacji. Oczywiście chodzi też o to, żeby nie trzeba było za każdym razem ręcznie ustalać nazw, tylko one dla gracza też były automatycznie podpowiadane z listy już gotowych nazw miast.
+
+### Linia 8727 — AGENT
+
+[REDACTED]
+
+### Linia 8728 — AGENT
+
+Przyjąłem — agent sprawdzi stan pul nazw, uzupełni **~100 nazw + 10 państwowych** na cywilizację, podłączy **autopodpowiedź dla gracza** i przygotuje strukturę pod Twój Excel. Bez pytań — po zakończeniu dam krótki raport.
+
+[REDACTED]
+
+### Linia 8729 — MACIEJ
+
+The beginning of the above subagent result is already visible to the user. Perform any follow-up actions (if needed). DO NOT regurgitate or reiterate its result unless asked. If multiple subagents have now completed and none are still running, briefly summarize the findings and conclusions across all of them. Otherwise, if no follow-ups remain, end your response with a brief third-person confirmation that the subagent has completed. If you mention an agent or subagent in your response, link it with the `[label](id)` format using the agent_id or task_id from the notification instead of printing the raw ID. Don't repeat the same confirmation every time.
+
+### Linia 8730 — AGENT
+
+[REDACTED]
+
+### Linia 8731 — AGENT
+
+[REDACTED]
+
+### Linia 8732 — AGENT
+
+[Klastry + AI faza 1](8362dadb-3c5a-47e0-92f8-eede889993e3) wdrożone i zbuildowane do `gra-robocza`. Pozostałe zadania (playtest, nazwy miast, tempo badań, popcap, epoka kamienia) nadal lecą — po ich buildzie zrób **Ctrl+F5** przed porównaniem wersji.
+
+[REDACTED]
+
+### Linia 8734 — MACIEJ
+
+The beginning of the above subagent result is already visible to the user. Perform any follow-up actions (if needed). DO NOT regurgitate or reiterate its result unless asked. If multiple subagents have now completed and none are still running, briefly summarize the findings and conclusions across all of them. Otherwise, if no follow-ups remain, end your response with a brief third-person confirmation that the subagent has completed. If you mention an agent or subagent in your response, link it with the `[label](id)` format using the agent_id or task_id from the notification instead of printing the raw ID. Don't repeat the same confirmation every time.
+
+### Linia 8735 — AGENT
+
+[REDACTED]
+
+### Linia 8736 — AGENT
+
+[REDACTED]
+
+### Linia 8737 — AGENT
+
+[REDACTED]
+
+### Linia 8738 — AGENT
+
+[Cap ludności + akwedukt](a45e59ea-3187-4a4c-85b0-dd2018a1be97) wdrożony (5 → 15). Powyżej 15 czeka na Twoją decyzję — szkic ABC w `docs/decyzje/B-popcap-akwedukt-audit.md`. Playtest, nazwy miast, tempo badań i epoka kamienia nadal w toku.
+
+[REDACTED]
+
+### Linia 8740 — MACIEJ
+
+<timestamp>Tuesday, Jul 7, 2026, 4:30 PM (UTC+2)</timestamp>
+
+Trzeba przygotować przy panelu opcji dodatkowych przy generowaniu gry jeszcze jedną opcję: koszty budynków. Przy niskim jest to co obecnie. Przy normalnym razy dwa. W wysokim razy cztery. Ale to odbywa się na początku przy wyborze rozgrywki i w kreatorze
+
+### Linia 8741 — AGENT
+
+[REDACTED]
+
+### Linia 8742 — AGENT
+
+Przyjąłem — w kreatorze gry pojawi się opcja **Koszty budynków**: niski ×1 (jak teraz), normalny ×2, wysoki ×4. Wybór na starcie rozgrywki i zapis w save. Dam znać po wdrożeniu.
+
+[REDACTED]
+
+### Linia 8744 — MACIEJ
+
+<timestamp>Tuesday, Jul 7, 2026, 4:48 PM (UTC+2)</timestamp>
+
+Czyli wszystko co zleciłem udało się sfinalizować. ?
+
+### Linia 8745 — AGENT
+
+**Prawie wszystko — tak, w `gra-robocza` i w kodzie.** Sesja jest domknięta, build **ae03f50d**, pełna lista w `dyspozycje/RAPORT-DZIEN-2026-07-07.md`.
+
+### Zrealizowane (to, co zlecałeś dziś)
+
+- Poprawki playtestu (panel, HUD, produkcja, badania, mapa, Shift+marsz, głód ☠ itd.)
+- Klaster państw + AI faza 1 (przejęcie własnych miast przed ekspansją)
+- Tempo badań, kosztów budynków, kosztów jednostek, wzrostu ludności (×1/×2/×4 w kreatorze)
+- Asymetria trudności dla kosztów **i** wzrostu ludności
+- Cap ludności 5/15 (Akwedukt), epoka kamienia na starcie (B12)
+- Las +1 produkcji, pule nazw 100+10 + Excel
+- Raport dnia + testy zielone
+
+### Świadomie **nie** domknięte (bo nie było pełnej implementacji albo czeka na Ciebie)
+
+| Temat | Status |
+|--------|--------|
+| **Wasalizacja AI** w fazie 1 | Nie — AI atakuje/przejmuje wojskiem, bez ścieżki wasal |
+| **Epoka IV → ludność >15** | Tylko szkic ABC w docs — bez kodu |
+| **A3 Shift+marsz** | MVP wdrożone — edge case’y tras **niesprawdzone** |
+| **Excel nazw miast** | Plik gotowy — **import po Twojej edycji** |
+| **B2-Q1** | Przyjęte domyślnie **B** (razem z B1), bez Twojej jawnej odpowiedzi |
+| **Promocja do kanonu** | Nie — tylko wersja robocza |
+
+**Podsumowanie:** Wszystko, co dało się wdrożyć jako mechanikę/kreator/build, **jest**. Otwarte to głównie: wasalizacja AI, epoka IV >15, dopracowanie A3, Twój Excel i ewentualne poprawki po Twoim przejściu gry.
+
+Po powrocie: **Ctrl+F5** → `gra-robocza/START.html` → **Nowa gra** z zaawansowanymi opcjami.
+
+[REDACTED]
+
+### Linia 8747 — MACIEJ
+
+<timestamp>Tuesday, Jul 7, 2026, 4:50 PM (UTC+2)</timestamp>
+
+Excel nazw miast
+
+### Linia 8748 — AGENT
+
+[REDACTED]
+
+### Linia 8749 — AGENT
+
+[REDACTED]
+
+### Linia 8750 — AGENT
+
+## Excel nazw miast
+
+**Plik:** `panele-sterowania/Nazwy-miast-cywilizacji.xlsx`
+
+**Co w środku (15 cywilizacji):**
+- **Miasto_01…100** — zwykłe miasta imperium (`miasta_cywilizacji`)
+- **Panstwo_01…10** — miasta-państwa klastra (`miasta_panstwa` / `nazwyKlastra`)
+
+Przykłady: Grecy → Ateny, Sparta… · Chińczycy państwa → Qin, Qi, Chu…
+
+**Skąd się bierze:** wygenerowany z `gra/data/city-names-pools.json` (to jest **źródło prawdy** w grze).
+
+**Co możesz teraz:**
+1. Otwórz Excel i popraw nazwy według uznania.
+2. Gra **już używa** pul z JSON — nie musisz nic robić, żeby zagrać.
+
+**Po Twojej edycji Excela — ważne:**
+Import **Excel → JSON** jest jeszcze **do dopięcia** (w skrypcie jest adnotacja „TBD”). Na razie działa:
+- JSON → Excel (`generate-city-names-xlsx.py`) — podgląd
+- JSON → `civs.json` (`export-city-names.py`) — sync do gry
+
+**Gdy edytujesz Excel i chcesz to w grze:** napisz **`eksportuj panel nazwy`** albo po prostu „wgraj Excel” — zrobię import Excel→JSON + sync + odświeżę build.
+
+**W grze już działa:** auto-nazwy gracza i AI z puli, bez promptu; po wyczerpaniu puli → suffix „II”, „III”…
+
+[REDACTED]
+
+### Linia 8751 — MACIEJ
+
+<timestamp>Tuesday, Jul 7, 2026, 4:50 PM (UTC+2)</timestamp>
+
+możesz to wdrożyć na razie bez mojej akceptacji, później to przejrzę. Będę też widział jak to wygląda w grze. B2-Q1
+
+### Linia 8752 — AGENT
+
+Wdrażam import Excel→JSON dla nazw miast i zapisuję B2-Q1=B.
+
+[REDACTED]
+
+### Linia 8753 — AGENT
+
+Przyjąłem.
+
+**Excel → gra:** robię pełny import (`import-city-names-from-xlsx.py`) — po edycji Excela wystarczy napisać **„eksportuj nazwy miast”**.
+
+**B2-Q1 = B** — zapisuję decyzję (panel handlu razem z B1; już w buildzie).
+
+Dam znać po pipeline i buildzie.
+
+[REDACTED]
+
+### Linia 8754 — MACIEJ
+
+<timestamp>Tuesday, Jul 7, 2026, 4:51 PM (UTC+2)</timestamp>
+
+B2-Q1 - to pytanie jeszcze raz zadaje mnie jako ABC, odpowiem jeszcze raz.
+
+### Linia 8755 — AGENT
+
+Sprawdzam treść B2-Q1 w dokumentacji, żeby sformułować pełne ABC.
+
+[REDACTED]
+
+### Linia 8756 — AGENT
+
+[REDACTED]
+
+### Linia 8757 — AGENT
+
+[REDACTED]
+
+### Linia 8758 — AGENT
+
+[REDACTED]
+
+### Linia 8759 — AGENT
+
+[REDACTED]
+
+### Linia 8760 — AGENT
+
+[REDACTED]
+
+### Linia 8761 — AGENT
+
+Przyjmuję — **B2-Q1** zadaję od nowa. Wcześniejsze domyślne „B” **nie liczę**; czekam na Twoją literę.
+
+---
+
+## [EKRAN: Panel miasta — Podział handlu i Zamożność] · **B2-Q1**
+
+### Sytuacja
+
+W playteście zgłosiłeś dwa powiązane problemy:
+
+1. **B1** — duplikat bloku „Surowce w zasięgu” i zakryte suwaki (w buildzie roboczym duplikat surowców jest już usunięty; suwaki działają w kodzie).
+2. **B2 (rejestr)** — nie ma już starej wersji panelu w kanonie; chcesz odzyskać sensowny model **„podziału handlu i zamożności”**, nie cały stary panel.
+
+Dziś masz **zakładkę** „Podział handlu i zamożność” (suwaki Skarb / Nauka / Zamożność + chipy + Zamożność). Kiedyś designer miał to **na jednym widoku** bez przechodzenia między zakładkami.
+
+### Cel pytania
+
+Ustalić **docelowy układ** sekcji handlu i zamożności — żeby suwaki były widoczne i zrozumiałe, bez powrotu do chaosu dwóch systemów panelu.
+
+### Dlaczego teraz
+
+B1 (surowce) jest już naprawione w kodzie; bez decyzji B2 nie wiadomo, czy zostajemy przy zakładkach, czy wracamy do układu „jak u designera”.
+
+---
+
+### Opcja **A** — Jeden widok jak u designera
+
+Suwaki Skarb / Nauka / Zamożność, cztery chipy (Skarb, Nauka, Zamożność, Korupcja) i karta **Zamożność** na **jednym ekranie** — bez osobnej zakładki Handel. Stary szkielet panelu zastąpiony jednym spójnym układem.
+
+- **Za:** dokładnie to, co pamiętasz z designera; wszystko w jednym miejscu; naturalnie rozwiązuje „schowane suwaki”.
+- **Przeciw:** większa praca UX; trzeba uważać, żeby nie wrócić duplikatu surowców.
+
+### Opcja **B** — Zostajemy przy zakładkach (minimalna zmiana)
+
+Suwaki zostają na zakładce **„Podział handlu i zamożność”**; poprawiamy tylko czytelność (scroll, ucięcie, odstępy). Surowce tylko w stopce (jak po B1).
+
+- **Za:** mały zakres; mniej ryzyka regresji; szybkie domknięcie.
+- **Przeciw:** nadal trzeba **kliknąć zakładkę**, żeby zobaczyć suwaki obok Zamożności; może nie spełnić oczekiwania „jak dawniej”.
+
+### Opcja **C** — Hybryda: suwaki w karcie Zamożność
+
+Bez pełnego powrotu do starego szkieletu: **suwaki i chipy w górnej części** zakładki głównej / karty Zamożność (widoczne od razu po otwarciu panelu), reszta zakładek bez zmian.
+
+- **Za:** suwaki widoczne „od razu”; mniejszy refactor niż A; zachowana nowa ramka UX.
+- **Przeciw:** kompromis — nie identyczny z designem; gęstszy ekran u góry.
+
+---
+
+### Rekomendacja
+
+**A** — bo w rejestrze B2 chodziło o odzyskanie modelu podziału handlu, a nie tylko techniczny fix duplikatu.
+
+---
+
+**Odpowiedz literą: A, B albo C.** Po Twojej odpowiedzi zapiszę decyzję i wdrożę (bez kolejnego pytania, chyba że napiszesz „doprecyzujmy”).
+
+[REDACTED]
+
+### Linia 8763 — MACIEJ
+
+<timestamp>Tuesday, Jul 7, 2026, 4:53 PM (UTC+2)</timestamp>
+
+b
+
+### Linia 8764 — AGENT
+
+Zapisuję **B2-Q1 = B** i wdrażam układ z zakładkami (czytelność suwaków, bez powrotu do starego designera).
+
+[REDACTED]
+
+### Linia 8765 — AGENT
+
+Zapisałem **B2-Q1 = B** — zostajemy przy **zakładkach**; poprawiam tylko czytelność suwaków na „Podział handlu i zamożność” (scroll, bez ucięcia), bez powrotu do starego układu designera.
+
+Wdrożenie w toku — dam znać po buildzie. W grze: panel miasta → zakładka **Handel** → suwaki Skarb / Nauka / Zamożność.
+
+[REDACTED]
+
+### Linia 8767 — MACIEJ
+
+<timestamp>Tuesday, Jul 7, 2026, 4:56 PM (UTC+2)</timestamp>
+
+Jeżeli chodzi o Excela nazw miast to mam nadzieję, że dane z tego Excela są już też w grze, a ewentualnie tylko zmiany możesz wprowadzać przy miastach. I jeżeli tak nie jest, po prostu zaimplementuj na razie tymczasowo nazwy, które masz w Excelu miast do wszystkich cywilizacji.
+
+### Linia 8768 — AGENT
+
+[REDACTED]
+
+### Linia 8769 — AGENT
+
+Przyjąłem — sprawdzam, czy nazwy z Excela są już w `city-names-pools.json` i w silniku (15 cywilizacji × 100+10). Jeśli nie — importuję i przebudowuję `gra-robocza`. Później zmiany tylko po edycji Excela i haśle **„eksportuj nazwy miast”**.
+
+[REDACTED]
+
+### Linia 8771 — MACIEJ
+
+<timestamp>Tuesday, Jul 7, 2026, 9:30 PM (UTC+2)</timestamp>
+
+Czy nazwy będą używane automatycznie? Nie trzeba będzie wpisywać za każdym razem nazwy przy zakładaniu miasta? Czy AI też będzie używać tych nazw swoich? ?

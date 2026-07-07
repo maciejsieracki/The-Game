@@ -3,7 +3,12 @@
  * Warstwa UI: lista sejwów, nazwa zapisu, usuwanie. Logika stanu w main.ts + save.ts.
  */
 
-import { listSaves, loadFromLocal, deleteLocal, type SaveGame } from '../game/save';
+import {
+  listSaves, loadFromLocal, deleteLocal,
+  getLastPlayedSlotId,
+  uniqueSlotIdFromLabel, slotSlugFromLabel,
+  type SaveGame,
+} from '../game/save';
 
 export interface SaveSlotSummary {
   slotId: string;
@@ -12,6 +17,8 @@ export interface SaveSlotSummary {
   savedAt: string;
   /** Krótki opis mapy / stanu — żeby odróżnić własną grę od playtestu lub autosave. */
   context: string;
+  /** Ostatnio grany / wczytany slot (Kontynuuj). */
+  isLastPlayed?: boolean;
 }
 
 const TYP_SWIATA_LABEL: Record<string, string> = {
@@ -103,18 +110,9 @@ export function hideSaveLoadDialog(): void {
   closeDialog();
 }
 
-/** Id slotu localStorage (bezpieczny klucz) z etykiety gracza. */
+/** @deprecated użyj slotSlugFromLabel / uniqueSlotIdFromLabel z save.ts */
 export function slotIdFromLabel(label: string): string {
-  const trimmed = label.trim();
-  if (!trimmed) return `zapis-${Date.now()}`;
-  const base = trimmed
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-    .slice(0, 40);
-  return base || `zapis-${Date.now()}`;
+  return slotSlugFromLabel(label);
 }
 
 function formatSavedAt(iso: string): string {
@@ -130,8 +128,10 @@ function formatSavedAt(iso: string): string {
 
 /** Podsumowania wszystkich slotów (najnowsze pierwsze). */
 export function summarizeSaveSlots(): SaveSlotSummary[] {
+  const lastPlayed = getLastPlayedSlotId();
   const out: SaveSlotSummary[] = [];
   for (const slotId of listSaves()) {
+    if (slotId.startsWith('_')) continue;
     const g = loadFromLocal(slotId);
     if (!g) continue;
     const meta = g.meta as Record<string, unknown> | undefined;
@@ -141,16 +141,22 @@ export function summarizeSaveSlots(): SaveSlotSummary[] {
       tura: g.tura,
       savedAt: typeof meta?.savedAt === 'string' ? meta.savedAt : '',
       context: saveContextLine(g),
+      isLastPlayed: slotId === lastPlayed,
     });
   }
   out.sort((a, b) => b.savedAt.localeCompare(a.savedAt));
   return out;
 }
 
-/** Najnowszy slot (do „Kontynuuj") lub null. */
+/** Najnowszy slot (data zapisu) — fallback gdy brak lastPlayed. */
 export function mostRecentSaveSlotId(): string | null {
   const slots = summarizeSaveSlots();
   return slots[0]?.slotId ?? null;
+}
+
+/** Slot do „Kontynuuj": ostatnio grany, inaczej najnowszy zapis. */
+export function continueSaveSlotId(): string | null {
+  return getLastPlayedSlotId() ?? mostRecentSaveSlotId();
 }
 
 export interface SaveDialogOptions {
@@ -175,7 +181,8 @@ export function showSaveGameDialog(opts: SaveDialogOptions): void {
   box.className = 'civ-sl-box';
   box.innerHTML =
     '<h2>Zapisz grę</h2>' +
-    '<p class="civ-sl-sub">Podaj nazwę sejwu. Ta sama nazwa nadpisze istniejący zapis.</p>';
+    '<p class="civ-sl-sub">Podaj nazwę sejwu. Każda nowa nazwa tworzy <b>osobny</b> zapis — inne gry się nie nadpisują. ' +
+    'Ta sama nazwa co istniejący sejw = nadpisanie wyłącznie tego slotu (potwierdzenie).</p>';
 
   const field = document.createElement('div');
   field.className = 'civ-sl-field';
@@ -209,10 +216,26 @@ export function showSaveGameDialog(opts: SaveDialogOptions): void {
 
   const commit = () => {
     const label = input.value.trim() || `Zapis · tura ${opts.turn}`;
-    const slotId = slotIdFromLabel(label);
+    const existing = existingAtCommit();
+    let slotId: string;
+    if (existing) {
+      const ok = window.confirm(
+        `Nadpisać istniejący zapis «${existing.label}»?\n${existing.context}\n\nInne sejwy pozostaną bez zmian.`,
+      );
+      if (!ok) return;
+      slotId = existing.slotId;
+    } else {
+      slotId = uniqueSlotIdFromLabel(label);
+    }
     closeDialog();
     opts.onSave(slotId, label);
   };
+
+  function existingAtCommit(): SaveSlotSummary | undefined {
+    const label = input.value.trim();
+    if (!label) return undefined;
+    return summarizeSaveSlots().find(s => s.label.trim() === label);
+  }
 
   cancelBtn.addEventListener('click', () => {
     closeDialog();
@@ -246,7 +269,8 @@ export function showLoadGameDialog(opts: LoadDialogOptions): void {
   ensureStyles();
 
   let slots = summarizeSaveSlots();
-  let selectedId: string | null = slots[0]?.slotId ?? null;
+  let selectedId: string | null =
+    slots.find(s => s.isLastPlayed)?.slotId ?? slots[0]?.slotId ?? null;
 
   root = document.createElement('div');
   root.className = 'civ-sl';
@@ -272,7 +296,7 @@ export function showLoadGameDialog(opts: LoadDialogOptions): void {
       return;
     }
     if (!selectedId || !slots.some(s => s.slotId === selectedId)) {
-      selectedId = slots[0]!.slotId;
+      selectedId = slots.find(s => s.isLastPlayed)?.slotId ?? slots[0]!.slotId;
     }
     for (const s of slots) {
       const row = document.createElement('div');
@@ -280,9 +304,10 @@ export function showLoadGameDialog(opts: LoadDialogOptions): void {
       row.dataset.slot = s.slotId;
       const main = document.createElement('div');
       main.className = 'civ-sl-row-main';
+      const lastTag = s.isLastPlayed ? ' · <span style="color:#e0b24a">ostatnio grane</span>' : '';
       main.innerHTML =
         `<div class="civ-sl-row-title">${escapeHtml(s.label)}</div>` +
-        `<div class="civ-sl-row-meta">Tura ${s.tura} · ${formatSavedAt(s.savedAt)}</div>` +
+        `<div class="civ-sl-row-meta">Tura ${s.tura} · ${formatSavedAt(s.savedAt)}${lastTag}</div>` +
         `<div class="civ-sl-row-meta">${escapeHtml(s.context)}</div>`;
       const del = document.createElement('button');
       del.type = 'button';

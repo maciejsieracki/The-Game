@@ -92,6 +92,8 @@ export interface EconParams {
   progWzrostuWspolczynnik:          number;
   spichlerzZachowaniePoPrzroscie:   number;
   akweduktProgLudnosci:             number;
+  /** Twardy cap ludności po zbudowaniu Akweduktu (domyślnie 15). */
+  akweduktMaxLudnosci:              number;
   zywnoscZuzytkaPopulacja:          number;
   zdrowieModyfikatorWspolczynnik:   number;  // health->growth coeff [PT 0.05]
   korupcjaWspolczynnikDystansu:     number;
@@ -160,7 +162,8 @@ export function loadEconParams(
   return {
     progWzrostuWspolczynnik:        read(em, KEY_PROG_WZROSTU, 8),
     spichlerzZachowaniePoPrzroscie: read(em, 'spichlerz_zachowanie_po_wzroscie', 0.5),
-    akweduktProgLudnosci:           read(em, 'akwedukt_prog_ludnosci', 6),
+    akweduktProgLudnosci:           read(em, 'akwedukt_prog_ludnosci', 5),
+    akweduktMaxLudnosci:            read(em, 'akwedukt_max_ludnosci', 15),
     zywnoscZuzytkaPopulacja:        read(em, 'zywnosc_zuzytka_populacja', 1),
     zdrowieModyfikatorWspolczynnik: read(em, 'zdrowie_modyfikator_wspolczynnik', 0.05),
     korupcjaWspolczynnikDystansu:   read(em, 'korupcja_wspolczynnik_dystansu', 2),
@@ -283,7 +286,7 @@ const TERRAIN_YIELDS: Record<TerenBazowy, TileYield> = {
 
 // Overlay modifiers (Spec-ekonomia.md ss.1.1)
 const RIVER_MODIFIER:  TileYield = { zywnosc: 3, praca: 2, handel: 2, drewno: 0, kamien: 0 };
-const FOREST_MODIFIER: TileYield = { zywnosc: -1, praca: 0, handel: -1, drewno: 3, kamien: 0 };
+const FOREST_MODIFIER: TileYield = { zywnosc: -1, praca: 3, handel: -1, drewno: 3, kamien: 0 };
 
 const ZERO_YIELD: TileYield = { zywnosc: 0, praca: 0, handel: 0, drewno: 0, kamien: 0 };
 
@@ -302,6 +305,7 @@ export function tileYield(tile: WorkedTile): TileYield {
 
   if (tile.nakladka === Nakladka.Las) {
     zywnosc += FOREST_MODIFIER.zywnosc;
+    praca   += FOREST_MODIFIER.praca;
     handel  += FOREST_MODIFIER.handel;
     drewno  += FOREST_MODIFIER.drewno;
   }
@@ -655,6 +659,14 @@ export function cityYieldPerTurn(
 // 3. populationGrowth
 // ---------------------------------------------------------------------------
 
+/** Aktualny twardy cap ludności miasta (bez Akweduktu vs z Akweduktem). */
+export function cityPopulationCap(
+  maAkwedukt: boolean,
+  params: Pick<EconParams, 'akweduktProgLudnosci' | 'akweduktMaxLudnosci'>,
+): number {
+  return maAkwedukt ? params.akweduktMaxLudnosci : params.akweduktProgLudnosci;
+}
+
 /**
  * Compute population change for one turn.
  *
@@ -663,20 +675,22 @@ export function cityYieldPerTurn(
  *   - Próg: Threshold(N) = 10 + N * coeff → +1 ludność.
  *   - Po wzroście: bez Spichlerza bufor → 0; ze Spichlerzem bufor × spichlerzZachowaniePoPrzroscie (50%).
  *   - Deficyt: magazyn maleje; przy 0 i ujemnej nadwyżce → −1 ludność (min 1).
- *   - Cap bez Akweduktu: akweduktProgLudnosci.
+ *   - Cap bez Akweduktu: akweduktProgLudnosci (normal=5).
+ *   - Cap z Akweduktem: akweduktMaxLudnosci (normal=15).
  *   - Zdrowie: modifier = max(0, 1 + zdrowie * wsp) [PT]
  */
 export function populationGrowth(
   city: EconomyCity,
   zywnoscNetto: number,
   params: EconParams,
+  wzrostThresholdMult: number = 1,
 ): PopulationGrowthResult {
   const { ludnosc, zdrowie, maSpichlerz, maAkwedukt, magazynZywnosci } = city;
 
   const healthModifier  = Math.max(0, 1 + zdrowie * params.zdrowieModyfikatorWspolczynnik);
   const effectiveFlow   = zywnoscNetto * healthModifier;
 
-  const popCap = maAkwedukt ? Number.MAX_SAFE_INTEGER : params.akweduktProgLudnosci;
+  const popCap = cityPopulationCap(maAkwedukt, params);
 
   let nowaLudnosc  = ludnosc;
   let nowyMagazynZywnosci  = magazynZywnosci;
@@ -694,7 +708,8 @@ export function populationGrowth(
     return { nowaLudnosc, nowyMagazynZywnosci, wzrost, ubytek };
   }
 
-  const threshold = 10 + ludnosc * params.progWzrostuWspolczynnik;
+  const baseThreshold = 10 + ludnosc * params.progWzrostuWspolczynnik;
+  const threshold = Math.max(1, Math.round(baseThreshold * wzrostThresholdMult));
 
   if (nowyMagazynZywnosci >= threshold && ludnosc < popCap) {
     nowaLudnosc = ludnosc + 1;

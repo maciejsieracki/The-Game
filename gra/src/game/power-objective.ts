@@ -144,7 +144,7 @@ export function computeObjectivePower(
   const components: PowerComponentBreakdown[] = [
     row('armia', 'Armia', Math.max(0, input.jednostki), coeff.jednostkaWojskowa),
     row('bitwy', 'Wygrane bitwy', bitwyRaw, bitwyCoeff),
-    row('ludki', 'Ludki', Math.max(0, input.sumaLudkow), coeff.ludek),
+    row('ludki', 'Obywatele', Math.max(0, input.sumaLudkow), coeff.ludek),
     row('rekruci', 'Rekruci (ekw. jedn.)', Math.max(0, input.rekrutEkw), coeff.rekrutEkwJednostki),
     row('miasta', 'Miasta', Math.max(0, input.miasta), coeff.miasto),
     row('terytorium', 'Terytorium (heksy)', Math.max(0, input.heksyTerytorium), coeff.heksTerytorium),

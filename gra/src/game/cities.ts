@@ -10,6 +10,7 @@ import { TerenBazowy } from '../types/hex';
 import type { RuntimeUnit } from '../units/setup';
 import { hexDistance } from '../units/setup';
 import { freshWealthState, type WealthState } from './wealth';
+import { readCityFoodBuffer } from './economy-upkeep';
 import type { SiegeMachinesState } from './siegeMachines';
 import miastoParams from '../../data/miasto-params.json';
 
@@ -33,6 +34,21 @@ export type OkolicaTryb = 'auto' | 'reczny';
 
 export const DEFAULT_OKOLICA_FOCUS: OkolicaFocus = 'zrownowazone';
 export const DEFAULT_OKOLICA_TRYB: OkolicaTryb = 'auto';
+
+/** Profile auto-kolejki budynków (panel Produkcja). */
+export type BudowaFocus =
+  | 'zrownowazone'
+  | 'wzrost'
+  | 'wojsko'
+  | 'kultura'
+  | 'prawo'
+  | 'produkcja';
+
+/** auto = AI dobiera budynki wg budowaFocus; reczny = gracz wybiera ręcznie. */
+export type BudowaTryb = 'auto' | 'reczny';
+
+export const DEFAULT_BUDOWA_FOCUS: BudowaFocus = 'zrownowazone';
+export const DEFAULT_BUDOWA_TRYB: BudowaTryb = 'reczny';
 
 /** Domyslny podzial Handlu — zgodny z buildEconParams / econ-params.json normal (20/70/10). */
 export const DEFAULT_PODZIAL_HANDLU: Readonly<CityPodzialHandlu> = {
@@ -89,6 +105,10 @@ export function ensureCitySaveDefaults(city: City): void {
   if (!city.wealthState) city.wealthState = freshWealthState();
   if (!city.okolicaFocus) city.okolicaFocus = DEFAULT_OKOLICA_FOCUS;
   if (!city.okolicaTryb) city.okolicaTryb = DEFAULT_OKOLICA_TRYB;
+  if (!city.budowaFocus) city.budowaFocus = DEFAULT_BUDOWA_FOCUS;
+  if (!city.budowaTryb) city.budowaTryb = DEFAULT_BUDOWA_TRYB;
+  const buf = readCityFoodBuffer(city.magazynZywnosci);
+  if (city.magazynZywnosci !== buf) city.magazynZywnosci = buf;
 }
 
 export interface City {
@@ -129,6 +149,10 @@ export interface City {
   okolicaTryb?: OkolicaTryb;
   /** Ręczne przypisanie: "q,r" → liczba 👤 (0|1). */
   okolicaReczne?: Record<string, number>;
+  /** Profil auto-kolejki budynków (panel Produkcja). */
+  budowaFocus?: BudowaFocus;
+  /** auto | reczny — ręczny wybór budynków w kolejce. */
+  budowaTryb?: BudowaTryb;
   /** B2-Q12=C: tury grace przed rebelią AI (null = brak). */
   revoltGraceRemaining?: number | null;
   /** Miasto pod kontrolą rebeliantów. */
@@ -148,7 +172,7 @@ export interface City {
   manpower?: number;
   /** F-CITY-HEX: plony centrum sprzed wyczyszczenia hexu (nakładka/ulepszenie/złoże). */
   centerWorkedTile?: import('./economy').WorkedTile;
-  /** Startowe miasto-państwo (Sparta/Kapua) — founding: min 3 hex zamiast 5. */
+  /** Startowe miasto-państwo (Sparta/Kapua) — founding: min 3 hex; UI: dopisek „· miasto-państwo”. */
   startCityState?: boolean;
 }
 
@@ -266,6 +290,10 @@ const CITY_NAMES: readonly string[] = [
   'Tyr',
 ];
 
+/**
+ * @deprecated Użyj pickNextRegularCityName / suggestPlayerFoundCityName z civ-names.
+ * Zachowane dla foundCityFromVillage — suffix generyczny.
+ */
 export function cityName(index: number): string {
   if (index >= 0 && index < CITY_NAMES.length) {
     return CITY_NAMES[index] as string;

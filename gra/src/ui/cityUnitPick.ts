@@ -81,7 +81,7 @@ export function hideCityUnitPick(): void {
 }
 
 export function isCityUnitPickOpen(): boolean {
-  return root !== null;
+  return root !== null && root.isConnected;
 }
 
 export function showCityUnitPick(opts: CityUnitPickOptions): void {

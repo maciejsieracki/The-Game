@@ -8,8 +8,10 @@
  * Panel v1.0 = podgląd + audiencja (D3). Callbacki wpina SILNIK.
  */
 import type { CivBonusLite } from '../game/production';
+import { formatEntityDisplayName } from '../game/display-names';
 import {
   civPennantHtml,
+  civPennantHtmlById,
   DIPLO_1E_SHARED_CSS,
   dipBrandIconHtml,
   ensureDiploBrandScope,
@@ -30,6 +32,8 @@ export interface DiploRelation {
   ownerId?: number;
   /** Nazwa wyświetlana (miasto rywala klastra lub nacja). */
   civ: string;
+  /** Miasto-państwo klastra — silnik ustawia flagę; UI formatuje przez display-names. */
+  isCityState?: boolean;
   /** Uproszczony klaster vs pełna dyplomacja obcego typu. */
   layer?: DiplomacyLayerMode;
   /** Dozwolone akcje w tej warstwie (podgląd v1). */
@@ -50,6 +54,10 @@ export interface DiploRelation {
   respekt?: number;
   /** D3 audiencja — formalny kontakt nawiązany (D3-Q2A). */
   contactEstablished?: boolean;
+  /** ikonaId nacji (z silnika). */
+  ikonaId?: string;
+  /** kolorHex nacji (#RRGGBB). */
+  kolorHex?: string;
 }
 
 /** Wojna między dwiema cywilizacjami (wywiad) — A1-Q5; nie musi dotyczyć gracza. */
@@ -181,11 +189,11 @@ ${DIPLO_1E_SHARED_CSS}
 // ---------------------------------------------------------------------------
 
 const PLACEHOLDER_RELATIONS: DiploRelation[] = [
-  { civ: 'Spartanie',  tier: 0, zaufanie: 3,  respekt: 70 },  // Wojna (STAN)
-  { civ: 'Hunowie',    tier: 1, zaufanie: 12, respekt: 50 },  // Wrogi
-  { civ: 'Chińczycy',  tier: 2, zaufanie: 50, respekt: 30 },  // Neutralny (start = 50)
-  { civ: 'Grecy',      tier: 3, zaufanie: 65, respekt: 40 },  // Przyjazny
-  { civ: 'Egipcjanie', tier: 4, zaufanie: 90, respekt: 55 },  // Sojusz
+  { civ: formatEntityDisplayName({ baseName: 'Sparta', isCityState: true }), isCityState: true, tier: 0, zaufanie: 3,  respekt: 70 },
+  { civ: 'Hunowie',    tier: 1, zaufanie: 12, respekt: 50 },
+  { civ: 'Chińczycy',  tier: 2, zaufanie: 50, respekt: 30 },
+  { civ: 'Grecy',      tier: 3, zaufanie: 65, respekt: 40 },
+  { civ: 'Egipcjanie', tier: 4, zaufanie: 90, respekt: 55 },
 ];
 
 // ---------------------------------------------------------------------------
@@ -221,7 +229,9 @@ function renderRow(rel: DiploRelation, isPlaceholder: boolean): string {
     ? '<div class="cd-stats">' + esc(statsParts.join(' · ')) + '</div>'
     : '';
   const rowCls = rel.tier === 0 ? 'cd-row cd-war' : 'cd-row';
-  const pennant = civPennantHtml(rel.civ, rel.tier);
+  const pennant = rel.ikonaId
+    ? civPennantHtmlById(rel.ikonaId, rel.kolorHex, rel.tier)
+    : civPennantHtml(rel.civ, rel.tier);
   return (
     '<div class="' + rowCls + '" data-owner="' + (rel.ownerId ?? '') + '">' +
       pennant +

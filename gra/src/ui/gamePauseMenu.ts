@@ -73,11 +73,12 @@ export function showGamePauseMenu(): void {
   const icLoad = menuIconSvg('menu-load', 20);
   const icNew = menuIconSvg('menu-play', 20);
   const icMain = brandIconSvg('ui-menu', 20);
+  const icResume = menuIconSvg('menu-play', 20);
   box.innerHTML =
     '<h2>Menu gry</h2>' +
     '<p class="civ-pause-sub">Gra jest wstrzymana. Wybierz akcję lub wróć do rozgrywki.</p>' +
     '<div class="civ-pause-btns">' +
-    '<button type="button" class="civ-pause-primary" data-act="resume">Wróć do gry</button>' +
+    '<button type="button" class="civ-pause-primary" data-act="resume"><span class="civ-pause-ic">' + icResume + '</span> Wróć do gry</button>' +
     '<button type="button" data-act="save"><span class="civ-pause-ic">' + icSave + '</span> Zapisz grę</button>' +
     '<button type="button" data-act="load"' + (hasSave ? '' : ' disabled title="Brak zapisu"') + '><span class="civ-pause-ic">' + icLoad + '</span> Wczytaj grę</button>' +
     '<button type="button" data-act="new"><span class="civ-pause-ic">' + icNew + '</span> Rozpocznij nową grę</button>' +

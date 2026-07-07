@@ -83,14 +83,21 @@
       "normal": -1,
       "hard": -1.25,
       "jednostka": "pkt Zdrowia",
-      "opis": "Kara Zdrowia gdy bagno lub dżungla w promieniu miasta (choroby, komary). [PT]"
+      "opis": "Kara Zdrowia gdy bagno w promieniu okolicy miasta (choroby, komary). Nie dotyczy lasu. [PT]"
+    },
+    "zdrowie_bonus_las": {
+      "easy": 2,
+      "normal": 1,
+      "hard": 0,
+      "jednostka": "pkt Zdrowia",
+      "opis": "Bonus Zdrowia gdy w promieniu okolicy miasta jest co najmniej jeden heks z nakładką Las (świeże powietrze, zasoby leśne). [PT]"
     },
     "zdrowie_kara_dzungla": {
       "easy": -0.75,
       "normal": -1,
       "hard": -1.25,
       "jednostka": "pkt Zdrowia",
-      "opis": "Kara Zdrowia za dżunglę w pobliżu (wilgoć, choroby tropikalne). [PT — do strojenia]"
+      "opis": "REZERWA — kara za prawdziwą dżunglę (osobna nakładka klimatyczna). Nakładka Las używa zdrowie_bonus_las, nie tej kary. [PT]"
     },
     "zdrowie_kara_zanieczyszczenie": {
       "easy": -0.75,
@@ -187,21 +194,21 @@
     },
     "szczescie_bonus_osiedle_pop": {
       "easy": [
+        5,
+        4,
+        3,
+        2
+      ],
+      "normal": [
         4,
         3,
         2,
         1
       ],
-      "normal": [
-        3,
+      "hard": [
+        2,
         2,
         1,
-        0
-      ],
-      "hard": [
-        1,
-        1,
-        0,
         0
       ],
       "jednostka": "pkt Zadowolenia",
@@ -215,23 +222,23 @@
       "opis": "D18-4 A+C: pierwsze miasto gracza na easy, T1–10."
     },
     "szczescie_kara_wielkosc_miasta": {
-      "easy": -0.75,
-      "normal": -1,
-      "hard": -1.25,
+      "easy": -0.5,
+      "normal": -0.75,
+      "hard": -1,
       "jednostka": "pkt/1 ludności",
       "opis": "Kara Zadowolenia za każdy punkt populacji powyżej progu zagęszczenia (zagęszczenie → niezadowolenie). [PT]"
     },
     "szczescie_prog_zagęszczenia": {
-      "easy": 5,
-      "normal": 4,
-      "hard": 3,
+      "easy": 6,
+      "normal": 5,
+      "hard": 4,
       "jednostka": "ludność",
       "opis": "Próg zagęszczenia dla szczęścia — poniżej tej liczby mieszkańców kara zagęszczenia nie jest naliczana. [PT]"
     },
     "szczescie_kara_wojna": {
-      "easy": -2,
-      "normal": -3,
-      "hard": -4,
+      "easy": -1,
+      "normal": -2,
+      "hard": -3,
       "jednostka": "pkt Zadowolenia",
       "opis": "Kara Zadowolenia w czasie stanu wojennego (zmęczenie wojną — dotyczy całej cywilizacji). [PT]"
     },
@@ -336,9 +343,9 @@
   },
   "kultura": {
     "kultura_palac": {
-      "easy": 5,
-      "normal": 4,
-      "hard": 3,
+      "easy": 8,
+      "normal": 6,
+      "hard": 5,
       "jednostka": "Kultura/turę",
       "opis": "Produkcja kultury z Pałacu (stolica cywilizacji). [PT — do strojenia]"
     },
@@ -655,15 +662,15 @@
       "opis": "Waga Prawa w Porządku (D18-A: hard 45/55)."
     },
     "porzadek_prog_bunt_skrajny_pct": {
-      "easy": 5,
-      "normal": 8,
-      "hard": 10,
+      "easy": 6,
+      "normal": 12,
+      "hard": 14,
       "jednostka": "% PorPct",
       "opis": "Próg wejścia w Bunt skrajny (B2-D18). Poniżej → grace B2-Q12."
     },
     "porzadek_grace_tur_bunt": {
-      "easy": 3,
-      "normal": 2,
+      "easy": 4,
+      "normal": 3,
       "hard": 2,
       "jednostka": "tur",
       "opis": "Tury bez rebelii po wejściu w strefę krytyczną (B2-D18)."
@@ -718,9 +725,9 @@
       "opis": "Kara tempa wzrostu populacji w niepokoju (Porządek < T1). Mnożnik = max(0, 1 + wartość). [PT — do strojenia]"
     },
     "porzadek_ryzyko_buntu_t1": {
-      "easy": 0.05,
-      "normal": 0.05,
-      "hard": 0.08,
+      "easy": 0.03,
+      "normal": 0.03,
+      "hard": 0.05,
       "jednostka": "prawdopodobieństwo/turę",
       "opis": "Ryzyko migracji buntu na turę w niepokoju (B2-Q6=C: ~5% normal). Engine losuje migrację −1/+1 pop w imperium. [PT]"
     },
@@ -755,25 +762,32 @@
       "opis": "Max jednostek liczonych do Prawa (5 → PrawPct≈100%)."
     },
     "prawo_ratusz": {
-      "easy": 4,
-      "normal": 3,
-      "hard": 2,
+      "easy": 8,
+      "normal": 6,
+      "hard": 4,
       "jednostka": "pkt Prawa",
       "opis": "Bonus Prawa z Ratusza (gdy wpięty w budynki)."
     },
     "prawo_pretorium": {
-      "easy": 3,
-      "normal": 2,
-      "hard": 1,
+      "easy": 6,
+      "normal": 5,
+      "hard": 3,
       "jednostka": "pkt Prawa",
       "opis": "Bonus Prawa z Pretorium."
     },
     "prawo_sad": {
-      "easy": 3,
-      "normal": 2,
-      "hard": 1,
+      "easy": 6,
+      "normal": 5,
+      "hard": 3,
       "jednostka": "pkt Prawa",
       "opis": "Bonus Prawa z Sądu."
+    },
+    "prawo_palac": {
+      "easy": 45,
+      "normal": 35,
+      "hard": 28,
+      "jednostka": "pkt Prawa",
+      "opis": "Pałac — główne źródło Prawa (≈1,75× jednostka garnizonu; PT 2026-07)."
     },
     "prawo_kara_brak_garnizonu": {
       "easy": -1,
@@ -791,22 +805,22 @@
     },
     "prawo_bonus_osiedle_pop": {
       "easy": [
-        9,
-        7,
-        5,
-        3
+        32,
+        24,
+        16,
+        10
       ],
       "normal": [
-        7,
-        5,
-        3,
-        1
+        28,
+        20,
+        14,
+        8
       ],
       "hard": [
-        5,
-        3,
-        2,
-        1
+        22,
+        16,
+        10,
+        6
       ],
       "jednostka": "pkt Prawa",
       "opis": "D-START-OSIEDLE: bonus Prawa pop 1→4. Cel PorPct T1 pop=1: easy ~75%, normal ~55%, hard ~35% (kult+rel)."

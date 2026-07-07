@@ -61,6 +61,12 @@ export interface MinimapPlaytestFogHooks {
   isLandReveal: () => boolean;
 }
 
+/** E-map-worker-overlay: toggle podglądu robotników na mapie świata. */
+export interface MinimapWorkerOverlayHooks {
+  onToggleWorkers?: () => void;
+  isWorkersActive?: () => boolean;
+}
+
 export interface MinimapHudConfig {
   /** Pobierz dane mapy; null = placeholder. */
   getMinimapData: () => MinimapData | null;
@@ -70,6 +76,8 @@ export interface MinimapHudConfig {
   layers?: MinimapLayerHooks;
   /** Playtest/dev: batony F/M (tylko gdy przekazane — brak w produkcji). */
   playtestFog?: MinimapPlaytestFogHooks;
+  /** Toggle ikon 👤 — pola z robotnikami na mapie świata. */
+  workerOverlay?: MinimapWorkerOverlayHooks;
   width?: number;
   height?: number;
 }
@@ -295,6 +303,7 @@ export function createMinimapHud(config: MinimapHudConfig): MinimapHudApi {
 
   let mapBtn: HTMLButtonElement | null = null;
   let searchBtn: HTMLButtonElement | null = null;
+  let workerBtn: HTMLButtonElement | null = null;
   let fogFullBtn: HTMLButtonElement | null = null;
   let landRevealBtn: HTMLButtonElement | null = null;
   let fogToolsSep: HTMLDivElement | null = null;
@@ -333,6 +342,17 @@ export function createMinimapHud(config: MinimapHudConfig): MinimapHudApi {
   function ensureToolButtons(): void {
     ensurePlaytestFogButtons();
     const L = config.layers;
+    const W = config.workerOverlay;
+    if (W?.onToggleWorkers && !workerBtn) {
+      workerBtn = document.createElement('button');
+      workerBtn.type = 'button';
+      workerBtn.className = 'mini-tool-btn';
+      workerBtn.title = 'Pokaż robotników w terenie';
+      workerBtn.textContent = '👤';
+      workerBtn.style.fontSize = '18px';
+      workerBtn.onclick = () => W.onToggleWorkers?.();
+      tools.appendChild(workerBtn);
+    }
     if (!mapBtn) {
       const mapSvg = brandIconSvg('chip-map', 24) || '';
       mapBtn = document.createElement('button');
@@ -366,6 +386,7 @@ export function createMinimapHud(config: MinimapHudConfig): MinimapHudApi {
     }
     if (mapBtn) mapBtn.classList.toggle('on', L?.isCultureActive?.() ?? false);
     if (searchBtn) searchBtn.classList.toggle('on', L?.isReligionActive?.() ?? false);
+    if (workerBtn) workerBtn.classList.toggle('on', W?.isWorkersActive?.() ?? false);
   }
 
   let canvas: HTMLCanvasElement | null = null;

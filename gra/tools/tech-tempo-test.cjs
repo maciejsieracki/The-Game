@@ -6,13 +6,7 @@
  * Self-contained: bundles tech-tempo.ts with esbuild to a temp CJS file,
  * then requires it and runs assertions. No DOM, no THREE.
  *
- * Covers:
- *   - szybka = x0.2 (round)
- *   - dluga = x5.0 (round)
- *   - standardowa = x1.0 (no change)
- *   - mnoznik liczbowy (numeric tempo arg)
- *   - zaokraglanie (Math.round)
- *   - minimum 1 (even for tiny base cost * small multiplier)
+ * Maciej 2026-07-07: szybka x1, standardowa x2, dluga x4 (bazowy koszt = szybki).
  */
 
 const fs   = require('fs');
@@ -71,28 +65,29 @@ function eq(a, b, msg) {
 // --- tests -----------------------------------------------------------------
 console.log('\n[tech-tempo-test] Uruchamiam testy...\n');
 
-// 1. szybka = divide by 5 (x0.2)
-eq(applyTempoKoszt(100, 'szybka'), 20, 'szybka x0.2: 100 -> 20');
+// Obróbka drewna — bazowy koszt 12 PN (Maciej 2026-07-07)
+eq(applyTempoKoszt(12, 'szybka'), 12, 'szybka x1: 12 -> 12');
+eq(applyTempoKoszt(12, 'standardowa'), 24, 'standardowa x2: 12 -> 24');
+eq(applyTempoKoszt(12, 'dluga'), 48, 'dluga x4: 12 -> 48');
 
-// 2. dluga = multiply by 5 (x5.0)
-eq(applyTempoKoszt(100, 'dluga'), 500, 'dluga x5.0: 100 -> 500');
+// Ogolne progi
+eq(applyTempoKoszt(100, 'szybka'), 100, 'szybka x1: 100 -> 100');
+eq(applyTempoKoszt(100, 'standardowa'), 200, 'standardowa x2: 100 -> 200');
+eq(applyTempoKoszt(100, 'dluga'), 400, 'dluga x4: 100 -> 400');
 
-// 3. standardowa = x1.0, no change
-eq(applyTempoKoszt(100, 'standardowa'), 100, 'standardowa x1.0: 100 -> 100');
-
-// 4. mnoznik liczbowy (numeric tempo arg)
+// mnoznik liczbowy
 eq(applyTempoKoszt(50, 2.5), 125, 'mnoznik liczbowy 2.5: 50 -> 125');
 
-// 5. zaokraglanie (Math.round): 45 * 0.2 = 9.0, 48 * 0.2 = 9.6 -> 10
-eq(applyTempoKoszt(48, 'szybka'), 10, 'zaokraglanie: round(48*0.2=9.6) -> 10');
+// zaokraglanie
+eq(applyTempoKoszt(7, 'standardowa'), 14, 'zaokraglanie: round(7*2) -> 14');
 
-// 6. minimum 1: very small cost * szybka
-eq(applyTempoKoszt(1, 'szybka'), 1, 'minimum 1: round(1*0.2=0.2) -> min 1');
+// minimum 1
+eq(applyTempoKoszt(1, 'szybka'), 1, 'minimum 1: 1*1 -> 1');
 
 // Extra: verify TEMPO_GRY constants
-eq(TEMPO_GRY.szybka, 0.2, 'TEMPO_GRY.szybka === 0.2');
-eq(TEMPO_GRY.standardowa, 1.0, 'TEMPO_GRY.standardowa === 1.0');
-eq(TEMPO_GRY.dluga, 5.0, 'TEMPO_GRY.dluga === 5.0');
+eq(TEMPO_GRY.szybka, 1.0, 'TEMPO_GRY.szybka === 1.0');
+eq(TEMPO_GRY.standardowa, 2.0, 'TEMPO_GRY.standardowa === 2.0');
+eq(TEMPO_GRY.dluga, 4.0, 'TEMPO_GRY.dluga === 4.0');
 
 // --- summary ---------------------------------------------------------------
 console.log(`\n[tech-tempo-test] Wyniki: ${passed} zaliczone, ${failed} niezaliczone`);

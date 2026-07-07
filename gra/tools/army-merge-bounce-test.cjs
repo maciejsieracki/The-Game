@@ -9,8 +9,8 @@ const BUNDLE = path.join(__dirname, '.army-merge-bounce-bundle.cjs');
 
 fs.writeFileSync(
   ENTRY,
-  `import { findBounceHexFromOrigin } from '../src/game/armyMerge';
-export { findBounceHexFromOrigin };`,
+  `import { findBounceHexFromOrigin, assignBounceHexesForUnits } from '../src/game/armyMerge';
+export { findBounceHexFromOrigin, assignBounceHexesForUnits };`,
 );
 
 esbuild.buildSync({
@@ -22,7 +22,7 @@ esbuild.buildSync({
   logLevel: 'silent',
 });
 
-const { findBounceHexFromOrigin } = require(BUNDLE);
+const { findBounceHexFromOrigin, assignBounceHexesForUnits } = require(BUNDLE);
 
 let pass = 0;
 let fail = 0;
@@ -49,6 +49,21 @@ const land2 = new Set(['4,5', '5,5']);
 const isLand2 = (q, r) => land2.has(q + ',' + r);
 b = findBounceHexFromOrigin(units, 5, 5, 'move', isLand2);
 assert(b && b.q === 4 && b.r === 5, 'bounce to only land neighbor, got ' + (b ? b.q + ',' + b.r : 'null'));
+
+const multi = assignBounceHexesForUnits(
+  [
+    { id: 'a', ownerId: 0, q: 5, r: 5 },
+    { id: 'b', ownerId: 0, q: 5, r: 5 },
+    { id: 'stay', ownerId: 0, q: 5, r: 5 },
+  ],
+  4,
+  5,
+  ['a', 'b'],
+  isLand,
+);
+const bSpot = multi.get('b');
+assert(multi.get('a')?.q === 4 && multi.get('a')?.r === 5, 'multi bounce a -> 4,5');
+assert(bSpot != null && !(bSpot.q === 4 && bSpot.r === 5), 'multi bounce b -> inny heks');
 
 console.log('army-merge-bounce-test: ' + pass + ' pass, ' + fail + ' fail');
 process.exit(fail > 0 ? 1 : 0);

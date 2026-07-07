@@ -991,7 +991,10 @@ function renderLandRiversFromPaths(
   riverMouthY: number,
   surfaceOffset: number,
   mainHalfWidth: number,
-  landRiverBucket: RiverGeoBucket,
+  scene: THREE.Scene,
+  riverEntries: RiverEntry[],
+  riverMat: THREE.Material,
+  renderOrder: number,
 ): Set<string> {
   const landHexKeys = new Set<string>();
 
@@ -1017,7 +1020,12 @@ function renderLandRiversFromPaths(
     );
     if (pts.length < 2) continue;
 
-    pushRiverMesh(landRiverBucket, pts, hexKeys, halfWidth, 8, true);
+    // Jedna trasa = jeden wpis fog (nie scalać wszystkich rzek mapy w jeden mesh).
+    const pathBucket: RiverGeoBucket = {
+      mat: riverMat, geos: [], hexKeys: new Set(), renderOrder,
+    };
+    pushRiverMesh(pathBucket, pts, hexKeys, halfWidth, 8, true);
+    flushRiverBucket(scene, pathBucket, riverEntries);
     for (const k of hexKeys) landHexKeys.add(k);
   }
   return landHexKeys;
@@ -1877,39 +1885,14 @@ export async function buildScene(
   const RIVER_MAIN_HALF_WIDTH = R * 0.052;
   const RIVER_SURFACE_OFFSET   = riverSurfaceLiftY(R);
 
-  const landRiverBucket: RiverGeoBucket = {
-    mat: riverWaterMat,
-    geos: [],
-    hexKeys: new Set(),
-    renderOrder: 55,
-  };
+  const LAND_RIVER_RENDER_ORDER = 55;
   // B0.8b (Z1): wstęga ujścia RYSUJE SIĘ NAD capem Wybrzeża i nad lejkiem delty.
   // renderOrder 58 > land 55 > cap-overlay (0/1) i > lejek (coastDeltaBucket 50).
   const RIVER_MOUTH_RENDER_ORDER = 58;
-  const coastRiverBucket: RiverGeoBucket = {
-    mat: riverWaterMat,
-    geos: [],
-    hexKeys: new Set(),
-    renderOrder: RIVER_MOUTH_RENDER_ORDER,
-  };
-  // Szeroka, „deltowa” część wstęgi ujścia — kolor delty, ale renderOrder wstęgi (nad lejkiem).
-  const coastRiverDeltaTopBucket: RiverGeoBucket = {
-    mat: coastDeltaMat,
-    geos: [],
-    hexKeys: new Set(),
-    renderOrder: RIVER_MOUTH_RENDER_ORDER,
-  };
-  // Lejek estuary + dekor laguny — POD wstęgą (nie zasłania jej).
-  const coastDeltaBucket: RiverGeoBucket = {
-    mat: coastDeltaMat,
-    geos: [],
-    hexKeys: new Set(),
-    renderOrder: 50,
-  };
 
   const landHexKeysAll = renderLandRiversFromPaths(
     map, paths, pathKinds, R, renderStyle, riverMouthY, RIVER_SURFACE_OFFSET,
-    RIVER_MAIN_HALF_WIDTH, landRiverBucket,
+    RIVER_MAIN_HALF_WIDTH, scene, riverEntries, riverWaterMat, LAND_RIVER_RENDER_ORDER,
   );
   for (const k of landHexKeysAll) riverHexKeys.push(k);
 
@@ -1919,18 +1902,25 @@ export async function buildScene(
     if ((pathKinds[pi] ?? 'main') !== 'main') continue;
     // B0.7/B0.8: wstęga ujścia + lejek TYLKO gdy trasa realnie kończy w morzu (nie junction).
     if (pathReachesOpenSeaRender(map, path) && pathNearCoast(map, path)) {
+      const coastRiverBucket: RiverGeoBucket = {
+        mat: riverWaterMat, geos: [], hexKeys: new Set(), renderOrder: RIVER_MOUTH_RENDER_ORDER,
+      };
+      const coastRiverDeltaTopBucket: RiverGeoBucket = {
+        mat: coastDeltaMat, geos: [], hexKeys: new Set(), renderOrder: RIVER_MOUTH_RENDER_ORDER,
+      };
+      const coastDeltaBucket: RiverGeoBucket = {
+        mat: coastDeltaMat, geos: [], hexKeys: new Set(), renderOrder: 50,
+      };
       renderCoastalRiverExtension(
         map, path, R, riverMouthY,
         coastRiverBucket, coastRiverDeltaTopBucket, coastDeltaBucket,
         RIVER_MAIN_HALF_WIDTH, deltaHexKeys,
       );
+      flushRiverBucket(scene, coastDeltaBucket, riverEntries);
+      flushRiverBucket(scene, coastRiverBucket, riverEntries);
+      flushRiverBucket(scene, coastRiverDeltaTopBucket, riverEntries);
     }
   }
-
-  flushRiverBucket(scene, landRiverBucket, riverEntries);
-  flushRiverBucket(scene, coastDeltaBucket, riverEntries);
-  flushRiverBucket(scene, coastRiverBucket, riverEntries);
-  flushRiverBucket(scene, coastRiverDeltaTopBucket, riverEntries);
 
   // ---------------------------------------------------------------------------
   // F1 — ocean wokol kontynentu + ramka swiata (plansza)
@@ -2214,12 +2204,8 @@ export async function buildScene(
       if (!anyHiddenFinal) {
         entry.waterMesh.visible = true;
         entry.bankMesh.visible = true;
-      } else if (entry.merged) {
-        const show = entry.hexKeys.size > 0
-          && Array.from(entry.hexKeys).some(k => visible.has(k) || explored.has(k));
-        entry.waterMesh.visible = show;
-        entry.bankMesh.visible = show;
       } else {
+        // Ukryj wstęgę, gdy choć jeden hex trasy jest w czarnej mgle (unknown).
         const show = entry.hexKeys.size > 0
           && !Array.from(entry.hexKeys).some(k => isHidden(k));
         entry.waterMesh.visible = show;

@@ -2,10 +2,10 @@
   "drzewko_model": "liniowe",
   "_drzewko_model_opis": "B1-Q3 Maciej 2026-06-28 opcja B — oś w epoce wg Poziom + kolejność w tablicy; bramki AND bez zmian (research.ts).",
   "tempo_gry": {
-    "szybka": 0.2,
-    "standardowa": 1,
-    "dluga": 5,
-    "_opis": "Globalny mnoznik kosztu badan wybierany przy starcie gry. Stosuje sie do KAZDEGO 'Koszt nauki' w tablicy 'technologie' przez funkcje applyTempoKoszt() z gra/src/game/tech-tempo.ts. Przyklad: tech koszt=100, tempo szybka -> round(100*0.2)=20 pkt; dluga -> round(100*5.0)=500 pkt."
+    "szybka": 1,
+    "standardowa": 2,
+    "dluga": 4,
+    "_opis": "Globalny mnoznik kosztu badan wybierany przy starcie gry. Bazowe 'Koszt nauki' = tryb szybki (x1). applyTempoKoszt() z gra/src/game/tech-tempo.ts. Przyklad: tech koszt=12, szybka -> 12 PN; standardowa -> 24 PN; dluga -> 48 PN. Maciej 2026-07-07."
   },
   "technologie": [
     {

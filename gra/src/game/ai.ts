@@ -194,6 +194,12 @@ export interface AITurnOpts {
    * @see cluster-start.ts `typCityCopyOwners`
    */
   defensiveCopy?: boolean;
+  /**
+   * Faza 1 konsolidacji klastra (Maciej 2026-07-07): wrogie miasta-państwa
+   * tego samego typu w obrębie klastra — przejąć / wasalizować przed ekspansją.
+   * Silnik podaje cele startCityState z tego samego typu cywilizacji.
+   */
+  clusterStateTargets?: Array<{ ownerId: number; q: number; r: number }>;
 }
 
 /**
@@ -799,6 +805,13 @@ export function decideAITurn(
   const enemyUnits   = units.filter(u => u.ownerId !== playerId);
   const enemyCities  = cities.filter(c => c.ownerId !== playerId);
 
+  // Faza 1: konsolidacja własnego klastra (Maciej 2026-07-07) — przed ekspansją poza region.
+  const clusterTargetOwnerIds = new Set(
+    (opts.clusterStateTargets ?? []).map(t => t.ownerId),
+  );
+  const clusterConsolidationPhase = clusterTargetOwnerIds.size > 0;
+  const clusterEnemyCities = enemyCities.filter(c => clusterTargetOwnerIds.has(c.ownerId));
+
   // Archetype modifiers
   const archKeyRaw: string = opts.civType !== undefined
     ? (CIV_TO_ARCH[opts.civType] ?? 'grecy')
@@ -843,8 +856,14 @@ export function decideAITurn(
   for (const unit of sortedUnits) {
     const cmdsBefore = commands.length;
 
-    // Settlers
+    // Settlers — faza 2 dopiero po konsolidacji klastra
     if (isSettler(unit)) {
+      if (clusterConsolidationPhase) {
+        applyIdleFallback(unit, map, myCities, units, commands);
+        if (commands.length > cmdsBefore) unitActed.add(unit.id);
+        continue;
+      }
+
       const { ok: canFound } = canFoundCity(unit.q, unit.r, cities, map);
       if (canFound) {
         commands.push({ type: 'foundCity', unitId: unit.id });
@@ -883,7 +902,9 @@ export function decideAITurn(
     }
 
     // 4b: adjacent enemy city -> move onto it (engine handles capture)
-    const adjacentEnemyCity = enemyCities.find(
+    const adjacentEnemyCity = (clusterConsolidationPhase ? clusterEnemyCities : enemyCities).find(
+      ec => isAdjacent(unit.q, unit.r, ec.q, ec.r),
+    ) ?? enemyCities.find(
       ec => isAdjacent(unit.q, unit.r, ec.q, ec.r),
     );
     if (adjacentEnemyCity !== undefined) {
@@ -892,19 +913,18 @@ export function decideAITurn(
       continue;
     }
 
-    // 4c: march toward nearest enemy city (§8d dominacja -- destroy all enemy cities)
-    // celObranie > 0: prefer weaker/easier target (T4=B spryt AI)
+    // 4c: march toward enemy city — faza 1: najpierw państwa w klastrze, potem reszta
+    const citiesForMarch = clusterConsolidationPhase && clusterEnemyCities.length > 0
+      ? clusterEnemyCities
+      : enemyCities;
     const targetCity = (() => {
-      if (enemyCities.length === 0) return undefined;
+      if (citiesForMarch.length === 0) return undefined;
       if (difficultyParams.celObranie <= 0) {
-        // poziom1: present behaviour — closest city
-        return nearest(unit.q, unit.r, enemyCities, c => c.q, c => c.r);
+        return nearest(unit.q, unit.r, citiesForMarch, c => c.q, c => c.r);
       }
-      // poziom2/3: score = -dist + celObranie * (1/max(population,1)) * 20
-      // Prefer closer and/or lower-population cities.
       let bestScore = -Infinity;
-      let bestCity: typeof enemyCities[0] | undefined;
-      for (const ec of enemyCities) {
+      let bestCity: typeof citiesForMarch[0] | undefined;
+      for (const ec of citiesForMarch) {
         const dist = hexDistance(unit.q, unit.r, ec.q, ec.r);
         const popPenalty = difficultyParams.celObranie * (10 / Math.max((ec as { population?: number }).population ?? 2, 1));
         const score = -dist + popPenalty;
@@ -1090,6 +1110,7 @@ function findSettlerTarget(
     let score = hexCityScore(hex, q, r, data, enemyCities);
 
     // pkt3: cluster bias — prefer hexes inside clusterCenter+clusterRadius
+    // Faza 2: po konsolidacji klastra — nadal preferuj wnętrze regionu.
     if (opts.clusterCenter !== undefined && opts.clusterRadius !== undefined) {
       const distToCenter = hexDistance(q, r, opts.clusterCenter.q, opts.clusterCenter.r);
       if (distToCenter <= opts.clusterRadius) {

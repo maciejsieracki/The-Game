@@ -33,8 +33,16 @@
  *           NIE schodzi z netto miasta (advanceEmpireFood + zapasy państwa).
  */
 
-import type { GameMap } from '../types/map';
+import {
+  type WzrostLudnosciPace,
+} from './population-growth-tempo';
+import {
+  applyPopulationGrowthThreshold,
+  getPopulationGrowthThresholdMultiplier,
+  type GameDifficulty,
+} from './difficulty-cost';
 import type { Hex } from '../types/hex';
+import type { GameMap } from '../types/map';
 import { Nakladka, TerenBazowy } from '../types/hex';
 import type { GameData } from '../data/loader';
 import type { City } from './cities';
@@ -57,6 +65,7 @@ import { cityManpowerMax, refreshManpowerAfterPopChange, tickManpowerRegen, civM
 import {
   loadStorageParams,
   foodStorageCapacity,
+  readCityFoodBuffer,
   resourceStorageCapacityPerType,
   loadUpkeepParams,
   buildUnitUpkeepTable,
@@ -65,6 +74,7 @@ import {
   type UnitFoodLike,
   type UnitUpkeepLike,
   type UpkeepBalance,
+  type StorageParams,
 } from './economy-upkeep';
 import {
   runConverters,
@@ -86,11 +96,13 @@ import {
   assignWorkedTiles,
   cityRangeForPopulation,
   resolveWorkedTiles,
+  rebalanceWorkersAfterPopulationChange,
   type TileYield as OkolicaTileYield,
 } from './okolica';
 import type { OrderYieldMults } from './order';
 import { getEmpireFoodSplit } from './empire-food';
 import { pickOsiedlePopBonus, osiedlePopLabel } from './society-breakdown';
+import { hexDistance } from '../units/setup';
 
 /** Stosuje mnożniki Porządku na plony (B2-Q6) — przed Wealth i splitPraca. */
 function applyOrderYieldMults(
@@ -143,7 +155,8 @@ export function buildEconParams(data: GameData, difficulty: Difficulty = 'normal
   return {
     progWzrostuWspolczynnik:        num(em, 'próg_wzrostu_wspolczynnik', 8),
     spichlerzZachowaniePoPrzroscie: num(em, 'spichlerz_zachowanie_po_wzroscie', 0.5),
-    akweduktProgLudnosci:           num(em, 'akwedukt_prog_ludnosci', 6),
+    akweduktProgLudnosci:           num(em, 'akwedukt_prog_ludnosci', 5),
+    akweduktMaxLudnosci:            num(em, 'akwedukt_max_ludnosci', 15),
     zywnoscZuzytkaPopulacja:        num(em, 'zywnosc_zuzytka_populacja', 1),
     zdrowieModyfikatorWspolczynnik: num(em, 'zdrowie_modyfikator_wspolczynnik', 0.05),
     korupcjaWspolczynnikDystansu:   num(em, 'korupcja_wspolczynnik_dystansu', 2),
@@ -183,9 +196,41 @@ interface HealthParams {
   osiedlePopBonus:  (pop: number) => number;
   karaZagoszczenie: number;  // kara/1 pop > prog (ujemna)
   progZagoszczenia: number;  // prog populacji dla zagoszczenia
-  karaBagno:        number;  // kara: bagno w okolicy (ujemna)
-  karaDzungla:      number;  // kara: dzungla (Nakladka.Las traktowana jako las -- brak Dzungla w v0.1)
+  karaBagno:        number;  // kara: bagno w okolicy (ujemna; teren 'bagno' — gdy dodany)
+  bonusLas:         number;  // bonus: las (Nakladka.Las) w promieniu okolicy miasta
+  karaDzungla:      number;  // rezerwa: prawdziwa dżungla (osobna nakładka — nie Las)
   karaBrakWody:     number;  // kara: brak rzeki+studni+akweduktu (ujemna)
+}
+
+/** Kontekst mapy do zdrowia: woda (D17-A) + skan okolicy (las/bagno). */
+export interface CityHealthMapContext {
+  city: Pick<City, 'q' | 'r' | 'population'>;
+  map: GameMap;
+}
+
+interface CityVicinityTerrain {
+  hasLas: boolean;
+  hasBagno: boolean;
+}
+
+/** Skan heksów w promieniu okolicy miasta pod modyfikatory zdrowia terenu. */
+function scanCityVicinityTerrain(ctx: CityHealthMapContext): CityVicinityTerrain {
+  const radius = cityRangeForPopulation(ctx.city.population);
+  let hasLas = false;
+  let hasBagno = false;
+  for (const key of Object.keys(ctx.map.hexes)) {
+    const hex = ctx.map.hexes[key];
+    if (!hex) continue;
+    const [qs, rs] = key.split(',');
+    const q = hex.coords?.q ?? Number(qs);
+    const r = hex.coords?.r ?? Number(rs);
+    if (!Number.isFinite(q) || !Number.isFinite(r)) continue;
+    if (hexDistance(ctx.city.q, ctx.city.r, q, r) > radius) continue;
+    if (!hasLas && hex.nakladka === Nakladka.Las) hasLas = true;
+    if (!hasBagno && (hex.terenBazowy as string) === 'bagno') hasBagno = true;
+    if (hasLas && hasBagno) break;
+  }
+  return { hasLas, hasBagno };
 }
 
 /**
@@ -224,6 +269,7 @@ function loadHealthParams(
     karaZagoszczenie: rd('zdrowie_kara_zagęszczenie', -1),
     progZagoszczenia,
     karaBagno:        rd('zdrowie_kara_bagno', -1),
+    bonusLas:         rd('zdrowie_bonus_las', 1),
     karaDzungla:      rd('zdrowie_kara_dzungla', -1),
     karaBrakWody:     rd('zdrowie_kara_brak_wody', -2),
   };
@@ -266,6 +312,7 @@ function computeCityHealth(
   builtIds: readonly string[],
   hp: HealthParams,
   hasWaterAccess?: boolean,
+  mapCtx?: CityHealthMapContext,
 ): number {
   let z = 0;
 
@@ -301,6 +348,13 @@ function computeCityHealth(
   // Kara brak wody
   if (!maRzeke && !maStudnie && !maAkwedukt) z += hp.karaBrakWody;
 
+  // Okolica: las = bonus zdrowia; bagno = kara (gdy teren istnieje na mapie)
+  if (mapCtx) {
+    const vicinity = scanCityVicinityTerrain(mapCtx);
+    if (vicinity.hasLas) z += hp.bonusLas;
+    if (vicinity.hasBagno) z += hp.karaBagno;
+  }
+
   return Math.round(z);  // zwracamy integer (pkt zdrowia)
 }
 
@@ -320,13 +374,13 @@ export function computeCityHealthBreakdown(
   builtIds: readonly string[],
   societyRaw: unknown,
   difficulty: Difficulty,
-  waterCtx?: { city: Pick<City, 'q' | 'r'>; map: GameMap },
+  mapCtx?: CityHealthMapContext,
 ): { total: number; lines: CityHealthLine[] } {
   const hp = loadHealthParams(societyRaw, difficulty);
   const lines: CityHealthLine[] = [];
 
-  const hasWaterAccess = waterCtx
-    ? cityHasWaterAccess(waterCtx.city, waterCtx.map)
+  const hasWaterAccess = mapCtx
+    ? cityHasWaterAccess(mapCtx.city, mapCtx.map)
     : undefined;
 
   let maRzeke = hasWaterAccess === true;
@@ -360,7 +414,13 @@ export function computeCityHealthBreakdown(
     lines.push({ label: 'Brak wody', value: hp.karaBrakWody });
   }
 
-  const total = computeCityHealth(ludnosc, tiles, builtIds, hp, maRzeke);
+  if (mapCtx) {
+    const vicinity = scanCityVicinityTerrain(mapCtx);
+    if (vicinity.hasLas) lines.push({ label: 'Las w okolicy', value: hp.bonusLas });
+    if (vicinity.hasBagno) lines.push({ label: 'Bagno w okolicy', value: hp.karaBagno });
+  }
+
+  const total = computeCityHealth(ludnosc, tiles, builtIds, hp, maRzeke, mapCtx);
   return { total, lines };
 }
 
@@ -484,7 +544,7 @@ export function toEconomyCity(
     czyStolica:      isCapital,
     maSpichlerz:     buildings.maSpichlerz ?? false,
     maAkwedukt:      buildings.maAkwedukt ?? false,
-    magazynZywnosci: city.magazynZywnosci ?? 0,
+    magazynZywnosci: readCityFoodBufferFromCity(city),
     specjalisci:     [],
     kolejkaProdukcji: [],
     podziałHandlu: normalizePodzialHandlu(city.podzialHandlu ?? {
@@ -503,6 +563,42 @@ export function toEconomyCity(
 // ---------------------------------------------------------------------------
 
 /**
+ * Bufor wzrostu (magazynZywnosci) — skalar >= 0 (patrz readCityFoodBuffer w economy-upkeep).
+ */
+export function readCityFoodBufferFromCity(city: Pick<City, 'magazynZywnosci'>): number {
+  return readCityFoodBuffer(city.magazynZywnosci);
+}
+
+/** Próg bufora wzrostu: (10 + N × wsp.) × tempo kreatora × asymetria trudności. */
+export function growthFoodThreshold(
+  population: number,
+  params: EconParams,
+  pace: WzrostLudnosciPace = 'wysoki',
+  ownerId: number = 0,
+  difficulty: GameDifficulty = 'normal',
+): number {
+  const base = 10 + population * params.progWzrostuWspolczynnik;
+  return applyPopulationGrowthThreshold(base, ownerId, pace, difficulty);
+}
+
+/**
+ * Pojemność bufora wzrostu — co najmniej próg wzrostu, żeby cap < próg
+ * nie blokował wzrostu przy małym napływie żywności/turę.
+ */
+export function growthFoodStorageCap(
+  population: number,
+  maSpichlerz: boolean,
+  params: EconParams,
+  storageParams: StorageParams,
+  pace: WzrostLudnosciPace = 'wysoki',
+  ownerId: number = 0,
+  difficulty: GameDifficulty = 'normal',
+): number {
+  const base = foodStorageCapacity(maSpichlerz, storageParams);
+  return Math.max(base, growthFoodThreshold(population, params, pace, ownerId, difficulty));
+}
+
+/**
  * getCityFood -- zwraca biezacy zapas zywnosci miasta.
  * Pole magazynZywnosci na runtime City jest skalarem (number | undefined).
  * Brak pola = magazyn pusty (0).
@@ -510,7 +606,7 @@ export function toEconomyCity(
  * Uzycie przez UNITS/SILNIK: getCityFood(city) zamiast city.magazynZywnosci ?? 0.
  */
 export function getCityFood(city: City): number {
-  return city.magazynZywnosci ?? 0;
+  return readCityFoodBufferFromCity(city);
 }
 
 // ---------------------------------------------------------------------------
@@ -655,6 +751,9 @@ export interface EconUnit {
   camping: boolean;
 }
 
+export type OwnerEraResolver = (ownerId: number) => number;
+export type OwnerTechResolver = (ownerId: number) => ReadonlySet<string>;
+
 export function advanceCityEconomy(
   cities: City[],
   map: GameMap,
@@ -667,7 +766,11 @@ export function advanceCityEconomy(
   playerZbadane: ReadonlySet<string> = new Set(),
   ownerCivByOwnerId: ReadonlyMap<number, string> = new Map(),
   orderMultByCity: ReadonlyMap<string, OrderYieldMults> = new Map(),
+  resolveOwnerEra?: OwnerEraResolver,
+  resolveOwnerTech?: OwnerTechResolver,
+  wzrostLudnosciPace: WzrostLudnosciPace = 'wysoki',
 ): EconomyTickResult {
+  const gameDifficulty = difficulty as GameDifficulty;
   const params = buildEconParams(data, difficulty);
   const noBuildings: CityBuildingEntry[] = [];
 
@@ -730,13 +833,19 @@ export function advanceCityEconomy(
 
     // WIRE 1: oblicz zdrowie miasta (D17-A: dostęp do wody z mapy, nie tylko pól plonów)
     const hasWater = cityHasWaterAccess(city, map);
-    const zdrowie = computeCityHealth(city.population, worked, builtIds, healthParams, hasWater);
+    const zdrowie = computeCityHealth(city.population, worked, builtIds, healthParams, hasWater, { city, map });
 
     const maSpichlerz = builtIds.includes('spichlerz');
     const maAkwedukt  = builtIds.includes('akwedukt');
     const econCity = toEconomyCity(city, params, isCapital, zdrowie, { maSpichlerz, maAkwedukt });
 
-    const walutaOdkryta = playerZbadane.has('Waluta') || playerZbadane.has('waluta');
+    const ownerEra = resolveOwnerEra
+      ? resolveOwnerEra(city.ownerId)
+      : (city.ownerId === 0 ? playerEra : 1);
+    const ownerTech = resolveOwnerTech
+      ? resolveOwnerTech(city.ownerId)
+      : playerZbadane;
+    const walutaOdkryta = ownerTech.has('Waluta') || ownerTech.has('waluta');
     const ownerCivKey = ownerCivByOwnerId.get(city.ownerId);
     const walutaMnoznikOverride = walutaOdkryta && ownerCivKey
       ? mnoznikHandelPieniadzForCiv(ownerCivKey, data.civs, params.walutaMnoznik)
@@ -773,7 +882,7 @@ export function advanceCityEconomy(
       prevWealth,
       yld.luksus,      // spoleczMoney = strumien Luksus
       yld.pieniadz,    // miastoMoney  = pieniadz brutto tej tury
-      playerEra,
+      ownerEra,
       wealthParams,
       wealthImmunity ? { minPoziom: 1 } : undefined,
     );
@@ -865,14 +974,23 @@ export function advanceCityEconomy(
       ? zywnoscDoRozwoju * growthMult
       : zywnoscDoRozwoju;
 
-    const grow = populationGrowth(econCity, zywnoscDlaWzrostu, params);
+    const wzrostThresholdMult = getPopulationGrowthThresholdMultiplier(
+      city.ownerId,
+      wzrostLudnosciPace,
+      gameDifficulty,
+    );
+    const grow = populationGrowth(econCity, zywnoscDlaWzrostu, params, wzrostThresholdMult);
 
     const before = city.population;
 
     // --- write results back onto the runtime city ---
     city.population = grow.nowaLudnosc;
 
-    const ownerEpoka = city.ownerId === 0 ? playerEra : 1;
+    if (grow.nowaLudnosc !== before) {
+      rebalanceWorkersAfterPopulationChange(city, map, before, grow.nowaLudnosc);
+    }
+
+    const ownerEpoka = ownerEra;
     if (city.manpower === undefined) {
       city.manpower = cityManpowerMax(city.population, ownerEpoka);
     } else if (grow.nowaLudnosc !== before) {
@@ -885,8 +1003,12 @@ export function advanceCityEconomy(
       civManpowerRegenMult(ownerBonusy),
     );
 
-    // Clamp bufor wzrostu to capacity (s.7.1 -- surplus above cap is lost).
-    const foodCap = foodStorageCapacity(maSpichlerz, storageParams);
+    // Clamp bufor wzrostu to capacity (s.7.1 — nadwyżka ponad cap ginie).
+    // Cap >= próg wzrostu: inaczej przy cap=20 i progu=22 miasto utknęło by na +1/t.
+    const foodCap = growthFoodStorageCap(
+      city.population, maSpichlerz, params, storageParams,
+      wzrostLudnosciPace, city.ownerId, gameDifficulty,
+    );
     city.magazynZywnosci = Math.min(grow.nowyMagazynZywnosci, foodCap);
     magazynPoTurze = city.magazynZywnosci;
 

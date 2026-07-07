@@ -5,12 +5,14 @@
 
 import type { CivsData } from '../data/loader';
 import type { GameMap } from '../types/map';
+import type { CityNamesPools } from '../game/civ-names';
 import {
   clusterRivalCityName,
   foreignCapitalCityName,
   playerStartCityName,
 } from '../game/civ-names';
-import { computeClusters, type ClusterPlacement, type TypeCluster } from './clusters';
+import { computeClusters, packRivalCitiesAroundCore, MIN_DIST_START_CITY_STATE, type ClusterPlacement, type TypeCluster } from './clusters';
+import { TerenBazowy } from '../types/hex';
 
 /** Slot startowy — kontrakt dla SILNIK (D-START). */
 export interface ClusterSpawnSlot {
@@ -21,6 +23,8 @@ export interface ClusterSpawnSlot {
   typ: string;
   isSameTypeRival: boolean;
   isPlayerCapital: boolean;
+  /** Stolica klastra na krawędzi — ekspansyjna AI (nie kopia_typu_obronna). */
+  isClusterCapital?: boolean;
 }
 
 /** Pełny klaster obcego typu — kontrakt dla SILNIK (MAP-P1-01). */
@@ -37,6 +41,58 @@ export interface ClusterSpawnPlan {
   /** Obcy typ → wszystkie miasta klastra (nie tylko stolica). */
   foreignTypeClusters: ForeignTypeClusterGroup[];
   placement: ClusterPlacement;
+  /** Rywale tego samego typu — spawn dopiero po założeniu pierwszego miasta gracza. */
+  pendingSameTypeRivals: number;
+  /** Pre-planowane pozycje państw gracza (Maciej 2026-07-07 — klaster na mapgen). */
+  pendingSameTypeRivalHexes: Array<{ q: number; r: number }>;
+  /** Ownerzy stolic klastrów — ekspansyjna AI (faza 1 konsolidacji). */
+  clusterCapitalOwnerIds: number[];
+}
+
+function landHexesFromMap(map: GameMap): Array<{ q: number; r: number }> {
+  const out: Array<{ q: number; r: number }> = [];
+  for (const h of Object.values(map.hexes)) {
+    if (h.terenBazowy === TerenBazowy.Morze || h.terenBazowy === TerenBazowy.Gory) continue;
+    out.push({ q: h.coords.q, r: h.coords.r });
+  }
+  return out;
+}
+
+/**
+ * Po wyborze miejsca stolicy gracza — ciasne miasta-państwa wokół rdzenia (min 3 hex).
+ */
+export function buildSameTypeRivalSlots(
+  map: GameMap,
+  civs: CivsData,
+  core: { q: number; r: number },
+  playerTyp: string,
+  rivalCount: number,
+  seed: number,
+  firstOwnerId: number,
+  pools?: CityNamesPools,
+): ClusterSpawnSlot[] {
+  if (rivalCount <= 0) return [];
+  const positions = packRivalCitiesAroundCore(
+    landHexesFromMap(map),
+    core,
+    rivalCount,
+    MIN_DIST_START_CITY_STATE,
+    seed,
+  );
+  const slots: ClusterSpawnSlot[] = [];
+  let ownerId = firstOwnerId;
+  positions.forEach((pos, idx) => {
+    slots.push({
+      ownerId: ownerId++,
+      q: pos.q,
+      r: pos.r,
+      nazwaMiasta: clusterRivalCityName(civs, playerTyp, idx + 1, pools),
+      typ: playerTyp,
+      isSameTypeRival: true,
+      isPlayerCapital: false,
+    });
+  });
+  return slots;
 }
 
 export interface BuildClusterSpawnInput {
@@ -46,6 +102,7 @@ export interface BuildClusterSpawnInput {
   playerTyp: string;
   rywaleNaKlaster: number;
   aktywneTypy?: number;
+  cityNamesPools?: CityNamesPools;
 }
 
 function capitalOf(klaster: TypeCluster): { q: number; r: number } | null {
@@ -77,7 +134,7 @@ export function groupForeignTypeClusters(slots: ClusterSpawnSlot[]): ForeignType
  */
 export function buildClusterSpawnPlan(input: BuildClusterSpawnInput): ClusterSpawnPlan {
   const {
-    map, civs, seed, playerTyp, rywaleNaKlaster, aktywneTypy,
+    map, civs, seed, playerTyp, rywaleNaKlaster, aktywneTypy, cityNamesPools,
   } = input;
 
   const placement = computeClusters(map, {
@@ -92,31 +149,24 @@ export function buildClusterSpawnPlan(input: BuildClusterSpawnInput): ClusterSpa
   if (!playerCluster || playerCluster.miasta.length === 0) {
     return {
       playerStartHex: fallbackHex,
-      playerStartCityName: playerStartCityName(civs, playerTyp),
+      playerStartCityName: playerStartCityName(civs, playerTyp, cityNamesPools),
       slots: [],
       foreignTypeClusters: [],
       placement,
+      pendingSameTypeRivals: rywaleNaKlaster,
+      pendingSameTypeRivalHexes: [],
+      clusterCapitalOwnerIds: [],
     };
   }
 
   const capPos = capitalOf(playerCluster) ?? fallbackHex;
   const slots: ClusterSpawnSlot[] = [];
+  const clusterCapitalOwnerIds: number[] = [];
   let nextOwnerId = 1;
 
-  const rivalHexes = playerCluster.miasta.filter(m => !m.isCapital).slice(0, rywaleNaKlaster);
-  rivalHexes.forEach((m, idx) => {
-    const ownerId = nextOwnerId++;
-    const nazwa = clusterRivalCityName(civs, playerTyp, idx + 1);
-    slots.push({
-      ownerId,
-      q: m.q,
-      r: m.r,
-      nazwaMiasta: nazwa,
-      typ: playerTyp,
-      isSameTypeRival: true,
-      isPlayerCapital: false,
-    });
-  });
+  // Miasta-państwa tego samego typu — dopiero po założeniu miasta gracza (Maciej 2026-07-07).
+  const pendingSameTypeRivals = rywaleNaKlaster;
+  const pendingSameTypeRivalHexes = playerCluster.pendingStateSlots?.slice() ?? [];
 
   // Obcy typ: pełny klaster miast-kopii (symetria z klasterem gracza — D-START-miasta-kopie-typu)
   for (const klaster of placement.klastry) {
@@ -126,10 +176,11 @@ export function buildClusterSpawnPlan(input: BuildClusterSpawnInput): ClusterSpa
       const ownerId = nextOwnerId++;
       let nazwa: string;
       if (m.isCapital) {
-        nazwa = foreignCapitalCityName(civs, klaster.typ);
+        nazwa = foreignCapitalCityName(civs, klaster.typ, cityNamesPools);
+        clusterCapitalOwnerIds.push(ownerId);
       } else {
         rivalIdx += 1;
-        nazwa = clusterRivalCityName(civs, klaster.typ, rivalIdx);
+        nazwa = clusterRivalCityName(civs, klaster.typ, rivalIdx, cityNamesPools);
       }
       slots.push({
         ownerId,
@@ -139,20 +190,24 @@ export function buildClusterSpawnPlan(input: BuildClusterSpawnInput): ClusterSpa
         typ: klaster.typ,
         isSameTypeRival: false,
         isPlayerCapital: false,
+        isClusterCapital: m.isCapital,
       });
     }
   }
 
   return {
     playerStartHex: capPos,
-    playerStartCityName: playerStartCityName(civs, playerTyp),
+    playerStartCityName: playerStartCityName(civs, playerTyp, cityNamesPools),
     slots,
     foreignTypeClusters: groupForeignTypeClusters(slots),
     placement,
+    pendingSameTypeRivals,
+    pendingSameTypeRivalHexes,
+    clusterCapitalOwnerIds,
   };
 }
 
-/** Etykieta UI dla ownera AI (N-2A: zawsze nazwa miasta z nazwyKlastra). */
+/** Etykieta bazowa ownera AI (N-2A: nazwa miasta z puli klastra; dopisek → display-names przy UI). */
 export function displayLabelForSlot(
   _civs: CivsData,
   slot: ClusterSpawnSlot,

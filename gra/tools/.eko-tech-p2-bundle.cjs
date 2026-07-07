@@ -461,8 +461,8 @@ var terrain_improvements_default = {
     bonus: {},
     surowiecOdblokowany: null,
     teren: "Las",
-    warunek: "darmowa wycinka; +20 Pracy/tur\u0119 \xD7 3 tury (=60); potem teren bazowy bez lasu",
-    koszt_praca: 0,
+    warunek: "koszt 5 Pracy na start; +20 Pracy/tur\u0119 \xD7 3 tury (=60); potem teren bazowy bez lasu",
+    koszt_praca: 5,
     tech: null,
     wycinka: {
       praca_per_tura: 20,
@@ -1425,6 +1425,7 @@ function createQualifier(state) {
         if (teren !== "gory" /* Gory */) return nakladka === "zloze_rudy" /* ZlozeRudy */;
         return zloze === "miedz" || zloze === "zelazo" || zloze === "wegiel" || nakladka === "zloze_rudy" /* ZlozeRudy */;
       case "wyrab":
+        if (state.clearingHexKeys?.has(hexKey)) return false;
         return nakladka === "las" /* Las */ && isInTerritory(q, r, cityNodes);
       case "tartak": {
         if (!isInTerritory(q, r, cityNodes)) return false;

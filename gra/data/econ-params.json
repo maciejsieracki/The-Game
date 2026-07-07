@@ -8,11 +8,11 @@
       "opis": "Próg wzrostu populacji: Próg(N) = 10 + N × wartość. Większy = wolniejszy wzrost. [PT]"
     },
     "spichlerz_zachowanie_po_wzroscie": {
-      "easy": 0.75,
-      "normal": 0.7,
-      "hard": 0.65,
+      "easy": 0.6,
+      "normal": 0.5,
+      "hard": 0.4,
       "jednostka": "%",
-      "opis": "Ułamek żywności zachowany w Spichlerzu po awansie populacji. ABC-11 Maciej 2026-07-04: normal=70%."
+      "opis": "Ze Spichlerzem w mieście: ułamek bufora wzrostu zachowany po awansie populacji (+1). Bez Spichlerza bufor zeruje się. Maciej 2026-07-06: normal=50%."
     },
     "handel_surowiec_min_stock": {
       "easy": 2,
@@ -22,11 +22,18 @@
       "opis": "ABC-15 Maciej 2026-07-04: handel surowcem dopiero gdy stock ≥ wartość; 1 szt. zostaje = dostęp (v2 handlu)."
     },
     "akwedukt_prog_ludnosci": {
-      "easy": 8,
-      "normal": 6,
+      "easy": 6,
+      "normal": 5,
       "hard": 4,
       "jednostka": "ludność",
-      "opis": "Max populacja bez Akweduktu. Po jego budowie blokada zdjęta. [PT]"
+      "opis": "Max populacja bez Akweduktu (Maciej: normal=5). Wzrost zablokowany przy cap — nadwyżka żywności idzie do armii lub przepada (B5). [PT]"
+    },
+    "akwedukt_max_ludnosci": {
+      "easy": 15,
+      "normal": 15,
+      "hard": 15,
+      "jednostka": "ludność",
+      "opis": "Twardy cap populacji Z Akweduktem (Maciej 2026-07-07: normal=15). Epoka 4+ — osobny unlock (do decyzji ABC)."
     },
     "zywnosc_zuzytka_populacja": {
       "easy": 1,
@@ -103,7 +110,21 @@
       "normal": 100,
       "hard": 80,
       "jednostka": "🍞",
-      "opis": "B5-SP: max zapasów armii na 1 Spichlerz w imperium; suma = wartość × liczba Spichlerzy. Nadwyżka przepada."
+      "opis": "Max zapasów armii na 1 Spichlerz w imperium (100% odkładania). Suma = wartość × liczba Spichlerzy. Bez Spichlerza: odkładanie 50%, bez limitu pojemności."
+    },
+    "armia_odklad_bez_spichlerza": {
+      "easy": 0.6,
+      "normal": 0.5,
+      "hard": 0.4,
+      "jednostka": "ułamek",
+      "opis": "Od startu gry: ułamek netto żywności armii (po koszcie wojska) odkładany do zapasów państwa BEZ Spichlerza w imperium. Reszta przepada."
+    },
+    "armia_odklad_ze_spichlerzem": {
+      "easy": 1,
+      "normal": 1,
+      "hard": 1,
+      "jednostka": "ułamek",
+      "opis": "Ułamek netto żywności armii odkładany do zapasów państwa gdy w imperium jest ≥1 Spichlerz (100%). Limit pojemności = spichlerz_pojemnosc × liczba Spichlerzy."
     },
     "korupcja_wspolczynnik_dystansu": {
       "easy": 1,
@@ -269,6 +290,13 @@
       "hard": 2,
       "jednostka": "Drewno/turę",
       "opis": "Bonus Drewna z nakładki Las."
+    },
+    "teren_las_praca": {
+      "easy": 2.5,
+      "normal": 2,
+      "hard": 1.5,
+      "jednostka": "Praca/turę",
+      "opis": "Bonus Pracy z nakładki Las (dostęp do drewna / wyrąb)."
     },
     "ulepszenie_farma_zywnosc": {
       "easy": 3,

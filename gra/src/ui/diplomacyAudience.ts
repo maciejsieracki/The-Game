@@ -5,7 +5,7 @@
 import type { CivBonusLite } from '../game/production';
 import { tierLabel } from './diplomacyPanel';
 import {
-  civLeaderMedallionHtml,
+  civLeaderMedallionHtmlById,
   dipBrandIconHtml,
   DIPLO_1E_SHARED_CSS,
   ensureDiploBrandScope,
@@ -57,6 +57,10 @@ export interface DiplomacyAudienceState {
   personalityTags?: readonly string[];
   /** Epoka rozmówcy (etykieta PL). */
   otherEpochLabel?: string;
+  /** ikonaId rozmówcy (z civs.json — nie po nazwie wyświetlanej). */
+  otherIkonaId?: string;
+  /** kolorHex rozmówcy (#RRGGBB). */
+  otherKolorHex?: string;
   /** Progi na paskach (readonly z JSON). */
   thresholds?: { sojuszZaufanie?: number; techZaufanie?: number };
 }
@@ -67,6 +71,8 @@ export interface DiplomacyAudienceConfig {
   /** payload opcjonalny — po modalu negocjacji v1.1 */
   onAction: (ownerId: number, actionId: string, payload?: NegotiationPayload) => void;
   onBack: () => void;
+  /** Etykieta przycisku zamknięcia — „Wróć” (lista) lub „Wyjście” (mapa). */
+  backLabel?: string;
   /** Bonusy cywilizacji (civs.json) — SILNIK: civBonusyForOwnerId. */
   getCivBonusy?: (ownerId: number) => readonly CivBonusLite[];
   /** Kontekst modali negocjacji (wrogowie, tech, opłaty granic). */
@@ -76,6 +82,22 @@ export interface DiplomacyAudienceConfig {
 let cfg: DiplomacyAudienceConfig | null = null;
 let rootEl: HTMLDivElement | null = null;
 let modalOverlay: HTMLDivElement | null = null;
+
+function childModalBlocksExit(): boolean {
+  if (modalOverlay !== null) return true;
+  const neg = document.querySelector('.civ-diplo-neg-overlay') as HTMLElement | null;
+  if (neg && neg.style.display !== 'none') return true;
+  const basket = document.querySelector('.civ-diplo-basket-overlay') as HTMLElement | null;
+  if (basket && basket.style.display !== 'none') return true;
+  return false;
+}
+
+function onAudienceEsc(ev: KeyboardEvent): void {
+  if (ev.key !== 'Escape' || cfg === null || rootEl === null || rootEl.style.display === 'none') return;
+  if (childModalBlocksExit()) return;
+  ev.preventDefault();
+  cfg.onBack();
+}
 
 const RESPEKT_TOOLTIP_PL =
   'Respekt = jak duża jest wasza Moc w porównaniu z tą nacją. 50 = równi. Wyżej = jesteś silniejszy.';
@@ -271,14 +293,17 @@ function render(): void {
     '<div class="civ-diplo-aud-box">' +
       '<div class="civ-diplo-aud-head">' +
         '<h2>' + headIc + 'Audiencja dyplomatyczna</h2>' +
-        '<button type="button" class="dip-muted-btn civ-diplo-aud-back">← Lista</button>' +
+        '<button type="button" class="dip-muted-btn civ-diplo-aud-back">' + esc(cfg!.backLabel ?? 'Wyjście') + '</button>' +
       '</div>' +
       '<div class="civ-diplo-aud-player">Ty: ' + esc(st.playerCivName) + ' · ' + esc(st.playerTitle) +
         (playerBon.length ? ' · ' + esc((playerBon[0]?.opis ?? '').trim()) : '') +
       '</div>' +
-      '<div class="civ-diplo-aud-hero">' + civLeaderMedallionHtml(st.otherCivName) + '</div>' +
+      '<div class="civ-diplo-aud-hero">' +
+        civLeaderMedallionHtmlById(st.otherIkonaId ?? 'grecy', st.otherKolorHex) +
+      '</div>' +
       '<div class="civ-diplo-aud-body">' +
         '<div class="civ-diplo-aud-name">' + esc(st.otherCivName) + '</div>' +
+        /* otherCivName — sformatowane przez silnik (formatEntityDisplayName / ownerDiploLabel) */
         '<div class="civ-diplo-aud-title">' + esc(st.otherTitle) +
           (st.otherEpochLabel ? ' · ' + esc(st.otherEpochLabel) : '') + '</div>' +
         '<div class="' + moodCls + '">Nastawienie: ' + esc(moodLabel(st.tier)) + '</div>' +
@@ -340,6 +365,7 @@ export function showDiplomacyAudience(config: DiplomacyAudienceConfig): void {
   }
   render();
   rootEl.style.display = 'flex';
+  document.addEventListener('keydown', onAudienceEsc);
 }
 
 export function updateDiplomacyAudience(): void {
@@ -347,6 +373,7 @@ export function updateDiplomacyAudience(): void {
 }
 
 export function hideDiplomacyAudience(): void {
+  document.removeEventListener('keydown', onAudienceEsc);
   if (rootEl !== null) rootEl.style.display = 'none';
 }
 

@@ -132,9 +132,9 @@
           "Trudny"
         ],
         "descs": [
-          "Łagodne AI",
-          "Klasyczna rozgrywka 4X",
-          "Agresywne AI"
+          "Gracz: standardowe koszty · AI i państwa miast: ×2 budynki, jednostki i badania",
+          "Symetryczne koszty — gracz i AI na tych samych mnożnikach",
+          "Gracz: ×2 budynki, jednostki i badania · AI i państwa miast: standard"
         ],
         "domyslny": 1
       },
@@ -185,9 +185,9 @@
           "Długa"
         ],
         "descs": [
-          "Pełny czas na decyzje",
-          "Skrócone tury",
-          "5× czas badań"
+          "2× koszt badań (wolniejszy postęp nauki)",
+          "Koszty z panelu — tempo szybkie",
+          "4× koszt badań (najdłuższa gra)"
         ],
         "domyslny": 0
       },

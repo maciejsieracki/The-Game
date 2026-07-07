@@ -34,9 +34,19 @@
     "forest_threshold_high": 0.5
   },
   "tempo_gry": {
-    "szybka": 0.2,
-    "standardowa": 1.0,
-    "dluga": 5.0
+    "szybka": 1.0,
+    "standardowa": 2.0,
+    "dluga": 4.0
+  },
+  "koszt_budynkow_pace": {
+    "niski": 1.0,
+    "normalny": 2.0,
+    "wysoki": 4.0
+  },
+  "koszt_jednostek_pace": {
+    "niski": 1.0,
+    "normalny": 2.0,
+    "wysoki": 4.0
   },
   "zwyciestwo": {
     "ostatnia_epoka_v1": 3,

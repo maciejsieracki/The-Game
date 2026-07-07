@@ -2347,6 +2347,7 @@ function mapHeightFromHexes(hexes) {
 function sanitizeCoastHexes(hexes) {
   var _a10;
   const valid = /* @__PURE__ */ new Set();
+  const queue = [];
   for (const [key, hex] of Object.entries(hexes)) {
     if (hex.terenBazowy !== "wybrzeze" /* Wybrzeze */) continue;
     const parts = key.split(",");
@@ -2356,25 +2357,22 @@ function sanitizeCoastHexes(hexes) {
       const nb = hexes[hexKey(q + dq, r + dr)];
       if (nb && isDryLandTerrain(nb.terenBazowy)) {
         valid.add(key);
+        queue.push(key);
         break;
       }
     }
   }
-  let propagated = true;
-  while (propagated) {
-    propagated = false;
-    for (const [key, hex] of Object.entries(hexes)) {
-      if (hex.terenBazowy !== "wybrzeze" /* Wybrzeze */ || valid.has(key)) continue;
-      const parts = key.split(",");
-      const q = Number(parts[0]);
-      const r = Number(parts[1]);
-      for (const [dq, dr] of HEX_DIRECTIONS) {
-        const nk = hexKey(q + dq, r + dr);
-        if (((_a10 = hexes[nk]) == null ? void 0 : _a10.terenBazowy) === "wybrzeze" /* Wybrzeze */ && valid.has(nk)) {
-          valid.add(key);
-          propagated = true;
-          break;
-        }
+  while (queue.length > 0) {
+    const key = queue.pop();
+    const parts = key.split(",");
+    const q = Number(parts[0]);
+    const r = Number(parts[1]);
+    for (const [dq, dr] of HEX_DIRECTIONS) {
+      const nk = hexKey(q + dq, r + dr);
+      if (valid.has(nk)) continue;
+      if (((_a10 = hexes[nk]) == null ? void 0 : _a10.terenBazowy) === "wybrzeze" /* Wybrzeze */) {
+        valid.add(nk);
+        queue.push(nk);
       }
     }
   }
@@ -2667,21 +2665,23 @@ function trimDeepOceanBays(hexes, width, height, _maxDepth) {
 }
 function finalizeCoastAndInlandWater(hexes, width, height, maxPasses = 3, opts) {
   for (let pass = 0; pass < maxPasses; pass++) {
+    let changed = 0;
     if ((opts == null ? void 0 : opts.maxInlandPoolSize) != null) {
-      removeSmallInlandWaterPools(hexes, width, height, opts.maxInlandPoolSize);
+      changed += removeSmallInlandWaterPools(hexes, width, height, opts.maxInlandPoolSize);
     } else {
-      removeInlandWaterPools(hexes, width, height);
+      changed += removeInlandWaterPools(hexes, width, height);
     }
-    applyDoubleCoastRing(hexes);
-    sanitizeCoastHexes(hexes);
+    changed += applyDoubleCoastRing(hexes);
+    changed += sanitizeCoastHexes(hexes);
     if ((opts == null ? void 0 : opts.maxInlandPoolSize) != null) {
-      removeSmallInlandWaterPools(hexes, width, height, opts.maxInlandPoolSize);
+      changed += removeSmallInlandWaterPools(hexes, width, height, opts.maxInlandPoolSize);
     } else {
-      removeInlandWaterPools(hexes, width, height);
+      changed += removeInlandWaterPools(hexes, width, height);
     }
     if (findInlandWaterHexes(hexes, width, height).length === 0 && findDryLandTouchingSea(hexes).length === 0) {
       break;
     }
+    if (changed === 0) break;
   }
 }
 function removeTinyLandIslands(hexes, minHexes) {
@@ -3702,6 +3702,72 @@ function buildOceanReachableRiverHexKeys(hexes, paths, kinds, width, height, oce
   }
   return reached;
 }
+function pruneOrphanRiverPaths(hexes, paths, kinds, width, height) {
+  var _a10;
+  let curPaths = paths.slice();
+  let curKinds = kinds.slice();
+  for (let iter = 0; iter < 10; iter++) {
+    const reached = buildOceanReachableRiverHexKeys(hexes, curPaths, curKinds, width, height);
+    const ocean = oceanConnectedWaterKeys(hexes, width, height);
+    const hexToPaths = /* @__PURE__ */ new Map();
+    for (let pi = 0; pi < curPaths.length; pi++) {
+      for (const c of curPaths[pi] ?? []) {
+        const k = hexKey(c.q, c.r);
+        let s = hexToPaths.get(k);
+        if (!s) {
+          s = /* @__PURE__ */ new Set();
+          hexToPaths.set(k, s);
+        }
+        s.add(pi);
+      }
+    }
+    const keptPaths = [];
+    const keptKinds = [];
+    let dropped = false;
+    for (let i = 0; i < curPaths.length; i++) {
+      const p = curPaths[i] ?? [];
+      if (p.length === 0) {
+        dropped = true;
+        continue;
+      }
+      const connected = p.every((c) => {
+        const h = hexes[hexKey(c.q, c.r)];
+        if ((h == null ? void 0 : h.terenBazowy) === "morze" /* Morze */) return true;
+        return reached.has(hexKey(c.q, c.r));
+      });
+      if (!connected) {
+        dropped = true;
+        continue;
+      }
+      if (curKinds[i] === "tributary" && !pathEndsAtSea(hexes, p, width, height, ocean)) {
+        const end = p[p.length - 1];
+        const eh = hexes[hexKey(end.q, end.r)];
+        let closed = false;
+        for (const ei of ((_a10 = eh == null ? void 0 : eh.rzeka) == null ? void 0 : _a10.krawedzie) ?? []) {
+          const dir = HEX_DIRECTIONS[ei];
+          if (!dir) continue;
+          const owners = hexToPaths.get(hexKey(end.q + dir[0], end.r + dir[1]));
+          if (owners && [...owners].some((x) => x !== i)) {
+            closed = true;
+            break;
+          }
+        }
+        if (!closed) {
+          dropped = true;
+          continue;
+        }
+      }
+      keptPaths.push(p);
+      keptKinds.push(curKinds[i] ?? "main");
+    }
+    clearRiverMarks(hexes);
+    for (const p of keptPaths) markRiverPath(hexes, p);
+    curPaths = keptPaths;
+    curKinds = keptKinds;
+    if (!dropped) break;
+  }
+  return { paths: curPaths, kinds: curKinds };
+}
 function collectRiverPathHexKeys(paths) {
   const keys = /* @__PURE__ */ new Set();
   for (const path of paths) {
@@ -3839,6 +3905,7 @@ function generateRivers(hexes, width, height, rand, opts = {}) {
   const minSourceSep = Math.max(2, Math.floor(cellSize * 0.75));
   const pushMain = (path, sq, sr) => {
     const trimmed = trimRiverPathRings(hexes, path);
+    if (!pathEndsAtSea(hexes, trimmed, width, height, oceanConnected)) return false;
     riverPaths.push(trimmed);
     riverKinds.push("main");
     usedSources.add(hexKey(sq, sr));
@@ -4066,6 +4133,7 @@ function topUpRiverGridCoverage(hexes, width, height, riverPaths, riverKinds, ra
   const minSourceSep = Math.max(2, Math.floor(cellSize * 0.75));
   const pushMain = (path, sq, sr) => {
     const trimmed = trimRiverPathRings(hexes, path);
+    if (!pathEndsAtSea(hexes, trimmed, width, height, oceanConnected)) return false;
     riverPaths.push(trimmed);
     riverKinds.push("main");
     usedSources.add(hexKey(sq, sr));
@@ -4710,8 +4778,8 @@ var terrain_improvements_default = {
     bonus: {},
     surowiecOdblokowany: null,
     teren: "Las",
-    warunek: "darmowa wycinka; +20 Pracy/tur\u0119 \xD7 3 tury (=60); potem teren bazowy bez lasu",
-    koszt_praca: 0,
+    warunek: "koszt 5 Pracy na start; +20 Pracy/tur\u0119 \xD7 3 tury (=60); potem teren bazowy bez lasu",
+    koszt_praca: 5,
     tech: null,
     wycinka: {
       praca_per_tura: 20,
@@ -5517,7 +5585,7 @@ function generateMap(width = DEFAULT_WIDTH, height = DEFAULT_HEIGHT, seed = 42, 
   purgeDesertEnclaveWater(hexes, width, height);
   const riversTier = ((_d3 = genOpts == null ? void 0 : genOpts.worldDensity) == null ? void 0 : _d3.rivers) ?? "medium";
   clearRiverMarks(hexes);
-  const { paths: riverPaths, kinds: riverPathKinds } = generateRivers(hexes, width, height, rand, {
+  let { paths: riverPaths, kinds: riverPathKinds } = generateRivers(hexes, width, height, rand, {
     minLen: wgn.riverTrace.minLen,
     maxLen: wgn.riverTrace.maxLen,
     margin: wgn.riverTrace.margin,
@@ -5537,6 +5605,7 @@ function generateMap(width = DEFAULT_WIDTH, height = DEFAULT_HEIGHT, seed = 42, 
   );
   stripRiverMarksFromOpenSea(hexes);
   stripDepositsFromWater(hexes);
+  ({ paths: riverPaths, kinds: riverPathKinds } = pruneOrphanRiverPaths(hexes, riverPaths, riverPathKinds, width, height));
   const startPositions = computeStartPositions(hexes, effectiveSeed, {
     minCount: 5,
     minDist: 5,
@@ -5863,7 +5932,7 @@ var TERRAIN_YIELDS = {
   ["pustynia" /* Pustynia */]: { zywnosc: 0, praca: 0, handel: 1, drewno: 0, kamien: 0 }
 };
 var RIVER_MODIFIER = { zywnosc: 3, praca: 2, handel: 2, drewno: 0, kamien: 0 };
-var FOREST_MODIFIER = { zywnosc: -1, praca: 0, handel: -1, drewno: 3, kamien: 0 };
+var FOREST_MODIFIER = { zywnosc: -1, praca: 2, handel: -1, drewno: 3, kamien: 0 };
 var ZERO_YIELD = { zywnosc: 0, praca: 0, handel: 0, drewno: 0, kamien: 0 };
 function tileYield(tile) {
   var _a10;
@@ -5875,6 +5944,7 @@ function tileYield(tile) {
   let kamien = base.kamien;
   if (tile.nakladka === "las" /* Las */) {
     zywnosc += FOREST_MODIFIER.zywnosc;
+    praca += FOREST_MODIFIER.praca;
     handel += FOREST_MODIFIER.handel;
     drewno += FOREST_MODIFIER.drewno;
   }
@@ -6441,6 +6511,139 @@ function freshWealthState() {
   return { poziom: 1, pula: 0 };
 }
 
+// src/game/economy-upkeep.ts
+function readNum(group, key, difficulty, fallback) {
+  const row = group ? group[key] : void 0;
+  const v = row ? row[difficulty] : void 0;
+  return typeof v === "number" && Number.isFinite(v) ? v : fallback;
+}
+var DEFAULT_STORAGE_PARAMS = {
+  bazaZywnosc: 20,
+  bazaSurowce: 10,
+  mnoznikMagazynu: 5
+};
+function loadStorageParams(raw, difficulty = "normal") {
+  const g = raw.globalne;
+  return {
+    bazaZywnosc: readNum(g, "magazyn_baza_zywnosc", difficulty, DEFAULT_STORAGE_PARAMS.bazaZywnosc),
+    bazaSurowce: readNum(g, "magazyn_baza_surowce", difficulty, DEFAULT_STORAGE_PARAMS.bazaSurowce),
+    mnoznikMagazynu: readNum(g, "magazyn_mnoznik_spichlerz", difficulty, DEFAULT_STORAGE_PARAMS.mnoznikMagazynu)
+  };
+}
+function foodStorageCapacity(maSpichlerz, p) {
+  return maSpichlerz ? p.bazaZywnosc * p.mnoznikMagazynu : p.bazaZywnosc;
+}
+function readCityFoodBuffer(magazynZywnosci) {
+  if (typeof magazynZywnosci === "number" && Number.isFinite(magazynZywnosci)) {
+    return Math.max(0, magazynZywnosci);
+  }
+  if (magazynZywnosci && typeof magazynZywnosci === "object") {
+    const a = magazynZywnosci.aktualny;
+    if (typeof a === "number" && Number.isFinite(a)) return Math.max(0, a);
+  }
+  return 0;
+}
+function resourceStorageCapacityPerType(maMagazyn, p) {
+  return maMagazyn ? p.bazaSurowce * p.mnoznikMagazynu : p.bazaSurowce;
+}
+function loadUpkeepParams(raw, difficulty = "normal") {
+  const em = raw.ekonomia_miasta;
+  const bu = raw.budynki;
+  const g = raw.globalne;
+  return {
+    budynekUtrzymanieFlat: readNum(bu, "utrzymanie_budynek", difficulty, 1),
+    jednostkaUtrzymanieStd: readNum(g, "utrzymanie_jednostka_standard", difficulty, 1),
+    zywnoscJednostkaRuch: readNum(em, "zywnosc_jednostka_ruch", difficulty, 1),
+    zywnoscJednostkaOboz: readNum(em, "zywnosc_jednostka_oboz", difficulty, 0.5)
+  };
+}
+function buildingUpkeep(building, level, flatOverride) {
+  if (typeof flatOverride === "number" && Number.isFinite(flatOverride)) {
+    return flatOverride;
+  }
+  const lvl = level >= 1 ? level : 1;
+  const base = Number.isFinite(building.utrzymanie) ? building.utrzymanie : 0;
+  return Math.floor(buildingEffectAtLevel(base, lvl));
+}
+function totalBuildingUpkeep(buildings, flatOverride) {
+  let sum = 0;
+  for (const b of buildings) {
+    sum += buildingUpkeep(b.record, b.level, flatOverride);
+  }
+  return sum;
+}
+var DEFAULT_UNIT_UPKEEP_BY_CATEGORY = {
+  osadnik: 1,
+  robotnik: 1,
+  zwiadowca: 1,
+  procarz: 1,
+  oszczepnik: 1,
+  lucznik: 1,
+  wlocznik: 2,
+  miecznik: 2,
+  falanga: 2,
+  legionista: 2,
+  maczuga: 2,
+  topor: 2,
+  konnica: 3,
+  rydwan: 3,
+  galera: 3,
+  super: 0,
+  domyslny: 1
+};
+function unitUpkeep(unit, table, standardUpkeep) {
+  const byType = table[unit.typeId];
+  if (typeof byType === "number" && Number.isFinite(byType)) return byType;
+  const byCat = DEFAULT_UNIT_UPKEEP_BY_CATEGORY[unit.category];
+  if (typeof byCat === "number" && Number.isFinite(byCat)) return byCat;
+  return Number.isFinite(standardUpkeep) ? standardUpkeep : 0;
+}
+function totalUnitUpkeep(units, table, standardUpkeep) {
+  let sum = 0;
+  for (const u of units) {
+    sum += unitUpkeep(u, table, standardUpkeep);
+  }
+  return sum;
+}
+function buildUnitUpkeepTable(rows) {
+  const out = {};
+  for (const row of rows) {
+    const name = row["Jednostka"];
+    if (typeof name !== "string" || name.length === 0) continue;
+    let upkeep;
+    const direct = row["Utrzymanie (Pieniadz/ture)"];
+    if (typeof direct === "number" && Number.isFinite(direct)) {
+      upkeep = direct;
+    } else {
+      for (const key of Object.keys(row)) {
+        if (key.indexOf("Utrzymanie") === 0) {
+          const v = row[key];
+          if (typeof v === "number" && Number.isFinite(v)) {
+            upkeep = v;
+            break;
+          }
+        }
+      }
+    }
+    if (upkeep !== void 0) out[name] = upkeep;
+  }
+  return out;
+}
+function upkeepBalance(income, buildings, units, unitUpkeepTbl, p) {
+  const utrzymanieBudynki = totalBuildingUpkeep(buildings, p.budynekUtrzymanieFlat);
+  const utrzymanieJednostki = totalUnitUpkeep(units, unitUpkeepTbl, p.jednostkaUtrzymanieStd);
+  const utrzymanieRazem = utrzymanieBudynki + utrzymanieJednostki;
+  const inc = Number.isFinite(income) ? income : 0;
+  const saldo = inc - utrzymanieRazem;
+  return {
+    utrzymanieBudynki,
+    utrzymanieJednostki,
+    utrzymanieRazem,
+    saldo,
+    deficyt: saldo < 0
+  };
+}
+
 // src/game/cities.ts
 var DEFAULT_OKOLICA_FOCUS = "zrownowazone";
 var DEFAULT_OKOLICA_TRYB = "auto";
@@ -6736,12 +6939,12 @@ var units_default = [
     "Surowiec (ilo\u015B\u0107)": 0,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 1,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
-    Atak: 45,
-    Uderzenie: 20,
-    Obrona: 38,
+    Atak: 6,
+    Uderzenie: 4,
+    Obrona: 6,
     Ruch: 2,
     "Ruch w bitwie (heksy)": 4,
-    Health: 45,
+    Health: 60,
     "Pr\xF3g dezercji (% health)": 0.4,
     "Widok pola": 2,
     "Atak dystansowy": 0,
@@ -6749,10 +6952,10 @@ var units_default = [
     "Ilo\u015B\u0107 pocisk\xF3w": "\u2014",
     "W zamian za": "\u2014",
     "Super-jednostka": "\u2014",
-    Uwagi: "C4-Q1=A macierz v2.0",
+    Uwagi: null,
     "Rola (linia)": "Wr\u0119cz",
-    Pancerz: 20,
-    Przebicie: 10,
+    Pancerz: 4,
+    Przebicie: 0,
     "Kara obrony z flanki (%)": 15,
     "Kara obrony z ty\u0142u (%)": 30,
     "Morale bazowe": 50,
@@ -6775,10 +6978,9 @@ var units_default = [
     piercing: 1,
     armor: 2,
     chargeBonus: 2,
-    health: 11,
+    health: 22,
     missileAttack: 0,
-    fieldPower: 21.5,
-    Obra\u017Cenia: 45
+    fieldPower: 21.5
   },
   {
     Jednostka: "Procarz",
@@ -6796,10 +6998,10 @@ var units_default = [
     Obrona: 4,
     Ruch: 2,
     "Ruch w bitwie (heksy)": 3,
-    Health: 10,
+    Health: 20,
     "Pr\xF3g dezercji (% health)": 0.5,
     "Widok pola": 2,
-    "Atak dystansowy": 8,
+    "Atak dystansowy": 4,
     "Zasi\u0119g ataku (hex)": 4,
     "Ilo\u015B\u0107 pocisk\xF3w": 15,
     "W zamian za": "\u2014",
@@ -6830,8 +7032,8 @@ var units_default = [
     piercing: 0,
     armor: 0,
     chargeBonus: 0,
-    health: 8,
-    missileAttack: 8,
+    health: 16,
+    missileAttack: 4,
     fieldPower: 10
   },
   {
@@ -6850,10 +7052,10 @@ var units_default = [
     Obrona: 4,
     Ruch: 2,
     "Ruch w bitwie (heksy)": 3,
-    Health: 10,
+    Health: 20,
     "Pr\xF3g dezercji (% health)": 0.5,
     "Widok pola": 2,
-    "Atak dystansowy": 8,
+    "Atak dystansowy": 4,
     "Zasi\u0119g ataku (hex)": 2,
     "Ilo\u015B\u0107 pocisk\xF3w": 6,
     "W zamian za": "\u2014",
@@ -6884,8 +7086,8 @@ var units_default = [
     piercing: 0,
     armor: 0,
     chargeBonus: 0,
-    health: 8,
-    missileAttack: 8,
+    health: 16,
+    missileAttack: 4,
     fieldPower: 10
   },
   {
@@ -6899,23 +7101,23 @@ var units_default = [
     "Surowiec (ilo\u015B\u0107)": 4,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 1,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
-    Atak: 30,
-    Uderzenie: 10,
-    Obrona: 20,
+    Atak: 4,
+    Uderzenie: 2,
+    Obrona: 6,
     Ruch: 2,
     "Ruch w bitwie (heksy)": 3,
-    Health: 30,
+    Health: 20,
     "Pr\xF3g dezercji (% health)": 0.5,
     "Widok pola": 2,
-    "Atak dystansowy": 35,
+    "Atak dystansowy": 5,
     "Zasi\u0119g ataku (hex)": 3,
     "Ilo\u015B\u0107 pocisk\xF3w": 12,
     "W zamian za": "\u2014",
     "Super-jednostka": "\u2014",
-    Uwagi: "C4-Q1=A macierz v2.0",
+    Uwagi: null,
     "Rola (linia)": "Dystans",
-    Pancerz: 10,
-    Przebicie: 15,
+    Pancerz: 2,
+    Przebicie: 2,
     "Kara obrony z flanki (%)": 50,
     "Kara obrony z ty\u0142u (%)": 80,
     "Morale bazowe": 40,
@@ -6938,10 +7140,9 @@ var units_default = [
     piercing: 1,
     armor: 1,
     chargeBonus: 0,
-    health: 8,
-    missileAttack: 6,
-    fieldPower: 15,
-    Obra\u017Cenia: 35
+    health: 16,
+    missileAttack: 3,
+    fieldPower: 15
   },
   {
     Jednostka: "Zwiadowca",
@@ -6953,10 +7154,10 @@ var units_default = [
     Surowiec: "-",
     "Surowiec (ilo\u015B\u0107)": 0,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 1,
-    "\u017Cywno\u015B\u0107/tur\u0119": 1,
-    Atak: 5,
-    Uderzenie: 0,
-    Obrona: 10,
+    "\u017Cywno\u015B\u0107/tur\u0119": 0,
+    Atak: 0,
+    Uderzenie: 2,
+    Obrona: 2,
     Ruch: 3,
     "Ruch w bitwie (heksy)": 5,
     Health: 20,
@@ -6967,7 +7168,7 @@ var units_default = [
     "Ilo\u015B\u0107 pocisk\xF3w": "\u2014",
     "W zamian za": "\u2014",
     "Super-jednostka": "\u2014",
-    Uwagi: "C4-Q1=A macierz v2.0",
+    Uwagi: null,
     "Rola (linia)": "Wsparcie",
     Pancerz: 0,
     Przebicie: 0,
@@ -6993,10 +7194,9 @@ var units_default = [
     piercing: 0,
     armor: 0,
     chargeBonus: 0,
-    health: 5,
+    health: 10,
     missileAttack: 0,
-    fieldPower: 3.5,
-    Obra\u017Cenia: 0
+    fieldPower: 3.5
   },
   {
     Jednostka: "W\u0142\xF3cznik",
@@ -7009,12 +7209,12 @@ var units_default = [
     "Surowiec (ilo\u015B\u0107)": 4,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
-    Atak: 50,
-    Uderzenie: 40,
-    Obrona: 80,
+    Atak: 6,
+    Uderzenie: 6,
+    Obrona: 8,
     Ruch: 2,
     "Ruch w bitwie (heksy)": 3,
-    Health: 65,
+    Health: 160,
     "Pr\xF3g dezercji (% health)": 0.3,
     "Widok pola": 2,
     "Atak dystansowy": 0,
@@ -7022,10 +7222,10 @@ var units_default = [
     "Ilo\u015B\u0107 pocisk\xF3w": "\u2014",
     "W zamian za": "\u2014",
     "Super-jednostka": "\u2014",
-    Uwagi: "C4-Q1=A macierz v2.0",
+    Uwagi: null,
     "Rola (linia)": "Wr\u0119cz",
-    Pancerz: 55,
-    Przebicie: 20,
+    Pancerz: 6,
+    Przebicie: 2,
     "Kara obrony z flanki (%)": 30,
     "Kara obrony z ty\u0142u (%)": 50,
     "Morale bazowe": 65,
@@ -7048,10 +7248,9 @@ var units_default = [
     piercing: 2,
     armor: 6,
     chargeBonus: 4,
-    health: 16,
+    health: 32,
     missileAttack: 0,
-    fieldPower: 36,
-    Obra\u017Cenia: 50
+    fieldPower: 36
   },
   {
     Jednostka: "Wojownik z mieczem i tarcz\u0105",
@@ -7064,12 +7263,12 @@ var units_default = [
     "Surowiec (ilo\u015B\u0107)": 5,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
-    Atak: 60,
-    Uderzenie: 35,
-    Obrona: 48,
+    Atak: 6,
+    Uderzenie: 6,
+    Obrona: 6,
     Ruch: 2,
     "Ruch w bitwie (heksy)": 3,
-    Health: 55,
+    Health: 100,
     "Pr\xF3g dezercji (% health)": 0.3,
     "Widok pola": 2,
     "Atak dystansowy": 0,
@@ -7077,10 +7276,10 @@ var units_default = [
     "Ilo\u015B\u0107 pocisk\xF3w": "\u2014",
     "W zamian za": "\u2014",
     "Super-jednostka": "\u2014",
-    Uwagi: "C4-Q1=A macierz v2.0",
+    Uwagi: null,
     "Rola (linia)": "Wr\u0119cz",
-    Pancerz: 35,
-    Przebicie: 20,
+    Pancerz: 4,
+    Przebicie: 4,
     "Kara obrony z flanki (%)": 15,
     "Kara obrony z ty\u0142u (%)": 30,
     "Morale bazowe": 60,
@@ -7103,10 +7302,9 @@ var units_default = [
     piercing: 2,
     armor: 4,
     chargeBonus: 4,
-    health: 14,
+    health: 28,
     missileAttack: 0,
-    fieldPower: 32,
-    Obra\u017Cenia: 65
+    fieldPower: 32
   },
   {
     Jednostka: "Rydwan (wo\u0142y)",
@@ -7119,12 +7317,12 @@ var units_default = [
     "Surowiec (ilo\u015B\u0107)": 1,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 3,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
-    Atak: 65,
-    Uderzenie: 90,
-    Obrona: 40,
+    Atak: 6,
+    Uderzenie: 6,
+    Obrona: 2,
     Ruch: 3,
     "Ruch w bitwie (heksy)": 5,
-    Health: 80,
+    Health: 200,
     "Pr\xF3g dezercji (% health)": 0.3,
     "Widok pola": 3,
     "Atak dystansowy": 0,
@@ -7132,10 +7330,10 @@ var units_default = [
     "Ilo\u015B\u0107 pocisk\xF3w": "\u2014",
     "W zamian za": "\u2014",
     "Super-jednostka": "\u2014",
-    Uwagi: "wczesny rydwan na wolach | C4-Q1=A macierz v2.0",
+    Uwagi: "wczesny rydwan na wolach",
     "Rola (linia)": "Flanka",
-    Pancerz: 25,
-    Przebicie: 30,
+    Pancerz: 2,
+    Przebicie: 4,
     "Kara obrony z flanki (%)": 25,
     "Kara obrony z ty\u0142u (%)": 40,
     "Morale bazowe": 55,
@@ -7158,10 +7356,9 @@ var units_default = [
     piercing: 3,
     armor: 3,
     chargeBonus: 10,
-    health: 24,
+    health: 48,
     missileAttack: 0,
-    fieldPower: 40,
-    Obra\u017Cenia: 70
+    fieldPower: 40
   },
   {
     Jednostka: "Konnica",
@@ -7174,12 +7371,12 @@ var units_default = [
     "Surowiec (ilo\u015B\u0107)": 1,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 3,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
-    Atak: 80,
-    Uderzenie: 100,
-    Obrona: 55,
+    Atak: 6,
+    Uderzenie: 6,
+    Obrona: 4,
     Ruch: 4,
     "Ruch w bitwie (heksy)": 6,
-    Health: 65,
+    Health: 160,
     "Pr\xF3g dezercji (% health)": 0.3,
     "Widok pola": 4,
     "Atak dystansowy": 0,
@@ -7187,10 +7384,10 @@ var units_default = [
     "Ilo\u015B\u0107 pocisk\xF3w": "\u2014",
     "W zamian za": "\u2014",
     "Super-jednostka": "\u2014",
-    Uwagi: "wymaga konia (Uderzenie do potwierdzenia) | C4-Q1=A macierz v2.0",
+    Uwagi: "wymaga konia (Uderzenie do potwierdzenia)",
     "Rola (linia)": "Flanka",
-    Pancerz: 40,
-    Przebicie: 60,
+    Pancerz: 4,
+    Przebicie: 4,
     "Kara obrony z flanki (%)": 25,
     "Kara obrony z ty\u0142u (%)": 40,
     "Morale bazowe": 70,
@@ -7213,10 +7410,9 @@ var units_default = [
     piercing: 6,
     armor: 4,
     chargeBonus: 10,
-    health: 14,
+    health: 28,
     missileAttack: 0,
-    fieldPower: 42,
-    Obra\u017Cenia: 80
+    fieldPower: 42
   },
   {
     Jednostka: "Galera",
@@ -7234,7 +7430,7 @@ var units_default = [
     Obrona: 4,
     Ruch: 4,
     "Ruch w bitwie (heksy)": "\u2014",
-    Health: 50,
+    Health: 100,
     "Pr\xF3g dezercji (% health)": 0.4,
     "Widok pola": 4,
     "Atak dystansowy": 0,
@@ -7268,7 +7464,7 @@ var units_default = [
     piercing: 0,
     armor: 2,
     chargeBonus: 2,
-    health: 12,
+    health: 24,
     missileAttack: 0,
     fieldPower: 19
   },
@@ -7283,12 +7479,12 @@ var units_default = [
     "Surowiec (ilo\u015B\u0107)": 5,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
-    Atak: 48,
-    Uderzenie: 70,
-    Obrona: 100,
+    Atak: 6,
+    Uderzenie: 6,
+    Obrona: 10,
     Ruch: 1,
     "Ruch w bitwie (heksy)": 3,
-    Health: 100,
+    Health: 40,
     "Pr\xF3g dezercji (% health)": 0.2,
     "Widok pola": 1,
     "Atak dystansowy": 0,
@@ -7296,10 +7492,10 @@ var units_default = [
     "Ilo\u015B\u0107 pocisk\xF3w": "\u2014",
     "W zamian za": "W\u0142\xF3cznik",
     "Super-jednostka": "\u2014",
-    Uwagi: "najlepsza Obrona frontalna / anty-szar\u017Ca | ZA\u0141O\u017BENIE: zast\u0119puje W\u0142\xF3cznik \u2014 do potwierdzenia | C4-Q1=A macierz v2.0",
+    Uwagi: "najlepsza Obrona frontalna / anty-szar\u017Ca | ZA\u0141O\u017BENIE: zast\u0119puje W\u0142\xF3cznik \u2014 do potwierdzenia",
     "Rola (linia)": "Wr\u0119cz",
-    Pancerz: 85,
-    Przebicie: 15,
+    Pancerz: 6,
+    Przebicie: 2,
     "Kara obrony z flanki (%)": 50,
     "Kara obrony z ty\u0142u (%)": 80,
     "Morale bazowe": 75,
@@ -7322,10 +7518,9 @@ var units_default = [
     piercing: 2,
     armor: 8,
     chargeBonus: 7,
-    health: 25,
+    health: 40,
     missileAttack: 0,
-    fieldPower: 45,
-    Obra\u017Cenia: 45
+    fieldPower: 45
   },
   {
     Jednostka: "Hieros Lochos (\u015Awi\u0119ty Zast\u0119p)",
@@ -7343,7 +7538,7 @@ var units_default = [
     Obrona: 10,
     Ruch: 2,
     "Ruch w bitwie (heksy)": 4,
-    Health: 85,
+    Health: 170,
     "Pr\xF3g dezercji (% health)": 0.1,
     "Widok pola": 2,
     "Atak dystansowy": 0,
@@ -7377,7 +7572,7 @@ var units_default = [
     piercing: 4,
     armor: 6,
     chargeBonus: 8,
-    health: 21,
+    health: 42,
     missileAttack: 0,
     fieldPower: 52.5
   },
@@ -7392,23 +7587,23 @@ var units_default = [
     "Surowiec (ilo\u015B\u0107)": 5,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
-    Atak: 88,
-    Uderzenie: 80,
-    Obrona: 70,
+    Atak: 6,
+    Uderzenie: 6,
+    Obrona: 6,
     Ruch: 2,
     "Ruch w bitwie (heksy)": 3,
-    Health: 75,
+    Health: 120,
     "Pr\xF3g dezercji (% health)": 0.15,
     "Widok pola": 2,
-    "Atak dystansowy": 6,
+    "Atak dystansowy": 3,
     "Zasi\u0119g ataku (hex)": 2,
     "Ilo\u015B\u0107 pocisk\xF3w": 2,
     "W zamian za": "Wojownik z mieczem i tarcz\u0105",
     "Super-jednostka": "\u2014",
-    Uwagi: "silna zbalansowana piechota; pilum \u2014 2 rzuty przed zwarciem | C4-Q1=A macierz v2.0",
+    Uwagi: "silna zbalansowana piechota; pilum \u2014 2 rzuty przed zwarciem",
     "Rola (linia)": "Wr\u0119cz",
-    Pancerz: 90,
-    Przebicie: 40,
+    Pancerz: 4,
+    Przebicie: 6,
     "Kara obrony z flanki (%)": 15,
     "Kara obrony z ty\u0142u (%)": 30,
     "Morale bazowe": 85,
@@ -7431,10 +7626,9 @@ var units_default = [
     piercing: 3,
     armor: 9,
     chargeBonus: 7,
-    health: 19,
-    missileAttack: 8,
-    fieldPower: 50,
-    Obra\u017Cenia: 100
+    health: 38,
+    missileAttack: 4,
+    fieldPower: 50
   },
   {
     Jednostka: "Triari",
@@ -7452,7 +7646,7 @@ var units_default = [
     Obrona: 8,
     Ruch: 2,
     "Ruch w bitwie (heksy)": 4,
-    Health: 85,
+    Health: 170,
     "Pr\xF3g dezercji (% health)": 0.1,
     "Widok pola": 2,
     "Atak dystansowy": 0,
@@ -7486,7 +7680,7 @@ var units_default = [
     piercing: 4,
     armor: 6,
     chargeBonus: 10,
-    health: 21,
+    health: 42,
     missileAttack: 0,
     fieldPower: 51.5
   },
@@ -7506,7 +7700,7 @@ var units_default = [
     Obrona: 4,
     Ruch: 4,
     "Ruch w bitwie (heksy)": 6,
-    Health: 75,
+    Health: 150,
     "Pr\xF3g dezercji (% health)": 0.2,
     "Widok pola": 4,
     "Atak dystansowy": 0,
@@ -7540,7 +7734,7 @@ var units_default = [
     piercing: 2,
     armor: 3,
     chargeBonus: 5,
-    health: 22,
+    health: 44,
     missileAttack: 0,
     fieldPower: 34.5
   },
@@ -7560,10 +7754,10 @@ var units_default = [
     Obrona: 4,
     Ruch: 2,
     "Ruch w bitwie (heksy)": 3,
-    Health: 20,
+    Health: 40,
     "Pr\xF3g dezercji (% health)": 0.4,
     "Widok pola": 2,
-    "Atak dystansowy": 10,
+    "Atak dystansowy": 5,
     "Zasi\u0119g ataku (hex)": 4,
     "Ilo\u015B\u0107 pocisk\xF3w": 14,
     "W zamian za": "\u0141ucznik",
@@ -7594,8 +7788,8 @@ var units_default = [
     piercing: 0,
     armor: 1,
     chargeBonus: 0,
-    health: 8,
-    missileAttack: 15,
+    health: 16,
+    missileAttack: 8,
     fieldPower: 16.5
   },
   {
@@ -7614,7 +7808,7 @@ var units_default = [
     Obrona: 7,
     Ruch: 3,
     "Ruch w bitwie (heksy)": 4,
-    Health: 80,
+    Health: 160,
     "Pr\xF3g dezercji (% health)": 0.1,
     "Widok pola": 3,
     "Atak dystansowy": 0,
@@ -7648,7 +7842,7 @@ var units_default = [
     piercing: 4,
     armor: 6,
     chargeBonus: 8,
-    health: 20,
+    health: 40,
     missileAttack: 0,
     fieldPower: 51
   },
@@ -7668,7 +7862,7 @@ var units_default = [
     Obrona: 6,
     Ruch: 4,
     "Ruch w bitwie (heksy)": 4,
-    Health: 70,
+    Health: 140,
     "Pr\xF3g dezercji (% health)": 0.15,
     "Widok pola": 4,
     "Atak dystansowy": 0,
@@ -7702,7 +7896,7 @@ var units_default = [
     piercing: 1,
     armor: 3,
     chargeBonus: 3,
-    health: 18,
+    health: 36,
     missileAttack: 0,
     fieldPower: 29.5
   },
@@ -7722,10 +7916,10 @@ var units_default = [
     Obrona: 4,
     Ruch: 2,
     "Ruch w bitwie (heksy)": 3,
-    Health: 20,
+    Health: 40,
     "Pr\xF3g dezercji (% health)": 0.4,
     "Widok pola": 2,
-    "Atak dystansowy": 9,
+    "Atak dystansowy": 4,
     "Zasi\u0119g ataku (hex)": 2,
     "Ilo\u015B\u0107 pocisk\xF3w": 10,
     "W zamian za": "Oszczepnik",
@@ -7756,8 +7950,8 @@ var units_default = [
     piercing: 0,
     armor: 1,
     chargeBonus: 0,
-    health: 10,
-    missileAttack: 9,
+    health: 20,
+    missileAttack: 4,
     fieldPower: 13.5
   },
   {
@@ -7776,7 +7970,7 @@ var units_default = [
     Obrona: 7,
     Ruch: 4,
     "Ruch w bitwie (heksy)": 4,
-    Health: 85,
+    Health: 170,
     "Pr\xF3g dezercji (% health)": 0.1,
     "Widok pola": 4,
     "Atak dystansowy": 0,
@@ -7810,7 +8004,7 @@ var units_default = [
     piercing: 4,
     armor: 6,
     chargeBonus: 10,
-    health: 21,
+    health: 42,
     missileAttack: 0,
     fieldPower: 50.5
   },
@@ -7830,7 +8024,7 @@ var units_default = [
     Obrona: 4,
     Ruch: 3,
     "Ruch w bitwie (heksy)": 4,
-    Health: 40,
+    Health: 80,
     "Pr\xF3g dezercji (% health)": 0.1,
     "Widok pola": 3,
     "Atak dystansowy": 0,
@@ -7864,7 +8058,7 @@ var units_default = [
     piercing: 2,
     armor: 2,
     chargeBonus: 2,
-    health: 10,
+    health: 20,
     missileAttack: 0,
     fieldPower: 27
   },
@@ -7884,7 +8078,7 @@ var units_default = [
     Obrona: 4,
     Ruch: 2,
     "Ruch w bitwie (heksy)": 4,
-    Health: 50,
+    Health: 100,
     "Pr\xF3g dezercji (% health)": 0.2,
     "Widok pola": 2,
     "Atak dystansowy": 0,
@@ -7918,7 +8112,7 @@ var units_default = [
     piercing: 2,
     armor: 2,
     chargeBonus: 3,
-    health: 12,
+    health: 24,
     missileAttack: 0,
     fieldPower: 26.5
   },
@@ -7938,10 +8132,10 @@ var units_default = [
     Obrona: 4,
     Ruch: 2,
     "Ruch w bitwie (heksy)": 3,
-    Health: 10,
+    Health: 20,
     "Pr\xF3g dezercji (% health)": 0.5,
     "Widok pola": 2,
-    "Atak dystansowy": 8,
+    "Atak dystansowy": 4,
     "Zasi\u0119g ataku (hex)": 5,
     "Ilo\u015B\u0107 pocisk\xF3w": 15,
     "W zamian za": "Procarz",
@@ -7972,8 +8166,8 @@ var units_default = [
     piercing: 0,
     armor: 0,
     chargeBonus: 0,
-    health: 8,
-    missileAttack: 8,
+    health: 16,
+    missileAttack: 4,
     fieldPower: 10
   },
   {
@@ -7992,10 +8186,10 @@ var units_default = [
     Obrona: 4,
     Ruch: 2,
     "Ruch w bitwie (heksy)": 3,
-    Health: 10,
+    Health: 20,
     "Pr\xF3g dezercji (% health)": 0.5,
     "Widok pola": 2,
-    "Atak dystansowy": 8,
+    "Atak dystansowy": 4,
     "Zasi\u0119g ataku (hex)": 2,
     "Ilo\u015B\u0107 pocisk\xF3w": 6,
     "W zamian za": "Oszczepnik",
@@ -8026,8 +8220,8 @@ var units_default = [
     piercing: 0,
     armor: 0,
     chargeBonus: 0,
-    health: 8,
-    missileAttack: 8,
+    health: 16,
+    missileAttack: 4,
     fieldPower: 10
   },
   {
@@ -8046,7 +8240,7 @@ var units_default = [
     Obrona: 8,
     Ruch: 3,
     "Ruch w bitwie (heksy)": 4,
-    Health: 80,
+    Health: 160,
     "Pr\xF3g dezercji (% health)": 0.1,
     "Widok pola": 3,
     "Atak dystansowy": 0,
@@ -8080,7 +8274,7 @@ var units_default = [
     piercing: 4,
     armor: 6,
     chargeBonus: 8,
-    health: 20,
+    health: 40,
     missileAttack: 0,
     fieldPower: 52
   },
@@ -8100,7 +8294,7 @@ var units_default = [
     Obrona: 2,
     Ruch: 4,
     "Ruch w bitwie (heksy)": 6,
-    Health: 90,
+    Health: 180,
     "Pr\xF3g dezercji (% health)": 0.3,
     "Widok pola": 4,
     "Atak dystansowy": 0,
@@ -8134,7 +8328,7 @@ var units_default = [
     piercing: 2,
     armor: 3,
     chargeBonus: 8,
-    health: 28,
+    health: 56,
     missileAttack: 0,
     fieldPower: 40
   },
@@ -8154,10 +8348,10 @@ var units_default = [
     Obrona: 6,
     Ruch: 2,
     "Ruch w bitwie (heksy)": 3,
-    Health: 20,
+    Health: 40,
     "Pr\xF3g dezercji (% health)": 0.4,
     "Widok pola": 2,
-    "Atak dystansowy": 10,
+    "Atak dystansowy": 5,
     "Zasi\u0119g ataku (hex)": 4,
     "Ilo\u015B\u0107 pocisk\xF3w": 12,
     "W zamian za": "\u0141ucznik",
@@ -8188,8 +8382,8 @@ var units_default = [
     piercing: 0,
     armor: 1,
     chargeBonus: 0,
-    health: 8,
-    missileAttack: 11,
+    health: 16,
+    missileAttack: 6,
     fieldPower: 13.5
   },
   {
@@ -8208,10 +8402,10 @@ var units_default = [
     Obrona: 2,
     Ruch: 5,
     "Ruch w bitwie (heksy)": 6,
-    Health: 90,
+    Health: 180,
     "Pr\xF3g dezercji (% health)": 0.3,
     "Widok pola": 5,
-    "Atak dystansowy": 8,
+    "Atak dystansowy": 4,
     "Zasi\u0119g ataku (hex)": 3,
     "Ilo\u015B\u0107 pocisk\xF3w": 14,
     "W zamian za": "Rydwan konny",
@@ -8242,8 +8436,8 @@ var units_default = [
     piercing: 2,
     armor: 2,
     chargeBonus: 7,
-    health: 28,
-    missileAttack: 10,
+    health: 56,
+    missileAttack: 5,
     fieldPower: 41.5
   },
   {
@@ -8262,7 +8456,7 @@ var units_default = [
     Obrona: 6,
     Ruch: 2,
     "Ruch w bitwie (heksy)": 3,
-    Health: 50,
+    Health: 100,
     "Pr\xF3g dezercji (% health)": 0.25,
     "Widok pola": 2,
     "Atak dystansowy": 0,
@@ -8296,7 +8490,7 @@ var units_default = [
     piercing: 1,
     armor: 3,
     chargeBonus: 3,
-    health: 12,
+    health: 24,
     missileAttack: 0,
     fieldPower: 27.5
   },
@@ -8316,10 +8510,10 @@ var units_default = [
     Obrona: 8,
     Ruch: 3,
     "Ruch w bitwie (heksy)": 4,
-    Health: 85,
+    Health: 170,
     "Pr\xF3g dezercji (% health)": 0.1,
     "Widok pola": 3,
-    "Atak dystansowy": 6,
+    "Atak dystansowy": 3,
     "Zasi\u0119g ataku (hex)": 2,
     "Ilo\u015B\u0107 pocisk\xF3w": 6,
     "W zamian za": "\u2014",
@@ -8350,8 +8544,8 @@ var units_default = [
     piercing: 4,
     armor: 6,
     chargeBonus: 8,
-    health: 21,
-    missileAttack: 6,
+    health: 42,
+    missileAttack: 3,
     fieldPower: 55.5
   },
   {
@@ -8370,10 +8564,10 @@ var units_default = [
     Obrona: 6,
     Ruch: 2,
     "Ruch w bitwie (heksy)": 3,
-    Health: 20,
+    Health: 40,
     "Pr\xF3g dezercji (% health)": 0.4,
     "Widok pola": 2,
-    "Atak dystansowy": 8,
+    "Atak dystansowy": 4,
     "Zasi\u0119g ataku (hex)": 4,
     "Ilo\u015B\u0107 pocisk\xF3w": 14,
     "W zamian za": "\u0141ucznik",
@@ -8404,8 +8598,8 @@ var units_default = [
     piercing: 0,
     armor: 0,
     chargeBonus: 0,
-    health: 8,
-    missileAttack: 8,
+    health: 16,
+    missileAttack: 4,
     fieldPower: 10
   },
   {
@@ -8424,7 +8618,7 @@ var units_default = [
     Obrona: 4,
     Ruch: 4,
     "Ruch w bitwie (heksy)": 6,
-    Health: 95,
+    Health: 190,
     "Pr\xF3g dezercji (% health)": 0.3,
     "Widok pola": 4,
     "Atak dystansowy": 0,
@@ -8458,7 +8652,7 @@ var units_default = [
     piercing: 2,
     armor: 3,
     chargeBonus: 9,
-    health: 28,
+    health: 56,
     missileAttack: 0,
     fieldPower: 40.5
   },
@@ -8478,7 +8672,7 @@ var units_default = [
     Obrona: 8,
     Ruch: 2,
     "Ruch w bitwie (heksy)": 3,
-    Health: 82,
+    Health: 164,
     "Pr\xF3g dezercji (% health)": 0.25,
     "Widok pola": 2,
     "Atak dystansowy": 0,
@@ -8512,7 +8706,7 @@ var units_default = [
     piercing: 2,
     armor: 3,
     chargeBonus: 2,
-    health: 20,
+    health: 40,
     missileAttack: 0,
     fieldPower: 31
   },
@@ -8532,7 +8726,7 @@ var units_default = [
     Obrona: 8,
     Ruch: 2,
     "Ruch w bitwie (heksy)": 4,
-    Health: 85,
+    Health: 170,
     "Pr\xF3g dezercji (% health)": 0.1,
     "Widok pola": 2,
     "Atak dystansowy": 0,
@@ -8566,7 +8760,7 @@ var units_default = [
     piercing: 4,
     armor: 6,
     chargeBonus: 8,
-    health: 21,
+    health: 42,
     missileAttack: 0,
     fieldPower: 52.5
   },
@@ -8586,7 +8780,7 @@ var units_default = [
     Obrona: 6,
     Ruch: 2,
     "Ruch w bitwie (heksy)": 3,
-    Health: 55,
+    Health: 110,
     "Pr\xF3g dezercji (% health)": 0.25,
     "Widok pola": 2,
     "Atak dystansowy": 0,
@@ -8620,7 +8814,7 @@ var units_default = [
     piercing: 1,
     armor: 3,
     chargeBonus: 3,
-    health: 14,
+    health: 28,
     missileAttack: 0,
     fieldPower: 27.5
   },
@@ -8640,7 +8834,7 @@ var units_default = [
     Obrona: 2,
     Ruch: 4,
     "Ruch w bitwie (heksy)": 6,
-    Health: 90,
+    Health: 180,
     "Pr\xF3g dezercji (% health)": 0.3,
     "Widok pola": 4,
     "Atak dystansowy": 0,
@@ -8674,7 +8868,7 @@ var units_default = [
     piercing: 3,
     armor: 2,
     chargeBonus: 9,
-    health: 26,
+    health: 52,
     missileAttack: 0,
     fieldPower: 39.5
   },
@@ -8694,7 +8888,7 @@ var units_default = [
     Obrona: 6,
     Ruch: 2,
     "Ruch w bitwie (heksy)": 3,
-    Health: 55,
+    Health: 110,
     "Pr\xF3g dezercji (% health)": 0.25,
     "Widok pola": 2,
     "Atak dystansowy": 0,
@@ -8728,7 +8922,7 @@ var units_default = [
     piercing: 1,
     armor: 3,
     chargeBonus: 3,
-    health: 14,
+    health: 28,
     missileAttack: 0,
     fieldPower: 28.5
   },
@@ -8748,7 +8942,7 @@ var units_default = [
     Obrona: 5,
     Ruch: 2,
     "Ruch w bitwie (heksy)": 3,
-    Health: 50,
+    Health: 100,
     "Pr\xF3g dezercji (% health)": 0.25,
     "Widok pola": 2,
     "Atak dystansowy": 0,
@@ -8782,7 +8976,7 @@ var units_default = [
     piercing: 3,
     armor: 4,
     chargeBonus: 2,
-    health: 12,
+    health: 24,
     missileAttack: 0,
     fieldPower: 30
   },
@@ -8802,7 +8996,7 @@ var units_default = [
     Obrona: 2,
     Ruch: 4,
     "Ruch w bitwie (heksy)": 6,
-    Health: 95,
+    Health: 190,
     "Pr\xF3g dezercji (% health)": 0.3,
     "Widok pola": 4,
     "Atak dystansowy": 0,
@@ -8836,7 +9030,7 @@ var units_default = [
     piercing: 3,
     armor: 3,
     chargeBonus: 8,
-    health: 30,
+    health: 60,
     missileAttack: 0,
     fieldPower: 43
   },
@@ -8856,10 +9050,10 @@ var units_default = [
     Obrona: 6,
     Ruch: 2,
     "Ruch w bitwie (heksy)": 3,
-    Health: 25,
+    Health: 50,
     "Pr\xF3g dezercji (% health)": 0.4,
     "Widok pola": 2,
-    "Atak dystansowy": 11,
+    "Atak dystansowy": 6,
     "Zasi\u0119g ataku (hex)": 4,
     "Ilo\u015B\u0107 pocisk\xF3w": 14,
     "W zamian za": "\u0141ucznik",
@@ -8890,8 +9084,8 @@ var units_default = [
     piercing: 0,
     armor: 1,
     chargeBonus: 0,
-    health: 9,
-    missileAttack: 10,
+    health: 18,
+    missileAttack: 5,
     fieldPower: 13.5
   },
   {
@@ -8908,10 +9102,10 @@ var units_default = [
     Atak: 8,
     Uderzenie: 6,
     Obrona: 5,
-    Ruch: 2,
-    "Ruch w bitwie (heksy)": 4,
-    Health: 55,
-    "Pr\xF3g dezercji (% health)": 0.3,
+    Ruch: 3,
+    "Ruch w bitwie (heksy)": 5,
+    Health: 110,
+    "Pr\xF3g dezercji (% health)": 0.1,
     "Widok pola": 3,
     "Atak dystansowy": 0,
     "Zasi\u0119g ataku (hex)": "\u2014",
@@ -8924,7 +9118,7 @@ var units_default = [
     Przebicie: 4,
     "Kara obrony z flanki (%)": 20,
     "Kara obrony z ty\u0142u (%)": 35,
-    "Morale bazowe": 100,
+    "Morale bazowe": 85,
     "Morale ucieczki": 22,
     "Nazwa EN": "Gaesatae",
     Typ: "Swordsman",
@@ -8944,7 +9138,7 @@ var units_default = [
     piercing: 1,
     armor: 1,
     chargeBonus: 5,
-    health: 11,
+    health: 22,
     missileAttack: 0,
     fieldPower: 24
   },
@@ -8961,7 +9155,7 @@ var units_default = [
     Obrona: 5,
     Ruch: 2,
     "Ruch w bitwie (heksy)": 4,
-    Health: 55,
+    Health: 44,
     "Pr\xF3g dezercji (% health)": 0.3,
     "Widok pola": 1,
     "Atak dystansowy": 0,
@@ -8977,7 +9171,7 @@ var units_default = [
     "Kara obrony z ty\u0142u (%)": 35,
     "Morale bazowe": 100,
     "Morale ucieczki": 22,
-    Typ: "Swordsman",
+    Typ: "Miecznik",
     Klasa: "Specjalna",
     "Bonus vs Swordsman %": 0,
     "Bonus vs Spearman %": 15,
@@ -8991,7 +9185,13 @@ var units_default = [
     Kultura: "Celtowie",
     Nacja: "Celtowie",
     "Nazwa EN": "Soldurii",
-    Jednostka: "Soldurii"
+    Jednostka: "Soldurii",
+    fieldPower: 0,
+    health: 44,
+    meleeAttack: 7,
+    weaponDamage: 5,
+    meleeDefence: 2,
+    missileAttack: 0
   },
   {
     Jednostka: "Rydwan celtycki",
@@ -9009,7 +9209,7 @@ var units_default = [
     Obrona: 2,
     Ruch: 4,
     "Ruch w bitwie (heksy)": 6,
-    Health: 85,
+    Health: 170,
     "Pr\xF3g dezercji (% health)": 0.3,
     "Widok pola": 4,
     "Atak dystansowy": 0,
@@ -9043,41 +9243,41 @@ var units_default = [
     piercing: 2,
     armor: 2,
     chargeBonus: 10,
-    health: 26,
+    health: 52,
     missileAttack: 0,
     fieldPower: 40
   },
   {
     Jednostka: "Wojownik germa\u0144ski",
-    Epoka: "Br\u0105z",
+    Epoka: "\u017Belazo",
     Kultura: "Germanie",
-    Tech: "\u2014",
-    "Pieni\u0105dz (koszt)": 0,
+    Tech: "Br\u0105zownictwo",
+    "Pieni\u0105dz (koszt)": 16,
     Ludno\u015B\u0107: 1,
     Surowiec: "\u2014",
     "Surowiec (ilo\u015B\u0107)": 0,
-    "Utrzymanie (Pieni\u0105dz/tur\u0119)": 0,
+    "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 6,
     Uderzenie: 7,
     Obrona: 6,
     Ruch: 3,
     "Ruch w bitwie (heksy)": 4,
-    Health: 60,
-    "Pr\xF3g dezercji (% health)": 0.1,
+    Health: 120,
+    "Pr\xF3g dezercji (% health)": 0.2,
     "Widok pola": 3,
-    "Atak dystansowy": 7,
+    "Atak dystansowy": 4,
     "Zasi\u0119g ataku (hex)": 2,
     "Ilo\u015B\u0107 pocisk\xF3w": 4,
     "W zamian za": "\u2014",
     "Super-jednostka": "TAK",
-    Uwagi: "NOWA; germa\u0144ski wojownik z frame\u0105 (kr\xF3tka w\u0142\xF3cznia do pchni\u0119cia i rzutu) + okr\u0105g\u0142a/heksagonalna tarcza drewniano-sk\xF3rzana; futrzany p\u0142aszcz, ma\u0142o/brak pancerza; walka w lesie i zasadzki | Super Br\u0105zu (framea); max 1; stolica; Koszt=0 | Super Br\u0105zu (framea); max 1; stolica; Koszt=0",
+    Uwagi: "NOWA; germa\u0144ski wojownik z frame\u0105 (kr\xF3tka w\u0142\xF3cznia do pchni\u0119cia i rzutu) + okr\u0105g\u0142a/heksagonalna tarcza drewniano-sk\xF3rzana; futrzany p\u0142aszcz, ma\u0142o/brak pancerza; walka w lesie i zasadzki | Super Br\u0105zu (framea); max 1; stolica; Koszt=0",
     "Rola (linia)": "Wr\u0119cz",
     Pancerz: 2,
     Przebicie: 2,
     "Kara obrony z flanki (%)": 30,
     "Kara obrony z ty\u0142u (%)": 50,
-    "Morale bazowe": 120,
+    "Morale bazowe": 100,
     "Morale ucieczki": 18,
     "Nazwa EN": "Germanic Warrior",
     Typ: "Swordsman",
@@ -9097,8 +9297,8 @@ var units_default = [
     piercing: 1,
     armor: 2,
     chargeBonus: 4,
-    health: 15,
-    missileAttack: 9,
+    health: 30,
+    missileAttack: 4,
     fieldPower: 32
   },
   {
@@ -9117,7 +9317,7 @@ var units_default = [
     Obrona: 2,
     Ruch: 3,
     "Ruch w bitwie (heksy)": 5,
-    Health: 50,
+    Health: 100,
     "Pr\xF3g dezercji (% health)": 0.1,
     "Widok pola": 3,
     "Atak dystansowy": 0,
@@ -9151,7 +9351,7 @@ var units_default = [
     piercing: 1,
     armor: 1,
     chargeBonus: 6,
-    health: 12,
+    health: 24,
     missileAttack: 0,
     fieldPower: 27
   },
@@ -9171,7 +9371,7 @@ var units_default = [
     Obrona: 2,
     Ruch: 1,
     "Ruch w bitwie (heksy)": 2,
-    Health: 1400,
+    Health: 2800,
     "Pr\xF3g dezercji (% health)": null,
     "Widok pola": 1,
     "Atak dystansowy": 0,
@@ -9205,7 +9405,7 @@ var units_default = [
     piercing: 1,
     armor: 1,
     chargeBonus: 1,
-    health: 350,
+    health: 700,
     missileAttack: 0,
     wallAttack: 14,
     fieldPower: 177.5,
@@ -9227,10 +9427,10 @@ var units_default = [
     Obrona: 1,
     Ruch: 1,
     "Ruch w bitwie (heksy)": 1,
-    Health: 500,
+    Health: 1e3,
     "Pr\xF3g dezercji (% health)": null,
     "Widok pola": 1,
-    "Atak dystansowy": 16,
+    "Atak dystansowy": 8,
     "Zasi\u0119g ataku (hex)": 6,
     "Ilo\u015B\u0107 pocisk\xF3w": 10,
     "W zamian za": "\u2014",
@@ -9261,8 +9461,8 @@ var units_default = [
     piercing: 1,
     armor: 0,
     chargeBonus: 0,
-    health: 125,
-    missileAttack: 8,
+    health: 250,
+    missileAttack: 4,
     wallAttack: 16,
     fieldPower: 67.5,
     siegePower: 36.5
@@ -9283,7 +9483,7 @@ var units_default = [
     Obrona: 4,
     Ruch: 1,
     "Ruch w bitwie (heksy)": 2,
-    Health: 1800,
+    Health: 3600,
     "Pr\xF3g dezercji (% health)": null,
     "Widok pola": 1,
     "Atak dystansowy": 0,
@@ -9317,7 +9517,7 @@ var units_default = [
     piercing: 0,
     armor: 1,
     chargeBonus: 0,
-    health: 450,
+    health: 900,
     missileAttack: 0,
     wallAttack: 6,
     fieldPower: 226,
@@ -9339,7 +9539,7 @@ var units_default = [
     Obrona: 4,
     Ruch: 2,
     "Ruch w bitwie (heksy)": 4,
-    Health: 50,
+    Health: 100,
     "Pr\xF3g dezercji (% health)": 0.2,
     "Widok pola": 2,
     "Atak dystansowy": 0,
@@ -9373,7 +9573,7 @@ var units_default = [
     piercing: 2,
     armor: 2,
     chargeBonus: 3,
-    health: 12,
+    health: 24,
     missileAttack: 0,
     fieldPower: 27.5
   },
@@ -9393,7 +9593,7 @@ var units_default = [
     Obrona: 7,
     Ruch: 2,
     "Ruch w bitwie (heksy)": 3,
-    Health: 55,
+    Health: 110,
     "Pr\xF3g dezercji (% health)": 0.2,
     "Widok pola": 2,
     "Atak dystansowy": 0,
@@ -9427,7 +9627,7 @@ var units_default = [
     piercing: 0,
     armor: 3,
     chargeBonus: 2,
-    health: 14,
+    health: 28,
     missileAttack: 0,
     fieldPower: 25
   },
@@ -9444,7 +9644,7 @@ var units_default = [
     Obrona: 5,
     Ruch: 4,
     "Ruch w bitwie (heksy)": 6,
-    Health: 85,
+    Health: 34,
     "Pr\xF3g dezercji (% health)": 0.3,
     "Widok pola": 2,
     "Atak dystansowy": 0,
@@ -9460,7 +9660,7 @@ var units_default = [
     "Kara obrony z ty\u0142u (%)": 40,
     "Morale bazowe": 100,
     "Morale ucieczki": 10,
-    Typ: "Mount",
+    Typ: "Konnica",
     Klasa: "Specjalna",
     "Bonus vs Swordsman %": 0,
     "Bonus vs Spearman %": 15,
@@ -9475,7 +9675,12 @@ var units_default = [
     Nacja: "Asyria",
     "Nazwa EN": "Assyrian Lancer",
     Jednostka: "Konnica lancowa asyryjska",
-    fieldPower: 0
+    fieldPower: 0,
+    health: 34,
+    meleeAttack: 9,
+    weaponDamage: 8,
+    meleeDefence: 5,
+    missileAttack: 0
   },
   {
     Epoka: "\u017Belazo",
@@ -9490,10 +9695,10 @@ var units_default = [
     Obrona: 3,
     Ruch: 4,
     "Ruch w bitwie (heksy)": 6,
-    Health: 75,
+    Health: 30,
     "Pr\xF3g dezercji (% health)": 0.3,
     "Widok pola": 2,
-    "Atak dystansowy": 12,
+    "Atak dystansowy": 6,
     "Zasi\u0119g ataku (hex)": 2,
     "Ilo\u015B\u0107 pocisk\xF3w": 20,
     "W zamian za": "Konnica",
@@ -9506,7 +9711,7 @@ var units_default = [
     "Kara obrony z ty\u0142u (%)": 40,
     "Morale bazowe": 100,
     "Morale ucieczki": 10,
-    Typ: "Mount",
+    Typ: "Konnica \u0142ucznicza",
     Klasa: "Specjalna",
     "Bonus vs Swordsman %": 0,
     "Bonus vs Spearman %": 15,
@@ -9521,7 +9726,12 @@ var units_default = [
     Nacja: "Asyria",
     "Nazwa EN": "Assyrian Horse Archer",
     Jednostka: "Konnica \u0142ucznicza asyryjska",
-    fieldPower: 0
+    fieldPower: 0,
+    health: 30,
+    meleeAttack: 4,
+    weaponDamage: 3,
+    meleeDefence: 2,
+    missileAttack: 6
   },
   {
     Epoka: "Br\u0105z",
@@ -9536,10 +9746,10 @@ var units_default = [
     Obrona: 7,
     Ruch: 2,
     "Ruch w bitwie (heksy)": 3,
-    Health: 25,
+    Health: 16,
     "Pr\xF3g dezercji (% health)": 0.3,
     "Widok pola": 1,
-    "Atak dystansowy": 12,
+    "Atak dystansowy": 6,
     "Zasi\u0119g ataku (hex)": 4,
     "Ilo\u015B\u0107 pocisk\xF3w": 14,
     "W zamian za": "\u0141ucznik",
@@ -9552,7 +9762,7 @@ var units_default = [
     "Kara obrony z ty\u0142u (%)": 80,
     "Morale bazowe": 85,
     "Morale ucieczki": 25,
-    Typ: "Distance",
+    Typ: "\u0141ucznik",
     Klasa: "Specjalna",
     "Bonus vs Swordsman %": 0,
     "Bonus vs Spearman %": 15,
@@ -9567,7 +9777,12 @@ var units_default = [
     Nacja: "Asyria",
     "Nazwa EN": "Assyrian Archer",
     Jednostka: "\u0141ucznik asyryjski",
-    fieldPower: 0
+    fieldPower: 0,
+    health: 16,
+    meleeAttack: 2,
+    weaponDamage: 2,
+    meleeDefence: 3,
+    missileAttack: 4
   },
   {
     Epoka: "\u017Belazo",
@@ -9582,7 +9797,7 @@ var units_default = [
     Obrona: 6,
     Ruch: 2,
     "Ruch w bitwie (heksy)": 3,
-    Health: 55,
+    Health: 31,
     "Pr\xF3g dezercji (% health)": 0.3,
     "Widok pola": 1,
     "Atak dystansowy": 0,
@@ -9598,7 +9813,7 @@ var units_default = [
     "Kara obrony z ty\u0142u (%)": 30,
     "Morale bazowe": 100,
     "Morale ucieczki": 22,
-    Typ: "Swordsman",
+    Typ: "W\u0142\xF3cznik",
     Klasa: "Specjalna",
     "Bonus vs Swordsman %": 0,
     "Bonus vs Spearman %": 15,
@@ -9613,7 +9828,12 @@ var units_default = [
     Nacja: "S\u0142owianie",
     "Nazwa EN": "Druzhinnik",
     Jednostka: "Dru\u017Cynnik",
-    fieldPower: 0
+    fieldPower: 0,
+    health: 31,
+    meleeAttack: 7,
+    weaponDamage: 6,
+    meleeDefence: 4,
+    missileAttack: 7
   },
   {
     Epoka: "\u017Belazo",
@@ -9628,10 +9848,10 @@ var units_default = [
     Obrona: 4,
     Ruch: 4,
     "Ruch w bitwie (heksy)": 6,
-    Health: 70,
+    Health: 28,
     "Pr\xF3g dezercji (% health)": 0.3,
     "Widok pola": 2,
-    "Atak dystansowy": 5,
+    "Atak dystansowy": 2,
     "Zasi\u0119g ataku (hex)": 2,
     "Ilo\u015B\u0107 pocisk\xF3w": 5,
     "W zamian za": "Konnica",
@@ -9644,7 +9864,7 @@ var units_default = [
     "Kara obrony z ty\u0142u (%)": 40,
     "Morale bazowe": 100,
     "Morale ucieczki": 10,
-    Typ: "Mount",
+    Typ: "Konnica",
     Klasa: "Specjalna",
     "Bonus vs Swordsman %": 0,
     "Bonus vs Spearman %": 15,
@@ -9658,8 +9878,13 @@ var units_default = [
     Kultura: "S\u0142owianie",
     Nacja: "S\u0142owianie",
     "Nazwa EN": "Slavic Javelin Cavalry",
-    Jednostka: "Je\u017Adziec z szczepnikami",
-    fieldPower: 0
+    Jednostka: "Je\u017Adziec z oszczepami",
+    fieldPower: 0,
+    health: 28,
+    meleeAttack: 6,
+    weaponDamage: 5,
+    meleeDefence: 4,
+    missileAttack: 7
   },
   {
     Epoka: "Br\u0105z",
@@ -9674,7 +9899,7 @@ var units_default = [
     Obrona: 9,
     Ruch: 2,
     "Ruch w bitwie (heksy)": 3,
-    Health: 70,
+    Health: 40,
     "Pr\xF3g dezercji (% health)": 0.3,
     "Widok pola": 1,
     "Atak dystansowy": 0,
@@ -9690,7 +9915,7 @@ var units_default = [
     "Kara obrony z ty\u0142u (%)": 30,
     "Morale bazowe": 100,
     "Morale ucieczki": 22,
-    Typ: "Spearman",
+    Typ: "W\u0142\xF3cznik",
     Klasa: "Specjalna",
     "Bonus vs Swordsman %": 0,
     "Bonus vs Spearman %": 0,
@@ -9705,7 +9930,12 @@ var units_default = [
     Nacja: "Harappa",
     "Nazwa EN": "Harappan Gate Guard",
     Jednostka: "Stra\u017Cnik bram Harappy",
-    fieldPower: 0
+    fieldPower: 0,
+    health: 40,
+    meleeAttack: 4,
+    weaponDamage: 4,
+    meleeDefence: 9,
+    missileAttack: 0
   },
   {
     Epoka: "Br\u0105z",
@@ -9720,7 +9950,7 @@ var units_default = [
     Obrona: 7,
     Ruch: 2,
     "Ruch w bitwie (heksy)": 3,
-    Health: 60,
+    Health: 24,
     "Pr\xF3g dezercji (% health)": 0.3,
     "Widok pola": 1,
     "Atak dystansowy": 0,
@@ -9736,7 +9966,7 @@ var units_default = [
     "Kara obrony z ty\u0142u (%)": 30,
     "Morale bazowe": 100,
     "Morale ucieczki": 22,
-    Typ: "Spearman",
+    Typ: "W\u0142\xF3cznik",
     Klasa: "Specjalna",
     "Bonus vs Swordsman %": 0,
     "Bonus vs Spearman %": 15,
@@ -9751,7 +9981,12 @@ var units_default = [
     Nacja: "Harappa",
     "Nazwa EN": "Indus Infantry",
     Jednostka: "Piechota induska",
-    fieldPower: 0
+    fieldPower: 0,
+    health: 24,
+    meleeAttack: 6,
+    weaponDamage: 5,
+    meleeDefence: 5,
+    missileAttack: 0
   },
   {
     Epoka: "\u017Belazo",
@@ -9766,7 +10001,7 @@ var units_default = [
     Obrona: 8,
     Ruch: 2,
     "Ruch w bitwie (heksy)": 3,
-    Health: 65,
+    Health: 26,
     "Pr\xF3g dezercji (% health)": 0.3,
     "Widok pola": 1,
     "Atak dystansowy": 0,
@@ -9782,7 +10017,7 @@ var units_default = [
     "Kara obrony z ty\u0142u (%)": 30,
     "Morale bazowe": 100,
     "Morale ucieczki": 22,
-    Typ: "Swordsman",
+    Typ: "W\u0142\xF3cznik",
     Klasa: "Specjalna",
     "Bonus vs Swordsman %": 0,
     "Bonus vs Spearman %": 15,
@@ -9797,7 +10032,12 @@ var units_default = [
     Nacja: "Harappa",
     "Nazwa EN": "Harappan Garrison",
     Jednostka: "Garnizon Harappy",
-    fieldPower: 0
+    fieldPower: 0,
+    health: 26,
+    meleeAttack: 5,
+    weaponDamage: 4,
+    meleeDefence: 8,
+    missileAttack: 0
   },
   {
     Epoka: "Br\u0105z",
@@ -9812,7 +10052,7 @@ var units_default = [
     Obrona: 3,
     Ruch: 5,
     "Ruch w bitwie (heksy)": 6,
-    Health: 90,
+    Health: 36,
     "Pr\xF3g dezercji (% health)": 0.3,
     "Widok pola": 2,
     "Atak dystansowy": 0,
@@ -9828,7 +10068,7 @@ var units_default = [
     "Kara obrony z ty\u0142u (%)": 40,
     "Morale bazowe": 100,
     "Morale ucieczki": 10,
-    Typ: "Mount",
+    Typ: "Rydwan",
     Klasa: "Specjalna",
     "Bonus vs Swordsman %": 0,
     "Bonus vs Spearman %": 15,
@@ -9843,7 +10083,12 @@ var units_default = [
     Nacja: "Hetyci",
     "Nazwa EN": "Cappadocian Chariot",
     Jednostka: "Rydwan Kapadokijski",
-    fieldPower: 0
+    fieldPower: 0,
+    health: 36,
+    meleeAttack: 7,
+    weaponDamage: 7,
+    meleeDefence: 3,
+    missileAttack: 0
   },
   {
     Epoka: "Br\u0105z",
@@ -9858,7 +10103,7 @@ var units_default = [
     Obrona: 8,
     Ruch: 2,
     "Ruch w bitwie (heksy)": 3,
-    Health: 65,
+    Health: 32,
     "Pr\xF3g dezercji (% health)": 0.3,
     "Widok pola": 1,
     "Atak dystansowy": 0,
@@ -9874,7 +10119,7 @@ var units_default = [
     "Kara obrony z ty\u0142u (%)": 30,
     "Morale bazowe": 100,
     "Morale ucieczki": 22,
-    Typ: "Spearman",
+    Typ: "W\u0142\xF3cznik",
     Klasa: "Specjalna",
     "Bonus vs Swordsman %": 0,
     "Bonus vs Spearman %": 15,
@@ -9889,7 +10134,12 @@ var units_default = [
     Nacja: "Hetyci",
     "Nazwa EN": "Hittite Infantry",
     Jednostka: "Piechota hetycka",
-    fieldPower: 0
+    fieldPower: 0,
+    health: 32,
+    meleeAttack: 5,
+    weaponDamage: 8,
+    meleeDefence: 8,
+    missileAttack: 0
   },
   {
     Epoka: "\u017Belazo",
@@ -9904,7 +10154,7 @@ var units_default = [
     Obrona: 8,
     Ruch: 2,
     "Ruch w bitwie (heksy)": 3,
-    Health: 70,
+    Health: 40,
     "Pr\xF3g dezercji (% health)": 0.3,
     "Widok pola": 1,
     "Atak dystansowy": 0,
@@ -9920,7 +10170,7 @@ var units_default = [
     "Kara obrony z ty\u0142u (%)": 30,
     "Morale bazowe": 100,
     "Morale ucieczki": 22,
-    Typ: "Swordsman",
+    Typ: "W\u0142\xF3cznik",
     Klasa: "Specjalna",
     "Bonus vs Swordsman %": 0,
     "Bonus vs Spearman %": 15,
@@ -9935,7 +10185,12 @@ var units_default = [
     Nacja: "Hetyci",
     "Nazwa EN": "Hittite Guard",
     Jednostka: "Gwardia hetycka",
-    fieldPower: 0
+    fieldPower: 0,
+    health: 40,
+    meleeAttack: 7,
+    weaponDamage: 6,
+    meleeDefence: 7,
+    missileAttack: 0
   },
   {
     Epoka: "Br\u0105z",
@@ -9950,7 +10205,7 @@ var units_default = [
     Obrona: 8,
     Ruch: 2,
     "Ruch w bitwie (heksy)": 3,
-    Health: 75,
+    Health: 35,
     "Pr\xF3g dezercji (% health)": 0.3,
     "Widok pola": 1,
     "Atak dystansowy": 0,
@@ -9966,7 +10221,7 @@ var units_default = [
     "Kara obrony z ty\u0142u (%)": 30,
     "Morale bazowe": 100,
     "Morale ucieczki": 22,
-    Typ: "Swordsman",
+    Typ: "W\u0142\xF3cznik",
     Klasa: "Specjalna",
     "Bonus vs Swordsman %": 0,
     "Bonus vs Spearman %": 15,
@@ -9981,7 +10236,12 @@ var units_default = [
     Nacja: "Babilonia",
     "Nazwa EN": "Ishtar Guard",
     Jednostka: "Gwardia Ishtar",
-    fieldPower: 0
+    fieldPower: 0,
+    health: 35,
+    meleeAttack: 8,
+    weaponDamage: 7,
+    meleeDefence: 7,
+    missileAttack: 0
   },
   {
     Epoka: "Br\u0105z",
@@ -9996,7 +10256,7 @@ var units_default = [
     Obrona: 7,
     Ruch: 2,
     "Ruch w bitwie (heksy)": 3,
-    Health: 55,
+    Health: 24,
     "Pr\xF3g dezercji (% health)": 0.3,
     "Widok pola": 1,
     "Atak dystansowy": 0,
@@ -10012,7 +10272,7 @@ var units_default = [
     "Kara obrony z ty\u0142u (%)": 30,
     "Morale bazowe": 100,
     "Morale ucieczki": 22,
-    Typ: "Swordsman",
+    Typ: "Miecznik",
     Klasa: "Specjalna",
     "Bonus vs Swordsman %": 0,
     "Bonus vs Spearman %": 15,
@@ -10027,7 +10287,12 @@ var units_default = [
     Nacja: "Babilonia",
     "Nazwa EN": "Babylonian Warrior",
     Jednostka: "Wojownik babilo\u0144ski",
-    fieldPower: 0
+    fieldPower: 0,
+    health: 24,
+    meleeAttack: 6,
+    weaponDamage: 5,
+    meleeDefence: 5,
+    missileAttack: 0
   },
   {
     Epoka: "\u017Belazo",
@@ -10042,7 +10307,7 @@ var units_default = [
     Obrona: 8,
     Ruch: 2,
     "Ruch w bitwie (heksy)": 3,
-    Health: 65,
+    Health: 26,
     "Pr\xF3g dezercji (% health)": 0.3,
     "Widok pola": 1,
     "Atak dystansowy": 0,
@@ -10058,7 +10323,7 @@ var units_default = [
     "Kara obrony z ty\u0142u (%)": 30,
     "Morale bazowe": 100,
     "Morale ucieczki": 22,
-    Typ: "Swordsman",
+    Typ: "W\u0142\xF3cznik",
     Klasa: "Specjalna",
     "Bonus vs Swordsman %": 0,
     "Bonus vs Spearman %": 15,
@@ -10073,7 +10338,12 @@ var units_default = [
     Nacja: "Babilonia",
     "Nazwa EN": "Neo-Babylonian Infantry",
     Jednostka: "Piechota neobabilo\u0144ska",
-    fieldPower: 0
+    fieldPower: 0,
+    health: 26,
+    meleeAttack: 6,
+    weaponDamage: 5,
+    meleeDefence: 7,
+    missileAttack: 0
   },
   {
     Epoka: "\u017Belazo",
@@ -10088,7 +10358,7 @@ var units_default = [
     Obrona: 6,
     Ruch: 2,
     "Ruch w bitwie (heksy)": 3,
-    Health: 55,
+    Health: 24,
     "Pr\xF3g dezercji (% health)": 0.3,
     "Widok pola": 1,
     "Atak dystansowy": 0,
@@ -10104,7 +10374,7 @@ var units_default = [
     "Kara obrony z ty\u0142u (%)": 30,
     "Morale bazowe": 100,
     "Morale ucieczki": 22,
-    Typ: "Swordsman",
+    Typ: "Miecznik",
     Klasa: "Specjalna",
     "Bonus vs Swordsman %": 0,
     "Bonus vs Spearman %": 15,
@@ -10119,7 +10389,12 @@ var units_default = [
     Nacja: "Fenicjanie",
     "Nazwa EN": "Tyrian Swordsman",
     Jednostka: "Tyrski miecznik",
-    fieldPower: 0
+    fieldPower: 0,
+    health: 24,
+    meleeAttack: 7,
+    weaponDamage: 6,
+    meleeDefence: 3,
+    missileAttack: 0
   },
   {
     Epoka: "Br\u0105z",
@@ -10134,7 +10409,7 @@ var units_default = [
     Obrona: 6,
     Ruch: 2,
     "Ruch w bitwie (heksy)": 3,
-    Health: 50,
+    Health: 20,
     "Pr\xF3g dezercji (% health)": 0.3,
     "Widok pola": 1,
     "Atak dystansowy": 0,
@@ -10150,7 +10425,7 @@ var units_default = [
     "Kara obrony z ty\u0142u (%)": 30,
     "Morale bazowe": 100,
     "Morale ucieczki": 22,
-    Typ: "Swordsman",
+    Typ: "W\u0142\xF3cznik",
     Klasa: "Specjalna",
     "Bonus vs Swordsman %": 0,
     "Bonus vs Spearman %": 15,
@@ -10165,7 +10440,12 @@ var units_default = [
     Nacja: "Fenicjanie",
     "Nazwa EN": "Phoenician Warrior",
     Jednostka: "Wojownik fenicki",
-    fieldPower: 0
+    fieldPower: 0,
+    health: 20,
+    meleeAttack: 5,
+    weaponDamage: 4,
+    meleeDefence: 4,
+    missileAttack: 0
   },
   {
     Epoka: "\u017Belazo",
@@ -10180,7 +10460,7 @@ var units_default = [
     Obrona: 7,
     Ruch: 2,
     "Ruch w bitwie (heksy)": 3,
-    Health: 60,
+    Health: 24,
     "Pr\xF3g dezercji (% health)": 0.3,
     "Widok pola": 1,
     "Atak dystansowy": 0,
@@ -10196,7 +10476,7 @@ var units_default = [
     "Kara obrony z ty\u0142u (%)": 30,
     "Morale bazowe": 100,
     "Morale ucieczki": 22,
-    Typ: "Swordsman",
+    Typ: "W\u0142\xF3cznik",
     Klasa: "Specjalna",
     "Bonus vs Swordsman %": 0,
     "Bonus vs Spearman %": 15,
@@ -10210,8 +10490,13 @@ var units_default = [
     Kultura: "Fenicjanie",
     Nacja: "Fenicjanie",
     "Nazwa EN": "Tyre Guard",
-    Jednostka: "Gwardia Tyr",
-    fieldPower: 0
+    Jednostka: "Gwardia Tyre\u0144ska",
+    fieldPower: 0,
+    health: 24,
+    meleeAttack: 7,
+    weaponDamage: 6,
+    meleeDefence: 6,
+    missileAttack: 0
   },
   {
     Jednostka: "Thorakites",
@@ -10229,9 +10514,9 @@ var units_default = [
     Obrona: 9,
     Ruch: 2,
     "Ruch w bitwie (heksy)": 3,
-    Health: 65,
+    Health: 42,
     "Pr\xF3g dezercji (% health)": 0.3,
-    "Widok pola": 2,
+    "Widok pola": 1,
     "Atak dystansowy": 0,
     "Zasi\u0119g ataku (hex)": "\u2014",
     "Ilo\u015B\u0107 pocisk\xF3w": "\u2014",
@@ -10240,13 +10525,13 @@ var units_default = [
     Uwagi: "\u017Belazna piechota defensywna; tarcza + miecz; profil obronny hoplit\xF3w p\xF3\u017Anego okresu",
     "Rola (linia)": "Wr\u0119cz",
     Pancerz: 6,
-    Przebicie: 20,
+    Przebicie: 4,
     "Kara obrony z flanki (%)": 15,
     "Kara obrony z ty\u0142u (%)": 30,
-    "Morale bazowe": 60,
+    "Morale bazowe": 100,
     "Morale ucieczki": 22,
     "Nazwa EN": "Thorakites",
-    Typ: "Swordsman",
+    Typ: "W\u0142\xF3cznik",
     Klasa: "Specjalna",
     Nacja: "Grecja",
     "Bonus vs Swordsman %": 0,
@@ -10257,19 +10542,15 @@ var units_default = [
     "Bonus vs Mount %": 0,
     "Zmiana na": "Swordsman",
     "Dost\u0119pna w epokach": "\u017Belazo",
-    fieldPower: 32,
-    meleeAttack: 6,
-    meleeDefence: 5,
-    weaponDamage: 6,
-    piercing: 2,
-    armor: 4,
-    chargeBonus: 4,
-    health: 14,
-    missileAttack: 0,
-    Obra\u017Cenia: 65
+    fieldPower: 0,
+    health: 42,
+    meleeAttack: 5,
+    weaponDamage: 4,
+    meleeDefence: 8,
+    missileAttack: 6
   },
   {
-    Jednostka: "Legionarius",
+    Jednostka: "Legion Rzymski",
     Epoka: "Br\u0105z",
     Kultura: "Rzymianie",
     Tech: "Br\u0105zownictwo",
@@ -10284,9 +10565,9 @@ var units_default = [
     Obrona: 7,
     Ruch: 2,
     "Ruch w bitwie (heksy)": 3,
-    Health: 58,
+    Health: 48,
     "Pr\xF3g dezercji (% health)": 0.3,
-    "Widok pola": 2,
+    "Widok pola": 1,
     "Atak dystansowy": 0,
     "Zasi\u0119g ataku (hex)": "\u2014",
     "Ilo\u015B\u0107 pocisk\xF3w": "\u2014",
@@ -10295,13 +10576,13 @@ var units_default = [
     Uwagi: "Wczesny legionariusz Br\u0105zu; gladius + scutum; przed reform\u0105 Mariusza",
     "Rola (linia)": "Wr\u0119cz",
     Pancerz: 5,
-    Przebicie: 20,
+    Przebicie: 4,
     "Kara obrony z flanki (%)": 15,
     "Kara obrony z ty\u0142u (%)": 30,
-    "Morale bazowe": 60,
+    "Morale bazowe": 100,
     "Morale ucieczki": 22,
     "Nazwa EN": "Legionary",
-    Typ: "Swordsman",
+    Typ: "Miecznik",
     Klasa: "Specjalna",
     Nacja: "Rzym",
     "Bonus vs Swordsman %": 0,
@@ -10312,16 +10593,12 @@ var units_default = [
     "Bonus vs Mount %": 0,
     "Zmiana na": "Swordsman",
     "Dost\u0119pna w epokach": "Br\u0105z",
-    fieldPower: 32,
-    meleeAttack: 6,
-    meleeDefence: 5,
+    fieldPower: 0,
+    health: 48,
+    meleeAttack: 7,
     weaponDamage: 6,
-    piercing: 2,
-    armor: 4,
-    chargeBonus: 4,
-    health: 14,
-    missileAttack: 0,
-    Obra\u017Cenia: 65
+    meleeDefence: 7,
+    missileAttack: 6
   },
   {
     Jednostka: "Evocati",
@@ -10339,7 +10616,7 @@ var units_default = [
     Obrona: 9,
     Ruch: 2,
     "Ruch w bitwie (heksy)": 4,
-    Health: 75,
+    Health: 55,
     "Pr\xF3g dezercji (% health)": 0.1,
     "Widok pola": 2,
     "Atak dystansowy": 0,
@@ -10356,7 +10633,7 @@ var units_default = [
     "Morale bazowe": 120,
     "Morale ucieczki": 18,
     "Nazwa EN": "Evocati",
-    Typ: "Swordsman",
+    Typ: "Miecznik",
     Klasa: "Super",
     Nacja: "Rzym",
     "Bonus vs Swordsman %": 0,
@@ -10367,15 +10644,12 @@ var units_default = [
     "Bonus vs Mount %": 0,
     "Zmiana na": "\u2014",
     "Dost\u0119pna w epokach": "Br\u0105z",
-    fieldPower: 51.5,
+    fieldPower: 0,
+    health: 55,
     meleeAttack: 8,
+    weaponDamage: 8,
     meleeDefence: 8,
-    weaponDamage: 10,
-    piercing: 4,
-    armor: 6,
-    chargeBonus: 10,
-    health: 21,
-    missileAttack: 0
+    missileAttack: 6
   },
   {
     Jednostka: "iButho z iklwa",
@@ -10393,9 +10667,9 @@ var units_default = [
     Obrona: 7,
     Ruch: 4,
     "Ruch w bitwie (heksy)": 4,
-    Health: 72,
+    Health: 29,
     "Pr\xF3g dezercji (% health)": 0.15,
-    "Widok pola": 4,
+    "Widok pola": 2,
     "Atak dystansowy": 0,
     "Zasi\u0119g ataku (hex)": "\u2014",
     "Ilo\u015B\u0107 pocisk\xF3w": "\u2014",
@@ -10410,7 +10684,7 @@ var units_default = [
     "Morale bazowe": 100,
     "Morale ucieczki": 22,
     "Nazwa EN": "iButho with iklwa",
-    Typ: "Spearman",
+    Typ: "W\u0142\xF3cznik",
     Klasa: "Specjalna",
     Nacja: "Zulu",
     "Bonus vs Swordsman %": 0,
@@ -10421,14 +10695,11 @@ var units_default = [
     "Bonus vs Mount %": 50,
     "Zmiana na": "Spearman",
     "Dost\u0119pna w epokach": "\u017Belazo",
-    fieldPower: 29.5,
+    fieldPower: 0,
+    health: 29,
     meleeAttack: 5,
-    meleeDefence: 6,
     weaponDamage: 4,
-    piercing: 1,
-    armor: 3,
-    chargeBonus: 3,
-    health: 18,
+    meleeDefence: 7,
     missileAttack: 0
   },
   {
@@ -10447,9 +10718,9 @@ var units_default = [
     Obrona: 7,
     Ruch: 2,
     "Ruch w bitwie (heksy)": 4,
-    Health: 60,
+    Health: 48,
     "Pr\xF3g dezercji (% health)": 0.2,
-    "Widok pola": 2,
+    "Widok pola": 1,
     "Atak dystansowy": 0,
     "Zasi\u0119g ataku (hex)": "\u2014",
     "Ilo\u015B\u0107 pocisk\xF3w": "\u2014",
@@ -10464,7 +10735,7 @@ var units_default = [
     "Morale bazowe": 100,
     "Morale ucieczki": 22,
     "Nazwa EN": "Champi Guardsman",
-    Typ: "Offensive",
+    Typ: "Miecznik",
     Klasa: "Specjalna",
     Nacja: "Inkowie",
     "Bonus vs Swordsman %": 25,
@@ -10475,15 +10746,12 @@ var units_default = [
     "Bonus vs Mount %": 0,
     "Zmiana na": "Offensive",
     "Dost\u0119pna w epokach": "Br\u0105z;\u017Belazo",
-    fieldPower: 26.5,
-    meleeAttack: 6,
-    meleeDefence: 4,
-    weaponDamage: 5,
-    piercing: 2,
-    armor: 2,
-    chargeBonus: 3,
-    health: 12,
-    missileAttack: 0
+    fieldPower: 0,
+    health: 48,
+    meleeAttack: 7,
+    weaponDamage: 6,
+    meleeDefence: 5,
+    missileAttack: 5
   },
   {
     Jednostka: "Wojownik z \u017Celaznym khopesh",
@@ -10501,9 +10769,9 @@ var units_default = [
     Obrona: 7,
     Ruch: 2,
     "Ruch w bitwie (heksy)": 3,
-    Health: 58,
+    Health: 23,
     "Pr\xF3g dezercji (% health)": 0.25,
-    "Widok pola": 2,
+    "Widok pola": 1,
     "Atak dystansowy": 0,
     "Zasi\u0119g ataku (hex)": "\u2014",
     "Ilo\u015B\u0107 pocisk\xF3w": "\u2014",
@@ -10518,7 +10786,7 @@ var units_default = [
     "Morale bazowe": 100,
     "Morale ucieczki": 22,
     "Nazwa EN": "Iron Khopesh Warrior",
-    Typ: "Swordsman",
+    Typ: "Miecznik",
     Klasa: "Specjalna",
     Nacja: "Egipt",
     "Bonus vs Swordsman %": 0,
@@ -10529,14 +10797,11 @@ var units_default = [
     "Bonus vs Mount %": 0,
     "Zmiana na": "Swordsman",
     "Dost\u0119pna w epokach": "\u017Belazo",
-    fieldPower: 27.5,
+    fieldPower: 0,
+    health: 23,
     meleeAttack: 6,
-    meleeDefence: 5,
-    weaponDamage: 5,
-    piercing: 1,
-    armor: 3,
-    chargeBonus: 3,
-    health: 12,
+    weaponDamage: 6,
+    meleeDefence: 6,
     missileAttack: 0
   },
   {
@@ -10555,9 +10820,9 @@ var units_default = [
     Obrona: 10,
     Ruch: 2,
     "Ruch w bitwie (heksy)": 3,
-    Health: 85,
+    Health: 34,
     "Pr\xF3g dezercji (% health)": 0.25,
-    "Widok pola": 2,
+    "Widok pola": 1,
     "Atak dystansowy": 0,
     "Zasi\u0119g ataku (hex)": "\u2014",
     "Ilo\u015B\u0107 pocisk\xF3w": "\u2014",
@@ -10572,7 +10837,7 @@ var units_default = [
     "Morale bazowe": 100,
     "Morale ucieczki": 22,
     "Nazwa EN": "Shield Wall (Sargonid)",
-    Typ: "Spearman",
+    Typ: "W\u0142\xF3cznik",
     Klasa: "Specjalna",
     Nacja: "Sumer",
     "Bonus vs Swordsman %": 0,
@@ -10583,14 +10848,11 @@ var units_default = [
     "Bonus vs Mount %": 50,
     "Zmiana na": "Spearman",
     "Dost\u0119pna w epokach": "\u017Belazo",
-    fieldPower: 31,
-    meleeAttack: 5,
-    meleeDefence: 6,
-    weaponDamage: 4,
-    piercing: 2,
-    armor: 3,
-    chargeBonus: 2,
-    health: 20,
+    fieldPower: 0,
+    health: 34,
+    meleeAttack: 4,
+    weaponDamage: 3,
+    meleeDefence: 10,
     missileAttack: 0
   },
   {
@@ -10608,10 +10870,10 @@ var units_default = [
     Uderzenie: 7,
     Obrona: 5,
     Ruch: 3,
-    "Ruch w bitwie (heksy)": 5,
-    Health: 58,
-    "Pr\xF3g dezercji (% health)": 0.1,
-    "Widok pola": 3,
+    "Ruch w bitwie (heksy)": 4,
+    Health: 38,
+    "Pr\xF3g dezercji (% health)": 0.3,
+    "Widok pola": 1,
     "Atak dystansowy": 0,
     "Zasi\u0119g ataku (hex)": "\u2014",
     "Ilo\u015B\u0107 pocisk\xF3w": "\u2014",
@@ -10623,10 +10885,10 @@ var units_default = [
     Przebicie: 4,
     "Kara obrony z flanki (%)": 20,
     "Kara obrony z ty\u0142u (%)": 35,
-    "Morale bazowe": 85,
+    "Morale bazowe": 100,
     "Morale ucieczki": 22,
     "Nazwa EN": "Gallic Swordsman",
-    Typ: "Swordsman",
+    Typ: "Miecznik",
     Klasa: "Specjalna",
     Nacja: "Celtowie",
     "Bonus vs Swordsman %": 0,
@@ -10637,14 +10899,11 @@ var units_default = [
     "Bonus vs Mount %": 0,
     "Zmiana na": "Swordsman",
     "Dost\u0119pna w epokach": "\u017Belazo",
-    fieldPower: 24,
-    meleeAttack: 7,
+    fieldPower: 0,
+    health: 38,
+    meleeAttack: 8,
+    weaponDamage: 6,
     meleeDefence: 2,
-    weaponDamage: 5,
-    piercing: 1,
-    armor: 1,
-    chargeBonus: 5,
-    health: 11,
     missileAttack: 0
   }
 ];
@@ -13397,12 +13656,12 @@ var terrain_yields_default = {
     {
       Modyfikator: "Las (nak\u0142adka)",
       \u017Bywno\u015B\u0107: -1,
-      Praca: 0,
+      Praca: 2,
       Handel: -1,
       Drewno: 3,
       Kamie\u0144: 0,
-      Suma: 1,
-      Uwagi: "Pod lasem zawsze jest teren bazowy (\u0142\u0105ka/r\xF3wnina/wzg\xF3rza itp.); las daje +drewno, redukuje \u017Cywno\u015B\u0107 i handel"
+      Suma: 3,
+      Uwagi: "Pod lasem zawsze jest teren bazowy; las: \u2212\u017Cywno\u015B\u0107, \u2212handel, +praca, +drewno \u2014 bez wzgl\u0119du na \u{1F464}/jednostk\u0119"
     }
   ]
 };
@@ -14402,11 +14661,11 @@ var econ_params_default = {
       opis: "Pr\xF3g wzrostu populacji: Pr\xF3g(N) = 10 + N \xD7 warto\u015B\u0107. Wi\u0119kszy = wolniejszy wzrost. [PT]"
     },
     spichlerz_zachowanie_po_wzroscie: {
-      easy: 0.75,
-      normal: 0.7,
-      hard: 0.65,
+      easy: 0.6,
+      normal: 0.5,
+      hard: 0.4,
       jednostka: "%",
-      opis: "U\u0142amek \u017Cywno\u015Bci zachowany w Spichlerzu po awansie populacji. ABC-11 Maciej 2026-07-04: normal=70%."
+      opis: "Ze Spichlerzem w mie\u015Bcie: u\u0142amek bufora wzrostu zachowany po awansie populacji (+1). Bez Spichlerza bufor zeruje si\u0119. Maciej 2026-07-06: normal=50%."
     },
     handel_surowiec_min_stock: {
       easy: 2,
@@ -14497,7 +14756,21 @@ var econ_params_default = {
       normal: 100,
       hard: 80,
       jednostka: "\u{1F35E}",
-      opis: "B5-SP: max zapas\xF3w armii na 1 Spichlerz w imperium; suma = warto\u015B\u0107 \xD7 liczba Spichlerzy. Nadwy\u017Cka przepada."
+      opis: "Max zapas\xF3w armii na 1 Spichlerz w imperium (100% odk\u0142adania). Suma = warto\u015B\u0107 \xD7 liczba Spichlerzy. Bez Spichlerza: odk\u0142adanie 50%, bez limitu pojemno\u015Bci."
+    },
+    armia_odklad_bez_spichlerza: {
+      easy: 0.6,
+      normal: 0.5,
+      hard: 0.4,
+      jednostka: "u\u0142amek",
+      opis: "Od startu gry: u\u0142amek netto \u017Cywno\u015Bci armii (po koszcie wojska) odk\u0142adany do zapas\xF3w pa\u0144stwa BEZ Spichlerza w imperium. Reszta przepada."
+    },
+    armia_odklad_ze_spichlerzem: {
+      easy: 1,
+      normal: 1,
+      hard: 1,
+      jednostka: "u\u0142amek",
+      opis: "U\u0142amek netto \u017Cywno\u015Bci armii odk\u0142adany do zapas\xF3w pa\u0144stwa gdy w imperium jest \u22651 Spichlerz (100%). Limit pojemno\u015Bci = spichlerz_pojemnosc \xD7 liczba Spichlerzy."
     },
     korupcja_wspolczynnik_dystansu: {
       easy: 1,
@@ -14663,6 +14936,13 @@ var econ_params_default = {
       hard: 2,
       jednostka: "Drewno/tur\u0119",
       opis: "Bonus Drewna z nak\u0142adki Las."
+    },
+    teren_las_praca: {
+      easy: 2.5,
+      normal: 2,
+      hard: 1.5,
+      jednostka: "Praca/tur\u0119",
+      opis: "Bonus Pracy z nak\u0142adki Las (dost\u0119p do drewna / wyr\u0105b)."
     },
     ulepszenie_farma_zywnosc: {
       easy: 3,
@@ -15785,14 +16065,21 @@ var society_params_default = {
       normal: -1,
       hard: -1.25,
       jednostka: "pkt Zdrowia",
-      opis: "Kara Zdrowia gdy bagno lub d\u017Cungla w promieniu miasta (choroby, komary). [PT]"
+      opis: "Kara Zdrowia gdy bagno w promieniu okolicy miasta (choroby, komary). Nie dotyczy lasu. [PT]"
+    },
+    zdrowie_bonus_las: {
+      easy: 2,
+      normal: 1,
+      hard: 0,
+      jednostka: "pkt Zdrowia",
+      opis: "Bonus Zdrowia gdy w promieniu okolicy miasta jest co najmniej jeden heks z nak\u0142adk\u0105 Las (\u015Bwie\u017Ce powietrze, zasoby le\u015Bne). [PT]"
     },
     zdrowie_kara_dzungla: {
       easy: -0.75,
       normal: -1,
       hard: -1.25,
       jednostka: "pkt Zdrowia",
-      opis: "Kara Zdrowia za d\u017Cungl\u0119 w pobli\u017Cu (wilgo\u0107, choroby tropikalne). [PT \u2014 do strojenia]"
+      opis: "REZERWA \u2014 kara za prawdziw\u0105 d\u017Cungl\u0119 (osobna nak\u0142adka klimatyczna). Nak\u0142adka Las u\u017Cywa zdrowie_bonus_las, nie tej kary. [PT]"
     },
     zdrowie_kara_zanieczyszczenie: {
       easy: -0.75,
@@ -17344,129 +17631,6 @@ function loadGameData() {
   };
 }
 
-// src/game/economy-upkeep.ts
-function readNum(group, key, difficulty, fallback) {
-  const row = group ? group[key] : void 0;
-  const v = row ? row[difficulty] : void 0;
-  return typeof v === "number" && Number.isFinite(v) ? v : fallback;
-}
-var DEFAULT_STORAGE_PARAMS = {
-  bazaZywnosc: 20,
-  bazaSurowce: 10,
-  mnoznikMagazynu: 5
-};
-function loadStorageParams(raw, difficulty = "normal") {
-  const g = raw.globalne;
-  return {
-    bazaZywnosc: readNum(g, "magazyn_baza_zywnosc", difficulty, DEFAULT_STORAGE_PARAMS.bazaZywnosc),
-    bazaSurowce: readNum(g, "magazyn_baza_surowce", difficulty, DEFAULT_STORAGE_PARAMS.bazaSurowce),
-    mnoznikMagazynu: readNum(g, "magazyn_mnoznik_spichlerz", difficulty, DEFAULT_STORAGE_PARAMS.mnoznikMagazynu)
-  };
-}
-function foodStorageCapacity(maSpichlerz, p) {
-  return maSpichlerz ? p.bazaZywnosc * p.mnoznikMagazynu : p.bazaZywnosc;
-}
-function resourceStorageCapacityPerType(maMagazyn, p) {
-  return maMagazyn ? p.bazaSurowce * p.mnoznikMagazynu : p.bazaSurowce;
-}
-function loadUpkeepParams(raw, difficulty = "normal") {
-  const em = raw.ekonomia_miasta;
-  const bu = raw.budynki;
-  const g = raw.globalne;
-  return {
-    budynekUtrzymanieFlat: readNum(bu, "utrzymanie_budynek", difficulty, 1),
-    jednostkaUtrzymanieStd: readNum(g, "utrzymanie_jednostka_standard", difficulty, 1),
-    zywnoscJednostkaRuch: readNum(em, "zywnosc_jednostka_ruch", difficulty, 1),
-    zywnoscJednostkaOboz: readNum(em, "zywnosc_jednostka_oboz", difficulty, 0.5)
-  };
-}
-function buildingUpkeep(building, level, flatOverride) {
-  if (typeof flatOverride === "number" && Number.isFinite(flatOverride)) {
-    return flatOverride;
-  }
-  const lvl = level >= 1 ? level : 1;
-  const base = Number.isFinite(building.utrzymanie) ? building.utrzymanie : 0;
-  return Math.floor(buildingEffectAtLevel(base, lvl));
-}
-function totalBuildingUpkeep(buildings, flatOverride) {
-  let sum = 0;
-  for (const b of buildings) {
-    sum += buildingUpkeep(b.record, b.level, flatOverride);
-  }
-  return sum;
-}
-var DEFAULT_UNIT_UPKEEP_BY_CATEGORY = {
-  osadnik: 1,
-  robotnik: 1,
-  zwiadowca: 1,
-  procarz: 1,
-  oszczepnik: 1,
-  lucznik: 1,
-  wlocznik: 2,
-  miecznik: 2,
-  falanga: 2,
-  legionista: 2,
-  maczuga: 2,
-  topor: 2,
-  konnica: 3,
-  rydwan: 3,
-  galera: 3,
-  super: 0,
-  domyslny: 1
-};
-function unitUpkeep(unit, table, standardUpkeep) {
-  const byType = table[unit.typeId];
-  if (typeof byType === "number" && Number.isFinite(byType)) return byType;
-  const byCat = DEFAULT_UNIT_UPKEEP_BY_CATEGORY[unit.category];
-  if (typeof byCat === "number" && Number.isFinite(byCat)) return byCat;
-  return Number.isFinite(standardUpkeep) ? standardUpkeep : 0;
-}
-function totalUnitUpkeep(units, table, standardUpkeep) {
-  let sum = 0;
-  for (const u of units) {
-    sum += unitUpkeep(u, table, standardUpkeep);
-  }
-  return sum;
-}
-function buildUnitUpkeepTable(rows) {
-  const out = {};
-  for (const row of rows) {
-    const name = row["Jednostka"];
-    if (typeof name !== "string" || name.length === 0) continue;
-    let upkeep;
-    const direct = row["Utrzymanie (Pieniadz/ture)"];
-    if (typeof direct === "number" && Number.isFinite(direct)) {
-      upkeep = direct;
-    } else {
-      for (const key of Object.keys(row)) {
-        if (key.indexOf("Utrzymanie") === 0) {
-          const v = row[key];
-          if (typeof v === "number" && Number.isFinite(v)) {
-            upkeep = v;
-            break;
-          }
-        }
-      }
-    }
-    if (upkeep !== void 0) out[name] = upkeep;
-  }
-  return out;
-}
-function upkeepBalance(income, buildings, units, unitUpkeepTbl, p) {
-  const utrzymanieBudynki = totalBuildingUpkeep(buildings, p.budynekUtrzymanieFlat);
-  const utrzymanieJednostki = totalUnitUpkeep(units, unitUpkeepTbl, p.jednostkaUtrzymanieStd);
-  const utrzymanieRazem = utrzymanieBudynki + utrzymanieJednostki;
-  const inc = Number.isFinite(income) ? income : 0;
-  const saldo = inc - utrzymanieRazem;
-  return {
-    utrzymanieBudynki,
-    utrzymanieJednostki,
-    utrzymanieRazem,
-    saldo,
-    deficyt: saldo < 0
-  };
-}
-
 // src/game/converters.ts
 function loadThroughput(raw, paramKey, difficulty, fallback) {
   const bu = raw.budynki ?? {};
@@ -17719,6 +17883,25 @@ function buildEconParams(data, difficulty = "normal") {
     suwaakPracaTeren: num(em, "suwak_praca_teren_domyslnie", 30)
   };
 }
+function scanCityVicinityTerrain(ctx) {
+  var _a10, _b3;
+  const radius = cityRangeForPopulation(ctx.city.population);
+  let hasLas = false;
+  let hasBagno = false;
+  for (const key of Object.keys(ctx.map.hexes)) {
+    const hex = ctx.map.hexes[key];
+    if (!hex) continue;
+    const [qs, rs] = key.split(",");
+    const q = ((_a10 = hex.coords) == null ? void 0 : _a10.q) ?? Number(qs);
+    const r = ((_b3 = hex.coords) == null ? void 0 : _b3.r) ?? Number(rs);
+    if (!Number.isFinite(q) || !Number.isFinite(r)) continue;
+    if (hexDistance(ctx.city.q, ctx.city.r, q, r) > radius) continue;
+    if (!hasLas && hex.nakladka === "las" /* Las */) hasLas = true;
+    if (!hasBagno && hex.terenBazowy === "bagno") hasBagno = true;
+    if (hasLas && hasBagno) break;
+  }
+  return { hasLas, hasBagno };
+}
 function loadHealthParams(raw, difficulty) {
   const sp = raw;
   const zd = sp && typeof sp === "object" && sp["zdrowie"] ? sp["zdrowie"] : {};
@@ -17743,6 +17926,7 @@ function loadHealthParams(raw, difficulty) {
     karaZagoszczenie: rd("zdrowie_kara_zag\u0119szczenie", -1),
     progZagoszczenia,
     karaBagno: rd("zdrowie_kara_bagno", -1),
+    bonusLas: rd("zdrowie_bonus_las", 1),
     karaDzungla: rd("zdrowie_kara_dzungla", -1),
     karaBrakWody: rd("zdrowie_kara_brak_wody", -2)
   };
@@ -17764,7 +17948,7 @@ function cityHasWaterAccess(city, map) {
   }
   return hexHasRiver(city.q, city.r);
 }
-function computeCityHealth(ludnosc, tiles, builtIds, hp, hasWaterAccess) {
+function computeCityHealth(ludnosc, tiles, builtIds, hp, hasWaterAccess, mapCtx) {
   let z = 0;
   let maRzeke = hasWaterAccess === true;
   if (hasWaterAccess === void 0) {
@@ -17790,6 +17974,11 @@ function computeCityHealth(ludnosc, tiles, builtIds, hp, hasWaterAccess) {
     z += hp.karaZagoszczenie * (ludnosc - hp.progZagoszczenia);
   }
   if (!maRzeke && !maStudnie && !maAkwedukt) z += hp.karaBrakWody;
+  if (mapCtx) {
+    const vicinity = scanCityVicinityTerrain(mapCtx);
+    if (vicinity.hasLas) z += hp.bonusLas;
+    if (vicinity.hasBagno) z += hp.karaBagno;
+  }
   return Math.round(z);
 }
 var HEX_NEIGHBORS2 = [
@@ -17853,7 +18042,7 @@ function toEconomyCity(city, params, isCapital, zdrowie = 0, buildings = {}) {
     czyStolica: isCapital,
     maSpichlerz: buildings.maSpichlerz ?? false,
     maAkwedukt: buildings.maAkwedukt ?? false,
-    magazynZywnosci: city.magazynZywnosci ?? 0,
+    magazynZywnosci: readCityFoodBufferFromCity(city),
     specjalisci: [],
     kolejkaProdukcji: [],
     podzia\u0142Handlu: normalizePodzialHandlu(city.podzialHandlu ?? {
@@ -17866,8 +18055,18 @@ function toEconomyCity(city, params, isCapital, zdrowie = 0, buildings = {}) {
     }
   };
 }
+function readCityFoodBufferFromCity(city) {
+  return readCityFoodBuffer(city.magazynZywnosci);
+}
+function growthFoodThreshold(population, params) {
+  return 10 + population * params.progWzrostuWspolczynnik;
+}
+function growthFoodStorageCap(population, maSpichlerz, params, storageParams) {
+  const base = foodStorageCapacity(maSpichlerz, storageParams);
+  return Math.max(base, growthFoodThreshold(population, params));
+}
 function getCityFood(city) {
-  return city.magazynZywnosci ?? 0;
+  return readCityFoodBufferFromCity(city);
 }
 function advanceCityEconomy(cities, map, data, difficulty = "normal", econUnits = [], growthMultByCity = /* @__PURE__ */ new Map(), builtByCity = /* @__PURE__ */ new Map(), playerEra = 1, playerZbadane = /* @__PURE__ */ new Set(), ownerCivByOwnerId = /* @__PURE__ */ new Map(), orderMultByCity = /* @__PURE__ */ new Map()) {
   var _a10;
@@ -17917,7 +18116,7 @@ function advanceCityEconomy(cities, map, data, difficulty = "normal", econUnits 
     const worked = cityWorkedTilesForEconomy(city, map);
     const builtIds = builtByCity.get(city.id) ?? [];
     const hasWater = cityHasWaterAccess(city, map);
-    const zdrowie = computeCityHealth(city.population, worked, builtIds, healthParams, hasWater);
+    const zdrowie = computeCityHealth(city.population, worked, builtIds, healthParams, hasWater, { city, map });
     const maSpichlerz = builtIds.includes("spichlerz");
     const maAkwedukt = builtIds.includes("akwedukt");
     const econCity = toEconomyCity(city, params, isCapital, zdrowie, { maSpichlerz, maAkwedukt });
@@ -18036,7 +18235,7 @@ function advanceCityEconomy(cities, map, data, difficulty = "normal", econUnits 
       loadManpowerRegenParams(),
       civManpowerRegenMult(ownerBonusy)
     );
-    const foodCap = foodStorageCapacity(maSpichlerz, storageParams);
+    const foodCap = growthFoodStorageCap(city.population, maSpichlerz, params, storageParams);
     city.magazynZywnosci = Math.min(grow.nowyMagazynZywnosci, foodCap);
     magazynPoTurze = city.magazynZywnosci;
     incomeByOwner.set(city.ownerId, (incomeByOwner.get(city.ownerId) ?? 0) + pieniadzPoWealth);
