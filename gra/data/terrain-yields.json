@@ -2,42 +2,42 @@
   "terrain_types": [
     {
       "Teren": "Łąka",
-      "Żywność": 4,
+      "Żywność": 3,
       "Praca": 1,
       "Handel": 1,
       "Drewno": 1,
       "Kamień": 0,
-      "Suma": 7,
+      "Suma": 6,
       "Uwagi": null
     },
     {
       "Teren": "Równina",
       "Żywność": 2,
-      "Praca": 1,
+      "Praca": 2,
       "Handel": 1,
       "Drewno": 2,
       "Kamień": 1,
-      "Suma": 7,
+      "Suma": 8,
       "Uwagi": null
     },
     {
       "Teren": "Wzgórza",
       "Żywność": 1,
-      "Praca": 2,
+      "Praca": 3,
       "Handel": 0,
       "Drewno": 2,
       "Kamień": 2,
-      "Suma": 7,
+      "Suma": 8,
       "Uwagi": "Kamień/Ruda po zbudowaniu Kopalni; +obrona"
     },
     {
       "Teren": "Góry",
       "Żywność": 0,
-      "Praca": 0,
+      "Praca": 4,
       "Handel": 0,
       "Drewno": 2,
       "Kamień": 5,
-      "Suma": 7,
+      "Suma": 11,
       "Uwagi": "Nieprzechodnie dla jednostek lądowych; Kamień/Ruda po Kopalni"
     },
     {

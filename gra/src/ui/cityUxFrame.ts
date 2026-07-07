@@ -45,8 +45,8 @@ function ensureFrameStyles(): void {
   box-shadow:inset 0 0 90px 28px rgba(0,0,0,0.38);}
 .civ-ux-top{position:fixed;top:0;left:0;right:0;height:auto;min-height:${TOP_H}px;z-index:403;pointer-events:auto;overflow:visible;
   display:flex;align-items:flex-start;justify-content:center;padding:12px max(210px,13vw) 6px 32px;}
-.civ-ux-top .civ-ux-panel-scope{height:auto;width:100%;display:flex;flex-direction:column;align-items:stretch;}
-.civ-ux-top .civ-ux-panel-scope .civ-v-top-stack{width:100%;box-sizing:border-box;}
+.civ-ux-top .civ-ux-panel-scope{height:auto;width:100%;display:flex;flex-direction:column;align-items:center;}
+.civ-ux-top .civ-ux-panel-scope .civ-v-top-stack{width:fit-content;max-width:100%;box-sizing:border-box;}
 .civ-ux-left{position:fixed;top:${LEFT_RAIL_TOP}px;left:${LEFT_MARGIN}px;bottom:0;width:min(24vw,${LEFT_W}px);min-width:280px;z-index:401;
   pointer-events:auto;overflow-y:auto;overflow-x:hidden;padding:0.32rem 0.4rem 0.48rem;
   display:flex;flex-direction:column;background:transparent;border:none;box-shadow:none;}

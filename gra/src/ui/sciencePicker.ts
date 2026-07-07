@@ -17,6 +17,7 @@ import type { TempoGry } from '../game/tech-tempo';
 import { scaledResearchCost, type GameDifficulty } from '../game/difficulty-cost';
 import { scienceOwlIconHtml } from './icons/scienceOwlIcon';
 import type { ScienceHubEntry, ScienceHubProgress } from './scienceHubHud';
+import { refreshScienceHubIfOpen } from './scienceHubHud';
 
 // ---------------------------------------------------------------------------
 // Typy wewnętrzne (dane z tech.json)
@@ -770,10 +771,10 @@ function buildSVG(
     if (isResearched) opacity = '0.55';
     if (isLocked) opacity = '0.35';
 
-    const cursorStyle = isClickable ? 'cursor:pointer;' : 'cursor:default;';
-    const dataAttr = isClickable ? ` data-techid="${esc(node.id)}"` : '';
+    const pickClass = isClickable ? ' civ-sci-node--pick' : '';
+    const pickAttr = isClickable ? ' data-pick="1"' : '';
 
-    lines.push(`<g class="civ-sci-node" transform="translate(${r(nodeX)},${r(nodeY)})" style="${cursorStyle}opacity:${opacity};"${dataAttr} id="snode-${esc(node.id)}">`);
+    lines.push(`<g class="civ-sci-node${pickClass}" transform="translate(${r(nodeX)},${r(nodeY)})" style="opacity:${opacity};" data-tech-id="${esc(node.id)}"${pickAttr} id="snode-${esc(node.id)}">`);
 
     // Outer glow ring
     if (!glass || isTarget) {
@@ -788,7 +789,7 @@ function buildSVG(
     // Main box
     const boxStroke = isTarget ? '#e0b24a' : isResearched ? st.nodeStroke : st.nodeStroke;
     const boxStrokeW = isTarget ? '2.5' : '1.5';
-    lines.push(`<rect x="0" y="0" width="${NW}" height="${NH}" rx="8" fill="${st.nodeFill}" stroke="${boxStroke}" stroke-width="${boxStrokeW}"/>`);
+    lines.push(`<rect class="civ-sci-node-box" x="0" y="0" width="${NW}" height="${NH}" rx="8" fill="${st.nodeFill}" stroke="${boxStroke}" stroke-width="${boxStrokeW}"/>`);
 
     // Top highlight
     lines.push(`<rect x="1" y="1" width="${NW - 2}" height="${Math.round(NH * 0.38)}" rx="7" fill="rgba(255,255,255,0.05)"/>`);
@@ -832,6 +833,10 @@ function buildSVG(
 
     // Cost top-right (po mnozniku tempa gry)
     lines.push(`<text x="${r(NW - 4)}" y="11" text-anchor="end" fill="rgba(120,180,90,0.45)" font-size="7.5" font-family="monospace" pointer-events="none">${effectiveTechCost(node.koszt, activeOwner)}PN</text>`);
+
+    if (isClickable) {
+      lines.push(`<rect class="civ-sci-hit" x="0" y="0" width="${NW}" height="${NH}" rx="8" fill="rgba(0,0,0,0.001)" stroke="none" pointer-events="all"/>`);
+    }
 
     lines.push('</g>');
   }
@@ -993,6 +998,9 @@ function ensureStyles(): void {
 .civ-sci .cs-tree-scroll{overflow-x:auto;flex:1;padding:18px 24px 48px;min-height:0;}
 .civ-sci.dock .cs-tree-scroll{overflow:auto;padding:12px 16px 24px;background:transparent;}
 .civ-sci.dock .cs-tree-scroll svg{background:transparent;}
+.civ-sci .civ-sci-node--pick{cursor:pointer;}
+.civ-sci .civ-sci-node--pick:hover .civ-sci-hit{fill:rgba(107,196,232,0.14);stroke:rgba(107,196,232,0.55);stroke-width:2;}
+.civ-sci .civ-sci-node--pick:hover .civ-sci-node-box{stroke-width:2.2;filter:brightness(1.08);}
 /* Tooltip */
 .civ-sci-tooltip{
   position:fixed;display:none;
@@ -1133,7 +1141,7 @@ function render(): void {
 
   bindClose();
   bindDockChrome(targetId);
-  bindNodeClicks(researchedIds, availableIds, targetId);
+  ensureTreeInteractionHandlers();
   scrollToFocusTech(targetId);
   } catch (err) {
     console.warn('[Nauka] Blad renderu drzewka:', err);
@@ -1193,47 +1201,63 @@ function scrollToFocusTech(fallbackTargetId: string | null): void {
   if (id) scrollToTechNode(id);
 }
 
-function bindNodeClicks(
-  researchedIds: Set<string>,
-  availableIds: Set<string>,
-  targetId: string | null,
-): void {
-  if (panelEl === null) return;
+function readTreeInteractionSets(): {
+  researchedIds: Set<string>;
+  availableIds: Set<string>;
+  targetId: string | null;
+} {
+  const state = cfg.getResearchState?.(activeOwner) ?? null;
+  const targetId = state?.targetId ?? null;
+  const researchedIds = new Set(cfg.getResearchedTechs?.(activeOwner) ?? []);
+  const availableIds = new Set(cfg.getAvailableTechs?.(activeOwner) ?? []);
+  if (targetId !== null && !researchedIds.has(targetId)) availableIds.add(targetId);
+  return { researchedIds, availableIds, targetId };
+}
 
-  const nodeEls = panelEl.querySelectorAll<SVGGElement>('[data-techid]');
+let treeInteractionBound = false;
 
-  for (const el of Array.from(nodeEls)) {
-    const id = el.getAttribute('data-techid');
-    if (id === null) continue;
-    const node = TECH_MAP.get(id);
-    if (!node) continue;
+function ensureTreeInteractionHandlers(): void {
+  if (panelEl === null || treeInteractionBound) return;
+  treeInteractionBound = true;
 
-    // Click handler
-    el.addEventListener('click', () => {
-      const nodeId = el.getAttribute('data-techid');
-      if (nodeId !== null && cfg.onSelectTarget) {
-        cfg.onSelectTarget(nodeId);
-        render();
-      }
-    });
+  panelEl.addEventListener('click', (e: Event) => {
+    const pick = (e.target as Element | null)?.closest('[data-pick="1"]');
+    if (!pick || cfg.onSelectTarget === undefined) return;
+    const nodeId = pick.getAttribute('data-tech-id');
+    if (nodeId === null) return;
+    e.preventDefault();
+    e.stopPropagation();
+    cfg.onSelectTarget(nodeId);
+    refreshScienceHubIfOpen();
+    render();
+  });
 
-    // Tooltip
-    const status = computeStatus(id, targetId, researchedIds, availableIds);
-    el.addEventListener('mouseenter', (e: Event) => {
-      if (tooltipEl === null) return;
-      tooltipEl.innerHTML = buildTooltipHTML(node, status);
-      tooltipEl.style.display = 'block';
-      const me = e as MouseEvent;
-      moveTooltip(me);
-    });
-    el.addEventListener('mousemove', (e: Event) => {
-      const me = e as MouseEvent;
-      moveTooltip(me);
-    });
-    el.addEventListener('mouseleave', () => {
-      if (tooltipEl !== null) tooltipEl.style.display = 'none';
-    });
-  }
+  panelEl.addEventListener('mouseover', (e: Event) => {
+    const nodeEl = (e.target as Element | null)?.closest('[data-tech-id]');
+    if (!nodeEl || tooltipEl === null) return;
+    const nodeId = nodeEl.getAttribute('data-tech-id');
+    if (nodeId === null) return;
+    const node = TECH_MAP.get(nodeId);
+    if (node === undefined) return;
+    const { researchedIds, availableIds, targetId } = readTreeInteractionSets();
+    tooltipEl.innerHTML = buildTooltipHTML(node, computeStatus(nodeId, targetId, researchedIds, availableIds));
+    tooltipEl.style.display = 'block';
+    moveTooltip(e as MouseEvent);
+  });
+
+  panelEl.addEventListener('mousemove', (e: Event) => {
+    if (tooltipEl === null || tooltipEl.style.display === 'none') return;
+    moveTooltip(e as MouseEvent);
+  });
+
+  panelEl.addEventListener('mouseout', (e: Event) => {
+    if (tooltipEl === null) return;
+    const me = e as MouseEvent;
+    const from = (e.target as Element | null)?.closest('[data-tech-id]');
+    const to = (me.relatedTarget as Element | null)?.closest('[data-tech-id]');
+    if (from !== null && from === to) return;
+    tooltipEl.style.display = 'none';
+  });
 }
 
 function moveTooltip(e: MouseEvent): void {

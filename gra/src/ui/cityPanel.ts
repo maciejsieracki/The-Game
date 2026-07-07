@@ -1391,14 +1391,14 @@ function ensureStyles(): void {
   gap:0.5rem;padding:0 0.65rem;height:100%;min-height:0;box-sizing:border-box;
   background:linear-gradient(180deg,#0c121c,#060a10);border-bottom:1px solid rgba(212,175,90,0.32);}
 .civ-v-resource-bar.civ-v-resource-bar-w3{display:flex;align-items:center;justify-content:center;gap:0.65rem;
-  padding:0;background:transparent;border:none;height:auto;min-height:0;width:100%;max-width:100%;min-width:0;box-sizing:border-box;}
-.civ-v-top-stack{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;width:100%;max-width:min(96vw,1120px);gap:0.38rem;padding:0 0.25rem;box-sizing:border-box;}
+  padding:0;background:transparent;border:none;height:auto;min-height:0;width:fit-content;max-width:100%;min-width:0;margin:0 auto;box-sizing:border-box;}
+.civ-v-top-stack{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;width:fit-content;max-width:min(96vw,1120px);gap:0.38rem;padding:0 0.25rem;box-sizing:border-box;margin:0 auto;}
 .civ-v-top-line{display:flex;align-items:center;justify-content:center;gap:0.65rem;flex-wrap:wrap;width:100%;}
 .civ-v-exit-top-row{display:flex;flex-direction:column;align-items:center;gap:0.28em;pointer-events:auto;flex-shrink:0;}
 .civ-v-exit-top-row .civ-v-exit-map-btn{font-size:0.82em;padding:0.48em 1.05em 0.48em 0.85em;}
 .civ-v-exit-top-row .civ-v-exit-foot-hint{font-size:0.62em;color:#8b97a8;text-align:center;white-space:nowrap;}
 .civ-v-w3-bar-spacer{display:none;}
-.civ-v-w3-chips-city{margin-left:0;flex:1 1 auto;width:100%;max-width:100%;min-width:0;}
+.civ-v-w3-chips-city{margin-left:0;flex:0 0 auto;width:fit-content;max-width:100%;min-width:0;}
 .civ-v-w3-city-badge{display:inline-flex;align-items:center;gap:0.55rem;padding:0.45rem 1.05rem 0.45rem 0.75rem;
   border-radius:24px;background:linear-gradient(180deg,#151b26,#0a0d14);border:1.5px solid #e8d88a;
   box-shadow:0 5px 16px rgba(0,0,0,0.6);flex-shrink:0;max-width:100%;}
@@ -1410,10 +1410,10 @@ function ensureStyles(): void {
   color:#f0e6d0;letter-spacing:0.04em;text-transform:uppercase;line-height:1;}
 .civ-v-w3-city-pop{width:1.65em;height:1.65em;border-radius:50%;background:#e8d88a;color:#2a2208;
   font-size:0.72em;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-.civ-v-w3-chips{display:flex;align-items:center;gap:0.65rem;padding:0.42rem 0.85rem;border-radius:12px;
+.civ-v-w3-chips{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:0.42rem 0.65rem;
+  padding:0.42rem 1rem;border-radius:12px;
   background:linear-gradient(180deg,rgba(22,28,40,0.94),rgba(8,10,16,0.95));border:1px solid rgba(232,216,138,0.32);
-  flex:1 1 auto;width:100%;max-width:100%;min-width:0;overflow-x:auto;scrollbar-width:none;-ms-overflow-style:none;}
-.civ-v-w3-chips::-webkit-scrollbar{display:none;}
+  flex:1 1 auto;width:100%;max-width:100%;min-width:0;overflow-x:visible;overflow-y:visible;}
 .civ-v-w3-chip{display:inline-flex;align-items:center;gap:0.42rem;white-space:nowrap;flex-shrink:0;
   font-size:0.78em;line-height:1;border:none;background:transparent;padding:0.12em 0.18em;margin:0;
   cursor:pointer;border-radius:4px;font-family:inherit;color:inherit;}
@@ -1670,8 +1670,13 @@ ${UNIT_RECRUIT_CARD_CSS}
 .civ-ux-panel-scope.civ-cs .ptitle{margin-bottom:0.22em;padding-bottom:0.14em;}
 .civ-ux-panel-scope.civ-cs .food-grow-block{margin:0.15em 0 0.22em;}
 .civ-ux-panel-scope.civ-cs .okolica-toolbar{margin:0.12em 0 0.18em;}
-.civ-ux-panel-scope.civ-cs .budowa-toolbar .okolica-toolbar-profiles{flex-wrap:wrap;gap:0.14em;}
-.civ-ux-panel-scope.civ-cs .budowa-toolbar .okolica-toolbar-profiles button{font-size:0.62em;padding:0.08em 0.22em;}
+.civ-ux-panel-scope.civ-cs .budowa-toolbar{flex-wrap:wrap;overflow-x:visible;overflow-y:visible;align-items:flex-start;gap:0.2em 0.35em;}
+.civ-ux-panel-scope.civ-cs .budowa-toolbar > .muted{flex:0 0 100%;margin-right:0;}
+.civ-ux-panel-scope.civ-cs .budowa-toolbar .okolica-toolbar-profiles{
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));flex:1 1 100%;width:100%;min-width:0;gap:0.18em 0.24em;}
+.civ-ux-panel-scope.civ-cs .budowa-toolbar .okolica-toolbar-profiles button{
+  font-size:0.66em;padding:0.1em 0.26em;width:100%;box-sizing:border-box;justify-content:center;}
+.civ-ux-panel-scope.civ-cs .budowa-toolbar .okolica-toolbar-profiles button.okolica-profile-btn{gap:0.24em;padding:0.12em 0.32em;}
 .civ-ux-panel-scope.civ-cs .section-blurb,
 .civ-ux-panel-scope.civ-cs .civ-v-section-blurb{margin:0.08em 0 0.28em;}
 .civ-v-left-col{display:flex!important;flex-direction:column!important;flex:1;min-height:0;width:100%;gap:0;}

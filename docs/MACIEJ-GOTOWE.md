@@ -1,10 +1,88 @@
-# Maciej — co jest gotowe (log agentów)
+﻿# Maciej — co jest gotowe (log agentów)
 
 > **Jedna strona do przejrzenia.** Agenci dopisują **append-only** (najnowsze **na górze**).  
 > **Czat:** krótko **`✅ Gotowe:`** / **`⏸️ Czeka:`** · **Ten plik:** pełniejszy zapis tego samego.  
 > Szczegóły techniczne → handoff w `dyspozycje/_handoff/` · operacja → `dyspozycje/DZIENNIK-MASTERA.md`
 
-**Ostatnia aktualizacja:** 2026-07-07
+**Ostatnia aktualizacja:** 2026-07-07 (noc — bundle GitHub)
+
+---
+
+## [2026-07-07] ✅ Gotowe — ROBOCZA zbiorcza przed archiwizacją GitHub
+
+| | |
+|---|---|
+| **Kto** | Integrator F |
+| **Co** | Jeden build łączący całą sesję: plony terenu · panel miasta B14 + Auto budowa · klik w drzewku technologii · zapis ustawień kreatora Nowa gra |
+| **Pliki źródłowe** | `terrain-yields.json` · `economy.ts` · `cityPanel.ts` · `cityUxFrame.ts` · `sciencePicker.ts` · `scienceHubHud.ts` · `newGameFlow.ts` |
+| **Build** | ROBOCZA md5 `dadfc0604fefacc2d8cfcb0f16b10cb2` · stamp `dadfc060` · `gra-robocza/START.html` |
+| **Testy** | tsc OK |
+| **Od Ciebie** | Ctrl+F5 · `gra-robocza/START.html` · potem archiwizacja GitHub (commit sam) |
+
+**W bundle:** (1) plony Łąka/Równina/Wzgórza/Góry z Panel-A · (2) panel miasta — Auto budowa 3×2, pasek B14 · (3) Badania — klik zielonego węzła w drzewku · (4) kreator — `civ-new-game-prefs-v1` między sesjami · (5) kopie PLAYTEST zsynchronizowane.
+
+---
+
+## [2026-07-07] ✅ Gotowe — Kreator: zapamiętywanie ustawień generatora
+
+| | |
+|---|---|
+| **Kto** | Integrator |
+| **Co** | Przywrócony persist ustawień kreatora „Nowa gra" (trudność, mapa, tempo, koszty, wzrost ludności, zaawansowane) w `localStorage` |
+| **Przyczyna regresji** | Każde otwarcie kreatora zapisywało domyślne wartości przy `render()` — nadpisywało zapisane prefs; wczytywanie miast-państw przed skalowaniem opcji mapy też gubiło indeksy |
+| **Plik** | `gra/src/ui/newGameFlow.ts` |
+| **Klucz localStorage** | `civ-new-game-prefs-v1` (odczyt migracyjny z legacy `civ-newgame-prefs-v2`) |
+| **Build** | ROBOCZA md5 `69ee33777a5e219bdebd559145d1770b` · stamp `69ee3377` · `gra-robocza/START.html` |
+| **Od Ciebie** | Ctrl+F5 · Nowa gra → ustaw opcje → menu / odśwież → Nowa gra → te same wartości |
+
+---
+
+## [2026-07-07] ✅ Gotowe — Eksport plonów terenu (Panel-A → gra)
+
+| | |
+|---|---|
+| **Kto** | Integrator / panel |
+| **Co** | `Panel-A-Plony-Terenu.xlsx` → `terrain-yields.json` · gra czyta JSON w `economy.ts` (okolica, tooltip, tura) |
+| **Zmiany Ż/P/H** | Łąka 4→3 Ż · Równina 1→2 P · Wzgórza 2→3 P · Góry 0→4 P · Rzeka/Las bez zmian |
+| **Plik** | `gra/data/terrain-yields.json` · `gra/src/game/economy.ts` (podpięcie JSON zamiast stałych) |
+| **Build** | ROBOCZA md5 `8f6eb435e89e1f8174dc71e5653f4546` · stamp `8f6eb435` · `gra-robocza/START.html` |
+| **Od Ciebie** | Ctrl+F5 · Nowa gra · sprawdź plony na mapie / okolicy miasta (Łąka, Równina, Wzgórza, Góry) |
+
+---
+
+## [2026-07-07] ✅ Gotowe — Badania: klik w drzewku technologii
+
+| | |
+|---|---|
+| **Kto** | Integrator / UI |
+| **Co** | Wybór celu badań **kliknięciem zielonego węzła** w drzewku (nie tylko lista po lewej) · zablokowane = tooltip bez akcji |
+| **Plik** | `gra/src/ui/sciencePicker.ts`, `gra/src/ui/scienceHubHud.ts` |
+| **Build** | ROBOCZA md5 `d52424e508cfb66d50bce0700e2e6b28` · stamp `d52424e5` · `gra-robocza/START.html` |
+| **Od Ciebie** | Ctrl+F5 · miasto → Badania → **Pełne drzewko** → klik np. Obróbka drewna → „Aktualnie" u góry się zmienia |
+
+---
+
+## [2026-07-07] ✅ Gotowe — Excel plonów terenu (Żywność / Praca / Handel)
+
+| | |
+|---|---|
+| **Kto** | Integrator / panel |
+| **Co** | `Panel-A-Plony-Terenu.xlsx` — arkusze **Teren-bazowy** (7 typów) + **Bonusy-nakladki** (Rzeka, Las) · tylko 3 surowce do edycji |
+| **Plik** | `panele-sterowania/Panel-A-Plony-Terenu.xlsx` · README: `panele-sterowania/README-Panel-A-Plony.md` |
+| **Build** | — (dane JSON; build gry po eksporcie) |
+| **Od Ciebie** | Edytuj xlsx → w czacie: **eksportuj plony terenu** → potem Ctrl+F5 na roboczej |
+
+---
+
+## [2026-07-07] ✅ Gotowe — Panel miasta: Auto budowa + pasek statystyk (B14)
+
+| | |
+|---|---|
+| **Kto** | Integrator F |
+| **Co** | Panel miasta: sekcja **Auto budowa** — grid 3×2 zamiast poziomego scrolla · górny pasek chipów surowców — `flex-wrap`, bez `overflow-x` · **B14** wyśrodkowanie paska (`fit-content`, bez pustej belki po prawej) |
+| **Plik** | `gra/src/ui/cityPanel.ts`, `gra/src/ui/cityUxFrame.ts` |
+| **Build** | ROBOCZA md5 `751632d266a607442ad6929a07d35067` · stamp `751632d2` · `gra-robocza/START.html` |
+| **Od Ciebie** | Ctrl+F5 · miasto ATENY: pasek wyśrodkowany, kończy się przy „Nauce" · Produkcja → Auto budowa w 2 rzędach |
 
 ---
 

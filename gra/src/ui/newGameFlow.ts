@@ -148,31 +148,74 @@ const DEFAULT_ADVANCED: NewGameAdvancedOptions = {
   landFractionCustom: false,
 };
 
-const NEWGAME_PREFS_KEY = 'civ-newgame-prefs-v2';
+/** Kanon v1 (2026-07-07) — stabilny klucz localStorage kreatora. */
+const NEWGAME_PREFS_KEY = 'civ-new-game-prefs-v1';
+/** Legacy (Grupa E) — odczyt migracyjny, zapis tylko do v1. */
+const NEWGAME_PREFS_KEY_LEGACY = 'civ-newgame-prefs-v2';
 
 interface SavedNewGamePrefs {
-  v: 2;
+  v: 3;
   selEpoch: string;
   selCiv: string | null;
+  /** Indeksy opcji (legacy / fallback). */
   settings: Record<string, number>;
+  /** Etykiety PL opcji — preferowane przy wczytywaniu (odporne na skalowanie mapy). */
+  settingLabels: Record<string, string>;
   advanced: NewGameAdvancedOptions;
 }
 
+/** Zapis tylko po zmianie użytkownika — unikamy nadpisywania prefs domyślnymi przy otwarciu kreatora. */
+let prefsDirty = false;
+
+function getPrefsStorage(): Storage | null {
+  try {
+    if (typeof localStorage === 'undefined') return null;
+    return localStorage;
+  } catch {
+    return null;
+  }
+}
+
+function readStoredNewGamePrefsRaw(): string | null {
+  const storage = getPrefsStorage();
+  if (!storage) return null;
+  return storage.getItem(NEWGAME_PREFS_KEY) ?? storage.getItem(NEWGAME_PREFS_KEY_LEGACY);
+}
+
 function saveNewGamePrefs(): void {
+  if (!prefsDirty) return;
+  const storage = getPrefsStorage();
+  if (!storage) return;
   try {
     const settings: Record<string, number> = {};
-    for (const s of SETT) settings[s.key] = s.idx;
+    const settingLabels: Record<string, string> = {};
+    for (const s of SETT) {
+      settings[s.key] = s.idx;
+      settingLabels[s.key] = s.opts[s.idx] ?? '';
+    }
     const payload: SavedNewGamePrefs = {
-      v: 2,
+      v: 3,
       selEpoch,
       selCiv,
       settings,
+      settingLabels,
       advanced: { ...advOpts },
     };
-    localStorage.setItem(NEWGAME_PREFS_KEY, JSON.stringify(payload));
+    storage.setItem(NEWGAME_PREFS_KEY, JSON.stringify(payload));
+    prefsDirty = false;
   } catch {
     /* prywatny tryb / brak localStorage */
   }
+}
+
+function markNewGamePrefsDirtyAndSave(): void {
+  prefsDirty = true;
+  saveNewGamePrefs();
+}
+
+function flushNewGamePrefs(): void {
+  prefsDirty = true;
+  saveNewGamePrefs();
 }
 
 function migrateAdvanced(raw: Record<string, unknown>): NewGameAdvancedOptions {
@@ -206,28 +249,51 @@ function migrateAdvanced(raw: Record<string, unknown>): NewGameAdvancedOptions {
   return base;
 }
 
+function applySettingLabel(key: string, label: string | undefined): boolean {
+  if (!label) return false;
+  const row = SETT.find(x => x.key === key);
+  if (!row) return false;
+  const idx = row.opts.indexOf(label);
+  if (idx < 0) return false;
+  row.idx = idx;
+  return true;
+}
+
+function applySettingFromPrefs(
+  parsed: SavedNewGamePrefs & { v?: number; settingLabels?: Record<string, string> },
+  key: string,
+): void {
+  const labels = parsed.settingLabels;
+  if (labels && typeof labels[key] === 'string' && applySettingLabel(key, labels[key])) return;
+  const idx = parsed.settings?.[key];
+  const row = SETT.find(x => x.key === key);
+  if (!row || typeof idx !== 'number') return;
+  if (idx >= 0 && idx < row.opts.length) row.idx = idx;
+}
+
 function loadNewGamePrefs(): void {
   try {
-    const raw = localStorage.getItem(NEWGAME_PREFS_KEY);
+    const raw = readStoredNewGamePrefsRaw();
     if (!raw) return;
-    const parsed = JSON.parse(raw) as SavedNewGamePrefs & { v?: number };
+    const parsed = JSON.parse(raw) as SavedNewGamePrefs & { v?: number; settingLabels?: Record<string, string> };
     if (parsed.selEpoch && EPOCHS.some(e => e.id === parsed.selEpoch)) selEpoch = parsed.selEpoch;
     if (parsed.selCiv) selCiv = parsed.selCiv;
     if (parsed.settings && typeof parsed.settings === 'object') {
+      applySettingFromPrefs(parsed, 'map_size');
+      syncMapScaleOptions();
       for (const s of SETT) {
-        const idx = parsed.settings[s.key];
-        if (typeof idx === 'number' && idx >= 0 && idx < s.opts.length) s.idx = idx;
+        if (s.key === 'map_size') continue;
+        applySettingFromPrefs(parsed, s.key);
       }
     }
     if (parsed.advanced && typeof parsed.advanced === 'object') {
       advOpts = migrateAdvanced(parsed.advanced as unknown as Record<string, unknown>);
     }
     migrateAdvLandFractionFromLegacy();
-    syncMapScaleOptions();
     syncAdvLandFromWorldType();
     ensureSelCivForEpoch();
   } catch {
-    /* ignore corrupt prefs */
+    /* ignore corrupt prefs — nie zapisuj domyślnych nadpisując stare dane */
   }
 }
 
@@ -770,7 +836,7 @@ function renderCivStep(host: HTMLElement): void {
   for (const c of available) {
     const card = el('div', 'card' + (selCiv === c.id ? ' sel' : ''));
     card.innerHTML = civMedallionHtml(c.id, selCiv === c.id, 'card', c.kolorHex) + '<div class="cn">' + c.name + '</div>';
-    card.addEventListener('click', () => { selCiv = c.id; saveNewGamePrefs(); render(); });
+    card.addEventListener('click', () => { selCiv = c.id; markNewGamePrefsDirtyAndSave(); render(); });
     grid.appendChild(card);
   }
   if (available.length === 0) {
@@ -834,7 +900,7 @@ function renderEpochStep(host: HTMLElement): void {
       ec.addEventListener('click', () => {
         selEpoch = e.id;
         ensureSelCivForEpoch();
-        saveNewGamePrefs();
+        markNewGamePrefsDirtyAndSave();
         render();
       });
     }
@@ -868,7 +934,7 @@ function renderSettingRows(host: HTMLElement, keys: string[]): void {
       if (s.key === 'map_size') syncMapScaleOptions();
       if (s.key === 'world_type') resetAdvLandOnWorldTypeChange();
       refreshSv();
-      saveNewGamePrefs();
+      markNewGamePrefsDirtyAndSave();
       if (s.key === 'map_size' || s.key === 'city_states_count' || s.key === 'civ_types_count') {
         render();
       }
@@ -1046,7 +1112,7 @@ function showAdvancedModal(): void {
       const next = (cur + d + row.opts.length) % row.opts.length;
       row.setIdx(next);
       refresh();
-      saveNewGamePrefs();
+      markNewGamePrefsDirtyAndSave();
     };
     left.addEventListener('click', () => ch(-1));
     right.addEventListener('click', () => ch(1));
@@ -1247,7 +1313,7 @@ function renderGenStep(host: HTMLElement): void {
   gp.innerHTML = rows.map(r => '<div class="pr"><span class="k">' + r[0] + '</span><span class="v">' + r[1] + '</span></div>').join('');
   wrap.appendChild(gp);
   host.appendChild(wrap);
-  saveNewGamePrefs();
+  flushNewGamePrefs();
   if (cfg) cfg.onStart(p);
 }
 
@@ -1366,6 +1432,7 @@ function render(): void {
 /** Pokaz kreator nowej gry. */
 export function showNewGameFlow(config: NewGameFlowConfig): void {
   cfg = config;
+  prefsDirty = false;
   curStep = 1;
   selCiv = DEFAULT_PLAYER_CIV_ID;
   selEpoch = DEFAULT_START_EPOCH_ID;
@@ -1385,6 +1452,7 @@ export function showNewGameFlow(config: NewGameFlowConfig): void {
 /** Ukryj kreator nowej gry. */
 export function hideNewGameFlow(): void {
   hideAdvancedModal();
+  saveNewGamePrefs();
   if (rootEl !== null) rootEl.style.display = 'none';
 }
 

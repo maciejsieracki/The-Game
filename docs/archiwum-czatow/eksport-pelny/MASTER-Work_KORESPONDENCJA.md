@@ -70815,3 +70815,1575 @@ Przyjąłem — sprawdzam, czy nazwy z Excela są już w `city-names-pools.json`
 <timestamp>Tuesday, Jul 7, 2026, 9:30 PM (UTC+2)</timestamp>
 
 Czy nazwy będą używane automatycznie? Nie trzeba będzie wpisywać za każdym razem nazwy przy zakładaniu miasta? Czy AI też będzie używać tych nazw swoich? ?
+
+
+---
+
+## Dopisek synchronizacji — 2026-07-07 21:15 UTC (linie 8772–8965)
+
+
+### Linia 8772 — AGENT
+
+Raport końcowy dnia składam teraz — zbieram wyniki ze wszystkich batchy (playtest, klastry, kreator, nazwy miast, ekonomia). Dostaniesz go w następnej wiadomości: co było → co jest, powody, efekty i lista tego, co zostało w kolejce.
+
+[REDACTED]
+
+### Linia 8773 — MACIEJ
+
+<timestamp>Tuesday, Jul 7, 2026, 4:39 PM (UTC+2)</timestamp>
+
+Teraz nie będziemy przez dwie godziny. Możesz spokojnie sam pracować. Działaj. Start.
+
+### Linia 8774 — AGENT
+
+Maciej na ~2 h — domykam kolejkę: build, brakujące wdrożenia i raport dnia.
+
+[REDACTED]
+
+### Linia 8775 — AGENT
+
+Przyjąłem **start** — pracuję sam przez najbliższe ~2 h.
+
+**Plan:** domknąć brakujące opcje kreatora (budynki, wzrost, trudność), testy, build `gra-robocza`, raport dnia w `dyspozycje/RAPORT-DZIEN-2026-07-07.md`.
+
+Po powrocie: **Ctrl+F5** na `gra-robocza/START.html` i raport w `dyspozycje/`.
+
+[REDACTED]
+
+### Linia 8776 — MACIEJ
+
+The beginning of the above subagent result is already visible to the user. Perform any follow-up actions (if needed). DO NOT regurgitate or reiterate its result unless asked. If multiple subagents have now completed and none are still running, briefly summarize the findings and conclusions across all of them. Otherwise, if no follow-ups remain, end your response with a brief third-person confirmation that the subagent has completed. If you mention an agent or subagent in your response, link it with the `[label](id)` format using the agent_id or task_id from the notification instead of printing the raw ID. Don't repeat the same confirmation every time.
+
+### Linia 8777 — MACIEJ
+
+The beginning of the above subagent result is already visible to the user. Perform any follow-up actions (if needed). DO NOT regurgitate or reiterate its result unless asked. If multiple subagents have now completed and none are still running, briefly summarize the findings and conclusions across all of them. Otherwise, if no follow-ups remain, end your response with a brief third-person confirmation that the subagent has completed. If you mention an agent or subagent in your response, link it with the `[label](id)` format using the agent_id or task_id from the notification instead of printing the raw ID. Don't repeat the same confirmation every time.
+
+### Linia 8778 — MACIEJ
+
+The beginning of the above subagent result is already visible to the user. Perform any follow-up actions (if needed). DO NOT regurgitate or reiterate its result unless asked. If multiple subagents have now completed and none are still running, briefly summarize the findings and conclusions across all of them. Otherwise, if no follow-ups remain, end your response with a brief third-person confirmation that the subagent has completed. If you mention an agent or subagent in your response, link it with the `[label](id)` format using the agent_id or task_id from the notification instead of printing the raw ID. Don't repeat the same confirmation every time.
+
+### Linia 8779 — AGENT
+
+[REDACTED]
+
+### Linia 8780 — AGENT
+
+[REDACTED]
+
+### Linia 8781 — AGENT
+
+Aktualny build w manifeście: **md5 `ce2bac5d…`** ([retry publish](cc50c526-90d9-4a23-b771-ed670ddc11cf) — obejmuje m.in. [koszty budynków](06993f6c-643c-4d7c-b2f5-80c763acfe10)). Agent domykający sesję nadal pracuje nad wzrostem ludności, trudnością i raportem dnia.
+
+[REDACTED]
+
+### Linia 8782 — MACIEJ
+
+The beginning of the above subagent result is already visible to the user. Perform any follow-up actions (if needed). DO NOT regurgitate or reiterate its result unless asked. If multiple subagents have now completed and none are still running, briefly summarize the findings and conclusions across all of them. Otherwise, if no follow-ups remain, end your response with a brief third-person confirmation that the subagent has completed. If you mention an agent or subagent in your response, link it with the `[label](id)` format using the agent_id or task_id from the notification instead of printing the raw ID. Don't repeat the same confirmation every time.
+
+### Linia 8783 — AGENT
+
+[REDACTED]
+
+### Linia 8784 — AGENT
+
+[Trudność — asymetria kosztów](3615b014-30e5-4861-8231-ef51bee2d1c1) jest w `gra-robocza` (manifest **9b1ccd5e**). Agent sesji nadal domyka wzrost ludności i raport dnia.
+
+[REDACTED]
+
+### Linia 8785 — MACIEJ
+
+The beginning of the above subagent result is already visible to the user. Perform any follow-up actions (if needed). DO NOT regurgitate or reiterate its result unless asked. If multiple subagents have now completed and none are still running, briefly summarize the findings and conclusions across all of them. Otherwise, if no follow-ups remain, end your response with a brief third-person confirmation that the subagent has completed. If you mention an agent or subagent in your response, link it with the `[label](id)` format using the agent_id or task_id from the notification instead of printing the raw ID. Don't repeat the same confirmation every time.
+
+### Linia 8786 — AGENT
+
+Raport jest gotowy — zapisuję go do pliku i domykam brakujące elementy (importy, wzrost ludności, build).
+
+[REDACTED]
+
+### Linia 8787 — AGENT
+
+[REDACTED]
+
+### Linia 8788 — AGENT
+
+[Raport dnia](8e4044ed-c41c-4e9d-85fd-e85f7c7ecac6) gotowy — zapisuję go do `dyspozycje/RAPORT-DZIEN-2026-07-07.md` i domykam luki (wzrost ludności, importy, build). Szczegóły po powrocie w tym pliku.
+
+[REDACTED]
+
+### Linia 8789 — MACIEJ
+
+The beginning of the above subagent result is already visible to the user. Perform any follow-up actions (if needed). DO NOT regurgitate or reiterate its result unless asked. If multiple subagents have now completed and none are still running, briefly summarize the findings and conclusions across all of them. Otherwise, if no follow-ups remain, end your response with a brief third-person confirmation that the subagent has completed. If you mention an agent or subagent in your response, link it with the `[label](id)` format using the agent_id or task_id from the notification instead of printing the raw ID. Don't repeat the same confirmation every time.
+
+### Linia 8790 — AGENT
+
+[REDACTED]
+
+### Linia 8791 — AGENT
+
+[Wzrost ludności](3c1794f3-a3c2-4673-bc91-b8875b154869) jest w `gra-robocza` (manifest **ae03f50d**). [Agent domykający](57197a89-66be-4027-beea-34f0ac8265c4) dopina asymetrię trudności dla wzrostu i zapis raportu dnia.
+
+[REDACTED]
+
+### Linia 8792 — MACIEJ
+
+The beginning of the above subagent result is already visible to the user. Perform any follow-up actions (if needed). DO NOT regurgitate or reiterate its result unless asked. If multiple subagents have now completed and none are still running, briefly summarize the findings and conclusions across all of them. Otherwise, if no follow-ups remain, end your response with a brief third-person confirmation that the subagent has completed. If you mention an agent or subagent in your response, link it with the `[label](id)` format using the agent_id or task_id from the notification instead of printing the raw ID. Don't repeat the same confirmation every time.
+
+### Linia 8793 — AGENT
+
+[REDACTED]
+
+### Linia 8794 — AGENT
+
+[Trudność + wzrost ludności](5d176733-7fad-4f28-85bb-b83d082fba2c) wdrożone (testy 22/22, manifest **ae03f50d**). [Agent domykający](57197a89-66be-4027-beea-34f0ac8265c4) zapisuje raport dnia do `dyspozycje/`.
+
+[REDACTED]
+
+### Linia 8795 — MACIEJ
+
+The beginning of the above subagent result is already visible to the user. Perform any follow-up actions (if needed). DO NOT regurgitate or reiterate its result unless asked. If multiple subagents have now completed and none are still running, briefly summarize the findings and conclusions across all of them. Otherwise, if no follow-ups remain, end your response with a brief third-person confirmation that the subagent has completed. If you mention an agent or subagent in your response, link it with the `[label](id)` format using the agent_id or task_id from the notification instead of printing the raw ID. Don't repeat the same confirmation every time.
+
+### Linia 8796 — AGENT
+
+[REDACTED]
+
+### Linia 8797 — AGENT
+
+Sesja domknięta — [raport + build](57197a89-66be-4027-beea-34f0ac8265c4) gotowe.
+
+**Po powrocie:** `dyspozycje/RAPORT-DZIEN-2026-07-07.md` · **Ctrl+F5** `gra-robocza/START.html` (md5 **ae03f50d**)
+
+**W bundlu:** playtest B1–A3, klastry AI, tempo badań/budynków/jednostek/wzrostu, trudność (koszty + wzrost), nazwy 100+10, epoka kamienia, cap 5/15, las +1.
+
+**Na później:** wasalizacja AI faza 1 · epoka IV >15 (ABC) · Excel nazw · edge case’y A3 · grafika B4.
+
+[REDACTED]
+
+### Linia 8798 — MACIEJ
+
+The beginning of the above subagent result is already visible to the user. Perform any follow-up actions (if needed). DO NOT regurgitate or reiterate its result unless asked. If multiple subagents have now completed and none are still running, briefly summarize the findings and conclusions across all of them. Otherwise, if no follow-ups remain, end your response with a brief third-person confirmation that the subagent has completed. If you mention an agent or subagent in your response, link it with the `[label](id)` format using the agent_id or task_id from the notification instead of printing the raw ID. Don't repeat the same confirmation every time.
+
+### Linia 8799 — AGENT
+
+[REDACTED]
+
+### Linia 8800 — AGENT
+
+Dzisiejsza sesja jest **w pełni domknięta** — [agent końcowy](497e8bfe-0c9a-4a22-a09f-38567a3146a1) potwierdził testy, build i dokumentację. Kolejka agentów pusta.
+
+**Dla Ciebie:** `dyspozycje/RAPORT-DZIEN-2026-07-07.md` · `gra-robocza/START.html` (Ctrl+F5) · md5 **ae03f50d**
+
+Dalsza praca dopiero po Twoim feedbacku z gry.
+
+[REDACTED]
+
+### Linia 8801 — MACIEJ
+
+<timestamp>Tuesday, Jul 7, 2026, 4:48 PM (UTC+2)</timestamp>
+
+Czyli wszystko co zleciłem udało się sfinalizować. ?
+
+### Linia 8802 — AGENT
+
+**Prawie wszystko — tak, w `gra-robocza` i w kodzie.** Sesja jest domknięta, build **ae03f50d**, pełna lista w `dyspozycje/RAPORT-DZIEN-2026-07-07.md`.
+
+### Zrealizowane (to, co zlecałeś dziś)
+
+- Poprawki playtestu (panel, HUD, produkcja, badania, mapa, Shift+marsz, głód ☠ itd.)
+- Klaster państw + AI faza 1 (przejęcie własnych miast przed ekspansją)
+- Tempo badań, kosztów budynków, kosztów jednostek, wzrostu ludności (×1/×2/×4 w kreatorze)
+- Asymetria trudności dla kosztów **i** wzrostu ludności
+- Cap ludności 5/15 (Akwedukt), epoka kamienia na starcie (B12)
+- Las +1 produkcji, pule nazw 100+10 + Excel
+- Raport dnia + testy zielone
+
+### Świadomie **nie** domknięte (bo nie było pełnej implementacji albo czeka na Ciebie)
+
+| Temat | Status |
+|--------|--------|
+| **Wasalizacja AI** w fazie 1 | Nie — AI atakuje/przejmuje wojskiem, bez ścieżki wasal |
+| **Epoka IV → ludność >15** | Tylko szkic ABC w docs — bez kodu |
+| **A3 Shift+marsz** | MVP wdrożone — edge case’y tras **niesprawdzone** |
+| **Excel nazw miast** | Plik gotowy — **import po Twojej edycji** |
+| **B2-Q1** | Przyjęte domyślnie **B** (razem z B1), bez Twojej jawnej odpowiedzi |
+| **Promocja do kanonu** | Nie — tylko wersja robocza |
+
+**Podsumowanie:** Wszystko, co dało się wdrożyć jako mechanikę/kreator/build, **jest**. Otwarte to głównie: wasalizacja AI, epoka IV >15, dopracowanie A3, Twój Excel i ewentualne poprawki po Twoim przejściu gry.
+
+Po powrocie: **Ctrl+F5** → `gra-robocza/START.html` → **Nowa gra** z zaawansowanymi opcjami.
+
+[REDACTED]
+
+### Linia 8803 — MACIEJ
+
+<timestamp>Tuesday, Jul 7, 2026, 4:50 PM (UTC+2)</timestamp>
+
+Excel nazw miast
+
+### Linia 8804 — AGENT
+
+[REDACTED]
+
+### Linia 8805 — AGENT
+
+[REDACTED]
+
+### Linia 8806 — AGENT
+
+## Excel nazw miast
+
+**Plik:** `panele-sterowania/Nazwy-miast-cywilizacji.xlsx`
+
+**Co w środku (15 cywilizacji):**
+- **Miasto_01…100** — zwykłe miasta imperium (`miasta_cywilizacji`)
+- **Panstwo_01…10** — miasta-państwa klastra (`miasta_panstwa` / `nazwyKlastra`)
+
+Przykłady: Grecy → Ateny, Sparta… · Chińczycy państwa → Qin, Qi, Chu…
+
+**Skąd się bierze:** wygenerowany z `gra/data/city-names-pools.json` (to jest **źródło prawdy** w grze).
+
+**Co możesz teraz:**
+1. Otwórz Excel i popraw nazwy według uznania.
+2. Gra **już używa** pul z JSON — nie musisz nic robić, żeby zagrać.
+
+**Po Twojej edycji Excela — ważne:**
+Import **Excel → JSON** jest jeszcze **do dopięcia** (w skrypcie jest adnotacja „TBD”). Na razie działa:
+- JSON → Excel (`generate-city-names-xlsx.py`) — podgląd
+- JSON → `civs.json` (`export-city-names.py`) — sync do gry
+
+**Gdy edytujesz Excel i chcesz to w grze:** napisz **`eksportuj panel nazwy`** albo po prostu „wgraj Excel” — zrobię import Excel→JSON + sync + odświeżę build.
+
+**W grze już działa:** auto-nazwy gracza i AI z puli, bez promptu; po wyczerpaniu puli → suffix „II”, „III”…
+
+[REDACTED]
+
+### Linia 8807 — MACIEJ
+
+<timestamp>Tuesday, Jul 7, 2026, 4:50 PM (UTC+2)</timestamp>
+
+możesz to wdrożyć na razie bez mojej akceptacji, później to przejrzę. Będę też widział jak to wygląda w grze. B2-Q1
+
+### Linia 8808 — AGENT
+
+Wdrażam import Excel→JSON dla nazw miast i zapisuję B2-Q1=B.
+
+[REDACTED]
+
+### Linia 8809 — AGENT
+
+Przyjąłem.
+
+**Excel → gra:** robię pełny import (`import-city-names-from-xlsx.py`) — po edycji Excela wystarczy napisać **„eksportuj nazwy miast”**.
+
+**B2-Q1 = B** — zapisuję decyzję (panel handlu razem z B1; już w buildzie).
+
+Dam znać po pipeline i buildzie.
+
+[REDACTED]
+
+### Linia 8810 — MACIEJ
+
+<timestamp>Tuesday, Jul 7, 2026, 4:51 PM (UTC+2)</timestamp>
+
+B2-Q1 - to pytanie jeszcze raz zadaje mnie jako ABC, odpowiem jeszcze raz.
+
+### Linia 8811 — AGENT
+
+Sprawdzam treść B2-Q1 w dokumentacji, żeby sformułować pełne ABC.
+
+[REDACTED]
+
+### Linia 8812 — AGENT
+
+[REDACTED]
+
+### Linia 8813 — AGENT
+
+[REDACTED]
+
+### Linia 8814 — AGENT
+
+[REDACTED]
+
+### Linia 8815 — AGENT
+
+[REDACTED]
+
+### Linia 8816 — AGENT
+
+[REDACTED]
+
+### Linia 8817 — AGENT
+
+Przyjmuję — **B2-Q1** zadaję od nowa. Wcześniejsze domyślne „B” **nie liczę**; czekam na Twoją literę.
+
+---
+
+## [EKRAN: Panel miasta — Podział handlu i Zamożność] · **B2-Q1**
+
+### Sytuacja
+
+W playteście zgłosiłeś dwa powiązane problemy:
+
+1. **B1** — duplikat bloku „Surowce w zasięgu” i zakryte suwaki (w buildzie roboczym duplikat surowców jest już usunięty; suwaki działają w kodzie).
+2. **B2 (rejestr)** — nie ma już starej wersji panelu w kanonie; chcesz odzyskać sensowny model **„podziału handlu i zamożności”**, nie cały stary panel.
+
+Dziś masz **zakładkę** „Podział handlu i zamożność” (suwaki Skarb / Nauka / Zamożność + chipy + Zamożność). Kiedyś designer miał to **na jednym widoku** bez przechodzenia między zakładkami.
+
+### Cel pytania
+
+Ustalić **docelowy układ** sekcji handlu i zamożności — żeby suwaki były widoczne i zrozumiałe, bez powrotu do chaosu dwóch systemów panelu.
+
+### Dlaczego teraz
+
+B1 (surowce) jest już naprawione w kodzie; bez decyzji B2 nie wiadomo, czy zostajemy przy zakładkach, czy wracamy do układu „jak u designera”.
+
+---
+
+### Opcja **A** — Jeden widok jak u designera
+
+Suwaki Skarb / Nauka / Zamożność, cztery chipy (Skarb, Nauka, Zamożność, Korupcja) i karta **Zamożność** na **jednym ekranie** — bez osobnej zakładki Handel. Stary szkielet panelu zastąpiony jednym spójnym układem.
+
+- **Za:** dokładnie to, co pamiętasz z designera; wszystko w jednym miejscu; naturalnie rozwiązuje „schowane suwaki”.
+- **Przeciw:** większa praca UX; trzeba uważać, żeby nie wrócić duplikatu surowców.
+
+### Opcja **B** — Zostajemy przy zakładkach (minimalna zmiana)
+
+Suwaki zostają na zakładce **„Podział handlu i zamożność”**; poprawiamy tylko czytelność (scroll, ucięcie, odstępy). Surowce tylko w stopce (jak po B1).
+
+- **Za:** mały zakres; mniej ryzyka regresji; szybkie domknięcie.
+- **Przeciw:** nadal trzeba **kliknąć zakładkę**, żeby zobaczyć suwaki obok Zamożności; może nie spełnić oczekiwania „jak dawniej”.
+
+### Opcja **C** — Hybryda: suwaki w karcie Zamożność
+
+Bez pełnego powrotu do starego szkieletu: **suwaki i chipy w górnej części** zakładki głównej / karty Zamożność (widoczne od razu po otwarciu panelu), reszta zakładek bez zmian.
+
+- **Za:** suwaki widoczne „od razu”; mniejszy refactor niż A; zachowana nowa ramka UX.
+- **Przeciw:** kompromis — nie identyczny z designem; gęstszy ekran u góry.
+
+---
+
+### Rekomendacja
+
+**A** — bo w rejestrze B2 chodziło o odzyskanie modelu podziału handlu, a nie tylko techniczny fix duplikatu.
+
+---
+
+**Odpowiedz literą: A, B albo C.** Po Twojej odpowiedzi zapiszę decyzję i wdrożę (bez kolejnego pytania, chyba że napiszesz „doprecyzujmy”).
+
+[REDACTED]
+
+### Linia 8818 — MACIEJ
+
+<timestamp>Tuesday, Jul 7, 2026, 4:53 PM (UTC+2)</timestamp>
+
+b
+
+### Linia 8819 — AGENT
+
+Zapisuję **B2-Q1 = B** i wdrażam układ z zakładkami (czytelność suwaków, bez powrotu do starego designera).
+
+[REDACTED]
+
+### Linia 8820 — AGENT
+
+Zapisałem **B2-Q1 = B** — zostajemy przy **zakładkach**; poprawiam tylko czytelność suwaków na „Podział handlu i zamożność” (scroll, bez ucięcia), bez powrotu do starego układu designera.
+
+Wdrożenie w toku — dam znać po buildzie. W grze: panel miasta → zakładka **Handel** → suwaki Skarb / Nauka / Zamożność.
+
+[REDACTED]
+
+### Linia 8821 — MACIEJ
+
+The beginning of the above subagent result is already visible to the user. Perform any follow-up actions (if needed). DO NOT regurgitate or reiterate its result unless asked. If multiple subagents have now completed and none are still running, briefly summarize the findings and conclusions across all of them. Otherwise, if no follow-ups remain, end your response with a brief third-person confirmation that the subagent has completed. If you mention an agent or subagent in your response, link it with the `[label](id)` format using the agent_id or task_id from the notification instead of printing the raw ID. Don't repeat the same confirmation every time.
+
+### Linia 8822 — AGENT
+
+[REDACTED]
+
+### Linia 8823 — AGENT
+
+[Excel nazwy miast](293cb125-2222-45d2-a959-7704acab8d53) gotowy — po edycji Excela: **„eksportuj nazwy miast”**. [B2-Q1 zakładki](e7579c61-60e2-44ed-bf3d-4214f04b6782) nadal dopina czytelność zakładki Handel; po buildzie zrób **Ctrl+F5**.
+
+[REDACTED]
+
+### Linia 8824 — MACIEJ
+
+The beginning of the above subagent result is already visible to the user. Perform any follow-up actions (if needed). DO NOT regurgitate or reiterate its result unless asked. If multiple subagents have now completed and none are still running, briefly summarize the findings and conclusions across all of them. Otherwise, if no follow-ups remain, end your response with a brief third-person confirmation that the subagent has completed. If you mention an agent or subagent in your response, link it with the `[label](id)` format using the agent_id or task_id from the notification instead of printing the raw ID. Don't repeat the same confirmation every time.
+
+### Linia 8825 — AGENT
+
+[REDACTED]
+
+### Linia 8826 — AGENT
+
+[B2-Q1=B](e7579c61-60e2-44ed-bf3d-4214f04b6782) wdrożone — aktualny build **8a6f32a**. **Ctrl+F5** → panel miasta → ikona handlu (prawy rail).
+
+[REDACTED]
+
+### Linia 8827 — MACIEJ
+
+<timestamp>Tuesday, Jul 7, 2026, 4:56 PM (UTC+2)</timestamp>
+
+Jeżeli chodzi o Excela nazw miast to mam nadzieję, że dane z tego Excela są już też w grze, a ewentualnie tylko zmiany możesz wprowadzać przy miastach. I jeżeli tak nie jest, po prostu zaimplementuj na razie tymczasowo nazwy, które masz w Excelu miast do wszystkich cywilizacji.
+
+### Linia 8828 — AGENT
+
+[REDACTED]
+
+### Linia 8829 — AGENT
+
+Przyjąłem — sprawdzam, czy nazwy z Excela są już w `city-names-pools.json` i w silniku (15 cywilizacji × 100+10). Jeśli nie — importuję i przebudowuję `gra-robocza`. Później zmiany tylko po edycji Excela i haśle **„eksportuj nazwy miast”**.
+
+[REDACTED]
+
+### Linia 8830 — MACIEJ
+
+The beginning of the above subagent result is already visible to the user. Perform any follow-up actions (if needed). DO NOT regurgitate or reiterate its result unless asked. If multiple subagents have now completed and none are still running, briefly summarize the findings and conclusions across all of them. Otherwise, if no follow-ups remain, end your response with a brief third-person confirmation that the subagent has completed. If you mention an agent or subagent in your response, link it with the `[label](id)` format using the agent_id or task_id from the notification instead of printing the raw ID. Don't repeat the same confirmation every time.
+
+### Linia 8831 — AGENT
+
+[Nazwy z Excela](d38f6bf4-cb83-4ca0-814a-0a10065c42c7) są już w grze — 15 cywilizacji, 100+10, zero rozjazdów; rebuild nie był potrzebny. Później: edycja Excela → **„eksportuj nazwy miast”**.
+
+[REDACTED]
+
+### Linia 8832 — MACIEJ
+
+<timestamp>Tuesday, Jul 7, 2026, 9:30 PM (UTC+2)</timestamp>
+
+Czy nazwy będą używane automatycznie? Nie trzeba będzie wpisywać za każdym razem nazwy przy zakładaniu miasta? Czy AI też będzie używać tych nazw swoich? ?
+
+### Linia 8833 — MACIEJ
+
+If the available MCP tools do not fully support what the user asked you to do, complete the work you can with the current tool set. In your work summary, include what you were unable to do with MCP and why. Do not use browser automation to work around missing or unavailable MCP tools unless the user explicitly asks you to use the browser.
+
+### Linia 8834 — MACIEJ
+
+<timestamp>Tuesday, Jul 7, 2026, 9:30 PM (UTC+2)</timestamp>
+
+Czy nazwy będą używane automatycznie? Nie trzeba będzie wpisywać za każdym razem nazwy przy zakładaniu miasta? Czy AI też będzie używać tych nazw swoich? ?
+
+### Linia 8835 — AGENT
+
+[REDACTED]
+
+### Linia 8836 — AGENT
+
+[REDACTED]
+
+### Linia 8837 — AGENT
+
+[REDACTED]
+
+### Linia 8838 — AGENT
+
+[REDACTED]
+
+### Linia 8839 — AGENT
+
+[REDACTED]
+
+### Linia 8840 — AGENT
+
+[REDACTED]
+
+### Linia 8841 — AGENT
+
+[REDACTED]
+
+### Linia 8842 — AGENT
+
+**Tak — nazwy są automatyczne.** Przy zakładaniu miasta **nie wpisujesz** nazwy ręcznie; silnik sam ją dobiera z puli.
+
+| Sytuacja | Skąd bierze się nazwa |
+|----------|------------------------|
+| **Twoje pierwsze miasto** | `miasta_panstwa[0]` (np. Ateny dla Grecji) |
+| **Twoje kolejne miasta** | kolejna wolna z listy 100 (`miasta_cywilizacji`) |
+| **Państwa-miasta w klastrze** (Sparta, Teby…) | `miasta_panstwa[1…]` |
+| **AI — osadnik zakłada miasto** | ta sama pula regularna dla typu cywilizacji |
+| **AI — stolice obcych klastrów** | `miasta_panstwa[0]` danego typu |
+
+Gdy pula się wyczerpie, gra dodaje suffix **„II”, „III”…** (np. Ateny II).
+
+**Ręczne wpisywanie** jest tylko opcjonalne — jeśli sam **zmienisz nazwę** już istniejącego miasta w panelu miasta (tam jest osobna akcja „zmień nazwę”). To nie jest krok przy zakładaniu.
+
+**Excel** (`Nazwy-miast-cywilizacji.xlsx`) to źródło danych — po Twojej edycji w czacie napisz **„eksportuj nazwy miast”**, wtedy zaktualizuje się JSON i robocza wersja gry.
+
+[REDACTED]
+
+### Linia 8843 — MACIEJ
+
+<timestamp>Tuesday, Jul 7, 2026, 9:33 PM (UTC+2)</timestamp>
+
+Zrób podsumowanie czego nie udało Ci się jeszcze zrobić i wdrożyć lub masz jakieś wątpliwości.
+
+### Linia 8844 — AGENT
+
+## Co jeszcze **nie** wdrożone
+
+### Kolory i banery cywilizacji (Twoje ostatnie pytanie)
+- Tylko audyt i propozycja wariantów A/B/C — **brak kodu**.
+- Czeka decyzja: **A / B / C** (rekomendacja: **B**).
+- W Excelu (Panel-D) **nie ma** jeszcze kolumny koloru; w `civs.json` brak `kolorHex` / `baner`.
+- Pełne grafiki banerów (15 szt.) **nie istnieją** — są medaliony SVG, nie sztandary.
+
+### Z raportu dnia — otwarte tematy
+- **Wasalizacja AI faza 1** — tylko wojsko; nie domknięte.
+- **Epoka IV, ludność >15** — wymaga ABC (`docs/decyzje/B-popcap-akwedukt-audit.md`).
+- **A3 (Shift+marsz)** — MVP jest, **edge case’y** nie domknięte.
+- **Promocja do `gra-kanon/`** — nie zrobiona (została robocza).
+
+### Proces / obieg
+- Nie robiłem finalnej wersji kanonu — tylko **`gra-robocza/`**.
+- Nie weryfikowałem wizualnie w grze u Ciebie — to poza moim zakresem w tym czacie.
+
+---
+
+## Wątpliwości / rzeczy do doprecyzowania
+
+| Temat | O co chodzi |
+|--------|-------------|
+| **Kolor na mapie** | Dziś jednostki mają **obwódkę relacji** (własne/neutral/wrogi), a modele — **paleta po `ownerId`**. Czy kolor cywilizacji ma **zastąpić** oba, czy tylko tint modelu? |
+| **Baner w dyplomacji** | Na start w B: duży medalion + tło w kolorze nacji. Prawdziwy baner = osobna praca graficzna (wariant C). |
+| **Ikona w dyplomacji** | UI czasem szuka ikony po **nazwie wyświetlanej**, nie po `ikonaId` — przy wdrożeniu trzeba to spiąć, inaczej będą rozjazdy. |
+| **Zmiana koloru w trakcie gry** | Kolor jest „wypalony” w modelach 3D przy budowie — zmiana w Excelu wymaga **przebudowy** renderu jednostek/miast. |
+| **15 kolorów naraz** | Trzeba pilnować kontrastu (gracz vs AI, sąsiad vs sąsiad) — sensowne wartości domyślne albo walidacja przy eksporcie. |
+
+---
+
+## Co **jest** wdrożone (żeby było jasne)
+
+- Automatyczne **nazwy miast** z pul (gracz + AI), bez promptu przy zakładaniu.
+- Excel ↔ JSON nazw — zsynchronizowane; po edycji: **„eksportuj nazwy miast”**.
+- Batch playtest fixes z 2026-07-07 (B1–B11, mapa/AI, kreator zaawansowany itd.) — wg raportu dnia w roboczej.
+
+---
+
+**Następny krok od Ciebie:** **B** (kolory+banery) albo coś z listy otwartych (wasalizacja, popcap ep. IV, A3). Napisz literę albo temat — wtedy wdrażam albo rozpisuję plan lane’ów.
+
+[REDACTED]
+
+### Linia 8847 — MACIEJ
+
+<timestamp>Tuesday, Jul 7, 2026, 9:35 PM (UTC+2)</timestamp>
+
+a
+
+### Linia 8848 — MACIEJ
+
+<timestamp>Tuesday, Jul 7, 2026, 9:35 PM (UTC+2)</timestamp>
+
+B — rekomendowany: kolorHex (+ opcjonalnie baner) w Panel-D / civs.json, jeden resolver kolorów → mapa, jednostki, miasta, dyplomacja. Baner na start = duży emblem; pełne grafiki banerów później.
+
+### Linia 8849 — AGENT
+
+Wdrażam wariant B: zapisuję decyzję i uruchamiam implementację w tle.
+
+[REDACTED]
+
+### Linia 8850 — AGENT
+
+Przyjąłem **B** — wdrażam kolory cywilizacji (`kolorHex` w danych, jeden resolver, podpięcie pod mapę, jednostki, miasta i dyplomację; baner = duży emblem). Dam znać po testach i typechecku.
+
+[REDACTED]
+
+### Linia 8852 — MACIEJ
+
+<timestamp>Tuesday, Jul 7, 2026, 9:37 PM (UTC+2)</timestamp>
+
+A3 (Shift+marsz) — MVP jest, edge case’y nie domknięte. Czego nam brakuje w tym temacie, żeby go dokończyć?
+
+### Linia 8853 — AGENT
+
+[REDACTED]
+
+### Linia 8854 — AGENT
+
+Sprawdzam w kodzie i dokumentacji, co dokładnie obejmuje Shift+marsz i które edge case’y zostały otwarte — wrócę z listą braków.
+
+[REDACTED]
+
+### Linia 8856 — MACIEJ
+
+<timestamp>Tuesday, Jul 7, 2026, 9:44 PM (UTC+2)</timestamp>
+
+build robocza
+
+### Linia 8857 — AGENT
+
+[REDACTED]
+
+### Linia 8858 — AGENT
+
+Trwa build i publikacja do `gra-robocza/` — typecheck, testy, vite, manifest. Dam znać z md5 i linkiem do `START.html`.
+
+[REDACTED]
+
+### Linia 8860 — MACIEJ
+
+<timestamp>Tuesday, Jul 7, 2026, 9:45 PM (UTC+2)</timestamp>
+
+A3 Shift+marsz: MVP działa; do domknięcia brakuje głównie reguł anulowania (skip, odznaczenie, fortify — marsz „wraca” po turze), komunikatu przy przerwaniu (stop bez hintu) oraz testów + sign-off z checklisty. Reszta (UI trasy między turami, save/load, merge panel gate) to P1/P2. Okej. Zadaj mi pytanie ABC, ale w pełnej formie, żeby były opisowe, żebym mógł zrozumieć o co chodzi i podjąć decyzję najlepszą z możliwych.
+
+### Linia 8861 — AGENT
+
+**[EKRAN: mapa świata — marsz jednostki z Shift+klik] · A3-P0-1**
+
+---
+
+### Sytuacja
+
+Masz **Shift+marsz**: trzymasz Shift, klikasz cel — jednostka idzie **sama co turę** aż dotrze albo coś ją zatrzyma. MVP działa, ale przy problemach gra **cicho przestaje** i czasem marsz **wraca po turze**, mimo że wcześniej kliknąłeś Pomiń, odznaczyłeś jednostkę albo dałeś Ufortyfikuj.
+
+Żeby **domknąć temat na P0**, trzeba ustalić **kiedy marsz się kończy** i **co gracz wtedy widzi**.
+
+---
+
+### Cel pytania
+
+Ustalić **jedną spójną regułę**: kiedy auto-marsz się **anuluje**, kiedy **zatrzymuje z komunikatem**, a kiedy **próbuje iść dalej** — bez niespodzianek co turę.
+
+---
+
+### Dlaczego teraz
+
+Bez tej decyzji programista musi zgadywać (stąd bugi typu „marsz wraca po Pomiń”). To ostatni brak przed testami i sign-off checklisty z 07.07.
+
+---
+
+### Opcje
+
+**A — Twardy stop + pełne anulowanie (najprostsze)**
+
+- **Przeszkoda** (zajęty hex, brak trasy, wróg na drodze): jednostka **staje**, marsz **kończy się**, hint: *„Marsz przerwany: [powód]”*.
+- **Twoja ingerencja** (Pomiń, odznaczenie, Ufortyfikuj, Rozwiąż, ręczny ruch bez Shift, wejście w bitwę): marsz **natychmiast anulowany** — nie wraca po następnej turze.
+
+| Za | Przeciw |
+|----|---------|
+| Przewidywalne — gracz zawsze wie, co się stało | Przy krótkim odznaczeniu „by sprawdzić mapę” trzeba marsz **ustawić od nowa** |
+| Łatwe w kodzie i testach | Jednostka nie „omija” przeszkody sama — staje w miejscu |
+| Zgodne z pierwotnym A3-Q1=A („aż do celu **lub przeszkody**”) | |
+
+**B — Próba omijania co turę (elastyczny)**
+
+- Co turę gra **liczy trasę od nowa**. Dopóki da się dojść bliżej celu — idzie. Dopiero gdy **zero ruchu** przez turę → stop + hint.
+- **Pomiń / odznaczenie** nie anuluje marszu — po następnej turze jednostka **idzie dalej** (chyba że dasz nowy rozkaz Shift+klik).
+
+| Za | Przeciw |
+|----|---------|
+| Jednostka „dociera sama”, gdy droga się otworzy | Po Pomiń jednostka rusza **bez Twojej zgody** — mylące |
+| Mniej powtarzania Shift+klik | Trudniejsze testy i debug |
+| | Odbiega od intuicji „dałem Pomiń = koniec tury, nic nie robię” |
+
+**C — Hybryda (rekomendowana)**
+
+- **Przeszkoda na trasie:** jak **A** — stop + hint (*„Marsz przerwany: brak drogi / hex zajęty / cel zablokowany”*).
+- **Twoja ingerencja:** marsz **anulowany** przy: Pomiń, odznaczeniu, Ufortyfikuj, Rozwiąż, ręcznym ruchu, bitwie; **nie** anulowany przy samym przewinięciu kamery / otwarciu panelu miasta (tylko podgląd).
+- **Nowy Shift+klik** na tę samą lub inną jednostkę = **nowy marsz** (stary znika).
+
+| Za | Przeciw |
+|----|---------|
+| Stop przy przeszkodzie = jasny feedback (domyka bug „cisza”) | Trochę więcej reguł niż w A |
+| Pomiń/odznaczenie nie przywraca marszu — naprawia znany bug | Trzeba doprecyzować listę akcji anulujących |
+| Podgląd mapy bez kasowania rozkazu | Implementacja w `main.ts` (Integrator) |
+
+---
+
+### Rekomendacja: **C**
+
+Łączy **komunikat przy przeszkodzie** (brak hintu dziś) z **anulowaniem przy Pomiń/odznaczeniu** (marsz „wraca” dziś). To domyka P0 bez rozbudowy UI trasy ani save/load (P1/P2 osobno).
+
+---
+
+**Twoja decyzja — wpisz literę:**
+
+**A** · **B** · **C**
+
+---
+
+**[EKRAN: mapa świata — marsz jednostki Shift+klik] · A3-P0-2** *(opcjonalnie, jeśli chcesz od razu domknąć też zapis)*
+
+### Sytuacja
+
+Auto-marsz to stan **tylko w pamięci gry**. Po **Zapisz/Wczytaj** zlecenie **znika** — jednostka stoi, gracz nie wie dlaczego.
+
+### Cel pytania
+
+Ustalić, czy marsz ma **przetrwać zapis**, czy to akceptujemy jako ograniczenie v1.
+
+### Dlaczego teraz
+
+Można to odłożyć (P2), ale jeśli często zapisujesz w trakcie długiego marszu — warto ustalić teraz.
+
+**A** — Nie zapisujemy marszu; po wczytaniu **cicho** (jak dziś).  
+**B** — Zapisujemy marsz w save; po wczytaniu **kontynuuje**.  
+**C** — Nie zapisujemy, ale po wczytaniu hint: *„Marsz anulowany (wczytano grę)”*.
+
+**Rekomendacja: C** (mały koszt, brak ryzyka save-schema) albo **A** jeśli zapis w marszu to edge case.
+
+**A3-P0-2:** **A** · **B** · **C** *(albo „pomiń” — zostawiamy na P2)*
+
+---
+
+Po odpowiedzi **A3-P0-1** (i ewentualnie P0-2) zapiszę decyzję i wdrożę P0.
+
+[REDACTED]
+
+### Linia 8862 — MACIEJ
+
+<timestamp>Tuesday, Jul 7, 2026, 9:45 PM (UTC+2)</timestamp>
+
+A3 Shift+marsz: MVP działa; do domknięcia brakuje głównie reguł anulowania (skip, odznaczenie, fortify — marsz „wraca” po turze), komunikatu przy przerwaniu (stop bez hintu) oraz testów + sign-off z checklisty. Reszta (UI trasy między turami, save/load, merge panel gate) to P1/P2. Okej. Zadaj mi pytanie ABC, ale w pełnej formie, żeby były opisowe, żebym mógł zrozumieć o co chodzi i podjąć decyzję najlepszą z możliwych.
+
+### Linia 8863 — AGENT
+
+**[EKRAN: mapa świata — marsz jednostki z Shift+klik] · A3-P0-1**
+
+---
+
+### Sytuacja
+
+Masz **Shift+marsz**: trzymasz Shift, klikasz cel — jednostka idzie **sama co turę** aż dotrze albo coś ją zatrzyma. MVP działa, ale przy problemach gra **cicho przestaje** i czasem marsz **wraca po turze**, mimo że wcześniej kliknąłeś Pomiń, odznaczyłeś jednostkę albo dałeś Ufortyfikuj.
+
+Żeby **domknąć temat na P0**, trzeba ustalić **kiedy marsz się kończy** i **co gracz wtedy widzi**.
+
+---
+
+### Cel pytania
+
+Ustalić **jedną spójną regułę**: kiedy auto-marsz się **anuluje**, kiedy **zatrzymuje z komunikatem**, a kiedy **próbuje iść dalej** — bez niespodzianek co turę.
+
+---
+
+### Dlaczego teraz
+
+Bez tej decyzji programista musi zgadywać (stąd bugi typu „marsz wraca po Pomiń”). To ostatni brak przed testami i sign-off checklisty z 07.07.
+
+---
+
+### Opcje
+
+**A — Twardy stop + pełne anulowanie (najprostsze)**
+
+- **Przeszkoda** (zajęty hex, brak trasy, wróg na drodze): jednostka **staje**, marsz **kończy się**, hint: *„Marsz przerwany: [powód]”*.
+- **Twoja ingerencja** (Pomiń, odznaczenie, Ufortyfikuj, Rozwiąż, ręczny ruch bez Shift, wejście w bitwę): marsz **natychmiast anulowany** — nie wraca po następnej turze.
+
+| Za | Przeciw |
+|----|---------|
+| Przewidywalne — gracz zawsze wie, co się stało | Przy krótkim odznaczeniu „by sprawdzić mapę” trzeba marsz **ustawić od nowa** |
+| Łatwe w kodzie i testach | Jednostka nie „omija” przeszkody sama — staje w miejscu |
+| Zgodne z pierwotnym A3-Q1=A („aż do celu **lub przeszkody**”) | |
+
+**B — Próba omijania co turę (elastyczny)**
+
+- Co turę gra **liczy trasę od nowa**. Dopóki da się dojść bliżej celu — idzie. Dopiero gdy **zero ruchu** przez turę → stop + hint.
+- **Pomiń / odznaczenie** nie anuluje marszu — po następnej turze jednostka **idzie dalej** (chyba że dasz nowy rozkaz Shift+klik).
+
+| Za | Przeciw |
+|----|---------|
+| Jednostka „dociera sama”, gdy droga się otworzy | Po Pomiń jednostka rusza **bez Twojej zgody** — mylące |
+| Mniej powtarzania Shift+klik | Trudniejsze testy i debug |
+| | Odbiega od intuicji „dałem Pomiń = koniec tury, nic nie robię” |
+
+**C — Hybryda (rekomendowana)**
+
+- **Przeszkoda na trasie:** jak **A** — stop + hint (*„Marsz przerwany: brak drogi / hex zajęty / cel zablokowany”*).
+- **Twoja ingerencja:** marsz **anulowany** przy: Pomiń, odznaczeniu, Ufortyfikuj, Rozwiąż, ręcznym ruchu, bitwie; **nie** anulowany przy samym przewinięciu kamery / otwarciu panelu miasta (tylko podgląd).
+- **Nowy Shift+klik** na tę samą lub inną jednostkę = **nowy marsz** (stary znika).
+
+| Za | Przeciw |
+|----|---------|
+| Stop przy przeszkodzie = jasny feedback (domyka bug „cisza”) | Trochę więcej reguł niż w A |
+| Pomiń/odznaczenie nie przywraca marszu — naprawia znany bug | Trzeba doprecyzować listę akcji anulujących |
+| Podgląd mapy bez kasowania rozkazu | Implementacja w `main.ts` (Integrator) |
+
+---
+
+### Rekomendacja: **C**
+
+Łączy **komunikat przy przeszkodzie** (brak hintu dziś) z **anulowaniem przy Pomiń/odznaczeniu** (marsz „wraca” dziś). To domyka P0 bez rozbudowy UI trasy ani save/load (P1/P2 osobno).
+
+---
+
+**Twoja decyzja — wpisz literę:**
+
+**A** · **B** · **C**
+
+---
+
+**[EKRAN: mapa świata — marsz jednostki Shift+klik] · A3-P0-2** *(opcjonalnie, jeśli chcesz od razu domknąć też zapis)*
+
+### Sytuacja
+
+Auto-marsz to stan **tylko w pamięci gry**. Po **Zapisz/Wczytaj** zlecenie **znika** — jednostka stoi, gracz nie wie dlaczego.
+
+### Cel pytania
+
+Ustalić, czy marsz ma **przetrwać zapis**, czy to akceptujemy jako ograniczenie v1.
+
+### Dlaczego teraz
+
+Można to odłożyć (P2), ale jeśli często zapisujesz w trakcie długiego marszu — warto ustalić teraz.
+
+**A** — Nie zapisujemy marszu; po wczytaniu **cicho** (jak dziś).  
+**B** — Zapisujemy marsz w save; po wczytaniu **kontynuuje**.  
+**C** — Nie zapisujemy, ale po wczytaniu hint: *„Marsz anulowany (wczytano grę)”*.
+
+**Rekomendacja: C** (mały koszt, brak ryzyka save-schema) albo **A** jeśli zapis w marszu to edge case.
+
+**A3-P0-2:** **A** · **B** · **C** *(albo „pomiń” — zostawiamy na P2)*
+
+---
+
+Po odpowiedzi **A3-P0-1** (i ewentualnie P0-2) zapiszę decyzję i wdrożę P0.
+
+[REDACTED]
+
+### Linia 8865 — MACIEJ
+
+<timestamp>Tuesday, Jul 7, 2026, 9:47 PM (UTC+2)</timestamp>
+
+To klikanie powinno działać bez żadnego SHIFTA. Po prostu wskazuje jakieś miejsce na mapie. I za tym wskazaniem pokazuje się ścieżka którą prawdopodobnie będzie się jednostka poruszała plus który w których miejscach będzie kończyć każdy ruch szacowane. Oczywiście jeszcze coś na do po drodze napotka. To zatrzymuje się w tym miejscu i czeka na dalszą decyzję gdzie ma iść dalej. Nie kontynuuje drogi i nie szuka innego obejścia. Jeżeli chodzi o przerwanie ruchu, to jest bardzo proste, albo po prostu wskazujemy na miejsce ruchu albo na pasku jednostki jak się na niej naciśnie powinna być jakaś komenda stop, przerwij, czy zatrzymaj się. Ale myślę, że więcej pytań będzie w pytaniach obecnych.
+
+### Linia 8866 — AGENT
+
+To istotna zmiana względem MVP (Shift+marsz). Zapisuję decyzję i doprecyzowuję, co zostaje do ustalenia.
+
+[REDACTED]
+
+### Linia 8867 — AGENT
+
+Zapisałem to jako **A3 redesign** — zapis w `docs/decyzje/` leci w tle.
+
+**Twoja reguła (skrót):**
+- **Bez Shift** — klik = cel + podgląd trasy i punktów końca ruchu co turę
+- **Przeszkoda** → stop, czeka; **bez** auto-kontynuacji i **bez** obejścia
+- **Przerwanie** → nowy cel **albo** przycisk **Stop** na pasku jednostki
+
+To zastępuje wcześniejsze ABC (Shift+marsz). MVP w kodzie trzeba będzie przerobić.
+
+---
+
+**Jedno doprecyzowanie** (żeby nie zgadywać):
+
+Gdy droga jest **czysta** na 5 tur — jednostka **sama idzie co turę** aż do celu/przeszkody (tylko podgląd przy kliknięciu), **czy** w każdej turze musisz **kliknąć od nowa**?
+
+**A** — sama idzie co turę (podgląd tylko informuje)  
+**B** — co turę nowy klik  
+**C** — sama idzie, ale max N tur bez ponownego potwierdzenia
+
+Rekomendacja: **A** (zgodne z „gdzie kończy każdy ruch” na podglądzie).
+
+Odpowiedz **A / B / C** — potem dopiszę pełne ABC reszty (Stop na pasku, Pomiń itd.) i wdrożenie.
+
+[REDACTED]
+
+### Linia 8868 — MACIEJ
+
+<timestamp>Tuesday, Jul 7, 2026, 9:48 PM (UTC+2)</timestamp>
+
+B — Zapisujemy marsz w save; po wczytaniu kontynuuje.
+
+### Linia 8869 — AGENT
+
+[REDACTED]
+
+### Linia 8870 — AGENT
+
+Zapisałem **A3-P0-2 = B** — marsz trafia do zapisu i **kontynuuje po wczytaniu**.
+
+**⏸️ Jeszcze brakuje:** doprecyzowania z poprzedniego pytania — gdy droga jest czysta na wiele tur, jednostka **sama idzie co turę** (**A**), czy **co turę nowy klik** (**B**)?  
+Rekomendacja nadal **A** (zgodne z podglądem „gdzie kończy każdy ruch”).
+
+Odpowiedz **A** albo **B** — potem mogę domknąć paczkę ABC i wdrożenie.
+
+[REDACTED]
+
+### Linia 8872 — MACIEJ
+
+<timestamp>Tuesday, Jul 7, 2026, 9:50 PM (UTC+2)</timestamp>
+
+dzialaj
+
+### Linia 8873 — AGENT
+
+[REDACTED]
+
+### Linia 8874 — AGENT
+
+Przyjąłem **„działaj”** — wdrażam A3 marsz (klik bez Shift, podgląd trasy, Kontynuuj/Stop, ruch przy końcu tury, zapis w save). Dam znać po testach i buildzie roboczej.
+
+[REDACTED]
+
+### Linia 8876 — MACIEJ
+
+The beginning of the above subagent result is already visible to the user. Perform any follow-up actions (if needed). DO NOT regurgitate or reiterate its result unless asked. If multiple subagents have now completed and none are still running, briefly summarize the findings and conclusions across all of them. Otherwise, if no follow-ups remain, end your response with a brief third-person confirmation that the subagent has completed. If you mention an agent or subagent in your response, link it with the `[label](id)` format using the agent_id or task_id from the notification instead of printing the raw ID. Don't repeat the same confirmation every time.
+
+### Linia 8877 — AGENT
+
+Spec [A3-P0-3](7de9b2c8-b6ab-4aea-9c0d-e8602536344b) i checklist AC są w repo. Wdrożenie z **„działaj”** nadal leci w tle — dam znać z buildem roboczej, gdy skończy.
+
+[REDACTED]
+
+### Linia 8879 — MACIEJ
+
+<timestamp>Tuesday, Jul 7, 2026, 9:51 PM (UTC+2)</timestamp>
+
+Jeszcze jedno. Jak spotykam różne miasta, państwa na mapie, czy to w dyplomacji, czy w innych miejscach, to warto, żeby przy nazwie, która jest dla tego miasta, był też dopisek miasto-państwo. Dlatego, że czasem ja nie wiem, czy ja rozmawiam z cywilizacją, czy z miastem-państwem
+
+### Linia 8880 — AGENT
+
+Sprawdzam, gdzie w grze wyświetlane są nazwy państw i miast-państw, żeby dodać czytelny dopisek.
+
+[REDACTED]
+
+### Linia 8881 — AGENT
+
+Przyjąłem — przy nazwach **miast-państw** z klastra (Sparta, Teby itd.) pojawi się dopisek **„· miasto-państwo”**, żeby odróżnić je od pełnej cywilizacji. Wdrażam w dyplomacji, tooltipach i innych miejscach z nazwą; dam znać po testach.
+
+[REDACTED]
+
+### Linia 8882 — MACIEJ
+
+<timestamp>Tuesday, Jul 7, 2026, 10:10 PM (UTC+2)</timestamp>
+
+Ok, możesz wgrać wszystko do wersji roboczej. Będę mógł to przetestować.  Ale zanim to zrobisz sprawdź co jeszcze nie udało się wdrożyć. Co czeka na decyzję lub inne elementy.
+
+### Linia 8883 — AGENT
+
+[REDACTED]
+
+### Linia 8884 — AGENT
+
+Trwa audyt otwartych tematów i publikacja do `gra-robocza/` — dam znać z listą „co czeka” i md5 buildu.
+
+[REDACTED]
+
+### Linia 8886 — MACIEJ
+
+<timestamp>Tuesday, Jul 7, 2026, 10:11 PM (UTC+2)</timestamp>
+
+Wypisz mi jeszcze bonusy i parametry terenowe z HEX-ów z każdego terenu ile jest na plusie ile co jest na plusie w sensie żywność produkcja handel
+
+### Linia 8887 — AGENT
+
+[REDACTED]
+
+### Linia 8888 — AGENT
+
+Przygotowuję tabelę plonów z hexów (żywność, praca, handel itd.) — zaraz wkleję wynik z danych gry.
+
+[REDACTED]
+
+### Linia 8890 — MACIEJ
+
+<timestamp>Tuesday, Jul 7, 2026, 10:12 PM (UTC+2)</timestamp>
+
+i dodatkowe bonusy takie jak rzeka, drzewa, las i cokolwiek innego co jeszcze może być.
+
+### Linia 8891 — AGENT
+
+[REDACTED]
+
+### Linia 8892 — AGENT
+
+Przygotowuję rozszerzoną tabelę: tereny bazowe plus rzeki, lasy, drzewa, ulepszenia i inne bonusy — wynik wkleję zaraz po zebraniu danych z plików gry.
+
+[REDACTED]
+
+### Linia 8894 — MACIEJ
+
+<timestamp>Tuesday, Jul 7, 2026, 10:15 PM (UTC+2)</timestamp>
+
+Jeszcze jedna kwestia, brakuje takiego podglądu na mapie świata. Może być na przykład obok minimapy jako przycisk, pokażę robotników w terenie. Chodzi o to, że będąc na mapie i musząc tam robić usprawnienia nie wiemy do końca w którym miejscu miasto korzysta z których terenów i które warto modyfikować. Przydałby się taki przycisk który pokazuje chłopków obywateli na mapie świata. Przeźroczysty w minimalnej formie. Że po prostu jak to włączę to widzę gdzie pracują na polu jednostki ludzi. I mogę tym samym przystąpić do modyfikacji tego terenu dokładnie tam, gdzie pracują aktualnie obywatele. To bardzo by usprawniło z pracy bo za każdym razem by trzeba było teraz wchodzić do miasta zobaczyć które tereny są obsługiwane i potem próbować celnąć sobie te miejsca co nie zawsze może być łatwe mogą być te same sygnety, grafiki, które są w polu miasta, czyli na mapie miasta. Tylko po prostu umieszczone same na mapie świata. Chodzi tylko, żeby można było je włączyć i wyłączyć.  I dobrze też, żeby podczas budowy ulepszeń one się automatycznie też włączały.
+
+### Linia 8895 — AGENT
+
+To sensowne ulepszenie UX — zapisuję spec i doprecyzowuję jedną kwestię przed wdrożeniem.
+
+[REDACTED]
+
+### Linia 8896 — AGENT
+
+**Przyjąłem** — podgląd robotników na mapie świata to sensowne ulepszenie. Spec leci do dokumentacji w tle.
+
+**Plan (Twoje słowa):**
+- Przycisk obok minimapy — włącz/wyłącz
+- Na hexach: te same ikonki co na mapie miasta (przeźroczyste, minimalne)
+- **Auto-włączenie** w trybie budowy ulepszeń
+- Bez wchodzenia do miasta — widać, gdzie faktycznie pracują 👤
+
+---
+
+**[EKRAN: mapa świata — podgląd robotników] · E-WORKER-1**
+
+Gdy masz **kilka miast**, co pokazujemy?
+
+**A** — wszystkie pola ze 👤 ze **wszystkich** Twoich miast naraz *(rekomendacja)*  
+**B** — tylko miasto **zaznaczone** / ostatnio otwarte w panelu  
+**C** — tylko miasto, którego **terytorium** obejmuje kursor
+
+**A** · **B** · **C**
+
+Potem napisz **„działaj”** — wdrożę w roboczej (HUD + overlay + auto przy budowie).
+
+[REDACTED]
+
+### Linia 8898 — MACIEJ
+
+<timestamp>Tuesday, Jul 7, 2026, 10:16 PM (UTC+2)</timestamp>
+
+a
+
+### Linia 8899 — AGENT
+
+[REDACTED]
+
+### Linia 8900 — AGENT
+
+Zapisałem **E-WORKER-1 = A** (wszystkie Twoje miasta naraz). Wdrażam podgląd robotników — przycisk przy minimapie, auto przy budowie ulepszeń — i dam znać po buildzie roboczej.
+
+[REDACTED]
+
+### Linia 8901 — MACIEJ
+
+<timestamp>Tuesday, Jul 7, 2026, 10:16 PM (UTC+2)</timestamp>
+
+dzialaj
+
+### Linia 8902 — AGENT
+
+[REDACTED]
+
+### Linia 8903 — AGENT
+
+Przyjąłem **„działaj”** — podgląd robotników (E-WORKER-1=A) jest już wdrażany od Twojej odpowiedzi **A**. Build roboczej poleci zaraz po skończeniu; dam znać z md5.
+
+[REDACTED]
+
+### Linia 8905 — MACIEJ
+
+<timestamp>Tuesday, Jul 7, 2026, 10:20 PM (UTC+2)</timestamp>
+
+Ok, czy wszystko już jest w grze roboczej?
+
+### Linia 8906 — AGENT
+
+[REDACTED]
+
+### Linia 8907 — AGENT
+
+Sprawdzam manifest roboczej względem ostatnich zmian w kodzie — za chwilę potwierdzę.
+
+[REDACTED]
+
+### Linia 8908 — AGENT
+
+**Tak** — cała dzisiejsza paczka z tej sesji jest w roboczej.
+
+**Wejście:** `gra-robocza/START.html` · **Ctrl+F5** · md5 `eead06d7c5ea6c974b07eb02da706bf1` (publish 22:19)
+
+**W środku m.in.:**
+- A3 marsz (klik, Kontynuuj, Zatrzymaj, save)
+- Kolory 15 cywilizacji
+- Nazwy miast auto + „· miasto-państwo”
+- Podgląd robotników 👤 przy minimapie
+- Batch z 07.07 (playtest fixes, kreator, klaster AI itd.)
+
+**Świadomie nie ma** (backlog, nie bug):
+- wasalizacja AI faza 1
+- epoka IV ludność >15 (czeka ABC)
+- pełne grafiki banerów
+- `gra-kanon/` (finalna)
+
+Jeśli coś wygląda „stare” — najpierw **Ctrl+F5**; cache potrafi trzymać poprzedni bundle.
+
+[REDACTED]
+
+### Linia 8910 — MACIEJ
+
+<timestamp>Tuesday, Jul 7, 2026, 10:21 PM (UTC+2)</timestamp>
+
+ale kolory, frakcje, jakieś wyróżniki, coś będzie, tak?
+
+### Linia 8911 — AGENT
+
+**Tak — kolory i wyróżniki już są w roboczej** (wdrożone dziś, wariant **B**).
+
+| Gdzie | Co widzisz |
+|--------|------------|
+| **Mapa** | Jednostki i miasta w **kolorze nacji** (np. Grecy niebieski, Rzym czerwony, Egipt złoty) |
+| **Minimapa** | Każdy gracz/AI w **swoim** kolorze, nie tylko „Ty vs reszta” |
+| **Dyplomacja** | Medalion cywilizacji + **ramka w kolorze nacji** |
+| **HUD / Nowa gra** | Medalion z subtelną obwódką w kolorze |
+| **Nazwy** | `Sparta · miasto-państwo` vs stolica imperium bez dopisku |
+
+**15 cywilizacji** ma przypisany `kolorHex` w danych — każda inna.
+
+---
+
+**Czego jeszcze nie ma** (plan na później):
+
+- **Pełne banery/sztandary** graficzne (prostokątne) — dziś jest **powiększony emblem** SVG, nie osobna grafika baneru
+- **Banery wojna/pokój** na HUD (decyzja zapisana, implementacja grafiki odłożona)
+- **Obwódka ringów** jednostek nadal = relacja (własne/neutral/wrogi), nie kolor frakcji — to osobna decyzja, jeśli chcesz zmienić
+
+**Sprawdzenie:** `gra-robocza/START.html` → **Ctrl+F5** → Nowa gra → zobacz kolory na mapie i w dyplomacji.
+
+Jeśli **nie widzisz** kolorów po Ctrl+F5, napisz — wtedy szukamy buga. Jeśli chcesz **mocniejsze** wyróżniki (np. pasek banerów na mapie), to kolejna paczka — napisz co dokładnie.
+
+[REDACTED]
+
+### Linia 8912 — MACIEJ
+
+<timestamp>Tuesday, Jul 7, 2026, 10:22 PM (UTC+2)</timestamp>
+
+Chociażby, żeby miasta, obwódki wokół miast i obwódki wokół jednostek przeciwników AI były w ich kolorach. plus tam, gdzie się da dyplomacji i tak dalej.
+
+### Linia 8913 — AGENT
+
+[REDACTED]
+
+### Linia 8914 — AGENT
+
+Tint modeli już jest — teraz dopinam **obwódki miast i jednostek AI** w kolorze frakcji oraz doprecyzowuję dyplomację. Build roboczej poleci po testach; dam znać z md5.
+
+[REDACTED]
+
+### Linia 8916 — MACIEJ
+
+<timestamp>Tuesday, Jul 7, 2026, 10:25 PM (UTC+2)</timestamp>
+
+ok wgrajmy tez do roboczej
+
+### Linia 8917 — AGENT
+
+[REDACTED]
+
+### Linia 8918 — AGENT
+
+Obwódki w kolorach frakcji są w trakcie wdrożenia — po zakończeniu od razu publikuję do `gra-robocza/` i dam znać z md5.
+
+[REDACTED]
+
+### Linia 8920 — MACIEJ
+
+<timestamp>Tuesday, Jul 7, 2026, 10:27 PM (UTC+2)</timestamp>
+
+ok zabieram sie za testy
+
+### Linia 8921 — AGENT
+
+**Super.** Krótka ściąga pod dzisiejszą roboczą:
+
+**Wejście:** `gra-robocza/START.html` → **Ctrl+F5** → Nowa gra  
+**Build:** md5 `e2c5c711d69065323c2ea3b2be280782` (stamp w lewym dolnym rogu gry)
+
+**Warto przejść:**
+1. **Kolory** — miasta/jednostki AI, obwódki w kolorze nacji; w wojnie + cienki czerwony akcent  
+2. **Dyplomacja** — medalion + ramka w kolorze; `Sparta · miasto-państwo` vs stolica bez dopisku  
+3. **Marsz** — klik celu (bez Shift) → trasa → **Kontynuuj** / **Zakończ turę** → **Zatrzymaj** → save/load w marszu  
+4. **Robotnicy 👤** — przycisk przy minimapie; auto przy 🔨 budowie  
+5. **Nazwy miast** — auto przy zakładaniu (gracz + AI)  
+6. **Kreator** — tempo badań, koszty, wzrost ludności (zaawansowane opcje)
+
+**Jak zgłaszasz:** napisz **`BUG:`** + co zrobiłeś + co poszło nie tak (np. „BUG: ring jednostki Rzymian nadal zielony").  
+
+Testuj spokojnie — czekam na feedback.
+
+[REDACTED]
+
+### Linia 8923 — MACIEJ
+
+<timestamp>Tuesday, Jul 7, 2026, 10:28 PM (UTC+2)</timestamp>
+
+Zrób mi listę zmian, poprawek, które wykonałeś, ale skrótowo, bo chcę to wkleić do bitwała. Wszystko, co było w ciągu ostatnich dwóch dni.
+
+### Linia 8924 — AGENT
+
+[REDACTED]
+
+### Linia 8925 — AGENT
+
+[REDACTED]
+
+### Linia 8926 — AGENT
+
+**Civ — zmiany 06–07.07.2026 (skrót do wklejenia)**
+
+**Wersja:** `gra-robocza/START.html` · Ctrl+F5 · md5 `e2c5c711…`
+
+---
+
+**PLAYTEST / PANEL MIASTA (B1–B11)**
+- B1: jeden blok „Surowce w zasięgu” (bez duplikatów)
+- B2: panel handlu — suwaki Skarb/Nauka/Zamożność widoczne
+- B6: HUD PAŃSTWO — tylko Twoje imperium, nie cała mapa
+- B7: kolejki budowy + rekrutacji na górze panelu
+- B8: strzałki ‹ › między miastami bez wychodzenia na mapę
+- B9: Zaokrąglona Zebrana Praca (bez 22.499…)
+- B10: Nadwyżka pracy przechodzi na kolejny budynek / pulę imperium
+- B11: Zwrot złota przy anulowaniu rekrutacji z kolejki
+
+**UI / BADANIA**
+- B3: Menu pauzy — ikony SVG zamiast emoji
+- B4: Drzewko badań — klik = cel bez zamykania; „Pełne drzewko” pod celem
+- B5: Overlay końca tury (pasek, faza, „Teraz gra: …”)
+
+**MAPA / WOJSKO / AI**
+- MAP-Q1: Chip ☠ na głodującej armii
+- Klaster startowy ~3 hex; founding na krawędzi
+- AI faza 1: stolice najpierw przejmują własne państwa w klastrze
+- B12: Państwa-miasta w epoce kamienia na starcie Kamienia
+- Las: Równina+Las = +1 Praca (4 zamiast 3)
+
+**KREATOR (zaawansowane opcje)**
+- Tempo badań ×1/×2/×4 (naprawione odwrócone mnożniki)
+- Koszty budynków ×1/×2/×4 Pracy
+- Koszty jednostek ×1/×2/×4 złota
+- Wzrost ludności ×1/×2/×4 progu żywności
+- Trudność: asymetria kosztów (Łatwa/Trudna) + asymetria wzrostu ludności AI vs gracz
+- Save/load wszystkich opcji tempa
+
+**EKONOMIA / MIASTA**
+- Cap ludności: 5 bez Akweduktu, 15 z Akweduktem
+- Nazwy miast auto z pul 100+10 (15 cywilizacji); bez promptu; gracz + AI
+- Excel nazw → JSON (eksport: „eksportuj nazwy miast”)
+- AI-62: poprawione nazwy w dyplomacji
+
+**MARSZ JEDNOSTEK (A3 — nowy model 07.07 wieczór)**
+- Klik celu bez Shift — plan trasy, markery tur, bez ruchu od razu
+- Ruch po „Zakończ turę” lub przycisk „Kontynuuj”
+- „Zatrzymaj” / nowy cel / Pomiń — anulowanie
+- Stop przy przeszkodzie, bez obejścia
+- Marsz w save/load (SAVE v2)
+
+**KOLORY / FRakcje (07.07 wieczór)**
+- kolorHex ×15 cywilizacji: jednostki, miasta, minimapa, dyplomacja, HUD
+- Obwódki miast i ringi jednostek AI w kolorze nacji (+ czerwony akcent w wojnie)
+
+**DYSPLOMACJA / NAZWY**
+- „Sparta · miasto-państwo” vs stolica imperium bez dopisku
+- Medalion + ramka w kolorze cywilizacji
+
+**MAPA — ROBOTNICY (E-WORKER)**
+- Przycisk 👤 przy minimapie — gdzie pracują obywatele na polu
+- Auto-włączenie przy budowie ulepszeń (🔨)
+- Wszystkie Twoje miasta naraz
+
+---
+
+**NIE WDROŻONE (świadomie)**
+- Wasalizacja AI faza 1
+- Epoka IV ludność >15 (czeka ABC)
+- Pełne grafiki banerów HUD
+- Promocja do gra-kanon
+- Import Excel nazw po Twojej edycji (skrypt gotowy)
+
+[REDACTED]
+
+### Linia 8928 — MACIEJ
+
+<timestamp>Tuesday, Jul 7, 2026, 10:37 PM (UTC+2)</timestamp>
+
+Ok, zapisujesz te wszystkie zmiany w jakichś plikach, żeby plot-code też w razie czego mógł kontynuować tą pracę. Nie zapisujemy wszelkie zmiany, błędy.
+
+### Linia 8929 — AGENT
+
+[REDACTED]
+
+### Linia 8930 — AGENT
+
+[REDACTED]
+
+### Linia 8931 — AGENT
+
+Zapisuję pełny handoff do repo — zmiany, decyzje i status bugów z 06–07.07, żeby **`plot code`** mógł czytać z plików bez historii czatu. Dam znać ze ścieżką głównego pliku.
+
+[REDACTED]
+
+### Linia 8933 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-bdd6e79e-a0fc-4e06-8f07-6419c541b131.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Tuesday, Jul 7, 2026, 10:38 PM (UTC+2)</timestamp>
+
+### Linia 8934 — AGENT
+
+Wykryto błąd startu gry — szukam przyczyny i naprawiam.
+
+[REDACTED]
+
+### Linia 8935 — AGENT
+
+Widzę **BOOT ERROR** — `Cannot access 'Mt' before initialization` (błąd inicjalizacji w bundlu, pewnie cykliczny import po dzisiejszych zmianach). Naprawiam i publikuję nową roboczą — **Ctrl+F5** po md5.
+
+[REDACTED]
+
+### Linia 8937 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-bba2e45f-cfe8-4506-b4ed-73feba10adcf.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Tuesday, Jul 7, 2026, 10:45 PM (UTC+2)</timestamp>
+
+### Linia 8938 — AGENT
+
+Ten sam błąd startu nadal występuje — sprawdzam, czy fix trafił do buildu, i szukam pozostałych cykli importów.
+
+[REDACTED]
+
+### Linia 8939 — AGENT
+
+Ten sam **BOOT ERROR** — poprzednia poprawka albo nie weszła do pliku, albo jest **kolejny cykl importów**. Szukam wszystkich cykli, robię nowy build i dam znać z md5.
+
+Tymczasem: **Ctrl+Shift+R** (twarde odświeżenie) albo okno incognito na `gra-robocza/START.html` — wykluczamy stary cache.
+
+[REDACTED]
+
+### Linia 8941 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-6d4cbaec-034c-47dc-9844-895c267a5451.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Tuesday, Jul 7, 2026, 10:51 PM (UTC+2)</timestamp>
+
+### Linia 8942 — AGENT
+
+Błąd startu nadal występuje — weryfikuję plik na dysku i szukam źródła problemu w bundlu.
+
+[REDACTED]
+
+### Linia 8943 — AGENT
+
+Nadal ten sam błąd — sprawdzam, czy masz **aktualny plik** na dysku (wcześniej manifest ≠ HTML) i szukam źródła `Mt` w bundlu ze sourcemap.
+
+**Tymczasem:** otwórz **`gra-robocza/START.html`** (nie bezpośrednio `Gra-ROBOCZA.html`) → **Ctrl+Shift+R**. W lewym dolnym rogu powinien być stamp **`749819eb`** — jeśli go nie ma albo jest inny, OneDrive trzyma starą wersję.
+
+Dam znać z nowym buildem za chwilę.
+
+[REDACTED]
+
+### Linia 8945 — MACIEJ
+
+<timestamp>Tuesday, Jul 7, 2026, 11:00 PM (UTC+2)</timestamp>
+
+dziala
+
+### Linia 8946 — AGENT
+
+[REDACTED]
+
+### Linia 8947 — AGENT
+
+Super — gra wstaje.
+
+**Build:** `70b28d10…` · zapisane w handoffie.
+
+Jak coś wyjdzie w testach — **`BUG:`** + krótki opis. Powodzenia z resztą checklisty (marsz, kolory, 👤 robotnicy, dyplomacja).
+
+[REDACTED]
+
+### Linia 8948 — MACIEJ
+
+<timestamp>Tuesday, Jul 7, 2026, 11:00 PM (UTC+2)</timestamp>
+
+Wszystko w roboczej?
+
+### Linia 8949 — AGENT
+
+[REDACTED]
+
+### Linia 8950 — AGENT
+
+[REDACTED]
+
+### Linia 8951 — AGENT
+
+**Tak** — cała dzisiejsza paczka jest w roboczej, w tym fix boota.
+
+| | |
+|---|---|
+| **Wejście** | `gra-robocza/START.html` |
+| **md5** | `70b28d10abfe641ce08b68e7a3efa430` |
+| **Stamp w grze** | `ROBOCZA · 70b28d10 ·` (potwierdziłeś, że działa) |
+
+**W środku:** playtest B1–B12, klaster/AI, kreator (tempo/koszty/wzrost), nazwy miast, A3 marsz, kolory + obwódki frakcji, „miasto-państwo”, overlay 👤 robotników, fix BOOT.
+
+**Świadomie poza roboczą** (backlog): wasalizacja AI, epoka IV >15 (ABC), pełne banery graficzne, `gra-kanon/`.
+
+Handoff: `dyspozycje/HANDOFF-PLOT-CODE-2026-07-06-07.md`
+
+[REDACTED]
+
+### Linia 8953 — MACIEJ
+
+<timestamp>Tuesday, Jul 7, 2026, 11:08 PM (UTC+2)</timestamp>
+
+podawałeś mi wcześniej już te dane odnośnie produkcji na poszczególnych HEX-ach i na wszystkich typach, w lesie i tak dalej. Gdzieś już to było wyświetlone, ale nie mogę tego znaleźć jak byś mógł to jeszcze raz podać?
+
+### Linia 8954 — AGENT
+
+# Plony z heksów — pełna tabela
+
+Źródło danych: `gra/data/terrain-yields.json`, `terrain-improvements.json`.
+
+**Ważne:**
+- **Nauka** i **Kultura** — **nie** z heksów (tylko budynki miasta + suwak handlu).
+- **Złoto** na heksie = bonus Handlu (Obóz łowiecki, Warzelnia soli).
+- **Drewno / Kamień** — surowce na mapie, nie wchodzą do bilansu Żywność · Praca · Handel miasta.
+- Wartości ujemne (np. las −1 żywności) są **obcinane do 0** w sumie.
+
+---
+
+## 1. Teren bazowy (sam heks)
+
+| Teren | Żywność | Praca | Handel | Drewno | Kamień |
+|-------|--------:|------:|-------:|-------:|-------:|
+| **Łąka** | 4 | 1 | 1 | 1 | — |
+| **Równina** | 2 | 1 | 1 | 2 | 1 |
+| **Wzgórza** | 1 | 2 | — | 2 | 2 |
+| **Góry** | — | — | — | 2 | 5 |
+| **Wybrzeże** | 3 | 2 | 2 | — | — |
+| **Morze** | 2 | — | 2 | — | — |
+| **Pustynia** | — | — | 1 | — | — |
+
+„—” = 0.
+
+---
+
+## 2. Bonusy nakładki (dodawane do bazy)
+
+| Modyfikator | Żywność | Praca | Handel | Drewno | Uwagi |
+|-------------|--------:|------:|-------:|-------:|-------|
+| **Rzeka** | +3 | +2 | +2 | — | Na dowolnym terenie z rzeką |
+| **Las** | −1* | +3 | −1* | +3 | Las nie znika sam; pod spodem teren bazowy |
+
+### Przykłady sum (bez ulepszeń)
+
+| Kombinacja | Żywność | Praca | Handel |
+|------------|--------:|------:|-------:|
+| Równina | 2 | 1 | 1 |
+| Równina + Las | 1 | 4 | — |
+| Łąka + Rzeka | 7 | 3 | 3 |
+| Łąka + Las + Rzeka | 6 | 6 | 2 |
+| Wzgórza + Las | — | 5 | — |
+| Pustynia + Rzeka | 3 | 2 | 3 |
+
+---
+
+## 3. Ulepszenia (bonus **dodawany** do sumy powyżej)
+
+| Ulepszenie | Epoka | Żywność | Praca | Handel/Złoto* | Gdzie |
+|------------|:-----:|--------:|------:|---------------|-------|
+| **Farma** | 1 | +3 | — | — | Łąka, Równina |
+| **Irygacja** | 2 | +5 | — | — | Przy **rzace** |
+| **Bydło** | 1 | +2 | +3 | — | Łąka, Równina |
+| **Owce** | 1 | +1 | +2 | — | Wzgórza |
+| **Lama** | 1 | +1 | +3 | — | Tylko Inkowie |
+| **Stadnina** | 2 | — | +2 | — | Złoże konia |
+| **Kopalnia** | 1 | — | +2 | — | Wzgórza, Góry, ruda |
+| **Kamieniołom** | 1 | — | +1 | — | Wzgórza, Góry (+1 Kamień) |
+| **Glinianka** | 2 | — | +1 | — | Złoże gliny |
+| **Popalnia brązu** | 2 | — | +2 | — | Ruda |
+| **Tartak** | 1 | — | +3 | — | Ląd; **może na lesie** |
+| **Tarasy uprawne** | 2 | +3 | — | — | Wzgórza |
+| **Łodzie rybackie** | 1 | +2 | +3 | — | Wybrzeże, Morze |
+| **Obóz łowiecki** | 1 | +1 | — | +1* | Las / zwierzyna |
+| **Warzelnia soli** | 2 | +1 | — | +1* | Złoże soli |
+| **Droga** | 1 | — | — | +1 | Każdy przejezdny hex |
+| **Wyrąb** | 1 | — | — | — | Usuwa las (3 tury) |
+| **Droga brukowana** | 3 | — | — | — | Tylko +ruch |
+| **Posterunek / Fort** | 2–3 | — | — | — | Obrona, **zero plonów** |
+
+\* Złoto = +1 Handel w silniku.
+
+**Przykład pełnego stacku:** Łąka + Rzeka + Farma = **10** żywności, **3** pracy, **3** handlu.
+
+---
+
+## 4. Złoża na mapie
+
+Samodzielne złoże **nie daje plonów** — trzeba zbudować ulepszenie (Bydło, Kopalnia, Warzelnia soli itd.).
+
+---
+
+## 5. Jak trafia do miasta
+
+- **Centrum miasta** — plony z własnego heksa **bez** 👤.
+- **Okolica** — pola z przypisanym robotnikiem (auto lub ręcznie).
+- W bilansie miasta z pól: tylko **Żywność · Praca · Handel**.
+
+---
+
+Jeśli chcesz to mieć na stałe w repo (np. do Bitwarden / plot-code), napisz **„zapisz do docs”** — wrzucę do `docs/decyzje/` albo `panele-sterowania/`.
+
+[REDACTED]
+
+### Linia 8956 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-6bcfa74d-35b7-4b26-a756-a9159d56ba64.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Tuesday, Jul 7, 2026, 11:12 PM (UTC+2)</timestamp>
+
+ten paner powinien być wyjustowany do środka, przeniósł się jakoś do lewej części. No i prawa część za nauką powinna się jakoś kończyć podobnie, jak lewa strona przy pracy. A nie jakaś taka wydłużona belka.
+
+### Linia 8957 — AGENT
+
+[REDACTED]
+
+### Linia 8958 — AGENT
+
+Widzę problem — górny pasek statystyk w panelu miasta ma być **wyśrodkowany**, a szerokość **dopasowana do zawartości** (symetryczny padding po obu stronach, bez pustej belki za „Nauką”). Poprawiam layout i wrzucam do roboczej — dam znać z md5.
+
+[REDACTED]
+
+### Linia 8960 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-d34ac28d-a452-45d0-aa5c-516dcdc2bcac.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Tuesday, Jul 7, 2026, 11:13 PM (UTC+2)</timestamp>
+
+Autobudowa lepiej żeby była w 2 rzędach niż w jednym z suwakiem przesuwanym bo to zmieni intuicyjne i niewygodne.
+
+### Linia 8961 — AGENT
+
+[REDACTED]
+
+### Linia 8962 — AGENT
+
+Przyjąłem — **Auto budowa** w **2 rzędach**, bez poziomego suwaka. Wdrażam razem z poprawką wyśrodkowania górnego paska statystyk; dam znać po buildzie roboczej.
+
+[REDACTED]
+
+### Linia 8964 — MACIEJ
+
+<timestamp>Tuesday, Jul 7, 2026, 11:14 PM (UTC+2)</timestamp>
+
+Jak byś mógł mi ten Teren bazowy (sam heks) i Bonusy nakładki (dodawane do bazy) rzucić do Excela, żebym mógł zrobić poprawki, które sugeruje, że powinny mieć miejsce.  Ze względu na fakt że w tej chwili nie korzystamy z pełnego zakresu surowców skupmy się tylko na żywności pracy i handlu.
+
+### Linia 8965 — AGENT
+
+[REDACTED]

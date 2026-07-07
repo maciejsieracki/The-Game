@@ -237,7 +237,7 @@ export function createScienceHubHud(config: ScienceHubHudConfig): ScienceHubHudA
 
     const hint = document.createElement('div');
     hint.className = 'sh-hint';
-    hint.textContent = 'Klik tech = ustaw cel. Drzewko pokazuje prereqy. Esc zamyka hub (najpierw drzewko).';
+    hint.textContent = 'Klik tech na liście lub w drzewku = ustaw cel. Esc zamyka hub (najpierw drzewko).';
 
     listPanel.appendChild(hint);
     scroll.appendChild(listPanel);

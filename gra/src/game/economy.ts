@@ -37,6 +37,8 @@
 
 export type { HexCoords } from '../types/hex';
 import { TerenBazowy, Nakladka } from '../types/hex';
+import terrainYieldsData from '../../data/terrain-yields.json';
+import type { TerrainModifierDef, TerrainTypeDef } from '../data/loader';
 import { buildingEffectAtLevel, BUILDING_LEVEL_FACTOR } from './production';
 import { applyImprovementBonuses } from './terrain-improvements';
 
@@ -274,21 +276,45 @@ export interface ProductionProgressResult {
 // Terrain yield tables (from terrain-yields.json / Spec-ekonomia.md ss.1.1)
 // ---------------------------------------------------------------------------
 
-const TERRAIN_YIELDS: Record<TerenBazowy, TileYield> = {
-  [TerenBazowy.Laka]:     { zywnosc: 4, praca: 1, handel: 1, drewno: 1, kamien: 0 },
-  [TerenBazowy.Rownina]:  { zywnosc: 2, praca: 1, handel: 1, drewno: 2, kamien: 1 },
-  [TerenBazowy.Wzgorza]:  { zywnosc: 1, praca: 2, handel: 0, drewno: 2, kamien: 2 },
-  [TerenBazowy.Gory]:     { zywnosc: 0, praca: 0, handel: 0, drewno: 2, kamien: 5 },
-  [TerenBazowy.Wybrzeze]: { zywnosc: 3, praca: 2, handel: 2, drewno: 0, kamien: 0 },
-  [TerenBazowy.Morze]:    { zywnosc: 2, praca: 0, handel: 2, drewno: 0, kamien: 0 },
-  [TerenBazowy.Pustynia]: { zywnosc: 0, praca: 0, handel: 1, drewno: 0, kamien: 0 },
+const ZERO_YIELD: TileYield = { zywnosc: 0, praca: 0, handel: 0, drewno: 0, kamien: 0 };
+
+const TERRAIN_NAME_TO_ENUM: Record<string, TerenBazowy> = {
+  'Łąka':     TerenBazowy.Laka,
+  'Równina':  TerenBazowy.Rownina,
+  'Wzgórza':  TerenBazowy.Wzgorza,
+  'Góry':     TerenBazowy.Gory,
+  'Wybrzeże': TerenBazowy.Wybrzeze,
+  'Morze':    TerenBazowy.Morze,
+  'Pustynia': TerenBazowy.Pustynia,
 };
 
-// Overlay modifiers (Spec-ekonomia.md ss.1.1)
-const RIVER_MODIFIER:  TileYield = { zywnosc: 3, praca: 2, handel: 2, drewno: 0, kamien: 0 };
-const FOREST_MODIFIER: TileYield = { zywnosc: -1, praca: 3, handel: -1, drewno: 3, kamien: 0 };
+function terrainRowToTileYield(row: TerrainTypeDef | TerrainModifierDef): TileYield {
+  return {
+    zywnosc: Number(row['Żywność'] ?? 0),
+    praca:   Number(row['Praca'] ?? 0),
+    handel:  Number(row['Handel'] ?? 0),
+    drewno:  Number(row['Drewno'] ?? 0),
+    kamien:  Number(row['Kamień'] ?? 0),
+  };
+}
 
-const ZERO_YIELD: TileYield = { zywnosc: 0, praca: 0, handel: 0, drewno: 0, kamien: 0 };
+function buildTerrainYields(): Record<TerenBazowy, TileYield> {
+  const out = {} as Record<TerenBazowy, TileYield>;
+  for (const row of terrainYieldsData.terrain_types) {
+    const key = TERRAIN_NAME_TO_ENUM[row.Teren];
+    if (key) out[key] = terrainRowToTileYield(row);
+  }
+  return out;
+}
+
+function terrainModifier(name: string): TileYield {
+  const row = terrainYieldsData.terrain_modifiers.find(m => m['Modyfikator'] === name);
+  return row ? terrainRowToTileYield(row) : ZERO_YIELD;
+}
+
+const TERRAIN_YIELDS = buildTerrainYields();
+const RIVER_MODIFIER  = terrainModifier('Rzeka');
+const FOREST_MODIFIER = terrainModifier('Las (nakładka)');
 
 /**
  * Compute raw tile yields including overlay modifiers.

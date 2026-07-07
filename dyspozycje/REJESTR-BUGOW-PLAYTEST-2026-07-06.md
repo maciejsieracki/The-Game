@@ -185,3 +185,14 @@ STATUS: NAPRAWIONY (2026-07-07)
 **Publish robocza md5:** `8c764e4b68be3b5dbe4fe70aa731438a`
 
 ---
+
+## B14 [23:12] — Pasek statystyk miasta przesunięty w lewo + pusta belka po „Nauce" (UI/UX)
+
+STATUS: WDROŻONE (2026-07-07)
+
+**Obszar:** UI/UX (panel miasta — górny pasek statystyk)
+**Objaw:** pasek Praca/Żywność/Skarbiec/Kultura/Religia/Nauka nie wyśrodkowany; po prawej stronie „Nauki" rozciągała się pusta belka (fixed width / flex:1).
+**Fix:** `cityPanel.ts` — `.civ-v-resource-bar-w3`, `.civ-v-w3-chips`, `.civ-v-w3-chips-city`, `.civ-v-top-stack` → `width:fit-content`, `margin:0 auto`, równy padding L/R 1rem; `cityUxFrame.ts` — `.civ-ux-top .civ-ux-panel-scope` → `align-items:center`.
+**Publish robocza md5:** `751632d266a607442ad6929a07d35067`
+
+---
