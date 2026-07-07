@@ -151,3 +151,21 @@ Wszystkie tempo-opcje zapisują się w sejwie (`gracz.tempoGry`, `buildingCostPa
 ---
 
 **Podsumowanie jednym zdaniem:** Dziś zrobiliśmy duży krok naprzód — playtest fixes, klaster, balans kreatora, nazwy, epoka kamienia, cap 15, asymetria trudności i tempo wzrostu ludności są w `gra-robocza`; na jutro zostaje wasalizacja AI, epoka 4 >15, import Excel i edge case’y A3.
+
+---
+
+## 7. Wieczór 22:00+ (sesja follow-up)
+
+**Build końcowy:** md5 **`e2c5c711d69065323c2ea3b2be280782`** · publish **2026-07-07T22:25:46** · `gra-robocza/START.html`
+
+| Temat | Co wdrożono | Decyzja / plik |
+|-------|-------------|----------------|
+| **A3 marsz redesign** | Planned march bez Shift: trasa + markery tur, Stop/Kontynuuj, save/load `autoMarch` + `plannedMarches` | A3-P0-REDESIGN, A3-P0-2=**B**, A3-P0-3=**A** · `planned-march.ts` · test 11/11 |
+| **Kolory cywilizacji (B)** | `kolorHex` ×15, resolver, mapa/minimapa/dyplomacja/HUD | `civ-visual.ts` · test 54/54 |
+| **Obwódki frakcji** | Heks miasta + ring jednostek w kolorze cywilizacji; wojna = civ + czerwony akcent | `cities.ts`, `units.ts` |
+| **E-WORKER-1=A** | Toggle 👤 przy minimapie; overlay robotników ze wszystkich miast gracza; auto ON przy trybie budowy | `workerFieldOverlay.ts`, `okolica.ts` |
+| **D-display miasto-państwo** | Dopisek `· miasto-państwo` w dyplomacji, mapie, tooltipie, panelu miasta | `display-names.ts` · test 6/6 |
+
+**Łańcuch wieczorny:** `ee4355af…` (kolory) → `8fd0dbfc…` (A3) → `eead06d7…` (worker) → **`e2c5c711…`** (obwódki).
+
+**Handoff plot code:** `dyspozycje/HANDOFF-PLOT-CODE-2026-07-06-07.md`

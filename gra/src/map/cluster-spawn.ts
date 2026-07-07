@@ -5,7 +5,7 @@
 
 import type { CivsData } from '../data/loader';
 import type { GameMap } from '../types/map';
-import type { CityNamesPools } from '../game/civ-names';
+import type { CityNamesPoolsData } from '../game/city-names-pool';
 import {
   clusterRivalCityName,
   foreignCapitalCityName,
@@ -69,7 +69,7 @@ export function buildSameTypeRivalSlots(
   rivalCount: number,
   seed: number,
   firstOwnerId: number,
-  pools?: CityNamesPools,
+  pools?: CityNamesPoolsData,
 ): ClusterSpawnSlot[] {
   if (rivalCount <= 0) return [];
   const positions = packRivalCitiesAroundCore(
@@ -102,7 +102,7 @@ export interface BuildClusterSpawnInput {
   playerTyp: string;
   rywaleNaKlaster: number;
   aktywneTypy?: number;
-  cityNamesPools?: CityNamesPools;
+  cityNamesPools?: CityNamesPoolsData;
 }
 
 function capitalOf(klaster: TypeCluster): { q: number; r: number } | null {

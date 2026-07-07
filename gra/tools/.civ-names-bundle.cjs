@@ -28,6 +28,14 @@ __export(civ_names_entry_exports, {
 module.exports = __toCommonJS(civ_names_entry_exports);
 
 // src/game/city-names-pool.ts
+var CITY_NAMES_POOL_STATE_LEN = 10;
+var NAZWY_KLASTRA_LEN = CITY_NAMES_POOL_STATE_LEN;
+function nazwaKlastraAt(names, index, fallback) {
+  if (index >= 0 && index < names.length && names[index]) {
+    return names[index];
+  }
+  return fallback;
+}
 function poolEntry(pools, ikonaId) {
   return pools[ikonaId];
 }
@@ -46,19 +54,12 @@ function clusterRivalFromPool(pools, ikonaId, rivalIndex1Based) {
 }
 
 // src/game/civ-names.ts
-var NAZWY_KLASTRA_LEN = 10;
 function findCivByIkonaId(civs, ikonaId) {
   return civs.cywilizacje.find((c) => c.ikonaId === ikonaId);
 }
 function getNazwyKlastra(civs, ikonaId) {
   const def = findCivByIkonaId(civs, ikonaId);
   return def?.nazwyKlastra ?? [];
-}
-function nazwaKlastraAt(names, index, fallback) {
-  if (index >= 0 && index < names.length && names[index]) {
-    return names[index];
-  }
-  return fallback;
 }
 function playerStartCityName(civs, playerCivId, pools) {
   if (pools?.[playerCivId]) {

@@ -29,7 +29,7 @@ import societyParamsRaw from '../../data/society-params.json';
 import terrainMovementRaw from '../../data/terrain-movement.json';
 import wondersRaw       from '../../data/wonders.json';
 import type { WondersData } from '../game/wonders-data';
-import type { CityNamesPools } from '../game/civ-names';
+import type { CityNamesPoolsData } from '../game/city-names-pool';
 
 // ─── Typy danych statycznych (wiersze z Excela) ───────────────────────────────
 
@@ -316,7 +316,7 @@ export interface GameData {
   /** Cuda świata (Antyk) + indeks per państwo. */
   wonders: WondersData;
   /** Pule nazw miast per cywilizacja (100 founding + 10 państw). */
-  cityNamesPools: CityNamesPools;
+  cityNamesPools: CityNamesPoolsData;
 }
 
 // ─── Loader ───────────────────────────────────────────────────────────────────
@@ -347,7 +347,7 @@ export function loadGameData(): GameData {
     societyParams: societyParamsRaw,
     terrainMovement: terrainMovementRaw as TerrainMovementData,
     wonders:           wondersRaw         as unknown as WondersData,
-    cityNamesPools:    cityNamesPoolsRaw  as CityNamesPools,
+    cityNamesPools:    cityNamesPoolsRaw  as CityNamesPoolsData,
   };
 }
 

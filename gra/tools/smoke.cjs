@@ -20,13 +20,19 @@ try { ({ JSDOM } = require('jsdom')); }
 catch (e) { console.error('[smoke] jsdom not installed — run: npm i -D jsdom'); process.exit(1); }
 
 // ---------------------------------------------------------------------------
-// 1. Read and parse dist/index.html
+// 1. Read and parse bundle HTML (dist/index.html lub gra-robocza/Gra-ROBOCZA.html)
 // ---------------------------------------------------------------------------
-const htmlPath = path.resolve(__dirname, '..', 'dist', 'index.html');
+const roboczaPath = path.resolve(__dirname, '..', '..', 'gra-robocza', 'Gra-ROBOCZA.html');
+const distPath = path.resolve(__dirname, '..', 'dist', 'index.html');
+const envPath = process.env.CIV_SMOKE_HTML;
+const htmlPath = envPath
+  ? path.resolve(envPath)
+  : (fs.existsSync(roboczaPath) ? roboczaPath : distPath);
 if (!fs.existsSync(htmlPath)) {
-  console.error('[smoke] dist/index.html not found. Run "npm run build" first.');
+  console.error('[smoke] Bundle not found. Tried:', roboczaPath, 'and', distPath);
   process.exit(1);
 }
+console.log('[smoke] bundle:', htmlPath);
 const html = fs.readFileSync(htmlPath, 'utf-8');
 
 // Extract scripts.  There are exactly 2:

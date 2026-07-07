@@ -585,6 +585,25 @@ async function boot(): Promise<void> {
     let _saveOrigin: 'normal' | 'playtest' = 'normal';
     let _currentRenderOptions: MapRenderOptions = { ...DEFAULT_MAP_RENDER_OPTIONS };
 
+    /** B13: anim/hover przed refreshFog() @ init — inaczej TDZ „Cannot access 'Mt' before initialization”. */
+    interface Waypoint { x: number; y: number; z: number; }
+    interface AnimState {
+      id: string;
+      movingStackIds: string[];
+      destQ: number;
+      destR: number;
+      fromQ: number;
+      fromR: number;
+      pathLen: number;
+      cost: number;
+      points: Waypoint[];
+      seg: number;
+      t: number;
+    }
+    let anim: AnimState | null = null;
+    let isAnimating = false;
+    let hoverKey: string | null = null;
+
     function mapQualityTierFromParams(params: NewGameParams): QualityTier {
       return params.mapQuality ?? qualityTierFromLabel(params.mapQualityLabel ?? 'Średnia');
     }
@@ -6658,25 +6677,6 @@ async function boot(): Promise<void> {
     /** Duration of each per-hex glide segment in seconds. */
     const ANIM_SEG_DUR = 0.14;
 
-    interface Waypoint { x: number; y: number; z: number; }
-
-    interface AnimState {
-      id: string;         // id of the unit being animated
-      movingStackIds: string[]; // cały stos ruszający się razem
-      destQ: number;      // logical destination (written to unit on completion)
-      destR: number;
-      fromQ: number;      // start hex (cofnięcie przy „Zostaw osobno”)
-      fromR: number;
-      pathLen: number;    // number of path steps (used for segment count in points)
-      cost: number;       // terrain-based movement cost (for ruchLeft deduction)
-      points: Waypoint[]; // world-space positions: [start, step1, ..., dest]
-      seg: number;        // active segment index; lerps points[seg]->points[seg+1]
-      t: number;          // interpolation param in [0,1) for the active segment
-    }
-
-    let anim: AnimState | null = null;
-    let isAnimating = false;
-
     /** A3: zaplanowane marsze — cel bez natychmiastowego ruchu. */
     const plannedMarches = new Map<string, PlannedMarchDest>();
     let marchExecQueue: string[] = [];
@@ -7013,10 +7013,6 @@ async function boot(): Promise<void> {
       startAnimatedMove(u, movePath, moveDestQ, moveDestR, cost);
       return true;
     }
-
-    // Hover route preview state: key of the hex currently under the cursor,
-    // or null when no preview is active.
-    let hoverKey: string | null = null;
 
     // Delta-time source: track the previous frame timestamp in seconds.
     let prevTime = performance.now() / 1000;

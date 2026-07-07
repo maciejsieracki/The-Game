@@ -19,13 +19,7 @@ $distBundle = Join-Path $DistDir 'index.html'
 if ($BundlePath -and (Test-Path $BundlePath)) {
   $bundleSrc = $BundlePath
 } elseif (Test-Path $distBundle) {
-  $existingRob = Join-Path $roboczaRoot $roboczaBundle
-  if ((Test-Path $existingRob) -and (Get-Item $existingRob).LastWriteTime -gt (Get-Item $distBundle).LastWriteTime) {
-    $bundleSrc = $existingRob
-    Write-Host "Uzyto istniejacy $roboczaBundle (niz temp dist)" -ForegroundColor DarkYellow
-  } else {
-    $bundleSrc = $distBundle
-  }
+  $bundleSrc = $distBundle
 } elseif (Test-Path (Join-Path $roboczaRoot $roboczaBundle)) {
   $bundleSrc = Join-Path $roboczaRoot $roboczaBundle
   Write-Host "Uzyto fallback bundle: $bundleSrc" -ForegroundColor DarkYellow
@@ -33,15 +27,10 @@ if ($BundlePath -and (Test-Path $BundlePath)) {
   throw "Brak bundle (najpierw bramka / vite build): $distBundle"
 }
 
-$md5 = (Get-FileHash $bundleSrc -Algorithm MD5).Hash.ToLower()
-$stamp = Get-Date -Format 'yyyy-MM-ddTHH:mm:ss'
-
-New-Item -ItemType Directory -Force -Path $roboczaRoot | Out-Null
-
 $roboczaHtml = Join-Path $roboczaRoot $roboczaBundle
+New-Item -ItemType Directory -Force -Path $roboczaRoot | Out-Null
 Copy-Item $bundleSrc $roboczaHtml -Force
-& (Join-Path $PSScriptRoot 'inject-build-stamp.ps1') -HtmlPath $roboczaHtml -Tier ROBOCZA -Md5 $md5
-
+# inject przeniesiony na koniec (po playtest copies) — md5 manifest = certutil
 $playtestNames = @(
   'Gra-ROBOCZA-PLAYTEST-WALKA.html',
   'Gra-ROBOCZA-PLAYTEST-ODSKOK.html',
@@ -50,44 +39,48 @@ $playtestNames = @(
   'Gra-ROBOCZA-PLAYTEST-MAPA.html',
   'Gra-ROBOCZA-PLAYTEST-MIASTO.html'
 )
-foreach ($name in $playtestNames) {
-  Copy-Item $bundleSrc (Join-Path $roboczaRoot $name) -Force
-}
 
-# Pole bitwy — OSOBNY build (oblezenie/main.ts), NIE z vite build main.ts
-Write-Host "Build POLE-BITWY (units.json + battleScene)..." -ForegroundColor Cyan
-Push-Location $graRoot
+# Pole bitwyWrite-Host "Build POLE-BITWY (units.json + battleScene)..." -ForegroundColor Cyan
 try {
+  Push-Location $graRoot
   npx vite build --config vite.oblezenie-bitwa.config.ts --outDir (Join-Path $env:TEMP 'civ-dist-oblezenie') 2>&1 | Out-Host
-  if ($LASTEXITCODE -ne 0) { throw "vite oblezenie-bitwa failed (exit $LASTEXITCODE)" }
+  if ($LASTEXITCODE -ne 0) { Write-Host "UWAGA: vite oblezenie-bitwa exit $LASTEXITCODE (pomijam POLE-BITWY)" -ForegroundColor Yellow }
+  else {
+    $poleSrc = Join-Path $projRoot 'Gra-ROBOCZA-POLE-BITWY.html'
+    if (-not (Test-Path $poleSrc)) { $poleSrc = Join-Path $projRoot 'Gra-podglad-POLE-BITWY.html' }
+    if (Test-Path $poleSrc) {
+      Copy-Item $poleSrc (Join-Path $roboczaRoot 'Gra-ROBOCZA-POLE-BITWY.html') -Force
+      $poleMd5 = (Get-FileHash $poleSrc -Algorithm MD5).Hash.ToLower()
+      Write-Host "Skopiowano POLE-BITWY -> gra-robocza/ (md5 $poleMd5)" -ForegroundColor DarkYellow
+    } else {
+      Write-Host "UWAGA: brak $poleSrc po buildzie oblezenie-bitwa" -ForegroundColor Yellow
+    }
+  }
+} catch {
+  Write-Host "UWAGA: POLE-BITWY build failed: $_" -ForegroundColor Yellow
 } finally {
   Pop-Location
-}
-$poleSrc = Join-Path $projRoot 'Gra-ROBOCZA-POLE-BITWY.html'
-if (-not (Test-Path $poleSrc)) { $poleSrc = Join-Path $projRoot 'Gra-podglad-POLE-BITWY.html' }
-if (Test-Path $poleSrc) {
-  Copy-Item $poleSrc (Join-Path $roboczaRoot 'Gra-ROBOCZA-POLE-BITWY.html') -Force
-  $poleMd5 = (Get-FileHash $poleSrc -Algorithm MD5).Hash.ToLower()
-  Write-Host "Skopiowano POLE-BITWY -> gra-robocza/ (md5 $poleMd5)" -ForegroundColor DarkYellow
-} else {
-  Write-Host "UWAGA: brak $poleSrc po buildzie oblezenie-bitwa" -ForegroundColor Yellow
 }
 
 # START.html w gra-robocza/ — utrzymywany ręcznie (hub playtestów); publish nie nadpisuje.
 
+# Pieczęć → potem kopie playtestów ze STAMPED bundla.
+& (Join-Path $PSScriptRoot 'inject-build-stamp.ps1') -HtmlPath $roboczaHtml -Tier ROBOCZA
+foreach ($name in $playtestNames) {
+  Copy-Item $roboczaHtml (Join-Path $roboczaRoot $name) -Force
+}
+
+$md5 = (Get-FileHash $roboczaHtml -Algorithm MD5).Hash.ToLower()
 $manifest = @{
-  publishedAt = $stamp
+  publishedAt = (Get-Date -Format 'yyyy-MM-ddTHH:mm:ss')
   publisher = 'Integrator F'
   md5 = $md5
   sourceBuild = $DistDir
   bundle = $roboczaBundle
   note = 'Grywalna ROBOCZA. Plik: gra-robocza/Gra-ROBOCZA.html'
 } | ConvertTo-Json -Depth 3
-Set-Content -Path (Join-Path $roboczaRoot 'ROBOCZA-MANIFEST.json') -Value $manifest -Encoding UTF8
-
-foreach ($name in $playtestNames) {
-  Copy-Item $roboczaHtml (Join-Path $roboczaRoot $name) -Force
-}
+[System.IO.File]::WriteAllText((Join-Path $roboczaRoot 'ROBOCZA-MANIFEST.json'), $manifest, [Text.UTF8Encoding]::new($false))
+Write-Host "Manifest md5 (final): $md5" -ForegroundColor Cyan
 
 Write-Host ''
 Write-Host "OK ROBOCZA: $roboczaRoot" -ForegroundColor Green

@@ -35,6 +35,13 @@ module.exports = __toCommonJS(city_names_pool_entry_exports);
 // src/game/city-names-pool.ts
 var CITY_NAMES_POOL_REGULAR_LEN = 100;
 var CITY_NAMES_POOL_STATE_LEN = 10;
+var NAZWY_KLASTRA_LEN = CITY_NAMES_POOL_STATE_LEN;
+function nazwaKlastraAt(names, index, fallback) {
+  if (index >= 0 && index < names.length && names[index]) {
+    return names[index];
+  }
+  return fallback;
+}
 function poolEntry(pools, ikonaId) {
   return pools[ikonaId];
 }
@@ -112,7 +119,6 @@ function validateCityNamesPools(pools, civs) {
 }
 
 // src/game/civ-names.ts
-var NAZWY_KLASTRA_LEN = 10;
 var MIASTA_CYWILIZACJI_LEN = 100;
 function findCivByIkonaId(civs, ikonaId) {
   return civs.cywilizacje.find((c) => c.ikonaId === ikonaId);
@@ -120,12 +126,6 @@ function findCivByIkonaId(civs, ikonaId) {
 function getNazwyKlastra(civs, ikonaId) {
   const def = findCivByIkonaId(civs, ikonaId);
   return def?.nazwyKlastra ?? [];
-}
-function nazwaKlastraAt(names, index, fallback) {
-  if (index >= 0 && index < names.length && names[index]) {
-    return names[index];
-  }
-  return fallback;
 }
 function playerStartCityName(civs, playerCivId, pools) {
   if (pools?.[playerCivId]) {

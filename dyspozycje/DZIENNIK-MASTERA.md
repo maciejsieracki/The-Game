@@ -11,6 +11,12 @@ Append-only. Source of truth operacyjny projektu Civ.
 
 ---
 
+## [2026-07-07 ~22:40] HANDOFF plot-code — sesja 06–07.07 zapisana
+
+**Plik:** `dyspozycje/HANDOFF-PLOT-CODE-2026-07-06-07.md` — build `e2c5c711…`, wdrożenia, decyzje ZAMKNIĘTE, status bugów B1–B12, priorytety plot code. Dopisek: `docs/MACIEJ-GOTOWE.md` · sekcja 7 w `RAPORT-DZIEN-2026-07-07.md`.
+
+---
+
 ## [2026-07-07 ~22:20] INTEGRATOR F — E-map-worker-overlay → ROBOCZA eead06d7
 
 Overlay robotników na mapie świata (E-WORKER-1=A): toggle 👤 przy minimapie, ikonki na hexach z pracownikami ze wszystkich miast gracza, auto-włączenie przy trybie budowy. Pliki: `okolica.ts`, `workerFieldOverlay.ts`, `minimapHud.ts`, `hud.ts`, `main.ts`. Decyzja: `docs/decyzje/E-map-worker-overlay-2026-07-07.md`. tsc OK · publish `gra-robocza/Gra-ROBOCZA.html` md5 `eead06d7c5ea6c974b07eb02da706bf1`.

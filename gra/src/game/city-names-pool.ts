@@ -9,11 +9,31 @@
  *   → generate-city-names-xlsx.py → Maciej edytuje → export-city-names.py → JSON
  */
 
-import type { CivsData } from '../data/loader';
-import { NAZWY_KLASTRA_LEN, nazwaKlastraAt } from './civ-names';
+/** Minimal civ list shape — leaf type, bez importu loader↔pool cycle. */
+export interface CivsForCityNames {
+  cywilizacje: ReadonlyArray<{
+    ikonaId?: string;
+    nazwyKlastra?: readonly string[];
+  }>;
+}
 
 export const CITY_NAMES_POOL_REGULAR_LEN = 100;
 export const CITY_NAMES_POOL_STATE_LEN = 10;
+
+/** Długość nazwyKlastra / miasta_panstwa (N-3A) — leaf, bez importu z civ-names. */
+export const NAZWY_KLASTRA_LEN = CITY_NAMES_POOL_STATE_LEN;
+
+/** Bezpieczny odczyt indeksu (N-3A: stała kolejność z JSON). */
+export function nazwaKlastraAt(
+  names: readonly string[],
+  index: number,
+  fallback: string,
+): string {
+  if (index >= 0 && index < names.length && names[index]) {
+    return names[index] as string;
+  }
+  return fallback;
+}
 
 /** Wpis puli dla jednej cywilizacji (klucz = ikonaId). */
 export interface CityNamesPoolEntry {
@@ -160,7 +180,7 @@ export function pickAiFoundCityName(
 /** Walidacja JSON (dev/test/CI). */
 export function validateCityNamesPools(
   pools: CityNamesPoolsData,
-  civs: CivsData,
+  civs: CivsForCityNames,
 ): string[] {
   const errs: string[] = [];
   const civIds = civs.cywilizacje
@@ -197,7 +217,7 @@ export function validateCityNamesPools(
  */
 export function resolveStateCityName(
   pools: CityNamesPoolsData | undefined,
-  civs: CivsData,
+  civs: CivsForCityNames,
   ikonaId: string,
   index: number,
   fallback: string,
@@ -212,7 +232,7 @@ export function resolveStateCityName(
 /** Sprawdza zgodność miasta_panstwa z nazwyKlastra (ostrzeżenie przy rozjazdach). */
 export function diffPoolsVsNazwyKlastra(
   pools: CityNamesPoolsData,
-  civs: CivsData,
+  civs: CivsForCityNames,
 ): string[] {
   const warns: string[] = [];
   for (const c of civs.cywilizacje) {

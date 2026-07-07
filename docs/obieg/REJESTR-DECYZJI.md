@@ -116,9 +116,12 @@
 | INK-Q1 | 2026-06-26 | Inkowie **bez Brązu** w kreatorze (Kamień + Żelazo) | D+E | ✅ ZWERYFIKOWANA | `civs.json` · kanon md5 `ad6112e0…` | |
 | **B2-Q1-HANDEL** | 2026-07-07 | **B** — panel handlu: naprawa razem z B1 (duplikat surowców zakrywał suwaki Skarb/Nauka/Zamożność) | B | 🟢 **WDROŻONA** | `B2-panel-handlu.md` · fix via `B1-panel-surowce.md` · `cityPanel.ts` | Maciej: wdrożyć bez ABC, przejrzy w grze |
 | **B-CITY-NAMES-IMPORT** | 2026-07-07 | Pipeline Excel→JSON nazw miast (bez ABC — implementacja autonomiczna) | B+D | 🟢 **WDROŻONA** | `import-city-names-from-xlsx.py` · `city-names-pool-test.cjs` | Maciej: „eksportuj nazwy miast" w czacie |
-| **A3-P0-REDESIGN** | 2026-07-07 | Marsz **bez Shift**: ścieżka + markery tur; STOP przy przeszkodzie; przerwanie = nowy cel lub Stop na pasku | A→F | 🟡 **ZAPISANA** | `docs/decyzje/A3-marsz-sciezka-2026-07-07.md` | zastępuje A3-Q1 · poddecyzje A3-P0-2/3 zamknięte · spec: `A3-SPEC-WDROZENIA.md` |
-| **A3-P0-2** | 2026-07-07 | **B** — marsz w save; po wczytaniu kontynuuje (`autoMarch`: leaderId, destQ, destR) | A→F | 🟡 **ZAPISANA** | `docs/decyzje/A3-P0-2-save-marsz.md` | poddecyzja A3-P0-REDESIGN · save schema — bez wdrożenia kodu |
-| **A3-P0-3** | 2026-07-07 | **A** — timing: cel planowany bez natychmiastowego ruchu; segment po end-turn lub przycisk Kontynuuj | A→F | 🟡 **ZAPISANA** | `docs/decyzje/A3-P0-3-timing-marszu.md` | zamyka pytanie auto-kontynuacji · spec: `A3-SPEC-WDROZENIA.md` |
+| **A3-P0-REDESIGN** | 2026-07-07 | Marsz **bez Shift**: ścieżka + markery tur; STOP przy przeszkodzie; przerwanie = nowy cel lub Stop na pasku | A→F | 🟢 **WDROŻONA** | `planned-march.ts` · robocza md5 `8fd0dbfc…` / `e2c5c711…` · test 11/11 | zastępuje A3-Q1 · spec: `A3-SPEC-WDROZENIA.md` |
+| **A3-P0-2** | 2026-07-07 | **B** — marsz w save; po wczytaniu kontynuuje (`autoMarch` + `plannedMarches`) | A→F | 🟢 **WDROŻONA** | `docs/decyzje/A3-P0-2-save-marsz.md` · `save.ts` SAVE v2 | poddecyzja A3-P0-REDESIGN |
+| **A3-P0-3** | 2026-07-07 | **A** — timing: cel planowany bez natychmiastowego ruchu; segment po end-turn lub przycisk Kontynuuj | A→F | 🟢 **WDROŻONA** | `docs/decyzje/A3-P0-3-timing-marszu.md` · `main.ts` | zamyka pytanie auto-kontynuacji |
+| **E-WORKER-1** | 2026-07-07 | **A** — overlay robotników: wszystkie pola 👤 ze wszystkich miast gracza | E→F | 🟢 **WDROŻONA** | `workerFieldOverlay.ts` · robocza md5 `eead06d7…` | `docs/decyzje/E-map-worker-overlay-2026-07-07.md` |
+| **D-DISPLAY-MIASTO** | 2026-07-07 | Dopisek `· miasto-państwo` dla państw klastra (nie imperium) | D | 🟢 **WDROŻONA** | `display-names.ts` · test 6/6 | `docs/decyzje/D-display-miasto-panstwo-2026-07-07.md` |
+| **B-KOLORY-CYW** | 2026-07-07 | **B** — `kolorHex` per cywilizacja (mapa, jednostki, dyplomacja, HUD) | B→F | 🟢 **WDROŻONA** | `civ-visual.ts` · robocza md5 `ee4355af…` · test 54/54 | obwódki frakcji w `e2c5c711…` |
 
 ---
 

@@ -173,3 +173,15 @@ STATUS: WDROŻONE (2026-07-07)
 **Fix:** `owner-epoch.ts` (`computeOwnerEraFromResearch` + tylko `isEraAdvanceTech`), `initOwnerEra`/`setupAiOwnerEpoch` per owner z `player.era`, render `_cityRenderOpts.getEra → empireEpochForOwner`. Test: `gra/tools/owner-epoch-test.cjs`.
 
 ---
+
+## B13 [22:45] — FATAL boot: `Cannot access 'Mt' before initialization` (TDZ / circular import)
+
+STATUS: NAPRAWIONY (2026-07-07)
+
+**Obszar:** SILNIK / bundel Vite / nazwy miast (B-city-names-pools)
+**Objaw:** `gra-robocza/Gra-ROBOCZA.html` — overlay `[TheGame] FATAL: ReferenceError: Cannot access 'Mt' before initialization` (minified `Mt` = TDZ przy ładowaniu modułu).
+**Przyczyna:** cykl importów wartości `game/civ-names.ts` ↔ `game/city-names-pool.ts` — pool importował `NAZWY_KLASTRA_LEN` / `nazwaKlastraAt` z civ-names, który z kolei importował funkcje z pool przy starcie bundla.
+**Fix:** przeniesiono `NAZWY_KLASTRA_LEN` + `nazwaKlastraAt` do leaf `city-names-pool.ts`; `civ-names.ts` tylko re-eksportuje. Testy: `civ-names-test.cjs` 5/5 · `city-names-pool-test.cjs` 10/10 · `smoke.cjs` OK.
+**Publish robocza md5:** `8c764e4b68be3b5dbe4fe70aa731438a`
+
+---

@@ -8,6 +8,32 @@
 
 ---
 
+## [2026-07-07] ✅ Gotowe — Handoff plot-code (sesja 06–07.07)
+
+| | |
+|---|---|
+| **Kto** | Sesja 06–07.07 (zapis dla plot code) |
+| **Co** | Pełny handoff: build, wdrożenia, decyzje ZAMKNIĘTE, status bugów B1–B12, priorytety następnego kroku |
+| **Plik** | `dyspozycje/HANDOFF-PLOT-CODE-2026-07-06-07.md` |
+| **Build** | ROBOCZA md5 `e2c5c711d69065323c2ea3b2be280782` · `gra-robocza/START.html` |
+| **Od Ciebie** | **`plot code`** — kontynuacja z repo bez historii czatu |
+
+---
+
+**Ostatnia aktualizacja:** 2026-07-07 (Maciej: gra bootuje, md5 `70b28d10…`)
+
+---
+
+## [2026-07-07] ✅ Potwierdzone — boot naprawiony (Maciej: „działa”)
+
+| | |
+|---|---|
+| **Build** | md5 `70b28d10abfe641ce08b68e7a3efa430` · stamp `70b28d10` |
+| **Fix** | TDZ `anim` w `main.ts` + wcześniejsze cykle nazw miast |
+| **Od Ciebie** | Kontynuuj testy z checklisty · `BUG:` gdy coś nie tak |
+
+---
+
 ## [2026-07-07] ✅ Gotowe — obwódki w kolorach frakcji (civ-visual)
 
 | | |

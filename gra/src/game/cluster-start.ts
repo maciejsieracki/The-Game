@@ -5,7 +5,7 @@
 
 import type { CivsData } from '../data/loader';
 import type { GameMap } from '../types/map';
-import type { CityNamesPools } from './civ-names';
+import type { CityNamesPoolsData } from './city-names-pool';
 import {
   buildClusterSpawnPlan,
   buildSameTypeRivalSlots,
@@ -51,7 +51,7 @@ export interface BuildClusterStartInput {
   playerCivId: string;
   rywaleNaKlaster: number;
   aktywneTypy?: number;
-  cityNamesPools?: CityNamesPools;
+  cityNamesPools?: CityNamesPoolsData;
 }
 
 /** Pełny plan startu — konsumuje SILNIK w doStartGame(). */
