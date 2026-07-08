@@ -204,12 +204,12 @@
       },
       {
         "key": "civ_types_count",
-        "label": "Typy cywilizacji",
+        "label": "Liczba cywilizacji",
         "opts": [
           "7"
         ],
         "descs": [
-          "Ile głównych typów / obcych klastrów na mapie (±1 od rozmiaru)"
+          "Liczba frakcji na mapie (±1 od rozmiaru)"
         ],
         "domyslny": 0
       },

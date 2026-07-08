@@ -754,6 +754,160 @@ export interface EconUnit {
 export type OwnerEraResolver = (ownerId: number) => number;
 export type OwnerTechResolver = (ownerId: number) => ReadonlySet<string>;
 
+/**
+ * Live preview of per-city yields — same formulas as advanceCityEconomy, but
+ * read-only (no population / wealth / magazyn mutation). For HUD before end turn.
+ */
+export function previewCityEconomy(
+  cities: ReadonlyArray<City>,
+  map: GameMap,
+  data: GameData,
+  difficulty: Difficulty = 'normal',
+  builtByCity: ReadonlyMap<string, readonly string[]> = new Map(),
+  playerEra: number = 1,
+  playerZbadane: ReadonlySet<string> = new Set(),
+  ownerCivByOwnerId: ReadonlyMap<number, string> = new Map(),
+  orderMultByCity: ReadonlyMap<string, OrderYieldMults> = new Map(),
+  resolveOwnerEra?: OwnerEraResolver,
+  resolveOwnerTech?: OwnerTechResolver,
+): Pick<EconomyTickResult, 'perCity'> {
+  const params = buildEconParams(data, difficulty);
+  const noBuildings: CityBuildingEntry[] = [];
+  const rawEconParams = data.econParams as unknown as Parameters<typeof loadUpkeepParams>[0];
+  const wealthParams = loadWealthParams(
+    data.econParams as unknown as import('./wealth').RawWealthParamsJson,
+    difficulty,
+  );
+  const healthParams = loadHealthParams(
+    (data as unknown as Record<string, unknown>).societyParams,
+    difficulty,
+  );
+
+  const perCity: CityEconomyTick[] = [];
+  const capitalSeen = new Set<number>();
+
+  for (const city of cities) {
+    const isCapital = !capitalSeen.has(city.ownerId);
+    capitalSeen.add(city.ownerId);
+
+    const worked = cityWorkedTilesForEconomy(city, map);
+    const builtIds = builtByCity.get(city.id) ?? [];
+    const hasWater = cityHasWaterAccess(city, map);
+    const zdrowie = computeCityHealth(city.population, worked, builtIds, healthParams, hasWater, { city, map });
+
+    const maSpichlerz = builtIds.includes('spichlerz');
+    const maAkwedukt = builtIds.includes('akwedukt');
+    const econCity = toEconomyCity(city, params, isCapital, zdrowie, { maSpichlerz, maAkwedukt });
+
+    const ownerEra = resolveOwnerEra
+      ? resolveOwnerEra(city.ownerId)
+      : (city.ownerId === 0 ? playerEra : 1);
+    const ownerTech = resolveOwnerTech
+      ? resolveOwnerTech(city.ownerId)
+      : playerZbadane;
+    const walutaOdkryta = ownerTech.has('Waluta') || ownerTech.has('waluta');
+    const ownerCivKey = ownerCivByOwnerId.get(city.ownerId);
+    const walutaMnoznikOverride = walutaOdkryta && ownerCivKey
+      ? mnoznikHandelPieniadzForCiv(ownerCivKey, data.civs, params.walutaMnoznik)
+      : undefined;
+    const ownerBonusy = ownerCivKey
+      ? civBonusyForCivKey(ownerCivKey, data.civs)
+      : [];
+    const { handel: civHandelMult, nauka: civNaukaMult } = civEconomyYieldMultipliers(ownerBonusy);
+    const ctx: CityYieldContext = {
+      wojskoZuzycieZywnosci: 0,
+      strataFraction: 0,
+      maMlyn: builtIds.includes('mlyn'),
+      maCegielnia: builtIds.includes('cegielnia'),
+      maTargowisko: builtIds.includes('targowisko'),
+      maBiblioteka: builtIds.includes('biblioteka'),
+      maMennica: builtIds.includes('mennica'),
+      mennicaMnoznik: 1,
+      walutaOdkryta,
+      walutaMnoznikOverride,
+      civHandelMult,
+      civNaukaMult,
+    };
+
+    const yld = cityYieldPerTurn(econCity, worked, noBuildings, params, ctx);
+    const orderMult = orderMultByCity.get(city.id);
+    if (orderMult) applyOrderYieldMults(yld, orderMult);
+
+    const prevWealth: WealthState = city.wealthState ?? freshWealthState();
+    const wealthImmunity = (city.wealthImmunityRemaining ?? 0) > 0;
+    const wt: WealthTickResult = advanceWealth(
+      prevWealth,
+      yld.luksus,
+      yld.pieniadz,
+      ownerEra,
+      wealthParams,
+      wealthImmunity ? { minPoziom: 1 } : undefined,
+    );
+    const pieniadzPoWealth = Math.floor(yld.pieniadz * wt.mnoznik);
+
+    const udzialBudynki = (city.podzialPracy?.procentBudynki ?? params.suwaakPracaBudynki) / 100;
+    const { doBudynkow, doPuli } = splitPraca(yld.praca, udzialBudynki);
+
+    const isOblegane = city.oblegane === true;
+    if (isOblegane) {
+      perCity.push({
+        cityId: city.id,
+        ownerId: city.ownerId,
+        praca: yld.praca,
+        pieniadz: pieniadzPoWealth,
+        pieniadzBrutto: yld.pieniadz,
+        zywnoscNetto: 0,
+        nauka: yld.nauka,
+        luksus: yld.luksus,
+        kultura: yld.kultura,
+        ludnoscPrzed: city.population,
+        ludnoscPo: city.population,
+        wzrost: false,
+        ubytek: false,
+        zdrowie,
+        doBudynkow,
+        doPuli,
+        wealthMnoznik: wt.mnoznik,
+        wealthZadowolenie: wt.zadowolenie,
+        pieniadzZPracy: yld.pieniadzZPracy,
+        oblegany: true,
+        obleganyGlod: getCityFood(city) <= 0,
+        magazynPoTurze: getCityFood(city),
+        maSpichlerz,
+      });
+      continue;
+    }
+
+    perCity.push({
+      cityId: city.id,
+      ownerId: city.ownerId,
+      praca: yld.praca,
+      pieniadz: pieniadzPoWealth,
+      pieniadzBrutto: yld.pieniadz,
+      zywnoscNetto: yld.zywnosc,
+      nauka: yld.nauka,
+      luksus: yld.luksus,
+      kultura: yld.kultura,
+      ludnoscPrzed: city.population,
+      ludnoscPo: city.population,
+      wzrost: false,
+      ubytek: false,
+      zdrowie,
+      doBudynkow,
+      doPuli,
+      wealthMnoznik: wt.mnoznik,
+      wealthZadowolenie: wt.zadowolenie,
+      pieniadzZPracy: yld.pieniadzZPracy,
+      oblegany: false,
+      obleganyGlod: false,
+      magazynPoTurze: getCityFood(city),
+      maSpichlerz,
+    });
+  }
+
+  return { perCity };
+}
+
 export function advanceCityEconomy(
   cities: City[],
   map: GameMap,

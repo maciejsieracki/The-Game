@@ -59,6 +59,8 @@ export interface MapUnitCursorInput {
   hoverR: number;
   /** Zasięg ruchu (z merge). */
   reachable: Set<string>;
+  /** Widoczne heksy (mgła) — do kursora ataku na dalekim wrogu. */
+  visibleHexes?: ReadonlySet<string>;
   /** Inne jednostki na mapie. */
   units: ReadonlyArray<{ id: string; ownerId: number; q: number; r: number }>;
   /** Miasta na mapie. */
@@ -72,17 +74,22 @@ export interface MapUnitCursorInput {
  */
 export function resolveMapUnitCursor(input: MapUnitCursorInput): string {
   const {
-    selected, hoverQ, hoverR, reachable, units, cities, hexDistance, keyOf,
+    selected, hoverQ, hoverR, reachable, units, cities, hexDistance, keyOf, visibleHexes,
   } = input;
   const k = keyOf(hoverQ, hoverR);
   const dist = hexDistance(selected.q, selected.r, hoverQ, hoverR);
 
-  if (selected.ruchLeft > 0 && dist <= 1) {
-    const enemy = units.find(
-      u => u.q === hoverQ && u.r === hoverR && u.ownerId !== selected.ownerId,
-    );
-    if (enemy !== undefined) return CURSOR_MAP_SWORD;
+  const enemy = units.find(
+    u => u.q === hoverQ && u.r === hoverR && u.ownerId !== selected.ownerId,
+  );
+  const enemyVisible = enemy !== undefined
+    && (visibleHexes?.has(k) ?? dist <= 1);
 
+  if (selected.ruchLeft > 0 && enemyVisible) {
+    return CURSOR_MAP_SWORD;
+  }
+
+  if (selected.ruchLeft > 0 && dist <= 1) {
     const city = cities.find(c => c.q === hoverQ && c.r === hoverR);
     if (city !== undefined && city.ownerId !== selected.ownerId) {
       return CURSOR_MAP_SWORD;

@@ -10570,6 +10570,8 @@ export class BattleScene {
   }
 
   private _deployLayoutListener: (() => void) | null = null;
+  /** Guard — _rebuildDeployRosterGrid ↔ _updateRosterBar ↔ _ensureDeployRowRefs. */
+  private _rebuildDeployRosterGridBusy = false;
 
   /**
    * Metryki siatki + skalowanie kart w kontenerze rosteru.
@@ -10947,6 +10949,16 @@ export class BattleScene {
 
   /** Odtwarza siatke rosteru deploy — ten sam układ bloków grup co walka. */
   private _rebuildDeployRosterGrid(): void {
+    if (this._rebuildDeployRosterGridBusy) return;
+    this._rebuildDeployRosterGridBusy = true;
+    try {
+      this._rebuildDeployRosterGridInner();
+    } finally {
+      this._rebuildDeployRosterGridBusy = false;
+    }
+  }
+
+  private _rebuildDeployRosterGridInner(): void {
     if (!this._ensureDeployRowRefs()) {
       if (this.deployPhase) {
         this._recoverDeployRosterDock();
@@ -14766,8 +14778,34 @@ export class BattleScene {
     const orphanGroups = document.getElementById('group-selector-bar');
     if (orphanGroups) orphanGroups.style.display = 'none';
 
-    const scrollEl = bar.querySelector('#battle-roster-scroll') as HTMLDivElement | null;
-    if (scrollEl) applyBattleRosterScrollbar(scrollEl);
+    let scrollEl = bar.querySelector('#battle-roster-scroll') as HTMLDivElement | null;
+    if (!scrollEl) {
+      scrollEl = document.createElement('div');
+      scrollEl.id = 'battle-roster-scroll';
+      Object.assign(scrollEl.style, {
+        flex: '1', minHeight: '0', overflowY: 'auto', overflowX: 'hidden',
+        background: 'rgba(8,10,16,1)', scrollbarGutter: 'stable', paddingRight: '2px',
+      });
+      bar.appendChild(scrollEl);
+    }
+    applyBattleRosterScrollbar(scrollEl);
+
+    let cardsRow = bar.querySelector('#battle-roster-cards') as HTMLDivElement | null;
+    if (!cardsRow) {
+      cardsRow = document.createElement('div');
+      cardsRow.id = 'battle-roster-cards';
+      Object.assign(cardsRow.style, {
+        display: 'flex', flexDirection: 'column', gap: '2px',
+        width: '100%', maxWidth: '100%', boxSizing: 'border-box',
+      });
+      scrollEl.appendChild(cardsRow);
+    }
+    this._battleRosterCards = cardsRow;
+    if (this.deployPhase) {
+      this._deployUnitsRow = cardsRow;
+      this._deployRosterScroll = scrollEl;
+      this._deployRosterGridEl = cardsRow;
+    }
 
     this._updateBattleRosterHeader();
     this._updateBattleSelectionBar();
@@ -15035,7 +15073,7 @@ export class BattleScene {
           break;
         }
       }
-      if (missingCards || wrongContainer || !this._ensureDeployRowRefs()) {
+      if (missingCards || wrongContainer) {
         this._rebuildDeployRosterGrid();
         return;
       }

@@ -65,5 +65,9 @@ const allStoneNoAdvance = new Set(
 assert(computeOwnerEraFromResearch(1, allStoneNoAdvance, tech) === 1,
   'tech Kamienia bez awansu epoki → era 1 (państwa-miasta)');
 
+// B12: epoka startu gry (kamien) — etykieta dyplomacji nie z etykiety Epoka w tech.json
+assert(computeOwnerEraFromResearch(1, new Set(['Żegluga', 'Garncarstwo']), tech) === 1,
+  'Kamień start + tech z etykietą Brąz bez awansu → nadal era 1 (Lagasz/audiencja)');
+
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
 process.exit(failed > 0 ? 1 : 0);

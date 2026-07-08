@@ -2,7 +2,7 @@
  * hud.ts
  * HUD w grze (UI plan pkt 3, D1=C) — gorny pasek zasobow + minimapa + panel boczny.
  * Uklad wg Makieta-HUD-mapa-swiata.html (grupy zasobow: Zloto/Praca, Moc/Nauka,
- * Kultura/Zadowolenie, Epoka + Wiki/Menu).
+ * Kultura/Zadowolenie; Wiki/Menu po prawej; epoka w panelu Moc).
  *
  * DOM-only, DECOUPLED: dane podaje silnik przez getState(); akcje przez callbacki.
  *
@@ -239,12 +239,13 @@ const MINI_H = 170;
 // Style
 // ---------------------------------------------------------------------------
 
-const STYLE_ID = 'civ-hud-css-w2full';
+const STYLE_ID = 'civ-hud-css-w2banners';
 function ensureStyles(): void {
   ensureBrandRootTokens();
   document.getElementById('civ-hud-css')?.remove();
   document.getElementById('civ-hud-css-w2')?.remove();
   document.getElementById('civ-hud-css-w2b')?.remove();
+  document.getElementById('civ-hud-css-w2full')?.remove();
   if (document.getElementById(STYLE_ID)) return;
   const css = `
 .civ-hud{position:fixed;inset:0;z-index:310;pointer-events:none;
@@ -252,16 +253,20 @@ function ensureStyles(): void {
   --orange:var(--tg-orange);--green:var(--tg-green);--blue:var(--civ-science);--muted:var(--civ-text-muted);}
 .civ-hud *{box-sizing:border-box;}
 .civ-hud button{font-family:var(--civ-font-ui);cursor:pointer;}
-.civ-hud .hud-left{pointer-events:auto;position:fixed;top:16px;left:20px;z-index:3;
-  display:flex;align-items:center;gap:12px;padding:10px 18px;max-width:min(calc(100vw - 380px),960px);
+.civ-hud .civ-hud-banner-shell{display:flex;align-items:center;padding:10px 14px;
   border-radius:12px;background:linear-gradient(180deg,rgba(20,26,38,.94),rgba(8,10,16,.95));
-  border:1px solid rgba(232,216,138,.3);box-shadow:inset 0 1px 0 rgba(232,216,138,.18),0 6px 18px rgba(0,0,0,.55);}
-.civ-hud .hud-chip-row{display:flex;align-items:center;gap:0;flex-wrap:nowrap;}
-.civ-hud .hud-pop-chip{margin-left:4px;}
-.civ-hud .civ-hud-chip{display:inline-flex;align-items:center;gap:7px;white-space:nowrap;}
+  border:1px solid rgba(232,216,138,.3);box-shadow:inset 0 1px 0 rgba(232,216,138,.18),0 6px 18px rgba(0,0,0,.55);
+  flex-shrink:0;width:max-content;overflow:visible;}
+.civ-hud .civ-hud-banner-left{pointer-events:auto;position:fixed;top:16px;left:20px;z-index:3;
+  max-width:min(calc(50vw - 150px),600px);}
+.civ-hud .civ-hud-banner-right{flex-shrink:0;max-width:min(calc(50vw - 340px),780px);}
+.civ-hud .hud-right-cluster{pointer-events:auto;position:fixed;top:16px;right:20px;z-index:3;
+  display:flex;align-items:center;gap:12px;max-width:calc(50vw - 150px);}
+.civ-hud .hud-chip-row{display:flex;align-items:center;gap:0;flex-wrap:nowrap;flex-shrink:0;}
+.civ-hud .civ-hud-chip{display:inline-flex;align-items:center;gap:5px;white-space:nowrap;flex-shrink:0;}
 .civ-hud .civ-hud-chip-click{cursor:pointer;border-radius:8px;padding:2px 4px;margin:-2px -4px;}
 .civ-hud .civ-hud-chip-click:hover{background:rgba(232,216,138,.06);}
-.civ-hud .civ-hud-chip-sep{width:1px;height:24px;background:rgba(232,216,138,.2);margin:0 12px;flex-shrink:0;}
+.civ-hud .civ-hud-chip-sep{width:1px;height:24px;background:rgba(232,216,138,.2);margin:0 8px;flex-shrink:0;}
 .civ-hud .civ-hud-chip-med{width:30px;height:30px;border-radius:50%;flex-shrink:0;
   display:inline-flex;align-items:center;justify-content:center;box-shadow:0 1px 3px rgba(0,0,0,.6);}
 .civ-hud .civ-hud-chip-med.gold{background:radial-gradient(circle at 35% 30%,#f4e0a0,#a9861f);border:1px solid #6a5212;color:#3a2e08;}
@@ -273,10 +278,8 @@ function ensureStyles(): void {
 .civ-hud .civ-hud-chip-val.science{color:#7cb4e4;}
 .civ-hud .civ-hud-chip-rate{font-size:10px;color:var(--tg-green);}
 .civ-hud .civ-hud-chip-rate.warn{color:var(--tg-orange);}
-.civ-hud .hud-right{pointer-events:auto;position:fixed;top:16px;right:20px;z-index:3;
-  display:flex;align-items:center;gap:16px;}
+.civ-hud .hud-right{display:flex;align-items:center;gap:12px;flex-shrink:0;}
 .civ-hud .hud-meta{text-align:right;}
-.civ-hud .hud-meta .hm-ep{font-family:var(--civ-font-title);font-size:16px;color:var(--civ-gold-primary);letter-spacing:.06em;}
 .civ-hud .b-menu{display:inline-flex;align-items:center;gap:8px;height:42px;padding:0 16px;
   border-radius:9px;border:1px solid rgba(232,216,138,.35);
   background:linear-gradient(180deg,#161c28,#0a0d14);color:var(--civ-gold-primary);
@@ -291,12 +294,14 @@ function ensureStyles(): void {
 .civ-hud .b-wiki.on{border-color:rgba(168,200,120,.72);background:linear-gradient(180deg,#1a2218,#0c100c);
   box-shadow:inset 0 0 0 1px rgba(168,200,120,.15),0 0 12px rgba(168,200,120,.12);}
 .civ-hud .b-wiki .civ-wiki-ic{width:16px;height:16px;flex-shrink:0;}
-.civ-hud .power-center{pointer-events:auto;position:fixed;left:50%;top:10px;transform:translateX(-50%);
-  display:flex;flex-direction:column;align-items:stretch;gap:0;padding:10px 22px 8px;cursor:pointer;min-width:220px;z-index:4;
+.civ-hud .power-center{pointer-events:auto;position:fixed;left:50%;top:6px;transform:translateX(-50%);
+  display:flex;flex-direction:column;align-items:stretch;gap:0;padding:12px 24px 10px;cursor:pointer;min-width:240px;z-index:4;
   background:linear-gradient(180deg,rgba(30,24,12,.96),rgba(14,10,6,.96));
-  border:1px solid #a08030;border-top:none;border-radius:0 0 16px 16px;
+  border:1px solid #a08030;border-top:none;border-radius:0 0 18px 18px;
   box-shadow:0 6px 22px rgba(0,0,0,.6),0 0 30px rgba(232,216,138,.18);}
 .civ-hud .power-center:hover{filter:brightness(1.06);}
+.civ-hud .power-center .p-epoch{text-align:center;font-family:var(--civ-font-title);font-size:13px;
+  color:var(--civ-gold-primary);letter-spacing:.08em;line-height:1.2;margin:0 0 8px;white-space:nowrap;}
 .civ-hud .power-center .p-row{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px;width:100%;}
 .civ-hud .power-center .p-side-left{justify-self:start;display:inline-flex;align-items:flex-start;
   cursor:pointer;border-radius:6px;padding:2px 6px;margin:-2px -6px;}
@@ -322,11 +327,11 @@ function ensureStyles(): void {
 .civ-hud .power-center .p-recruit-val{font-size:15px;color:#f4e6a8;font-weight:700;font-family:var(--civ-font-title);}
 .civ-hud .power-center .p-lbl{font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:#a08030;}
 .civ-hud .power-center .p-sub{display:none;}
-.civ-hud.is-city-view .hud-left,
-.civ-hud.is-city-view .power-center,
-.civ-hud.is-city-view .hud-pop-chip{display:none!important;}
+.civ-hud.is-city-view .civ-hud-banner-left,
+.civ-hud.is-city-view .civ-hud-banner-right,
+.civ-hud.is-city-view .power-center{display:none!important;}
 .civ-hud.is-city-view .hud-meta{display:none!important;}
-.civ-hud.is-city-view .hud-right{top:10px;right:14px;z-index:5;}
+.civ-hud.is-city-view .hud-right-cluster{top:10px;right:14px;z-index:5;}
 .civ-mini{position:fixed;left:20px;bottom:20px;width:${MINI_W}px;height:${MINI_H}px;z-index:309;display:none;}
 .civ-war-strip{pointer-events:auto;position:fixed;top:46px;left:0;right:0;z-index:309;display:flex;flex-wrap:wrap;gap:6px;align-items:center;
   padding:3px 12px;background:rgba(48,12,12,0.92);border-bottom:1px solid rgba(211,55,55,0.55);
@@ -395,15 +400,7 @@ function powerSymbolHtml(): string {
 
 function renderBarD1B(s: HudState): string {
   const powerIconHtml = powerCenterIconHtml(s);
-  const ludnoscChip = chip6cHtml({
-    iconId: 'res-population',
-    label: 'Ludność',
-    value: String(s.ludnosc),
-    rate: signed(s.ludnoscRate ?? 0),
-    act: 'ludnosc',
-    title: 'Ludność imperium — klik po szczegóły',
-  });
-  const chips: string[] = [
+  const leftChips: string[] = [
     chip6cHtml({
       iconId: 'res-treasury',
       label: 'Skarbiec',
@@ -424,6 +421,18 @@ function renderBarD1B(s: HudState): string {
     }),
     chip6cSep(),
     chip6cHtml({
+      iconId: 'res-science',
+      label: 'Nauka',
+      value: String(Math.floor(s.nauka)),
+      rate: signed(s.naukaRate ?? 0),
+      medVariant: 'science',
+      valClass: ' science',
+      act: 'nauka',
+      title: 'Nauka — kliknij po podsumowanie imperium',
+    }),
+  ];
+  const rightChips: string[] = [
+    chip6cHtml({
       iconId: 'res-food',
       label: 'Zaopatrzenie',
       value: formatFoodHudLabel(s),
@@ -434,14 +443,12 @@ function renderBarD1B(s: HudState): string {
     }),
     chip6cSep(),
     chip6cHtml({
-      iconId: 'res-science',
-      label: 'Nauka',
-      value: String(Math.floor(s.nauka)),
-      rate: signed(s.naukaRate ?? 0),
-      medVariant: 'science',
-      valClass: ' science',
-      act: 'nauka',
-      title: 'Nauka — kliknij po podsumowanie imperium',
+      iconId: 'res-population',
+      label: 'Ludność',
+      value: String(s.ludnosc),
+      rate: signed(s.ludnoscRate ?? 0),
+      act: 'ludnosc',
+      title: 'Ludność imperium — klik po szczegóły',
     }),
     chip6cSep(),
     chip6cHtml({
@@ -452,13 +459,24 @@ function renderBarD1B(s: HudState): string {
       act: 'kultura',
       title: 'Kultura — kliknij po szczegóły imperium',
     }),
+    chip6cSep(),
+    chip6cHtml({
+      iconId: 'res-religion',
+      label: 'Religia',
+      value: String(Math.round(s.religionStock ?? 0)),
+      rate: signed(s.religionRate ?? 0),
+      act: 'religia',
+      title: 'Religia państwa — klik po szczegóły imperium',
+    }),
   ];
 
   const rekrLabel = s.rekruciLabel ?? '—';
 
-  let html = '<div class="hud-left"><div class="hud-chip-row">' + chips.join('') + '</div></div>';
+  let html = '<div class="civ-hud-banner-shell civ-hud-banner-left"><div class="hud-chip-row">'
+    + leftChips.join('') + '</div></div>';
 
   html += '<div class="power-center" data-act="power" title="Klik — składniki Mocy imperium">'
+    + '<div class="p-epoch">' + escHtml(s.epoka) + '</div>'
     + '<div class="p-row">'
     + `<span class="p-side p-side-left" data-act="rekruci" title="Rekruci (pula werbu) — klik po szczegóły">`
     + '<span class="p-stack">'
@@ -481,12 +499,14 @@ function renderBarD1B(s: HudState): string {
       + wikiBookIcon(16)
       + '<span>Wiki</span></button>'
     : '';
-  html += '<div class="hud-right">'
-    + '<span class="hud-pop-chip">' + ludnoscChip + '</span>'
-    + '<div class="hud-meta"><div class="hm-ep">' + escHtml(s.epoka) + '</div></div>'
+  html += '<div class="hud-right-cluster">'
+    + '<div class="civ-hud-banner-shell civ-hud-banner-right"><div class="hud-chip-row">'
+    + rightChips.join('') + '</div></div>'
+    + '<div class="hud-right">'
     + wikiBtn
     + '<button type="button" class="b-menu" data-act="menu">'
-    + (menuIc || '') + '<span>Menu</span></button></div>';
+    + (menuIc || '') + '<span>Menu</span></button>'
+    + '</div></div>';
   return html;
 }
 
@@ -525,10 +545,7 @@ function handleHudBarAction(act: string): void {
       const data = cfg.getPowerOverlay?.();
       if (data) showPowerOverlay(data);
     }
-  } else if (act === 'religia') {
-    const data = cfg.getReligionOverlay?.();
-    if (data) showReligionOverlay(data);
-  } else if (act === 'kultura' || act === 'skarbiec' || act === 'praca' || act === 'nauka'
+  } else if (act === 'religia' || act === 'kultura' || act === 'skarbiec' || act === 'praca' || act === 'nauka'
     || act === 'ludnosc' || act === 'rekruci' || act === 'zywnosc') {
     hideEmpireOverlay();
     const section = empireSectionFromHudAct(act);
@@ -536,6 +553,9 @@ function handleHudBarAction(act: string): void {
     else if (act === 'kultura') {
       const data = cfg.getCultureOverlay?.();
       if (data) showCultureOverlay(data);
+    } else if (act === 'religia') {
+      const data = cfg.getReligionOverlay?.();
+      if (data) showReligionOverlay(data);
     }
   }
 }

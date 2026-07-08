@@ -20,6 +20,7 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 // tools/.planned-march-entry.ts
 var planned_march_entry_exports = {};
 __export(planned_march_entry_exports, {
+  applyFogToPathPlan: () => applyFogToPathPlan,
   computePath: () => computePath,
   deserializeGame: () => deserializeGame,
   executeMarchStep: () => executeMarchStep,
@@ -29,6 +30,7 @@ __export(planned_march_entry_exports, {
   plannedMarchesToSave: () => plannedMarchesToSave,
   serializeGame: () => serializeGame,
   shouldStopAtObstacle: () => shouldStopAtObstacle,
+  truncatePathAtFogFrontier: () => truncatePathAtFogFrontier,
   truncatePathToBudget: () => truncatePathToBudget,
   validateAutoMarchFromSave: () => validateAutoMarchFromSave
 });
@@ -532,6 +534,76 @@ function pathCost(path, map) {
 }
 
 // src/game/planned-march.ts
+function truncatePathAtFogFrontier(path, visible, keyOf2) {
+  if (path.length === 0) return { path, fogLimited: false };
+  const out = [];
+  for (const hex of path) {
+    if (!visible.has(keyOf2(hex.q, hex.r))) break;
+    out.push(hex);
+  }
+  return { path: out, fogLimited: out.length < path.length };
+}
+function applyFogToPathPlan(plan, map, perTurnMove, movementBudget, fog) {
+  if (!fog?.fogActive || fog.attackOnVisibleEnemy || plan.fullPath.length === 0) {
+    return plan;
+  }
+  const { path: clamped, fogLimited } = truncatePathAtFogFrontier(
+    plan.fullPath,
+    fog.visible,
+    fog.keyOf
+  );
+  if (!fogLimited) return plan;
+  if (clamped.length === 0) {
+    return {
+      ...plan,
+      fullPath: [],
+      turnStops: [],
+      segmentPath: [],
+      segmentCost: 0,
+      reachable: false,
+      stopReason: "fog"
+    };
+  }
+  const budget = movementBudget ?? perTurnMove;
+  const segmentPath = truncatePathToBudget(clamped, budget, map);
+  const segmentCost = segmentPath.length > 0 ? pathCost(segmentPath, map) : 0;
+  const turnStops = [];
+  let turnAcc = 0;
+  let turnNum = 1;
+  const perTurn = Math.max(1, perTurnMove);
+  for (let i = 0; i < clamped.length; i++) {
+    const stepCost = pathCost(clamped.slice(0, i + 1), map) - (i > 0 ? pathCost(clamped.slice(0, i), map) : 0);
+    if (turnAcc + stepCost > perTurn) {
+      if (i > 0) {
+        const prev = clamped[i - 1];
+        const last2 = turnStops[turnStops.length - 1];
+        if (!last2 || last2.q !== prev.q || last2.r !== prev.r) {
+          turnStops.push({ q: prev.q, r: prev.r, turn: turnNum });
+        }
+      }
+      turnNum++;
+      turnAcc = stepCost;
+    } else {
+      turnAcc += stepCost;
+    }
+  }
+  const last = clamped[clamped.length - 1];
+  const lastStop = turnStops[turnStops.length - 1];
+  if (!lastStop || lastStop.q !== last.q || lastStop.r !== last.r) {
+    turnStops.push({ q: last.q, r: last.r, turn: turnNum });
+  }
+  return {
+    fullPath: clamped,
+    turnStops,
+    segmentPath,
+    segmentCost,
+    reachable: true,
+    fogLimited: true
+  };
+}
+function isMarchAttackDest(q, r, dest) {
+  return q === dest.destQ && r === dest.destR;
+}
 function truncatePathToBudget(path, budget, map) {
   if (budget <= 0 || path.length === 0) return [];
   const out = [];
@@ -611,7 +683,7 @@ function shouldStopAtObstacle(unit, dest, map, occupied, segmentPath, movementBu
   if (segEndIdx >= 0 && segEndIdx < path.length - 1) {
     const next = path[segEndIdx + 1];
     const nextKey = `${next.q},${next.r}`;
-    if (occupied.has(nextKey)) {
+    if (occupied.has(nextKey) && !isMarchAttackDest(next.q, next.r, dest)) {
       return { stop: true, reason: "obstacle", detail: "zablokowany heks na trasie" };
     }
   }
@@ -627,15 +699,16 @@ function shouldStopAtObstacle(unit, dest, map, occupied, segmentPath, movementBu
     const nextIdx = truncated.length;
     if (nextIdx < path.length) {
       const next = path[nextIdx];
-      if (occupied.has(`${next.q},${next.r}`)) {
+      if (occupied.has(`${next.q},${next.r}`) && !isMarchAttackDest(next.q, next.r, dest)) {
         return { stop: true, reason: "obstacle", detail: "zablokowany heks na trasie" };
       }
     }
   }
   return { stop: false };
 }
-function executeMarchStep(unit, dest, map, occupied, movementBudget, canOccupyHex, perTurnMove) {
-  const plan = planPathTurns(unit, dest.destQ, dest.destR, map, occupied, perTurnMove, movementBudget);
+function executeMarchStep(unit, dest, map, occupied, movementBudget, canOccupyHex, perTurnMove, fog) {
+  let plan = planPathTurns(unit, dest.destQ, dest.destR, map, occupied, perTurnMove, movementBudget);
+  plan = applyFogToPathPlan(plan, map, perTurnMove, movementBudget, fog);
   if (!plan.reachable || plan.fullPath.length === 0) {
     return {
       ok: false,
@@ -680,13 +753,20 @@ function executeMarchStep(unit, dest, map, occupied, movementBudget, canOccupyHe
   }
   const arrived = last.q === dest.destQ && last.r === dest.destR;
   const obstacle = shouldStopAtObstacle(unit, dest, map, occupied, movePath, movementBudget);
+  const fogLimited = "fogLimited" in plan && plan.fogLimited === true;
+  let stopReason = obstacle.stop && !arrived ? obstacle.reason : void 0;
+  let stopDetail = obstacle.detail;
+  if (fogLimited && !arrived) {
+    stopReason = "fog";
+    stopDetail = "granica mg\u0142y \u2014 czeka na odkrycie";
+  }
   return {
     ok: true,
     movePath,
     cost: plan.segmentCost,
     arrived,
-    stopReason: obstacle.stop && !arrived ? obstacle.reason : void 0,
-    stopDetail: obstacle.detail
+    stopReason,
+    stopDetail
   };
 }
 function validateAutoMarchFromSave(saved, units, playerOwnerId = 0) {
@@ -705,7 +785,11 @@ function plannedMarchesFromSave(saved, plannedMarches, units, playerOwnerId = 0)
       const u = units.find((x) => x.id === uid);
       if (!u || u.ownerId !== playerOwnerId) continue;
       if (u.q === dest.destQ && u.r === dest.destR) continue;
-      out.set(uid, { destQ: dest.destQ, destR: dest.destR });
+      const entry = { destQ: dest.destQ, destR: dest.destR };
+      if (typeof dest.attackUnitId === "string" && dest.attackUnitId.length > 0) {
+        entry.attackUnitId = dest.attackUnitId;
+      }
+      out.set(uid, entry);
     }
   }
   const legacy = validateAutoMarchFromSave(saved, units, playerOwnerId);
@@ -719,7 +803,7 @@ function plannedMarchesToSave(marches) {
   const plannedMarches = {};
   let first;
   for (const [unitId, dest] of marches) {
-    plannedMarches[unitId] = { destQ: dest.destQ, destR: dest.destR };
+    plannedMarches[unitId] = dest.attackUnitId ? { destQ: dest.destQ, destR: dest.destR, attackUnitId: dest.attackUnitId } : { destQ: dest.destQ, destR: dest.destR };
     if (!first) first = { leaderId: unitId, destQ: dest.destQ, destR: dest.destR };
   }
   return { autoMarch: first, plannedMarches };
@@ -790,6 +874,7 @@ function deserializeGame(json) {
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
+  applyFogToPathPlan,
   computePath,
   deserializeGame,
   executeMarchStep,
@@ -799,6 +884,7 @@ function deserializeGame(json) {
   plannedMarchesToSave,
   serializeGame,
   shouldStopAtObstacle,
+  truncatePathAtFogFrontier,
   truncatePathToBudget,
   validateAutoMarchFromSave
 });

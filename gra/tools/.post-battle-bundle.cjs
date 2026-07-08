@@ -187,8 +187,8 @@ var terrain_improvements_default = {
     bonus: {},
     surowiecOdblokowany: null,
     teren: "Las",
-    warunek: "darmowa wycinka; +20 Pracy/tur\u0119 \xD7 3 tury (=60); potem teren bazowy bez lasu",
-    koszt_praca: 0,
+    warunek: "koszt 5 Pracy na start; +20 Pracy/tur\u0119 \xD7 3 tury (=60); potem teren bazowy bez lasu",
+    koszt_praca: 5,
     tech: null,
     wycinka: {
       praca_per_tura: 20,
@@ -367,6 +367,17 @@ function hexNeighborCoords(q, r) {
   return HEX_NEIGHBORS.map(([dq, dr]) => ({ q: q + dq, r: r + dr }));
 }
 
+// src/game/armyMerge.ts
+function stackRuchLeft(stack) {
+  if (stack.length === 0) return 0;
+  return Math.min(...stack.map((u) => u.ruchLeft));
+}
+function syncStackRuchLeft(stack, ruchLeft) {
+  if (stack.length === 0) return;
+  const v = ruchLeft ?? stackRuchLeft(stack);
+  for (const u of stack) u.ruchLeft = v;
+}
+
 // src/game/auto-battle-power.ts
 var LINE_WEIGHTS = {
   "Wr\u0119cz": 1,
@@ -542,13 +553,14 @@ function retreatDefendersOnTie(input) {
   const dir = pickRetreatTargetAwayFromAttacker(input);
   placeFanOutGroup(input, defAlive, lead, dir, !!input.cityOnBattleHex);
 }
-function moveAtkLeadOntoBattleHex(input) {
-  const lead = liveUnit(input.units, input.atkAnchor.id);
-  if (!lead) return;
-  if (!input.isUnitAt(input.battleQ, input.battleR, lead.id)) {
-    lead.q = input.battleQ;
-    lead.r = input.battleR;
+function moveAtkRosterOntoBattleHex(input) {
+  const liveAtk = input.atkRoster.map((r) => liveUnit(input.units, r.id)).filter((u) => !!u);
+  if (liveAtk.length === 0) return;
+  for (const u of liveAtk) {
+    u.q = input.battleQ;
+    u.r = input.battleR;
   }
+  if (liveAtk.length > 1) syncStackRuchLeft(liveAtk);
 }
 function retreatAtkRosterToStart(input) {
   for (const ref of input.atkRoster) {
@@ -577,8 +589,8 @@ function applyPostBattleMap(input) {
   }
   if (input.winner === "atakujacy") {
     if (input.cityOnBattleHex) wipeDefenderOnCityCenter(input);
-    moveAtkLeadOntoBattleHex(input);
     retreatDefendersAfterAtkWin(input);
+    moveAtkRosterOntoBattleHex(input);
   } else if (input.winner === "obronca") {
     retreatAtkRosterToStart(input);
     for (const ref of input.defRoster) {

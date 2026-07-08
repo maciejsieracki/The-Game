@@ -17,10 +17,13 @@ esbuild.buildSync({
 const {
   planPathTurns,
   executeMarchStep,
+  shouldStopAtObstacle,
   validateAutoMarchFromSave,
   plannedMarchesFromSave,
   plannedMarchesToSave,
   truncatePathToBudget,
+  truncatePathAtFogFrontier,
+  applyFogToPathPlan,
   pathCost,
   serializeGame,
   deserializeGame,
@@ -88,6 +91,38 @@ const blocked = executeMarchStep(
 );
 assert(!blocked.ok || blocked.movePath.length <= 1, 'obstacle limits movement');
 
+const attackOcc = new Set(['2,0']);
+const attackStep = executeMarchStep(
+  unit,
+  { destQ: 2, destR: 0 },
+  map,
+  attackOcc,
+  2,
+  () => true,
+  2,
+);
+assert(attackStep.ok && attackStep.arrived, 'occupied enemy dest reachable');
+
+const midSegment = shouldStopAtObstacle(
+  unit,
+  { destQ: 2, destR: 0 },
+  map,
+  attackOcc,
+  [{ q: 1, r: 0 }],
+  1,
+);
+assert(!midSegment.stop, 'enemy dest hex is not mid-path obstacle');
+
+const midBlocked = shouldStopAtObstacle(
+  unit,
+  { destQ: 3, destR: 0 },
+  map,
+  new Set(['1,0']),
+  [{ q: 0, r: 0 }],
+  1,
+);
+assert(midBlocked.stop, 'neutral occupied hex still blocks');
+
 const units = [unit];
 const saved = validateAutoMarchFromSave({ leaderId: 'u1', destQ: 3, destR: 0 }, units, 0);
 assert(saved !== null, 'validate save march');
@@ -112,6 +147,41 @@ const json = serializeGame({
 });
 const loaded = deserializeGame(json);
 assert(loaded.plannedMarches?.u1?.destQ === 3, 'save JSON roundtrip');
+
+const visible = new Set(['0,0', '1,0', '2,0']);
+const fogPath = [{ q: 1, r: 0 }, { q: 2, r: 0 }, { q: 3, r: 0 }];
+const fogCut = truncatePathAtFogFrontier(fogPath, visible, (q, r) => q + ',' + r);
+assert(fogCut.path.length === 2 && fogCut.fogLimited, 'fog frontier truncates before hidden hex');
+
+const fogPlan = planPathTurns(unit, 3, 0, map, occ, 2, 2);
+const fogApplied = applyFogToPathPlan(fogPlan, map, 2, 2, {
+  fogActive: true,
+  visible: new Set(['0,0', '1,0']),
+  attackOnVisibleEnemy: false,
+  keyOf: (q, r) => q + ',' + r,
+});
+assert(fogApplied.fullPath.length === 1 && fogApplied.fogLimited, 'applyFog limits march into fog');
+
+const attackMarch = executeMarchStep(
+  unit,
+  { destQ: 1, destR: 0, attackUnitId: 'e1' },
+  map,
+  new Set(['1,0']),
+  2,
+  () => true,
+  2,
+  {
+    fogActive: true,
+    visible: new Set(['0,0', '1,0', '2,0']),
+    attackOnVisibleEnemy: true,
+    keyOf: (q, r) => q + ',' + r,
+  },
+);
+assert(attackMarch.ok, 'attack march through fog when enemy visible');
+
+const marchesAtk = new Map([['u1', { destQ: 3, destR: 0, attackUnitId: 'e99' }]]);
+const snapAtk = plannedMarchesToSave(marchesAtk);
+assert(snapAtk.plannedMarches?.u1?.attackUnitId === 'e99', 'serialize attackUnitId');
 
 console.log('planned-march-test: ' + pass + ' pass, ' + fail + ' fail');
 process.exit(fail > 0 ? 1 : 0);

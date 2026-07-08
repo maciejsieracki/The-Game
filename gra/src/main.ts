@@ -92,7 +92,7 @@ import {
   buildTechEpochMap,
 } from './game/wonder-availability';
 import { getWondersForCiv, getWonderById, getWonderAbsolutEpoka, type WonderDef } from './game/wonders-data';
-import type { CivEntryEpochRow } from './game/civ-entry-epoch';
+import { gameEpochHudLabel, type CivEntryEpochRow } from './game/civ-entry-epoch';
 import type { ProductionItem } from './game/production';
 import { resolveArchetypeAggression, resolveArchetypeTrade } from './game/civ-ai-data';
 import { buildClusterStartPlan, buildSameTypeRivalSlots } from './game/cluster-start';
@@ -208,13 +208,14 @@ import {
   resolveMapUnitCursor,
   CURSOR_MAP_DEFAULT,
 } from './ui/mapUnitCursor';
-import { isInTerritory, territoryOwnerAt } from './map/territory';
+import { isInTerritory, territoryOwnerAt, isPlayerTerritoryHex } from './map/territory';
 import type { CityNode, TerritoryNode } from './map/territory';
 import {
   advanceCityEconomy, type EconUnit,
   computeCityHealthBreakdown, cityWorkedTilesForEconomy, workedHexCoordsForCity,
   sumEconomyForOwner,
   sumEconomyForPlayerCities,
+  previewCityEconomy,
 } from './game/turn-economy';
 import {
   createPlayerState,
@@ -392,6 +393,7 @@ import {
   tickHexClearing,
   type HexClearingState,
 } from './game/improvement-tech';
+import { PendingImprovementsTurn, type PendingImprovementEntry } from './game/pending-improvements';
 import {
   aiDiplomacyStance, relationTier, loadDiplomacyParams,
   applyDiplomaticEvent, computePotegaNacji, computeRespekt, tickDiplomacy,
@@ -403,10 +405,12 @@ import {
   formatPowerRelationLine,
 } from './game/diplomacy-display';
 import {
+  applyFogToPathPlan,
   executeMarchStep,
   planPathTurns,
   plannedMarchesFromSave,
   plannedMarchesToSave,
+  type MarchFogContext,
   type PlannedMarchDest,
 } from './game/planned-march';
 import { TypCywilizacji, type Player } from './types/player';
@@ -724,9 +728,20 @@ async function boot(): Promise<void> {
     const ownerStartEraByOwner = new Map<number, number>();
     let objectivePowerByOwner = new Map<number, ObjectivePowerResult>();
 
+    const ERA_ID_TO_NUM: Record<string, number> = { kamien: 1, braz: 2, zelazo: 3 };
+
+    function eraNumberFromEpochId(epochId: string): number {
+      return ERA_ID_TO_NUM[epochId] ?? 1;
+    }
+
+    /** Epoka startowa gry z kreatora — nie bieżąca epoka gracza po awansie tech. */
+    function gameStartEra(): number {
+      return eraNumberFromEpochId(_menuEpochId || 'kamien');
+    }
+
     function empireEpochForOwner(ownerId: number): number {
       if (ownerId === 0) return player.era;
-      return ownerEraByOwner.get(ownerId) ?? 1;
+      return ownerEraByOwner.get(ownerId) ?? gameStartEra();
     }
 
     function initOwnerEra(ownerId: number, era = 1): void {
@@ -736,22 +751,28 @@ async function boot(): Promise<void> {
       ownerStartEraByOwner.set(ownerId, e);
     }
 
-    function syncOwnerEraFromResearch(ownerId: number): void {
-      if (ownerId === 0) return;
-      const startEra = ownerStartEraByOwner.get(ownerId) ?? ownerEraByOwner.get(ownerId) ?? player.era;
+    function syncOwnerEraFromResearch(ownerId: number): boolean {
+      if (ownerId === 0) return false;
+      const startEra = ownerStartEraByOwner.get(ownerId) ?? ownerEraByOwner.get(ownerId) ?? gameStartEra();
       const done = aiResearchDone.get(ownerId) ?? new Set<string>();
-      ownerEraByOwner.set(
-        ownerId,
-        computeOwnerEraFromResearch(startEra, done, data.tech as import('./data/loader').TechDef[]),
-      );
+      const prev = ownerEraByOwner.get(ownerId) ?? startEra;
+      const next = computeOwnerEraFromResearch(startEra, done, data.tech as import('./data/loader').TechDef[]);
+      ownerEraByOwner.set(ownerId, next);
+      return prev !== next;
+    }
+
+    function refreshCityRenderIfEraChanged(changed: boolean): void {
+      if (changed) cityRenderer.sync(cities, _cityRenderOpts());
     }
 
     /** Przelicz epokę wszystkich AI z badań (fair play — bez „Brązu” bez awansu). */
     function reconcileAllOwnerErasFromResearch(): void {
+      let anyChanged = false;
       for (const oid of allAiOwnerIdsOnMap()) {
         ensureAiOwnerStartEra(oid);
-        syncOwnerEraFromResearch(oid);
+        anyChanged = syncOwnerEraFromResearch(oid) || anyChanged;
       }
+      refreshCityRenderIfEraChanged(anyChanged);
     }
 
     function allAiOwnerIdsOnMap(): number[] {
@@ -763,7 +784,7 @@ async function boot(): Promise<void> {
     }
 
     /** Uzupełnia brakujące wpisy epoki startowej (legacy sejwy / nowi ownerzy z mapy). */
-    function ensureAiOwnerStartEra(ownerId: number, startEra = player.era): void {
+    function ensureAiOwnerStartEra(ownerId: number, startEra = gameStartEra()): void {
       if (ownerId === 0) return;
       if (!ownerStartEraByOwner.has(ownerId)) {
         ownerStartEraByOwner.set(ownerId, startEra);
@@ -790,9 +811,9 @@ async function boot(): Promise<void> {
       }
     }
 
-    /** Epoka + badania startowe jednego ownera AI (E1 — ta sama epoka co gracz). */
+    /** Epoka + badania startowe jednego ownera AI (E1 / B12 — epoka startu gry z kreatora). */
     function setupAiOwnerEpoch(ownerId: number, epochId: string): void {
-      initOwnerEra(ownerId, player.era);
+      initOwnerEra(ownerId, eraNumberFromEpochId(epochId));
       const priorTechs = grantTechEpokWczesniejszych(data.tech, epochId);
       aiResearchDone.set(ownerId, priorTechs.size > 0 ? new Set(priorTechs) : new Set());
       syncOwnerEraFromResearch(ownerId);
@@ -2316,6 +2337,13 @@ async function boot(): Promise<void> {
         onOpenMapForOkolica: (cityId: string) => {
           enterOkolicaMapMode(cityId);
         },
+        onSwitchCity: (cityId: string) => {
+          const city = cities.find(c => c.id === cityId);
+          if (!city) return;
+          applyCityPanelWorldView(true, city);
+          syncOkolicaOverlay();
+          updateHud();
+        },
         getBudowaState: (cityId: string) => {
           const city = cities.find(c => c.id === cityId);
           if (!city) return null;
@@ -2431,7 +2459,7 @@ async function boot(): Promise<void> {
       });
       for (const [oid, civ] of aiMap) {
         aiOwnerCivMap.set(oid, civ);
-        initOwnerEra(oid, player.era);
+        initOwnerEra(oid, gameStartEra());
       }
     }
 
@@ -2737,7 +2765,7 @@ async function boot(): Promise<void> {
       ownerStartEraByOwner.clear();
       for (const [oid, civ] of plan.aiOwnerCivMap) {
         aiOwnerCivMap.set(oid, civ);
-        initOwnerEra(oid, player.era);
+        initOwnerEra(oid, gameStartEra());
       }
       for (const [oid, label] of plan.ownerDisplayName) ownerDisplayName.set(oid, label);
       for (const oid of plan.simplifiedDiplomacyOwners) simplifiedDiplomacyOwners.add(oid);
@@ -2942,7 +2970,7 @@ async function boot(): Promise<void> {
                   toOwnerId,
                   new Set(basketTransferCtx.researchedByOwner.get(toOwnerId) ?? []),
                 );
-                syncOwnerEraFromResearch(toOwnerId);
+                refreshCityRenderIfEraChanged(syncOwnerEraFromResearch(toOwnerId));
               }
             }
             break;
@@ -3274,6 +3302,8 @@ async function boot(): Promise<void> {
     let _lastNaukaRate: number = 0;
     let _lastLudnoscRate: number = 0;
     let _lastBogactwoRate: number = 0;
+    /** Live brutto żywności imperium (preview) — gdy brak ticku po endTurn. */
+    let _liveFoodBrutto: number = 0;
     /** Ostatni tick ekonomii per miasto gracza (HUD imperium). */
     let _lastPlayerCityEcon: Array<{
       cityId: string;
@@ -3829,6 +3859,7 @@ async function boot(): Promise<void> {
     const improvementMeshes = new Map<string, THREE.Group>();
     const clearingMeshes = new Map<string, THREE.Group>();
     const hexClearingStates = new Map<string, HexClearingState>();
+    let pendingImprovementsTurn = new PendingImprovementsTurn();
     let buildApi: ImprovementBuildCallbacks | null = null;
 
     /** F-CITY-HEX: wyczyść hex + ukryj dekoracje terenu pod miastem. */
@@ -3914,6 +3945,8 @@ async function boot(): Promise<void> {
         {
           map,
           cityNodes: playerCityNodes(),
+          territoryNodes: buildAllTerritoryNodes(),
+          playerOwnerIdNum: 0,
           placedKeys: collectPlacedImprovementKeys(),
           roadKeys: collectRoadKeys(map),
           playerCivArchetype: String(player.civType || 'rzymianie'),
@@ -3922,6 +3955,7 @@ async function boot(): Promise<void> {
           placedImprovements,
           researchedTechs: player.zbadane,
           clearingHexKeys: new Set(hexClearingStates.keys()),
+          pendingUndoKeys: pendingImprovementsTurn.getUndoKeySet(),
         },
         {
           activeKey: activeImprovementKey,
@@ -4048,9 +4082,70 @@ async function boot(): Promise<void> {
       refreshD1bHud();
     }
 
+    function undoPendingBuildRequest(req: ImprovementBuildRequest): void {
+      const pending = pendingImprovementsTurn.remove(req.hexKey, req.key);
+      if (!pending) return;
+
+      if (pending.action === 'wycinka') {
+        hexClearingStates.delete(req.hexKey);
+        removeClearingMesh(req.hexKey);
+      } else {
+        const prev = placedImprovements.get(req.hexKey) ?? [];
+        const nextLayers = prev.filter(k => k !== req.key);
+        if (nextLayers.length) {
+          placedImprovements.set(req.hexKey, nextLayers);
+          syncHexUlepszenieFields(req.hexKey, nextLayers);
+        } else {
+          placedImprovements.delete(req.hexKey);
+          syncHexUlepszenieFields(req.hexKey, []);
+        }
+        spawnImprovementMesh(req.hexKey);
+        rebuildResourceOverlays();
+      }
+
+      if (pending.kosztPraca > 0) {
+        playerPracaPool += pending.kosztPraca;
+        _lastPraca = playerPracaPool;
+      }
+
+      refreshBuildApi();
+      refreshBuildHighlight();
+      updateHud();
+      showHintMessage('Cofnięto — Praca zwrócona (' + pending.kosztPraca + ')', 2500);
+      console.log('[BuildMode] undo', req.key, req.hexKey);
+    }
+
+    function showBuildTerritoryBlockedHint(q: number, r: number): void {
+      const nodes = buildAllTerritoryNodes();
+      if (isPlayerTerritoryHex(q, r, playerCityNodes(), nodes, 0)) return;
+      const owner = territoryOwnerAt(q, r, nodes);
+      if (owner != null && owner !== 0) {
+        showHintMessage('Tylko w swoim terytorium — ten heks należy do innego państwa', 3000);
+      } else {
+        showHintMessage('Poza terytorium — rozszerz okolicę miasta', 3000);
+      }
+    }
+
+    function assertPlayerTerritoryForBuild(q: number, r: number): boolean {
+      const nodes = buildAllTerritoryNodes();
+      if (isPlayerTerritoryHex(q, r, playerCityNodes(), nodes, 0)) return true;
+      showBuildTerritoryBlockedHint(q, r);
+      return false;
+    }
+
     function applyBuildRequest(req: ImprovementBuildRequest): void {
+      if (pendingImprovementsTurn.has(req.hexKey, req.key)) {
+        undoPendingBuildRequest(req);
+        return;
+      }
+
       const hex = map.hexes[req.hexKey];
       if (!hex) return;
+
+      if (!pendingImprovementsTurn.has(req.hexKey, req.key)
+        && !assertPlayerTerritoryForBuild(req.q, req.r)) {
+        return;
+      }
 
       if (req.action === 'wycinka') {
         if (hex.nakladka !== Nakladka.Las) return;
@@ -4066,10 +4161,16 @@ async function boot(): Promise<void> {
         }
         const clr = freshClearingState(req.key, 0);
         if (clr) hexClearingStates.set(req.hexKey, clr);
+        pendingImprovementsTurn.add({
+          hexKey: req.hexKey,
+          key: req.key,
+          kosztPraca: startCost,
+          action: 'wycinka',
+        });
         spawnClearingMesh(req.hexKey);
         const costPart = startCost > 0 ? ' (koszt startu ' + startCost + ' Pracy)' : '';
         showHintMessage(
-          'Wyrąb' + costPart + ': +20 Pracy/turę przez 3 tury (łącznie 60)',
+          'Wyrąb' + costPart + ': +20 Pracy/turę przez 3 tury (łącznie 60) · klik ponownie = cofnij',
           3500,
         );
         refreshBuildApi();
@@ -4094,6 +4195,12 @@ async function boot(): Promise<void> {
       const nextLayers: PlacedLayers = [...prev, req.key];
       placedImprovements.set(req.hexKey, nextLayers);
       syncHexUlepszenieFields(req.hexKey, nextLayers);
+      pendingImprovementsTurn.add({
+        hexKey: req.hexKey,
+        key: req.key,
+        kosztPraca: req.kosztPraca,
+        action: req.action,
+      });
 
       spawnImprovementMesh(req.hexKey);
       rebuildResourceOverlays();
@@ -4101,7 +4208,7 @@ async function boot(): Promise<void> {
       refreshBuildApi();
       refreshBuildHighlight();
       updateHud();
-      showHintMessage('Postawiono ulepszenie: ' + req.key, 2500);
+      showHintMessage('Postawiono: ' + req.key + ' · klik ponownie w turze = cofnij', 2500);
       console.log('[BuildMode]', req.key, req.hexKey, 'koszt=' + req.kosztPraca);
     }
 
@@ -4267,6 +4374,7 @@ async function boot(): Promise<void> {
       }
       hintToast.innerHTML = msg;
       hintToast.style.display = 'block';
+      hintToast.style.zIndex = isPreBattleOpen() ? '9950' : '320';
       hintOverrideTimer = setTimeout(() => {
         hintToast.style.display = 'none';
         hintOverrideTimer = null;
@@ -4894,24 +5002,16 @@ async function boot(): Promise<void> {
       return civKey;
     }
 
-    /** Ranking Mocy po cywilizacjach (nie po każdym ownerId = nazwa miasta). */
-    function buildPowerRankingByCiv(): PowerOverlayData['ranking'] {
-      const byCiv = new Map<string, { label: string; power: number; isPlayer: boolean }>();
-      for (const oid of allPowerOwnerIds()) {
-        const civKey = civKeyForOwner(oid);
-        const label = civDisplayNameForKey(civKey);
-        const pwr = objectivePowerForOwner(oid);
-        const cur = byCiv.get(civKey);
-        if (cur) {
-          cur.power += pwr;
-          if (oid === 0) cur.isPlayer = true;
-        } else {
-          byCiv.set(civKey, { label, power: pwr, isPlayer: oid === 0 });
-        }
-      }
-      return Array.from(byCiv.values())
-        .sort((a, b) => b.power - a.power)
-        .map((row, i) => ({ civ: row.label, power: row.power, rank: i + 1, isPlayer: row.isPlayer }));
+    /** Ranking Mocy po państwach (ownerId) — ta sama metryka co panel Moc w HUD. */
+    function buildPowerRankingByOwner(): PowerOverlayData['ranking'] {
+      const rows = allPowerOwnerIds().map(oid => ({
+        civ: oid === 0 ? civDisplayNameForKey(civKeyForOwner(0)) : ownerDiploLabel(oid),
+        power: objectivePowerForOwner(oid),
+        isPlayer: oid === 0,
+        rank: 0,
+      }));
+      rows.sort((a, b) => b.power - a.power);
+      return rows.map((row, i) => ({ ...row, rank: i + 1 }));
     }
 
     function computePotegaComponents(ownerId: number): PotegaKomponenty {
@@ -4948,7 +5048,7 @@ async function boot(): Promise<void> {
         normalized: c.points / maxPts,
         points: c.points,
       }));
-      const ranking = buildPowerRankingByCiv();
+      const ranking = buildPowerRankingByOwner();
       let respektExample: PowerOverlayData['respektExample'];
       const contacted = getDiplomaticContacts();
       for (const oid of contacted) {
@@ -5284,7 +5384,7 @@ async function boot(): Promise<void> {
       const st = empireFoodStates.get(0);
       const pctRozwoj = st?.procentRozwoj ?? efParams.procentRozwojDefault;
       const foodTick = getLastEmpireFoodTick(0);
-      const brutto = foodTick?.zywnoscBrutto ?? 0;
+      const brutto = foodTick?.zywnoscBrutto ?? _liveFoodBrutto;
       const upkeepParams = loadUpkeepParams(data.econParams, _menuDifficulty);
       const playerUnits: EconUnit[] = units
         .filter(u => u.ownerId === 0)
@@ -5297,6 +5397,59 @@ async function boot(): Promise<void> {
         countPlayerSpichlerze(),
         efParams,
       );
+    }
+
+    /** Przelicz stawki imperium na HUD z bieżącego stanu miast (bez mutacji). */
+    function refreshLiveEmpireRates(): void {
+      const playerCities = cities.filter(c => c.ownerId === 0);
+      if (playerCities.length === 0) {
+        _liveFoodBrutto = 0;
+        return;
+      }
+      const ownerCivMap = new Map<number, string>();
+      ownerCivMap.set(0, (player.civType as string) || 'grecy');
+      for (const [oid, civ] of aiOwnerCivMap) ownerCivMap.set(oid, civ);
+      const preview = previewCityEconomy(
+        cities,
+        map,
+        data,
+        _menuDifficulty,
+        cityBuilt,
+        player.era,
+        player.zbadane,
+        ownerCivMap,
+        orderMultMap,
+        empireEpochForOwner,
+        unlockedTechSetForOwner,
+      );
+      const playerEcon = sumEconomyForPlayerCities(preview, cities);
+      _lastPracaRate = playerEcon.doPuli;
+      _lastPieniadzRate = playerEcon.pieniadz;
+      _lastNaukaRate = playerEcon.nauka;
+      _lastKulturaRate = playerEcon.kultura;
+      _lastBogactwoRate = playerEcon.pieniadz;
+      let brutto = 0;
+      for (const tk of preview.perCity) {
+        if (tk.ownerId !== 0 || tk.oblegany) continue;
+        brutto += Math.max(0, tk.zywnoscNetto);
+      }
+      _liveFoodBrutto = brutto;
+      for (const tk of preview.perCity) {
+        if (tk.ownerId === 0) lastCityKulturaTick.set(tk.cityId, tk.kultura);
+      }
+      _lastPlayerCityEcon = preview.perCity
+        .filter(tk => tk.ownerId === 0)
+        .map(tk => {
+          const c = cities.find(x => x.id === tk.cityId);
+          return {
+            cityId: tk.cityId,
+            name: c?.name ?? tk.cityId,
+            pieniadz: Math.round(tk.pieniadz),
+            doPuli: Math.round(tk.doPuli),
+            doBudynkow: Math.round(tk.doBudynkow),
+            nauka: Math.round(tk.nauka),
+          };
+        });
     }
 
     function buildHudState(): HudState {
@@ -5320,6 +5473,14 @@ async function boot(): Promise<void> {
       const foodReserve = Math.floor(getEmpireFoodReserve(0));
       const foodMaxCap = projectPlayerFoodMaxCap();
       const foodNetRate = Math.floor(projectPlayerFoodNetRate());
+      const stateRel = ownerReligionForOwnerId(0);
+      const relAgg = aggregateReligionEmpire(
+        pc.map(c => ({
+          state: resolvedCityReligion(c),
+          spreadDelta: lastReligionSpreadByCity.get(c.id) ?? 0,
+        })),
+        stateRel,
+      );
       return {
         zywnoscLabel: String(foodReserve),
         zywnoscMax: foodMaxCap,
@@ -5337,6 +5498,9 @@ async function boot(): Promise<void> {
         bogactwoRate: Math.floor(_lastPieniadzRate),
         ludnosc: pop,
         ludnoscRate: Math.floor(_lastLudnoscRate),
+        religionStock: relAgg.stateAdherents,
+        religionRate: relAgg.spreadRateTotal,
+        stateReligion: stateRel,
         rekruci: pobor.rekruci,
         rekruciLabel: formatManpower(pobor.rekruci),
         ludnoscAbsLabel: formatManpower(pobor.ludnoscAbsolutna),
@@ -5344,7 +5508,7 @@ async function boot(): Promise<void> {
         osiedla: pc.length,
         osiedlaMax: 99,
         tura: turn,
-        epoka: 'Epoka ' + player.era,
+        epoka: gameEpochHudLabel(player.era),
         epokaPostep,
         badana: player.badana,
         sojusze: chips.sojusze,
@@ -5930,7 +6094,7 @@ async function boot(): Promise<void> {
           const respektNorm = powerLine.respekt;
           const pairMeta = getDiploPairMeta(0, ownerId);
           return {
-            playerTitle: 'Władca',
+            playerTitle: 'Władca · ' + epochLabelForOwner(0),
             playerCivName,
             otherTitle: 'Przedstawiciel',
             otherCivName: ownerDiploLabel(ownerId),
@@ -6036,12 +6200,6 @@ async function boot(): Promise<void> {
       if (siegeCity) {
         actions.push({ id: 'siege-hold', label: 'Oblega', disabled: true });
       } else if (hasPlan) {
-        actions.push({
-          id: 'march-continue',
-          label: 'Kontynuuj',
-          primary: true,
-          disabled: stackRuch <= 0 || isAnimating,
-        });
         actions.push({
           id: 'march-stop',
           label: 'Zatrzymaj',
@@ -6460,14 +6618,23 @@ async function boot(): Promise<void> {
             cities.map(c => ({
               q: c.q,
               r: c.r,
+              ownerId: c.ownerId,
               ownerColor: civColorCssForOwner(data.civs, c.ownerId, civTypeForOwner),
             })),
-            units.map(u => ({
-              q: u.q,
-              r: u.r,
-              ownerColor: civColorCssForOwner(data.civs, u.ownerId, civTypeForOwner),
-            })),
-            { visible: vis, explored: fogExploredForRender() },
+            units
+              .filter(u => !isUnitInGarnizon(u))
+              .map(u => ({
+                q: u.q,
+                r: u.r,
+                ownerId: u.ownerId,
+                ownerColor: civColorCssForOwner(data.civs, u.ownerId, civTypeForOwner),
+              })),
+            {
+              visible: vis,
+              explored: fogExploredForRender(),
+              playerOwnerId: 0,
+              fogOn,
+            },
           );
         },
         getWarsWithPlayer: collectWarsWithPlayer,
@@ -6499,6 +6666,8 @@ async function boot(): Promise<void> {
 
     function updateHud(): void {
       if (d1bHudActive) {
+        refreshLiveEmpireRates();
+        refreshObjectivePowerCache();
         refreshD1bHud();
         if (isEmpireDetailPanelOpen()) refreshEmpireDetailPanel();
       }
@@ -6679,6 +6848,8 @@ async function boot(): Promise<void> {
 
     /** A3: zaplanowane marsze — cel bez natychmiastowego ruchu. */
     const plannedMarches = new Map<string, PlannedMarchDest>();
+    /** Cel ataku po dotarciu marszem (unitId → enemyUnitId). */
+    const marchAttackTargets = new Map<string, string>();
     let marchExecQueue: string[] = [];
     let pendingMarchHint: {
       unitId: string;
@@ -6691,8 +6862,10 @@ async function boot(): Promise<void> {
     function clearPlannedMarch(unitId?: string): void {
       if (unitId !== undefined) {
         plannedMarches.delete(unitId);
+        marchAttackTargets.delete(unitId);
       } else {
         plannedMarches.clear();
+        marchAttackTargets.clear();
       }
       if (selectedId === null || unitId === selectedId || unitId === undefined) {
         unitRenderer.clearPathRoute();
@@ -6711,6 +6884,50 @@ async function boot(): Promise<void> {
       return Math.max(1, normFieldVal(lookupUnitDef(u.typeId)['Ruch'], u.ruch));
     }
 
+    function buildMarchFogContext(dest: PlannedMarchDest): MarchFogContext {
+      const vis = currentVisible();
+      const attackOnVisible = Boolean(
+        dest.attackUnitId && vis.has(keyOf(dest.destQ, dest.destR)),
+      );
+      return {
+        fogActive: fogOn,
+        visible: vis,
+        attackOnVisibleEnemy: attackOnVisible,
+        keyOf,
+      };
+    }
+
+    function marchPathPlan(
+      mover: RuntimeUnit,
+      destQ: number,
+      destR: number,
+      occ: Set<string>,
+      perTurn: number,
+      budget: number | undefined,
+      fog?: MarchFogContext,
+    ) {
+      const raw = planPathTurns(mover, destQ, destR, map, occ, perTurn, budget);
+      return applyFogToPathPlan(raw, map, perTurn, budget, fog);
+    }
+
+    function syncMarchAttackTarget(unitId: string, dest: PlannedMarchDest): void {
+      if (dest.attackUnitId) {
+        marchAttackTargets.set(unitId, dest.attackUnitId);
+      } else {
+        marchAttackTargets.delete(unitId);
+      }
+    }
+
+    function tryLaunchMarchAttack(atkUnit: RuntimeUnit, attackTargetId: string): boolean {
+      const def = units.find(x => x.id === attackTargetId);
+      if (!def) return false;
+      if (!currentVisible().has(keyOf(def.q, def.r))) return false;
+      if (hexDistance(atkUnit.q, atkUnit.r, def.q, def.r) > 1) return false;
+      clearPlannedMarch(atkUnit.id);
+      openPlayerMapUnitAttack(atkUnit, def);
+      return true;
+    }
+
     function refreshPlannedMarchPreview(unitId?: string): void {
       const uid = unitId ?? selectedId;
       if (uid === null) {
@@ -6726,7 +6943,15 @@ async function boot(): Promise<void> {
       const stack = playerStackAt(u);
       const occ = occupiedForMove(u.ownerId, ...stack.map(s => s.id));
       const mover = unitWithStackRuch(u, stack);
-      const plan = planPathTurns(mover, dest.destQ, dest.destR, map, occ, perTurnMoveForUnit(u));
+      const plan = marchPathPlan(
+        mover,
+        dest.destQ,
+        dest.destR,
+        occ,
+        perTurnMoveForUnit(u),
+        undefined,
+        buildMarchFogContext(dest),
+      );
       if (plan.fullPath.length === 0) {
         unitRenderer.clearPathRoute();
         return;
@@ -6741,7 +6966,22 @@ async function boot(): Promise<void> {
       const stack = playerStackAt(uSel);
       const occ = occupiedForMove(uSel.ownerId, ...stack.map(s => s.id));
       const mover = unitWithStackRuch(uSel, stack);
-      const plan = planPathTurns(mover, hitQ, hitR, map, occ, perTurnMoveForUnit(uSel));
+      const hoverEnemy = units.find(
+        x => x.q === hitQ && x.r === hitR && x.ownerId !== uSel.ownerId,
+      );
+      const hoverVis = currentVisible().has(keyOf(hitQ, hitR));
+      const hoverDest: PlannedMarchDest = hoverEnemy && hoverVis
+        ? { destQ: hitQ, destR: hitR, attackUnitId: hoverEnemy.id }
+        : { destQ: hitQ, destR: hitR };
+      const plan = marchPathPlan(
+        mover,
+        hitQ,
+        hitR,
+        occ,
+        perTurnMoveForUnit(uSel),
+        undefined,
+        buildMarchFogContext(hoverDest),
+      );
       if (plan.fullPath.length > 0) {
         unitRenderer.setPathRoute(
           [{ q: uSel.q, r: uSel.r }, ...plan.fullPath],
@@ -6752,7 +6992,7 @@ async function boot(): Promise<void> {
       }
     }
 
-    function planMarchTo(destQ: number, destR: number): boolean {
+    function planMarchTo(destQ: number, destR: number, attackUnitId?: string): boolean {
       if (selectedId === null || isAnimating) return false;
       if (isSiegeMapPanelOpen()) {
         showHintMessage(
@@ -6776,12 +7016,35 @@ async function boot(): Promise<void> {
       const stack = playerStackAt(u);
       const occ = occupiedForMove(u.ownerId, ...stack.map(s => s.id));
       const mover = unitWithStackRuch(u, stack);
-      const plan = planPathTurns(mover, destQ, destR, map, occ, perTurnMoveForUnit(u));
+
+      const attackTarget = attackUnitId
+        ? units.find(x => x.id === attackUnitId)
+        : units.find(
+          x => x.q === destQ && x.r === destR && x.ownerId !== 0 && x.ownerId !== u.ownerId,
+        );
+      if (attackTarget && !currentVisible().has(keyOf(attackTarget.q, attackTarget.r))) {
+        showHintMessage('Cel niewidoczny (mgła).', 3500);
+        return false;
+      }
+
+      const marchDest: PlannedMarchDest = attackTarget
+        ? { destQ, destR, attackUnitId: attackTarget.id }
+        : { destQ, destR };
+      const fogCtx = buildMarchFogContext(marchDest);
+      const plan = marchPathPlan(
+        mover,
+        destQ,
+        destR,
+        occ,
+        perTurnMoveForUnit(u),
+        stackRuchLeft(stack),
+        fogCtx,
+      );
       if (plan.fullPath.length === 0) {
         showHintMessage('Marsz przerwany: brak trasy do celu', 3500);
         return false;
       }
-      if (!canOccupyHexForUnit(u, destQ, destR)) {
+      if (!attackTarget && !canOccupyHexForUnit(u, destQ, destR)) {
         showHintMessage(
           'Obce miasto — stój na sąsiednim heksie i kliknij miasto, aby atakować.',
           3800,
@@ -6789,10 +7052,14 @@ async function boot(): Promise<void> {
         return false;
       }
 
-      plannedMarches.set(u.id, { destQ, destR });
+      plannedMarches.set(u.id, marchDest);
+      syncMarchAttackTarget(u.id, marchDest);
       hoverKey = null;
       refreshPlannedMarchPreview(u.id);
       refreshD1bHud();
+      if (stackRuchLeft(stack) > 0) {
+        executeMarchSegmentForUnit(u.id);
+      }
       return true;
     }
 
@@ -6849,7 +7116,8 @@ async function boot(): Promise<void> {
         return;
       }
       if (stopReason) {
-        showHintMessage('Marsz przerwany: ' + (stopDetail ?? stopReason), 3500);
+        const prefix = stopReason === 'fog' ? 'Marsz wstrzymany: ' : 'Marsz przerwany: ';
+        showHintMessage(prefix + (stopDetail ?? stopReason), 3500);
         return;
       }
       if (selectedId === unitId) refreshPlannedMarchPreview(unitId);
@@ -6870,14 +7138,18 @@ async function boot(): Promise<void> {
 
       const occ = occupiedForMove(u.ownerId, ...stack.map(s => s.id));
       const mover = unitWithStackRuch(u, stack);
+      const fogCtx = buildMarchFogContext(dest);
       const result = executeMarchStep(
         mover,
         dest,
         map,
         occ,
         stackRuch,
-        (q, r) => canOccupyHexForUnit(u, q, r),
+        (q, r) => canOccupyHexForUnit(u, q, r) || Boolean(
+          dest.attackUnitId && q === dest.destQ && r === dest.destR,
+        ),
         perTurnMoveForUnit(u),
+        fogCtx,
       );
 
       if (!result.ok || result.movePath.length === 0) {
@@ -7122,6 +7394,7 @@ async function boot(): Promise<void> {
         hoverQ: hitEarly.q,
         hoverR: hitEarly.r,
         reachable,
+        visibleHexes: currentVisible(),
         units,
         cities,
         hexDistance,
@@ -7243,7 +7516,14 @@ async function boot(): Promise<void> {
       if (buildModeOpen && activeImprovementKey && buildApi?.handleHexClick) {
         const req = buildApi.handleHexClick(hit.q, hit.r);
         if (req) return;
-        exitBuildMode();
+        const nodes = buildAllTerritoryNodes();
+        if (!isPlayerTerritoryHex(hit.q, hit.r, playerCityNodes(), nodes, 0)) {
+          showBuildTerritoryBlockedHint(hit.q, hit.r);
+        } else if (!buildApi.canBuild(activeImprovementKey, hit.q, hit.r)) {
+          showHintMessage('Nie można tu zbudować (teren / złoże)', 2500);
+        } else {
+          showHintMessage('Wymaga technologii', 2500);
+        }
         return;
       }
 
@@ -7339,16 +7619,6 @@ async function boot(): Promise<void> {
           if (beginMoveSelectedUnitTo(clickedCity.q, clickedCity.r)) return;
         }
         const stackOnCity = visibleStackOnHex(units, hit.q, hit.r, 0);
-        if (stackOnCity.length > 0 && clickedCity.ownerId === 0) {
-          const selOnHex = sel && sel.ownerId === 0 && sel.q === hit.q && sel.r === hit.r;
-          if (selOnHex) {
-            openCityPanelForPlayer(clickedCity);
-            return;
-          }
-          const rep = unitAtRepresentative(hit.q, hit.r, units, unitAttackScore) ?? stackOnCity[0]!;
-          selectPlayerUnit(rep.id);
-          return;
-        }
         if (stackOnCity.length > 0) {
           const rep = unitAtRepresentative(hit.q, hit.r, units, unitAttackScore) ?? stackOnCity[0]!;
           showCityUnitPick({
@@ -7371,7 +7641,7 @@ async function boot(): Promise<void> {
         const hitKey = keyOf(hit.q, hit.r);
         if (sel && sel.id !== cu.id && sel.q === cu.q && sel.r === cu.r) {
           selectPlayerUnit(cu.id);
-        } else if (sel && sel.id !== cu.id && stackCanMove(sel) && reachable.has(hitKey)) {
+        } else if (sel && sel.id !== cu.id) {
           planMarchTo(hit.q, hit.r);
         } else {
           selectPlayerUnit(cu.id);
@@ -7381,188 +7651,14 @@ async function boot(): Promise<void> {
         const atkUnit = units.find(x => x.id === selectedId);
         if (atkUnit && atkUnit.ownerId === 0 && stackCanMove(atkUnit) &&
             hexDistance(atkUnit.q, atkUnit.r, cu.q, cu.r) <= 1) {
-          // P4 / C1-Q4: preBattle z składem multi-unit (heks + sąsiedztwo 1)
-          const atkRoster = collectBattleRoster(atkUnit, units);
-          const defRoster = collectBattleRoster(cu, units);
-          const aDef4 = lookupUnitDef(atkUnit.typeId);
-          const dDef4 = lookupUnitDef(cu.typeId);
-          const dHexKey4 = keyOf(cu.q, cu.r);
-          const dHex4 = map.hexes[dHexKey4];
-          const dTeren4: string = dHex4 ? (dHex4.terenBazowy as string) : 'Rownina';
-          const dStructBonus4 = structureDefenseBonusFor(cu.q, cu.r);
-          const atkLeadDef = unitDefFor(atkRoster[0]!);
-          const szanse4 = preBattleSzanseAtkPct(atkRoster, defRoster, dTeren4, dStructBonus4);
-          const defCivLabel = ownerDiploLabel(cu.ownerId);
-          const placeInfo = fieldBattlePlaceInfo(cu.q, cu.r, dTeren4, 0);
-          const pbInfo4: PreBattleInfo = {
-            atakujacy: preBattleSideFromRoster(
-              atkRoster,
-              atkRoster.length > 1 ? 'Skład (' + atkRoster.length + ')' : atkUnit.typeId,
-              'Gracz',
-            ),
-            obronca: preBattleSideFromRoster(
-              defRoster,
-              defRoster.length > 1 ? 'Skład (' + defRoster.length + ')' : cu.typeId,
-              defCivLabel,
-            ),
-            teren: dTeren4,
-            szanseAtkPct: szanse4,
-            miejsce: placeInfo.miejsce,
-            lokacja: placeInfo.lokacja,
-            tura: turn,
-            canRetreat: true,
-          };
-
-          const atkRosterRef = atkRoster.slice();
-          const defRosterRef = defRoster.slice();
-          const atkStartSnap = snapshotRosterPositions(atkRosterRef);
-          const battleHex = { q: cu.q, r: cu.r };
-
-          reachable = new Set<string>();
-          unitRenderer.clearHighlight();
-          unitRenderer.clearPathRoute();
-
-          function clearBattleUiState(): void {
-            clearPlayerUnitSelection();
-            refreshFog();
-            updateHud();
-          }
-
-          function rosterToBattleUnits(roster: RuntimeUnit[], color: number): BattleUnit[] {
-            return roster.map(u => runtimeToBattleUnit(u, lookupUnitDef(u.typeId), color));
-          }
-
-          function finishMapBattleUi(): void {
-            clearBattleUiState();
-          }
-
-          function mapBattleSummaryMeta(mode: 'auto' | 'manual') {
-            return {
-              mode,
-              atkLabel: pbInfo4.atakujacy.nazwa,
-              defLabel: pbInfo4.obronca.nazwa,
-              atkCivLabel: pbInfo4.atakujacy.cywilizacja,
-              defCivLabel: pbInfo4.obronca.cywilizacja,
-              teren: dTeren4,
-              placeLabel: placeInfo.miejsce + ' · ' + placeInfo.lokacja,
-            };
-          }
-
-          function doMapAutoResolve(): void {
-            try {
-              const atkLead = atkRosterRef[0]!;
-              const defLead = defRosterRef[0]!;
-              const aLeadDef = unitDefFor(atkLead);
-              const mAtk = rosterFieldPowerM(atkRosterRef);
-              const mDef = effectiveDefenderM(defRosterRef, dTeren4, dStructBonus4, aLeadDef);
-              const powerRes = resolveAutoBattleByPower({ mAtk, mDef });
-
-              if (powerRes.winner === 'none') {
-                showHintMessage('Atak: brak sił bojowych w składzie', 3000);
-                finishMapBattleUi();
-              } else if (powerRes.winner === 'tie') {
-                applyMapBattleOutcomeWithSummary(
-                  atkRosterRef, defRosterRef, 'remis', undefined,
-                  {
-                    lossAtkPct: powerRes.lossAtkPct,
-                    lossDefPct: powerRes.lossDefPct,
-                    battleQ: battleHex.q,
-                    battleR: battleHex.r,
-                    atkStart: atkStartSnap,
-                  },
-                  mapBattleSummaryMeta('auto'),
-                  finishMapBattleUi,
-                );
-              } else if (powerRes.winner === 'attacker') {
-                applyMapBattleOutcomeWithSummary(
-                  atkRosterRef, defRosterRef, 'atakujacy', undefined,
-                  {
-                    lossAtkPct: powerRes.lossAtkPct,
-                    lossDefPct: powerRes.lossDefPct,
-                    battleQ: battleHex.q,
-                    battleR: battleHex.r,
-                    atkStart: atkStartSnap,
-                  },
-                  mapBattleSummaryMeta('auto'),
-                  finishMapBattleUi,
-                );
-              } else {
-                applyMapBattleOutcomeWithSummary(
-                  atkRosterRef, defRosterRef, 'obronca', undefined,
-                  {
-                    lossAtkPct: powerRes.lossAtkPct,
-                    lossDefPct: powerRes.lossDefPct,
-                    battleQ: battleHex.q,
-                    battleR: battleHex.r,
-                    atkStart: atkStartSnap,
-                  },
-                  mapBattleSummaryMeta('auto'),
-                  finishMapBattleUi,
-                );
-              }
-            } catch (eBattle4) {
-              console.error('[Bitwa] Blad ataku gracza:', eBattle4);
-              finishMapBattleUi();
-            }
-          }
-
-          showPreBattle(pbInfo4, {
-            onAuto: () => { hidePreBattle(); doMapAutoResolve(); },
-            onBattlefield: () => {
-              hidePreBattle();
-              const atkLead = atkRosterRef[0]!;
-              const defLead = defRosterRef[0]!;
-              const atkBus = rosterToBattleUnits(atkRosterRef, 0xffd54a);
-              const defBus = rosterToBattleUnits(defRosterRef, 0xc84040);
-              const bs = new BattleScene({
-                attacker: atkBus,
-                defender: defBus,
-                teren: dTeren4,
-                data,
-                deploy: true,
-                deployPlayerSide: 'atk',
-                attackerCivBonusy: civBonusyForOwnerId(atkLead.ownerId),
-                defenderCivBonusy: civBonusyForOwnerId(defLead.ownerId),
-                attackerCivLabel: pbInfo4.atakujacy.cywilizacja,
-                defenderCivLabel: pbInfo4.obronca.cywilizacja,
-                attackerSideLabel: pbInfo4.atakujacy.nazwa,
-                defenderSideLabel: pbInfo4.obronca.nazwa,
-              });
-              bs.play((res) => {
-                applyMapBattleOutcomeWithSummary(
-                  atkRosterRef, defRosterRef, res.winner, res.survivors,
-                  {
-                    battleQ: battleHex.q,
-                    battleR: battleHex.r,
-                    atkStart: atkStartSnap,
-                  },
-                  mapBattleSummaryMeta('manual'),
-                  () => {
-                    finishMapBattleUi();
-                    bs.dispose();
-                  },
-                );
-              });
-            },
-            onCancel: () => {
-              hidePreBattle();
-            },
-            onSave: () => {
-              if (doQuickSave(false)) {
-                showHintMessage('Zapis przed bitwa (tura ' + turn + ')', 2500);
-              } else {
-                showHintMessage('Zapis nieudany (brak localStorage?)', 2500);
-              }
-            },
-          }, { defaultAction: 'manual' });
+          openPlayerMapUnitAttack(atkUnit, cu);
         } else if (atkUnit && atkUnit.ownerId === 0) {
-          if (atkUnit.ruchLeft <= 0) {
+          if (!stackCanMove(atkUnit)) {
             showHintMessage('Brak ruchu — zakończ turę lub wybierz inną jednostkę.', 3500);
-          } else {
-            showHintMessage(
-              'Za daleko — podejdź na sąsiedni heks (klik zielony), potem kliknij wroga.',
-              4500,
-            );
+          } else if (!currentVisible().has(keyOf(cu.q, cu.r))) {
+            showHintMessage('Cel niewidoczny (mgła).', 3500);
+          } else if (!planMarchTo(cu.q, cu.r, cu.id)) {
+            showHintMessage('Brak trasy do wroga — cel zablokowany.', 3500);
           }
         } else {
           clearPlayerUnitSelection();
@@ -7570,7 +7666,7 @@ async function boot(): Promise<void> {
         }
       } else if (selectedId !== null) {
         const sel = units.find(x => x.id === selectedId);
-        if (sel && sel.ownerId === 0 && stackCanMove(sel)) {
+        if (sel && sel.ownerId === 0) {
           planMarchTo(hit.q, hit.r);
         }
       } else if (cu !== null && cu.ownerId !== 0) {
@@ -7912,6 +8008,173 @@ async function boot(): Promise<void> {
       };
     }
 
+    /** MAP PLAYER ATTACK: jednostka → jednostka (sąsiad) → preBattle C-01 */
+    function openPlayerMapUnitAttack(atkUnit: RuntimeUnit, defUnit: RuntimeUnit): void {
+      const atkRoster = collectBattleRoster(atkUnit, units);
+      const defRoster = collectBattleRoster(defUnit, units);
+      const dHexKey4 = keyOf(defUnit.q, defUnit.r);
+      const dHex4 = map.hexes[dHexKey4];
+      const dTeren4: string = dHex4 ? (dHex4.terenBazowy as string) : 'Rownina';
+      const dStructBonus4 = structureDefenseBonusFor(defUnit.q, defUnit.r);
+      const szanse4 = preBattleSzanseAtkPct(atkRoster, defRoster, dTeren4, dStructBonus4);
+      const defCivLabel = ownerDiploLabel(defUnit.ownerId);
+      const placeInfo = fieldBattlePlaceInfo(defUnit.q, defUnit.r, dTeren4, 0);
+      const pbInfo4: PreBattleInfo = {
+        atakujacy: preBattleSideFromRoster(
+          atkRoster,
+          atkRoster.length > 1 ? 'Skład (' + atkRoster.length + ')' : atkUnit.typeId,
+          'Gracz',
+        ),
+        obronca: preBattleSideFromRoster(
+          defRoster,
+          defRoster.length > 1 ? 'Skład (' + defRoster.length + ')' : defUnit.typeId,
+          defCivLabel,
+        ),
+        teren: dTeren4,
+        szanseAtkPct: szanse4,
+        miejsce: placeInfo.miejsce,
+        lokacja: placeInfo.lokacja,
+        tura: turn,
+        canRetreat: true,
+      };
+
+      const atkRosterRef = atkRoster.slice();
+      const defRosterRef = defRoster.slice();
+      const atkStartSnap = snapshotRosterPositions(atkRosterRef);
+      const battleHex = { q: defUnit.q, r: defUnit.r };
+
+      reachable = new Set<string>();
+      unitRenderer.clearHighlight();
+      unitRenderer.clearPathRoute();
+
+      function clearBattleUiState(): void {
+        clearPlayerUnitSelection();
+        refreshFog();
+        updateHud();
+      }
+
+      function rosterToBattleUnits(roster: RuntimeUnit[], color: number): BattleUnit[] {
+        return roster.map(u => runtimeToBattleUnit(u, lookupUnitDef(u.typeId), color));
+      }
+
+      function finishMapBattleUi(): void {
+        clearBattleUiState();
+      }
+
+      function mapBattleSummaryMeta(mode: 'auto' | 'manual') {
+        return {
+          mode,
+          atkLabel: pbInfo4.atakujacy.nazwa,
+          defLabel: pbInfo4.obronca.nazwa,
+          atkCivLabel: pbInfo4.atakujacy.cywilizacja,
+          defCivLabel: pbInfo4.obronca.cywilizacja,
+          teren: dTeren4,
+          placeLabel: placeInfo.miejsce + ' · ' + placeInfo.lokacja,
+        };
+      }
+
+      function doMapAutoResolve(): void {
+        try {
+          const atkLead = atkRosterRef[0]!;
+          const aLeadDef = unitDefFor(atkLead);
+          const mAtk = rosterFieldPowerM(atkRosterRef);
+          const mDef = effectiveDefenderM(defRosterRef, dTeren4, dStructBonus4, aLeadDef);
+          const powerRes = resolveAutoBattleByPower({ mAtk, mDef });
+
+          if (powerRes.winner === 'none') {
+            showHintMessage('Atak: brak sił bojowych w składzie', 3000);
+            finishMapBattleUi();
+          } else if (powerRes.winner === 'tie') {
+            applyMapBattleOutcomeWithSummary(
+              atkRosterRef, defRosterRef, 'remis', undefined,
+              {
+                lossAtkPct: powerRes.lossAtkPct,
+                lossDefPct: powerRes.lossDefPct,
+                battleQ: battleHex.q,
+                battleR: battleHex.r,
+                atkStart: atkStartSnap,
+              },
+              mapBattleSummaryMeta('auto'),
+              finishMapBattleUi,
+            );
+          } else if (powerRes.winner === 'attacker') {
+            applyMapBattleOutcomeWithSummary(
+              atkRosterRef, defRosterRef, 'atakujacy', undefined,
+              {
+                lossAtkPct: powerRes.lossAtkPct,
+                lossDefPct: powerRes.lossDefPct,
+                battleQ: battleHex.q,
+                battleR: battleHex.r,
+                atkStart: atkStartSnap,
+              },
+              mapBattleSummaryMeta('auto'),
+              finishMapBattleUi,
+            );
+          } else {
+            applyMapBattleOutcomeWithSummary(
+              atkRosterRef, defRosterRef, 'obronca', undefined,
+              {
+                lossAtkPct: powerRes.lossAtkPct,
+                lossDefPct: powerRes.lossDefPct,
+                battleQ: battleHex.q,
+                battleR: battleHex.r,
+                atkStart: atkStartSnap,
+              },
+              mapBattleSummaryMeta('auto'),
+              finishMapBattleUi,
+            );
+          }
+        } catch (eBattle4) {
+          console.error('[Bitwa] Blad ataku gracza:', eBattle4);
+          finishMapBattleUi();
+        }
+      }
+
+      showPreBattle(pbInfo4, {
+        onAuto: () => { hidePreBattle(); doMapAutoResolve(); },
+        onBattlefield: () => {
+          hidePreBattle();
+          const atkLead = atkRosterRef[0]!;
+          const defLead = defRosterRef[0]!;
+          const atkBus = rosterToBattleUnits(atkRosterRef, 0xffd54a);
+          const defBus = rosterToBattleUnits(defRosterRef, 0xc84040);
+          const bs = new BattleScene({
+            attacker: atkBus,
+            defender: defBus,
+            teren: dTeren4,
+            data,
+            deploy: true,
+            deployPlayerSide: 'atk',
+            attackerCivBonusy: civBonusyForOwnerId(atkLead.ownerId),
+            defenderCivBonusy: civBonusyForOwnerId(defLead.ownerId),
+            attackerCivLabel: pbInfo4.atakujacy.cywilizacja,
+            defenderCivLabel: pbInfo4.obronca.cywilizacja,
+            attackerSideLabel: pbInfo4.atakujacy.nazwa,
+            defenderSideLabel: pbInfo4.obronca.nazwa,
+          });
+          bs.play((res) => {
+            applyMapBattleOutcomeWithSummary(
+              atkRosterRef, defRosterRef, res.winner, res.survivors,
+              {
+                battleQ: battleHex.q,
+                battleR: battleHex.r,
+                atkStart: atkStartSnap,
+              },
+              mapBattleSummaryMeta('manual'),
+              () => {
+                finishMapBattleUi();
+                bs.dispose();
+              },
+            );
+          });
+        },
+        onCancel: () => {
+          hidePreBattle();
+        },
+        onSave: () => doQuickSave(false),
+      }, { defaultAction: 'manual' });
+    }
+
     function snapshotRosterForSummary(roster: RuntimeUnit[]): BattleUnitBeforeSnap[] {
       return roster.map(u => {
         const def = unitDefFor(u);
@@ -8198,11 +8461,7 @@ async function boot(): Promise<void> {
         onCancel: () => {
           hidePreBattle();
         },
-        onSave: () => {
-          if (doQuickSave(false)) {
-            showHintMessage('Zapis przed bitwą (tura ' + turn + ')', 2500);
-          }
-        },
+        onSave: () => doQuickSave(false),
       }, { defaultAction: 'manual' });
     }
 
@@ -8288,6 +8547,9 @@ async function boot(): Promise<void> {
       }
 
       if (mapWinner === 'obronca') selectedId = null;
+
+      forceVisibleUnitId = null;
+      syncUnitsRender();
     }
 
     function collectSiegeAtkRoster(city: City, anchor: RuntimeUnit): RuntimeUnit[] {
@@ -8756,11 +9018,7 @@ async function boot(): Promise<void> {
           syncSiegePanelMeta(city);
           showSiegeMapPanel(ctx, siegePanelActions, siegeTurnByCity.get(city.id) ?? 1);
         },
-        onSave: () => {
-          if (doQuickSave(false)) {
-            showHintMessage('Zapis przed szturmem (tura ' + turn + ')', 2500);
-          }
-        },
+        onSave: () => doQuickSave(false),
       }, { defaultAction: 'manual' });
 
       console.log('[Oblezenie] szturm preBattle', city.name, 'atk=', atkRoster.length, 'def=', defRoster.length);
@@ -9029,13 +9287,7 @@ async function boot(): Promise<void> {
         onCancel: () => {
           // preBattle hides itself on button click; nothing extra needed
         },
-        onSave: () => {
-          if (doQuickSave(false)) {
-            showHintMessage('Zapis przed bitwa (tura ' + turn + ')', 2500);
-          } else {
-            showHintMessage('Zapis nieudany (brak localStorage?)', 2500);
-          }
-        },
+        onSave: () => doQuickSave(false),
       }, { defaultAction: 'manual' });
     }
 
@@ -9107,6 +9359,7 @@ async function boot(): Promise<void> {
           ownerStartEraByOwner: Array.from(ownerStartEraByOwner.entries()),
           placedImprovements: Array.from(placedImprovements.entries()),
           hexClearingStates: Array.from(hexClearingStates.entries()),
+          pendingImprovementsTurn: pendingImprovementsTurn.toSave(),
           completedWorldWonders: completedWorldWonders.slice(),
           placedWorldWonders: placedWorldWonders.slice(),
         },
@@ -9321,6 +9574,8 @@ async function boot(): Promise<void> {
         setTurnTransition(6, 'Zakończenie ruchów gracza…', 'Gracz', nextTurnNum);
         await yieldTurnTransitionUi();
         turn++;
+
+        pendingImprovementsTurn.commitTurn();
 
         setTurnTransition(10, 'Dyplomacja i traktaty…', 'Gracz', nextTurnNum);
         await yieldTurnTransitionUi();
@@ -9968,9 +10223,13 @@ async function boot(): Promise<void> {
                 { myCitiesCount: aiCitiesCount, allBuiltBuildings: allBuiltForAI },
               );
               if (aiTechChoice !== null && !aiDone.has(aiTechChoice)) {
-                aiDone.add(aiTechChoice);
-                syncOwnerEraFromResearch(ownerId);
-                console.log(`[AI ${ownerId}] Zbadano: ${aiTechChoice}`);
+                const techDef = data.tech.find(t => t.Technologia === aiTechChoice);
+                const eraAdvance = techDef && isEraAdvanceTech(techDef as import('./data/loader').TechDef);
+                if (!eraAdvance) {
+                  aiDone.add(aiTechChoice);
+                  refreshCityRenderIfEraChanged(syncOwnerEraFromResearch(ownerId));
+                  console.log(`[AI ${ownerId}] Zbadano: ${aiTechChoice}`);
+                }
               }
             } catch (eAIRes) {
               console.error(`[AI ${ownerId}] Blad wyboru technologii:`, eAIRes);
@@ -10551,13 +10810,19 @@ async function boot(): Promise<void> {
             }
           }
           if (pendingMarchHint && pendingMarchHint.unitId === finishedId) {
-            finishMarchSegmentHints(
-              pendingMarchHint.unitId,
-              pendingMarchHint.arrived,
-              pendingMarchHint.stopReason,
-              pendingMarchHint.stopDetail,
-            );
+            const attackTargetId = marchAttackTargets.get(finishedId);
+            const hint = pendingMarchHint;
             pendingMarchHint = null;
+            if (u && attackTargetId && tryLaunchMarchAttack(u, attackTargetId)) {
+              // preBattle uruchomione — marsz wyczyszczony w tryLaunchMarchAttack
+            } else {
+              finishMarchSegmentHints(
+                hint.unitId,
+                hint.arrived,
+                hint.stopReason,
+                hint.stopDetail,
+              );
+            }
           }
           updateHud();
           refreshD1bHud();
@@ -11102,6 +11367,7 @@ async function boot(): Promise<void> {
       removeBuildGhosts();
       placedImprovements.clear();
       clearAllHexClearing();
+      pendingImprovementsTurn = new PendingImprovementsTurn();
       for (const mesh of improvementMeshes.values()) scene.remove(mesh);
       improvementMeshes.clear();
 
@@ -11312,6 +11578,7 @@ async function boot(): Promise<void> {
       activeImprovementKey = null;
       placedImprovements.clear();
       clearAllHexClearing();
+      pendingImprovementsTurn = new PendingImprovementsTurn();
       for (const mesh of improvementMeshes.values()) scene.remove(mesh);
       improvementMeshes.clear();
       refreshBuildApi();
@@ -11525,6 +11792,7 @@ async function boot(): Promise<void> {
       activeImprovementKey = null;
       placedImprovements.clear();
       clearAllHexClearing();
+      pendingImprovementsTurn = new PendingImprovementsTurn();
       for (const mesh of improvementMeshes.values()) scene.remove(mesh);
       improvementMeshes.clear();
 
@@ -11709,6 +11977,7 @@ async function boot(): Promise<void> {
       activeImprovementKey = null;
       placedImprovements.clear();
       clearAllHexClearing();
+      pendingImprovementsTurn = new PendingImprovementsTurn();
       for (const mesh of improvementMeshes.values()) scene.remove(mesh);
       improvementMeshes.clear();
 
@@ -11891,7 +12160,10 @@ async function boot(): Promise<void> {
       marchExecQueue.length = 0;
       pendingMarchHint = null;
       const loadedMarches = plannedMarchesFromSave(saved.autoMarch, saved.plannedMarches, units, 0);
-      for (const [uid, dest] of loadedMarches) plannedMarches.set(uid, dest);
+      for (const [uid, dest] of loadedMarches) {
+        plannedMarches.set(uid, dest);
+        syncMarchAttackTarget(uid, dest);
+      }
       cities.length = 0;
       for (const c of saved.cities) {
         ensureCitySaveDefaults(c);
@@ -11956,6 +12228,10 @@ async function boot(): Promise<void> {
         if (eid === 'kamien') return 1;
         return player.era;
       })();
+      const savedOwnerEra = saved.meta?.ownerEraByOwner as Array<[number, number]> | undefined;
+      if (savedOwnerEra?.length) {
+        for (const [oid, e] of savedOwnerEra) ownerEraByOwner.set(oid, e);
+      }
       const savedStartEra = saved.meta?.ownerStartEraByOwner as Array<[number, number]> | undefined;
       if (savedStartEra?.length) {
         for (const [oid, e] of savedStartEra) ownerStartEraByOwner.set(oid, e);
@@ -11965,7 +12241,10 @@ async function boot(): Promise<void> {
       for (const oid of allAiOwnerIdsOnMap()) {
         if (!ownerStartEraByOwner.has(oid)) ownerStartEraByOwner.set(oid, loadStartEra);
       }
-      for (const oid of allAiOwnerIdsOnMap()) syncOwnerEraFromResearch(oid);
+      let loadEraChanged = false;
+      for (const oid of allAiOwnerIdsOnMap()) {
+        loadEraChanged = syncOwnerEraFromResearch(oid) || loadEraChanged;
+      }
       diplomacyRelations.clear();
       diplomaticContactEstablished.clear();
       resetDiplomaticDiscoveryUiState();
@@ -12052,6 +12331,9 @@ async function boot(): Promise<void> {
       const savedImps = saved.meta?.placedImprovements as Array<[string, ImprovementKey]> | undefined;
       restorePlacedImprovementsFromSave(savedImps);
       clearAllHexClearing();
+      pendingImprovementsTurn = PendingImprovementsTurn.fromSave(
+        saved.meta?.pendingImprovementsTurn as PendingImprovementEntry[] | undefined,
+      );
       const savedClr = saved.meta?.hexClearingStates as Array<[string, HexClearingState]> | undefined;
       if (savedClr?.length) {
         for (const [hk, st] of savedClr) hexClearingStates.set(hk, st);

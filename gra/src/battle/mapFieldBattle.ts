@@ -411,11 +411,7 @@ export function launchFieldBattleFromMap(
       deps.hidePreBattle();
     },
     onSave: deps.onQuickSave
-      ? () => {
-          if (deps.onQuickSave!()) {
-            deps.showHint('Zapis przed bitwa (tura ' + deps.turn + ')', 2500);
-          }
-        }
+      ? () => deps.onQuickSave!()
       : undefined,
   }, { defaultAction: 'manual' });
 

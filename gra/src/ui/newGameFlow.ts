@@ -1159,7 +1159,7 @@ function renderSettStep(host: HTMLElement): void {
   host.appendChild(el(
     'div',
     'sett-note',
-    'Miasta-państwa = miasta w Twoim klastrze (Sparta, Kapua…). Typy cywilizacji = ile głównych typów / obcych klastrów na mapie. Gęstość świata — w zaawansowanych.',
+    'Miasta-państwa = miasta w Twoim klastrze (Sparta, Kapua…). Liczba cywilizacji = ile frakcji / obcych klastrów na mapie. Gęstość świata — w zaawansowanych.',
   ));
 }
 
@@ -1262,7 +1262,7 @@ function renderGenStep(host: HTMLElement): void {
     ['Rozmiar mapy', p.mapSize],
     ['Typ swiata', p.worldType],
     ['Miasta-panstwa', String(p.cityStatesCount) + ' w klastrze'],
-    ['Typy cywilizacji', String(p.civTypesCount) + ' na mapie'],
+    ['Liczba cywilizacji', String(p.civTypesCount) + ' na mapie'],
     ['Predkosc', p.speed],
     ['Surowce', p.worldDensityLabels.resources],
     ['Ląd / morze', p.landFractionPercent + '% / ' + (100 - p.landFractionPercent) + '%'],

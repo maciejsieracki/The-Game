@@ -48,6 +48,7 @@ function mkHex(q, r, teren, nakladka = NK.Brak, zloze, ulepszenia) {
 }
 
 const cityNodes = [{ q: 0, r: 0, pop: 10, level: 1 }];
+const playerTerritoryNodes = [{ q: 0, r: 0, pop: 10, level: 1, ownerId: 0 }];
 const hexes = {
   '0,0': mkHex(0, 0, TB.Rownina),
   '1,0': mkHex(1, 0, TB.Laka),
@@ -81,6 +82,8 @@ function qual(opts = {}) {
   return M.buildImprovementQualifier({
     map,
     cityNodes,
+    territoryNodes: opts.territoryNodes ?? playerTerritoryNodes,
+    playerOwnerIdNum: 0,
     playerCivArchetype: opts.civ ?? 'inkowie',
     playerEra: opts.era ?? 1,
     placedImprovements: opts.placed,
@@ -117,6 +120,8 @@ ok(qInka('lodzie_rybackie', 0, -1), 'A-R7: lodzie wybrzeze IN territory');
 const qA7small = M.buildImprovementQualifier({
   map,
   cityNodes: [{ q: 0, r: 0, pop: 1, level: 1 }],
+  territoryNodes: [{ q: 0, r: 0, pop: 1, level: 1, ownerId: 0 }],
+  playerOwnerIdNum: 0,
   playerCivArchetype: 'inkowie',
   playerEra: 1,
 });
@@ -145,6 +150,22 @@ ok(!M.depositAllowsPlayerImprovement('farma', hexes['4,0']), 'depositAllows NOT 
 ok(M.depositAllowsPlayerImprovement('warzelnia_soli', hexes['4,0']), 'depositAllows warzelnia sol');
 ok(!M.hasBlockingDepositForFarm(hexes['1,0']), 'no block plain laka');
 ok(M.isTarasyCiv('chiny'), 'isTarasyCiv chiny');
+
+hexes['4,0'] = mkHex(4, 0, TB.Laka, NK.Las);
+hexes['2,1'] = mkHex(2, 1, TB.Laka, NK.Las);
+const qOverlap = M.buildImprovementQualifier({
+  map,
+  cityNodes: [{ q: 0, r: 0, pop: 10, level: 1 }],
+  territoryNodes: [
+    { q: 0, r: 0, pop: 10, level: 1, ownerId: 0 },
+    { q: 5, r: 0, pop: 10, level: 1, ownerId: 99 },
+  ],
+  playerOwnerIdNum: 0,
+  playerCivArchetype: 'inkowie',
+  playerEra: 1,
+});
+ok(!qOverlap('wyrab', 4, 0), 'wyrab NOT on Sparta-owned forest (territory overlap)');
+ok(qOverlap('wyrab', 2, 1), 'wyrab OK on player-owned forest');
 
 try { fs.unlinkSync(ENTRY); fs.unlinkSync(BUNDLE); } catch (_) {}
 

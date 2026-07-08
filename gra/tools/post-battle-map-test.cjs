@@ -104,6 +104,38 @@ applyPostBattleMap({
 });
 assert(units.filter(u => u.ownerId === 0).length === 2, 'auto win: both atk units remain');
 assert(units.find(u => u.id === 'u0')?.q === 11 && units.find(u => u.id === 'u0')?.r === 22, 'lead on city hex');
+assert(units.find(u => u.id === 'u1')?.q === 11 && units.find(u => u.id === 'u1')?.r === 22, 'stacked atk on city hex');
+
+// Pole P×W+: połączona armia ATK zostaje razem na heksie zwycięstwa
+const stackedAtk = [
+  { id: 'a0', ownerId: 0, typeId: 'Oszczepnik', q: 96, r: 53, ruchLeft: 1 },
+  { id: 'a1', ownerId: 0, typeId: 'Wojownik', q: 96, r: 53, ruchLeft: 1 },
+  { id: 'e0', ownerId: 1, typeId: 'Wojownik', q: 95, r: 53, ruchLeft: 1 },
+];
+applyPostBattleMap({
+  units: stackedAtk,
+  map: { hexes: {} },
+  cities: [],
+  battleQ: 95,
+  battleR: 53,
+  atkAnchor: stackedAtk[0],
+  atkRoster: [stackedAtk[0], stackedAtk[1]],
+  defRoster: [stackedAtk[2]],
+  atkStart: new Map([['a0', { q: 96, r: 53 }], ['a1', { q: 96, r: 53 }]]),
+  winner: 'atakujacy',
+  manualSurvivors: [{ id: 'a0', hp: 80 }, { id: 'a1', hp: 60 }],
+  getDef: () => ({ Health: 100 }),
+  maxHpOf: () => 100,
+  isPassableHex: () => true,
+  isUnitAt: (q, r, exceptId) =>
+    stackedAtk.some(u => u.id !== exceptId && u.q === q && u.r === r),
+});
+const a0 = stackedAtk.find(u => u.id === 'a0');
+const a1 = stackedAtk.find(u => u.id === 'a1');
+const e0 = stackedAtk.find(u => u.id === 'e0');
+assert(a0?.q === 95 && a0?.r === 53, 'stack win: spearman on battle hex');
+assert(a1?.q === 95 && a1?.r === 53, 'stack win: warrior stacked on battle hex');
+assert(!e0, 'stack win: enemy removed');
 
 // Miasto M×W+ (Maciej B 2026-06-26): pierścień odskakuje −1 heks jak na polu
 const widePassable = (q, r) => q >= 9 && q <= 14 && r >= 20 && r <= 24;

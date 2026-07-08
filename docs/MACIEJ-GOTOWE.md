@@ -4,7 +4,321 @@
 > **Czat:** krótko **`✅ Gotowe:`** / **`⏸️ Czeka:`** · **Ten plik:** pełniejszy zapis tego samego.  
 > Szczegóły techniczne → handoff w `dyspozycje/_handoff/` · operacja → `dyspozycje/DZIENNIK-MASTERA.md`
 
-**Ostatnia aktualizacja:** 2026-07-07 (noc — bundle GitHub)
+**Ostatnia aktualizacja:** 2026-07-08 (metadata drift START + stamp)
+
+---
+
+## [2026-07-08] ✅ Gotowe — Metadata drift gra-robocza (START + stamp)
+
+| | |
+|---|---|
+| **Kto** | Integrator (weryfikacja 46928d20) |
+| **Co** | `START.html` pokazywał stary md5 `749819eb` · pieczętka w bundlu nieaktualna · bez zmian w kodzie gry |
+| **Weryfikacja** | Fresh vite build = ten sam core co `Gra-ROBOCZA.html` (52bb99e3) · tylko metadane |
+| **Naprawa** | Odświeżono pieczętkę + manifest + playtesty + `generate-start-hub.cjs` |
+| **md5** | `14f97262aeef2c3e97ab49e4562ee71f` |
+| **Od Ciebie** | Ctrl+F5 · `gra-robocza/START.html` · sprawdź `14f97262` w nagłówku |
+
+---
+
+## [2026-07-08] ✅ Gotowe — Marsz: auto-commit, fog pause, atak widocznego wroga
+
+| | |
+|---|---|
+| **Kto** | Integrator |
+| **Co** | Klik terenu/wroga = natychmiastowy marsz (bez Kontynuuj) · multi-turn po Zakończ turę · mgła = wstrzymanie na granicy · klik widocznego wroga = dojście + preBattle |
+| **Przyczyna buga** | Brak auto-ruchu po kliku; przycisk Kontynuuj wymagany; atak tylko na sąsiednim heksie; marsz w mgłę bez reguły wstrzymania; wróg na celu jak przeszkoda na trasie |
+| **Pliki** | `gra/src/game/planned-march.ts` · `gra/src/main.ts` · `gra/src/ui/mapUnitCursor.ts` · `gra/src/game/save.ts` |
+| **Testy** | tsc OK · planned-march 18/18 · city-hex-movement 7/7 · map-road-movement 16/16 · map-field-battle 15/15 |
+| **Build** | ROBOCZA md5 `d3dc5dc617c8304dd273e36cea8122d3` · stamp `d3dc5dc6` · `gra-robocza/START.html` |
+| **Od Ciebie** | Ctrl+F5 · zaznacz armię · klik odległy heks → rusza od razu · klik widocznego wroga → dojście + bitwa · klik w mgłę → staje na granicy · Zakończ turę → kontynuuje |
+
+---
+
+## [2026-07-08] ✅ Gotowe — ZAPISZ na ekranie pre-bitwy
+
+| | |
+|---|---|
+| **Kto** | Integrator |
+| **Co** | Przycisk ZAPISZ na ekranie przed bitwą zapisuje grę (autosave) i pokazuje widoczny komunikat na overlay |
+| **Przyczyna buga** | `doQuickSave` działał, ale toast `showHintMessage` miał z-index 320 — ukryty pod overlayem pre-bitwy (9900). Wyglądało jak brak reakcji. |
+| **Pliki** | `gra/src/ui/preBattle.ts` (toast na overlay + `onSave → boolean`), `gra/src/main.ts` (handlery zwracają `doQuickSave`), `gra/src/battle/mapFieldBattle.ts`, `gra/tools/pre-battle-save-test.cjs` |
+| **Testy** | tsc OK · pre-battle-save OK · map-field-battle 15/15 · smoke OK |
+| **Build** | ROBOCZA md5 `a62a66c5ca6a75015017c1f14cdd3146` · stamp `a62a66c5` · `gra-robocza/START.html` |
+| **Od Ciebie** | Ctrl+F5 · doprowadź do pre-bitwy (atak / obrona) · klik **Zapisz** → zielony toast „Zapisano · tura N" na środku ekranu · Wczytaj grę / Kontynuuj → stan sprzed bitwy |
+
+---
+
+## [2026-07-08] ✅ Gotowe — Stos armii po wygranej bitwie ręcznej
+
+| | |
+|---|---|
+| **Kto** | Integrator |
+| **Co** | Po wygranej połączoną armią (np. Oszczepnik + Wojownik) cały skład zostaje na jednym heksie zwycięstwa; badge ×N = liczba jednostek; obwódka gracza nie „brązowa" |
+| **Przyczyna buga** | `applyPostBattleMap` przenosił tylko dowódcę (`moveAtkLeadOntoBattleHex`) — reszta wracała na `atkStart`; render nie odświeżał się po bitwie (`forceVisibleUnitId` + brak `syncUnitsRender`) |
+| **Pliki** | `gra/src/game/post-battle-map.ts` (`moveAtkRosterOntoBattleHex`, kolejność: ucieczka DEF → stos ATK), `gra/src/main.ts` (`syncUnitsRender` po `applyMapBattleOutcome`), `gra/tools/post-battle-map-test.cjs` |
+| **Testy** | tsc OK · post-battle-map 14/14 · army-merge-bounce 4/4 · army-stack-ruch 5/5 |
+| **Build** | ROBOCZA md5 `a62a66c5ca6a75015017c1f14cdd3146` · stamp `a62a66c5` · `gra-robocza/START.html` |
+| **Od Ciebie** | Ctrl+F5 · Nowa gra · połącz Oszczepnik + Wojownik · atak wroga → bitwa ręczna → wygrana → obie jednostki na jednym heksie, badge ×2, niebieska obwódka, brak POŁĄCZ |
+
+---
+
+## [2026-07-08] ✅ Gotowe — Marsz ataku: cel wroga nie blokuje trasy
+
+| | |
+|---|---|
+| **Kto** | Integrator |
+| **Co** | Klik w widocznego wroga zapisuje marsz-atak, trasa dochodzi do heksu wroga, po dotarciu otwiera pre-bitwę |
+| **Przyczyna buga** | `shouldStopAtObstacle` traktował zajęty heks celu (wróg) jak przeszkodę na trasie; klik w nie-sąsiada wroga nie wywoływał `planMarchTo`, tylko komunikat „za daleko" |
+| **Pliki** | `gra/src/game/planned-march.ts` (wyjątek celu ataku w occupied), `gra/src/main.ts` (klik wroga → marsz, auto pre-bitwa po dotarciu, `openPlayerMapUnitAttack`) |
+| **Testy** | tsc OK · planned-march 14/14 · army-stack-ruch 5/5 |
+| **Build** | ROBOCZA md5 `8131cec60ba2c318b08b24c34a767e6e` · stamp `8131cec6` · `gra-robocza/START.html` |
+| **Od Ciebie** | Ctrl+F5 · Nowa gra · zaznacz jednostkę · klik wroga poza zasięgiem 1 hex → żółta trasa + ruch · po dotarciu pre-bitwa · mgła = brak marszu-ataku |
+
+---
+
+## [2026-07-08] ✅ Gotowe — Crash przy starcie bitwy ręcznej (roster deploy)
+
+| | |
+|---|---|
+| **Kto** | Integrator |
+| **Co** | Gra nie wywala się przy wejściu w bitwę ręczną (atak wroga → deploy / roster) |
+| **Przyczyna buga** | Pętla rekurencji: `_ensureDeployRowRefs` → `_ensureBattleRosterChrome` → brak `#battle-roster-scroll` / `#battle-roster-cards` → `_rebuildDeployRosterGrid` → `_updateRosterBar` → z powrotem. `_buildRosterBar` przy istniejącym panelu kończył wcześniej bez tworzenia scroll/cards. |
+| **Pliki** | `gra/src/battle/battleScene.ts` (`_ensureBattleRosterChrome` tworzy scroll+cards; guard `_rebuildDeployRosterGridBusy`; usunięty redundantny `_ensureDeployRowRefs` w `_updateRosterBar`) |
+| **Testy** | tsc OK |
+| **Build** | ROBOCZA md5 `1d56ef7e7eeb7b2853614fea780a5507` · stamp `1d56ef7e` · `gra-robocza/START.html` |
+| **Od Ciebie** | Ctrl+F5 · Nowa gra · doprowadź do walki (wróg atakuje) · wybierz **bitwę ręczną** → ekran deploy z lewym rosterem, bez „BOOT ERROR” / stack overflow |
+
+---
+
+## [2026-07-08] ✅ Gotowe — Marsz: klik terenu zapisuje i rusza
+
+| | |
+|---|---|
+| **Kto** | Integrator |
+| **Co** | Klik w heks docelowy **zapisuje** marsz i **od razu wykonuje** pierwszy segment (gdy są punkty ruchu). Ścieżka wieloturowa zostaje do końca trasy — bez ręcznego „Kontynuuj". |
+| **Przyczyna buga** | `planMarchTo` tylko zapisywała plan w `plannedMarches`, nie wywoływała `executeMarchSegmentForUnit`. Klik wymagał `stackCanMove` — przy 0 ruchu plan w ogóle się nie zapisywał (tylko podgląd hover). |
+| **Pliki** | `gra/src/main.ts` (`planMarchTo`, handlery kliku mapy) |
+| **Testy** | tsc OK · planned-march 11/11 · city-hex-movement 7/7 · map-road-movement 16/16 |
+| **Build** | ROBOCZA md5 `1d56ef7e7eeb7b2853614fea780a5507` · stamp `1d56ef7e` · `gra-robocza/START.html` |
+| **Od Ciebie** | Ctrl+F5 · zaznacz armię (2 jednostki) · klik odległy heks → jednostka rusza + żółta ścieżka zostaje · kolejne tury: auto-marsz po „Zakończ turę" |
+
+---
+
+## [2026-07-08] ✅ Gotowe — Wycinka lasu tylko w terytorium gracza
+
+| | |
+|---|---|
+| **Kto** | Integrator |
+| **Co** | Wyrąb / budowa ulepszeń terenu działa **tylko** na heksach, gdzie właścicielem jest gracz (owner 0) — nie obok Sparty / AI |
+| **Przyczyna buga** | `isInTerritory(playerNodes)` zwracało true także w strefie overlapu dwóch miast — bez `territoryOwnerAt` (wygrywa bliższe miasto) |
+| **Pliki** | `gra/src/map/territory.ts` (`isPlayerTerritoryHex`) · `gra/src/map/improvement-build.ts` · `gra/src/main.ts` (bramka + hint UI) |
+| **Testy** | tsc OK · map-improvement-qualify 44/44 (+ overlap Sparta) |
+| **Build** | ROBOCZA md5 `8a9d5b3f76f966eb4d98acb47e8e650a` · stamp `8a9d5b3f` · `gra-robocza/START.html` |
+| **Od Ciebie** | Ctrl+F5 · Nowa gra · 🔨 Wyrąb przy Sparcie → brak podświetlenia / komunikat · las w niebieskiej obwódce gracza → OK |
+
+---
+
+## [2026-07-08] ✅ Gotowe — Przełączanie miast ‹ › (mapa okolicy)
+
+| | |
+|---|---|
+| **Kto** | Integrator |
+| **Co** | Strzałki ‹ › w widoku miasta przełączają **cały** widok: baner + panel + mapa 3D okolicy (kamera, heks centrum, etykieta miasta) |
+| **Przyczyna buga** | `switchCity` odświeżał tylko UI panelu (`paintCityPanelSections`); silnik trzymał `cityPanelViewCityId` na pierwszym mieście — kamera i etykieta zostawały na ATENACH |
+| **Pliki** | `gra/src/ui/cityPanel.ts` (`onSwitchCity` hook + wywołanie w `switchCity`) · `gra/src/main.ts` (`applyCityPanelWorldView` + `syncOkolicaOverlay`) |
+| **Testy** | tsc OK |
+| **Build** | ROBOCZA md5 `c74a39ac36522875340329ca915c81b4` · stamp `c74a39ac` · `gra-robocza/START.html` |
+| **Od Ciebie** | Ctrl+F5 · 2+ miasta gracza · otwórz miasto · ‹ › → baner, panel i mapa okolicy = to samo miasto (etykieta + centrum heks) |
+
+---
+
+## [2026-07-08] ✅ Gotowe — Moc HUD = ranking · miasta epoki kamienia na starcie
+
+| | |
+|---|---|
+| **Kto** | Integrator |
+| **Co** | **Moc:** panel środkowy HUD i ranking w panelu imperium pokazują tę samą wartość per państwo (obiektywny POWER z `power-objective.ts`). **Epoka:** start Kamień → modele kamienne na mapie (nie brąz/ziggurat z instant-AI tech). |
+| **Przyczyna Moc** | Ranking sumował POWER po **typie cywilizacji** (`grecy` × N państw) — HUD pokazywał tylko imperium gracza (owner 0). |
+| **Przyczyna epoka** | AI dostawało od razu tech kończące epokę → `ownerEraByOwner` = 2 → `buildBronzeCityRoblox` (ziggurat). Kamień ignorował cywilizację w `settlementModel`. |
+| **Pliki** | `gra/src/main.ts` (`buildPowerRankingByOwner`, `updateHud` cache, AI research filter, load `ownerEraByOwner`) · `gra/src/render/settlementModel.ts` |
+| **Testy** | tsc OK |
+| **Build** | ROBOCZA md5 `d8fc99075ded76beef771636228d2d24` · stamp `d8fc9907` · `gra-robocza/START.html` |
+| **Od Ciebie** | Ctrl+F5 · Nowa gra Kamień · Grecy: liczba Moc w HUD = Twoja pozycja w rankingu · miasta = lepianki/kamień, nie świątynie brązu |
+
+---
+
+## [2026-07-08] ✅ Gotowe — Banery HUD: chipy w ramce (Nauka + Religia)
+
+| | |
+|---|---|
+| **Kto** | Integrator |
+| **Co** | Lewy i prawy baner HUD mapy — wszystkie chipy mieszczą się w ramce; Religia i Nauka z pełną etykietą, wartością i deltą |
+| **Przyczyna buga** | Za niski `max-width` (420/520px) + prawy baner kurczył się w `hud-right-cluster` obok Wiki/Menu |
+| **Pliki** | `gra/src/ui/hud.ts` — `.civ-hud-banner-shell`, `.civ-hud-banner-left`, `.civ-hud-banner-right`, `.hud-right-cluster`, `.hud-chip-row`, `.civ-hud-chip`, `.civ-hud-chip-sep`, `.hud-right` |
+| **Testy** | tsc OK |
+| **Build** | ROBOCZA md5 `d8fc99075ded76beef771636228d2d24` · stamp `d8fc9907` · `gra-robocza/START.html` |
+| **Od Ciebie** | Ctrl+F5 · mapa: lewy baner (Skarbiec/Praca/Nauka) + prawy (Zaopatrzenie/Ludność/Kultura/Religia) — wszystko czytelne w ramce |
+
+---
+
+## [2026-07-08] ✅ Gotowe — Wybór miasto vs jednostka (ten sam heks)
+
+| | |
+|---|---|
+| **Kto** | Integrator |
+| **Co** | Klik na heks z **własnym miastem + własną jednostką** → popup „Co wybierasz?” (Miasto / Jednostka) zamiast auto-zaznaczenia wojska |
+| **Przyczyna regresji** | W `main.ts` handler kliku miasta: gałąź `ownerId === 0` od razu wołała `selectPlayerUnit()`; `showCityUnitPick()` było tylko dla obcych miast (martwy kod) |
+| **Pliki** | `gra/src/main.ts` (~L7482) — przywrócona logika z kanonu: `stackOnCity.length > 0` → `showCityUnitPick` |
+| **Testy** | tsc OK |
+| **Build** | ROBOCZA md5 `2122e63d70e1776776641fe88779d651` · stamp `2122e63d` · `gra-robocza/START.html` |
+| **Od Ciebie** | Ctrl+F5 · Nowa gra · postaw jednostkę na własnym mieście · klik heks → wybór Miasto / Jednostka |
+
+---
+
+## [2026-07-08] ✅ Gotowe — Suwak żywności Wzrost / Armia (płynny drag)
+
+| | |
+|---|---|
+| **Kto** | Integrator |
+| **Co** | Panel miasta → Spichlerz / Wzrost: suwak podziału żywności **Wzrost ↔ Armia** — płynne przeciąganie i klik na track (jak Skarb/Nauka/Zamożność), bez native `<input type="range">` |
+| **Przyczyna buga** | Nałożony native range (`food-split-range`) — krok co 10% + brzydki thumb / kursor ↔ na Windows |
+| **Pliki** | `gra/src/ui/cityPanel.ts` — `attachFoodSplitBar` · `snapFoodSplitPct` · CSS `.food-split-handle` |
+| **Testy** | tsc OK |
+| **Build** | ROBOCZA md5 `7670977e4f47e9ad5ea325cd629bde83` · stamp `7670977e` · `gra-robocza/START.html` |
+| **Od Ciebie** | Ctrl+F5 · Miasto → prawa kolumna Spichlerz: przeciągnij pasek żółty/czerwony — płynnie, klik w dowolnym miejscu tracka |
+
+---
+
+## [2026-07-08] ✅ Gotowe — Kolejka rekrutacji pod budową (layout Produkcja)
+
+| | |
+|---|---|
+| **Kto** | Integrator |
+| **Co** | Zakładka Rekrutacja w panelu miasta: **kolejka rekrutacji** z powrotem **nad** kartami jednostek (Taran, Wojownik…), zaraz pod sekcją Produkcja (kolejka budowy + auto budowa) |
+| **Przyczyna regresji** | `renderPurchasableUnits` dopinała `appendRecruitmentQueue` **po** `unit-recruit-scroll` (appendChild na końcu mounta) |
+| **Pliki** | `gra/src/ui/cityPanel.ts` — `renderPurchasableUnits` · `appendRecruitmentQueue` (CSS w4: border-bottom zamiast border-top) |
+| **Testy** | tsc OK |
+| **Build** | ROBOCZA md5 `30c7e76fdb36892e3f66a03e416ce17d` · stamp `30c7e76f` · `gra-robocza/START.html` |
+| **Od Ciebie** | Ctrl+F5 · Miasto → Produkcja → Rekrutacja: kolejka (Wojownik…) **nad** listą kart, **pod** kolejką budowy |
+
+---
+
+## [2026-07-07] ✅ Gotowe — Cofanie ulepszeń terenu w tej samej turze
+
+| | |
+|---|---|
+| **Kto** | Integrator |
+| **Co** | Panel budowy ulepszeń: ponowny klik tego samego typu na tym samym heksie **w turze** cofa akcję — ulepszenie znika, **Praca wraca**; po **N** (koniec tury) brak cofania |
+| **Model** | **Pending** (`PendingImprovementsTurn`) — wpisy `{hexKey, key, kosztPraca, action}` do `commitTurn()`; **Committed** — po endTurn (ulepszenie zostaje, koszt finalny) |
+| **Wycinka lasu** | Wyrąb start (5 Pracy) → ikona 🪓 → klik ponownie w turze → las zostaje, Praca +5; po turze wycinka trwa normalnie (+20/turę) |
+| **Pliki** | `gra/src/game/pending-improvements.ts` (nowy) · `gra/src/map/improvement-build.ts` · `gra/src/main.ts` |
+| **Save** | `meta.pendingImprovementsTurn` — cofanie po wczytaniu zapisu w tej samej turze |
+| **Testy** | tsc OK · `node tools/pending-improvements-test.cjs` 8/8 |
+| **Build** | ROBOCZA md5 `5dc9e8b5e1d4ddaa1f7ff814c117cce9` · stamp `5dc9e8b5` · `gra-robocza/START.html` |
+| **Od Ciebie** | Ctrl+F5 · Nowa gra → 🔨 Wyrąb na lesie → sprawdź −5 Pracy → klik ponownie → las + refund · N → brak cofania |
+
+---
+
+## [2026-07-07] ✅ Gotowe — HUD: epoka w panelu Moc (bez duplikatu)
+
+| | |
+|---|---|
+| **Kto** | Integrator |
+| **Co** | Nazwa epoki (np. „Epoka kamienia") nad sygnetem cywilizacji w centralnym panelu Moc; usunięte „Epoka 1" z prawego klastra (Wiki/Menu zostają) |
+| **Źródło nazwy** | `gameEpochHudLabel(player.era)` w `gra/src/game/civ-entry-epoch.ts` — mapa `1→kamien, 2→braz, 3→zelazo` → etykiety PL |
+| **Pliki** | `gra/src/game/civ-entry-epoch.ts` · `gra/src/main.ts` (`buildHudState`) · `gra/src/ui/hud.ts` |
+| **CSS** | `.power-center .p-epoch` (nad sygnetem) · `.power-center` powiększony w górę · brak `.hm-ep` w `.hud-right-cluster` |
+| **Build** | ROBOCZA md5 `0fd9292da03ce8b7befb0e1fcda498ce` · stamp `0fd9292d` · `gra-robocza/START.html` |
+| **Testy** | tsc OK |
+| **Od Ciebie** | Ctrl+F5 · Nowa gra (Kamień) → nad sygnetem „Epoka kamienia"; prawy róg bez epoki, tylko Wiki + Menu |
+
+---
+
+## [2026-07-07] ✅ Gotowe — Minimapa: mgła wojny (brak AI poza odkryciem)
+
+| | |
+|---|---|
+| **Kto** | Integrator |
+| **Co** | Minimapa nie pokazuje kolorowych kropek/clusterów obcych cywilizacji poza zasięgiem wiedzy gracza |
+| **Przyczyna** | Markery miast/jednostek i kolory terytorium były rysowane dla **całej mapy** — heksy miały `fog: hidden`, ale markery nie |
+| **Fix** | `isMinimapMarkerVisible()` — ten sam kontrakt co `refreshFog`: gracz zawsze; obce miasta gdy `visible ∪ explored`; obce jednostki gdy `visible`; terytorium bez koloru na `hidden` |
+| **Pliki** | `gra/src/map/minimap.ts` · `gra/src/ui/minimapHud.ts` · `gra/src/main.ts` |
+| **Build** | ROBOCZA md5 `bf1015202ed24561304cb968ec690748` · stamp `bf101520` · `gra-robocza/START.html` |
+| **Testy** | tsc OK |
+| **Od Ciebie** | Ctrl+F5 · Nowa gra → minimapa ciemna poza startem, bez kolorowych AI na drugim końcu mapy; zwiadowca odkrywa → pojawia się |
+
+---
+
+## [2026-07-07] ✅ Gotowe — Dyplomacja: THE GAME wyśrodkowane, bez 1E
+
+| | |
+|---|---|
+| **Kto** | Integrator |
+| **Co** | Nagłówek panelu Dyplomacja: podpis **THE GAME** wyśrodkowany pod słowem Dyplomacja; usunięte **· 1E** |
+| **Plik** | `gra/src/ui/diploListHud.ts` |
+| **Selektor** | `.civ-diplo-list-hud .dl-head-sub` (+ `.dl-head-text` flex column center) |
+| **Build** | ROBOCZA md5 `bf1015202ed24561304cb968ec690748` · stamp `bf101520` · `gra-robocza/START.html` |
+| **Testy** | tsc OK |
+| **Od Ciebie** | Ctrl+F5 · mapa → toolbar uścisk dłoni (Dyplomacja) → sprawdź nagłówek |
+
+---
+
+## [2026-07-07] ✅ Gotowe — HUD mapy: dwa banery (lewy + prawy)
+
+| | |
+|---|---|
+| **Kto** | Integrator |
+| **Co** | Górny pasek państwa podzielony na **dwa banery** w jednym rzędzie: lewy (Skarbiec · Praca · Nauka) · prawy (Zaopatrzenie · Ludność · Kultura · **Religia**) |
+| **Przyczyna** | Chip Ludność wylądował samotnie po prawej stronie ekranu; brak chipu Religia |
+| **Pliki** | `gra/src/ui/hud.ts` · `gra/src/main.ts` (`buildHudState` → `religionStock` / `religionRate`) |
+| **CSS** | `.civ-hud-banner-shell` · `.civ-hud-banner-left` (fixed lewo) · `.civ-hud-banner-right` · `.hud-right-cluster` (prawy banner + epoka/Wiki/Menu) |
+| **Religia** | `aggregateReligionEmpire()` → `stateAdherents` (wartość) · `spreadRateTotal` (+X/turę) · ikona `res-religion` |
+| **Build** | ROBOCZA md5 `8916b7264a4eceaa6036ae0251a196a3` · stamp `8916b726` · `gra-robocza/START.html` |
+| **Testy** | tsc OK |
+| **Od Ciebie** | Ctrl+F5 · mapa → lewy banner 3 chipy · prawy banner 4 chipy · Ludność obok Kultury (nie na skraju) |
+
+---
+
+## [2026-07-07] ✅ Gotowe — HUD państwa od razu (tur 0 / zmiana w mieście)
+
+| | |
+|---|---|
+| **Kto** | Integrator |
+| **Co** | Górny pasek imperium (Skarbiec, Praca, Zaopatrzenie, Nauka, Kultura) pokazuje **sumy na żywo** — nie czeka na koniec tury |
+| **Przyczyna** | HUD czytał `_last*Rate` ustawiane **tylko w endTurn**; panel miasta liczył lokalnie przez `cityYieldPerTurn` |
+| **Fix** | `previewCityEconomy()` (read-only) + `refreshLiveEmpireRates()` wołane przy każdym `updateHud()` |
+| **Pliki** | `gra/src/game/turn-economy.ts` · `gra/src/main.ts` |
+| **Build** | ROBOCZA md5 `4f80e9d261b63fd3b1ac72d832c229fe` · stamp `4f80e9d2` · `gra-robocza/START.html` |
+| **Testy** | tsc OK |
+| **Od Ciebie** | Ctrl+F5 · Nowa gra → załóż miasto → pasek ≠ same zera; zmień 👤/suwak → pasek od razu |
+
+---
+
+## [2026-07-07] ✅ Gotowe — Kreator: etykieta „Liczba cywilizacji"
+
+| | |
+|---|---|
+| **Kto** | Integrator |
+| **Co** | Krok 4 kreatora: mylące **„Typy cywilizacji"** → **„Liczba cywilizacji"** (nagłówek suwaka); podpisy pod wartością: „Mniej/Więcej frakcji na mapie" |
+| **Gdzie było „typy"** | `ui-params.json` label · `newGameFlow.ts` (notatka kroku 4 + podsumowanie generacji) · `newGameMapDefaults.ts` (descs suwaka ±1) |
+| **Pliki** | `gra/data/ui-params.json` · `gra/src/ui/newGameFlow.ts` · `gra/src/map/newGameMapDefaults.ts` |
+| **Build** | ROBOCZA md5 `2e83ae94dabbaa36de85f169a5b69de4` · stamp `2e83ae94` · `gra-robocza/START.html` |
+| **Testy** | tsc OK |
+| **Od Ciebie** | Ctrl+F5 · Nowa gra → krok Ustawienia → sprawdź nagłówek suwaka |
+
+---
+
+## [2026-07-07] ✅ Gotowe — Kreator: switchery zamiast strzałek
+
+| | |
+|---|---|
+| **Kto** | Integrator |
+| **Co** | Krok 4 kreatora (Ustawienia): wiersze trudność, mapa, świat, tempo, miasta-państwa, liczba cywilizacji — **przełączniki segmentowe** zamiast ‹ › |
+| **Plik** | `gra/src/ui/newGameFlow.ts` |
+| **Build** | ROBOCZA md5 `dadfc0604fefacc2d8cfcb0f16b10cb2` · stamp `dadfc060` · `gra-robocza/START.html` |
+| **Testy** | tsc OK |
+| **Od Ciebie** | Ctrl+F5 · Nowa gra → krok Ustawienia → klik segmentów |
 
 ---
 

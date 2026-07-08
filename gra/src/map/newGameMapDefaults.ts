@@ -513,8 +513,8 @@ export function civTypesMenuForMapLabel(menuLabel: string): CivTypesMenuBundle {
   return menuBundleFromTriple(
     triple,
     'Zalecane dla tej mapy (obce klastry ≥5 hex od stolicy)',
-    'Mniej głównych typów na mapie',
-    'Więcej obcych typów cywilizacji',
+    'Mniej frakcji na mapie',
+    'Więcej frakcji na mapie',
   );
 }
 

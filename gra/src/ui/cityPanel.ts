@@ -187,6 +187,8 @@ export interface CityPanelConfig {
   onRushBuy?: (cityId: string, item: ProductionItem, koszt: number) => void;
   /** Called after the queue changes so the engine can react (e.g. refresh HUD). */
   onChange?: (cityId: string) => void;
+  /** ‹ › między miastami gracza — silnik przełącza widok 3D okolicy + etykietę. */
+  onSwitchCity?: (cityId: string) => void;
   /** Zmiana nazwy miasta — silnik wykonuje faktyczną zmianę w modelu. */
   onRename?: (cityId: string, newName: string) => void;
   /** Przełącz zarządcę automatycznego dla miasta. */
@@ -731,6 +733,98 @@ function cityFoodSplit(view: CityView): { total: number; doWzrostu: number; doAr
   return { total, doWzrostu, doArmii: total - doWzrostu };
 }
 
+function snapFoodSplitPct(n: number): number {
+  return Math.max(0, Math.min(100, Math.round(n)));
+}
+
+/** Custom drag suwaka wzrost vs armia — pointer events, bez native range. */
+function attachFoodSplitBar(
+  barWrap: HTMLElement,
+  initialPct: number,
+  onChange: (pct: number) => void,
+  onCommit: () => void,
+): void {
+  const gBar = barWrap.querySelector('[data-food-bar="wzrost"]') as HTMLElement | null;
+  const aBar = barWrap.querySelector('[data-food-bar="armia"]') as HTMLElement | null;
+  const handle = el('div', 'food-split-handle');
+  barWrap.appendChild(handle);
+
+  let currentPct = snapFoodSplitPct(initialPct);
+
+  const syncVisual = (pct: number) => {
+    const u = 100 - pct;
+    if (gBar) gBar.style.width = `${pct}%`;
+    if (aBar) aBar.style.width = `${u}%`;
+    handle.style.left = `${pct}%`;
+    barWrap.setAttribute('aria-valuenow', String(pct));
+  };
+  syncVisual(currentPct);
+
+  barWrap.setAttribute('role', 'slider');
+  barWrap.tabIndex = 0;
+  barWrap.setAttribute('aria-valuemin', '0');
+  barWrap.setAttribute('aria-valuemax', '100');
+  barWrap.setAttribute('aria-label', 'Podział żywności: wzrost miast versus armia');
+
+  const pctFromClientX = (clientX: number): number => {
+    const rect = barWrap.getBoundingClientRect();
+    if (rect.width <= 0) return currentPct;
+    return snapFoodSplitPct(((clientX - rect.left) / rect.width) * 100);
+  };
+
+  const apply = (pct: number, notify: boolean) => {
+    if (pct === currentPct) return;
+    currentPct = pct;
+    syncVisual(pct);
+    if (notify) onChange(pct);
+  };
+
+  let dragging = false;
+
+  const finishDrag = () => {
+    if (!dragging) return;
+    dragging = false;
+    barWrap.classList.remove('food-split-bar--dragging');
+    window.removeEventListener('pointermove', onPointerMove);
+    window.removeEventListener('pointerup', onPointerUp);
+    window.removeEventListener('pointercancel', onPointerUp);
+    onCommit();
+  };
+
+  const onPointerMove = (e: PointerEvent) => {
+    if (!dragging) return;
+    apply(pctFromClientX(e.clientX), true);
+  };
+
+  const onPointerUp = () => finishDrag();
+
+  const startDrag = (e: PointerEvent) => {
+    if (e.button !== 0) return;
+    e.preventDefault();
+    dragging = true;
+    barWrap.classList.add('food-split-bar--dragging');
+    barWrap.setPointerCapture(e.pointerId);
+    apply(pctFromClientX(e.clientX), true);
+    window.addEventListener('pointermove', onPointerMove);
+    window.addEventListener('pointerup', onPointerUp);
+    window.addEventListener('pointercancel', onPointerUp);
+  };
+
+  barWrap.addEventListener('pointerdown', startDrag);
+
+  barWrap.addEventListener('keydown', (e) => {
+    let next = currentPct;
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') next = snapFoodSplitPct(currentPct - 1);
+    else if (e.key === 'ArrowRight' || e.key === 'ArrowUp') next = snapFoodSplitPct(currentPct + 1);
+    else if (e.key === 'Home') next = 0;
+    else if (e.key === 'End') next = 100;
+    else return;
+    e.preventDefault();
+    apply(next, true);
+    onCommit();
+  });
+}
+
 function resolveEmpireSnap(city: City, map: GameMap | null, data: GameData | null): EmpireHudSnap {
   const fromEngine = cfg.getEmpireHud?.(city.ownerId);
   if (fromEngine) return fromEngine;
@@ -1159,18 +1253,16 @@ function ensureStyles(): void {
 .civ-cs .food-stat-lbl{font-size:0.68em;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;}
 .civ-cs .food-stat-val{font-size:0.92em;font-weight:700;line-height:1.15;}
 .civ-cs .food-split-wrap{margin-top:0.28em;}
-.civ-cs .food-split-bar{display:flex;height:1.35em;background:#111518;border:1px solid var(--border);border-radius:4px;overflow:hidden;position:relative;}
-.civ-cs .food-split-bar--interactive{overflow:visible;}
+.civ-cs .food-split-bar{display:flex;height:1.35em;background:#111518;border:1px solid var(--border);border-radius:4px;overflow:hidden;position:relative;touch-action:none;}
+.civ-cs .food-split-bar--interactive{overflow:visible;cursor:ew-resize;}
 .civ-cs .food-split-bar--interactive .food-split-g,.civ-cs .food-split-bar--interactive .food-split-a{border-radius:0;}
-.civ-cs .food-split-g,.civ-cs .food-split-a{height:100%;min-width:0;flex-shrink:0;transition:width .12s ease;}
+.civ-cs .food-split-g,.civ-cs .food-split-a{height:100%;min-width:0;flex-shrink:0;transition:width .12s ease;pointer-events:none;}
+.civ-cs .food-split-bar--dragging .food-split-g,.civ-cs .food-split-bar--dragging .food-split-a{transition:none;}
 .civ-cs .food-split-bar--ro{cursor:default;}
 .civ-cs .food-split-g{background:linear-gradient(180deg,#f0d878,#c89830 45%,#8a6018);}
 .civ-cs .food-split-a{background:linear-gradient(180deg,#5a3840,#3a2830);}
-.civ-cs .food-split-range{position:absolute;inset:0;width:100%;height:100%;margin:0;padding:0;-webkit-appearance:none;appearance:none;background:transparent;outline:none;cursor:ew-resize;z-index:3;}
-.civ-cs .food-split-range::-webkit-slider-runnable-track{height:100%;background:transparent;border:none;}
-.civ-cs .food-split-range::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:calc(100% + 6px);margin-top:-3px;border-radius:4px;background:linear-gradient(180deg,#faf0c8 0%,#e8d070 35%,#a9861f 100%);border:1px solid #6a5212;box-shadow:0 1px 6px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.35);cursor:ew-resize;}
-.civ-cs .food-split-range::-moz-range-track{height:100%;background:transparent;border:none;}
-.civ-cs .food-split-range::-moz-range-thumb{width:14px;height:calc(1.35em + 6px);border-radius:4px;background:linear-gradient(180deg,#faf0c8,#a9861f);border:1px solid #6a5212;box-shadow:0 1px 6px rgba(0,0,0,.55);cursor:ew-resize;}
+.civ-cs .food-split-handle{position:absolute;top:-3px;bottom:-3px;width:14px;margin-left:-7px;border-radius:4px;background:linear-gradient(180deg,#faf0c8 0%,#e8d070 35%,#a9861f 100%);border:1px solid #6a5212;box-shadow:0 1px 6px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.35);cursor:ew-resize;z-index:2;touch-action:none;pointer-events:none;}
+.civ-cs .food-split-bar:focus-visible{outline:2px solid rgba(232,216,138,.55);outline-offset:2px;}
 .civ-cs .food-split-labels{display:flex;justify-content:space-between;font-size:0.66em;color:var(--muted);margin-bottom:0.12em;}
 .civ-cs .praca-split-bar{display:flex;height:26px;background:rgba(255,255,255,0.08);border:1px solid rgba(232,216,138,0.18);border-radius:7px;overflow:hidden;position:relative;margin-bottom:0.38em;}
 .civ-cs .praca-split-b{background:linear-gradient(90deg,#a08030,#e8d88a);display:flex;align-items:center;justify-content:center;font-size:0.72em;color:#2e2708;font-weight:700;}
@@ -3460,25 +3552,12 @@ function renderMagazyn(mount: HTMLElement, city: City, view: CityView | null): v
 
   if (sliderEditable) {
     barWrap.classList.add('food-split-bar--interactive');
-    const inp = document.createElement('input');
-    inp.type = 'range';
-    inp.className = 'food-split-range';
-    inp.min = '0';
-    inp.max = '100';
-    inp.step = String(HANDEL_PCT_STEP);
-    inp.value = String(pctRozwoj);
-    inp.setAttribute('aria-label', 'Podział żywności: wzrost miast versus armia');
-    inp.addEventListener('input', () => {
-      const v = snapHandelPct(Number(inp.value));
-      const u = 100 - v;
-      const gBar = barWrap.querySelector('[data-food-bar="wzrost"]') as HTMLElement | null;
-      const aBar = barWrap.querySelector('[data-food-bar="armia"]') as HTMLElement | null;
-      if (gBar) gBar.style.width = `${v}%`;
-      if (aBar) aBar.style.width = `${u}%`;
-      cfg.onEmpireFoodSplitChange?.(city.ownerId, v);
-      rerender();
-    });
-    barWrap.appendChild(inp);
+    attachFoodSplitBar(
+      barWrap,
+      pctRozwoj,
+      (v) => cfg.onEmpireFoodSplitChange?.(city.ownerId, v),
+      () => rerender(),
+    );
   } else if (st) {
     barWrap.classList.add('food-split-bar--ro');
     const ro = el('div', 'muted');
@@ -4658,7 +4737,7 @@ function appendRecruitmentQueue(mount: HTMLElement, city: City, player: boolean,
   const data = gameData();
   const wrap = el('div');
   wrap.style.cssText = opts?.w4
-    ? 'margin-top:0.45em;padding-top:0.35em;border-top:1px solid rgba(232,216,138,.12);'
+    ? 'margin-bottom:0.45em;padding-bottom:0.35em;border-bottom:1px solid rgba(232,216,138,.12);'
     : 'margin-top:0.5em;border-top:1px solid var(--border);padding-top:0.35em;';
   const qh = el('div', opts?.w4 ? 'civ-w4-section-hd' : 'gold');
   if (opts?.w4) {
@@ -4816,11 +4895,9 @@ function renderProd(mount: HTMLElement, city: City, view: CityView | null): void
   const player = city.ownerId === 0; // AI cities -> read-only (no build/queue controls)
   const data = gameData();
 
-  // B7: obie kolejki na górze sekcji Produkcja
+  // B7: obie kolejki na górze sekcji Produkcja (wszystkie zakładki lewego raila)
   appendBuildQueueSection(mount, city, player);
-  if (activeCityPanelTab !== 'rekrutacja') {
-    appendRecruitmentQueue(mount, city, player);
-  }
+  appendRecruitmentQueue(mount, city, player);
 
   if (player && cfg.getBudowaState) {
     const bState = cfg.getBudowaState(city.id);
@@ -5240,7 +5317,6 @@ function renderPurchasableUnits(
 
   if (units.length === 0) {
     mount.appendChild(el('div', 'muted', '(brak jednostek do kupienia — zbadaj technologie / Koszary)'));
-    if (w4) appendRecruitmentQueue(mount, city, true, { w4: true });
     return;
   }
 
@@ -5253,7 +5329,6 @@ function renderPurchasableUnits(
     appendUnitRecruitCard(grid, city, it, data, skarb);
   }
   mount.appendChild(scroll);
-  if (w4) appendRecruitmentQueue(mount, city, true, { w4: true });
 }
 
 function buildUpgradeBonusDetailCard(
@@ -6010,7 +6085,11 @@ function switchCity(dir: -1 | 1): void {
   if (list.length < 2) return;
   const idx = list.findIndex(c => c.id === activeCity!.id);
   const next = list[(idx + dir + list.length) % list.length];
-  if (next) { activeCity = next; rerender(); }
+  if (next) {
+    activeCity = next;
+    cfg.onSwitchCity?.(next.id);
+    rerender();
+  }
 }
 
 function headerOrderBadge(city: City): string {

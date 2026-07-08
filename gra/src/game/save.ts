@@ -133,7 +133,7 @@ export interface SaveGame {
   autoMarch?: { leaderId: string; destQ: number; destR: number };
 
   /** A3: wszystkie zaplanowane marsze gracza (unitId → cel). */
-  plannedMarches?: Record<string, { destQ: number; destR: number }>;
+  plannedMarches?: Record<string, { destQ: number; destR: number; attackUnitId?: string }>;
 
   /** Optional free-form metadata: timestamp, label, map dimensions, etc. */
   meta?: any;

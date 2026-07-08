@@ -74,7 +74,8 @@ export interface PreBattleCallbacks {
   onAuto: () => void;
   onBattlefield: () => void;
   onCancel: () => void;
-  onSave?: () => void;
+  /** Zwraca true gdy zapis się powiódł (toast na overlay). */
+  onSave?: () => boolean;
 }
 
 export interface PreBattleOptions {
@@ -86,6 +87,8 @@ export interface PreBattleOptions {
 let overlayEl: HTMLDivElement | null = null;
 let keyHandler: ((e: KeyboardEvent) => void) | null = null;
 let pbCfg: PreBattleConfig = {};
+let saveToastEl: HTMLDivElement | null = null;
+let saveToastTimer: ReturnType<typeof setTimeout> | null = null;
 
 /** Wpięcie silnika — jak configureCityPanel (P0-D4). */
 export function configurePreBattle(config: PreBattleConfig): void {
@@ -105,10 +108,50 @@ export function showPreBattle(
 
 export function hidePreBattle(): void {
   detachKeyboard();
+  clearPreBattleSaveToast();
   if (overlayEl !== null) {
     overlayEl.remove();
     overlayEl = null;
   }
+}
+
+function clearPreBattleSaveToast(): void {
+  if (saveToastTimer !== null) {
+    clearTimeout(saveToastTimer);
+    saveToastTimer = null;
+  }
+  if (saveToastEl !== null) {
+    saveToastEl.remove();
+    saveToastEl = null;
+  }
+}
+
+function showPreBattleSaveToast(overlay: HTMLElement, message: string, ok: boolean): void {
+  clearPreBattleSaveToast();
+  const toast = el('div');
+  css(toast, {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    zIndex: '20',
+    padding: '14px 28px',
+    borderRadius: '10px',
+    fontSize: '15px',
+    fontFamily: BATTLE_FONT,
+    pointerEvents: 'none',
+    border: '2px solid ' + (ok ? 'rgba(122,208,160,.65)' : 'rgba(255,112,112,.65)'),
+    background: ok ? 'rgba(18,40,28,.96)' : 'rgba(40,18,18,.96)',
+    color: ok ? '#7ad0a0' : '#ff7070',
+    boxShadow: '0 10px 36px rgba(0,0,0,.6)',
+    letterSpacing: '.04em',
+  });
+  toast.textContent = message;
+  overlay.appendChild(toast);
+  saveToastEl = toast;
+  saveToastTimer = setTimeout(() => {
+    clearPreBattleSaveToast();
+  }, 2500);
 }
 
 export function isPreBattleOpen(): boolean {
@@ -628,6 +671,7 @@ function buildBottomBar(
   cb: PreBattleCallbacks,
   info: PreBattleInfo,
   dismiss: () => void,
+  overlay: HTMLDivElement,
   opts?: PreBattleOptions,
 ): HTMLElement {
   const canRetreat = info.canRetreat !== false;
@@ -652,7 +696,15 @@ function buildBottomBar(
   wrap.appendChild(buildTwButton('Atakuj \u2014 auto', () => { cb.onAuto(); dismiss(); }, 'auto', PB_SVG.auto));
 
   if (cb.onSave) {
-    wrap.appendChild(buildTwButton('Zapisz', () => { cb.onSave!(); }, 'outline'));
+    wrap.appendChild(buildTwButton('Zapisz', () => {
+      const ok = cb.onSave!();
+      const tur = info.tura !== undefined ? String(info.tura) : '?';
+      showPreBattleSaveToast(
+        overlay,
+        ok ? 'Zapisano \u00B7 tura ' + tur : 'Zapis nieudany (brak localStorage?)',
+        ok,
+      );
+    }, 'outline'));
   }
 
   return wrap;
@@ -689,7 +741,7 @@ function buildOverlay(info: PreBattleInfo, cb: PreBattleCallbacks, opts?: PreBat
   overlay.appendChild(buildRosterColumn(info.atakujacy, 'atk'));
   overlay.appendChild(buildRosterColumn(info.obronca, 'def'));
   overlay.appendChild(buildCenterPanel(info, opts));
-  overlay.appendChild(buildBottomBar(cb, info, () => hidePreBattle(), opts));
+  overlay.appendChild(buildBottomBar(cb, info, () => hidePreBattle(), overlay, opts));
 
   const defaultManual = (opts?.defaultAction ?? 'manual') === 'manual';
   const hint = el('div');

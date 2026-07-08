@@ -226,7 +226,13 @@ function renderCanvas(
   }
 
   if (data.markers !== undefined && data.markers.length > 0) {
+    const fogByKey = new Map<string, MinimapHexData['fog']>();
+    for (const hex of data.hexes) {
+      fogByKey.set(`${hex.q},${hex.r}`, hex.fog);
+    }
     for (const m of data.markers) {
+      const fog = fogByKey.get(`${m.q},${m.r}`);
+      if (fog === 'hidden') continue;
       const { x, y } = axialMinimapXY(m.q, m.r);
       const cx = x * scale + offX;
       const cy = y * scale + offY;

@@ -40,6 +40,7 @@ export interface MinimapData {
 export interface MinimapCityInput {
   q: number;
   r: number;
+  ownerId?: number;
   ownerColor?: string;
   isOutpost?: boolean;
 }
@@ -47,6 +48,7 @@ export interface MinimapCityInput {
 export interface MinimapUnitInput {
   q: number;
   r: number;
+  ownerId?: number;
   ownerColor?: string;
 }
 
@@ -66,6 +68,10 @@ export interface GetMinimapDataOptions {
   visible?: Set<string>;
   /** Odkryte hexy (mgla). */
   explored?: Set<string>;
+  /** ownerId gracza (domyślnie 0) — własne miasta/jednostki zawsze na minimapie. */
+  playerOwnerId?: number;
+  /** false = dev FoW wył. (jak refreshFog bez mgły). */
+  fogOn?: boolean;
 }
 
 const TEREN_KEY: Record<TerenBazowy, string> = {
@@ -81,6 +87,39 @@ const TEREN_KEY: Record<TerenBazowy, string> = {
 const DEFAULT_CITY_COLOR = '#ffd479';
 const DEFAULT_OUTPOST_COLOR = '#88aaff';
 const DEFAULT_UNIT_COLOR = '#ffffff';
+
+type MinimapFogState = 'hidden' | 'explored' | 'visible';
+
+function hexFogState(
+  key: string,
+  visible: Set<string>,
+  explored: Set<string>,
+): MinimapFogState {
+  if (visible.has(key)) return 'visible';
+  if (explored.has(key)) return 'explored';
+  return 'hidden';
+}
+
+/** Zgodne z cityRenderer.applyFogVisibility + visibleUnitsList (main.ts). */
+function isMinimapMarkerVisible(
+  q: number,
+  r: number,
+  ownerId: number,
+  kind: 'city' | 'outpost' | 'unit',
+  opts: {
+    useFog: boolean;
+    fogOn: boolean;
+    visible: Set<string>;
+    explored: Set<string>;
+    playerOwnerId: number;
+  },
+): boolean {
+  if (!opts.useFog || !opts.fogOn) return true;
+  if (ownerId === opts.playerOwnerId) return true;
+  const key = `${q},${r}`;
+  if (kind === 'unit') return opts.visible.has(key);
+  return opts.visible.has(key) || opts.explored.has(key);
+}
 
 function computeViewport(
   map: GameMap,
@@ -120,17 +159,33 @@ export function getMinimapData(
   units: MinimapUnitInput[] = [],
   options: GetMinimapDataOptions = {},
 ): MinimapData {
-  const { playerColors = {}, visible, explored } = options;
+  const {
+    playerColors = {},
+    visible,
+    explored,
+    playerOwnerId = 0,
+    fogOn = true,
+  } = options;
   const useFog = visible !== undefined && explored !== undefined;
+  const fogOpts = {
+    useFog,
+    fogOn,
+    visible: visible ?? new Set<string>(),
+    explored: explored ?? new Set<string>(),
+    playerOwnerId,
+  };
 
   const ownerOverride = new Map<string, string>();
   for (const c of cities) {
+    const kind = c.isOutpost ? 'outpost' as const : 'city' as const;
+    if (!isMinimapMarkerVisible(c.q, c.r, c.ownerId ?? -1, kind, fogOpts)) continue;
     ownerOverride.set(
       `${c.q},${c.r}`,
       c.ownerColor ?? (c.isOutpost ? DEFAULT_OUTPOST_COLOR : DEFAULT_CITY_COLOR),
     );
   }
   for (const u of units) {
+    if (!isMinimapMarkerVisible(u.q, u.r, u.ownerId ?? -1, 'unit', fogOpts)) continue;
     const key = `${u.q},${u.r}`;
     if (!ownerOverride.has(key) && u.ownerColor) {
       ownerOverride.set(key, u.ownerColor);
@@ -141,18 +196,20 @@ export function getMinimapData(
   for (const hex of Object.values(map.hexes)) {
     const { q, r } = hex.coords;
     const key = `${q},${r}`;
+    const fog: MinimapFogState | undefined = useFog
+      ? hexFogState(key, fogOpts.visible, fogOpts.explored)
+      : undefined;
     let ownerColor = ownerOverride.get(key);
     if (!ownerColor && hex.wlasciciel) {
       ownerColor = playerColors[hex.wlasciciel];
     }
+    if (fog === 'hidden') ownerColor = undefined;
     hexes.push({
       q,
       r,
       teren: TEREN_KEY[hex.terenBazowy] ?? 'Rownina',
       ownerColor,
-      fog: useFog
-        ? (visible!.has(key) ? 'visible' : explored!.has(key) ? 'explored' : 'hidden')
-        : undefined,
+      fog,
     });
   }
 
@@ -160,6 +217,8 @@ export function getMinimapData(
 
   const markers: MinimapMarkerData[] = [];
   for (const c of cities) {
+    const kind = c.isOutpost ? 'outpost' as const : 'city' as const;
+    if (!isMinimapMarkerVisible(c.q, c.r, c.ownerId ?? -1, kind, fogOpts)) continue;
     markers.push({
       q: c.q,
       r: c.r,
@@ -168,6 +227,7 @@ export function getMinimapData(
     });
   }
   for (const u of units) {
+    if (!isMinimapMarkerVisible(u.q, u.r, u.ownerId ?? -1, 'unit', fogOpts)) continue;
     markers.push({
       q: u.q,
       r: u.r,

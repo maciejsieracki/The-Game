@@ -63,8 +63,10 @@ ${DIPLO_1E_SHARED_CSS}
 .civ-diplo-list-hud .dl-scroll::-webkit-scrollbar-thumb{background:rgba(232,216,138,.22);border-radius:3px;}
 .civ-diplo-list-hud .dl-head{padding:0.35rem 0.15rem 0.55rem;border-bottom:1px solid rgba(232,216,138,.18);
   display:flex;justify-content:space-between;align-items:center;gap:0.5em;}
+.civ-diplo-list-hud .dl-head-left{display:flex;align-items:center;gap:0.35em;}
+.civ-diplo-list-hud .dl-head-text{display:flex;flex-direction:column;align-items:center;text-align:center;}
 .civ-diplo-list-hud .dl-head-title{font-family:Georgia,'Times New Roman',serif;font-size:1.35em;color:#e8d88a;letter-spacing:.04em;}
-.civ-diplo-list-hud .dl-head-sub{font-size:0.62em;letter-spacing:.28em;text-transform:uppercase;color:#8a8070;margin-top:0.12em;}
+.civ-diplo-list-hud .dl-head-sub{font-size:0.62em;letter-spacing:.28em;text-transform:uppercase;color:#8a8070;margin-top:0.12em;text-align:center;}
 .civ-diplo-list-hud .dl-head-ic{display:flex;align-items:center;gap:0.35em;color:#e8d88a;}
 .civ-diplo-list-hud .dl-head-ic .dip-ic{width:22px;height:22px;}
 .civ-diplo-list-hud .dl-empty{font-size:0.86em;color:#8a8070;line-height:1.5;padding:0.65em 0.35em;font-style:italic;}
@@ -128,10 +130,11 @@ export function createDiploListHud(config: DiploListHudConfig): DiploListHudApi 
     const head = document.createElement('div');
     head.className = 'dl-head';
     const headLeft = document.createElement('div');
+    headLeft.className = 'dl-head-left';
     const dipIc = dipBrandIconHtml('tb-diplomacy', 24, 'dip-ic');
     headLeft.innerHTML =
       (dipIc ? `<div class="dl-head-ic">${dipIc}</div>` : '') +
-      '<div><div class="dl-head-title">Dyplomacja</div><div class="dl-head-sub">The Game · 1E</div></div>';
+      '<div class="dl-head-text"><div class="dl-head-title">Dyplomacja</div><div class="dl-head-sub">THE GAME</div></div>';
     head.appendChild(headLeft);
     const closeWrap = document.createElement('div');
     closeWrap.innerHTML = dipCloseBtnHtml('Zamknij listę (Esc)');

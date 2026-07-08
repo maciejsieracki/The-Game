@@ -10,8 +10,10 @@ import type { ImprovementKey } from '../render/improvements';
 import { IMPROVEMENTS } from '../render/improvements';
 import {
   isInTerritory,
+  isPlayerTerritoryHex,
   axialDistance,
   type CityNode,
+  type TerritoryNode,
 } from './territory';
 import terrainImprovements from '../../data/terrain-improvements.json';
 import {
@@ -48,12 +50,18 @@ export interface ImprovementBuildState {
   playerEra?: number;
   /** Właściciel imperium — unlock hodowli po pierwszym złożu. */
   playerOwnerId?: string | null;
+  /** Wszystkie węzły terytorium (ownerId) — overlap → territoryOwnerAt. */
+  territoryNodes?: readonly TerritoryNode[];
+  /** Numeryczny owner gracza (domyślnie 0). */
+  playerOwnerIdNum?: number;
   /** Heks → klucze ulepszeń (warstwy); fallback: hex.ulepszenia / hex.ulepszenie. */
   placedImprovements?: ReadonlyMap<string, string | readonly string[]>;
   /** Zbadane technologie gracza (nazwy z tech.json). */
   researchedTechs?: ReadonlySet<string>;
   /** Heksy z trwającą wycinką lasu (wyrąb) — blokada ponownego wyboru. */
   clearingHexKeys?: ReadonlySet<string>;
+  /** Id pending w tej turze (`hexKey:improvementKey`) — ponowny klik = cofnięcie. */
+  pendingUndoKeys?: ReadonlySet<string>;
 }
 
 export interface ImprovementTypeInfo {
@@ -324,6 +332,8 @@ function hexZloze(hex: HexWithZloze | undefined): string | undefined {
 function createQualifier(state: ImprovementBuildState) {
   const { map, cityNodes, playerCivArchetype } = state;
   const playerEra = state.playerEra ?? 1;
+  const playerOwnerIdNum = state.playerOwnerIdNum ?? 0;
+  const territoryNodes = state.territoryNodes ?? [];
   const placedKeys = state.placedKeys ?? new Set<string>();
   const roadKeys = state.roadKeys ?? new Set<string>();
   const riverHexSet = buildRiverHexSet(map);
@@ -334,10 +344,14 @@ function createQualifier(state: ImprovementBuildState) {
     state.playerOwnerId,
   );
 
+  function inPlayerTerritory(q: number, r: number): boolean {
+    return isPlayerTerritoryHex(q, r, cityNodes, territoryNodes, playerOwnerIdNum);
+  }
+
   function isOnTerritoryEdge(q: number, r: number): boolean {
-    if (isInTerritory(q, r, cityNodes)) return true;
+    if (inPlayerTerritory(q, r)) return true;
     for (const nb of hexNeighbors(q, r)) {
-      if (isInTerritory(nb.q, nb.r, cityNodes)) return true;
+      if (inPlayerTerritory(nb.q, nb.r)) return true;
     }
     return false;
   }
@@ -390,6 +404,8 @@ function createQualifier(state: ImprovementBuildState) {
       return hasDroga && !hasBruk;
     }
 
+    if (state.pendingUndoKeys?.has(`${hexKey}:${key}`)) return true;
+
     if (key !== 'droga') {
       const nonFoodExisting = existing.filter(k => !FOOD_LAYER_KEYS.has(k));
       if (isFoodKey(key)) {
@@ -406,78 +422,79 @@ function createQualifier(state: ImprovementBuildState) {
       case 'farma':
         if (!FLAT_FARM.has(teren)) return false;
         if (hasBlockingDepositForFarm(hex)) return false;
-        if (!isInTerritory(q, r, cityNodes)) return false;
+        if (!inPlayerTerritory(q, r)) return false;
         return true;
       case 'irygacja':
         if (!FLAT_IRR.has(teren)) return false;
         if (hasBlockingDepositForFarm(hex)) return false;
-        if (!isInTerritory(q, r, cityNodes)) return false;
+        if (!inPlayerTerritory(q, r)) return false;
         return isRiverAdjacent(q, r);
       case 'bydlo':
         if (!FLAT_FARM.has(teren)) return false;
-        if (!isInTerritory(q, r, cityNodes)) return false;
+        if (!inPlayerTerritory(q, r)) return false;
         if (!isLivestockAllowed(playerCivArchetype, key, playerEra)) return false;
         return isLivestockUnlockedForPlacement(key, hex, empireUnlocks);
       case 'owce':
         if (teren !== TerenBazowy.Wzgorza) return false;
-        if (!isInTerritory(q, r, cityNodes)) return false;
+        if (!inPlayerTerritory(q, r)) return false;
         if (!isLivestockAllowed(playerCivArchetype, key, playerEra)) return false;
         return isLivestockUnlockedForPlacement(key, hex, empireUnlocks);
       case 'lama':
         if (teren === TerenBazowy.Pustynia) return false;
         if (!TERRAIN_ALLOW.lama?.has(teren)) return false;
-        if (!isInTerritory(q, r, cityNodes)) return false;
+        if (!inPlayerTerritory(q, r)) return false;
         if (!isLivestockAllowed(playerCivArchetype, key, playerEra)) return false;
         return isLivestockUnlockedForPlacement(key, hex, empireUnlocks);
       case 'stadnina':
-        if (!isInTerritory(q, r, cityNodes)) return false;
+        if (!inPlayerTerritory(q, r)) return false;
         if (teren !== TerenBazowy.Laka && teren !== TerenBazowy.Rownina) return false;
         if (!isLivestockAllowed(playerCivArchetype, key, playerEra)) return false;
         return hex.nakladka === Nakladka.ZlozeKonia
           || isLivestockUnlockedForPlacement(key, hex, empireUnlocks);
       case 'droga':
-        return TERENY_LADU.has(teren) && isRoadQualified(q, r);
+        return TERENY_LADU.has(teren) && inPlayerTerritory(q, r) && isRoadQualified(q, r);
       case 'posterunek':
         return TERENY_LADU.has(teren) && isOnTerritoryEdge(q, r);
       case 'fort':
-        return TERENY_LADU.has(teren) && isInTerritory(q, r, cityNodes);
+        return TERENY_LADU.has(teren) && inPlayerTerritory(q, r);
       case 'glinianka':
-        return nakladka === Nakladka.ZlozeGliny && isInTerritory(q, r, cityNodes);
+        return nakladka === Nakladka.ZlozeGliny && inPlayerTerritory(q, r);
       case 'kopalnia':
-        if (!isInTerritory(q, r, cityNodes)) return false;
+        if (!inPlayerTerritory(q, r)) return false;
         if (teren !== TerenBazowy.Gory) return nakladka === Nakladka.ZlozeRudy;
         return zloze === 'miedz' || zloze === 'zelazo' || zloze === 'wegiel' ||
           nakladka === Nakladka.ZlozeRudy;
       case 'wyrab':
+        if (state.pendingUndoKeys?.has(`${hexKey}:wyrab`)) return true;
         if (state.clearingHexKeys?.has(hexKey)) return false;
-        return nakladka === Nakladka.Las && isInTerritory(q, r, cityNodes);
+        return nakladka === Nakladka.Las && inPlayerTerritory(q, r);
       case 'tartak': {
-        if (!isInTerritory(q, r, cityNodes)) return false;
+        if (!inPlayerTerritory(q, r)) return false;
         return TARTAK_TERENY.has(teren);
       }
       case 'oboz_lowiecki': {
-        if (!isInTerritory(q, r, cityNodes)) return false;
+        if (!inPlayerTerritory(q, r)) return false;
         return nakladka === Nakladka.Las || hasAnimalDeposit(nakladka);
       }
       case 'warzelnia_soli':
-        if (!isInTerritory(q, r, cityNodes)) return false;
+        if (!inPlayerTerritory(q, r)) return false;
         return zloze === 'sol';
       case 'popalnia_brazu':
-        if (!isInTerritory(q, r, cityNodes)) return false;
+        if (!inPlayerTerritory(q, r)) return false;
         if (teren !== TerenBazowy.Wzgorza && teren !== TerenBazowy.Gory) return false;
         return hexHasRudaDeposit(hex);
       case 'tarasy': {
-        if (!isInTerritory(q, r, cityNodes)) return false;
+        if (!inPlayerTerritory(q, r)) return false;
         if (hasBlockingDepositForFarm(hex)) return false;
         return teren === TerenBazowy.Wzgorza;
       }
       case 'lodzie_rybackie':
-        if (!isInTerritory(q, r, cityNodes)) return false;
+        if (!inPlayerTerritory(q, r)) return false;
         return teren === TerenBazowy.Wybrzeze || teren === TerenBazowy.Morze;
       default: {
         const allowed = TERRAIN_ALLOW[key];
         if (!TERENY_LADU.has(teren)) return false;
-        if (!isInTerritory(q, r, cityNodes)) return false;
+        if (!inPlayerTerritory(q, r)) return false;
         if (allowed && !allowed.has(teren)) return false;
         return true;
       }
@@ -603,26 +620,6 @@ export function createImprovementBuildApi(
 
   const researched = state.researchedTechs ?? new Set<string>();
 
-  const listTypes = (): ImprovementTypeInfo[] =>
-    IMPROVEMENTS.map(({ key, label, epoka }) => {
-      const meta = getImprovementMeta(key);
-      const techId = meta?.techId ?? null;
-      const typ = meta?.typ ?? 'ulepszenie';
-      const koszt = meta?.kosztPraca ?? readWorkCost(key);
-      const unlocked = isImprovementTechUnlocked(key, researched);
-      return {
-        key,
-        label: meta?.nazwa ?? label,
-        kosztPraca: koszt,
-        epoka,
-        typ,
-        techId,
-        techUnlocked: unlocked,
-        techLabel: techId,
-        lockHint: unlocked ? null : getImprovementLockHint(key, researched),
-      };
-    });
-
   const getWorkCost = (key: ImprovementKey): number =>
     getImprovementMeta(key)?.kosztPraca ?? readWorkCost(key);
 
@@ -637,6 +634,34 @@ export function createImprovementBuildApi(
     }
     return out;
   };
+
+  const listTypes = (): ImprovementTypeInfo[] =>
+    IMPROVEMENTS.map(({ key, label, epoka }) => {
+      const meta = getImprovementMeta(key);
+      const techId = meta?.techId ?? null;
+      const typ = meta?.typ ?? 'ulepszenie';
+      const koszt = meta?.kosztPraca ?? readWorkCost(key);
+      const unlocked = isImprovementTechUnlocked(key, researched);
+      const canPlaceAny = getQualifyingHexes(key).length > 0;
+      const territoryHint = unlocked && !canPlaceAny
+        ? (key === 'wyrab'
+          ? 'Brak lasu w twoim terytorium'
+          : 'Brak heksów w twoim terytorium')
+        : null;
+      return {
+        key,
+        label: meta?.nazwa ?? label,
+        kosztPraca: koszt,
+        epoka,
+        typ,
+        techId,
+        techUnlocked: unlocked && canPlaceAny,
+        techLabel: techId,
+        lockHint: !unlocked
+          ? getImprovementLockHint(key, researched)
+          : territoryHint,
+      };
+    });
 
   const createBuildRequest = (
     key: ImprovementKey,
@@ -661,6 +686,21 @@ export function createImprovementBuildApi(
   const handleHexClick = (q: number, r: number): ImprovementBuildRequest | null => {
     const key = mode.activeKey;
     if (!key) return null;
+    const hexKey = `${q},${r}`;
+    if (state.pendingUndoKeys?.has(`${hexKey}:${key}`)) {
+      const meta = getImprovementMeta(key);
+      const req: ImprovementBuildRequest = {
+        type: 'buildImprovement',
+        key,
+        q,
+        r,
+        hexKey,
+        kosztPraca: meta?.kosztPraca ?? readWorkCost(key),
+        action: meta?.typ ?? 'ulepszenie',
+      };
+      mode.onSelect?.(req);
+      return req;
+    }
     const req = createBuildRequest(key, q, r);
     if (req) mode.onSelect?.(req);
     return req;

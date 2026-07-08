@@ -8,6 +8,7 @@ import type { GameMap } from '../types/map';
 import type { City } from './cities';
 import type { RuntimeUnit } from '../units/setup';
 import { hexNeighborCoords } from '../units/setup';
+import { syncStackRuchLeft } from './armyMerge';
 import { applyLossPctToRoster } from './auto-battle-power';
 import type { UnitPowerInput } from './unit-power';
 
@@ -233,13 +234,18 @@ function retreatDefendersOnTie(input: PostBattleMapInput): void {
   placeFanOutGroup(input, defAlive, lead, dir, !!input.cityOnBattleHex);
 }
 
-function moveAtkLeadOntoBattleHex(input: PostBattleMapInput): void {
-  const lead = liveUnit(input.units, input.atkAnchor.id);
-  if (!lead) return;
-  if (!input.isUnitAt(input.battleQ, input.battleR, lead.id)) {
-    lead.q = input.battleQ;
-    lead.r = input.battleR;
+/** Po wygranej ATK: cały ocalony skład na heksie bitwy (stos, nie rozdział). */
+function moveAtkRosterOntoBattleHex(input: PostBattleMapInput): void {
+  const liveAtk = input.atkRoster
+    .map(r => liveUnit(input.units, r.id))
+    .filter((u): u is RuntimeUnit => !!u);
+  if (liveAtk.length === 0) return;
+
+  for (const u of liveAtk) {
+    u.q = input.battleQ;
+    u.r = input.battleR;
   }
+  if (liveAtk.length > 1) syncStackRuchLeft(liveAtk);
 }
 
 function retreatAtkRosterToStart(input: PostBattleMapInput): void {
@@ -273,8 +279,8 @@ export function applyPostBattleMap(input: PostBattleMapInput): PostBattleMapResu
 
   if (input.winner === 'atakujacy') {
     if (input.cityOnBattleHex) wipeDefenderOnCityCenter(input);
-    moveAtkLeadOntoBattleHex(input);
     retreatDefendersAfterAtkWin(input);
+    moveAtkRosterOntoBattleHex(input);
   } else if (input.winner === 'obronca') {
     retreatAtkRosterToStart(input);
     for (const ref of input.defRoster) {

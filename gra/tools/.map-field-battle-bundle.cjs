@@ -192,8 +192,8 @@ var terrain_improvements_default = {
     bonus: {},
     surowiecOdblokowany: null,
     teren: "Las",
-    warunek: "darmowa wycinka; +20 Pracy/tur\u0119 \xD7 3 tury (=60); potem teren bazowy bez lasu",
-    koszt_praca: 0,
+    warunek: "koszt 5 Pracy na start; +20 Pracy/tur\u0119 \xD7 3 tury (=60); potem teren bazowy bez lasu",
+    koszt_praca: 5,
     tech: null,
     wycinka: {
       praca_per_tura: 20,

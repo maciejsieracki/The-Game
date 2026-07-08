@@ -73,3 +73,16 @@ export function formatCivEntryEpochLabel(civ: CivEntryEpochRow): string {
   };
   return `Wejście: ${names[entry]} · dostępne: ${available.map((e) => names[e]).join(', ')}`;
 }
+
+/** Etykieta epoki na HUD mapy (panel Moc) — z indeksu gry 1=Kamień… */
+const EPOCH_HUD_LABELS: Record<GameEpochId, string> = {
+  kamien: 'Epoka kamienia',
+  braz: 'Epoka brązu',
+  zelazo: 'Epoka żelaza',
+};
+
+export function gameEpochHudLabel(eraIndex: number): string {
+  const idx = Math.max(1, Math.min(GAME_EPOCH_ORDER.length, Math.round(eraIndex))) - 1;
+  const id = GAME_EPOCH_ORDER[idx] ?? 'kamien';
+  return EPOCH_HUD_LABELS[id] ?? `Epoka ${eraIndex}`;
+}

@@ -123,3 +123,20 @@ export function territoryOwnerAt(
 
   return bestOwner;
 }
+
+/**
+ * Heks w terytorium danego właściciela — z rozstrzygnięciem overlapu (najbliższe miasto).
+ * Samo isInTerritory(playerNodes) zwraca true także na heksach faktycznie należących do AI
+ * (np. las przy Sparcie w strefie dwóch zasięgów).
+ */
+export function isPlayerTerritoryHex(
+  q: number,
+  r: number,
+  playerNodes: CityNode[],
+  allNodes: readonly TerritoryNode[],
+  playerOwnerId = 0,
+): boolean {
+  if (!isInTerritory(q, r, playerNodes)) return false;
+  if (!allNodes.length) return true;
+  return territoryOwnerAt(q, r, allNodes) === playerOwnerId;
+}
