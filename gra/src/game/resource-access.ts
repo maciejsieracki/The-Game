@@ -18,7 +18,7 @@ import { isDepositVisible, zlozeMinEraFor } from '../map/deposit-era';
 
 import { hexDistance } from '../units/setup';
 
-import { citySightRadius } from './okolica';
+import { citySightRadius, hexKeysWithinRadius } from './okolica';
 
 import { hasBrazAccess } from './braz-access';
 
@@ -324,7 +324,11 @@ function hexesInCitySight(
 
   const out: Array<{ hexKey: string; hex: typeof map.hexes[string] & HexZloze }> = [];
 
-  for (const [hexKey, hex] of Object.entries(map.hexes)) {
+  for (const hexKey of hexKeysWithinRadius(city.q, city.r, sight, map)) {
+
+    const hex = map.hexes[hexKey];
+
+    if (!hex) continue;
 
     if (hexDistance(city.q, city.r, hex.coords.q, hex.coords.r) > sight) continue;
 

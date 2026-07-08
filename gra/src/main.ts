@@ -1684,7 +1684,8 @@ async function boot(): Promise<void> {
         }
         cityPanelViewCityId = null;
       }
-      refreshFog();
+      // D3: usunięty zbędny refreshFog() przy otwarciu panelu miasta — mgła się tu nie zmienia
+      // (widoczność miast ustawia cityRenderer.sync; poprawność mgły dają realne zdarzenia: ruch/tura).
       cityRenderer.sync(cities, _cityRenderOpts());
       refreshRangeOverlays();
       refreshWorkerFieldOverlay();

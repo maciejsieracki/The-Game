@@ -48,6 +48,23 @@ export function citySightRadius(population: number, kulturaSkumulowana = 0): num
   return base + cityBorderRadius(kulturaSkumulowana);
 }
 
+/**
+ * D1: lokalna enumeracja heksów w promieniu `rad` (bez skanu całej mapy) — O(rad²).
+ * Zwraca klucze istniejących heksów w dysku hex wokół (cq,cr); równoważne filtrowi hexDistance<=rad.
+ */
+export function hexKeysWithinRadius(cq: number, cr: number, rad: number, map: GameMap): string[] {
+  const out: string[] = [];
+  const r = Number.isFinite(rad) && rad > 0 ? Math.floor(rad) : 0;
+  for (let dq = -r; dq <= r; dq++) {
+    const lo = Math.max(-r, -dq - r), hi = Math.min(r, -dq + r);
+    for (let dr = lo; dr <= hi; dr++) {
+      const key = `${cq + dq},${cr + dr}`;
+      if (map.hexes[key]) out.push(key);
+    }
+  }
+  return out;
+}
+
 
 export interface TileYield { zywnosc?: number; praca?: number; handel?: number; }
 export interface OkolicaTile { q: number; r: number; key: string; dist: number; }
@@ -62,7 +79,7 @@ export function okolicaTiles(
 ): OkolicaTile[] {
   const out: OkolicaTile[] = [];
   const rad = Number.isFinite(radius) && radius > 0 ? Math.floor(radius) : 1;
-  for (const key of Object.keys(map.hexes)) {
+  for (const key of hexKeysWithinRadius(centerQ, centerR, rad, map)) {
     const parts = key.split(',');
     const q = Number(parts[0]);
     const rr = Number(parts[1]);

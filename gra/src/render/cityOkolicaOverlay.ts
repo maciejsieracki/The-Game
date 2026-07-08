@@ -9,7 +9,7 @@ import { TerenBazowy } from '../types/hex';
 import { axialToWorld, HEX_R } from './hexutil';
 import { buildRangeOverlayGroup, disposeRangeOverlayGroup, type RangeOverlayStyle } from './rangeOverlay';
 import { GAME_MAP_RENDER_STYLE, terrainSurfaceTopY } from './mapRenderStyle';
-import type { TileYield } from '../game/okolica';
+import { hexKeysWithinRadius, type TileYield } from '../game/okolica';
 import { hexDistance } from '../units/setup';
 
 export const CITY_RANGE_OVERLAY_STYLE: RangeOverlayStyle = {
@@ -190,7 +190,7 @@ function placeYieldLabelSprite(sprite: THREE.Sprite, map: GameMap, q: number, r:
 
 function collectRangeKeys(map: GameMap, cq: number, cr: number, range: number): Set<string> {
   const keys = new Set<string>();
-  for (const key of Object.keys(map.hexes)) {
+  for (const key of hexKeysWithinRadius(cq, cr, range, map)) {
     const [qs, rs] = key.split(',');
     const q = Number(qs);
     const r = Number(rs);
