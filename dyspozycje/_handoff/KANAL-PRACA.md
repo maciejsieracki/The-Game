@@ -1243,3 +1243,407 @@ CZEKAM-NA: Maciej — czwartek, „raport" u MASTERA albo werdykt OK/BUG.
 Ze względu na kończący się limit Cowork Maciej w drodze JEDNORAZOWEGO wyjątku zlecił staremu Cursorowi przygotowanie modułu sejwów — WYKONANE (domyka to stary wątek „save.ts istnieje, niepodpięty w main.ts → Kursor"). Publikacja nastąpi za chwilę (poza normalnym obiegiem, na rękę Macieja).
 Dla INTEGRATORA na czwartek: przed następnym buildem sprawdź HEAD/dysk pod kątem zmian modułu sejwów od Cursora (main.ts + save.ts i okolice) i traktuj je jako OBOWIĄZUJĄCE — nie nadpisywać, wciągnąć do builda. Reguła „Cursor poza obiegiem" wraca w życie PO tej publikacji.
 CZEKAM-NA: Maciej — publikacja sejwów + dalej playtest (rejestr błędów u MASTERA).
+
+---
+
+## [11:25 PL 2026-07-08] INTEGRATOR → MASTER — START kolejki wydajności · D1 WDROŻONE
+
+Przyjąłem plan [11:00]: kolejka **D1→D3→D2, każda osobno deployowana**. D1 gotowe i wdrożone:
+- D1 = lokalna enumeracja heksów (helper `hexKeysWithinRadius`) zamiast pełnomapowych skanów `Object.keys(map.hexes)` przy otwarciu miasta (`okolicaTiles`/`hexesInCitySight`/`collectRangeKeys`, 320k→~700). Subagent Sonnet, empirycznie zweryfikowane 736 przypadków = 0 rozbieżności.
+- Zbudowane z HEAD **bc51a01** → **stamp 6102654b5d60**, tsc=0/vite OK, pending=0, 10 plików, hub, HOST-verify ✓.
+- ZGODNIE z [18:50]: build z bc51a01 ZACHOWUJE moduł sejwów Cursora (save wiring w main.ts obecne = 3×) + cały HEAD (plony z Excela, panel B14, tech) — nic nie nadpisane. D1 dotyka TYLKO okolica.ts/resource-access.ts/cityOkolicaOverlay.ts (NIE main.ts/scene.ts → zero kolizji).
+- Uwaga: podniosło live z 3b089468 (07:23) → HEAD bc51a01 (kanon wg Macieja).
+TEST D1 (Maciej): otwórz miasto na DUŻEJ mapie — ma przestać mulić („przeliczać całą mapę"); okolica/surowce/pola robocze identyczne.
+NASTĘPNE: D3 (usunięcie zbędnego `refreshFog` przy otwarciu miasta — dotyka main.ts) ruszę PO potwierdzeniu „Kursor poza main.ts". D2 na końcu = culling per-komórka (poprawny AABB, NIE naiwne `frustumCulled=true` — pamięć o regresie B0.6) + przełącznik awaryjny `?culling=0` (dodam przed deployem).
+CZEKAM-NA: Maciej — werdykt D1 (wejście do miasta) + „Kursor poza main.ts" przed D3.
+
+---
+
+## [11:40 PL 2026-07-08] INTEGRATOR → MASTER — D3 WDROŻONE (D1+D3)
+
+Maciej potwierdził „Kursor poza main.ts" → D3 wykonane. D3 = usunięty zbędny `refreshFog()` z `applyCityPanelWorldView` (main.ts): otwarcie panelu miasta nie zmienia wejść mgły (setFog no-op), widoczność miast ustawia `cityRenderer.sync()`; poprawność mgły zapewniają realne zdarzenia (ruch/tura). Zweryfikowane: `refreshFog();` 27→26 (usunięta dokładnie 1, w applyCityPanelWorldView=0), unikalny anchor, tsc=0/vite OK. Build D1+D3 z HEAD bc51a01 (sejwy+HEAD zachowane). **stamp c293647ccedf**, pending=0, 10 plików, hub, HOST-verify ✓.
+TEST D3 (Maciej): wejście do miasta — mgła/okolica/inne miasta bez regresji (otwórz/zamknij panel kilka razy; widoczność jak przed). Efekt perf subtelny (po D1 to drobiazg).
+NASTĘPNE: **D2** = culling terenu per-komórka (poprawny AABB + margines, NIE naiwne `frustumCulled=true` — B0.6) + przełącznik `?culling=0`. Wymaga Twojego testu wizualnego (F9 + brak dziur w terenie). Uprzedzę przed deployem.
+CZEKAM-NA: Maciej — werdykt D1+D3; zielone światło na D2.
+
+---
+
+## [11:00 PL, 2026-07-08] MASTER → INTEGRATOR — DECYZJA Macieja: wydajność mapa/miasto robimy SAMI — kolejka D1→D3→D2
+
+Kontekst: Twój audyt z 2026-07-08 (spec: `dyspozycje/KURSOR-3-DYSPOZYCJE-WYDAJNOSC.md` + `DO-KURSORA-wydajnosc-mapa-miasto.md`). Decyzja Macieja: wykonawca = INTEGRATOR (nie Kursor); pliki-spec zostają jako recepta. Testy wizualne robi WYŁĄCZNIE Maciej.
+
+Kolejka (na „start"; każda dyspozycja = osobny deploy, żeby efekt był przypisywalny):
+1. **D1 [SONNET wg recepty]** — lokalna enumeracja po promieniu zamiast skanu całej mapy (`okolica.ts` / `resource-access.ts` / `cityOkolicaOverlay.ts`). Test Macieja: wejście do miasta na dużej mapie.
+2. **D3 [SONNET]** — redundancje otwarcia miasta (worked-tiles ×3, zbędny `refreshFog`) — dotyka `main.ts`: START DOPIERO po potwierdzeniu Macieja, że Kursor tam teraz nie edytuje.
+3. **D2 [OPUS — UWAGA, HISTORIA]** — frustum culling terenu. KRYTYCZNE: `frustumCulled=false` (×12) to był ŚWIADOMY fix regresu B0.6 („zalany"/znikający ląd — złe bounding sphere po instancingu). Samo przestawienie na `true` przywróci tamtego buga. Wymagane: policzyć poprawne boundingSphere/Box PER CHUNK z realnych pozycji instancji PRZED włączeniem cullingu + przełącznik awaryjny (np. `?culling=0`) do porównania na żywo. Test Macieja: F9 — draw calls przy panie spadają; szybki pan/zoom bez dziur i znikających chunków.
+
+Zasady: build ZAWSZE z aktualnego HEAD świeżym klonem (stan Kursora — sejwy, jego deploye be32d0a8/58e76604 — jest obowiązujący); tryb oszczędny [17:15] obowiązuje; meldunek po każdej dyspozycji ze stemplem.
+CZEKAM-NA: Maciej — (a) potwierdzenie „Kursor nie edytuje teraz main.ts/okolica.ts/scene.ts", (b) „start" u INTEGRATORA.
+
+---
+
+## [11:10 PL, 2026-07-08] MASTER → INTEGRATOR — ROZSTRZYGNIĘCIE: kanon = repo HEAD; bc51a01 wdrażalny PO synchronizacji Cursora
+
+Odpowiedź na Twoje pytanie o kanon i rozjazd wersji (repo bc51a01 > wdrożone 3b089468, stemple commitów ≠ deploy):
+
+1. **KANON ŹRÓDEŁ = repo HEAD** (teraz bc51a01). Zmiany Cursora (sejwy, immunitet buntu, plony z Excela, B14, drzewko tech) są zlecone przez Macieja = obowiązujące. bc51a01 MOŻNA wdrażać.
+2. **Warunek przed deployem (domknięcie rozjazdu):** wdrożony 3b089468 nie odpowiada żadnemu commitowi → Cursor mógł budować z niezacommitowanego drzewa. Maciej każe Cursorowi: **wypchnąć WSZYSTKO teraz (commit+push), potwierdzić koniec edycji w main.ts/okolica.ts/scene.ts i KONIEC deployów**. Publikacja wraca WYŁĄCZNIE do INTEGRATORA (żelazna zasada z CLAUDE.md; wyjątek sejwowy zamknięty). Jeśli Cursor czegoś nie wypchnie — trudno: HEAD wygrywa, braki dopisujemy (tylko do przodu).
+3. **Po pushu Cursora:** świeży klon z NOWEGO HEAD → wciągnij D1 (+resztkę D3) → tsc/vite → JEDEN deploy ze stemplem → WERSJE.md z adnotacją „rozjazd 3b089468 zamknięty" → meldunek. D2 osobno po nim (warunki z [11:00]: bounding per chunk + `?culling=0` + test wizualny Macieja).
+4. **Akceptuję Twoją korektę inżynierską D3** — po D1 zostaje tylko usunięcie zbędnego `refreshFog()` przy otwarciu miasta (po weryfikacji, że nic od niego nie zależy). Zapisane, memoizacji nie robimy.
+5. D1: przyjęte do wiadomości — zaimplementowana i zweryfikowana (736 przypadków, 0 rozbieżności), czeka na deploy w kroku 3.
+
+CZEKAM-NA: Maciej — polecenie Cursorowi (push wszystkiego + stop edycji + stop deployów) i potwierdzenie tu; potem INTEGRATOR — krok 3.
+
+---
+
+## [11:25 PL, 2026-07-08] MASTER — PRZYJĘTE: D1 LIVE (6102654b5d60, build z HEAD bc51a01)
+
+Meldunek integratora (przez Macieja) przyjęty: D1 wdrożone, gra podniesiona 3b089468→bc51a01 (w tym sejwy Cursora, plony z Excela, B14, drzewko tech). Kolejka trzymana: D3 po potwierdzeniu, że Kursor nie edytuje `main.ts`; D2 na końcu (bounding per chunk + `?culling=0`).
+UWAGA do playtestu Macieja: jeśli COKOLWIEK, co działało dziś rano na 3b089468, teraz zniknęło — to luka „Cursor budował z niewypchniętego drzewa"; zgłosić jako BUG, naprawa = push Cursora (nie archeologia).
+Test D1: Ctrl+F5 → nowa gra Super Huge → wejście do miasta (ma być natychmiastowe; okolica/surowce/pola robocze bez zmian w zachowaniu).
+CZEKAM-NA: Maciej — werdykt testu D1 (OK/BUG) + potwierdzenie ws. Kursora i main.ts (odblokowuje D3).
+
+---
+
+## [11:45 PL, 2026-07-08] MASTER → WSZYSCY — INTEGRATOR uruchomiony w Claude Code (zakładka Code) — zasady przejęcia
+
+Maciej uruchomił sesję INTEGRATORA w Claude Code (pracuje NATYWNIE na lokalnym repo — bez sandboxa, bez dehydratacji, z gitem i dev-serverem). Żeby nie było dwóch wykonawców naraz:
+
+1. **Dopóki sesja Code-INTEGRATOR jest aktywna: wykonawstwo kodu i PUBLIKACJA bundli do gra-robocza są WYŁĄCZNIE u niej.** Cowork-INTEGRATOR (czat 2) NIE wykonuje i NIE deployuje nic bez nowej dyspozycji MASTERA — zostaje w odwodzie (koordynacja/weryfikacje na prośbę).
+2. Dla Code-INTEGRATORA obowiązuje wszystko z tego kanału, w szczególności: append-only + reguła anty-kolizyjna ([15:05]), tryb oszczędny ([17:15]), kolejka D3→D2 ([11:00]+[11:10]+[11:25] z 2026-07-08). D3 = usunięcie zbędnego `refreshFog()` przy otwarciu miasta; D2 = culling z boundingiem per chunk + `?culling=0` + test wizualny Macieja (HISTORIA B0.6!).
+3. Git: commit lokalny po każdej domkniętej zmianie (opis bez dat); **push nadal robi wyłącznie Maciej** (GitHub Desktop, Summary od MASTERA). Publikacja bundla = build z repo + kopia do gra-robocza + stempel + WERSJE.md + wpis tu.
+4. Zaległe z kolejki Cowork-INTEGRATORA (audyt bonusów terenowych [OPUS], gęstość ujść — wymaga zgody Macieja na hash, persystencja kreatora, rzeki-render domknięcie) — przechodzą na Code-INTEGRATORA, kolejność po D3/D2, na „start" Macieja.
+
+CZEKAM-NA: Code-INTEGRATOR — potwierdzenie przejęcia wpisem tutaj; Maciej — werdykt D1 + zgoda na D3 (main.ts wolny od Cursora?).
+
+---
+
+## [12:05 PL, 2026-07-08] MASTER → WSZYSCY — OBOWIĄZUJĄCA dyspozycja dla Code: `dyspozycje/START-DLA-CODE.md` (scalona)
+
+Scaliłem draft Cowork-INTEGRATORA (setup: klon POZA OneDrive + dev-server HMR; stan: D1+D3 na main; priorytety: D2 culling → panel miasta double-mount → rejestr B1–B11) z korektami MASTERA (kanał w folderze Civ, nie w klonie; zakaz commitowania `dyspozycje/` z klonu; publikacja bundli do gra-robocza ze stemplem+WERSJE; push tylko na „pushuj" Macieja; jeden wykonawca — Cowork-INTEGRATOR i lane UX w odwodzie; ui/** wolno w ramach rejestru; tryb oszczędny; parking bez zmian).
+Cowork-INTEGRATOR: NIE zapisuj własnej wersji START-DLA-CODE.md — plik już istnieje, Twoja treść jest w nim uwzględniona. Moja wcześniejsza `DYSPOZYCJA-CODE-INTEGRATOR-2026-07-08.md` = ZASTĄPIONA przez START-DLA-CODE.md.
+CZEKAM-NA: Maciej — wklejka do Code: „Przeczytaj i wykonaj dyspozycje/START-DLA-CODE.md"; Code — wpis potwierdzający + propozycja kolejności.
+
+---
+
+## [12:15 PL, 2026-07-08] MASTER → CODE-INTEGRATOR — NOWE ZADANIE do kolejki: GENERACJA-SUPERHUGE (czas tworzenia świata)
+
+Zgłoszenie Macieja (screenshot: Super Huge/Kontynenty, faza 1/6 „Przygotowanie mapy", 0:42 i pasek ledwo ruszył — całość „kosmos"). To osobny temat od wydajności gameplayu. Generacja działa w JEDNYM workerze (genWorker.ts); `hardwareProfile.recommendedWorkerLimit()` istnieje, nieużywany do generacji.
+
+Zakres (dwuetapowo, NIE zaczynaj przed zatwierdzeniem kolejności przez Macieja):
+1. **PROFIL:** zmierz czasy 6 faz generacji na Super Huge (konsola/timery) → meldunek: gdzie realnie ucieka czas.
+2. **PROPOZYCJE (po profilu, do decyzji Macieja):**
+   a) optymalizacje BEZ zmiany hasha (algorytmiczne w obrębie obecnej kolejności `rand()` — kontynuacja starych B3/B4, które czekały na zgodę);
+   b) **zrównoleglenie na wiele workerów** (per-region/per-faza, osobne ziarna) — realnie wykorzysta rdzenie, ale ZMIENIA HASHE MAP (te same ziarna → inne mapy; stare hashe kontrolne 4284176530/682095284 przestaną obowiązywać). Wolno WYŁĄCZNIE po wyraźnej zgodzie Macieja, z nowymi hashami kontrolnymi i przejściem weryfikacji-mapy (bezUjscia/sieroc/ciaglosc/junction/pierscienie = 0).
+Cel Macieja: sensowny czas Super Huge (historyczny target <60 s). Determinizm zostaje (seed → zawsze ta sama mapa).
+CZEKAM-NA: Code — dopisanie do propozycji kolejności (D2 / panel / rejestr / generacja); Maciej — zatwierdzenie kolejności.
+
+---
+
+## [12:35 PL, 2026-07-08] MASTER → CODE-INTEGRATOR — BUG-REGRES-DRZEWKO: podejrzenie wdrożenia starej wersji — diagnoza PRZED D2
+
+Zgłoszenie Macieja: drzewko technologii było już naprawione (zmiana Cursora, wg meldunku obecna w bc51a01), a na live (c293647ccedf) ZNOWU jest na dole listy = stan sprzed poprawki. Podejrzenie: build poszedł ze starego drzewa/klonu ALBO poprawka nigdy nie weszła do repo (luka „Cursor budował z niewypchniętego drzewa" — ostrzeżenie [11:25]).
+
+Diagnoza (dokładnie w tej kolejności, bez cofania czegokolwiek):
+1. Ustal, z jakiego commita zbudowano c293647ccedf (WERSJE/meldunek go autora buildu).
+2. Sprawdź w AKTUALNYM HEAD, czy zmiana pozycji drzewka technologii W OGÓLE tam jest (git log/grep po pliku UI drzewka).
+3. Jeśli JEST w HEAD, a nie ma w grze → build ze starego stanu → przebuduj z aktualnego HEAD, wdróż, stempel, WERSJE, meldunek.
+4. Jeśli NIE MA w HEAD → niewypchnięta praca Cursora: NIE robimy archeologii — Maciej każe Cursorowi wypchnąć wszystko, a jeśli się nie da, piszesz poprawkę OD NOWA (mały temat UI) i wdrażasz do przodu.
+Przy okazji zweryfikuj, że pozostałe zmiany Cursora z bc51a01 (sejwy, plony z Excela, B14, immunitet buntu) SĄ na live — jeśli czegoś brakuje, to ten sam regres.
+D2 czeka do zamknięcia tego BUGa.
+CZEKAM-NA: CODE-INTEGRATOR — diagnoza + naprawa + meldunek; Maciej — retest drzewka po deployu.
+
+---
+
+## [12:45 PL, 2026-07-08] MASTER → CODE-INTEGRATOR — OSTRZENIE diagnozy [12:35] (korekta Macieja)
+
+Korekta faktów od Macieja: pracę Cursora ON pushował do GitHuba — więc poprawka drzewka najpewniej JEST w historii repo. Główny podejrzany zmienia się na: **nadpisanie pliku starszą pełną kopią przy D1/D3** (edycja na kopii sprzed zmian Cursora → commit cofnął poprawkę w tym samym pliku).
+Do kroku 2 diagnozy: `git log --oneline -- <plik z listą/drzewkiem technologii>` + `git blame` → znajdź (a) commit, który WPROWADZIŁ poprawkę drzewka, (b) późniejszy commit, który ją COFNĄŁ (jeśli jest — to jest sprawca i moment). Naprawa: przywróć poprawkę z historii commita (a) do AKTUALNEGO stanu pliku (scal, nie cofaj innych zmian), tsc, build z HEAD, deploy, stempel, WERSJE, meldunek Z NAZWANIEM przyczyny (kto/który commit nadpisał).
+REGUŁA NA STAŁE od teraz: przed commitem dotykającym pliku sprawdź `git log -1 -- <plik>` — jeśli plik ma świeższe zmiany niż Twoja kopia robocza, SCALASZ, nigdy nie wgrywasz całego pliku ze starszej kopii.
+CZEKAM-NA: CODE-INTEGRATOR — wynik git log/blame + naprawa + meldunek.
+
+---
+
+## [13:00 PL, 2026-07-08] MASTER → CODE-INTEGRATOR — TROP do BUG-REGRES-DRZEWKO + STOP dla pozostałych
+
+TROP (od Cowork-integratora, zanim stanął): w KOPII ROBOCZEJ na OneDrive (folder Civ = repo GitHub Desktop) `git status` pokazuje NIEZACOMMITOWANE zmiany lokalne (m.in. `Gra-FINALNA.html`, foldery design). Możliwe więc, że poprawka drzewka NIGDY nie weszła do repo i siedzi w niezacommitowanych plikach źródłowych na OneDrive — wtedy Twój świeży klon jej nie ma i git log jej nie pokaże.
+Rozszerz diagnozę: (1) `git status` + `git diff` w folderze Civ (masz go udostępniony) — wypisz niezacommitowane zmiany w PLIKACH ŹRÓDŁOWYCH; (2) jeśli poprawka drzewka tam jest → scal ją do swojego klonu/commita (TYLKO pliki źródłowe poprawki; artefaktów buildów jak Gra-FINALNA.html NIE commitować) i jedź dalej wg [12:35]/[12:45]; (3) jeśli jej tam nie ma i nie ma w historii → poprawka od nowa (mały temat UI, pozycja drzewka na liście).
+STOP potwierdzony: Cowork-INTEGRATOR i UX nie wykonują ŻADNYCH działań (także diagnoz) — jedyny śledczy/wykonawca = Ty.
+CZEKAM-NA: CODE-INTEGRATOR — meldunek: gdzie była poprawka (uncommitted/nadpisana/brak) + naprawa + deploy.
+
+---
+
+## [13:10 PL, 2026-07-08] MASTER → CODE-INTEGRATOR — PRZYCZYNA POTWIERDZONA (spowiedź Cowork-integratora) + PLAN ODZYSKANIA
+
+Cowork-integrator potwierdził mechanizm: build D1+D3 poszedł ze świeżego klonu HEAD bc51a01, a na kopii roboczej OneDrive były NIEZACOMMITOWANE zmiany źródłowe (żywność 6.33, menu dwuskładnikowe, prawdopodobnie drzewko). Poprzednie live (build Cursora) pokazywało je, bo Cursor budował z brudnej kopii. Deploy z klonu je „cofnął" WYŁĄCZNIE w skompilowanych HTML-ach — źródła w `srcKopiaMaster` na OneDrive leżą NIETKNIĘTE.
+
+ODZYSKANIE (Ty, po kolei):
+1. `git status` + `git diff` w folderze Civ → lista niezacommitowanych zmian.
+2. Do commita WYŁĄCZNIE pliki źródłowe (srcKopiaMaster / data / konfigi). Artefaktów NIE commitować (Gra-FINALNA.html, zbudowane HTML-e; foldery design tylko jeśli źródła ich wymagają).
+3. Commit (opis po polsku, bez dat) → poproś Macieja o „pushuj".
+4. Po pushu: świeży build z NOWEGO HEAD → deploy ze stemplem → WERSJE → meldunek. Wynik: drzewko/żywność/menu wracają, D1+D3 zostają.
+
+REGUŁA NA STAŁE (dopisek do [12:45]): przed KAŻDYM buildem sprawdź `git status` kopii roboczej OneDrive — brudna kopia = najpierw commit źródeł (albo STOP i pytanie do Macieja). Live zawsze = commit w repo.
+CZEKAM-NA: CODE-INTEGRATOR — kroki 1–3 + prośba o push; Maciej — „pushuj"; potem deploy i retest drzewka.
+
+---
+
+## [13:35 PL, 2026-07-08] MASTER → CODE-INTEGRATOR — DIAGNOZA PRZYJĘTA (dwa drzewa + deploy-only D1/D3) — plan naprawy DWUETAPOWY
+
+Twoje ustalenia przyjmuję jako obowiązujące: (a) Cursor commitował do `gra/src` (38ec0eb, 37312db: tech-UI/plony/B14), buildy kompilują `srcKopiaMaster` zamrożony na f2df10f — stąd „cofnięcia"; (b) D1+D3 nie ma w ŻADNYM drzewie repo — żyją tylko w bundlu c293647ccedf (budowane z łatanego klonu sandboxa); (c) working tree = HEAD, spowiedź Cowork-integratora o „niezacommitowanych źródłach" była błędna w tym szczególe (niezacommitowane są tylko artefakty). Unieważnia to kroki commitowe z [13:10].
+
+**ETAP 1 — dziś, cel: live kompletny (bez ruszania struktury):**
+1. Port zmian Cursora z `gra/src` do `srcKopiaMaster` (pliki z diffów 38ec0eb+37312db: sciencePicker/scienceHubHud/cityPanel/cityUxFrame i co tam jeszcze w diffach; scalaj, nie nadpisuj — srcKopiaMaster ma świeższe rzeczy z lipca: countery, balans, emoji→SVG, rzeki, kontrakt #8).
+2. Odtwórz D1+D3 w `srcKopiaMaster` wg receptur (`KURSOR-3-DYSPOZYCJE-WYDAJNOSC.md`; helper lokalnej enumeracji + 3 podmiany + usunięcie zbędnego refreshFog) — bundle c293647ccedf masz jako wzorzec zachowania.
+3. Commit źródeł (bez artefaktów) → prośba do Macieja o „pushuj".
+4. Build z NOWEGO HEAD (pipeline srcKopiaMaster, jak dotychczas) → bramki: tsc=0, vite OK, w bundlu OBECNE: fingerprint Cursora („na liście lub w drzewku"), helper D1, markery stałe → deploy ze stemplem → WERSJE → meldunek.
+Werdykt Macieja po deployu: drzewko NA GÓRZE + plony/B14/sejwy/balans/countery + miasto otwiera się szybko.
+
+**ETAP 2 — osobna decyzja, NIE wykonuj bez zgody Macieja:** likwidacja podwójnego drzewa (konsolidacja do JEDNEGO źródła + jeden konfig builda; kierunek scalenia wg audytu rozbieżności). Przygotuj po Etapie 1 krótką propozycję (lista rozbieżnych plików + rekomendacja kierunku + ryzyka) — decyzja i „start" należą do Macieja.
+
+CZEKAM-NA: CODE-INTEGRATOR — Etap 1 kroki 1–3, potem prośba o push.
+
+---
+
+## [14:00 PL, 2026-07-08] MASTER → CODE-INTEGRATOR — autonomia na czas nieobecności Macieja + korekty do Etapu 1
+
+Twoje ustalenia (stash=śmieci; brak zmian CRLF; srcKopiaMaster czysty = HEAD; commitowany bundle w HEAD MA fix drzewka, nadpisał go dopiero deploy c293647) — przyjęte. Tropy chat-2 uznajemy za fałszywe; chat-2 pozostaje w STOP.
+
+Ramy autonomii (potwierdzam Twoje): bez pusha, bez nadpisywania deployu, wszystko odwracalne. W tych ramach:
+1. **NIE rób przywracania HTML-i z HEAD jako kroku przejściowego** — Maciej wraca za ~1h; zamiast dwóch podmian robimy JEDEN deploy docelowy po Etapie 1 (mniej okazji do rozjazdu).
+2. Dokończ Etap 1 kroki 1–2 (port Cursora do srcKopiaMaster + odtworzenie D1/D3) + krok 3 commit lokalny. Przygotuj build na sucho (tsc/vite w Twoim klonie), ale DEPLOY dopiero po „pushuj" Macieja i buildzie z nowego HEAD.
+3. **Bramki bundla rozszerzone:** oprócz fingerprintu tech („na liście lub w drzewku"), helpera D1 i markerów stałych — dołóż fingerprinty żywności 6.33 i menu dwuskładnikowego (zlokalizuj je w gra/src tak jak tech) oraz porównanie z commitowanym bundlem HEAD: nowy bundle NIE MOŻE stracić niczego, co ma tamten.
+4. Meldunek tutaj po kroku 3: lista przeportowanych plików + wynik bramek na sucho + „gotowe do pusha".
+CZEKAM-NA: CODE-INTEGRATOR — meldunek „gotowe do pusha"; Maciej (po powrocie) — „pushuj" w Code.
+
+---
+
+## [14:15 PL, 2026-07-08] MASTER → CODE-INTEGRATOR — KOREKTA PLANU po audycie (129 plików rozjazdu): kanon = `gra/src`, scalamy DO NIEGO
+
+Przyjmuję: premisa Etapu 1 obalona (srcKopiaMaster ~129 plików w tyle; gra/src niesie duże dodatki Cursora: cityPanel +836, save, economy, turn-economy…). HEAD-bundle niestemplowany i bez D1 → checkout odpada. Chat-2 zdyskredytowany — kierujemy się wyłącznie Twoimi dowodami.
+
+**NOWY Etap 1 (zastępuje [13:35] pkt 1–2):**
+1. Dokończ weryfikację supersetu. **Niezależnie od wyniku: drzewem kanonicznym zostaje `gra/src`** (większe, commitowane przez Cursora, z najświeższymi dużymi feature'ami).
+2. Jeśli gra/src NIE zawiera lipcowej roboty Cowork — przeportuj ją DO gra/src wg udokumentowanych meldunków (wszystkie mają listy plik:linia w kanale): rzeki-wodospad (`render/scene.ts`, riverMouthY + applyCoastalWaterfall), countery po polu Typ (`game/combat.ts` counterTyp ×4 + `battle/battleScene.ts` ×1), kontrakt #8 unitIconSvg (main.ts + 4 pliki HUD), emoji→SVG (7+6 plików ui), **balans jednostek** (wartości z `data — kopia/units.json`: HP×2, dyst×0.5, Falanga=40, 26 jedn. PL0, pole Typ — przenieś do TEGO źródła danych, z którego realnie czyta build gra/src!).
+3. Odtwórz D1+D3 w `gra/src` wg receptur.
+4. Commit lokalny (bez artefaktów) + build na sucho konfigiem gra/ → bramki: tsc=0; w bundlu OBECNE naraz: fingerprint tech, helper D1, counterTyp, marker rzek, ikony SVG, wartości balansu (spot-check 2–3 jednostek); NIC nie stracone vs OBA bundle referencyjne (live c293647 i commitowany HEAD).
+5. Meldunek „gotowe do pusha" + lista przeportowanych plików. Po „pushuj" Macieja: build z nowego HEAD → deploy ze stemplem → WERSJE → meldunek.
+`srcKopiaMaster` od teraz ZAMROŻONE (nie edytować); jego likwidacja = Etap 2 na decyzję Macieja.
+CZEKAM-NA: CODE-INTEGRATOR — wykonanie + „gotowe do pusha".
+
+---
+
+## [15:10 PL, 2026-07-08] MASTER — audyt Code przyjęty (34/34 + origin czysty) · PUŁAPKA export-data.py zarejestrowana
+
+1. Audyt kompletności Code przyjęty: 34/34 poprawek w gra/src @ HEAD, wartości plonów co do jednego, origin/main bez brakujących commitów, jedyny lokalny commit ponad origin = D1/D3 (865c94e). „Food 6.33/menu" wyjaśnione (suwak żywności + plony terenu — obecne).
+2. **PUŁAPKA DEPLOYU (obowiązująca reguła):** `npm run build` odpala prebuild `export-data.py`, który regeneruje `gra/data` z Excela — a balans jednostek ([17:55] 2026-07-06: HP×2, dyst×0.5, Falanga=40, 26×PL0) był wpinany ręcznie do JSON, NIE do Excela. Pełny `npm run build` NADPISAŁBY balans. Reguła: **build przez `vite build` bezpośrednio** (bez prebuildu), dopóki:
+3. **BACKLOG (nowa pozycja, na „start" Macieja):** uzupełnić Excel jednostek (panel sterowania) o aktualne wartości balansu z `gra/data/units.json`, żeby panel znów był źródłem prawdy i `npm run data` przestało być miną. [SONNET — przepisanie wartości wg tabeli]
+CZEKAM-NA: CODE-INTEGRATOR — „gotowe do pusha"; Maciej — „pushuj".
+
+---
+
+## [15:25 PL, 2026-07-08] MASTER → CODE-INTEGRATOR — plan wydajności P0 ZATWIERDZONY (z korektami) — do kolejki PO deployu i teście
+
+Raport zweryfikowany kodem — przyjęty. P0 zatwierdzone z korektami: kolejność **P0-4 (F9 pomiar ms/owner) → P0-1 (koniec skanów AI; bramka równoważności celów jak przy D1) → P0-2 (yield po każdym AI-ownerze) → P0-3 (jedno refreshFog po AI)**; każda pozycja = osobny commit. P1 (workery) dopiero po zmierzeniu efektu P0. P2 odrzucone na teraz; lista „czego NIE robić" obowiązuje.
+NIE zaczynać przed: (a) obecnym deployem, (b) wielkim testem Macieja, (c) zatwierdzeniem przez niego kolejności tematów (na stole: P0 / D2 culling / duplikat panelu miasta / profil generacji Super Huge [12:15] / rejestr B1–B11).
+CZEKAM-NA: bez zmian — „gotowe do pusha", potem „pushuj" Macieja.
+
+---
+
+## [15:40 PL, 2026-07-08] MASTER → CODE-INTEGRATOR — NOWY PLIK: `_handoff/CODE-DO-MASTERA.md` (lustro Twoich odpowiedzi)
+
+Od teraz KAŻDĄ merytoryczną odpowiedź/raport, które dajesz Maciejowi w czacie (audyty, raporty wydajności, meldunki, pytania-decyzje), zapisuj RÓWNOLEGLE do `dyspozycje/_handoff/CODE-DO-MASTERA.md`: append-only na końcu, nagłówek `## [HH:MM PL, data] — temat`, reguła anty-kolizyjna jak w kanale. Cel: MASTER czyta stamtąd zamiast wklejek Macieja. KANAL-PRACA bez zmian (krótkie meldunki/decyzje) — CODE-DO-MASTERA to pełne treści.
+Utwórz plik pierwszym wpisem: skrót aktualnego stanu (dry-run D1/D3, co zostało do „gotowe do pusha").
+CZEKAM-NA: CODE-INTEGRATOR — utworzenie pliku + dokończenie dry-run wg [14:15] + „gotowe do pusha".
+
+---
+
+## [13:20 PL, 2026-07-08] INTEGRATOR (czat 2) → CODE — WNIOSKI (ostatni wpis, potem STOP)
+
+STOP przyjęty — dalej nic nie robię (ani diagnoz). Uzupełnienie tropu [13:00] faktami z mojego `git` (read-only, sprzed STOP):
+- HEAD dysku = **bc51a01** (main) — z tego budowałem D1+D3. Mój deploy NADPISAŁ working-tree `gra-robocza/Gra-ROBOCZA*.html` (10 plików) buildem **c293647ccedf** → to jest widoczne „cofnięcie" w grze. Źródeł (`srcKopiaMaster`) NIE ruszałem (budowałem z klonu) → lokalne niezacommitowane zmiany ŹRÓDŁA są NIETKNIĘTE.
+- **KLUCZOWE przy `git diff`:** `srcKopiaMaster` = 240 plików, **92491 insertions / 92491 deletions (równe)** = przepisane KOŃCE LINII/kodowanie (CRLF↔LF) całych plików, które MASKUJĄ realne zmiany. Użyj `git diff --ignore-all-space` (lub `--stat` + punktowo), inaczej utoniesz w szumie. Realna poprawka drzewka / żywności (6.33) / menu dwuskładnikowego siedzi w tym — plus modyfikowane WSZYSTKIE `data/*.json` i `Gra-FINALNA.html`.
+- Stash GitHub Desktop: `stash@{0}: On develop: !!GitHub_Desktop<develop>` — sprawdź (branch **develop** / stash może zawierać poprawkę; ja klonowałem `main`).
+- Committed HEAD `Gra-ROBOCZA.html` = stempel **3b089468 · 07:23** (poranny push Macieja). `git checkout -- gra-robocza/Gra-ROBOCZA*.html` cofnie mój deploy do 3b089468, ale to NIE odzyska niezacommitowanych lokalnych poprawek — te trzeba wbudować ze źródła z OneDrive.
+KONIEC. Czat 2 (INTEGRATOR) i UX stoją. Wykonawca/śledczy: CODE.
+
+---
+
+## [17:45 PL, 2026-07-08] CODE-INTEGRATOR → MASTER — [14:15] PRZYJĘTE (kanon=gra/src) + SUPERSET POTWIERDZONY, zaczynam Etap 1
+
+Zgoda z [14:15]. Superset zweryfikowany host-side — `gra/src` MA lipcową robotę Cowork (kodu NIE trzeba portować): counterTyp=2, applyCoastalWaterfall=1, unitIconSvg=10, pruneOrphanRiverPaths=2, saveToLocal=3 (+ tech 37312db, ekonomia/B14/plony bc51a01). Jedyny brak w gra/src = **D1+D3** (deploy-only).
+Do sprawdzenia/portu zostaje TYLKO balans DANYCH: potwierdzę, którą `units.json` czyta build gra/ (gra/data vs `data — kopia`) i czy ma HP×2/Falanga=40/PL0/Typ; jak nie — przeniosę wartości do źródła, z którego czyta gra/.
+Fałszywe tropy chat-2 potwierdzone: stash=śmieci, 0 zmian CRLF w źródłach, HEAD-bundle MA fix drzewka ale UNSTAMPED, „6.33" nie istnieje nigdzie. Live nietknięty; c293647 zbackupowany jako wzorzec zachowania D1+D3.
+PLAN (bez deployu/pusha, zgodnie z [14:00]/[14:15]): klon gra/src → (balans jeśli trzeba) → D1+D3 wg receptur → commit lokalny → build na sucho konfigiem gra/ → bramki [14:15 pkt 4] → meldunek „gotowe do pusha".
+CZEKAM-NA: robię Etap 1 → „gotowe do pusha"; Maciej — „pushuj" po powrocie.
+
+---
+
+## [18:05 PL, 2026-07-08] CODE-INTEGRATOR → MASTER — GOTOWE DO PUSHA: D1+D3 na gra/src, build na sucho ZIELONY
+
+Etap 1 wykonany (kanon=gra/src; srcKopiaMaster nietknięty/zamrożony). **Portu kodu NIE było** — superset potwierdzony. Odtworzyłem tylko **D1+D3** (były deploy-only):
+Commit **865c94e** (lokalny, NIEWYPCHNIĘTY), 4 pliki źródła (28+/6-):
+- `game/okolica.ts` — helper `hexKeysWithinRadius` + `okolicaTiles` (lokalna enumeracja zamiast `Object.keys(map.hexes)`)
+- `game/resource-access.ts` — `hexesInCitySight` (`Object.entries`→helper + guard)
+- `render/cityOkolicaOverlay.ts` — `collectRangeKeys` (`Object.keys`→helper)
+- `main.ts` — D3: usunięty zbędny `refreshFog()` z `applyCityPanelWorldView`
+Filtr `hexDistance` zachowany w każdej z 3 funkcji ⇒ wynik IDENTYCZNY, 0 skanów całej mapy.
+BUILD NA SUCHO (vite konfigiem gra/, bez python-prebuild → committed data): **tsc=0 · vite OK** (9.8 MB single-file, scratch). Bramka bundla vs live c293647 i HEAD:
+- **fix drzewka „na liście lub w drzewku" = OBECNY** (live=0 → NAPRAWIONE); stary hint zniknął.
+- markery overlay(4)/perf-c3(1)/„Test wydajności"(2), balans Falanga(27), counterTyp(2) = identyczne z live i HEAD ⇒ **NIC nie stracone**.
+- D1 helper w bundlu zminifikowany (nazwa nie do grepu — tak samo w c293647 i HEAD); zweryfikowany NA ŹRÓDLE (tsc=0, 3 funkcje przerobione, 0 skanów). Zachowanie potwierdzi playtest.
+LIVE NIETKNIĘTY (c293647 zbackupowany). NIE pushowałem, NIE deployowałem.
+CZEKAM-NA: Maciej — „pushuj" (wypcham 865c94e) → wtedy build z nowego HEAD → stempel → deploy 9 plików + hub + WERSJE → meldunek. Playtest po deployu: drzewko NA GÓRZE + miasto otwiera się szybko (D1) + mgła OK (D3).
+
+---
+
+## [19:32 PL, 2026-07-08] CODE-INTEGRATOR → MASTER — DRY-RUN RE-WERYFIKACJA z realnego HEAD: GOTOWE DO PUSHA
+
+Na „start" Macieja: NIE przyklepałem [18:05] — odtworzyłem bramkę [14:15 pkt 4] niezależnie z aktualnego stanu repo (dyscyplina „weryfikuję artefakt, nie raport").
+
+STAN ŹRÓDŁA (git):
+- `main` = 1 commit ponad origin: **865c94e** (D1+D3, 4 pliki źródła: okolica.ts/resource-access.ts/cityOkolicaOverlay.ts/main.ts, 28+/6−) — NIEWYPCHNIĘTY.
+- `gra/src` + `gra/data` CZYSTE (0 brudnych plików źródła). Brudne w drzewie = TYLKO artefakty deployu (`gra-robocza/*` = live c293647) + docsy. Live NIETKNIĘTY.
+- D1 helper `hexKeysWithinRadius` obecny (okolica.ts:55; użyty w resource-access.ts + cityOkolicaOverlay.ts; 3 funkcje przerobione, filtr hexDistance zachowany). D3: usunięty zbędny refreshFog w applyCityPanelWorldView (main.ts:1687).
+
+BRAMKI [14:15 pkt 4] — WSZYSTKIE ZIELONE:
+- **tsc --noEmit = 0**.
+- **vite build BEZPOŚREDNIO** (bez `npm run build` → bez prebuildu `export-data.py`; pułapka [15:10] ominięta, balans z committed `gra/data` zachowany) → **565 modułów, single-file 9,80 MB**, wyjście do scratchu `gra/dist-dryrun-p0` (NIE deploy target).
+- **Bramka bundla (FRESH vs LIVE c293647 vs HEAD-committed 3b089468) — licznik fingerprintów-literałów:**
+  | fingerprint            | FRESH | LIVE | HEAD |
+  |------------------------|-------|------|------|
+  | Falanga (balans)       | 45    | 45   | 45   |
+  | counterTyp             | 7     | 7    | 7    |
+  | Test wydajności        | 2     | 2    | 2    |
+  | technolog              | 266   | 266  | 266  |
+  | viewBox (ikony SVG)    | 343   | 342  | 343  |
+  | drzew / Nauka          | 88/129| 87/128| 88/129 |
+  FRESH ≥ LIVE na KAŻDYM (nic nie stracone) oraz FRESH == HEAD. +1 na drzew/Nauka/viewBox vs LIVE = **fix drzewka ODTWORZONY** (zregresowane live c293647 go nie ma). Identyfikatory D1/D3 zminifikowane (0 w każdym bundlu) → zweryfikowane NA ŹRÓDLE. Bundle niestemplowany (stempel przy deployu).
+
+WERDYKT: **GOTOWE DO PUSHA.** Nie pushowałem, nie deployowałem, live c293647 nietknięty; dry-bundle w gitignorowanym scratchu.
+
+P0 [15:25]: przyjęte do kolejki (P0-4→P0-1→P0-2→P0-3, każdy = osobny commit), ale NIE zaczynam — blokada (a) deploy, (b) wielki test Macieja, (c) zatwierdzenie kolejności tematów. Zgodne z „P0 wchodzi dopiero po deployu i moim teście".
+
+CZEKAM-NA: Maciej — „pushuj" (wypcham 865c94e) → build z NOWEGO HEAD → stempel → deploy 9 plików + hub + WERSJE → meldunek; potem Twój playtest (drzewko NA GÓRZE + miasto otwiera się szybko [D1] + mgła OK [D3]).
+
+---
+
+## [16:20 PL, 2026-07-08] MASTER → CODE-INTEGRATOR — INTENCJA DOCELOWA: Excel-panele = źródło prawdy (obieg Macieja)
+
+Ważny kontekst od Macieja do pułapki z [15:10]: panele sterowania w Excelu są CELOWYM narzędziem balansowania — docelowy obieg to: Maciej zmienia parametry w Excelu → „eksportuj" → export-data.py → build → deploy. Zakaz prebuildu jest TYMCZASOWY (Excel jednostek nieaktualny vs ręcznie wpięty balans z 2026-07-06).
+Backlog [15:10 pkt 3] dostaje więc wyższą wagę i pełny kształt: (1) przepisać aktualne wartości z `gra/data/units.json` do Excela jednostek (jednorazowa synchronizacja), (2) zweryfikować eksport round-trip (Excel → export-data.py → JSON identyczny z obecnym), (3) po zgodności ZDJĄĆ zakaz prebuildu i przywrócić pełny obieg eksportu jako standard. [SONNET wg tabeli; wejście po wielkim teście, na „start" Macieja]
+CZEKAM-NA: bez zmian — „pushuj" Macieja.
+
+---
+
+## [16:35 PL, 2026-07-08] MASTER → CODE-INTEGRATOR — ZADANIE: SYNC-PANELI — audyt i aktualizacja WSZYSTKICH paneli sterowania (Excel ↔ gra)
+
+**Czym są panele (kontekst, przeczytaj uważnie):** w `panele-sterowania/` leży 5–6 Exceli — to CELOWE narzędzia balansowania Macieja (nie-programisty). Zamysł architektury: KAŻDY parametr rozgrywki (statystyki jednostek, plony terenu, budynki, technologie, parametry ekonomii itd.) żyje w Excelu; skrypty `tools/export-*.py` przelewają go do JSON-ów w `gra/data/`; kod tylko czyta JSON-y. Maciej balansuje w Excelu i mówi „eksportuj" — nigdy nie grzebie w kodzie. Ten obieg się rozjechał (balans z 2026-07-06 wszedł ręcznie do JSON), stąd to zadanie.
+
+**Wykonanie (może iść równolegle z oczekiwaniem na push — NIE dotyka plików gry ani kodu):**
+1. **Inwentaryzacja:** wylistuj wszystkie Excele w `panele-sterowania/`, wszystkie JSON-y w `gra/data/`, wszystkie eksportery w `tools/`; zmapuj łańcuch panel → skrypt → JSON → moduł kodu, który go czyta. Panele bez eksportera lub JSON-y bez panelu — wykaż.
+2. **Audyt zgodności per panel:** tabela różnic (parametr | wartość w Excelu | wartość w grze/JSON). 
+3. **Kierunek prawdy przy synchronizacji: GRA → EXCEL** (stan JSON-ów działających na live to zatwierdzony balans Macieja; Excel doganiamy do gry, NIE odwrotnie). Gdzie Excel wydaje się świeższy/niejasny — NIE nadpisuj, wypisz jako pytanie do Macieja.
+4. **Sync:** przepisz wartości do Exceli (openpyxl; zachowaj strukturę arkuszy, formaty, kolumny polskie — to interfejs Macieja).
+5. **Bramka round-trip per panel:** Excel → eksporter → JSON musi wyjść IDENTYCZNY z obecnym w grze (diff=0). Panel zielony dopiero po tym.
+6. Po wszystkich zielonych: zdejmujemy zakaz prebuildu ([15:10]) i komenda **„eksportuj"** wchodzi do słownika na stałe (obieg: diff Excel↔gra → lista zmian → „OK" Macieja → export → build → deploy → meldunek ze stemplem).
+7. **Meldunek:** tabela per panel (✅ zsynchronizowany / różnice / pytania), braki w eksporterach (+propozycja dopisania [SONNET]).
+CZEKAM-NA: Maciej — „pushuj" (deploy D1+D3+drzewko) oraz „start SYNC-PANELI" u Code (można równolegle).
+
+---
+
+## [16:45 PL, 2026-07-08] MASTER → CODE-INTEGRATOR — NOWA REGUŁA STAŁA (decyzja Macieja): panele aktualne przy każdym pushu
+
+Od teraz element stały obiegu (dopisany też do START-DLA-CODE.md §8): **przed każdym pushem, a najpóźniej na koniec dnia pracy**, sprawdzasz, czy zmiany dotknęły danych balansu (gra/data/*.json lub wartości opisywanych przez którykolwiek panel Excel). Jeśli tak → sync GRA→EXCEL + round-trip (diff=0) → w meldunku jedno zdanie: „panele zsynchronizowane" / „bez zmian danych balansu". Excel nigdy nie może być starszy od gry.
+Pierwsze wykonanie reguły = zadanie SYNC-PANELI [16:35] (pełny audyt 5–6 paneli).
+CZEKAM-NA: bez zmian — „pushuj" Macieja; „start SYNC-PANELI" u Code.
+
+---
+
+## [16:55 PL, 2026-07-08] MASTER → CODE-INTEGRATOR — SYNC-PANELI: zidentyfikowane pliki paneli (uzupełnienie [16:35])
+
+**Rdzeń — `panele-sterowania/` (to jest 6 paneli Macieja):**
+1. `Panel-A.xlsx` + `Panel-A-Plony-Terenu.xlsx` (plony terenu — świeżo eksportowane commitem 37312db, prawdopodobnie już zgodne)
+2. `Panel-B.xlsx`
+3. `Panel-C.xlsx` (jednostki/walka — wg [17:25 z 2026-07-06] był zgodny z units.json PRZED ręcznym balansem; dziś na pewno STARSZY od gry — główny kandydat do syncu)
+4. `Panel-D.xlsx`
+5. `Panel-E.xlsx`
+(zawartość B/D/E zmapuj w inwentaryzacji — nazwy arkuszy powiedzą, co opisują)
+
+**Pomocnicze w tym samym folderze (sklasyfikuj):** `Jednostki-staty-MACIEJ-20260706.xlsx` + `Jednostki-PL0-MACIEJ-20260706.xlsx` (poniedziałkowe uploady balansu — ŹRÓDŁO obecnych wartości w grze, przydadzą się do weryfikacji syncu Panel-C), `Nazwy-miast-cywilizacji.xlsx`, `Cyw-macierz-REVIEW.xlsx`, `TW-dystans-edycja.xlsx`.
+
+**Legacy z czasów lane'ów (rozproszone po folderach — NIE synchronizuj, tylko wykaż w meldunku z rekomendacją zostaw/scal/wycofaj):** `Civ-CYWILIZACJE/Panel-CYWILIZACJE.xlsx`, `EKONOMIA/EKONOMIA-panel-parametrow.xlsx`, `EKONOMIA/Ulepszenia-terenu.xlsx`, `Civ-MAPA/Parametry-Civ-MAPA.xlsx`, `Civ-MAPA/Ulepszenia-na-terenach-matryca.xlsx`, `Civ-UNITS/Bitwa-parametry.xlsx`, `SILNIK/SILNIK-parametry.xlsx`, `Technologie-drzewko.xlsx` (root), `gra/tools/Jednostki-*-TW-v3*.xlsx`.
+Decyzja o losie legacy = Maciej, po Twoim meldunku.
+CZEKAM-NA: bez zmian.
+
+---
+
+## [17:05 PL, 2026-07-08] MASTER → CODE-INTEGRATOR — DECYZJA MACIEJA do SYNC-PANELI: Panel-A-Plony-Terenu SCALIĆ do Panel-A i wycofać
+
+Zasada porządkowa Macieja: nie mnożymy bytów — plony terenu mają żyć WEWNĄTRZ Panel-A, nie w osobnym pliku. W ramach SYNC-PANELI wykonaj (kolejność ważna, każda zmiana z bramką):
+1. Przenieś zawartość `Panel-A-Plony-Terenu.xlsx` do `Panel-A.xlsx` jako osobny arkusz (np. „Plony terenu") — zachowaj strukturę kolumn 1:1 (to interfejs Macieja).
+2. Przepnij eksporter (`tools/export-terrain-yields.py` lub jego następca w `export-data.py`) na czytanie z Panel-A/arkusz „Plony terenu".
+3. **Bramka round-trip:** eksport z Panel-A → `terrain-yields.json` IDENTYCZNY z obecnym w grze (diff=0). Bez zieleni nie idziemy dalej.
+4. Po zieleni: `Panel-A-Plony-Terenu.xlsx` przenieś do `archiwum/` (wycofany z panele-sterowania; fizyczne usunięcie = decyzja Macieja później) + zaktualizuj `README-Panel-A-Plony.md` (wskazanie nowego miejsca).
+5. Commit + jedno zdanie w meldunku SYNC-PANELI.
+Ta sama zasada („jeden temat = jeden panel, zero osobnych plików-odprysków") obowiązuje przy klasyfikacji legacy z [16:55] — rekomendacje formułuj pod scalanie do Paneli A–E.
+CZEKAM-NA: deploy D1+D3 (w toku) → potem „start SYNC-PANELI" Macieja.
+
+---
+
+## [17:45 PL, 2026-07-08] MASTER → CODE-INTEGRATOR — ZADANIE GRAFIKA-3D (partia 1): koń + pastwisko ROBLOX — STYL ZATWIERDZONY przez Macieja
+
+MASTER (subagenty Fable) przygotował nowe modele 3D; Maciej zatwierdził styl. Gotowe pliki (czyste TS, tsc --strict=0, interfejs jak modele gry: Group, MeshLambert flatShading, przód=+x, spód y=0):
+- `gra-robocza/_sandbox/MASTER/render-kon/kon-nowy-model.ts` — `buildHorse()` (nowy koń: łeb/szyja w łuku/nogi ze stawami/ogon; jeździec z nogami; NAPRAWIONY bug latającego grotu lancy — snippet w komentarzu na końcu pliku). Rendery obok.
+- `gra-robocza/_sandbox/MASTER/render-zwierzeta/pastwisko-modele.ts` — `buildKrowa`(2 pozy/2 warianty), `buildOwca`(2 pozy, biała/czarna), `buildLama` + **`PASTWISKO_LAYOUT`** (strefy heksa: środek r0.40 REZERWA pod budynek, pierścień 0.50–0.80, sektory: krowy N-NE / lama E / owce S-SW / WOLNY W-NW na przyszłe assety) + `buildPastwiskoZwierzeta(hexR)`. Rendery obok.
+
+WPIĘCIE (punkty namierzone przez subagentów — zweryfikuj przed edycją):
+1. **Koń:** `gra/src/render/units.ts:691` — podmiana `buildHorse()` (stałe BH_* od :686; wywołania: konnica ~:5071, rydwan ~:5320, onager ~:2230 — nowa funkcja obsługuje wszystkie, param `mHarn`; `horseBackY` 0.2724→0.296 propaguje się przez wartość zwracaną). Poprawka lancy: `units.ts:5138–5156` wg snippetu.
+2. **Pastwisko:** `gra/src/render/robloxImprovements.ts:376` registry BUILDERS (`bydlo`/`pastwisko` → `buildPastwiskoZwierzeta`, `lama` → `buildLama`) + `gra/src/render/styleResources.ts:396–401` (`Nakladka.ZlozeBydla` → krowy w slotach layoutu; owce pod złoże owiec wg instrukcji w nagłówku pliku). Skala S=2.05/3, y=0 — zgodne, bez przeliczeń.
+3. **Jakość grafiki (decyzja Macieja):** liczba dekoracji wg ustawienia jakości — WYSOKA = pełne sloty (5 zwierząt), NORMALNA = podzbiór (np. krowaA+owcaA+lama), NISKA = 1 zwierzę lub sama nakładka. Sloty wybierasz z PASTWISKO_LAYOUT — jedna linijka na poziom. Detalu siatek NIE stopniujemy.
+KOLEJNOŚĆ: osobny commit + osobny deploy, PO domknięciu bieżących tematów (deploy D1+D3, SYNC-PANELI) — na „start GRAFIKA-3D" od Macieja. Bramki standardowe (tsc=0, vite, nic nie stracone) + test wizualny Macieja: konnica na mapie (lanca w dłoni!), heks bydła/owiec, 3 poziomy jakości.
+CZEKAM-NA: Maciej — „start GRAFIKA-3D" u Code (po bieżących).
+
+---
+
+## [19:34 PL, 2026-07-08] CODE-INTEGRATOR → MASTER — [15:40] WYKONANE: utworzony `CODE-DO-MASTERA.md` + dry-run potwierdzony → GOTOWE DO PUSHA
+
+[15:40] wykonane: utworzyłem `dyspozycje/_handoff/CODE-DO-MASTERA.md` (append-only, konwencja jak kanał), pierwszy wpis = pełny skrót stanu dry-runu D1/D3 + co zostało do pusha. Pełna treść tam; tu skrót.
+Dry-run [14:15] re-potwierdzony (stan od [19:32] nieruszony): tip `865c94e` = 1 ponad origin, 0 brudnych plików źródła, bramki zielone (tsc=0, vite-direct 9,80 MB, bundle FRESH≥LIVE/==HEAD, fix drzewka odtworzony, balans zachowany). **GOTOWE DO PUSHA.** Nie pushowałem/nie deployowałem; live c293647 nietknięty.
+CZEKAM-NA: Maciej — „pushuj" → build z nowego HEAD → stempel → deploy 9 + hub + WERSJE → meldunek; playtest po deployu. P0 [15:25] czeka (blokada: deploy + wielki test + zatwierdzenie kolejności).
+
+---
+
+## [19:54 PL, 2026-07-08] CODE-INTEGRATOR → MASTER — „pushuj" WYKONANE W PEŁNI: live = 865c94e (D1+D3 na kanonie + fix drzewka NA ŻYWO)
+
+Maciej „pushuj" → pełny pipeline zamknięty:
+1. **PUSH:** `bc51a01..865c94e` → origin/main. Źródło = commit (koniec deploy-only D1/D3).
+2. **BUILD z nowego HEAD** (vite-direct, bez `export-data.py` → balans zachowany) → **stempel `ROBOCZA · 7fe722e3 · 19:50`** → **deploy 9 plików** (`Gra-ROBOCZA.html` + 8 playtestów, WSZYSTKIE md5 `51c2eb24`) + **hub `START.html`** + manifest → `verify-robocza-bundle` = OK (manifest match).
+3. **WERSJE:** nowa **AKTUALNA `51c2eb24`**; `c293647` → ZASTĄPIONA.
+LIVE-verify (na wdrożonym pliku): **drzew 88 / Nauka 129** (stary live 87/128 = **fix drzewka NA ŻYWO**), Falanga 45 (balans OK), viewBox 343. `stamp WARN` = znany self-hash inject-build-stamp (autorytatywny = manifest md5 = plik md5 = `51c2eb24`).
+Deploy ścieżką bezpieczną: `publish-robocza-snapshot`-prymitywami z canonu `gra/src`; NIE użyto `publish-robocza-bundle.ps1` (buduje ze stale `gra-robocza/src` + pisze root). `POLE-BITWY` nietknięty (poza hubem, osobny temat).
+CZEKAM-NA: Maciej — **WIELKI TEST** po **Ctrl+F5** na `gra-robocza/START.html`: drzewko NA GÓRZE + miasto otwiera się szybko (D1) + mgła OK (D3) → werdykt **OK/BUG**. Po OK: zatwierdzenie kolejności tematów → **P0 [15:25]**.
+
+---
+
+## [20:06 PL, 2026-07-08] CODE-INTEGRATOR → MASTER — SYNC-PANELI: audyt kompletny + legacy + komplikacja merge [17:05] (pełne w CODE-DO-MASTERA)
+
+Audyt round-trip 6 paneli zrobiony BEZ dotykania live JSON (dry-run/--data-dir). Wynik: **A-Plony ZIELONY (diff=0)**; **C** rozbieżny tylko `units` (91 pól = HP×2/dyst×0.5 → GRA prawda); **D** rozbieżny tylko `civs` (1 pole: Asyria Arbail vs Nineveh → GRA prawda); **A** (map-gen 23, terrain-impr 1, terrain-yields 5-konflikt), **B** (buildings 28, tech 31, society 10, econ 2), **E** (e-start 17, ui 1) = duże rozjazdy, kierunek do potwierdzenia.
+**Komplikacja [17:05]:** Panel-A JUŻ ma arkusz `Plony-terenow` (stare źródło 5 diff terrain-yields via export-a) — dedykowany Panel-A-Plony jest zielony. Merge wymaga decyzji: zastąpić Plony-terenow zielonymi danymi + usunąć overlay z export-a (jeden JSON=jeden eksporter). Legacy sklasyfikowane (2 już w archiwum; reszta scal→A–E).
+Wszystkie dalsze kroki = zapisy do Exceli Macieja + kierunek → NIE wykonuję na ślepo.
+CZEKAM-NA: Maciej — (1) zgoda na sync C+D GRA→EXCEL (jednoznaczne); (2) kierunek A/B/E; (3) reko merge [17:05]. Potem sync + round-trip diff=0 per panel.
+
+---
+
+## [20:20 PL, 2026-07-08] CODE-INTEGRATOR → MASTER — SYNC-PANELI cz.2: C+D zsync (diff=0), merge [17:05] gotowy; A/B/E w kolejce (pełne w CODE-DO-MASTERA)
+
+Wg decyzji Macieja (sync C+D; A/B/E GRA→EXCEL; merge reko). **Zrobione:** Panel-C (Jednostki-staty 64 + Koszty 1 → bramka staty/koszty=0), Panel-D (Nineveh→Arbail → diff=0), merge [17:05] (Panel-A scalony, A-Plony→archiwum, export-terrain-yields przepięty → terrain-yields 0, export-a już nie pisze yields → jeden eksporter). **Znalezisko:** live ma stary cache mocy (fieldPower ×75/siegePower ×3 policzone ze statów sprzed HP×2) — pole pochodne, naprawi realny eksport; do rozważenia. **gra/data NIETKNIĘTE.** Zmiany niezacommitowane. **W kolejce:** A (map-gen 23, terrain-impr 1), B (buildings 28, tech 31, society 10, econ 2), E (e-start 17, ui 1) — reverse-sync per eksporter + bramka.
+CZEKAM-NA: Maciej — „dalej A/B/E" i/lub przegląd C/D/merge + „commituj".
+
+---
+
+## [21:04 PL, 2026-07-08] CODE-INTEGRATOR → MASTER — KANON wypchnięty (obecna wersja zabezpieczona przed pracą nad wydajnością)
+
+Na prośbę Macieja („wypchnij obecną wersję do kanonu" przed B/A): promocja robocza→kanon sankcjonowanym publish-kanon-snapshot.ps1. Kanon = **51c2eb24** (D1/D3 + fix drzewka + balans SYNC), stempel **KANON 8adcd682 · 21:02**; Gra-FINALNA.html (root) stempel FINALNA 60576180; KANON-MANIFEST sourceRoboczaMd5=51c2eb24; backup+retencja OK. **Bez eksperymentu B** (kanon kopiuje istniejący bundel robocza, nie przebudowuje). WERSJE zaktualizowane (KANON+FINALNA).
+OTWARTE: git commit+push kanonu na GitHub (jak poprzednio bad0c7f) — czeka na „pushuj" Macieja (osobna decyzja + zakres commita). B/A (wydajność) rusza po tym.
+CZEKAM-NA: Maciej — czy commit+push kanonu na GitHub; potem deploy B do pomiaru.

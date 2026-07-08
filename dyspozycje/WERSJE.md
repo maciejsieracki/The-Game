@@ -5,10 +5,26 @@ nigdy nie kopiują (stary system miał 4 sprzeczne „aktualne" md5 — nigdy wi
 Format: data · md5 (pełne) · stempel z menu · co weszło (1 linia) · status.
 
 ## ROBOCZA (gra-robocza\Gra-ROBOCZA.html — wskazywana przez START.html)
-- 2026-07-06 20:41 · plik 0edbc91d5b5d… · stempel build 371151b5544247c1e66f93597770c2f8 · ROBOCZA · 371151b5 · 20:41 ·
+- 2026-07-08 19:50 · **51c2eb248aedac4f97a78854ad9b7422** · stempel: 2026-07-08 19:50 · 7fe722e3 · **WYDAJNOŚĆ D1+D3 na KANONIE `gra/src` + fix drzewka technologii przywrócony na live** ·
+  Zbudowane z committed `gra/src` @ **865c94e** (wypchnięty na origin/main) — koniec ery deploy-only D1/D3, live=commit. vite-direct
+  (bez `npm run build`/`export-data.py` → **balans zachowany**: Falanga=45). WSZYSTKIE 9 plików + hub na tym samym md5 `51c2eb24`
+  (spójność). tsc=0 · bundle-gate HOST-verified: **drzew 88 / Nauka 129** (stary live c293647 miał 87/128 = **regres drzewka
+  NAPRAWIONY**), viewBox 343, counterTyp 7 · FRESH≥LIVE i ==HEAD · publikował CODE-INTEGRATOR · **AKTUALNA (klucz=stempel)**.
+- 2026-07-08 11:40 · stempel: 2026-07-08 11:40 · c293647ccedf · **WYDAJNOŚĆ D1+D3** (kolejka D1→D3→D2, osobno) ·
+  D3 = usunięty zbędny `refreshFog()` z `applyCityPanelWorldView` (main.ts) — otwarcie panelu miasta nie zmienia wejść
+  mgły (setFog no-op); widoczność miast ustawia `cityRenderer.sync()`; poprawność mgły zapewniają realne zdarzenia.
+  `refreshFog();` 27→26 (usunięta dokładnie 1). + D1. Z HEAD bc51a01 (sejwy+HEAD zachowane). tsc=0 · vite OK · pending=0 ·
+  10 plików · hub · HOST-verify · publikował INTEGRATOR · ZASTĄPIONA (→ 51c2eb24…, stempel 7fe722e3 · 2026-07-08 19:50 — właściwy build z committed `gra/src` @ 865c94e). D2 następne (osobno, +`?culling=0`).
+- 2026-07-08 11:20 · stempel: 2026-07-08 11:20 · 6102654b5d60 · **WYDAJNOŚĆ D1** (kolejka Mastera D1→D3→D2, osobno) · ZASTĄPIONA (→ c293647ccedf) ·
+  D1 = lokalna enumeracja heksów (helper `hexKeysWithinRadius`) zamiast pełnomapowych skanów `Object.keys(map.hexes)`
+  przy otwarciu miasta — `okolicaTiles`/`hexesInCitySight`/`collectRangeKeys` (320k→~700, ~450×). Zbudowane z HEAD
+  **bc51a01** (zawiera moduł sejwów Cursora + plony z Excela + panel B14 + drzewko tech — nic nie nadpisane; D1 dotyka
+  tylko okolica.ts/resource-access.ts/cityOkolicaOverlay.ts). tsc=0 · vite OK · pending=0 · 10 plików · hub · HOST-verify ·
+  publikował INTEGRATOR · AKTUALNA (klucz=stempel). Uwaga: podniosło live z 3b089468→bc51a01. D3, D2 następne (osobno).
+- 2026-07-06 20:41 · stempel build 371151b5544247c1e66f93597770c2f8 · ROBOCZA · 371151b5 · 20:41 · ZASTĄPIONA (→ 6102654b5d60; między nimi buildy Cursora be32d0a8/58e76604/6e3027fe/3b089468 — wciągnięte przez bc51a01) ·
   SAVE/LOAD UX: dialog zapisu (nazwa sejwu) + dialog wczytywania (lista slotów, usuwanie);
   wczytanie z menu regeneruje mapę z seeda zapisu (fix „randomowa gra"); z-index dialog nad menu;
-  Kontynuuj → wybór sejwu. tsc=0 · smoke OK · publish Cursor (wyjątek Macieja, bez Integratora) · AKTUALNA
+  Kontynuuj → wybór sejwu. tsc=0 · smoke OK · publish Cursor (wyjątek Macieja, bez Integratora)
 - 2026-07-06 18:35 · <plik-md5 dryfuje> · stempel: 2026-07-06 18:35 · e4d99a49b659 ·
   FIX duplikatu „SUROWCE W ZASIĘGU" w panelu miasta (usunięte wywołanie `appendW4TabFooter` @6489 w
   `ui/cityPanel.ts`). + całość d744 (balans, countery, rzeki, KONTRAKT #8, UX, roster, obwódki, duże bitwy).
@@ -85,15 +101,17 @@ Format: data · md5 (pełne) · stempel z menu · co weszło (1 linia) · status
   rozstawione na MAPIE ŚWIATA) — ZŁY POZIOM, Maciej chciał areny · ZASTĄPIONA (→ 486a65094ddb)
 
 ## KANON (gra-kanon\)
+- 2026-07-08 21:02 · **f2dcbbb8d9e7707d779d310ecff9a643** · stempel KANON: **8adcd682** · źródło robocza md5 **51c2eb248aed** · promocja z roboczej PRZED pracą nad wydajnością (Maciej: „wypchnij obecną wersję do kanonu"). Zawartość = live D1/D3 (miasto szybko + mgła) + fix drzewka NA GÓRZE + balans/countery/plony/rzeki/ikony; źródło `865c94e` na origin. **Bez** eksperymentu B (geometria heksa). publikował CODE-INTEGRATOR (publish-kanon-snapshot.ps1) · **AKTUALNA**
 - 2026-07-06 20:17 · **7856d3451a0cb3963bd3c50c032f5ad5** · stempel wewn.: **d744cd7956fb**
   (2026-07-06 18:10) · promocja Cursor Grupa G z roboczej (Maciej: playtest OK + GitHub
   bad0c7f). Zawartość: rzeki wodospad, KONTRAKT #8 ikony, UX emoji→SVG, siatka rostera
   6 kol., obwódki właściciela, duże bitwy arena, port UX W4, balans HP×2/dyst×0.5,
   countery po polu `Typ`, C3/B0.6/Test wydajności/A5/H1. gra/src zsynchronizowane ze
-  srcKopiaMaster. tsc=0 · smoke OK · publikował Cursor (publish-kanon-snapshot.ps1) · **AKTUALNA**
+  srcKopiaMaster. tsc=0 · smoke OK · publikował Cursor (publish-kanon-snapshot.ps1) · **ZASTĄPIONA** (→ 51c2eb24 / kanon 8adcd682, 2026-07-08 21:02)
 - 2026-07-06 ~03:55 · skopiowany przez Cursora bundle f199c4c8 (ze stemplem PENDING) ·
   **ZASTĄPIONA** (→ 7856d345)
 
 ## FINALNA (root)
+- 2026-07-08 21:02 · **605761807eb0b79f43c047c4e70916f7** · stempel FINALNA · zsynchronizowana z kanonem 51c2eb24 (Gra-FINALNA.html) · **AKTUALNA**
 - 2026-07-06 20:17 · **7856d3451a0cb3963bd3c50c032f5ad5** · zsynchronizowana z kanonem
-  (Gra-FINALNA.html) · **AKTUALNA**
+  (Gra-FINALNA.html) · **ZASTĄPIONA** (→ 60576180)
