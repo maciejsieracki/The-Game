@@ -3970,20 +3970,19 @@ async function boot(): Promise<void> {
 
       applyCityFoundingToHex(c, map, q, r); // nakładki/złoża wg macierzy B (las ZNIKA, złoża ZOSTAJĄ; Góry=wszystko)
       hideDecorAtHex(hk);                    // schowaj teren-dekor/las pod środkiem miasta
-      const oldMesh = improvementMeshes.get(hk);
-      if (oldMesh) {
-        scene.remove(oldMesh);
-        improvementMeshes.delete(hk);
-      }
       if (keptLayers.length > 0) {
-        // Ocalałe ulepszenia (macierz B ZOSTAJE) — na pierścieniu; plony/legacy z warstw, mesh odbudowany.
+        // Ocalałe ulepszenia (macierz B ZOSTAJE) — na pierścieniu; plony/legacy z warstw.
         placedImprovements.set(hk, keptLayers);
         syncHexUlepszenieFields(hk, keptLayers);
-        spawnImprovementMesh(hk);
       } else {
         placedImprovements.delete(hk);
         syncHexUlepszenieFields(hk, [] as PlacedLayers);
       }
+      // FIX (review 2026-07-09): odbuduj mesh ZAWSZE — także dla GOŁEGO ocalałego złoża zwierzęcego
+      // (macierz B ZOSTAJE; mergedImprovementLayers dokłada warstwę z foodLayerFromAnimalDeposit).
+      // Bez tego miasto na dzikim złożu bydła/owiec kasowało jego model 3D mimo że dane je trzymały
+      // (rozjazd dane↔render). spawnImprovementMesh sam zdejmuje stary mesh; no-op gdy heks pusty.
+      spawnImprovementMesh(hk);
       hexClearingStates.delete(hk);
       removeClearingMesh(hk);
       // D4: zamiast pełnomapowego rebuildResourceOverlays (skan 320k + odbudowa wszystkich meshy)
