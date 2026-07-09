@@ -144,7 +144,7 @@ const TERRAIN_ALLOW: Partial<Record<ImprovementKey, TerenSet | null>> = {
   irygacja: FLAT_IRR,
   bydlo: FLAT_FARM,
   owce: new Set([TerenBazowy.Wzgorza]),
-  lama: new Set([TerenBazowy.Laka, TerenBazowy.Rownina, TerenBazowy.Wzgorza]),
+  lama: new Set([TerenBazowy.Wzgorza, TerenBazowy.Gory]), // decyzja 3a: lama tylko wzgórza + góry
   stadnina: new Set([TerenBazowy.Laka, TerenBazowy.Rownina]),
   kopalnia: new Set([TerenBazowy.Wzgorza, TerenBazowy.Gory]),
   glinianka: null,
@@ -172,7 +172,10 @@ export function isTarasyCiv(civ: string | undefined | null): boolean {
 export function hasBlockingDepositForFarm(hex: HexWithZloze): boolean {
   if (hex.zloze) return true;
   if (hex.nakladka === Nakladka.Brak || hex.nakladka === Nakladka.Las) return false;
-  if (hex.nakladka === Nakladka.ZlozeBydla || hex.nakladka === Nakladka.ZlozeOwiec) return false;
+  // Koń = surowiec-dostęp (decyzja 2a): złoże konia NIE blokuje farmy/irygacji (współistnieją),
+  // podobnie jak złoża bydła/owiec (= już „food").
+  if (hex.nakladka === Nakladka.ZlozeBydla || hex.nakladka === Nakladka.ZlozeOwiec
+    || hex.nakladka === Nakladka.ZlozeKonia) return false;
   return true;
 }
 
@@ -394,7 +397,10 @@ function createQualifier(state: ImprovementBuildState) {
     const zloze = hexZloze(hex);
     const existing = getHexLayers(hexKey, hex, placedMap);
 
-    if (hexHasDepositReserve(hex) && !depositAllowsPlayerImprovement(key, hex)) {
+    // Koń = surowiec-dostęp (decyzja 2a): złoże konia NIE rezerwuje heksa — inne ulepszenia
+    // (farma/irygacja/stadnina…) mogą tu stanąć i współistnieć z dostępem do koni.
+    if (hexHasDepositReserve(hex) && !depositAllowsPlayerImprovement(key, hex)
+      && hex.nakladka !== Nakladka.ZlozeKonia) {
       return false;
     }
 
@@ -409,9 +415,14 @@ function createQualifier(state: ImprovementBuildState) {
     if (state.pendingUndoKeys?.has(`${hexKey}:${key}`)) return true;
 
     if (key !== 'droga') {
-      const nonFoodExisting = existing.filter(k => !FOOD_LAYER_KEYS.has(k));
-      if (isFoodKey(key)) {
-        if (nonFoodExisting.length > 0) return false;
+      // Koń/stadnina = surowiec-dostęp POZA systemem food (decyzja 2a): współistnieje ze wszystkim
+      // (farma/krowy/owce/lama/irygacja), więc nie liczy się jako warstwa blokująca dla food;
+      // blokuje tylko druga stadnina na tym samym heksie.
+      const blockingNonFood = existing.filter(k => !FOOD_LAYER_KEYS.has(k) && k !== 'stadnina');
+      if (key === 'stadnina') {
+        if (existing.includes('stadnina')) return false;
+      } else if (isFoodKey(key)) {
+        if (blockingNonFood.length > 0) return false;
         if (!canAddFoodLayer(existing, key)) return false;
       } else if (existing.length > 0 || placedKeys.has(hexKey)) {
         return false;

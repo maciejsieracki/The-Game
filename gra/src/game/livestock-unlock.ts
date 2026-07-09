@@ -32,6 +32,15 @@ export function isIncaCiv(civType: string | undefined | null): boolean {
   return INCA_CIV_TYPES.has(t) || t.includes('inkow');
 }
 
+/**
+ * Cywilizacja „Nowego Świata" (Ameryka) — start bez koni/owiec/krów: bydło/owce odblokowane
+ * od epoki 3, koń dopiero po uzyskaniu dostępu do złoża koni. Dziś = Inkowie; gdy dojdą kolejne
+ * cywilizacje amerykańskie (Majowie itd.), rozszerzyć TU (jedno miejsce) — reguła po TYPIE, nie nazwie.
+ */
+export function isNewWorldCiv(civType: string | undefined | null): boolean {
+  return isIncaCiv(civType);
+}
+
 export function livestockKeyFromImprovement(improvementKey: string): LivestockKey | null {
   const raw = improvementKey?.toLowerCase?.().trim();
   if (raw === 'kon' || raw === 'konie') return 'kon';
@@ -75,9 +84,13 @@ export function isLivestockAllowed(
 ): boolean {
   const lk = livestockKeyFromImprovement(improvementKey);
   if (!lk) return true;
-  if (lk === 'kon') return !isIncaCiv(civType);
-  if (lk === 'lama') return isIncaCiv(civType);
-  if (isIncaCiv(civType) && era < 3) return false;
+  // Koń = surowiec-dostęp poza food-gate (decyzja 2a). Nowy Świat nie ma koni na starcie, ale
+  // zdobywa je PO uzyskaniu dostępu do złoża koni — tu (civ-gate) koń dozwolony dla wszystkich,
+  // a realny warunek złoża/odblokowania imperium egzekwuje isLivestockUnlockedForPlacement.
+  // (Zmiana 2026-07-09: wcześniej Inkowie mieli konia zablokowanego NA ZAWSZE.)
+  if (lk === 'kon') return true;
+  if (lk === 'lama') return isIncaCiv(civType); // lama andyjska — tylko Inkowie
+  if (isNewWorldCiv(civType) && era < 3) return false; // Nowy Świat: bydło/owce dopiero od epoki 3
   return true;
 }
 
