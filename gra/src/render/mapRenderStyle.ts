@@ -127,8 +127,10 @@ export const WYBRZEZE_SURFACE_TOP_Y = 0.28;
 /** Min. odstęp wierzchu lądu nad taflą morza — bufor na nakładki wybrzeża/rzeki. */
 export const LAND_MIN_CLEARANCE_ABOVE_SEA = 0.35;
 
-/** Wstęga rzeki nad wierzchołkiem terenu (× promień hexa) — po podniesieniu lądu 0.10 chowało wstęgę za ścianą pryzmu. */
-export const RIVER_LIFT_ABOVE_TERRAIN_FRAC = 0.22;
+/** Wstęga rzeki nad wierzchołkiem terenu (× promień hexa). Maciej 2026-07-09: 0.22→0.08 — po insecie
+ *  wstęgi do WNĘTRZA płaskiego heksa (z dala od ściany pryzmu) duże podniesienie nie jest już potrzebne
+ *  i powodowało lewitację. Rzeka na stałej płaskiej wysokości. */
+export const RIVER_LIFT_ABOVE_TERRAIN_FRAC = 0.08;
 
 export function riverSurfaceLiftY(R: number): number {
   return R * RIVER_LIFT_ABOVE_TERRAIN_FRAC;

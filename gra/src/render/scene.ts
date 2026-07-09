@@ -800,10 +800,11 @@ function riverHexSurfaceY(
   if (!h || h.terenBazowy === TerenBazowy.Morze) return null;
   // Tylko sam heks Wybrzeże schodzi do poziomu morza; sąsiedztwo plaży NIE obcina lądu.
   if (h.terenBazowy === TerenBazowy.Wybrzeze) return riverMouthY;
-  let y = terrainSurfaceTopY(h.terenBazowy, renderStyle) + surfaceOffset;
-  if (h.terenBazowy === TerenBazowy.Wzgorza) y += R * 0.05;
-  if (h.terenBazowy === TerenBazowy.Gory) y += R * 0.08;
-  return y;
+  // Maciej 2026-07-09: STAŁA PŁASKA wysokość — rzeka na poziomie równin/łąk niezależnie od faktycznego
+  // terenu heksa (bez per-hex bonusów wzgórz/gór). Rzeka nie płynie w górę→dół→w górę; inset (pushPt)
+  // trzyma wstęgę we wnętrzu płaskiej strony. R nieużywane po zdjęciu bonusów.
+  void R;
+  return terrainSurfaceTopY(TerenBazowy.Laka, renderStyle) + surfaceOffset;
 }
 
 function neighborDirIndex(q: number, r: number, nq: number, nr: number): number {
@@ -934,6 +935,10 @@ function riverTransitCornersOnHex(
   return corners.map((ci) => ({ x: cs[ci]!.x, z: cs[ci]!.z }));
 }
 
+/** Wsunięcie wstęgi rzeki do WNĘTRZA właściwego heksa (× odległość punktu do środka heksa).
+ *  Maciej 2026-07-09: rzeka po krawędziach, ale wewnątrz krawędzi heksa, nie na granicy dwóch. */
+const RIVER_INSET_FRAC = 0.22;
+
 /** Kwadratowa trasa wzdłuż krawędzi heksów — rogi + środki krawędzi (NIE przez środek pola). */
 function buildRiverPointsFromHexPath(
   map: GameMap,
@@ -952,7 +957,11 @@ function buildRiverPointsFromHexPath(
     riverHexSurfaceY(map, q, r, renderStyle, riverMouthY, surfaceOffset, R);
 
   const pushPt = (x: number, z: number, y: number, hq: number, hr: number): void => {
-    const p = new THREE.Vector3(x, y, z);
+    // inset: wsuń punkt do WNĘTRZA właściwego heksa (z dala od granicy między heksami)
+    const c = axialToWorld(hq, hr, R);
+    const ix = x + (c.x - x) * RIVER_INSET_FRAC;
+    const iz = z + (c.z - z) * RIVER_INSET_FRAC;
+    const p = new THREE.Vector3(ix, y, iz);
     if (pts.length === 0 || pts[pts.length - 1]!.distanceTo(p) > R * 0.008) {
       pts.push(p);
       hexKeys.add(`${hq},${hr}`);
