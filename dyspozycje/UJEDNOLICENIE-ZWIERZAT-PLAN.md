@@ -12,6 +12,14 @@ na mapie) I ulepszeniem (budowanym) — „to samo dwa razy". Naprawa: hodowla t
 ## Ulepszenia zwierzęce = budowane na terenie (jak farma), BEZ złoża
 - Pastwisko (`bydlo`, Łąka/Równina), Owczarnia (`owce`, Wzgórza), Zagroda lam (`lama`, Wzgórza/Góry).
 - Produkują surowce (Trzoda/Owce/Lama jako SurowiecId ZOSTAJĄ — jak farma daje żywność).
+- **WYGLĄD (Maciej): ulepszenia używają OBECNYCH modeli zwierząt** — Pastwisko=`buildTrzoda` (krowa+świnia),
+  Owczarnia=`rbxOwce`/`buildOwca`, Zagroda lam=`buildLama`. Już podpięte w registry `robloxImprovements.ts`;
+  grafika, która dziś jest na złożach, przechodzi na ulepszenia. NIC NOWEGO nie rysujemy.
+
+## ZASADA (Maciej): generator kładzie TYLKO surowce/złoża — NIGDY ulepszeń
+- Na starcie gry ZERO ulepszeń na mapie (żadnych farm/pastwisk/hodowli), chyba że ustalimy inaczej.
+- Mapa = teren + złoża (koń/ruda/glina/sól/las) + rzeki. Ulepszenia wyłącznie budowane przez gracza.
+- (Dziś generator i tak nie kładzie ulepszeń — zweryfikować że nic się nie prześlizguje; zasada na przyszłość.)
 
 ## ZMIANY (pliki)
 1. **Generator** `map/gen-helpers.ts` DEPOSIT_RULES (~5585-5618): usunąć reguły **bydło (~5603)** i
