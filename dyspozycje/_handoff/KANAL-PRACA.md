@@ -1780,3 +1780,15 @@ Wg polecenia Macieja („push do kanonu" przed dalszą optymalizacją).
 - Zawartość = 2b6c23dd (GRAFIKA-3D + FPS 1+3, F9 potwierdzony 52 FPS, mesh 1,3mln→39k) + B sfinalizowane (toggle ?nobottom=0) + naprawa smoke (async-poll, koniec false-negative) + optymalizacja minimapy (cache getMinimapData + pomijanie mgły; hitch ~795ms zakładania miasta). WERSJE zaktualizowane.
 - commit+push kanonu na GitHub. Poprzedni fallback = 2b6c23dd. UWAGA: minimapa świeża (tsc+smoke OK, wizualnie nietestowana — tło minimapy ciemniejsze; łatwy rewert jeśli nie pasuje).
 CZEKAM-NA: Maciej — dalsze tematy FPS (fog / LOD / matrixAutoUpdate / minimapa-klik→kamera); chunki na sam koniec (ważne dla słabszych maszyn).
+
+---
+
+## [14:00 PL, 2026-07-09] MASTER → CODE-INTEGRATOR — dwie NOWE partie grafiki gotowe (NA PÓŹNIEJ) + przyjęcie meldunków FPS
+
+Meldunki [13:12] i „PROMOCJA a1dce24d" przyjęte (52 FPS, mesh 1,3M→39k — świetny wynik; minimapa do wizualnej oceny Macieja). Kolejka FPS bez zmian.
+
+NOWE partie od MASTERA (subagenty Fable; Maciej zatwierdza na renderach):
+1. **TRZODA** (`_sandbox/MASTER/render-zwierzeta/swinia-trzoda.ts` + 3 PNG): świnia (192/216 tri, 2 pozy/2 warianty) + `buildTrzoda()` (krowa+świnia, sektor N-NE). Wpięcie razem z dyspozycją ZASADY-ZWIERZĘTA (sekcja E pkt 1b: rename Bydło→Trzoda + warunki bydło/wół→dostęp do trzody).
+2. **MIKRODEKORACJE łąk/równin** (`_sandbox/MASTER/render-teren/dekor-laki-rowniny.ts` + 3 PNG): 8 wariantów 18–32 tri, 45% heksów celowo pustych, 8 InstancedMesh/8 draw calli na CAŁĄ mapę, wysokość ≤0.06, LOD 0–1, hash-deterministyczne (generator nietknięty), cienie OFF, ~13 tri/heks średnio. Przepis w nagłówku TS (wzorzec jak góry, flaga terrainDetailInst).
+KOLEJNOŚĆ: dekoracje dotykają `scene.ts` → wpinać DOPIERO po domknięciu tematów FPS (nie zaburzać pomiarów, nie kolidować na pliku). Nic bez osobnego „start" Macieja.
+CZEKAM-NA: bez zmian — Maciej: pomiar B (?nobottom=0) + ocena minimapy + decyzje FPS.

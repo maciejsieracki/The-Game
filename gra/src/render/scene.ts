@@ -2506,5 +2506,16 @@ export async function buildScene(
     return currentZoomLod;
   }
 
+  // FPS: statyczne InstancedMeshe terenu/dekoracji (baza heksów, las, śnieg, szczyty, garby
+  // wzgórz, plaże/wydmy/oazy, 10× góry/wzgórza) nie zmieniają WŁASNEJ macierzy — instancje
+  // pozycjonowane są przez instanceMatrix (setMatrixAt), a sam mesh stoi w origin. matrixAutoUpdate
+  // off zdejmuje per-frame updateMatrix z każdego z nich. Celujemy tylko w isInstancedMesh, więc
+  // oceanMesh (jego position.y zmienia się w setFog) i wstęgi rzek zostają nietknięte.
+  scene.traverse((o) => {
+    if ((o as THREE.InstancedMesh).isInstancedMesh) {
+      o.matrixAutoUpdate = false;
+      o.updateMatrix();
+    }
+  });
   return { scene, camera, renderer, center, dispose, setFog, hideDecorAtHex, setZoomLod, getZoomLodLevel };
 }

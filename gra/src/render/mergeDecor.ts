@@ -61,6 +61,7 @@ function buildMergedMesh(group: THREE.Object3D): THREE.Mesh {
   );
   m.castShadow = true;
   m.receiveShadow = true;
+  m.matrixAutoUpdate = false; // FPS: statyczny (lokalna macierz = identyczność) — bez per-frame updateMatrix
   return m;
 }
 
