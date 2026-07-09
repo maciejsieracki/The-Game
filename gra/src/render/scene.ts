@@ -62,6 +62,11 @@ import { addRobloxSkyDecor } from './robloxCity';
 import { improvementKeysForHex } from '../game/terrain-improvements';
 import { FOG_EXPLORED_BRIGHTNESS } from '../game/visibility';
 import {
+  goraGeometria, wzgorzeGeometria, wariantDlaHeksa, rotacjaDlaHeksa,
+  TEREN_MATERIAL, LICZBA_WARIANTOW_TERENU,
+} from './teren-gory-wzgorza';
+import { setImprovementDetailQuality } from './robloxImprovements';
+import {
   type ZoomLodLevel,
   type ZoomLodFlags,
   normalizedZoomT,
@@ -1152,6 +1157,8 @@ export async function buildScene(
   const hexCount = Object.keys(map.hexes).length;
   const preset = resolveRenderPreset(renderOptions, hexCount);
   const robloxLite = preset.robloxLite;
+  // GRAFIKA-3D: jakość dekoracji ulepszeń (stadnina 1/2 konie itp.) wg ustawienia gracza.
+  setImprovementDetailQuality(renderOptions.mapDetailQuality);
   const palette = styleScenePalette(renderStyle);
   const useStyledDecor = renderStyle !== 'civ';
   const styledOverlays: Array<{ group: THREE.Group; hexKey: string }> = [];
@@ -1222,18 +1229,30 @@ export async function buildScene(
   // CylinderGeometry(6) jest juz pointy-top -- bez rotacji.
 
   // Zlicz ilosc per teren i nakladke
+  // GRAFIKA-3D partia TEREN stage 2: w stylu roblox góry/wzgórza renderujemy jako
+  // 10 InstancedMesh (5 wariantów gór + 5 wzgórz) zamiast per-heks styledOverlays.
+  const NW = LICZBA_WARIANTOW_TERENU;
+  const styledTerrain = useStyledDecor && renderStyle === 'roblox';
   const countByTerrain: Partial<Record<TerenBazowy, number>> = {};
   let forestCount = 0;
   let mountainSnowCount = 0;
   let hillCount = 0;
   let desertCount = 0;
+  const goraVarCount: number[] = new Array(NW).fill(0);
+  const wzgorzeVarCount: number[] = new Array(NW).fill(0);
 
   for (const hex of Object.values(map.hexes)) {
     const t = hex.terenBazowy;
     countByTerrain[t] = (countByTerrain[t] ?? 0) + 1;
     if (hex.nakladka === Nakladka.Las) forestCount++;
-    if (t === TerenBazowy.Gory) mountainSnowCount++;
-    if (t === TerenBazowy.Wzgorza) hillCount++;
+    if (t === TerenBazowy.Gory) {
+      mountainSnowCount++;
+      if (styledTerrain) goraVarCount[wariantDlaHeksa(hex.coords.q, hex.coords.r, NW, map.seed)]!++;
+    }
+    if (t === TerenBazowy.Wzgorza) {
+      hillCount++;
+      if (styledTerrain) wzgorzeVarCount[wariantDlaHeksa(hex.coords.q, hex.coords.r, NW, map.seed)]!++;
+    }
     if (t === TerenBazowy.Pustynia) desertCount++;
   }
 
@@ -1325,6 +1344,30 @@ export async function buildScene(
   hillBumpMesh.castShadow = true;
   hillBumpMesh.receiveShadow = true;
   if (!useStyledDecor) scene.add(hillBumpMesh);
+
+  // GRAFIKA-3D partia TEREN stage 2: 10 InstancedMesh (5 gora + 5 wzgorze wariantów),
+  // wspólny TEREN_MATERIAL (vertexColors), frustumCulled=false jak peak/hillBump.
+  // Fog: matrix-hide (nieodkryte/miasto) + instanceColor-dim (explored) — patrz applyTerrainFog.
+  const goraInst: THREE.InstancedMesh[] = [];
+  const wzgorzeInst: THREE.InstancedMesh[] = [];
+  const goraHexKey: string[][] = [];
+  const goraOrigMatrix: THREE.Matrix4[][] = [];
+  const goraIdx: number[] = [];
+  const wzgorzeHexKey: string[][] = [];
+  const wzgorzeOrigMatrix: THREE.Matrix4[][] = [];
+  const wzgorzeIdx: number[] = [];
+  if (styledTerrain) {
+    for (let v = 0; v < NW; v++) {
+      const gm = new THREE.InstancedMesh(goraGeometria(v), TEREN_MATERIAL, Math.max(1, goraVarCount[v]!));
+      gm.frustumCulled = false; gm.castShadow = true; gm.receiveShadow = true; gm.count = 0;
+      scene.add(gm);
+      goraInst.push(gm); goraHexKey.push([]); goraOrigMatrix.push([]); goraIdx.push(0);
+      const wm = new THREE.InstancedMesh(wzgorzeGeometria(v), TEREN_MATERIAL, Math.max(1, wzgorzeVarCount[v]!));
+      wm.frustumCulled = false; wm.castShadow = true; wm.receiveShadow = true; wm.count = 0;
+      scene.add(wm);
+      wzgorzeInst.push(wm); wzgorzeHexKey.push([]); wzgorzeOrigMatrix.push([]); wzgorzeIdx.push(0);
+    }
+  }
 
   // -- Piaszczysty pierscien wybrzeza
   const coastCount = countByTerrain[TerenBazowy.Wybrzeze] ?? 0;
@@ -1594,7 +1637,20 @@ export async function buildScene(
     if (t === TerenBazowy.Gory) {
       const topY = vis.height + vis.yOffset;
       const q = hex.coords.q, r = hex.coords.r;
-      if (useStyledDecor) {
+      if (styledTerrain) {
+        // GRAFIKA-3D partia TEREN stage 2: instanced góra (wariant + rotacja deterministyczne; R=1 → bez skali)
+        const v = wariantDlaHeksa(q, r, NW, map.seed);
+        dummy.position.set(x, topY, z);
+        dummy.rotation.set(0, rotacjaDlaHeksa(q, r, map.seed), 0);
+        dummy.scale.set(1, 1, 1);
+        dummy.updateMatrix();
+        const gm = goraInst[v]!;
+        const gi = goraIdx[v]!;
+        gm.setMatrixAt(gi, dummy.matrix);
+        goraHexKey[v]![gi] = hexKey;
+        goraOrigMatrix[v]![gi] = dummy.matrix.clone();
+        goraIdx[v] = gi + 1;
+      } else if (useStyledDecor) {
         const peak = buildStyleMountainPeak(renderStyle, { q, r, x, z, topY, seed: map.seed, R }, robloxLite);
         styledOverlays.push({ group: peak, hexKey });
         scene.add(peak);
@@ -1630,7 +1686,20 @@ export async function buildScene(
       const baseY = vis.height + vis.yOffset;
       const q = hex.coords.q, r = hex.coords.r;
       const hillLayers = improvementKeysForHex(hex);
-      if (useStyledDecor && !hillLayers.includes('tarasy')) {
+      if (styledTerrain && !hillLayers.includes('tarasy')) {
+        // GRAFIKA-3D partia TEREN stage 2: instanced wzgórze (plateau 0.392 zachowane w modelu)
+        const v = wariantDlaHeksa(q, r, NW, map.seed);
+        dummy.position.set(x, baseY, z);
+        dummy.rotation.set(0, rotacjaDlaHeksa(q, r, map.seed), 0);
+        dummy.scale.set(1, 1, 1);
+        dummy.updateMatrix();
+        const wm = wzgorzeInst[v]!;
+        const wi = wzgorzeIdx[v]!;
+        wm.setMatrixAt(wi, dummy.matrix);
+        wzgorzeHexKey[v]![wi] = hexKey;
+        wzgorzeOrigMatrix[v]![wi] = dummy.matrix.clone();
+        wzgorzeIdx[v] = wi + 1;
+      } else if (useStyledDecor && !hillLayers.includes('tarasy')) {
         const hill = buildStyleHillBump(renderStyle, { q, r, x, z, baseY, seed: map.seed, R }, robloxLite);
         styledOverlays.push({ group: hill, hexKey });
         scene.add(hill);
@@ -1872,6 +1941,13 @@ export async function buildScene(
   peakMesh.instanceMatrix.needsUpdate = true;
   hillBumpMesh.count = hillBumpIdx;
   hillBumpMesh.instanceMatrix.needsUpdate = true;
+  // GRAFIKA-3D partia TEREN stage 2: finalizacja liczników 10 InstancedMesh terenu.
+  for (let v = 0; v < goraInst.length; v++) {
+    goraInst[v]!.count = goraIdx[v]!;
+    goraInst[v]!.instanceMatrix.needsUpdate = true;
+    wzgorzeInst[v]!.count = wzgorzeIdx[v]!;
+    wzgorzeInst[v]!.instanceMatrix.needsUpdate = true;
+  }
   beachMesh.count = beachIdx;
   beachMesh.instanceMatrix.needsUpdate = true;
   duneMesh.count = duneIdx;
@@ -2053,6 +2129,10 @@ export async function buildScene(
     // Nowe dekoracje terenu
     peakGeo.dispose(); peakMat.dispose();
     hillBumpGeo.dispose(); hillBumpMat.dispose();
+    // GRAFIKA-3D partia TEREN stage 2: zwolnij bufory instancji (geometria gór/wzgórz i
+    // TEREN_MATERIAL są współdzielone/cache w module — NIE dispose'ować ich tutaj).
+    for (const m of goraInst) m.dispose();
+    for (const m of wzgorzeInst) m.dispose();
     beachGeo.dispose(); beachMat.dispose();
     duneGeo.dispose(); duneMat.dispose();
     // Oazy (InstancedMesh)
@@ -2113,6 +2193,10 @@ export async function buildScene(
     hideInstancedOnHex(shrubMesh, shrubHexKey, shrubOrigMatrix, hexKey);
     hideInstancedOnHex(peakMesh, peakHexKey, peakOrigMatrix, hexKey);
     hideInstancedOnHex(hillBumpMesh, hillBumpHexKey, hillBumpOrigMatrix, hexKey);
+    for (let v = 0; v < goraInst.length; v++) {
+      hideInstancedOnHex(goraInst[v]!, goraHexKey[v]!, goraOrigMatrix[v]!, hexKey);
+      hideInstancedOnHex(wzgorzeInst[v]!, wzgorzeHexKey[v]!, wzgorzeOrigMatrix[v]!, hexKey);
+    }
     hideInstancedOnHex(beachMesh, beachHexKey, beachOrigMatrix, hexKey);
     hideInstancedOnHex(duneMesh, duneHexKey, duneOrigMatrix, hexKey);
     hideInstancedOnHex(oasisPoolMesh, oasisPoolHexKey, oasisPoolOrigMat, hexKey);
@@ -2183,6 +2267,33 @@ export async function buildScene(
       mesh.instanceMatrix.needsUpdate = true;
     };
 
+    // GRAFIKA-3D partia TEREN stage 2: fog dla instanced gór/wzgórz — matrix-hide (nieodkryte
+    // / miasto) + instanceColor-dim (explored ×FOG_EXPLORED_BRIGHTNESS). Parytet z dimmingiem
+    // styledOverlays (applyFogDimToObject3D), bo tu materiał wspólny — dimujemy per-instancję.
+    const _terrainDim = new THREE.Color();
+    const applyTerrainFog = (
+      mesh: THREE.InstancedMesh,
+      keys: string[],
+      orig: THREE.Matrix4[],
+    ) => {
+      const cnt = mesh.count;
+      for (let i = 0; i < cnt; i++) {
+        const k = keys[i];
+        if (k === undefined) continue;
+        const bri = fogBrightnessForHex(k, visible, explored, hasFog);
+        if (bri <= 0 || decorHiddenHexKeys.has(k)) {
+          mesh.setMatrixAt(i, ZERO_MATRIX);
+        } else {
+          const m = orig[i];
+          if (m) mesh.setMatrixAt(i, m);
+          _terrainDim.setScalar(bri);
+          mesh.setColorAt(i, _terrainDim);
+        }
+      }
+      mesh.instanceMatrix.needsUpdate = true;
+      if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
+    };
+
     forestMesh.visible = zoomFlags.forestInst;
     if (zoomFlags.forestInst) applyOverlayFog(forestMesh, forestHexKey, forestOrigMatrix);
 
@@ -2200,6 +2311,14 @@ export async function buildScene(
 
     hillBumpMesh.visible = zoomFlags.terrainDetailInst;
     if (zoomFlags.terrainDetailInst) applyOverlayFog(hillBumpMesh, hillBumpHexKey, hillBumpOrigMatrix);
+
+    // GRAFIKA-3D partia TEREN stage 2: instanced góry/wzgórza — widoczność jak styledDecor.
+    for (let v = 0; v < goraInst.length; v++) {
+      goraInst[v]!.visible = zoomFlags.styledDecor;
+      if (zoomFlags.styledDecor) applyTerrainFog(goraInst[v]!, goraHexKey[v]!, goraOrigMatrix[v]!);
+      wzgorzeInst[v]!.visible = zoomFlags.styledDecor;
+      if (zoomFlags.styledDecor) applyTerrainFog(wzgorzeInst[v]!, wzgorzeHexKey[v]!, wzgorzeOrigMatrix[v]!);
+    }
 
     beachMesh.visible = zoomFlags.coastDecorInst;
     if (zoomFlags.coastDecorInst) applyOverlayFog(beachMesh, beachHexKey, beachOrigMatrix);

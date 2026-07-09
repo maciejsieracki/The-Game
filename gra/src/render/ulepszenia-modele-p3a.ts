@@ -408,7 +408,7 @@ export function buildLodzieRybackie(): THREE.Group {
 }
 
 // =============================== STADNINA ==================================
-export function buildStadnina(): THREE.Group {
+export function buildStadnina(liczbaKoni = 2): THREE.Group {
   const g = new THREE.Group();
   const scianaM = mat(P.sciana), dachM = mat(P.dachDeska), ciemnyM = mat(P.drewnoC),
     bialyM = mat(P.bialy), drzwiM = mat(P.ciemneDrzwi), sianoM = mat(P.siano),
@@ -465,8 +465,8 @@ export function buildStadnina(): THREE.Group {
     k.rotation.y = rotY;
     g.add(k);
   };
-  kon(P.konKasztan, P.konKasztanGrzywa, 90, 0.40, 2.90);   // kasztan skosem, leb ku S-SW
-  kon(P.konSiwy, P.konSiwyGrzywa, 152, 0.53, 2.0);         // siwek bokiem, leb ku bramie
+  kon(P.konKasztan, P.konKasztanGrzywa, 90, 0.40, 2.90);   // kasztan (zawsze; NISKA/NORMALNA = 1 koń)
+  if (liczbaKoni >= 2) kon(P.konSiwy, P.konSiwyGrzywa, 152, 0.53, 2.0); // siwek — tylko WYSOKA (2 konie)
   // poidlo + stog siana w zagrodzie
   const poidlo = new THREE.Group();
   B(poidlo, 0.19, 0.065, 0.105, 0, 0.0325, 0, ciemnyM);

@@ -4,7 +4,7 @@
  */
 import * as THREE from 'three';
 import type { ImprovementKey } from './improvements';
-import { buildStyleTarasyTerrace } from './mapRenderStyle';
+import { buildStyleTarasyTerrace, type QualityTier } from './mapRenderStyle';
 import { placeLivestockPair } from './styleResources';
 import { buildLama, buildPastwiskoZwierzeta } from './pastwisko-modele';
 import {
@@ -23,6 +23,11 @@ import {
 function mat(c: number): THREE.MeshLambertMaterial {
   return new THREE.MeshLambertMaterial({ color: c, flatShading: true });
 }
+
+// GRAFIKA-3D: poziom jakości dekoracji (liczba koni w stadninie, gęstość zwierząt itp.).
+// Ustawiany ze sceny (mapDetailQuality gracza); domyślnie 'high' (pełne sloty).
+let _improvementDetailQuality: QualityTier = 'high';
+export function setImprovementDetailQuality(q: QualityTier): void { _improvementDetailQuality = q; }
 
 function box(w: number, h: number, d: number, c: number): THREE.Mesh {
   const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat(c));
@@ -383,7 +388,7 @@ const BUILDERS: Record<ImprovementKey, (g: THREE.Group, owner: number) => void> 
   bydlo: g => { g.add(buildPastwiskoZwierzeta()); },   // GRAFIKA-3D partia 1: pełne pastwisko, środek wolny pod budynek
   owce: g => rbxOwce(g),
   lama: g => { const l = buildLama(); l.position.set(0.63, 0, 0.04); g.add(l); },
-  stadnina: g => { g.add(buildStadnina()); },   // GRAFIKA-3D partia 3A (dotąd: rbxBydlo = krowy!)
+  stadnina: g => { g.add(buildStadnina(_improvementDetailQuality === 'high' ? 2 : 1)); },   // GRAFIKA-3D 3A: WYSOKA=2 konie, NISKA/NORMALNA=1
   kopalnia: g => { const m = buildKopalnia(); m.rotation.y = ULEPSZENIA_P2_LAYOUT.kopalnia.budynek.rotY; g.add(m); },
   kamieniolom: g => { const m = buildKamieniolom(); m.rotation.y = ULEPSZENIA_P2_LAYOUT.kamieniolom.budynek.rotY; g.add(m); },
   oboz_lowiecki: g => { const m = buildObozLowiecki(); m.rotation.y = ULEPSZENIA_P3A_LAYOUT.obozLowiecki.budynek.rotY; g.add(m); },
