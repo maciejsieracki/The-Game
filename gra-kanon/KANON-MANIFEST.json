@@ -1,7 +1,7 @@
 {
-  "publishedAt": "2026-07-09T16:29:32",
-  "sourceRoboczaMd5": "bc8b8e38b5c9737e16c53d24ea1d39a2",
+  "sourceRobocza": "gra-robocza/",
   "note": "KANON w gra-kanon/ + FINALNA w root/Gra-FINALNA.html — tylko Master po OK Macieja.",
-  "publisher": "Master Orkiestrator",
-  "sourceRobocza": "gra-robocza/"
+  "sourceRoboczaMd5": "dee7140df6e7012213918913deba7c9e",
+  "publishedAt": "2026-07-09T16:49:26",
+  "publisher": "Master Orkiestrator"
 }
