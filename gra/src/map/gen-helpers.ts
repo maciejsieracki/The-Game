@@ -3296,11 +3296,16 @@ export function repairRiverPathAdjacency(
 /** Min. odległość ciała rzeki od morza (Maciej 2026-07-04). Ujście = ostatnie N hex. */
 export const RIVER_MIN_INLAND_FROM_SEA = 2;
 
-/** Maciej 2026-07-09: rzeka wchodząca do MORZA musi mieć min. tyle długości ścieżki (heksów).
- *  Cel: 25 długości BOKU heksa. Przy wymogu ≥3 boki/heks (render riverCornersAlongHexEdges)
- *  25 boków ≈ 8 heksów ścieżki. WYJĄTEK: dopływ do innej rzeki (pushTributary) — bez minimum.
- *  Knob długości (25 heksów dławiło generator — perf). */
-export const RIVER_MIN_MAIN_LEN = 8;
+/** Maciej 2026-07-09 (REGUŁA B): realną długość głównego nurtu wymusza teraz twardy meander
+ *  fazy 1 (zob. RIVER_HARD_MEANDER_LEN / growRiverInlandBeforeDrainage), nie ten filtr.
+ *  Filtr trzyma tylko próg degeneracji (odrzuca 1-2 hex) — na małej wyspie/ciasnym lądzie
+ *  meander może przerwać się wcześniej (brak miejsca) i rzeka MA prawo być krótsza niż dawne 8. */
+export const RIVER_MIN_MAIN_LEN = 3;
+
+/** REGUŁA B (Maciej 2026-07-09): przez pierwsze tyle kroków fazy 1 meander jest TWARDY —
+ *  kandydat zbliżający się do morza (od < curOd) jest odrzucany, dopóki path.length < ten próg.
+ *  Cel: „najpierw meander w głąb, potem do morza" zamiast ciągnięcia do oceanu od 1. kroku. */
+export const RIVER_HARD_MEANDER_LEN = 8;
 
 /** Ostatnie N hex trasy — szybkie połączenie z morzem (Maciej 2026-07-05: 5). */
 export const RIVER_MOUTH_TAIL_LEN = 5;
@@ -3518,17 +3523,22 @@ function growRiverInlandBeforeDrainage(
     const curKey = hexKey(cur.q, cur.r);
     const curD = seaDist.get(curKey) ?? 0;
     const curOd = openOceanDist.get(curKey) ?? Infinity;
+    // REGUŁA B (Maciej 2026-07-09): przez pierwsze RIVER_HARD_MEANDER_LEN kroków meander jest
+    // twardy — kandydat zbliżający się do morza (od < curOd) jest odrzucony NIŻEJ, przed rand(),
+    // więc nie zużywa losowania (ta sama liczba wywołań rand() na przepuszczonego kandydata: 1).
+    const hardMeander = path.length < RIVER_HARD_MEANDER_LEN;
     const candidates: Array<{ q: number; r: number; score: number }> = [];
 
     for (const [dq, dr] of HEX_DIRECTIONS) {
       const nq = cur.q + dq;
       const nr = cur.r + dr;
       const nk = hexKey(nq, nr);
-      if (visited.has(nk)) continue;
-      if (!canRiverFlowThrough(hexes[nk], nk, srcKey)) continue;
+      if (visited.has(nk)) continue; // brak samoprzecięcia
+      if (!canRiverFlowThrough(hexes[nk], nk, srcKey)) continue; // brak morza/poza mapą (poza źródłem-reliefem)
       const nd = seaDist.get(nk) ?? 0;
       if (nd < RIVER_MIN_INLAND_FROM_SEA) continue;
       const od = openOceanDist.get(nk) ?? Infinity;
+      if (hardMeander && od < curOd) continue; // twardy meander: nie zbliżaj się do morza
       let score = 1200 - od * 30;
       if (od > curOd + 0.5) score -= 18;
       if (nd > curD + 1) score -= 10;
@@ -3537,6 +3547,8 @@ function growRiverInlandBeforeDrainage(
       candidates.push({ q: nq, r: nr, score });
     }
 
+    // Mała wyspa / brak miejsca: twardy meander nie ma dokąd iść — przerwij (NIE luzuj filtra),
+    // faza 2 (aStarRiverToSea w traceRiver) dokończy do morza; rzeka będzie krótsza niż 8 — OK.
     if (candidates.length === 0) break;
     candidates.sort((a, b) => b.score - a.score);
     const pickIdx = Math.min(candidates.length - 1, Math.floor(rand() * Math.min(3, candidates.length)));

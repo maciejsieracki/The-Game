@@ -886,6 +886,7 @@ function riverCornersAlongHexEdges(
   dirIn: number,
   dirOut: number,
   hexParity: number,
+  minBoki: number = 3,
 ): number[] {
   const a = ((dirIn % 6) + 6) % 6;
   const b = ((dirOut % 6) + 6) % 6;
@@ -894,10 +895,12 @@ function riverCornersAlongHexEdges(
   const entryOpts = [(a + 1) % 6, (a + 2) % 6];
   const exitOpts = [(b + 1) % 6, (b + 2) % 6];
 
-  // Maciej 2026-07-09: rzeka musi przejść przez ≥3 boki heksa (bardziej pokręcona, szybciej nabiera
-  // długości, naturalna). Bierzemy NAJKRÓTSZY łuk po bokach mający ≥MIN_BOKI boków; fallback: najdłuższy.
+  // Maciej 2026-07-09: rzeka musi przejść przez ≥minBoki boków heksa (domyślnie 3 — bardziej
+  // pokręcona, szybciej nabiera długości, naturalna). Bierzemy NAJKRÓTSZY łuk po bokach mający
+  // ≥minBoki boków; fallback: najdłuższy.
+  // Maciej 2026-07-09b: na heksie-ujściu (przy Wybrzeżu/Morzu) wołający łamie regułę (minBoki=1),
+  // żeby rzeka nie wiła się wzdłuż brzegu, tylko wpadała do morza najkrótszym łukiem.
   // Linie proste — same krawędzie heksa (walkHexPerimeter), bez skrótów przez środek.
-  const MIN_BOKI = 3;
   let best: number[] = [];
   let bestScore = Infinity;
   let longest: number[] = [];
@@ -907,7 +910,7 @@ function riverCornersAlongHexEdges(
         const walked = walkHexPerimeter(entry, exit, cw);
         if (walked.length === 0) continue;
         if (walked.length > longest.length) longest = walked;
-        if (walked.length - 1 < MIN_BOKI) continue; // walked.length-1 = pełne boki między rogami
+        if (walked.length - 1 < minBoki) continue; // walked.length-1 = pełne boki między rogami
         let score = walked.length;
         // Przy remisie: deterministyczny wybór strony (S w lewo/prawo)
         if (score === bestScore && hexParity % 2 === 0) score += cw ? 0 : 0.01;
@@ -931,13 +934,14 @@ function riverTransitCornersOnHex(
   qNext: number,
   rNext: number,
   R: number,
+  minBoki: number = 3,
 ): Array<{ x: number; z: number }> {
   const dirIn = neighborDirIndex(q, r, qPrev, rPrev);
   const dirOut = neighborDirIndex(q, r, qNext, rNext);
   if (dirIn < 0 || dirOut < 0) return [];
   const wc = axialToWorld(q, r, R);
   const cs = hexCorners(wc.x, wc.z, R);
-  const corners = riverCornersAlongHexEdges(dirIn, dirOut, q + r);
+  const corners = riverCornersAlongHexEdges(dirIn, dirOut, q + r, minBoki);
   return corners.map((ci) => ({ x: cs[ci]!.x, z: cs[ci]!.z }));
 }
 
@@ -996,8 +1000,19 @@ function buildRiverPointsFromHexPath(
     const yc = yAt(cur.q, cur.r);
     if (yc == null) continue;
 
+    // Maciej 2026-07-09b: heks-ujście (sam lub sąsiad na trasie dotyka Wybrzeża/Morza) — złam
+    // regułę ≥3 boków, pozwól na najkrótszy łuk (1-2 boki), żeby rzeka wpadała PROSTO do morza,
+    // zamiast wić się wzdłuż brzegu. Na zwykłych heksach zostaje minBoki=3 (domyślne).
+    const curTeren = map.hexes[`${cur.q},${cur.r}`]?.terenBazowy;
+    const prevTeren = map.hexes[`${prev.q},${prev.r}`]?.terenBazowy;
+    const nextTeren = map.hexes[`${next.q},${next.r}`]?.terenBazowy;
+    const isUjscieHex = [curTeren, prevTeren, nextTeren].some(
+      (t) => t === TerenBazowy.Wybrzeze || t === TerenBazowy.Morze,
+    );
+    const minBoki = isUjscieHex ? 1 : 3;
+
     for (const corner of riverTransitCornersOnHex(
-      cur.q, cur.r, prev.q, prev.r, next.q, next.r, R,
+      cur.q, cur.r, prev.q, prev.r, next.q, next.r, R, minBoki,
     )) {
       pushPt(corner.x, corner.z, yc, cur.q, cur.r);
     }
