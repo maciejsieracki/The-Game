@@ -1792,3 +1792,26 @@ NOWE partie od MASTERA (subagenty Fable; Maciej zatwierdza na renderach):
 2. **MIKRODEKORACJE łąk/równin** (`_sandbox/MASTER/render-teren/dekor-laki-rowniny.ts` + 3 PNG): 8 wariantów 18–32 tri, 45% heksów celowo pustych, 8 InstancedMesh/8 draw calli na CAŁĄ mapę, wysokość ≤0.06, LOD 0–1, hash-deterministyczne (generator nietknięty), cienie OFF, ~13 tri/heks średnio. Przepis w nagłówku TS (wzorzec jak góry, flaga terrainDetailInst).
 KOLEJNOŚĆ: dekoracje dotykają `scene.ts` → wpinać DOPIERO po domknięciu tematów FPS (nie zaburzać pomiarów, nie kolidować na pliku). Nic bez osobnego „start" Macieja.
 CZEKAM-NA: bez zmian — Maciej: pomiar B (?nobottom=0) + ocena minimapy + decyzje FPS.
+
+---
+
+## [2026-07-09 · późn.] CODE-INTEGRATOR → MASTER/Maciej — FPS domknięty + DEKOR + ZASADY-ZWIERZĄT E1–E5 (ROBOCZA f69d1b0b)
+
+**FPS (dokończone po [12:55]):** diff-fog (`setFog` iteruje tylko zmienione heksy) → **fog 41,4 ms → 1,9 ms**; matrixAutoUpdate off na zmergowanych/statycznych InstancedMesh; cienie na żądanie (`shadowMap.autoUpdate=false` + `needsUpdate` przy zmianie casterów); minimapa klik→kamera. Baseline F9 przed dekorem: **FPS 57 · fog 1,9 ms · tri 6,7 mln (vertex-bound → pixelRatio nie jest leverem; został tylko chunki, świadomie na koniec)**. Pełny log: `dyspozycje/OPTYMALIZACJE-FPS-LOG.md`.
+
+**DEKOR (wpis [14:00] pkt 2):** `dekor-laki-rowniny.ts` wpięty w `scene.ts` wzorcem gór (8 InstancedMesh w grupie, LOD `terrainDetailInst`, fog `applyTerrainFog`, cienie OFF, ~45% pustych). Hash mapy nietknięty.
+
+**ZASADY-ZWIERZĄT (dyspozycja E1–E5, decyzje 1abc):**
+- E1: lama→{Wzgórza,Góry}; koń poza food-gate (współistnieje ze wszystkim, złoże konia nie rezerwuje/nie blokuje farmy); Nowy Świat koń po dostępie do złoża (funkcja `isNewWorldCiv`).
+- E1b: **Trzoda** (rename Bydło→Trzoda, klucz `bydlo` zostaje; `buildTrzoda` krowa+świnia; rydwan Surowiec `wol`→`bydlo`).
+- E2: posiew lamy Inków (2–3 złoża na wzgórzach/górach startu, deterministycznie, POZA generatorem).
+- E3: **macierz miasta B** (ZOSTAJE/ZNIKA + wyjątek GÓRY; filtr placedImprovements + sync plonów + mesh).
+- E4: `buildPastwiskoZwierzeta` wycofany (pastwisko→trzoda).
+- E5: opisy = zawartość heksa (Trzoda…); `terrain-improvements.json` + `PROJEKT-GRY-master.md`.
+
+**Bramki:** tsc=0 · smoke OK · map-gen determinizm/hash **55aaa07c identyczny** · vite-direct (bez prebuildu) · verify OK. Commity per temat na `main` (DEKOR d52483a · E1 3aac9fa · E1b 326405b · E2 0bc4a8d · E3 6388487 · E4 bb83408 · E5 9427284 + FPS b8f80a7/a7ec2fd/9b5b20c). Deploy ROBOCZA **f69d1b0b**.
+
+**DO MASTERA (render-approval):** farma-solo (`wariant:'solo'`, pełny heks) → przenieść poletka do sektora **W-NW** (środek wolny pod miasto). Poletka parametryzowane azymutem w `ULEPSZENIA_P2_LAYOUT.farma.solo` — layout do przeprojektowania + render do akceptacji.
+**DO SYNCU DANYCH (Excel, po Twojej stronie):** `units.json` rydwan Surowiec `wol`→`bydlo` oraz `terrain-improvements.json` (lama teren Wzgórza/Góry, bydlo nazwa→Trzoda) — zmienione w `gra/data`, do odwzorowania w panelach.
+
+CZEKAM-NA: Maciej — **test wzrokowy f69d1b0b**: (1) FPS przy panie (cienie na żądanie) + mgła odsłania się poprawnie (diff-fog) + brak utkniętych cieni; (2) zwierzęta: owce/lama tylko wzgórza (lama też góry), farma+krowa/irygacja OK a farma+owce NIE, koń dokłada się wszędzie, start Inkami → lamy w regionie bez koni/owiec/krów; (3) miasto: na farmie+krowie zostają, na lesie znikają, na górze wszystko znika; (4) opis heksa = dokładnie to, co widać; (5) mikrodekor łąk/równin + trzoda (krowa+świnia). Po OK → promocja do kanonu + push.
