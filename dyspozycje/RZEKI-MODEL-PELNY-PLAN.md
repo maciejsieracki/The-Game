@@ -42,8 +42,15 @@ UWAGA: dopływ kończący się przy zbiegu vs „nie dochodzi do morza" — dop�
 
 ## DWA TORY RZEK
 - **Tor RENDER (render-only, bez hasha):** inset do wnętrza płaskiego heksa + stała płaska wysokość (2+3 wyżej).
-- **Tor GENERATOR (hash+baseline):** brak rozgałęziania (topologia). Prześledzić `generateRivers` — gdzie
-  powstają widelce/dopływy — i zakończyć trasę przy zbiegu.
+- **Tor GENERATOR:** brak rozgałęziania (topologia). ZBADANE: rzeki = główne (źródło→morze) + DOPŁYWY
+  (`aStarRiverToTarget` gen-helpers:4334 — A* dopływ→konkretny hex na głównej) + domykanie junction (B0.8 I2,
+  ~4263) + walidacja ujść (~4736 „każdy dopływ na wspólnej krawędzi z inną ścieżką"). `tributaryCountForLength`
+  (4328) daje 0–4 dopływów. Widelce „Y" = zbiegi dopływów.
+  PODEJŚCIE (do zrobienia, ostrożnie): dopływ ma **zatrzymać się przy PIERWSZYM kontakcie** z rzeką (nie
+  celować w hex NA głównej + domykać junction). Zmienić: cel A* = hex SĄSIEDNI do sieci (nie na niej) i
+  stop; ALBO w budowie ścieżki przerwać przy trafieniu na `riverHexSet`. Dostosować walidację ujść (dopływ
+  kończący przy rzece = OK, nie „bez ujścia"). Uwaga: to intrykowany podsystem — robić na świeżo, mały krok,
+  bramka map-gen-regression (0 rzek bez ujścia + determinizm). Test = determinizm (NIE złoty hash) → brak baseline.
 
 ## Gates
 tsc=0 · smoke OK · map-gen-regression (render-tor: determinizm bez zmian; generator-tor: nowy baseline,
