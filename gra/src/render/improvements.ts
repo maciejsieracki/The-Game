@@ -16,9 +16,11 @@ export type ImprovementKey =
 
 export const IMPROVEMENTS: { key: ImprovementKey; label: string; epoka: number }[] = [
   { key: 'farma', label: 'Farma', epoka: 1 },
-  { key: 'bydlo', label: 'Trzoda', epoka: 1 }, // rename Bydło→Trzoda (Maciej 2026-07-09; klucz techniczny bydlo zostaje)
-  { key: 'owce', label: 'Owce', epoka: 1 },
-  { key: 'lama', label: 'Lama', epoka: 1 },
+  // Ulepszenie ≠ surowiec (Maciej 2026-07-09): to STRUKTURY budowane na surowcu-zwierzęciu
+  // (jak stadnina na koniu). Surowce (złoża) zostają nazwami zwierząt: Trzoda / Owce / Lama.
+  { key: 'bydlo', label: 'Pastwisko', epoka: 1 },      // buduje się na złożu Trzody (krowa/świnia)
+  { key: 'owce', label: 'Owczarnia', epoka: 1 },       // buduje się na złożu Owiec
+  { key: 'lama', label: 'Zagroda lam', epoka: 1 },     // buduje się na złożu Lam
   { key: 'stadnina', label: 'Stadnina', epoka: 2 },
   { key: 'kopalnia', label: 'Kopalnia', epoka: 1 }, { key: 'kamieniolom', label: 'Kamieniołom', epoka: 1 },
   { key: 'oboz_lowiecki', label: 'Obóz łowiecki', epoka: 1 }, { key: 'wyrab', label: 'Wyrąb', epoka: 1 },
