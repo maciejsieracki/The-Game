@@ -1722,6 +1722,14 @@ CZEKAM-NA: CODE — kanon (stempel+commit) → TEREN → meldunki; Maciej — po
 
 ---
 
+## [13:15 PL, 2026-07-09] MASTER → CODE-INTEGRATOR — NOWA DYSPOZYCJA (na później): `dyspozycje/DYSPOZYCJA-ZASADY-ZWIERZETA-MIASTO.md`
+
+Decyzje Macieja z formularza 1abc zapadły i są ZAAKCEPTOWANE W CAŁOŚCI (łącznie z macierzą miasta pkt 1–15). Skrót: lama tylko wzgórza+góry; farma wyłącznie z krową ALBO irygacją; koń = surowiec-dostęp współistniejący ze wszystkim; posiew lamy przy starcie Inków (BEZ generatora/hasha); szablon ograniczeń Nowego Świata (koń po zdobyciu dostępu, nie „nigdy"); macierz co zostaje/znika przy budowie miasta + WYJĄTEK GÓRY (znika wszystko); layout: wszystkie ulepszenia małe przy bokach heksa, środek wolny pod miasto (korekta farmy-solo).
+WYKONANIE: NIE TERAZ — po tematach FPS ([12:55] obowiązuje), na osobne „start ZASADY-ZWIERZĄT" od Macieja. Szczegóły, bramki i testy w pliku dyspozycji.
+CZEKAM-NA: bez zmian — CODE: kanon + FPS wg [12:55].
+
+---
+
 ## [10:44 PL, 2026-07-09] CODE-INTEGRATOR → MASTER — GRAFIKA-3D KOMPLET wdrożone (stempel ab5b8527)
 
 Cała dyspozycja GRAFIKA-3D wpięta do `gra/src/render/` i wdrożona na ROBOCZA + 8 playtestów + hub. Commity per partia (5): koń+pastwisko (5e9167f), P2+3A+3B (8ab8e7e), TEREN stage 1 (00ca51d), TEREN stage 2 + stadnina quality (983b4b5).
@@ -1751,3 +1759,14 @@ Wg [12:55]. Promocja robocza→kanon sankcjonowanym `publish-kanon-snapshot.ps1`
 
 Następnie (pkt 2b [12:55]): **eksperyment B na nowej bazie** — deploy na roboczej + meldunek ze stemplem → Maciej mierzy F9 (tri z-B vs bez-B) i daje werdykt.
 CZEKAM-NA: Maciej — po deployu B pomiar F9 i werdykt B; potem ewentualnie A (chunki).
+
+---
+
+## [13:12 PL, 2026-07-09] CODE-INTEGRATOR → MASTER — EKSPERYMENT B wdrożony (stempel 5ff6abe0) → pomiar F9
+
+Wg [12:55] pkt 2b. USTALENIE: eksperyment B = `hexPrismNoBottomGeo` (heks bez dolnej pokrywy) i on JEST JUŻ w buildzie/kanonie 2b6c23dd (pomiar Macieja 7,02M tri = Z B). Żeby dać werdykt B, potrzebny pomiar Z-B vs BEZ-B na nowej bazie — zrobiłem to przełącznikiem (wzorzec `?culling=0`):
+- `scene.ts` flaga `B_NO_BOTTOM`: DOMYŚLNIE B on (jak kanon), a **`?nobottom=0` w URL → pełny pryzm** (dolna pokrywa wraca).
+- Deploy roboczej **stempel 5ff6abe0** (baza = kanon + toggle; default = identycznie jak kanon, więc nie regres).
+
+POMIAR (Maciej): otwórz roboczą normalnie → F9 `tri` (z B); dopisz `?nobottom=0` do URL, przeładuj → F9 `tri` (bez B). Różnica = oszczędność B na nowej bazie. Werdykt: keep (jeśli oszczędność sensowna, bez dziur pod heksami) / rewert. Źródło toggle niezacommitowane do werdyktu.
+CZEKAM-NA: Maciej — pomiar F9 (tri z/bez B) + werdykt B; potem A (chunki) lub sprzątnięcie toggle.

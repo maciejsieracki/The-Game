@@ -1156,6 +1156,12 @@ export async function buildScene(
   const renderOptions = normalizeMapRenderOptions(styleOrOptions);
   const renderStyle = renderOptions.style;
   const hexCount = Object.keys(map.hexes).length;
+  // Eksperyment B (heks bez dolnej pokrywy, ~25% mniej tri bazowych). Domyślnie WŁĄCZONE.
+  // Przełącznik pomiarowy: ?nobottom=0 → pełny pryzm (z dolną pokrywą) do porównania F9.
+  const B_NO_BOTTOM =
+    (typeof location !== 'undefined'
+      ? new URLSearchParams(location.search).get('nobottom')
+      : null) !== '0';
   const preset = resolveRenderPreset(renderOptions, hexCount);
   const robloxLite = preset.robloxLite;
   // GRAFIKA-3D: jakość dekoracji ulepszeń (stadnina 1/2 konie itp.) wg ustawienia gracza.
@@ -1274,7 +1280,9 @@ export async function buildScene(
     const vis = terrainVis(t, renderStyle);
     // Roblox: lekki overlap zamyka trójkątne szczeliny między heksami (prześwit tafli oceanu).
     const hexR = renderStyle === 'roblox' ? R * 1.008 : R * 0.998;
-    const geo = hexPrismNoBottomGeo(hexR, vis.height);
+    const geo = B_NO_BOTTOM
+      ? hexPrismNoBottomGeo(hexR, vis.height)
+      : new THREE.CylinderGeometry(hexR, hexR, vis.height, 6, 1); // ?nobottom=0: pełny pryzm (pomiar B)
     // Brak rotateY -- CylinderGeometry(6) jest juz pointy-top jak axialToWorld.
     const mat = new THREE.MeshLambertMaterial({
       color: styleTerrainColor(t, renderStyle),
