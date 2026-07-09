@@ -96,6 +96,8 @@ import { gameEpochHudLabel, type CivEntryEpochRow } from './game/civ-entry-epoch
 import type { ProductionItem } from './game/production';
 import { resolveArchetypeAggression, resolveArchetypeTrade } from './game/civ-ai-data';
 import { buildClusterStartPlan, buildSameTypeRivalSlots } from './game/cluster-start';
+import { isIncaCiv } from './game/livestock-unlock';
+import { seedIncaLlamaDeposits } from './game/inca-llama-seed';
 import { clusterPackRadius, MIN_DIST_START_CITY_STATE, type ClusterPlacement } from './map/clusters';
 import { playerStartCityName, clusterRivalCityName, pickAiFoundedCityName, suggestPlayerFoundCityName } from './game/civ-names';
 import {
@@ -2857,6 +2859,32 @@ async function boot(): Promise<void> {
           }
           cities.push(c);
           finalizeCityFounding(c, sc.q, sc.r);
+        }
+      }
+
+      // E2: posiew lamy przy starcie Inków (decyzja 3a) — POZA generatorem, hash mapy nietknięty.
+      // 2–3 złoża ZlozeLamy na wzgórzach/górach regionu każdego startu Inków; bez lamy pod miastem.
+      {
+        const incaStarts: Array<{ q: number; r: number }> = [];
+        const avoidLlama = new Set<string>();
+        for (const c of cities) avoidLlama.add(`${c.q},${c.r}`);
+        if (isIncaCiv(playerCivId)) {
+          if (playerStartHex) {
+            incaStarts.push({ q: playerStartHex.q, r: playerStartHex.r });
+            avoidLlama.add(`${playerStartHex.q},${playerStartHex.r}`);
+          }
+          for (const h of pendingSameTypeRivalHexes) { // rywale tego samego typu = też Inkowie
+            incaStarts.push({ q: h.q, r: h.r });
+            avoidLlama.add(`${h.q},${h.r}`);
+          }
+        }
+        for (const sc of plan.spawnCities) {
+          if (isIncaCiv(aiOwnerCivMap.get(sc.ownerId))) incaStarts.push({ q: sc.q, r: sc.r });
+        }
+        if (incaStarts.length > 0) {
+          const n = seedIncaLlamaDeposits(map, seed, incaStarts, avoidLlama);
+          if (n > 0) rebuildResourceOverlays();
+          console.log(`[IncaLlama] posiano ${n} złóż lamy dla ${incaStarts.length} startów Inków`);
         }
       }
 
