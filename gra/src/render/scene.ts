@@ -159,6 +159,12 @@ function hash2D(q: number, r: number, seed: number, salt: number): number {
  * Duze jednolite obszary tego samego terenu przestaja byc plaska plama koloru.
  * Woda (Morze/Wybrzeze) dostaje mniejszy jitter (gladsza tafla).
  */
+// Wariant 3 odcieni koloru terenu (Maciej 2026-07-09) — zamiast ozdobników pustych heksów:
+// Równina = 3 jasne zielenie, Łąka/trawa = 3 ciemne zielenie; deterministycznie per heks (hash2D),
+// mgła nadal przygasza (baseColor × jasność w setFog). Wartości do dostrojenia na renderze.
+const LAKA_SHADES3 = [0x5f9e42, 0x6cab4f, 0x79b85c] as const;    // ciemne zielenie (trawa/łąka)
+const ROWNINA_SHADES3 = [0xa6d074, 0xb4dc84, 0xc0e693] as const; // jasne zielenie (równina)
+
 function jitteredTerrainColor(
   baseHex: number,
   q: number,
@@ -1406,6 +1412,10 @@ export async function buildScene(
   // = 8 draw calli na całą mapę. Wzorzec jak góry/wzgórza; castShadow OFF (mikrodetal, cień nic
   // nie wnosi a kosztuje pass); matrixAutoUpdate zamrażany globalnym traverse na końcu buildScene.
   // LOD: dekorGroup.visible = terrainDetailInst (poziomy 0-1). Fog: applyTerrainFog (wspólny materiał).
+  // DEKOR WYŁĄCZONY (Maciej 2026-07-09): ozdobniki pustych heksów rozmywały czytelność
+  // (nie było wiadomo co surowiec/ulepszenie/ozdoba). Zastąpione wariantem 3 odcieni koloru
+  // terenu (patrz baseColor niżej). Kod dekoru zostaje za flagą — łatwy powrót gdyby trzeba.
+  const DEKOR_ENABLED = false;
   const dekorGroup = new THREE.Group();
   const dekorLakaInst: THREE.InstancedMesh[] = [];
   const dekorLakaHexKey: string[][] = [];
@@ -1418,7 +1428,7 @@ export async function buildScene(
   // FPS fog: hexKey → instancja dekoru, żeby mgła aktualizowała dekor DIFFEM (tylko zmienione
   // heksy w setFog), a nie pełnym skanem ~80–150k instancji co wywołanie (regresja 1,9→139 ms).
   const dekorRefByHex = new Map<string, { mesh: THREE.InstancedMesh; index: number; orig: THREE.Matrix4 }>();
-  if (styledTerrain) {
+  if (styledTerrain && DEKOR_ENABLED) {
     for (let w = 0; w < DEKOR_LICZBA_WARIANTOW; w++) {
       const lm = new THREE.InstancedMesh(dekorLakaGeometria(w), DEKOR_MATERIAL, Math.max(1, dekorLakaVarCount[w]!));
       lm.frustumCulled = false; lm.castShadow = false; lm.receiveShadow = true; lm.count = 0;
@@ -1615,7 +1625,7 @@ export async function buildScene(
 
     // DEKOR: mikrodekor pustego heksa łąki/równiny (styl roblox). Obecność/wariant/rotacja
     // deterministyczne z hash(map.seed) — generator NIETKNIĘTY. Spód modelu = wierzch pryzmu.
-    if (styledTerrain && (t === TerenBazowy.Laka || t === TerenBazowy.Rownina)) {
+    if (styledTerrain && DEKOR_ENABLED && (t === TerenBazowy.Laka || t === TerenBazowy.Rownina)) {
       const dw = dekorDlaHeksa(hex.coords.q, hex.coords.r, map.seed);
       if (dw !== null) {
         const dTopY = vis.height + vis.yOffset;
@@ -1665,9 +1675,15 @@ export async function buildScene(
       const blendedHex = isCoastRoblox
         ? baseTerrainHex
         : blendedTerrainHex(map, hex.coords.q, hex.coords.r, baseTerrainHex, isWater, renderStyle, t);
+      // Łąka/Równina (styl roblox): 3 dyskretne odcienie zamiast ozdobników. Inne tereny: jitter HSL.
+      const shades3 = styledTerrain
+        ? (t === TerenBazowy.Laka ? LAKA_SHADES3 : t === TerenBazowy.Rownina ? ROWNINA_SHADES3 : null)
+        : null;
       const baseColor = isCoastRoblox
         ? new THREE.Color(baseTerrainHex)
-        : jitteredTerrainColor(blendedHex, hex.coords.q, hex.coords.r, map.seed, isWater);
+        : shades3 !== null
+          ? new THREE.Color(shades3[Math.floor(hash2D(hex.coords.q, hex.coords.r, map.seed, 4242) * 3) % 3]!)
+          : jitteredTerrainColor(blendedHex, hex.coords.q, hex.coords.r, map.seed, isWater);
       // Rzeka = wstęga na krawędzi (pushRiverMesh), nie tint całego heksu.
       mesh.setColorAt(iIdx, baseColor);
 

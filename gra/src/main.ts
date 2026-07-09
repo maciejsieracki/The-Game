@@ -4430,6 +4430,7 @@ async function boot(): Promise<void> {
       collapseToMergedMesh(g); // FPS lewar 1: setki boxów (zwierzęta/budynki) → 1 mesh
       const wp = axialToWorld(q, r, HEX_R);
       g.position.set(wp.x, improvementMeshPlacement(q, r, layers), wp.z);
+      g.scale.setScalar(0.5); // Maciej 2026-07-09: ulepszenia -50% (mniej dominują heks, środek wolniejszy pod miasto)
       g.matrixAutoUpdate = false; g.updateMatrix(); // FPS lewar 3
       scene.add(g);
       improvementMeshes.set(hexKey, g);

@@ -389,7 +389,7 @@ const BUILDERS: Record<ImprovementKey, (g: THREE.Group, owner: number) => void> 
   bydlo: g => { g.add(buildTrzoda()); },   // TRZODA (krowa+świnia N-NE, środek wolny pod miasto) — Maciej 2026-07-09
   owce: g => rbxOwce(g),
   lama: g => { const l = buildLama(); l.position.set(0.63, 0, 0.04); g.add(l); },
-  stadnina: g => { g.add(buildStadnina(_improvementDetailQuality === 'high' ? 2 : 1)); },   // GRAFIKA-3D 3A: WYSOKA=2 konie, NISKA/NORMALNA=1
+  stadnina: g => { g.add(buildStadnina(1)); },   // Maciej 2026-07-09: zawsze 1 koń (dwa zajmowały prawie cały heks)
   kopalnia: g => { const m = buildKopalnia(); m.rotation.y = ULEPSZENIA_P2_LAYOUT.kopalnia.budynek.rotY; g.add(m); },
   kamieniolom: g => { const m = buildKamieniolom(); m.rotation.y = ULEPSZENIA_P2_LAYOUT.kamieniolom.budynek.rotY; g.add(m); },
   oboz_lowiecki: g => { const m = buildObozLowiecki(); m.rotation.y = ULEPSZENIA_P3A_LAYOUT.obozLowiecki.budynek.rotY; g.add(m); },
