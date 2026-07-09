@@ -245,6 +245,7 @@ import {
   type QualityTier,
 } from './map/newGameMapDefaults';
 import { buildStyledResourceOverlay } from './render/styleResources';
+import { collapseToMergedMesh } from './render/mergeDecor';
 import { visibleZloze, ensureDepositEraMeta } from './map/deposit-era';
 import { machinesByCampHex, campOwnerByHex, readyMachinesForCity } from './render/siegeCampSync';
 import { TerenBazowy, Nakladka, Ulepszenie } from './types/hex';
@@ -1062,10 +1063,12 @@ async function boot(): Promise<void> {
       try {
         const ov = buildStyledResourceOverlay(hex.nakladka, GAME_MAP_RENDER_STYLE, zlozeShown);
         if (!ov) return;
+        collapseToMergedMesh(ov); // FPS lewar 1: dziesiątki boxów złoża → 1 mesh
         const { x, z } = axialToWorld(hex.coords.q, hex.coords.r, HEX_R);
         const baseY = TERRAIN_SURFACE_Y[hex.terenBazowy] ?? 0.45;
         ov.position.set(x, baseY + 0.01, z);
         ov.rotation.y = hex.coords.q * 1.3 + hex.coords.r * 0.7;
+        ov.matrixAutoUpdate = false; ov.updateMatrix(); // FPS lewar 3: statyczne — bez per-frame update macierzy
         scene.add(ov);
         resourceOverlays.push({ group: ov, hexKey });
       } catch (err) {
@@ -1088,10 +1091,12 @@ async function boot(): Promise<void> {
         try {
           const ov = buildStyledResourceOverlay(hex.nakladka, GAME_MAP_RENDER_STYLE, zlozeShown);
           if (!ov) continue;
+          collapseToMergedMesh(ov); // FPS lewar 1
           const { x, z } = axialToWorld(hex.coords.q, hex.coords.r, HEX_R);
           const baseY = TERRAIN_SURFACE_Y[hex.terenBazowy] ?? 0.45;
           ov.position.set(x, baseY + 0.01, z);
           ov.rotation.y = hex.coords.q * 1.3 + hex.coords.r * 0.7;
+          ov.matrixAutoUpdate = false; ov.updateMatrix(); // FPS lewar 3
           const hexKey = keyOf(hex.coords.q, hex.coords.r);
           scene.add(ov);
           resourceOverlays.push({ group: ov, hexKey });
@@ -4379,8 +4384,10 @@ async function boot(): Promise<void> {
       }
       syncImprovementDecorForHex(hexKey, layers);
       const g = buildImprovementVisual(layers);
+      collapseToMergedMesh(g); // FPS lewar 1: setki boxów (zwierzęta/budynki) → 1 mesh
       const wp = axialToWorld(q, r, HEX_R);
       g.position.set(wp.x, improvementMeshPlacement(q, r, layers), wp.z);
+      g.matrixAutoUpdate = false; g.updateMatrix(); // FPS lewar 3
       scene.add(g);
       improvementMeshes.set(hexKey, g);
     }

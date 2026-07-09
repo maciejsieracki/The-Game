@@ -66,6 +66,7 @@ import {
   TEREN_MATERIAL, LICZBA_WARIANTOW_TERENU,
 } from './teren-gory-wzgorza';
 import { setImprovementDetailQuality } from './robloxImprovements';
+import { collapseToMergedMesh } from './mergeDecor';
 import {
   type ZoomLodLevel,
   type ZoomLodFlags,
@@ -1947,6 +1948,15 @@ export async function buildScene(
     goraInst[v]!.instanceMatrix.needsUpdate = true;
     wzgorzeInst[v]!.count = wzgorzeIdx[v]!;
     wzgorzeInst[v]!.instanceMatrix.needsUpdate = true;
+  }
+
+  // FPS lewar 1+3: każda grupa styledOverlays (wybrzeże/plaże/wydmy/oazy — po ~5-20 boxów/heks,
+  // skalują się z rozmiarem mapy) → 1 zmergowany mesh + zamrożona macierz. Fog działa bez zmian
+  // (własny materiał vertexColors → applyFogDimToObject3D dimuje per-grupa jak dotąd).
+  for (const { group } of styledOverlays) {
+    collapseToMergedMesh(group);
+    group.matrixAutoUpdate = false;
+    group.updateMatrix();
   }
   beachMesh.count = beachIdx;
   beachMesh.instanceMatrix.needsUpdate = true;
