@@ -801,8 +801,8 @@ function riverHexSurfaceY(
   // Tylko sam heks Wybrzeże schodzi do poziomu morza; sąsiedztwo plaży NIE obcina lądu.
   if (h.terenBazowy === TerenBazowy.Wybrzeze) return riverMouthY;
   // Maciej 2026-07-09: STAŁA PŁASKA wysokość — rzeka na poziomie równin/łąk niezależnie od faktycznego
-  // terenu heksa (bez per-hex bonusów wzgórz/gór). Rzeka nie płynie w górę→dół→w górę; inset (pushPt)
-  // trzyma wstęgę we wnętrzu płaskiej strony. R nieużywane po zdjęciu bonusów.
+  // terenu heksa (bez per-hex bonusów wzgórz/gór). Rzeka nie płynie w górę→dół→w górę.
+  // R nieużywane po zdjęciu bonusów.
   void R;
   return terrainSurfaceTopY(TerenBazowy.Laka, renderStyle) + surfaceOffset;
 }
@@ -945,9 +945,19 @@ function riverTransitCornersOnHex(
   return corners.map((ci) => ({ x: cs[ci]!.x, z: cs[ci]!.z }));
 }
 
-/** Wsunięcie wstęgi rzeki do WNĘTRZA właściwego heksa (× odległość punktu do środka heksa).
- *  Maciej 2026-07-09: rzeka po krawędziach, ale wewnątrz krawędzi heksa, nie na granicy dwóch. */
-const RIVER_INSET_FRAC = 0.22;
+/** Wsunięcie wstęgi rzeki do WNĘTRZA właściwego heksa (ku jego WŁASNEMU środkowi, ułamek odległości).
+ *  Maciej 2026-07-09d: rzeka ma leżeć przy WEWNĘTRZNEJ stronie ścianki heksa (nie dokładnie na
+ *  granicy dwóch heksów — tam ginie pod wzgórzami sąsiada), ale inset musi być SPÓJNY: każdy punkt
+ *  łuku jednego heksa (wejściowy środek krawędzi, rogi, wyjściowy środek krawędzi) insetujemy
+ *  względem środka TEGO SAMEGO heksa. Jednorodne skalowanie względem jednego środka to podobieństwo
+ *  (similarity transform) — nie zmienia kątów, więc 120° na rogu zostaje dokładnie 120°. Dawny bug:
+ *  środek krawędzi WYJŚCIOWEJ był insetowany względem środka NASTĘPNEGO heksa, a rogi względem
+ *  środka BIEŻĄCEGO — różne środki odniesienia na sąsiednich punktach łuku psuły kąt (nie-120°,
+ *  „wygibasy”). Naprawa: każdy wspólny środek krawędzi dostaje DWIE wersje — insetowaną ku
+ *  bieżącemu heksowi (zamyka jego łuk) i insetowaną ku następnemu (otwiera jego łuk) — połączone
+ *  krótkim odcinkiem, który przeprowadza wstęgę przez ściankę, cały czas hugując jej wewnętrzną
+ *  stronę po obu stronach granicy. */
+const RIVER_INSET_FRAC = 0.15;
 
 /** Kwadratowa trasa wzdłuż krawędzi heksów — rogi + środki krawędzi (NIE przez środek pola). */
 function buildRiverPointsFromHexPath(
@@ -966,12 +976,15 @@ function buildRiverPointsFromHexPath(
   const yAt = (q: number, r: number): number | null =>
     riverHexSurfaceY(map, q, r, renderStyle, riverMouthY, surfaceOffset, R);
 
-  const pushPt = (x: number, z: number, y: number, hq: number, hr: number): void => {
-    // inset: wsuń punkt do WNĘTRZA właściwego heksa (z dala od granicy między heksami)
+  // Insetuj surowy punkt obwodu heksa (hq,hr) ku WŁASNEMU środkowi tego heksa — patrz komentarz
+  // przy RIVER_INSET_FRAC. Wywołujący musi zawsze podać hex, do którego dany punkt łuku należy.
+  const insetToward = (x: number, z: number, hq: number, hr: number): { x: number; z: number } => {
     const c = axialToWorld(hq, hr, R);
-    const ix = x + (c.x - x) * RIVER_INSET_FRAC;
-    const iz = z + (c.z - z) * RIVER_INSET_FRAC;
-    const p = new THREE.Vector3(ix, y, iz);
+    return { x: x + (c.x - x) * RIVER_INSET_FRAC, z: z + (c.z - z) * RIVER_INSET_FRAC };
+  };
+
+  const pushPt = (x: number, z: number, y: number, hq: number, hr: number): void => {
+    const p = new THREE.Vector3(x, y, z);
     if (pts.length === 0 || pts[pts.length - 1]!.distanceTo(p) > R * 0.008) {
       pts.push(p);
       hexKeys.add(`${hq},${hr}`);
@@ -981,11 +994,14 @@ function buildRiverPointsFromHexPath(
   hexKeys.add(`${path[0]!.q},${path[0]!.r}`);
   hexKeys.add(`${path[1]!.q},${path[1]!.r}`);
 
+  // Punkt wejścia na heks[1]: środek wspólnej krawędzi hex0–hex1, insetowany ku środkowi hex1
+  // (pierwszy punkt łuku hex1 — hex0 nie ma własnego łuku, rzeka „rodzi się” na tej granicy).
   const mid0 = sharedEdgeMidpoint(path[0]!.q, path[0]!.r, path[1]!.q, path[1]!.r, R);
   const y0 = yAt(path[0]!.q, path[0]!.r);
   const y1 = yAt(path[1]!.q, path[1]!.r);
   if (mid0 && y0 != null && y1 != null && neighborDirIndex(path[0]!.q, path[0]!.r, path[1]!.q, path[1]!.r) >= 0) {
-    pushPt(mid0.x, mid0.z, (y0 + y1) * 0.5, path[1]!.q, path[1]!.r);
+    const p0 = insetToward(mid0.x, mid0.z, path[1]!.q, path[1]!.r);
+    pushPt(p0.x, p0.z, (y0 + y1) * 0.5, path[1]!.q, path[1]!.r);
   }
 
   for (let i = 1; i < path.length - 1; i++) {
@@ -1011,15 +1027,28 @@ function buildRiverPointsFromHexPath(
     );
     const minBoki = isUjscieHex ? 1 : 3;
 
+    // Rogi łuku heksa cur — insetowane ku środkowi CUR (spójnie z resztą jego łuku).
     for (const corner of riverTransitCornersOnHex(
       cur.q, cur.r, prev.q, prev.r, next.q, next.r, R, minBoki,
     )) {
-      pushPt(corner.x, corner.z, yc, cur.q, cur.r);
+      const pc = insetToward(corner.x, corner.z, cur.q, cur.r);
+      pushPt(pc.x, pc.z, yc, cur.q, cur.r);
     }
 
     const mid = sharedEdgeMidpoint(cur.q, cur.r, next.q, next.r, R);
     const yn = yAt(next.q, next.r);
-    if (mid && yn != null) pushPt(mid.x, mid.z, (yc + yn) * 0.5, next.q, next.r);
+    if (mid && yn != null) {
+      // Punkt WYJŚCIA z heksa cur: ten sam surowy środek krawędzi, insetowany ku środkowi CUR —
+      // zamyka łuk cur tym samym odniesieniem co jego rogi (tu był bug: dawniej od razu ku next).
+      const exitP = insetToward(mid.x, mid.z, cur.q, cur.r);
+      pushPt(exitP.x, exitP.z, (yc + yn) * 0.5, cur.q, cur.r);
+
+      // Punkt WEJŚCIA do heksa next: ten sam surowy środek krawędzi, insetowany ku środkowi NEXT —
+      // inny punkt (bo inne odniesienie skalowania). Krótki odcinek exitP→entryP przeprowadza
+      // wstęgę przez ściankę, hugując jej wewnętrzną stronę po obu stronach granicy.
+      const entryP = insetToward(mid.x, mid.z, next.q, next.r);
+      pushPt(entryP.x, entryP.z, (yc + yn) * 0.5, next.q, next.r);
+    }
   }
 
   return { pts, hexKeys };
