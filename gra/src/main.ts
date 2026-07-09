@@ -332,7 +332,7 @@ import {
   type ImprovementBuildCallbacks,
 } from './map/improvement-build';
 import type { ImprovementKey } from './render/improvements';
-import { buildImprovement, buildImprovementStack } from './render/improvements';
+import { buildImprovement, buildImprovementStack, buildImprovementSectored } from './render/improvements';
 import { foodLayerFromAnimalDeposit, improvementKeysForHex } from './game/terrain-improvements';
 import { ikonaIdToBronzeCiv, type BronzeCiv } from './render/bronzeCity';
 import { buildSettlementModel } from './render/settlementModel';
@@ -1031,10 +1031,9 @@ async function boot(): Promise<void> {
 
     function buildImprovementVisual(layers: readonly string[]): THREE.Group {
       if (layers.length === 0) return new THREE.Group();
-      if (layers.length === 1) {
-        return buildImprovement(layers[0] as ImprovementKey, 0xffd54a);
-      }
-      return buildImprovementStack(layers, 0xffd54a);
+      // Maciej 2026-07-09: układ sektorowy — każde ulepszenie w swoim boku heksa, mocno mniejsze,
+      // przy ściance, środek wolny pod miasto; droga = obwódka.
+      return buildImprovementSectored(layers, 0xffd54a, undefined, HEX_R);
     }
 
     function clearResourceOverlays(): void {
@@ -4406,7 +4405,7 @@ async function boot(): Promise<void> {
       collapseToMergedMesh(g); // FPS lewar 1: setki boxów (zwierzęta/budynki) → 1 mesh
       const wp = axialToWorld(q, r, HEX_R);
       g.position.set(wp.x, improvementMeshPlacement(q, r, layers), wp.z);
-      g.scale.setScalar(0.5); // Maciej 2026-07-09: ulepszenia -50% (mniej dominują heks, środek wolniejszy pod miasto)
+      // (skala 0.5 usunięta — buildImprovementSectored skaluje per sektor do SECTOR_SCALE)
       g.matrixAutoUpdate = false; g.updateMatrix(); // FPS lewar 3
       scene.add(g);
       improvementMeshes.set(hexKey, g);

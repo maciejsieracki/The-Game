@@ -328,6 +328,82 @@ export function buildImprovement(
   }
 }
 
+// === UKŁAD SEKTOROWY (Maciej 2026-07-09) ===================================
+// Każde ulepszenie w SWOIM boku heksa, wyśrodkowane, MOCNO mniejsze, dosunięte do ścianki;
+// środek wolny pod miasto. Droga = obwódka wokół heksa (na razie; docelowo łączenie dróg).
+// Reużywa istniejących modeli — BEZ nowych grafik, tylko pomniejszenie + przesunięcie.
+// Boki: 1 surowce+ulepszenia surowców · 2 farma · 3 pastwisko/hodowla · 4 fort/posterunek · 5-6 rezerwa.
+const SECTOR_R = 0.72;      // dosunięcie do ścianki (HEX_R=1)
+const SECTOR_SCALE = 0.30;  // znacząco mniejsze
+const CAT_ANGLE_DEG: Record<string, number> = {
+  surowiec: 0, farma: 60, pastwisko: 120, fort: 180, inne: 240,
+};
+const SUROWIEC_KEYS = new Set(['kopalnia', 'kamieniolom', 'glinianka', 'warzelnia_soli', 'stadnina', 'popalnia_brazu']);
+const PASTWISKO_KEYS = new Set(['bydlo', 'owce', 'lama', 'pastwisko']);
+const FORT_KEYS = new Set(['fort', 'posterunek']);
+const DROGA_KEYS = new Set(['droga', 'droga_brukowana']);
+const OVERLAY_KEYS = new Set(['irygacja', 'pole_irygowane', 'tarasy']); // nakładki → przy farmie
+
+function improvementSectorAngle(key: string): number {
+  if (SUROWIEC_KEYS.has(key)) return CAT_ANGLE_DEG.surowiec!;
+  if (key === 'farma' || OVERLAY_KEYS.has(key)) return CAT_ANGLE_DEG.farma!;
+  if (PASTWISKO_KEYS.has(key)) return CAT_ANGLE_DEG.pastwisko!;
+  if (FORT_KEYS.has(key)) return CAT_ANGLE_DEG.fort!;
+  return CAT_ANGLE_DEG.inne!;
+}
+
+/** Droga jako obwódka (sześciokątny pierścień przy ściance heksa). */
+function buildRoadBorderRing(hexR: number): THREE.Mesh {
+  const geo = new THREE.RingGeometry(hexR * 0.80, hexR * 0.94, 6);
+  geo.rotateX(-Math.PI / 2);
+  geo.rotateZ(Math.PI / 6);
+  const m = new THREE.Mesh(geo, new THREE.MeshLambertMaterial({ color: 0xb09766, flatShading: true }));
+  m.position.y = 0.02;
+  m.receiveShadow = true;
+  return m;
+}
+
+/**
+ * Ujednolicony układ sektorowy dla wszystkich ulepszeń heksa. Każdy typ w swoim boku,
+ * wyśrodkowany w XZ, przeskalowany SECTOR_SCALE i dosunięty do ścianki (SECTOR_R).
+ */
+export function buildImprovementSectored(
+  keys: readonly string[],
+  ownerCol = 0xffd54a,
+  style: MapRenderStyle = GAME_MAP_RENDER_STYLE,
+  hexR = 1,
+): THREE.Group {
+  const g = new THREE.Group();
+  const normalized = keys.filter(k => k && k !== 'brak');
+  const bySector = new Map<number, string[]>();
+  for (const k of normalized) {
+    if (DROGA_KEYS.has(k)) { g.add(buildRoadBorderRing(hexR)); continue; }
+    const ang = improvementSectorAngle(k);
+    let arr = bySector.get(ang);
+    if (!arr) { arr = []; bySector.set(ang, arr); }
+    arr.push(k);
+  }
+  const box = new THREE.Box3();
+  const c = new THREE.Vector3();
+  for (const [angDeg, ks] of bySector) {
+    const sub = new THREE.Group();
+    for (const k of ks) {
+      const model = buildImprovement(k as ImprovementKey, ownerCol, style);
+      box.setFromObject(model);
+      box.getCenter(c);
+      model.position.x -= c.x;
+      model.position.z -= c.z; // wyśrodkuj w XZ (spód Y zostaje na 0)
+      if (FORT_KEYS.has(k)) model.scale.multiplyScalar(0.5); // fort/posterunek dodatkowo mniejsze
+      sub.add(model);
+    }
+    sub.scale.setScalar(SECTOR_SCALE);
+    const a = (angDeg * Math.PI) / 180;
+    sub.position.set(Math.sin(a) * SECTOR_R * hexR, 0, -Math.cos(a) * SECTOR_R * hexR);
+    g.add(sub);
+  }
+  return g;
+}
+
 /** Wiele warstw ulepszeń na heksie (kanon §3 — SILNIK wpina stan hex.ulepszenia[]). */
 export function buildImprovementStack(
   keys: readonly string[],
