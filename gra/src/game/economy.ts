@@ -734,7 +734,7 @@ export function populationGrowth(
     return { nowaLudnosc, nowyMagazynZywnosci, wzrost, ubytek };
   }
 
-  const baseThreshold = 20 + ludnosc * params.progWzrostuWspolczynnik; // Maciej 2026-07-09: 2× żywność do wzrostu (baza 10→20, wsp. 8→16 w econ-params) — wszystkie warianty i trudności
+  const baseThreshold = 20 + ludnosc * params.progWzrostuWspolczynnik; // Próg wzrostu — wartości finalne (baza 20, wsp. w econ-params), wszystkie warianty i trudności
   const threshold = Math.max(1, Math.round(baseThreshold * wzrostThresholdMult));
 
   if (nowyMagazynZywnosci >= threshold && ludnosc < popCap) {

@@ -2,7 +2,7 @@
 
 Maciej 2026-07-09. Przed przebudową reguł. Zasada: **każde ulepszenie ma swoje miejsce (bok) na
 heksie**, dowolne mogą współistnieć, a jedynym twardym ogranicznikiem jest **teren** (+ tech + cyw).
-Balans żywności trzyma **próg wzrostu miasta** (już 2×), NIE ograniczanie liczby ulepszeń.
+Balans żywności trzyma **próg wzrostu miasta** (wartości finalne), NIE ograniczanie liczby ulepszeń.
 
 ## 1. MAPA SEKTORÓW (bok heksa → typ)
 
