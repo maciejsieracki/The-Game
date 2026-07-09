@@ -35,19 +35,19 @@
     "odblokowuje": ""
   },
   "bydlo": {
-    "nazwa": "Bydło",
+    "nazwa": "Trzoda",
     "epoka": 1,
     "bonus": {
       "zywnosc": 2,
       "praca": 3
     },
     "surowiecOdblokowany": "bydlo",
-    "surowiecOdblokowany_uwaga": "ABC-18: dostęp dopiero po postawieniu na złożu bydła",
+    "surowiecOdblokowany_uwaga": "ABC-18: dostęp dopiero po postawieniu na złożu trzody",
     "teren": "Łąka, Równina",
     "warunek": "plaski ląd; pierwsze: złoże bydła; potem po odblokowaniu — bez złoża; + farma lub solo; NIE na Pustyni",
     "koszt_praca": 20,
     "tech": "Oswojenie zwierząt",
-    "odblokowuje": "Bydło (Rydwan po odblokowaniu)"
+    "odblokowuje": "Trzoda (Rydwan po odblokowaniu)"
   },
   "owce": {
     "nazwa": "Owce",
@@ -73,8 +73,8 @@
     },
     "surowiecOdblokowany": "lama",
     "surowiecOdblokowany_uwaga": "TYLKO Inkowie; solo — bez innych ulepszen na heksie; pierwsze na zlozu lamy",
-    "teren": "Łąka, Równina, Wzgórza",
-    "warunek": "solo; tylko cyw. Inkowie; pierwsze: złoże lamy; NIE na Pustyni",
+    "teren": "Wzgórza, Góry",
+    "warunek": "solo; tylko cyw. Inkowie; wzgórza/góry; pierwsze: złoże lamy; NIE na Łące/Równinie/Pustyni",
     "koszt_praca": 20,
     "tech": "Oswojenie zwierząt",
     "odblokowuje": "Lama (transport / żywność)"
