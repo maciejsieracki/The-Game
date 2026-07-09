@@ -272,8 +272,8 @@
     "odblokowuje": "",
     "uwagi": "T-TECH-9 Maciej 2026-07-04"
   },
-  "popalnia_brazu": {
-    "nazwa": "Popalnia brązu",
+  "kopalnia_miedzi": {
+    "nazwa": "Kopalnia miedzi",
     "epoka": 2,
     "bonus": {
       "praca": 2

@@ -11,7 +11,7 @@ import { placeLivestockPair } from './styleResources';
 
 export type ImprovementKey =
   | 'farma' | 'bydlo' | 'owce' | 'lama' | 'kopalnia' | 'kamieniolom' | 'oboz_lowiecki' | 'wyrab' | 'tartak'
-  | 'lodzie_rybackie' | 'droga' | 'droga_brukowana' | 'posterunek' | 'stadnina' | 'pastwisko' | 'popalnia_brazu'
+  | 'lodzie_rybackie' | 'droga' | 'droga_brukowana' | 'posterunek' | 'stadnina' | 'pastwisko' | 'kopalnia_miedzi'
   | 'irygacja' | 'pole_irygowane' | 'glinianka' | 'warzelnia_soli' | 'tarasy' | 'fort';
 
 export const IMPROVEMENTS: { key: ImprovementKey; label: string; epoka: number }[] = [
@@ -22,7 +22,8 @@ export const IMPROVEMENTS: { key: ImprovementKey; label: string; epoka: number }
   { key: 'owce', label: 'Owczarnia', epoka: 1 },       // buduje się na złożu Owiec
   { key: 'lama', label: 'Zagroda lam', epoka: 1 },     // buduje się na złożu Lam
   { key: 'stadnina', label: 'Stadnina', epoka: 2 },
-  { key: 'kopalnia', label: 'Kopalnia', epoka: 1 }, { key: 'kamieniolom', label: 'Kamieniołom', epoka: 1 },
+  { key: 'kopalnia', label: 'Kopalnia żelaza', epoka: 1 }, { key: 'kamieniolom', label: 'Kamieniołom', epoka: 1 },
+  { key: 'kopalnia_miedzi', label: 'Kopalnia miedzi', epoka: 2 },
   { key: 'oboz_lowiecki', label: 'Obóz łowiecki', epoka: 1 }, { key: 'wyrab', label: 'Wyrąb', epoka: 1 },
   { key: 'tartak', label: 'Tartak', epoka: 1 },
   { key: 'lodzie_rybackie', label: 'Łodzie rybackie', epoka: 1 }, { key: 'droga', label: 'Droga', epoka: 1 },
@@ -324,7 +325,7 @@ export function buildImprovement(
     case 'fort': return fort(ownerCol);
     case 'posterunek': return straznica(ownerCol);
     case 'pastwisko': return bydlo();
-    case 'popalnia_brazu': return kopalnia();
+    case 'kopalnia_miedzi': return kopalnia();
   }
 }
 
@@ -339,7 +340,7 @@ const SECTOR_SCALE = 0.30;  // znacząco mniejsze
 const CAT_ANGLE_DEG: Record<string, number> = {
   surowiec: 0, farma: 60, pastwisko: 120, fort: 180, inne: 240,
 };
-const SUROWIEC_KEYS = new Set(['kopalnia', 'kamieniolom', 'glinianka', 'warzelnia_soli', 'stadnina', 'popalnia_brazu']);
+const SUROWIEC_KEYS = new Set(['kopalnia', 'kamieniolom', 'glinianka', 'warzelnia_soli', 'stadnina', 'kopalnia_miedzi']);
 const PASTWISKO_KEYS = new Set(['bydlo', 'owce', 'lama', 'pastwisko']);
 const FORT_KEYS = new Set(['fort', 'posterunek']);
 const DROGA_KEYS = new Set(['droga', 'droga_brukowana']);

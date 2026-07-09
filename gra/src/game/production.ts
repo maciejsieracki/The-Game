@@ -57,7 +57,7 @@ import {
 import { buildingCostAfterCivDiscount } from './civ-bonuses';
 import { unitManpowerCost, tryDeductUnitSpawnCosts, cityManpowerCurrent } from './manpower';
 import {
-  empireHasPopalniaBrazu,
+  empireHasKopalniaMiedzi,
   hasBrazAccess,
   PIEC_HUTNICZY_BUILDING_ID,
 } from './braz-access';
@@ -612,7 +612,7 @@ export function availableProduction(
     const tech = (b.techUnlock ?? '').trim();
     if (tech.length > 0 && !techs.has(tech)) continue;
     if (b.id === PIEC_HUTNICZY_BUILDING_ID
-      && !empireHasPopalniaBrazu(ctx.placedImprovements)) {
+      && !empireHasKopalniaMiedzi(ctx.placedImprovements)) {
       continue;
     }
     items.push({

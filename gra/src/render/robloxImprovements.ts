@@ -408,7 +408,7 @@ const BUILDERS: Record<ImprovementKey, (g: THREE.Group, owner: number) => void> 
     f.rotation.y = ULEPSZENIA_P2_LAYOUT.farma.pastwisko.budynek.rotY;
     g.add(f, buildTrzoda(), buildZagrodaDodatki()); // wycofano buildPastwiskoZwierzeta (model pokazowy) → trzoda N-NE
   },
-  popalnia_brazu: g => { const m = buildKopalnia(); m.rotation.y = ULEPSZENIA_P2_LAYOUT.kopalnia.budynek.rotY; g.add(m); },
+  kopalnia_miedzi: g => { const m = buildKopalnia(); m.rotation.y = ULEPSZENIA_P2_LAYOUT.kopalnia.budynek.rotY; g.add(m); },
 };
 
 export function buildRobloxImprovement(key: ImprovementKey, ownerCol = 0xffd54a): THREE.Group {

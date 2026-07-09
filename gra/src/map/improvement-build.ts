@@ -145,7 +145,7 @@ const SOLO_FOOD_KEYS = new Set<string>(['tarasy', 'owce', 'lama']);
 const SEKTOR_OF: Record<string, string> = {
   // bok 1 — surowce + ich ulepszenia
   kopalnia: 'surowiec', kamieniolom: 'surowiec', glinianka: 'surowiec',
-  warzelnia_soli: 'surowiec', stadnina: 'surowiec', popalnia_brazu: 'surowiec',
+  warzelnia_soli: 'surowiec', stadnina: 'surowiec', kopalnia_miedzi: 'surowiec',
   // las (bok 1 — surowiec leśny)
   wyrab: 'las', tartak: 'las', oboz_lowiecki: 'las',
   // bok 2 — pole (food-teren)
@@ -173,7 +173,7 @@ const TERRAIN_ALLOW: Partial<Record<ImprovementKey, TerenSet | null>> = {
   stadnina: new Set([TerenBazowy.Laka, TerenBazowy.Rownina]),
   kopalnia: new Set([TerenBazowy.Wzgorza, TerenBazowy.Gory]),
   glinianka: null,
-  kamieniolom: new Set([TerenBazowy.Wzgorza, TerenBazowy.Gory]),
+  kamieniolom: new Set([TerenBazowy.Gory]), // Maciej 2026-07-09: kamieniołom TYLKO góry (bez złoża)
   oboz_lowiecki: null,
   wyrab: null,
   lodzie_rybackie: new Set([TerenBazowy.Wybrzeze, TerenBazowy.Morze]),
@@ -182,7 +182,7 @@ const TERRAIN_ALLOW: Partial<Record<ImprovementKey, TerenSet | null>> = {
   droga: null,
   droga_brukowana: null,
   posterunek: null,
-  popalnia_brazu: new Set([TerenBazowy.Wzgorza, TerenBazowy.Gory]),
+  kopalnia_miedzi: new Set([TerenBazowy.Wzgorza, TerenBazowy.Gory]),
 };
 
 /** @deprecated T-TECH-4 (2026-07-05): tarasy po Rolnictwie dla wszystkich cyw — funkcja zostaje dla testów legacy. */
@@ -225,16 +225,16 @@ export function depositAllowsPlayerImprovement(
   switch (key) {
     case 'glinianka':
       return nakladka === Nakladka.ZlozeGliny;
-    case 'kopalnia':
+    case 'kopalnia': // Maciej 2026-07-09: kopalnia żelaza — żelazo/węgiel/generyczna ruda (NIE miedź)
       if (teren === TerenBazowy.Gory) {
-        return zloze === 'miedz' || zloze === 'zelazo' || zloze === 'wegiel'
+        return zloze === 'zelazo' || zloze === 'wegiel'
           || nakladka === Nakladka.ZlozeRudy;
       }
       return nakladka === Nakladka.ZlozeRudy;
     case 'warzelnia_soli':
       return zloze === 'sol';
-    case 'popalnia_brazu':
-      return hexHasRudaDeposit(hex);
+    case 'kopalnia_miedzi': // kopalnia miedzi — TYLKO ruda miedzi
+      return zloze === 'miedz';
     case 'bydlo':
       return nakladka === Nakladka.ZlozeBydla;
     case 'owce':
@@ -484,10 +484,10 @@ function createQualifier(state: ImprovementBuildState) {
         return TERENY_LADU.has(teren) && inPlayerTerritory(q, r);
       case 'glinianka':
         return nakladka === Nakladka.ZlozeGliny && inPlayerTerritory(q, r);
-      case 'kopalnia':
+      case 'kopalnia': // Maciej 2026-07-09: kopalnia żelaza — żelazo/węgiel/generyczna ruda (NIE miedź)
         if (!inPlayerTerritory(q, r)) return false;
         if (teren !== TerenBazowy.Gory) return nakladka === Nakladka.ZlozeRudy;
-        return zloze === 'miedz' || zloze === 'zelazo' || zloze === 'wegiel' ||
+        return zloze === 'zelazo' || zloze === 'wegiel' ||
           nakladka === Nakladka.ZlozeRudy;
       case 'wyrab':
         if (state.pendingUndoKeys?.has(`${hexKey}:wyrab`)) return true;
@@ -504,10 +504,10 @@ function createQualifier(state: ImprovementBuildState) {
       case 'warzelnia_soli':
         if (!inPlayerTerritory(q, r)) return false;
         return zloze === 'sol';
-      case 'popalnia_brazu':
+      case 'kopalnia_miedzi': // Maciej 2026-07-09: kopalnia miedzi — TYLKO ruda miedzi
         if (!inPlayerTerritory(q, r)) return false;
         if (teren !== TerenBazowy.Wzgorza && teren !== TerenBazowy.Gory) return false;
-        return hexHasRudaDeposit(hex);
+        return zloze === 'miedz';
       case 'tarasy': {
         if (!inPlayerTerritory(q, r)) return false;
         if (hasBlockingDepositForFarm(hex)) return false;
@@ -559,7 +559,7 @@ export function galleryTerrainEligible(key: ImprovementKey, teren: TerenBazowy):
       return teren === TerenBazowy.Wybrzeze || teren === TerenBazowy.Morze;
     case 'kopalnia':
     case 'kamieniolom':
-    case 'popalnia_brazu':
+    case 'kopalnia_miedzi':
       return teren === TerenBazowy.Wzgorza || teren === TerenBazowy.Gory;
     case 'wyrab':
       return teren === TerenBazowy.Laka || teren === TerenBazowy.Rownina

@@ -23,7 +23,7 @@ type HexExt = Hex & { zloze?: string; improvementKey?: string };
 /** Ulepszenia klasy ZOSTAJE (macierz B) — przenoszą się na obrzeże heksa miasta. Reszta ZNIKA. */
 export const CITY_KEEP_IMPROVEMENT_KEYS: ReadonlySet<string> = new Set<string>([
   'farma', 'bydlo', 'owce', 'lama', 'stadnina', 'pastwisko',
-  'kopalnia', 'kamieniolom', 'glinianka', 'warzelnia_soli', 'popalnia_brazu',
+  'kopalnia', 'kamieniolom', 'glinianka', 'warzelnia_soli', 'kopalnia_miedzi',
   'droga', 'droga_brukowana',
 ]);
 

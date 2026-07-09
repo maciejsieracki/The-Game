@@ -32,7 +32,7 @@
  *                buildZagrodaDodatki, ULEPSZENIA_P2_LAYOUT } from './ulepszenia-modele-p2';
  *       farma:       g => { g.add(buildFarma({ wariant: 'solo' })); },
  *       kopalnia:    g => { const m = buildKopalnia(); m.rotation.y = ULEPSZENIA_P2_LAYOUT.kopalnia.budynek.rotY; g.add(m); },
- *       popalnia_brazu: jw. (kopalnia),
+ *       kopalnia_miedzi: jw. (kopalnia),
  *       kamieniolom: g => { const m = buildKamieniolom(); m.rotation.y = ULEPSZENIA_P2_LAYOUT.kamieniolom.budynek.rotY; g.add(m); },
  *       tartak:      g => { const m = buildTartak(); m.rotation.y = ULEPSZENIA_P2_LAYOUT.tartak.budynek.rotY; g.add(m); },
  *     (stare rbxFarma/rbxKopalnia/rbxKamieniolom/rbxTartak — do wycofania).
