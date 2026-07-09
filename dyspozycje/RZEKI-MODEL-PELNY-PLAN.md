@@ -13,25 +13,40 @@ Decyzja: rzeki tylko przez **równiny/łąki/pustynie**, na **stałej płaskiej 
 - **Render ścieżka:** `landRiverRenderPath` / `coastalRiverRenderPath` (gen-helpers 3106/3124) budują
   łańcuch heksów; wstęga rysowana po krawędziach.
 
-## Cel — 3 części
-1. **ROUTING (generator, ZMIENIA HASH):** rzeka może wchodzić tylko na `Rownina/Laka/Pustynia`
-   (+ Wybrzeże/Morze na ujściu). Wzgórza/Góry = zakaz. Zmiana w doborze kroku (canRiverDrainStep/goal
-   + pathfinding). Ryzyko: rzeka może nie znaleźć drogi do morza (mniej rzek). Bramka: map-gen-regression
-   (0 rzek bez ujścia zostaje), **przebić baseline determinizmu** (zmiana zamierzona).
-2. **WYSOKOŚĆ (render):** stała, na poziomie płaskiego terenu (`Rownina/Laka/Pustynia` mają jedną
-   wysokość + małe podniesienie ~0.06–0.10R). Zdjąć bonusy wzgórz/gór (skoro rzek tam nie ma).
-   `riverHexSurfaceY` → zwraca stałą płaską wysokość.
-3. **POZYCJA (render):** wstęgę wsunąć do WNĘTRZA płaskiego heksa (odsunięta od krawędzi z sąsiadem,
-   nie przez sam środek). Modyfikacja budowy wstęgi (offset ścieżki do wnętrza heksa wzdłuż płaskiego boku).
+## DOPRECYZOWANIE (Maciej): rzeki ZOSTAJĄ krawędziowe
+Wstęga dalej biegnie po krawędziach, ale rysowana **wewnątrz krawędzi właściwego heksa** (płaskiego),
+a NIE na granicy dwóch heksów. Routing/dane BEZ zmian → **hash bez zmian, baseline nietknięty**.
+Część 1 (generator) ODPADA. Zostaje wyłącznie RENDER (2 + 3).
+
+## Cel — RENDER (2 części, render-only)
+2. **WYSOKOŚĆ:** wstęga na wysokości **płaskiego sąsiada** (Rownina/Laka/Pustynia) + małe podniesienie
+   (~0.06–0.08R zamiast 0.22). `riverHexSurfaceY`/`RIVER_LIFT_ABOVE_TERRAIN_FRAC` — użyć płaskiej wys.,
+   nie per-hex-ze-wzgórzem.
+3. **POZYCJA:** dla każdej krawędzi rzeki wybrać sąsiadujący PŁASKI heks i **wsunąć wstęgę do jego wnętrza**
+   (offset od granicy wzdłuż normalnej krawędzi, ~0.15–0.25R do środka), rysować na jego wysokości.
+   Gdy oba sąsiady płaskie → dowolny/niższy; gdy oba wzgórza (rzadkie) → fallback niższy hex.
 
 ## Kolejność
-1. **Część 1 (routing)** — fundament; bez niej stała wysokość zatapia rzekę na wzgórzu. Osobny commit,
-   przebicie baseline. Prześledzić 1 rzekę: czy dochodzi do morza po ograniczeniu do płaskich.
-2. **Część 2 (wysokość)** — po routingu bezpieczna; render-only.
-3. **Część 3 (pozycja/wnętrze)** — render-only; iteracyjnie wizualnie (zrzuty).
+1. Zrozumieć builder wstęgi (scene.ts ~943–1035, `landRiverRenderPath` + geometria) — gdzie punkty
+   krawędzi → offset do wnętrza + wybór płaskiego heksa.
+2. Część 3 (offset do wnętrza) + część 2 (płaska wysokość) razem — render-only, iteracyjnie zrzuty.
+
+## ZASADA TOPOLOGII (Maciej): BRAK ROZGAŁĘZIANIA — generator, ZMIENIA HASH
+Rzeka płynie w JEDNYM kierunku i się NIE rozwidla. Gdy dochodzi do innej rzeki — **tam kończy swój bieg**
+(dopływ kończy się przy zbiegu, nie tworzy widelca „Y"). Implementacja: w `generateRivers` przy prowadzeniu
+trasy — jeśli kolejny krok trafia na hex/krawędź już zajętą przez inną rzekę, **zakończyć trasę** (stop),
+nie kontynuować ani nie rozdwajać. Efekt: rzeki liniowe, zbiegają się (koniec dopływu), zero delt/widelców.
+Osobny tor od renderu (2+3). Bramka: map-gen-regression (0 rzek bez ujścia zostaje) + **nowy baseline**.
+UWAGA: dopływ kończący się przy zbiegu vs „nie dochodzi do morza" — dopływ MOŻE kończyć się przy rzece
+(to jego ujście), nie liczyć tego jako błąd „bez ujścia".
+
+## DWA TORY RZEK
+- **Tor RENDER (render-only, bez hasha):** inset do wnętrza płaskiego heksa + stała płaska wysokość (2+3 wyżej).
+- **Tor GENERATOR (hash+baseline):** brak rozgałęziania (topologia). Prześledzić `generateRivers` — gdzie
+  powstają widelce/dopływy — i zakończyć trasę przy zbiegu.
 
 ## Gates
-tsc=0 · smoke OK · map-gen-regression (0 rzek bez ujścia + determinizm; po części 1 **nowy baseline**) ·
-wzrokowo: rzeka na płaskiej wysokości, we wnętrzu heksa, widoczna obok wzgórza, dochodzi do morza.
+tsc=0 · smoke OK · map-gen-regression (render-tor: determinizm bez zmian; generator-tor: nowy baseline,
+0 rzek bez ujścia) · wzrokowo: rzeka we wnętrzu płaskiej strony, płaski poziom, brak widelców, dochodzi do morza/zbiegu.
 
 ## Niezależne od tego: kawałek 2 (rename brąz→miedź/żelazo) — dalej w kolejce.
