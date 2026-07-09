@@ -34,7 +34,7 @@ const FALLBACK_AKTYWNE_TYPY: Record<MapSizeLabel, number> = {
 const FALLBACK_RYWALE: Record<MapSizeLabel, number> = {
   mala: 2, srednia: 4, duza: 6, ogromna: 8, super: 10,
 };
-const FALLBACK_METAL_ERA: Record<string, number> = { miedz: 2, zelazo: 3 };
+const FALLBACK_METAL_ERA: Record<string, number> = { miedz: 2, zelazo: 3, wegiel: 8 };
 const FALLBACK_DEPOSIT_RARITY: Partial<Record<string, number>> = {
   miedz: 0.10, zelazo: 0.08, glina: 0.10, konie: 0.10, wegiel: 0.10,
   owce: 0.08, bydlo: 0.07, sol: 0.12,

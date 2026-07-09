@@ -97,6 +97,7 @@
   },
   "metal_deposit_min_era": {
     "miedz": 2,
-    "zelazo": 3
+    "zelazo": 3,
+    "wegiel": 8
   }
 }
