@@ -68,6 +68,10 @@ import {
 import { setImprovementDetailQuality } from './robloxImprovements';
 import { collapseToMergedMesh } from './mergeDecor';
 import {
+  dekorLakaGeometria, dekorRowninaGeometria, dekorDlaHeksa, rotacjaDekoru,
+  DEKOR_MATERIAL, DEKOR_LICZBA_WARIANTOW,
+} from './dekor-laki-rowniny';
+import {
   type ZoomLodLevel,
   type ZoomLodFlags,
   normalizedZoomT,
@@ -1256,6 +1260,9 @@ export async function buildScene(
   let desertCount = 0;
   const goraVarCount: number[] = new Array(NW).fill(0);
   const wzgorzeVarCount: number[] = new Array(NW).fill(0);
+  // DEKOR: mikrodekor łąk/równin — pre-count wariantów (jak goraVarCount) do alokacji InstancedMesh.
+  const dekorLakaVarCount: number[] = new Array(DEKOR_LICZBA_WARIANTOW).fill(0);
+  const dekorRowninaVarCount: number[] = new Array(DEKOR_LICZBA_WARIANTOW).fill(0);
 
   for (const hex of Object.values(map.hexes)) {
     const t = hex.terenBazowy;
@@ -1270,6 +1277,14 @@ export async function buildScene(
       if (styledTerrain) wzgorzeVarCount[wariantDlaHeksa(hex.coords.q, hex.coords.r, NW, map.seed)]!++;
     }
     if (t === TerenBazowy.Pustynia) desertCount++;
+    // DEKOR: policz warianty mikrodekoru na heksach łąki/równiny (styl roblox; ~45% pustych).
+    if (styledTerrain && (t === TerenBazowy.Laka || t === TerenBazowy.Rownina)) {
+      const dw = dekorDlaHeksa(hex.coords.q, hex.coords.r, map.seed);
+      if (dw !== null) {
+        if (t === TerenBazowy.Laka) dekorLakaVarCount[dw]!++;
+        else dekorRowninaVarCount[dw]!++;
+      }
+    }
   }
 
   // Maks. liczby instancji dekoracji (z zapasem na deterministyczna zmiennosc)
@@ -1385,6 +1400,33 @@ export async function buildScene(
       scene.add(wm);
       wzgorzeInst.push(wm); wzgorzeHexKey.push([]); wzgorzeOrigMatrix.push([]); wzgorzeIdx.push(0);
     }
+  }
+
+  // DEKOR mikrodekor łąk/równin (MASTER [14:00] pkt 2): 4+4 InstancedMesh w JEDNEJ grupie
+  // = 8 draw calli na całą mapę. Wzorzec jak góry/wzgórza; castShadow OFF (mikrodetal, cień nic
+  // nie wnosi a kosztuje pass); matrixAutoUpdate zamrażany globalnym traverse na końcu buildScene.
+  // LOD: dekorGroup.visible = terrainDetailInst (poziomy 0-1). Fog: applyTerrainFog (wspólny materiał).
+  const dekorGroup = new THREE.Group();
+  const dekorLakaInst: THREE.InstancedMesh[] = [];
+  const dekorLakaHexKey: string[][] = [];
+  const dekorLakaOrig: THREE.Matrix4[][] = [];
+  const dekorLakaIdx: number[] = [];
+  const dekorRowninaInst: THREE.InstancedMesh[] = [];
+  const dekorRowninaHexKey: string[][] = [];
+  const dekorRowninaOrig: THREE.Matrix4[][] = [];
+  const dekorRowninaIdx: number[] = [];
+  if (styledTerrain) {
+    for (let w = 0; w < DEKOR_LICZBA_WARIANTOW; w++) {
+      const lm = new THREE.InstancedMesh(dekorLakaGeometria(w), DEKOR_MATERIAL, Math.max(1, dekorLakaVarCount[w]!));
+      lm.frustumCulled = false; lm.castShadow = false; lm.receiveShadow = true; lm.count = 0;
+      dekorGroup.add(lm);
+      dekorLakaInst.push(lm); dekorLakaHexKey.push([]); dekorLakaOrig.push([]); dekorLakaIdx.push(0);
+      const rm = new THREE.InstancedMesh(dekorRowninaGeometria(w), DEKOR_MATERIAL, Math.max(1, dekorRowninaVarCount[w]!));
+      rm.frustumCulled = false; rm.castShadow = false; rm.receiveShadow = true; rm.count = 0;
+      dekorGroup.add(rm);
+      dekorRowninaInst.push(rm); dekorRowninaHexKey.push([]); dekorRowninaOrig.push([]); dekorRowninaIdx.push(0);
+    }
+    scene.add(dekorGroup);
   }
 
   // -- Piaszczysty pierscien wybrzeza
@@ -1567,6 +1609,32 @@ export async function buildScene(
       y = wyTop - vis.height / 2;
     }
     const hexKey = `${hex.coords.q},${hex.coords.r}`;
+
+    // DEKOR: mikrodekor pustego heksa łąki/równiny (styl roblox). Obecność/wariant/rotacja
+    // deterministyczne z hash(map.seed) — generator NIETKNIĘTY. Spód modelu = wierzch pryzmu.
+    if (styledTerrain && (t === TerenBazowy.Laka || t === TerenBazowy.Rownina)) {
+      const dw = dekorDlaHeksa(hex.coords.q, hex.coords.r, map.seed);
+      if (dw !== null) {
+        const dTopY = vis.height + vis.yOffset;
+        dummy.position.set(x, dTopY, z);
+        dummy.rotation.set(0, rotacjaDekoru(hex.coords.q, hex.coords.r, map.seed), 0);
+        dummy.scale.set(1, 1, 1);
+        dummy.updateMatrix();
+        if (t === TerenBazowy.Laka) {
+          const di = dekorLakaIdx[dw]!;
+          dekorLakaInst[dw]!.setMatrixAt(di, dummy.matrix);
+          dekorLakaHexKey[dw]![di] = hexKey;
+          dekorLakaOrig[dw]![di] = dummy.matrix.clone();
+          dekorLakaIdx[dw] = di + 1;
+        } else {
+          const di = dekorRowninaIdx[dw]!;
+          dekorRowninaInst[dw]!.setMatrixAt(di, dummy.matrix);
+          dekorRowninaHexKey[dw]![di] = hexKey;
+          dekorRowninaOrig[dw]![di] = dummy.matrix.clone();
+          dekorRowninaIdx[dw] = di + 1;
+        }
+      }
+    }
 
     // Hex prism
     const meshIdx = terrainIndex[t];
@@ -1966,6 +2034,13 @@ export async function buildScene(
     wzgorzeInst[v]!.count = wzgorzeIdx[v]!;
     wzgorzeInst[v]!.instanceMatrix.needsUpdate = true;
   }
+  // DEKOR: finalizacja liczników 8 InstancedMesh mikrodekoru łąk/równin.
+  for (let w = 0; w < dekorLakaInst.length; w++) {
+    dekorLakaInst[w]!.count = dekorLakaIdx[w]!;
+    dekorLakaInst[w]!.instanceMatrix.needsUpdate = true;
+    dekorRowninaInst[w]!.count = dekorRowninaIdx[w]!;
+    dekorRowninaInst[w]!.instanceMatrix.needsUpdate = true;
+  }
 
   // FPS lewar 1+3: każda grupa styledOverlays (wybrzeże/plaże/wydmy/oazy — po ~5-20 boxów/heks,
   // skalują się z rozmiarem mapy) → 1 zmergowany mesh + zamrożona macierz. Fog działa bez zmian
@@ -2160,6 +2235,8 @@ export async function buildScene(
     // TEREN_MATERIAL są współdzielone/cache w module — NIE dispose'ować ich tutaj).
     for (const m of goraInst) m.dispose();
     for (const m of wzgorzeInst) m.dispose();
+    for (const m of dekorLakaInst) m.dispose();
+    for (const m of dekorRowninaInst) m.dispose();
     beachGeo.dispose(); beachMat.dispose();
     duneGeo.dispose(); duneMat.dispose();
     // Oazy (InstancedMesh)
@@ -2223,6 +2300,11 @@ export async function buildScene(
     for (let v = 0; v < goraInst.length; v++) {
       hideInstancedOnHex(goraInst[v]!, goraHexKey[v]!, goraOrigMatrix[v]!, hexKey);
       hideInstancedOnHex(wzgorzeInst[v]!, wzgorzeHexKey[v]!, wzgorzeOrigMatrix[v]!, hexKey);
+    }
+    // DEKOR: schowaj mikrodekor pod miastem/ulepszeniem na tym heksie (wzorzec jak las).
+    for (let w = 0; w < dekorLakaInst.length; w++) {
+      hideInstancedOnHex(dekorLakaInst[w]!, dekorLakaHexKey[w]!, dekorLakaOrig[w]!, hexKey);
+      hideInstancedOnHex(dekorRowninaInst[w]!, dekorRowninaHexKey[w]!, dekorRowninaOrig[w]!, hexKey);
     }
     hideInstancedOnHex(beachMesh, beachHexKey, beachOrigMatrix, hexKey);
     hideInstancedOnHex(duneMesh, duneHexKey, duneOrigMatrix, hexKey);
@@ -2341,6 +2423,15 @@ export async function buildScene(
 
     hillBumpMesh.visible = zoomFlags.terrainDetailInst;
     if (zoomFlags.terrainDetailInst) applyOverlayFog(hillBumpMesh, hillBumpHexKey, hillBumpOrigMatrix);
+
+    // DEKOR mikrodekor łąk/równin — LOD 0-1 (terrainDetailInst); fog per-instancja (wspólny materiał).
+    dekorGroup.visible = zoomFlags.terrainDetailInst;
+    if (zoomFlags.terrainDetailInst) {
+      for (let w = 0; w < dekorLakaInst.length; w++) {
+        applyTerrainFog(dekorLakaInst[w]!, dekorLakaHexKey[w]!, dekorLakaOrig[w]!);
+        applyTerrainFog(dekorRowninaInst[w]!, dekorRowninaHexKey[w]!, dekorRowninaOrig[w]!);
+      }
+    }
 
     // GRAFIKA-3D partia TEREN stage 2: instanced góry/wzgórza — widoczność jak styledDecor.
     for (let v = 0; v < goraInst.length; v++) {
