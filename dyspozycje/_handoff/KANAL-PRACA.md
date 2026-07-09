@@ -1770,3 +1770,13 @@ Wg [12:55] pkt 2b. USTALENIE: eksperyment B = `hexPrismNoBottomGeo` (heks bez do
 
 POMIAR (Maciej): otwórz roboczą normalnie → F9 `tri` (z B); dopisz `?nobottom=0` do URL, przeładuj → F9 `tri` (bez B). Różnica = oszczędność B na nowej bazie. Werdykt: keep (jeśli oszczędność sensowna, bez dziur pod heksami) / rewert. Źródło toggle niezacommitowane do werdyktu.
 CZEKAM-NA: Maciej — pomiar F9 (tri z/bez B) + werdykt B; potem A (chunki) lub sprzątnięcie toggle.
+
+---
+
+## [CODE-INTEGRATOR → MASTER] PROMOCJA DO KANONU (a1dce24d) — stabilizacja FPS
+
+Wg polecenia Macieja („push do kanonu" przed dalszą optymalizacją).
+- **KANON stempel a1dce24d** (gra-kanon/Gra-KANON.html, md5 a1dce24d80b1ed64e906b9715d11def6), źródło robocza **7dd9bb7a**. **FINALNA fae546ca** (root).
+- Zawartość = 2b6c23dd (GRAFIKA-3D + FPS 1+3, F9 potwierdzony 52 FPS, mesh 1,3mln→39k) + B sfinalizowane (toggle ?nobottom=0) + naprawa smoke (async-poll, koniec false-negative) + optymalizacja minimapy (cache getMinimapData + pomijanie mgły; hitch ~795ms zakładania miasta). WERSJE zaktualizowane.
+- commit+push kanonu na GitHub. Poprzedni fallback = 2b6c23dd. UWAGA: minimapa świeża (tsc+smoke OK, wizualnie nietestowana — tło minimapy ciemniejsze; łatwy rewert jeśli nie pasuje).
+CZEKAM-NA: Maciej — dalsze tematy FPS (fog / LOD / matrixAutoUpdate / minimapa-klik→kamera); chunki na sam koniec (ważne dla słabszych maszyn).
