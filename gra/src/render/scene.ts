@@ -894,14 +894,20 @@ function riverCornersAlongHexEdges(
   const entryOpts = [(a + 1) % 6, (a + 2) % 6];
   const exitOpts = [(b + 1) % 6, (b + 2) % 6];
 
+  // Maciej 2026-07-09: rzeka musi przejść przez ≥3 boki heksa (bardziej pokręcona, szybciej nabiera
+  // długości, naturalna). Bierzemy NAJKRÓTSZY łuk po bokach mający ≥MIN_BOKI boków; fallback: najdłuższy.
+  // Linie proste — same krawędzie heksa (walkHexPerimeter), bez skrótów przez środek.
+  const MIN_BOKI = 3;
   let best: number[] = [];
   let bestScore = Infinity;
-
+  let longest: number[] = [];
   for (const entry of entryOpts) {
     for (const exit of exitOpts) {
       for (const cw of [true, false]) {
         const walked = walkHexPerimeter(entry, exit, cw);
         if (walked.length === 0) continue;
+        if (walked.length > longest.length) longest = walked;
+        if (walked.length - 1 < MIN_BOKI) continue; // walked.length-1 = pełne boki między rogami
         let score = walked.length;
         // Przy remisie: deterministyczny wybór strony (S w lewo/prawo)
         if (score === bestScore && hexParity % 2 === 0) score += cw ? 0 : 0.01;
@@ -913,7 +919,7 @@ function riverCornersAlongHexEdges(
       }
     }
   }
-  return best;
+  return best.length ? best : longest;
 }
 
 /** @deprecated Użyj riverCornersAlongHexEdges — zostawione dla czytelności diff. */

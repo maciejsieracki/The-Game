@@ -3297,10 +3297,10 @@ export function repairRiverPathAdjacency(
 export const RIVER_MIN_INLAND_FROM_SEA = 2;
 
 /** Maciej 2026-07-09: rzeka wchodząca do MORZA musi mieć min. tyle długości ścieżki (heksów).
- *  Cel wg Macieja: ~25 długości BOKU heksa; wstęga ma ~2 boki na heks (rogi+środki krawędzi),
- *  więc 25 boków ≈ 12 heksów ścieżki. WYJĄTEK: dopływ do innej rzeki (pushTributary) — bez minimum.
- *  Wyżej (np. 25) dławi generator na standardowej mapie (perf). Knob długości. */
-export const RIVER_MIN_MAIN_LEN = 12;
+ *  Cel: 25 długości BOKU heksa. Przy wymogu ≥3 boki/heks (render riverCornersAlongHexEdges)
+ *  25 boków ≈ 8 heksów ścieżki. WYJĄTEK: dopływ do innej rzeki (pushTributary) — bez minimum.
+ *  Knob długości (25 heksów dławiło generator — perf). */
+export const RIVER_MIN_MAIN_LEN = 8;
 
 /** Ostatnie N hex trasy — szybkie połączenie z morzem (Maciej 2026-07-05: 5). */
 export const RIVER_MOUTH_TAIL_LEN = 5;
