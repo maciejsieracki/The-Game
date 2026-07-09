@@ -6,7 +6,7 @@ import * as THREE from 'three';
 import type { ImprovementKey } from './improvements';
 import { buildStyleTarasyTerrace, type QualityTier } from './mapRenderStyle';
 import { placeLivestockPair } from './styleResources';
-import { buildLama, buildPastwiskoZwierzeta } from './pastwisko-modele';
+import { buildLama } from './pastwisko-modele'; // buildPastwiskoZwierzeta wycofany (model pokazowy — nieużywany)
 import { buildTrzoda } from './swinia-trzoda';
 import {
   buildFarma, buildKopalnia, buildKamieniolom, buildTartak, buildZagrodaDodatki,
@@ -406,7 +406,7 @@ const BUILDERS: Record<ImprovementKey, (g: THREE.Group, owner: number) => void> 
   pastwisko: g => {
     const f = buildFarma({ wariant: 'pastwisko' });
     f.rotation.y = ULEPSZENIA_P2_LAYOUT.farma.pastwisko.budynek.rotY;
-    g.add(f, buildPastwiskoZwierzeta(), buildZagrodaDodatki());
+    g.add(f, buildTrzoda(), buildZagrodaDodatki()); // wycofano buildPastwiskoZwierzeta (model pokazowy) → trzoda N-NE
   },
   popalnia_brazu: g => { const m = buildKopalnia(); m.rotation.y = ULEPSZENIA_P2_LAYOUT.kopalnia.budynek.rotY; g.add(m); },
 };
