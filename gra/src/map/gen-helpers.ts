@@ -5610,20 +5610,9 @@ const BASE_DEPOSIT_RULES: DepositRule[] = [
     allowedOn: (h) => isDryLandTerrain(h.terenBazowy) && h.terenBazowy === TerenBazowy.Gory,
     rarity: 0.10,
   },
-  {
-    id: 'owce',
-    nakladka: Nakladka.ZlozeOwiec,
-    allowedOn: (h) => isDryLandTerrain(h.terenBazowy) && h.terenBazowy === TerenBazowy.Wzgorza,
-    rarity: 0.08,
-  },
-  {
-    id: 'bydlo',
-    nakladka: Nakladka.ZlozeBydla,
-    allowedOn: (h) =>
-      isDryLandTerrain(h.terenBazowy) &&
-      (h.terenBazowy === TerenBazowy.Laka || h.terenBazowy === TerenBazowy.Rownina),
-    rarity: 0.07,
-  },
+  // Model B (Maciej 2026-07-09): USUNIĘTE złoża owiec/bydła (ZlozeOwiec/ZlozeBydla) — hodowla to
+  // teraz CZYSTE ulepszenie (Owczarnia/Pastwisko), budowane jak farma, nie surowiec na mapie.
+  // Koń (wyżej) zostaje surowcem. Zmienia hash mapy (zamierzone).
   {
     id: 'sol',
     nakladka: null,
@@ -5713,7 +5702,7 @@ export function placeDeposits(
 
 /** Pakiet surowców wymagany w każdej komórce siatki fair play (Maciej 2026-07-04). Konie wyłączone — mają być rzadkie. */
 export const FAIR_PLAY_DEPOSIT_IDS: ReadonlyArray<DepositRule['id']> = [
-  'zelazo', 'miedz', 'glina', 'bydlo', 'owce',
+  'zelazo', 'miedz', 'glina', // Model B: bydlo/owce usunięte (hodowla = ulepszenie, nie złoże)
 ];
 
 function depositRuleById(id: DepositRule['id']): DepositRule {

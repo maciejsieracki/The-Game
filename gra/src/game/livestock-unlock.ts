@@ -122,7 +122,12 @@ export function computeEmpireLivestockUnlocks(
   return unlocked;
 }
 
-/** Pierwsze pastwisko: tylko na złożu; potem — po odblokowaniu imperium. */
+/**
+ * Model B (Maciej 2026-07-09): hodowla (Pastwisko/Owczarnia/Zagroda lam) = CZYSTE ulepszenie
+ * budowane jak farma — BEZ złoża/„zarodka" (złoża zwierzęce usunięte z mapy). Tylko KOŃ zostaje
+ * surowcem: stadnina wymaga złoża konia LUB imperialnego odblokowania 'kon'.
+ * (Bramka cywilizacji/epoki jest osobno w isLivestockAllowed.)
+ */
 export function isLivestockUnlockedForPlacement(
   improvementKey: string,
   hex: { nakladka?: Nakladka },
@@ -132,8 +137,5 @@ export function isLivestockUnlockedForPlacement(
   if (norm === 'stadnina') {
     return hexHasHorseDeposit(hex) || empireUnlocks.has('kon');
   }
-  const lk = livestockKeyFromImprovement(norm);
-  if (!lk || lk === 'kon') return true;
-  if (improvementMatchesLivestockDeposit(norm, hex)) return true;
-  return empireUnlocks.has(lk);
+  return true; // bydlo/owce/lama — bez wymogu złoża
 }

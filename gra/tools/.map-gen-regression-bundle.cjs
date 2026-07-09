@@ -4151,18 +4151,9 @@ var BASE_DEPOSIT_RULES = [
     allowedOn: (h) => isDryLandTerrain(h.terenBazowy) && h.terenBazowy === "gory" /* Gory */,
     rarity: 0.1
   },
-  {
-    id: "owce",
-    nakladka: "zloze_owiec" /* ZlozeOwiec */,
-    allowedOn: (h) => isDryLandTerrain(h.terenBazowy) && h.terenBazowy === "wzgorza" /* Wzgorza */,
-    rarity: 0.08
-  },
-  {
-    id: "bydlo",
-    nakladka: "zloze_bydla" /* ZlozeBydla */,
-    allowedOn: (h) => isDryLandTerrain(h.terenBazowy) && (h.terenBazowy === "laka" /* Laka */ || h.terenBazowy === "rownina" /* Rownina */),
-    rarity: 0.07
-  },
+  // Model B (Maciej 2026-07-09): USUNIĘTE złoża owiec/bydła (ZlozeOwiec/ZlozeBydla) — hodowla to
+  // teraz CZYSTE ulepszenie (Owczarnia/Pastwisko), budowane jak farma, nie surowiec na mapie.
+  // Koń (wyżej) zostaje surowcem. Zmienia hash mapy (zamierzone).
   {
     id: "sol",
     nakladka: null,
@@ -4222,9 +4213,8 @@ function placeDeposits(hexes, seed, rules = DEPOSIT_RULES, resourceMult = 1, bas
 var FAIR_PLAY_DEPOSIT_IDS = [
   "zelazo",
   "miedz",
-  "glina",
-  "bydlo",
-  "owce"
+  "glina"
+  // Model B: bydlo/owce usunięte (hodowla = ulepszenie, nie złoże)
 ];
 function depositRuleById(id) {
   const rule = DEPOSIT_RULES.find((r) => r.id === id);
