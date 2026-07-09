@@ -886,7 +886,7 @@ function riverCornersAlongHexEdges(
   dirIn: number,
   dirOut: number,
   hexParity: number,
-  minBoki: number = 3,
+  minBoki: number = 1,
 ): number[] {
   const a = ((dirIn % 6) + 6) % 6;
   const b = ((dirOut % 6) + 6) % 6;
@@ -895,22 +895,20 @@ function riverCornersAlongHexEdges(
   const entryOpts = [(a + 1) % 6, (a + 2) % 6];
   const exitOpts = [(b + 1) % 6, (b + 2) % 6];
 
-  // Maciej 2026-07-09: rzeka musi przejść przez ≥minBoki boków heksa (domyślnie 3 — bardziej
-  // pokręcona, szybciej nabiera długości, naturalna). Bierzemy NAJKRÓTSZY łuk po bokach mający
-  // ≥minBoki boków; fallback: najdłuższy.
-  // Maciej 2026-07-09b: na heksie-ujściu (przy Wybrzeżu/Morzu) wołający łamie regułę (minBoki=1),
-  // żeby rzeka nie wiła się wzdłuż brzegu, tylko wpadała do morza najkrótszym łukiem.
+  // Maciej 2026-07-09c: NAJKRÓTSZY łuk po obwodzie między krawędzią wejścia a wyjścia —
+  // bez wymogu minimalnej liczby boków. Poprzednia wersja (minBoki≥3, fallback: najdłuższy)
+  // przy ostrym skręcie (wejście i wyjście blisko siebie) wymuszała objazd PRAWIE CAŁEGO
+  // obwodu heksa zamiast najkrótszej drogi — przy wielu rzekach dawało to siatkę zamkniętych
+  // pętli heksagonalnych („plaster miodu”) zamiast płynących linii rzek. Minimalizacja
+  // walked.length eliminuje objazdy: rzeka zawsze idzie najkrótszą sensowną drogą po ściankach.
   // Linie proste — same krawędzie heksa (walkHexPerimeter), bez skrótów przez środek.
   let best: number[] = [];
   let bestScore = Infinity;
-  let longest: number[] = [];
   for (const entry of entryOpts) {
     for (const exit of exitOpts) {
       for (const cw of [true, false]) {
         const walked = walkHexPerimeter(entry, exit, cw);
         if (walked.length === 0) continue;
-        if (walked.length > longest.length) longest = walked;
-        if (walked.length - 1 < minBoki) continue; // walked.length-1 = pełne boki między rogami
         let score = walked.length;
         // Przy remisie: deterministyczny wybór strony (S w lewo/prawo)
         if (score === bestScore && hexParity % 2 === 0) score += cw ? 0 : 0.01;
@@ -922,7 +920,7 @@ function riverCornersAlongHexEdges(
       }
     }
   }
-  return best.length ? best : longest;
+  return best;
 }
 
 /** @deprecated Użyj riverCornersAlongHexEdges — zostawione dla czytelności diff. */
@@ -934,7 +932,7 @@ function riverTransitCornersOnHex(
   qNext: number,
   rNext: number,
   R: number,
-  minBoki: number = 3,
+  minBoki: number = 1,
 ): Array<{ x: number; z: number }> {
   const dirIn = neighborDirIndex(q, r, qPrev, rPrev);
   const dirOut = neighborDirIndex(q, r, qNext, rNext);
@@ -1016,16 +1014,19 @@ function buildRiverPointsFromHexPath(
     const yc = yAt(cur.q, cur.r);
     if (yc == null) continue;
 
-    // Maciej 2026-07-09b: heks-ujście (sam lub sąsiad na trasie dotyka Wybrzeża/Morza) — złam
-    // regułę ≥3 boków, pozwól na najkrótszy łuk (1-2 boki), żeby rzeka wpadała PROSTO do morza,
-    // zamiast wić się wzdłuż brzegu. Na zwykłych heksach zostaje minBoki=3 (domyślne).
+    // Maciej 2026-07-09c: regresja pętli-siatki — regułę ≥3 boki (poprzednie minBoki=3 na
+    // zwykłych heksach) usunięto z riverCornersAlongHexEdges, więc tu też liczy się zawsze
+    // najkrótszy łuk (minBoki=1) — na heksie-ujściu tak jak wcześniej (rzeka wpada PROSTO do
+    // morza), a na zwykłych heksach identycznie (bez objazdu dookoła heksa przy ostrym skręcie).
+    // curTeren/prevTeren/nextTeren i isUjscieHex zostają jako scaffolding — gdyby kiedyś wrócił
+    // pomysł na inne zachowanie na ujściu, jest tu gotowy punkt zaczepienia.
     const curTeren = map.hexes[`${cur.q},${cur.r}`]?.terenBazowy;
     const prevTeren = map.hexes[`${prev.q},${prev.r}`]?.terenBazowy;
     const nextTeren = map.hexes[`${next.q},${next.r}`]?.terenBazowy;
     const isUjscieHex = [curTeren, prevTeren, nextTeren].some(
       (t) => t === TerenBazowy.Wybrzeze || t === TerenBazowy.Morze,
     );
-    const minBoki = isUjscieHex ? 1 : 3;
+    const minBoki = isUjscieHex ? 1 : 1;
 
     // Rogi łuku heksa cur — insetowane ku środkowi CUR (spójnie z resztą jego łuku).
     for (const corner of riverTransitCornersOnHex(
