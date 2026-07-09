@@ -1670,3 +1670,60 @@ CZEKAM-NA: Maciej - "deploy B" (pozniej) -> pomiar F9.
 
 Deploy B: heks bez dolnej pokrywy (~25% mniej trojkatow bazowych, pixel-identycznie). Bundle dfa3f2e2, stempel ROBOCZA e6ba6cd5 21:27, 9 plikow + hub, verify OK. NIEZACOMMITOWANE (build testowy). Kanon 51c2eb24 (8adcd682) bezpieczny na GitHub 32dca78 = fallback.
 CZEKAM-NA: Maciej — pomiar F9 (tri przed 7.69M -> po ~5.8M; FPS) -> werdykt OK (commit B) / nie (rewert), potem A (chunki).
+
+---
+
+## [01:00 PL, 2026-07-09] MASTER → CODE-INTEGRATOR — ZADANIE POWER-REFAKTOR (decyzja architektoniczna Macieja): moc liczona ZAWSZE z bieżących statystyk
+
+Zasada Macieja (obowiązująca): **power/moc jednostki = wartość POCHODNA, wyliczana z bieżących współczynników w systemie — nigdy przechowywana i „pamiętana do update'u"**. Twoje znalezisko (stary cache fieldPower po HP×2) to dokładnie ta choroba.
+
+Wykonanie (po dokończeniu SYNC-PANELI A/B/E, przed zdjęciem zakazu prebuildu):
+1. Przenieś formułę mocy (dziś w `sync_units_power_cache` w eksporterze) do JEDNEGO miejsca w silniku: `gra/src/game/power.ts` → `computeFieldPower(unit)` / `computeSiegePower(unit)` — port 1:1 z pythona.
+2. Podmień WSZYSTKIE odczyty `fieldPower`/`siegePower` z danych (grep po gra/src: AI, UI, respekt/potęga) na wywołanie funkcji (wynik można memoizować per sesja — cache w pamięci procesu jest OK, bo unieważnia się sam przy restarcie; ZAKAZANE jest tylko trwałe przechowywanie w data).
+3. `units.json`: pola fieldPower/siegePower przestają być czytane przez silnik. W Excelu (Panel-C) kolumny mocy zostają WYŁĄCZNIE jako podgląd generowany przez eksporter, wyraźnie opisane „POCHODNA — nie edytować".
+4. **Bramka równoważności:** dla wszystkich 75 jednostek `computeFieldPower` == wartość z poprawnego przeliczenia eksporterem (ta sama formuła) — tabela diff=0. Plus tsc=0, build, nic nie stracone.
+5. Efekt: każda przyszła zmiana statystyk (Excel→eksportuj) automatycznie zmienia moc — zero pamiętania.
+CZEKAM-NA: kolejność bez zmian — najpierw werdykt B Macieja (F9), „dalej A/B/E"+„commituj", potem POWER-REFAKTOR, potem GRAFIKA-3D [00:45].
+
+---
+
+## [01:15 PL, 2026-07-09] MASTER → CODE-INTEGRATOR — KOREKTA KOLEJNOŚCI (stan faktyczny): GRAFIKA-3D już ruszyła — eksperyment B PONOWIĆ PO grafice
+
+Maciej uruchomił GRAFIKA-3D [00:45] przed werdyktem B — OK (kanon 32dca78 = fallback, bezpieczne). Konsekwencje porządkowe:
+1. Deploy grafiki nadpisze testowy bundel B (dfa3f2e2, niezacommitowany) — **eksperyment B uznaj za PRZESUNIĘTY, nie oceniony**. Po wpięciu i zaakceptowaniu grafiki PONÓW deploy B na nowej bazie (nowe góry/wzgórza same zmieniają tri — stary pomiar byłby niemiarodajny) i dopiero wtedy Maciej mierzy F9 i daje werdykt B; potem ewentualnie A (chunki).
+2. SYNC-PANELI A/B/E + commit C/D/merge + POWER-REFAKTOR [01:00] — wykonuj RÓWNOLEGLE/po grafice wg swoich mocy; nie dotykają buildu gry (Excele/eksportery/power.ts), więc nie kolidują.
+3. Przy buildzie grafiki pamiętaj: bez prebuildu (zakaz [15:10] nadal obowiązuje — sync niezakończony), commity per partia, jeden deploy, bramki + WYMÓG SKALI z dyspozycji.
+CZEKAM-NA: CODE — GRAFIKA-3D meldunek ze stemplem; Maciej — wielki test grafiki; potem ponowiony B → F9.
+
+---
+
+## [01:45 PL, 2026-07-09] MASTER → CODE-INTEGRATOR — KOREKTA GRAFIKA-3D (zgłoszenie Macieja): zwierzęta per ZASÓB heksa, nie „wszystko naraz"
+
+BŁĄD W MOJEJ DYSPOZYCJI (partia 1): `buildPastwiskoZwierzeta()` (2 krowy+2 owce+lama) to był heks POKAZOWY, a został wpięty jako grafika bydła — na live [27cb7771] heks z opisem „bydło" pokazuje wszystkie zwierzęta. DO PRZEPIĘCIA:
+1. **Kompozycja per zasób z INDYWIDUALNYCH builderów** (wszystkie są eksportowane): heks ma bydło → `buildKrowa` ×2 w sektorze krów (N-NE); owce → `buildOwca` ×2 w sektorze S-SW; koń (SUROWIEC, nie ulepszenie) → `buildHorse` bez jeźdźca w sektorze E; farma → środek r0.40. Kombinacje składają się SAME z obecności zasobów/ulepszeń na heksie (jak istniejący FoodStack — gałęzie hasI). `buildPastwiskoZwierzeta` NIE wpinać nigdzie (zostaje jako demo).
+2. **LAMA = zawsze SOLO** — własny mini-layout (2 lamy? 1 lama + skałki — Twój gust w ramach stylu), nigdy nie miesza się z krowinstitutami/owcami/koniem.
+3. **Sektor E:** w kompozycjach należy do KONIA (lama nie miesza się nigdy, więc kolizji nie ma).
+4. Zasada gry (potwierdzona przez Macieja, upraszczamy): **na heksie hodowlanym jest JEDEN typ zwierzęcia (krowy ALBO owce) + opcjonalna farma + opcjonalny koń-surowiec**. Krowy+owce razem NIE występują. (Jeśli dane mapy gdzieś generują oba naraz — zgłoś, NIE zmieniaj generatora.)
+5. To korekta WPIĘCIA (render), zero zmian w generatorze/danych. Wejdzie z partią TEREN albo osobnym commitem — jak Ci wygodniej, byle przed wielkim testem Macieja.
+
+BACKLOG (gameplay, NIE ruszać — osobne decyzje Macieja, dotykają generatora/hasha i zasad): (a) lamy występują tylko w regionie Inków; (b) Inkowie bez dostępu do krów/owiec/koni, dopóki nie zdobędą zasobu koni. Zapisane, wycenimy po grafice.
+CZEKAM-NA: CODE — TEREN + korekta [01:45] + meldunek; Maciej — wielki test.
+
+---
+
+## [10:44 PL, 2026-07-09] CODE-INTEGRATOR → MASTER — GRAFIKA-3D KOMPLET wdrożone (stempel ab5b8527)
+
+Cała dyspozycja GRAFIKA-3D wpięta do `gra/src/render/` i wdrożona na ROBOCZA + 8 playtestów + hub. Commity per partia (5): koń+pastwisko (5e9167f), P2+3A+3B (8ab8e7e), TEREN stage 1 (00ca51d), TEREN stage 2 + stadnina quality (983b4b5).
+
+**Zawartość:**
+- **P1**: nowy koń (moduł `kon-nowy-model.ts`, współdzielony: konnica/rydwan/onager + złoże koni + stadnina); fix lancy konnicy (grot/proporczyk na osi drzewca); pastwisko krowa/owca/lama; złoża bydła(2 krowy)/owiec(2 owce)/koni(2 konie bez jeźdźca), środek heksa wolny.
+- **P2**: farma(solo/pastwisko)/kopalnia/kamieniołom/tartak. **P3A**: wyrąb/obóz/glinianka/warzelnia/łodzie/stadnina (własny model). **P3B**: irygacja/pole/fort/posterunek(kolory graczy)/drogi/złoża mineralne.
+- **TEREN oba etapy**: (1) 5+5 wariantów sylwetek gór/wzgórz (`teren-gory-wzgorza.ts`); (2) render w stylu roblox jako **10 InstancedMesh** (batching) zamiast per-heks styledOverlays — pełna maszyneria FoW (matrix-hide + instanceColor-dim ×0.175), hide-on-hex, LOD, dispose. Minecraft/civ bez zmian.
+
+**Bramki (wszystkie zielone):** tsc=0 · smoke OK · **map-gen determinizm IDENTYCZNY** (hashe mapy nietknięte — render-only) · wysokości logiczne nietknięte (plateau wzgórz 0.392, GORA_APEX_Y) · **bez prebuildu** (vite-direct) · **FORT 1/3** (WYMÓG SKALI) · **stadnina 1/2 konie wg jakości** (WYSOKA=2, NISKA/NORMALNA=1, przez `mapDetailQuality`) · verify OK.
+
+**Stempel: ROBOCZA · ab5b8527 · 2026-07-09** (9 plików + hub spójne na tym md5).
+
+BRAK/uwagi: FoodStack-irygacja (opcja P3B step 3) pominięta; gabaryty nowych modeli poza fortem nie mierzone bounding-boxem (do oceny wzrokowej). Panele: ta partia danych balansu nie dotyka (reguła §8).
+
+CZEKAM-NA: Maciej — wielki test F9 (rano, za jednym razem); po akceptacji grafiki → ponowiony eksperyment B → F9 (jak w [01:15]), potem ewentualnie A (chunki bazowego terenu).
