@@ -163,7 +163,9 @@ function renderCanvas(
 
   canvas.width = w;
   canvas.height = h;
-  ctx.fillStyle = '#163d5c';
+  // FPS: tło = kolor mgły (hidden). Dzięki temu heksy w mgle NIE muszą być rysowane
+  // pojedynczo (na starcie to ~99% mapy) — pokrywa je tło.
+  ctx.fillStyle = '#0b0d12';
   ctx.fillRect(0, 0, w, h);
 
   if (data.hexes.length === 0) return;
@@ -187,17 +189,12 @@ function renderCanvas(
   const drawR = scale * hexR;
 
   for (const hex of data.hexes) {
+    // FPS: hidden = tło (już ciemne #0b0d12) — pomijamy przed liczeniem pozycji/trig.
+    if (hex.fog === 'hidden') continue;
     const { x, y } = axialMinimapXY(hex.q, hex.r);
     const cx = x * scale + offX;
     const cy = y * scale + offY;
     const base = TEREN_KOLOR[hex.teren] ?? TEREN_KOLOR_DEFAULT;
-
-    if (hex.fog === 'hidden') {
-      ctx.fillStyle = '#0b0d12';
-      ctx.globalAlpha = 1;
-      fillHexCell(ctx, cx, cy, drawR);
-      continue;
-    }
 
     ctx.fillStyle = base;
     if (hex.fog === 'explored') ctx.globalAlpha = FOG_EXPLORED_BRIGHTNESS;

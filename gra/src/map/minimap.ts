@@ -143,6 +143,30 @@ function computeViewport(
   return { x: minQ, y: minR, w: maxQ - minQ + 1, h: maxR - minR + 1 };
 }
 
+// FPS: cache statycznej struktury minimapy. q/r/teren heksa nie zmieniają się w trakcie
+// gry, więc alokujemy tablicę obiektów + klucze RAZ per mapa; przy każdym wywołaniu tylko
+// mutujemy fog + ownerColor (koniec 320k alokacji/wywołanie na dużych mapach). ownerColor
+// czytamy z żywego hex.wlasciciel (własność zmienia się), stąd cache referencji heksów.
+type MinimapHexRef = GameMap['hexes'][string];
+let _mmCacheMap: GameMap | null = null;
+let _mmHexes: MinimapHexData[] = [];
+let _mmKeys: string[] = [];
+let _mmRefs: MinimapHexRef[] = [];
+
+function ensureMinimapCache(map: GameMap): void {
+  if (_mmCacheMap === map) return;
+  _mmHexes = [];
+  _mmKeys = [];
+  _mmRefs = [];
+  for (const hex of Object.values(map.hexes)) {
+    const { q, r } = hex.coords;
+    _mmHexes.push({ q, r, teren: TEREN_KEY[hex.terenBazowy] ?? 'Rownina', ownerColor: undefined, fog: undefined });
+    _mmKeys.push(`${q},${r}`);
+    _mmRefs.push(hex);
+  }
+  _mmCacheMap = map;
+}
+
 /**
  * Zwraca siatkę kolorów/właścicieli heksów dla UI minimapy (D15=B).
  *
@@ -192,25 +216,22 @@ export function getMinimapData(
     }
   }
 
-  const hexes: MinimapHexData[] = [];
-  for (const hex of Object.values(map.hexes)) {
-    const { q, r } = hex.coords;
-    const key = `${q},${r}`;
+  ensureMinimapCache(map);
+  const hexes = _mmHexes;
+  for (let i = 0; i < hexes.length; i++) {
+    const obj = hexes[i]!;
+    const key = _mmKeys[i]!;
     const fog: MinimapFogState | undefined = useFog
       ? hexFogState(key, fogOpts.visible, fogOpts.explored)
       : undefined;
     let ownerColor = ownerOverride.get(key);
-    if (!ownerColor && hex.wlasciciel) {
-      ownerColor = playerColors[hex.wlasciciel];
+    const wl = _mmRefs[i]!.wlasciciel;
+    if (!ownerColor && wl) {
+      ownerColor = playerColors[wl];
     }
     if (fog === 'hidden') ownerColor = undefined;
-    hexes.push({
-      q,
-      r,
-      teren: TEREN_KEY[hex.terenBazowy] ?? 'Rownina',
-      ownerColor,
-      fog,
-    });
+    obj.ownerColor = ownerColor;
+    obj.fog = fog;
   }
 
   const viewport = camera ? computeViewport(map, camera) : undefined;
