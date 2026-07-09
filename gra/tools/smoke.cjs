@@ -19,6 +19,14 @@ let JSDOM;
 try { ({ JSDOM } = require('jsdom')); }
 catch (e) { console.error('[smoke] jsdom not installed — run: npm i -D jsdom'); process.exit(1); }
 
+// Async boot (await buildScene) może odrzucić promise poza sync-try/catch evala — bez tego
+// handlera padał cicho jako rafCount=0 (false-negative). Teraz realny błąd renderu wypłynie.
+let bootRejection = null;
+process.on('unhandledRejection', (reason) => {
+  bootRejection = reason;
+  console.error('[smoke] BOOT REJECTION:', (reason && reason.stack) || reason);
+});
+
 // ---------------------------------------------------------------------------
 // 1. Read and parse bundle HTML (dist/index.html lub gra-robocza/Gra-ROBOCZA.html)
 // ---------------------------------------------------------------------------
@@ -468,57 +476,73 @@ if (rafCount === 0 && !evalError) {
   window.document.dispatchEvent(evt);
 }
 
-// Run a few rAF frames synchronously
-const FRAMES = 3;
-for (let i = 0; i < FRAMES && rafCallbacks.length > 0; i++) {
-  const cb = rafCallbacks.shift();
-  try { cb(16.67 * (i + 1)); }
-  catch (err) { console.error('[smoke] Error in rAF frame', i + 1, ':', err.message); }
-}
-console.log('[smoke] rAF calls so far:', rafCount);
-
-// ---------------------------------------------------------------------------
-// 5. Check success criteria
-// ---------------------------------------------------------------------------
-const errors = [];
-
-// (a) Boot error overlays must be absent or empty
-for (const id of ['__boot_err__', '__err_overlay__']) {
-  const el = document.getElementById(id);
-  if (el) {
-    const txt = (el.textContent || el.innerHTML || '').trim();
-    if (txt) errors.push(`Error overlay #${id} has content:\n  ${txt.slice(0, 500)}`);
+// buildScene jest ASYNC (await geometria/waitTwoFrames) — czekamy aż ruszy pętla renderu
+// (rafCount>0), zamiast sprawdzać synchronicznie (to dawało false-negative na wolniejszym
+// boocie stage-2 / instancingu terenu). Napędzamy zaległe rAF + oddajemy sterowanie
+// mikrotaskom/timerom co tick. Zatrzymujemy się gdy render wystartował (nie przetrzymujemy
+// procesu — jsdom rekursywnie przetwarza setTimeout i przy długim biegu przepełnia stos).
+(async () => {
+  const MAX_TICKS = 150;
+  for (let i = 0; i < MAX_TICKS && rafCount === 0 && !bootRejection; i++) {
+    while (rafCallbacks.length > 0) {
+      const cb = rafCallbacks.shift();
+      try { cb(16.67); } catch (err) { console.error('[smoke] Error in rAF frame:', err.message); }
+    }
+    await new Promise((r) => setImmediate(r));
   }
-}
+  // Dobij kilka klatek pętli renderu (jeśli wystartowała).
+  for (let i = 0; i < 3 && rafCallbacks.length > 0; i++) {
+    const cb = rafCallbacks.shift();
+    try { cb(16.67 * (i + 1)); } catch (err) { console.error('[smoke] Error in rAF frame:', err.message); }
+  }
+  console.log('[smoke] rAF calls so far:', rafCount);
 
-// (b) A <canvas> must have been appended to body
-const canvases = document.body ? document.body.querySelectorAll('canvas') : [];
-if (!canvases || canvases.length === 0) {
-  errors.push('No <canvas> element found in document.body after boot');
-}
+  // -------------------------------------------------------------------------
+  // 5. Check success criteria
+  // -------------------------------------------------------------------------
+  const errors = [];
 
-// (c) rAF must have been called at least once
-if (rafCount === 0) {
-  errors.push('requestAnimationFrame was never called — render loop did not start');
-}
+  // (a) Boot error overlays must be absent or empty
+  for (const id of ['__boot_err__', '__err_overlay__']) {
+    const el = document.getElementById(id);
+    if (el) {
+      const txt = (el.textContent || el.innerHTML || '').trim();
+      if (txt) errors.push(`Error overlay #${id} has content:\n  ${txt.slice(0, 500)}`);
+    }
+  }
 
-// (d) Bundle must not have thrown
-if (evalError) {
-  errors.push(`Bundle eval threw: ${evalError.message}`);
-}
+  // (b) A <canvas> must have been appended to body
+  const canvases = document.body ? document.body.querySelectorAll('canvas') : [];
+  if (!canvases || canvases.length === 0) {
+    errors.push('No <canvas> element found in document.body after boot');
+  }
 
-// ---------------------------------------------------------------------------
-// 6. Report
-// ---------------------------------------------------------------------------
-if (errors.length === 0) {
-  console.log('');
-  console.log('SMOKE OK');
-  console.log('  canvas count :', canvases.length);
-  console.log('  rAF calls    :', rafCount);
-  process.exit(0);
-} else {
-  console.error('');
-  console.error('SMOKE FAIL');
-  for (const e of errors) console.error('  x', e);
-  process.exit(1);
-}
+  // (c) rAF must have been called at least once
+  if (rafCount === 0) {
+    errors.push('requestAnimationFrame was never called — render loop did not start');
+  }
+
+  // (d) Bundle must not have thrown (sync eval lub async boot)
+  if (evalError) {
+    errors.push(`Bundle eval threw: ${evalError.message}`);
+  }
+  if (bootRejection) {
+    errors.push(`Async boot rejected: ${(bootRejection && bootRejection.message) || bootRejection}`);
+  }
+
+  // -------------------------------------------------------------------------
+  // 6. Report
+  // -------------------------------------------------------------------------
+  if (errors.length === 0) {
+    console.log('');
+    console.log('SMOKE OK');
+    console.log('  canvas count :', canvases.length);
+    console.log('  rAF calls    :', rafCount);
+    process.exit(0);
+  } else {
+    console.error('');
+    console.error('SMOKE FAIL');
+    for (const e of errors) console.error('  x', e);
+    process.exit(1);
+  }
+})();
