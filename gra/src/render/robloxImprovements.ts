@@ -6,6 +6,7 @@ import * as THREE from 'three';
 import type { ImprovementKey } from './improvements';
 import { buildStyleTarasyTerrace } from './mapRenderStyle';
 import { placeLivestockPair } from './styleResources';
+import { buildLama, buildPastwiskoZwierzeta } from './pastwisko-modele';
 
 function mat(c: number): THREE.MeshLambertMaterial {
   return new THREE.MeshLambertMaterial({ color: c, flatShading: true });
@@ -161,16 +162,6 @@ function rbxFarmOwce(g: THREE.Group): void {
 /** Solo owce / złoże owiec — tylko zwierzęta. */
 function rbxOwce(g: THREE.Group): void {
   rbxLivestockOwce(g, 0.02, 0, false);
-}
-
-function rbxLama(g: THREE.Group): void {
-  const ll = (x: number, z: number) => {
-    addBox(g, 0.12, 0.12, 0.07, x, 0.08, z, 0xc4a574);
-    addCyl(g, 0.028, 0.034, 0.12, x + 0.05, 0.16, z, 0xc4a574, 6);
-    addBox(g, 0.05, 0.04, 0.04, x + 0.09, 0.22, z, 0xb8956a);
-  };
-  ll(0.26, 0.02);
-  ll(0.38, -0.14);
 }
 
 function rbxKopalnia(g: THREE.Group): void {
@@ -377,9 +368,9 @@ const BUILDERS: Record<ImprovementKey, (g: THREE.Group, owner: number) => void> 
   droga: g => rbxDroga(g),
   droga_brukowana: g => rbxDrogaBrukowana(g),
   farma: g => rbxFarma(g),
-  bydlo: g => rbxBydlo(g),
+  bydlo: g => { g.add(buildPastwiskoZwierzeta()); },   // GRAFIKA-3D partia 1: pełne pastwisko, środek wolny pod budynek
   owce: g => rbxOwce(g),
-  lama: g => rbxLama(g),
+  lama: g => { const l = buildLama(); l.position.set(0.63, 0, 0.04); g.add(l); },
   stadnina: g => rbxBydlo(g),
   kopalnia: g => rbxKopalnia(g),
   kamieniolom: g => rbxKamieniolom(g),
@@ -394,7 +385,7 @@ const BUILDERS: Record<ImprovementKey, (g: THREE.Group, owner: number) => void> 
   warzelnia_soli: g => rbxWarzelniaSoli(g),
   fort: (g, o) => rbxFort(g, o),
   posterunek: (g, o) => rbxPosterunek(g, o),
-  pastwisko: g => rbxBydlo(g),
+  pastwisko: g => { g.add(buildPastwiskoZwierzeta()); },
   popalnia_brazu: g => rbxKopalnia(g),
 };
 

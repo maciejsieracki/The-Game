@@ -29,6 +29,7 @@ import type { GameMap } from '../types/map';
 import type { Hex } from '../types/hex';
 import { TerenBazowy } from '../types/hex';
 import { axialToWorld, HEX_R } from './hexutil';
+import { buildHorse } from './kon-nowy-model';
 import { GAME_MAP_RENDER_STYLE, terrainVisualForStyle } from './mapRenderStyle';
 import type { RuntimeUnit } from '../units/setup';
 import type { StackDisplayInfo } from '../game/armyMerge';
@@ -345,18 +346,7 @@ let geoAxeHandle:    THREE.BoxGeometry | null = null;
 let geoAxeBlade:     THREE.BoxGeometry | null = null;
 
 // Horse shared (konnica / rydwan / onager — faces -Z, head toward -Z)
-let geoHorseBodyR:   THREE.BoxGeometry | null = null;  // tułów (długi wzdłuż Z)
-let geoHorseChest:   THREE.BoxGeometry | null = null;  // kłoda / withers
-let geoHorseRump:    THREE.BoxGeometry | null = null;  // zad
-let geoHorseLegR:    THREE.BoxGeometry | null = null;
-let geoHorseHoofR:   THREE.BoxGeometry | null = null;
-let geoHorseNeckR:   THREE.BoxGeometry | null = null;
-let geoHorseHeadR:   THREE.BoxGeometry | null = null;
-let geoHorseSnout:   THREE.BoxGeometry | null = null;
-let geoHorseEarR:    THREE.BoxGeometry | null = null;
-let geoHorseManeR:   THREE.BoxGeometry | null = null;
-let geoHorseTail:    THREE.BoxGeometry | null = null;
-let geoHorseHarn:    THREE.BoxGeometry | null = null;
+// koń (buildHorse) → moduł ./kon-nowy-model (współdzielony: konnica/rydwan/onager tu + złoże koni w styleResources + stadnina P3A)
 
 // Chariot
 let geoCartBody:     THREE.BoxGeometry | null = null;
@@ -449,18 +439,6 @@ function getGeoClubHandle():   THREE.BoxGeometry      { return (geoClubHandle   
 function getGeoClubKnob():     THREE.BoxGeometry      { return (geoClubKnob     ||= new THREE.BoxGeometry(0.055 * HEX_R, 0.055 * HEX_R, 0.055 * HEX_R)); }
 function getGeoAxeHandle():    THREE.BoxGeometry      { return (geoAxeHandle    ||= new THREE.BoxGeometry(0.016 * HEX_R, 0.18  * HEX_R, 0.016 * HEX_R)); }
 function getGeoAxeBlade():     THREE.BoxGeometry      { return (geoAxeBlade     ||= new THREE.BoxGeometry(0.08  * HEX_R, 0.065 * HEX_R, 0.018 * HEX_R)); }
-function getGeoHorseBodyR():   THREE.BoxGeometry { return (geoHorseBodyR ||= new THREE.BoxGeometry(0.15  * HEX_R, 0.105 * HEX_R, 0.26  * HEX_R)); }
-function getGeoHorseChest():   THREE.BoxGeometry { return (geoHorseChest ||= new THREE.BoxGeometry(0.12  * HEX_R, 0.115 * HEX_R, 0.10  * HEX_R)); }
-function getGeoHorseRump():    THREE.BoxGeometry { return (geoHorseRump  ||= new THREE.BoxGeometry(0.13  * HEX_R, 0.095 * HEX_R, 0.11  * HEX_R)); }
-function getGeoHorseLegR():    THREE.BoxGeometry { return (geoHorseLegR  ||= new THREE.BoxGeometry(0.028 * HEX_R, 0.152 * HEX_R, 0.028 * HEX_R)); }
-function getGeoHorseHoofR():   THREE.BoxGeometry { return (geoHorseHoofR ||= new THREE.BoxGeometry(0.034 * HEX_R, 0.020 * HEX_R, 0.036 * HEX_R)); }
-function getGeoHorseNeckR():   THREE.BoxGeometry { return (geoHorseNeckR ||= new THREE.BoxGeometry(0.052 * HEX_R, 0.135 * HEX_R, 0.048 * HEX_R)); }
-function getGeoHorseHeadR():   THREE.BoxGeometry { return (geoHorseHeadR ||= new THREE.BoxGeometry(0.068 * HEX_R, 0.068 * HEX_R, 0.078 * HEX_R)); }
-function getGeoHorseSnout():   THREE.BoxGeometry { return (geoHorseSnout ||= new THREE.BoxGeometry(0.040 * HEX_R, 0.038 * HEX_R, 0.115 * HEX_R)); }
-function getGeoHorseEarR():    THREE.BoxGeometry { return (geoHorseEarR  ||= new THREE.BoxGeometry(0.010 * HEX_R, 0.032 * HEX_R, 0.008 * HEX_R)); }
-function getGeoHorseManeR():   THREE.BoxGeometry { return (geoHorseManeR ||= new THREE.BoxGeometry(0.014 * HEX_R, 0.042 * HEX_R, 0.012 * HEX_R)); }
-function getGeoHorseTail():    THREE.BoxGeometry { return (geoHorseTail  ||= new THREE.BoxGeometry(0.018 * HEX_R, 0.095 * HEX_R, 0.018 * HEX_R)); }
-function getGeoHorseHarn():    THREE.BoxGeometry { return (geoHorseHarn  ||= new THREE.BoxGeometry(0.012 * HEX_R, 0.012 * HEX_R, 0.060 * HEX_R)); }
 function getGeoCartBody():     THREE.BoxGeometry      { return (geoCartBody     ||= new THREE.BoxGeometry(0.25  * HEX_R, 0.08  * HEX_R, 0.14  * HEX_R)); }
 function getGeoCartWheel():    THREE.CylinderGeometry { return (geoCartWheel    ||= new THREE.CylinderGeometry(0.065 * HEX_R, 0.065 * HEX_R, 0.020 * HEX_R, 10, 1)); }
 function getGeoSuperCrestPlume(): THREE.BoxGeometry   { return (geoSuperCrestPlume ||= new THREE.BoxGeometry(0.015 * HEX_R, 0.10  * HEX_R, 0.08  * HEX_R)); }
@@ -685,98 +663,7 @@ function buildBaseAvatar(
 // All geometries used are shared singletons -- no per-token geo allocation.
 // ---------------------------------------------------------------------------
 
-const BH_LEG_H     = 0.152 * HEX_R;
-const BH_BODY_H    = 0.105 * HEX_R;
-const BH_BODY_CTR  = BH_LEG_H + 0.058 * HEX_R;
-const BH_BODY_TOP  = BH_BODY_CTR + BH_BODY_H * 0.48;
-
-function buildHorse(
-  group:  THREE.Group,
-  mat:    MatFactory,
-  mHorse: THREE.MeshStandardMaterial,
-  mMane:  THREE.MeshStandardMaterial,
-  mHarn:  THREE.MeshStandardMaterial | null,
-  cx:     number,
-  cz:     number,
-): number {
-  const legMid = BH_LEG_H * 0.5;
-  const hoofY  = 0.010 * HEX_R;
-
-  const legPos: ReadonlyArray<readonly [number, number]> = [
-    [ 0.050 * HEX_R, -0.078 * HEX_R],
-    [-0.050 * HEX_R, -0.078 * HEX_R],
-    [ 0.050 * HEX_R,  0.088 * HEX_R],
-    [-0.050 * HEX_R,  0.088 * HEX_R],
-  ];
-  for (const [lx, lz] of legPos) {
-    const mLeg = new THREE.Mesh(getGeoHorseLegR(), mHorse);
-    mLeg.position.set(cx + lx, legMid, cz + lz);
-    group.add(mLeg);
-    const mHoof = new THREE.Mesh(getGeoHorseHoofR(), mMane);
-    mHoof.position.set(cx + lx, hoofY, cz + lz);
-    group.add(mHoof);
-  }
-
-  const mBody = new THREE.Mesh(getGeoHorseBodyR(), mHorse);
-  mBody.position.set(cx, BH_BODY_CTR, cz);
-  group.add(mBody);
-
-  const mChest = new THREE.Mesh(getGeoHorseChest(), mHorse);
-  mChest.position.set(cx, BH_BODY_CTR + 0.018 * HEX_R, cz - 0.070 * HEX_R);
-  group.add(mChest);
-
-  const mRump = new THREE.Mesh(getGeoHorseRump(), mHorse);
-  mRump.position.set(cx, BH_BODY_CTR + 0.012 * HEX_R, cz + 0.082 * HEX_R);
-  group.add(mRump);
-
-  const neckY = BH_BODY_CTR + 0.095 * HEX_R;
-  const neckZ = cz - 0.082 * HEX_R;
-  const mNeck = new THREE.Mesh(getGeoHorseNeckR(), mHorse);
-  mNeck.rotation.x = 0.48;
-  mNeck.position.set(cx, neckY, neckZ);
-  group.add(mNeck);
-
-  const headY = BH_BODY_CTR + 0.188 * HEX_R;
-  const headZ = cz - 0.168 * HEX_R;
-  const mHead = new THREE.Mesh(getGeoHorseHeadR(), mHorse);
-  mHead.position.set(cx, headY, headZ);
-  group.add(mHead);
-
-  const mSnout = new THREE.Mesh(getGeoHorseSnout(), mHorse);
-  mSnout.position.set(cx, headY - 0.018 * HEX_R, headZ - 0.092 * HEX_R);
-  group.add(mSnout);
-
-  for (const side of [-1, 1] as const) {
-    const mEar = new THREE.Mesh(getGeoHorseEarR(), mHorse);
-    mEar.position.set(cx + side * 0.028 * HEX_R, headY + 0.038 * HEX_R, headZ + 0.010 * HEX_R);
-    mEar.rotation.z = side * 0.35;
-    group.add(mEar);
-  }
-
-  for (let i = 0; i < 4; i++) {
-    const mManeSeg = new THREE.Mesh(getGeoHorseManeR(), mMane);
-    mManeSeg.rotation.x = 0.42 + i * 0.04;
-    mManeSeg.position.set(
-      cx,
-      BH_BODY_CTR + (0.068 + i * 0.032) * HEX_R,
-      cz - (0.048 + i * 0.028) * HEX_R,
-    );
-    group.add(mManeSeg);
-  }
-
-  const mTail = new THREE.Mesh(getGeoHorseTail(), mMane);
-  mTail.rotation.x = -0.55;
-  mTail.position.set(cx, BH_BODY_CTR + 0.028 * HEX_R, cz + 0.138 * HEX_R);
-  group.add(mTail);
-
-  if (mHarn !== null) {
-    const mH = new THREE.Mesh(getGeoHorseHarn(), mHarn);
-    mH.position.set(cx, BH_BODY_CTR + 0.022 * HEX_R, cz + 0.055 * HEX_R);
-    group.add(mH);
-  }
-
-  return BH_BODY_TOP + 0.012 * HEX_R;
-}
+// buildHorse — patrz moduł ./kon-nowy-model (import na górze pliku).
 
 // ---------------------------------------------------------------------------
 // Shared gear sub-assemblies (rerender realism pass)
@@ -5134,21 +5021,28 @@ function buildCategoryModel(category: string, ownerColor_: number): THREE.Group 
       mBlanket.position.set(0, RIDER_BOT - 0.012 * HEX_R, 0.01 * HEX_R);
       group.add(mBlanket);
 
-      // Couched cavalry lance held in the right hand, angled forward (toward -Z)
+      // Couched cavalry lance — grot i proporczyk NA osi drzewca
+      // (GRAFIKA-3D partia 1: fix — wcześniej latały w powietrzu obok konia)
       const RSPEAR_X = AV_ARM_OFFSET_X * 0.85 + AV_ARM_W * 0.4 + 0.012 * HEX_R;
       const gLance = new THREE.BoxGeometry(0.016 * HEX_R, 0.56 * HEX_R, 0.016 * HEX_R);
+      const lanceTh = Math.PI * 0.5 + 0.34;                       // przód-góra nad łbem konia
+      const lanceAxis = new THREE.Vector3(0, Math.cos(lanceTh), Math.sin(lanceTh));
+      const lanceCtr = new THREE.Vector3(RSPEAR_X, R_ARM_CTR + 0.075 * HEX_R, -0.085 * HEX_R);
       const mLance = new THREE.Mesh(gLance, mWood);
-      mLance.rotation.x = Math.PI * 0.5 - 0.32;   // tilt forward over the horse head
-      mLance.position.set(RSPEAR_X, R_ARM_CTR + 0.02 * HEX_R, -0.14 * HEX_R);
+      mLance.rotation.x = lanceTh;
+      mLance.position.copy(lanceCtr);
       group.add(mLance);
       const mLanceTip = new THREE.Mesh(getGeoSpearTip(), mSteel);
-      mLanceTip.rotation.x = Math.PI * 0.5 - 0.32;
-      mLanceTip.position.set(RSPEAR_X, R_ARM_CTR + 0.20 * HEX_R, -0.40 * HEX_R);
+      mLanceTip.rotation.x = lanceTh;
+      mLanceTip.position.copy(lanceCtr.clone().addScaledVector(lanceAxis, -0.295 * HEX_R));
       group.add(mLanceTip);
-      // Owner-colour pennon just behind the lance head
+      // Owner-colour pennon just behind the lance head (na osi drzewca)
       const gPennon = new THREE.BoxGeometry(0.012 * HEX_R, 0.045 * HEX_R, 0.06 * HEX_R);
       const mPennon = new THREE.Mesh(gPennon, mOwner);
-      mPennon.position.set(RSPEAR_X, R_ARM_CTR + 0.13 * HEX_R, -0.30 * HEX_R);
+      mPennon.rotation.x = lanceTh;
+      mPennon.position.copy(
+        lanceCtr.clone().addScaledVector(lanceAxis, -0.225 * HEX_R).add(new THREE.Vector3(0, -0.028 * HEX_R, 0)),
+      );
       group.add(mPennon);
 
       // Round shield on the rider's left arm (owner blazon + boss)
@@ -7972,18 +7866,7 @@ export class UnitRenderer {
     geoClubKnob?.dispose();     geoClubKnob     = null;
     geoAxeHandle?.dispose();    geoAxeHandle    = null;
     geoAxeBlade?.dispose();     geoAxeBlade     = null;
-    geoHorseBodyR?.dispose();   geoHorseBodyR   = null;
-    geoHorseChest?.dispose();   geoHorseChest   = null;
-    geoHorseRump?.dispose();    geoHorseRump    = null;
-    geoHorseLegR?.dispose();    geoHorseLegR    = null;
-    geoHorseHoofR?.dispose();   geoHorseHoofR   = null;
-    geoHorseNeckR?.dispose();   geoHorseNeckR   = null;
-    geoHorseHeadR?.dispose();   geoHorseHeadR   = null;
-    geoHorseSnout?.dispose();   geoHorseSnout   = null;
-    geoHorseEarR?.dispose();    geoHorseEarR    = null;
-    geoHorseManeR?.dispose();   geoHorseManeR   = null;
-    geoHorseTail?.dispose();    geoHorseTail    = null;
-    geoHorseHarn?.dispose();    geoHorseHarn    = null;
+    // koń: singletony geometrii w module ./kon-nowy-model (współdzielone, żyją przez cały cykl aplikacji)
     geoCartBody?.dispose();     geoCartBody     = null;
     geoCartWheel?.dispose();    geoCartWheel    = null;
     geoSuperCrestPlume?.dispose(); geoSuperCrestPlume = null;

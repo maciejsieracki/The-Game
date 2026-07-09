@@ -5,8 +5,9 @@
 import * as THREE from 'three';
 import { Nakladka } from '../types/hex';
 import type { MapRenderStyle } from './mapRenderStyle';
-import { buildRobloxImprovement } from './robloxImprovements';
 import { buildResourceOverlay } from './resources';
+import { buildZlozeKrowy, buildZlozeOwce } from './pastwisko-modele';
+import { buildZlozeKonie } from './kon-nowy-model';
 
 const S = 2.05 / 3; // małe nakładki surowcowe (~1/3 poprzedniej skali)
 
@@ -391,12 +392,15 @@ export function buildStyledResourceOverlay(nakladka: Nakladka, style: MapRenderS
   if (style === 'civ') return buildResourceOverlay(nakladka);
   let g: THREE.Group | null = null;
   switch (nakladka) {
-    case Nakladka.ZlozeKonia: g = styledHorse(style); break;
+    case Nakladka.ZlozeKonia:
+      // GRAFIKA-3D partia 1 (item 2): 2 konie BEZ jeźdźca w slotach obrzeża, środek wolny
+      g = style === 'roblox' ? buildZlozeKonie() : styledHorse(style);
+      break;
     case Nakladka.ZlozeOwiec:
     case Nakladka.ZlozeBydla:
-      // Złoże bydła/owiec = gotowe ulepszenie hodowli (pastwisko), nie pojedyncza ikona
+      // GRAFIKA-3D partia 1: surowe złoże = zwierzęta danego typu w slotach layoutu (środek wolny pod ulepszenie)
       if (style === 'roblox') {
-        g = buildRobloxImprovement(nakladka === Nakladka.ZlozeBydla ? 'bydlo' : 'owce');
+        g = nakladka === Nakladka.ZlozeBydla ? buildZlozeKrowy() : buildZlozeOwce();
       } else {
         g = nakladka === Nakladka.ZlozeBydla ? styledCow(style) : styledSheep(style);
       }
