@@ -91,7 +91,7 @@ def write_param_sheet(wb, title, items, json_file):
         ws.cell(idx, 1, idx - 1)
         ws.cell(idx, 2, it["key"])
         ws.cell(idx, 3, it.get("opis", ""))
-        ws.cell(idx, 4, it["value"])
+        ws.cell(idx, 4, _cell(it["value"]))
         ws.cell(idx, 5, it.get("zakres", ""))
         ws.cell(idx, 6, it.get("jednostka", ""))
         ws.cell(idx, 7, it.get("wplyw", ""))
@@ -100,6 +100,15 @@ def write_param_sheet(wb, title, items, json_file):
             ws.cell(idx, c).alignment = Alignment(wrap_text=True, vertical="top")
     ws.freeze_panes = "A2"
     return ws
+
+
+def _cell(v):
+    """openpyxl nie zapisze list/dict do komorki — konwertuj na czytelny string."""
+    if isinstance(v, (list, tuple)):
+        return ", ".join(str(x) for x in v)
+    if isinstance(v, dict):
+        return str(v)
+    return v
 
 
 def write_table_sheet(wb, title, columns, rows):
@@ -114,7 +123,7 @@ def write_table_sheet(wb, title, columns, rows):
     for i, row in enumerate(rows, 2):
         for j, col in enumerate(columns, 1):
             val = row.get(col) if isinstance(row, dict) else None
-            ws.cell(i, j, val)
+            ws.cell(i, j, _cell(val))
     ws.freeze_panes = "A2"
     return ws
 

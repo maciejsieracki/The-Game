@@ -585,7 +585,7 @@ export function growthFoodThreshold(
   ownerId: number = 0,
   difficulty: GameDifficulty = 'normal',
 ): number {
-  const base = 10 + population * params.progWzrostuWspolczynnik;
+  const base = 20 + population * params.progWzrostuWspolczynnik; // Maciej 2026-07-09: 2× żywność do wzrostu (baza 10→20, wsp. 8→16)
   return applyPopulationGrowthThreshold(base, ownerId, pace, difficulty);
 }
 

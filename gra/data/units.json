@@ -51,7 +51,7 @@
     "chargeBonus": 2,
     "health": 22,
     "missileAttack": 0,
-    "fieldPower": 21.5
+    "fieldPower": 27.0
   },
   {
     "Jednostka": "Procarz",
@@ -105,7 +105,7 @@
     "chargeBonus": 0,
     "health": 16,
     "missileAttack": 4,
-    "fieldPower": 10.0
+    "fieldPower": 12.0
   },
   {
     "Jednostka": "Oszczepnik",
@@ -159,7 +159,7 @@
     "chargeBonus": 0,
     "health": 16,
     "missileAttack": 4,
-    "fieldPower": 10.0
+    "fieldPower": 12.0
   },
   {
     "Jednostka": "Łucznik",
@@ -213,7 +213,7 @@
     "chargeBonus": 0,
     "health": 16,
     "missileAttack": 3,
-    "fieldPower": 15.0
+    "fieldPower": 17.5
   },
   {
     "Jednostka": "Zwiadowca",
@@ -267,7 +267,7 @@
     "chargeBonus": 0,
     "health": 10,
     "missileAttack": 0,
-    "fieldPower": 3.5
+    "fieldPower": 6.0
   },
   {
     "Jednostka": "Włócznik",
@@ -321,7 +321,7 @@
     "chargeBonus": 4,
     "health": 32,
     "missileAttack": 0,
-    "fieldPower": 36.0
+    "fieldPower": 44.0
   },
   {
     "Jednostka": "Wojownik z mieczem i tarczą",
@@ -375,7 +375,7 @@
     "chargeBonus": 4,
     "health": 28,
     "missileAttack": 0,
-    "fieldPower": 32.0
+    "fieldPower": 39.0
   },
   {
     "Jednostka": "Rydwan (woły)",
@@ -429,7 +429,7 @@
     "chargeBonus": 10,
     "health": 48,
     "missileAttack": 0,
-    "fieldPower": 40.0
+    "fieldPower": 52.0
   },
   {
     "Jednostka": "Konnica",
@@ -483,7 +483,7 @@
     "chargeBonus": 10,
     "health": 28,
     "missileAttack": 0,
-    "fieldPower": 42.0
+    "fieldPower": 49.0
   },
   {
     "Jednostka": "Galera",
@@ -537,7 +537,7 @@
     "chargeBonus": 2,
     "health": 24,
     "missileAttack": 0,
-    "fieldPower": 19.0
+    "fieldPower": 25.0
   },
   {
     "Jednostka": "Falanga",
@@ -591,7 +591,7 @@
     "chargeBonus": 7,
     "health": 40,
     "missileAttack": 0,
-    "fieldPower": 45.0
+    "fieldPower": 52.5
   },
   {
     "Jednostka": "Hieros Lochos (Święty Zastęp)",
@@ -645,7 +645,7 @@
     "chargeBonus": 8,
     "health": 42,
     "missileAttack": 0,
-    "fieldPower": 52.5
+    "fieldPower": 63.0
   },
   {
     "Jednostka": "Hastati",
@@ -699,7 +699,7 @@
     "chargeBonus": 7,
     "health": 38,
     "missileAttack": 4,
-    "fieldPower": 50.0
+    "fieldPower": 57.5
   },
   {
     "Jednostka": "Triari",
@@ -753,7 +753,7 @@
     "chargeBonus": 10,
     "health": 42,
     "missileAttack": 0,
-    "fieldPower": 51.5
+    "fieldPower": 62.0
   },
   {
     "Jednostka": "Jeździec chiński",
@@ -807,7 +807,7 @@
     "chargeBonus": 5,
     "health": 44,
     "missileAttack": 0,
-    "fieldPower": 34.5
+    "fieldPower": 45.5
   },
   {
     "Jednostka": "Kusznik",
@@ -861,7 +861,7 @@
     "chargeBonus": 0,
     "health": 16,
     "missileAttack": 8,
-    "fieldPower": 16.5
+    "fieldPower": 17.0
   },
   {
     "Jednostka": "Hu Ben Wei (Gwardia Tygrysa)",
@@ -915,7 +915,7 @@
     "chargeBonus": 8,
     "health": 40,
     "missileAttack": 0,
-    "fieldPower": 51.0
+    "fieldPower": 61.0
   },
   {
     "Jednostka": "Impi",
@@ -969,7 +969,7 @@
     "chargeBonus": 3,
     "health": 36,
     "missileAttack": 0,
-    "fieldPower": 29.5
+    "fieldPower": 38.5
   },
   {
     "Jednostka": "Oszczepnik Zulu (Izijula)",
@@ -1023,7 +1023,7 @@
     "chargeBonus": 0,
     "health": 20,
     "missileAttack": 4,
-    "fieldPower": 13.5
+    "fieldPower": 16.0
   },
   {
     "Jednostka": "uThulwana (Białe Tarcze)",
@@ -1077,7 +1077,7 @@
     "chargeBonus": 10,
     "health": 42,
     "missileAttack": 0,
-    "fieldPower": 50.5
+    "fieldPower": 61.0
   },
   {
     "Jednostka": "Wojownik z maczugą (Chaska)",
@@ -1131,7 +1131,7 @@
     "chargeBonus": 2,
     "health": 20,
     "missileAttack": 0,
-    "fieldPower": 27.0
+    "fieldPower": 32.0
   },
   {
     "Jednostka": "Wojownik z toporem",
@@ -1185,7 +1185,7 @@
     "chargeBonus": 3,
     "health": 24,
     "missileAttack": 0,
-    "fieldPower": 26.5
+    "fieldPower": 32.5
   },
   {
     "Jednostka": "Procarz (Huaracoc)",
@@ -1239,7 +1239,7 @@
     "chargeBonus": 0,
     "health": 16,
     "missileAttack": 4,
-    "fieldPower": 10.0
+    "fieldPower": 12.0
   },
   {
     "Jednostka": "Oszczepnik (Estólica)",
@@ -1293,7 +1293,7 @@
     "chargeBonus": 0,
     "health": 16,
     "missileAttack": 4,
-    "fieldPower": 10.0
+    "fieldPower": 12.0
   },
   {
     "Jednostka": "Królewska Gwardia",
@@ -1347,7 +1347,7 @@
     "chargeBonus": 8,
     "health": 40,
     "missileAttack": 0,
-    "fieldPower": 52.0
+    "fieldPower": 62.0
   },
   {
     "Jednostka": "Rydwan konny",
@@ -1401,7 +1401,7 @@
     "chargeBonus": 8,
     "health": 56,
     "missileAttack": 0,
-    "fieldPower": 40.0
+    "fieldPower": 54.0
   },
   {
     "Jednostka": "Łucznik egipski",
@@ -1455,7 +1455,7 @@
     "chargeBonus": 0,
     "health": 16,
     "missileAttack": 6,
-    "fieldPower": 13.5
+    "fieldPower": 15.0
   },
   {
     "Jednostka": "Rydwan egipski",
@@ -1509,7 +1509,7 @@
     "chargeBonus": 7,
     "health": 56,
     "missileAttack": 5,
-    "fieldPower": 41.5
+    "fieldPower": 53.0
   },
   {
     "Jednostka": "Wojownik z khopesh",
@@ -1563,7 +1563,7 @@
     "chargeBonus": 3,
     "health": 24,
     "missileAttack": 0,
-    "fieldPower": 27.5
+    "fieldPower": 33.5
   },
   {
     "Jednostka": "Medżaj (Gwardia Faraona)",
@@ -1617,7 +1617,7 @@
     "chargeBonus": 8,
     "health": 42,
     "missileAttack": 3,
-    "fieldPower": 55.5
+    "fieldPower": 64.5
   },
   {
     "Jednostka": "Łucznik sumeryjski",
@@ -1671,7 +1671,7 @@
     "chargeBonus": 0,
     "health": 16,
     "missileAttack": 4,
-    "fieldPower": 10.0
+    "fieldPower": 12.0
   },
   {
     "Jednostka": "Rydwan sumeryjski",
@@ -1725,7 +1725,7 @@
     "chargeBonus": 9,
     "health": 56,
     "missileAttack": 0,
-    "fieldPower": 40.5
+    "fieldPower": 54.5
   },
   {
     "Jednostka": "Włócznik sumeryjski",
@@ -1779,7 +1779,7 @@
     "chargeBonus": 2,
     "health": 40,
     "missileAttack": 0,
-    "fieldPower": 31.0
+    "fieldPower": 41.0
   },
   {
     "Jednostka": "Gwardia Królewska Sumeru",
@@ -1833,7 +1833,7 @@
     "chargeBonus": 8,
     "health": 42,
     "missileAttack": 0,
-    "fieldPower": 52.5
+    "fieldPower": 63.0
   },
   {
     "Jednostka": "Wojownik mykeński",
@@ -1887,7 +1887,7 @@
     "chargeBonus": 3,
     "health": 28,
     "missileAttack": 0,
-    "fieldPower": 27.5
+    "fieldPower": 34.5
   },
   {
     "Jednostka": "Rydwan mykeński",
@@ -1941,7 +1941,7 @@
     "chargeBonus": 9,
     "health": 52,
     "missileAttack": 0,
-    "fieldPower": 39.5
+    "fieldPower": 52.5
   },
   {
     "Jednostka": "Wojownik Sherden",
@@ -1995,7 +1995,7 @@
     "chargeBonus": 3,
     "health": 28,
     "missileAttack": 0,
-    "fieldPower": 28.5
+    "fieldPower": 35.5
   },
   {
     "Jednostka": "Halabardnik Shang",
@@ -2049,7 +2049,7 @@
     "chargeBonus": 2,
     "health": 24,
     "missileAttack": 0,
-    "fieldPower": 30.0
+    "fieldPower": 36.0
   },
   {
     "Jednostka": "Rydwan Shang",
@@ -2103,7 +2103,7 @@
     "chargeBonus": 8,
     "health": 60,
     "missileAttack": 0,
-    "fieldPower": 43.0
+    "fieldPower": 58.0
   },
   {
     "Jednostka": "Łucznik akadyjski",
@@ -2157,7 +2157,7 @@
     "chargeBonus": 0,
     "health": 18,
     "missileAttack": 5,
-    "fieldPower": 13.5
+    "fieldPower": 15.5
   },
   {
     "Jednostka": "Gaesatae",
@@ -2211,7 +2211,7 @@
     "chargeBonus": 5,
     "health": 22,
     "missileAttack": 0,
-    "fieldPower": 24.0
+    "fieldPower": 29.5
   },
   {
     "Epoka": "Żelazo",
@@ -2257,7 +2257,7 @@
     "Nacja": "Celtowie",
     "Nazwa EN": "Soldurii",
     "Jednostka": "Soldurii",
-    "fieldPower": 0.0,
+    "fieldPower": 36.0,
     "health": 44,
     "meleeAttack": 7,
     "weaponDamage": 5,
@@ -2316,7 +2316,7 @@
     "chargeBonus": 10,
     "health": 52,
     "missileAttack": 0,
-    "fieldPower": 40.0
+    "fieldPower": 53.0
   },
   {
     "Jednostka": "Wojownik germański",
@@ -2370,7 +2370,7 @@
     "chargeBonus": 4,
     "health": 30,
     "missileAttack": 4,
-    "fieldPower": 32.0
+    "fieldPower": 37.0
   },
   {
     "Jednostka": "Berserker germański",
@@ -2424,7 +2424,7 @@
     "chargeBonus": 6,
     "health": 24,
     "missileAttack": 0,
-    "fieldPower": 27.0
+    "fieldPower": 33.0
   },
   {
     "Jednostka": "Taran",
@@ -2479,8 +2479,8 @@
     "health": 700,
     "missileAttack": 0,
     "wallAttack": 14,
-    "fieldPower": 177.5,
-    "siegePower": 50.0
+    "fieldPower": 352.5,
+    "siegePower": 85.0
   },
   {
     "Jednostka": "Katapulta",
@@ -2535,8 +2535,8 @@
     "health": 250,
     "missileAttack": 4,
     "wallAttack": 16,
-    "fieldPower": 67.5,
-    "siegePower": 36.5
+    "fieldPower": 128.0,
+    "siegePower": 45.0
   },
   {
     "Jednostka": "Wieża oblężnicza",
@@ -2591,8 +2591,8 @@
     "health": 900,
     "missileAttack": 0,
     "wallAttack": 6,
-    "fieldPower": 226.0,
-    "siegePower": 52.0
+    "fieldPower": 451.0,
+    "siegePower": 97.0
   },
   {
     "Jednostka": "Wojownik tyrreński",
@@ -2646,7 +2646,7 @@
     "chargeBonus": 3,
     "health": 24,
     "missileAttack": 0,
-    "fieldPower": 27.5
+    "fieldPower": 33.5
   },
   {
     "Jednostka": "Wojownik szekelesz",
@@ -2700,7 +2700,7 @@
     "chargeBonus": 2,
     "health": 28,
     "missileAttack": 0,
-    "fieldPower": 25.0
+    "fieldPower": 32.0
   },
   {
     "Epoka": "Żelazo",
@@ -2746,7 +2746,7 @@
     "Nacja": "Asyria",
     "Nazwa EN": "Assyrian Lancer",
     "Jednostka": "Konnica lancowa asyryjska",
-    "fieldPower": 0.0,
+    "fieldPower": 39.0,
     "health": 34,
     "meleeAttack": 9,
     "weaponDamage": 8,
@@ -2797,7 +2797,7 @@
     "Nacja": "Asyria",
     "Nazwa EN": "Assyrian Horse Archer",
     "Jednostka": "Konnica łucznicza asyryjska",
-    "fieldPower": 0.0,
+    "fieldPower": 27.0,
     "health": 30,
     "meleeAttack": 4,
     "weaponDamage": 3,
@@ -2848,7 +2848,7 @@
     "Nacja": "Asyria",
     "Nazwa EN": "Assyrian Archer",
     "Jednostka": "Łucznik asyryjski",
-    "fieldPower": 0.0,
+    "fieldPower": 17.0,
     "health": 16,
     "meleeAttack": 2,
     "weaponDamage": 2,
@@ -2899,7 +2899,7 @@
     "Nacja": "Słowianie",
     "Nazwa EN": "Druzhinnik",
     "Jednostka": "Drużynnik",
-    "fieldPower": 0.0,
+    "fieldPower": 36.0,
     "health": 31,
     "meleeAttack": 7,
     "weaponDamage": 6,
@@ -2950,7 +2950,7 @@
     "Nacja": "Słowianie",
     "Nazwa EN": "Slavic Javelin Cavalry",
     "Jednostka": "Jeździec z oszczepami",
-    "fieldPower": 0.0,
+    "fieldPower": 32.5,
     "health": 28,
     "meleeAttack": 6,
     "weaponDamage": 5,
@@ -3001,7 +3001,7 @@
     "Nacja": "Harappa",
     "Nazwa EN": "Harappan Gate Guard",
     "Jednostka": "Strażnik bram Harappy",
-    "fieldPower": 0.0,
+    "fieldPower": 37.0,
     "health": 40,
     "meleeAttack": 4,
     "weaponDamage": 4,
@@ -3052,7 +3052,7 @@
     "Nacja": "Harappa",
     "Nazwa EN": "Indus Infantry",
     "Jednostka": "Piechota induska",
-    "fieldPower": 0.0,
+    "fieldPower": 28.0,
     "health": 24,
     "meleeAttack": 6,
     "weaponDamage": 5,
@@ -3103,7 +3103,7 @@
     "Nacja": "Harappa",
     "Nazwa EN": "Harappan Garrison",
     "Jednostka": "Garnizon Harappy",
-    "fieldPower": 0.0,
+    "fieldPower": 30.0,
     "health": 26,
     "meleeAttack": 5,
     "weaponDamage": 4,
@@ -3154,7 +3154,7 @@
     "Nacja": "Hetyci",
     "Nazwa EN": "Cappadocian Chariot",
     "Jednostka": "Rydwan Kapadokijski",
-    "fieldPower": 0.0,
+    "fieldPower": 35.0,
     "health": 36,
     "meleeAttack": 7,
     "weaponDamage": 7,
@@ -3205,7 +3205,7 @@
     "Nacja": "Hetyci",
     "Nazwa EN": "Hittite Infantry",
     "Jednostka": "Piechota hetycka",
-    "fieldPower": 0.0,
+    "fieldPower": 37.0,
     "health": 32,
     "meleeAttack": 5,
     "weaponDamage": 8,
@@ -3256,7 +3256,7 @@
     "Nacja": "Hetyci",
     "Nazwa EN": "Hittite Guard",
     "Jednostka": "Gwardia hetycka",
-    "fieldPower": 0.0,
+    "fieldPower": 40.0,
     "health": 40,
     "meleeAttack": 7,
     "weaponDamage": 6,
@@ -3307,7 +3307,7 @@
     "Nacja": "Babilonia",
     "Nazwa EN": "Ishtar Guard",
     "Jednostka": "Gwardia Ishtar",
-    "fieldPower": 0.0,
+    "fieldPower": 39.5,
     "health": 35,
     "meleeAttack": 8,
     "weaponDamage": 7,
@@ -3358,7 +3358,7 @@
     "Nacja": "Babilonia",
     "Nazwa EN": "Babylonian Warrior",
     "Jednostka": "Wojownik babiloński",
-    "fieldPower": 0.0,
+    "fieldPower": 28.0,
     "health": 24,
     "meleeAttack": 6,
     "weaponDamage": 5,
@@ -3409,7 +3409,7 @@
     "Nacja": "Babilonia",
     "Nazwa EN": "Neo-Babylonian Infantry",
     "Jednostka": "Piechota neobabilońska",
-    "fieldPower": 0.0,
+    "fieldPower": 31.0,
     "health": 26,
     "meleeAttack": 6,
     "weaponDamage": 5,
@@ -3460,7 +3460,7 @@
     "Nacja": "Fenicjanie",
     "Nazwa EN": "Tyrian Swordsman",
     "Jednostka": "Tyrski miecznik",
-    "fieldPower": 0.0,
+    "fieldPower": 28.0,
     "health": 24,
     "meleeAttack": 7,
     "weaponDamage": 6,
@@ -3511,7 +3511,7 @@
     "Nacja": "Fenicjanie",
     "Nazwa EN": "Phoenician Warrior",
     "Jednostka": "Wojownik fenicki",
-    "fieldPower": 0.0,
+    "fieldPower": 23.0,
     "health": 20,
     "meleeAttack": 5,
     "weaponDamage": 4,
@@ -3562,7 +3562,7 @@
     "Nacja": "Fenicjanie",
     "Nazwa EN": "Tyre Guard",
     "Jednostka": "Gwardia Tyreńska",
-    "fieldPower": 0.0,
+    "fieldPower": 31.0,
     "health": 24,
     "meleeAttack": 7,
     "weaponDamage": 6,
@@ -3613,7 +3613,7 @@
     "Bonus vs Mount %": 0,
     "Zmiana na": "Swordsman",
     "Dostępna w epokach": "Żelazo",
-    "fieldPower": 0.0,
+    "fieldPower": 41.0,
     "health": 42,
     "meleeAttack": 5,
     "weaponDamage": 4,
@@ -3664,7 +3664,7 @@
     "Bonus vs Mount %": 0,
     "Zmiana na": "Swordsman",
     "Dostępna w epokach": "Brąz",
-    "fieldPower": 0.0,
+    "fieldPower": 47.0,
     "health": 48,
     "meleeAttack": 7,
     "weaponDamage": 6,
@@ -3715,7 +3715,7 @@
     "Bonus vs Mount %": 0,
     "Zmiana na": "—",
     "Dostępna w epokach": "Brąz",
-    "fieldPower": 0.0,
+    "fieldPower": 54.5,
     "health": 55,
     "meleeAttack": 8,
     "weaponDamage": 8,
@@ -3766,7 +3766,7 @@
     "Bonus vs Mount %": 50,
     "Zmiana na": "Spearman",
     "Dostępna w epokach": "Żelazo",
-    "fieldPower": 0.0,
+    "fieldPower": 30.5,
     "health": 29,
     "meleeAttack": 5,
     "weaponDamage": 4,
@@ -3817,7 +3817,7 @@
     "Bonus vs Mount %": 0,
     "Zmiana na": "Offensive",
     "Dostępna w epokach": "Brąz;Żelazo",
-    "fieldPower": 0.0,
+    "fieldPower": 44.5,
     "health": 48,
     "meleeAttack": 7,
     "weaponDamage": 6,
@@ -3868,7 +3868,7 @@
     "Bonus vs Mount %": 0,
     "Zmiana na": "Swordsman",
     "Dostępna w epokach": "Żelazo",
-    "fieldPower": 0.0,
+    "fieldPower": 29.5,
     "health": 23,
     "meleeAttack": 6,
     "weaponDamage": 6,
@@ -3919,7 +3919,7 @@
     "Bonus vs Mount %": 50,
     "Zmiana na": "Spearman",
     "Dostępna w epokach": "Żelazo",
-    "fieldPower": 0.0,
+    "fieldPower": 34.0,
     "health": 34,
     "meleeAttack": 4,
     "weaponDamage": 3,
@@ -3970,7 +3970,7 @@
     "Bonus vs Mount %": 0,
     "Zmiana na": "Swordsman",
     "Dostępna w epokach": "Żelazo",
-    "fieldPower": 0.0,
+    "fieldPower": 35.0,
     "health": 38,
     "meleeAttack": 8,
     "weaponDamage": 6,

@@ -1,11 +1,11 @@
 {
   "ekonomia_miasta": {
     "próg_wzrostu_wspolczynnik": {
-      "easy": 6,
-      "normal": 8,
-      "hard": 10,
+      "easy": 12,
+      "normal": 16,
+      "hard": 20,
       "jednostka": "per 1 ludności",
-      "opis": "Próg wzrostu populacji: Próg(N) = 10 + N × wartość. Większy = wolniejszy wzrost. [PT]"
+      "opis": "Próg wzrostu populacji: Próg(N) = 20 + N × wartość. Większy = wolniejszy wzrost. Maciej 2026-07-09: 2× żywność do wzrostu (baza 10→20 w kodzie + wsp. podwojone easy/normal/hard). [PT]"
     },
     "spichlerz_zachowanie_po_wzroscie": {
       "easy": 0.6,
