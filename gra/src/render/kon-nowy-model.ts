@@ -325,15 +325,15 @@ export function buildZlozeKonie(hexR: number = HEX_R): THREE.Group {
   const std = (c: number): THREE.MeshStandardMaterial =>
     new THREE.MeshStandardMaterial({ color: c, flatShading: true, roughness: 0.85, metalness: 0.05 });
   const matF: MatFactory = (c) => std(c);
-  // Maciej 2026-07-09: JEDEN koń (było 2) i mocno mniejszy (skala 0.5) — dwa konie w pełnej skali
-  // zajmowały prawie cały heks. Koń na obrzeżu (sektor E), środek wolny pod miasto.
+  // Maciej 2026-07-09: JEDEN koń, mały, MOCNO przy krawędzi heksa (środek wolny pod miasto).
+  // Skala 0.18 (0.125 był trochę za mały); pozycja na obrzeżu ~0.82 R (sektor E).
   const konie = [
-    { x: 0.42, z: -0.08, rotY: 2.30, body: 0x6b4a2f, mane: 0x2a1c12 },  // gniady
+    { x: 0.80, z: -0.14, rotY: 2.30, body: 0x6b4a2f, mane: 0x2a1c12 },  // gniady, przy krawędzi
   ] as const;
   for (const k of konie) {
     const sub = new THREE.Group();
     buildHorse(sub, matF, std(k.body), std(k.mane), null, 0, 0);
-    sub.scale.setScalar(0.125); // Maciej 2026-07-09: koń jeszcze 4× mniejszy (0.5→0.125)
+    sub.scale.setScalar(0.18);
     sub.position.set(k.x * hexR, 0, k.z * hexR);
     sub.rotation.y = k.rotY;
     g.add(sub);
