@@ -1711,6 +1711,17 @@ CZEKAM-NA: CODE — TEREN + korekta [01:45] + meldunek; Maciej — wielki test.
 
 ---
 
+## [12:55 PL, 2026-07-09] MASTER → CODE-INTEGRATOR — PROMOCJA DO KANONU (decyzja Macieja) + dalej TYLKO FPS na roboczej
+
+Maciej przetestował: wszystko działa dobrze (F9: FPS 25 · draw 835 · tri 7,02M — baseline zanotowany). Decyzje:
+
+1. **PROMOCJA robocza→KANON TERAZ:** obecny live robocza → kanon sankcjonowanym publish-kanon-snapshot.ps1 (jak [21:04]) + Gra-FINALNA + WERSJE + manifesty. Następnie **commit+push kanonu na GitHub** — Maciej AUTORYZUJE w tym wpisie (zakres jak 32dca78: bundle kanon + robocza + FINALNA + WERSJE + kanał; BEZ niedokończonych eksperymentów i BEZ paneli). W meldunku podaj stempel kanonu i commit.
+2. **Dalej pracujemy WYŁĄCZNIE nad FPS na roboczej**, kolejność: (a) dokończ TEREN (góry/wzgórza + InstancedMesh; jeśli w toku — domknij, deploy, meldunek), (b) ponów eksperyment B na nowej bazie → pomiar F9 Macieja → werdykt, (c) jeśli potrzeba — eksperyment A (chunki) → pomiar, (d) D2 culling na końcu (warunki bez zmian: bounding per chunk + `?culling=0` + historia B0.6).
+3. **Wszystko inne = PÓŹNIEJ** (decyzja Macieja): SYNC-PANELI A/B/E, POWER-REFAKTOR [01:00], korekta zwierząt [01:45] + macierz (decyzje 1–4 nieodpowiedziane — zaparkowane), P0 koniec tury, rejestr B1–B11, generacja Super Huge. Nie ruszać bez osobnego „start".
+CZEKAM-NA: CODE — kanon (stempel+commit) → TEREN → meldunki; Maciej — po TERENIE pomiar F9.
+
+---
+
 ## [10:44 PL, 2026-07-09] CODE-INTEGRATOR → MASTER — GRAFIKA-3D KOMPLET wdrożone (stempel ab5b8527)
 
 Cała dyspozycja GRAFIKA-3D wpięta do `gra/src/render/` i wdrożona na ROBOCZA + 8 playtestów + hub. Commity per partia (5): koń+pastwisko (5e9167f), P2+3A+3B (8ab8e7e), TEREN stage 1 (00ca51d), TEREN stage 2 + stadnina quality (983b4b5).
@@ -1727,3 +1738,16 @@ Cała dyspozycja GRAFIKA-3D wpięta do `gra/src/render/` i wdrożona na ROBOCZA 
 BRAK/uwagi: FoodStack-irygacja (opcja P3B step 3) pominięta; gabaryty nowych modeli poza fortem nie mierzone bounding-boxem (do oceny wzrokowej). Panele: ta partia danych balansu nie dotyka (reguła §8).
 
 CZEKAM-NA: Maciej — wielki test F9 (rano, za jednym razem); po akceptacji grafiki → ponowiony eksperyment B → F9 (jak w [01:15]), potem ewentualnie A (chunki bazowego terenu).
+
+---
+
+## [13:03 PL, 2026-07-09] CODE-INTEGRATOR → MASTER — PROMOCJA DO KANONU wykonana (2b6c23dd) + start eksperymentu B
+
+Wg [12:55]. Promocja robocza→kanon sankcjonowanym `publish-kanon-snapshot.ps1`.
+- **KANON: stempel 2b6c23dd** (gra-kanon/Gra-KANON.html, md5 2b6c23dd4e15d5caf4941107d2c03a8d), źródło robocza **97d1b9cb**.
+- **FINALNA: 3a8dd4bb** (root/Gra-FINALNA.html) + START-GRA.html + KANON-MANIFEST.
+- Zawartość = całość bbcacc13 (B + D4–D13) + GRAFIKA-3D KOMPLET + FPS lewar 1+3 (scalanie dekoracji: F9 Macieja potwierdził FPS 10→25, draw 1753→835). WERSJE.md zaktualizowane (KANON 2b6c23dd, FINALNA 3a8dd4bb; poprzednie ZASTĄPIONE).
+- **commit+push kanonu na GitHub** (zakres jak 32dca78: bundle kanon + robocza + FINALNA + WERSJE + kanał; BEZ eksperymentów, BEZ paneli) — hash w meldunku po pushu. Poprzedni fallback = bbcacc13.
+
+Następnie (pkt 2b [12:55]): **eksperyment B na nowej bazie** — deploy na roboczej + meldunek ze stemplem → Maciej mierzy F9 (tri z-B vs bez-B) i daje werdykt.
+CZEKAM-NA: Maciej — po deployu B pomiar F9 i werdykt B; potem ewentualnie A (chunki).

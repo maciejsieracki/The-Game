@@ -119,7 +119,8 @@ Format: data · md5 (pełne) · stempel z menu · co weszło (1 linia) · status
   rozstawione na MAPIE ŚWIATA) — ZŁY POZIOM, Maciej chciał areny · ZASTĄPIONA (→ 486a65094ddb)
 
 ## KANON (gra-kanon\)
-- 2026-07-09 · **bbcacc138dde46ec0b0f136e3097c283** · stempel KANON: **bbcacc13** · źródło robocza md5 **00a372f495e8** · promocja PO pracy nad wydajnością (Maciej: „kanon plus git działaj start"). Zawartość = B (geometria heksa) + D4–D13 (zakładanie 30 s→1,67 s, wejście 60 s→1,4 s), diagnostyka zdjęta; **poprawność ekonomii zachowana** (lokalne enumeracje == pełne skany, D13 równoważność 19/19). Bazuje na 51c2eb24 (D1/D3 + drzewko + balans). publikował CODE-INTEGRATOR (publish-kanon-snapshot.ps1) · **AKTUALNA**
+- 2026-07-09 · **2b6c23dd4e15d5caf4941107d2c03a8d** · stempel KANON: **2b6c23dd** · źródło robocza md5 **97d1b9cb2edf** · promocja PO GRAFICE-3D + FPS (decyzja Macieja [12:55]; F9 przetestowany: FPS 25 · draw 835 · tri 7,02M). Zawartość = całość bbcacc13 (B + D4–D13) + **GRAFIKA-3D KOMPLET** (koń/pastwisko/budynki/osady/złoża/forty/drogi/góry+wzgórza z instancingiem + stadnina quality) + **FPS lewar 1+3** (scalanie dekoracji per-heks → 1 mesh; mesh 1,3 mln→spadek, draw 1753→835). Bez niedokończonych eksperymentów (B na roboczej dalej), bez paneli. publikował CODE-INTEGRATOR (publish-kanon-snapshot.ps1) · **AKTUALNA**
+- 2026-07-09 · **bbcacc138dde46ec0b0f136e3097c283** · stempel KANON: **bbcacc13** · źródło robocza md5 **00a372f495e8** · promocja PO pracy nad wydajnością (Maciej: „kanon plus git działaj start"). Zawartość = B (geometria heksa) + D4–D13 (zakładanie 30 s→1,67 s, wejście 60 s→1,4 s), diagnostyka zdjęta; **poprawność ekonomii zachowana** (lokalne enumeracje == pełne skany, D13 równoważność 19/19). Bazuje na 51c2eb24 (D1/D3 + drzewko + balans). publikował CODE-INTEGRATOR (publish-kanon-snapshot.ps1) · **ZASTĄPIONA** (→ 2b6c23dd, 2026-07-09)
 - 2026-07-08 21:02 · **f2dcbbb8d9e7707d779d310ecff9a643** · stempel KANON: **8adcd682** · źródło robocza md5 **51c2eb248aed** · promocja z roboczej PRZED pracą nad wydajnością (Maciej: „wypchnij obecną wersję do kanonu"). Zawartość = live D1/D3 (miasto szybko + mgła) + fix drzewka NA GÓRZE + balans/countery/plony/rzeki/ikony; źródło `865c94e` na origin. **Bez** eksperymentu B (geometria heksa). publikował CODE-INTEGRATOR (publish-kanon-snapshot.ps1) · **ZASTĄPIONA** (→ bbcacc13, 2026-07-09)
 - 2026-07-06 20:17 · **7856d3451a0cb3963bd3c50c032f5ad5** · stempel wewn.: **d744cd7956fb**
   (2026-07-06 18:10) · promocja Cursor Grupa G z roboczej (Maciej: playtest OK + GitHub
@@ -131,7 +132,8 @@ Format: data · md5 (pełne) · stempel z menu · co weszło (1 linia) · status
   **ZASTĄPIONA** (→ 7856d345)
 
 ## FINALNA (root)
-- 2026-07-09 · **676809f2bdf06d7c5a55bfb45ad1469e** · stempel FINALNA · zsynchronizowana z kanonem bbcacc13 (źródło robocza 00a372f4; Gra-FINALNA.html) · **AKTUALNA**
+- 2026-07-09 · **3a8dd4bb5c5e8691f37d5fd3d92a9ffa** · stempel FINALNA · zsynchronizowana z kanonem 2b6c23dd (źródło robocza 97d1b9cb; GRAFIKA-3D + FPS 1+3; Gra-FINALNA.html) · **AKTUALNA**
+- 2026-07-09 · **676809f2bdf06d7c5a55bfb45ad1469e** · stempel FINALNA · zsynchronizowana z kanonem bbcacc13 (źródło robocza 00a372f4; Gra-FINALNA.html) · **ZASTĄPIONA** (→ 3a8dd4bb, 2026-07-09)
 - 2026-07-08 21:02 · **605761807eb0b79f43c047c4e70916f7** · stempel FINALNA · zsynchronizowana z kanonem 51c2eb24 (Gra-FINALNA.html) · **ZASTĄPIONA** (→ 676809f2, 2026-07-09)
 - 2026-07-06 20:17 · **7856d3451a0cb3963bd3c50c032f5ad5** · zsynchronizowana z kanonem
   (Gra-FINALNA.html) · **ZASTĄPIONA** (→ 60576180)
