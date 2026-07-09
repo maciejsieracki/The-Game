@@ -7,6 +7,18 @@ import type { ImprovementKey } from './improvements';
 import { buildStyleTarasyTerrace } from './mapRenderStyle';
 import { placeLivestockPair } from './styleResources';
 import { buildLama, buildPastwiskoZwierzeta } from './pastwisko-modele';
+import {
+  buildFarma, buildKopalnia, buildKamieniolom, buildTartak, buildZagrodaDodatki,
+  ULEPSZENIA_P2_LAYOUT,
+} from './ulepszenia-modele-p2';
+import {
+  buildWyrab, buildObozLowiecki, buildGlinianka, buildWarzelniaSoli,
+  buildLodzieRybackie, buildStadnina, ULEPSZENIA_P3A_LAYOUT,
+} from './ulepszenia-modele-p3a';
+import {
+  buildIrygacja, buildPoleIrygowane, buildFort, buildPosterunek,
+  buildDrogaNawierzchnia, buildDrogaBrukowanaNawierzchnia, ULEPSZENIA_P3B_LAYOUT,
+} from './ulepszenia-modele-p3b';
 
 function mat(c: number): THREE.MeshLambertMaterial {
   return new THREE.MeshLambertMaterial({ color: c, flatShading: true });
@@ -365,28 +377,32 @@ function rbxPosterunek(g: THREE.Group, ownerCol: number): void {
 }
 
 const BUILDERS: Record<ImprovementKey, (g: THREE.Group, owner: number) => void> = {
-  droga: g => rbxDroga(g),
-  droga_brukowana: g => rbxDrogaBrukowana(g),
-  farma: g => rbxFarma(g),
+  droga: g => { g.add(buildDrogaNawierzchnia()); },   // GRAFIKA-3D partia 3B
+  droga_brukowana: g => { g.add(buildDrogaBrukowanaNawierzchnia()); },
+  farma: g => { g.add(buildFarma({ wariant: 'solo' })); },   // GRAFIKA-3D partia 2
   bydlo: g => { g.add(buildPastwiskoZwierzeta()); },   // GRAFIKA-3D partia 1: pełne pastwisko, środek wolny pod budynek
   owce: g => rbxOwce(g),
   lama: g => { const l = buildLama(); l.position.set(0.63, 0, 0.04); g.add(l); },
-  stadnina: g => rbxBydlo(g),
-  kopalnia: g => rbxKopalnia(g),
-  kamieniolom: g => rbxKamieniolom(g),
-  oboz_lowiecki: g => rbxObozLowiecki(g),
-  wyrab: g => rbxWyrab(g),
-  tartak: g => rbxTartak(g),
-  irygacja: g => rbxIrygacja(g),
-  pole_irygowane: g => rbxPoleIrygowane(g),
-  glinianka: g => rbxGlinianka(g),
+  stadnina: g => { g.add(buildStadnina()); },   // GRAFIKA-3D partia 3A (dotąd: rbxBydlo = krowy!)
+  kopalnia: g => { const m = buildKopalnia(); m.rotation.y = ULEPSZENIA_P2_LAYOUT.kopalnia.budynek.rotY; g.add(m); },
+  kamieniolom: g => { const m = buildKamieniolom(); m.rotation.y = ULEPSZENIA_P2_LAYOUT.kamieniolom.budynek.rotY; g.add(m); },
+  oboz_lowiecki: g => { const m = buildObozLowiecki(); m.rotation.y = ULEPSZENIA_P3A_LAYOUT.obozLowiecki.budynek.rotY; g.add(m); },
+  wyrab: g => { const m = buildWyrab(); m.rotation.y = ULEPSZENIA_P3A_LAYOUT.wyrab.budynek.rotY; g.add(m); },
+  tartak: g => { const m = buildTartak(); m.rotation.y = ULEPSZENIA_P2_LAYOUT.tartak.budynek.rotY; g.add(m); },
+  irygacja: g => { const m = buildIrygacja(); m.rotation.y = ULEPSZENIA_P3B_LAYOUT.irygacja.budynek.rotY; g.add(m); },
+  pole_irygowane: g => { const m = buildPoleIrygowane(); m.rotation.y = ULEPSZENIA_P3B_LAYOUT.pole_irygowane.budynek.rotY; g.add(m); },
+  glinianka: g => { const m = buildGlinianka(); m.rotation.y = ULEPSZENIA_P3A_LAYOUT.glinianka.budynek.rotY; g.add(m); },
   tarasy: g => rbxTarasy(g),
-  lodzie_rybackie: g => rbxLodzie(g),
-  warzelnia_soli: g => rbxWarzelniaSoli(g),
-  fort: (g, o) => rbxFort(g, o),
-  posterunek: (g, o) => rbxPosterunek(g, o),
-  pastwisko: g => { g.add(buildPastwiskoZwierzeta()); },
-  popalnia_brazu: g => rbxKopalnia(g),
+  lodzie_rybackie: g => { const m = buildLodzieRybackie(); m.rotation.y = ULEPSZENIA_P3A_LAYOUT.lodzieRybackie.budynek.rotY; g.add(m); },
+  warzelnia_soli: g => { const m = buildWarzelniaSoli(); m.rotation.y = ULEPSZENIA_P3A_LAYOUT.warzelniaSoli.budynek.rotY; g.add(m); },
+  fort: (g, o) => { const m = buildFort(o); m.rotation.y = ULEPSZENIA_P3B_LAYOUT.fort.budynek.rotY; m.scale.setScalar(1 / 3); g.add(m); },   // WYMÓG SKALI: fort ~1/3 (gabaryt jak stary rbxFort)
+  posterunek: (g, o) => { const m = buildPosterunek(o); m.rotation.y = ULEPSZENIA_P3B_LAYOUT.posterunek.budynek.rotY; g.add(m); },
+  pastwisko: g => {
+    const f = buildFarma({ wariant: 'pastwisko' });
+    f.rotation.y = ULEPSZENIA_P2_LAYOUT.farma.pastwisko.budynek.rotY;
+    g.add(f, buildPastwiskoZwierzeta(), buildZagrodaDodatki());
+  },
+  popalnia_brazu: g => { const m = buildKopalnia(); m.rotation.y = ULEPSZENIA_P2_LAYOUT.kopalnia.budynek.rotY; g.add(m); },
 };
 
 export function buildRobloxImprovement(key: ImprovementKey, ownerCol = 0xffd54a): THREE.Group {

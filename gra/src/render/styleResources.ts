@@ -8,6 +8,9 @@ import type { MapRenderStyle } from './mapRenderStyle';
 import { buildResourceOverlay } from './resources';
 import { buildZlozeKrowy, buildZlozeOwce } from './pastwisko-modele';
 import { buildZlozeKonie } from './kon-nowy-model';
+import {
+  buildZlozeMiedz, buildZlozeZelazo, buildZlozeWegiel, buildZlozeSol, buildZlozeGlina,
+} from './ulepszenia-modele-p3b';
 
 const S = 2.05 / 3; // małe nakładki surowcowe (~1/3 poprzedniej skali)
 
@@ -406,16 +409,16 @@ export function buildStyledResourceOverlay(nakladka: Nakladka, style: MapRenderS
       }
       break;
     case Nakladka.ZlozeLamy: g = styledLlama(style); break;
-    case Nakladka.ZlozeGliny: g = styledClay(style); break;
+    case Nakladka.ZlozeGliny: g = style === 'roblox' ? buildZlozeGlina() : styledClay(style); break;
     case Nakladka.ZlozeRudy: g = styledOre(style); break;
     default: break;
   }
   if (!g && zloze) {
     switch (zloze) {
-      case 'miedz': g = styledCopperOre(style); break;
-      case 'zelazo': g = styledIronOre(style); break;
-      case 'wegiel': g = styledCoal(style); break;
-      case 'sol': g = styledSalt(style); break;
+      case 'miedz': g = style === 'roblox' ? buildZlozeMiedz() : styledCopperOre(style); break;
+      case 'zelazo': g = style === 'roblox' ? buildZlozeZelazo() : styledIronOre(style); break;
+      case 'wegiel': g = style === 'roblox' ? buildZlozeWegiel() : styledCoal(style); break;
+      case 'sol': g = style === 'roblox' ? buildZlozeSol() : styledSalt(style); break;
     }
   }
   return g;
