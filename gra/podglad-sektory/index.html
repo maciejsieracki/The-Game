@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Podgląd: sektory heksa + współistnienie</title>
+  <style>
+    html, body { margin: 0; height: 100%; background: #1e2c36; font-family: system-ui, sans-serif; overflow: hidden; }
+    #info { position: fixed; top: 10px; left: 10px; color: #e8eef2; font-size: 13px;
+      background: rgba(0,0,0,.45); padding: 10px 12px; border-radius: 8px; max-width: 360px; line-height: 1.45; }
+    #info b { color: #ffd54a; }
+    kbd { background: #33444f; padding: 1px 6px; border-radius: 4px; font-size: 12px; }
+    #cnt { color: #9fd4a0; }
+  </style>
+</head>
+<body>
+  <div id="info">
+    <b>Podgląd układu sektorowego</b><br />
+    Każde ulepszenie w swoim boku, mocno mniejsze, dosunięte do ścianki; środek wolny pod miasto.
+    Sektory: <b>1</b> surowce · <b>2</b> pole · <b>3</b> hodowla · <b>4</b> militaria · droga = obwódka.<br />
+    Mysz: obrót · scroll: zoom · <kbd>R</kbd> reset kamery<br />
+    <span id="cnt"></span>
+  </div>
+  <script type="module" src="./main.ts"></script>
+</body>
+</html>

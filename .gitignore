@@ -7,6 +7,10 @@ gra/dist/
 gra/dist-*/
 dist/
 
+# Podglądy sektorów/ulepszeń w root — buildy (9MB+), nie commitować (źródło: gra/podglad-sektory)
+/Gra-DEMO-ULEPSZENIA.html
+/Gra-podglad-SEKTORY.html
+
 # Local / temp
 gra/tmp/
 tmp/

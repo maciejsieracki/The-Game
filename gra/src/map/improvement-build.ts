@@ -137,6 +137,31 @@ export const FOOD_LAYER_KEYS = new Set<string>([
 
 const SOLO_FOOD_KEYS = new Set<string>(['tarasy', 'owce', 'lama']);
 
+// WOLNE WSPÓŁISTNIENIE + „jeden per bok" (Maciej 2026-07-09, §5 SCHEMAT-SEKTORY-WSPOLISTNIENIE.md).
+// Każde ulepszenie należy do sektora (boku). Ulepszenia RÓŻNYCH sektorów współistnieją swobodnie;
+// w obrębie jednego sektora — maks. jedno. Teren/tech/cyw egzekwuje switch w qualifies(). Balans =
+// próg wzrostu miasta, nie limit ulepszeń. Droga = pas przez środek (poza sektorami). Irygacja =
+// nakładka (współistnieje z food). Uwaga: teren i tak wyklucza większość par (płaski≠wzgórza).
+const SEKTOR_OF: Record<string, string> = {
+  // bok 1 — surowce + ich ulepszenia
+  kopalnia: 'surowiec', kamieniolom: 'surowiec', glinianka: 'surowiec',
+  warzelnia_soli: 'surowiec', stadnina: 'surowiec', popalnia_brazu: 'surowiec',
+  // las (bok 1 — surowiec leśny)
+  wyrab: 'las', tartak: 'las', oboz_lowiecki: 'las',
+  // bok 2 — pole (food-teren)
+  farma: 'foodteren', tarasy: 'foodteren',
+  // bok 3 — hodowla
+  bydlo: 'hodowla', owce: 'hodowla', lama: 'hodowla', pastwisko: 'hodowla',
+  // bok 4 — militaria
+  fort: 'militaria', posterunek: 'militaria',
+  // nakładki / poza sektorem — współistnieją bez limitu
+  irygacja: 'overlay', pole_irygowane: 'overlay',
+  droga: 'droga', droga_brukowana: 'droga',
+  lodzie_rybackie: 'woda',
+};
+/** Sektory z limitem „jeden na heks". Overlay/droga/woda — bez limitu (współistnieją). */
+const EXCLUSIVE_SEKTORY = new Set<string>(['surowiec', 'las', 'foodteren', 'hodowla', 'militaria']);
+
 type TerenSet = Set<TerenBazowy>;
 
 const TERRAIN_ALLOW: Partial<Record<ImprovementKey, TerenSet | null>> = {
@@ -169,14 +194,10 @@ export function isTarasyCiv(civ: string | undefined | null): boolean {
 }
 
 /** Farma / irygacja — zakaz na złożu surowcowym; wyjątek: bydło/owce = już ulepszenie. */
-export function hasBlockingDepositForFarm(hex: HexWithZloze): boolean {
-  if (hex.zloze) return true;
-  if (hex.nakladka === Nakladka.Brak || hex.nakladka === Nakladka.Las) return false;
-  // Koń = surowiec-dostęp (decyzja 2a): złoże konia NIE blokuje farmy/irygacji (współistnieją),
-  // podobnie jak złoża bydła/owiec (= już „food").
-  if (hex.nakladka === Nakladka.ZlozeBydla || hex.nakladka === Nakladka.ZlozeOwiec
-    || hex.nakladka === Nakladka.ZlozeKonia) return false;
-  return true;
+export function hasBlockingDepositForFarm(_hex: HexWithZloze): boolean {
+  // WOLNE WSPÓŁISTNIENIE (Maciej 2026-07-09): złoża (ruda/koń/sól/glina) NIE blokują farmy/irygacji/tarasów —
+  // współistnieją (surowiec = bok 1, pole = bok 2). Teren i tak wyklucza niepasujące (ruda=wzgórza itd.).
+  return false;
 }
 
 /** Heks ze złożem rudy — Popalnia brązu (ABC-14). */
@@ -397,12 +418,9 @@ function createQualifier(state: ImprovementBuildState) {
     const zloze = hexZloze(hex);
     const existing = getHexLayers(hexKey, hex, placedMap);
 
-    // Koń = surowiec-dostęp (decyzja 2a): złoże konia NIE rezerwuje heksa — inne ulepszenia
-    // (farma/irygacja/stadnina…) mogą tu stanąć i współistnieć z dostępem do koni.
-    if (hexHasDepositReserve(hex) && !depositAllowsPlayerImprovement(key, hex)
-      && hex.nakladka !== Nakladka.ZlozeKonia) {
-      return false;
-    }
+    // WOLNE WSPÓŁISTNIENIE (Maciej 2026-07-09): złoża NIE rezerwują heksa — inne ulepszenia
+    // (farma/hodowla/fort…) współistnieją z ulepszeniem surowca. Limit egzekwuje sektor + switch niżej.
+    // (dawna bramka rezerwy złóż usunięta; hexHasDepositReserve/depositAllowsPlayerImprovement zostają eksportowane.)
 
     if (key === 'droga_brukowana') {
       if (!TERENY_LADU.has(teren)) return false;
@@ -414,19 +432,13 @@ function createQualifier(state: ImprovementBuildState) {
 
     if (state.pendingUndoKeys?.has(`${hexKey}:${key}`)) return true;
 
+    // WOLNE WSPÓŁISTNIENIE + „jeden per bok" (Maciej 2026-07-09, §5): ulepszenia różnych sektorów
+    // współistnieją; w obrębie jednego sektora maks. jedno; brak duplikatu klucza. Droga = środek (osobno).
     if (key !== 'droga') {
-      // Koń/stadnina = surowiec-dostęp POZA systemem food (decyzja 2a): współistnieje ze wszystkim
-      // (farma/krowy/owce/lama/irygacja), więc nie liczy się jako warstwa blokująca dla food;
-      // blokuje tylko druga stadnina na tym samym heksie.
-      const blockingNonFood = existing.filter(k => !FOOD_LAYER_KEYS.has(k) && k !== 'stadnina');
-      if (key === 'stadnina') {
-        if (existing.includes('stadnina')) return false;
-      } else if (isFoodKey(key)) {
-        if (blockingNonFood.length > 0) return false;
-        if (!canAddFoodLayer(existing, key)) return false;
-      } else if (existing.length > 0 || placedKeys.has(hexKey)) {
-        return false;
-      }
+      if (existing.includes(key)) return false;                     // brak duplikatu tego samego ulepszenia
+      const sekt = SEKTOR_OF[key];
+      if (sekt && EXCLUSIVE_SEKTORY.has(sekt)
+        && existing.some(k => SEKTOR_OF[k] === sekt)) return false; // jeden per bok
     } else if (placedKeys.has(hexKey)) {
       return false;
     }

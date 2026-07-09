@@ -4429,6 +4429,57 @@ async function boot(): Promise<void> {
       syncLivestockAndPlacedMeshes();
     }
 
+    // === TRYB POKAZOWY ULEPSZEŃ (Maciej 2026-07-09) ==========================
+    // ?demo=ulepszenia lub plik *DEMO-ULEPSZENIA*: zasiewa ulepszenia na KAŻDYM heksie
+    // prawdziwej mapy (realna skala) wg terenu/surowca — do oceny układu sektorowego.
+    // BEZ drogi (na razie). Osobny plik podglądu; zwykłej gry nie dotyczy.
+    function demoKeysForHex(hex: { terenBazowy: TerenBazowy; nakladka: Nakladka }): ImprovementKey[] {
+      const t = hex.terenBazowy;
+      const n = hex.nakladka;
+      if (t === TerenBazowy.Morze) return [];
+      if (t === TerenBazowy.Wybrzeze) return ['lodzie_rybackie'];
+      if (n === Nakladka.Las) return ['tartak', 'oboz_lowiecki', 'droga'];
+      const out: ImprovementKey[] = [];
+      if (n === Nakladka.ZlozeKonia) out.push('stadnina');
+      else if (n === Nakladka.ZlozeGliny) out.push('glinianka');
+      else if (n === Nakladka.ZlozeRudy) out.push('kopalnia');
+      else if (n === Nakladka.ZlozeLamy) out.push('lama');
+      switch (t) {
+        case TerenBazowy.Laka:
+        case TerenBazowy.Rownina:
+          out.push('farma', 'bydlo'); break;
+        case TerenBazowy.Wzgorza:
+          out.push('tarasy', 'owce'); break;
+        case TerenBazowy.Gory:
+          if (!out.includes('kopalnia')) out.push('kamieniolom'); break;
+        case TerenBazowy.Pustynia:
+          out.push('farma'); break;
+        default: break;
+      }
+      out.push('droga'); // Maciej: droga jako model na boku 5 (demonstracja)
+      return out;
+    }
+
+    function seedDemoUlepszenia(): void {
+      if (!map?.hexes) return;
+      const keys = Object.keys(map.hexes);
+      let count = 0;
+      for (const key of keys) {
+        const hex = map.hexes[key];
+        if (!hex) continue;
+        const layers = demoKeysForHex(hex);
+        if (!layers.length) continue;
+        placedImprovements.set(key, layers);
+        syncHexUlepszenieFields(key, layers);
+        count++;
+      }
+      for (const key of keys) {
+        if (placedImprovements.has(key)) spawnImprovementMesh(key);
+      }
+      renderer.shadowMap.needsUpdate = true;
+      diagInfo('demo', `zasiano ulepszenia na ${count} heksach (tryb pokazowy)`);
+    }
+
     function countBlockingEvents(): number {
       return collectTurnEvents().length;
     }
@@ -12499,7 +12550,13 @@ async function boot(): Promise<void> {
       })() ||
       /PLAYTEST-MAPA/i.test(location.pathname || '')
     );
-    if (playtestBitwaDuzaAny || playtestOdskokOblUrl || playtestOdskokUrl || playtestWalkaUrl) {
+    const demoUlepszeniaUrl = typeof location !== 'undefined' && (
+      new URLSearchParams(location.search).get('demo') === 'ulepszenia' ||
+      /DEMO-ULEPSZENIA/i.test(location.pathname || '')
+    );
+    if (demoUlepszeniaUrl) {
+      void (async () => { await doStartPlaytestMapaSwiata(); seedDemoUlepszenia(); })();
+    } else if (playtestBitwaDuzaAny || playtestOdskokOblUrl || playtestOdskokUrl || playtestWalkaUrl) {
       void doStartPlaytestWalkaMapy();
     } else if (playtestMapaUrl) {
       void doStartPlaytestMapaSwiata();

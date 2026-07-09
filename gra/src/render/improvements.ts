@@ -330,9 +330,10 @@ export function buildImprovement(
 
 // === UKŁAD SEKTOROWY (Maciej 2026-07-09) ===================================
 // Każde ulepszenie w SWOIM boku heksa, wyśrodkowane, MOCNO mniejsze, dosunięte do ścianki;
-// środek wolny pod miasto. Droga = obwódka wokół heksa (na razie; docelowo łączenie dróg).
-// Reużywa istniejących modeli — BEZ nowych grafik, tylko pomniejszenie + przesunięcie.
-// Boki: 1 surowce+ulepszenia surowców · 2 farma · 3 pastwisko/hodowla · 4 fort/posterunek · 5-6 rezerwa.
+// środek wolny pod miasto. Reużywa istniejących modeli — BEZ nowych grafik, tylko pomniejszenie + przesunięcie.
+// Boki: 1 surowce · 2 farma · 3 pastwisko/hodowla · 4 fort/posterunek · 5-6 rezerwa.
+// DROGA (Maciej 2026-07-09): pas przez ŚRODEK heksa góra–dół (symbol drogi); miasto ją przykryje.
+// Może kolidować z rzeką — zaakceptowane. Łączenie dróg rozwiążemy inaczej w przyszłości.
 const SECTOR_R = 0.72;      // dosunięcie do ścianki (HEX_R=1)
 const SECTOR_SCALE = 0.30;  // znacząco mniejsze
 const CAT_ANGLE_DEG: Record<string, number> = {
@@ -352,17 +353,6 @@ function improvementSectorAngle(key: string): number {
   return CAT_ANGLE_DEG.inne!;
 }
 
-/** Droga jako obwódka (sześciokątny pierścień przy ściance heksa). */
-function buildRoadBorderRing(hexR: number): THREE.Mesh {
-  const geo = new THREE.RingGeometry(hexR * 0.80, hexR * 0.94, 6);
-  geo.rotateX(-Math.PI / 2);
-  geo.rotateZ(Math.PI / 6);
-  const m = new THREE.Mesh(geo, new THREE.MeshLambertMaterial({ color: 0xb09766, flatShading: true }));
-  m.position.y = 0.02;
-  m.receiveShadow = true;
-  return m;
-}
-
 /**
  * Ujednolicony układ sektorowy dla wszystkich ulepszeń heksa. Każdy typ w swoim boku,
  * wyśrodkowany w XZ, przeskalowany SECTOR_SCALE i dosunięty do ścianki (SECTOR_R).
@@ -375,16 +365,31 @@ export function buildImprovementSectored(
 ): THREE.Group {
   const g = new THREE.Group();
   const normalized = keys.filter(k => k && k !== 'brak');
+  const box = new THREE.Box3();
+  const c = new THREE.Vector3();
+  const sz = new THREE.Vector3();
   const bySector = new Map<number, string[]>();
   for (const k of normalized) {
-    if (DROGA_KEYS.has(k)) { g.add(buildRoadBorderRing(hexR)); continue; }
+    if (DROGA_KEYS.has(k)) {
+      // Droga = pas przez ŚRODEK heksa (góra–dół). Model istniejący, wyśrodkowany, obrócony na N–S
+      // i rozciągnięty do (prawie) wierzchołków. Miasto go przykryje. Może kolidować z rzeką (OK).
+      const road = buildImprovement(k as ImprovementKey, ownerCol, style);
+      box.setFromObject(road); box.getCenter(c); box.getSize(sz);
+      road.position.x -= c.x; road.position.z -= c.z; // środek w XZ (spód Y zostaje)
+      const wrap = new THREE.Group();
+      wrap.add(road);
+      const longLen = Math.max(sz.x, sz.z) || 1;
+      const target = 1.9 * hexR; // od górnego do dolnego wierzchołka
+      if (sz.x >= sz.z) { wrap.scale.x = target / longLen; wrap.rotation.y = Math.PI / 2; }
+      else { wrap.scale.z = target / longLen; }
+      g.add(wrap);
+      continue;
+    }
     const ang = improvementSectorAngle(k);
     let arr = bySector.get(ang);
     if (!arr) { arr = []; bySector.set(ang, arr); }
     arr.push(k);
   }
-  const box = new THREE.Box3();
-  const c = new THREE.Vector3();
   for (const [angDeg, ks] of bySector) {
     const sub = new THREE.Group();
     for (const k of ks) {
