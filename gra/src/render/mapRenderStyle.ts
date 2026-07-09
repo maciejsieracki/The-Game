@@ -7,6 +7,10 @@ import { TerenBazowy } from '../types/hex';
 import type { GameMap } from '../types/map';
 import { climateZoneAt } from '../map/gen-helpers';
 import { axialToWorld, HEX_R } from './hexutil';
+import {
+  goraGeometria, wzgorzeGeometria, wariantDlaHeksa, rotacjaDlaHeksa,
+  TEREN_MATERIAL, LICZBA_WARIANTOW_TERENU, GORA_APEX_Y,
+} from './teren-gory-wzgorza';
 
 export type MapRenderStyle = 'civ' | 'roblox' | 'minecraft';
 
@@ -759,62 +763,18 @@ export function buildStyleMountainPeak(style: MapRenderStyle, p: PeakParams, lit
   const mtnVariant = decorVariant5(q, r, seed, 400);
 
   if (style === 'roblox') {
-    const pal = MOUNTAIN_VARIANTS[mtnVariant]!;
-    const stoneCols = pal.stoneCols;
-    const stoneDk = pal.stoneDk;
-    const tiers = lite ? 4 : 5;
-    /** ~1.55–1.75× wysokość stopnia vs wzgórze — wyraźnie wyższe szczyty. */
-    const tierScale = 1.55 + hash2D(q, r, seed, 5) * 0.20;
-
-    let radius = R * 0.86;
-    let y = topY;
-
-    for (let i = 0; i < tiers; i++) {
-      const wallH = (0.072 + (i === 0 ? 0.018 : 0)) * tierScale;
-      const topH = 0.032 * tierScale * (i === tiers - 1 ? 0.55 : 1);
-
-      const wall = new THREE.Mesh(
-        new THREE.CylinderGeometry(radius, radius * 1.03, wallH, 6),
-        mat(i % 2 ? stoneCols[i % stoneCols.length]! : stoneDk[i % stoneDk.length]!),
-      );
-      wall.position.set(0, y + wallH / 2, 0);
-      wall.rotation.y = hexSnap;
-      wall.castShadow = true;
-      wall.receiveShadow = true;
-      g.add(wall);
-
-      const topR = radius * 0.84;
-      const top = new THREE.Mesh(
-        new THREE.CylinderGeometry(topR, topR, topH, 6),
-        mat(stoneCols[Math.min(i + 1, stoneCols.length - 1)]!),
-      );
-      top.position.set(0, y + wallH + topH / 2, 0);
-      top.rotation.y = hexSnap;
-      top.castShadow = true;
-      top.receiveShadow = true;
-      g.add(top);
-
-      y += wallH + topH;
-      radius *= 0.70;
-    }
-
-    const snowR = radius * 1.08;
-    const snowBlock = new THREE.Mesh(
-      new THREE.CylinderGeometry(snowR, snowR, R * 0.08, 6),
-      mat(pal.snowBlock),
+    // GRAFIKA-3D partia TEREN: nowy zmergowany model góry (5 wariantów sylwetki,
+    // vertex colors, spód y=0; HEX_R=1 = R, więc bez skalowania). Wariant i obrót
+    // deterministyczne (bez zmian hasha mapy).
+    const mesh = new THREE.Mesh(
+      goraGeometria(wariantDlaHeksa(q, r, LICZBA_WARIANTOW_TERENU, seed)),
+      TEREN_MATERIAL,
     );
-    snowBlock.position.set(0, y + R * 0.04, 0);
-    snowBlock.rotation.y = hexSnap;
-    snowBlock.castShadow = true;
-    g.add(snowBlock);
-
-    const snowPeak = new THREE.Mesh(
-      new THREE.ConeGeometry(snowR * 0.62, R * 0.20, 6),
-      mat(pal.snowPeak),
-    );
-    snowPeak.position.set(0, y + R * 0.08 + R * 0.10, 0);
-    snowPeak.rotation.y = hexSnap;
-    g.add(snowPeak);
+    mesh.position.set(0, topY, 0);
+    mesh.rotation.y = rotacjaDlaHeksa(q, r, seed);
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
+    g.add(mesh);
   } else {
     const pal = MINECRAFT_MOUNTAIN_VARIANTS[mtnVariant]!;
     const tiers = lite ? 3 : 4;
@@ -979,9 +939,23 @@ export function buildStyleHillBump(style: MapRenderStyle, p: HillParams, lite = 
   if (style === 'civ') return g;
 
   g.position.set(p.x, 0, p.z);
+  if (style === 'roblox') {
+    // GRAFIKA-3D partia TEREN: nowy model wzgórza (5 wariantów sylwetki). Plateau szczytu =
+    // WZGORZE_SZCZYT_Y (0.392) = styleHillBumpSurfaceY(0) — parytet z jednostkami/ulepszeniami.
+    // Spód y=0, HEX_R=1. Wariant i obrót deterministyczne (bez zmian hasha mapy).
+    const mesh = new THREE.Mesh(
+      wzgorzeGeometria(wariantDlaHeksa(p.q, p.r, LICZBA_WARIANTOW_TERENU, p.seed)),
+      TEREN_MATERIAL,
+    );
+    mesh.position.set(0, p.baseY, 0);
+    mesh.rotation.y = rotacjaDlaHeksa(p.q, p.r, p.seed);
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
+    g.add(mesh);
+    return g;
+  }
   const local: HillParams = { ...p, x: 0, z: 0 };
-  const meshStyle = style === 'roblox' ? 'roblox' : style === 'minecraft' ? 'minecraft' : 'roblox';
-  addSteppedTerraceHill(g, local, meshStyle, lite, 'natural');
+  addSteppedTerraceHill(g, local, 'minecraft', lite, 'natural');
   return g;
 }
 
@@ -1005,15 +979,9 @@ export function styleMountainPeakSurfaceY(
   R: number,
   lite = false,
 ): number {
-  const tiers = lite ? 4 : 5;
-  const tierScale = 1.55 + hash2D(q, r, seed, 5) * 0.20;
-  let y = topY;
-  for (let i = 0; i < tiers; i++) {
-    const wallH = (0.072 + (i === 0 ? 0.018 : 0)) * tierScale;
-    const topH = 0.032 * tierScale * (i === tiers - 1 ? 0.55 : 1);
-    y += wallH + topH;
-  }
-  return y + R * 0.08;
+  // GRAFIKA-3D partia TEREN: apex nowego modelu góry = GORA_APEX_Y[wariant] nad wierzchem heksa.
+  void R; void lite; // interfejs zachowany (wołane przez galleryDecorSurfaceY)
+  return topY + GORA_APEX_Y[wariantDlaHeksa(q, r, LICZBA_WARIANTOW_TERENU, seed)]!;
 }
 
 /**
