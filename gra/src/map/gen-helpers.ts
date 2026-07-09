@@ -617,6 +617,15 @@ function reliefElevGates(mtnTh: number): { mountain: number; highland: number; l
   return { mountain: 0.14, highland: 0.11, landMaskHi: 0.20, landMaskMtn: 0.22 };
 }
 
+// Maciej 2026-07-09: PRZEMIESZANIE równina/łąka. Bez tego decyzja to czysto `elev > 0.35` — gładkie
+// pole wysokości daje WIELKIE BLOKI / całe kontynenty jednego typu. Dokładamy koherentny szum (blend
+// niezależnych pól forNoise+desNoise) do progu → poszarpana granica, wtrącone łaty obu terenów.
+// TERRAIN_MIX_AMP = pokrętło różnorodności (większe = więcej przemieszania).
+const TERRAIN_MIX_AMP = 0.28;
+function terrainRownLakaJitter(forNoise: number, desNoise: number): number {
+  return ((forNoise + desNoise) * 0.5 - 0.5) * TERRAIN_MIX_AMP;
+}
+
 export function classifyTerrain(
   elevContinental: number,
   landMask: number,
@@ -652,7 +661,7 @@ export function classifyTerrain(
       elevContinental < 0.45
     ) {
       terenBazowy = TerenBazowy.Pustynia;
-    } else if (elevContinental > 0.35) {
+    } else if (elevContinental + terrainRownLakaJitter(forNoise, desNoise) > 0.35) {
       terenBazowy = TerenBazowy.Rownina;
     } else {
       terenBazowy = TerenBazowy.Laka;
@@ -700,7 +709,7 @@ export function classifyTerrainFlat(
     elevContinental < 0.45
   ) {
     terenBazowy = TerenBazowy.Pustynia;
-  } else if (elevContinental > 0.35) {
+  } else if (elevContinental + terrainRownLakaJitter(forNoise, desNoise) > 0.35) {
     terenBazowy = TerenBazowy.Rownina;
   } else {
     terenBazowy = TerenBazowy.Laka;
