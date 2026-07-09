@@ -159,11 +159,11 @@ function hash2D(q: number, r: number, seed: number, salt: number): number {
  * Duze jednolite obszary tego samego terenu przestaja byc plaska plama koloru.
  * Woda (Morze/Wybrzeze) dostaje mniejszy jitter (gladsza tafla).
  */
-// Wariant 3 odcieni koloru terenu (Maciej 2026-07-09) — zamiast ozdobników pustych heksów:
-// Równina = 3 jasne zielenie, Łąka/trawa = 3 ciemne zielenie; deterministycznie per heks (hash2D),
+// Wariant 5 odcieni koloru terenu (Maciej 2026-07-09) — zamiast ozdobników pustych heksów:
+// Równina = 5 jasnych zieleni, Łąka/trawa = 5 ciemnych zieleni; deterministycznie per heks (hash2D),
 // mgła nadal przygasza (baseColor × jasność w setFog). Wartości do dostrojenia na renderze.
-const LAKA_SHADES3 = [0x5f9e42, 0x6cab4f, 0x79b85c] as const;    // ciemne zielenie (trawa/łąka)
-const ROWNINA_SHADES3 = [0xa6d074, 0xb4dc84, 0xc0e693] as const; // jasne zielenie (równina)
+const LAKA_SHADES = [0x54923a, 0x5f9e42, 0x6cab4f, 0x79b85c, 0x86c469] as const;    // 5 ciemnych zieleni (trawa/łąka)
+const ROWNINA_SHADES = [0x9ac968, 0xa6d074, 0xb4dc84, 0xc0e693, 0xcaec9f] as const; // 5 jasnych zieleni (równina)
 
 function jitteredTerrainColor(
   baseHex: number,
@@ -1675,14 +1675,14 @@ export async function buildScene(
       const blendedHex = isCoastRoblox
         ? baseTerrainHex
         : blendedTerrainHex(map, hex.coords.q, hex.coords.r, baseTerrainHex, isWater, renderStyle, t);
-      // Łąka/Równina (styl roblox): 3 dyskretne odcienie zamiast ozdobników. Inne tereny: jitter HSL.
-      const shades3 = styledTerrain
-        ? (t === TerenBazowy.Laka ? LAKA_SHADES3 : t === TerenBazowy.Rownina ? ROWNINA_SHADES3 : null)
+      // Łąka/Równina (styl roblox): 5 dyskretnych odcieni zamiast ozdobników. Inne tereny: jitter HSL.
+      const shades = styledTerrain
+        ? (t === TerenBazowy.Laka ? LAKA_SHADES : t === TerenBazowy.Rownina ? ROWNINA_SHADES : null)
         : null;
       const baseColor = isCoastRoblox
         ? new THREE.Color(baseTerrainHex)
-        : shades3 !== null
-          ? new THREE.Color(shades3[Math.floor(hash2D(hex.coords.q, hex.coords.r, map.seed, 4242) * 3) % 3]!)
+        : shades !== null
+          ? new THREE.Color(shades[Math.floor(hash2D(hex.coords.q, hex.coords.r, map.seed, 4242) * shades.length) % shades.length]!)
           : jitteredTerrainColor(blendedHex, hex.coords.q, hex.coords.r, map.seed, isWater);
       // Rzeka = wstęga na krawędzi (pushRiverMesh), nie tint całego heksu.
       mesh.setColorAt(iIdx, baseColor);
