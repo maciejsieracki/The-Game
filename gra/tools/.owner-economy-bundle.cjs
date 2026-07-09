@@ -30,6 +30,31 @@ __export(owner_economy_entry_exports, {
 });
 module.exports = __toCommonJS(owner_economy_entry_exports);
 
+// src/game/population-growth-tempo.ts
+var WZROST_LUDNOSCI_PACE = {
+  wysoki: 1,
+  normalny: 2,
+  wolny: 4
+};
+
+// src/game/difficulty-cost.ts
+function isPlayerOwner(ownerId) {
+  return ownerId === 0;
+}
+function getPopulationGrowthDifficultyMultiplier(ownerId, difficulty) {
+  if (difficulty === "normal") return 1;
+  if (difficulty === "easy") return isPlayerOwner(ownerId) ? 1 : 2;
+  return isPlayerOwner(ownerId) ? 2 : 0.5;
+}
+function getPopulationGrowthThresholdMultiplier(ownerId, pace, difficulty) {
+  const paceMult = typeof pace === "number" ? pace : WZROST_LUDNOSCI_PACE[pace];
+  return paceMult * getPopulationGrowthDifficultyMultiplier(ownerId, difficulty);
+}
+function applyPopulationGrowthThreshold(baseThreshold, ownerId, pace, difficulty) {
+  const mult = getPopulationGrowthThresholdMultiplier(ownerId, pace, difficulty);
+  return Math.max(1, Math.round(baseThreshold * mult));
+}
+
 // data/terrain-improvements.json
 var terrain_improvements_default = {
   _meta: {
@@ -191,8 +216,8 @@ var terrain_improvements_default = {
     bonus: {},
     surowiecOdblokowany: null,
     teren: "Las",
-    warunek: "darmowa wycinka; +20 Pracy/tur\u0119 \xD7 3 tury (=60); potem teren bazowy bez lasu",
-    koszt_praca: 0,
+    warunek: "koszt 5 Pracy na start; +20 Pracy/tur\u0119 \xD7 3 tury (=60); potem teren bazowy bez lasu",
+    koszt_praca: 5,
     tech: null,
     wycinka: {
       praca_per_tura: 20,
@@ -494,6 +519,28 @@ function freshWealthState() {
   return { poziom: 1, pula: 0 };
 }
 
+// data/epoka-ludnosc-manpower.json
+var epoka_ludnosc_manpower_default = {
+  _opis: "Skala ludno\u015Bci i Manpower per epoka imperium (wiersze 1\u201310). 1 ludek = ludno\u015B\u0107 absolutna na slot population (1\u201310). manpowerNaLudka = 10% ludekNaLudka. manpowerNaJednostke = 10% manpowerNaLudka (koszt rekrutacji 1 jednostki).",
+  _formuly: {
+    ludnoscAbsolutna: "population \xD7 ludekNaLudka[epoka]",
+    manpowerMax: "population \xD7 manpowerNaLudka[epoka]",
+    kosztRekrutacji: "manpowerNaJednostke[epoka] per jednostka"
+  },
+  epoki: [
+    { epoka: 1, ludekNaLudka: 1e4, manpowerNaLudka: 1e3, manpowerNaJednostke: 100 },
+    { epoka: 2, ludekNaLudka: 2e4, manpowerNaLudka: 2e3, manpowerNaJednostke: 200 },
+    { epoka: 3, ludekNaLudka: 4e4, manpowerNaLudka: 4e3, manpowerNaJednostke: 400 },
+    { epoka: 4, ludekNaLudka: 8e4, manpowerNaLudka: 8e3, manpowerNaJednostke: 800 },
+    { epoka: 5, ludekNaLudka: 16e4, manpowerNaLudka: 16e3, manpowerNaJednostke: 1600 },
+    { epoka: 6, ludekNaLudka: 32e4, manpowerNaLudka: 32e3, manpowerNaJednostke: 3200 },
+    { epoka: 7, ludekNaLudka: 64e4, manpowerNaLudka: 64e3, manpowerNaJednostke: 6400 },
+    { epoka: 8, ludekNaLudka: 12e5, manpowerNaLudka: 12e4, manpowerNaJednostke: 12e3 },
+    { epoka: 9, ludekNaLudka: 24e5, manpowerNaLudka: 24e4, manpowerNaJednostke: 24e3 },
+    { epoka: 10, ludekNaLudka: 48e5, manpowerNaLudka: 48e4, manpowerNaJednostke: 48e3 }
+  ]
+};
+
 // data/miasto-params.json
 var miasto_params_default = {
   min_dystans_miast: {
@@ -613,110 +660,6 @@ var miasto_params_default = {
   }
 };
 
-// src/game/cities.ts
-var DEFAULT_OKOLICA_FOCUS = "zrownowazone";
-var DEFAULT_OKOLICA_TRYB = "auto";
-var DEFAULT_PODZIAL_HANDLU = {
-  procentNauka: 20,
-  procentPieniadz: 70,
-  procentLuksus: 10
-};
-var DEFAULT_PODZIAL_PRACY = {
-  procentBudynki: 70
-};
-var HANDEL_PCT_STEP = 10;
-function snapHandelPct(n) {
-  return Math.max(0, Math.min(100, Math.round(n / HANDEL_PCT_STEP) * HANDEL_PCT_STEP));
-}
-function normalizePodzialHandlu(split) {
-  let p = snapHandelPct(split.procentPieniadz);
-  let n = snapHandelPct(split.procentNauka);
-  let l = snapHandelPct(split.procentLuksus);
-  let sum = p + n + l;
-  if (sum !== 100) {
-    l = Math.max(0, Math.min(100, l + (100 - sum)));
-    sum = p + n + l;
-    if (sum !== 100) {
-      n = Math.max(0, Math.min(100, n + (100 - sum)));
-    }
-  }
-  return { procentPieniadz: p, procentNauka: n, procentLuksus: l };
-}
-function freshCityPodzial() {
-  return {
-    podzialHandlu: { ...DEFAULT_PODZIAL_HANDLU },
-    podzialPracy: { ...DEFAULT_PODZIAL_PRACY }
-  };
-}
-var MIN_CITY_DISTANCE = miasto_params_default.min_dystans_miast?.wartosc ?? 5;
-var MIN_CITY_DISTANCE_START_CITY_STATE = 3;
-function canFoundCity(q, r, cities, map, opts) {
-  const key = `${q},${r}`;
-  if (!(key in map.hexes)) {
-    return { ok: false, reason: "poza mapa" };
-  }
-  const hex = map.hexes[key];
-  if (hex !== void 0) {
-    if (hex.terenBazowy === "morze" /* Morze */ || hex.terenBazowy === "wybrzeze" /* Wybrzeze */) {
-      return { ok: false, reason: "morze" };
-    }
-    if (hex.terenBazowy === "gory" /* Gory */) {
-      return { ok: false, reason: "gory" };
-    }
-  }
-  for (const city of cities) {
-    const minDist = city.startCityState ? MIN_CITY_DISTANCE_START_CITY_STATE : MIN_CITY_DISTANCE;
-    if (hexDistance(q, r, city.q, city.r) < minDist) {
-      return { ok: false, reason: "za blisko innego miasta" };
-    }
-  }
-  if (opts?.withinTerritory && !opts.withinTerritory(q, r)) {
-    return { ok: false, reason: "poza terytorium" };
-  }
-  return { ok: true, reason: "" };
-}
-function foundCityAt(q, r, ownerId, cities, map, name) {
-  const { ok } = canFoundCity(q, r, cities, map);
-  if (!ok) {
-    return null;
-  }
-  const podzial = freshCityPodzial();
-  return {
-    id: "city" + cities.length,
-    ownerId,
-    q,
-    r,
-    name,
-    population: 1,
-    wealthState: freshWealthState(),
-    wealthImmunityRemaining: 5,
-    podzialHandlu: podzial.podzialHandlu,
-    podzialPracy: podzial.podzialPracy
-  };
-}
-
-// data/epoka-ludnosc-manpower.json
-var epoka_ludnosc_manpower_default = {
-  _opis: "Skala ludno\u015Bci i Manpower per epoka imperium (wiersze 1\u201310). 1 ludek = ludno\u015B\u0107 absolutna na slot population (1\u201310). manpowerNaLudka = 10% ludekNaLudka. manpowerNaJednostke = 10% manpowerNaLudka (koszt rekrutacji 1 jednostki).",
-  _formuly: {
-    ludnoscAbsolutna: "population \xD7 ludekNaLudka[epoka]",
-    manpowerMax: "population \xD7 manpowerNaLudka[epoka]",
-    kosztRekrutacji: "manpowerNaJednostke[epoka] per jednostka"
-  },
-  epoki: [
-    { epoka: 1, ludekNaLudka: 1e4, manpowerNaLudka: 1e3, manpowerNaJednostke: 100 },
-    { epoka: 2, ludekNaLudka: 2e4, manpowerNaLudka: 2e3, manpowerNaJednostke: 200 },
-    { epoka: 3, ludekNaLudka: 4e4, manpowerNaLudka: 4e3, manpowerNaJednostke: 400 },
-    { epoka: 4, ludekNaLudka: 8e4, manpowerNaLudka: 8e3, manpowerNaJednostke: 800 },
-    { epoka: 5, ludekNaLudka: 16e4, manpowerNaLudka: 16e3, manpowerNaJednostke: 1600 },
-    { epoka: 6, ludekNaLudka: 32e4, manpowerNaLudka: 32e3, manpowerNaJednostke: 3200 },
-    { epoka: 7, ludekNaLudka: 64e4, manpowerNaLudka: 64e3, manpowerNaJednostke: 6400 },
-    { epoka: 8, ludekNaLudka: 12e5, manpowerNaLudka: 12e4, manpowerNaJednostke: 12e3 },
-    { epoka: 9, ludekNaLudka: 24e5, manpowerNaLudka: 24e4, manpowerNaJednostke: 24e3 },
-    { epoka: 10, ludekNaLudka: 48e5, manpowerNaLudka: 48e4, manpowerNaJednostke: 48e3 }
-  ]
-};
-
 // src/game/manpower.ts
 var ROWS = epoka_ludnosc_manpower_default.epoki;
 var MAX_EPOKA = 10;
@@ -817,19 +760,354 @@ var DEFAULT_OUTPUT_SHARES = Object.freeze({
   rozwoj: miasto_params_default.udzial_output_rozwoj?.wartosc ?? 0.1
 });
 
-// src/game/economy.ts
-var TERRAIN_YIELDS = {
-  ["laka" /* Laka */]: { zywnosc: 4, praca: 1, handel: 1, drewno: 1, kamien: 0 },
-  ["rownina" /* Rownina */]: { zywnosc: 2, praca: 1, handel: 1, drewno: 2, kamien: 1 },
-  ["wzgorza" /* Wzgorza */]: { zywnosc: 1, praca: 2, handel: 0, drewno: 2, kamien: 2 },
-  ["gory" /* Gory */]: { zywnosc: 0, praca: 0, handel: 0, drewno: 2, kamien: 5 },
-  ["wybrzeze" /* Wybrzeze */]: { zywnosc: 3, praca: 2, handel: 2, drewno: 0, kamien: 0 },
-  ["morze" /* Morze */]: { zywnosc: 2, praca: 0, handel: 2, drewno: 0, kamien: 0 },
-  ["pustynia" /* Pustynia */]: { zywnosc: 0, praca: 0, handel: 1, drewno: 0, kamien: 0 }
+// src/game/economy-upkeep.ts
+function readNum(group, key, difficulty, fallback) {
+  const row = group ? group[key] : void 0;
+  const v = row ? row[difficulty] : void 0;
+  return typeof v === "number" && Number.isFinite(v) ? v : fallback;
+}
+var DEFAULT_STORAGE_PARAMS = {
+  bazaZywnosc: 20,
+  bazaSurowce: 10,
+  mnoznikMagazynu: 5
 };
-var RIVER_MODIFIER = { zywnosc: 3, praca: 2, handel: 2, drewno: 0, kamien: 0 };
-var FOREST_MODIFIER = { zywnosc: -1, praca: 0, handel: -1, drewno: 3, kamien: 0 };
+function loadStorageParams(raw, difficulty = "normal") {
+  const g = raw.globalne;
+  return {
+    bazaZywnosc: readNum(g, "magazyn_baza_zywnosc", difficulty, DEFAULT_STORAGE_PARAMS.bazaZywnosc),
+    bazaSurowce: readNum(g, "magazyn_baza_surowce", difficulty, DEFAULT_STORAGE_PARAMS.bazaSurowce),
+    mnoznikMagazynu: readNum(g, "magazyn_mnoznik_spichlerz", difficulty, DEFAULT_STORAGE_PARAMS.mnoznikMagazynu)
+  };
+}
+function foodStorageCapacity(maSpichlerz, p) {
+  return maSpichlerz ? p.bazaZywnosc * p.mnoznikMagazynu : p.bazaZywnosc;
+}
+function readCityFoodBuffer(magazynZywnosci) {
+  if (typeof magazynZywnosci === "number" && Number.isFinite(magazynZywnosci)) {
+    return Math.max(0, magazynZywnosci);
+  }
+  if (magazynZywnosci && typeof magazynZywnosci === "object") {
+    const a = magazynZywnosci.aktualny;
+    if (typeof a === "number" && Number.isFinite(a)) return Math.max(0, a);
+  }
+  return 0;
+}
+function resourceStorageCapacityPerType(maMagazyn, p) {
+  return maMagazyn ? p.bazaSurowce * p.mnoznikMagazynu : p.bazaSurowce;
+}
+function loadUpkeepParams(raw, difficulty = "normal") {
+  const em = raw.ekonomia_miasta;
+  const bu = raw.budynki;
+  const g = raw.globalne;
+  return {
+    budynekUtrzymanieFlat: readNum(bu, "utrzymanie_budynek", difficulty, 1),
+    jednostkaUtrzymanieStd: readNum(g, "utrzymanie_jednostka_standard", difficulty, 1),
+    zywnoscJednostkaRuch: readNum(em, "zywnosc_jednostka_ruch", difficulty, 1),
+    zywnoscJednostkaOboz: readNum(em, "zywnosc_jednostka_oboz", difficulty, 0.5)
+  };
+}
+function buildingUpkeep(building, level, flatOverride) {
+  if (typeof flatOverride === "number" && Number.isFinite(flatOverride)) {
+    return flatOverride;
+  }
+  const lvl = level >= 1 ? level : 1;
+  const base = Number.isFinite(building.utrzymanie) ? building.utrzymanie : 0;
+  return Math.floor(buildingEffectAtLevel(base, lvl));
+}
+function totalBuildingUpkeep(buildings, flatOverride) {
+  let sum = 0;
+  for (const b of buildings) {
+    sum += buildingUpkeep(b.record, b.level, flatOverride);
+  }
+  return sum;
+}
+var DEFAULT_UNIT_UPKEEP_BY_CATEGORY = {
+  osadnik: 1,
+  robotnik: 1,
+  zwiadowca: 1,
+  procarz: 1,
+  oszczepnik: 1,
+  lucznik: 1,
+  wlocznik: 2,
+  miecznik: 2,
+  falanga: 2,
+  legionista: 2,
+  maczuga: 2,
+  topor: 2,
+  konnica: 3,
+  rydwan: 3,
+  galera: 3,
+  super: 0,
+  domyslny: 1
+};
+function unitUpkeep(unit, table, standardUpkeep) {
+  const byType = table[unit.typeId];
+  if (typeof byType === "number" && Number.isFinite(byType)) return byType;
+  const byCat = DEFAULT_UNIT_UPKEEP_BY_CATEGORY[unit.category];
+  if (typeof byCat === "number" && Number.isFinite(byCat)) return byCat;
+  return Number.isFinite(standardUpkeep) ? standardUpkeep : 0;
+}
+function totalUnitUpkeep(units, table, standardUpkeep) {
+  let sum = 0;
+  for (const u of units) {
+    sum += unitUpkeep(u, table, standardUpkeep);
+  }
+  return sum;
+}
+function buildUnitUpkeepTable(rows) {
+  const out = {};
+  for (const row of rows) {
+    const name = row["Jednostka"];
+    if (typeof name !== "string" || name.length === 0) continue;
+    let upkeep;
+    const direct = row["Utrzymanie (Pieniadz/ture)"];
+    if (typeof direct === "number" && Number.isFinite(direct)) {
+      upkeep = direct;
+    } else {
+      for (const key of Object.keys(row)) {
+        if (key.indexOf("Utrzymanie") === 0) {
+          const v = row[key];
+          if (typeof v === "number" && Number.isFinite(v)) {
+            upkeep = v;
+            break;
+          }
+        }
+      }
+    }
+    if (upkeep !== void 0) out[name] = upkeep;
+  }
+  return out;
+}
+function upkeepBalance(income, buildings, units, unitUpkeepTbl, p) {
+  const utrzymanieBudynki = totalBuildingUpkeep(buildings, p.budynekUtrzymanieFlat);
+  const utrzymanieJednostki = totalUnitUpkeep(units, unitUpkeepTbl, p.jednostkaUtrzymanieStd);
+  const utrzymanieRazem = utrzymanieBudynki + utrzymanieJednostki;
+  const inc = Number.isFinite(income) ? income : 0;
+  const saldo = inc - utrzymanieRazem;
+  return {
+    utrzymanieBudynki,
+    utrzymanieJednostki,
+    utrzymanieRazem,
+    saldo,
+    deficyt: saldo < 0
+  };
+}
+
+// src/game/cities.ts
+var DEFAULT_OKOLICA_FOCUS = "zrownowazone";
+var DEFAULT_OKOLICA_TRYB = "auto";
+var DEFAULT_PODZIAL_HANDLU = {
+  procentNauka: 20,
+  procentPieniadz: 70,
+  procentLuksus: 10
+};
+var DEFAULT_PODZIAL_PRACY = {
+  procentBudynki: 70
+};
+var HANDEL_PCT_STEP = 10;
+function snapHandelPct(n) {
+  return Math.max(0, Math.min(100, Math.round(n / HANDEL_PCT_STEP) * HANDEL_PCT_STEP));
+}
+function normalizePodzialHandlu(split) {
+  let p = snapHandelPct(split.procentPieniadz);
+  let n = snapHandelPct(split.procentNauka);
+  let l = snapHandelPct(split.procentLuksus);
+  let sum = p + n + l;
+  if (sum !== 100) {
+    l = Math.max(0, Math.min(100, l + (100 - sum)));
+    sum = p + n + l;
+    if (sum !== 100) {
+      n = Math.max(0, Math.min(100, n + (100 - sum)));
+    }
+  }
+  return { procentPieniadz: p, procentNauka: n, procentLuksus: l };
+}
+function freshCityPodzial() {
+  return {
+    podzialHandlu: { ...DEFAULT_PODZIAL_HANDLU },
+    podzialPracy: { ...DEFAULT_PODZIAL_PRACY }
+  };
+}
+var MIN_CITY_DISTANCE = miasto_params_default.min_dystans_miast?.wartosc ?? 5;
+var MIN_CITY_DISTANCE_START_CITY_STATE = 3;
+function canFoundCity(q, r, cities, map, opts) {
+  const key = `${q},${r}`;
+  if (!(key in map.hexes)) {
+    return { ok: false, reason: "poza mapa" };
+  }
+  const hex = map.hexes[key];
+  if (hex !== void 0) {
+    if (hex.terenBazowy === "morze" /* Morze */ || hex.terenBazowy === "wybrzeze" /* Wybrzeze */) {
+      return { ok: false, reason: "morze" };
+    }
+    if (hex.terenBazowy === "gory" /* Gory */) {
+      return { ok: false, reason: "gory" };
+    }
+  }
+  for (const city of cities) {
+    const minDist = city.startCityState ? MIN_CITY_DISTANCE_START_CITY_STATE : MIN_CITY_DISTANCE;
+    if (hexDistance(q, r, city.q, city.r) < minDist) {
+      return { ok: false, reason: "za blisko innego miasta" };
+    }
+  }
+  if (opts?.withinTerritory && !opts.withinTerritory(q, r)) {
+    return { ok: false, reason: "poza terytorium" };
+  }
+  return { ok: true, reason: "" };
+}
+function foundCityAt(q, r, ownerId, cities, map, name) {
+  const { ok } = canFoundCity(q, r, cities, map);
+  if (!ok) {
+    return null;
+  }
+  const podzial = freshCityPodzial();
+  return {
+    id: "city" + cities.length,
+    ownerId,
+    q,
+    r,
+    name,
+    population: 1,
+    wealthState: freshWealthState(),
+    wealthImmunityRemaining: 5,
+    podzialHandlu: podzial.podzialHandlu,
+    podzialPracy: podzial.podzialPracy
+  };
+}
+
+// data/terrain-yields.json
+var terrain_yields_default = {
+  terrain_types: [
+    {
+      Teren: "\u0141\u0105ka",
+      \u017Bywno\u015B\u0107: 3,
+      Praca: 1,
+      Handel: 1,
+      Drewno: 1,
+      Kamie\u0144: 0,
+      Suma: 6,
+      Uwagi: null
+    },
+    {
+      Teren: "R\xF3wnina",
+      \u017Bywno\u015B\u0107: 2,
+      Praca: 2,
+      Handel: 1,
+      Drewno: 2,
+      Kamie\u0144: 1,
+      Suma: 8,
+      Uwagi: null
+    },
+    {
+      Teren: "Wzg\xF3rza",
+      \u017Bywno\u015B\u0107: 1,
+      Praca: 3,
+      Handel: 0,
+      Drewno: 2,
+      Kamie\u0144: 2,
+      Suma: 8,
+      Uwagi: "Kamie\u0144/Ruda po zbudowaniu Kopalni; +obrona"
+    },
+    {
+      Teren: "G\xF3ry",
+      \u017Bywno\u015B\u0107: 0,
+      Praca: 4,
+      Handel: 0,
+      Drewno: 2,
+      Kamie\u0144: 5,
+      Suma: 11,
+      Uwagi: "Nieprzechodnie dla jednostek l\u0105dowych; Kamie\u0144/Ruda po Kopalni"
+    },
+    {
+      Teren: "Wybrze\u017Ce",
+      \u017Bywno\u015B\u0107: 3,
+      Praca: 2,
+      Handel: 2,
+      Drewno: 0,
+      Kamie\u0144: 0,
+      Suma: 7,
+      Uwagi: "Teren morski przy l\u0105dzie (osobny od rzeki); pod port"
+    },
+    {
+      Teren: "Morze",
+      \u017Bywno\u015B\u0107: 2,
+      Praca: 0,
+      Handel: 2,
+      Drewno: 0,
+      Kamie\u0144: 0,
+      Suma: 4,
+      Uwagi: "Otwarta woda; rybo\u0142\xF3wstwo"
+    },
+    {
+      Teren: "Pustynia",
+      \u017Bywno\u015B\u0107: 0,
+      Praca: 0,
+      Handel: 1,
+      Drewno: 0,
+      Kamie\u0144: 0,
+      Suma: 1,
+      Uwagi: null
+    }
+  ],
+  terrain_modifiers: [
+    {
+      Modyfikator: "Rzeka",
+      \u017Bywno\u015B\u0107: 3,
+      Praca: 2,
+      Handel: 2,
+      Drewno: 0,
+      Kamie\u0144: 0,
+      Suma: 7,
+      Uwagi: "Dodaje bonus do DOWOLNEGO pola z rzek\u0105 (Tw\xF3j opis); razem +7 \u2014 mocny, mo\u017Cna stonowa\u0107"
+    },
+    {
+      Modyfikator: "Las (nak\u0142adka)",
+      \u017Bywno\u015B\u0107: -1,
+      Praca: 3,
+      Handel: -1,
+      Drewno: 3,
+      Kamie\u0144: 0,
+      Suma: 4,
+      Uwagi: "Pod lasem zawsze jest teren bazowy; las: \u2212\u017Cywno\u015B\u0107, \u2212handel, +praca (+3), +drewno \u2014 bez wzgl\u0119du na \u{1F464}/jednostk\u0119"
+    }
+  ]
+};
+
+// src/game/economy.ts
 var ZERO_YIELD = { zywnosc: 0, praca: 0, handel: 0, drewno: 0, kamien: 0 };
+var TERRAIN_NAME_TO_ENUM = {
+  "\u0141\u0105ka": "laka" /* Laka */,
+  "R\xF3wnina": "rownina" /* Rownina */,
+  "Wzg\xF3rza": "wzgorza" /* Wzgorza */,
+  "G\xF3ry": "gory" /* Gory */,
+  "Wybrze\u017Ce": "wybrzeze" /* Wybrzeze */,
+  "Morze": "morze" /* Morze */,
+  "Pustynia": "pustynia" /* Pustynia */
+};
+function terrainRowToTileYield(row) {
+  return {
+    zywnosc: Number(row["\u017Bywno\u015B\u0107"] ?? 0),
+    praca: Number(row["Praca"] ?? 0),
+    handel: Number(row["Handel"] ?? 0),
+    drewno: Number(row["Drewno"] ?? 0),
+    kamien: Number(row["Kamie\u0144"] ?? 0)
+  };
+}
+function buildTerrainYields() {
+  const out = {};
+  for (const row of terrain_yields_default.terrain_types) {
+    const key = TERRAIN_NAME_TO_ENUM[row.Teren];
+    if (key) out[key] = terrainRowToTileYield(row);
+  }
+  return out;
+}
+function terrainModifier(name) {
+  const row = terrain_yields_default.terrain_modifiers.find((m) => m["Modyfikator"] === name);
+  return row ? terrainRowToTileYield(row) : ZERO_YIELD;
+}
+var TERRAIN_YIELDS = buildTerrainYields();
+var RIVER_MODIFIER = terrainModifier("Rzeka");
+var FOREST_MODIFIER = terrainModifier("Las (nak\u0142adka)");
 function tileYield(tile) {
   const base = TERRAIN_YIELDS[tile.terenBazowy] ?? ZERO_YIELD;
   let zywnosc = base.zywnosc;
@@ -839,6 +1117,7 @@ function tileYield(tile) {
   let kamien = base.kamien;
   if (tile.nakladka === "las" /* Las */) {
     zywnosc += FOREST_MODIFIER.zywnosc;
+    praca += FOREST_MODIFIER.praca;
     handel += FOREST_MODIFIER.handel;
     drewno += FOREST_MODIFIER.drewno;
   }
@@ -1004,11 +1283,14 @@ function cityYieldPerTurn(city, workedTiles, cityBuildings, params, ctx) {
     pieniadzZPracy
   };
 }
-function populationGrowth(city, zywnoscNetto, params) {
+function cityPopulationCap(maAkwedukt, params) {
+  return maAkwedukt ? params.akweduktMaxLudnosci : params.akweduktProgLudnosci;
+}
+function populationGrowth(city, zywnoscNetto, params, wzrostThresholdMult = 1) {
   const { ludnosc, zdrowie, maSpichlerz, maAkwedukt, magazynZywnosci } = city;
   const healthModifier = Math.max(0, 1 + zdrowie * params.zdrowieModyfikatorWspolczynnik);
   const effectiveFlow = zywnoscNetto * healthModifier;
-  const popCap = maAkwedukt ? Number.MAX_SAFE_INTEGER : params.akweduktProgLudnosci;
+  const popCap = cityPopulationCap(maAkwedukt, params);
   let nowaLudnosc = ludnosc;
   let nowyMagazynZywnosci = magazynZywnosci;
   let wzrost = false;
@@ -1022,136 +1304,14 @@ function populationGrowth(city, zywnoscNetto, params) {
     }
     return { nowaLudnosc, nowyMagazynZywnosci, wzrost, ubytek };
   }
-  const threshold = 10 + ludnosc * params.progWzrostuWspolczynnik;
+  const baseThreshold = 10 + ludnosc * params.progWzrostuWspolczynnik;
+  const threshold = Math.max(1, Math.round(baseThreshold * wzrostThresholdMult));
   if (nowyMagazynZywnosci >= threshold && ludnosc < popCap) {
     nowaLudnosc = ludnosc + 1;
     wzrost = true;
     nowyMagazynZywnosci = maSpichlerz ? Math.floor(nowyMagazynZywnosci * params.spichlerzZachowaniePoPrzroscie) : 0;
   }
   return { nowaLudnosc, nowyMagazynZywnosci, wzrost, ubytek };
-}
-
-// src/game/economy-upkeep.ts
-function readNum(group, key, difficulty, fallback) {
-  const row = group ? group[key] : void 0;
-  const v = row ? row[difficulty] : void 0;
-  return typeof v === "number" && Number.isFinite(v) ? v : fallback;
-}
-var DEFAULT_STORAGE_PARAMS = {
-  bazaZywnosc: 20,
-  bazaSurowce: 10,
-  mnoznikMagazynu: 5
-};
-function loadStorageParams(raw, difficulty = "normal") {
-  const g = raw.globalne;
-  return {
-    bazaZywnosc: readNum(g, "magazyn_baza_zywnosc", difficulty, DEFAULT_STORAGE_PARAMS.bazaZywnosc),
-    bazaSurowce: readNum(g, "magazyn_baza_surowce", difficulty, DEFAULT_STORAGE_PARAMS.bazaSurowce),
-    mnoznikMagazynu: readNum(g, "magazyn_mnoznik_spichlerz", difficulty, DEFAULT_STORAGE_PARAMS.mnoznikMagazynu)
-  };
-}
-function foodStorageCapacity(maSpichlerz, p) {
-  return maSpichlerz ? p.bazaZywnosc * p.mnoznikMagazynu : p.bazaZywnosc;
-}
-function resourceStorageCapacityPerType(maMagazyn, p) {
-  return maMagazyn ? p.bazaSurowce * p.mnoznikMagazynu : p.bazaSurowce;
-}
-function loadUpkeepParams(raw, difficulty = "normal") {
-  const em = raw.ekonomia_miasta;
-  const bu = raw.budynki;
-  const g = raw.globalne;
-  return {
-    budynekUtrzymanieFlat: readNum(bu, "utrzymanie_budynek", difficulty, 1),
-    jednostkaUtrzymanieStd: readNum(g, "utrzymanie_jednostka_standard", difficulty, 1),
-    zywnoscJednostkaRuch: readNum(em, "zywnosc_jednostka_ruch", difficulty, 1),
-    zywnoscJednostkaOboz: readNum(em, "zywnosc_jednostka_oboz", difficulty, 0.5)
-  };
-}
-function buildingUpkeep(building, level, flatOverride) {
-  if (typeof flatOverride === "number" && Number.isFinite(flatOverride)) {
-    return flatOverride;
-  }
-  const lvl = level >= 1 ? level : 1;
-  const base = Number.isFinite(building.utrzymanie) ? building.utrzymanie : 0;
-  return Math.floor(buildingEffectAtLevel(base, lvl));
-}
-function totalBuildingUpkeep(buildings, flatOverride) {
-  let sum = 0;
-  for (const b of buildings) {
-    sum += buildingUpkeep(b.record, b.level, flatOverride);
-  }
-  return sum;
-}
-var DEFAULT_UNIT_UPKEEP_BY_CATEGORY = {
-  osadnik: 1,
-  robotnik: 1,
-  zwiadowca: 1,
-  procarz: 1,
-  oszczepnik: 1,
-  lucznik: 1,
-  wlocznik: 2,
-  miecznik: 2,
-  falanga: 2,
-  legionista: 2,
-  maczuga: 2,
-  topor: 2,
-  konnica: 3,
-  rydwan: 3,
-  galera: 3,
-  super: 0,
-  domyslny: 1
-};
-function unitUpkeep(unit, table, standardUpkeep) {
-  const byType = table[unit.typeId];
-  if (typeof byType === "number" && Number.isFinite(byType)) return byType;
-  const byCat = DEFAULT_UNIT_UPKEEP_BY_CATEGORY[unit.category];
-  if (typeof byCat === "number" && Number.isFinite(byCat)) return byCat;
-  return Number.isFinite(standardUpkeep) ? standardUpkeep : 0;
-}
-function totalUnitUpkeep(units, table, standardUpkeep) {
-  let sum = 0;
-  for (const u of units) {
-    sum += unitUpkeep(u, table, standardUpkeep);
-  }
-  return sum;
-}
-function buildUnitUpkeepTable(rows) {
-  const out = {};
-  for (const row of rows) {
-    const name = row["Jednostka"];
-    if (typeof name !== "string" || name.length === 0) continue;
-    let upkeep;
-    const direct = row["Utrzymanie (Pieniadz/ture)"];
-    if (typeof direct === "number" && Number.isFinite(direct)) {
-      upkeep = direct;
-    } else {
-      for (const key of Object.keys(row)) {
-        if (key.indexOf("Utrzymanie") === 0) {
-          const v = row[key];
-          if (typeof v === "number" && Number.isFinite(v)) {
-            upkeep = v;
-            break;
-          }
-        }
-      }
-    }
-    if (upkeep !== void 0) out[name] = upkeep;
-  }
-  return out;
-}
-function upkeepBalance(income, buildings, units, unitUpkeepTbl, p) {
-  const utrzymanieBudynki = totalBuildingUpkeep(buildings, p.budynekUtrzymanieFlat);
-  const utrzymanieJednostki = totalUnitUpkeep(units, unitUpkeepTbl, p.jednostkaUtrzymanieStd);
-  const utrzymanieRazem = utrzymanieBudynki + utrzymanieJednostki;
-  const inc = Number.isFinite(income) ? income : 0;
-  const saldo = inc - utrzymanieRazem;
-  return {
-    utrzymanieBudynki,
-    utrzymanieJednostki,
-    utrzymanieRazem,
-    saldo,
-    deficyt: saldo < 0
-  };
 }
 
 // src/game/converters.ts
@@ -1253,10 +1413,22 @@ function cityRangeForPopulation(population) {
   if (pop <= 0) return 0;
   return Math.min(Math.max(CITY_RANGE_MIN, pop), CITY_RANGE_CAP);
 }
+function hexKeysWithinRadius(cq, cr, rad, map) {
+  const out = [];
+  const r = Number.isFinite(rad) && rad > 0 ? Math.floor(rad) : 0;
+  for (let dq = -r; dq <= r; dq++) {
+    const lo = Math.max(-r, -dq - r), hi = Math.min(r, -dq + r);
+    for (let dr = lo; dr <= hi; dr++) {
+      const key = `${cq + dq},${cr + dr}`;
+      if (map.hexes[key]) out.push(key);
+    }
+  }
+  return out;
+}
 function okolicaTiles(centerQ, centerR, radius, map, isWorkable) {
   const out = [];
   const rad = Number.isFinite(radius) && radius > 0 ? Math.floor(radius) : 1;
-  for (const key of Object.keys(map.hexes)) {
+  for (const key of hexKeysWithinRadius(centerQ, centerR, rad, map)) {
     const parts = key.split(",");
     const q = Number(parts[0]);
     const rr = Number(parts[1]);
@@ -1325,6 +1497,96 @@ function resolveWorkedTiles(city, map, yieldOf, opts = {}) {
     wagi: wagiForFocus(focus)
   });
 }
+function yieldOfMapHex(map, q, r) {
+  const h = map.hexes[`${q},${r}`];
+  if (!h) return {};
+  const y = tileYield({
+    terenBazowy: h.terenBazowy,
+    nakladka: h.nakladka ?? "brak" /* Brak */,
+    maRzeke: !!(h.rzeka && h.rzeka.obecna),
+    ulepszenieKey: normalizeImprovementKey(String(h.ulepszenie ?? "brak"))
+  });
+  return { zywnosc: y.zywnosc, praca: y.praca, handel: y.handel };
+}
+function seedReczneFromAuto(city, map) {
+  const pop = Math.max(0, Math.floor(city.population ?? 0));
+  if (pop <= 0) return {};
+  const radius = cityRangeForPopulation(pop);
+  const focus = city.okolicaFocus ?? DEFAULT_OKOLICA_FOCUS;
+  const tiles = assignWorkedTiles(city.q, city.r, pop, map, (q, r) => yieldOfMapHex(map, q, r), {
+    radius,
+    wagi: wagiForFocus(focus)
+  });
+  const reczne = {};
+  for (const t of tiles) reczne[t.key] = 1;
+  return reczne;
+}
+function countAssignedWorkers(reczne) {
+  return Object.values(reczne).filter((n) => n > 0).length;
+}
+function pickDeterministicIndex(seed, length) {
+  if (length <= 0) return 0;
+  return (seed % length + length) % length;
+}
+function rebalanceWorkersAfterPopulationChange(city, map, popBefore, popAfter) {
+  const tryb = city.okolicaTryb ?? DEFAULT_OKOLICA_TRYB;
+  const pop = Math.max(0, Math.floor(popAfter));
+  if (popBefore === popAfter) return;
+  if (tryb !== "reczny") {
+    return;
+  }
+  const radius = cityRangeForPopulation(pop);
+  const focus = city.okolicaFocus ?? DEFAULT_OKOLICA_FOCUS;
+  const wagi = wagiForFocus(focus);
+  const tiles = okolicaTiles(city.q, city.r, radius, map);
+  const yieldOf = (q, r) => yieldOfMapHex(map, q, r);
+  let reczne = { ...city.okolicaReczne ?? {} };
+  if (popAfter > popBefore) {
+    if (countAssignedWorkers(reczne) === 0 && pop > 0) {
+      city.okolicaReczne = seedReczneFromAuto({ ...city, population: pop }, map);
+      return;
+    }
+    let need = pop - countAssignedWorkers(reczne);
+    let salt = 0;
+    while (need > 0) {
+      const free = tiles.filter((t) => (reczne[t.key] ?? 0) < 1);
+      if (free.length === 0) break;
+      const idx = pickDeterministicIndex(city.q * 997 + city.r * 991 + pop * 17 + salt, free.length);
+      reczne[free[idx].key] = 1;
+      need--;
+      salt++;
+    }
+    city.okolicaReczne = reczne;
+    return;
+  }
+  if (popAfter < popBefore) {
+    let excess = countAssignedWorkers(reczne) - pop;
+    while (excess > 0) {
+      const keys = Object.keys(reczne).filter((k) => (reczne[k] ?? 0) > 0);
+      if (keys.length === 0) break;
+      let worstKey = null;
+      let worstScore = Infinity;
+      let worstDist = -1;
+      for (const key of keys) {
+        const t = tiles.find((x) => x.key === key);
+        if (!t) {
+          delete reczne[key];
+          excess--;
+          continue;
+        }
+        const s = tileScore(yieldOf(t.q, t.r), wagi);
+        if (s < worstScore || s === worstScore && t.dist > worstDist) {
+          worstScore = s;
+          worstDist = t.dist;
+          worstKey = key;
+        }
+      }
+      if (worstKey) delete reczne[worstKey];
+      excess--;
+    }
+    city.okolicaReczne = reczne;
+  }
+}
 
 // src/game/empire-food.ts
 var _statesRef = /* @__PURE__ */ new Map();
@@ -1383,7 +1645,8 @@ function buildEconParams(data, difficulty = "normal") {
   return {
     progWzrostuWspolczynnik: num(em, "pr\xF3g_wzrostu_wspolczynnik", 8),
     spichlerzZachowaniePoPrzroscie: num(em, "spichlerz_zachowanie_po_wzroscie", 0.5),
-    akweduktProgLudnosci: num(em, "akwedukt_prog_ludnosci", 6),
+    akweduktProgLudnosci: num(em, "akwedukt_prog_ludnosci", 5),
+    akweduktMaxLudnosci: num(em, "akwedukt_max_ludnosci", 15),
     zywnoscZuzytkaPopulacja: num(em, "zywnosc_zuzytka_populacja", 1),
     zdrowieModyfikatorWspolczynnik: num(em, "zdrowie_modyfikator_wspolczynnik", 0.05),
     korupcjaWspolczynnikDystansu: num(em, "korupcja_wspolczynnik_dystansu", 2),
@@ -1403,6 +1666,19 @@ function buildEconParams(data, difficulty = "normal") {
     suwaakPracaBudynki: num(em, "suwak_praca_budynki_domyslnie", 70),
     suwaakPracaTeren: num(em, "suwak_praca_teren_domyslnie", 30)
   };
+}
+function scanCityVicinityTerrain(ctx) {
+  const radius = cityRangeForPopulation(ctx.city.population);
+  let hasLas = false;
+  let hasBagno = false;
+  for (const key of hexKeysWithinRadius(ctx.city.q, ctx.city.r, radius, ctx.map)) {
+    const hex = ctx.map.hexes[key];
+    if (!hex) continue;
+    if (!hasLas && hex.nakladka === "las" /* Las */) hasLas = true;
+    if (!hasBagno && hex.terenBazowy === "bagno") hasBagno = true;
+    if (hasLas && hasBagno) break;
+  }
+  return { hasLas, hasBagno };
 }
 function loadHealthParams(raw, difficulty) {
   const sp = raw;
@@ -1428,15 +1704,22 @@ function loadHealthParams(raw, difficulty) {
     karaZagoszczenie: rd("zdrowie_kara_zag\u0119szczenie", -1),
     progZagoszczenia,
     karaBagno: rd("zdrowie_kara_bagno", -1),
+    bonusLas: rd("zdrowie_bonus_las", 1),
     karaDzungla: rd("zdrowie_kara_dzungla", -1),
     karaBrakWody: rd("zdrowie_kara_brak_wody", -2)
   };
 }
+var __riverHexSetCache = /* @__PURE__ */ new WeakMap();
 function cityHasWaterAccess(city, map) {
-  const riverHexSet = /* @__PURE__ */ new Set();
-  for (const path of map.riverPaths ?? []) {
-    for (const h of path) riverHexSet.add(`${h.q},${h.r}`);
-  }
+  const paths = map.riverPaths ?? [];
+  const riverHexSet = __riverHexSetCache.get(paths) ?? (() => {
+    const s = /* @__PURE__ */ new Set();
+    for (const path of paths) {
+      for (const h of path) s.add(`${h.q},${h.r}`);
+    }
+    __riverHexSetCache.set(paths, s);
+    return s;
+  })();
   function hexHasRiver(q, r) {
     const hex = map.hexes[`${q},${r}`];
     if (hex?.rzeka?.obecna) return true;
@@ -1448,7 +1731,7 @@ function cityHasWaterAccess(city, map) {
   }
   return hexHasRiver(city.q, city.r);
 }
-function computeCityHealth(ludnosc, tiles, builtIds, hp, hasWaterAccess) {
+function computeCityHealth(ludnosc, tiles, builtIds, hp, hasWaterAccess, mapCtx) {
   let z = 0;
   let maRzeke = hasWaterAccess === true;
   if (hasWaterAccess === void 0) {
@@ -1474,6 +1757,11 @@ function computeCityHealth(ludnosc, tiles, builtIds, hp, hasWaterAccess) {
     z += hp.karaZagoszczenie * (ludnosc - hp.progZagoszczenia);
   }
   if (!maRzeke && !maStudnie && !maAkwedukt) z += hp.karaBrakWody;
+  if (mapCtx) {
+    const vicinity = scanCityVicinityTerrain(mapCtx);
+    if (vicinity.hasLas) z += hp.bonusLas;
+    if (vicinity.hasBagno) z += hp.karaBagno;
+  }
   return Math.round(z);
 }
 var HEX_NEIGHBORS = [
@@ -1527,7 +1815,7 @@ function toEconomyCity(city, params, isCapital, zdrowie = 0, buildings = {}) {
     czyStolica: isCapital,
     maSpichlerz: buildings.maSpichlerz ?? false,
     maAkwedukt: buildings.maAkwedukt ?? false,
-    magazynZywnosci: city.magazynZywnosci ?? 0,
+    magazynZywnosci: readCityFoodBufferFromCity(city),
     specjalisci: [],
     kolejkaProdukcji: [],
     podzia\u0142Handlu: normalizePodzialHandlu(city.podzialHandlu ?? {
@@ -1540,8 +1828,19 @@ function toEconomyCity(city, params, isCapital, zdrowie = 0, buildings = {}) {
     }
   };
 }
+function readCityFoodBufferFromCity(city) {
+  return readCityFoodBuffer(city.magazynZywnosci);
+}
+function growthFoodThreshold(population, params, pace = "wysoki", ownerId = 0, difficulty = "normal") {
+  const base = 10 + population * params.progWzrostuWspolczynnik;
+  return applyPopulationGrowthThreshold(base, ownerId, pace, difficulty);
+}
+function growthFoodStorageCap(population, maSpichlerz, params, storageParams, pace = "wysoki", ownerId = 0, difficulty = "normal") {
+  const base = foodStorageCapacity(maSpichlerz, storageParams);
+  return Math.max(base, growthFoodThreshold(population, params, pace, ownerId, difficulty));
+}
 function getCityFood(city) {
-  return city.magazynZywnosci ?? 0;
+  return readCityFoodBufferFromCity(city);
 }
 function sumEconomyForOwner(result, ownerId) {
   let pieniadz = 0;
@@ -1578,7 +1877,8 @@ function sumEconomyForPlayerCities(result, cities) {
   }
   return { pieniadz, nauka, doPuli, praca, kultura };
 }
-function advanceCityEconomy(cities, map, data, difficulty = "normal", econUnits = [], growthMultByCity = /* @__PURE__ */ new Map(), builtByCity = /* @__PURE__ */ new Map(), playerEra = 1, playerZbadane = /* @__PURE__ */ new Set(), ownerCivByOwnerId = /* @__PURE__ */ new Map(), orderMultByCity = /* @__PURE__ */ new Map()) {
+function advanceCityEconomy(cities, map, data, difficulty = "normal", econUnits = [], growthMultByCity = /* @__PURE__ */ new Map(), builtByCity = /* @__PURE__ */ new Map(), playerEra = 1, playerZbadane = /* @__PURE__ */ new Set(), ownerCivByOwnerId = /* @__PURE__ */ new Map(), orderMultByCity = /* @__PURE__ */ new Map(), resolveOwnerEra, resolveOwnerTech, wzrostLudnosciPace = "wysoki") {
+  const gameDifficulty = difficulty;
   const params = buildEconParams(data, difficulty);
   const noBuildings = [];
   const rawEconParams = data.econParams;
@@ -1625,11 +1925,13 @@ function advanceCityEconomy(cities, map, data, difficulty = "normal", econUnits 
     const worked = cityWorkedTilesForEconomy(city, map);
     const builtIds = builtByCity.get(city.id) ?? [];
     const hasWater = cityHasWaterAccess(city, map);
-    const zdrowie = computeCityHealth(city.population, worked, builtIds, healthParams, hasWater);
+    const zdrowie = computeCityHealth(city.population, worked, builtIds, healthParams, hasWater, { city, map });
     const maSpichlerz = builtIds.includes("spichlerz");
     const maAkwedukt = builtIds.includes("akwedukt");
     const econCity = toEconomyCity(city, params, isCapital, zdrowie, { maSpichlerz, maAkwedukt });
-    const walutaOdkryta = playerZbadane.has("Waluta") || playerZbadane.has("waluta");
+    const ownerEra = resolveOwnerEra ? resolveOwnerEra(city.ownerId) : city.ownerId === 0 ? playerEra : 1;
+    const ownerTech = resolveOwnerTech ? resolveOwnerTech(city.ownerId) : playerZbadane;
+    const walutaOdkryta = ownerTech.has("Waluta") || ownerTech.has("waluta");
     const ownerCivKey = ownerCivByOwnerId.get(city.ownerId);
     const walutaMnoznikOverride = walutaOdkryta && ownerCivKey ? mnoznikHandelPieniadzForCiv(ownerCivKey, data.civs, params.walutaMnoznik) : void 0;
     const ownerBonusy = ownerCivKey ? civBonusyForCivKey(ownerCivKey, data.civs) : [];
@@ -1665,7 +1967,7 @@ function advanceCityEconomy(cities, map, data, difficulty = "normal", econUnits 
       // spoleczMoney = strumien Luksus
       yld.pieniadz,
       // miastoMoney  = pieniadz brutto tej tury
-      playerEra,
+      ownerEra,
       wealthParams,
       wealthImmunity ? { minPoziom: 1 } : void 0
     );
@@ -1729,10 +2031,18 @@ function advanceCityEconomy(cities, map, data, difficulty = "normal", econUnits 
     const zywnoscDoRozwoju = yld.zywnosc * (pctRozwoj / 100);
     const growthMult = growthMultByCity.get(city.id) ?? 1;
     const zywnoscDlaWzrostu = growthMult !== 1 ? zywnoscDoRozwoju * growthMult : zywnoscDoRozwoju;
-    const grow = populationGrowth(econCity, zywnoscDlaWzrostu, params);
+    const wzrostThresholdMult = getPopulationGrowthThresholdMultiplier(
+      city.ownerId,
+      wzrostLudnosciPace,
+      gameDifficulty
+    );
+    const grow = populationGrowth(econCity, zywnoscDlaWzrostu, params, wzrostThresholdMult);
     const before = city.population;
     city.population = grow.nowaLudnosc;
-    const ownerEpoka = city.ownerId === 0 ? playerEra : 1;
+    if (grow.nowaLudnosc !== before) {
+      rebalanceWorkersAfterPopulationChange(city, map, before, grow.nowaLudnosc);
+    }
+    const ownerEpoka = ownerEra;
     if (city.manpower === void 0) {
       city.manpower = cityManpowerMax(city.population, ownerEpoka);
     } else if (grow.nowaLudnosc !== before) {
@@ -1744,7 +2054,15 @@ function advanceCityEconomy(cities, map, data, difficulty = "normal", econUnits 
       loadManpowerRegenParams(),
       civManpowerRegenMult(ownerBonusy)
     );
-    const foodCap = foodStorageCapacity(maSpichlerz, storageParams);
+    const foodCap = growthFoodStorageCap(
+      city.population,
+      maSpichlerz,
+      params,
+      storageParams,
+      wzrostLudnosciPace,
+      city.ownerId,
+      gameDifficulty
+    );
     city.magazynZywnosci = Math.min(grow.nowyMagazynZywnosci, foodCap);
     magazynPoTurze = city.magazynZywnosci;
     incomeByOwner.set(city.ownerId, (incomeByOwner.get(city.ownerId) ?? 0) + pieniadzPoWealth);
@@ -1900,10 +2218,10 @@ var map_gen_params_default = {
     miedz: { rarity: 0.1 },
     zelazo: { rarity: 0.08 },
     glina: { rarity: 0.1 },
-    konie: { rarity: 0.1 },
+    konie: { rarity: 0.025 },
     wegiel: { rarity: 0.1 },
-    owce: { rarity: 0.08 },
-    bydlo: { rarity: 0.07 },
+    owce: { rarity: 0.14 },
+    bydlo: { rarity: 0.12 },
     lama: { rarity: 0.06 },
     luksus: { rarity: 0.06 },
     sol: { rarity: 0.12 }
@@ -2060,9 +2378,19 @@ var e_start_params_default = {
     forest_threshold_high: 0.5
   },
   tempo_gry: {
-    szybka: 0.2,
-    standardowa: 1,
-    dluga: 5
+    szybka: 1,
+    standardowa: 2,
+    dluga: 4
+  },
+  koszt_budynkow_pace: {
+    niski: 1,
+    normalny: 2,
+    wysoki: 4
+  },
+  koszt_jednostek_pace: {
+    niski: 1,
+    normalny: 2,
+    wysoki: 4
   },
   zwyciestwo: {
     ostatnia_epoka_v1: 3,
@@ -5998,7 +6326,6 @@ var FAIR_PLAY_DEPOSIT_IDS = [
   "zelazo",
   "miedz",
   "glina",
-  "konie",
   "bydlo",
   "owce"
 ];

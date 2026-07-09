@@ -5,7 +5,14 @@ nigdy nie kopiują (stary system miał 4 sprzeczne „aktualne" md5 — nigdy wi
 Format: data · md5 (pełne) · stempel z menu · co weszło (1 linia) · status.
 
 ## ROBOCZA (gra-robocza\Gra-ROBOCZA.html — wskazywana przez START.html)
-- 2026-07-08 19:50 · **51c2eb248aedac4f97a78854ad9b7422** · stempel: 2026-07-08 19:50 · 7fe722e3 · **WYDAJNOŚĆ D1+D3 na KANONIE `gra/src` + fix drzewka technologii przywrócony na live** ·
+- 2026-07-09 · **00a372f495e8f55ee9edaa4bf9a7914f** · stempel: ROBOCZA · 00a372f4 · **WYDAJNOŚĆ B + D4–D13 (zakładanie miasta 30 s→1,67 s, wejście do miasta 60 s→1,4 s) — diagnostyka zdjęta** ·
+  lokalne enumeracje zamiast pełnomapowych skanów `Object.keys(map.hexes)`: D5/D6/D9 (wejście), **D13** `getQualifyingHexes` w `map/improvement-build.ts` = kandydaci [terytorium+ring ∪ drogi ∪ placed ∪ pendingUndo] zamiast 19×320k; D7 player-only, D10 event-trigger (dirty-flag), D11 gate minimapy, D12 dedup refreshFog/sync; B = geometria heksa bez dolnej pokrywy (~25% mniej tri). Czerwony box + timery serii D usunięte.
+  tsc=0 · smoke OK · owner-economy 9/9 · wire-ekonomia 37/37 · qualify 44/44 · owner-epoch 7/7 · D13 równoważność candidate==full-scan (19/19 typów) · vite-direct (bez export-data.py) · 9 plików + hub na `00a372f4` · verify OK · publikował CODE-INTEGRATOR · **AKTUALNA** (→ promowana do KANON bbcacc13).
+- 2026-07-08 21:27 · **dfa3f2e2f747059884aa6d2918250253** · stempel: 2026-07-08 21:27 · e6ba6cd5 · **B (test wydajności): heks bez dolnej pokrywy — ~25% mniej trójkątów bazowych** ·
+  `hexPrismNoBottomGeo` w `render/scene.ts` (usunięta niewidoczna dolna pokrywa, boki+góra zostają → pixel-identycznie). tsc=0 · vite-direct
+  (bez export-data.py) · 9 plików + hub na md5 `dfa3f2e2` · verify OK. NIEZACOMMITOWANE (build testowy do pomiaru F9: tri przed↔po; kanon 51c2eb24
+  bezpieczny na GitHub 32dca78 = fallback). Po pomiarze: commit jeśli OK / rewert jeśli nie · publikował CODE-INTEGRATOR · **ZASTĄPIONA** (→ 00a372f4 = B + D4–D13 zacommitowane; kanon bbcacc13).
+- 2026-07-08 19:50 · **51c2eb248aedac4f97a78854ad9b7422** · stempel: 2026-07-08 19:50 · 7fe722e3 · **WYDAJNOŚĆ D1+D3 na KANONIE `gra/src` + fix drzewka technologii przywrócony na live** · ZASTĄPIONA (→ dfa3f2e2 test B; ta wersja = KANON 8adcd682) ·
   Zbudowane z committed `gra/src` @ **865c94e** (wypchnięty na origin/main) — koniec ery deploy-only D1/D3, live=commit. vite-direct
   (bez `npm run build`/`export-data.py` → **balans zachowany**: Falanga=45). WSZYSTKIE 9 plików + hub na tym samym md5 `51c2eb24`
   (spójność). tsc=0 · bundle-gate HOST-verified: **drzew 88 / Nauka 129** (stary live c293647 miał 87/128 = **regres drzewka
@@ -101,7 +108,8 @@ Format: data · md5 (pełne) · stempel z menu · co weszło (1 linia) · status
   rozstawione na MAPIE ŚWIATA) — ZŁY POZIOM, Maciej chciał areny · ZASTĄPIONA (→ 486a65094ddb)
 
 ## KANON (gra-kanon\)
-- 2026-07-08 21:02 · **f2dcbbb8d9e7707d779d310ecff9a643** · stempel KANON: **8adcd682** · źródło robocza md5 **51c2eb248aed** · promocja z roboczej PRZED pracą nad wydajnością (Maciej: „wypchnij obecną wersję do kanonu"). Zawartość = live D1/D3 (miasto szybko + mgła) + fix drzewka NA GÓRZE + balans/countery/plony/rzeki/ikony; źródło `865c94e` na origin. **Bez** eksperymentu B (geometria heksa). publikował CODE-INTEGRATOR (publish-kanon-snapshot.ps1) · **AKTUALNA**
+- 2026-07-09 · **bbcacc138dde46ec0b0f136e3097c283** · stempel KANON: **bbcacc13** · źródło robocza md5 **00a372f495e8** · promocja PO pracy nad wydajnością (Maciej: „kanon plus git działaj start"). Zawartość = B (geometria heksa) + D4–D13 (zakładanie 30 s→1,67 s, wejście 60 s→1,4 s), diagnostyka zdjęta; **poprawność ekonomii zachowana** (lokalne enumeracje == pełne skany, D13 równoważność 19/19). Bazuje na 51c2eb24 (D1/D3 + drzewko + balans). publikował CODE-INTEGRATOR (publish-kanon-snapshot.ps1) · **AKTUALNA**
+- 2026-07-08 21:02 · **f2dcbbb8d9e7707d779d310ecff9a643** · stempel KANON: **8adcd682** · źródło robocza md5 **51c2eb248aed** · promocja z roboczej PRZED pracą nad wydajnością (Maciej: „wypchnij obecną wersję do kanonu"). Zawartość = live D1/D3 (miasto szybko + mgła) + fix drzewka NA GÓRZE + balans/countery/plony/rzeki/ikony; źródło `865c94e` na origin. **Bez** eksperymentu B (geometria heksa). publikował CODE-INTEGRATOR (publish-kanon-snapshot.ps1) · **ZASTĄPIONA** (→ bbcacc13, 2026-07-09)
 - 2026-07-06 20:17 · **7856d3451a0cb3963bd3c50c032f5ad5** · stempel wewn.: **d744cd7956fb**
   (2026-07-06 18:10) · promocja Cursor Grupa G z roboczej (Maciej: playtest OK + GitHub
   bad0c7f). Zawartość: rzeki wodospad, KONTRAKT #8 ikony, UX emoji→SVG, siatka rostera
@@ -112,6 +120,7 @@ Format: data · md5 (pełne) · stempel z menu · co weszło (1 linia) · status
   **ZASTĄPIONA** (→ 7856d345)
 
 ## FINALNA (root)
-- 2026-07-08 21:02 · **605761807eb0b79f43c047c4e70916f7** · stempel FINALNA · zsynchronizowana z kanonem 51c2eb24 (Gra-FINALNA.html) · **AKTUALNA**
+- 2026-07-09 · **676809f2bdf06d7c5a55bfb45ad1469e** · stempel FINALNA · zsynchronizowana z kanonem bbcacc13 (źródło robocza 00a372f4; Gra-FINALNA.html) · **AKTUALNA**
+- 2026-07-08 21:02 · **605761807eb0b79f43c047c4e70916f7** · stempel FINALNA · zsynchronizowana z kanonem 51c2eb24 (Gra-FINALNA.html) · **ZASTĄPIONA** (→ 676809f2, 2026-07-09)
 - 2026-07-06 20:17 · **7856d3451a0cb3963bd3c50c032f5ad5** · zsynchronizowana z kanonem
   (Gra-FINALNA.html) · **ZASTĄPIONA** (→ 60576180)

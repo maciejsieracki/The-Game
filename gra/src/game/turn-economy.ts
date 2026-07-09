@@ -97,6 +97,7 @@ import {
   cityRangeForPopulation,
   resolveWorkedTiles,
   rebalanceWorkersAfterPopulationChange,
+  hexKeysWithinRadius,
   type TileYield as OkolicaTileYield,
 } from './okolica';
 import type { OrderYieldMults } from './order';
@@ -218,14 +219,12 @@ function scanCityVicinityTerrain(ctx: CityHealthMapContext): CityVicinityTerrain
   const radius = cityRangeForPopulation(ctx.city.population);
   let hasLas = false;
   let hasBagno = false;
-  for (const key of Object.keys(ctx.map.hexes)) {
+  // D5: lokalna enumeracja heksów w promieniu (jak D1) zamiast skanu CAŁEJ mapy.
+  // Ta funkcja leci per computeView, a computeView jest wołane w pętli po miastach
+  // (panel miasta) → stary skan 320k dawał O(miasta × 320k) = kilkadziesiąt sekund na Super Huge.
+  for (const key of hexKeysWithinRadius(ctx.city.q, ctx.city.r, radius, ctx.map)) {
     const hex = ctx.map.hexes[key];
     if (!hex) continue;
-    const [qs, rs] = key.split(',');
-    const q = hex.coords?.q ?? Number(qs);
-    const r = hex.coords?.r ?? Number(rs);
-    if (!Number.isFinite(q) || !Number.isFinite(r)) continue;
-    if (hexDistance(ctx.city.q, ctx.city.r, q, r) > radius) continue;
     if (!hasLas && hex.nakladka === Nakladka.Las) hasLas = true;
     if (!hasBagno && (hex.terenBazowy as string) === 'bagno') hasBagno = true;
     if (hasLas && hasBagno) break;
@@ -278,11 +277,20 @@ function loadHealthParams(
 /**
  * Czy miasto ma dostęp do wody (D17-A): centrum lub sąsiad z rzeką / riverPaths.
  */
+const __riverHexSetCache = new WeakMap<object, Set<string>>();
 export function cityHasWaterAccess(city: Pick<City, 'q' | 'r'>, map: GameMap): boolean {
-  const riverHexSet = new Set<string>();
-  for (const path of map.riverPaths ?? []) {
-    for (const h of path) riverHexSet.add(`${h.q},${h.r}`);
-  }
+  // D6: memoizuj zbiór heksów rzek per referencja riverPaths — cityHasWaterAccess leci
+  // per computeView w pętli po miastach, a odbudowa całego zbioru (alokacje stringów) za
+  // każdym razem to koszt + GC na Super Huge. Cache auto-inwaliduje, gdy riverPaths się zmieni.
+  const paths = map.riverPaths ?? [];
+  const riverHexSet: Set<string> = __riverHexSetCache.get(paths as object) ?? (() => {
+    const s = new Set<string>();
+    for (const path of paths) {
+      for (const h of path) s.add(`${h.q},${h.r}`);
+    }
+    __riverHexSetCache.set(paths as object, s);
+    return s;
+  })();
 
   function hexHasRiver(q: number, r: number): boolean {
     const hex = map.hexes[`${q},${r}`];

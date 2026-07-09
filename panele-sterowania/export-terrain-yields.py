@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
-# export-terrain-yields.py — Panel-A-Plony-Terenu.xlsx → gra/data/terrain-yields.json
+# export-terrain-yields.py — Panel-A.xlsx (arkusze Teren-bazowy + Bonusy-nakladki) → gra/data/terrain-yields.json
 # Uruchom: python panele-sterowania/export-terrain-yields.py
 # Maciej nie używa terminala — agent odpala po "eksportuj plony terenu".
+# SYNC-PANELI [17:05]: plony terenu scalone do Panel-A (dawniej osobny Panel-A-Plony-Terenu.xlsx → archiwum/).
 import argparse
 import json
 import os
@@ -15,7 +16,7 @@ except ImportError:
 
 ROOT = os.path.normpath(os.path.join(os.path.dirname(__file__), ".."))
 DATA = os.path.join(ROOT, "gra", "data")
-DEFAULT_XLSX = os.path.join(os.path.dirname(__file__), "Panel-A-Plony-Terenu.xlsx")
+DEFAULT_XLSX = os.path.join(os.path.dirname(__file__), "Panel-A.xlsx")
 YIELDS_PATH = os.path.join(DATA, "terrain-yields.json")
 
 EDITABLE_FIELDS = ("Żywność", "Praca", "Handel", "Uwagi")

@@ -373,12 +373,6 @@ function applyImprovementBonuses(yld, improvementKeys) {
 var ROAD_MIN_MOVE_COST = 1 / 3;
 
 // src/units/setup.ts
-function hexDistance(aq, ar, bq, br) {
-  const dq = Math.abs(aq - bq);
-  const dr = Math.abs(ar - br);
-  const ds = Math.abs(-aq - ar - (-bq - br));
-  return Math.max(dq, dr, ds);
-}
 var DEFAULT_TERRAIN_COSTS = {
   ["laka" /* Laka */]: 1,
   ["rownina" /* Rownina */]: 1,
@@ -688,19 +682,139 @@ function normalizePodzialHandlu(split) {
 }
 var MIN_CITY_DISTANCE = miasto_params_default.min_dystans_miast?.wartosc ?? 5;
 
-// src/game/economy.ts
-var TERRAIN_YIELDS = {
-  ["laka" /* Laka */]: { zywnosc: 4, praca: 1, handel: 1, drewno: 1, kamien: 0 },
-  ["rownina" /* Rownina */]: { zywnosc: 2, praca: 1, handel: 1, drewno: 2, kamien: 1 },
-  ["wzgorza" /* Wzgorza */]: { zywnosc: 1, praca: 2, handel: 0, drewno: 2, kamien: 2 },
-  ["gory" /* Gory */]: { zywnosc: 0, praca: 0, handel: 0, drewno: 2, kamien: 5 },
-  ["wybrzeze" /* Wybrzeze */]: { zywnosc: 3, praca: 2, handel: 2, drewno: 0, kamien: 0 },
-  ["morze" /* Morze */]: { zywnosc: 2, praca: 0, handel: 2, drewno: 0, kamien: 0 },
-  ["pustynia" /* Pustynia */]: { zywnosc: 0, praca: 0, handel: 1, drewno: 0, kamien: 0 }
+// data/terrain-yields.json
+var terrain_yields_default = {
+  terrain_types: [
+    {
+      Teren: "\u0141\u0105ka",
+      \u017Bywno\u015B\u0107: 3,
+      Praca: 1,
+      Handel: 1,
+      Drewno: 1,
+      Kamie\u0144: 0,
+      Suma: 6,
+      Uwagi: null
+    },
+    {
+      Teren: "R\xF3wnina",
+      \u017Bywno\u015B\u0107: 2,
+      Praca: 2,
+      Handel: 1,
+      Drewno: 2,
+      Kamie\u0144: 1,
+      Suma: 8,
+      Uwagi: null
+    },
+    {
+      Teren: "Wzg\xF3rza",
+      \u017Bywno\u015B\u0107: 1,
+      Praca: 3,
+      Handel: 0,
+      Drewno: 2,
+      Kamie\u0144: 2,
+      Suma: 8,
+      Uwagi: "Kamie\u0144/Ruda po zbudowaniu Kopalni; +obrona"
+    },
+    {
+      Teren: "G\xF3ry",
+      \u017Bywno\u015B\u0107: 0,
+      Praca: 4,
+      Handel: 0,
+      Drewno: 2,
+      Kamie\u0144: 5,
+      Suma: 11,
+      Uwagi: "Nieprzechodnie dla jednostek l\u0105dowych; Kamie\u0144/Ruda po Kopalni"
+    },
+    {
+      Teren: "Wybrze\u017Ce",
+      \u017Bywno\u015B\u0107: 3,
+      Praca: 2,
+      Handel: 2,
+      Drewno: 0,
+      Kamie\u0144: 0,
+      Suma: 7,
+      Uwagi: "Teren morski przy l\u0105dzie (osobny od rzeki); pod port"
+    },
+    {
+      Teren: "Morze",
+      \u017Bywno\u015B\u0107: 2,
+      Praca: 0,
+      Handel: 2,
+      Drewno: 0,
+      Kamie\u0144: 0,
+      Suma: 4,
+      Uwagi: "Otwarta woda; rybo\u0142\xF3wstwo"
+    },
+    {
+      Teren: "Pustynia",
+      \u017Bywno\u015B\u0107: 0,
+      Praca: 0,
+      Handel: 1,
+      Drewno: 0,
+      Kamie\u0144: 0,
+      Suma: 1,
+      Uwagi: null
+    }
+  ],
+  terrain_modifiers: [
+    {
+      Modyfikator: "Rzeka",
+      \u017Bywno\u015B\u0107: 3,
+      Praca: 2,
+      Handel: 2,
+      Drewno: 0,
+      Kamie\u0144: 0,
+      Suma: 7,
+      Uwagi: "Dodaje bonus do DOWOLNEGO pola z rzek\u0105 (Tw\xF3j opis); razem +7 \u2014 mocny, mo\u017Cna stonowa\u0107"
+    },
+    {
+      Modyfikator: "Las (nak\u0142adka)",
+      \u017Bywno\u015B\u0107: -1,
+      Praca: 3,
+      Handel: -1,
+      Drewno: 3,
+      Kamie\u0144: 0,
+      Suma: 4,
+      Uwagi: "Pod lasem zawsze jest teren bazowy; las: \u2212\u017Cywno\u015B\u0107, \u2212handel, +praca (+3), +drewno \u2014 bez wzgl\u0119du na \u{1F464}/jednostk\u0119"
+    }
+  ]
 };
-var RIVER_MODIFIER = { zywnosc: 3, praca: 2, handel: 2, drewno: 0, kamien: 0 };
-var FOREST_MODIFIER = { zywnosc: -1, praca: 3, handel: -1, drewno: 3, kamien: 0 };
+
+// src/game/economy.ts
 var ZERO_YIELD = { zywnosc: 0, praca: 0, handel: 0, drewno: 0, kamien: 0 };
+var TERRAIN_NAME_TO_ENUM = {
+  "\u0141\u0105ka": "laka" /* Laka */,
+  "R\xF3wnina": "rownina" /* Rownina */,
+  "Wzg\xF3rza": "wzgorza" /* Wzgorza */,
+  "G\xF3ry": "gory" /* Gory */,
+  "Wybrze\u017Ce": "wybrzeze" /* Wybrzeze */,
+  "Morze": "morze" /* Morze */,
+  "Pustynia": "pustynia" /* Pustynia */
+};
+function terrainRowToTileYield(row) {
+  return {
+    zywnosc: Number(row["\u017Bywno\u015B\u0107"] ?? 0),
+    praca: Number(row["Praca"] ?? 0),
+    handel: Number(row["Handel"] ?? 0),
+    drewno: Number(row["Drewno"] ?? 0),
+    kamien: Number(row["Kamie\u0144"] ?? 0)
+  };
+}
+function buildTerrainYields() {
+  const out = {};
+  for (const row of terrain_yields_default.terrain_types) {
+    const key = TERRAIN_NAME_TO_ENUM[row.Teren];
+    if (key) out[key] = terrainRowToTileYield(row);
+  }
+  return out;
+}
+function terrainModifier(name) {
+  const row = terrain_yields_default.terrain_modifiers.find((m) => m["Modyfikator"] === name);
+  return row ? terrainRowToTileYield(row) : ZERO_YIELD;
+}
+var TERRAIN_YIELDS = buildTerrainYields();
+var RIVER_MODIFIER = terrainModifier("Rzeka");
+var FOREST_MODIFIER = terrainModifier("Las (nak\u0142adka)");
 function tileYield(tile) {
   const base = TERRAIN_YIELDS[tile.terenBazowy] ?? ZERO_YIELD;
   let zywnosc = base.zywnosc;
@@ -876,6 +990,18 @@ function cityRangeForPopulation(population) {
   if (pop <= 0) return 0;
   return Math.min(Math.max(CITY_RANGE_MIN, pop), CITY_RANGE_CAP);
 }
+function hexKeysWithinRadius(cq, cr, rad, map) {
+  const out = [];
+  const r = Number.isFinite(rad) && rad > 0 ? Math.floor(rad) : 0;
+  for (let dq = -r; dq <= r; dq++) {
+    const lo = Math.max(-r, -dq - r), hi = Math.min(r, -dq + r);
+    for (let dr = lo; dr <= hi; dr++) {
+      const key = `${cq + dq},${cr + dr}`;
+      if (map.hexes[key]) out.push(key);
+    }
+  }
+  return out;
+}
 
 // src/game/order.ts
 var FALLBACK_ORDER_PARAMS = Object.freeze({
@@ -952,14 +1078,9 @@ function scanCityVicinityTerrain(ctx) {
   const radius = cityRangeForPopulation(ctx.city.population);
   let hasLas = false;
   let hasBagno = false;
-  for (const key of Object.keys(ctx.map.hexes)) {
+  for (const key of hexKeysWithinRadius(ctx.city.q, ctx.city.r, radius, ctx.map)) {
     const hex = ctx.map.hexes[key];
     if (!hex) continue;
-    const [qs, rs] = key.split(",");
-    const q = hex.coords?.q ?? Number(qs);
-    const r = hex.coords?.r ?? Number(rs);
-    if (!Number.isFinite(q) || !Number.isFinite(r)) continue;
-    if (hexDistance(ctx.city.q, ctx.city.r, q, r) > radius) continue;
     if (!hasLas && hex.nakladka === "las" /* Las */) hasLas = true;
     if (!hasBagno && hex.terenBazowy === "bagno") hasBagno = true;
     if (hasLas && hasBagno) break;
@@ -995,11 +1116,17 @@ function loadHealthParams(raw, difficulty) {
     karaBrakWody: rd("zdrowie_kara_brak_wody", -2)
   };
 }
+var __riverHexSetCache = /* @__PURE__ */ new WeakMap();
 function cityHasWaterAccess(city, map) {
-  const riverHexSet = /* @__PURE__ */ new Set();
-  for (const path of map.riverPaths ?? []) {
-    for (const h of path) riverHexSet.add(`${h.q},${h.r}`);
-  }
+  const paths = map.riverPaths ?? [];
+  const riverHexSet = __riverHexSetCache.get(paths) ?? (() => {
+    const s = /* @__PURE__ */ new Set();
+    for (const path of paths) {
+      for (const h of path) s.add(`${h.q},${h.r}`);
+    }
+    __riverHexSetCache.set(paths, s);
+    return s;
+  })();
   function hexHasRiver(q, r) {
     const hex = map.hexes[`${q},${r}`];
     if (hex?.rzeka?.obecna) return true;

@@ -1606,6 +1606,15 @@ CZEKAM-NA: Maciej — „start GRAFIKA-3D" u Code (po bieżących).
 
 ---
 
+## [00:45 PL, 2026-07-09] MASTER → CODE-INTEGRATOR — GRAFIKA-3D: ZAKRES PEŁNY zatwierdzony (partie 1+2+3A+3B+TEREN) — wykonuj wg pliku dyspozycji
+
+Maciej zatwierdził WSZYSTKIE partie grafiki ROBLOX. **Jedyne źródło szczegółów wykonania: `dyspozycje/DYSPOZYCJA-GRAFIKA-3D-partia1.md`** (zaktualizowany: sekcje partii 1, 2+3A+3B, TEREN góry-wzgórza, WYMÓG SKALI, KOMPLETNOŚĆ, bramki całości).
+Skrót zakresu: koń (konnica z jeźdźcem / złoże koni bez jeźdźca / rydwan-onager) · pastwisko+farma · kopalnia/kamieniołom/tartak · wyrąb/obóz łowiecki/glinianka/warzelnia/łodzie/stadnina · irygacja/pole/fort(SKALA!)/posterunek/drogi/złoża ×5 · GÓRY 5 + WZGÓRZA 5 (InstancedMesh, hash mapy nietykalny). Pliki modeli: `gra-robocza/_sandbox/MASTER/render-{kon,zwierzeta,ulepszenia,teren}/*.ts` (instrukcje wpięcia w nagłówkach TS + w dyspozycji).
+Tryb: commity per partia → JEDEN build+deploy na końcu → pełny test Macieja. Kolejność z bieżącymi tematami: GRAFIKA-3D po domknięciu deployu D1+D3 i (jeśli trwa) SYNC-PANELI — nie mieszać w jednym buildzie z niczym innym.
+CZEKAM-NA: Maciej — „start GRAFIKA-3D" u Code; CODE — wykonanie + meldunek ze stemplem.
+
+---
+
 ## [19:34 PL, 2026-07-08] CODE-INTEGRATOR → MASTER — [15:40] WYKONANE: utworzony `CODE-DO-MASTERA.md` + dry-run potwierdzony → GOTOWE DO PUSHA
 
 [15:40] wykonane: utworzyłem `dyspozycje/_handoff/CODE-DO-MASTERA.md` (append-only, konwencja jak kanał), pierwszy wpis = pełny skrót stanu dry-runu D1/D3 + co zostało do pusha. Pełna treść tam; tu skrót.
@@ -1647,3 +1656,17 @@ CZEKAM-NA: Maciej — „dalej A/B/E" i/lub przegląd C/D/merge + „commituj".
 Na prośbę Macieja („wypchnij obecną wersję do kanonu" przed B/A): promocja robocza→kanon sankcjonowanym publish-kanon-snapshot.ps1. Kanon = **51c2eb24** (D1/D3 + fix drzewka + balans SYNC), stempel **KANON 8adcd682 · 21:02**; Gra-FINALNA.html (root) stempel FINALNA 60576180; KANON-MANIFEST sourceRoboczaMd5=51c2eb24; backup+retencja OK. **Bez eksperymentu B** (kanon kopiuje istniejący bundel robocza, nie przebudowuje). WERSJE zaktualizowane (KANON+FINALNA).
 OTWARTE: git commit+push kanonu na GitHub (jak poprzednio bad0c7f) — czeka na „pushuj" Macieja (osobna decyzja + zakres commita). B/A (wydajność) rusza po tym.
 CZEKAM-NA: Maciej — czy commit+push kanonu na GitHub; potem deploy B do pomiaru.
+
+---
+
+## [21:14 PL, 2026-07-08] CODE-INTEGRATOR to MASTER — KANON na GitHub: commit 32dca78 wypchniety
+
+Maciej: "zrob git commit + push kanon". Zrobione: commit 32dca78 (865c94e..32dca78 main->main), 29 plikow = bundle kanon + robocza 51c2eb24 + Gra-FINALNA + WERSJE + meldunki. Staz zawezony: BEZ srcKopiaMaster (szum CRLF), BEZ eksperymentu B (scene.ts), BEZ paneli SYNC. HEAD == origin/main.
+CZEKAM-NA: Maciej - "deploy B" (pozniej) -> pomiar F9.
+
+---
+
+## [21:28 PL, 2026-07-08] CODE-INTEGRATOR to MASTER — DEPLOY B (test wydajnosci) na robocza
+
+Deploy B: heks bez dolnej pokrywy (~25% mniej trojkatow bazowych, pixel-identycznie). Bundle dfa3f2e2, stempel ROBOCZA e6ba6cd5 21:27, 9 plikow + hub, verify OK. NIEZACOMMITOWANE (build testowy). Kanon 51c2eb24 (8adcd682) bezpieczny na GitHub 32dca78 = fallback.
+CZEKAM-NA: Maciej — pomiar F9 (tri przed 7.69M -> po ~5.8M; FPS) -> werdykt OK (commit B) / nie (rewert), potem A (chunki).

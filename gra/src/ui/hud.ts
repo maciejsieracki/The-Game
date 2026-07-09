@@ -769,9 +769,15 @@ function mountMinimap(): void {
   }
 }
 
+let minimapDirty = true;
+/** D11: minimapa przerysowuje 320k heksów — rób to TYLKO gdy mapa/mgła/terytorium się zmieni
+ *  (wołane z refreshFog), nie na każdym odświeżeniu HUD (wejście do miasta/hover/ekonomia). */
+export function markMinimapDirty(): void { minimapDirty = true; }
 function refreshMinimap(): void {
   if (cfg === null) return;
   if (!miniMounted) { mountMinimap(); }
+  if (!minimapDirty) return;
+  minimapDirty = false;
   if (minimapApi !== null) {
     minimapApi.update();
     if (cfg.getState !== undefined) setMinimapTurnLabel(minimapApi, cfg.getState().tura);

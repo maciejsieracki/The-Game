@@ -208,7 +208,7 @@ import {
   resolveMapUnitCursor,
   CURSOR_MAP_DEFAULT,
 } from './ui/mapUnitCursor';
-import { isInTerritory, territoryOwnerAt, isPlayerTerritoryHex } from './map/territory';
+import { isInTerritory, territoryOwnerAt, isPlayerTerritoryHex, cityTerritoryRadius } from './map/territory';
 import type { CityNode, TerritoryNode } from './map/territory';
 import {
   advanceCityEconomy, type EconUnit,
@@ -269,7 +269,7 @@ import {
   type BattleSummaryWinner,
 } from './game/battle-summary';
 import type { PreBattleInfo, PreBattleUnit } from './ui/preBattle';
-import { showHud, updateHud as refreshD1bHud, hideHud } from './ui/hud';
+import { showHud, updateHud as refreshD1bHud, hideHud, markMinimapDirty } from './ui/hud';
 import {
   createCityListHud,
   hideCityListHud,
@@ -382,7 +382,7 @@ import {
 } from './game/empire-food';
 import { loadUpkeepParams, buildUnitFoodTable, militaryFoodConsumption } from './game/economy-upkeep';
 import { computePowerContributionsCityEconomy, buildPowerSnapshots, type PowerOwnerSnapshot } from './game/power';
-import { citySightRadius, toggleTileWorker, cityRangeForPopulation, yieldOfMapHex, resolveWorkedTiles, seedReczneFromAuto, collectWorkedHexKeysForOwner } from './game/okolica';
+import { citySightRadius, toggleTileWorker, cityRangeForPopulation, yieldOfMapHex, resolveWorkedTiles, seedReczneFromAuto, collectWorkedHexKeysForOwner, hexKeysWithinRadius } from './game/okolica';
 import { getCityResourceAccessForCity } from './game/resource-access';
 import { isForeignReligionDominant, resolveOwnCultureShare, stolicaEasyBonusActive } from './game/society-inputs';
 import { loadWealthParams, type RawWealthParamsJson } from './game/wealth';
@@ -871,13 +871,19 @@ async function boot(): Promise<void> {
     function countImprovementsForOwner(ownerId: number): number {
       const nodes = cityNodesForOwner(ownerId);
       if (nodes.length === 0) return 0;
+      // D9: lokalna enumeracja (jak countTerritoryHexes) zamiast skanu całej mapy — wynik 1:1.
+      const seen = new Set<string>();
       let n = 0;
-      for (const k of Object.keys(map.hexes)) {
-        const [qs, rs] = k.split(',');
-        if (!isInTerritory(Number(qs), Number(rs), nodes)) continue;
-        const hex = map.hexes[k];
-        if (!hex) continue;
-        n += improvementKeysForHex(hex).length;
+      for (const node of nodes) {
+        for (const key of hexKeysWithinRadius(node.q, node.r, cityTerritoryRadius(node) + 1, map)) {
+          if (seen.has(key)) continue;
+          const hex = map.hexes[key];
+          if (!hex) continue;
+          const [qs, rs] = key.split(',');
+          if (!isInTerritory(Number(qs), Number(rs), nodes)) continue;
+          seen.add(key);
+          n += improvementKeysForHex(hex).length;
+        }
       }
       return n;
     }
@@ -918,7 +924,19 @@ async function boot(): Promise<void> {
       });
     }
 
+    // D10: model ZDARZENIOWY — przelicz ekonomię/moc TYLKO po realnej zmianie (trigger),
+    // nie na każdym odświeżeniu HUD ani co turę. markCityStateDirty() wołane w punktach zmiany:
+    // produkcja, pola robocze, podział handlu/pracy, podział żywności, budynek/rush, założenie
+    // miasta oraz koniec tury (siatka bezpieczeństwa dla zmian systemowych: wzrost/tech/zdobycie).
+    let empireEconDirty = true;
+    let powerDirty = true;
+    function markCityStateDirty(): void {
+      empireEconDirty = true;
+      powerDirty = true;
+    }
     function refreshObjectivePowerCache(): void {
+      if (!powerDirty && objectivePowerByOwner.size > 0) return;
+      powerDirty = false;
       objectivePowerByOwner = new Map<number, ObjectivePowerResult>();
       for (const oid of allPowerOwnerIds()) {
         objectivePowerByOwner.set(oid, buildObjectivePowerForOwner(oid));
@@ -1021,6 +1039,38 @@ async function boot(): Promise<void> {
     function clearResourceOverlays(): void {
       for (const { group } of resourceOverlays) scene.remove(group);
       resourceOverlays.length = 0;
+    }
+
+    /** D4: odśwież nakładkę surowca TYLKO na jednym heksie (zamiast pełnomapowego rebuildResourceOverlays).
+     *  Ta sama logika per-hex co rebuild, ale O(1) — używane przy zakładaniu miasta. */
+    function syncResourceOverlayAtHex(hexKey: string): void {
+      for (let i = resourceOverlays.length - 1; i >= 0; i--) {
+        if (resourceOverlays[i]!.hexKey === hexKey) {
+          scene.remove(resourceOverlays[i]!.group);
+          resourceOverlays.splice(i, 1);
+        }
+      }
+      const hex = map.hexes[hexKey];
+      if (!hex) return;
+      const hexZ = hex as typeof hex & { zloze?: string };
+      if (hex.terenBazowy === TerenBazowy.Morze || hex.terenBazowy === TerenBazowy.Wybrzeze) return;
+      const hasNakladka = hex.nakladka && hex.nakladka !== Nakladka.Brak && hex.nakladka !== Nakladka.Las;
+      const zlozeShown = visibleZloze(hexZ, overlayDepositEra);
+      if (!hasNakladka && !zlozeShown) return;
+      if (isLivestockDepositNakladka(hex.nakladka)) return;
+      if (improvementMeshes.has(hexKey)) return;
+      try {
+        const ov = buildStyledResourceOverlay(hex.nakladka, GAME_MAP_RENDER_STYLE, zlozeShown);
+        if (!ov) return;
+        const { x, z } = axialToWorld(hex.coords.q, hex.coords.r, HEX_R);
+        const baseY = TERRAIN_SURFACE_Y[hex.terenBazowy] ?? 0.45;
+        ov.position.set(x, baseY + 0.01, z);
+        ov.rotation.y = hex.coords.q * 1.3 + hex.coords.r * 0.7;
+        scene.add(ov);
+        resourceOverlays.push({ group: ov, hexKey });
+      } catch (err) {
+        console.warn('[main] buildStyledResourceOverlay error', hex.nakladka, err);
+      }
     }
 
     function rebuildResourceOverlays(): number {
@@ -1253,6 +1303,7 @@ async function boot(): Promise<void> {
       completed: ProductionItem,
       prodAfterAdvance: CityProduction,
     ): { prod: CityProduction; requeueManpower?: boolean } {
+      markCityStateDirty(); // D10: ukończenie produkcji (budynek/jednostka/cud) → przelicz ekonomię/moc
       const wonderId = parseWonderProdId(completed.id);
       if (wonderId) {
         if (completedWorldWonders.includes(wonderId)) {
@@ -1332,6 +1383,7 @@ async function boot(): Promise<void> {
       const ownerId = city?.ownerId ?? 0;
       const next = sanitizeProductionQueue(ownerId, { ...prod, kolejka: [...prod.kolejka] });
       cityProd.set(cityId, next);
+      markCityStateDirty(); // D10: zmiana produkcji → przelicz ekonomię/moc
     }
 
     function wonderHudTargetLabel(): string | null {
@@ -1596,12 +1648,18 @@ async function boot(): Promise<void> {
 
     function countTerritoryHexes(nodes: CityNode[]): number {
       if (nodes.length === 0) return 0;
-      let n = 0;
-      for (const k of Object.keys(map.hexes)) {
-        const [qs, rs] = k.split(',');
-        if (isInTerritory(Number(qs), Number(rs), nodes)) n++;
+      // D9: enumeruj heksy LOKALNIE (dyski wokół miast, promień = cityTerritoryRadius +1 margines)
+      // zamiast skanu CAŁEJ mapy. Ten sam predykat isInTerritory + dedup + tylko istniejące heksy
+      // → wynik IDENTYCZNY jak skan 320k, ale O(miasta × promień²).
+      const seen = new Set<string>();
+      for (const node of nodes) {
+        for (const key of hexKeysWithinRadius(node.q, node.r, cityTerritoryRadius(node) + 1, map)) {
+          if (seen.has(key) || !map.hexes[key]) continue;
+          const [qs, rs] = key.split(',');
+          if (isInTerritory(Number(qs), Number(rs), nodes)) seen.add(key);
+        }
       }
-      return n;
+      return seen.size;
     }
 
     function buildPowerSnapshotsForTurn(econ: { perCity: Array<{ ownerId: number; pieniadz: number }> }): PowerOwnerSnapshot[] {
@@ -1754,6 +1812,7 @@ async function boot(): Promise<void> {
       if (res.ok) {
         city.okolicaReczne = res.reczne;
         city.okolicaTryb = 'reczny';
+        markCityStateDirty(); // D10: zmiana pól roboczych → przelicz
         updateHud();
         refreshCityPanelIfOpen();
         syncOkolicaOverlay();
@@ -2214,6 +2273,7 @@ async function boot(): Promise<void> {
           const st = empireFoodStates.get(oid) ?? freshEmpireFoodState(empireFoodDefaultPct());
           st.procentRozwoj = pct;
           empireFoodStates.set(oid, st);
+          markCityStateDirty(); // D10: podział żywności (wojsko vs miasto) → przelicz
           if (oid === 0) updateHud();
         },
         getCultureState: (cityId: string) => {
@@ -2851,9 +2911,9 @@ async function boot(): Promise<void> {
         }
       }
 
-      refreshFog();
+      // D12: refreshFog + cityRenderer.sync robi wywołujący (tryFoundPlayerCityAt) RAZ po spawnie —
+      // nie dublujemy tu (było 2× pełny fog + 2× odbudowa WSZYSTKICH miast na Super Huge).
       initDiplomaticContactSnapshot();
-      cityRenderer.sync(cities, _cityRenderOpts());
       console.log('[ClusterStart] deferred same-type rivals=' + rivalCount + ' (pre-planned cluster)');
     }
 
@@ -3189,6 +3249,7 @@ async function boot(): Promise<void> {
      */
     function refreshFog(): void {
       if (galleryOn) return;
+      markMinimapDirty(); // D11: zmiana mgły/mapy → minimapa do przerysowania (poza tym pomijana)
       const vis = currentVisible();
       addExplored(explored, vis);
       const exploredForRender = fogExploredForRender();
@@ -3876,9 +3937,12 @@ async function boot(): Promise<void> {
       placedImprovements.delete(hk);
       hexClearingStates.delete(hk);
       removeClearingMesh(hk);
-      rebuildResourceOverlays();
+      // D4: zamiast pełnomapowego rebuildResourceOverlays (skan 320k + odbudowa wszystkich meshy)
+      // odświeżamy nakładkę surowca TYLKO na heksie zakładanego miasta.
+      syncResourceOverlayAtHex(hk);
       seedCityReligionAtFounding(c);
       seedWealthImmunityAtFounding(c);
+      markCityStateDirty(); // D10: założenie miasta → przelicz ekonomię/moc państwa
     }
 
     function reapplyCityHexDecorHides(): void {
@@ -4061,7 +4125,7 @@ async function boot(): Promise<void> {
       hideCityPanelFull();
       clearPlayerUnitSelection();
       lastBHex = null;
-      refreshFog();
+      // D12: usunięty zbędny drugi refreshFog (pierwszy — po spawnie rywali — już odświeżył mgłę).
       updateHud();
       refreshD1bHud();
       showHintMessage(
@@ -5402,6 +5466,8 @@ async function boot(): Promise<void> {
 
     /** Przelicz stawki imperium na HUD z bieżącego stanu miast (bez mutacji). */
     function refreshLiveEmpireRates(): void {
+      if (!empireEconDirty) return;   // D10: przelicz tylko po zmianie (trigger), nie co odświeżenie
+      empireEconDirty = false;
       const playerCities = cities.filter(c => c.ownerId === 0);
       if (playerCities.length === 0) {
         _liveFoodBrutto = 0;
@@ -5410,8 +5476,11 @@ async function boot(): Promise<void> {
       const ownerCivMap = new Map<number, string>();
       ownerCivMap.set(0, (player.civType as string) || 'grecy');
       for (const [oid, civ] of aiOwnerCivMap) ownerCivMap.set(oid, civ);
+      // D7: licz ekonomię TYLKO miast gracza (HUD używa wyłącznie ownerId===0).
+      // Wcześniej szło `cities` (gracz + całe AI) → O(wszystkie miasta) na każdym updateHud
+      // = główny koszt wejścia do miasta na Super Huge (14 s w pomiarze).
       const preview = previewCityEconomy(
-        cities,
+        playerCities,
         map,
         data,
         _menuDifficulty,
@@ -6744,6 +6813,7 @@ async function boot(): Promise<void> {
         const c = cities.find(ct => ct.id === cityId);
         if (c && c.ownerId === 0) {
           c.podzialHandlu = { ...split };
+          markCityStateDirty(); // D10: podział podatków/handlu → przelicz
           updateHud();
         }
       },
@@ -6751,6 +6821,7 @@ async function boot(): Promise<void> {
         const c = cities.find(ct => ct.id === cityId);
         if (c && c.ownerId === 0) {
           c.podzialPracy = { procentBudynki: split.procentBudynki };
+          markCityStateDirty(); // D10: podział pracy → przelicz
           updateHud();
         }
       },
@@ -10701,6 +10772,7 @@ async function boot(): Promise<void> {
           console.error('[Victory] Blad sprawdzania warunkow zwyciestwa:', eVic);
         }
 
+        markCityStateDirty(); // D10: koniec tury — siatka bezpieczeństwa (wzrost/tech/zdobycie/AI)
         updateHud();
         cityRenderer.sync(cities, _cityRenderOpts());
         refreshWorkerFieldOverlay();
@@ -11081,6 +11153,7 @@ async function boot(): Promise<void> {
           const c = cities.find(ct => ct.id === cityId);
           if (c && c.ownerId === 0) {
             c.podzialHandlu = { ...split };
+            markCityStateDirty(); // D10: podział podatków/handlu → przelicz
             updateHud();
           }
         },
@@ -11088,6 +11161,7 @@ async function boot(): Promise<void> {
           const c = cities.find(ct => ct.id === cityId);
           if (c && c.ownerId === 0) {
             c.podzialPracy = { procentBudynki: split.procentBudynki };
+            markCityStateDirty(); // D10: podział pracy → przelicz
             updateHud();
           }
         },

@@ -1115,6 +1115,27 @@ function c3NextFrame(): Promise<void> {
 /** Callback postępu budowy sceny (C3). pct = 0..100 (procent porcji zrobionych). */
 export type SceneBuildProgress = (pct: number) => void;
 
+/**
+ * B (cięcie geometrii): hex-graniastosłup BEZ dolnej pokrywy. Spód heksa nigdy nie jest
+ * widoczny (kamera z góry), a dolna pokrywa to 6 z 24 trójkątów → ~25% mniej trójkątów
+ * bazowych heksów, PIXEL-IDENTYCZNIE. Zostawiamy boki (relief przy klifach) + górną pokrywę.
+ */
+function hexPrismNoBottomGeo(radius: number, height: number, radial = 6): THREE.CylinderGeometry {
+  const g = new THREE.CylinderGeometry(radius, radius, height, radial, 1);
+  const idx = g.getIndex();
+  if (idx) {
+    // Grupy CylinderGeometry: 0=boki, 1=górna pokrywa, 2=DOLNA pokrywa (ostatnia w indeksie).
+    const bottom = g.groups.find((gr) => gr.materialIndex === 2);
+    if (bottom) {
+      const arr = idx.array as Uint16Array | Uint32Array;
+      const kept = arr.slice(0, bottom.start); // boki + góra, bez dolnej pokrywy
+      g.setIndex(new THREE.BufferAttribute(kept, 1));
+      g.clearGroups();
+    }
+  }
+  return g;
+}
+
 export async function buildScene(
   map: GameMap,
   canvas: HTMLCanvasElement,
@@ -1233,7 +1254,7 @@ export async function buildScene(
     const vis = terrainVis(t, renderStyle);
     // Roblox: lekki overlap zamyka trójkątne szczeliny między heksami (prześwit tafli oceanu).
     const hexR = renderStyle === 'roblox' ? R * 1.008 : R * 0.998;
-    const geo = new THREE.CylinderGeometry(hexR, hexR, vis.height, 6, 1);
+    const geo = hexPrismNoBottomGeo(hexR, vis.height);
     // Brak rotateY -- CylinderGeometry(6) jest juz pointy-top jak axialToWorld.
     const mat = new THREE.MeshLambertMaterial({
       color: styleTerrainColor(t, renderStyle),

@@ -12,9 +12,11 @@ import {
   isInTerritory,
   isPlayerTerritoryHex,
   axialDistance,
+  cityTerritoryRadius,
   type CityNode,
   type TerritoryNode,
 } from './territory';
+import { hexKeysWithinRadius } from '../game/okolica';
 import terrainImprovements from '../../data/terrain-improvements.json';
 import {
   computeEmpireLivestockUnlocks,
@@ -620,6 +622,32 @@ export function createImprovementBuildApi(
 
   const researched = state.researchedTechs ?? new Set<string>();
 
+  // D13 (perf): zamiast skanować całe map.hexes (~320k) w getQualifyingHexes —
+  // a listTypes() robi to dla KAŻDEGO typu (~19×) na każdy render HUD budowy —
+  // budujemy zbiór kandydatów RAZ. To wszystkie heksy, które w ogóle MOGĄ przejść
+  // qualifies() dla dowolnego klucza:
+  //   • terytorium gracza + 1 pierścień  (posterunek: isOnTerritoryEdge = sąsiad terytorium),
+  //   • istniejące drogi                 (droga_brukowana nie sprawdza terytorium),
+  //   • placedKeys / pendingUndoKeys     (ścieżki w qualifies() zwracające true poza terytorium).
+  // Każdy heks SPOZA tego zbioru zwróciłby z qualifies() false, więc wynik jest
+  // IDENTYCZNY jak przy pełnym skanie (predykat qualifies bez zmian).
+  const candidateHexKeys: Set<string> = (() => {
+    const set = new Set<string>();
+    for (const node of state.cityNodes) {
+      const rad = cityTerritoryRadius(node) + 1;
+      for (const k of hexKeysWithinRadius(node.q, node.r, rad, map)) set.add(k);
+    }
+    if (state.roadKeys) for (const k of state.roadKeys) set.add(k);
+    if (state.placedKeys) for (const k of state.placedKeys) set.add(k);
+    if (state.pendingUndoKeys) {
+      for (const composite of state.pendingUndoKeys) {
+        const idx = composite.lastIndexOf(':');
+        if (idx > 0) set.add(composite.slice(0, idx));
+      }
+    }
+    return set;
+  })();
+
   const getWorkCost = (key: ImprovementKey): number =>
     getImprovementMeta(key)?.kosztPraca ?? readWorkCost(key);
 
@@ -628,7 +656,9 @@ export function createImprovementBuildApi(
 
   const getQualifyingHexes = (key: ImprovementKey): Array<{ q: number; r: number }> => {
     const out: Array<{ q: number; r: number }> = [];
-    for (const hex of Object.values(map.hexes)) {
+    for (const hk of candidateHexKeys) {
+      const hex = map.hexes[hk];
+      if (!hex) continue;
       const { q, r } = hex.coords;
       if (qualifies(key, q, r)) out.push({ q, r });
     }

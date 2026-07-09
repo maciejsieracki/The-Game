@@ -388,14 +388,9 @@ def main():
         save_json(terrain, terrain_path)
     total += ch
 
-    yields_path = os.path.join(args.data_dir, "terrain-yields.json")
-    if os.path.isfile(yields_path):
-        yields_data = json.load(open(yields_path, encoding="utf-8"))
-        ch_y = overlay_terrain_yields(yields_data, all_params)
-        print(f"terrain-yields.json: {ch_y} zmian")
-        if ch_y and not args.dry_run:
-            save_json(yields_data, yields_path)
-        total += ch_y
+    # terrain-yields.json — przeniesione do export-terrain-yields.py (Panel-A / arkusze
+    # Teren-bazowy + Bonusy-nakladki) w ramach SYNC-PANELI [17:05]. Jeden JSON = jeden eksporter.
+    # Stary arkusz "Plony-terenow" (rozbieżne źródło) wycofany; overlay_terrain_yields wyłączony.
 
     move_path = os.path.join(args.data_dir, "terrain-movement.json")
     if os.path.isfile(move_path):
