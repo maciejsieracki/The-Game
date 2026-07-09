@@ -6687,6 +6687,12 @@ async function boot(): Promise<void> {
           isWorkersActive: () => showWorkerOverlay,
         },
         minimapPlaytestFog: minimapPlaytestFogHooks(),
+        onMinimapClick: (q, r) => {
+          // Klik w minimapę → kamera leci w to miejsce (zoom bez zmian).
+          const { x, z } = axialToWorld(q, r, HEX_R);
+          const { dist } = camCtrl.getFocusState();
+          camCtrl.focusAt(x, z, dist);
+        },
         getMinimapData: () => {
           const vis = currentVisible();
           return getMinimapData(

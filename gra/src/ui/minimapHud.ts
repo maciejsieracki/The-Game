@@ -152,6 +152,28 @@ function strokeHexCell(
   ctx.stroke();
 }
 
+interface MinimapLayout { scale: number; offX: number; offY: number; drawR: number; }
+
+/** Wspólny layout minimapy (skala + offset) z danych heksów — używa render ORAZ klik→kamera. */
+function computeMinimapLayout(hexes: MinimapHexData[], w: number, h: number): MinimapLayout {
+  let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+  for (const hex of hexes) {
+    const { x, y } = axialMinimapXY(hex.q, hex.r);
+    if (x < minX) minX = x;
+    if (x > maxX) maxX = x;
+    if (y < minY) minY = y;
+    if (y > maxY) maxY = y;
+  }
+  const hexR = 0.55;
+  const pad = hexR * SQRT3;
+  const spanX = maxX - minX + pad * 2;
+  const spanY = maxY - minY + pad * 2;
+  const scale = Math.min(w / spanX, h / spanY);
+  const offX = (w - spanX * scale) / 2 - (minX - pad) * scale;
+  const offY = (h - spanY * scale) / 2 - (minY - pad) * scale;
+  return { scale, offX, offY, drawR: scale * hexR };
+}
+
 function renderCanvas(
   canvas: HTMLCanvasElement,
   data: MinimapData,
@@ -170,23 +192,7 @@ function renderCanvas(
 
   if (data.hexes.length === 0) return;
 
-  let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
-  for (const hex of data.hexes) {
-    const { x, y } = axialMinimapXY(hex.q, hex.r);
-    if (x < minX) minX = x;
-    if (x > maxX) maxX = x;
-    if (y < minY) minY = y;
-    if (y > maxY) maxY = y;
-  }
-
-  const hexR = 0.55;
-  const pad = hexR * SQRT3;
-  const spanX = maxX - minX + pad * 2;
-  const spanY = maxY - minY + pad * 2;
-  const scale = Math.min(w / spanX, h / spanY);
-  const offX = (w - spanX * scale) / 2 - (minX - pad) * scale;
-  const offY = (h - spanY * scale) / 2 - (minY - pad) * scale;
-  const drawR = scale * hexR;
+  const { scale, offX, offY, drawR } = computeMinimapLayout(data.hexes, w, h);
 
   for (const hex of data.hexes) {
     // FPS: hidden = tło (już ciemne #0b0d12) — pomijamy przed liczeniem pozycji/trig.
@@ -407,10 +413,16 @@ export function createMinimapHud(config: MinimapHudConfig): MinimapHudApi {
       const data = config.getMinimapData();
       if (data === null || canvas === null) return;
       const rect = canvas.getBoundingClientRect();
-      const px = e.clientX - rect.left;
-      const py = e.clientY - rect.top;
-      const q = Math.floor((px / rect.width) * data.cols);
-      const r = Math.floor((py / rect.height) * data.rows);
+      // CSS px → wewnętrzne (w×h) → przestrzeń axialMinimapXY (odwrócony layout renderu),
+      // dzięki temu klik trafia w faktyczny heks (skośny pointy-top), nie liniowo.
+      const cxi = ((e.clientX - rect.left) / rect.width) * w;
+      const cyi = ((e.clientY - rect.top) / rect.height) * h;
+      const { scale, offX, offY } = computeMinimapLayout(data.hexes, w, h);
+      const mx = (cxi - offX) / scale;
+      const my = (cyi - offY) / scale;
+      // axialMinimapXY: y = 1.5·r, x = √3·(q + r/2) → odwrócenie:
+      const r = Math.round(my / 1.5);
+      const q = Math.round(mx / SQRT3 - r * 0.5);
       config.onMinimapClick(q, r);
     });
   }
