@@ -3296,6 +3296,12 @@ export function repairRiverPathAdjacency(
 /** Min. odległość ciała rzeki od morza (Maciej 2026-07-04). Ujście = ostatnie N hex. */
 export const RIVER_MIN_INLAND_FROM_SEA = 2;
 
+/** Maciej 2026-07-09: rzeka wchodząca do MORZA musi mieć min. tyle długości ścieżki (heksów).
+ *  Cel wg Macieja: ~25 długości BOKU heksa; wstęga ma ~2 boki na heks (rogi+środki krawędzi),
+ *  więc 25 boków ≈ 12 heksów ścieżki. WYJĄTEK: dopływ do innej rzeki (pushTributary) — bez minimum.
+ *  Wyżej (np. 25) dławi generator na standardowej mapie (perf). Knob długości. */
+export const RIVER_MIN_MAIN_LEN = 12;
+
 /** Ostatnie N hex trasy — szybkie połączenie z morzem (Maciej 2026-07-05: 5). */
 export const RIVER_MOUTH_TAIL_LEN = 5;
 
@@ -4325,10 +4331,12 @@ export function clearRiverMarks(hexes: Record<string, Hex>): void {
  * Dopływy dekoracyjne na długich rzekach — cieńsze, wpływają do głównego nurtu (nigdy ujścia).
  * B0.8b (Z2): ~2× więcej dopływów niż wcześniej (było 0/1/max2). Zero wpływu na liczbę ujść.
  */
-function tributaryCountForLength(_pathLen: number): number {
-  // Maciej 2026-07-09: BRAK ROZGAŁĘZIEŃ — rzeki bez dopływów przy głównej (żadnych widelców „Y").
-  // Rzeka płynie w jednym kierunku; jeśli łączy się z inną — kończy bieg (bez domykania junction).
-  return 0;
+function tributaryCountForLength(pathLen: number): number {
+  // Maciej 2026-07-09: dopływy DOZWOLONE (delta = widelec-DOPŁYW). Zakazany tylko dystrybutariusz
+  // (rozwidlenie ODPŁYWU do morza) — a tego generator nie tworzy (trasa źródło→morze jest jedna).
+  if (pathLen < 12) return 0;
+  if (pathLen < 22) return 2;
+  return Math.min(4, Math.floor(pathLen / 8));
 }
 
 /** A* do konkretnego heksa (dopływ → główna rzeka). */
@@ -5179,6 +5187,8 @@ export function generateRivers(
     const trimmed = trimRiverPathRings(hexes, path);
     // B0.7: Z3 (trimRiverPathRings) mogl uciac ogon do morza -> nie zapisuj main bez ujscia (bezUjscia/sieroc).
     if (!pathEndsAtSea(hexes, trimmed, width, height, oceanConnected)) return false;
+    // Maciej 2026-07-09: rzeka do MORZA min. RIVER_MIN_MAIN_LEN (dopływy do rzeki zwolnione — pushTributary).
+    if (trimmed.length < RIVER_MIN_MAIN_LEN) return false;
     riverPaths.push(trimmed);
     riverKinds.push('main');
     usedSources.add(hexKey(sq, sr));
@@ -5239,10 +5249,16 @@ export function generateRivers(
 
     const startDist = seaDist.get(srcKey) ?? 999;
     const traceMax = Math.max(maxLen, minLen + 20, Math.ceil(startDist * 2.6) + minLen);
-    // Maciej 2026-07-09: BRAK ROZGAŁĘZIEŃ — feeder NIE łączy z siecią (żadnych dopływów/junction);
-    // zawsze próbuje własnego biegu do morza (pushMain). junctionKeysOverride ignorowane.
-    void junctionKeysOverride;
-    const junctionKeys = new Set<string>();
+    const junctionKeys = junctionKeysOverride ?? (() => {
+      const reach = buildOceanReachableRiverHexKeys(
+        hexes, riverPaths, riverKinds, width, height, oceanConnected,
+      );
+      const pool = new Set<string>();
+      for (const k of collectRiverPathHexKeys(riverPaths)) {
+        if (reach.has(k)) pool.add(k);
+      }
+      return pool;
+    })();
 
     if (junctionKeys.size === 0) {
       const seaPath = traceRiver(hexes, sq, sr, traceMax, {
@@ -5416,6 +5432,8 @@ export function topUpRiverGridCoverage(
     const trimmed = trimRiverPathRings(hexes, path);
     // B0.7: Z3 (trimRiverPathRings) mogl uciac ogon do morza -> nie zapisuj main bez ujscia (bezUjscia/sieroc).
     if (!pathEndsAtSea(hexes, trimmed, width, height, oceanConnected)) return false;
+    // Maciej 2026-07-09: rzeka do MORZA min. RIVER_MIN_MAIN_LEN (dopływy do rzeki zwolnione — pushTributary).
+    if (trimmed.length < RIVER_MIN_MAIN_LEN) return false;
     riverPaths.push(trimmed);
     riverKinds.push('main');
     usedSources.add(hexKey(sq, sr));
@@ -5453,10 +5471,16 @@ export function topUpRiverGridCoverage(
 
     const startDist = seaDist.get(srcKey) ?? 999;
     const traceMax = Math.max(maxLen, minLen + 20, Math.ceil(startDist * 2.6) + minLen);
-    // Maciej 2026-07-09: BRAK ROZGAŁĘZIEŃ — feeder NIE łączy z siecią (żadnych dopływów/junction);
-    // zawsze próbuje własnego biegu do morza (pushMain). junctionKeysOverride ignorowane.
-    void junctionKeysOverride;
-    const junctionKeys = new Set<string>();
+    const junctionKeys = junctionKeysOverride ?? (() => {
+      const reach = buildOceanReachableRiverHexKeys(
+        hexes, riverPaths, riverKinds, width, height, oceanConnected,
+      );
+      const pool = new Set<string>();
+      for (const k of collectRiverPathHexKeys(riverPaths)) {
+        if (reach.has(k)) pool.add(k);
+      }
+      return pool;
+    })();
 
     if (junctionKeys.size === 0) {
       const seaPath = traceRiver(hexes, sq, sr, traceMax, {
