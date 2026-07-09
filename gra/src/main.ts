@@ -1006,10 +1006,26 @@ async function boot(): Promise<void> {
 
     /** Nakładki surowcowe — synchronizowane z mgłą w refreshFog. */
     const resourceOverlays: Array<{ group: THREE.Group; hexKey: string }> = [];
-    // Maciej 2026-07-09: złoża (glina/sól/ruda…) zminiaturyzowane i dosunięte do ścianki (bok 1 = surowiec),
-    // spójnie z układem sektorowym ulepszeń — nie dominują środka heksa (wolny pod miasto).
-    const DEPOSIT_MARKER_SCALE = 0.5;
-    const DEPOSIT_EDGE_R = 0.62; // promień dosunięcia do ścianki (bok 1, kierunek -Z = północ)
+    // Maciej 2026-07-09: WSZYSTKIE złoża (miedź/żelazo/glina/sól/ruda…) skompaktowane do JEDNEJ ścianki
+    // (bok 1 = surowiec), spójnie z ulepszeniami — nie rozrzucone po heksie, środek wolny pod miasto.
+    const DEPOSIT_EDGE_R = 0.62;    // dosunięcie do ścianki (bok 1, kierunek -Z = północ)
+    const DEPOSIT_TARGET_SPAN = 0.55; // docelowa szerokość kompaktowego markera złoża (w jedn. HEX_R)
+    /** Wyśrodkuj model złoża (bbox XZ), skompaktuj do wąskiego markera i dosuń do ścianki bok 1. */
+    function compactDepositAtEdge(ov: THREE.Group, x: number, z: number, baseY: number, rotY: number): void {
+      const bb = new THREE.Box3().setFromObject(ov);
+      if (!bb.isEmpty()) {
+        const cx = (bb.min.x + bb.max.x) / 2;
+        const cz = (bb.min.z + bb.max.z) / 2;
+        const maxSpan = Math.max(bb.max.x - bb.min.x, bb.max.z - bb.min.z) || 1;
+        for (const ch of ov.children) {
+          const geo = (ch as THREE.Mesh).geometry;
+          if (geo) geo.translate(-cx, 0, -cz); // wyśrodkuj w XZ (spód Y zostaje na terenie)
+        }
+        ov.scale.setScalar(Math.min(0.6, (DEPOSIT_TARGET_SPAN * HEX_R) / maxSpan));
+      }
+      ov.position.set(x, baseY + 0.01, z - DEPOSIT_EDGE_R * HEX_R);
+      ov.rotation.y = rotY;
+    }
     /** Epoka gracza dla widoczności złóż metali (E-P0); aktualizowana przy starcie / awansie. */
     let overlayDepositEra = 1;
 
@@ -1069,9 +1085,7 @@ async function boot(): Promise<void> {
         collapseToMergedMesh(ov); // FPS lewar 1: dziesiątki boxów złoża → 1 mesh
         const { x, z } = axialToWorld(hex.coords.q, hex.coords.r, HEX_R);
         const baseY = TERRAIN_SURFACE_Y[hex.terenBazowy] ?? 0.45;
-        ov.scale.setScalar(DEPOSIT_MARKER_SCALE);
-        ov.position.set(x, baseY + 0.01, z - DEPOSIT_EDGE_R * HEX_R); // bok 1 (surowiec) przy ściance
-        ov.rotation.y = hex.coords.q * 1.3 + hex.coords.r * 0.7;
+        compactDepositAtEdge(ov, x, z, baseY, hex.coords.q * 1.3 + hex.coords.r * 0.7);
         ov.matrixAutoUpdate = false; ov.updateMatrix(); // FPS lewar 3: statyczne — bez per-frame update macierzy
         scene.add(ov);
         resourceOverlays.push({ group: ov, hexKey });
@@ -1098,9 +1112,7 @@ async function boot(): Promise<void> {
           collapseToMergedMesh(ov); // FPS lewar 1
           const { x, z } = axialToWorld(hex.coords.q, hex.coords.r, HEX_R);
           const baseY = TERRAIN_SURFACE_Y[hex.terenBazowy] ?? 0.45;
-          ov.scale.setScalar(DEPOSIT_MARKER_SCALE);
-          ov.position.set(x, baseY + 0.01, z - DEPOSIT_EDGE_R * HEX_R); // bok 1 (surowiec) przy ściance
-          ov.rotation.y = hex.coords.q * 1.3 + hex.coords.r * 0.7;
+          compactDepositAtEdge(ov, x, z, baseY, hex.coords.q * 1.3 + hex.coords.r * 0.7);
           ov.matrixAutoUpdate = false; ov.updateMatrix(); // FPS lewar 3
           const hexKey = keyOf(hex.coords.q, hex.coords.r);
           scene.add(ov);
