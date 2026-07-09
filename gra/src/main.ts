@@ -73,7 +73,7 @@ import { computeVisible, addExplored, allHexKeys, allRevealLandKeys, exploredSet
 import { runScoutsAutoExplore } from './game/scout-auto-explore';
 import { startRevealRadiusForDifficulty } from './map/startScoring';
 import { canFoundCity, foundCity, foundCityAt, ensureCitySaveDefaults, DEFAULT_PODZIAL_HANDLU, DEFAULT_BUDOWA_TRYB, type City, type BudowaFocus } from './game/cities';
-import { applyCityFoundingToHex } from './game/city-hex-clear';
+import { applyCityFoundingToHex, cityKeepsImprovement } from './game/city-hex-clear';
 import { canUnitOccupyCityHex, addForeignCityBlocks } from './game/city-hex-movement';
 import {
   evaluateFoundCityAffordance,
@@ -3959,15 +3959,31 @@ async function boot(): Promise<void> {
 
     /** F-CITY-HEX: wyczyść hex + ukryj dekoracje terenu pod miastem. */
     function finalizeCityFounding(c: City, q: number, r: number): void {
-      applyCityFoundingToHex(c, map, q, r);
       const hk = keyOf(q, r);
-      hideDecorAtHex(hk);
+      // Macierz B (Maciej 2026-07-09): część ulepszeń/złóż ZOSTAJE na obrzeżu heksa miasta.
+      // Wyjątek GÓRY: kasuje wszystkie ulepszenia. Filtr warstw przed czyszczeniem hexa.
+      const mountainClearsAll = map.hexes[hk]?.terenBazowy === TerenBazowy.Gory;
+      const prevLayers = placedImprovements.get(hk) ?? [];
+      const keptLayers = (mountainClearsAll
+        ? []
+        : prevLayers.filter(k => cityKeepsImprovement(k))) as PlacedLayers;
+
+      applyCityFoundingToHex(c, map, q, r); // nakładki/złoża wg macierzy B (las ZNIKA, złoża ZOSTAJĄ; Góry=wszystko)
+      hideDecorAtHex(hk);                    // schowaj teren-dekor/las pod środkiem miasta
       const oldMesh = improvementMeshes.get(hk);
       if (oldMesh) {
         scene.remove(oldMesh);
         improvementMeshes.delete(hk);
       }
-      placedImprovements.delete(hk);
+      if (keptLayers.length > 0) {
+        // Ocalałe ulepszenia (macierz B ZOSTAJE) — na pierścieniu; plony/legacy z warstw, mesh odbudowany.
+        placedImprovements.set(hk, keptLayers);
+        syncHexUlepszenieFields(hk, keptLayers);
+        spawnImprovementMesh(hk);
+      } else {
+        placedImprovements.delete(hk);
+        syncHexUlepszenieFields(hk, [] as PlacedLayers);
+      }
       hexClearingStates.delete(hk);
       removeClearingMesh(hk);
       // D4: zamiast pełnomapowego rebuildResourceOverlays (skan 320k + odbudowa wszystkich meshy)
