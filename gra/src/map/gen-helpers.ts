@@ -4325,10 +4325,10 @@ export function clearRiverMarks(hexes: Record<string, Hex>): void {
  * Dopływy dekoracyjne na długich rzekach — cieńsze, wpływają do głównego nurtu (nigdy ujścia).
  * B0.8b (Z2): ~2× więcej dopływów niż wcześniej (było 0/1/max2). Zero wpływu na liczbę ujść.
  */
-function tributaryCountForLength(pathLen: number): number {
-  if (pathLen < 12) return 0;
-  if (pathLen < 22) return 2;
-  return Math.min(4, Math.floor(pathLen / 8));
+function tributaryCountForLength(_pathLen: number): number {
+  // Maciej 2026-07-09: BRAK ROZGAŁĘZIEŃ — rzeki bez dopływów przy głównej (żadnych widelców „Y").
+  // Rzeka płynie w jednym kierunku; jeśli łączy się z inną — kończy bieg (bez domykania junction).
+  return 0;
 }
 
 /** A* do konkretnego heksa (dopływ → główna rzeka). */
@@ -5239,16 +5239,10 @@ export function generateRivers(
 
     const startDist = seaDist.get(srcKey) ?? 999;
     const traceMax = Math.max(maxLen, minLen + 20, Math.ceil(startDist * 2.6) + minLen);
-    const junctionKeys = junctionKeysOverride ?? (() => {
-      const reach = buildOceanReachableRiverHexKeys(
-        hexes, riverPaths, riverKinds, width, height, oceanConnected,
-      );
-      const pool = new Set<string>();
-      for (const k of collectRiverPathHexKeys(riverPaths)) {
-        if (reach.has(k)) pool.add(k);
-      }
-      return pool;
-    })();
+    // Maciej 2026-07-09: BRAK ROZGAŁĘZIEŃ — feeder NIE łączy z siecią (żadnych dopływów/junction);
+    // zawsze próbuje własnego biegu do morza (pushMain). junctionKeysOverride ignorowane.
+    void junctionKeysOverride;
+    const junctionKeys = new Set<string>();
 
     if (junctionKeys.size === 0) {
       const seaPath = traceRiver(hexes, sq, sr, traceMax, {
@@ -5459,16 +5453,10 @@ export function topUpRiverGridCoverage(
 
     const startDist = seaDist.get(srcKey) ?? 999;
     const traceMax = Math.max(maxLen, minLen + 20, Math.ceil(startDist * 2.6) + minLen);
-    const junctionKeys = junctionKeysOverride ?? (() => {
-      const reach = buildOceanReachableRiverHexKeys(
-        hexes, riverPaths, riverKinds, width, height, oceanConnected,
-      );
-      const pool = new Set<string>();
-      for (const k of collectRiverPathHexKeys(riverPaths)) {
-        if (reach.has(k)) pool.add(k);
-      }
-      return pool;
-    })();
+    // Maciej 2026-07-09: BRAK ROZGAŁĘZIEŃ — feeder NIE łączy z siecią (żadnych dopływów/junction);
+    // zawsze próbuje własnego biegu do morza (pushMain). junctionKeysOverride ignorowane.
+    void junctionKeysOverride;
+    const junctionKeys = new Set<string>();
 
     if (junctionKeys.size === 0) {
       const seaPath = traceRiver(hexes, sq, sr, traceMax, {
