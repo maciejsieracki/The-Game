@@ -4390,6 +4390,7 @@ async function boot(): Promise<void> {
       g.matrixAutoUpdate = false; g.updateMatrix(); // FPS lewar 3
       scene.add(g);
       improvementMeshes.set(hexKey, g);
+      renderer.shadowMap.needsUpdate = true; // FPS cienie na żądanie: nowy/zmieniony caster (budynek/ulepszenie)
     }
 
     function restorePlacedImprovementsFromSave(
@@ -10991,6 +10992,9 @@ async function boot(): Promise<void> {
         setZoomLod(dist, minDist, maxDist);
       }
       renderer.info.reset();
+      // FPS cienie na żądanie: token jednostki (caster) rusza się co klatkę tylko podczas
+      // animacji ruchu; galeria może obracać modele. Poza tym (pan/idle) shadow pass pomijany.
+      if (isAnimating || galleryOn) renderer.shadowMap.needsUpdate = true;
       renderer.render(scene, camera);
       if (isPerfDebugOverlayVisible()) {
         let meshCount = 0;

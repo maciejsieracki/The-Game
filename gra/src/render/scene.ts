@@ -1190,6 +1190,15 @@ export async function buildScene(
   }
   renderer.shadowMap.enabled = preset.shadowsEnabled;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  // FPS: cienie na żądanie. Shadow pass ≈ drugi przebieg CAŁEJ geometrii co klatkę, a przy
+  // panie/idle kamery cienie się NIE zmieniają (są w world-space). Wyłączamy auto-render shadow
+  // mapy — Three.js rysuje ją tylko gdy needsUpdate=true i konsumuje flagę po renderze. Flagę
+  // podnosimy przy realnej zmianie casterów: setFog (odsłonięcie/ukrycie terenu), applyZoomGpuSettings
+  // (LOD), spawn ulepszeń, oraz per-klatkę animacji ruchu (pętla main.ts). Pierwszy render: true.
+  if (renderer.shadowMap.enabled) {
+    renderer.shadowMap.autoUpdate = false;
+    renderer.shadowMap.needsUpdate = true;
+  }
 
   // -- Scena + tlo
   const scene = new THREE.Scene();
@@ -2256,6 +2265,9 @@ export async function buildScene(
     }
     renderer.shadowMap.enabled = zoomFlags.shadows;
     sun.castShadow = zoomFlags.shadows;
+    // FPS cienie na żądanie: powrót do bliskiego LOD włącza cienie → jednorazowe przerysowanie
+    // shadow mapy (auto-render wyłączony). Oddalenie (shadows=false) i tak jej nie rysuje.
+    if (zoomFlags.shadows) renderer.shadowMap.needsUpdate = true;
   }
 
   function applyZoomLodDecor(anyHiddenFinal: boolean): void {
@@ -2499,6 +2511,10 @@ export async function buildScene(
 
     lastAnyHidden = anyHiddenFinal && !landReveal;
     applyZoomLodDecor(anyHiddenFinal && !landReveal);
+    // FPS cienie na żądanie: geometria casterów zmieniła się tylko gdy jakiś heks realnie
+    // zmienił stan (touchedMeshes>0 = ukrycie/odsłonięcie terenu, a wtedy i dekor per-heks).
+    // Pusty diff (np. odświeżenie mgły bez zmian przy hover/select) NIE rusza shadow pass.
+    if (touchedMeshes.size > 0) renderer.shadowMap.needsUpdate = true;
     lastSetFogMs = performance.now() - __fogT0;
   }
 
