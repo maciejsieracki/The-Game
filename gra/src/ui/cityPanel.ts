@@ -3576,7 +3576,7 @@ function buildSpichlerzDetailCard(
 ): HTMLDivElement {
   const data = gameData();
   const params = data ? buildEconParams(data, cfg.difficulty ?? 'normal') : null;
-  const coeff = params?.progWzrostuWspolczynnik ?? 8;
+  const coeff = params?.progWzrostuWspolczynnik ?? 16;
   const spichlerzKeep = params ? Math.round(params.spichlerzZachowaniePoPrzroscie * 100) : 50;
   const prog = Math.round(view.progWzrostu);
   const mag = Math.round(view.magazyn);
@@ -3614,7 +3614,7 @@ function buildSpichlerzDetailCard(
   );
   gridDetailRow(g1, 'Spichlerz w mieście', view.maSpichlerz ? `tak (po wzroście ${spichlerzKeep}% bufora)` : 'nie (po wzroście bufor=0)');
 
-  appendDetailFormula(card, `Próg(N) = 10 + N × ${coeff}`);
+  appendDetailFormula(card, `Próg(N) = 20 + N × ${coeff}`);
   appendDetailFormula(card, 'Bufor += zywnoscDoWzrostu × modyfikator_zdrowia');
   appendDetailFormula(card, `Po wzroście: bufor = ${view.maSpichlerz ? `floor(bufor × ${spichlerzKeep}%)` : '0'}`);
 
@@ -3674,7 +3674,7 @@ function buildTopBarZywnoscDetailCard(
   const doArmiiMiasto = Math.max(0, cityNet - doWzrostu);
   const hasSpichlerz = ownerHasSpichlerz(city.ownerId);
   const params = data ? buildEconParams(data, cfg.difficulty ?? 'normal') : null;
-  const coeff = params?.progWzrostuWspolczynnik ?? 8;
+  const coeff = params?.progWzrostuWspolczynnik ?? 16;
   const prog = Math.round(view.progWzrostu);
   const mag = Math.round(view.magazyn);
 
@@ -3706,7 +3706,7 @@ function buildTopBarZywnoscDetailCard(
   appendDetailSection(card, 'Bufor wzrostu ludności (osobno!)');
   const g2 = appendDetailGrid(card);
   gridDetailRow(g2, 'Bufor miasta', `${mag} / ${prog} 🍞 — liczy się tylko w tym grodzie`);
-  gridDetailRow(g2, 'Próg wzrostu', `${prog} 🍞 na +1 mieszkańca (10 + ${city.population} × ${coeff})`);
+  gridDetailRow(g2, 'Próg wzrostu', `${prog} 🍞 na +1 mieszkańca (20 + ${city.population} × ${coeff})`);
   gridDetailRow(g2, 'Spichlerz', view.maSpichlerz
     ? 'tak — po wzroście zostaje 50% bufora miasta'
     : 'nie — po wzroście bufor zeruje się');
@@ -3780,8 +3780,8 @@ function buildTopBarLudnoscDetailCard(
 ): HTMLDivElement {
   const epoch = cfg.getEpoch?.(city.ownerId) ?? 1;
   const params = data ? buildEconParams(data, cfg.difficulty ?? 'normal') : null;
-  const coeff = params?.progWzrostuWspolczynnik ?? 8;
-  const prog = view ? Math.round(view.progWzrostu) : 10 + city.population * coeff;
+  const coeff = params?.progWzrostuWspolczynnik ?? 16;
+  const prog = view ? Math.round(view.progWzrostu) : 20 + city.population * coeff;
   const mag = view ? Math.round(view.magazyn) : (city.magazynZywnosci ?? 0);
   const eta = view && view.zywnoscDoWzrostu > 0
     ? etaTurns(prog, mag, Math.max(0, view.zywnoscDoWzrostu))
@@ -3809,7 +3809,7 @@ function buildTopBarLudnoscDetailCard(
     appendDetailSection(card, 'Wzrost ludności');
     const g1 = appendDetailGrid(card);
     gridDetailRow(g1, 'Bufor 🍞', `${mag} / ${prog} — osobny licznik wzrostu (nie zapasy armii)`);
-    gridDetailRow(g1, 'Próg +1', `${prog} 🍞 (10 + ${city.population} × ${coeff})`);
+    gridDetailRow(g1, 'Próg +1', `${prog} 🍞 (20 + ${city.population} × ${coeff})`);
     gridDetailRow(g1, 'Przyrost', `+${Math.round(view.zywnoscDoWzrostu)} 🍞 idzie do bufora (po suwaku armii)`);
     gridDetailRow(g1, 'ETA wzrostu', eta != null ? `~${eta} ${tury(eta)}` : '— (brak nadwyżki żywności)');
     gridDetailRow(g1, 'Spichlerz', view.maSpichlerz ? 'tak — po wzroście zostaje 50% bufora' : 'nie — bufor zeruje się po +1');
@@ -3824,7 +3824,7 @@ function buildTopBarLudnoscDetailCard(
     }
   }
 
-  appendDetailFormula(card, 'Próg(N) = 10 + N × wsp_wzrostu');
+  appendDetailFormula(card, 'Próg(N) = 20 + N × wsp_wzrostu');
   appendDetailFormula(card, 'Bufor += zywnoscDoWzrostu × modyfikator_zdrowia');
   appendDetailAlgo(card, 'Gdzie zarządzać', [
     'Prawa kolumna → „Spichlerz”: pasek bufora 🍞.',

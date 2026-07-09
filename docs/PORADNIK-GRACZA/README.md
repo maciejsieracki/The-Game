@@ -16,7 +16,7 @@ Legenda: ✅ Poradnik‑L gotowy · 📋 katalog (lista + akapit) · 🔗 Wiki�
 | **### Strategia gracza** + **### Typowe błędy** | **~140** par (rozdz. 00–17) |
 | Katalogi encji — przykład pod każdą encją | **112** (26+50+17+19) |
 | Hasła encyklopedii | **121** (26+50+17+19+9) |
-| Część VI §33/§38/§39 | bufor próg **34**, tabele suwaków, scenariusz SP |
+| Część VI §33/§38/§39 | bufor próg **68**, tabele suwaków, scenariusz SP |
 | Warstwa Wiki‑S/M | ✅ dla wszystkich haseł JSON |
 
 ---

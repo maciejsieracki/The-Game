@@ -355,7 +355,7 @@ Hasła encyklopedii: **Spichlerz** · **Zapasy państwa** · **Żywność wojska
 
 **1** Spichlerz → limit zapasów państwa **100** 🍞 (normal). Wojsko **8** jednostek × **1** 🍞 = **8**/turę.
 Nadwyżka suwaka **+6**/turę przez **10** tur → magazyn **60/100**.
-Po awansie ludności bufor **34** 🍞 → ze Spichlerzem zostaje **50%** = **17** 🍞 (próg następny nadal **34** przy N=3).
+Po awansie ludności bufor **68** 🍞 → ze Spichlerzem zostaje **50%** = **34** 🍞 (próg następny nadal **68** przy N=3).
 
 ### Strategia gracza
 

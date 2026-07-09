@@ -162,7 +162,7 @@ export function loadEconParams(
   };
 
   return {
-    progWzrostuWspolczynnik:        read(em, KEY_PROG_WZROSTU, 8),
+    progWzrostuWspolczynnik:        read(em, KEY_PROG_WZROSTU, 16),
     spichlerzZachowaniePoPrzroscie: read(em, 'spichlerz_zachowanie_po_wzroscie', 0.5),
     akweduktProgLudnosci:           read(em, 'akwedukt_prog_ludnosci', 5),
     akweduktMaxLudnosci:            read(em, 'akwedukt_max_ludnosci', 15),
@@ -698,7 +698,7 @@ export function cityPopulationCap(
  *
  * Rules (B5-SPICH, Maciej 2026-06-29):
  *   - Bufor wzrostu kumuluje się ZAWSZE (z/bez Spichlerza) z zywnoscNetto (część „Rozwój miast”).
- *   - Próg: Threshold(N) = 10 + N * coeff → +1 ludność.
+ *   - Próg: Threshold(N) = 20 + N * coeff → +1 ludność.
  *   - Po wzroście: bez Spichlerza bufor → 0; ze Spichlerzem bufor × spichlerzZachowaniePoPrzroscie (50%).
  *   - Deficyt: magazyn maleje; przy 0 i ujemnej nadwyżce → −1 ludność (min 1).
  *   - Cap bez Akweduktu: akweduktProgLudnosci (normal=5).

@@ -21,7 +21,7 @@
 
 | Temat | Wzór / liczba |
 |-------|----------------|
-| Próg wzrostu | **10 + N × 8** (N = pop przed awansem) |
+| Próg wzrostu | **20 + N × 16** (N = pop przed awansem) |
 | Spichlerz po awansie | **50%** bufora zostaje |
 | Magazyn państwa | **100 ×** liczba Spichlerzy |
 | Szczęście | netto ÷ SzMax (12 / 18 / 24) × 100% |

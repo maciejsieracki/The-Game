@@ -45,14 +45,14 @@
 
 ## Przykład liczbowy
 
-**Miasto A:** pop **3**, bufor **32/34** (próg = 10 + 3×8 = **34**). Suwak żywności **70% rozwój / 30% wojsko**. Miasto produkuje **12 żywności/t**.
+**Miasto A:** pop **3**, bufor **66/68** (próg = 20 + 3×16 = **68**). Suwak żywności **70% rozwój / 30% wojsko**. Miasto produkuje **12 żywności/t**.
 
 - Na rozwój: 12 × 0,7 = **8,4** → bufor  
 - Na wojsko: 12 × 0,3 = **3,6** → 📦 tylko **ze Spichlerzem**
 
-**Awans 3→4 (BEZ Spichlerza):** bufor 34→**0**. Tracisz postęp; 3,6 żywności/t na wojsko **przepada**.
+**Awans 3→4 (BEZ Spichlerza):** bufor 68→**0**. Tracisz postęp; 3,6 żywności/t na wojsko **przepada**.
 
-**Awans 3→4 (ZE Spichlerzem):** bufor 34→**17** (50%). Wojsko: **3,6/t** → zapasy (np. 45/100 → 48,6/100).
+**Awans 3→4 (ZE Spichlerzem):** bufor 68→**34** (50%). Wojsko: **3,6/t** → zapasy (np. 45/100 → 48,6/100).
 
 **Drugi Spichlerz:** limit **200** (100×2). Przy nadprodukcji **+15/t** na wojsko, pełny magazyn w **~10 tur** — potem nadwyżka przepada (planuj konsumpcję wojska).
 

@@ -154,7 +154,7 @@ export function buildEconParams(data: GameData, difficulty: Difficulty = 'normal
   };
 
   return {
-    progWzrostuWspolczynnik:        num(em, 'próg_wzrostu_wspolczynnik', 8),
+    progWzrostuWspolczynnik:        num(em, 'próg_wzrostu_wspolczynnik', 16),
     spichlerzZachowaniePoPrzroscie: num(em, 'spichlerz_zachowanie_po_wzroscie', 0.5),
     akweduktProgLudnosci:           num(em, 'akwedukt_prog_ludnosci', 5),
     akweduktMaxLudnosci:            num(em, 'akwedukt_max_ludnosci', 15),
@@ -577,7 +577,7 @@ export function readCityFoodBufferFromCity(city: Pick<City, 'magazynZywnosci'>):
   return readCityFoodBuffer(city.magazynZywnosci);
 }
 
-/** Próg bufora wzrostu: (10 + N × wsp.) × tempo kreatora × asymetria trudności. */
+/** Próg bufora wzrostu: (20 + N × wsp.) × tempo kreatora × asymetria trudności. */
 export function growthFoodThreshold(
   population: number,
   params: EconParams,

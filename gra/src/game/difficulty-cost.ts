@@ -90,7 +90,7 @@ export function getPopulationGrowthThresholdMultiplier(
   return paceMult * getPopulationGrowthDifficultyMultiplier(ownerId, difficulty);
 }
 
-/** Próg 10 + N x wsp. po tempie kreatora i trudnosci (minimum 1). */
+/** Próg 20 + N x wsp. po tempie kreatora i trudnosci (minimum 1). */
 export function applyPopulationGrowthThreshold(
   baseThreshold: number,
   ownerId: number,

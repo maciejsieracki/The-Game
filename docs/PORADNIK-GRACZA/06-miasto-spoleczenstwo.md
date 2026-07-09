@@ -129,9 +129,9 @@ Przy **niskim porządku** (§36) część ludzi może **odejść** do innego two
 
 ### Przykład liczbowy
 
-Miasto ma **3** mieszkańców (N=3). Próg kolejnego awansu: Próg(N) = 10 + N × 8 → **10 + 3×8 = 34** 🍞 w buforze.
+Miasto ma **3** mieszkańców (N=3). Próg kolejnego awansu: Próg(N) = 20 + N × 16 → **20 + 3×16 = 68** 🍞 w buforze.
 Produkcja netto **12** 🍞/t, suwak rozwój miast **70%** → **+8,4** 🍞/t do bufora (zaokr. **+8**).
-Bez Spichlerza po awansie bufor **→ 0**; ze Spichlerzem zostaje **50%** z zebranego (np. z 34 → **17** 🍞).
+Bez Spichlerza po awansie bufor **→ 0**; ze Spichlerzem zostaje **50%** z zebranego (np. z 68 → **34** 🍞).
 
 ### Strategia gracza
 
@@ -142,9 +142,9 @@ Czytaj **rozpiskę plusów i minusów** w panelu — naprawiaj największy minus
 - Patrzenie tylko na **sumę** zasobu zamiast **przyrostu**/turę.
 - Odkładanie reakcji na **pomarańczowe** alerty — za turę mogą być **czerwone**.
 
-### 33.6. Pełny scenariusz bufora (próg 34)
+### 33.6. Pełny scenariusz bufora (próg 68)
 
-Miasto ma **3** mieszkańców — kolejny awans wymaga **Próg(3) = 10 + 3×8 = 34** 🍞 w buforze.
+Miasto ma **3** mieszkańców — kolejny awans wymaga **Próg(3) = 20 + 3×16 = 68** 🍞 w buforze.
 
 | Tura | Produkcja netto | Suwak 70% rozwój | Bufor przed | Bufor po | Zdarzenie |
 |------|-----------------|------------------|-------------|----------|-----------|
@@ -152,11 +152,15 @@ Miasto ma **3** mieszkańców — kolejny awans wymaga **Próg(3) = 10 + 3×8 = 
 | 2 | 12 🍞 | +8 | 8 | 16 | — |
 | 3 | 12 🍞 | +8 | 16 | 24 | — |
 | 4 | 12 🍞 | +8 | 24 | 32 | — |
-| 5 | 12 🍞 | +8 | 32 | **40** | **+1 mieszkaniec** (bufor ≥34) |
+| 5 | 12 🍞 | +8 | 32 | 40 | — |
+| 6 | 12 🍞 | +8 | 40 | 48 | — |
+| 7 | 12 🍞 | +8 | 48 | 56 | — |
+| 8 | 12 🍞 | +8 | 56 | 64 | — |
+| 9 | 12 🍞 | +8 | 64 | **72** | **+1 mieszkaniec** (bufor ≥68) |
 
-**Bez Spichlerza:** po awansie bufor **→ 0**; następny próg dla N=4: **10+4×8 = 42** 🍞 od zera.
+**Bez Spichlerza:** po awansie bufor **→ 0**; następny próg dla N=4: **20+4×16 = 84** 🍞 od zera.
 
-**Ze Spichlerzem:** z **40** zostaje **50% = 20** 🍞 — do progu **42** brakuje **22**, nie **42**.
+**Ze Spichlerzem:** z **72** zostaje **50% = 36** 🍞 — do progu **84** brakuje **48**, nie **84**.
 
 
 ---
@@ -628,7 +632,7 @@ Ten sam suwak 70/30 — **inny skutek** z/bez Spichlerza:
 
 **1** Spichlerz → limit zapasów państwa **100** 🍞 (normal). Wojsko **8** jednostek × **1** 🍞 = **8**/turę.
 Nadwyżka suwaka **+6**/turę przez **10** tur → magazyn **60/100**.
-Po awansie ludności bufor **34** 🍞 → ze Spichlerzem zostaje **50%** = **17** 🍞 (próg następny nadal **34** przy N=3).
+Po awansie ludności bufor **68** 🍞 → ze Spichlerzem zostaje **50%** = **34** 🍞 (próg następny nadal **68** przy N=3).
 
 ### Strategia gracza
 
@@ -641,12 +645,12 @@ Postaw **pierwszy Spichlerz** przed masową rekrutacją — jeden budynek w impe
 
 ### 39.6. Scenariusz SP — pełna ścieżka (decyzja B5)
 
-**Start:** imperium **bez** Spichlerza, miasto **pop 2**, bufor **0**, próg **10+2×8 = 26**.
+**Start:** imperium **bez** Spichlerza, miasto **pop 2**, bufor **0**, próg **20+2×16 = 52**.
 
-1. **Tury 1–3:** +**9** 🍞/t do bufora (70% z 13 netto) → bufor **27** → awans **pop 3**, bufor **→ 0**.
-2. **Tury 4–7:** znowu zbierasz do **34** (próg N=3) — **4** tury po **8** 🍞.
-3. **Budowa Spichlerza** w turze 8 (koszt **20** pracy ≈ **3** tury produkcji).
-4. **Tura 12:** awans **pop 4** przy zebranych **36** 🍞 — **ze Spichlerzem** bufor = **18** 🍞 (50%).
+1. **Tury 1–6:** +**9** 🍞/t do bufora (70% z 13 netto) → bufor **54** → awans **pop 3**, bufor **→ 0**.
+2. **Tury 7–15:** znowu zbierasz do **68** (próg N=3) — **9** tur po **8** 🍞 (bufor **72**, próg przekroczony).
+3. **Budowa Spichlerza** w turze 10 (koszt **20** pracy ≈ **3** tury produkcji).
+4. **Tura 15:** awans **pop 4** przy zebranych **72** 🍞 — **ze Spichlerzem** bufor = **36** 🍞 (50%).
 5. **Suwak wojska 40%** + **2** Spichlerze → limit zapasów **200** 🍞; armia **10** 🍞/t; nadwyżka **+6**/t → pełny magazyn za **~25** tur.
 
 **SP1–SP6 w skrócie:** jeden Spichlerz w imperium wystarczy; termin UI zawsze **Spichlerz**; rekrutacja **nigdy** nie blokowana brakiem magazynu.
@@ -780,7 +784,7 @@ Czytaj **rozpiskę plusów i minusów** w panelu — naprawiaj największy minus
 
 Scenariusz na **Normalnym**: przyrost **+10**/turę z działalności opisanej w tej sekcji.
 Po **5** turach akumulacja **50** jednostek zasobu — wystarcza na **1** kluczową decyzję (budowa, tech lub armia).
-Wzory referencyjne: Próg(N) = 10 + N × 8; Porządek ≈ 0,5 × Szczęście% + 0,5 × Prawo%; suwaki 70% złoto · 20% nauka · 10% zamożność.
+Wzory referencyjne: Próg(N) = 20 + N × 16; Porządek ≈ 0,5 × Szczęście% + 0,5 × Prawo%; suwaki 70% złoto · 20% nauka · 10% zamożność.
 
 ### Strategia gracza
 
