@@ -3146,6 +3146,23 @@ export function coastalRiverRenderPath(
     if (!h || h.terenBazowy === TerenBazowy.Morze) continue;
     out.push({ q: p.q, r: p.r });
   }
+  // FIX 2026-07-09 (rzeki dochodzą do morza): generator kończy trasę na heksie SĄSIADUJĄCYM z
+  // oceanem (isRiverDrainageGoal), więc ostatni heks bywa LĄDEM stykającym się z morzem, bez
+  // Wybrzeża w ścieżce → wtedy out<2 i ujście się nie renderuje (rzeka urywa się przed wodą).
+  // Dopnij sąsiedni Wybrzeże, by wstęga ujścia realnie sięgnęła tafli. Render-only (bez hasha).
+  if (out.length >= 1) {
+    const lp = out[out.length - 1]!;
+    const lh = hexes[hexKey(lp.q, lp.r)];
+    if (lh && lh.terenBazowy !== TerenBazowy.Wybrzeze) {
+      for (const [dq, dr] of HEX_DIRECTIONS) {
+        const nh = hexes[hexKey(lp.q + dq, lp.r + dr)];
+        if (nh?.terenBazowy === TerenBazowy.Wybrzeze) {
+          out.push({ q: lp.q + dq, r: lp.r + dr });
+          break;
+        }
+      }
+    }
+  }
   if (out.length < 2) return out;
   if (start > 0) {
     const prev = path[start - 1]!;
