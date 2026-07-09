@@ -1415,6 +1415,9 @@ export async function buildScene(
   const dekorRowninaHexKey: string[][] = [];
   const dekorRowninaOrig: THREE.Matrix4[][] = [];
   const dekorRowninaIdx: number[] = [];
+  // FPS fog: hexKey → instancja dekoru, żeby mgła aktualizowała dekor DIFFEM (tylko zmienione
+  // heksy w setFog), a nie pełnym skanem ~80–150k instancji co wywołanie (regresja 1,9→139 ms).
+  const dekorRefByHex = new Map<string, { mesh: THREE.InstancedMesh; index: number; orig: THREE.Matrix4 }>();
   if (styledTerrain) {
     for (let w = 0; w < DEKOR_LICZBA_WARIANTOW; w++) {
       const lm = new THREE.InstancedMesh(dekorLakaGeometria(w), DEKOR_MATERIAL, Math.max(1, dekorLakaVarCount[w]!));
@@ -1620,17 +1623,20 @@ export async function buildScene(
         dummy.rotation.set(0, rotacjaDekoru(hex.coords.q, hex.coords.r, map.seed), 0);
         dummy.scale.set(1, 1, 1);
         dummy.updateMatrix();
+        const dOrig = dummy.matrix.clone();
         if (t === TerenBazowy.Laka) {
           const di = dekorLakaIdx[dw]!;
           dekorLakaInst[dw]!.setMatrixAt(di, dummy.matrix);
           dekorLakaHexKey[dw]![di] = hexKey;
-          dekorLakaOrig[dw]![di] = dummy.matrix.clone();
+          dekorLakaOrig[dw]![di] = dOrig;
+          dekorRefByHex.set(hexKey, { mesh: dekorLakaInst[dw]!, index: di, orig: dOrig });
           dekorLakaIdx[dw] = di + 1;
         } else {
           const di = dekorRowninaIdx[dw]!;
           dekorRowninaInst[dw]!.setMatrixAt(di, dummy.matrix);
           dekorRowninaHexKey[dw]![di] = hexKey;
-          dekorRowninaOrig[dw]![di] = dummy.matrix.clone();
+          dekorRowninaOrig[dw]![di] = dOrig;
+          dekorRefByHex.set(hexKey, { mesh: dekorRowninaInst[dw]!, index: di, orig: dOrig });
           dekorRowninaIdx[dw] = di + 1;
         }
       }
@@ -2425,13 +2431,10 @@ export async function buildScene(
     if (zoomFlags.terrainDetailInst) applyOverlayFog(hillBumpMesh, hillBumpHexKey, hillBumpOrigMatrix);
 
     // DEKOR mikrodekor łąk/równin — LOD 0-1 (terrainDetailInst); fog per-instancja (wspólny materiał).
+    // DEKOR: tylko LOD (widoczność). Mgła dekoru aktualizowana DIFFEM w setFog (dekorRefByHex),
+    // NIE pełnym skanem tutaj — inaczej ~80–150k instancji × każde odsłonięcie = regresja 139 ms.
+    // Instancje mają zawsze aktualny stan mgły z diffu, więc przy powrocie LOD są poprawne.
     dekorGroup.visible = zoomFlags.terrainDetailInst;
-    if (zoomFlags.terrainDetailInst) {
-      for (let w = 0; w < dekorLakaInst.length; w++) {
-        applyTerrainFog(dekorLakaInst[w]!, dekorLakaHexKey[w]!, dekorLakaOrig[w]!);
-        applyTerrainFog(dekorRowninaInst[w]!, dekorRowninaHexKey[w]!, dekorRowninaOrig[w]!);
-      }
-    }
 
     // GRAFIKA-3D partia TEREN stage 2: instanced góry/wzgórza — widoczność jak styledDecor.
     for (let v = 0; v < goraInst.length; v++) {
@@ -2540,6 +2543,8 @@ export async function buildScene(
       keysToScan = changed;
     }
 
+    const touchedDekorMeshes = new Set<THREE.InstancedMesh>();
+    const _dekorFogC = new THREE.Color();
     for (const key of keysToScan) {
       const entry = hexInstance.get(key);
       if (entry === undefined) continue;
@@ -2567,12 +2572,30 @@ export async function buildScene(
       }
       lastFogSig.set(key, sig);
       touchedMeshes.add(mesh);
+
+      // FPS fog: mikrodekor tego heksa dzieli stan mgły (ten sam sig) — aktualizuj DIFFEM (tylko
+      // zmienione heksy), nie pełnym skanem ~80–150k instancji per setFog (naprawa regresji 139 ms).
+      const dref = dekorRefByHex.get(key);
+      if (dref !== undefined) {
+        if (sig === 2 || decorHiddenHexKeys.has(key)) {
+          dref.mesh.setMatrixAt(dref.index, ZERO_MATRIX); // hidden lub pod miastem → schowaj
+        } else {
+          dref.mesh.setMatrixAt(dref.index, dref.orig);
+          _dekorFogC.setScalar(sig === 0 ? 1 : FOG_EXPLORED_BRIGHTNESS);
+          dref.mesh.setColorAt(dref.index, _dekorFogC); // visible=pełny, explored=przygaszony
+        }
+        touchedDekorMeshes.add(dref.mesh);
+      }
     }
 
     // Zatwierdz zmiany kolorow i macierzy na wszystkich dotknietych meshach
     for (const mesh of touchedMeshes) {
       if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
       mesh.instanceMatrix.needsUpdate = true;
+    }
+    for (const m of touchedDekorMeshes) {
+      m.instanceMatrix.needsUpdate = true;
+      if (m.instanceColor) m.instanceColor.needsUpdate = true;
     }
 
     const anyHiddenFinal = anyHidden;
