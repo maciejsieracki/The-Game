@@ -2392,6 +2392,7 @@ export async function buildScene(
 
   function setFog(visible: Set<string>, explored: Set<string>, opts?: { landReveal?: boolean }): void {
     const __fogT0 = performance.now();
+    const prevVisible = lastFogVisible;
     lastFogVisible = visible;
     lastFogExplored = explored;
     const landReveal = opts?.landReveal ?? false;
@@ -2400,25 +2401,46 @@ export async function buildScene(
 
     // -- Baza: kolory + ukrycie geometrii terenu (unknown = brak heksa, nie kontur kontynentu)
     const touchedMeshes = new Set<THREE.InstancedMesh>();
-    let hiddenCount = 0;
+    // FPS: anyHidden = czy istnieje JAKIKOLWIEK ukryty heks (early-exit; przy obecnej mgle
+    // kończy na pierwszym nieodkrytym, bez skanu 320k).
+    let anyHidden = false;
     for (const [key] of hexInstance) {
-      if (isHidden(key)) hiddenCount++;
+      if (isHidden(key)) { anyHidden = true; break; }
     }
-    const anyHidden = hiddenCount > 0;
 
     // A5: kontekst globalny decydujący o roblox ocean-hide (patrz pętla ~2100 niżej).
     // Jeśli się zmienił, interpretacja macierzy heksów Morze/Wybrzeże się zmienia
     // (ZERO ↔ orig), więc per-heks sygnatura stanu nie wystarcza → pełny przebieg.
     const showOceanBackdropNow = !anyHidden || landReveal;
-    if (showOceanBackdropNow !== lastFogShowOceanBackdrop) {
+    const contextChanged = showOceanBackdropNow !== lastFogShowOceanBackdrop;
+    if (contextChanged) {
       lastFogSig.clear();
       lastFogShowOceanBackdrop = showOceanBackdropNow;
     }
 
-    for (const [key, entry] of hexInstance) {
-      // A5: tania sygnatura stanu (kompletny opis wejść efektu głównej pętli).
-      // 0=visible, 1=explored, 2=hidden. Pokrywa kolor (3 gałęzie) oraz macierz
-      // (isHidden → ZERO, else → orig). Reszta wejść stała per heks/globalnie.
+    // FPS: iteruj TYLKO heksy, które ZMIENIŁY przynależność do `visible` vs poprzednie
+    // wywołanie (symetryczna różnica), zamiast całych ~320k.
+    // Dlaczego wystarczy sam `visible` (bez explored): `explored` rośnie wyłącznie o aktualnie
+    // widoczne heksy (addExplored(explored,vis) tuż przed setFog) i NIGDY nie maleje. Zatem
+    // KAŻDE przejście mgły (hidden→visible, visible→explored, explored→visible) zmienia
+    // przynależność do `visible` — a explored bez zmiany visible nie zmienia `sig`. Dodatkowo
+    // w normalnej grze `explored` to TEN SAM obiekt co poprzednio (współdzielony), więc diff po
+    // nim i tak byłby pusty (i kosztowny — iteruje rosnący zbiór). revealAllLand daje nowy
+    // (scalony) explored, ale jego włączenie zmienia kontekst → pełny przebieg poniżej.
+    let keysToScan: Iterable<string>;
+    if (contextChanged || prevVisible === null) {
+      keysToScan = hexInstance.keys();
+    } else {
+      const changed = new Set<string>();
+      for (const k of visible) if (!prevVisible.has(k)) changed.add(k);
+      for (const k of prevVisible) if (!visible.has(k)) changed.add(k);
+      keysToScan = changed;
+    }
+
+    for (const key of keysToScan) {
+      const entry = hexInstance.get(key);
+      if (entry === undefined) continue;
+      // 0=visible, 1=explored, 2=hidden. Pokrywa kolor (3 gałęzie) i macierz (isHidden→ZERO).
       const sig = visible.has(key) ? 0 : explored.has(key) ? 1 : 2;
       if (lastFogSig.get(key) === sig) continue; // brak zmiany → zero operacji GPU
 
