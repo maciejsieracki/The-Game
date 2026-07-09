@@ -86,7 +86,7 @@ const NAKLADKA_LABEL: Partial<Record<Nakladka, string>> = {
 
   [Nakladka.ZlozeOwiec]: 'Owce',
 
-  [Nakladka.ZlozeBydla]: 'Bydło (krowa/wół)',
+  [Nakladka.ZlozeBydla]: 'Trzoda (krowa/świnia)',
 
   [Nakladka.ZlozeLamy]:  'Lama',
 
@@ -126,7 +126,7 @@ const SUROWIEC_KEY_LABEL: Record<string, string> = {
 
   stal:   'Stal',
 
-  bydlo:  'Bydło (krowa/wół)',
+  bydlo:  'Trzoda (krowa/świnia)',
 
   owce:   'Owce',
 

@@ -2293,7 +2293,7 @@ function renderSurowce(mount: HTMLElement, city: City): void {
   wrap.appendChild(hd);
   attachHoverDetail(hd, () => buildSurowceDetailCard(potential, active, legacy), 220);
 
-  const preview = ['Bydło', 'Glina', 'Koń', 'Sól'];
+  const preview = ['Trzoda', 'Glina', 'Koń', 'Sól'];
   const hasSplit = raw !== undefined && !legacy;
   const hasAny = hasSplit ? (active.length + potential.length > 0) : (raw !== undefined ? active.length > 0 : true);
 

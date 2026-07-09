@@ -7,6 +7,7 @@ import type { ImprovementKey } from './improvements';
 import { buildStyleTarasyTerrace, type QualityTier } from './mapRenderStyle';
 import { placeLivestockPair } from './styleResources';
 import { buildLama, buildPastwiskoZwierzeta } from './pastwisko-modele';
+import { buildTrzoda } from './swinia-trzoda';
 import {
   buildFarma, buildKopalnia, buildKamieniolom, buildTartak, buildZagrodaDodatki,
   ULEPSZENIA_P2_LAYOUT,
@@ -385,7 +386,7 @@ const BUILDERS: Record<ImprovementKey, (g: THREE.Group, owner: number) => void> 
   droga: g => { g.add(buildDrogaNawierzchnia()); },   // GRAFIKA-3D partia 3B
   droga_brukowana: g => { g.add(buildDrogaBrukowanaNawierzchnia()); },
   farma: g => { g.add(buildFarma({ wariant: 'solo' })); },   // GRAFIKA-3D partia 2
-  bydlo: g => { g.add(buildPastwiskoZwierzeta()); },   // GRAFIKA-3D partia 1: pełne pastwisko, środek wolny pod budynek
+  bydlo: g => { g.add(buildTrzoda()); },   // TRZODA (krowa+świnia N-NE, środek wolny pod miasto) — Maciej 2026-07-09
   owce: g => rbxOwce(g),
   lama: g => { const l = buildLama(); l.position.set(0.63, 0, 0.04); g.add(l); },
   stadnina: g => { g.add(buildStadnina(_improvementDetailQuality === 'high' ? 2 : 1)); },   // GRAFIKA-3D 3A: WYSOKA=2 konie, NISKA/NORMALNA=1

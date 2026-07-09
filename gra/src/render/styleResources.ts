@@ -7,6 +7,7 @@ import { Nakladka } from '../types/hex';
 import type { MapRenderStyle } from './mapRenderStyle';
 import { buildResourceOverlay } from './resources';
 import { buildZlozeKrowy, buildZlozeOwce } from './pastwisko-modele';
+import { buildTrzoda } from './swinia-trzoda';
 import { buildZlozeKonie } from './kon-nowy-model';
 import {
   buildZlozeMiedz, buildZlozeZelazo, buildZlozeWegiel, buildZlozeSol, buildZlozeGlina,
@@ -403,7 +404,8 @@ export function buildStyledResourceOverlay(nakladka: Nakladka, style: MapRenderS
     case Nakladka.ZlozeBydla:
       // GRAFIKA-3D partia 1: surowe złoże = zwierzęta danego typu w slotach layoutu (środek wolny pod ulepszenie)
       if (style === 'roblox') {
-        g = nakladka === Nakladka.ZlozeBydla ? buildZlozeKrowy() : buildZlozeOwce();
+        // ZlozeBydla = złoże TRZODY (krowa+świnia N-NE); ZlozeOwiec = owce. Środek wolny pod ulepszenie/miasto.
+        g = nakladka === Nakladka.ZlozeBydla ? buildTrzoda() : buildZlozeOwce();
       } else {
         g = nakladka === Nakladka.ZlozeBydla ? styledCow(style) : styledSheep(style);
       }

@@ -16,7 +16,7 @@ export type ImprovementKey =
 
 export const IMPROVEMENTS: { key: ImprovementKey; label: string; epoka: number }[] = [
   { key: 'farma', label: 'Farma', epoka: 1 },
-  { key: 'bydlo', label: 'Bydło', epoka: 1 },
+  { key: 'bydlo', label: 'Trzoda', epoka: 1 }, // rename Bydło→Trzoda (Maciej 2026-07-09; klucz techniczny bydlo zostaje)
   { key: 'owce', label: 'Owce', epoka: 1 },
   { key: 'lama', label: 'Lama', epoka: 1 },
   { key: 'stadnina', label: 'Stadnina', epoka: 2 },
