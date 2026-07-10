@@ -39,10 +39,14 @@ function buildMergedMesh(group: THREE.Object3D): THREE.Mesh {
       | THREE.MeshLambertMaterial
       | undefined;
     _c.copy(mat0?.color ?? WHITE);
+    // Modele z WYPIECZONYMI vertex colors (teren-gory-wzgorza / tarasy / lasy — atrybut 'color')
+    // zachowują własny kolor per-wierzchołek; reszta (solidne materiały) bierze mat.color jak dotąd.
+    const colAttr = geo.getAttribute('color') as THREE.BufferAttribute | undefined;
     const push = (i: number): void => {
       _v.fromBufferAttribute(posAttr, i).applyMatrix4(_m);
       positions.push(_v.x, _v.y, _v.z);
-      colors.push(_c.r, _c.g, _c.b);
+      if (colAttr) colors.push(colAttr.getX(i), colAttr.getY(i), colAttr.getZ(i));
+      else colors.push(_c.r, _c.g, _c.b);
     };
     if (idx) {
       for (let i = 0; i < idx.count; i++) push(idx.getX(i));

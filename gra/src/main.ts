@@ -333,6 +333,11 @@ import {
 } from './map/improvement-build';
 import type { ImprovementKey } from './render/improvements';
 import { buildImprovement, buildImprovementStack, buildImprovementSectored } from './render/improvements';
+// GRAFIKA-TEREN-2: render wiosek neutralnych + obozów barbarzyńców (wcześniej ZERO tri).
+import { buildWioska, buildObozBarbarzyncow, WIOSKA_OBOZ_LAYOUT } from './render/wioska-oboz';
+// GRAFIKA-TEREN-2: tarasy = wzgórze (wariant 0/3) + schodkowe półki NA garbie (nie mini-dysk w sektorze).
+import { buildWzgorze, rotacjaDlaHeksa } from './render/teren-gory-wzgorza';
+import { buildTarasy, tarasyWariantDlaHeksa } from './render/tarasy-model';
 import { foodLayerFromAnimalDeposit, improvementKeysForHex } from './game/terrain-improvements';
 import { ikonaIdToBronzeCiv, type BronzeCiv } from './render/bronzeCity';
 import { buildSettlementModel } from './render/settlementModel';
@@ -1150,6 +1155,89 @@ async function boot(): Promise<void> {
         if (hidden) continue;
         const bri = fogBrightnessForHex(hexKey, vis, exploredKeys, true);
         applyFogDimToObject3D(group, bri);
+      }
+    }
+
+    // ==== GRAFIKA-TEREN-2: wioski neutralne + obozy barbarzyńców (render — wcześniej ZERO tri) ====
+    // Reconcile keyed na `parent === scene`: samo-naprawia się przy przebudowie sceny (nowa mapa),
+    // więc nie trzeba dotykać ścieżek reset/load. Wioska = mesh per heks (hex.wioska.istnieje, bez
+    // miasta); obóz = mesh per camp.id. Oba: środek heksa, skala 1.0, collapse (FPS lewar 1), mgła
+    // jak improvementMeshes. Kolor barbarzyńców = 0xff4444 (default builder — decyzja B właściciela).
+    const villageMeshes = new Map<string, THREE.Group>();
+    const campMeshes = new Map<string, THREE.Group>();
+
+    function syncVillageMeshes(): void {
+      const wanted = new Set<string>();
+      let changed = false;
+      // for..in zamiast Object.values — brak alokacji tablicy ~N heksów na każde refreshFog.
+      for (const hexKey in map.hexes) {
+        const hex = map.hexes[hexKey];
+        if (!hex?.wioska?.istnieje) continue;
+        const q = hex.coords.q, r = hex.coords.r;
+        if (cities.some(c => c.q === q && c.r === r)) continue; // miasto zastępuje wioskę
+        wanted.add(hexKey);
+        const existing = villageMeshes.get(hexKey);
+        if (existing && existing.parent === scene) continue;
+        if (existing) existing.parent?.remove(existing); // stara scena — odbuduj w bieżącej
+        const g = buildWioska();
+        collapseToMergedMesh(g); // FPS lewar 1: ~20 boxów → 1 mesh
+        const wp = axialToWorld(q, r, HEX_R);
+        g.position.set(wp.x, unitRenderer.topYAt(q, r), wp.z);
+        g.rotation.y = WIOSKA_OBOZ_LAYOUT.wioska.budynek.rotY;
+        g.matrixAutoUpdate = false; g.updateMatrix(); // FPS lewar 3
+        scene.add(g);
+        villageMeshes.set(hexKey, g);
+        changed = true;
+      }
+      for (const [hexKey, g] of villageMeshes) {
+        if (wanted.has(hexKey)) continue;
+        g.parent?.remove(g);
+        villageMeshes.delete(hexKey);
+        changed = true;
+      }
+      if (changed) renderer.shadowMap.needsUpdate = true;
+    }
+
+    function syncCampMeshes(): void {
+      const wanted = new Set<string>();
+      let changed = false;
+      for (const camp of barbCamps) {
+        wanted.add(camp.id);
+        const existing = campMeshes.get(camp.id);
+        if (existing && existing.parent === scene) continue;
+        if (existing) existing.parent?.remove(existing);
+        const g = buildObozBarbarzyncow(); // default BARB_FACTION_COLOR = 0xff4444 (decyzja B)
+        collapseToMergedMesh(g);
+        const wp = axialToWorld(camp.q, camp.r, HEX_R);
+        g.position.set(wp.x, unitRenderer.topYAt(camp.q, camp.r), wp.z);
+        g.rotation.y = WIOSKA_OBOZ_LAYOUT.obozBarbarzyncow.budynek.rotY;
+        g.matrixAutoUpdate = false; g.updateMatrix();
+        scene.add(g);
+        campMeshes.set(camp.id, g);
+        changed = true;
+      }
+      for (const [id, g] of campMeshes) {
+        if (wanted.has(id)) continue;
+        g.parent?.remove(g);
+        campMeshes.delete(id);
+        changed = true;
+      }
+      if (changed) renderer.shadowMap.needsUpdate = true;
+    }
+
+    /** Mgła wojenna dla wiosek/obozów — jak syncImprovementMeshFog. */
+    function syncSettlementMeshFog(vis: Set<string>, exploredKeys: Set<string>): void {
+      const applyOne = (hexKey: string, group: THREE.Group): void => {
+        const hidden = !vis.has(hexKey) && !exploredKeys.has(hexKey);
+        group.visible = !hidden;
+        if (hidden) return;
+        const bri = fogBrightnessForHex(hexKey, vis, exploredKeys, true);
+        applyFogDimToObject3D(group, bri);
+      };
+      for (const [hexKey, group] of villageMeshes) applyOne(hexKey, group);
+      for (const camp of barbCamps) {
+        const g = campMeshes.get(camp.id);
+        if (g) applyOne(keyOf(camp.q, camp.r), g);
       }
     }
 
@@ -3296,10 +3384,15 @@ async function boot(): Promise<void> {
       addExplored(explored, vis);
       const exploredForRender = fogExploredForRender();
       const useFogRender = fogOn || revealAllLand;
+      // GRAFIKA-TEREN-2: uzgodnij meshe wiosek/obozów z aktualnym stanem (reconcile idempotentny;
+      // samo-naprawia się przy przebudowie sceny). refreshFog = centralny hook po każdej zmianie stanu.
+      syncCampMeshes();
+      syncVillageMeshes();
       if (useFogRender) {
         setFog(vis, exploredForRender, { landReveal: revealAllLand });
         syncResourceOverlayFog(vis, exploredForRender);
         syncImprovementMeshFog(vis, exploredForRender);
+        syncSettlementMeshFog(vis, exploredForRender);
         syncUnitsRender(visibleUnitsList(vis));
         cityRenderer.applyFogVisibility(vis, true, 0);
         wonderRenderer.applyFogVisibility(vis, true);
@@ -3307,6 +3400,7 @@ async function boot(): Promise<void> {
         setFog(ALL_KEYS, ALL_KEYS);
         syncResourceOverlayFog(ALL_KEYS, ALL_KEYS);
         syncImprovementMeshFog(ALL_KEYS, ALL_KEYS);
+        syncSettlementMeshFog(ALL_KEYS, ALL_KEYS);
         syncUnitsRender(visibleUnitsList(ALL_KEYS));
         cityRenderer.applyFogVisibility(ALL_KEYS, false, 0);
         wonderRenderer.applyFogVisibility(ALL_KEYS, false);
@@ -4449,8 +4543,21 @@ async function boot(): Promise<void> {
         return;
       }
       syncImprovementDecorForHex(hexKey, layers);
-      const g = buildImprovementVisual(layers);
-      collapseToMergedMesh(g); // FPS lewar 1: setki boxów (zwierzęta/budynki) → 1 mesh
+      // GRAFIKA-TEREN-2: tarasy NIE idą do sektora (stary mini-dysk). Zamiast tego stawiamy właściwe
+      // wzgórze (wariant 0/3, prepared slopes) + schodkowe półki NA garbie; instanced garb tego heksa
+      // schowany przez syncImprovementDecorForHex→hideDecorAtHex. Vertex colors przetrwają collapse.
+      const hasTarasy = layers.includes('tarasy');
+      const hex = map.hexes[hexKey];
+      const isHill = hex?.terenBazowy === TerenBazowy.Wzgorza;
+      const sectoredLayers = hasTarasy ? layers.filter(l => l !== 'tarasy') : layers;
+      const g = buildImprovementVisual(sectoredLayers);
+      if (hasTarasy && isHill) {
+        const tv = tarasyWariantDlaHeksa(q, r, map.seed);
+        const rotY = rotacjaDlaHeksa(q, r, map.seed);
+        const hill = buildWzgorze(tv); hill.rotation.y = rotY; g.add(hill);   // garb pod tarasami (wariant 0/3)
+        const ter = buildTarasy(tv); ter.rotation.y = rotY; g.add(ter);       // schodkowe półki opasujące stok
+      }
+      collapseToMergedMesh(g); // FPS lewar 1: setki boxów (zwierzęta/budynki) → 1 mesh; vertex colors zachowane
       const wp = axialToWorld(q, r, HEX_R);
       g.position.set(wp.x, improvementMeshPlacement(q, r, layers), wp.z);
       // (skala 0.5 usunięta — buildImprovementSectored skaluje per sektor do SECTOR_SCALE)

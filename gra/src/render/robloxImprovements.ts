@@ -6,7 +6,7 @@ import * as THREE from 'three';
 import type { ImprovementKey } from './improvements';
 import { buildStyleTarasyTerrace, type QualityTier } from './mapRenderStyle';
 import { placeLivestockPair } from './styleResources';
-import { buildLama } from './pastwisko-modele'; // buildPastwiskoZwierzeta wycofany (model pokazowy — nieużywany)
+import { buildLama, buildZlozeOwce } from './pastwisko-modele'; // buildPastwiskoZwierzeta wycofany (model pokazowy — nieużywany)
 import { buildTrzoda } from './swinia-trzoda';
 import {
   buildFarma, buildKopalnia, buildKamieniolom, buildTartak, buildZagrodaDodatki,
@@ -387,7 +387,7 @@ const BUILDERS: Record<ImprovementKey, (g: THREE.Group, owner: number) => void> 
   droga_brukowana: g => { g.add(buildDrogaBrukowanaNawierzchnia()); },
   farma: g => { g.add(buildFarma({ wariant: 'solo' })); },   // GRAFIKA-3D partia 2
   bydlo: g => { g.add(buildTrzoda()); },   // TRZODA (krowa+świnia N-NE, środek wolny pod miasto) — Maciej 2026-07-09
-  owce: g => rbxOwce(g),
+  owce: g => { g.add(buildZlozeOwce()); },   // FIX GRAFIKA-TEREN-2: owce jak trzoda/złoże owiec (2 owce S-SW, środek wolny) — buildOwca z pastwisko-modele
   lama: g => { const l = buildLama(); l.position.set(0.63, 0, 0.04); g.add(l); },
   stadnina: g => { g.add(buildStadnina(1)); },   // Maciej 2026-07-09: zawsze 1 koń (dwa zajmowały prawie cały heks)
   kopalnia: g => { const m = buildKopalnia(); m.rotation.y = ULEPSZENIA_P2_LAYOUT.kopalnia.budynek.rotY; g.add(m); },
@@ -401,7 +401,7 @@ const BUILDERS: Record<ImprovementKey, (g: THREE.Group, owner: number) => void> 
   tarasy: g => rbxTarasy(g),
   lodzie_rybackie: g => { const m = buildLodzieRybackie(); m.rotation.y = ULEPSZENIA_P3A_LAYOUT.lodzieRybackie.budynek.rotY; g.add(m); },
   warzelnia_soli: g => { const m = buildWarzelniaSoli(); m.rotation.y = ULEPSZENIA_P3A_LAYOUT.warzelniaSoli.budynek.rotY; g.add(m); },
-  fort: (g, o) => { const m = buildFort(o); m.rotation.y = ULEPSZENIA_P3B_LAYOUT.fort.budynek.rotY; m.scale.setScalar(1 / 3); g.add(m); },   // WYMÓG SKALI: fort ~1/3 (gabaryt jak stary rbxFort)
+  fort: (g, o) => { const m = buildFort(o); m.rotation.y = ULEPSZENIA_P3B_LAYOUT.fort.budynek.rotY; g.add(m); },   // FIX GRAFIKA-TEREN-2: usunięto scale 1/3 (relikt sprzed sektorów — płaska plamka); net 0.15 jak posterunek
   posterunek: (g, o) => { const m = buildPosterunek(o); m.rotation.y = ULEPSZENIA_P3B_LAYOUT.posterunek.budynek.rotY; g.add(m); },
   pastwisko: g => {
     const f = buildFarma({ wariant: 'pastwisko' });
