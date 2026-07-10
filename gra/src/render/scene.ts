@@ -858,11 +858,14 @@ function hexEdgeMidpointByDir(q: number, r: number, dir: number, R: number): { x
 }
 
 // ---------------------------------------------------------------------------
-// Rzeki jako GŁADKI NATURALNY ciek (Maciej 2026-07-10): wstęga biegnie przez CIĄG ŚRODKÓW
-// WSPÓLNYCH KRAWĘDZI kolejnych heksów trasy (jeden surowy punkt na granicę), a splajn
-// CatmullRom (buildRibbonGeometry sharp=false) przeciąga przez nie płynną linię. Odrzucone:
-// „centrolinia" prostymi (kanciasto), trasowanie po ROGACH obwodu + Chaikin (bąble-co-heks).
-// RENDER-ONLY (nie zmienia generatora ani hasza mapy).
+// Rzeki PO WEWNĘTRZNEJ STRONIE ŚCIANEK heksa — KANCIASTO (Owner 2026-07-10, twarda wytyczna
+// „!!"): NIE prosta przez środek pola (odrzucona „centrolinia"), NIE gładka krzywa (odrzucony
+// CatmullRom/Chaikin — „to nie styl Roblox"). Geometria KRAWĘDZIOWA: polilinia biegnie OBWODEM
+// heksów — środek krawędzi WEJŚCIA → ROGI łuku (najkrótszy po ściankach, ≥2 boki) → środek
+// krawędzi WYJŚCIA. Rogi INSETOWANE ku środkowi WŁASNEGO heksa (RIVER_INSET_FRAC) = hug
+// WEWNĘTRZNEJ strony ścianki. JEDEN punkt na przejściu przez ściankę (wspólny środek krawędzi,
+// bez insetu) → ZERO „domków". Render sharp=true (proste odcinki + załamania na rogach), BEZ
+// wygładzania. RENDER-ONLY (nie zmienia generatora ani hasza mapy).
 // ---------------------------------------------------------------------------
 
 /** Wspólny środek krawędzi dwóch sąsiednich heksów (granica hex1|hex2). */
@@ -873,6 +876,84 @@ function sharedEdgeMidpoint(
   if (dir < 0) return null;
   return hexEdgeMidpointByDir(q1, r1, dir, R);
 }
+
+/** Następny róg obwodu heksa (pointy-top; cw = zgodnie z ruchem wskazówek). */
+function hexCornerStep(from: number, cw: boolean): number {
+  return cw ? (from + 1) % 6 : (from + 5) % 6;
+}
+
+/** Droga wzdłuż obwodu heksa (rogi) między dwoma rogami — bez przekątnej przez pole. */
+function walkHexPerimeter(fromCorner: number, toCorner: number, cw: boolean): number[] {
+  if (fromCorner === toCorner) return [fromCorner];
+  const out: number[] = [];
+  let c = fromCorner;
+  for (let guard = 0; guard < 7; guard++) {
+    out.push(c);
+    if (c === toCorner) break;
+    c = hexCornerStep(c, cw);
+  }
+  return out;
+}
+
+/**
+ * Rogi obwodu między krawędzią WEJŚCIA (dirIn) a WYJŚCIA (dirOut) — NAJKRÓTSZY łuk po ściankach.
+ * Owner 2026-07-10: rzeka MUSI biec przez MINIMUM DWIE ŚCIANKI na każdy heks. UWAGA na liczenie
+ * „boków": owner liczy ODCINKI ŚCIANEK po których biegnie rzeka = walked.length (pół-ścianka
+ * wejścia + pełne boki róg-róg + pół-ścianka wyjścia); kod trzyma walked.length-1 = same PEŁNE
+ * boki róg-róg. MIN_BOKI=1 (walked.length-1 ≥ 1 → walked.length ≥ 2) daje owner-boki ≥ 2:
+ *   bieg prosty (krawędzie przeciwległe, diff 3) → walked 3 = 3 ścianki,
+ *   łagodny skręt (diff 2)                       → walked 2 = 2 ścianki,
+ *   ostry skręt (krawędzie sąsiednie, diff 1)    → już zwinięty przez simplifyRiverRenderPath.
+ * Odrzucamy tylko walked.length=1 (clip rogu, 0 pełnych boków = tylko 1 ścianka). NIE żądamy
+ * walked.length-1 ≥ 2 (owner-boki ≥ 3): to wymuszało przy łagodnym skręcie overshoot rogu →
+ * prostopadły „domek", a przy ostrzejszych — objazd obwodu → ZAMKNIĘTE PĘTLE („plaster miodu").
+ * Fallback: najkrótszy łuk w ogóle (degeneracja). hexParity rozstrzyga remis strony deterministycznie.
+ */
+function riverCornersAlongHexEdges(dirIn: number, dirOut: number, hexParity: number): number[] {
+  const a = ((dirIn % 6) + 6) % 6;
+  const b = ((dirOut % 6) + 6) % 6;
+  if (a === b) return [];
+  const entryOpts = [(a + 1) % 6, (a + 2) % 6];
+  const exitOpts = [(b + 1) % 6, (b + 2) % 6];
+  const MIN_BOKI = 1; // walked.length-1 = pełne boki róg-róg; =1 → hug pełnej ścianki + 2 połówki
+                      // ścianek wejścia/wyjścia = wizualnie ≥2 ścianki/heks BEZ „domków". (=2
+                      // wymuszało przy łagodnym skręcie overshoot rogu → prostopadły dzióbek.)
+  let best: number[] = [];
+  let bestScore = Infinity;
+  let fallback: number[] = [];
+  let fallbackScore = Infinity;
+  for (const entry of entryOpts) {
+    for (const exit of exitOpts) {
+      for (const cw of [true, false]) {
+        const walked = walkHexPerimeter(entry, exit, cw);
+        if (walked.length === 0) continue;
+        let score = walked.length;
+        if (score === bestScore && hexParity % 2 === 0) score += cw ? 0 : 0.01;
+        else if (score === bestScore) score += cw ? 0.01 : 0;
+        if (score < fallbackScore) { fallbackScore = score; fallback = walked; }
+        if (walked.length - 1 < MIN_BOKI) continue; // odrzuć „clip rogu" (0 pełnych boków)
+        if (score < bestScore) { bestScore = score; best = walked; }
+      }
+    }
+  }
+  return best.length ? best : fallback;
+}
+
+/** Rogi obwodu heksa (cur) na trasie prev→cur→next, we współrzędnych świata. */
+function riverTransitCornersOnHex(
+  q: number, r: number, qPrev: number, rPrev: number, qNext: number, rNext: number, R: number,
+): Array<{ x: number; z: number }> {
+  const dirIn = neighborDirIndex(q, r, qPrev, rPrev);
+  const dirOut = neighborDirIndex(q, r, qNext, rNext);
+  if (dirIn < 0 || dirOut < 0) return [];
+  const wc = axialToWorld(q, r, R);
+  const cs = hexCorners(wc.x, wc.z, R);
+  return riverCornersAlongHexEdges(dirIn, dirOut, q + r).map((ci) => ({ x: cs[ci]!.x, z: cs[ci]!.z }));
+}
+
+/** Wsunięcie rogu łuku ku środkowi WŁASNEGO heksa (hug WEWNĘTRZNEJ strony ścianki —
+ *  rzeka widoczna po krawędzi, ale nie ginie pod wzgórzem sąsiada za ścianką). */
+const RIVER_INSET_FRAC = 0.15;
 
 /**
  * Regularyzacja ścieżki rzeki POD RENDER (render-only — NIE zmienia generatora ani hasza mapy).
@@ -907,12 +988,20 @@ function simplifyRiverRenderPath(
 }
 
 /**
- * Punkty wstęgi rzeki = CIĄG ŚRODKÓW WSPÓLNYCH KRAWĘDZI kolejnych heksów trasy (Maciej 2026-07-10):
- * dla granicy hex[i]|hex[i+1] jeden SUROWY punkt na ściance (sharedEdgeMidpoint). Wstęgę rysuje
- * splajn CatmullRom (buildRibbonGeometry sharp=false) → gładki naturalny ciek: prawie prosta na
- * prostym biegu, delikatne łuki na zakrętach. Bez rogów obwodu i bez Chaikina = koniec bąbli-co-heks.
+ * Wstęga rzeki = polilinia KANCIASTA PO WEWNĘTRZNEJ STRONIE ŚCIANEK heksów (Owner 2026-07-10 —
+ * powrót od odrzuconej „centrolinii" prostej i odrzuconego gładkiego CatmullRom/Chaikin; „to nie
+ * styl Roblox"). Dla każdego heksa trasy rzeka biegnie jego OBWODEM: środek krawędzi WEJŚCIA →
+ * ROGI łuku (najkrótszy po ściankach, ≥2 boki) → środek krawędzi WYJŚCIA.
+ *  - ROGI łuku INSETOWANE ku środkowi WŁASNEGO heksa (RIVER_INSET_FRAC) → hug WEWNĘTRZNEJ strony
+ *    ścianki: widoczna po krawędzi, ale nie ginie pod wzgórzem sąsiada za ścianką,
+ *  - wspólny środek krawędzi = JEDEN punkt bez insetu (granica dwóch heksów RZEKI, obie strony
+ *    to koryto) → ZERO „domków" (dawniej exit-ku-cur + entry-ku-next dawały prostopadły dzióbek),
+ *  - polilinia SUROWA (kanciasta) renderowana buildRibbonGeometry sharp=true → proste odcinki +
+ *    załamania na rogach. BEZ Chaikina, BEZ CatmullRom = zero wygładzania (owner: kanciasto),
  *  - stała PŁASKA wysokość (riverHexSurfaceY) — bez lewitacji góra-dół-góra,
- *  - simplifyRiverRenderPath ścina zawroty 180° / skręty ≥120° → brak dziwnych pętli splajnu.
+ *  - simplifyRiverRenderPath ścina zawroty 180° / skręty ≥120° → brak pętli heksagonalnych i
+ *    (kluczowe dla ≥2 boki) usuwa transity przez sąsiednie krawędzie, które musiałyby objeżdżać
+ *    obwód → filtr ≥2 boki nie generuje pętli ani zawrotów.
  * `extendToJoin`: dołóż środek OSTATNIEGO heksa — dla dopływu tip wchodzi w kanał głównej rzeki
  * (konfluencja), dla rzeki głównej wstęga kończy się w środku ostatniego heksa lądu = styk bez
  * luki z łańcuchem przybrzeżnym (buildCoastalRiverPointChain kotwiczy się w tym samym punkcie).
@@ -940,25 +1029,52 @@ function buildRiverPointsFromHexPath(
   const rp = simplifyRiverRenderPath(path);
   if (rp.length < 2) return { pts, hexKeys };
 
+  // Inset surowego rogu obwodu ku środkowi WŁASNEGO heksa (hug wewnętrznej ścianki).
+  const insetToward = (x: number, z: number, hq: number, hr: number): { x: number; z: number } => {
+    const c = axialToWorld(hq, hr, R);
+    return { x: x + (c.x - x) * RIVER_INSET_FRAC, z: z + (c.z - z) * RIVER_INSET_FRAC };
+  };
+
+  // Surowa polilinia PO ŚCIANKACH — jeden punkt na przejście przez ściankę (bez domków), kanciasto.
   const pushPt = (x: number, z: number, y: number): void => {
     const p = new THREE.Vector3(x, y, z);
     if (pts.length === 0 || pts[pts.length - 1]!.distanceTo(p) > R * 0.004) pts.push(p);
   };
 
-  // CIĄG ŚRODKÓW WSPÓLNYCH KRAWĘDZI kolejnych heksów trasy — JEDEN surowy punkt na granicę
-  // (na ściance hex[i]|hex[i+1]). To wszystko: żadnych rogów obwodu, żadnego Chaikina. Wstęgę
-  // renderujemy CatmullRomem (buildRibbonGeometry sharp=false), który przeciąga przez te punkty
-  // gładki splajn → naturalny ciek: prawie prosta na prostym biegu, delikatne łuki na zakrętach.
-  // Koniec „bąbli-co-heks" (rogi obwodu) i „schodków" (kanciasta polilinia).
-  for (let i = 0; i < rp.length - 1; i++) {
-    const a = rp[i]!;
-    const b = rp[i + 1]!;
-    const mid = sharedEdgeMidpoint(a.q, a.r, b.q, b.r, R);
-    if (!mid) continue;
+  // Start: środek wspólnej krawędzi hex0|hex1, INSET ku hex1 (na wewnętrznym paśmie, nie na samej
+  // ściance) — rzeka „rodzi się" tu, spójnie z rogami łuku (bez nadmiarowego nubu przy źródle).
+  {
+    const a = rp[0]!;
+    const b = rp[1]!;
+    const mid0 = sharedEdgeMidpoint(a.q, a.r, b.q, b.r, R);
     const ya = yAt(a.q, a.r);
     const yb = yAt(b.q, b.r);
-    if (ya == null || yb == null) continue;
-    pushPt(mid.x, mid.z, (ya + yb) * 0.5);
+    if (mid0 && ya != null && yb != null) {
+      const p0 = insetToward(mid0.x, mid0.z, b.q, b.r);
+      pushPt(p0.x, p0.z, (ya + yb) * 0.5);
+    }
+  }
+
+  // Heksy środkowe: TYLKO rogi łuku obwodu (inset ku cur, ≥2 boki). ŚRODKÓW KRAWĘDZI PRZEJŚCIA
+  // NIE dodajemy — to one były źródłem „domków": nieinsetowany środek ścianki między dwoma
+  // insetowanymi rogami dawał prostopadły dzióbek (out-and-back do połowy ścianki), który Chaikin
+  // wcześniej wygładzał. Bez Chaikina rogi sąsiednich heksów łączą się WPROST przez wspólną
+  // ściankę — czysty odcinek po wewnętrznej stronie krawędzi, ZERO dzióbków, kanciasto.
+  for (let i = 1; i < rp.length - 1; i++) {
+    const prev = rp[i - 1]!;
+    const cur = rp[i]!;
+    const next = rp[i + 1]!;
+    if (neighborDirIndex(prev.q, prev.r, cur.q, cur.r) < 0) continue;
+    if (neighborDirIndex(cur.q, cur.r, next.q, next.r) < 0) continue;
+    const yc = yAt(cur.q, cur.r);
+    if (yc == null) continue;
+
+    for (const corner of riverTransitCornersOnHex(
+      cur.q, cur.r, prev.q, prev.r, next.q, next.r, R,
+    )) {
+      const pc = insetToward(corner.x, corner.z, cur.q, cur.r);
+      pushPt(pc.x, pc.z, yc);
+    }
   }
 
   // Dopływ / ujście: dołóż środek OSTATNIEGO heksa. Dopływ → tip wchodzi w kanał głównej rzeki
@@ -1025,8 +1141,9 @@ function renderLandRiversFromPaths(
     const pathBucket: RiverGeoBucket = {
       mat: riverMat, geos: [], hexKeys: new Set(), renderOrder,
     };
-    // sharp=false → gładki splajn CatmullRom przez środki krawędzi (naturalny ciek, nie schodki).
-    pushRiverMesh(pathBucket, pts, hexKeys, halfWidth, 8, false);
+    // sharp=true → KANCIASTA wstęga po ściankach (proste odcinki + załamania na rogach), ZERO
+    // wygładzania (owner: „to nie styl Roblox" o krzywych). Punkty to już polilinia po obwodzie.
+    pushRiverMesh(pathBucket, pts, hexKeys, halfWidth, 8, true);
     flushRiverBucket(scene, pathBucket, riverEntries);
     for (const k of hexKeys) landHexKeys.add(k);
   }
