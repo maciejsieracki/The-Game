@@ -30,6 +30,11 @@ import { axialToWorld, HEX_R } from './hexutil';
 import { buildSettlementModel } from './settlementModel';
 import { GAME_MAP_RENDER_STYLE, terrainVisualForStyle, type MapRenderStyle } from './mapRenderStyle';
 import type { BronzeCiv } from './bronzeCity';
+// MASTER render-miasta (2026-07-10): modele miast Kamień/Brąz — podpięcie
+// bezpośrednio w CityRenderer.sync() (styl roblox), obok legacy
+// buildSettlementModel (styl 'civ'/'minecraft' bez zmian).
+import { buildMiastoKamien } from './miasto-kamien';
+import { buildMiastoBraz } from './miasto-braz';
 import {
   cityMapBadgeKey,
   makeCityMapBadgeSprite,
@@ -198,6 +203,31 @@ function buildCityModel(ownerCol: number): CityModelResult {
   group.userData['perCityGeos']  = [gPlatform, gHouseBody, gHouseRoof, gTempleBody, gTempleRoof, gPole, gFlag];
 
   return { group, mats };
+}
+
+// ---------------------------------------------------------------------------
+// MASTER render-miasta (2026-07-10): modele miast Kamień (era 1) / Brąz (era 2+)
+// dla stylu mapy 'roblox'. Epoka 3+ (Żelazo) — brak modelu w tej partii,
+// fallback do Brązu [fallback do czasu partii Żelaza]. Cywilizacje spoza
+// Grecja/Rzym -> fallback Grecja, obsłużony wewnątrz buildMiastoBraz.
+// Style 'civ'/'minecraft' -> bez zmian, legacy buildSettlementModel.
+// ---------------------------------------------------------------------------
+
+function buildSettlementModelForStyle(
+  era: number,
+  civ: BronzeCiv,
+  level: number,
+  ownerCol: number,
+  withWalls: boolean,
+): THREE.Group {
+  if (GAME_MAP_RENDER_STYLE === 'roblox') {
+    if (era >= 2) {
+      // era 2 = Brąz; era 3+ (Żelazo, brak modelu) [fallback do czasu partii Żelaza]
+      return buildMiastoBraz(civ, level, { mur: withWalls, color: ownerCol });
+    }
+    return buildMiastoKamien(level, { mur: withWalls, color: ownerCol });
+  }
+  return buildSettlementModel(era, civ, level, ownerCol, withWalls);
 }
 
 // ---------------------------------------------------------------------------
@@ -371,7 +401,7 @@ export class CityRenderer {
       const col = (options?.ownerColorFn ?? ownerColor)(ownerIndex);
       let group: THREE.Group;
       try {
-        group = buildSettlementModel(era, civ, level, col, walls);
+        group = buildSettlementModelForStyle(era, civ, level, col, walls);
       } catch (err) {
         console.warn('[CityRenderer] fallback na buildCityModel dla', city.id, err);
         const result = buildCityModel(col);

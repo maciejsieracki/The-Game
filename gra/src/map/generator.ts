@@ -29,6 +29,7 @@ import {
   buildSixteenGridIslandCenters,
   continentCenterCount,
   classifyTerrain,
+  terrainCellBias,
   climateZoneAt,
   countLandSeaHexes,
   removeSmallInlandWaterPools,
@@ -213,6 +214,7 @@ export function generateMap(
           desNoise,
           terrainTh,
           climateZoneAt(q, r, height),
+          terrainCellBias(q, r, effectiveSeed),
         );
 
       terrainScratch.set(key, { elevContinental, landMask, mtnNoise, forNoise, desNoise });
@@ -284,7 +286,7 @@ export function generateMap(
   const reliefTier: ReliefDensityTier =
     genOpts?.worldDensity?.relief ?? genOpts?.worldDensity?.rivers ?? 'medium';
   const forestTier = genOpts?.worldDensity?.forest ?? 'medium';
-  reapplyLandTerrain(hexes, terrainScratch, terrainTh, height);
+  reapplyLandTerrain(hexes, terrainScratch, effectiveSeed, terrainTh, height);
   if (typ !== 'pangea') {
     purgeInlandWaterForMultiLandTyp(hexes, width, height);
   }

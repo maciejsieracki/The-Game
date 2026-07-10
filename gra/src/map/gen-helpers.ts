@@ -617,13 +617,56 @@ function reliefElevGates(mtnTh: number): { mountain: number; highland: number; l
   return { mountain: 0.14, highland: 0.11, landMaskHi: 0.20, landMaskMtn: 0.22 };
 }
 
-// Maciej 2026-07-09: PRZEMIESZANIE równina/łąka. Bez tego decyzja to czysto `elev > 0.35` — gładkie
-// pole wysokości daje WIELKIE BLOKI / całe kontynenty jednego typu. Dokładamy koherentny szum (blend
-// niezależnych pól forNoise+desNoise) do progu → poszarpana granica, wtrącone łaty obu terenów.
-// TERRAIN_MIX_AMP = pokrętło różnorodności (większe = więcej przemieszania).
-const TERRAIN_MIX_AMP = 0.28;
-function terrainRownLakaJitter(forNoise: number, desNoise: number): number {
-  return ((forNoise + desNoise) * 0.5 - 0.5) * TERRAIN_MIX_AMP;
+// Maciej 2026-07-10: KOMÓRKOWE przemieszanie równina/łąka (jak przy górach/wzgórzach — patrz
+// ironCoverageCellSize/copperCoverageCellSize — ale BEZ kwoty "ile ma być"). Wcześniej (2026-07-09)
+// próg `elev > 0.35` był łagodzony jedynie koherentnym globalnym szumem (forNoise+desNoise) — to
+// nadal gładkie, niskoczęstotliwościowe pole, skorelowane na dziesiątkach heksów → WIELKIE PLAMY.
+// Teraz: mapa dzielona na komórki terenCoverageCellSize() heksów; KAŻDA komórka losuje WŁASNE
+// przesunięcie progu z (cx,cy,seed) — deterministyczny hash, nie sekwencja rand() (niezależny od
+// kolejności wywołań pętli q/r). Dominujący wkład = lokalny (per-komórka) → rozbija plamy na
+// mozaikę wielkości komórki. Mały wkład = globalny (jak wcześniej — daje "charakter" regionu).
+// Amplitudy dobrane tak, by ŚREDNI globalny udział Równina:Łąka pozostał zgodny z poprzednim
+// (hash symetryczny wokół 0 → nie przesuwa progu w jedną stronę w skali całej mapy).
+const TERRAIN_GLOBAL_MIX_AMP = 0.12;
+const TERRAIN_CELL_JITTER_AMP = 0.65;
+
+/**
+ * Siatka komórek dla przeplotu Równina/Łąka — rząd wielkości mniejszy niż relief
+ * (ironCoverageCellSize/copperCoverageCellSize = 12–35 heksów, myślą kwotą "ile ma być");
+ * tu chcemy mozaikę widoczną przy przybliżeniu mapy, nie bloki wielkości regionu/kontynentu.
+ */
+export function terenCoverageCellSize(): number {
+  return 4;
+}
+
+/**
+ * Hash całkowitoliczbowy — czysta funkcja (a,b,c) → [0,1), BEZ stanu i BEZ zależności od
+ * kolejności wywołań (w przeciwieństwie do mulberry32/rand()). Potrzebne, bo klasyfikacja
+ * terenu biegnie w zagnieżdżonej pętli q/r — a per-komórkowe losowanie ma być identyczne
+ * niezależnie od tego, w jakiej kolejności komórki zostaną odwiedzone (determinizm A=B).
+ */
+function hashInt3(a: number, b: number, c: number): number {
+  let h = (a * 374761393) ^ (b * 668265263) ^ (c * 2246822519);
+  h = Math.imul(h ^ (h >>> 13), 1274126177);
+  h = (h ^ (h >>> 16)) >>> 0;
+  return h / 4294967296;
+}
+
+/**
+ * Deterministyczne LOKALNE przesunięcie progu Równina/Łąka dla komórki, do której należy (q,r).
+ * Ta sama komórka (i seed mapy) → to samo przesunięcie dla wszystkich heksów w niej — stąd
+ * "mozaika" komórkowa zamiast gładkiego globalnego gradientu. Zakres [-1, 1).
+ */
+export function terrainCellBias(q: number, r: number, seed: number, cellSize = terenCoverageCellSize()): number {
+  const cx = Math.floor(q / cellSize);
+  const cy = Math.floor(r / cellSize);
+  return (hashInt3(cx, cy, seed) - 0.5) * 2;
+}
+
+function terrainRownLakaJitter(forNoise: number, desNoise: number, cellBias: number): number {
+  const global = ((forNoise + desNoise) * 0.5 - 0.5) * TERRAIN_GLOBAL_MIX_AMP;
+  const local = cellBias * TERRAIN_CELL_JITTER_AMP;
+  return global + local;
 }
 
 export function classifyTerrain(
@@ -634,6 +677,8 @@ export function classifyTerrain(
   desNoise: number,
   thresholds?: TerrainClassifyThresholds,
   climateZone?: ClimateZone,
+  /** Lokalne przesunięcie progu Równina/Łąka per komórka — patrz terrainCellBias(). */
+  cellBias = 0,
 ): TerrainResult {
   const desTh = thresholds?.desert ?? 0.63;
   const forTh = climateForestThreshold(climateZone, thresholds?.forest ?? 0.58);
@@ -661,7 +706,7 @@ export function classifyTerrain(
       elevContinental < 0.45
     ) {
       terenBazowy = TerenBazowy.Pustynia;
-    } else if (elevContinental + terrainRownLakaJitter(forNoise, desNoise) > 0.35) {
+    } else if (elevContinental + terrainRownLakaJitter(forNoise, desNoise, cellBias) > 0.35) {
       terenBazowy = TerenBazowy.Rownina;
     } else {
       terenBazowy = TerenBazowy.Laka;
@@ -694,6 +739,8 @@ export function classifyTerrainFlat(
   desNoise: number,
   thresholds?: TerrainClassifyThresholds,
   climateZone?: ClimateZone,
+  /** Lokalne przesunięcie progu Równina/Łąka per komórka — patrz terrainCellBias(). */
+  cellBias = 0,
 ): TerrainResult {
   const desTh = thresholds?.desert ?? 0.63;
   const forTh = climateForestThreshold(climateZone, thresholds?.forest ?? 0.58);
@@ -709,7 +756,7 @@ export function classifyTerrainFlat(
     elevContinental < 0.45
   ) {
     terenBazowy = TerenBazowy.Pustynia;
-  } else if (elevContinental + terrainRownLakaJitter(forNoise, desNoise) > 0.35) {
+  } else if (elevContinental + terrainRownLakaJitter(forNoise, desNoise, cellBias) > 0.35) {
     terenBazowy = TerenBazowy.Rownina;
   } else {
     terenBazowy = TerenBazowy.Laka;
@@ -793,6 +840,7 @@ export function reapplyForestOverlay(
 export function reapplyLandTerrain(
   hexes: Record<string, Hex>,
   scratch: Map<string, TerrainScratch>,
+  seed: number,
   thresholds?: TerrainClassifyThresholds,
   mapHeight?: number,
 ): void {
@@ -804,6 +852,7 @@ export function reapplyLandTerrain(
     if (!s) continue;
     const { q, r } = hex.coords;
     const climateZone = mapHeight ? climateZoneAt(q, r, mapHeight) : undefined;
+    const cellBias = terrainCellBias(q, r, seed);
     const { terenBazowy, nakladka } = classifyTerrainFlat(
       s.elevContinental,
       s.landMask,
@@ -812,6 +861,7 @@ export function reapplyLandTerrain(
       s.desNoise,
       thresholds,
       climateZone,
+      cellBias,
     );
     hex.terenBazowy = terenBazowy;
     hex.nakladka = nakladka;

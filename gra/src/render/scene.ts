@@ -90,7 +90,7 @@ import {
   effectivePixelRatio,
 } from './zoomLod';
 import { fogBrightnessForHex, applyFogDimToObject3D } from './fogDim';
-import { coastalRiverRenderPath, landRiverRenderPath } from '../map/gen-helpers';
+import { landRiverRenderPath } from '../map/gen-helpers';
 
 export type { MapRenderStyle, MapRenderOptions, QualityTier } from './mapRenderStyle';
 export { DEFAULT_MAP_RENDER_OPTIONS, normalizeMapRenderOptions, resolveRenderPreset } from './mapRenderStyle';
@@ -468,16 +468,6 @@ function hasWybrzezeNeighbor(map: GameMap, q: number, r: number): boolean {
   return false;
 }
 
-function pathNearCoast(map: GameMap, path: Array<{ q: number; r: number }>): boolean {
-  for (const ph of path) {
-    const h = map.hexes[`${ph.q},${ph.r}`];
-    if (!h) continue;
-    if (h.terenBazowy === TerenBazowy.Wybrzeze) return true;
-    if (hasWybrzezeNeighbor(map, ph.q, ph.r)) return true;
-  }
-  return false;
-}
-
 function hasMorzeNeighbor(map: GameMap, q: number, r: number): boolean {
   for (const [dq, dr] of AXIAL_DIRS) {
     if (map.hexes[`${q + dq},${r + dr}`]?.terenBazowy === TerenBazowy.Morze) return true;
@@ -496,6 +486,8 @@ function pathReachesOpenSeaRender(map: GameMap, path: Array<{ q: number; r: numb
   if (!lastH) return false;
   if (lastH.terenBazowy === TerenBazowy.Morze) return true;
   if (lastH.terenBazowy === TerenBazowy.Wybrzeze) return hasMorzeNeighbor(map, last.q, last.r);
+  // Ujście na LĄDZIE stykającym się WPROST z Morzem (bez heksa Wybrzeże pośrodku) — też ujście.
+  if (isDryLandTeren(lastH.terenBazowy) && hasMorzeNeighbor(map, last.q, last.r)) return true;
   for (const [dq, dr] of AXIAL_DIRS) {
     const nq = last.q + dq;
     const nr = last.r + dr;
@@ -506,7 +498,14 @@ function pathReachesOpenSeaRender(map: GameMap, path: Array<{ q: number; r: numb
   return false;
 }
 
-/** Punkty ujścia wzdłuż krawędzi heksów — wybrzeże → jeden hex morza. */
+/**
+ * Punkty ujścia: ostatni heks LĄDU → heksy Wybrzeża → spływ (wodospad) do tafli Morza.
+ * Łańcuch budowany PROSTO z trasy (render-only) — dawny coastalRiverRenderPath zwracał łańcuch
+ * długości 1 dla ~99% rzek (urywał się na ostatnim Wybrzeżu przed unshiftem lądu), przez co
+ * ujście nie renderowało się w ogóle i rzeka „chowała się pod ziemią" przed wodą.
+ * KOTWICA: pierwszy punkt = środek ostatniego heksa lądu = dokładnie tam, gdzie kończy się
+ * wstęga lądowa (renderLandRiversFromPaths z extendToJoin) → styk bez luki.
+ */
 function buildCoastalRiverPointChain(
   map: GameMap,
   path: Array<{ q: number; r: number }>,
@@ -515,66 +514,88 @@ function buildCoastalRiverPointChain(
 ): { pts: THREE.Vector3[]; hexKeys: Set<string> } {
   const hexKeys = new Set<string>();
   const pts: THREE.Vector3[] = [];
-  if (path.length < 2 || !pathNearCoast(map, path)) return { pts, hexKeys };
+  if (path.length < 2) return { pts, hexKeys };
 
-  const chain = coastalRiverRenderPath(map.hexes, path);
-  if (chain.length < 2) return { pts, hexKeys };
+  const COAST_OFFSET = R * 0.14;
 
+  // Łańcuch ujścia = ostatni heks LĄDU + kolejne heksy (Wybrzeże) aż do pierwszego Morza.
+  let seaStart = -1;
+  for (let i = 0; i < path.length; i++) {
+    const h = map.hexes[`${path[i]!.q},${path[i]!.r}`];
+    if (h && !isDryLandTeren(h.terenBazowy)) { seaStart = i; break; }
+  }
+  const chain: Array<{ q: number; r: number }> = [];
+  if (seaStart > 0) {
+    chain.push({ q: path[seaStart - 1]!.q, r: path[seaStart - 1]!.r }); // ostatni heks lądu (styk)
+    for (let i = seaStart; i < path.length; i++) {
+      const h = map.hexes[`${path[i]!.q},${path[i]!.r}`];
+      if (!h || h.terenBazowy === TerenBazowy.Morze) break; // stop na otwartym morzu
+      chain.push({ q: path[i]!.q, r: path[i]!.r });
+    }
+  } else {
+    // Brak Wybrzeża w trasie — rzeka kończy na lądzie dotykającym Morza wprost (rzadkie).
+    const last = path[path.length - 1]!;
+    chain.push({ q: last.q, r: last.r });
+  }
+  if (chain.length < 1) return { pts, hexKeys };
   for (const ph of chain) hexKeys.add(`${ph.q},${ph.r}`);
 
-  const { pts: edgePts } = buildRiverPointsFromHexPath(
-    map, chain, R, 'roblox', riverMouthY, R * 0.14, new Set<string>(),
-  );
-  for (const p of edgePts) pts.push(p);
+  const landHex = chain[0]!; // ostatni heks lądu — punkt styku z wstęgą lądową
 
-  const endPh = chain[chain.length - 1]!;
-  const endH = map.hexes[`${endPh.q},${endPh.r}`];
-  if (endH?.terenBazowy !== TerenBazowy.Wybrzeze) {
+  // KOTWICA: środek ostatniego heksa lądu (na wysokości lądu) — koniec wstęgi lądowej ląduje TU.
+  const landCenter = axialToWorld(landHex.q, landHex.r, R);
+  const landY = riverHexSurfaceY(map, landHex.q, landHex.r, 'roblox', riverMouthY, COAST_OFFSET, R) ?? riverMouthY;
+  pts.push(new THREE.Vector3(landCenter.x, landY, landCenter.z));
+
+  // Środki wspólnych krawędzi wzdłuż łańcucha ląd→wybrzeże (surowe punkty; wodospad domknie Y).
+  if (chain.length >= 2) {
+    const { pts: edgePts } = buildRiverPointsFromHexPath(
+      map, chain, R, 'roblox', riverMouthY, COAST_OFFSET, new Set<string>(),
+    );
+    for (const p of edgePts) {
+      if (pts.length === 0 || pts[pts.length - 1]!.distanceTo(p) > R * 0.02) pts.push(p);
+    }
+  }
+
+  // Ostatni heks łańcucha: jeśli nie styka się z Morzem, przeskocz na sąsiedni Wybrzeże, które styka.
+  let endPh = chain[chain.length - 1]!;
+  if (!hasMorzeNeighbor(map, endPh.q, endPh.r)) {
     for (let d = 0; d < AXIAL_DIRS.length; d++) {
       const [dq, dr] = AXIAL_DIRS[d]!;
-      const wq = endPh.q + dq;
-      const wr = endPh.r + dr;
+      const wq = endPh.q + dq, wr = endPh.r + dr;
       const wh = map.hexes[`${wq},${wr}`];
       if (wh?.terenBazowy !== TerenBazowy.Wybrzeze) continue;
-      const touchesMorse = AXIAL_DIRS.some(([mdq, mdr]) =>
-        map.hexes[`${wq + mdq},${wr + mdr}`]?.terenBazowy === TerenBazowy.Morze,
-      );
-      if (!touchesMorse) continue;
-      chain.push({ q: wq, r: wr });
+      if (!hasMorzeNeighbor(map, wq, wr)) continue;
+      const midEW = sharedEdgeMidpoint(endPh.q, endPh.r, wq, wr, R);
+      if (midEW) pts.push(new THREE.Vector3(midEW.x, riverMouthY, midEW.z));
       hexKeys.add(`${wq},${wr}`);
+      endPh = { q: wq, r: wr };
       break;
     }
   }
-  const endPhFinal = chain[chain.length - 1]!;
-  const endHFinal = map.hexes[`${endPhFinal.q},${endPhFinal.r}`];
-  if (endHFinal?.terenBazowy !== TerenBazowy.Wybrzeze || pts.length < 1) return { pts, hexKeys };
 
-  const prevPh = chain.length >= 2 ? chain[chain.length - 2]! : null;
+  // Kierunek do Morza z ostatniego heksa (preferuj kierunek zgodny z biegiem rzeki).
+  const prevPh = chain.length >= 2 ? chain[chain.length - 2]! : landHex;
   let bestDir = -1;
   let bestScore = -Infinity;
   for (let d = 0; d < AXIAL_DIRS.length; d++) {
     const [dq, dr] = AXIAL_DIRS[d]!;
-    const nh = map.hexes[`${endPhFinal.q + dq},${endPhFinal.r + dr}`];
+    const nh = map.hexes[`${endPh.q + dq},${endPh.r + dr}`];
     if (nh?.terenBazowy !== TerenBazowy.Morze) continue;
     let score = 1;
-    if (prevPh) {
-      const inDir = neighborDirIndex(prevPh.q, prevPh.r, endPhFinal.q, endPhFinal.r);
-      if (inDir >= 0 && d === inDir) score += 3;
-    }
-    if (score > bestScore) {
-      bestScore = score;
-      bestDir = d;
-    }
+    const inDir = neighborDirIndex(prevPh.q, prevPh.r, endPh.q, endPh.r);
+    if (inDir >= 0 && d === inDir) score += 3;
+    if (score > bestScore) { bestScore = score; bestDir = d; }
   }
-  if (bestDir < 0) return { pts, hexKeys };
+  if (bestDir < 0 || pts.length < 1) return { pts: [], hexKeys };
 
-  const coastEdge = hexEdgeMidpointByDir(endPhFinal.q, endPhFinal.r, bestDir, R);
+  const coastEdge = hexEdgeMidpointByDir(endPh.q, endPh.r, bestDir, R);
   const coastPt = new THREE.Vector3(coastEdge.x, riverMouthY, coastEdge.z);
   if (pts.length === 0 || pts[pts.length - 1]!.distanceTo(coastPt) > R * 0.02) pts.push(coastPt);
 
   const [sdq, sdr] = AXIAL_DIRS[bestDir]!;
-  const seaQ = endPhFinal.q + sdq;
-  const seaR = endPhFinal.r + sdr;
+  const seaQ = endPh.q + sdq;
+  const seaR = endPh.r + sdr;
   hexKeys.add(`${seaQ},${seaR}`);
   // I3: wstęga WCHODZI w głąb pierwszego heksa Morza (~35-40% od krawędzi w stronę środka),
   // na poziomie tafli — nie urywa się na linii brzegowej. Delta/lejek kotwiczy się w tym punkcie.
@@ -585,12 +606,11 @@ function buildCoastalRiverPointChain(
   const seaInZ = seaEdge.z + (seaCenter.z - seaEdge.z) * tIn;
   pts.push(new THREE.Vector3(seaInX, riverMouthY, seaInZ));
 
-  // BUG-RZEKI-RENDER (wariant B): przerób ujście na plateau→wodospad→tafla. landPlateauY =
-  // wysokość wstęgi na OSTATNIM heksie lądu w łańcuchu (ten sam offset R*0.14 co edgePts),
-  // żeby korona wodospadu spinała się z lądową wstęgą, a nie wisiała w powietrzu.
-  let landPlateauY = riverMouthY;
+  // Wodospad: część lądowa trzyma plateau (najwyższa wysokość łańcucha), na styku ląd→morze
+  // wstęga spada pionowo do tafli (riverMouthY). Korona spina się z kotwicą lądową (bez luki).
+  let landPlateauY = landY;
   for (const ph of chain) {
-    const y = riverHexSurfaceY(map, ph.q, ph.r, 'roblox', riverMouthY, R * 0.14, R);
+    const y = riverHexSurfaceY(map, ph.q, ph.r, 'roblox', riverMouthY, COAST_OFFSET, R);
     if (y != null && y > landPlateauY) landPlateauY = y;
   }
   const shaped = applyCoastalWaterfall(pts, riverMouthY, landPlateauY, R);
@@ -838,11 +858,11 @@ function hexEdgeMidpointByDir(q: number, r: number, dir: number, R: number): { x
 }
 
 // ---------------------------------------------------------------------------
-// Rzeki PO ŚCIANKACH heksów (Maciej 2026-07-10): geometria krawędziowa —
-// polilinia biegnie OBWODEM heksów (środki krawędzi + rogi), NIE prostą przez
-// środek pola (odrzucona „centrolinia"). Fix domków: JEDEN punkt na przejściu
-// przez ściankę (współny środek krawędzi, bez insetu → brak prostopadłego
-// „dzióbka"). Fix schodków: wygładzenie Chaikina (corner-cutting). RENDER-ONLY.
+// Rzeki jako GŁADKI NATURALNY ciek (Maciej 2026-07-10): wstęga biegnie przez CIĄG ŚRODKÓW
+// WSPÓLNYCH KRAWĘDZI kolejnych heksów trasy (jeden surowy punkt na granicę), a splajn
+// CatmullRom (buildRibbonGeometry sharp=false) przeciąga przez nie płynną linię. Odrzucone:
+// „centrolinia" prostymi (kanciasto), trasowanie po ROGACH obwodu + Chaikin (bąble-co-heks).
+// RENDER-ONLY (nie zmienia generatora ani hasza mapy).
 // ---------------------------------------------------------------------------
 
 /** Wspólny środek krawędzi dwóch sąsiednich heksów (granica hex1|hex2). */
@@ -852,96 +872,6 @@ function sharedEdgeMidpoint(
   const dir = neighborDirIndex(q1, r1, q2, r2);
   if (dir < 0) return null;
   return hexEdgeMidpointByDir(q1, r1, dir, R);
-}
-
-/** Następny róg obwodu heksa (pointy-top; cw = zgodnie z ruchem wskazówek). */
-function hexCornerStep(from: number, cw: boolean): number {
-  return cw ? (from + 1) % 6 : (from + 5) % 6;
-}
-
-/** Droga wzdłuż obwodu heksa (rogi) między dwoma rogami — bez przekątnej przez pole. */
-function walkHexPerimeter(fromCorner: number, toCorner: number, cw: boolean): number[] {
-  if (fromCorner === toCorner) return [fromCorner];
-  const out: number[] = [];
-  let c = fromCorner;
-  for (let guard = 0; guard < 7; guard++) {
-    out.push(c);
-    if (c === toCorner) break;
-    c = hexCornerStep(c, cw);
-  }
-  return out;
-}
-
-/**
- * Rogi obwodu między krawędzią WEJŚCIA (dirIn) a WYJŚCIA (dirOut) — NAJKRÓTSZY łuk po
- * ściankach heksa. Bez skrótów przez środek. Bez wymogu min. liczby boków (dawny minBoki≥3
- * dawał „plaster miodu" — objazd prawie całego obwodu przy ostrym skręcie). hexParity tylko
- * deterministycznie rozstrzyga remis strony (spójny wybór między klatkami → hash bez zmian).
- */
-function riverCornersAlongHexEdges(dirIn: number, dirOut: number, hexParity: number): number[] {
-  const a = ((dirIn % 6) + 6) % 6;
-  const b = ((dirOut % 6) + 6) % 6;
-  if (a === b) return [];
-  const entryOpts = [(a + 1) % 6, (a + 2) % 6];
-  const exitOpts = [(b + 1) % 6, (b + 2) % 6];
-  let best: number[] = [];
-  let bestScore = Infinity;
-  for (const entry of entryOpts) {
-    for (const exit of exitOpts) {
-      for (const cw of [true, false]) {
-        const walked = walkHexPerimeter(entry, exit, cw);
-        if (walked.length === 0) continue;
-        let score = walked.length;
-        if (score === bestScore && hexParity % 2 === 0) score += cw ? 0 : 0.01;
-        else if (score === bestScore) score += cw ? 0.01 : 0;
-        if (score < bestScore) { bestScore = score; best = walked; }
-      }
-    }
-  }
-  return best;
-}
-
-/** Rogi obwodu heksa (cur) na trasie prev→cur→next, we współrzędnych świata. */
-function riverTransitCornersOnHex(
-  q: number, r: number, qPrev: number, rPrev: number, qNext: number, rNext: number, R: number,
-): Array<{ x: number; z: number }> {
-  const dirIn = neighborDirIndex(q, r, qPrev, rPrev);
-  const dirOut = neighborDirIndex(q, r, qNext, rNext);
-  if (dirIn < 0 || dirOut < 0) return [];
-  const wc = axialToWorld(q, r, R);
-  const cs = hexCorners(wc.x, wc.z, R);
-  return riverCornersAlongHexEdges(dirIn, dirOut, q + r).map((ci) => ({ x: cs[ci]!.x, z: cs[ci]!.z }));
-}
-
-/** Wsunięcie rogu łuku ku środkowi WŁASNEGO heksa (hug WEWNĘTRZNEJ strony ścianki —
- *  rzeka widoczna po krawędzi, ale nie ginie pod wzgórzem sąsiada za ścianką). */
-const RIVER_INSET_FRAC = 0.15;
-/** Iteracje wygładzania Chaikina (2 = miękkie meandry, końce nienaruszalne). */
-const RIVER_CHAIKIN_ITERS = 2;
-
-/**
- * Corner-cutting Chaikina: każdy odcinek zamień na punkty w 1/4 i 3/4 długości. Ścina ostre
- * rogi obwodu → gładka, meandrująca polilinia (koniec „schodków"). Pierwszy i ostatni punkt
- * NIENARUSZALNE (źródło / ujście / węzeł konfluencji zostają na miejscu). RENDER-ONLY.
- */
-function chaikinSmooth(pts: THREE.Vector3[], iterations: number): THREE.Vector3[] {
-  let cur = pts;
-  for (let it = 0; it < iterations && cur.length >= 3; it++) {
-    const out: THREE.Vector3[] = [cur[0]!];
-    for (let i = 0; i < cur.length - 1; i++) {
-      const a = cur[i]!;
-      const b = cur[i + 1]!;
-      out.push(new THREE.Vector3(
-        a.x * 0.75 + b.x * 0.25, a.y * 0.75 + b.y * 0.25, a.z * 0.75 + b.z * 0.25,
-      ));
-      out.push(new THREE.Vector3(
-        a.x * 0.25 + b.x * 0.75, a.y * 0.25 + b.y * 0.75, a.z * 0.25 + b.z * 0.75,
-      ));
-    }
-    out.push(cur[cur.length - 1]!);
-    cur = out;
-  }
-  return cur;
 }
 
 /**
@@ -977,19 +907,15 @@ function simplifyRiverRenderPath(
 }
 
 /**
- * Wstęga rzeki = polilinia PO ŚCIANKACH heksów (Maciej 2026-07-10 — powrót od odrzuconej
- * „centrolinii" prostej przez środek pola). Dla każdego heksa trasy rzeka biegnie jego OBWODEM:
- * środek krawędzi WEJŚCIA → rogi łuku (najkrótszy po ściankach) → środek krawędzi WYJŚCIA.
- *  - ROGI łuku insetowane ku środkowi WŁASNEGO heksa (RIVER_INSET_FRAC) → hug WEWNĘTRZNEJ strony
- *    ścianki: widoczna po krawędzi, ale nie ginie pod wzgórzem sąsiada za ścianką,
- *  - wspólny środek krawędzi = JEDEN punkt bez insetu (granica dwóch heksów RZEKI, obie strony
- *    to koryto) → ZERO „domków" (dawniej exit-ku-cur + entry-ku-next dawały prostopadły dzióbek),
- *  - polilinia surowa (kanciasta) → wygładzenie Chaikina (RIVER_CHAIKIN_ITERS) → miękkie meandry
- *    po ściankach, koniec „schodków",
+ * Punkty wstęgi rzeki = CIĄG ŚRODKÓW WSPÓLNYCH KRAWĘDZI kolejnych heksów trasy (Maciej 2026-07-10):
+ * dla granicy hex[i]|hex[i+1] jeden SUROWY punkt na ściance (sharedEdgeMidpoint). Wstęgę rysuje
+ * splajn CatmullRom (buildRibbonGeometry sharp=false) → gładki naturalny ciek: prawie prosta na
+ * prostym biegu, delikatne łuki na zakrętach. Bez rogów obwodu i bez Chaikina = koniec bąbli-co-heks.
  *  - stała PŁASKA wysokość (riverHexSurfaceY) — bez lewitacji góra-dół-góra,
- *  - simplifyRiverRenderPath ścina zawroty 180° / skręty ≥120° → brak pętli heksagonalnych.
- * `extendToJoin` (dopływy): dołóż środek OSTATNIEGO heksa, by tip dopływu wszedł w kanał głównej
- * rzeki i scalił się czysto (zamiast urwać się na granicy węzła).
+ *  - simplifyRiverRenderPath ścina zawroty 180° / skręty ≥120° → brak dziwnych pętli splajnu.
+ * `extendToJoin`: dołóż środek OSTATNIEGO heksa — dla dopływu tip wchodzi w kanał głównej rzeki
+ * (konfluencja), dla rzeki głównej wstęga kończy się w środku ostatniego heksa lądu = styk bez
+ * luki z łańcuchem przybrzeżnym (buildCoastalRiverPointChain kotwiczy się w tym samym punkcie).
  */
 function buildRiverPointsFromHexPath(
   map: GameMap,
@@ -1014,67 +940,37 @@ function buildRiverPointsFromHexPath(
   const rp = simplifyRiverRenderPath(path);
   if (rp.length < 2) return { pts, hexKeys };
 
-  // Inset surowego rogu obwodu ku środkowi WŁASNEGO heksa (hug wewnętrznej ścianki).
-  const insetToward = (x: number, z: number, hq: number, hr: number): { x: number; z: number } => {
-    const c = axialToWorld(hq, hr, R);
-    return { x: x + (c.x - x) * RIVER_INSET_FRAC, z: z + (c.z - z) * RIVER_INSET_FRAC };
-  };
-
-  // Surowa polilinia PO ŚCIANKACH — jeden punkt na przejście przez ściankę (bez domków).
-  const raw: THREE.Vector3[] = [];
-  const pushRaw = (x: number, z: number, y: number): void => {
+  const pushPt = (x: number, z: number, y: number): void => {
     const p = new THREE.Vector3(x, y, z);
-    if (raw.length === 0 || raw[raw.length - 1]!.distanceTo(p) > R * 0.004) raw.push(p);
+    if (pts.length === 0 || pts[pts.length - 1]!.distanceTo(p) > R * 0.004) pts.push(p);
   };
 
-  // Start: środek wspólnej krawędzi hex0|hex1 (na ściance, bez insetu — rzeka „rodzi się" tu).
-  {
-    const a = rp[0]!;
-    const b = rp[1]!;
-    const mid0 = sharedEdgeMidpoint(a.q, a.r, b.q, b.r, R);
+  // CIĄG ŚRODKÓW WSPÓLNYCH KRAWĘDZI kolejnych heksów trasy — JEDEN surowy punkt na granicę
+  // (na ściance hex[i]|hex[i+1]). To wszystko: żadnych rogów obwodu, żadnego Chaikina. Wstęgę
+  // renderujemy CatmullRomem (buildRibbonGeometry sharp=false), który przeciąga przez te punkty
+  // gładki splajn → naturalny ciek: prawie prosta na prostym biegu, delikatne łuki na zakrętach.
+  // Koniec „bąbli-co-heks" (rogi obwodu) i „schodków" (kanciasta polilinia).
+  for (let i = 0; i < rp.length - 1; i++) {
+    const a = rp[i]!;
+    const b = rp[i + 1]!;
+    const mid = sharedEdgeMidpoint(a.q, a.r, b.q, b.r, R);
+    if (!mid) continue;
     const ya = yAt(a.q, a.r);
     const yb = yAt(b.q, b.r);
-    if (mid0 && ya != null && yb != null) pushRaw(mid0.x, mid0.z, (ya + yb) * 0.5);
+    if (ya == null || yb == null) continue;
+    pushPt(mid.x, mid.z, (ya + yb) * 0.5);
   }
 
-  // Heksy środkowe: rogi łuku obwodu (inset ku cur) + środek krawędzi wyjściowej (bez insetu).
-  for (let i = 1; i < rp.length - 1; i++) {
-    const prev = rp[i - 1]!;
-    const cur = rp[i]!;
-    const next = rp[i + 1]!;
-    if (neighborDirIndex(prev.q, prev.r, cur.q, cur.r) < 0) continue;
-    if (neighborDirIndex(cur.q, cur.r, next.q, next.r) < 0) continue;
-    const yc = yAt(cur.q, cur.r);
-    if (yc == null) continue;
-
-    for (const corner of riverTransitCornersOnHex(
-      cur.q, cur.r, prev.q, prev.r, next.q, next.r, R,
-    )) {
-      const pc = insetToward(corner.x, corner.z, cur.q, cur.r);
-      pushRaw(pc.x, pc.z, yc);
-    }
-
-    const mid = sharedEdgeMidpoint(cur.q, cur.r, next.q, next.r, R);
-    const yn = yAt(next.q, next.r);
-    if (mid && yn != null) pushRaw(mid.x, mid.z, (yc + yn) * 0.5);
-  }
-
-  // Dopływ: wejdź środkiem ostatniego heksa w kanał głównej rzeki (czyste scalenie w konfluencji).
+  // Dopływ / ujście: dołóż środek OSTATNIEGO heksa. Dopływ → tip wchodzi w kanał głównej rzeki
+  // (czyste scalenie w konfluencji). Rzeka główna dochodząca do morza → koniec wstęgi lądowej
+  // ląduje w środku ostatniego heksa lądu = punkt STYKU z łańcuchem przybrzeżnym (bez luki).
   if (extendToJoin && rp.length >= 2) {
     const last = rp[rp.length - 1]!;
     const yl = yAt(last.q, last.r);
     if (yl != null) {
       const cl = axialToWorld(last.q, last.r, R);
-      pushRaw(cl.x, cl.z, yl);
+      pushPt(cl.x, cl.z, yl);
     }
-  }
-
-  if (raw.length < 2) return { pts, hexKeys };
-
-  // Wygładzenie Chaikina — miękkie meandry po ściankach zamiast kanciastych schodków.
-  const smooth = chaikinSmooth(raw, RIVER_CHAIKIN_ITERS);
-  for (const p of smooth) {
-    if (pts.length === 0 || pts[pts.length - 1]!.distanceTo(p) > R * 0.006) pts.push(p);
   }
 
   return { pts, hexKeys };
@@ -1116,10 +1012,12 @@ function renderLandRiversFromPaths(
           : 0.7;
     const halfWidth = mainHalfWidth * widthMul;
 
-    // Dopływ scala się w węźle: przedłuż tip środkiem ostatniego heksa w kanał głównej rzeki.
+    // extendToJoin: dopływ scala się w węźle głównej rzeki; rzeka główna dochodząca do morza
+    // kończy wstęgę w środku ostatniego heksa lądu = styk z łańcuchem przybrzeżnym (bez luki).
+    const reachesSea = pathReachesOpenSeaRender(map, path);
     const { pts, hexKeys } = buildRiverPointsFromHexPath(
       map, landPath, R, renderStyle, riverMouthY, surfaceOffset, new Set<string>(),
-      kind === 'tributary',
+      kind === 'tributary' || reachesSea,
     );
     if (pts.length < 2) continue;
 
@@ -1127,7 +1025,8 @@ function renderLandRiversFromPaths(
     const pathBucket: RiverGeoBucket = {
       mat: riverMat, geos: [], hexKeys: new Set(), renderOrder,
     };
-    pushRiverMesh(pathBucket, pts, hexKeys, halfWidth, 8, true);
+    // sharp=false → gładki splajn CatmullRom przez środki krawędzi (naturalny ciek, nie schodki).
+    pushRiverMesh(pathBucket, pts, hexKeys, halfWidth, 8, false);
     flushRiverBucket(scene, pathBucket, riverEntries);
     for (const k of hexKeys) landHexKeys.add(k);
   }
@@ -1355,6 +1254,9 @@ export async function buildScene(
   const wzgorzeVarCount: number[] = new Array(NW).fill(0);
   // GRAFIKA-TEREN-2: kępy lasu (5 wariantów) — pre-count wariantów do alokacji InstancedMesh (jak góry/wzgórza).
   const NL = LICZBA_WARIANTOW_LASU;
+  // NATURALNY las = warianty 0..3 (BEZ L4 „przetrzebionego": pieńki+kłoda). L4 zarezerwowany na
+  // dynamiczny wyrąb (hexClearingStates) — na starcie las ma być PEŁNY, nie wyglądać na wyrąbany.
+  const NL_NATURAL = 4;
   const lasVarCount: number[] = new Array(NL).fill(0);
   // DEKOR: mikrodekor łąk/równin — pre-count wariantów (jak goraVarCount) do alokacji InstancedMesh.
   const dekorLakaVarCount: number[] = new Array(DEKOR_LICZBA_WARIANTOW).fill(0);
@@ -1368,7 +1270,7 @@ export async function buildScene(
       // Kępa lasu instancjonowana tylko dla stylu roblox POZA strefą tropikalną (dżungla = stara ścieżka).
       if (styledTerrain && t !== TerenBazowy.Morze && t !== TerenBazowy.Wybrzeze
           && !isWarmJungleForestHex(hex.coords.q, hex.coords.r, map.wysokoscR)) {
-        lasVarCount[wariantLasuDlaHeksa(hex.coords.q, hex.coords.r, NL, map.seed)]!++;
+        lasVarCount[wariantLasuDlaHeksa(hex.coords.q, hex.coords.r, NL_NATURAL, map.seed)]!++;
       }
     }
     if (t === TerenBazowy.Gory) {
@@ -1811,7 +1713,8 @@ export async function buildScene(
       const q = hex.coords.q, r = hex.coords.r;
       if (styledTerrain && !isWarmJungleForestHex(q, r, map.wysokoscR)) {
         // GRAFIKA-TEREN-2: instancjonowana kępa lasu (wariant + rotacja deterministyczne; R=1 → bez skali).
-        const v = wariantLasuDlaHeksa(q, r, NL, map.seed);
+        // NL_NATURAL (4): tylko pełne warianty 0..3 — nigdy L4 „przetrzebiony" na starcie mapy.
+        const v = wariantLasuDlaHeksa(q, r, NL_NATURAL, map.seed);
         dummy.position.set(x, baseY, z);
         dummy.rotation.set(0, rotacjaLasuDlaHeksa(q, r, map.seed), 0);
         dummy.scale.set(1, 1, 1);
@@ -2258,7 +2161,9 @@ export async function buildScene(
     if (path.length < 2) continue;
     if ((pathKinds[pi] ?? 'main') !== 'main') continue;
     // B0.7/B0.8: wstęga ujścia + lejek TYLKO gdy trasa realnie kończy w morzu (nie junction).
-    if (pathReachesOpenSeaRender(map, path) && pathNearCoast(map, path)) {
+    // pathReachesOpenSeaRender wystarcza (buildCoastalRiverPointChain sam buduje łańcuch lub
+    // zwraca pusto) — dawny dodatkowy warunek pathNearCoast blokował rzeki wpadające wprost w Morze.
+    if (pathReachesOpenSeaRender(map, path)) {
       const coastRiverBucket: RiverGeoBucket = {
         mat: riverWaterMat, geos: [], hexKeys: new Set(), renderOrder: RIVER_MOUTH_RENDER_ORDER,
       };
