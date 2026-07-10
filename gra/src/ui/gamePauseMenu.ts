@@ -12,6 +12,14 @@ export interface GamePauseMenuConfig {
   onLoad: () => void;
   onNewGame: () => void;
   onMainMenu: () => void;
+  /** Muzyka WŁ/WYŁ — stan bieżący, do zaznaczenia przełącznika przy otwarciu. */
+  getMusicEnabled?: () => boolean;
+  /** Głośność muzyki 0..1 — do ustawienia suwaka przy otwarciu. */
+  getMusicVolume?: () => number;
+  /** Przełącznik Muzyka WŁ/WYŁ (stopMusic() / startMusic(getMood())). */
+  onMusicToggle?: (enabled: boolean) => void;
+  /** Suwak głośności muzyki, wartość 0..1 (setMusicVolume). */
+  onMusicVolumeChange?: (volume: number) => void;
 }
 
 const STYLE_ID = 'civ-game-pause-css';
@@ -41,6 +49,18 @@ function ensureStyles(): void {
 .civ-pause-btns .civ-pause-primary{background:rgba(224,178,74,0.18);color:#f5e6b8;border-color:rgba(224,178,74,0.55);}
 .civ-pause-btns .civ-pause-danger{margin-top:6px;border-color:rgba(180,90,70,0.45);color:#ffd0c8;}
 .civ-pause-btns .civ-pause-danger:hover:not(:disabled){background:rgba(120,45,35,0.25);}
+.civ-pause-music{margin:4px 0 14px;padding:10px 12px;border-radius:8px;
+  border:1px solid rgba(224,178,74,0.22);background:rgba(255,255,255,0.03);}
+.civ-pause-music-row{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.civ-pause-music-lbl{font-size:13px;font-weight:600;color:#e8ebf0;display:flex;align-items:center;gap:8px;}
+.civ-pause-music-toggle{position:relative;width:38px;height:21px;flex:none;border-radius:11px;
+  border:1px solid rgba(224,178,74,0.35);background:rgba(0,0,0,0.35);cursor:pointer;padding:0;}
+.civ-pause-music-toggle::after{content:'';position:absolute;top:2px;left:2px;width:15px;height:15px;border-radius:50%;
+  background:#9aa4b8;transition:left .15s,background .15s;}
+.civ-pause-music-toggle[aria-pressed="true"]{background:rgba(224,178,74,0.35);border-color:rgba(224,178,74,0.6);}
+.civ-pause-music-toggle[aria-pressed="true"]::after{left:19px;background:#f5e6b8;}
+.civ-pause-music-vol{width:100%;margin-top:8px;accent-color:#e0b24a;cursor:pointer;}
+.civ-pause-music-vol:disabled{opacity:.4;cursor:not-allowed;}
 `;
   const s = document.createElement('style');
   s.id = STYLE_ID;
@@ -66,6 +86,8 @@ export function showGamePauseMenu(): void {
   root.setAttribute('aria-label', 'Menu gry');
 
   const hasSave = cfg.hasSave?.() ?? false;
+  const musicEnabledNow = cfg.getMusicEnabled?.() ?? true;
+  const musicVolumeNow = cfg.getMusicVolume?.() ?? 0.7;
 
   const box = document.createElement('div');
   box.className = 'civ-pause-box';
@@ -77,6 +99,13 @@ export function showGamePauseMenu(): void {
   box.innerHTML =
     '<h2>Menu gry</h2>' +
     '<p class="civ-pause-sub">Gra jest wstrzymana. Wybierz akcję lub wróć do rozgrywki.</p>' +
+    '<div class="civ-pause-music">' +
+    '<div class="civ-pause-music-row"><span class="civ-pause-music-lbl">Muzyka</span>' +
+    '<button type="button" class="civ-pause-music-toggle" data-act="music-toggle" role="switch" ' +
+    'aria-pressed="' + (musicEnabledNow ? 'true' : 'false') + '" aria-label="Muzyka WŁ/WYŁ"></button></div>' +
+    '<input type="range" class="civ-pause-music-vol" data-act="music-vol" min="0" max="100" step="5" ' +
+    'value="' + Math.round(musicVolumeNow * 100) + '"' + (musicEnabledNow ? '' : ' disabled') + ' aria-label="Głośność muzyki" />' +
+    '</div>' +
     '<div class="civ-pause-btns">' +
     '<button type="button" class="civ-pause-primary" data-act="resume"><span class="civ-pause-ic">' + icResume + '</span> Wróć do gry</button>' +
     '<button type="button" data-act="save"><span class="civ-pause-ic">' + icSave + '</span> Zapisz grę</button>' +
@@ -87,6 +116,19 @@ export function showGamePauseMenu(): void {
 
   root.appendChild(box);
   document.body.appendChild(root);
+
+  const musicToggleBtn = box.querySelector('[data-act="music-toggle"]') as HTMLButtonElement | null;
+  const musicVolInput = box.querySelector('[data-act="music-vol"]') as HTMLInputElement | null;
+  musicToggleBtn?.addEventListener('click', () => {
+    const next = musicToggleBtn.getAttribute('aria-pressed') !== 'true';
+    musicToggleBtn.setAttribute('aria-pressed', next ? 'true' : 'false');
+    if (musicVolInput) musicVolInput.disabled = !next;
+    cfg?.onMusicToggle?.(next);
+  });
+  musicVolInput?.addEventListener('input', () => {
+    const v = Math.max(0, Math.min(100, Number(musicVolInput.value))) / 100;
+    cfg?.onMusicVolumeChange?.(v);
+  });
 
   root.addEventListener('click', (ev) => {
     if (ev.target === root) {

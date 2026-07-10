@@ -27,6 +27,7 @@ import { collectAtkRosterNearCity } from '../units/battleRoster';
 import type { PreBattleInfo, PreBattleCallbacks, PreBattleOptions } from '../ui/preBattle';
 import type { BattleOpts, BattleResult, BattleUnit } from './battleScene';
 import type { CivBonusEntry } from '../game/civ-bonuses';
+import { setMood } from '../audio/muzyka-antyczna';
 
 export interface MapFieldBattleAction {
   attacker: RuntimeUnit;
@@ -374,6 +375,7 @@ export function launchFieldBattleFromMap(
       deps.hidePreBattle();
       const atkLead = atkRosterRef[0]!;
       const defLead = defRosterRef[0]!;
+      setMood('bitwa');
       const bs = deps.createBattleScene({
         attacker: rosterToBattleUnits(atkRosterRef, 0xffd54a),
         defender: rosterToBattleUnits(defRosterRef, 0xc84040),
@@ -386,6 +388,7 @@ export function launchFieldBattleFromMap(
         defenderCivLabel: pbInfo.obronca.cywilizacja,
         attackerSideLabel: pbInfo.atakujacy.nazwa,
         defenderSideLabel: pbInfo.obronca.nazwa,
+        onCancel: () => setMood('mapa'),
       });
       bs.play((res) => {
         deps.applyMapBattleOutcomeWithSummary(
@@ -401,6 +404,7 @@ export function launchFieldBattleFromMap(
           },
           summaryMeta('manual'),
           () => {
+            setMood('mapa');
             deps.clearBattleUiState();
             bs.dispose();
           },
