@@ -158,12 +158,12 @@
     "bonus": {},
     "surowiecOdblokowany": null,
     "teren": "Las",
-    "warunek": "koszt 5 Pracy na start; +20 Pracy/turę × 3 tury (=60); potem teren bazowy bez lasu",
+    "warunek": "koszt 5 Pracy na start; +5 Pracy × 1 tura (=5, netto zero); potem teren bazowy bez lasu",
     "koszt_praca": 5,
     "tech": null,
     "wycinka": {
-      "praca_per_tura": 20,
-      "tury": 3,
+      "praca_per_tura": 5,
+      "tury": 1,
       "usuwa_nakladke": "las"
     },
     "odblokowuje": ""
