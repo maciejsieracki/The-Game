@@ -113,7 +113,10 @@ export function categoryOf(name: string, role: string, isSuper: boolean): string
   // Greek phalanx -> distinct 'falanga' BEFORE the generic spearman check.
   if (n.includes('falanga') || n.includes('hoplit') || n.includes('phalanx')) return 'falanga';
   // Roman legionary -> distinct 'legionista' BEFORE the generic swordsman check.
-  if (n.includes('legionist') || n.includes('hastati')) return 'legionista';
+  // GRAFIKA-JEDNOSTKI fix: "Legion Rzymski" nie zawiera 'legionist', dopisano
+  // 'legion' zeby kategoria (staty/UI) tez trafila do legionista, spojnie z
+  // bespoke modelem buildLegionRzymski w units.ts (buildNamedUnit).
+  if (n.includes('legionist') || n.includes('hastati') || n.includes('legion')) return 'legionista';
   const wloczKw = ['wloczn', 'pikinier', 'spear', 'impi'];
   if (wloczKw.some(kw => n.includes(kw) || r.includes(kw))) return 'wlocznik';
   const mieczKw = ['miecz', 'sword', 'gladi', 'khopesh'];
