@@ -827,6 +827,113 @@ function hexEdgeMidpointByDir(q: number, r: number, dir: number, R: number): { x
   return { x: (p0.x + p1.x) * 0.5, z: (p0.z + p1.z) * 0.5 };
 }
 
+// ---------------------------------------------------------------------------
+// Rzeki PO ŚCIANKACH heksów (Maciej 2026-07-10): geometria krawędziowa —
+// polilinia biegnie OBWODEM heksów (środki krawędzi + rogi), NIE prostą przez
+// środek pola (odrzucona „centrolinia"). Fix domków: JEDEN punkt na przejściu
+// przez ściankę (współny środek krawędzi, bez insetu → brak prostopadłego
+// „dzióbka"). Fix schodków: wygładzenie Chaikina (corner-cutting). RENDER-ONLY.
+// ---------------------------------------------------------------------------
+
+/** Wspólny środek krawędzi dwóch sąsiednich heksów (granica hex1|hex2). */
+function sharedEdgeMidpoint(
+  q1: number, r1: number, q2: number, r2: number, R: number,
+): { x: number; z: number } | null {
+  const dir = neighborDirIndex(q1, r1, q2, r2);
+  if (dir < 0) return null;
+  return hexEdgeMidpointByDir(q1, r1, dir, R);
+}
+
+/** Następny róg obwodu heksa (pointy-top; cw = zgodnie z ruchem wskazówek). */
+function hexCornerStep(from: number, cw: boolean): number {
+  return cw ? (from + 1) % 6 : (from + 5) % 6;
+}
+
+/** Droga wzdłuż obwodu heksa (rogi) między dwoma rogami — bez przekątnej przez pole. */
+function walkHexPerimeter(fromCorner: number, toCorner: number, cw: boolean): number[] {
+  if (fromCorner === toCorner) return [fromCorner];
+  const out: number[] = [];
+  let c = fromCorner;
+  for (let guard = 0; guard < 7; guard++) {
+    out.push(c);
+    if (c === toCorner) break;
+    c = hexCornerStep(c, cw);
+  }
+  return out;
+}
+
+/**
+ * Rogi obwodu między krawędzią WEJŚCIA (dirIn) a WYJŚCIA (dirOut) — NAJKRÓTSZY łuk po
+ * ściankach heksa. Bez skrótów przez środek. Bez wymogu min. liczby boków (dawny minBoki≥3
+ * dawał „plaster miodu" — objazd prawie całego obwodu przy ostrym skręcie). hexParity tylko
+ * deterministycznie rozstrzyga remis strony (spójny wybór między klatkami → hash bez zmian).
+ */
+function riverCornersAlongHexEdges(dirIn: number, dirOut: number, hexParity: number): number[] {
+  const a = ((dirIn % 6) + 6) % 6;
+  const b = ((dirOut % 6) + 6) % 6;
+  if (a === b) return [];
+  const entryOpts = [(a + 1) % 6, (a + 2) % 6];
+  const exitOpts = [(b + 1) % 6, (b + 2) % 6];
+  let best: number[] = [];
+  let bestScore = Infinity;
+  for (const entry of entryOpts) {
+    for (const exit of exitOpts) {
+      for (const cw of [true, false]) {
+        const walked = walkHexPerimeter(entry, exit, cw);
+        if (walked.length === 0) continue;
+        let score = walked.length;
+        if (score === bestScore && hexParity % 2 === 0) score += cw ? 0 : 0.01;
+        else if (score === bestScore) score += cw ? 0.01 : 0;
+        if (score < bestScore) { bestScore = score; best = walked; }
+      }
+    }
+  }
+  return best;
+}
+
+/** Rogi obwodu heksa (cur) na trasie prev→cur→next, we współrzędnych świata. */
+function riverTransitCornersOnHex(
+  q: number, r: number, qPrev: number, rPrev: number, qNext: number, rNext: number, R: number,
+): Array<{ x: number; z: number }> {
+  const dirIn = neighborDirIndex(q, r, qPrev, rPrev);
+  const dirOut = neighborDirIndex(q, r, qNext, rNext);
+  if (dirIn < 0 || dirOut < 0) return [];
+  const wc = axialToWorld(q, r, R);
+  const cs = hexCorners(wc.x, wc.z, R);
+  return riverCornersAlongHexEdges(dirIn, dirOut, q + r).map((ci) => ({ x: cs[ci]!.x, z: cs[ci]!.z }));
+}
+
+/** Wsunięcie rogu łuku ku środkowi WŁASNEGO heksa (hug WEWNĘTRZNEJ strony ścianki —
+ *  rzeka widoczna po krawędzi, ale nie ginie pod wzgórzem sąsiada za ścianką). */
+const RIVER_INSET_FRAC = 0.15;
+/** Iteracje wygładzania Chaikina (2 = miękkie meandry, końce nienaruszalne). */
+const RIVER_CHAIKIN_ITERS = 2;
+
+/**
+ * Corner-cutting Chaikina: każdy odcinek zamień na punkty w 1/4 i 3/4 długości. Ścina ostre
+ * rogi obwodu → gładka, meandrująca polilinia (koniec „schodków"). Pierwszy i ostatni punkt
+ * NIENARUSZALNE (źródło / ujście / węzeł konfluencji zostają na miejscu). RENDER-ONLY.
+ */
+function chaikinSmooth(pts: THREE.Vector3[], iterations: number): THREE.Vector3[] {
+  let cur = pts;
+  for (let it = 0; it < iterations && cur.length >= 3; it++) {
+    const out: THREE.Vector3[] = [cur[0]!];
+    for (let i = 0; i < cur.length - 1; i++) {
+      const a = cur[i]!;
+      const b = cur[i + 1]!;
+      out.push(new THREE.Vector3(
+        a.x * 0.75 + b.x * 0.25, a.y * 0.75 + b.y * 0.25, a.z * 0.75 + b.z * 0.25,
+      ));
+      out.push(new THREE.Vector3(
+        a.x * 0.25 + b.x * 0.75, a.y * 0.25 + b.y * 0.75, a.z * 0.25 + b.z * 0.75,
+      ));
+    }
+    out.push(cur[cur.length - 1]!);
+    cur = out;
+  }
+  return cur;
+}
+
 /**
  * Regularyzacja ścieżki rzeki POD RENDER (render-only — NIE zmienia generatora ani hasza mapy).
  * Zwija dwa artefakty meandra generatora, które psuły wygląd wstęgi:
@@ -860,18 +967,19 @@ function simplifyRiverRenderPath(
 }
 
 /**
- * Wstęga rzeki = polilinia przez PUNKTY-PRZEJŚCIA między kolejnymi heksami trasy.
- * Punkt przejścia i = środek wspólnej krawędzi heksów H[i-1]|H[i] = ŚREDNIA ich środków
- * ( (C(H[i-1]) + C(H[i])) / 2 ). Model (formalnie — patrz raport):
- *  - JEDEN punkt na granicę (nie exit+entry jak dawniej) → ZERO prostopadłego „dzióbka/domku",
- *  - prosty bieg heksów → punkty współliniowe → PROSTY odcinek rzeki (koniec „schodków"),
- *  - ciasny 60°-zygzak → punkty uśredniają się do PROSTEJ (kadencja meandra),
- *  - po simplifyRiverRenderPath zakręty ≤60° → czysty meander wielokrotności 60°, bez wygibasów,
+ * Wstęga rzeki = polilinia PO ŚCIANKACH heksów (Maciej 2026-07-10 — powrót od odrzuconej
+ * „centrolinii" prostej przez środek pola). Dla każdego heksa trasy rzeka biegnie jego OBWODEM:
+ * środek krawędzi WEJŚCIA → rogi łuku (najkrótszy po ściankach) → środek krawędzi WYJŚCIA.
+ *  - ROGI łuku insetowane ku środkowi WŁASNEGO heksa (RIVER_INSET_FRAC) → hug WEWNĘTRZNEJ strony
+ *    ścianki: widoczna po krawędzi, ale nie ginie pod wzgórzem sąsiada za ścianką,
+ *  - wspólny środek krawędzi = JEDEN punkt bez insetu (granica dwóch heksów RZEKI, obie strony
+ *    to koryto) → ZERO „domków" (dawniej exit-ku-cur + entry-ku-next dawały prostopadły dzióbek),
+ *  - polilinia surowa (kanciasta) → wygładzenie Chaikina (RIVER_CHAIKIN_ITERS) → miękkie meandry
+ *    po ściankach, koniec „schodków",
  *  - stała PŁASKA wysokość (riverHexSurfaceY) — bez lewitacji góra-dół-góra,
- *  - punkty-przejścia leżą na granicy DWÓCH heksów RZEKI (nie sąsiada-wzgórza), a odcinki biegną
- *    wnętrzem heksów trasy → hug wewnętrznej ścianki spełniony bez ginięcia pod terenem sąsiada.
+ *  - simplifyRiverRenderPath ścina zawroty 180° / skręty ≥120° → brak pętli heksagonalnych.
  * `extendToJoin` (dopływy): dołóż środek OSTATNIEGO heksa, by tip dopływu wszedł w kanał głównej
- * rzeki i scalił się czysto w punkcie przecięcia (zamiast urwać się na granicy węzła).
+ * rzeki i scalił się czysto (zamiast urwać się na granicy węzła).
  */
 function buildRiverPointsFromHexPath(
   map: GameMap,
@@ -894,32 +1002,69 @@ function buildRiverPointsFromHexPath(
     riverHexSurfaceY(map, q, r, renderStyle, riverMouthY, surfaceOffset, R);
 
   const rp = simplifyRiverRenderPath(path);
+  if (rp.length < 2) return { pts, hexKeys };
 
-  const pushPt = (x: number, z: number, y: number): void => {
-    const p = new THREE.Vector3(x, y, z);
-    if (pts.length === 0 || pts[pts.length - 1]!.distanceTo(p) > R * 0.008) pts.push(p);
+  // Inset surowego rogu obwodu ku środkowi WŁASNEGO heksa (hug wewnętrznej ścianki).
+  const insetToward = (x: number, z: number, hq: number, hr: number): { x: number; z: number } => {
+    const c = axialToWorld(hq, hr, R);
+    return { x: x + (c.x - x) * RIVER_INSET_FRAC, z: z + (c.z - z) * RIVER_INSET_FRAC };
   };
 
-  for (let i = 1; i < rp.length; i++) {
-    const a = rp[i - 1]!;
-    const b = rp[i]!;
-    if (neighborDirIndex(a.q, a.r, b.q, b.r) < 0) continue; // bezpiecznik: pomiń nie-sąsiadów
+  // Surowa polilinia PO ŚCIANKACH — jeden punkt na przejście przez ściankę (bez domków).
+  const raw: THREE.Vector3[] = [];
+  const pushRaw = (x: number, z: number, y: number): void => {
+    const p = new THREE.Vector3(x, y, z);
+    if (raw.length === 0 || raw[raw.length - 1]!.distanceTo(p) > R * 0.004) raw.push(p);
+  };
+
+  // Start: środek wspólnej krawędzi hex0|hex1 (na ściance, bez insetu — rzeka „rodzi się" tu).
+  {
+    const a = rp[0]!;
+    const b = rp[1]!;
+    const mid0 = sharedEdgeMidpoint(a.q, a.r, b.q, b.r, R);
     const ya = yAt(a.q, a.r);
     const yb = yAt(b.q, b.r);
-    if (ya == null || yb == null) continue;
-    const ca = axialToWorld(a.q, a.r, R);
-    const cb = axialToWorld(b.q, b.r, R);
-    pushPt((ca.x + cb.x) * 0.5, (ca.z + cb.z) * 0.5, (ya + yb) * 0.5);
+    if (mid0 && ya != null && yb != null) pushRaw(mid0.x, mid0.z, (ya + yb) * 0.5);
+  }
+
+  // Heksy środkowe: rogi łuku obwodu (inset ku cur) + środek krawędzi wyjściowej (bez insetu).
+  for (let i = 1; i < rp.length - 1; i++) {
+    const prev = rp[i - 1]!;
+    const cur = rp[i]!;
+    const next = rp[i + 1]!;
+    if (neighborDirIndex(prev.q, prev.r, cur.q, cur.r) < 0) continue;
+    if (neighborDirIndex(cur.q, cur.r, next.q, next.r) < 0) continue;
+    const yc = yAt(cur.q, cur.r);
+    if (yc == null) continue;
+
+    for (const corner of riverTransitCornersOnHex(
+      cur.q, cur.r, prev.q, prev.r, next.q, next.r, R,
+    )) {
+      const pc = insetToward(corner.x, corner.z, cur.q, cur.r);
+      pushRaw(pc.x, pc.z, yc);
+    }
+
+    const mid = sharedEdgeMidpoint(cur.q, cur.r, next.q, next.r, R);
+    const yn = yAt(next.q, next.r);
+    if (mid && yn != null) pushRaw(mid.x, mid.z, (yc + yn) * 0.5);
   }
 
   // Dopływ: wejdź środkiem ostatniego heksa w kanał głównej rzeki (czyste scalenie w konfluencji).
-  if (extendToJoin && rp.length >= 2 && pts.length >= 1) {
+  if (extendToJoin && rp.length >= 2) {
     const last = rp[rp.length - 1]!;
     const yl = yAt(last.q, last.r);
     if (yl != null) {
       const cl = axialToWorld(last.q, last.r, R);
-      pushPt(cl.x, cl.z, yl);
+      pushRaw(cl.x, cl.z, yl);
     }
+  }
+
+  if (raw.length < 2) return { pts, hexKeys };
+
+  // Wygładzenie Chaikina — miękkie meandry po ściankach zamiast kanciastych schodków.
+  const smooth = chaikinSmooth(raw, RIVER_CHAIKIN_ITERS);
+  for (const p of smooth) {
+    if (pts.length === 0 || pts[pts.length - 1]!.distanceTo(p) > R * 0.006) pts.push(p);
   }
 
   return { pts, hexKeys };
