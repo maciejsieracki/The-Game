@@ -159,23 +159,25 @@
       "wymagany budynek": null,
       "Wymaga (prereq)": "Garncarstwo",
       "Odblokowuje surowiec.": null,
-      "Odblokowuje budynek": "Odlewnia brązu; Kuznia; Jednostki: Włócznik, Wojownik z mieczem i tarczą, Falanga, Hastati, Kusznik, Impi, Wojownik z toporem, Wojownik z khopesh, Włócznik sumeryjski, Wojownik mykeński, Wojownik Sherden, Halabardnik Shang, Gaesatae, Soldurii, Wojownik germański, Berserker germański, Wieża oblężnicza, Wojownik tyrreński, Wojownik szekelesz",
+      "Odblokowuje budynek": "Odlewnia brązu; Kuznia; Jednostki: Włócznik, Wojownik z mieczem i tarczą, Falanga, Impi, Wojownik z toporem, Wojownik z khopesh, Włócznik sumeryjski, Wojownik mykeński, Wojownik Sherden, Halabardnik Shang, Wieża oblężnicza, Wojownik tyrreński, Wojownik szekelesz",
       "Koszt nauki": 45,
       "Uwagi": "kończy Epokę 1; ABC-7: Popalnia brązu na mapie",
-      "Odblokowuje ulepszenie terenu": "Popalnia brązu"
+      "Odblokowuje ulepszenie terenu": "Popalnia brązu",
+      "awansDoEpoki": 2
     },
     {
       "Technologia": "Żegluga",
       "Epoka": "Brąz",
       "Poziom": 2,
       "Dostęp do surowca.": "Deski",
-      "wymagany budynek": "Tartak",
+      "wymagany budynek": null,
       "Wymaga (prereq)": "Obróbka drewna",
       "Odblokowuje surowiec.": null,
       "Odblokowuje budynek": "Port handlowy; Jednostki: Galera",
       "Koszt nauki": 40,
       "Uwagi": null,
-      "Odblokowuje ulepszenie terenu": "Łodzie rybackie"
+      "Odblokowuje ulepszenie terenu": "Łodzie rybackie",
+      "wymagane ulepszenie": "Tartak"
     },
     {
       "Technologia": "Pismo",
@@ -211,7 +213,7 @@
       "wymagany budynek": null,
       "Wymaga (prereq)": "Koło + Brązownictwo",
       "Odblokowuje surowiec.": null,
-      "Odblokowuje budynek": "Jednostki: Konnica, Jeździec chiński, Rydwan konny, Rydwan egipski, Rydwan sumeryjski, Rydwan mykeński, Rydwan Shang, Rydwan celtycki",
+      "Odblokowuje budynek": "Jednostki: Konnica, Jeździec chiński, Rydwan konny, Rydwan egipski, Rydwan sumeryjski, Rydwan mykeński, Rydwan Shang",
       "Koszt nauki": 56,
       "Uwagi": null,
       "Odblokowuje ulepszenie terenu": null
@@ -263,7 +265,7 @@
       "wymagany budynek": null,
       "Wymaga (prereq)": "Pismo",
       "Odblokowuje surowiec.": null,
-      "Odblokowuje budynek": null,
+      "Odblokowuje budynek": "Trybunał",
       "Koszt nauki": 62,
       "Uwagi": null,
       "Odblokowuje ulepszenie terenu": null
@@ -295,17 +297,31 @@
       "Odblokowuje ulepszenie terenu": null
     },
     {
+      "Technologia": "Astronomia",
+      "Epoka": "Brąz",
+      "Poziom": 5,
+      "Dostęp do surowca.": null,
+      "wymagany budynek": null,
+      "Wymaga (prereq)": "Matematyka + Mistycyzm",
+      "Odblokowuje surowiec.": null,
+      "Odblokowuje budynek": "Obserwatorium",
+      "Koszt nauki": 110,
+      "Uwagi": "3a: Obserwatorium = +nauka (obserwacje nieba); prereq Matematyka+Mistycyzm",
+      "Odblokowuje ulepszenie terenu": null
+    },
+    {
       "Technologia": "Obróbka żelaza",
       "Epoka": "Żelazo",
       "Poziom": 6,
       "Dostęp do surowca.": "Dostęp do żelazo",
-      "wymagany budynek": "Odlewnia brązu",
+      "wymagany budynek": "Piec hutniczy",
       "Wymaga (prereq)": "Brązownictwo",
       "Odblokowuje surowiec.": "żelazo",
-      "Odblokowuje budynek": "Kuźnia żelaza",
+      "Odblokowuje budynek": "Kuźnia żelaza; Jednostki: Hastati, Drużynnik, Garnizon Harappy, Gwardia hetycka, Piechota neobabilońska, Tyrski miecznik, Gwardia Tyreńska, Thorakites, iButho z iklwa, Wojownik z żelaznym khopesh, Mur tarcz (Sargonid), Miecznik galijski, Rydwan celtycki, Konnica lancowa asyryjska, Konnica łucznicza asyryjska, Jeździec z oszczepami",
       "Koszt nauki": 120,
       "Uwagi": "kończy Epokę 2 / otwiera Epokę 3; jednostki żelazne (Gaesatae, Soldurii, Wojownik germański itp.) — do zdefiniowania przez UNITS; Kuźnia żelaza = NOWY budynek dla EKONOMIA",
-      "Odblokowuje ulepszenie terenu": null
+      "Odblokowuje ulepszenie terenu": null,
+      "awansDoEpoki": 3
     },
     {
       "Technologia": "Inżynieria",
@@ -393,7 +409,7 @@
       "wymagany budynek": "Kuźnia żelaza",
       "Wymaga (prereq)": "Obróbka żelaza + Inżynieria",
       "Odblokowuje surowiec.": "stal (prereq)",
-      "Odblokowuje budynek": "Wielka Kuźnia",
+      "Odblokowuje budynek": "Wielka Kuźnia; Jednostki: Gaesatae, Soldurii, Wojownik germański, Berserker germański",
       "Koszt nauki": 185,
       "Uwagi": "Wielka Kuźnia = NOWY budynek (produkcja++, mnoznik jednostek++); stal = NOWY surowiec dla DANE (prereq dalszych epok); EKONOMIA dodaje surowiec; UNITS aktualizuje jednostki żelazne wyższego poziomu",
       "Odblokowuje ulepszenie terenu": null

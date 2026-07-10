@@ -177,6 +177,31 @@ function lama(): THREE.Group {
   ll(0.38, -0.14);
   return g;
 }
+function stadnina(): THREE.Group {
+  // Koń (stadnina) — wcześniej reużywała model bydła. Sylwetka konia + płot hodowli.
+  const g = new THREE.Group();
+  const coat = 0x8a5a2b, coatDk = 0x6e4620, mane = 0x2f1d0e, hoof = 0x1c140c;
+  const horse = (x: number, z: number, rot: number): void => {
+    const h = new THREE.Group();
+    const body = box(0.22, 0.10, 0.10, coat); body.position.y = 0.17; h.add(body);
+    const rump = box(0.10, 0.12, 0.10, coat); rump.position.set(-0.09, 0.18, 0); h.add(rump);
+    const neck = box(0.06, 0.14, 0.08, coat); neck.position.set(0.12, 0.24, 0); neck.rotation.z = 0.55; h.add(neck);
+    const head = box(0.11, 0.06, 0.055, coatDk); head.position.set(0.20, 0.29, 0); h.add(head);
+    const maneM = box(0.025, 0.13, 0.085, mane); maneM.position.set(0.10, 0.25, 0); maneM.rotation.z = 0.55; h.add(maneM);
+    const tail = box(0.03, 0.13, 0.03, mane); tail.position.set(-0.15, 0.15, 0); tail.rotation.z = -0.55; h.add(tail);
+    for (const lx of [-0.08, 0.08]) for (const lz of [-0.035, 0.035]) {
+      const leg = box(0.026, 0.15, 0.026, coat); leg.position.set(lx, 0.075, lz); h.add(leg);
+      const hf = box(0.03, 0.02, 0.03, hoof); hf.position.set(lx, 0.01, lz); h.add(hf);
+    }
+    h.position.set(x, 0, z); h.rotation.y = rot; g.add(h);
+  };
+  horse(-0.02, 0.10, 0.25);
+  horse(0.20, -0.18, -0.6);
+  // płot stadniny — sygnał „hodowla", nie dzikie konie
+  for (let i = 0; i < 4; i++) { const post = box(0.03, 0.17, 0.03, COL.wood); post.position.set(-0.34 + i * 0.24, 0.085, 0.44); g.add(post); }
+  const rail = box(0.74, 0.025, 0.03, COL.woodDk); rail.position.set(-0.01, 0.13, 0.44); g.add(rail);
+  return g;
+}
 function pastwisko(): THREE.Group { return bydlo(); }
 function kopalnia(): THREE.Group {
   const g = new THREE.Group();
@@ -186,6 +211,20 @@ function kopalnia(): THREE.Group {
   for (const t of [[-0.3, 0.18], [0.32, 0.1], [0.1, -0.2]] as const) { const r = sph(0.08, COL.ore); r.position.set(t[0], 0.2, t[1]); g.add(r); }
   const cart = box(0.2, 0.1, 0.14, COL.woodDk); cart.position.set(0.4, 0.12, -0.05); g.add(cart);
   for (const sx of [-1, 1]) { const w = cyl(0.05, 0.05, 0.03, 0x222222, 8); w.rotation.z = Math.PI / 2; w.position.set(0.4, 0.06, -0.05 + sx * 0.08); g.add(w); }
+  return g;
+}
+function kopalniaMiedzi(): THREE.Group {
+  // Kopalnia miedzi — wcześniej reużywała model kopalni żelaza. Wyróżnik: MIEDZIANA ruda + sztabki.
+  const g = new THREE.Group();
+  const copper = 0xb5622f, copperLt = 0xd07f3f;
+  const mound = cyl(0.5, 0.7, 0.18, COL.dirtDk, 7); mound.position.y = 0.09; g.add(mound);
+  const frame = box(0.34, 0.26, 0.06, COL.wood); frame.position.set(0, 0.21, 0.34); g.add(frame);
+  const adit = box(0.22, 0.18, 0.05, 0x1c140c); adit.position.set(0, 0.17, 0.37); g.add(adit);
+  // hałdy rudy MIEDZI — miedziany kolor (kopalnia żelaza ma szarą COL.ore)
+  for (const t of [[-0.3, 0.18], [0.32, 0.1], [0.1, -0.2]] as const) { const r = sph(0.09, t[1] < 0 ? copper : copperLt); r.position.set(t[0], 0.2, t[1]); g.add(r); }
+  // sztabki wytopionej miedzi
+  const ingotA = box(0.16, 0.05, 0.09, copperLt); ingotA.position.set(0.38, 0.12, -0.12); g.add(ingotA);
+  const ingotB = box(0.14, 0.05, 0.08, copper); ingotB.position.set(0.35, 0.17, -0.10); g.add(ingotB);
   return g;
 }
 function glinianka(): THREE.Group {
@@ -312,7 +351,7 @@ export function buildImprovement(
     case 'bydlo': return bydlo();
     case 'owce': return owce();
     case 'lama': return lama();
-    case 'stadnina': return bydlo();
+    case 'stadnina': return stadnina();
     case 'kopalnia': return kopalnia();
     case 'glinianka': return glinianka();
     case 'kamieniolom': return kamieniolom();
@@ -325,7 +364,7 @@ export function buildImprovement(
     case 'fort': return fort(ownerCol);
     case 'posterunek': return straznica(ownerCol);
     case 'pastwisko': return bydlo();
-    case 'kopalnia_miedzi': return kopalnia();
+    case 'kopalnia_miedzi': return kopalniaMiedzi();
   }
 }
 

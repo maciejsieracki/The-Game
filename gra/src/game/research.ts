@@ -61,6 +61,18 @@ export interface ResearchTechDef {
   'Koszt nauki'?: number | null;
   /** Building required empire-wide before research may start (T-TECH-7). */
   'wymagany budynek'?: string | null;
+  /**
+   * Terrain improvement required empire-wide before research may start
+   * (DRZEWKO-TECH-FIX faza 1): np. Żegluga wymaga ulepszenia "Tartak".
+   * Etykieta wyświetlana; porównywana do slugów kluczy ulepszeń imperium.
+   */
+  'wymagane ulepszenie'?: string | null;
+  /**
+   * Numer epoki nadawany po ukończeniu tego techu (jawny awans epoki).
+   * Obecny tylko na techach-kamieniach milowych (Brązownictwo→2, Obróbka żelaza→3).
+   * Brak pola = ukończenie NIE zmienia epoki. Czytane przez playerState.ts.
+   */
+  awansDoEpoki?: number | null;
 }
 
 /** One row of buildings.json -- only the fields this module reads. */
@@ -120,11 +132,17 @@ export interface TechUnlocks {
 /** Tokens in the prereq column that mean "no prerequisite". */
 const BRAK_PREREQ = new Set(['', '-', '\u2014', '\u2013', 'brak', 'none']);
 
-/** Optional empire-wide building gate for research (T-TECH-7). */
+/** Optional empire-wide building + improvement gate for research (T-TECH-7). */
 export interface ResearchBuildingGate {
   /** Union of building ids built in any city of the empire. */
   empireBuiltIds: ReadonlySet<string> | readonly string[];
   buildings: readonly ResearchBuildingDef[];
+  /**
+   * Union of terrain-improvement keys (slugs) placed anywhere in the empire —
+   * gate for tech's optional "wymagane ulepszenie" field. Optional: when absent
+   * the improvement gate is treated as met (backward compatible).
+   */
+  empireImprovementKeys?: ReadonlySet<string> | readonly string[];
 }
 
 function empireBuiltSet(gate: ResearchBuildingGate): Set<string> {
@@ -166,6 +184,58 @@ export function buildingGateMet(
   const reqId = resolveRequiredBuildingId(trimmed, gate.buildings);
   if (!reqId) return true;
   return empireBuiltSet(gate).has(reqId);
+}
+
+/**
+ * Normalizuje etykietę ulepszenia (np. "Tartak", "Kopalnia miedzi") do slugu
+ * zgodnego z kluczami ulepszeń imperium (lowercase, bez diakrytyków, spacje→'_').
+ * "Tartak" → "tartak"; "Kopalnia miedzi" → "kopalnia_miedzi".
+ */
+const PL_DIACRITICS: Readonly<Record<string, string>> = {
+  'ą': 'a', 'ć': 'c', 'ę': 'e', 'ł': 'l', 'ń': 'n',
+  'ó': 'o', 'ś': 's', 'ź': 'z', 'ż': 'z',
+};
+
+export function slugifyImprovementLabel(label: string): string {
+  return label
+    .trim()
+    .toLowerCase()
+    .replace(/[ąćęłńóśźż]/g, (c) => PL_DIACRITICS[c] ?? c)
+    .replace(/[^a-z0-9]+/g, '_')
+    .replace(/^_+|_+$/g, '');
+}
+
+function empireImprovementSet(gate: ResearchBuildingGate): Set<string> {
+  const src = gate.empireImprovementKeys;
+  if (!src) return new Set<string>();
+  return src instanceof Set ? src : new Set(src as readonly string[]);
+}
+
+/**
+ * True when empire owns the terrain improvement required by tech.
+ * No "wymagane ulepszenie" field (or empty) → gate met (backward compatible).
+ * Otherwise the tech's improvement label is slugified and compared to the set
+ * of improvement keys placed in the empire (gate.empireImprovementKeys).
+ */
+export function improvementGateMet(
+  tech: ResearchTechDef,
+  gate: ResearchBuildingGate,
+): boolean {
+  const label = tech['wymagane ulepszenie'];
+  if (label == null) return true;
+  const trimmed = String(label).trim();
+  if (!trimmed || BRAK_PREREQ.has(trimmed.toLowerCase())) return true;
+  const wanted = slugifyImprovementLabel(trimmed);
+  if (!wanted) return true;
+  return empireImprovementSet(gate).has(wanted);
+}
+
+/** True when BOTH the building gate and the improvement gate are satisfied. */
+export function researchGatesMet(
+  tech: ResearchTechDef,
+  gate: ResearchBuildingGate,
+): boolean {
+  return buildingGateMet(tech, gate) && improvementGateMet(tech, gate);
 }
 
 /** Cost-fallback base (used only when "Koszt nauki" is missing). */
@@ -273,7 +343,7 @@ export function availableTechs(
     if (done.has(tech.Technologia)) continue;
     const prereqs = prerequisitesOf(tech);
     if (!prereqs.every((p) => done.has(p))) continue;
-    if (gate && !buildingGateMet(tech, gate)) continue;
+    if (gate && !researchGatesMet(tech, gate)) continue;
     result.push(tech.Technologia);
   }
   return result;
@@ -291,7 +361,7 @@ export function canResearch(
   if (!tech) return false;
   const done = new Set(state.ukonczone);
   if (!prerequisitesOf(tech).every((p) => done.has(p))) return false;
-  if (gate && !buildingGateMet(tech, gate)) return false;
+  if (gate && !researchGatesMet(tech, gate)) return false;
   return true;
 }
 

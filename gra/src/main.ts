@@ -1173,10 +1173,24 @@ async function boot(): Promise<void> {
       return ids;
     }
 
+    /**
+     * Union kluczy ulepszeń terenu imperium — bramka „wymagane ulepszenie" (np. Żegluga→Tartak).
+     * placedImprovements nie jest per-owner (jak w braz-access.empireHasKopalniaMiedzi);
+     * dla bramki badań (owner 0 = gracz) zbieramy wszystkie klucze ulepszeń na mapie.
+     */
+    function empireImprovementKeysForOwner(_ownerId: number): Set<string> {
+      const keys = new Set<string>();
+      for (const layers of placedImprovements.values()) {
+        for (const k of layers) keys.add(k);
+      }
+      return keys;
+    }
+
     function researchGateForOwner(ownerId: number): EmpireResearchGate {
       return {
         empireBuiltIds: empireBuiltIdsForOwner(ownerId),
         buildings: data.buildings,
+        empireImprovementKeys: empireImprovementKeysForOwner(ownerId),
       };
     }
 

@@ -59,7 +59,7 @@ function ok(cond, msg) {
   else { fail++; console.error('FAIL:', msg); }
 }
 
-ok(techs.length === 31, '31 technologii w tech.json');
+ok(techs.length === 32, '32 technologii w tech.json (E3a: +Astronomia)');
 ok(TT.readTechTreeModel(techRoot) === TT.TECH_TREE_MODEL_LINEAR, 'drzewko_model liniowe');
 ok(techRoot.drzewko_model === 'liniowe', 'tech.json drzewko_model pole');
 

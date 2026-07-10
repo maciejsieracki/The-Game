@@ -45,20 +45,26 @@ import type { BuildingCostPace } from './building-cost-tempo';
 import type { KosztJednostekPace } from './unit-cost-tempo';
 import type { WzrostLudnosciPace } from './population-growth-tempo';
 import { scaledResearchCost, type GameDifficulty } from './difficulty-cost';
-import { buildingGateMet, type ResearchBuildingGate } from './research';
+import { researchGatesMet, type ResearchBuildingGate } from './research';
 
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
 
-/** Empire-wide building ids for research gate (T-TECH-7). */
+/** Empire-wide building + improvement ids for research gate (T-TECH-7). */
 export interface EmpireResearchGate {
   empireBuiltIds: ReadonlySet<string>;
   buildings: readonly BuildingDef[];
+  /** Slugi ulepszeń terenu postawionych w imperium (bramka „wymagane ulepszenie"). */
+  empireImprovementKeys?: ReadonlySet<string>;
 }
 
 function asResearchGate(g: EmpireResearchGate): ResearchBuildingGate {
-  return { empireBuiltIds: g.empireBuiltIds, buildings: g.buildings };
+  return {
+    empireBuiltIds: g.empireBuiltIds,
+    buildings: g.buildings,
+    empireImprovementKeys: g.empireImprovementKeys,
+  };
 }
 
 /** Sentinel meaning "no prerequisite" in tech.json's "Wymaga (prereq)" field. */
@@ -175,7 +181,7 @@ export function availableTechs(
     const id = techId(t);
     if (id === '' || researched.has(id)) return false;
     if (!prereqsMet(t, researched)) return false;
-    if (gate && !buildingGateMet(t, asResearchGate(gate))) return false;
+    if (gate && !researchGatesMet(t, asResearchGate(gate))) return false;
     return true;
   });
 }
@@ -201,11 +207,23 @@ export function cheapestAvailable(
   return best ? techId(best) : null;
 }
 
-/** True when finishing this tech should advance to the next era. */
+/**
+ * Docelowy numer epoki nadawany po ukończeniu techu (jawne pole `awansDoEpoki`),
+ * lub null gdy tech nie awansuje epoki.
+ *
+ * DRZEWKO-TECH-FIX faza 1: porzucamy heurystykę regex /epok/i na Uwagach
+ * (fałszywie łapała Walutę i Sztukę wojenną, które kończą epokę OPISOWO, ale nie
+ * powinny jej awansować w v0.1). Jawne pole ustawiono tylko na kamieniach milowych:
+ * Brązownictwo→2, Obróbka żelaza→3.
+ */
+export function eraAdvanceTarget(t: TechDef): number | null {
+  const raw = t.awansDoEpoki;
+  return typeof raw === 'number' && Number.isFinite(raw) ? raw : null;
+}
+
+/** True when finishing this tech should advance the era (has explicit awansDoEpoki). */
 export function isEraAdvanceTech(t: TechDef): boolean {
-  const notes = `${t.Uwagi ?? ''} ${t['Odblokowuje budynek'] ?? ''}`;
-  // "konczy Epoke 1", "-> Epoka 2", etc. — match the "Epok" stem (any case).
-  return /epok/i.test(notes);
+  return eraAdvanceTarget(t) !== null;
 }
 
 /** True when this tech grants money / the Pieniadz (x10) economy. */
@@ -278,7 +296,7 @@ export function researchStep(
     const def = byId.get(id);
     if (!def || state.zbadane.has(id)) return false;
     if (!prereqsMet(def, state.zbadane)) return false;
-    if (gate && !buildingGateMet(def, asResearchGate(gate))) return false;
+    if (gate && !researchGatesMet(def, asResearchGate(gate))) return false;
     return true;
   };
 
@@ -310,16 +328,18 @@ export function researchStep(
     );
     if (state.nauka < cost) break; // can't finish the current tech yet
 
-    // T-TECH-7: nie badaj tech wymagajacej budynku bez bramki (jesli gate podany).
-    if (gate && !buildingGateMet(def, asResearchGate(gate))) break;
+    // T-TECH-7: nie badaj tech wymagajacej budynku/ulepszenia bez bramki (jesli gate podany).
+    if (gate && !researchGatesMet(def, asResearchGate(gate))) break;
 
     // --- complete the tech ---
     state.nauka -= cost;
     state.zbadane.add(state.badana);
 
-    const awans = isEraAdvanceTech(def);
+    const awansTarget = eraAdvanceTarget(def);
+    const awans = awansTarget !== null;
     const money = isMoneyTech(def);
-    if (awans) state.era += 1;
+    // Jawny awans epoki: ustaw epokę na max(bieżąca, docelowa) — bez podwójnego +1.
+    if (awansTarget !== null) state.era = Math.max(state.era, awansTarget);
     if (money) state.pieniadzMnoznik = PIENIADZ_MNOZNIK;
 
     completed.push({
@@ -380,8 +400,8 @@ export function setPlayerResearchTarget(
   if (state.zbadane.has(techId)) return false;
   // All prereqs must be met.
   if (!prereqsMet(def, state.zbadane)) return false;
-  // Building gate (T-TECH-7).
-  if (gate && !buildingGateMet(def, asResearchGate(gate))) return false;
+  // Building + improvement gate (T-TECH-7).
+  if (gate && !researchGatesMet(def, asResearchGate(gate))) return false;
   state.playerResearchTargetId = techId;
   return true;
 }

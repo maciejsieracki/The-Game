@@ -596,6 +596,41 @@
     "techUnlock": "Pismo"
   },
   {
+    "id": "obserwatorium",
+    "nazwa": "Obserwatorium",
+    "kategoria": "Nauka",
+    "epokaWejscia": 2,
+    "maksPoziom": 10,
+    "nazwyPoziomow": [],
+    "baza": {
+      "praca": 0,
+      "pieniadz": 0,
+      "zywnosc": 0,
+      "nauka": 4,
+      "kultura": 1,
+      "zadowolenie": 0,
+      "obrona": 0,
+      "mnoznik": 0
+    },
+    "przyrost": {
+      "praca": 0,
+      "pieniadz": 0,
+      "zywnosc": 0,
+      "nauka": 2,
+      "kultura": 0,
+      "zadowolenie": 0,
+      "obrona": 0,
+      "mnoznik": 0
+    },
+    "kosztBudowy": 30,
+    "przyrostKosztu": 10,
+    "utrzymanie": 1,
+    "przyrostUtrzymania": 1,
+    "wymagania": "",
+    "uwagi": "3a: Astronomia — +nauka (obserwacje nieba); wzorzec na Bibliotece",
+    "techUnlock": "Astronomia"
+  },
+  {
     "id": "studnia",
     "nazwa": "Studnia",
     "kategoria": "Zdrowie",
@@ -1174,6 +1209,41 @@
     "wymagania": "",
     "uwagi": "Centrum administracji prowincji; bonus do utrzymania porzadku (garnizon); mnoznik % do przychodu podatkowego",
     "techUnlock": "Kodeks prawa"
+  },
+  {
+    "id": "trybunal",
+    "nazwa": "Trybunał",
+    "kategoria": "Administracja",
+    "epokaWejscia": 2,
+    "maksPoziom": 10,
+    "nazwyPoziomow": [],
+    "baza": {
+      "praca": 0,
+      "pieniadz": 1,
+      "zywnosc": 0,
+      "nauka": 0,
+      "kultura": 0,
+      "zadowolenie": 1,
+      "obrona": 0,
+      "mnoznik": 0
+    },
+    "przyrost": {
+      "praca": 0,
+      "pieniadz": 1,
+      "zywnosc": 0,
+      "nauka": 0,
+      "kultura": 0,
+      "zadowolenie": 1,
+      "obrona": 0,
+      "mnoznik": 0
+    },
+    "kosztBudowy": 30,
+    "przyrostKosztu": 10,
+    "utrzymanie": 1,
+    "przyrostUtrzymania": 1,
+    "wymagania": "",
+    "uwagi": "3a: wczesna administracja — +porzadek, anty-korupcja; slabszy niz Sad/Pretorium (Kodeks prawa)",
+    "techUnlock": "Prawo (Kodeks)"
   },
   {
     "id": "laznia_publiczna",

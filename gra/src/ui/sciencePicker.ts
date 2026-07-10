@@ -28,6 +28,8 @@ interface RawTech {
   'Epoka': string;
   'Poziom': number;
   'Wymaga (prereq)': string;
+  'wymagany budynek'?: string | null;
+  'wymagane ulepszenie'?: string | null;
   'Odblokowuje budynek': string | null;
   'Odblokowuje surowiec.': string | null;
   'Odblokowuje ulepszenie terenu'?: string | null;
@@ -108,6 +110,8 @@ interface TechNode {
   poziom: number;
   prereqRaw: string;
   prereqIds: string[];
+  wymaganyBudynek: string;
+  wymaganeUlepszenie: string;
   odblokujeBudynek: string;
   odblokujeSurowiec: string;
   odblokujeUlepszenie: string;
@@ -134,6 +138,8 @@ function buildNodes(): Map<string, TechNode> {
       poziom: r['Poziom'],
       prereqRaw: r['Wymaga (prereq)'],
       prereqIds: [],
+      wymaganyBudynek: (r['wymagany budynek'] ?? '').trim(),
+      wymaganeUlepszenie: (r['wymagane ulepszenie'] ?? '').trim(),
       odblokujeBudynek: r['Odblokowuje budynek'] ?? '',
       odblokujeSurowiec: r['Odblokowuje surowiec.'] ?? '',
       odblokujeUlepszenie: resolveTerrainUnlockLabel(r['Technologia'], r['Odblokowuje ulepszenie terenu']),
@@ -867,6 +873,14 @@ function buildTooltipHTML(node: TechNode, status: NodeStatus): string {
     const prereqNames = node.prereqIds.map(pid => TECH_MAP.get(pid)?.nazwa ?? pid);
     h += `<div class="tt-section" style="margin-top:6px;color:#907030;font-size:0.68em;text-transform:uppercase">Wymaga:</div>`;
     h += `<ul class="tt-items">${prereqNames.map(n => `<li>${esc(n)}</li>`).join('')}</ul>`;
+  }
+  // Warunek odblokowania badania: budynek w mieście i/lub ulepszenie na mapie.
+  if (node.wymaganyBudynek || node.wymaganeUlepszenie) {
+    const reqs: string[] = [];
+    if (node.wymaganyBudynek) reqs.push('🏛 budynek: ' + esc(node.wymaganyBudynek));
+    if (node.wymaganeUlepszenie) reqs.push('🌾 ulepszenie: ' + esc(node.wymaganeUlepszenie));
+    h += `<div class="tt-section" style="margin-top:6px;color:#c08830;font-size:0.68em;text-transform:uppercase">Warunek badania:</div>`;
+    h += `<ul class="tt-items">${reqs.map(rq => `<li>${rq}</li>`).join('')}</ul>`;
   }
   if (node.odblokujeBudynek) {
     h += `<div class="tt-section" style="margin-top:6px;color:#907030;font-size:0.68em;text-transform:uppercase">Odblokowuje budynki:</div>`;

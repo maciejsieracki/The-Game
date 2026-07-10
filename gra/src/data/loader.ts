@@ -131,6 +131,10 @@ export interface TechDef {
   'Odblokowuje budynek': string | null;
   'Koszt nauki': number | null;
   Uwagi: string | null;
+  /** Ulepszenie terenu wymagane w imperium przed badaniem (np. Żegluga→Tartak). */
+  'wymagane ulepszenie'?: string | null;
+  /** Jawny awans epoki po ukończeniu (Brązownictwo→2, Obróbka żelaza→3); brak = bez awansu. */
+  awansDoEpoki?: number | null;
 }
 
 /** Jeden bonus cywilizacji (z tablicy bonusy[] w civs.json). */
