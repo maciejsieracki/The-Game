@@ -240,7 +240,7 @@
     "teren": "dowolny ląd w terytorium",
     "warunek": "+100% Obrony jednostkom obozującym na polu fortu (bez plonów); rozszerza zasięg terytorium o promień 10 pól",
     "koszt_praca": 25,
-    "tech": "Wojskowosc",
+    "tech": "Wojskowość",
     "odblokowuje": "",
     "uwagi": "ABC-10 Maciej 2026-07-04: Fort (mapa) ≠ Cytadela (miasto). Żelazo ep.3; zasięg 10; +100% Obrona obozowanie"
   },

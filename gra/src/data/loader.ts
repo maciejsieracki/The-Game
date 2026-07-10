@@ -109,6 +109,14 @@ export interface BuildingDef {
   upgradeFrom?: string;
   /** true = ukryty z listy produkcji (merge w inny budynek). */
   suppressed?: boolean;
+  /**
+   * Bramka poziomu po technologii: mapa poziom (jako string, 1-based, zgodny z
+   * indeksem+1 w nazwyPoziomow) -> nazwa wymaganej technologii. Budynek nie moze
+   * awansowac na dany poziom (ani wyzej) dopoki ta technologia nie zostanie
+   * odkryta — patrz buildingLevelForEpoch() w game/production.ts.
+   * Przyklad (Biblioteka): { "6": "Astronomia" } = poziom 6 "Obserwatorium".
+   */
+  poziomTechGate?: Record<string, string>;
 }
 
 /** Wiersz z arkusza Surowce.xlsx. */
@@ -133,7 +141,7 @@ export interface TechDef {
   Uwagi: string | null;
   /** Ulepszenie terenu wymagane w imperium przed badaniem (np. Żegluga→Tartak). */
   'wymagane ulepszenie'?: string | null;
-  /** Jawny awans epoki po ukończeniu (Brązownictwo→2, Obróbka żelaza→3); brak = bez awansu. */
+  /** Jawny awans epoki po ukończeniu (Brązownictwo→2, Hutnictwo żelaza→3); brak = bez awansu. */
   awansDoEpoki?: number | null;
 }
 

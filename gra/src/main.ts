@@ -345,6 +345,8 @@ import { BattleScene } from './battle/battleScene';
 import { buildTestArmies, ensureSiegeMachines as ensureSiegeMachinesPreset } from './battle/testBattle';
 import type { PresetName } from './battle/testBattle';
 import type { BattleResult, BattleUnit, BattleOpts } from './battle/battleScene';
+import { startMusic, stopMusic, setMood, setEra, setMusicVolume, getMood } from './audio/muzyka-antyczna';
+import { loadMusicPrefs, saveMusicPrefs } from './audio/musicPrefs';
 import { resolveCombat, combatUnitFromDef, terrainDefenseMultiplier } from './game/combat';
 import type { CombatUnit, TerrainEntry } from './game/combat';
 import terrainCombatData from '../data/terrain-combat.json';
@@ -3499,6 +3501,22 @@ async function boot(): Promise<void> {
     const player: PlayerState = createPlayerState();
     overlayDepositEra = player.era;
     fillAiOwnerCivMap(_menuCivId, _gameSeed);
+
+    // --- Muzyka proceduralna (DYSPOZYCJA-MUZYKA.md §2) ------------------------
+    // AudioContext jest leniwy — startMusic() wolno wołać TYLKO po geście
+    // użytkownika (nowa gra / wczytaj / playtest-skrót), NIGDY na load strony.
+    // Wczytanie preferencji + setMusicVolume() są bezpieczne przed startem
+    // (nie tworzą AudioContext — patrz audio/muzyka-antyczna.ts).
+    const _musicPrefsAtBoot = loadMusicPrefs();
+    let musicEnabled = _musicPrefsAtBoot.enabled;
+    let musicVolumeState = _musicPrefsAtBoot.volume;
+    setMusicVolume(musicVolumeState);
+
+    /** Startuje muzykę tła po geście startowym gry, jeśli gracz jej nie wyłączył (setEra zawsze). */
+    function startGameMusic(mood: 'mapa' | 'bitwa' = 'mapa'): void {
+      setEra(player.era);
+      if (musicEnabled) startMusic(mood);
+    }
     // P3a: Last-turn totals for HUD display (Praca, Kultura from economy; Porzadek from order)
     /** Pula Pracy gracza (suma doPuli z miast — plaster D2=A). */
     let playerPracaPool: number = 0;
@@ -3547,6 +3565,24 @@ async function boot(): Promise<void> {
         for (const sid of anim.movingStackIds) display.visibleIds.add(sid);
       } else if (forceVisibleUnitId) {
         display.visibleIds.add(forceVisibleUnitId);
+      }
+      // MAP-Q1: czaszka głodu — per-państwo (wszystkie jednostki właściciela,
+      // gdy jego państwo głoduje wg isArmyStarving()).
+      const unitById = new Map<string, RuntimeUnit>();
+      for (const u of src) unitById.set(u.id, u);
+      const starvingOwnerCache = new Map<number, boolean>();
+      for (const repId of display.visibleIds) {
+        const rep = unitById.get(repId);
+        if (!rep) continue;
+        let starving = starvingOwnerCache.get(rep.ownerId);
+        if (starving === undefined) {
+          starving = isArmyStarving(rep.ownerId);
+          starvingOwnerCache.set(rep.ownerId, starving);
+        }
+        if (starving) {
+          if (!display.starvingRepIds) display.starvingRepIds = new Set();
+          display.starvingRepIds.add(repId);
+        }
       }
       unitRenderer.setForceVisibleUnitId(forceVisibleUnitId);
       unitRenderer.setCityHexKeys(new Set(cities.map(c => keyOf(c.q, c.r))));
@@ -6620,6 +6656,18 @@ async function boot(): Promise<void> {
         });
       },
       onMainMenu: () => { resetStuckInteractiveState(); openStartupMainMenu(); },
+      getMusicEnabled: () => musicEnabled,
+      getMusicVolume: () => musicVolumeState,
+      onMusicToggle: (enabled) => {
+        musicEnabled = enabled;
+        saveMusicPrefs({ enabled: musicEnabled, volume: musicVolumeState });
+        if (enabled) startMusic(getMood()); else stopMusic();
+      },
+      onMusicVolumeChange: (v) => {
+        musicVolumeState = v;
+        saveMusicPrefs({ enabled: musicEnabled, volume: musicVolumeState });
+        setMusicVolume(v);
+      },
     });
 
     function mountD1bHud(): void {
@@ -8457,6 +8505,7 @@ async function boot(): Promise<void> {
           const defLead = defRosterRef[0]!;
           const atkBus = rosterToBattleUnits(atkRosterRef, 0xffd54a);
           const defBus = rosterToBattleUnits(defRosterRef, 0xc84040);
+          setMood('bitwa');
           const bs = new BattleScene({
             attacker: atkBus,
             defender: defBus,
@@ -8470,6 +8519,7 @@ async function boot(): Promise<void> {
             defenderCivLabel: pbInfo4.obronca.cywilizacja,
             attackerSideLabel: pbInfo4.atakujacy.nazwa,
             defenderSideLabel: pbInfo4.obronca.nazwa,
+            onCancel: () => setMood('mapa'),
           });
           bs.play((res) => {
             applyMapBattleOutcomeWithSummary(
@@ -8481,6 +8531,7 @@ async function boot(): Promise<void> {
               },
               mapBattleSummaryMeta('manual'),
               () => {
+                setMood('mapa');
                 finishMapBattleUi();
                 bs.dispose();
               },
@@ -8744,6 +8795,7 @@ async function boot(): Promise<void> {
           hidePreBattle();
           const atkBus = rosterToBattleUnits(atkRosterRef, 0xc84040);
           const defBus = rosterToBattleUnits(defRosterRef, 0xffd54a);
+          setMood('bitwa');
           const bs = new BattleScene({
             attacker: atkBus,
             defender: defBus,
@@ -8757,6 +8809,7 @@ async function boot(): Promise<void> {
             defenderCivLabel: pbInfo.obronca.cywilizacja,
             attackerSideLabel: pbInfo.atakujacy.nazwa,
             defenderSideLabel: pbInfo.obronca.nazwa,
+            onCancel: () => setMood('mapa'),
           });
           bs.play((res) => {
             applyMapBattleOutcomeWithSummary(
@@ -8771,6 +8824,7 @@ async function boot(): Promise<void> {
               },
               mapBattleSummaryMeta('manual'),
               () => {
+                setMood('mapa');
                 finishIncomingBattleUi();
                 bs.dispose();
               },
@@ -9310,6 +9364,7 @@ async function boot(): Promise<void> {
         onAuto: () => { hidePreBattle(); doSiegeAutoResolve(); },
         onBattlefield: () => {
           hidePreBattle();
+          setMood('bitwa');
           const bs = new BattleScene({
             attacker: rosterToBattleUnits(atkRosterRef, 0xffd54a),
             defender: rosterToBattleUnits(defRosterRef, 0xc84040),
@@ -9320,12 +9375,14 @@ async function boot(): Promise<void> {
             siege: { defCiv: ikonaIdToBronzeCiv(defCivId) },
             attackerCivBonusy: civBonusyForOwnerId(atkRosterRef[0]?.ownerId ?? 0),
             defenderCivBonusy: civBonusyForOwnerId(defRosterRef[0]?.ownerId ?? 0),
+            onCancel: () => setMood('mapa'),
           });
           bs.play((res) => {
             finishSiegeStormBattle(city, atkRosterRef, defRosterRef, res, {
               atkStart: atkStartSnap,
               summary: siegeSummaryMeta('manual'),
               afterSummary: () => {
+                setMood('mapa');
                 clearBattleUiState();
                 bs.dispose();
               },
@@ -9400,13 +9457,20 @@ async function boot(): Promise<void> {
         defenderCivLabel: 'Grecja',
         attackerCivBonusy: civBonusyForOwnerId(0),
         defenderCivBonusy: civBonusyForOwnerId(1),
+        onCancel: () => setMood('mapa'),
       };
       if (siege) bOpts.siege = { defCiv: 'grecja' };
+      // Ten preset to jednocześnie pierwszy gest gracza w tym trybie playtest
+      // (patrz doStartPlaytestWalkaMapy: gałąź bitwaDuza/oblezDuze returnuje
+      // przed startGameMusic) — więc epoka + muzyka startują tu wprost w 'bitwa'.
+      setEra(player.era);
+      if (musicEnabled) startMusic('bitwa');
       const bs = new BattleScene(bOpts);
       bs.play((res) => {
         const wl = res.winner === 'atakujacy' ? 'Rzym (atak)'
                  : res.winner === 'obronca'  ? 'Grecja (obrona)' : 'Remis';
         showHintMessage('Duża bitwa — wynik: <b>' + wl + '</b>', 6000);
+        setMood('mapa');
         bs.dispose();
       });
     }
@@ -9587,6 +9651,7 @@ async function boot(): Promise<void> {
           }
         },
         onBattlefield: () => {
+          setMood('bitwa');
           const bs = new BattleScene({
             attacker: attackerUnits,
             defender: defenderUnits,
@@ -9595,11 +9660,13 @@ async function boot(): Promise<void> {
             deploy: true,
             attackerCivBonusy: civBonusyForOwnerId(0),
             defenderCivBonusy: civBonusyForOwnerId(1),
+            onCancel: () => setMood('mapa'),
           });
           bs.play((res) => {
             const winnerLabel =
               res.winner === 'atakujacy' ? pbInfo.atakujacy.nazwa : pbInfo.obronca.nazwa;
             showHintMessage('Bitwa: <b>' + winnerLabel + '</b> wygrywa', 4000);
+            setMood('mapa');
             bs.dispose();
           });
         },
@@ -10133,6 +10200,7 @@ async function boot(): Promise<void> {
               if (step.completed.some(d => d.awansEpoki)) {
                 overlayDepositEra = player.era;
                 rebuildResourceOverlays();
+                setEra(player.era); // DYSPOZYCJA-MUZYKA §2 pkt 3 — awans epoki gracza (toast „nowa epoka")
               }
               console.log(
                 '[Nauka] Skarbiec=' + player.skarbiec +
@@ -10223,7 +10291,7 @@ async function boot(): Promise<void> {
               for (const bid of builtIds) {
                 const bdef = data.buildings.find(b => b.id === bid);
                 if (bdef && typeof bdef.baza.zadowolenie === 'number') {
-                  const lvl = buildingLevelForEpoch(bdef.epokaWejscia, player.era, bdef.maksPoziom);
+                  const lvl = buildingLevelForEpoch(bdef.epokaWejscia, player.era, bdef.maksPoziom, bdef.poziomTechGate, player.zbadane);
                   haBuildings += buildingEffectAtLevel(bdef.baza.zadowolenie, lvl);
                 }
               }
@@ -11727,6 +11795,7 @@ async function boot(): Promise<void> {
       syncBasketResearchFromEngine();
       console.log('[NewGame] Mapa: ' + map.szerokoscQ + 'x' + map.wysokoscR + ' seed=' + newSeed + ' typ=' + _menuTypSwiata + ' rywale=' + _menuCityStates + ' typy=' + _menuCivTypesCount);
       beginOnboardingFoundCity();
+      startGameMusic('mapa');
       startRenderLoop();
     }
 
@@ -11982,6 +12051,7 @@ async function boot(): Promise<void> {
         ' miast=' + cities.length +
         ' wrogie=' + (enemyCity?.name ?? '?') + ' ownerId=' + (enemyCity?.ownerId ?? '?'),
       );
+      startGameMusic('mapa');
       startRenderLoop();
     }
 
@@ -12162,6 +12232,7 @@ async function boot(): Promise<void> {
         ' miasto=' + (playerCity?.name ?? '?') +
         ' pop=' + (playerCity?.population ?? 0),
       );
+      startGameMusic('mapa');
       startRenderLoop();
     }
 
@@ -12360,6 +12431,7 @@ async function boot(): Promise<void> {
         ' jednostek=' + units.length +
         ' praca=' + _lastPraca,
       );
+      startGameMusic('mapa');
       startRenderLoop();
     }
 
@@ -12446,6 +12518,7 @@ async function boot(): Promise<void> {
         refreshFog();
         initDiplomaticContactSnapshot();
         updateHud();
+        startGameMusic('mapa');
         startRenderLoop();
         const label = (saved.meta?.label as string) || slotId;
         showHintMessage(

@@ -220,6 +220,18 @@ interface RiverEntry {
   hexKeys:   Set<string>;
   /** Scalona geometria wielu odcinków — uproszczone reguły fog. */
   merged?: boolean;
+  /**
+   * Klucz heksa per PUNKT wejściowy wstęgi (tylko rzeki jednowstęgowe, gałąź `sharp`).
+   * Punkt i → wierzchołki 2i, 2i+1; quad j łączy punkty j..j+1 (wierzchołki 2j..2j+3).
+   * Pozwala na mgłę PER-HEKS: chowamy tylko quady dotykające czerni (indeks), reszta wstęgi
+   * zostaje. Brak (delty scalone) → fog per całą wstęgę.
+   */
+  pointHex?: string[];
+  /** PERF: hash stanu mgły (odkryte/ciemne per punkt) z ostatniej przebudowy — pomija `setIndex`,
+   *  gdy mgła tej rzeki się nie zmieniła (np. przy samym zoomie). Bez re-uploadu GPU bez potrzeby. */
+  lastFogSig?: number;
+  /** Czy po ostatniej przebudowie indeksu został choć jeden widoczny quad (dla flagi visible/LOD). */
+  hasVisibleQuads?: boolean;
 }
 
 /** Kolejka geometrii rzek przed merge do jednego mesha per materiał (BATCH 3 / A1b). */
@@ -239,7 +251,9 @@ export interface SceneResult {
   dispose:  () => void;
   /**
    * Przelicza kolory prizmów terenu według stanu mgły wojennej,
-   * oraz ukrywa/przywraca nakładki (las, śnieg, krzewy, oazy, rzeki).
+   * oraz ukrywa/przywraca nakładki (las, śnieg, krzewy, oazy).
+   * Rzeki są WYJĄTKIEM (Właściciel 2026-07-10): renderują się zawsze pełnym kolorem,
+   * niezależnie od stanu mgły — patrz pętla `riverEntries` w `applyZoomLodDecor`.
    * @param visible  Zbiór kluczy "q,r" aktualnie widocznych hexów.
    * @param explored Zbiór kluczy "q,r" odkrytych, lecz nie widocznych hexów.
    *
@@ -271,7 +285,7 @@ export interface SceneResult {
 
 function buildRibbonGeometry(
   points: THREE.Vector3[],
-  halfWidth: number,
+  halfWidth: number | number[],
   segmentsPerSpan: number,
   sharp = false,
 ): THREE.BufferGeometry {
@@ -284,10 +298,17 @@ function buildRibbonGeometry(
   let vertexCount = 0;
   let uAccum = 0;
 
-  const emitCrossSection = (pt: THREE.Vector3, tFlat: THREE.Vector3, u: number): void => {
+  // Grubość wg rzędu cieku (Właściciel 2026-07-10, zad. 4): `halfWidth` może być tablicą — jedna
+  // wartość per punkt wejściowy (1:1 w gałęzi `sharp`, jedyna aktualnie używana przez rzeki).
+  const scalarHalfWidth = Array.isArray(halfWidth) ? (halfWidth[0] ?? 0) : halfWidth;
+  const hwAt = (i: number): number => Array.isArray(halfWidth)
+    ? (halfWidth[i] ?? halfWidth[halfWidth.length - 1] ?? scalarHalfWidth)
+    : halfWidth;
+
+  const emitCrossSection = (pt: THREE.Vector3, tFlat: THREE.Vector3, u: number, hw: number): void => {
     const right = new THREE.Vector3(-tFlat.z, 0, tFlat.x);
-    const left  = new THREE.Vector3(pt.x - right.x * halfWidth, pt.y, pt.z - right.z * halfWidth);
-    const rightV = new THREE.Vector3(pt.x + right.x * halfWidth, pt.y, pt.z + right.z * halfWidth);
+    const left  = new THREE.Vector3(pt.x - right.x * hw, pt.y, pt.z - right.z * hw);
+    const rightV = new THREE.Vector3(pt.x + right.x * hw, pt.y, pt.z + right.z * hw);
     positions.push(left.x, left.y, left.z, rightV.x, rightV.y, rightV.z);
     normals.push(0, 1, 0, 0, 1, 0);
     uvs.push(0, u, 1, u);
@@ -314,10 +335,11 @@ function buildRibbonGeometry(
         tFlat = new THREE.Vector3(n.x - p.x, 0, n.z - p.z).normalize();
       }
       if (i > 0) uAccum += pt.distanceTo(points[i - 1]!);
-      emitCrossSection(pt, tFlat, uAccum);
+      emitCrossSection(pt, tFlat, uAccum, hwAt(i));
     }
   } else {
-    // Interpoluj ścieżkę przez CatmullRom dla gładkości (ujścia / estuary)
+    // Interpoluj ścieżkę przez CatmullRom dla gładkości (ujścia / estuary). Nie wspiera per-punktowej
+    // tablicy szerokości (resampling nie ma 1:1 z punktami wejścia) — używany zawsze ze skalarem.
     const curve = new THREE.CatmullRomCurve3(points, false, 'catmullrom', 0.5);
     const totalSeg = Math.max(20, points.length * segmentsPerSpan);
 
@@ -326,7 +348,7 @@ function buildRibbonGeometry(
       const pt = curve.getPoint(t);
       const tVec = curve.getTangent(t);
       const tFlat = new THREE.Vector3(tVec.x, 0, tVec.z).normalize();
-      emitCrossSection(pt, tFlat, t);
+      emitCrossSection(pt, tFlat, t, scalarHalfWidth);
     }
   }
 
@@ -1015,19 +1037,26 @@ function buildRiverPointsFromHexPath(
   surfaceOffset: number,
   _coastalKeys: Set<string>,
   extendToJoin = false,
-): { pts: THREE.Vector3[]; hexKeys: Set<string> } {
+  /** Zad. 4 (rząd cieku): mnożnik szerokości dla heksa (q,r) tej trasy. Brak → 1 (bez zmian). */
+  widthAtHex?: (q: number, r: number) => number,
+): { pts: THREE.Vector3[]; hexKeys: Set<string>; widths: number[]; pointHex: string[] } {
   const pts: THREE.Vector3[] = [];
+  const widths: number[] = [];
+  // Heks per PUNKT (równoległa tablica do pts) — dla mgły per-heks na wstędze. Zad. bramki dedup
+  // ta sama co pts/widths, więc pointHex[i] ↔ pts[i] ↔ wierzchołki 2i/2i+1 w buildRibbonGeometry.
+  const pointHex: string[] = [];
   const hexKeys = new Set<string>();
-  if (path.length < 2) return { pts, hexKeys };
+  if (path.length < 2) return { pts, hexKeys, widths, pointHex };
 
   // Fog: pokryj WSZYSTKIE oryginalne heksy trasy (także zwinięte przez simplify).
   for (const h of path) hexKeys.add(`${h.q},${h.r}`);
 
   const yAt = (q: number, r: number): number | null =>
     riverHexSurfaceY(map, q, r, renderStyle, riverMouthY, surfaceOffset, R);
+  const wAt = (q: number, r: number): number => widthAtHex ? widthAtHex(q, r) : 1;
 
   const rp = simplifyRiverRenderPath(path);
-  if (rp.length < 2) return { pts, hexKeys };
+  if (rp.length < 2) return { pts, hexKeys, widths, pointHex };
 
   // Inset surowego rogu obwodu ku środkowi WŁASNEGO heksa (hug wewnętrznej ścianki).
   const insetToward = (x: number, z: number, hq: number, hr: number): { x: number; z: number } => {
@@ -1036,9 +1065,15 @@ function buildRiverPointsFromHexPath(
   };
 
   // Surowa polilinia PO ŚCIANKACH — jeden punkt na przejście przez ściankę (bez domków), kanciasto.
-  const pushPt = (x: number, z: number, y: number): void => {
+  // `w` = mnożnik szerokości w tym punkcie (rząd cieku) — równoległa tablica do `pts` (ta sama
+  // dedup-brama dystansu, żeby długości pts/widths zawsze się zgadzały).
+  const pushPt = (x: number, z: number, y: number, w: number, hexKey: string): void => {
     const p = new THREE.Vector3(x, y, z);
-    if (pts.length === 0 || pts[pts.length - 1]!.distanceTo(p) > R * 0.004) pts.push(p);
+    if (pts.length === 0 || pts[pts.length - 1]!.distanceTo(p) > R * 0.004) {
+      pts.push(p);
+      widths.push(w);
+      pointHex.push(hexKey);
+    }
   };
 
   // Start: środek wspólnej krawędzi hex0|hex1, INSET ku hex1 (na wewnętrznym paśmie, nie na samej
@@ -1051,7 +1086,7 @@ function buildRiverPointsFromHexPath(
     const yb = yAt(b.q, b.r);
     if (mid0 && ya != null && yb != null) {
       const p0 = insetToward(mid0.x, mid0.z, b.q, b.r);
-      pushPt(p0.x, p0.z, (ya + yb) * 0.5);
+      pushPt(p0.x, p0.z, (ya + yb) * 0.5, wAt(b.q, b.r), `${b.q},${b.r}`);
     }
   }
 
@@ -1069,11 +1104,12 @@ function buildRiverPointsFromHexPath(
     const yc = yAt(cur.q, cur.r);
     if (yc == null) continue;
 
+    const wc = wAt(cur.q, cur.r);
     for (const corner of riverTransitCornersOnHex(
       cur.q, cur.r, prev.q, prev.r, next.q, next.r, R,
     )) {
       const pc = insetToward(corner.x, corner.z, cur.q, cur.r);
-      pushPt(pc.x, pc.z, yc);
+      pushPt(pc.x, pc.z, yc, wc, `${cur.q},${cur.r}`);
     }
   }
 
@@ -1085,11 +1121,11 @@ function buildRiverPointsFromHexPath(
     const yl = yAt(last.q, last.r);
     if (yl != null) {
       const cl = axialToWorld(last.q, last.r, R);
-      pushPt(cl.x, cl.z, yl);
+      pushPt(cl.x, cl.z, yl, wAt(last.q, last.r), `${last.q},${last.r}`);
     }
   }
 
-  return { pts, hexKeys };
+  return { pts, hexKeys, widths, pointHex };
 }
 
 /** Jedna ciągła wstęga na trasę riverPaths — rogi i środki krawędzi (NIE przez środek heksa).
@@ -1131,7 +1167,7 @@ function renderLandRiversFromPaths(
     // extendToJoin: dopływ scala się w węźle głównej rzeki; rzeka główna dochodząca do morza
     // kończy wstęgę w środku ostatniego heksa lądu = styk z łańcuchem przybrzeżnym (bez luki).
     const reachesSea = pathReachesOpenSeaRender(map, path);
-    const { pts, hexKeys } = buildRiverPointsFromHexPath(
+    const { pts, hexKeys, pointHex } = buildRiverPointsFromHexPath(
       map, landPath, R, renderStyle, riverMouthY, surfaceOffset, new Set<string>(),
       kind === 'tributary' || reachesSea,
     );
@@ -1144,7 +1180,7 @@ function renderLandRiversFromPaths(
     // sharp=true → KANCIASTA wstęga po ściankach (proste odcinki + załamania na rogach), ZERO
     // wygładzania (owner: „to nie styl Roblox" o krzywych). Punkty to już polilinia po obwodzie.
     pushRiverMesh(pathBucket, pts, hexKeys, halfWidth, 8, true);
-    flushRiverBucket(scene, pathBucket, riverEntries);
+    flushRiverBucket(scene, pathBucket, riverEntries, pointHex);
     for (const k of hexKeys) landHexKeys.add(k);
   }
   return landHexKeys;
@@ -1163,6 +1199,8 @@ function flushRiverBucket(
   scene: THREE.Scene,
   bucket: RiverGeoBucket,
   riverEntries: RiverEntry[],
+  /** Heks per punkt wstęgi (mgła per-heks). Tylko dla pojedynczej geo (jedna trasa, bez merge). */
+  pointHex?: string[],
 ): void {
   if (bucket.geos.length === 0) return;
   const merged = bucket.geos.length === 1
@@ -1181,6 +1219,8 @@ function flushRiverBucket(
     bankGeo: merged,
     hexKeys: bucket.hexKeys,
     merged: bucket.geos.length > 1,
+    // Per-heks fog tylko dla jednowstęgowej geo (merge przesuwa offsety wierzchołków → niepewne).
+    pointHex: bucket.geos.length === 1 ? pointHex : undefined,
   });
   if (bucket.geos.length > 1) {
     for (const g of bucket.geos) g.dispose();
@@ -1191,7 +1231,7 @@ function pushRiverMesh(
   bucket: RiverGeoBucket,
   pts: THREE.Vector3[],
   hexKeys: Set<string>,
-  halfWidth: number,
+  halfWidth: number | number[],
   segmentsPerSpan = 16,
   sharp = true,
 ): void {
@@ -2445,7 +2485,7 @@ export async function buildScene(
 
   // ---------------------------------------------------------------------------
   // setFog -- przelicza kolory prizmow terenu wedlug stanu mgly wojennej
-  // oraz ukrywa/przywraca nakladki (las, snieg, krzewy, oazy, rzeki)
+  // oraz ukrywa/przywraca nakladki (las, snieg, krzewy, oazy). Rzeki WYJATEK: zawsze widoczne.
   // ---------------------------------------------------------------------------
 
   // Macierz zerowa (skala 0,0,0) — ukrywa instancje InstancedMesh
@@ -2645,21 +2685,45 @@ export async function buildScene(
     oasisFrondMesh.visible = zoomFlags.coastDecorInst;
     if (zoomFlags.coastDecorInst) applyOverlayFog(oasisFrondMesh, oasisFrondHexKey, oasisFrondOrigMat);
 
+    // Właściciel 2026-07-10: rzeki NIE mają być widoczne na ciemnym (nieodkrytym) polu, ALE
+    // odkryta część rzeki MA zostać widoczna — i CAŁOŚĆ, gdy nie ma fog-of-war. Rozwiązanie:
+    // mgła PER-HEKS. Dla rzek jednowstęgowych (entry.pointHex) rysujemy tylko te quady, których
+    // OBA końce leżą na odkrytym polu — przez przebudowę INDEKSU (pozycje wierzchołków nietknięte
+    // → identyczny wygląd, 1 draw-call). Ciemne odcinki po prostu wypadają z indeksu.
+    // Delty scalone (bez pointHex) → fallback: ukryj całą wstęgę, gdy KTÓRYKOLWIEK heks w czerni.
+    // Bez mgły (hasFog=false) overlayHidden zawsze false → indeks pełny → cała rzeka widoczna.
     for (const entry of riverEntries) {
-      if (!zoomFlags.rivers) {
-        entry.waterMesh.visible = false;
-        entry.bankMesh.visible = false;
-        continue;
-      }
-      if (!anyHiddenFinal) {
-        entry.waterMesh.visible = true;
-        entry.bankMesh.visible = true;
+      const ph = entry.pointHex;
+      if (ph && ph.length >= 2) {
+        // PERF: `setIndex` (re-upload GPU) TYLKO gdy zmienił się stan mgły tej rzeki. Sygnatura =
+        // tani 32-bit hash odkryte/ciemne per punkt (same Set.has). Zoom lub setFog na niezmienionej
+        // rzece → sam hash, ZERO setIndex/alokacji. Pętla i tak nie odpala się per-klatka.
+        let sig = 0;
+        for (let k = 0; k < ph.length; k++) {
+          sig = (Math.imul(sig, 31) + (overlayHidden(ph[k]!) ? 1 : 0)) | 0;
+        }
+        if (sig !== entry.lastFogSig) {
+          entry.lastFogSig = sig;
+          const idx: number[] = [];
+          for (let j = 0; j < ph.length - 1; j++) {
+            if (overlayHidden(ph[j]!) || overlayHidden(ph[j + 1]!)) continue;
+            const b = 2 * j; // punkt j → wierzch. 2j/2j+1; quad j..j+1 = 2 trójkąty (winding jak build)
+            idx.push(b, b + 2, b + 1, b + 1, b + 2, b + 3);
+          }
+          entry.waterGeo.setIndex(idx);
+          entry.hasVisibleQuads = idx.length > 0;
+        }
+        const riverVis = zoomFlags.rivers && (entry.hasVisibleQuads ?? true);
+        entry.waterMesh.visible = riverVis;
+        entry.bankMesh.visible = riverVis;
       } else {
-        // Ukryj wstęgę, gdy choć jeden hex trasy jest w czarnej mgle (unknown).
-        const show = entry.hexKeys.size > 0
-          && !Array.from(entry.hexKeys).some(k => isHidden(k));
-        entry.waterMesh.visible = show;
-        entry.bankMesh.visible = show;
+        let allRevealed = true;
+        for (const hk of entry.hexKeys) {
+          if (overlayHidden(hk)) { allRevealed = false; break; }
+        }
+        const riverVis = zoomFlags.rivers && allRevealed;
+        entry.waterMesh.visible = riverVis;
+        entry.bankMesh.visible = riverVis;
       }
     }
 

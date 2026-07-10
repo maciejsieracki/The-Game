@@ -218,7 +218,7 @@
     "przyrostUtrzymania": 1,
     "wymagania": "upgrade Odlewni brązu",
     "uwagi": "ABC-7: suma bonusów z Odlewni brązu + żelazo; placeholder receptury",
-    "techUnlock": "Obróbka żelaza",
+    "techUnlock": "Hutnictwo żelaza",
     "upgradeFrom": "odlewnia_brazu"
   },
   {
@@ -592,43 +592,11 @@
     "utrzymanie": 1,
     "przyrostUtrzymania": 1,
     "wymagania": "",
-    "uwagi": "",
-    "techUnlock": "Pismo"
-  },
-  {
-    "id": "obserwatorium",
-    "nazwa": "Obserwatorium",
-    "kategoria": "Nauka",
-    "epokaWejscia": 2,
-    "maksPoziom": 10,
-    "nazwyPoziomow": [],
-    "baza": {
-      "praca": 0,
-      "pieniadz": 0,
-      "zywnosc": 0,
-      "nauka": 4,
-      "kultura": 1,
-      "zadowolenie": 0,
-      "obrona": 0,
-      "mnoznik": 0
-    },
-    "przyrost": {
-      "praca": 0,
-      "pieniadz": 0,
-      "zywnosc": 0,
-      "nauka": 2,
-      "kultura": 0,
-      "zadowolenie": 0,
-      "obrona": 0,
-      "mnoznik": 0
-    },
-    "kosztBudowy": 30,
-    "przyrostKosztu": 10,
-    "utrzymanie": 1,
-    "przyrostUtrzymania": 1,
-    "wymagania": "",
-    "uwagi": "3a: Astronomia — +nauka (obserwacje nieba); wzorzec na Bibliotece",
-    "techUnlock": "Astronomia"
+    "uwagi": "3a: poziom 6 (Obserwatorium) i wyzej wymaga odkrycia technologii Astronomia — patrz poziomTechGate.",
+    "techUnlock": "Pismo",
+    "poziomTechGate": {
+      "6": "Astronomia"
+    }
   },
   {
     "id": "studnia",
@@ -804,7 +772,7 @@
     "przyrostUtrzymania": 1,
     "wymagania": "",
     "uwagi": "Mnoznik % dotyczy sily i exp jednostek szkolonych w miescie",
-    "techUnlock": "Wojskowosc"
+    "techUnlock": "Wojskowość"
   },
   {
     "id": "magazyn",
@@ -956,7 +924,7 @@
     "wymagania": "zelazo w zasiegu",
     "wymaganySurowiec": "zelazo",
     "uwagi": "Mnoznik % dotyczy sily jednostek zelaznych produkowanych w miescie; wymaga dostepu do zelaza",
-    "techUnlock": "Obróbka żelaza"
+    "techUnlock": "Hutnictwo żelaza"
   },
   {
     "id": "wielka_kuznia",
@@ -992,7 +960,7 @@
     "wymagania": "upgrade Kuźni żelaza; stal w zasięgu",
     "wymaganySurowiec": "stal",
     "uwagi": "Upgrade Kuźnia żelaza → Wielka Kuźnia; suma bonusów w JSON",
-    "techUnlock": "Hutnictwo żelaza",
+    "techUnlock": "Obróbka żelaza",
     "upgradeFrom": "kuznia_zelaza"
   },
   {
@@ -1173,7 +1141,7 @@
     "przyrostUtrzymania": 1,
     "wymagania": "",
     "uwagi": "Redukuje korupcje (anty-korupcja); zwiekszony porzadek publiczny; zadowolenie z praworz.",
-    "techUnlock": "Kodeks prawa"
+    "techUnlock": "Prawo"
   },
   {
     "id": "pretorium",
@@ -1208,7 +1176,7 @@
     "przyrostUtrzymania": 1,
     "wymagania": "",
     "uwagi": "Centrum administracji prowincji; bonus do utrzymania porzadku (garnizon); mnoznik % do przychodu podatkowego",
-    "techUnlock": "Kodeks prawa"
+    "techUnlock": "Prawo"
   },
   {
     "id": "trybunal",
@@ -1243,7 +1211,7 @@
     "przyrostUtrzymania": 1,
     "wymagania": "",
     "uwagi": "3a: wczesna administracja — +porzadek, anty-korupcja; slabszy niz Sad/Pretorium (Kodeks prawa)",
-    "techUnlock": "Prawo (Kodeks)"
+    "techUnlock": "Kodeks"
   },
   {
     "id": "laznia_publiczna",

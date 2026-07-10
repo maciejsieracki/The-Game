@@ -87,12 +87,12 @@
     "Surowiec": "Żelazo",
     "Typ": "surowy",
     "Źródło / budynek": "złoże Ruda żelaza + Kuźnia żelaza",
-    "Uwagi": "model dostępu v0.1 = boolean (złoże w zasięgu + ulepszenie); odblokowuje tech Obróbka żelaza; prereq Kuźni żelaza"
+    "Uwagi": "model dostępu v0.1 = boolean (złoże w zasięgu + ulepszenie); odblokowuje tech Hutnictwo żelaza; prereq Kuźni żelaza"
   },
   {
     "Surowiec": "Stal",
     "Typ": "przetworzony",
     "Źródło / budynek": "Wielka Kuźnia (żelazo+paliwo)",
-    "Uwagi": "odblokowuje tech Hutnictwo żelaza; prereq Wielkiej Kuźni; model dostępu v0.1 = boolean"
+    "Uwagi": "odblokowuje tech Obróbka żelaza; prereq Wielkiej Kuźni; model dostępu v0.1 = boolean"
   }
 ]

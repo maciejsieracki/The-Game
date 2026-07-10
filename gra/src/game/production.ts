@@ -168,15 +168,35 @@ export const BUILDING_LEVEL_FACTOR = (miastoParams.budynek_mnoznik_poziomu?.wart
 /**
  * Building level derived from a city's epoch: 1 at the building's entry epoch,
  * +1 each subsequent epoch, capped at maksPoziom (>= 1).
+ *
+ * Optional tech gate (`poziomTechGate`, decyzja Naster — kolizja nazwy
+ * "Obserwatorium"): a building may additionally require a specific technology
+ * to be researched before it can advance to (or past) a given level. E.g. the
+ * Biblioteka's `poziomTechGate` is `{ "6": "Astronomia" }` — level 6
+ * ("Obserwatorium") stays locked until Astronomia is unlocked, regardless of
+ * how many epochs have passed. When omitted, behaviour is unchanged (pure
+ * epoch-based level).
  */
 export function buildingLevelForEpoch(
   epokaWejscia: number,
   cityEpoch: number,
   maksPoziom: number,
+  poziomTechGate?: Record<string, string> | null,
+  unlockedTechs?: ReadonlySet<string> | readonly string[] | null,
 ): number {
   const lvl = Math.floor(cityEpoch) - Math.floor(epokaWejscia) + 1;
   const cap = Number.isFinite(maksPoziom) && maksPoziom > 0 ? Math.floor(maksPoziom) : 1;
-  return Math.max(1, Math.min(cap, lvl));
+  let level = Math.max(1, Math.min(cap, lvl));
+  if (poziomTechGate) {
+    const unlocked = unlockedTechs instanceof Set ? unlockedTechs : new Set(unlockedTechs ?? []);
+    for (const [levelKey, techName] of Object.entries(poziomTechGate)) {
+      const gateLevel = Number(levelKey);
+      if (Number.isFinite(gateLevel) && level >= gateLevel && !unlocked.has(techName)) {
+        level = Math.min(level, gateLevel - 1);
+      }
+    }
+  }
+  return level;
 }
 
 /** Compound-scaled value of a building base stat at `level`: baza * 1.10^(level-1). */

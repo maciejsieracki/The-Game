@@ -214,7 +214,7 @@ export function cheapestAvailable(
  * DRZEWKO-TECH-FIX faza 1: porzucamy heurystykę regex /epok/i na Uwagach
  * (fałszywie łapała Walutę i Sztukę wojenną, które kończą epokę OPISOWO, ale nie
  * powinny jej awansować w v0.1). Jawne pole ustawiono tylko na kamieniach milowych:
- * Brązownictwo→2, Obróbka żelaza→3.
+ * Brązownictwo→2, Hutnictwo żelaza→3.
  */
 export function eraAdvanceTarget(t: TechDef): number | null {
   const raw = t.awansDoEpoki;

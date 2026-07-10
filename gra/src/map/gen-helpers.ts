@@ -1612,8 +1612,10 @@ function forceReliefTypeInCell(
       spot = [ranked[0]!.q, ranked[0]!.r];
     }
     const k = hexKey(spot[0], spot[1]);
-    hexes[k]!.terenBazowy = want === 'mountain' ? TerenBazowy.Gory : TerenBazowy.Wzgorza;
-    hexes[k]!.nakladka = Nakladka.Brak;
+    const forcedHex = hexes[k]!;
+    forcedHex.terenBazowy = want === 'mountain' ? TerenBazowy.Gory : TerenBazowy.Wzgorza;
+    forcedHex.nakladka = Nakladka.Brak;
+    delete (forcedHex as HexWithZloze).zloze;
     placed.add(k);
     changed = true;
   }
@@ -1677,8 +1679,10 @@ function capMountainOverflowInCell(
   let changed = false;
   while (mountains.length > maxMtn && mountains.length > MIN_MOUNTAINS_IRON_CELL) {
     const drop = mountains.shift()!;
-    hexes[hexKey(drop.q, drop.r)]!.terenBazowy = TerenBazowy.Wzgorza;
-    hexes[hexKey(drop.q, drop.r)]!.nakladka = Nakladka.Brak;
+    const dropHex = hexes[hexKey(drop.q, drop.r)]!;
+    dropHex.terenBazowy = TerenBazowy.Wzgorza;
+    dropHex.nakladka = Nakladka.Brak;
+    delete (dropHex as HexWithZloze).zloze;
     changed = true;
   }
   return changed;
@@ -1701,8 +1705,10 @@ function capHighlandOverflowInCell(
   let changed = false;
   while (highlands.length > maxHi && highlands.length > MIN_HIGHLANDS_COPPER_CELL) {
     const drop = highlands.shift()!;
-    hexes[hexKey(drop.q, drop.r)]!.terenBazowy = TerenBazowy.Rownina;
-    hexes[hexKey(drop.q, drop.r)]!.nakladka = Nakladka.Brak;
+    const dropHex = hexes[hexKey(drop.q, drop.r)]!;
+    dropHex.terenBazowy = TerenBazowy.Rownina;
+    dropHex.nakladka = Nakladka.Brak;
+    delete (dropHex as HexWithZloze).zloze;
     changed = true;
   }
   return changed;
@@ -2314,7 +2320,12 @@ export function applyCoastRing(hexes: Record<string, Hex>): number {
       }
     }
   }
-  for (const key of toCoast) hexes[key]!.terenBazowy = TerenBazowy.Wybrzeze;
+  for (const key of toCoast) {
+    const hex = hexes[key]!;
+    hex.terenBazowy = TerenBazowy.Wybrzeze;
+    hex.nakladka = Nakladka.Brak;
+    delete (hex as HexWithZloze).zloze;
+  }
   return toCoast.length;
 }
 
@@ -2338,7 +2349,12 @@ export function applyDoubleCoastRing(hexes: Record<string, Hex>): number {
       }
     }
   }
-  for (const key of toCoast) hexes[key]!.terenBazowy = TerenBazowy.Wybrzeze;
+  for (const key of toCoast) {
+    const hex = hexes[key]!;
+    hex.terenBazowy = TerenBazowy.Wybrzeze;
+    hex.nakladka = Nakladka.Brak;
+    delete (hex as HexWithZloze).zloze;
+  }
   return n + toCoast.length;
 }
 
@@ -2438,6 +2454,8 @@ export function sanitizeCoastHexes(hexes: Record<string, Hex>): number {
     }
     if (!touchesSea) {
       hex.terenBazowy = TerenBazowy.Laka;
+      hex.nakladka = Nakladka.Brak;
+      delete (hex as HexWithZloze).zloze;
       fixed++;
     }
   }
@@ -3524,9 +3542,27 @@ function isReliefTerrain(t: TerenBazowy): boolean {
   return t === TerenBazowy.Gory || t === TerenBazowy.Wzgorza;
 }
 
-function canRiverFlowThrough(hex: Hex | undefined, cellKey: string, sourceKey: string): boolean {
+/**
+ * Konfluencje zamiast krzyżowań (Właściciel 2026-07-10): gdy trasowanie szuka WŁASNEJ drogi
+ * (do morza / meander / dopływ-do-celu), nie wolno jej PRZEJŚĆ przez heks NALEŻĄCY DO INNEJ,
+ * już ułożonej rzeki — inaczej dwie niezależne rzeki renderują się jako dwie krzyżujące się
+ * wstęgi na tym samym heksie (każda po swoich własnych kątach wejścia/wyjścia) zamiast się
+ * złączyć w jednym punkcie. `blockExisting=true` włącza tę regułę; `allowKey` to wyjątek —
+ * zamierzony hex-cel dopływu/feedera (konkretny węzeł sieci, do którego CELOWO dołączamy —
+ * on już ma rzeka.obecna=true, to nie przypadkowe skrzyżowanie, tylko planowana konfluencja).
+ * Domyślnie (blockExisting=false) zachowanie identyczne jak wcześniej — wszystkie inne wywołania
+ * (repair/gap-fill, test sąsiedztwa celu) nie są dotknięte.
+ */
+function canRiverFlowThrough(
+  hex: Hex | undefined,
+  cellKey: string,
+  sourceKey: string,
+  blockExisting = false,
+  allowKey?: string,
+): boolean {
   if (!hex || hex.terenBazowy === TerenBazowy.Morze) return false;
   if (isReliefTerrain(hex.terenBazowy)) return cellKey === sourceKey;
+  if (blockExisting && hex.rzeka?.obecna && cellKey !== allowKey) return false;
   return true;
 }
 
@@ -3584,7 +3620,8 @@ function growRiverInlandBeforeDrainage(
       const nr = cur.r + dr;
       const nk = hexKey(nq, nr);
       if (visited.has(nk)) continue; // brak samoprzecięcia
-      if (!canRiverFlowThrough(hexes[nk], nk, srcKey)) continue; // brak morza/poza mapą (poza źródłem-reliefem)
+      // blockExisting: nie wchodź na heks innej, już ułożonej rzeki (konfluencje, nie krzyżowania).
+      if (!canRiverFlowThrough(hexes[nk], nk, srcKey, true)) continue; // brak morza/poza mapą (poza źródłem-reliefem)
       const nd = seaDist.get(nk) ?? 0;
       if (nd < RIVER_MIN_INLAND_FROM_SEA) continue;
       const od = openOceanDist.get(nk) ?? Infinity;
@@ -3646,7 +3683,8 @@ function greedyRiverDrainToSea(
       const nr = cur.r + dr;
       const nk = hexKey(nq, nr);
       if (visited.has(nk)) continue;
-      if (!canRiverFlowThrough(hexes[nk], nk, sourceKey)) continue;
+      // blockExisting: nie wchodź na heks innej, już ułożonej rzeki (konfluencje, nie krzyżowania).
+      if (!canRiverFlowThrough(hexes[nk], nk, sourceKey, true)) continue;
       const nd = seaDist.get(nk) ?? Infinity;
       if (!canRiverDrainStep(nk, nd, openOceanDist, oceanConnected, true)) continue;
       const od = openOceanDist.get(nk) ?? Infinity;
@@ -3731,7 +3769,8 @@ function aStarRiverToSea(
 
     for (const [dq, dr] of HEX_DIRECTIONS) {
       const nk = hexKey(q + dq, r + dr);
-      if (!canRiverFlowThrough(hexes[nk], nk, startK)) continue;
+      // blockExisting: nie wchodź na heks innej, już ułożonej rzeki (konfluencje, nie krzyżowania).
+      if (!canRiverFlowThrough(hexes[nk], nk, startK, true)) continue;
       const nd = seaDist.get(nk) ?? Infinity;
       if (!canRiverDrainStep(nk, nd, openOceanDist, oceanConnected, true)) continue;
       let stepCost = 1;
@@ -3778,7 +3817,8 @@ function findRiverMeanderStep(
     if (nk === tgtK || used.has(nk)) continue;
     if (sameRiverDir([dq, dr], toTarget)) continue;
     const nh = hexes[nk];
-    if (!canRiverFlowThrough(nh, nk, '')) continue;
+    // blockExisting: meander nie ma wpadać na heks innej, już ułożonej rzeki.
+    if (!canRiverFlowThrough(nh, nk, '', true)) continue;
     const nd = seaDist.get(nk);
     if (nd == null || nd > curD) continue;
     if (nd < RIVER_MIN_INLAND_FROM_SEA) continue;
@@ -4441,7 +4481,9 @@ function aStarRiverToTarget(
     const { q, r } = parseHexKey(current);
     for (const [dq, dr] of HEX_DIRECTIONS) {
       const nk = hexKey(q + dq, r + dr);
-      if (!canRiverFlowThrough(hexes[nk], nk, sourceKey)) continue;
+      // blockExisting: nie przecinaj ŻADNEJ innej, już ułożonej rzeki po drodze — jedyny
+      // dozwolony (już-oznakowany) heks to sam cel `targetK` (zamierzona konfluencja).
+      if (!canRiverFlowThrough(hexes[nk], nk, sourceKey, true, targetK)) continue;
       const tg = curG + 1;
       if (tg > maxLen) continue;
       if (tg >= (gScore.get(nk) ?? Infinity)) continue;

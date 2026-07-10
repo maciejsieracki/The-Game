@@ -1884,13 +1884,14 @@ function PH(): string {
 // Lewa kolumna — społeczeństwo (B2: Mieszkańcy, Porządek, Zdrowie)
 // ---------------------------------------------------------------------------
 
-function buildingHappinessSum(cityId: string, data: GameData, era: number): number {
+function buildingHappinessSum(cityId: string, data: GameData, era: number, ownerId: number): number {
   const builtIds = cfg.getBuiltBuildingIds?.(cityId) ?? [];
+  const techs = cfg.getUnlockedTechs?.(ownerId) ?? [];
   let sum = 0;
   for (const bid of builtIds) {
     const bdef = data.buildings.find(b => b.id === bid);
     if (bdef && typeof bdef.baza.zadowolenie === 'number') {
-      const lvl = buildingLevelForEpoch(bdef.epokaWejscia, era, bdef.maksPoziom);
+      const lvl = buildingLevelForEpoch(bdef.epokaWejscia, era, bdef.maksPoziom, bdef.poziomTechGate, techs);
       sum += buildingEffectAtLevel(bdef.baza.zadowolenie, lvl);
     }
   }
@@ -1956,7 +1957,7 @@ function computeOrderStateLocal(city: City, data: GameData): { state: OrderState
       difficulty,
       era,
       population: city.population,
-      buildingZadowolenie: buildingHappinessSum(city.id, data, era),
+      buildingZadowolenie: buildingHappinessSum(city.id, data, era, city.ownerId),
       haKult,
       haRel,
       haWealth,
@@ -5185,7 +5186,7 @@ function renderBuildList(
       const def = data.buildings.find(b => b.id === id);
       if (!def || def.maksPoziom <= 1) continue;
       if (buildingTypeQueued(id, prodState.kolejka)) continue;
-      const targetLevel = buildingLevelForEpoch(def.epokaWejscia, epoch, def.maksPoziom);
+      const targetLevel = buildingLevelForEpoch(def.epokaWejscia, epoch, def.maksPoziom, def.poziomTechGate, techs);
       if (targetLevel <= 1) continue;
       const item = buildingProductionItem(
         id,

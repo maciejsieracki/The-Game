@@ -405,8 +405,8 @@ function scoreTech(
     score += underThreat ? 90 : (earlyPhase ? 70 : 50);
   }
 
-  // Wojskowosc: unlocks Koszary (important mid-game)
-  if (tech.Technologia === 'Wojskowosc') score += underThreat ? 95 : (earlyPhase ? 35 : 75);
+  // Wojskowość: unlocks Koszary (important mid-game)
+  if (tech.Technologia === 'Wojskowosc' || tech.Technologia === 'Wojskowość') score += underThreat ? 95 : (earlyPhase ? 35 : 75);
 
   // Base: any researchable tech gets a small floor so nothing is ignored
   score += 10;

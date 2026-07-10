@@ -69,7 +69,7 @@ export interface ResearchTechDef {
   'wymagane ulepszenie'?: string | null;
   /**
    * Numer epoki nadawany po ukończeniu tego techu (jawny awans epoki).
-   * Obecny tylko na techach-kamieniach milowych (Brązownictwo→2, Obróbka żelaza→3).
+   * Obecny tylko na techach-kamieniach milowych (Brązownictwo→2, Hutnictwo żelaza→3).
    * Brak pola = ukończenie NIE zmienia epoki. Czytane przez playerState.ts.
    */
   awansDoEpoki?: number | null;

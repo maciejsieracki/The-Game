@@ -159,6 +159,19 @@ const CITY_UNIT_OFFSET     = 0.38 * HEX_R;
 const CITY_UNIT_OFFSET_ANGLE = Math.PI / 2;
 const CITY_UNIT_SCALE        = 1.22;
 
+/**
+ * MAP-Q1: parametry czaszki głodu (☠) rysowanej nad jednostkami głodującego
+ * państwa. Wartości dobrane pod oko właściciela na starcie — proste do
+ * dostrojenia w jednym miejscu:
+ *  - SCALE: rozmiar sprite'a w jednostkach świata (HEX_R=1). Token jednostki
+ *    ma wysokość ~0.58*HEX_R (AV_Y_HEAD_TOP) — 0.85 celowo większe/wyraźniejsze.
+ *  - OPACITY: półprzezroczystość, żeby jednostka pod spodem prześwitywała.
+ *  - RENDER_ORDER: wyżej niż badge stosu (10) i stary chip (11), zawsze na wierzchu.
+ */
+const STARVING_SKULL_SCALE         = 0.85;
+const STARVING_SKULL_OPACITY       = 0.30;
+const STARVING_SKULL_RENDER_ORDER  = 15;
+
 // Avatar proportions -- stocky R6 style
 const AV_LEG_W   = 0.07  * HEX_R;  // leg box width & depth
 const AV_LEG_H   = 0.20  * HEX_R;  // leg height
@@ -4693,35 +4706,43 @@ export class UnitRenderer {
         const obj = this.tokens.get(repId);
         if (!obj || !obj.visible) continue;
         const sprite = this._makeStarvingChipSprite();
-        sprite.position.set(-0.28 * HEX_R, 0.58 * HEX_R, 0.18 * HEX_R);
+        // Wyśrodkowana nad jednostką (x=0), wysoko nad głową (Y), lekko
+        // wysunięta w stronę kamery (Z), żeby nie ginęła w geometrii tokena.
+        sprite.position.set(0, 0.78 * HEX_R, 0.10 * HEX_R);
         obj.add(sprite);
         this.stackStarvingSprites.set(repId, sprite);
       }
     }
   }
 
+  /**
+   * MAP-Q1: du\u017ca, p\u00f3\u0142przezroczysta CZERWONA czaszka (U+2620) nad jednostkami
+   * nale\u017c\u0105cymi do g\u0142oduj\u0105cego pa\u0144stwa. Rysowana na przezroczystym tle (bez
+   * tarczy/obw\u00f3dki), tak by prze\u015bwitywa\u0142 token jednostki pod spodem.
+   * Skala i opacity dobrane pod oko w\u0142a\u015bciciela \u2014 \u0142atwe do dostrojenia
+   * (patrz sta\u0142e STARVING_SKULL_* poni\u017cej).
+   */
   private _makeStarvingChipSprite(): THREE.Sprite {
     const canvas = document.createElement('canvas');
-    canvas.width = 48;
-    canvas.height = 48;
+    canvas.width = 128;
+    canvas.height = 128;
     const ctx = canvas.getContext('2d')!;
-    ctx.fillStyle = 'rgba(120,20,20,0.92)';
-    ctx.beginPath();
-    ctx.arc(24, 24, 20, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.strokeStyle = '#ff9090';
-    ctx.lineWidth = 2;
-    ctx.stroke();
-    ctx.fillStyle = '#ffe0e0';
-    ctx.font = 'bold 22px Segoe UI, Arial, sans-serif';
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#e01e1e';
+    ctx.font = 'bold 104px "Segoe UI Symbol", "Segoe UI Emoji", "Segoe UI", Arial, sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText('\u2620', 24, 26);
+    ctx.fillText('\u2620', 64, 70);
     const tex = new THREE.CanvasTexture(canvas);
-    const mat = new THREE.SpriteMaterial({ map: tex, transparent: true, depthTest: false });
+    const mat = new THREE.SpriteMaterial({
+      map: tex,
+      transparent: true,
+      opacity: STARVING_SKULL_OPACITY,
+      depthTest: false,
+    });
     const sp = new THREE.Sprite(mat);
-    sp.scale.set(0.32, 0.32, 1);
-    sp.renderOrder = 11;
+    sp.scale.set(STARVING_SKULL_SCALE, STARVING_SKULL_SCALE, 1);
+    sp.renderOrder = STARVING_SKULL_RENDER_ORDER;
     return sp;
   }
 
