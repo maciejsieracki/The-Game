@@ -624,13 +624,28 @@ function chooseCityProduction(
     candidates.push({ id: 'Wojownik', score: 280 + militaryScore });
   }
 
+  // Państwa-kopie (kopia_typu_obronna): najpierw fortyfikacja + garnizon, nigdy ekspansja.
+  if (opts.defensiveCopy) {
+    const guardDC = allUnits.filter(
+      u => u.ownerId === playerId && hexDistance(u.q, u.r, city.q, city.r) <= 1,
+    );
+    if (guardDC.length === 0) {
+      // Maciej: NAJPIERW jedna jednostka obronna (garnizon) — jednostka bazowa, zawsze buduwalna;
+      // dzięki temu państwo-kopia przestaje być łatwym łupem od 1. tury.
+      candidates.push({ id: 'Wojownik', score: 340 + militaryScore });
+    }
+    if (!built.includes('Mury')) {
+      candidates.push({ id: 'Mury', score: 320 + defenseScore });
+    }
+  }
+
   if (earlyPhase) {
     // §4.1 Early phase
     if (!built.includes('Spichlerz')) {
       candidates.push({ id: 'Spichlerz', score: 250 });
     }
-    // Settler if < 3 cities
-    if (myCities.length < 3) {
+    // Settler if < 3 cities (państwa-kopie nigdy nie ekspandują)
+    if (myCities.length < 3 && !opts.defensiveCopy) {
       candidates.push({ id: 'Osadnik', score: 200 });
     }
     // Defensive unit if city is unguarded
@@ -654,7 +669,7 @@ function chooseCityProduction(
         candidates.push({ id: b, score: 140 + economyScore });
       }
     }
-    candidates.push({ id: 'Osadnik', score: 100 });
+    if (!opts.defensiveCopy) candidates.push({ id: 'Osadnik', score: 100 });
   }
 
   // §4.4 Filter out buildings already built (units can be built multiple times)
@@ -794,8 +809,17 @@ export function decideAITurn(
   data: GameData,
   opts: AITurnOpts = {},
 ): AICommand[] {
+  // Archetyp + trudność — wspólne dla ścieżki normalnej i defensywnej (kopie).
+  const archKeyRaw: string = opts.civType !== undefined
+    ? (CIV_TO_ARCH[opts.civType] ?? 'grecy')
+    : 'grecy';
+  const archKey = archKeyRaw as ArchKey;
+  const mods = readArchMods(data, archKey);
+  const difficultyLevel: 1 | 2 | 3 = opts.poziomTrudnosci ?? 2;
+  const difficultyParams = loadDifficultyParams(data, difficultyLevel);
+
   if (opts.defensiveCopy) {
-    return decideDefensiveCopyTurn(playerId, units, cities, map);
+    return decideDefensiveCopyTurn(playerId, units, cities, map, data, mods, opts, difficultyParams);
   }
 
   const commands: AICommand[] = [];
@@ -812,17 +836,7 @@ export function decideAITurn(
   const clusterConsolidationPhase = clusterTargetOwnerIds.size > 0;
   const clusterEnemyCities = enemyCities.filter(c => clusterTargetOwnerIds.has(c.ownerId));
 
-  // Archetype modifiers
-  const archKeyRaw: string = opts.civType !== undefined
-    ? (CIV_TO_ARCH[opts.civType] ?? 'grecy')
-    : 'grecy';
-  const archKey = archKeyRaw as ArchKey;
-  const mods = readArchMods(data, archKey);
-
-  // Difficulty parameters (loaded from ai-params.json)
-  const difficultyLevel: 1 | 2 | 3 = opts.poziomTrudnosci ?? 2;
-  const difficultyParams = loadDifficultyParams(data, difficultyLevel);
-
+  // (archetyp + trudność policzone na górze funkcji — wspólne dla obu ścieżek)
   const minCityDist = getAiParam(data, 'ekspansja_min_dystans_miast', 5);
 
   // -------------------------------------------------------------------------
@@ -1024,11 +1038,26 @@ function decideDefensiveCopyTurn(
   units: RuntimeUnit[],
   cities: AICity[],
   map: GameMap,
+  data: GameData,
+  mods: ArchetypeMods,
+  opts: AITurnOpts,
+  difficultyParams: DifficultyParams,
 ): AICommand[] {
   const commands: AICommand[] = [];
   const myUnits = units.filter(u => u.ownerId === playerId);
   const myCities = cities.filter(c => c.ownerId === playerId);
   const enemyUnits = units.filter(u => u.ownerId !== playerId);
+
+  // PRODUKCJA — defensywna gospodarka: mury + garnizon najpierw, potem budynki/ekonomia; bez ekspansji.
+  // opts.defensiveCopy=true → chooseCityProduction pomija Osadnika i priorytetuje obronę/mury.
+  for (const city of myCities) {
+    const buildId = chooseCityProduction(
+      city.id, myCities, units, playerId, data, mods, opts, map, difficultyParams,
+    );
+    if (buildId !== null) {
+      commands.push({ type: 'build', cityId: city.id, buildingId: buildId });
+    }
+  }
 
   for (const unit of myUnits) {
     if (isSettler(unit)) continue;
