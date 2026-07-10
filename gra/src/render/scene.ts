@@ -2221,7 +2221,10 @@ export async function buildScene(
   oceanMesh.rotation.x = -Math.PI / 2;
   oceanMesh.renderOrder = -10;
   oceanMesh.position.set(cXb, OCEAN_BED_Y, cZb);
-  oceanMesh.receiveShadow = true;
+  // Płaszczyzna głębokiego oceanu leży 14-28 j. POD taflą (OCEAN_BED_Y) — cień kontynentu
+  // rzucany na nią wyglądał jak „lewitujący", przesunięty cień na wodzie (tylko pod
+  // kontynentem w kadrze kamery cienia). Dekoracyjne tło nie potrzebuje cienia → OFF.
+  oceanMesh.receiveShadow = false;
   scene.add(oceanMesh);
 
   // Ramka swiata — 4 listwy obramowania wokol mapy (ciemny kamien/drewno), w oceanie.
