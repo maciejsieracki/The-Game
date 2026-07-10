@@ -2,9 +2,7 @@
   "publisher": "Integrator F",
   "bundle": "Gra-ROBOCZA.html",
   "note": "Grywalna ROBOCZA. Plik: gra-robocza/Gra-ROBOCZA.html",
-  "publishedAt": "2026-07-08T05:23:38",
   "sourceBuild": "C:\\Users\\macie\\AppData\\Local\\Temp\\civ-dist",
-  "md5": "fc50634b6f3172c949d808b59916c718",
   "hubGeneratedAt": "2026-07-09T18:47:21",
   "bundles": [
     {
@@ -78,5 +76,8 @@
       "sizeBytes": 9843380
     }
   ],
-  "startHub": "START.html"
+  "startHub": "START.html",
+  "md5": "79eb31598aa8011caf6194bdf83f04d7",
+  "publishedAt": "2026-07-10T08:10:08",
+  "source": "gra/src"
 }
