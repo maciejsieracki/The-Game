@@ -618,8 +618,16 @@ interface CityView {
   popCapAktualny: number;
   /** Wzrost zablokowany — ludność ≥ aktualny cap. */
   atPopCap: boolean;
-  /** Żywność/turę idąca do bufora wzrostu (po suwaku imperium). */
+  /** Żywność/turę idąca do bufora wzrostu (po suwaku imperium; z bonusami wzrostu/zdrowia). */
   zywnoscDoWzrostu: number;
+  /**
+   * Żywność/turę tego miasta przeznaczona na zapasy armii państwa = wkład miasta do
+   * `doPanstwa` silnika (empire-food.ts): max(0, netto) × (100 − %wzrost)/100.
+   * BUGFIX 2026-07-10: liczone jako REALNY udział z suwaka (NIE rezyduał
+   * `netto − zywnoscDoWzrostu`, który schodził na minus, bo zywnoscDoWzrostu ma
+   * bonusy growthMult×healthMod i przekracza netto). 0% armii ⇒ 0 (nie widmowe −2).
+   */
+  zywnoscDoArmii: number;
 }
 
 /** Snapshot imperium do paska zasobów w widoku miasta (spójny z HudState). */
@@ -675,6 +683,11 @@ function computeView(city: City, map: GameMap, data: GameData): CityView | null 
     const growthMult = cfg.getGrowthMult?.(city.id) ?? 1;
     const healthMod = Math.max(0, 1 + zdrowie * params.zdrowieModyfikatorWspolczynnik);
     const zywnoscDoWzrostu = Math.floor(y.zywnosc * (pctRozwoj / 100) * growthMult * healthMod);
+    // BUGFIX 2026-07-10 (widmowa „Armia −2"): udział miasta na zapasy armii = wkład do
+    // doPanstwa silnika (empire-food.ts): max(0, netto) × (100 − %wzrost)/100. Bez armii
+    // i przy 100% wzrostu daje 0 (nie rezyduał netto−zywnoscDoWzrostu, który był ujemny
+    // przez bonusy growthMult×healthMod zawyżające zywnoscDoWzrostu ponad netto).
+    const zywnoscDoArmii = Math.round(Math.max(0, y.zywnosc) * ((100 - pctRozwoj) / 100));
     const magazyn = readCityFoodBufferFromCity(city);
     const wzrostPace = cfg.getWzrostLudnosciPace?.() ?? 'wysoki';
     const popCapBezAkweduktu = params.akweduktProgLudnosci;
@@ -693,6 +706,7 @@ function computeView(city: City, map: GameMap, data: GameData): CityView | null 
       popCapAktualny,
       atPopCap,
       zywnoscDoWzrostu,
+      zywnoscDoArmii,
     };
   } catch { return null; }
 }
@@ -730,7 +744,10 @@ function cityPracaSplit(city: City, view: CityView, data: GameData | null): {
 function cityFoodSplit(view: CityView): { total: number; doWzrostu: number; doArmii: number } {
   const total = Math.round(view.zywnoscNetto);
   const doWzrostu = Math.round(view.zywnoscDoWzrostu);
-  return { total, doWzrostu, doArmii: total - doWzrostu };
+  // BUGFIX 2026-07-10: „doArmii" = realny udział na armię z suwaka (view.zywnoscDoArmii),
+  // a NIE rezyduał total−doWzrostu (który był ujemny mimo braku armii, bo doWzrostu ma
+  // bonusy wzrostu/zdrowia przekraczające netto). Jedno źródło prawdy spójne z silnikiem.
+  return { total, doWzrostu, doArmii: view.zywnoscDoArmii };
 }
 
 function snapFoodSplitPct(n: number): number {
@@ -3254,8 +3271,8 @@ function buildPracaDetailCard(
   gridDetailRow(g1, '→ Budynki', praca ? `${signed(praca.doBudynkow)} (${praca.pctBudynki}%)` : '—');
   gridDetailRow(g1, '→ Ulepszenia', praca ? `${signed(praca.doUlepszen)} (${praca.pctUlepszenia}%)` : '—');
 
-  appendDetailFormula(card, 'doBudynkow = floor(praca × %Budynki)');
-  appendDetailFormula(card, 'doUlepszen = praca − doBudynkow');
+  appendDetailFormula(card, 'doBudynkow = round(praca × %Budynki)');
+  appendDetailFormula(card, 'doUlepszen = praca − doBudynkow  (nigdy nie gubi reszty)');
 
   appendDetailSection(card, 'Trade-off (po co ten wybór)');
   const gt = appendDetailGrid(card);
@@ -3585,7 +3602,7 @@ function buildSpichlerzDetailCard(
   const pctRozwoj = st?.procentRozwoj ?? getEmpireFoodSplit(city.ownerId);
   const pctArmia = 100 - pctRozwoj;
   const reserve = st?.zapasyPanstwa;
-  const doArmii = Math.round(view.zywnoscNetto) - Math.round(view.zywnoscDoWzrostu);
+  const doArmii = view.zywnoscDoArmii;   // BUGFIX 2026-07-10: realny udział, nie rezyduał netto−wzrost
   const starving = tick?.glodWojska ?? (reserve != null && reserve < 0);
 
   const card = el('div', 'detail-card');
@@ -3635,7 +3652,7 @@ function buildSpichlerzDetailCard(
     gridDetailRow(g2, '→ armia', `+${Math.round(tick.doPanstwa)} 🍞`);
     gridDetailRow(g2, 'Koszt armii', `−${Math.round(tick.kosztArmii)}`);
   } else {
-    gridDetailRow(g2, 'Armia (miasto)', `+${Math.max(0, Math.round(view.zywnoscNetto - view.zywnoscDoWzrostu))}`);
+    gridDetailRow(g2, 'Armia (miasto)', `+${Math.max(0, doArmii)}`);
   }
 
   appendDetailFormula(card, 'doRozwoju = Σ zywnoscNetto_miast × %wzrost');
@@ -3671,7 +3688,7 @@ function buildTopBarZywnoscDetailCard(
   const pctRozwoj = st?.procentRozwoj ?? getEmpireFoodSplit(city.ownerId);
   const pctArmia = 100 - pctRozwoj;
   const doWzrostu = Math.round(view.zywnoscDoWzrostu);
-  const doArmiiMiasto = Math.max(0, cityNet - doWzrostu);
+  const doArmiiMiasto = view.zywnoscDoArmii;   // BUGFIX 2026-07-10: realny udział, nie rezyduał netto−wzrost
   const hasSpichlerz = ownerHasSpichlerz(city.ownerId);
   const params = data ? buildEconParams(data, cfg.difficulty ?? 'normal') : null;
   const coeff = params?.progWzrostuWspolczynnik ?? 16;
@@ -3701,7 +3718,7 @@ function buildTopBarZywnoscDetailCard(
   gridDetailRow(g1, 'Budynki', 'Spichlerz, Targowisko, Świątynia itd. — plony z kart budynków.');
   gridDetailRow(g1, 'Netto', `${signed(cityNet)} 🍞 — suma po kosztach utrzymania miasta.`);
   gridDetailRow(g1, '→ na wzrost', `${signed(doWzrostu)} (${pctRozwoj}% suwaka imperium)`);
-  gridDetailRow(g1, '→ na armię', `${signed(doArmiiMiasto)} (reszta netto miasta)`);
+  gridDetailRow(g1, '→ na armię', `${signed(doArmiiMiasto)} (${pctArmia}% suwaka imperium)`);
 
   appendDetailSection(card, 'Bufor wzrostu ludności (osobno!)');
   const g2 = appendDetailGrid(card);
@@ -3725,8 +3742,8 @@ function buildTopBarZywnoscDetailCard(
     : 'nie — odkładasz 50% netto armii od startu (bez limitu)');
 
   appendDetailFormula(card, 'zywnoscNetto = plony_pól + budynki − utrzymanie_miasta');
-  appendDetailFormula(card, `doWzrostu = zywnoscNetto × ${pctRozwoj}%`);
-  appendDetailFormula(card, 'doArmii_miasto = zywnoscNetto − doWzrostu');
+  appendDetailFormula(card, `doWzrostu = zywnoscNetto × ${pctRozwoj}% (× bonus wzrostu/zdrowia)`);
+  appendDetailFormula(card, `doArmii_miasto = max(0, zywnoscNetto) × ${pctArmia}%`);
   appendDetailFormula(card, hasSpichlerz
     ? 'zapasy_armii += 100% × (doArmii − koszt_wojska); cap ze Spichlerzy'
     : 'zapasy_armii += 50% × (doArmii − koszt_wojska); reszta przepada');
@@ -3875,8 +3892,8 @@ function buildTopBarPracaDetailCard(
   gridDetailRow(g1, '→ Budynki', `${signed(pracaSplit.doBudynkow)} — postęp w kolejce produkcji`);
   gridDetailRow(g1, '→ Ulepszenia', `${signed(pracaSplit.doUlepszen)} — farma, kamieniołom itd.`);
 
-  appendDetailFormula(card, 'doBudynkow = floor(praca × %Budynki)');
-  appendDetailFormula(card, 'doUlepszen = praca − doBudynkow');
+  appendDetailFormula(card, 'doBudynkow = round(praca × %Budynki)');
+  appendDetailFormula(card, 'doUlepszen = praca − doBudynkow  (nigdy nie gubi reszty)');
   appendDetailAlgo(card, 'Gdzie zarządzać', [
     'Lewa kolumna → „Podział pracy”: suwak 🏛 vs 🛠 (per miasto).',
     'Mapa okolicy → przypisz 👤 na heksy z 🔨 (pola, lasy, kamieniołomy).',

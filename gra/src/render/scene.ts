@@ -827,137 +827,52 @@ function hexEdgeMidpointByDir(q: number, r: number, dir: number, R: number): { x
   return { x: (p0.x + p1.x) * 0.5, z: (p0.z + p1.z) * 0.5 };
 }
 
-/** Wspólny róg dwóch krawędzi wychodzących z tego samego heksa (załamanie „chrześcijańskie”). */
-function sharedCornerBetweenEdgeDirs(dirIn: number, dirOut: number): number {
-  if (dirIn < 0 || dirOut < 0) return -1;
-  const a = ((dirIn % 6) + 6) % 6;
-  const b = ((dirOut % 6) + 6) % 6;
-  if (a === b) return -1;
-  if ((a + 1) % 6 === b) return (a + 2) % 6;
-  if ((b + 1) % 6 === a) return (b + 2) % 6;
-  return -1;
-}
-
-/** Środek wspólnej krawędzi dwóch sąsiednich heksów. */
-function sharedEdgeMidpoint(q1: number, r1: number, q2: number, r2: number, R: number): { x: number; z: number } | null {
-  const dir = neighborDirIndex(q1, r1, q2, r2);
-  if (dir < 0) return null;
-  return hexEdgeMidpointByDir(q1, r1, dir, R);
-}
-
-/** Róg heksa przy załamaniu trasy a→b→c (krawędziami, nie przez środek). */
-function turnCornerOnHex(
-  q: number, r: number,
-  qPrev: number, rPrev: number,
-  qNext: number, rNext: number,
-  R: number,
-): { x: number; z: number } | null {
-  const dirIn = neighborDirIndex(q, r, qPrev, rPrev);
-  const dirOut = neighborDirIndex(q, r, qNext, rNext);
-  const cornerIdx = sharedCornerBetweenEdgeDirs(dirIn, dirOut);
-  if (cornerIdx < 0) return null;
-  const c = axialToWorld(q, r, R);
-  return hexCorners(c.x, c.z, R)[cornerIdx] ?? null;
-}
-
-/** Następny róg obwodu heksa (pointy-top). */
-function hexCornerStep(from: number, cw: boolean): number {
-  return cw ? (from + 1) % 6 : (from + 5) % 6;
-}
-
-/** Droga wzdłuż krawędzi heksa między rogami (bez przekątnej przez pole). */
-function walkHexPerimeter(fromCorner: number, toCorner: number, cw: boolean): number[] {
-  if (fromCorner === toCorner) return [fromCorner];
-  const out: number[] = [];
-  let c = fromCorner;
-  for (let guard = 0; guard < 7; guard++) {
-    out.push(c);
-    if (c === toCorner) break;
-    c = hexCornerStep(c, cw);
+/**
+ * Regularyzacja ścieżki rzeki POD RENDER (render-only — NIE zmienia generatora ani hasza mapy).
+ * Zwija dwa artefakty meandra generatora, które psuły wygląd wstęgi:
+ *  - zawrót 180° (H[i-1] == H[i+1]) — „spike tam i z powrotem" → usuwamy H[i] i H[i+1],
+ *  - zakręt ≥120° (H[i-1] SĄSIADUJE z H[i+1]) — skrót korytarzem → usuwamy H[i].
+ * Po dojściu do punktu stałego zostają WYŁĄCZNIE zakręty ≤60° i proste biegi. Ponieważ wstęga
+ * biegnie przez punkty-przejścia = ŚREDNIE środków kolejnych heksów (patrz buildRiverPointsFromHexPath),
+ * przy zakrętach ≤60° każdy wierzchołek wstęgi ma odchylenie ≤60°, a ciasny 60°-zygzak (…d,d+1,d,d+1…)
+ * uśrednia się do PROSTEJ — stąd znika „schodkowy" wygląd i wymuszona jest kadencja meandra.
+ * Pierwszy i ostatni heks są nienaruszalne (źródło / ujście / węzeł konfluencji).
+ */
+function simplifyRiverRenderPath(
+  path: Array<{ q: number; r: number }>,
+): Array<{ q: number; r: number }> {
+  const p = path.map((h) => ({ q: h.q, r: h.r }));
+  if (p.length < 3) return p;
+  let changed = true;
+  let guard = 0;
+  while (changed && guard++ < 4000) {
+    changed = false;
+    for (let i = 1; i < p.length - 1; i++) {
+      const a = p[i - 1]!;
+      const c = p[i + 1]!;
+      // 180° zawrót: sąsiedzi H[i] to ten sam heks → wytnij oba środkowe (degeneracja).
+      if (a.q === c.q && a.r === c.r) { p.splice(i, 2); changed = true; break; }
+      // ≥120° zakręt: H[i-1] sąsiaduje bezpośrednio z H[i+1] → skrót, zostaje ≤60°.
+      if (neighborDirIndex(a.q, a.r, c.q, c.r) >= 0) { p.splice(i, 1); changed = true; break; }
+    }
   }
-  return out;
+  return p;
 }
 
 /**
- * Rogi obwodu między krawędzią wejścia (dirIn) a wyjścia (dirOut).
- * Wyłącznie po krawędziach — żadnych skrótów przez środek heksa.
+ * Wstęga rzeki = polilinia przez PUNKTY-PRZEJŚCIA między kolejnymi heksami trasy.
+ * Punkt przejścia i = środek wspólnej krawędzi heksów H[i-1]|H[i] = ŚREDNIA ich środków
+ * ( (C(H[i-1]) + C(H[i])) / 2 ). Model (formalnie — patrz raport):
+ *  - JEDEN punkt na granicę (nie exit+entry jak dawniej) → ZERO prostopadłego „dzióbka/domku",
+ *  - prosty bieg heksów → punkty współliniowe → PROSTY odcinek rzeki (koniec „schodków"),
+ *  - ciasny 60°-zygzak → punkty uśredniają się do PROSTEJ (kadencja meandra),
+ *  - po simplifyRiverRenderPath zakręty ≤60° → czysty meander wielokrotności 60°, bez wygibasów,
+ *  - stała PŁASKA wysokość (riverHexSurfaceY) — bez lewitacji góra-dół-góra,
+ *  - punkty-przejścia leżą na granicy DWÓCH heksów RZEKI (nie sąsiada-wzgórza), a odcinki biegną
+ *    wnętrzem heksów trasy → hug wewnętrznej ścianki spełniony bez ginięcia pod terenem sąsiada.
+ * `extendToJoin` (dopływy): dołóż środek OSTATNIEGO heksa, by tip dopływu wszedł w kanał głównej
+ * rzeki i scalił się czysto w punkcie przecięcia (zamiast urwać się na granicy węzła).
  */
-function riverCornersAlongHexEdges(
-  dirIn: number,
-  dirOut: number,
-  hexParity: number,
-  minBoki: number = 1,
-): number[] {
-  const a = ((dirIn % 6) + 6) % 6;
-  const b = ((dirOut % 6) + 6) % 6;
-  if (a === b) return [];
-
-  const entryOpts = [(a + 1) % 6, (a + 2) % 6];
-  const exitOpts = [(b + 1) % 6, (b + 2) % 6];
-
-  // Maciej 2026-07-09c: NAJKRÓTSZY łuk po obwodzie między krawędzią wejścia a wyjścia —
-  // bez wymogu minimalnej liczby boków. Poprzednia wersja (minBoki≥3, fallback: najdłuższy)
-  // przy ostrym skręcie (wejście i wyjście blisko siebie) wymuszała objazd PRAWIE CAŁEGO
-  // obwodu heksa zamiast najkrótszej drogi — przy wielu rzekach dawało to siatkę zamkniętych
-  // pętli heksagonalnych („plaster miodu”) zamiast płynących linii rzek. Minimalizacja
-  // walked.length eliminuje objazdy: rzeka zawsze idzie najkrótszą sensowną drogą po ściankach.
-  // Linie proste — same krawędzie heksa (walkHexPerimeter), bez skrótów przez środek.
-  let best: number[] = [];
-  let bestScore = Infinity;
-  for (const entry of entryOpts) {
-    for (const exit of exitOpts) {
-      for (const cw of [true, false]) {
-        const walked = walkHexPerimeter(entry, exit, cw);
-        if (walked.length === 0) continue;
-        let score = walked.length;
-        // Przy remisie: deterministyczny wybór strony (S w lewo/prawo)
-        if (score === bestScore && hexParity % 2 === 0) score += cw ? 0 : 0.01;
-        else if (score === bestScore) score += cw ? 0.01 : 0;
-        if (score < bestScore) {
-          bestScore = score;
-          best = walked;
-        }
-      }
-    }
-  }
-  return best;
-}
-
-/** @deprecated Użyj riverCornersAlongHexEdges — zostawione dla czytelności diff. */
-function riverTransitCornersOnHex(
-  q: number,
-  r: number,
-  qPrev: number,
-  rPrev: number,
-  qNext: number,
-  rNext: number,
-  R: number,
-  minBoki: number = 1,
-): Array<{ x: number; z: number }> {
-  const dirIn = neighborDirIndex(q, r, qPrev, rPrev);
-  const dirOut = neighborDirIndex(q, r, qNext, rNext);
-  if (dirIn < 0 || dirOut < 0) return [];
-  const wc = axialToWorld(q, r, R);
-  const cs = hexCorners(wc.x, wc.z, R);
-  const corners = riverCornersAlongHexEdges(dirIn, dirOut, q + r, minBoki);
-  return corners.map((ci) => ({ x: cs[ci]!.x, z: cs[ci]!.z }));
-}
-
-/** Wsunięcie wstęgi rzeki do WNĘTRZA właściwego heksa (ku jego WŁASNEMU środkowi, ułamek odległości).
- *  Maciej 2026-07-09d: rzeka ma leżeć przy WEWNĘTRZNEJ stronie ścianki heksa (nie dokładnie na
- *  granicy dwóch heksów — tam ginie pod wzgórzami sąsiada), ale inset musi być SPÓJNY: każdy punkt
- *  łuku jednego heksa (wejściowy środek krawędzi, rogi, wyjściowy środek krawędzi) insetujemy
- *  względem środka TEGO SAMEGO heksa. Jednorodne skalowanie względem jednego środka to podobieństwo
- *  (similarity transform) — nie zmienia kątów, więc 120° na rogu zostaje dokładnie 120°. Dawny bug:
- *  środek krawędzi WYJŚCIOWEJ był insetowany względem środka NASTĘPNEGO heksa, a rogi względem
- *  środka BIEŻĄCEGO — różne środki odniesienia na sąsiednich punktach łuku psuły kąt (nie-120°,
- *  „wygibasy”). Naprawa: każdy wspólny środek krawędzi dostaje DWIE wersje — insetowaną ku
- *  bieżącemu heksowi (zamyka jego łuk) i insetowaną ku następnemu (otwiera jego łuk) — połączone
- *  krótkim odcinkiem, który przeprowadza wstęgę przez ściankę, cały czas hugując jej wewnętrzną
- *  stronę po obu stronach granicy. */
-const RIVER_INSET_FRAC = 0.15;
-
-/** Kwadratowa trasa wzdłuż krawędzi heksów — rogi + środki krawędzi (NIE przez środek pola). */
 function buildRiverPointsFromHexPath(
   map: GameMap,
   path: Array<{ q: number; r: number }>,
@@ -966,89 +881,44 @@ function buildRiverPointsFromHexPath(
   riverMouthY: number,
   surfaceOffset: number,
   _coastalKeys: Set<string>,
+  extendToJoin = false,
 ): { pts: THREE.Vector3[]; hexKeys: Set<string> } {
   const pts: THREE.Vector3[] = [];
   const hexKeys = new Set<string>();
   if (path.length < 2) return { pts, hexKeys };
 
+  // Fog: pokryj WSZYSTKIE oryginalne heksy trasy (także zwinięte przez simplify).
+  for (const h of path) hexKeys.add(`${h.q},${h.r}`);
+
   const yAt = (q: number, r: number): number | null =>
     riverHexSurfaceY(map, q, r, renderStyle, riverMouthY, surfaceOffset, R);
 
-  // Insetuj surowy punkt obwodu heksa (hq,hr) ku WŁASNEMU środkowi tego heksa — patrz komentarz
-  // przy RIVER_INSET_FRAC. Wywołujący musi zawsze podać hex, do którego dany punkt łuku należy.
-  const insetToward = (x: number, z: number, hq: number, hr: number): { x: number; z: number } => {
-    const c = axialToWorld(hq, hr, R);
-    return { x: x + (c.x - x) * RIVER_INSET_FRAC, z: z + (c.z - z) * RIVER_INSET_FRAC };
-  };
+  const rp = simplifyRiverRenderPath(path);
 
-  const pushPt = (x: number, z: number, y: number, hq: number, hr: number): void => {
+  const pushPt = (x: number, z: number, y: number): void => {
     const p = new THREE.Vector3(x, y, z);
-    if (pts.length === 0 || pts[pts.length - 1]!.distanceTo(p) > R * 0.008) {
-      pts.push(p);
-      hexKeys.add(`${hq},${hr}`);
-    }
+    if (pts.length === 0 || pts[pts.length - 1]!.distanceTo(p) > R * 0.008) pts.push(p);
   };
 
-  hexKeys.add(`${path[0]!.q},${path[0]!.r}`);
-  hexKeys.add(`${path[1]!.q},${path[1]!.r}`);
-
-  // Punkt wejścia na heks[1]: środek wspólnej krawędzi hex0–hex1, insetowany ku środkowi hex1
-  // (pierwszy punkt łuku hex1 — hex0 nie ma własnego łuku, rzeka „rodzi się” na tej granicy).
-  const mid0 = sharedEdgeMidpoint(path[0]!.q, path[0]!.r, path[1]!.q, path[1]!.r, R);
-  const y0 = yAt(path[0]!.q, path[0]!.r);
-  const y1 = yAt(path[1]!.q, path[1]!.r);
-  if (mid0 && y0 != null && y1 != null && neighborDirIndex(path[0]!.q, path[0]!.r, path[1]!.q, path[1]!.r) >= 0) {
-    const p0 = insetToward(mid0.x, mid0.z, path[1]!.q, path[1]!.r);
-    pushPt(p0.x, p0.z, (y0 + y1) * 0.5, path[1]!.q, path[1]!.r);
+  for (let i = 1; i < rp.length; i++) {
+    const a = rp[i - 1]!;
+    const b = rp[i]!;
+    if (neighborDirIndex(a.q, a.r, b.q, b.r) < 0) continue; // bezpiecznik: pomiń nie-sąsiadów
+    const ya = yAt(a.q, a.r);
+    const yb = yAt(b.q, b.r);
+    if (ya == null || yb == null) continue;
+    const ca = axialToWorld(a.q, a.r, R);
+    const cb = axialToWorld(b.q, b.r, R);
+    pushPt((ca.x + cb.x) * 0.5, (ca.z + cb.z) * 0.5, (ya + yb) * 0.5);
   }
 
-  for (let i = 1; i < path.length - 1; i++) {
-    const prev = path[i - 1]!;
-    const cur = path[i]!;
-    const next = path[i + 1]!;
-    if (neighborDirIndex(prev.q, prev.r, cur.q, cur.r) < 0) continue;
-    if (neighborDirIndex(cur.q, cur.r, next.q, next.r) < 0) continue;
-    hexKeys.add(`${cur.q},${cur.r}`);
-    hexKeys.add(`${next.q},${next.r}`);
-
-    const yc = yAt(cur.q, cur.r);
-    if (yc == null) continue;
-
-    // Maciej 2026-07-09c: regresja pętli-siatki — regułę ≥3 boki (poprzednie minBoki=3 na
-    // zwykłych heksach) usunięto z riverCornersAlongHexEdges, więc tu też liczy się zawsze
-    // najkrótszy łuk (minBoki=1) — na heksie-ujściu tak jak wcześniej (rzeka wpada PROSTO do
-    // morza), a na zwykłych heksach identycznie (bez objazdu dookoła heksa przy ostrym skręcie).
-    // curTeren/prevTeren/nextTeren i isUjscieHex zostają jako scaffolding — gdyby kiedyś wrócił
-    // pomysł na inne zachowanie na ujściu, jest tu gotowy punkt zaczepienia.
-    const curTeren = map.hexes[`${cur.q},${cur.r}`]?.terenBazowy;
-    const prevTeren = map.hexes[`${prev.q},${prev.r}`]?.terenBazowy;
-    const nextTeren = map.hexes[`${next.q},${next.r}`]?.terenBazowy;
-    const isUjscieHex = [curTeren, prevTeren, nextTeren].some(
-      (t) => t === TerenBazowy.Wybrzeze || t === TerenBazowy.Morze,
-    );
-    const minBoki = isUjscieHex ? 1 : 1;
-
-    // Rogi łuku heksa cur — insetowane ku środkowi CUR (spójnie z resztą jego łuku).
-    for (const corner of riverTransitCornersOnHex(
-      cur.q, cur.r, prev.q, prev.r, next.q, next.r, R, minBoki,
-    )) {
-      const pc = insetToward(corner.x, corner.z, cur.q, cur.r);
-      pushPt(pc.x, pc.z, yc, cur.q, cur.r);
-    }
-
-    const mid = sharedEdgeMidpoint(cur.q, cur.r, next.q, next.r, R);
-    const yn = yAt(next.q, next.r);
-    if (mid && yn != null) {
-      // Punkt WYJŚCIA z heksa cur: ten sam surowy środek krawędzi, insetowany ku środkowi CUR —
-      // zamyka łuk cur tym samym odniesieniem co jego rogi (tu był bug: dawniej od razu ku next).
-      const exitP = insetToward(mid.x, mid.z, cur.q, cur.r);
-      pushPt(exitP.x, exitP.z, (yc + yn) * 0.5, cur.q, cur.r);
-
-      // Punkt WEJŚCIA do heksa next: ten sam surowy środek krawędzi, insetowany ku środkowi NEXT —
-      // inny punkt (bo inne odniesienie skalowania). Krótki odcinek exitP→entryP przeprowadza
-      // wstęgę przez ściankę, hugując jej wewnętrzną stronę po obu stronach granicy.
-      const entryP = insetToward(mid.x, mid.z, next.q, next.r);
-      pushPt(entryP.x, entryP.z, (yc + yn) * 0.5, next.q, next.r);
+  // Dopływ: wejdź środkiem ostatniego heksa w kanał głównej rzeki (czyste scalenie w konfluencji).
+  if (extendToJoin && rp.length >= 2 && pts.length >= 1) {
+    const last = rp[rp.length - 1]!;
+    const yl = yAt(last.q, last.r);
+    if (yl != null) {
+      const cl = axialToWorld(last.q, last.r, R);
+      pushPt(cl.x, cl.z, yl);
     }
   }
 
@@ -1091,8 +961,10 @@ function renderLandRiversFromPaths(
           : 0.7;
     const halfWidth = mainHalfWidth * widthMul;
 
+    // Dopływ scala się w węźle: przedłuż tip środkiem ostatniego heksa w kanał głównej rzeki.
     const { pts, hexKeys } = buildRiverPointsFromHexPath(
       map, landPath, R, renderStyle, riverMouthY, surfaceOffset, new Set<string>(),
+      kind === 'tributary',
     );
     if (pts.length < 2) continue;
 

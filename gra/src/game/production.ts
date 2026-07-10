@@ -998,12 +998,25 @@ export function rushProduction(prod: CityProduction): AdvanceProductionResult {
 // Q4 split Pracy + Q1 tryb kosztu jednostek (zawsze pieniadz) -- ADDYTYWNE
 // ---------------------------------------------------------------------------
 
-/** Q4: podzial Pracy miasta na kolejke budynkow vs ulepszenia terenu. udzialBudynki w [0,1]. */
+/**
+ * Q4: podzial Pracy miasta na kolejke budynkow vs ulepszenia terenu (pula imperium).
+ * udzialBudynki w [0,1].
+ *
+ * BUGFIX 2026-07-10 (Praca ginie przy zaokragleniu): Praca miasta jest calkowita
+ * (np. 6), ale `cityPraca * udzialBudynki` daje z reguly ulamek (np. 6*0.7=4.2).
+ * Zaokraglanie OBU stron NIEZALEZNIE (floor/round kazdej z osobna) potrafi zgubic
+ * lub zdublowac 1 jednostke Pracy (np. floor(4.2)=4 + floor(1.8)=1 => suma 5 != 6;
+ * przy remisie .5/.5 round+round moze dac sume+1). Naprawa: zaokraglamy TYLKO
+ * jedna strone (doBudynkow), druga to `total - doBudynkow` -- z definicji suma
+ * zawsze rowna sie calkowitej Pracy miasta. Ten sam wynik zasila silnik
+ * (turn-economy.ts, real stan gry) i UI (cityPanel.ts, empireDetailPanel.ts,
+ * gorny pasek) -- jedno zrodlo prawdy, zero gubionych jednostek.
+ */
 export function splitPraca(cityPraca: number, udzialBudynki: number): { doBudynkow: number; doPuli: number } {
-  const praca = Number.isFinite(cityPraca) && cityPraca > 0 ? cityPraca : 0;
+  const total = Number.isFinite(cityPraca) && cityPraca > 0 ? Math.round(cityPraca) : 0;
   const u = Math.min(1, Math.max(0, Number.isFinite(udzialBudynki) ? udzialBudynki : 1));
-  const doBudynkow = praca * u;
-  return { doBudynkow, doPuli: praca - doBudynkow };
+  const doBudynkow = Math.round(total * u);
+  return { doBudynkow, doPuli: total - doBudynkow };
 }
 
 /** Q1: tryb kosztu jednostki -- zawsze 'pieniadz' (zakup ze skarbca) we WSZYSTKICH epokach.

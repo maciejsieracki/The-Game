@@ -2195,6 +2195,7 @@ async function boot(): Promise<void> {
       }
       if (isDiplomacyPanelOpen()) hideDiplomacyPanel();
       if (isCityPanelOpen()) hideCityPanelFull();
+      hideHexContextPanel();
     }
 
     function toggleDiploListFromToolbar(): void {
@@ -2250,6 +2251,7 @@ async function boot(): Promise<void> {
       }
       if (isDiplomacyPanelOpen()) hideDiplomacyPanel();
       if (isCityPanelOpen()) hideCityPanelFull();
+      hideHexContextPanel();
       showWikiHubHud();
       refreshD1bHud();
     }
@@ -3369,6 +3371,18 @@ async function boot(): Promise<void> {
     /** Last hex the player explicitly clicked on the map (for B = found city). */
     let lastBHex: { q: number; r: number } | null = null;
 
+    /**
+     * Zamyka panel kontekstowy heksa (D17=A) — wzajemna wyłączność z innymi
+     * panelami/funkcjami (badania/ekonomia/kultura/itp.) oraz PPM na mapie.
+     * Panel jest w 100% pochodną `lastBHex` (patrz buildHexContextPanelMessage),
+     * więc wyczyszczenie stanu + odświeżenie HUD-a wystarcza, by realnie zniknął.
+     */
+    function hideHexContextPanel(): void {
+      if (lastBHex === null) return;
+      lastBHex = null;
+      refreshD1bHud();
+    }
+
     // --- Global player state (tasks 13B-finish + 7B) ---
     // Holds the banked treasury (skarbiec) and science (nauka) plus the research
     // progress (zbadane / badana / era).  Per-turn economy totals are banked into
@@ -3773,6 +3787,7 @@ async function boot(): Promise<void> {
     function toggleCultureRangeOnMap(): void {
       cultureRangeVisible = !cultureRangeVisible;
       hideEmpireOverlay();
+      hideHexContextPanel();
       refreshRangeOverlays();
       refreshD1bHud();
     }
@@ -3780,6 +3795,7 @@ async function boot(): Promise<void> {
     function toggleReligionRangeOnMap(): void {
       religionRangeVisible = !religionRangeVisible;
       hideEmpireOverlay();
+      hideHexContextPanel();
       refreshRangeOverlays();
       refreshD1bHud();
     }
@@ -5391,6 +5407,7 @@ async function boot(): Promise<void> {
       hideSciencePicker();
       hideCityListHud();
       hideArmyListHud();
+      hideHexContextPanel();
       showEmpireDetailPanel(section);
       refreshD1bHud();
     }
@@ -5654,8 +5671,13 @@ async function boot(): Promise<void> {
         glodWojska: isArmyStarving(0),
         zloto: Math.floor(player.skarbiec),
         zlotoRate: Math.floor(_lastPieniadzRate),
-        praca: Math.floor(_lastPraca),
-        pracaRate: Math.floor(_lastPracaRate),
+        // BUGFIX 2026-07-10: Math.floor tutaj obcinal np. 1.8 -> 1 (zamiast 2), mimo
+        // ze silnik (splitPraca, production.ts) juz liczy doPuli jako cala liczbe
+        // sumujaca sie z doBudynkow do calkowitej Pracy miasta. Math.round zostaje
+        // jako zabezpieczenie przed drobnym bledem zmiennoprzecinkowym przy sumowaniu
+        // wielu miast (np. 1.9999999998 nie powinno spasc do 1).
+        praca: Math.round(_lastPraca),
+        pracaRate: Math.round(_lastPracaRate),
         nauka: Math.floor(player.nauka),
         naukaRate: Math.floor(_lastNaukaRate),
         kultura: Math.floor(_lastKultura),
@@ -7514,6 +7536,8 @@ async function boot(): Promise<void> {
       if (galleryOn || isAnimating || isPostBattleSummaryOpen()) return;
       if (isPointOverCityPanelUi(e.clientX, e.clientY)) return;
       dismissPlayerUnitSelectionIfAny();
+      // PPM na mapie zamyka panel kontekstowy heksa (D17=A — zgłoszenie: panel "utknięty").
+      hideHexContextPanel();
     });
 
     // -----------------------------------------------------------------------
