@@ -149,7 +149,8 @@ export interface TechDef {
 export interface CivBonus {
   typ: string;
   cel: string;
-  wartosc: number | string;
+  /** jednostka_specjalna: string[] (tokeny-fix, 1 wpis / zamiennik nacji); inne typy bonusow: number. */
+  wartosc: number | string | string[];
   opis: string;
   realizuje: string;
 }

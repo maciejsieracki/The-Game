@@ -417,7 +417,9 @@ export function unitMoneyCost(
 export interface CivBonusLite {
   typ: string;
   cel: string;
-  wartosc: number | string;
+  /** jednostka_specjalna: string[] (od RDY tokeny-fix — 1 wpis / zamiennik nacji);
+   *  string legacy (pojedyncza nazwa lub "A/B" łączone slashem) nadal wspierany. */
+  wartosc: number | string | string[];
   opis?: string;
   realizuje?: string;
 }
@@ -449,6 +451,14 @@ const CIV_KEY_TO_UNIT_NACJA: Readonly<Record<string, string>> = {
   zulusi: 'Zulu',
   inkowie: 'Inkowie',
   egipt: 'Egipt',
+  // BUGFIX (Sumer): civs.json ikonaId + TypCywilizacji.Sumer enum both use 'sumer'
+  // (ikonaId="sumer" — patrz data/civs.json), nie 'sumerowie'. Bez tego klucza
+  // unitNacjaForCivKey('sumer') zwracal undefined -> jednostki Sumeru nigdy sie
+  // nie pokazywaly w produkcji miasta. 'sumerowie' zostaje (nieuzywany, ale
+  // nieszkodliwy legacy klucz); 'babilon' to zamierzony alias wsteczny (patrz
+  // TypCywilizacji.Babilon @deprecated w types/player.ts) — Sumerowie bywali
+  // dawniej nazywani "Babilon", oba klucze poprawnie wskazuja nacje Sumer.
+  sumer: 'Sumer',
   sumerowie: 'Sumer',
   babilon: 'Sumer',
   celtowie: 'Celtowie',
@@ -542,7 +552,14 @@ function isBlankReplacement(zamiast: string): boolean {
   return zamiast.length === 0 || zamiast === '-' || zamiast === '\u2014';
 }
 
-/** Tokeny nazw jednostek specjalnych z bonusy[] typ=jednostka_specjalna. */
+/**
+ * Tokeny nazw jednostek specjalnych z bonusy[] typ=jednostka_specjalna.
+ *
+ * `wartosc` moze byc:
+ *   - string[]  — schemat od RDY tokeny-fix (1 wpis / zamiennik nacji, civs.json).
+ *   - string    — legacy: pojedyncza nazwa, lub kilka nazw łączone "/" (nadal
+ *                 wspierane dla wstecznej zgodnosci / recznie edytowanych danych).
+ */
 export function civSpecialUnitNameTokens(
   bonusy: readonly CivBonusLite[] | undefined,
 ): string[] {
@@ -550,14 +567,19 @@ export function civSpecialUnitNameTokens(
   const tokens: string[] = [];
   for (const b of bonusy) {
     if (b.typ !== 'jednostka_specjalna') continue;
-    const raw = String(b.wartosc ?? '').trim();
-    if (!raw) continue;
-    for (const part of raw.split('/')) {
-      const trimmed = part.trim();
-      if (!trimmed) continue;
-      tokens.push(trimmed);
-      const primary = trimmed.split('(')[0]?.trim();
-      if (primary && primary !== trimmed) tokens.push(primary);
+    const rawValues: string[] = Array.isArray(b.wartosc)
+      ? b.wartosc.map(v => String(v ?? ''))
+      : [String(b.wartosc ?? '')];
+    for (const rawValue of rawValues) {
+      const raw = rawValue.trim();
+      if (!raw) continue;
+      for (const part of raw.split('/')) {
+        const trimmed = part.trim();
+        if (!trimmed) continue;
+        tokens.push(trimmed);
+        const primary = trimmed.split('(')[0]?.trim();
+        if (primary && primary !== trimmed) tokens.push(primary);
+      }
     }
   }
   return tokens;
@@ -670,7 +692,12 @@ export function availableProduction(
       if (replacedBySpec) continue;
     }
     const tech = (u.Tech ?? '').toString().trim();
-    if (tech.length > 0 && tech !== '-' && !techs.has(tech)) continue;
+    // BUGFIX: blank-tech marker w units.json bywa zapisany jako '-' LUB '—'
+    // (em dash) -- np. jednostki Specjalna/Super z pustym Tech (Hieros Lochos,
+    // Evocati, Triari). Bez tej drugiej formy taka jednostka nigdy sie nie
+    // pojawia w produkcji (szuka nieistniejacej technologii "—"). Uzgodnione
+    // z isBlankReplacement(), ktora juz uznaje obie formy za puste.
+    if (tech.length > 0 && tech !== '-' && tech !== '—' && !techs.has(tech)) continue;
     // Koszary gate (decyzja Maciej 2026-06-25): jednostki epoki Brazu wymagaja
     // wybudowanych Koszar (id='koszary') w miescie. Inne epoki bez zmian.
     if (epochNumber(u.Epoka) === 2 && !built.has('koszary')) continue;

@@ -73,6 +73,7 @@ import {
   purgeOceanInsideEarthLandMask,
   purgeReliefValleyWater,
   purgeDesertEnclaveWater,
+  thickenCoastAndSmoothInlets,
   type StartPosition,
   type TypSwiata,
 } from './gen-helpers';
@@ -353,6 +354,9 @@ export function generateMap(
   // ── Przebieg 3h-pre: ostatni purge wody→ląd PRZED rzekami (B0.1 — nie kasować ujść) ─
   purgeInlandWaterForMultiLandTyp(hexes, width, height);
   purgeDesertEnclaveWater(hexes, width, height);
+  // ── Przebieg 3h-coast: grubsze (≥2 hex) + gładsze wybrzeże PRZED rzekami (Zmiana 2) ─
+  thickenCoastAndSmoothInlets(hexes, width, height, 2);
+  enforceMapBorderOcean(hexes, width, height);
   // ── Przebieg 3h: rzeki DOPIERO po finalnym wybrzeżu (Maciej: bufor 2 hex od morza) ─
   const riversTier = genOpts?.worldDensity?.rivers ?? 'medium';
   clearRiverMarks(hexes);

@@ -70,7 +70,8 @@ export function loadManpowerRegenParams(
 /** Bonus cywilizacji wpływający na odnowę poboru (civs.json). */
 export interface CivBonusPoborLite {
   typ?: string;
-  wartosc?: number | string;
+  /** jednostka_specjalna: string[] (tokeny-fix); inne typy bonusow: number. */
+  wartosc?: number | string | string[];
   realizuje?: string;
 }
 

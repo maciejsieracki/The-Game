@@ -168,6 +168,82 @@ export function prereqsMet(t: TechDef, researched: Set<string>): boolean {
   return parsePrereqs(t).every(p => researched.has(p));
 }
 
+// ---------------------------------------------------------------------------
+// Progresja epok/tierów — 3 zasady twardego gatingu (DODATKOWE do prereków).
+// DUPLIKAT logiki z research.ts (epochGateMet/epochTierGateMet) — runtime gracza
+// ma własną kopię (jak prereqsMet/availableTechs), by UI i runtime się nie rozjechały.
+// Ta sama logika MUSI pozostać zgodna z research.ts.
+//   Zasada 1: epoka N+1 zablokowana, dopóki cała epoka N nieodkryta.
+//   Zasada 2: wyższy tier epoki zablokowany, dopóki niższe tiery tej epoki nieodkryte.
+//   Zasada 3: awans na T3 (awansDoEpoki na kapstone T3) wynika strukturalnie z 1+2.
+// ---------------------------------------------------------------------------
+
+/** Diakrytyki PL → ASCII (normalizacja etykiety epoki). */
+const PL_DIAKRYTYKI_EPOKA: Readonly<Record<string, string>> = {
+  'ą': 'a', 'ć': 'c', 'ę': 'e', 'ł': 'l', 'ń': 'n',
+  'ó': 'o', 'ś': 's', 'ź': 'z', 'ż': 'z',
+};
+
+/** Mapowanie znormalizowanej etykiety epoki na numer: Kamień=1, Brąz=2, Żelazo=3. */
+const NUMER_EPOKI: Readonly<Record<string, number>> = {
+  kamien: 1,
+  braz: 2,
+  zelazo: 3,
+};
+
+/** Numer epoki techu (1/2/3) lub null gdy pole Epoka puste / nierozpoznane. */
+export function epochNumber(t: TechDef): number | null {
+  const raw = t.Epoka;
+  if (raw == null) return null;
+  const norm = String(raw)
+    .trim()
+    .toLowerCase()
+    .replace(/[ąćęłńóśźż]/g, (c) => PL_DIAKRYTYKI_EPOKA[c] ?? c);
+  const n = NUMER_EPOKI[norm];
+  return typeof n === 'number' ? n : null;
+}
+
+/**
+ * ZASADA 1 — TWARDA BRAMKA EPOKI: tech epoki E dostępny tylko gdy WSZYSTKIE techy
+ * o Epoce < E są w `done`. Tech bez rozpoznanej epoki → spełniona (kompat. wsteczna).
+ */
+export function epochGateMet(
+  t: TechDef,
+  techs: readonly TechDef[],
+  done: ReadonlySet<string>,
+): boolean {
+  const e = epochNumber(t);
+  if (e == null) return true;
+  for (const other of techs) {
+    const oe = epochNumber(other);
+    if (oe == null) continue;
+    if (oe < e && !done.has(techId(other))) return false;
+  }
+  return true;
+}
+
+/**
+ * ZASADA 2 — TIER-GATING WEWNĄTRZ EPOKI: tech o Poziom=P w Epoce E dostępny tylko
+ * gdy WSZYSTKIE techy TEJ SAMEJ epoki E o Poziom < P są w `done`. Filtr po Epoce
+ * PRZED porównaniem Poziom. Brak epoki/Poziom → spełniona (kompat. wsteczna).
+ */
+export function epochTierGateMet(
+  t: TechDef,
+  techs: readonly TechDef[],
+  done: ReadonlySet<string>,
+): boolean {
+  const e = epochNumber(t);
+  const p = t.Poziom;
+  if (e == null || typeof p !== 'number' || !Number.isFinite(p)) return true;
+  for (const other of techs) {
+    if (epochNumber(other) !== e) continue;
+    const op = other.Poziom;
+    if (typeof op !== 'number' || !Number.isFinite(op)) continue;
+    if (op < p && !done.has(techId(other))) return false;
+  }
+  return true;
+}
+
 /**
  * Techs that may be started now: not already researched and all prereqs met.
  * Returns the matching TechDef rows (order preserved from the data array).
@@ -181,6 +257,8 @@ export function availableTechs(
     const id = techId(t);
     if (id === '' || researched.has(id)) return false;
     if (!prereqsMet(t, researched)) return false;
+    if (!epochGateMet(t, techs, researched)) return false;      // Zasada 1
+    if (!epochTierGateMet(t, techs, researched)) return false;  // Zasada 2
     if (gate && !researchGatesMet(t, asResearchGate(gate))) return false;
     return true;
   });
@@ -296,6 +374,8 @@ export function researchStep(
     const def = byId.get(id);
     if (!def || state.zbadane.has(id)) return false;
     if (!prereqsMet(def, state.zbadane)) return false;
+    if (!epochGateMet(def, techs, state.zbadane)) return false;      // Zasada 1
+    if (!epochTierGateMet(def, techs, state.zbadane)) return false;  // Zasada 2
     if (gate && !researchGatesMet(def, asResearchGate(gate))) return false;
     return true;
   };
@@ -400,6 +480,9 @@ export function setPlayerResearchTarget(
   if (state.zbadane.has(techId)) return false;
   // All prereqs must be met.
   if (!prereqsMet(def, state.zbadane)) return false;
+  // Progresja epok/tierów (Zasady 1+2) — twardsze niż prereki.
+  if (!epochGateMet(def, techs, state.zbadane)) return false;
+  if (!epochTierGateMet(def, techs, state.zbadane)) return false;
   // Building + improvement gate (T-TECH-7).
   if (gate && !researchGatesMet(def, asResearchGate(gate))) return false;
   state.playerResearchTargetId = techId;

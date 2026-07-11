@@ -289,10 +289,17 @@ export function riverGridCellSizeForTier(tier: DensityTier): number {
 
 /**
  * Min. długość trasy przy stawianiu siatki fair play (Maciej A 2026-07-05).
- * Tier katalogowy (np. 25) obowiązuje jako cel; siatka akceptuje krótsze na wąskich lądach.
+ * Tier katalogowy (np. 25) obowiązuje jako CEL; siatka akceptuje krótsze na wąskich lądach.
+ *
+ * Zmiana 3 „reguła długości 25 → miękka" (Maciej 2026-07-11): próg akceptacji obniżony
+ * (12→6 med), aby rzeka, której NIE da się doprowadzić do 25 heksów, i tak powstała
+ * jako krótka, ale KOMPLETNA (z ujściem do morza) zamiast zostać odrzucona. Cel 25 nadal
+ * steruje traceRiver (inlandTarget) — długie rzeki powstają tam, gdzie geografia pozwala;
+ * dolny próg tylko decyduje, czy zachować krótki, kompletny bieg. Ujście gwarantowane przez
+ * pathEndsAtSea (tryPlaceGridRiver) — „0 rzek bez ujścia" zostaje.
  */
 export function riverGridTraceMinLen(catalogMinLen: number, tier: DensityTier = 'medium'): number {
-  const cap = tier === 'low' ? 10 : 12;
+  const cap = tier === 'low' ? 5 : tier === 'high' ? 8 : 6;
   return Math.min(catalogMinLen, cap);
 }
 

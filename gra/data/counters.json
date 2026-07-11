@@ -1,35 +1,35 @@
 [
   {
-    "Typ atakujący": "Włócznik",
-    "Cel (typ)": "Konnica/Rydwan",
+    "Typ atakujący": "Spearman",
+    "Cel (typ)": "Mount",
     "Bonus": "+50%",
     "Rodzaj (Atak/Obrona)": "Atak",
     "Status": "potwierdzone"
   },
   {
-    "Typ atakujący": "Włócznik",
-    "Cel (typ)": "Konnica/Rydwan",
+    "Typ atakujący": "Spearman",
+    "Cel (typ)": "Mount",
     "Bonus": "+50%",
     "Rodzaj (Atak/Obrona)": "Obrona",
     "Status": "potwierdzone"
   },
   {
-    "Typ atakujący": "Konnica/Rydwan",
-    "Cel (typ)": "Dystansowe (łucznik/oszczepnik/procarz)",
+    "Typ atakujący": "Mount",
+    "Cel (typ)": "Distance",
     "Bonus": "+50%",
     "Rodzaj (Atak/Obrona)": "Atak",
     "Status": "potwierdzone"
   },
   {
     "Typ atakujący": "Procarz",
-    "Cel (typ)": "Włócznik",
+    "Cel (typ)": "Spearman",
     "Bonus": "+50%",
     "Rodzaj (Atak/Obrona)": "Atak",
     "Status": "potwierdzone"
   },
   {
     "Typ atakujący": "Atak z flanki (z boku)",
-    "Cel (typ)": "Falanga, łucznicy",
+    "Cel (typ)": "Falangite/Distance",
     "Bonus": "−50%",
     "Rodzaj (Atak/Obrona)": "Obrona",
     "Status": "potwierdzone"

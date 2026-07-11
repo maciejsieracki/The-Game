@@ -1662,6 +1662,15 @@ function forceReliefInCell(
   return a || b;
 }
 
+/**
+ * Zmiana 1 „MIN NIE MAX" (Maciej 2026-07-11): fair-play min. 2 Góry + 2 Wzgórza / komórkę
+ * jest DOLNĄ granicą reliefu, nie górną. Górny limit (degradacja nadmiaru — najsłabsza
+ * Góra→Wzgórza, Wzgórze→Równina) BYŁ sztuczną regularnością. Mnożnik = ∞ → cap wyłączony:
+ * naturalny szum daje bogatszy, nieregularny relief (gwarancja minimum zostaje — force*InCell).
+ * Miękki sufit (np. 3–5 × dawny cap) tylko gdy skan pokaże za dużo (>~40% lądu górzyste).
+ */
+const RELIEF_OVERFLOW_CAP_MULT = Number.POSITIVE_INFINITY;
+
 function capMountainOverflowInCell(
   land: Array<[number, number]>,
   hexes: Record<string, Hex>,
@@ -1669,9 +1678,10 @@ function capMountainOverflowInCell(
   tier: ReliefDensityTier,
   spreadOnly = false,
 ): boolean {
-  const maxMtn = spreadOnly
+  const baseMaxMtn = spreadOnly
     ? reliefSpreadCapMountain(tier, land.length)
     : Math.max(MIN_MOUNTAINS_IRON_CELL, reliefBonusCapMountain(tier, land.length) + MIN_MOUNTAINS_IRON_CELL);
+  const maxMtn = baseMaxMtn * RELIEF_OVERFLOW_CAP_MULT;
   const mountains = land
     .filter(([q, r]) => hexes[hexKey(q, r)]?.terenBazowy === TerenBazowy.Gory)
     .map(([q, r]) => ({ q, r, n: scratch.get(hexKey(q, r))?.mtnNoise ?? 0 }))
@@ -1695,9 +1705,11 @@ function capHighlandOverflowInCell(
   tier: ReliefDensityTier,
   spreadOnly = false,
 ): boolean {
-  const maxHi = spreadOnly
+  // Zmiana 1 „MIN NIE MAX": górny limit Wzgórz wyłączony (RELIEF_OVERFLOW_CAP_MULT = ∞).
+  const baseMaxHi = spreadOnly
     ? reliefSpreadCapHighland(tier, land.length)
     : Math.max(MIN_HIGHLANDS_COPPER_CELL, reliefBonusCapHighland(tier, land.length) + MIN_HIGHLANDS_COPPER_CELL);
+  const maxHi = baseMaxHi * RELIEF_OVERFLOW_CAP_MULT;
   const highlands = land
     .filter(([q, r]) => hexes[hexKey(q, r)]?.terenBazowy === TerenBazowy.Wzgorza)
     .map(([q, r]) => ({ q, r, n: scratch.get(hexKey(q, r))?.mtnNoise ?? 0 }))
@@ -2929,6 +2941,83 @@ export function finalizeCoastAndInlandWater(
     // byłyby no-opami (te helpery nie losują). Pomijamy je bez zmiany wyniku.
     if (changed === 0) break;
   }
+}
+
+/**
+ * Zmiana 2 (Maciej 2026-07-11): grubsze, gładsze wybrzeże — uruchamiane PRZED rzekami,
+ * jako OSTATNI krok kształtu lądu/morza (dalej nic nie zdejmuje wybrzeża).
+ *
+ *  (a) Wygładzenie fałszywych wcięć-ujść: Morze wcinające się w ląd (≥4 sąsiadów
+ *      ląd/wybrzeże) → Łąka; iteracyjnie, plus jeden pass pojedynczych wcięć (≥3).
+ *      Usuwa zatoczki między heksami morza, które kształtem udają ujście rzeki bez rzeki.
+ *  (b) TRWAŁY podwójny (coastWidth) pierścień wybrzeża — min. 2 heksy dookoła lądu.
+ *      Reset istniejącego wybrzeża → ląd, potem `coastWidth` pierścieni od Morza, BEZ
+ *      sanitizeCoastHexes (który zdejmował 2. pierścień). Dzięki temu pasmo faktycznie
+ *      ma coastWidth heksów w finalnej mapie.
+ *
+ * Determinizm: brak rand(). Ocean-connectivity (oceanConnectedWaterKeys) idzie przez
+ * Morze+Wybrzeże, więc rzeka kończąca na wewnętrznym pierścieniu wybrzeża nadal spełnia
+ * pathEndsAtSea → „0 rzek bez ujścia" zostaje.
+ */
+export function thickenCoastAndSmoothInlets(
+  hexes: Record<string, Hex>,
+  width: number,
+  height: number,
+  coastWidth = 2,
+): number {
+  let changed = 0;
+
+  // (a) wygładzenie wcięć — Morze wcięte w ląd (≥4 sąsiadów niebędących Morzem) → Łąka.
+  // Zbieżnie (aż 0), bo wypełnienie jednego wcięcia może odsłonić kolejne; brak kaskady
+  // zostawiłby świeżo utworzone 1-heksowe kieszenie morza wyglądające jak ujścia rzek.
+  // (próg ≥4 — jak fillEnclosedWaterByLandNeighbors w pipeline; ≥3 zwężałoby cieśniny.)
+  for (let pass = 0; pass < 12; pass++) {
+    const toFill: string[] = [];
+    for (const [key, hex] of Object.entries(hexes)) {
+      if (hex.terenBazowy !== TerenBazowy.Morze) continue;
+      const { q, r } = parseHexKey(key);
+      if (isInMapBorder(q, r, width, height)) continue;
+      if (countLandNeighbors(hexes, q, r) >= 4) toFill.push(key);
+    }
+    if (toFill.length === 0) break;
+    for (const key of toFill) {
+      setHexToLaka(hexes[key]!);
+      changed++;
+    }
+  }
+  // po wygładzeniu mogły powstać odcięte kałuże — zamień na ląd
+  changed += removeInlandWaterPools(hexes, width, height);
+
+  // (b) reset istniejącego wybrzeża → ląd, potem `coastWidth` pierścieni od Morza (trwałe)
+  for (const hex of Object.values(hexes)) {
+    if (hex.terenBazowy === TerenBazowy.Wybrzeze) {
+      setHexToLaka(hex);
+      changed++;
+    }
+  }
+  for (let ring = 0; ring < coastWidth; ring++) {
+    const toCoast: string[] = [];
+    for (const [key, hex] of Object.entries(hexes)) {
+      if (!isDryLandTerrain(hex.terenBazowy)) continue;
+      const { q, r } = parseHexKey(key);
+      for (const [dq, dr] of HEX_DIRECTIONS) {
+        const nb = hexes[hexKey(q + dq, r + dr)];
+        if (nb && (nb.terenBazowy === TerenBazowy.Morze || nb.terenBazowy === TerenBazowy.Wybrzeze)) {
+          toCoast.push(key);
+          break;
+        }
+      }
+    }
+    if (toCoast.length === 0) break;
+    for (const key of toCoast) {
+      const hex = hexes[key]!;
+      hex.terenBazowy = TerenBazowy.Wybrzeze;
+      hex.nakladka = Nakladka.Brak;
+      delete (hex as HexWithZloze).zloze;
+      changed++;
+    }
+  }
+  return changed;
 }
 
 /**

@@ -11,7 +11,8 @@
 export interface CivBonusEntry {
   typ: string;
   cel: string;
-  wartosc: number | string;
+  /** jednostka_specjalna: string[] (tokeny-fix); inne typy bonusow: number. */
+  wartosc: number | string | string[];
   opis?: string;
   realizuje?: string;
 }

@@ -238,6 +238,80 @@ export function researchGatesMet(
   return buildingGateMet(tech, gate) && improvementGateMet(tech, gate);
 }
 
+// ---------------------------------------------------------------------------
+// Progresja epok/tierów — 3 zasady twardego gatingu (DODATKOWE do prereków).
+// Zasada 1: nie ruszysz epoki N+1, dopóki cała epoka N nieodkryta.
+// Zasada 2: nie ruszysz wyższego tieru w epoce, dopóki niższe tiery tej epoki
+//           nieodkryte. Zasada 3 (awans na T3) jest strukturalna w danych i
+//           wynika z 1+2 (awansDoEpoki siedzi na kapstone T3 danej epoki).
+// ---------------------------------------------------------------------------
+
+/**
+ * Mapowanie znormalizowanej etykiety epoki na numer: Kamień=1, Brąz=2, Żelazo=3.
+ * Klucze bez diakrytyków/lowercase — akceptuje "Kamień"/"Kamien", "Brąz"/"Braz" itd.
+ */
+const NUMER_EPOKI: Readonly<Record<string, number>> = {
+  kamien: 1,
+  braz: 2,
+  zelazo: 3,
+};
+
+/** Numer epoki techu (1/2/3) lub null gdy pole Epoka puste / nierozpoznane. */
+export function epochNumber(tech: ResearchTechDef): number | null {
+  const raw = tech.Epoka;
+  if (raw == null) return null;
+  const norm = String(raw)
+    .trim()
+    .toLowerCase()
+    .replace(/[ąćęłńóśźż]/g, (c) => PL_DIACRITICS[c] ?? c);
+  const n = NUMER_EPOKI[norm];
+  return typeof n === 'number' ? n : null;
+}
+
+/**
+ * ZASADA 1 — TWARDA BRAMKA EPOKI.
+ * Tech epoki E jest dostępny tylko gdy WSZYSTKIE techy o Epoce < E są w `done`.
+ * Tech bez rozpoznanej epoki → bramka spełniona (kompatybilność wsteczna, zero regresji).
+ */
+export function epochGateMet(
+  tech: ResearchTechDef,
+  techData: readonly ResearchTechDef[],
+  done: ReadonlySet<string>,
+): boolean {
+  const e = epochNumber(tech);
+  if (e == null) return true;
+  for (const other of techData) {
+    const oe = epochNumber(other);
+    if (oe == null) continue;
+    if (oe < e && !done.has(other.Technologia)) return false;
+  }
+  return true;
+}
+
+/**
+ * ZASADA 2 — TIER-GATING WEWNĄTRZ EPOKI.
+ * Tech o Poziom=P w Epoce E dostępny tylko gdy WSZYSTKIE techy TEJ SAMEJ epoki E
+ * o Poziom < P są w `done`. Filtr po Epoce PRZED porównaniem Poziom (Poziom rośnie
+ * globalnie, ale monotonicznie w obrębie epoki, więc porównanie per-epoka jest poprawne).
+ * Brak rozpoznanej epoki lub brak liczbowego Poziom → bramka spełniona (kompat. wsteczna).
+ */
+export function epochTierGateMet(
+  tech: ResearchTechDef,
+  techData: readonly ResearchTechDef[],
+  done: ReadonlySet<string>,
+): boolean {
+  const e = epochNumber(tech);
+  const p = tech.Poziom;
+  if (e == null || typeof p !== 'number' || !Number.isFinite(p)) return true;
+  for (const other of techData) {
+    if (epochNumber(other) !== e) continue;
+    const op = other.Poziom;
+    if (typeof op !== 'number' || !Number.isFinite(op)) continue;
+    if (op < p && !done.has(other.Technologia)) return false;
+  }
+  return true;
+}
+
 /** Cost-fallback base (used only when "Koszt nauki" is missing). */
 const FALLBACK_KOSZT_BAZOWY = 10;
 /** Cost-fallback increment per tree level above 1. */
@@ -343,6 +417,8 @@ export function availableTechs(
     if (done.has(tech.Technologia)) continue;
     const prereqs = prerequisitesOf(tech);
     if (!prereqs.every((p) => done.has(p))) continue;
+    if (!epochGateMet(tech, techData, done)) continue;      // Zasada 1: cała epoka N przed N+1
+    if (!epochTierGateMet(tech, techData, done)) continue;  // Zasada 2: niższe tiery epoki przed wyższymi
     if (gate && !researchGatesMet(tech, gate)) continue;
     result.push(tech.Technologia);
   }
@@ -361,6 +437,8 @@ export function canResearch(
   if (!tech) return false;
   const done = new Set(state.ukonczone);
   if (!prerequisitesOf(tech).every((p) => done.has(p))) return false;
+  if (!epochGateMet(tech, techData, done)) return false;      // Zasada 1
+  if (!epochTierGateMet(tech, techData, done)) return false;  // Zasada 2
   if (gate && !researchGatesMet(tech, gate)) return false;
   return true;
 }

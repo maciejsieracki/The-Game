@@ -34,7 +34,12 @@
         {
           "typ": "jednostka_specjalna",
           "cel": "piechota",
-          "wartosc": "Falanga (Hoplita)",
+          "wartosc": [
+            "Falanga",
+            "Wojownik mykeński",
+            "Rydwan mykeński",
+            "Thorakites"
+          ],
           "opis": "Hoplita = ulepszona piechota z tarczą; silna od frontu, odpiera szarżę kawalerii",
           "realizuje": "walka"
         },
@@ -203,7 +208,10 @@
         {
           "typ": "jednostka_specjalna",
           "cel": "piechota",
-          "wartosc": "Legion (Legionista)",
+          "wartosc": [
+            "Hastati",
+            "Triari"
+          ],
           "opis": "Legionista = ciężka piechota z pilum; silny atak + pancerz + morale",
           "realizuje": "walka"
         },
@@ -327,7 +335,7 @@
     {
       "Cywilizacja": "Chińczycy",
       "Styl / charakter": "dystans + kawaleria",
-      "Jednostka specjalna": "Kusznik (lepszy łucznik)",
+      "Jednostka specjalna": "Jeździec chiński",
       "Bonus startowy": "lepsi łucznicy (+Atak/zasięg) i lepsza konnica (+Uderzenie)",
       "Bonusy/minusy (do dopracowania)": "słabsza piechota szturmowa wręcz (nacisk na dystans i konnicę)",
       "Uwagi": "wczesna przewaga w wojnie dystansowej",
@@ -352,7 +360,7 @@
           "typ": "bonus_walka",
           "cel": "lukownicy",
           "wartosc": 0.2,
-          "opis": "Kusznik: +20% ataku i zasięgu łuczników/kuszników (przewaga dystansowa)",
+          "opis": "Łucznicy: +20% ataku i zasięgu jednostek dystansowych (przewaga dystansowa)",
           "realizuje": "walka"
         },
         {
@@ -364,9 +372,13 @@
         },
         {
           "typ": "jednostka_specjalna",
-          "cel": "dystans",
-          "wartosc": "Kusznik (lepszy łucznik)",
-          "opis": "Kusznik = silniejszy łucznik z kuszą; większy zasięg i przebicie pancerza",
+          "cel": "kawaleria",
+          "wartosc": [
+            "Jeździec chiński",
+            "Halabardnik Shang",
+            "Rydwan Shang"
+          ],
+          "opis": "Chińscy specjaliści: Jeździec chiński (kawaleria stepowa), Halabardnik Shang (elitarna piechota), Rydwan Shang (rydwan bojowy)",
           "realizuje": "walka"
         }
       ],
@@ -520,7 +532,13 @@
         {
           "typ": "jednostka_specjalna",
           "cel": "piechota",
-          "wartosc": "Chaska / Królewska Gwardia",
+          "wartosc": [
+            "Wojownik z maczugą (Chaska)",
+            "Wojownik z toporem",
+            "Procarz (Huaracoc)",
+            "Oszczepnik (Estólica)",
+            "Gwardzista z champi"
+          ],
           "opis": "Chaska (maczuga gwiaździsta) = elitarna piechota; Królewska Gwardia = oddziały prestiżowe",
           "realizuje": "walka"
         }
@@ -675,7 +693,11 @@
         {
           "typ": "jednostka_specjalna",
           "cel": "piechota",
-          "wartosc": "Impi",
+          "wartosc": [
+            "Impi",
+            "Oszczepnik Zulu (Izijula)",
+            "iButho z iklwa"
+          ],
           "opis": "Impi = szybka piechota z assegai; silna w zmasowanym ataku, słaba na dystans",
           "realizuje": "walka"
         }
@@ -830,7 +852,12 @@
         {
           "typ": "jednostka_specjalna",
           "cel": "piechota",
-          "wartosc": "Medżaj (Gwardia Faraona)",
+          "wartosc": [
+            "Łucznik egipski",
+            "Rydwan egipski",
+            "Wojownik z khopesh",
+            "Wojownik z żelaznym khopesh"
+          ],
           "opis": "Medżaj = elitarna gwardia; najlepsza piechota Egiptu, ochrona centrum miasta",
           "realizuje": "walka"
         }
@@ -985,7 +1012,13 @@
         {
           "typ": "jednostka_specjalna",
           "cel": "piechota",
-          "wartosc": "Gwardia Królewska Sumeru",
+          "wartosc": [
+            "Łucznik sumeryjski",
+            "Rydwan sumeryjski",
+            "Włócznik sumeryjski",
+            "Łucznik akadyjski",
+            "Mur tarcz (Sargonid)"
+          ],
           "opis": "Gwardia Królewska = szczyt ciężkiej piechoty Sumeru; pancerz i lanca; +obrona miasta",
           "realizuje": "walka"
         }
@@ -1140,7 +1173,11 @@
         {
           "typ": "jednostka_specjalna",
           "cel": "piechota",
-          "wartosc": "Soldurii",
+          "wartosc": [
+            "Soldurii",
+            "Rydwan celtycki",
+            "Miecznik galijski"
+          ],
           "opis": "Soldurii — elitarna gwardia wodza; przysięga do śmierci; silna w szarży",
           "realizuje": "walka"
         }
@@ -1295,7 +1332,9 @@
         {
           "typ": "jednostka_specjalna",
           "cel": "piechota",
-          "wartosc": "Wojownik germański (framea)",
+          "wartosc": [
+            "Berserker germański"
+          ],
           "opis": "Framea = włócznia/oszczep germański; celny rzut + walka wręcz; specjalista od zasadzki",
           "realizuje": "walka"
         }
@@ -1450,7 +1489,11 @@
         {
           "typ": "jednostka_specjalna",
           "cel": "piechota",
-          "wartosc": "Strażnik bram Harappy",
+          "wartosc": [
+            "Strażnik bram Harappy",
+            "Piechota induska",
+            "Garnizon Harappy"
+          ],
           "opis": "Elitarna piechota bram miasta-plan",
           "realizuje": "walka"
         }
@@ -1605,7 +1648,11 @@
         {
           "typ": "jednostka_specjalna",
           "cel": "rydwany",
-          "wartosc": "Rydwan Kapadokijski",
+          "wartosc": [
+            "Rydwan Kapadokijski",
+            "Piechota hetycka",
+            "Gwardia hetycka"
+          ],
           "opis": "Elitarny rydwan hetycki",
           "realizuje": "walka"
         }
@@ -1760,7 +1807,10 @@
         {
           "typ": "jednostka_specjalna",
           "cel": "piechota",
-          "wartosc": "Drużynnik",
+          "wartosc": [
+            "Drużynnik",
+            "Jeździec z oszczepami"
+          ],
           "opis": "Elitarny wojownik drużyny księcia",
           "realizuje": "walka"
         }
@@ -1915,7 +1965,11 @@
         {
           "typ": "jednostka_specjalna",
           "cel": "piechota",
-          "wartosc": "Gwardia Ishtar",
+          "wartosc": [
+            "Gwardia Ishtar",
+            "Wojownik babiloński",
+            "Piechota neobabilońska"
+          ],
           "opis": "Elitarna gwardia świątynna",
           "realizuje": "walka"
         }
@@ -2070,7 +2124,11 @@
         {
           "typ": "jednostka_specjalna",
           "cel": "lukownicy",
-          "wartosc": "Łucznik asyryjski",
+          "wartosc": [
+            "Konnica lancowa asyryjska",
+            "Konnica łucznicza asyryjska",
+            "Łucznik asyryjski"
+          ],
           "opis": "Elitarny łucznik imperium",
           "realizuje": "walka"
         }
@@ -2225,7 +2283,11 @@
         {
           "typ": "jednostka_specjalna",
           "cel": "piechota",
-          "wartosc": "Tyrski miecznik",
+          "wartosc": [
+            "Tyrski miecznik",
+            "Wojownik fenicki",
+            "Gwardia Tyreńska"
+          ],
           "opis": "Elitarny wojownik fenicki",
           "realizuje": "walka"
         }
