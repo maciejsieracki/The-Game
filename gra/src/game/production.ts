@@ -732,6 +732,120 @@ export function availableProduction(
 }
 
 // ---------------------------------------------------------------------------
+// availableReplacementsFor — mechanizm "Zastąp" (ZASTAP-JEDNOSTKI-PLAN.md)
+// ---------------------------------------------------------------------------
+
+/**
+ * Lista jednostek, którymi gracz może ZASTĄPIĆ `currentUnitName` (nie "awans" —
+ * nawet słabsza jednostka tego samego `Typ` jest dopuszczalna).
+ *
+ * Lista = SUMA:
+ *   A) wszystkie odblokowane TERAZ jednostki tego samego `Typ` (epoka/tech/nacja/
+ *      koszary/braz-access — te same bramki co availableProduction), WŁĄCZNIE
+ *      z jednostkami słabszymi od bieżącej (w przeciwieństwie do availableProduction
+ *      ten krok NIE chowa jednostki bazowej gdy istnieje lepszy zamiennik cyw.).
+ *   B) jeśli `currentUnitName` ma wypełnione pole "Zastąp specjalnie" w units.json —
+ *      dokładnie TA jednostka, NAWET innego `Typ` (np. Wojownik tyrreński → Evocati),
+ *      porównywana po pełnej nazwie `Jednostka` (bez fuzzy matchingu), również
+ *      przefiltrowana epoka/tech/nacja/koszary/braz (musi być "dostępna TERAZ").
+ *
+ * Bieżąca jednostka jest zawsze wykluczona z wyniku (zastępowanie sobą nie ma sensu).
+ *
+ * Bramka koszary/braz-access jest per-miasto w produkcji; tu (jednostka w polu, bez
+ * własnego miasta) `ctx` powinien nieść dane miasta-garnizonu (zasięg akcji "Zastąp"
+ * = tylko heks własnego miasta — patrz main.ts openUnitReplacePicker).
+ */
+export function availableReplacementsFor(
+  currentUnitName: string,
+  data: ProductionData,
+  unlockedTechs: readonly string[],
+  ctx: AvailabilityContext = {},
+): ProductionItem[] {
+  const current = findUnit(data, currentUnitName);
+  if (!current) return [];
+  const currentTyp = (current.Typ ?? '').toString().trim();
+
+  const epoch = Number.isFinite(ctx.epoch) ? (ctx.epoch as number) : 1;
+  const builtList = ctx.builtBuildingIds ?? [];
+  const built = new Set(builtList);
+  const techs = new Set(unlockedTechs);
+  const specTokens = civSpecialUnitNameTokens(ctx.civBonusy);
+  const ownerId = ctx.ownerId ?? 0;
+  const difficulty = ctx.difficulty ?? 'normal';
+
+  /** Bramki wspólne dla A) i B): epoka/nacja/tech/koszary/braz-access. Nie sprawdza Typ. */
+  function passesAvailabilityGates(u: UnitDef): boolean {
+    if (epochNumber(u.Epoka) > epoch) return false;
+    const nacja = (u.Nacja ?? '').toString().trim();
+    if (!unitAllowedForCivNation(nacja, ctx.civUnitNacja)) return false;
+    const tech = (u.Tech ?? '').toString().trim();
+    // Blank-tech marker bywa '-' LUB '—' (em dash) -- patrz uwaga w availableProduction.
+    if (tech.length > 0 && tech !== '-' && tech !== '—' && !techs.has(tech)) return false;
+    // Koszary gate (decyzja Maciej 2026-06-25): jednostki epoki Brazu wymagaja Koszar.
+    if (epochNumber(u.Epoka) === 2 && !built.has('koszary')) return false;
+    const surowiec = (u.Surowiec ?? '').toString().trim().toLowerCase();
+    if (surowiec === 'braz' && !hasBrazAccess(ctx.placedImprovements, builtList)) return false;
+    return true;
+  }
+
+  function costOf(u: UnitDef): number {
+    return unitMoneyCost(
+      itemCost('jednostka', u.Jednostka, data, 1),
+      ctx.civBonusy,
+      ctx.kosztJednostekPace,
+      ownerId,
+      difficulty,
+    );
+  }
+
+  const items: ProductionItem[] = [];
+  const seen = new Set<string>();
+
+  // --- A) wszystkie jednostki tego samego Typ, odblokowane teraz -------------
+  for (const u of data.units) {
+    if (u.Jednostka === currentUnitName) continue; // nie zastępuj sobą
+    const utyp = (u.Typ ?? '').toString().trim();
+    if (!utyp || utyp !== currentTyp) continue;
+    if (!passesAvailabilityGates(u)) continue;
+    // Reużyte 1:1 z availableProduction: jednostka "Specjalna" (W zamian za wypełnione)
+    // pokazuje się TYLKO gdy cyw gracza ma dopasowany token w bonusy[] (civs.json).
+    // Krok "chowaj jednostke bazowa gdy istnieje lepszy zamiennik cyw." jest CELOWO
+    // POMINIĘTY (Zastąp ma pokazać też warianty słabsze -- inaczej niż w rekrutacji).
+    const zamiast = (u['W zamian za'] ?? '').toString().trim();
+    if (!isBlankReplacement(zamiast) && !unitMatchesSpecialName(u.Jednostka, specTokens)) continue;
+
+    items.push({ kind: 'jednostka', id: u.Jednostka, nazwa: u.Jednostka, koszt: costOf(u) });
+    seen.add(u.Jednostka);
+  }
+
+  // --- B) jednostka specjalna z pola "Zastąp specjalnie" (nawet inny Typ) ----
+  const specialName = (current['Zastąp specjalnie'] ?? '').toString().trim();
+  if (specialName && !isBlankReplacement(specialName)) {
+    for (const rawName of specialName.split('/')) {
+      const name = rawName.trim();
+      if (!name || name === currentUnitName || seen.has(name)) continue;
+      const specialUnit = findUnit(data, name);
+      if (!specialUnit) continue;
+      if (!passesAvailabilityGates(specialUnit)) continue;
+      items.push({
+        kind: 'jednostka',
+        id: specialUnit.Jednostka,
+        nazwa: specialUnit.Jednostka,
+        koszt: costOf(specialUnit),
+      });
+      seen.add(specialUnit.Jednostka);
+    }
+  }
+
+  items.sort((a, b) => {
+    if (a.koszt !== b.koszt) return a.koszt - b.koszt;
+    return a.nazwa.localeCompare(b.nazwa);
+  });
+
+  return items;
+}
+
+// ---------------------------------------------------------------------------
 // Queue helpers (all immutable)
 // ---------------------------------------------------------------------------
 

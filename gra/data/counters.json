@@ -21,7 +21,14 @@
     "Status": "potwierdzone"
   },
   {
-    "Typ atakujący": "Procarz",
+    "Typ atakujący": "Mount",
+    "Cel (typ)": "Slinger",
+    "Bonus": "+50%",
+    "Rodzaj (Atak/Obrona)": "Atak",
+    "Status": "potwierdzone"
+  },
+  {
+    "Typ atakujący": "Slinger",
     "Cel (typ)": "Spearman",
     "Bonus": "+50%",
     "Rodzaj (Atak/Obrona)": "Atak",
@@ -29,7 +36,7 @@
   },
   {
     "Typ atakujący": "Atak z flanki (z boku)",
-    "Cel (typ)": "Falangite/Distance",
+    "Cel (typ)": "Falangite/Distance/Slinger",
     "Bonus": "−50%",
     "Rodzaj (Atak/Obrona)": "Obrona",
     "Status": "potwierdzone"

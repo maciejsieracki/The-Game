@@ -66,6 +66,14 @@ export interface UnitDef {
   Nacja?: string | null;
   'Kara obrony z flanki (%)': string | number | null;
   'Kara obrony z tyłu (%)': string | number | null;
+  /** Typ walki jednostki (Swordsman/Offensive/Distance/Mount/...) — bramka mechanizmu Zastąp. */
+  Typ?: string | null;
+  /**
+   * Mechanizm „Zastąp" (ZASTAP-JEDNOSTKI-PLAN.md): dokładna nazwa `Jednostka` konkretnej
+   * jednostki specjalnej, NAWET innego `Typ` (np. Wojownik tyrreński → Evocati).
+   * "—" / null / puste = brak zamiennika specjalnego (tylko reguła Typ w availableReplacementsFor).
+   */
+  'Zastąp specjalnie'?: string | null;
 }
 
 /** Wiersz z arkusza Budynki.xlsx. */

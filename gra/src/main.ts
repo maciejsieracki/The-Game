@@ -186,6 +186,7 @@ import {
 } from './game/siegeMachines';
 import { showCityAttackChoice, hideCityAttackChoice } from './ui/cityAttackChoice';
 import { showCityUnitPick, hideCityUnitPick, isCityUnitPickOpen } from './ui/cityUnitPick';
+import { showUnitReplacePicker } from './ui/unitReplacePicker';
 import { showCityCaptureNotice } from './ui/cityCaptureNotice';
 import { showArmyMergePanel, hideArmyMergePanel, isArmyMergePanelOpen } from './ui/armyMergePanel';
 import { showArmySplitPanel, hideArmySplitPanel, isArmySplitPanelOpen } from './ui/armySplitPanel';
@@ -365,8 +366,9 @@ import {
 import { civBonusyForCivKey } from './game/economy';
 import { advanceProduction, rushProduction, rushCost, populationCostOf, UNIT_POPULATION_COST,
   enqueueRecruitment, advanceRecruitment, advanceRecruitmentGated, unitProductionItem,
-  enqueue, buildingProductionItem, splitPraca, availableProduction,
-  buildingLevelForEpoch, buildingEffectAtLevel, frontItem, unitNacjaForCivKey, applyCompletedBuildingIds, type CityProduction } from './game/production';
+  enqueue, buildingProductionItem, splitPraca, availableProduction, availableReplacementsFor,
+  buildingLevelForEpoch, buildingEffectAtLevel, frontItem, unitNacjaForCivKey, applyCompletedBuildingIds,
+  type CityProduction, type AvailabilityContext } from './game/production';
 import {
   tryDeductUnitSpawnCosts, empirePoborTotals, rekrutUnitEquivalents, formatManpower,
   cityManpowerSnapshot, civManpowerRegenMult, cityManpowerMax, unitManpowerCost,
@@ -2188,6 +2190,143 @@ async function boot(): Promise<void> {
       );
       refreshD1bHud();
       return true;
+    }
+
+    // -------------------------------------------------------------------
+    // Mechanizm "Zastąp" (ZASTAP-JEDNOSTKI-PLAN.md) — decyzje UX wdrożone:
+    //   koszt = max(0, koszt_nowej - koszt_starej) w Pieniądzu (dopłata; sidegrade/
+    //     downgrade = 0, bez zwrotu);
+    //   tura = zużywa ruch (ruchLeft = 0 po zamianie);
+    //   zasięg = TYLKO heks własnego miasta gracza (jak fortify: cityAtUnit + ownerId);
+    //   HP = zachowany % (newHp = round(newMaxHp * oldHp/oldMaxHp), min 1);
+    //   limit = raz na turę na jednostkę (RuntimeUnit.replaceUsedThisTurn, reset w N: End turn);
+    //   nacja = tylko własna (unitAllowedForCivNation w availableReplacementsFor, niezmienione);
+    //   zakres = JEDNA zaznaczona karta w stosie (selectedId), nie cały stos;
+    //   manpower = POMINIĘTE — patrz DO DECYZJI w raporcie końcowym (unitManpowerCost() zależy
+    //     wyłącznie od epoki imperium, nie od typu jednostki -> "różnica nowa-stara" byłaby
+    //     zawsze 0 w obecnym modelu danych; dopłata/zwrot nie miałaby żadnego efektu).
+    // -------------------------------------------------------------------
+
+    /** Miasto-garnizon jednostki, o ile stoi na heksie WŁASNEGO miasta (cityAtUnit już filtruje ownerId). */
+    function unitReplaceGarrisonCity(u: RuntimeUnit): City | undefined {
+      return cityAtUnit(u);
+    }
+
+    /** Kontekst dostępności dla availableReplacementsFor — jak productionCtxForCity (cityPanel.ts),
+     *  ale per-miasto garnizonu (bramka koszary/braz-access jest per-miasto; zasięg akcji "Zastąp"
+     *  i tak = tylko garnizon, więc "OR po miastach gracza" z recon się nie zdarza). */
+    function replaceAvailabilityCtxForCity(city: City): AvailabilityContext {
+      return {
+        epoch: empireEpochForOwner(city.ownerId),
+        builtBuildingIds: cityBuilt.get(city.id) ?? [],
+        civBonusy: civBonusyForOwnerId(city.ownerId),
+        civUnitNacja: unitNacjaForCivKey(civKeyForOwnerId(city.ownerId)),
+        placedImprovements,
+        kosztJednostekPace: player.kosztJednostekPace ?? 'niski',
+        ownerId: city.ownerId,
+        difficulty: _menuDifficulty,
+      };
+    }
+
+    /** Lista zamienników dostępnych TERAZ dla jednostki `u` (pusta gdy nie w garnizonie własnego miasta). */
+    function computeUnitReplacements(u: RuntimeUnit): ProductionItem[] {
+      const city = unitReplaceGarrisonCity(u);
+      if (!city) return [];
+      return availableReplacementsFor(
+        u.typeId,
+        data,
+        Array.from(player.zbadane),
+        replaceAvailabilityCtxForCity(city),
+      );
+    }
+
+    /** Koszt rekrutacji Pieniądzem jednostki `typeId` (dla dopłaty = nowa - stara). */
+    function replaceUnitMoneyCost(typeId: string): number {
+      const item = unitProductionItem(
+        typeId, data, civBonusyForOwnerId(0), player.kosztJednostekPace ?? 'niski', 0, _menuDifficulty,
+      );
+      return item?.koszt ?? 0;
+    }
+
+    /** Otwórz modal wyboru zamiennika dla jednostki `u` (akcja "Zastąp" w ArmyStackHud). */
+    function openUnitReplacePicker(u: RuntimeUnit): void {
+      if (u.ownerId !== 0) return;
+      const city = unitReplaceGarrisonCity(u);
+      if (!city) {
+        showHintMessage('Zastąp: jednostka musi stać w garnizonie własnego miasta.', 3000);
+        return;
+      }
+      if (u.replaceUsedThisTurn) {
+        showHintMessage('Zastąp: już wykorzystano w tej turze.', 2500);
+        return;
+      }
+      const replacements = computeUnitReplacements(u);
+      if (replacements.length === 0) {
+        showHintMessage('Zastąp: brak dostępnych zamienników tego typu.', 2500);
+        return;
+      }
+      const oldCost = replaceUnitMoneyCost(u.typeId);
+      showUnitReplacePicker({
+        unitName: u.typeId,
+        skarb: player.skarbiec,
+        options: replacements.map(it => {
+          const udef = lookupUnitDef(it.id);
+          return {
+            id: it.id,
+            name: it.nazwa,
+            icon: unitIconSvg(udef, it.id),
+            surcharge: Math.max(0, it.koszt - oldCost),
+            atk: unitAtak(udef),
+            def: unitObrona(udef),
+            hpMax: unitHealth(udef),
+          };
+        }),
+        onPick: (newTypeId) => performUnitReplace(u.id, newTypeId),
+      });
+    }
+
+    /** Wykonaj zamianę jednostki `unitId` na `newTypeId` (runtime, po wyborze w modalu). */
+    function performUnitReplace(unitId: string, newTypeId: string): void {
+      const u = units.find(x => x.id === unitId);
+      if (!u || u.ownerId !== 0) return;
+      const city = unitReplaceGarrisonCity(u);
+      if (!city) return;
+      if (u.replaceUsedThisTurn) return;
+      const newDef = lookupUnitDef(newTypeId);
+      if (!newDef) return;
+
+      const surcharge = Math.max(0, replaceUnitMoneyCost(newTypeId) - replaceUnitMoneyCost(u.typeId));
+      if (player.skarbiec < surcharge) {
+        showHintMessage('Zastąp: brak Pieniądza na dopłatę (' + surcharge + ' 💰)', 3000);
+        return;
+      }
+
+      const oldDef = lookupUnitDef(u.typeId);
+      const oldMaxHp = unitHealth(oldDef);
+      const newMaxHp = unitHealth(newDef);
+      const oldHp = u.hp ?? oldMaxHp;
+      const newHp = Math.max(1, Math.round(newMaxHp * (oldMaxHp > 0 ? oldHp / oldMaxHp : 1)));
+
+      player.skarbiec -= surcharge;
+
+      const oldTypeId = u.typeId;
+      const isSuper = newDef['Super-jednostka'] === 'TAK';
+      u.typeId = newTypeId;
+      u.category = categoryOf(newTypeId, newDef['Rola (linia)'] ?? '', isSuper);
+      u.hp = newHp;
+      u.ruchLeft = 0;
+      u.replaceUsedThisTurn = true;
+
+      syncUnitsRender();
+      refreshFog();
+      refreshD1bHud();
+
+      showHintMessage(
+        oldTypeId + ' → ' + newTypeId
+          + (surcharge > 0 ? ' (dopłata ' + surcharge + ' 💰)' : ' (bez dopłaty)')
+          + ' — ' + city.name,
+        3500,
+      );
     }
 
     function buildPlayerCityListEntries(): CityListEntry[] {
@@ -6553,6 +6692,13 @@ async function boot(): Promise<void> {
       }
       if (!siegeCity) {
         actions.push({ id: 'fortify', label: 'Ufort.', disabled: stackRuch <= 0 });
+        // Mechanizm "Zast\u0105p" (ZASTAP-JEDNOSTKI-PLAN.md): tylko w garnizonie w\u0142asnego
+        // miasta, jednostka jeszcze nie u\u017cy\u0142a akcji w tej turze, i istnieje >=1 zamiennik.
+        const replaceCity = unitReplaceGarrisonCity(active);
+        const replaceDisabled = !replaceCity
+          || active.replaceUsedThisTurn === true
+          || computeUnitReplacements(active).length === 0;
+        actions.push({ id: 'replace', label: 'Zast\u0105p', disabled: replaceDisabled });
       }
       actions.push({ id: 'skip', label: 'Pomi\u0144', disabled: siegeCity !== null });
       actions.push({ id: 'disband', label: 'Rozwi\u0105\u017c', danger: true });
@@ -6949,6 +7095,8 @@ async function boot(): Promise<void> {
               refreshD1bHud();
             } else if (actionId === 'disband') {
               disbandPlayerUnit(u.id);
+            } else if (actionId === 'replace') {
+              openUnitReplacePicker(u);
             }
           },
           onClose: () => {
@@ -9951,6 +10099,8 @@ async function boot(): Promise<void> {
         for (const u of units) {
           u.ruchLeft = u.ruch;
           if (u.oblegaCityId) u.ruchLeft = 0;
+          // Mechanizm "Zastąp" (ZASTAP-JEDNOSTKI-PLAN.md): raz na turę na jednostkę.
+          if (u.replaceUsedThisTurn) u.replaceUsedThisTurn = false;
         }
         selectedId = null;
         reachable = new Set<string>();

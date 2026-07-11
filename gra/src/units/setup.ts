@@ -67,6 +67,9 @@ export interface RuntimeUnit {
   defLossesThisTurn?: number;
   /** Miasto oblegane — jednostka trzyma oblężenie (ruch zablokowany do końca / szturmu). */
   oblegaCityId?: string;
+  /** Mechanizm "Zastąp" (ZASTAP-JEDNOSTKI-PLAN.md): raz na turę na jednostkę.
+   *  Resetowana na false na starcie tury gracza (main.ts, obok resetu ruchLeft). */
+  replaceUsedThisTurn?: boolean;
 }
 
 /**
