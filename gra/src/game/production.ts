@@ -751,9 +751,12 @@ export function availableProduction(
  *
  * Bieżąca jednostka jest zawsze wykluczona z wyniku (zastępowanie sobą nie ma sensu).
  *
- * Bramka koszary/braz-access jest per-miasto w produkcji; tu (jednostka w polu, bez
- * własnego miasta) `ctx` powinien nieść dane miasta-garnizonu (zasięg akcji "Zastąp"
- * = tylko heks własnego miasta — patrz main.ts openUnitReplacePicker).
+ * Bramka koszary/braz-access jest per-miasto w produkcji. Zasięg akcji "Zastąp" =
+ * całe terytorium gracza (decyzja właściciela, 2026-07-19), nie tylko heks miasta —
+ * gdy jednostka stoi w garnizonie, `ctx` niesie dane TEGO miasta (jak w produkcji);
+ * gdy stoi w polu (bez miasta pod nią), wołający (main.ts computeUnitReplacements /
+ * replaceAvailabilityCtxEmpireWide) musi zbudować `ctx` jako "OR po wszystkich
+ * miastach gracza" (unia builtBuildingIds), bo ta funkcja sama nie zna reszty miast.
  */
 export function availableReplacementsFor(
   currentUnitName: string,

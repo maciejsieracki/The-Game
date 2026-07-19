@@ -2197,14 +2197,19 @@ async function boot(): Promise<void> {
     //   koszt = max(0, koszt_nowej - koszt_starej) w Pieniądzu (dopłata; sidegrade/
     //     downgrade = 0, bez zwrotu);
     //   tura = zużywa ruch (ruchLeft = 0 po zamianie);
-    //   zasięg = TYLKO heks własnego miasta gracza (jak fortify: cityAtUnit + ownerId);
+    //   zasięg = CAŁE terytorium gracza (decyzja właściciela, zmiana zakresu 2026-07-19) —
+    //     dowolny heks należący do gracza (isPlayerTerritoryHex), NIE tylko garnizon miasta;
+    //     gdy jednostka stoi w mieście, bramka koszary/braz-access nadal per to miasto,
+    //     poza miastem — "OR po wszystkich miastach gracza" (replaceAvailabilityCtxEmpireWide);
     //   HP = zachowany % (newHp = round(newMaxHp * oldHp/oldMaxHp), min 1);
     //   limit = raz na turę na jednostkę (RuntimeUnit.replaceUsedThisTurn, reset w N: End turn);
     //   nacja = tylko własna (unitAllowedForCivNation w availableReplacementsFor, niezmienione);
     //   zakres = JEDNA zaznaczona karta w stosie (selectedId), nie cały stos;
-    //   manpower = POMINIĘTE — patrz DO DECYZJI w raporcie końcowym (unitManpowerCost() zależy
-    //     wyłącznie od epoki imperium, nie od typu jednostki -> "różnica nowa-stara" byłaby
-    //     zawsze 0 w obecnym modelu danych; dopłata/zwrot nie miałaby żadnego efektu).
+    //   ludność = POMINIĘTA (decyzja właściciela 2026-07-19: "Zastąp" kosztuje WYŁĄCZNIE
+    //     Pieniądz — wszystkie 73 jednostki w units.json mają dziś "Ludność"=1, więc
+    //     różnicowanie kosztów ludności i tak nic by nie dało; rozliczenie wycofane);
+    //   manpower = POMINIĘTE — unitManpowerCost() zależy wyłącznie od epoki imperium, nie
+    //     od typu jednostki, więc nie ma tu roli do odegrania w obecnym modelu danych.
     // -------------------------------------------------------------------
 
     /** Miasto-garnizon jednostki, o ile stoi na heksie WŁASNEGO miasta (cityAtUnit już filtruje ownerId). */
@@ -2212,9 +2217,16 @@ async function boot(): Promise<void> {
       return cityAtUnit(u);
     }
 
+    /** Czy jednostka stoi na heksie należącym do terytorium gracza (miasto/posterunek/fort) —
+     *  zasięg akcji "Zastąp" (decyzja właściciela: całe terytorium, nie tylko garnizon miasta).
+     *  Reużywa dokładnie ten sam mechanizm co bramka trybu budowy (main.ts handleHexClick). */
+    function isUnitInPlayerTerritory(u: RuntimeUnit): boolean {
+      const nodes = buildAllTerritoryNodes();
+      return isPlayerTerritoryHex(u.q, u.r, playerCityNodes(), nodes, 0);
+    }
+
     /** Kontekst dostępności dla availableReplacementsFor — jak productionCtxForCity (cityPanel.ts),
-     *  ale per-miasto garnizonu (bramka koszary/braz-access jest per-miasto; zasięg akcji "Zastąp"
-     *  i tak = tylko garnizon, więc "OR po miastach gracza" z recon się nie zdarza). */
+     *  per-miasto garnizonu (bramka koszary/braz-access per to miasto, gdy jednostka w nim stoi). */
     function replaceAvailabilityCtxForCity(city: City): AvailabilityContext {
       return {
         epoch: empireEpochForOwner(city.ownerId),
@@ -2228,16 +2240,37 @@ async function boot(): Promise<void> {
       };
     }
 
-    /** Lista zamienników dostępnych TERAZ dla jednostki `u` (pusta gdy nie w garnizonie własnego miasta). */
+    /** Kontekst dostępności dla availableReplacementsFor, gdy jednostka stoi w POLU (w granicach
+     *  terytorium, bez miasta pod nią) — bramka koszary/braz-access "OR po wszystkich miastach
+     *  gracza" (decyzja właściciela: Zastąp działa w całym terytorium, nie tylko w garnizonie;
+     *  unia builtBuildingIds ze wszystkich miast gracza -> built.has('koszary') /
+     *  cityHasPiecHutniczy() zwraca true, gdy KTÓREKOLWIEK miasto spełnia warunek). */
+    function replaceAvailabilityCtxEmpireWide(): AvailabilityContext {
+      const builtUnion = new Set<string>();
+      for (const c of cities) {
+        if (c.ownerId !== 0) continue;
+        for (const id of cityBuilt.get(c.id) ?? []) builtUnion.add(id);
+      }
+      return {
+        epoch: empireEpochForOwner(0),
+        builtBuildingIds: Array.from(builtUnion),
+        civBonusy: civBonusyForOwnerId(0),
+        civUnitNacja: unitNacjaForCivKey(civKeyForOwnerId(0)),
+        placedImprovements,
+        kosztJednostekPace: player.kosztJednostekPace ?? 'niski',
+        ownerId: 0,
+        difficulty: _menuDifficulty,
+      };
+    }
+
+    /** Lista zamienników dostępnych TERAZ dla jednostki `u` (pusta gdy poza terytorium gracza).
+     *  W garnizonie miasta -> bramka per to miasto; w polu (w granicach terytorium, bez miasta
+     *  pod jednostką) -> bramka "OR po wszystkich miastach gracza". */
     function computeUnitReplacements(u: RuntimeUnit): ProductionItem[] {
+      if (!isUnitInPlayerTerritory(u)) return [];
       const city = unitReplaceGarrisonCity(u);
-      if (!city) return [];
-      return availableReplacementsFor(
-        u.typeId,
-        data,
-        Array.from(player.zbadane),
-        replaceAvailabilityCtxForCity(city),
-      );
+      const ctx = city ? replaceAvailabilityCtxForCity(city) : replaceAvailabilityCtxEmpireWide();
+      return availableReplacementsFor(u.typeId, data, Array.from(player.zbadane), ctx);
     }
 
     /** Koszt rekrutacji Pieniądzem jednostki `typeId` (dla dopłaty = nowa - stara). */
@@ -2251,9 +2284,8 @@ async function boot(): Promise<void> {
     /** Otwórz modal wyboru zamiennika dla jednostki `u` (akcja "Zastąp" w ArmyStackHud). */
     function openUnitReplacePicker(u: RuntimeUnit): void {
       if (u.ownerId !== 0) return;
-      const city = unitReplaceGarrisonCity(u);
-      if (!city) {
-        showHintMessage('Zastąp: jednostka musi stać w garnizonie własnego miasta.', 3000);
+      if (!isUnitInPlayerTerritory(u)) {
+        showHintMessage('Zastąp: dostępne tylko na własnym terytorium.', 3000);
         return;
       }
       if (u.replaceUsedThisTurn) {
@@ -2289,8 +2321,7 @@ async function boot(): Promise<void> {
     function performUnitReplace(unitId: string, newTypeId: string): void {
       const u = units.find(x => x.id === unitId);
       if (!u || u.ownerId !== 0) return;
-      const city = unitReplaceGarrisonCity(u);
-      if (!city) return;
+      if (!isUnitInPlayerTerritory(u)) return;
       if (u.replaceUsedThisTurn) return;
       const newDef = lookupUnitDef(newTypeId);
       if (!newDef) return;
@@ -2321,10 +2352,13 @@ async function boot(): Promise<void> {
       refreshFog();
       refreshD1bHud();
 
+      // Etykieta miasta w toaście: garnizon jednostki, a poza miastem (całe terytorium
+      // gracza) — pierwsze miasto gracza jako fallback (ten sam wzorzec co disbandPlayerUnit).
+      const replaceCity = unitReplaceGarrisonCity(u) ?? cities.find(c => c.ownerId === 0);
       showHintMessage(
         oldTypeId + ' → ' + newTypeId
           + (surcharge > 0 ? ' (dopłata ' + surcharge + ' 💰)' : ' (bez dopłaty)')
-          + ' — ' + city.name,
+          + (replaceCity ? (' — ' + replaceCity.name) : ''),
         3500,
       );
     }
@@ -6692,10 +6726,10 @@ async function boot(): Promise<void> {
       }
       if (!siegeCity) {
         actions.push({ id: 'fortify', label: 'Ufort.', disabled: stackRuch <= 0 });
-        // Mechanizm "Zast\u0105p" (ZASTAP-JEDNOSTKI-PLAN.md): tylko w garnizonie w\u0142asnego
-        // miasta, jednostka jeszcze nie u\u017cy\u0142a akcji w tej turze, i istnieje >=1 zamiennik.
-        const replaceCity = unitReplaceGarrisonCity(active);
-        const replaceDisabled = !replaceCity
+        // Mechanizm "Zast\u0105p" (ZASTAP-JEDNOSTKI-PLAN.md): dost\u0119pne w ca\u0142ym
+        // terytorium gracza (decyzja w\u0142a\u015bciciela, nie tylko garnizon miasta),
+        // jednostka jeszcze nie u\u017cy\u0142a akcji w tej turze, i istnieje >=1 zamiennik.
+        const replaceDisabled = !isUnitInPlayerTerritory(active)
           || active.replaceUsedThisTurn === true
           || computeUnitReplacements(active).length === 0;
         actions.push({ id: 'replace', label: 'Zast\u0105p', disabled: replaceDisabled });
