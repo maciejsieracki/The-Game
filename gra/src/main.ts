@@ -369,6 +369,7 @@ import { advanceProduction, rushProduction, rushCost, populationCostOf, UNIT_POP
   enqueue, buildingProductionItem, splitPraca, availableProduction, availableReplacementsFor,
   buildingLevelForEpoch, buildingEffectAtLevel, frontItem, unitNacjaForCivKey, applyCompletedBuildingIds,
   type CityProduction, type AvailabilityContext } from './game/production';
+import { empireHasKopalniaNaZlozuZelaza } from './game/zelazo-access';
 import {
   tryDeductUnitSpawnCosts, empirePoborTotals, rekrutUnitEquivalents, formatManpower,
   cityManpowerSnapshot, civManpowerRegenMult, cityManpowerMax, unitManpowerCost,
@@ -2234,6 +2235,7 @@ async function boot(): Promise<void> {
         civBonusy: civBonusyForOwnerId(city.ownerId),
         civUnitNacja: unitNacjaForCivKey(civKeyForOwnerId(city.ownerId)),
         placedImprovements,
+        hasKopalniaNaZlozuZelaza: empireHasKopalniaNaZlozuZelaza(placedImprovements, map),
         kosztJednostekPace: player.kosztJednostekPace ?? 'niski',
         ownerId: city.ownerId,
         difficulty: _menuDifficulty,
@@ -2257,6 +2259,7 @@ async function boot(): Promise<void> {
         civBonusy: civBonusyForOwnerId(0),
         civUnitNacja: unitNacjaForCivKey(civKeyForOwnerId(0)),
         placedImprovements,
+        hasKopalniaNaZlozuZelaza: empireHasKopalniaNaZlozuZelaza(placedImprovements, map),
         kosztJednostekPace: player.kosztJednostekPace ?? 'niski',
         ownerId: 0,
         difficulty: _menuDifficulty,
@@ -2566,6 +2569,7 @@ async function boot(): Promise<void> {
             { builtIds, ownerId: String(0) },
           );
         },
+        getHasKopalniaNaZlozuZelaza: () => empireHasKopalniaNaZlozuZelaza(placedImprovements, map),
         isAutoManageEnabled: (cityId: string) => autoManageCities.has(cityId),
         getGrowthMult: (cityId: string) => growthMultMap.get(cityId) ?? 1,
         getEmpireFoodState: (oid: number) => empireFoodStates.get(oid) ?? null,
@@ -2970,6 +2974,7 @@ async function boot(): Promise<void> {
           civBonusy: civBonusyForOwnerId(city.ownerId),
           civUnitNacja: unitNacjaForCivKey(civKeyForOwnerId(city.ownerId)),
           placedImprovements,
+          hasKopalniaNaZlozuZelaza: empireHasKopalniaNaZlozuZelaza(placedImprovements, map),
         },
       });
       if (!item) return null;
@@ -10630,6 +10635,7 @@ async function boot(): Promise<void> {
                         civBonusy: civBonusyForOwnerId(city.ownerId),
                         civUnitNacja: unitNacjaForCivKey(civKeyForOwnerId(city.ownerId)),
                         placedImprovements,
+                        hasKopalniaNaZlozuZelaza: empireHasKopalniaNaZlozuZelaza(placedImprovements, map),
                       },
                     },
                   );
@@ -11055,6 +11061,7 @@ async function boot(): Promise<void> {
                         civBonusy: civBonusyForOwnerId(ownerId),
                         civUnitNacja: unitNacjaForCivKey(civKeyForOwnerId(ownerId)),
                         placedImprovements,
+                        hasKopalniaNaZlozuZelaza: empireHasKopalniaNaZlozuZelaza(placedImprovements, map),
                         buildingCostPace: player.buildingCostPace ?? 'niski',
                         ownerId,
                         difficulty: _menuDifficulty,

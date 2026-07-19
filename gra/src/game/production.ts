@@ -61,6 +61,7 @@ import {
   hasBrazAccess,
   PIEC_HUTNICZY_BUILDING_ID,
 } from './braz-access';
+import { hasZelazoAccess } from './zelazo-access';
 import {
   isBuildingSuppressedFromProduction,
   upgradeProductionDisplayName,
@@ -373,6 +374,13 @@ export interface AvailabilityContext {
   civUnitNacja?: string;
   /** Ulepszenia terenu imperium — bramka Popalnia brązu (ABC-13). */
   placedImprovements?: ReadonlyMap<string, string | readonly string[]> | null;
+  /**
+   * Kopalnia postawiona na złożu żelaza gdziekolwiek w imperium gracza (bramka Odlewni
+   * żelaza / jednostek żelaznych, decyzja właściciela 2026-07-19) — WYLICZONE przez
+   * wołającego (main.ts/cityPanel.ts, tam gdzie jest dostęp do mapy), bo production.ts
+   * jest pure-logic i nie zna mapy. Patrz game/zelazo-access.ts hasZelazoAccess().
+   */
+  hasKopalniaNaZlozuZelaza?: boolean;
   /** Mnoznik kosztow budynkow z kreatora (Niski x1 / Normalny x2 / Wysoki x4). */
   buildingCostPace?: BuildingCostPace;
   /** Mnoznik kosztow rekrutacji jednostek z kreatora (Niski x1 / Normalny x2 / Wysoki x4). */
@@ -706,6 +714,10 @@ export function availableProduction(
       && !hasBrazAccess(ctx.placedImprovements, builtList)) {
       continue;
     }
+    if (surowiec === 'zelazo'
+      && !hasZelazoAccess(ctx.hasKopalniaNaZlozuZelaza, builtList)) {
+      continue;
+    }
     const koszt = unitMoneyCost(
       itemCost('jednostka', u.Jednostka, data, 1),
       ctx.civBonusy,
@@ -788,6 +800,8 @@ export function availableReplacementsFor(
     if (epochNumber(u.Epoka) === 2 && !built.has('koszary')) return false;
     const surowiec = (u.Surowiec ?? '').toString().trim().toLowerCase();
     if (surowiec === 'braz' && !hasBrazAccess(ctx.placedImprovements, builtList)) return false;
+    if (surowiec === 'zelazo'
+      && !hasZelazoAccess(ctx.hasKopalniaNaZlozuZelaza, builtList)) return false;
     return true;
   }
 

@@ -281,6 +281,9 @@ export interface CityPanelConfig {
   getOwnerColor?: (ownerId: number) => number;
   /** Ulepszenia terenu imperium — bramka Popalnia brązu (ABC-13). */
   getPlacedImprovements?: () => ReadonlyMap<string, string | readonly string[]> | null;
+  /** Kopalnia na złożu żelaza gdziekolwiek w imperium gracza (bramka żelaza, dec. 2026-07-19) —
+   *  całe imperium, nie per-miasto (jak Popalnia brązu). */
+  getHasKopalniaNaZlozuZelaza?: () => boolean;
   /** Mnoznik kosztow budynkow z kreatora (globalny dla rozgrywki). */
   getBuildingCostPace?: () => import('../game/building-cost-tempo').BuildingCostPace;
   /** Mnoznik kosztow rekrutacji jednostek z kreatora (globalny dla rozgrywki). */
@@ -5081,6 +5084,7 @@ function productionCtxForCity(city: City): AvailabilityContext {
     civBonusy: cfg.getCivBonusy?.(city.ownerId) ?? [],
     civUnitNacja: unitNacjaForCivKey(cfg.getCivKey?.(city.ownerId)),
     placedImprovements: cfg.getPlacedImprovements?.() ?? null,
+    hasKopalniaNaZlozuZelaza: cfg.getHasKopalniaNaZlozuZelaza?.() ?? false,
     buildingCostPace: cfg.getBuildingCostPace?.() ?? 'niski',
     kosztJednostekPace: cfg.getKosztJednostekPace?.() ?? 'niski',
     ownerId: city.ownerId,

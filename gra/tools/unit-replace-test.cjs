@@ -81,13 +81,17 @@ function assert(cond, msg, extra) {
 
 // Ctx: Rzym gracz w epoce Zelazo (3), Hutnictwo zelaza + Brazownictwo zbadane,
 // bez bonusow cyw (civBonusy=[]) -- specTokens puste, wiec jednostki "Specjalna"
-// innych nacji i tak odpadaja na bramce Nacja.
+// innych nacji i tak odpadaja na bramce Nacja. builtBuildingIds zawiera Odlewnie
+// zelaza + hasKopalniaNaZlozuZelaza=true (dec. wlasciciela 2026-07-19: jednostki
+// Zelaza wymagaja Surowiec='zelazo' -- Evocati/Hastati itd.) -- ten test sprawdza
+// filtrowanie Nacja/Typ/Tech, WIEC symulowany gracz ma juz pelny dostep do zelaza.
 const RZYM_ZELAZO_CTX = {
   epoch: 3,
   civUnitNacja: 'Rzym',
   civBonusy: [],
-  builtBuildingIds: [],
+  builtBuildingIds: ['odlewnia_zelaza'],
   placedImprovements: null,
+  hasKopalniaNaZlozuZelaza: true,
 };
 const TECHS_ZELAZO = ['Brazownictwo', 'Brązownictwo', 'Hutnictwo żelaza'];
 
