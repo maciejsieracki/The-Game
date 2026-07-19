@@ -43,7 +43,7 @@ git status --short
 
 ## 3. ✅ ZROBIONE I DZIAŁA W GRZE (zdeployowane do ROBOCZA)
 
-**Ostatni pełny deploy: ROBOCZA `ca3aafa0`** — zawiera także wszystko z sekcji 4 (wypchnięty na GitHub tym samym commitem, co ten plik). Poprzedni deploy: `ed16d0ea` / commit `49ab882`.
+**Ostatni pełny deploy: ROBOCZA `a44d5350`** — dokłada **wymóg surowca żelazo** dla jednostek epoki Żelaza (patrz §8 pkt 4) i **synchronizację paneli Excel** (§8 pkt 3). Poprzednie: `ca3aafa0` (Zastąp/Slinger/tech) → `ed16d0ea` (commit `49ab882`).
 
 - **Zasady progresji epok** — twarda bramka epoki (cała epoka odkryta przed następną) + tier-gating T1→T2→T3 wewnątrz epoki.
 - **Mapa** — „min nie max" (nie degradujemy wygenerowanych gór/wzgórz → więcej nieregularnego terenu); wybrzeże ≥2 heksy + eliminacja fałszywych wcięć wyglądających jak ujścia rzek; zmiękczona reguła długości rzeki (krótsze rzeki też powstają, ale zawsze dochodzą do morza).
@@ -129,12 +129,8 @@ node tools/map-gen-regression-test.cjs   # determinizm A=B + 0 rzek bez ujścia
 
 1. **Ludy Morza — barbarzyńcy epoki Brąz.** Rozszerzyć `barbarians.ts` o pulę jednostek + spawnować Wojownika Sherden / szekelesz gdy era = Brąz. Jednostki istnieją i mają już poprawną nację, ale „Ludy Morza" nie są grywalną cywilizacją, więc dziś są nieosiągalne.
 2. **Naprawa testów** — zaktualizować fixtury `logic-test` (nowe wymagania Brązownictwa) i naprawić harness `combat-test` (`counterTyp`).
-3. **Synchronizacja Excel ↔ JSON** — round-trip JSON → panele, żeby eksport odtwarzał aktualny stan (z nową kolumną „Bonus vs Slinger %" i polem „Zastąp specjalnie"). Docelowo diff = 0. To zdejmuje dług z zasady nr 2.
-4. **Łańcuch żelaza — NOWA MECHANIKA (zatwierdzona, pełna spec).**
-   *Problem:* `production.ts` egzekwuje **wyłącznie** `surowiec === 'braz'` (przez `hasBrazAccess`). Każda inna wartość pola „Surowiec" jest ignorowana. Dziś 16 jednostek epoki żelaza wymaga **brązu**.
-   ⚠️ **Sama zmiana danych na `zelazo` dałaby efekt ODWROTNY** — te 16 jednostek straciłoby jedyną działającą bramkę.
-   *Do zrobienia:* nowy `game/zelazo-access.ts` (wzór 1:1 z `braz-access.ts`) = kopalnia na złożu żelaza w imperium **AND** Odlewnia żelaza w mieście → bramka `if (surowiec === 'zelazo' && !hasZelazoAccess(...)) continue;` → wszystkie 25 jednostek epoki Żelaza dostają `Surowiec: "zelazo"` (**także 4 konne — „Koń" znika**) → weryfikacja balansu, czy mapa daje dość złóż (inaczej gracz traci całą epokę).
-   *Otwarty szczegół:* nie ma dedykowanej „kopalni żelaza" — jest ogólna `kopalnia` i `kopalnia_miedzi`. Do rozstrzygnięcia, czy zwykła kopalnia na złożu żelaza wystarcza, czy dorabiamy osobne ulepszenie.
+3. ✅ **ZROBIONE (deploy `a44d5350`) — Synchronizacja Excel ↔ JSON.** Panele A–E zregenerowane z bieżącego JSON przez `gen-panel-{a..e}.py`; **JSON `gra/data` nietknięty** (weryfikowane `git status` po każdym uruchomieniu). Round-trip `test-panel-{b,c,d}-roundtrip.py` = OK; Panel-A fail („łąka żywność") = **pre-istniejący**, deprecated arkusz `Plony-terenow` (potwierdzone: fail identyczny na starym pliku). Naprawiono `gen-panel-d.py` — obsługa `jednostka_specjalna.wartosc` jako tablicy (łączenie „/" do komórki). ⚠️ **Round-trip kolumny tokenów wymaga dopasowania parsera w `export-d.py`** przy realnym „eksportuj" (dziś zablokowany). Nowe pola (`Bonus vs Slinger %`, `Zastąp specjalnie`, `Surowiec`) świadomie POZA panelem — jak reszta bonusów.
+4. ✅ **ZROBIONE (deploy `a44d5350`) — Łańcuch żelaza.** `game/zelazo-access.ts` = ulepszenie `kopalnia` na heksie ze złożem `zelazo` w imperium **AND** `odlewnia_zelaza` w mieście; bramka `surowiec === 'zelazo'` w `production.ts` (spójnie w 6 miejscach, w tym walidator AI); 25 jednostek Epoka=Żelazo → `Surowiec: "zelazo"` (też 4 konne). Model **„jedna, ogólna kopalnia — surowiec wynika ze złoża pod nią"** (ogólna `kopalnia` już dziś stawia się na żelazie/węglu — `improvement-build.ts`). Balans: ~16 złóż/mapę, `zelazo` w `FAIR_PLAY_DEPOSIT_IDS` (gwarancja per komórka), ryzyko odcięcia epoki NISKIE. **Otwarte:** (a) dedykowana „Kopalnia żelaza" jako osobne ulepszenie — **decyzja odłożona** (na razie ogólna kopalnia wystarcza); (b) dostęp otwiera tylko `odlewnia_zelaza`, NIE `kuznia_zelaza` (spójne z wyborem; zmiana = 1 linia).
 5. **Backlog:** Handel vs Wymiana (naprawić Mennicę+Karawanseraj czy zrobić realne szlaki handlowe) · Ludy Morza — pełny feature (agresja AI + pływanie + embarkacja) · gęstość mapy (więcej miast/państw) · chunki mapy dla słabszych maszyn · restrukturyzacja drzewka 3-tier (D1–D9) · sprzątanie starej dokumentacji jednostek.
 
 ---

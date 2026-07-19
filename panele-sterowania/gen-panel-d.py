@@ -103,12 +103,17 @@ def bonusy_cywilizacji_rows():
         name = cyw.get("Cywilizacja", "")
         typ_cyw = cyw.get("typCywilizacji", "")
         for b in cyw.get("bonusy") or []:
+            # jednostka_specjalna.wartosc jest teraz tablica tokenow (string[]) —
+            # do komorki Excela laczymy je w jeden string; openpyxl nie wpisze listy.
+            w = b.get("wartosc", "")
+            if isinstance(w, list):
+                w = " / ".join(str(x) for x in w)
             rows.append({
                 "Nacja": name,
                 "typCywilizacji": typ_cyw,
                 "Typ efektu": b.get("typ", ""),
                 "Cel": b.get("cel", ""),
-                "Wartosc": b.get("wartosc", ""),
+                "Wartosc": w,
                 "Opis": b.get("opis", ""),
                 "Realizuje": b.get("realizuje", ""),
             })
