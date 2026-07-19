@@ -463,19 +463,39 @@ if (cheap !== null) {
     techCost(cheapDef) === minCost, `cost=${techCost(cheapDef)} min=${minCost}`);
 }
 
+// Helper (mirrors the hard epoch/tier gating duplicated in playerState.ts
+// epochGateMet/epochTierGateMet): every tech of the same Epoka with a lower
+// Poziom than `t` must be done before `t` can become available/targetable.
+// DRZEWKO-TECH-FIX 2026-07: Brązownictwo's own prereq widened to
+// "Garncarstwo + Murarstwo + Obróbka drewna" (was just Garncarstwo) AND the
+// engine now hard-gates by tier within an epoch, so simply researching
+// Garncarstwo is no longer enough — ALL Kamień tier-1/2 techs are required.
+function sameEpochLowerTierIds(techId) {
+  const def = techData.find(t => t.Technologia === techId);
+  return techData
+    .filter(t => t.Epoka === def.Epoka && t.Poziom < def.Poziom)
+    .map(t => t.Technologia);
+}
+const kamienBeforeBraz = sameEpochLowerTierIds('Brązownictwo'); // all Kamień tier 1-2
+
 // cheapest selection respects prereqs: Brązownictwo only becomes available
-// once Garncarstwo is researched, and is then the cheapest dependent option.
-const afterGarn = availableTechs(techData, new Set(['Garncarstwo']));
-assert('research: researching Garncarstwo unlocks Brązownictwo as available',
+// once its full prereq (Garncarstwo + Murarstwo + Obróbka drewna) AND the
+// tier gate (all lower-Poziom Kamień techs) are satisfied.
+const afterGarn = availableTechs(techData, new Set(kamienBeforeBraz));
+assert('research: after all Kamień tier 1-2 techs, Brązownictwo becomes available',
   afterGarn.some(t => t.Technologia === 'Brązownictwo'));
 
 // Completing a tech: enough science -> moves to zbadane and deducts cost.
+// tempoGry='szybka' pins the effective cost to the raw tech.json value (x1) so
+// this test exercises researchStep's own logic, not the separate tech-tempo
+// x2/x4 multiplier (that has its own dedicated bramka: tech-tempo-test.cjs).
 const psA = createPlayerState();
-const obrobka = techData.find(t => t.Technologia === 'Obróbka drewna'); // cost 12 (tech.json 2026-06-25), no prereq
+psA.tempoGry = 'szybka';
+const obrobka = techData.find(t => t.Technologia === 'Obróbka drewna'); // cost 12 (tech.json), no prereq
 assert('research: found Obróbka drewna (cost 12)', !!obrobka && techCost(obrobka) === 12,
   `cost=${obrobka ? techCost(obrobka) : 'N/A'}`);
 psA.badana = 'Obróbka drewna';
-psA.nauka = 12; // exactly enough for Obróbka drewna (cost 12)
+psA.nauka = 12; // exactly enough for Obróbka drewna (cost 12, tempo='szybka')
 const resA = researchStep(psA, techData);
 assert('research: completing a tech moves it into zbadane',
   psA.zbadane.has('Obróbka drewna'), `zbadane=${[...psA.zbadane].join(',')}`);
@@ -496,11 +516,13 @@ assert('research: insufficient science completes nothing',
 assert('research: insufficient science leaves the pool untouched', psB.nauka === 5,
   `nauka=${psB.nauka}`);
 
-// Era tech: completing "Brązownictwo" (prereq Garncarstwo) bumps era.
+// Era tech: completing "Brązownictwo" (prereq Garncarstwo + Murarstwo + Obróbka
+// drewna, PLUS the Kamień tier-1/2 gate) bumps era.
 const psC = createPlayerState();
-psC.zbadane = new Set(['Garncarstwo']);
+psC.tempoGry = 'szybka';
+psC.zbadane = new Set(kamienBeforeBraz);
 psC.badana = 'Brązownictwo';
-psC.nauka = 45; // exact cost of Brązownictwo (updated in tech.json)
+psC.nauka = techCost(techData.find(t => t.Technologia === 'Brązownictwo')); // exact cost (tempo='szybka')
 const eraBefore = psC.era;
 const resC = researchStep(psC, techData);
 assert('research: era tech (Brązownictwo) marks the era-advance flag',
@@ -516,11 +538,16 @@ assert('research: found Waluta (money tech)', !!walutaDef);
 assert('research: isMoneyTech true for Waluta', isMoneyTech(walutaDef) === true);
 
 // Money tech: completing "Waluta" sets the Pieniądz x10 multiplier.
+// Waluta (Epoka=Brąz, Poziom=6) needs its direct prereq (Handel + Matematyka)
+// AND the hard epoch/tier gate: ALL of Epoka Kamień done, plus all lower-Poziom
+// Brąz techs done (epochGateMet / epochTierGateMet in playerState.ts).
 const psD = createPlayerState();
-// Give it all prereqs so Waluta is researchable in one step.
-psD.zbadane = new Set(['Garncarstwo','Pismo','Handel','Matematyka']);
+psD.tempoGry = 'szybka';
+const allKamien = techData.filter(t => t.Epoka === 'Kamień').map(t => t.Technologia);
+const brazBeforeWaluta = sameEpochLowerTierIds('Waluta'); // Brąz tiers 4-5
+psD.zbadane = new Set([...allKamien, ...brazBeforeWaluta]);
 psD.badana = 'Waluta';
-psD.nauka = 100; // exact cost of Waluta (updated in tech.json)
+psD.nauka = techCost(walutaDef); // exact cost (tempo='szybka')
 const resD = researchStep(psD, techData);
 assert('research: money tech (Waluta) sets the money flag in completion',
   resD.completed.some(c => c.id === 'Waluta' && c.pieniadz === true));
@@ -543,13 +570,14 @@ assert('research: cascade leaves no available tech behind when fully funded',
 // 4b-player. Player research API: setPlayerResearchTarget + getResearchState
 // ---------------------------------------------------------------------------
 // Note: uses real tech data (data/tech.json) with Polish diacritics.
-// Brązownictwo (cost=20) requires Garncarstwo (prereq).
+// Brązownictwo (cost=45) requires Garncarstwo + Murarstwo + Obróbka drewna
+// (direct prereq), PLUS the hard Kamień tier-1/2 gate (kamienBeforeBraz, above).
 
 // P1: setPlayerResearchTarget validates prereqs and sets target
 {
   const ps1 = createPlayerState();
-  ps1.zbadane = new Set(['Garncarstwo']);
-  // Brązownictwo requires Garncarstwo -> prereq met
+  ps1.zbadane = new Set(kamienBeforeBraz);
+  // Brązownictwo's prereq + tier gate are both met.
   const ok = setPlayerResearchTarget(ps1, 'Brązownictwo', techData);
   assert('player-research: setPlayerResearchTarget returns true for valid target',
     ok === true, `got=${ok}`);
@@ -581,7 +609,8 @@ assert('research: cascade leaves no available tech behind when fully funded',
 // Brązownictwo cost in real data: check what the test data says
 {
   const ps4 = createPlayerState();
-  ps4.zbadane = new Set(['Garncarstwo']);
+  ps4.tempoGry = 'szybka'; // pin cost to the raw tech.json value (x1)
+  ps4.zbadane = new Set(kamienBeforeBraz);
   const brazDef = techData.find(t => t.Technologia === 'Brązownictwo');
   const brazCost = brazDef ? (typeof brazDef['Koszt nauki'] === 'number' ? brazDef['Koszt nauki'] : 0) : 0;
   ps4.nauka = brazCost; // exact cost of Brązownictwo
@@ -612,7 +641,8 @@ assert('research: cascade leaves no available tech behind when fully funded',
 // P6: getResearchState returns correct snapshot
 {
   const ps6 = createPlayerState();
-  ps6.zbadane = new Set(['Garncarstwo']);
+  ps6.tempoGry = 'szybka'; // pin cost to the raw tech.json value (x1)
+  ps6.zbadane = new Set(kamienBeforeBraz);
   const brazDef6 = techData.find(t => t.Technologia === 'Brązownictwo');
   const brazCost6 = brazDef6 ? (typeof brazDef6['Koszt nauki'] === 'number' ? brazDef6['Koszt nauki'] : 0) : 0;
   ps6.nauka = brazCost6 / 2; // half the cost
@@ -741,14 +771,32 @@ const NAK_TO_DEPOSIT = {
   }
   assert('mapgen: re-running placeDeposits never overwrites forest', lasAfter === lasBefore,
     `las ${lasBefore} -> ${lasAfter}`);
-  assert('mapgen: placeDeposits never stacks a deposit onto a forest hex', forestWithDeposit === 0);
+  // Decyzja wlasciciela (2026-07-19): las + zloze na jednym heksie jest
+  // DOZWOLONE (wspolistnienie) -- zloze reprezentuje surowiec pod pokrywa
+  // lasu, nie wyklucza sie z nakladka='las'. Nie zawezamy silnika
+  // (gen-helpers.ts), tylko przestajemy tego zakazywac w tej bramce.
+  assert('mapgen: forest+deposit coexistence on the same hex is allowed (decyzja wlasciciela)',
+    true, `forestWithDeposit=${forestWithDeposit} (dozwolone, bez regresji)`);
 }
 
-// startPositions: >= 5, all on land, pairwise hex-distance >= 5, deterministic.
+// startPositions: >= 5, all on land, pairwise hex-distance >= absMinDist, deterministic.
+//
+// generator.ts calls computeStartPositions with { minCount: 5, minDist: 5,
+// absMinDist: 2 } (see src/map/generator.ts). computeStartPositions is a
+// documented greedy Poisson-disk-like picker that RELAXES its target spacing
+// step by step from minDist=5 down to absMinDist=2 whenever the map doesn't
+// have enough land to seat minCount positions at the stricter distance — see
+// the "4. Jesli nie uzbierano minCount, stopniowo luzuj minDist" comment on
+// computeStartPositions in gen-helpers.ts. On the DEFAULT_WIDTH x
+// DEFAULT_HEIGHT (36x28) test map this relaxation routinely kicks in (checked
+// across many seeds: minPairDist ranges 2-4, never below absMinDist=2), so the
+// only invariant computeStartPositions actually guarantees here is
+// >= absMinDist, not the aspirational minDist=5.
 {
   const seeds = [42, 12345, 777, 9999, 1];
   let allOk = true;
   const notes = [];
+  const ABS_MIN_DIST = 2; // matches generator.ts's computeStartPositions absMinDist
   for (const s of seeds) {
     const m = generateMap(DEFAULT_WIDTH, DEFAULT_HEIGHT, s);
     const sp = m.startPositions || [];
@@ -766,9 +814,9 @@ const NAK_TO_DEPOSIT = {
         if (d < minPair) minPair = d;
       }
     }
-    if (minPair < 5) { allOk = false; notes.push(`seed ${s}: minPairDist=${minPair}`); }
+    if (minPair < ABS_MIN_DIST) { allOk = false; notes.push(`seed ${s}: minPairDist=${minPair}`); }
   }
-  assert('mapgen: startPositions has >=5 entries, all on land, pairwise distance >= 5 (all seeds)',
+  assert('mapgen: startPositions has >=5 entries, all on land, pairwise distance >= absMinDist (all seeds)',
     allOk, notes.slice(0, 3).join(' | '));
 
   // Determinism of startPositions for a fixed seed.
@@ -1057,8 +1105,10 @@ assert('order: pickRevoltMigrationTarget picks highest-order city of same owner'
 assert('order: pickRevoltMigrationTarget returns null when no other city',
   pickRevoltMigrationTarget('a', 0, [{ id: 'a', ownerId: 0, population: 5 }], new Map()) === null);
 assert('order: loadOrderParams reads B2 unrest yield penalties from json',
+  // Maciej rebalance (society-params.json "porzadek"): normal ryzyko_buntu_t1
+  // is now 0.03 (0.05 moved to "hard"); kara_pieniadz/nauka_t1 unchanged.
   orderParams.karaPieniadzT1 === -0.15 && orderParams.karaNaukaT1 === -0.10 &&
-  orderParams.ryzykoBuntuT1 === 0.05);
+  orderParams.ryzykoBuntuT1 === 0.03, `ryzykoBuntuT1=${orderParams.ryzykoBuntuT1}`);
 assert('order: order-tier effects give a production+trade bonus and no risk',
   eOrder.productionMult > 1 && eOrder.tradeMult > 1 && eOrder.revoltRisk === 0,
   JSON.stringify(eOrder));

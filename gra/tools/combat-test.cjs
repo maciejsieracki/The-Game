@@ -94,6 +94,13 @@ function adaptUnit(raw) {
   };
   return {
     typNazwa : raw['Jednostka'],
+    // counterTyp drives counterMultiplier() matching against counters.json's
+    // "Typ atakujący"/"Cel (typ)" (Swordsman/Spearman/Mount/Distance/Slinger/
+    // Falangite...). Mirrors combatUnitFromDef() in src/game/combat.ts:
+    //   counterTyp: String(def['Typ'] ?? opts.typNazwa ?? def['Jednostka'] ?? '')
+    // The harness has no separate opts.typNazwa, so the fallback chain
+    // collapses to raw['Typ'] ?? raw['Jednostka'] ?? ''.
+    counterTyp : String(raw['Typ'] ?? raw['Jednostka'] ?? ''),
     rola     : raw['Rola (linia)'],
     meleeAttack  : num(raw.meleeAttack, num(raw['Atak'], 0)),
     meleeDefence : num(raw.meleeDefence, num(raw['Obrona'], 0)),

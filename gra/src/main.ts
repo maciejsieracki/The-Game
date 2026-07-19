@@ -473,7 +473,7 @@ import {
 } from './ui/victoryScreen';
 import {
   loadBarbParams, barbariansActive, spawnCamps, tickCamps, decideBarbarianMoves,
-  scaleBarbParamsForLevel,
+  scaleBarbParamsForLevel, pickBronzeBarbUnit,
   BARBARIAN_OWNER_ID, isBarbarian,
 } from './game/barbarians';
 import type { BarbCamp, BarbUnit } from './game/barbarians';
@@ -11136,8 +11136,14 @@ async function boot(): Promise<void> {
             }
 
             // Tick camps: decrement cooldowns + collect spawns.
+            // Ludy Morza (BACKLOG): w epoce Brąz (2) pełne zastąpienie domyślnego
+            // typu barbarzyńcy -- oba warianty naprzemiennie wg tury, wszystkie
+            // poziomy trudności jednakowo (decyzja właściciela 2026-07-19).
+            const barbLiveForSpawn = player.era === 2
+              ? { ...barbLive, unitTypeId: pickBronzeBarbUnit(turn) }
+              : barbLive;
             const barbUnitsNow = units.filter(u => isBarbarian(u.ownerId)) as BarbUnit[];
-            const tickRes = tickCamps(barbCamps, barbUnitsNow, units, map, barbLive);
+            const tickRes = tickCamps(barbCamps, barbUnitsNow, units, map, barbLiveForSpawn);
             barbCamps = tickRes.camps;
 
             // Instantiate spawned barbarian units.

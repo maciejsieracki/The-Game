@@ -30,6 +30,7 @@ export {
   FALLBACK_BARB_PARAMS, loadBarbParams, barbariansActive,
   EPOKA_SREDNIOWIECZE_BARBARZY,
   spawnCamps, tickCamps, decideBarbarianMoves,
+  LUDY_MORZA_BARB_UNIT_IDS, pickBronzeBarbUnit,
 } from '../src/game/barbarians';
 export { hexDistance } from '../src/units/setup';
 `;
@@ -57,6 +58,7 @@ const {
   FALLBACK_BARB_PARAMS, loadBarbParams, barbariansActive,
   EPOKA_SREDNIOWIECZE_BARBARZY,
   spawnCamps, tickCamps, decideBarbarianMoves,
+  LUDY_MORZA_BARB_UNIT_IDS, pickBronzeBarbUnit,
   hexDistance,
 } = B;
 
@@ -327,6 +329,46 @@ assert(barbariansActive(P.startTurn, P, EPOKA_SREDNIOWIECZE_BARBARZY) === false,
     eq(cmds[0].type, 'move', 'city raid approach is a move');
     const dNew = hexDistance(cmds[0].toQ, cmds[0].toR, 3, 0);
     assert(dNew < 3, 'step gets closer to the city');
+  }
+}
+
+// ===========================================================================
+// 7. Ludy Morza jako barbarzyncy epoki Braz (BACKLOG, decyzja 2026-07-19)
+// ===========================================================================
+{
+  eq(LUDY_MORZA_BARB_UNIT_IDS.length, 2, 'exactly two Ludy Morza unit ids');
+  assert(LUDY_MORZA_BARB_UNIT_IDS.includes('Wojownik Sherden'), 'pool has Sherden');
+  assert(LUDY_MORZA_BARB_UNIT_IDS.includes('Wojownik szekelesz'), 'pool has szekelesz');
+
+  // 7a. pickBronzeBarbUnit is deterministic and alternates by seed parity.
+  eq(pickBronzeBarbUnit(0), LUDY_MORZA_BARB_UNIT_IDS[0], 'seed 0 -> first unit');
+  eq(pickBronzeBarbUnit(1), LUDY_MORZA_BARB_UNIT_IDS[1], 'seed 1 -> second unit');
+  eq(pickBronzeBarbUnit(2), LUDY_MORZA_BARB_UNIT_IDS[0], 'seed 2 -> first unit again (alternation)');
+  eq(pickBronzeBarbUnit(10), pickBronzeBarbUnit(0), 'same parity -> same unit (deterministic)');
+  eq(pickBronzeBarbUnit(11), pickBronzeBarbUnit(1), 'same parity -> same unit (deterministic)');
+
+  // 7b. Simulates main.ts's era override: for Braz (era 2), tickCamps spawns
+  // only Ludy Morza unit ids across consecutive turns (naprzemiennie).
+  const map = makeMap(10, 10);
+  const seenTypes = new Set();
+  for (let turn = 1; turn <= 4; turn++) {
+    const bronzeParams = Object.assign({}, P, { unitTypeId: pickBronzeBarbUnit(turn) });
+    const camp = { id: 'cbraz', q: 5, r: 5, spawnCooldown: 0 };
+    const res = tickCamps([camp], [], [], map, bronzeParams);
+    eq(res.spawns.length, 1, `Braz turn ${turn}: spawns one unit`);
+    const typeId = res.spawns[0].typeId;
+    assert(LUDY_MORZA_BARB_UNIT_IDS.includes(typeId), `Braz turn ${turn}: spawned typeId (${typeId}) is a Ludy Morza unit`);
+    seenTypes.add(typeId);
+  }
+  eq(seenTypes.size, 2, 'across turns both Ludy Morza unit ids are used (naprzemiennie)');
+
+  // 7c. Default era (e.g. Kamien) is untouched: spawn still uses the plain
+  // fallback unit type ('Wojownik'), never a Ludy Morza id.
+  {
+    const camp = { id: 'ckam', q: 5, r: 5, spawnCooldown: 0 };
+    const res = tickCamps([camp], [], [], map, P);
+    eq(res.spawns[0].typeId, P.unitTypeId, 'default era: spawn uses FALLBACK unitTypeId (Wojownik)');
+    assert(!LUDY_MORZA_BARB_UNIT_IDS.includes(res.spawns[0].typeId), 'default era: never a Ludy Morza unit');
   }
 }
 

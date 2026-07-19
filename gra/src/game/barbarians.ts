@@ -233,6 +233,23 @@ export function barbariansActive(
 /** Od epoki Średniowiecze (4) barbarzyńcy wyłączeni — buntownicy mapowi (11=C*). */
 export const EPOKA_SREDNIOWIECZE_BARBARZY = 4;
 
+/**
+ * Ludy Morza (BACKLOG): w epoce Brąz barbarzyńcy spawnują WYŁĄCZNIE jednostki
+ * Ludów Morza (pełne zastąpienie domyślnego 'Wojownik') -- oba typy naprzemiennie,
+ * bez zależności od poziomu trudności (decyzja właściciela 2026-07-19).
+ * Staty jednostek bez zmian; render po nazwie już wspiera oba modele.
+ */
+export const LUDY_MORZA_BARB_UNIT_IDS: readonly string[] = ['Wojownik Sherden', 'Wojownik szekelesz'];
+
+/**
+ * Wybiera deterministycznie jednostkę Ludów Morza dla danego "ziarna"
+ * (np. numeru tury) -- naprzemiennie po parzystości. Bez Math.random.
+ */
+export function pickBronzeBarbUnit(seed: number): string {
+  const idx = ((seed % LUDY_MORZA_BARB_UNIT_IDS.length) + LUDY_MORZA_BARB_UNIT_IDS.length) % LUDY_MORZA_BARB_UNIT_IDS.length;
+  return LUDY_MORZA_BARB_UNIT_IDS[idx]!;
+}
+
 // ---------------------------------------------------------------------------
 // Internal helpers
 // ---------------------------------------------------------------------------

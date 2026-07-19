@@ -10030,7 +10030,7 @@ var units_default = [
   {
     Jednostka: "Wojownik szekelesz",
     Epoka: "Br\u0105z",
-    Kultura: "Rzymska",
+    Kultura: "Ludy Morza",
     Tech: "Br\u0105zownictwo",
     "Pieni\u0105dz (koszt)": 14,
     Ludno\u015B\u0107: 1,
