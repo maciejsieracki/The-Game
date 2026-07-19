@@ -207,7 +207,8 @@ var map_gen_params_default = {
   },
   metal_deposit_min_era: {
     miedz: 2,
-    zelazo: 3
+    zelazo: 3,
+    wegiel: 8
   }
 };
 
@@ -483,7 +484,7 @@ function riverMinPathLengthForTier(tier) {
   return 25;
 }
 function riverGridTraceMinLen(catalogMinLen, tier = "medium") {
-  const cap = tier === "low" ? 10 : 12;
+  const cap = tier === "low" ? 5 : tier === "high" ? 8 : 6;
   return Math.min(catalogMinLen, cap);
 }
 function resolveRiverTraceForMap(mapMenuLabel, riversTier) {
@@ -1335,7 +1336,28 @@ function reliefElevGates(mtnTh) {
   }
   return { mountain: 0.14, highland: 0.11, landMaskHi: 0.2, landMaskMtn: 0.22 };
 }
-function classifyTerrain(elevContinental, landMask, mtnNoise, forNoise, desNoise, thresholds, climateZone) {
+var TERRAIN_GLOBAL_MIX_AMP = 0.12;
+var TERRAIN_CELL_JITTER_AMP = 0.65;
+function terenCoverageCellSize() {
+  return 4;
+}
+function hashInt3(a, b, c) {
+  let h = a * 374761393 ^ b * 668265263 ^ c * 2246822519;
+  h = Math.imul(h ^ h >>> 13, 1274126177);
+  h = (h ^ h >>> 16) >>> 0;
+  return h / 4294967296;
+}
+function terrainCellBias(q, r, seed, cellSize = terenCoverageCellSize()) {
+  const cx = Math.floor(q / cellSize);
+  const cy = Math.floor(r / cellSize);
+  return (hashInt3(cx, cy, seed) - 0.5) * 2;
+}
+function terrainRownLakaJitter(forNoise, desNoise, cellBias) {
+  const global = ((forNoise + desNoise) * 0.5 - 0.5) * TERRAIN_GLOBAL_MIX_AMP;
+  const local = cellBias * TERRAIN_CELL_JITTER_AMP;
+  return global + local;
+}
+function classifyTerrain(elevContinental, landMask, mtnNoise, forNoise, desNoise, thresholds, climateZone, cellBias = 0) {
   const desTh = (thresholds == null ? void 0 : thresholds.desert) ?? 0.63;
   const forTh = climateForestThreshold(climateZone, (thresholds == null ? void 0 : thresholds.forest) ?? 0.58);
   const mtnTh = (thresholds == null ? void 0 : thresholds.mountain) ?? 0.75;
@@ -1354,7 +1376,7 @@ function classifyTerrain(elevContinental, landMask, mtnNoise, forNoise, desNoise
       terenBazowy = "wzgorza" /* Wzgorza */;
     } else if (canAssignClimateDesert(climateZone) && desNoise > desTh && elevContinental > 0.18 && elevContinental < 0.45) {
       terenBazowy = "pustynia" /* Pustynia */;
-    } else if (elevContinental > 0.35) {
+    } else if (elevContinental + terrainRownLakaJitter(forNoise, desNoise, cellBias) > 0.35) {
       terenBazowy = "rownina" /* Rownina */;
     } else {
       terenBazowy = "laka" /* Laka */;
@@ -1365,7 +1387,7 @@ function classifyTerrain(elevContinental, landMask, mtnNoise, forNoise, desNoise
   }
   return { terenBazowy, nakladka };
 }
-function classifyTerrainFlat(elevContinental, landMask, _mtnNoise, forNoise, desNoise, thresholds, climateZone) {
+function classifyTerrainFlat(elevContinental, landMask, _mtnNoise, forNoise, desNoise, thresholds, climateZone, cellBias = 0) {
   const desTh = (thresholds == null ? void 0 : thresholds.desert) ?? 0.63;
   const forTh = climateForestThreshold(climateZone, (thresholds == null ? void 0 : thresholds.forest) ?? 0.58);
   let terenBazowy;
@@ -1374,7 +1396,7 @@ function classifyTerrainFlat(elevContinental, landMask, _mtnNoise, forNoise, des
     terenBazowy = "laka" /* Laka */;
   } else if (canAssignClimateDesert(climateZone) && desNoise > desTh && elevContinental > 0.18 && elevContinental < 0.45) {
     terenBazowy = "pustynia" /* Pustynia */;
-  } else if (elevContinental > 0.35) {
+  } else if (elevContinental + terrainRownLakaJitter(forNoise, desNoise, cellBias) > 0.35) {
     terenBazowy = "rownina" /* Rownina */;
   } else {
     terenBazowy = "laka" /* Laka */;
@@ -1424,7 +1446,7 @@ function reapplyForestOverlay(hexes, scratch, thresholds, typ, forestTier, conti
   }
   return assigned;
 }
-function reapplyLandTerrain(hexes, scratch, thresholds, mapHeight) {
+function reapplyLandTerrain(hexes, scratch, seed, thresholds, mapHeight) {
   for (const [key, hex] of Object.entries(hexes)) {
     if (hex.terenBazowy === "morze" /* Morze */ || hex.terenBazowy === "wybrzeze" /* Wybrzeze */) {
       continue;
@@ -1433,6 +1455,7 @@ function reapplyLandTerrain(hexes, scratch, thresholds, mapHeight) {
     if (!s) continue;
     const { q, r } = hex.coords;
     const climateZone = mapHeight ? climateZoneAt(q, r, mapHeight) : void 0;
+    const cellBias = terrainCellBias(q, r, seed);
     const { terenBazowy, nakladka } = classifyTerrainFlat(
       s.elevContinental,
       s.landMask,
@@ -1440,7 +1463,8 @@ function reapplyLandTerrain(hexes, scratch, thresholds, mapHeight) {
       s.forNoise,
       s.desNoise,
       thresholds,
-      climateZone
+      climateZone,
+      cellBias
     );
     hex.terenBazowy = terenBazowy;
     hex.nakladka = nakladka;
@@ -1881,8 +1905,10 @@ function forceReliefTypeInCell(land, hexes, scratch, width, height, rand, want, 
       spot = [ranked[0].q, ranked[0].r];
     }
     const k = hexKey(spot[0], spot[1]);
-    hexes[k].terenBazowy = want === "mountain" ? "gory" /* Gory */ : "wzgorza" /* Wzgorza */;
-    hexes[k].nakladka = "brak" /* Brak */;
+    const forcedHex = hexes[k];
+    forcedHex.terenBazowy = want === "mountain" ? "gory" /* Gory */ : "wzgorza" /* Wzgorza */;
+    forcedHex.nakladka = "brak" /* Brak */;
+    delete forcedHex.zloze;
     placed.add(k);
     changed = true;
   }
@@ -1912,8 +1938,10 @@ function forceCopperHighlandsInCell(land, hexes, scratch, width, height, rand) {
     MIN_HIGHLANDS_COPPER_CELL
   );
 }
+var RELIEF_OVERFLOW_CAP_MULT = Number.POSITIVE_INFINITY;
 function capMountainOverflowInCell(land, hexes, scratch, tier, spreadOnly = false) {
-  const maxMtn = spreadOnly ? reliefSpreadCapMountain(tier, land.length) : Math.max(MIN_MOUNTAINS_IRON_CELL, reliefBonusCapMountain(tier, land.length) + MIN_MOUNTAINS_IRON_CELL);
+  const baseMaxMtn = spreadOnly ? reliefSpreadCapMountain(tier, land.length) : Math.max(MIN_MOUNTAINS_IRON_CELL, reliefBonusCapMountain(tier, land.length) + MIN_MOUNTAINS_IRON_CELL);
+  const maxMtn = baseMaxMtn * RELIEF_OVERFLOW_CAP_MULT;
   const mountains = land.filter(([q, r]) => {
     var _a10;
     return ((_a10 = hexes[hexKey(q, r)]) == null ? void 0 : _a10.terenBazowy) === "gory" /* Gory */;
@@ -1924,14 +1952,17 @@ function capMountainOverflowInCell(land, hexes, scratch, tier, spreadOnly = fals
   let changed = false;
   while (mountains.length > maxMtn && mountains.length > MIN_MOUNTAINS_IRON_CELL) {
     const drop = mountains.shift();
-    hexes[hexKey(drop.q, drop.r)].terenBazowy = "wzgorza" /* Wzgorza */;
-    hexes[hexKey(drop.q, drop.r)].nakladka = "brak" /* Brak */;
+    const dropHex = hexes[hexKey(drop.q, drop.r)];
+    dropHex.terenBazowy = "wzgorza" /* Wzgorza */;
+    dropHex.nakladka = "brak" /* Brak */;
+    delete dropHex.zloze;
     changed = true;
   }
   return changed;
 }
 function capHighlandOverflowInCell(land, hexes, scratch, tier, spreadOnly = false) {
-  const maxHi = spreadOnly ? reliefSpreadCapHighland(tier, land.length) : Math.max(MIN_HIGHLANDS_COPPER_CELL, reliefBonusCapHighland(tier, land.length) + MIN_HIGHLANDS_COPPER_CELL);
+  const baseMaxHi = spreadOnly ? reliefSpreadCapHighland(tier, land.length) : Math.max(MIN_HIGHLANDS_COPPER_CELL, reliefBonusCapHighland(tier, land.length) + MIN_HIGHLANDS_COPPER_CELL);
+  const maxHi = baseMaxHi * RELIEF_OVERFLOW_CAP_MULT;
   const highlands = land.filter(([q, r]) => {
     var _a10;
     return ((_a10 = hexes[hexKey(q, r)]) == null ? void 0 : _a10.terenBazowy) === "wzgorza" /* Wzgorza */;
@@ -1942,8 +1973,10 @@ function capHighlandOverflowInCell(land, hexes, scratch, tier, spreadOnly = fals
   let changed = false;
   while (highlands.length > maxHi && highlands.length > MIN_HIGHLANDS_COPPER_CELL) {
     const drop = highlands.shift();
-    hexes[hexKey(drop.q, drop.r)].terenBazowy = "rownina" /* Rownina */;
-    hexes[hexKey(drop.q, drop.r)].nakladka = "brak" /* Brak */;
+    const dropHex = hexes[hexKey(drop.q, drop.r)];
+    dropHex.terenBazowy = "rownina" /* Rownina */;
+    dropHex.nakladka = "brak" /* Brak */;
+    delete dropHex.zloze;
     changed = true;
   }
   return changed;
@@ -2308,7 +2341,12 @@ function applyCoastRing(hexes) {
       }
     }
   }
-  for (const key of toCoast) hexes[key].terenBazowy = "wybrzeze" /* Wybrzeze */;
+  for (const key of toCoast) {
+    const hex = hexes[key];
+    hex.terenBazowy = "wybrzeze" /* Wybrzeze */;
+    hex.nakladka = "brak" /* Brak */;
+    delete hex.zloze;
+  }
   return toCoast.length;
 }
 function applyDoubleCoastRing(hexes) {
@@ -2327,7 +2365,12 @@ function applyDoubleCoastRing(hexes) {
       }
     }
   }
-  for (const key of toCoast) hexes[key].terenBazowy = "wybrzeze" /* Wybrzeze */;
+  for (const key of toCoast) {
+    const hex = hexes[key];
+    hex.terenBazowy = "wybrzeze" /* Wybrzeze */;
+    hex.nakladka = "brak" /* Brak */;
+    delete hex.zloze;
+  }
   return n + toCoast.length;
 }
 function findDryLandTouchingSea(hexes) {
@@ -2414,6 +2457,8 @@ function sanitizeCoastHexes(hexes) {
     }
     if (!touchesSea) {
       hex.terenBazowy = "laka" /* Laka */;
+      hex.nakladka = "brak" /* Brak */;
+      delete hex.zloze;
       fixed++;
     }
   }
@@ -2694,6 +2739,53 @@ function finalizeCoastAndInlandWater(hexes, width, height, maxPasses = 3, opts) 
     if (changed === 0) break;
   }
 }
+function thickenCoastAndSmoothInlets(hexes, width, height, coastWidth = 2) {
+  let changed = 0;
+  for (let pass = 0; pass < 12; pass++) {
+    const toFill = [];
+    for (const [key, hex] of Object.entries(hexes)) {
+      if (hex.terenBazowy !== "morze" /* Morze */) continue;
+      const { q, r } = parseHexKey(key);
+      if (isInMapBorder(q, r, width, height)) continue;
+      if (countLandNeighbors(hexes, q, r) >= 4) toFill.push(key);
+    }
+    if (toFill.length === 0) break;
+    for (const key of toFill) {
+      setHexToLaka(hexes[key]);
+      changed++;
+    }
+  }
+  changed += removeInlandWaterPools(hexes, width, height);
+  for (const hex of Object.values(hexes)) {
+    if (hex.terenBazowy === "wybrzeze" /* Wybrzeze */) {
+      setHexToLaka(hex);
+      changed++;
+    }
+  }
+  for (let ring = 0; ring < coastWidth; ring++) {
+    const toCoast = [];
+    for (const [key, hex] of Object.entries(hexes)) {
+      if (!isDryLandTerrain(hex.terenBazowy)) continue;
+      const { q, r } = parseHexKey(key);
+      for (const [dq, dr] of HEX_DIRECTIONS) {
+        const nb = hexes[hexKey(q + dq, r + dr)];
+        if (nb && (nb.terenBazowy === "morze" /* Morze */ || nb.terenBazowy === "wybrzeze" /* Wybrzeze */)) {
+          toCoast.push(key);
+          break;
+        }
+      }
+    }
+    if (toCoast.length === 0) break;
+    for (const key of toCoast) {
+      const hex = hexes[key];
+      hex.terenBazowy = "wybrzeze" /* Wybrzeze */;
+      hex.nakladka = "brak" /* Brak */;
+      delete hex.zloze;
+      changed++;
+    }
+  }
+  return changed;
+}
 function removeTinyLandIslands(hexes, minHexes) {
   const visited = /* @__PURE__ */ new Set();
   let removed = 0;
@@ -2868,6 +2960,8 @@ function repairRiverPathAdjacency(path, hexes, sourceKey) {
   return sanitizeRiverPath(out);
 }
 var RIVER_MIN_INLAND_FROM_SEA = 2;
+var RIVER_MIN_MAIN_LEN = 3;
+var RIVER_HARD_MEANDER_LEN = 8;
 var RIVER_MOUTH_TAIL_LEN = 5;
 function riverPathRespectsSeaBuffer(hexes, path, seaDist, minInland = RIVER_MIN_INLAND_FROM_SEA, mouthTail = RIVER_MOUTH_TAIL_LEN) {
   if (path.length === 0) return false;
@@ -2974,9 +3068,11 @@ function pathEndsAtSea(hexes, path, width, height, oceanConnected) {
 function isReliefTerrain(t) {
   return t === "gory" /* Gory */ || t === "wzgorza" /* Wzgorza */;
 }
-function canRiverFlowThrough(hex, cellKey, sourceKey) {
+function canRiverFlowThrough(hex, cellKey, sourceKey, blockExisting = false, allowKey) {
+  var _a10;
   if (!hex || hex.terenBazowy === "morze" /* Morze */) return false;
   if (isReliefTerrain(hex.terenBazowy)) return cellKey === sourceKey;
+  if (blockExisting && ((_a10 = hex.rzeka) == null ? void 0 : _a10.obecna) && cellKey !== allowKey) return false;
   return true;
 }
 function riverStepDir(from, to) {
@@ -3005,16 +3101,18 @@ function growRiverInlandBeforeDrainage(hexes, sq, sr, seaDist, openOceanDist, ra
     const curKey = hexKey(cur.q, cur.r);
     const curD = seaDist.get(curKey) ?? 0;
     const curOd = openOceanDist.get(curKey) ?? Infinity;
+    const hardMeander = path.length < RIVER_HARD_MEANDER_LEN;
     const candidates = [];
     for (const [dq, dr] of HEX_DIRECTIONS) {
       const nq = cur.q + dq;
       const nr = cur.r + dr;
       const nk = hexKey(nq, nr);
       if (visited.has(nk)) continue;
-      if (!canRiverFlowThrough(hexes[nk], nk, srcKey)) continue;
+      if (!canRiverFlowThrough(hexes[nk], nk, srcKey, true)) continue;
       const nd = seaDist.get(nk) ?? 0;
       if (nd < RIVER_MIN_INLAND_FROM_SEA) continue;
       const od = openOceanDist.get(nk) ?? Infinity;
+      if (hardMeander && od < curOd) continue;
       let score = 1200 - od * 30;
       if (od > curOd + 0.5) score -= 18;
       if (nd > curD + 1) score -= 10;
@@ -3054,7 +3152,7 @@ function greedyRiverDrainToSea(hexes, sq, sr, seaDist, openOceanDist, oceanConne
       const nr = cur.r + dr;
       const nk = hexKey(nq, nr);
       if (visited.has(nk)) continue;
-      if (!canRiverFlowThrough(hexes[nk], nk, sourceKey)) continue;
+      if (!canRiverFlowThrough(hexes[nk], nk, sourceKey, true)) continue;
       const nd = seaDist.get(nk) ?? Infinity;
       if (!canRiverDrainStep(nk, nd, openOceanDist, oceanConnected, true)) continue;
       const od = openOceanDist.get(nk) ?? Infinity;
@@ -3121,7 +3219,7 @@ function aStarRiverToSea(hexes, sq, sr, seaDist, openOceanDist, oceanConnected, 
     }
     for (const [dq, dr] of HEX_DIRECTIONS) {
       const nk = hexKey(q + dq, r + dr);
-      if (!canRiverFlowThrough(hexes[nk], nk, startK)) continue;
+      if (!canRiverFlowThrough(hexes[nk], nk, startK, true)) continue;
       const nd = seaDist.get(nk) ?? Infinity;
       if (!canRiverDrainStep(nk, nd, openOceanDist, oceanConnected, true)) continue;
       let stepCost = 1;
@@ -3157,7 +3255,7 @@ function findRiverMeanderStep(hexes, cur, target, seaDist, used, rand) {
     if (nk === tgtK || used.has(nk)) continue;
     if (sameRiverDir([dq, dr], toTarget)) continue;
     const nh = hexes[nk];
-    if (!canRiverFlowThrough(nh, nk, "")) continue;
+    if (!canRiverFlowThrough(nh, nk, "", true)) continue;
     const nd = seaDist.get(nk);
     if (nd == null || nd > curD) continue;
     if (nd < RIVER_MIN_INLAND_FROM_SEA) continue;
@@ -3559,7 +3657,7 @@ function aStarRiverToTarget(hexes, sq, sr, tq, tr, maxLen, sourceKey) {
     const { q, r } = parseHexKey(current);
     for (const [dq, dr] of HEX_DIRECTIONS) {
       const nk = hexKey(q + dq, r + dr);
-      if (!canRiverFlowThrough(hexes[nk], nk, sourceKey)) continue;
+      if (!canRiverFlowThrough(hexes[nk], nk, sourceKey, true, targetK)) continue;
       const tg = curG + 1;
       if (tg > maxLen) continue;
       if (tg >= (gScore.get(nk) ?? Infinity)) continue;
@@ -3916,6 +4014,7 @@ function generateRivers(hexes, width, height, rand, opts = {}) {
   const pushMain = (path, sq, sr) => {
     const trimmed = trimRiverPathRings(hexes, path);
     if (!pathEndsAtSea(hexes, trimmed, width, height, oceanConnected)) return false;
+    if (trimmed.length < RIVER_MIN_MAIN_LEN) return false;
     riverPaths.push(trimmed);
     riverKinds.push("main");
     usedSources.add(hexKey(sq, sr));
@@ -4144,6 +4243,7 @@ function topUpRiverGridCoverage(hexes, width, height, riverPaths, riverKinds, ra
   const pushMain = (path, sq, sr) => {
     const trimmed = trimRiverPathRings(hexes, path);
     if (!pathEndsAtSea(hexes, trimmed, width, height, oceanConnected)) return false;
+    if (trimmed.length < RIVER_MIN_MAIN_LEN) return false;
     riverPaths.push(trimmed);
     riverKinds.push("main");
     usedSources.add(hexKey(sq, sr));
@@ -4315,18 +4415,9 @@ var BASE_DEPOSIT_RULES = [
     allowedOn: (h) => isDryLandTerrain(h.terenBazowy) && h.terenBazowy === "gory" /* Gory */,
     rarity: 0.1
   },
-  {
-    id: "owce",
-    nakladka: "zloze_owiec" /* ZlozeOwiec */,
-    allowedOn: (h) => isDryLandTerrain(h.terenBazowy) && h.terenBazowy === "wzgorza" /* Wzgorza */,
-    rarity: 0.08
-  },
-  {
-    id: "bydlo",
-    nakladka: "zloze_bydla" /* ZlozeBydla */,
-    allowedOn: (h) => isDryLandTerrain(h.terenBazowy) && (h.terenBazowy === "laka" /* Laka */ || h.terenBazowy === "rownina" /* Rownina */),
-    rarity: 0.07
-  },
+  // Model B (Maciej 2026-07-09): USUNIĘTE złoża owiec/bydła (ZlozeOwiec/ZlozeBydla) — hodowla to
+  // teraz CZYSTE ulepszenie (Owczarnia/Pastwisko), budowane jak farma, nie surowiec na mapie.
+  // Koń (wyżej) zostaje surowcem. Zmienia hash mapy (zamierzone).
   {
     id: "sol",
     nakladka: null,
@@ -4386,9 +4477,8 @@ function placeDeposits(hexes, seed, rules = DEPOSIT_RULES, resourceMult = 1, bas
 var FAIR_PLAY_DEPOSIT_IDS = [
   "zelazo",
   "miedz",
-  "glina",
-  "bydlo",
-  "owce"
+  "glina"
+  // Model B: bydlo/owce usunięte (hodowla = ulepszenie, nie złoże)
 ];
 function depositRuleById(id) {
   const rule = DEPOSIT_RULES.find((r) => r.id === id);
@@ -4664,19 +4754,19 @@ var terrain_improvements_default = {
     odblokowuje: ""
   },
   bydlo: {
-    nazwa: "Byd\u0142o",
+    nazwa: "Trzoda",
     epoka: 1,
     bonus: {
       zywnosc: 2,
       praca: 3
     },
     surowiecOdblokowany: "bydlo",
-    surowiecOdblokowany_uwaga: "ABC-18: dost\u0119p dopiero po postawieniu na z\u0142o\u017Cu byd\u0142a",
+    surowiecOdblokowany_uwaga: "ABC-18: dost\u0119p dopiero po postawieniu na z\u0142o\u017Cu trzody",
     teren: "\u0141\u0105ka, R\xF3wnina",
     warunek: "plaski l\u0105d; pierwsze: z\u0142o\u017Ce byd\u0142a; potem po odblokowaniu \u2014 bez z\u0142o\u017Ca; + farma lub solo; NIE na Pustyni",
     koszt_praca: 20,
     tech: "Oswojenie zwierz\u0105t",
-    odblokowuje: "Byd\u0142o (Rydwan po odblokowaniu)"
+    odblokowuje: "Trzoda (Rydwan po odblokowaniu)"
   },
   owce: {
     nazwa: "Owce",
@@ -4702,8 +4792,8 @@ var terrain_improvements_default = {
     },
     surowiecOdblokowany: "lama",
     surowiecOdblokowany_uwaga: "TYLKO Inkowie; solo \u2014 bez innych ulepszen na heksie; pierwsze na zlozu lamy",
-    teren: "\u0141\u0105ka, R\xF3wnina, Wzg\xF3rza",
-    warunek: "solo; tylko cyw. Inkowie; pierwsze: z\u0142o\u017Ce lamy; NIE na Pustyni",
+    teren: "Wzg\xF3rza, G\xF3ry",
+    warunek: "solo; tylko cyw. Inkowie; wzg\xF3rza/g\xF3ry; pierwsze: z\u0142o\u017Ce lamy; NIE na \u0141\u0105ce/R\xF3wninie/Pustyni",
     koszt_praca: 20,
     tech: "Oswojenie zwierz\u0105t",
     odblokowuje: "Lama (transport / \u017Cywno\u015B\u0107)"
@@ -4787,12 +4877,12 @@ var terrain_improvements_default = {
     bonus: {},
     surowiecOdblokowany: null,
     teren: "Las",
-    warunek: "koszt 5 Pracy na start; +20 Pracy/tur\u0119 \xD7 3 tury (=60); potem teren bazowy bez lasu",
+    warunek: "koszt 5 Pracy na start; +5 Pracy \xD7 1 tura (=5, netto zero); potem teren bazowy bez lasu",
     koszt_praca: 5,
     tech: null,
     wycinka: {
-      praca_per_tura: 20,
-      tury: 3,
+      praca_per_tura: 5,
+      tury: 1,
       usuwa_nakladke: "las"
     },
     odblokowuje: ""
@@ -4869,7 +4959,7 @@ var terrain_improvements_default = {
     teren: "dowolny l\u0105d w terytorium",
     warunek: "+100% Obrony jednostkom obozuj\u0105cym na polu fortu (bez plon\xF3w); rozszerza zasi\u0119g terytorium o promie\u0144 10 p\xF3l",
     koszt_praca: 25,
-    tech: "Wojskowosc",
+    tech: "Wojskowo\u015B\u0107",
     odblokowuje: "",
     uwagi: "ABC-10 Maciej 2026-07-04: Fort (mapa) \u2260 Cytadela (miasto). \u017Belazo ep.3; zasi\u0119g 10; +100% Obrona obozowanie"
   },
@@ -4901,8 +4991,8 @@ var terrain_improvements_default = {
     odblokowuje: "",
     uwagi: "T-TECH-9 Maciej 2026-07-04"
   },
-  popalnia_brazu: {
-    nazwa: "Popalnia br\u0105zu",
+  kopalnia_miedzi: {
+    nazwa: "Kopalnia miedzi",
     epoka: 2,
     bonus: {
       praca: 2
@@ -5472,7 +5562,8 @@ function generateMap(width = DEFAULT_WIDTH, height = DEFAULT_HEIGHT, seed = 42, 
         forNoise,
         desNoise,
         terrainTh,
-        climateZoneAt(q, r, height)
+        climateZoneAt(q, r, height),
+        terrainCellBias(q, r, effectiveSeed)
       );
       terrainScratch.set(key, { elevContinental, landMask, mtnNoise, forNoise, desNoise });
       hexes[key] = {
@@ -5529,7 +5620,7 @@ function generateMap(width = DEFAULT_WIDTH, height = DEFAULT_HEIGHT, seed = 42, 
   finalizeCoastAndInlandWater(hexes, width, height, 3, coastOpts);
   const reliefTier = ((_a10 = genOpts == null ? void 0 : genOpts.worldDensity) == null ? void 0 : _a10.relief) ?? ((_b3 = genOpts == null ? void 0 : genOpts.worldDensity) == null ? void 0 : _b3.rivers) ?? "medium";
   const forestTier = ((_c3 = genOpts == null ? void 0 : genOpts.worldDensity) == null ? void 0 : _c3.forest) ?? "medium";
-  reapplyLandTerrain(hexes, terrainScratch, terrainTh, height);
+  reapplyLandTerrain(hexes, terrainScratch, effectiveSeed, terrainTh, height);
   if (typ !== "pangea") {
     purgeInlandWaterForMultiLandTyp(hexes, width, height);
   }
@@ -5592,6 +5683,8 @@ function generateMap(width = DEFAULT_WIDTH, height = DEFAULT_HEIGHT, seed = 42, 
   ensureForestGridCoverage(hexes, terrainScratch, forestTier, typ, zoneOf, nZones, rand);
   purgeInlandWaterForMultiLandTyp(hexes, width, height);
   purgeDesertEnclaveWater(hexes, width, height);
+  thickenCoastAndSmoothInlets(hexes, width, height, 2);
+  enforceMapBorderOcean(hexes, width, height);
   const riversTier = ((_d3 = genOpts == null ? void 0 : genOpts.worldDensity) == null ? void 0 : _d3.rivers) ?? "medium";
   clearRiverMarks(hexes);
   let { paths: riverPaths, kinds: riverPathKinds } = generateRivers(hexes, width, height, rand, {
@@ -6033,10 +6126,10 @@ var DEFAULT_COST_BY_ROLE = {
 var _a4;
 var UNIT_POPULATION_COST = ((_a4 = miasto_params_default.jednostka_koszt_ludnosci) == null ? void 0 : _a4.wartosc) ?? 1;
 function splitPraca(cityPraca, udzialBudynki) {
-  const praca = Number.isFinite(cityPraca) && cityPraca > 0 ? cityPraca : 0;
+  const total = Number.isFinite(cityPraca) && cityPraca > 0 ? Math.round(cityPraca) : 0;
   const u = Math.min(1, Math.max(0, Number.isFinite(udzialBudynki) ? udzialBudynki : 1));
-  const doBudynkow = praca * u;
-  return { doBudynkow, doPuli: praca - doBudynkow };
+  const doBudynkow = Math.round(total * u);
+  return { doBudynkow, doPuli: total - doBudynkow };
 }
 var _a5, _b2, _c2, _d2;
 var DEFAULT_OUTPUT_SHARES = Object.freeze({
@@ -6075,6 +6168,37 @@ function buildingGateMet(tech, gate) {
   const reqId = resolveRequiredBuildingId(trimmed, gate.buildings);
   if (!reqId) return true;
   return empireBuiltSet(gate).has(reqId);
+}
+var PL_DIACRITICS = {
+  "\u0105": "a",
+  "\u0107": "c",
+  "\u0119": "e",
+  "\u0142": "l",
+  "\u0144": "n",
+  "\xF3": "o",
+  "\u015B": "s",
+  "\u017A": "z",
+  "\u017C": "z"
+};
+function slugifyImprovementLabel(label) {
+  return label.trim().toLowerCase().replace(/[ąćęłńóśźż]/g, (c) => PL_DIACRITICS[c] ?? c).replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "");
+}
+function empireImprovementSet(gate) {
+  const src = gate.empireImprovementKeys;
+  if (!src) return /* @__PURE__ */ new Set();
+  return src instanceof Set ? src : new Set(src);
+}
+function improvementGateMet(tech, gate) {
+  const label = tech["wymagane ulepszenie"];
+  if (label == null) return true;
+  const trimmed = String(label).trim();
+  if (!trimmed || BRAK_PREREQ.has(trimmed.toLowerCase())) return true;
+  const wanted = slugifyImprovementLabel(trimmed);
+  if (!wanted) return true;
+  return empireImprovementSet(gate).has(wanted);
+}
+function researchGatesMet(tech, gate) {
+  return buildingGateMet(tech, gate) && improvementGateMet(tech, gate);
 }
 
 // src/game/economy.ts
@@ -6311,7 +6435,7 @@ function populationGrowth(city, zywnoscNetto, params, wzrostThresholdMult = 1) {
     }
     return { nowaLudnosc, nowyMagazynZywnosci, wzrost, ubytek };
   }
-  const baseThreshold = 10 + ludnosc * params.progWzrostuWspolczynnik;
+  const baseThreshold = 20 + ludnosc * params.progWzrostuWspolczynnik;
   const threshold = Math.max(1, Math.round(baseThreshold * wzrostThresholdMult));
   if (nowyMagazynZywnosci >= threshold && ludnosc < popCap) {
     nowaLudnosc = ludnosc + 1;
@@ -6965,10 +7089,22 @@ function citySightRadius(population, kulturaSkumulowana = 0) {
   if (base <= 0) return 0;
   return base + cityBorderRadius(kulturaSkumulowana);
 }
+function hexKeysWithinRadius(cq, cr, rad, map) {
+  const out = [];
+  const r = Number.isFinite(rad) && rad > 0 ? Math.floor(rad) : 0;
+  for (let dq = -r; dq <= r; dq++) {
+    const lo = Math.max(-r, -dq - r), hi = Math.min(r, -dq + r);
+    for (let dr = lo; dr <= hi; dr++) {
+      const key = `${cq + dq},${cr + dr}`;
+      if (map.hexes[key]) out.push(key);
+    }
+  }
+  return out;
+}
 function okolicaTiles(centerQ, centerR, radius, map, isWorkable) {
   const out = [];
   const rad = Number.isFinite(radius) && radius > 0 ? Math.floor(radius) : 1;
-  for (const key of Object.keys(map.hexes)) {
+  for (const key of hexKeysWithinRadius(centerQ, centerR, rad, map)) {
     const parts = key.split(",");
     const q = Number(parts[0]);
     const rr = Number(parts[1]);
@@ -7242,7 +7378,9 @@ var units_default = [
     "Bonus vs Offensive %": 0,
     "Bonus vs Distance %": 0,
     "Bonus vs Mount %": 0,
+    "Bonus vs Slinger %": 0,
     "Zmiana na": "Wojownik z mieczem i tarcz\u0105",
+    "Zast\u0105p specjalnie": "\u2014",
     "Dost\u0119pna w epokach": "Kamie\u0144",
     meleeAttack: 4,
     meleeDefence: 4,
@@ -7252,7 +7390,7 @@ var units_default = [
     chargeBonus: 2,
     health: 22,
     missileAttack: 0,
-    fieldPower: 21.5
+    fieldPower: 27
   },
   {
     Jednostka: "Procarz",
@@ -7287,7 +7425,7 @@ var units_default = [
     "Morale bazowe": 85,
     "Morale ucieczki": 25,
     "Nazwa EN": "Slinger",
-    Typ: "Distance",
+    Typ: "Slinger",
     Klasa: "Standardowa",
     Nacja: "",
     "Bonus vs Swordsman %": 0,
@@ -7296,7 +7434,9 @@ var units_default = [
     "Bonus vs Offensive %": 0,
     "Bonus vs Distance %": 0,
     "Bonus vs Mount %": 0,
-    "Zmiana na": "Kusznik",
+    "Bonus vs Slinger %": 0,
+    "Zmiana na": "\u2014",
+    "Zast\u0105p specjalnie": "\u2014",
     "Dost\u0119pna w epokach": "Br\u0105z",
     meleeAttack: 1,
     meleeDefence: 1,
@@ -7306,7 +7446,7 @@ var units_default = [
     chargeBonus: 0,
     health: 16,
     missileAttack: 4,
-    fieldPower: 10
+    fieldPower: 12
   },
   {
     Jednostka: "Oszczepnik",
@@ -7350,7 +7490,9 @@ var units_default = [
     "Bonus vs Offensive %": 0,
     "Bonus vs Distance %": 0,
     "Bonus vs Mount %": 0,
-    "Zmiana na": "Kusznik",
+    "Bonus vs Slinger %": 0,
+    "Zmiana na": "\u2014",
+    "Zast\u0105p specjalnie": "\u2014",
     "Dost\u0119pna w epokach": "Kamie\u0144;Br\u0105z",
     meleeAttack: 1,
     meleeDefence: 1,
@@ -7360,7 +7502,7 @@ var units_default = [
     chargeBonus: 0,
     health: 16,
     missileAttack: 4,
-    fieldPower: 10
+    fieldPower: 12
   },
   {
     Jednostka: "\u0141ucznik",
@@ -7404,7 +7546,9 @@ var units_default = [
     "Bonus vs Offensive %": 0,
     "Bonus vs Distance %": 0,
     "Bonus vs Mount %": 0,
-    "Zmiana na": "Kusznik",
+    "Bonus vs Slinger %": 0,
+    "Zmiana na": "\u2014",
+    "Zast\u0105p specjalnie": "\u2014",
     "Dost\u0119pna w epokach": "Kamie\u0144;Br\u0105z",
     meleeAttack: 2,
     meleeDefence: 2,
@@ -7414,7 +7558,7 @@ var units_default = [
     chargeBonus: 0,
     health: 16,
     missileAttack: 3,
-    fieldPower: 15
+    fieldPower: 17.5
   },
   {
     Jednostka: "Zwiadowca",
@@ -7458,7 +7602,9 @@ var units_default = [
     "Bonus vs Offensive %": 0,
     "Bonus vs Distance %": 0,
     "Bonus vs Mount %": 0,
+    "Bonus vs Slinger %": 0,
     "Zmiana na": "\u2014",
+    "Zast\u0105p specjalnie": "\u2014",
     "Dost\u0119pna w epokach": "Kamie\u0144;Br\u0105z;\u017Belazo",
     meleeAttack: 0,
     meleeDefence: 1,
@@ -7468,7 +7614,7 @@ var units_default = [
     chargeBonus: 0,
     health: 10,
     missileAttack: 0,
-    fieldPower: 3.5
+    fieldPower: 6
   },
   {
     Jednostka: "W\u0142\xF3cznik",
@@ -7512,7 +7658,9 @@ var units_default = [
     "Bonus vs Offensive %": 0,
     "Bonus vs Distance %": 0,
     "Bonus vs Mount %": 50,
+    "Bonus vs Slinger %": 0,
     "Zmiana na": "Spearman",
+    "Zast\u0105p specjalnie": "\u2014",
     "Dost\u0119pna w epokach": "Br\u0105z;\u017Belazo",
     meleeAttack: 5,
     meleeDefence: 8,
@@ -7522,7 +7670,7 @@ var units_default = [
     chargeBonus: 4,
     health: 32,
     missileAttack: 0,
-    fieldPower: 36
+    fieldPower: 44
   },
   {
     Jednostka: "Wojownik z mieczem i tarcz\u0105",
@@ -7566,7 +7714,9 @@ var units_default = [
     "Bonus vs Offensive %": 0,
     "Bonus vs Distance %": 0,
     "Bonus vs Mount %": 0,
+    "Bonus vs Slinger %": 0,
     "Zmiana na": "Swordsman",
+    "Zast\u0105p specjalnie": "\u2014",
     "Dost\u0119pna w epokach": "Br\u0105z;\u017Belazo",
     meleeAttack: 6,
     meleeDefence: 5,
@@ -7576,7 +7726,7 @@ var units_default = [
     chargeBonus: 4,
     health: 28,
     missileAttack: 0,
-    fieldPower: 32
+    fieldPower: 39
   },
   {
     Jednostka: "Rydwan (wo\u0142y)",
@@ -7585,7 +7735,7 @@ var units_default = [
     Tech: "Ko\u0142o",
     "Pieni\u0105dz (koszt)": 30,
     Ludno\u015B\u0107: 1,
-    Surowiec: "wol",
+    Surowiec: "bydlo",
     "Surowiec (ilo\u015B\u0107)": 1,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 3,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
@@ -7620,7 +7770,9 @@ var units_default = [
     "Bonus vs Offensive %": 25,
     "Bonus vs Distance %": 50,
     "Bonus vs Mount %": 0,
+    "Bonus vs Slinger %": 50,
     "Zmiana na": "Mount",
+    "Zast\u0105p specjalnie": "\u2014",
     "Dost\u0119pna w epokach": "Br\u0105z",
     meleeAttack: 6,
     meleeDefence: 4,
@@ -7630,7 +7782,7 @@ var units_default = [
     chargeBonus: 10,
     health: 48,
     missileAttack: 0,
-    fieldPower: 40
+    fieldPower: 52
   },
   {
     Jednostka: "Konnica",
@@ -7674,7 +7826,9 @@ var units_default = [
     "Bonus vs Offensive %": 25,
     "Bonus vs Distance %": 50,
     "Bonus vs Mount %": 0,
+    "Bonus vs Slinger %": 50,
     "Zmiana na": "Mount",
+    "Zast\u0105p specjalnie": "\u2014",
     "Dost\u0119pna w epokach": "Br\u0105z;\u017Belazo",
     meleeAttack: 8,
     meleeDefence: 5,
@@ -7684,7 +7838,7 @@ var units_default = [
     chargeBonus: 10,
     health: 28,
     missileAttack: 0,
-    fieldPower: 42
+    fieldPower: 49
   },
   {
     Jednostka: "Galera",
@@ -7719,7 +7873,7 @@ var units_default = [
     "Morale bazowe": 90,
     "Morale ucieczki": 20,
     "Nazwa EN": "Galley",
-    Typ: "Swordsman",
+    Typ: "Naval",
     Klasa: "Standardowa",
     Nacja: "",
     "Bonus vs Swordsman %": 0,
@@ -7728,7 +7882,9 @@ var units_default = [
     "Bonus vs Offensive %": 0,
     "Bonus vs Distance %": 0,
     "Bonus vs Mount %": 0,
+    "Bonus vs Slinger %": 0,
     "Zmiana na": "Swordsman",
+    "Zast\u0105p specjalnie": "\u2014",
     "Dost\u0119pna w epokach": "Br\u0105z;\u017Belazo",
     meleeAttack: 3,
     meleeDefence: 4,
@@ -7738,16 +7894,16 @@ var units_default = [
     chargeBonus: 2,
     health: 24,
     missileAttack: 0,
-    fieldPower: 19
+    fieldPower: 25
   },
   {
     Jednostka: "Falanga",
-    Epoka: "Br\u0105z",
+    Epoka: "\u017Belazo",
     Kultura: "Grecka",
-    Tech: "Br\u0105zownictwo",
+    Tech: "Hutnictwo \u017Celaza",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
-    Surowiec: "braz",
+    Surowiec: "zelazo",
     "Surowiec (ilo\u015B\u0107)": 5,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
@@ -7782,7 +7938,9 @@ var units_default = [
     "Bonus vs Offensive %": 0,
     "Bonus vs Distance %": 0,
     "Bonus vs Mount %": 50,
+    "Bonus vs Slinger %": 0,
     "Zmiana na": "Falangite",
+    "Zast\u0105p specjalnie": "\u2014",
     "Dost\u0119pna w epokach": "Br\u0105z;\u017Belazo",
     meleeAttack: 5,
     meleeDefence: 10,
@@ -7792,16 +7950,16 @@ var units_default = [
     chargeBonus: 7,
     health: 40,
     missileAttack: 0,
-    fieldPower: 45
+    fieldPower: 52.5
   },
   {
     Jednostka: "Hieros Lochos (\u015Awi\u0119ty Zast\u0119p)",
-    Epoka: "Br\u0105z",
+    Epoka: "\u017Belazo",
     Kultura: "Grecka",
     Tech: "\u2014",
     "Pieni\u0105dz (koszt)": 0,
     Ludno\u015B\u0107: 1,
-    Surowiec: "\u2014",
+    Surowiec: "zelazo",
     "Surowiec (ilo\u015B\u0107)": 0,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 0,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
@@ -7836,7 +7994,9 @@ var units_default = [
     "Bonus vs Offensive %": 0,
     "Bonus vs Distance %": 0,
     "Bonus vs Mount %": 0,
+    "Bonus vs Slinger %": 0,
     "Zmiana na": "\u2014",
+    "Zast\u0105p specjalnie": "\u2014",
     "Dost\u0119pna w epokach": "Br\u0105z;\u017Belazo",
     meleeAttack: 8,
     meleeDefence: 10,
@@ -7846,16 +8006,16 @@ var units_default = [
     chargeBonus: 8,
     health: 42,
     missileAttack: 0,
-    fieldPower: 52.5
+    fieldPower: 63
   },
   {
     Jednostka: "Hastati",
     Epoka: "\u017Belazo",
     Kultura: "Rzymska",
-    Tech: "Br\u0105zownictwo",
+    Tech: "Hutnictwo \u017Celaza",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
-    Surowiec: "braz",
+    Surowiec: "zelazo",
     "Surowiec (ilo\u015B\u0107)": 5,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
@@ -7890,7 +8050,9 @@ var units_default = [
     "Bonus vs Offensive %": 0,
     "Bonus vs Distance %": 0,
     "Bonus vs Mount %": 0,
+    "Bonus vs Slinger %": 0,
     "Zmiana na": "Swordsman",
+    "Zast\u0105p specjalnie": "\u2014",
     "Dost\u0119pna w epokach": "\u017Belazo",
     meleeAttack: 7,
     meleeDefence: 7,
@@ -7900,16 +8062,16 @@ var units_default = [
     chargeBonus: 7,
     health: 38,
     missileAttack: 4,
-    fieldPower: 50
+    fieldPower: 57.5
   },
   {
     Jednostka: "Triari",
     Epoka: "\u017Belazo",
     Kultura: "Rzymska",
-    Tech: "\u2014",
-    "Pieni\u0105dz (koszt)": 0,
+    Tech: "Hutnictwo \u017Celaza",
+    "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
-    Surowiec: "\u2014",
+    Surowiec: "zelazo",
     "Surowiec (ilo\u015B\u0107)": 0,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 0,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
@@ -7924,7 +8086,7 @@ var units_default = [
     "Atak dystansowy": 0,
     "Zasi\u0119g ataku (hex)": "\u2014",
     "Ilo\u015B\u0107 pocisk\xF3w": "\u2014",
-    "W zamian za": "\u2014",
+    "W zamian za": "W\u0142\xF3cznik",
     "Super-jednostka": "TAK",
     Uwagi: "propozycja \u2014 do akceptacji; max 1, bezp\u0142atna, stolica, respawn",
     "Rola (linia)": "Wr\u0119cz",
@@ -7935,8 +8097,8 @@ var units_default = [
     "Morale bazowe": 120,
     "Morale ucieczki": 18,
     "Nazwa EN": "Triari",
-    Typ: "Swordsman",
-    Klasa: "Super",
+    Typ: "Spearman",
+    Klasa: "Specjalna",
     Nacja: "Rzym",
     "Bonus vs Swordsman %": 0,
     "Bonus vs Spearman %": 15,
@@ -7944,7 +8106,9 @@ var units_default = [
     "Bonus vs Offensive %": 0,
     "Bonus vs Distance %": 0,
     "Bonus vs Mount %": 0,
+    "Bonus vs Slinger %": 0,
     "Zmiana na": "\u2014",
+    "Zast\u0105p specjalnie": "\u2014",
     "Dost\u0119pna w epokach": "\u017Belazo",
     meleeAttack: 8,
     meleeDefence: 8,
@@ -7954,7 +8118,7 @@ var units_default = [
     chargeBonus: 10,
     health: 42,
     missileAttack: 0,
-    fieldPower: 51.5
+    fieldPower: 62
   },
   {
     Jednostka: "Je\u017Adziec chi\u0144ski",
@@ -7998,7 +8162,9 @@ var units_default = [
     "Bonus vs Offensive %": 25,
     "Bonus vs Distance %": 50,
     "Bonus vs Mount %": 0,
+    "Bonus vs Slinger %": 50,
     "Zmiana na": "Mount",
+    "Zast\u0105p specjalnie": "\u2014",
     "Dost\u0119pna w epokach": "Br\u0105z;\u017Belazo",
     meleeAttack: 7,
     meleeDefence: 4,
@@ -8008,61 +8174,7 @@ var units_default = [
     chargeBonus: 5,
     health: 44,
     missileAttack: 0,
-    fieldPower: 34.5
-  },
-  {
-    Jednostka: "Kusznik",
-    Epoka: "\u015Aredniowiecze",
-    Kultura: "Chi\u0144czycy",
-    Tech: "Br\u0105zownictwo",
-    "Pieni\u0105dz (koszt)": 20,
-    Ludno\u015B\u0107: 1,
-    Surowiec: "drewno",
-    "Surowiec (ilo\u015B\u0107)": 5,
-    "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
-    "\u017Cywno\u015B\u0107/tur\u0119": 1,
-    Atak: 8,
-    Uderzenie: 4,
-    Obrona: 4,
-    Ruch: 2,
-    "Ruch w bitwie (heksy)": 3,
-    Health: 40,
-    "Pr\xF3g dezercji (% health)": 0.4,
-    "Widok pola": 2,
-    "Atak dystansowy": 5,
-    "Zasi\u0119g ataku (hex)": 4,
-    "Ilo\u015B\u0107 pocisk\xF3w": 14,
-    "W zamian za": "\u0141ucznik",
-    "Super-jednostka": "\u2014",
-    Uwagi: "jednostka specjalna (lepsza piechota dystansowa); na razie informacyjny | BALANCE: Zasi\u0119g\u21914, Pociski\u219114; po epoce \u017Belaza (\u015Bredniowiecze); docelowy awans dla cz\u0119\u015Bci jednostek (Zmiana na \u2192 Kusznik)",
-    "Rola (linia)": "Dystans",
-    Pancerz: 2,
-    Przebicie: 2,
-    "Kara obrony z flanki (%)": 50,
-    "Kara obrony z ty\u0142u (%)": 80,
-    "Morale bazowe": 85,
-    "Morale ucieczki": 25,
-    "Nazwa EN": "Crossbowman",
-    Typ: "Distance",
-    Klasa: "Standardowa",
-    Nacja: "Chiny",
-    "Bonus vs Swordsman %": 0,
-    "Bonus vs Spearman %": 0,
-    "Bonus vs Falangite %": 0,
-    "Bonus vs Offensive %": 0,
-    "Bonus vs Distance %": 0,
-    "Bonus vs Mount %": 0,
-    "Zmiana na": "Distance",
-    "Dost\u0119pna w epokach": "\u015Aredniowiecze",
-    meleeAttack: 2,
-    meleeDefence: 2,
-    weaponDamage: 0,
-    piercing: 0,
-    armor: 1,
-    chargeBonus: 0,
-    health: 16,
-    missileAttack: 8,
-    fieldPower: 16.5
+    fieldPower: 45.5
   },
   {
     Jednostka: "Hu Ben Wei (Gwardia Tygrysa)",
@@ -8106,7 +8218,9 @@ var units_default = [
     "Bonus vs Offensive %": 0,
     "Bonus vs Distance %": 0,
     "Bonus vs Mount %": 0,
+    "Bonus vs Slinger %": 0,
     "Zmiana na": "\u2014",
+    "Zast\u0105p specjalnie": "\u2014",
     "Dost\u0119pna w epokach": "Br\u0105z;\u017Belazo",
     meleeAttack: 10,
     meleeDefence: 7,
@@ -8116,7 +8230,7 @@ var units_default = [
     chargeBonus: 8,
     health: 40,
     missileAttack: 0,
-    fieldPower: 51
+    fieldPower: 61
   },
   {
     Jednostka: "Impi",
@@ -8160,7 +8274,9 @@ var units_default = [
     "Bonus vs Offensive %": 0,
     "Bonus vs Distance %": 0,
     "Bonus vs Mount %": 50,
+    "Bonus vs Slinger %": 0,
     "Zmiana na": "Spearman",
+    "Zast\u0105p specjalnie": "\u2014",
     "Dost\u0119pna w epokach": "Br\u0105z;\u017Belazo",
     meleeAttack: 5,
     meleeDefence: 6,
@@ -8170,7 +8286,7 @@ var units_default = [
     chargeBonus: 3,
     health: 36,
     missileAttack: 0,
-    fieldPower: 29.5
+    fieldPower: 38.5
   },
   {
     Jednostka: "Oszczepnik Zulu (Izijula)",
@@ -8214,7 +8330,9 @@ var units_default = [
     "Bonus vs Offensive %": 0,
     "Bonus vs Distance %": 0,
     "Bonus vs Mount %": 0,
-    "Zmiana na": "Kusznik",
+    "Bonus vs Slinger %": 0,
+    "Zmiana na": "\u2014",
+    "Zast\u0105p specjalnie": "\u2014",
     "Dost\u0119pna w epokach": "Kamie\u0144;Br\u0105z",
     meleeAttack: 1,
     meleeDefence: 2,
@@ -8224,7 +8342,7 @@ var units_default = [
     chargeBonus: 0,
     health: 20,
     missileAttack: 4,
-    fieldPower: 13.5
+    fieldPower: 16
   },
   {
     Jednostka: "uThulwana (Bia\u0142e Tarcze)",
@@ -8268,7 +8386,9 @@ var units_default = [
     "Bonus vs Offensive %": 0,
     "Bonus vs Distance %": 0,
     "Bonus vs Mount %": 0,
+    "Bonus vs Slinger %": 0,
     "Zmiana na": "\u2014",
+    "Zast\u0105p specjalnie": "\u2014",
     "Dost\u0119pna w epokach": "Br\u0105z;\u017Belazo",
     meleeAttack: 8,
     meleeDefence: 7,
@@ -8278,7 +8398,7 @@ var units_default = [
     chargeBonus: 10,
     health: 42,
     missileAttack: 0,
-    fieldPower: 50.5
+    fieldPower: 61
   },
   {
     Jednostka: "Wojownik z maczug\u0105 (Chaska)",
@@ -8322,7 +8442,9 @@ var units_default = [
     "Bonus vs Offensive %": 0,
     "Bonus vs Distance %": 0,
     "Bonus vs Mount %": 0,
+    "Bonus vs Slinger %": 0,
     "Zmiana na": "Offensive",
+    "Zast\u0105p specjalnie": "\u2014",
     "Dost\u0119pna w epokach": "Kamie\u0144;Br\u0105z",
     meleeAttack: 7,
     meleeDefence: 4,
@@ -8332,7 +8454,7 @@ var units_default = [
     chargeBonus: 2,
     health: 20,
     missileAttack: 0,
-    fieldPower: 27
+    fieldPower: 32
   },
   {
     Jednostka: "Wojownik z toporem",
@@ -8376,7 +8498,9 @@ var units_default = [
     "Bonus vs Offensive %": 0,
     "Bonus vs Distance %": 0,
     "Bonus vs Mount %": 0,
+    "Bonus vs Slinger %": 0,
     "Zmiana na": "Offensive",
+    "Zast\u0105p specjalnie": "\u2014",
     "Dost\u0119pna w epokach": "Br\u0105z;\u017Belazo",
     meleeAttack: 6,
     meleeDefence: 4,
@@ -8386,7 +8510,7 @@ var units_default = [
     chargeBonus: 3,
     health: 24,
     missileAttack: 0,
-    fieldPower: 26.5
+    fieldPower: 32.5
   },
   {
     Jednostka: "Procarz (Huaracoc)",
@@ -8430,7 +8554,9 @@ var units_default = [
     "Bonus vs Offensive %": 0,
     "Bonus vs Distance %": 0,
     "Bonus vs Mount %": 0,
-    "Zmiana na": "Kusznik",
+    "Bonus vs Slinger %": 0,
+    "Zmiana na": "\u2014",
+    "Zast\u0105p specjalnie": "\u2014",
     "Dost\u0119pna w epokach": "Br\u0105z",
     meleeAttack: 1,
     meleeDefence: 1,
@@ -8440,7 +8566,7 @@ var units_default = [
     chargeBonus: 0,
     health: 16,
     missileAttack: 4,
-    fieldPower: 10
+    fieldPower: 12
   },
   {
     Jednostka: "Oszczepnik (Est\xF3lica)",
@@ -8484,7 +8610,9 @@ var units_default = [
     "Bonus vs Offensive %": 0,
     "Bonus vs Distance %": 0,
     "Bonus vs Mount %": 0,
-    "Zmiana na": "Kusznik",
+    "Bonus vs Slinger %": 0,
+    "Zmiana na": "\u2014",
+    "Zast\u0105p specjalnie": "\u2014",
     "Dost\u0119pna w epokach": "Kamie\u0144;Br\u0105z",
     meleeAttack: 1,
     meleeDefence: 1,
@@ -8494,7 +8622,7 @@ var units_default = [
     chargeBonus: 0,
     health: 16,
     missileAttack: 4,
-    fieldPower: 10
+    fieldPower: 12
   },
   {
     Jednostka: "Kr\xF3lewska Gwardia",
@@ -8538,7 +8666,9 @@ var units_default = [
     "Bonus vs Offensive %": 0,
     "Bonus vs Distance %": 0,
     "Bonus vs Mount %": 0,
+    "Bonus vs Slinger %": 0,
     "Zmiana na": "\u2014",
+    "Zast\u0105p specjalnie": "\u2014",
     "Dost\u0119pna w epokach": "Br\u0105z;\u017Belazo",
     meleeAttack: 10,
     meleeDefence: 8,
@@ -8548,7 +8678,7 @@ var units_default = [
     chargeBonus: 8,
     health: 40,
     missileAttack: 0,
-    fieldPower: 52
+    fieldPower: 62
   },
   {
     Jednostka: "Rydwan konny",
@@ -8592,7 +8722,9 @@ var units_default = [
     "Bonus vs Offensive %": 25,
     "Bonus vs Distance %": 50,
     "Bonus vs Mount %": 0,
+    "Bonus vs Slinger %": 50,
     "Zmiana na": "Mount",
+    "Zast\u0105p specjalnie": "\u2014",
     "Dost\u0119pna w epokach": "Br\u0105z;\u017Belazo",
     meleeAttack: 7,
     meleeDefence: 4,
@@ -8602,7 +8734,7 @@ var units_default = [
     chargeBonus: 8,
     health: 56,
     missileAttack: 0,
-    fieldPower: 40
+    fieldPower: 54
   },
   {
     Jednostka: "\u0141ucznik egipski",
@@ -8646,7 +8778,9 @@ var units_default = [
     "Bonus vs Offensive %": 0,
     "Bonus vs Distance %": 0,
     "Bonus vs Mount %": 0,
-    "Zmiana na": "Kusznik",
+    "Bonus vs Slinger %": 0,
+    "Zmiana na": "\u2014",
+    "Zast\u0105p specjalnie": "\u2014",
     "Dost\u0119pna w epokach": "Kamie\u0144;Br\u0105z",
     meleeAttack: 1,
     meleeDefence: 2,
@@ -8656,7 +8790,7 @@ var units_default = [
     chargeBonus: 0,
     health: 16,
     missileAttack: 6,
-    fieldPower: 13.5
+    fieldPower: 15
   },
   {
     Jednostka: "Rydwan egipski",
@@ -8700,7 +8834,9 @@ var units_default = [
     "Bonus vs Offensive %": 25,
     "Bonus vs Distance %": 50,
     "Bonus vs Mount %": 0,
+    "Bonus vs Slinger %": 50,
     "Zmiana na": "Mount",
+    "Zast\u0105p specjalnie": "\u2014",
     "Dost\u0119pna w epokach": "Br\u0105z;\u017Belazo",
     meleeAttack: 6,
     meleeDefence: 4,
@@ -8710,7 +8846,7 @@ var units_default = [
     chargeBonus: 7,
     health: 56,
     missileAttack: 5,
-    fieldPower: 41.5
+    fieldPower: 53
   },
   {
     Jednostka: "Wojownik z khopesh",
@@ -8754,7 +8890,9 @@ var units_default = [
     "Bonus vs Offensive %": 0,
     "Bonus vs Distance %": 0,
     "Bonus vs Mount %": 0,
+    "Bonus vs Slinger %": 0,
     "Zmiana na": "Swordsman",
+    "Zast\u0105p specjalnie": "\u2014",
     "Dost\u0119pna w epokach": "Br\u0105z;\u017Belazo",
     meleeAttack: 6,
     meleeDefence: 5,
@@ -8764,7 +8902,7 @@ var units_default = [
     chargeBonus: 3,
     health: 24,
     missileAttack: 0,
-    fieldPower: 27.5
+    fieldPower: 33.5
   },
   {
     Jednostka: "Med\u017Caj (Gwardia Faraona)",
@@ -8808,7 +8946,9 @@ var units_default = [
     "Bonus vs Offensive %": 0,
     "Bonus vs Distance %": 0,
     "Bonus vs Mount %": 0,
+    "Bonus vs Slinger %": 0,
     "Zmiana na": "\u2014",
+    "Zast\u0105p specjalnie": "\u2014",
     "Dost\u0119pna w epokach": "Br\u0105z;\u017Belazo",
     meleeAttack: 10,
     meleeDefence: 8,
@@ -8818,7 +8958,7 @@ var units_default = [
     chargeBonus: 8,
     health: 42,
     missileAttack: 3,
-    fieldPower: 55.5
+    fieldPower: 64.5
   },
   {
     Jednostka: "\u0141ucznik sumeryjski",
@@ -8862,7 +9002,9 @@ var units_default = [
     "Bonus vs Offensive %": 0,
     "Bonus vs Distance %": 0,
     "Bonus vs Mount %": 0,
-    "Zmiana na": "Kusznik",
+    "Bonus vs Slinger %": 0,
+    "Zmiana na": "\u2014",
+    "Zast\u0105p specjalnie": "\u2014",
     "Dost\u0119pna w epokach": "Kamie\u0144;Br\u0105z",
     meleeAttack: 1,
     meleeDefence: 1,
@@ -8872,7 +9014,7 @@ var units_default = [
     chargeBonus: 0,
     health: 16,
     missileAttack: 4,
-    fieldPower: 10
+    fieldPower: 12
   },
   {
     Jednostka: "Rydwan sumeryjski",
@@ -8916,7 +9058,9 @@ var units_default = [
     "Bonus vs Offensive %": 25,
     "Bonus vs Distance %": 50,
     "Bonus vs Mount %": 0,
+    "Bonus vs Slinger %": 50,
     "Zmiana na": "Mount",
+    "Zast\u0105p specjalnie": "\u2014",
     "Dost\u0119pna w epokach": "Br\u0105z;\u017Belazo",
     meleeAttack: 7,
     meleeDefence: 4,
@@ -8926,7 +9070,7 @@ var units_default = [
     chargeBonus: 9,
     health: 56,
     missileAttack: 0,
-    fieldPower: 40.5
+    fieldPower: 54.5
   },
   {
     Jednostka: "W\u0142\xF3cznik sumeryjski",
@@ -8970,7 +9114,9 @@ var units_default = [
     "Bonus vs Offensive %": 0,
     "Bonus vs Distance %": 0,
     "Bonus vs Mount %": 50,
+    "Bonus vs Slinger %": 0,
     "Zmiana na": "Spearman",
+    "Zast\u0105p specjalnie": "\u2014",
     "Dost\u0119pna w epokach": "Br\u0105z;\u017Belazo",
     meleeAttack: 5,
     meleeDefence: 6,
@@ -8980,7 +9126,7 @@ var units_default = [
     chargeBonus: 2,
     health: 40,
     missileAttack: 0,
-    fieldPower: 31
+    fieldPower: 41
   },
   {
     Jednostka: "Gwardia Kr\xF3lewska Sumeru",
@@ -9024,7 +9170,9 @@ var units_default = [
     "Bonus vs Offensive %": 0,
     "Bonus vs Distance %": 0,
     "Bonus vs Mount %": 0,
+    "Bonus vs Slinger %": 0,
     "Zmiana na": "\u2014",
+    "Zast\u0105p specjalnie": "\u2014",
     "Dost\u0119pna w epokach": "Br\u0105z;\u017Belazo",
     meleeAttack: 10,
     meleeDefence: 8,
@@ -9034,7 +9182,7 @@ var units_default = [
     chargeBonus: 8,
     health: 42,
     missileAttack: 0,
-    fieldPower: 52.5
+    fieldPower: 63
   },
   {
     Jednostka: "Wojownik myke\u0144ski",
@@ -9078,7 +9226,9 @@ var units_default = [
     "Bonus vs Offensive %": 0,
     "Bonus vs Distance %": 0,
     "Bonus vs Mount %": 0,
+    "Bonus vs Slinger %": 0,
     "Zmiana na": "Swordsman",
+    "Zast\u0105p specjalnie": "Hieros Lochos (\u015Awi\u0119ty Zast\u0119p)",
     "Dost\u0119pna w epokach": "Br\u0105z;\u017Belazo",
     meleeAttack: 6,
     meleeDefence: 4,
@@ -9088,7 +9238,7 @@ var units_default = [
     chargeBonus: 3,
     health: 28,
     missileAttack: 0,
-    fieldPower: 27.5
+    fieldPower: 34.5
   },
   {
     Jednostka: "Rydwan myke\u0144ski",
@@ -9132,7 +9282,9 @@ var units_default = [
     "Bonus vs Offensive %": 25,
     "Bonus vs Distance %": 50,
     "Bonus vs Mount %": 0,
+    "Bonus vs Slinger %": 50,
     "Zmiana na": "Mount",
+    "Zast\u0105p specjalnie": "\u2014",
     "Dost\u0119pna w epokach": "Br\u0105z;\u017Belazo",
     meleeAttack: 7,
     meleeDefence: 3,
@@ -9142,7 +9294,7 @@ var units_default = [
     chargeBonus: 9,
     health: 52,
     missileAttack: 0,
-    fieldPower: 39.5
+    fieldPower: 52.5
   },
   {
     Jednostka: "Wojownik Sherden",
@@ -9186,7 +9338,9 @@ var units_default = [
     "Bonus vs Offensive %": 0,
     "Bonus vs Distance %": 0,
     "Bonus vs Mount %": 0,
+    "Bonus vs Slinger %": 0,
     "Zmiana na": "Swordsman",
+    "Zast\u0105p specjalnie": "\u2014",
     "Dost\u0119pna w epokach": "Br\u0105z;\u017Belazo",
     meleeAttack: 6,
     meleeDefence: 5,
@@ -9196,7 +9350,7 @@ var units_default = [
     chargeBonus: 3,
     health: 28,
     missileAttack: 0,
-    fieldPower: 28.5
+    fieldPower: 35.5
   },
   {
     Jednostka: "Halabardnik Shang",
@@ -9240,7 +9394,9 @@ var units_default = [
     "Bonus vs Offensive %": 0,
     "Bonus vs Distance %": 0,
     "Bonus vs Mount %": 0,
+    "Bonus vs Slinger %": 0,
     "Zmiana na": "Swordsman",
+    "Zast\u0105p specjalnie": "\u2014",
     "Dost\u0119pna w epokach": "Br\u0105z;\u017Belazo",
     meleeAttack: 6,
     meleeDefence: 5,
@@ -9250,7 +9406,7 @@ var units_default = [
     chargeBonus: 2,
     health: 24,
     missileAttack: 0,
-    fieldPower: 30
+    fieldPower: 36
   },
   {
     Jednostka: "Rydwan Shang",
@@ -9294,7 +9450,9 @@ var units_default = [
     "Bonus vs Offensive %": 25,
     "Bonus vs Distance %": 50,
     "Bonus vs Mount %": 0,
+    "Bonus vs Slinger %": 50,
     "Zmiana na": "Mount",
+    "Zast\u0105p specjalnie": "\u2014",
     "Dost\u0119pna w epokach": "Br\u0105z;\u017Belazo",
     meleeAttack: 7,
     meleeDefence: 5,
@@ -9304,7 +9462,7 @@ var units_default = [
     chargeBonus: 8,
     health: 60,
     missileAttack: 0,
-    fieldPower: 43
+    fieldPower: 58
   },
   {
     Jednostka: "\u0141ucznik akadyjski",
@@ -9348,7 +9506,9 @@ var units_default = [
     "Bonus vs Offensive %": 0,
     "Bonus vs Distance %": 0,
     "Bonus vs Mount %": 0,
-    "Zmiana na": "Kusznik",
+    "Bonus vs Slinger %": 0,
+    "Zmiana na": "\u2014",
+    "Zast\u0105p specjalnie": "\u2014",
     "Dost\u0119pna w epokach": "Br\u0105z;\u017Belazo",
     meleeAttack: 1,
     meleeDefence: 2,
@@ -9358,16 +9518,16 @@ var units_default = [
     chargeBonus: 0,
     health: 18,
     missileAttack: 5,
-    fieldPower: 13.5
+    fieldPower: 15.5
   },
   {
     Jednostka: "Gaesatae",
     Epoka: "\u017Belazo",
     Kultura: "Celtowie",
-    Tech: "Br\u0105zownictwo",
+    Tech: "Obr\xF3bka \u017Celaza",
     "Pieni\u0105dz (koszt)": 14,
     Ludno\u015B\u0107: 1,
-    Surowiec: "braz",
+    Surowiec: "zelazo",
     "Surowiec (ilo\u015B\u0107)": 3,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 1,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
@@ -9402,7 +9562,9 @@ var units_default = [
     "Bonus vs Offensive %": 0,
     "Bonus vs Distance %": 0,
     "Bonus vs Mount %": 0,
+    "Bonus vs Slinger %": 0,
     "Zmiana na": "Swordsman",
+    "Zast\u0105p specjalnie": "\u2014",
     "Dost\u0119pna w epokach": "\u017Belazo",
     meleeAttack: 7,
     meleeDefence: 2,
@@ -9412,13 +9574,13 @@ var units_default = [
     chargeBonus: 5,
     health: 22,
     missileAttack: 0,
-    fieldPower: 24
+    fieldPower: 29.5
   },
   {
     Epoka: "\u017Belazo",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
-    Surowiec: "braz",
+    Surowiec: "zelazo",
     "Surowiec (ilo\u015B\u0107)": 5,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
@@ -9443,7 +9605,7 @@ var units_default = [
     "Kara obrony z ty\u0142u (%)": 35,
     "Morale bazowe": 100,
     "Morale ucieczki": 22,
-    Typ: "Miecznik",
+    Typ: "Swordsman",
     Klasa: "Specjalna",
     "Bonus vs Swordsman %": 0,
     "Bonus vs Spearman %": 15,
@@ -9451,14 +9613,16 @@ var units_default = [
     "Bonus vs Offensive %": 0,
     "Bonus vs Distance %": 0,
     "Bonus vs Mount %": 0,
+    "Bonus vs Slinger %": 0,
     "Zmiana na": "Swordsman",
+    "Zast\u0105p specjalnie": "\u2014",
     "Dost\u0119pna w epokach": "\u017Belazo",
-    Tech: "Br\u0105zownictwo",
+    Tech: "Obr\xF3bka \u017Celaza",
     Kultura: "Celtowie",
     Nacja: "Celtowie",
     "Nazwa EN": "Soldurii",
     Jednostka: "Soldurii",
-    fieldPower: 0,
+    fieldPower: 36,
     health: 44,
     meleeAttack: 7,
     weaponDamage: 5,
@@ -9469,10 +9633,10 @@ var units_default = [
     Jednostka: "Rydwan celtycki",
     Epoka: "\u017Belazo",
     Kultura: "Celtowie",
-    Tech: "Je\u017Adziectwo",
+    Tech: "Hutnictwo \u017Celaza",
     "Pieni\u0105dz (koszt)": 28,
     Ludno\u015B\u0107: 1,
-    Surowiec: "Ko\u0144",
+    Surowiec: "zelazo",
     "Surowiec (ilo\u015B\u0107)": 1,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 3,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
@@ -9507,7 +9671,9 @@ var units_default = [
     "Bonus vs Offensive %": 25,
     "Bonus vs Distance %": 50,
     "Bonus vs Mount %": 0,
+    "Bonus vs Slinger %": 50,
     "Zmiana na": "Mount",
+    "Zast\u0105p specjalnie": "\u2014",
     "Dost\u0119pna w epokach": "\u017Belazo",
     meleeAttack: 8,
     meleeDefence: 3,
@@ -9517,16 +9683,16 @@ var units_default = [
     chargeBonus: 10,
     health: 52,
     missileAttack: 0,
-    fieldPower: 40
+    fieldPower: 53
   },
   {
     Jednostka: "Wojownik germa\u0144ski",
     Epoka: "\u017Belazo",
     Kultura: "Germanie",
-    Tech: "Br\u0105zownictwo",
+    Tech: "Obr\xF3bka \u017Celaza",
     "Pieni\u0105dz (koszt)": 16,
     Ludno\u015B\u0107: 1,
-    Surowiec: "\u2014",
+    Surowiec: "zelazo",
     "Surowiec (ilo\u015B\u0107)": 0,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
@@ -9561,7 +9727,9 @@ var units_default = [
     "Bonus vs Offensive %": 0,
     "Bonus vs Distance %": 0,
     "Bonus vs Mount %": 0,
+    "Bonus vs Slinger %": 0,
     "Zmiana na": "\u2014",
+    "Zast\u0105p specjalnie": "\u2014",
     "Dost\u0119pna w epokach": "Br\u0105z",
     meleeAttack: 6,
     meleeDefence: 4,
@@ -9571,16 +9739,16 @@ var units_default = [
     chargeBonus: 4,
     health: 30,
     missileAttack: 4,
-    fieldPower: 32
+    fieldPower: 37
   },
   {
     Jednostka: "Berserker germa\u0144ski",
     Epoka: "\u017Belazo",
     Kultura: "Germanie",
-    Tech: "Br\u0105zownictwo",
+    Tech: "Obr\xF3bka \u017Celaza",
     "Pieni\u0105dz (koszt)": 16,
     Ludno\u015B\u0107: 1,
-    Surowiec: "braz",
+    Surowiec: "zelazo",
     "Surowiec (ilo\u015B\u0107)": 3,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
@@ -9615,7 +9783,9 @@ var units_default = [
     "Bonus vs Offensive %": 0,
     "Bonus vs Distance %": 0,
     "Bonus vs Mount %": 0,
+    "Bonus vs Slinger %": 0,
     "Zmiana na": "Swordsman",
+    "Zast\u0105p specjalnie": "\u2014",
     "Dost\u0119pna w epokach": "\u017Belazo",
     meleeAttack: 8,
     meleeDefence: 2,
@@ -9625,13 +9795,13 @@ var units_default = [
     chargeBonus: 6,
     health: 24,
     missileAttack: 0,
-    fieldPower: 27
+    fieldPower: 33
   },
   {
     Jednostka: "Taran",
     Epoka: "Kamie\u0144",
     Kultura: null,
-    Tech: "-",
+    Tech: "Obr\xF3bka drewna",
     "Pieni\u0105dz (koszt)": 14,
     Ludno\u015B\u0107: 1,
     Surowiec: "-",
@@ -9669,7 +9839,9 @@ var units_default = [
     "Bonus vs Offensive %": 0,
     "Bonus vs Distance %": 0,
     "Bonus vs Mount %": 0,
+    "Bonus vs Slinger %": 0,
     "Zmiana na": "\u2014",
+    "Zast\u0105p specjalnie": "\u2014",
     "Dost\u0119pna w epokach": "Kamie\u0144;Br\u0105z;\u017Belazo",
     meleeAttack: 0,
     meleeDefence: 0,
@@ -9680,8 +9852,8 @@ var units_default = [
     health: 700,
     missileAttack: 0,
     wallAttack: 14,
-    fieldPower: 177.5,
-    siegePower: 50
+    fieldPower: 352.5,
+    siegePower: 85
   },
   {
     Jednostka: "Katapulta",
@@ -9690,7 +9862,7 @@ var units_default = [
     Tech: "Obl\u0119\u017Cnictwo",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
-    Surowiec: "-",
+    Surowiec: "zelazo",
     "Surowiec (ilo\u015B\u0107)": 0,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
@@ -9725,7 +9897,9 @@ var units_default = [
     "Bonus vs Offensive %": 0,
     "Bonus vs Distance %": 0,
     "Bonus vs Mount %": 0,
+    "Bonus vs Slinger %": 0,
     "Zmiana na": "\u2014",
+    "Zast\u0105p specjalnie": "\u2014",
     "Dost\u0119pna w epokach": "\u017Belazo",
     meleeAttack: 0,
     meleeDefence: 0,
@@ -9736,8 +9910,8 @@ var units_default = [
     health: 250,
     missileAttack: 4,
     wallAttack: 16,
-    fieldPower: 67.5,
-    siegePower: 36.5
+    fieldPower: 128,
+    siegePower: 45
   },
   {
     Jednostka: "Wie\u017Ca obl\u0119\u017Cnicza",
@@ -9781,7 +9955,9 @@ var units_default = [
     "Bonus vs Offensive %": 0,
     "Bonus vs Distance %": 0,
     "Bonus vs Mount %": 0,
+    "Bonus vs Slinger %": 0,
     "Zmiana na": "\u2014",
+    "Zast\u0105p specjalnie": "\u2014",
     "Dost\u0119pna w epokach": "Br\u0105z;\u017Belazo",
     meleeAttack: 0,
     meleeDefence: 0,
@@ -9792,8 +9968,8 @@ var units_default = [
     health: 900,
     missileAttack: 0,
     wallAttack: 6,
-    fieldPower: 226,
-    siegePower: 52
+    fieldPower: 451,
+    siegePower: 97
   },
   {
     Jednostka: "Wojownik tyrre\u0144ski",
@@ -9837,7 +10013,9 @@ var units_default = [
     "Bonus vs Offensive %": 0,
     "Bonus vs Distance %": 15,
     "Bonus vs Mount %": 0,
+    "Bonus vs Slinger %": 15,
     "Zmiana na": "Offensive",
+    "Zast\u0105p specjalnie": "Evocati",
     "Dost\u0119pna w epokach": "Br\u0105z;\u017Belazo",
     meleeAttack: 7,
     meleeDefence: 4,
@@ -9847,7 +10025,7 @@ var units_default = [
     chargeBonus: 3,
     health: 24,
     missileAttack: 0,
-    fieldPower: 27.5
+    fieldPower: 33.5
   },
   {
     Jednostka: "Wojownik szekelesz",
@@ -9884,14 +10062,16 @@ var units_default = [
     "Nazwa EN": "Shekelesh Warrior",
     Typ: "Spearman",
     Klasa: "Specjalna",
-    Nacja: "Rzym",
+    Nacja: "Ludy Morza",
     "Bonus vs Swordsman %": 0,
     "Bonus vs Spearman %": 0,
     "Bonus vs Falangite %": 0,
     "Bonus vs Offensive %": 0,
     "Bonus vs Distance %": 0,
     "Bonus vs Mount %": 25,
+    "Bonus vs Slinger %": 0,
     "Zmiana na": "Spearman",
+    "Zast\u0105p specjalnie": "\u2014",
     "Dost\u0119pna w epokach": "Br\u0105z;\u017Belazo",
     meleeAttack: 5,
     meleeDefence: 5,
@@ -9901,13 +10081,13 @@ var units_default = [
     chargeBonus: 2,
     health: 28,
     missileAttack: 0,
-    fieldPower: 25
+    fieldPower: 32
   },
   {
     Epoka: "\u017Belazo",
     "Pieni\u0105dz (koszt)": 32,
     Ludno\u015B\u0107: 1,
-    Surowiec: "Ko\u0144",
+    Surowiec: "zelazo",
     "Surowiec (ilo\u015B\u0107)": 1,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 3,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
@@ -9932,7 +10112,7 @@ var units_default = [
     "Kara obrony z ty\u0142u (%)": 40,
     "Morale bazowe": 100,
     "Morale ucieczki": 10,
-    Typ: "Konnica",
+    Typ: "Mount",
     Klasa: "Specjalna",
     "Bonus vs Swordsman %": 0,
     "Bonus vs Spearman %": 15,
@@ -9940,14 +10120,16 @@ var units_default = [
     "Bonus vs Offensive %": 25,
     "Bonus vs Distance %": 50,
     "Bonus vs Mount %": 0,
+    "Bonus vs Slinger %": 50,
     "Zmiana na": "Mount",
+    "Zast\u0105p specjalnie": "\u2014",
     "Dost\u0119pna w epokach": "Br\u0105z;\u017Belazo",
-    Tech: "Je\u017Adziectwo",
+    Tech: "Hutnictwo \u017Celaza",
     Kultura: "Asyria",
     Nacja: "Asyria",
     "Nazwa EN": "Assyrian Lancer",
     Jednostka: "Konnica lancowa asyryjska",
-    fieldPower: 0,
+    fieldPower: 39,
     health: 34,
     meleeAttack: 9,
     weaponDamage: 8,
@@ -9958,7 +10140,7 @@ var units_default = [
     Epoka: "\u017Belazo",
     "Pieni\u0105dz (koszt)": 30,
     Ludno\u015B\u0107: 1,
-    Surowiec: "Ko\u0144",
+    Surowiec: "zelazo",
     "Surowiec (ilo\u015B\u0107)": 1,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 3,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
@@ -9983,7 +10165,7 @@ var units_default = [
     "Kara obrony z ty\u0142u (%)": 40,
     "Morale bazowe": 100,
     "Morale ucieczki": 10,
-    Typ: "Konnica \u0142ucznicza",
+    Typ: "Mount",
     Klasa: "Specjalna",
     "Bonus vs Swordsman %": 0,
     "Bonus vs Spearman %": 15,
@@ -9991,14 +10173,16 @@ var units_default = [
     "Bonus vs Offensive %": 25,
     "Bonus vs Distance %": 50,
     "Bonus vs Mount %": 0,
+    "Bonus vs Slinger %": 50,
     "Zmiana na": "Mount",
+    "Zast\u0105p specjalnie": "\u2014",
     "Dost\u0119pna w epokach": "Br\u0105z;\u017Belazo",
-    Tech: "Je\u017Adziectwo",
+    Tech: "Hutnictwo \u017Celaza",
     Kultura: "Asyria",
     Nacja: "Asyria",
     "Nazwa EN": "Assyrian Horse Archer",
     Jednostka: "Konnica \u0142ucznicza asyryjska",
-    fieldPower: 0,
+    fieldPower: 27,
     health: 30,
     meleeAttack: 4,
     weaponDamage: 3,
@@ -10034,7 +10218,7 @@ var units_default = [
     "Kara obrony z ty\u0142u (%)": 80,
     "Morale bazowe": 85,
     "Morale ucieczki": 25,
-    Typ: "\u0141ucznik",
+    Typ: "Distance",
     Klasa: "Specjalna",
     "Bonus vs Swordsman %": 0,
     "Bonus vs Spearman %": 15,
@@ -10042,14 +10226,16 @@ var units_default = [
     "Bonus vs Offensive %": 0,
     "Bonus vs Distance %": 0,
     "Bonus vs Mount %": 0,
-    "Zmiana na": "Kusznik",
+    "Bonus vs Slinger %": 0,
+    "Zmiana na": "\u2014",
+    "Zast\u0105p specjalnie": "\u2014",
     "Dost\u0119pna w epokach": "Br\u0105z;\u017Belazo",
     Tech: "\u0141ucznictwo",
     Kultura: "Asyria",
     Nacja: "Asyria",
     "Nazwa EN": "Assyrian Archer",
     Jednostka: "\u0141ucznik asyryjski",
-    fieldPower: 0,
+    fieldPower: 17,
     health: 16,
     meleeAttack: 2,
     weaponDamage: 2,
@@ -10060,7 +10246,7 @@ var units_default = [
     Epoka: "\u017Belazo",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
-    Surowiec: "braz",
+    Surowiec: "zelazo",
     "Surowiec (ilo\u015B\u0107)": 5,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
@@ -10085,7 +10271,7 @@ var units_default = [
     "Kara obrony z ty\u0142u (%)": 30,
     "Morale bazowe": 100,
     "Morale ucieczki": 22,
-    Typ: "W\u0142\xF3cznik",
+    Typ: "Swordsman",
     Klasa: "Specjalna",
     "Bonus vs Swordsman %": 0,
     "Bonus vs Spearman %": 15,
@@ -10093,14 +10279,16 @@ var units_default = [
     "Bonus vs Offensive %": 0,
     "Bonus vs Distance %": 0,
     "Bonus vs Mount %": 0,
+    "Bonus vs Slinger %": 0,
     "Zmiana na": "Swordsman",
+    "Zast\u0105p specjalnie": "\u2014",
     "Dost\u0119pna w epokach": "\u017Belazo",
-    Tech: "Br\u0105zownictwo",
+    Tech: "Hutnictwo \u017Celaza",
     Kultura: "S\u0142owianie",
     Nacja: "S\u0142owianie",
     "Nazwa EN": "Druzhinnik",
     Jednostka: "Dru\u017Cynnik",
-    fieldPower: 0,
+    fieldPower: 36,
     health: 31,
     meleeAttack: 7,
     weaponDamage: 6,
@@ -10111,7 +10299,7 @@ var units_default = [
     Epoka: "\u017Belazo",
     "Pieni\u0105dz (koszt)": 26,
     Ludno\u015B\u0107: 1,
-    Surowiec: "Ko\u0144",
+    Surowiec: "zelazo",
     "Surowiec (ilo\u015B\u0107)": 1,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 3,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
@@ -10136,7 +10324,7 @@ var units_default = [
     "Kara obrony z ty\u0142u (%)": 40,
     "Morale bazowe": 100,
     "Morale ucieczki": 10,
-    Typ: "Konnica",
+    Typ: "Mount",
     Klasa: "Specjalna",
     "Bonus vs Swordsman %": 0,
     "Bonus vs Spearman %": 15,
@@ -10144,14 +10332,16 @@ var units_default = [
     "Bonus vs Offensive %": 25,
     "Bonus vs Distance %": 50,
     "Bonus vs Mount %": 0,
+    "Bonus vs Slinger %": 50,
     "Zmiana na": "Mount",
+    "Zast\u0105p specjalnie": "\u2014",
     "Dost\u0119pna w epokach": "\u017Belazo",
-    Tech: "Je\u017Adziectwo",
+    Tech: "Hutnictwo \u017Celaza",
     Kultura: "S\u0142owianie",
     Nacja: "S\u0142owianie",
     "Nazwa EN": "Slavic Javelin Cavalry",
     Jednostka: "Je\u017Adziec z oszczepami",
-    fieldPower: 0,
+    fieldPower: 32.5,
     health: 28,
     meleeAttack: 6,
     weaponDamage: 5,
@@ -10187,7 +10377,7 @@ var units_default = [
     "Kara obrony z ty\u0142u (%)": 30,
     "Morale bazowe": 100,
     "Morale ucieczki": 22,
-    Typ: "W\u0142\xF3cznik",
+    Typ: "Spearman",
     Klasa: "Specjalna",
     "Bonus vs Swordsman %": 0,
     "Bonus vs Spearman %": 0,
@@ -10195,14 +10385,16 @@ var units_default = [
     "Bonus vs Offensive %": 0,
     "Bonus vs Distance %": 0,
     "Bonus vs Mount %": 0,
+    "Bonus vs Slinger %": 0,
     "Zmiana na": "Spearman",
+    "Zast\u0105p specjalnie": "\u2014",
     "Dost\u0119pna w epokach": "Br\u0105z;\u017Belazo",
     Tech: "Br\u0105zownictwo",
     Kultura: "Harappa",
     Nacja: "Harappa",
     "Nazwa EN": "Harappan Gate Guard",
     Jednostka: "Stra\u017Cnik bram Harappy",
-    fieldPower: 0,
+    fieldPower: 37,
     health: 40,
     meleeAttack: 4,
     weaponDamage: 4,
@@ -10238,7 +10430,7 @@ var units_default = [
     "Kara obrony z ty\u0142u (%)": 30,
     "Morale bazowe": 100,
     "Morale ucieczki": 22,
-    Typ: "W\u0142\xF3cznik",
+    Typ: "Spearman",
     Klasa: "Specjalna",
     "Bonus vs Swordsman %": 0,
     "Bonus vs Spearman %": 15,
@@ -10246,14 +10438,16 @@ var units_default = [
     "Bonus vs Offensive %": 0,
     "Bonus vs Distance %": 0,
     "Bonus vs Mount %": 0,
+    "Bonus vs Slinger %": 0,
     "Zmiana na": "Spearman",
+    "Zast\u0105p specjalnie": "\u2014",
     "Dost\u0119pna w epokach": "Br\u0105z;\u017Belazo",
     Tech: "Br\u0105zownictwo",
     Kultura: "Harappa",
     Nacja: "Harappa",
     "Nazwa EN": "Indus Infantry",
     Jednostka: "Piechota induska",
-    fieldPower: 0,
+    fieldPower: 28,
     health: 24,
     meleeAttack: 6,
     weaponDamage: 5,
@@ -10264,7 +10458,7 @@ var units_default = [
     Epoka: "\u017Belazo",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
-    Surowiec: "braz",
+    Surowiec: "zelazo",
     "Surowiec (ilo\u015B\u0107)": 5,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
@@ -10289,7 +10483,7 @@ var units_default = [
     "Kara obrony z ty\u0142u (%)": 30,
     "Morale bazowe": 100,
     "Morale ucieczki": 22,
-    Typ: "W\u0142\xF3cznik",
+    Typ: "Swordsman",
     Klasa: "Specjalna",
     "Bonus vs Swordsman %": 0,
     "Bonus vs Spearman %": 15,
@@ -10297,14 +10491,16 @@ var units_default = [
     "Bonus vs Offensive %": 0,
     "Bonus vs Distance %": 0,
     "Bonus vs Mount %": 0,
+    "Bonus vs Slinger %": 0,
     "Zmiana na": "Swordsman",
+    "Zast\u0105p specjalnie": "\u2014",
     "Dost\u0119pna w epokach": "\u017Belazo",
-    Tech: "Br\u0105zownictwo",
+    Tech: "Hutnictwo \u017Celaza",
     Kultura: "Harappa",
     Nacja: "Harappa",
     "Nazwa EN": "Harappan Garrison",
     Jednostka: "Garnizon Harappy",
-    fieldPower: 0,
+    fieldPower: 30,
     health: 26,
     meleeAttack: 5,
     weaponDamage: 4,
@@ -10340,7 +10536,7 @@ var units_default = [
     "Kara obrony z ty\u0142u (%)": 40,
     "Morale bazowe": 100,
     "Morale ucieczki": 10,
-    Typ: "Rydwan",
+    Typ: "Mount",
     Klasa: "Specjalna",
     "Bonus vs Swordsman %": 0,
     "Bonus vs Spearman %": 15,
@@ -10348,14 +10544,16 @@ var units_default = [
     "Bonus vs Offensive %": 25,
     "Bonus vs Distance %": 50,
     "Bonus vs Mount %": 0,
+    "Bonus vs Slinger %": 50,
     "Zmiana na": "Mount",
+    "Zast\u0105p specjalnie": "\u2014",
     "Dost\u0119pna w epokach": "Br\u0105z;\u017Belazo",
     Tech: "Je\u017Adziectwo",
     Kultura: "Hetyci",
     Nacja: "Hetyci",
     "Nazwa EN": "Cappadocian Chariot",
     Jednostka: "Rydwan Kapadokijski",
-    fieldPower: 0,
+    fieldPower: 35,
     health: 36,
     meleeAttack: 7,
     weaponDamage: 7,
@@ -10391,7 +10589,7 @@ var units_default = [
     "Kara obrony z ty\u0142u (%)": 30,
     "Morale bazowe": 100,
     "Morale ucieczki": 22,
-    Typ: "W\u0142\xF3cznik",
+    Typ: "Spearman",
     Klasa: "Specjalna",
     "Bonus vs Swordsman %": 0,
     "Bonus vs Spearman %": 15,
@@ -10399,14 +10597,16 @@ var units_default = [
     "Bonus vs Offensive %": 0,
     "Bonus vs Distance %": 0,
     "Bonus vs Mount %": 0,
+    "Bonus vs Slinger %": 0,
     "Zmiana na": "Spearman",
+    "Zast\u0105p specjalnie": "\u2014",
     "Dost\u0119pna w epokach": "Br\u0105z;\u017Belazo",
     Tech: "Br\u0105zownictwo",
     Kultura: "Hetyci",
     Nacja: "Hetyci",
     "Nazwa EN": "Hittite Infantry",
     Jednostka: "Piechota hetycka",
-    fieldPower: 0,
+    fieldPower: 37,
     health: 32,
     meleeAttack: 5,
     weaponDamage: 8,
@@ -10417,7 +10617,7 @@ var units_default = [
     Epoka: "\u017Belazo",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
-    Surowiec: "braz",
+    Surowiec: "zelazo",
     "Surowiec (ilo\u015B\u0107)": 5,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
@@ -10442,7 +10642,7 @@ var units_default = [
     "Kara obrony z ty\u0142u (%)": 30,
     "Morale bazowe": 100,
     "Morale ucieczki": 22,
-    Typ: "W\u0142\xF3cznik",
+    Typ: "Swordsman",
     Klasa: "Specjalna",
     "Bonus vs Swordsman %": 0,
     "Bonus vs Spearman %": 15,
@@ -10450,14 +10650,16 @@ var units_default = [
     "Bonus vs Offensive %": 0,
     "Bonus vs Distance %": 0,
     "Bonus vs Mount %": 0,
+    "Bonus vs Slinger %": 0,
     "Zmiana na": "Swordsman",
+    "Zast\u0105p specjalnie": "\u2014",
     "Dost\u0119pna w epokach": "\u017Belazo",
-    Tech: "Br\u0105zownictwo",
+    Tech: "Hutnictwo \u017Celaza",
     Kultura: "Hetyci",
     Nacja: "Hetyci",
     "Nazwa EN": "Hittite Guard",
     Jednostka: "Gwardia hetycka",
-    fieldPower: 0,
+    fieldPower: 40,
     health: 40,
     meleeAttack: 7,
     weaponDamage: 6,
@@ -10493,7 +10695,7 @@ var units_default = [
     "Kara obrony z ty\u0142u (%)": 30,
     "Morale bazowe": 100,
     "Morale ucieczki": 22,
-    Typ: "W\u0142\xF3cznik",
+    Typ: "Swordsman",
     Klasa: "Specjalna",
     "Bonus vs Swordsman %": 0,
     "Bonus vs Spearman %": 15,
@@ -10501,14 +10703,16 @@ var units_default = [
     "Bonus vs Offensive %": 0,
     "Bonus vs Distance %": 0,
     "Bonus vs Mount %": 0,
+    "Bonus vs Slinger %": 0,
     "Zmiana na": "Swordsman",
+    "Zast\u0105p specjalnie": "\u2014",
     "Dost\u0119pna w epokach": "Br\u0105z;\u017Belazo",
     Tech: "Br\u0105zownictwo",
     Kultura: "Babilonia",
     Nacja: "Babilonia",
     "Nazwa EN": "Ishtar Guard",
     Jednostka: "Gwardia Ishtar",
-    fieldPower: 0,
+    fieldPower: 39.5,
     health: 35,
     meleeAttack: 8,
     weaponDamage: 7,
@@ -10544,7 +10748,7 @@ var units_default = [
     "Kara obrony z ty\u0142u (%)": 30,
     "Morale bazowe": 100,
     "Morale ucieczki": 22,
-    Typ: "Miecznik",
+    Typ: "Swordsman",
     Klasa: "Specjalna",
     "Bonus vs Swordsman %": 0,
     "Bonus vs Spearman %": 15,
@@ -10552,14 +10756,16 @@ var units_default = [
     "Bonus vs Offensive %": 0,
     "Bonus vs Distance %": 0,
     "Bonus vs Mount %": 0,
+    "Bonus vs Slinger %": 0,
     "Zmiana na": "Swordsman",
+    "Zast\u0105p specjalnie": "\u2014",
     "Dost\u0119pna w epokach": "Br\u0105z;\u017Belazo",
     Tech: "Br\u0105zownictwo",
     Kultura: "Babilonia",
     Nacja: "Babilonia",
     "Nazwa EN": "Babylonian Warrior",
     Jednostka: "Wojownik babilo\u0144ski",
-    fieldPower: 0,
+    fieldPower: 28,
     health: 24,
     meleeAttack: 6,
     weaponDamage: 5,
@@ -10570,7 +10776,7 @@ var units_default = [
     Epoka: "\u017Belazo",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
-    Surowiec: "braz",
+    Surowiec: "zelazo",
     "Surowiec (ilo\u015B\u0107)": 5,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
@@ -10595,7 +10801,7 @@ var units_default = [
     "Kara obrony z ty\u0142u (%)": 30,
     "Morale bazowe": 100,
     "Morale ucieczki": 22,
-    Typ: "W\u0142\xF3cznik",
+    Typ: "Swordsman",
     Klasa: "Specjalna",
     "Bonus vs Swordsman %": 0,
     "Bonus vs Spearman %": 15,
@@ -10603,14 +10809,16 @@ var units_default = [
     "Bonus vs Offensive %": 0,
     "Bonus vs Distance %": 0,
     "Bonus vs Mount %": 0,
+    "Bonus vs Slinger %": 0,
     "Zmiana na": "Swordsman",
+    "Zast\u0105p specjalnie": "\u2014",
     "Dost\u0119pna w epokach": "\u017Belazo",
-    Tech: "Br\u0105zownictwo",
+    Tech: "Hutnictwo \u017Celaza",
     Kultura: "Babilonia",
     Nacja: "Babilonia",
     "Nazwa EN": "Neo-Babylonian Infantry",
     Jednostka: "Piechota neobabilo\u0144ska",
-    fieldPower: 0,
+    fieldPower: 31,
     health: 26,
     meleeAttack: 6,
     weaponDamage: 5,
@@ -10621,7 +10829,7 @@ var units_default = [
     Epoka: "\u017Belazo",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
-    Surowiec: "braz",
+    Surowiec: "zelazo",
     "Surowiec (ilo\u015B\u0107)": 5,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
@@ -10646,7 +10854,7 @@ var units_default = [
     "Kara obrony z ty\u0142u (%)": 30,
     "Morale bazowe": 100,
     "Morale ucieczki": 22,
-    Typ: "Miecznik",
+    Typ: "Swordsman",
     Klasa: "Specjalna",
     "Bonus vs Swordsman %": 0,
     "Bonus vs Spearman %": 15,
@@ -10654,14 +10862,16 @@ var units_default = [
     "Bonus vs Offensive %": 0,
     "Bonus vs Distance %": 0,
     "Bonus vs Mount %": 0,
+    "Bonus vs Slinger %": 0,
     "Zmiana na": "Swordsman",
+    "Zast\u0105p specjalnie": "\u2014",
     "Dost\u0119pna w epokach": "\u017Belazo",
-    Tech: "Br\u0105zownictwo",
+    Tech: "Hutnictwo \u017Celaza",
     Kultura: "Fenicjanie",
     Nacja: "Fenicjanie",
     "Nazwa EN": "Tyrian Swordsman",
     Jednostka: "Tyrski miecznik",
-    fieldPower: 0,
+    fieldPower: 28,
     health: 24,
     meleeAttack: 7,
     weaponDamage: 6,
@@ -10697,7 +10907,7 @@ var units_default = [
     "Kara obrony z ty\u0142u (%)": 30,
     "Morale bazowe": 100,
     "Morale ucieczki": 22,
-    Typ: "W\u0142\xF3cznik",
+    Typ: "Swordsman",
     Klasa: "Specjalna",
     "Bonus vs Swordsman %": 0,
     "Bonus vs Spearman %": 15,
@@ -10705,14 +10915,16 @@ var units_default = [
     "Bonus vs Offensive %": 0,
     "Bonus vs Distance %": 0,
     "Bonus vs Mount %": 0,
+    "Bonus vs Slinger %": 0,
     "Zmiana na": "Swordsman",
+    "Zast\u0105p specjalnie": "\u2014",
     "Dost\u0119pna w epokach": "Br\u0105z;\u017Belazo",
     Tech: "Br\u0105zownictwo",
     Kultura: "Fenicjanie",
     Nacja: "Fenicjanie",
     "Nazwa EN": "Phoenician Warrior",
     Jednostka: "Wojownik fenicki",
-    fieldPower: 0,
+    fieldPower: 23,
     health: 20,
     meleeAttack: 5,
     weaponDamage: 4,
@@ -10723,7 +10935,7 @@ var units_default = [
     Epoka: "\u017Belazo",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
-    Surowiec: "braz",
+    Surowiec: "zelazo",
     "Surowiec (ilo\u015B\u0107)": 5,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
@@ -10748,7 +10960,7 @@ var units_default = [
     "Kara obrony z ty\u0142u (%)": 30,
     "Morale bazowe": 100,
     "Morale ucieczki": 22,
-    Typ: "W\u0142\xF3cznik",
+    Typ: "Swordsman",
     Klasa: "Specjalna",
     "Bonus vs Swordsman %": 0,
     "Bonus vs Spearman %": 15,
@@ -10756,14 +10968,16 @@ var units_default = [
     "Bonus vs Offensive %": 0,
     "Bonus vs Distance %": 0,
     "Bonus vs Mount %": 0,
+    "Bonus vs Slinger %": 0,
     "Zmiana na": "Swordsman",
+    "Zast\u0105p specjalnie": "\u2014",
     "Dost\u0119pna w epokach": "\u017Belazo",
-    Tech: "Br\u0105zownictwo",
+    Tech: "Hutnictwo \u017Celaza",
     Kultura: "Fenicjanie",
     Nacja: "Fenicjanie",
     "Nazwa EN": "Tyre Guard",
     Jednostka: "Gwardia Tyre\u0144ska",
-    fieldPower: 0,
+    fieldPower: 31,
     health: 24,
     meleeAttack: 7,
     weaponDamage: 6,
@@ -10774,10 +10988,10 @@ var units_default = [
     Jednostka: "Thorakites",
     Epoka: "\u017Belazo",
     Kultura: "Grecja",
-    Tech: "Br\u0105zownictwo",
+    Tech: "Hutnictwo \u017Celaza",
     "Pieni\u0105dz (koszt)": 16,
     Ludno\u015B\u0107: 1,
-    Surowiec: "braz",
+    Surowiec: "zelazo",
     "Surowiec (ilo\u015B\u0107)": 5,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
@@ -10803,7 +11017,7 @@ var units_default = [
     "Morale bazowe": 100,
     "Morale ucieczki": 22,
     "Nazwa EN": "Thorakites",
-    Typ: "W\u0142\xF3cznik",
+    Typ: "Swordsman",
     Klasa: "Specjalna",
     Nacja: "Grecja",
     "Bonus vs Swordsman %": 0,
@@ -10812,9 +11026,11 @@ var units_default = [
     "Bonus vs Offensive %": 0,
     "Bonus vs Distance %": 0,
     "Bonus vs Mount %": 0,
+    "Bonus vs Slinger %": 0,
     "Zmiana na": "Swordsman",
+    "Zast\u0105p specjalnie": "\u2014",
     "Dost\u0119pna w epokach": "\u017Belazo",
-    fieldPower: 0,
+    fieldPower: 41,
     health: 42,
     meleeAttack: 5,
     weaponDamage: 4,
@@ -10822,64 +11038,13 @@ var units_default = [
     missileAttack: 6
   },
   {
-    Jednostka: "Legion Rzymski",
-    Epoka: "Br\u0105z",
-    Kultura: "Rzymianie",
-    Tech: "Br\u0105zownictwo",
-    "Pieni\u0105dz (koszt)": 16,
-    Ludno\u015B\u0107: 1,
-    Surowiec: "braz",
-    "Surowiec (ilo\u015B\u0107)": 5,
-    "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
-    "\u017Cywno\u015B\u0107/tur\u0119": 1,
-    Atak: 7,
-    Uderzenie: 6,
-    Obrona: 7,
-    Ruch: 2,
-    "Ruch w bitwie (heksy)": 3,
-    Health: 48,
-    "Pr\xF3g dezercji (% health)": 0.3,
-    "Widok pola": 1,
-    "Atak dystansowy": 0,
-    "Zasi\u0119g ataku (hex)": "\u2014",
-    "Ilo\u015B\u0107 pocisk\xF3w": "\u2014",
-    "W zamian za": "Wojownik z mieczem i tarcz\u0105",
-    "Super-jednostka": "\u2014",
-    Uwagi: "Wczesny legionariusz Br\u0105zu; gladius + scutum; przed reform\u0105 Mariusza",
-    "Rola (linia)": "Wr\u0119cz",
-    Pancerz: 5,
-    Przebicie: 4,
-    "Kara obrony z flanki (%)": 15,
-    "Kara obrony z ty\u0142u (%)": 30,
-    "Morale bazowe": 100,
-    "Morale ucieczki": 22,
-    "Nazwa EN": "Legionary",
-    Typ: "Miecznik",
-    Klasa: "Specjalna",
-    Nacja: "Rzym",
-    "Bonus vs Swordsman %": 0,
-    "Bonus vs Spearman %": 15,
-    "Bonus vs Falangite %": 0,
-    "Bonus vs Offensive %": 0,
-    "Bonus vs Distance %": 0,
-    "Bonus vs Mount %": 0,
-    "Zmiana na": "Swordsman",
-    "Dost\u0119pna w epokach": "Br\u0105z",
-    fieldPower: 0,
-    health: 48,
-    meleeAttack: 7,
-    weaponDamage: 6,
-    meleeDefence: 7,
-    missileAttack: 6
-  },
-  {
     Jednostka: "Evocati",
-    Epoka: "Br\u0105z",
+    Epoka: "\u017Belazo",
     Kultura: "Rzymianie",
-    Tech: "\u2014",
+    Tech: "Hutnictwo \u017Celaza",
     "Pieni\u0105dz (koszt)": 0,
     Ludno\u015B\u0107: 1,
-    Surowiec: "\u2014",
+    Surowiec: "zelazo",
     "Surowiec (ilo\u015B\u0107)": 0,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 0,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
@@ -10905,7 +11070,7 @@ var units_default = [
     "Morale bazowe": 120,
     "Morale ucieczki": 18,
     "Nazwa EN": "Evocati",
-    Typ: "Miecznik",
+    Typ: "Swordsman",
     Klasa: "Super",
     Nacja: "Rzym",
     "Bonus vs Swordsman %": 0,
@@ -10914,9 +11079,11 @@ var units_default = [
     "Bonus vs Offensive %": 0,
     "Bonus vs Distance %": 0,
     "Bonus vs Mount %": 0,
+    "Bonus vs Slinger %": 0,
     "Zmiana na": "\u2014",
+    "Zast\u0105p specjalnie": "\u2014",
     "Dost\u0119pna w epokach": "Br\u0105z",
-    fieldPower: 0,
+    fieldPower: 54.5,
     health: 55,
     meleeAttack: 8,
     weaponDamage: 8,
@@ -10927,10 +11094,10 @@ var units_default = [
     Jednostka: "iButho z iklwa",
     Epoka: "\u017Belazo",
     Kultura: "Zulusi",
-    Tech: "Br\u0105zownictwo",
+    Tech: "Hutnictwo \u017Celaza",
     "Pieni\u0105dz (koszt)": 16,
     Ludno\u015B\u0107: 1,
-    Surowiec: "braz",
+    Surowiec: "zelazo",
     "Surowiec (ilo\u015B\u0107)": 4,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
@@ -10956,7 +11123,7 @@ var units_default = [
     "Morale bazowe": 100,
     "Morale ucieczki": 22,
     "Nazwa EN": "iButho with iklwa",
-    Typ: "W\u0142\xF3cznik",
+    Typ: "Spearman",
     Klasa: "Specjalna",
     Nacja: "Zulu",
     "Bonus vs Swordsman %": 0,
@@ -10965,9 +11132,11 @@ var units_default = [
     "Bonus vs Offensive %": 0,
     "Bonus vs Distance %": 0,
     "Bonus vs Mount %": 50,
+    "Bonus vs Slinger %": 0,
     "Zmiana na": "Spearman",
+    "Zast\u0105p specjalnie": "\u2014",
     "Dost\u0119pna w epokach": "\u017Belazo",
-    fieldPower: 0,
+    fieldPower: 30.5,
     health: 29,
     meleeAttack: 5,
     weaponDamage: 4,
@@ -11007,7 +11176,7 @@ var units_default = [
     "Morale bazowe": 100,
     "Morale ucieczki": 22,
     "Nazwa EN": "Champi Guardsman",
-    Typ: "Miecznik",
+    Typ: "Offensive",
     Klasa: "Specjalna",
     Nacja: "Inkowie",
     "Bonus vs Swordsman %": 25,
@@ -11016,9 +11185,11 @@ var units_default = [
     "Bonus vs Offensive %": 0,
     "Bonus vs Distance %": 0,
     "Bonus vs Mount %": 0,
+    "Bonus vs Slinger %": 0,
     "Zmiana na": "Offensive",
+    "Zast\u0105p specjalnie": "\u2014",
     "Dost\u0119pna w epokach": "Br\u0105z;\u017Belazo",
-    fieldPower: 0,
+    fieldPower: 44.5,
     health: 48,
     meleeAttack: 7,
     weaponDamage: 6,
@@ -11029,10 +11200,10 @@ var units_default = [
     Jednostka: "Wojownik z \u017Celaznym khopesh",
     Epoka: "\u017Belazo",
     Kultura: "Egipt",
-    Tech: "Br\u0105zownictwo",
+    Tech: "Hutnictwo \u017Celaza",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
-    Surowiec: "braz",
+    Surowiec: "zelazo",
     "Surowiec (ilo\u015B\u0107)": 5,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
@@ -11058,7 +11229,7 @@ var units_default = [
     "Morale bazowe": 100,
     "Morale ucieczki": 22,
     "Nazwa EN": "Iron Khopesh Warrior",
-    Typ: "Miecznik",
+    Typ: "Swordsman",
     Klasa: "Specjalna",
     Nacja: "Egipt",
     "Bonus vs Swordsman %": 0,
@@ -11067,9 +11238,11 @@ var units_default = [
     "Bonus vs Offensive %": 0,
     "Bonus vs Distance %": 0,
     "Bonus vs Mount %": 0,
+    "Bonus vs Slinger %": 0,
     "Zmiana na": "Swordsman",
+    "Zast\u0105p specjalnie": "\u2014",
     "Dost\u0119pna w epokach": "\u017Belazo",
-    fieldPower: 0,
+    fieldPower: 29.5,
     health: 23,
     meleeAttack: 6,
     weaponDamage: 6,
@@ -11080,10 +11253,10 @@ var units_default = [
     Jednostka: "Mur tarcz (Sargonid)",
     Epoka: "\u017Belazo",
     Kultura: "Sumerowie",
-    Tech: "Br\u0105zownictwo",
+    Tech: "Hutnictwo \u017Celaza",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
-    Surowiec: "braz",
+    Surowiec: "zelazo",
     "Surowiec (ilo\u015B\u0107)": 5,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
@@ -11109,7 +11282,7 @@ var units_default = [
     "Morale bazowe": 100,
     "Morale ucieczki": 22,
     "Nazwa EN": "Shield Wall (Sargonid)",
-    Typ: "W\u0142\xF3cznik",
+    Typ: "Spearman",
     Klasa: "Specjalna",
     Nacja: "Sumer",
     "Bonus vs Swordsman %": 0,
@@ -11118,9 +11291,11 @@ var units_default = [
     "Bonus vs Offensive %": 0,
     "Bonus vs Distance %": 0,
     "Bonus vs Mount %": 50,
+    "Bonus vs Slinger %": 0,
     "Zmiana na": "Spearman",
+    "Zast\u0105p specjalnie": "\u2014",
     "Dost\u0119pna w epokach": "\u017Belazo",
-    fieldPower: 0,
+    fieldPower: 34,
     health: 34,
     meleeAttack: 4,
     weaponDamage: 3,
@@ -11131,10 +11306,10 @@ var units_default = [
     Jednostka: "Miecznik galijski",
     Epoka: "\u017Belazo",
     Kultura: "Celtowie",
-    Tech: "Br\u0105zownictwo",
+    Tech: "Hutnictwo \u017Celaza",
     "Pieni\u0105dz (koszt)": 14,
     Ludno\u015B\u0107: 1,
-    Surowiec: "braz",
+    Surowiec: "zelazo",
     "Surowiec (ilo\u015B\u0107)": 3,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 1,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
@@ -11160,7 +11335,7 @@ var units_default = [
     "Morale bazowe": 100,
     "Morale ucieczki": 22,
     "Nazwa EN": "Gallic Swordsman",
-    Typ: "Miecznik",
+    Typ: "Swordsman",
     Klasa: "Specjalna",
     Nacja: "Celtowie",
     "Bonus vs Swordsman %": 0,
@@ -11169,9 +11344,11 @@ var units_default = [
     "Bonus vs Offensive %": 0,
     "Bonus vs Distance %": 0,
     "Bonus vs Mount %": 0,
+    "Bonus vs Slinger %": 0,
     "Zmiana na": "Swordsman",
+    "Zast\u0105p specjalnie": "\u2014",
     "Dost\u0119pna w epokach": "\u017Belazo",
-    fieldPower: 0,
+    fieldPower: 35,
     health: 38,
     meleeAttack: 8,
     weaponDamage: 6,
@@ -11401,7 +11578,7 @@ var buildings_default = [
     przyrostUtrzymania: 1,
     wymagania: "upgrade Odlewni br\u0105zu",
     uwagi: "ABC-7: suma bonus\xF3w z Odlewni br\u0105zu + \u017Celazo; placeholder receptury",
-    techUnlock: "Obr\xF3bka \u017Celaza",
+    techUnlock: "Hutnictwo \u017Celaza",
     upgradeFrom: "odlewnia_brazu"
   },
   {
@@ -11775,8 +11952,11 @@ var buildings_default = [
     utrzymanie: 1,
     przyrostUtrzymania: 1,
     wymagania: "",
-    uwagi: "",
-    techUnlock: "Pismo"
+    uwagi: "3a: poziom 6 (Obserwatorium) i wyzej wymaga odkrycia technologii Astronomia \u2014 patrz poziomTechGate.",
+    techUnlock: "Pismo",
+    poziomTechGate: {
+      "6": "Astronomia"
+    }
   },
   {
     id: "studnia",
@@ -11952,7 +12132,7 @@ var buildings_default = [
     przyrostUtrzymania: 1,
     wymagania: "",
     uwagi: "Mnoznik % dotyczy sily i exp jednostek szkolonych w miescie",
-    techUnlock: "Wojskowosc"
+    techUnlock: "Wojskowo\u015B\u0107"
   },
   {
     id: "magazyn",
@@ -12104,7 +12284,7 @@ var buildings_default = [
     wymagania: "zelazo w zasiegu",
     wymaganySurowiec: "zelazo",
     uwagi: "Mnoznik % dotyczy sily jednostek zelaznych produkowanych w miescie; wymaga dostepu do zelaza",
-    techUnlock: "Obr\xF3bka \u017Celaza"
+    techUnlock: "Hutnictwo \u017Celaza"
   },
   {
     id: "wielka_kuznia",
@@ -12140,7 +12320,7 @@ var buildings_default = [
     wymagania: "upgrade Ku\u017Ani \u017Celaza; stal w zasi\u0119gu",
     wymaganySurowiec: "stal",
     uwagi: "Upgrade Ku\u017Ania \u017Celaza \u2192 Wielka Ku\u017Ania; suma bonus\xF3w w JSON",
-    techUnlock: "Hutnictwo \u017Celaza",
+    techUnlock: "Obr\xF3bka \u017Celaza",
     upgradeFrom: "kuznia_zelaza"
   },
   {
@@ -12321,7 +12501,7 @@ var buildings_default = [
     przyrostUtrzymania: 1,
     wymagania: "",
     uwagi: "Redukuje korupcje (anty-korupcja); zwiekszony porzadek publiczny; zadowolenie z praworz.",
-    techUnlock: "Kodeks prawa"
+    techUnlock: "Prawo"
   },
   {
     id: "pretorium",
@@ -12356,7 +12536,42 @@ var buildings_default = [
     przyrostUtrzymania: 1,
     wymagania: "",
     uwagi: "Centrum administracji prowincji; bonus do utrzymania porzadku (garnizon); mnoznik % do przychodu podatkowego",
-    techUnlock: "Kodeks prawa"
+    techUnlock: "Prawo"
+  },
+  {
+    id: "trybunal",
+    nazwa: "Trybuna\u0142",
+    kategoria: "Administracja",
+    epokaWejscia: 2,
+    maksPoziom: 10,
+    nazwyPoziomow: [],
+    baza: {
+      praca: 0,
+      pieniadz: 1,
+      zywnosc: 0,
+      nauka: 0,
+      kultura: 0,
+      zadowolenie: 1,
+      obrona: 0,
+      mnoznik: 0
+    },
+    przyrost: {
+      praca: 0,
+      pieniadz: 1,
+      zywnosc: 0,
+      nauka: 0,
+      kultura: 0,
+      zadowolenie: 1,
+      obrona: 0,
+      mnoznik: 0
+    },
+    kosztBudowy: 30,
+    przyrostKosztu: 10,
+    utrzymanie: 1,
+    przyrostUtrzymania: 1,
+    wymagania: "",
+    uwagi: "3a: wczesna administracja \u2014 +porzadek, anty-korupcja; slabszy niz Sad/Pretorium (Kodeks prawa)",
+    techUnlock: "Kodeks"
   },
   {
     id: "laznia_publiczna",
@@ -12556,13 +12771,13 @@ var resources_default = [
     Surowiec: "\u017Belazo",
     Typ: "surowy",
     "\u0179r\xF3d\u0142o / budynek": "z\u0142o\u017Ce Ruda \u017Celaza + Ku\u017Ania \u017Celaza",
-    Uwagi: "model dost\u0119pu v0.1 = boolean (z\u0142o\u017Ce w zasi\u0119gu + ulepszenie); odblokowuje tech Obr\xF3bka \u017Celaza; prereq Ku\u017Ani \u017Celaza"
+    Uwagi: "model dost\u0119pu v0.1 = boolean (z\u0142o\u017Ce w zasi\u0119gu + ulepszenie); odblokowuje tech Hutnictwo \u017Celaza; prereq Ku\u017Ani \u017Celaza"
   },
   {
     Surowiec: "Stal",
     Typ: "przetworzony",
     "\u0179r\xF3d\u0142o / budynek": "Wielka Ku\u017Ania (\u017Celazo+paliwo)",
-    Uwagi: "odblokowuje tech Hutnictwo \u017Celaza; prereq Wielkiej Ku\u017Ani; model dost\u0119pu v0.1 = boolean"
+    Uwagi: "odblokowuje tech Obr\xF3bka \u017Celaza; prereq Wielkiej Ku\u017Ani; model dost\u0119pu v0.1 = boolean"
   }
 ];
 
@@ -12645,7 +12860,7 @@ var tech_default = {
     {
       Technologia: "\u0141ucznictwo",
       Epoka: "Kamie\u0144",
-      Poziom: 1,
+      Poziom: 2,
       "Dost\u0119p do surowca.": "Dost\u0119p do drewna",
       "wymagany budynek": null,
       "Wymaga (prereq)": "\u2014",
@@ -12684,10 +12899,10 @@ var tech_default = {
     {
       Technologia: "Wymiana",
       Epoka: "Kamie\u0144",
-      Poziom: 1,
+      Poziom: 2,
       "Dost\u0119p do surowca.": null,
       "wymagany budynek": null,
-      "Wymaga (prereq)": "Garncarstwo",
+      "Wymaga (prereq)": "Garncarstwo + Rolnictwo + Oswojenie zwierz\u0105t",
       "Odblokowuje surowiec.": null,
       "Odblokowuje budynek": "Targowisko (Rynek)",
       "Koszt nauki": 16,
@@ -12697,10 +12912,10 @@ var tech_default = {
     {
       Technologia: "Gospodarka wodna",
       Epoka: "Kamie\u0144",
-      Poziom: 1,
+      Poziom: 2,
       "Dost\u0119p do surowca.": null,
       "wymagany budynek": null,
-      "Wymaga (prereq)": "Garncarstwo",
+      "Wymaga (prereq)": "Rolnictwo",
       "Odblokowuje surowiec.": null,
       "Odblokowuje budynek": "Studnia",
       "Koszt nauki": 18,
@@ -12723,36 +12938,38 @@ var tech_default = {
     {
       Technologia: "Br\u0105zownictwo",
       Epoka: "Kamie\u0144",
-      Poziom: 2,
+      Poziom: 3,
       "Dost\u0119p do surowca.": "Dost\u0119p do br\u0105zu",
       "wymagany budynek": null,
-      "Wymaga (prereq)": "Garncarstwo",
+      "Wymaga (prereq)": "Garncarstwo + Murarstwo + Obr\xF3bka drewna",
       "Odblokowuje surowiec.": null,
-      "Odblokowuje budynek": "Odlewnia br\u0105zu; Kuznia; Jednostki: W\u0142\xF3cznik, Wojownik z mieczem i tarcz\u0105, Falanga, Hastati, Kusznik, Impi, Wojownik z toporem, Wojownik z khopesh, W\u0142\xF3cznik sumeryjski, Wojownik myke\u0144ski, Wojownik Sherden, Halabardnik Shang, Gaesatae, Soldurii, Wojownik germa\u0144ski, Berserker germa\u0144ski, Wie\u017Ca obl\u0119\u017Cnicza, Wojownik tyrre\u0144ski, Wojownik szekelesz",
+      "Odblokowuje budynek": "Odlewnia br\u0105zu; Kuznia; Jednostki: W\u0142\xF3cznik, Wojownik z mieczem i tarcz\u0105, Impi, Wojownik z toporem, Wojownik z khopesh, W\u0142\xF3cznik sumeryjski, Wojownik myke\u0144ski, Wojownik Sherden, Halabardnik Shang, Wie\u017Ca obl\u0119\u017Cnicza, Wojownik tyrre\u0144ski, Wojownik szekelesz",
       "Koszt nauki": 45,
       Uwagi: "ko\u0144czy Epok\u0119 1; ABC-7: Popalnia br\u0105zu na mapie",
-      "Odblokowuje ulepszenie terenu": "Popalnia br\u0105zu"
+      "Odblokowuje ulepszenie terenu": "Popalnia br\u0105zu",
+      awansDoEpoki: 2
     },
     {
       Technologia: "\u017Begluga",
       Epoka: "Br\u0105z",
-      Poziom: 2,
+      Poziom: 4,
       "Dost\u0119p do surowca.": "Deski",
-      "wymagany budynek": "Tartak",
+      "wymagany budynek": null,
       "Wymaga (prereq)": "Obr\xF3bka drewna",
       "Odblokowuje surowiec.": null,
       "Odblokowuje budynek": "Port handlowy; Jednostki: Galera",
       "Koszt nauki": 40,
       Uwagi: null,
-      "Odblokowuje ulepszenie terenu": "\u0141odzie rybackie"
+      "Odblokowuje ulepszenie terenu": "\u0141odzie rybackie",
+      "wymagane ulepszenie": "Tartak"
     },
     {
       Technologia: "Pismo",
       Epoka: "Br\u0105z",
-      Poziom: 3,
+      Poziom: 4,
       "Dost\u0119p do surowca.": "Ceramika",
       "wymagany budynek": "Cegielnia",
-      "Wymaga (prereq)": "Garncarstwo",
+      "Wymaga (prereq)": "Garncarstwo + Wymiana",
       "Odblokowuje surowiec.": null,
       "Odblokowuje budynek": "Biblioteka",
       "Koszt nauki": 45,
@@ -12762,10 +12979,10 @@ var tech_default = {
     {
       Technologia: "Religia",
       Epoka: "Br\u0105z",
-      Poziom: 3,
+      Poziom: 4,
       "Dost\u0119p do surowca.": "Ceramika",
       "wymagany budynek": "Cegielnia",
-      "Wymaga (prereq)": "Garncarstwo",
+      "Wymaga (prereq)": "Garncarstwo + Mistycyzm",
       "Odblokowuje surowiec.": null,
       "Odblokowuje budynek": "\u015Awi\u0105tynia (upgrade kr\u0119g\xF3w)",
       "Koszt nauki": 48,
@@ -12775,20 +12992,20 @@ var tech_default = {
     {
       Technologia: "Je\u017Adziectwo",
       Epoka: "Br\u0105z",
-      Poziom: 3,
+      Poziom: 4,
       "Dost\u0119p do surowca.": "kon",
       "wymagany budynek": null,
       "Wymaga (prereq)": "Ko\u0142o + Br\u0105zownictwo",
       "Odblokowuje surowiec.": null,
-      "Odblokowuje budynek": "Jednostki: Konnica, Je\u017Adziec chi\u0144ski, Rydwan konny, Rydwan egipski, Rydwan sumeryjski, Rydwan myke\u0144ski, Rydwan Shang, Rydwan celtycki",
+      "Odblokowuje budynek": "Jednostki: Konnica, Je\u017Adziec chi\u0144ski, Rydwan konny, Rydwan egipski, Rydwan sumeryjski, Rydwan myke\u0144ski, Rydwan Shang",
       "Koszt nauki": 56,
       Uwagi: null,
       "Odblokowuje ulepszenie terenu": null
     },
     {
-      Technologia: "Wojskowosc",
+      Technologia: "Wojskowo\u015B\u0107",
       Epoka: "Br\u0105z",
-      Poziom: 3,
+      Poziom: 4,
       "Dost\u0119p do surowca.": null,
       "wymagany budynek": null,
       "Wymaga (prereq)": "Br\u0105zownictwo",
@@ -12801,10 +13018,10 @@ var tech_default = {
     {
       Technologia: "Matematyka",
       Epoka: "Br\u0105z",
-      Poziom: 4,
+      Poziom: 5,
       "Dost\u0119p do surowca.": null,
       "wymagany budynek": null,
-      "Wymaga (prereq)": "Pismo",
+      "Wymaga (prereq)": "Pismo + Wymiana",
       "Odblokowuje surowiec.": null,
       "Odblokowuje budynek": null,
       "Koszt nauki": 68,
@@ -12814,10 +13031,10 @@ var tech_default = {
     {
       Technologia: "Handel",
       Epoka: "Br\u0105z",
-      Poziom: 4,
+      Poziom: 5,
       "Dost\u0119p do surowca.": null,
       "wymagany budynek": null,
-      "Wymaga (prereq)": "Pismo",
+      "Wymaga (prereq)": "Pismo + \u017Begluga",
       "Odblokowuje surowiec.": null,
       "Odblokowuje budynek": "Karawanseraj; Magazyn",
       "Koszt nauki": 74,
@@ -12825,14 +13042,14 @@ var tech_default = {
       "Odblokowuje ulepszenie terenu": null
     },
     {
-      Technologia: "Prawo (Kodeks)",
+      Technologia: "Kodeks",
       Epoka: "Br\u0105z",
-      Poziom: 4,
+      Poziom: 5,
       "Dost\u0119p do surowca.": null,
       "wymagany budynek": null,
-      "Wymaga (prereq)": "Pismo",
+      "Wymaga (prereq)": "Pismo + Religia",
       "Odblokowuje surowiec.": null,
-      "Odblokowuje budynek": null,
+      "Odblokowuje budynek": "Trybuna\u0142",
       "Koszt nauki": 62,
       Uwagi: null,
       "Odblokowuje ulepszenie terenu": null
@@ -12840,7 +13057,7 @@ var tech_default = {
     {
       Technologia: "Budownictwo",
       Epoka: "Br\u0105z",
-      Poziom: 5,
+      Poziom: 6,
       "Dost\u0119p do surowca.": "ceg\u0142a",
       "wymagany budynek": null,
       "Wymaga (prereq)": "Matematyka + Murarstwo",
@@ -12853,7 +13070,7 @@ var tech_default = {
     {
       Technologia: "Waluta",
       Epoka: "Br\u0105z",
-      Poziom: 5,
+      Poziom: 6,
       "Dost\u0119p do surowca.": "handel",
       "wymagany budynek": null,
       "Wymaga (prereq)": "Handel + Matematyka",
@@ -12864,22 +13081,36 @@ var tech_default = {
       "Odblokowuje ulepszenie terenu": null
     },
     {
-      Technologia: "Obr\xF3bka \u017Celaza",
-      Epoka: "\u017Belazo",
+      Technologia: "Astronomia",
+      Epoka: "Br\u0105z",
+      Poziom: 6,
+      "Dost\u0119p do surowca.": null,
+      "wymagany budynek": null,
+      "Wymaga (prereq)": "Matematyka + Religia",
+      "Odblokowuje surowiec.": null,
+      "Odblokowuje budynek": "Biblioteka: poziom Obserwatorium+ (poz. 6)",
+      "Koszt nauki": 110,
+      Uwagi: "3a: Astronomia = bramka rozwoju Biblioteki do poziomu 6 (Obserwatorium) i wyzej; nie osobny budynek. prereq Matematyka+Mistycyzm",
+      "Odblokowuje ulepszenie terenu": null
+    },
+    {
+      Technologia: "Hutnictwo \u017Celaza",
+      Epoka: "Br\u0105z",
       Poziom: 6,
       "Dost\u0119p do surowca.": "Dost\u0119p do \u017Celazo",
-      "wymagany budynek": "Odlewnia br\u0105zu",
+      "wymagany budynek": "Piec hutniczy",
       "Wymaga (prereq)": "Br\u0105zownictwo",
       "Odblokowuje surowiec.": "\u017Celazo",
-      "Odblokowuje budynek": "Ku\u017Ania \u017Celaza",
+      "Odblokowuje budynek": "Ku\u017Ania \u017Celaza; Jednostki: Hastati, Falanga, Dru\u017Cynnik, Garnizon Harappy, Gwardia hetycka, Piechota neobabilo\u0144ska, Tyrski miecznik, Gwardia Tyre\u0144ska, Thorakites, iButho z iklwa, Wojownik z \u017Celaznym khopesh, Mur tarcz (Sargonid), Miecznik galijski, Rydwan celtycki, Konnica lancowa asyryjska, Konnica \u0142ucznicza asyryjska, Je\u017Adziec z oszczepami",
       "Koszt nauki": 120,
       Uwagi: "ko\u0144czy Epok\u0119 2 / otwiera Epok\u0119 3; jednostki \u017Celazne (Gaesatae, Soldurii, Wojownik germa\u0144ski itp.) \u2014 do zdefiniowania przez UNITS; Ku\u017Ania \u017Celaza = NOWY budynek dla EKONOMIA",
-      "Odblokowuje ulepszenie terenu": null
+      "Odblokowuje ulepszenie terenu": null,
+      awansDoEpoki: 3
     },
     {
       Technologia: "In\u017Cynieria",
       Epoka: "\u017Belazo",
-      Poziom: 6,
+      Poziom: 7,
       "Dost\u0119p do surowca.": null,
       "wymagany budynek": null,
       "Wymaga (prereq)": "Budownictwo",
@@ -12892,10 +13123,10 @@ var tech_default = {
     {
       Technologia: "Obl\u0119\u017Cnictwo",
       Epoka: "\u017Belazo",
-      Poziom: 6,
+      Poziom: 7,
       "Dost\u0119p do surowca.": null,
       "wymagany budynek": "Koszary",
-      "Wymaga (prereq)": "Matematyka + Wojskowosc",
+      "Wymaga (prereq)": "Matematyka + Wojskowo\u015B\u0107",
       "Odblokowuje surowiec.": null,
       "Odblokowuje budynek": "Warsztat obl\u0119\u017Cniczy; Jednostki: Katapulta",
       "Koszt nauki": 140,
@@ -12916,12 +13147,12 @@ var tech_default = {
       "Odblokowuje ulepszenie terenu": null
     },
     {
-      Technologia: "Kodeks prawa",
+      Technologia: "Prawo",
       Epoka: "\u017Belazo",
-      Poziom: 7,
+      Poziom: 8,
       "Dost\u0119p do surowca.": null,
       "wymagany budynek": null,
-      "Wymaga (prereq)": "Prawo (Kodeks) + Pismo",
+      "Wymaga (prereq)": "Kodeks + Filozofia",
       "Odblokowuje surowiec.": null,
       "Odblokowuje budynek": "S\u0105d; Pretorium",
       "Koszt nauki": 155,
@@ -12931,7 +13162,7 @@ var tech_default = {
     {
       Technologia: "Drogi brukowane",
       Epoka: "\u017Belazo",
-      Poziom: 7,
+      Poziom: 8,
       "Dost\u0119p do surowca.": null,
       "wymagany budynek": null,
       "Wymaga (prereq)": "In\u017Cynieria + Budownictwo",
@@ -12944,10 +13175,10 @@ var tech_default = {
     {
       Technologia: "Medycyna",
       Epoka: "\u017Belazo",
-      Poziom: 7,
+      Poziom: 8,
       "Dost\u0119p do surowca.": null,
       "wymagany budynek": "Studnia",
-      "Wymaga (prereq)": "Filozofia + Gospodarka wodna",
+      "Wymaga (prereq)": "Filozofia",
       "Odblokowuje surowiec.": null,
       "Odblokowuje budynek": "\u0141a\u017Ania publiczna; Lazaret",
       "Koszt nauki": 162,
@@ -12955,14 +13186,14 @@ var tech_default = {
       "Odblokowuje ulepszenie terenu": null
     },
     {
-      Technologia: "Hutnictwo \u017Celaza",
+      Technologia: "Obr\xF3bka \u017Celaza",
       Epoka: "\u017Belazo",
-      Poziom: 8,
+      Poziom: 9,
       "Dost\u0119p do surowca.": "\u017Celazo",
       "wymagany budynek": "Ku\u017Ania \u017Celaza",
-      "Wymaga (prereq)": "Obr\xF3bka \u017Celaza + In\u017Cynieria",
+      "Wymaga (prereq)": "Hutnictwo \u017Celaza + Drogi brukowane",
       "Odblokowuje surowiec.": "stal (prereq)",
-      "Odblokowuje budynek": "Wielka Ku\u017Ania",
+      "Odblokowuje budynek": "Wielka Ku\u017Ania; Jednostki: Gaesatae, Soldurii, Wojownik germa\u0144ski, Berserker germa\u0144ski",
       "Koszt nauki": 185,
       Uwagi: "Wielka Ku\u017Ania = NOWY budynek (produkcja++, mnoznik jednostek++); stal = NOWY surowiec dla DANE (prereq dalszych epok); EKONOMIA dodaje surowiec; UNITS aktualizuje jednostki \u017Celazne wy\u017Cszego poziomu",
       "Odblokowuje ulepszenie terenu": null
@@ -12970,7 +13201,7 @@ var tech_default = {
     {
       Technologia: "Sztuka wojenna",
       Epoka: "\u017Belazo",
-      Poziom: 8,
+      Poziom: 9,
       "Dost\u0119p do surowca.": null,
       "wymagany budynek": "Koszary",
       "Wymaga (prereq)": "Obl\u0119\u017Cnictwo + Obr\xF3bka \u017Celaza",
@@ -13020,7 +13251,12 @@ var civs_default = {
         {
           typ: "jednostka_specjalna",
           cel: "piechota",
-          wartosc: "Falanga (Hoplita)",
+          wartosc: [
+            "Falanga",
+            "Wojownik myke\u0144ski",
+            "Rydwan myke\u0144ski",
+            "Thorakites"
+          ],
           opis: "Hoplita = ulepszona piechota z tarcz\u0105; silna od frontu, odpiera szar\u017C\u0119 kawalerii",
           realizuje: "walka"
         },
@@ -13189,7 +13425,10 @@ var civs_default = {
         {
           typ: "jednostka_specjalna",
           cel: "piechota",
-          wartosc: "Legion (Legionista)",
+          wartosc: [
+            "Hastati",
+            "Triari"
+          ],
           opis: "Legionista = ci\u0119\u017Cka piechota z pilum; silny atak + pancerz + morale",
           realizuje: "walka"
         },
@@ -13313,7 +13552,7 @@ var civs_default = {
     {
       Cywilizacja: "Chi\u0144czycy",
       "Styl / charakter": "dystans + kawaleria",
-      "Jednostka specjalna": "Kusznik (lepszy \u0142ucznik)",
+      "Jednostka specjalna": "Je\u017Adziec chi\u0144ski",
       "Bonus startowy": "lepsi \u0142ucznicy (+Atak/zasi\u0119g) i lepsza konnica (+Uderzenie)",
       "Bonusy/minusy (do dopracowania)": "s\u0142absza piechota szturmowa wr\u0119cz (nacisk na dystans i konnic\u0119)",
       Uwagi: "wczesna przewaga w wojnie dystansowej",
@@ -13338,7 +13577,7 @@ var civs_default = {
           typ: "bonus_walka",
           cel: "lukownicy",
           wartosc: 0.2,
-          opis: "Kusznik: +20% ataku i zasi\u0119gu \u0142ucznik\xF3w/kusznik\xF3w (przewaga dystansowa)",
+          opis: "\u0141ucznicy: +20% ataku i zasi\u0119gu jednostek dystansowych (przewaga dystansowa)",
           realizuje: "walka"
         },
         {
@@ -13350,9 +13589,13 @@ var civs_default = {
         },
         {
           typ: "jednostka_specjalna",
-          cel: "dystans",
-          wartosc: "Kusznik (lepszy \u0142ucznik)",
-          opis: "Kusznik = silniejszy \u0142ucznik z kusz\u0105; wi\u0119kszy zasi\u0119g i przebicie pancerza",
+          cel: "kawaleria",
+          wartosc: [
+            "Je\u017Adziec chi\u0144ski",
+            "Halabardnik Shang",
+            "Rydwan Shang"
+          ],
+          opis: "Chi\u0144scy specjali\u015Bci: Je\u017Adziec chi\u0144ski (kawaleria stepowa), Halabardnik Shang (elitarna piechota), Rydwan Shang (rydwan bojowy)",
           realizuje: "walka"
         }
       ],
@@ -13506,7 +13749,13 @@ var civs_default = {
         {
           typ: "jednostka_specjalna",
           cel: "piechota",
-          wartosc: "Chaska / Kr\xF3lewska Gwardia",
+          wartosc: [
+            "Wojownik z maczug\u0105 (Chaska)",
+            "Wojownik z toporem",
+            "Procarz (Huaracoc)",
+            "Oszczepnik (Est\xF3lica)",
+            "Gwardzista z champi"
+          ],
           opis: "Chaska (maczuga gwia\u017Adzista) = elitarna piechota; Kr\xF3lewska Gwardia = oddzia\u0142y presti\u017Cowe",
           realizuje: "walka"
         }
@@ -13661,7 +13910,11 @@ var civs_default = {
         {
           typ: "jednostka_specjalna",
           cel: "piechota",
-          wartosc: "Impi",
+          wartosc: [
+            "Impi",
+            "Oszczepnik Zulu (Izijula)",
+            "iButho z iklwa"
+          ],
           opis: "Impi = szybka piechota z assegai; silna w zmasowanym ataku, s\u0142aba na dystans",
           realizuje: "walka"
         }
@@ -13816,7 +14069,12 @@ var civs_default = {
         {
           typ: "jednostka_specjalna",
           cel: "piechota",
-          wartosc: "Med\u017Caj (Gwardia Faraona)",
+          wartosc: [
+            "\u0141ucznik egipski",
+            "Rydwan egipski",
+            "Wojownik z khopesh",
+            "Wojownik z \u017Celaznym khopesh"
+          ],
           opis: "Med\u017Caj = elitarna gwardia; najlepsza piechota Egiptu, ochrona centrum miasta",
           realizuje: "walka"
         }
@@ -13971,7 +14229,13 @@ var civs_default = {
         {
           typ: "jednostka_specjalna",
           cel: "piechota",
-          wartosc: "Gwardia Kr\xF3lewska Sumeru",
+          wartosc: [
+            "\u0141ucznik sumeryjski",
+            "Rydwan sumeryjski",
+            "W\u0142\xF3cznik sumeryjski",
+            "\u0141ucznik akadyjski",
+            "Mur tarcz (Sargonid)"
+          ],
           opis: "Gwardia Kr\xF3lewska = szczyt ci\u0119\u017Ckiej piechoty Sumeru; pancerz i lanca; +obrona miasta",
           realizuje: "walka"
         }
@@ -14126,7 +14390,11 @@ var civs_default = {
         {
           typ: "jednostka_specjalna",
           cel: "piechota",
-          wartosc: "Soldurii",
+          wartosc: [
+            "Soldurii",
+            "Rydwan celtycki",
+            "Miecznik galijski"
+          ],
           opis: "Soldurii \u2014 elitarna gwardia wodza; przysi\u0119ga do \u015Bmierci; silna w szar\u017Cy",
           realizuje: "walka"
         }
@@ -14281,7 +14549,9 @@ var civs_default = {
         {
           typ: "jednostka_specjalna",
           cel: "piechota",
-          wartosc: "Wojownik germa\u0144ski (framea)",
+          wartosc: [
+            "Berserker germa\u0144ski"
+          ],
           opis: "Framea = w\u0142\xF3cznia/oszczep germa\u0144ski; celny rzut + walka wr\u0119cz; specjalista od zasadzki",
           realizuje: "walka"
         }
@@ -14436,7 +14706,11 @@ var civs_default = {
         {
           typ: "jednostka_specjalna",
           cel: "piechota",
-          wartosc: "Stra\u017Cnik bram Harappy",
+          wartosc: [
+            "Stra\u017Cnik bram Harappy",
+            "Piechota induska",
+            "Garnizon Harappy"
+          ],
           opis: "Elitarna piechota bram miasta-plan",
           realizuje: "walka"
         }
@@ -14591,7 +14865,11 @@ var civs_default = {
         {
           typ: "jednostka_specjalna",
           cel: "rydwany",
-          wartosc: "Rydwan Kapadokijski",
+          wartosc: [
+            "Rydwan Kapadokijski",
+            "Piechota hetycka",
+            "Gwardia hetycka"
+          ],
           opis: "Elitarny rydwan hetycki",
           realizuje: "walka"
         }
@@ -14746,7 +15024,10 @@ var civs_default = {
         {
           typ: "jednostka_specjalna",
           cel: "piechota",
-          wartosc: "Dru\u017Cynnik",
+          wartosc: [
+            "Dru\u017Cynnik",
+            "Je\u017Adziec z oszczepami"
+          ],
           opis: "Elitarny wojownik dru\u017Cyny ksi\u0119cia",
           realizuje: "walka"
         }
@@ -14901,7 +15182,11 @@ var civs_default = {
         {
           typ: "jednostka_specjalna",
           cel: "piechota",
-          wartosc: "Gwardia Ishtar",
+          wartosc: [
+            "Gwardia Ishtar",
+            "Wojownik babilo\u0144ski",
+            "Piechota neobabilo\u0144ska"
+          ],
           opis: "Elitarna gwardia \u015Bwi\u0105tynna",
           realizuje: "walka"
         }
@@ -15056,7 +15341,11 @@ var civs_default = {
         {
           typ: "jednostka_specjalna",
           cel: "lukownicy",
-          wartosc: "\u0141ucznik asyryjski",
+          wartosc: [
+            "Konnica lancowa asyryjska",
+            "Konnica \u0142ucznicza asyryjska",
+            "\u0141ucznik asyryjski"
+          ],
           opis: "Elitarny \u0142ucznik imperium",
           realizuje: "walka"
         }
@@ -15211,7 +15500,11 @@ var civs_default = {
         {
           typ: "jednostka_specjalna",
           cel: "piechota",
-          wartosc: "Tyrski miecznik",
+          wartosc: [
+            "Tyrski miecznik",
+            "Wojownik fenicki",
+            "Gwardia Tyre\u0144ska"
+          ],
           opis: "Elitarny wojownik fenicki",
           realizuje: "walka"
         }
@@ -17207,36 +17500,43 @@ var terrain_combat_default = [
 // data/counters.json
 var counters_default = [
   {
-    "Typ atakuj\u0105cy": "W\u0142\xF3cznik",
-    "Cel (typ)": "Konnica/Rydwan",
+    "Typ atakuj\u0105cy": "Spearman",
+    "Cel (typ)": "Mount",
     Bonus: "+50%",
     "Rodzaj (Atak/Obrona)": "Atak",
     Status: "potwierdzone"
   },
   {
-    "Typ atakuj\u0105cy": "W\u0142\xF3cznik",
-    "Cel (typ)": "Konnica/Rydwan",
+    "Typ atakuj\u0105cy": "Spearman",
+    "Cel (typ)": "Mount",
     Bonus: "+50%",
     "Rodzaj (Atak/Obrona)": "Obrona",
     Status: "potwierdzone"
   },
   {
-    "Typ atakuj\u0105cy": "Konnica/Rydwan",
-    "Cel (typ)": "Dystansowe (\u0142ucznik/oszczepnik/procarz)",
+    "Typ atakuj\u0105cy": "Mount",
+    "Cel (typ)": "Distance",
     Bonus: "+50%",
     "Rodzaj (Atak/Obrona)": "Atak",
     Status: "potwierdzone"
   },
   {
-    "Typ atakuj\u0105cy": "Procarz",
-    "Cel (typ)": "W\u0142\xF3cznik",
+    "Typ atakuj\u0105cy": "Mount",
+    "Cel (typ)": "Slinger",
+    Bonus: "+50%",
+    "Rodzaj (Atak/Obrona)": "Atak",
+    Status: "potwierdzone"
+  },
+  {
+    "Typ atakuj\u0105cy": "Slinger",
+    "Cel (typ)": "Spearman",
     Bonus: "+50%",
     "Rodzaj (Atak/Obrona)": "Atak",
     Status: "potwierdzone"
   },
   {
     "Typ atakuj\u0105cy": "Atak z flanki (z boku)",
-    "Cel (typ)": "Falanga, \u0142ucznicy",
+    "Cel (typ)": "Falangite/Distance/Slinger",
     Bonus: "\u221250%",
     "Rodzaj (Atak/Obrona)": "Obrona",
     Status: "potwierdzone"
@@ -18132,11 +18432,11 @@ var diplomacy_default = {
 var econ_params_default = {
   ekonomia_miasta: {
     pr\u00F3g_wzrostu_wspolczynnik: {
-      easy: 6,
-      normal: 8,
-      hard: 10,
+      easy: 12,
+      normal: 16,
+      hard: 20,
       jednostka: "per 1 ludno\u015Bci",
-      opis: "Pr\xF3g wzrostu populacji: Pr\xF3g(N) = 10 + N \xD7 warto\u015B\u0107. Wi\u0119kszy = wolniejszy wzrost. [PT]"
+      opis: "Pr\xF3g wzrostu populacji: Pr\xF3g(N) = 20 + N \xD7 warto\u015B\u0107 (baza 20 w kodzie, economy.ts/turn-economy.ts). Wi\u0119kszy = wolniejszy wzrost. Warto\u015Bci finalne. [PT]"
     },
     spichlerz_zachowanie_po_wzroscie: {
       easy: 0.6,
@@ -20722,7 +21022,7 @@ var wonders_default = {
       nazwa: "Terakotowa armia",
       dostep: "E",
       cywilizacje: ["chinczycy"],
-      techUnlock: ["Wojskowosc"],
+      techUnlock: ["Wojskowo\u015B\u0107"],
       wymagaTerenu: ["laka"],
       epokaWejscia: 3,
       absolut: 6,
@@ -20766,7 +21066,7 @@ var wonders_default = {
       nazwa: "Dur-Sharrukin",
       dostep: "E",
       cywilizacje: ["asyria"],
-      techUnlock: ["Budownictwo", "Wojskowosc"],
+      techUnlock: ["Budownictwo", "Wojskowo\u015B\u0107"],
       wymagaTerenu: ["przy_miescie"],
       epokaWejscia: 2,
       absolut: 6,
@@ -20804,7 +21104,7 @@ var wonders_default = {
         "zulusi",
         "slowianie"
       ],
-      techUnlock: ["In\u017Cynieria", "Wojskowosc"],
+      techUnlock: ["In\u017Cynieria", "Wojskowo\u015B\u0107"],
       wymagaTerenu: ["przy_miescie"],
       epokaWejscia: 3,
       absolut: 6,
@@ -20850,7 +21150,7 @@ var wonders_default = {
       nazwaAlt: "Brama Sfinks\xF3w, Hattusa",
       dostep: "E",
       cywilizacje: ["hetyci"],
-      techUnlock: ["Wojskowosc"],
+      techUnlock: ["Wojskowo\u015B\u0107"],
       wymagaTerenu: ["wzgorze", "trudny_teren"],
       epokaWejscia: 2,
       absolut: 6,
@@ -21353,7 +21653,7 @@ function buildEconParams(data, difficulty = "normal") {
     return typeof v === "number" && Number.isFinite(v) ? v : fallback;
   };
   return {
-    progWzrostuWspolczynnik: num(em, "pr\xF3g_wzrostu_wspolczynnik", 8),
+    progWzrostuWspolczynnik: num(em, "pr\xF3g_wzrostu_wspolczynnik", 16),
     spichlerzZachowaniePoPrzroscie: num(em, "spichlerz_zachowanie_po_wzroscie", 0.5),
     akweduktProgLudnosci: num(em, "akwedukt_prog_ludnosci", 5),
     akweduktMaxLudnosci: num(em, "akwedukt_max_ludnosci", 15),
@@ -21378,18 +21678,12 @@ function buildEconParams(data, difficulty = "normal") {
   };
 }
 function scanCityVicinityTerrain(ctx) {
-  var _a10, _b3;
   const radius = cityRangeForPopulation(ctx.city.population);
   let hasLas = false;
   let hasBagno = false;
-  for (const key of Object.keys(ctx.map.hexes)) {
+  for (const key of hexKeysWithinRadius(ctx.city.q, ctx.city.r, radius, ctx.map)) {
     const hex = ctx.map.hexes[key];
     if (!hex) continue;
-    const [qs, rs] = key.split(",");
-    const q = ((_a10 = hex.coords) == null ? void 0 : _a10.q) ?? Number(qs);
-    const r = ((_b3 = hex.coords) == null ? void 0 : _b3.r) ?? Number(rs);
-    if (!Number.isFinite(q) || !Number.isFinite(r)) continue;
-    if (hexDistance(ctx.city.q, ctx.city.r, q, r) > radius) continue;
     if (!hasLas && hex.nakladka === "las" /* Las */) hasLas = true;
     if (!hasBagno && hex.terenBazowy === "bagno") hasBagno = true;
     if (hasLas && hasBagno) break;
@@ -21425,11 +21719,17 @@ function loadHealthParams(raw, difficulty) {
     karaBrakWody: rd("zdrowie_kara_brak_wody", -2)
   };
 }
+var __riverHexSetCache = /* @__PURE__ */ new WeakMap();
 function cityHasWaterAccess(city, map) {
-  const riverHexSet = /* @__PURE__ */ new Set();
-  for (const path of map.riverPaths ?? []) {
-    for (const h of path) riverHexSet.add(`${h.q},${h.r}`);
-  }
+  const paths = map.riverPaths ?? [];
+  const riverHexSet = __riverHexSetCache.get(paths) ?? (() => {
+    const s = /* @__PURE__ */ new Set();
+    for (const path of paths) {
+      for (const h of path) s.add(`${h.q},${h.r}`);
+    }
+    __riverHexSetCache.set(paths, s);
+    return s;
+  })();
   function hexHasRiver(q, r) {
     var _a10;
     const hex = map.hexes[`${q},${r}`];
@@ -21553,7 +21853,7 @@ function readCityFoodBufferFromCity(city) {
   return readCityFoodBuffer(city.magazynZywnosci);
 }
 function growthFoodThreshold(population, params, pace = "wysoki", ownerId = 0, difficulty = "normal") {
-  const base = 10 + population * params.progWzrostuWspolczynnik;
+  const base = 20 + population * params.progWzrostuWspolczynnik;
   return applyPopulationGrowthThreshold(base, ownerId, pace, difficulty);
 }
 function growthFoodStorageCap(population, maSpichlerz, params, storageParams, pace = "wysoki", ownerId = 0, difficulty = "normal") {
@@ -21817,7 +22117,11 @@ function advanceCityEconomy(cities, map, data, difficulty = "normal", econUnits 
 
 // src/game/playerState.ts
 function asResearchGate(g) {
-  return { empireBuiltIds: g.empireBuiltIds, buildings: g.buildings };
+  return {
+    empireBuiltIds: g.empireBuiltIds,
+    buildings: g.buildings,
+    empireImprovementKeys: g.empireImprovementKeys
+  };
 }
 var NO_PREREQ = "\u2014";
 var PIENIADZ_MNOZNIK = 10;
@@ -21856,12 +22160,59 @@ function parsePrereqs(t) {
 function prereqsMet(t, researched) {
   return parsePrereqs(t).every((p) => researched.has(p));
 }
+var PL_DIAKRYTYKI_EPOKA = {
+  "\u0105": "a",
+  "\u0107": "c",
+  "\u0119": "e",
+  "\u0142": "l",
+  "\u0144": "n",
+  "\xF3": "o",
+  "\u015B": "s",
+  "\u017A": "z",
+  "\u017C": "z"
+};
+var NUMER_EPOKI = {
+  kamien: 1,
+  braz: 2,
+  zelazo: 3
+};
+function epochNumber(t) {
+  const raw = t.Epoka;
+  if (raw == null) return null;
+  const norm = String(raw).trim().toLowerCase().replace(/[ąćęłńóśźż]/g, (c) => PL_DIAKRYTYKI_EPOKA[c] ?? c);
+  const n = NUMER_EPOKI[norm];
+  return typeof n === "number" ? n : null;
+}
+function epochGateMet(t, techs, done) {
+  const e = epochNumber(t);
+  if (e == null) return true;
+  for (const other of techs) {
+    const oe = epochNumber(other);
+    if (oe == null) continue;
+    if (oe < e && !done.has(techId(other))) return false;
+  }
+  return true;
+}
+function epochTierGateMet(t, techs, done) {
+  const e = epochNumber(t);
+  const p = t.Poziom;
+  if (e == null || typeof p !== "number" || !Number.isFinite(p)) return true;
+  for (const other of techs) {
+    if (epochNumber(other) !== e) continue;
+    const op = other.Poziom;
+    if (typeof op !== "number" || !Number.isFinite(op)) continue;
+    if (op < p && !done.has(techId(other))) return false;
+  }
+  return true;
+}
 function availableTechs(techs, researched, gate) {
   return techs.filter((t) => {
     const id = techId(t);
     if (id === "" || researched.has(id)) return false;
     if (!prereqsMet(t, researched)) return false;
-    if (gate && !buildingGateMet(t, asResearchGate(gate))) return false;
+    if (!epochGateMet(t, techs, researched)) return false;
+    if (!epochTierGateMet(t, techs, researched)) return false;
+    if (gate && !researchGatesMet(t, asResearchGate(gate))) return false;
     return true;
   });
 }
@@ -21879,9 +22230,12 @@ function cheapestAvailable(techs, researched, gate) {
   }
   return best ? techId(best) : null;
 }
+function eraAdvanceTarget(t) {
+  const raw = t.awansDoEpoki;
+  return typeof raw === "number" && Number.isFinite(raw) ? raw : null;
+}
 function isEraAdvanceTech(t) {
-  const notes = `${t.Uwagi ?? ""} ${t["Odblokowuje budynek"] ?? ""}`;
-  return /epok/i.test(notes);
+  return eraAdvanceTarget(t) !== null;
 }
 function isMoneyTech(t) {
   if (techId(t).toLowerCase() === "waluta") return true;
@@ -21899,7 +22253,9 @@ function researchStep(state, techs, gate, difficulty = "normal") {
     const def = byId.get(id);
     if (!def || state.zbadane.has(id)) return false;
     if (!prereqsMet(def, state.zbadane)) return false;
-    if (gate && !buildingGateMet(def, asResearchGate(gate))) return false;
+    if (!epochGateMet(def, techs, state.zbadane)) return false;
+    if (!epochTierGateMet(def, techs, state.zbadane)) return false;
+    if (gate && !researchGatesMet(def, asResearchGate(gate))) return false;
     return true;
   };
   if (state.playerResearchTargetId !== null && targetAllowed(state.playerResearchTargetId)) {
@@ -21924,12 +22280,13 @@ function researchStep(state, techs, gate, difficulty = "normal") {
       difficulty
     );
     if (state.nauka < cost) break;
-    if (gate && !buildingGateMet(def, asResearchGate(gate))) break;
+    if (gate && !researchGatesMet(def, asResearchGate(gate))) break;
     state.nauka -= cost;
     state.zbadane.add(state.badana);
-    const awans = isEraAdvanceTech(def);
+    const awansTarget = eraAdvanceTarget(def);
+    const awans = awansTarget !== null;
     const money = isMoneyTech(def);
-    if (awans) state.era += 1;
+    if (awansTarget !== null) state.era = Math.max(state.era, awansTarget);
     if (money) state.pieniadzMnoznik = PIENIADZ_MNOZNIK;
     completed.push({
       id: state.badana,
@@ -21949,7 +22306,9 @@ function setPlayerResearchTarget(state, techId2, techs, gate) {
   if (!def) return false;
   if (state.zbadane.has(techId2)) return false;
   if (!prereqsMet(def, state.zbadane)) return false;
-  if (gate && !buildingGateMet(def, asResearchGate(gate))) return false;
+  if (!epochGateMet(def, techs, state.zbadane)) return false;
+  if (!epochTierGateMet(def, techs, state.zbadane)) return false;
+  if (gate && !researchGatesMet(def, asResearchGate(gate))) return false;
   state.playerResearchTargetId = techId2;
   return true;
 }

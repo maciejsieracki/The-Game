@@ -125,7 +125,8 @@ var map_gen_params_default = {
   },
   metal_deposit_min_era: {
     miedz: 2,
-    zelazo: 3
+    zelazo: 3,
+    wegiel: 8
   }
 };
 
@@ -383,7 +384,7 @@ function riverMinPathLengthForTier(tier) {
   return 25;
 }
 function riverGridTraceMinLen(catalogMinLen, tier = "medium") {
-  const cap = tier === "low" ? 10 : 12;
+  const cap = tier === "low" ? 5 : tier === "high" ? 8 : 6;
   return Math.min(catalogMinLen, cap);
 }
 function resolveRiverTraceForMap(mapMenuLabel, riversTier) {
@@ -1235,7 +1236,28 @@ function reliefElevGates(mtnTh) {
   }
   return { mountain: 0.14, highland: 0.11, landMaskHi: 0.2, landMaskMtn: 0.22 };
 }
-function classifyTerrain(elevContinental, landMask, mtnNoise, forNoise, desNoise, thresholds, climateZone) {
+var TERRAIN_GLOBAL_MIX_AMP = 0.12;
+var TERRAIN_CELL_JITTER_AMP = 0.65;
+function terenCoverageCellSize() {
+  return 4;
+}
+function hashInt3(a, b, c) {
+  let h = a * 374761393 ^ b * 668265263 ^ c * 2246822519;
+  h = Math.imul(h ^ h >>> 13, 1274126177);
+  h = (h ^ h >>> 16) >>> 0;
+  return h / 4294967296;
+}
+function terrainCellBias(q, r, seed, cellSize = terenCoverageCellSize()) {
+  const cx = Math.floor(q / cellSize);
+  const cy = Math.floor(r / cellSize);
+  return (hashInt3(cx, cy, seed) - 0.5) * 2;
+}
+function terrainRownLakaJitter(forNoise, desNoise, cellBias) {
+  const global = ((forNoise + desNoise) * 0.5 - 0.5) * TERRAIN_GLOBAL_MIX_AMP;
+  const local = cellBias * TERRAIN_CELL_JITTER_AMP;
+  return global + local;
+}
+function classifyTerrain(elevContinental, landMask, mtnNoise, forNoise, desNoise, thresholds, climateZone, cellBias = 0) {
   const desTh = thresholds?.desert ?? 0.63;
   const forTh = climateForestThreshold(climateZone, thresholds?.forest ?? 0.58);
   const mtnTh = thresholds?.mountain ?? 0.75;
@@ -1254,7 +1276,7 @@ function classifyTerrain(elevContinental, landMask, mtnNoise, forNoise, desNoise
       terenBazowy = "wzgorza" /* Wzgorza */;
     } else if (canAssignClimateDesert(climateZone) && desNoise > desTh && elevContinental > 0.18 && elevContinental < 0.45) {
       terenBazowy = "pustynia" /* Pustynia */;
-    } else if (elevContinental > 0.35) {
+    } else if (elevContinental + terrainRownLakaJitter(forNoise, desNoise, cellBias) > 0.35) {
       terenBazowy = "rownina" /* Rownina */;
     } else {
       terenBazowy = "laka" /* Laka */;
@@ -1265,7 +1287,7 @@ function classifyTerrain(elevContinental, landMask, mtnNoise, forNoise, desNoise
   }
   return { terenBazowy, nakladka };
 }
-function classifyTerrainFlat(elevContinental, landMask, _mtnNoise, forNoise, desNoise, thresholds, climateZone) {
+function classifyTerrainFlat(elevContinental, landMask, _mtnNoise, forNoise, desNoise, thresholds, climateZone, cellBias = 0) {
   const desTh = thresholds?.desert ?? 0.63;
   const forTh = climateForestThreshold(climateZone, thresholds?.forest ?? 0.58);
   let terenBazowy;
@@ -1274,7 +1296,7 @@ function classifyTerrainFlat(elevContinental, landMask, _mtnNoise, forNoise, des
     terenBazowy = "laka" /* Laka */;
   } else if (canAssignClimateDesert(climateZone) && desNoise > desTh && elevContinental > 0.18 && elevContinental < 0.45) {
     terenBazowy = "pustynia" /* Pustynia */;
-  } else if (elevContinental > 0.35) {
+  } else if (elevContinental + terrainRownLakaJitter(forNoise, desNoise, cellBias) > 0.35) {
     terenBazowy = "rownina" /* Rownina */;
   } else {
     terenBazowy = "laka" /* Laka */;
@@ -1318,7 +1340,7 @@ function reapplyForestOverlay(hexes, scratch, thresholds, typ, forestTier, conti
   }
   return assigned;
 }
-function reapplyLandTerrain(hexes, scratch, thresholds, mapHeight) {
+function reapplyLandTerrain(hexes, scratch, seed, thresholds, mapHeight) {
   for (const [key, hex] of Object.entries(hexes)) {
     if (hex.terenBazowy === "morze" /* Morze */ || hex.terenBazowy === "wybrzeze" /* Wybrzeze */) {
       continue;
@@ -1327,6 +1349,7 @@ function reapplyLandTerrain(hexes, scratch, thresholds, mapHeight) {
     if (!s) continue;
     const { q, r } = hex.coords;
     const climateZone = mapHeight ? climateZoneAt(q, r, mapHeight) : void 0;
+    const cellBias = terrainCellBias(q, r, seed);
     const { terenBazowy, nakladka } = classifyTerrainFlat(
       s.elevContinental,
       s.landMask,
@@ -1334,7 +1357,8 @@ function reapplyLandTerrain(hexes, scratch, thresholds, mapHeight) {
       s.forNoise,
       s.desNoise,
       thresholds,
-      climateZone
+      climateZone,
+      cellBias
     );
     hex.terenBazowy = terenBazowy;
     hex.nakladka = nakladka;
@@ -1763,8 +1787,10 @@ function forceReliefTypeInCell(land, hexes, scratch, width, height, rand, want, 
       spot = [ranked[0].q, ranked[0].r];
     }
     const k = hexKey(spot[0], spot[1]);
-    hexes[k].terenBazowy = want === "mountain" ? "gory" /* Gory */ : "wzgorza" /* Wzgorza */;
-    hexes[k].nakladka = "brak" /* Brak */;
+    const forcedHex = hexes[k];
+    forcedHex.terenBazowy = want === "mountain" ? "gory" /* Gory */ : "wzgorza" /* Wzgorza */;
+    forcedHex.nakladka = "brak" /* Brak */;
+    delete forcedHex.zloze;
     placed.add(k);
     changed = true;
   }
@@ -1794,26 +1820,33 @@ function forceCopperHighlandsInCell(land, hexes, scratch, width, height, rand) {
     MIN_HIGHLANDS_COPPER_CELL
   );
 }
+var RELIEF_OVERFLOW_CAP_MULT = Number.POSITIVE_INFINITY;
 function capMountainOverflowInCell(land, hexes, scratch, tier, spreadOnly = false) {
-  const maxMtn = spreadOnly ? reliefSpreadCapMountain(tier, land.length) : Math.max(MIN_MOUNTAINS_IRON_CELL, reliefBonusCapMountain(tier, land.length) + MIN_MOUNTAINS_IRON_CELL);
+  const baseMaxMtn = spreadOnly ? reliefSpreadCapMountain(tier, land.length) : Math.max(MIN_MOUNTAINS_IRON_CELL, reliefBonusCapMountain(tier, land.length) + MIN_MOUNTAINS_IRON_CELL);
+  const maxMtn = baseMaxMtn * RELIEF_OVERFLOW_CAP_MULT;
   const mountains = land.filter(([q, r]) => hexes[hexKey(q, r)]?.terenBazowy === "gory" /* Gory */).map(([q, r]) => ({ q, r, n: scratch.get(hexKey(q, r))?.mtnNoise ?? 0 })).sort((a, b) => a.n - b.n);
   let changed = false;
   while (mountains.length > maxMtn && mountains.length > MIN_MOUNTAINS_IRON_CELL) {
     const drop = mountains.shift();
-    hexes[hexKey(drop.q, drop.r)].terenBazowy = "wzgorza" /* Wzgorza */;
-    hexes[hexKey(drop.q, drop.r)].nakladka = "brak" /* Brak */;
+    const dropHex = hexes[hexKey(drop.q, drop.r)];
+    dropHex.terenBazowy = "wzgorza" /* Wzgorza */;
+    dropHex.nakladka = "brak" /* Brak */;
+    delete dropHex.zloze;
     changed = true;
   }
   return changed;
 }
 function capHighlandOverflowInCell(land, hexes, scratch, tier, spreadOnly = false) {
-  const maxHi = spreadOnly ? reliefSpreadCapHighland(tier, land.length) : Math.max(MIN_HIGHLANDS_COPPER_CELL, reliefBonusCapHighland(tier, land.length) + MIN_HIGHLANDS_COPPER_CELL);
+  const baseMaxHi = spreadOnly ? reliefSpreadCapHighland(tier, land.length) : Math.max(MIN_HIGHLANDS_COPPER_CELL, reliefBonusCapHighland(tier, land.length) + MIN_HIGHLANDS_COPPER_CELL);
+  const maxHi = baseMaxHi * RELIEF_OVERFLOW_CAP_MULT;
   const highlands = land.filter(([q, r]) => hexes[hexKey(q, r)]?.terenBazowy === "wzgorza" /* Wzgorza */).map(([q, r]) => ({ q, r, n: scratch.get(hexKey(q, r))?.mtnNoise ?? 0 })).sort((a, b) => a.n - b.n);
   let changed = false;
   while (highlands.length > maxHi && highlands.length > MIN_HIGHLANDS_COPPER_CELL) {
     const drop = highlands.shift();
-    hexes[hexKey(drop.q, drop.r)].terenBazowy = "rownina" /* Rownina */;
-    hexes[hexKey(drop.q, drop.r)].nakladka = "brak" /* Brak */;
+    const dropHex = hexes[hexKey(drop.q, drop.r)];
+    dropHex.terenBazowy = "rownina" /* Rownina */;
+    dropHex.nakladka = "brak" /* Brak */;
+    delete dropHex.zloze;
     changed = true;
   }
   return changed;
@@ -2178,7 +2211,12 @@ function applyCoastRing(hexes) {
       }
     }
   }
-  for (const key of toCoast) hexes[key].terenBazowy = "wybrzeze" /* Wybrzeze */;
+  for (const key of toCoast) {
+    const hex = hexes[key];
+    hex.terenBazowy = "wybrzeze" /* Wybrzeze */;
+    hex.nakladka = "brak" /* Brak */;
+    delete hex.zloze;
+  }
   return toCoast.length;
 }
 function applyDoubleCoastRing(hexes) {
@@ -2197,7 +2235,12 @@ function applyDoubleCoastRing(hexes) {
       }
     }
   }
-  for (const key of toCoast) hexes[key].terenBazowy = "wybrzeze" /* Wybrzeze */;
+  for (const key of toCoast) {
+    const hex = hexes[key];
+    hex.terenBazowy = "wybrzeze" /* Wybrzeze */;
+    hex.nakladka = "brak" /* Brak */;
+    delete hex.zloze;
+  }
   return n + toCoast.length;
 }
 function findDryLandTouchingSea(hexes) {
@@ -2280,6 +2323,8 @@ function sanitizeCoastHexes(hexes) {
     }
     if (!touchesSea) {
       hex.terenBazowy = "laka" /* Laka */;
+      hex.nakladka = "brak" /* Brak */;
+      delete hex.zloze;
       fixed++;
     }
   }
@@ -2560,6 +2605,53 @@ function finalizeCoastAndInlandWater(hexes, width, height, maxPasses = 3, opts) 
     if (changed === 0) break;
   }
 }
+function thickenCoastAndSmoothInlets(hexes, width, height, coastWidth = 2) {
+  let changed = 0;
+  for (let pass = 0; pass < 12; pass++) {
+    const toFill = [];
+    for (const [key, hex] of Object.entries(hexes)) {
+      if (hex.terenBazowy !== "morze" /* Morze */) continue;
+      const { q, r } = parseHexKey(key);
+      if (isInMapBorder(q, r, width, height)) continue;
+      if (countLandNeighbors(hexes, q, r) >= 4) toFill.push(key);
+    }
+    if (toFill.length === 0) break;
+    for (const key of toFill) {
+      setHexToLaka(hexes[key]);
+      changed++;
+    }
+  }
+  changed += removeInlandWaterPools(hexes, width, height);
+  for (const hex of Object.values(hexes)) {
+    if (hex.terenBazowy === "wybrzeze" /* Wybrzeze */) {
+      setHexToLaka(hex);
+      changed++;
+    }
+  }
+  for (let ring = 0; ring < coastWidth; ring++) {
+    const toCoast = [];
+    for (const [key, hex] of Object.entries(hexes)) {
+      if (!isDryLandTerrain(hex.terenBazowy)) continue;
+      const { q, r } = parseHexKey(key);
+      for (const [dq, dr] of HEX_DIRECTIONS) {
+        const nb = hexes[hexKey(q + dq, r + dr)];
+        if (nb && (nb.terenBazowy === "morze" /* Morze */ || nb.terenBazowy === "wybrzeze" /* Wybrzeze */)) {
+          toCoast.push(key);
+          break;
+        }
+      }
+    }
+    if (toCoast.length === 0) break;
+    for (const key of toCoast) {
+      const hex = hexes[key];
+      hex.terenBazowy = "wybrzeze" /* Wybrzeze */;
+      hex.nakladka = "brak" /* Brak */;
+      delete hex.zloze;
+      changed++;
+    }
+  }
+  return changed;
+}
 function removeTinyLandIslands(hexes, minHexes) {
   const visited = /* @__PURE__ */ new Set();
   let removed = 0;
@@ -2734,6 +2826,8 @@ function repairRiverPathAdjacency(path, hexes, sourceKey) {
   return sanitizeRiverPath(out);
 }
 var RIVER_MIN_INLAND_FROM_SEA = 2;
+var RIVER_MIN_MAIN_LEN = 3;
+var RIVER_HARD_MEANDER_LEN = 8;
 var RIVER_MOUTH_TAIL_LEN = 5;
 function riverPathRespectsSeaBuffer(hexes, path, seaDist, minInland = RIVER_MIN_INLAND_FROM_SEA, mouthTail = RIVER_MOUTH_TAIL_LEN) {
   if (path.length === 0) return false;
@@ -2840,9 +2934,10 @@ function pathEndsAtSea(hexes, path, width, height, oceanConnected) {
 function isReliefTerrain(t) {
   return t === "gory" /* Gory */ || t === "wzgorza" /* Wzgorza */;
 }
-function canRiverFlowThrough(hex, cellKey, sourceKey) {
+function canRiverFlowThrough(hex, cellKey, sourceKey, blockExisting = false, allowKey) {
   if (!hex || hex.terenBazowy === "morze" /* Morze */) return false;
   if (isReliefTerrain(hex.terenBazowy)) return cellKey === sourceKey;
+  if (blockExisting && hex.rzeka?.obecna && cellKey !== allowKey) return false;
   return true;
 }
 function riverStepDir(from, to) {
@@ -2871,16 +2966,18 @@ function growRiverInlandBeforeDrainage(hexes, sq, sr, seaDist, openOceanDist, ra
     const curKey = hexKey(cur.q, cur.r);
     const curD = seaDist.get(curKey) ?? 0;
     const curOd = openOceanDist.get(curKey) ?? Infinity;
+    const hardMeander = path.length < RIVER_HARD_MEANDER_LEN;
     const candidates = [];
     for (const [dq, dr] of HEX_DIRECTIONS) {
       const nq = cur.q + dq;
       const nr = cur.r + dr;
       const nk = hexKey(nq, nr);
       if (visited.has(nk)) continue;
-      if (!canRiverFlowThrough(hexes[nk], nk, srcKey)) continue;
+      if (!canRiverFlowThrough(hexes[nk], nk, srcKey, true)) continue;
       const nd = seaDist.get(nk) ?? 0;
       if (nd < RIVER_MIN_INLAND_FROM_SEA) continue;
       const od = openOceanDist.get(nk) ?? Infinity;
+      if (hardMeander && od < curOd) continue;
       let score = 1200 - od * 30;
       if (od > curOd + 0.5) score -= 18;
       if (nd > curD + 1) score -= 10;
@@ -2920,7 +3017,7 @@ function greedyRiverDrainToSea(hexes, sq, sr, seaDist, openOceanDist, oceanConne
       const nr = cur.r + dr;
       const nk = hexKey(nq, nr);
       if (visited.has(nk)) continue;
-      if (!canRiverFlowThrough(hexes[nk], nk, sourceKey)) continue;
+      if (!canRiverFlowThrough(hexes[nk], nk, sourceKey, true)) continue;
       const nd = seaDist.get(nk) ?? Infinity;
       if (!canRiverDrainStep(nk, nd, openOceanDist, oceanConnected, true)) continue;
       const od = openOceanDist.get(nk) ?? Infinity;
@@ -2987,7 +3084,7 @@ function aStarRiverToSea(hexes, sq, sr, seaDist, openOceanDist, oceanConnected, 
     }
     for (const [dq, dr] of HEX_DIRECTIONS) {
       const nk = hexKey(q + dq, r + dr);
-      if (!canRiverFlowThrough(hexes[nk], nk, startK)) continue;
+      if (!canRiverFlowThrough(hexes[nk], nk, startK, true)) continue;
       const nd = seaDist.get(nk) ?? Infinity;
       if (!canRiverDrainStep(nk, nd, openOceanDist, oceanConnected, true)) continue;
       let stepCost = 1;
@@ -3023,7 +3120,7 @@ function findRiverMeanderStep(hexes, cur, target, seaDist, used, rand) {
     if (nk === tgtK || used.has(nk)) continue;
     if (sameRiverDir([dq, dr], toTarget)) continue;
     const nh = hexes[nk];
-    if (!canRiverFlowThrough(nh, nk, "")) continue;
+    if (!canRiverFlowThrough(nh, nk, "", true)) continue;
     const nd = seaDist.get(nk);
     if (nd == null || nd > curD) continue;
     if (nd < RIVER_MIN_INLAND_FROM_SEA) continue;
@@ -3404,7 +3501,7 @@ function aStarRiverToTarget(hexes, sq, sr, tq, tr, maxLen, sourceKey) {
     const { q, r } = parseHexKey(current);
     for (const [dq, dr] of HEX_DIRECTIONS) {
       const nk = hexKey(q + dq, r + dr);
-      if (!canRiverFlowThrough(hexes[nk], nk, sourceKey)) continue;
+      if (!canRiverFlowThrough(hexes[nk], nk, sourceKey, true, targetK)) continue;
       const tg = curG + 1;
       if (tg > maxLen) continue;
       if (tg >= (gScore.get(nk) ?? Infinity)) continue;
@@ -3756,6 +3853,7 @@ function generateRivers(hexes, width, height, rand, opts = {}) {
   const pushMain = (path, sq, sr) => {
     const trimmed = trimRiverPathRings(hexes, path);
     if (!pathEndsAtSea(hexes, trimmed, width, height, oceanConnected)) return false;
+    if (trimmed.length < RIVER_MIN_MAIN_LEN) return false;
     riverPaths.push(trimmed);
     riverKinds.push("main");
     usedSources.add(hexKey(sq, sr));
@@ -3983,6 +4081,7 @@ function topUpRiverGridCoverage(hexes, width, height, riverPaths, riverKinds, ra
   const pushMain = (path, sq, sr) => {
     const trimmed = trimRiverPathRings(hexes, path);
     if (!pathEndsAtSea(hexes, trimmed, width, height, oceanConnected)) return false;
+    if (trimmed.length < RIVER_MIN_MAIN_LEN) return false;
     riverPaths.push(trimmed);
     riverKinds.push("main");
     usedSources.add(hexKey(sq, sr));
@@ -4605,12 +4704,12 @@ var terrain_improvements_default = {
     bonus: {},
     surowiecOdblokowany: null,
     teren: "Las",
-    warunek: "koszt 5 Pracy na start; +20 Pracy/tur\u0119 \xD7 3 tury (=60); potem teren bazowy bez lasu",
+    warunek: "koszt 5 Pracy na start; +5 Pracy \xD7 1 tura (=5, netto zero); potem teren bazowy bez lasu",
     koszt_praca: 5,
     tech: null,
     wycinka: {
-      praca_per_tura: 20,
-      tury: 3,
+      praca_per_tura: 5,
+      tury: 1,
       usuwa_nakladke: "las"
     },
     odblokowuje: ""
@@ -4687,7 +4786,7 @@ var terrain_improvements_default = {
     teren: "dowolny l\u0105d w terytorium",
     warunek: "+100% Obrony jednostkom obozuj\u0105cym na polu fortu (bez plon\xF3w); rozszerza zasi\u0119g terytorium o promie\u0144 10 p\xF3l",
     koszt_praca: 25,
-    tech: "Wojskowosc",
+    tech: "Wojskowo\u015B\u0107",
     odblokowuje: "",
     uwagi: "ABC-10 Maciej 2026-07-04: Fort (mapa) \u2260 Cytadela (miasto). \u017Belazo ep.3; zasi\u0119g 10; +100% Obrona obozowanie"
   },
@@ -4719,8 +4818,8 @@ var terrain_improvements_default = {
     odblokowuje: "",
     uwagi: "T-TECH-9 Maciej 2026-07-04"
   },
-  popalnia_brazu: {
-    nazwa: "Popalnia br\u0105zu",
+  kopalnia_miedzi: {
+    nazwa: "Kopalnia miedzi",
     epoka: 2,
     bonus: {
       praca: 2
@@ -4847,7 +4946,8 @@ function generateMap(width = DEFAULT_WIDTH, height = DEFAULT_HEIGHT, seed = 42, 
         forNoise,
         desNoise,
         terrainTh,
-        climateZoneAt(q, r, height)
+        climateZoneAt(q, r, height),
+        terrainCellBias(q, r, effectiveSeed)
       );
       terrainScratch.set(key, { elevContinental, landMask, mtnNoise, forNoise, desNoise });
       hexes[key] = {
@@ -4904,7 +5004,7 @@ function generateMap(width = DEFAULT_WIDTH, height = DEFAULT_HEIGHT, seed = 42, 
   finalizeCoastAndInlandWater(hexes, width, height, 3, coastOpts);
   const reliefTier = genOpts?.worldDensity?.relief ?? genOpts?.worldDensity?.rivers ?? "medium";
   const forestTier = genOpts?.worldDensity?.forest ?? "medium";
-  reapplyLandTerrain(hexes, terrainScratch, terrainTh, height);
+  reapplyLandTerrain(hexes, terrainScratch, effectiveSeed, terrainTh, height);
   if (typ !== "pangea") {
     purgeInlandWaterForMultiLandTyp(hexes, width, height);
   }
@@ -4967,6 +5067,8 @@ function generateMap(width = DEFAULT_WIDTH, height = DEFAULT_HEIGHT, seed = 42, 
   ensureForestGridCoverage(hexes, terrainScratch, forestTier, typ, zoneOf, nZones, rand);
   purgeInlandWaterForMultiLandTyp(hexes, width, height);
   purgeDesertEnclaveWater(hexes, width, height);
+  thickenCoastAndSmoothInlets(hexes, width, height, 2);
+  enforceMapBorderOcean(hexes, width, height);
   const riversTier = genOpts?.worldDensity?.rivers ?? "medium";
   clearRiverMarks(hexes);
   let { paths: riverPaths, kinds: riverPathKinds } = generateRivers(hexes, width, height, rand, {

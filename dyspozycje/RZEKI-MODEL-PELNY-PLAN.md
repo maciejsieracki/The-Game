@@ -57,3 +57,33 @@ tsc=0 · smoke OK · map-gen-regression (render-tor: determinizm bez zmian; gene
 0 rzek bez ujścia) · wzrokowo: rzeka we wnętrzu płaskiej strony, płaski poziom, brak widelców, dochodzi do morza/zbiegu.
 
 ## Niezależne od tego: kawałek 2 (rename brąz→miedź/żelazo) — dalej w kolejce.
+
+---
+
+## STAN NA 2026-07-10 15:00 — ROZSTRZYGNIĘTE (styl finalny = KANCIASTY)
+
+Po tym planie temat przeszedł **6 iteracji renderu** w ciągu 2026-07-09/10, wszystkie render-only
+(routing/generator bez zmian, determinizm A=B zachowany przez cały ciąg):
+1. `5a04f72`/`5a9bbc7` (07-09) — usunięcie pętli heksagonalnych (najkrótszy łuk).
+2. `8a3d983`/`8854c92` (07-10 08:13, **79eb3159**) — **centrolinia** (punkty przez środek heksa) —
+   ODRZUCONE przez Macieja: „biegnie przez heksy, nie po ściance".
+3. `06faee2`/`eb77b67` (07-10 09:19, **33527d79**) — powrót do krawędzi, wall-hugging + Chaikin 2× —
+   superseded.
+4. `ec2a186`/`70755cf` (07-10 13:42, **9c58ebc2**) — „naturalny ciek" splajn CatmullRom (`sharp=false`) —
+   ODRZUCONE po teście wizualnym Macieja (za miękkie/nienaturalne w porównaniu do referencji).
+5. **`3d5da76` (07-10 14:31, stempel `3dec388b`) — FINALNE:** powrót do trasowania krawędziowego
+   (jak pkt 3) z `sharp=true` — **zero wygładzania, kanciasty styl „Roblox"**. Rzeka biegnie wewnętrzną
+   stroną ścianki, próg `MIN_BOKI` = **≥2 boki właściciela/heks** (prosty odcinek = 3 ścianki, łagodny
+   skręt = 2), usunięty środkowy punkt przejścia przez ściankę (koniec „domków"). Fix ujść zachowany
+   (patrz `RZEKI-DIAGNOZA-UJSCIA.md` — root cause: `coastalRiverRenderPath` dawał łańcuch dł.1 dla
+   505/507 rzek; naprawione w kroku 4, zachowane w kroku 5).
+
+**Decyzja Macieja (ABC, dorozumiana z odrzuceń):** a) centrolinia — NIE; b) gładki splajn naturalny —
+NIE; **c) kanciasty wall-tracing — TAK, to jest wygląd docelowy.**
+
+Zasada topologii „brak rozgałęziania" (sekcja wyżej) — status: NIE weryfikowany osobno w tym ciągu
+(tor render, nie generator; pozostaje odrębnym zadaniem, jeśli jeszcze aktualne).
+
+**UWAGA:** w chwili tego wpisu (2026-07-10 ~15:00) rzeki są PONOWNIE w iteracji w równoległej sesji —
+traktuj powyższe jako stan na commit `3d5da76`, zweryfikuj `git log -1 -- gra/src/render/scene.ts`
+przed założeniem, że to nadal ostatnie słowo. Zbiorczy stan sesji: `STAN-SESJI-RZEKI-DRZEWKO.md`.

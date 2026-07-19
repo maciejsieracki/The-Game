@@ -35,6 +35,31 @@ __export(empire_food_b5_entry_exports, {
 });
 module.exports = __toCommonJS(empire_food_b5_entry_exports);
 
+// src/game/population-growth-tempo.ts
+var WZROST_LUDNOSCI_PACE = {
+  wysoki: 1,
+  normalny: 2,
+  wolny: 4
+};
+
+// src/game/difficulty-cost.ts
+function isPlayerOwner(ownerId) {
+  return ownerId === 0;
+}
+function getPopulationGrowthDifficultyMultiplier(ownerId, difficulty) {
+  if (difficulty === "normal") return 1;
+  if (difficulty === "easy") return isPlayerOwner(ownerId) ? 1 : 2;
+  return isPlayerOwner(ownerId) ? 2 : 0.5;
+}
+function getPopulationGrowthThresholdMultiplier(ownerId, pace, difficulty) {
+  const paceMult = typeof pace === "number" ? pace : WZROST_LUDNOSCI_PACE[pace];
+  return paceMult * getPopulationGrowthDifficultyMultiplier(ownerId, difficulty);
+}
+function applyPopulationGrowthThreshold(baseThreshold, ownerId, pace, difficulty) {
+  const mult = getPopulationGrowthThresholdMultiplier(ownerId, pace, difficulty);
+  return Math.max(1, Math.round(baseThreshold * mult));
+}
+
 // data/epoka-ludnosc-manpower.json
 var epoka_ludnosc_manpower_default = {
   _opis: "Skala ludno\u015Bci i Manpower per epoka imperium (wiersze 1\u201310). 1 ludek = ludno\u015B\u0107 absolutna na slot population (1\u201310). manpowerNaLudka = 10% ludekNaLudka. manpowerNaJednostke = 10% manpowerNaLudka (koszt rekrutacji 1 jednostki).",
@@ -285,19 +310,19 @@ var terrain_improvements_default = {
     odblokowuje: ""
   },
   bydlo: {
-    nazwa: "Byd\u0142o",
+    nazwa: "Trzoda",
     epoka: 1,
     bonus: {
       zywnosc: 2,
       praca: 3
     },
     surowiecOdblokowany: "bydlo",
-    surowiecOdblokowany_uwaga: "ABC-18: dost\u0119p dopiero po postawieniu na z\u0142o\u017Cu byd\u0142a",
+    surowiecOdblokowany_uwaga: "ABC-18: dost\u0119p dopiero po postawieniu na z\u0142o\u017Cu trzody",
     teren: "\u0141\u0105ka, R\xF3wnina",
     warunek: "plaski l\u0105d; pierwsze: z\u0142o\u017Ce byd\u0142a; potem po odblokowaniu \u2014 bez z\u0142o\u017Ca; + farma lub solo; NIE na Pustyni",
     koszt_praca: 20,
     tech: "Oswojenie zwierz\u0105t",
-    odblokowuje: "Byd\u0142o (Rydwan po odblokowaniu)"
+    odblokowuje: "Trzoda (Rydwan po odblokowaniu)"
   },
   owce: {
     nazwa: "Owce",
@@ -323,8 +348,8 @@ var terrain_improvements_default = {
     },
     surowiecOdblokowany: "lama",
     surowiecOdblokowany_uwaga: "TYLKO Inkowie; solo \u2014 bez innych ulepszen na heksie; pierwsze na zlozu lamy",
-    teren: "\u0141\u0105ka, R\xF3wnina, Wzg\xF3rza",
-    warunek: "solo; tylko cyw. Inkowie; pierwsze: z\u0142o\u017Ce lamy; NIE na Pustyni",
+    teren: "Wzg\xF3rza, G\xF3ry",
+    warunek: "solo; tylko cyw. Inkowie; wzg\xF3rza/g\xF3ry; pierwsze: z\u0142o\u017Ce lamy; NIE na \u0141\u0105ce/R\xF3wninie/Pustyni",
     koszt_praca: 20,
     tech: "Oswojenie zwierz\u0105t",
     odblokowuje: "Lama (transport / \u017Cywno\u015B\u0107)"
@@ -522,8 +547,8 @@ var terrain_improvements_default = {
     odblokowuje: "",
     uwagi: "T-TECH-9 Maciej 2026-07-04"
   },
-  popalnia_brazu: {
-    nazwa: "Popalnia br\u0105zu",
+  kopalnia_miedzi: {
+    nazwa: "Kopalnia miedzi",
     epoka: 2,
     bonus: {
       praca: 2
@@ -615,10 +640,10 @@ var DEFAULT_COST_BY_ROLE = {
 };
 var UNIT_POPULATION_COST = miasto_params_default.jednostka_koszt_ludnosci?.wartosc ?? 1;
 function splitPraca(cityPraca, udzialBudynki) {
-  const praca = Number.isFinite(cityPraca) && cityPraca > 0 ? cityPraca : 0;
+  const total = Number.isFinite(cityPraca) && cityPraca > 0 ? Math.round(cityPraca) : 0;
   const u = Math.min(1, Math.max(0, Number.isFinite(udzialBudynki) ? udzialBudynki : 1));
-  const doBudynkow = praca * u;
-  return { doBudynkow, doPuli: praca - doBudynkow };
+  const doBudynkow = Math.round(total * u);
+  return { doBudynkow, doPuli: total - doBudynkow };
 }
 var DEFAULT_OUTPUT_SHARES = Object.freeze({
   produkcja: miasto_params_default.udzial_output_produkcja?.wartosc ?? 0.4,
@@ -1029,19 +1054,139 @@ function normalizePodzialHandlu(split) {
 }
 var MIN_CITY_DISTANCE = miasto_params_default.min_dystans_miast?.wartosc ?? 5;
 
-// src/game/economy.ts
-var TERRAIN_YIELDS = {
-  ["laka" /* Laka */]: { zywnosc: 4, praca: 1, handel: 1, drewno: 1, kamien: 0 },
-  ["rownina" /* Rownina */]: { zywnosc: 2, praca: 1, handel: 1, drewno: 2, kamien: 1 },
-  ["wzgorza" /* Wzgorza */]: { zywnosc: 1, praca: 2, handel: 0, drewno: 2, kamien: 2 },
-  ["gory" /* Gory */]: { zywnosc: 0, praca: 0, handel: 0, drewno: 2, kamien: 5 },
-  ["wybrzeze" /* Wybrzeze */]: { zywnosc: 3, praca: 2, handel: 2, drewno: 0, kamien: 0 },
-  ["morze" /* Morze */]: { zywnosc: 2, praca: 0, handel: 2, drewno: 0, kamien: 0 },
-  ["pustynia" /* Pustynia */]: { zywnosc: 0, praca: 0, handel: 1, drewno: 0, kamien: 0 }
+// data/terrain-yields.json
+var terrain_yields_default = {
+  terrain_types: [
+    {
+      Teren: "\u0141\u0105ka",
+      \u017Bywno\u015B\u0107: 3,
+      Praca: 1,
+      Handel: 1,
+      Drewno: 1,
+      Kamie\u0144: 0,
+      Suma: 6,
+      Uwagi: null
+    },
+    {
+      Teren: "R\xF3wnina",
+      \u017Bywno\u015B\u0107: 2,
+      Praca: 2,
+      Handel: 1,
+      Drewno: 2,
+      Kamie\u0144: 1,
+      Suma: 8,
+      Uwagi: null
+    },
+    {
+      Teren: "Wzg\xF3rza",
+      \u017Bywno\u015B\u0107: 1,
+      Praca: 3,
+      Handel: 0,
+      Drewno: 2,
+      Kamie\u0144: 2,
+      Suma: 8,
+      Uwagi: "Kamie\u0144/Ruda po zbudowaniu Kopalni; +obrona"
+    },
+    {
+      Teren: "G\xF3ry",
+      \u017Bywno\u015B\u0107: 0,
+      Praca: 4,
+      Handel: 0,
+      Drewno: 2,
+      Kamie\u0144: 5,
+      Suma: 11,
+      Uwagi: "Nieprzechodnie dla jednostek l\u0105dowych; Kamie\u0144/Ruda po Kopalni"
+    },
+    {
+      Teren: "Wybrze\u017Ce",
+      \u017Bywno\u015B\u0107: 3,
+      Praca: 2,
+      Handel: 2,
+      Drewno: 0,
+      Kamie\u0144: 0,
+      Suma: 7,
+      Uwagi: "Teren morski przy l\u0105dzie (osobny od rzeki); pod port"
+    },
+    {
+      Teren: "Morze",
+      \u017Bywno\u015B\u0107: 2,
+      Praca: 0,
+      Handel: 2,
+      Drewno: 0,
+      Kamie\u0144: 0,
+      Suma: 4,
+      Uwagi: "Otwarta woda; rybo\u0142\xF3wstwo"
+    },
+    {
+      Teren: "Pustynia",
+      \u017Bywno\u015B\u0107: 0,
+      Praca: 0,
+      Handel: 1,
+      Drewno: 0,
+      Kamie\u0144: 0,
+      Suma: 1,
+      Uwagi: null
+    }
+  ],
+  terrain_modifiers: [
+    {
+      Modyfikator: "Rzeka",
+      \u017Bywno\u015B\u0107: 3,
+      Praca: 2,
+      Handel: 2,
+      Drewno: 0,
+      Kamie\u0144: 0,
+      Suma: 7,
+      Uwagi: "Dodaje bonus do DOWOLNEGO pola z rzek\u0105 (Tw\xF3j opis); razem +7 \u2014 mocny, mo\u017Cna stonowa\u0107"
+    },
+    {
+      Modyfikator: "Las (nak\u0142adka)",
+      \u017Bywno\u015B\u0107: -1,
+      Praca: 3,
+      Handel: -1,
+      Drewno: 3,
+      Kamie\u0144: 0,
+      Suma: 4,
+      Uwagi: "Pod lasem zawsze jest teren bazowy; las: \u2212\u017Cywno\u015B\u0107, \u2212handel, +praca (+3), +drewno \u2014 bez wzgl\u0119du na \u{1F464}/jednostk\u0119"
+    }
+  ]
 };
-var RIVER_MODIFIER = { zywnosc: 3, praca: 2, handel: 2, drewno: 0, kamien: 0 };
-var FOREST_MODIFIER = { zywnosc: -1, praca: 3, handel: -1, drewno: 3, kamien: 0 };
+
+// src/game/economy.ts
 var ZERO_YIELD = { zywnosc: 0, praca: 0, handel: 0, drewno: 0, kamien: 0 };
+var TERRAIN_NAME_TO_ENUM = {
+  "\u0141\u0105ka": "laka" /* Laka */,
+  "R\xF3wnina": "rownina" /* Rownina */,
+  "Wzg\xF3rza": "wzgorza" /* Wzgorza */,
+  "G\xF3ry": "gory" /* Gory */,
+  "Wybrze\u017Ce": "wybrzeze" /* Wybrzeze */,
+  "Morze": "morze" /* Morze */,
+  "Pustynia": "pustynia" /* Pustynia */
+};
+function terrainRowToTileYield(row) {
+  return {
+    zywnosc: Number(row["\u017Bywno\u015B\u0107"] ?? 0),
+    praca: Number(row["Praca"] ?? 0),
+    handel: Number(row["Handel"] ?? 0),
+    drewno: Number(row["Drewno"] ?? 0),
+    kamien: Number(row["Kamie\u0144"] ?? 0)
+  };
+}
+function buildTerrainYields() {
+  const out = {};
+  for (const row of terrain_yields_default.terrain_types) {
+    const key = TERRAIN_NAME_TO_ENUM[row.Teren];
+    if (key) out[key] = terrainRowToTileYield(row);
+  }
+  return out;
+}
+function terrainModifier(name) {
+  const row = terrain_yields_default.terrain_modifiers.find((m) => m["Modyfikator"] === name);
+  return row ? terrainRowToTileYield(row) : ZERO_YIELD;
+}
+var TERRAIN_YIELDS = buildTerrainYields();
+var RIVER_MODIFIER = terrainModifier("Rzeka");
+var FOREST_MODIFIER = terrainModifier("Las (nak\u0142adka)");
 function tileYield(tile) {
   const base = TERRAIN_YIELDS[tile.terenBazowy] ?? ZERO_YIELD;
   let zywnosc = base.zywnosc;
@@ -1220,7 +1365,7 @@ function cityYieldPerTurn(city, workedTiles, cityBuildings, params, ctx) {
 function cityPopulationCap(maAkwedukt, params) {
   return maAkwedukt ? params.akweduktMaxLudnosci : params.akweduktProgLudnosci;
 }
-function populationGrowth(city, zywnoscNetto, params) {
+function populationGrowth(city, zywnoscNetto, params, wzrostThresholdMult = 1) {
   const { ludnosc, zdrowie, maSpichlerz, maAkwedukt, magazynZywnosci } = city;
   const healthModifier = Math.max(0, 1 + zdrowie * params.zdrowieModyfikatorWspolczynnik);
   const effectiveFlow = zywnoscNetto * healthModifier;
@@ -1238,7 +1383,8 @@ function populationGrowth(city, zywnoscNetto, params) {
     }
     return { nowaLudnosc, nowyMagazynZywnosci, wzrost, ubytek };
   }
-  const threshold = 10 + ludnosc * params.progWzrostuWspolczynnik;
+  const baseThreshold = 20 + ludnosc * params.progWzrostuWspolczynnik;
+  const threshold = Math.max(1, Math.round(baseThreshold * wzrostThresholdMult));
   if (nowyMagazynZywnosci >= threshold && ludnosc < popCap) {
     nowaLudnosc = ludnosc + 1;
     wzrost = true;
@@ -1346,10 +1492,22 @@ function cityRangeForPopulation(population) {
   if (pop <= 0) return 0;
   return Math.min(Math.max(CITY_RANGE_MIN, pop), CITY_RANGE_CAP);
 }
+function hexKeysWithinRadius(cq, cr, rad, map) {
+  const out = [];
+  const r = Number.isFinite(rad) && rad > 0 ? Math.floor(rad) : 0;
+  for (let dq = -r; dq <= r; dq++) {
+    const lo = Math.max(-r, -dq - r), hi = Math.min(r, -dq + r);
+    for (let dr = lo; dr <= hi; dr++) {
+      const key = `${cq + dq},${cr + dr}`;
+      if (map.hexes[key]) out.push(key);
+    }
+  }
+  return out;
+}
 function okolicaTiles(centerQ, centerR, radius, map, isWorkable) {
   const out = [];
   const rad = Number.isFinite(radius) && radius > 0 ? Math.floor(radius) : 1;
-  for (const key of Object.keys(map.hexes)) {
+  for (const key of hexKeysWithinRadius(centerQ, centerR, rad, map)) {
     const parts = key.split(",");
     const q = Number(parts[0]);
     const rr = Number(parts[1]);
@@ -1558,7 +1716,7 @@ function buildEconParams(data, difficulty = "normal") {
     return typeof v === "number" && Number.isFinite(v) ? v : fallback;
   };
   return {
-    progWzrostuWspolczynnik: num(em, "pr\xF3g_wzrostu_wspolczynnik", 8),
+    progWzrostuWspolczynnik: num(em, "pr\xF3g_wzrostu_wspolczynnik", 16),
     spichlerzZachowaniePoPrzroscie: num(em, "spichlerz_zachowanie_po_wzroscie", 0.5),
     akweduktProgLudnosci: num(em, "akwedukt_prog_ludnosci", 5),
     akweduktMaxLudnosci: num(em, "akwedukt_max_ludnosci", 15),
@@ -1586,14 +1744,9 @@ function scanCityVicinityTerrain(ctx) {
   const radius = cityRangeForPopulation(ctx.city.population);
   let hasLas = false;
   let hasBagno = false;
-  for (const key of Object.keys(ctx.map.hexes)) {
+  for (const key of hexKeysWithinRadius(ctx.city.q, ctx.city.r, radius, ctx.map)) {
     const hex = ctx.map.hexes[key];
     if (!hex) continue;
-    const [qs, rs] = key.split(",");
-    const q = hex.coords?.q ?? Number(qs);
-    const r = hex.coords?.r ?? Number(rs);
-    if (!Number.isFinite(q) || !Number.isFinite(r)) continue;
-    if (hexDistance(ctx.city.q, ctx.city.r, q, r) > radius) continue;
     if (!hasLas && hex.nakladka === "las" /* Las */) hasLas = true;
     if (!hasBagno && hex.terenBazowy === "bagno") hasBagno = true;
     if (hasLas && hasBagno) break;
@@ -1629,11 +1782,17 @@ function loadHealthParams(raw, difficulty) {
     karaBrakWody: rd("zdrowie_kara_brak_wody", -2)
   };
 }
+var __riverHexSetCache = /* @__PURE__ */ new WeakMap();
 function cityHasWaterAccess(city, map) {
-  const riverHexSet = /* @__PURE__ */ new Set();
-  for (const path of map.riverPaths ?? []) {
-    for (const h of path) riverHexSet.add(`${h.q},${h.r}`);
-  }
+  const paths = map.riverPaths ?? [];
+  const riverHexSet = __riverHexSetCache.get(paths) ?? (() => {
+    const s = /* @__PURE__ */ new Set();
+    for (const path of paths) {
+      for (const h of path) s.add(`${h.q},${h.r}`);
+    }
+    __riverHexSetCache.set(paths, s);
+    return s;
+  })();
   function hexHasRiver(q, r) {
     const hex = map.hexes[`${q},${r}`];
     if (hex?.rzeka?.obecna) return true;
@@ -1745,17 +1904,19 @@ function toEconomyCity(city, params, isCapital, zdrowie = 0, buildings = {}) {
 function readCityFoodBufferFromCity(city) {
   return readCityFoodBuffer(city.magazynZywnosci);
 }
-function growthFoodThreshold(population, params) {
-  return 10 + population * params.progWzrostuWspolczynnik;
+function growthFoodThreshold(population, params, pace = "wysoki", ownerId = 0, difficulty = "normal") {
+  const base = 20 + population * params.progWzrostuWspolczynnik;
+  return applyPopulationGrowthThreshold(base, ownerId, pace, difficulty);
 }
-function growthFoodStorageCap(population, maSpichlerz, params, storageParams) {
+function growthFoodStorageCap(population, maSpichlerz, params, storageParams, pace = "wysoki", ownerId = 0, difficulty = "normal") {
   const base = foodStorageCapacity(maSpichlerz, storageParams);
-  return Math.max(base, growthFoodThreshold(population, params));
+  return Math.max(base, growthFoodThreshold(population, params, pace, ownerId, difficulty));
 }
 function getCityFood(city) {
   return readCityFoodBufferFromCity(city);
 }
-function advanceCityEconomy(cities, map, data, difficulty = "normal", econUnits = [], growthMultByCity = /* @__PURE__ */ new Map(), builtByCity = /* @__PURE__ */ new Map(), playerEra = 1, playerZbadane = /* @__PURE__ */ new Set(), ownerCivByOwnerId = /* @__PURE__ */ new Map(), orderMultByCity = /* @__PURE__ */ new Map(), resolveOwnerEra, resolveOwnerTech) {
+function advanceCityEconomy(cities, map, data, difficulty = "normal", econUnits = [], growthMultByCity = /* @__PURE__ */ new Map(), builtByCity = /* @__PURE__ */ new Map(), playerEra = 1, playerZbadane = /* @__PURE__ */ new Set(), ownerCivByOwnerId = /* @__PURE__ */ new Map(), orderMultByCity = /* @__PURE__ */ new Map(), resolveOwnerEra, resolveOwnerTech, wzrostLudnosciPace = "wysoki") {
+  const gameDifficulty = difficulty;
   const params = buildEconParams(data, difficulty);
   const noBuildings = [];
   const rawEconParams = data.econParams;
@@ -1908,7 +2069,12 @@ function advanceCityEconomy(cities, map, data, difficulty = "normal", econUnits 
     const zywnoscDoRozwoju = yld.zywnosc * (pctRozwoj / 100);
     const growthMult = growthMultByCity.get(city.id) ?? 1;
     const zywnoscDlaWzrostu = growthMult !== 1 ? zywnoscDoRozwoju * growthMult : zywnoscDoRozwoju;
-    const grow = populationGrowth(econCity, zywnoscDlaWzrostu, params);
+    const wzrostThresholdMult = getPopulationGrowthThresholdMultiplier(
+      city.ownerId,
+      wzrostLudnosciPace,
+      gameDifficulty
+    );
+    const grow = populationGrowth(econCity, zywnoscDlaWzrostu, params, wzrostThresholdMult);
     const before = city.population;
     city.population = grow.nowaLudnosc;
     if (grow.nowaLudnosc !== before) {
@@ -1926,7 +2092,15 @@ function advanceCityEconomy(cities, map, data, difficulty = "normal", econUnits 
       loadManpowerRegenParams(),
       civManpowerRegenMult(ownerBonusy)
     );
-    const foodCap = growthFoodStorageCap(city.population, maSpichlerz, params, storageParams);
+    const foodCap = growthFoodStorageCap(
+      city.population,
+      maSpichlerz,
+      params,
+      storageParams,
+      wzrostLudnosciPace,
+      city.ownerId,
+      gameDifficulty
+    );
     city.magazynZywnosci = Math.min(grow.nowyMagazynZywnosci, foodCap);
     magazynPoTurze = city.magazynZywnosci;
     incomeByOwner.set(city.ownerId, (incomeByOwner.get(city.ownerId) ?? 0) + pieniadzPoWealth);

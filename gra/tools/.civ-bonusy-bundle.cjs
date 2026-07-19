@@ -61,6 +61,129 @@ var Nakladka = /* @__PURE__ */ ((Nakladka2) => {
   return Nakladka2;
 })(Nakladka || {});
 
+// data/terrain-yields.json
+var terrain_yields_default = {
+  terrain_types: [
+    {
+      Teren: "\u0141\u0105ka",
+      \u017Bywno\u015B\u0107: 3,
+      Praca: 1,
+      Handel: 1,
+      Drewno: 1,
+      Kamie\u0144: 0,
+      Suma: 6,
+      Uwagi: null
+    },
+    {
+      Teren: "R\xF3wnina",
+      \u017Bywno\u015B\u0107: 2,
+      Praca: 2,
+      Handel: 1,
+      Drewno: 2,
+      Kamie\u0144: 1,
+      Suma: 8,
+      Uwagi: null
+    },
+    {
+      Teren: "Wzg\xF3rza",
+      \u017Bywno\u015B\u0107: 1,
+      Praca: 3,
+      Handel: 0,
+      Drewno: 2,
+      Kamie\u0144: 2,
+      Suma: 8,
+      Uwagi: "Kamie\u0144/Ruda po zbudowaniu Kopalni; +obrona"
+    },
+    {
+      Teren: "G\xF3ry",
+      \u017Bywno\u015B\u0107: 0,
+      Praca: 4,
+      Handel: 0,
+      Drewno: 2,
+      Kamie\u0144: 5,
+      Suma: 11,
+      Uwagi: "Nieprzechodnie dla jednostek l\u0105dowych; Kamie\u0144/Ruda po Kopalni"
+    },
+    {
+      Teren: "Wybrze\u017Ce",
+      \u017Bywno\u015B\u0107: 3,
+      Praca: 2,
+      Handel: 2,
+      Drewno: 0,
+      Kamie\u0144: 0,
+      Suma: 7,
+      Uwagi: "Teren morski przy l\u0105dzie (osobny od rzeki); pod port"
+    },
+    {
+      Teren: "Morze",
+      \u017Bywno\u015B\u0107: 2,
+      Praca: 0,
+      Handel: 2,
+      Drewno: 0,
+      Kamie\u0144: 0,
+      Suma: 4,
+      Uwagi: "Otwarta woda; rybo\u0142\xF3wstwo"
+    },
+    {
+      Teren: "Pustynia",
+      \u017Bywno\u015B\u0107: 0,
+      Praca: 0,
+      Handel: 1,
+      Drewno: 0,
+      Kamie\u0144: 0,
+      Suma: 1,
+      Uwagi: null
+    }
+  ],
+  terrain_modifiers: [
+    {
+      Modyfikator: "Rzeka",
+      \u017Bywno\u015B\u0107: 3,
+      Praca: 2,
+      Handel: 2,
+      Drewno: 0,
+      Kamie\u0144: 0,
+      Suma: 7,
+      Uwagi: "Dodaje bonus do DOWOLNEGO pola z rzek\u0105 (Tw\xF3j opis); razem +7 \u2014 mocny, mo\u017Cna stonowa\u0107"
+    },
+    {
+      Modyfikator: "Las (nak\u0142adka)",
+      \u017Bywno\u015B\u0107: -1,
+      Praca: 3,
+      Handel: -1,
+      Drewno: 3,
+      Kamie\u0144: 0,
+      Suma: 4,
+      Uwagi: "Pod lasem zawsze jest teren bazowy; las: \u2212\u017Cywno\u015B\u0107, \u2212handel, +praca (+3), +drewno \u2014 bez wzgl\u0119du na \u{1F464}/jednostk\u0119"
+    }
+  ]
+};
+
+// src/game/unit-cost-tempo.ts
+var KOSZT_JEDNOSTEK_PACE = {
+  niski: 1,
+  normalny: 2,
+  wysoki: 4
+};
+function applyUnitCostPace(bazowyKoszt, pace) {
+  const mnoznik = typeof pace === "number" ? pace : KOSZT_JEDNOSTEK_PACE[pace];
+  return Math.max(1, Math.round(bazowyKoszt * mnoznik));
+}
+
+// src/game/difficulty-cost.ts
+function isPlayerOwner(ownerId) {
+  return ownerId === 0;
+}
+function getCostMultiplierForOwner(ownerId, difficulty) {
+  if (difficulty === "normal") return 1;
+  if (difficulty === "easy") return isPlayerOwner(ownerId) ? 1 : 2;
+  return isPlayerOwner(ownerId) ? 2 : 1;
+}
+function applyDifficultyCostMultiplier(costAfterPace, ownerId, difficulty) {
+  const mult = getCostMultiplierForOwner(ownerId, difficulty);
+  return Math.max(1, Math.round(costAfterPace * mult));
+}
+
 // src/game/civ-bonuses.ts
 var ONE = {
   atk: 0,
@@ -389,19 +512,19 @@ var terrain_improvements_default = {
     odblokowuje: ""
   },
   bydlo: {
-    nazwa: "Byd\u0142o",
+    nazwa: "Trzoda",
     epoka: 1,
     bonus: {
       zywnosc: 2,
       praca: 3
     },
     surowiecOdblokowany: "bydlo",
-    surowiecOdblokowany_uwaga: "ABC-18: dost\u0119p dopiero po postawieniu na z\u0142o\u017Cu byd\u0142a",
+    surowiecOdblokowany_uwaga: "ABC-18: dost\u0119p dopiero po postawieniu na z\u0142o\u017Cu trzody",
     teren: "\u0141\u0105ka, R\xF3wnina",
     warunek: "plaski l\u0105d; pierwsze: z\u0142o\u017Ce byd\u0142a; potem po odblokowaniu \u2014 bez z\u0142o\u017Ca; + farma lub solo; NIE na Pustyni",
     koszt_praca: 20,
     tech: "Oswojenie zwierz\u0105t",
-    odblokowuje: "Byd\u0142o (Rydwan po odblokowaniu)"
+    odblokowuje: "Trzoda (Rydwan po odblokowaniu)"
   },
   owce: {
     nazwa: "Owce",
@@ -427,8 +550,8 @@ var terrain_improvements_default = {
     },
     surowiecOdblokowany: "lama",
     surowiecOdblokowany_uwaga: "TYLKO Inkowie; solo \u2014 bez innych ulepszen na heksie; pierwsze na zlozu lamy",
-    teren: "\u0141\u0105ka, R\xF3wnina, Wzg\xF3rza",
-    warunek: "solo; tylko cyw. Inkowie; pierwsze: z\u0142o\u017Ce lamy; NIE na Pustyni",
+    teren: "Wzg\xF3rza, G\xF3ry",
+    warunek: "solo; tylko cyw. Inkowie; wzg\xF3rza/g\xF3ry; pierwsze: z\u0142o\u017Ce lamy; NIE na \u0141\u0105ce/R\xF3wninie/Pustyni",
     koszt_praca: 20,
     tech: "Oswojenie zwierz\u0105t",
     odblokowuje: "Lama (transport / \u017Cywno\u015B\u0107)"
@@ -512,12 +635,12 @@ var terrain_improvements_default = {
     bonus: {},
     surowiecOdblokowany: null,
     teren: "Las",
-    warunek: "darmowa wycinka; +20 Pracy/tur\u0119 \xD7 3 tury (=60); potem teren bazowy bez lasu",
-    koszt_praca: 0,
+    warunek: "koszt 5 Pracy na start; +5 Pracy \xD7 1 tura (=5, netto zero); potem teren bazowy bez lasu",
+    koszt_praca: 5,
     tech: null,
     wycinka: {
-      praca_per_tura: 20,
-      tury: 3,
+      praca_per_tura: 5,
+      tury: 1,
       usuwa_nakladke: "las"
     },
     odblokowuje: ""
@@ -594,7 +717,7 @@ var terrain_improvements_default = {
     teren: "dowolny l\u0105d w terytorium",
     warunek: "+100% Obrony jednostkom obozuj\u0105cym na polu fortu (bez plon\xF3w); rozszerza zasi\u0119g terytorium o promie\u0144 10 p\xF3l",
     koszt_praca: 25,
-    tech: "Wojskowosc",
+    tech: "Wojskowo\u015B\u0107",
     odblokowuje: "",
     uwagi: "ABC-10 Maciej 2026-07-04: Fort (mapa) \u2260 Cytadela (miasto). \u017Belazo ep.3; zasi\u0119g 10; +100% Obrona obozowanie"
   },
@@ -626,8 +749,8 @@ var terrain_improvements_default = {
     odblokowuje: "",
     uwagi: "T-TECH-9 Maciej 2026-07-04"
   },
-  popalnia_brazu: {
-    nazwa: "Popalnia br\u0105zu",
+  kopalnia_miedzi: {
+    nazwa: "Kopalnia miedzi",
     epoka: 2,
     bonus: {
       praca: 2
@@ -713,6 +836,15 @@ function unitCostFromDef(def) {
   }
   return DEFAULT_UNIT_COST;
 }
+function unitMoneyCost(baseCost, civBonusy, pace, ownerId = 0, difficulty = "normal") {
+  let koszt = baseCost;
+  const recDisc = civRecruitmentDiscount(civBonusy);
+  if (recDisc > 0) {
+    koszt = Math.max(1, Math.floor(koszt * (1 - recDisc)));
+  }
+  const afterPace = pace ? applyUnitCostPace(koszt, pace) : koszt;
+  return applyDifficultyCostMultiplier(afterPace, ownerId, difficulty);
+}
 function civRecruitmentDiscount(bonusy) {
   if (!bonusy?.length) return 0;
   for (const b of bonusy) {
@@ -725,13 +857,8 @@ function civRecruitmentDiscount(bonusy) {
   return 0;
 }
 var UNIT_POPULATION_COST = miasto_params_default.jednostka_koszt_ludnosci?.wartosc ?? 1;
-function unitPurchaseCost(def, civBonusy) {
-  let koszt = unitCostFromDef(def);
-  const recDisc = civRecruitmentDiscount(civBonusy);
-  if (recDisc > 0) {
-    koszt = Math.max(1, Math.floor(koszt * (1 - recDisc)));
-  }
-  return koszt;
+function unitPurchaseCost(def, civBonusy, kosztJednostekPace, ownerId = 0, difficulty = "normal") {
+  return unitMoneyCost(unitCostFromDef(def), civBonusy, kosztJednostekPace, ownerId, difficulty);
 }
 var DEFAULT_OUTPUT_SHARES = Object.freeze({
   produkcja: miasto_params_default.udzial_output_produkcja?.wartosc ?? 0.4,
@@ -752,9 +879,10 @@ function loadEconParams(raw, difficulty) {
     return typeof v === "number" && Number.isFinite(v) ? v : fallback;
   };
   return {
-    progWzrostuWspolczynnik: read(em, KEY_PROG_WZROSTU, 8),
+    progWzrostuWspolczynnik: read(em, KEY_PROG_WZROSTU, 16),
     spichlerzZachowaniePoPrzroscie: read(em, "spichlerz_zachowanie_po_wzroscie", 0.5),
-    akweduktProgLudnosci: read(em, "akwedukt_prog_ludnosci", 6),
+    akweduktProgLudnosci: read(em, "akwedukt_prog_ludnosci", 5),
+    akweduktMaxLudnosci: read(em, "akwedukt_max_ludnosci", 15),
     zywnoscZuzytkaPopulacja: read(em, "zywnosc_zuzytka_populacja", 1),
     zdrowieModyfikatorWspolczynnik: read(em, "zdrowie_modyfikator_wspolczynnik", 0.05),
     korupcjaWspolczynnikDystansu: read(em, "korupcja_wspolczynnik_dystansu", 2),
@@ -775,18 +903,40 @@ function loadEconParams(raw, difficulty) {
     suwaakPracaTeren: read(em, "suwak_praca_teren_domyslnie", 30)
   };
 }
-var TERRAIN_YIELDS = {
-  ["laka" /* Laka */]: { zywnosc: 4, praca: 1, handel: 1, drewno: 1, kamien: 0 },
-  ["rownina" /* Rownina */]: { zywnosc: 2, praca: 1, handel: 1, drewno: 2, kamien: 1 },
-  ["wzgorza" /* Wzgorza */]: { zywnosc: 1, praca: 2, handel: 0, drewno: 2, kamien: 2 },
-  ["gory" /* Gory */]: { zywnosc: 0, praca: 0, handel: 0, drewno: 2, kamien: 5 },
-  ["wybrzeze" /* Wybrzeze */]: { zywnosc: 3, praca: 2, handel: 2, drewno: 0, kamien: 0 },
-  ["morze" /* Morze */]: { zywnosc: 2, praca: 0, handel: 2, drewno: 0, kamien: 0 },
-  ["pustynia" /* Pustynia */]: { zywnosc: 0, praca: 0, handel: 1, drewno: 0, kamien: 0 }
-};
-var RIVER_MODIFIER = { zywnosc: 3, praca: 2, handel: 2, drewno: 0, kamien: 0 };
-var FOREST_MODIFIER = { zywnosc: -1, praca: 0, handel: -1, drewno: 3, kamien: 0 };
 var ZERO_YIELD = { zywnosc: 0, praca: 0, handel: 0, drewno: 0, kamien: 0 };
+var TERRAIN_NAME_TO_ENUM = {
+  "\u0141\u0105ka": "laka" /* Laka */,
+  "R\xF3wnina": "rownina" /* Rownina */,
+  "Wzg\xF3rza": "wzgorza" /* Wzgorza */,
+  "G\xF3ry": "gory" /* Gory */,
+  "Wybrze\u017Ce": "wybrzeze" /* Wybrzeze */,
+  "Morze": "morze" /* Morze */,
+  "Pustynia": "pustynia" /* Pustynia */
+};
+function terrainRowToTileYield(row) {
+  return {
+    zywnosc: Number(row["\u017Bywno\u015B\u0107"] ?? 0),
+    praca: Number(row["Praca"] ?? 0),
+    handel: Number(row["Handel"] ?? 0),
+    drewno: Number(row["Drewno"] ?? 0),
+    kamien: Number(row["Kamie\u0144"] ?? 0)
+  };
+}
+function buildTerrainYields() {
+  const out = {};
+  for (const row of terrain_yields_default.terrain_types) {
+    const key = TERRAIN_NAME_TO_ENUM[row.Teren];
+    if (key) out[key] = terrainRowToTileYield(row);
+  }
+  return out;
+}
+function terrainModifier(name) {
+  const row = terrain_yields_default.terrain_modifiers.find((m) => m["Modyfikator"] === name);
+  return row ? terrainRowToTileYield(row) : ZERO_YIELD;
+}
+var TERRAIN_YIELDS = buildTerrainYields();
+var RIVER_MODIFIER = terrainModifier("Rzeka");
+var FOREST_MODIFIER = terrainModifier("Las (nak\u0142adka)");
 function tileYield(tile) {
   const base = TERRAIN_YIELDS[tile.terenBazowy] ?? ZERO_YIELD;
   let zywnosc = base.zywnosc;
@@ -796,6 +946,7 @@ function tileYield(tile) {
   let kamien = base.kamien;
   if (tile.nakladka === "las" /* Las */) {
     zywnosc += FOREST_MODIFIER.zywnosc;
+    praca += FOREST_MODIFIER.praca;
     handel += FOREST_MODIFIER.handel;
     drewno += FOREST_MODIFIER.drewno;
   }
@@ -1141,8 +1292,8 @@ function resolveCombat(attacker, defender, opts = {}) {
   let totalRounds = 0;
   const defPenaltyFrac = flankRearDefensePenalty(defender, position);
   const defEffObrona = Math.max(0, defObrona0 * (1 - defPenaltyFrac));
-  const ctrAtkVsDef = counterMultiplier(attacker.typNazwa, defender.typNazwa, counters);
-  const ctrDefVsAtk = counterMultiplier(defender.typNazwa, attacker.typNazwa, counters);
+  const ctrAtkVsDef = counterMultiplier(attacker.counterTyp, defender.counterTyp, counters);
+  const ctrDefVsAtk = counterMultiplier(defender.counterTyp, attacker.counterTyp, counters);
   const terrDefMult = terrainDefenseMultiplier(defenderTerrain, attacker.rola, terrainData);
   const terrRiverMult = terrainRiverAttackMultiplier(defenderTerrain, terrainData);
   const structBonusPct = opts.structureDefBonusPct ?? 0;

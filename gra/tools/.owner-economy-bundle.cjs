@@ -93,19 +93,19 @@ var terrain_improvements_default = {
     odblokowuje: ""
   },
   bydlo: {
-    nazwa: "Byd\u0142o",
+    nazwa: "Trzoda",
     epoka: 1,
     bonus: {
       zywnosc: 2,
       praca: 3
     },
     surowiecOdblokowany: "bydlo",
-    surowiecOdblokowany_uwaga: "ABC-18: dost\u0119p dopiero po postawieniu na z\u0142o\u017Cu byd\u0142a",
+    surowiecOdblokowany_uwaga: "ABC-18: dost\u0119p dopiero po postawieniu na z\u0142o\u017Cu trzody",
     teren: "\u0141\u0105ka, R\xF3wnina",
     warunek: "plaski l\u0105d; pierwsze: z\u0142o\u017Ce byd\u0142a; potem po odblokowaniu \u2014 bez z\u0142o\u017Ca; + farma lub solo; NIE na Pustyni",
     koszt_praca: 20,
     tech: "Oswojenie zwierz\u0105t",
-    odblokowuje: "Byd\u0142o (Rydwan po odblokowaniu)"
+    odblokowuje: "Trzoda (Rydwan po odblokowaniu)"
   },
   owce: {
     nazwa: "Owce",
@@ -131,8 +131,8 @@ var terrain_improvements_default = {
     },
     surowiecOdblokowany: "lama",
     surowiecOdblokowany_uwaga: "TYLKO Inkowie; solo \u2014 bez innych ulepszen na heksie; pierwsze na zlozu lamy",
-    teren: "\u0141\u0105ka, R\xF3wnina, Wzg\xF3rza",
-    warunek: "solo; tylko cyw. Inkowie; pierwsze: z\u0142o\u017Ce lamy; NIE na Pustyni",
+    teren: "Wzg\xF3rza, G\xF3ry",
+    warunek: "solo; tylko cyw. Inkowie; wzg\xF3rza/g\xF3ry; pierwsze: z\u0142o\u017Ce lamy; NIE na \u0141\u0105ce/R\xF3wninie/Pustyni",
     koszt_praca: 20,
     tech: "Oswojenie zwierz\u0105t",
     odblokowuje: "Lama (transport / \u017Cywno\u015B\u0107)"
@@ -330,8 +330,8 @@ var terrain_improvements_default = {
     odblokowuje: "",
     uwagi: "T-TECH-9 Maciej 2026-07-04"
   },
-  popalnia_brazu: {
-    nazwa: "Popalnia br\u0105zu",
+  kopalnia_miedzi: {
+    nazwa: "Kopalnia miedzi",
     epoka: 2,
     bonus: {
       praca: 2
@@ -748,10 +748,10 @@ var DEFAULT_COST_BY_ROLE = {
 };
 var UNIT_POPULATION_COST = miasto_params_default.jednostka_koszt_ludnosci?.wartosc ?? 1;
 function splitPraca(cityPraca, udzialBudynki) {
-  const praca = Number.isFinite(cityPraca) && cityPraca > 0 ? cityPraca : 0;
+  const total = Number.isFinite(cityPraca) && cityPraca > 0 ? Math.round(cityPraca) : 0;
   const u = Math.min(1, Math.max(0, Number.isFinite(udzialBudynki) ? udzialBudynki : 1));
-  const doBudynkow = praca * u;
-  return { doBudynkow, doPuli: praca - doBudynkow };
+  const doBudynkow = Math.round(total * u);
+  return { doBudynkow, doPuli: total - doBudynkow };
 }
 var DEFAULT_OUTPUT_SHARES = Object.freeze({
   produkcja: miasto_params_default.udzial_output_produkcja?.wartosc ?? 0.4,
@@ -1304,7 +1304,7 @@ function populationGrowth(city, zywnoscNetto, params, wzrostThresholdMult = 1) {
     }
     return { nowaLudnosc, nowyMagazynZywnosci, wzrost, ubytek };
   }
-  const baseThreshold = 10 + ludnosc * params.progWzrostuWspolczynnik;
+  const baseThreshold = 20 + ludnosc * params.progWzrostuWspolczynnik;
   const threshold = Math.max(1, Math.round(baseThreshold * wzrostThresholdMult));
   if (nowyMagazynZywnosci >= threshold && ludnosc < popCap) {
     nowaLudnosc = ludnosc + 1;
@@ -1643,7 +1643,7 @@ function buildEconParams(data, difficulty = "normal") {
     return typeof v === "number" && Number.isFinite(v) ? v : fallback;
   };
   return {
-    progWzrostuWspolczynnik: num(em, "pr\xF3g_wzrostu_wspolczynnik", 8),
+    progWzrostuWspolczynnik: num(em, "pr\xF3g_wzrostu_wspolczynnik", 16),
     spichlerzZachowaniePoPrzroscie: num(em, "spichlerz_zachowanie_po_wzroscie", 0.5),
     akweduktProgLudnosci: num(em, "akwedukt_prog_ludnosci", 5),
     akweduktMaxLudnosci: num(em, "akwedukt_max_ludnosci", 15),
@@ -1832,7 +1832,7 @@ function readCityFoodBufferFromCity(city) {
   return readCityFoodBuffer(city.magazynZywnosci);
 }
 function growthFoodThreshold(population, params, pace = "wysoki", ownerId = 0, difficulty = "normal") {
-  const base = 10 + population * params.progWzrostuWspolczynnik;
+  const base = 20 + population * params.progWzrostuWspolczynnik;
   return applyPopulationGrowthThreshold(base, ownerId, pace, difficulty);
 }
 function growthFoodStorageCap(population, maSpichlerz, params, storageParams, pace = "wysoki", ownerId = 0, difficulty = "normal") {
@@ -2228,7 +2228,8 @@ var map_gen_params_default = {
   },
   metal_deposit_min_era: {
     miedz: 2,
-    zelazo: 3
+    zelazo: 3,
+    wegiel: 8
   }
 };
 
@@ -3338,6 +3339,10 @@ function reliefElevGates(mtnTh) {
   }
   return { mountain: 0.14, highland: 0.11, landMaskHi: 0.2, landMaskMtn: 0.22 };
 }
+var TERRAIN_MIX_AMP = 0.28;
+function terrainRownLakaJitter(forNoise, desNoise) {
+  return ((forNoise + desNoise) * 0.5 - 0.5) * TERRAIN_MIX_AMP;
+}
 function classifyTerrain(elevContinental, landMask, mtnNoise, forNoise, desNoise, thresholds, climateZone) {
   const desTh = thresholds?.desert ?? 0.63;
   const forTh = climateForestThreshold(climateZone, thresholds?.forest ?? 0.58);
@@ -3357,7 +3362,7 @@ function classifyTerrain(elevContinental, landMask, mtnNoise, forNoise, desNoise
       terenBazowy = "wzgorza" /* Wzgorza */;
     } else if (canAssignClimateDesert(climateZone) && desNoise > desTh && elevContinental > 0.18 && elevContinental < 0.45) {
       terenBazowy = "pustynia" /* Pustynia */;
-    } else if (elevContinental > 0.35) {
+    } else if (elevContinental + terrainRownLakaJitter(forNoise, desNoise) > 0.35) {
       terenBazowy = "rownina" /* Rownina */;
     } else {
       terenBazowy = "laka" /* Laka */;
@@ -3377,7 +3382,7 @@ function classifyTerrainFlat(elevContinental, landMask, _mtnNoise, forNoise, des
     terenBazowy = "laka" /* Laka */;
   } else if (canAssignClimateDesert(climateZone) && desNoise > desTh && elevContinental > 0.18 && elevContinental < 0.45) {
     terenBazowy = "pustynia" /* Pustynia */;
-  } else if (elevContinental > 0.35) {
+  } else if (elevContinental + terrainRownLakaJitter(forNoise, desNoise) > 0.35) {
     terenBazowy = "rownina" /* Rownina */;
   } else {
     terenBazowy = "laka" /* Laka */;
@@ -4837,6 +4842,8 @@ function repairRiverPathAdjacency(path, hexes, sourceKey) {
   return sanitizeRiverPath(out);
 }
 var RIVER_MIN_INLAND_FROM_SEA = 2;
+var RIVER_MIN_MAIN_LEN = 3;
+var RIVER_HARD_MEANDER_LEN = 8;
 var RIVER_MOUTH_TAIL_LEN = 5;
 function riverPathRespectsSeaBuffer(hexes, path, seaDist, minInland = RIVER_MIN_INLAND_FROM_SEA, mouthTail = RIVER_MOUTH_TAIL_LEN) {
   if (path.length === 0) return false;
@@ -4974,6 +4981,7 @@ function growRiverInlandBeforeDrainage(hexes, sq, sr, seaDist, openOceanDist, ra
     const curKey = hexKey(cur.q, cur.r);
     const curD = seaDist.get(curKey) ?? 0;
     const curOd = openOceanDist.get(curKey) ?? Infinity;
+    const hardMeander = path.length < RIVER_HARD_MEANDER_LEN;
     const candidates = [];
     for (const [dq, dr] of HEX_DIRECTIONS) {
       const nq = cur.q + dq;
@@ -4984,6 +4992,7 @@ function growRiverInlandBeforeDrainage(hexes, sq, sr, seaDist, openOceanDist, ra
       const nd = seaDist.get(nk) ?? 0;
       if (nd < RIVER_MIN_INLAND_FROM_SEA) continue;
       const od = openOceanDist.get(nk) ?? Infinity;
+      if (hardMeander && od < curOd) continue;
       let score = 1200 - od * 30;
       if (od > curOd + 0.5) score -= 18;
       if (nd > curD + 1) score -= 10;
@@ -5859,6 +5868,7 @@ function generateRivers(hexes, width, height, rand, opts = {}) {
   const pushMain = (path, sq, sr) => {
     const trimmed = trimRiverPathRings(hexes, path);
     if (!pathEndsAtSea(hexes, trimmed, width, height, oceanConnected)) return false;
+    if (trimmed.length < RIVER_MIN_MAIN_LEN) return false;
     riverPaths.push(trimmed);
     riverKinds.push("main");
     usedSources.add(hexKey(sq, sr));
@@ -6086,6 +6096,7 @@ function topUpRiverGridCoverage(hexes, width, height, riverPaths, riverKinds, ra
   const pushMain = (path, sq, sr) => {
     const trimmed = trimRiverPathRings(hexes, path);
     if (!pathEndsAtSea(hexes, trimmed, width, height, oceanConnected)) return false;
+    if (trimmed.length < RIVER_MIN_MAIN_LEN) return false;
     riverPaths.push(trimmed);
     riverKinds.push("main");
     usedSources.add(hexKey(sq, sr));
@@ -6254,18 +6265,9 @@ var BASE_DEPOSIT_RULES = [
     allowedOn: (h) => isDryLandTerrain(h.terenBazowy) && h.terenBazowy === "gory" /* Gory */,
     rarity: 0.1
   },
-  {
-    id: "owce",
-    nakladka: "zloze_owiec" /* ZlozeOwiec */,
-    allowedOn: (h) => isDryLandTerrain(h.terenBazowy) && h.terenBazowy === "wzgorza" /* Wzgorza */,
-    rarity: 0.08
-  },
-  {
-    id: "bydlo",
-    nakladka: "zloze_bydla" /* ZlozeBydla */,
-    allowedOn: (h) => isDryLandTerrain(h.terenBazowy) && (h.terenBazowy === "laka" /* Laka */ || h.terenBazowy === "rownina" /* Rownina */),
-    rarity: 0.07
-  },
+  // Model B (Maciej 2026-07-09): USUNIĘTE złoża owiec/bydła (ZlozeOwiec/ZlozeBydla) — hodowla to
+  // teraz CZYSTE ulepszenie (Owczarnia/Pastwisko), budowane jak farma, nie surowiec na mapie.
+  // Koń (wyżej) zostaje surowcem. Zmienia hash mapy (zamierzone).
   {
     id: "sol",
     nakladka: null,
@@ -6325,9 +6327,8 @@ function placeDeposits(hexes, seed, rules = DEPOSIT_RULES, resourceMult = 1, bas
 var FAIR_PLAY_DEPOSIT_IDS = [
   "zelazo",
   "miedz",
-  "glina",
-  "bydlo",
-  "owce"
+  "glina"
+  // Model B: bydlo/owce usunięte (hodowla = ulepszenie, nie złoże)
 ];
 function depositRuleById(id) {
   const rule = DEPOSIT_RULES.find((r) => r.id === id);

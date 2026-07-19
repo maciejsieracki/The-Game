@@ -23,7 +23,6 @@ __export(eko_tech_p3_entry_exports, {
   PIEC_HUTNICZY_BUILDING_ID: () => PIEC_HUTNICZY_BUILDING_ID,
   availableProduction: () => availableProduction,
   cityHasPiecHutniczy: () => cityHasPiecHutniczy,
-  empireHasPopalniaBrazu: () => empireHasPopalniaBrazu,
   hasBrazAccess: () => hasBrazAccess
 });
 module.exports = __toCommonJS(eko_tech_p3_entry_exports);
@@ -66,19 +65,19 @@ var terrain_improvements_default = {
     odblokowuje: ""
   },
   bydlo: {
-    nazwa: "Byd\u0142o",
+    nazwa: "Trzoda",
     epoka: 1,
     bonus: {
       zywnosc: 2,
       praca: 3
     },
     surowiecOdblokowany: "bydlo",
-    surowiecOdblokowany_uwaga: "ABC-18: dost\u0119p dopiero po postawieniu na z\u0142o\u017Cu byd\u0142a",
+    surowiecOdblokowany_uwaga: "ABC-18: dost\u0119p dopiero po postawieniu na z\u0142o\u017Cu trzody",
     teren: "\u0141\u0105ka, R\xF3wnina",
     warunek: "plaski l\u0105d; pierwsze: z\u0142o\u017Ce byd\u0142a; potem po odblokowaniu \u2014 bez z\u0142o\u017Ca; + farma lub solo; NIE na Pustyni",
     koszt_praca: 20,
     tech: "Oswojenie zwierz\u0105t",
-    odblokowuje: "Byd\u0142o (Rydwan po odblokowaniu)"
+    odblokowuje: "Trzoda (Rydwan po odblokowaniu)"
   },
   owce: {
     nazwa: "Owce",
@@ -104,8 +103,8 @@ var terrain_improvements_default = {
     },
     surowiecOdblokowany: "lama",
     surowiecOdblokowany_uwaga: "TYLKO Inkowie; solo \u2014 bez innych ulepszen na heksie; pierwsze na zlozu lamy",
-    teren: "\u0141\u0105ka, R\xF3wnina, Wzg\xF3rza",
-    warunek: "solo; tylko cyw. Inkowie; pierwsze: z\u0142o\u017Ce lamy; NIE na Pustyni",
+    teren: "Wzg\xF3rza, G\xF3ry",
+    warunek: "solo; tylko cyw. Inkowie; wzg\xF3rza/g\xF3ry; pierwsze: z\u0142o\u017Ce lamy; NIE na \u0141\u0105ce/R\xF3wninie/Pustyni",
     koszt_praca: 20,
     tech: "Oswojenie zwierz\u0105t",
     odblokowuje: "Lama (transport / \u017Cywno\u015B\u0107)"
@@ -189,12 +188,12 @@ var terrain_improvements_default = {
     bonus: {},
     surowiecOdblokowany: null,
     teren: "Las",
-    warunek: "darmowa wycinka; +20 Pracy/tur\u0119 \xD7 3 tury (=60); potem teren bazowy bez lasu",
-    koszt_praca: 0,
+    warunek: "koszt 5 Pracy na start; +5 Pracy \xD7 1 tura (=5, netto zero); potem teren bazowy bez lasu",
+    koszt_praca: 5,
     tech: null,
     wycinka: {
-      praca_per_tura: 20,
-      tury: 3,
+      praca_per_tura: 5,
+      tury: 1,
       usuwa_nakladke: "las"
     },
     odblokowuje: ""
@@ -271,7 +270,7 @@ var terrain_improvements_default = {
     teren: "dowolny l\u0105d w terytorium",
     warunek: "+100% Obrony jednostkom obozuj\u0105cym na polu fortu (bez plon\xF3w); rozszerza zasi\u0119g terytorium o promie\u0144 10 p\xF3l",
     koszt_praca: 25,
-    tech: "Wojskowosc",
+    tech: "Wojskowo\u015B\u0107",
     odblokowuje: "",
     uwagi: "ABC-10 Maciej 2026-07-04: Fort (mapa) \u2260 Cytadela (miasto). \u017Belazo ep.3; zasi\u0119g 10; +100% Obrona obozowanie"
   },
@@ -303,8 +302,8 @@ var terrain_improvements_default = {
     odblokowuje: "",
     uwagi: "T-TECH-9 Maciej 2026-07-04"
   },
-  popalnia_brazu: {
-    nazwa: "Popalnia br\u0105zu",
+  kopalnia_miedzi: {
+    nazwa: "Kopalnia miedzi",
     epoka: 2,
     bonus: {
       praca: 2
@@ -353,7 +352,7 @@ function normalizeImprovementKey(raw) {
 
 // src/game/braz-access.ts
 var PIEC_HUTNICZY_BUILDING_ID = "odlewnia_brazu";
-var POPALNIA_BRAZU_KEY = "popalnia_brazu";
+var KOPALNIA_MIEDZI_KEY = "kopalnia_miedzi";
 function improvementKeysOnPlaced(imp) {
   if (typeof imp === "string") {
     const k = normalizeImprovementKey(imp);
@@ -361,11 +360,11 @@ function improvementKeysOnPlaced(imp) {
   }
   return imp.map((k) => normalizeImprovementKey(String(k))).filter((k) => !!k);
 }
-function empireHasPopalniaBrazu(placedImprovements) {
+function empireHasKopalniaMiedzi(placedImprovements) {
   if (!placedImprovements?.size) return false;
   for (const imp of placedImprovements.values()) {
     for (const key of improvementKeysOnPlaced(imp)) {
-      if (key === POPALNIA_BRAZU_KEY) return true;
+      if (key === KOPALNIA_MIEDZI_KEY) return true;
     }
   }
   return false;
@@ -374,7 +373,43 @@ function cityHasPiecHutniczy(builtIds) {
   return builtIds.includes(PIEC_HUTNICZY_BUILDING_ID) || builtIds.includes("odlewnia_zelaza");
 }
 function hasBrazAccess(placedImprovements, builtIds) {
-  return empireHasPopalniaBrazu(placedImprovements) && cityHasPiecHutniczy(builtIds);
+  return empireHasKopalniaMiedzi(placedImprovements) && cityHasPiecHutniczy(builtIds);
+}
+
+// src/game/building-cost-tempo.ts
+var KOSZT_BUDYNKOW_PACE = {
+  niski: 1,
+  normalny: 2,
+  wysoki: 4
+};
+function applyBuildingCostPace(bazowyKoszt, pace) {
+  const mnoznik = typeof pace === "number" ? pace : KOSZT_BUDYNKOW_PACE[pace];
+  return Math.max(1, Math.round(bazowyKoszt * mnoznik));
+}
+
+// src/game/unit-cost-tempo.ts
+var KOSZT_JEDNOSTEK_PACE = {
+  niski: 1,
+  normalny: 2,
+  wysoki: 4
+};
+function applyUnitCostPace(bazowyKoszt, pace) {
+  const mnoznik = typeof pace === "number" ? pace : KOSZT_JEDNOSTEK_PACE[pace];
+  return Math.max(1, Math.round(bazowyKoszt * mnoznik));
+}
+
+// src/game/difficulty-cost.ts
+function isPlayerOwner(ownerId) {
+  return ownerId === 0;
+}
+function getCostMultiplierForOwner(ownerId, difficulty) {
+  if (difficulty === "normal") return 1;
+  if (difficulty === "easy") return isPlayerOwner(ownerId) ? 1 : 2;
+  return isPlayerOwner(ownerId) ? 2 : 1;
+}
+function applyDifficultyCostMultiplier(costAfterPace, ownerId, difficulty) {
+  const mult = getCostMultiplierForOwner(ownerId, difficulty);
+  return Math.max(1, Math.round(costAfterPace * mult));
 }
 
 // src/game/civ-bonuses.ts
@@ -607,6 +642,20 @@ function itemCost(kind, id, data, cityLevelOrEpoch) {
   if (!u) return 0;
   return unitCostFromDef(u);
 }
+function buildingWorkCost(baseCost, civBonusy, pace, ownerId = 0, difficulty = "normal") {
+  const afterCiv = buildingCostAfterCivDiscount(baseCost, civBonusy);
+  const afterPace = pace ? applyBuildingCostPace(afterCiv, pace) : afterCiv;
+  return applyDifficultyCostMultiplier(afterPace, ownerId, difficulty);
+}
+function unitMoneyCost(baseCost, civBonusy, pace, ownerId = 0, difficulty = "normal") {
+  let koszt = baseCost;
+  const recDisc = civRecruitmentDiscount(civBonusy);
+  if (recDisc > 0) {
+    koszt = Math.max(1, Math.floor(koszt * (1 - recDisc)));
+  }
+  const afterPace = pace ? applyUnitCostPace(koszt, pace) : koszt;
+  return applyDifficultyCostMultiplier(afterPace, ownerId, difficulty);
+}
 function civRecruitmentDiscount(bonusy) {
   if (!bonusy?.length) return 0;
   for (const b of bonusy) {
@@ -680,6 +729,8 @@ function availableProduction(city, data, unlockedTechs, ctx = {}) {
   const queue = ctx.productionQueue ?? [];
   const techs = new Set(unlockedTechs);
   const specTokens = civSpecialUnitNameTokens(ctx.civBonusy);
+  const ownerId = ctx.ownerId ?? 0;
+  const difficulty = ctx.difficulty ?? "normal";
   const items = [];
   for (const b of data.buildings) {
     if (b.epokaWejscia > epoch) continue;
@@ -694,16 +745,19 @@ function availableProduction(city, data, unlockedTechs, ctx = {}) {
     }
     const tech = (b.techUnlock ?? "").trim();
     if (tech.length > 0 && !techs.has(tech)) continue;
-    if (b.id === PIEC_HUTNICZY_BUILDING_ID && !empireHasPopalniaBrazu(ctx.placedImprovements)) {
+    if (b.id === PIEC_HUTNICZY_BUILDING_ID && !empireHasKopalniaMiedzi(ctx.placedImprovements)) {
       continue;
     }
     items.push({
       kind: "budynek",
       id: b.id,
       nazwa: upgradeProductionDisplayName(b, data.buildings),
-      koszt: buildingCostAfterCivDiscount(
+      koszt: buildingWorkCost(
         itemCost("budynek", b.id, data, level),
-        ctx.civBonusy
+        ctx.civBonusy,
+        ctx.buildingCostPace,
+        ownerId,
+        difficulty
       )
     });
   }
@@ -731,11 +785,13 @@ function availableProduction(city, data, unlockedTechs, ctx = {}) {
     if (surowiec === "braz" && !hasBrazAccess(ctx.placedImprovements, builtList)) {
       continue;
     }
-    let koszt = itemCost("jednostka", u.Jednostka, data, 1);
-    const recDisc = civRecruitmentDiscount(ctx.civBonusy);
-    if (recDisc > 0) {
-      koszt = Math.max(1, Math.floor(koszt * (1 - recDisc)));
-    }
+    const koszt = unitMoneyCost(
+      itemCost("jednostka", u.Jednostka, data, 1),
+      ctx.civBonusy,
+      ctx.kosztJednostekPace,
+      ownerId,
+      difficulty
+    );
     items.push({
       kind: "jednostka",
       id: u.Jednostka,
@@ -762,6 +818,5 @@ var DEFAULT_OUTPUT_SHARES = Object.freeze({
   PIEC_HUTNICZY_BUILDING_ID,
   availableProduction,
   cityHasPiecHutniczy,
-  empireHasPopalniaBrazu,
   hasBrazAccess
 });

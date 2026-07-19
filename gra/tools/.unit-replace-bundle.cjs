@@ -573,6 +573,15 @@ function hasBrazAccess(placedImprovements, builtIds) {
   return empireHasKopalniaMiedzi(placedImprovements) && cityHasPiecHutniczy(builtIds);
 }
 
+// src/game/zelazo-access.ts
+var ODLEWNIA_ZELAZA_BUILDING_ID = "odlewnia_zelaza";
+function cityHasOdlewniaZelaza(builtIds) {
+  return builtIds.includes(ODLEWNIA_ZELAZA_BUILDING_ID);
+}
+function hasZelazoAccess(hasKopalniaNaZlozuZelaza, builtIds) {
+  return !!hasKopalniaNaZlozuZelaza && cityHasOdlewniaZelaza(builtIds);
+}
+
 // src/game/building-upgrades.ts
 var SUPPRESSED_FROM_PRODUCTION = /* @__PURE__ */ new Set(["teatr"]);
 function isBuildingSuppressedFromProduction(building) {
@@ -787,6 +796,9 @@ function availableProduction(city, data, unlockedTechs, ctx = {}) {
     if (surowiec === "braz" && !hasBrazAccess(ctx.placedImprovements, builtList)) {
       continue;
     }
+    if (surowiec === "zelazo" && !hasZelazoAccess(ctx.hasKopalniaNaZlozuZelaza, builtList)) {
+      continue;
+    }
     const koszt = unitMoneyCost(
       itemCost("jednostka", u.Jednostka, data, 1),
       ctx.civBonusy,
@@ -828,6 +840,7 @@ function availableReplacementsFor(currentUnitName, data, unlockedTechs, ctx = {}
     if (epochNumber(u.Epoka) === 2 && !built.has("koszary")) return false;
     const surowiec = (u.Surowiec ?? "").toString().trim().toLowerCase();
     if (surowiec === "braz" && !hasBrazAccess(ctx.placedImprovements, builtList)) return false;
+    if (surowiec === "zelazo" && !hasZelazoAccess(ctx.hasKopalniaNaZlozuZelaza, builtList)) return false;
     return true;
   }
   function costOf(u) {

@@ -1,0 +1,146 @@
+<svg viewBox="0 0 1170 662" xmlns="http://www.w3.org/2000/svg" role="img" font-family="ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,sans-serif">
+<title>Drzewko technologii — układ 3-tier na każdą epokę</title>
+<desc>Trzy epoki (Kamień, Brąz, Żelazo), każda podzielona na 3 tiery. Bursztynowe kapstone na T3 otwierają następną epokę; badania oznaczone D# zmieniają wymagania względem obecnej wersji.</desc>
+<text x="15" y="26" font-size="18" font-weight="700" fill="var(--text-primary)">Drzewko technologii — 3 tiery na każdą epokę</text>
+<text x="15" y="44" font-size="12" fill="var(--text-secondary)">Bursztyn = zmiana względem dziś (D#) · kapstone (T3) = badanie awansu epoki · ⚑ Astronomia = bramka poziomu Biblioteki</text>
+<rect x="15" y="54" width="370" height="34" rx="7" fill="var(--surface-tertiary)" stroke="var(--border)"/>
+<rect x="15" y="54" width="6" height="34" rx="3" fill="#8a8a7a"/>
+<text x="33" y="76" font-size="15" font-weight="700" fill="var(--text-primary)">KAMIEŃ</text>
+<text x="23" y="112" font-size="11" font-weight="600" fill="var(--text-secondary)" letter-spacing=".3">T1 · KORZENIE (BEZ WYMAGAŃ)</text>
+<line x1="23" y1="118" x2="377" y2="118" stroke="var(--border)" stroke-width="1"/>
+<rect x="23" y="124" width="354" height="24" rx="6" fill="var(--surface-primary)" stroke="var(--border-strong)"/>
+<text x="37" y="140" font-size="12" font-weight="500" fill="var(--text-primary)">Obróbka drewna</text>
+<text x="365" y="140" font-size="11" text-anchor="end" fill="var(--text-muted)">12</text>
+<rect x="23" y="153" width="354" height="24" rx="6" fill="var(--surface-primary)" stroke="var(--border-strong)"/>
+<text x="37" y="169" font-size="12" font-weight="500" fill="var(--text-primary)">Garncarstwo</text>
+<text x="365" y="169" font-size="11" text-anchor="end" fill="var(--text-muted)">10</text>
+<rect x="23" y="182" width="354" height="24" rx="6" fill="var(--surface-primary)" stroke="var(--border-strong)"/>
+<text x="37" y="198" font-size="12" font-weight="500" fill="var(--text-primary)">Murarstwo</text>
+<text x="365" y="198" font-size="11" text-anchor="end" fill="var(--text-muted)">14</text>
+<rect x="23" y="211" width="354" height="24" rx="6" fill="var(--surface-primary)" stroke="var(--border-strong)"/>
+<text x="37" y="227" font-size="12" font-weight="500" fill="var(--text-primary)">Rolnictwo</text>
+<text x="365" y="227" font-size="11" text-anchor="end" fill="var(--text-muted)">8</text>
+<rect x="23" y="240" width="354" height="24" rx="6" fill="var(--surface-primary)" stroke="var(--border-strong)"/>
+<text x="37" y="256" font-size="12" font-weight="500" fill="var(--text-primary)">Łowiectwo</text>
+<text x="365" y="256" font-size="11" text-anchor="end" fill="var(--text-muted)">10</text>
+<rect x="23" y="269" width="354" height="24" rx="6" fill="var(--surface-primary)" stroke="var(--border-strong)"/>
+<text x="37" y="285" font-size="12" font-weight="500" fill="var(--text-primary)">Oswojenie zwierząt</text>
+<text x="365" y="285" font-size="11" text-anchor="end" fill="var(--text-muted)">12</text>
+<rect x="23" y="298" width="354" height="24" rx="6" fill="var(--surface-primary)" stroke="var(--border-strong)"/>
+<text x="37" y="314" font-size="12" font-weight="500" fill="var(--text-primary)">Mistycyzm</text>
+<text x="365" y="314" font-size="11" text-anchor="end" fill="var(--text-muted)">10</text>
+<text x="23" y="345" font-size="11" font-weight="600" fill="var(--text-secondary)" letter-spacing=".3">T2</text>
+<line x1="23" y1="351" x2="377" y2="351" stroke="var(--border)" stroke-width="1"/>
+<rect x="23" y="357" width="354" height="24" rx="6" fill="var(--surface-primary)" stroke="var(--border-strong)"/>
+<rect x="23" y="357" width="5" height="24" rx="2.5" fill="#d98a3d"/>
+<text x="37" y="373" font-size="12" font-weight="500" fill="var(--text-primary)">Łucznictwo</text>
+<text x="365" y="373" font-size="11" text-anchor="end" fill="var(--text-muted)">14</text>
+<text x="337" y="373" font-size="9" font-weight="700" text-anchor="end" fill="#a8641f">D1</text>
+<rect x="23" y="386" width="354" height="24" rx="6" fill="var(--surface-primary)" stroke="var(--border-strong)"/>
+<rect x="23" y="386" width="5" height="24" rx="2.5" fill="#d98a3d"/>
+<text x="37" y="402" font-size="12" font-weight="500" fill="var(--text-primary)">Wymiana</text>
+<text x="365" y="402" font-size="11" text-anchor="end" fill="var(--text-muted)">16</text>
+<text x="337" y="402" font-size="9" font-weight="700" text-anchor="end" fill="#a8641f">D2</text>
+<rect x="23" y="415" width="354" height="24" rx="6" fill="var(--surface-primary)" stroke="var(--border-strong)"/>
+<text x="37" y="431" font-size="12" font-weight="500" fill="var(--text-primary)">Gospodarka wodna</text>
+<text x="365" y="431" font-size="11" text-anchor="end" fill="var(--text-muted)">18</text>
+<rect x="23" y="444" width="354" height="24" rx="6" fill="var(--surface-primary)" stroke="var(--border-strong)"/>
+<text x="37" y="460" font-size="12" font-weight="500" fill="var(--text-primary)">Koło</text>
+<text x="365" y="460" font-size="11" text-anchor="end" fill="var(--text-muted)">22</text>
+<text x="23" y="491" font-size="11" font-weight="600" fill="var(--text-secondary)" letter-spacing=".3">T3 · KAPSTONE</text>
+<line x1="23" y1="497" x2="377" y2="497" stroke="var(--border)" stroke-width="1"/>
+<rect x="23" y="503" width="354" height="24" rx="6" fill="#d98a3d" stroke="#a8641f"/>
+<text x="37" y="519" font-size="12" font-weight="500" fill="#2a1b0a">Brązownictwo</text>
+<text x="365" y="519" font-size="11" font-weight="700" text-anchor="end" fill="#2a1b0a">▶ BRĄZ · 45</text>
+<rect x="400" y="54" width="370" height="34" rx="7" fill="var(--surface-tertiary)" stroke="var(--border)"/>
+<rect x="400" y="54" width="6" height="34" rx="3" fill="#b8863b"/>
+<text x="418" y="76" font-size="15" font-weight="700" fill="var(--text-primary)">BRĄZ</text>
+<text x="408" y="112" font-size="11" font-weight="600" fill="var(--text-secondary)" letter-spacing=".3">T1 · WEJŚCIE</text>
+<line x1="408" y1="118" x2="762" y2="118" stroke="var(--border)" stroke-width="1"/>
+<rect x="408" y="124" width="354" height="24" rx="6" fill="var(--surface-primary)" stroke="var(--border-strong)"/>
+<text x="422" y="140" font-size="12" font-weight="500" fill="var(--text-primary)">Żegluga</text>
+<text x="750" y="140" font-size="11" text-anchor="end" fill="var(--text-muted)">40</text>
+<rect x="408" y="153" width="354" height="24" rx="6" fill="var(--surface-primary)" stroke="var(--border-strong)"/>
+<text x="422" y="169" font-size="12" font-weight="500" fill="var(--text-primary)">Pismo</text>
+<text x="750" y="169" font-size="11" text-anchor="end" fill="var(--text-muted)">45</text>
+<rect x="408" y="182" width="354" height="24" rx="6" fill="var(--surface-primary)" stroke="var(--border-strong)"/>
+<rect x="408" y="182" width="5" height="24" rx="2.5" fill="#d98a3d"/>
+<text x="422" y="198" font-size="12" font-weight="500" fill="var(--text-primary)">Religia</text>
+<text x="750" y="198" font-size="11" text-anchor="end" fill="var(--text-muted)">48</text>
+<text x="722" y="198" font-size="9" font-weight="700" text-anchor="end" fill="#a8641f">D4</text>
+<rect x="408" y="211" width="354" height="24" rx="6" fill="var(--surface-primary)" stroke="var(--border-strong)"/>
+<text x="422" y="227" font-size="12" font-weight="500" fill="var(--text-primary)">Jeździectwo</text>
+<text x="750" y="227" font-size="11" text-anchor="end" fill="var(--text-muted)">56</text>
+<rect x="408" y="240" width="354" height="24" rx="6" fill="var(--surface-primary)" stroke="var(--border-strong)"/>
+<text x="422" y="256" font-size="12" font-weight="500" fill="var(--text-primary)">Wojskowość</text>
+<text x="750" y="256" font-size="11" text-anchor="end" fill="var(--text-muted)">52</text>
+<text x="408" y="287" font-size="11" font-weight="600" fill="var(--text-secondary)" letter-spacing=".3">T2</text>
+<line x1="408" y1="293" x2="762" y2="293" stroke="var(--border)" stroke-width="1"/>
+<rect x="408" y="299" width="354" height="24" rx="6" fill="var(--surface-primary)" stroke="var(--border-strong)"/>
+<text x="422" y="315" font-size="12" font-weight="500" fill="var(--text-primary)">Matematyka</text>
+<text x="750" y="315" font-size="11" text-anchor="end" fill="var(--text-muted)">68</text>
+<rect x="408" y="328" width="354" height="24" rx="6" fill="var(--surface-primary)" stroke="var(--border-strong)"/>
+<rect x="408" y="328" width="5" height="24" rx="2.5" fill="#d98a3d"/>
+<text x="422" y="344" font-size="12" font-weight="500" fill="var(--text-primary)">Handel</text>
+<text x="750" y="344" font-size="11" text-anchor="end" fill="var(--text-muted)">74</text>
+<text x="722" y="344" font-size="9" font-weight="700" text-anchor="end" fill="#a8641f">D5</text>
+<rect x="408" y="357" width="354" height="24" rx="6" fill="var(--surface-primary)" stroke="var(--border-strong)"/>
+<rect x="408" y="357" width="5" height="24" rx="2.5" fill="#d98a3d"/>
+<text x="422" y="373" font-size="12" font-weight="500" fill="var(--text-primary)">Prawo (Kodeks)</text>
+<text x="750" y="373" font-size="11" text-anchor="end" fill="var(--text-muted)">62</text>
+<text x="722" y="373" font-size="9" font-weight="700" text-anchor="end" fill="#a8641f">D6</text>
+<text x="408" y="404" font-size="11" font-weight="600" fill="var(--text-secondary)" letter-spacing=".3">T3 · KAPSTONE</text>
+<line x1="408" y1="410" x2="762" y2="410" stroke="var(--border)" stroke-width="1"/>
+<rect x="408" y="416" width="354" height="24" rx="6" fill="var(--surface-primary)" stroke="var(--border-strong)"/>
+<text x="422" y="432" font-size="12" font-weight="500" fill="var(--text-primary)">Budownictwo</text>
+<text x="750" y="432" font-size="11" text-anchor="end" fill="var(--text-muted)">85</text>
+<rect x="408" y="445" width="354" height="24" rx="6" fill="var(--surface-primary)" stroke="var(--border-strong)"/>
+<text x="422" y="461" font-size="12" font-weight="500" fill="var(--text-primary)">Waluta</text>
+<text x="750" y="461" font-size="11" text-anchor="end" fill="var(--text-muted)">100</text>
+<rect x="408" y="474" width="354" height="24" rx="6" fill="var(--surface-primary)" stroke="var(--border-strong)"/>
+<text x="422" y="490" font-size="12" font-weight="500" fill="var(--text-primary)">Astronomia ⚑</text>
+<text x="750" y="490" font-size="11" text-anchor="end" fill="var(--text-muted)">110</text>
+<rect x="408" y="503" width="354" height="24" rx="6" fill="#d98a3d" stroke="#a8641f"/>
+<text x="422" y="519" font-size="12" font-weight="500" fill="#2a1b0a">Obróbka żelaza</text>
+<text x="750" y="519" font-size="11" font-weight="700" text-anchor="end" fill="#2a1b0a">▶ ŻELAZO · 120</text>
+<rect x="785" y="54" width="370" height="34" rx="7" fill="var(--surface-tertiary)" stroke="var(--border)"/>
+<rect x="785" y="54" width="6" height="34" rx="3" fill="#6b7d8f"/>
+<text x="803" y="76" font-size="15" font-weight="700" fill="var(--text-primary)">ŻELAZO</text>
+<text x="793" y="112" font-size="11" font-weight="600" fill="var(--text-secondary)" letter-spacing=".3">T1 · WEJŚCIE</text>
+<line x1="793" y1="118" x2="1147" y2="118" stroke="var(--border)" stroke-width="1"/>
+<rect x="793" y="124" width="354" height="24" rx="6" fill="var(--surface-primary)" stroke="var(--border-strong)"/>
+<text x="807" y="140" font-size="12" font-weight="500" fill="var(--text-primary)">Inżynieria</text>
+<text x="1135" y="140" font-size="11" text-anchor="end" fill="var(--text-muted)">130</text>
+<rect x="793" y="153" width="354" height="24" rx="6" fill="var(--surface-primary)" stroke="var(--border-strong)"/>
+<text x="807" y="169" font-size="12" font-weight="500" fill="var(--text-primary)">Oblężnictwo</text>
+<text x="1135" y="169" font-size="11" text-anchor="end" fill="var(--text-muted)">140</text>
+<rect x="793" y="182" width="354" height="24" rx="6" fill="var(--surface-primary)" stroke="var(--border-strong)"/>
+<text x="807" y="198" font-size="12" font-weight="500" fill="var(--text-primary)">Filozofia</text>
+<text x="1135" y="198" font-size="11" text-anchor="end" fill="var(--text-muted)">150</text>
+<text x="793" y="229" font-size="11" font-weight="600" fill="var(--text-secondary)" letter-spacing=".3">T2</text>
+<line x1="793" y1="235" x2="1147" y2="235" stroke="var(--border)" stroke-width="1"/>
+<rect x="793" y="241" width="354" height="24" rx="6" fill="var(--surface-primary)" stroke="var(--border-strong)"/>
+<text x="807" y="257" font-size="12" font-weight="500" fill="var(--text-primary)">Drogi brukowane</text>
+<text x="1135" y="257" font-size="11" text-anchor="end" fill="var(--text-muted)">170</text>
+<rect x="793" y="270" width="354" height="24" rx="6" fill="var(--surface-primary)" stroke="var(--border-strong)"/>
+<text x="807" y="286" font-size="12" font-weight="500" fill="var(--text-primary)">Medycyna</text>
+<text x="1135" y="286" font-size="11" text-anchor="end" fill="var(--text-muted)">162</text>
+<rect x="793" y="299" width="354" height="24" rx="6" fill="var(--surface-primary)" stroke="var(--border-strong)"/>
+<rect x="793" y="299" width="5" height="24" rx="2.5" fill="#d98a3d"/>
+<text x="807" y="315" font-size="12" font-weight="500" fill="var(--text-primary)">Kodeks prawa</text>
+<text x="1135" y="315" font-size="11" text-anchor="end" fill="var(--text-muted)">155</text>
+<text x="1107" y="315" font-size="9" font-weight="700" text-anchor="end" fill="#a8641f">D7</text>
+<text x="793" y="346" font-size="11" font-weight="600" fill="var(--text-secondary)" letter-spacing=".3">T3 · KAPSTONE (CAP V0.1)</text>
+<line x1="793" y1="352" x2="1147" y2="352" stroke="var(--border)" stroke-width="1"/>
+<rect x="793" y="358" width="354" height="24" rx="6" fill="var(--surface-primary)" stroke="var(--border-strong)"/>
+<rect x="793" y="358" width="5" height="24" rx="2.5" fill="#d98a3d"/>
+<text x="807" y="374" font-size="12" font-weight="500" fill="var(--text-primary)">Hutnictwo żelaza</text>
+<text x="1135" y="374" font-size="11" text-anchor="end" fill="var(--text-muted)">185</text>
+<text x="1107" y="374" font-size="9" font-weight="700" text-anchor="end" fill="#a8641f">D8</text>
+<rect x="793" y="387" width="354" height="24" rx="6" fill="var(--surface-primary)" stroke="var(--border-strong)"/>
+<text x="807" y="403" font-size="12" font-weight="500" fill="var(--text-primary)">Sztuka wojenna</text>
+<text x="1135" y="403" font-size="11" text-anchor="end" fill="var(--text-muted)">200</text>
+<rect x="15" y="590" width="1140" height="58" rx="8" fill="var(--surface-tertiary)" stroke="var(--border)"/>
+<text x="30" y="612" font-size="12" font-weight="700" fill="var(--text-primary)">Zasady progresji:</text>
+<text x="30" y="630" font-size="11.5" fill="var(--text-secondary)">① Twarda bramka epoki — musisz odkryć WSZYSTKIE badania epoki, zanim ruszysz jakiekolwiek badanie następnej.  ② Tech-awans zawsze na T3 (Brązownictwo→Brąz, Obróbka żelaza→Żelazo).</text>
+</svg>

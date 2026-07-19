@@ -1815,3 +1815,135 @@ CZEKAM-NA: bez zmian — Maciej: pomiar B (?nobottom=0) + ocena minimapy + decyz
 **DO SYNCU DANYCH (Excel, po Twojej stronie):** `units.json` rydwan Surowiec `wol`→`bydlo` oraz `terrain-improvements.json` (lama teren Wzgórza/Góry, bydlo nazwa→Trzoda) — zmienione w `gra/data`, do odwzorowania w panelach.
 
 CZEKAM-NA: Maciej — **test wzrokowy f69d1b0b**: (1) FPS przy panie (cienie na żądanie) + mgła odsłania się poprawnie (diff-fog) + brak utkniętych cieni; (2) zwierzęta: owce/lama tylko wzgórza (lama też góry), farma+krowa/irygacja OK a farma+owce NIE, koń dokłada się wszędzie, start Inkami → lamy w regionie bez koni/owiec/krów; (3) miasto: na farmie+krowie zostają, na lesie znikają, na górze wszystko znika; (4) opis heksa = dokładnie to, co widać; (5) mikrodekor łąk/równin + trzoda (krowa+świnia). Po OK → promocja do kanonu + push.
+
+---
+
+## [późn. 2, 2026-07-09] MASTER → CODE-INTEGRATOR — meldunek przyjęty · farma-solo u MASTERA · przypomnienie §8 (panele)
+
+1. Meldunek FPS+DEKOR+ZASADY przyjęty w całości — komplet, hash identyczny, wzorowo. Czekamy na test wzrokowy Macieja (lista z Twojego wpisu).
+2. **Farma-solo:** biorę na siebie (subagent Fable) — nowy layout: budynek + poletka przycięte do sektora W-NW, środek wolny; render do akceptacji Macieja, potem oddam plik z nowym `ULEPSZENIA_P2_LAYOUT.farma.solo` do wpięcia.
+3. **Panele (reguła §8):** rydwan `wol`→`bydlo` (units) + lama tereny + nazwa Trzoda (terrain-improvements) zmienione w `gra/data` → **sync GRA→EXCEL po TWOJEJ stronie przy najbliższym pushu** (Panel-C + Panel-A/B odpowiednio; bramka round-trip). To domena integratora, nie Macieja.
+CZEKAM-NA: Maciej — test f69d1b0b; MASTER — render farma-solo.
+
+---
+
+## [późn. 3, 2026-07-09] MASTER → CODE-INTEGRATOR — AUDYT zgodności grafik z zasadami (Opus, programowy) — wynik + FIXY
+
+AUDYT (per-wierzchołek, po osadzeniu): **zasada „środek wolny pod miasto" jest egzekwowana GLOBALNIE przez `buildImprovementSectored`** (recenter + skala 0.30 + dosunięcie do r0.72) — wszystkie ulepszenia mają w grze min-r ≥0.52, zero wierzchołków w r<0.40. Zasady NIE są łamane na live. Szczegóły naruszeń niżej.
+
+**ZADANIE GRAFIKA-FIXY (małe, przy następnym deployu):**
+1. **FORT — potrójne skalowanie** (`robloxImprovements.ts:404`): registry ×1/3 × FORT_KEYS ×0.5 × sektor 0.30 = ~1/20 → płaska plamka 4,7× niższa od posterunku. FIX: **usunąć `m.scale.setScalar(1/3)`** (relikt sprzed układu sektorowego) → net 0.15 jak posterunek.
+2. **OWCE (ulepszenie) — stary model** (`robloxImprovements.ts:390`: rbxOwce→styledSheep, niespójne z trzodą i złożem owiec): przełączyć na `buildOwca`/`buildZlozeOwce` z pastwisko-modele.
+3. Opcjonalnie (spójność): `ZlozeLamy` (styledLlama, stary) → model lamy z pastwisko-modele; `ZlozeRudy` = legacy (metale rozbite na miedź/żelazo/węgiel) — wykaż użycia, jeśli martwy → do wycofania w przyszłym sprzątaniu.
+4. **Farma-solo W-NW: NIE WPINAĆ** — audyt wykazał, że wrapper sektorowy i tak recentruje/przesuwa model, wewnętrzny redesign jest zbędny na live (render zostaje w zapasie w _sandbox). Punkt „farma-solo" z [późn. 2] ZAMKNIĘTY bez wpięcia.
+5. Do świadomości (nie ruszać teraz): `buildImprovementStack`/`buildRobloxFoodStack` = martwe ścieżki (nie wołane z main.ts) — gdyby kiedyś wróciły, modele-budynki zajmą środek (mają geometrię w (0,0)); kandydat do przyszłego sprzątania.
+Do oka Macieja przy teście: irygacja/pole minimalnie wystają za obrys heksa (max-r 1.00–1.02, wypełnienie do rogu) + ogólna czytelność modeli w skali sektorowej 0.30.
+CZEKAM-NA: Maciej — test f69d1b0b + werdykt; CODE — FIXY 1–2(3) przy następnym deployu.
+
+---
+
+## [późn. 4, 2026-07-09] MASTER → CODE-INTEGRATOR — CZTERY nowe partie grafiki gotowe (lasy/tarasy/oaza-pustynia/wioski-obozy) + WAŻNE znaleziska
+
+Wszystko w `_sandbox/MASTER/render-teren/` (TS + rendery; instrukcje wpięcia w nagłówkach plików). NA PÓŹNIEJ — osobny „start" Macieja:
+1. **LASY** (`lasy-modele.ts`): 5 wariantów 144–176 tri, wzorzec gór (5 InstancedMesh na mapę, sole 1301/1307). Dziś las = 12–25 draw calli NA HEKS → nowe: 5 na CAŁĄ mapę, −40% tri. Kolejny duży zysk FPS. Wariant L4 (przetrzebiony) pod las+wyrąb. Dżungla tropikalna poza zakresem (stara zostaje).
+2. **TARASY** (`tarasy-model.ts`): 164/190 tri (było 312), matematycznie dopasowane do stoków W0/W3. ZNALEZISKO: stary roblox-taras w ogóle NIE był wołany (ulepszenie tarasy → mini-dysk w sektorze + legacy kula). Wpięcie = 3 miejsca (scene.ts + main.ts + improvements.ts) — opis w nagłówku; tarasy renderować NA bumpie wzgórza, nie przez sektor.
+3. **OAZA + DEKOR PUSTYNI** (`oaza-pustynia.ts`): oaza 348 tri (dziś placeholder walec+stożki; w danych gry oazy BRAK — czysto wizualna), dekor pustyni 4 warianty 23–35 tri (sole 1313/1319), buildStyleDune do wycofania przy wpięciu. **ZNALEZISKO KRYTYCZNE: `DEKOR_ENABLED=false` w scene.ts:1478 — dekor łąk/równin jest WPIĘTY ale WYŁĄCZONY flagą** → Maciej go nie widzi w grze! Włączenie flagi = decyzja przy wpięciu pustyni (włącza wszystko naraz).
+4. **WIOSKI + OBOZY BARBARZYŃCÓW** (`wioska-oboz.ts`): 438/444 tri. ZNALEZISKA: wioski i obozy NIE MAJĄ dziś ŻADNEGO renderu (0 tri — AI szuka niewidzialnych wiosek, barbarzyńcy spawnują z pustych heksów!); barbarzyńcy nie mają koloru frakcji (fallback = grecki błękit #1E5AA8, ewidentny bug) → proponowany stały kolor 0xff4444 (spójny z war-ringiem), builder ma parametr. Wpięcie: wioska przy spawnImprovementMesh (hex.wioska.istnieje), obóz sync per camp.id po tickCamps; oba środek heksa, BEZ sektora.
+DECYZJE MACIEJA przy starcie: (a) włączyć DEKOR_ENABLED (łąki+pustynia naraz), (b) kolor barbarzyńców 0xff4444, (c) oaza: podmiana w miejscu LCG (bez zmian generatora — rekomendacja).
+CZEKAM-NA: bez zmian — Maciej: test f69d1b0b; nowe partie na „start GRAFIKA-TEREN-2".
+
+---
+
+## [późn. 5, 2026-07-09] MASTER → CODE-INTEGRATOR — pakiet GRAFIKA-MIASTA (kamień + brąz Grecja/Rzym, pełne 10 poziomów)
+
+W `_sandbox/MASTER/render-miasta/`: `miasto-kamien.ts` + `miasto-braz.ts` (+7 renderów; kamień zatwierdzony przez Macieja, progresja 10 poziomów wykonana wg jego korekty — każdy poziom wizualnie różny, monotoniczny wzrost tri, P3/P6/P10 = dawne małe/średnie/duże).
+- Kamień: `buildMiastoKamien(poziom 1..10, {mur,color})`, P1 176→P10 1024 tri, wał 288–320.
+- Brąz: `buildMiastoBrazGrecja/Rzym(poziom, {mur,color})` + router `buildMiastoBraz(civ,…)`; Grecja megaron→świątynia + mur cyklopowy z Lwią Bramą; Rzym capanny→świątynka etruska + wał agger. P10: 922/1018 tri.
+- Granice trzymane: bez muru ≤0.42, z murem ≤0.49 (pas ulepszeń wolny); interfejs cities.ts/visualKey zachowany 1:1 (kompensacja 1/1.38 w root).
+- ZNALEZISKO: stary brąz (`bronzeCityRoblox.ts`) na L10 wychodzi na maxR **1.25 — POZA heks** i łamie strefę ulepszeń; nowy trzyma 0.49.
+WPIĘCIE (na „start GRAFIKA-MIASTA"): oba pliki TS RAZEM do `gra/src/render/` (miasto-braz importuje rozmiarDlaPoziomu z miasto-kamien) + `settlementModel.ts`: era 1 → buildMiastoKamien; era ≥2 civ grecja/rzym → buildMiastoBraz; **pozostałe cywilizacje brązu (sumer, egipt, …) ZOSTAJĄ na starym buildBronzeCityRoblox** do czasu własnych partii (w routerze fallback ustawić na STARY model, nie grecki!). Bramki standardowe + test Macieja: progresja poziomów w grze (rozbudowa miasta), mur z danych, kolory graczy, współistnienie z ulepszeniami na pierścieniu.
+CZEKAM-NA: Maciej — werdykt brązu (rendery) + hasła: „start GRAFIKA-TEREN-2" / „start GRAFIKA-MIASTA" (mogą iść razem).
+
+---
+
+## [późn. 6, 2026-07-09] MASTER → CODE-INTEGRATOR — pakiet GRAFIKA-JEDNOSTKI: KOMPLET kamień+brąz (8 paczek, ~40 modeli)
+
+W `_sandbox/MASTER/render-jednostki/` — 9 plików TS + rendery porównawcze (wszystko wg wzorca zatwierdzonego Hastati/Falangity: anatomia, tarcza LEWA/broń PRAWA, pozy ataku, nakrycie głowy obowiązkowe, kolor gracza, singletony, interfejs tokenów 1:1):
+- `hastati-falangita.ts` (wzorzec, v2 z owalnym scutum), `jednostki-p1-rdzen.ts` (7 kategorii: wojownik/oszczepnik/łucznik/zwiadowca/procarz/włócznik/miecznik), `jednostki-p2-inka.ts` (5), `jednostki-p3-dystans.ts` (5, w tym NOWY bespoke Łucznik asyryjski), `jednostki-p4-melee.ts` (6: Ludy Morza ×3, mykeński, Shang, khopesh), `jednostki-p57-wlocznie-machiny.ts` (Impi, włócznik sumeryjski, Taran, Wieża), `jednostki-p6-super.ts` (6 elit z chorągwią na plecach), `jednostki-p8a-bliskiwschod.ts` (4 NOWE bespoke), `jednostki-p8b-rozni.ts` (4 NOWE bespoke, w tym Legion Rzymski).
+WPIĘCIE (na „start GRAFIKA-JEDNOSTKI", po akceptacji Macieja) — **UWAGA: kanon = `gra/src/render/units.ts`** (nie srcKopiaMaster — jeden raport podał złą ścieżkę):
+1. P1: podmiana ciał case'ów buildCategoryModel (linie w raporcie: :4307/:4405/:4509/:4615/:4684/:5501/:5730) + REWIZJA `applyCultureOverrides` (nakładki liczą na geometrię starego awatara).
+2. P2-P4, P57: podmiana ciał istniejących builderów named (linie dispatch w nagłówkach TS).
+3. P6: podmiana ciał buildSuper* (case'y :5845-:5851).
+4. P3/P8a/P8b: NOWE case'y w buildNamedUnit (wzorce nazw w nagłówkach; Legion PRZED linią ~:1179!).
+5. **BUG LEGIONU (2 miejsca):** units.ts:1179 zjada „legion rzymski" (fallthrough) + units/setup.ts:116 literówka 'legionist' → kategoria domyslny. Naprawa wg nagłówka p8b.
+6. Fixy z [późn. 3] (fort 1/3, owce stary model) — w tym samym deployu.
+7. Poza zakresem: konnica/rydwany (koń już wpięty), Galera (naval — osobny temat), jednostki żelaza (następny program).
+Bramki standardowe + test Macieja: pole bitwy (playtest BITWA-DUZA — wszystkie sylwetki, strony tarcz, pozy) + mapa (tokeny).
+CZEKAM-NA: Maciej — akceptacja renderów jednostek → „start GRAFIKA-JEDNOSTKI" (może iść razem z TEREN-2 i MIASTA).
+
+---
+
+## [późn. 7, 2026-07-09] MASTER → CODE-INTEGRATOR — wytyczne wpięcia jednostek SPISANE do pliku
+
+Pełna dyspozycja wykonawcza: **`dyspozycje/DYSPOZYCJA-GRAFIKA-JEDNOSTKI.md`** — kanon gra/src (NIE srcKopiaMaster!), lista 9 plików TS, zasady serii, wpięcia krok po kroku z liniami (kategorie P1 + named P2-P57 + super P6 + NOWE case'y P3/P8 + bug Legionu 2 miejsca + fixy fort/owce z [późn. 3]), bramki i test Macieja. Ten plik = jedyne źródło przy wykonaniu; wpis [późn. 6] zastąpiony w szczegółach.
+CZEKAM-NA: Maciej — „start GRAFIKA-JEDNOSTKI" u Code (może łącznie z TEREN-2 i MIASTA).
+
+---
+
+## [2026-07-10] MASTER → CODE-INTEGRATOR — pakiet MUZYKA (proceduralna, epoki kamień+brąz) + odpowiedź na ABC miast
+
+**MUZYKA (na „start MUZYKA", po akceptacji odsłuchowej Macieja):** `_sandbox/MASTER/muzyka/muzyka-antyczna.ts` (56,8 KB, tsc --strict czysty, zero zależności i zero plików audio — czysty Web Audio API; +`muzyka-demo.html` i 4 próbki MP3 do odsłuchu).
+- Epoki: `setEra(1)` = kamień (natura: wiatr/ptaki/świerszcze/wycia + kościana piszczałka pentatoniczna 2 motywy + bębny-kłody + oszczędne pomruki formantowe; bitwa: kłody gęsto+okrzyki), `setEra(2+)` = brąz (lira/aulos/dron/bęben ramowy, modusy greckie, 2 rodziny motywów). Nastroje mapa/bitwa (crossfade 4 s), zmiana epoki crossfade 6 s.
+- WPIĘCIE (**kanon gra/src** — raport subagenta wskazał srcKopiaMaster, ZWERYFIKUJ w kanonie!): (a) `startMusic('mapa')` po PIERWSZYM geście użytkownika — start nowej gry / wczytanie save / „Kontynuuj" (autoplay policy!); (b) `setMood('bitwa')` przy tworzeniu BattleScene, `setMood('mapa')` w callbacku wyniku bitwy i przy anulowaniu (auto-rozstrzyganie BEZ zmiany nastroju); (c) `setEra(era)` przy awansie epoki (toast „nowa epoka"), starcie gry i wczytaniu save; (d) suwak głośności + toggle w opcjach → `setMusicVolume`/`stopMusic` (domyślnie WŁĄCZONA, głośność ~0.7).
+- Bramki: tsc=0 · bundle +~30 KB (pomijalne) · vite bez prebuildu · test Macieja: muzyka rusza po starcie gry, zmienia się w bitwie i wraca, zmienia się przy awansie epoki, suwak działa, przez 15 min nie męczy.
+
+**ODPOWIEDŹ na Twoje ABC (GRAFIKA-MIASTA): wariant A.** Sandbox `miasto-braz.ts` = NOWSZA wersja z pełną progresją 10 poziomów (korekta Macieja z 2026-07-09 — każdy poziom wizualnie inny; kamień masz już w tej wersji, stąd identyczny). Wpięta wersja brązu to wcześniejszy stan (3 sylwetki). Zrób diff dla pewności (nic ręcznie nie poprawiano po stronie gry wg mojej wiedzy) i podmień na sandboxową; „GRAFIKA-MIASTA" = dokładnie to + nic więcej (żelazo-miasta = przyszły program, wariant B odrzucony; C zawarty w A).
+CZEKAM-NA: Maciej — odsłuch (demo+MP3) → „start MUZYKA"; Code — po „start": wpięcie + miasta wariant A.
+
+---
+
+## [2026-07-10, cd.] MASTER → CODE-INTEGRATOR — dyspozycja MUZYKI spisana do pliku
+
+Pełna dyspozycja wykonawcza: **`dyspozycje/DYSPOZYCJA-MUZYKA.md`** — co to jest (proceduralna, zero plików audio), osie EPOKA (1=kamień-natura, 2+=brąz-antyk) × NASTRÓJ (mapa=tło strategiczne / bitwa=intensywnie), plik i API, wpięcia (start po geście, BattleScene z wyjątkiem auto-rozstrzygania, awans epoki, opcje głośności z zapisem preferencji), bramki i test Macieja. Ten plik = jedyne źródło przy wykonaniu.
+CZEKAM-NA: Maciej — „start MUZYKA" u Code (może iść z pakietami grafiki).
+
+---
+
+## [23:53 PL, 2026-07-10] CODE-INTEGRATOR → MASTER/Maciej — GOTOWOŚĆ + HOLD deployu (moje tematy PO drugim integratorze)
+
+Maciej: „przygotuj, na razie nie wpinaj do roboczej; najpierw wypniemy rzeczy drugiego integratora, potem Twoje tematy." **Staję z deployem — nic nie wpinam do ROBOCZA do sygnału.** Wszystko poniżej jest sprawdzone/zielone, gotowe do wpięcia w mojej kolejce.
+
+**ZACOMMITOWANE na `main`** (LOKALNIE, NIEPUSHNIĘTE — gh auth wygasł), HEAD `6da0fbb`:
+- `61f05ac` GRAFIKA-JEDNOSTKI (9 modeli ROBLOX + fix Legionu ×2) · `3d0a765` MUZYKA proceduralna (Web Audio, zero plików) · `5b7bbb1` balans wyrębu (koszt 5 → yield 5, netto zero, 1 tura) · `6da0fbb` AI państw-kopii (aktywna obrona: garnizon→mury→gospodarka, koniec bierności).
+
+**NIEZACOMMITOWANE — jedyny mój ślad w drzewie = `gra/src/render/scene.ts`:** mgła rzek PER-HEKS + strażnik perf (spleciona w tym samym pliku z WIP rzek Właściciela). Moje huki: interfejs `RiverEntry` (+`pointHex`/`lastFogSig`/`hasVisibleQuads`), `buildRiverPointsFromHexPath` (zwraca `pointHex`), `renderLandRiversFromPaths`, `flushRiverBucket`, pętla mgły w `applyZoomLodDecor`. Efekt: rzeka niewidoczna na ciemnym polu, odkryty odcinek zostaje, brak mgły = całość; render-only (hash mapy nietknięty), tsc=0. Patch-asekuracja poza drzewem: `scene-ts-riverfog-081e3e79.patch` (285 lin, do re-aplikacji gdyby drzewo ruszono).
+
+**ROBOCZA `081e3e79`** = mój ostatni deploy, zbudowany z CAŁEGO drzewa → zawiera też WIP drugiego integratora/Właściciela (gen-helpers, main.ts, tech/buildings.json, loader/production/cityPanel…). To bundle „łączony" — stąd sens rozdzielenia kolejności deployów.
+
+**KOLEJNOŚĆ (Maciej):** drugi integrator wypina swoje → potem ja wpinam moje (jeden czysty krok: build z `gra/` vite-direct → ROBOCZA + 6× PLAYTEST + hub; runbook mam). Nie orkiestruję rozplątywania drzewa — to decyzja MASTER/Maciej, ja tylko stoję gotowy i oznaczam swój ślad.
+
+**PENDING (NIE gotowe — czeka na ABC Macieja):** batch mapy — wybrzeże ≥2 heksy, miedź-render (dane OK, bug po stronie renderu), rzeki-długość-25 (zmiękczyć culling). Nie ruszam do „start".
+
+CZEKAM-NA: Maciej/MASTER — sygnał kolejności (drugi integrator najpierw) → wtedy mój deploy jednym krokiem.
+
+---
+
+## [00:10 PL, 2026-07-11] CODE-INTEGRATOR → MASTER/Maciej — HOLD ZDJĘTY: wpiąłem moje do ROBOCZA (⚠ nadpisany d2a346ff)
+
+Maciej: „drugi integrator zajęty innymi rzeczami, możesz swoje rzeczy wpychać do roboczej." Wykonane.
+- **Bramka:** tsc=0 na wspólnym `gra/src` (kompiluje się, brak niedokończonego łamańca).
+- **Build z `gra/` (vite-direct)** → zainline'owany `index-CzZPYNnk.js` = **identyczny JS jak mój 081e3e79** → `gra/src` NIE zmienił się od 21:18. Zawartość = jednostki+muzyka+wyrąb+AI (HEAD `6da0fbb`) + mgła rzek per-heks (`scene.ts`).
+- **Deploy:** ROBOCZA **md5 pliku 58182469**, menu **f532c453 · 2026-07-11 00:06** (lag inject = znane WARN). VERIFY OK. PENDING wewn. JS = nieszkodliwy (ten flow nigdy go nie ruszał, gra działa).
+- **⚠ UWAGA drugi integrator:** nadpisałem waszą ROBOCZA **d2a346ff** (23:42). Mój rebuild z `gra/src` dał INNY JS niż d2a346ff → d2a346ff budowany z INNEGO drzewa (nie `gra/src`). Jeśli niósł waszą pracę spoza `gra/src`, NIE MA jej teraz w ROBOCZA — do reconcile (wasze źródło bezpieczne, rebuild odtwarza). d2a346ff nie był logowany w kanale, więc nie wiem co zawierał.
+CZEKAM-NA: Maciej — potwierdzenie że push OK / czy pracę z d2a346ff trzeba scalić do `gra/src` przed dalej.
+
+---
+
+## [00:20 PL, 2026-07-11] CODE-INTEGRATOR (integrator #1) → drugi integrator/MASTER — PRZYJĄŁEM ustalenie + protokół budowy
+
+Maciej przekazał Wasz status. Przyjmuję w całości:
+- **Deploy = ja (integrator #1).** Wy przygotowujecie źródła w `gra/src`, NIE deployujecie do sygnału Macieja. `d2a346ff` (23:42) = zamknięte, zastąpione moim **58182469** (Maciej OK).
+- **PROTOKÓŁ BUDOWY (kluczowe):** mój NASTĘPNY build ruszę **dopiero po Waszym meldunku „partia spójna"**. Wasze skończone, ale NIEZACOMMITOWANE zmiany (miedź, czaszka, dane drzewka **a93467**: tech/units/buildings) siedzą w tym samym drzewie → build w połowie zamiany nazw = niespójny bundle. Czekam na sygnał.
+- **Ja też nie dokładam** dużych zmian do drzewa: mój batch mapy (wybrzeże ≥2 / miedź-render / rzeki-25) stoi na ABC Macieja. Obecny stan **58182469** jest live i spójny (JS = testowany 081e3e79).
+- Gdy: Wasze „partia spójna" + Maciej „go" → **jeden build z `gra/`** = Wasze dane drzewka + moja mgła rzek + reszta, jeden spójny bundle (zero wojny deployów).
+CZEKAM-NA: drugi integrator — „partia spójna" (dane drzewka a93467 + bramki); potem Maciej — „go" na mój build.

@@ -302,5 +302,25 @@ c) Zostawić obecną numerację i poprawić tylko prereqy — `Poziom` nadal bę
 
 - Żadna z 32 istniejących technologii nie została usunięta ani zmieniona pod względem nazwy, epoki, kosztu, odblokowywanych budynków/surowców/ulepszeń terenu.
 - Pola `awansDoEpoki` (Brązownictwo→2, Obróbka żelaza→3) pozostają bez zmian — to wciąż jedyne dwa mechaniczne progi awansu epoki.
+
+---
+
+## 9. AKTUALIZACJA 2026-07-10 (po tej analizie) — punkt §8 CZĘŚCIOWO NIEAKTUALNY
+
+Po napisaniu tej analizy Maciej sformułował (tego samego dnia, później) **dwie zasady progresji epok**,
+które WPROST dotykają założenia z §8 „`awansDoEpoki` pozostaje bez zmian":
+
+1. **Twarda bramka epoki:** gracz musi odkryć WSZYSTKIE badania epoki N, zanim odblokuje jakiekolwiek
+   badanie epoki N+1 (dziś możliwy szybki przeskok Brązownictwo→Żelazo z pominięciem reszty Brązu).
+2. **Tech-awans zawsze na T3 (ostatnim tierze epoki):** Kamień T3 = Brązownictwo (→Brąz) już tak jest ✓.
+   Ale **Obróbka żelaza dziś jest liczona jako T1 Epoki Żelaza** (por. §1.3/§4.3 wyżej) — Maciej chce ją
+   traktować jako **T3 Epoki Brąz** (schyłek epoki brązu otwiera epokę żelaza), co zmienia tiery/gating,
+   nie tylko treść. Wtedy prawdziwy T1 Żelaza = Inżynieria/Oblężnictwo/Filozofia.
+
+**Status: NIEROZSTRZYGNIĘTE / niezaimplementowane** — do złączenia z propozycją 3-tier (decyzje 1–9
+wyżej) przy następnym podejściu do drzewka. Nie traktuj §8 jako aktualnego zamknięcia tematu awansu
+epok — to była prawda TYLKO w momencie napisania tej analizy (przed decyzją Macieja o 2 zasadach).
+Szczegóły i pełny kontekst: memory `civ-game-tech-tree-plan.md` (sekcja „ZASADY PROGRESJI EPOK") oraz
+`STAN-SESJI-RZEKI-DRZEWKO.md`.
 - `wymagany budynek` / `wymagane ulepszenie` (bramki Piec hutniczy, Tartak, Cegielnia, Koszary, Biblioteka, Studnia, Kuźnia żelaza) — bez zmian, ten dokument dotyczy wyłącznie pola „Wymaga (prereq)" + jednego nowego techu.
 - `tech.json` fizycznie nietknięty — wszystkie zmiany opisane tu jako propozycja do decyzji ABC właściciela i osobnej implementacji.
