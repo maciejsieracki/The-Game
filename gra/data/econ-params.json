@@ -415,11 +415,11 @@
       "opis": "Kurs bazowy: 1 Pieniądz = 1 Praca (używany do wykupu budynków za Pieniądz)."
     },
     "mennica_mnoznik_po_walucie": {
-      "easy": 1.88,
+      "easy": 2,
       "normal": 1.5,
-      "hard": 1.12,
+      "hard": 1,
       "jednostka": "×",
-      "opis": "Mnożnik Mennicy aktywny po odkryciu technologii Waluta. [PT — docelowo ×1,5–×2,0]"
+      "opis": "Mnożnik Mennicy (Handel→Pieniądz) aktywny TYLKO gdy Mennica zbudowana ORAZ technologia Waluta odkryta w mieście. Wartości właściciela (Q5=A, 2026-07-20): easy ×2 / normal ×1,5 / hard ×1 (hard = bez bonusu, ale nie zeruje dochodu). Wcześniej 1.88/1.5/1.12 mimo że mennicaMnoznik był zahardkodowany na 1 w turn-economy.ts (Mennica nic nie robiła) — naprawione E1 zadanie 1."
     },
     "luksus_przelicznik_zadowolenie": {
       "easy": 4,

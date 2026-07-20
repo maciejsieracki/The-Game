@@ -109,6 +109,10 @@ export function ensureCitySaveDefaults(city: City): void {
   if (!city.budowaTryb) city.budowaTryb = DEFAULT_BUDOWA_TRYB;
   const buf = readCityFoodBuffer(city.magazynZywnosci);
   if (city.magazynZywnosci !== buf) city.magazynZywnosci = buf;
+  // E1 Zadanie 2: magazyn surowcow logistycznych (drewno/kamien/glina/ruda) -- pole
+  // addytywne, opcjonalne; brak bumpu SAVE_VERSION. Stary zapis (bez pola) dostaje
+  // pusty magazyn.
+  if (!city.surowce) city.surowce = {};
 }
 
 export interface City {
@@ -119,6 +123,16 @@ export interface City {
   name: string;
   population: number;
   magazynZywnosci?: number;
+  /**
+   * E1 Zadanie 2: magazyn PER-MIASTO surowcow logistycznych zasilajacych converters
+   * (game/converters.ts): drewno/kamien (dzis zbierane), docelowo glina/ruda.
+   * Klucze ASCII zgodne z DEFAULT_CONVERTER_RECIPES (drewno/kamien/paliwo/glina/
+   * ruda/deski/cegla/braz/ceramika). Pole addytywne/opcjonalne -- brak w starym
+   * zapisie = {} (ensureCitySaveDefaults). NIE myl z civ-wide bramkami braz/zelazo/
+   * hodowla (zelazo-access.ts / braz-access.ts / livestock-unlock.ts) -- te zostaja
+   * bez zmian, to osobny mechanizm (boolean dostep, nie ilosc).
+   */
+  surowce?: Record<string, number>;
   /** Ustawiane po zbudowaniu budynku 'mury'; +200% obrony liczy UNITS/silnik. */
   maMur?: boolean;
   /**

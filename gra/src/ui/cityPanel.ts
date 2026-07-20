@@ -6598,6 +6598,11 @@ function buildHandelDetailCard(
   const maTargowisko = built.includes('targowisko');
   const maMennica = built.includes('mennica');
   const maBiblioteka = cityHasBibliotekaLine(built);
+  const techs = cfg.getUnlockedTechs?.(city.ownerId) ?? [];
+  const walutaOdkryta = techs.includes('Waluta') || techs.includes('waluta');
+  // Zadanie 1 (E1): Mennica dziala TYLKO gdy zbudowana ORAZ Waluta odkryta (turn-economy.ts).
+  const mennicaAktywna = maMennica && walutaOdkryta;
+  const mennicaMnoznikTxt = params ? `×${params.mennicaMnoznikPoWalucie}` : '×?';
   const est = estimateHandelChips(view, split);
 
   const card = el('div', 'detail-card');
@@ -6641,7 +6646,7 @@ function buildHandelDetailCard(
   appendDetailFormula(card, `strataKorupcji = handelBrutto × ${HANDEL_KORUPCJA_PCT_PLACEHOLDER}% (placeholder UI)`);
   appendDetailFormula(card, 'handelNetto = handelBrutto − strataKorupcji' + (params ? ' × mnożnik Waluty (jeśli zbadana)' : ''));
   appendDetailFormula(card, 'nauka = floor(handelNetto × %Nauka) + budynki');
-  appendDetailFormula(card, 'skarb_z_handlu = floor(handelNetto × %Skarb × mennica)');
+  appendDetailFormula(card, `skarb_z_handlu = floor(handelNetto × %Skarb${mennicaAktywna ? ` × mennica (${mennicaMnoznikTxt})` : ' × mennica (×1, brak Waluty lub Mennicy)'})`);
   appendDetailFormula(card, `${HANDEL_ZAMOZNOSC_LABEL} = floor(handelNetto × %${HANDEL_ZAMOZNOSC_LABEL}) → pula zamożności`);
 
   appendDetailAlgo(card, 'Algorytm podziału handlu (cityYieldPerTurn)', [
@@ -6650,7 +6655,11 @@ function buildHandelDetailCard(
     `Odejmij korupcję (placeholder ${HANDEL_KORUPCJA_PCT_PLACEHOLDER}% brutto; docelowo: dystans, miasta, cap) → handelNetto.`,
     'Technologia Waluta mnoży handelNetto (także Naukę i ' + HANDEL_ZAMOZNOSC_LABEL + ').',
     `Podziel handelNetto suwakami: Skarb / Nauka / ${HANDEL_ZAMOZNOSC_LABEL} (suma 100%).`,
-    maMennica ? 'Mennica mnoży tylko część Skarb z handlu.' : 'Bez Mennicy — Skarb z handlu bez mnożnika.',
+    mennicaAktywna
+      ? `Mennica mnoży część Skarb z handlu ${mennicaMnoznikTxt} (aktywna: zbudowana + Waluta odkryta).`
+      : maMennica
+        ? 'Mennica zbudowana, ale bez Waluty jeszcze nie mnoży Skarbu (bramka: budynek + technologia).'
+        : 'Bez Mennicy — Skarb z handlu bez mnożnika.',
     maBiblioteka ? 'Biblioteka dodaje % bonusu do Nauki (łącznie z Nauką z handlu).' : 'Nauka = wyłącznie udział z handlu + budynki.',
     `${HANDEL_ZAMOZNOSC_LABEL} nie trafia do skarbca — idzie do puli zamożności miasta.`,
     'Na końcu: mnożnik W mnoży cały pieniądz miasta (Skarb + budynki + Targowisko).',

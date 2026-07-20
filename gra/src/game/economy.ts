@@ -107,6 +107,12 @@ export interface EconParams {
   budynekTargowiskoBonusHandlu:     number;
   budynekBibliotekaBonusNauki:      number;  // Biblioteka -> +Nauka% (master par.2a)
   budynekMennicaMnoznik:            number;  // Mennica: Handel->Pieniadz x mnoznik (par.2.3)
+  /**
+   * E1 Zadanie 1: Mennica mnoznik Handel->Pieniadz AKTYWNY DOPIERO gdy Waluta odkryta
+   * (globalne.mennica_mnoznik_po_walucie). Wartosci wlasciciela: easy 2 / normal 1.5 / hard 1.
+   * Bramka (budynek + tech) liczona przez wolajacego (turn-economy.ts), nie tutaj.
+   */
+  mennicaMnoznikPoWalucie:          number;
   walutaMnoznik:                    number;  // Efekt 1: handelNetto x mnoznik gdy walutaOdkryta (domyslnie 2)
   targowiskoPracaMnoznik:           number;  // Efekt 2: doPuli x mnoznik -> Pieniadz gdy maTargowisko+waluta (domyslnie 2)
   suwaakHandelNaukaDefault:         number;
@@ -128,6 +134,7 @@ type RawEconParam = Record<string, number | string | undefined>;
 interface RawEconParamsJson {
   ekonomia_miasta?: Record<string, RawEconParam>;
   budynki?:         Record<string, RawEconParam>;
+  globalne?:        Record<string, RawEconParam>;
 }
 
 /** JSON key for the growth-threshold coefficient (diacritic: "próg"). */
@@ -149,6 +156,7 @@ export function loadEconParams(
 ): EconParams {
   const em = raw.ekonomia_miasta ?? {};
   const bu = raw.budynki ?? {};
+  const gl = raw.globalne ?? {};
   const d  = difficulty;
 
   const read = (
@@ -177,6 +185,7 @@ export function loadEconParams(
     budynekTargowiskoBonusHandlu:   read(bu, 'budynek_targowisko_bonus_handlu', 0.5),
     budynekBibliotekaBonusNauki:    read(bu, 'budynek_biblioteka_bonus_nauki', 0.5),
     budynekMennicaMnoznik:          read(bu, 'budynek_mennica_mnoznik', 1),
+    mennicaMnoznikPoWalucie:        read(gl, 'mennica_mnoznik_po_walucie', 1.5),
     walutaMnoznik:                  read(bu, 'waluta_mnoznik', 2),
     targowiskoPracaMnoznik:         read(bu, 'targowisko_praca_na_pieniadz_mnoznik', 2),
     suwaakHandelNaukaDefault:       read(em, 'suwak_handel_nauka_domyslnie', 60),
@@ -257,6 +266,13 @@ export interface CityYieldResult {
   pracaTerenu:    number;
   pracaBudynkow:  number;
   pieniadzZPracy: number;  // Efekt 2: doPuli * targowiskoPracaMnoznik (0 gdy brak Targowiska/Waluty)
+  /**
+   * E1 Zadanie 2: surowce logistyczne zebrane z pol tej tury (przed magazynem/converterami).
+   * Tylko drewno/kamien maja dzis numeryczny plon terenu/ulepszen (tileYield); glina/ruda
+   * sa dzis wylacznie boolean "dostep" (surowiecOdblokowany), bez ilosci -- patrz raport E1.
+   */
+  drewnoTerenu:   number;
+  kamienTerenu:   number;
 }
 
 export interface PopulationGrowthResult {
@@ -551,12 +567,16 @@ export function cityYieldPerTurn(
   let zywnoscTerenu = 0;
   let pracaTerenu   = 0;
   let handelTerenu  = 0;
+  let drewnoTerenu  = 0;
+  let kamienTerenu  = 0;
 
   for (const tile of workedTiles) {
     const y = tileYield(tile);
     zywnoscTerenu += y.zywnosc;
     pracaTerenu   += y.praca;
     handelTerenu  += y.handel;
+    drewnoTerenu  += y.drewno;
+    kamienTerenu  += y.kamien;
   }
 
   // --- Step 2: Mlyn multiplier on tile Praca (Spec ss.1.2) ---
@@ -679,6 +699,8 @@ export function cityYieldPerTurn(
     pracaTerenu:    Math.floor(pracaBruttoTerenu),
     pracaBudynkow:  Math.floor(pracaBudynkow),
     pieniadzZPracy,
+    drewnoTerenu:   Math.floor(drewnoTerenu),
+    kamienTerenu:   Math.floor(kamienTerenu),
   };
 }
 

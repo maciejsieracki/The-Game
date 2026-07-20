@@ -142,9 +142,11 @@ export function buildEconParams(data: GameData, difficulty: Difficulty = 'normal
   const raw = data.econParams as unknown as {
     ekonomia_miasta?: Record<string, Record<string, number>>;
     budynki?: Record<string, Record<string, number>>;
+    globalne?: Record<string, Record<string, number>>;
   };
   const em = raw.ekonomia_miasta ?? {};
   const bu = raw.budynki ?? {};
+  const gl = raw.globalne ?? {};
   const d = difficulty;
 
   const num = (group: Record<string, Record<string, number>>, key: string, fallback: number): number => {
@@ -169,6 +171,7 @@ export function buildEconParams(data: GameData, difficulty: Difficulty = 'normal
     budynekTargowiskoBonusHandlu:   num(bu, 'budynek_targowisko_bonus_handlu', 0.5),
     budynekBibliotekaBonusNauki:    num(bu, 'budynek_biblioteka_bonus_nauki', 0.5),
     budynekMennicaMnoznik:          num(bu, 'budynek_mennica_mnoznik', 1),
+    mennicaMnoznikPoWalucie:        num(gl, 'mennica_mnoznik_po_walucie', 1.5),
     walutaMnoznik:                  num(bu, 'waluta_mnoznik', 2),
     targowiskoPracaMnoznik:         num(bu, 'targowisko_praca_na_pieniadz_mnoznik', 2),
     suwaakHandelNaukaDefault:       num(em, 'suwak_handel_nauka_domyslnie', 60),
@@ -830,7 +833,11 @@ export function previewCityEconomy(
       maTargowisko: builtIds.includes('targowisko'),
       maBiblioteka: builtIds.includes('biblioteka'),
       maMennica: builtIds.includes('mennica'),
-      mennicaMnoznik: 1,
+      // Zadanie 1 (E1): Mennica dziala TYLKO gdy zbudowana ORAZ Waluta odkryta (spojne
+      // z tym, ze Mennica i tak wymaga techu Waluta do postawienia -- patrz buildings.json).
+      mennicaMnoznik: (builtIds.includes('mennica') && walutaOdkryta)
+        ? params.mennicaMnoznikPoWalucie
+        : 1,
       walutaOdkryta,
       walutaMnoznikOverride,
       civHandelMult,
@@ -1024,7 +1031,11 @@ export function advanceCityEconomy(
       maTargowisko:          builtIds.includes('targowisko'),
       maBiblioteka:          builtIds.includes('biblioteka'),
       maMennica:             builtIds.includes('mennica'),
-      mennicaMnoznik:        1,
+      // Zadanie 1 (E1): Mennica dziala TYLKO gdy zbudowana ORAZ Waluta odkryta (spojne
+      // z tym, ze Mennica i tak wymaga techu Waluta do postawienia -- patrz buildings.json).
+      mennicaMnoznik:        (builtIds.includes('mennica') && walutaOdkryta)
+        ? params.mennicaMnoznikPoWalucie
+        : 1,
       walutaOdkryta,         // P1b: mnoznik Handel->Pieniadz gdy Waluta zbadana
       walutaMnoznikOverride, // RDY-11: per-cyw 1.7-2.4 gdy ownerCivByOwnerId podane
       civHandelMult,         // RDY-01: bonus_zloto handel (Grecy +15%)
@@ -1177,20 +1188,35 @@ export function advanceCityEconomy(
     // Accumulate income for upkeep balance (uzyj pieniadz po Wealth).
     incomeByOwner.set(city.ownerId, (incomeByOwner.get(city.ownerId) ?? 0) + pieniadzPoWealth);
 
-    // --- Converters (s.1.5) -- run after terrain yield, per-city ---
-    // City.surowce is not yet a runtime field (resource collection not wired).
-    // This hook runs with empty stores (no-op) until resource stores are added.
-    const maMagazyn = false;
+    // --- Converters (s.1.5) -- run after terrain yield, per-city (Zadanie 2 E1) ---
+    // City.surowce jest teraz realnym polem runtime (game/cities.ts). Zbieramy TYLKO
+    // surowce logistyczne z liczbowym plonem terenu: drewno/kamien (yld.drewnoTerenu/
+    // kamienTerenu z tileYield -- economy.ts). Glina/ruda maja dzis wylacznie dostep
+    // boolean (surowiecOdblokowany w terrain-improvements.json), bez ilosci per-ture --
+    // zbieranie ich zostaje do domkniecia w kolejnym etapie (patrz raport E1, nie
+    // zgadujemy wartosci na sile).
+    const maMagazyn = builtIds.includes('magazyn');
     const resCap = resourceStorageCapacityPerType(maMagazyn, storageParams);
-    const citySurowce: Record<string, number> = (city as any).surowce ?? {};
-    if (Object.keys(citySurowce).length > 0) {
+    if (!city.surowce) city.surowce = {};
+    const citySurowce: Record<string, number> = city.surowce;
+    citySurowce.drewno = Math.min(resCap, (citySurowce.drewno ?? 0) + yld.drewnoTerenu);
+    citySurowce.kamien = Math.min(resCap, (citySurowce.kamien ?? 0) + yld.kamienTerenu);
+
+    // Uruchamiamy tylko konwertery, ktorych budynek jest FAKTYCZNIE wybudowany w tym
+    // miescie (inaczej drewno konwertowaloby sie samoistnie bez Mielerza/Cegielni/...).
+    // Uwaga: 'tartak' i 'huta' (id w DEFAULT_CONVERTER_RECIPES) nie maja dzis
+    // odpowiednika w buildings.json (Tartak istnieje tylko jako ulepszenie terenu;
+    // Huta w ogole nie istnieje -- zastapiona przez 'odlewnia_brazu') -- te dwie
+    // receptury pozostaja wiec nieaktywne, to pre-istniejacy stan danych, nie regresja.
+    const activeRecipes = DEFAULT_CONVERTER_RECIPES.filter(r => builtIds.includes(r.id));
+    if (activeRecipes.length > 0) {
       const convResult = runConverters(
-        DEFAULT_CONVERTER_RECIPES,
+        activeRecipes,
         citySurowce,
         converterThroughputs,
         () => resCap,
       );
-      (city as any).surowce = convResult.stores;
+      city.surowce = convResult.stores;
     }
 
     const tick: CityEconomyTick = {
