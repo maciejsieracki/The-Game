@@ -733,12 +733,6 @@ async function boot(): Promise<void> {
     }
 
     let camCtrl = new CameraController(camera, canvas, center, cameraControllerOpts());
-    // TYMCZASOWY hook diagnostyczny (render ujść rzek, sesja 2026-07-20) — usunąć przed commitem.
-    (window as unknown as { __riverDebug?: unknown }).__riverDebug = {
-      getMap: () => map,
-      getCam: () => camCtrl,
-      HEX_R,
-    };
 
     // -----------------------------------------------------------------------
     // Units

@@ -571,9 +571,16 @@ function buildCoastalRiverPointChain(
   const landY = riverHexSurfaceY(map, landHex.q, landHex.r, 'roblox', riverMouthY, COAST_OFFSET, R) ?? riverMouthY;
   pts.push(new THREE.Vector3(landCenter.x, landY, landCenter.z));
 
-  // Krawędź styku ląd → Wybrzeże (poziom tafli od tego miejsca — wodospad domknie Y poniżej).
+  // Krawędź styku ląd → Wybrzeże — TRZYMA WYSOKOŚĆ LĄDU (nie tafli!). BUG-RZEKI-RENDER-B1
+  // (2026-07-20): wcześniej ten punkt miał już Y=riverMouthY, przez co `applyCoastalWaterfall`
+  // (który szuka progu Y wzdłuż punktów WEJŚCIOWYCH) klasyfikował go jako „morski" i wstawiał
+  // pionowy próg TUŻ PRZY środku heksa lądu (nudge=R*0.06 z odcinka land→edge długości ~R*0.87,
+  // czyli <7% drogi) — długi płaski odcinek aż do krawędzi (>90% drogi) zostawał na poziomie
+  // tafli, czyli SCHOWANY POD bryłą lądu (niewidoczny). Plateau musi trzymać wysokość lądu AŻ DO
+  // krawędzi (zgodnie z komentarzem do applyCoastalWaterfall) — próg wodospadu wtedy wypada
+  // dokładnie na krawędzi styku ląd/Wybrzeże, nad taflą, widocznie.
   const edgeMid = sharedEdgeMidpoint(landHex.q, landHex.r, coastHex.q, coastHex.r, R);
-  if (edgeMid) pts.push(new THREE.Vector3(edgeMid.x, riverMouthY, edgeMid.z));
+  if (edgeMid) pts.push(new THREE.Vector3(edgeMid.x, landY, edgeMid.z));
 
   // Krótkie wejście w płytką wodę PIERWSZEGO heksa Wybrzeża — TU kończy się ujście.
   // NIE idziemy dalej w stronę środka/drugiego pierścienia wybrzeża ani do Morza.
@@ -717,11 +724,21 @@ function renderCoastalRiverExtension(
   const touchesDelta = [...hexKeys].some(k => deltaKeys.has(k));
   const segCount = pts.length - 1;
 
+  // BUG-RZEKI-RENDER-B1 (2026-07-20, Maciej: wstęga urywa się w połowie heksa lądu, luka do
+  // brzegu — potwierdzone zrzutem po poprzednim (niewystarczającym) fixie renderu ujścia).
+  // Przyczyna: `coastDeltaMat` ma KOLOR IDENTYCZNY z terenem Wybrzeża (styleTerrainColor(Wybrzeze))
+  // — to zamierzone dla PRAWDZIWEJ delty (blend z lejkiem/sandbarem, touchesDelta=true), ale dla
+  // ZWYKŁEGO ujścia (touchesDelta=false, czyli ~wszystkie rzeki) próg `t >= 0.45` przemalowywał
+  // DRUGĄ POŁOWĘ łańcucha ujścia (dokładnie tę część, która realnie wchodzi za krawędź brzegu w
+  // Wybrzeże) na kolor terenu — wstęga kamuflowała się na tle identycznie ubarwionego Wybrzeża i
+  // wizualnie „znikała" tuż za lądem, mimo że geometria (punkty łańcucha) była poprawna. Naprawa:
+  // kolor terenu (coastDeltaMat) TYLKO gdy realnie dotyka delty; w przeciwnym razie CAŁY łańcuch
+  // ujścia zostaje kolorem wody (riverWaterMat) aż do wejścia w Wybrzeże — widocznie ciągły.
   for (let i = 0; i < segCount; i++) {
     const t = segCount <= 1 ? 1 : i / (segCount - 1);
     const segPts = [pts[i]!, pts[i + 1]!];
     const widthMul = 1.08 + t * 2.65;
-    const useCoastMat = touchesDelta ? t >= 0.12 : t >= 0.45;
+    const useCoastMat = touchesDelta && t >= 0.12;
     // Z1: „deltowa” część wstęgi trafia do bucketa o renderOrder wstęgi (nad lejkiem), nie do lejka.
     const bucket = useCoastMat ? riverDeltaTopBucket : riverWaterBucket;
     const geo = buildRibbonGeometry(segPts, halfWidth * widthMul, 12, true);
