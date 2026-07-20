@@ -206,6 +206,8 @@ export interface TileYield {
   handel:  number;
   drewno:  number;
   kamien:  number;
+  /** GLINA-Q1=A (2026-07-20): stala ilosc z bonusu ulepszenia (glinianka); baza terenu zawsze 0. */
+  glina:   number;
 }
 
 /** A worked tile passed to cityYieldPerTurn. */
@@ -268,11 +270,13 @@ export interface CityYieldResult {
   pieniadzZPracy: number;  // Efekt 2: doPuli * targowiskoPracaMnoznik (0 gdy brak Targowiska/Waluty)
   /**
    * E1 Zadanie 2: surowce logistyczne zebrane z pol tej tury (przed magazynem/converterami).
-   * Tylko drewno/kamien maja dzis numeryczny plon terenu/ulepszen (tileYield); glina/ruda
-   * sa dzis wylacznie boolean "dostep" (surowiecOdblokowany), bez ilosci -- patrz raport E1.
+   * Drewno/kamien/glina maja numeryczny plon terenu/ulepszen (tileYield); glina dodana
+   * GLINA-Q1=A (2026-07-20, stala ilosc 2/ture z glinianki). Ruda pozostaje wylacznie
+   * boolean "dostep" (surowiecOdblokowany), bez ilosci -- GLINA-Q2=A: rudy NIE ruszamy.
    */
   drewnoTerenu:   number;
   kamienTerenu:   number;
+  glinaTerenu:    number;
 }
 
 export interface PopulationGrowthResult {
@@ -292,7 +296,7 @@ export interface ProductionProgressResult {
 // Terrain yield tables (from terrain-yields.json / Spec-ekonomia.md ss.1.1)
 // ---------------------------------------------------------------------------
 
-const ZERO_YIELD: TileYield = { zywnosc: 0, praca: 0, handel: 0, drewno: 0, kamien: 0 };
+const ZERO_YIELD: TileYield = { zywnosc: 0, praca: 0, handel: 0, drewno: 0, kamien: 0, glina: 0 };
 
 const TERRAIN_NAME_TO_ENUM: Record<string, TerenBazowy> = {
   'Łąka':     TerenBazowy.Laka,
@@ -311,6 +315,9 @@ function terrainRowToTileYield(row: TerrainTypeDef | TerrainModifierDef): TileYi
     handel:  Number(row['Handel'] ?? 0),
     drewno:  Number(row['Drewno'] ?? 0),
     kamien:  Number(row['Kamień'] ?? 0),
+    // Glina nie ma bazy terenu ani modyfikatora w terrain-yields.json -- wylacznie z bonusu
+    // ulepszenia (glinianka, GLINA-Q1=A), doklejane w tileYield() nizej.
+    glina:   0,
   };
 }
 
@@ -344,6 +351,7 @@ export function tileYield(tile: WorkedTile): TileYield {
   let handel  = base.handel;
   let drewno  = base.drewno;
   let kamien  = base.kamien;
+  let glina   = base.glina;
 
   if (tile.nakladka === Nakladka.Las) {
     zywnosc += FOREST_MODIFIER.zywnosc;
@@ -364,6 +372,7 @@ export function tileYield(tile: WorkedTile): TileYield {
     handel:  Math.max(0, handel),
     drewno:  Math.max(0, drewno),
     kamien:  Math.max(0, kamien),
+    glina:   Math.max(0, glina),
   };
 
   const impKeys = tile.ulepszeniaKeys?.length
@@ -376,6 +385,7 @@ export function tileYield(tile: WorkedTile): TileYield {
     out.handel  = Math.max(0, out.handel);
     out.drewno  = Math.max(0, out.drewno);
     out.kamien  = Math.max(0, out.kamien);
+    out.glina   = Math.max(0, out.glina);
   }
 
   return out;
@@ -569,6 +579,7 @@ export function cityYieldPerTurn(
   let handelTerenu  = 0;
   let drewnoTerenu  = 0;
   let kamienTerenu  = 0;
+  let glinaTerenu   = 0;
 
   for (const tile of workedTiles) {
     const y = tileYield(tile);
@@ -577,6 +588,7 @@ export function cityYieldPerTurn(
     handelTerenu  += y.handel;
     drewnoTerenu  += y.drewno;
     kamienTerenu  += y.kamien;
+    glinaTerenu   += y.glina;
   }
 
   // --- Step 2: Mlyn multiplier on tile Praca (Spec ss.1.2) ---
@@ -701,6 +713,7 @@ export function cityYieldPerTurn(
     pieniadzZPracy,
     drewnoTerenu:   Math.floor(drewnoTerenu),
     kamienTerenu:   Math.floor(kamienTerenu),
+    glinaTerenu:    Math.floor(glinaTerenu),
   };
 }
 

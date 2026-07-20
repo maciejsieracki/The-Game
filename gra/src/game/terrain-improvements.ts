@@ -8,7 +8,7 @@ import { Nakladka } from '../types/hex';
 import type { TileYield } from './economy';
 
 export type ImprovementBonusKey =
-  | 'zywnosc' | 'praca' | 'handel' | 'pieniadz' | 'drewno' | 'kamien';
+  | 'zywnosc' | 'praca' | 'handel' | 'pieniadz' | 'drewno' | 'kamien' | 'glina';
 
 export type ImprovementBonus = Partial<Record<ImprovementBonusKey, number>>;
 
@@ -52,6 +52,7 @@ export function applyImprovementBonus(yld: TileYield, improvementKey: string | u
   if (b.pieniadz) yld.handel += b.pieniadz;
   if (b.drewno)  yld.drewno  += b.drewno;
   if (b.kamien)  yld.kamien  += b.kamien;
+  if (b.glina)   yld.glina   += b.glina;
 }
 
 /** Suma bonusów wielu warstw ulepszeń na jednym heksie (kanon §3). */

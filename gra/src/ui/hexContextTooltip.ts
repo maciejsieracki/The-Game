@@ -62,8 +62,8 @@ const YIELD_ROWS: ReadonlyArray<{ key: YieldKey; label: string }> = [
   { key: 'kamien', label: 'Kamień' },
 ];
 
-const RIVER_BONUS: TileYield = { zywnosc: 3, praca: 2, handel: 2, drewno: 0, kamien: 0 };
-const FOREST_BONUS: TileYield = { zywnosc: -1, praca: 3, handel: -1, drewno: 3, kamien: 0 };
+const RIVER_BONUS: TileYield = { zywnosc: 3, praca: 2, handel: 2, drewno: 0, kamien: 0, glina: 0 };
+const FOREST_BONUS: TileYield = { zywnosc: -1, praca: 3, handel: -1, drewno: 3, kamien: 0, glina: 0 };
 
 function formatYieldLine(y: TileYield, empty = '—'): string {
   const parts: string[] = [];
@@ -82,6 +82,7 @@ function bonusToTileYield(b: ImprovementBonus): TileYield {
     handel: (b.handel ?? 0) + (b.pieniadz ?? 0),
     drewno: b.drewno ?? 0,
     kamien: b.kamien ?? 0,
+    glina: b.glina ?? 0,
   };
 }
 

@@ -5122,10 +5122,11 @@ var terrain_improvements_default = {
     nazwa: "Glinianka",
     epoka: 2,
     bonus: {
-      praca: 1
+      praca: 1,
+      glina: 2
     },
     surowiecOdblokowany: "glina",
-    surowiecOdblokowany_uwaga: "klucz 'glina' wg Surowiec='Glina' w resources.json; brak pola id \u2014 propozycja EKONOMIA",
+    surowiecOdblokowany_uwaga: "GLINA-Q1=A (Maciej 2026-07-20): stala ilosc 2 glina/ture z ulepszenia (bonus.glina), analogicznie do drewna/kamienia. Klucz 'glina' wg Surowiec='Glina' w resources.json.",
     teren: "z\u0142o\u017Ce Gliny",
     warunek: "glina \u2192 ceg\u0142a (wa\u017Cne w br\u0105zie)",
     koszt_praca: 20,
@@ -5345,6 +5346,7 @@ function applyImprovementBonus(yld, improvementKey) {
   if (b.pieniadz) yld.handel += b.pieniadz;
   if (b.drewno) yld.drewno += b.drewno;
   if (b.kamien) yld.kamien += b.kamien;
+  if (b.glina) yld.glina += b.glina;
 }
 function applyImprovementBonuses(yld, improvementKeys) {
   for (const key of improvementKeys) {
@@ -6502,7 +6504,7 @@ function researchGatesMet(tech, gate) {
 }
 
 // src/game/economy.ts
-var ZERO_YIELD = { zywnosc: 0, praca: 0, handel: 0, drewno: 0, kamien: 0 };
+var ZERO_YIELD = { zywnosc: 0, praca: 0, handel: 0, drewno: 0, kamien: 0, glina: 0 };
 var TERRAIN_NAME_TO_ENUM = {
   "\u0141\u0105ka": "laka" /* Laka */,
   "R\xF3wnina": "rownina" /* Rownina */,
@@ -6518,7 +6520,10 @@ function terrainRowToTileYield(row) {
     praca: Number(row["Praca"] ?? 0),
     handel: Number(row["Handel"] ?? 0),
     drewno: Number(row["Drewno"] ?? 0),
-    kamien: Number(row["Kamie\u0144"] ?? 0)
+    kamien: Number(row["Kamie\u0144"] ?? 0),
+    // Glina nie ma bazy terenu ani modyfikatora w terrain-yields.json -- wylacznie z bonusu
+    // ulepszenia (glinianka, GLINA-Q1=A), doklejane w tileYield() nizej.
+    glina: 0
   };
 }
 function buildTerrainYields() {
@@ -6544,6 +6549,7 @@ function tileYield(tile) {
   let handel = base.handel;
   let drewno = base.drewno;
   let kamien = base.kamien;
+  let glina = base.glina;
   if (tile.nakladka === "las" /* Las */) {
     zywnosc += FOREST_MODIFIER.zywnosc;
     praca += FOREST_MODIFIER.praca;
@@ -6560,7 +6566,8 @@ function tileYield(tile) {
     praca: Math.max(0, praca),
     handel: Math.max(0, handel),
     drewno: Math.max(0, drewno),
-    kamien: Math.max(0, kamien)
+    kamien: Math.max(0, kamien),
+    glina: Math.max(0, glina)
   };
   const impKeys = ((_a10 = tile.ulepszeniaKeys) == null ? void 0 : _a10.length) ? tile.ulepszeniaKeys : tile.ulepszenieKey ? [tile.ulepszenieKey] : [];
   if (impKeys.length) {
@@ -6570,6 +6577,7 @@ function tileYield(tile) {
     out.handel = Math.max(0, out.handel);
     out.drewno = Math.max(0, out.drewno);
     out.kamien = Math.max(0, out.kamien);
+    out.glina = Math.max(0, out.glina);
   }
   return out;
 }
@@ -6622,6 +6630,7 @@ function cityYieldPerTurn(city, workedTiles, cityBuildings, params, ctx) {
   let handelTerenu = 0;
   let drewnoTerenu = 0;
   let kamienTerenu = 0;
+  let glinaTerenu = 0;
   for (const tile of workedTiles) {
     const y = tileYield(tile);
     zywnoscTerenu += y.zywnosc;
@@ -6629,6 +6638,7 @@ function cityYieldPerTurn(city, workedTiles, cityBuildings, params, ctx) {
     handelTerenu += y.handel;
     drewnoTerenu += y.drewno;
     kamienTerenu += y.kamien;
+    glinaTerenu += y.glina;
   }
   let pracaBruttoTerenu;
   if (ctx.maMlyn) {
@@ -6717,7 +6727,8 @@ function cityYieldPerTurn(city, workedTiles, cityBuildings, params, ctx) {
     pracaBudynkow: Math.floor(pracaBudynkow),
     pieniadzZPracy,
     drewnoTerenu: Math.floor(drewnoTerenu),
-    kamienTerenu: Math.floor(kamienTerenu)
+    kamienTerenu: Math.floor(kamienTerenu),
+    glinaTerenu: Math.floor(glinaTerenu)
   };
 }
 function cityPopulationCap(maAkwedukt, params) {
@@ -22385,6 +22396,7 @@ function advanceCityEconomy(cities, map, data, difficulty = "normal", econUnits 
     const citySurowce = city.surowce;
     citySurowce.drewno = Math.min(resCap, (citySurowce.drewno ?? 0) + yld.drewnoTerenu);
     citySurowce.kamien = Math.min(resCap, (citySurowce.kamien ?? 0) + yld.kamienTerenu);
+    citySurowce.glina = Math.min(resCap, (citySurowce.glina ?? 0) + yld.glinaTerenu);
     const activeRecipes = DEFAULT_CONVERTER_RECIPES.filter((r) => builtIds.includes(r.id));
     if (activeRecipes.length > 0) {
       const convResult = runConverters(

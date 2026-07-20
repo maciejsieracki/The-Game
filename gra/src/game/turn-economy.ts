@@ -1189,18 +1189,20 @@ export function advanceCityEconomy(
     incomeByOwner.set(city.ownerId, (incomeByOwner.get(city.ownerId) ?? 0) + pieniadzPoWealth);
 
     // --- Converters (s.1.5) -- run after terrain yield, per-city (Zadanie 2 E1) ---
-    // City.surowce jest teraz realnym polem runtime (game/cities.ts). Zbieramy TYLKO
-    // surowce logistyczne z liczbowym plonem terenu: drewno/kamien (yld.drewnoTerenu/
-    // kamienTerenu z tileYield -- economy.ts). Glina/ruda maja dzis wylacznie dostep
-    // boolean (surowiecOdblokowany w terrain-improvements.json), bez ilosci per-ture --
-    // zbieranie ich zostaje do domkniecia w kolejnym etapie (patrz raport E1, nie
-    // zgadujemy wartosci na sile).
+    // City.surowce jest teraz realnym polem runtime (game/cities.ts). Zbieramy surowce
+    // logistyczne z liczbowym plonem terenu: drewno/kamien/glina (yld.drewnoTerenu/
+    // kamienTerenu/glinaTerenu z tileYield -- economy.ts). Glina dodana GLINA-Q1=A
+    // (Maciej 2026-07-20): stala ilosc 2/ture z glinianki (bonus.glina w
+    // terrain-improvements.json), dokladnie ten sam wzorzec co drewno/kamien.
+    // Ruda pozostaje wylacznie dostep boolean (surowiecOdblokowany) bez ilosci --
+    // GLINA-Q2=A: rudy/brazu NIE ruszamy w tym etapie.
     const maMagazyn = builtIds.includes('magazyn');
     const resCap = resourceStorageCapacityPerType(maMagazyn, storageParams);
     if (!city.surowce) city.surowce = {};
     const citySurowce: Record<string, number> = city.surowce;
     citySurowce.drewno = Math.min(resCap, (citySurowce.drewno ?? 0) + yld.drewnoTerenu);
     citySurowce.kamien = Math.min(resCap, (citySurowce.kamien ?? 0) + yld.kamienTerenu);
+    citySurowce.glina  = Math.min(resCap, (citySurowce.glina ?? 0) + yld.glinaTerenu);
 
     // Uruchamiamy tylko konwertery, ktorych budynek jest FAKTYCZNIE wybudowany w tym
     // miescie (inaczej drewno konwertowaloby sie samoistnie bez Mielerza/Cegielni/...).

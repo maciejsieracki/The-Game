@@ -226,6 +226,63 @@ assert(!buildingIds.has('huta'), 'potwierdzenie: brak budynku "huta" w buildings
 assert(buildingIds.has('mielerz') && buildingIds.has('cegielnia') && buildingIds.has('garncarnia') && buildingIds.has('odlewnia_brazu'),
   'pozostale 4 receptury (mielerz/cegielnia/garncarnia/odlewnia_brazu) MAJA budynek -- moga byc aktywne');
 
+// ---------------------------------------------------------------------------
+// G. GLINA-Q1=A (2026-07-20): glinianka daje 2 glina/ture, dokladnie jak drewno/kamien
+// ---------------------------------------------------------------------------
+console.log('\n-- G. cityYieldPerTurn: glinaTerenu z glinianki (GLINA-Q1=A) --');
+const clayTile = { terenBazowy: 'rownina', nakladka: 'brak', maRzeke: false, ulepszenieKey: 'glinianka' };
+const yClay = M.tileYield(clayTile);
+eq(yClay.glina, 2, 'tileYield: glinianka daje glina=2 (bonus stala ilosc, GLINA-Q1=A)');
+
+const plainTile = { terenBazowy: 'rownina', nakladka: 'brak', maRzeke: false };
+const yPlain = M.tileYield(plainTile);
+eq(yPlain.glina, 0, 'tileYield: teren bez glinianki -> glina=0 (baza terenu nie daje gliny)');
+
+const yldClay = M.cityYieldPerTurn(city, [clayTile, clayTile], [], pNormal, makeCtx({}));
+eq(yldClay.glinaTerenu, 4, 'cityYieldPerTurn: 2 pola z glinianka -> glinaTerenu = 4 (2 x 2/ture)');
+
+// ---------------------------------------------------------------------------
+// H. Cegielnia/Garncarnia oziywaja: glina+paliwo -> cegla/ceramika; brak rudy -> braz=0
+// ---------------------------------------------------------------------------
+console.log('\n-- H. Cegielnia/Garncarnia produkuja z gliny+paliwa; odlewnia_brazu NIE bez rudy --');
+
+// Cegielnia + Garncarnia zbudowane, magazyn ma glina+paliwo (jak po zebraniu z glinianki
+// + Mielerzu) -- obie receptury powinny odpalic (kolejnosc DEFAULT_CONVERTER_RECIPES: obie
+// czytaja z tego samego wspolnego magazynu 'glina'/'paliwo', wiec kazda zuzywa swoja partie).
+const withCegielniaGarncarnia = simulateConverterTick(
+  ['cegielnia', 'garncarnia'],
+  { glina: 4, paliwo: 4 },
+);
+assert(withCegielniaGarncarnia.stores.cegla > 0,
+  `Cegielnia: cegla > 0 przy glina+paliwo obecnych (got ${withCegielniaGarncarnia.stores.cegla})`);
+assert(withCegielniaGarncarnia.stores.ceramika > 0,
+  `Garncarnia: ceramika > 0 przy glina+paliwo obecnych (got ${withCegielniaGarncarnia.stores.ceramika})`);
+assert(withCegielniaGarncarnia.stores.glina < 4,
+  'Cegielnia+Garncarnia: glina zmalala (skonsumowana przez obie receptury)');
+
+// Bez budynkow: mimo obecnosci gliny+paliwa w magazynie nic sie nie produkuje (gating builtIds).
+const withoutBuildings = simulateConverterTick([], { glina: 4, paliwo: 4 });
+eq(withoutBuildings.stores.cegla, undefined, 'brak Cegielni: brak cegly (converter nieaktywny)');
+eq(withoutBuildings.stores.ceramika, undefined, 'brak Garncarni: brak ceramiki (converter nieaktywny)');
+eq(withoutBuildings.stores.glina, 4, 'brak budynkow: glina niezmieniona');
+
+// odlewnia_brazu zbudowana + paliwo obecne, ale BEZ rudy (GLINA-Q2=A: rudy nie zbieramy) ->
+// braz NIE rosnie (limitWejscia=0 bo have('ruda')=0), niezaleznie od gliny/cegielni/garncarni.
+const withOdlewniaNoOre = simulateConverterTick(
+  ['odlewnia_brazu', 'cegielnia', 'garncarnia'],
+  { glina: 4, paliwo: 4 },
+);
+eq(withOdlewniaNoOre.stores.braz, undefined,
+  'odlewnia_brazu zbudowana ale brak rudy w magazynie -> braz NIE rosnie (undefined, brak-wejscia)');
+assert(withOdlewniaNoOre.stores.cegla > 0 && withOdlewniaNoOre.stores.ceramika > 0,
+  'odlewnia_brazu bez rudy NIE blokuje Cegielni/Garncarni (nadal produkuja z gliny+paliwa)');
+
+// Sanity: gdyby ruda BYLA w magazynie (nie zbierana dzis, ale receptura istnieje), odlewnia
+// zadzialalaby -- potwierdza, ze brak braz wyzej wynika z braku rudy, nie ze zlej receptury.
+const withOdlewniaWithOre = simulateConverterTick(['odlewnia_brazu'], { ruda: 4, paliwo: 4 });
+assert(withOdlewniaWithOre.stores.braz > 0,
+  `kontrola: odlewnia_brazu Z ruda w magazynie -> braz > 0 (got ${withOdlewniaWithOre.stores.braz}) -- receptura sama w sobie sprawna`);
+
 // --- summary ---------------------------------------------------------------
 console.log(`\nmennica-magazyn-test: ${passed} passed, ${failed} failed`);
 try { fs.unlinkSync(ENTRY_FILE);  } catch (e) {}
