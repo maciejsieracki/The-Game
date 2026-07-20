@@ -4,6 +4,11 @@ ZASADA: md5/stempel wpisuje się TYLKO tutaj, zaraz po publishu. Inne pliki link
 nigdy nie kopiują (stary system miał 4 sprzeczne „aktualne" md5 — nigdy więcej).
 Format: data · md5 (pełne) · stempel z menu · co weszło (1 linia) · status.
 
+UWAGA: KANON i FINALNA promują się teraz OSOBNYMI skryptami (`gra/tools/publish-kanon-snapshot.ps1`
+= ROBOCZA→KANON, `gra/tools/publish-finalna-snapshot.ps1` = KANON→FINALNA, ten drugi tylko na
+wyraźne polecenie właściciela) — dlatego są logowane NIEZALEŻNIE, każdy w swojej sekcji, ze
+swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drugiego.
+
 ## ROBOCZA (gra-robocza\Gra-ROBOCZA.html — wskazywana przez START.html)
 
 > ⚠️ **UZUPEŁNIENIE WSTECZNE 2026-07-19 (integrator #2 / „drugi integrator").** Trzy deploye poniżej (`494598a3`, `ed16d0ea`, `ca3aafa0`) wykonałem **bez wpisu w tym dzienniku i bez meldunku w `_handoff/KANAL-PRACA.md`** — złamanie zasady z nagłówka tego pliku („md5/stempel wpisuje się TYLKO tutaj, zaraz po publishu"). Dokładnie ten sam problem, który integrator #1 zgłaszał przy `d2a346ff`. Wszystkie trzy były na **wyraźne polecenie Macieja**, nie samowolnie — ale przez ~8 dni rejestr wskazywał jako AKTUALNĄ nieaktualną `58182469`. Uzupełniam wstecznie; równolegle meldunek w kanale pracy.

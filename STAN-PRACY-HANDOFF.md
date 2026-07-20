@@ -101,6 +101,22 @@ Następnie:
 
 **Uwaga:** `verify` sprawdza `manifest.md5 === md5(Gra-ROBOCZA.html)`. „stamp match: WARN" jest **normalny** (md5 w `title` z założenia o iterację w tyle). Bramka `map-gen-regression-test` — progi czasowe „AC <5s/<15s" bywają FAIL na wolniejszej maszynie/CI; **to pomiar wydajności, nie regresja** (liczy się determinizm A=B + 0 rzek bez ujścia).
 
+### 6a. Promocja ROBOCZA → KANON (osobna procedura, po teście Master)
+
+Z katalogu `gra`:
+```powershell
+.\tools\publish-kanon-snapshot.ps1
+```
+Wymaga `gra-robocza/Gra-ROBOCZA.html` po PASS F + test Master. Robi **wyłącznie** ROBOCZA→KANON: kopiuje `gra-robocza/` → `gra-kanon/`, zmienia nazwy bundli na `Gra-KANON*.html`, stempluje (`inject-build-stamp.ps1 -Tier KANON`), zapisuje `KANON-MANIFEST.json`, odświeża `START.html`/`START-GRA.html`, uruchamia `cleanup-retention.ps1`. **Nie dotyka `Gra-FINALNA.html`** — to osobny krok (§6b). Zaloguj promocję w `WERSJE.md` (sekcja KANON) + `KANAL-PRACA.md`.
+
+### 6b. Promocja KANON → FINALNA (osobna procedura, RZADKO, na wyraźne polecenie właściciela)
+
+Z katalogu `gra`:
+```powershell
+.\tools\publish-finalna-snapshot.ps1
+```
+Wymaga `gra-kanon/Gra-KANON.html` (kanon już promowany i przetestowany — **źródłem jest KANON, nie ROBOCZA**). Kopiuje `gra-kanon/Gra-KANON.html` → `Gra-FINALNA.html` w korzeniu, stempluje (`inject-build-stamp.ps1 -Tier FINALNA`), wypisuje md5 źródłowego KANONU i md5 powstałej FINALNEJ. **Uruchamiać tylko gdy Maciej wyraźnie o to poprosi** — nigdy automatycznie przy okazji §6a. Zaloguj promocję w `WERSJE.md` (sekcja FINALNA) + `KANAL-PRACA.md`.
+
 ---
 
 ## 7. ⚠️ CO NIE DZIAŁA / ZNANE PROBLEMY

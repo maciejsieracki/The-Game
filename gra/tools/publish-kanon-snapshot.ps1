@@ -1,4 +1,7 @@
-# Master: bezpieczna promocja gra-robocza/ → gra-kanon/ (FINALNA — tylko Master)
+﻿# Master: bezpieczna promocja gra-robocza/ → gra-kanon/ (tylko Master)
+# Ten skrypt promuje WYŁĄCZNIE ROBOCZA → KANON — nic ponadto. Trzeci poziom (patrz
+# CLAUDE.md / STAN-PRACY-HANDOFF.md) ma osobny, ręcznie uruchamiany skrypt, wyłącznie
+# na wyraźne polecenie właściciela, NIGDY automatycznie "przy okazji" tej promocji.
 # Wymaga: gra-robocza/ po PASS F + test Master
 # Uruchom z gra/:  .\tools\publish-kanon-snapshot.ps1
 
@@ -11,7 +14,6 @@ $archiveRoot = Join-Path $projRoot 'gra-kanon-archiwum'
 
 $roboczaBundle = 'Gra-ROBOCZA.html'
 $kanonBundle = 'Gra-KANON.html'
-$finalnaBundle = 'Gra-FINALNA.html'
 
 if (-not (Test-Path (Join-Path $roboczaRoot $roboczaBundle))) {
   throw "Brak gra-robocza/$roboczaBundle - najpierw F: publish-robocza-snapshot.ps1"
@@ -49,7 +51,7 @@ $manifest = @{
   sourceRobocza = 'gra-robocza/'
   sourceRoboczaMd5 = $md5
   publisher = 'Master Orkiestrator'
-  note = 'KANON w gra-kanon/ + FINALNA w root/Gra-FINALNA.html — tylko Master po OK Macieja.'
+  note = 'KANON w gra-kanon/ — tylko Master po OK Macieja. Trzeci poziom promowany OSOBNYM skryptem, wyłącznie na wyraźne polecenie właściciela.'
 } | ConvertTo-Json -Depth 3
 Set-Content -Path (Join-Path $kanonRoot 'KANON-MANIFEST.json') -Value $manifest -Encoding UTF8
 
@@ -72,13 +74,6 @@ location.replace('Gra-KANON.html?skipMenuRedirect=1');
 $kanonHtml = Join-Path $kanonRoot $kanonBundle
 & (Join-Path $PSScriptRoot 'inject-build-stamp.ps1') -HtmlPath $kanonHtml -Tier KANON -Md5 $md5
 
-$finalnaPath = Join-Path $projRoot $finalnaBundle
-Copy-Item $kanonHtml $finalnaPath -Force
-& (Join-Path $PSScriptRoot 'inject-build-stamp.ps1') -HtmlPath $finalnaPath -Tier FINALNA -Md5 $md5
-
-$backupDir = Join-Path $projRoot '_backup'
-New-Item -ItemType Directory -Force -Path $backupDir | Out-Null
-Copy-Item $finalnaPath (Join-Path $backupDir "$finalnaBundle.bak-$stamp".Replace(':', '-')) -Force
 & (Join-Path $PSScriptRoot 'cleanup-retention.ps1') -Execute -KanonArchiwumKeep 5 -BackupHtmlKeep 3 -RoboczaKopiaDaysKeep 7 | Out-Null
 
 @'
@@ -93,13 +88,12 @@ location.replace('gra-robocza/START.html');
 </head>
 <body>
 <p><strong>Domyślnie: ROBOCZA</strong> (D1A)</p>
-<p><a href="gra-robocza/START.html">Robocza</a> | <a href="gra-kanon/START.html">Finalna (kanon)</a></p>
+<p><a href="gra-robocza/START.html">Robocza</a> | <a href="gra-kanon/START.html">Kanon</a></p>
 </body>
 </html>
 '@ | Set-Content -Path (Join-Path $projRoot 'START-GRA.html') -Encoding UTF8
 
 Write-Host ''
-Write-Host "OK FINALNA (gra-kanon): $kanonRoot" -ForegroundColor Green
+Write-Host "OK KANON: $kanonRoot" -ForegroundColor Green
 Write-Host "MD5: $md5"
 Write-Host "Kanon: gra-kanon/$kanonBundle"
-Write-Host "Finalna: $finalnaBundle"
