@@ -27,6 +27,15 @@ Tarcza ZAWSZE w LEWEJ (+X), broń w PRAWEJ (−X) · pozy ATAKU · nakrycie gło
 6. **Fixy z audytu [późn. 3] w tym samym deployu:** FORT — usunąć `m.scale.setScalar(1/3)` (robloxImprovements.ts:404, potrójne skalowanie); OWCE (ulepszenie) :390 → buildOwca/buildZlozeOwce z pastwisko-modele (spójność z trzodą); opcjonalnie ZlozeLamy → nowa lama.
 7. **POZA ZAKRESEM:** konnica/rydwany/onager (koń wpięty wcześniej — nie dublować), Galera (naval, osobny temat), jednostki epok ≥3 (żelazo = następny program; Hastati/Triari żelazne bez zmian poza Hastatim).
 
+## 2b. ROZSZERZENIE 2026-07-10: ŻELAZO + GALERA (zlecenie Macieja „wszystkie jednostki żelaza oraz galera")
+Nowe pliki w `_sandbox/MASTER/render-jednostki/` (konwencje serii jak wyżej; żelazo = ciemniejszy, zimny metal 0x8f97a3):
+- `jednostki-z1-mezopotamia.ts` — Gwardia hetycka, Piechota neobabilońska, Mur tarcz (Sargonid), Garnizon Harappy — 4 NOWE case'y w buildNamedUnit (snippet w raporcie/nagłówku; „gwardia hetycka" nie koliduje z „piechota hetycka").
+- `jednostki-z2-srodziemne.ts` — Tyrski miecznik, Gwardia Tyreńska, Żelazny khopesh (UWAGA: „wojownik z ŻELAZNYM khopesh" nie łapie starego case'a — nowy wzorzec nazwy), Thorakites + **TRIARI** (klęcząca poza trzeciej linii). **FIX TRIARI:** `buildSuperUnit` ignoruje nazwę — `case 'rzym'` zawsze daje Evocati; poprawka: rozróżnić po nazwie (`includes('triari') → buildTriari`).
+- `jednostki-z3-plemiona.ts` — Drużynnik (Słowianie), iButho z iklwa (Zulu), **Wojownik germański SUPER** + Miecznik galijski. **FIX ROUTINGU GERMANA (3 dopiski):** (a) Culture + `'germanie'`; (b) `cultureFromName`: wzorce germansk/germanic → 'germanie'; (c) `buildSuperUnit` case 'germanie' → buildGermanSuper. (buildGermanWarrior/berserker named — bez regresji.)
+- `galera-model.ts` — nowa Galera (oko apotropaiczne, taran trójzębny, wybrzuszony żagiel z emblematem gracza, 8 wioseł/burta w zamachu, 2 marynarzy, aplustre): ciało `case 'galera'` w buildCategoryModel → `buildGalera(ownerColor_)`. Interfejs wody zachowany (HULL_Y 0.10, dziób −Z, mOwner). **740 tri — MASTER akceptuje** (+6% nad budżet; jedyny statek w grze).
+POZA ZAKRESEM (backlog „platformy wozów"): Rydwan celtycki, konnice asyryjskie (lanca/łuk), jeździec słowiański — koń już nowy, platformy/dekory wozów starą partią do zrobienia później.
+Test Macieja (dodatkowo): Triari klęczy z hastą (nie jest kopią Evocati), German super nie jest już generykiem, Galera na wodzie z okiem i wiosłami, 12 żelaznych generyków ma twarze kultur.
+
 ## 3. BRAMKI I TEST
 tsc --noEmit=0 · vite build BEZ prebuildu · bramka „nic nie stracone" vs poprzedni bundle · hashe mapy nietknięte (to render-only) · stempel host-side + WERSJE + hub · commit per paczka, JEDEN deploy.
 Test Macieja: (a) playtest BITWA-DUŻA — wszystkie sylwetki, tarcze w LEWEJ, pozy ataku, kolory graczy obu stron; (b) mapa — tokeny jednostek czytelne z zoomu; (c) Legion Rzymski wygląda jak legionista (bug); (d) Ludy Morza przy Rzymie w brązie; (e) super-jednostki z chorągwiami; (f) fort większy, owce nowe.

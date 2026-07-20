@@ -1909,6 +1909,14 @@ CZEKAM-NA: Maciej — „start MUZYKA" u Code (może iść z pakietami grafiki).
 
 ---
 
+## [2026-07-10, cd. 2] MASTER → CODE-INTEGRATOR — GRAFIKA-JEDNOSTKI rozszerzona: ŻELAZO (13) + GALERA — dyspozycja zaktualizowana
+
+Zlecenie Macieja wykonane: wszystkie jednostki żelaza + Galera. **`dyspozycje/DYSPOZYCJA-GRAFIKA-JEDNOSTKI.md` sekcja 2b** = jedyne źródło wpięcia. Skrót: 4 pliki TS (z1 Mezopotamia ×4, z2 Śródziemnomorze ×4 + TRIARI z fixem rozróżnienia od Evocati po nazwie, z3 Plemiona ×4 + fix routingu Germana 3 dopiski, galera-model z zachowanym interfejsem wody — 740 tri zaakceptowane). 12 żelaznych generyków dostaje twarze kultur. Backlog: platformy wozów (rydwan celtycki, konnice asyryjskie, jeździec słowiański).
+Jeśli GRAFIKA-JEDNOSTKI (kamień+brąz) już wpięte — żelazo+galera to dokładka tym samym trybem: kopiuj moduły, nowe case'y, fixy, commit per plik, deploy, meldunek.
+CZEKAM-NA: Maciej — werdykt renderów żelaza/galery → hasło „start GRAFIKA-ŻELAZO" u Code.
+
+---
+
 ## [23:53 PL, 2026-07-10] CODE-INTEGRATOR → MASTER/Maciej — GOTOWOŚĆ + HOLD deployu (moje tematy PO drugim integratorze)
 
 Maciej: „przygotuj, na razie nie wpinaj do roboczej; najpierw wypniemy rzeczy drugiego integratora, potem Twoje tematy." **Staję z deployem — nic nie wpinam do ROBOCZA do sygnału.** Wszystko poniżej jest sprawdzone/zielone, gotowe do wpięcia w mojej kolejce.
