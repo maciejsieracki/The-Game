@@ -34,6 +34,12 @@ __export(cluster_start_entry_exports, {
 module.exports = __toCommonJS(cluster_start_entry_exports);
 
 // src/game/city-names-pool.ts
+function nazwaKlastraAt(names, index, fallback) {
+  if (index >= 0 && index < names.length && names[index]) {
+    return names[index];
+  }
+  return fallback;
+}
 function poolEntry(pools, ikonaId) {
   return pools[ikonaId];
 }
@@ -61,12 +67,6 @@ function findCivByIkonaId(civs, ikonaId) {
 function getNazwyKlastra(civs, ikonaId) {
   const def = findCivByIkonaId(civs, ikonaId);
   return def?.nazwyKlastra ?? [];
-}
-function nazwaKlastraAt(names, index, fallback) {
-  if (index >= 0 && index < names.length && names[index]) {
-    return names[index];
-  }
-  return fallback;
 }
 function playerStartCityName(civs, playerCivId, pools) {
   if (pools?.[playerCivId]) {
@@ -146,22 +146,29 @@ var map_gen_params_default = {
       low: { mountain: 0.03, highland: 0.07 },
       medium: { mountain: 0.06, highland: 0.11 },
       high: { mountain: 0.12, highland: 0.18 }
+    },
+    pasma_gorskie: {
+      _opis: "Zadanie HILLS Q1/Q2 (2026-07-20): skupiska g\xF3r/wzg\xF3rz (seed-and-grow), spi\u0119te z tierem suwaka Relief (mountain_noise_threshold/highland_noise_threshold). Bez nowego suwaka UI. ZADANIE 3 (2026-07-20): d\u0142u\u017Csze/w\u0119\u017Csze \u0142a\u0144cuchy (kordyliery) zamiast okr\u0105g\u0142ych plam \u2014 dlugosc_min/max w g\xF3r\u0119, max_pasm_na_mase w d\xF3\u0142 (mniej ale d\u0142u\u017Cszych pasm), nowy obrzeze_szansa < 1 zmniejsza rozlewanie foothills na boki.",
+      low: { hexy_na_pasmo: 320, max_pasm_na_mase: 2, dlugosc_min: 9, dlugosc_max: 11, min_masa_hexow: 40, obrzeze_szansa: 0.3 },
+      medium: { hexy_na_pasmo: 240, max_pasm_na_mase: 3, dlugosc_min: 11, dlugosc_max: 14, min_masa_hexow: 30, obrzeze_szansa: 0.35 },
+      high: { hexy_na_pasmo: 170, max_pasm_na_mase: 5, dlugosc_min: 13, dlugosc_max: 17, min_masa_hexow: 24, obrzeze_szansa: 0.4 }
     }
   },
   mapa_skala: {
+    _opis: "Trzeciorz\u0119dny fallback (u\u017Cywany tylko gdy skala_mapy w e-start-params.json nie ma wpisu). \xD72 balans 2026-07-20, aktywne_typy przyci\u0119te do sufitu rosteru 15 nacji (ogromna/super).",
     aktywne_typy: {
-      mala: 4,
-      srednia: 5,
-      duza: 6,
-      ogromna: 8,
-      super: 10
+      mala: 8,
+      srednia: 10,
+      duza: 12,
+      ogromna: 15,
+      super: 15
     },
     domyslni_rywale: {
-      mala: 6,
-      srednia: 7,
-      duza: 9,
-      ogromna: 11,
-      super: 15
+      mala: 12,
+      srednia: 14,
+      duza: 18,
+      ogromna: 22,
+      super: 30
     }
   },
   generator: {
@@ -190,7 +197,8 @@ var map_gen_params_default = {
   },
   metal_deposit_min_era: {
     miedz: 2,
-    zelazo: 3
+    zelazo: 3,
+    wegiel: 8
   }
 };
 
@@ -217,6 +225,11 @@ var FALLBACK_DESERT = { low: 0.68, medium: 0.63, high: 0.58 };
 var FALLBACK_FOREST = { low: 0.65, medium: 0.58, high: 0.5 };
 var FALLBACK_MOUNTAIN = { low: 0.8, medium: 0.68, high: 0.52 };
 var FALLBACK_HIGHLAND = { low: 0.66, medium: 0.5, high: 0.38 };
+var FALLBACK_MOUNTAIN_RANGE = {
+  low: { hexyNaPasmo: 320, maxPasmNaMase: 2, dlugoscMin: 9, dlugoscMax: 15, minMasaHexow: 40, obrzezeSzansa: 0.3 },
+  medium: { hexyNaPasmo: 240, maxPasmNaMase: 3, dlugoscMin: 11, dlugoscMax: 18, minMasaHexow: 30, obrzezeSzansa: 0.35 },
+  high: { hexyNaPasmo: 170, maxPasmNaMase: 5, dlugoscMin: 13, dlugoscMax: 22, minMasaHexow: 24, obrzezeSzansa: 0.4 }
+};
 var FALLBACK_DEPOSIT_RARITY = {
   miedz: 0.1,
   zelazo: 0.08,
@@ -280,6 +293,21 @@ function mapGenHighlandThreshold(tier) {
   if (h && typeof h[k] === "number") return h[k];
   return FALLBACK_HIGHLAND[tier];
 }
+function mapGenMountainRangeParams(tier) {
+  const fb = FALLBACK_MOUNTAIN_RANGE[tier];
+  const src = map_gen_params_default.gestosc?.pasma_gorskie;
+  const row = src?.[tierKey(tier)];
+  if (!row) return { ...fb };
+  const dlugoscMin = typeof row.dlugosc_min === "number" && row.dlugosc_min > 0 ? row.dlugosc_min : fb.dlugoscMin;
+  return {
+    hexyNaPasmo: typeof row.hexy_na_pasmo === "number" && row.hexy_na_pasmo > 0 ? row.hexy_na_pasmo : fb.hexyNaPasmo,
+    maxPasmNaMase: typeof row.max_pasm_na_mase === "number" && row.max_pasm_na_mase >= 0 ? row.max_pasm_na_mase : fb.maxPasmNaMase,
+    dlugoscMin,
+    dlugoscMax: typeof row.dlugosc_max === "number" && row.dlugosc_max >= dlugoscMin ? row.dlugosc_max : Math.max(fb.dlugoscMax, dlugoscMin),
+    minMasaHexow: typeof row.min_masa_hexow === "number" && row.min_masa_hexow >= 0 ? row.min_masa_hexow : fb.minMasaHexow,
+    obrzezeSzansa: typeof row.obrzeze_szansa === "number" && row.obrzeze_szansa >= 0 && row.obrzeze_szansa <= 1 ? row.obrzeze_szansa : fb.obrzezeSzansa
+  };
+}
 function mapGenRozmiarDims() {
   const src = map_gen_params_default.generator?.rozmiar_dims;
   const out = { ...FALLBACK_ROZMIAR };
@@ -313,12 +341,12 @@ var e_start_params_default = {
     render_quality_bundled: "medium"
   },
   skala_mapy: {
-    Malenki: { rywale_ai: 2, miasta_panstwa: 4, typy_cywilizacji: 4, hex_w: 76, hex_h: 52 },
-    Ma\u0142y: { rywale_ai: 3, miasta_panstwa: 5, typy_cywilizacji: 5, hex_w: 108, hex_h: 74 },
-    Standardowy: { rywale_ai: 6, miasta_panstwa: 6, typy_cywilizacji: 6, hex_w: 168, hex_h: 120 },
-    Du\u017Cy: { rywale_ai: 7, miasta_panstwa: 7, typy_cywilizacji: 7, hex_w: 240, hex_h: 168 },
-    Ogromny: { rywale_ai: 8, miasta_panstwa: 8, typy_cywilizacji: 10, hex_w: 336, hex_h: 238 },
-    "Super Huge": { rywale_ai: 10, miasta_panstwa: 8, typy_cywilizacji: 12, hex_w: 672, hex_h: 476 }
+    Malenki: { rywale_ai: 2, miasta_panstwa: 8, typy_cywilizacji: 8, hex_w: 76, hex_h: 52 },
+    Ma\u0142y: { rywale_ai: 3, miasta_panstwa: 10, typy_cywilizacji: 10, hex_w: 108, hex_h: 74 },
+    Standardowy: { rywale_ai: 6, miasta_panstwa: 12, typy_cywilizacji: 12, hex_w: 168, hex_h: 120 },
+    Du\u017Cy: { rywale_ai: 7, miasta_panstwa: 14, typy_cywilizacji: 14, hex_w: 240, hex_h: 168 },
+    Ogromny: { rywale_ai: 8, miasta_panstwa: 16, typy_cywilizacji: 15, hex_w: 336, hex_h: 238 },
+    "Super Huge": { rywale_ai: 10, miasta_panstwa: 16, typy_cywilizacji: 15, hex_w: 672, hex_h: 476 }
   },
   generator_e2: {
     resource_mult_low: 0.6,
@@ -398,6 +426,61 @@ function eStartRenderQualityBundled() {
   return "medium";
 }
 
+// src/map/villages.ts
+var VILLAGE_LAND_HEX_PER_VILLAGE = 140;
+var VILLAGE_MIN_DIST_FROM_CITY = 4;
+var VILLAGE_MIN_SPACING = 5;
+function lcgNext(state) {
+  const next = state * 1664525 + 1013904223 >>> 0;
+  return [next, next / 4294967296];
+}
+function isVillageExcludedTerrain(t) {
+  return t === "morze" /* Morze */ || t === "wybrzeze" /* Wybrzeze */ || t === "gory" /* Gory */ || t === "pustynia" /* Pustynia */;
+}
+function placeVillages(hexes, cities, existingCamps, seed, opts) {
+  const minDistFromCity = opts?.minDistFromCity ?? VILLAGE_MIN_DIST_FROM_CITY;
+  const spacing = opts?.spacing ?? VILLAGE_MIN_SPACING;
+  const landHexPerVillage = opts?.landHexPerVillage ?? VILLAGE_LAND_HEX_PER_VILLAGE;
+  let landHexCount = 0;
+  const candidates = [];
+  for (const key of Object.keys(hexes)) {
+    const hex = hexes[key];
+    if (hex === void 0) continue;
+    const isSea = hex.terenBazowy === "morze" /* Morze */ || hex.terenBazowy === "wybrzeze" /* Wybrzeze */;
+    if (!isSea) landHexCount++;
+    if (hex.wlasciciel !== null) continue;
+    if (isVillageExcludedTerrain(hex.terenBazowy)) continue;
+    candidates.push({ q: hex.coords.q, r: hex.coords.r });
+  }
+  const targetCount = Math.max(1, Math.round(landHexCount / landHexPerVillage));
+  if (candidates.length === 0) return [];
+  let lcg = seed >>> 0;
+  for (let i = candidates.length - 1; i > 0; i--) {
+    let rnd;
+    [lcg, rnd] = lcgNext(lcg);
+    const j = Math.floor(rnd * (i + 1));
+    const tmp = candidates[i];
+    candidates[i] = candidates[j];
+    candidates[j] = tmp;
+  }
+  const placed = existingCamps.map((c) => ({ q: c.q, r: c.r }));
+  const result = [];
+  for (const cand of candidates) {
+    if (result.length >= targetCount) break;
+    const tooCloseToCity = cities.some(
+      (c) => hexDistanceAxial(cand.q, cand.r, c.q, c.r) < minDistFromCity
+    );
+    if (tooCloseToCity) continue;
+    const tooCloseToOther = placed.some(
+      (p) => hexDistanceAxial(cand.q, cand.r, p.q, p.r) < spacing
+    );
+    if (tooCloseToOther) continue;
+    placed.push(cand);
+    result.push(cand);
+  }
+  return result;
+}
+
 // data/terrain-improvements.json
 var terrain_improvements_default = {
   _meta: {
@@ -436,19 +519,19 @@ var terrain_improvements_default = {
     odblokowuje: ""
   },
   bydlo: {
-    nazwa: "Byd\u0142o",
+    nazwa: "Trzoda",
     epoka: 1,
     bonus: {
       zywnosc: 2,
       praca: 3
     },
     surowiecOdblokowany: "bydlo",
-    surowiecOdblokowany_uwaga: "ABC-18: dost\u0119p dopiero po postawieniu na z\u0142o\u017Cu byd\u0142a",
+    surowiecOdblokowany_uwaga: "ABC-18: dost\u0119p dopiero po postawieniu na z\u0142o\u017Cu trzody",
     teren: "\u0141\u0105ka, R\xF3wnina",
     warunek: "plaski l\u0105d; pierwsze: z\u0142o\u017Ce byd\u0142a; potem po odblokowaniu \u2014 bez z\u0142o\u017Ca; + farma lub solo; NIE na Pustyni",
     koszt_praca: 20,
     tech: "Oswojenie zwierz\u0105t",
-    odblokowuje: "Byd\u0142o (Rydwan po odblokowaniu)"
+    odblokowuje: "Trzoda (Rydwan po odblokowaniu)"
   },
   owce: {
     nazwa: "Owce",
@@ -474,8 +557,8 @@ var terrain_improvements_default = {
     },
     surowiecOdblokowany: "lama",
     surowiecOdblokowany_uwaga: "TYLKO Inkowie; solo \u2014 bez innych ulepszen na heksie; pierwsze na zlozu lamy",
-    teren: "\u0141\u0105ka, R\xF3wnina, Wzg\xF3rza",
-    warunek: "solo; tylko cyw. Inkowie; pierwsze: z\u0142o\u017Ce lamy; NIE na Pustyni",
+    teren: "Wzg\xF3rza, G\xF3ry",
+    warunek: "solo; tylko cyw. Inkowie; wzg\xF3rza/g\xF3ry; pierwsze: z\u0142o\u017Ce lamy; NIE na \u0141\u0105ce/R\xF3wninie/Pustyni",
     koszt_praca: 20,
     tech: "Oswojenie zwierz\u0105t",
     odblokowuje: "Lama (transport / \u017Cywno\u015B\u0107)"
@@ -512,10 +595,11 @@ var terrain_improvements_default = {
     nazwa: "Glinianka",
     epoka: 2,
     bonus: {
-      praca: 1
+      praca: 1,
+      glina: 2
     },
     surowiecOdblokowany: "glina",
-    surowiecOdblokowany_uwaga: "klucz 'glina' wg Surowiec='Glina' w resources.json; brak pola id \u2014 propozycja EKONOMIA",
+    surowiecOdblokowany_uwaga: "GLINA-Q1=A (Maciej 2026-07-20): stala ilosc 2 glina/ture z ulepszenia (bonus.glina), analogicznie do drewna/kamienia. Klucz 'glina' wg Surowiec='Glina' w resources.json.",
     teren: "z\u0142o\u017Ce Gliny",
     warunek: "glina \u2192 ceg\u0142a (wa\u017Cne w br\u0105zie)",
     koszt_praca: 20,
@@ -559,12 +643,12 @@ var terrain_improvements_default = {
     bonus: {},
     surowiecOdblokowany: null,
     teren: "Las",
-    warunek: "koszt 5 Pracy na start; +20 Pracy/tur\u0119 \xD7 3 tury (=60); potem teren bazowy bez lasu",
+    warunek: "koszt 5 Pracy na start; +5 Pracy \xD7 1 tura (=5, netto zero); potem teren bazowy bez lasu",
     koszt_praca: 5,
     tech: null,
     wycinka: {
-      praca_per_tura: 20,
-      tury: 3,
+      praca_per_tura: 5,
+      tury: 1,
       usuwa_nakladke: "las"
     },
     odblokowuje: ""
@@ -641,7 +725,7 @@ var terrain_improvements_default = {
     teren: "dowolny l\u0105d w terytorium",
     warunek: "+100% Obrony jednostkom obozuj\u0105cym na polu fortu (bez plon\xF3w); rozszerza zasi\u0119g terytorium o promie\u0144 10 p\xF3l",
     koszt_praca: 25,
-    tech: "Wojskowosc",
+    tech: "Wojskowo\u015B\u0107",
     odblokowuje: "",
     uwagi: "ABC-10 Maciej 2026-07-04: Fort (mapa) \u2260 Cytadela (miasto). \u017Belazo ep.3; zasi\u0119g 10; +100% Obrona obozowanie"
   },
@@ -673,8 +757,8 @@ var terrain_improvements_default = {
     odblokowuje: "",
     uwagi: "T-TECH-9 Maciej 2026-07-04"
   },
-  popalnia_brazu: {
-    nazwa: "Popalnia br\u0105zu",
+  kopalnia_miedzi: {
+    nazwa: "Kopalnia miedzi",
     epoka: 2,
     bonus: {
       praca: 2
@@ -801,7 +885,8 @@ function generateMap(width = DEFAULT_WIDTH, height = DEFAULT_HEIGHT, seed = 42, 
         forNoise,
         desNoise,
         terrainTh,
-        climateZoneAt(q, r, height)
+        climateZoneAt(q, r, height),
+        terrainCellBias(q, r, effectiveSeed)
       );
       terrainScratch.set(key, { elevContinental, landMask, mtnNoise, forNoise, desNoise });
       hexes[key] = {
@@ -858,7 +943,7 @@ function generateMap(width = DEFAULT_WIDTH, height = DEFAULT_HEIGHT, seed = 42, 
   finalizeCoastAndInlandWater(hexes, width, height, 3, coastOpts);
   const reliefTier = genOpts?.worldDensity?.relief ?? genOpts?.worldDensity?.rivers ?? "medium";
   const forestTier = genOpts?.worldDensity?.forest ?? "medium";
-  reapplyLandTerrain(hexes, terrainScratch, terrainTh, height);
+  reapplyLandTerrain(hexes, terrainScratch, effectiveSeed, terrainTh, height, reliefTier);
   if (typ !== "pangea") {
     purgeInlandWaterForMultiLandTyp(hexes, width, height);
   }
@@ -917,10 +1002,17 @@ function generateMap(width = DEFAULT_WIDTH, height = DEFAULT_HEIGHT, seed = 42, 
     nZones,
     rand
   );
+  growMountainRanges(hexes, terrainScratch, reliefTier, width, height, rand);
   ensureDepositGridCoverage(hexes, reliefTier, typ, zoneOf, nZones, rand);
   ensureForestGridCoverage(hexes, terrainScratch, forestTier, typ, zoneOf, nZones, rand);
   purgeInlandWaterForMultiLandTyp(hexes, width, height);
   purgeDesertEnclaveWater(hexes, width, height);
+  thickenCoastAndSmoothInlets(hexes, width, height, 2);
+  if (typ === "ziemia") {
+    purgeStrayLandOutsideEarthMask(hexes, width, height);
+    applyCoastRing(hexes);
+  }
+  enforceMapBorderOcean(hexes, width, height);
   const riversTier = genOpts?.worldDensity?.rivers ?? "medium";
   clearRiverMarks(hexes);
   let { paths: riverPaths, kinds: riverPathKinds } = generateRivers(hexes, width, height, rand, {
@@ -944,11 +1036,18 @@ function generateMap(width = DEFAULT_WIDTH, height = DEFAULT_HEIGHT, seed = 42, 
   stripRiverMarksFromOpenSea(hexes);
   stripDepositsFromWater(hexes);
   ({ paths: riverPaths, kinds: riverPathKinds } = pruneOrphanRiverPaths(hexes, riverPaths, riverPathKinds, width, height));
+  ({ paths: riverPaths, kinds: riverPathKinds } = pruneRiversNotReachingRealSea(hexes, riverPaths, riverPathKinds, width, height));
+  flattenFalseCoastalRiverNotches(hexes, width, height);
   const startPositions = computeStartPositions(hexes, effectiveSeed, {
     minCount: 5,
     minDist: 5,
     absMinDist: 2
   });
+  const villageSites = placeVillages(hexes, startPositions, [], (effectiveSeed ^ 24301) >>> 0);
+  for (const site of villageSites) {
+    const hex = hexes[`${site.q},${site.r}`];
+    if (hex) hex.wioska = { istnieje: true, ludnosc: 1 };
+  }
   return {
     szerokoscQ: width,
     wysokoscR: height,
@@ -1031,7 +1130,7 @@ function riverMinPathLengthForTier(tier) {
   return 25;
 }
 function riverGridTraceMinLen(catalogMinLen, tier = "medium") {
-  const cap = tier === "low" ? 10 : 12;
+  const cap = tier === "low" ? 5 : tier === "high" ? 8 : 6;
   return Math.min(catalogMinLen, cap);
 }
 function resolveRiverTraceForMap(mapMenuLabel, riversTier) {
@@ -1883,7 +1982,28 @@ function reliefElevGates(mtnTh) {
   }
   return { mountain: 0.14, highland: 0.11, landMaskHi: 0.2, landMaskMtn: 0.22 };
 }
-function classifyTerrain(elevContinental, landMask, mtnNoise, forNoise, desNoise, thresholds, climateZone) {
+var TERRAIN_GLOBAL_MIX_AMP = 0.12;
+var TERRAIN_CELL_JITTER_AMP = 0.65;
+function terenCoverageCellSize() {
+  return 4;
+}
+function hashInt3(a, b, c) {
+  let h = a * 374761393 ^ b * 668265263 ^ c * 2246822519;
+  h = Math.imul(h ^ h >>> 13, 1274126177);
+  h = (h ^ h >>> 16) >>> 0;
+  return h / 4294967296;
+}
+function terrainCellBias(q, r, seed, cellSize = terenCoverageCellSize()) {
+  const cx = Math.floor(q / cellSize);
+  const cy = Math.floor(r / cellSize);
+  return (hashInt3(cx, cy, seed) - 0.5) * 2;
+}
+function terrainRownLakaJitter(forNoise, desNoise, cellBias) {
+  const global = ((forNoise + desNoise) * 0.5 - 0.5) * TERRAIN_GLOBAL_MIX_AMP;
+  const local = cellBias * TERRAIN_CELL_JITTER_AMP;
+  return global + local;
+}
+function classifyTerrain(elevContinental, landMask, mtnNoise, forNoise, desNoise, thresholds, climateZone, cellBias = 0) {
   const desTh = thresholds?.desert ?? 0.63;
   const forTh = climateForestThreshold(climateZone, thresholds?.forest ?? 0.58);
   const mtnTh = thresholds?.mountain ?? 0.75;
@@ -1902,7 +2022,7 @@ function classifyTerrain(elevContinental, landMask, mtnNoise, forNoise, desNoise
       terenBazowy = "wzgorza" /* Wzgorza */;
     } else if (canAssignClimateDesert(climateZone) && desNoise > desTh && elevContinental > 0.18 && elevContinental < 0.45) {
       terenBazowy = "pustynia" /* Pustynia */;
-    } else if (elevContinental > 0.35) {
+    } else if (elevContinental + terrainRownLakaJitter(forNoise, desNoise, cellBias) > 0.35) {
       terenBazowy = "rownina" /* Rownina */;
     } else {
       terenBazowy = "laka" /* Laka */;
@@ -1913,7 +2033,7 @@ function classifyTerrain(elevContinental, landMask, mtnNoise, forNoise, desNoise
   }
   return { terenBazowy, nakladka };
 }
-function classifyTerrainFlat(elevContinental, landMask, _mtnNoise, forNoise, desNoise, thresholds, climateZone) {
+function classifyTerrainFlat(elevContinental, landMask, _mtnNoise, forNoise, desNoise, thresholds, climateZone, cellBias = 0) {
   const desTh = thresholds?.desert ?? 0.63;
   const forTh = climateForestThreshold(climateZone, thresholds?.forest ?? 0.58);
   let terenBazowy;
@@ -1922,7 +2042,7 @@ function classifyTerrainFlat(elevContinental, landMask, _mtnNoise, forNoise, des
     terenBazowy = "laka" /* Laka */;
   } else if (canAssignClimateDesert(climateZone) && desNoise > desTh && elevContinental > 0.18 && elevContinental < 0.45) {
     terenBazowy = "pustynia" /* Pustynia */;
-  } else if (elevContinental > 0.35) {
+  } else if (elevContinental + terrainRownLakaJitter(forNoise, desNoise, cellBias) > 0.35) {
     terenBazowy = "rownina" /* Rownina */;
   } else {
     terenBazowy = "laka" /* Laka */;
@@ -1966,26 +2086,63 @@ function reapplyForestOverlay(hexes, scratch, thresholds, typ, forestTier, conti
   }
   return assigned;
 }
-function reapplyLandTerrain(hexes, scratch, thresholds, mapHeight) {
+var REAPPLY_RELIEF_BUDGET_FRAC = {
+  low: 0.1,
+  medium: 0.17,
+  high: 0.3
+};
+function reapplyLandTerrain(hexes, scratch, seed, thresholds, mapHeight, reliefTier = "medium") {
+  const reliefCandidates = [];
+  let landCount = 0;
   for (const [key, hex] of Object.entries(hexes)) {
     if (hex.terenBazowy === "morze" /* Morze */ || hex.terenBazowy === "wybrzeze" /* Wybrzeze */) {
       continue;
     }
     const s = scratch.get(key);
     if (!s) continue;
+    landCount++;
     const { q, r } = hex.coords;
     const climateZone = mapHeight ? climateZoneAt(q, r, mapHeight) : void 0;
-    const { terenBazowy, nakladka } = classifyTerrainFlat(
+    const cellBias = terrainCellBias(q, r, seed);
+    const { terenBazowy: fullTb, nakladka: fullNak } = classifyTerrain(
       s.elevContinental,
       s.landMask,
       s.mtnNoise,
       s.forNoise,
       s.desNoise,
       thresholds,
-      climateZone
+      climateZone,
+      cellBias
     );
-    hex.terenBazowy = terenBazowy;
-    hex.nakladka = nakladka;
+    if (fullTb === "gory" /* Gory */ || fullTb === "wzgorza" /* Wzgorza */) {
+      const { terenBazowy: flatTb, nakladka: flatNak } = classifyTerrainFlat(
+        s.elevContinental,
+        s.landMask,
+        s.mtnNoise,
+        s.forNoise,
+        s.desNoise,
+        thresholds,
+        climateZone,
+        cellBias
+      );
+      hex.terenBazowy = flatTb;
+      hex.nakladka = flatNak;
+      reliefCandidates.push({ key, n: s.mtnNoise, want: fullTb });
+    } else {
+      hex.terenBazowy = fullTb === "morze" /* Morze */ ? "laka" /* Laka */ : fullTb;
+      hex.nakladka = fullNak;
+    }
+  }
+  if (reliefCandidates.length === 0) return;
+  reliefCandidates.sort((a, b) => b.n - a.n);
+  const budgetFrac = REAPPLY_RELIEF_BUDGET_FRAC[reliefTier];
+  const budget = Math.floor(landCount * budgetFrac);
+  for (let i = 0; i < Math.min(budget, reliefCandidates.length); i++) {
+    const c = reliefCandidates[i];
+    const hex = hexes[c.key];
+    if (!hex) continue;
+    hex.terenBazowy = c.want;
+    hex.nakladka = "brak" /* Brak */;
   }
 }
 var FALLBACK_RELIEF_FRAC = {
@@ -2411,8 +2568,10 @@ function forceReliefTypeInCell(land, hexes, scratch, width, height, rand, want, 
       spot = [ranked[0].q, ranked[0].r];
     }
     const k = hexKey(spot[0], spot[1]);
-    hexes[k].terenBazowy = want === "mountain" ? "gory" /* Gory */ : "wzgorza" /* Wzgorza */;
-    hexes[k].nakladka = "brak" /* Brak */;
+    const forcedHex = hexes[k];
+    forcedHex.terenBazowy = want === "mountain" ? "gory" /* Gory */ : "wzgorza" /* Wzgorza */;
+    forcedHex.nakladka = "brak" /* Brak */;
+    delete forcedHex.zloze;
     placed.add(k);
     changed = true;
   }
@@ -2442,26 +2601,33 @@ function forceCopperHighlandsInCell(land, hexes, scratch, width, height, rand) {
     MIN_HIGHLANDS_COPPER_CELL
   );
 }
+var RELIEF_OVERFLOW_CAP_MULT = Number.POSITIVE_INFINITY;
 function capMountainOverflowInCell(land, hexes, scratch, tier, spreadOnly = false) {
-  const maxMtn = spreadOnly ? reliefSpreadCapMountain(tier, land.length) : Math.max(MIN_MOUNTAINS_IRON_CELL, reliefBonusCapMountain(tier, land.length) + MIN_MOUNTAINS_IRON_CELL);
+  const baseMaxMtn = spreadOnly ? reliefSpreadCapMountain(tier, land.length) : Math.max(MIN_MOUNTAINS_IRON_CELL, reliefBonusCapMountain(tier, land.length) + MIN_MOUNTAINS_IRON_CELL);
+  const maxMtn = baseMaxMtn * RELIEF_OVERFLOW_CAP_MULT;
   const mountains = land.filter(([q, r]) => hexes[hexKey(q, r)]?.terenBazowy === "gory" /* Gory */).map(([q, r]) => ({ q, r, n: scratch.get(hexKey(q, r))?.mtnNoise ?? 0 })).sort((a, b) => a.n - b.n);
   let changed = false;
   while (mountains.length > maxMtn && mountains.length > MIN_MOUNTAINS_IRON_CELL) {
     const drop = mountains.shift();
-    hexes[hexKey(drop.q, drop.r)].terenBazowy = "wzgorza" /* Wzgorza */;
-    hexes[hexKey(drop.q, drop.r)].nakladka = "brak" /* Brak */;
+    const dropHex = hexes[hexKey(drop.q, drop.r)];
+    dropHex.terenBazowy = "wzgorza" /* Wzgorza */;
+    dropHex.nakladka = "brak" /* Brak */;
+    delete dropHex.zloze;
     changed = true;
   }
   return changed;
 }
 function capHighlandOverflowInCell(land, hexes, scratch, tier, spreadOnly = false) {
-  const maxHi = spreadOnly ? reliefSpreadCapHighland(tier, land.length) : Math.max(MIN_HIGHLANDS_COPPER_CELL, reliefBonusCapHighland(tier, land.length) + MIN_HIGHLANDS_COPPER_CELL);
+  const baseMaxHi = spreadOnly ? reliefSpreadCapHighland(tier, land.length) : Math.max(MIN_HIGHLANDS_COPPER_CELL, reliefBonusCapHighland(tier, land.length) + MIN_HIGHLANDS_COPPER_CELL);
+  const maxHi = baseMaxHi * RELIEF_OVERFLOW_CAP_MULT;
   const highlands = land.filter(([q, r]) => hexes[hexKey(q, r)]?.terenBazowy === "wzgorza" /* Wzgorza */).map(([q, r]) => ({ q, r, n: scratch.get(hexKey(q, r))?.mtnNoise ?? 0 })).sort((a, b) => a.n - b.n);
   let changed = false;
   while (highlands.length > maxHi && highlands.length > MIN_HIGHLANDS_COPPER_CELL) {
     const drop = highlands.shift();
-    hexes[hexKey(drop.q, drop.r)].terenBazowy = "rownina" /* Rownina */;
-    hexes[hexKey(drop.q, drop.r)].nakladka = "brak" /* Brak */;
+    const dropHex = hexes[hexKey(drop.q, drop.r)];
+    dropHex.terenBazowy = "rownina" /* Rownina */;
+    dropHex.nakladka = "brak" /* Brak */;
+    delete dropHex.zloze;
     changed = true;
   }
   return changed;
@@ -2547,6 +2713,169 @@ function ensureReliefGridCoverage(hexes, scratch, tier, width, height, _typ, _co
   }
   return fixed;
 }
+var MOUNTAIN_RANGE_LAND_SHARE_CAP = 0.4;
+function mountainRangeSeedCandidates(mass, hexes, scratch, width, height, rand) {
+  return mass.filter((k) => {
+    const hex = hexes[k];
+    if (!hex) return false;
+    const { q, r } = parseHexKey(k);
+    return isReliefCandidateHex(hex, q, r, width, height);
+  }).map((k) => ({ k, n: (scratch.get(k)?.mtnNoise ?? 0) + rand() * 0.15 })).sort((a, b) => b.n - a.n);
+}
+function walkMountainRange(hexes, scratch, width, height, rand, start, steps) {
+  const path = [];
+  const visited = /* @__PURE__ */ new Set([start]);
+  let cur = start;
+  for (let i = 0; i < steps; i++) {
+    const { q, r } = parseHexKey(cur);
+    const candidates = HEX_DIRECTIONS.map(([dq, dr]) => hexKey(q + dq, r + dr)).filter((k) => {
+      if (visited.has(k)) return false;
+      const hex = hexes[k];
+      if (!hex) return false;
+      const { q: nq, r: nr } = parseHexKey(k);
+      return isReliefCandidateHex(hex, nq, nr, width, height);
+    }).map((k) => ({ k, n: (scratch.get(k)?.mtnNoise ?? 0) + rand() * 0.3 })).sort((a, b) => b.n - a.n);
+    if (candidates.length === 0) break;
+    cur = candidates[0].k;
+    visited.add(cur);
+    path.push(cur);
+  }
+  return path;
+}
+function growMountainRanges(hexes, scratch, tier, width, height, rand) {
+  const params = mapGenMountainRangeParams(tier);
+  const mtnTh = mapGenMountainThreshold(tier);
+  const hiTh = mapGenHighlandThreshold(tier);
+  const masses = groupLandMassKeys(hexes).filter((m) => m.length >= params.minMasaHexow).sort((a, b) => b.length - a.length || (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0));
+  const addedByThisRun = [];
+  for (const mass of masses) {
+    const nRanges = Math.min(
+      params.maxPasmNaMase,
+      Math.max(1, Math.round(mass.length / params.hexyNaPasmo))
+    );
+    const seedCandidates = mountainRangeSeedCandidates(mass, hexes, scratch, width, height, rand);
+    if (seedCandidates.length === 0) continue;
+    const seeds = pickSpreadReliefKeys(seedCandidates, nRanges, 5);
+    for (const seedKey of seeds) {
+      const len = params.dlugoscMin + Math.floor(rand() * (params.dlugoscMax - params.dlugoscMin + 1));
+      const path = [seedKey, ...walkMountainRange(hexes, scratch, width, height, rand, seedKey, len)];
+      const placedThisRange = [];
+      for (const k of path) {
+        const hex = hexes[k];
+        if (!hex) continue;
+        if (hex.terenBazowy === "gory" /* Gory */ || hex.terenBazowy === "wzgorza" /* Wzgorza */) {
+          placedThisRange.push(k);
+          continue;
+        }
+        if (hex.terenBazowy !== "laka" /* Laka */ && hex.terenBazowy !== "rownina" /* Rownina */ && hex.terenBazowy !== "pustynia" /* Pustynia */) {
+          continue;
+        }
+        const n = scratch.get(k)?.mtnNoise ?? 0;
+        if (n > mtnTh) {
+          addedByThisRun.push({ k, n, wasHighland: false, prev: hex.terenBazowy });
+          hex.terenBazowy = "gory" /* Gory */;
+          hex.nakladka = "brak" /* Brak */;
+          delete hex.zloze;
+          placedThisRange.push(k);
+        } else if (n > hiTh) {
+          addedByThisRun.push({ k, n, wasHighland: true, prev: hex.terenBazowy });
+          hex.terenBazowy = "wzgorza" /* Wzgorza */;
+          hex.nakladka = "brak" /* Brak */;
+          delete hex.zloze;
+          placedThisRange.push(k);
+        }
+      }
+      for (const k of placedThisRange) {
+        const { q, r } = parseHexKey(k);
+        for (const [dq, dr] of HEX_DIRECTIONS) {
+          const nq = q + dq;
+          const nr = r + dr;
+          const nk = hexKey(nq, nr);
+          const nhex = hexes[nk];
+          if (!nhex) continue;
+          if (nhex.terenBazowy === "gory" /* Gory */ || nhex.terenBazowy === "wzgorza" /* Wzgorza */) continue;
+          if (nhex.terenBazowy !== "laka" /* Laka */ && nhex.terenBazowy !== "rownina" /* Rownina */ && nhex.terenBazowy !== "pustynia" /* Pustynia */) continue;
+          if (!isReliefCandidateHex(nhex, nq, nr, width, height)) continue;
+          if (rand() >= params.obrzezeSzansa) continue;
+          const n = scratch.get(nk)?.mtnNoise ?? 0;
+          addedByThisRun.push({ k: nk, n, wasHighland: true, prev: nhex.terenBazowy });
+          nhex.terenBazowy = "wzgorza" /* Wzgorza */;
+          nhex.nakladka = "brak" /* Brak */;
+          delete nhex.zloze;
+        }
+      }
+    }
+  }
+  const { land } = countLandSeaHexes2(hexes);
+  const capCount = Math.floor(land * MOUNTAIN_RANGE_LAND_SHARE_CAP);
+  let mountainous = 0;
+  for (const hex of Object.values(hexes)) {
+    if (hex.terenBazowy === "gory" /* Gory */ || hex.terenBazowy === "wzgorza" /* Wzgorza */) mountainous++;
+  }
+  if (mountainous > capCount && addedByThisRun.length > 0) {
+    const revertOrder = [...addedByThisRun].sort((a, b) => {
+      if (a.wasHighland !== b.wasHighland) return a.wasHighland ? -1 : 1;
+      return a.n - b.n;
+    });
+    for (const item of revertOrder) {
+      if (mountainous <= capCount) break;
+      const hex = hexes[item.k];
+      if (!hex) continue;
+      if (hex.terenBazowy !== "gory" /* Gory */ && hex.terenBazowy !== "wzgorza" /* Wzgorza */) continue;
+      hex.terenBazowy = item.prev;
+      mountainous--;
+    }
+  }
+  if (mountainous > capCount) {
+    const ironSize = ironCoverageCellSize(tier);
+    const copperSize = copperCoverageCellSize(tier);
+    const ironCellCount = /* @__PURE__ */ new Map();
+    const copperCellCount = /* @__PURE__ */ new Map();
+    const cellIdOf = (q, r, size) => `${Math.floor(q / size)},${Math.floor(r / size)}`;
+    const allRelief = [];
+    for (const [k, hex] of Object.entries(hexes)) {
+      if (hex.terenBazowy !== "gory" /* Gory */ && hex.terenBazowy !== "wzgorza" /* Wzgorza */) continue;
+      const { q, r } = parseHexKey(k);
+      const isHighland = hex.terenBazowy === "wzgorza" /* Wzgorza */;
+      if (isHighland) {
+        const ck = cellIdOf(q, r, copperSize);
+        copperCellCount.set(ck, (copperCellCount.get(ck) ?? 0) + 1);
+      } else {
+        const ck = cellIdOf(q, r, ironSize);
+        ironCellCount.set(ck, (ironCellCount.get(ck) ?? 0) + 1);
+      }
+      allRelief.push({ k, q, r, n: scratch.get(k)?.mtnNoise ?? 0, isHighland });
+    }
+    allRelief.sort((a, b) => {
+      if (a.isHighland !== b.isHighland) return a.isHighland ? -1 : 1;
+      return a.n - b.n;
+    });
+    for (const item of allRelief) {
+      if (mountainous <= capCount) break;
+      const hex = hexes[item.k];
+      if (!hex) continue;
+      if (item.isHighland) {
+        const ck = cellIdOf(item.q, item.r, copperSize);
+        const cnt = copperCellCount.get(ck) ?? 0;
+        if (cnt <= MIN_HIGHLANDS_COPPER_CELL) continue;
+        hex.terenBazowy = "rownina" /* Rownina */;
+        hex.nakladka = "brak" /* Brak */;
+        delete hex.zloze;
+        copperCellCount.set(ck, cnt - 1);
+      } else {
+        const ck = cellIdOf(item.q, item.r, ironSize);
+        const cnt = ironCellCount.get(ck) ?? 0;
+        if (cnt <= MIN_MOUNTAINS_IRON_CELL) continue;
+        hex.terenBazowy = "rownina" /* Rownina */;
+        hex.nakladka = "brak" /* Brak */;
+        delete hex.zloze;
+        ironCellCount.set(ck, cnt - 1);
+      }
+      mountainous--;
+    }
+  }
+  return addedByThisRun.length;
+}
 function assignContinentIndices(width, height, centers) {
   const map = /* @__PURE__ */ new Map();
   for (let r = 0; r < height; r++) {
@@ -2585,7 +2914,7 @@ function isLandTerrain(tb) {
   return tb === "laka" /* Laka */ || tb === "rownina" /* Rownina */ || tb === "wzgorza" /* Wzgorza */ || tb === "pustynia" /* Pustynia */;
 }
 function isLandOrCoast(tb) {
-  return tb !== "morze" /* Morze */;
+  return tb !== "morze" /* Morze */ && tb !== "wybrzeze" /* Wybrzeze */;
 }
 function defaultLandFractionForTyp(typ) {
   switch (typ) {
@@ -2605,7 +2934,7 @@ function countLandSeaHexes2(hexes) {
   let land = 0;
   let sea = 0;
   for (const h of Object.values(hexes)) {
-    if (h.terenBazowy === "morze" /* Morze */) sea++;
+    if (h.terenBazowy === "morze" /* Morze */ || h.terenBazowy === "wybrzeze" /* Wybrzeze */) sea++;
     else land++;
   }
   return { land, sea, total: land + sea };
@@ -2626,7 +2955,7 @@ function countMorseNeighbors(hexes, q, r) {
   let n = 0;
   for (const [dq, dr] of HEX_DIRECTIONS) {
     const nh = hexes[hexKey(q + dq, r + dr)];
-    if (nh?.terenBazowy === "morze" /* Morze */) n++;
+    if (nh?.terenBazowy === "morze" /* Morze */ || nh?.terenBazowy === "wybrzeze" /* Wybrzeze */) n++;
   }
   return n;
 }
@@ -2634,18 +2963,18 @@ function countLandNeighbors(hexes, q, r) {
   let n = 0;
   for (const [dq, dr] of HEX_DIRECTIONS) {
     const nh = hexes[hexKey(q + dq, r + dr)];
-    if (nh && nh.terenBazowy !== "morze" /* Morze */) n++;
+    if (nh && nh.terenBazowy !== "morze" /* Morze */ && nh.terenBazowy !== "wybrzeze" /* Wybrzeze */) n++;
   }
   return n;
 }
 function isCoastalLandHex(hexes, q, r) {
   const h = hexes[hexKey(q, r)];
-  if (!h || h.terenBazowy === "morze" /* Morze */) return false;
+  if (!h || h.terenBazowy === "morze" /* Morze */ || h.terenBazowy === "wybrzeze" /* Wybrzeze */) return false;
   return countMorseNeighbors(hexes, q, r) > 0;
 }
 function isCoastalMorseHex(hexes, q, r) {
   const h = hexes[hexKey(q, r)];
-  if (h?.terenBazowy !== "morze" /* Morze */) return false;
+  if (h?.terenBazowy !== "morze" /* Morze */ && h?.terenBazowy !== "wybrzeze" /* Wybrzeze */) return false;
   return countLandNeighbors(hexes, q, r) > 0;
 }
 function setHexToMorze(hex) {
@@ -2814,26 +3143,31 @@ function isDryLandTerrain(tb) {
 function applyCoastRing(hexes) {
   const toCoast = [];
   for (const [key, hex] of Object.entries(hexes)) {
-    if (!isDryLandTerrain(hex.terenBazowy)) continue;
+    if (hex.terenBazowy !== "morze" /* Morze */) continue;
     const parts = key.split(",");
     const q = Number(parts[0]);
     const r = Number(parts[1]);
     for (const [dq, dr] of HEX_DIRECTIONS) {
       const nb = hexes[hexKey(q + dq, r + dr)];
-      if (nb?.terenBazowy === "morze" /* Morze */) {
+      if (nb && isDryLandTerrain(nb.terenBazowy)) {
         toCoast.push(key);
         break;
       }
     }
   }
-  for (const key of toCoast) hexes[key].terenBazowy = "wybrzeze" /* Wybrzeze */;
+  for (const key of toCoast) {
+    const hex = hexes[key];
+    hex.terenBazowy = "wybrzeze" /* Wybrzeze */;
+    hex.nakladka = "brak" /* Brak */;
+    delete hex.zloze;
+  }
   return toCoast.length;
 }
 function applyDoubleCoastRing(hexes) {
   let n = applyCoastRing(hexes);
   const toCoast = [];
   for (const [key, hex] of Object.entries(hexes)) {
-    if (!isDryLandTerrain(hex.terenBazowy)) continue;
+    if (hex.terenBazowy !== "morze" /* Morze */) continue;
     const parts = key.split(",");
     const q = Number(parts[0]);
     const r = Number(parts[1]);
@@ -2845,7 +3179,12 @@ function applyDoubleCoastRing(hexes) {
       }
     }
   }
-  for (const key of toCoast) hexes[key].terenBazowy = "wybrzeze" /* Wybrzeze */;
+  for (const key of toCoast) {
+    const hex = hexes[key];
+    hex.terenBazowy = "wybrzeze" /* Wybrzeze */;
+    hex.nakladka = "brak" /* Brak */;
+    delete hex.zloze;
+  }
   return n + toCoast.length;
 }
 function findDryLandTouchingSea(hexes) {
@@ -2864,13 +3203,6 @@ function findDryLandTouchingSea(hexes) {
     }
   }
   return bad;
-}
-function mapHeightFromHexes(hexes) {
-  let maxR = 0;
-  for (const h of Object.values(hexes)) {
-    if (h.coords.r > maxR) maxR = h.coords.r;
-  }
-  return maxR + 1;
 }
 function sanitizeCoastHexes(hexes) {
   const valid = /* @__PURE__ */ new Set();
@@ -2904,32 +3236,11 @@ function sanitizeCoastHexes(hexes) {
     }
   }
   let fixed = 0;
-  const mapHeight = mapHeightFromHexes(hexes);
   for (const [key, hex] of Object.entries(hexes)) {
     if (hex.terenBazowy !== "wybrzeze" /* Wybrzeze */) continue;
-    const parts = key.split(",");
-    const q = Number(parts[0]);
-    const r = Number(parts[1]);
-    const touchesSea = HEX_DIRECTIONS.some(
-      ([dq, dr]) => hexes[hexKey(q + dq, r + dr)]?.terenBazowy === "morze" /* Morze */
-    );
-    if (!valid.has(key)) {
-      let pustN = 0;
-      for (const [dq, dr] of HEX_DIRECTIONS) {
-        const nh = hexes[hexKey(q + dq, r + dr)];
-        if (nh && nh.terenBazowy === "pustynia" /* Pustynia */) pustN++;
-      }
-      const inArid = climateZoneAt(q, r, mapHeight) === "arid";
-      hex.terenBazowy = inArid && pustN >= 2 ? "pustynia" /* Pustynia */ : "laka" /* Laka */;
-      hex.nakladka = "brak" /* Brak */;
-      delete hex.zloze;
-      fixed++;
-      continue;
-    }
-    if (!touchesSea) {
-      hex.terenBazowy = "laka" /* Laka */;
-      fixed++;
-    }
+    if (valid.has(key)) continue;
+    setHexToMorze(hex);
+    fixed++;
   }
   return fixed;
 }
@@ -3208,6 +3519,75 @@ function finalizeCoastAndInlandWater(hexes, width, height, maxPasses = 3, opts) 
     if (changed === 0) break;
   }
 }
+function thickenCoastAndSmoothInlets(hexes, width, height, coastWidth = 2) {
+  let changed = 0;
+  for (let pass = 0; pass < 12; pass++) {
+    const toFill = [];
+    for (const [key, hex] of Object.entries(hexes)) {
+      if (hex.terenBazowy !== "morze" /* Morze */) continue;
+      const { q, r } = parseHexKey(key);
+      if (isInMapBorder(q, r, width, height)) continue;
+      if (countLandNeighbors(hexes, q, r) >= 4) toFill.push(key);
+    }
+    if (toFill.length === 0) break;
+    for (const key of toFill) {
+      setHexToLaka(hexes[key]);
+      changed++;
+    }
+  }
+  changed += removeInlandWaterPools(hexes, width, height);
+  for (const hex of Object.values(hexes)) {
+    if (hex.terenBazowy === "wybrzeze" /* Wybrzeze */) {
+      setHexToMorze(hex);
+      changed++;
+    }
+  }
+  for (let ring = 0; ring < coastWidth; ring++) {
+    const toCoast = [];
+    for (const [key, hex] of Object.entries(hexes)) {
+      if (hex.terenBazowy !== "morze" /* Morze */) continue;
+      const { q, r } = parseHexKey(key);
+      for (const [dq, dr] of HEX_DIRECTIONS) {
+        const nb = hexes[hexKey(q + dq, r + dr)];
+        if (nb && (isDryLandTerrain(nb.terenBazowy) || nb.terenBazowy === "wybrzeze" /* Wybrzeze */)) {
+          toCoast.push(key);
+          break;
+        }
+      }
+    }
+    if (toCoast.length === 0) break;
+    for (const key of toCoast) {
+      const hex = hexes[key];
+      hex.terenBazowy = "wybrzeze" /* Wybrzeze */;
+      hex.nakladka = "brak" /* Brak */;
+      delete hex.zloze;
+      changed++;
+    }
+  }
+  return changed;
+}
+function flattenFalseCoastalRiverNotches(hexes, width, height) {
+  const toFlatten = [];
+  for (const [key, hex] of Object.entries(hexes)) {
+    if (hex.terenBazowy !== "wybrzeze" /* Wybrzeze */) continue;
+    if (hex.rzeka?.obecna) continue;
+    const { q, r } = parseHexKey(key);
+    if (isInMapBorder(q, r, width, height)) continue;
+    let morzeN = 0;
+    for (const [dq, dr] of HEX_DIRECTIONS) {
+      if (hexes[hexKey(q + dq, r + dr)]?.terenBazowy === "morze" /* Morze */) morzeN++;
+    }
+    if (morzeN >= 5) toFlatten.push(key);
+  }
+  for (const key of toFlatten) {
+    const hex = hexes[key];
+    hex.terenBazowy = "morze" /* Morze */;
+    hex.nakladka = "brak" /* Brak */;
+    hex.rzeka = { obecna: false, krawedzie: [] };
+    delete hex.zloze;
+  }
+  return toFlatten.length;
+}
 function removeTinyLandIslands(hexes, minHexes) {
   const visited = /* @__PURE__ */ new Set();
   let removed = 0;
@@ -3328,6 +3708,17 @@ function purgeOceanInsideEarthLandMask(hexes, width, height) {
   }
   return n;
 }
+function purgeStrayLandOutsideEarthMask(hexes, width, height) {
+  let n = 0;
+  for (const [key, hex] of Object.entries(hexes)) {
+    const { q, r } = parseHexKey(key);
+    if (earthTemplateLandAt(q, r, width, height) > 0) continue;
+    if (!isDryLandTerrain(hex.terenBazowy)) continue;
+    setHexToMorze(hex);
+    n++;
+  }
+  return n;
+}
 function sanitizeRiverPath(path) {
   if (path.length < 2) return path;
   const out = [{ ...path[0] }];
@@ -3382,6 +3773,8 @@ function repairRiverPathAdjacency(path, hexes, sourceKey) {
   return sanitizeRiverPath(out);
 }
 var RIVER_MIN_INLAND_FROM_SEA = 2;
+var RIVER_MIN_MAIN_LEN = 3;
+var RIVER_HARD_MEANDER_LEN = 8;
 var RIVER_MOUTH_TAIL_LEN = 5;
 function riverPathRespectsSeaBuffer(hexes, path, seaDist, minInland = RIVER_MIN_INLAND_FROM_SEA, mouthTail = RIVER_MOUTH_TAIL_LEN) {
   if (path.length === 0) return false;
@@ -3488,9 +3881,10 @@ function pathEndsAtSea(hexes, path, width, height, oceanConnected) {
 function isReliefTerrain(t) {
   return t === "gory" /* Gory */ || t === "wzgorza" /* Wzgorza */;
 }
-function canRiverFlowThrough(hex, cellKey, sourceKey) {
+function canRiverFlowThrough(hex, cellKey, sourceKey, blockExisting = false, allowKey) {
   if (!hex || hex.terenBazowy === "morze" /* Morze */) return false;
   if (isReliefTerrain(hex.terenBazowy)) return cellKey === sourceKey;
+  if (blockExisting && hex.rzeka?.obecna && cellKey !== allowKey) return false;
   return true;
 }
 function riverStepDir(from, to) {
@@ -3519,16 +3913,18 @@ function growRiverInlandBeforeDrainage(hexes, sq, sr, seaDist, openOceanDist, ra
     const curKey = hexKey(cur.q, cur.r);
     const curD = seaDist.get(curKey) ?? 0;
     const curOd = openOceanDist.get(curKey) ?? Infinity;
+    const hardMeander = path.length < RIVER_HARD_MEANDER_LEN;
     const candidates = [];
     for (const [dq, dr] of HEX_DIRECTIONS) {
       const nq = cur.q + dq;
       const nr = cur.r + dr;
       const nk = hexKey(nq, nr);
       if (visited.has(nk)) continue;
-      if (!canRiverFlowThrough(hexes[nk], nk, srcKey)) continue;
+      if (!canRiverFlowThrough(hexes[nk], nk, srcKey, true)) continue;
       const nd = seaDist.get(nk) ?? 0;
       if (nd < RIVER_MIN_INLAND_FROM_SEA) continue;
       const od = openOceanDist.get(nk) ?? Infinity;
+      if (hardMeander && od < curOd) continue;
       let score = 1200 - od * 30;
       if (od > curOd + 0.5) score -= 18;
       if (nd > curD + 1) score -= 10;
@@ -3568,7 +3964,7 @@ function greedyRiverDrainToSea(hexes, sq, sr, seaDist, openOceanDist, oceanConne
       const nr = cur.r + dr;
       const nk = hexKey(nq, nr);
       if (visited.has(nk)) continue;
-      if (!canRiverFlowThrough(hexes[nk], nk, sourceKey)) continue;
+      if (!canRiverFlowThrough(hexes[nk], nk, sourceKey, true)) continue;
       const nd = seaDist.get(nk) ?? Infinity;
       if (!canRiverDrainStep(nk, nd, openOceanDist, oceanConnected, true)) continue;
       const od = openOceanDist.get(nk) ?? Infinity;
@@ -3635,7 +4031,7 @@ function aStarRiverToSea(hexes, sq, sr, seaDist, openOceanDist, oceanConnected, 
     }
     for (const [dq, dr] of HEX_DIRECTIONS) {
       const nk = hexKey(q + dq, r + dr);
-      if (!canRiverFlowThrough(hexes[nk], nk, startK)) continue;
+      if (!canRiverFlowThrough(hexes[nk], nk, startK, true)) continue;
       const nd = seaDist.get(nk) ?? Infinity;
       if (!canRiverDrainStep(nk, nd, openOceanDist, oceanConnected, true)) continue;
       let stepCost = 1;
@@ -3671,7 +4067,7 @@ function findRiverMeanderStep(hexes, cur, target, seaDist, used, rand) {
     if (nk === tgtK || used.has(nk)) continue;
     if (sameRiverDir([dq, dr], toTarget)) continue;
     const nh = hexes[nk];
-    if (!canRiverFlowThrough(nh, nk, "")) continue;
+    if (!canRiverFlowThrough(nh, nk, "", true)) continue;
     const nd = seaDist.get(nk);
     if (nd == null || nd > curD) continue;
     if (nd < RIVER_MIN_INLAND_FROM_SEA) continue;
@@ -3724,13 +4120,7 @@ function extendRiverToWybrzeze(hexes, path, seaDist) {
   for (let extra = 0; extra < RIVER_MOUTH_TAIL_LEN; extra++) {
     const endHex = hexes[hexKey(cq, cr)];
     if (!endHex) break;
-    if (endHex.terenBazowy === "wybrzeze" /* Wybrzeze */) {
-      const touchesMorse = HEX_DIRECTIONS.some(
-        ([dq, dr]) => hexes[hexKey(cq + dq, cr + dr)]?.terenBazowy === "morze" /* Morze */
-      );
-      if (touchesMorse) break;
-    }
-    if (endHex.terenBazowy === "morze" /* Morze */) break;
+    if (endHex.terenBazowy === "wybrzeze" /* Wybrzeze */ || endHex.terenBazowy === "morze" /* Morze */) break;
     let best = null;
     let bestScore = Infinity;
     for (const [dq, dr] of HEX_DIRECTIONS) {
@@ -3741,12 +4131,7 @@ function extendRiverToWybrzeze(hexes, path, seaDist) {
       const nh = hexes[nk];
       if (!nh || nh.terenBazowy === "morze" /* Morze */ || isReliefTerrain(nh.terenBazowy)) continue;
       let score = seaDist.get(nk) ?? 999;
-      if (nh.terenBazowy === "wybrzeze" /* Wybrzeze */) {
-        score -= 8;
-        if (HEX_DIRECTIONS.some(
-          ([ddq, ddr]) => hexes[hexKey(nq + ddq, nr + ddr)]?.terenBazowy === "morze" /* Morze */
-        )) score -= 12;
-      }
+      if (nh.terenBazowy === "wybrzeze" /* Wybrzeze */) score -= 8;
       if (score < bestScore) {
         bestScore = score;
         best = [nq, nr];
@@ -3762,16 +4147,7 @@ function extendRiverToWybrzeze(hexes, path, seaDist) {
 }
 function finishRiverMouthAtSea(hexes, path, seaDist, openOceanDist, oceanConnected, sourceKey) {
   if (path.length === 0) return path;
-  const mouthReady = (q, r) => {
-    const h = hexes[hexKey(q, r)];
-    if (!h) return false;
-    if (h.terenBazowy === "wybrzeze" /* Wybrzeze */) {
-      return HEX_DIRECTIONS.some(
-        ([dq, dr]) => hexes[hexKey(q + dq, r + dr)]?.terenBazowy === "morze" /* Morze */
-      );
-    }
-    return isRiverDrainageGoal(q, r, seaDist, hexes, sourceKey, oceanConnected);
-  };
+  const mouthReady = (q, r) => isRiverDrainageGoal(q, r, seaDist, hexes, sourceKey, oceanConnected);
   if (mouthReady(path[path.length - 1].q, path[path.length - 1].r)) return path;
   const visited = new Set(path.map((p) => hexKey(p.q, p.r)));
   let cur = path[path.length - 1];
@@ -3790,12 +4166,7 @@ function finishRiverMouthAtSea(hexes, path, seaDist, openOceanDist, oceanConnect
       if (nh.terenBazowy !== "wybrzeze" /* Wybrzeze */ && !canRiverDrainStep(nk, nd, openOceanDist, oceanConnected, true)) continue;
       if (!canRiverFlowThrough(nh, nk, sourceKey) && nh.terenBazowy !== "wybrzeze" /* Wybrzeze */) continue;
       let score = openOceanDist.get(nk) ?? nd;
-      if (nh.terenBazowy === "wybrzeze" /* Wybrzeze */) {
-        score -= 15;
-        if (HEX_DIRECTIONS.some(
-          ([ddq, ddr]) => hexes[hexKey(nq + ddq, nr + ddr)]?.terenBazowy === "morze" /* Morze */
-        )) score -= 20;
-      }
+      if (nh.terenBazowy === "wybrzeze" /* Wybrzeze */) score -= 15;
       if (score < bestScore) {
         bestScore = score;
         best = { q: nq, r: nr };
@@ -4052,7 +4423,7 @@ function aStarRiverToTarget(hexes, sq, sr, tq, tr, maxLen, sourceKey) {
     const { q, r } = parseHexKey(current);
     for (const [dq, dr] of HEX_DIRECTIONS) {
       const nk = hexKey(q + dq, r + dr);
-      if (!canRiverFlowThrough(hexes[nk], nk, sourceKey)) continue;
+      if (!canRiverFlowThrough(hexes[nk], nk, sourceKey, true, targetK)) continue;
       const tg = curG + 1;
       if (tg > maxLen) continue;
       if (tg >= (gScore.get(nk) ?? Infinity)) continue;
@@ -4267,6 +4638,25 @@ function pruneOrphanRiverPaths(hexes, paths, kinds, width, height) {
   }
   return { paths: curPaths, kinds: curKinds };
 }
+function pathReachesRealSea(hexes, path, width, height, goalKeys) {
+  const dims = width != null && height != null ? { width, height } : inferMapDimsFromHexes(hexes);
+  const goal = goalKeys ?? oceanConnectedWaterKeys(hexes, dims.width, dims.height);
+  return pathEndsAtSea(hexes, path, dims.width, dims.height, goal);
+}
+function pruneRiversNotReachingRealSea(hexes, paths, kinds, width, height) {
+  const goal = oceanConnectedWaterKeys(hexes, width, height);
+  const drop = /* @__PURE__ */ new Set();
+  for (let i = 0; i < paths.length; i++) {
+    if (kinds[i] !== "main") continue;
+    if (!pathReachesRealSea(hexes, paths[i] ?? [], width, height, goal)) drop.add(i);
+  }
+  if (drop.size === 0) return { paths, kinds };
+  const keptPaths = paths.filter((_, i) => !drop.has(i));
+  const keptKinds = kinds.filter((_, i) => !drop.has(i));
+  clearRiverMarks(hexes);
+  for (const p of keptPaths) markRiverPath(hexes, p);
+  return pruneOrphanRiverPaths(hexes, keptPaths, keptKinds, width, height);
+}
 function collectRiverPathHexKeys(paths) {
   const keys = /* @__PURE__ */ new Set();
   for (const path of paths) {
@@ -4404,6 +4794,7 @@ function generateRivers(hexes, width, height, rand, opts = {}) {
   const pushMain = (path, sq, sr) => {
     const trimmed = trimRiverPathRings(hexes, path);
     if (!pathEndsAtSea(hexes, trimmed, width, height, oceanConnected)) return false;
+    if (trimmed.length < RIVER_MIN_MAIN_LEN) return false;
     riverPaths.push(trimmed);
     riverKinds.push("main");
     usedSources.add(hexKey(sq, sr));
@@ -4631,6 +5022,7 @@ function topUpRiverGridCoverage(hexes, width, height, riverPaths, riverKinds, ra
   const pushMain = (path, sq, sr) => {
     const trimmed = trimRiverPathRings(hexes, path);
     if (!pathEndsAtSea(hexes, trimmed, width, height, oceanConnected)) return false;
+    if (trimmed.length < RIVER_MIN_MAIN_LEN) return false;
     riverPaths.push(trimmed);
     riverKinds.push("main");
     usedSources.add(hexKey(sq, sr));
@@ -4799,18 +5191,9 @@ var BASE_DEPOSIT_RULES = [
     allowedOn: (h) => isDryLandTerrain(h.terenBazowy) && h.terenBazowy === "gory" /* Gory */,
     rarity: 0.1
   },
-  {
-    id: "owce",
-    nakladka: "zloze_owiec" /* ZlozeOwiec */,
-    allowedOn: (h) => isDryLandTerrain(h.terenBazowy) && h.terenBazowy === "wzgorza" /* Wzgorza */,
-    rarity: 0.08
-  },
-  {
-    id: "bydlo",
-    nakladka: "zloze_bydla" /* ZlozeBydla */,
-    allowedOn: (h) => isDryLandTerrain(h.terenBazowy) && (h.terenBazowy === "laka" /* Laka */ || h.terenBazowy === "rownina" /* Rownina */),
-    rarity: 0.07
-  },
+  // Model B (Maciej 2026-07-09): USUNIĘTE złoża owiec/bydła (ZlozeOwiec/ZlozeBydla) — hodowla to
+  // teraz CZYSTE ulepszenie (Owczarnia/Pastwisko), budowane jak farma, nie surowiec na mapie.
+  // Koń (wyżej) zostaje surowcem. Zmienia hash mapy (zamierzone).
   {
     id: "sol",
     nakladka: null,
@@ -4870,9 +5253,8 @@ function placeDeposits(hexes, seed, rules = DEPOSIT_RULES, resourceMult = 1, bas
 var FAIR_PLAY_DEPOSIT_IDS = [
   "zelazo",
   "miedz",
-  "glina",
-  "bydlo",
-  "owce"
+  "glina"
+  // Model B: bydlo/owce usunięte (hodowla = ulepszenie, nie złoże)
 ];
 function depositRuleById(id) {
   const rule = DEPOSIT_RULES.find((r) => r.id === id);

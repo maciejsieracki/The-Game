@@ -129,14 +129,19 @@ assert(
 
 // Maciej 2026-07-04 / 2026-07-07: odległości startu + ciasny klaster
 const playerCap = plan.playerStartHex;
-const packR = M.clusterPackRadius(5, M.MIN_DIST_START_CITY_STATE);
+// packR z FAKTYCZNEJ wielkości klastra (siostry + stolica), nie stałej —
+// po podwojeniu miast klaster jest większy i promień rośnie.
+const packR = M.clusterPackRadius(sameType.length + 1, M.MIN_DIST_START_CITY_STATE);
+// Dozwolony zasięg = packR + fallback rozszerzający z landPoolNearCore
+// (przy skąpym lądzie miasta lądują dalej: `expanded <= packR + minDist*6`).
+const packReach = packR + M.MIN_DIST_START_CITY_STATE * 6;
 for (let i = 0; i < sameType.length; i++) {
   for (let j = i + 1; j < sameType.length; j++) {
     const d = M.hexDistanceAxial(sameType[i].q, sameType[i].r, sameType[j].q, sameType[j].r);
     assert(d >= M.MIN_DIST_START_CITY_STATE, `miasta-panstwa >= ${M.MIN_DIST_START_CITY_STATE} hex (${d})`);
   }
   const dCore = M.hexDistanceAxial(sameType[i].q, sameType[i].r, playerCap.q, playerCap.r);
-  assert(dCore <= packR + M.MIN_DIST_START_CITY_STATE, `rywal w packRadius od rdzenia (${dCore} <= ${packR + M.MIN_DIST_START_CITY_STATE})`);
+  assert(dCore <= packReach, `rywal w zasięgu klastra od rdzenia (${dCore} <= ${packReach})`);
 }
 const foreignCities = plan.spawnCities.filter(c => plan.foreignTypeOwners.has(c.ownerId));
 for (const fc of foreignCities) {
@@ -158,8 +163,8 @@ for (const fcl of plan.foreignTypeClusters) {
     if (fcCentrum) {
       const dc = M.hexDistanceAxial(pos[i].q, pos[i].r, fcCentrum.q, fcCentrum.r);
       assert(
-        dc <= fPackR + M.MIN_DIST_FOREIGN_IN_CLUSTER,
-        `obcy ${fcl.typ} w packRadius centrum (${dc})`,
+        dc <= fPackR + M.MIN_DIST_FOREIGN_IN_CLUSTER * 6,
+        `obcy ${fcl.typ} w zasięgu klastra od centrum (${dc})`,
       );
     }
   }

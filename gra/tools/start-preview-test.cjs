@@ -39,14 +39,13 @@ const p = M.buildStartPreview({
   civs,
   playerCivId: 'grecy',
   mapSizeMenuLabel: 'Standardowy',
-  rivalsCount: 6,
 });
 
 assert(p.playerCapitalName === 'Ateny', 'stolica Grecy');
-assert(p.sameTypeRivalCount === 6, '6 rywali standard');
+assert(p.sameTypeRivalCount === 12, '12 rywali standard (balans ×2, 2026-07-20)');
 assert(p.sameTypeRivalNames[0] === 'Sparta', 'rywal [1] Sparta');
-assert(p.activeTypesOnMap === 7, '7 typow standard');
-assert(p.foreignTypesCount === 6, '6 obcych typow');
+assert(p.activeTypesOnMap === 12, '12 typow standard (balans ×2, 2026-07-20)');
+assert(p.foreignTypesCount === 11, '11 obcych typow');
 assert(M.startPreviewSummaryRows(p).length === 4, '4 wiersze UI');
 
 console.log('\n' + passed + ' passed, ' + failed + ' failed');

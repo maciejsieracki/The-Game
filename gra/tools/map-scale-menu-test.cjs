@@ -44,18 +44,18 @@ function assert(c, msg) {
 }
 
 const EXPECT = {
-  Malenki: { mp: [3, 4, 5], typy: [3, 4, 6] },
-  Mały: { mp: [4, 5, 6], typy: [4, 5, 8] },
-  Standardowy: { mp: [5, 6, 7], typy: [5, 6, 10] },
-  Duży: { mp: [6, 7, 8], typy: [6, 7, 11] },
-  Ogromny: { mp: [7, 8, 9], typy: [8, 10, 12] },
-  'Super Huge': { mp: [7, 8, 9], typy: [10, 12, 14] },
+  Malenki: { mp: [6, 8, 10], typy: [6, 8, 10] },
+  Mały: { mp: [8, 10, 12], typy: [8, 10, 12] },
+  Standardowy: { mp: [10, 12, 14], typy: [10, 12, 14] },
+  Duży: { mp: [12, 14, 16], typy: [12, 14, 15] },
+  Ogromny: { mp: [14, 16, 18], typy: [13, 15, 15] },
+  'Super Huge': { mp: [14, 16, 18], typy: [13, 15, 15] },
 };
 
 console.log('map-scale-menu-test (Panel-E + menu kreatora)\n');
 
-assert(M.MAX_MIAST_PANSTWA === 9, 'MAX_MIAST_PANSTWA=9');
-assert(M.MAX_TYPY_CYWILIZACJI_MENU === 14, 'MAX_TYPY_CYWILIZACJI_MENU=14');
+assert(M.MAX_MIAST_PANSTWA === 18, 'MAX_MIAST_PANSTWA=18');
+assert(M.MAX_TYPY_CYWILIZACJI_MENU === 15, 'MAX_TYPY_CYWILIZACJI_MENU=15');
 
 for (const [label, exp] of Object.entries(EXPECT)) {
   const mp = M.miastaPanstwaMenuForMapLabel(label);

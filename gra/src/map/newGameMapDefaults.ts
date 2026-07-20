@@ -421,13 +421,13 @@ export function resolveWorldGenNumbers(opts?: WorldGenOptions): {
   };
 }
 
-/** Twardy sufit miast-państw w klastrze (Maciej 2026-07-04). */
-export const MAX_MIAST_PANSTWA = 9;
+/** Twardy sufit miast-państw w klastrze (Maciej 2026-07-04; ×2 balans 2026-07-20). */
+export const MAX_MIAST_PANSTWA = 18;
 
 /** Twardy sufit typów cywilizacji w menu (roster silnika: 15 nacji). */
-export const MAX_TYPY_CYWILIZACJI_MENU = 14;
+export const MAX_TYPY_CYWILIZACJI_MENU = 15;
 
-/** Menu „Miasta-państwa" — drabinka Maciej: Ogromny/Super 7·8·9, każdy mniejszy rozmiar −1. */
+/** Menu „Miasta-państwa" — drabinka Maciej: Ogromny/Super 14·16·18, każdy mniejszy rozmiar −2 (×2 balans 2026-07-20). */
 const MAP_MENU_TIER_ORDER: readonly RozmiarSwiata[] = [
   'malenki', 'maly', 'standardowy', 'duzy', 'ogromny', 'superogromny',
 ];
@@ -438,24 +438,28 @@ interface MapScaleTriple {
   max: number;
 }
 
-/** min · domyślne · max — miasta-państwa per klaster. */
+/** min · domyślne · max — miasta-państwa per klaster (×2 balans 2026-07-20). */
 const MIASTA_PANSTWA_MENU_BY_TIER: readonly MapScaleTriple[] = [
-  { min: 3, default: 4, max: 5 },
-  { min: 4, default: 5, max: 6 },
-  { min: 5, default: 6, max: 7 },
-  { min: 6, default: 7, max: 8 },
-  { min: 7, default: 8, max: MAX_MIAST_PANSTWA },
-  { min: 7, default: 8, max: MAX_MIAST_PANSTWA },
+  { min: 6, default: 8, max: 10 },
+  { min: 8, default: 10, max: 12 },
+  { min: 10, default: 12, max: 14 },
+  { min: 12, default: 14, max: 16 },
+  { min: 14, default: 16, max: MAX_MIAST_PANSTWA },
+  { min: 14, default: 16, max: MAX_MIAST_PANSTWA },
 ];
 
-/** min · domyślne · max — typy cywilizacji (gracz + obce); osobna skala, boost Ogromny/Super. */
+/**
+ * min · domyślne · max — typy cywilizacji (gracz + obce); osobna skala, boost Ogromny/Super.
+ * ×2 balans 2026-07-20 — Ogromny/Super Huge przycięte do sufitu rosteru (15 nacji),
+ * default==max=15 dla tych dwóch tierów jest zamierzone (twardy sufit, nie miejsce na „+2").
+ */
 const TYPY_CYWILIZACJI_MENU_BY_TIER: readonly MapScaleTriple[] = [
-  { min: 3, default: 4, max: 6 },
-  { min: 4, default: 5, max: 8 },
-  { min: 5, default: 6, max: 10 },
-  { min: 6, default: 7, max: 11 },
+  { min: 6, default: 8, max: 10 },
   { min: 8, default: 10, max: 12 },
-  { min: 10, default: 12, max: MAX_TYPY_CYWILIZACJI_MENU },
+  { min: 10, default: 12, max: 14 },
+  { min: 12, default: 14, max: MAX_TYPY_CYWILIZACJI_MENU },
+  { min: 13, default: MAX_TYPY_CYWILIZACJI_MENU, max: MAX_TYPY_CYWILIZACJI_MENU },
+  { min: 13, default: MAX_TYPY_CYWILIZACJI_MENU, max: MAX_TYPY_CYWILIZACJI_MENU },
 ];
 
 function mapMenuTierIndex(menuLabel: string): number {

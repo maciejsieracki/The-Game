@@ -62,19 +62,20 @@
     }
   },
   "mapa_skala": {
+    "_opis": "Trzeciorzędny fallback (używany tylko gdy skala_mapy w e-start-params.json nie ma wpisu). ×2 balans 2026-07-20, aktywne_typy przycięte do sufitu rosteru 15 nacji (ogromna/super).",
     "aktywne_typy": {
-      "mala": 4,
-      "srednia": 5,
-      "duza": 6,
-      "ogromna": 8,
-      "super": 10
+      "mala": 8,
+      "srednia": 10,
+      "duza": 12,
+      "ogromna": 15,
+      "super": 15
     },
     "domyslni_rywale": {
-      "mala": 6,
-      "srednia": 7,
-      "duza": 9,
-      "ogromna": 11,
-      "super": 15
+      "mala": 12,
+      "srednia": 14,
+      "duza": 18,
+      "ogromna": 22,
+      "super": 30
     }
   },
   "generator": {
