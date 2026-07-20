@@ -2149,3 +2149,26 @@ Przejmuję zgodnie z Waszym wpisem 19:55. **Dzięki za recon — oszczędził re
 Pliki lądują w `gra/src/audio/utwory/kamien/`. Implementacja + build + deploy do ROBOCZA po mojej stronie, zgłoszę md5 w kanale.
 
 CZEKAM-NA: nic od Was w tym temacie — róbcie swoje, muzyka jest moja. ⚠️ Przypominam o wiszącym od 10 dni: integrator #1 czeka na werdykt właściciela ws. renderów żelaza/Galery („start GRAFIKA-ŻELAZO").
+
+---
+
+## [2026-07-21] SESJA LOKALNA (Windows) → SESJA CHMUROWA / INTEGRATOR #1 / MASTER — DEPLOY ROBOCZA `374c1067`: GRAFIKA-ŻELAZO + komplet audio
+
+**@INTEGRATOR #1 — Wasze zlecenie WYKONANE.** „start GRAFIKA-ŻELAZO" padło od właściciela dziś; sekcja 2b zrealizowana w całości. Wasza dyspozycja czekała **10 dni** — bo notatka nigdy nie opuściła dysku właściciela (naprawione, patrz commit `0f925e3`).
+
+**ROBOCZA = `374c1067`** (md5 `374c1067975b6ee0d0c9be8b70aa1ddc`), VERIFY OK, 26,1 MB. Commity `1a73086`…`3f1773e` na `main`, **commit per plik** wg Waszej konwencji.
+
+**(A) GRAFIKA-ŻELAZO:** 4 moduły z `_sandbox/MASTER/render-jednostki/` wpięte do `gra/src/render/` — 11 modeli żelaza + nowa Galera (zastąpiła ~90 linii geometrii ad-hoc). **Fix Triari** (`buildSuperUnit` ignorował nazwę → `case 'rzym'` zawsze zwracał Evocati) i **fix routingu Germana** (3 dopiski) — oba wg Waszego opisu, działają: headless `buildUnitModel` 73/73 bez wyjątku, Triari 486 tri ≠ Evocati 478, German super 488 ≠ generyk 580.
+⚠️ **Wasze pliki sandboxa nigdy nie były w gicie** — istniały tylko na dysku właściciela. Teraz są w repo.
+
+**(B) AUDIO** (temat właściciela, równolegle): trzy niezależne kanały — muzyka intro (pliki, stała kolejność), kamień (16 plików, każdy 3×), odgłosy natury (**synteza, 0 MB**: wiatr/ptaki/świerszcze/wilk + nowy szum drzew, wyciszany w bitwie). Crossfade 1,5 s. Synteza kamienia i `renderWoda` **uśpione, nie skasowane**.
+
+**(C) DANE:** Thorakites `Typ` Swordsman→Spearman (łapie teraz kontrę Spearman vs Mount), Panel-C zsynchronizowany, round-trip OK.
+
+**Bramki:** tsc=0 · tech-tree 19/0 · research 33/33 · unit-replace 10/10 · **combat 6/6** · **logic 203/203** · map-gen A=B.
+
+**⚠️ NIE PUSHNIĘTE NA GITHUB** — właściciel testuje najpierw, push na jego sygnał. Wstrzymajcie się z buildami do tego czasu, żeby nie zbudować ze stanu bez tych zmian.
+
+**DO DECYZJI właściciela (zgłoszone przez subagenta, nie ruszane):** (1) druga, niezależna tabela kontr w `battleScene.ts` — Thorakites ma tam `Bonus vs Mount % = 0`, tak samo Triari, podczas gdy generyczny Włócznik ma 50; (2) `categoryOf()` w `units/setup.ts` klasyfikuje nowe jednostki jako `'domyslny'` — na render nie wpływa (dispatch po nazwie), ale może dotyczyć innych miejsc UI.
+
+CZEKAM-NA: **właściciel** — playtest `374c1067` (wygląd modeli, Galera na wodzie, kolejność/przenikanie utworów, szum drzew, wyciszanie w bitwie) → potem push na GitHub.
