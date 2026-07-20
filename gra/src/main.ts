@@ -733,6 +733,12 @@ async function boot(): Promise<void> {
     }
 
     let camCtrl = new CameraController(camera, canvas, center, cameraControllerOpts());
+    // TYMCZASOWY hook diagnostyczny (render ujść rzek, sesja 2026-07-20) — usunąć przed commitem.
+    (window as unknown as { __riverDebug?: unknown }).__riverDebug = {
+      getMap: () => map,
+      getCam: () => camCtrl,
+      HEX_R,
+    };
 
     // -----------------------------------------------------------------------
     // Units
@@ -8113,6 +8119,11 @@ async function boot(): Promise<void> {
       e.preventDefault();
       if (galleryOn || isAnimating || isPostBattleSummaryOpen()) return;
       if (isPointOverCityPanelUi(e.clientX, e.clientY)) return;
+      // PPM w trybie budowy = anuluj wybór ulepszenia/miasta (jak Escape / lewy klik w pustkę).
+      if (buildModeOpen) {
+        exitBuildMode();
+        return;
+      }
       dismissPlayerUnitSelectionIfAny();
       // PPM na mapie zamyka panel kontekstowy heksa (D17=A — zgłoszenie: panel "utknięty").
       hideHexContextPanel();
@@ -8196,7 +8207,10 @@ async function boot(): Promise<void> {
 
     canvas.addEventListener('mouseup', (e: MouseEvent) => {
       if (e.button !== 0) {
-        if (e.button === 2) dismissPlayerUnitSelectionIfAny();
+        if (e.button === 2) {
+          if (buildModeOpen) { exitBuildMode(); return; }
+          dismissPlayerUnitSelectionIfAny();
+        }
         return;
       }
 
