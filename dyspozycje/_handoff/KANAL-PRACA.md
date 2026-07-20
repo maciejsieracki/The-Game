@@ -1979,3 +1979,18 @@ CZEKAM-NA: **Maciej** — rozstrzygnięcie „kto deployuje" (kolizja wyżej); *
 - Bramki: tsc=0 · tech-tree 19/0 · research 33/33 · unit-replace 10/10 · combat 6/6 · logic 203/203 · barbarians 74/0 · villages 31/31 · map-gen A=B + 0 rzek bez ujścia · VERIFY OK.
 
 CZEKAM-NA: **Maciej** — test wzrokowy w grze (Ludy Morza w Brązie + wioski/nagrody); ewentualne dostrojenie wartości nagród wiosek (stałe „TUNING" w `villageRewards.ts`).
+
+---
+
+## [13:57 PL, 2026-07-20] SESJA CHMUROWA (Claude Code) → MASTER / INTEGRATORZY — DEPLOY ROBOCZA `b217916e` (mapa: wybrzeże=woda + pasma + rzeki · Handel E1)
+
+**Deploy do ROBOCZA na wyraźne polecenie Macieja** („push e1 i deploy"). Zalogowane w `WERSJE.md` (`ba8ab0d7` → ZASTĄPIONA, `b217916e` → AKTUALNA).
+
+- **ROBOCZA = `b217916e`** (md5 `b217916ec1352988ef9085e63c22f658`), VERIFY OK. Łańcuch: `ba8ab0d7` → **`b217916e`**.
+- **Zawartość:** (1) **Wybrzeże przeklasyfikowane LĄD→WODA** — decyzja Macieja; pas 2 heksy zostaje, ale wybrzeże liczy się/wygląda jak płytka woda (predykaty generatora + budowalność + render); rzeki uproszczone (kończą na pierwszym kontakcie z wodą). **UWAGA charakter map:** balans „% lądu" liczy teraz tylko suchy ląd → mapy mają więcej lądu, mniej/większe wyspy (COAST-Q4=A). (2) **Pasma górskie dłuższe/węższe** (łańcuchy zamiast plam). (3) **Handel E1** — naprawa Mennicy (mnożnik po Walucie 2/1,5/1) + per-city surowce logistyczne (drewno/kamień) + ożywienie converters; braz/żelazo/hodowla **nietknięte** (civ-wide). BEZ tras handlowych (E2-E7 później).
+- **Gałąź/push:** sesja chmurowa, gałąź `claude/sprawdzenie-funkcjonalnosci-ek4ra0`, commity `bed3ea1` (mapa) + `5a7db56` (Handel E1); fast-forward na `main` + push origin main (main był FF-owalny, `HEAD..origin/main` puste przed pushem).
+- **Środowisko:** stamp przez port node'owy (brak PowerShell na Linux); build `vite`-direct z `gra/`.
+- Bramki: tsc=0 · determinizm A=B · logic 203/203 · combat 6/6 · barbarians 74/74 · villages 31/31 · converters 31/31 · mennica-magazyn 26/26 · VERIFY OK.
+- **Uwaga meldunkowa dla integratorów:** handoffowa notatka o „21 pre-istniejących fejlach logic-test i wyjątku combat-test" jest **NIEAKTUALNA** — na baseline też 203/203 i 6/6 zielone. Warto poprawić handoff §7.
+
+CZEKAM-NA: **Maciej** — test wzrokowy (wybrzeże-woda + pasma w grze; Mennica +50% w mieście z Walutą); decyzja o zbieraniu gliny/rudy (domknięcie łańcucha converterów) + kolejny etap Handlu (E2 = wykrywanie połączeń miast).
