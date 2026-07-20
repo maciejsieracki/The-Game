@@ -1,14 +1,54 @@
 // ============================================================================
-// muzyka-antyczna.ts — proceduralna muzyka tła gry 4X: EPOKI x NASTROJE.
-// Czysty Web Audio API, zero plików audio, zero zależności, single-file.
+// muzyka-antyczna.ts — muzyka tła gry: EPOKI x NASTROJE + intro ekranów
+// przedgrowych. Silnik syntezy poniżej to czysty Web Audio API, zero plików
+// audio, zero zależności, single-file — ZOSTAJE bez zmian jako kompozytor
+// BRĄZU (era>=2) i jako uśpiony fallback KAMIENIA (gdyby zabrakło plików).
 //
-// API:
+// KAMIEŃ (era===1) gra domyślnie z prawdziwych nagrań (./filePlayer.ts,
+// kamienPlaylist) zamiast syntezy — router: usesFilePlayer(). Jeśli katalog
+// utwory/kamien/ jest pusty, ta funkcja zwraca false i kamień automatycznie
+// wraca do syntezy poniżej — bez żadnej dodatkowej konfiguracji.
+//
+// API (niezmienione dla wywołujących — main.ts, battle/mapFieldBattle.ts):
 //   startMusic(mood?: 'mapa'|'bitwa')  — wywołać PO geście użytkownika (klik!)
-//   setMood(mood)                      — płynne przejście (crossfade ~4 s)
+//   setMood(mood)                      — płynne przejście (crossfade ~4 s);
+//                                        bez efektu w kamieniu-plikowym (ta
+//                                        sama playlista niezależnie od mood)
 //   setEra(era: number)                — 1=Kamień, 2=Brąz; era>=3 gra (na razie)
-//                                        brązem; crossfade epoki ~6 s (nagroda!)
+//                                        brązem; crossfade epoki ~6 s (nagroda!);
+//                                        przełącza też kamień(pliki)<->brąz(synteza)
 //   getEra(): 1|2
 //   setMusicVolume(v: 0..1) / stopMusic() / isMusicPlaying() / getMood()
+//
+// API NOWE — intro (ekrany przed rozgrywką, poza systemem era x mood):
+//   startIntroMusic() / stopIntroMusic() / isIntroMusicPlaying()
+//   Sterowane wprost z main.ts (patrz resumeIntroMusic()/startGameMusic()).
+//
+// API NOWE — AMBIENCE, TRZECI i NIEZALEŻNY kanał (odgłosy natury): własny
+// AudioContext/bus (zero wspólnego stanu z muzyką — inny ctx/graf/gain, inna
+// głośność), własna pętla schedulera (patrz sekcja "AMBIENCE" pod koniec
+// pliku). Reużywa WYŁĄCZNIE warstwę natury kompozytora kamienia — wiatr,
+// ptaki, świerszcze, wycie wilka/sowy i szum drzew (renderListowie) — przez
+// composeKamien(..., onlyNature=true): zero piszczałki/bębnów/klekotu/
+// grzechotki/głosów, czysty soundscape bez rytmu i tonów. Gra w KAŻDEJ
+// epoce, odcięta od era MUZYKI (setEra() jej nie dotyczy). UWAGA: woda
+// (renderWoda) wypadła z tej listy — USPIONA, patrz jej komentarz przy
+// definicji funkcji:
+//   startAmbience() / stopAmbience() / setAmbienceVolume(v: 0..1) /
+//   isAmbiencePlaying() / setAmbienceMood(mood) [opcjonalne — patrz niżej]
+//   Sterowane wprost z main.ts, w tych samych miejscach co startGameMusic()/
+//   openStartupMainMenu() (patrz komentarze w main.ts).
+//   setMood(mood) MUZYKI — JEDYNY WYJĄTEK od "całkiem odcięta": woła
+//   wewnętrznie ambApplyBattleMute() (patrz sekcja AMBIENCE), która w
+//   bitwie PRZYCICHA kanał natury i na mapie go przywraca (właściciel:
+//   "odgłosy natury powinny być automatycznie wyciszane"). To JEDNO miejsce
+//   w tym pliku — main.ts/battle/mapFieldBattle.ts nie wymagały ŻADNEJ
+//   zmiany, bo i tak wołają setMood() z ~16 miejsc.
+//   setAmbienceMood(): hak "w bitwie milkną ptaki/zwierzęta" (już wbudowany
+//   w composeKamien, patrz blok NATURA) — main.ts nadal świadomie go NIE
+//   wywołuje wprost, ale od ambApplyBattleMute() bywa wołany WEWNĘTRZNIE
+//   stąd, w wariancie AMB_BITWA_MUTE_PELNE=false (patrz ta stała) — czyli
+//   "tylko zwierzęta milkną" zamiast pełnej ciszy. Zostaje też publiczny.
 //
 // EPOKA 1 — KAMIEŃ ("odgłosy natury i dzikich ludów, bez przesady"):
 //   NATURA    — wiatr (filtrowany szum, falowanie 0.03–0.08 Hz; gra ZAWSZE),
@@ -27,6 +67,8 @@
 // Miks: FDN-reverb (3 linie delay + LP w pętli), soft-limiter tanh na masterze.
 // Render offline (Node) jest lustrzany: te same funkcje przez export _silnik.
 // ============================================================================
+
+import { kamienPlaylist, introPlaylist } from './filePlayer';
 
 export type Mood = 'mapa' | 'bitwa';
 export type Era = 1 | 2;
@@ -88,8 +130,9 @@ function pentToMidi(root: number, deg: number): number {
 const LEVELS = {
   // brąz
   lira: 0.40, aulos: 0.26, dum: 0.60, tek: 0.30, krotal: 0.11,
-  // kamień — natura
-  wiatr: 0.30, ptak: 0.17, swierszcz: 0.10, wycie: 0.17,
+  // kamień — natura (woda: USPIONA, patrz renderWoda niżej — czeka na dźwięk
+  // pozycyjny; liście: AKTYWNA w ambience zamiast wody, patrz composeKamien onlyNature)
+  wiatr: 0.30, ptak: 0.17, swierszcz: 0.10, wycie: 0.17, woda: 0.20, liscie: 0.24,
   // kamień — instrumenty i głosy
   piszcz: 0.38, kloda: 0.62, klekot: 0.34, grzechot: 0.18, glos: 0.55,
   dronMapa: 0.115, dronBitwa: 0.165,
@@ -127,12 +170,25 @@ const LOOKAHEAD = 2.6;  // s — planowanie do przodu (odporność na throttling
 const WIATR_SEG = 11.0;  // s — długość segmentu
 const WIATR_KROK = 8.0;  // s — odstęp startów (3 s nakładki, equal-power fade)
 
+/** Woda — USPIONA: composeKamien już jej nie planuje (patrz komentarz przy
+ *  renderWoda niżej), stałe zostają razem z funkcją na powrót. */
+const WODA_SEG = 13.0;
+const WODA_KROK = 9.5;
+
+/** Liście (szum drzew, TYLKO tryb ambience — patrz composeKamien onlyNature,
+ *  zastępuje wodę w tym miejscu): ta sama technika segmentów nakładanych co
+ *  wiatr, inny okres niż WIATR_SEG/KROK i inny niż (uśpione) WODA_SEG/KROK —
+ *  celowo rozstrojony, żeby wiatr (fundament) i liście (warstwa nad nim) nie
+ *  fazowały się. */
+const LISCIE_SEG = 9.5;
+const LISCIE_KROK = 6.5;
+
 // ---------------------------------------------------------------------------
 // Zdarzenia nutowe
 // ---------------------------------------------------------------------------
 type InstrTyp =
   | 'lira' | 'aulos' | 'dum' | 'tek' | 'krotal'                    // brąz
-  | 'wiatr' | 'ptak' | 'swierszcz' | 'wycie'                       // kamień: natura
+  | 'wiatr' | 'ptak' | 'swierszcz' | 'wycie' | 'woda' | 'liscie'   // kamień/ambience: natura (woda uśpiona)
   | 'piszcz' | 'kloda' | 'klekot' | 'grzechot' | 'glos';           // kamień: ludzie
 
 interface NoteEvent {
@@ -264,8 +320,10 @@ interface CompState {
   slotDur: number; pattern: string; slot: number; tPerc: number;
   ostinato: number[]; ostDur: number[]; ostPos: number; ostReps: number; tOst: number;
   tKrotal: number;
-  // kamień — natura
-  tWiatr: number; tPtak: number; tSwierszcz: number; tWycie: number;
+  // kamień — natura (tWoda: uśpiona, patrz renderWoda; tListowie: TYLKO tryb
+  // ambience, patrz composeKamien onlyNature)
+  tWiatr: number; tPtak: number; tSwierszcz: number; tWycie: number; tWoda: number;
+  tListowie: number;
   // kamień — instrumenty i głosy
   tPiszcz: number; tKloda: number; tKlekot: number; tGrzechot: number; tGlos: number;
   piszczOstatni: 0 | 1; piszczPowtorki: number;
@@ -292,6 +350,8 @@ function newState(era: Era, mood: Mood, seed: number): CompState {
     tPtak: rr(rng, 2, 7),
     tSwierszcz: rr(rng, 20, 70),
     tWycie: rr(rng, 25, 70),
+    tWoda: rr(rng, 1, 5),
+    tListowie: rr(rng, 1, 5),
     tPiszcz: mood === 'bitwa' ? rr(rng, 6, 14) : rr(rng, 4, 10),
     tKloda: mood === 'bitwa' ? rr(rng, 1.0, 2.5) : rr(rng, 5, 12),
     tKlekot: mood === 'bitwa' ? rr(rng, 1.5, 4) : rr(rng, 15, 40),
@@ -351,7 +411,7 @@ function motifNext(s: CompState): void {
 // "Bez przesady": każda warstwa ma pauzy dużo dłuższe niż zdarzenia;
 // jedynym dźwiękiem ciągłym jest wiatr (fundament zamiast drona).
 // ---------------------------------------------------------------------------
-function composeKamien(s: CompState, toT: number, out: NoteEvent[]): void {
+function composeKamien(s: CompState, toT: number, out: NoteEvent[], onlyNature = false): void {
   const r = s.rng;
   const bitwa = s.mood === 'bitwa';
   // WIATR — segmenty nakładane: gra zawsze, bez dziur
@@ -360,104 +420,124 @@ function composeKamien(s: CompState, toT: number, out: NoteEvent[]): void {
       rr(r, 0.8, 1.0) * (bitwa ? 0.75 : 1), 0));
     s.tWiatr += WIATR_KROK;
   }
-  // PISZCZAŁKA — mapa: motywy A/B z wariacjami; bitwa: krótki sygnał alarmowy
-  while (s.tPiszcz < toT) {
+  // WODA — USPIONA: composeKamien już jej nie planuje (decyzja właściciela:
+  // woda losowana bez związku z geografią brzmiała fałszywie — fale słychać
+  // było w środku lądu). renderWoda i WODA_SEG/KROK ZOSTAJĄ w kodzie na
+  // powrót, gdy powstanie dźwięk pozycyjny (głośność zależna od bliskości
+  // wody na mapie). W jej miejsce w kanale ambience gra LIŚCIE — las jest
+  // wszędzie, więc ta warstwa nigdy nie zabrzmi geograficznie fałszywie.
+  //
+  // LIŚCIE — TYLKO tryb ambience (onlyNature): ta sama logika segmentów co
+  // wiatr, gra zawsze (jak wiatr), niezależnie od bitwy. Wariant losowany na
+  // segment: 0 = lekki powiew (częściej), 1 = mocniejszy podmuch.
+  if (onlyNature) {
+    while (s.tListowie < toT) {
+      const wariant = r() < 0.7 ? 0 : 1;
+      out.push(ev(s, s.tListowie, 'liscie', wariant, LISCIE_SEG,
+        rr(r, 0.5, 0.7) * (bitwa ? 0.85 : 1), rr(r, -0.35, 0.35)));
+      s.tListowie += LISCIE_KROK;
+    }
+  }
+  if (!onlyNature) {
+    // PISZCZAŁKA — mapa: motywy A/B z wariacjami; bitwa: krótki sygnał alarmowy
+    while (s.tPiszcz < toT) {
+      if (bitwa) {
+        let t = s.tPiszcz;
+        const k = 2 + Math.floor(r() * 3);
+        const degA = pick(r, [4, 5, 6]);
+        for (let i = 0; i < k; i++) {
+          const last = i === k - 1;
+          const dur = last ? rr(r, 0.5, 0.8) : rr(r, 0.2, 0.32);
+          const deg = last && r() < 0.5 ? degA - 2 : degA;
+          out.push(ev(s, t, 'piszcz', pentToMidi(74, deg), dur,
+            rr(r, 0.8, 1.0), rr(r, -0.15, 0.25)));
+          t += dur + rr(r, 0.05, 0.12);
+        }
+        s.tPiszcz = t + rr(r, 14, 32);
+      } else {
+        let ktory: 0 | 1 = r() < 0.55 ? 0 : 1;      // A częściej niż B
+        if (ktory === s.piszczOstatni && s.piszczPowtorki >= 2) {
+          ktory = ktory === 0 ? 1 : 0;              // nie powtarzaj >2x z rzędu
+        }
+        s.piszczPowtorki = ktory === s.piszczOstatni ? s.piszczPowtorki + 1 : 1;
+        s.piszczOstatni = ktory;
+        const f = frazaPiszcz(r, ktory);
+        let t = s.tPiszcz;
+        for (let i = 0; i < f.deg.length; i++) {
+          const dur = f.dur[i] as number;
+          out.push(ev(s, t, 'piszcz', pentToMidi(74, f.deg[i] as number), dur,
+            rr(r, 0.65, 0.9), rr(r, -0.2, 0.2)));
+          t += dur * rr(r, 0.95, 1.1) + (r() < 0.25 ? rr(r, 0.15, 0.5) : 0.02);
+        }
+        s.tPiszcz = t + rr(r, 13, 28); // długa pauza — zawołanie, nie melodia ciągła
+      }
+    }
+    // BĘBEN-KŁODA — mapa: rzadkie tętno; bitwa: gęsty, wciąż nierówny puls
     if (bitwa) {
-      let t = s.tPiszcz;
-      const k = 2 + Math.floor(r() * 3);
-      const degA = pick(r, [4, 5, 6]);
-      for (let i = 0; i < k; i++) {
-        const last = i === k - 1;
-        const dur = last ? rr(r, 0.5, 0.8) : rr(r, 0.2, 0.32);
-        const deg = last && r() < 0.5 ? degA - 2 : degA;
-        out.push(ev(s, t, 'piszcz', pentToMidi(74, deg), dur,
-          rr(r, 0.8, 1.0), rr(r, -0.15, 0.25)));
-        t += dur + rr(r, 0.05, 0.12);
+      while (s.tPerc < toT) {
+        const ch = s.pattern.charAt(s.slot);
+        const jit = rr(r, -0.04, 0.04);
+        if (ch === 'K' && r() > 0.06) {
+          out.push(ev(s, s.tPerc + jit, 'kloda', 0, 0.6, rr(r, 0.85, 1.0),
+            rr(r, -0.12, 0.06)));
+        } else if (ch === 'k' && r() > 0.15) {
+          out.push(ev(s, s.tPerc + jit, 'kloda', 1, 0.5, rr(r, 0.5, 0.7),
+            rr(r, 0.0, 0.2)));
+        }
+        s.slot++;
+        if (s.slot >= s.pattern.length) {
+          s.slot = 0;
+          if (r() < 0.3) s.pattern = pick(r, PATTERNS_KLODA);
+          s.tPerc += rr(r, 0, 0.35); // oddech — puls celowo nie kwantyzowany
+        }
+        s.tPerc += s.slotDur * rr(r, 0.94, 1.08);
       }
-      s.tPiszcz = t + rr(r, 14, 32);
     } else {
-      let ktory: 0 | 1 = r() < 0.55 ? 0 : 1;      // A częściej niż B
-      if (ktory === s.piszczOstatni && s.piszczPowtorki >= 2) {
-        ktory = ktory === 0 ? 1 : 0;              // nie powtarzaj >2x z rzędu
+      while (s.tKloda < toT) {
+        out.push(ev(s, s.tKloda, 'kloda', 0, 0.6, rr(r, 0.55, 0.8),
+          rr(r, -0.15, 0.1)));
+        if (r() < 0.35) { // czasem podwójne tętno
+          out.push(ev(s, s.tKloda + rr(r, 0.35, 0.7), 'kloda', 1, 0.5,
+            rr(r, 0.4, 0.6), rr(r, -0.1, 0.15)));
+        }
+        s.tKloda += rr(r, 9, 20);
       }
-      s.piszczPowtorki = ktory === s.piszczOstatni ? s.piszczPowtorki + 1 : 1;
-      s.piszczOstatni = ktory;
-      const f = frazaPiszcz(r, ktory);
-      let t = s.tPiszcz;
-      for (let i = 0; i < f.deg.length; i++) {
-        const dur = f.dur[i] as number;
-        out.push(ev(s, t, 'piszcz', pentToMidi(74, f.deg[i] as number), dur,
-          rr(r, 0.65, 0.9), rr(r, -0.2, 0.2)));
-        t += dur * rr(r, 0.95, 1.1) + (r() < 0.25 ? rr(r, 0.15, 0.5) : 0.02);
-      }
-      s.tPiszcz = t + rr(r, 13, 28); // długa pauza — zawołanie, nie melodia ciągła
     }
-  }
-  // BĘBEN-KŁODA — mapa: rzadkie tętno; bitwa: gęsty, wciąż nierówny puls
-  if (bitwa) {
-    while (s.tPerc < toT) {
-      const ch = s.pattern.charAt(s.slot);
-      const jit = rr(r, -0.04, 0.04);
-      if (ch === 'K' && r() > 0.06) {
-        out.push(ev(s, s.tPerc + jit, 'kloda', 0, 0.6, rr(r, 0.85, 1.0),
-          rr(r, -0.12, 0.06)));
-      } else if (ch === 'k' && r() > 0.15) {
-        out.push(ev(s, s.tPerc + jit, 'kloda', 1, 0.5, rr(r, 0.5, 0.7),
-          rr(r, 0.0, 0.2)));
-      }
-      s.slot++;
-      if (s.slot >= s.pattern.length) {
-        s.slot = 0;
-        if (r() < 0.3) s.pattern = pick(r, PATTERNS_KLODA);
-        s.tPerc += rr(r, 0, 0.35); // oddech — puls celowo nie kwantyzowany
-      }
-      s.tPerc += s.slotDur * rr(r, 0.94, 1.08);
-    }
-  } else {
-    while (s.tKloda < toT) {
-      out.push(ev(s, s.tKloda, 'kloda', 0, 0.6, rr(r, 0.55, 0.8),
-        rr(r, -0.15, 0.1)));
-      if (r() < 0.35) { // czasem podwójne tętno
-        out.push(ev(s, s.tKloda + rr(r, 0.35, 0.7), 'kloda', 1, 0.5,
-          rr(r, 0.4, 0.6), rr(r, -0.1, 0.15)));
-      }
-      s.tKloda += rr(r, 9, 20);
-    }
-  }
-  // KLEKOT kamieni (0) / patyków (1): seria 2–4 kliknięć, oszczędnie
-  while (s.tKlekot < toT) {
-    let t = s.tKlekot;
-    const k = 2 + Math.floor(r() * (bitwa ? 3 : 2));
-    const rodzaj = r() < 0.5 ? 0 : 1;
-    const g0 = bitwa ? rr(r, 0.6, 0.9) : rr(r, 0.35, 0.55);
-    const pan = rr(r, -0.5, 0.5);
-    for (let i = 0; i < k; i++) {
-      out.push(ev(s, t, 'klekot', rodzaj, 0.08, g0 * rr(r, 0.8, 1.0),
-        pan + rr(r, -0.06, 0.06)));
-      t += rr(r, 0.09, 0.22);
-    }
-    s.tKlekot += bitwa ? rr(r, 2, 5) : rr(r, 25, 60);
-  }
-  // GRZECHOTKA z nasion
-  while (s.tGrzechot < toT) {
-    out.push(ev(s, s.tGrzechot, 'grzechot', 0, rr(r, 0.5, 1.0),
-      bitwa ? rr(r, 0.55, 0.8) : rr(r, 0.35, 0.55), rr(r, -0.45, 0.45)));
-    s.tGrzechot += bitwa ? rr(r, 8, 18) : rr(r, 30, 70);
-  }
-  // GŁOSY — mapa: pojedynczy odległy pomruk; bitwa: okrzyki grupowe
-  while (s.tGlos < toT) {
-    if (bitwa) {
-      const k = 2 + Math.floor(r() * 3);
-      const t = s.tGlos;
+    // KLEKOT kamieni (0) / patyków (1): seria 2–4 kliknięć, oszczędnie
+    while (s.tKlekot < toT) {
+      let t = s.tKlekot;
+      const k = 2 + Math.floor(r() * (bitwa ? 3 : 2));
+      const rodzaj = r() < 0.5 ? 0 : 1;
+      const g0 = bitwa ? rr(r, 0.6, 0.9) : rr(r, 0.35, 0.55);
+      const pan = rr(r, -0.5, 0.5);
       for (let i = 0; i < k; i++) {
-        out.push(ev(s, t + rr(r, 0, 0.18), 'glos', 41 + Math.floor(r() * 10),
-          rr(r, 0.3, 0.6), rr(r, 0.7, 0.95), rr(r, -0.5, 0.5)));
+        out.push(ev(s, t, 'klekot', rodzaj, 0.08, g0 * rr(r, 0.8, 1.0),
+          pan + rr(r, -0.06, 0.06)));
+        t += rr(r, 0.09, 0.22);
       }
-      s.tGlos += rr(r, 10, 22);
-    } else {
-      out.push(ev(s, s.tGlos, 'glos', 40 + Math.floor(r() * 8),
-        rr(r, 1.2, 2.6), rr(r, 0.35, 0.55), pick(r, [-1, 1]) * rr(r, 0.3, 0.6)));
-      s.tGlos += rr(r, 35, 80);
+      s.tKlekot += bitwa ? rr(r, 2, 5) : rr(r, 25, 60);
+    }
+    // GRZECHOTKA z nasion
+    while (s.tGrzechot < toT) {
+      out.push(ev(s, s.tGrzechot, 'grzechot', 0, rr(r, 0.5, 1.0),
+        bitwa ? rr(r, 0.55, 0.8) : rr(r, 0.35, 0.55), rr(r, -0.45, 0.45)));
+      s.tGrzechot += bitwa ? rr(r, 8, 18) : rr(r, 30, 70);
+    }
+    // GŁOSY — mapa: pojedynczy odległy pomruk; bitwa: okrzyki grupowe
+    while (s.tGlos < toT) {
+      if (bitwa) {
+        const k = 2 + Math.floor(r() * 3);
+        const t = s.tGlos;
+        for (let i = 0; i < k; i++) {
+          out.push(ev(s, t + rr(r, 0, 0.18), 'glos', 41 + Math.floor(r() * 10),
+            rr(r, 0.3, 0.6), rr(r, 0.7, 0.95), rr(r, -0.5, 0.5)));
+        }
+        s.tGlos += rr(r, 10, 22);
+      } else {
+        out.push(ev(s, s.tGlos, 'glos', 40 + Math.floor(r() * 8),
+          rr(r, 1.2, 2.6), rr(r, 0.35, 0.55), pick(r, [-1, 1]) * rr(r, 0.3, 0.6)));
+        s.tGlos += rr(r, 35, 80);
+      }
     }
   }
   // NATURA — tylko na mapie; w bitwie ptaki i zwierzęta milkną
@@ -784,6 +864,108 @@ function renderWiatr(fs: number, dur: number, seed: number): Float32Array {
     out[i] = (lp2 * 1.9 + swist) * gust;
   }
   const nF = Math.min(Math.floor(fs * (WIATR_SEG - WIATR_KROK)), len >> 1);
+  for (let i = 0; i < nF; i++) {
+    const u = Math.sqrt(i / nF);
+    out[i] = (out[i] as number) * u;
+    const j = len - 1 - i;
+    out[j] = (out[j] as number) * u;
+  }
+  return out;
+}
+
+/** WODA — USPIONA (composeKamien już jej nie planuje — patrz komentarz w
+ *  composeKamien, blok WODA/LIŚCIE). NIE KASOWAĆ: funkcja zostaje w kodzie
+ *  jako uśpiony fallback, tym samym wzorcem co uśpiona synteza kamienia
+ *  (patrz nagłówek pliku) — właściciel wprost planuje do niej wrócić, gdy
+ *  powstanie dźwięk POZYCYJNY (głośność zależna od bliskości wody na mapie;
+ *  na razie silnik nie zna geografii mapy, więc losowa woda brzmiała
+ *  fałszywie — fale słychać było w środku lądu). Szum rzeki (0, węższe/
+ *  wyższe pasmo, szybsze falowanie — "bełkot") albo morza (1, szersze/
+ *  niższe pasmo + wolny "przypływ"). Dokładnie ta sama technika co
+ *  renderWiatr (biały szum przez 2x one-pole LP + LFO na odcięciu/głośności
+ *  + cichy bandpass-"pluski"), inne pasmo i wolniejsza obwiednia. Segmenty
+ *  nakładane (WODA_SEG/WODA_KROK) — grałaby bez dziur, jak wiatr. UWAGA:
+ *  wariant (rzeka vs morze) losuje wywołujący, tu tylko renderowany. */
+function renderWoda(fs: number, wariant: number, dur: number, seed: number): Float32Array {
+  const rng = mulberry32(seed);
+  const len = Math.floor(fs * dur);
+  const out = new Float32Array(len);
+  const rzeka = wariant === 0;
+  const lfoHz = rzeka ? rr(rng, 0.15, 0.32) : rr(rng, 0.02, 0.045);
+  const lfoPh = rng() * Math.PI * 2;
+  const fcBaza = rzeka ? rr(rng, 550, 900) : rr(rng, 180, 340);
+  let lp = 0, lp2 = 0;
+  const cBP = biquadCoef('bandpass', fs, rzeka ? rr(rng, 1400, 2200) : rr(rng, 700, 1200),
+    rzeka ? 1.6 : 1.1);
+  const stBP: BiquadState = { x1: 0, x2: 0, y1: 0, y2: 0 };
+  for (let i = 0; i < len; i++) {
+    const t = i / fs;
+    const lfo = 0.5 + 0.5 * Math.sin(2 * Math.PI * lfoHz * t + lfoPh); // 0..1
+    const gust = rzeka ? (0.75 + 0.4 * lfo) : (0.45 + 0.85 * lfo);
+    const fc = fcBaza * (rzeka ? (0.85 + 0.3 * lfo) : (0.6 + 0.9 * lfo));
+    const k = 1 - Math.exp(-2 * Math.PI * fc / fs);
+    const w = rng() * 2 - 1;
+    lp += k * (w - lp);
+    lp2 += k * (lp - lp2);
+    const pluski = biquadRun(cBP, stBP, w) * (rzeka ? 0.10 : 0.035) * (rzeka ? 1 : lfo);
+    out[i] = (lp2 * (rzeka ? 1.7 : 2.1) + pluski) * gust;
+  }
+  const nF = Math.min(Math.floor(fs * (WODA_SEG - WODA_KROK)), len >> 1);
+  for (let i = 0; i < nF; i++) {
+    const u = Math.sqrt(i / nF);
+    out[i] = (out[i] as number) * u;
+    const j = len - 1 - i;
+    out[j] = (out[j] as number) * u;
+  }
+  return out;
+}
+
+/** LIŚCIE — szum drzew na wietrze, AKTYWNA warstwa ambience w miejscu wody
+ *  (patrz jej komentarz powyżej). Ta sama technika co renderWiatr (biały
+ *  szum przez 2x one-pole LP + LFO na odcięciu/głośności + cichy bandpass-
+ *  "szelest"), ale celowo różna od fundamentu wiatru:
+ *   (1) pasmo WYŻEJ — liście nie są fundamentem: fcBaza ok. 850–1700 Hz,
+ *       wobec 320–480 Hz wiatru;
+ *   (2) falowanie DUŻO SZYBSZE — 0.6–1.8 Hz, wobec 0.03–0.08 Hz wiatru —
+ *       "szelest", nie "dęcie";
+ *   (3) dodatkowa ZIARNISTOŚĆ — szybka losowa mikro-modulacja głośności
+ *       (cel losowany co ~12 ms, dogonięty szybkim wygładzeniem), żeby
+ *       brzmiało jak drobne, nierówne poruszenie mnóstwa listków, a nie jak
+ *       gładki drugi wiatr.
+ *  2 warianty losowane per segment (jak dawniej woda): 0 = lekki powiew
+ *  (ciszej, węziej), 1 = mocniejszy podmuch (głośniej, szerzej). Segmenty
+ *  nakładane (LISCIE_SEG/LISCIE_KROK) — gra bez dziur, jak wiatr. */
+function renderListowie(fs: number, wariant: number, dur: number, seed: number): Float32Array {
+  const rng = mulberry32(seed);
+  const len = Math.floor(fs * dur);
+  const out = new Float32Array(len);
+  const mocny = wariant === 1;
+  const lfoHz = mocny ? rr(rng, 0.9, 1.8) : rr(rng, 0.6, 1.2);
+  const lfoPh = rng() * Math.PI * 2;
+  const fcBaza = mocny ? rr(rng, 1150, 1700) : rr(rng, 850, 1300);
+  let lp = 0, lp2 = 0;
+  const cBP = biquadCoef('bandpass', fs, rr(rng, 2400, 3600), 2.0);
+  const stBP: BiquadState = { x1: 0, x2: 0, y1: 0, y2: 0 };
+  // ziarnistość: cel losowany co ~12 ms, dobiegany szybkim wygładzeniem —
+  // daje drobne "migotanie" głośności zamiast gładkiej obwiedni wiatru.
+  const krokZiarna = Math.max(1, Math.floor(fs * 0.012));
+  let ziarnoCel = 1, ziarnoBiez = 1, licznik = 0;
+  for (let i = 0; i < len; i++) {
+    const t = i / fs;
+    const lfo = 0.5 + 0.5 * Math.sin(2 * Math.PI * lfoHz * t + lfoPh); // 0..1
+    if (licznik <= 0) { ziarnoCel = rr(rng, 0.55, 1.15); licznik = krokZiarna; }
+    licznik--;
+    ziarnoBiez += (ziarnoCel - ziarnoBiez) * 0.03;
+    const gust = (mocny ? 0.5 : 0.4) + (mocny ? 0.75 : 0.55) * lfo;
+    const fc = fcBaza * (0.75 + 0.6 * lfo);
+    const k = 1 - Math.exp(-2 * Math.PI * fc / fs);
+    const w = rng() * 2 - 1;
+    lp += k * (w - lp);
+    lp2 += k * (lp - lp2);
+    const szelest = biquadRun(cBP, stBP, w) * (mocny ? 0.09 : 0.06) * lfo;
+    out[i] = (lp2 * (mocny ? 1.5 : 1.2) + szelest) * gust * ziarnoBiez;
+  }
+  const nF = Math.min(Math.floor(fs * (LISCIE_SEG - LISCIE_KROK)), len >> 1);
   for (let i = 0; i < nF; i++) {
     const u = Math.sqrt(i / nF);
     out[i] = (out[i] as number) * u;
@@ -1120,6 +1302,8 @@ function renderEvent(fs: number, e: NoteEvent): Float32Array {
     case 'tek':       return renderTek(fs, e.seed);
     case 'krotal':    return renderKrotal(fs, e.seed);
     case 'wiatr':     return renderWiatr(fs, e.dur, e.seed);
+    case 'woda':      return renderWoda(fs, e.midi, e.dur, e.seed);
+    case 'liscie':    return renderListowie(fs, e.midi, e.dur, e.seed);
     case 'ptak':      return renderPtak(fs, e.midi, e.dur, e.seed);
     case 'swierszcz': return renderSwierszcz(fs, e.dur, e.seed);
     case 'wycie':     return renderWycie(fs, e.midi, e.dur, e.seed);
@@ -1167,6 +1351,13 @@ let moodNow: Mood = 'mapa';
 let eraNow: Era = 1; // gra zaczyna w epoce kamienia
 
 function volCurve(v: number): number { return Math.pow(Math.max(0, Math.min(1, v)), 1.6); }
+
+/** Czy dana epoka gra z prawdziwych plików (kamień) zamiast syntezy poniżej.
+ *  false gdy katalog utwory/kamien/ jest pusty => automatyczny fallback na
+ *  syntezę composeKamien() (decyzja właściciela: "rozłącz, nie kasuj"). */
+function usesFilePlayer(era: Era): boolean {
+  return era === 1 && kamienPlaylist.hasTracks();
+}
 
 function buildGraf(ac: AudioContext): Graf {
   const sum = ac.createGain();
@@ -1338,6 +1529,16 @@ function spawnEngine(era: Era, mood: Mood, fadeIn: number): void {
  */
 export function startMusic(mood: Mood = 'mapa'): void {
   moodNow = mood;
+  if (usesFilePlayer(eraNow)) {
+    if (!playing) {
+      playing = true;
+      kamienPlaylist.setVolume(volume);
+      kamienPlaylist.start();
+    }
+    // mood nie ma efektu dźwiękowego w kamieniu-plikowym — ta sama playlista
+    // niezależnie od mapa/bitwa (decyzja właściciela Q2=A).
+    return;
+  }
   if (ctx === null) {
     const w = window as unknown as { AudioContext?: typeof AudioContext;
       webkitAudioContext?: typeof AudioContext };
@@ -1362,42 +1563,76 @@ function respawn(fade: number): void {
   spawnEngine(eraNow, moodNow, fade);
 }
 
-/** Płynna zmiana nastroju (crossfade ~4 s). Bez efektu, gdy muzyka nie gra. */
+/** Płynna zmiana nastroju (crossfade ~4 s). Bez efektu na muzykę, gdy muzyka
+ *  nie gra ani w kamieniu-plikowym (ta sama playlista niezależnie od mood).
+ *  UBOCZNIE (zawsze, niezależnie od stanu muzyki): woła ambApplyBattleMute()
+ *  — JEDYNE miejsce spinające kanał natury z bitwą, patrz jej komentarz i
+ *  sekcja AMBIENCE niżej. Dzięki temu wszystkie ~16 miejsc w main.ts/battle/
+ *  mapFieldBattle.ts wołające setMood() dostają wyciszenie natury w bitwie
+ *  bez żadnych zmian po ich stronie. */
 export function setMood(mood: Mood): void {
+  ambApplyBattleMute(mood);
   if (mood === moodNow && playing) return;
   moodNow = mood;
-  if (!playing || !ctx || !graf) return;
+  if (!playing) return;
+  if (usesFilePlayer(eraNow)) return; // decyzja właściciela Q2=A
+  if (!ctx || !graf) return;
   respawn(XFADE);
 }
 
 /**
  * Zmiana EPOKI: 1 = kamień, 2 = brąz; era >= 3 (żelazo itd.) gra na razie
- * brązem. Crossfade ~6 s — awans epoki ma być słyszalną nagrodą.
+ * brązem. Crossfade ~6 s — awans epoki ma być słyszalną nagrodą (dotyczy
+ * przejść w obrębie syntezy). Przejścia kamień(pliki) <-> brąz(synteza) nie
+ * mają crossfade próbek (inny tor odtwarzania) — playlista/silnik po prostu
+ * się zatrzymuje i startuje drugi, natychmiast.
  * Można wołać też przed startem muzyki (ustawia epokę startową).
  */
 export function setEra(era: number): void {
   const e: Era = era >= 2 ? 2 : 1;
   if (e === eraNow) return;
+  const wasFilePlayer = usesFilePlayer(eraNow);
   eraNow = e;
-  if (!playing || !ctx || !graf) return;
-  respawn(ERA_XFADE);
+  if (!playing) return; // tylko zapamiętaj epokę startową, bez efektu dźwiękowego
+  const nowFilePlayer = usesFilePlayer(eraNow);
+  if (wasFilePlayer && !nowFilePlayer) {
+    // kamień(pliki) -> brąz+(synteza)
+    kamienPlaylist.stop();
+    spawnEngine(eraNow, moodNow, ERA_XFADE);
+    return;
+  }
+  if (!wasFilePlayer && nowFilePlayer) {
+    // brąz+(synteza) -> kamień(pliki)
+    for (const eng of engines) eng.fadeOutAndDispose(ERA_XFADE);
+    engines = [];
+    kamienPlaylist.setVolume(volume);
+    kamienPlaylist.start();
+    return;
+  }
+  if (!nowFilePlayer) respawn(ERA_XFADE); // oba w syntezie
 }
 
 /** Aktualna epoka muzyki (1 = kamień, 2 = brąz). */
 export function getEra(): Era { return eraNow; }
 
-/** Głośność 0..1 (krzywa percepcyjna ^1.6). */
+/** Głośność 0..1 (krzywa percepcyjna ^1.6). Dotyczy syntezy ORAZ obu playlist
+ *  plikowych (kamień + intro) — jeden suwak/preferencja dla całej muzyki. */
 export function setMusicVolume(v: number): void {
   volume = Math.max(0, Math.min(1, v));
   if (ctx && graf) {
     graf.sum.gain.setTargetAtTime(volCurve(volume), ctx.currentTime, 0.05);
   }
+  kamienPlaylist.setVolume(volume);
+  introPlaylist.setVolume(volume);
 }
 
-/** Zatrzymuje muzykę (fade ~1 s). AudioContext zostaje do ponownego użycia. */
+/** Zatrzymuje muzykę gry (fade ~1 s w syntezie / natychmiast w playliście
+ *  plikowej kamienia). AudioContext zostaje do ponownego użycia. Nie dotyka
+ *  intro — to osobny tor, patrz stopIntroMusic(). */
 export function stopMusic(): void {
   if (!playing) return;
   playing = false;
+  kamienPlaylist.stop();
   for (const e of engines) e.fadeOutAndDispose(1.0);
   engines = [];
 }
@@ -1406,3 +1641,209 @@ export function isMusicPlaying(): boolean { return playing; }
 
 /** Aktualny nastrój (ostatnio żądany). */
 export function getMood(): Mood { return moodNow; }
+
+// ---------------------------------------------------------------------------
+// INTRO — playlista ekranów przed rozgrywką (menu główne / wybór cywilizacji
+// / ustawienia). Poza systemem era x mood: sterowana wprost z main.ts
+// (resumeIntroMusic() na pokazaniu menu, stopIntroMusic() wewnątrz
+// startGameMusic() — dokładny moment przejścia menu->rozgrywka).
+// ---------------------------------------------------------------------------
+
+/** Startuje (lub wznawia od bieżącej pozycji) playlistę intro. Wywoływać
+ *  z gestu użytkownika, jak startMusic(). No-op, jeśli już gra albo brak
+ *  plików w utwory/intro/. */
+export function startIntroMusic(): void {
+  introPlaylist.setVolume(volume);
+  introPlaylist.start();
+}
+
+/** Zatrzymuje i zwalnia zasoby playlisty intro. */
+export function stopIntroMusic(): void {
+  introPlaylist.stop();
+}
+
+export function isIntroMusicPlaying(): boolean { return introPlaylist.isPlaying(); }
+
+// ---------------------------------------------------------------------------
+// AMBIENCE — TRZECI, NIEZALEŻNY kanał audio: odgłosy natury (wiatr/ptaki/
+// świerszcze/wycie/liście). Reużywa WYŁĄCZNIE warstwę natury kompozytora
+// kamienia — composeKamien(..., onlyNature=true) — na WŁASNYM AudioContext
+// i własnej magistrali: zero wspólnych węzłów Web Audio z muzyką (ctx/graf
+// powyżej), zero wspólnego stanu poza reużyciem czystych funkcji renderujących
+// i newState/composeKamien. Gra w KAŻDEJ epoce (setEra() jej nie dotyczy).
+// JEDYNY hak do MUZYKI: setMood() (patrz jej definicja) woła
+// ambApplyBattleMute() niżej — w bitwie kanał się PRZYCICHA (właściciel:
+// "odgłosy natury powinny być automatycznie wyciszane"), na mapie wraca.
+// To NIE jest to samo co ambMood/setAmbienceMood() poniżej: ambMood zostaje
+// domyślnie 'mapa' na stałe (main.ts nadal świadomie nie woła
+// setAmbienceMood() wprost — patrz nagłówek pliku), chyba że
+// AMB_BITWA_MUTE_PELNE=false, wtedy ambApplyBattleMute() SAMA woła
+// setAmbienceMood() zamiast wyciszać cały bus (patrz komentarz przy stałej).
+// ---------------------------------------------------------------------------
+
+let ambCtx: AudioContext | null = null;
+let ambOut: GainNode | null = null;
+let ambState: CompState | null = null;
+let ambTimer: number | null = null;
+let ambHorizon = 0;
+let ambT0 = 0;
+let ambPlaying = false;
+let ambVolume = 0.7;
+let ambMood: Mood = 'mapa';
+
+/** Wyciszenie kanału natury w bitwie: PEŁNE (cały bus do ciszy, true) czy
+ *  TYLKO zwierzęta (ptaki/świerszcze/wycie — wbudowany efekt composeKamien
+ *  przez setAmbienceMood(); wiatr/liście grają dalej, false)? Właściciel
+ *  poprosił wprost o wyciszenie ("odgłosy natury powinny być automatycznie
+ *  wyciszane") — stąd PEŁNE domyślnie. Flaga zostaje jedną linią do
+ *  przełączenia, gdyby po odsłuchu wolał zostawić sam wiatr. */
+const AMB_BITWA_MUTE_PELNE = true;
+
+/** Czas przycichnięcia/powrotu kanału natury przy zmianie mood MUZYKI (patrz
+ *  setMood() -> ambApplyBattleMute() niżej) — ma być wyraźnie słyszalne jako
+ *  "przycichnięcie świata", ale bez gwałtownego ucięcia. */
+const AMB_BITWA_XFADE = 0.8;
+
+/** Czy kanał natury jest AKTUALNIE wyciszony z powodu bitwy. Osobna warstwa
+ *  NAD ustawieniem gracza (ambVolume/ambPlaying) — nie zastępuje go, patrz
+ *  ambApplyBattleMute(). */
+let ambBattleMuted = false;
+
+/** Tworzy (raz) prywatny AudioContext + gain wyjściowy ambience. Zwraca null,
+ *  gdy przeglądarka nie ma Web Audio — wywołujący cicho odpuszcza, jak reszta
+ *  modułów audio w tej grze. */
+function ensureAmbGraph(): { ac: AudioContext; out: GainNode } | null {
+  if (ambCtx === null) {
+    const w = window as unknown as { AudioContext?: typeof AudioContext;
+      webkitAudioContext?: typeof AudioContext };
+    const AC = w.AudioContext ?? w.webkitAudioContext;
+    if (!AC) return null;
+    ambCtx = new AC();
+    ambOut = ambCtx.createGain();
+    ambOut.gain.value = volCurve(ambVolume);
+    ambOut.connect(ambCtx.destination);
+  }
+  return ambOut ? { ac: ambCtx, out: ambOut } : null;
+}
+
+function ambSchedule(e: NoteEvent): void {
+  if (!ambCtx || !ambOut) return;
+  const ac = ambCtx;
+  const mono = renderEvent(ac.sampleRate, e);
+  const buf = ac.createBuffer(1, mono.length, ac.sampleRate);
+  buf.copyToChannel(mono as Float32Array<ArrayBuffer>, 0);
+  const src = ac.createBufferSource();
+  src.buffer = buf;
+  const g = ac.createGain();
+  g.gain.value = e.gain * LEVELS[e.typ];
+  const pan = ac.createStereoPanner();
+  pan.pan.value = e.pan;
+  src.connect(g); g.connect(pan); pan.connect(ambOut);
+  const when = Math.max(ac.currentTime + 0.02, ambT0 + e.t);
+  src.onended = () => { src.disconnect(); g.disconnect(); pan.disconnect(); };
+  src.start(when);
+}
+
+function ambTick(): void {
+  if (!ambCtx || !ambState || !ambPlaying) return;
+  const target = ambCtx.currentTime - ambT0 + LOOKAHEAD;
+  if (target <= ambHorizon) return;
+  const evs: NoteEvent[] = [];
+  composeKamien(ambState, target, evs, true);
+  ambHorizon = target;
+  for (const e of evs) ambSchedule(e);
+}
+
+/** Startuje (lub wznawia) odgłosy natury. MUSI być wywołane z gestu
+ *  użytkownika (jak startMusic()) — AudioContext tworzony leniwie tutaj.
+ *  No-op, jeśli już gra albo przeglądarka nie ma Web Audio. */
+export function startAmbience(): void {
+  if (ambPlaying) return;
+  const g = ensureAmbGraph();
+  if (!g) return; // brak Web Audio — cicho odpuszczamy
+  const { ac, out } = g;
+  if (ac.state === 'suspended') { void ac.resume(); }
+  const now = ac.currentTime;
+  out.gain.cancelScheduledValues(now);
+  out.gain.setValueAtTime(volCurve(ambVolume), now);
+  // Brzeżny przypadek: start (pierwszy lub po stopAmbience()) W TRAKCIE
+  // bitwy — kanał ma wystartować już wyciszony, nie na chwilę słyszalny.
+  if (AMB_BITWA_MUTE_PELNE && ambBattleMuted) out.gain.setValueAtTime(0.0001, now);
+  ambPlaying = true;
+  ambState = newState(1, ambMood, Math.floor(Math.random() * 2147483647));
+  ambT0 = now + 0.05;
+  ambHorizon = 0;
+  ambTick();
+  ambTimer = window.setInterval(ambTick, 350);
+}
+
+/** Zatrzymuje odgłosy natury (fade ~1 s). AudioContext zostaje do ponownego
+ *  użycia, jak w stopMusic(). Nie dotyka muzyki ani intro — osobny kanał. */
+export function stopAmbience(): void {
+  if (!ambPlaying) return;
+  ambPlaying = false;
+  if (ambTimer !== null) { window.clearInterval(ambTimer); ambTimer = null; }
+  if (ambCtx && ambOut) {
+    const now = ambCtx.currentTime;
+    ambOut.gain.cancelScheduledValues(now);
+    ambOut.gain.setValueAtTime(ambOut.gain.value, now);
+    ambOut.gain.linearRampToValueAtTime(0.0001, now + 1.0);
+  }
+  ambState = null;
+}
+
+/** Głośność 0..1 (ta sama krzywa percepcyjna ^1.6 co muzyka) — dotyczy
+ *  WYŁĄCZNIE odgłosów natury, nigdy muzyki i odwrotnie. Bezpieczne wołać
+ *  przed startem (nie tworzy AudioContext). Podczas PEŁNEGO wyciszenia
+ *  bitewnego (AMB_BITWA_MUTE_PELNE && ambBattleMuted) celowo NIE rusza
+ *  słyszalnego gain — inaczej suwak gracza w trakcie bitwy przebiłby
+ *  wyciszenie. Nowa wartość i tak zostaje zapamiętana (ambVolume) i wejdzie
+ *  w życie przy powrocie na mapę (patrz ambApplyBattleMute()). */
+export function setAmbienceVolume(v: number): void {
+  ambVolume = Math.max(0, Math.min(1, v));
+  if (ambCtx && ambOut && !(AMB_BITWA_MUTE_PELNE && ambBattleMuted)) {
+    ambOut.gain.setTargetAtTime(volCurve(ambVolume), ambCtx.currentTime, 0.05);
+  }
+}
+
+export function isAmbiencePlaying(): boolean { return ambPlaying; }
+
+/** NIEOBOWIĄZKOWY hak: "w bitwie milkną ptaki/zwierzęta" (efekt już wbudowany
+ *  w composeKamien, blok NATURA). main.ts nadal świadomie go NIE wywołuje
+ *  wprost (patrz nagłówek pliku) — ale od wprowadzenia ambApplyBattleMute()
+ *  niżej JEST wołany WEWNĘTRZNIE stąd, gdy AMB_BITWA_MUTE_PELNE=false
+ *  (wariant "tylko zwierzęta milkną"). Zostaje też publiczny, gdyby
+ *  właściciel chciał go użyć wprost bez dalszych zmian silnika. */
+export function setAmbienceMood(mood: Mood): void {
+  ambMood = mood;
+  if (ambState) ambState.mood = mood;
+}
+
+/** Wyciszenie kanału natury w bitwie — JEDYNY hak wpięty w setMood() (patrz
+ *  tam), więc działa automatycznie ze WSZYSTKICH miejsc w main.ts/battle/
+ *  mapFieldBattle.ts, które i tak wołają setMood('bitwa'/'mapa'); zero zmian
+ *  po ich stronie. Nie zatrzymuje silnika/schedulera — tylko wygasza gain
+ *  busa ambience (albo, w wariancie AMB_BITWA_MUTE_PELNE=false, samą warstwę
+ *  zwierząt przez setAmbienceMood() powyżej — wiatr/liście grają dalej).
+ *  Powrót na mapę celuje ZAWSZE w bieżącą głośność gracza
+ *  (volCurve(ambVolume)) — jeśli gracz wyciszył cały kanał (ambVolume=0)
+ *  przed/w trakcie bitwy, po bitwie zostaje cisza: wyciszenie bitewne jest
+ *  warstwą NAD ustawieniem gracza, nigdy go nie nadpisuje na trwałe.
+ *  Idempotentne — powtórne wywołanie z tym samym mood nic nie robi. */
+function ambApplyBattleMute(mood: Mood): void {
+  const shouldMute = mood === 'bitwa';
+  if (shouldMute === ambBattleMuted) return;
+  ambBattleMuted = shouldMute;
+  if (!AMB_BITWA_MUTE_PELNE) {
+    // Wariant "tylko zwierzęta milkną": reużywa wbudowanego efektu
+    // composeKamien (blok NATURA) przez już istniejący hak.
+    setAmbienceMood(mood);
+    return;
+  }
+  if (!ambCtx || !ambOut) return; // kanał jeszcze nie wystartowany — nic do wyciszenia
+  const now = ambCtx.currentTime;
+  ambOut.gain.cancelScheduledValues(now);
+  ambOut.gain.setValueAtTime(ambOut.gain.value, now);
+  const target = shouldMute ? 0.0001 : volCurve(ambVolume);
+  ambOut.gain.linearRampToValueAtTime(target, now + AMB_BITWA_XFADE);
+}

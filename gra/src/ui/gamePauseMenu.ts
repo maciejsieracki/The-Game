@@ -20,6 +20,15 @@ export interface GamePauseMenuConfig {
   onMusicToggle?: (enabled: boolean) => void;
   /** Suwak głośności muzyki, wartość 0..1 (setMusicVolume). */
   onMusicVolumeChange?: (volume: number) => void;
+  /** Odgłosy natury WŁ/WYŁ — stan bieżący, do zaznaczenia przełącznika przy
+   *  otwarciu. Osobny kanał od muzyki — patrz audio/ambience.ts. */
+  getAmbienceEnabled?: () => boolean;
+  /** Głośność odgłosów natury 0..1 — do ustawienia suwaka przy otwarciu. */
+  getAmbienceVolume?: () => number;
+  /** Przełącznik Odgłosy natury WŁ/WYŁ (stopAmbience() / startAmbience()). */
+  onAmbienceToggle?: (enabled: boolean) => void;
+  /** Suwak głośności odgłosów natury, wartość 0..1 (setAmbienceVolume). */
+  onAmbienceVolumeChange?: (volume: number) => void;
 }
 
 const STYLE_ID = 'civ-game-pause-css';
@@ -61,6 +70,18 @@ function ensureStyles(): void {
 .civ-pause-music-toggle[aria-pressed="true"]::after{left:19px;background:#f5e6b8;}
 .civ-pause-music-vol{width:100%;margin-top:8px;accent-color:#e0b24a;cursor:pointer;}
 .civ-pause-music-vol:disabled{opacity:.4;cursor:not-allowed;}
+.civ-pause-ambience{margin:4px 0 14px;padding:10px 12px;border-radius:8px;
+  border:1px solid rgba(224,178,74,0.22);background:rgba(255,255,255,0.03);}
+.civ-pause-ambience-row{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.civ-pause-ambience-lbl{font-size:13px;font-weight:600;color:#e8ebf0;display:flex;align-items:center;gap:8px;}
+.civ-pause-ambience-toggle{position:relative;width:38px;height:21px;flex:none;border-radius:11px;
+  border:1px solid rgba(224,178,74,0.35);background:rgba(0,0,0,0.35);cursor:pointer;padding:0;}
+.civ-pause-ambience-toggle::after{content:'';position:absolute;top:2px;left:2px;width:15px;height:15px;border-radius:50%;
+  background:#9aa4b8;transition:left .15s,background .15s;}
+.civ-pause-ambience-toggle[aria-pressed="true"]{background:rgba(224,178,74,0.35);border-color:rgba(224,178,74,0.6);}
+.civ-pause-ambience-toggle[aria-pressed="true"]::after{left:19px;background:#f5e6b8;}
+.civ-pause-ambience-vol{width:100%;margin-top:8px;accent-color:#e0b24a;cursor:pointer;}
+.civ-pause-ambience-vol:disabled{opacity:.4;cursor:not-allowed;}
 `;
   const s = document.createElement('style');
   s.id = STYLE_ID;
@@ -88,6 +109,8 @@ export function showGamePauseMenu(): void {
   const hasSave = cfg.hasSave?.() ?? false;
   const musicEnabledNow = cfg.getMusicEnabled?.() ?? true;
   const musicVolumeNow = cfg.getMusicVolume?.() ?? 0.7;
+  const ambienceEnabledNow = cfg.getAmbienceEnabled?.() ?? true;
+  const ambienceVolumeNow = cfg.getAmbienceVolume?.() ?? 0.7;
 
   const box = document.createElement('div');
   box.className = 'civ-pause-box';
@@ -105,6 +128,13 @@ export function showGamePauseMenu(): void {
     'aria-pressed="' + (musicEnabledNow ? 'true' : 'false') + '" aria-label="Muzyka WŁ/WYŁ"></button></div>' +
     '<input type="range" class="civ-pause-music-vol" data-act="music-vol" min="0" max="100" step="5" ' +
     'value="' + Math.round(musicVolumeNow * 100) + '"' + (musicEnabledNow ? '' : ' disabled') + ' aria-label="Głośność muzyki" />' +
+    '</div>' +
+    '<div class="civ-pause-ambience">' +
+    '<div class="civ-pause-ambience-row"><span class="civ-pause-ambience-lbl">Odgłosy natury</span>' +
+    '<button type="button" class="civ-pause-ambience-toggle" data-act="ambience-toggle" role="switch" ' +
+    'aria-pressed="' + (ambienceEnabledNow ? 'true' : 'false') + '" aria-label="Odgłosy natury WŁ/WYŁ"></button></div>' +
+    '<input type="range" class="civ-pause-ambience-vol" data-act="ambience-vol" min="0" max="100" step="5" ' +
+    'value="' + Math.round(ambienceVolumeNow * 100) + '"' + (ambienceEnabledNow ? '' : ' disabled') + ' aria-label="Głośność odgłosów natury" />' +
     '</div>' +
     '<div class="civ-pause-btns">' +
     '<button type="button" class="civ-pause-primary" data-act="resume"><span class="civ-pause-ic">' + icResume + '</span> Wróć do gry</button>' +
@@ -128,6 +158,19 @@ export function showGamePauseMenu(): void {
   musicVolInput?.addEventListener('input', () => {
     const v = Math.max(0, Math.min(100, Number(musicVolInput.value))) / 100;
     cfg?.onMusicVolumeChange?.(v);
+  });
+
+  const ambienceToggleBtn = box.querySelector('[data-act="ambience-toggle"]') as HTMLButtonElement | null;
+  const ambienceVolInput = box.querySelector('[data-act="ambience-vol"]') as HTMLInputElement | null;
+  ambienceToggleBtn?.addEventListener('click', () => {
+    const next = ambienceToggleBtn.getAttribute('aria-pressed') !== 'true';
+    ambienceToggleBtn.setAttribute('aria-pressed', next ? 'true' : 'false');
+    if (ambienceVolInput) ambienceVolInput.disabled = !next;
+    cfg?.onAmbienceToggle?.(next);
+  });
+  ambienceVolInput?.addEventListener('input', () => {
+    const v = Math.max(0, Math.min(100, Number(ambienceVolInput.value))) / 100;
+    cfg?.onAmbienceVolumeChange?.(v);
   });
 
   root.addEventListener('click', (ev) => {

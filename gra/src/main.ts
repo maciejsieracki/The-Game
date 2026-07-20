@@ -365,8 +365,13 @@ import { BattleScene } from './battle/battleScene';
 import { buildTestArmies, ensureSiegeMachines as ensureSiegeMachinesPreset } from './battle/testBattle';
 import type { PresetName } from './battle/testBattle';
 import type { BattleResult, BattleUnit, BattleOpts } from './battle/battleScene';
-import { startMusic, stopMusic, setMood, setEra, setMusicVolume, getMood } from './audio/muzyka-antyczna';
+import {
+  startMusic, stopMusic, setMood, setEra, setMusicVolume, getMood,
+  startIntroMusic, stopIntroMusic,
+  startAmbience, stopAmbience, setAmbienceVolume,
+} from './audio/muzyka-antyczna';
 import { loadMusicPrefs, saveMusicPrefs } from './audio/musicPrefs';
+import { loadAmbiencePrefs, saveAmbiencePrefs } from './audio/ambiencePrefs';
 import { resolveCombat, combatUnitFromDef, terrainDefenseMultiplier } from './game/combat';
 import type { CombatUnit, TerrainEntry } from './game/combat';
 import terrainCombatData from '../data/terrain-combat.json';
@@ -3710,15 +3715,77 @@ async function boot(): Promise<void> {
     // użytkownika (nowa gra / wczytaj / playtest-skrót), NIGDY na load strony.
     // Wczytanie preferencji + setMusicVolume() są bezpieczne przed startem
     // (nie tworzą AudioContext — patrz audio/muzyka-antyczna.ts).
+    // `musicEnabled` (WŁ/WYCISZ) jest CELOWO ulotny — NIE wczytujemy go z
+    // localStorage (C-AUD-Q5=A): wyciszenie z menu pauzy ma dotyczyć tylko
+    // bieżącej rozgrywki, patrz komentarz w audio/musicPrefs.ts. Resetowany
+    // do WŁ. na każdym starcie rozgrywki — patrz startGameMusic() niżej.
+    // Głośność (`volume`) ZOSTAJE trwała — to nie było przedmiotem błędu.
     const _musicPrefsAtBoot = loadMusicPrefs();
-    let musicEnabled = _musicPrefsAtBoot.enabled;
+    let musicEnabled = true;
     let musicVolumeState = _musicPrefsAtBoot.volume;
     setMusicVolume(musicVolumeState);
 
-    /** Startuje muzykę tła po geście startowym gry, jeśli gracz jej nie wyłączył (setEra zawsze). */
+    // --- Odgłosy natury (TRZECI, niezależny kanał audio — sekcja "AMBIENCE"
+    // w audio/muzyka-antyczna.ts + audio/ambiencePrefs.ts). Synteza Web Audio
+    // na WŁASNYM AudioContext (composeKamien onlyNature=true — wiatr/ptaki/
+    // świerszcze/wycie/woda, zero instrumentów/rytmu), własny stan, własne
+    // preferencje, zero wpływu na muzykę i odwrotnie. setAmbienceVolume() jest
+    // tak samo bezpieczne przed startem jak setMusicVolume() powyżej (nie
+    // tworzy AudioContext).
+    const _ambiencePrefsAtBoot = loadAmbiencePrefs();
+    let ambienceEnabled = _ambiencePrefsAtBoot.enabled;
+    let ambienceVolumeState = _ambiencePrefsAtBoot.volume;
+    setAmbienceVolume(ambienceVolumeState);
+
+    /** Startuje muzykę tła po geście startowym gry, jeśli gracz jej nie wyłączył (setEra zawsze).
+     *  Pierwsza rzecz: gasi intro (ekrany przed rozgrywką) — to dokładny moment
+     *  przejścia menu->rozgrywka, patrz resumeIntroMusic() / openStartupMainMenu().
+     *  Tu też startują odgłosy natury (jeśli gracz ich nie wyłączył) — ten sam
+     *  moment startu co muzyka gry, ale kanał całkiem niezależny (patrz sekcja
+     *  AMBIENCE w audio/muzyka-antyczna.ts). */
     function startGameMusic(mood: 'mapa' | 'bitwa' = 'mapa'): void {
+      // C-AUD-Q5=A: nowa rozgrywka zawsze startuje z muzyką WŁ. — wyciszenie
+      // dokonane w POPRZEDNIEJ rozgrywce (przełącznik w menu pauzy) jest
+      // ulotne i nie ma tu żadnego znaczenia (patrz audio/musicPrefs.ts).
+      musicEnabled = true;
+      stopIntroMusic();
       setEra(player.era);
       if (musicEnabled) startMusic(mood);
+      if (ambienceEnabled) startAmbience();
+    }
+
+    // --- Intro (muzyka ekranów przed rozgrywką: menu główne, wybór cywilizacji,
+    // ustawienia) — patrz audio/filePlayer.ts (introPlaylist) + rozszerzenie
+    // zadania muzyki kamienia z 2026-07-20. Jedna ciągła playlista niezależna
+    // od era/mood; milknie dokładnie w startGameMusic() powyżej.
+    let introGestureArmed = false;
+    /** Jednorazowy nasłuch na PIERWSZĄ interakcję w całym dokumencie — fallback
+     *  na wypadek, gdy resumeIntroMusic() zostanie wywołane bez gestu (jedyny
+     *  taki przypadek: pierwsze pokazanie menu na starcie strony, wprost z
+     *  boot(), zanim gracz kliknie cokolwiek). Wszystkie POZOSTAŁE wywołania
+     *  openStartupMainMenu() dzieją się już wewnątrz handlerów kliknięć, więc
+     *  startIntroMusic() tam działa od razu — ten nasłuch po prostu nic wtedy
+     *  nie robi (self-removes po pierwszym zdarzeniu, start jest no-op gdy gra). */
+    function armIntroFallbackGesture(): void {
+      if (introGestureArmed) return;
+      introGestureArmed = true;
+      const onGesture = (): void => {
+        document.removeEventListener('pointerdown', onGesture, true);
+        document.removeEventListener('keydown', onGesture, true);
+        startIntroMusic();
+      };
+      document.addEventListener('pointerdown', onGesture, true);
+      document.addEventListener('keydown', onGesture, true);
+    }
+    /** Uruchamia (lub wznawia) playlistę intro. Wołane za każdym razem, gdy
+     *  pokazuje się ekran przedgrowy (patrz openStartupMainMenu()). CELOWO
+     *  odcięte od `musicEnabled` (C-AUD-Q5=A): intro nigdy nie milknie z
+     *  powodu wyciszenia dokonanego W GRZE — to osobna, ulotna, per-rozgrywkowa
+     *  decyzja (patrz startGameMusic() i audio/musicPrefs.ts). Głośność nadal
+     *  respektowana przez setMusicVolume() (wspólna, trwała, patrz wyżej). */
+    function resumeIntroMusic(): void {
+      startIntroMusic();
+      armIntroFallbackGesture();
     }
     // P3a: Last-turn totals for HUD display (Praca, Kultura from economy; Porzadek from order)
     /** Pula Pracy gracza (suma doPuli z miast — plaster D2=A). */
@@ -6853,6 +6920,14 @@ async function boot(): Promise<void> {
 
     function openStartupMainMenu(): void {
       resetStuckInteractiveState();
+      // Wymuszamy wzajemną wykluczalność z muzyką rozgrywki: jeśli ta funkcja
+      // jest wołana z jakiejś ścieżki powrotu w trakcie/awarii rozpoczynania
+      // gry (już po startGameMusic()), nie chcemy, żeby synteza/kamień-pliki
+      // grały RÓWNOLEGLE z intro w tle menu. Odgłosy natury analogicznie —
+      // nie mają odpowiednika na ekranach przedgrowych, więc po prostu milkną.
+      stopMusic();
+      stopAmbience();
+      resumeIntroMusic();
       showMainMenu({
         hasSave: hasAnySaveSlot,
         onNewGame: () => {
@@ -6898,14 +6973,28 @@ async function boot(): Promise<void> {
       getMusicEnabled: () => musicEnabled,
       getMusicVolume: () => musicVolumeState,
       onMusicToggle: (enabled) => {
+        // C-AUD-Q5=A: `enabled` jest ulotny (tylko bieżąca rozgrywka) — celowo
+        // NIE wchodzi do saveMusicPrefs (patrz audio/musicPrefs.ts).
         musicEnabled = enabled;
-        saveMusicPrefs({ enabled: musicEnabled, volume: musicVolumeState });
+        saveMusicPrefs({ volume: musicVolumeState });
         if (enabled) startMusic(getMood()); else stopMusic();
       },
       onMusicVolumeChange: (v) => {
         musicVolumeState = v;
-        saveMusicPrefs({ enabled: musicEnabled, volume: musicVolumeState });
+        saveMusicPrefs({ volume: musicVolumeState });
         setMusicVolume(v);
+      },
+      getAmbienceEnabled: () => ambienceEnabled,
+      getAmbienceVolume: () => ambienceVolumeState,
+      onAmbienceToggle: (enabled) => {
+        ambienceEnabled = enabled;
+        saveAmbiencePrefs({ enabled: ambienceEnabled, volume: ambienceVolumeState });
+        if (enabled) startAmbience(); else stopAmbience();
+      },
+      onAmbienceVolumeChange: (v) => {
+        ambienceVolumeState = v;
+        saveAmbiencePrefs({ enabled: ambienceEnabled, volume: ambienceVolumeState });
+        setAmbienceVolume(v);
       },
     });
 
@@ -9783,8 +9872,11 @@ async function boot(): Promise<void> {
       // Ten preset to jednocześnie pierwszy gest gracza w tym trybie playtest
       // (patrz doStartPlaytestWalkaMapy: gałąź bitwaDuza/oblezDuze returnuje
       // przed startGameMusic) — więc epoka + muzyka startują tu wprost w 'bitwa'.
+      // Ten sam reset wyciszenia co w startGameMusic() (C-AUD-Q5=A) — to też
+      // "start nowej rozgrywki", tylko inną ścieżką.
       setEra(player.era);
-      if (musicEnabled) startMusic('bitwa');
+      musicEnabled = true;
+      startMusic('bitwa');
       const bs = new BattleScene(bOpts);
       bs.play((res) => {
         const wl = res.winner === 'atakujacy' ? 'Rzym (atak)'
