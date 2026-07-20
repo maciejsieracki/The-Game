@@ -1,6 +1,6 @@
 # STAN PRACY — HANDOFF
 
-**Ostatnia aktualizacja: 2026-07-20** · Projekt: Civ „The Game"
+**Ostatnia aktualizacja: 2026-07-21** · Projekt: Civ „The Game"
 
 > **Ten plik jest punktem wejścia dla KAŻDEJ nowej sesji** — lokalnej, chmurowej, telefonicznej.
 > Mówi: co jest zrobione, co w toku, czego NIE wolno ruszać i czy można pracować.
@@ -21,7 +21,9 @@ git status --short
 - Jeśli w `gra/src` lub `gra/data` są **niezacommitowane zmiany** — ktoś jest w połowie pracy. NIE nadpisuj ich, NIE rób `git checkout`/`git stash` na tych plikach. Najpierw ustal z właścicielem, co to jest.
 - **Zawsze przed pracą uruchom bramki** (sekcja 7), żeby wiedzieć, co jest sprawne, a co było zepsute PRZED Tobą.
 
-**Stan na 2026-07-20:** drzewo **czyste**, ostatni commit = deploy `ea4d679` (bundel ROBOCZA `a31ebe6f`), wypchnięte na `main` i gałąź. Nic nie jest w toku — nowa sesja startuje bez ryzyka.
+**Stan na 2026-07-21:** drzewo **czyste**, ostatni commit `51e0cd7` (bundel ROBOCZA **`374c1067`**), **wypchnięte na `main`**, playtest właściciela **zaliczony** („wszystko działa prawidłowo"). Nic nie jest w toku.
+
+*(poprzedni stan 2026-07-20: deploy `ea4d679` / ROBOCZA `a31ebe6f`)* — dawniej: drzewo czyste, nic nie jest w toku — nowa sesja startuje bez ryzyka.
 
 **Czego NIE zaczynać bez zgody właściciela:** dużych tematów z sekcji 8 (kolejne etapy Handlu E6/E3b, pełny feature Ludów Morza) — mają swoje decyzje i kolejność.
 
@@ -47,8 +49,27 @@ git status --short
 
 ## 3. ✅ ZROBIONE I DZIAŁA W GRZE (zdeployowane do ROBOCZA)
 
-**Ostatni deploy: ROBOCZA `a31ebe6f`** (2026-07-20, commit `ea4d679`). Łańcuch ostatnich deployów:
-`a44d5350` (łańcuch żelaza + sync paneli) → `ba8ab0d7` (Ludy Morza + Wioski + naprawa bramek) → `b217916e` (mapa: wybrzeże=woda + pasma + rzeki · Handel E1 Mennica) → **`a31ebe6f`** (Handel: szlaki E2+E3+E7 + zbieranie gliny).
+**Ostatni deploy: ROBOCZA `374c1067`** (2026-07-21, commity `1a73086`…`51e0cd7`, na GitHubie, **playtest zaliczony**). Łańcuch ostatnich deployów:
+`a31ebe6f` → `74d85bc2` (mapa: wybrzeże z morza + fix Ziemia + pasma −25%) → `50448964` (render ujścia rzek kończy na Wybrzeżu) → **`374c1067`** (GRAFIKA-ŻELAZO + komplet audio).
+
+### 3a. CO WESZŁO 2026-07-21 (najnowsze)
+
+**GRAFIKA-ŻELAZO** *(zlecenie integratora #1 z 2026-07-10 — czekało 10 dni na werdykt właściciela; dyspozycja `DYSPOZYCJA-GRAFIKA-JEDNOSTKI.md` §2b)*:
+- 4 nowe moduły w `gra/src/render/`: `jednostki-z1-mezopotamia`, `jednostki-z2-srodziemne`, `jednostki-z3-plemiona`, `galera-model` — **11 modeli jednostek żelaza** + **nowa Galera** (oko apotropaiczne, trójzębny taran, żagiel z emblematem gracza, 8 wioseł/burta) zastępująca ~90 linii geometrii ad-hoc.
+- **FIX Triari:** `buildSuperUnit` ignorował nazwę → `case 'rzym'` zawsze zwracał Evocati, więc Triari renderował się jako jego kopia. Teraz rozróżnienie po nazwie.
+- **FIX routingu Germana:** „Wojownik germański SUPER" trafiał w generyczny fallback — dopisane `germanie` do `Culture` / `cultureFromName` / `buildSuperUnit`.
+- Weryfikacja headless: `buildUnitModel` dla **73/73 jednostek bez wyjątku**; Triari 486 tri ≠ Evocati 478, German super 488 ≠ generyk 580.
+
+**AUDIO — trzy niezależne kanały** *(nowe pliki: `gra/src/audio/filePlayer.ts`, `ambiencePrefs.ts`, `utwory/`)*:
+- **Intro** (ekrany przed rozgrywką): 3 utwory instrumentalne, **stała kolejność** (`C-MUZ-Q6=A`) — spokojne otwarcie, energiczne zamknięcie. 3 utwory z wokalem odstawione do `utwory/_wykluczone/`.
+- **Kamień** (rozgrywka): 16 plików mp3, shuffle, **każdy utwór 3× pod rząd**. Brąz+ synteza **bez zmian**; synteza kamienia **rozłączona, ale ZOSTAJE w kodzie** jako uśpiony fallback (pusty katalog → automatyczny powrót).
+- **Crossfade 1,5 s** (`CROSSFADE_SEC`) na KAŻDYM przejściu, także między powtórzeniami; krzywa **equal-power** (liniowa dawała słyszalny dołek). Zgłoszenie właściciela: ~1 s głuchej ciszy, bo `'ended'` reaguje za późno.
+- **Odgłosy natury** — **SYNTEZA, 0 MB** (nie pliki!): wiatr, ptaki, świerszcze, wycie wilka/sowy + nowy `renderListowie` (szum drzew). Własny przełącznik i suwak w menu pauzy, osobne preferencje. **Automatyczne wyciszanie w bitwie** (0,8 s) wpięte w `setMood()` — `main.ts` i pliki bitwy bez zmian. `renderWoda` (morze/rzeka) **UŚPIONA, nie skasowana** — wróci przy dźwięku pozycyjnym.
+- **FIX zgłoszony przez właściciela:** wyciszenie muzyki zapisywało się trwale i gasiło też intro. Teraz `enabled` jest **ulotne** (tylko bieżąca rozgrywka), głośność nadal trwała, stare `{enabled:false}` rozbrojone.
+
+**DANE:** Thorakites `Typ` **Swordsman→Spearman** + uwagi (tarcza thureos + włócznia dory) → łapie kontrę **Spearman vs Mount +50%**. Panel-C zsynchronizowany, round-trip OK.
+
+**Waga bundla: 26,1 MB** (19 mp3 inline, 192 kbps). Wzrost z ~10 MB to świadoma decyzja właściciela („jeżeli plik będzie cięższy, trudno"). Konwersja do 96 kbps odpada — **brak `ffmpeg`** na maszynie właściciela.
 
 Skrót całości live (szczegóły sesji 2026-07-20 w §4):
 - **Jednostki/epoki:** progresja epok (twarda bramka + tier-gating), wielka naprawa jednostek (tokeny 100%, 7 super-jednostek), „Zastąp", typ Slinger, łańcuch brązu i żelaza (surowiec).
@@ -201,6 +222,14 @@ node tools/trade-routes-income-test.cjs  # 49/49
 - **Glina/ruda→brąz** — czy przebudować brąz na ilościowy, czy zostawić civ-wide.
 - **Głód wojska / „Zastąp"** — wzrokowa weryfikacja (stare, nierozstrzygnięte).
 - **Pary „Zastąp specjalnie"** — wypełnione 2, reszta czeka na przegląd kuratorski.
+
+**Nowe po sesji 2026-07-21 (audio/grafika):**
+- **Druga, niezależna tabela kontr** w `gra/src/battle/battleScene.ts` (kolumna `Bonus vs <Typ> %` per jednostka, osobna od `counters.json`). **Thorakites i Triari mają tam `Bonus vs Mount % = 0`, podczas gdy generyczny Włócznik ma 50.** Może być zamierzone (elita ≠ generyk), ale warto rzucić okiem przy balansie.
+- **`categoryOf()`** (`gra/src/units/setup.ts`) klasyfikuje nowe jednostki żelaza jako `'domyslny'`. Na render NIE wpływa (dispatch idzie po nazwie — potwierdzone testem), ale może dotyczyć innych miejsc UI/logiki zależnych od kategorii.
+- **Odgłosy natury — ten sam błąd, co naprawiony w muzyce:** wyciszenie w `ambiencePrefs` zapisuje się **trwale** (przechodzi na kolejne gry i do menu). W muzyce właściciel kazał to zmienić na ulotne (`C-AUD-Q5=A`); dla natury **nie zgłaszał**, więc zostało. Do wyrównania, jeśli zacznie przeszkadzać.
+- **Szum morza/rzeki (`renderWoda`) czeka uśpiony** — właściciel: *„szum morza powinien pojawiać się dopiero, gdy na mapie zbliżamy się do morza"*. Wymaga dźwięku pozycyjnego (głośność zależna od ilości wody w kadrze). Generator gotowy, wystarczy go obudzić i wpiąć sterowanie.
+- **Muzyka brązu/żelaza z plików** — właściciel zbiera utwory (`Downloads\muzyka braz\`). Brąz+ gra dziś **syntezą**; podmiana na pliki = ten sam mechanizm co kamień (`createPlaylist`), gdy zdecyduje.
+- **Waga bundla** — 26,1 MB przy 192 kbps. Jeśli ładowanie zacznie doskwierać: eksport utworów w 96 kbps zdjąłby ~7 MB (właściciel musi wyeksportować sam, brak `ffmpeg`).
 
 ---
 
