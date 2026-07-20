@@ -44,7 +44,7 @@ function assert(c, msg) {
 }
 
 const EXPECT = {
-  Malenki: { mp: [6, 8, 10], typy: [6, 8, 10] },
+  Malenki: { mp: [6, 8, 10], typy: [6, 7, 10] },
   Mały: { mp: [8, 10, 12], typy: [8, 10, 12] },
   Standardowy: { mp: [10, 12, 14], typy: [10, 12, 14] },
   Duży: { mp: [12, 14, 16], typy: [12, 14, 15] },

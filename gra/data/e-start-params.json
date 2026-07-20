@@ -7,7 +7,7 @@
     "render_quality_bundled": "medium"
   },
   "skala_mapy": {
-    "Malenki": { "rywale_ai": 2, "miasta_panstwa": 8, "typy_cywilizacji": 8, "hex_w": 76, "hex_h": 52 },
+    "Malenki": { "rywale_ai": 2, "miasta_panstwa": 8, "typy_cywilizacji": 7, "hex_w": 76, "hex_h": 52 },
     "Mały": { "rywale_ai": 3, "miasta_panstwa": 10, "typy_cywilizacji": 10, "hex_w": 108, "hex_h": 74 },
     "Standardowy": { "rywale_ai": 6, "miasta_panstwa": 12, "typy_cywilizacji": 12, "hex_w": 168, "hex_h": 120 },
     "Duży": { "rywale_ai": 7, "miasta_panstwa": 14, "typy_cywilizacji": 14, "hex_w": 240, "hex_h": 168 },

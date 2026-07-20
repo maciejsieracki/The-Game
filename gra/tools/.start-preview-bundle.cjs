@@ -337,7 +337,7 @@ var e_start_params_default = {
     render_quality_bundled: "medium"
   },
   skala_mapy: {
-    Malenki: { rywale_ai: 2, miasta_panstwa: 8, typy_cywilizacji: 8, hex_w: 76, hex_h: 52 },
+    Malenki: { rywale_ai: 2, miasta_panstwa: 8, typy_cywilizacji: 7, hex_w: 76, hex_h: 52 },
     Ma\u0142y: { rywale_ai: 3, miasta_panstwa: 10, typy_cywilizacji: 10, hex_w: 108, hex_h: 74 },
     Standardowy: { rywale_ai: 6, miasta_panstwa: 12, typy_cywilizacji: 12, hex_w: 168, hex_h: 120 },
     Du\u017Cy: { rywale_ai: 7, miasta_panstwa: 14, typy_cywilizacji: 14, hex_w: 240, hex_h: 168 },
@@ -822,7 +822,9 @@ var MIASTA_PANSTWA_MENU_BY_TIER = [
   { min: 14, default: 16, max: MAX_MIAST_PANSTWA }
 ];
 var TYPY_CYWILIZACJI_MENU_BY_TIER = [
-  { min: 6, default: 8, max: 10 },
+  // Maleński: 7 (nie 8) — na najmniejszej mapie 8 klastrów czasem się nie mieści
+  // (pofragmentowany ląd → 1 państwo z 0 miast). Decyzja właściciela 2026-07-20.
+  { min: 6, default: 7, max: 10 },
   { min: 8, default: 10, max: 12 },
   { min: 10, default: 12, max: 14 },
   { min: 12, default: 14, max: MAX_TYPY_CYWILIZACJI_MENU },

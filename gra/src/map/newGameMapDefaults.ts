@@ -454,7 +454,9 @@ const MIASTA_PANSTWA_MENU_BY_TIER: readonly MapScaleTriple[] = [
  * default==max=15 dla tych dwóch tierów jest zamierzone (twardy sufit, nie miejsce na „+2").
  */
 const TYPY_CYWILIZACJI_MENU_BY_TIER: readonly MapScaleTriple[] = [
-  { min: 6, default: 8, max: 10 },
+  // Maleński: 7 (nie 8) — na najmniejszej mapie 8 klastrów czasem się nie mieści
+  // (pofragmentowany ląd → 1 państwo z 0 miast). Decyzja właściciela 2026-07-20.
+  { min: 6, default: 7, max: 10 },
   { min: 8, default: 10, max: 12 },
   { min: 10, default: 12, max: 14 },
   { min: 12, default: 14, max: MAX_TYPY_CYWILIZACJI_MENU },
