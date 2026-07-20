@@ -498,35 +498,33 @@ function hasMorzeNeighbor(map: GameMap, q: number, r: number): boolean {
 }
 
 /**
- * B0.7/B0.8: trasa realnie kończy w morzu (ostatni hex to woda otwarta lub Wybrzeże przy Morzu).
- * Tylko takie trasy dostają wstęgę ujścia + lejek — dopływy (koniec na junction) NIE.
+ * B0.7/B0.8/B0.9 (Owner 2026-07-20: „Wybrzeże JEST częścią morza" — dotknięcie Wybrzeża =
+ * dotarcie do morza = koniec biegu, NIE wymagamy dojścia do głębokiego Morza).
+ * Trasa realnie kończy w morzu, gdy ostatni hex JEST wodą (Morze lub Wybrzeże) albo ostatni
+ * hex to ląd SĄSIADUJĄCY z wodą (Morze lub Wybrzeże). Tylko takie trasy dostają wstęgę
+ * ujścia — dopływy (koniec na junction w głębi lądu) NIE.
  */
 function pathReachesOpenSeaRender(map: GameMap, path: Array<{ q: number; r: number }>): boolean {
   if (path.length < 1) return false;
   const last = path[path.length - 1]!;
   const lastH = map.hexes[`${last.q},${last.r}`];
   if (!lastH) return false;
-  if (lastH.terenBazowy === TerenBazowy.Morze) return true;
-  if (lastH.terenBazowy === TerenBazowy.Wybrzeze) return hasMorzeNeighbor(map, last.q, last.r);
-  // Ujście na LĄDZIE stykającym się WPROST z Morzem (bez heksa Wybrzeże pośrodku) — też ujście.
-  if (isDryLandTeren(lastH.terenBazowy) && hasMorzeNeighbor(map, last.q, last.r)) return true;
-  for (const [dq, dr] of AXIAL_DIRS) {
-    const nq = last.q + dq;
-    const nr = last.r + dr;
-    if (map.hexes[`${nq},${nr}`]?.terenBazowy === TerenBazowy.Wybrzeze && hasMorzeNeighbor(map, nq, nr)) {
-      return true;
-    }
-  }
-  return false;
+  if (!isDryLandTeren(lastH.terenBazowy)) return true; // ostatni hex JEST wodą (Morze lub Wybrzeże)
+  // Ostatni hex to ląd — ujście, jeśli SĄSIADUJE wprost z wodą (Morze lub Wybrzeże).
+  return hasWybrzezeNeighbor(map, last.q, last.r) || hasMorzeNeighbor(map, last.q, last.r);
 }
 
 /**
- * Punkty ujścia: ostatni heks LĄDU → heksy Wybrzeża → spływ (wodospad) do tafli Morza.
- * Łańcuch budowany PROSTO z trasy (render-only) — dawny coastalRiverRenderPath zwracał łańcuch
- * długości 1 dla ~99% rzek (urywał się na ostatnim Wybrzeżu przed unshiftem lądu), przez co
- * ujście nie renderowało się w ogóle i rzeka „chowała się pod ziemią" przed wodą.
+ * Punkty ujścia: ostatni heks LĄDU → krótkie wejście w PIERWSZY heks Wybrzeża → spływ
+ * (wodospad) do tafli. Łańcuch budowany PROSTO z trasy (render-only) — dawny
+ * coastalRiverRenderPath zwracał łańcuch długości 1 dla ~99% rzek (urywał się na ostatnim
+ * Wybrzeżu przed unshiftem lądu), przez co ujście nie renderowało się w ogóle i rzeka
+ * „chowała się pod ziemią" przed wodą.
  * KOTWICA: pierwszy punkt = środek ostatniego heksa lądu = dokładnie tam, gdzie kończy się
  * wstęga lądowa (renderLandRiversFromPaths z extendToJoin) → styk bez luki.
+ * B0.9 (Owner 2026-07-20): „Wybrzeże JEST częścią morza" — ujście KOŃCZY SIĘ na pierwszym
+ * heksie Wybrzeża, do którego dochodzi rzeka. NIE ciągniemy dalej pasem wybrzeża (coastWidth=2)
+ * do heksa Morze — to właśnie „przepychanie się przez pas wybrzeża", którego reguła zabrania.
  */
 function buildCoastalRiverPointChain(
   map: GameMap,
@@ -536,106 +534,60 @@ function buildCoastalRiverPointChain(
 ): { pts: THREE.Vector3[]; hexKeys: Set<string> } {
   const hexKeys = new Set<string>();
   const pts: THREE.Vector3[] = [];
-  if (path.length < 2) return { pts, hexKeys };
+  if (path.length < 1) return { pts, hexKeys };
 
   const COAST_OFFSET = R * 0.14;
 
-  // Łańcuch ujścia = ostatni heks LĄDU + kolejne heksy (Wybrzeże) aż do pierwszego Morza.
-  let seaStart = -1;
+  // Pierwszy heks NIE-lądowy w trasie (Wybrzeże LUB Morze) = cel ujścia; heks bezpośrednio
+  // przed nim = ostatni ląd (styk bez luki z wstęgą lądową).
+  let landHex: { q: number; r: number } | null = null;
+  let coastHex: { q: number; r: number } | null = null;
   for (let i = 0; i < path.length; i++) {
     const h = map.hexes[`${path[i]!.q},${path[i]!.r}`];
-    if (h && !isDryLandTeren(h.terenBazowy)) { seaStart = i; break; }
-  }
-  const chain: Array<{ q: number; r: number }> = [];
-  if (seaStart > 0) {
-    chain.push({ q: path[seaStart - 1]!.q, r: path[seaStart - 1]!.r }); // ostatni heks lądu (styk)
-    for (let i = seaStart; i < path.length; i++) {
-      const h = map.hexes[`${path[i]!.q},${path[i]!.r}`];
-      if (!h || h.terenBazowy === TerenBazowy.Morze) break; // stop na otwartym morzu
-      chain.push({ q: path[i]!.q, r: path[i]!.r });
+    if (h && !isDryLandTeren(h.terenBazowy)) {
+      coastHex = { q: path[i]!.q, r: path[i]!.r };
+      if (i > 0) landHex = { q: path[i - 1]!.q, r: path[i - 1]!.r };
+      break;
     }
-  } else {
-    // Brak Wybrzeża w trasie — rzeka kończy na lądzie dotykającym Morza wprost (rzadkie).
-    const last = path[path.length - 1]!;
-    chain.push({ q: last.q, r: last.r });
   }
-  if (chain.length < 1) return { pts, hexKeys };
-  for (const ph of chain) hexKeys.add(`${ph.q},${ph.r}`);
-
-  const landHex = chain[0]!; // ostatni heks lądu — punkt styku z wstęgą lądową
+  if (!coastHex) {
+    // Trasa (render) kończy na lądzie stykającym się z wodą wprost — landRiverRenderPath ucina
+    // bieg PRZED heksem wody, więc w `path` może nie być żadnego heksu wody. Dobierz sąsiada
+    // deterministycznie: stały porządek AXIAL_DIRS, pierwszy pasujący (Wybrzeże lub Morze).
+    const last = path[path.length - 1]!;
+    landHex = { q: last.q, r: last.r };
+    for (const [dq, dr] of AXIAL_DIRS) {
+      const nq = last.q + dq, nr = last.r + dr;
+      const nh = map.hexes[`${nq},${nr}`];
+      if (nh && !isDryLandTeren(nh.terenBazowy)) { coastHex = { q: nq, r: nr }; break; }
+    }
+  }
+  if (!landHex || !coastHex) return { pts, hexKeys };
+  hexKeys.add(`${landHex.q},${landHex.r}`);
+  hexKeys.add(`${coastHex.q},${coastHex.r}`);
 
   // KOTWICA: środek ostatniego heksa lądu (na wysokości lądu) — koniec wstęgi lądowej ląduje TU.
   const landCenter = axialToWorld(landHex.q, landHex.r, R);
   const landY = riverHexSurfaceY(map, landHex.q, landHex.r, 'roblox', riverMouthY, COAST_OFFSET, R) ?? riverMouthY;
   pts.push(new THREE.Vector3(landCenter.x, landY, landCenter.z));
 
-  // Środki wspólnych krawędzi wzdłuż łańcucha ląd→wybrzeże (surowe punkty; wodospad domknie Y).
-  if (chain.length >= 2) {
-    const { pts: edgePts } = buildRiverPointsFromHexPath(
-      map, chain, R, 'roblox', riverMouthY, COAST_OFFSET, new Set<string>(),
-    );
-    for (const p of edgePts) {
-      if (pts.length === 0 || pts[pts.length - 1]!.distanceTo(p) > R * 0.02) pts.push(p);
-    }
-  }
+  // Krawędź styku ląd → Wybrzeże (poziom tafli od tego miejsca — wodospad domknie Y poniżej).
+  const edgeMid = sharedEdgeMidpoint(landHex.q, landHex.r, coastHex.q, coastHex.r, R);
+  if (edgeMid) pts.push(new THREE.Vector3(edgeMid.x, riverMouthY, edgeMid.z));
 
-  // Ostatni heks łańcucha: jeśli nie styka się z Morzem, przeskocz na sąsiedni Wybrzeże, które styka.
-  let endPh = chain[chain.length - 1]!;
-  if (!hasMorzeNeighbor(map, endPh.q, endPh.r)) {
-    for (let d = 0; d < AXIAL_DIRS.length; d++) {
-      const [dq, dr] = AXIAL_DIRS[d]!;
-      const wq = endPh.q + dq, wr = endPh.r + dr;
-      const wh = map.hexes[`${wq},${wr}`];
-      if (wh?.terenBazowy !== TerenBazowy.Wybrzeze) continue;
-      if (!hasMorzeNeighbor(map, wq, wr)) continue;
-      const midEW = sharedEdgeMidpoint(endPh.q, endPh.r, wq, wr, R);
-      if (midEW) pts.push(new THREE.Vector3(midEW.x, riverMouthY, midEW.z));
-      hexKeys.add(`${wq},${wr}`);
-      endPh = { q: wq, r: wr };
-      break;
-    }
-  }
+  // Krótkie wejście w płytką wodę PIERWSZEGO heksa Wybrzeża — TU kończy się ujście.
+  // NIE idziemy dalej w stronę środka/drugiego pierścienia wybrzeża ani do Morza.
+  const coastCenter = axialToWorld(coastHex.q, coastHex.r, R);
+  const tIn = 0.4; // krótki odcinek w głąb pierwszego heksa Wybrzeża
+  const baseX = edgeMid ? edgeMid.x : landCenter.x;
+  const baseZ = edgeMid ? edgeMid.z : landCenter.z;
+  const inX = baseX + (coastCenter.x - baseX) * tIn;
+  const inZ = baseZ + (coastCenter.z - baseZ) * tIn;
+  pts.push(new THREE.Vector3(inX, riverMouthY, inZ));
 
-  // Kierunek do Morza z ostatniego heksa (preferuj kierunek zgodny z biegiem rzeki).
-  const prevPh = chain.length >= 2 ? chain[chain.length - 2]! : landHex;
-  let bestDir = -1;
-  let bestScore = -Infinity;
-  for (let d = 0; d < AXIAL_DIRS.length; d++) {
-    const [dq, dr] = AXIAL_DIRS[d]!;
-    const nh = map.hexes[`${endPh.q + dq},${endPh.r + dr}`];
-    if (nh?.terenBazowy !== TerenBazowy.Morze) continue;
-    let score = 1;
-    const inDir = neighborDirIndex(prevPh.q, prevPh.r, endPh.q, endPh.r);
-    if (inDir >= 0 && d === inDir) score += 3;
-    if (score > bestScore) { bestScore = score; bestDir = d; }
-  }
-  if (bestDir < 0 || pts.length < 1) return { pts: [], hexKeys };
-
-  const coastEdge = hexEdgeMidpointByDir(endPh.q, endPh.r, bestDir, R);
-  const coastPt = new THREE.Vector3(coastEdge.x, riverMouthY, coastEdge.z);
-  if (pts.length === 0 || pts[pts.length - 1]!.distanceTo(coastPt) > R * 0.02) pts.push(coastPt);
-
-  const [sdq, sdr] = AXIAL_DIRS[bestDir]!;
-  const seaQ = endPh.q + sdq;
-  const seaR = endPh.r + sdr;
-  hexKeys.add(`${seaQ},${seaR}`);
-  // I3: wstęga WCHODZI w głąb pierwszego heksa Morza (~35-40% od krawędzi w stronę środka),
-  // na poziomie tafli — nie urywa się na linii brzegowej. Delta/lejek kotwiczy się w tym punkcie.
-  const seaEdge = hexEdgeMidpointByDir(seaQ, seaR, (bestDir + 3) % 6, R);
-  const seaCenter = axialToWorld(seaQ, seaR, R);
-  const tIn = 0.6; // udział drogi krawędź→środek (apotema); ~35-40% szerokości heksa w głąb
-  const seaInX = seaEdge.x + (seaCenter.x - seaEdge.x) * tIn;
-  const seaInZ = seaEdge.z + (seaCenter.z - seaEdge.z) * tIn;
-  pts.push(new THREE.Vector3(seaInX, riverMouthY, seaInZ));
-
-  // Wodospad: część lądowa trzyma plateau (najwyższa wysokość łańcucha), na styku ląd→morze
+  // Wodospad: część lądowa trzyma plateau (wysokość ostatniego heksa lądu), na styku ląd→morze
   // wstęga spada pionowo do tafli (riverMouthY). Korona spina się z kotwicą lądową (bez luki).
-  let landPlateauY = landY;
-  for (const ph of chain) {
-    const y = riverHexSurfaceY(map, ph.q, ph.r, 'roblox', riverMouthY, COAST_OFFSET, R);
-    if (y != null && y > landPlateauY) landPlateauY = y;
-  }
-  const shaped = applyCoastalWaterfall(pts, riverMouthY, landPlateauY, R);
+  const shaped = applyCoastalWaterfall(pts, riverMouthY, landY, R);
   return { pts: shaped, hexKeys };
 }
 
