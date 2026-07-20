@@ -2097,3 +2097,28 @@ Właściciel doprecyzował dwa hasła-skróty (jedno słowo = czynność, bez pr
 **Uwaga dla Was (integrator #1):** to zmiana protokołu w `CLAUDE.md` (`git pull` ją u Was przyniesie). Jeśli coś w brzmieniu haseł Wam nie pasuje — dopiszcie w kanale, dostroimy.
 
 CZEKAM-NA: **właściciel** — playtest ROBOCZA `50448964`; **wy (lokalna)** — na hasło „push" od właściciela: pull `50448964` na jego dysk (otwarte polecenie z wpisu 19:20 nadal aktualne).
+
+---
+
+## [19:55 PL, 2026-07-20] SESJA CHMUROWA (Claude Code) → SESJA LOKALNA — PRZEKAZANIE ZADANIA: MUZYKA EPOKI KAMIENIA (pliki audio + shuffle 3×)
+
+Właściciel przekazuje to zadanie WAM (chmura ma limit 5 uploadów; Wy macie dysk). Zrobiłem już recon systemu muzyki — poniżej komplet, żebyście nie odkrywali od zera.
+
+**ZADANIE (wg właściciela):** muzyka epoki KAMIENIA → prawdziwe pliki audio (kilka utworów, ~30 s każdy). Reguła odtwarzania: **shuffle** — tasujemy listę, gramy każdy utwór **3× pod rząd** (~30 s → ~90 s), po wyczerpaniu listy **nowe tasowanie**, bez powtórki tego samego na styku tur. Głośność/mute przez istniejący suwak.
+
+**⚠️ KLUCZOWE ODKRYCIE (inaczej wpadniecie w pułapkę „gdzie są mp3?"):** obecna muzyka kamienia to NIE pliki, tylko **synteza Web Audio w locie** — `gra/src/audio/muzyka-antyczna.ts` (`composeKamien()` + renderery: wiatr=szum, ptaki/wilki=oscylatory, piszczałka, bębny-kłody). Zero plików audio w całym repo. Czyli to **budowa nowego toru odtwarzania plików**, nie podmiana istniejących.
+
+**ARCHITEKTURA / PUŁAPKI:**
+- Single-file (vite-plugin-singlefile). `gra/vite.config.ts` ma `assetsInlineLimit: 100_000_000` → import mp3 jako asset Vite zostanie **zinline'owany base64 do jednego HTML**. Bundle urośnie (~0,5 MB/utwór 30 s @128 kbps) — pilnujcie rozmiaru. Musi działać z `file://` (patrz `fixScriptTag` w vite.config).
+- Obecny silnik używa `AudioContext` + ręczny graf; NIE ma ładowania plików. Dopiszcie tor plikowy (`decodeAudioData`+`AudioBufferSourceNode`, albo `<audio>`) — najlepiej OBOK istniejącej syntezy.
+- **Zachować publiczne API** (importowane w wielu miejscach `main.ts` + `battle/mapFieldBattle.ts`): `startMusic/stopMusic/setMood/setEra/setMusicVolume/getMood/isMusicPlaying`. Podepnijcie nowy odtwarzacz pod te same funkcje.
+- **Reużyć bez zmian:** `gra/src/audio/musicPrefs.ts` (localStorage `civ-music-prefs-v1`, {enabled,volume}); suwak+przełącznik w `gra/src/ui/gamePauseMenu.ts` (okablowane w `main.ts:6899-6910`). NIE ruszać.
+- FYI martwy panel „muzyka" w `gra/data/ui-params.json:29-46` + `mainMenu.ts` — niepodłączony do silnika, zostawcie.
+
+**MOJE REKOMENDACJE (do potwierdzenia z właścicielem):**
+- Zakres: **tylko Kamień → pliki; Brąz+ synteza zostaje**; syntezę kamienia rozłączyć, ale zostawić w kodzie jako uśpiony fallback (nie kasować).
+- Bitwa w epoce kamienia: na start **ta sama playlista niezależnie od mood** (ewentualne ściszenie później).
+
+**Pliki do ruszenia:** `gra/src/audio/muzyka-antyczna.ts` (rozłączyć gałąź kamienia), nowy moduł odtwarzacza plików (np. `gra/src/audio/filePlayer.ts`), wpięcia w `main.ts`. Pliki mp3 dostaniecie od właściciela z jego dysku.
+
+CZEKAM-NA: **sesja lokalna** — przejęcie zadania (weźcie pliki mp3 z dysku właściciela, potwierdźcie z nim zakres Q1/Q2, zbudujcie + deploy do ROBOCZA wg runbooka handoff §6). **Właściciel** — wskazanie utworów lokalnej sesji.
