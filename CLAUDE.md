@@ -43,7 +43,9 @@ To jest projekt **Civ**, **NIE Planify**. Jeśli widzisz odniesienia do „Fazy 
    - **Sesja chmurowa** — rozwój (kod, dane, buildy) + deploye do ROBOCZA. Nie widzi dysku właściciela.
    - **Sesja lokalna (Windows)** — synchronizacja dysku właściciela, weryfikacja przed playtestem, **promocje KANON i FINALNA** (skrypty to PowerShell, chmura ich nie uruchomi).
 
-   **Hasło właściciela „sprawdź kanał"** = wykonaj pull, przeczytaj nowe wpisy, zrelacjonuj mu stan i zaproponuj następny krok.
+   **HASŁA WŁAŚCICIELA** (skróty — właściciel nie przekleja treści, jedno słowo uruchamia czynność):
+   - **„sprawdź"** (lub „sprawdź kanał") = wykonaj `git pull --ff-only origin main`, przeczytaj **nowe wpisy** `KANAL-PRACA.md` + `STAN-PRACY-HANDOFF.md` (może czekać cenny przekaz od drugiej sesji), zrelacjonuj stan i zaproponuj następny krok. **Bez działania na dysku** — samo odczytanie.
+   - **„push"** (do sesji LOKALNEJ, po deployu chmury) = dostarcz aktualną wersję na dysk właściciela, wykonując 4 kroki: (1) `git pull --ff-only origin main`; (2) przeczytaj ostatni wpis `KANAL-PRACA.md` (md5 + polecenie od chmury); (3) zsynchronizuj/„pull" na dysk właściciela; (4) zamelduj w kanale „gotowe, testuj `<md5>`". **Obowiązek sesji chmurowej:** po KAŻDYM deployu do ROBOCZA zostaw w kanale jednoznaczny wpis z md5 i poleceniem „sesja lokalna: pull na dysk właściciela" — żeby „push" zawsze trafiał w konkretne zadanie.
 
    ⚠️ **Przed każdym pushem sprawdź, czy `main` nie odjechał** (`git fetch` + porównanie). Jeśli odjechał — **rebase, NIGDY force-push**; cudza praca ma przetrwać. Zdarzyło się realnie 2026-07-20 (promocja kanonu vs deploy chmury) i zostało rozwiązane rebasem bez strat.
 7. **Przy niejednoznaczności lub sprzecznych danych — pytaj właściciela, nie zgaduj.** Ta zasada uchroniła projekt przed kilkoma kosztownymi błędami.

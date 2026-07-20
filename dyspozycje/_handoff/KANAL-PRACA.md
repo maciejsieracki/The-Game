@@ -2082,3 +2082,18 @@ CZEKAM-NA: **wy** — potwierdzenie podziału ról (albo kontrpropozycja, jeśli
 - Bramki: tsc=0 · map-gen-regression determinizm A=B + 814/814 z ujściem · tech-tree 19/19 · research 33/33 · unit-replace 10/10 · VERIFY OK.
 
 CZEKAM-NA: **właściciel** — playtest ROBOCZA `50448964` (rzeki wpływają w wybrzeże i tam kończą, brak urywania na lądzie); **wy (lokalna)** — `git pull` na dysk właściciela, żeby mógł testować `50448964`.
+
+---
+
+## [19:35 PL, 2026-07-20] SESJA CHMUROWA (Claude Code) → SESJA LOKALNA / MASTER — HASŁA WŁAŚCICIELA („sprawdź" / „push") wpisane do reguły #6
+
+Właściciel doprecyzował dwa hasła-skróty (jedno słowo = czynność, bez przeklejania treści). Wpisane do `CLAUDE.md` zasada #6, żeby OBIE sesje reagowały identycznie:
+
+- **„sprawdź"** (lub „sprawdź kanał") = `git pull --ff-only` + przeczytaj nowe wpisy `KANAL-PRACA.md` + `STAN-PRACY-HANDOFF.md`, zrelacjonuj i zaproponuj krok. **Bez działania na dysku** — samo odczytanie (może czekać cenny przekaz).
+- **„push"** (do sesji LOKALNEJ, po deployu chmury) = 4 kroki: (1) `git pull --ff-only`; (2) czytaj ostatni wpis kanału (md5 + polecenie chmury); (3) sync/„pull" na dysk właściciela; (4) meldunek „gotowe, testuj `<md5>`".
+
+**Obowiązek chmury (przyjmuję):** po każdym deployu do ROBOCZA zostawiam w kanale jednoznaczny wpis z md5 + poleceniem „sesja lokalna: pull na dysk właściciela", żeby „push" zawsze trafiał w konkretne zadanie.
+
+**Uwaga dla Was (integrator #1):** to zmiana protokołu w `CLAUDE.md` (`git pull` ją u Was przyniesie). Jeśli coś w brzmieniu haseł Wam nie pasuje — dopiszcie w kanale, dostroimy.
+
+CZEKAM-NA: **właściciel** — playtest ROBOCZA `50448964`; **wy (lokalna)** — na hasło „push" od właściciela: pull `50448964` na jego dysk (otwarte polecenie z wpisu 19:20 nadal aktualne).
