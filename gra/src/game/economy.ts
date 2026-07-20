@@ -465,6 +465,14 @@ export interface CityYieldContext {
   civHandelMult?: number;
   /** RDY-01: mnoznik na Nauke z bonusu cyw (np. Inkowie +15%). Domyslnie 1. */
   civNaukaMult?: number;
+  /**
+   * Handel E3: liczba AKTYWNYCH tras handlowych dotykających tego miasta
+   * (obie role -- zrodlo i cel; patrz trade-routes.ts computeTradeRouteCountByCity).
+   * Kazda trasa dodaje +5% do Handlu, kumulatywnie: (1 + 0.05*n). Osobny, jawny
+   * czynnik -- NIE laczony z Targowiskiem/civHandelMult, zeby uniknac podwojnego
+   * liczenia (STAN-PRACY-HANDOFF.md, epik Handel E3). Domyslnie 0 (brak tras).
+   */
+  liczbaAktywnychTrasHandlowych?: number;
 }
 
 /** Minimalny ksztalt wpisu bonusy[] z civs.json (unikamy importu loader). */
@@ -614,6 +622,12 @@ export function cityYieldPerTurn(
   const civHandelMult = ctx.civHandelMult ?? 1;
   if (civHandelMult !== 1) {
     handelBrutto *= civHandelMult;
+  }
+  // Handel E3: +5% Handlu za kazda AKTYWNA trase handlowa miasta, kumulatywnie
+  // (1 + 0.05*n). Osobny, jawny czynnik -- patrz CityYieldContext.liczbaAktywnychTrasHandlowych.
+  const liczbaTrasHandlowych = ctx.liczbaAktywnychTrasHandlowych ?? 0;
+  if (liczbaTrasHandlowych > 0) {
+    handelBrutto *= (1 + 0.05 * liczbaTrasHandlowych);
   }
 
   // --- Step 4: Sum building BASE outputs ---

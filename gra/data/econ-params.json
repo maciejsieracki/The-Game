@@ -478,6 +478,27 @@
       "hard": 20,
       "jednostka": "heksow",
       "opis": "Handel E2 (trade-routes.ts): prog uproszczonego dystansu dla szlaku MORSKIEGO (przez Port w OBU miastach), po wodzie (Morze unia Wybrzeze -- obie klasyfikowane jako woda po zmianie z 2026-07-20). Szerszy prog niz lad, bo statek nie zna przeszkod gorskich/lasu."
+    },
+    "dochod_bazowy": {
+      "easy": 8,
+      "normal": 8,
+      "hard": 8,
+      "jednostka": "pieniadz/ture",
+      "opis": "Handel E3 (trade-routes.ts, Q7=A): dochod trasy przy dystansie 0 (skladnik dystansowy, PRZED odjeciem dochod_na_dystans*dystans). Kredytowany OBU miastom trasy w pelnej kwocie (Q8=B). Placeholder startowy -- do dostrojenia przez wlasciciela w panelu Excel."
+    },
+    "dochod_na_dystans": {
+      "easy": 0.4,
+      "normal": 0.4,
+      "hard": 0.4,
+      "jednostka": "pieniadz/heks",
+      "opis": "Handel E3: ile pieniedzy odejmujemy od dochod_bazowy za kazdy heks dystansu miedzy miastami trasy (wzor liniowy Q7=A)."
+    },
+    "dochod_podloga": {
+      "easy": 1,
+      "normal": 1,
+      "hard": 1,
+      "jednostka": "pieniadz/ture",
+      "opis": "Handel E3: dolna podloga dochodu dystansowego -- aktywna trasa nigdy nie daje mniej niz to, nawet przy dystansie bliskim progowi max."
     }
   }
 }

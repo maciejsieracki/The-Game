@@ -219,6 +219,14 @@ import {
   previewCityEconomy,
 } from './game/turn-economy';
 import {
+  refreshTradeRoutes,
+  computeTradeRouteIncomeByCity,
+  computeTradeRouteCountByCity,
+  loadTradeRouteParams,
+  loadTradeRouteIncomeParams,
+  type TradeRoute,
+} from './game/trade-routes';
+import {
   createPlayerState,
   researchStep,
   availableTechs,
@@ -1258,6 +1266,8 @@ async function boot(): Promise<void> {
     const cityProd  = new Map<string, CityProduction>();
     const cityBuilt = new Map<string, string[]>();
     const cityRelig = new Map<string, ReligionState>();
+    /** Handel E3: aktywne trasy gracz<->obca cywilizacja (odswiezane co ture). */
+    let tradeRoutes: TradeRoute[] = [];
     const lastReligionSpreadByCity = new Map<string, number>();
     let _lastReligionSpreadTotal = 0;
 
@@ -9982,6 +9992,7 @@ async function boot(): Promise<void> {
         cityBuilt:      cityBuiltSave,
         aiResearchDone: aiResSave,
         diploRelations: diploSave,
+        tradeRoutes:    tradeRoutes.slice(),
         meta: {
           label: label ?? `Zapis · tura ${turn}`,
           savedAt,
@@ -10259,11 +10270,40 @@ async function boot(): Promise<void> {
           ownerCivMap.set(0, (player.civType as string) || 'grecy');
           for (const [oid, civ] of aiOwnerCivMap) ownerCivMap.set(oid, civ);
           const popBeforeTick = cities.filter(c => c.ownerId === 0).reduce((s, c) => s + c.population, 0);
+
+          // --- Handel E3: odswiez trasy handlowe gracz<->obca cywilizacja ---
+          // Filtr zewnetrzny + pokoj stosuje refreshTradeRoutes samo; tutaj tylko
+          // wykluczamy barbarzyncow (nie sa stronami handlu) i budujemy isAtWar.
+          try {
+            const tradeCities = cities.filter(c => !isBarbarian(c.ownerId));
+            const tradeParams = loadTradeRouteParams(
+              data.econParams as unknown as Parameters<typeof loadTradeRouteParams>[0],
+              _menuDifficulty,
+            );
+            tradeRoutes = refreshTradeRoutes(
+              tradeCities,
+              tradeRoutes,
+              map,
+              cityBuilt,
+              (a, b) => getDiploRelation(a, b).status === 'wojna',
+              tradeParams,
+            );
+          } catch (eTrade) {
+            console.error('[Handel] Blad odswiezania tras:', eTrade);
+          }
+          const tradeRouteCountByCity = computeTradeRouteCountByCity(tradeRoutes);
+          const tradeIncomeParams = loadTradeRouteIncomeParams(
+            data.econParams as unknown as Parameters<typeof loadTradeRouteIncomeParams>[0],
+            _menuDifficulty,
+          );
+          const tradeIncomeByCity = computeTradeRouteIncomeByCity(tradeRoutes, tradeIncomeParams);
+
           const econ = advanceCityEconomy(
             cities, map, data, _menuDifficulty, econUnits, growthMultMap, cityBuilt,
             player.era, player.zbadane, ownerCivMap, orderMultMap,
             empireEpochForOwner, unlockedTechSetForOwner,
             player.wzrostLudnosciPace ?? 'wysoki',
+            tradeRouteCountByCity, tradeIncomeByCity,
           );
           powerSnapshotsForTurn = buildPowerSnapshotsForTurn(econ);
           refreshObjectivePowerCache();
@@ -11996,6 +12036,7 @@ async function boot(): Promise<void> {
 
       // Reset stanu przed klastrem
       cities.length = 0;
+      tradeRoutes.length = 0;
       explored.clear();
       rebuildAllKeys();
       diplomacyRelations.clear();
@@ -12227,6 +12268,7 @@ async function boot(): Promise<void> {
       playerEverOwnedCity = false;
 
       cities.length = 0;
+      tradeRoutes.length = 0;
       for (const c of preset.cities) {
         ensureCitySaveDefaults(c);
         cities.push(c);
@@ -12438,6 +12480,7 @@ async function boot(): Promise<void> {
       playerEverOwnedCity = true;
 
       cities.length = 0;
+      tradeRoutes.length = 0;
       for (const c of preset.cities) {
         ensureCitySaveDefaults(c);
         cities.push(c);
@@ -12622,6 +12665,7 @@ async function boot(): Promise<void> {
       playerEverOwnedCity = true;
 
       cities.length = 0;
+      tradeRoutes.length = 0;
       for (const c of preset.cities) {
         ensureCitySaveDefaults(c);
         cities.push(c);
@@ -12844,6 +12888,8 @@ async function boot(): Promise<void> {
         plannedMarches.set(uid, dest);
         syncMarchAttackTarget(uid, dest);
       }
+      // Handel E3: migracja -- brak pola w starym zapisie normalizuje sie do [].
+      tradeRoutes = Array.isArray(saved.tradeRoutes) ? saved.tradeRoutes.slice() : [];
       cities.length = 0;
       for (const c of saved.cities) {
         ensureCitySaveDefaults(c);

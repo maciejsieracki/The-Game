@@ -645,6 +645,13 @@ export interface CityEconomyTick {
   wealthMnoznik:  number;          // WIRE 3: mnoznik podatku z Wealth
   wealthZadowolenie: number;       // WIRE 3: wklad do zadowolenia
   pieniadzZPracy: number;          // Efekt 2: doPuli*targowiskoPracaMnoznik (0 bez Targowiska/Waluty)
+  /**
+   * Handel E3: dochod dystansowy z tras handlowych dotykajacych to miasto
+   * (trade-routes.ts computeTradeRouteIncomeByCity) -- juz WLICZONY w `pieniadz`
+   * powyzej (dodany PO mnozniku Wealth, wiec "czysto" do skarbca), a tutaj
+   * wystawiony osobno wylacznie do rozbicia w UI. 0 gdy miasto nie ma tras.
+   */
+  pieniadzZTras: number;
   // WIRE 4: oblezenie
   oblegany:       boolean;         // czy miasto bylo oblegane w tej turze
   obleganyGlod:   boolean;         // true gdy magazyn osiagnal 0 (ryzyko kapitulacji)
@@ -676,6 +683,8 @@ export interface OwnerEconomySum {
   doPuli: number;
   praca: number;
   kultura: number;
+  /** Handel E3: podzbior `pieniadz` pochodzacy z dochodu dystansowego tras (rozbicie UI). */
+  pieniadzZTras: number;
 }
 
 /** Sum per-city tick yields for one owner (HUD / treasury — not econ.total*). */
@@ -688,6 +697,7 @@ export function sumEconomyForOwner(
   let doPuli = 0;
   let praca = 0;
   let kultura = 0;
+  let pieniadzZTras = 0;
   for (const tk of result.perCity) {
     if (tk.ownerId !== ownerId) continue;
     pieniadz += tk.pieniadz;
@@ -695,8 +705,9 @@ export function sumEconomyForOwner(
     doPuli += tk.doPuli;
     praca += tk.praca;
     kultura += tk.kultura;
+    pieniadzZTras += tk.pieniadzZTras;
   }
-  return { pieniadz, nauka, doPuli, praca, kultura };
+  return { pieniadz, nauka, doPuli, praca, kultura, pieniadzZTras };
 }
 
 /**
@@ -715,6 +726,7 @@ export function sumEconomyForPlayerCities(
   let doPuli = 0;
   let praca = 0;
   let kultura = 0;
+  let pieniadzZTras = 0;
   for (const tk of result.perCity) {
     if (!playerCityIds.has(tk.cityId)) continue;
     pieniadz += tk.pieniadz;
@@ -722,8 +734,9 @@ export function sumEconomyForPlayerCities(
     doPuli += tk.doPuli;
     praca += tk.praca;
     kultura += tk.kultura;
+    pieniadzZTras += tk.pieniadzZTras;
   }
-  return { pieniadz, nauka, doPuli, praca, kultura };
+  return { pieniadz, nauka, doPuli, praca, kultura, pieniadzZTras };
 }
 
 /**
@@ -781,6 +794,8 @@ export function previewCityEconomy(
   orderMultByCity: ReadonlyMap<string, OrderYieldMults> = new Map(),
   resolveOwnerEra?: OwnerEraResolver,
   resolveOwnerTech?: OwnerTechResolver,
+  tradeRouteCountByCity: ReadonlyMap<string, number> = new Map(),
+  tradeIncomeByCity: ReadonlyMap<string, number> = new Map(),
 ): Pick<EconomyTickResult, 'perCity'> {
   const params = buildEconParams(data, difficulty);
   const noBuildings: CityBuildingEntry[] = [];
@@ -825,6 +840,7 @@ export function previewCityEconomy(
       ? civBonusyForCivKey(ownerCivKey, data.civs)
       : [];
     const { handel: civHandelMult, nauka: civNaukaMult } = civEconomyYieldMultipliers(ownerBonusy);
+    const liczbaTrasHandlowych = tradeRouteCountByCity.get(city.id) ?? 0;
     const ctx: CityYieldContext = {
       wojskoZuzycieZywnosci: 0,
       strataFraction: 0,
@@ -842,6 +858,7 @@ export function previewCityEconomy(
       walutaMnoznikOverride,
       civHandelMult,
       civNaukaMult,
+      liczbaAktywnychTrasHandlowych: liczbaTrasHandlowych,
     };
 
     const yld = cityYieldPerTurn(econCity, worked, noBuildings, params, ctx);
@@ -859,6 +876,9 @@ export function previewCityEconomy(
       wealthImmunity ? { minPoziom: 1 } : undefined,
     );
     const pieniadzPoWealth = Math.floor(yld.pieniadz * wt.mnoznik);
+    // Handel E3: dochod dystansowy z tras -- CZYSTO do skarbca, dodany PO mnozniku
+    // Wealth (nie jest mnozony przez niego).
+    const pieniadzZTras = tradeIncomeByCity.get(city.id) ?? 0;
 
     const udzialBudynki = (city.podzialPracy?.procentBudynki ?? params.suwaakPracaBudynki) / 100;
     const { doBudynkow, doPuli } = splitPraca(yld.praca, udzialBudynki);
@@ -869,7 +889,7 @@ export function previewCityEconomy(
         cityId: city.id,
         ownerId: city.ownerId,
         praca: yld.praca,
-        pieniadz: pieniadzPoWealth,
+        pieniadz: pieniadzPoWealth + pieniadzZTras,
         pieniadzBrutto: yld.pieniadz,
         zywnoscNetto: 0,
         nauka: yld.nauka,
@@ -885,6 +905,7 @@ export function previewCityEconomy(
         wealthMnoznik: wt.mnoznik,
         wealthZadowolenie: wt.zadowolenie,
         pieniadzZPracy: yld.pieniadzZPracy,
+        pieniadzZTras,
         oblegany: true,
         obleganyGlod: getCityFood(city) <= 0,
         magazynPoTurze: getCityFood(city),
@@ -897,7 +918,7 @@ export function previewCityEconomy(
       cityId: city.id,
       ownerId: city.ownerId,
       praca: yld.praca,
-      pieniadz: pieniadzPoWealth,
+      pieniadz: pieniadzPoWealth + pieniadzZTras,
       pieniadzBrutto: yld.pieniadz,
       zywnoscNetto: yld.zywnosc,
       nauka: yld.nauka,
@@ -913,6 +934,7 @@ export function previewCityEconomy(
       wealthMnoznik: wt.mnoznik,
       wealthZadowolenie: wt.zadowolenie,
       pieniadzZPracy: yld.pieniadzZPracy,
+      pieniadzZTras,
       oblegany: false,
       obleganyGlod: false,
       magazynPoTurze: getCityFood(city),
@@ -938,6 +960,10 @@ export function advanceCityEconomy(
   resolveOwnerEra?: OwnerEraResolver,
   resolveOwnerTech?: OwnerTechResolver,
   wzrostLudnosciPace: WzrostLudnosciPace = 'wysoki',
+  /** Handel E3: cityId -> liczba aktywnych tras handlowych (+5% Handlu/trasa). */
+  tradeRouteCountByCity: ReadonlyMap<string, number> = new Map(),
+  /** Handel E3: cityId -> dochod dystansowy z tras tej tury (czysto do skarbca). */
+  tradeIncomeByCity: ReadonlyMap<string, number> = new Map(),
 ): EconomyTickResult {
   const gameDifficulty = difficulty as GameDifficulty;
   const params = buildEconParams(data, difficulty);
@@ -1023,6 +1049,7 @@ export function advanceCityEconomy(
       ? civBonusyForCivKey(ownerCivKey, data.civs)
       : [];
     const { handel: civHandelMult, nauka: civNaukaMult } = civEconomyYieldMultipliers(ownerBonusy);
+    const liczbaTrasHandlowych = tradeRouteCountByCity.get(city.id) ?? 0;
     const ctx: CityYieldContext = {
       wojskoZuzycieZywnosci: 0,   // B5: wojsko → zapasy państwa (advanceEmpireFood)
       strataFraction:        0,   // no distance-corruption tracking yet
@@ -1040,6 +1067,7 @@ export function advanceCityEconomy(
       walutaMnoznikOverride, // RDY-11: per-cyw 1.7-2.4 gdy ownerCivByOwnerId podane
       civHandelMult,         // RDY-01: bonus_zloto handel (Grecy +15%)
       civNaukaMult,          // RDY-01: bonus_nauka (Inkowie +15%)
+      liczbaAktywnychTrasHandlowych: liczbaTrasHandlowych, // Handel E3: +5%/trasa
     };
 
     const yld = cityYieldPerTurn(econCity, worked, noBuildings, params, ctx);
@@ -1067,6 +1095,9 @@ export function advanceCityEconomy(
 
     // Pieniadz po mnozniku Wealth (KONTRAKT: mnozi strumien podatku, nie nauka/luksus)
     const pieniadzPoWealth = Math.floor(yld.pieniadz * wt.mnoznik);
+    // Handel E3: dochod dystansowy z tras -- CZYSTO do skarbca, dodany PO mnozniku
+    // Wealth (nie jest mnozony przez niego). Kredytowany OBU miastom trasy (Q8=B).
+    const pieniadzZTras = tradeIncomeByCity.get(city.id) ?? 0;
 
     // WIRE 2: splitPraca
     const udzialBudynki = (city.podzialPracy?.procentBudynki ?? params.suwaakPracaBudynki) / 100;
@@ -1096,7 +1127,7 @@ export function advanceCityEconomy(
         cityId:            city.id,
         ownerId:           city.ownerId,
         praca:             yld.praca,
-        pieniadz:          pieniadzPoWealth,
+        pieniadz:          pieniadzPoWealth + pieniadzZTras,
         pieniadzBrutto:    yld.pieniadz,
         zywnoscNetto:      0,           // brak dochodu podczas oblezenia
         nauka:             yld.nauka,
@@ -1112,6 +1143,7 @@ export function advanceCityEconomy(
         wealthMnoznik:     wt.mnoznik,
         wealthZadowolenie: wt.zadowolenie,
         pieniadzZPracy:    yld.pieniadzZPracy,
+        pieniadzZTras,
         oblegany:          true,
         obleganyGlod,
         magazynPoTurze,
@@ -1119,12 +1151,12 @@ export function advanceCityEconomy(
       };
       result.perCity.push(tick);
 
-      // Accumulate income for upkeep balance.
-      incomeByOwner.set(city.ownerId, (incomeByOwner.get(city.ownerId) ?? 0) + pieniadzPoWealth);
+      // Accumulate income for upkeep balance (wliczajac dochod z tras -- Handel E3).
+      incomeByOwner.set(city.ownerId, (incomeByOwner.get(city.ownerId) ?? 0) + tick.pieniadz);
 
       result.cities         += 1;
       result.totalPraca      += yld.praca;
-      result.totalPieniadz   += pieniadzPoWealth;
+      result.totalPieniadz   += tick.pieniadz;
       result.totalNauka      += yld.nauka;
       result.totalLuksus     += yld.luksus;
       result.totalKultura    += yld.kultura;
@@ -1185,8 +1217,8 @@ export function advanceCityEconomy(
     city.magazynZywnosci = Math.min(grow.nowyMagazynZywnosci, foodCap);
     magazynPoTurze = city.magazynZywnosci;
 
-    // Accumulate income for upkeep balance (uzyj pieniadz po Wealth).
-    incomeByOwner.set(city.ownerId, (incomeByOwner.get(city.ownerId) ?? 0) + pieniadzPoWealth);
+    // Accumulate income for upkeep balance (pieniadz po Wealth + dochod z tras -- Handel E3).
+    incomeByOwner.set(city.ownerId, (incomeByOwner.get(city.ownerId) ?? 0) + pieniadzPoWealth + pieniadzZTras);
 
     // --- Converters (s.1.5) -- run after terrain yield, per-city (Zadanie 2 E1) ---
     // City.surowce jest teraz realnym polem runtime (game/cities.ts). Zbieramy surowce
@@ -1225,7 +1257,7 @@ export function advanceCityEconomy(
       cityId:            city.id,
       ownerId:           city.ownerId,
       praca:             yld.praca,
-      pieniadz:          pieniadzPoWealth,
+      pieniadz:          pieniadzPoWealth + pieniadzZTras,
       pieniadzBrutto:    yld.pieniadz,
       zywnoscNetto:      yld.zywnosc,
       nauka:             yld.nauka,
@@ -1241,6 +1273,7 @@ export function advanceCityEconomy(
       wealthMnoznik:     wt.mnoznik,
       wealthZadowolenie: wt.zadowolenie,
       pieniadzZPracy:    yld.pieniadzZPracy,
+      pieniadzZTras,
       oblegany:          false,
       obleganyGlod:      false,
       magazynPoTurze,
@@ -1250,7 +1283,7 @@ export function advanceCityEconomy(
 
     result.cities         += 1;
     result.totalPraca      += yld.praca;
-    result.totalPieniadz   += pieniadzPoWealth;
+    result.totalPieniadz   += tick.pieniadz;
     result.totalNauka      += yld.nauka;
     result.totalLuksus     += yld.luksus;
     result.totalKultura    += yld.kultura;

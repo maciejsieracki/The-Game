@@ -1,7 +1,7 @@
 /**
- * trade-routes.ts — Handel E2: wykrywanie połączeń miast (fundament, bez dochodu).
+ * trade-routes.ts — Handel E2/E3: wykrywanie połączeń miast + dochód z tras.
  *
- * Zakres E2 (patrz STAN-PRACY-HANDOFF.md / epik Handel):
+ * Zakres E2 (fundament, patrz STAN-PRACY-HANDOFF.md / epik Handel):
  *   - Typy szlaku handlowego (TradeRoute) — na razie tylko pola potrzebne do detekcji;
  *     dochód, wpięcie w turn-economy.ts i UI to E3+.
  *   - findCityConnection() — GENERYCZNA funkcja: czy dwa dowolne miasta MOGĄ być
@@ -11,8 +11,21 @@
  *     po sieci dróg — to nie jest computePath/Dijkstra po koszcie ruchu jednostki,
  *     tylko czysta reachability (każdy krok kosztuje "1", bez modyfikatorów drogi/
  *     rzeki/lasu — te wpływają na ruch JEDNOSTEK, nie na to czy handel jest możliwy).
- *   - Filtr „obce miasto / pokój" NIE jest tu stosowany — to warstwa E3/E6
- *     (dyplomacja). Ta funkcja odpowiada wyłącznie na pytanie geograficzne.
+ *   - Filtr „obce miasto / pokój" NIE jest tu stosowany na poziomie findCityConnection
+ *     — to warstwa E3 (refreshTradeRoutes niżej stosuje ten filtr).
+ *
+ * Zakres E3 (dochód z tras, decyzje właściciela 2026-07-20 -- Q7=A, Q8=B, Q9):
+ *   - refreshTradeRoutes() — ustala/utrzymuje/usuwa trasy GRACZ<->OBCA CYWILIZACJA
+ *     co turę: filtr obcy właściciel + pokój (nie wojna), limit tras na miasto =
+ *     liczba budynków handlowych (Targowisko/Karawanseraj/Port/Port wielki).
+ *   - Dochód = DWA SKŁADNIKI (wpięte oddzielnie):
+ *     (1) składnik dystansowy (tradeRouteDistanceIncome / computeTradeRouteIncomeByCity)
+ *         — wzór liniowy z podłogą, kredytowany OBU miastom trasy w pełnej kwocie
+ *         (Q8=B: obie strony zarabiają), do skarbca CZYSTO (pomija Wealth) — wpięcie
+ *         w turn-economy.ts (pieniadzZTras).
+ *     (2) +5% Handlu za każde aktywne połączenie miasta (computeTradeRouteCountByCity)
+ *         — osobny, jawny mnożnik w economy.ts (cityYieldPerTurn), NIE łączony z
+ *         Targowiskiem/civHandelMult, żeby uniknąć podwójnego liczenia.
  *
  * Pure logic — bez DOM, bez THREE, bez side effects (poza cache'em w WeakMap,
  * patrz niżej).
@@ -423,4 +436,289 @@ export function loadTradeRouteParams(
     ladMaxDist: read('lad_max_dystans', DEFAULT_TRADE_ROUTE_PARAMS.ladMaxDist),
     morzeMaxDist: read('morze_max_dystans', DEFAULT_TRADE_ROUTE_PARAMS.morzeMaxDist),
   };
+}
+
+// ---------------------------------------------------------------------------
+// E3: limit tras na miasto (Q9) — liczba budynków handlowych
+// ---------------------------------------------------------------------------
+
+/**
+ * Budynki handlowe, których obecność w mieście daje +1 do limitu tras (Q9).
+ * Port/Port wielki to upgrade tej samej linii (upgradeFrom w buildings.json) —
+ * builtByCity zawiera po upgrade WYŁĄCZNIE 'port_wielki', więc nie ma ryzyka
+ * podwójnego liczenia tego samego budynku.
+ */
+export const TRADE_BUILDING_IDS: ReadonlySet<string> = new Set([
+  'targowisko', 'karawanseraj', 'port', 'port_wielki',
+]);
+
+/** Limit tras handlowych danego miasta = liczba zbudowanych budynków handlowych. */
+export function tradeRouteLimitForCity(
+  cityId: string,
+  builtByCity: ReadonlyMap<string, readonly string[]>,
+): number {
+  const built = builtByCity.get(cityId);
+  if (!built) return 0;
+  let n = 0;
+  for (const id of built) if (TRADE_BUILDING_IDS.has(id)) n++;
+  return n;
+}
+
+// ---------------------------------------------------------------------------
+// E3: refreshTradeRoutes — ustalanie/utrzymanie/usuwanie tras co turę
+// ---------------------------------------------------------------------------
+
+/** Jeden kandydat trasy (para miast + medium wybrane przez detectBestConnection). */
+interface TradeRouteCandidate {
+  from: TradeRouteCityRef;
+  to: TradeRouteCityRef;
+  medium: TradeRouteMedium;
+  distance: number;
+  id: string;
+}
+
+/**
+ * Wybiera lepsze medium (ląd/morze) dla pary miast: krótszy dystans spośród
+ * połączonych; remis rozstrzyga na korzyść lądu (deterministyczne, tańsze).
+ * Zwraca null, gdy żadne medium nie łączy miast.
+ */
+function detectBestConnection(
+  a: TradeRouteCityRef,
+  b: TradeRouteCityRef,
+  map: GameMap,
+  params: TradeRouteParams,
+  builtByCity: ReadonlyMap<string, readonly string[]>,
+): { medium: TradeRouteMedium; distance: number } | null {
+  const land = findCityConnection(a, b, map, 'lad', params, builtByCity);
+  const sea  = findCityConnection(a, b, map, 'morze', params, builtByCity);
+  if (land.connected && sea.connected) {
+    return land.distance <= sea.distance
+      ? { medium: 'lad', distance: land.distance }
+      : { medium: 'morze', distance: sea.distance };
+  }
+  if (land.connected) return { medium: 'lad', distance: land.distance };
+  if (sea.connected)  return { medium: 'morze', distance: sea.distance };
+  return null;
+}
+
+/**
+ * refreshTradeRoutes — E3: ustala aktywne trasy handlowe gracza na tę turę.
+ *
+ * Reguły (decyzje właściciela, patrz STAN-PRACY-HANDOFF.md, epik Handel):
+ *   - TYLKO ZEWNĘTRZNY: trasa łączy miasto GRACZA (ownerId === 0) z miastem
+ *     OBCEJ cywilizacji (ownerId !== 0). Własne<->własne NIGDY nie tworzy trasy.
+ *   - Filtr pokoju: isAtWar(ownerA, ownerB) === true -> para wykluczona (wojna
+ *     zrywa/blokuje trasę). Wszystko poza wojną liczy się jako "pokój" (w tym
+ *     neutralni/sojusz) — zgodnie z „filtr: obcy właściciel + pokój (nie wojna)".
+ *   - Limit tras NA MIASTO, po OBU stronach (tradeRouteLimitForCity) = liczba
+ *     zbudowanych budynków handlowych w TYM mieście. Miasto bez żadnego z nich
+ *     ma limit 0 -> nie może uczestniczyć w żadnej trasie.
+ *   - Stabilność między turami: trasy z `existingRoutes`, które nadal spełniają
+ *     wszystkie warunki i mieszczą się w (odświeżonym) limicie, są PRIORYTETOWO
+ *     zachowywane. Nowe kandydatury wypełniają dopiero pozostałe sloty, w
+ *     kolejności rosnącego dystansu (deterministyczny tie-break: id trasy) —
+ *     „najbliższe wygrywają", zgodnie ze wskazówką z zadania.
+ *
+ * Czysta funkcja — nie mutuje `existingRoutes`; zwraca nową listę (wyłącznie
+ * trasy aktualnie połączone => wszystkie mają status 'polaczony'; trasa, która
+ * przestała spełniać warunki, po prostu znika z wyniku zamiast dostawać status
+ * 'zawieszony' — najprostsze rozwiązanie spełniające wymaganie „trasa znika
+ * przy wojnie").
+ *
+ * @param cities        WSZYSTKIE miasta biorące udział w handlu (gracz + obce
+ *                       cywilizacje kwalifikujące się do handlu). Wykluczenie
+ *                       barbarzyńców / niekwalifikujących się właścicieli to
+ *                       odpowiedzialność wywołującego (main.ts) — ten moduł nie
+ *                       zna pojęcia "barbarzyńca".
+ * @param existingRoutes trasy z poprzedniej tury (dla ciągłości/stabilności).
+ * @param map           mapa świata (do findCityConnection).
+ * @param builtByCity   cityId -> zbudowane budynki (limit tras + wymóg Portu na morzu).
+ * @param isAtWar       (ownerA, ownerB) => czy strony są w stanie wojny.
+ * @param params        progi dystansu (handel_szlaki, patrz loadTradeRouteParams).
+ */
+export function refreshTradeRoutes(
+  cities: readonly TradeRouteCityRef[],
+  existingRoutes: readonly TradeRoute[],
+  map: GameMap,
+  builtByCity: ReadonlyMap<string, readonly string[]>,
+  isAtWar: (ownerA: number, ownerB: number) => boolean,
+  params: TradeRouteParams = DEFAULT_TRADE_ROUTE_PARAMS,
+): TradeRoute[] {
+  const cityById = new Map<string, TradeRouteCityRef>();
+  for (const c of cities) cityById.set(c.id, c);
+
+  const playerCities  = cities.filter(c => c.ownerId === 0);
+  const foreignCities = cities.filter(c => c.ownerId !== 0);
+  if (playerCities.length === 0 || foreignCities.length === 0) return [];
+
+  const usedSlots = new Map<string, number>();
+  const limitOf  = (cityId: string): number => tradeRouteLimitForCity(cityId, builtByCity);
+  const hasRoom  = (cityId: string): boolean => (usedSlots.get(cityId) ?? 0) < limitOf(cityId);
+  const useSlot  = (cityId: string): void => {
+    usedSlots.set(cityId, (usedSlots.get(cityId) ?? 0) + 1);
+  };
+
+  const kept: TradeRoute[] = [];
+  const keptIds = new Set<string>();
+
+  // --- Pass 1: zachowaj istniejące trasy, które nadal spełniają warunki ---
+  const stillValid: TradeRouteCandidate[] = [];
+  for (const route of existingRoutes) {
+    const from = cityById.get(route.fromCityId);
+    const to   = cityById.get(route.toCityId);
+    if (!from || !to) continue;
+    if (from.ownerId !== 0 || to.ownerId === 0) continue; // musi być nadal gracz->obcy
+    if (isAtWar(from.ownerId, to.ownerId)) continue;
+    const conn = findCityConnection(from, to, map, route.medium, params, builtByCity);
+    if (!conn.connected) continue;
+    stillValid.push({ from, to, medium: route.medium, distance: conn.distance, id: route.id });
+  }
+  stillValid.sort((x, y) => x.id.localeCompare(y.id));
+  for (const cand of stillValid) {
+    if (!hasRoom(cand.from.id) || !hasRoom(cand.to.id)) continue;
+    useSlot(cand.from.id);
+    useSlot(cand.to.id);
+    keptIds.add(cand.id);
+    kept.push({
+      id: cand.id,
+      fromCityId: cand.from.id,
+      toCityId: cand.to.id,
+      ownerId: cand.from.ownerId,
+      toOwnerId: cand.to.ownerId,
+      medium: cand.medium,
+      dystans: cand.distance,
+      status: 'polaczony',
+    });
+  }
+
+  // --- Pass 2: nowe kandydatury wypełniają pozostałe sloty (najbliższe pierwsze) ---
+  const fresh: TradeRouteCandidate[] = [];
+  for (const p of playerCities) {
+    for (const f of foreignCities) {
+      if (isAtWar(p.ownerId, f.ownerId)) continue;
+      const best = detectBestConnection(p, f, map, params, builtByCity);
+      if (!best) continue;
+      const id = tradeRouteId(p.id, f.id, best.medium);
+      if (keptIds.has(id)) continue;
+      fresh.push({ from: p, to: f, medium: best.medium, distance: best.distance, id });
+    }
+  }
+  fresh.sort((a, b) => a.distance - b.distance || a.id.localeCompare(b.id));
+
+  for (const cand of fresh) {
+    if (!hasRoom(cand.from.id) || !hasRoom(cand.to.id)) continue;
+    useSlot(cand.from.id);
+    useSlot(cand.to.id);
+    kept.push({
+      id: cand.id,
+      fromCityId: cand.from.id,
+      toCityId: cand.to.id,
+      ownerId: cand.from.ownerId,
+      toOwnerId: cand.to.ownerId,
+      medium: cand.medium,
+      dystans: cand.distance,
+      status: 'polaczony',
+    });
+  }
+
+  return kept;
+}
+
+// ---------------------------------------------------------------------------
+// E3: dochód z tras — składnik dystansowy (Q7=A) + agregaty per-miasto
+// ---------------------------------------------------------------------------
+
+/** Parametry dochodu dystansowego (data/econ-params.json, blok "handel_szlaki"). */
+export interface TradeRouteIncomeParams {
+  /** Dochód (pieniądz) trasy przy dystansie 0. */
+  dochodBazowy: number;
+  /** Ile pieniędzy odejmujemy za każdy heks dystansu. */
+  dochodNaDystans: number;
+  /** Podłoga dochodu — aktywna trasa nigdy nie daje mniej niż to. */
+  dochodPodloga: number;
+}
+
+/**
+ * Wartości domyślne (gdy econ-params.json niedostępny / brak kluczy) — dobrane
+ * ostrożnie: przy typowym dystansie sąsiednich miast (kilka-kilkanaście heksów)
+ * dochód jest zauważalny, ale niedominujący względem Handlu z pól/budynków;
+ * właściciel dostroi w panelu Excel (gen-panel-*.py), to placeholder startowy.
+ */
+export const DEFAULT_TRADE_ROUTE_INCOME_PARAMS: TradeRouteIncomeParams = {
+  dochodBazowy: 8,
+  dochodNaDystans: 0.4,
+  dochodPodloga: 1,
+};
+
+/** Wzór dystansowy (Q7=A, decyzja właściciela 2026-07-20): bazowy − dystans×wspolczynnik, z podłogą. */
+export function tradeRouteDistanceIncome(
+  dystans: number,
+  params: TradeRouteIncomeParams = DEFAULT_TRADE_ROUTE_INCOME_PARAMS,
+): number {
+  const raw = params.dochodBazowy - dystans * params.dochodNaDystans;
+  return Math.max(params.dochodPodloga, Math.floor(raw));
+}
+
+interface RawEconParamsJsonTradeIncome {
+  handel_szlaki?: Record<string, RawParamRow>;
+}
+
+/**
+ * Wczytaj TradeRouteIncomeParams z surowego econ-params.json (grupa "handel_szlaki",
+ * te same trzy klucze na wszystkich poziomach trudności — to parametr geografii/
+ * gameplayu jak lad_max_dystans/morze_max_dystans, nie skalowanie trudności).
+ */
+export function loadTradeRouteIncomeParams(
+  raw: RawEconParamsJsonTradeIncome,
+  difficulty: Difficulty,
+): TradeRouteIncomeParams {
+  const grp = raw.handel_szlaki ?? {};
+  const read = (key: string, fallback: number): number => {
+    const row = grp[key];
+    const v = row ? row[difficulty] : undefined;
+    return typeof v === 'number' && Number.isFinite(v) ? v : fallback;
+  };
+  return {
+    dochodBazowy:    read('dochod_bazowy', DEFAULT_TRADE_ROUTE_INCOME_PARAMS.dochodBazowy),
+    dochodNaDystans: read('dochod_na_dystans', DEFAULT_TRADE_ROUTE_INCOME_PARAMS.dochodNaDystans),
+    dochodPodloga:   read('dochod_podloga', DEFAULT_TRADE_ROUTE_INCOME_PARAMS.dochodPodloga),
+  };
+}
+
+/**
+ * Dochód dystansowy per-miasto: KAŻDA aktywna trasa kredytuje OBU miastom
+ * (fromCityId i toCityId) pełną kwotę tradeRouteDistanceIncome(dystans) —
+ * Q8=B, obie strony zarabiają, bez podziału. Miasto uczestniczące w wielu
+ * trasach sumuje wkłady. Do wpięcia w turn-economy.ts jako "pieniadzZTras"
+ * (dochód czysto do skarbca, pomija Wealth — patrz advanceCityEconomy).
+ */
+export function computeTradeRouteIncomeByCity(
+  routes: readonly TradeRoute[],
+  params: TradeRouteIncomeParams = DEFAULT_TRADE_ROUTE_INCOME_PARAMS,
+): Map<string, number> {
+  const out = new Map<string, number>();
+  for (const route of routes) {
+    if (route.status !== 'polaczony') continue;
+    const income = tradeRouteDistanceIncome(route.dystans, params);
+    out.set(route.fromCityId, (out.get(route.fromCityId) ?? 0) + income);
+    out.set(route.toCityId,   (out.get(route.toCityId)   ?? 0) + income);
+  }
+  return out;
+}
+
+/**
+ * Liczba aktywnych tras dotykających danego miasta (licząc obie role — from
+ * i to). Wejście do mnożnika Handlu (1 + 0.05×liczbaTras) w economy.ts
+ * (CityYieldContext.liczbaAktywnychTrasHandlowych).
+ */
+export function computeTradeRouteCountByCity(
+  routes: readonly TradeRoute[],
+): Map<string, number> {
+  const out = new Map<string, number>();
+  for (const route of routes) {
+    if (route.status !== 'polaczony') continue;
+    out.set(route.fromCityId, (out.get(route.fromCityId) ?? 0) + 1);
+    out.set(route.toCityId,   (out.get(route.toCityId)   ?? 0) + 1);
+  }
+  return out;
 }

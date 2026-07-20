@@ -39,6 +39,7 @@
 
 import type { RuntimeUnit } from '../units/setup';
 import type { City } from './cities';
+import type { TradeRoute } from './trade-routes';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -137,6 +138,13 @@ export interface SaveGame {
 
   /** Optional free-form metadata: timestamp, label, map dimensions, etc. */
   meta?: any;
+
+  /**
+   * Handel E3: aktywne trasy handlowe gracz<->obca cywilizacja (trade-routes.ts).
+   * Opcjonalne — starszy zapis bez tego pola normalizuje się do [] (jak inne
+   * opcjonalne kolekcje: cityProd/cityBuilt/diploRelations), bez bumpu SAVE_VERSION.
+   */
+  tradeRoutes?: TradeRoute[];
 
   /** E1: jeden tier jakości mapy (bundled preset). */
   mapQuality?: 'low' | 'medium' | 'high';
@@ -273,6 +281,7 @@ export function deserializeGame(json: string): SaveGame {
     diploRelations: obj2.diploRelations,
     autoMarch: obj2.autoMarch,
     plannedMarches: obj2.plannedMarches,
+    tradeRoutes: Array.isArray(obj2.tradeRoutes) ? obj2.tradeRoutes : undefined,
     meta: obj.meta,
     mapQuality: obj2.mapQuality,
     renderQuality: obj2.renderQuality,
