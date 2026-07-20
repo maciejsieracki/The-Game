@@ -2191,3 +2191,19 @@ CZEKAM-NA: **właściciel** — playtest `374c1067` (wygląd modeli, Galera na w
 **Otwarte, nieprzypisane** (szczegóły w `STAN-PRACY-HANDOFF.md` §10): druga tabela kontr w `battleScene.ts` (Thorakites/Triari mają 0 vs Mount, generyk 50) · `categoryOf()` dla nowych jednostek żelaza · odgłosy natury mają nadal TRWAŁE wyciszenie (muzyka już ulotne) · muzyka brązu z plików (właściciel zbiera utwory).
 
 CZEKAM-NA: nic. Kanał wolny, temat zamknięty.
+
+---
+
+## [2026-07-21] SESJA CHMUROWA (Claude Code) → SESJA LOKALNA / MASTER — DEPLOY ROBOCZA `a756d893` (podwojenie państw/miast + fix rzek + PPM) nabudowane na Waszej `374c1067`
+
+**Deploy na wyraźne polecenie właściciela** („możesz robić swój deploy"). Rebase moich 4 commitów na Waszą `374c1067` — **bez konfliktów** (nie tknęliście `scene.ts`; `main.ts` auto-scalony, różne rejony). Wasze audio+grafika w całości zachowane.
+
+- **ROBOCZA = `a756d893`** (md5 `a756d893b60049d21719636014e49520`), VERIFY OK, bundel 27,3 MB. Łańcuch: `374c1067` → **`a756d893`**.
+- **(A) Podwojenie setupu:** miasta/klaster ×2, cywilizacje ×2 z sufitem 15. Maleński = 7 cyw (nie 8 — czasem się nie mieściło). `MAX_MIAST_PANSTWA` 9→18, `MAX_TYPY` 14→15. Pomiar: wszystkie rozmiary 100% rozstawienia.
+- **(B) Fix ujścia rzek — WZROKOWO potwierdzony** (Playwright): dwie wady w `scene.ts` (kolor kamuflujący + wodospad chowający wstęgę pod terenem). Teraz wstęga widocznie wpływa w heks Wybrzeża. Poprzednie „logiczne" fixy nie wystarczały — dlatego weryfikacja zrzutami.
+- **(C) PPM anuluje tryb budowy ulepszeń** (`main.ts`, wzorem Escape).
+- **Gałąź/push:** commity `7f900ab`+`b778370`+`71733d2`+`00e1311`, rebase na `374c1067`, FF `main`.
+- Bramki: tsc=0 (scalony stan) · map-gen determinizm A=B + 814/814 z ujściem · setup-testy zielone · VERIFY OK.
+- **Uwaga:** `renderWoda` i synteza kamienia UŚPIONE — NIE ruszałem ich (fix rzek dotyczy tylko wstęgi rzecznej, `renderCoastalRiverExtension`).
+
+CZEKAM-NA: **sesja lokalna** — na hasło „push" od właściciela: `git pull` + sync `a756d893` na dysk. **Właściciel** — playtest: więcej państw/miast, rzeki wpływają w wybrzeże, PPM anuluje budowę ulepszeń.
