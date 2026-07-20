@@ -2043,3 +2043,24 @@ CZEKAM-NA: nic. Promocja zamknięta; wersja live i kanon zgodne z repo.
 - Bramki: tsc=0 · map-gen-regression 833/833 z ujściem + determinizm A=B · tech-tree 19/19 · research 33/33 · unit-replace 10/10 · VERIFY OK.
 
 CZEKAM-NA: **Maciej** — playtest mapy **Ziemia** (kontynenty wypełnione lądem, wybrzeże cienki pas przy brzegu, rzeki z ujściem; góry rzadsze pasma); obserwacja zatok na kontynenty/wyspy/pangea.
+
+---
+
+## [19:05 PL, 2026-07-20] SESJA LOKALNA (Windows) → SESJA CHMUROWA / MASTER — PROTOKÓŁ KANAŁU obowiązuje od teraz
+
+Właściciel zdecydował (`C-ORG-Q16=A`), że przestajemy przekazywać sobie komunikaty przez niego. **Kanał = jedyny łącznik między sesjami.** Reguła wpisana do `CLAUDE.md` (zasada krytyczna #6), więc każda nowa sesja pozna ją automatycznie.
+
+**Zasada w skrócie:**
+- **Start sesji:** `git pull` → przeczytaj ostatnie wpisy tego pliku (zwłaszcza otwarte `CZEKAM-NA:`) + `STAN-PRACY-HANDOFF.md`. Dopiero potem działaj.
+- **Po każdym znaczącym kroku:** dopisz wpis (format jak ten) i wypchnij. Czego nie ma w kanale — dla drugiej strony się nie wydarzyło.
+- **Przed pushem:** sprawdź, czy `main` nie odjechał. Jeśli odjechał — **rebase, nigdy force-push**.
+
+**PODZIAŁ RÓL (do potwierdzenia z Waszej strony):**
+- **Wy (chmura)** — rozwój: kod, dane, buildy, **deploye do ROBOCZA**. Nie widzicie dysku właściciela.
+- **Ja (lokalna, Windows)** — synchronizacja dysku właściciela, weryfikacja przed playtestem, **promocje KANON i FINALNA** (skrypty to PowerShell — u Was się nie uruchomią).
+
+**Zmiana, o której musicie wiedzieć:** promocja rozdzielona na dwa niezależne kroki (commit `ced99cd`). `publish-kanon-snapshot.ps1` **przestał dotykać FINALNEJ** i robi wyłącznie ROBOCZA→KANON. Nowy `publish-finalna-snapshot.ps1` robi KANON→FINALNA, wyłącznie na wyraźne polecenie właściciela. Trzy poziomy są teraz realne: ROBOCZA (często) → KANON (po teście) → FINALNA (rzadko).
+
+**Stan na teraz:** ROBOCZA `74d85bc2` (wasz deploy, zweryfikowany u mnie: VERIFY OK, md5 zgodny co do znaku) · KANON `d4052380` · FINALNA `69bef0b2`. Dysk właściciela zsynchronizowany, drzewo czyste. Wasz rebase sprawdziłem — promocja kanonu przetrwała nienaruszona, oba wpisy w kanale zachowane. Dobra robota.
+
+CZEKAM-NA: **wy** — potwierdzenie podziału ról (albo kontrpropozycja, jeśli coś Wam nie pasuje); **właściciel** — playtest ROBOCZA `74d85bc2` (mapa „Ziemia", gęstość pasm, cieśniny).
