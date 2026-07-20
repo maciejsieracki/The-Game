@@ -6659,6 +6659,10 @@ function cityYieldPerTurn(city, workedTiles, cityBuildings, params, ctx) {
   if (civHandelMult !== 1) {
     handelBrutto *= civHandelMult;
   }
+  const liczbaTrasHandlowych = ctx.liczbaAktywnychTrasHandlowych ?? 0;
+  if (liczbaTrasHandlowych > 0) {
+    handelBrutto *= 1 + 0.05 * liczbaTrasHandlowych;
+  }
   let pracaBudynkow = 0;
   let pieniadzBudynkow = 0;
   let zywnoscBudynkow = 0;
@@ -19226,6 +19230,27 @@ var econ_params_default = {
       hard: 20,
       jednostka: "heksow",
       opis: "Handel E2 (trade-routes.ts): prog uproszczonego dystansu dla szlaku MORSKIEGO (przez Port w OBU miastach), po wodzie (Morze unia Wybrzeze -- obie klasyfikowane jako woda po zmianie z 2026-07-20). Szerszy prog niz lad, bo statek nie zna przeszkod gorskich/lasu."
+    },
+    dochod_bazowy: {
+      easy: 8,
+      normal: 8,
+      hard: 8,
+      jednostka: "pieniadz/ture",
+      opis: "Handel E3 (trade-routes.ts, Q7=A): dochod trasy przy dystansie 0 (skladnik dystansowy, PRZED odjeciem dochod_na_dystans*dystans). Kredytowany OBU miastom trasy w pelnej kwocie (Q8=B). Placeholder startowy -- do dostrojenia przez wlasciciela w panelu Excel."
+    },
+    dochod_na_dystans: {
+      easy: 0.4,
+      normal: 0.4,
+      hard: 0.4,
+      jednostka: "pieniadz/heks",
+      opis: "Handel E3: ile pieniedzy odejmujemy od dochod_bazowy za kazdy heks dystansu miedzy miastami trasy (wzor liniowy Q7=A)."
+    },
+    dochod_podloga: {
+      easy: 1,
+      normal: 1,
+      hard: 1,
+      jednostka: "pieniadz/ture",
+      opis: "Handel E3: dolna podloga dochodu dystansowego -- aktywna trasa nigdy nie daje mniej niz to, nawet przy dystansie bliskim progowi max."
     }
   }
 };
@@ -22198,7 +22223,7 @@ function growthFoodStorageCap(population, maSpichlerz, params, storageParams, pa
 function getCityFood(city) {
   return readCityFoodBufferFromCity(city);
 }
-function advanceCityEconomy(cities, map, data, difficulty = "normal", econUnits = [], growthMultByCity = /* @__PURE__ */ new Map(), builtByCity = /* @__PURE__ */ new Map(), playerEra = 1, playerZbadane = /* @__PURE__ */ new Set(), ownerCivByOwnerId = /* @__PURE__ */ new Map(), orderMultByCity = /* @__PURE__ */ new Map(), resolveOwnerEra, resolveOwnerTech, wzrostLudnosciPace = "wysoki") {
+function advanceCityEconomy(cities, map, data, difficulty = "normal", econUnits = [], growthMultByCity = /* @__PURE__ */ new Map(), builtByCity = /* @__PURE__ */ new Map(), playerEra = 1, playerZbadane = /* @__PURE__ */ new Set(), ownerCivByOwnerId = /* @__PURE__ */ new Map(), orderMultByCity = /* @__PURE__ */ new Map(), resolveOwnerEra, resolveOwnerTech, wzrostLudnosciPace = "wysoki", tradeRouteCountByCity = /* @__PURE__ */ new Map(), tradeIncomeByCity = /* @__PURE__ */ new Map()) {
   var _a10;
   const gameDifficulty = difficulty;
   const params = buildEconParams(data, difficulty);
@@ -22258,6 +22283,7 @@ function advanceCityEconomy(cities, map, data, difficulty = "normal", econUnits 
     const walutaMnoznikOverride = walutaOdkryta && ownerCivKey ? mnoznikHandelPieniadzForCiv(ownerCivKey, data.civs, params.walutaMnoznik) : void 0;
     const ownerBonusy = ownerCivKey ? civBonusyForCivKey(ownerCivKey, data.civs) : [];
     const { handel: civHandelMult, nauka: civNaukaMult } = civEconomyYieldMultipliers(ownerBonusy);
+    const liczbaTrasHandlowych = tradeRouteCountByCity.get(city.id) ?? 0;
     const ctx = {
       wojskoZuzycieZywnosci: 0,
       // B5: wojsko → zapasy państwa (advanceEmpireFood)
@@ -22277,8 +22303,10 @@ function advanceCityEconomy(cities, map, data, difficulty = "normal", econUnits 
       // RDY-11: per-cyw 1.7-2.4 gdy ownerCivByOwnerId podane
       civHandelMult,
       // RDY-01: bonus_zloto handel (Grecy +15%)
-      civNaukaMult
+      civNaukaMult,
       // RDY-01: bonus_nauka (Inkowie +15%)
+      liczbaAktywnychTrasHandlowych: liczbaTrasHandlowych
+      // Handel E3: +5%/trasa
     };
     const yld = cityYieldPerTurn(econCity, worked, noBuildings, params, ctx);
     const orderMult = orderMultByCity.get(city.id);
@@ -22300,6 +22328,7 @@ function advanceCityEconomy(cities, map, data, difficulty = "normal", econUnits 
     }
     city.wealthState = { poziom: wt.poziom, pula: wt.pula };
     const pieniadzPoWealth = Math.floor(yld.pieniadz * wt.mnoznik);
+    const pieniadzZTras = tradeIncomeByCity.get(city.id) ?? 0;
     const udzialBudynki = (((_a10 = city.podzialPracy) == null ? void 0 : _a10.procentBudynki) ?? params.suwaakPracaBudynki) / 100;
     const { doBudynkow, doPuli } = splitPraca(yld.praca, udzialBudynki);
     const isOblegane = city.oblegane === true;
@@ -22316,7 +22345,7 @@ function advanceCityEconomy(cities, map, data, difficulty = "normal", econUnits 
         cityId: city.id,
         ownerId: city.ownerId,
         praca: yld.praca,
-        pieniadz: pieniadzPoWealth,
+        pieniadz: pieniadzPoWealth + pieniadzZTras,
         pieniadzBrutto: yld.pieniadz,
         zywnoscNetto: 0,
         // brak dochodu podczas oblezenia
@@ -22334,16 +22363,17 @@ function advanceCityEconomy(cities, map, data, difficulty = "normal", econUnits 
         wealthMnoznik: wt.mnoznik,
         wealthZadowolenie: wt.zadowolenie,
         pieniadzZPracy: yld.pieniadzZPracy,
+        pieniadzZTras,
         oblegany: true,
         obleganyGlod,
         magazynPoTurze,
         maSpichlerz
       };
       result.perCity.push(tick2);
-      incomeByOwner.set(city.ownerId, (incomeByOwner.get(city.ownerId) ?? 0) + pieniadzPoWealth);
+      incomeByOwner.set(city.ownerId, (incomeByOwner.get(city.ownerId) ?? 0) + tick2.pieniadz);
       result.cities += 1;
       result.totalPraca += yld.praca;
-      result.totalPieniadz += pieniadzPoWealth;
+      result.totalPieniadz += tick2.pieniadz;
       result.totalNauka += yld.nauka;
       result.totalLuksus += yld.luksus;
       result.totalKultura += yld.kultura;
@@ -22389,7 +22419,7 @@ function advanceCityEconomy(cities, map, data, difficulty = "normal", econUnits 
     );
     city.magazynZywnosci = Math.min(grow.nowyMagazynZywnosci, foodCap);
     magazynPoTurze = city.magazynZywnosci;
-    incomeByOwner.set(city.ownerId, (incomeByOwner.get(city.ownerId) ?? 0) + pieniadzPoWealth);
+    incomeByOwner.set(city.ownerId, (incomeByOwner.get(city.ownerId) ?? 0) + pieniadzPoWealth + pieniadzZTras);
     const maMagazyn = builtIds.includes("magazyn");
     const resCap = resourceStorageCapacityPerType(maMagazyn, storageParams);
     if (!city.surowce) city.surowce = {};
@@ -22411,7 +22441,7 @@ function advanceCityEconomy(cities, map, data, difficulty = "normal", econUnits 
       cityId: city.id,
       ownerId: city.ownerId,
       praca: yld.praca,
-      pieniadz: pieniadzPoWealth,
+      pieniadz: pieniadzPoWealth + pieniadzZTras,
       pieniadzBrutto: yld.pieniadz,
       zywnoscNetto: yld.zywnosc,
       nauka: yld.nauka,
@@ -22427,6 +22457,7 @@ function advanceCityEconomy(cities, map, data, difficulty = "normal", econUnits 
       wealthMnoznik: wt.mnoznik,
       wealthZadowolenie: wt.zadowolenie,
       pieniadzZPracy: yld.pieniadzZPracy,
+      pieniadzZTras,
       oblegany: false,
       obleganyGlod: false,
       magazynPoTurze,
@@ -22435,7 +22466,7 @@ function advanceCityEconomy(cities, map, data, difficulty = "normal", econUnits 
     result.perCity.push(tick);
     result.cities += 1;
     result.totalPraca += yld.praca;
-    result.totalPieniadz += pieniadzPoWealth;
+    result.totalPieniadz += tick.pieniadz;
     result.totalNauka += yld.nauka;
     result.totalLuksus += yld.luksus;
     result.totalKultura += yld.kultura;

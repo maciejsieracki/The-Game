@@ -338,6 +338,11 @@ import {
   CULTURE_RANGE_STYLE,
   RELIGION_RANGE_STYLE,
 } from './render/rangeOverlay';
+import {
+  buildTradeRoutesOverlayGroup,
+  disposeTradeRoutesOverlayGroup,
+  type TradeRouteOverlayInput,
+} from './render/tradeRoutesOverlay';
 import { showDiplomacyPendingModal } from './ui/diplomacyPendingHud';
 import { getMinimapData } from './map/minimap';
 import {
@@ -1268,6 +1273,9 @@ async function boot(): Promise<void> {
     const cityRelig = new Map<string, ReligionState>();
     /** Handel E3: aktywne trasy gracz<->obca cywilizacja (odswiezane co ture). */
     let tradeRoutes: TradeRoute[] = [];
+    /** Handel E3: liczba aktywnych tras per miasto (odswiezane razem z tradeRoutes) — wejście
+     *  do UI (panel miasta E7) i do mnożnika Handlu (getCityBuildingFlags, cityYieldPerTurn). */
+    let tradeRouteCountByCity: Map<string, number> = new Map();
     const lastReligionSpreadByCity = new Map<string, number>();
     let _lastReligionSpreadTotal = 0;
 
@@ -1892,6 +1900,7 @@ async function boot(): Promise<void> {
       cityRenderer.sync(cities, _cityRenderOpts());
       refreshRangeOverlays();
       refreshWorkerFieldOverlay();
+      refreshTradeRoutesOverlay();
     }
 
     function okolicaHexWorkable(q: number, r: number): boolean {
@@ -4037,6 +4046,35 @@ async function boot(): Promise<void> {
     let religionRangeVisible = false;
     let cultureRangeGroup: THREE.Group | null = null;
     let religionRangeGroup: THREE.Group | null = null;
+
+    // --- E7 (epik Handel): łuki tras handlowych na mapie 3D ---
+    let tradeRoutesOverlayGroup: THREE.Group | null = null;
+
+    function clearTradeRoutesOverlay(): void {
+      if (!tradeRoutesOverlayGroup) return;
+      scene.remove(tradeRoutesOverlayGroup);
+      disposeTradeRoutesOverlayGroup(tradeRoutesOverlayGroup);
+      tradeRoutesOverlayGroup = null;
+    }
+
+    /** Przerysuj łuki tras handlowych (wołaj po każdej zmianie tradeRoutes — co turę). */
+    function refreshTradeRoutesOverlay(): void {
+      clearTradeRoutesOverlay();
+      if (isCityPanelOpen()) return;
+      if (tradeRoutes.length === 0) return;
+      const cityById = new Map(cities.map(c => [c.id, c] as const));
+      const inputs: TradeRouteOverlayInput[] = [];
+      for (const route of tradeRoutes) {
+        if (route.status !== 'polaczony') continue;
+        const from = cityById.get(route.fromCityId);
+        const to = cityById.get(route.toCityId);
+        if (!from || !to) continue;
+        inputs.push({ fromQ: from.q, fromR: from.r, toQ: to.q, toR: to.r, medium: route.medium });
+      }
+      if (inputs.length === 0) return;
+      tradeRoutesOverlayGroup = buildTradeRoutesOverlayGroup(map, inputs);
+      scene.add(tradeRoutesOverlayGroup);
+    }
 
     // --- E-map-worker-overlay: ikonki 👤 na polach z robotnikami (wszystkie miasta gracza) ---
     let showWorkerOverlay = false;
@@ -7253,6 +7291,11 @@ async function boot(): Promise<void> {
       data,
       difficulty: _menuDifficulty,
       getCities: () => cities,
+      getTradeRoutes: () => tradeRoutes,
+      getOwnerLabel: (ownerId: number) => ownerDiploLabel(ownerId),
+      getCityBuildingFlags: (cityId: string) => ({
+        liczbaAktywnychTrasHandlowych: tradeRouteCountByCity.get(cityId) ?? 0,
+      }),
       getEpoch: (ownerId: number) => empireEpochForOwner(ownerId),
       getManpowerSnapshot: (cityId: string) => {
         const c = cities.find(x => x.id === cityId);
@@ -10291,7 +10334,7 @@ async function boot(): Promise<void> {
           } catch (eTrade) {
             console.error('[Handel] Blad odswiezania tras:', eTrade);
           }
-          const tradeRouteCountByCity = computeTradeRouteCountByCity(tradeRoutes);
+          tradeRouteCountByCity = computeTradeRouteCountByCity(tradeRoutes);
           const tradeIncomeParams = loadTradeRouteIncomeParams(
             data.econParams as unknown as Parameters<typeof loadTradeRouteIncomeParams>[0],
             _menuDifficulty,
@@ -10348,6 +10391,7 @@ async function boot(): Promise<void> {
           _lastKulturaRate = playerEcon.kultura;
           _lastKultura = playerEcon.kultura;
           if (cultureRangeVisible || religionRangeVisible) refreshRangeOverlays();
+          refreshTradeRoutesOverlay();
           for (const [hexKey, st] of hexClearingStates) {
             if (st.ownerId !== 0) continue;
             const { pracaGrant, expired } = tickHexClearing(st);
@@ -11738,6 +11782,11 @@ async function boot(): Promise<void> {
         data,
         difficulty: _menuDifficulty,
         getCities: () => cities,
+        getTradeRoutes: () => tradeRoutes,
+        getOwnerLabel: (ownerId: number) => ownerDiploLabel(ownerId),
+        getCityBuildingFlags: (cityId: string) => ({
+          liczbaAktywnychTrasHandlowych: tradeRouteCountByCity.get(cityId) ?? 0,
+        }),
         getEpoch: (ownerId: number) => empireEpochForOwner(ownerId),
       getManpowerSnapshot: (cityId: string) => {
         const c = cities.find(x => x.id === cityId);
@@ -12037,6 +12086,8 @@ async function boot(): Promise<void> {
       // Reset stanu przed klastrem
       cities.length = 0;
       tradeRoutes.length = 0;
+      tradeRouteCountByCity.clear();
+      clearTradeRoutesOverlay();
       explored.clear();
       rebuildAllKeys();
       diplomacyRelations.clear();
@@ -12269,6 +12320,8 @@ async function boot(): Promise<void> {
 
       cities.length = 0;
       tradeRoutes.length = 0;
+      tradeRouteCountByCity.clear();
+      clearTradeRoutesOverlay();
       for (const c of preset.cities) {
         ensureCitySaveDefaults(c);
         cities.push(c);
@@ -12481,6 +12534,8 @@ async function boot(): Promise<void> {
 
       cities.length = 0;
       tradeRoutes.length = 0;
+      tradeRouteCountByCity.clear();
+      clearTradeRoutesOverlay();
       for (const c of preset.cities) {
         ensureCitySaveDefaults(c);
         cities.push(c);
@@ -12666,6 +12721,8 @@ async function boot(): Promise<void> {
 
       cities.length = 0;
       tradeRoutes.length = 0;
+      tradeRouteCountByCity.clear();
+      clearTradeRoutesOverlay();
       for (const c of preset.cities) {
         ensureCitySaveDefaults(c);
         cities.push(c);
@@ -12840,6 +12897,8 @@ async function boot(): Promise<void> {
         syncLivestockAndPlacedMeshes();
         syncUnitsRender();
         cityRenderer.sync(cities, _cityRenderOpts());
+        tradeRouteCountByCity = computeTradeRouteCountByCity(tradeRoutes);
+        refreshTradeRoutesOverlay();
         refreshSiegeMarkers();
         refreshFog();
         initDiplomaticContactSnapshot();

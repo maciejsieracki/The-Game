@@ -116,6 +116,13 @@ import {
   type Difficulty,
 } from '../game/turn-economy';
 import { tileYield } from '../game/economy';
+import {
+  tradeRouteDistanceIncome,
+  loadTradeRouteIncomeParams,
+  DEFAULT_TRADE_ROUTE_INCOME_PARAMS,
+  TRADE_BUILDING_IDS,
+  type TradeRoute,
+} from '../game/trade-routes';
 import { normalizeImprovementKey } from '../game/terrain-improvements';
 import type { Hex } from '../types/hex';
 import { loadOrderParams } from '../game/order';
@@ -292,6 +299,10 @@ export interface CityPanelConfig {
   getWzrostLudnosciPace?: () => import('../game/population-growth-tempo').WzrostLudnosciPace;
   /** Poziom trudnosci rozgrywki — asymetria kosztow budynkow/jednostek/badan. */
   getDifficulty?: () => import('../game/difficulty-cost').GameDifficulty;
+  /** E7 — trasy handlowe aktywne w tej chwili (odswiezane co ture przez refreshTradeRoutes). */
+  getTradeRoutes?: () => readonly TradeRoute[];
+  /** E7 — etykieta cywilizacji wlasciciela (jak w panelu dyplomacji) — do „czyje to miasto". */
+  getOwnerLabel?: (ownerId: number) => string;
 }
 
 let cfg: CityPanelConfig = {};
@@ -6709,6 +6720,171 @@ function renderHandelSlidersPanel(mount: HTMLElement, city: City, view: CityView
   appendPodzialHandlu(mount, city, view, data, { skipSubhd: true });
 }
 
+/** E7 — bonus Handlu na trasę (musi zgadzać się z hardcoded 0.05 w game/economy.ts cityYieldPerTurn). */
+const TRADE_ROUTE_HANDEL_BONUS_PCT_PER_ROUTE = 5;
+
+interface TradeRouteRowInfo {
+  route: TradeRoute;
+  otherCityId: string;
+  otherOwnerId: number;
+  otherCityName: string;
+  otherOwnerLabel: string;
+  income: number;
+}
+
+function tradeRoutesForCity(city: City, data: GameData | null): TradeRouteRowInfo[] {
+  const all = cfg.getTradeRoutes?.() ?? [];
+  const incomeParams = data
+    ? loadTradeRouteIncomeParams(
+        data.econParams as unknown as Parameters<typeof loadTradeRouteIncomeParams>[0],
+        cfg.difficulty ?? 'normal',
+      )
+    : DEFAULT_TRADE_ROUTE_INCOME_PARAMS;
+  const cities = cfg.getCities?.() ?? [];
+
+  const out: TradeRouteRowInfo[] = [];
+  for (const route of all) {
+    if (route.status !== 'polaczony') continue;
+    const isFrom = route.fromCityId === city.id;
+    const isTo = route.toCityId === city.id;
+    if (!isFrom && !isTo) continue;
+    const otherCityId = isFrom ? route.toCityId : route.fromCityId;
+    const otherOwnerId = isFrom ? route.toOwnerId : route.ownerId;
+    const otherCity = cities.find(c => c.id === otherCityId);
+    out.push({
+      route,
+      otherCityId,
+      otherOwnerId,
+      otherCityName: otherCity?.name ?? otherCityId,
+      otherOwnerLabel: cfg.getOwnerLabel?.(otherOwnerId) ?? `Cywilizacja ${otherOwnerId}`,
+      income: tradeRouteDistanceIncome(route.dystans, incomeParams),
+    });
+  }
+  // Najkrótsze (najbardziej dochodowe) trasy pierwsze — deterministyczny tie-break po id.
+  out.sort((a, b) => a.route.dystans - b.route.dystans || a.route.id.localeCompare(b.route.id));
+  return out;
+}
+
+function buildTradeRoutesDetailCard(city: City, rows: TradeRouteRowInfo[], data: GameData | null): HTMLDivElement {
+  const incomeParams = data
+    ? loadTradeRouteIncomeParams(
+        data.econParams as unknown as Parameters<typeof loadTradeRouteIncomeParams>[0],
+        cfg.difficulty ?? 'normal',
+      )
+    : DEFAULT_TRADE_ROUTE_INCOME_PARAMS;
+  const built = cfg.getBuiltBuildingIds?.(city.id) ?? [];
+  const maBudynekHandlowy = built.some(id => TRADE_BUILDING_IDS.has(id));
+  const limit = built.filter(id => TRADE_BUILDING_IDS.has(id)).length;
+
+  const card = el('div', 'detail-card');
+  const head = el('div', 'dc-h');
+  head.innerHTML = `<span>${cityPanelChipIconWrap('cp-trade', 14)} Szlaki handlowe — szczegóły</span>`;
+  card.appendChild(head);
+
+  const intro = el('div', 'dc-note');
+  setNoteHtml(intro,
+    'Szlak handlowy łączy to miasto z obcym miastem (cywilizacja spoza tej, nie w wojnie). ' +
+    'Każda aktywna trasa daje osobny dochód (zależny od dystansu) ORAZ mnoży Handel z pól o +' +
+    `${TRADE_ROUTE_HANDEL_BONUS_PCT_PER_ROUTE}%.`,
+  );
+  card.appendChild(intro);
+
+  appendDetailSection(card, 'Limit i warunki');
+  const g0 = appendDetailGrid(card);
+  gridDetailRow(g0, 'Budynek handlowy', maBudynekHandlowy ? 'Tak' : 'Brak — trasy niemożliwe');
+  gridDetailRow(g0, 'Limit tras miasta', `${limit} (= liczba budynków: Targowisko/Karawanseraj/Port)`);
+  gridDetailRow(g0, 'Aktywne trasy', `${rows.length} / ${limit}`);
+  gridDetailRow(g0, 'Warunek partnera', 'Miasto obcej cywilizacji, bez wojny, w zasięgu (ląd/morze)');
+
+  appendDetailFormula(card, `dochódTrasy = max(${incomeParams.dochodPodloga}, floor(${incomeParams.dochodBazowy} − dystans × ${incomeParams.dochodNaDystans}))`);
+  appendDetailFormula(card, `mnożnikHandlu = 1 + ${TRADE_ROUTE_HANDEL_BONUS_PCT_PER_ROUTE / 100} × liczbaAktywnychTras (osobno od Targowiska)`);
+
+  if (rows.length > 0) {
+    appendDetailSection(card, 'Rozpiska tras');
+    const g1 = appendDetailGrid(card);
+    for (const r of rows) {
+      gridDetailRow(
+        g1,
+        `${r.otherCityName} (${r.otherOwnerLabel})`,
+        `${r.route.medium === 'morze' ? 'Morze' : 'Ląd'} · ${r.route.dystans} heks. · +${r.income}/turę`,
+      );
+    }
+  }
+
+  appendDetailAlgo(card, 'Skąd biorą się trasy (refreshTradeRoutes, co turę)', [
+    'Filtr: tylko gracz ↔ obca cywilizacja (własne miasta między sobą nigdy nie tworzą trasy).',
+    'Filtr pokoju: wojna z danym właścicielem zrywa/blokuje trasę z jego miastami.',
+    'Limit slotów na miasto = liczba zbudowanych budynków handlowych (obie strony trasy muszą mieć wolny slot).',
+    'Dystans ≤ próg (ląd/morze); dla morza wymagany Port w OBU miastach i ciągła droga wodna.',
+    'Istniejące trasy mają priorytet nad nowymi kandydaturami (stabilność między turami); wśród nowych wygrywają najbliższe.',
+  ]);
+
+  return card;
+}
+
+function renderTradeRoutesPanel(mount: HTMLElement, city: City, data: GameData | null): void {
+  mount.innerHTML = '';
+  const rows = tradeRoutesForCity(city, data);
+
+  appendSectionTitleWithDetails(
+    mount,
+    '<span>Szlaki handlowe</span>',
+    () => buildTradeRoutesDetailCard(city, rows, data),
+  );
+
+  const bonusPct = rows.length * TRADE_ROUTE_HANDEL_BONUS_PCT_PER_ROUTE;
+  const totalIncome = rows.reduce((s, r) => s + r.income, 0);
+  appendTabIndicators(mount, [
+    {
+      icon: cityPanelChipIcon('cp-trade', 14),
+      label: 'Aktywne trasy',
+      value: `${rows.length}`,
+      cls: rows.length > 0 ? 'gold' : 'muted',
+    },
+    ...(rows.length > 0
+      ? [
+          {
+            icon: cityPanelChipIcon('chip-trend-up', 14),
+            label: 'Bonus Handlu',
+            value: `+${bonusPct}%`,
+            cls: 'green',
+            title: `+${TRADE_ROUTE_HANDEL_BONUS_PCT_PER_ROUTE}% za każdą z ${rows.length} aktywnych tras`,
+          },
+          {
+            icon: cityPanelChipIcon('res-treasury', 14),
+            label: 'Dochód z tras',
+            value: `+${totalIncome}`,
+            cls: 'gold',
+          },
+        ]
+      : []),
+  ]);
+
+  if (rows.length === 0) {
+    const built = cfg.getBuiltBuildingIds?.(city.id) ?? [];
+    const maBudynekHandlowy = built.some(id => TRADE_BUILDING_IDS.has(id));
+    const hint = el('div', 'muted');
+    hint.textContent = maBudynekHandlowy
+      ? 'Brak tras — brak w zasięgu obcego miasta (bez wojny), z którym dałoby się połączyć.'
+      : 'Brak tras — potrzebny budynek handlowy (Targowisko/Karawanseraj/Port) i połączone obce miasto w pokoju.';
+    mount.appendChild(hint);
+    return;
+  }
+
+  const list = el('div', 'col');
+  for (const r of rows) {
+    const row = el('div', 'rsb');
+    const mediumLabel = r.route.medium === 'morze' ? 'Morze' : 'Ląd';
+    row.innerHTML =
+      `<span>${r.otherCityName} <span class="muted">(${r.otherOwnerLabel})</span></span>` +
+      `<span class="chip"><span class="cv">${mediumLabel}</span></span>` +
+      `<span class="muted">${r.route.dystans} heks.</span>` +
+      `<span class="gold val">+${r.income}/turę</span>`;
+    list.appendChild(row);
+  }
+  mount.appendChild(list);
+}
+
 function renderCivMapChrome(mount: HTMLElement, city: City, _onClose?: () => void): void {
   mount.innerHTML =
     `<div class="civ-v-map-bottom-stack">` +
@@ -7027,10 +7203,13 @@ function renderRightPanelTab(
         body.appendChild(hint);
         const slidersHost = el('div', 'civ-handel-sliders-host');
         const wealthHost = el('div', 'civ-handel-wealth-host');
+        const tradeRoutesHost = el('div', 'civ-handel-wealth-host');
         body.appendChild(slidersHost);
         body.appendChild(wealthHost);
+        body.appendChild(tradeRoutesHost);
         renderHandelSlidersPanel(slidersHost, city, view, data);
         renderWealth(wealthHost, city, data, view);
+        renderTradeRoutesPanel(tradeRoutesHost, city, data);
       }, { scrollable: true });
       break;
     case 'praca':
