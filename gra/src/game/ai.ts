@@ -190,7 +190,9 @@ export interface AITurnOpts {
   /**
    * D-START miasta-kopie typu (profil kopia_typu_obronna).
    * Silnik ustawia z `ClusterStartPlan.typCityCopyOwners.has(ownerId)`.
-   * Gdy true: brak osadników/ekspansji/foundCity/build — tylko garnizon i riposta.
+   * Gdy true: brak osadników/ekspansji/foundCity — ale POZA TYM pełna, normalna
+   * produkcja (budynki gospodarcze, Koszary, jednostki) jak każde inne miasto AI
+   * (Maciej 2026-07-20 — miasta-siostry aktywnym graczem, nie biernym łupem).
    * @see cluster-start.ts `typCityCopyOwners`
    */
   defensiveCopy?: boolean;
@@ -200,6 +202,16 @@ export interface AITurnOpts {
    * Silnik podaje cele startCityState z tego samego typu cywilizacji.
    */
   clusterStateTargets?: Array<{ ownerId: number; q: number; r: number }>;
+  /**
+   * D-START posiłki w klastrze (Maciej 2026-07-20): pozostałe miasta-siostry
+   * (profil kopia_typu_obronna, TEN SAM typ cywilizacji/klaster) — źródła i cele
+   * wewnątrz-klastrowych posiłków. Silnik podaje wyłącznie dla ownerId z
+   * `typCityCopyOwners`, filtrowane do tego samego `tc.typ` w promieniu klastra.
+   * Gdy obecne: decideDefensiveCopyTurn może wysłać JEDNĄ nadwyżkową jednostkę
+   * obrony ku zagrożonej siostrze (zero bonusu — normalny ruch, normalna jednostka).
+   * @see cluster-start.ts `typCityCopyOwners`
+   */
+  sisterCityStates?: Array<{ ownerId: number; q: number; r: number }>;
 }
 
 /**
@@ -614,7 +626,15 @@ function chooseCityProduction(
 
   const candidates: { id: string; score: number }[] = [];
 
-  const earlyPhase = myCities.length < 3;
+  // Państwa-kopie (kopia_typu_obronna) NIGDY nie zakładają miast (brak Osadnika/foundCity —
+  // patrz opts.defensiveCopy niżej), więc myCities.length pozostaje = 1 na zawsze. Bez tego
+  // wyjątku "earlyPhase" (myCities.length<3) byłoby wieczne — miasto-kopia utknęłoby na
+  // Wojowniku+Murach+Spichlerzu i NIGDY nie odblokowałoby Koszar ani budynków gospodarczych
+  // (Tartak/Cegielnia/Huta/Magazyn/Targowisko) z gałęzi "else" niżej. Traktujemy je więc tak,
+  // jakby "wyrosły" z fazy startowej mimo posiadania jednego miasta — bez tego są trwale
+  // biernym łupem zamiast rozwijać się jak normalne miasto AI. Zero bonusu liczbowego:
+  // dostają dokładnie tę samą listę kandydatów budowy co każde inne miasto AI w fazie mid-game.
+  const earlyPhase = myCities.length < 3 && !opts.defensiveCopy;
 
   // §4.3 Under threat: walls first, then guard
   if (underThreat) {
@@ -636,6 +656,14 @@ function chooseCityProduction(
     }
     if (!built.includes('Mury')) {
       candidates.push({ id: 'Mury', score: 320 + defenseScore });
+    }
+    // Spichlerz dopisany tu (a nie w gałęzi early-phase §4.1, bo defensiveCopy nigdy tam nie
+    // trafia — patrz earlyPhase wyżej) — TA SAMA pozycja/score co dla normalnego miasta AI
+    // w fazie startowej (250), żeby nie zaburzyć kolejności względem Mury/Wojownik powyżej ani
+    // względem budynków gospodarczych z gałęzi "else" niżej. Bez tego defensiveCopy nigdy nie
+    // zobaczyłoby Spichlerza (brak wpływu na zwykłe AI — ta gałąź działa tylko gdy defensiveCopy).
+    if (!built.includes('Spichlerz')) {
+      candidates.push({ id: 'Spichlerz', score: 250 });
     }
   }
 
@@ -1030,8 +1058,10 @@ export function decideAITurn(
 }
 
 /**
- * D-START kopia_typu_obronna — bez produkcji ekspansyjnej, bez osadników;
- * tylko riposta przy zagrożeniu miasta lub atak w sąsiedztwie.
+ * D-START kopia_typu_obronna — bez produkcji ekspansyjnej, bez osadników/foundCity;
+ * poza tym pełna produkcja (jak zwykłe miasto AI, via chooseCityProduction), riposta
+ * przy zagrożeniu własnego miasta i posiłki wewnątrz klastra ku zagrożonej siostrze
+ * (Maciej 2026-07-20 — miasta-siostry aktywnym graczem, nie biernym łupem).
  */
 function decideDefensiveCopyTurn(
   playerId: number,
@@ -1048,8 +1078,10 @@ function decideDefensiveCopyTurn(
   const myCities = cities.filter(c => c.ownerId === playerId);
   const enemyUnits = units.filter(u => u.ownerId !== playerId);
 
-  // PRODUKCJA — defensywna gospodarka: mury + garnizon najpierw, potem budynki/ekonomia; bez ekspansji.
-  // opts.defensiveCopy=true → chooseCityProduction pomija Osadnika i priorytetuje obronę/mury.
+  // PRODUKCJA — garnizon+mury najpierw (patrz opts.defensiveCopy w chooseCityProduction),
+  // potem PEŁNA kolejka jak zwykłe miasto AI (budynki gospodarcze, Koszary, jednostki);
+  // bez ekspansji (Osadnik/foundCity zablokowane w chooseCityProduction i tutaj nigdzie
+  // nie emitujemy foundCity). Zero bonusu: identyczna funkcja co dla zwykłego AI.
   for (const city of myCities) {
     const buildId = chooseCityProduction(
       city.id, myCities, units, playerId, data, mods, opts, map, difficultyParams,
@@ -1058,6 +1090,41 @@ function decideDefensiveCopyTurn(
       commands.push({ type: 'build', cityId: city.id, buildingId: buildId });
     }
   }
+
+  // ---------------------------------------------------------------------------
+  // POSIŁKI W KLASTRZE (D-START pkt c, Maciej ABC — progi PONIŻEJ do akceptacji właściciela):
+  //   - RESUP_THREAT_RADIUS  = 1  → siostra uznana za "zagrożoną" gdy wróg SĄSIADUJE z jej
+  //     miastem (ta sama definicja zagrożenia co "riposta przy własnym mieście" niżej —
+  //     spójność, nie osobny/luźniejszy próg).
+  //   - RESUP_MIN_GUARD_TO_SEND = 2 → źródło wysyła posiłek TYLKO gdy ma w promieniu 1 od
+  //     WŁASNEGO miasta >= 2 jednostki (zostawia sobie min. 1 obrońcę — nigdy nie rozbraja
+  //     się całkowicie).
+  //   - RESUP_MAX_PER_TURN = 1 → maks. jedna jednostka na turę z jednego miasta-źródła.
+  //   Zero bonusu: normalny rozkaz 'move' tą samą jednostką, którą i tak miasto wyprodukowało
+  //   normalną produkcją — różni się tylko WYBÓR CELU marszu (siostra zamiast bezczynności).
+  const RESUP_THREAT_RADIUS     = 1;
+  const RESUP_MIN_GUARD_TO_SEND = 2;
+  const RESUP_MAX_PER_TURN      = 1;
+
+  const sisterCityStates = opts.sisterCityStates ?? [];
+  // Jednostki sióstr (ten sam klaster/typ) nigdy nie liczą się jako "wróg" zagrażający innej
+  // siostrze — bez tego wędrujący własny garnizon sąsiedniej siostry fałszywie wyzwalałby
+  // posiłki co turę. Dyplomacja poza tym nierozszerzana (zgodnie z poleceniem).
+  const sisterOwnerIds = new Set(sisterCityStates.map(s => s.ownerId));
+  const nonSisterEnemyUnits = enemyUnits.filter(eu => !sisterOwnerIds.has(eu.ownerId));
+
+  // Garnizon startowy per miasto (jednostki własne w promieniu 1) — migawka sprzed ruchów
+  // w tej turze; wystarcza jako brama "nadwyżki", bo RESUP_MAX_PER_TURN=1 i tak ogranicza
+  // wysyłkę do najwyżej jednej jednostki z danego miasta-źródła w tej turze.
+  const homeGuardCount = new Map<string, number>();
+  for (const city of myCities) {
+    homeGuardCount.set(
+      city.id,
+      myUnits.filter(u => !isSettler(u) && hexDistance(u.q, u.r, city.q, city.r) <= 1).length,
+    );
+  }
+
+  let reinforcementsSentThisTurn = 0;
 
   for (const unit of myUnits) {
     if (isSettler(unit)) continue;
@@ -1085,6 +1152,47 @@ function decideDefensiveCopyTurn(
       }
     }
     if (moved) continue;
+
+    // POSIŁKI: własne miasto NIE jest zagrożone (inaczej unit już by ripostował/marszował
+    // wyżej) — sprawdź, czy jakaś siostra w klastrze jest zagrożona i czy ta jednostka jest
+    // "nadwyżkowym" garnizonem swojego miasta (stoi w promieniu 1 od domu, dom ma >= 2 obrońców).
+    if (
+      reinforcementsSentThisTurn < RESUP_MAX_PER_TURN
+      && sisterCityStates.length > 0
+    ) {
+      const homeCityForResup = nearest(unit.q, unit.r, myCities, c => c.q, c => c.r);
+      const atHome = homeCityForResup !== undefined
+        && hexDistance(unit.q, unit.r, homeCityForResup.q, homeCityForResup.r) <= 1;
+      const guardCount = homeCityForResup !== undefined
+        ? (homeGuardCount.get(homeCityForResup.id) ?? 0)
+        : 0;
+
+      if (atHome && guardCount >= RESUP_MIN_GUARD_TO_SEND) {
+        // Najbliższa zagrożona siostra (wróg sąsiaduje z jej miastem) — deterministyczny
+        // tie-break: dystans rosnąco, przy remisie kolejność z opts.sisterCityStates.
+        let bestSister: { ownerId: number; q: number; r: number } | undefined;
+        let bestDist = Infinity;
+        for (const sister of sisterCityStates) {
+          const underAttack = nonSisterEnemyUnits.some(
+            eu => hexDistance(eu.q, eu.r, sister.q, sister.r) <= RESUP_THREAT_RADIUS,
+          );
+          if (!underAttack) continue;
+          const d = hexDistance(unit.q, unit.r, sister.q, sister.r);
+          if (d < bestDist) {
+            bestDist = d;
+            bestSister = sister;
+          }
+        }
+        if (bestSister !== undefined) {
+          const step = firstStep(unit, map, bestSister.q, bestSister.r, units);
+          if (step !== null) {
+            commands.push({ type: 'move', unitId: unit.id, toQ: step.q, toR: step.r });
+            reinforcementsSentThisTurn++;
+            continue;
+          }
+        }
+      }
+    }
 
     if (myCities.length > 0) {
       const homeCity = nearest(unit.q, unit.r, myCities, c => c.q, c => c.r);

@@ -11032,6 +11032,20 @@ async function boot(): Promise<void> {
             } else if (tc && !typCityCopyOwners.has(ownerId)) {
               opts.clusterCenter = tc.centrum;
               opts.clusterRadius = clusterPackRadius(tc.miasta.length + 1, MIN_DIST_START_CITY_STATE);
+            } else if (tc && typCityCopyOwners.has(ownerId)) {
+              // D-START posiłki w klastrze (Maciej 2026-07-20): pozostałe miasta-siostry
+              // (profil kopia_typu_obronna) TEGO SAMEGO klastra/typu — decideDefensiveCopyTurn
+              // może wysłać nadwyżkową jednostkę ku zagrożonej siostrze. Ten sam promień co
+              // dla clusterStateTargets (spójność z konsolidacją klastra powyżej).
+              const resupRadius = clusterPackRadius(tc.miasta.length + (tc.growthSlot ? 1 : 0), MIN_DIST_START_CITY_STATE);
+              opts.sisterCityStates = cities
+                .filter(c =>
+                  c.ownerId !== ownerId
+                  && typCityCopyOwners.has(c.ownerId)
+                  && aiOwnerCivMap.get(c.ownerId) === myCivTyp
+                  && hexDistance(c.q, c.r, tc.centrum.q, tc.centrum.r) <= resupRadius,
+                )
+                .map(c => ({ ownerId: c.ownerId, q: c.q, r: c.r }));
             }
             let commands: AICommand[];
             let cmdStart = 0;
