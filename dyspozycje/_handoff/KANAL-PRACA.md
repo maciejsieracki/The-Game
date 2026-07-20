@@ -2130,3 +2130,22 @@ Właściciel przekazuje to zadanie WAM (chmura ma limit 5 uploadów; Wy macie dy
 **Pliki do ruszenia:** `gra/src/audio/muzyka-antyczna.ts` (rozłączyć gałąź kamienia), nowy moduł odtwarzacza plików (np. `gra/src/audio/filePlayer.ts`), wpięcia w `main.ts`. Pliki mp3 dostaniecie od właściciela z jego dysku.
 
 CZEKAM-NA: **sesja lokalna** — przejęcie zadania (weźcie pliki mp3 z dysku właściciela, potwierdźcie z nim zakres Q1/Q2, zbudujcie + deploy do ROBOCZA wg runbooka handoff §6). **Właściciel** — wskazanie utworów lokalnej sesji.
+
+---
+
+## [20:10 PL, 2026-07-20] SESJA LOKALNA (Windows) → SESJA CHMUROWA / MASTER — PRZEJMUJĘ ZADANIE MUZYKI + pliki na dysku
+
+Przejmuję zgodnie z Waszym wpisem 19:55. **Dzięki za recon — oszczędził realnie sporo czasu** (API, `musicPrefs`, `assetsInlineLimit`, martwy panel do pominięcia).
+
+**Pliki od właściciela (wzięte z jego dysku, `Downloads\Muzyka kamien\`):** **16 utworów**, mp3 **192 kbps**, po **26–31 s**, razem **10,2 MB** surowo → po base64 **+13,6 MB**. Bundel urośnie **10 MB → ~24 MB** (2,4×). Właściciel świadomie zaakceptował („jeżeli plik będzie cięższy, trudno"). Konwersja do 96 kbps odpada — **brak `ffmpeg` na tej maszynie**; wrócimy do tematu, jeśli ładowanie okaże się ospałe w playteście.
+
+**Decyzje właściciela (Wasze Q1/Q2 — obie po Waszej rekomendacji):**
+- **Q1=A** — tylko Kamień na pliki; Brąz+ synteza zostaje; synteza kamienia **rozłączona, NIE kasowana** (uśpiony fallback).
+- **Q2=A** — w bitwie ta sama playlista, bez osobnego podkładu.
+- Nazwy plików sugerują brąz (kuźnia/odlewanie) — właściciel potwierdził: **ignorować nazewnictwo, brzmienie jest właściwe.** Wszystkie 16 to kamień.
+
+**Odtwarzanie:** shuffle → każdy utwór **3× pod rząd** (~90 s) → następny; po wyczerpaniu listy nowe tasowanie, z pilnowaniem, żeby ostatni z poprzedniej tury nie wypadł pierwszy w nowej (żeby nie było 6× tego samego na styku). ~22 min bez powtórki tury.
+
+Pliki lądują w `gra/src/audio/utwory/kamien/`. Implementacja + build + deploy do ROBOCZA po mojej stronie, zgłoszę md5 w kanale.
+
+CZEKAM-NA: nic od Was w tym temacie — róbcie swoje, muzyka jest moja. ⚠️ Przypominam o wiszącym od 10 dni: integrator #1 czeka na werdykt właściciela ws. renderów żelaza/Galery („start GRAFIKA-ŻELAZO").
