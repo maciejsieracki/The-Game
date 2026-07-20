@@ -229,6 +229,12 @@ import {
   type PlayerState,
   type EmpireResearchGate,
 } from './game/playerState';
+import {
+  pickVillageReward,
+  villageGoldAmount,
+  villageTechProgress,
+  villageUnitForEra,
+} from './game/villageRewards';
 import { CityRenderer, type CityRenderOptions, type CityMapOutlineKind } from './render/cities';
 import { WonderRenderer, type PlacedWonder } from './render/wonderRenderer';
 import { pickWonderHexForCity } from './map/wonder-placement';
@@ -7775,6 +7781,80 @@ async function boot(): Promise<void> {
       refreshD1bHud();
     }
 
+    /**
+     * WIOSKI neutralne (goodie huts): pierwsze wejście jednostki GRACZA na
+     * heks z wioską -> nagroda losowa (pickVillageReward), potem wioska znika.
+     * `hex.wioska.istnieje = false` jest ustawiane NATYCHMIAST (przed
+     * losowaniem/efektami) -- to jest samo w sobie zabezpieczeniem przed
+     * podwójnym przyznaniem: każde kolejne wejście (w tej samej turze albo
+     * później) widzi już `istnieje === false` i funkcja wraca natychmiast.
+     * Wołane raz na ZAKOŃCZONE przemieszczenie (nie per jednostka w stosie).
+     */
+    function checkVillageRewardAt(q: number, r: number): void {
+      const hex = map.hexes[keyOf(q, r)];
+      if (!hex?.wioska?.istnieje) return;
+      hex.wioska.istnieje = false;
+      hex.wioska.ludnosc = 0;
+
+      const grantGold = (label: string): void => {
+        const amount = villageGoldAmount(player.era);
+        player.skarbiec += amount;
+        showHintMessage('Wioska: ' + label + ' — otrzymano ' + amount + ' złota!', 3600);
+      };
+
+      const kind = pickVillageReward(Math.random());
+
+      if (kind === 'zloto') {
+        grantGold('znaleziono skarb');
+      } else if (kind === 'tech') {
+        if (player.badana === null) {
+          // Fallback: brak biezaco badanej technologii -- nie ma czego przyspieszyc.
+          grantGold('brak aktywnych badań, w zamian');
+        } else {
+          const amount = villageTechProgress(player.era);
+          player.nauka += amount;
+          showHintMessage('Wioska: +' + amount + ' postępu badań (' + player.badana + ')', 3600);
+          const step = researchStep(player, data.tech, researchGateForOwner(0), _menuDifficulty);
+          for (const done of step.completed) {
+            let msg = 'Zbadano: ' + done.id + ' (-' + done.koszt + ' nauki)';
+            if (done.awansEpoki) msg += ' \xb7 nowa epoka ' + done.era;
+            if (done.pieniadz) msg += ' \xb7 Pieniądz \xd710';
+            showHintMessage(msg, 3500);
+          }
+        }
+      } else {
+        const typeId = villageUnitForEra(player.era);
+        const dest = typeId
+          ? findAdjacentEmptyHexes(units, q, r, isHexPassableForUnit)[0]
+          : undefined;
+        if (!typeId || !dest) {
+          // Fallback: brak zdefiniowanej jednostki dla tej ery, albo brak wolnego sasiedniego heksu.
+          grantGold('brak miejsca/jednostki, w zamian');
+        } else {
+          const def = lookupUnitDef(typeId);
+          const ruch = normFieldVal(def['Ruch'], 2);
+          const role = String(def['Rola'] ?? def['Rola (linia)'] ?? '');
+          const isSuper = normFieldVal(def['Super'], 0) === 1;
+          const newUnitId = 'wioska_' + turn + '_' + q + '_' + r + '_' + Math.random().toString(36).slice(2);
+          units.push({
+            id: newUnitId,
+            ownerId: 0,
+            typeId,
+            category: categoryOf(typeId, role, isSuper),
+            q: dest.q,
+            r: dest.r,
+            ruch,
+            ruchLeft: 0,
+          });
+          showHintMessage('Wioska: dołączyła jednostka — ' + typeId, 3600);
+          syncUnitsRender();
+        }
+      }
+
+      // Wioska znikła -- odśwież meshe (ta sama ścieżka co syncVillageMeshes w refreshFog).
+      refreshFog();
+    }
+
     /** Animowany ruch (merge / taktyka — natychmiast, bez planowania A3). */
     function beginMoveSelectedUnitTo(destQ: number, destR: number): boolean {
       if (selectedId === null || isAnimating) return false;
@@ -11372,6 +11452,11 @@ async function boot(): Promise<void> {
 
           refreshFog();
           validateActiveSieges();
+
+          // GRAFIKA-TEREN-2 / WIOSKI: jednostka gracza kończy ruch na wiosce -> nagroda + znika.
+          if (u && u.ownerId === 0) {
+            checkVillageRewardAt(destQ, destR);
+          }
 
           const entryCity = u && cities.find(
             c => c.q === destQ && c.r === destR && c.ownerId === u.ownerId,

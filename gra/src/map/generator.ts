@@ -78,6 +78,7 @@ import {
   type TypSwiata,
 } from './gen-helpers';
 import { pruneOrphanRiverPaths } from './gen-helpers';
+import { placeVillages } from './villages';
 import { resolveWorldGenNumbers, resolveLandFraction, type WorldGenOptions } from './newGameMapDefaults';
 import { mapGenRozmiarDims } from '../data/map-gen-params-loader';
 import { normPlMenuLabel } from '../util/norm-pl-label';
@@ -389,6 +390,17 @@ export function generateMap(
     minDist: 5,
     absMinDist: 2,
   });
+
+  // ── Przebieg 4: wioski neutralne (goodie huts) — RAZ przy generacji, po ────
+  // finalizacji lądu/wybrzeża i po pozycjach startowych (traktowane jak
+  // przyszłe miasta dla wykluczenia dystansu). Obozów barbarzyńców jeszcze nie
+  // ma na tym etapie (spawnują się co turę w main.ts) -> existingCamps = [].
+  // Osobny strumień PRNG (seed^0x5eed) — niezależny od reszty generacji.
+  const villageSites = placeVillages(hexes, startPositions, [], (effectiveSeed ^ 0x5eed) >>> 0);
+  for (const site of villageSites) {
+    const hex = hexes[`${site.q},${site.r}`];
+    if (hex) hex.wioska = { istnieje: true, ludnosc: 1 };
+  }
 
   return {
     szerokoscQ: width,
