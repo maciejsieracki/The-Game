@@ -1965,3 +1965,17 @@ CZEKAM-NA: drugi integrator — „partia spójna" (dane drzewka a93467 + bramki
 **Nowe:** `STAN-PRACY-HANDOFF.md` w korzeniu repo — punkt wejścia dla każdej sesji (Maciej przechodzi na pracę w chmurze/telefonie). Zawiera stan, kolejkę, zasady krytyczne (zakaz `npm run build` — nadpisuje ręcznie edytowane JSON) i znane-zepsute-przed-nami (logic-test 21, combat-test). Trzymajcie go aktualnym razem ze mną.
 
 CZEKAM-NA: **Maciej** — rozstrzygnięcie „kto deployuje" (kolizja wyżej); **integrator #1** — potwierdzenie, czy `58182469` niosło coś spoza `gra/src` do odzyskania.
+
+---
+
+## [04:17 PL, 2026-07-20] SESJA CHMUROWA (Claude Code) → MASTER / INTEGRATORZY — DEPLOY ROBOCZA `ba8ab0d7` (Ludy Morza + Wioski)
+
+**Deploy do ROBOCZA na wyraźne polecenie Macieja** („deploy", potwierdzone „tak, na main"). Zalogowane równolegle w `WERSJE.md` (`a44d5350` → ZASTĄPIONA, `ba8ab0d7` → AKTUALNA).
+
+- **ROBOCZA = `ba8ab0d7`** (md5 `ba8ab0d70e8b010c97808e9540f3bb6b`), VERIFY OK. Łańcuch: `a44d5350` → **`ba8ab0d7`**.
+- **Zawartość:** (1) **Ludy Morza jako barbarzyńcy epoki Brąz** — obozy w Brązie spawnują Sherden/szekelesz (naprzemiennie); (2) **Wioski goodie-hut** — rozmieszczenie (`placeVillages`, rzadko, proporcjonalnie do lądu) + nagroda złoto/tech/jednostka + interakcja przy wejściu jednostki; (3) **naprawa bramek** `combat-test` 6/6 i `logic-test` 203/203 (były zepsute przed nami).
+- **Gałąź/push:** praca powstała w sesji chmurowej na gałęzi `claude/sprawdzenie-funkcjonalnosci-ek4ra0` (commity `496dd53` Ludy Morza+testy, `a624ec4` Wioski). **Fast-forward na `main` + push origin main** — `main` był dokładnie punktem bazowym mojej gałęzi, więc czysty FF; przed pushem `HEAD..origin/main` puste = **nic drugiego integratora nie przeoczone**.
+- **Uwaga środowiskowa:** deploy z Linuksa — `inject-build-stamp.ps1` (PowerShell) niedostępny, użyłem **wiernego portu node'owego** (tylko stemplowanie HTML; skrypt w scratchpadzie sesji, NIE w repo). Build wyłącznie `vite`-direct z `gra/` (zakaz `npm run build` zachowany).
+- Bramki: tsc=0 · tech-tree 19/0 · research 33/33 · unit-replace 10/10 · combat 6/6 · logic 203/203 · barbarians 74/0 · villages 31/31 · map-gen A=B + 0 rzek bez ujścia · VERIFY OK.
+
+CZEKAM-NA: **Maciej** — test wzrokowy w grze (Ludy Morza w Brązie + wioski/nagrody); ewentualne dostrojenie wartości nagród wiosek (stałe „TUNING" w `villageRewards.ts`).
