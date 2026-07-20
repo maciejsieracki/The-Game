@@ -91,6 +91,26 @@ import {
   buildLegionRzymski,
   buildGwardzistaChampi,
 } from './jednostki-p8b-rozni';
+import {
+  buildGwardiaHetycka,
+  buildPiechotaNeobabilonska,
+  buildMurTarcz,
+  buildGarnizonHarappy,
+} from './jednostki-z1-mezopotamia';
+import {
+  buildTyrskiMiecznik,
+  buildGwardiaTyrenska,
+  buildZelaznyKhopesh,
+  buildThorakites,
+  buildTriari,
+} from './jednostki-z2-srodziemne';
+import {
+  buildDruzynnik,
+  buildIButho,
+  buildGermanSuper,
+  buildMiecznikGalijski,
+} from './jednostki-z3-plemiona';
+import { buildGalera as newBuildGalera } from './galera-model';
 
 // ---------------------------------------------------------------------------
 // Terrain top-Y — spójne z scene.ts przez terrainVisualForStyle (Roblox/Civ)
@@ -827,7 +847,7 @@ function addTunicHem(group: THREE.Group, mHem: THREE.MeshStandardMaterial): void
 // ---------------------------------------------------------------------------
 
 type Culture =
-  | 'rzym' | 'grecja' | 'chiny' | 'zulu' | 'inka' | 'egipt' | 'sumer' | 'neutral';
+  | 'rzym' | 'grecja' | 'chiny' | 'zulu' | 'inka' | 'egipt' | 'sumer' | 'germanie' | 'neutral';
 
 /** ASCII-fold a Polish name for substring matching (matches setup.ts logic). */
 function normName(s: string): string {
@@ -854,6 +874,10 @@ function cultureFromName(name: string | undefined): Culture {
   if (n.includes('medzaj') || n.includes('faraon') || n.includes('khopesh') ||
       n.includes('egip')) return 'egipt';
   if (n.includes('sumeru') || n.includes('sumer') || n.includes('qurub')) return 'sumer';
+  // GRAFIKA-JEDNOSTKI 2b — FIX ROUTINGU GERMANA (dopisek 1/3): tak "Wojownik
+  // germański" (Super-jednostka=TAK) trafia do buildSuperUnit('germanie', …)
+  // zamiast domyślnego generyka (buildCategoryModel('super')).
+  if (n.includes('germansk') || n.includes('germanic') || n.includes('germanie')) return 'germanie';
   return 'neutral';
 }
 
@@ -1165,6 +1189,22 @@ function buildNamedUnit(n: string, ownerColor_: number): THREE.Group | null {
   if (n.includes('uthulwana') || n.includes('white shields') || n.includes('biale tarcze')) return buildUThulwana(ownerColor_);
   // INKA — KRÓLEWSKA GWARDIA (Royal Guard) — po sumer żeby nie łapał sumeryjskiego -----
   if ((n.includes('krolewska gwardia') || n.includes('royal guard')) && !n.includes('sumer')) return buildInkaRoyalGuard(ownerColor_);
+  // GRAFIKA-JEDNOSTKI 2b (ŻELAZO): Mezopotamia/Indus (jednostki-z1-mezopotamia.ts) --
+  if (n.includes('gwardia hetycka')) return buildGwardiaHetycka(ownerColor_);
+  if (n.includes('piechota neobabilonska')) return buildPiechotaNeobabilonska(ownerColor_);
+  if (n.includes('mur tarcz')) return buildMurTarcz(ownerColor_);
+  if (n.includes('garnizon harappy')) return buildGarnizonHarappy(ownerColor_);
+  // GRAFIKA-JEDNOSTKI 2b (ŻELAZO): Śródziemnomorze (jednostki-z2-srodziemne.ts) ------
+  // (Triari NIE tutaj — to super-jednostka, dispatch przez buildSuperUnit poniżej.)
+  if (n.includes('tyrski miecznik')) return buildTyrskiMiecznik(ownerColor_);
+  if (n.includes('gwardia tyrensk')) return buildGwardiaTyrenska(ownerColor_);
+  if (n.includes('zelaznym khopesh') || n.includes('iron khopesh')) return buildZelaznyKhopesh(ownerColor_);
+  if (n.includes('thorakites')) return buildThorakites(ownerColor_);
+  // GRAFIKA-JEDNOSTKI 2b (ŻELAZO): Plemiona (jednostki-z3-plemiona.ts) --------------
+  // (Wojownik germański SUPER NIE tutaj — dispatch przez buildSuperUnit/cultureFromName.)
+  if (n.includes('druzynnik')) return buildDruzynnik(ownerColor_);
+  if (n.includes('ibutho') || n.includes('butho')) return buildIButho(ownerColor_);
+  if (n.includes('miecznik galijski') || n.includes('gallic swordsman')) return buildMiecznikGalijski(ownerColor_);
   return null;
 }
 
@@ -3522,98 +3562,11 @@ function buildCategoryModel(category: string, ownerColor_: number): THREE.Group 
 
     // -----------------------------------------------------------------------
     case 'galera': {
-      // Ancient war GALLEY (no foot soldier): a long low hull, a bronze ram at
-      // the bow, a single mast with a square owner-colour sail, a bank of oars
-      // along each side, and a row of round shields on the gunwale. Built so it
-      // sits low on the tile and faces -Z (consistent with horses/chariot).
-      const group = new THREE.Group();
-      const mats: THREE.Material[] = [];
-      const mat = makeMatFactory(mats);
-
-      const mHull  = mat(COLOR_CHARIOT,  0.05, 0.85);   // warm wood
-      const mDark  = mat(0x5a3c20,       0.05, 0.85);   // dark wood trim
-      const mBronze= mat(COLOR_BRONZE,   0.35, 0.55);   // ram
-      const mSail  = mat(COLOR_SAIL,     0.04, 0.90);   // canvas
-      const mOwner = mat(ownerColor_,    0.10, 0.68);   // sail stripe / shields
-      const mMast  = mat(0x6e4a24,       0.05, 0.82);
-      const mWater = mat(0x2b5a86,       0.05, 0.80);   // small bow wave hint
-
-      const HULL_Y = 0.10 * HEX_R;   // hull centre sits low on the tile
-
-      // Hull
-      const mHullM = new THREE.Mesh(getGeoShipHull(), mHull);
-      mHullM.position.set(0, HULL_Y, 0);
-      group.add(mHullM);
-      // Raised stern (curved up at +Z)
-      const gStern = new THREE.BoxGeometry(0.18 * HEX_R, 0.16 * HEX_R, 0.08 * HEX_R);
-      const mStern = new THREE.Mesh(gStern, mHull);
-      mStern.rotation.x = -0.4;
-      mStern.position.set(0, HULL_Y + 0.06 * HEX_R, 0.30 * HEX_R);
-      group.add(mStern);
-      // Dark gunwale strip along each side
-      const galExtraGeos: THREE.BoxGeometry[] = [];
-      for (const sx of [-1, 1]) {
-        const gGun = new THREE.BoxGeometry(0.018 * HEX_R, 0.03 * HEX_R, 0.60 * HEX_R);
-        galExtraGeos.push(gGun);
-        const mGun = new THREE.Mesh(gGun, mDark);
-        mGun.position.set(sx * 0.10 * HEX_R, HULL_Y + 0.07 * HEX_R, 0);
-        group.add(mGun);
-      }
-
-      // Bronze ram at the bow (toward -Z), low at the waterline
-      const mRam = new THREE.Mesh(getGeoShipRam(), mBronze);
-      mRam.position.set(0, HULL_Y - 0.03 * HEX_R, -(0.31 * HEX_R + 0.06 * HEX_R));
-      group.add(mRam);
-      // Small bow-wave hint at the ram
-      const gWave = new THREE.BoxGeometry(0.10 * HEX_R, 0.02 * HEX_R, 0.04 * HEX_R);
-      const mWaveM = new THREE.Mesh(gWave, mWater);
-      mWaveM.position.set(0, HULL_Y - 0.05 * HEX_R, -(0.31 * HEX_R + 0.10 * HEX_R));
-      group.add(mWaveM);
-
-      // Mast amidships + yard + square sail (owner stripe down the middle)
-      const mMastM = new THREE.Mesh(getGeoShipMast(), mMast);
-      mMastM.position.set(0, HULL_Y + 0.24 * HEX_R, 0.02 * HEX_R);
-      group.add(mMastM);
-      const gYard = new THREE.BoxGeometry(0.36 * HEX_R, 0.016 * HEX_R, 0.016 * HEX_R);
-      const mYard = new THREE.Mesh(gYard, mMast);
-      mYard.rotation.y = Math.PI / 2;
-      mYard.position.set(0, HULL_Y + 0.40 * HEX_R, 0.02 * HEX_R);
-      group.add(mYard);
-      const mSailM = new THREE.Mesh(getGeoShipSail(), mSail);
-      mSailM.position.set(0, HULL_Y + 0.27 * HEX_R, 0.02 * HEX_R);
-      group.add(mSailM);
-      const gStripe = new THREE.BoxGeometry(0.013 * HEX_R, 0.26 * HEX_R, 0.07 * HEX_R);
-      const mStripe = new THREE.Mesh(gStripe, mOwner);
-      mStripe.position.set(0.001 * HEX_R, HULL_Y + 0.27 * HEX_R, 0.02 * HEX_R);
-      group.add(mStripe);
-
-      // Oars: a slanted bank along each side
-      const oarGeos: THREE.BoxGeometry[] = [];
-      for (const sx of [-1, 1]) {
-        for (let i = 0; i < 5; i++) {
-          const oz = -0.20 * HEX_R + i * 0.10 * HEX_R;
-          const oar = new THREE.Mesh(getGeoOar(), mMast);
-          oar.rotation.z = sx * 0.6;
-          oar.rotation.x = 0.25;
-          oar.position.set(sx * 0.155 * HEX_R, HULL_Y - 0.02 * HEX_R, oz);
-          group.add(oar);
-        }
-      }
-      // Round shields hung on the gunwale (alternating owner/bronze)
-      for (const sx of [-1, 1]) {
-        for (let i = 0; i < 4; i++) {
-          const sz = -0.15 * HEX_R + i * 0.10 * HEX_R;
-          const sh = new THREE.Mesh(getGeoShieldRim(), (i % 2 === 0) ? mOwner : mBronze);
-          sh.rotation.x = Math.PI / 2;
-          sh.scale.set(0.9, 1.0, 0.9);
-          sh.position.set(sx * 0.108 * HEX_R, HULL_Y + 0.085 * HEX_R, sz);
-          group.add(sh);
-        }
-      }
-
-      group.userData['mats'] = mats;
-      group.userData['perTokenGeos'] = [gStern, gWave, gYard, gStripe, ...oarGeos, ...galExtraGeos];
-      return group;
+      // GRAFIKA-JEDNOSTKI 2b: deleguje do bespoke modelu (galera-model.ts) —
+      // oko apotropaiczne, trójzębny taran, żagiel z emblematem gracza, 8
+      // wioseł/burta, 2 marynarzy, aplustre. Stary token (hull/mast/oars
+      // ad-hoc powyżej) zastąpiony 1:1 (interfejs HULL_Y/dziób na -Z bez zmian).
+      return newBuildGalera(ownerColor_);
     }
 
     // -----------------------------------------------------------------------
@@ -3671,13 +3624,19 @@ function addSuperBanner(group: THREE.Group, mPole: THREE.MeshStandardMaterial,
  */
 function buildSuperUnit(culture: Culture, ownerColor_: number, _name: string): THREE.Group {
   switch (culture) {
-    case 'rzym':   return buildSuperRome(ownerColor_);
+    // GRAFIKA-JEDNOSTKI 2b — FIX TRIARI: 'rzym' obejmuje DWIE super-jednostki
+    // (Evocati i Triari); dawniej zawsze zwracał Evocati bo _name był
+    // ignorowany. Rozróżniamy po nazwie -- Triari dostaje własny bespoke model.
+    case 'rzym':   return normName(_name).includes('triari') ? buildTriari(ownerColor_) : buildSuperRome(ownerColor_);
     case 'grecja': return buildSuperGreece(ownerColor_);
     case 'chiny':  return buildSuperChina(ownerColor_);
     case 'zulu':   return buildSuperZulu(ownerColor_);
     case 'inka':   return buildSuperInca(ownerColor_);
     case 'egipt':  return buildSuperEgypt(ownerColor_);
     case 'sumer':  return buildSuperSumer(ownerColor_);
+    // GRAFIKA-JEDNOSTKI 2b — FIX ROUTINGU GERMANA (dopisek 3/3): "Wojownik
+    // germański" SUPER dostaje bespoke model zamiast generycznego super.
+    case 'germanie': return buildGermanSuper(ownerColor_);
     default:       return buildCategoryModel('super', ownerColor_);
   }
 }
