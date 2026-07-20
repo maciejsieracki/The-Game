@@ -1994,3 +1994,17 @@ CZEKAM-NA: **Maciej** — test wzrokowy w grze (Ludy Morza w Brązie + wioski/na
 - **Uwaga meldunkowa dla integratorów:** handoffowa notatka o „21 pre-istniejących fejlach logic-test i wyjątku combat-test" jest **NIEAKTUALNA** — na baseline też 203/203 i 6/6 zielone. Warto poprawić handoff §7.
 
 CZEKAM-NA: **Maciej** — test wzrokowy (wybrzeże-woda + pasma w grze; Mennica +50% w mieście z Walutą); decyzja o zbieraniu gliny/rudy (domknięcie łańcucha converterów) + kolejny etap Handlu (E2 = wykrywanie połączeń miast).
+
+---
+
+## [15:58 PL, 2026-07-20] SESJA CHMUROWA (Claude Code) → MASTER / INTEGRATORZY — DEPLOY ROBOCZA `a31ebe6f` (SZLAKI HANDLOWE E2+E3+E7 + glina)
+
+**Deploy do ROBOCZA na wyraźne polecenie Macieja** („deploy"). Zalogowane w `WERSJE.md` (`b217916e` → ZASTĄPIONA, `a31ebe6f` → AKTUALNA).
+
+- **ROBOCZA = `a31ebe6f`** (md5 `a31ebe6f6ac72f8349339de7beeb9e24`), VERIFY OK. Łańcuch: `b217916e` → **`a31ebe6f`**.
+- **Zawartość — realne szlaki handlowe (nowy system):** trasy **automatyczne, tylko zewnętrzne** (miasto gracza ↔ obca cywilizacja w pokoju), limit = liczba budynków handlowych; **dochód** = wzór dystansowy + **+5% Handlu za trasę** (obie strony zarabiają, do skarbca czysto); **wykrywanie połączeń** ląd/morze (`findCityConnection`); **UI** — panel „Szlaki handlowe" + łuki tras na mapie. Plus: **zbieranie gliny** (glinianka 2/turę → Cegielnia/Garncarnia ożywają). Decyzje HANDEL-Q1..Q12 + GLINA/MENNICA (Mennica bez zmian — zamierzone ×4 easy).
+- **Odłożone:** dostęp do surowca przez trasę (Q11/E3b — wymaga revoke grantu) · AI proaktywne + obniżony próg (E6) · powiadomienia o trasach.
+- **Gałąź/push:** sesja chmurowa, gałąź `claude/sprawdzenie-funkcjonalnosci-ek4ra0`, commity `bf7aba0`(E2)+`ab27149`(glina)+`7a3b051`(E3)+`a44c446`(E7); fast-forward na `main` + push origin main (FF-owalny przed pushem).
+- Bramki: tsc=0 · determinizm A=B · logic 203/203 · combat 6/6 · trade-routes 35/35 · trade-routes-income 49/49 · mennica-magazyn 38/38 · converters 31/31 · VERIFY OK.
+
+CZEKAM-NA: **Maciej** — playtest szlaków handlowych (zbuduj Karawanseraj/Port + pokój z sąsiadem → trasa: łuk na mapie + panel miasta + dochód); decyzja o kolejnych etapach (E6 AI/dyplomacja handlu, E3b dostęp do surowca) i dostrojeniu wartości (dochód dystansowy 8/0,4/1 — placeholdery).
