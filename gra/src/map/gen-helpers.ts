@@ -2659,20 +2659,23 @@ export function isDryLandTerrain(tb: TerenBazowy): boolean {
 }
 
 /**
- * Bufor wybrzeża: każdy suchy ląd graniczący z Morzem → Wybrzeże.
- * Reguła: ląd nie styka się wprost z głębokim morzem (1 heks plaży).
+ * ZADANIE (2026-07-20, korekta regresji „ląd zjadany przez Wybrzeże"): Wybrzeże jest teraz
+ * DODATKIEM od strony MORZA, nie konwersją lądu. Suchy ląd NIGDY nie jest tu ruszany — pierścień
+ * bierze heksy Morza sąsiadujące z suchym lądem i zamienia JE na Wybrzeże (płytka woda przy
+ * brzegu). Efekt widoczny (ląd/kontur) jest identyczny jak dawniej (Wybrzeże nadal siedzi
+ * między lądem a Morzem), ale ląd się nie kurczy przy powtórnych wywołaniach w pipeline.
  * Uruchamiaj po każdej zmianie siatki ląd/morze (np. po usunięciu wysepek).
  */
 export function applyCoastRing(hexes: Record<string, Hex>): number {
   const toCoast: string[] = [];
   for (const [key, hex] of Object.entries(hexes)) {
-    if (!isDryLandTerrain(hex.terenBazowy)) continue;
+    if (hex.terenBazowy !== TerenBazowy.Morze) continue;
     const parts = key.split(',');
     const q = Number(parts[0]);
     const r = Number(parts[1]);
     for (const [dq, dr] of HEX_DIRECTIONS) {
       const nb = hexes[hexKey(q + dq, r + dr)];
-      if (nb?.terenBazowy === TerenBazowy.Morze) {
+      if (nb && isDryLandTerrain(nb.terenBazowy)) {
         toCoast.push(key);
         break;
       }
@@ -2688,14 +2691,15 @@ export function applyCoastRing(hexes: Record<string, Hex>): number {
 }
 
 /**
- * D-COAST-2 — podwójny pierścień: morze → wybrzeże → wybrzeże → ląd.
- * Drugi pass: suchy ląd graniczący z Wybrzeżem → też Wybrzeże.
+ * D-COAST-2 — podwójny pierścień: ląd → wybrzeże → wybrzeże → (głębsze) morze.
+ * Drugi pass: Morze graniczące z (nowym) Wybrzeżem → też Wybrzeże (2 heksy w głąb morza).
+ * Ląd nie jest tu w ogóle dotykany — patrz komentarz przy {@link applyCoastRing}.
  */
 export function applyDoubleCoastRing(hexes: Record<string, Hex>): number {
   let n = applyCoastRing(hexes);
   const toCoast: string[] = [];
   for (const [key, hex] of Object.entries(hexes)) {
-    if (!isDryLandTerrain(hex.terenBazowy)) continue;
+    if (hex.terenBazowy !== TerenBazowy.Morze) continue;
     const parts = key.split(',');
     const q = Number(parts[0]);
     const r = Number(parts[1]);
@@ -2735,17 +2739,13 @@ export function findDryLandTouchingSea(hexes: Record<string, Hex>): string[] {
   return bad;
 }
 
-function mapHeightFromHexes(hexes: Record<string, Hex>): number {
-  let maxR = 0;
-  for (const h of Object.values(hexes)) {
-    if (h.coords.r > maxR) maxR = h.coords.r;
-  }
-  return maxR + 1;
-}
-
 /**
- * Usuwa „rafy” — heksy Wybrzeże bez suchiego lądu za plecami lub bez styku z morzem.
- * Prawidłowa plaża: morze ↔ wybrzeże (opcjonalnie pierścień) ↔ ląd.
+ * Usuwa „sieroty" Wybrzeża — heksy Wybrzeże (WODA, ZADANIE 2026-07-20) bez łańcucha
+ * sąsiednich Wybrzeży prowadzącego do suchego lądu. Mogą powstać, gdy ląd zniknął w
+ * kolejnym przebiegu pipeline (erozja/rebalance) po tym, jak coastify już oznaczył
+ * sąsiadujące Morze jako Wybrzeże — wtedy taki znacznik zostaje „osierocony".
+ * Prawidłowa plaża: ląd ↔ wybrzeże (opcjonalnie 2. pierścień) ↔ (głębsze) morze.
+ * Sierotę cofamy do Morza (NIGDY do lądu — Wybrzeże to woda, nie tworzymy fałszywego lądu).
  */
 export function sanitizeCoastHexes(hexes: Record<string, Hex>): number {
   const valid = new Set<string>();
@@ -2787,35 +2787,12 @@ export function sanitizeCoastHexes(hexes: Record<string, Hex>): number {
   }
 
   let fixed = 0;
-  const mapHeight = mapHeightFromHexes(hexes);
   for (const [key, hex] of Object.entries(hexes)) {
     if (hex.terenBazowy !== TerenBazowy.Wybrzeze) continue;
-    const parts = key.split(',');
-    const q = Number(parts[0]);
-    const r = Number(parts[1]);
-    const touchesSea = HEX_DIRECTIONS.some(([dq, dr]) =>
-      hexes[hexKey(q + dq, r + dr)]?.terenBazowy === TerenBazowy.Morze,
-    );
-
-    if (!valid.has(key)) {
-      let pustN = 0;
-      for (const [dq, dr] of HEX_DIRECTIONS) {
-        const nh = hexes[hexKey(q + dq, r + dr)];
-        if (nh && nh.terenBazowy === TerenBazowy.Pustynia) pustN++;
-      }
-      const inArid = climateZoneAt(q, r, mapHeight) === 'arid';
-      hex.terenBazowy = inArid && pustN >= 2 ? TerenBazowy.Pustynia : TerenBazowy.Laka;
-      hex.nakladka = Nakladka.Brak;
-      delete (hex as HexWithZloze).zloze;
-      fixed++;
-      continue;
-    }
-    if (!touchesSea) {
-      hex.terenBazowy = TerenBazowy.Laka;
-      hex.nakladka = Nakladka.Brak;
-      delete (hex as HexWithZloze).zloze;
-      fixed++;
-    }
+    if (valid.has(key)) continue;
+    // Sierota — brak łańcucha do lądu. Cofamy do Morza (woda), nigdy do lądu.
+    setHexToMorze(hex);
+    fixed++;
   }
   return fixed;
 }
@@ -3344,21 +3321,23 @@ export function thickenCoastAndSmoothInlets(
   // po wygładzeniu mogły powstać odcięte kałuże — zamień na ląd
   changed += removeInlandWaterPools(hexes, width, height);
 
-  // (b) reset istniejącego wybrzeża → ląd, potem `coastWidth` pierścieni od Morza (trwałe)
+  // (b) reset istniejącego Wybrzeża → Morze (Wybrzeże to WODA, nie ląd — ZADANIE 2026-07-20:
+  // ląd się nie kurczy, więc reset musi wracać do wody, nigdy do lądu), potem `coastWidth`
+  // pierścieni od Morza w głąb, trwałe (bez sanitizeCoastHexes, który zdejmowałby 2. pierścień).
   for (const hex of Object.values(hexes)) {
     if (hex.terenBazowy === TerenBazowy.Wybrzeze) {
-      setHexToLaka(hex);
+      setHexToMorze(hex);
       changed++;
     }
   }
   for (let ring = 0; ring < coastWidth; ring++) {
     const toCoast: string[] = [];
     for (const [key, hex] of Object.entries(hexes)) {
-      if (!isDryLandTerrain(hex.terenBazowy)) continue;
+      if (hex.terenBazowy !== TerenBazowy.Morze) continue;
       const { q, r } = parseHexKey(key);
       for (const [dq, dr] of HEX_DIRECTIONS) {
         const nb = hexes[hexKey(q + dq, r + dr)];
-        if (nb && (nb.terenBazowy === TerenBazowy.Morze || nb.terenBazowy === TerenBazowy.Wybrzeze)) {
+        if (nb && (isDryLandTerrain(nb.terenBazowy) || nb.terenBazowy === TerenBazowy.Wybrzeze)) {
           toCoast.push(key);
           break;
         }
@@ -3658,6 +3637,35 @@ export function purgeOceanInsideEarthLandMask(
     hex.nakladka = Nakladka.Brak;
     hex.rzeka = { obecna: false, krawedzie: [] };
     delete (hex as HexWithZloze).zloze;
+    n++;
+  }
+  return n;
+}
+
+/**
+ * ZADANIE (2026-07-20, domknięcie regresji Ziemi po Zmianie 1): odwrotność
+ * {@link purgeOceanInsideEarthLandMask} — suchy ląd POZA maską Ziemi. Powstaje jako efekt
+ * uboczny heurystyk „domykania zatok" (fillEnclosedWaterByLandNeighbors, trimEnclosedOceanOnly,
+ * thickenCoastAndSmoothInlets część (a)) — te funkcje nie znają konturu Ziemi i przy dużej ilości
+ * zachowanego lądu (Zmiana 1: ląd się już nie kurczy) potrafią błędnie zalać lądem prawdziwą,
+ * wąską zatokę/cieśninę tuż za konturem. Cofamy TYLKO suchy ląd (nigdy nie ruszamy Wybrzeża —
+ * pas wybrzeża CELOWO rośnie w głąb morza poza konturem, p. {@link applyCoastRing}). Wołać RAZ,
+ * na samym końcu kształtowania lądu/morza (po thickenCoastAndSmoothInlets, przed rzekami) —
+ * po tym trzeba odtworzyć POJEDYNCZY pierścień wybrzeża wokół świeżo powstałego Morza
+ * ({@link applyCoastRing}, NIE double — reszta wybrzeża ma już pełne coastWidth z
+ * thickenCoastAndSmoothInlets, podwójny pierścień pogrubiłby całą linię brzegową o 1 dodatkowy).
+ */
+export function purgeStrayLandOutsideEarthMask(
+  hexes: Record<string, Hex>,
+  width: number,
+  height: number,
+): number {
+  let n = 0;
+  for (const [key, hex] of Object.entries(hexes)) {
+    const { q, r } = parseHexKey(key);
+    if (earthTemplateLandAt(q, r, width, height) > 0) continue;
+    if (!isDryLandTerrain(hex.terenBazowy)) continue;
+    setHexToMorze(hex);
     n++;
   }
   return n;

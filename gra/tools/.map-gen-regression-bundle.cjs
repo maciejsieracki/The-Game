@@ -85,9 +85,9 @@ var map_gen_params_default = {
     },
     pasma_gorskie: {
       _opis: "Zadanie HILLS Q1/Q2 (2026-07-20): skupiska g\xF3r/wzg\xF3rz (seed-and-grow), spi\u0119te z tierem suwaka Relief (mountain_noise_threshold/highland_noise_threshold). Bez nowego suwaka UI. ZADANIE 3 (2026-07-20): d\u0142u\u017Csze/w\u0119\u017Csze \u0142a\u0144cuchy (kordyliery) zamiast okr\u0105g\u0142ych plam \u2014 dlugosc_min/max w g\xF3r\u0119, max_pasm_na_mase w d\xF3\u0142 (mniej ale d\u0142u\u017Cszych pasm), nowy obrzeze_szansa < 1 zmniejsza rozlewanie foothills na boki.",
-      low: { hexy_na_pasmo: 320, max_pasm_na_mase: 2, dlugosc_min: 9, dlugosc_max: 15, min_masa_hexow: 40, obrzeze_szansa: 0.3 },
-      medium: { hexy_na_pasmo: 240, max_pasm_na_mase: 3, dlugosc_min: 11, dlugosc_max: 18, min_masa_hexow: 30, obrzeze_szansa: 0.35 },
-      high: { hexy_na_pasmo: 170, max_pasm_na_mase: 5, dlugosc_min: 13, dlugosc_max: 22, min_masa_hexow: 24, obrzeze_szansa: 0.4 }
+      low: { hexy_na_pasmo: 320, max_pasm_na_mase: 2, dlugosc_min: 9, dlugosc_max: 11, min_masa_hexow: 40, obrzeze_szansa: 0.3 },
+      medium: { hexy_na_pasmo: 240, max_pasm_na_mase: 3, dlugosc_min: 11, dlugosc_max: 14, min_masa_hexow: 30, obrzeze_szansa: 0.35 },
+      high: { hexy_na_pasmo: 170, max_pasm_na_mase: 5, dlugosc_min: 13, dlugosc_max: 17, min_masa_hexow: 24, obrzeze_szansa: 0.4 }
     }
   },
   mapa_skala: {
@@ -2424,13 +2424,13 @@ function isDryLandTerrain(tb) {
 function applyCoastRing(hexes) {
   const toCoast = [];
   for (const [key, hex] of Object.entries(hexes)) {
-    if (!isDryLandTerrain(hex.terenBazowy)) continue;
+    if (hex.terenBazowy !== "morze" /* Morze */) continue;
     const parts = key.split(",");
     const q = Number(parts[0]);
     const r = Number(parts[1]);
     for (const [dq, dr] of HEX_DIRECTIONS) {
       const nb = hexes[hexKey(q + dq, r + dr)];
-      if (nb?.terenBazowy === "morze" /* Morze */) {
+      if (nb && isDryLandTerrain(nb.terenBazowy)) {
         toCoast.push(key);
         break;
       }
@@ -2448,7 +2448,7 @@ function applyDoubleCoastRing(hexes) {
   let n = applyCoastRing(hexes);
   const toCoast = [];
   for (const [key, hex] of Object.entries(hexes)) {
-    if (!isDryLandTerrain(hex.terenBazowy)) continue;
+    if (hex.terenBazowy !== "morze" /* Morze */) continue;
     const parts = key.split(",");
     const q = Number(parts[0]);
     const r = Number(parts[1]);
@@ -2485,13 +2485,6 @@ function findDryLandTouchingSea(hexes) {
   }
   return bad;
 }
-function mapHeightFromHexes(hexes) {
-  let maxR = 0;
-  for (const h of Object.values(hexes)) {
-    if (h.coords.r > maxR) maxR = h.coords.r;
-  }
-  return maxR + 1;
-}
 function sanitizeCoastHexes(hexes) {
   const valid = /* @__PURE__ */ new Set();
   const queue = [];
@@ -2524,34 +2517,11 @@ function sanitizeCoastHexes(hexes) {
     }
   }
   let fixed = 0;
-  const mapHeight = mapHeightFromHexes(hexes);
   for (const [key, hex] of Object.entries(hexes)) {
     if (hex.terenBazowy !== "wybrzeze" /* Wybrzeze */) continue;
-    const parts = key.split(",");
-    const q = Number(parts[0]);
-    const r = Number(parts[1]);
-    const touchesSea = HEX_DIRECTIONS.some(
-      ([dq, dr]) => hexes[hexKey(q + dq, r + dr)]?.terenBazowy === "morze" /* Morze */
-    );
-    if (!valid.has(key)) {
-      let pustN = 0;
-      for (const [dq, dr] of HEX_DIRECTIONS) {
-        const nh = hexes[hexKey(q + dq, r + dr)];
-        if (nh && nh.terenBazowy === "pustynia" /* Pustynia */) pustN++;
-      }
-      const inArid = climateZoneAt(q, r, mapHeight) === "arid";
-      hex.terenBazowy = inArid && pustN >= 2 ? "pustynia" /* Pustynia */ : "laka" /* Laka */;
-      hex.nakladka = "brak" /* Brak */;
-      delete hex.zloze;
-      fixed++;
-      continue;
-    }
-    if (!touchesSea) {
-      hex.terenBazowy = "laka" /* Laka */;
-      hex.nakladka = "brak" /* Brak */;
-      delete hex.zloze;
-      fixed++;
-    }
+    if (valid.has(key)) continue;
+    setHexToMorze(hex);
+    fixed++;
   }
   return fixed;
 }
@@ -2849,18 +2819,18 @@ function thickenCoastAndSmoothInlets(hexes, width, height, coastWidth = 2) {
   changed += removeInlandWaterPools(hexes, width, height);
   for (const hex of Object.values(hexes)) {
     if (hex.terenBazowy === "wybrzeze" /* Wybrzeze */) {
-      setHexToLaka(hex);
+      setHexToMorze(hex);
       changed++;
     }
   }
   for (let ring = 0; ring < coastWidth; ring++) {
     const toCoast = [];
     for (const [key, hex] of Object.entries(hexes)) {
-      if (!isDryLandTerrain(hex.terenBazowy)) continue;
+      if (hex.terenBazowy !== "morze" /* Morze */) continue;
       const { q, r } = parseHexKey(key);
       for (const [dq, dr] of HEX_DIRECTIONS) {
         const nb = hexes[hexKey(q + dq, r + dr)];
-        if (nb && (nb.terenBazowy === "morze" /* Morze */ || nb.terenBazowy === "wybrzeze" /* Wybrzeze */)) {
+        if (nb && (isDryLandTerrain(nb.terenBazowy) || nb.terenBazowy === "wybrzeze" /* Wybrzeze */)) {
           toCoast.push(key);
           break;
         }
@@ -3015,6 +2985,17 @@ function purgeOceanInsideEarthLandMask(hexes, width, height) {
     hex.nakladka = "brak" /* Brak */;
     hex.rzeka = { obecna: false, krawedzie: [] };
     delete hex.zloze;
+    n++;
+  }
+  return n;
+}
+function purgeStrayLandOutsideEarthMask(hexes, width, height) {
+  let n = 0;
+  for (const [key, hex] of Object.entries(hexes)) {
+    const { q, r } = parseHexKey(key);
+    if (earthTemplateLandAt(q, r, width, height) > 0) continue;
+    if (!isDryLandTerrain(hex.terenBazowy)) continue;
+    setHexToMorze(hex);
     n++;
   }
   return n;
@@ -5366,6 +5347,10 @@ function generateMap(width = DEFAULT_WIDTH, height = DEFAULT_HEIGHT, seed = 42, 
   purgeInlandWaterForMultiLandTyp(hexes, width, height);
   purgeDesertEnclaveWater(hexes, width, height);
   thickenCoastAndSmoothInlets(hexes, width, height, 2);
+  if (typ === "ziemia") {
+    purgeStrayLandOutsideEarthMask(hexes, width, height);
+    applyDoubleCoastRing(hexes);
+  }
   enforceMapBorderOcean(hexes, width, height);
   const riversTier = genOpts?.worldDensity?.rivers ?? "medium";
   clearRiverMarks(hexes);

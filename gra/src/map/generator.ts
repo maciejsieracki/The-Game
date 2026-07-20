@@ -72,9 +72,11 @@ import {
   stripRiverMarksFromOpenSea,
   computeStartPositions,
   purgeOceanInsideEarthLandMask,
+  purgeStrayLandOutsideEarthMask,
   purgeReliefValleyWater,
   purgeDesertEnclaveWater,
   thickenCoastAndSmoothInlets,
+  applyCoastRing,
   type StartPosition,
   type TypSwiata,
 } from './gen-helpers';
@@ -362,6 +364,16 @@ export function generateMap(
   purgeDesertEnclaveWater(hexes, width, height);
   // ── Przebieg 3h-coast: grubsze (≥2 hex) + gładsze wybrzeże PRZED rzekami (Zmiana 2) ─
   thickenCoastAndSmoothInlets(hexes, width, height, 2);
+  // ── Przebieg 3h-post (Ziemia, Zmiana 1): heurystyki „domykania zatok" powyżej nie znają
+  // konturu Ziemi i przy zachowanym (nie-zjadanym) lądzie potrafią zalać lądem prawdziwą wąską
+  // zatokę/cieśninę tuż za maską — cofnij taki suchy ląd do Morza i odtwórz pierścień wybrzeża.
+  if (typ === 'ziemia') {
+    purgeStrayLandOutsideEarthMask(hexes, width, height);
+    // Pojedynczy pierścień (nie double) — reszta wybrzeża ma już pełne coastWidth=2 z
+    // thickenCoastAndSmoothInlets powyżej; podwójny pierścień tutaj nadmiarowo pogrubiłby
+    // CAŁĄ linię brzegową o kolejny pierścień (Morze przy już-Wybrzeżu też by się złapało).
+    applyCoastRing(hexes);
+  }
   enforceMapBorderOcean(hexes, width, height);
   // ── Przebieg 3h: rzeki DOPIERO po finalnym wybrzeżu (Maciej: bufor 2 hex od morza) ─
   const riversTier = genOpts?.worldDensity?.rivers ?? 'medium';
