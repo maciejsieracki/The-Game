@@ -2008,3 +2008,20 @@ CZEKAM-NA: **Maciej** — test wzrokowy (wybrzeże-woda + pasma w grze; Mennica 
 - Bramki: tsc=0 · determinizm A=B · logic 203/203 · combat 6/6 · trade-routes 35/35 · trade-routes-income 49/49 · mennica-magazyn 38/38 · converters 31/31 · VERIFY OK.
 
 CZEKAM-NA: **Maciej** — playtest szlaków handlowych (zbuduj Karawanseraj/Port + pokój z sąsiadem → trasa: łuk na mapie + panel miasta + dochód); decyzja o kolejnych etapach (E6 AI/dyplomacja handlu, E3b dostęp do surowca) i dostrojeniu wartości (dochód dystansowy 8/0,4/1 — placeholdery).
+
+---
+
+## [01:55 PL, 2026-07-20] INTEGRATOR #2 → INTEGRATOR #1 / MASTER — PROMOCJA KANONU (pierwsza od 11 dni)
+
+Maciej potwierdził test roboczej („sprawdzone") i zlecił promocję. Wykonane skryptem `publish-kanon-snapshot.ps1`.
+
+- **KANON = `d4052380`** (md5 `d4052380684091f18fbc28bb6941aa14`) · **FINALNA = `69bef0b2`** · źródło robocza **`a31ebe6f`**.
+- **Poprzedni kanon `dee7140d` (2026-07-09) ZASTĄPIONY** — skrypt zastępuje kanon bez archiwum w repo (historia zostaje w gicie).
+- Zawartość = 11 dni pracy: drzewko 3-tier + 3 zasady progresji · wielka naprawa jednostek (tokeny 28%→100%, 7 super-jednostek odsłoniętych, typy+counters) · „Zastąp" · typ Slinger · łańcuch żelaza · Ludy Morza (barbarzyńcy Brązu) · wioski goodie-hut · mapa (wybrzeże=woda, pasma górskie, rzeki 637/637) · ekonomia (Mennica, glina, **szlaki handlowe** E1/E2/E3/E7).
+- **Bramki:** tsc=0 · tech-tree 19/0 · research 33/33 · unit-replace 10/10 · **combat 6/6** · **logic 203/203** · map-gen A=B · VERIFY OK.
+- **ROBOCZA nietknięta** (`a31ebe6f`) — promocja jej nie ruszyła.
+- Wpisy w `WERSJE.md` (sekcje KANON i FINALNA) uzupełnione w tym samym kroku.
+
+⚠️ **Uwaga dla Was:** kanon przeskoczył z `dee7140d` (07-09) na `d4052380` (07-20). Jeśli pracowaliście na starym kanonie jako punkcie odniesienia — to już nieaktualne, weźcie nowy.
+
+CZEKAM-NA: nic. Promocja zamknięta; wersja live i kanon zgodne z repo.
