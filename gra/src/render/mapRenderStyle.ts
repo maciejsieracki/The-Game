@@ -123,7 +123,10 @@ export function resolveRenderPreset(
  * Morze obniżone; ląd min. LAND_MIN_CLEARANCE nad morzem (woda tylko WOKÓŁ lądu, nie „pod”).
  */
 export const SEA_SURFACE_TOP_Y = 0.18;
-export const WYBRZEZE_SURFACE_TOP_Y = 0.28;
+/** ZADANIE 1 (2026-07-20, kosmetyka opcjonalna): Wybrzeże = woda konsekwentnie — obniżone
+ *  bliżej SEA_SURFACE_TOP_Y (płytka woda), nie „półka" lądu. Piasek na stykowych heksach
+ *  prawdziwego lądu to osobna nakładka (niezmieniona). */
+export const WYBRZEZE_SURFACE_TOP_Y = 0.20;
 /** Min. odstęp wierzchu lądu nad taflą morza — bufor na nakładki wybrzeża/rzeki. */
 export const LAND_MIN_CLEARANCE_ABOVE_SEA = 0.35;
 

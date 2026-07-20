@@ -1,2 +1,2 @@
 export { generujSwiat } from '../src/map/generator';
-export { pathEndsAtSea } from '../src/map/gen-helpers';
+export { pathEndsAtSea, pathReachesRealSea } from '../src/map/gen-helpers';

@@ -13,7 +13,12 @@
 
 import type { Hex } from '../types/hex';
 import { TerenBazowy, Nakladka } from '../types/hex';
-import { mapGenAllDepositRarities } from '../data/map-gen-params-loader';
+import {
+  mapGenAllDepositRarities,
+  mapGenMountainThreshold,
+  mapGenHighlandThreshold,
+  mapGenMountainRangeParams,
+} from '../data/map-gen-params-loader';
 import { riverGridTraceMinLen, type DensityTier } from './newGameMapDefaults';
 import { earthTemplateLandAt } from './earth-land-mask';
 
@@ -835,36 +840,87 @@ export function reapplyForestOverlay(
 
 /**
  * Ponowna klasyfikacja lądu po dopasowaniu udziału lądu/morze.
- * Bez gór/wzgórz; nie nadpisuje pierścienia wybrzeża.
+ *
+ * HILLS Q1 (2026-07-20): teraz porównuje `classifyTerrain` (PEŁNA, z górami/wzgórzami) z
+ * `classifyTerrainFlat`, by przywrócić naturalne skupiska reliefu z Przebiegu 1 (Przebieg 1
+ * je tworzy, poprzednia wersja tej funkcji je kasowała spłaszczając teren PRZED reliefem
+ * z rankingu szumu). UWAGA — zmierzone empirycznie: wprowadzenie `classifyTerrain` NA ŚLEPO
+ * (całość jako baza, bez budżetu) daje relief ≈50% lądu (progi mtnNoise/hiTh są symetryczne
+ * wokół 0.5 w skali CAŁEJ mapy — bez ograniczenia per-komórka, jak w applyReliefByNoiseRank/
+ * ensureReliefGridCoverage/growMountainRanges, to naturalnie ~połowa lądu). To nie tylko
+ * niegrywalne (ściana gór/wzgórz), ale i zabija wydajność (A* rzek błądzi po ogromnym reliefie
+ * — zmierzone: „duża" 26s → 65s). Fair-play system (relief_land_fraction / ensureReliefGridCoverage
+ * / growMountainRanges) był kalibrowany zakładając bazę PŁASKĄ (classifyTerrainFlat) i DOKŁADA
+ * kontrolowany procent na wierzch — więc pełne classifyTerrain jako baza koliduje z tą architekturą.
+ *
+ * Rozwiązanie: budżet. Heksy, gdzie `classifyTerrain` chce Gór/Wzgórz (a `classifyTerrainFlat`
+ * by tego nie zrobił), trafiają na listę kandydatów rankowaną po mtnNoise malejąco — przywracamy
+ * TYLKO najsilniejszy budżet (REAPPLY_RELIEF_BUDGET_FRAC = suma relief_land_fraction dla tieru,
+ * czyli te same liczby co reszta reliefu — „spięte z tierem" bez nowego parametru). Ponieważ fbm
+ * jest przestrzennie spójny, najsilniejsze mtnNoise nadal tworzy SKUPISKA (nie rozprasza się), więc
+ * cel Q1 (naturalne klastry zamiast rozproszenia przez pickSpreadReliefKeys) jest spełniony, a
+ * budżet zostawia miejsce dla dalszych przebiegów (bonus %, floor, pasma) bez przebicia sanity-cap
+ * ~40% z growMountainRanges. `classifyTerrain` przy niskim elevContinental+landMask może zwrócić
+ * Morze (próg oceanu) — ale każdy heks tutaj JEST już lądem (skip Morze/Wybrzeze poniżej) — nie
+ * cofamy tamtej decyzji: taki przypadek spłaszczamy do Łąki, jak robił classifyTerrainFlat.
  */
+const REAPPLY_RELIEF_BUDGET_FRAC: Record<ReliefDensityTier, number> = {
+  low: 0.10,
+  medium: 0.17,
+  high: 0.30,
+};
+
 export function reapplyLandTerrain(
   hexes: Record<string, Hex>,
   scratch: Map<string, TerrainScratch>,
   seed: number,
   thresholds?: TerrainClassifyThresholds,
   mapHeight?: number,
+  reliefTier: ReliefDensityTier = 'medium',
 ): void {
+  const reliefCandidates: Array<{ key: string; n: number; want: TerenBazowy }> = [];
+  let landCount = 0;
+
   for (const [key, hex] of Object.entries(hexes)) {
     if (hex.terenBazowy === TerenBazowy.Morze || hex.terenBazowy === TerenBazowy.Wybrzeze) {
       continue;
     }
     const s = scratch.get(key);
     if (!s) continue;
+    landCount++;
     const { q, r } = hex.coords;
     const climateZone = mapHeight ? climateZoneAt(q, r, mapHeight) : undefined;
     const cellBias = terrainCellBias(q, r, seed);
-    const { terenBazowy, nakladka } = classifyTerrainFlat(
-      s.elevContinental,
-      s.landMask,
-      s.mtnNoise,
-      s.forNoise,
-      s.desNoise,
-      thresholds,
-      climateZone,
-      cellBias,
+    const { terenBazowy: fullTb, nakladka: fullNak } = classifyTerrain(
+      s.elevContinental, s.landMask, s.mtnNoise, s.forNoise, s.desNoise,
+      thresholds, climateZone, cellBias,
     );
-    hex.terenBazowy = terenBazowy;
-    hex.nakladka = nakladka;
+    if (fullTb === TerenBazowy.Gory || fullTb === TerenBazowy.Wzgorza) {
+      // Tymczasowo płasko — przywrócimy TOP-budżet kandydatów po mtnNoise (skupiska), nie wszystkie.
+      const { terenBazowy: flatTb, nakladka: flatNak } = classifyTerrainFlat(
+        s.elevContinental, s.landMask, s.mtnNoise, s.forNoise, s.desNoise,
+        thresholds, climateZone, cellBias,
+      );
+      hex.terenBazowy = flatTb;
+      hex.nakladka = flatNak;
+      reliefCandidates.push({ key, n: s.mtnNoise, want: fullTb });
+    } else {
+      // Ten heks JEST lądem (skip Morze/Wybrzeze powyżej) — classifyTerrain nie cofa tej decyzji.
+      hex.terenBazowy = fullTb === TerenBazowy.Morze ? TerenBazowy.Laka : fullTb;
+      hex.nakladka = fullNak;
+    }
+  }
+
+  if (reliefCandidates.length === 0) return;
+  reliefCandidates.sort((a, b) => b.n - a.n);
+  const budgetFrac = REAPPLY_RELIEF_BUDGET_FRAC[reliefTier];
+  const budget = Math.floor(landCount * budgetFrac);
+  for (let i = 0; i < Math.min(budget, reliefCandidates.length); i++) {
+    const c = reliefCandidates[i]!;
+    const hex = hexes[c.key];
+    if (!hex) continue;
+    hex.terenBazowy = c.want;
+    hex.nakladka = Nakladka.Brak;
   }
 }
 
@@ -1870,6 +1926,286 @@ export function ensureReliefGridCoverage(
   return fixed;
 }
 
+// ---------------------------------------------------------------------------
+// Pasma górskie — naturalne skupiska (HILLS Q1/Q2/Q3=A, Maciej 2026-07-20)
+// ---------------------------------------------------------------------------
+
+/**
+ * Sufit udziału lądu (Morze wyłączone z „lądu") zajętego przez Góry+Wzgórza PO dołożeniu
+ * pasm — komentarz przy RELIEF_OVERFLOW_CAP_MULT wspominał ~40%; sanity-cap, nie floor.
+ */
+const MOUNTAIN_RANGE_LAND_SHARE_CAP = 0.40;
+
+/** Kandydaci na seed pasma w masie lądu: preferują wysoki mtnNoise + deterministyczna domieszka rand(). */
+function mountainRangeSeedCandidates(
+  mass: string[],
+  hexes: Record<string, Hex>,
+  scratch: Map<string, TerrainScratch>,
+  width: number,
+  height: number,
+  rand: () => number,
+): Array<{ k: string; n: number }> {
+  return mass
+    .filter((k) => {
+      const hex = hexes[k];
+      if (!hex) return false;
+      const { q, r } = parseHexKey(k);
+      return isReliefCandidateHex(hex, q, r, width, height);
+    })
+    .map((k) => ({ k, n: (scratch.get(k)?.mtnNoise ?? 0) + rand() * 0.15 }))
+    .sort((a, b) => b.n - a.n);
+}
+
+/**
+ * Pojedynczy random-walk „grzbiet" pasma z hexKey `start` — wzorzec jak traceRiver: na każdym
+ * kroku wybiera SĄSIADA z najwyższym mtnNoise + domieszka rand() (nie czysto zachłannie —
+ * wężowaty, nieregularny kształt pasma, nie kwadratowy blob). Nigdy nie wchodzi na Morze/
+ * Wybrzeże/bufor krawędzi (isReliefCandidateHex) i nigdy nie zawraca (visited). Zwraca klucze
+ * odwiedzone PO seedzie (seed nie jest częścią wyniku — dodaje go wołający).
+ */
+function walkMountainRange(
+  hexes: Record<string, Hex>,
+  scratch: Map<string, TerrainScratch>,
+  width: number,
+  height: number,
+  rand: () => number,
+  start: string,
+  steps: number,
+): string[] {
+  const path: string[] = [];
+  const visited = new Set<string>([start]);
+  let cur = start;
+  for (let i = 0; i < steps; i++) {
+    const { q, r } = parseHexKey(cur);
+    const candidates = HEX_DIRECTIONS
+      .map(([dq, dr]) => hexKey(q + dq, r + dr))
+      .filter((k) => {
+        if (visited.has(k)) return false;
+        const hex = hexes[k];
+        if (!hex) return false;
+        const { q: nq, r: nr } = parseHexKey(k);
+        return isReliefCandidateHex(hex, nq, nr, width, height);
+      })
+      .map((k) => ({ k, n: (scratch.get(k)?.mtnNoise ?? 0) + rand() * 0.3 }))
+      .sort((a, b) => b.n - a.n);
+    if (candidates.length === 0) break;
+    cur = candidates[0]!.k;
+    visited.add(cur);
+    path.push(cur);
+  }
+  return path;
+}
+
+/**
+ * ZADANIE 1 (HILLS Q1/Q2/Q3=A, 2026-07-20): dorzuca deterministyczne PASMA górskie metodą
+ * seed-and-grow — kilka seedów per masa lądu (preferują wysoki mtnNoise, patrz
+ * mountainRangeSeedCandidates), rozrost random-walk (walkMountainRange) wybierający sąsiada
+ * z najwyższym mtnNoise + rand(), jak traceRiver/generowanie kontynentów.
+ *
+ * Struktura pasma (Q3=A, DWA PROGI — te same co classifyTerrain/mapGenMountainThreshold +
+ * mapGenHighlandThreshold, więc spięte z tierem suwaka Relief bez nowego suwaka UI):
+ *   - rdzeń: heks na ścieżce z własnym mtnNoise > próg gór (mtnTh) → Góry.
+ *   - obrzeże pasma: (a) heks na ścieżce z mtnNoise > próg wzgórz (hiTh) ale ≤ mtnTh → Wzgórza;
+ *                    (b) SĄSIEDZI rdzenia/obrzeża jeszcze nie będący reliefem → Wzgórza (foothills,
+ *                    to realnie tworzy „skupisko" widoczne na mapie, nie cienką nitkę 1-hex).
+ *   - heks na ścieżce poniżej hiTh: pozostaje niezmieniony (naturalna „przerwa" w paśmie).
+ *
+ * Konwertuje TYLKO Łąka/Równina/Pustynia; NIGDY nie nadpisuje istniejących Gór/Wzgórz — floor
+ * fair-play „min nie max" z ensureReliefGridCoverage (wołane PRZED tą funkcją) zostaje nietknięty.
+ * Nigdy Morze/Wybrzeże/bufor krawędzi (isReliefCandidateHex, ten sam predykat co reszta reliefu).
+ *
+ * Sanity-cap (nie floor): jeśli globalny udział Gór+Wzgórz w lądzie przekroczy
+ * MOUNTAIN_RANGE_LAND_SHARE_CAP (~40%), cofa WYŁĄCZNIE to, co DOŁOŻYŁA TA FUNKCJA (obrzeże/
+ * Wzgórza najpierw, od najsłabszego mtnNoise) — floor i wcześniejszy relief (Przebieg 1e /
+ * ensureReliefGridCoverage) nie są ruszane.
+ *
+ * Determinizm: brak Math.random/Date.now — wyłącznie przekazany `rand()`, wołany w ustalonej
+ * kolejności (masy sortowane deterministycznie, potem seedy, potem kroki spaceru) — ten sam
+ * seed = ta sama sekwencja wywołań rand() = identyczny wynik (A=B).
+ */
+export function growMountainRanges(
+  hexes: Record<string, Hex>,
+  scratch: Map<string, TerrainScratch>,
+  tier: ReliefDensityTier,
+  width: number,
+  height: number,
+  rand: () => number,
+): number {
+  const params = mapGenMountainRangeParams(tier);
+  const mtnTh = mapGenMountainThreshold(tier);
+  const hiTh = mapGenHighlandThreshold(tier);
+
+  const masses = groupLandMassKeys(hexes)
+    .filter((m) => m.length >= params.minMasaHexow)
+    .sort((a, b) => (b.length - a.length) || (a[0]! < b[0]! ? -1 : a[0]! > b[0]! ? 1 : 0));
+
+  /** Klucze przekonwertowane PRZEZ TĘ funkcję — do sanity-cap na końcu (reszta reliefu nietknięta). */
+  const addedByThisRun: Array<{ k: string; n: number; wasHighland: boolean; prev: TerenBazowy }> = [];
+
+  for (const mass of masses) {
+    const nRanges = Math.min(
+      params.maxPasmNaMase,
+      Math.max(1, Math.round(mass.length / params.hexyNaPasmo)),
+    );
+    const seedCandidates = mountainRangeSeedCandidates(mass, hexes, scratch, width, height, rand);
+    if (seedCandidates.length === 0) continue;
+    const seeds = pickSpreadReliefKeys(seedCandidates, nRanges, 5);
+
+    for (const seedKey of seeds) {
+      const len = params.dlugoscMin
+        + Math.floor(rand() * (params.dlugoscMax - params.dlugoscMin + 1));
+      const path = [seedKey, ...walkMountainRange(hexes, scratch, width, height, rand, seedKey, len)];
+
+      const placedThisRange: string[] = [];
+      for (const k of path) {
+        const hex = hexes[k];
+        if (!hex) continue;
+        if (hex.terenBazowy === TerenBazowy.Gory || hex.terenBazowy === TerenBazowy.Wzgorza) {
+          // Istniejący relief (floor/wcześniejszy przebieg) — nie nadpisuj, ale traktuj jako
+          // część kształtu pasma (naturalne zrośnięcie z istniejącym skupiskiem).
+          placedThisRange.push(k);
+          continue;
+        }
+        if (
+          hex.terenBazowy !== TerenBazowy.Laka
+          && hex.terenBazowy !== TerenBazowy.Rownina
+          && hex.terenBazowy !== TerenBazowy.Pustynia
+        ) {
+          continue;
+        }
+        const n = scratch.get(k)?.mtnNoise ?? 0;
+        if (n > mtnTh) {
+          addedByThisRun.push({ k, n, wasHighland: false, prev: hex.terenBazowy });
+          hex.terenBazowy = TerenBazowy.Gory;
+          hex.nakladka = Nakladka.Brak;
+          delete (hex as HexWithZloze).zloze;
+          placedThisRange.push(k);
+        } else if (n > hiTh) {
+          addedByThisRun.push({ k, n, wasHighland: true, prev: hex.terenBazowy });
+          hex.terenBazowy = TerenBazowy.Wzgorza;
+          hex.nakladka = Nakladka.Brak;
+          delete (hex as HexWithZloze).zloze;
+          placedThisRange.push(k);
+        }
+        // poniżej hiTh: heks zostaje niezmieniony — naturalna "przerwa" w paśmie.
+      }
+
+      // ZADANIE 3 (2026-07-20): obrzeże pasma (foothills) — sąsiedzi rdzenia/wzgórz jeszcze nie
+      // będący reliefem → Wzgórza, ale TYLKO z prawdopodobieństwem params.obrzezeSzansa (< 1.0).
+      // Dawniej ZAWSZE (100%) — stąd okrągłe „plamy"; niższa szansa daje węższe, wydłużone
+      // łańcuchy (kordyliery), bo halo wokół grzbietu jest cieńsze/bardziej dziurawe.
+      // rand() wołany deterministycznie dla KAŻDEGO kwalifikującego się kandydata (ta sama
+      // kolejność co reszta pętli po masach/seedach/krokach) — A=B zostaje.
+      for (const k of placedThisRange) {
+        const { q, r } = parseHexKey(k);
+        for (const [dq, dr] of HEX_DIRECTIONS) {
+          const nq = q + dq;
+          const nr = r + dr;
+          const nk = hexKey(nq, nr);
+          const nhex = hexes[nk];
+          if (!nhex) continue;
+          if (nhex.terenBazowy === TerenBazowy.Gory || nhex.terenBazowy === TerenBazowy.Wzgorza) continue;
+          if (
+            nhex.terenBazowy !== TerenBazowy.Laka
+            && nhex.terenBazowy !== TerenBazowy.Rownina
+            && nhex.terenBazowy !== TerenBazowy.Pustynia
+          ) continue;
+          if (!isReliefCandidateHex(nhex, nq, nr, width, height)) continue;
+          if (rand() >= params.obrzezeSzansa) continue;
+          const n = scratch.get(nk)?.mtnNoise ?? 0;
+          addedByThisRun.push({ k: nk, n, wasHighland: true, prev: nhex.terenBazowy });
+          nhex.terenBazowy = TerenBazowy.Wzgorza;
+          nhex.nakladka = Nakladka.Brak;
+          delete (nhex as HexWithZloze).zloze;
+        }
+      }
+    }
+  }
+
+  // Sanity-cap ~40% górzystości lądu. Krok 1: cofamy TO, CO DOŁOŻYŁA TA FUNKCJA (obrzeże/
+  // Wzgórza najpierw, od najsłabszego mtnNoise) — floor i wcześniejszy relief nietknięte.
+  const { land } = countLandSeaHexes(hexes);
+  const capCount = Math.floor(land * MOUNTAIN_RANGE_LAND_SHARE_CAP);
+  let mountainous = 0;
+  for (const hex of Object.values(hexes)) {
+    if (hex.terenBazowy === TerenBazowy.Gory || hex.terenBazowy === TerenBazowy.Wzgorza) mountainous++;
+  }
+  if (mountainous > capCount && addedByThisRun.length > 0) {
+    const revertOrder = [...addedByThisRun].sort((a, b) => {
+      if (a.wasHighland !== b.wasHighland) return a.wasHighland ? -1 : 1; // Wzgórza/obrzeże najpierw
+      return a.n - b.n; // najsłabszy szum najpierw
+    });
+    for (const item of revertOrder) {
+      if (mountainous <= capCount) break;
+      const hex = hexes[item.k];
+      if (!hex) continue;
+      if (hex.terenBazowy !== TerenBazowy.Gory && hex.terenBazowy !== TerenBazowy.Wzgorza) continue;
+      hex.terenBazowy = item.prev;
+      mountainous--;
+    }
+  }
+
+  // Krok 2 (rzadki fallback): jeśli baza SPRZED tej funkcji (reapplyLandTerrain budget +
+  // ensureReliefGridCoverage floor/bonus) już sama przebija ~40% (np. pangea + relief=high —
+  // zmierzone empirycznie ≈43%), krok 1 nie ma czego cofać (addedByThisRun wyczerpane). Domykamy
+  // globalnym przycięciem najsłabszego szumu (Wzgórza przed Górami), ale NIGDY poniżej floor
+  // fair-play (MIN_MOUNTAINS_IRON_CELL/MIN_HIGHLANDS_COPPER_CELL na komórkę żelaza/miedzi —
+  // ensureReliefGridCoverage "zostaje nietknięte").
+  if (mountainous > capCount) {
+    const ironSize = ironCoverageCellSize(tier);
+    const copperSize = copperCoverageCellSize(tier);
+    const ironCellCount = new Map<string, number>();
+    const copperCellCount = new Map<string, number>();
+    const cellIdOf = (q: number, r: number, size: number) =>
+      `${Math.floor(q / size)},${Math.floor(r / size)}`;
+    const allRelief: Array<{ k: string; q: number; r: number; n: number; isHighland: boolean }> = [];
+    for (const [k, hex] of Object.entries(hexes)) {
+      if (hex.terenBazowy !== TerenBazowy.Gory && hex.terenBazowy !== TerenBazowy.Wzgorza) continue;
+      const { q, r } = parseHexKey(k);
+      const isHighland = hex.terenBazowy === TerenBazowy.Wzgorza;
+      if (isHighland) {
+        const ck = cellIdOf(q, r, copperSize);
+        copperCellCount.set(ck, (copperCellCount.get(ck) ?? 0) + 1);
+      } else {
+        const ck = cellIdOf(q, r, ironSize);
+        ironCellCount.set(ck, (ironCellCount.get(ck) ?? 0) + 1);
+      }
+      allRelief.push({ k, q, r, n: scratch.get(k)?.mtnNoise ?? 0, isHighland });
+    }
+    allRelief.sort((a, b) => {
+      if (a.isHighland !== b.isHighland) return a.isHighland ? -1 : 1; // Wzgórza przed Górami
+      return a.n - b.n; // najsłabszy szum najpierw
+    });
+    for (const item of allRelief) {
+      if (mountainous <= capCount) break;
+      const hex = hexes[item.k];
+      if (!hex) continue;
+      if (item.isHighland) {
+        const ck = cellIdOf(item.q, item.r, copperSize);
+        const cnt = copperCellCount.get(ck) ?? 0;
+        if (cnt <= MIN_HIGHLANDS_COPPER_CELL) continue; // floor — nie schodzimy niżej
+        hex.terenBazowy = TerenBazowy.Rownina;
+        hex.nakladka = Nakladka.Brak;
+        delete (hex as HexWithZloze).zloze;
+        copperCellCount.set(ck, cnt - 1);
+      } else {
+        const ck = cellIdOf(item.q, item.r, ironSize);
+        const cnt = ironCellCount.get(ck) ?? 0;
+        if (cnt <= MIN_MOUNTAINS_IRON_CELL) continue; // floor — nie schodzimy niżej
+        // Rownina (nie Wzgorza) — Wzgorza nadal liczyłoby się do "mountainous" i nie
+        // zmniejszyłoby udziału górzystości, którego pilnuje ten sanity-cap.
+        hex.terenBazowy = TerenBazowy.Rownina;
+        hex.nakladka = Nakladka.Brak;
+        delete (hex as HexWithZloze).zloze;
+        ironCellCount.set(ck, cnt - 1);
+      }
+      mountainous--;
+    }
+  }
+
+  return addedByThisRun.length;
+}
+
 export function assignContinentIndices(
   width: number,
   height: number,
@@ -1927,9 +2263,14 @@ export function isLandTerrain(tb: TerenBazowy): boolean {
   );
 }
 
-/** Ląd + wybrzeże — do spójności kontynentu (mosty między plażą a wnętrzem). */
+/**
+ * ZADANIE 1 (2026-07-20, Q1=A): mimo nazwy historycznej, Wybrzeże jest teraz traktowane
+ * konsekwentnie jak WODA (spójne z ruchem/miastami/AI/wioskami/złożami/renderem, które już
+ * dawno tak je traktowały) — TYLKO suchy ląd (Łąka/Równina/Wzgórza/Góry/Pustynia) zwraca true.
+ * Nazwa zostaje (minimalny diff, funkcja eksportowana) — semantyka zmieniona świadomie.
+ */
 export function isLandOrCoast(tb: TerenBazowy): boolean {
-  return tb !== TerenBazowy.Morze;
+  return tb !== TerenBazowy.Morze && tb !== TerenBazowy.Wybrzeze;
 }
 
 /** Domyślny udział lądu (0–1) per typ świata; nadpisywalny suwakiem zaawansowanym. Maciej 2026-07-04. */
@@ -1943,12 +2284,15 @@ export function defaultLandFractionForTyp(typ: TypSwiata): number {
   }
 }
 
-/** Liczba heksów lądu (wszystko oprócz Morse) vs morza. */
+/**
+ * Liczba heksów lądu (suchy ląd) vs morza. ZADANIE 1: Wybrzeże liczy się teraz jako WODA
+ * (jak Morze) — konsekwencja reklasyfikacji Q1=A.
+ */
 export function countLandSeaHexes(hexes: Record<string, Hex>): { land: number; sea: number; total: number } {
   let land = 0;
   let sea = 0;
   for (const h of Object.values(hexes)) {
-    if (h.terenBazowy === TerenBazowy.Morze) sea++;
+    if (h.terenBazowy === TerenBazowy.Morze || h.terenBazowy === TerenBazowy.Wybrzeze) sea++;
     else land++;
   }
   return { land, sea, total: land + sea };
@@ -1969,33 +2313,35 @@ function erodeTerrainRank(tb: TerenBazowy): number {
   return i >= 0 ? i : ERODE_TERRAIN_ORDER.length;
 }
 
+/** ZADANIE 1: Wybrzeże liczy się jak woda (Morze) — nie tylko Morze samo. */
 function countMorseNeighbors(hexes: Record<string, Hex>, q: number, r: number): number {
   let n = 0;
   for (const [dq, dr] of HEX_DIRECTIONS) {
     const nh = hexes[hexKey(q + dq, r + dr)];
-    if (nh?.terenBazowy === TerenBazowy.Morze) n++;
+    if (nh?.terenBazowy === TerenBazowy.Morze || nh?.terenBazowy === TerenBazowy.Wybrzeze) n++;
   }
   return n;
 }
 
+/** ZADANIE 1: ląd = suchy ląd (bez Wybrzeża, które jest teraz wodą). */
 function countLandNeighbors(hexes: Record<string, Hex>, q: number, r: number): number {
   let n = 0;
   for (const [dq, dr] of HEX_DIRECTIONS) {
     const nh = hexes[hexKey(q + dq, r + dr)];
-    if (nh && nh.terenBazowy !== TerenBazowy.Morze) n++;
+    if (nh && nh.terenBazowy !== TerenBazowy.Morze && nh.terenBazowy !== TerenBazowy.Wybrzeze) n++;
   }
   return n;
 }
 
 function isCoastalLandHex(hexes: Record<string, Hex>, q: number, r: number): boolean {
   const h = hexes[hexKey(q, r)];
-  if (!h || h.terenBazowy === TerenBazowy.Morze) return false;
+  if (!h || h.terenBazowy === TerenBazowy.Morze || h.terenBazowy === TerenBazowy.Wybrzeze) return false;
   return countMorseNeighbors(hexes, q, r) > 0;
 }
 
 function isCoastalMorseHex(hexes: Record<string, Hex>, q: number, r: number): boolean {
   const h = hexes[hexKey(q, r)];
-  if (h?.terenBazowy !== TerenBazowy.Morze) return false;
+  if (h?.terenBazowy !== TerenBazowy.Morze && h?.terenBazowy !== TerenBazowy.Wybrzeze) return false;
   return countLandNeighbors(hexes, q, r) > 0;
 }
 
@@ -2547,6 +2893,16 @@ function oceanConnectedMorseKeys(
   return connected;
 }
 
+/**
+ * ZADANIE 2 (2026-07-20, uproszczenie): dawniej istniały tu `coastTouchingSeaKeys` i
+ * `riverSeaGoalKeys` — „ostrzejszy" cel ujścia (Morze ∪ tylko-Wybrzeże-stykające-Morze),
+ * potrzebny WYŁĄCZNIE bo Wybrzeże było kiedyś przechodnie jak ląd w predykatach generatora.
+ * Po ZADANIU 1 (Wybrzeże = woda konsekwentnie) cel ujścia to znowu zwyczajnie KAŻDA woda —
+ * {@link oceanConnectedWaterKeys} — więc oba wrappery i ich zależność `oceanConnectedMorseKeys`
+ * (w tym kontekście) zostały usunięte jako martwy kod. `pathReachesRealSea` (bramka regresji)
+ * i `pruneRiversNotReachingRealSea` używają teraz wprost oceanConnectedWaterKeys.
+ */
+
 /** Heksy Morze otoczone lądem (artefakt szumu — nie ocean). */
 export function findInlandWaterHexes(
   hexes: Record<string, Hex>,
@@ -3021,6 +3377,45 @@ export function thickenCoastAndSmoothInlets(
 }
 
 /**
+ * ZADANIE 2 / C2 (2026-07-20): spłaszcza POJEDYNCZE heksy Wybrzeże, których kształt (≥5 z 6
+ * sąsiadów to Morze — wąski cypel/punkt wybrzeża wcinający się w morze) wygląda jak delta/ujście
+ * rzeki (por. computeRiverDeltaHexKeys w mapRenderStyle.ts — prawdziwa delta ujścia to właśnie
+ * mały fan Wybrzeża wcinający się w Morze), a NIE MAJĄ żadnej WŁASNEJ krawędzi rzeki
+ * (`hex.rzeka.obecna === false`) — więc to przypadkowy artefakt szumu wybrzeża, nie prawdziwe
+ * ujście. Musi być wołane PO finalnym oznakowaniu rzek (żeby znać PRAWDZIWE ujścia i nigdy ich
+ * nie ruszać). Celowo węższy/ostrzejszy próg niż ogólne czyszczenie thickenCoastAndSmoothInlets
+ * (≥4 sąsiadów, część (a) — Morze wcięte w LĄD) — TA funkcja dotyka WYŁĄCZNIE Wybrzeża bez
+ * rzeki i tylko najbardziej odosobnionych "punktów" (≥5/6 Morze), żeby nie zwężać prawdziwych,
+ * szerszych zatok/cypli. Pojedynczy przebieg (bez iteracji) — unika kaskadowej erozji wybrzeża.
+ */
+export function flattenFalseCoastalRiverNotches(
+  hexes: Record<string, Hex>,
+  width: number,
+  height: number,
+): number {
+  const toFlatten: string[] = [];
+  for (const [key, hex] of Object.entries(hexes)) {
+    if (hex.terenBazowy !== TerenBazowy.Wybrzeze) continue;
+    if (hex.rzeka?.obecna) continue; // prawdziwe ujście/koryto — nigdy nie ruszamy
+    const { q, r } = parseHexKey(key);
+    if (isInMapBorder(q, r, width, height)) continue;
+    let morzeN = 0;
+    for (const [dq, dr] of HEX_DIRECTIONS) {
+      if (hexes[hexKey(q + dq, r + dr)]?.terenBazowy === TerenBazowy.Morze) morzeN++;
+    }
+    if (morzeN >= 5) toFlatten.push(key);
+  }
+  for (const key of toFlatten) {
+    const hex = hexes[key]!;
+    hex.terenBazowy = TerenBazowy.Morze;
+    hex.nakladka = Nakladka.Brak;
+    hex.rzeka = { obecna: false, krawedzie: [] };
+    delete (hex as HexWithZloze).zloze;
+  }
+  return toFlatten.length;
+}
+
+/**
  * Usuwa drobne wysepki (szum maski) — zamienia na Morze.
  * Zostawia główną masę lądową; zwraca liczbę usuniętych heksów.
  */
@@ -3315,18 +3710,35 @@ export function coastalRiverRenderPath(
   // FIX 2026-07-09 (rzeki dochodzą do morza): generator kończy trasę na heksie SĄSIADUJĄCYM z
   // oceanem (isRiverDrainageGoal), więc ostatni heks bywa LĄDEM stykającym się z morzem, bez
   // Wybrzeża w ścieżce → wtedy out<2 i ujście się nie renderuje (rzeka urywa się przed wodą).
-  // Dopnij sąsiedni Wybrzeże, by wstęga ujścia realnie sięgnęła tafli. Render-only (bez hasha).
+  // ZADANIE 2 / A1 (2026-07-20): pas Wybrzeża ma teraz `coastWidth` (2) heksy — jeden "dopnij"
+  // hex by nie zawsze wystarczał (mogła trafić na ZEWNĘTRZNY pierścień, nadal bez styku z
+  // Morzem). Dociągamy wstęgę PRZEZ pas (max kilka kroków — pętla ograniczona), aż trafi na
+  // Wybrzeże faktycznie stykające się z Morzem (albo skończą się kandydaci). Render-only (bez
+  // hasha) — nie zmienia terenu/rzeki, tylko wizualną ścieżkę ujścia.
   if (out.length >= 1) {
-    const lp = out[out.length - 1]!;
-    const lh = hexes[hexKey(lp.q, lp.r)];
-    if (lh && lh.terenBazowy !== TerenBazowy.Wybrzeze) {
-      for (const [dq, dr] of HEX_DIRECTIONS) {
-        const nh = hexes[hexKey(lp.q + dq, lp.r + dr)];
-        if (nh?.terenBazowy === TerenBazowy.Wybrzeze) {
-          out.push({ q: lp.q + dq, r: lp.r + dr });
-          break;
-        }
+    let lp = out[out.length - 1]!;
+    let lh = hexes[hexKey(lp.q, lp.r)];
+    for (let guard = 0; guard < 4; guard++) {
+      if (lh?.terenBazowy === TerenBazowy.Wybrzeze && hasMorzeNeighborForRiverRender(hexes, lp.q, lp.r)) {
+        break; // już styka z Morzem — koniec dociągania
       }
+      let nextKey: string | null = null;
+      let bestScore = -1;
+      for (const [dq, dr] of HEX_DIRECTIONS) {
+        const nq = lp.q + dq;
+        const nr = lp.r + dr;
+        const nk = hexKey(nq, nr);
+        if (out.some((o) => o.q === nq && o.r === nr)) continue;
+        const nh = hexes[nk];
+        if (nh?.terenBazowy !== TerenBazowy.Wybrzeze) continue;
+        const score = hasMorzeNeighborForRiverRender(hexes, nq, nr) ? 1 : 0;
+        if (score > bestScore) { bestScore = score; nextKey = nk; }
+      }
+      if (!nextKey) break;
+      const { q: nq, r: nr } = parseHexKey(nextKey);
+      out.push({ q: nq, r: nr });
+      lp = { q: nq, r: nr };
+      lh = hexes[nextKey];
     }
   }
   if (out.length < 2) return out;
@@ -3345,6 +3757,14 @@ function hasLandNeighborTouchingSea(hexes: Record<string, Hex>, q: number, r: nu
   for (const [dq, dr] of HEX_DIRECTIONS) {
     const nh = hexes[hexKey(q + dq, r + dr)];
     if (nh?.terenBazowy === TerenBazowy.Wybrzeze || nh?.terenBazowy === TerenBazowy.Morze) return true;
+  }
+  return false;
+}
+
+/** Czy (q,r) ma bezpośredniego sąsiada Morze — używane przy dociąganiu wstęgi ujścia (render). */
+function hasMorzeNeighborForRiverRender(hexes: Record<string, Hex>, q: number, r: number): boolean {
+  for (const [dq, dr] of HEX_DIRECTIONS) {
+    if (hexes[hexKey(q + dq, r + dr)]?.terenBazowy === TerenBazowy.Morze) return true;
   }
   return false;
 }
@@ -4012,16 +4432,13 @@ function extendRiverToWybrzeze(
   let cq = path[path.length - 1]!.q;
   let cr = path[path.length - 1]!.r;
 
+  // ZADANIE 2 (uproszczenie): Wybrzeże samo jest wodą (ZADANIE 1) — rzeka kończy na
+  // PIERWSZYM kontakcie z wodą (Wybrzeże LUB Morze), bez tunelowania w głąb 2-hex pasa
+  // aż do realnego Morza (dawne zachowanie wymagało `touchesMorse` — usunięte jako zbędne).
   for (let extra = 0; extra < RIVER_MOUTH_TAIL_LEN; extra++) {
     const endHex = hexes[hexKey(cq, cr)];
     if (!endHex) break;
-    if (endHex.terenBazowy === TerenBazowy.Wybrzeze) {
-      const touchesMorse = HEX_DIRECTIONS.some(([dq, dr]) =>
-        hexes[hexKey(cq + dq, cr + dr)]?.terenBazowy === TerenBazowy.Morze,
-      );
-      if (touchesMorse) break;
-    }
-    if (endHex.terenBazowy === TerenBazowy.Morze) break;
+    if (endHex.terenBazowy === TerenBazowy.Wybrzeze || endHex.terenBazowy === TerenBazowy.Morze) break;
 
     let best: [number, number] | null = null;
     let bestScore = Infinity;
@@ -4033,12 +4450,7 @@ function extendRiverToWybrzeze(
       const nh = hexes[nk];
       if (!nh || nh.terenBazowy === TerenBazowy.Morze || isReliefTerrain(nh.terenBazowy)) continue;
       let score = seaDist.get(nk) ?? 999;
-      if (nh.terenBazowy === TerenBazowy.Wybrzeze) {
-        score -= 8;
-        if (HEX_DIRECTIONS.some(([ddq, ddr]) =>
-          hexes[hexKey(nq + ddq, nr + ddr)]?.terenBazowy === TerenBazowy.Morze,
-        )) score -= 12;
-      }
+      if (nh.terenBazowy === TerenBazowy.Wybrzeze) score -= 8;
       if (score < bestScore) {
         bestScore = score;
         best = [nq, nr];
@@ -4054,7 +4466,7 @@ function extendRiverToWybrzeze(
   return path;
 }
 
-/** Domyka ujście na heksie Wybrzeże stykającym Morza (wymóg renderu wstęgi). */
+/** Domyka ujście na pierwszym heksie wody (Wybrzeże lub Morze) — wymóg renderu wstęgi. */
 function finishRiverMouthAtSea(
   hexes: Record<string, Hex>,
   path: RiverCoord[],
@@ -4065,16 +4477,12 @@ function finishRiverMouthAtSea(
 ): RiverCoord[] {
   if (path.length === 0) return path;
 
-  const mouthReady = (q: number, r: number): boolean => {
-    const h = hexes[hexKey(q, r)];
-    if (!h) return false;
-    if (h.terenBazowy === TerenBazowy.Wybrzeze) {
-      return HEX_DIRECTIONS.some(([dq, dr]) =>
-        hexes[hexKey(q + dq, r + dr)]?.terenBazowy === TerenBazowy.Morze,
-      );
-    }
-    return isRiverDrainageGoal(q, r, seaDist, hexes, sourceKey, oceanConnected);
-  };
+  // ZADANIE 2 (uproszczenie): Wybrzeże = woda (ZADANIE 1) — gotowe ujście to PIERWSZY kontakt
+  // z Wybrzeżem, bez wymogu, by ten konkretny hex dotykał jeszcze realnego Morza (dawny
+  // specjalny przypadek usunięty — isRiverDrainageGoal(oceanConnected) już to pokrywa, bo
+  // oceanConnected = oceanConnectedWaterKeys = Morze ∪ Wybrzeże).
+  const mouthReady = (q: number, r: number): boolean =>
+    isRiverDrainageGoal(q, r, seaDist, hexes, sourceKey, oceanConnected);
 
   if (mouthReady(path[path.length - 1]!.q, path[path.length - 1]!.r)) return path;
 
@@ -4098,12 +4506,9 @@ function finishRiverMouthAtSea(
         && !canRiverDrainStep(nk, nd, openOceanDist, oceanConnected, true)) continue;
       if (!canRiverFlowThrough(nh, nk, sourceKey) && nh.terenBazowy !== TerenBazowy.Wybrzeze) continue;
       let score = openOceanDist.get(nk) ?? nd;
-      if (nh.terenBazowy === TerenBazowy.Wybrzeze) {
-        score -= 15;
-        if (HEX_DIRECTIONS.some(([ddq, ddr]) =>
-          hexes[hexKey(nq + ddq, nr + ddr)]?.terenBazowy === TerenBazowy.Morze,
-        )) score -= 20;
-      }
+      // Preferuj Wybrzeże (pierwszy kontakt z wodą kończy trasę w następnej iteracji —
+      // patrz mouthReady) — bez dodatkowego tunelowania do heksu stykającego realne Morze.
+      if (nh.terenBazowy === TerenBazowy.Wybrzeze) score -= 15;
       if (score < bestScore) {
         bestScore = score;
         best = { q: nq, r: nr };
@@ -4135,6 +4540,9 @@ export function traceRiver(
     : inferMapDimsFromHexes(hexes);
   const openOceanDist = traceOpts.openOceanDist
     ?? buildOpenOceanDistanceField(hexes, dims.width, dims.height, traceOpts.oceanConnected);
+  // ZADANIE 2: domyślnie KAŻDA woda (Morze ∪ Wybrzeże). Realni wołający (generateRivers/
+  // topUpRiverGridCoverage) i tak zawsze przekazują własny, jednolity zestaw; ten fallback
+  // dotyczy tylko wywołań traceRiver() bez traceOpts.oceanConnected (np. debug/testy bezpośrednie).
   const oceanConnected = traceOpts.oceanConnected
     ?? oceanConnectedWaterKeys(hexes, dims.width, dims.height);
   const rand = traceOpts.rand ?? (() => 0);
@@ -4888,6 +5296,55 @@ export function pruneOrphanRiverPaths(
   return { paths: curPaths, kinds: curKinds };
 }
 
+/**
+ * ZADANIE 2 (2026-07-20, uproszczenie): ujście = ostatni hex trasy dotyka wody (Morze ∪
+ * Wybrzeże — {@link oceanConnectedWaterKeys}). Wybrzeże jest teraz wodą konsekwentnie
+ * (ZADANIE 1), więc to kryterium jest już zawsze wystarczające — dawny „ostrzejszy" wariant
+ * (riverSeaGoalKeys: tylko Wybrzeże stykające bezpośrednio z Morzem) nie jest już potrzebny
+ * i został usunięty. Funkcja zostaje (dziś funkcjonalnie tożsama z pathEndsAtSea) —
+ * eksportowana do bramki regresji (tools/map-gen-regression-test.cjs), sprawdzenie ciągłości.
+ */
+export function pathReachesRealSea(
+  hexes: Record<string, Hex>,
+  path: Array<{ q: number; r: number }>,
+  width?: number,
+  height?: number,
+  goalKeys?: Set<string>,
+): boolean {
+  const dims = width != null && height != null ? { width, height } : inferMapDimsFromHexes(hexes);
+  const goal = goalKeys ?? oceanConnectedWaterKeys(hexes, dims.width, dims.height);
+  return pathEndsAtSea(hexes, path, dims.width, dims.height, goal);
+}
+
+/**
+ * Bezpiecznik końcowy (generator.ts, PO pruneOrphanRiverPaths) — usuwa główne ('main') trasy,
+ * które mimo generateRivers/topUpRiverGridCoverage nie dotykają wody (np. gdyby jakiś późniejszy
+ * krok terenu przesunął wybrzeże). W normalnym biegu to no-op (0 usuniętych) — to tylko ostatnia
+ * bramka gwarancji. Kaskadowo domyka ewentualne osierocone dopływy przez ponowne wywołanie
+ * {@link pruneOrphanRiverPaths} (ta funkcja NIE dotyka logiki dopływ-vs-własne-ujście —
+ * B1 zostaje bez zmian). Deterministyczne, bez rand().
+ */
+export function pruneRiversNotReachingRealSea(
+  hexes: Record<string, Hex>,
+  paths: RiverCoord[][],
+  kinds: RiverPathKind[],
+  width: number,
+  height: number,
+): { paths: RiverCoord[][]; kinds: RiverPathKind[] } {
+  const goal = oceanConnectedWaterKeys(hexes, width, height);
+  const drop = new Set<number>();
+  for (let i = 0; i < paths.length; i++) {
+    if (kinds[i] !== 'main') continue;
+    if (!pathReachesRealSea(hexes, paths[i] ?? [], width, height, goal)) drop.add(i);
+  }
+  if (drop.size === 0) return { paths, kinds };
+  const keptPaths = paths.filter((_, i) => !drop.has(i));
+  const keptKinds = kinds.filter((_, i) => !drop.has(i));
+  clearRiverMarks(hexes);
+  for (const p of keptPaths) markRiverPath(hexes, p);
+  return pruneOrphanRiverPaths(hexes, keptPaths, keptKinds, width, height);
+}
+
 /** Czy między lądowymi heksami a→b krawędź rzeki jest oznakowana po OBU stronach (I1). */
 function riverEdgeMarkedBoth(hexes: Record<string, Hex>, a: RiverCoord, b: RiverCoord): boolean {
   const eA = neighborDirIndex(a.q, a.r, b.q, b.r);
@@ -5358,6 +5815,12 @@ export function generateRivers(
   const riversTier = opts.riversTier ?? 'medium';
 
   const seaDist = buildSeaDistanceField(hexes);
+  // ZADANIE 2 (2026-07-20, uproszczenie): „u źródła" — jeden zbiór ocean-goal na CAŁY potok
+  // rzek tej funkcji (isRiverDrainageGoal/canRiverDrainStep/pathEndsAtSea/pushMain wszystkie
+  // dzielą TĘ SAMĄ zmienną `oceanConnected`), więc kryterium ujścia jest jednolite wszędzie.
+  // Wybrzeże jest teraz WODĄ (ZADANIE 1) — cel ujścia to zwyczajnie KAŻDA woda (Morze ∪
+  // Wybrzeże) połączona z krawędzią mapy; nie trzeba już „ostrzejszego" podzbioru
+  // (dawne riverSeaGoalKeys/coastTouchingSeaKeys — usunięte, patrz historia zmian).
   const oceanConnected = oceanConnectedWaterKeys(hexes, width, height);
   const openOceanDist = buildOpenOceanDistanceField(hexes, width, height, oceanConnected);
   const riverPaths: RiverCoord[][] = [];
@@ -5601,6 +6064,7 @@ export function topUpRiverGridCoverage(
   maxLen = 40,
 ): number {
   const seaDist = buildSeaDistanceField(hexes);
+  // ZADANIE 2: ten sam zbiór co generateRivers — spójne kryterium ujścia (Morze ∪ Wybrzeże).
   const oceanConnected = oceanConnectedWaterKeys(hexes, width, height);
   const openOceanDist = buildOpenOceanDistanceField(hexes, width, height, oceanConnected);
   const usedSources = new Set<string>();

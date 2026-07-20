@@ -28,6 +28,32 @@ const FALLBACK_DESERT: Record<DensityTier, number> = { low: 0.68, medium: 0.63, 
 const FALLBACK_FOREST: Record<DensityTier, number> = { low: 0.65, medium: 0.58, high: 0.50 };
 const FALLBACK_MOUNTAIN: Record<DensityTier, number> = { low: 0.80, medium: 0.68, high: 0.52 };
 const FALLBACK_HIGHLAND: Record<DensityTier, number> = { low: 0.66, medium: 0.50, high: 0.38 };
+
+/** Parametry pasm górskich (seed-and-grow) — Zadanie HILLS Q1/Q2 (2026-07-20). */
+export interface MountainRangeTierParams {
+  /** Ile heksów lądu w masie przypada na jedno pasmo (mniej = więcej pasm). */
+  hexyNaPasmo: number;
+  /** Twardy sufit liczby pasm na jedną masę lądu. */
+  maxPasmNaMase: number;
+  /** Min/max długość (kroki spaceru) pojedynczego pasma. */
+  dlugoscMin: number;
+  dlugoscMax: number;
+  /** Minimalny rozmiar masy lądu, żeby w ogóle próbować dorzucić pasmo. */
+  minMasaHexow: number;
+  /**
+   * ZADANIE 3 (2026-07-20): szansa (0..1), że sąsiad rdzenia/wzgórz dostanie „obrzeże"
+   * (foothills, Wzgórza) — niżej niż 1.0 daje WĘŻSZE, wydłużone pasma (mniej rozlewania
+   * na boki) zamiast okrągłych „plam". `rand()` wywoływany deterministycznie dla KAŻDEGO
+   * kwalifikującego się kandydata (kolejność jak reszta pętli), więc A=B zostaje.
+   */
+  obrzezeSzansa: number;
+}
+
+const FALLBACK_MOUNTAIN_RANGE: Record<DensityTier, MountainRangeTierParams> = {
+  low:    { hexyNaPasmo: 320, maxPasmNaMase: 2, dlugoscMin: 9,  dlugoscMax: 15, minMasaHexow: 40, obrzezeSzansa: 0.30 },
+  medium: { hexyNaPasmo: 240, maxPasmNaMase: 3, dlugoscMin: 11, dlugoscMax: 18, minMasaHexow: 30, obrzezeSzansa: 0.35 },
+  high:   { hexyNaPasmo: 170, maxPasmNaMase: 5, dlugoscMin: 13, dlugoscMax: 22, minMasaHexow: 24, obrzezeSzansa: 0.40 },
+};
 const FALLBACK_AKTYWNE_TYPY: Record<MapSizeLabel, number> = {
   mala: 3, srednia: 5, duza: 7, ogromna: 9, super: 11,
 };
@@ -103,6 +129,32 @@ export function mapGenHighlandThreshold(tier: DensityTier): number {
   const k = tierKey(tier);
   if (h && typeof h[k] === 'number') return h[k]!;
   return FALLBACK_HIGHLAND[tier];
+}
+
+/** Parametry pasm górskich (Panel-A JSON `gestosc.pasma_gorskie`, fallback w kodzie). */
+export function mapGenMountainRangeParams(tier: DensityTier): MountainRangeTierParams {
+  const fb = FALLBACK_MOUNTAIN_RANGE[tier];
+  const src = (raw as {
+    gestosc?: { pasma_gorskie?: Record<string, Partial<Record<
+      'hexy_na_pasmo' | 'max_pasm_na_mase' | 'dlugosc_min' | 'dlugosc_max' | 'min_masa_hexow' | 'obrzeze_szansa',
+      number
+    >>> };
+  }).gestosc?.pasma_gorskie;
+  const row = src?.[tierKey(tier)];
+  if (!row) return { ...fb };
+  const dlugoscMin = typeof row.dlugosc_min === 'number' && row.dlugosc_min > 0 ? row.dlugosc_min : fb.dlugoscMin;
+  return {
+    hexyNaPasmo: typeof row.hexy_na_pasmo === 'number' && row.hexy_na_pasmo > 0 ? row.hexy_na_pasmo : fb.hexyNaPasmo,
+    maxPasmNaMase: typeof row.max_pasm_na_mase === 'number' && row.max_pasm_na_mase >= 0
+      ? row.max_pasm_na_mase : fb.maxPasmNaMase,
+    dlugoscMin,
+    dlugoscMax: typeof row.dlugosc_max === 'number' && row.dlugosc_max >= dlugoscMin
+      ? row.dlugosc_max : Math.max(fb.dlugoscMax, dlugoscMin),
+    minMasaHexow: typeof row.min_masa_hexow === 'number' && row.min_masa_hexow >= 0
+      ? row.min_masa_hexow : fb.minMasaHexow,
+    obrzezeSzansa: typeof row.obrzeze_szansa === 'number' && row.obrzeze_szansa >= 0 && row.obrzeze_szansa <= 1
+      ? row.obrzeze_szansa : fb.obrzezeSzansa,
+  };
 }
 
 export function mapGenAktywneTypy(size: MapSizeLabel): number {

@@ -115,15 +115,19 @@ export interface ImprovementBuildModeOptions {
 // Pomocnicze — kwalifikacja (logika z placementpreview, territory.ts)
 // ---------------------------------------------------------------------------
 
+// ZADANIE 1 (2026-07-20, Q3=A): Wybrzeże jest teraz WODĄ konsekwentnie (jak w ruchu/miastach/
+// AI/wioskach/złożach/renderze) — usunięte z TERENY_LADU/TARTAK_TERENY. Skutek: droga/
+// droga_brukowana/fort/posterunek/tartak znikają z Wybrzeża (budowalne tylko lodzie_rybackie
+// i warzelnia_soli — patrz sektor 'woda' niżej).
 const TERENY_LADU = new Set<TerenBazowy>([
   TerenBazowy.Laka, TerenBazowy.Rownina, TerenBazowy.Wzgorza,
-  TerenBazowy.Gory, TerenBazowy.Pustynia, TerenBazowy.Wybrzeze,
+  TerenBazowy.Gory, TerenBazowy.Pustynia,
 ]);
 
-/** Tartak — ląd bez szczytów górskich (Góry). */
+/** Tartak — ląd bez szczytów górskich (Góry) i bez Wybrzeża (ZADANIE 1 — Wybrzeże = woda). */
 const TARTAK_TERENY = new Set<TerenBazowy>([
   TerenBazowy.Laka, TerenBazowy.Rownina, TerenBazowy.Wzgorza,
-  TerenBazowy.Pustynia, TerenBazowy.Wybrzeze,
+  TerenBazowy.Pustynia,
 ]);
 
 const FLAT_FARM = new Set<TerenBazowy>([TerenBazowy.Laka, TerenBazowy.Rownina]);
@@ -145,7 +149,7 @@ const SOLO_FOOD_KEYS = new Set<string>(['tarasy', 'owce', 'lama']);
 const SEKTOR_OF: Record<string, string> = {
   // bok 1 — surowce + ich ulepszenia
   kopalnia: 'surowiec', kamieniolom: 'surowiec', glinianka: 'surowiec',
-  warzelnia_soli: 'surowiec', stadnina: 'surowiec', kopalnia_miedzi: 'surowiec',
+  stadnina: 'surowiec', kopalnia_miedzi: 'surowiec',
   // las (bok 1 — surowiec leśny)
   wyrab: 'las', tartak: 'las', oboz_lowiecki: 'las',
   // bok 2 — pole (food-teren)
@@ -157,7 +161,10 @@ const SEKTOR_OF: Record<string, string> = {
   // nakładki / poza sektorem — współistnieją bez limitu
   irygacja: 'overlay', pole_irygowane: 'overlay',
   droga: 'droga', droga_brukowana: 'droga',
-  lodzie_rybackie: 'woda',
+  // ZADANIE 1 (2026-07-20): warzelnia_soli przeniesiona do sektora 'woda' — na Wybrzeżu
+  // działa jak lodzie_rybackie (bez wymogu złoża, „sól z morza"); na lądzie (Pustynia/
+  // Rownina) nadal wymaga złoża 'sol' w qualifies() poniżej.
+  lodzie_rybackie: 'woda', warzelnia_soli: 'woda',
 };
 /** Sektory z limitem „jeden na heks". Overlay/droga/woda — bez limitu (współistnieją). */
 const EXCLUSIVE_SEKTORY = new Set<string>(['surowiec', 'las', 'foodteren', 'hodowla', 'militaria']);
@@ -503,6 +510,8 @@ function createQualifier(state: ImprovementBuildState) {
       }
       case 'warzelnia_soli':
         if (!inPlayerTerritory(q, r)) return false;
+        // ZADANIE 1: Wybrzeże = woda — sól z morza, jak lodzie_rybackie (bez wymogu złoża).
+        if (teren === TerenBazowy.Wybrzeze) return true;
         return zloze === 'sol';
       case 'kopalnia_miedzi': // Maciej 2026-07-09: kopalnia miedzi — TYLKO ruda miedzi
         if (!inPlayerTerritory(q, r)) return false;

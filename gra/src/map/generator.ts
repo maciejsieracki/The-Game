@@ -48,6 +48,7 @@ import {
   reapplyForestOverlay,
   applyReliefByNoiseRank,
   ensureReliefGridCoverage,
+  growMountainRanges,
   applyMarginalLandZoneCaps,
   rebalanceLandFractionWithMargins,
   enforceMapBorderOcean,
@@ -77,7 +78,7 @@ import {
   type StartPosition,
   type TypSwiata,
 } from './gen-helpers';
-import { pruneOrphanRiverPaths } from './gen-helpers';
+import { pruneOrphanRiverPaths, pruneRiversNotReachingRealSea, flattenFalseCoastalRiverNotches } from './gen-helpers';
 import { placeVillages } from './villages';
 import { resolveWorldGenNumbers, resolveLandFraction, type WorldGenOptions } from './newGameMapDefaults';
 import { mapGenRozmiarDims } from '../data/map-gen-params-loader';
@@ -288,7 +289,7 @@ export function generateMap(
   const reliefTier: ReliefDensityTier =
     genOpts?.worldDensity?.relief ?? genOpts?.worldDensity?.rivers ?? 'medium';
   const forestTier = genOpts?.worldDensity?.forest ?? 'medium';
-  reapplyLandTerrain(hexes, terrainScratch, effectiveSeed, terrainTh, height);
+  reapplyLandTerrain(hexes, terrainScratch, effectiveSeed, terrainTh, height, reliefTier);
   if (typ !== 'pangea') {
     purgeInlandWaterForMultiLandTyp(hexes, width, height);
   }
@@ -350,6 +351,10 @@ export function generateMap(
   ensureReliefGridCoverage(
     hexes, terrainScratch, reliefTier, width, height, typ, zoneOf, nZones, rand,
   );
+  // ── Przebieg 3g-bis: pasma górskie — naturalne skupiska (HILLS Q1, po floor reliefu,
+  // przed drugim ensureDepositGridCoverage żeby nowe Gory/Wzgorza dostały złoża, i przed
+  // rzekami żeby rzeki opływały nowy relief) ───────────────────────────────────────────
+  growMountainRanges(hexes, terrainScratch, reliefTier, width, height, rand);
   ensureDepositGridCoverage(hexes, reliefTier, typ, zoneOf, nZones, rand);
   ensureForestGridCoverage(hexes, terrainScratch, forestTier, typ, zoneOf, nZones, rand);
   // ── Przebieg 3h-pre: ostatni purge wody→ląd PRZED rzekami (B0.1 — nie kasować ujść) ─
@@ -383,7 +388,16 @@ export function generateMap(
   stripDepositsFromWater(hexes);
   // B0.7/B0.8: „zero sierot" — usun sciezki niepolaczone z morzem (finalny stan, jak widzi test).
   ({ paths: riverPaths, kinds: riverPathKinds } = pruneOrphanRiverPaths(hexes, riverPaths, riverPathKinds, width, height));
+  // ZADANIE 2 — bezpiecznik końcowy: generateRivers/topUpRiverGridCoverage już trasują do
+  // oceanConnectedWaterKeys (Morze ∪ Wybrzeże), więc to zwykle no-op; ostateczna gwarancja
+  // "0 rzek bez ujścia do wody" niezależnie od ewentualnych późniejszych przesunięć wybrzeża.
+  ({ paths: riverPaths, kinds: riverPathKinds } =
+    pruneRiversNotReachingRealSea(hexes, riverPaths, riverPathKinds, width, height));
   // B0.1: purge wody→ląd tylko PRZED generateRivers — po rzekach kasował ujścia
+  // ZADANIE 2 / C2: spłaszcz fałszywe "wcięcia/ujścia" (Wybrzeże bez własnej rzeki, kształtem
+  // udające deltę) — OSTATNI krok geografii, po finalnym oznakowaniu rzek, żeby znać PRAWDZIWE
+  // ujścia i nigdy ich nie ruszać.
+  flattenFalseCoastalRiverNotches(hexes, width, height);
 
   const startPositions = computeStartPositions(hexes, effectiveSeed, {
     minCount: 5,
