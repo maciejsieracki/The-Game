@@ -1,0 +1,18 @@
+# ── Zbudowane bundle gry (samodzielny single-file HTML) ─────────────────────
+# Te pliki są weryfikowane po SUMIE MD5 wobec manifestów
+# (gra-robocza/ROBOCZA-MANIFEST.json, gra-kanon/KANON-MANIFEST.json) —
+# patrz gra/tools/verify-robocza-bundle.cjs.
+#
+# PROBLEM, który to naprawia (Windows CRLF vs Linux LF):
+# Build powstaje na Linuksie z końcami linii LF. Na Windows Git z
+# core.autocrlf=true przy pobieraniu zamieniałby LF -> CRLF, przez co md5
+# pliku NA DYSKU różniło się od md5 zapisanego w manifeście (zbudowanym na
+# Linuksie) — verify zgłaszał FAŁSZYWĄ niezgodność (np. manifest a31ebe6f,
+# plik na dysku e7838ee2), mimo że bundle jest poprawny.
+#
+# `-text` = traktuj te pliki jak binaria: ŻADNEJ konwersji końców linii na
+# żadnej platformie -> bajtowo identyczne wszędzie -> md5 zawsze zgodne z
+# manifestem. Nie zmienia to zawartości blobów w repo (są już LF).
+gra-robocza/*.html -text
+gra-kanon/*.html   -text
+Gra-FINALNA*.html  -text
