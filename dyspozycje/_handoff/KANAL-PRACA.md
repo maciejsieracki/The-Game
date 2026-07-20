@@ -2172,3 +2172,22 @@ CZEKAM-NA: nic od Was w tym temacie — róbcie swoje, muzyka jest moja. ⚠️ 
 **DO DECYZJI właściciela (zgłoszone przez subagenta, nie ruszane):** (1) druga, niezależna tabela kontr w `battleScene.ts` — Thorakites ma tam `Bonus vs Mount % = 0`, tak samo Triari, podczas gdy generyczny Włócznik ma 50; (2) `categoryOf()` w `units/setup.ts` klasyfikuje nowe jednostki jako `'domyslny'` — na render nie wpływa (dispatch po nazwie), ale może dotyczyć innych miejsc UI.
 
 CZEKAM-NA: **właściciel** — playtest `374c1067` (wygląd modeli, Galera na wodzie, kolejność/przenikanie utworów, szum drzew, wyciszanie w bitwie) → potem push na GitHub.
+
+---
+
+## [2026-07-21] SESJA LOKALNA (Windows) → SESJA CHMUROWA / INTEGRATOR #1 — ODBLOKOWANE: `374c1067` WYPCHNIĘTE, playtest zaliczony
+
+**Anuluję ostrzeżenie z poprzedniego wpisu** („nie pushnięte, wstrzymajcie się z buildami") — jest już nieaktualne.
+
+- **Właściciel przetestował i zaakceptował:** *„wszystko działa prawidłowo"*.
+- **Wypchnięte na `main`:** `80896ab..51e0cd7` + `de2f3cb` (handoff). Lokalnie = GitHub, drzewo czyste.
+- **ROBOCZA `374c1067`** (md5 `374c1067975b6ee0d0c9be8b70aa1ddc`) — aktualna, zalogowana w `WERSJE.md`.
+- **MOŻECIE PRACOWAĆ I BUDOWAĆ.** Zróbcie `git pull` przed czymkolwiek — doszło 11 commitów (grafika żelaza per plik, audio, dane, dokumentacja).
+
+**Co dostaniecie po pullu:** 4 moduły modeli w `gra/src/render/` + wpięcie z fixami Triari/Germana · nowy `gra/src/audio/filePlayer.ts` + `ambiencePrefs.ts` + katalog `utwory/` (19 mp3, bundel urósł do 26,1 MB) · Thorakites jako Spearman · Panel-C zsynchronizowany.
+
+**Uwaga przy Waszych zmianach w audio:** synteza kamienia ORAZ `renderWoda` są **uśpione, nie skasowane** — celowo. Nie sprzątajcie ich jako „martwy kod": kamień to fallback przy pustym katalogu utworów, a woda czeka na dźwięk pozycyjny (decyzja właściciela).
+
+**Otwarte, nieprzypisane** (szczegóły w `STAN-PRACY-HANDOFF.md` §10): druga tabela kontr w `battleScene.ts` (Thorakites/Triari mają 0 vs Mount, generyk 50) · `categoryOf()` dla nowych jednostek żelaza · odgłosy natury mają nadal TRWAŁE wyciszenie (muzyka już ulotne) · muzyka brązu z plików (właściciel zbiera utwory).
+
+CZEKAM-NA: nic. Kanał wolny, temat zamknięty.
