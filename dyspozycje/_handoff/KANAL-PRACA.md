@@ -2025,3 +2025,21 @@ Maciej potwierdził test roboczej („sprawdzone") i zlecił promocję. Wykonane
 ⚠️ **Uwaga dla Was:** kanon przeskoczył z `dee7140d` (07-09) na `d4052380` (07-20). Jeśli pracowaliście na starym kanonie jako punkcie odniesienia — to już nieaktualne, weźcie nowy.
 
 CZEKAM-NA: nic. Promocja zamknięta; wersja live i kanon zgodne z repo.
+
+---
+
+## [18:30 PL, 2026-07-20] SESJA CHMUROWA (Claude Code) → MASTER / INTEGRATORZY — DEPLOY ROBOCZA `74d85bc2` (MAPA: wybrzeże z morza + fix Ziemia + pasma -25%)
+
+**Deploy do ROBOCZA na wyraźne polecenie Macieja** („możesz zrobić deploy"). Zalogowane w `WERSJE.md` (`a31ebe6f` → ZASTĄPIONA, `74d85bc2` → AKTUALNA).
+
+- **ROBOCZA = `74d85bc2`** (md5 `74d85bc2197de26d7fe47d36cf76420b`), VERIFY OK. Łańcuch: `a31ebe6f` → **`74d85bc2`**.
+- **Regresja naprawiona (zgłoszona przez Macieja, głównie mapa Ziemia):** po przeklasyfikowaniu Wybrzeże=woda (poprzedni deploy) ląd był nadmiernie zjadany przez wybrzeże („kontynent europejski zamieniony w wybrzeże"), rzeki bez widocznych ujść.
+- **Fix (COAST-Q1=A): kierunek wybrzeża odwrócony** — Wybrzeże powstaje z heksów **Morza przy lądzie** (płytka woda), NIGDY przez konwersję suchego lądu. Ląd zostaje w 100%. Zmienione: `applyCoastRing`, `applyDoubleCoastRing`, `thickenCoastAndSmoothInlets` (reset Wybrzeże→**Morze**, nie→Łąka), `sanitizeCoastHexes` (sierota→Morze). Pomiar Ziemia: wybrzeże/ląd **0.65→0.47**, ląd **+63%**, rzeki 100% z ujściem.
+- **Fix dodatkowy:** `purgeStrayLandOutsideEarthMask` (tylko `typ=ziemia`) — heurystyki domykania zatok zalewały cieśnie lądem poza maską Ziemi (349→**0** heksów).
+- **Pasma gór -25%** (GORY-Q2=A): `pasma_gorskie.dlugosc_max` low 15→11 / med 18→14 / high 22→17 (logika nietknięta).
+- **RYZYKO do obserwacji w playteście:** ten sam mechanizm domykania zatok działa też na kontynenty/wyspy/pangea (brak maski referencyjnej — niemierzalne). Jeśli widać nienaturalnie „zalane" zatoki na innych typach → wrócić do tego.
+- **Gałąź/push:** sesja chmurowa, gałąź `claude/sprawdzenie-funkcjonalnosci-ek4ra0`, commit `0d11fdd` (feature) + commit deployu; fast-forward na `main` + push origin main.
+- **Środowisko:** stamp przez port node'owy (brak PowerShell na Linux); build `vite`-direct z `gra/`.
+- Bramki: tsc=0 · map-gen-regression 833/833 z ujściem + determinizm A=B · tech-tree 19/19 · research 33/33 · unit-replace 10/10 · VERIFY OK.
+
+CZEKAM-NA: **Maciej** — playtest mapy **Ziemia** (kontynenty wypełnione lądem, wybrzeże cienki pas przy brzegu, rzeki z ujściem; góry rzadsze pasma); obserwacja zatok na kontynenty/wyspy/pangea.
