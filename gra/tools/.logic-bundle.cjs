@@ -6620,11 +6620,15 @@ function cityYieldPerTurn(city, workedTiles, cityBuildings, params, ctx) {
   let zywnoscTerenu = 0;
   let pracaTerenu = 0;
   let handelTerenu = 0;
+  let drewnoTerenu = 0;
+  let kamienTerenu = 0;
   for (const tile of workedTiles) {
     const y = tileYield(tile);
     zywnoscTerenu += y.zywnosc;
     pracaTerenu += y.praca;
     handelTerenu += y.handel;
+    drewnoTerenu += y.drewno;
+    kamienTerenu += y.kamien;
   }
   let pracaBruttoTerenu;
   if (ctx.maMlyn) {
@@ -6711,7 +6715,9 @@ function cityYieldPerTurn(city, workedTiles, cityBuildings, params, ctx) {
     handelBrutto: Math.floor(handelBrutto),
     pracaTerenu: Math.floor(pracaBruttoTerenu),
     pracaBudynkow: Math.floor(pracaBudynkow),
-    pieniadzZPracy
+    pieniadzZPracy,
+    drewnoTerenu: Math.floor(drewnoTerenu),
+    kamienTerenu: Math.floor(kamienTerenu)
   };
 }
 function cityPopulationCap(maAkwedukt, params) {
@@ -19146,11 +19152,11 @@ var econ_params_default = {
       opis: "Kurs bazowy: 1 Pieni\u0105dz = 1 Praca (u\u017Cywany do wykupu budynk\xF3w za Pieni\u0105dz)."
     },
     mennica_mnoznik_po_walucie: {
-      easy: 1.88,
+      easy: 2,
       normal: 1.5,
-      hard: 1.12,
+      hard: 1,
       jednostka: "\xD7",
-      opis: "Mno\u017Cnik Mennicy aktywny po odkryciu technologii Waluta. [PT \u2014 docelowo \xD71,5\u2013\xD72,0]"
+      opis: "Mno\u017Cnik Mennicy (Handel\u2192Pieni\u0105dz) aktywny TYLKO gdy Mennica zbudowana ORAZ technologia Waluta odkryta w mie\u015Bcie. Warto\u015Bci w\u0142a\u015Bciciela (Q5=A, 2026-07-20): easy \xD72 / normal \xD71,5 / hard \xD71 (hard = bez bonusu, ale nie zeruje dochodu). Wcze\u015Bniej 1.88/1.5/1.12 mimo \u017Ce mennicaMnoznik by\u0142 zahardkodowany na 1 w turn-economy.ts (Mennica nic nie robi\u0142a) \u2014 naprawione E1 zadanie 1."
     },
     luksus_przelicznik_zadowolenie: {
       easy: 4,
@@ -19193,6 +19199,22 @@ var econ_params_default = {
       hard: "stolica",
       jednostka: "miasto",
       opis: "Skarbiec zawsze w stolicy; utrata stolicy zeruje go do 0."
+    }
+  },
+  handel_szlaki: {
+    lad_max_dystans: {
+      easy: 12,
+      normal: 12,
+      hard: 12,
+      jednostka: "heksow",
+      opis: "Handel E2 (trade-routes.ts): prog uproszczonego dystansu (hexDistance) dla szlaku LADOWEGO miedzy centrami dwoch miast. Ta sama wartosc na wszystkich trudnosciach -- to parametr geografii/gameplayu, nie ekonomicznego skalowania trudnosci. Q6=B (Maciej 2026-07-20): connected = dystans <= prog ORAZ istnieje przechodnia sciezka bez przeszkody terenowej (woda/gory blokuja); NIE budujemy pathfindera po sieci drog."
+    },
+    morze_max_dystans: {
+      easy: 20,
+      normal: 20,
+      hard: 20,
+      jednostka: "heksow",
+      opis: "Handel E2 (trade-routes.ts): prog uproszczonego dystansu dla szlaku MORSKIEGO (przez Port w OBU miastach), po wodzie (Morze unia Wybrzeze -- obie klasyfikowane jako woda po zmianie z 2026-07-20). Szerszy prog niz lad, bo statek nie zna przeszkod gorskich/lasu."
     }
   }
 };
@@ -21946,6 +21968,7 @@ function buildEconParams(data, difficulty = "normal") {
   const raw = data.econParams;
   const em = raw.ekonomia_miasta ?? {};
   const bu = raw.budynki ?? {};
+  const gl = raw.globalne ?? {};
   const d = difficulty;
   const num = (group, key, fallback) => {
     const row = group[key];
@@ -21968,6 +21991,7 @@ function buildEconParams(data, difficulty = "normal") {
     budynekTargowiskoBonusHandlu: num(bu, "budynek_targowisko_bonus_handlu", 0.5),
     budynekBibliotekaBonusNauki: num(bu, "budynek_biblioteka_bonus_nauki", 0.5),
     budynekMennicaMnoznik: num(bu, "budynek_mennica_mnoznik", 1),
+    mennicaMnoznikPoWalucie: num(gl, "mennica_mnoznik_po_walucie", 1.5),
     walutaMnoznik: num(bu, "waluta_mnoznik", 2),
     targowiskoPracaMnoznik: num(bu, "targowisko_praca_na_pieniadz_mnoznik", 2),
     suwaakHandelNaukaDefault: num(em, "suwak_handel_nauka_domyslnie", 60),
@@ -22233,7 +22257,9 @@ function advanceCityEconomy(cities, map, data, difficulty = "normal", econUnits 
       maTargowisko: builtIds.includes("targowisko"),
       maBiblioteka: builtIds.includes("biblioteka"),
       maMennica: builtIds.includes("mennica"),
-      mennicaMnoznik: 1,
+      // Zadanie 1 (E1): Mennica dziala TYLKO gdy zbudowana ORAZ Waluta odkryta (spojne
+      // z tym, ze Mennica i tak wymaga techu Waluta do postawienia -- patrz buildings.json).
+      mennicaMnoznik: builtIds.includes("mennica") && walutaOdkryta ? params.mennicaMnoznikPoWalucie : 1,
       walutaOdkryta,
       // P1b: mnoznik Handel->Pieniadz gdy Waluta zbadana
       walutaMnoznikOverride,
@@ -22353,12 +22379,16 @@ function advanceCityEconomy(cities, map, data, difficulty = "normal", econUnits 
     city.magazynZywnosci = Math.min(grow.nowyMagazynZywnosci, foodCap);
     magazynPoTurze = city.magazynZywnosci;
     incomeByOwner.set(city.ownerId, (incomeByOwner.get(city.ownerId) ?? 0) + pieniadzPoWealth);
-    const maMagazyn = false;
+    const maMagazyn = builtIds.includes("magazyn");
     const resCap = resourceStorageCapacityPerType(maMagazyn, storageParams);
-    const citySurowce = city.surowce ?? {};
-    if (Object.keys(citySurowce).length > 0) {
+    if (!city.surowce) city.surowce = {};
+    const citySurowce = city.surowce;
+    citySurowce.drewno = Math.min(resCap, (citySurowce.drewno ?? 0) + yld.drewnoTerenu);
+    citySurowce.kamien = Math.min(resCap, (citySurowce.kamien ?? 0) + yld.kamienTerenu);
+    const activeRecipes = DEFAULT_CONVERTER_RECIPES.filter((r) => builtIds.includes(r.id));
+    if (activeRecipes.length > 0) {
       const convResult = runConverters(
-        DEFAULT_CONVERTER_RECIPES,
+        activeRecipes,
         citySurowce,
         converterThroughputs,
         () => resCap

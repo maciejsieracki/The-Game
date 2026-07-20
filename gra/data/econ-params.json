@@ -463,5 +463,21 @@
       "jednostka": "miasto",
       "opis": "Skarbiec zawsze w stolicy; utrata stolicy zeruje go do 0."
     }
+  },
+  "handel_szlaki": {
+    "lad_max_dystans": {
+      "easy": 12,
+      "normal": 12,
+      "hard": 12,
+      "jednostka": "heksow",
+      "opis": "Handel E2 (trade-routes.ts): prog uproszczonego dystansu (hexDistance) dla szlaku LADOWEGO miedzy centrami dwoch miast. Ta sama wartosc na wszystkich trudnosciach -- to parametr geografii/gameplayu, nie ekonomicznego skalowania trudnosci. Q6=B (Maciej 2026-07-20): connected = dystans <= prog ORAZ istnieje przechodnia sciezka bez przeszkody terenowej (woda/gory blokuja); NIE budujemy pathfindera po sieci drog."
+    },
+    "morze_max_dystans": {
+      "easy": 20,
+      "normal": 20,
+      "hard": 20,
+      "jednostka": "heksow",
+      "opis": "Handel E2 (trade-routes.ts): prog uproszczonego dystansu dla szlaku MORSKIEGO (przez Port w OBU miastach), po wodzie (Morze unia Wybrzeze -- obie klasyfikowane jako woda po zmianie z 2026-07-20). Szerszy prog niz lad, bo statek nie zna przeszkod gorskich/lasu."
+    }
   }
 }
