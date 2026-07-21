@@ -11,9 +11,13 @@ swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drug
 
 ## ROBOCZA (gra-robocza\Gra-ROBOCZA.html — wskazywana przez START.html)
 
+- 2026-07-22 · stempel: ROBOCZA · **70aea720** · md5 pliku `70aea720f1c8697bb77fb97bfadc466f` · **MAPA: więcej chat ze skarbami (miasta × trudność)** — na `7d03bb35`:
+  **Decyzja Macieja:** liczba chat = miasta startowe (typy × (1+państwa)) × mnożnik trudności — HART=1 · NORMAL=2 · EZ=3. **Było:** `round(ląd/140)` (~10–65). **Jest:** `targetHuts = cityCount × multiplier` w `villages.ts` + `WorldGenOptions` (difficulty, civTypesCount, cityStatesCount) z kreatora → `generator.ts` / `main.ts`.
+  tsc=0 · villages-test 39/39 · map-gen-regression determinizm PASS · publish `gra-robocza/Gra-ROBOCZA.html`. · **AKTUALNA** · Test: Ctrl+F5 START.html → stamp `70aea720`; nowa gra Standard · Normal → więcej chat niż wcześniej; przykład 8 miast Normal → 16 chat.
+
 - 2026-07-22 · stempel: ROBOCZA · **7d03bb35** · md5 pliku `7d03bb35daf68ef86d540b35cf87361b` · **DYPL: oferta AI = faktyczny skarbiec (strict transfer)** — na `826cc00b`:
   **Decyzja Macieja:** państwo/miasto-państwo/cywilizacja proponuje TYLKO tyle ¤/PN, ile ma w skarbcu — nie więcej. **Fix:** `capAiGoldOffer` (min(saldo, max)); `decideAIDiplomacy` + `enrichAiCommandWithTreasury` — brak propozycji gold-only przy 0 ¤; UI dynamiczne („**5** ¤"); akceptacja przez `applyOneShotGoldTransfer` (strict); cofnięty grant bez skarbca (`applyDiplomaticGoldGrant` → strict alias).
-  tsc=0 · diplomacy-proposal-test 64/64 · diplomacy-economy-test 11/11 · publish `gra-robocza/Gra-ROBOCZA.html`. · **AKTUALNA** · Test: Ctrl+F5 START.html → stamp `7d03bb35`; propozycja handlu AI pokazuje realną kwotę (np. 5 ¤); AKCEPTUJ → skarbiec +dokładnie tyle; AI z 0 ¤ nie wysyła handlu złotem.
+  tsc=0 · diplomacy-proposal-test 64/64 · diplomacy-economy-test 11/11 · publish `gra-robocza/Gra-ROBOCZA.html`. · **ZASTĄPIONA** (→ `70aea720`) · Test: Ctrl+F5 START.html → stamp `7d03bb35`; propozycja handlu AI pokazuje realną kwotę (np. 5 ¤); AKCEPTUJ → skarbiec +dokładnie tyle; AI z 0 ¤ nie wysyła handlu złotem.
 
 - 2026-07-22 · stempel: ROBOCZA · **826cc00b** · md5 pliku `826cc00bda20eccc5392ae3924a7aae0` · **MAPA: granice państwa — ciągły kontur per państwo** — na `f9bd9a75`:
   **Bug:** poprzedni fix (`07beb443`) nadal dawał rozłączone paski — per-heks offset normalnych od środka każdego heksa + błędne mapowanie krawędzi (rog i zamiast rog i+1,i+2). **Fix:** `territory-border.ts` — zbieranie krawędzi granicznych → graf → zamknięte pętle (polyline loops); `rangeOverlay.ts` — pas mesh wzdłuż pętli z joinami w wierzchołkach; alpha **0.5**, szerokość **0.15** world units; per ownerId osobny obwód w kolorze cywilizacji.

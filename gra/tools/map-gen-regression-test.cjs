@@ -12,7 +12,9 @@ const BUNDLE = path.join(__dirname, '.map-gen-regression-bundle.cjs');
 fs.writeFileSync(
   ENTRY,
   `export { generujSwiat } from '../src/map/generator';
-export { pathEndsAtSea, pathReachesRealSea } from '../src/map/gen-helpers';`,
+export { pathEndsAtSea, pathReachesRealSea } from '../src/map/gen-helpers';
+export { expectedStartCityCount, targetVillageHutCount } from '../src/map/villages';
+export { defaultCivTypesFromMapLabel, defaultMiastaPanstwaFromMapLabel } from '../src/map/newGameMapDefaults';`,
   'utf8',
 );
 
@@ -136,5 +138,33 @@ console.log(`  0 rzek bez ujścia (luźne): ${totalBad === 0 ? 'PASS' : 'FAIL'} 
 console.log(`  0 rzek bez REALNEGO ujścia (pathReachesRealSea): ${totalBadReal === 0 ? 'PASS' : 'FAIL'} (${totalBadReal} złych)`);
 console.log(`  determinizm: ${detOk ? 'PASS' : 'FAIL'}`);
 
-const allOk = stdOk && duzyOk && totalBad === 0 && totalBadReal === 0 && detOk && fail === 0;
+console.log('\n=== Chat ze skarbami (miasta x trudnosc) ===');
+function countVillages(map) {
+  let n = 0;
+  for (const hex of Object.values(map.hexes)) {
+    if (hex.wioska?.istnieje) n++;
+  }
+  return n;
+}
+const stdLabel = 'Standardowy';
+const stdTypes = M.defaultCivTypesFromMapLabel(stdLabel);
+const stdStates = M.defaultMiastaPanstwaFromMapLabel(stdLabel);
+const stdCities = M.expectedStartCityCount(stdTypes, stdStates);
+const stdTargetNormal = M.targetVillageHutCount(stdCities, 'normal');
+const mapVillages = M.generujSwiat(42, 'standardowy', 'kontynenty', {
+  worldDensity: DENSITY,
+  mapSizeMenuLabel: stdLabel,
+  difficulty: 'normal',
+  civTypesCount: stdTypes,
+  cityStatesCount: stdStates,
+});
+const placed = countVillages(mapVillages);
+console.log(`  miasta=${stdCities} typow=${stdTypes} panstw=${stdStates} -> target=${stdTargetNormal}, placed=${placed}`);
+const example8 = M.targetVillageHutCount(8, 'normal');
+console.log(`  przyklad 8 miast Normal -> ${example8} chat: ${example8 === 16 ? 'PASS' : 'FAIL'}`);
+const villageOk = placed <= stdTargetNormal && placed > 0;
+console.log(`  spawn chat (<=target, >0): ${villageOk ? 'PASS' : 'FAIL'}`);
+if (!villageOk) fail++;
+
+const allOk = stdOk && duzyOk && totalBad === 0 && totalBadReal === 0 && detOk && fail === 0 && villageOk;
 process.exit(allOk ? 0 : 1);

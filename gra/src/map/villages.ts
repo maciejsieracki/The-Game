@@ -16,21 +16,45 @@
 
 import type { Hex } from '../types/hex';
 import { TerenBazowy } from '../types/hex';
+import type { GameDifficulty } from '../game/difficulty-cost';
 import { hexDistanceAxial } from './gen-helpers';
 
 // ---------------------------------------------------------------------------
-// TUNING: wartości do playtestu
+// TUNING: liczba chat ze skarbami (Maciej 2026-07-22)
 // ---------------------------------------------------------------------------
 
 /**
- * Ile heksów lądowych (Morze/Wybrzeże wykluczone z liczenia) przypada na jedną
- * wioskę. Liczba wiosek = round(landHexCount / VILLAGE_LAND_HEX_PER_VILLAGE),
- * min. 1. Zmierzone na realnych mapach 'kontynenty' (ląd tu wychodzi ~20% —
- * mniej niż mogłoby się wydawać z rozmiaru siatki): z N=140 wychodzi
- * maly(108×74)≈10, standardowy(168×120)≈29, duzy(240×168)≈65 wiosek —
- * "kilkanaście do kilkadziesiąt" w zależności od rozmiaru mapy.
+ * Chat na miasto wg trudności: HART=1 · NORMAL=2 · EZ=3.
+ * targetHuts = expectedStartCityCount × multiplier.
  */
+export const VILLAGE_HUTS_PER_CITY: Readonly<Record<GameDifficulty, number>> = {
+  hard: 1,
+  normal: 2,
+  easy: 3,
+};
+
+/** @deprecated Stara formuła (ląd/140) — tylko testy legacy / jawny fallback. */
 export const VILLAGE_LAND_HEX_PER_VILLAGE = 140;
+
+/** Oczekiwana liczba miast startowych: gracz + AI + miasta-państwa (1 + N per typ). */
+export function expectedStartCityCount(civTypesCount: number, cityStatesCount: number): number {
+  const types = Math.max(1, Math.floor(civTypesCount));
+  const states = Math.max(0, Math.floor(cityStatesCount));
+  return types * (1 + states);
+}
+
+export function villageHutsPerCityMultiplier(difficulty: GameDifficulty = 'normal'): number {
+  return VILLAGE_HUTS_PER_CITY[difficulty] ?? VILLAGE_HUTS_PER_CITY.normal;
+}
+
+/** Docelowa liczba chat: miasta × mnożnik trudności. */
+export function targetVillageHutCount(
+  cityCount: number,
+  difficulty: GameDifficulty = 'normal',
+): number {
+  const cities = Math.max(0, Math.floor(cityCount));
+  return cities * villageHutsPerCityMultiplier(difficulty);
+}
 
 /** Minimalny dystans (heksy) wioski od dowolnego miasta / pozycji startowej. */
 export const VILLAGE_MIN_DIST_FROM_CITY = 4;
@@ -95,10 +119,8 @@ function isVillageExcludedTerrain(t: TerenBazowy): boolean {
  * Kolejność kandydatów jest tasowana deterministycznie z `seed` (LCG
  * Fisher-Yates) — te same wejścia zawsze dają te same wioski.
  *
- * Liczba wiosek = round(landHexCount / landHexPerVillage), min. 1, gdzie
- * landHexCount liczy WSZYSTKIE heksy lądowe (bez Morza/Wybrzeża) — niezależnie
- * od tego czy dany heks akurat kwalifikuje się jako kandydat (Góry/Pustynia się
- * liczą do "lądu", ale nie mogą przyjąć wioski).
+ * Liczba wiosek: `opts.targetCount` (kanon: miasta × mnożnik trudności), albo
+ * legacy `round(landHexCount / landHexPerVillage)` gdy targetCount nie podany.
  *
  * @returns lista nowych pozycji wiosek (możliwe pusta, gdy brak miejsca).
  */
@@ -110,6 +132,9 @@ export function placeVillages(
   opts?: {
     minDistFromCity?: number;
     spacing?: number;
+    /** Kanon: docelowa liczba chat (miasta × trudność). */
+    targetCount?: number;
+    /** @deprecated fallback gdy brak targetCount */
     landHexPerVillage?: number;
   },
 ): VillageSite[] {
@@ -133,7 +158,9 @@ export function placeVillages(
     candidates.push({ q: hex.coords.q, r: hex.coords.r });
   }
 
-  const targetCount = Math.max(1, Math.round(landHexCount / landHexPerVillage));
+  const targetCount = opts?.targetCount != null && Number.isFinite(opts.targetCount)
+    ? Math.max(0, Math.floor(opts.targetCount))
+    : Math.max(1, Math.round(landHexCount / landHexPerVillage));
   if (candidates.length === 0) return [];
 
   // Deterministyczny Fisher-Yates shuffle seedowany `seed` (wzór jak spawnCamps).

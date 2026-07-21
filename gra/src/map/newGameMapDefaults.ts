@@ -358,6 +358,12 @@ export interface WorldGenOptions {
   mapSizeMenuLabel?: string;
   /** Udział lądu 0–1 (reszta morze). Nadpisuje domyślny preset typu świata. */
   landFraction?: number;
+  /** Trudność gry — skala chat ze skarbami (HART=1 · NORMAL=2 · EZ=3 na miasto). */
+  difficulty?: 'easy' | 'normal' | 'hard';
+  /** Liczba typów cywilizacji na mapie (kreator). */
+  civTypesCount?: number;
+  /** Liczba miast-państw w klastrze (kreator). */
+  cityStatesCount?: number;
 }
 
 /** Suwak zaawansowany — procent lądu (reszta morze). */

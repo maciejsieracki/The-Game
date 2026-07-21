@@ -20,9 +20,13 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 // tools/.map-gen-regression-entry.ts
 var map_gen_regression_entry_exports = {};
 __export(map_gen_regression_entry_exports, {
+  defaultCivTypesFromMapLabel: () => defaultCivTypesFromMapLabel,
+  defaultMiastaPanstwaFromMapLabel: () => defaultMiastaPanstwaFromMapLabel,
+  expectedStartCityCount: () => expectedStartCityCount,
   generujSwiat: () => generujSwiat,
   pathEndsAtSea: () => pathEndsAtSea,
-  pathReachesRealSea: () => pathReachesRealSea
+  pathReachesRealSea: () => pathReachesRealSea,
+  targetVillageHutCount: () => targetVillageHutCount
 });
 module.exports = __toCommonJS(map_gen_regression_entry_exports);
 
@@ -346,6 +350,22 @@ function normPlMenuLabel(label) {
 
 // src/data/e-start-params-loader.ts
 var R = e_start_params_default;
+var MENU_KEYS = ["Malenki", "Ma\u0142y", "Standardowy", "Du\u017Cy", "Ogromny", "Super Huge"];
+function normMenuLabel(label) {
+  return normPlMenuLabel(label);
+}
+function skalaRow(menuLabel) {
+  const n = normMenuLabel(menuLabel);
+  const m = R.skala_mapy;
+  if (!m) return void 0;
+  for (const key of Object.keys(m)) {
+    if (normMenuLabel(key) === n) return m[key];
+  }
+  for (const key of MENU_KEYS) {
+    if (normMenuLabel(key) === n) return m[key];
+  }
+  return void 0;
+}
 function eStartPlayerCivId() {
   return R.defaulty?.player_civ_id ?? "rzymianie";
 }
@@ -356,6 +376,12 @@ function eStartRenderQualityBundled() {
   const q = R.defaulty?.render_quality_bundled ?? "medium";
   if (q === "low" || q === "high") return q;
   return "medium";
+}
+function eStartTypyCywilizacji(menuLabel) {
+  return skalaRow(menuLabel)?.typy_cywilizacji;
+}
+function eStartMiastaPanstwa(menuLabel) {
+  return skalaRow(menuLabel)?.miasta_panstwa;
 }
 
 // src/map/newGameMapDefaults.ts
@@ -464,6 +490,54 @@ function resolveWorldGenNumbers(opts) {
     highlandThreshold: highlandNoiseThresholdFromTier(reliefTier),
     riverTrace: resolveRiverTraceForMap(mapLabel, wd.rivers)
   };
+}
+var MAX_MIAST_PANSTWA = 18;
+var MAX_TYPY_CYWILIZACJI_MENU = 15;
+var MAP_MENU_TIER_ORDER = [
+  "malenki",
+  "maly",
+  "standardowy",
+  "duzy",
+  "ogromny",
+  "superogromny"
+];
+var MIASTA_PANSTWA_MENU_BY_TIER = [
+  { min: 6, default: 8, max: 10 },
+  { min: 8, default: 10, max: 12 },
+  { min: 10, default: 12, max: 14 },
+  { min: 12, default: 14, max: 16 },
+  { min: 14, default: 16, max: MAX_MIAST_PANSTWA },
+  { min: 14, default: 16, max: MAX_MIAST_PANSTWA }
+];
+var TYPY_CYWILIZACJI_MENU_BY_TIER = [
+  // Maleński: 7 (nie 8) — na najmniejszej mapie 8 klastrów czasem się nie mieści
+  // (pofragmentowany ląd → 1 państwo z 0 miast). Decyzja właściciela 2026-07-20.
+  { min: 6, default: 7, max: 10 },
+  { min: 8, default: 10, max: 12 },
+  { min: 10, default: 12, max: 14 },
+  { min: 12, default: 14, max: MAX_TYPY_CYWILIZACJI_MENU },
+  { min: 13, default: MAX_TYPY_CYWILIZACJI_MENU, max: MAX_TYPY_CYWILIZACJI_MENU },
+  { min: 13, default: MAX_TYPY_CYWILIZACJI_MENU, max: MAX_TYPY_CYWILIZACJI_MENU }
+];
+function mapMenuTierIndex(menuLabel) {
+  const idx = MAP_MENU_TIER_ORDER.indexOf(rozmiarFromMenuLabel(menuLabel));
+  return idx >= 0 ? idx : 2;
+}
+function miastaPanstwaTriple(menuLabel) {
+  return MIASTA_PANSTWA_MENU_BY_TIER[mapMenuTierIndex(menuLabel)] ?? MIASTA_PANSTWA_MENU_BY_TIER[2];
+}
+function typyCywilizacjiTriple(menuLabel) {
+  return TYPY_CYWILIZACJI_MENU_BY_TIER[mapMenuTierIndex(menuLabel)] ?? TYPY_CYWILIZACJI_MENU_BY_TIER[2];
+}
+function defaultMiastaPanstwaFromMapLabel(menuLabel) {
+  const fromE = eStartMiastaPanstwa(menuLabel);
+  if (fromE != null && fromE > 0) return Math.min(fromE, MAX_MIAST_PANSTWA);
+  return miastaPanstwaTriple(menuLabel).default;
+}
+function defaultCivTypesFromMapLabel(menuLabel) {
+  const fromE = eStartTypyCywilizacji(menuLabel);
+  if (fromE != null && fromE > 0) return Math.min(fromE, MAX_TYPY_CYWILIZACJI_MENU);
+  return typyCywilizacjiTriple(menuLabel).default;
 }
 
 // src/map/earth-land-mask.generated.ts
@@ -4765,7 +4839,24 @@ function computeStartPositions(hexes, seed, opts = {}) {
 }
 
 // src/map/villages.ts
+var VILLAGE_HUTS_PER_CITY = {
+  hard: 1,
+  normal: 2,
+  easy: 3
+};
 var VILLAGE_LAND_HEX_PER_VILLAGE = 140;
+function expectedStartCityCount(civTypesCount, cityStatesCount) {
+  const types = Math.max(1, Math.floor(civTypesCount));
+  const states = Math.max(0, Math.floor(cityStatesCount));
+  return types * (1 + states);
+}
+function villageHutsPerCityMultiplier(difficulty = "normal") {
+  return VILLAGE_HUTS_PER_CITY[difficulty] ?? VILLAGE_HUTS_PER_CITY.normal;
+}
+function targetVillageHutCount(cityCount, difficulty = "normal") {
+  const cities = Math.max(0, Math.floor(cityCount));
+  return cities * villageHutsPerCityMultiplier(difficulty);
+}
 var VILLAGE_MIN_DIST_FROM_CITY = 4;
 var VILLAGE_MIN_SPACING = 5;
 function lcgNext(state) {
@@ -4790,7 +4881,7 @@ function placeVillages(hexes, cities, existingCamps, seed, opts) {
     if (isVillageExcludedTerrain(hex.terenBazowy)) continue;
     candidates.push({ q: hex.coords.q, r: hex.coords.r });
   }
-  const targetCount = Math.max(1, Math.round(landHexCount / landHexPerVillage));
+  const targetCount = opts?.targetCount != null && Number.isFinite(opts.targetCount) ? Math.max(0, Math.floor(opts.targetCount)) : Math.max(1, Math.round(landHexCount / landHexPerVillage));
   if (candidates.length === 0) return [];
   let lcg = seed >>> 0;
   for (let i = candidates.length - 1; i > 0; i--) {
@@ -4837,8 +4928,8 @@ var terrain_improvements_default = {
       zywnosc: 3
     },
     surowiecOdblokowany: null,
-    teren: "\u0141\u0105ka, R\xF3wnina",
-    warunek: "ziemia uprawna; DZIA\u0141A BEZ rzeki (podstawowy)",
+    teren: "\u0141\u0105ka, R\xF3wnina; Wzg\xF3rza z lasem",
+    warunek: "ziemia uprawna; DZIA\u0141A BEZ rzeki (podstawowy); MO\u017BE na lesie (Las) \u2014 bez wyr\u0119bu (Maciej 2026-07-21)",
     koszt_praca: 20,
     tech: "Rolnictwo",
     odblokowuje: ""
@@ -5379,7 +5470,15 @@ function generateMap(width = DEFAULT_WIDTH, height = DEFAULT_HEIGHT, seed = 42, 
     minDist: 5,
     absMinDist: 2
   });
-  const villageSites = placeVillages(hexes, startPositions, [], (effectiveSeed ^ 24301) >>> 0);
+  const mapMenuLabel = genOpts?.mapSizeMenuLabel ?? "Standardowy";
+  const startCityCount = expectedStartCityCount(
+    genOpts?.civTypesCount ?? defaultCivTypesFromMapLabel(mapMenuLabel),
+    genOpts?.cityStatesCount ?? defaultMiastaPanstwaFromMapLabel(mapMenuLabel)
+  );
+  const targetHuts = targetVillageHutCount(startCityCount, genOpts?.difficulty ?? "normal");
+  const villageSites = placeVillages(hexes, startPositions, [], (effectiveSeed ^ 24301) >>> 0, {
+    targetCount: targetHuts
+  });
   for (const site of villageSites) {
     const hex = hexes[`${site.q},${site.r}`];
     if (hex) hex.wioska = { istnieje: true, ludnosc: 1 };
@@ -5395,11 +5494,11 @@ function generateMap(width = DEFAULT_WIDTH, height = DEFAULT_HEIGHT, seed = 42, 
   };
 }
 var ROZMIAR_DIMS = mapGenRozmiarDims();
-function normMenuLabel(label) {
+function normMenuLabel2(label) {
   return normPlMenuLabel(label);
 }
 function rozmiarFromMenuLabel(label) {
-  const n = normMenuLabel(label);
+  const n = normMenuLabel2(label);
   if (n.startsWith("malen") || n === "malenki") return "malenki";
   if (n.startsWith("mal") || n === "maly" || n === "small") return "maly";
   if (n.startsWith("stand") || n.startsWith("sre") || n === "standardowy" || n === "medium") return "standardowy";
@@ -5425,7 +5524,11 @@ function generujSwiat(seed, rozmiar, typ = "kontynenty", genOpts, onProgress) {
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
+  defaultCivTypesFromMapLabel,
+  defaultMiastaPanstwaFromMapLabel,
+  expectedStartCityCount,
   generujSwiat,
   pathEndsAtSea,
-  pathReachesRealSea
+  pathReachesRealSea,
+  targetVillageHutCount
 });

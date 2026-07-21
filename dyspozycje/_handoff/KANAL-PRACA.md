@@ -2704,3 +2704,12 @@ Fix: `capAiGoldOffer`, `enrichAiCommandWithTreasury`, `decideAIDiplomacy(skarbie
 Bramki: tsc=0 · diplomacy-proposal 64/64 · diplomacy-economy 11/11.
 Publish ROBOCZA: stamp **7d03bb35** · md5 `7d03bb35daf68ef86d540b35cf87361b`.
 CZEKAM-NA: Maciej — `git pull` → Ctrl+F5 START.html → stamp `7d03bb35` → propozycja handlu AI = realna kwota; AKCEPTUJ = dokładnie tyle w skarbcu.
+
+## [01:15] INTEGRATOR → Maciej — MAPA: więcej chat ze skarbami (miasta × trudność)
+
+Decyzja Macieja: targetHuts = cityCount × multiplier (HART=1 · NORMAL=2 · EZ=3).
+Było: `round(ląd/140)` w `villages.ts`. Jest: `expectedStartCityCount(civTypes×(1+państwa))` × mnożnik z `WorldGenOptions.difficulty`.
+Pliki: `villages.ts`, `generator.ts`, `newGameMapDefaults.ts`, `main.ts` (genOpts z kreatora).
+Bramki: tsc=0 · villages-test 39/39 · map-gen-regression determinizm PASS.
+Publish ROBOCZA: stamp **70aea720** · md5 `70aea720f1c8697bb77fb97bfadc466f`.
+CZEKAM-NA: Maciej — `git pull` → Ctrl+F5 START.html → stamp `70aea720` → nowa gra → więcej chat (np. 8 miast Normal → 16).

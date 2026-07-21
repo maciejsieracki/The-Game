@@ -26,7 +26,7 @@ const ENTRY_FILE  = path.resolve(__dirname, '.villages-entry.ts');
 const BUNDLE_FILE = path.resolve(__dirname, '.villages-bundle.cjs');
 
 const ENTRY_TS = `
-export { placeVillages, VILLAGE_LAND_HEX_PER_VILLAGE, VILLAGE_MIN_DIST_FROM_CITY, VILLAGE_MIN_SPACING } from '../src/map/villages';
+export { placeVillages, VILLAGE_LAND_HEX_PER_VILLAGE, VILLAGE_MIN_DIST_FROM_CITY, VILLAGE_MIN_SPACING, VILLAGE_HUTS_PER_CITY, expectedStartCityCount, targetVillageHutCount, villageHutsPerCityMultiplier } from '../src/map/villages';
 export {
   pickVillageReward, villageGoldAmount, villageTechProgress, villageUnitForEra,
   VILLAGE_REWARD_WEIGHT_GOLD, VILLAGE_REWARD_WEIGHT_TECH, VILLAGE_REWARD_WEIGHT_UNIT,
@@ -56,6 +56,7 @@ try {
 const M = require(BUNDLE_FILE);
 const {
   placeVillages, VILLAGE_LAND_HEX_PER_VILLAGE, VILLAGE_MIN_DIST_FROM_CITY, VILLAGE_MIN_SPACING,
+  VILLAGE_HUTS_PER_CITY, expectedStartCityCount, targetVillageHutCount, villageHutsPerCityMultiplier,
   pickVillageReward, villageGoldAmount, villageTechProgress, villageUnitForEra,
   VILLAGE_REWARD_WEIGHT_GOLD, VILLAGE_REWARD_WEIGHT_TECH, VILLAGE_REWARD_WEIGHT_UNIT,
   VILLAGE_GOLD_BASE_MIN, VILLAGE_GOLD_BASE_MAX, VILLAGE_TECH_SCIENCE_BASE,
@@ -183,9 +184,28 @@ console.log('\n3. placeVillages -- min dystans od miasta/obozu + spacing miedzy 
 }
 
 // ===========================================================================
-// 4. placeVillages -- liczba proporcjonalna do heksow ladowych
+// 4. placeVillages -- targetCount (kanon: miasta x trudnosc)
 // ===========================================================================
-console.log('\n4. placeVillages -- proporcjonalnosc do wielkosci ladu');
+console.log('\n4. placeVillages -- targetCount (miasta x trudnosc)');
+{
+  eq(expectedStartCityCount(2, 3), 8, '8 miast = 2 typy x (1+3 panstwa)');
+  eq(targetVillageHutCount(8, 'normal'), 16, '8 miast Normal -> 16 chat');
+  eq(targetVillageHutCount(8, 'hard'), 8, '8 miast Hard -> 8 chat');
+  eq(targetVillageHutCount(8, 'easy'), 24, '8 miast Easy -> 24 chat');
+  eq(villageHutsPerCityMultiplier('hard'), VILLAGE_HUTS_PER_CITY.hard, 'hard multiplier = 1');
+  eq(villageHutsPerCityMultiplier('normal'), VILLAGE_HUTS_PER_CITY.normal, 'normal multiplier = 2');
+  eq(villageHutsPerCityMultiplier('easy'), VILLAGE_HUTS_PER_CITY.easy, 'easy multiplier = 3');
+
+  const big = makeMap(60, 60);
+  const target = targetVillageHutCount(8, 'normal');
+  const sites = placeVillages(big, [], [], 123, { targetCount: target });
+  eq(sites.length, target, 'large map places exactly targetCount when space allows');
+}
+
+// ===========================================================================
+// 5. placeVillages -- legacy proporcjonalnosc do heksow ladowych
+// ===========================================================================
+console.log('\n5. placeVillages -- legacy proporcjonalnosc do wielkosci ladu');
 {
   const small = makeMap(20, 20); // 400 hexes, all land
   const big   = makeMap(40, 40); // 1600 hexes, all land
@@ -197,9 +217,9 @@ console.log('\n4. placeVillages -- proporcjonalnosc do wielkosci ladu');
 }
 
 // ===========================================================================
-// 5. placeVillages -- min. 1 wioska nawet na malej mapie
+// 6. placeVillages -- min. 1 wioska (legacy fallback)
 // ===========================================================================
-console.log('\n5. placeVillages -- min. 1 wioska');
+console.log('\n6. placeVillages -- min. 1 wioska (legacy fallback)');
 {
   const tiny = makeMap(4, 4); // 16 hexes, N=250 domyslnie -> round(16/250)=0 -> min 1
   const sites = placeVillages(tiny, [], [], 9, {});
@@ -208,9 +228,9 @@ console.log('\n5. placeVillages -- min. 1 wioska');
 }
 
 // ===========================================================================
-// 6. pickVillageReward -- progi wag
+// 7. pickVillageReward -- progi wag
 // ===========================================================================
-console.log('\n6. pickVillageReward -- progi deterministyczne');
+console.log('\n7. pickVillageReward -- progi deterministyczne');
 {
   eq(pickVillageReward(0),        'zloto',     'roll=0 -> zloto');
   eq(pickVillageReward(VILLAGE_REWARD_WEIGHT_GOLD - 0.001), 'zloto', 'tuz przed progu gold -> zloto');
@@ -236,9 +256,9 @@ console.log('\n6. pickVillageReward -- progi deterministyczne');
 }
 
 // ===========================================================================
-// 7. villageGoldAmount / villageTechProgress / villageUnitForEra
+// 8. villageGoldAmount / villageTechProgress / villageUnitForEra
 // ===========================================================================
-console.log('\n7. Magnitudy nagrod');
+console.log('\n8. Magnitudy nagrod');
 {
   const fixedRand = () => 0; // najnizszy koniec zakresu
   eq(villageGoldAmount(1, fixedRand), VILLAGE_GOLD_BASE_MIN, 'era1 min gold == base min');

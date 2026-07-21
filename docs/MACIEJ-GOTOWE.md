@@ -4,7 +4,20 @@
 > **Czat:** krótko **`✅ Gotowe:`** / **`⏸️ Czeka:`** · **Ten plik:** pełniejszy zapis tego samego.  
 > Szczegóły techniczne → handoff w `dyspozycje/_handoff/` · operacja → `dyspozycje/DZIENNIK-MASTERA.md`
 
-**Ostatnia aktualizacja:** 2026-07-22 (dyplomacja — oferta AI = skarbiec)
+**Ostatnia aktualizacja:** 2026-07-22 (mapa — więcej chat ze skarbami)
+
+---
+
+## [2026-07-22] ✅ Gotowe — mapa: więcej chat ze skarbami (miasta × trudność)
+
+| | |
+|---|---|
+| **Co** | Liczba chat ze skarbami skaluje się z liczbą miast startowych × trudność (HART=1 · NORMAL=2 · EZ=3) |
+| **Przykład** | 8 miast na Normal → **16 chat** (2× więcej niż na Hard) |
+| **Było** | ~10–65 chat zależnie od rozmiaru mapy (`ląd ÷ 140`) |
+| **md5** | `70aea720f1c8697bb77fb97bfadc466f` · stamp `70aea720` |
+| **Bramki** | tsc=0 · villages-test 39/39 · map-gen-regression determinizm PASS |
+| **Od Ciebie** | `git pull` → Ctrl+F5 · `gra-robocza/START.html` → stamp `70aea720` → nowa gra → więcej chat wokół klastrów miast |
 
 ---
 

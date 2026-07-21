@@ -81,8 +81,14 @@ import {
   type TypSwiata,
 } from './gen-helpers';
 import { pruneOrphanRiverPaths, pruneRiversNotReachingRealSea, flattenFalseCoastalRiverNotches } from './gen-helpers';
-import { placeVillages } from './villages';
-import { resolveWorldGenNumbers, resolveLandFraction, type WorldGenOptions } from './newGameMapDefaults';
+import { placeVillages, targetVillageHutCount, expectedStartCityCount } from './villages';
+import {
+  resolveWorldGenNumbers,
+  resolveLandFraction,
+  defaultCivTypesFromMapLabel,
+  defaultMiastaPanstwaFromMapLabel,
+  type WorldGenOptions,
+} from './newGameMapDefaults';
 import { mapGenRozmiarDims } from '../data/map-gen-params-loader';
 import { normPlMenuLabel } from '../util/norm-pl-label';
 
@@ -419,8 +425,17 @@ export function generateMap(
   // finalizacji lądu/wybrzeża i po pozycjach startowych (traktowane jak
   // przyszłe miasta dla wykluczenia dystansu). Obozów barbarzyńców jeszcze nie
   // ma na tym etapie (spawnują się co turę w main.ts) -> existingCamps = [].
+  // Liczba chat: miasta startowe (typy × (1+państwa)) × mnożnik trudności.
   // Osobny strumień PRNG (seed^0x5eed) — niezależny od reszty generacji.
-  const villageSites = placeVillages(hexes, startPositions, [], (effectiveSeed ^ 0x5eed) >>> 0);
+  const mapMenuLabel = genOpts?.mapSizeMenuLabel ?? 'Standardowy';
+  const startCityCount = expectedStartCityCount(
+    genOpts?.civTypesCount ?? defaultCivTypesFromMapLabel(mapMenuLabel),
+    genOpts?.cityStatesCount ?? defaultMiastaPanstwaFromMapLabel(mapMenuLabel),
+  );
+  const targetHuts = targetVillageHutCount(startCityCount, genOpts?.difficulty ?? 'normal');
+  const villageSites = placeVillages(hexes, startPositions, [], (effectiveSeed ^ 0x5eed) >>> 0, {
+    targetCount: targetHuts,
+  });
   for (const site of villageSites) {
     const hex = hexes[`${site.q},${site.r}`];
     if (hex) hex.wioska = { istnieje: true, ludnosc: 1 };
