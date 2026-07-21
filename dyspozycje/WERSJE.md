@@ -11,9 +11,13 @@ swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drug
 
 ## ROBOCZA (gra-robocza\Gra-ROBOCZA.html — wskazywana przez START.html)
 
+- 2026-07-22 · stempel: ROBOCZA · **f8a680cb** · md5 pliku `f8a680cb8139078332c92fac65b4cb89` · **FIX: epoka startowa miast-państw (Kamień, nie Brąz)** — na `4bd22b7b`:
+  **Bug Macieja:** państwa-miasta wyglądały jak epoka Brązu (kamienne chatki) mimo startu w Kamieniu. **Przyczyna:** spawn klastra obcych AI używał `initOwnerEra` bez pełnej synchronizacji tech/epoki (`setupAiOwnerEpoch`); render brał epokę z `empireEpochForOwner` — poprawnie, ale dane startowe były niespójne. **Fix:** `applyClusterStartPlan` + `fillAiOwnerCivMap` → `setupAiOwnerEpoch`; `spawnPendingSameTypeRivals` → `reconcileAllOwnerErasFromResearch` przed sync. **Uwaga:** neutralne chat ze skarbami (`wioska`) to osobny model — zawsze 3 chatki, nie epoka.
+  tsc=0 · owner-epoch-test 11/11 · publish `gra-robocza/Gra-ROBOCZA.html`. · **AKTUALNA** · Test: Ctrl+F5 START.html → stamp `f8a680cb`; Nowa gra · Epoka Kamienia → załóż miasto → sprawdź miasta-państwa: tipi/ognisko (P1 Kamień), nie megaron (Brąz); chat ze skarbami = neutralne chatki bez etykiety miasta.
+
 - 2026-07-22 · stempel: ROBOCZA · **4bd22b7b** · md5 pliku `4bd22b7b03a0a85de8e5b8e0ba90f629` · **EKO: nadmiar Pracy → pula ulepszeń** — na `27108476`:
   **Bug Macieja:** bez budynku w kolejce do puli cywilizacji szła tylko część z suwaka (np. 4 z 13), reszta (doBudynkow) ginęła. **Fix:** `advanceProduction` — pusta kolejka → `overflowToPool = doBudynkow`; `main.ts` — overflow dolicza do `_lastPracaRate` (HUD).
-  tsc=0 · production-overflow-test 12/12 · wire-ekonomia-test 37/37 · publish `gra-robocza/Gra-ROBOCZA.html`. · **AKTUALNA** · Test: Ctrl+F5 START.html → stamp `4bd22b7b`; miasto bez budynku, 13 Pracy, suwak 70/30 → pula +13/t (nie +4).
+  tsc=0 · production-overflow-test 12/12 · wire-ekonomia-test 37/37 · publish `gra-robocza/Gra-ROBOCZA.html`. · **ZASTĄPIONA** (→ `f8a680cb`) · Test: Ctrl+F5 START.html → stamp `4bd22b7b`; miasto bez budynku, 13 Pracy, suwak 70/30 → pula +13/t (nie +4).
 
 - 2026-07-22 · stempel: ROBOCZA · **27108476** · md5 pliku `27108476a220e9029beaf7a02512b0e7` · **START/DYPL: unikalne nazwy miast-państw 10–18** — na `d5a4543e`:
   **Uzupełnienie fixu Rywal N:** `miasta_panstwa` = 10 nazw (9 rywali), kreator do 18. **Było:** rywal 10+ → fallback „Rywal N" (podgląd bez pul) lub zawijanie (Sparta×2). **Jest:** `clusterRivalFromPool` bierze rywali 10–18 z `miasta_cywilizacji` (Grecy: Olimpia…Nafplion); kreator przekazuje `cityNamesPools`; UI `resolveOwnerBaseName` bez zmian (z `d5a4543e`).

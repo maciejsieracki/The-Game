@@ -2750,3 +2750,13 @@ Pliki: `production.ts`, `main.ts`, `tools/production-overflow-test.cjs`.
 Bramki: tsc=0 · production-overflow-test 12/12 · wire-ekonomia-test 37/37.
 Publish ROBOCZA: stamp **4bd22b7b** · md5 `4bd22b7b03a0a85de8e5b8e0ba90f629`.
 CZEKAM-NA: Maciej — `git pull` → Ctrl+F5 START.html → stamp `4bd22b7b` → miasto bez budynku → pula Pracy +13/t (nie +4).
+
+## [01:28] INTEGRATOR → Maciej — FIX: epoka startowa miast-państw (f8a680cb)
+
+Bug Macieja: państwa-miasta wyglądały jak Brąz (kamienne chatki) mimo startu w Kamieniu.
+Przyczyna: spawn klastra obcych AI używał initOwnerEra bez pełnej sync tech/epoki; render OK, dane startowe niespójne.
+Fix: applyClusterStartPlan + fillAiOwnerCivMap → setupAiOwnerEpoch; spawnPendingSameTypeRivals → reconcileAllOwnerErasFromResearch.
+Pliki: `main.ts`, `tools/owner-epoch-test.cjs` (11/11).
+Bramki: tsc=0 · owner-epoch-test 11/11 · VERIFY OK.
+Publish ROBOCZA: stamp **f8a680cb** · md5 `f8a680cb8139078332c92fac65b4cb89`.
+CZEKAM-NA: Maciej — `git pull` → Ctrl+F5 START.html → stamp `f8a680cb` → Nowa gra Kamień → załóż miasto → miasta-państwa tipi/ognisko (nie megaron); chat ze skarbami = neutralne chatki (osobny model).

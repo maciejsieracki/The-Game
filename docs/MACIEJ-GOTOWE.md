@@ -4,7 +4,19 @@
 > **Czat:** krótko **`✅ Gotowe:`** / **`⏸️ Czeka:`** · **Ten plik:** pełniejszy zapis tego samego.  
 > Szczegóły techniczne → handoff w `dyspozycje/_handoff/` · operacja → `dyspozycje/DZIENNIK-MASTERA.md`
 
-**Ostatnia aktualizacja:** 2026-07-22 (nadmiar Pracy → ulepszenia cywilizacji)
+**Ostatnia aktualizacja:** 2026-07-22 (epoka startowa miast-państw)
+
+---
+
+## [2026-07-22] ✅ Gotowe — miasta-państwa startują w epoce Kamienia (nie Brązu)
+
+| | |
+|---|---|
+| **Co** | Państwa-miasta na mapie mają wizual Kamienia (tipi/ognisko) gdy startujesz w epoce Kamienia — nie kamienne chatki Brązu |
+| **Przykład** | Nowa gra · Epoka Kamienia → załóż miasto → obce miasta-państwa w klastrze = model Kamienia |
+| **md5** | `f8a680cb8139078332c92fac65b4cb89` · stamp `f8a680cb` |
+| **Bramki** | tsc=0 · owner-epoch-test 11/11 |
+| **Od Ciebie** | `git pull` → Ctrl+F5 · `gra-robocza/START.html` → stamp `f8a680cb` → Nowa gra Kamień → sprawdź domki miast-państw (nie mylić z neutralnymi chatami ze skarbami — te zawsze wyglądają jak chatki) |
 
 ---
 

@@ -21,6 +21,7 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 var owner_epoch_entry_exports = {};
 __export(owner_epoch_entry_exports, {
   computeOwnerEraFromResearch: () => computeOwnerEraFromResearch,
+  grantTechEpokWczesniejszych: () => grantTechEpokWczesniejszych,
   isEraAdvanceTech: () => isEraAdvanceTech
 });
 module.exports = __toCommonJS(owner_epoch_entry_exports);
@@ -32,10 +33,28 @@ function gameEpochIndex(epochId) {
   return i >= 0 ? i : GAME_EPOCH_ORDER.length;
 }
 
+// src/game/research.ts
+function grantTechEpokWczesniejszych(techs, epochId) {
+  const granted = /* @__PURE__ */ new Set();
+  const priorLabels = [];
+  if (epochId === "braz") priorLabels.push("Kamie\u0144");
+  else if (epochId === "zelazo") priorLabels.push("Kamie\u0144", "Br\u0105z");
+  if (priorLabels.length === 0) return granted;
+  for (const row of techs) {
+    const ep = row.Epoka ?? "";
+    const id = row.Technologia;
+    if (id && priorLabels.includes(ep)) granted.add(id);
+  }
+  return granted;
+}
+
 // src/game/playerState.ts
+function eraAdvanceTarget(t) {
+  const raw = t.awansDoEpoki;
+  return typeof raw === "number" && Number.isFinite(raw) ? raw : null;
+}
 function isEraAdvanceTech(t) {
-  const notes = `${t.Uwagi ?? ""} ${t["Odblokowuje budynek"] ?? ""}`;
-  return /epok/i.test(notes);
+  return eraAdvanceTarget(t) !== null;
 }
 
 // src/game/wonder-civ-tech.ts
@@ -70,5 +89,6 @@ function computeOwnerEraFromResearch(startEra, done, techRows) {
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   computeOwnerEraFromResearch,
+  grantTechEpokWczesniejszych,
   isEraAdvanceTech
 });

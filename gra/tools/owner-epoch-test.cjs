@@ -12,6 +12,7 @@ const bundle = path.join(__dirname, '.owner-epoch-bundle.cjs');
 fs.writeFileSync(entry, `
 export { computeOwnerEraFromResearch } from '../src/game/owner-epoch';
 export { isEraAdvanceTech } from '../src/game/playerState';
+export { grantTechEpokWczesniejszych } from '../src/game/research';
 `, 'utf8');
 
 esbuild.buildSync({
@@ -26,7 +27,7 @@ esbuild.buildSync({
   logLevel: 'silent',
 });
 
-const { computeOwnerEraFromResearch, isEraAdvanceTech } = require(bundle);
+const { computeOwnerEraFromResearch, isEraAdvanceTech, grantTechEpokWczesniejszych } = require(bundle);
 const tech = require('../data/tech.json').technologie;
 
 let passed = 0;
@@ -68,6 +69,22 @@ assert(computeOwnerEraFromResearch(1, allStoneNoAdvance, tech) === 1,
 // B12: epoka startu gry (kamien) — etykieta dyplomacji nie z etykiety Epoka w tech.json
 assert(computeOwnerEraFromResearch(1, new Set(['Żegluga', 'Garncarstwo']), tech) === 1,
   'Kamień start + tech z etykietą Brąz bez awansu → nadal era 1 (Lagasz/audiencja)');
+
+// B12: symulacja setupAiOwnerEpoch('kamien') — państwa-miasta startowe
+const kamienPrior = grantTechEpokWczesniejszych(tech, 'kamien');
+assert(kamienPrior.size === 0, 'grantTechEpok kamien → brak tech startowych');
+assert(
+  computeOwnerEraFromResearch(1, kamienPrior, tech) === 1,
+  'setupAiOwnerEpoch kamien → miasta-państwa era 1',
+);
+
+// Brąz start: tech Kamienia w tym Brązownictwo — bez podwójnego awansu
+const brazPrior = grantTechEpokWczesniejszych(tech, 'braz');
+assert(brazPrior.has('Brązownictwo'), 'grantTechEpok braz zawiera Brązownictwo');
+assert(
+  computeOwnerEraFromResearch(2, brazPrior, tech) === 2,
+  'setupAiOwnerEpoch braz → era 2 (Brązownictwo wchłonięte przy starcie)',
+);
 
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
 process.exit(failed > 0 ? 1 : 0);

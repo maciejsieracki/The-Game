@@ -3013,7 +3013,7 @@ async function boot(): Promise<void> {
       });
       for (const [oid, civ] of aiMap) {
         aiOwnerCivMap.set(oid, civ);
-        initOwnerEra(oid, gameStartEra());
+        setupAiOwnerEpoch(oid, _menuEpochId || 'kamien');
       }
     }
 
@@ -3339,7 +3339,7 @@ async function boot(): Promise<void> {
       zdobyczePowerByOwner.clear();
       for (const [oid, civ] of plan.aiOwnerCivMap) {
         aiOwnerCivMap.set(oid, civ);
-        initOwnerEra(oid, gameStartEra());
+        setupAiOwnerEpoch(oid, _menuEpochId || 'kamien');
       }
       for (const [oid, label] of plan.ownerDisplayName) ownerDisplayName.set(oid, label);
       for (const oid of plan.simplifiedDiplomacyOwners) simplifiedDiplomacyOwners.add(oid);
@@ -3455,12 +3455,15 @@ async function boot(): Promise<void> {
         }
       }
 
+      // B12: epoka wizualna musi = epoka startu gry (Kamień→1) — reconcile przed sync renderu.
+      reconcileAllOwnerErasFromResearch();
       // D12: refreshFog + cityRenderer.sync robi wywołujący (tryFoundPlayerCityAt) RAZ po spawnie —
       // nie dublujemy tu (było 2× pełny fog + 2× odbudowa WSZYSTKICH miast na Super Huge).
       initDiplomaticContactSnapshot();
       console.log(
         '[ClusterStart] deferred same-type rivals=' + _rivalsFounded + '/' + targetCount +
         (_rivalsRejected > 0 ? ' (' + _rivalsRejected + ' odrzuconych, backfill)' : '') +
+        ' epokaStart=' + (_menuEpochId || 'kamien') +
         ' (actual player capital @ ' + core.q + ',' + core.r + ')',
       );
     }
