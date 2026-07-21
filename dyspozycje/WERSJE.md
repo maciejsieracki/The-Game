@@ -11,9 +11,13 @@ swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drug
 
 ## ROBOCZA (gra-robocza\Gra-ROBOCZA.html — wskazywana przez START.html)
 
+- 2026-07-22 · stempel: ROBOCZA · **77c603d7** · md5 pliku `77c603d77fe1346c18d8b5cb52535d3c` · **UI: etykieta kultury w audiencji dyplomatycznej** — na `3d2e4f32`:
+  **Cel:** gracz widzi okręg kulturowy rozmówcy (np. „Kultura: Grecka" / „Chetycka") oraz wskazówkę ten sam okręg vs obca kultura. **Fix:** `civCultureLabelForKey` + `sameCultureCircle` w `diplomacy-display.ts`; linia UI w `diplomacyAudience.ts`; stan w `main.ts`.
+  tsc=0 · VERIFY OK · publish `gra-robocza/Gra-ROBOCZA.html`. · **AKTUALNA** · Test: Ctrl+F5 START.html → stamp `77c603d7`; dyplomacja → audiencja Argos → „Kultura: Grecka · Ten sam okręg kulturowy"; obcy typ → „Obca kultura".
+
 - 2026-07-22 · stempel: ROBOCZA · **3d2e4f32** · md5 pliku `3d2e4f329dc66bc40aadf23c7c4d9623` · **UI: stan dyplomatyczny vs nastawienie w audiencji** — na `40a77974`:
   **Cel:** jednoznaczny formalny stan umów (wojna/pokój/sojusz/pakt/handel/brak kontaktu) odrębny od nastawienia (score). **Fix:** `resolveFormalDiplomaticStatus` + `nastawienieLabelFromScore` w `diplomacy-display.ts`; audiencja — prominentny box „Stan dyplomatyczny" z ikoną mieczy przy wojnie; nastawienie z podpisem wyjaśniającym; usunięto mylące „Pokój (neutralne)" i badge tier w sekcji relacji.
-  tsc=0 · diplomacy-display-test 14/14 · publish `gra-robocza/Gra-ROBOCZA.html`. · **AKTUALNA** · Test: Ctrl+F5 START.html → stamp `3d2e4f32`; dyplomacja → audiencja → „Stan dyplomatyczny: Pokój" + osobno „Nastawienie: Neutralny"; przy wojnie → ⚔ Wojna.
+  tsc=0 · diplomacy-display-test 14/14 · publish `gra-robocza/Gra-ROBOCZA.html`. · **ZASTĄPIONA** (→ `77c603d7`) · Test: Ctrl+F5 START.html → stamp `3d2e4f32`; dyplomacja → audiencja → „Stan dyplomatyczny: Pokój" + osobno „Nastawienie: Neutralny"; przy wojnie → ⚔ Wojna.
 
 - 2026-07-22 · stempel: ROBOCZA · **40a77974** · md5 pliku `40a77974b45d7aedb7bd17bc7abf2dfa` · **BALANS: badania x2, budynki -50% produkcji** — na `345cf8e2`:
   **Decyzja Macieja (flat, bez trudności):** koszty badań ×2 (`GLOBAL_RESEARCH_COST_MULT` w `difficulty-cost.ts` → `scaledResearchCost`); koszt Pracy budynków ×0.5 (`GLOBAL_BUILDING_PROD_MULT` w `production.ts` → `buildingWorkCost`). JSON bez zmian.

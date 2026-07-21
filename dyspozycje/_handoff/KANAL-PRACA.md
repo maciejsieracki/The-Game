@@ -2633,3 +2633,12 @@ CZEKAM-NA: **Maciej** `git pull` → Ctrl+F5 START.html → stamp `40a77974`; dr
 - tsc=0 · diplomacy-display-test 14/14 · publish `gra-robocza/Gra-ROBOCZA.html` · commit+push main.
 
 CZEKAM-NA: **Maciej** `git pull` → Ctrl+F5 START.html → stamp `3d2e4f32`; dyplomacja → audiencja → „Stan dyplomatyczny: Pokój" + osobno „Nastawienie: …"; przy wojnie → ⚔ Wojna.
+
+## [01:35 PL, 2026-07-22] INTEGRATOR → Maciej — UI: etykieta kultury w audiencji dyplomatycznej
+
+- **Stamp ROBOCZA:** `77c603d7` (md5 `77c603d77fe1346c18d8b5cb52535d3c`)
+- **Cel:** jawna etykieta okręgu kulturowego rozmówcy + wskazówka ten sam okręg vs obca kultura.
+- **Pliki:** `diplomacy-display.ts` (`civCultureLabelForKey`, `sameCultureCircle`), `diplomacyAudience.ts`, `main.ts`.
+- tsc=0 · VERIFY OK · publish `gra-robocza/Gra-ROBOCZA.html` · commit+push main.
+
+CZEKAM-NA: **Maciej** `git pull` → Ctrl+F5 START.html → stamp `77c603d7`; audiencja Argos → „Kultura: Grecka · Ten sam okręg kulturowy".

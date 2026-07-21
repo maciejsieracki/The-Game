@@ -4,7 +4,20 @@
 > **Czat:** krótko **`✅ Gotowe:`** / **`⏸️ Czeka:`** · **Ten plik:** pełniejszy zapis tego samego.  
 > Szczegóły techniczne → handoff w `dyspozycje/_handoff/` · operacja → `dyspozycje/DZIENNIK-MASTERA.md`
 
-**Ostatnia aktualizacja:** 2026-07-22 (stan dyplomatyczny w audiencji)
+**Ostatnia aktualizacja:** 2026-07-22 (etykieta kultury — audiencja dyplomatyczna)
+
+---
+
+## [2026-07-22] ✅ Gotowe — etykieta kultury w audiencji dyplomatycznej
+
+| | |
+|---|---|
+| **Co** | Panel audiencji pokazuje okręg kulturowy rozmówcy + czy to ta sama kultura co gracz |
+| **Przykłady** | Argos (Grecy): „Kultura: **Grecka** · Ten sam okręg kulturowy" · Hattusa: „Kultura: **Chetycka** · Obca kultura" |
+| **Gdzie** | Dyplomacja → audiencja → pod linią PRZEDSTAWICIEL · epoka, przed stanem dyplomatycznym |
+| **md5** | `77c603d77fe1346c18d8b5cb52535d3c` · stamp `77c603d7` |
+| **Bramki** | tsc=0 · VERIFY OK |
+| **Od Ciebie** | `git pull` → Ctrl+F5 · `gra-robocza/START.html` → stamp `77c603d7` · otwórz audiencję z Argos i z obcym typem |
 
 ---
 
