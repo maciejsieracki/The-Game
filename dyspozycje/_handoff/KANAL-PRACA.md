@@ -2426,3 +2426,14 @@ CZEKAM-NA: **sesja lokalna** — commit+push main · **Maciej** Ctrl+F5 → stam
 - Commit+push main (ten wpis).
 
 CZEKAM-NA: **Maciej** Ctrl+F5 → stamp `83eadf9a` · mapa: brak wrogich jednostek poza bieżącym zasięgiem widzenia.
+
+---
+
+## [23:05 PL, 2026-07-21] INTEGRATOR → Maciej — FIX picking heksów (raycast 3D)
+
+- **ROBOCZA = `f7664322`** (md5 `f766432255c08eb0e74c17333dbdbb57`), na `83eadf9a`.
+- **Przyczyna:** `pixelToHex` przecinał promień z płaszczyzną y=0; przy kamerze ~52° i podniesionym terenie wybór przesuwał się w stronę kamery (krawędzie heksów = zły sąsiad).
+- **Fix:** raycast na InstancedMesh terenu (`picker.ts` + `terrainPickMeshes` w SceneResult); fallback y=0.
+- tsc=0 · VERIFY OK · commit+push main.
+
+CZEKAM-NA: **Maciej** Ctrl+F5 → stamp `f7664322` · klik w krawędź heksa → panel kontekstowy = właściwy hex.

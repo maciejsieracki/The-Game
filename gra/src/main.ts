@@ -729,7 +729,11 @@ async function boot(): Promise<void> {
 
     // C3: buildScene jest asynchroniczny (budowa sceny porcjami/chunkami). Mapa startowa
     // (domyślna, mała) budowana bez overlaya — po prostu await, bez callbacku postępu.
-    let { scene, camera, renderer, center, setFog, hideDecorAtHex, setZoomLod, getZoomLodLevel, dispose: disposeScene } = await buildScene(map, canvas, _currentRenderOptions);
+    let { scene, camera, renderer, center, setFog, hideDecorAtHex, setZoomLod, getZoomLodLevel, terrainPickMeshes, dispose: disposeScene } = await buildScene(map, canvas, _currentRenderOptions);
+
+    function pickHexAt(clientX: number, clientY: number): { q: number; r: number } | null {
+      return pixelToHex(clientX, clientY, canvas, camera, HEX_R, terrainPickMeshes);
+    }
 
     function cameraControllerOpts(): CameraControllerOptions {
       const mapSpan = Math.max(map.szerokoscQ, map.wysokoscR) * HEX_R * 1.85;
@@ -4484,7 +4488,7 @@ async function boot(): Promise<void> {
         removeBuildGhosts();
         return;
       }
-      const hit = pixelToHex(e.clientX, e.clientY, canvas, camera, HEX_R);
+      const hit = pickHexAt(e.clientX, e.clientY);
       if (!hit) {
         removeBuildGhosts();
         return;
@@ -8420,7 +8424,7 @@ async function boot(): Promise<void> {
         return;
       }
 
-      const hitEarly = pixelToHex(e.clientX, e.clientY, canvas, camera, HEX_R);
+      const hitEarly = pickHexAt(e.clientX, e.clientY);
 
       // Kursory jednostek tylko na mapie świata (nie w panelu miasta / mockupie okolicy).
       if (!isWorldMapUnitMode()) {
@@ -8508,7 +8512,7 @@ async function boot(): Promise<void> {
       if (isCityUnitPickOpen()) hideCityUnitPick();
 
       // Treat as a click at (e.clientX, e.clientY)
-      const hit = pixelToHex(e.clientX, e.clientY, canvas, camera, HEX_R);
+      const hit = pickHexAt(e.clientX, e.clientY);
       if (!hit) {
         if (foundCityMode) {
           showHintMessage('Kliknij w heks lądu (podświetlony obszar startu)', 2500);
@@ -12830,6 +12834,7 @@ async function boot(): Promise<void> {
         hideDecorAtHex = newSceneResult.hideDecorAtHex;
         setZoomLod = newSceneResult.setZoomLod;
         getZoomLodLevel = newSceneResult.getZoomLodLevel;
+        terrainPickMeshes = newSceneResult.terrainPickMeshes;
         disposeScene = newSceneResult.dispose;
         cultureRangeGroup = null;
         religionRangeGroup = null;
@@ -12911,6 +12916,7 @@ async function boot(): Promise<void> {
       hideDecorAtHex = newSceneResult.hideDecorAtHex;
       setZoomLod = newSceneResult.setZoomLod;
       getZoomLodLevel = newSceneResult.getZoomLodLevel;
+      terrainPickMeshes = newSceneResult.terrainPickMeshes;
       disposeScene = newSceneResult.dispose;
       cultureRangeGroup = null;
       religionRangeGroup = null;
@@ -13139,6 +13145,7 @@ async function boot(): Promise<void> {
       hideDecorAtHex = newSceneResult.hideDecorAtHex;
       setZoomLod = newSceneResult.setZoomLod;
       getZoomLodLevel = newSceneResult.getZoomLodLevel;
+      terrainPickMeshes = newSceneResult.terrainPickMeshes;
       disposeScene = newSceneResult.dispose;
       cultureRangeGroup = null;
       religionRangeGroup = null;
@@ -13358,6 +13365,7 @@ async function boot(): Promise<void> {
       hideDecorAtHex = newSceneResult.hideDecorAtHex;
       setZoomLod = newSceneResult.setZoomLod;
       getZoomLodLevel = newSceneResult.getZoomLodLevel;
+      terrainPickMeshes = newSceneResult.terrainPickMeshes;
       disposeScene = newSceneResult.dispose;
       cultureRangeGroup = null;
       religionRangeGroup = null;
@@ -13543,6 +13551,7 @@ async function boot(): Promise<void> {
       hideDecorAtHex = newSceneResult.hideDecorAtHex;
       setZoomLod = newSceneResult.setZoomLod;
       getZoomLodLevel = newSceneResult.getZoomLodLevel;
+      terrainPickMeshes = newSceneResult.terrainPickMeshes;
       disposeScene = newSceneResult.dispose;
       cultureRangeGroup = null;
       religionRangeGroup = null;

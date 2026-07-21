@@ -4,7 +4,19 @@
 > **Czat:** krótko **`✅ Gotowe:`** / **`⏸️ Czeka:`** · **Ten plik:** pełniejszy zapis tego samego.  
 > Szczegóły techniczne → handoff w `dyspozycje/_handoff/` · operacja → `dyspozycje/DZIENNIK-MASTERA.md`
 
-**Ostatnia aktualizacja:** 2026-07-21 (fix FoW jednostek)
+**Ostatnia aktualizacja:** 2026-07-21 (fix picking heksów)
+
+---
+
+## [2026-07-21] ✅ Gotowe — FIX picking heksów (raycast 3D terenu)
+
+| | |
+|---|---|
+| **Co** | Klik w krawędź heksa wybiera właściwy hex (panel kontekstowy, ruch jednostek, tryb budowy) |
+| **Przyczyna** | Picking na płaszczyźnie y=0 przy kamerze 3D ~52° i podniesionym terenie przesuwał trafienie w stronę kamery |
+| **md5** | `f766432255c08eb0e74c17333dbdbb57` · stamp `f7664322` |
+| **Bramki** | tsc=0 · VERIFY OK |
+| **Od Ciebie** | Ctrl+F5 · `gra-robocza/START.html` · Nowa gra · klikaj **krawędzie** heksów (nie tylko środek) → panel pokazuje ten sam hex co wizualnie pod kursorem; sprawdź też ruch zwiadowcy na krawędzi docelowego heksa |
 
 ---
 

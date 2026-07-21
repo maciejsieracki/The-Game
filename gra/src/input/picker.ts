@@ -80,7 +80,11 @@ export function worldToAxial(x: number, z: number, R: number): { q: number; r: n
 
 /**
  * Convert a canvas pixel (clientX, clientY) to the axial hex coordinates
- * under the cursor, using a Three.js camera ray intersected with the y=0 plane.
+ * under the cursor.
+ *
+ * When `terrainMeshes` is provided, raycasts against the actual 3D terrain
+ * prisms first (fixes perspective offset at hex edges with tilted camera).
+ * Falls back to y=0 plane intersection when no mesh is hit.
  *
  * Returns null if the ray is parallel to the plane or points away from it
  * (no intersection in the forward direction).
@@ -91,6 +95,7 @@ export function pixelToHex(
   canvas: HTMLCanvasElement,
   camera: THREE.Camera,
   R: number,
+  terrainMeshes?: readonly THREE.Object3D[],
 ): { q: number; r: number } | null {
   const rect = canvas.getBoundingClientRect();
 
@@ -102,7 +107,21 @@ export function pixelToHex(
   const raycaster = new THREE.Raycaster();
   raycaster.setFromCamera(new THREE.Vector2(ndcX, ndcY), camera);
 
-  // Intersect with the horizontal plane y = 0  (normal = (0, 1, 0), constant = 0)
+  // Prefer 3D terrain hit — y=0 alone shifts picks toward the camera under ~52° tilt.
+  if (terrainMeshes && terrainMeshes.length > 0) {
+    const hits = raycaster.intersectObjects(terrainMeshes as THREE.Object3D[], false);
+    for (const h of hits) {
+      if (h.face && h.face.normal.y > 0.5) {
+        return worldToAxial(h.point.x, h.point.z, R);
+      }
+    }
+    if (hits.length > 0) {
+      const pt = hits[0]!.point;
+      return worldToAxial(pt.x, pt.z, R);
+    }
+  }
+
+  // Fallback: horizontal plane y = 0
   const plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
   const intersection = new THREE.Vector3();
   const hit = raycaster.ray.intersectPlane(plane, intersection);

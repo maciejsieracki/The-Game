@@ -272,6 +272,8 @@ export interface SceneResult {
   setZoomLod: (dist: number, minDist: number, maxDist: number) => void;
   /** Aktualny poziom zoom LOD (0–4) — overlay F9. */
   getZoomLodLevel: () => ZoomLodLevel;
+  /** InstancedMesh terenu — raycast pickingu heksów (input/picker.ts). */
+  terrainPickMeshes: THREE.InstancedMesh[];
 }
 
 // ---------------------------------------------------------------------------
@@ -2866,5 +2868,5 @@ export async function buildScene(
       o.updateMatrix();
     }
   });
-  return { scene, camera, renderer, center, dispose, setFog, hideDecorAtHex, setZoomLod, getZoomLodLevel };
+  return { scene, camera, renderer, center, dispose, setFog, hideDecorAtHex, setZoomLod, getZoomLodLevel, terrainPickMeshes: instancedMeshes };
 }
