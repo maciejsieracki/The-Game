@@ -26,6 +26,12 @@ import type { RuntimeUnit } from '../units/setup';
 
 const SQRT3 = Math.sqrt(3);
 
+/** Resolve InstancedMesh terrain hit → axial hex (built in render/scene.ts). */
+export type TerrainPickResolver = (
+  mesh: THREE.InstancedMesh,
+  instanceId: number,
+) => { q: number; r: number } | null;
+
 // ---------------------------------------------------------------------------
 // 1. worldToAxial
 // ---------------------------------------------------------------------------
@@ -75,6 +81,31 @@ export function worldToAxial(x: number, z: number, R: number): { q: number; r: n
 }
 
 // ---------------------------------------------------------------------------
+// 1b. clientRectToNdc — testable NDC conversion (must match camera viewport)
+// ---------------------------------------------------------------------------
+
+export function clientRectToNdc(
+  clientX: number,
+  clientY: number,
+  rect: { left: number; top: number; width: number; height: number },
+): { x: number; y: number } | null {
+  const { left, top, width, height } = rect;
+  if (width <= 0 || height <= 0) return null;
+  return {
+    x: ((clientX - left) / width) * 2 - 1,
+    y: -((clientY - top) / height) * 2 + 1,
+  };
+}
+
+function worldUpNormal(hit: THREE.Intersection): number {
+  if (!hit.face) return 0;
+  const n = hit.face.normal.clone();
+  hit.object.updateMatrixWorld(true);
+  n.transformDirection(hit.object.matrixWorld);
+  return n.y;
+}
+
+// ---------------------------------------------------------------------------
 // 2. pixelToHex
 // ---------------------------------------------------------------------------
 
@@ -82,9 +113,9 @@ export function worldToAxial(x: number, z: number, R: number): { q: number; r: n
  * Convert a canvas pixel (clientX, clientY) to the axial hex coordinates
  * under the cursor.
  *
- * When `terrainMeshes` is provided, raycasts against the actual 3D terrain
- * prisms first (fixes perspective offset at hex edges with tilted camera).
- * Falls back to y=0 plane intersection when no mesh is hit.
+ * When `terrainMeshes` + `resolveTerrainInstance` are provided, InstancedMesh
+ * hits resolve directly to the hex instance (Civ6-style — no worldToAxial drift
+ * on prism side faces). Otherwise raycasts terrain tops, then falls back to y=0.
  *
  * Returns null if the ray is parallel to the plane or points away from it
  * (no intersection in the forward direction).
@@ -96,22 +127,29 @@ export function pixelToHex(
   camera: THREE.Camera,
   R: number,
   terrainMeshes?: readonly THREE.Object3D[],
+  resolveTerrainInstance?: TerrainPickResolver,
 ): { q: number; r: number } | null {
   const rect = canvas.getBoundingClientRect();
+  const ndc = clientRectToNdc(clientX, clientY, rect);
+  if (!ndc) return null;
 
-  // Normalized device coordinates in [-1, +1]
-  const ndcX = ((clientX - rect.left)  / rect.width)  *  2 - 1;
-  const ndcY = ((clientY - rect.top)   / rect.height) * -2 + 1;
+  camera.updateMatrixWorld(true);
 
-  // Raycast through NDC point
   const raycaster = new THREE.Raycaster();
-  raycaster.setFromCamera(new THREE.Vector2(ndcX, ndcY), camera);
+  raycaster.setFromCamera(new THREE.Vector2(ndc.x, ndc.y), camera);
 
-  // Prefer 3D terrain hit — y=0 alone shifts picks toward the camera under ~52° tilt.
   if (terrainMeshes && terrainMeshes.length > 0) {
     const hits = raycaster.intersectObjects(terrainMeshes as THREE.Object3D[], false);
     for (const h of hits) {
-      if (h.face && h.face.normal.y > 0.5) {
+      if (
+        resolveTerrainInstance
+        && h.object instanceof THREE.InstancedMesh
+        && h.instanceId !== undefined
+      ) {
+        const resolved = resolveTerrainInstance(h.object, h.instanceId);
+        if (resolved) return resolved;
+      }
+      if (worldUpNormal(h) > 0.5) {
         return worldToAxial(h.point.x, h.point.z, R);
       }
     }
@@ -121,7 +159,6 @@ export function pixelToHex(
     }
   }
 
-  // Fallback: horizontal plane y = 0
   const plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
   const intersection = new THREE.Vector3();
   const hit = raycaster.ray.intersectPlane(plane, intersection);

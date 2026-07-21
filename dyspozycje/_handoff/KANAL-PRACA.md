@@ -2587,3 +2587,13 @@ CZEKAM-NA: **Maciej** `git pull` → Ctrl+F5 START.html → stamp `13cb70c2`; ov
 - tsc=0 · VERIFY OK.
 
 CZEKAM-NA: **Maciej** `git pull` → Ctrl+F5 START.html → stamp `0440dbe4`; PLAYTEST-WALKA → bitwa ręczna → deploy → zaznacz jednostkę → LPM na docelowy kafelek (jeden klik, właściwy slot).
+
+## [00:30 PL, 2026-07-22] INTEGRATOR → Maciej — FIX picking heksów mapy (offset w dół)
+
+- **Stamp ROBOCZA:** `8b53ffd7` (md5 `8b53ffd7328af8e421b094d5dc290460`)
+- **Bug:** klik w heks na mapie świata — stałe przesunięcie w dół; trzeba klikać środek kafelka. Poprzedni fix `95be60fc` (raycast terenu) niewystarczający.
+- **Przyczyna:** (1) rozjazd `innerWidth/innerHeight` vs `canvas.clientWidth/Height` w aspect kamery vs NDC z `getBoundingClientRect`; (2) `worldToAxial` na trafieniu w bok pryzmu zamiast hex z `instanceId`.
+- **Fix:** `scene.ts` — `clientWidth/Height` dla kamery i resize; mapa `terrainPickKeys` + `resolveTerrainPick`; `picker.ts` — instance lookup, `updateMatrixWorld`, test `picker-test.cjs` 136/136.
+- tsc=0 · VERIFY OK · commit+push main.
+
+CZEKAM-NA: **Maciej** `git pull` → Ctrl+F5 START.html → stamp `8b53ffd7`; klik krawędzi heksa (nie tylko środek) → właściwy hex.

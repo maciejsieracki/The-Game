@@ -734,10 +734,10 @@ async function boot(): Promise<void> {
 
     // C3: buildScene jest asynchroniczny (budowa sceny porcjami/chunkami). Mapa startowa
     // (domyślna, mała) budowana bez overlaya — po prostu await, bez callbacku postępu.
-    let { scene, camera, renderer, center, setFog, hideDecorAtHex, setZoomLod, getZoomLodLevel, terrainPickMeshes, dispose: disposeScene } = await buildScene(map, canvas, _currentRenderOptions);
+    let { scene, camera, renderer, center, setFog, hideDecorAtHex, setZoomLod, getZoomLodLevel, terrainPickMeshes, resolveTerrainPick, dispose: disposeScene } = await buildScene(map, canvas, _currentRenderOptions);
 
     function pickHexAt(clientX: number, clientY: number): { q: number; r: number } | null {
-      return pixelToHex(clientX, clientY, canvas, camera, HEX_R, terrainPickMeshes);
+      return pixelToHex(clientX, clientY, canvas, camera, HEX_R, terrainPickMeshes, resolveTerrainPick);
     }
 
     function cameraControllerOpts(): CameraControllerOptions {
@@ -12999,6 +12999,7 @@ async function boot(): Promise<void> {
         setZoomLod = newSceneResult.setZoomLod;
         getZoomLodLevel = newSceneResult.getZoomLodLevel;
         terrainPickMeshes = newSceneResult.terrainPickMeshes;
+        resolveTerrainPick = newSceneResult.resolveTerrainPick;
         disposeScene = newSceneResult.dispose;
         cultureRangeGroup = null;
         religionRangeGroup = null;
@@ -13082,6 +13083,7 @@ async function boot(): Promise<void> {
       setZoomLod = newSceneResult.setZoomLod;
       getZoomLodLevel = newSceneResult.getZoomLodLevel;
       terrainPickMeshes = newSceneResult.terrainPickMeshes;
+      resolveTerrainPick = newSceneResult.resolveTerrainPick;
       disposeScene = newSceneResult.dispose;
       cultureRangeGroup = null;
       religionRangeGroup = null;
@@ -13312,6 +13314,7 @@ async function boot(): Promise<void> {
       setZoomLod = newSceneResult.setZoomLod;
       getZoomLodLevel = newSceneResult.getZoomLodLevel;
       terrainPickMeshes = newSceneResult.terrainPickMeshes;
+      resolveTerrainPick = newSceneResult.resolveTerrainPick;
       disposeScene = newSceneResult.dispose;
       cultureRangeGroup = null;
       religionRangeGroup = null;
@@ -13533,6 +13536,7 @@ async function boot(): Promise<void> {
       setZoomLod = newSceneResult.setZoomLod;
       getZoomLodLevel = newSceneResult.getZoomLodLevel;
       terrainPickMeshes = newSceneResult.terrainPickMeshes;
+      resolveTerrainPick = newSceneResult.resolveTerrainPick;
       disposeScene = newSceneResult.dispose;
       cultureRangeGroup = null;
       religionRangeGroup = null;
@@ -13720,6 +13724,7 @@ async function boot(): Promise<void> {
       setZoomLod = newSceneResult.setZoomLod;
       getZoomLodLevel = newSceneResult.getZoomLodLevel;
       terrainPickMeshes = newSceneResult.terrainPickMeshes;
+      resolveTerrainPick = newSceneResult.resolveTerrainPick;
       disposeScene = newSceneResult.dispose;
       cultureRangeGroup = null;
       religionRangeGroup = null;

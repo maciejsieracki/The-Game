@@ -11,9 +11,13 @@ swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drug
 
 ## ROBOCZA (gra-robocza\Gra-ROBOCZA.html — wskazywana przez START.html)
 
+- 2026-07-22 · stempel: ROBOCZA · **8b53ffd7** · md5 pliku `8b53ffd7328af8e421b094d5dc290460` · **FIX: picking heksów mapy świata (offset w dół)** — na `0440dbe4`:
+  **Bug:** klik w heks na mapie trafiał w sąsiada „w dół" — trzeba było klikać środek kafelka (`95be60fc` raycast terenu nie wystarczył). **Przyczyna:** (1) `camera.aspect`/`setSize` z `innerWidth/innerHeight` vs `getBoundingClientRect` canvas (scrollbar/DPR drift → przesunięcie Y promienia); (2) `worldToAxial` na trafieniu w bok pryzmu zamiast hex z `instanceId`. **Fix:** `scene.ts` — rozmiar kamery z `canvas.clientWidth/Height`; `terrainPickKeys` + `resolveTerrainPick(instanceId)`; `picker.ts` — `updateMatrixWorld`, world-space normal, test `picker-test.cjs`.
+  tsc=0 · picker-test 136/136 · VERIFY OK · publish `gra-robocza/Gra-ROBOCZA.html`. · **AKTUALNA** · Test: Ctrl+F5 START.html → stamp `8b53ffd7`; klik krawędzi heksa (nie tylko środek) → właściwy hex / panel kontekstowy.
+
 - 2026-07-22 · stempel: ROBOCZA · **0440dbe4** · md5 pliku `0440dbe4c9b526c4e382d22585168d40` · **FIX: manual battle deploy — raycast terenu 3D** — na `13cb70c2`:
   **Bug:** w fazie rozstawiania (deploy) klik w pole czasem trafiał w sąsiedni hex / wymagał wielu klików — `_pickGroundTile` i `_onDeployClick` używały płaszczyzny y=0 (perspektywa kamery przesuwała trafienie, jak stary bug mapy w `picker.ts`). **Fix:** `_battleGroundPickMeshes` + raycast na meshach terenu; `preferPlacement` przy kliku z zaznaczeniem; feedback „Poza strefą"/„Pole nieprzechodne".
-  tsc=0 · battle-smoke harness pre-existing fail · publish `gra-robocza/Gra-ROBOCZA.html`. · **AKTUALNA** · Test: Ctrl+F5 START.html → stamp `0440dbe4`; PLAYTEST-WALKA → bitwa ręczna deploy → zaznacz jednostkę → LPM na docelowy niebieski kafelek → jedna próba, właściwy slot.
+  tsc=0 · battle-smoke harness pre-existing fail · publish `gra-robocza/Gra-ROBOCZA.html`. · **ZASTĄPIONA** (→ `8b53ffd7`) · Test: Ctrl+F5 START.html → stamp `0440dbe4`; PLAYTEST-WALKA → bitwa ręczna deploy → zaznacz jednostkę → LPM na docelowy niebieski kafelek → jedna próba, właściwy slot.
 
 - 2026-07-22 · stempel: ROBOCZA · **13cb70c2** · md5 pliku `13cb70c217f2e899a712af962cfb176a` · **FIX: obywatele nie pracują na obcym terytorium + granice państw** — na `d33863ab`:
   **Bug:** w overlapie zasięgów miast gracz widział 👤 i zbierał plony z heksów faktycznie należących do AI (budowa ulepszeń już blokowana). **Fix:** `territoryOwnerAt` filtruje auto/ręczny przydział pól, reconcile co turę i przy założeniu miasta; 👤 overlay tylko na własnych heksach; toggle granic państw (minimapa, sześciokąt) — już podpięty.

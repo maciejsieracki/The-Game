@@ -274,6 +274,8 @@ export interface SceneResult {
   getZoomLodLevel: () => ZoomLodLevel;
   /** InstancedMesh terenu — raycast pickingu heksów (input/picker.ts). */
   terrainPickMeshes: THREE.InstancedMesh[];
+  /** InstancedMesh hit → axial hex (instanceId lookup, bez worldToAxial na ścianach pryzmu). */
+  resolveTerrainPick: (mesh: THREE.InstancedMesh, instanceId: number) => { q: number; r: number } | null;
 }
 
 // ---------------------------------------------------------------------------
@@ -1294,10 +1296,13 @@ export async function buildScene(
   const useStyledDecor = renderStyle !== 'civ';
   const styledOverlays: Array<{ group: THREE.Group; hexKey: string }> = [];
   const R = HEX_R;
-  const vpW = renderOptions.previewViewport?.width ?? window.innerWidth;
-  const vpH = renderOptions.previewViewport?.height ?? window.innerHeight;
   const fixedViewport = renderOptions.previewViewport != null;
   const panelCols = Math.max(1, renderOptions.previewViewport?.panelColumns ?? 1);
+  // clientWidth/Height — ten sam układ co getBoundingClientRect w pickerze (≠ innerHeight ze scrollbarem).
+  const canvasCssW = () => canvas.clientWidth || window.innerWidth;
+  const canvasCssH = () => canvas.clientHeight || window.innerHeight;
+  const vpW = renderOptions.previewViewport?.width ?? canvasCssW();
+  const vpH = renderOptions.previewViewport?.height ?? canvasCssH();
   const camAspect = (vpW / panelCols) / vpH;
 
   // -- Renderer (jakość GPU z kreatora / menu)
@@ -1426,6 +1431,8 @@ export async function buildScene(
 
   // -- Instanced hex prisms per terrain type
   const instancedMeshes: THREE.InstancedMesh[] = [];
+  /** mesh → instanceId → hex key "q,r" (picking bez worldToAxial na bokach pryzmu). */
+  const terrainPickKeys = new Map<THREE.InstancedMesh, string[]>();
   const terrainMaterials: Partial<Record<TerenBazowy, THREE.MeshLambertMaterial>> = {};
 
   const terrainIndex: Partial<Record<TerenBazowy, number>> = {};
@@ -1804,6 +1811,12 @@ export async function buildScene(
       dummy.scale.set(1, scaleY, 1);
       dummy.updateMatrix();
       mesh.setMatrixAt(iIdx, dummy.matrix);
+      let pickKeys = terrainPickKeys.get(mesh);
+      if (!pickKeys) {
+        pickKeys = [];
+        terrainPickKeys.set(mesh, pickKeys);
+      }
+      pickKeys[iIdx] = hexKey;
       hexOrigMatrix.set(hexKey, dummy.matrix.clone());
       hexTeren.set(hexKey, t);
 
@@ -2401,11 +2414,26 @@ export async function buildScene(
   camera.position.set(center.x, camDist * 0.9, center.z + camDist * 0.7);
   camera.lookAt(center.x, 0, center.z);
 
+  function resolveTerrainPick(mesh: THREE.InstancedMesh, instanceId: number): { q: number; r: number } | null {
+    const keys = terrainPickKeys.get(mesh);
+    const key = keys?.[instanceId];
+    if (!key) return null;
+    const comma = key.indexOf(',');
+    if (comma < 0) return null;
+    const q = Number(key.slice(0, comma));
+    const r = Number(key.slice(comma + 1));
+    if (!Number.isFinite(q) || !Number.isFinite(r)) return null;
+    return { q, r };
+  }
+
   // -- Resize handler (pominięty gdy previewViewport — qualitypreview zarządza rozmiarem)
   function onResize() {
-    camera.aspect = window.innerWidth / window.innerHeight;
+    const w = canvasCssW();
+    const h = canvasCssH();
+    if (w <= 0 || h <= 0) return;
+    camera.aspect = w / h;
     camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setSize(w, h);
   }
   if (!fixedViewport) {
     window.addEventListener('resize', onResize);
@@ -2868,5 +2896,8 @@ export async function buildScene(
       o.updateMatrix();
     }
   });
-  return { scene, camera, renderer, center, dispose, setFog, hideDecorAtHex, setZoomLod, getZoomLodLevel, terrainPickMeshes: instancedMeshes };
+  return {
+    scene, camera, renderer, center, dispose, setFog, hideDecorAtHex, setZoomLod, getZoomLodLevel,
+    terrainPickMeshes: instancedMeshes, resolveTerrainPick,
+  };
 }
