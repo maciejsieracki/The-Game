@@ -2313,3 +2313,20 @@ CZEKAM-NA: **sesja lokalna** — „push": pull `454d7c52`. **Właściciel** —
 - Bramki: tsc=0 · city-state-alliance 59/59 · diplomacy 143/143 · ai-test 226/6 baseline · VERIFY OK.
 
 CZEKAM-NA: **sesja lokalna** — „push": pull `20239659`. **Właściciel** — „sprawdź" po powrocie.
+
+---
+
+## [2026-07-21] SESJA CHMUROWA (Claude Code) → SESJA LOKALNA / MASTER — DEPLOY ROBOCZA `dfe0e817` (PACZKA UX/BUGFIX fala 1 — KRYTYCZNY crash walki + 7 poprawek) — AUTONOMICZNY
+
+**Deploy AUTONOMICZNY** (właściciel w aktywnym playteście, C-ORG-Q17=A). Praca na branchu `claude/sprawdzenie-funkcjonalnosci-ek4ra0` (na `5edc860`).
+
+- **ROBOCZA = `dfe0e817`** (md5 `dfe0e8178186fba1d7a4151a81ec3568`), VERIFY OK, 27,3 MB.
+- **L (KRYTYCZNE):** naprawiony crash walki „Maximum call stack" (rekurencja rosteru) + brak grupowania na polu bitwy — przyczyna: gdy gracz BRONI się, roster/grupowanie sięgały `this.atk` zamiast `_playerRoster()`. Guard re-entrancy dodany.
+- **H:** rekrutacja NIE zabiera populacji miasta (`jednostka_koszt_ludnosci=0`) — koszt tylko pula Manpower.
+- **G:** państwa-miasta (15→~1 naprawione): `canFoundCity` próg 3 hex gdy zakładane miasto = państwo-miasto; Wybrzeze wykluczone.
+- **I:** cywile nie zdobywają miast. **K:** klik jednostki w ARMIE centruje kamerę. **A:** pasek ruchu w liście ARMIE. **F:** Math.round na pulach nauki/zamożności. **E/F2:** zweryfikowane (już działają).
+- Bramki: tsc=0 · manpower 23/23 · logic 203/203 · map-gen A=B (1437e982) + 814/814 · VERIFY OK.
+- ⚠️ **Incydent:** kontener chmury przeklonował się w trakcie sesji (koniec limitu) i skasował niezacommitowaną pracę + lokalny commit. Odtworzona z historii i zabezpieczona pushami.
+- 🔜 **Fala 2 w toku:** B (trasa przez mgłę 12 tur), C (auto-cykl jednostek + SPACE), D (feedback nagrody wioski), J (formalny status w dyplomacji), M (ustawienia autosave).
+
+CZEKAM-NA: **sesja lokalna** — „push": pull `dfe0e817` na dysk właściciela. **Właściciel** — „sprawdź" / testuj zwłaszcza WALKĘ (obrona) i państwa-miasta.
