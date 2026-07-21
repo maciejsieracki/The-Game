@@ -68,6 +68,9 @@ export {
   DIPLOMACY_PARAMS, sisterAllianceDiplomacyParams, sisterAllianceEligible,
 } from ${JSON.stringify(SRC + '/game/diplomacy')};
 export { hexDistance } from ${JSON.stringify(SRC + '/units/setup')};
+export {
+  startRelationForPair, applyCityStateDifficultyTrust, CITY_STATE_TRUST_DELTA_BY_DIFFICULTY,
+} from ${JSON.stringify(SRC + '/game/diplomacy-layers')};
 `;
 
 fs.writeFileSync(ENTRY_FILE, ENTRY_TS, 'utf8');
@@ -92,6 +95,7 @@ const {
   decideAITurn, RESUP_TIERS,
   DIPLOMACY_PARAMS, sisterAllianceDiplomacyParams, sisterAllianceEligible,
   hexDistance,
+  startRelationForPair, applyCityStateDifficultyTrust, CITY_STATE_TRUST_DELTA_BY_DIFFICULTY,
 } = require(BUNDLE_FILE);
 
 // --- tiny assertion framework ------------------------------------------------
@@ -394,6 +398,53 @@ console.log('8. determinizm (A=B)');
   const cmdsA = decideAITurn(PLAYER_ID, scen.units.map(u => ({ ...u })), [city], map, data, { ...opts });
   const cmdsB = decideAITurn(PLAYER_ID, scen.units.map(u => ({ ...u })), [city], map, data, { ...opts });
   eq(JSON.stringify(cmdsA), JSON.stringify(cmdsB), 'dwa identyczne wywolania -> identyczne komendy (brak Math.random)');
+}
+
+// ===========================================================================
+// 9. D-MP-DYPL Q1 (część 1): korekta startowego zaufania miast-panstw wg trudnosci.
+// ===========================================================================
+console.log('9. applyCityStateDifficultyTrust -- korekta zaufania miast-panstw wg trudnosci (WARIANT B)');
+{
+  // WARIANT B (po recon podlogi skali): skala PRZESUNIETA W GORE -- hard=0 (dzisiejsze
+  // zero, zero regresji na trudnym), normal=+5, easy=+10. Unika clamp-wchloniecia, ktore
+  // czynilo hard nieodroznialnym od normal w pierwotnej propozycji (easy+5/normal0/hard-10).
+  eq(CITY_STATE_TRUST_DELTA_BY_DIFFICULTY.easy, 10, 'delta easy = +10');
+  eq(CITY_STATE_TRUST_DELTA_BY_DIFFICULTY.normal, 5, 'delta normal = +5');
+  eq(CITY_STATE_TRUST_DELTA_BY_DIFFICULTY.hard, 0, 'delta hard = 0 (dzisiejsze zero, zero regresji na trudnym)');
+
+  const base = startRelationForPair(true);
+  eq(base.zaufanie, 0, 'baza miasta-panstwa (isSameTypeRival): zaufanie=20-20=0 (juz na podlodze)');
+  eq(base.status, 'neutralni', 'status startowy zawsze neutralni (nie wojna od tury 1)');
+
+  const relHard = applyCityStateDifficultyTrust(base, 'hard');
+  eq(relHard.zaufanie, 0, 'hard: brak zmiany vs baza (delta=0, zero regresji na trudnym -- dzisiejsze zachowanie)');
+  eq(relHard.status, 'neutralni', 'hard: status niezmieniony');
+
+  const relNormal = applyCityStateDifficultyTrust(base, 'normal');
+  eq(relNormal.zaufanie, 5, 'normal: zaufanie podniesione o +5 (0 -> 5, lekko cieplej niz hard)');
+  eq(relNormal.status, 'neutralni', 'normal: status niezmieniony');
+
+  const relEasy = applyCityStateDifficultyTrust(base, 'easy');
+  eq(relEasy.zaufanie, 10, 'easy: zaufanie podniesione o +10 (0 -> 10, najcieplej)');
+  eq(relEasy.status, 'neutralni', 'easy: status niezmieniony');
+
+  // Monotonicznosc REALNA (bez clamp-wchloniecia): easy > normal > hard, scisle rosnaco.
+  assert(relEasy.zaufanie > relNormal.zaufanie, 'easy zaufanie > normal (scisle, bez clamp)');
+  assert(relNormal.zaufanie > relHard.zaufanie, 'normal zaufanie > hard (scisle, bez clamp)');
+  assert(relEasy.zaufanie > relHard.zaufanie, 'easy zaufanie > hard (najwieksza rozpietosc)');
+
+  // respekt nietkniety -- korekta dotyczy WYLACZNIE zaufania.
+  eq(relEasy.respekt, base.respekt, 'easy: respekt niezmieniony');
+  eq(relHard.respekt, base.respekt, 'hard: respekt niezmieniony');
+
+  // applyCityStateDifficultyTrust per se nie rozroznia sameType (to main.ts decyduje GDZIE
+  // ja wywolac -- WYLACZNIE spawnPendingSameTypeRivals dla miast-panstw, nigdy dla glownych
+  // cywilizacji obcego typu / startRelationForPair(false) na linii ~3223).
+  const foreignBase = startRelationForPair(false);
+  eq(applyCityStateDifficultyTrust(foreignBase, 'easy').zaufanie, foreignBase.zaufanie + 10,
+    'funkcja sama w sobie jest ogolna (deltaZ na kazdej Relation) -- scope do WYLACZNIE ' +
+    'miast-panstw jest zapewniony przez main.ts (jedyne wywolanie: spawnPendingSameTypeRivals), ' +
+    'nie przez logike tej funkcji');
 }
 
 // ---------------------------------------------------------------------------

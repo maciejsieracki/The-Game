@@ -20,12 +20,15 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 // tools/.city-state-alliance-test-entry.ts
 var city_state_alliance_test_entry_exports = {};
 __export(city_state_alliance_test_entry_exports, {
+  CITY_STATE_TRUST_DELTA_BY_DIFFICULTY: () => CITY_STATE_TRUST_DELTA_BY_DIFFICULTY,
   DIPLOMACY_PARAMS: () => DIPLOMACY_PARAMS,
   RESUP_TIERS: () => RESUP_TIERS,
+  applyCityStateDifficultyTrust: () => applyCityStateDifficultyTrust,
   decideAITurn: () => decideAITurn,
   hexDistance: () => hexDistance,
   sisterAllianceDiplomacyParams: () => sisterAllianceDiplomacyParams,
-  sisterAllianceEligible: () => sisterAllianceEligible
+  sisterAllianceEligible: () => sisterAllianceEligible,
+  startRelationForPair: () => startRelationForPair
 });
 module.exports = __toCommonJS(city_state_alliance_test_entry_exports);
 
@@ -12532,14 +12535,46 @@ function findNearestVillage(unit, map, playerId) {
   }
   return bestHex;
 }
+
+// src/game/diplomacy-layers.ts
+function clamp3(n, lo, hi) {
+  return Math.max(lo, Math.min(hi, n));
+}
+function startRelationForPair(sameType) {
+  const p = DIPLOMACY_PARAMS;
+  let zaufanie = p.startZaufanie;
+  if (sameType) {
+    zaufanie += p.rywalizacjaTenSamTyp_zaufanie;
+  } else {
+    zaufanie += p.roznicaKulturowa_zaufanie;
+  }
+  return {
+    zaufanie: clamp3(zaufanie, 0, 100),
+    respekt: p.startRespekt,
+    status: "neutralni"
+  };
+}
+var CITY_STATE_TRUST_DELTA_BY_DIFFICULTY = {
+  easy: 10,
+  normal: 5,
+  hard: 0
+};
+function applyCityStateDifficultyTrust(base, difficulty) {
+  const delta = CITY_STATE_TRUST_DELTA_BY_DIFFICULTY[difficulty];
+  if (delta === 0) return base;
+  return { ...base, zaufanie: clamp3(base.zaufanie + delta, 0, 100) };
+}
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
+  CITY_STATE_TRUST_DELTA_BY_DIFFICULTY,
   DIPLOMACY_PARAMS,
   RESUP_TIERS,
+  applyCityStateDifficultyTrust,
   decideAITurn,
   hexDistance,
   sisterAllianceDiplomacyParams,
-  sisterAllianceEligible
+  sisterAllianceEligible,
+  startRelationForPair
 });
 /*! Bundled license information:
 

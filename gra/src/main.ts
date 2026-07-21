@@ -109,6 +109,7 @@ import {
   filterDiplomacyCommandsForLayer,
   playerDiplomacyActionAllowed,
   startRelationForPair,
+  applyCityStateDifficultyTrust,
 } from './game/diplomacy-layers';
 import { grantTechEpokWczesniejszych } from './game/research';
 import { computeOwnerEraFromResearch } from './game/owner-epoch';
@@ -3282,7 +3283,16 @@ async function boot(): Promise<void> {
         ownerDisplayName.set(ownerId, nazwa);
         simplifiedDiplomacyOwners.add(ownerId);
         typCityCopyOwners.add(ownerId);
-        setDiploRelation(0, ownerId, startRelationForPair(true));
+        // D-MP-DYPL Q1 (część 1, WARIANT B): korekta startowego zaufania miast-panstw wg
+        // trudnosci (easy +10 / normal +5 / hard 0 — skala przesunieta w gore, bo baza=0
+        // juz jest na dole 0-100 i ujemna delta na hard bylaby wchlaniana przez clamp)
+        // — WYLACZNIE tu, NIE dotyka głównych cywilizacji obcego typu (te startuja przez
+        // startRelationForPair(false) bez korekty, patrz plan.startRelations w
+        // cluster-start.ts / main.ts linia ~3223).
+        setDiploRelation(
+          0, ownerId,
+          applyCityStateDifficultyTrust(startRelationForPair(true), _menuDifficulty),
+        );
         aiStartHexes.push({ q: pos.q, r: pos.r, ownerId });
 
         const c = foundCityAt(pos.q, pos.r, ownerId, cities, map, nazwa);
@@ -11622,7 +11632,9 @@ async function boot(): Promise<void> {
                 foreignTypeOwners,
                 contactedOwners,
               );
-              const dipCmdsRaw = decideAIDiplomacy(diploInp, undefined, diffParams.agresjaMnoznik);
+              const dipCmdsRaw = decideAIDiplomacy(
+                diploInp, undefined, diffParams.agresjaMnoznik, diffParams.dyplomacjaAktywnosc,
+              );
               const dipCmds: AIDiplomacyCommand[] = filterDiplomacyCommandsForLayer(
                 Array.isArray(dipCmdsRaw) ? dipCmdsRaw : [],
                 dipLayer,

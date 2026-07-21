@@ -1941,16 +1941,29 @@ export function loadDefaultAIDiplomacyProgs(): DiplomacjaParams {
  *
  * Pure function – brak DOM, brak mutacji wejść, deterministyczna.
  *
- * @param inp     Kompletne wejście dla tej tury AI.
- * @param params  Opcjonalne overridy progów (domyślnie PROG_* stałe z tego modułu).
+ * @param inp                 Kompletne wejście dla tej tury AI.
+ * @param params              Opcjonalne overridy progów (domyślnie PROG_* stałe z tego modułu).
+ * @param agresjaMnoznik      Mnoznik trudnosci dla effAgresja (P3/P4 - trybut/wojna).
+ * @param dyplomacjaAktywnosc Mnoznik trudnosci dla willingnessAlly/willingnessTrade
+ *                            (P5 sojusz / P6 handel) — D-MP-DYPL Q1 (Maciej 2026-07-21).
  * @returns       Tablica komend (0..N); jeden gracz może dostać max jedną komendę.
  *
- * v0.2 TODO: sojusz (willingnessAlly), handel (willingnessTrade) – stub poniżej.
+ * Priorytety 5 (zaproponuj_sojusz) i 6 (zaproponuj_handel) zaimplementowane ponizej
+ * (v0.2), skalowane dyplomacjaAktywnosc.
  */
 export function decideAIDiplomacy(
-  inp:            DiplomacjaInputs,
-  params?:        Partial<DiplomacjaParams>,
-  agresjaMnoznik: number = 1,
+  inp:                 DiplomacjaInputs,
+  params?:             Partial<DiplomacjaParams>,
+  agresjaMnoznik:      number = 1,
+  /**
+   * D-MP-DYPL Q1 (Maciej 2026-07-21, część 2): mnoznik aktywnosci dyplomacji
+   * (0..2, z ai-params.json trudnosc_poziomN_dyplomacja_aktywnosc: easy=0.8,
+   * normal=1.0, hard=1.25). Skaluje willingnessAlly/willingnessTrade (P5/P6)
+   * analogicznie do agresjaMnoznik na effAgresja -- wyzsza aktywnosc = chetniej
+   * proponuje sojusz/handel. Dotyczy WSZYSTKICH AI (parametr ogolny), nie tylko
+   * miast-panstw -- viz. RAPORT do wlasciciela.
+   */
+  dyplomacjaAktywnosc: number = 1,
 ): AIDiplomacyCommand[] {
   if (!inp?.relacje?.length) return [];
 
@@ -2062,17 +2075,20 @@ export function decideAIDiplomacy(
       dipP.progSojuszRelacja - sojuszAdj.ease.scoreThresholdDelta + sojuszAdj.penaltyScore,
       dipP,
     );
+    // D-MP-DYPL Q1 (część 2): dyplomacjaAktywnosc skaluje willingnessAlly (T4=B analogicznie
+    // do agresjaMnoznik na effAgresja) -- wyzsza aktywnosc trudnosci = chetniej proponuje sojusz.
+    const effWillingnessAlly = Math.min(1, stance.willingnessAlly * dyplomacjaAktywnosc);
     if (
       !rel.stanWojny &&
       !sojuszAdj.hegemonProposerNoAlliance &&
-      stance.willingnessAlly >= minSojuszAlly &&
+      effWillingnessAlly >= minSojuszAlly &&
       score >= minSojuszScore &&
       rel.relation.zaufanie >= diplomacyAllianceMinZaufanie(sojuszAdj, aiMilRatio, dipP)
     ) {
       komendy.push({
         type:     'zaproponuj_sojusz',
         targetId: rel.partnerId,
-        powod:    `willingnessAlly=${stance.willingnessAlly.toFixed(2)} >= prog=${minSojuszAlly.toFixed(2)} (rw=${rw.toFixed(2)}): proponujemy sojusz`,
+        powod:    `willingnessAlly=${stance.willingnessAlly.toFixed(2)} (eff=${effWillingnessAlly.toFixed(2)} x aktywnosc=${dyplomacjaAktywnosc.toFixed(2)}) >= prog=${minSojuszAlly.toFixed(2)} (rw=${rw.toFixed(2)}): proponujemy sojusz`,
       });
       continue;
     }
@@ -2080,17 +2096,19 @@ export function decideAIDiplomacy(
     // ---- Priorytet 6: zaproponuj_handel ----
     // Warunki: !stanWojny, willingnessTrade >= PROG_HANDEL(0.5), handlowosc >= 0.4.
     // Cel: AI proponuje handel gdy relacja co najmniej neutralna i archetyp jest handlowy.
+    // dyplomacjaAktywnosc skaluje willingnessTrade analogicznie do sojuszu powyzej.
     const handlowosc = inp.handlowosc ?? p.progHandelArchetypeMin;
+    const effWillingnessTrade = Math.min(1, stance.willingnessTrade * dyplomacjaAktywnosc);
     if (
       !rel.stanWojny &&
-      stance.willingnessTrade >= p.progHandel &&
+      effWillingnessTrade >= p.progHandel &&
       handlowosc >= p.progHandelArchetypeMin &&
       score > p.progHandelRelacjaMin
     ) {
       komendy.push({
         type:     'zaproponuj_handel',
         targetId: rel.partnerId,
-        powod:    `willingnessTrade=${stance.willingnessTrade.toFixed(2)} >= prog=${p.progHandel}, handlowosc=${handlowosc.toFixed(2)} >= 0.4: proponujemy handel`,
+        powod:    `willingnessTrade=${stance.willingnessTrade.toFixed(2)} (eff=${effWillingnessTrade.toFixed(2)} x aktywnosc=${dyplomacjaAktywnosc.toFixed(2)}) >= prog=${p.progHandel}, handlowosc=${handlowosc.toFixed(2)} >= 0.4: proponujemy handel`,
       });
       continue;
     }

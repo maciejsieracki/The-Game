@@ -39,6 +39,42 @@ export function startRelationForPair(sameType: boolean): Relation {
   };
 }
 
+/**
+ * D-MP-DYPL Q1 (Maciej 2026-07-21, C-MP-DYPL-Q1=B, część 1): korekta startowego
+ * zaufania miast-panstw (isSameTypeRival — kopie typu gracza, `simplifiedDiplomacyOwners`)
+ * wg poziomu trudnosci gry. WYLACZNIE miasta-panstwa — NIE dotyka relacji z glownymi
+ * cywilizacjami obcego typu (te zostaja na globalnym startRelationForPair(false),
+ * niezmienione, zeby nie ruszyc balansu glownych cyw).
+ *
+ * Wyzsza trudnosc = mniej zaufania (miasta-panstwa bardziej nieufne wobec gracza).
+ * Status pozostaje 'neutralni' — to nastawienie startowe, nie wojna od tury 1.
+ *
+ * WARIANT B (Maciej 2026-07-21, po recon podlogi skali): baza miasta-panstwa
+ * (startRelationForPair(true) = startZaufanie(20) + rywalizacjaTenSamTyp_zaufanie(-20) = 0)
+ * jest juz na dole skali 0-100 -- delta ujemna na hard bylaby wchlaniana przez clamp i
+ * nieodrozniablna od normal. Zamiast tego skala PRZESUNIETA W GORE: hard=0 (dzisiejsze
+ * zero -- zero regresji na trudnym, najbardziej nieufne), normal=+5 (lekko cieplej),
+ * easy=+10 (najcieplej) -- monotonicznie "wyzsza trudnosc = mniej zaufania", i hard ma
+ * realny, widoczny sens (nie jest identyczny z normal).
+ *
+ * Liczby (zaakceptowane przez wlasciciela): easy +10 / normal +5 / hard 0 (skala 0-100).
+ */
+export const CITY_STATE_TRUST_DELTA_BY_DIFFICULTY: Record<'easy' | 'normal' | 'hard', number> = {
+  easy: 10,
+  normal: 5,
+  hard: 0,
+};
+
+/** Stosuje korektę zaufania miast-panstw wg trudności do relacji startowej. */
+export function applyCityStateDifficultyTrust(
+  base: Relation,
+  difficulty: 'easy' | 'normal' | 'hard',
+): Relation {
+  const delta = CITY_STATE_TRUST_DELTA_BY_DIFFICULTY[difficulty];
+  if (delta === 0) return base;
+  return { ...base, zaufanie: clamp(base.zaufanie + delta, 0, 100) };
+}
+
 /** Domyślna relacja neutralna (lazy init bez kontekstu typu). */
 export function defaultNeutralRelation(): Relation {
   const p = DIPLOMACY_PARAMS;
