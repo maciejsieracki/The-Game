@@ -2724,3 +2724,13 @@ Pliki: `gra/src/render/scene.ts`, `gra/src/main.ts`.
 Bramki: tsc=0 · smoke OK · picker-test 136/136.
 Publish ROBOCZA: stamp **248b2622** · md5 `248b262222701bc1bf5149094e1d277b`.
 CZEKAM-NA: Maciej — `git pull` → Ctrl+F5 START.html → stamp `248b2622` → jednostka na lesie → token + pierścień w pełni widoczne; po ruchu las wraca.
+
+## [01:30] INTEGRATOR → Maciej — DYPL: nazwy miast-państw w audiencji
+
+Bug: audiencja pokazywała „Rywal 10 · miasto-państwo" zamiast Mykeny/Argos.
+Przyczyna: cache `ownerDisplayName` z fallbacku `Rywal N` (pula 10 nazw, rywal >9) miał pierwszeństwo przed `city.name`.
+Fix: `resolveOwnerBaseName` + `isTechnicalOwnerLabel` (`display-names.ts`); `ownerDiploLabel` (`main.ts`); zawijanie indeksu puli (`city-names-pool.ts`).
+Pliki: `gra/src/game/display-names.ts`, `gra/src/main.ts`, `gra/src/game/city-names-pool.ts`, `gra/tools/display-names-test.cjs`.
+Bramki: tsc=0 · display-names-test 11/11 · diplomacy-display-test 14/14.
+Publish ROBOCZA: stamp **d5a4543e** · md5 `d5a4543e21e40869cd6fbbd6a7f27671`.
+CZEKAM-NA: Maciej — `git pull` → Ctrl+F5 START.html → stamp `d5a4543e` → dyplomacja → audiencja → nazwa miasta zamiast Rywal N.

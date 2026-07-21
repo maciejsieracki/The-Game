@@ -79,3 +79,57 @@ export function formatOwnerDiploLabel(
     isCityState: isOwnerClusterCityState(ownerId, opts),
   });
 }
+
+/** Placeholder z fallbacku nazw klastra — nie pokazywać graczowi w UI dyplomacji. */
+export function isTechnicalOwnerLabel(name: string | null | undefined): boolean {
+  const t = (name ?? '').trim();
+  if (!t) return true;
+  if (/^Rywal \d+$/i.test(t)) return true;
+  if (/^AI \d+$/i.test(t)) return true;
+  if (/^oid-\d+$/i.test(t)) return true;
+  return false;
+}
+
+export interface ResolveOwnerBaseNameInput {
+  ownerId: number;
+  cached?: string;
+  cityName?: string;
+  civDisplayName?: string;
+  isCityState: boolean;
+  isClusterCapital?: boolean;
+}
+
+/**
+ * Bazowa nazwa państwa przed dopiskiem „· miasto-państwo”.
+ * Miasta-państwa → nazwa miasta z mapy; stolice obcych klastrów → nazwa nacji; reszta → cache/miasto.
+ */
+export function resolveOwnerBaseName(input: ResolveOwnerBaseNameInput): string {
+  const {
+    ownerId,
+    cached,
+    cityName,
+    civDisplayName,
+    isCityState,
+    isClusterCapital = false,
+  } = input;
+
+  const cleanCity = cityName && !isTechnicalOwnerLabel(cityName)
+    ? stripCityStateSuffix(cityName)
+    : undefined;
+  const cleanCiv = civDisplayName && !isTechnicalOwnerLabel(civDisplayName)
+    ? stripCityStateSuffix(civDisplayName)
+    : undefined;
+  const cleanCached = cached && !isTechnicalOwnerLabel(cached)
+    ? stripCityStateSuffix(cached)
+    : undefined;
+
+  if (isClusterCapital && cleanCiv) return cleanCiv;
+  if (isCityState && cleanCity) return cleanCity;
+  if (!isCityState && cleanCiv) return cleanCiv;
+  if (cleanCached) return cleanCached;
+  if (cleanCity) return cleanCity;
+  if (cleanCiv) return cleanCiv;
+  if (cached?.trim()) return stripCityStateSuffix(cached);
+  if (cityName?.trim()) return stripCityStateSuffix(cityName);
+  return `AI ${ownerId}`;
+}

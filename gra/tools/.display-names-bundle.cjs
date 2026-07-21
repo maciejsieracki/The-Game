@@ -25,7 +25,9 @@ __export(display_names_entry_exports, {
   formatEntityDisplayName: () => formatEntityDisplayName,
   formatOwnerDiploLabel: () => formatOwnerDiploLabel,
   isClusterCityStateSlot: () => isClusterCityStateSlot,
-  isOwnerClusterCityState: () => isOwnerClusterCityState
+  isOwnerClusterCityState: () => isOwnerClusterCityState,
+  isTechnicalOwnerLabel: () => isTechnicalOwnerLabel,
+  resolveOwnerBaseName: () => resolveOwnerBaseName
 });
 module.exports = __toCommonJS(display_names_entry_exports);
 
@@ -68,6 +70,36 @@ function formatOwnerDiploLabel(baseName, ownerId, opts) {
     isCityState: isOwnerClusterCityState(ownerId, opts)
   });
 }
+function isTechnicalOwnerLabel(name) {
+  const t = (name ?? "").trim();
+  if (!t) return true;
+  if (/^Rywal \d+$/i.test(t)) return true;
+  if (/^AI \d+$/i.test(t)) return true;
+  if (/^oid-\d+$/i.test(t)) return true;
+  return false;
+}
+function resolveOwnerBaseName(input) {
+  const {
+    ownerId,
+    cached,
+    cityName,
+    civDisplayName,
+    isCityState,
+    isClusterCapital = false
+  } = input;
+  const cleanCity = cityName && !isTechnicalOwnerLabel(cityName) ? stripCityStateSuffix(cityName) : void 0;
+  const cleanCiv = civDisplayName && !isTechnicalOwnerLabel(civDisplayName) ? stripCityStateSuffix(civDisplayName) : void 0;
+  const cleanCached = cached && !isTechnicalOwnerLabel(cached) ? stripCityStateSuffix(cached) : void 0;
+  if (isClusterCapital && cleanCiv) return cleanCiv;
+  if (isCityState && cleanCity) return cleanCity;
+  if (!isCityState && cleanCiv) return cleanCiv;
+  if (cleanCached) return cleanCached;
+  if (cleanCity) return cleanCity;
+  if (cleanCiv) return cleanCiv;
+  if (cached?.trim()) return stripCityStateSuffix(cached);
+  if (cityName?.trim()) return stripCityStateSuffix(cityName);
+  return `AI ${ownerId}`;
+}
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   CITY_STATE_LABEL,
@@ -75,5 +107,7 @@ function formatOwnerDiploLabel(baseName, ownerId, opts) {
   formatEntityDisplayName,
   formatOwnerDiploLabel,
   isClusterCityStateSlot,
-  isOwnerClusterCityState
+  isOwnerClusterCityState,
+  isTechnicalOwnerLabel,
+  resolveOwnerBaseName
 });

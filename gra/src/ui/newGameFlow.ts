@@ -803,6 +803,7 @@ function currentStartPreview(): StartPreview | null {
   const typesN = curStep >= 4 ? parseInt(settingValue('civ_types_count'), 10) : NaN;
   return buildStartPreview({
     civs: data.civs,
+    cityNamesPools: data.cityNamesPools,
     playerCivId: selCiv,
     mapSizeMenuLabel: mapLabel,
     cityStatesCount: Number.isFinite(cityN) ? cityN : undefined,
@@ -1192,6 +1193,7 @@ function buildParams(): NewGameParams {
   const startPreview = data
     ? buildStartPreview({
         civs: data.civs,
+        cityNamesPools: data.cityNamesPools,
         playerCivId: selCiv ?? DEFAULT_PLAYER_CIV_ID,
         mapSizeMenuLabel: mapSizeLabel,
         cityStatesCount: Number.isFinite(cityStatesCount) ? cityStatesCount : undefined,

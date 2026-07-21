@@ -48,6 +48,13 @@ function poolEntry(pools: CityNamesPoolsData, ikonaId: string): CityNamesPoolEnt
   return pools[ikonaId];
 }
 
+/** Indeks w miasta_panstwa: 0 = stolica, 1..N-1 = rywale (zawijanie przy >9 rywalach). */
+export function rivalPoolIndex(rivalIndex1Based: number, poolLen: number): number {
+  if (poolLen <= 1) return 0;
+  const rivalSlots = poolLen - 1;
+  return ((Math.max(1, rivalIndex1Based) - 1) % rivalSlots) + 1;
+}
+
 /** Nazwa państwa-miasta (indeks 0 = stolica gracza / obca stolica klastra). */
 export function stateCityNameAt(
   pools: CityNamesPoolsData,
@@ -56,8 +63,10 @@ export function stateCityNameAt(
   fallback: string,
 ): string {
   const pan = poolEntry(pools, ikonaId)?.miasta_panstwa;
-  if (pan && index >= 0 && index < pan.length && pan[index]) {
-    return pan[index] as string;
+  if (!pan?.length) return fallback;
+  const idx = index >= 1 ? rivalPoolIndex(index, pan.length) : index;
+  if (idx >= 0 && idx < pan.length && pan[idx]) {
+    return pan[idx] as string;
   }
   return fallback;
 }
@@ -67,13 +76,49 @@ export function playerCapitalFromPool(pools: CityNamesPoolsData, ikonaId: string
   return stateCityNameAt(pools, ikonaId, 0, 'Stolica');
 }
 
-/** N-2A / N-3A: rywal klastra (1-based) = miasta_panstwa[i]. */
+/**
+ * N-2A / N-3A: rywal klastra (1-based).
+ * Indeksy 1..(len-1) z miasta_panstwa; powyżej — kolejne unikalne z miasta_cywilizacji
+ * (MAX_MIAST_PANSTWA=18 vs 10 nazw klastra — bez „Rywal N" gdy jest pula regularna).
+ */
 export function clusterRivalFromPool(
   pools: CityNamesPoolsData,
   ikonaId: string,
   rivalIndex1Based: number,
 ): string {
-  return stateCityNameAt(pools, ikonaId, rivalIndex1Based, `Rywal ${rivalIndex1Based}`);
+  const entry = poolEntry(pools, ikonaId);
+  const pan = entry?.miasta_panstwa ?? [];
+  const fallback = `Rywal ${rivalIndex1Based}`;
+
+  if (!pan.length || rivalIndex1Based < 1) {
+    return fallback;
+  }
+
+  const rivalSlots = pan.length - 1;
+
+  if (rivalIndex1Based <= rivalSlots) {
+    const idx = rivalPoolIndex(rivalIndex1Based, pan.length);
+    const name = pan[idx];
+    if (name) return name;
+  }
+
+  const regular = entry?.miasta_cywilizacji ?? [];
+  const usedInCluster = new Set(pan.filter(Boolean));
+  const overflowIndex = rivalIndex1Based - rivalSlots - 1;
+
+  let skipped = 0;
+  for (const name of regular) {
+    if (!name || usedInCluster.has(name)) continue;
+    if (skipped === overflowIndex) return name;
+    skipped++;
+  }
+
+  const base = regular.find(n => n && !usedInCluster.has(n));
+  if (base) {
+    return cityNameWithSuffix(base, overflowIndex + 2);
+  }
+
+  return fallback;
 }
 
 /** Stolica obcego typu = miasta_panstwa[0]. */
@@ -226,7 +271,8 @@ export function resolveStateCityName(
     return stateCityNameAt(pools, ikonaId, index, fallback);
   }
   const names = civs.cywilizacje.find(c => c.ikonaId === ikonaId)?.nazwyKlastra ?? [];
-  return nazwaKlastraAt(names, index, fallback);
+  const idx = index >= 1 ? rivalPoolIndex(index, names.length) : index;
+  return nazwaKlastraAt(names, idx, fallback);
 }
 
 /** Sprawdza zgodność miasta_panstwa z nazwyKlastra (ostrzeżenie przy rozjazdach). */

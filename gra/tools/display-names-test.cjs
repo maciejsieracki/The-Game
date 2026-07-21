@@ -16,6 +16,8 @@ export {
   formatOwnerDiploLabel,
   isOwnerClusterCityState,
   isClusterCityStateSlot,
+  isTechnicalOwnerLabel,
+  resolveOwnerBaseName,
   CITY_STATE_LABEL,
 } from '../src/game/display-names';
 `, 'utf8');
@@ -75,6 +77,40 @@ assert(M.isClusterCityStateSlot({ isSameTypeRival: true }) === true,
 
 assert(M.isClusterCityStateSlot({ isClusterCapital: true, isSameTypeRival: false }) === false,
   'stolica klastra obcego typu = imperium');
+
+assert(M.isTechnicalOwnerLabel('Rywal 10') === true, 'Rywal N = placeholder techniczny');
+assert(M.isTechnicalOwnerLabel('Mykeny') === false, 'Mykeny = prawdziwa nazwa');
+
+assert(
+  M.resolveOwnerBaseName({
+    ownerId: 10,
+    cached: 'Rywal 10',
+    cityName: 'Mykeny',
+    civDisplayName: 'Grecy',
+    isCityState: true,
+  }) === 'Mykeny',
+  'miasto-państwo: miasto z mapy > cache Rywal N',
+);
+
+assert(
+  M.resolveOwnerBaseName({
+    ownerId: 3,
+    cached: 'Hattusa',
+    cityName: 'Hattusa',
+    civDisplayName: 'Hetyci',
+    isCityState: false,
+    isClusterCapital: true,
+  }) === 'Hetyci',
+  'stolica obcego klastra → nazwa nacji',
+);
+
+assert(
+  M.formatOwnerDiploLabel('Mykeny', 10, {
+    simplifiedOwners: new Set([10]),
+    cities: [{ ownerId: 10, name: 'Mykeny', startCityState: true }],
+  }) === 'Mykeny' + suffix,
+  'audiencja: Mykeny · miasto-państwo',
+);
 
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
 process.exit(failed > 0 ? 1 : 0);

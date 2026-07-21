@@ -47,6 +47,7 @@ assert(M.validateNazwyKlastra(civs).length === 0, 'civs.json: 15×10 nazwyKlastr
 assert(M.playerStartCityName(civs, 'grecy') === 'Ateny', 'N-1A Grecy → Ateny');
 assert(M.clusterRivalCityName(civs, 'grecy', 1) === 'Sparta', 'N-3A rywal [1] → Sparta');
 assert(M.clusterRivalCityName(civs, 'grecy', 2) === 'Korynt', 'N-3A rywal [2] → Korynt');
+assert(M.clusterRivalCityName(civs, 'grecy', 10) === 'Sparta', 'legacy wrap: rywal [10] → Sparta (zawijanie nazwyKlastra)');
 
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
 process.exit(failed > 0 ? 1 : 0);

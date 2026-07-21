@@ -4,7 +4,19 @@
 > **Czat:** krótko **`✅ Gotowe:`** / **`⏸️ Czeka:`** · **Ten plik:** pełniejszy zapis tego samego.  
 > Szczegóły techniczne → handoff w `dyspozycje/_handoff/` · operacja → `dyspozycje/DZIENNIK-MASTERA.md`
 
-**Ostatnia aktualizacja:** 2026-07-22 (mapa — jednostka widoczna na lesie)
+**Ostatnia aktualizacja:** 2026-07-22 (dyplomacja — nazwy miast-państw w audiencji)
+
+---
+
+## [2026-07-22] ✅ Gotowe — dyplomacja: prawdziwe nazwy w audiencji
+
+| | |
+|---|---|
+| **Co** | Audiencja dyplomatyczna pokazuje nazwę miasta (Mykeny, Argos…) zamiast „Rywal 10 · miasto-państwo" |
+| **Przykład** | Mykeny · miasto-państwo · stolica obcego typu → Hetyci |
+| **md5** | `d5a4543e21e40869cd6fbbd6a7f27671` · stamp `d5a4543e` |
+| **Bramki** | tsc=0 · display-names-test 11/11 · diplomacy-display-test 14/14 |
+| **Od Ciebie** | `git pull` → Ctrl+F5 · `gra-robocza/START.html` → stamp `d5a4543e` → dyplomacja → audiencja miasta-państwa |
 
 ---
 

@@ -101,6 +101,8 @@ import { playerStartCityName, clusterRivalCityName, pickAiFoundedCityName, sugge
 import {
   formatOwnerDiploLabel,
   isOwnerClusterCityState,
+  isTechnicalOwnerLabel,
+  resolveOwnerBaseName,
 } from './game/display-names';
 import {
   computeDiplomaticContacts,
@@ -875,8 +877,12 @@ async function boot(): Promise<void> {
     /** Uzupełnia ownerDisplayName z nazw miast na mapie (save legacy / brak meta). */
     function syncOwnerDisplayNamesFromCities(): void {
       for (const c of cities) {
-        if (c.ownerId > 0 && !ownerDisplayName.has(c.ownerId)) {
-          ownerDisplayName.set(c.ownerId, c.name);
+        if (c.ownerId <= 0) continue;
+        const existing = ownerDisplayName.get(c.ownerId);
+        if (!existing || isTechnicalOwnerLabel(existing)) {
+          if (c.name && !isTechnicalOwnerLabel(c.name)) {
+            ownerDisplayName.set(c.ownerId, c.name);
+          }
         }
       }
     }
@@ -3224,19 +3230,32 @@ async function boot(): Promise<void> {
       };
     }
 
+    function civDisplayNameForOwner(ownerId: number): string | undefined {
+      const civKey = aiOwnerCivMap.get(ownerId);
+      if (!civKey) return undefined;
+      const row = data.civs.cywilizacje.find(
+        (c: { ikonaId?: string; typCywilizacji?: string }) =>
+          c.ikonaId === civKey || c.typCywilizacji === civKey,
+      );
+      return row?.Cywilizacja != null ? String(row.Cywilizacja) : undefined;
+    }
+
     function ownerDiploLabel(ownerId: number): string {
       if (isBarbarian(ownerId)) return 'Barbarzyńcy';
-      const cached = ownerDisplayName.get(ownerId);
-      if (cached) {
-        return formatOwnerDiploLabel(cached, ownerId, ownerCityStateOpts());
+      const opts = ownerCityStateOpts();
+      const isCS = isOwnerClusterCityState(ownerId, opts);
+      const base = resolveOwnerBaseName({
+        ownerId,
+        cached: ownerDisplayName.get(ownerId),
+        cityName: ownerCityLabelFromMap(ownerId),
+        civDisplayName: civDisplayNameForOwner(ownerId),
+        isCityState: isCS,
+        isClusterCapital: clusterCapitalOwnerIds.has(ownerId),
+      });
+      if (!isTechnicalOwnerLabel(base)) {
+        ownerDisplayName.set(ownerId, base);
       }
-      const fromCity = ownerCityLabelFromMap(ownerId);
-      if (fromCity) {
-        ownerDisplayName.set(ownerId, fromCity);
-        return formatOwnerDiploLabel(fromCity, ownerId, ownerCityStateOpts());
-      }
-      const fallback = aiOwnerCivMap.get(ownerId) ?? ('AI ' + ownerId);
-      return formatOwnerDiploLabel(fallback, ownerId, ownerCityStateOpts());
+      return formatOwnerDiploLabel(base, ownerId, opts);
     }
 
     function terrainLabelPl(tb: string): string {

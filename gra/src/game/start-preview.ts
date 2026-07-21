@@ -5,6 +5,7 @@
  */
 
 import type { CivsData } from '../data/loader';
+import type { CityNamesPoolsData } from './city-names-pool';
 import {
   playerStartCityName,
   clusterRivalCityName,
@@ -36,6 +37,8 @@ export interface StartPreview {
 
 export interface BuildStartPreviewInput {
   civs: CivsData;
+  /** Pule nazw — bez tego podgląd używa legacy nazwyKlastra (max 9 unikalnych rywali). */
+  cityNamesPools?: CityNamesPoolsData;
   playerCivId: string;
   /** Etykieta menu np. Standardowy — opcjonalna przed krokiem Ustawienia */
   mapSizeMenuLabel?: string;
@@ -52,16 +55,18 @@ export interface BuildStartPreviewInput {
  * i opcjonalnie w SILNIK do logów weryfikacyjnych.
  */
 export function buildStartPreview(input: BuildStartPreviewInput): StartPreview {
-  const { civs, playerCivId, mapSizeMenuLabel, cityStatesCount, activeTypesCount, rivalsCount } = input;
+  const {
+    civs, cityNamesPools, playerCivId, mapSizeMenuLabel, cityStatesCount, activeTypesCount, rivalsCount,
+  } = input;
   const mapLabel = mapSizeMenuLabel ?? 'Standardowy';
   const rivalN = cityStatesCount ?? rivalsCount ?? defaultMiastaPanstwaFromMapLabel(mapLabel);
   const activeTypes = activeTypesCount ?? defaultCivTypesFromMapLabel(mapLabel);
   const foreignTypes = Math.max(0, activeTypes - 1);
 
-  const playerCapitalName = playerStartCityName(civs, playerCivId);
+  const playerCapitalName = playerStartCityName(civs, playerCivId, cityNamesPools);
   const sameTypeRivalNames: string[] = [];
   for (let i = 1; i <= rivalN; i++) {
-    sameTypeRivalNames.push(clusterRivalCityName(civs, playerCivId, i));
+    sameTypeRivalNames.push(clusterRivalCityName(civs, playerCivId, i, cityNamesPools));
   }
 
   const civLabel = civDisplayName(civs, playerCivId);

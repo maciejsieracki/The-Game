@@ -13,6 +13,7 @@ import {
   pickNextRegularCityName,
   playerCapitalFromPool,
   resolveStateCityName,
+  rivalPoolIndex,
   suggestPlayerFoundCityName,
   validateCityNamesPools as validatePoolsCore,
   NAZWY_KLASTRA_LEN,
@@ -69,7 +70,11 @@ export function clusterRivalCityName(
     return clusterRivalFromPool(pools, playerCivId, rivalIndex1Based);
   }
   const names = getNazwyKlastra(civs, playerCivId);
-  return nazwaKlastraAt(names, rivalIndex1Based, `Rywal ${rivalIndex1Based}`);
+  if (!names.length) return `Rywal ${rivalIndex1Based}`;
+  const idx = rivalIndex1Based >= 1
+    ? rivalPoolIndex(rivalIndex1Based, names.length)
+    : rivalIndex1Based;
+  return nazwaKlastraAt(names, idx, `Rywal ${rivalIndex1Based}`);
 }
 
 /** Stolica obcego typu = miasta_panstwa[0] lub nazwyKlastra[0]. */
