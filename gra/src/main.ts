@@ -427,7 +427,7 @@ import {
 } from './game/empire-food';
 import { loadUpkeepParams, buildUnitFoodTable, militaryFoodConsumption } from './game/economy-upkeep';
 import { computePowerContributionsCityEconomy, buildPowerSnapshots, type PowerOwnerSnapshot } from './game/power';
-import { citySightRadius, toggleTileWorker, cityRangeForPopulation, yieldOfMapHex, resolveWorkedTiles, seedReczneFromAuto, collectWorkedHexKeysForOwner, hexKeysWithinRadius } from './game/okolica';
+import { citySightRadius, toggleTileWorker, cityRangeForPopulation, yieldOfMapHex, resolveWorkedTiles, seedReczneFromAuto, collectWorkedHexKeysForOwner, hexKeysWithinRadius, reconcileAllWorkedTiles } from './game/okolica';
 import { getCityResourceAccessForCity } from './game/resource-access';
 import { isForeignReligionDominant, resolveOwnCultureShare, stolicaEasyBonusActive } from './game/society-inputs';
 import { loadWealthParams, type RawWealthParamsJson } from './game/wealth';
@@ -2004,8 +2004,11 @@ async function boot(): Promise<void> {
     }
 
     function okolicaWorkedKeySet(city: City): Set<string> {
+      const nodes = buildAllTerritoryNodes();
       const worked = resolveWorkedTiles(city, map, (q, rr) => yieldOfMapHex(map, q, rr), {
         isWorkable: okolicaHexWorkable,
+        territoryNodes: nodes,
+        ownerId: city.ownerId,
       });
       return new Set(worked.map(t => t.key));
     }
@@ -2055,7 +2058,7 @@ async function boot(): Promise<void> {
     function applyOkolicaTileAdjust(cityId: string, q: number, r: number, _delta: number): void {
       const city = cities.find(c => c.id === cityId);
       if (!city || city.ownerId !== 0) return;
-      const res = toggleTileWorker(city, map, q, r);
+      const res = toggleTileWorker(city, map, q, r, undefined, buildAllTerritoryNodes());
       if (res.ok) {
         city.okolicaReczne = res.reczne;
         city.okolicaTryb = 'reczny';

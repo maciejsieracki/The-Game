@@ -11,18 +11,14 @@ swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drug
 
 ## ROBOCZA (gra-robocza\Gra-ROBOCZA.html — wskazywana przez START.html)
 
-- 2026-07-22 · stempel: ROBOCZA · **e5d1ebad** · md5 pliku `e5d1ebadf440f2f722a641698f79fa07` · **Granice państw (zasięg terytorium) — przywrócone + toggle minimapa** — na `4a4047a4`:
-  **Bug/feature:** brak obrysu granic państw na mapie 3D (kultura/religia działają). **Fix:** `collectTerritoryHexKeysByOwner` + `buildTerritoryBorderGroup` — zewnętrzna krawędź terytorium w kolorze cywilizacji (~30% alpha); przycisk **Zasięg państwa** obok minimapy (hex-grid SVG); gracz + odkryte AI; odświeżanie przy mgle/turze.
-  tsc=0 · publish `gra-robocza/Gra-ROBOCZA.html`. · **AKTUALNA** · Test: Ctrl+F5 START.html → stamp `e5d1ebad`; klik hex-grid obok minimapy → obrys granic w kolorze cywilizacji; ponowny klik wyłącza.
-
-- 2026-07-22 · stempel: ROBOCZA · **4a4047a4** · md5 pliku `4a4047a4d8551a2cf7d4a36aee6aa7ca` · **FIX: zwiadowca bez głodu + Manpower przy rekrutacji** — na `e1ac8503`:
+- 2026-07-22 · stempel: ROBOCZA · **d33863ab** · md5 pliku `d33863ab2e47ec6fd8b5b8dcf2cd3a3f` · **FIX: zwiadowca bez głodu + Manpower przy rekrutacji** — na `e1ac8503`:
   **Bug1:** czaszka głodu i utrata HP na zwiadowcy gdy imperium głoduje — overlay per-państwo bez filtra cywilnych + utrzymanie złoto Zwiadowca=1 w JSON. **Fix:** `isCivilianUnit` (zwiadowca/osadnik/robotnik) pomijany w overlay i `applyArmyStarvationHpLoss`; cywilne upkeep/food=0.
   **Bug2:** rekrutacja za złoto nie odejmowała Manpower przy kliknięciu. **Fix:** `purchaseRecruitmentUnit` pobiera MP od razu; anulowanie zwraca MP; kolejka spawn bez ponownego poboru.
-  tsc=0 · manpower-test 24/24 · upkeep-test 58/58 · publish `gra-robocza/Gra-ROBOCZA.html`. · **ZASTĄPIONA** (→ `e5d1ebad`) · Test: Ctrl+F5 START.html → stamp `4a4047a4`; zwiadowca bez czaszki przy głodzie wojska; rekrutuj → pula rekrutów spada natychmiast.
+  tsc=0 · manpower-test 24/24 · upkeep-test 58/58 · publish `gra-robocza/Gra-ROBOCZA.html`. · **AKTUALNA** · Test: Ctrl+F5 START.html → stamp `d33863ab`; zwiadowca bez czaszki przy głodzie wojska; rekrutuj → pula rekrutów spada natychmiast.
 
 - 2026-07-22 · stempel: ROBOCZA · **e1ac8503** · md5 pliku `e1ac85039004206b42257db32921ebac` · **UI: Stos → Armia (etykiety stosu jednostek)** — na `c7301135`:
   **Zmiana Macieja:** `Stos · 2 jedn.` → `Armia — 2 jednostki` (odmiana 1/2–4/5+); tooltip `Zaznacz armię — N jednostek`; spójnie panel stosu, merge, wybór miasto/jednostka.
-  Pliki: `gra/src/ui/formatPl.ts`, `main.ts`, `armyListHud.ts`, `armyStackHud.ts`, `armyMergePanel.ts`, `cityUnitPick.ts`. tsc=0 · VERIFY OK · publish `gra-robocza/Gra-ROBOCZA.html`. · **ZASTĄPIONA** (→ `4a4047a4`) · Test: Ctrl+F5 START.html → md5 `e1ac8503`; ⚔ lista armii → „Armia — N jednostki", hover „Zaznacz armię — …".
+  Pliki: `gra/src/ui/formatPl.ts`, `main.ts`, `armyListHud.ts`, `armyStackHud.ts`, `armyMergePanel.ts`, `cityUnitPick.ts`. tsc=0 · VERIFY OK · publish `gra-robocza/Gra-ROBOCZA.html`. · **ZASTĄPIONA** (→ `d33863ab`) · Test: Ctrl+F5 START.html → md5 `e1ac8503`; ⚔ lista armii → „Armia — N jednostki", hover „Zaznacz armię — …".
 
 - 2026-07-22 · stempel: ROBOCZA · **a6820979** · md5 pliku `a6820979252257f6df87e881c729509d` · **D3-TRUST-TICK + lista dyplomacji Relacja/Zaufanie** — na `c63dd3f4`:
   **Zaufanie/turę (wykluczające tiery):** sojusz +3 · NAP +2 · pokój +1 · UmowaHandlowa +1 stackuje. **Handel surowców/złóż:** `UmowaHandlowa` trwała, czas umowy **1–20 tur** (koszyk), wygasa bez auto-odnowienia; PN/¤ bez surowców = one-shot. **UI lista dyplomacji:** `Relacja: X · Zaufanie: Y`, bez bonusów cyw.

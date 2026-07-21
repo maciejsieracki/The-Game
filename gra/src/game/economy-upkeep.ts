@@ -393,9 +393,9 @@ export function totalBuildingUpkeep(
  * mounted & naval ~3, super-units 0 (free upkeep in units.json).
  */
 export const DEFAULT_UNIT_UPKEEP_BY_CATEGORY: Readonly<Record<string, number>> = {
-  osadnik:    1,
-  robotnik:   1,
-  zwiadowca:  1,
+  osadnik:    0,
+  robotnik:   0,
+  zwiadowca:  0,
   procarz:    1,
   oszczepnik: 1,
   lucznik:    1,
@@ -432,9 +432,10 @@ export function unitUpkeep(
   table: UnitUpkeepTable,
   standardUpkeep: number,
 ): number {
+  const byCat = DEFAULT_UNIT_UPKEEP_BY_CATEGORY[unit.category];
+  if (typeof byCat === 'number' && byCat === 0) return 0;
   const byType = table[unit.typeId];
   if (typeof byType === 'number' && Number.isFinite(byType)) return byType;
-  const byCat = DEFAULT_UNIT_UPKEEP_BY_CATEGORY[unit.category];
   if (typeof byCat === 'number' && Number.isFinite(byCat)) return byCat;
   return Number.isFinite(standardUpkeep) ? standardUpkeep : 0;
 }

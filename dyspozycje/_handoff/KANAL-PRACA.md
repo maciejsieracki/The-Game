@@ -2548,14 +2548,14 @@ CZEKAM-NA: **Maciej** `git pull` → Ctrl+F5 START.html → stamp `a6820979`.
 
 CZEKAM-NA: **Maciej** `git pull` → Ctrl+F5 START.html → md5 `e1ac8503`; ⚔ lista armii → hover stosu wielojednostkowego.
 
-## [00:15 PL, 2026-07-22] INTEGRATOR → Maciej — FIX zwiadowca głód + Manpower rekrutacja · stamp `4a4047a4`
+## [00:15 PL, 2026-07-22] INTEGRATOR → Maciej — FIX zwiadowca głód + Manpower rekrutacja · stamp `d33863ab`
 
-- **ROBOCZA = `4a4047a4`** (md5 `4a4047a4d8551a2cf7d4a36aee6aa7ca`), na `e1ac8503`.
+- **ROBOCZA = `d33863ab`** (md5 `d33863ab2e47ec6fd8b5b8dcf2cd3a3f`), na `e1ac8503`.
 - Zwiadowca/osadnik/robotnik: brak czaszki głodu, brak utraty HP, upkeep 0.
 - Rekrutacja za złoto: Manpower odejmowany przy kliknięciu (zwrot przy anulowaniu).
 - tsc=0 · manpower 24/24 · upkeep 58/58 · push na `main`.
 
-CZEKAM-NA: **Maciej** `git pull` → Ctrl+F5 START.html → stamp `4a4047a4`; zwiadowca bez czaszki; rekrut → pula rekrutów spada od razu.
+CZEKAM-NA: **Maciej** `git pull` → Ctrl+F5 START.html → stamp `d33863ab`; zwiadowca bez czaszki; rekrut → pula rekrutów spada od razu.
 
 ## [00:30 PL, 2026-07-22] INTEGRATOR → Maciej — granice państw (zasięg terytorium) · stamp `e5d1ebad`
 

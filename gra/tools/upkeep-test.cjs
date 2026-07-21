@@ -136,6 +136,7 @@ eq(U.totalBuildingUpkeep(blds, 1), 12, 's8.4: 12 buildings * 1 = 12');
 // s.6.2 unit upkeep: typeId table > category default > standard
 const tbl = U.buildUnitUpkeepTable([{ Jednostka: 'Hetairoi', 'Utrzymanie (Pieniadz/ture)': 3 }]);
 eq(U.unitUpkeep({ typeId: 'Hetairoi', category: 'konnica' }, tbl, 1), 3, 's6.2: exact typeId from table = 3');
+eq(U.unitUpkeep({ typeId: 'X', category: 'zwiadowca' }, {}, 1), 0, 's6.2: zwiadowca cywilny upkeep 0');
 eq(U.unitUpkeep({ typeId: 'X', category: 'falanga' }, {}, 1), 2, 's6.2: category falanga default = 2');
 eq(U.unitUpkeep({ typeId: 'X', category: 'super' }, {}, 1), 0, 's6.2: super-unit upkeep 0');
 eq(U.unitUpkeep({ typeId: 'X', category: 'nieznana' }, {}, 1), 1, 's6.2: unknown -> standard 1');

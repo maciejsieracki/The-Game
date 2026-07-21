@@ -72,6 +72,14 @@ export interface RuntimeUnit {
   replaceUsedThisTurn?: boolean;
 }
 
+/** Kategorie cywilne — bez utrzymania, bez głodu wojska, bez ataku miast. */
+export const CIVILIAN_CATEGORIES = new Set(['osadnik', 'robotnik', 'zwiadowca']);
+
+/** Czy jednostka jest cywilna (zwiadowca/osadnik/robotnik). */
+export function isCivilianUnit(u: Pick<RuntimeUnit, 'category'>): boolean {
+  return CIVILIAN_CATEGORIES.has(u.category);
+}
+
 /**
  * Returns the model category key for a unit given its name, role string, and
  * super-unit flag.  All matching is case-insensitive and done on both name and

@@ -4753,12 +4753,14 @@ function appendUnitRecruitCard(
 ): void {
   const udef = findUnitDef(data, item.id);
   if (!udef) return;
+  const mpSnap = cfg.getManpowerSnapshot?.(city.id);
+  const canMp = !mpSnap || mpSnap.manpowerBiezacy >= mpSnap.kosztJednostki;
   const cardWrap = buildUnitRecruitCard({
     udef,
     item,
     data,
     skarb,
-    canPurchase: !!cfg.onPurchaseUnit,
+    canPurchase: !!cfg.onPurchaseUnit && canMp,
     treasuryIconHtml: cityPanelChipIconWrap('res-treasury', 14),
     onRecruit: () => recruitUnit(city, item),
   });
@@ -4772,6 +4774,8 @@ function appendUnitRecruitCard(
 function recruitUnit(city: City, item: ProductionItem): void {
   const skarb = cfg.getTreasury?.(city.ownerId);
   if (skarb !== undefined && skarb < item.koszt) return;
+  const mpSnap = cfg.getManpowerSnapshot?.(city.id);
+  if (mpSnap && mpSnap.manpowerBiezacy < mpSnap.kosztJednostki) return;
   if (cfg.onPurchaseUnit) {
     cfg.onPurchaseUnit(city.id, item.id, item.koszt);
   } else {

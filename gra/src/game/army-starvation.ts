@@ -1,11 +1,15 @@
 /**
  * army-starvation.ts — głód wojska (B5-Q1): −hpFrac max HP co turę gdy zapasy państwa < 0.
  * SILNIK wywołuje po advanceEmpireFood gdy isArmyStarving(ownerId).
+ * Jednostki cywilne (zwiadowca/osadnik/robotnik) są pomijane.
  */
+import { isCivilianUnit } from '../units/setup';
+
 export interface StarvationUnit {
   id: string;
   ownerId: number;
   typeId: string;
+  category: string;
   hp?: number;
   hpMax?: number;
 }
@@ -35,6 +39,7 @@ export function applyArmyStarvationHpLoss(
 
   for (const u of units) {
     if (u.ownerId !== ownerId) continue;
+    if (isCivilianUnit(u)) continue;
     const maxHp = u.hpMax ?? getMaxHp(u.typeId);
     if (maxHp <= 0) continue;
 

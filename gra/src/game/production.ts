@@ -1082,6 +1082,8 @@ export function advanceRecruitmentGated(
   city: Pick<import('./cities').City, 'population' | 'manpower'>,
   epoka: number,
   maxPerTurn = RECRUIT_UNITS_PER_TURN,
+  /** true gdy koszt Manpower pobrano przy opłaceniu złotem (kolejka rekrutacji). */
+  costAlreadyPaid = false,
 ): AdvanceRecruitmentGatedResult {
   let pop = city.population;
   let mp = cityManpowerCurrent(city, epoka);
@@ -1089,6 +1091,11 @@ export function advanceRecruitmentGated(
   const completed: ProductionItem[] = [];
   let n = 0;
   while (n < maxPerTurn && rq.length > 0) {
+    if (costAlreadyPaid) {
+      completed.push(rq.shift()!);
+      n++;
+      continue;
+    }
     const d = tryDeductUnitSpawnCosts({ population: pop, manpower: mp }, epoka, UNIT_POPULATION_COST);
     if (!d.ok) break;
     completed.push(rq.shift()!);

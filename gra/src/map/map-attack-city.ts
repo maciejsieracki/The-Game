@@ -6,7 +6,7 @@
 
 import type { City } from '../game/cities';
 import type { RuntimeUnit } from '../units/setup';
-import { hexDistance } from '../units/setup';
+import { hexDistance, isCivilianUnit } from '../units/setup';
 import {
   canInitiateSiege,
   classifyCityAttack,
@@ -24,13 +24,7 @@ export type MapEnemyCityClickAction =
   | { kind: 'hint_civilian'; cityName: string }
   | { kind: 'hint_pick_attacker'; cityName: string; adjacentCount: number };
 
-/** Kategorie cywilne — jednostki wsparcia, które NIE mogą atakować ani zdobywać miast. */
-const CIVILIAN_CATEGORIES = new Set(['osadnik', 'robotnik', 'zwiadowca']);
-
-/** Czy jednostka jest cywilna (nie może prowadzić działań zbrojnych wobec miast). */
-export function isCivilianUnit(u: Pick<RuntimeUnit, 'category'>): boolean {
-  return CIVILIAN_CATEGORIES.has(u.category);
-}
+export { isCivilianUnit } from '../units/setup';
 
 export interface ResolveEnemyCityClickInput {
   city: City;

@@ -117,5 +117,8 @@ ok(emp.ludnoscAbsolutna === 150_000, 'empire ludnosc 150k');
 ok(emp.rekruci === 12_000, 'empire rekruci 12k');
 ok(emp.poborRaw === 162_000, 'pobor raw sum');
 
+const cityRecruit = { population: 10, manpower: 10_000 };
+ok(mp.spendManpower(cityRecruit, 1) === 9_900, 'enqueue rekrutacji: spendManpower od razu');
+
 console.log(`[manpower-test] ${pass} OK, ${fail} FAIL`);
 process.exit(fail > 0 ? 1 : 0);
