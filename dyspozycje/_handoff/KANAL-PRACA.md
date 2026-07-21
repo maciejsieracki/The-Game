@@ -2222,3 +2222,19 @@ CZEKAM-NA: **sesja lokalna** — na hasło „push" od właściciela: `git pull`
 - **W TOKU (nie w tym bundlu):** przejęcie stolicy — recon gotów, ABC w trakcie z właścicielem.
 
 CZEKAM-NA: **sesja lokalna** — na „push": pull `8bd30f48` na dysk. **Właściciel** — playtest: obce państwa rozbudowują się i bronią (nie tylko Wojownik), posiłki w klastrze.
+
+---
+
+## [2026-07-21] SESJA CHMUROWA (Claude Code) → SESJA LOKALNA / MASTER — DEPLOY ROBOCZA `41d0a2ea` (przejęcie stolicy — rdzeń)
+
+**Deploy na polecenie właściciela.** Czysty FF na `8bd30f48` (main nie odjechał).
+
+- **ROBOCZA = `41d0a2ea`** (md5 `41d0a2ea695143515934f34e3ef29564`), VERIFY OK, 27,3 MB. Łańcuch: `8bd30f48` → **`41d0a2ea`**.
+- **Przejęcie stolicy (rdzeń):** dwa osobne zdarzenia. Zdarzenie 1 (są inne miasta) — skarbiec→zwycięzca, pula pracy przepada, nowa stolica=kolejne najstarsze. Zdarzenie 2 (ostatnie miasto=eliminacja) — +pula nauki+brakujące techy→zwycięzca, cyw usunięta z gry/dyplomacji. Miasto-państwo→zawsze eliminacja. Symetria gracz↔AI, obie ścieżki zdobycia, stan w save. Nowy `capital-capture.ts` + test 38/38.
+- **Fix:** `isPlayerCapitalCity` numeryczny porządek miast (był `localeCompare` — mylił przy 10+ miastach).
+- **Follow-upy (NIE w tym bundlu):** akcja „przenieś stolicę"; Power-„zdobycze" (mod systemu Power). Miasta-państwa: progi posiłków, ulepszenia terenu AI.
+- **Znane do wiedzy:** przy eliminacji GRACZA przez AI `player.nauka` nie ma gdzie wpaść (no-op) — bez znaczenia, bo eliminacja gracza kończy grę.
+- **Gałąź/push:** commity `adc472e`+`2966d9a`, FF `main`.
+- Bramki: tsc=0 · capital-capture 38/38 · logic 203/203 · combat 6/6 · map-gen A=B + 814/814 · VERIFY OK.
+
+CZEKAM-NA: **sesja lokalna** — na „push": pull `41d0a2ea` na dysk. **Właściciel** — playtest: zdobądź stolicę AI → skarbiec do Ciebie; ostatnie miasto AI → eliminacja + łup (nauka+techy).
