@@ -4,7 +4,19 @@
 > **Czat:** krótko **`✅ Gotowe:`** / **`⏸️ Czeka:`** · **Ten plik:** pełniejszy zapis tego samego.  
 > Szczegóły techniczne → handoff w `dyspozycje/_handoff/` · operacja → `dyspozycje/DZIENNIK-MASTERA.md`
 
-**Ostatnia aktualizacja:** 2026-07-22 (miasta-państwa 10–18 — unikalne nazwy)
+**Ostatnia aktualizacja:** 2026-07-22 (nadmiar Pracy → ulepszenia cywilizacji)
+
+---
+
+## [2026-07-22] ✅ Gotowe — nadmiar Pracy trafia na ulepszenia cywilizacji
+
+| | |
+|---|---|
+| **Co** | Gdy miasto nie buduje budynku, cała niewykorzystana Praca (nie tylko % z suwaka) idzie do puli ulepszeń mapy |
+| **Przykład** | 13 Pracy, brak budynku, suwak 70/30 → **+13/t** do puli (wcześniej tylko +4) |
+| **md5** | `4bd22b7b03a0a85de8e5b8e0ba90f629` · stamp `4bd22b7b` |
+| **Bramki** | tsc=0 · production-overflow-test 12/12 · wire-ekonomia-test 37/37 |
+| **Od Ciebie** | `git pull` → Ctrl+F5 · `gra-robocza/START.html` → stamp `4bd22b7b` → miasto bez kolejki budowy, obserwuj pulę Pracy w HUD |
 
 ---
 

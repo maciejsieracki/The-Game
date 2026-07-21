@@ -927,7 +927,7 @@ export interface AdvanceProductionResult {
   prod: CityProduction;
   /** The item finished this turn, or null when nothing completed. */
   completed: ProductionItem | null;
-  /** B10: nadwyżka Pracy gdy kolejka pusta po ukończeniu → pula imperium gracza. */
+  /** Nadwyżka Pracy → pula ulepszeń cywilizacji (pusta kolejka lub reszta po ukończeniu). */
   overflowToPool?: number;
 }
 
@@ -942,7 +942,8 @@ export interface AdvanceProductionResult {
  * just-finished item is parked on the new front item's `postep` for next turn.
  *
  * Edge cases:
- *   - Empty queue            -> postep stays 0, completed = null.
+ *   - Empty queue            -> postep stays 0, completed = null; cała Praca tej tury
+ *     idzie do overflowToPool (niewykorzystana część budynkowa → ulepszenia mapy).
  *   - Non-positive / NaN Praca -> treated as 0 (no progress, no completion).
  *   - Front item with koszt <= 0 -> completes immediately, carrying all postep.
  *   - Queue becomes empty after completion -> remainder is discarded (no item to
@@ -961,7 +962,9 @@ export function advanceProduction(
     return { prod: { ...prod, kolejka: [...prod.kolejka] }, completed: null };
   }
 
-  // Nothing to build -> no progress.
+  const praca = Number.isFinite(pracaPerTurn) && pracaPerTurn > 0 ? pracaPerTurn : 0;
+
+  // Pusta kolejka: doBudynkow nie ma na co iść → całość na pulę ulepszeń (Maciej 2026-07-22).
   if (front === null) {
     return {
       prod: {
@@ -971,10 +974,9 @@ export function advanceProduction(
         rekrutacja: prod.rekrutacja ? [...prod.rekrutacja] : undefined,
       },
       completed: null,
+      overflowToPool: praca > 0 ? praca : undefined,
     };
   }
-
-  const praca = Number.isFinite(pracaPerTurn) && pracaPerTurn > 0 ? pracaPerTurn : 0;
   const accumulated = prod.postep + praca;
   const rqCopy = prod.rekrutacja ? [...prod.rekrutacja] : undefined;
 

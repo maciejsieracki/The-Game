@@ -2741,3 +2741,12 @@ Uzupełnienie `d5a4543e`: spawn + kreator — rywale 10–18 dostają nazwy z `m
 Pliki: `city-names-pool.ts`, `civ-names.ts`, `start-preview.ts`, `newGameFlow.ts`, testy.
 Publish ROBOCZA: stamp **27108476** · md5 `27108476a220e9029beaf7a02512b0e7`.
 CZEKAM-NA: Maciej — `git pull` → Ctrl+F5 → stamp `27108476` → nowa gra Grecy · 16 miast-państw → brak „Rywal 10" w kreatorze/mapa/dyplomacja.
+
+## [01:24] INTEGRATOR → Maciej — EKO: nadmiar Pracy → pula ulepszeń (4bd22b7b)
+
+Bug Macieja: bez budynku w kolejce do puli cywilizacji szła tylko część z suwaka (np. 4/13), reszta doBudynkow ginęła.
+Fix: `advanceProduction` — pusta kolejka → overflowToPool=doBudynkow; `main.ts` — overflow w _lastPracaRate (HUD).
+Pliki: `production.ts`, `main.ts`, `tools/production-overflow-test.cjs`.
+Bramki: tsc=0 · production-overflow-test 12/12 · wire-ekonomia-test 37/37.
+Publish ROBOCZA: stamp **4bd22b7b** · md5 `4bd22b7b03a0a85de8e5b8e0ba90f629`.
+CZEKAM-NA: Maciej — `git pull` → Ctrl+F5 START.html → stamp `4bd22b7b` → miasto bez budynku → pula Pracy +13/t (nie +4).

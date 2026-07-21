@@ -11799,6 +11799,7 @@ async function boot(): Promise<void> {
                 if (city.ownerId === 0) {
                   playerPracaPool += overflowToPool;
                   _lastPraca = playerPracaPool;
+                  _lastPracaRate += overflowToPool;
                 } else {
                   // D-IMPROVEMENTS: nadmiar Pracy kolejki AI (miasto nie ma co budować) ->
                   // pula empire-wide AI, symetryczne z graczem.
