@@ -12071,7 +12071,20 @@ export class BattleScene {
   }
 
   /** Odtwarza roster walki — lewy panel pionowy (stała szerokość, 4 kolumny). */
+  /** Guard — _rebuildBattleRosterGrid ↔ _updateRosterBar (crash: Maximum call stack). */
+  private _rebuildBattleRosterGridBusy = false;
+
   private _rebuildBattleRosterGrid(): void {
+    if (this._rebuildBattleRosterGridBusy) return;
+    this._rebuildBattleRosterGridBusy = true;
+    try {
+      this._rebuildBattleRosterGridInner();
+    } finally {
+      this._rebuildBattleRosterGridBusy = false;
+    }
+  }
+
+  private _rebuildBattleRosterGridInner(): void {
     if (this.deployPhase || !this._rosterBar) return;
 
     if (!this._battleRosterCards?.isConnected) {
@@ -15126,9 +15139,13 @@ export class BattleScene {
       requestAnimationFrame(() => this._syncDeployPanelLayout());
       return;
     }
-    // Walka: karty płasko w battle-roster-cards
+    // Walka: karty płasko w battle-roster-cards.
+    // Iterujemy _playerRoster() (a NIE this.atk), bo _rebuildBattleRosterGrid buduje
+    // karty właśnie dla _playerRoster(). Gdy gracz jest OBROŃCĄ (_playerRoster()===this.def),
+    // rozjazd atk/roster powodował wieczne needRebuild → nieskończona rekurencja (crash).
+    const battleRoster = this._playerRoster();
     let needRebuild = false;
-    for (const ru of this.atk) {
+    for (const ru of battleRoster) {
       if (ru.dead || ru.removed || ru.routed) continue;
       const card = this._unitCards.get(ru.bu.id);
       if (!card) { needRebuild = true; break; }
@@ -15141,7 +15158,7 @@ export class BattleScene {
       this._rebuildBattleRosterGrid();
       return;
     }
-    for (const ru of this.atk) {
+    for (const ru of battleRoster) {
       let card = this._unitCards.get(ru.bu.id);
       if (!card) {
         card = this._createUnitCard(ru);
@@ -15238,7 +15255,7 @@ export class BattleScene {
       return;
     }
     const selUnits = [...this._selectedUnits]
-      .map(id => this.atk.find(u => u.bu.id === id))
+      .map(id => this._groupRegistryRoster().find(u => u.bu.id === id))
       .filter((u): u is RuntimeBattleUnit => !!u && !u.dead && !u.removed && !u.routed);
     if (selUnits.length < 2) {
       this._showDeployFeedback('Za malo zywych jednostek do grupowania');
@@ -15301,7 +15318,7 @@ export class BattleScene {
   private _disbandGroup(gid: string): void {
     const ids = this._liveGroupMemberIds(gid);
     for (const id of ids) {
-      const ru = this.atk.find(u => u.bu.id === id);
+      const ru = this._groupRegistryRoster().find(u => u.bu.id === id);
       if (!ru) continue;
       ru.groupId = null;
       ru.formationOffset = null;

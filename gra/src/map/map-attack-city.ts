@@ -21,7 +21,16 @@ export type MapEnemyCityClickAction =
   | { kind: 'field_battle'; attacker: RuntimeUnit; ctx: MapSiegeContext }
   | { kind: 'capture_empty'; attacker: RuntimeUnit; ctx: MapSiegeContext }
   | { kind: 'hint_no_adjacent'; cityName: string }
+  | { kind: 'hint_civilian'; cityName: string }
   | { kind: 'hint_pick_attacker'; cityName: string; adjacentCount: number };
+
+/** Kategorie cywilne — jednostki wsparcia, które NIE mogą atakować ani zdobywać miast. */
+const CIVILIAN_CATEGORIES = new Set(['osadnik', 'robotnik', 'zwiadowca']);
+
+/** Czy jednostka jest cywilna (nie może prowadzić działań zbrojnych wobec miast). */
+export function isCivilianUnit(u: Pick<RuntimeUnit, 'category'>): boolean {
+  return CIVILIAN_CATEGORIES.has(u.category);
+}
 
 export interface ResolveEnemyCityClickInput {
   city: City;
@@ -40,6 +49,7 @@ function adjacentPlayerAttackers(
     u =>
       u.ownerId === playerOwnerId &&
       u.ruchLeft > 0 &&
+      !isCivilianUnit(u) &&
       hexDistance(u.q, u.r, city.q, city.r) === 1,
   );
 }
@@ -81,6 +91,14 @@ export function resolveEnemyCityClick(
         ctx: classifyCityAttack(besieger, city, units as RuntimeUnit[]),
       };
     }
+  }
+
+  // Zaznaczony cywil (osadnik/robotnik/zwiadowca) obok miasta → jasny komunikat,
+  // zamiast mylącego "brak sąsiednich jednostek". Cywile nie zdobywają miast.
+  if (selectedUnit && selectedUnit.ownerId === playerOwnerId &&
+      isCivilianUnit(selectedUnit) &&
+      hexDistance(selectedUnit.q, selectedUnit.r, city.q, city.r) === 1) {
+    return { kind: 'hint_civilian', cityName: city.name };
   }
 
   const adjacent = adjacentPlayerAttackers(city, units, playerOwnerId);

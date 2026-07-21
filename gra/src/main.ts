@@ -7156,6 +7156,14 @@ async function boot(): Promise<void> {
         getArmies: buildPlayerArmyListEntries,
         onSelectArmy: (unitId) => {
           selectPlayerUnit(unitId);
+          // K: po kliknięciu jednostki w panelu ARMIE wycentruj kamerę na jej heksie
+          // (zachowując bieżący zoom).
+          const su = units.find(x => x.id === unitId);
+          if (su) {
+            const { x, z } = axialToWorld(su.q, su.r, HEX_R);
+            const { dist } = camCtrl.getFocusState();
+            camCtrl.focusAt(x, z, dist);
+          }
           refreshD1bHud();
         },
         onClose: () => refreshD1bHud(),
@@ -8529,6 +8537,12 @@ async function boot(): Promise<void> {
             );
             clearPlayerUnitSelection();
             refreshD1bHud();
+            return;
+          case 'hint_civilian':
+            showHintMessage(
+              action.cityName + ' — jednostka cywilna (zwiadowca/osadnik/robotnik) nie może zdobywać miast. Użyj jednostki bojowej.',
+              4500,
+            );
             return;
           case 'hint_pick_attacker':
             showHintMessage(
