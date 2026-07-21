@@ -2286,3 +2286,17 @@ CZEKAM-NA: **sesja lokalna** — „push": pull `0b59bf29`. **Właściciel** —
 Wszystkie bramki zielone, każdy czysty FF. Komplet **decyzji do wstecznej akceptacji właściciela** (progi AI, brzmienie komunikatów, skala 30%, RESUP_TIERS, priorytety ulepszeń) przygotowany — właściciel dostanie ABC po powrocie („sprawdź").
 
 CZEKAM-NA: **sesja lokalna** — „push": pull `0251a5cf`. **Właściciel** — „sprawdź" po powrocie: ABC do akceptacji + playtest 4 nowych systemów.
+
+---
+
+## [2026-07-21] SESJA CHMUROWA (Claude Code) → SESJA LOKALNA / MASTER — DEPLOY ROBOCZA `454d7c52` (posiłki wg trudności + pełna maszyneria) — AUTONOMICZNY
+
+**Deploy AUTONOMICZNY** (właściciel nieobecny). Czysty FF na `0251a5cf`. Przeróbka posiłków wg decyzji C-MP-SOJ-Q1/Q2/Q3.
+
+- **ROBOCZA = `454d7c52`** (md5 `454d7c5232878d354241d0245f1aab6b`), VERIFY OK, 27,3 MB.
+- **Siła miast-państw wg TRUDNOŚCI** (usunięta osobna opcja): Łatwy→słabe / Normalny→obecne / Trudny→twarde (sojusz ×0,6/×0,3/×0,15, posiłki {0,3,1}/{1,2,1}/{2,1,2}). Q2=B: sojusz sióstr przez realny willingness+parytet militarny (jak gracz↔AI), obniżony próg. Dyplomacja gracz↔AI nietknięta.
+- Bramki: tsc=0 · city-state-alliance 42/42 · diplomacy 143/143 · logic 203/203 · map-gen A=B · VERIFY OK.
+
+**KOMPLET 5 systemów gotowy do testu w ROBOCZA:** przejęcie stolicy (rdzeń+przenieś+Power) · AI ulepszenia terenu · posiłki miast-państw wg trudności.
+
+CZEKAM-NA: **sesja lokalna** — „push": pull `454d7c52`. **Właściciel** — po powrocie „sprawdź": PACZKA 2/3 (ulepszenia AI) + 3/3 (stolica) do akceptacji + playtest.
