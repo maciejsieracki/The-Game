@@ -2474,3 +2474,13 @@ Maciej: **push** — szybki test NAP + handel.
 - tsc=0 · diplomacy-proposal 47/47 · VERIFY OK.
 
 CZEKAM-NA: **Maciej** `git pull` → Ctrl+F5 START.html → stamp `b1e90a22`; NAP Rel≥50 bez Zauf; handel aktywny przy Rel≥40 na panelu.
+
+## [00:05 PL, 2026-07-22] INTEGRATOR → Maciej — FIX propozycje handlu AI tylko po odkryciu (D3-Q2)
+
+Maciej: **push** — szybki test bugfixu propozycji handlu od nieodkrytych państw-miast.
+
+- **ROBOCZA = `87d0d359`** (md5 `87d0d359f8ccd4275c89e56496dc1c9c`), na `b1e90a22`.
+- **Fix:** `diplomacyLayerForOwner` → `pre_contact` dla wszystkich ownerów bez odkrycia w mgle (miasta-państwa wcześniej omijały bramkę).
+- tsc=0 · ai-test T10a–c OK (234 pass, 4 pre-existing fail).
+
+CZEKAM-NA: **Maciej** `git pull` → Ctrl+F5 START.html → stamp `87d0d359`; Nowa gra bez odkrycia państw-miast → brak propozycji handlu.

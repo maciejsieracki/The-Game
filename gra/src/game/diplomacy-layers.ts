@@ -116,10 +116,13 @@ export function diplomacyLayerForOwner(
   if (foreignTypeOwners === undefined || contactedOwners === undefined) {
     return simplifiedOwners.has(ownerId) ? 'simplified' : 'full';
   }
-  if (simplifiedOwners.has(ownerId)) return 'simplified';
-  if (foreignTypeOwners.has(ownerId) && !contactedOwners.has(ownerId)) {
+  // D3-Q2 (Maciej 2026-07-21): brak odkrycia w mgle → brak dyplomacji AI/UI.
+  // Dotyczy WSZYSTKICH ownerów, w tym miast-panstw (simplifiedOwners) — wcześniej
+  // omijały bramkę i wysyłały zaproponuj_handel bez kontaktu z graczem.
+  if (!contactedOwners.has(ownerId)) {
     return 'pre_contact';
   }
+  if (simplifiedOwners.has(ownerId)) return 'simplified';
   return 'full';
 }
 

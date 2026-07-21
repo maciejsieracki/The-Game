@@ -11,9 +11,13 @@ swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drug
 
 ## ROBOCZA (gra-robocza\Gra-ROBOCZA.html — wskazywana przez START.html)
 
+- 2026-07-21 · stempel: ROBOCZA · **87d0d359** · md5 pliku `87d0d359f8ccd4275c89e56496dc1c9c` · **FIX: propozycje handlu AI tylko po odkryciu w mgle (D3-Q2)** — na `b1e90a22`:
+  **Bug:** miasta-państwa z klastra kulturowego wysyłały `zaproponuj_handel` bez odkrycia gracza i bez akcji „Nawiąż kontakt". **Fix:** `diplomacyLayerForOwner` → `pre_contact` dla wszystkich ownerów bez odkrycia (wcześniej miasta-państwa omijały bramkę przez warstwę `simplified`); `filterDiplomacyCommandsForLayer` blokuje wszystkie propozycje AI.
+  tsc=0 · ai-test T10a–c OK (234 pass, 4 pre-existing fail) · publish `gra-robocza/Gra-ROBOCZA.html`. · **AKTUALNA** · Test: Ctrl+F5 START.html → stamp `87d0d359`; Nowa gra bez odkrycia państw-miast → brak propozycji handlu; po odkryciu w mgle → propozycje możliwe.
+
 - 2026-07-21 · stempel: ROBOCZA · **b1e90a22** · md5 pliku `b1e90a22570f73e834a6209c6830575a` · **NAP rel-only + fix handel UI (live Respekt)** — na `31bf4a4b`:
   **NAP:** bramka tylko Relacja ≥ progNapRelacja (bez Zaufania); Zaufanie rośnie po zawarciu. **Handel:** UI używało stale `rel.respekt` zamiast live `computeRespekt` → przy Rel 55 na ekranie przycisk szary z mylącym tooltipem; naprawione `audienceRelTotal` + `buildProposalEvalContext`.
-  tsc=0 · diplomacy-proposal 47/47 · VERIFY OK · publish `gra-robocza/Gra-ROBOCZA.html`. · **AKTUALNA** · Test: Ctrl+F5 START.html → stamp `b1e90a22`; NAP przy Rel≥50 bez Zauf; handel aktywny gdy Rel (Zauf+Respekt mocy) ≥40.
+  tsc=0 · diplomacy-proposal 47/47 · VERIFY OK · publish `gra-robocza/Gra-ROBOCZA.html`. · **ZASTĄPIONA** (→ `87d0d359`) · Test: Ctrl+F5 START.html → stamp `b1e90a22`; NAP przy Rel≥50 bez Zauf; handel aktywny gdy Rel (Zauf+Respekt mocy) ≥40.
 
 - 2026-07-21 · stempel: ROBOCZA · **31bf4a4b** · md5 pliku `31bf4a4bbe8eea314f7210b9a61f4a1a` · **D3-PROG-DIFF: progi traktatów wg trudności + dual gates NAP/handl** — na `95be60fc`:
   **D3-PROG-DIFF:** skalowanie progów relacji/zaufania/respektu ±10 wg trudności (easy −10 / hard +10). Normal: handel Rel 40, NAP Rel 50 + Zauf 40. Dual gates: NAP wymaga Rel+Zauf (+ tech/granice gdzie dotyczy); sojusz/trybut/handl z osobnymi progami.

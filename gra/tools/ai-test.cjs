@@ -33,6 +33,7 @@ const BUNDLE_FILE = path.resolve(__dirname, '.ai-test-bundle.cjs');
 const ENTRY_TS = `
 export { decideAITurn, loadDifficultyParams, decideAIReaction, decideAIReinforcements, PROG_BITWA, TERYTORIUM_MNOZNIK, AGRESJA_WPLYW, WARTOSC_PROG_OBS, WARTOSC_KOREKTA, PRZYJAZN_ZAUFANIE_PROG, AGRESJA_AGRESYWNY_PROG, decideAIDiplomacy, PROG_WOJNA_SILA, PROG_WOJNA_AGRESJA, PROG_TRYBUT, PROG_POKOJ_SLABOSC, PROG_SOJUSZ, PROG_HANDEL } from ${JSON.stringify(AI_SRC + '/game/ai')};
 export { hexDistance } from ${JSON.stringify(AI_SRC + '/units/setup')};
+export { diplomacyLayerForOwner, filterDiplomacyCommandsForLayer } from ${JSON.stringify(AI_SRC + '/game/diplomacy-layers')};
 `;
 
 fs.writeFileSync(ENTRY_FILE, ENTRY_TS, 'utf8');
@@ -54,7 +55,7 @@ try {
 }
 
 const AI = require(BUNDLE_FILE);
-const { decideAITurn, loadDifficultyParams, decideAIReaction, decideAIReinforcements, PROG_BITWA, TERYTORIUM_MNOZNIK, AGRESJA_WPLYW, WARTOSC_PROG_OBS, WARTOSC_KOREKTA, PRZYJAZN_ZAUFANIE_PROG, AGRESJA_AGRESYWNY_PROG, hexDistance, decideAIDiplomacy, PROG_WOJNA_SILA, PROG_WOJNA_AGRESJA, PROG_TRYBUT, PROG_POKOJ_SLABOSC, PROG_SOJUSZ, PROG_HANDEL } = AI;
+const { decideAITurn, loadDifficultyParams, decideAIReaction, decideAIReinforcements, PROG_BITWA, TERYTORIUM_MNOZNIK, AGRESJA_WPLYW, WARTOSC_PROG_OBS, WARTOSC_KOREKTA, PRZYJAZN_ZAUFANIE_PROG, AGRESJA_AGRESYWNY_PROG, hexDistance, decideAIDiplomacy, PROG_WOJNA_SILA, PROG_WOJNA_AGRESJA, PROG_TRYBUT, PROG_POKOJ_SLABOSC, PROG_SOJUSZ, PROG_HANDEL, diplomacyLayerForOwner, filterDiplomacyCommandsForLayer } = AI;
 
 // --- tiny assertion framework ----------------------------------------------
 let passed = 0;
@@ -2254,6 +2255,55 @@ console.log('\n--- T7D-f: bez defensiveCopy -> foundCity gdy osadnik moze (regre
   const result = decideAITurn(7, [settler], [], map7f, makeGameData(), { civType: 'grecy' });
   const found = result.filter(c => c.type === 'foundCity');
   assert(found.length === 1, 'T7D-f: ekspansyjny AI zaklada miasto gdy canFound');
+}
+
+// ============================================================================
+// TESTY T10: D3-Q2 — bramka odkrycia w mgle przed propozycjami AI
+// ============================================================================
+
+console.log('\n--- T10a: miasto-panstwo bez odkrycia -> pre_contact, brak handlu ---');
+{
+  const simplified = new Set([3]);
+  const foreign = new Set([5]);
+  const contacted = new Set([5]); // owner 3 NIE odkryty
+  const layer = diplomacyLayerForOwner(3, simplified, foreign, contacted);
+  eq(layer, 'pre_contact', 'T10a: city-state bez odkrycia = pre_contact');
+  const rawCmds = decideAIDiplomacy({
+    myPlayerId: '3',
+    relacje: [{ partnerId: '0', relation: { zaufanie: 60, respekt: 50, status: 'pokoj' }, respektWzgledny: 0.55, stanWojny: false }],
+    agresja: 0.3,
+    handlowosc: 0.7,
+    epoka: 'kamien',
+  });
+  const filtered = filterDiplomacyCommandsForLayer(rawCmds, layer);
+  assert(!filtered.some(c => c.type === 'zaproponuj_handel'), `T10a: brak zaproponuj_handel bez odkrycia; got: ${JSON.stringify(filtered.map(c => c.type))}`);
+}
+
+console.log('\n--- T10b: miasto-panstwo po odkryciu -> simplified, handel mozliwy ---');
+{
+  const simplified = new Set([3]);
+  const foreign = new Set([5]);
+  const contacted = new Set([3, 5]);
+  const layer = diplomacyLayerForOwner(3, simplified, foreign, contacted);
+  eq(layer, 'simplified', 'T10b: city-state po odkryciu = simplified');
+  const rawCmds = decideAIDiplomacy({
+    myPlayerId: '3',
+    relacje: [{ partnerId: '0', relation: { zaufanie: 60, respekt: 50, status: 'pokoj' }, respektWzgledny: 0.55, stanWojny: false }],
+    agresja: 0.3,
+    handlowosc: 0.7,
+    epoka: 'kamien',
+  });
+  const filtered = filterDiplomacyCommandsForLayer(rawCmds, layer);
+  assert(filtered.some(c => c.type === 'zaproponuj_handel'), `T10b: zaproponuj_handel po odkryciu; got: ${JSON.stringify(filtered.map(c => c.type))}`);
+}
+
+console.log('\n--- T10c: obca cywilizacja bez odkrycia -> pre_contact ---');
+{
+  const simplified = new Set([3]);
+  const foreign = new Set([5]);
+  const contacted = new Set([3]);
+  const layer = diplomacyLayerForOwner(5, simplified, foreign, contacted);
+  eq(layer, 'pre_contact', 'T10c: foreign civ bez odkrycia = pre_contact');
 }
 
 // --- summary ---------------------------------------------------------------
