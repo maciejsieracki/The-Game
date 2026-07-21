@@ -6212,9 +6212,9 @@ var miasto_params_default = {
     opis: "Mnoznik compound (procent skladany) efektu I kosztu budynku za kazdy poziom: wartosc^(poziom-1). Decyzja Naster = +10%/epoke. Uzywany w production.itemCost (koszt) i buildingEffectAtLevel (efekt)."
   },
   jednostka_koszt_ludnosci: {
-    wartosc: 1,
+    wartosc: 0,
     jednostka: "ludnosc",
-    opis: "Ile ludnosci kosztuje miasto ukonczenie jednostki z kolejki (rekrutacja). production.populationCostOf; odjecie + clamp do min.1 robi petla tury."
+    opis: "Koszt ludnosci miasta za ukonczenie jednostki z kolejki (rekrutacja). USTAWIONE 0 (Maciej 2026-07-21): rekrutacja NIE zabiera juz populacji miasta \u2014 jedynym kosztem werbu jest pula Manpower (epoka-ludnosc-manpower.json / manpower.ts). production.populationCostOf; przy 0 populacja pozostaje bez zmian."
   },
   manpower_regen_proc_max_tura: {
     wartosc: 10,
@@ -7307,7 +7307,7 @@ function canFoundCity(q, r, cities, map, opts) {
     }
   }
   for (const city of cities) {
-    const minDist = city.startCityState ? MIN_CITY_DISTANCE_START_CITY_STATE : MIN_CITY_DISTANCE;
+    const minDist = (opts == null ? void 0 : opts.foundingCityState) || city.startCityState ? MIN_CITY_DISTANCE_START_CITY_STATE : MIN_CITY_DISTANCE;
     if (hexDistance(q, r, city.q, city.r) < minDist) {
       return { ok: false, reason: "za blisko innego miasta" };
     }
@@ -7336,8 +7336,8 @@ function foundCity(settler, cities, map, name, opts) {
     podzialPracy: podzial.podzialPracy
   };
 }
-function foundCityAt(q, r, ownerId, cities, map, name) {
-  const { ok } = canFoundCity(q, r, cities, map);
+function foundCityAt(q, r, ownerId, cities, map, name, foundingCityState = false) {
+  const { ok } = canFoundCity(q, r, cities, map, { foundingCityState });
   if (!ok) {
     return null;
   }
