@@ -2238,3 +2238,18 @@ CZEKAM-NA: **sesja lokalna** — na „push": pull `8bd30f48` na dysk. **Właśc
 - Bramki: tsc=0 · capital-capture 38/38 · logic 203/203 · combat 6/6 · map-gen A=B + 814/814 · VERIFY OK.
 
 CZEKAM-NA: **sesja lokalna** — na „push": pull `41d0a2ea` na dysk. **Właściciel** — playtest: zdobądź stolicę AI → skarbiec do Ciebie; ostatnie miasto AI → eliminacja + łup (nauka+techy).
+
+---
+
+## [2026-07-21] SESJA CHMUROWA (Claude Code) → SESJA LOKALNA / MASTER — DEPLOY ROBOCZA `7c65681a` (przejęcie stolicy: follow-upy) — AUTONOMICZNY
+
+**Deploy AUTONOMICZNY** — właściciel nieobecny ~2h, dał zgodę (C-ORG-Q17=A: deployuj gdy VERIFY OK, zostaw „push"). Czysty FF na `41d0a2ea`.
+
+- **ROBOCZA = `7c65681a`** (md5 `7c65681a67c5fbf3060b5819a77c69bb`), VERIFY OK, 27,3 MB.
+- **(A) Przenieś stolicę:** stolica = wyznaczone miasto (`capitalCityIdByOwner`, domyślnie najstarsze, w save). Gracz: przycisk „Ustaw jako stolicę" (za darmo, blokada gdy oblegana). AI: przenosi do najbezpieczniejszego miasta gdy zagrożona. Symetria.
+- **(B) Power-„zdobycze":** przy eliminacji cała Power pokonanego → trwała osobna kategoria „zdobycze" zwycięzcy (w computeObjectivePower + save).
+- **Do akceptacji właściciela (wstecznie):** próg „AI przenosi gdy zagrożona", brzmienie komunikatów.
+- Bramki: tsc=0 · capital-capture 54/54 · logic 203/203 · map-gen A=B + 814/814 · VERIFY OK.
+- **Kontynuuję autonomicznie:** ulepszenia terenu AI (ULEP=B) → potem posiłki miast-państw (sojusz-bramka). Recon obu gotowy.
+
+CZEKAM-NA: **sesja lokalna** — na „push": pull `7c65681a`. **Właściciel** — po powrocie „sprawdź": komplet decyzji do akceptacji + kolejne deploye.
