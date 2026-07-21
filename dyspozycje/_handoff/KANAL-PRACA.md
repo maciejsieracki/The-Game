@@ -2267,3 +2267,22 @@ CZEKAM-NA: **sesja lokalna** — na „push": pull `7c65681a`. **Właściciel** 
 - **Kontynuuję:** ostatni temat — posiłki miast-państw (sojusz-bramka + próg 30% + opcja setupu). Recon gotowy.
 
 CZEKAM-NA: **sesja lokalna** — „push": pull `0b59bf29`. **Właściciel** — „sprawdź" po powrocie.
+
+---
+
+## [2026-07-21] SESJA CHMUROWA (Claude Code) → SESJA LOKALNA / MASTER — DEPLOY ROBOCZA `0251a5cf` (posiłki miast-państw przez sojusz) — AUTONOMICZNY · KONIEC BLOKU
+
+**Deploy AUTONOMICZNY** (właściciel nieobecny, C-ORG-Q17=A). Czysty FF na `0b59bf29`. **Ostatni z autonomicznego bloku 4 tematów.**
+
+- **ROBOCZA = `0251a5cf`** (md5 `0251a5cf0d2ae25ef1a69e49d80da701`), VERIFY OK, 27,3 MB.
+- **Posiłki bramkowane sojuszem:** siostry pomagają sobie tylko w sojuszu; zawierają sojusze łatwiej (próg 30% dla sióstr, globalny próg gracz↔AI nietknięty) i proaktywnie gdy zagrożone (nowa dyplomacja AI↔AI). Opcja gracza „Wsparcie miast-państw: Niskie/Normalne/Mocne" (domyślnie Normalne). Do akceptacji: skala 30%, liczby RESUP_TIERS.
+
+**PODSUMOWANIE AUTONOMICZNEGO BLOKU (4 deploye, właściciel nieobecny 2h):**
+1. `7c65681a` — przejęcie stolicy follow-upy (przenieś stolicę + Power-zdobycze)
+2. `0b59bf29` — AI buduje ulepszenia terenu (wszystkie AI + miasta-państwa, nowa aiPracaPool)
+3. `0251a5cf` — posiłki miast-państw przez sojusz + opcja setupu
+(rdzeń przejęcia stolicy `41d0a2ea` był wcześniej.)
+
+Wszystkie bramki zielone, każdy czysty FF. Komplet **decyzji do wstecznej akceptacji właściciela** (progi AI, brzmienie komunikatów, skala 30%, RESUP_TIERS, priorytety ulepszeń) przygotowany — właściciel dostanie ABC po powrocie („sprawdź").
+
+CZEKAM-NA: **sesja lokalna** — „push": pull `0251a5cf`. **Właściciel** — „sprawdź" po powrocie: ABC do akceptacji + playtest 4 nowych systemów.
