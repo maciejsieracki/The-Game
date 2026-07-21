@@ -4034,10 +4034,10 @@ var ARCHETYPE_TRADE = {
   ["fenicjanie" /* Fenicjanie */]: 0.9,
   ["drobna_cywilizacja" /* DrobnaCywilizacja */]: 0.6
 };
-function aiDiplomacyStance(aiPlayer, otherPlayer, rel, context) {
+function aiDiplomacyStance(aiPlayer, otherPlayer, rel, context, params = getEffectiveDiplomacyParams()) {
   const score = relationScore(rel);
   const { zaufanie, respekt } = rel;
-  const p = getEffectiveDiplomacyParams();
+  const p = params;
   if (!aiPlayer?.typCywilizacji || !otherPlayer?.typCywilizacji) {
     return {
       willingnessWar: 0,

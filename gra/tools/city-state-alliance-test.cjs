@@ -1,25 +1,35 @@
 'use strict';
 /**
  * city-state-alliance-test.cjs -- standalone Node test for D-START posiłki v2
- * (Maciej 2026-07-21): posiłki między siostrami tego samego klastra BRAMKOWANE
- * SOJUSZEM + próg sojuszu obniżony 30% dla tej pary + RESUP_TIERS sterowane opcją
- * setupu „Wsparcie miast-państw". Run from gra/:  node tools/city-state-alliance-test.cjs
+ * (Maciej 2026-07-21, PRZERÓBKA wg zmienionych decyzji właściciela): posiłki między
+ * siostrami tego samego klastra BRAMKOWANE SOJUSZEM + próg sojuszu przeskalowany PER
+ * POZIOM TRUDNOŚCI gry (nie osobna opcja setupu -- USUNIĘTA) + ocena sojuszu przez
+ * PEŁNĄ maszynerię (aiDiplomacyStance.willingnessAlly), nie uproszczony proxy
+ * zaufanie/100. Run from gra/:  node tools/city-state-alliance-test.cjs
  *
  * Zakres celowo NIE obejmuje main.ts (nie da się go zaimportować w izolacji --
- * to jeden ogromny plik bootstrapujący silnik). main.ts robi TYLKO dwie rzeczy
- * ponad to co tu testowane, obie trivialne do zweryfikowania czytaniem kodu:
+ * to jeden ogromny plik bootstrapujący silnik). main.ts robi TYLKO rzeczy trivialne
+ * do zweryfikowania czytaniem kodu, ponad to co tu testowane:
  *   (a) filtruje opts.sisterCityStates po aktywnym sojuszu (activeDeals) PRZED
  *       przekazaniem do decideAITurn -- tu symulujemy to bezpośrednio: test 4
  *       pokazuje "bez sisterCityStates -> zero ruchu-posiłku", test 5 pokazuje
  *       "z sisterCityStates -> posiłek" (main.ts decyduje CZY przekazać listę wg
  *       sojuszu -- ai.ts jest ślepe na dyplomację, jak i ma pozostać).
- *   (b) przekazuje opts.citySupportLevel = _menuCitySupport (setup) 1:1 do AITurnOpts.
+ *   (b) przekazuje opts.citySupportLevel = _menuCitySupport (pochodna TRUDNOŚCI gry,
+ *       applyMenuParams: easy→'low' · normal→'normal' · hard→'strong') 1:1 do AITurnOpts.
+ *   (c) formSisterAlliancesIfThreatened() buduje stub graczy (typCywilizacji = typ
+ *       KLASTRA, nie DrobnaCywilizacja) + militaryRatio realny (militaryRatioFromArmyM)
+ *       i woła sisterAllianceEligible(...) przed addTreaty -- tu testujemy
+ *       sisterAllianceEligible bezpośrednio z równoważnymi argumentami.
  *
  * Testy:
- *   1. sisterAllianceDiplomacyParams -- skala 30% dokładnie (Zaufanie/Relacja/Willingness),
- *      z twardą podłogą progSojuszRelacja >= progMinimalnyRelacja.
- *   2. sisterAllianceEligible -- poniżej progu -> false; na/powyżej progu -> true;
- *      status='wojna' -> zawsze false (nawet przy wysokiej relacji).
+ *   1. sisterAllianceDiplomacyParams -- skale PER POZIOM (low ×0,6 / normal ×0,3 /
+ *      strong ×0,15) dokładnie (Zaufanie/Relacja/Willingness/progUmowaMinRelacja),
+ *      z twardą podłogą progSojuszRelacja >= progMinimalnyRelacja, i porządkiem
+ *      strong < normal < low (wyższa trudność = łatwiej sojusz sióstr).
+ *   2. sisterAllianceEligible -- PEŁNA maszyneria (aiDiplomacyStance.willingnessAlly):
+ *      wysoka relacja + parytet sił -> sojusz (na obniżonym progu, NIE na globalnym);
+ *      niska relacja -> brak sojuszu nawet po obniżce; status='wojna' -> zawsze false.
  *   3. RESUP_TIERS -- dokładne liczby per poziom (low/normal/strong) - regresja pinning.
  *   4. decideDefensiveCopyTurn: BRAK opts.sisterCityStates (symulacja "brak sojuszu") ->
  *      zagrożona siostra nie dostaje posiłku (jednostka-nadwyżka NIE rusza w jej stronę).
@@ -160,45 +170,101 @@ const SISTER_ID = 12;
 const ENEMY_ID  = 99;
 
 // ===========================================================================
-// 1. sisterAllianceDiplomacyParams -- skala 30% + podłoga progSojuszRelacja
+// 1. sisterAllianceDiplomacyParams -- skale PER POZIOM + podloga + porzadek
 // ===========================================================================
-console.log('1. sisterAllianceDiplomacyParams -- skala 30% + podloga');
+console.log('1. sisterAllianceDiplomacyParams -- skale per poziom (low/normal/strong) + podloga');
 {
-  const p = sisterAllianceDiplomacyParams(DIPLOMACY_PARAMS);
-  eq(p.progSojuszZaufanie, Math.round(DIPLOMACY_PARAMS.progSojuszZaufanie * 0.3),
-    'progSojuszZaufanie przeskalowany x0.3');
-  eq(
-    p.progSojuszRelacja,
-    Math.max(DIPLOMACY_PARAMS.progMinimalnyRelacja, Math.round(DIPLOMACY_PARAMS.progSojuszRelacja * 0.3)),
-    'progSojuszRelacja przeskalowany x0.3 z podloga progMinimalnyRelacja',
-  );
-  close(p.progSojuszWillingnessMin, DIPLOMACY_PARAMS.progSojuszWillingnessMin * 0.3, 0.001,
-    'progSojuszWillingnessMin przeskalowany x0.3');
+  const pLow = sisterAllianceDiplomacyParams('low', DIPLOMACY_PARAMS);
+  const pNormal = sisterAllianceDiplomacyParams('normal', DIPLOMACY_PARAMS);
+  const pStrong = sisterAllianceDiplomacyParams('strong', DIPLOMACY_PARAMS);
+
+  eq(pLow.progSojuszZaufanie, Math.round(DIPLOMACY_PARAMS.progSojuszZaufanie * 0.6), 'low: progSojuszZaufanie x0.6');
+  eq(pNormal.progSojuszZaufanie, Math.round(DIPLOMACY_PARAMS.progSojuszZaufanie * 0.3), 'normal: progSojuszZaufanie x0.3');
+  eq(pStrong.progSojuszZaufanie, Math.round(DIPLOMACY_PARAMS.progSojuszZaufanie * 0.15), 'strong: progSojuszZaufanie x0.15');
+
+  const relaczaLow = Math.max(DIPLOMACY_PARAMS.progMinimalnyRelacja, Math.round(DIPLOMACY_PARAMS.progSojuszRelacja * 0.6));
+  const relaczaNormal = Math.max(DIPLOMACY_PARAMS.progMinimalnyRelacja, Math.round(DIPLOMACY_PARAMS.progSojuszRelacja * 0.3));
+  const relaczaStrong = Math.max(DIPLOMACY_PARAMS.progMinimalnyRelacja, Math.round(DIPLOMACY_PARAMS.progSojuszRelacja * 0.15));
+  eq(pLow.progSojuszRelacja, relaczaLow, 'low: progSojuszRelacja x0.6 z podloga progMinimalnyRelacja');
+  eq(pNormal.progSojuszRelacja, relaczaNormal, 'normal: progSojuszRelacja x0.3 z podloga progMinimalnyRelacja');
+  eq(pStrong.progSojuszRelacja, relaczaStrong, 'strong: progSojuszRelacja x0.15 z podloga progMinimalnyRelacja');
+
+  // progUmowaMinRelacja MUSI byc przeskalowany RAZEM z progSojuszRelacja -- inaczej
+  // diplomacyTreatyMinRelacja (wolane wewnatrz aiDiplomacyStance) wymusi globalna
+  // podloge 151 niezaleznie od skali, kasujac cala obnizke progu sojuszu siostr.
+  eq(pLow.progUmowaMinRelacja, relaczaLow, 'low: progUmowaMinRelacja rowny przeskalowanej progSojuszRelacja');
+  eq(pNormal.progUmowaMinRelacja, relaczaNormal, 'normal: progUmowaMinRelacja rowny przeskalowanej progSojuszRelacja');
+  eq(pStrong.progUmowaMinRelacja, relaczaStrong, 'strong: progUmowaMinRelacja rowny przeskalowanej progSojuszRelacja');
+
+  close(pLow.progSojuszWillingnessMin, DIPLOMACY_PARAMS.progSojuszWillingnessMin * 0.6, 0.001, 'low: progSojuszWillingnessMin x0.6');
+  close(pNormal.progSojuszWillingnessMin, DIPLOMACY_PARAMS.progSojuszWillingnessMin * 0.3, 0.001, 'normal: progSojuszWillingnessMin x0.3');
+  close(pStrong.progSojuszWillingnessMin, DIPLOMACY_PARAMS.progSojuszWillingnessMin * 0.15, 0.001, 'strong: progSojuszWillingnessMin x0.15');
+
   // Globalne DIPLOMACY_PARAMS NIE zmienione (immutable, brak efektu ubocznego).
   eq(DIPLOMACY_PARAMS.progSojuszZaufanie, 91, 'DIPLOMACY_PARAMS.progSojuszZaufanie global niezmieniony');
   eq(DIPLOMACY_PARAMS.progSojuszRelacja, 151, 'DIPLOMACY_PARAMS.progSojuszRelacja global niezmieniony');
-  // Sanity: obnizony prog rzeczywiscie NIZSZY niz globalny (to caly sens funkcji).
-  assert(p.progSojuszZaufanie < DIPLOMACY_PARAMS.progSojuszZaufanie, 'prog siostr < prog globalny (Zaufanie)');
-  assert(p.progSojuszRelacja < DIPLOMACY_PARAMS.progSojuszRelacja, 'prog siostr < prog globalny (Relacja)');
+  eq(DIPLOMACY_PARAMS.progUmowaMinRelacja, 151, 'DIPLOMACY_PARAMS.progUmowaMinRelacja global niezmieniony');
+
+  // Wyzsza trudnosc (strong) = latwiej sojusz siostr = prog NIZSZY niz normal < low.
+  assert(pStrong.progSojuszZaufanie < pNormal.progSojuszZaufanie, 'strong < normal (Zaufanie)');
+  assert(pNormal.progSojuszZaufanie < pLow.progSojuszZaufanie, 'normal < low (Zaufanie)');
+  assert(pStrong.progSojuszRelacja <= pNormal.progSojuszRelacja, 'strong <= normal (Relacja)');
+  assert(pNormal.progSojuszRelacja < pLow.progSojuszRelacja, 'normal < low (Relacja)');
+  assert(pLow.progSojuszZaufanie < DIPLOMACY_PARAMS.progSojuszZaufanie, 'nawet low < prog globalny (Zaufanie)');
+  assert(pLow.progSojuszRelacja < DIPLOMACY_PARAMS.progSojuszRelacja, 'nawet low < prog globalny (Relacja)');
 }
 
 // ===========================================================================
-// 2. sisterAllianceEligible -- prog + wojna
+// 2. sisterAllianceEligible -- PELNA maszyneria (aiDiplomacyStance.willingnessAlly)
 // ===========================================================================
-console.log('2. sisterAllianceEligible -- prog obnizony + wojna blokuje');
+console.log('2. sisterAllianceEligible -- pelna ocena (willingness/sila) + wojna blokuje');
 {
-  const sp = sisterAllianceDiplomacyParams(DIPLOMACY_PARAMS);
-  const below = { zaufanie: sp.progSojuszZaufanie - 1, respekt: 30, status: 'pokoj' };
-  const atThreshold = { zaufanie: sp.progSojuszZaufanie, respekt: sp.progSojuszRelacja - sp.progSojuszZaufanie, status: 'pokoj' };
-  eq(sisterAllianceEligible(below, sp), false, 'ponizej progu Zaufanie -> brak sojuszu');
-  eq(sisterAllianceEligible(atThreshold, sp), true, 'na progu (Zaufanie+Relacja) -> sojusz mozliwy');
-  const atWar = { ...atThreshold, status: 'wojna' };
-  eq(sisterAllianceEligible(atWar, sp), false, 'status wojna -> zawsze brak sojuszu, mimo spelnionego progu liczbowego');
+  // Siostry = typCywilizacji KLASTRA (np. 'grecy'), NIGDY 'drobna_cywilizacja'
+  // (inaczej aiDiplomacyStance wchodzi na sciezke minor-civ i willingnessAlly=0).
+  const playerA = { ownerId: 21, typCywilizacji: 'grecy' };
+  const playerB = { ownerId: 22, typCywilizacji: 'grecy' };
+  const ctxParity = { isMinorCiv: false, militaryRatio: 1, currentTurn: 10, turnsAtWar: 0 };
+  const spNormal = sisterAllianceDiplomacyParams('normal', DIPLOMACY_PARAMS);
+
+  const relHigh = { zaufanie: 90, respekt: 50, status: 'pokoj' }; // relacja=140
+  const relLow = { zaufanie: 10, respekt: 10, status: 'pokoj' };  // relacja=20
+
+  eq(
+    sisterAllianceEligible(playerA, playerB, relHigh, ctxParity, spNormal),
+    true,
+    'wysoka relacja + parytet sil -> sojusz siostr na obnizonym progu (normal)',
+  );
+  eq(
+    sisterAllianceEligible(playerA, playerB, relLow, ctxParity, spNormal),
+    false,
+    'niska relacja -> brak sojuszu, nawet po obnizce progu',
+  );
+
+  const atWar = { ...relHigh, status: 'wojna' };
+  eq(
+    sisterAllianceEligible(playerA, playerB, atWar, ctxParity, spNormal),
+    false,
+    'status wojna -> zawsze brak sojuszu, mimo relacji ktora inaczej kwalifikowalaby',
+  );
+
   // Prog obnizony jest realnie osiagalny szybciej niz globalny sojusz gracz<->AI:
-  // relacja ktora NIE kwalifikuje globalnego sojuszu moze kwalifikowac siostrzany.
-  const midRelation = { zaufanie: 40, respekt: 20, status: 'pokoj' }; // relacja=60, daleko od globalnych progow (91/151)
-  eq(sisterAllianceEligible(midRelation, DIPLOMACY_PARAMS), false, 'relacja=60 nie spelnia globalnego progu sojuszu');
-  eq(sisterAllianceEligible(midRelation, sp), true, 'ta sama relacja=60 SPELNIA obnizony prog siostr (30%)');
+  // ta sama relacja ktora NIE kwalifikuje globalnego progu MOZE kwalifikowac siostrzany.
+  eq(
+    sisterAllianceEligible(playerA, playerB, relHigh, ctxParity, DIPLOMACY_PARAMS),
+    false,
+    'ta sama relacja (140) NIE kwalifikuje globalnego progu sojuszu (bez obnizki)',
+  );
+
+  // DrobnaCywilizacja (nie typ klastra) -> aiDiplomacyStance wchodzi na sciezke
+  // minor-civ -> willingnessAlly zawsze 0 -> sisterAllianceEligible zawsze false,
+  // niezaleznie od relacji. Pilnuje, ze main.ts NIGDY nie ustawia isMinorCiv/typu
+  // DrobnaCywilizacja dla par siostr (zerowaloby to willingnessAlly).
+  const minorPlayer = { ownerId: 23, typCywilizacji: 'drobna_cywilizacja' };
+  eq(
+    sisterAllianceEligible(minorPlayer, playerB, relHigh, ctxParity, spNormal),
+    false,
+    'typCywilizacji=DrobnaCywilizacja -> willingnessAlly=0 -> brak sojuszu (regresja-pin)',
+  );
 }
 
 // ===========================================================================

@@ -115,14 +115,6 @@ export interface NewGameParams {
   landFractionPercent: number;
   /** Podgląd startu klastra (E1/D-START) — z kreatora do SILNIK. */
   startPreview?: StartPreview;
-  /**
-   * D-START posiłki v2 (Maciej 2026-07-21): etykieta PL kreatora „Wsparcie
-   * miast-państw" (Niskie/Normalne/Mocne, domyślnie Normalne) — steruje siłą
-   * posiłków AI między siostrami klastra (main.ts applyMenuParams -> _menuCitySupport
-   * -> AITurnOpts.citySupportLevel -> ai.ts RESUP_TIERS). Opcjonalne — brak pola
-   * (stary save) -> main.ts domyślnie 'normal' (zero regresji).
-   */
-  citySupport?: string;
 }
 
 /** Decyzja B — modal „Zaawansowane opcje” krok 4. */
@@ -502,7 +494,6 @@ const SETTING_GLYPHS: Record<string, string> = {
   desert_density: 'Ps',
   forest_density: 'Ls',
   relief_density: 'Gw',
-  city_state_support: 'Ws',
 };
 
 function settingIcon(key: string): string {
@@ -1146,7 +1137,6 @@ function renderSettStep(host: HTMLElement): void {
   syncAdvLandFromWorldType();
   renderSettingRows(host, [
     'difficulty', 'map_size', 'world_type', 'game_speed', 'city_states_count', 'civ_types_count',
-    'city_state_support',
   ]);
 
   const preview = currentStartPreview();
@@ -1234,7 +1224,6 @@ function buildParams(): NewGameParams {
     landFractionPercent: advOpts.landFractionPercent,
     advanced: { ...advOpts },
     startPreview,
-    citySupport: settingValue('city_state_support') || 'Normalne',
   };
 }
 

@@ -381,62 +381,93 @@ export function diplomacyAllianceStrengthAdjust(
 
 // ---------------------------------------------------------------------------
 // sisterAllianceDiplomacyParams / sisterAllianceEligible
-// (D-START posiłki v2, Maciej 2026-07-21: posiłki między siostrami TEGO SAMEGO
-//  klastra bramkowane sojuszem, próg sojuszu obniżony do 30% dla TEJ pary.
-//  SELEKTYWNY override — NIGDY nie dotyka getEffectiveDiplomacyParams()/
-//  DIPLOMACY_PARAMS globalnie; main.ts woła to wyłącznie dla par
-//  miasto-państwo↔miasto-państwo tego samego klastra, patrz main.ts
-//  formSisterAlliancesIfThreatened().)
+// (D-START posiłki v2 ZMIANA 1/2/4, Maciej 2026-07-21 przeróbka: posiłki między
+//  siostrami TEGO SAMEGO klastra bramkowane sojuszem; próg sojuszu obniżony PER
+//  POZIOM TRUDNOŚCI gry (nie osobna opcja setupu — usunięta, patrz newGameFlow.ts/
+//  main.ts _menuDifficulty -> _menuCitySupport). SELEKTYWNY override — NIGDY nie
+//  dotyka getEffectiveDiplomacyParams()/DIPLOMACY_PARAMS globalnie; main.ts woła to
+//  wyłącznie dla par miasto-państwo↔miasto-państwo tego samego klastra, patrz
+//  main.ts formSisterAlliancesIfThreatened().)
 // ---------------------------------------------------------------------------
 
-/** Skala obniżenia progów sojuszu dla par sióstr tego samego klastra (Maciej: 30%). */
-export const SISTER_ALLIANCE_THRESHOLD_SCALE = 0.3;
+/**
+ * Skala obniżenia progów sojuszu dla par sióstr tego samego klastra, PER POZIOM
+ * trudności gry (Maciej 2026-07-21 przeróbka ZMIANA 2 — wyższa trudność = twardsze
+ * miasta-państwa = łatwiejszy sojusz/mocniejsze posiłki):
+ *   low    (Łatwy)   ×0,6  — sojusz trudniejszy niż na normal (mniej obniżony próg)
+ *   normal (Normalny)×0,3  — dotychczasowa stała (zero regresji domyślnej)
+ *   strong (Trudny)  ×0,15 — sojusz najłatwiejszy (próg najniżej obniżony)
+ */
+export const SISTER_ALLIANCE_THRESHOLD_SCALE: Record<'low' | 'normal' | 'strong', number> = {
+  low:    0.6,
+  normal: 0.3,
+  strong: 0.15,
+};
 
 /**
- * Kopia DiplomacyParams z przeskalowanymi progami sojuszu (×30%) — WYŁĄCZNIE do
- * użytku przy ocenie sojuszu między siostrami tego samego klastra. Twarda podłoga:
+ * Kopia DiplomacyParams z przeskalowanymi progami sojuszu (per `level`) — WYŁĄCZNIE
+ * do użytku przy ocenie sojuszu między siostrami tego samego klastra. Twarda podłoga:
  * progSojuszRelacja nie schodzi poniżej progMinimalnyRelacja (jak w
  * diplomacyTreatyMinRelacja — Relacja < progMinimalnyRelacja = "dyplomacja prawie
  * niemożliwa", więc nawet zdyskontowany próg sojuszu nie może zejść poniżej tego dna).
+ *
+ * WAŻNE: `progUmowaMinRelacja` (globalnie 151 — "twarda podłoga na dobrowolne umowy,
+ * premia siły NIE obniża") jest tu przeskalowany RAZEM z `progSojuszRelacja`
+ * (do tej samej wartości). aiDiplomacyStance liczy próg sojuszu przez
+ * diplomacyTreatyMinRelacja(adjustedThreshold, params) = max(params.progUmowaMinRelacja,
+ * adjustedThreshold) — gdyby progUmowaMinRelacja został globalny (151), próg sojuszu
+ * sióstr byłby ZAWSZE 151 niezależnie od skali (bug — obniżka nie miałaby efektu).
+ * Dla par sióstr "twarda podłoga" to WŁAŚNIE ich własny, obniżony próg sojuszu.
+ *
  * Nie zmienia `base` (immutable) ani globalnego getEffectiveDiplomacyParams().
  */
 export function sisterAllianceDiplomacyParams(
+  level: 'low' | 'normal' | 'strong' = 'normal',
   base: DiplomacyParams = getEffectiveDiplomacyParams(),
 ): DiplomacyParams {
+  const scale = SISTER_ALLIANCE_THRESHOLD_SCALE[level];
+  const scaledRelacja = Math.max(
+    base.progMinimalnyRelacja,
+    Math.round(base.progSojuszRelacja * scale),
+  );
   return {
     ...base,
-    progSojuszZaufanie: Math.round(base.progSojuszZaufanie * SISTER_ALLIANCE_THRESHOLD_SCALE),
-    progSojuszRelacja: Math.max(
-      base.progMinimalnyRelacja,
-      Math.round(base.progSojuszRelacja * SISTER_ALLIANCE_THRESHOLD_SCALE),
-    ),
+    progSojuszZaufanie: Math.round(base.progSojuszZaufanie * scale),
+    progSojuszRelacja: scaledRelacja,
+    progUmowaMinRelacja: scaledRelacja,
     progSojuszWillingnessMin: Math.round(
-      base.progSojuszWillingnessMin * SISTER_ALLIANCE_THRESHOLD_SCALE * 1000,
+      base.progSojuszWillingnessMin * scale * 1000,
     ) / 1000,
   };
 }
 
 /**
- * Czy relacja (a,b) siostrzanych miast-państw tego samego klastra spełnia OBNIŻONY
- * (30%) próg sojuszu? Czysta funkcja, bez zależności od main.ts/aktywnych traktatów —
- * caller (main.ts) sam sprawdza, czy sojusz już istnieje i czy nie ma stanu wojny
- * przed wywołaniem tej funkcji na poziomie orkiestracji (patrz raport pkt c).
- * Uproszczona ścieżka AI↔AI: pomija pełną maszynerię evaluateProposal (hegemon/
- * militaryRatio premie i kary) — to celowe, siostry tego samego klastra nie walczą
- * o hegemonię między sobą, tylko o wspólne przetrwanie.
+ * Czy relacja (playerA,playerB) siostrzanych miast-państw tego samego klastra
+ * kwalifikuje się do sojuszu, wg PEŁNEJ maszynerii dyplomacji (Maciej 2026-07-21
+ * przeróbka ZMIANA 4 = Q2 odpowiedź B): realna ocena aiDiplomacyStance(...)
+ * .willingnessAlly (relacja + przewaga militarna via diplomacyAllianceStrengthAdjust,
+ * dokładnie jak gracz↔AI w evaluateProposal), tylko z OBNIŻONYM progiem tierowym
+ * (`params` = sisterAllianceDiplomacyParams(poziom)) zamiast uproszczonego proxy
+ * zaufanie/100 użytego poprzednio.
+ *
+ * Czysta funkcja, bez zależności od main.ts/aktywnych traktatów — caller (main.ts)
+ * sam sprawdza, czy sojusz już istnieje, przed wywołaniem tej funkcji (patrz raport
+ * pkt c). `playerA`/`playerB` — siostry mają typCywilizacji = TYP KLASTRA (nie
+ * DrobnaCywilizacja) i `context.isMinorCiv` MUSI być false — inaczej aiDiplomacyStance
+ * wejdzie na ścieżkę "minor civ" i willingnessAlly wyjdzie zawsze 0 (paragraph 5.2:
+ * miasta-państwa nie zawierają sojuszy wojskowych z GRACZEM/AI głównym — to inna
+ * ścieżka niż siostry tego samego klastra między sobą).
  */
 export function sisterAllianceEligible(
-  rel: Relation,
-  params: DiplomacyParams = sisterAllianceDiplomacyParams(),
+  playerA: Player,
+  playerB: Player,
+  rel:     Relation,
+  context: AIDiplomacyContext,
+  params:  DiplomacyParams = sisterAllianceDiplomacyParams(),
 ): boolean {
   if (rel.status === 'wojna') return false;
-  const score = relationScore(rel);
-  const willingnessProxy = rel.zaufanie / 100;
-  return (
-    rel.zaufanie >= params.progSojuszZaufanie
-    && score >= params.progSojuszRelacja
-    && willingnessProxy >= params.progSojuszWillingnessMin
-  );
+  const stance = aiDiplomacyStance(playerA, playerB, rel, context, params);
+  return stance.willingnessAlly >= params.progSojuszWillingnessMin;
 }
 
 // ---------------------------------------------------------------------------
@@ -801,20 +832,30 @@ export const ARCHETYPE_TRADE: Record<TypCywilizacji, number> = {
  *   - Accept almost everything when player Respekt > 60
  *   - Cannot form military alliances (willingnessAlly = 0)
  *
+ * `params` optional override (Maciej 2026-07-21 — D-START posiłki v2 ZMIANA 4):
+ * domyślnie globalne getEffectiveDiplomacyParams() (gracz↔AI, zero regresji).
+ * Caller może podać przeskalowane progi sojuszu (np. sisterAllianceDiplomacyParams())
+ * do oceny par sióstr tego samego klastra — WYŁĄCZNIE ally-related computation
+ * (minAllyZ/minAllyScore/adj) korzysta z `params`; reszta funkcji (war/peace/trade)
+ * używa tych samych pól `p`, więc override wpływa też na nie -- zamierzone dla
+ * pełnej maszynerii sióstr (main.ts formSisterAlliancesIfThreatened), NIE dotyka
+ * globalnego stanu (getEffectiveDiplomacyParams() cache nietknięty).
+ *
  * All logic is pure / deterministic.
  */
 export function aiDiplomacyStance(
   aiPlayer:    Player,
   otherPlayer: Player,
   rel:         Relation,
-  context:     AIDiplomacyContext
+  context:     AIDiplomacyContext,
+  params:      DiplomacyParams = getEffectiveDiplomacyParams(),
 ): AIDiplomacyStance {
   // Suppress unused-variable warning for otherPlayer (available for future use).
   void otherPlayer;
 
   const score = relationScore(rel);
   const { zaufanie, respekt } = rel;
-  const p = getEffectiveDiplomacyParams();
+  const p = params;
 
   if (!aiPlayer?.typCywilizacji || !otherPlayer?.typCywilizacji) {
     return {

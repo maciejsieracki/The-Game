@@ -616,9 +616,12 @@ async function boot(): Promise<void> {
 
     // --- Menu integration: mutable game params set by New Game flow ---
     let _menuDifficulty: 'easy' | 'normal' | 'hard' = 'normal';
-    /** D-START posiłki v2 (Maciej 2026-07-21): setup „Wsparcie miast-państw" (domyślnie
-     *  normalne = dzisiejsze RESUP stałe, zero regresji). Steruje AITurnOpts.citySupportLevel
-     *  (ai.ts RESUP_TIERS) dla WSZYSTKICH AI defensywnych kopii typu. */
+    /** D-START posiłki v2 (Maciej 2026-07-21 przeróbka ZMIANA 1): pochodna TRUDNOŚCI gry
+     *  (_menuDifficulty), NIE osobna opcja setupu -- easy→'low' · normal→'normal' ·
+     *  hard→'strong', patrz applyMenuParams(). Domyślnie 'normal' (dzisiejsze stałe
+     *  RESUP 1/2/1, zero regresji). Steruje AITurnOpts.citySupportLevel (ai.ts
+     *  RESUP_TIERS) dla WSZYSTKICH AI defensywnych kopii typu oraz próg sojuszu sióstr
+     *  (sisterAllianceDiplomacyParams, diplomacy.ts). */
     let _menuCitySupport: 'low' | 'normal' | 'strong' = 'normal';
     let _menuCivId: string = 'rzymianie'; // E1 default: Rzymianie
     let _menuMapSize: string = 'Standardowy'; // E1 default map size
@@ -6387,10 +6390,14 @@ async function boot(): Promise<void> {
      * (gate sojuszu na posiłkach) sprawiłby, że posiłki między siostrami NIGDY nie
      * ruszą, bo sojusz nie ma jak powstać.
      *
-     * Ścieżka celowo UPROSZCZONA (AI↔AI, nie gracz↔AI): z pominięciem UI,
-     * evaluateProposal i warstwy komend (filterDiplomacyCommandsForLayer) — zawiera
-     * sojusz BEZPOŚREDNIO (ActiveDeal) gdy relacja spełnia próg obniżony do 30%
-     * (sisterAllianceDiplomacyParams/sisterAllianceEligible, diplomacy.ts).
+     * Ścieżka pomija UI, evaluateProposal (dedykowany kod komend gracz↔AI) i warstwę
+     * komend (filterDiplomacyCommandsForLayer) — zawiera sojusz BEZPOŚREDNIO
+     * (ActiveDeal), ale ocena kwalifikacji jest PEŁNA (Maciej 2026-07-21 przeróbka
+     * ZMIANA 4 = Q2 odpowiedź B): sisterAllianceEligible woła realny
+     * aiDiplomacyStance(...).willingnessAlly (relacja + przewaga militarna
+     * militaryRatioFromArmyM(a,b), dokładnie jak gracz↔AI), tylko z progiem
+     * obniżonym PER POZIOM TRUDNOŚCI (sisterAllianceDiplomacyParams(_menuCitySupport),
+     * diplomacy.ts) zamiast dawnego uproszczonego proxy zaufanie/100.
      *
      * Determinizm: pary iterowane w stałej kolejności (ownerId rosnąco); brak
      * Math.random(). Wydajność: iteruje TYLKO siostry aktualnie zagrożone (klastry
@@ -6428,7 +6435,22 @@ async function boot(): Promise<void> {
               continue; // już sojusznicy
             }
             const rel = getDiploRelation(a, b);
-            if (!sisterAllianceEligible(rel, sisterAllianceDiplomacyParams())) continue;
+            const sisterParams = sisterAllianceDiplomacyParams(_menuCitySupport);
+            const civTypA = aiOwnerCivMap.get(a) as TypCywilizacji | undefined;
+            const civTypB = aiOwnerCivMap.get(b) as TypCywilizacji | undefined;
+            if (!civTypA || !civTypB) continue;
+            // Siostry = typCywilizacji KLASTRA (tc.typ), NIE DrobnaCywilizacja -- inaczej
+            // aiDiplomacyStance wejdzie na ścieżkę "minor civ" i willingnessAlly = 0 zawsze.
+            const playerAStub: Player = { ownerId: a, typCywilizacji: civTypA } as unknown as Player;
+            const playerBStub: Player = { ownerId: b, typCywilizacji: civTypB } as unknown as Player;
+            const milRatioAB = militaryRatioFromArmyM(sumArmyMForOwner(a), sumArmyMForOwner(b));
+            const dipCtx: AIDiplomacyContext = {
+              isMinorCiv: false,
+              militaryRatio: milRatioAB,
+              currentTurn: turn,
+              turnsAtWar: 0,
+            };
+            if (!sisterAllianceEligible(playerAStub, playerBStub, rel, dipCtx, sisterParams)) continue;
 
             const [p0, p1] = pairOwnerIds(a, b);
             activeDeals = addTreaty(activeDeals, {
@@ -12299,16 +12321,16 @@ async function boot(): Promise<void> {
       _menuDifficulty = diff;
       startRevealRadius = startRevealRadiusForDifficulty(diff);
 
-      // D-START posiłki v2: „Wsparcie miast-państw" (setup) -> AITurnOpts.citySupportLevel.
-      const citySupportMap: Record<string, 'low' | 'normal' | 'strong'> = {
-        'Niskie': 'low',
-        'Normalne': 'normal',
-        'Mocne': 'strong',
-        low: 'low',
+      // D-START posiłki v2 (Maciej 2026-07-21 przeróbka ZMIANA 1): osobna opcja setupu
+      // usunięta -- „Wsparcie miast-państw" wynika teraz z TRUDNOŚCI gry (wyższa
+      // trudność = twardsze miasta-państwa = łatwiej sojusz + mocniejsze posiłki).
+      // Fallback 'normal' dla starych save bez pola trudności (zero regresji domyślnej).
+      const citySupportByDifficulty: Record<'easy' | 'normal' | 'hard', 'low' | 'normal' | 'strong'> = {
+        easy:   'low',
         normal: 'normal',
-        strong: 'strong',
+        hard:   'strong',
       };
-      _menuCitySupport = citySupportMap[params.citySupport ?? ''] ?? 'normal';
+      _menuCitySupport = citySupportByDifficulty[diff] ?? 'normal';
       _menuCivId = params.civId || 'rzymianie';
       _menuMapSize = params.mapSize || 'Standardowy';
       _menuCivTypesCount = params.civTypesCount || defaultCivTypesFromMapLabel(_menuMapSize);

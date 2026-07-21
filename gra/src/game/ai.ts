@@ -267,12 +267,13 @@ export interface AITurnOpts {
    */
   civEra?: number;
   /**
-   * D-START posiłki v2 (Maciej 2026-07-21): "Wsparcie miast-państw" z setupu nowej gry
-   * (niskie/normalne/mocne — domyślnie normalne). Steruje RESUP_TIERS (próg zagrożenia,
-   * min. garnizon do wysyłki, maks. posiłków/turę) w decideDefensiveCopyTurn.
-   * Silnik podaje main.ts `_menuCitySupport` (z NewGameParams.citySupport, ustawienie
-   * kreatora `city_state_support`). Gdy brak (stary save / brak pola) -- fallback 'normal'
-   * (= dzisiejsze stałe 1/2/1, zero regresji domyślnej).
+   * D-START posiłki v2 (Maciej 2026-07-21 przeróbka ZMIANA 1): "Wsparcie miast-państw"
+   * — NIE osobna opcja setupu (usunięta), pochodna TRUDNOŚCI gry (niskie/normalne/mocne
+   * = easy/normal/hard). Steruje RESUP_TIERS (próg zagrożenia, min. garnizon do wysyłki,
+   * maks. posiłków/turę) w decideDefensiveCopyTurn.
+   * Silnik podaje main.ts `_menuCitySupport` (z `_menuDifficulty` przez
+   * applyMenuParams — patrz main.ts). Gdy brak (stary save / brak pola) -- fallback
+   * 'normal' (= dzisiejsze stałe 1/2/1, zero regresji domyślnej).
    */
   citySupportLevel?: 'low' | 'normal' | 'strong';
 }
@@ -1267,7 +1268,8 @@ interface ResupTier {
 }
 
 /**
- * D-START posiłki v2 (Maciej 2026-07-21 — liczby PONIŻEJ do akceptacji właściciela):
+ * D-START posiłki v2 (Maciej 2026-07-21 przeróbka ZMIANA 3 -- wartości NIETKNIĘTE,
+ * tylko sterowanie zmienione z osobnej opcji setupu na trudność gry):
  *   normal = DZISIEJSZE stałe (1/2/1) — zero regresji domyślnej.
  *   low    = trudniej wyzwolić posiłek (radius 0, wyższy próg garnizonu).
  *   strong = łatwiej i więcej (radius 2, niższy próg garnizonu, 2/turę).
@@ -1319,8 +1321,8 @@ function decideDefensiveCopyTurn(
   }
 
   // ---------------------------------------------------------------------------
-  // POSIŁKI W KLASTRZE (D-START pkt c/e, Maciej ABC — liczby PONIŻEJ do akceptacji
-  // właściciela) — sterowane opcją setupu „Wsparcie miast-państw" (opts.citySupportLevel):
+  // POSIŁKI W KLASTRZE (D-START pkt c/e; Maciej 2026-07-21 przeróbka ZMIANA 1 —
+  // sterowane TRUDNOŚCIĄ gry, nie osobną opcją setupu) — opts.citySupportLevel:
   //   - threatRadius  → siostra uznana za "zagrożoną" gdy wróg jest w tym promieniu od jej
   //     miasta (normal=1 = ta sama definicja co "riposta przy własnym mieście" niżej).
   //   - minGuard → źródło wysyła posiłek TYLKO gdy ma w promieniu 1 od WŁASNEGO miasta
