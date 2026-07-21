@@ -4,7 +4,20 @@
 > **Czat:** krótko **`✅ Gotowe:`** / **`⏸️ Czeka:`** · **Ten plik:** pełniejszy zapis tego samego.  
 > Szczegóły techniczne → handoff w `dyspozycje/_handoff/` · operacja → `dyspozycje/DZIENNIK-MASTERA.md`
 
-**Ostatnia aktualizacja:** 2026-07-22 (etykieta kultury — audiencja dyplomatyczna)
+**Ostatnia aktualizacja:** 2026-07-22 (taktyka/strategia per jednostka w bitwie)
+
+---
+
+## [2026-07-22] ✅ Gotowe — taktyka/strategia per jednostka (bitwa)
+
+| | |
+|---|---|
+| **Co** | Taktyka (Obrona/Atak/Szturm/Ostrzał) i Strategia (priorytety celów) działają na **pojedynczej jednostce**, nie tylko na grupie |
+| **Jak zaznaczyć** | **Ctrl+LPM** na jednostkę w rosterze lub na polu bitwy = tylko ta jednostka · zwykły LPM na grupę = cała grupa |
+| **Wielokrotne** | Zaznacz kilka → Taktyka ustawia wszystkim; gdy różne postawy → nagłówek „mieszane" |
+| **md5** | `cb0248e49ea724d4d87f1f728637dadf` · stamp `cb0248e4` |
+| **Bramki** | tsc=0 · smoke OK |
+| **Od Ciebie** | `git pull` → Ctrl+F5 · `gra-robocza/START.html` → stamp `cb0248e4` · PLAYTEST-WALKA → bitwa ręczna → Ctrl+LPM wybierz 1 wojownika → Taktyka → Szturm; drugi w tej samej grupie → Obrona |
 
 ---
 

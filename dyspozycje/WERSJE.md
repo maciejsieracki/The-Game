@@ -11,9 +11,13 @@ swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drug
 
 ## ROBOCZA (gra-robocza\Gra-ROBOCZA.html — wskazywana przez START.html)
 
+- 2026-07-22 · stempel: ROBOCZA · **cb0248e4** · md5 pliku `cb0248e49ea724d4d87f1f728637dadf` · **BITWA: taktyka/strategia per jednostka** — na `77c603d7`:
+  **Cel:** wybór Taktyki (Obrona/Atak/Szturm/Ostrzał) i Strategii (priorytety celów) dla pojedynczej jednostki, nie tylko grupy. **Fix:** `battleScene.ts` — pola `unitDoctrine`, `useUnitPriorities` / `unitTargetPriorities` na `RuntimeBattleUnit`; popup Taktyka/Strategia działa na zaznaczeniu (Ctrl+LPM = jedna jednostka); wielokrotne zaznaczenie ustawia wszystkim lub pokazuje „mieszane".
+  tsc=0 · smoke OK · battle-smoke harness pre-existing fail · publish `gra-robocza/Gra-ROBOCZA.html`. · **AKTUALNA** · Test: Ctrl+F5 START.html → stamp `cb0248e4`; PLAYTEST-WALKA → bitwa ręczna → Ctrl+LPM zaznacz 1 jednostkę → Taktyka → Szturm; druga w grupie → Obrona → różne postawy w tej samej grupie.
+
 - 2026-07-22 · stempel: ROBOCZA · **77c603d7** · md5 pliku `77c603d77fe1346c18d8b5cb52535d3c` · **UI: etykieta kultury w audiencji dyplomatycznej** — na `3d2e4f32`:
   **Cel:** gracz widzi okręg kulturowy rozmówcy (np. „Kultura: Grecka" / „Chetycka") oraz wskazówkę ten sam okręg vs obca kultura. **Fix:** `civCultureLabelForKey` + `sameCultureCircle` w `diplomacy-display.ts`; linia UI w `diplomacyAudience.ts`; stan w `main.ts`.
-  tsc=0 · VERIFY OK · publish `gra-robocza/Gra-ROBOCZA.html`. · **AKTUALNA** · Test: Ctrl+F5 START.html → stamp `77c603d7`; dyplomacja → audiencja Argos → „Kultura: Grecka · Ten sam okręg kulturowy"; obcy typ → „Obca kultura".
+  tsc=0 · VERIFY OK · publish `gra-robocza/Gra-ROBOCZA.html`. · **ZASTĄPIONA** (→ `cb0248e4`) · Test: Ctrl+F5 START.html → stamp `77c603d7`; dyplomacja → audiencja Argos → „Kultura: Grecka · Ten sam okręg kulturowy"; obcy typ → „Obca kultura".
 
 - 2026-07-22 · stempel: ROBOCZA · **3d2e4f32** · md5 pliku `3d2e4f329dc66bc40aadf23c7c4d9623` · **UI: stan dyplomatyczny vs nastawienie w audiencji** — na `40a77974`:
   **Cel:** jednoznaczny formalny stan umów (wojna/pokój/sojusz/pakt/handel/brak kontaktu) odrębny od nastawienia (score). **Fix:** `resolveFormalDiplomaticStatus` + `nastawienieLabelFromScore` w `diplomacy-display.ts`; audiencja — prominentny box „Stan dyplomatyczny" z ikoną mieczy przy wojnie; nastawienie z podpisem wyjaśniającym; usunięto mylące „Pokój (neutralne)" i badge tier w sekcji relacji.

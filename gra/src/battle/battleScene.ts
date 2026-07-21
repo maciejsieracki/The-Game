@@ -1324,6 +1324,10 @@ function dirYaw(d: Dir): number {
 // Internal runtime unit
 // ---------------------------------------------------------------------------
 
+/** Postawa taktyczna grupy gracza (auto-gra bez mikro). */
+type GroupDoctrine = 'defensive' | 'steady' | 'aggressive' | 'skirmish' | 'manual';
+type BattleUnitClass = 'mounted' | 'ranged' | 'melee';
+
 interface RuntimeBattleUnit {
   bu:           BattleUnit;
   group:        THREE.Group;
@@ -1392,13 +1396,15 @@ interface RuntimeBattleUnit {
   groupId:      string | null;
   /** Wzgledny offset {dc, dr} od centroidu grupy w chwili grupowania (formacja pierwotna). */
   formationOffset: { dc: number; dr: number } | null;
+  /** Wlasna doktryna (null = dziedzicz z grupy, potem domyslnie Atak). */
+  unitDoctrine: GroupDoctrine | null;
+  /** Wlasne priorytety celow (gdy useUnitPriorities). */
+  unitTargetPriorities?: Partial<Record<BattleUnitClass, BattleUnitClass[]>>;
+  /** Gdy true — jednostka uzywa unitTargetPriorities zamiast armii/grupy. */
+  useUnitPriorities?: boolean;
   mats:         THREE.Material[];
   perTokenGeos: THREE.BufferGeometry[];
 }
-
-/** Postawa taktyczna grupy gracza (auto-gra bez mikro). */
-type GroupDoctrine = 'defensive' | 'steady' | 'aggressive' | 'skirmish' | 'manual';
-type BattleUnitClass = 'mounted' | 'ranged' | 'melee';
 
 /** Ustawienie konnicy w formacji deploy: skrzydla lub linia z tylu. */
 type CavalryDeployMode = 'flanks' | 'rear';
@@ -3319,6 +3325,7 @@ export class BattleScene {
         shootingEnabled:  true,
         groupId:      null,
         formationOffset: null,
+        unitDoctrine: null,
         mats,
         perTokenGeos,
       };
@@ -3459,6 +3466,7 @@ export class BattleScene {
         removed: false, onWallWalkway: true, playerOrder: { type: 'none' },
         rangedKite: true, shootingEnabled: true,
         groupId: null, formationOffset: null,
+        unitDoctrine: null,
         mats, perTokenGeos,
       };
       this._updateMoraleBar(ru);
@@ -3995,6 +4003,7 @@ export class BattleScene {
           shootingEnabled:  true,
           groupId:      null,
           formationOffset: null,
+          unitDoctrine: null,
           mats,
           perTokenGeos,
         };
@@ -4158,7 +4167,7 @@ export class BattleScene {
         this._manualMode
         && this._isPlayerSide(u.side)
         && u.playerOrder.type === 'none'
-        && !(u.groupId && this._groupMeta.get(u.groupId)?.autoPlay);
+        && !this._isUnitDoctrineAuto(u);
       if (!idlePlayerUnit) u.acted = true;
       // Light stagger so actions play in quick succession without freezing the
       // rest of the army.
@@ -4196,11 +4205,13 @@ export class BattleScene {
       if (this._performPlayerOrder(ru, done)) return;
     }
 
-    // AUTO bitwy: grupy z autoPlay wykonuja doktryne (Szturm, Atak, …)
+    // AUTO bitwy: jednostki z autoPlay wykonuja doktryne (Szturm, Atak, …)
     if (ru.side === 'atk' && !this._manualMode) {
-      const meta = ru.groupId ? this._groupMeta.get(ru.groupId) : undefined;
-      if (meta?.autoPlay && meta.doctrine !== 'manual' && ru.playerOrder.type === 'none') {
-        if (this._executeGroupDoctrineStep(ru, meta, done)) return;
+      if (this._isUnitDoctrineAuto(ru) && ru.playerOrder.type === 'none') {
+        const meta = this._effectiveMetaForUnit(ru);
+        if (meta.doctrine !== 'manual') {
+          if (this._executeGroupDoctrineStep(ru, meta, done)) return;
+        }
       }
     }
 
@@ -9548,7 +9559,19 @@ export class BattleScene {
     const gid = this._resolveDeployPopupGroupId();
 
     if (!this.deployPhase && this.started) {
-      if (gid) {
+      const units = this._resolveDeployPopupUnits();
+      if (units.length === 1) {
+        el.appendChild(mkChip(this._unitDisplayLabel(units[0]!)));
+        const doc = this._getEffectiveDoctrine(units[0]!);
+        el.appendChild(mkChip(this._doctrineLabel(doc)));
+        if (this._isUnitDoctrineAuto(units[0]!)) el.appendChild(mkChip('AUTO'));
+        else el.appendChild(mkChip('RECZNY'));
+      } else if (units.length > 1) {
+        const docs = units.map(u => this._getEffectiveDoctrine(u));
+        const allSame = docs.every(d => d === docs[0]);
+        el.appendChild(mkChip(units.length + ' j.'));
+        el.appendChild(mkChip(allSame ? this._doctrineLabel(docs[0]!) : 'MIESZANE'));
+      } else if (gid) {
         const meta = this._ensureGroupMeta(gid);
         el.appendChild(mkChip(this._groupDisplayLabel(gid)));
         el.appendChild(mkChip(this._doctrineLabel(meta.doctrine)));
@@ -9653,25 +9676,32 @@ export class BattleScene {
     }
   }
 
-  /** Popup Taktyka — doktryny grupy (Obrona / Atak / Szturm / Ostrzał). */
+  /** Popup Taktyka — doktryny per jednostka lub wspolnie dla zaznaczenia. */
   private _renderDeployTacticsPopup(popup: HTMLDivElement): void {
     const body = popup.querySelector('#deploy-tactics-popup') as HTMLDivElement | null
       ?? popup.firstElementChild as HTMLDivElement | null;
     if (!body) return;
     body.innerHTML = '';
 
-    const gid = this._resolveDeployPopupGroupId();
-    if (!gid) {
-      body.textContent = 'Brak grup \u2014 najpierw pogrupuj jednostki.';
+    const units = this._resolveDeployPopupUnits();
+    if (units.length === 0) {
+      body.textContent = 'Zaznacz jednostk\u0119 (Ctrl+LPM = tylko ta) \u2014 Taktyka dotyczy zaznaczenia.';
       Object.assign(body.style, { fontSize: '10px', color: BATTLE_TEXT_DIM, padding: '4px' });
       return;
     }
 
-    const meta = this._ensureGroupMeta(gid);
-    const doc = meta.doctrine;
+    const doctrines = units.map(u => this._getEffectiveDoctrine(u));
+    const allSame = doctrines.every(d => d === doctrines[0]);
+    const doc = allSame ? doctrines[0]! : null;
 
     const hdr = document.createElement('div');
-    hdr.textContent = this._groupDisplayLabel(gid);
+    if (units.length === 1) {
+      hdr.textContent = this._unitDisplayLabel(units[0]!);
+    } else if (allSame) {
+      hdr.textContent = units.length + ' jednostek \u00B7 ' + this._doctrineLabel(doc!);
+    } else {
+      hdr.textContent = units.length + ' jednostek \u00B7 mieszane';
+    }
     Object.assign(hdr.style, {
       fontSize: '10px', color: BATTLE_GOLD, fontWeight: 'bold', marginBottom: '4px',
       letterSpacing: '0.06em',
@@ -9679,9 +9709,15 @@ export class BattleScene {
     body.appendChild(hdr);
 
     const hint = document.createElement('div');
-    hint.textContent = this.deployPhase
-      ? 'Postawa taktyczna grupy w walce (auto):'
-      : 'Postawa taktyczna — grupa wykona ja na turze (SPACJA):';
+    if (units.length === 1) {
+      hint.textContent = this.deployPhase
+        ? 'Postawa taktyczna tej jednostki (auto):'
+        : 'Postawa taktyczna \u2014 jednostka wykona ja na turze (SPACJA):';
+    } else if (allSame) {
+      hint.textContent = 'Wsp\u00F3lna postawa \u2014 klik ustawia wszystkim zaznaczonym:';
+    } else {
+      hint.textContent = 'R\u00F3\u017Cne postawy \u2014 klik ustawia wszystkim zaznaczonym:';
+    }
     Object.assign(hint.style, {
       fontSize: '9px', color: BATTLE_TEXT_DIM, marginBottom: '6px', lineHeight: '1.35',
     });
@@ -9695,8 +9731,10 @@ export class BattleScene {
     const mkDoc = (label: string, d: GroupDoctrine, icon: string): HTMLButtonElement => {
       const active = doc === d;
       const b = this._makeDeployQuickBtn(label, active, () => {
-        this._setGroupDoctrine(gid, d);
-        this._deployActiveGroupId = gid;
+        this._setUnitsDoctrine(units, d);
+        if (units.length === 1 && units[0]!.groupId) {
+          this._deployActiveGroupId = units[0]!.groupId;
+        }
         this._renderDeployTacticsPopup(popup);
         this._updateDeployToolbarStatus();
       }, { fullWidth: true });
@@ -9746,9 +9784,13 @@ export class BattleScene {
       fontFamily: BATTLE_FONT,
     });
 
-    const gid = this._resolveDeployPopupGroupId();
-    if (!gid) {
-      body.textContent = 'Brak grup \u2014 najpierw pogrupuj jednostki.';
+    const units = this._resolveDeployPopupUnits();
+    const gid = units.length === 1 && units[0]!.groupId ? units[0]!.groupId : this._resolveDeployPopupGroupId();
+    const meta = gid ? this._ensureGroupMeta(gid) : null;
+    const rerender = (): void => this._renderDeployStrategyPopup(popup);
+
+    if (units.length === 0) {
+      body.textContent = 'Zaznacz jednostk\u0119 (Ctrl+LPM = tylko ta) \u2014 strategia dotyczy zaznaczenia.';
       Object.assign(body.style, {
         fontSize: '10px', color: BATTLE_TEXT_DIM, padding: '12px',
         display: 'block', maxHeight: 'none', border: 'none', boxShadow: 'none',
@@ -9756,8 +9798,10 @@ export class BattleScene {
       return;
     }
 
-    const meta = this._ensureGroupMeta(gid);
-    const rerender = (): void => this._renderDeployStrategyPopup(popup);
+    const primary = units[0]!;
+    const useOwnFlags = units.map(u => !!u.useUnitPriorities);
+    const allSameUnitPri = useOwnFlags.every(f => f === useOwnFlags[0]);
+    const useOwnUnit = allSameUnitPri ? !!useOwnFlags[0] : false;
 
     const topHdr = document.createElement('div');
     Object.assign(topHdr.style, {
@@ -9828,14 +9872,19 @@ export class BattleScene {
     scroll.appendChild(divider);
 
     const grpHdr = document.createElement('div');
-    grpHdr.textContent = 'Priorytety grupy: ' + this._groupDisplayLabel(gid);
+    if (units.length === 1) {
+      grpHdr.textContent = 'Priorytety jednostki: ' + this._unitDisplayLabel(primary);
+    } else if (allSameUnitPri) {
+      grpHdr.textContent = 'Priorytety ' + units.length + ' zaznaczonych jednostek';
+    } else {
+      grpHdr.textContent = 'Priorytety ' + units.length + ' jednostek \u00B7 mieszane';
+    }
     Object.assign(grpHdr.style, {
       fontFamily: BATTLE_FONT_TITLE, fontSize: '16px', color: BATTLE_GOLD,
       marginBottom: '4px',
     });
     scroll.appendChild(grpHdr);
 
-    const useOwn = !!meta.useGroupPriorities;
     const toggleRow = document.createElement('label');
     Object.assign(toggleRow.style, {
       display: 'flex', alignItems: 'center', gap: '9px',
@@ -9843,56 +9892,92 @@ export class BattleScene {
     });
     const toggle = document.createElement('input');
     toggle.type = 'checkbox';
-    toggle.checked = useOwn;
+    toggle.checked = useOwnUnit;
     applyBattleCheckbox1E(toggle);
     toggle.addEventListener('change', () => {
-      meta.useGroupPriorities = toggle.checked;
-      if (toggle.checked && !meta.groupTargetPriorities) {
-        meta.groupTargetPriorities = {
-          mounted: [...this._targetPriorities.mounted],
-          ranged:  [...this._targetPriorities.ranged],
-          melee:   [...this._targetPriorities.melee],
-        };
+      for (const u of units) {
+        u.useUnitPriorities = toggle.checked;
+        if (toggle.checked && !u.unitTargetPriorities) {
+          u.unitTargetPriorities = {
+            mounted: [...this._targetPriorities.mounted],
+            ranged:  [...this._targetPriorities.ranged],
+            melee:   [...this._targetPriorities.melee],
+          };
+        }
       }
       rerender();
       this._updateDeployToolbarStatus();
     });
     toggleRow.appendChild(toggle);
-    toggleRow.appendChild(document.createTextNode('W\u0142asne priorytety tej grupy'));
+    toggleRow.appendChild(document.createTextNode(
+      units.length === 1
+        ? 'W\u0142asne priorytety tej jednostki'
+        : 'W\u0142asne priorytety zaznaczonych jednostek',
+    ));
     scroll.appendChild(toggleRow);
 
-    if (useOwn) {
-      if (!meta.groupTargetPriorities) {
-        meta.groupTargetPriorities = {
+    if (useOwnUnit) {
+      if (!primary.unitTargetPriorities) {
+        primary.unitTargetPriorities = {
           mounted: [...this._targetPriorities.mounted],
           ranged:  [...this._targetPriorities.ranged],
           melee:   [...this._targetPriorities.melee],
         };
       }
-      const gp = meta.groupTargetPriorities;
+      const up = primary.unitTargetPriorities;
       this._appendDeployPriorityBlock(
         scroll,
-        'Kolejność celów grupy',
-        (cls) => [...(gp[cls] ?? this._targetPriorities[cls])],
-        (cls, prefs) => { gp[cls] = prefs; },
+        units.length === 1 ? 'Kolejno\u015B\u0107 cel\u00F3w jednostki' : 'Kolejno\u015B\u0107 cel\u00F3w (zaznaczenie)',
+        (cls) => [...(up[cls] ?? this._targetPriorities[cls])],
+        (cls, prefs) => {
+          for (const u of units) {
+            if (!u.unitTargetPriorities) {
+              u.unitTargetPriorities = {
+                mounted: [...this._targetPriorities.mounted],
+                ranged:  [...this._targetPriorities.ranged],
+                melee:   [...this._targetPriorities.melee],
+              };
+            }
+            u.unitTargetPriorities[cls] = prefs;
+            u.useUnitPriorities = true;
+          }
+        },
         () => { rerender(); this._updateDeployToolbarStatus(); },
       );
-      const resetGrp = document.createElement('button');
-      resetGrp.textContent = 'Skopiuj z priorytet\u00F3w armii';
-      applyBattleStrategyGoldCta(resetGrp);
-      resetGrp.addEventListener('click', (e) => {
+      const resetUnit = document.createElement('button');
+      resetUnit.textContent = 'Skopiuj z priorytet\u00F3w armii';
+      applyBattleStrategyGoldCta(resetUnit);
+      resetUnit.addEventListener('click', (e) => {
         e.stopPropagation();
-        meta.groupTargetPriorities = {
+        const copy = {
           mounted: [...this._targetPriorities.mounted],
           ranged:  [...this._targetPriorities.ranged],
           melee:   [...this._targetPriorities.melee],
         };
+        for (const u of units) {
+          u.unitTargetPriorities = {
+            mounted: [...copy.mounted],
+            ranged:  [...copy.ranged],
+            melee:   [...copy.melee],
+          };
+          u.useUnitPriorities = true;
+        }
         rerender();
       });
-      stickyFoot.appendChild(resetGrp);
+      stickyFoot.appendChild(resetUnit);
+    } else if (meta && gid) {
+      const useGrp = !!meta.useGroupPriorities;
+      const grpNote = document.createElement('div');
+      grpNote.textContent = useGrp
+        ? 'Jednostka dziedziczy priorytety grupy ' + this._groupDisplayLabel(gid) + '.'
+        : 'Jednostka u\u017Cywa priorytet\u00F3w armii (powy\u017Cej).';
+      Object.assign(grpNote.style, {
+        fontSize: '11px', color: BATTLE_TEXT_DIM, lineHeight: '1.35', marginBottom: '4px',
+      });
+      scroll.appendChild(grpNote);
     } else {
       const note = document.createElement('div');
-      note.textContent = 'Grupa u\u017Cywa priorytet\u00F3w armii (powy\u017Cej).';
+      note.textContent = 'Jednostka u\u017Cywa priorytet\u00F3w armii (powy\u017Cej).';
       Object.assign(note.style, {
         fontSize: '11px', color: BATTLE_TEXT_DIM, lineHeight: '1.35', marginBottom: '4px',
       });
@@ -10110,7 +10195,7 @@ export class BattleScene {
     btn.dataset.deployGroupTab = gid;
     btn.textContent = this._groupDisplayLabel(gid) + ' \u00B7 ' + cnt;
     applyDeployGroupTab1E(btn, active);
-    btn.title = 'Klik = zaznacz i zarządzaj grupą (Formacja, Taktyka)';
+    btn.title = 'Klik = zaznacz grup\u0119 \u00B7 Ctrl+LPM = jedna jednostka (Taktyka per jednostka)';
     btn.addEventListener('click', (e) => {
       e.preventDefault();
       e.stopPropagation();
@@ -10146,11 +10231,23 @@ export class BattleScene {
       status.textContent = 'Zaznaczone: ' + n;
       status.style.color = BATTLE_GOLD;
     }
-    if (hint && manageGid && this._deployRosterFeedback === hint) {
-      const base = 'Formacja / Taktyka dotyczy ' + this._groupDisplayLabel(manageGid);
-      if (!hint.textContent || hint.textContent.includes('Ctrl+LPM') || hint.textContent.includes('Formacja /')) {
-        hint.textContent = base;
+    if (hint) {
+      if (n === 1 && selUnits[0]) {
+        hint.textContent = 'Taktyka/Strategia: ' + this._unitDisplayLabel(selUnits[0]);
         hint.style.color = BATTLE_TEXT_DIM;
+      } else if (n > 1) {
+        const docs = selUnits.map(u => this._getEffectiveDoctrine(u));
+        const mixed = !docs.every(d => d === docs[0]);
+        hint.textContent = mixed
+          ? 'Taktyka: ' + n + ' jednostek \u00B7 mieszane postawy'
+          : 'Taktyka: ' + n + ' jednostek \u00B7 ' + this._doctrineLabel(docs[0]!);
+        hint.style.color = BATTLE_TEXT_DIM;
+      } else if (manageGid && this._deployRosterFeedback === hint) {
+        const base = 'Formacja grupy ' + this._groupDisplayLabel(manageGid) + ' \u00B7 Taktyka = zaznaczenie (Ctrl+LPM)';
+        if (!hint.textContent || hint.textContent.includes('Ctrl+LPM') || hint.textContent.includes('Formacja')) {
+          hint.textContent = base;
+          hint.style.color = BATTLE_TEXT_DIM;
+        }
       }
     }
   }
@@ -13386,6 +13483,7 @@ export class BattleScene {
         shootingEnabled:  true,
         groupId:      null,
         formationOffset: null,
+        unitDoctrine: null,
         mats,
         perTokenGeos,
       };
@@ -13461,7 +13559,7 @@ export class BattleScene {
         ru.acted = false;
       }
       this._showBattleRosterFeedback(
-        'Tryb RECZNY — SPACJA = kontynuuj · Taktyka/Strategia = per grupa · zaznacz czesc armii + Grupuj = podzial',
+        'Tryb RECZNY — SPACJA = kontynuuj · Taktyka/Strategia = per jednostka (Ctrl+LPM) · Grupuj = wspolna formacja',
       );
     }
     if (this._manualMode && !this._rosterBar) this._buildRosterBar();
@@ -13566,6 +13664,10 @@ export class BattleScene {
 
   private _prefsForUnit(ru: RuntimeBattleUnit): BattleUnitClass[] {
     const ac = this._unitBattleClass(ru);
+    if (ru.useUnitPriorities) {
+      const up = ru.unitTargetPriorities?.[ac];
+      if (up && up.length === 3) return up;
+    }
     if (ru.groupId) {
       const meta = this._groupMeta.get(ru.groupId);
       if (meta?.useGroupPriorities) {
@@ -13638,6 +13740,97 @@ export class BattleScene {
       this._groupMeta.set(gid, m);
     }
     return m;
+  }
+
+  private _unitDisplayLabel(ru: RuntimeBattleUnit): string {
+    return String(ru.bu.nazwa ?? ru.bu.kategoria ?? 'Jednostka');
+  }
+
+  /** Jednostki objete popupami Taktyka / Strategia (zaznaczenie, potem aktywna grupa). */
+  private _resolveDeployPopupUnits(): RuntimeBattleUnit[] {
+    const fromSel = [...this._selectedUnits]
+      .map(id => this._findPlayerUnit(id))
+      .filter((u): u is RuntimeBattleUnit => !!u && !u.dead && !u.removed);
+    if (fromSel.length > 0) return fromSel;
+    const gid = this._resolveDeployPopupGroupId();
+    if (!gid) return [];
+    return this._liveGroupMemberIds(gid)
+      .map(id => this._findPlayerUnit(id))
+      .filter((u): u is RuntimeBattleUnit => !!u && !u.dead && !u.removed);
+  }
+
+  private _getEffectiveDoctrine(ru: RuntimeBattleUnit): GroupDoctrine {
+    if (ru.unitDoctrine != null) return ru.unitDoctrine;
+    if (ru.groupId) {
+      const meta = this._groupMeta.get(ru.groupId);
+      if (meta) return meta.doctrine;
+    }
+    return 'steady';
+  }
+
+  private _isUnitDoctrineAuto(ru: RuntimeBattleUnit): boolean {
+    const doc = this._getEffectiveDoctrine(ru);
+    if (doc === 'manual') return false;
+    if (ru.unitDoctrine != null) return true;
+    if (ru.groupId) {
+      const meta = this._groupMeta.get(ru.groupId);
+      return meta?.autoPlay ?? true;
+    }
+    return true;
+  }
+
+  /** Meta do wykonania doktryny — doktryna z jednostki, reszta z grupy. */
+  private _effectiveMetaForUnit(ru: RuntimeBattleUnit): GroupMeta {
+    const doctrine = this._getEffectiveDoctrine(ru);
+    const base: GroupMeta = ru.groupId
+      ? { ...this._ensureGroupMeta(ru.groupId) }
+      : { doctrine: 'steady', autoPlay: true };
+    const meta: GroupMeta = {
+      ...base,
+      doctrine,
+      autoPlay: this._isUnitDoctrineAuto(ru),
+    };
+    if (!ru.groupId && doctrine !== 'defensive' && doctrine !== 'manual' && doctrine !== 'aggressive') {
+      if (doctrine === 'steady' || doctrine === 'skirmish') {
+        meta.rallyCol = Math.min(BF_COLS - 1, ru.q + 2);
+        meta.rallyRow = ru.r;
+      } else {
+        const tgt = this._pickTargetByPriority(ru);
+        if (tgt) {
+          meta.rallyCol = tgt.q;
+          meta.rallyRow = tgt.r;
+        }
+      }
+    }
+    return meta;
+  }
+
+  private _applySkirmishFlagsForUnit(ru: RuntimeBattleUnit): void {
+    if (ru.primaryRanged || ru.rangedBase || ru.range > 1) {
+      ru.rangedKite = true;
+      ru.shootingEnabled = true;
+    }
+  }
+
+  /** Ustaw doktryne na zaznaczonych jednostkach (per unit, nie nadpisuje calej grupy). */
+  private _setUnitsDoctrine(units: RuntimeBattleUnit[], doctrine: GroupDoctrine): void {
+    if (units.length === 0) return;
+    for (const ru of units) {
+      ru.unitDoctrine = doctrine;
+      ru.playerOrder = { type: 'none' };
+      if (doctrine === 'skirmish') this._applySkirmishFlagsForUnit(ru);
+    }
+    this._refreshQueuedOrderVisuals();
+    const label = this._doctrineLabel(doctrine);
+    if (units.length === 1) {
+      this._showOrderFeedback('Taktyka · ' + this._unitDisplayLabel(units[0]!) + ': ' + label);
+    } else {
+      this._showOrderFeedback('Taktyka · ' + units.length + ' jednostek: ' + label);
+    }
+    this._updateSelectedPanel();
+    if (this.deployPhase) this._updateDeployStrategyBar();
+    if (!this.deployPhase) this._updateDeployToolbarStatus();
+    if (this._generalPanel) this._refreshGeneralPanelBody();
   }
 
   private _groupCentroid(gid: string): { col: number; row: number } {
@@ -14167,9 +14360,11 @@ export class BattleScene {
       return true;
     }
     if (ord.type === 'none') {
-      const meta = ru.groupId ? this._groupMeta.get(ru.groupId) : undefined;
-      if (meta?.autoPlay && meta.doctrine !== 'manual') {
-        return this._executeGroupDoctrineStep(ru, meta, done);
+      if (this._isUnitDoctrineAuto(ru)) {
+        const meta = this._effectiveMetaForUnit(ru);
+        if (meta.doctrine !== 'manual') {
+          return this._executeGroupDoctrineStep(ru, meta, done);
+        }
       }
       done();
       return true;
