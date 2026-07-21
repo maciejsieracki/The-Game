@@ -389,6 +389,7 @@ import {
 } from './game/post-battle-map';
 import {
   applyCapitalCapturePlunder,
+  oldestCityOfOwner,
   type OwnerResourceAccess,
 } from './game/capital-capture';
 import { civBonusyForCivKey } from './game/economy';
@@ -766,6 +767,12 @@ async function boot(): Promise<void> {
     /** Epoka wizualna AI z momentu startu gry (initOwnerEra) — baza do awansów. */
     const ownerStartEraByOwner = new Map<number, number>();
     let objectivePowerByOwner = new Map<number, ObjectivePowerResult>();
+    /** Follow-up „przenieś stolicę" (2026-07-21): wyznaczona stolica per ownerId.
+     *  Brak wpisu = fallback na najstarsze miasto (patrz capitalCityIdForOwner). */
+    const capitalCityIdByOwner = new Map<number, string>();
+    /** Follow-up „Power-zdobycze" (2026-07-21): trwały bonus Power po eliminacji
+     *  wroga, per zwycięzca (ownerId) — patrz eliminateOwner()/buildObjectivePowerForOwner. */
+    const zdobyczePowerByOwner = new Map<number, number>();
 
     const ERA_ID_TO_NUM: Record<string, number> = { kamien: 1, braz: 2, zelazo: 3 };
 
@@ -960,6 +967,10 @@ async function boot(): Promise<void> {
         budynki: countBuildingsForOwner(ownerId),
         techZbadane: countTechForOwner(ownerId),
         ulepszeniaTerenu: countImprovementsForOwner(ownerId),
+        // Follow-up „Power-zdobycze": trwały bonus po eliminacji wroga (rekurencyjnie
+        // złożony — jeśli ownerId sam kiedyś eliminował kogoś, tamten snapshot już
+        // jest tu wliczony, więc łańcuch eliminacji sumuje się poprawnie).
+        zdobyczePower: zdobyczePowerByOwner.get(ownerId) ?? 0,
       });
     }
 
@@ -3173,6 +3184,8 @@ async function boot(): Promise<void> {
       ownerEraByOwner.clear();
       ownerStartEraByOwner.clear();
       eliminatedOwners.clear();
+      capitalCityIdByOwner.clear();
+      zdobyczePowerByOwner.clear();
       for (const [oid, civ] of plan.aiOwnerCivMap) {
         aiOwnerCivMap.set(oid, civ);
         initOwnerEra(oid, gameStartEra());
@@ -5774,6 +5787,7 @@ async function boot(): Promise<void> {
         infra: 'Wybudowane budynki (suma)',
         tech: 'Liczba zbadanych technologii',
         ulepszenia: 'Ulepszenia terenu w terytorium',
+        zdobycze: 'Trwały bonus — Power przejęty po eliminacji wroga (nie znika)',
       };
       const powerComponents = obj.components.map(c => ({
         key: c.key,
@@ -7396,6 +7410,8 @@ async function boot(): Promise<void> {
       getCities: () => cities,
       getTradeRoutes: () => tradeRoutes,
       getOwnerLabel: (ownerId: number) => ownerDiploLabel(ownerId),
+      getCapitalCityId: (ownerId: number) => capitalCityIdForOwner(ownerId),
+      onSetCapital: (cityId: string) => { trySetPlayerCapital(cityId); },
       getCityBuildingFlags: (cityId: string) => ({
         liczbaAktywnychTrasHandlowych: tradeRouteCountByCity.get(cityId) ?? 0,
       }),
@@ -9465,6 +9481,106 @@ async function boot(): Promise<void> {
       for (const id of ids) set.add(id);
     }
 
+    /**
+     * Follow-up „przenieś stolicę" — stolica WYZNACZONA (capitalCityIdByOwner), z
+     * fallbackiem na najstarsze miasto gdy brak wpisu (gra jeszcze nic nie wyznaczyła,
+     * albo stary zapis sprzed tego follow-upu). Self-healing: gdy wpis wskazuje na
+     * miasto, które już nie istnieje / zmieniło właściciela poza tym systemem (nie
+     * powinno się zdarzyć, ale defensywnie), też spada na fallback zamiast rzucać.
+     */
+    function capitalCityIdForOwner(ownerId: number): string | null {
+      const explicit = capitalCityIdByOwner.get(ownerId);
+      if (explicit && cities.some(c => c.id === explicit && c.ownerId === ownerId)) return explicit;
+      return oldestCityOfOwner(ownerId, cities)?.id ?? null;
+    }
+
+    /**
+     * Follow-up „przenieś stolicę" — akcja gracza z panelu miasta (cityPanel.ts
+     * `onSetCapital`). Q1=A: za darmo, bez cooldownu — jedyny warunek to obecna
+     * stolica NIE będąca pod oblężeniem. Zwraca true gdy przeniesiono.
+     */
+    function trySetPlayerCapital(cityId: string): boolean {
+      const target = cities.find(c => c.id === cityId);
+      if (!target || target.ownerId !== 0) return false;
+      const currentCapId = capitalCityIdForOwner(0);
+      if (currentCapId === cityId) return false; // już stolica -- nic do zrobienia
+      const currentCap = currentCapId ? cities.find(c => c.id === currentCapId) : null;
+      if (currentCap?.oblegane) {
+        showHintMessage(
+          `Nie można przenieść stolicy — ${currentCap.name} jest obecnie oblegana.`,
+          4000,
+        );
+        return false;
+      }
+      capitalCityIdByOwner.set(0, cityId);
+      markCityStateDirty();
+      showHintMessage(`${target.name} — nowa stolica.`, 3500);
+      return true;
+    }
+
+    /**
+     * Follow-up „przenieś stolicę" (Q2=A + Q3=A): AI przenosi stolicę PROAKTYWNIE
+     * gdy jest ZAGROŻONA (wroga jednostka w promieniu AI_CAPITAL_THREAT_RADIUS
+     * heksów), ale jeszcze NIE oblegana (przeniesienie stolicy oblężonej jest
+     * zablokowane — ten sam warunek "nie oblegana" co przy akcji gracza). Nowa
+     * stolica = własne miasto NAJDALEJ od najbliższego wroga; przy remisie wygrywa
+     * miasto wcześniej założone (kolejność iteracji `cities` po filtrze ownera —
+     * `cities` zachowuje kolejność founding, bo foundCity/foundCityAt tylko pushują).
+     *
+     * "Zagrożenie" zdefiniowane ZACHOWAWCZO, wzorem `chooseCityProduction` w
+     * game/ai.ts (linia ~613: `enemyUnits = allUnits.filter(u => u.ownerId !== playerId)`,
+     * próg `ekspansja_zagroz_zasieg` domyślnie 5 heksów) — DOWOLNA jednostka innego
+     * ownera (bez sprawdzania dyplomacji/wojny, spójnie z resztą AI-taktyki w tym
+     * pliku). AI_CAPITAL_THREAT_RADIUS=3 (mniejszy niż domyślny próg produkcji 5,
+     * bo przeniesienie stolicy to decyzja poważniejsza niż zmiana kolejki budowy —
+     * PRÓG DO AKCEPTACJI WŁAŚCICIELA). Wołane raz na turę, na końcu przetwarzania
+     * komend danego ownerId w pętli AI (main.ts ownerLoop, koniec ciała pętli).
+     */
+    const AI_CAPITAL_THREAT_RADIUS = 3;
+    function maybeRelocateThreatenedAiCapital(ownerId: number): void {
+      if (ownerId <= 0 || eliminatedOwners.has(ownerId)) return;
+      const capId = capitalCityIdForOwner(ownerId);
+      if (!capId) return;
+      const capCity = cities.find(c => c.id === capId && c.ownerId === ownerId);
+      if (!capCity || capCity.oblegane) return; // brak stolicy, lub już oblegana -- nie przenosimy
+
+      const myOtherCities = cities.filter(c => c.ownerId === ownerId && c.id !== capCity.id);
+      if (myOtherCities.length === 0) return; // nie ma dokąd przenieść
+
+      const enemyUnits = units.filter(u => u.ownerId !== ownerId);
+      if (enemyUnits.length === 0) return;
+
+      let nearestToCapital = Infinity;
+      for (const eu of enemyUnits) {
+        const d = hexDistance(capCity.q, capCity.r, eu.q, eu.r);
+        if (d < nearestToCapital) nearestToCapital = d;
+      }
+      if (nearestToCapital > AI_CAPITAL_THREAT_RADIUS) return; // stolica NIE zagrożona
+
+      // Wybierz własne miasto NAJDALEJ od najbliższego wroga.
+      let best: City | null = null;
+      let bestDist = -1;
+      for (const c of myOtherCities) {
+        let minDist = Infinity;
+        for (const eu of enemyUnits) {
+          const d = hexDistance(c.q, c.r, eu.q, eu.r);
+          if (d < minDist) minDist = d;
+        }
+        if (minDist > bestDist) {
+          best = c;
+          bestDist = minDist;
+        }
+      }
+      if (!best || bestDist <= nearestToCapital) return; // brak lepszej lokalizacji -- zostaw jak jest
+
+      capitalCityIdByOwner.set(ownerId, best.id);
+      markCityStateDirty();
+      console.log(
+        `[Stolica-AI] ${civLabelForOwner(ownerId)}: stolica ${capCity.name} zagrozona `
+        + `(wrog ${nearestToCapital} heks.) -> przeniesiona do ${best.name} (najblizszy wrog ${bestDist} heks.)`,
+      );
+    }
+
     const capitalCaptureResourceAccess: OwnerResourceAccess = {
       getTreasury: ownerTreasury,
       setTreasury: setOwnerTreasury,
@@ -9505,6 +9621,12 @@ async function boot(): Promise<void> {
       clusterCapitalOwnerIds.delete(ownerId);
       diplomaticContactEstablished.delete(ownerId);
       battlePowerPtsByOwner.delete(ownerId);
+      // Follow-up „przenieś stolicę"/„Power-zdobycze": cywilizacja skasowana, jej
+      // wyznaczenie stolicy i (ew. własne) zdobycze nie mają już znaczenia. Zdobycze
+      // pokonanego zostały już przejęte przez zwycięzcę WCZEŚNIEJ, w runCapitalCapturePlunder
+      // (PRZED tym wywołaniem — snapshot musi być liczony zanim tu wyzerujemy stan).
+      capitalCityIdByOwner.delete(ownerId);
+      zdobyczePowerByOwner.delete(ownerId);
 
       for (const key of Array.from(diplomacyRelations.keys())) {
         if (diploPairKeyHasOwner(key, ownerId)) diplomacyRelations.delete(key);
@@ -9541,25 +9663,50 @@ async function boot(): Promise<void> {
      * RDZEŃ „przejęcie stolicy" — wołane z OBU ścieżek zdobycia (post-battle +
      * kapitulacja z głodu) TUŻ PO zmianie city.ownerId. Zwraca się cicho (no-op)
      * gdy przejęte miasto nie było stolicą oldOwner — patrz capital-capture.ts.
+     *
+     * Follow-up „przenieś stolicę": czyta wyznaczenie oldOwner SPRZED przejęcia
+     * (`capitalCityIdByOwner.get(oldOwner)`) i po Zdarzeniu 1 (sukcesja) zapisuje
+     * nowe wyznaczenie z powrotem.
+     *
+     * Follow-up „Power-zdobycze": przy ELIMINACJI (Zdarzenie 2) snapshot CAŁEGO
+     * Power pokonanego MUSI paść PRZED eliminateOwner() — ten czyści
+     * battlePowerPtsByOwner/aiResearchDone dla oldOwner, co ucięłoby składniki
+     * bitwy/tech w snapshotcie, gdyby liczyć go po.
      */
     function runCapitalCapturePlunder(city: City, oldOwner: number, newOwner: number): void {
+      const designatedCapitalId = capitalCityIdByOwner.get(oldOwner) ?? undefined;
       const outcome = applyCapitalCapturePlunder(
-        city, oldOwner, newOwner, cities, capitalCaptureResourceAccess,
+        city, oldOwner, newOwner, cities, capitalCaptureResourceAccess, designatedCapitalId,
       );
       if (!outcome) return;
 
       if (outcome.event === 'przejecie_stolicy') {
+        // SUKCESJA: nowa stolica oldOwner = najstarsze z pozostałych miast (lub brak wpisu).
+        if (outcome.newCapitalIdForOldOwner) {
+          capitalCityIdByOwner.set(oldOwner, outcome.newCapitalIdForOldOwner);
+        } else {
+          capitalCityIdByOwner.delete(oldOwner);
+        }
         showHintMessage(
           `${city.name}: stolica ${civLabelForOwner(oldOwner)} przejęta przez ${civLabelForOwner(newOwner)} — skarbiec i pula pracy przepadły.`,
           5000,
         );
       } else {
+        // Power-zdobycze: CAŁE Power pokonanego (armia/miasta[już 0]/techy/bitwy/
+        // ew. jego WCZEŚNIEJSZE zdobycze z poprzednich eliminacji — rekurencyjnie
+        // złożone w computeObjectivePower) -> trwały bonus zwycięzcy. Snapshot PRZED
+        // eliminateOwner (patrz komentarz funkcji).
+        const lostPower = buildObjectivePowerForOwner(oldOwner).power;
+        if (lostPower > 0) {
+          zdobyczePowerByOwner.set(newOwner, (zdobyczePowerByOwner.get(newOwner) ?? 0) + lostPower);
+        }
         showHintMessage(
-          `${civLabelForOwner(oldOwner)} — ELIMINACJA! Ostatnie miasto (${city.name}) przejęte przez ${civLabelForOwner(newOwner)}. Skarbiec, nauka i ${outcome.techSkopiowane.length} tech(y) przejęte.`,
+          `${civLabelForOwner(oldOwner)} — ELIMINACJA! Ostatnie miasto (${city.name}) przejęte przez ${civLabelForOwner(newOwner)}. Skarbiec, nauka i ${outcome.techSkopiowane.length} tech(y) przejęte. Zdobycze Power: +${lostPower}.`,
           6000,
         );
         eliminateOwner(oldOwner);
       }
+      markCityStateDirty();
     }
 
     /** ST-2/ST-3: przejęcie miasta — tylko obrońca na centrum (B); pierścień zostaje. */
@@ -10317,6 +10464,8 @@ async function boot(): Promise<void> {
           zlozeGrants: zlozeGrants.slice(),
           surowiecBooleanGrants: basketTransferCtx.surowiecBooleanGrants,
           battlePowerPtsByOwner: Array.from(battlePowerPtsByOwner.entries()),
+          capitalCityIdByOwner: Array.from(capitalCityIdByOwner.entries()),
+          zdobyczePowerByOwner: Array.from(zdobyczePowerByOwner.entries()),
           eliminatedOwners: Array.from(eliminatedOwners),
           ownerEraByOwner: Array.from(ownerEraByOwner.entries()),
           ownerStartEraByOwner: Array.from(ownerStartEraByOwner.entries()),
@@ -10908,7 +11057,7 @@ async function boot(): Promise<void> {
               const podzial = city.podzialHandlu ?? DEFAULT_PODZIAL_HANDLU;
               const gCountLaw = lawGarrisonCountForCity(city);
               const playerAtWar = city.ownerId === 0 && isPlayerAtWar();
-              const stolicaBonus = stolicaEasyBonusActive(difficulty, turn, city, cities);
+              const stolicaBonus = stolicaEasyBonusActive(difficulty, turn, city, cities, 10, capitalCityIdForOwner(0));
               const revoltParams = loadRevoltParams(data.societyParams, difficulty);
 
               const ordPct = evaluateOrderFromBreakdown(
@@ -11547,6 +11696,9 @@ async function boot(): Promise<void> {
                 console.error(`[AI ${ownerId}] Blad wykonania komendy ${(cmd as { type?: string }).type}:`, eCMD);
               }
             }
+            // Follow-up „przenieś stolicę" (Q2=A): raz na turę, po przetworzeniu
+            // wszystkich komend tego ownera -- sprawdź zagrożenie stolicy AI.
+            maybeRelocateThreatenedAiCapital(ownerId);
           }
             if (!aiTurnAwaitingBattle) {
               scanAutoSiegesAfterAiTurn();
@@ -12399,6 +12551,8 @@ async function boot(): Promise<void> {
       ownerEraByOwner.clear();
       ownerStartEraByOwner.clear();
       eliminatedOwners.clear();
+      capitalCityIdByOwner.clear();
+      zdobyczePowerByOwner.clear();
       barbCamps = [];
       gameOver = false;
       selectedId = null;
@@ -12616,6 +12770,8 @@ async function boot(): Promise<void> {
       growthMultMap.clear();
       aiResearchDone.clear();
       eliminatedOwners.clear();
+      capitalCityIdByOwner.clear();
+      zdobyczePowerByOwner.clear();
       barbCamps = [];
       gameOver = false;
       selectedId = null;
@@ -12835,6 +12991,8 @@ async function boot(): Promise<void> {
       autoManageCities.clear();
       aiResearchDone.clear();
       eliminatedOwners.clear();
+      capitalCityIdByOwner.clear();
+      zdobyczePowerByOwner.clear();
       barbCamps = [];
       gameOver = false;
       selectedId = null;
@@ -13025,6 +13183,8 @@ async function boot(): Promise<void> {
       autoManageCities.clear();
       aiResearchDone.clear();
       eliminatedOwners.clear();
+      capitalCityIdByOwner.clear();
+      zdobyczePowerByOwner.clear();
       barbCamps = [];
       gameOver = false;
       selectedId = null;
@@ -13285,6 +13445,16 @@ async function boot(): Promise<void> {
       const savedPts = saved.meta?.battlePowerPtsByOwner as Array<[number, number]> | undefined;
       if (savedPts?.length) {
         for (const [oid, n] of savedPts) battlePowerPtsByOwner.set(oid, n);
+      }
+      capitalCityIdByOwner.clear();
+      const savedCapitalIds = saved.meta?.capitalCityIdByOwner as Array<[number, string]> | undefined;
+      if (savedCapitalIds?.length) {
+        for (const [oid, cid] of savedCapitalIds) capitalCityIdByOwner.set(oid, cid);
+      }
+      zdobyczePowerByOwner.clear();
+      const savedZdobycze = saved.meta?.zdobyczePowerByOwner as Array<[number, number]> | undefined;
+      if (savedZdobycze?.length) {
+        for (const [oid, n] of savedZdobycze) zdobyczePowerByOwner.set(oid, n);
       }
       ownerEraByOwner.clear();
       ownerStartEraByOwner.clear();

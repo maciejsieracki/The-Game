@@ -17,9 +17,9 @@
  *     - Cywilizacja SKASOWANA (obsługa poza tym modułem — main.ts eliminateOwner(),
  *       bo wymaga dostępu do map stanu AI/dyplomacji lokalnych dla main.ts).
  *
- * „Stolica" = NAJSTARSZE miasto danego ownera (pierwsze założone). Kryterium wieku:
- * city.id ma postać 'city' + N, gdzie N to globalny licznik zakładania miast (patrz
- * foundCity/foundCityAt w cities.ts — jedyne dwa miejsca nadające id). Niższe N =
+ * „Stolica" = domyślnie NAJSTARSZE miasto danego ownera (pierwsze założone). Kryterium
+ * wieku: city.id ma postać 'city' + N, gdzie N to globalny licznik zakładania miast
+ * (patrz foundCity/foundCityAt w cities.ts — jedyne dwa miejsca nadające id). Niższe N =
  * założone wcześniej. UWAGA: to NIE to samo co localeCompare użyty w
  * society-inputs.ts:isPlayerCapitalCity — ten porównuje id jako stringi, co dla
  * ownerów z 10+ miastami globalnie daje błędną kolejność (np. "city10" < "city9"
@@ -27,6 +27,19 @@
  * numerycznie, żeby uniknąć tego błędu. isPlayerCapitalCity (society-inputs.ts)
  * naprawione 2026-07-21 — teraz importuje i używa cityFoundOrder z tego modułu,
  * więc oba miejsca liczą wiek miasta identycznie (numerycznie, nie leksykograficznie).
+ *
+ * FOLLOW-UP „przenieś stolicę" (2026-07-21, ten sam dzień): stolica przestaje być
+ * SZTYWNO liczona jako najstarsze miasto — staje się WYZNACZONYM miastem, trwale
+ * zapamiętanym w main.ts (`capitalCityIdByOwner: Map<ownerId, cityId>`, per save).
+ * Domyślnie (brak wpisu) = najstarsze miasto (fallback, patrz wyżej). Gracz/AI mogą
+ * przenieść stolicę na inne swoje miasto (za darmo), ale TYLKO gdy obecna stolica
+ * NIE jest oblegana. `wasCapitalOfOldOwner`/`applyCapitalCapturePlunder` przyjmują
+ * teraz opcjonalny `designatedCapitalId` (odczytany z tej mapy PRZED wywołaniem) —
+ * gdy podany, zastępuje całkowicie legacy "najstarsze miasto" jako kryterium "czy to
+ * była stolica". Po przejęciu stolicy (Zdarzenie 1, cywilizacja przeżywa) następuje
+ * SUKCESJA: nowa stolica oldOwner = najstarsze z jego POZOSTAŁYCH miast — wynik w
+ * `CapitalCaptureOutcome.newCapitalIdForOldOwner`, main.ts MUSI zapisać go z powrotem
+ * do `capitalCityIdByOwner`.
  *
  * WOŁANE PO zmianie city.ownerId (city.ownerId === newOwner już ustawione przez
  * wywołującego) — patrz applyCityCaptureAfterBattle (post-battle-map.ts) i
@@ -67,16 +80,27 @@ export function oldestCityOfOwner(ownerId: number, cities: readonly City[]): Cit
 }
 
 /**
- * Czy `city` (już przypisane do newOwner) BYŁO stolicą (najstarszym miastem)
- * oldOwner sprzed przejęcia. Porównuje jego own id vs pozostałe miasta oldOwner
- * w `citiesAfterCapture` (city samo już ma ownerId!==oldOwner, więc nie wchodzi
- * do tamtej grupy — porównanie jest jawne przez wykluczenie po id, nie po ownerId).
+ * Czy `city` (już przypisane do newOwner) BYŁO stolicą oldOwner sprzed przejęcia.
+ *
+ * Follow-up „przenieś stolicę" (2026-07-21): stolica jest teraz WYZNACZONYM
+ * miastem (persystentny `capitalCityIdByOwner` w main.ts), nie zawsze najstarszym.
+ * `designatedCapitalId` to wartość tego wyznaczenia dla oldOwner SPRZED przejęcia
+ * (main.ts czyta swoją mapę PRZED wywołaniem — city.ownerId już zmienione, ale
+ * wyznaczenie jeszcze nie zaktualizowane, więc to poprawny stan "przed"):
+ *   - jeśli podane (niepuste) -> proste porównanie id (dokładnie to miasto było
+ *     wyznaczoną stolicą, niezależnie od wieku).
+ *   - jeśli `undefined`/`null` (brak wyznaczenia -- np. stary zapis sprzed tego
+ *     follow-upu, albo gra jeszcze nie miała okazji nic wyznaczyć) -> fallback:
+ *     legacy zachowanie "najstarsze miasto" (porównanie `city` vs pozostałe
+ *     miasta oldOwner w `citiesAfterCapture`).
  */
 export function wasCapitalOfOldOwner(
   city: City,
   oldOwner: number,
   citiesAfterCapture: readonly City[],
+  designatedCapitalId?: string | null,
 ): boolean {
+  if (designatedCapitalId != null) return designatedCapitalId === city.id;
   const order = cityFoundOrder(city.id);
   for (const c of citiesAfterCapture) {
     if (c.id === city.id) continue;
@@ -129,12 +153,23 @@ export interface CapitalCaptureOutcome {
   techSkopiowane: string[];
   /** True = Zdarzenie 2 (eliminacja) — caller (main.ts) musi doczyścić rostery/dyplomację. */
   eliminacja: boolean;
+  /**
+   * Follow-up „przenieś stolicę" — SUKCESJA: id nowej wyznaczonej stolicy oldOwner
+   * (najstarsze z pozostałych miast), lub `null` gdy `eliminacja` (brak miast, brak
+   * sukcesji — caller usuwa wpis oldOwner z `capitalCityIdByOwner`). Caller (main.ts)
+   * MUSI zapisać tę wartość pod oldOwner w swojej trwałej mapie wyznaczeń.
+   */
+  newCapitalIdForOldOwner: string | null;
 }
 
 /**
  * Wołane PO zmianie city.ownerId (city.ownerId === newOwner już ustawione).
  * Zwraca null gdy przejęte miasto NIE było stolicą oldOwner — zwykła (nie-
  * stołeczna) utrata miasta, poza zakresem tego systemu, brak transferów.
+ *
+ * `designatedCapitalId` — wyznaczenie stolicy oldOwner SPRZED przejęcia (patrz
+ * komentarz przy `wasCapitalOfOldOwner`); `undefined`/`null` = brak wyznaczenia,
+ * fallback na legacy "najstarsze miasto".
  */
 export function applyCapitalCapturePlunder(
   city: City,
@@ -142,11 +177,14 @@ export function applyCapitalCapturePlunder(
   newOwner: number,
   citiesAfterCapture: readonly City[],
   access: OwnerResourceAccess,
+  designatedCapitalId?: string | null,
 ): CapitalCaptureOutcome | null {
-  if (!wasCapitalOfOldOwner(city, oldOwner, citiesAfterCapture)) return null;
+  if (!wasCapitalOfOldOwner(city, oldOwner, citiesAfterCapture, designatedCapitalId)) return null;
 
   const remaining = remainingCitiesOfOwner(oldOwner, citiesAfterCapture);
   const eliminacja = remaining.length === 0;
+  // SUKCESJA: gdy oldOwner przeżywa, nowa stolica = najstarsze z pozostałych miast.
+  const newCapitalIdForOldOwner = eliminacja ? null : (oldestCityOfOwner(oldOwner, remaining)?.id ?? null);
 
   // --- Pieniądze: w całości do zwycięzcy (identycznie w obu zdarzeniach) ---
   const skarbiecPrzejety = access.getTreasury(oldOwner);
@@ -187,6 +225,7 @@ export function applyCapitalCapturePlunder(
     skarbiecPrzejety,
     naukaPrzejeta,
     techSkopiowane,
+    newCapitalIdForOldOwner,
     eliminacja,
   };
 }

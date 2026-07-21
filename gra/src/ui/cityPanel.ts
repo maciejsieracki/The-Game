@@ -303,6 +303,17 @@ export interface CityPanelConfig {
   getTradeRoutes?: () => readonly TradeRoute[];
   /** E7 — etykieta cywilizacji wlasciciela (jak w panelu dyplomacji) — do „czyje to miasto". */
   getOwnerLabel?: (ownerId: number) => string;
+  /**
+   * Follow-up „przenieś stolicę" (2026-07-21) — id aktualnie wyznaczonej stolicy
+   * danego ownera (silnik już robi fallback na najstarsze miasto, jeśli gracz/AI
+   * nigdy nic nie przenosił — patrz main.ts capitalCityIdForOwner).
+   */
+  getCapitalCityId?: (ownerId: number) => string | null;
+  /**
+   * Przenieś stolicę gracza na to miasto — silnik waliduje (miasto gracza, nie już
+   * stolica, obecna stolica NIE oblegana) i wykonuje transfer; za darmo (Q1=A).
+   */
+  onSetCapital?: (cityId: string) => void;
 }
 
 let cfg: CityPanelConfig = {};
@@ -1533,6 +1544,13 @@ function ensureStyles(): void {
   color:#f0e6d0;letter-spacing:0.04em;text-transform:uppercase;line-height:1;}
 .civ-v-w3-city-pop{width:1.65em;height:1.65em;border-radius:50%;background:#e8d88a;color:#2a2208;
   font-size:0.72em;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.civ-v-w3-capital-badge{font-size:0.68em;font-weight:700;color:#2a2208;background:#e8d88a;
+  border-radius:10px;padding:0.2em 0.6em;white-space:nowrap;flex-shrink:0;letter-spacing:0.02em;}
+.civ-v-w3-capital-btn{font-size:0.62em;font-family:inherit;font-weight:600;color:#e8d88a;
+  background:transparent;border:1px solid #e8d88a;border-radius:10px;padding:0.22em 0.6em;
+  white-space:nowrap;flex-shrink:0;cursor:pointer;opacity:0.9;}
+.civ-v-w3-capital-btn:hover:not(:disabled){opacity:1;background:rgba(232,216,138,0.14);}
+.civ-v-w3-capital-btn:disabled{opacity:0.35;cursor:not-allowed;}
 .civ-v-w3-chips{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:0.42rem 0.65rem;
   padding:0.42rem 1rem;border-radius:12px;
   background:linear-gradient(180deg,rgba(22,28,40,0.94),rgba(8,10,16,0.95));border:1px solid rgba(232,216,138,0.32);
@@ -1964,7 +1982,9 @@ function computeOrderStateLocal(city: City, data: GameData): { state: OrderState
   );
   const allCities = cfg.getCities?.() ?? [];
   const gameTurn = cfg.getTurn?.() ?? 1;
-  const stolicaBonus = stolicaEasyBonusActive(difficulty, gameTurn, city, allCities);
+  const stolicaBonus = stolicaEasyBonusActive(
+    difficulty, gameTurn, city, allCities, 10, cfg.getCapitalCityId?.(city.ownerId) ?? null,
+  );
 
   const ordPct = evaluateOrderFromBreakdown(
     {
@@ -6522,6 +6542,30 @@ function renderCityExitFooter(mount: HTMLElement, onClose?: () => void): void {
   mount.appendChild(wrap);
 }
 
+/**
+ * Follow-up „przenieś stolicę" (2026-07-21): ★ Stolica (badge) gdy `city` jest
+ * aktualną wyznaczoną stolicą swojego ownera; w przeciwnym razie — dla miast
+ * GRACZA — przycisk „Ustaw jako stolicę" (widoczny tylko gdy silnik udostępnia
+ * `onSetCapital`), wyłączony (disabled) gdy obecna stolica gracza jest oblegana
+ * (Q1=A: bez kosztu/cooldownu poza tym warunkiem).
+ */
+function capitalBadgeOrButtonHtml(city: City): string {
+  const capitalId = cfg.getCapitalCityId?.(city.ownerId) ?? null;
+  if (capitalId != null && capitalId === city.id) {
+    return `<span class="civ-v-w3-capital-badge" title="Stolica">★ Stolica</span>`;
+  }
+  if (city.ownerId !== 0 || !cfg.onSetCapital) return '';
+  const allCitiesForCapital = cfg.getCities?.() ?? [];
+  const capitalCity = capitalId ? allCitiesForCapital.find(c => c.id === capitalId) : null;
+  const besieged = !!capitalCity?.oblegane;
+  if (besieged) {
+    return `<button type="button" class="civ-v-w3-capital-btn" disabled ` +
+      `title="Obecna stolica (${capitalCity?.name ?? '?'}) jest oblegana — nie można przenieść">Ustaw jako stolicę</button>`;
+  }
+  return `<button type="button" class="civ-v-w3-capital-btn" id="civ-v-set-capital" ` +
+    `title="Przenieś stolicę do tego miasta (za darmo)">Ustaw jako stolicę</button>`;
+}
+
 function renderCivResourceTopBar(
   mount: HTMLElement,
   city: City,
@@ -6540,6 +6584,7 @@ function renderCivResourceTopBar(
     `<span class="civ-v-w3-city-name">${cityPanelTitle(city)}</span>` +
     `<button type="button" class="civ-v-w3-city-nav" id="civ-v-city-next" ${navDis} title="Następne miasto">›</button>` +
     `<span class="civ-v-w3-city-pop">${city.population}</span>` +
+    capitalBadgeOrButtonHtml(city) +
     `</div>` +
     `<div class="civ-v-resource-bar civ-v-resource-bar-w3">` +
     `<div class="civ-v-w3-chips civ-v-w3-chips-city">${items}</div>` +
@@ -6555,6 +6600,10 @@ function renderCivResourceTopBar(
   mount.querySelector('#civ-v-map-close')?.addEventListener('click', () => closeCityView(onClose));
   mount.querySelector('#civ-v-city-prev')?.addEventListener('click', () => switchCity(-1));
   mount.querySelector('#civ-v-city-next')?.addEventListener('click', () => switchCity(1));
+  mount.querySelector('#civ-v-set-capital')?.addEventListener('click', () => {
+    cfg.onSetCapital?.(city.id);
+    rerender();
+  });
   wireTopBarStatDetails(mount, city, view, map, data);
 }
 

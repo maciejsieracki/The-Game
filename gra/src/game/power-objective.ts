@@ -40,6 +40,14 @@ export interface EmpirePowerRaw {
   budynki: number;
   techZbadane: number;
   ulepszeniaTerenu: number;
+  /**
+   * Follow-up „Power-zdobycze" (Maciej 2026-07-21): trwały bonus po ELIMINACJI wroga
+   * — CAŁE Power pokonanego w chwili eliminacji, zsumowane (per zwycięzca), nie
+   * znika przy buntach/utracie miast. Współczynnik zawsze 1 (wartość to już gotowe
+   * punkty Power, nie surowy licznik) — patrz computeObjectivePower. Opcjonalne,
+   * `?? 0` w computeObjectivePower dla wstecznej zgodności ze starymi callerami/testami.
+   */
+  zdobyczePower?: number;
 }
 
 export interface PowerComponentBreakdown {
@@ -151,6 +159,8 @@ export function computeObjectivePower(
     row('infra', 'Infrastruktura (budynki)', Math.max(0, input.budynki), coeff.budynki),
     row('tech', 'Odkrycia / tech', Math.max(0, input.techZbadane), coeff.techZbadane),
     row('ulepszenia', 'Ulepszenia terenu', Math.max(0, input.ulepszeniaTerenu), coeff.ulepszenieTerenu),
+    // Follow-up „Power-zdobycze": wartość to już punkty (nie surowy licznik) -> coeff=1 stały.
+    row('zdobycze', 'Zdobycze (eliminacje)', Math.max(0, input.zdobyczePower ?? 0), 1),
   ];
 
   const powerBase = components.reduce((s, c) => s + c.points, 0);

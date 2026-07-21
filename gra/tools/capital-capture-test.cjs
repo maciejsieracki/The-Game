@@ -47,6 +47,7 @@ export {
   remainingCitiesOfOwner,
   applyCapitalCapturePlunder,
 } from '../src/game/capital-capture';
+export { computeObjectivePower } from '../src/game/power-objective';
 `;
 
 fs.writeFileSync(ENTRY_FILE, ENTRY_TS, 'utf8');
@@ -74,6 +75,7 @@ const {
   wasCapitalOfOldOwner,
   remainingCitiesOfOwner,
   applyCapitalCapturePlunder,
+  computeObjectivePower,
 } = M;
 
 // --- tiny assertion framework ------------------------------------------------
@@ -266,6 +268,84 @@ console.log('6. oldestCityOfOwner / remainingCitiesOfOwner');
     ['city0', 'city2', 'city5'],
     'remainingCitiesOfOwner zwraca wszystkie miasta danego ownera',
   );
+}
+
+// ===========================================================================
+// 7. Follow-up "przenieś stolicę" -- designatedCapitalId ZASTĘPUJE legacy
+//    "najstarsze miasto" jako kryterium plunderu. Scenariusz: oldOwner=1 ma
+//    city0 (najstarsze -- legacy "stolica") + city3 (młodsze), ale WYZNACZYŁ
+//    (przeniósł) stolicę na city3. Przejęcie city0 (legacy-stolica, ale NIE
+//    wyznaczona) -> BRAK plunderu. Przejęcie city3 (wyznaczona, młodsza) -> plunder.
+// ===========================================================================
+console.log('7. designatedCapitalId zastepuje legacy "najstarsze miasto"');
+{
+  // 7a. Przejecie city0 (legacy-najstarsze, ale NIE wyznaczone) -> null, brak plunderu.
+  const citiesAfterA = [city('city0', 2), city('city3', 1)];
+  const accessA = makeAccess({ skarbiec: { 1: 300, 2: 0 } });
+  const resA = applyCapitalCapturePlunder(city('city0', 2), 1, 2, citiesAfterA, accessA, 'city3');
+  eq(resA, null, 'city0 (najstarsze, ale wyznaczona to city3) -> NIE bylo stolica -> null');
+  eq(accessA.getTreasury(1), 300, 'skarbiec oldOwner nietkniety (brak plunderu)');
+
+  // 7b. Przejecie city3 (wyznaczona, mlodsza) -> plunder + SUKCESJA (oldOwner ma
+  //     jeszcze city0 -> nowa stolica = city0, najstarsze z POZOSTALYCH).
+  const citiesAfterB = [city('city0', 1), city('city3', 2)];
+  const accessB = makeAccess({ skarbiec: { 1: 300, 2: 0 } });
+  const resB = applyCapitalCapturePlunder(city('city3', 2), 1, 2, citiesAfterB, accessB, 'city3');
+  assert(resB !== null, 'city3 (wyznaczona stolica) -> plunder');
+  eq(resB.event, 'przejecie_stolicy', 'zdarzenie 1 (city0 zostaje przy oldOwner)');
+  eq(resB.skarbiecPrzejety, 300, 'skarbiec przejety');
+  eq(resB.newCapitalIdForOldOwner, 'city0', 'SUKCESJA: nowa stolica oldOwner = city0 (jedyne pozostale)');
+}
+
+// ===========================================================================
+// 8. Sukcesja z wieloma pozostalymi miastami -- nowa stolica = NAJSTARSZE z
+//    pozostalych (nie dowolne), niezaleznie od tego ktore bylo wyznaczone.
+// ===========================================================================
+console.log('8. Sukcesja -- nowa stolica = najstarsze z pozostalych miast oldOwner');
+{
+  // oldOwner=1: city5 (wyznaczona stolica, przejmowana), city2 i city8 zostaja.
+  // Najstarsze z pozostalych to city2 (2 < 8).
+  const citiesAfter = [city('city5', 9), city('city2', 1), city('city8', 1)];
+  const access = makeAccess({ skarbiec: { 1: 10 } });
+  const res = applyCapitalCapturePlunder(city('city5', 9), 1, 9, citiesAfter, access, 'city5');
+  assert(res !== null && res.event === 'przejecie_stolicy', 'city5 wyznaczona -> plunder, cyw przezywa');
+  eq(res.newCapitalIdForOldOwner, 'city2', 'sukcesja: city2 (najstarsze z pozostalych city2/city8)');
+}
+
+// ===========================================================================
+// 9. Eliminacja -> newCapitalIdForOldOwner=null (brak sukcesji, brak miast).
+// ===========================================================================
+console.log('9. Eliminacja -> brak sukcesji (newCapitalIdForOldOwner=null)');
+{
+  const citiesAfter = [city('city7', 4)];
+  const access = makeAccess({ skarbiec: { 2: 5 } });
+  const res = applyCapitalCapturePlunder(city('city7', 4), 2, 4, citiesAfter, access, 'city7');
+  assert(res !== null && res.eliminacja === true, 'ostatnie miasto -> eliminacja');
+  eq(res.newCapitalIdForOldOwner, null, 'eliminacja -> brak sukcesji (owner juz nie istnieje)');
+}
+
+// ===========================================================================
+// 10. Follow-up "Power-zdobycze" -- computeObjectivePower: nowa skladowa
+//     "zdobycze" (coeff stale 1, wartosc to juz gotowe punkty), wchodzi do sumy.
+// ===========================================================================
+console.log('10. computeObjectivePower -- skladowa "zdobycze" (Power-zdobycze)');
+{
+  const baseInput = {
+    ownerId: 9, epoka: 1, jednostki: 0, wygraneBitwy: 0, bitwyPktSum: 0,
+    sumaLudkow: 0, rekrutEkw: 0, miasta: 0, heksyTerytorium: 0, budynki: 0,
+    techZbadane: 0, ulepszeniaTerenu: 0,
+  };
+  const withoutZdobycze = computeObjectivePower(baseInput);
+  eq(withoutZdobycze.power, 0, 'brak zdobyczePower (pole nieobecne) -> Power=0, bez wyjatku');
+  const zdobyczeRow0 = withoutZdobycze.components.find(c => c.key === 'zdobycze');
+  assert(!!zdobyczeRow0, 'skladowa "zdobycze" zawsze obecna w breakdown');
+  eq(zdobyczeRow0.points, 0, 'brak zdobyczy -> 0 pkt');
+
+  const withZdobycze = computeObjectivePower({ ...baseInput, zdobyczePower: 1234 });
+  const zdobyczeRow = withZdobycze.components.find(c => c.key === 'zdobycze');
+  eq(zdobyczeRow.coefficient, 1, 'coeff "zdobycze" zawsze 1 (wartosc to juz pkt, nie surowy licznik)');
+  eq(zdobyczeRow.points, 1234, 'pkt "zdobycze" = zdobyczePower 1:1');
+  eq(withZdobycze.power, 1234, 'Power calkowity = zdobycze (jedyna niezerowa skladowa w tym teście)');
 }
 
 // --- summary ---------------------------------------------------------------
