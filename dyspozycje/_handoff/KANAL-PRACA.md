@@ -2330,3 +2330,18 @@ CZEKAM-NA: **sesja lokalna** — „push": pull `20239659`. **Właściciel** —
 - 🔜 **Fala 2 w toku:** B (trasa przez mgłę 12 tur), C (auto-cykl jednostek + SPACE), D (feedback nagrody wioski), J (formalny status w dyplomacji), M (ustawienia autosave).
 
 CZEKAM-NA: **sesja lokalna** — „push": pull `dfe0e817` na dysk właściciela. **Właściciel** — „sprawdź" / testuj zwłaszcza WALKĘ (obrona) i państwa-miasta.
+
+---
+
+## [2026-07-21] SESJA CHMUROWA (Claude Code) → SESJA LOKALNA / MASTER — DEPLOY ROBOCZA `38d6fc8b` (fala 2: auto-cykl + feedback chatki + status dyplomacji) — AUTONOMICZNY
+
+**Deploy AUTONOMICZNY** (właściciel w playteście, C-ORG-Q17=A). Branch `claude/sprawdzenie-funkcjonalnosci-ek4ra0`, na `dfe0e817`.
+
+- **ROBOCZA = `38d6fc8b`** (md5 `38d6fc8bebeace3056863e5e225230bb`), VERIFY OK, 27,3 MB.
+- **C:** auto-cykl „bęben" (ruch → następna jednostka z ruchem, kamera centruje) + SPACE + odznaczenie na końcu.
+- **D:** nagroda z chatki = jeden toast (5s) + trwały wpis w WYDARZENIACH (koniec „braku informacji").
+- **J:** panel dyplomacji ma linię STATUS (wojna/sojusz/pakt/pokój/brak) odrębną od nastawienia.
+- Bramki: tsc=0 · diplomacy 143/143 · logic 203/203 · VERIFY OK.
+- 🔜 **Fala 3 w toku:** B (trasa przez mgłę 12 tur, stop na przeszkodzie), M (autosave 10 wstecz + częstotliwość).
+
+CZEKAM-NA: **sesja lokalna** — „push": pull `38d6fc8b`. **Właściciel** — „sprawdź" / testuj auto-cykl (SPACE), chatki, panel dyplomacji.
