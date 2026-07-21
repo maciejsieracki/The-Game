@@ -11,13 +11,13 @@ swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drug
 
 ## ROBOCZA (gra-robocza\Gra-ROBOCZA.html — wskazywana przez START.html)
 
-- 2026-07-21 · stempel: ROBOCZA · **f7664322** · md5 pliku `f766432255c08eb0e74c17333dbdbb57` · **FIX picking heksów — raycast 3D terenu zamiast płaszczyzny y=0** — na `83eadf9a`:
-  **Przyczyna:** kamera ~52° + pryzmy terenu podniesione nad y=0 → `pixelToHex` trafiał w płaszczyznę pod spodem, przesuwając wybór w stronę kamery (krawędzie heksów = zły hex). **Fix:** raycast na InstancedMesh terenu (prefer górna ścianka), fallback y=0; `terrainPickMeshes` w SceneResult.
-  tsc=0 · VERIFY OK · publish `gra-robocza/Gra-ROBOCZA.html`. · **AKTUALNA** · Test: Ctrl+F5 START.html → stamp `f7664322`; klik w krawędź heksa → panel kontekstowy pokazuje właściwy hex (nie sąsiada „w górę").
+- 2026-07-21 · stempel: ROBOCZA · **95be60fc** · md5 pliku `95be60fc79400576b0e82bb15f518174` · **FIX picking heksów — raycast 3D terenu zamiast płaszczyzny y=0** — na `83eadf9a`:
+  **Przyczyna:** kamera ~52° + pryzmy terenu podniesione nad y=0 → `pixelToHex` trafiał w płaszczyznę pod spodem, przesuwając wybór w stronę kamery (krawędzie heksów = zły hex). **Fix:** raycast na InstancedMesh terenu (prefer górna ścianka), fallback y=0; `terrainPickMeshes` w SceneResult + `pickHexAt` w main.ts.
+  tsc=0 · logic 207/207 · VERIFY OK · publish `gra-robocza/Gra-ROBOCZA.html`. · **AKTUALNA** · Test: Ctrl+F5 START.html → stamp `95be60fc`; klik w krawędź heksa → panel kontekstowy pokazuje właściwy hex (nie sąsiada „w górę").
 
 - 2026-07-21 · stempel: ROBOCZA · **83eadf9a** · md5 pliku `83eadf9a14a80a6e08db6a2eb8da88ca` · **FIX FoW — jednostki wroga ukryte poza bieżącym zasięgiem** — na `eeace0a7`:
   **Przyczyna:** `syncUnitsRender()` bez jawnej listy mgły synchronizowało wszystkie tokeny jako widoczne (czerwone pierścienie w czerni/shroud). **Fix:** przy `fogOn` domyślna lista = `unitsVisibleOnMap` (obcy tylko w `currentVisible`; gracz zawsze); test logic 207/207 (+4).
-  tsc=0 · logic 207/207 · VERIFY OK · publish `gra-robocza/Gra-ROBOCZA.html`. · **ZASTĄPIONA** (→ `f7664322`) · Test: Ctrl+F5 START.html → stamp `83eadf9a`; brak wrogich jednostek w czarnej mgle i ciemnym shroud poza zasięgiem.
+  tsc=0 · logic 207/207 · VERIFY OK · publish `gra-robocza/Gra-ROBOCZA.html`. · **ZASTĄPIONA** (→ `95be60fc`) · Test: Ctrl+F5 START.html → stamp `83eadf9a`; brak wrogich jednostek w czarnej mgle i ciemnym shroud poza zasięgiem.
 
 - 2026-07-21 · stempel: ROBOCZA · **eeace0a7** · md5 pliku `eeace0a7477674272f86583795d60826` · **BUGFIX: miasta-państwa atakują gracza tylko w wojnie** — na `5793da54`:
   **Fix:** `canEngageOwner` w AI (ai.ts) + bramka w main.ts — bez statusu `wojna` brak preBattle/ataku na jednostki gracza (riposta przy zwiadowcy obok miasta-państwa). Dyplomacja PRZYJAZNY/neutralni spójna z brakiem walki.

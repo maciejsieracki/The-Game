@@ -14,8 +14,8 @@
 |---|---|
 | **Co** | Klik w krawędź heksa wybiera właściwy hex (panel kontekstowy, ruch jednostek, tryb budowy) |
 | **Przyczyna** | Picking na płaszczyźnie y=0 przy kamerze 3D ~52° i podniesionym terenie przesuwał trafienie w stronę kamery |
-| **md5** | `f766432255c08eb0e74c17333dbdbb57` · stamp `f7664322` |
-| **Bramki** | tsc=0 · VERIFY OK |
+| **md5** | `95be60fc79400576b0e82bb15f518174` · stamp `95be60fc` |
+| **Bramki** | tsc=0 · logic 207/207 · VERIFY OK |
 | **Od Ciebie** | Ctrl+F5 · `gra-robocza/START.html` · Nowa gra · klikaj **krawędzie** heksów (nie tylko środek) → panel pokazuje ten sam hex co wizualnie pod kursorem; sprawdź też ruch zwiadowcy na krawędzi docelowego heksa |
 
 ---

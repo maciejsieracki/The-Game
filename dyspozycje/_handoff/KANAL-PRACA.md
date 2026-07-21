@@ -2429,6 +2429,19 @@ CZEKAM-NA: **Maciej** Ctrl+F5 → stamp `83eadf9a` · mapa: brak wrogich jednost
 
 ---
 
+## [22:55 PL, 2026-07-21] INTEGRATOR → Maciej — FIX picking heksów + commit/push main
+
+Maciej: weryfikacja spójności + push GitHub.
+
+- **ROBOCZA = `95be60fc`** (md5 `95be60fc79400576b0e82bb15f518174`), na `83eadf9a`.
+- **Fix:** raycast 3D terenu w `picker.ts` + `terrainPickMeshes` w `scene.ts`/`main.ts` (wcześniej tylko w src, brak w bundlu).
+- tsc=0 · logic 207/207 · VERIFY OK · manifest + START.html zsynchronizowane.
+- Commit+push `main` (FF).
+
+CZEKAM-NA: **Maciej** Ctrl+F5 → stamp `95be60fc` · klik krawędzi heksa = właściwy hex.
+
+---
+
 ## [23:05 PL, 2026-07-21] INTEGRATOR → Maciej — FIX picking heksów (raycast 3D)
 
 - **ROBOCZA = `f7664322`** (md5 `f766432255c08eb0e74c17333dbdbb57`), na `83eadf9a`.
