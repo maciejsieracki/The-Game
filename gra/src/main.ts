@@ -2194,6 +2194,46 @@ async function boot(): Promise<void> {
       refreshD1bHud();
     }
 
+    /** Jednostki gracza na mapie świata z dostępnym ruchem (1 reprezentant/heks), stała kolejność. */
+    function movableWorldUnits(): RuntimeUnit[] {
+      const seen = new Set<string>();
+      const out: RuntimeUnit[] = [];
+      for (const u of units) {
+        if (u.ownerId !== 0) continue;
+        if (u.inGarnizon) continue;
+        if (!stackCanMove(u)) continue;
+        const key = u.q + ',' + u.r;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        out.push(u);
+      }
+      return out;
+    }
+
+    /**
+     * C: auto-cykl „bęben" — przejdź do następnej jednostki gracza z dostępnym ruchem
+     * (po jednostce `afterId`). Gdy żadna nie ma już ruchu — odznacz (koniec cyklu).
+     * Centruje kamerę na wybranej jednostce (jak klik w panelu ARMIE).
+     */
+    function cycleToNextMovableUnit(afterId: string | null): void {
+      if (!isWorldMapUnitMode()) return;
+      const list = movableWorldUnits();
+      if (list.length === 0) {
+        clearPlayerUnitSelection();
+        return;
+      }
+      let idx = 0;
+      if (afterId !== null) {
+        const cur = list.findIndex(u => u.id === afterId);
+        idx = cur >= 0 ? (cur + 1) % list.length : 0;
+      }
+      const next = list[idx]!;
+      selectPlayerUnit(next.id);
+      const { x, z } = axialToWorld(next.q, next.r, HEX_R);
+      const { dist } = camCtrl.getFocusState();
+      camCtrl.focusAt(x, z, dist);
+    }
+
     /** Rozwiązanie jednostki gracza — usuwa z mapy, zwraca ludność + Manpower do miasta. */
     function disbandPlayerUnit(unitId: string): boolean {
       const idx = units.findIndex(x => x.id === unitId);
@@ -5610,8 +5650,11 @@ async function boot(): Promise<void> {
       setSiegePanelBesiegerCount(countBesiegersAdjacent(city));
     }
 
+    // D: trwały log nagród z chatek/wiosek (toast bywa nadpisywany) — pokazywany w WYDARZENIACH.
+    const villageEventLog: SidePanelEvent[] = [];
+
     function collectTurnEvents(): SidePanelEvent[] {
-      const events: SidePanelEvent[] = [];
+      const events: SidePanelEvent[] = [...villageEventLog];
       for (const city of cities) {
         if (city.ownerId !== 0) continue;
         const st = cityOrderState.get(city.id);
@@ -8106,30 +8149,37 @@ async function boot(): Promise<void> {
       hex.wioska.istnieje = false;
       hex.wioska.ludnosc = 0;
 
+      // D: zbieramy JEDEN czytelny opis nagrody + ikonę + kind zdarzenia (zamiast
+      // kilku nadpisujących się toastów). Na końcu: jeden toast + trwały wpis w WYDARZENIA.
+      let summary = '';
+      let icon = '\u{1F381}'; // 🎁
+      let evKind: SidePanelEvent['kind'] = 'info';
+
       const grantGold = (label: string): void => {
         const amount = villageGoldAmount(player.era);
         player.skarbiec += amount;
-        showHintMessage('Wioska: ' + label + ' — otrzymano ' + amount + ' złota!', 3600);
+        summary = 'Chatka (' + label + '): +' + amount + ' złota';
+        icon = '\u{1F4B0}'; // 💰
+        evKind = 'city';
       };
 
       const kind = pickVillageReward(Math.random());
 
       if (kind === 'zloto') {
-        grantGold('znaleziono skarb');
+        grantGold('skarb');
       } else if (kind === 'tech') {
         if (player.badana === null) {
-          // Fallback: brak biezaco badanej technologii -- nie ma czego przyspieszyc.
           grantGold('brak aktywnych badań, w zamian');
         } else {
           const amount = villageTechProgress(player.era);
           player.nauka += amount;
-          showHintMessage('Wioska: +' + amount + ' postępu badań (' + player.badana + ')', 3600);
+          summary = 'Chatka: +' + amount + ' postępu badań (' + player.badana + ')';
+          icon = '\u{1F52C}'; // 🔬
+          evKind = 'science';
           const step = researchStep(player, data.tech, researchGateForOwner(0), _menuDifficulty);
           for (const done of step.completed) {
-            let msg = 'Zbadano: ' + done.id + ' (-' + done.koszt + ' nauki)';
-            if (done.awansEpoki) msg += ' \xb7 nowa epoka ' + done.era;
-            if (done.pieniadz) msg += ' \xb7 Pieniądz \xd710';
-            showHintMessage(msg, 3500);
+            summary += ' \xb7 zbadano ' + done.id;
+            if (done.awansEpoki) summary += ' (epoka ' + done.era + ')';
           }
         }
       } else {
@@ -8138,7 +8188,6 @@ async function boot(): Promise<void> {
           ? findAdjacentEmptyHexes(units, q, r, isHexPassableForUnit)[0]
           : undefined;
         if (!typeId || !dest) {
-          // Fallback: brak zdefiniowanej jednostki dla tej ery, albo brak wolnego sasiedniego heksu.
           grantGold('brak miejsca/jednostki, w zamian');
         } else {
           const def = lookupUnitDef(typeId);
@@ -8156,9 +8205,25 @@ async function boot(): Promise<void> {
             ruch,
             ruchLeft: 0,
           });
-          showHintMessage('Wioska: dołączyła jednostka — ' + typeId, 3600);
+          summary = 'Chatka: dołączyła jednostka — ' + typeId;
+          icon = '⚔️'; // ⚔️
+          evKind = 'unit';
           syncUnitsRender();
         }
+      }
+
+      if (summary) {
+        // Jeden trwały toast (5 s) + wpis w panelu WYDARZENIA (nie ginie jak toast).
+        showHintMessage(icon + ' ' + summary, 5000);
+        villageEventLog.unshift({
+          id: 'village-' + turn + '-' + q + '-' + r,
+          icon,
+          title: 'Odkryto chatkę',
+          subtitle: summary,
+          kind: evKind,
+        });
+        if (villageEventLog.length > 6) villageEventLog.length = 6;
+        refreshD1bHud();
       }
 
       // Wioska znikła -- odśwież meshe (ta sama ścieżka co syncVillageMeshes w refreshFog).
@@ -10698,6 +10763,16 @@ async function boot(): Promise<void> {
         return;
       }
 
+      // --- Spacja: przejdź do następnej jednostki gracza z dostępnym ruchem (auto-cykl „bęben") ---
+      if (e.code === 'Space' || e.key === ' ') {
+        const ae = document.activeElement as HTMLElement | null;
+        if (ae && (ae.tagName === 'INPUT' || ae.tagName === 'TEXTAREA' || ae.isContentEditable)) return;
+        if (e.repeat || galleryOn || !isWorldMapUnitMode()) return;
+        e.preventDefault();
+        cycleToNextMovableUnit(selectedId);
+        return;
+      }
+
       // --- Gallery toggle ---
       if (e.key.toLowerCase() === 'g') {
         galleryOn = !galleryOn;
@@ -12230,6 +12305,13 @@ async function boot(): Promise<void> {
           updateHud();
           refreshD1bHud();
           processMarchQueue();
+          // C: auto-cykl „bęben" — jednostka gracza wyczerpała ruch (bez marszu
+          // wieloturowego w toku) → przejdź automatycznie do następnej jednostki z ruchem.
+          if (u && u.ownerId === 0 && selectedId === finishedId
+              && !stackCanMove(u) && !plannedMarches.has(finishedId)
+              && !isAnimating && isWorldMapUnitMode()) {
+            cycleToNextMovableUnit(finishedId);
+          }
         } else {
           // --- Interpolate token along current segment ---
           const tc = Math.min(Math.max(anim.t, 0), 1);
