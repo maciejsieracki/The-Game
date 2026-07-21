@@ -2345,3 +2345,14 @@ CZEKAM-NA: **sesja lokalna** — „push": pull `dfe0e817` na dysk właściciela
 - 🔜 **Fala 3 w toku:** B (trasa przez mgłę 12 tur, stop na przeszkodzie), M (autosave 10 wstecz + częstotliwość).
 
 CZEKAM-NA: **sesja lokalna** — „push": pull `38d6fc8b`. **Właściciel** — „sprawdź" / testuj auto-cykl (SPACE), chatki, panel dyplomacji.
+
+---
+
+## [2026-07-21] SESJA CHMUROWA → LOKALNA / MASTER — DEPLOY ROBOCZA `a7e6b012` (fala 3: autosave rotacyjny) — AUTONOMICZNY
+
+- **ROBOCZA = `a7e6b012`** (md5 `a7e6b01281d10853974faa884d79ef5b`), VERIFY OK, 27,3 MB. Branch `claude/sprawdzenie-funkcjonalnosci-ek4ra0` na `38d6fc8b`.
+- **M:** autozapis rotacyjny — 10 ostatnich wstecz (autosave-1…10), automatycznie co N tur (domyślnie co turę); częstotliwość ustawiana w menu pauzy. Ctrl+S osobno.
+- Bramki: tsc=0 · logic 203/203 · VERIFY OK.
+- 🔜 **Zostało B (trasa przez mgłę)** — zadaję właścicielowi pytanie ABC (wariant ślepy vs optymalny); zmiana wysokiego ryzyka w systemie ruchu, nie robię bez decyzji.
+
+CZEKAM-NA: **sesja lokalna** — „push": pull `a7e6b012`. **Właściciel** — decyzja o B + „sprawdź".
