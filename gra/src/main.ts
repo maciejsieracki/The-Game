@@ -7212,6 +7212,11 @@ async function boot(): Promise<void> {
         saveAmbiencePrefs({ enabled: ambienceEnabled, volume: ambienceVolumeState });
         setAmbienceVolume(v);
       },
+      getAutosaveFreq: () => getAutosaveFrequency(),
+      onAutosaveFreqChange: (turns) => {
+        setAutosaveFrequency(turns);
+        showHintMessage('Autozapis: co ' + Math.max(1, Math.round(turns)) + ' tur (10 ostatnich wstecz)', 3000);
+      },
     });
 
     function mountD1bHud(): void {
@@ -10740,6 +10745,45 @@ async function boot(): Promise<void> {
     }
 
     // -----------------------------------------------------------------------
+    // M: rotacyjny autozapis — trzyma 10 ostatnich stanów wstecz (autosave-1..10),
+    // wykonywany automatycznie co N tur (domyślnie co turę). Częstotliwość w
+    // localStorage (zmienialna w Ustawieniach). Slot 'autosave' (Ctrl+S) — osobno.
+    // -----------------------------------------------------------------------
+    const AUTOSAVE_ROT_COUNT = 10;
+    const AUTOSAVE_ROT_IDX_KEY = 'thegame.autosave.rotIdx';
+    const AUTOSAVE_FREQ_KEY = 'thegame.autosave.freq';
+
+    function getAutosaveFrequency(): number {
+      try {
+        const v = parseInt(localStorage.getItem(AUTOSAVE_FREQ_KEY) ?? '1', 10);
+        return Number.isFinite(v) && v >= 1 ? v : 1;
+      } catch { return 1; }
+    }
+    function setAutosaveFrequency(n: number): void {
+      try { localStorage.setItem(AUTOSAVE_FREQ_KEY, String(Math.max(1, Math.round(n)))); } catch { /* brak localStorage */ }
+    }
+
+    /** Zapis do kolejnego slotu rotacji (1..10), zachowując 10 ostatnich wstecz. */
+    function doRotatingAutosave(): void {
+      let idx = 0;
+      try {
+        const prev = parseInt(localStorage.getItem(AUTOSAVE_ROT_IDX_KEY) ?? '-1', 10);
+        idx = (((Number.isFinite(prev) ? prev : -1) + 1) % AUTOSAVE_ROT_COUNT + AUTOSAVE_ROT_COUNT) % AUTOSAVE_ROT_COUNT;
+      } catch { idx = 0; }
+      const slot = 'autosave-' + (idx + 1);
+      try {
+        const ok = saveToLocal(slot, buildSaveGameSnapshot('Autozapis · tura ' + turn));
+        if (ok) {
+          setLastPlayedSlotId(slot);
+          try { localStorage.setItem(AUTOSAVE_ROT_IDX_KEY, String(idx)); } catch { /* ignore */ }
+          console.log('[Autosave] rotacyjny slot=' + slot + ' tura=' + turn);
+        }
+      } catch (eRot) {
+        console.error('[Autosave] blad rotacyjnego zapisu:', eRot);
+      }
+    }
+
+    // -----------------------------------------------------------------------
     // End turn (N key) + Gallery toggle (G key) + Fog toggle (F key)
     // + City founding (B key)
     // If animation is running, snap unit to destination first.
@@ -10931,6 +10975,9 @@ async function boot(): Promise<void> {
         setTurnTransition(6, 'Zakończenie ruchów gracza…', 'Gracz', nextTurnNum);
         await yieldTurnTransitionUi();
         turn++;
+
+        // M: rotacyjny autozapis co N tur (domyślnie co turę) — 10 ostatnich wstecz.
+        if (turn % getAutosaveFrequency() === 0) doRotatingAutosave();
 
         pendingImprovementsTurn.commitTurn();
 

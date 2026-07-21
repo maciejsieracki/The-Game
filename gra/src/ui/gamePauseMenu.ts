@@ -29,6 +29,10 @@ export interface GamePauseMenuConfig {
   onAmbienceToggle?: (enabled: boolean) => void;
   /** Suwak głośności odgłosów natury, wartość 0..1 (setAmbienceVolume). */
   onAmbienceVolumeChange?: (volume: number) => void;
+  /** M: co ile tur wykonywać rotacyjny autozapis (1..20; 10 ostatnich wstecz). */
+  getAutosaveFreq?: () => number;
+  /** M: zmiana częstotliwości autozapisu (liczba tur). */
+  onAutosaveFreqChange?: (turns: number) => void;
 }
 
 const STYLE_ID = 'civ-game-pause-css';
@@ -111,6 +115,7 @@ export function showGamePauseMenu(): void {
   const musicVolumeNow = cfg.getMusicVolume?.() ?? 0.7;
   const ambienceEnabledNow = cfg.getAmbienceEnabled?.() ?? true;
   const ambienceVolumeNow = cfg.getAmbienceVolume?.() ?? 0.7;
+  const autosaveFreqNow = Math.max(1, Math.min(20, Math.round(cfg.getAutosaveFreq?.() ?? 1)));
 
   const box = document.createElement('div');
   box.className = 'civ-pause-box';
@@ -135,6 +140,13 @@ export function showGamePauseMenu(): void {
     'aria-pressed="' + (ambienceEnabledNow ? 'true' : 'false') + '" aria-label="Odgłosy natury WŁ/WYŁ"></button></div>' +
     '<input type="range" class="civ-pause-ambience-vol" data-act="ambience-vol" min="0" max="100" step="5" ' +
     'value="' + Math.round(ambienceVolumeNow * 100) + '"' + (ambienceEnabledNow ? '' : ' disabled') + ' aria-label="Głośność odgłosów natury" />' +
+    '</div>' +
+    '<div class="civ-pause-ambience">' +
+    '<div class="civ-pause-ambience-row"><span class="civ-pause-ambience-lbl">Autozapis co N tur</span>' +
+    '<input type="number" class="civ-pause-autosave-freq" data-act="autosave-freq" min="1" max="20" step="1" ' +
+    'value="' + autosaveFreqNow + '" aria-label="Autozapis co ile tur" ' +
+    'style="width:56px;padding:3px 6px;border-radius:6px;border:1px solid rgba(224,178,74,0.4);background:rgba(0,0,0,0.3);color:#e8ebf0;font:13px inherit;text-align:center" /></div>' +
+    '<div style="font-size:11px;color:#8b97a8;margin-top:4px">Rotacja: 10 ostatnich autozapisów wstecz (autosave-1…10).</div>' +
     '</div>' +
     '<div class="civ-pause-btns">' +
     '<button type="button" class="civ-pause-primary" data-act="resume"><span class="civ-pause-ic">' + icResume + '</span> Wróć do gry</button>' +
@@ -171,6 +183,13 @@ export function showGamePauseMenu(): void {
   ambienceVolInput?.addEventListener('input', () => {
     const v = Math.max(0, Math.min(100, Number(ambienceVolInput.value))) / 100;
     cfg?.onAmbienceVolumeChange?.(v);
+  });
+
+  const autosaveFreqInput = box.querySelector('[data-act="autosave-freq"]') as HTMLInputElement | null;
+  autosaveFreqInput?.addEventListener('change', () => {
+    const n = Math.max(1, Math.min(20, Math.round(Number(autosaveFreqInput.value) || 1)));
+    autosaveFreqInput.value = String(n);
+    cfg?.onAutosaveFreqChange?.(n);
   });
 
   root.addEventListener('click', (ev) => {
