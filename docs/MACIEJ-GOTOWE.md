@@ -4,7 +4,20 @@
 > **Czat:** krótko **`✅ Gotowe:`** / **`⏸️ Czeka:`** · **Ten plik:** pełniejszy zapis tego samego.  
 > Szczegóły techniczne → handoff w `dyspozycje/_handoff/` · operacja → `dyspozycje/DZIENNIK-MASTERA.md`
 
-**Ostatnia aktualizacja:** 2026-07-22 (taktyka/strategia per jednostka w bitwie)
+**Ostatnia aktualizacja:** 2026-07-22 (granice państwa na mapie)
+
+---
+
+## [2026-07-22] ✅ Gotowe — granice państwa: widoczny spójny obwód
+
+| | |
+|---|---|
+| **Co** | Granice państwa na mapie świata — wyraźny kolorowy obwód wokół całego terytorium (nie cienkie kreski per heks) |
+| **Jak włączyć** | Minimapa → ikona/przycisk **granice państwa** (toggle jak wcześniej) |
+| **Co naprawiono** | Cienka linia WebGL 1px @ 30% alpha → szeroki pas 0.10 world units @ 48% alpha; flat Y + trójkąty w narożnikach = ciągły obwód |
+| **md5** | `07beb443d7efc6dd1bd35efa29bfebae` · stamp `07beb443` |
+| **Bramki** | tsc=0 · map-gen-regression determinizm PASS · picker-test 136/136 |
+| **Od Ciebie** | `git pull` → Ctrl+F5 · `gra-robocza/START.html` → stamp `07beb443` → mapa → włącz granice przy minimapie → obwód wokół terytorium gracza i AI |
 
 ---
 

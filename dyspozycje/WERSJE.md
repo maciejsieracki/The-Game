@@ -11,9 +11,13 @@ swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drug
 
 ## ROBOCZA (gra-robocza\Gra-ROBOCZA.html — wskazywana przez START.html)
 
+- 2026-07-22 · stempel: ROBOCZA · **07beb443** · md5 pliku `07beb443d7efc6dd1bd35efa29bfebae` · **MAPA: granice państwa — widoczny spójny obwód** — na `2e46903e`:
+  **Bug:** granica praktycznie niewidoczna (cienka linia WebGL 1px @ 30% alpha) + efekt rozłączonych pasków per heks. **Fix:** `rangeOverlay.ts` — `buildTerritoryBorderMesh`: szeroki pas `TERRITORY_BORDER_BAND_WIDTH=0.10` (world units), flat Y dla całego obwodu, trójkąty w narożnikach łączą segmenty; alpha 0.48. Toggle minimapy bez zmian.
+  tsc=0 · map-gen-regression determinizm PASS · picker-test 136/136 · publish `gra-robocza/Gra-ROBOCZA.html`. · **AKTUALNA** · Test: Ctrl+F5 START.html → stamp `07beb443`; mapa → minimapa → ikona granic państwa → wyraźny kolorowy obwód wokół terytorium (nie kreski per heks).
+
 - 2026-07-22 · stempel: ROBOCZA · **2e46903e** · md5 pliku `2e46903ef4065678fb24fbfe0475dd0f` · **BITWA: taktyka/strategia per jednostka** — na `77c603d7`:
   **Cel:** wybór Taktyki (Obrona/Atak/Szturm/Ostrzał) i Strategii (priorytety celów) dla pojedynczej jednostki, nie tylko grupy. **Fix:** `battleScene.ts` — pola `unitDoctrine`, `useUnitPriorities` / `unitTargetPriorities` na `RuntimeBattleUnit`; popup Taktyka/Strategia działa na zaznaczeniu (Ctrl+LPM = jedna jednostka); wielokrotne zaznaczenie ustawia wszystkim lub pokazuje „mieszane".
-  tsc=0 · auto-battle-power-test 14/14 · battle-smoke harness pre-existing fail · publish `gra-robocza/Gra-ROBOCZA.html`. · **AKTUALNA** · Test: Ctrl+F5 START.html → stamp `2e46903e`; PLAYTEST-WALKA → bitwa ręczna → Ctrl+LPM zaznacz 1 jednostkę → Taktyka → Szturm; druga w grupie → Obrona → różne postawy w tej samej grupie.
+  tsc=0 · auto-battle-power-test 14/14 · battle-smoke harness pre-existing fail · publish `gra-robocza/Gra-ROBOCZA.html`. · **ZASTĄPIONA** (→ `07beb443`) · Test: Ctrl+F5 START.html → stamp `2e46903e`; PLAYTEST-WALKA → bitwa ręczna → Ctrl+LPM zaznacz 1 jednostkę → Taktyka → Szturm; druga w grupie → Obrona → różne postawy w tej samej grupie.
 
 - 2026-07-22 · stempel: ROBOCZA · **77c603d7** · md5 pliku `77c603d77fe1346c18d8b5cb52535d3c` · **UI: etykieta kultury w audiencji dyplomatycznej** — na `3d2e4f32`:
   **Cel:** gracz widzi okręg kulturowy rozmówcy (np. „Kultura: Grecka" / „Chetycka") oraz wskazówkę ten sam okręg vs obca kultura. **Fix:** `civCultureLabelForKey` + `sameCultureCircle` w `diplomacy-display.ts`; linia UI w `diplomacyAudience.ts`; stan w `main.ts`.

@@ -2651,3 +2651,12 @@ CZEKAM-NA: **Maciej** `git pull` → Ctrl+F5 START.html → stamp `77c603d7`; au
 - tsc=0 · auto-battle-power-test 14/14 · publish `gra-robocza/Gra-ROBOCZA.html` · commit+push main.
 
 CZEKAM-NA: **Maciej** `git pull` → Ctrl+F5 START.html → stamp `2e46903e`; PLAYTEST-WALKA → bitwa ręczna → Ctrl+LPM 1 jednostka → Taktyka → inna niż reszta grupy.
+
+## [00:45 PL, 2026-07-22] INTEGRATOR → Maciej — MAPA: granice państwa widoczny spójny obwód (deploy)
+
+- **Stamp ROBOCZA:** `07beb443` (md5 `07beb443d7efc6dd1bd35efa29bfebae`)
+- **Bug:** granica praktycznie niewidoczna (LineBasicMaterial 1px @ 30% alpha) + rozłączone paski per heks.
+- **Fix:** `gra/src/render/rangeOverlay.ts` — `buildTerritoryBorderMesh`: pas `TERRITORY_BORDER_BAND_WIDTH=0.10`, flat Y, trójkąty w narożnikach; alpha 0.48. Toggle minimapy bez zmian.
+- tsc=0 · map-gen-regression determinizm PASS · picker-test 136/136 · publish `gra-robocza/Gra-ROBOCZA.html` · commit+push main.
+
+CZEKAM-NA: **Maciej** `git pull` → Ctrl+F5 START.html → stamp `07beb443`; mapa → minimapa → włącz granice państwa → wyraźny kolorowy obwód wokół terytorium.
