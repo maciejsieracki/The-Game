@@ -2392,3 +2392,15 @@ Maciej: **E-START-CS-Q1 opcja C** — państwa-miasta wokół faktycznej stolicy
 - Pre-plan `pendingSameTypeRivalHexes` = podgląd mapgen only.
 
 CZEKAM-NA: **sesja lokalna** — push na dysk · md5 **`35a07a49`**. **Właściciel** — Ctrl+F5 START.html · Nowa gra 10–14 państw · staw stolicę · klaster ~3 hex.
+
+---
+
+## [22:40 PL, 2026-07-21] SESJA LOKALNA — COMMIT+PUSH `5793da54` (audyt 20 kod + deploy merge)
+
+Maciej: **commit / push** — kod audytu 20 POTWIERDZONE + rebuild ROBOCZA (łączy z E-START-CS z `35a07a49`).
+
+- **ROBOCZA = `5793da54`** (md5 `5793da543dc71b9a5ea61f6776f8c241`), tsc=0, tech-tree 19/19, map-gen-regression OK.
+- Kod: `gra/src/` E1–E8 (manpower, turn-economy, economy, empire-food, ai, victory, map, audio, playerState) · log: `dyspozycje/AUDYT-NAPRAWY-LOG.md`.
+- WERSJE.md zaktualizowane · `35a07a49` → ZASTĄPIONA.
+
+CZEKAM-NA: **właściciel** — Ctrl+F5 START.html → stamp **`5793da54`**. **main** na origin po push.

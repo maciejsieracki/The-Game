@@ -144,7 +144,9 @@ export function isNaukaVictory(
   wszystkieTechZbadane: boolean,
   rakietaWystrzelona: boolean,
 ): boolean {
-  return wszystkieTechZbadane && rakietaWystrzelona;
+  if (!wszystkieTechZbadane) return false;
+  if (!NAUKA_WYMAGA_RAKIETY) return true;
+  return rakietaWystrzelona;
 }
 
 /** Czy zestaw zbadanych tech pokrywa listę id w scope gry. */

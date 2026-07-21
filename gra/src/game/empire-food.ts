@@ -49,6 +49,13 @@ function pick(row: RawParamRow | undefined, d: Difficulty, fallback: number): nu
 
 export function buildEmpireFoodParams(
   raw: {
+    ekonomia_miasta?: {
+      suwak_zywnosc_rozwoj_domyslnie?: RawParamRow;
+      glod_wojska_hp_frac?: RawParamRow;
+      armia_odklad_bez_spichlerza?: RawParamRow;
+      armia_odklad_ze_spichlerzem?: RawParamRow;
+      spichlerz_pojemnosc_zapasow_panstwa?: RawParamRow;
+    };
     suwak_zywnosc_rozwoj_domyslnie?: RawParamRow;
     glod_wojska_hp_frac?: RawParamRow;
     armia_odklad_bez_spichlerza?: RawParamRow;
@@ -57,12 +64,13 @@ export function buildEmpireFoodParams(
   },
   difficulty: Difficulty = 'normal',
 ): EmpireFoodParams {
+  const section = raw.ekonomia_miasta ?? raw;
   return {
-    procentRozwojDefault: pick(raw.suwak_zywnosc_rozwoj_domyslnie, difficulty, 100),
-    glodWojskaHpFrac:     pick(raw.glod_wojska_hp_frac, difficulty, 0.08),
-    armiaOdkladBezSpichlerza: pick(raw.armia_odklad_bez_spichlerza, difficulty, 0.5),
-    armiaOdkladZeSpichlerzem: pick(raw.armia_odklad_ze_spichlerzem, difficulty, 1),
-    spichlerzPojemnoscZapasowPanstwa: pick(raw.spichlerz_pojemnosc_zapasow_panstwa, difficulty, 100),
+    procentRozwojDefault: pick(section.suwak_zywnosc_rozwoj_domyslnie, difficulty, 100),
+    glodWojskaHpFrac:     pick(section.glod_wojska_hp_frac, difficulty, 0.08),
+    armiaOdkladBezSpichlerza: pick(section.armia_odklad_bez_spichlerza, difficulty, 0.5),
+    armiaOdkladZeSpichlerzem: pick(section.armia_odklad_ze_spichlerzem, difficulty, 1),
+    spichlerzPojemnoscZapasowPanstwa: pick(section.spichlerz_pojemnosc_zapasow_panstwa, difficulty, 100),
   };
 }
 

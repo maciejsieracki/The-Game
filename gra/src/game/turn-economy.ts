@@ -59,6 +59,7 @@ import {
   type WorkedTile,
   type CityBuildingEntry,
   type CityYieldContext,
+  type BuildingRecord,
 } from './economy';
 import { improvementKeysForHex } from './terrain-improvements';
 import { cityManpowerMax, refreshManpowerAfterPopChange, tickManpowerRegen, civManpowerRegenMult, loadManpowerRegenParams } from './manpower';
@@ -75,6 +76,7 @@ import {
   type UnitUpkeepLike,
   type UpkeepBalance,
   type StorageParams,
+  type BuildingInstanceLike,
 } from './economy-upkeep';
 import {
   runConverters,
@@ -84,6 +86,7 @@ import {
 } from './converters';
 import {
   splitPraca,
+  buildingLevelForEpoch,
 } from './production';
 import {
   advanceWealth,
@@ -1102,6 +1105,11 @@ export function advanceCityEconomy(
     // WIRE 2: splitPraca
     const udzialBudynki = (city.podzialPracy?.procentBudynki ?? params.suwaakPracaBudynki) / 100;
     const { doBudynkow, doPuli } = splitPraca(yld.praca, udzialBudynki);
+    if (ctx.maTargowisko && walutaOdkryta) {
+      const pieniadzZPracyPoSplit = Math.floor(doPuli * params.targowiskoPracaMnoznik);
+      yld.pieniadz = yld.pieniadz - yld.pieniadzZPracy + pieniadzZPracyPoSplit;
+      yld.pieniadzZPracy = pieniadzZPracyPoSplit;
+    }
 
     // WIRE 4: oblezenie -- zegar glodu
     // Gdy city.oblegane === true: pomijamy dochod zywnosci z pol, odejmujemy zuzycie.
@@ -1173,7 +1181,9 @@ export function advanceCityEconomy(
     // threshold crossing is affected.  growthMult < 1 under unrest slows growth
     // (food accumulates slower); growthMult > 1 speeds it up.  Default = 1 (no effect).
     const pctRozwoj = Math.min(100, Math.max(0, getEmpireFoodSplit(city.ownerId)));
-    const zywnoscDoRozwoju = yld.zywnosc * (pctRozwoj / 100);
+    const surplus = Math.max(0, yld.zywnosc) * (pctRozwoj / 100);
+    const deficit = Math.min(0, yld.zywnosc);
+    const zywnoscDoRozwoju = surplus + deficit;
     const growthMult = growthMultByCity.get(city.id) ?? 1;
     const zywnoscDlaWzrostu = growthMult !== 1
       ? zywnoscDoRozwoju * growthMult
@@ -1299,11 +1309,35 @@ export function advanceCityEconomy(
     ...cities.map(c => c.ownerId),
     ...econUnits.map(u => u.ownerId),
   ]);
+  const buildingsByOwner = new Map<number, BuildingInstanceLike[]>();
+  for (const city of cities) {
+    const builtIds = builtByCity.get(city.id) ?? [];
+    if (builtIds.length === 0) continue;
+    const ownerEra = resolveOwnerEra
+      ? resolveOwnerEra(city.ownerId)
+      : (city.ownerId === 0 ? playerEra : 1);
+    const ownerTech = resolveOwnerTech
+      ? resolveOwnerTech(city.ownerId)
+      : playerZbadane;
+    const list = buildingsByOwner.get(city.ownerId) ?? [];
+    for (const bid of builtIds) {
+      const bdef = data.buildings.find(b => b.id === bid);
+      if (!bdef) continue;
+      const level = buildingLevelForEpoch(
+        bdef.epokaWejscia,
+        ownerEra,
+        bdef.maksPoziom,
+        bdef.poziomTechGate,
+        ownerTech,
+      );
+      list.push({ record: bdef as unknown as BuildingRecord, level });
+    }
+    buildingsByOwner.set(city.ownerId, list);
+  }
   for (const oid of ownerIds) {
     const income  = incomeByOwner.get(oid) ?? 0;
     const ounits  = econUnits.filter(u => u.ownerId === oid) as unknown as UnitUpkeepLike[];
-    // No buildings in runtime yet -> empty array; upkeep = 0 for buildings.
-    const balance = upkeepBalance(income, [], ounits, unitUpkeepTbl, upkeepParams);
+    const balance = upkeepBalance(income, buildingsByOwner.get(oid) ?? [], ounits, unitUpkeepTbl, upkeepParams);
     result.upkeepByOwner.set(oid, balance);
   }
 

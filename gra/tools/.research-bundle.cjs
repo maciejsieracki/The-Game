@@ -390,9 +390,9 @@ var miasto_params_default = {
     opis: "Mnoznik compound (procent skladany) efektu I kosztu budynku za kazdy poziom: wartosc^(poziom-1). Decyzja Naster = +10%/epoke. Uzywany w production.itemCost (koszt) i buildingEffectAtLevel (efekt)."
   },
   jednostka_koszt_ludnosci: {
-    wartosc: 1,
+    wartosc: 0,
     jednostka: "ludnosc",
-    opis: "Ile ludnosci kosztuje miasto ukonczenie jednostki z kolejki (rekrutacja). production.populationCostOf; odjecie + clamp do min.1 robi petla tury."
+    opis: "Koszt ludnosci miasta za ukonczenie jednostki z kolejki (rekrutacja). USTAWIONE 0 (Maciej 2026-07-21): rekrutacja NIE zabiera juz populacji miasta \u2014 jedynym kosztem werbu jest pula Manpower (epoka-ludnosc-manpower.json / manpower.ts). production.populationCostOf; przy 0 populacja pozostaje bez zmian."
   },
   manpower_regen_proc_max_tura: {
     wartosc: 10,
@@ -618,6 +618,102 @@ var terrain_yields_default = {
     }
   ]
 };
+
+// src/game/research.ts
+var BRAK_PREREQ = /* @__PURE__ */ new Set(["", "-", "\u2014", "\u2013", "brak", "none"]);
+function empireBuiltSet(gate) {
+  return gate.empireBuiltIds instanceof Set ? gate.empireBuiltIds : new Set(gate.empireBuiltIds);
+}
+function resolveRequiredBuildingId(requiredLabel, buildings) {
+  const raw = requiredLabel.trim();
+  if (!raw || BRAK_PREREQ.has(raw.toLowerCase())) return null;
+  for (const b of buildings) {
+    if (b.id === raw) return b.id;
+    const nazwa = (b.nazwa ?? "").trim();
+    if (nazwa === raw) return b.id;
+  }
+  const lower = raw.toLowerCase();
+  for (const b of buildings) {
+    if (b.id.toLowerCase() === lower) return b.id;
+    const nazwa = (b.nazwa ?? "").trim().toLowerCase();
+    if (nazwa === lower) return b.id;
+  }
+  return raw;
+}
+function buildingGateMet(tech, gate) {
+  const label = tech["wymagany budynek"];
+  if (label == null) return true;
+  const trimmed = String(label).trim();
+  if (!trimmed || BRAK_PREREQ.has(trimmed.toLowerCase())) return true;
+  const reqId = resolveRequiredBuildingId(trimmed, gate.buildings);
+  if (!reqId) return true;
+  return empireBuiltSet(gate).has(reqId);
+}
+var PL_DIACRITICS = {
+  "\u0105": "a",
+  "\u0107": "c",
+  "\u0119": "e",
+  "\u0142": "l",
+  "\u0144": "n",
+  "\xF3": "o",
+  "\u015B": "s",
+  "\u017A": "z",
+  "\u017C": "z"
+};
+function slugifyImprovementLabel(label) {
+  return label.trim().toLowerCase().replace(/[ąćęłńóśźż]/g, (c) => PL_DIACRITICS[c] ?? c).replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "");
+}
+function empireImprovementSet(gate) {
+  const src = gate.empireImprovementKeys;
+  if (!src) return /* @__PURE__ */ new Set();
+  return src instanceof Set ? src : new Set(src);
+}
+function improvementGateMet(tech, gate) {
+  const label = tech["wymagane ulepszenie"];
+  if (label == null) return true;
+  const trimmed = String(label).trim();
+  if (!trimmed || BRAK_PREREQ.has(trimmed.toLowerCase())) return true;
+  const wanted = slugifyImprovementLabel(trimmed);
+  if (!wanted) return true;
+  return empireImprovementSet(gate).has(wanted);
+}
+function researchGatesMet(tech, gate) {
+  return buildingGateMet(tech, gate) && improvementGateMet(tech, gate);
+}
+var NUMER_EPOKI = {
+  kamien: 1,
+  braz: 2,
+  zelazo: 3
+};
+function epochNumber(tech) {
+  const raw = tech.Epoka;
+  if (raw == null) return null;
+  const norm = String(raw).trim().toLowerCase().replace(/[ąćęłńóśźż]/g, (c) => PL_DIACRITICS[c] ?? c);
+  const n = NUMER_EPOKI[norm];
+  return typeof n === "number" ? n : null;
+}
+function epochGateMet(tech, techData, done) {
+  const e = epochNumber(tech);
+  if (e == null) return true;
+  for (const other of techData) {
+    const oe = epochNumber(other);
+    if (oe == null) continue;
+    if (oe < e && !done.has(other.Technologia)) return false;
+  }
+  return true;
+}
+function epochTierGateMet(tech, techData, done) {
+  const e = epochNumber(tech);
+  const p = tech.Poziom;
+  if (e == null || typeof p !== "number" || !Number.isFinite(p)) return true;
+  for (const other of techData) {
+    if (epochNumber(other) !== e) continue;
+    const op = other.Poziom;
+    if (typeof op !== "number" || !Number.isFinite(op)) continue;
+    if (op < p && !done.has(other.Technologia)) return false;
+  }
+  return true;
+}
 
 // src/game/economy.ts
 var ZERO_YIELD = { zywnosc: 0, praca: 0, handel: 0, drewno: 0, kamien: 0, glina: 0 };
@@ -6845,10 +6941,6 @@ var map_gen_params_default = {
     glina: { rarity: 0.1 },
     konie: { rarity: 0.025 },
     wegiel: { rarity: 0.1 },
-    owce: { rarity: 0.14 },
-    bydlo: { rarity: 0.12 },
-    lama: { rarity: 0.06 },
-    luksus: { rarity: 0.06 },
     sol: { rarity: 0.12 }
   },
   metal_deposit_min_era: {
@@ -7340,6 +7432,12 @@ function scoreTech(tech, ukonczone, opts) {
   if (ukonczone.has(tech.Technologia)) return -Infinity;
   const prereqs = parsePrereqs(tech["Wymaga (prereq)"]);
   if (!prereqs.every((p) => ukonczone.has(p))) return -Infinity;
+  const techData = opts.techData;
+  if (techData) {
+    if (!epochGateMet(tech, techData, ukonczone)) return -Infinity;
+    if (!epochTierGateMet(tech, techData, ukonczone)) return -Infinity;
+  }
+  if (opts.researchGate && !researchGatesMet(tech, opts.researchGate)) return -Infinity;
   const mods = opts.mods ?? { wojsko: 0, nauka: 0, ekonomia: 0, obrona: 0 };
   const earlyPhase = (opts.myCitiesCount ?? 1) < 3;
   const underThreat = opts.underThreat ?? false;

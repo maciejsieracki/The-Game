@@ -282,8 +282,6 @@ export function generateMap(
   enforceMapBorderOcean(hexes, width, height);
   if (typ !== 'pangea') {
     purgeInlandWaterForMultiLandTyp(hexes, width, height);
-  } else {
-    purgeInlandWaterForMultiLandTyp(hexes, width, height);
   }
   finalizeCoastAndInlandWater(hexes, width, height, 3, coastOpts);
 

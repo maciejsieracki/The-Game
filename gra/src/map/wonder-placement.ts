@@ -30,7 +30,9 @@ function hexAt(map: GameMap, q: number, r: number): Hex | undefined {
 
 function isLandBuildable(hex: Hex): boolean {
   const t = hex.terenBazowy;
-  return t !== TerenBazowy.Morze && t !== TerenBazowy.Gory;
+  return t !== TerenBazowy.Morze
+    && t !== TerenBazowy.Gory
+    && t !== TerenBazowy.Wybrzeze;
 }
 
 function isOccupied(

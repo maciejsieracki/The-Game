@@ -245,7 +245,7 @@ export function canAffordUnitManpower(
   return snap.manpowerBiezacy >= snap.kosztJednostki;
 }
 
-export type UnitSpawnBlockReason = 'brak_manpower';
+export type UnitSpawnBlockReason = 'brak_manpower' | 'brak_ludnosci';
 
 export interface UnitSpawnDeduction {
   ok: boolean;
@@ -275,9 +275,18 @@ export function tryDeductUnitSpawnCosts(
       reason: 'brak_manpower',
     };
   }
+  if (popCost > 0 && city.population <= popCost) {
+    return {
+      ok: false,
+      population: city.population,
+      manpower: cur,
+      kosztManpower,
+      reason: 'brak_ludnosci',
+    };
+  }
   return {
     ok: true,
-    population: Math.max(1, city.population - popCost),
+    population: city.population - popCost,
     manpower: cur - kosztManpower,
     kosztManpower,
   };
@@ -291,9 +300,11 @@ export function refundUnitSpawnToCity(
   city: Pick<City, 'population' | 'manpower'>,
   epoka: number,
   popCost = 1,
+  popCap?: number,
 ): { population: number; manpower: number } {
   const mpRefund = unitManpowerCost(epoka);
-  const population = city.population + popCost;
+  const rawPop = city.population + popCost;
+  const population = popCap != null ? Math.min(popCap, rawPop) : rawPop;
   const max = cityManpowerMax(population, epoka);
   const manpower = Math.min(max, cityManpowerCurrent(city, epoka) + mpRefund);
   return { population, manpower };

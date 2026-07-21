@@ -76,10 +76,10 @@ export function scoreCityStartHex(map: GameMap, q: number, r: number): number {
   }
   if (adjRiver) score += 8;
 
-  for (let dq = -3; dq <= 3; dq++) {
-    for (let dr = -3; dr <= 3; dr++) {
+  for (let dq = -4; dq <= 4; dq++) {
+    for (let dr = -4; dr <= 4; dr++) {
       const dist = hexDistance(q, r, q + dq, r + dr);
-      if (dist === 0 || dist > 3) continue;
+      if (dist === 0 || dist > 4) continue;
       const nb = hexAt(map, q + dq, r + dr);
       if (!nb) continue;
       if (isArable(nb.terenBazowy)) score += dist <= 2 ? 2 : 0.5;

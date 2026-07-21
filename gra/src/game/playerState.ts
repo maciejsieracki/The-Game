@@ -67,8 +67,8 @@ function asResearchGate(g: EmpireResearchGate): ResearchBuildingGate {
   };
 }
 
-/** Sentinel meaning "no prerequisite" in tech.json's "Wymaga (prereq)" field. */
-const NO_PREREQ = '—'; // em dash
+/** Sentinel values meaning "no prerequisite" in tech.json's "Wymaga (prereq)" field. */
+const BRAK_PREREQ = new Set(['', '-', '\u2014', '\u2013', 'brak', 'none']);
 
 /** Money multiplier granted by the Pieniadz (Waluta) tech — Praca->x10 economy. */
 export const PIENIADZ_MNOZNIK = 10;
@@ -156,11 +156,11 @@ export function techCost(t: TechDef): number {
  */
 export function parsePrereqs(t: TechDef): string[] {
   const raw = (t['Wymaga (prereq)'] ?? '').trim();
-  if (raw === '' || raw === NO_PREREQ) return [];
+  if (raw === '' || BRAK_PREREQ.has(raw.toLowerCase())) return [];
   return raw
     .split('+')
     .map(s => s.trim())
-    .filter(s => s.length > 0 && s !== NO_PREREQ);
+    .filter(s => s.length > 0 && !BRAK_PREREQ.has(s.toLowerCase()));
 }
 
 /** True when every prerequisite of `t` is already in `researched`. */

@@ -253,9 +253,8 @@ function createPlaylist(
     el.currentTime = 0;
     el.volume = volCurve(volume01);
     void el.play().catch(() => {
-      // Przeglądarka wstrzymała odtwarzanie (np. brak jeszcze odblokowanej
-      // sesji audio) — cicho odpuszczamy, jak reszta modułów audio w tej grze
-      // (patrz "brak Web Audio — cicho odpuszczamy" w muzyka-antyczna.ts).
+      // Przeglądarka wstrzymała odtwarzanie — reset playing, żeby start() mógł ponowić.
+      playing = false;
     });
   }
 
@@ -277,7 +276,15 @@ function createPlaylist(
   function onError(idx: 0 | 1): void {
     // Uszkodzony/brakujący plik — nie blokuj playlisty, graj dalej (bez
     // przenikania — sytuacja awaryjna jak wyżej).
-    if (!playing || idx !== activeIdx) return;
+    if (!playing) return;
+    const isIncomingCrossfade = crossfading && idx === crossfadeToIdx;
+    if (idx !== activeIdx && !isIncomingCrossfade) return;
+    if (isIncomingCrossfade) {
+      clearCrossfadeTimer();
+      crossfading = false;
+      const fromEl = els[crossfadeFromIdx];
+      if (fromEl) fromEl.pause();
+    }
     selectNext();
     const url = currentUrl();
     if (!url) return;

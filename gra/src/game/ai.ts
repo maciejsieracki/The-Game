@@ -23,6 +23,12 @@ import { canFoundCity }    from './cities';
 import type { ImprovementKey } from '../render/improvements';
 import type { TerritoryNode } from '../map/territory';
 import { cityTerritoryRadius } from '../map/territory';
+import {
+  epochGateMet,
+  epochTierGateMet,
+  researchGatesMet,
+  type ResearchBuildingGate,
+} from './research';
 import { buildImprovementQualifier, type ImprovementBuildState } from '../map/improvement-build';
 import { hexKeysWithinRadius } from './okolica';
 import { getImprovementMeta, isImprovementTechUnlocked } from './improvement-tech';
@@ -377,6 +383,10 @@ export interface AIResearchOpts {
    * Used to deprioritize techs whose buildings are already present.
    */
   allBuiltBuildings?: string[];
+  /** Full tech table — required for epoch/tier gating (Zasady 1+2). */
+  techData?: readonly AITechDef[];
+  /** Building/improvement gates — same contract as gracz (researchGatesMet). */
+  researchGate?: ResearchBuildingGate;
 }
 
 /**
@@ -412,6 +422,13 @@ function scoreTech(
   // Prereqs must all be done
   const prereqs = parsePrereqs(tech['Wymaga (prereq)']);
   if (!prereqs.every(p => ukonczone.has(p))) return -Infinity;
+
+  const techData = opts.techData;
+  if (techData) {
+    if (!epochGateMet(tech, techData, ukonczone)) return -Infinity;
+    if (!epochTierGateMet(tech, techData, ukonczone)) return -Infinity;
+  }
+  if (opts.researchGate && !researchGatesMet(tech, opts.researchGate)) return -Infinity;
 
   const mods          = opts.mods ?? { wojsko: 0, nauka: 0, ekonomia: 0, obrona: 0 };
   const earlyPhase    = (opts.myCitiesCount ?? 1) < 3;

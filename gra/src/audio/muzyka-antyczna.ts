@@ -1598,6 +1598,15 @@ export function setEra(era: number): void {
   if (wasFilePlayer && !nowFilePlayer) {
     // kamień(pliki) -> brąz+(synteza)
     kamienPlaylist.stop();
+    if (ctx === null) {
+      const w = window as unknown as { AudioContext?: typeof AudioContext;
+        webkitAudioContext?: typeof AudioContext };
+      const AC = w.AudioContext ?? w.webkitAudioContext;
+      if (!AC) return;
+      ctx = new AC();
+      graf = buildGraf(ctx);
+    }
+    if (ctx.state === 'suspended') { void ctx.resume(); }
     spawnEngine(eraNow, moodNow, ERA_XFADE);
     return;
   }
@@ -1690,6 +1699,8 @@ let ambT0 = 0;
 let ambPlaying = false;
 let ambVolume = 0.7;
 let ambMood: Mood = 'mapa';
+/** Aktywne źródła ambience — stopAmbience() musi je uciąć (nie tylko gain bus). */
+const ambActiveSources: AudioBufferSourceNode[] = [];
 
 /** Wyciszenie kanału natury w bitwie: PEŁNE (cały bus do ciszy, true) czy
  *  TYLKO zwierzęta (ptaki/świerszcze/wycie — wbudowany efekt composeKamien
@@ -1740,7 +1751,12 @@ function ambSchedule(e: NoteEvent): void {
   pan.pan.value = e.pan;
   src.connect(g); g.connect(pan); pan.connect(ambOut);
   const when = Math.max(ac.currentTime + 0.02, ambT0 + e.t);
-  src.onended = () => { src.disconnect(); g.disconnect(); pan.disconnect(); };
+  ambActiveSources.push(src);
+  src.onended = () => {
+    const i = ambActiveSources.indexOf(src);
+    if (i >= 0) ambActiveSources.splice(i, 1);
+    src.disconnect(); g.disconnect(); pan.disconnect();
+  };
   src.start(when);
 }
 
@@ -1783,6 +1799,10 @@ export function stopAmbience(): void {
   if (!ambPlaying) return;
   ambPlaying = false;
   if (ambTimer !== null) { window.clearInterval(ambTimer); ambTimer = null; }
+  for (const src of ambActiveSources) {
+    try { src.stop(); } catch { /* już zatrzymany */ }
+  }
+  ambActiveSources.length = 0;
   if (ambCtx && ambOut) {
     const now = ambCtx.currentTime;
     ambOut.gain.cancelScheduledValues(now);
@@ -1841,6 +1861,7 @@ function ambApplyBattleMute(mood: Mood): void {
     return;
   }
   if (!ambCtx || !ambOut) return; // kanał jeszcze nie wystartowany — nic do wyciszenia
+  if (!shouldMute && !ambPlaying) return; // nie podnoś gainu resztek po OFF
   const now = ambCtx.currentTime;
   ambOut.gain.cancelScheduledValues(now);
   ambOut.gain.setValueAtTime(ambOut.gain.value, now);

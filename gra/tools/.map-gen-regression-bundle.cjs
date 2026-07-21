@@ -125,10 +125,6 @@ var map_gen_params_default = {
     glina: { rarity: 0.1 },
     konie: { rarity: 0.025 },
     wegiel: { rarity: 0.1 },
-    owce: { rarity: 0.14 },
-    bydlo: { rarity: 0.12 },
-    lama: { rarity: 0.06 },
-    luksus: { rarity: 0.06 },
     sol: { rarity: 0.12 }
   },
   metal_deposit_min_era: {
@@ -1780,6 +1776,7 @@ function pickReliefForceHex(land, hexes, scratch, width, height, want, avoid, ra
     if (avoid.has(k)) return false;
     const hex = hexes[k];
     if (!hex || hex.terenBazowy === "morze" /* Morze */) return false;
+    if (hex.terenBazowy === "wybrzeze" /* Wybrzeze */) return false;
     if (want === "mountain" && hex.terenBazowy === "gory" /* Gory */) return false;
     if (want === "highland" && hex.terenBazowy === "wzgorza" /* Wzgorza */) return false;
     if (want === "mountain" && protectHighland && hex.terenBazowy === "wzgorza" /* Wzgorza */) {
@@ -1842,6 +1839,7 @@ function forceReliefTypeInCell(land, hexes, scratch, width, height, rand, want, 
         if (placed.has(k2)) return false;
         const hex = hexes[k2];
         if (!hex || hex.terenBazowy === "morze" /* Morze */) return false;
+        if (hex.terenBazowy === "wybrzeze" /* Wybrzeze */) return false;
         if (want === "mountain" && hex.terenBazowy === "gory" /* Gory */) return false;
         if (want === "highland" && hex.terenBazowy === "wzgorza" /* Wzgorza */) return false;
         return true;
@@ -5276,8 +5274,6 @@ function generateMap(width = DEFAULT_WIDTH, height = DEFAULT_HEIGHT, seed = 42, 
   }
   enforceMapBorderOcean(hexes, width, height);
   if (typ !== "pangea") {
-    purgeInlandWaterForMultiLandTyp(hexes, width, height);
-  } else {
     purgeInlandWaterForMultiLandTyp(hexes, width, height);
   }
   finalizeCoastAndInlandWater(hexes, width, height, 3, coastOpts);

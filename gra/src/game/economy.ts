@@ -764,7 +764,9 @@ export function populationGrowth(
   const { ludnosc, zdrowie, maSpichlerz, maAkwedukt, magazynZywnosci } = city;
 
   const healthModifier  = Math.max(0, 1 + zdrowie * params.zdrowieModyfikatorWspolczynnik);
-  const effectiveFlow   = zywnoscNetto * healthModifier;
+  const effectiveFlow   = zywnoscNetto >= 0
+    ? zywnoscNetto * healthModifier
+    : zywnoscNetto;
 
   const popCap = cityPopulationCap(maAkwedukt, params);
 

@@ -1599,6 +1599,7 @@ function pickReliefForceHex(
       if (avoid.has(k)) return false;
       const hex = hexes[k];
       if (!hex || hex.terenBazowy === TerenBazowy.Morze) return false;
+      if (hex.terenBazowy === TerenBazowy.Wybrzeze) return false;
       if (want === 'mountain' && hex.terenBazowy === TerenBazowy.Gory) return false;
       if (want === 'highland' && hex.terenBazowy === TerenBazowy.Wzgorza) return false;
       if (want === 'mountain' && protectHighland && hex.terenBazowy === TerenBazowy.Wzgorza) {
@@ -1658,6 +1659,7 @@ function forceReliefTypeInCell(
           if (placed.has(k)) return false;
           const hex = hexes[k];
           if (!hex || hex.terenBazowy === TerenBazowy.Morze) return false;
+          if (hex.terenBazowy === TerenBazowy.Wybrzeze) return false;
           if (want === 'mountain' && hex.terenBazowy === TerenBazowy.Gory) return false;
           if (want === 'highland' && hex.terenBazowy === TerenBazowy.Wzgorza) return false;
           return true;

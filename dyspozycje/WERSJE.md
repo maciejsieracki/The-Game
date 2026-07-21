@@ -11,9 +11,13 @@ swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drug
 
 ## ROBOCZA (gra-robocza\Gra-ROBOCZA.html — wskazywana przez START.html)
 
+- 2026-07-21 · stempel: ROBOCZA · **5793da54** · md5 pliku `5793da543dc71b9a5ea61f6776f8c241` · **AUDYT 20 POTWIERDZONE + E-START-CS-Q1=C (merge commit)** — na `35a07a49`:
+  **Audyt E1–E8:** #3–#9 #34–#39 #59–#65 + fix chatki WYDARZENIA (pełny opis: `dyspozycje/AUDYT-NAPRAWY-LOG.md`). **E-START-CS:** państwa-miasta wokół faktycznej stolicy (już w `35a07a49`, zachowane).
+  tsc=0 · tech-tree 19/19 · map-gen-regression OK · publish `gra-robocza/Gra-ROBOCZA.html`. · **AKTUALNA** · Test: Ctrl+F5 START.html → stamp `5793da54`; chatka + AI badania + klaster państw po stolicy.
+
 - 2026-07-21 · stempel: ROBOCZA · **35a07a49** · md5 pliku `35a07a49cd8d393f82b45819ccc1a19c` · **E-START-CS-Q1=C — państwa-miasta wokół faktycznej stolicy gracza** — na `33e7c213`:
   **C:** spawn deferred same-type rivals używa `buildSameTypeRivalCandidateHexes` wokół hexu gracza (nie pre-planu mapgen); backfill przy odrzuceniu `foundCityAt`; pre-plan zostaje tylko do podglądu UI.
-  tsc=0 · cluster-start-test 92/95 (3 pre-existing map 50×50) · publish `gra-robocza/Gra-ROBOCZA.html`. · **AKTUALNA** · Test: Ctrl+F5 START.html → stamp `35a07a49`; Nowa gra 10–14 państw → postaw stolicę w innym miejscu niż sugerowane → gęsty klaster ~3 hex wokół Twojej stolicy.
+  tsc=0 · cluster-start-test 92/95 (3 pre-existing map 50×50) · publish `gra-robocza/Gra-ROBOCZA.html`. · **ZASTĄPIONA** (→ `5793da54`) · Test: Ctrl+F5 START.html → stamp `35a07a49`; Nowa gra 10–14 państw → postaw stolicę w innym miejscu niż sugerowane → gęsty klaster ~3 hex wokół Twojej stolicy.
 
 - 2026-07-21 · stempel: ROBOCZA · **33e7c213** · md5 pliku `33e7c2138ee878307b4f0e294b5413e1` · **AUDYT 20 POTWIERDZONE (Maciej OK plan audyt 20)** + fix chatki WYDARZENIA:
   **E1–E8:** #3 dupe ludności rekrut/disband · #4 suwak 0% nie kasuje głodu · #5/#37 AI badania (awans epoki + epoch/tier gates) · #6 zwycięstwo nauka bez rakiety (NAUKA_WYMAGA_RAKIETY) · #7 relief bez Gór na Wybrzeżu · #8/#9/#39/#65 audio intro/awans epoki/natura/crossfade · #34 parametry głodu z ekonomia_miasta · #35 zdrowie nie zeruje deficytu żywności · #36 utrzymanie budynków w upkeep · #38 cuda nie na Wybrzeżu · #59 Praca→¤ po splitPraca · #60/#61 wioska setEra + parser prereków · #62 pangea bez purge jezior · #63 scoring start dist=4 · #64 martwe deposit_rules usunięte · **extra:** chatka znika po turze, WYKONAJ nie blokuje na nagrodzie.
