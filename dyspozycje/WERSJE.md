@@ -11,9 +11,13 @@ swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drug
 
 ## ROBOCZA (gra-robocza\Gra-ROBOCZA.html — wskazywana przez START.html)
 
+- 2026-07-21 · stempel: ROBOCZA · **31bf4a4b** · md5 pliku `31bf4a4bbe8eea314f7210b9a61f4a1a` · **D3-PROG-DIFF: progi traktatów wg trudności + dual gates NAP/handl** — na `95be60fc`:
+  **D3-PROG-DIFF:** skalowanie progów relacji/zaufania/respektu ±10 wg trudności (easy −10 / hard +10). Normal: handel Rel 40, NAP Rel 50 + Zauf 40. Dual gates: NAP wymaga Rel+Zauf (+ tech/granice gdzie dotyczy); sojusz/trybut/handl z osobnymi progami.
+  tsc=0 · diplomacy-proposal 48/48 · VERIFY OK · publish `gra-robocza/Gra-ROBOCZA.html`. · **AKTUALNA** · Test: Ctrl+F5 START.html → stamp `31bf4a4b`; normal: NAP przy Rel≥50 i Zauf≥40; handel przy Rel≥40.
+
 - 2026-07-21 · stempel: ROBOCZA · **95be60fc** · md5 pliku `95be60fc79400576b0e82bb15f518174` · **FIX picking heksów — raycast 3D terenu zamiast płaszczyzny y=0** — na `83eadf9a`:
-  **Przyczyna:** kamera ~52° + pryzmy terenu podniesione nad y=0 → `pixelToHex` trafiał w płaszczyznę pod spodem, przesuwając wybór w stronę kamery (krawędzie heksów = zły hex). **Fix:** raycast na InstancedMesh terenu (prefer górna ścianka), fallback y=0; `terrainPickMeshes` w SceneResult + `pickHexAt` w main.ts.
-  tsc=0 · logic 207/207 · VERIFY OK · publish `gra-robocza/Gra-ROBOCZA.html`. · **AKTUALNA** · Test: Ctrl+F5 START.html → stamp `95be60fc`; klik w krawędź heksa → panel kontekstowy pokazuje właściwy hex (nie sąsiada „w górę").
+  **Przyczyna:** kamera ~52° + pryzmy terenu podniesione nad y=0 → `pixelToHex` trafiał w płaszczyznę pod spodem, przesuwając wybór w stronę kamery (krawędzie heksów = zły hex). **Fix:** raycast na InstancedMesh terenu (prefer górna ścianka), fallback y=0; `terrainPickMeshes` w SceneResult + `pickHexAt` in main.ts.
+  tsc=0 · logic 207/207 · VERIFY OK · publish `gra-robocza/Gra-ROBOCZA.html`. · **ZASTĄPIONA** (→ `31bf4a4b`) · Test: Ctrl+F5 START.html → stamp `95be60fc`; klik w krawędź heksa → panel kontekstowy pokazuje właściwy hex (nie sąsiada „w górę").
 
 - 2026-07-21 · stempel: ROBOCZA · **83eadf9a** · md5 pliku `83eadf9a14a80a6e08db6a2eb8da88ca` · **FIX FoW — jednostki wroga ukryte poza bieżącym zasięgiem** — na `eeace0a7`:
   **Przyczyna:** `syncUnitsRender()` bez jawnej listy mgły synchronizowało wszystkie tokeny jako widoczne (czerwone pierścienie w czerni/shroud). **Fix:** przy `fogOn` domyślna lista = `unitsVisibleOnMap` (obcy tylko w `currentVisible`; gracz zawsze); test logic 207/207 (+4).

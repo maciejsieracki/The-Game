@@ -107,6 +107,7 @@
 | D3-CONFIRM | 2026-06-26 | **A** — potwierdza pełny Wealth v1.0 (karta D3=A) | B+UI | 🟢 WDROŻONA | `wealth.ts` · `turn-economy.ts` WIRE3 · `cityPanel.ts` · `wire-ekonomia-test.cjs` | Maciej potwierdził 5a — nie minimalny tick |
 | **P-C2-DEF** | 2026-07-01 | **A** — suma M_pole wroga przed walką; bez underdog | B+F | ✅ ZWERYFIKOWANA | `power-objective-test.cjs` 12/12 · kanon `d5e0f62d…` | |
 | MACIEJ-ABC-2026-06-30 | 2026-06-30 | **D3 v1.1:** T1A · T2 dwa sojusze · T3A · T4B | D+EKO+UI+F | 🟢 WDROŻONA | `SILNIK-D-V11` · md5 `de9b53e4…` · treaties 9/9 · economy 6/6 · diplo 143/143 | playtest **PT-D3** otwarty |
+| **D3-PROG-DIFF** | 2026-07-21 | Progi traktatów ±10 wg trudności; baza NAP 50 / handel 40 @ normal | D+F | 🟢 WDROŻONA | `diplomacy.ts` · `diplomacy-proposal-test.cjs` · `D3-PROG-DIFF-2026-07-21.md` | Maciej IMPLEMENT NOW |
 | B1-tech-Q3 | 2026-06-26 | Posterunek = **Obróbka drewna AND Murarstwo** | B+A | 🟢 WDROŻONA | `improvement-tech.ts` | |
 | A-R7-IMP | 2026-07-01 | **A** — wdrażaj B: łodzie tylko w terytorium (wybrzeże + morze) | A | ✅ ZWERYFIKOWANA | kanon md5 `ad6112e0…` | Master promocja 2026-07-01 |
 | A5-S1 | 2026-07-01 | **A** — sign-off podglądu brązu v1.0 (D12) | A | ✅ ZWERYFIKOWANA | `A5-wyglad-miast-mapa.md` · Maciej sign-off | nie wymaga kodu |

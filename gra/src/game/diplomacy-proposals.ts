@@ -13,6 +13,7 @@ import {
   type AIDiplomacyContext,
   type Relation,
 } from './diplomacy';
+import type { GameDifficulty } from './difficulty-cost';
 import type { AIDiplomacyCommand } from './ai';
 import {
   addTreaty,
@@ -108,6 +109,8 @@ export interface ProposalEvalContext {
   isMinorCiv?: boolean;
   /** Istniejące traktaty — blokada duplikatów */
   activeDeals?: readonly ActiveDeal[];
+  /** Poziom trudności gry — skaluje progi relacji/zaufania (Maciej 2026-07-21). */
+  difficulty?: GameDifficulty;
 }
 
 export interface ProposalEvalResult {
@@ -207,7 +210,7 @@ export function evaluateProposal(
 ): ProposalEvalResult {
   const { actionId, proposerOwnerId, responderOwnerId, payload } = proposal;
   const { relation, stanWojny } = ctx;
-  const p = getEffectiveDiplomacyParams();
+  const p = getEffectiveDiplomacyParams(ctx.difficulty ?? 'normal');
   const score = relationScore(relation);
   const stance = stanceForEval(ctx);
 
@@ -217,8 +220,19 @@ export function evaluateProposal(
 
   switch (actionId) {
     case 'nap': {
-      if (score < p.progNapRelacja) {
+      const napRelOk = score >= p.progNapRelacja;
+      const napZaufOk = relation.zaufanie >= p.progNapZaufanie;
+      if (!napRelOk && !napZaufOk) {
+        return {
+          accepted: false,
+          reason: `Relacja zbyt niska na pakt (wymagana Relacja ≥ ${p.progNapRelacja} i Zaufanie ≥ ${p.progNapZaufanie})`,
+        };
+      }
+      if (!napRelOk) {
         return { accepted: false, reason: `Relacja zbyt niska na pakt (wymagana ≥ ${p.progNapRelacja})` };
+      }
+      if (!napZaufOk) {
+        return { accepted: false, reason: `Zaufanie zbyt niskie na pakt (wymagane ≥ ${p.progNapZaufanie})` };
       }
       if (ctx.ekspansjaPrzyGranicy) {
         return { accepted: false, reason: 'Ekspansja przy granicy — brak zaufania do paktu' };
@@ -346,10 +360,10 @@ export function evaluateProposal(
         || ((payload.giveItems?.length ?? 0) > 0 && !(payload.receiveItems?.length) && (payload.receivePn ?? 0) <= 0);
 
       if (isGift) {
-        if (!pnGiftAllowed(relTotal)) {
+        if (!pnGiftAllowed(relTotal, ctx.difficulty ?? 'normal')) {
           return {
             accepted: false,
-            reason: `Relacja zbyt niska na dar (wymagane ≥ ${diplomacyProgDarRelacja()})`,
+            reason: `Relacja zbyt niska na dar (wymagane ≥ ${diplomacyProgDarRelacja(undefined, ctx.difficulty ?? 'normal')})`,
           };
         }
         if (givePn <= 0) {
@@ -402,8 +416,19 @@ export function evaluateProposal(
     }
 
     case 'tech': {
-      if (score < p.progHandelRelacja) {
+      const techRelOk = score >= p.progHandelRelacja;
+      const techZaufOk = relation.zaufanie >= p.progWymianaTechZaufanie;
+      if (!techRelOk && !techZaufOk) {
+        return {
+          accepted: false,
+          reason: `Relacja zbyt niska na wymianę tech (wymagana Relacja ≥ ${p.progHandelRelacja} i Zaufanie ≥ ${p.progWymianaTechZaufanie})`,
+        };
+      }
+      if (!techRelOk) {
         return { accepted: false, reason: `Relacja zbyt niska na wymianę tech (wymagane ≥ ${p.progHandelRelacja})` };
+      }
+      if (!techZaufOk) {
+        return { accepted: false, reason: `Zaufanie zbyt niskie na wymianę tech (wymagane ≥ ${p.progWymianaTechZaufanie})` };
       }
       const minPrice = ctx.techMinPrice ?? 50;
       const price = payload.techPrice ?? 0;
@@ -417,7 +442,18 @@ export function evaluateProposal(
     }
 
     case 'granice': {
-      if (relation.zaufanie < p.progGraniceZaufanie) {
+      const granRelOk = score >= p.progGraniceRelacja;
+      const granZaufOk = relation.zaufanie >= p.progGraniceZaufanie;
+      if (!granRelOk && !granZaufOk) {
+        return {
+          accepted: false,
+          reason: `Relacja zbyt niska na granice (wymagana Relacja ≥ ${p.progGraniceRelacja} i Zaufanie ≥ ${p.progGraniceZaufanie})`,
+        };
+      }
+      if (!granRelOk) {
+        return { accepted: false, reason: `Relacja zbyt niska na granice (wymagana ≥ ${p.progGraniceRelacja})` };
+      }
+      if (!granZaufOk) {
         return { accepted: false, reason: `Zaufanie zbyt niskie (wymagane ≥ ${p.progGraniceZaufanie})` };
       }
       if (payload.borderMilitary && ctx.responderRespekt < p.progGraniceWojskoweRespekt) {

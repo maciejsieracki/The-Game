@@ -40,8 +40,8 @@
     "progPoboczneHandel": 30,
     "progPoboczneWojna": 15,
     "progNapZaufanie": 40,
-    "progNapRelacja": 110,
-    "progHandelRelacja": 100,
+    "progNapRelacja": 50,
+    "progHandelRelacja": 40,
     "progSojuszPartnerRwMin": 0.4,
     "progSojuszPartnerRwMax": 0.7,
     "progSojuszPremiaSilniejszyMax": 0.25,
@@ -146,7 +146,7 @@
       "zrodlo": "spichlerz miasta",
       "decyzja": "D3-W6b korekta Maciej 2026-06-30 — 1 PN = 1 żywność (było 4)"
     },
-    "handel_prog_relacja": 100,
+    "handel_prog_relacja": 40,
     "dostep_zloze_wojna": {
       "utrata_w_trakcie_wojny": true,
       "wymaga_renegocjacji_po_pokoju": true,

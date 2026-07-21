@@ -21,6 +21,7 @@ import { StanWojny }                 from '../types/diplomacy';
 import { TypCywilizacji }            from '../types/player';
 import type { Player }               from '../types/player';
 import diplomacyData from '../../data/diplomacy.json';
+import type { GameDifficulty } from './difficulty-cost';
 import {
   nastawienieBazoweZaufanieDelta,
   resolveArchetypeAggression,
@@ -157,10 +158,10 @@ export const DIPLOMACY_PARAMS = {
   // ---- propozycje v1.1 (Panel-D → evaluateProposal) ----
   /** Zaufanie >= wartość wymagane do NAP */
   progNapZaufanie:                 40,
-  /** Relacja >= wartość wymagana do NAP (Maciej 2026-06-30: 110, bez innych progów) */
-  progNapRelacja:                  110,
-  /** Relacja >= wartość wymagana do handlu ¤/Praca/złoża (Maciej 2026-06-30: 100) */
-  progHandelRelacja:               100,
+  /** Relacja >= wartość wymagana do NAP (Maciej 2026-07-21: 50 @ normal) */
+  progNapRelacja:                  50,
+  /** Relacja >= wartość wymagana do handlu ¤/Praca/złoża (Maciej 2026-07-21: 40 @ normal) */
+  progHandelRelacja:               40,
   /** @deprecated v1.2 — usunięte „tylko równi”; zostaje w JSON dla roundtrip */
   progSojuszPartnerRwMin:          0.4,
   progSojuszPartnerRwMax:          0.7,
@@ -218,6 +219,8 @@ export const DIPLOMACY_PARAMS = {
   progNamowWojneBribeBase:         30,
   /** Zaufanie min dla otwartych granic */
   progGraniceZaufanie:             45,
+  /** Relacja min dla otwartych granic / przemarszu (G1-A) */
+  progGraniceRelacja:              100,
   /** Respekt min dla prawa wojskowego przemarszu */
   progGraniceWojskoweRespekt:      55,
   /** militaryRatio min dla ultimatum */
@@ -265,21 +268,95 @@ export function loadDiplomacyParams(json: unknown): Partial<DiplomacyParams> {
 }
 
 /** Kanon + override z diplomacy.json (Panel-D export). Bez main.ts — czyta JSON przy bundlu. */
-let _effectiveDiplomacyParams: DiplomacyParams | null = null;
+let _baseDiplomacyParams: DiplomacyParams | null = null;
 
-export function getEffectiveDiplomacyParams(): DiplomacyParams {
-  if (!_effectiveDiplomacyParams) {
-    _effectiveDiplomacyParams = {
+/** Maciej 2026-07-21: ±10 na progi relacji/zaufania/respektu wg trudności (normal = baza JSON). */
+export const DIPLOMACY_DIFFICULTY_DELTA: Record<GameDifficulty, number> = {
+  easy:   -10,
+  normal: 0,
+  hard:   10,
+};
+
+/** Progi Relacji (0–200) — bramki traktatów/umów. */
+const DIPLO_RELATION_THRESHOLD_KEYS: readonly (keyof DiplomacyParams)[] = [
+  'progMinimalnyRelacja',
+  'progSojuszRelacja',
+  'progUmowaMinRelacja',
+  'progNapRelacja',
+  'progHandelRelacja',
+  'progGraniceRelacja',
+  'progPoboczneHandel',
+  'progPoboczneWojna',
+];
+
+/** Progi Zaufania (0–100) — bramki akcji dyplomatycznych. */
+const DIPLO_ZAUFANIE_THRESHOLD_KEYS: readonly (keyof DiplomacyParams)[] = [
+  'progSojuszZaufanie',
+  'progWymianaTechZaufanie',
+  'progNapZaufanie',
+  'progNamowWojneZaufanie',
+  'progGraniceZaufanie',
+  'progTrybutOfertaNearWarZaufanie',
+  'progSojuszPremiaGracz2xMinZaufanie',
+  'progSojuszPremiaGracz3xMinZaufanie',
+];
+
+/** Progi Respektu (0–100) — bramki trybutu/wasalizacji/granic wojskowych. */
+const DIPLO_RESPEKT_THRESHOLD_KEYS: readonly (keyof DiplomacyParams)[] = [
+  'progWasalizacjaRespekt',
+  'progWchloniecieRespekt',
+  'progGraniceWojskoweRespekt',
+  'progTrybutZadanieMinRespekt',
+  'progPoboczneAkceptacja',
+];
+
+function getBaseDiplomacyParams(): DiplomacyParams {
+  if (!_baseDiplomacyParams) {
+    _baseDiplomacyParams = {
       ...DIPLOMACY_PARAMS,
       ...loadDiplomacyParams(diplomacyData),
     };
   }
-  return _effectiveDiplomacyParams;
+  return _baseDiplomacyParams;
+}
+
+/** Skaluje wyłącznie progi bramek traktatów (nie bonusy, mnożniki ani willingness). */
+export function scaleDiplomacyParamsForDifficulty(
+  base: DiplomacyParams,
+  difficulty: GameDifficulty = 'normal',
+): DiplomacyParams {
+  const delta = DIPLOMACY_DIFFICULTY_DELTA[difficulty];
+  if (delta === 0) return { ...base };
+  const out = { ...base };
+  for (const k of DIPLO_RELATION_THRESHOLD_KEYS) {
+    out[k] = Math.max(0, Math.min(200, base[k] + delta));
+  }
+  for (const k of DIPLO_ZAUFANIE_THRESHOLD_KEYS) {
+    out[k] = Math.max(0, Math.min(100, base[k] + delta));
+  }
+  for (const k of DIPLO_RESPEKT_THRESHOLD_KEYS) {
+    out[k] = Math.max(0, Math.min(100, base[k] + delta));
+  }
+  return out;
+}
+
+/** Skala progu Relacji (np. prog_dar_relacja z pn_relacja). */
+export function scaleRelationThreshold(
+  base: number,
+  difficulty: GameDifficulty = 'normal',
+): number {
+  return Math.max(0, Math.min(200, base + DIPLOMACY_DIFFICULTY_DELTA[difficulty]));
+}
+
+export function getEffectiveDiplomacyParams(
+  difficulty: GameDifficulty = 'normal',
+): DiplomacyParams {
+  return scaleDiplomacyParamsForDifficulty(getBaseDiplomacyParams(), difficulty);
 }
 
 /** Testy / hot-reload — opcjonalnie reset cache. */
 export function resetEffectiveDiplomacyParamsCache(): void {
-  _effectiveDiplomacyParams = null;
+  _baseDiplomacyParams = null;
 }
 
 /** Minimalna Relacja na dobrowolną umowę — nie poniżej progUmowaMinRelacja (Maciej: >150). */

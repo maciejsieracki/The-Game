@@ -3,6 +3,7 @@
  * Pure helpers; mutacja stanu gry w main.ts.
  */
 import type { Relation } from './diplomacy';
+import type { GameDifficulty } from './difficulty-cost';
 import {
   diplomacyTradeTrustFromDeal,
   diplomacyGiftTrustFromPn,
@@ -60,8 +61,8 @@ export function pnDealAcceptedByAi(
 }
 
 /** W3-B: czysty dar wymaga Relacji ≥ progDarRelacja. */
-export function pnGiftAllowed(relacja: number): boolean {
-  return relacja >= diplomacyProgDarRelacja();
+export function pnGiftAllowed(relacja: number, difficulty: GameDifficulty = 'normal'): boolean {
+  return relacja >= diplomacyProgDarRelacja(undefined, difficulty);
 }
 
 export function pnFromLegacyGold(goldOnce: number | undefined): number {

@@ -10,6 +10,8 @@ import unitsJson from '../../data/units.json';
 import buildingsJson from '../../data/buildings.json';
 import { diplomacyDepositBasePrice } from './diplomacy-deposit-trade';
 import { applyTempoKoszt, type TempoGry } from './tech-tempo';
+import { scaleRelationThreshold } from './diplomacy';
+import type { GameDifficulty } from './difficulty-cost';
 
 /** Typ pozycji w koszyku wymiany / daru (v1.0). Ulepszenia terenu — poza koszykiem. */
 export type WartoscPozycjaTyp =
@@ -395,7 +397,11 @@ export function diplomacyDobraWolaFromSurplus(
   };
 }
 
-/** D3-W3-B: minimalna Relacja na czysty dar. */
-export function diplomacyProgDarRelacja(params: PnRelacjaParams = _pnRelacja): number {
-  return { ..._pnRelacja, ...params }.prog_dar_relacja;
+/** D3-W3-B: minimalna Relacja na czysty dar (skalowana wg trudności). */
+export function diplomacyProgDarRelacja(
+  params: PnRelacjaParams = _pnRelacja,
+  difficulty: GameDifficulty = 'normal',
+): number {
+  const base = { ..._pnRelacja, ...params }.prog_dar_relacja;
+  return scaleRelationThreshold(base, difficulty);
 }

@@ -2450,3 +2450,16 @@ CZEKAM-NA: **Maciej** Ctrl+F5 → stamp `95be60fc` · klik krawędzi heksa = wł
 - tsc=0 · VERIFY OK · commit+push main.
 
 CZEKAM-NA: **Maciej** Ctrl+F5 → stamp `f7664322` · klik w krawędź heksa → panel kontekstowy = właściwy hex.
+
+---
+
+## [23:21 PL, 2026-07-21] INTEGRATOR → Maciej — D3-PROG-DIFF deploy ROBOCZA + push main
+
+Maciej: **push** — progi dyplomacji wg trudności.
+
+- **ROBOCZA = `31bf4a4b`** (md5 `31bf4a4bbe8eea314f7210b9a61f4a1a`), na `95be60fc`.
+- **D3-PROG-DIFF:** ±10 rel/zauf/respekt wg trudności; normal handel Rel 40, NAP Rel 50 + Zauf 40; dual gates (NAP Rel+Zauf, tech, granice).
+- tsc=0 · diplomacy-proposal 48/48 · VERIFY OK · manifest + START.html zsynchronizowane.
+- Commit+push `main` (FF).
+
+CZEKAM-NA: **Maciej** Ctrl+F5 → stamp `31bf4a4b` · dyplomacja normal: NAP przy Rel≥50 i Zauf≥40; handel przy Rel≥40.

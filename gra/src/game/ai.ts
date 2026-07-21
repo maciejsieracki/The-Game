@@ -1800,6 +1800,7 @@ import {
   relationScore,
 } from './diplomacy';
 import type { Relation, AIDiplomacyContext } from './diplomacy';
+import type { GameDifficulty } from './difficulty-cost';
 
 // ---------------------------------------------------------------------------
 // Strojalne progi (eksportowane, by testy mogły je sprawdzić)
@@ -1935,8 +1936,8 @@ function staticAiParam(key: string, fallback: number): number {
 }
 
 /** Domyślne progi decideAIDiplomacy z Panel-D (ai-params.json). */
-export function loadDefaultAIDiplomacyProgs(): DiplomacjaParams {
-  const dip = getEffectiveDiplomacyParams();
+export function loadDefaultAIDiplomacyProgs(difficulty: GameDifficulty = 'normal'): DiplomacjaParams {
+  const dip = getEffectiveDiplomacyParams(difficulty);
   return {
     progWojnaSila:          staticAiParam('ai_diplomacja_prog_wojna_sila',    PROG_WOJNA_SILA),
     progWojnaAgresja:       staticAiParam('ai_diplomacja_prog_wojna_agresja', PROG_WOJNA_AGRESJA),
@@ -1996,11 +1997,12 @@ export function decideAIDiplomacy(
    * miast-panstw -- viz. RAPORT do wlasciciela.
    */
   dyplomacjaAktywnosc: number = 1,
+  difficulty: GameDifficulty = 'normal',
 ): AIDiplomacyCommand[] {
   if (!inp?.relacje?.length) return [];
 
   const p: DiplomacjaParams = {
-    ...loadDefaultAIDiplomacyProgs(),
+    ...loadDefaultAIDiplomacyProgs(difficulty),
     ...params,
   };
 
@@ -2030,7 +2032,7 @@ export function decideAIDiplomacy(
 
     const stance = aiDiplomacyStance(stubAIPlayer, stubOtherPlayer, rel.relation, ctx);
     const score  = relationScore(rel.relation);
-    const { progMinimalnyRelacja } = getEffectiveDiplomacyParams();
+    const { progMinimalnyRelacja } = getEffectiveDiplomacyParams(difficulty);
     // Efektywna agresja z uwzglednieniem mnoznika trudnosci (T4=B: spryt AI)
     const effAgresja = Math.min(1, inp.agresja * agresjaMnoznik);
 
@@ -2055,7 +2057,7 @@ export function decideAIDiplomacy(
     }
 
     // ---- Priorytet 3: zadaj_trybut (b. silny, !stanWojny, agresja srednia; preferable over war) ----
-    const dipTrybut = getEffectiveDiplomacyParams();
+    const dipTrybut = getEffectiveDiplomacyParams(difficulty);
     const proposerRespektPct = Math.round(100 * rw);
     if (
       !rel.stanWojny
@@ -2092,7 +2094,7 @@ export function decideAIDiplomacy(
     }
 
     // ---- Priorytet 5: zaproponuj_sojusz ----
-    const dipP = getEffectiveDiplomacyParams();
+    const dipP = getEffectiveDiplomacyParams(difficulty);
     const aiMilRatio = rw >= 1 ? 99 : rw <= 0 ? 0.01 : rw / (1 - rw);
     const aiRespekt = Math.round(rw * 100);
     const partnerRespekt = Math.round((1 - rw) * 100);

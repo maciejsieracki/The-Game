@@ -437,7 +437,7 @@ import {
 } from './game/improvement-tech';
 import { PendingImprovementsTurn, type PendingImprovementEntry } from './game/pending-improvements';
 import {
-  aiDiplomacyStance, relationTier, loadDiplomacyParams,
+  aiDiplomacyStance, relationTier, loadDiplomacyParams, getEffectiveDiplomacyParams,
   applyDiplomaticEvent, computePotegaNacji, computeRespekt, tickDiplomacy,
   ARCHETYPE_AGGRESSION, ARCHETYPE_TRADE, DEFAULT_POTEGA_WAGI,
   relationScore, sisterAllianceDiplomacyParams, sisterAllianceEligible,
@@ -3123,10 +3123,7 @@ async function boot(): Promise<void> {
     /** P6: tech + surowiec boolean z koszyka PN (save/load meta.surowiecBooleanGrants). */
     let basketTransferCtx: BasketTransferContext = createEmptyBasketTransferContext(data.tech);
     let _dipUnitSeq = 0;
-    const _diplomacyParams = loadDiplomacyParams(
-      (data as any).diplomacyParams ?? {},
-    );
-    void _diplomacyParams; // loaded for future event use; stance uses DIPLOMACY_PARAMS internally
+    const _diplomacyParams = () => getEffectiveDiplomacyParams(_menuDifficulty);
 
     function getDiploRelation(a: number, b: number): Relation {
       const key = a < b ? `${a}_${b}` : `${b}_${a}`;
@@ -6716,6 +6713,7 @@ async function boot(): Promise<void> {
           cities.filter(c => c.ownerId === proposerId).length > 2,
         fairTradeValue: 20,
         activeDeals,
+        difficulty: _menuDifficulty,
         proposerPlayer: { ownerId: proposerId, typCywilizacji: proposerTyp } as unknown as Player,
         responderPlayer: { ownerId: responderId, typCywilizacji: responderTyp } as unknown as Player,
       };
@@ -6794,11 +6792,29 @@ async function boot(): Promise<void> {
       return m ? m[1]! : akcja;
     }
 
+    function diplomacyDualGateTooltip(
+      relTotal: number,
+      zaufanie: number,
+      minRel: number,
+      minZauf: number,
+    ): { ok: boolean; tooltip: string } {
+      const relOk = relTotal >= minRel;
+      const zaufOk = zaufanie >= minZauf;
+      if (relOk && zaufOk) return { ok: true, tooltip: '' };
+      if (!relOk && !zaufOk) {
+        return { ok: false, tooltip: `Wymagana Relacja ≥ ${minRel} i Zaufanie ≥ ${minZauf}` };
+      }
+      if (!relOk) return { ok: false, tooltip: `Wymagana Relacja ≥ ${minRel}` };
+      return { ok: false, tooltip: `Wymagane Zaufanie ≥ ${minZauf}` };
+    }
+
     function buildAudienceActions(
       ownerId: number,
       layer: ReturnType<typeof diplomacyLayerForOwner>,
     ): AudienceAction[] {
       const rel = getDiploRelation(0, ownerId);
+      const dip = _diplomacyParams();
+      const relTotal = relationTotal(rel);
       const tier = relationTier(rel);
       const contact = diplomaticContactEstablished.has(ownerId);
       const isSimplified = layer === 'simplified';
@@ -6828,33 +6844,52 @@ async function boot(): Promise<void> {
           }
         } else if (id === '10') {
           if (tier !== 0) { enabled = false; tooltip = 'Brak aktywnej wojny'; }
-        } else if (id === '5' && !playerDiplomacyActionAllowed(layer, 'trade')) {
-          enabled = false;
-          tooltip = 'Handel niedostępny';
+        } else if (id === '5') {
+          if (!playerDiplomacyActionAllowed(layer, 'trade')) {
+            enabled = false;
+            tooltip = 'Handel niedostępny';
+          } else if (relTotal < dip.progHandelRelacja) {
+            enabled = false;
+            tooltip = 'Wymagana Relacja ≥ ' + dip.progHandelRelacja;
+          }
         } else if (id === '2') {
           if (rel.status === 'wojna') { enabled = false; tooltip = 'Niedostępne w wojnie'; }
-          else if (((rel as { zaufanie?: number }).zaufanie ?? 0) < 40) {
-            enabled = false; tooltip = 'Wymagane zaufanie ≥ 40';
-          } else if (hasTreaty(activeDeals, 0, ownerId, RodzajTraktatu.PaktNieagresji)) {
+          else if (hasTreaty(activeDeals, 0, ownerId, RodzajTraktatu.PaktNieagresji)) {
             enabled = false; tooltip = 'Pakt już obowiązuje';
+          } else {
+            const gate = diplomacyDualGateTooltip(
+              relTotal, rel.zaufanie ?? 0, dip.progNapRelacja, dip.progNapZaufanie,
+            );
+            if (!gate.ok) { enabled = false; tooltip = gate.tooltip; }
           }
         } else if (id === '3') {
           if (rel.status === 'wojna') { enabled = false; tooltip = 'Niedostępne w wojnie'; }
-          else if (((rel as { zaufanie?: number }).zaufanie ?? 0) < 60) {
-            enabled = false; tooltip = 'Wymagane zaufanie ≥ 60';
+          else {
+            const gate = diplomacyDualGateTooltip(
+              relTotal, rel.zaufanie ?? 0, dip.progSojuszRelacja, dip.progSojuszZaufanie,
+            );
+            if (!gate.ok) { enabled = false; tooltip = gate.tooltip; }
           }
         } else if (id === '4') {
           if (rel.status === 'wojna') { enabled = false; tooltip = 'Niedostępne w wojnie'; }
-          else if (((rel as { zaufanie?: number }).zaufanie ?? 0) < 30) {
-            enabled = false; tooltip = 'Zbyt niskie zaufanie';
+          else {
+            const gate = diplomacyDualGateTooltip(
+              relTotal, rel.zaufanie ?? 0, dip.progGraniceRelacja, dip.progGraniceZaufanie,
+            );
+            if (!gate.ok) { enabled = false; tooltip = gate.tooltip; }
           }
         } else if (id === '6') {
-          if (getSellableTechForPlayer().length === 0) {
+          const gate = diplomacyDualGateTooltip(
+            relTotal, rel.zaufanie ?? 0, dip.progHandelRelacja, dip.progWymianaTechZaufanie,
+          );
+          if (!gate.ok) {
+            enabled = false; tooltip = gate.tooltip;
+          } else if (getSellableTechForPlayer().length === 0) {
             enabled = false; tooltip = 'Brak technologii do wymiany';
           }
         } else if (id === '7') {
-          if (((rel as { zaufanie?: number }).zaufanie ?? 0) < 50) {
-            enabled = false; tooltip = 'Wymagane zaufanie ≥ 50';
+          if ((rel.zaufanie ?? 0) < dip.progNamowWojneZaufanie) {
+            enabled = false; tooltip = 'Wymagane zaufanie ≥ ' + dip.progNamowWojneZaufanie;
           } else if (getKnownRivalsFor(ownerId).length === 0) {
             enabled = false; tooltip = 'Brak znanych celów wojny';
           }
@@ -6864,14 +6899,14 @@ async function boot(): Promise<void> {
           if (rel.status === 'wojna') { enabled = false; tooltip = 'Ultimatum wymaga pokoju'; }
         } else if (id === '12') {
           if (rel.status === 'wojna') { enabled = false; tooltip = 'Niedostępne w wojnie'; }
-          else if (((rel as { zaufanie?: number }).zaufanie ?? 0) < 40) {
-            enabled = false; tooltip = 'Zbyt niskie zaufanie';
+          else if ((rel.respekt ?? 0) < dip.progWasalizacjaRespekt) {
+            enabled = false; tooltip = 'Wymagany Respekt ≥ ' + dip.progWasalizacjaRespekt;
           }
         } else if (id === '13') {
           if (rel.status === 'wojna') { enabled = false; tooltip = 'Dar niedostępny w wojnie'; }
-          else if (relationTotal(rel) < diplomacyProgDarRelacja()) {
+          else if (relTotal < diplomacyProgDarRelacja(undefined, _menuDifficulty)) {
             enabled = false;
-            tooltip = 'Wymagana Relacja ≥ ' + diplomacyProgDarRelacja();
+            tooltip = 'Wymagana Relacja ≥ ' + diplomacyProgDarRelacja(undefined, _menuDifficulty);
           }
         }
 
@@ -6955,6 +6990,7 @@ async function boot(): Promise<void> {
           const powerLine = formatPowerRelationLine(playerPower, otherPower);
           const respektNorm = powerLine.respekt;
           const pairMeta = getDiploPairMeta(0, ownerId);
+          const dip = _diplomacyParams();
           // J: jawny formalny status (odrębny od nastawienia/tier).
           let _fsAlly = false, _fsPakt = false;
           for (const d of activeDeals) {
@@ -6979,7 +7015,7 @@ async function boot(): Promise<void> {
             respekt: respektNorm,
             relacjaTotal: zaufanieNorm + respektNorm,
             trustPnGainedThisTurn: pairMeta.trustPnGainedThisTurn,
-            progDarRelacja: diplomacyProgDarRelacja(),
+            progDarRelacja: diplomacyProgDarRelacja(undefined, _menuDifficulty),
             playerPower,
             otherPower,
             powerRatioLabel: powerLine.ratioLabel,
@@ -6989,8 +7025,8 @@ async function boot(): Promise<void> {
             otherIkonaId: civTypeForOwner(ownerId),
             otherKolorHex: civKolorHexFn(ownerId),
             thresholds: {
-              sojuszZaufanie: _diplomacyParams.progSojuszZaufanie,
-              techZaufanie: _diplomacyParams.progWymianaTechZaufanie,
+              sojuszZaufanie: dip.progSojuszZaufanie,
+              techZaufanie: dip.progWymianaTechZaufanie,
             },
             tier: relationTier(rel),
             layer: layer === 'pre_contact' ? 'full' : layer,
@@ -7012,13 +7048,21 @@ async function boot(): Promise<void> {
           requestAnimationFrame(() => tryOpenNextAutoDiploAudience());
         },
         getCivBonusy: civBonusyForOwnerId,
-        getNegotiationContext: () => ({
-          civName: ownerDiploLabel(ownerId),
-          rivalOptions: getKnownRivalsFor(ownerId),
-          techOptions: getSellableTechForPlayer(),
-          borderFeeCivil: 20,
-          borderFeeMilitary: 40,
-        }),
+        getNegotiationContext: () => {
+          const rel = getDiploRelation(0, ownerId);
+          const dip = _diplomacyParams();
+          return {
+            civName: ownerDiploLabel(ownerId),
+            rivalOptions: getKnownRivalsFor(ownerId),
+            techOptions: getSellableTechForPlayer(),
+            borderFeeCivil: 20,
+            borderFeeMilitary: 40,
+            relacjaTotal: relationTotal(rel),
+            trustPnGainedThisTurn: getDiploPairMeta(0, ownerId).trustPnGainedThisTurn,
+            progDarRelacja: diplomacyProgDarRelacja(undefined, _menuDifficulty),
+            progHandelRelacja: dip.progHandelRelacja,
+          };
+        },
       });
     }
 
@@ -11844,6 +11888,7 @@ async function boot(): Promise<void> {
               );
               const dipCmdsRaw = decideAIDiplomacy(
                 diploInp, undefined, diffParams.agresjaMnoznik, diffParams.dyplomacjaAktywnosc,
+                _menuDifficulty,
               );
               const dipCmds: AIDiplomacyCommand[] = filterDiplomacyCommandsForLayer(
                 Array.isArray(dipCmdsRaw) ? dipCmdsRaw : [],

@@ -16,6 +16,7 @@ export {
   makeDealId,
 } from '../src/game/diplomacy-proposals.ts';
 export { addTreaty, hasTreaty, treatiesBrokenByWar } from '../src/game/diplomacy-treaties.ts';
+export { getEffectiveDiplomacyParams } from '../src/game/diplomacy.ts';
 `);
 
 esbuild.buildSync({
@@ -31,6 +32,7 @@ esbuild.buildSync({
 const {
   evaluateProposal, applyAcceptedProposal, aiCommandToPendingProposal,
   addTreaty, hasTreaty, treatiesBrokenByWar,
+  getEffectiveDiplomacyParams,
 } = require(BUNDLE);
 
 let pass = 0;
@@ -57,13 +59,31 @@ function prop(actionId, a = 0, b = 1, payload = {}) {
 
 console.log('diplomacy-proposal-test');
 
-// 1 NAP accept — Relacja >= 110
-let r = evaluateProposal(prop('nap', 0, 1, { turns: 15 }), ctx({ relation: rel(60, 50) }));
-ok(r.accepted && r.deal?.rodzaj === 'pakt_nieagresji', 'NAP accept relacja 110');
+// 0 Baseline progów @ normal (Maciej 2026-07-21)
+const dipNormal = getEffectiveDiplomacyParams('normal');
+const dipEasy = getEffectiveDiplomacyParams('easy');
+const dipHard = getEffectiveDiplomacyParams('hard');
+ok(dipNormal.progNapRelacja === 50, 'normal progNapRelacja 50');
+ok(dipNormal.progHandelRelacja === 40, 'normal progHandelRelacja 40');
+ok(dipEasy.progNapRelacja === 40, 'easy progNapRelacja 40');
+ok(dipEasy.progHandelRelacja === 30, 'easy progHandelRelacja 30');
+ok(dipHard.progNapRelacja === 60, 'hard progNapRelacja 60');
+ok(dipHard.progHandelRelacja === 50, 'hard progHandelRelacja 50');
+ok(dipNormal.progNapZaufanie === 40, 'normal progNapZaufanie 40');
+ok(dipEasy.progNapZaufanie === 30, 'easy progNapZaufanie 30');
+ok(dipHard.progNapZaufanie === 50, 'hard progNapZaufanie 50');
 
-// 2 NAP reject low relacja
-r = evaluateProposal(prop('nap'), ctx({ relation: rel(50, 59) }));
-ok(!r.accepted, 'NAP reject relacja 109');
+// 1 NAP accept — Relacja >= 50 AND Zaufanie >= 40 @ normal
+let r = evaluateProposal(prop('nap', 0, 1, { turns: 15 }), ctx({ relation: rel(40, 10) }));
+ok(r.accepted && r.deal?.rodzaj === 'pakt_nieagresji', 'NAP accept rel 50 zauf 40 normal');
+
+// 1a NAP reject — Rel OK, Zaufanie za niskie
+r = evaluateProposal(prop('nap'), ctx({ relation: rel(30, 20) }));
+ok(!r.accepted && r.reason.includes('Zaufanie'), 'NAP reject rel 50 zauf 30 normal');
+
+// 2 NAP reject low relacja @ normal
+r = evaluateProposal(prop('nap'), ctx({ relation: rel(25, 24) }));
+ok(!r.accepted, 'NAP reject relacja 49 normal');
 
 // 3 NAP reject border expansion
 r = evaluateProposal(prop('nap'), ctx({ ekspansjaPrzyGranicy: true }));
@@ -216,27 +236,45 @@ r = evaluateProposal(prop('trybut_oferta', 0, 1, { goldOnce: 50 }), ctx({
 }));
 ok(r.accepted && r.oneShotTrade, 'trybut oferta jednorazowy');
 
-// 9 Handel fair (strict PN W4-A)
-r = evaluateProposal(prop('handel', 0, 1, { givePn: 100, receivePn: 100 }), ctx({
-  relation: rel(55, 50),
+// 9 Handel fair (strict PN W4-A) @ normal — givePn skalowany do fair @ Rel 45
+r = evaluateProposal(prop('handel', 0, 1, { givePn: 250, receivePn: 100 }), ctx({
+  relation: rel(25, 20),
 }));
-ok(r.accepted && r.oneShotTrade, 'handel fair strict PN');
+ok(r.accepted && r.oneShotTrade, 'handel fair strict PN rel 45');
 
-// 9a Handel reject Rel 99
+// 9a Handel reject Rel 39 @ normal
 r = evaluateProposal(prop('handel', 0, 1, { goldOnce: 100 }), ctx({
-  relation: rel(50, 49),
+  relation: rel(20, 19),
   fairTradeValue: 100,
 }));
-ok(!r.accepted, 'handel reject relacja 99');
+ok(!r.accepted, 'handel reject relacja 39 normal');
 
-// 9b Handel accept Rel 100
-r = evaluateProposal(prop('handel', 0, 1, { givePn: 100, receivePn: 100 }), ctx({
-  relation: rel(50, 50),
+// 9b Handel accept Rel 40 @ normal
+r = evaluateProposal(prop('handel', 0, 1, { givePn: 250, receivePn: 100 }), ctx({
+  relation: rel(25, 15),
 }));
-ok(r.accepted, 'handel accept relacja 100');
+ok(r.accepted, 'handel accept relacja 40 normal');
+
+// 9c NAP easy — accept rel 40 + zauf 30, reject rel 39 / zauf 29
+r = evaluateProposal(prop('nap', 0, 1, { turns: 15 }), ctx({
+  relation: rel(30, 10),
+  difficulty: 'easy',
+}));
+ok(r.accepted, 'NAP accept rel 40 zauf 30 easy');
+r = evaluateProposal(prop('nap'), ctx({ relation: rel(20, 19), difficulty: 'easy' }));
+ok(!r.accepted, 'NAP reject relacja 39 easy');
+r = evaluateProposal(prop('nap'), ctx({ relation: rel(20, 20), difficulty: 'easy' }));
+ok(!r.accepted, 'NAP reject zauf 20 easy (rel OK)');
+
+// 9d Handel easy — accept 30
+r = evaluateProposal(prop('handel', 0, 1, { givePn: 350, receivePn: 100 }), ctx({
+  relation: rel(20, 10),
+  difficulty: 'easy',
+}));
+ok(r.accepted, 'handel accept relacja 30 easy');
 
 // 10 Handel unfair (strict PN W4-A)
-r = evaluateProposal(prop('handel', 0, 1, { givePn: 50, receivePn: 100 }), ctx({ relation: rel(55, 50) }));
+r = evaluateProposal(prop('handel', 0, 1, { givePn: 50, receivePn: 100 }), ctx({ relation: rel(25, 20) }));
 ok(!r.accepted, 'handel reject unfair PN');
 
 // 11 Namów wojna
@@ -246,19 +284,38 @@ r = evaluateProposal(prop('namow_wojne', 0, 1, { targetOwnerId: 2, bribeGold: 60
 }));
 ok(r.accepted, 'namów wojna + łapówka');
 
-// 12 Tech sell
+// 12 Tech sell — Rel >= 40 AND Zaufanie >= 70
 r = evaluateProposal(prop('tech', 0, 1, { techId: 'kolba', techPrice: 80 }), ctx({
   relation: rel(75, 50),
   techMinPrice: 50,
 }));
-ok(r.accepted, 'tech sprzedaż');
+ok(r.accepted, 'tech sprzedaż rel+zauf OK');
 
-// 13 Granice wojskowe
+// 12a Tech reject — Rel OK, Zaufanie za niskie
+r = evaluateProposal(prop('tech', 0, 1, { techId: 'kolba', techPrice: 80 }), ctx({
+  relation: rel(25, 20),
+  techMinPrice: 50,
+}));
+ok(!r.accepted && r.reason.includes('Zaufanie'), 'tech reject zauf 25 rel 45');
+
+// 13 Granice wojskowe — Rel >= 100 AND Zaufanie >= 45
 r = evaluateProposal(prop('granice', 0, 1, { borderMilitary: true }), ctx({
   relation: rel(50, 60),
   responderRespekt: 60,
 }));
 ok(r.accepted && r.deal?.rodzaj === 'prawo_wojskowe_przemarszu', 'granice wojskowe');
+
+// 13a Granice reject — Rel OK, Zaufanie za niskie
+r = evaluateProposal(prop('granice', 0, 1, { borderMilitary: false }), ctx({
+  relation: rel(40, 65),
+}));
+ok(!r.accepted && r.reason.includes('Zaufanie'), 'granice reject zauf 40 rel 105');
+
+// 13b Granice reject — Zauf OK, Rel za niska
+r = evaluateProposal(prop('granice', 0, 1, { borderMilitary: false }), ctx({
+  relation: rel(50, 40),
+}));
+ok(!r.accepted && r.reason.includes('Relacja'), 'granice reject rel 90 zauf 50');
 
 // 14 applyAcceptedProposal + treatiesBrokenByWar
 let deals = applyAcceptedProposal([], r);
