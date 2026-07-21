@@ -266,6 +266,15 @@ export interface AITurnOpts {
    * od epoki 3, patrz livestock-unlock.ts). Domyślnie 1 gdy brak.
    */
   civEra?: number;
+  /**
+   * D-START posiłki v2 (Maciej 2026-07-21): "Wsparcie miast-państw" z setupu nowej gry
+   * (niskie/normalne/mocne — domyślnie normalne). Steruje RESUP_TIERS (próg zagrożenia,
+   * min. garnizon do wysyłki, maks. posiłków/turę) w decideDefensiveCopyTurn.
+   * Silnik podaje main.ts `_menuCitySupport` (z NewGameParams.citySupport, ustawienie
+   * kreatora `city_state_support`). Gdy brak (stary save / brak pola) -- fallback 'normal'
+   * (= dzisiejsze stałe 1/2/1, zero regresji domyślnej).
+   */
+  citySupportLevel?: 'low' | 'normal' | 'strong';
 }
 
 /**
@@ -1247,6 +1256,28 @@ export function decideAITurn(
   return commands;
 }
 
+/** Progi posiłków w klastrze per poziom „Wsparcie miast-państw" (setup nowej gry). */
+interface ResupTier {
+  /** Promień (heksy) w którym wróg czyni siostrę "zagrożoną". */
+  threatRadius: number;
+  /** Min. własny garnizon (promień 1 od miasta-źródła) wymagany, by wysłać posiłek. */
+  minGuard: number;
+  /** Maks. liczba jednostek wysłanych na turę z jednego miasta-źródła. */
+  maxPerTurn: number;
+}
+
+/**
+ * D-START posiłki v2 (Maciej 2026-07-21 — liczby PONIŻEJ do akceptacji właściciela):
+ *   normal = DZISIEJSZE stałe (1/2/1) — zero regresji domyślnej.
+ *   low    = trudniej wyzwolić posiłek (radius 0, wyższy próg garnizonu).
+ *   strong = łatwiej i więcej (radius 2, niższy próg garnizonu, 2/turę).
+ */
+export const RESUP_TIERS: Record<'low' | 'normal' | 'strong', ResupTier> = {
+  low:    { threatRadius: 0, minGuard: 3, maxPerTurn: 1 },
+  normal: { threatRadius: 1, minGuard: 2, maxPerTurn: 1 },
+  strong: { threatRadius: 2, minGuard: 1, maxPerTurn: 2 },
+};
+
 /**
  * D-START kopia_typu_obronna — bez produkcji ekspansyjnej, bez osadników/foundCity;
  * poza tym pełna produkcja (jak zwykłe miasto AI, via chooseCityProduction), riposta
@@ -1288,19 +1319,21 @@ function decideDefensiveCopyTurn(
   }
 
   // ---------------------------------------------------------------------------
-  // POSIŁKI W KLASTRZE (D-START pkt c, Maciej ABC — progi PONIŻEJ do akceptacji właściciela):
-  //   - RESUP_THREAT_RADIUS  = 1  → siostra uznana za "zagrożoną" gdy wróg SĄSIADUJE z jej
-  //     miastem (ta sama definicja zagrożenia co "riposta przy własnym mieście" niżej —
-  //     spójność, nie osobny/luźniejszy próg).
-  //   - RESUP_MIN_GUARD_TO_SEND = 2 → źródło wysyła posiłek TYLKO gdy ma w promieniu 1 od
-  //     WŁASNEGO miasta >= 2 jednostki (zostawia sobie min. 1 obrońcę — nigdy nie rozbraja
-  //     się całkowicie).
-  //   - RESUP_MAX_PER_TURN = 1 → maks. jedna jednostka na turę z jednego miasta-źródła.
+  // POSIŁKI W KLASTRZE (D-START pkt c/e, Maciej ABC — liczby PONIŻEJ do akceptacji
+  // właściciela) — sterowane opcją setupu „Wsparcie miast-państw" (opts.citySupportLevel):
+  //   - threatRadius  → siostra uznana za "zagrożoną" gdy wróg jest w tym promieniu od jej
+  //     miasta (normal=1 = ta sama definicja co "riposta przy własnym mieście" niżej).
+  //   - minGuard → źródło wysyła posiłek TYLKO gdy ma w promieniu 1 od WŁASNEGO miasta
+  //     >= minGuard jednostek (zostawia sobie obrońców — nigdy nie rozbraja się całkowicie).
+  //   - maxPerTurn → maks. tyle jednostek na turę z jednego miasta-źródła.
   //   Zero bonusu: normalny rozkaz 'move' tą samą jednostką, którą i tak miasto wyprodukowało
   //   normalną produkcją — różni się tylko WYBÓR CELU marszu (siostra zamiast bezczynności).
-  const RESUP_THREAT_RADIUS     = 1;
-  const RESUP_MIN_GUARD_TO_SEND = 2;
-  const RESUP_MAX_PER_TURN      = 1;
+  //   normal = DZISIEJSZE stałe (1/2/1) -- zero regresji domyślnej; fallback 'normal' gdy
+  //   opts.citySupportLevel nieustawiony (stare save sprzed tej opcji).
+  const resupTier = RESUP_TIERS[opts.citySupportLevel ?? 'normal'];
+  const RESUP_THREAT_RADIUS     = resupTier.threatRadius;
+  const RESUP_MIN_GUARD_TO_SEND = resupTier.minGuard;
+  const RESUP_MAX_PER_TURN      = resupTier.maxPerTurn;
 
   const sisterCityStates = opts.sisterCityStates ?? [];
   // Jednostki sióstr (ten sam klaster/typ) nigdy nie liczą się jako "wróg" zagrażający innej

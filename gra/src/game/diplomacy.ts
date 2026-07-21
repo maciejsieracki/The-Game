@@ -380,6 +380,66 @@ export function diplomacyAllianceStrengthAdjust(
 }
 
 // ---------------------------------------------------------------------------
+// sisterAllianceDiplomacyParams / sisterAllianceEligible
+// (D-START posiłki v2, Maciej 2026-07-21: posiłki między siostrami TEGO SAMEGO
+//  klastra bramkowane sojuszem, próg sojuszu obniżony do 30% dla TEJ pary.
+//  SELEKTYWNY override — NIGDY nie dotyka getEffectiveDiplomacyParams()/
+//  DIPLOMACY_PARAMS globalnie; main.ts woła to wyłącznie dla par
+//  miasto-państwo↔miasto-państwo tego samego klastra, patrz main.ts
+//  formSisterAlliancesIfThreatened().)
+// ---------------------------------------------------------------------------
+
+/** Skala obniżenia progów sojuszu dla par sióstr tego samego klastra (Maciej: 30%). */
+export const SISTER_ALLIANCE_THRESHOLD_SCALE = 0.3;
+
+/**
+ * Kopia DiplomacyParams z przeskalowanymi progami sojuszu (×30%) — WYŁĄCZNIE do
+ * użytku przy ocenie sojuszu między siostrami tego samego klastra. Twarda podłoga:
+ * progSojuszRelacja nie schodzi poniżej progMinimalnyRelacja (jak w
+ * diplomacyTreatyMinRelacja — Relacja < progMinimalnyRelacja = "dyplomacja prawie
+ * niemożliwa", więc nawet zdyskontowany próg sojuszu nie może zejść poniżej tego dna).
+ * Nie zmienia `base` (immutable) ani globalnego getEffectiveDiplomacyParams().
+ */
+export function sisterAllianceDiplomacyParams(
+  base: DiplomacyParams = getEffectiveDiplomacyParams(),
+): DiplomacyParams {
+  return {
+    ...base,
+    progSojuszZaufanie: Math.round(base.progSojuszZaufanie * SISTER_ALLIANCE_THRESHOLD_SCALE),
+    progSojuszRelacja: Math.max(
+      base.progMinimalnyRelacja,
+      Math.round(base.progSojuszRelacja * SISTER_ALLIANCE_THRESHOLD_SCALE),
+    ),
+    progSojuszWillingnessMin: Math.round(
+      base.progSojuszWillingnessMin * SISTER_ALLIANCE_THRESHOLD_SCALE * 1000,
+    ) / 1000,
+  };
+}
+
+/**
+ * Czy relacja (a,b) siostrzanych miast-państw tego samego klastra spełnia OBNIŻONY
+ * (30%) próg sojuszu? Czysta funkcja, bez zależności od main.ts/aktywnych traktatów —
+ * caller (main.ts) sam sprawdza, czy sojusz już istnieje i czy nie ma stanu wojny
+ * przed wywołaniem tej funkcji na poziomie orkiestracji (patrz raport pkt c).
+ * Uproszczona ścieżka AI↔AI: pomija pełną maszynerię evaluateProposal (hegemon/
+ * militaryRatio premie i kary) — to celowe, siostry tego samego klastra nie walczą
+ * o hegemonię między sobą, tylko o wspólne przetrwanie.
+ */
+export function sisterAllianceEligible(
+  rel: Relation,
+  params: DiplomacyParams = sisterAllianceDiplomacyParams(),
+): boolean {
+  if (rel.status === 'wojna') return false;
+  const score = relationScore(rel);
+  const willingnessProxy = rel.zaufanie / 100;
+  return (
+    rel.zaufanie >= params.progSojuszZaufanie
+    && score >= params.progSojuszRelacja
+    && willingnessProxy >= params.progSojuszWillingnessMin
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Clamp helper
 // ---------------------------------------------------------------------------
 

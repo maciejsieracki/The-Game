@@ -439,6 +439,7 @@ import {
   aiDiplomacyStance, relationTier, loadDiplomacyParams,
   applyDiplomaticEvent, computePotegaNacji, computeRespekt, tickDiplomacy,
   ARCHETYPE_AGGRESSION, ARCHETYPE_TRADE, DEFAULT_POTEGA_WAGI,
+  relationScore, sisterAllianceDiplomacyParams, sisterAllianceEligible,
   type Relation, type AIDiplomacyContext, type PotegaKomponenty, type TickCtx,
 } from './game/diplomacy';
 import {
@@ -492,7 +493,7 @@ import {
   showWikiHubHud,
   toggleWikiHubHud,
 } from './ui/wikiHubHud';
-import { decideAITurn, chooseAIResearch, decideAIDiplomacy, loadDifficultyParams, type AICommand } from './game/ai';
+import { decideAITurn, chooseAIResearch, decideAIDiplomacy, loadDifficultyParams, RESUP_TIERS, type AICommand } from './game/ai';
 import type { AITurnOpts, RelacjaWejscie, DiplomacjaInputs, AIDiplomacyCommand } from './game/ai';
 import { checkVictory, techIdsInGameScope, allTechInScopeResearched, OSTATNIA_EPOKA_GRY_V1, powerShare } from './game/victory';
 import type { VictoryPlayer, VictoryInput } from './game/victory';
@@ -539,7 +540,7 @@ import {
 import {
   type ActiveDeal, hasTreaty, expireTreaties, treatiesBrokenByWar,
   removeTreatiesById, allianceObligationsForWarDeclaration, treatiesBrokenByRefusal,
-  normalizeTreatyKind, hydrateActiveDeals,
+  normalizeTreatyKind, hydrateActiveDeals, addTreaty,
 } from './game/diplomacy-treaties';
 import {
   activeDealsToPaymentDeals, tickDiplomacyPayments, applyOneShotGoldTransfer,
@@ -615,6 +616,10 @@ async function boot(): Promise<void> {
 
     // --- Menu integration: mutable game params set by New Game flow ---
     let _menuDifficulty: 'easy' | 'normal' | 'hard' = 'normal';
+    /** D-START posiłki v2 (Maciej 2026-07-21): setup „Wsparcie miast-państw" (domyślnie
+     *  normalne = dzisiejsze RESUP stałe, zero regresji). Steruje AITurnOpts.citySupportLevel
+     *  (ai.ts RESUP_TIERS) dla WSZYSTKICH AI defensywnych kopii typu. */
+    let _menuCitySupport: 'low' | 'normal' | 'strong' = 'normal';
     let _menuCivId: string = 'rzymianie'; // E1 default: Rzymianie
     let _menuMapSize: string = 'Standardowy'; // E1 default map size
     let _menuRivals: number = 6; // default rival count (skalowane w kreatorze)
@@ -6374,6 +6379,74 @@ async function boot(): Promise<void> {
       }
     }
 
+    /**
+     * D-START posiłki v2 (Maciej 2026-07-21, pkt C): proaktywne sojusze AI↔AI między
+     * SIOSTRAMI tego samego klastra (profil kopia_typu_obronna) gdy jedna z nich jest
+     * zagrożona — dyplomacja AI↔AI dziś NIE ISTNIEJE poza gracz↔AI (ownerLoop diplo
+     * blok wyżej), więc siostry nigdy by się nie sprzymierzyły same. Bez tego pkt A
+     * (gate sojuszu na posiłkach) sprawiłby, że posiłki między siostrami NIGDY nie
+     * ruszą, bo sojusz nie ma jak powstać.
+     *
+     * Ścieżka celowo UPROSZCZONA (AI↔AI, nie gracz↔AI): z pominięciem UI,
+     * evaluateProposal i warstwy komend (filterDiplomacyCommandsForLayer) — zawiera
+     * sojusz BEZPOŚREDNIO (ActiveDeal) gdy relacja spełnia próg obniżony do 30%
+     * (sisterAllianceDiplomacyParams/sisterAllianceEligible, diplomacy.ts).
+     *
+     * Determinizm: pary iterowane w stałej kolejności (ownerId rosnąco); brak
+     * Math.random(). Wydajność: iteruje TYLKO siostry aktualnie zagrożone (klastry
+     * są małe — kilka miast), więc O(par zagrożonych) na turę, nie O(wszystkich par).
+     */
+    function formSisterAlliancesIfThreatened(): void {
+      if (!clusterPlacement || typCityCopyOwners.size === 0) return;
+      const threatRadius = RESUP_TIERS[_menuCitySupport].threatRadius;
+
+      for (const tc of clusterPlacement.klastry) {
+        const sisterOwners = Array.from(typCityCopyOwners)
+          .filter(oid => aiOwnerCivMap.get(oid) === tc.typ)
+          .sort((a, b) => a - b); // determinizm: kolejność par po id
+        if (sisterOwners.length < 2) continue;
+
+        const sisterOwnerSet = new Set(sisterOwners);
+        const threatenedOwners = new Set<number>();
+        for (const oid of sisterOwners) {
+          const city = cities.find(c => c.ownerId === oid);
+          if (!city) continue;
+          const threatened = units.some(
+            u => !sisterOwnerSet.has(u.ownerId)
+              && hexDistance(u.q, u.r, city.q, city.r) <= threatRadius,
+          );
+          if (threatened) threatenedOwners.add(oid);
+        }
+        if (threatenedOwners.size === 0) continue; // brama wydajności: żadna siostra zagrożona
+
+        for (let i = 0; i < sisterOwners.length; i++) {
+          for (let j = i + 1; j < sisterOwners.length; j++) {
+            const a = sisterOwners[i]!;
+            const b = sisterOwners[j]!;
+            if (!threatenedOwners.has(a) && !threatenedOwners.has(b)) continue;
+            if (activeDeals.some(d => isAllianceDealKind(d.rodzaj) && dealInvolvesOwners(d, a, b))) {
+              continue; // już sojusznicy
+            }
+            const rel = getDiploRelation(a, b);
+            if (!sisterAllianceEligible(rel, sisterAllianceDiplomacyParams())) continue;
+
+            const [p0, p1] = pairOwnerIds(a, b);
+            activeDeals = addTreaty(activeDeals, {
+              id: `sojusz_siostry_${p0}_${p1}`,
+              rodzaj: 'sojusz_pelny',
+              strony: [p0, p1],
+              wygasaTura: null,
+            });
+            syncRelationFromDeals(a, b);
+            console.log(
+              `[Dyplomacja] Siostry ${ownerDiploLabel(p0)}(${p0})-${ownerDiploLabel(p1)}(${p1}) ` +
+              `zawierają sojusz (klaster ${tc.typ}, zagrożenie w promieniu ${threatRadius})`,
+            );
+          }
+        }
+      }
+    }
+
     function breakTreatiesOnWar(a: number, b: number, breakerIsPlayer: boolean): void {
       suspendZlozeOnWar(a, b);
       const brokenIds = treatiesBrokenByWar(activeDeals, a, b);
@@ -11361,6 +11434,8 @@ async function boot(): Promise<void> {
               improvementTechs: aiResearchDone.get(ownerId) ?? new Set<string>(),
               pracaAvailable: aiPracaPoolByOwner.get(ownerId) ?? 0,
               civEra: empireEpochForOwner(ownerId),
+              // D-START posiłki v2: setup „Wsparcie miast-państw" -> RESUP_TIERS (ai.ts).
+              citySupportLevel: _menuCitySupport,
             };
             const myCivTyp = aiOwnerCivMap.get(ownerId);
             const tc = clusterPlacement?.klastry.find(k => k.typ === myCivTyp);
@@ -11380,17 +11455,25 @@ async function boot(): Promise<void> {
               opts.clusterCenter = tc.centrum;
               opts.clusterRadius = clusterPackRadius(tc.miasta.length + 1, MIN_DIST_START_CITY_STATE);
             } else if (tc && typCityCopyOwners.has(ownerId)) {
-              // D-START posiłki w klastrze (Maciej 2026-07-20): pozostałe miasta-siostry
-              // (profil kopia_typu_obronna) TEGO SAMEGO klastra/typu — decideDefensiveCopyTurn
-              // może wysłać nadwyżkową jednostkę ku zagrożonej siostrze. Ten sam promień co
-              // dla clusterStateTargets (spójność z konsolidacją klastra powyżej).
+              // D-START posiłki w klastrze (Maciej 2026-07-20, bramkowane sojuszem
+              // 2026-07-21): pozostałe miasta-siostry (profil kopia_typu_obronna) TEGO
+              // SAMEGO klastra/typu — decideDefensiveCopyTurn może wysłać nadwyżkową
+              // jednostkę ku zagrożonej siostrze TYLKO jeśli (ownerId, c.ownerId) są
+              // aktualnie w aktywnym sojuszu (activeDeals — patrz isAllianceDealKind/
+              // dealInvolvesOwners powyżej). Bez sojuszu siostra jest pominięta —
+              // ai.ts nie wie nic o dyplomacji, filtrujemy TUTAJ, przed przekazaniem.
+              // Ten sam promień co dla clusterStateTargets (spójność z konsolidacją
+              // klastra powyżej).
               const resupRadius = clusterPackRadius(tc.miasta.length + (tc.growthSlot ? 1 : 0), MIN_DIST_START_CITY_STATE);
               opts.sisterCityStates = cities
                 .filter(c =>
                   c.ownerId !== ownerId
                   && typCityCopyOwners.has(c.ownerId)
                   && aiOwnerCivMap.get(c.ownerId) === myCivTyp
-                  && hexDistance(c.q, c.r, tc.centrum.q, tc.centrum.r) <= resupRadius,
+                  && hexDistance(c.q, c.r, tc.centrum.q, tc.centrum.r) <= resupRadius
+                  && activeDeals.some(
+                    d => isAllianceDealKind(d.rodzaj) && dealInvolvesOwners(d, ownerId, c.ownerId),
+                  ),
                 )
                 .map(c => ({ ownerId: c.ownerId, q: c.q, r: c.r }));
             }
@@ -11765,6 +11848,16 @@ async function boot(): Promise<void> {
             // wszystkich komend tego ownera -- sprawdź zagrożenie stolicy AI.
             maybeRelocateThreatenedAiCapital(ownerId);
           }
+
+            // D-START posiłki v2 (pkt C): po przetworzeniu WSZYSTKICH AI tej tury --
+            // siostry tego samego klastra zagrożone wrogiem mogą proaktywnie
+            // sprzymierzyć się (próg obniżony 30%), co odblokowuje posiłki (pkt A).
+            try {
+              formSisterAlliancesIfThreatened();
+            } catch (eSisterAlly) {
+              console.error('[Dyplomacja] Blad sojuszy siostrzanych:', eSisterAlly);
+            }
+
             if (!aiTurnAwaitingBattle) {
               scanAutoSiegesAfterAiTurn();
             }
@@ -12205,6 +12298,17 @@ async function boot(): Promise<void> {
       const diff = diffMap[params.difficulty] ?? 'normal';
       _menuDifficulty = diff;
       startRevealRadius = startRevealRadiusForDifficulty(diff);
+
+      // D-START posiłki v2: „Wsparcie miast-państw" (setup) -> AITurnOpts.citySupportLevel.
+      const citySupportMap: Record<string, 'low' | 'normal' | 'strong'> = {
+        'Niskie': 'low',
+        'Normalne': 'normal',
+        'Mocne': 'strong',
+        low: 'low',
+        normal: 'normal',
+        strong: 'strong',
+      };
+      _menuCitySupport = citySupportMap[params.citySupport ?? ''] ?? 'normal';
       _menuCivId = params.civId || 'rzymianie';
       _menuMapSize = params.mapSize || 'Standardowy';
       _menuCivTypesCount = params.civTypesCount || defaultCivTypesFromMapLabel(_menuMapSize);

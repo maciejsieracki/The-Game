@@ -302,6 +302,21 @@
           "Więcej gór i wzgórz — więcej rzek"
         ],
         "domyslny": 1
+      },
+      {
+        "key": "city_state_support",
+        "label": "Wsparcie miast-państw",
+        "opts": [
+          "Niskie",
+          "Normalne",
+          "Mocne"
+        ],
+        "descs": [
+          "Siostry klastra rzadziej wysyłają posiłki (wyższy próg garnizonu, węższy zasięg zagrożenia)",
+          "Domyślna siła posiłków między siostrami klastra tego samego typu",
+          "Siostry klastra częściej i liczniej wysyłają posiłki (szerszy zasięg zagrożenia, niższy próg garnizonu)"
+        ],
+        "domyslny": 1
       }
     ]
   }
