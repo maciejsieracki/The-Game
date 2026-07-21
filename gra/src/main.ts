@@ -448,8 +448,11 @@ import {
   type Relation, type AIDiplomacyContext, type PotegaKomponenty, type TickCtx,
 } from './game/diplomacy';
 import {
+  civCultureLabelForKey,
   diplomacyPersonalityTags,
   formatPowerRelationLine,
+  resolveFormalDiplomaticStatus,
+  sameCultureCircle,
 } from './game/diplomacy-display';
 import {
   applyFogToPathPlan,
@@ -7145,20 +7148,23 @@ async function boot(): Promise<void> {
           const respektNorm = powerLine.respekt;
           const pairMeta = getDiploPairMeta(0, ownerId);
           const dip = _diplomacyParams();
-          // J: jawny formalny status (odrębny od nastawienia/tier).
-          let _fsAlly = false, _fsPakt = false;
+          let _fsAlly = false;
+          let _fsPakt = false;
+          let _fsTrade = false;
           for (const d of activeDeals) {
             if (!d.strony.includes(0) || !d.strony.includes(ownerId)) continue;
+            const k = normalizeTreatyKind(d.rodzaj);
             if (isAllianceDealKind(d.rodzaj)) _fsAlly = true;
-            else if (normalizeTreatyKind(d.rodzaj) === RodzajTraktatu.PaktNieagresji) _fsPakt = true;
+            else if (k === RodzajTraktatu.PaktNieagresji) _fsPakt = true;
+            else if (k === RodzajTraktatu.UmowaHandlowa) _fsTrade = true;
           }
-          const _fsContact = diplomaticContactEstablished.has(ownerId);
-          const formalStatus: { label: string; kind: 'wojna' | 'sojusz' | 'pakt' | 'pokoj' | 'brak' } =
-            rel.status === 'wojna' ? { label: 'W trakcie wojny', kind: 'wojna' }
-            : _fsAlly ? { label: 'Sojusz wojskowy', kind: 'sojusz' }
-            : _fsPakt ? { label: 'Pakt o nieagresji', kind: 'pakt' }
-            : _fsContact ? { label: 'Pokój (neutralne)', kind: 'pokoj' }
-            : { label: 'Brak formalnego kontaktu', kind: 'brak' };
+          const formalStatus = resolveFormalDiplomaticStatus({
+            relationStatus: rel.status,
+            hasAlliance: _fsAlly,
+            hasNap: _fsPakt,
+            hasTrade: _fsTrade,
+            contactEstablished: diplomaticContactEstablished.has(ownerId),
+          });
           return {
             formalStatus,
             playerTitle: 'Władca · ' + epochLabelForOwner(0),
@@ -7178,6 +7184,8 @@ async function boot(): Promise<void> {
             otherEpochLabel: epochLabelForOwner(ownerId),
             otherIkonaId: civTypeForOwner(ownerId),
             otherKolorHex: civKolorHexFn(ownerId),
+            otherCultureLabel: civCultureLabelForKey(civKeyForOwner(ownerId)),
+            cultureCircleSame: sameCultureCircle(civKeyForOwner(0), civKeyForOwner(ownerId)),
             thresholds: {
               sojuszZaufanie: dip.progSojuszZaufanie,
               techZaufanie: dip.progWymianaTechZaufanie,

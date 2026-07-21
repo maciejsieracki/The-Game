@@ -3,13 +3,16 @@
  * DECOUPLED: zero importów game/*; callbacki z SILNIK.
  */
 import type { CivBonusLite } from '../game/production';
-import { tierLabel } from './diplomacyPanel';
+import {
+  nastawienieHintPl,
+  nastawienieLabelFromScore,
+  type FormalDiplomaticKind,
+} from '../game/diplomacy-display';
 import {
   civLeaderMedallionHtmlById,
   dipBrandIconHtml,
   DIPLO_1E_SHARED_CSS,
   ensureDiploBrandScope,
-  tierBadgeHtml,
 } from './diploUiSkin';
 import { mocLabel } from './power-labels';
 import {
@@ -57,7 +60,7 @@ export interface DiplomacyAudienceState {
    * J: JAWNY formalny status relacji (odrębny od nastawienia/tier). Odpowiada na
    * pytanie „wojna czy tylko nastawienie?": wojna / sojusz / pakt / pokój / brak kontaktu.
    */
-  formalStatus?: { label: string; kind: 'wojna' | 'sojusz' | 'pakt' | 'pokoj' | 'brak' };
+  formalStatus?: { label: string; kind: FormalDiplomaticKind };
   /** Tagi charakteru (D3-UX-3B) — bez liczb. */
   personalityTags?: readonly string[];
   /** Epoka rozmówcy (etykieta PL). */
@@ -66,6 +69,10 @@ export interface DiplomacyAudienceState {
   otherIkonaId?: string;
   /** kolorHex rozmówcy (#RRGGBB). */
   otherKolorHex?: string;
+  /** Etykieta okręgu kulturowego rozmówcy (np. „Grecka", „Chetycka"). */
+  otherCultureLabel?: string;
+  /** true = ten sam typ/okręg co gracz (silnik: typCywilizacji). */
+  cultureCircleSame?: boolean;
   /** Progi na paskach (readonly z JSON). */
   thresholds?: { sojuszZaufanie?: number; techZaufanie?: number };
 }
@@ -134,10 +141,21 @@ ${DIPLO_1E_SHARED_CSS}
 .civ-diplo-aud-title{font-size:0.72em;color:var(--tg-text-muted,#8a8070);margin-top:4px;
   letter-spacing:.14em;text-transform:uppercase;}
 .civ-diplo-aud-player{font-size:0.72em;color:var(--tg-text-muted,#8a8070);margin-bottom:12px;text-align:left;padding:0 20px;}
-.civ-diplo-aud-mood{display:inline-flex;align-items:center;gap:8px;margin-top:14px;padding:6px 16px;
-  border-radius:20px;background:rgba(80,176,112,.08);border:1px solid rgba(80,176,112,.35);
-  font-size:0.72em;letter-spacing:.08em;text-transform:uppercase;color:#7ad0a0;}
-.civ-diplo-aud-mood.war{background:rgba(200,64,64,.08);border-color:rgba(200,64,64,.35);color:#e08a8a;}
+.civ-diplo-aud-formal{margin:12px auto 0;max-width:420px;padding:10px 16px;border-radius:10px;
+  background:rgba(12,14,20,.65);border:2px solid rgba(232,216,138,.35);text-align:center;}
+.civ-diplo-aud-formal--wojna{border-color:rgba(224,90,90,.55);background:rgba(80,20,20,.25);}
+.civ-diplo-aud-formal-lbl{font-size:0.62em;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--tg-text-muted,#8a8070);margin-bottom:4px;}
+.civ-diplo-aud-formal-val{font-family:var(--tg-font-title,Georgia,serif);font-size:1.15em;
+  font-weight:700;letter-spacing:.06em;display:inline-flex;align-items:center;gap:8px;justify-content:center;}
+.dip-formal-war-ic{width:20px;height:20px;flex-shrink:0;}
+.civ-diplo-aud-mood{display:inline-flex;flex-direction:column;align-items:center;gap:3px;margin-top:12px;
+  padding:6px 16px;border-radius:20px;background:rgba(80,176,112,.08);
+  border:1px solid rgba(80,176,112,.35);font-size:0.72em;letter-spacing:.08em;
+  text-transform:uppercase;color:#7ad0a0;}
+.civ-diplo-aud-mood-hostile{background:rgba(200,64,64,.08);border-color:rgba(200,64,64,.35);color:#e08a8a;}
+.civ-diplo-aud-mood-hint{font-size:0.85em;letter-spacing:.02em;text-transform:none;
+  color:var(--tg-text-muted,#8a8070);font-weight:400;max-width:320px;line-height:1.35;}
 .civ-diplo-aud-bonus{margin-top:10px;text-align:center;font-size:0.68em;line-height:1.4;color:var(--tg-text-muted,#8a8070);}
 .civ-diplo-aud-bonus li{margin:2px 0;padding-left:0;list-style:none;}
 .civ-diplo-aud-bonus li::before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;
@@ -161,6 +179,10 @@ ${DIPLO_1E_SHARED_CSS}
 .civ-diplo-aud-tag{font-size:0.65em;padding:3px 8px;border-radius:10px;
   border:1px solid rgba(160,140,200,.35);background:rgba(100,80,140,.12);color:#c8b8e8;}
 .civ-diplo-aud-epoch{font-size:0.68em;color:#8a8070;margin-top:4px;}
+.civ-diplo-aud-culture{font-size:0.72em;color:#a8c0d8;margin-top:8px;letter-spacing:.04em;}
+.civ-diplo-aud-culture-hint{font-size:0.68em;margin-left:6px;color:#8a8070;}
+.civ-diplo-aud-culture-hint.same{color:#7ad0a0;}
+.civ-diplo-aud-culture-hint.foreign{color:#d4a870;}
 .civ-diplo-aud-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;padding:14px 20px 18px;}
 .civ-diplo-aud-card{text-align:left;padding:10px 12px;border-radius:8px;cursor:pointer;
   border:1px solid rgba(232,216,138,.22);background:rgba(232,216,138,.05);color:#e8e0c8;font-family:inherit;}
@@ -226,20 +248,40 @@ function progressBarHtml(label: string, value: number, max: number, tooltip?: st
   );
 }
 
+function formalStatusHtml(st: DiplomacyAudienceState): string {
+  if (!st.formalStatus) return '';
+  const fsColors: Record<FormalDiplomaticKind, string> = {
+    wojna: '#e05a5a', sojusz: '#5ad07a', pakt: '#8ec5ff', handel: '#d4b870', pokoj: '#d4cba0', brak: '#8b97a8',
+  };
+  const c = fsColors[st.formalStatus.kind] ?? '#d4cba0';
+  const warIcon = st.formalStatus.kind === 'wojna'
+    ? (dipBrandIconHtml('dip-war', 20, 'dip-formal-war-ic') || '<span aria-hidden="true">⚔</span>')
+    : '';
+  return (
+    '<div class="civ-diplo-aud-formal civ-diplo-aud-formal--' + st.formalStatus.kind + '"' +
+    ' title="Formalny stan umów — co obowiązuje między państwami">' +
+    '<div class="civ-diplo-aud-formal-lbl">Stan dyplomatyczny</div>' +
+    '<div class="civ-diplo-aud-formal-val" style="color:' + c + '">' +
+    warIcon + esc(st.formalStatus.label) +
+    '</div></div>'
+  );
+}
+
+function nastawienieHtml(st: DiplomacyAudienceState): string {
+  const label = nastawienieLabelFromScore(st.zaufanie, st.respekt);
+  const hostile = label === 'Wrogi' || label === 'Nieufny';
+  const cls = hostile ? 'civ-diplo-aud-mood civ-diplo-aud-mood-hostile' : 'civ-diplo-aud-mood';
+  return (
+    '<div class="' + cls + '" title="' + esc(nastawienieHintPl()) + '">' +
+    '<span>Nastawienie: ' + esc(label) + '</span>' +
+    '<span class="civ-diplo-aud-mood-hint">' + esc(nastawienieHintPl()) + '</span>' +
+    '</div>'
+  );
+}
+
 function relationSectionHtml(st: DiplomacyAudienceState): string {
   const relTotal = st.relacjaTotal ?? (st.zaufanie + st.respekt);
   let html = '<div class="civ-diplo-aud-rel">';
-  if (st.formalStatus) {
-    const fsColors: Record<string, string> = {
-      wojna: '#e05a5a', sojusz: '#5ad07a', pakt: '#8ec5ff', pokoj: '#d4cba0', brak: '#8b97a8',
-    };
-    const c = fsColors[st.formalStatus.kind] ?? '#d4cba0';
-    html += '<div class="civ-diplo-aud-formal" title="Formalny stan relacji — odrębny od nastawienia"' +
-      ' style="font-weight:700;letter-spacing:.05em;text-transform:uppercase;font-size:0.8em;color:' + c +
-      ';border:1px solid ' + c + '66;border-radius:5px;padding:3px 9px;margin-bottom:7px;display:inline-block">' +
-      'STATUS: ' + esc(st.formalStatus.label) + '</div>';
-  }
-  html += '<div class="civ-diplo-aud-rel-badge">' + tierBadgeHtml(st.tier, tierLabel(st.tier)) + '</div>';
   html += '<div>Relacja <b>' + relTotal + '</b></div>';
   html += progressBarHtml('Zaufanie', st.zaufanie, 100);
   html += progressBarHtml('Respekt', st.respekt, 100, RESPEKT_TOOLTIP_PL);
@@ -270,13 +312,16 @@ function personalityTagsHtml(tags: readonly string[] | undefined): string {
     '</div>';
 }
 
-function moodLabel(tier: number): string {
-  const t = Math.max(0, Math.min(4, Math.round(tier)));
-  if (t === 0) return 'Wrogi';
-  if (t === 1) return 'Nieufny';
-  if (t === 2) return 'Neutralny';
-  if (t === 3) return 'Życzliwy';
-  return 'Przyjazny';
+function cultureLineHtml(st: DiplomacyAudienceState): string {
+  if (!st.otherCultureLabel?.trim()) return '';
+  let html = '<div class="civ-diplo-aud-culture">Kultura: <b>' + esc(st.otherCultureLabel.trim()) + '</b>';
+  if (st.cultureCircleSame === true) {
+    html += '<span class="civ-diplo-aud-culture-hint same">· Ten sam okręg kulturowy</span>';
+  } else if (st.cultureCircleSame === false) {
+    html += '<span class="civ-diplo-aud-culture-hint foreign">· Obca kultura</span>';
+  }
+  html += '</div>';
+  return html;
 }
 
 function render(): void {
@@ -302,7 +347,6 @@ function render(): void {
   const playerBon = cfg.getCivBonusy?.(0) ?? [];
   const otherBon = cfg.getCivBonusy?.(cfg.ownerId) ?? [];
   const headIc = dipBrandIconHtml('tb-diplomacy', 24, 'dip-ic') ?? '';
-  const moodCls = st.tier <= 1 ? 'civ-diplo-aud-mood war' : 'civ-diplo-aud-mood';
 
   rootEl.innerHTML =
     '<div class="civ-diplo-aud-box">' +
@@ -321,7 +365,9 @@ function render(): void {
         /* otherCivName — sformatowane przez silnik (formatEntityDisplayName / ownerDiploLabel) */
         '<div class="civ-diplo-aud-title">' + esc(st.otherTitle) +
           (st.otherEpochLabel ? ' · ' + esc(st.otherEpochLabel) : '') + '</div>' +
-        '<div class="' + moodCls + '">Nastawienie: ' + esc(moodLabel(st.tier)) + '</div>' +
+        cultureLineHtml(st) +
+        formalStatusHtml(st) +
+        nastawienieHtml(st) +
         personalityTagsHtml(st.personalityTags) +
         bonusListHtml(otherBon) +
       '</div>' +

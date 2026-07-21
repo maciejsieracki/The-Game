@@ -17,6 +17,8 @@ export {
   diplomacyPersonalityTags,
   formatPowerRatioLabel,
   formatPowerRelationLine,
+  nastawienieLabelFromScore,
+  resolveFormalDiplomaticStatus,
   respektTooltipPl,
 } from './game/diplomacy-display';
 `);
@@ -56,6 +58,29 @@ ok(line.respekt === 67, 'respekt 4000 vs 2000 = 67');
 ok(line.ratioLabel === '2:1', 'line ratio 2:1');
 
 ok(mod.respektTooltipPl().includes('Respekt'), 'tooltip PL');
+
+const war = mod.resolveFormalDiplomaticStatus({
+  relationStatus: 'wojna', hasAlliance: false, hasNap: false, hasTrade: false, contactEstablished: true,
+});
+ok(war.kind === 'wojna' && war.label === 'Wojna', 'formal: wojna');
+
+const ally = mod.resolveFormalDiplomaticStatus({
+  relationStatus: 'sojusz', hasAlliance: true, hasNap: false, hasTrade: false, contactEstablished: true,
+});
+ok(ally.kind === 'sojusz', 'formal: sojusz');
+
+const peace = mod.resolveFormalDiplomaticStatus({
+  relationStatus: 'pokoj', hasAlliance: false, hasNap: false, hasTrade: false, contactEstablished: true,
+});
+ok(peace.kind === 'pokoj' && peace.label === 'Pokój', 'formal: pokój bez (neutralne)');
+
+const trade = mod.resolveFormalDiplomaticStatus({
+  relationStatus: 'pokoj', hasAlliance: false, hasNap: false, hasTrade: true, contactEstablished: true,
+});
+ok(trade.kind === 'handel', 'formal: umowa handlowa');
+
+ok(mod.nastawienieLabelFromScore(10, 10) === 'Wrogi', 'nastawienie: wrogi z score');
+ok(mod.nastawienieLabelFromScore(25, 25) === 'Neutralny', 'nastawienie: neutralny z score');
 
 try { fs.unlinkSync(ENTRY); } catch (_) { /* ok */ }
 
