@@ -4,7 +4,19 @@
 > **Czat:** krótko **`✅ Gotowe:`** / **`⏸️ Czeka:`** · **Ten plik:** pełniejszy zapis tego samego.  
 > Szczegóły techniczne → handoff w `dyspozycje/_handoff/` · operacja → `dyspozycje/DZIENNIK-MASTERA.md`
 
-**Ostatnia aktualizacja:** 2026-07-21 (bugfix miasta-państwa vs gracz)
+**Ostatnia aktualizacja:** 2026-07-21 (fix FoW jednostek)
+
+---
+
+## [2026-07-21] ✅ Gotowe — FIX FoW: jednostki wroga w mgle
+
+| | |
+|---|---|
+| **Co** | Wrogie jednostki (czerwone pierścienie) nie widać w czarnej mgle ani w ciemnym shroud poza bieżącym zasięgiem |
+| **Przyczyna** | `syncUnitsRender()` bez filtrowania mgły synchronizowało wszystkie tokeny jako widoczne |
+| **md5** | `83eadf9a14a80a6e08db6a2eb8da88ca` · stamp `83eadf9a` |
+| **Bramki** | tsc=0 · logic 207/207 · VERIFY OK |
+| **Od Ciebie** | Ctrl+F5 · `gra-robocza/START.html` · Nowa gra · oddal mapę do nieodkrytego obszaru / shroud — brak wrogich tokenów; w zasięgu wzroku jednostki wracają |
 
 ---
 

@@ -102,6 +102,7 @@ __export(logic_entry_exports, {
   spreadReligion: () => spreadReligion,
   techCost: () => techCost,
   terrainDefenseMult: () => terrainDefenseMult,
+  unitsVisibleOnMap: () => unitsVisibleOnMap,
   wallParamsFromBuildings: () => wallParamsFromBuildings,
   workedTilesForCity: () => workedTilesForCity
 });
@@ -206,10 +207,6 @@ var map_gen_params_default = {
     glina: { rarity: 0.1 },
     konie: { rarity: 0.025 },
     wegiel: { rarity: 0.1 },
-    owce: { rarity: 0.14 },
-    bydlo: { rarity: 0.12 },
-    lama: { rarity: 0.06 },
-    luksus: { rarity: 0.06 },
     sol: { rarity: 0.12 }
   },
   metal_deposit_min_era: {
@@ -1894,6 +1891,7 @@ function pickReliefForceHex(land, hexes, scratch, width, height, want, avoid, ra
     if (avoid.has(k)) return false;
     const hex = hexes[k];
     if (!hex || hex.terenBazowy === "morze" /* Morze */) return false;
+    if (hex.terenBazowy === "wybrzeze" /* Wybrzeze */) return false;
     if (want === "mountain" && hex.terenBazowy === "gory" /* Gory */) return false;
     if (want === "highland" && hex.terenBazowy === "wzgorza" /* Wzgorza */) return false;
     if (want === "mountain" && protectHighland && hex.terenBazowy === "wzgorza" /* Wzgorza */) {
@@ -1957,6 +1955,7 @@ function forceReliefTypeInCell(land, hexes, scratch, width, height, rand, want, 
         if (placed.has(k2)) return false;
         const hex = hexes[k2];
         if (!hex || hex.terenBazowy === "morze" /* Morze */) return false;
+        if (hex.terenBazowy === "wybrzeze" /* Wybrzeze */) return false;
         if (want === "mountain" && hex.terenBazowy === "gory" /* Gory */) return false;
         if (want === "highland" && hex.terenBazowy === "wzgorza" /* Wzgorza */) return false;
         return true;
@@ -5726,10 +5725,10 @@ function scoreCityStartHex(map, q, r) {
     if (hasRiver(map, q + dq, r + dr)) adjRiver = true;
   }
   if (adjRiver) score += 8;
-  for (let dq = -3; dq <= 3; dq++) {
-    for (let dr = -3; dr <= 3; dr++) {
+  for (let dq = -4; dq <= 4; dq++) {
+    for (let dr = -4; dr <= 4; dr++) {
       const dist = hexDistance(q, r, q + dq, r + dr);
-      if (dist === 0 || dist > 3) continue;
+      if (dist === 0 || dist > 4) continue;
       const nb = hexAt(map, q + dq, r + dr);
       if (!nb) continue;
       if (isArable(nb.terenBazowy)) score += dist <= 2 ? 2 : 0.5;
@@ -5886,8 +5885,6 @@ function generateMap(width = DEFAULT_WIDTH, height = DEFAULT_HEIGHT, seed = 42, 
   }
   enforceMapBorderOcean(hexes, width, height);
   if (typ !== "pangea") {
-    purgeInlandWaterForMultiLandTyp(hexes, width, height);
-  } else {
     purgeInlandWaterForMultiLandTyp(hexes, width, height);
   }
   finalizeCoastAndInlandWater(hexes, width, height, 3, coastOpts);
@@ -6393,6 +6390,21 @@ function refreshManpowerAfterPopChange(city, epoka, previousPop) {
 // src/game/production.ts
 var _a;
 var BUILDING_LEVEL_FACTOR = ((_a = miasto_params_default.budynek_mnoznik_poziomu) == null ? void 0 : _a.wartosc) ?? 1.1;
+function buildingLevelForEpoch(epokaWejscia, cityEpoch, maksPoziom, poziomTechGate, unlockedTechs) {
+  const lvl = Math.floor(cityEpoch) - Math.floor(epokaWejscia) + 1;
+  const cap = Number.isFinite(maksPoziom) && maksPoziom > 0 ? Math.floor(maksPoziom) : 1;
+  let level = Math.max(1, Math.min(cap, lvl));
+  if (poziomTechGate) {
+    const unlocked = unlockedTechs instanceof Set ? unlockedTechs : new Set(unlockedTechs ?? []);
+    for (const [levelKey, techName] of Object.entries(poziomTechGate)) {
+      const gateLevel = Number(levelKey);
+      if (Number.isFinite(gateLevel) && level >= gateLevel && !unlocked.has(techName)) {
+        level = Math.min(level, gateLevel - 1);
+      }
+    }
+  }
+  return level;
+}
 function buildingEffectAtLevel(baza, level) {
   const n = Math.max(1, Math.floor(level));
   return baza * Math.pow(BUILDING_LEVEL_FACTOR, n - 1);
@@ -6724,7 +6736,7 @@ function cityPopulationCap(maAkwedukt, params) {
 function populationGrowth(city, zywnoscNetto, params, wzrostThresholdMult = 1) {
   const { ludnosc, zdrowie, maSpichlerz, maAkwedukt, magazynZywnosci } = city;
   const healthModifier = Math.max(0, 1 + zdrowie * params.zdrowieModyfikatorWspolczynnik);
-  const effectiveFlow = zywnoscNetto * healthModifier;
+  const effectiveFlow = zywnoscNetto >= 0 ? zywnoscNetto * healthModifier : zywnoscNetto;
   const popCap = cityPopulationCap(maAkwedukt, params);
   let nowaLudnosc = ludnosc;
   let nowyMagazynZywnosci = magazynZywnosci;
@@ -7636,6 +7648,12 @@ function computePlayerVisibility(opts) {
     return computeVisibleAt(startHex.q, startHex.r, map, startRevealRadius);
   }
   return visible;
+}
+function unitsVisibleOnMap(units, visibleHexes, playerOwnerId = 0) {
+  return units.filter((u) => {
+    if (u.inGarnizon === true) return false;
+    return u.ownerId === playerOwnerId || visibleHexes.has(keyOf(u.q, u.r));
+  });
 }
 
 // data/units.json
@@ -22314,6 +22332,11 @@ function advanceCityEconomy(cities, map, data, difficulty = "normal", econUnits 
     const pieniadzZTras = tradeIncomeByCity.get(city.id) ?? 0;
     const udzialBudynki = (((_a10 = city.podzialPracy) == null ? void 0 : _a10.procentBudynki) ?? params.suwaakPracaBudynki) / 100;
     const { doBudynkow, doPuli } = splitPraca(yld.praca, udzialBudynki);
+    if (ctx.maTargowisko && walutaOdkryta) {
+      const pieniadzZPracyPoSplit = Math.floor(doPuli * params.targowiskoPracaMnoznik);
+      yld.pieniadz = yld.pieniadz - yld.pieniadzZPracy + pieniadzZPracyPoSplit;
+      yld.pieniadzZPracy = pieniadzZPracyPoSplit;
+    }
     const isOblegane = city.oblegane === true;
     let magazynPoTurze;
     let obleganyGlod = false;
@@ -22365,7 +22388,9 @@ function advanceCityEconomy(cities, map, data, difficulty = "normal", econUnits 
       continue;
     }
     const pctRozwoj = Math.min(100, Math.max(0, getEmpireFoodSplit(city.ownerId)));
-    const zywnoscDoRozwoju = yld.zywnosc * (pctRozwoj / 100);
+    const surplus = Math.max(0, yld.zywnosc) * (pctRozwoj / 100);
+    const deficit = Math.min(0, yld.zywnosc);
+    const zywnoscDoRozwoju = surplus + deficit;
     const growthMult = growthMultByCity.get(city.id) ?? 1;
     const zywnoscDlaWzrostu = growthMult !== 1 ? zywnoscDoRozwoju * growthMult : zywnoscDoRozwoju;
     const wzrostThresholdMult = getPopulationGrowthThresholdMultiplier(
@@ -22462,10 +22487,31 @@ function advanceCityEconomy(cities, map, data, difficulty = "normal", econUnits 
     ...cities.map((c) => c.ownerId),
     ...econUnits.map((u) => u.ownerId)
   ]);
+  const buildingsByOwner = /* @__PURE__ */ new Map();
+  for (const city of cities) {
+    const builtIds = builtByCity.get(city.id) ?? [];
+    if (builtIds.length === 0) continue;
+    const ownerEra = resolveOwnerEra ? resolveOwnerEra(city.ownerId) : city.ownerId === 0 ? playerEra : 1;
+    const ownerTech = resolveOwnerTech ? resolveOwnerTech(city.ownerId) : playerZbadane;
+    const list = buildingsByOwner.get(city.ownerId) ?? [];
+    for (const bid of builtIds) {
+      const bdef = data.buildings.find((b) => b.id === bid);
+      if (!bdef) continue;
+      const level = buildingLevelForEpoch(
+        bdef.epokaWejscia,
+        ownerEra,
+        bdef.maksPoziom,
+        bdef.poziomTechGate,
+        ownerTech
+      );
+      list.push({ record: bdef, level });
+    }
+    buildingsByOwner.set(city.ownerId, list);
+  }
   for (const oid of ownerIds) {
     const income = incomeByOwner.get(oid) ?? 0;
     const ounits = econUnits.filter((u) => u.ownerId === oid);
-    const balance = upkeepBalance(income, [], ounits, unitUpkeepTbl, upkeepParams);
+    const balance = upkeepBalance(income, buildingsByOwner.get(oid) ?? [], ounits, unitUpkeepTbl, upkeepParams);
     result.upkeepByOwner.set(oid, balance);
   }
   return result;
@@ -22479,7 +22525,7 @@ function asResearchGate(g) {
     empireImprovementKeys: g.empireImprovementKeys
   };
 }
-var NO_PREREQ = "\u2014";
+var BRAK_PREREQ2 = /* @__PURE__ */ new Set(["", "-", "\u2014", "\u2013", "brak", "none"]);
 var PIENIADZ_MNOZNIK = 10;
 function createPlayerState() {
   return {
@@ -22510,8 +22556,8 @@ function techCost(t) {
 }
 function parsePrereqs(t) {
   const raw = (t["Wymaga (prereq)"] ?? "").trim();
-  if (raw === "" || raw === NO_PREREQ) return [];
-  return raw.split("+").map((s) => s.trim()).filter((s) => s.length > 0 && s !== NO_PREREQ);
+  if (raw === "" || BRAK_PREREQ2.has(raw.toLowerCase())) return [];
+  return raw.split("+").map((s) => s.trim()).filter((s) => s.length > 0 && !BRAK_PREREQ2.has(s.toLowerCase()));
 }
 function prereqsMet(t, researched) {
   return parsePrereqs(t).every((p) => researched.has(p));
@@ -23114,6 +23160,7 @@ function isInTerritory(q, r, nodes) {
   spreadReligion,
   techCost,
   terrainDefenseMult,
+  unitsVisibleOnMap,
   wallParamsFromBuildings,
   workedTilesForCity
 });

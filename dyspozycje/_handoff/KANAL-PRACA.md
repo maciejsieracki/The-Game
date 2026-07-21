@@ -2415,3 +2415,14 @@ CZEKAM-NA: **właściciel** — Ctrl+F5 START.html → stamp **`5793da54`**. **m
 - tsc=0 · diplomacy-test 143/143 · ai-test T7D-g OK · publish OK.
 
 CZEKAM-NA: **sesja lokalna** — commit+push main · **Maciej** Ctrl+F5 → stamp `eeace0a7` · zwiadowca obok państwa-miasta bez wojny = brak bitwy.
+
+---
+
+## [22:50 PL, 2026-07-21] INTEGRATOR → Maciej — FIX FoW jednostki w mgle
+
+- **ROBOCZA = `83eadf9a`** (md5 `83eadf9a14a80a6e08db6a2eb8da88ca`), na `eeace0a7`.
+- **Przyczyna:** `syncUnitsRender()` bez listy mgły pokazywało wszystkie tokeny (czerwone pierścienie wroga w czerni/shroud).
+- **Fix:** `unitsVisibleOnMap` w `visibility.ts` + domyślne filtrowanie w `syncUnitsRender` gdy `fogOn`; logic 207/207 · VERIFY OK.
+- Commit+push main (ten wpis).
+
+CZEKAM-NA: **Maciej** Ctrl+F5 → stamp `83eadf9a` · mapa: brak wrogich jednostek poza bieżącym zasięgiem widzenia.

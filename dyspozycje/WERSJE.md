@@ -11,9 +11,13 @@ swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drug
 
 ## ROBOCZA (gra-robocza\Gra-ROBOCZA.html — wskazywana przez START.html)
 
+- 2026-07-21 · stempel: ROBOCZA · **83eadf9a** · md5 pliku `83eadf9a14a80a6e08db6a2eb8da88ca` · **FIX FoW — jednostki wroga ukryte poza bieżącym zasięgiem** — na `eeace0a7`:
+  **Przyczyna:** `syncUnitsRender()` bez jawnej listy mgły synchronizowało wszystkie tokeny jako widoczne (czerwone pierścienie w czerni/shroud). **Fix:** przy `fogOn` domyślna lista = `unitsVisibleOnMap` (obcy tylko w `currentVisible`; gracz zawsze); test logic 207/207 (+4).
+  tsc=0 · logic 207/207 · VERIFY OK · publish `gra-robocza/Gra-ROBOCZA.html`. · **AKTUALNA** · Test: Ctrl+F5 START.html → stamp `83eadf9a`; brak wrogich jednostek w czarnej mgle i ciemnym shroud poza zasięgiem.
+
 - 2026-07-21 · stempel: ROBOCZA · **eeace0a7** · md5 pliku `eeace0a7477674272f86583795d60826` · **BUGFIX: miasta-państwa atakują gracza tylko w wojnie** — na `5793da54`:
   **Fix:** `canEngageOwner` w AI (ai.ts) + bramka w main.ts — bez statusu `wojna` brak preBattle/ataku na jednostki gracza (riposta przy zwiadowcy obok miasta-państwa). Dyplomacja PRZYJAZNY/neutralni spójna z brakiem walki.
-  tsc=0 · diplomacy-test 143/143 · ai-test T7D-g OK · publish `gra-robocza/Gra-ROBOCZA.html`. · **AKTUALNA** · Test: Ctrl+F5 START.html → stamp `eeace0a7`; zwiadowca obok Gamla Uppsala → brak ataku; po wypowiedzeniu wojny → atak dozwolony.
+  tsc=0 · diplomacy-test 143/143 · ai-test T7D-g OK · publish `gra-robocza/Gra-ROBOCZA.html`. · **ZASTĄPIONA** (→ `83eadf9a`) · Test: Ctrl+F5 START.html → stamp `eeace0a7`; zwiadowca obok Gamla Uppsala → brak ataku; po wypowiedzeniu wojny → atak dozwolony.
 
 - 2026-07-21 · stempel: ROBOCZA · **5793da54** · md5 pliku `5793da543dc71b9a5ea61f6776f8c241` · **AUDYT 20 POTWIERDZONE + E-START-CS-Q1=C (merge commit)** — na `35a07a49`:
   **Audyt E1–E8:** #3–#9 #34–#39 #59–#65 + fix chatki WYDARZENIA (pełny opis: `dyspozycje/AUDYT-NAPRAWY-LOG.md`). **E-START-CS:** państwa-miasta wokół faktycznej stolicy (już w `35a07a49`, zachowane).

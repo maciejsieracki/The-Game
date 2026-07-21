@@ -270,3 +270,24 @@ export function computePlayerVisibility(opts: ComputePlayerVisibilityOptions): S
 }
 
 export { citySightRadius } from './okolica';
+
+// ---------------------------------------------------------------------------
+// unitsVisibleOnMap — które tokeny jednostek rysować (FoW)
+// ---------------------------------------------------------------------------
+
+/**
+ * Jednostki widoczne na mapie świata przy włączonej mgle:
+ * - gracz (playerOwnerId) zawsze,
+ * - obcy tylko gdy heks jest w bieżącym zasięgu widzenia (nie w explored/shroud),
+ * - garnizon (inGarnizon) nigdy.
+ */
+export function unitsVisibleOnMap(
+  units: readonly RuntimeUnit[],
+  visibleHexes: ReadonlySet<string>,
+  playerOwnerId = 0,
+): RuntimeUnit[] {
+  return units.filter(u => {
+    if (u.inGarnizon === true) return false;
+    return u.ownerId === playerOwnerId || visibleHexes.has(keyOf(u.q, u.r));
+  });
+}

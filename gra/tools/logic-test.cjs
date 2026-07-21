@@ -34,7 +34,7 @@ const BUNDLE_FILE = path.resolve(__dirname, '.logic-bundle.cjs');
 const ENTRY_TS = `
 import { generateMap, DEFAULT_WIDTH, DEFAULT_HEIGHT } from '../src/map/generator';
 import { computeStartPlacements, placeStartingUnits, computeReachable, computePath, keyOf, hexDistance } from '../src/units/setup';
-import { computeVisible, DEFAULT_SIGHT, computePlayerVisibility, buildUnitSightResolver, computeVisibleAt } from '../src/game/visibility';
+import { computeVisible, DEFAULT_SIGHT, computePlayerVisibility, buildUnitSightResolver, computeVisibleAt, unitsVisibleOnMap } from '../src/game/visibility';
 import { canFoundCity, foundCity, foundCityAt, cityName } from '../src/game/cities';
 import { loadGameData } from '../src/data/loader';
 import { advanceCityEconomy, buildEconParams, workedTilesForCity } from '../src/game/turn-economy';
@@ -71,7 +71,7 @@ import civsRaw from '../data/civs.json';
 export {
   generateMap, DEFAULT_WIDTH, DEFAULT_HEIGHT,
   computeStartPlacements, placeStartingUnits, computeReachable, computePath, keyOf, hexDistance,
-  computeVisible, DEFAULT_SIGHT, computePlayerVisibility, buildUnitSightResolver, computeVisibleAt,
+  computeVisible, DEFAULT_SIGHT, computePlayerVisibility, buildUnitSightResolver, computeVisibleAt, unitsVisibleOnMap,
   canFoundCity, foundCity, foundCityAt, cityName,
   loadGameData,
   advanceCityEconomy, buildEconParams, workedTilesForCity,
@@ -122,7 +122,7 @@ console.log('[logic-test] Bundle written to', BUNDLE_FILE);
 const {
   generateMap, DEFAULT_WIDTH, DEFAULT_HEIGHT,
   computeStartPlacements, placeStartingUnits, computeReachable, computePath, keyOf, hexDistance,
-  computeVisible, DEFAULT_SIGHT, computePlayerVisibility, buildUnitSightResolver, computeVisibleAt,
+  computeVisible, DEFAULT_SIGHT, computePlayerVisibility, buildUnitSightResolver, computeVisibleAt, unitsVisibleOnMap,
   canFoundCity, foundCity, foundCityAt, cityName,
   loadGameData,
   advanceCityEconomy, buildEconParams, workedTilesForCity,
@@ -279,6 +279,24 @@ for (const k of startOnlyVis) {
 }
 assert('computePlayerVisibility start fallback radius <= 5', startDistMax <= 5,
   `maxDist=${startDistMax}`);
+
+// ── Test 5c: unitsVisibleOnMap (FoW — obcy tylko w bieżącym zasięgu) ───────
+const fogPlayer = { id: 'p0', ownerId: 0, q: settler.q, r: settler.r, typeId: 'Osadnik', inGarnizon: false };
+const fogEnemyHidden = { id: 'e0', ownerId: 2, q: settler.q + 20, r: settler.r, typeId: 'Wojownik', inGarnizon: false };
+const fogEnemyVisible = { id: 'e1', ownerId: 2, q: settler.q + 1, r: settler.r, typeId: 'Wojownik', inGarnizon: false };
+const fogGarnizon = { id: 'g0', ownerId: 0, q: settler.q, r: settler.r, typeId: 'Wojownik', inGarnizon: true };
+const fogVisHexes = new Set([keyOf(settler.q, settler.r), keyOf(settler.q + 1, settler.r)]);
+const fogOnMap = unitsVisibleOnMap(
+  [fogPlayer, fogEnemyHidden, fogEnemyVisible, fogGarnizon],
+  fogVisHexes,
+  0,
+);
+assert('unitsVisibleOnMap always shows player units', fogOnMap.some(u => u.id === 'p0'));
+assert('unitsVisibleOnMap hides enemy outside current vision',
+  !fogOnMap.some(u => u.id === 'e0'));
+assert('unitsVisibleOnMap shows enemy on visible hex',
+  fogOnMap.some(u => u.id === 'e1'));
+assert('unitsVisibleOnMap hides garnizon', !fogOnMap.some(u => u.id === 'g0'));
 
 // ── Test 6: canFoundCity ───────────────────────────────────────────────────
 const cities = [];
