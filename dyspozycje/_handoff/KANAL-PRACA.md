@@ -2463,3 +2463,14 @@ Maciej: **push** — progi dyplomacji wg trudności.
 - Commit+push `main` (FF).
 
 CZEKAM-NA: **Maciej** Ctrl+F5 → stamp `31bf4a4b` · dyplomacja normal: NAP przy Rel≥50 i Zauf≥40; handel przy Rel≥40.
+
+## [23:45 PL, 2026-07-21] INTEGRATOR → Maciej — NAP rel-only + fix handel UI deploy ROBOCZA
+
+Maciej: **push** — szybki test NAP + handel.
+
+- **ROBOCZA = `b1e90a22`** (md5 `b1e90a22570f73e834a6209c6830575a`), na `31bf4a4b`.
+- **NAP:** tylko Relacja ≥ progNapRelacja (bez progu Zaufania).
+- **Handel UI:** bramka używała stale `rel.respekt`; panel pokazywał live `computeRespekt` → naprawione `audienceRelTotal`.
+- tsc=0 · diplomacy-proposal 47/47 · VERIFY OK.
+
+CZEKAM-NA: **Maciej** `git pull` → Ctrl+F5 START.html → stamp `b1e90a22`; NAP Rel≥50 bez Zauf; handel aktywny przy Rel≥40 na panelu.

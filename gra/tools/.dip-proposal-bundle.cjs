@@ -10431,19 +10431,8 @@ function evaluateProposal(proposal, ctx) {
   }
   switch (actionId) {
     case "nap": {
-      const napRelOk = score >= p.progNapRelacja;
-      const napZaufOk = relation.zaufanie >= p.progNapZaufanie;
-      if (!napRelOk && !napZaufOk) {
-        return {
-          accepted: false,
-          reason: `Relacja zbyt niska na pakt (wymagana Relacja \u2265 ${p.progNapRelacja} i Zaufanie \u2265 ${p.progNapZaufanie})`
-        };
-      }
-      if (!napRelOk) {
+      if (score < p.progNapRelacja) {
         return { accepted: false, reason: `Relacja zbyt niska na pakt (wymagana \u2265 ${p.progNapRelacja})` };
-      }
-      if (!napZaufOk) {
-        return { accepted: false, reason: `Zaufanie zbyt niskie na pakt (wymagane \u2265 ${p.progNapZaufanie})` };
       }
       if (ctx.ekspansjaPrzyGranicy) {
         return { accepted: false, reason: "Ekspansja przy granicy \u2014 brak zaufania do paktu" };

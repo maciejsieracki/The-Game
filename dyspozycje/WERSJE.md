@@ -11,9 +11,13 @@ swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drug
 
 ## ROBOCZA (gra-robocza\Gra-ROBOCZA.html — wskazywana przez START.html)
 
+- 2026-07-21 · stempel: ROBOCZA · **b1e90a22** · md5 pliku `b1e90a22570f73e834a6209c6830575a` · **NAP rel-only + fix handel UI (live Respekt)** — na `31bf4a4b`:
+  **NAP:** bramka tylko Relacja ≥ progNapRelacja (bez Zaufania); Zaufanie rośnie po zawarciu. **Handel:** UI używało stale `rel.respekt` zamiast live `computeRespekt` → przy Rel 55 na ekranie przycisk szary z mylącym tooltipem; naprawione `audienceRelTotal` + `buildProposalEvalContext`.
+  tsc=0 · diplomacy-proposal 47/47 · VERIFY OK · publish `gra-robocza/Gra-ROBOCZA.html`. · **AKTUALNA** · Test: Ctrl+F5 START.html → stamp `b1e90a22`; NAP przy Rel≥50 bez Zauf; handel aktywny gdy Rel (Zauf+Respekt mocy) ≥40.
+
 - 2026-07-21 · stempel: ROBOCZA · **31bf4a4b** · md5 pliku `31bf4a4bbe8eea314f7210b9a61f4a1a` · **D3-PROG-DIFF: progi traktatów wg trudności + dual gates NAP/handl** — na `95be60fc`:
   **D3-PROG-DIFF:** skalowanie progów relacji/zaufania/respektu ±10 wg trudności (easy −10 / hard +10). Normal: handel Rel 40, NAP Rel 50 + Zauf 40. Dual gates: NAP wymaga Rel+Zauf (+ tech/granice gdzie dotyczy); sojusz/trybut/handl z osobnymi progami.
-  tsc=0 · diplomacy-proposal 48/48 · VERIFY OK · publish `gra-robocza/Gra-ROBOCZA.html`. · **AKTUALNA** · Test: Ctrl+F5 START.html → stamp `31bf4a4b`; normal: NAP przy Rel≥50 i Zauf≥40; handel przy Rel≥40.
+  tsc=0 · diplomacy-proposal 48/48 · VERIFY OK · publish `gra-robocza/Gra-ROBOCZA.html`. · **ZASTĄPIONA** (→ `b1e90a22`) · Test: Ctrl+F5 START.html → stamp `31bf4a4b`; normal: NAP przy Rel≥50 i Zauf≥40; handel przy Rel≥40.
 
 - 2026-07-21 · stempel: ROBOCZA · **95be60fc** · md5 pliku `95be60fc79400576b0e82bb15f518174` · **FIX picking heksów — raycast 3D terenu zamiast płaszczyzny y=0** — na `83eadf9a`:
   **Przyczyna:** kamera ~52° + pryzmy terenu podniesione nad y=0 → `pixelToHex` trafiał w płaszczyznę pod spodem, przesuwając wybór w stronę kamery (krawędzie heksów = zły hex). **Fix:** raycast na InstancedMesh terenu (prefer górna ścianka), fallback y=0; `terrainPickMeshes` w SceneResult + `pickHexAt` in main.ts.

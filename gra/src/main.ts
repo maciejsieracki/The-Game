@@ -6681,11 +6681,15 @@ async function boot(): Promise<void> {
     }
 
     function buildProposalEvalContext(proposerId: number, responderId: number): ProposalEvalContext {
-      const rel = getDiploRelation(proposerId, responderId);
+      const relRaw = getDiploRelation(proposerId, responderId);
       const potProposer = objectivePowerByOwner.get(proposerId)?.power ?? 0;
       const potResponder = objectivePowerByOwner.get(responderId)?.power ?? 0;
       const proposerRespekt = computeRespekt(potProposer, potResponder);
       const responderRespekt = computeRespekt(potResponder, potProposer);
+      const rel: Relation = {
+        ...relRaw,
+        respekt: proposerRespekt,
+      };
       const militaryRatio = militaryRatioFromArmyM(
         sumArmyMForOwner(proposerId),
         sumArmyMForOwner(responderId),
@@ -6808,13 +6812,18 @@ async function boot(): Promise<void> {
       return { ok: false, tooltip: `Wymagane Zaufanie ≥ ${minZauf}` };
     }
 
+    /** Relacja widoczna w audiencji = Zaufanie + Respekt z mocy (jak w panelu). */
+    function audienceRelTotal(ownerId: number, rel: Relation): number {
+      return Math.round(Math.max(0, Math.min(200, (rel.zaufanie ?? 0) + objectiveRespektPctToward(ownerId))));
+    }
+
     function buildAudienceActions(
       ownerId: number,
       layer: ReturnType<typeof diplomacyLayerForOwner>,
     ): AudienceAction[] {
       const rel = getDiploRelation(0, ownerId);
       const dip = _diplomacyParams();
-      const relTotal = relationTotal(rel);
+      const relTotal = audienceRelTotal(ownerId, rel);
       const tier = relationTier(rel);
       const contact = diplomaticContactEstablished.has(ownerId);
       const isSimplified = layer === 'simplified';
@@ -6856,11 +6865,9 @@ async function boot(): Promise<void> {
           if (rel.status === 'wojna') { enabled = false; tooltip = 'Niedostępne w wojnie'; }
           else if (hasTreaty(activeDeals, 0, ownerId, RodzajTraktatu.PaktNieagresji)) {
             enabled = false; tooltip = 'Pakt już obowiązuje';
-          } else {
-            const gate = diplomacyDualGateTooltip(
-              relTotal, rel.zaufanie ?? 0, dip.progNapRelacja, dip.progNapZaufanie,
-            );
-            if (!gate.ok) { enabled = false; tooltip = gate.tooltip; }
+          } else if (relTotal < dip.progNapRelacja) {
+            enabled = false;
+            tooltip = 'Wymagana Relacja ≥ ' + dip.progNapRelacja;
           }
         } else if (id === '3') {
           if (rel.status === 'wojna') { enabled = false; tooltip = 'Niedostępne w wojnie'; }
@@ -7057,7 +7064,7 @@ async function boot(): Promise<void> {
             techOptions: getSellableTechForPlayer(),
             borderFeeCivil: 20,
             borderFeeMilitary: 40,
-            relacjaTotal: relationTotal(rel),
+            relacjaTotal: audienceRelTotal(ownerId, rel),
             trustPnGainedThisTurn: getDiploPairMeta(0, ownerId).trustPnGainedThisTurn,
             progDarRelacja: diplomacyProgDarRelacja(undefined, _menuDifficulty),
             progHandelRelacja: dip.progHandelRelacja,

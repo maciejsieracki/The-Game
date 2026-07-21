@@ -73,13 +73,13 @@ ok(dipNormal.progNapZaufanie === 40, 'normal progNapZaufanie 40');
 ok(dipEasy.progNapZaufanie === 30, 'easy progNapZaufanie 30');
 ok(dipHard.progNapZaufanie === 50, 'hard progNapZaufanie 50');
 
-// 1 NAP accept — Relacja >= 50 AND Zaufanie >= 40 @ normal
+// 1 NAP accept — Relacja >= 50 @ normal (bez progu Zaufania, Maciej 2026-07-21)
 let r = evaluateProposal(prop('nap', 0, 1, { turns: 15 }), ctx({ relation: rel(40, 10) }));
-ok(r.accepted && r.deal?.rodzaj === 'pakt_nieagresji', 'NAP accept rel 50 zauf 40 normal');
+ok(r.accepted && r.deal?.rodzaj === 'pakt_nieagresji', 'NAP accept rel 50 zauf 5 normal');
 
-// 1a NAP reject — Rel OK, Zaufanie za niskie
+// 1a NAP accept — Rel OK, niskie Zaufanie (brak progu Zauf)
 r = evaluateProposal(prop('nap'), ctx({ relation: rel(30, 20) }));
-ok(!r.accepted && r.reason.includes('Zaufanie'), 'NAP reject rel 50 zauf 30 normal');
+ok(r.accepted, 'NAP accept rel 50 zauf 30 normal (bez progu Zauf)');
 
 // 2 NAP reject low relacja @ normal
 r = evaluateProposal(prop('nap'), ctx({ relation: rel(25, 24) }));
@@ -255,16 +255,14 @@ r = evaluateProposal(prop('handel', 0, 1, { givePn: 250, receivePn: 100 }), ctx(
 }));
 ok(r.accepted, 'handel accept relacja 40 normal');
 
-// 9c NAP easy — accept rel 40 + zauf 30, reject rel 39 / zauf 29
+// 9c NAP easy — accept rel 40, reject rel 39 (bez progu Zauf)
 r = evaluateProposal(prop('nap', 0, 1, { turns: 15 }), ctx({
   relation: rel(30, 10),
   difficulty: 'easy',
 }));
-ok(r.accepted, 'NAP accept rel 40 zauf 30 easy');
+ok(r.accepted, 'NAP accept rel 40 zauf 5 easy');
 r = evaluateProposal(prop('nap'), ctx({ relation: rel(20, 19), difficulty: 'easy' }));
 ok(!r.accepted, 'NAP reject relacja 39 easy');
-r = evaluateProposal(prop('nap'), ctx({ relation: rel(20, 20), difficulty: 'easy' }));
-ok(!r.accepted, 'NAP reject zauf 20 easy (rel OK)');
 
 // 9d Handel easy — accept 30
 r = evaluateProposal(prop('handel', 0, 1, { givePn: 350, receivePn: 100 }), ctx({
