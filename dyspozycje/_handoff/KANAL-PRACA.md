@@ -2578,3 +2578,12 @@ CZEKAM-NA: **Maciej** `git pull` → Ctrl+F5 START.html → stamp `e5d1ebad`; kl
 - tsc=0 · okolica-test 39/39.
 
 CZEKAM-NA: **Maciej** `git pull` → Ctrl+F5 START.html → stamp `13cb70c2`; overlap przy Sparcie — brak 👤/plonów na lesie AI; minimapa → granice państw ON.
+
+## [00:15] INTEGRATOR → Maciej — FIX manual battle deploy pick
+
+- **Stamp ROBOCZA:** `0440dbe4` (md5 `0440dbe4c9b526c4e382d22585168d40`)
+- **Bug:** deploy — klik w pole czasem trafiał w sąsiedni hex / wymagał wielu klików (y=0 plane vs pochylona kamera).
+- **Fix:** `battleScene.ts` — `_battleGroundPickMeshes` + raycast terenu 3D (jak `picker.ts` na mapie); `preferPlacement` przy przenoszeniu z zaznaczeniem.
+- tsc=0 · VERIFY OK.
+
+CZEKAM-NA: **Maciej** `git pull` → Ctrl+F5 START.html → stamp `0440dbe4`; PLAYTEST-WALKA → bitwa ręczna → deploy → zaznacz jednostkę → LPM na docelowy kafelek (jeden klik, właściwy slot).

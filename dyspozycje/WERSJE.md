@@ -11,9 +11,13 @@ swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drug
 
 ## ROBOCZA (gra-robocza\Gra-ROBOCZA.html — wskazywana przez START.html)
 
+- 2026-07-22 · stempel: ROBOCZA · **0440dbe4** · md5 pliku `0440dbe4c9b526c4e382d22585168d40` · **FIX: manual battle deploy — raycast terenu 3D** — na `13cb70c2`:
+  **Bug:** w fazie rozstawiania (deploy) klik w pole czasem trafiał w sąsiedni hex / wymagał wielu klików — `_pickGroundTile` i `_onDeployClick` używały płaszczyzny y=0 (perspektywa kamery przesuwała trafienie, jak stary bug mapy w `picker.ts`). **Fix:** `_battleGroundPickMeshes` + raycast na meshach terenu; `preferPlacement` przy kliku z zaznaczeniem; feedback „Poza strefą"/„Pole nieprzechodne".
+  tsc=0 · battle-smoke harness pre-existing fail · publish `gra-robocza/Gra-ROBOCZA.html`. · **AKTUALNA** · Test: Ctrl+F5 START.html → stamp `0440dbe4`; PLAYTEST-WALKA → bitwa ręczna deploy → zaznacz jednostkę → LPM na docelowy niebieski kafelek → jedna próba, właściwy slot.
+
 - 2026-07-22 · stempel: ROBOCZA · **13cb70c2** · md5 pliku `13cb70c217f2e899a712af962cfb176a` · **FIX: obywatele nie pracują na obcym terytorium + granice państw** — na `d33863ab`:
   **Bug:** w overlapie zasięgów miast gracz widział 👤 i zbierał plony z heksów faktycznie należących do AI (budowa ulepszeń już blokowana). **Fix:** `territoryOwnerAt` filtruje auto/ręczny przydział pól, reconcile co turę i przy założeniu miasta; 👤 overlay tylko na własnych heksach; toggle granic państw (minimapa, sześciokąt) — już podpięty.
-  tsc=0 · okolica-test 39/39 · publish `gra-robocza/Gra-ROBOCZA.html`. · **AKTUALNA** · Test: Ctrl+F5 START.html → stamp `13cb70c2`; overlap przy Sparcie — brak 👤/plonów na lesie AI; minimapa → granice państw ON.
+  tsc=0 · okolica-test 39/39 · publish `gra-robocza/Gra-ROBOCZA.html`. · **ZASTĄPIONA** (→ `0440dbe4`) · Test: Ctrl+F5 START.html → stamp `13cb70c2`; overlap przy Sparcie — brak 👤/plonów na lesie AI; minimapa → granice państw ON.
 
 - 2026-07-22 · stempel: ROBOCZA · **d33863ab** · md5 pliku `d33863ab2e47ec6fd8b5b8dcf2cd3a3f` · **FIX: zwiadowca bez głodu + Manpower przy rekrutacji** — na `e1ac8503`:
   **Bug1:** czaszka głodu i utrata HP na zwiadowcy gdy imperium głoduje — overlay per-państwo bez filtra cywilnych + utrzymanie złoto Zwiadowca=1 w JSON. **Fix:** `isCivilianUnit` (zwiadowca/osadnik/robotnik) pomijany w overlay i `applyArmyStarvationHpLoss`; cywilne upkeep/food=0.

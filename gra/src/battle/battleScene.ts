@@ -1562,6 +1562,8 @@ export class BattleScene {
   private _deploySelected: RuntimeBattleUnit | null = null;
   /** Meshe strefy startowej (podswietlenie polowy ATK + mgla DEF). */
   private _deployZoneMeshes: THREE.Mesh[] = [];
+  /** Floor + hill/water meshes for screen→tile raycast (avoids y=0 perspective skew). */
+  private _battleGroundPickMeshes: THREE.Object3D[] = [];
   /** Grupa wizualizacji fazy deploy (jasna polowa / mgla / linia). */
   private _deployVisualGroup: THREE.Group | null = null;
   /** Etykiety HTML polow mapy w fazie deploy. */
@@ -3482,6 +3484,7 @@ export class BattleScene {
   // -------------------------------------------------------------------------
 
   private _buildBattlefield(_teren: string): void {
+    this._battleGroundPickMeshes = [];
     const tm = this.terrainMap;
 
     // Flat SQUARE tile: a thin slab BoxGeometry(S, h, S). A tiny gap (0.98)
@@ -3538,6 +3541,7 @@ export class BattleScene {
         mesh.position.set(x, yTop - TILE_H * 0.5, z);
         mesh.receiveShadow = true;
         this.scene.add(mesh);
+        this._battleGroundPickMeshes.push(mesh);
       }
     }
 
@@ -3625,6 +3629,7 @@ export class BattleScene {
       shrubs.instanceMatrix.needsUpdate = true;
       this.scene.add(bumps);
       this.scene.add(shrubs);
+      this._battleGroundPickMeshes.push(bumps);
     }
 
     // --- RIVER + FORD: a translucent water sheen plane over each water tile ---
@@ -3654,6 +3659,7 @@ export class BattleScene {
       water.count = wi;
       water.instanceMatrix.needsUpdate = true;
       this.scene.add(water);
+      this._battleGroundPickMeshes.push(water);
     }
 
     // --- ROCKS: small instanced low-poly boulders on rock tiles ---
@@ -8200,9 +8206,26 @@ export class BattleScene {
     const ndcY = -((cy - rect.top) / rect.height) * 2 + 1;
     const raycaster = new THREE.Raycaster();
     raycaster.setFromCamera(new THREE.Vector2(ndcX, ndcY), this.camera);
-    const ground = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
     const pt = new THREE.Vector3();
-    if (!raycaster.ray.intersectPlane(ground, pt)) return null;
+    let gotHit = false;
+    if (this._battleGroundPickMeshes.length > 0) {
+      const hits = raycaster.intersectObjects(this._battleGroundPickMeshes, false);
+      for (const h of hits) {
+        if (h.face && h.face.normal.y > 0.3) {
+          pt.copy(h.point);
+          gotHit = true;
+          break;
+        }
+      }
+      if (!gotHit && hits.length > 0) {
+        pt.copy(hits[0]!.point);
+        gotHit = true;
+      }
+    }
+    if (!gotHit) {
+      const ground = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+      if (!raycaster.ray.intersectPlane(ground, pt)) return null;
+    }
     const col = Math.round(pt.x / TILE_S);
     const row = Math.round(pt.z / TILE_S);
     if (col < 0 || col >= BF_COLS || row < 0 || row >= BF_ROWS) return null;
@@ -8745,12 +8768,9 @@ export class BattleScene {
         obj = obj.parent;
       }
     }
-    const ground = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
-    const pt = new THREE.Vector3();
-    if (!raycaster.ray.intersectPlane(ground, pt)) return null;
-    const col = Math.round(pt.x / TILE_S);
-    const row = Math.round(pt.z / TILE_S);
-    const cellUnit = this.occByKey.get(cellKey(col, row));
+    const tile = this._pickGroundTile(cx, cy);
+    if (!tile) return null;
+    const cellUnit = this.occByKey.get(cellKey(tile.col, tile.row));
     if (cellUnit && !cellUnit.dead && !cellUnit.fadingOut && !cellUnit.removed) return cellUnit;
     return null;
   }
@@ -8971,7 +8991,7 @@ export class BattleScene {
       const distSq = (e.clientX - start.x) ** 2 + (e.clientY - start.y) ** 2;
       if (distSq < 36) {
         this._lastClickModifiers = { ctrl: e.ctrlKey, shift: e.shiftKey };
-        this._onDeployClick(e.clientX, e.clientY);
+        this._onDeployClick(e.clientX, e.clientY, true);
       }
       this._pointerDownPos = null;
       return;
@@ -12232,63 +12252,62 @@ export class BattleScene {
    * atakujacych (precyzyjne trafienie w model), potem raycast y=0 do
    * wyznaczenia celu przeniesienia.
    *
-   * NAPRAWA BUGU: poprzednia wersja uzywala wylacznie raycastu na plaszczyznie
-   * y=0 do wykrywania kliknietych jednostek. Modele 3D maja wysokosc > 0, wiec
-   * klikniecie w gornej czesci modelu dawalo pt.z przesuniete o ~0.5 TILE —
-   * Math.round zaokraglal do sasiedniego (pustego) kafelka, co przy zaznaczonej
-   * jednostce powodowalo jej przeniesienie na bledne pole zamiast ponownego
-   * zaznaczenia / wybrania nowej jednostki.
+   * NAPRAWA BUGU: poprzednia wersja uzywala wylacznie plaszczyzny y=0 do
+   * wyznaczenia celu przeniesienia. Przy pochylonej kamerze dawalo to przesuniecie
+   * w strone kamery — Math.round trafial sasiedni kafelek. Teraz raycast na
+   * meshach terenu (_battleGroundPickMeshes), jak picker.ts na mapie swiata.
+   * preferPlacement=true pomija ponowne trafienie w model jednostki (klik na pole).
    */
-  private _onDeployClick(cx: number, cy: number): void {
+  private _onDeployClick(cx: number, cy: number, preferPlacement = false): void {
     if (!this.deployPhase) return;
-    const rect = this.canvas.getBoundingClientRect();
-    const ndcX =  ((cx - rect.left) / rect.width)  * 2 - 1;
-    const ndcY = -((cy - rect.top)  / rect.height) * 2 + 1;
-
-    const raycaster = new THREE.Raycaster();
-    raycaster.setFromCamera(new THREE.Vector2(ndcX, ndcY), this.camera);
 
     // --- KROK 1: Sprawdz 3D-raycast na meshach atakujacych ---
     // Dzieki temu klikniecie w dowolna czesc modelu (nie tylko podstawe)
     // precyzyjnie identyfikuje jednostke bez bledu perspektywy.
-    const atkGroups = this._playerRoster()
-      .filter(u => !u.dead && !u.removed)
-      .map(u => u.group);
-    const hits3d = raycaster.intersectObjects(atkGroups, true);
-    if (hits3d.length > 0) {
-      let hitUnit: RuntimeBattleUnit | null = null;
-      const roster = this._playerRoster();
-      for (const h of hits3d) {
-        let obj: THREE.Object3D | null = h.object;
-        while (obj) {
-          const found = roster.find(u => u.group === obj && !u.dead && !u.removed);
-          if (found) { hitUnit = found; break; }
-          obj = obj.parent;
+    // Pomijamy gdy uzytkownik kliknal puste pole z zaznaczeniem (preferPlacement).
+    if (!preferPlacement) {
+      const rect = this.canvas.getBoundingClientRect();
+      const ndcX =  ((cx - rect.left) / rect.width)  * 2 - 1;
+      const ndcY = -((cy - rect.top)  / rect.height) * 2 + 1;
+      const raycaster = new THREE.Raycaster();
+      raycaster.setFromCamera(new THREE.Vector2(ndcX, ndcY), this.camera);
+      const atkGroups = this._playerRoster()
+        .filter(u => !u.dead && !u.removed)
+        .map(u => u.group);
+      const hits3d = raycaster.intersectObjects(atkGroups, true);
+      if (hits3d.length > 0) {
+        let hitUnit: RuntimeBattleUnit | null = null;
+        const roster = this._playerRoster();
+        for (const h of hits3d) {
+          let obj: THREE.Object3D | null = h.object;
+          while (obj) {
+            const found = roster.find(u => u.group === obj && !u.dead && !u.removed);
+            if (found) { hitUnit = found; break; }
+            obj = obj.parent;
+          }
+          if (hitUnit) break;
         }
-        if (hitUnit) break;
-      }
-      if (hitUnit) {
-        this._handleDeployUnitPick(hitUnit, this._lastClickModifiers.ctrl, this._lastClickModifiers.shift);
-        return;
+        if (hitUnit) {
+          this._handleDeployUnitPick(hitUnit, this._lastClickModifiers.ctrl, this._lastClickModifiers.shift);
+          return;
+        }
       }
     }
 
-    // --- KROK 2: Raycast na plaszczyznę y=0 (cel przeniesienia) ---
-    const ground = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
-    const pt = new THREE.Vector3();
-    if (!raycaster.ray.intersectPlane(ground, pt)) return;
-
-    // Przelicz na kolumne/rzad siatki
-    const col = Math.round(pt.x / TILE_S);
-    const row = Math.round(pt.z / TILE_S);
+    // --- KROK 2: Raycast na teren 3D (cel przeniesienia) ---
+    const tile = this._pickGroundTile(cx, cy);
+    if (!tile) return;
+    const { col, row } = tile;
 
     // Fallback: sprawdz occByKey (na wypadek gdyby raycast 3D nie trafil —
     // np. jednostka bez mesha; dla bezpieczenstwa zachowujemy ten krok)
-    const key = cellKey(col, row);
-    const unitAtCell = this.occByKey.get(key);
-    if (unitAtCell && this._isPlayerSide(unitAtCell.side)) {
-      this._handleDeployUnitPick(unitAtCell, this._lastClickModifiers.ctrl, this._lastClickModifiers.shift);
-      return;
+    if (!preferPlacement) {
+      const key = cellKey(col, row);
+      const unitAtCell = this.occByKey.get(key);
+      if (unitAtCell && this._isPlayerSide(unitAtCell.side)) {
+        this._handleDeployUnitPick(unitAtCell, this._lastClickModifiers.ctrl, this._lastClickModifiers.shift);
+        return;
+      }
     }
 
     // LPM + zaznaczenie: przesun na wskazane pole (pojedynczo lub grupa)
@@ -12304,6 +12323,8 @@ export class BattleScene {
       }
     }
     if (hasSelection) {
+      if (!inZone) this._showDeployFeedback('Poza strefą rozstawienia');
+      else if (!passable) this._showDeployFeedback('Pole nieprzechodne');
       this._clearDeploySelectionState();
     }
   }
@@ -14396,15 +14417,11 @@ export class BattleScene {
       }
     }
 
-    const ground = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
-    const pt = new THREE.Vector3();
-    if (!raycaster.ray.intersectPlane(ground, pt)) return;
-    const col = Math.round(pt.x / TILE_S);
-    const row = Math.round(pt.z / TILE_S);
-    if (col < 0 || col >= BF_COLS || row < 0 || row >= BF_ROWS) return;
+    const tile = this._pickGroundTile(cx, cy);
+    if (!tile) return;
 
     if (!hitUnit) {
-      const cellUnit = this.occByKey.get(cellKey(col, row));
+      const cellUnit = this.occByKey.get(cellKey(tile.col, tile.row));
       if (cellUnit && !cellUnit.dead && !cellUnit.fadingOut) {
         if (this._isPlayerSide(cellUnit.side)) {
           this._handleBattleUnitPick(cellUnit, this._lastClickModifiers.ctrl, this._lastClickModifiers.shift);
@@ -14418,7 +14435,7 @@ export class BattleScene {
     }
 
     if (this._selectedUnits.size > 0) {
-      this._issueBattleMove(col, row, queueOnly);
+      this._issueBattleMove(tile.col, tile.row, queueOnly);
     }
   }
 
