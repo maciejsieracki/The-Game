@@ -164,7 +164,7 @@ import {
 } from './game/mapSiegeDetect';
 import { resolveEnemyCityClick } from './map/map-attack-city';
 import { launchFieldBattleFromMap } from './battle/mapFieldBattle';
-import { collectAtkRosterNearCity } from './units/battleRoster';
+import { collectAtkRosterNearCity, collectBattleRoster as collectBattleRosterPure, collectDefRosterNearCity } from './units/battleRoster';
 import { hasCityDefenders, survivorsLiveSet } from './game/siegeDefenders';
 import { getCityFood } from './game/turn-economy';
 import { SiegeMarkerRenderer } from './render/siegeMarker';
@@ -4031,6 +4031,9 @@ async function boot(): Promise<void> {
       goldOnce?: number;
     }> = [];
 
+    /** Tura ostatniej propozycji jednorazowego daru ¤ AI→gracz (cooldown per ownerId). */
+    const aiOneShotGiftLastTurn = new Map<number, number>();
+
     function unitAttackScore(u: RuntimeUnit): number {
       return normFieldVal(lookupUnitDef(u.typeId)['meleeAttack'], 0);
     }
@@ -6215,6 +6218,9 @@ async function boot(): Promise<void> {
       const enriched = enrichAiCommandWithTreasury(cmd, balance);
       if (!enriched) return;
       console.log(`[Dyplomacja] AI${ownerId} ${enriched.type}: ${enriched.powod}`);
+      if (enriched.type === 'zaproponuj_handel') {
+        aiOneShotGiftLastTurn.set(ownerId, turn);
+      }
       enqueueDiplomacyPending(
         ownerId,
         enriched.type,
@@ -6273,6 +6279,9 @@ async function boot(): Promise<void> {
       } else {
         if (p.cmdType === 'zadaj_trybut' || p.cmdType === 'oferuj_trybut_za_pokoj') {
           setDiploRelation(0, p.ownerId, applyDiplomaticEvent(curRel, 'trybut_odmowa'));
+        }
+        if (p.cmdType === 'zaproponuj_handel') {
+          aiOneShotGiftLastTurn.set(p.ownerId, turn);
         }
         showDiplomacyProposalBanner(false, 'Odrzucono propozycję');
         showHintMessage('Odrzucono: ' + p.civName, 3000);
@@ -9268,23 +9277,17 @@ async function boot(): Promise<void> {
     }
 
     /** C1-Q4 / D8=A: heks kotwicy + własne jednostki w promieniu 1 heksa. */
-    function collectBattleRoster(anchor: RuntimeUnit, allUnits: RuntimeUnit[]): RuntimeUnit[] {
+    function collectBattleRoster(
+      anchor: RuntimeUnit,
+      allUnits: RuntimeUnit[],
+      side: 'attacker' | 'defender' = 'attacker',
+    ): RuntimeUnit[] {
       if (playtestWalkaActive) {
         // DUŻA bitwa: klik jednej jednostki zbiera cały klaster armii (owner-filtered).
         const radius = bitwaDuzaActive ? PLAYTEST_BITWA_DUZA_ROSTER_RADIUS : undefined;
         return collectPlaytestBattleRoster(anchor, allUnits, radius);
       }
-      const out: RuntimeUnit[] = [];
-      const seen = new Set<string | number>();
-      for (const u of allUnits) {
-        if (u.ownerId !== anchor.ownerId) continue;
-        if (hexDistance(anchor.q, anchor.r, u.q, u.r) > 1) continue;
-        if (seen.has(u.id)) continue;
-        seen.add(u.id);
-        out.push(u);
-      }
-      if (!out.some(x => x.id === anchor.id)) out.unshift(anchor);
-      return out;
+      return collectBattleRosterPure(anchor, allUnits, side);
     }
 
     function preBattleUnitFromRuntime(u: RuntimeUnit): PreBattleUnit {
@@ -9324,8 +9327,8 @@ async function boot(): Promise<void> {
 
     /** MAP PLAYER ATTACK: jednostka → jednostka (sąsiad) → preBattle C-01 */
     function openPlayerMapUnitAttack(atkUnit: RuntimeUnit, defUnit: RuntimeUnit): void {
-      const atkRoster = collectBattleRoster(atkUnit, units);
-      const defRoster = collectBattleRoster(defUnit, units);
+      const atkRoster = collectBattleRoster(atkUnit, units, 'attacker');
+      const defRoster = collectBattleRoster(defUnit, units, 'defender');
       const dHexKey4 = keyOf(defUnit.q, defUnit.r);
       const dHex4 = map.hexes[dHexKey4];
       const dTeren4: string = dHex4 ? (dHex4.terenBazowy as string) : 'Rownina';
@@ -9873,17 +9876,7 @@ async function boot(): Promise<void> {
     }
 
     function collectSiegeAtkRoster(city: City, anchor: RuntimeUnit): RuntimeUnit[] {
-      const out: RuntimeUnit[] = [];
-      const seen = new Set<string | number>();
-      for (const u of units) {
-        if (u.ownerId !== anchor.ownerId) continue;
-        if (hexDistance(u.q, u.r, city.q, city.r) > 1) continue;
-        if (seen.has(u.id)) continue;
-        seen.add(u.id);
-        out.push(u);
-      }
-      if (!out.some(x => x.id === anchor.id)) out.unshift(anchor);
-      return out;
+      return collectAtkRosterNearCity(city, anchor, units);
     }
 
     function militiaDefRecord(m: ReturnType<typeof makeMilitia>): Record<string, unknown> {
@@ -9913,10 +9906,7 @@ async function boot(): Promise<void> {
     }
 
     function collectSiegeDefRoster(city: City): RuntimeUnit[] {
-      const roster = units.filter(
-        u => u.ownerId === city.ownerId &&
-          hexDistance(u.q, u.r, city.q, city.r) <= 1,
-      );
+      const roster = collectDefRosterNearCity(city, units).filter(u => u.ownerId === city.ownerId);
       if (roster.length > 0) return roster;
       if ((city.garnizon ?? 0) <= 0) return [];
 
@@ -10963,6 +10953,7 @@ async function boot(): Promise<void> {
           siegeBesiegerByCity: Array.from(siegeBesiegerByCity.entries()),
           siegeAiStateByKey: Array.from(siegeAiStateByKey.entries()),
           pendingDiplomacyInbox: pendingDiplomacyInbox.slice(),
+          aiOneShotGiftLastTurn: Array.from(aiOneShotGiftLastTurn.entries()),
           diplomaticContactEstablished: Array.from(diplomaticContactEstablished),
           diplomaticDiscoveryPopupShown: Array.from(diplomaticDiscoveryPopupShown),
           diplomacyDeals: activeDeals.slice(),
@@ -12079,11 +12070,13 @@ async function boot(): Promise<void> {
                   relation: relTicked as unknown as Relation,
                   respektWzgledny,
                   stanWojny: (relTicked as any).status === 'wojna',
+                  lastOneShotGiftTurn: aiOneShotGiftLastTurn.get(ownerId),
                 }],
                 agresja: resolveArchetypeAggression(aiTyp, ARCHETYPE_AGGRESSION[aiTyp] ?? 0.5),
                 handlowosc: resolveArchetypeTrade(aiTyp, ARCHETYPE_TRADE[aiTyp] ?? 0.5),
                 epoka: player.era,
                 skarbiecGold: aiSkarbiecByOwner.get(ownerId) ?? 0,
+                currentTurn: turn,
               };
               const dipLayer = diplomacyLayerForOwner(
                 ownerId,
@@ -12205,8 +12198,8 @@ async function boot(): Promise<void> {
                     console.warn(`[AI ${ownerId}] Atak na gracza bez wojny — pominięto`);
                     continue;
                   }
-                  const atkRoster = collectBattleRoster(attacker, units);
-                  const defRoster = collectBattleRoster(defender, units);
+                  const atkRoster = collectBattleRoster(attacker, units, 'attacker');
+                  const defRoster = collectBattleRoster(defender, units, 'defender');
                   const hexKey = keyOf(defender.q, defender.r);
                   const hexObj = map.hexes[hexKey];
                   const teren: string = hexObj ? (hexObj.terenBazowy as string) : 'Rownina';
@@ -12429,8 +12422,8 @@ async function boot(): Promise<void> {
                 } else if (bcmd.type === 'attack') {
                   const target = units.find(u => u.id === bcmd.targetUnitId);
                   if (!target) continue;
-                  const atkRoster = collectBattleRoster(bu, units);
-                  const defRoster = collectBattleRoster(target, units);
+                  const atkRoster = collectBattleRoster(bu, units, 'attacker');
+                  const defRoster = collectBattleRoster(target, units, 'defender');
                   const hexKey2 = keyOf(target.q, target.r);
                   const hexObj2 = map.hexes[hexKey2];
                   const teren2: string = hexObj2 ? (hexObj2.terenBazowy as string) : 'Rownina';
@@ -13201,6 +13194,7 @@ async function boot(): Promise<void> {
       basketTransferCtx = createEmptyBasketTransferContext(data.tech);
       _dipUnitSeq = 0;
       pendingDiplomacyInbox.length = 0;
+      aiOneShotGiftLastTurn.clear();
       units.length = 0;
       plannedMarches.clear();
       marchExecQueue.length = 0;
@@ -14225,6 +14219,11 @@ async function boot(): Promise<void> {
       pendingDiplomacyInbox.length = 0;
       const savedPending = saved.meta?.pendingDiplomacyInbox as typeof pendingDiplomacyInbox | undefined;
       if (savedPending?.length) pendingDiplomacyInbox.push(...savedPending);
+      aiOneShotGiftLastTurn.clear();
+      const savedGiftCooldown = saved.meta?.aiOneShotGiftLastTurn as Array<[number, number]> | undefined;
+      if (savedGiftCooldown?.length) {
+        for (const [oid, t] of savedGiftCooldown) aiOneShotGiftLastTurn.set(oid, t);
+      }
       activeDeals = [];
       aiSkarbiecByOwner.clear();
       const savedDeals = saved.meta?.diplomacyDeals as ActiveDeal[] | undefined;

@@ -4,7 +4,19 @@
 > **Czat:** krótko **`✅ Gotowe:`** / **`⏸️ Czeka:`** · **Ten plik:** pełniejszy zapis tego samego.  
 > Szczegóły techniczne → handoff w `dyspozycje/_handoff/` · operacja → `dyspozycje/DZIENNIK-MASTERA.md`
 
-**Ostatnia aktualizacja:** 2026-07-22 (epoka startowa miast-państw)
+**Ostatnia aktualizacja:** 2026-07-22 (zwiadowca poza bitwą miasta)
+
+---
+
+## [2026-07-22] ✅ Gotowe — zwiadowca nie wchodzi w bitwę obok armii (Teby x3)
+
+| | |
+|---|---|
+| **Co** | Sąsiedni zwiadowca nie trafia do preBattle ani nie dołącza do armii po ataku miasta |
+| **Przykład** | Armia 2 jednostek + zwiadowca obok → atak miasta → preBattle tylko 2 bojowników; po wygranej zwiadowca zostaje na swoim hexie |
+| **md5** | `5ce0dfb7a110e60576de86a4acf4a48b` · stamp `5ce0dfb7` |
+| **Bramki** | tsc=0 · battle-roster-test 5/5 · post-battle-map-test 15/15 · combat-test 6/6 |
+| **Od Ciebie** | `git pull` → Ctrl+F5 · `gra-robocza/START.html` → stamp `5ce0dfb7` → powtórz scenariusz Teby x3 |
 
 ---
 

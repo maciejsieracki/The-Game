@@ -11,9 +11,13 @@ swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drug
 
 ## ROBOCZA (gra-robocza\Gra-ROBOCZA.html — wskazywana przez START.html)
 
+- 2026-07-22 · stempel: ROBOCZA · **5ce0dfb7** · md5 pliku `5ce0dfb7a110e60576de86a4acf4a48b` · **FIX: zwiadowca nie wchodzi w bitwę / nie merge po walce** — na `f8a680cb`:
+  **Bug Macieja (Teby x3):** armia 2 jednostek atakuje miasto; sąsiedni zwiadowca włączał się do preBattle i po wygranej dołączał do armii na hexie miasta. **Przyczyna:** `collectBattleRoster` / `collectAtkRosterNearCity` / `collectSiegeDefRoster` zbierały wszystkie jednostki dist≤1 bez filtra cywilów; `moveAtkRosterOntoBattleHex` przenosił cały roster. **Fix:** `shouldIncludeInBattleRoster` — cywil (zwiadowca/osadnik/robotnik) tylko jako kotwica ataku lub obrońca na hexie starcia; `collectDefRosterNearCity` dla obrońców miasta.
+  tsc=0 · battle-roster-test 5/5 · post-battle-map-test 15/15 · combat-test 6/6 · publish `gra-robocza/Gra-ROBOCZA.html`. · **AKTUALNA** · Test: Ctrl+F5 START.html → stamp `5ce0dfb7`; armia 2 + zwiadowca sąsiad → atak miasta → preBattle bez zwiadu; po wygranej zwiadowca zostaje na swoim hexie.
+
 - 2026-07-22 · stempel: ROBOCZA · **f8a680cb** · md5 pliku `f8a680cb8139078332c92fac65b4cb89` · **FIX: epoka startowa miast-państw (Kamień, nie Brąz)** — na `4bd22b7b`:
   **Bug Macieja:** państwa-miasta wyglądały jak epoka Brązu (kamienne chatki) mimo startu w Kamieniu. **Przyczyna:** spawn klastra obcych AI używał `initOwnerEra` bez pełnej synchronizacji tech/epoki (`setupAiOwnerEpoch`); render brał epokę z `empireEpochForOwner` — poprawnie, ale dane startowe były niespójne. **Fix:** `applyClusterStartPlan` + `fillAiOwnerCivMap` → `setupAiOwnerEpoch`; `spawnPendingSameTypeRivals` → `reconcileAllOwnerErasFromResearch` przed sync. **Uwaga:** neutralne chat ze skarbami (`wioska`) to osobny model — zawsze 3 chatki, nie epoka.
-  tsc=0 · owner-epoch-test 11/11 · publish `gra-robocza/Gra-ROBOCZA.html`. · **AKTUALNA** · Test: Ctrl+F5 START.html → stamp `f8a680cb`; Nowa gra · Epoka Kamienia → załóż miasto → sprawdź miasta-państwa: tipi/ognisko (P1 Kamień), nie megaron (Brąz); chat ze skarbami = neutralne chatki bez etykiety miasta.
+  tsc=0 · owner-epoch-test 11/11 · publish `gra-robocza/Gra-ROBOCZA.html`. · **ZASTĄPIONA** (→ `5ce0dfb7`) · Test: Ctrl+F5 START.html → stamp `f8a680cb`; Nowa gra · Epoka Kamienia → załóż miasto → sprawdź miasta-państwa: tipi/ognisko (P1 Kamień), nie megaron (Brąz); chat ze skarbami = neutralne chatki bez etykiety miasta.
 
 - 2026-07-22 · stempel: ROBOCZA · **4bd22b7b** · md5 pliku `4bd22b7b03a0a85de8e5b8e0ba90f629` · **EKO: nadmiar Pracy → pula ulepszeń** — na `27108476`:
   **Bug Macieja:** bez budynku w kolejce do puli cywilizacji szła tylko część z suwaka (np. 4 z 13), reszta (doBudynkow) ginęła. **Fix:** `advanceProduction` — pusta kolejka → `overflowToPool = doBudynkow`; `main.ts` — overflow dolicza do `_lastPracaRate` (HUD).

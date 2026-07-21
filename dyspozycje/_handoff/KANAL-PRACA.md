@@ -2760,3 +2760,13 @@ Pliki: `main.ts`, `tools/owner-epoch-test.cjs` (11/11).
 Bramki: tsc=0 · owner-epoch-test 11/11 · VERIFY OK.
 Publish ROBOCZA: stamp **f8a680cb** · md5 `f8a680cb8139078332c92fac65b4cb89`.
 CZEKAM-NA: Maciej — `git pull` → Ctrl+F5 START.html → stamp `f8a680cb` → Nowa gra Kamień → załóż miasto → miasta-państwa tipi/ognisko (nie megaron); chat ze skarbami = neutralne chatki (osobny model).
+
+## [01:45 PL, 2026-07-22] INTEGRATOR → Maciej — FIX zwiadowca w bitwie miasta (Teby x3)
+
+Bug: armia 2 jednostek atakuje miasto; sąsiedni zwiadowca w preBattle + merge na hex miasta po wygranej.
+Przyczyna: roster dist≤1 bez filtra cywilów; post-battle `moveAtkRosterOntoBattleHex` na cały roster.
+Fix: `shouldIncludeInBattleRoster` w `battleRoster.ts` — cywil tylko kotwica ATK lub hex starcia DEF.
+Pliki: `gra/src/units/battleRoster.ts`, `siegeDefenders.ts`, `main.ts`; test `battle-roster-test.cjs`.
+Bramki: tsc=0 · battle-roster 5/5 · post-battle 15/15 · combat 6/6.
+Publish ROBOCZA: stamp **5ce0dfb7** · md5 `5ce0dfb7a110e60576de86a4acf4a48b`.
+CZEKAM-NA: Maciej — `git pull` → Ctrl+F5 START.html → stamp `5ce0dfb7` → armia 2 + zwiadowca obok → atak miasta → brak zwiadu w preBattle; po walce zwiadowca na swoim hexie.

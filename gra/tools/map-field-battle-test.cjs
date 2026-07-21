@@ -10,7 +10,7 @@ const OUT = path.join(__dirname, '.map-field-battle-bundle.cjs');
 fs.writeFileSync(
   ENTRY,
   [
-    "export { collectBattleRoster, collectAtkRosterNearCity } from '../src/units/battleRoster';",
+    "export { collectBattleRoster, collectAtkRosterNearCity, shouldIncludeInBattleRoster } from '../src/units/battleRoster';",
     "export { collectCityDefRoster, defenderSideTitle, hasCityDefenders } from '../src/game/siegeDefenders';",
     "export { validateOpenCityFieldBattle, planOpenCityFieldBattle } from '../src/battle/mapFieldBattle';",
     "export { resolveEnemyCityClick } from '../src/map/map-attack-city';",
@@ -31,6 +31,7 @@ esbuild.buildSync({
 const {
   collectBattleRoster,
   collectAtkRosterNearCity,
+  shouldIncludeInBattleRoster,
   collectCityDefRoster,
   defenderSideTitle,
   hasCityDefenders,
@@ -93,6 +94,26 @@ const garrison = {
   ruchLeft: 0,
   ruch: 2,
 };
+const scoutNeighbor = {
+  id: 'u-scout',
+  ownerId: 0,
+  typeId: 'Zwiadowca',
+  category: 'zwiadowca',
+  q: 5,
+  r: 1,
+  ruchLeft: 2,
+  ruch: 3,
+};
+const warrior2 = {
+  id: 'u3',
+  ownerId: 0,
+  typeId: 'Hastati',
+  category: 'miecznik',
+  q: 5,
+  r: -1,
+  ruchLeft: 2,
+  ruch: 2,
+};
 
 const stubDef = () => ({
   meleeAttack: 8,
@@ -108,11 +129,57 @@ const stubDef = () => ({
 
 console.log('map-field-battle-test');
 
-const atkR = collectBattleRoster(hastati, [hastati, ally, garrison]);
+const atkR = collectBattleRoster(hastati, [hastati, ally, garrison], 'attacker');
 assert(atkR.length === 2 && atkR.every(u => u.ownerId === 0), 'collectBattleRoster: 2 allies dist<=1');
 
-const atkNear = collectAtkRosterNearCity(openCity, hastati, [hastati, ally]);
-assert(atkNear.length === 2, 'collectAtkRosterNearCity: adjacent to city');
+const atkWithScout = collectBattleRoster(hastati, [hastati, ally, scoutNeighbor, warrior2], 'attacker');
+assert(atkWithScout.length === 2 && !atkWithScout.some(u => u.typeId === 'Zwiadowca'),
+  'collectBattleRoster atk: adjacent scout excluded');
+
+const atkNear = collectAtkRosterNearCity(openCity, hastati, [hastati, ally, scoutNeighbor]);
+assert(atkNear.length === 2 && !atkNear.some(u => u.typeId === 'Zwiadowca'),
+  'collectAtkRosterNearCity: adjacent scout excluded');
+
+const cityScoutDef = {
+  id: 'u-scout-def',
+  ownerId: 1,
+  typeId: 'Zwiadowca',
+  category: 'zwiadowca',
+  q: 6,
+  r: 1,
+  ruchLeft: 2,
+  ruch: 3,
+};
+const defNearCity = collectCityDefRoster(openCity, [garrison, cityScoutDef]);
+assert(defNearCity.roster.length === 1 && defNearCity.roster[0].typeId === 'Falanga',
+  'collectCityDefRoster: adjacent defender scout excluded');
+
+const defOnCityScout = {
+  ...cityScoutDef,
+  id: 'u-scout-city',
+  q: 6,
+  r: 0,
+};
+const defCityScout = collectCityDefRoster(openCity, [garrison, defOnCityScout]);
+assert(defCityScout.roster.length === 2 && defCityScout.roster.some(u => u.typeId === 'Zwiadowca'),
+  'collectCityDefRoster: scout ON city hex included');
+
+assert(
+  shouldIncludeInBattleRoster(scoutNeighbor, {
+    side: 'attacker',
+    anchor: hastati,
+    battleHex: { q: 6, r: 0 },
+  }) === false,
+  'shouldIncludeInBattleRoster: neighbor scout not attacker',
+);
+assert(
+  shouldIncludeInBattleRoster(hastati, {
+    side: 'attacker',
+    anchor: hastati,
+    battleHex: { q: 6, r: 0 },
+  }) === true,
+  'shouldIncludeInBattleRoster: combat anchor always in',
+);
 
 assert(!hasCityDefenders({ ...openCity, garnizon: 0 }, []), 'empty city no defenders');
 assert(hasCityDefenders(openCity, [garrison]), 'garrison unit = defenders');

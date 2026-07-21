@@ -195,5 +195,38 @@ applyPostBattleMap({
 const e0After = fieldUnits.find(u => u.id === 'e0');
 assert(e0After && (e0After.q !== 11 || e0After.r !== 22), 'field win: def e0 moved off battle hex');
 
+// Scout sąsiad NIE w atkRoster — po wygranej zostaje na swoim hexie (Teby x3 fix)
+const scoutSideUnits = [
+  { id: 'a0', ownerId: 0, typeId: 'Hastati', q: 10, r: 22, ruchLeft: 2 },
+  { id: 'a1', ownerId: 0, typeId: 'Hastati', q: 11, r: 21, ruchLeft: 2 },
+  { id: 'scout', ownerId: 0, typeId: 'Zwiadowca', category: 'zwiadowca', q: 10, r: 21, ruchLeft: 3 },
+  { id: 'e0', ownerId: 1, typeId: 'Falanga', q: 11, r: 22, ruchLeft: 0 },
+];
+const scoutCity = { id: 'c2', ownerId: 1, q: 11, r: 22, name: 'Teby' };
+applyPostBattleMap({
+  units: scoutSideUnits,
+  map: { hexes: {} },
+  cities: [scoutCity],
+  battleQ: 11,
+  battleR: 22,
+  atkAnchor: scoutSideUnits[0],
+  atkRoster: [scoutSideUnits[0], scoutSideUnits[1]],
+  defRoster: [scoutSideUnits[3]],
+  atkStart: new Map([
+    ['a0', { q: 10, r: 22 }],
+    ['a1', { q: 11, r: 21 }],
+  ]),
+  winner: 'atakujacy',
+  lossAtkPct: 0,
+  lossDefPct: 1,
+  getDef: () => ({ Health: 100 }),
+  maxHpOf: () => 100,
+  isPassableHex,
+  isUnitAt: () => false,
+  cityOnBattleHex: scoutCity,
+});
+const scoutAfter = scoutSideUnits.find(u => u.id === 'scout');
+assert(scoutAfter?.q === 10 && scoutAfter?.r === 21, 'scout neighbor stays on original hex after city win');
+
 console.log('post-battle-map-test: ' + pass + ' pass, ' + fail + ' fail');
 process.exit(fail > 0 ? 1 : 0);

@@ -5,7 +5,7 @@
 
 import type { City } from './cities';
 import type { RuntimeUnit } from '../units/setup';
-import { hexDistance } from '../units/setup';
+import { collectDefRosterNearCity } from '../units/battleRoster';
 import { makeMilitia, type SiegeUnit } from './siege';
 
 /** Jednostki właściciela miasta w promieniu 1 heksa (przy murze / w mieście). */
@@ -13,10 +13,7 @@ export function defenderUnitsNearCity(
   city: City,
   units: readonly RuntimeUnit[],
 ): RuntimeUnit[] {
-  return units.filter(
-    u => u.ownerId === city.ownerId &&
-      hexDistance(u.q, u.r, city.q, city.r) <= 1,
-  );
+  return collectDefRosterNearCity(city, units).filter(u => u.ownerId === city.ownerId);
 }
 
 /**
