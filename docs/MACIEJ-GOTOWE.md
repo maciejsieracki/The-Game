@@ -15,9 +15,9 @@
 | **Co** | Taktyka (Obrona/Atak/Szturm/Ostrzał) i Strategia (priorytety celów) działają na **pojedynczej jednostce**, nie tylko na grupie |
 | **Jak zaznaczyć** | **Ctrl+LPM** na jednostkę w rosterze lub na polu bitwy = tylko ta jednostka · zwykły LPM na grupę = cała grupa |
 | **Wielokrotne** | Zaznacz kilka → Taktyka ustawia wszystkim; gdy różne postawy → nagłówek „mieszane" |
-| **md5** | `cb0248e49ea724d4d87f1f728637dadf` · stamp `cb0248e4` |
-| **Bramki** | tsc=0 · smoke OK |
-| **Od Ciebie** | `git pull` → Ctrl+F5 · `gra-robocza/START.html` → stamp `cb0248e4` · PLAYTEST-WALKA → bitwa ręczna → Ctrl+LPM wybierz 1 wojownika → Taktyka → Szturm; drugi w tej samej grupie → Obrona |
+| **md5** | `2e46903ef4065678fb24fbfe0475dd0f` · stamp `2e46903e` |
+| **Bramki** | tsc=0 · auto-battle-power-test 14/14 |
+| **Od Ciebie** | `git pull` → Ctrl+F5 · `gra-robocza/START.html` → stamp `2e46903e` · PLAYTEST-WALKA → bitwa ręczna → Ctrl+LPM wybierz 1 wojownika → Taktyka → Szturm; drugi w tej samej grupie → Obrona |
 
 ---
 

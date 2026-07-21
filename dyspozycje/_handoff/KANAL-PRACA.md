@@ -2643,11 +2643,11 @@ CZEKAM-NA: **Maciej** `git pull` → Ctrl+F5 START.html → stamp `3d2e4f32`; dy
 
 CZEKAM-NA: **Maciej** `git pull` → Ctrl+F5 START.html → stamp `77c603d7`; audiencja Argos → „Kultura: Grecka · Ten sam okręg kulturowy".
 
-## [00:35 PL, 2026-07-22] INTEGRATOR → Maciej — BITWA: taktyka/strategia per jednostka
+## [00:45 PL, 2026-07-22] INTEGRATOR → Maciej — BITWA: taktyka/strategia per jednostka (deploy)
 
-- **Stamp ROBOCZA:** `cb0248e4` (md5 `cb0248e49ea724d4d87f1f728637dadf`)
-- **Cel:** Taktyka (Obrona/Atak/Szturm/Ostrzał) i Strategia (priorytety celów) dostępne per jednostka — Ctrl+LPM zaznacza jedną; bez wymogu grupowania.
-- **Plik:** `gra/src/battle/battleScene.ts` — `unitDoctrine`, `useUnitPriorities` / `unitTargetPriorities`; popup Taktyka/Strategia na zaznaczeniu; wielokrotne → ustaw wszystkim lub „mieszane".
-- tsc=0 · smoke OK · publish `gra-robocza/Gra-ROBOCZA.html` · commit+push main.
+- **Stamp ROBOCZA:** `2e46903e` (md5 `2e46903ef4065678fb24fbfe0475dd0f`)
+- **Cel:** Taktyka (Obrona/Atak/Szturm/Ostrzał) i Strategia (priorytety celów) per jednostka — Ctrl+LPM zaznacza jedną; bez wymogu grupowania.
+- **Plik:** `gra/src/battle/battleScene.ts` — `unitDoctrine`, `useUnitPriorities` / `unitTargetPriorities`; popup Taktyka/Strategia na zaznaczeniu; `_effectiveMetaForUnit` wykonuje postawę per jednostka.
+- tsc=0 · auto-battle-power-test 14/14 · publish `gra-robocza/Gra-ROBOCZA.html` · commit+push main.
 
-CZEKAM-NA: **Maciej** `git pull` → Ctrl+F5 START.html → stamp `cb0248e4`; PLAYTEST-WALKA → bitwa ręczna → Ctrl+LPM 1 jednostka → Taktyka → inna niż reszta grupy.
+CZEKAM-NA: **Maciej** `git pull` → Ctrl+F5 START.html → stamp `2e46903e`; PLAYTEST-WALKA → bitwa ręczna → Ctrl+LPM 1 jednostka → Taktyka → inna niż reszta grupy.
