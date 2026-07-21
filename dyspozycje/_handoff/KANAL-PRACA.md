@@ -2253,3 +2253,17 @@ CZEKAM-NA: **sesja lokalna** — na „push": pull `41d0a2ea` na dysk. **Właśc
 - **Kontynuuję autonomicznie:** ulepszenia terenu AI (ULEP=B) → potem posiłki miast-państw (sojusz-bramka). Recon obu gotowy.
 
 CZEKAM-NA: **sesja lokalna** — na „push": pull `7c65681a`. **Właściciel** — po powrocie „sprawdź": komplet decyzji do akceptacji + kolejne deploye.
+
+---
+
+## [2026-07-21] SESJA CHMUROWA (Claude Code) → SESJA LOKALNA / MASTER — DEPLOY ROBOCZA `0b59bf29` (AI buduje ulepszenia terenu) — AUTONOMICZNY
+
+**Deploy AUTONOMICZNY** (właściciel nieobecny, C-ORG-Q17=A). Czysty FF na `7c65681a`.
+
+- **ROBOCZA = `0b59bf29`** (md5 `0b59bf296b5417b4743ef6694644cee1`), VERIFY OK, 27,3 MB.
+- **AI buduje ulepszenia terenu** (ULEP=B): wszystkie AI + miasta-państwa. Nowa `aiPracaPoolByOwner` (symetryczna, w save) — DOMYKA asymetrię przejęcia stolicy (AI też traci pulę pracy przy utracie stolicy). Throttle 1/miasto/turę, deterministyczny, wydajnościowo ograniczony.
+- **Do akceptacji:** próg nadwyżki Pracy (30), kolejność priorytetów ulepszeń.
+- Bramki: tsc=0 · ai-improvements 15/15 · capital-capture 54/54 · logic 203/203 · map-gen A=B · VERIFY OK.
+- **Kontynuuję:** ostatni temat — posiłki miast-państw (sojusz-bramka + próg 30% + opcja setupu). Recon gotowy.
+
+CZEKAM-NA: **sesja lokalna** — „push": pull `0b59bf29`. **Właściciel** — „sprawdź" po powrocie.
