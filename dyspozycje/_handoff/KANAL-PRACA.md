@@ -2734,3 +2734,10 @@ Pliki: `gra/src/game/display-names.ts`, `gra/src/main.ts`, `gra/src/game/city-na
 Bramki: tsc=0 · display-names-test 11/11 · diplomacy-display-test 14/14.
 Publish ROBOCZA: stamp **d5a4543e** · md5 `d5a4543e21e40869cd6fbbd6a7f27671`.
 CZEKAM-NA: Maciej — `git pull` → Ctrl+F5 START.html → stamp `d5a4543e` → dyplomacja → audiencja → nazwa miasta zamiast Rywal N.
+
+## [01:45] INTEGRATOR → Maciej — START: unikalne nazwy miast-państw 10–18 (27108476)
+
+Uzupełnienie `d5a4543e`: spawn + kreator — rywale 10–18 dostają nazwy z `miasta_cywilizacji` (Grecy: Olimpia, Efez…Nafplion), nie „Rywal N" ani powtórzone Sparta.
+Pliki: `city-names-pool.ts`, `civ-names.ts`, `start-preview.ts`, `newGameFlow.ts`, testy.
+Publish ROBOCZA: stamp **27108476** · md5 `27108476a220e9029beaf7a02512b0e7`.
+CZEKAM-NA: Maciej — `git pull` → Ctrl+F5 → stamp `27108476` → nowa gra Grecy · 16 miast-państw → brak „Rywal 10" w kreatorze/mapa/dyplomacja.

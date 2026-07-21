@@ -4,7 +4,19 @@
 > **Czat:** krótko **`✅ Gotowe:`** / **`⏸️ Czeka:`** · **Ten plik:** pełniejszy zapis tego samego.  
 > Szczegóły techniczne → handoff w `dyspozycje/_handoff/` · operacja → `dyspozycje/DZIENNIK-MASTERA.md`
 
-**Ostatnia aktualizacja:** 2026-07-22 (dyplomacja — nazwy miast-państw w audiencji)
+**Ostatnia aktualizacja:** 2026-07-22 (miasta-państwa 10–18 — unikalne nazwy)
+
+---
+
+## [2026-07-22] ✅ Gotowe — miasta-państwa 10–18: prawdziwe nazwy (nie „Rywal 10")
+
+| | |
+|---|---|
+| **Co** | Przy ≥10 miastach-państwach w klastrze (do 18) każde dostaje unikalną nazwę z puli greckiej (Olimpia, Efez…) — kreator, mapa i dyplomacja spójne |
+| **Przykład** | Grecy · 16 państw: rywal 10 = **Olimpia · miasto-państwo** (nie „Rywal 10") |
+| **md5** | `27108476a220e9029beaf7a02512b0e7` · stamp `27108476` |
+| **Bramki** | tsc=0 · city-names-pool-test 13/13 · civ-names-test 6/6 · display-names-test 11/11 |
+| **Od Ciebie** | `git pull` → Ctrl+F5 · `gra-robocza/START.html` → stamp `27108476` → nowa gra Grecy · suwak miast-państw 16 |
 
 ---
 

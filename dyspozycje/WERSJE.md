@@ -11,9 +11,13 @@ swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drug
 
 ## ROBOCZA (gra-robocza\Gra-ROBOCZA.html — wskazywana przez START.html)
 
+- 2026-07-22 · stempel: ROBOCZA · **27108476** · md5 pliku `27108476a220e9029beaf7a02512b0e7` · **START/DYPL: unikalne nazwy miast-państw 10–18** — na `d5a4543e`:
+  **Uzupełnienie fixu Rywal N:** `miasta_panstwa` = 10 nazw (9 rywali), kreator do 18. **Było:** rywal 10+ → fallback „Rywal N" (podgląd bez pul) lub zawijanie (Sparta×2). **Jest:** `clusterRivalFromPool` bierze rywali 10–18 z `miasta_cywilizacji` (Grecy: Olimpia…Nafplion); kreator przekazuje `cityNamesPools`; UI `resolveOwnerBaseName` bez zmian (z `d5a4543e`).
+  tsc=0 · city-names-pool-test 13/13 · civ-names-test 6/6 · display-names-test 11/11 · publish `gra-robocza/Gra-ROBOCZA.html`. · **AKTUALNA** · Test: Ctrl+F5 START.html → stamp `27108476`; Grecy · 16 miast-państw → kreator + mapa + dyplomacja: Olimpia, Efez… (nie „Rywal 10").
+
 - 2026-07-22 · stempel: ROBOCZA · **d5a4543e** · md5 pliku `d5a4543e21e40869cd6fbbd6a7f27671` · **DYPL: nazwy miast-państw w audiencji** — na `248b2622`:
   **Bug Macieja:** audiencja dyplomatyczna pokazywała „Rywal 10 · miasto-państwo" zamiast prawdziwej nazwy (np. Mykeny). **Przyczyna:** cache `ownerDisplayName` z fallbacku `Rywal N` (indeks poza pulą 10 nazw) miał pierwszeństwo przed `city.name`. **Fix:** `resolveOwnerBaseName` + `isTechnicalOwnerLabel` w `display-names.ts`; `ownerDiploLabel` w `main.ts` — miasto-państwo → nazwa z mapy; stolica obcego klastra → nazwa nacji; zawijanie indeksu w `city-names-pool.ts`.
-  tsc=0 · display-names-test 11/11 · diplomacy-display-test 14/14 · publish `gra-robocza/Gra-ROBOCZA.html`. · **AKTUALNA** · Test: Ctrl+F5 START.html → stamp `d5a4543e`; dyplomacja → audiencja miasta-państwa → **Mykeny · miasto-państwo** (nie Rywal N); pełna nacja → **Hetyci** itd.
+  tsc=0 · display-names-test 11/11 · diplomacy-display-test 14/14 · publish `gra-robocza/Gra-ROBOCZA.html`. · **ZASTĄPIONA** (→ `27108476`) · Test: Ctrl+F5 START.html → stamp `d5a4543e`; dyplomacja → audiencja miasta-państwa → **Mykeny · miasto-państwo** (nie Rywal N); pełna nacja → **Hetyci** itd.
 
 - 2026-07-22 · stempel: ROBOCZA · **248b2622** · md5 pliku `248b262222701bc1bf5149094e1d277b` · **MAPA: jednostka widoczna na lesie** — na `70aea720`:
   **Bug Macieja:** token jednostki zasłonięty przez kępę drzew (nakładka Las). **Fix (wzorzec B — jak farma na lesie):** `syncForestForUnits` w `scene.ts` — tymczasowo ukrywa instancjonowaną kępę lasu (+ legacy forest mesh + dżungla styledOverlays) na heksach z widocznym tokenem; przywraca po ruchu. Wywołanie z `syncUnitsRender` w `main.ts`. Farmy/hodowle/ulepszenia na lesie bez zmian (`hideDecorAtHex` trwałe).
