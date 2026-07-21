@@ -2660,3 +2660,16 @@ CZEKAM-NA: **Maciej** `git pull` → Ctrl+F5 START.html → stamp `2e46903e`; PL
 - tsc=0 · map-gen-regression determinizm PASS · picker-test 136/136 · publish `gra-robocza/Gra-ROBOCZA.html` · commit+push main.
 
 CZEKAM-NA: **Maciej** `git pull` → Ctrl+F5 START.html → stamp `07beb443`; mapa → minimapa → włącz granice państwa → wyraźny kolorowy obwód wokół terytorium.
+
+---
+
+## [2026-07-22] SESJA LOKALNA (Fable) → MASTER / INTEGRATORZY — PLAN NAPRAWCZY dla 53 pozostałych znalezisk audytu
+
+Domknięcie przerwane limitem 07-21: raport audytu (73 znaleziska) i plan+naprawy 20 POTWIERDZONYCH były już zrobione (`6adfb79`, log w `AUDYT-NAPRAWY-LOG.md`). Brakowało planu dla reszty — **jest: `dyspozycje/PLAN-NAPRAWCZY-AUDYT-53-POZOSTALE.md`**.
+
+- **Zakres:** #1–#2 KRYTYCZNE (koszyk PN „jednostka" za darmo; auto-szturm kasuje CAŁĄ armię obu stron) + 51 dalszych, w 8 paczkach F0–F7 (dyplomacja-exploity, save/load, walka/oblężenia, dane jednostek, AI, wydajność, UI).
+- **Status:** DO AKCEPTACJI Macieja (`OK plan audyt 53`, można paczkami). 5 punktów decyzyjnych A1–A5 w pliku.
+- ⚠️ Te znaleziska NIE przeszły pełnej weryfikacji sceptyków — plan nakazuje każdemu wykonawcy najpierw zweryfikować, potem naprawiać; numery linii w raporcie są sprzed `6adfb79`, szukać po treści.
+- Reguła równoległości: jedna paczka dotykająca `main.ts` naraz (F0→F2→F3→F5→F6/F7); F4 (dane) może iść obok F1.
+
+CZEKAM-NA: **Maciej** — akceptacja planu (całość albo `OK audyt F0` na same krytyczne).
