@@ -165,7 +165,7 @@ export function createScienceHubHud(config: ScienceHubHudConfig): ScienceHubHudA
     const rate = prog.naukaRate !== undefined ? ' · +' + prog.naukaRate + ' PN/t' : '';
     box.innerHTML = '<div class="sh-prog-target"><span class="sh-owl">' + scienceOwlIconHtml()
       + '</span> ' + esc(prog.targetName) + '</div>'
-      + '<div class="sh-prog-meta">Pula: ' + prog.pula + ' / ' + prog.kosztCelu + ' PN'
+      + '<div class="sh-prog-meta">Pula: ' + Math.round(prog.pula) + ' / ' + Math.round(prog.kosztCelu) + ' PN'
       + ' · ' + pct + '% · ETA ' + esc(eta) + rate + '</div>'
       + '<div class="sh-bar"><div class="sh-bar-fill" style="width:' + pct + '%"></div></div>';
     return box;

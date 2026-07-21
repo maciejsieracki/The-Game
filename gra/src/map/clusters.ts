@@ -414,10 +414,13 @@ export function computeClusters(
   const aktywneTypy = opts?.aktywneTypy ?? aktywneTypyFromSize(rozmiarMapy);
   const nTypy = Math.min(aktywneTypy, ROSTER_KLUCZE.length);
 
-  // --- Pola lądowe (zamieszkiwalne — bez Morza i bez Gór) ---
+  // --- Pola lądowe (zamieszkiwalne — bez Morza, Gór i Wybrzeża) ---
+  // Wybrzeze wykluczone, bo canFoundCity je odrzuca (cities.ts) — trzymanie go w
+  // puli kandydatów dawało "ciche" odrzucenia przy faktycznym zakładaniu miast.
   const ladowe: Array<{ q: number; r: number }> = [];
   for (const h of allHexes) {
-    if (h.terenBazowy !== TerenBazowy.Morze && h.terenBazowy !== TerenBazowy.Gory) {
+    if (h.terenBazowy !== TerenBazowy.Morze && h.terenBazowy !== TerenBazowy.Gory &&
+        h.terenBazowy !== TerenBazowy.Wybrzeze) {
       ladowe.push({ q: h.coords.q, r: h.coords.r });
     }
   }

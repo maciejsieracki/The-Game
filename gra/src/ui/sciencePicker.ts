@@ -1069,7 +1069,7 @@ function renderProgress(state: {
     + '</div>';
   html += '<div class="cs-prog-row">'
     + '<span>Pula:</span>'
-    + '<span class="cs-val">' + state.pula + ' / ' + state.kosztCelu + ' PN</span>'
+    + '<span class="cs-val">' + Math.round(state.pula) + ' / ' + Math.round(state.kosztCelu) + ' PN</span>'
     + '</div>';
   html += '<div class="cs-bar"><div class="cs-bar-fill" style="width:' + pct + '%"></div></div>';
   html += '<div class="cs-prog-hint">Post&#x0119;p: ' + pct + '% &middot; ETA: ' + esc(eta) + '</div>';

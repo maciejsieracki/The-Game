@@ -3144,7 +3144,7 @@ function renderWealth(mount: HTMLElement, city: City, data: GameData | null, vie
 
   const block = el('div', 'food-grow-block');
   const track = el('div', 'food-grow-track');
-  const barLabel = atCap ? 'MAX' : `${ws.pula} / ${progRounded}`;
+  const barLabel = atCap ? 'MAX' : `${Math.round(ws.pula)} / ${progRounded}`;
   track.innerHTML =
     `<div class="food-grow-fill" style="width:${pct}%"></div>` +
     `<span class="food-grow-loaf" aria-hidden="true">${cityPanelChipIconWrap('res-treasury', 14)}</span>` +
@@ -3180,7 +3180,7 @@ function buildWealthDetailCard(
   summary.style.cssText = 'font-size:0.88em;margin-bottom:0.35em;';
   summary.textContent = ws.poziom >= cap
     ? `W${ws.poziom} · MAX (epoka ${epoch}) · ×Skarb ${mnoz.toFixed(2)}`
-    : `W${ws.poziom} · pula ${ws.pula} / ${Math.round(prog)} · ×Skarb ${mnoz.toFixed(2)}`;
+    : `W${ws.poziom} · pula ${Math.round(ws.pula)} / ${Math.round(prog)} · ×Skarb ${mnoz.toFixed(2)}`;
   card.appendChild(summary);
 
   const intro = el('div', 'dc-note');
@@ -3194,7 +3194,7 @@ function buildWealthDetailCard(
   const g0 = appendDetailGrid(card);
   gridDetailRow(g0, 'Pasek (główny widok)', ws.poziom >= cap
     ? 'Pełny — osiągnięto max W w tej epoce'
-    : `${ws.pula} / ${Math.round(prog)} — ile zebrano z puli potrzebnej do W${ws.poziom + 1}`);
+    : `${Math.round(ws.pula)} / ${Math.round(prog)} — ile zebrano z puli potrzebnej do W${ws.poziom + 1}`);
   gridDetailRow(g0, 'W (poziom Wealth)', `W${ws.poziom} — poziom zamożności obywateli (max W${cap} w epoce ${epoch}). Wyższe W = bogatsze miasto i bonus do szczęścia co 10 poziomów.`);
   gridDetailRow(g0, '×Skarb (mnożnik)', `×${mnoz.toFixed(2)} — ile razy mnożony jest strumień pieniędzy do skarbca przy obecnym W. W1 = ×1,00 (bez bonusu); każdy kolejny poziom W podnosi mnożnik.`);
   gridDetailRow(g0, 'Próg awansu', ws.poziom >= cap
@@ -3204,10 +3204,10 @@ function buildWealthDetailCard(
   appendDetailSection(card, 'Stan miasta');
   const g1 = appendDetailGrid(card);
   gridDetailRow(g1, 'Poziom W', `W${ws.poziom} (max W${cap} w epoce ${epoch})`);
-  gridDetailRow(g1, 'Pula zamożności', `${ws.pula} / ${Math.round(prog)} do W${Math.min(cap, ws.poziom + 1)}`);
+  gridDetailRow(g1, 'Pula zamożności', `${Math.round(ws.pula)} / ${Math.round(prog)} do W${Math.min(cap, ws.poziom + 1)}`);
   gridDetailRow(g1, 'Postęp paska', ws.poziom >= cap
     ? 'Maks. poziom zamożności w tej epoce'
-    : `→ W${ws.poziom + 1}: ${ws.pula} / ${Math.round(prog)} (${Math.round(prog > 0 ? (ws.pula / prog) * 100 : 0)}%)`);
+    : `→ W${ws.poziom + 1}: ${Math.round(ws.pula)} / ${Math.round(prog)} (${Math.round(prog > 0 ? (ws.pula / prog) * 100 : 0)}%)`);
   gridDetailRow(g1, 'Mnożnik skarbca', `×${mnoz.toFixed(2)}`);
   gridDetailRow(g1, 'Wpływ na szczęście', `${signed(szcz)} zadowolonych`);
 

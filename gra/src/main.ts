@@ -2470,6 +2470,8 @@ async function boot(): Promise<void> {
             ? `Ruch: ${ruchLeft}/${ruchMax}` + (group.length > 1 ? ' · armia' : '')
             : 'Ruch wykorzystany w tej turze',
           metaLine: types.length > 1 ? types.join(', ') : undefined,
+          ruchLeft,
+          ruchMax,
         });
       }
       out.sort((a, b) => a.name.localeCompare(b.name, 'pl'));
@@ -3223,15 +3225,24 @@ async function boot(): Promise<void> {
       _dipUnitSeq = 0;
       for (const [oid, rel] of plan.startRelations) setDiploRelation(0, oid, rel);
 
+      let _scFounded = 0, _scRejected = 0;
       for (const sc of plan.spawnCities) {
-        const c = foundCityAt(sc.q, sc.r, sc.ownerId, cities, map, sc.name);
+        const isCS = plan.simplifiedDiplomacyOwners.has(sc.ownerId) || typCityCopyOwners.has(sc.ownerId);
+        const c = foundCityAt(sc.q, sc.r, sc.ownerId, cities, map, sc.name, isCS);
         if (c) {
-          if (plan.simplifiedDiplomacyOwners.has(sc.ownerId) || typCityCopyOwners.has(sc.ownerId)) {
+          if (isCS) {
             c.startCityState = true;
           }
           cities.push(c);
           finalizeCityFounding(c, sc.q, sc.r);
+          _scFounded++;
+        } else {
+          _scRejected++;
         }
+      }
+      if (_scRejected > 0) {
+        console.warn('[ClusterStart] klastry: założono ' + _scFounded + ' z ' +
+          plan.spawnCities.length + ' (' + _scRejected + ' odrzuconych przez canFoundCity)');
       }
 
       // Model B (Maciej 2026-07-09): USUNIĘTO posiew lamy (E2) — nie ma już złóż zwierzęcych.
@@ -3274,6 +3285,7 @@ async function boot(): Promise<void> {
       pendingSameTypeRivalCount = 0;
       pendingSameTypeRivalHexes = [];
 
+      let _rivalsFounded = 0, _rivalsRejected = 0;
       for (let idx = 0; idx < rivalCount; idx++) {
         const pos = hexes[idx]!;
         const ownerId = nextOwnerId + idx;
@@ -3295,18 +3307,23 @@ async function boot(): Promise<void> {
         );
         aiStartHexes.push({ q: pos.q, r: pos.r, ownerId });
 
-        const c = foundCityAt(pos.q, pos.r, ownerId, cities, map, nazwa);
+        const c = foundCityAt(pos.q, pos.r, ownerId, cities, map, nazwa, true);
         if (c) {
           c.startCityState = true;
           cities.push(c);
           finalizeCityFounding(c, pos.q, pos.r);
+          _rivalsFounded++;
+        } else {
+          _rivalsRejected++;
         }
       }
 
       // D12: refreshFog + cityRenderer.sync robi wywołujący (tryFoundPlayerCityAt) RAZ po spawnie —
       // nie dublujemy tu (było 2× pełny fog + 2× odbudowa WSZYSTKICH miast na Super Huge).
       initDiplomaticContactSnapshot();
-      console.log('[ClusterStart] deferred same-type rivals=' + rivalCount + ' (pre-planned cluster)');
+      console.log('[ClusterStart] deferred same-type rivals=' + _rivalsFounded + '/' + rivalCount +
+        (_rivalsRejected > 0 ? ' (' + _rivalsRejected + ' odrzuconych przez canFoundCity)' : '') +
+        ' (pre-planned cluster)');
     }
 
     function setDiploRelation(a: number, b: number, rel: Relation): void {

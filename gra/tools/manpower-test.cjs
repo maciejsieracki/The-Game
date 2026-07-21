@@ -90,6 +90,11 @@ ok(!block.ok && block.reason === 'brak_manpower', 'blokada przy 50 MP');
 const okDed = mp.tryDeductUnitSpawnCosts({ population: 10, manpower: 10_000 }, 1);
 ok(okDed.ok && okDed.manpower === 9_900 && okDed.population === 9, 'deduct pop+mp');
 
+// H-fix (Maciej 2026-07-21): rekrutacja z popCost=0 (miasto-params.json jednostka_koszt_ludnosci=0)
+// NIE zabiera populacji miasta — jedynym kosztem werbu jest pula Manpower.
+const okDed0 = mp.tryDeductUnitSpawnCosts({ population: 10, manpower: 10_000 }, 1, 0);
+ok(okDed0.ok && okDed0.manpower === 9_900 && okDed0.population === 10, 'popCost=0: populacja bez zmian, manpower -100');
+
 ok(mp.formatPopulationAbs(1_200_000).includes('mln'), 'format mln');
 
 ok(mp.manpowerRegenGain(10, 1, { regenProcMaxPerTurn: 10, blockWhenBesieged: true }) === 1000, 'regen 10% max');

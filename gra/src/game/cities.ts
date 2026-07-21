@@ -199,7 +199,7 @@ export function canFoundCity(
   r: number,
   cities: City[],
   map: GameMap,
-  opts?: { withinTerritory?: (q: number, r: number) => boolean },
+  opts?: { withinTerritory?: (q: number, r: number) => boolean; foundingCityState?: boolean },
 ): { ok: boolean; reason: string } {
   const key = `${q},${r}`;
 
@@ -219,7 +219,12 @@ export function canFoundCity(
   }
 
   for (const city of cities) {
-    const minDist = city.startCityState
+    // Próg 3 obowiązuje gdy ALBO istniejące miasto jest państwem-miastem,
+    // ALBO zakładane miasto jest państwem-miastem (kopia typu). Wcześniej brano
+    // pod uwagę tylko flagę istniejącego miasta — a stolice (gracza i klastrów)
+    // nie mają startCityState, więc państwa-miasta pakowane 3 hex od stolicy były
+    // odrzucane przez próg 5 i "znikały" (15 żądanych → ~1 na mapie).
+    const minDist = (opts?.foundingCityState || city.startCityState)
       ? MIN_CITY_DISTANCE_START_CITY_STATE
       : MIN_CITY_DISTANCE;
     if (hexDistance(q, r, city.q, city.r) < minDist) {
@@ -268,8 +273,9 @@ export function foundCityAt(
   cities: City[],
   map: GameMap,
   name: string,
+  foundingCityState = false,
 ): City | null {
-  const { ok } = canFoundCity(q, r, cities, map);
+  const { ok } = canFoundCity(q, r, cities, map, { foundingCityState });
   if (!ok) {
     return null;
   }
