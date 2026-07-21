@@ -4,7 +4,19 @@
 > **Czat:** krótko **`✅ Gotowe:`** / **`⏸️ Czeka:`** · **Ten plik:** pełniejszy zapis tego samego.  
 > Szczegóły techniczne → handoff w `dyspozycje/_handoff/` · operacja → `dyspozycje/DZIENNIK-MASTERA.md`
 
-**Ostatnia aktualizacja:** 2026-07-22 (mapa — więcej chat ze skarbami)
+**Ostatnia aktualizacja:** 2026-07-22 (mapa — jednostka widoczna na lesie)
+
+---
+
+## [2026-07-22] ✅ Gotowe — mapa: jednostka widoczna na lesie
+
+| | |
+|---|---|
+| **Co** | Token jednostki nie jest już zasłaniany przez kępę drzew na heksie z lasem |
+| **Jak** | Las chowa się tymczasowo pod widocznym tokenem (jak farma na lesie); wraca po ruchu |
+| **md5** | `248b262222701bc1bf5149094e1d277b` · stamp `248b2622` |
+| **Bramki** | tsc=0 · smoke OK · picker-test 136/136 |
+| **Od Ciebie** | `git pull` → Ctrl+F5 · `gra-robocza/START.html` → stamp `248b2622` → postaw jednostkę na lesie → token + pierścień w pełni widoczne |
 
 ---
 

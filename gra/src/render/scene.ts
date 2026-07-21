@@ -265,6 +265,8 @@ export interface SceneResult {
   setFog: (visible: Set<string>, explored: Set<string>, opts?: { landReveal?: boolean }) => void;
   /** F-CITY-HEX: trwale ukryj dekoracje terenu (las, oaza…) na hexie miasta. */
   hideDecorAtHex: (hexKey: string) => void;
+  /** Tymczasowo ukryj kępę lasu na heksach z widoczną jednostką (przywraca po ruchu). */
+  syncForestForUnits: (hexKeys: Set<string>) => void;
   /**
    * Dynamiczny LOD przy oddalaniu kamery — ukrywa drogie dekoracje i obniża pixel ratio.
    * Wywoływać co klatkę z odległością kamery (dist, minDist, maxDist).
@@ -1294,7 +1296,7 @@ export async function buildScene(
   setImprovementDetailQuality(renderOptions.mapDetailQuality);
   const palette = styleScenePalette(renderStyle);
   const useStyledDecor = renderStyle !== 'civ';
-  const styledOverlays: Array<{ group: THREE.Group; hexKey: string }> = [];
+  const styledOverlays: Array<{ group: THREE.Group; hexKey: string; kind?: 'forest' }> = [];
   const R = HEX_R;
   const fixedViewport = renderOptions.previewViewport != null;
   const panelCols = Math.max(1, renderOptions.previewViewport?.panelColumns ?? 1);
@@ -1869,7 +1871,7 @@ export async function buildScene(
       } else if (useStyledDecor) {
         // Dżungla tropikalna (palmy/parasole) — stara ścieżka klastra drzew (poza zakresem GRAFIKA-TEREN-2).
         const cluster = buildStyleForestCluster(renderStyle, { q, r, x, z, baseY, seed: map.seed, R, mapHeight: map.wysokoscR }, robloxLite);
-        styledOverlays.push({ group: cluster, hexKey });
+        styledOverlays.push({ group: cluster, hexKey, kind: 'forest' });
         scene.add(cluster);
       } else {
       const treeCount = 3 + Math.floor(hash2D(q, r, map.seed, 1) * 3); // 3..5
@@ -2491,6 +2493,8 @@ export async function buildScene(
   const ZERO_MATRIX = new THREE.Matrix4().makeScale(0, 0, 0);
   /** Hexy z miastem — dekoracje terenu ukryte na stałe (F-CITY-HEX); grunt zostaje widoczny. */
   const decorHiddenHexKeys = new Set<string>();
+  /** Hexy z widoczną jednostką — tymczasowo ukryta kępa lasu (syncForestForUnits). */
+  const unitForestHiddenHexKeys = new Set<string>();
 
   const hideInstancedOnHex = (
     mesh: THREE.InstancedMesh,
@@ -2507,7 +2511,16 @@ export async function buildScene(
     if (touched) mesh.instanceMatrix.needsUpdate = true;
   };
 
+  function syncForestForUnits(hexKeys: Set<string>): void {
+    unitForestHiddenHexKeys.clear();
+    for (const k of hexKeys) {
+      if (!decorHiddenHexKeys.has(k)) unitForestHiddenHexKeys.add(k);
+    }
+    applyZoomLodDecor(lastAnyHidden);
+  }
+
   function hideDecorAtHex(hexKey: string): void {
+    unitForestHiddenHexKeys.delete(hexKey);
     decorHiddenHexKeys.add(hexKey);
     // F-CITY-HEX: tylko dekor (las, zasoby, wydma…) — NIE ukrywaj kafelka terenu (inaczej „dziura” z oceanem).
     for (const { group, hexKey: hk } of styledOverlays) {
@@ -2585,6 +2598,8 @@ export async function buildScene(
     const isHidden = (k: string) => hasFog && !visible.has(k) && !explored.has(k);
     const overlayHidden = (k: string) =>
       isHidden(k) || decorHiddenHexKeys.has(k);
+    const forestHidden = (k: string) =>
+      overlayHidden(k) || unitForestHiddenHexKeys.has(k);
 
     const applyOverlayFog = (
       mesh: THREE.InstancedMesh,
@@ -2631,12 +2646,53 @@ export async function buildScene(
       mesh.instanceMatrix.needsUpdate = true;
       if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
     };
+    const applyLasFog = (
+      mesh: THREE.InstancedMesh,
+      keys: string[],
+      orig: THREE.Matrix4[],
+    ) => {
+      const cnt = mesh.count;
+      for (let i = 0; i < cnt; i++) {
+        const k = keys[i];
+        if (k === undefined) continue;
+        const bri = fogBrightnessForHex(k, visible, explored, hasFog);
+        if (bri <= 0 || forestHidden(k)) {
+          mesh.setMatrixAt(i, ZERO_MATRIX);
+        } else {
+          const m = orig[i];
+          if (m) mesh.setMatrixAt(i, m);
+          _terrainDim.setScalar(bri);
+          mesh.setColorAt(i, _terrainDim);
+        }
+      }
+      mesh.instanceMatrix.needsUpdate = true;
+      if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
+    };
+
+    const applyForestOverlayFog = (
+      mesh: THREE.InstancedMesh,
+      keys: string[],
+      orig: THREE.Matrix4[],
+    ) => {
+      const cnt = mesh.count;
+      for (let i = 0; i < cnt; i++) {
+        const k = keys[i];
+        if (k === undefined) continue;
+        if (forestHidden(k)) {
+          mesh.setMatrixAt(i, ZERO_MATRIX);
+        } else {
+          const m = orig[i];
+          if (m) mesh.setMatrixAt(i, m);
+        }
+      }
+      mesh.instanceMatrix.needsUpdate = true;
+    };
 
     forestMesh.visible = zoomFlags.forestInst;
-    if (zoomFlags.forestInst) applyOverlayFog(forestMesh, forestHexKey, forestOrigMatrix);
+    if (zoomFlags.forestInst) applyForestOverlayFog(forestMesh, forestHexKey, forestOrigMatrix);
 
     forestTrunkMesh.visible = zoomFlags.forestTrunkInst;
-    if (zoomFlags.forestTrunkInst) applyOverlayFog(forestTrunkMesh, forestTrunkHexKey, forestTrunkOrigMatrix);
+    if (zoomFlags.forestTrunkInst) applyForestOverlayFog(forestTrunkMesh, forestTrunkHexKey, forestTrunkOrigMatrix);
 
     snowMesh.visible = zoomFlags.terrainDetailInst;
     if (zoomFlags.terrainDetailInst) applyOverlayFog(snowMesh, snowHexKey, snowOrigMatrix);
@@ -2666,7 +2722,7 @@ export async function buildScene(
     // GRAFIKA-TEREN-2: instancjonowane kępy lasu — widoczność/mgła jak góry/wzgórza (styledDecor).
     for (let v = 0; v < lasInst.length; v++) {
       lasInst[v]!.visible = zoomFlags.styledDecor;
-      if (zoomFlags.styledDecor) applyTerrainFog(lasInst[v]!, lasHexKey[v]!, lasOrigMatrix[v]!);
+      if (zoomFlags.styledDecor) applyLasFog(lasInst[v]!, lasHexKey[v]!, lasOrigMatrix[v]!);
     }
 
     beachMesh.visible = zoomFlags.coastDecorInst;
@@ -2726,8 +2782,8 @@ export async function buildScene(
       }
     }
 
-    for (const { group, hexKey: hk } of styledOverlays) {
-      const hidden = overlayHidden(hk);
+    for (const { group, hexKey: hk, kind } of styledOverlays) {
+      const hidden = overlayHidden(hk) || (kind === 'forest' && unitForestHiddenHexKeys.has(hk));
       group.visible = zoomFlags.styledDecor && !hidden;
       if (!group.visible) continue;
       const bri = fogBrightnessForHex(hk, visible, explored, hasFog);
@@ -2897,7 +2953,7 @@ export async function buildScene(
     }
   });
   return {
-    scene, camera, renderer, center, dispose, setFog, hideDecorAtHex, setZoomLod, getZoomLodLevel,
+    scene, camera, renderer, center, dispose, setFog, hideDecorAtHex, syncForestForUnits, setZoomLod, getZoomLodLevel,
     terrainPickMeshes: instancedMeshes, resolveTerrainPick,
   };
 }

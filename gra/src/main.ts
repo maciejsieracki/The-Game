@@ -739,7 +739,7 @@ async function boot(): Promise<void> {
 
     // C3: buildScene jest asynchroniczny (budowa sceny porcjami/chunkami). Mapa startowa
     // (domyślna, mała) budowana bez overlaya — po prostu await, bez callbacku postępu.
-    let { scene, camera, renderer, center, setFog, hideDecorAtHex, setZoomLod, getZoomLodLevel, terrainPickMeshes, resolveTerrainPick, dispose: disposeScene } = await buildScene(map, canvas, _currentRenderOptions);
+    let { scene, camera, renderer, center, setFog, hideDecorAtHex, syncForestForUnits, setZoomLod, getZoomLodLevel, terrainPickMeshes, resolveTerrainPick, dispose: disposeScene } = await buildScene(map, canvas, _currentRenderOptions);
 
     function pickHexAt(clientX: number, clientY: number): { q: number; r: number } | null {
       return pixelToHex(clientX, clientY, canvas, camera, HEX_R, terrainPickMeshes, resolveTerrainPick);
@@ -4018,6 +4018,7 @@ async function boot(): Promise<void> {
       if (isCityPanelOpen()) {
         unitRenderer.setForceVisibleUnitId(null);
         unitRenderer.sync([], { visibleIds: new Set(), badgeByRepId: new Map() });
+        syncForestForUnits(new Set());
         cityRenderer.syncStatChips(cities, _cityRenderOpts());
         return;
       }
@@ -4051,6 +4052,15 @@ async function boot(): Promise<void> {
       unitRenderer.setForceVisibleUnitId(forceVisibleUnitId);
       unitRenderer.setCityHexKeys(new Set(cities.map(c => keyOf(c.q, c.r))));
       unitRenderer.sync(src, display);
+      const unitForestHexKeys = new Set<string>();
+      for (const u of src) {
+        if (display.visibleIds.has(u.id)) unitForestHexKeys.add(keyOf(u.q, u.r));
+      }
+      if (forceVisibleUnitId) {
+        const fu = units.find(u => u.id === forceVisibleUnitId);
+        if (fu) unitForestHexKeys.add(keyOf(fu.q, fu.r));
+      }
+      syncForestForUnits(unitForestHexKeys);
       cityRenderer.syncStatChips(cities, _cityRenderOpts());
     }
 
@@ -13037,6 +13047,7 @@ async function boot(): Promise<void> {
         center = newSceneResult.center;
         setFog = newSceneResult.setFog;
         hideDecorAtHex = newSceneResult.hideDecorAtHex;
+        syncForestForUnits = newSceneResult.syncForestForUnits;
         setZoomLod = newSceneResult.setZoomLod;
         getZoomLodLevel = newSceneResult.getZoomLodLevel;
         terrainPickMeshes = newSceneResult.terrainPickMeshes;
@@ -13124,6 +13135,7 @@ async function boot(): Promise<void> {
       center = newSceneResult.center;
       setFog = newSceneResult.setFog;
       hideDecorAtHex = newSceneResult.hideDecorAtHex;
+      syncForestForUnits = newSceneResult.syncForestForUnits;
       setZoomLod = newSceneResult.setZoomLod;
       getZoomLodLevel = newSceneResult.getZoomLodLevel;
       terrainPickMeshes = newSceneResult.terrainPickMeshes;
@@ -13355,6 +13367,7 @@ async function boot(): Promise<void> {
       center = newSceneResult.center;
       setFog = newSceneResult.setFog;
       hideDecorAtHex = newSceneResult.hideDecorAtHex;
+      syncForestForUnits = newSceneResult.syncForestForUnits;
       setZoomLod = newSceneResult.setZoomLod;
       getZoomLodLevel = newSceneResult.getZoomLodLevel;
       terrainPickMeshes = newSceneResult.terrainPickMeshes;
@@ -13577,6 +13590,7 @@ async function boot(): Promise<void> {
       center = newSceneResult.center;
       setFog = newSceneResult.setFog;
       hideDecorAtHex = newSceneResult.hideDecorAtHex;
+      syncForestForUnits = newSceneResult.syncForestForUnits;
       setZoomLod = newSceneResult.setZoomLod;
       getZoomLodLevel = newSceneResult.getZoomLodLevel;
       terrainPickMeshes = newSceneResult.terrainPickMeshes;
@@ -13768,6 +13782,7 @@ async function boot(): Promise<void> {
       center = newSceneResult.center;
       setFog = newSceneResult.setFog;
       hideDecorAtHex = newSceneResult.hideDecorAtHex;
+      syncForestForUnits = newSceneResult.syncForestForUnits;
       setZoomLod = newSceneResult.setZoomLod;
       getZoomLodLevel = newSceneResult.getZoomLodLevel;
       terrainPickMeshes = newSceneResult.terrainPickMeshes;

@@ -2713,3 +2713,14 @@ Pliki: `villages.ts`, `generator.ts`, `newGameMapDefaults.ts`, `main.ts` (genOpt
 Bramki: tsc=0 · villages-test 39/39 · map-gen-regression determinizm PASS.
 Publish ROBOCZA: stamp **70aea720** · md5 `70aea720f1c8697bb77fb97bfadc466f`.
 CZEKAM-NA: Maciej — `git pull` → Ctrl+F5 START.html → stamp `70aea720` → nowa gra → więcej chat (np. 8 miast Normal → 16).
+
+---
+
+## [01:30] INTEGRATOR → Maciej — MAPA: jednostka widoczna na lesie
+
+Zgłoszenie Macieja: token jednostki praktycznie niewidoczny na heksie z lasem (drzewa zasłaniają).
+Fix: wzorzec B (jak farma/hodowla na lesie) — `syncForestForUnits` w `scene.ts` + wywołanie z `syncUnitsRender` w `main.ts`. Kępa lasu chowa się tymczasowo na heksach z widocznym tokenem (gracz + wróg w mgle); wraca po ruchu. Farmy/ulepszenia na lesie bez zmian.
+Pliki: `gra/src/render/scene.ts`, `gra/src/main.ts`.
+Bramki: tsc=0 · smoke OK · picker-test 136/136.
+Publish ROBOCZA: stamp **248b2622** · md5 `248b262222701bc1bf5149094e1d277b`.
+CZEKAM-NA: Maciej — `git pull` → Ctrl+F5 START.html → stamp `248b2622` → jednostka na lesie → token + pierścień w pełni widoczne; po ruchu las wraca.
