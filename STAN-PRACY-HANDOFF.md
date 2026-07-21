@@ -21,7 +21,7 @@ git status --short
 - Jeśli w `gra/src` lub `gra/data` są **niezacommitowane zmiany** — ktoś jest w połowie pracy. NIE nadpisuj ich, NIE rób `git checkout`/`git stash` na tych plikach. Najpierw ustal z właścicielem, co to jest.
 - **Zawsze przed pracą uruchom bramki** (sekcja 7), żeby wiedzieć, co jest sprawne, a co było zepsute PRZED Tobą.
 
-**Stan na 2026-07-21:** drzewo **czyste**, ostatni commit `51e0cd7` (bundel ROBOCZA **`374c1067`**), **wypchnięte na `main`**, playtest właściciela **zaliczony** („wszystko działa prawidłowo"). Nic nie jest w toku.
+**Stan na 2026-07-21 (sesja 2, wieczór):** drzewo **czyste**, ostatni commit deploy (bundel ROBOCZA **`20239659`**), **wypchnięte na `main`**. Duża sesja systemów strategicznych — 7 nowych systemów zdeployowanych AUTONOMICZNIE (właściciel dał zgodę na deploye pod nieobecność, C-ORG-Q17=A). **Czeka: playtest właściciela + wsteczna akceptacja liczb strojeniowych** (patrz koniec §3a-2 i §10). Nic nie jest w toku.
 
 *(poprzedni stan 2026-07-20: deploy `ea4d679` / ROBOCZA `a31ebe6f`)* — dawniej: drzewo czyste, nic nie jest w toku — nowa sesja startuje bez ryzyka.
 
@@ -49,8 +49,8 @@ git status --short
 
 ## 3. ✅ ZROBIONE I DZIAŁA W GRZE (zdeployowane do ROBOCZA)
 
-**Ostatni deploy: ROBOCZA `374c1067`** (2026-07-21, commity `1a73086`…`51e0cd7`, na GitHubie, **playtest zaliczony**). Łańcuch ostatnich deployów:
-`a31ebe6f` → `74d85bc2` (mapa: wybrzeże z morza + fix Ziemia + pasma −25%) → `50448964` (render ujścia rzek kończy na Wybrzeżu) → **`374c1067`** (GRAFIKA-ŻELAZO + komplet audio).
+**Ostatni deploy: ROBOCZA `20239659`** (2026-07-21 sesja 2, na GitHubie). Łańcuch ostatnich deployów:
+`374c1067` → `a756d893` (podwojenie państw/miast + fix rzek + PPM) → `8bd30f48` (miasta-państwa aktywne) → `41d0a2ea` (przejęcie stolicy rdzeń) → `7c65681a` (przejęcie stolicy: przenieś + Power) → `0b59bf29` (AI buduje ulepszenia terenu) → `0251a5cf`/`454d7c52` (posiłki miast-państw wg trudności) → **`20239659`** (dyplomacja miast-państw wg trudności). Wcześniej (sesja 1): `74d85bc2` (mapa wybrzeże z morza) → `50448964` (render ujścia rzek) → `374c1067` (grafika żelaza + audio).
 
 ### 3a. CO WESZŁO 2026-07-21 (najnowsze)
 
@@ -77,6 +77,28 @@ Skrót całości live (szczegóły sesji 2026-07-20 w §4):
 - **Wioski goodie-hut** — rozmieszczenie + nagroda (złoto/tech/jednostka) + interakcja.
 - **Mapa** — **wybrzeże = woda** (nie ląd; pas 2 heksy jako płytka woda), **pasma górskie** (łańcuchy zamiast plam), **rzeki dochodzą do morza** (uproszczone po zmianie wybrzeża).
 - **Ekonomia/Handel** — Mennica działa (mnożnik po Walucie), per-city surowce logistyczne + converters (Cegielnia/Garncarnia), **realne szlaki handlowe** (wykrywanie połączeń + dochód + UI/mapa).
+
+---
+
+### 3a-2. CO WESZŁO 2026-07-21 SESJA 2 (systemy strategiczne — najnowsze)
+
+7 systemów zdeployowanych autonomicznie (właściciel nieobecny, zgoda C-ORG-Q17=A). Wszystkie bramki zielone, każdy deploy czysty FF.
+
+**A) Mapa — poprawki** (`a756d893`/wcześniej `74d85bc2`,`50448964`): wybrzeże powstaje z Morza przy lądzie (ląd nietknięty — fix regresji „Ziemia"); **ujście rzek wpływa w heks Wybrzeża** (weryfikacja WZROKOWA Playwright — 2 błędy: kolor kamuflujący + wodospad pod terenem); pasma gór −25%; **PPM anuluje tryb budowy ulepszeń**.
+
+**B) Podwojenie państw/miast** (`a756d893`): miasta/klaster ×2, cywilizacje ×2 z sufitem **15** (roster nacji). Maleński=7 cyw (8 się nie mieściło). `MAX_MIAST_PANSTWA` 9→18, `MAX_TYPY_CYWILIZACJI_MENU` 14→15. Pomiar: 100% rozstawienia poza Maleńkim.
+
+**C) Miasta-państwa — aktywny gracz** (`8bd30f48`): kopie typu (`kopia_typu_obronna`) przestały być biernym łupem — pełny rozwój (budynki gospodarcze + jednostki) + posiłki w klastrze. **Bez bonusów, bez darmowych jednostek, nie zakładają miast.** Przyczyna bierności była bramka `earlyPhase` (`myCities.length<3`, kopie mają zawsze 1 miasto).
+
+**D) Przejęcie stolicy** (`41d0a2ea` rdzeń + `7c65681a` follow-upy): **dwa zdarzenia**. Zdarzenie 1 (są inne miasta): skarbiec→zwycięzca, pula pracy przepada, nowa stolica=następne najstarsze. Zdarzenie 2 (ostatnie miasto=ELIMINACJA): +pula nauki+brakujące techy→zwycięzca + **Power-„zdobycze"** (snapshot całego Power pokonanego, osobna kategoria); cyw usunięta z gry/dyplomacji. Stolica=najstarsze miasto (`capitalCityIdByOwner`, w save). **Przenieś stolicę** (gracz przycisk w panelu miasta + AI proaktywnie gdy zagrożona; blokada gdy oblegana). Symetria gracz↔AI, `capital-capture.ts` + test 54/54.
+
+**E) AI buduje ulepszenia terenu** (`0b59bf29`): WSZYSTKIE AI + miasta-państwa. Nowa **`aiPracaPoolByOwner`** (symetryczna do skarbca, w save) — domyka asymetrię przejęcia stolicy (AI też traci pulę pracy przy utracie stolicy). Throttle 1/miasto/turę, deterministyczny, food-first, `wyrab` pominięty. `planCityImprovements` reużywa kwalifikatora gracza.
+
+**F) Posiłki miast-państw wg TRUDNOŚCI** (`0251a5cf`/`454d7c52`): siostry pomagają sobie **tylko w SOJUSZU** (pełna maszyneria dyplomacji — willingness/parytet militarny, obniżony próg tierowy). Siła sterowana **trudnością gry** (osobna opcja „Wsparcie miast-państw" USUNIĘTA): Łatwy słabe / Normalny obecne / Trudny twarde. Skale sojuszu ×0,6/×0,3/×0,15; RESUP {0,3,1}/{1,2,1}/{2,1,2}. **Nowa dyplomacja AI↔AI** (`formSisterAlliancesIfThreatened`) — dotąd nie istniała.
+
+**G) Dyplomacja miast-państw wg trudności** (`20239659`): startowe zaufanie miast-państw do gracza wg trudności (easy +10/normal +5/hard 0 — hard=dziś, monotonicznie „trudniej=mniej zaufania"; tylko kopie typu) + ożywiony martwy param `dyplomacjaAktywnosc` (skłonność do sojuszy/handlu wg trudności — **ogólny, dotyczy też głównych cyw**).
+
+**⚠️ DO WSTECZNEJ AKCEPTACJI właściciela** (liczby strojeniowe — dostrojenie po playteście, patrz §10): przenieś-stolicę AI promień **3**; ulepszenia AI próg Pracy **>30** + priorytet food-first; skale sojuszu **×0,6/×0,3/×0,15**; RESUP **{0,3,1}/{1,2,1}/{2,1,2}**; start-zaufanie **10/5/0**; zasięg `dyplomacjaAktywnosc` (ogólny — dotyka głównych cyw); brzmienie komunikatów przejęcia stolicy (robocze).
 
 ---
 
@@ -187,7 +209,8 @@ node tools/trade-routes-income-test.cjs  # 49/49
 
 **Mapa / teren:**
 - Weryfikacja wzrokowa: pasma, wybrzeże=woda, bug rzeka↔mgła (patrz §7).
-- Gęstość osadnictwa (więcej miast/państw), chunki mapy dla słabszych maszyn — odłożone.
+- ~~Gęstość osadnictwa (więcej miast/państw)~~ — **ZROBIONE** (sesja 2, podwojenie państw/miast). Chunki mapy dla słabszych maszyn — odłożone.
+- **Follow-upy strategiczne (po playteście):** dostrojenie liczb (progi AI, skale sojuszu, RESUP, start-zaufanie — §3a-2); ewentualnie: więcej nacji (żeby cywilizacje ×2 działało pełni powyżej 15 na Ogromny/Super); wyrąb lasu (`wyrab`) dla AI (dziś pominięty).
 - Dedykowana „Kopalnia żelaza" jako osobne ulepszenie — **decyzja odłożona** (ogólna kopalnia wystarcza).
 
 **Ludy Morza — pełny feature** (agresja AI + pływanie + embarkacja) — osobny, duży temat (dziś tylko barbarzyńcy).
@@ -208,6 +231,16 @@ node tools/trade-routes-income-test.cjs  # 49/49
 - **Handel (HANDEL):** Q1=B realne szlaki · Q2=A trasy automatyczne · Q3=C pełny zakres · Q4=B napraw Mennicę+surowce · Q5=A mnożnik po Walucie **2/1,5/1** · Q6=B połączenie po dystansie (bez drogi) · Q7=A wzór dystansowy (zostaje) · Q8=B obie strony + AI proaktywne/obniżony próg · Q9 = każdy budynek handlowy (Targowisko/Karawanseraj/Port/Port wielki) +1 trasa · Q10/Q11=B trasa daje dostęp do surowca + dochód, **+5% Handlu/trasę dodatkowo** · Q12=B per-city magazyn dla surowców logistycznych (drewno/kamień/glina/ruda), braz/żelazo/hodowla zostają civ-wide · **handel TYLKO zewnętrzny** (wewnętrzny odłożony) · dochód do skarbca czysto (pomija Wealth).
 - **GLINA:** Q1=A 2/turę stała · Q2=A tylko glina teraz (ruda/brąz odłożone).
 - **MENNICA-Q1=A:** Mennica zostaje jak jest (×4 easy zamierzone); Fenicjanie = osobny temat.
+
+**Sesja 2026-07-21 (systemy strategiczne):**
+- **Podwojenie:** miasta/klaster ×2 + cywilizacje ×2 z sufitem 15; Maleński=7 cyw (opcja B — 8 się nie mieściło).
+- **Miasta-państwa:** aktywny rozwój, **te same zasady co gracz, ZERO bonusów/darmowych jednostek**, budują jednostki+budynki+ulepszenia, **nie zakładają nowych miast**, ograniczona dyplomacja.
+- **Przejęcie stolicy:** stolica=najstarsze miasto, trwałe, przenieś (gracz+AI, nie gdy oblegana). Q1=A+przenieś · Q2=A cały skarbiec · Q3=A praca per-miasto zostaje + pula pracy cyw przepada · Q4: stolica→pieniądze+praca; ostatnie miasto=eliminacja→+nauka+brakujące techy+Power(zdobycze) · Q5=B pełne usunięcie cyw · jednostki NIE przejmowane (są kasowane) · **dwa osobne zdarzenia** (przejęcie stolicy vs ostatniego miasta).
+- **Ulepszenia terenu przez AI:** `C-AI-ULEP-Q1=B` — buduje KAŻDE AI (nie tylko miasta-państwa); AI ma własną pulę Pracy.
+- **Posiłki miast-państw:** bramkowane SOJUSZEM (`C-MP-SOJ-Q1/Q2/Q3`); pełna maszyneria dyplomacji (Q2=B); siła+łatwość sojuszu wg **TRUDNOŚCI gry** (nie osobna opcja); zakres = siostry tego samego klastra.
+- **Dyplomacja miast-państw wg trudności:** `C-MP-DYPL-Q1=B` — start-zaufanie do gracza wg trudności (wariant B: easy+10/normal+5/hard0) + ożywiony `dyplomacjaAktywnosc`.
+- **Deploy autonomiczny:** `C-ORG-Q17=A` — pod nieobecność właściciela deploy do ROBOCZA gdy VERIFY OK + „push" w kanale.
+- **Hasła właściciela:** „sprawdź" = pull+czytaj kanał/handoff (bez dysku); „push" (do sesji lokalnej) = pull+sync na dysk właściciela. (CLAUDE.md §6.)
 
 **Wcześniejsze (nadal obowiązują):**
 - Wybrzeże jako pas — było 2 heksy (teraz jako WODA, §4 pkt 4). Kategoria kontr konnicy = „Mount". Kontra Procarz = podtyp „Slinger". Unikat Chin = „Jeździec chiński". „Zastąp" = całe terytorium, koszt tylko Pieniądz. Triari/Evocati = wymóg techu żelaza. Łańcuch żelaza = ogólna kopalnia na złożu + odlewnia żelaza.
