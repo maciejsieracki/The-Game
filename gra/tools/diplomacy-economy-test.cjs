@@ -14,6 +14,7 @@ fs.writeFileSync(entryFile, `
 export {
   activeDealsToPaymentDeals, tickDiplomacyPayments, applyOneShotGoldTransfer,
   applyDiplomaticGoldGrant, tributeBreakPairsFromDeals, capAiGoldOffer, AI_TRADE_GOLD_MAX,
+  canAiProposeOneShotGoldGift, aiOneShotGiftCooldownTurns, aiOneShotGiftGoldMultiplier,
 } from '../src/game/diplomacy-economy.ts';
 `);
 
@@ -30,6 +31,7 @@ esbuild.buildSync({
 const {
   activeDealsToPaymentDeals, tickDiplomacyPayments, applyOneShotGoldTransfer,
   applyDiplomaticGoldGrant, tributeBreakPairsFromDeals, capAiGoldOffer, AI_TRADE_GOLD_MAX,
+  canAiProposeOneShotGoldGift, aiOneShotGiftCooldownTurns, aiOneShotGiftGoldMultiplier,
 } = require(BUNDLE);
 
 let pass = 0;
@@ -85,6 +87,12 @@ ok(grantOk.ok && grantOk.granted === 20 && t6._map[0] === 120 && t6._map[5] === 
 
 ok(capAiGoldOffer(5, AI_TRADE_GOLD_MAX) === 5, 'capAiGoldOffer 5');
 ok(capAiGoldOffer(0, AI_TRADE_GOLD_MAX) === 0, 'capAiGoldOffer 0');
+
+ok(canAiProposeOneShotGoldGift(10, undefined, 'normal'), 'cooldown: brak historii → OK');
+ok(!canAiProposeOneShotGoldGift(10, 5, 'normal'), 'cooldown normal: tura 10 po darze 5 → blok');
+ok(canAiProposeOneShotGoldGift(30, 5, 'normal'), 'cooldown normal: tura 30 po darze 5 → OK');
+ok(aiOneShotGiftCooldownTurns('hard') === 35, 'cooldown hard 35 tur');
+ok(aiOneShotGiftGoldMultiplier('easy') === 1.25, 'gold mult easy 1.25');
 
 const pairs = tributeBreakPairsFromDeals([{
   id: 'tb', rodzaj: 'wasalizacja', strony: [0, 2], wygasaTura: null,

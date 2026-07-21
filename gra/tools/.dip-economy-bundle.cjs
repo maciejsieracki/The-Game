@@ -22,8 +22,11 @@ var dip_economy_entry_exports = {};
 __export(dip_economy_entry_exports, {
   AI_TRADE_GOLD_MAX: () => AI_TRADE_GOLD_MAX,
   activeDealsToPaymentDeals: () => activeDealsToPaymentDeals,
+  aiOneShotGiftCooldownTurns: () => aiOneShotGiftCooldownTurns,
+  aiOneShotGiftGoldMultiplier: () => aiOneShotGiftGoldMultiplier,
   applyDiplomaticGoldGrant: () => applyDiplomaticGoldGrant,
   applyOneShotGoldTransfer: () => applyOneShotGoldTransfer,
+  canAiProposeOneShotGoldGift: () => canAiProposeOneShotGoldGift,
   capAiGoldOffer: () => capAiGoldOffer,
   tickDiplomacyPayments: () => tickDiplomacyPayments,
   tributeBreakPairsFromDeals: () => tributeBreakPairsFromDeals
@@ -102,6 +105,26 @@ function tributeBreakPairsFromDeals(deals, brokenIds) {
   return out;
 }
 var AI_TRADE_GOLD_MAX = 20;
+var AI_ONESHOT_GIFT_COOLDOWN_TURNS = {
+  easy: 15,
+  normal: 25,
+  hard: 35
+};
+var AI_ONESHOT_GIFT_GOLD_MULT = {
+  easy: 1.25,
+  normal: 1,
+  hard: 0.75
+};
+function aiOneShotGiftCooldownTurns(difficulty) {
+  return AI_ONESHOT_GIFT_COOLDOWN_TURNS[difficulty];
+}
+function aiOneShotGiftGoldMultiplier(difficulty) {
+  return AI_ONESHOT_GIFT_GOLD_MULT[difficulty];
+}
+function canAiProposeOneShotGoldGift(currentTurn, lastGiftTurn, difficulty) {
+  if (lastGiftTurn == null || lastGiftTurn <= 0) return true;
+  return currentTurn >= lastGiftTurn + aiOneShotGiftCooldownTurns(difficulty);
+}
 function capAiGoldOffer(balance, maxOffer) {
   if (!Number.isFinite(balance) || balance <= 0) return 0;
   return Math.min(Math.floor(balance), maxOffer);
@@ -125,8 +148,11 @@ function applyDiplomaticGoldGrant(fromOwnerId, toOwnerId, amount, treasury) {
 0 && (module.exports = {
   AI_TRADE_GOLD_MAX,
   activeDealsToPaymentDeals,
+  aiOneShotGiftCooldownTurns,
+  aiOneShotGiftGoldMultiplier,
   applyDiplomaticGoldGrant,
   applyOneShotGoldTransfer,
+  canAiProposeOneShotGoldGift,
   capAiGoldOffer,
   tickDiplomacyPayments,
   tributeBreakPairsFromDeals

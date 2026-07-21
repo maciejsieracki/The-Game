@@ -1804,6 +1804,8 @@ import type { GameDifficulty } from './difficulty-cost';
 import {
   AI_TRADE_GOLD_MAX,
   AI_TRIBUTE_PEACE_MAX,
+  aiOneShotGiftGoldMultiplier,
+  canAiProposeOneShotGoldGift,
   capAiGoldOffer,
 } from './diplomacy-economy';
 
@@ -1871,6 +1873,8 @@ export interface RelacjaWejscie {
   respektWzgledny: number;
   /** Czy aktualnie trwa stan wojny z tym partnerem? */
   stanWojny: boolean;
+  /** Tura ostatniej propozycji/rozliczenia jednorazowego daru ¤ (cooldown per para). */
+  lastOneShotGiftTurn?: number;
 }
 
 /**
@@ -1899,6 +1903,8 @@ export interface DiplomacjaInputs {
   epoka?: number;
   /** Saldo skarbca AI (¤) — cap ofert złota; brak/0 = bez propozycji gold-only. */
   skarbiecGold?: number;
+  /** Bieżąca tura — wymagana do cooldownu jednorazowych darów. */
+  currentTurn?: number;
 }
 
 /**
@@ -2144,9 +2150,20 @@ export function decideAIDiplomacy(
     // dyplomacjaAktywnosc skaluje willingnessTrade analogicznie do sojuszu powyzej.
     const handlowosc = inp.handlowosc ?? p.progHandelArchetypeMin;
     const effWillingnessTrade = Math.min(1, stance.willingnessTrade * dyplomacjaAktywnosc);
-    const tradeGold = capAiGoldOffer(inp.skarbiecGold ?? 0, AI_TRADE_GOLD_MAX);
+    const giftTurn = inp.currentTurn ?? 0;
+    const giftCooldownOk = canAiProposeOneShotGoldGift(
+      giftTurn,
+      rel.lastOneShotGiftTurn,
+      difficulty,
+    );
+    const rawTradeGold = capAiGoldOffer(inp.skarbiecGold ?? 0, AI_TRADE_GOLD_MAX);
+    const tradeGold = Math.max(
+      0,
+      Math.floor(rawTradeGold * aiOneShotGiftGoldMultiplier(difficulty)),
+    );
     if (
       !rel.stanWojny &&
+      giftCooldownOk &&
       tradeGold > 0 &&
       effWillingnessTrade >= p.progHandel &&
       handlowosc >= p.progHandelArchetypeMin &&

@@ -4,7 +4,20 @@
 > **Czat:** krótko **`✅ Gotowe:`** / **`⏸️ Czeka:`** · **Ten plik:** pełniejszy zapis tego samego.  
 > Szczegóły techniczne → handoff w `dyspozycje/_handoff/` · operacja → `dyspozycje/DZIENNIK-MASTERA.md`
 
-**Ostatnia aktualizacja:** 2026-07-22 (zwiadowca poza bitwą miasta)
+**Ostatnia aktualizacja:** 2026-07-22 (cooldown darów dyplomacji)
+
+---
+
+## [2026-07-22] ✅ Gotowe — miasta-państwa nie spamują złotem co turę
+
+| | |
+|---|---|
+| **Co** | Jednorazowy dar ¤ (propozycja handlu) od tego samego miasta-państwa max raz na cooldown — nie comiesięczny spam bez umowy |
+| **Przykład** | Po poznaniu Myken → propozycja np. 15 ¤ → akcept/odrzut → **cisza ~25 tur** (normal) → dopiero potem kolejna oferta |
+| **Trudność** | Łatwy: cooldown 15 tur, kwota ×1.25 · Normalny: 25 tur · Trudny: 35 tur, kwota ×0.75 |
+| **md5** | `2c72af6335dfc5c456f62b7d23649af1` · stamp `2c72af63` |
+| **Bramki** | tsc=0 · diplomacy-economy-test 16/16 · diplomacy-proposal-test 64/64 · ai-test T2S-b2 PASS |
+| **Od Ciebie** | `git pull` → Ctrl+F5 · `gra-robocza/START.html` → stamp `2c72af63` → graj kilka tur po pierwszym darze — brak kolejnych popupów złota z tego samego państwa |
 
 ---
 

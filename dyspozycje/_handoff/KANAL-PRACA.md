@@ -2770,3 +2770,12 @@ Pliki: `gra/src/units/battleRoster.ts`, `siegeDefenders.ts`, `main.ts`; test `ba
 Bramki: tsc=0 · battle-roster 5/5 · post-battle 15/15 · combat 6/6.
 Publish ROBOCZA: stamp **5ce0dfb7** · md5 `5ce0dfb7a110e60576de86a4acf4a48b`.
 CZEKAM-NA: Maciej — `git pull` → Ctrl+F5 START.html → stamp `5ce0dfb7` → armia 2 + zwiadowca obok → atak miasta → brak zwiadu w preBattle; po walce zwiadowca na swoim hexie.
+
+## [02:15 PL, 2026-07-22] INTEGRATOR → Maciej — DYPL: cooldown jednorazowych darów ¤ (miasta-państwa)
+
+Bug Macieja: miasta-państwa co turę proponowały handel ze złotem — gracz zbierał ¤ bez haraczu/trybutu.
+Przyczyna: decideAIDiplomacy P6 (zaproponuj_handel) bez cooldownu; akceptacja nie blokowała kolejnej propozycji.
+Fix: canAiProposeOneShotGoldGift — cooldown easy 15 / normal 25 / hard 35 tur per ownerId; aiOneShotGiftLastTurn w save; mnożnik kwoty per trudność.
+Pliki: diplomacy-economy.ts, ai.ts, main.ts; testy diplomacy-economy 16/16, ai T2S-b2.
+Publish ROBOCZA: stamp **2c72af63** · md5 `2c72af6335dfc5c456f62b7d23649af1` (zastępuje `5ce0dfb7`).
+CZEKAM-NA: Maciej — `git pull` → Ctrl+F5 START.html → stamp `2c72af63` → pierwszy dar od miasta-państwa → akcept/odrzut → brak kolejnych ofert złota ~25 tur (normal).

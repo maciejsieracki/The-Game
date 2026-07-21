@@ -1804,6 +1804,7 @@ console.log('\n--- T2S-b: zaproponuj_handel gdy neutralny + handlowosc >= 0.4 + 
     myPlayerId: 'ai-1',
     agresja: 0.3,
     handlowosc: 0.7,
+    skarbiecGold: 100,
     relacje: [{
       partnerId: 'chiny-1',
       relation: { zaufanie: 30, respekt: 30, status: 'neutralni' },
@@ -1814,6 +1815,38 @@ console.log('\n--- T2S-b: zaproponuj_handel gdy neutralny + handlowosc >= 0.4 + 
   const handelCmd = cmds.find(c => c.type === 'zaproponuj_handel');
   assert(!!handelCmd, `T2S-b: zaproponuj_handel dla neutralnej relacji + handlowosc=0.7; got: ${JSON.stringify(cmds.map(c=>c.type))}`);
   assert(handelCmd && handelCmd.targetId === 'chiny-1', 'T2S-b: targetId prawidlowy');
+}
+
+console.log('\n--- T2S-b2: cooldown blokuje kolejny zaproponuj_handel ---');
+{
+  const relBase = {
+    partnerId: 'chiny-1',
+    relation: { zaufanie: 30, respekt: 30, status: 'neutralni' },
+    respektWzgledny: 0.5,
+    stanWojny: false,
+    lastOneShotGiftTurn: 10,
+  };
+  const blocked = decideAIDiplomacy({
+    myPlayerId: 'ai-1',
+    agresja: 0.3,
+    handlowosc: 0.7,
+    skarbiecGold: 100,
+    currentTurn: 20,
+    relacje: [relBase],
+  }, undefined, 1, 1, 'normal');
+  assert(!blocked.some(c => c.type === 'zaproponuj_handel'),
+    `T2S-b2: cooldown normal 25 tur blokuje handel w turze 20 po darze 10; got: ${JSON.stringify(blocked.map(c=>c.type))}`);
+
+  const allowed = decideAIDiplomacy({
+    myPlayerId: 'ai-1',
+    agresja: 0.3,
+    handlowosc: 0.7,
+    skarbiecGold: 100,
+    currentTurn: 36,
+    relacje: [relBase],
+  }, undefined, 1, 1, 'normal');
+  assert(allowed.some(c => c.type === 'zaproponuj_handel'),
+    `T2S-b2: po cooldownie (tura 36) handel wraca; got: ${JSON.stringify(allowed.map(c=>c.type))}`);
 }
 
 console.log('\n--- T2S-c: brak sojuszu gdy ofiara (rw > 0.7 -> dominacja, nie rowny partner) ---');

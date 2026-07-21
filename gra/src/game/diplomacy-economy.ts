@@ -146,6 +146,41 @@ export function tributeBreakPairsFromDeals(
 export const AI_TRADE_GOLD_MAX = 20;
 export const AI_TRIBUTE_PEACE_MAX = 50;
 
+/**
+ * Cooldown jednorazowego daru ¤ (propozycja zaproponuj_handel) per para AI→gracz.
+ * Maciej 2026-07-22: miasta-państwa spamowały co turę — jeden dar, potem cisza.
+ */
+export const AI_ONESHOT_GIFT_COOLDOWN_TURNS: Record<'easy' | 'normal' | 'hard', number> = {
+  easy: 15,
+  normal: 25,
+  hard: 35,
+};
+
+/** Mnożnik kwoty jednorazowego daru wg trudności (łatwy = więcej, trudny = mniej). */
+export const AI_ONESHOT_GIFT_GOLD_MULT: Record<'easy' | 'normal' | 'hard', number> = {
+  easy: 1.25,
+  normal: 1.0,
+  hard: 0.75,
+};
+
+export function aiOneShotGiftCooldownTurns(difficulty: 'easy' | 'normal' | 'hard'): number {
+  return AI_ONESHOT_GIFT_COOLDOWN_TURNS[difficulty];
+}
+
+export function aiOneShotGiftGoldMultiplier(difficulty: 'easy' | 'normal' | 'hard'): number {
+  return AI_ONESHOT_GIFT_GOLD_MULT[difficulty];
+}
+
+/** Czy AI może zaproponować kolejny jednorazowy dar ¤ (bez umowy handlowej/trybutu). */
+export function canAiProposeOneShotGoldGift(
+  currentTurn: number,
+  lastGiftTurn: number | undefined,
+  difficulty: 'easy' | 'normal' | 'hard',
+): boolean {
+  if (lastGiftTurn == null || lastGiftTurn <= 0) return true;
+  return currentTurn >= lastGiftTurn + aiOneShotGiftCooldownTurns(difficulty);
+}
+
 /** Oferta AI = tyle, ile ma w skarbcu (cap opcjonalny). 0 gdy pusty skarbiec. */
 export function capAiGoldOffer(balance: number, maxOffer: number): number {
   if (!Number.isFinite(balance) || balance <= 0) return 0;
