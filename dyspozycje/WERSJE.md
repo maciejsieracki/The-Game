@@ -11,9 +11,13 @@ swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drug
 
 ## ROBOCZA (gra-robocza\Gra-ROBOCZA.html — wskazywana przez START.html)
 
+- 2026-07-22 · stempel: ROBOCZA · **e90f27d4** · md5 pliku `e90f27d4a8e40d79d19c410d21641ed4` · **FIX: propozycje dyplomacji AI — tekst dla gracza** — na `8b53ffd7`:
+  **Bug:** popup propozycji handlu (i innych) pokazywał debug silnika (`willingnessTrade=0.58 …`). **Fix:** `formatAiDiplomacyPlayerMessage` w `diplomacy-proposals.ts` — polskie opisy oferty (złoto/trybut/sojusz/pokój); `cmd.powod` tylko w `console.log`; UI inbox/modal bez współczynników.
+  tsc=0 · VERIFY OK · publish `gra-robocza/Gra-ROBOCZA.html`. · **AKTUALNA** · Test: Ctrl+F5 START.html → stamp `e90f27d4`; propozycja handlu od miasta-państwa → „Proponujemy jednorazową wymianę: 20 ¤…” bez willingnessTrade.
+
 - 2026-07-22 · stempel: ROBOCZA · **8b53ffd7** · md5 pliku `8b53ffd7328af8e421b094d5dc290460` · **FIX: picking heksów mapy świata (offset w dół)** — na `0440dbe4`:
   **Bug:** klik w heks na mapie trafiał w sąsiada „w dół" — trzeba było klikać środek kafelka (`95be60fc` raycast terenu nie wystarczył). **Przyczyna:** (1) `camera.aspect`/`setSize` z `innerWidth/innerHeight` vs `getBoundingClientRect` canvas (scrollbar/DPR drift → przesunięcie Y promienia); (2) `worldToAxial` na trafieniu w bok pryzmu zamiast hex z `instanceId`. **Fix:** `scene.ts` — rozmiar kamery z `canvas.clientWidth/Height`; `terrainPickKeys` + `resolveTerrainPick(instanceId)`; `picker.ts` — `updateMatrixWorld`, world-space normal, test `picker-test.cjs`.
-  tsc=0 · picker-test 136/136 · VERIFY OK · publish `gra-robocza/Gra-ROBOCZA.html`. · **AKTUALNA** · Test: Ctrl+F5 START.html → stamp `8b53ffd7`; klik krawędzi heksa (nie tylko środek) → właściwy hex / panel kontekstowy.
+  tsc=0 · picker-test 136/136 · VERIFY OK · publish `gra-robocza/Gra-ROBOCZA.html`. · **ZASTĄPIONA** (→ `e90f27d4`) · Test: Ctrl+F5 START.html → stamp `8b53ffd7`; klik krawędzi heksa (nie tylko środek) → właściwy hex / panel kontekstowy.
 
 - 2026-07-22 · stempel: ROBOCZA · **0440dbe4** · md5 pliku `0440dbe4c9b526c4e382d22585168d40` · **FIX: manual battle deploy — raycast terenu 3D** — na `13cb70c2`:
   **Bug:** w fazie rozstawiania (deploy) klik w pole czasem trafiał w sąsiedni hex / wymagał wielu klików — `_pickGroundTile` i `_onDeployClick` używały płaszczyzny y=0 (perspektywa kamery przesuwała trafienie, jak stary bug mapy w `picker.ts`). **Fix:** `_battleGroundPickMeshes` + raycast na meshach terenu; `preferPlacement` przy kliku z zaznaczeniem; feedback „Poza strefą"/„Pole nieprzechodne".

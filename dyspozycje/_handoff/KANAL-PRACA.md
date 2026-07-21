@@ -2597,3 +2597,12 @@ CZEKAM-NA: **Maciej** `git pull` → Ctrl+F5 START.html → stamp `0440dbe4`; PL
 - tsc=0 · VERIFY OK · commit+push main.
 
 CZEKAM-NA: **Maciej** `git pull` → Ctrl+F5 START.html → stamp `8b53ffd7`; klik krawędzi heksa (nie tylko środek) → właściwy hex.
+
+## [00:45 PL, 2026-07-22] INTEGRATOR → Maciej — FIX tekst propozycji dyplomacji AI
+
+- **Stamp ROBOCZA:** `e90f27d4` (md5 `e90f27d4a8e40d79d19c410d21641ed4`)
+- **Bug:** popup propozycji handlu pokazywał debug silnika (`willingnessTrade=… handlowosc=…`).
+- **Fix:** `formatAiDiplomacyPlayerMessage` — polskie opisy ofert (handel/sojusz/pokój/trybut/wojna); `cmd.powod` tylko w `console.log`.
+- tsc=0 · VERIFY OK · commit+push main.
+
+CZEKAM-NA: **Maciej** `git pull` → Ctrl+F5 START.html → stamp `e90f27d4`; propozycja handlu od AI → czytelny tekst bez współczynników.

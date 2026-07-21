@@ -540,7 +540,8 @@ import { showDiplomacyProposalBanner } from './ui/diplomacyProposalBanner';
 import { proposalActionIdFromPayload, actionNeedsNegotiation } from './ui/diplomacyNegotiationModal';
 import {
   evaluateProposal, applyAcceptedProposal, aiCommandToPendingProposal,
-  evaluatePendingFromAI, type ProposalEvalContext, type ProposalPayload,
+  evaluatePendingFromAI, formatAiDiplomacyPlayerMessage,
+  type ProposalEvalContext, type ProposalPayload,
 } from './game/diplomacy-proposals';
 import {
   type ActiveDeal, hasTreaty, expireTreaties, treatiesBrokenByWar,
@@ -6168,6 +6169,11 @@ async function boot(): Promise<void> {
         case 'oferuj_trybut_za_pokoj': return 'Trybut za pokój';
         default: return 'Propozycja dyplomatyczna';
       }
+    }
+
+    function enqueueDiplomacyPendingFromCmd(ownerId: number, cmd: AIDiplomacyCommand): void {
+      console.log(`[Dyplomacja] AI${ownerId} ${cmd.type}: ${cmd.powod}`);
+      enqueueDiplomacyPending(ownerId, cmd.type, formatAiDiplomacyPlayerMessage(cmd));
     }
 
     function enqueueDiplomacyPending(ownerId: number, cmdType: string, reason: string): void {
@@ -12037,18 +12043,18 @@ async function boot(): Promise<void> {
                     const newRel = applyDiplomaticEvent(curRel, 'wojna_wypowiedziana');
                     setDiploRelation(0, ownerId, newRel);
                     console.log(`[Dyplomacja] AI${ownerId} wypowiada wojne: ${cmd.powod}`);
-                    showHintMessage('\u2694 AI ' + ownerDiploLabel(ownerId) + ' wypowiada wojne! (' + cmd.powod + ')', 4500);
+                    showHintMessage('\u2694 ' + ownerDiploLabel(ownerId) + ' — ' + formatAiDiplomacyPlayerMessage(cmd), 4500);
                     if (isDiplomacyPanelOpen()) updateDiplomacyPanel();
                   } else if (cmd.type === 'zaproponuj_pokoj') {
-                    enqueueDiplomacyPending(ownerId, cmd.type, cmd.powod);
+                    enqueueDiplomacyPendingFromCmd(ownerId, cmd);
                   } else if (cmd.type === 'zadaj_trybut') {
-                    enqueueDiplomacyPending(ownerId, cmd.type, cmd.powod);
+                    enqueueDiplomacyPendingFromCmd(ownerId, cmd);
                   } else if (cmd.type === 'oferuj_trybut_za_pokoj') {
-                    enqueueDiplomacyPending(ownerId, cmd.type, cmd.powod);
+                    enqueueDiplomacyPendingFromCmd(ownerId, cmd);
                   } else if (cmd.type === 'zaproponuj_sojusz') {
-                    enqueueDiplomacyPending(ownerId, cmd.type, cmd.powod);
+                    enqueueDiplomacyPendingFromCmd(ownerId, cmd);
                   } else if (cmd.type === 'zaproponuj_handel') {
-                    enqueueDiplomacyPending(ownerId, cmd.type, cmd.powod);
+                    enqueueDiplomacyPendingFromCmd(ownerId, cmd);
                   }
                 } catch (eCmdDiplo) {
                   console.error(`[Dyplomacja] Blad komendy ${cmd.type}:`, eCmdDiplo);

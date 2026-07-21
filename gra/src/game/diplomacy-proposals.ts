@@ -557,6 +557,34 @@ export function applyAcceptedProposal(
   return addTreaty(deals, result.deal);
 }
 
+/** Domyślne payloady propozycji AI (sync z aiCommandToPendingProposal). */
+const AI_TRADE_GOLD_ONCE = 20;
+const AI_TRIBUTE_PER_TURN = 15;
+const AI_TRIBUTE_PEACE_ONCE = 50;
+
+/**
+ * Tekst propozycji dyplomatycznej AI dla gracza (UI / inbox).
+ * cmd.powod pozostaje diagnostyką silnika — nie pokazuj w UI.
+ */
+export function formatAiDiplomacyPlayerMessage(cmd: AIDiplomacyCommand): string {
+  switch (cmd.type) {
+    case 'zaproponuj_handel':
+      return `Proponujemy jednorazową wymianę: ${AI_TRADE_GOLD_ONCE} ¤ na rzecz twojego państwa.`;
+    case 'zaproponuj_sojusz':
+      return 'Proponujemy pełny sojusz — wspólna obrona i wsparcie militarnie.';
+    case 'zaproponuj_pokoj':
+      return 'Proponujemy zawarcie pokoju i zakończenie wojny.';
+    case 'zadaj_trybut':
+      return `Żądamy trybut: ${AI_TRIBUTE_PER_TURN} ¤ co turę na rzecz naszego państwa.`;
+    case 'oferuj_trybut_za_pokoj':
+      return `Oferujemy jednorazową zapłatę ${AI_TRIBUTE_PEACE_ONCE} ¤ w zamian za pokój.`;
+    case 'wypowiedz_wojne':
+      return 'Wypowiadamy wojnę — nasze wojska są gotowe do walki.';
+    default:
+      return 'Propozycja dyplomatyczna od tego państwa.';
+  }
+}
+
 /** Konwersja komendy AI → propozycja oczekująca (banner audiencji). */
 export function aiCommandToPendingProposal(
   cmd: AIDiplomacyCommand,
@@ -570,7 +598,7 @@ export function aiCommandToPendingProposal(
     createdTurn: turn,
     expiresTurn: turn + 5,
     source: 'ai' as const,
-    aiPowod: cmd.powod,
+    aiPowod: formatAiDiplomacyPlayerMessage(cmd),
   };
 
   switch (cmd.type) {
@@ -585,7 +613,7 @@ export function aiCommandToPendingProposal(
       return {
         ...base,
         id: makeDealId('pending-handel', turn, fromOwnerId, toOwnerId),
-        payload: { goldOnce: 20 },
+        payload: { goldOnce: AI_TRADE_GOLD_ONCE },
         actionId: 'handel',
       };
     case 'zadaj_trybut':
@@ -593,14 +621,14 @@ export function aiCommandToPendingProposal(
         ...base,
         id: makeDealId('pending-trybut', turn, fromOwnerId, toOwnerId),
         actionId: 'trybut_zadanie',
-        payload: { goldPerTurn: 15 },
+        payload: { goldPerTurn: AI_TRIBUTE_PER_TURN },
       };
     case 'oferuj_trybut_za_pokoj':
       return {
         ...base,
         id: makeDealId('pending-trybut-oferta', turn, fromOwnerId, toOwnerId),
         actionId: 'trybut_oferta',
-        payload: { goldOnce: 50 },
+        payload: { goldOnce: AI_TRIBUTE_PEACE_ONCE },
       };
     default:
       return null;
