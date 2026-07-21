@@ -2696,3 +2696,11 @@ Fix: `territory-border.ts` (pętle obwodu) + `rangeOverlay.ts` (pas wzdłuż pę
 Bramki: tsc=0 · territory-border-test 9/9 · picker-test 136/136 · map-gen-regression PASS.
 Publish ROBOCZA: stamp **826cc00b** · md5 `826cc00bda20eccc5392ae3924a7aae0`.
 CZEKAM-NA: Maciej — `git pull` → Ctrl+F5 START.html → stamp `826cc00b` → granice państwa ON → ciągły obwód każdego państwa.
+
+## [01:05] INTEGRATOR → Maciej — DYPL: oferta AI = faktyczny skarbiec (strict)
+
+Decyzja Macieja: AI proponuje tylko tyle ¤, ile ma — transfer strict (bez grantu).
+Fix: `capAiGoldOffer`, `enrichAiCommandWithTreasury`, `decideAIDiplomacy(skarbiecGold)`; UI „**N** ¤"; 0 ¤ → brak propozycji handlu; `applyOneShotGoldTransfer` zamiast grantu.
+Bramki: tsc=0 · diplomacy-proposal 64/64 · diplomacy-economy 11/11.
+Publish ROBOCZA: stamp **7d03bb35** · md5 `7d03bb35daf68ef86d540b35cf87361b`.
+CZEKAM-NA: Maciej — `git pull` → Ctrl+F5 START.html → stamp `7d03bb35` → propozycja handlu AI = realna kwota; AKCEPTUJ = dokładnie tyle w skarbcu.

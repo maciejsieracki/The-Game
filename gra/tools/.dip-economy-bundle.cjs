@@ -20,9 +20,11 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 // tools/.dip-economy-entry.ts
 var dip_economy_entry_exports = {};
 __export(dip_economy_entry_exports, {
+  AI_TRADE_GOLD_MAX: () => AI_TRADE_GOLD_MAX,
   activeDealsToPaymentDeals: () => activeDealsToPaymentDeals,
   applyDiplomaticGoldGrant: () => applyDiplomaticGoldGrant,
   applyOneShotGoldTransfer: () => applyOneShotGoldTransfer,
+  capAiGoldOffer: () => capAiGoldOffer,
   tickDiplomacyPayments: () => tickDiplomacyPayments,
   tributeBreakPairsFromDeals: () => tributeBreakPairsFromDeals
 });
@@ -99,6 +101,11 @@ function tributeBreakPairsFromDeals(deals, brokenIds) {
   }
   return out;
 }
+var AI_TRADE_GOLD_MAX = 20;
+function capAiGoldOffer(balance, maxOffer) {
+  if (!Number.isFinite(balance) || balance <= 0) return 0;
+  return Math.min(Math.floor(balance), maxOffer);
+}
 function applyOneShotGoldTransfer(fromOwnerId, toOwnerId, amount, treasury) {
   if (amount <= 0) return { ok: false, reason: "Kwota musi by\u0107 > 0" };
   const balance = treasury.getPieniadze(fromOwnerId);
@@ -110,18 +117,17 @@ function applyOneShotGoldTransfer(fromOwnerId, toOwnerId, amount, treasury) {
   return { ok: true };
 }
 function applyDiplomaticGoldGrant(fromOwnerId, toOwnerId, amount, treasury) {
-  if (amount <= 0) return { ok: false, granted: 0, reason: "Kwota musi by\u0107 > 0" };
-  const fromBalance = treasury.getPieniadze(fromOwnerId);
-  const deduct = Math.min(fromBalance, amount);
-  if (deduct > 0) treasury.add(fromOwnerId, -deduct);
-  treasury.add(toOwnerId, amount);
+  const result = applyOneShotGoldTransfer(fromOwnerId, toOwnerId, amount, treasury);
+  if (!result.ok) return { ok: false, granted: 0, reason: result.reason };
   return { ok: true, granted: amount };
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
+  AI_TRADE_GOLD_MAX,
   activeDealsToPaymentDeals,
   applyDiplomaticGoldGrant,
   applyOneShotGoldTransfer,
+  capAiGoldOffer,
   tickDiplomacyPayments,
   tributeBreakPairsFromDeals
 });

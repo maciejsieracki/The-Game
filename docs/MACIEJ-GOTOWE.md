@@ -4,7 +4,20 @@
 > **Czat:** krótko **`✅ Gotowe:`** / **`⏸️ Czeka:`** · **Ten plik:** pełniejszy zapis tego samego.  
 > Szczegóły techniczne → handoff w `dyspozycje/_handoff/` · operacja → `dyspozycje/DZIENNIK-MASTERA.md`
 
-**Ostatnia aktualizacja:** 2026-07-22 (granice państwa — ciągły kontur)
+**Ostatnia aktualizacja:** 2026-07-22 (dyplomacja — oferta AI = skarbiec)
+
+---
+
+## [2026-07-22] ✅ Gotowe — dyplomacja: oferta AI = faktyczny skarbiec
+
+| | |
+|---|---|
+| **Co** | AI proponuje tylko tyle **¤**, ile realnie ma w skarbcu — tekst UI i transfer zgodne z kwotą |
+| **Przykład** | AI ma 5 ¤ → „Proponujemy jednorazową wymianę: **5** ¤…"; AI ma 0 ¤ → **brak** propozycji handlu złotem |
+| **Strict transfer** | Cofnięty grant bez skarbca — akceptacja transferuje dokładnie kwotę z payload (pełne saldo wymagane) |
+| **md5** | `7d03bb35daf68ef86d540b35cf87361b` · stamp `7d03bb35` |
+| **Bramki** | tsc=0 · diplomacy-proposal 64/64 · diplomacy-economy 11/11 |
+| **Od Ciebie** | `git pull` → Ctrl+F5 · `gra-robocza/START.html` → stamp `7d03bb35` → poczekaj na propozycję handlu AI → sprawdź kwotę w tekście i skarbcu po AKCEPTUJ |
 
 ---
 

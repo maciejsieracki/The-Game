@@ -142,6 +142,16 @@ export function tributeBreakPairsFromDeals(
   return out;
 }
 
+/** Maks. kwota złota w propozycji AI (faktyczna = min(skarbiec, max)). */
+export const AI_TRADE_GOLD_MAX = 20;
+export const AI_TRIBUTE_PEACE_MAX = 50;
+
+/** Oferta AI = tyle, ile ma w skarbcu (cap opcjonalny). 0 gdy pusty skarbiec. */
+export function capAiGoldOffer(balance: number, maxOffer: number): number {
+  if (!Number.isFinite(balance) || balance <= 0) return 0;
+  return Math.min(Math.floor(balance), maxOffer);
+}
+
 /** T3A: jednorazowy transfer złota po akceptacji handlu / trybutu oferta. */
 export function applyOneShotGoldTransfer(
   fromOwnerId: number,
@@ -160,8 +170,7 @@ export function applyOneShotGoldTransfer(
 }
 
 /**
- * Propozycja AI → gracz (zaproponuj_handel / oferuj_trybut_za_pokoj):
- * gracz dostaje pełną kwotę; AI płaci tyle, ile ma w skarbcu (reszta = grant dyplomatyczny).
+ * @deprecated Użyj applyOneShotGoldTransfer — strict: transfer tylko przy pełnej kwocie w skarbcu.
  */
 export function applyDiplomaticGoldGrant(
   fromOwnerId: number,
@@ -169,10 +178,7 @@ export function applyDiplomaticGoldGrant(
   amount: number,
   treasury: TreasuryAdapter,
 ): { ok: boolean; granted: number; reason?: string } {
-  if (amount <= 0) return { ok: false, granted: 0, reason: 'Kwota musi być > 0' };
-  const fromBalance = treasury.getPieniadze(fromOwnerId);
-  const deduct = Math.min(fromBalance, amount);
-  if (deduct > 0) treasury.add(fromOwnerId, -deduct);
-  treasury.add(toOwnerId, amount);
+  const result = applyOneShotGoldTransfer(fromOwnerId, toOwnerId, amount, treasury);
+  if (!result.ok) return { ok: false, granted: 0, reason: result.reason };
   return { ok: true, granted: amount };
 }

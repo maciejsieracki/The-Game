@@ -34,6 +34,13 @@ import {
   type BasketItem,
 } from './diplomacy-pn-engine';
 import { diplomacyProgDarRelacja } from './diplomacy-value-catalog';
+import {
+  AI_TRADE_GOLD_MAX,
+  AI_TRIBUTE_PEACE_MAX,
+  capAiGoldOffer,
+} from './diplomacy-economy';
+
+export { AI_TRADE_GOLD_MAX, AI_TRIBUTE_PEACE_MAX, capAiGoldOffer } from './diplomacy-economy';
 
 // ---------------------------------------------------------------------------
 // Typy propozycji (UI → SILNIK → CYW)
@@ -557,10 +564,28 @@ export function applyAcceptedProposal(
   return addTreaty(deals, result.deal);
 }
 
-/** Domyślne payloady propozycji AI (sync z aiCommandToPendingProposal). */
-export const AI_TRADE_GOLD_ONCE = 20;
+/** @deprecated alias — użyj AI_TRADE_GOLD_MAX */
+export const AI_TRADE_GOLD_ONCE = AI_TRADE_GOLD_MAX;
 const AI_TRIBUTE_PER_TURN = 15;
-const AI_TRIBUTE_PEACE_ONCE = 50;
+
+/** Wzbogaca komendę AI o kwoty ze skarbca; null gdy brak środków na gold-only. */
+export function enrichAiCommandWithTreasury(
+  cmd: AIDiplomacyCommand,
+  treasuryBalance: number,
+): AIDiplomacyCommand | null {
+  switch (cmd.type) {
+    case 'zaproponuj_handel': {
+      const goldOnce = cmd.goldOnce ?? capAiGoldOffer(treasuryBalance, AI_TRADE_GOLD_MAX);
+      return goldOnce > 0 ? { ...cmd, goldOnce } : null;
+    }
+    case 'oferuj_trybut_za_pokoj': {
+      const goldOnce = cmd.goldOnce ?? capAiGoldOffer(treasuryBalance, AI_TRIBUTE_PEACE_MAX);
+      return goldOnce > 0 ? { ...cmd, goldOnce } : null;
+    }
+    default:
+      return cmd;
+  }
+}
 
 /**
  * Tekst propozycji dyplomatycznej AI dla gracza (UI / inbox).
@@ -569,7 +594,7 @@ const AI_TRIBUTE_PEACE_ONCE = 50;
 export function formatAiDiplomacyPlayerMessage(cmd: AIDiplomacyCommand): string {
   switch (cmd.type) {
     case 'zaproponuj_handel':
-      return `Proponujemy jednorazową wymianę: ${AI_TRADE_GOLD_ONCE} ¤ na rzecz twojego państwa.`;
+      return `Proponujemy jednorazową wymianę: ${cmd.goldOnce ?? 0} ¤ na rzecz twojego państwa.`;
     case 'zaproponuj_sojusz':
       return 'Proponujemy pełny sojusz — wspólna obrona i wsparcie militarnie.';
     case 'zaproponuj_pokoj':
@@ -577,7 +602,7 @@ export function formatAiDiplomacyPlayerMessage(cmd: AIDiplomacyCommand): string 
     case 'zadaj_trybut':
       return `Żądamy trybut: ${AI_TRIBUTE_PER_TURN} ¤ co turę na rzecz naszego państwa.`;
     case 'oferuj_trybut_za_pokoj':
-      return `Oferujemy jednorazową zapłatę ${AI_TRIBUTE_PEACE_ONCE} ¤ w zamian za pokój.`;
+      return `Oferujemy jednorazową zapłatę ${cmd.goldOnce ?? 0} ¤ w zamian za pokój.`;
     case 'wypowiedz_wojne':
       return 'Wypowiadamy wojnę — nasze wojska są gotowe do walki.';
     default:
@@ -609,13 +634,16 @@ export function aiCommandToPendingProposal(
         actionId: 'sojusz_pelny',
         payload: {},
       };
-    case 'zaproponuj_handel':
+    case 'zaproponuj_handel': {
+      const goldOnce = cmd.goldOnce ?? 0;
+      if (goldOnce <= 0) return null;
       return {
         ...base,
         id: makeDealId('pending-handel', turn, fromOwnerId, toOwnerId),
-        payload: { goldOnce: AI_TRADE_GOLD_ONCE },
+        payload: { goldOnce },
         actionId: 'handel',
       };
+    }
     case 'zadaj_trybut':
       return {
         ...base,
@@ -623,13 +651,16 @@ export function aiCommandToPendingProposal(
         actionId: 'trybut_zadanie',
         payload: { goldPerTurn: AI_TRIBUTE_PER_TURN },
       };
-    case 'oferuj_trybut_za_pokoj':
+    case 'oferuj_trybut_za_pokoj': {
+      const goldOnce = cmd.goldOnce ?? 0;
+      if (goldOnce <= 0) return null;
       return {
         ...base,
         id: makeDealId('pending-trybut-oferta', turn, fromOwnerId, toOwnerId),
         actionId: 'trybut_oferta',
-        payload: { goldOnce: AI_TRIBUTE_PEACE_ONCE },
+        payload: { goldOnce },
       };
+    }
     default:
       return null;
   }

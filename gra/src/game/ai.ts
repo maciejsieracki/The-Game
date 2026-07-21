@@ -1801,6 +1801,11 @@ import {
 } from './diplomacy';
 import type { Relation, AIDiplomacyContext } from './diplomacy';
 import type { GameDifficulty } from './difficulty-cost';
+import {
+  AI_TRADE_GOLD_MAX,
+  AI_TRIBUTE_PEACE_MAX,
+  capAiGoldOffer,
+} from './diplomacy-economy';
 
 // ---------------------------------------------------------------------------
 // Strojalne progi (eksportowane, by testy mogły je sprawdzić)
@@ -1892,6 +1897,8 @@ export interface DiplomacjaInputs {
    * 0 = Kamień, 1 = Brąz, itp.
    */
   epoka?: number;
+  /** Saldo skarbca AI (¤) — cap ofert złota; brak/0 = bez propozycji gold-only. */
+  skarbiecGold?: number;
 }
 
 /**
@@ -1905,9 +1912,9 @@ export type AIDiplomacyCommand =
   | { type: 'wypowiedz_wojne';       targetId: string; powod: string }
   | { type: 'zaproponuj_pokoj';      targetId: string; powod: string }
   | { type: 'zadaj_trybut';          targetId: string; powod: string }
-  | { type: 'oferuj_trybut_za_pokoj'; targetId: string; powod: string }
+  | { type: 'oferuj_trybut_za_pokoj'; targetId: string; powod: string; goldOnce?: number }
   | { type: 'zaproponuj_sojusz';     targetId: string; powod: string }
-  | { type: 'zaproponuj_handel';     targetId: string; powod: string };
+  | { type: 'zaproponuj_handel';     targetId: string; powod: string; goldOnce?: number };
 
 // ---------------------------------------------------------------------------
 // Opcjonalne overridy progów (dla testów lub trudności)
@@ -2038,12 +2045,16 @@ export function decideAIDiplomacy(
 
     // ---- Priorytet 1: oferuj_trybut_za_pokoj (b. słaby w trakcie wojny) ----
     if (rel.stanWojny && rw <= p.progTrybutKrytyczny) {
-      komendy.push({
-        type:     'oferuj_trybut_za_pokoj',
-        targetId: rel.partnerId,
-        powod:    `krytyczna slabosz w wojnie (respektWzgledny=${rw.toFixed(2)}): oferujemy trybut za pokoj`,
-      });
-      continue;
+      const peaceGold = capAiGoldOffer(inp.skarbiecGold ?? 0, AI_TRIBUTE_PEACE_MAX);
+      if (peaceGold > 0) {
+        komendy.push({
+          type:     'oferuj_trybut_za_pokoj',
+          targetId: rel.partnerId,
+          powod:    `krytyczna slabosz w wojnie (respektWzgledny=${rw.toFixed(2)}): oferujemy ${peaceGold} ¤ za pokoj`,
+          goldOnce: peaceGold,
+        });
+        continue;
+      }
     }
 
     // ---- Priorytet 2: zaproponuj_pokoj (słaby w trakcie wojny) ----
@@ -2133,8 +2144,10 @@ export function decideAIDiplomacy(
     // dyplomacjaAktywnosc skaluje willingnessTrade analogicznie do sojuszu powyzej.
     const handlowosc = inp.handlowosc ?? p.progHandelArchetypeMin;
     const effWillingnessTrade = Math.min(1, stance.willingnessTrade * dyplomacjaAktywnosc);
+    const tradeGold = capAiGoldOffer(inp.skarbiecGold ?? 0, AI_TRADE_GOLD_MAX);
     if (
       !rel.stanWojny &&
+      tradeGold > 0 &&
       effWillingnessTrade >= p.progHandel &&
       handlowosc >= p.progHandelArchetypeMin &&
       score > p.progHandelRelacjaMin
@@ -2142,7 +2155,8 @@ export function decideAIDiplomacy(
       komendy.push({
         type:     'zaproponuj_handel',
         targetId: rel.partnerId,
-        powod:    `willingnessTrade=${stance.willingnessTrade.toFixed(2)} (eff=${effWillingnessTrade.toFixed(2)} x aktywnosc=${dyplomacjaAktywnosc.toFixed(2)}) >= prog=${p.progHandel}, handlowosc=${handlowosc.toFixed(2)} >= 0.4: proponujemy handel`,
+        powod:    `willingnessTrade=${stance.willingnessTrade.toFixed(2)} (eff=${effWillingnessTrade.toFixed(2)} x aktywnosc=${dyplomacjaAktywnosc.toFixed(2)}) >= prog=${p.progHandel}, handlowosc=${handlowosc.toFixed(2)} >= 0.4: proponujemy ${tradeGold} ¤`,
+        goldOnce: tradeGold,
       });
       continue;
     }

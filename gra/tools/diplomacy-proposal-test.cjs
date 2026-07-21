@@ -14,8 +14,10 @@ fs.writeFileSync(entryFile, `
 export {
   evaluateProposal, applyAcceptedProposal, aiCommandToPendingProposal,
   makeDealId, proposalHasResourceAccess, clampDealTurns,
-  resolvePlayerAcceptsAiPending, AI_TRADE_GOLD_ONCE,
+  resolvePlayerAcceptsAiPending, AI_TRADE_GOLD_ONCE, AI_TRADE_GOLD_MAX,
+  enrichAiCommandWithTreasury, formatAiDiplomacyPlayerMessage,
 } from '../src/game/diplomacy-proposals.ts';
+export { capAiGoldOffer, AI_TRADE_GOLD_MAX as ECO_GOLD_MAX } from '../src/game/diplomacy-economy.ts';
 export { addTreaty, hasTreaty, treatiesBrokenByWar, resolvePokojTrustTier } from '../src/game/diplomacy-treaties.ts';
 export { getEffectiveDiplomacyParams } from '../src/game/diplomacy.ts';
 `);
@@ -34,7 +36,8 @@ const {
   evaluateProposal, applyAcceptedProposal, aiCommandToPendingProposal,
   addTreaty, hasTreaty, treatiesBrokenByWar, resolvePokojTrustTier,
   getEffectiveDiplomacyParams, proposalHasResourceAccess, clampDealTurns,
-  resolvePlayerAcceptsAiPending, AI_TRADE_GOLD_ONCE,
+  resolvePlayerAcceptsAiPending, AI_TRADE_GOLD_ONCE, AI_TRADE_GOLD_MAX,
+  enrichAiCommandWithTreasury, formatAiDiplomacyPlayerMessage, capAiGoldOffer,
 } = require(BUNDLE);
 
 let pass = 0;
@@ -351,20 +354,47 @@ const pending = aiCommandToPendingProposal(
 );
 ok(pending?.actionId === 'sojusz_pelny' && pending.fromOwnerId === 2, 'AI pending sojusz');
 
-// 16 AI handel — gracz akceptuje → oneShotTrade + goldOnce 20
-const pendingHandel = aiCommandToPendingProposal(
+// 16 AI handel — kwota ze skarbca (cap max 20)
+ok(capAiGoldOffer(5, AI_TRADE_GOLD_MAX) === 5, 'capAiGoldOffer 5¤ → 5');
+ok(capAiGoldOffer(0, AI_TRADE_GOLD_MAX) === 0, 'capAiGoldOffer 0¤ → brak oferty');
+ok(capAiGoldOffer(100, AI_TRADE_GOLD_MAX) === 20, 'capAiGoldOffer 100¤ → max 20');
+
+const enriched5 = enrichAiCommandWithTreasury(
   { type: 'zaproponuj_handel', targetId: 'p0', powod: 'test' },
+  5,
+);
+ok(enriched5?.goldOnce === 5, 'enrich handel 5¤ skarbca');
+ok(
+  enrichAiCommandWithTreasury({ type: 'zaproponuj_handel', targetId: 'p0', powod: 'x' }, 0) === null,
+  'enrich handel 0¤ → null',
+);
+ok(
+  formatAiDiplomacyPlayerMessage({ type: 'zaproponuj_handel', targetId: 'p0', powod: 'x', goldOnce: 5 })
+    .includes('5 ¤'),
+  'UI tekst handel 5¤',
+);
+
+const pendingHandel = aiCommandToPendingProposal(
+  { type: 'zaproponuj_handel', targetId: 'p0', powod: 'test', goldOnce: 5 },
   3, 0, 12,
 );
 ok(
   pendingHandel?.actionId === 'handel'
-    && pendingHandel.payload.goldOnce === AI_TRADE_GOLD_ONCE,
-  'AI pending handel goldOnce 20',
+    && pendingHandel.payload.goldOnce === 5,
+  'AI pending handel goldOnce 5',
 );
 const acceptHandel = resolvePlayerAcceptsAiPending(pendingHandel, 12);
 ok(
   acceptHandel.accepted && acceptHandel.oneShotTrade && !acceptHandel.deal,
   'gracz akceptuje AI handel → oneShotTrade',
+);
+
+ok(
+  aiCommandToPendingProposal(
+    { type: 'zaproponuj_handel', targetId: 'p0', powod: 'test', goldOnce: 0 },
+    3, 0, 12,
+  ) === null,
+  'AI pending handel 0¤ → null',
 );
 
 console.log(`\n${pass}/${pass + fail} PASS`);

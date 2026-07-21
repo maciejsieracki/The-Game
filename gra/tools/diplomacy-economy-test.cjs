@@ -13,7 +13,7 @@ const entryFile = path.resolve(__dirname, '.dip-economy-entry.ts');
 fs.writeFileSync(entryFile, `
 export {
   activeDealsToPaymentDeals, tickDiplomacyPayments, applyOneShotGoldTransfer,
-  applyDiplomaticGoldGrant, tributeBreakPairsFromDeals,
+  applyDiplomaticGoldGrant, tributeBreakPairsFromDeals, capAiGoldOffer, AI_TRADE_GOLD_MAX,
 } from '../src/game/diplomacy-economy.ts';
 `);
 
@@ -29,7 +29,7 @@ esbuild.buildSync({
 
 const {
   activeDealsToPaymentDeals, tickDiplomacyPayments, applyOneShotGoldTransfer,
-  applyDiplomaticGoldGrant, tributeBreakPairsFromDeals,
+  applyDiplomaticGoldGrant, tributeBreakPairsFromDeals, capAiGoldOffer, AI_TRADE_GOLD_MAX,
 } = require(BUNDLE);
 
 let pass = 0;
@@ -72,12 +72,19 @@ const once = applyOneShotGoldTransfer(1, 4, 30, t3);
 ok(once.ok && t3._map[1] === 20 && t3._map[4] === 30, 'one-shot handel T3A');
 
 const t4 = treasury({ 5: 0, 0: 100 });
-const grant = applyDiplomaticGoldGrant(5, 0, 20, t4);
-ok(grant.ok && grant.granted === 20 && t4._map[0] === 120 && t4._map[5] === 0, 'AI grant 20 → gracz bez skarbca AI');
+const grantEmpty = applyDiplomaticGoldGrant(5, 0, 20, t4);
+ok(!grantEmpty.ok && t4._map[0] === 100 && t4._map[5] === 0, 'strict grant — pusty skarbiec AI → brak transferu');
 
 const t5 = treasury({ 5: 8, 0: 100 });
 const grantPartial = applyDiplomaticGoldGrant(5, 0, 20, t5);
-ok(grantPartial.ok && t5._map[0] === 120 && t5._map[5] === 0, 'AI grant 20 — AI płaci 8, reszta grant');
+ok(!grantPartial.ok && t5._map[0] === 100 && t5._map[5] === 8, 'strict grant — 8¤ w skarbcu, oferta 20 → odrzucone');
+
+const t6 = treasury({ 5: 20, 0: 100 });
+const grantOk = applyDiplomaticGoldGrant(5, 0, 20, t6);
+ok(grantOk.ok && grantOk.granted === 20 && t6._map[0] === 120 && t6._map[5] === 0, 'strict grant 20¤ pełny skarbiec');
+
+ok(capAiGoldOffer(5, AI_TRADE_GOLD_MAX) === 5, 'capAiGoldOffer 5');
+ok(capAiGoldOffer(0, AI_TRADE_GOLD_MAX) === 0, 'capAiGoldOffer 0');
 
 const pairs = tributeBreakPairsFromDeals([{
   id: 'tb', rodzaj: 'wasalizacja', strony: [0, 2], wygasaTura: null,

@@ -1,5 +1,5 @@
 
 export {
   activeDealsToPaymentDeals, tickDiplomacyPayments, applyOneShotGoldTransfer,
-  applyDiplomaticGoldGrant, tributeBreakPairsFromDeals,
+  applyDiplomaticGoldGrant, tributeBreakPairsFromDeals, capAiGoldOffer, AI_TRADE_GOLD_MAX,
 } from '../src/game/diplomacy-economy.ts';

@@ -544,6 +544,7 @@ import { proposalActionIdFromPayload, actionNeedsNegotiation } from './ui/diplom
 import {
   evaluateProposal, applyAcceptedProposal, aiCommandToPendingProposal,
   evaluatePendingFromAI, resolvePlayerAcceptsAiPending, formatAiDiplomacyPlayerMessage,
+  enrichAiCommandWithTreasury,
   type ProposalEvalContext, type ProposalPayload,
 } from './game/diplomacy-proposals';
 import {
@@ -553,7 +554,7 @@ import {
 } from './game/diplomacy-treaties';
 import {
   activeDealsToPaymentDeals, tickDiplomacyPayments, applyOneShotGoldTransfer,
-  applyDiplomaticGoldGrant, tributeBreakPairsFromDeals,
+  tributeBreakPairsFromDeals,
 } from './game/diplomacy-economy';
 import { RodzajTraktatu } from './types/diplomacy';
 import {
@@ -3613,11 +3614,7 @@ async function boot(): Promise<void> {
       const gold = payload.goldOnce ?? 0;
       if (gold > 0) {
         const treasury = buildDiploTreasury();
-        if (proposerId !== 0 && responderId === 0) {
-          applyDiplomaticGoldGrant(proposerId, responderId, gold, treasury);
-        } else {
-          applyOneShotGoldTransfer(proposerId, responderId, gold, treasury);
-        }
+        applyOneShotGoldTransfer(proposerId, responderId, gold, treasury);
         if (responderId === 0 || proposerId === 0) updateHud();
       }
     }
@@ -4009,6 +4006,7 @@ async function boot(): Promise<void> {
     /** A1-Q18: oczekujące propozycje dyplomatyczne AI (blocking). */
     const pendingDiplomacyInbox: Array<{
       id: string; ownerId: number; civName: string; cmdType: string; reason: string;
+      goldOnce?: number;
     }> = [];
 
     function unitAttackScore(u: RuntimeUnit): number {
@@ -6181,11 +6179,26 @@ async function boot(): Promise<void> {
     }
 
     function enqueueDiplomacyPendingFromCmd(ownerId: number, cmd: AIDiplomacyCommand): void {
-      console.log(`[Dyplomacja] AI${ownerId} ${cmd.type}: ${cmd.powod}`);
-      enqueueDiplomacyPending(ownerId, cmd.type, formatAiDiplomacyPlayerMessage(cmd));
+      const balance = aiSkarbiecByOwner.get(ownerId) ?? 0;
+      const enriched = enrichAiCommandWithTreasury(cmd, balance);
+      if (!enriched) return;
+      console.log(`[Dyplomacja] AI${ownerId} ${enriched.type}: ${enriched.powod}`);
+      enqueueDiplomacyPending(
+        ownerId,
+        enriched.type,
+        formatAiDiplomacyPlayerMessage(enriched),
+        (enriched.type === 'zaproponuj_handel' || enriched.type === 'oferuj_trybut_za_pokoj')
+          ? enriched.goldOnce
+          : undefined,
+      );
     }
 
-    function enqueueDiplomacyPending(ownerId: number, cmdType: string, reason: string): void {
+    function enqueueDiplomacyPending(
+      ownerId: number,
+      cmdType: string,
+      reason: string,
+      goldOnce?: number,
+    ): void {
       const id = 'diplo-pend-' + ownerId + '-' + cmdType + '-' + turn + '-' + pendingDiplomacyInbox.length;
       if (pendingDiplomacyInbox.some(p => p.ownerId === ownerId && p.cmdType === cmdType)) return;
       pendingDiplomacyInbox.push({
@@ -6194,6 +6207,7 @@ async function boot(): Promise<void> {
         civName: ownerDiploLabel(ownerId),
         cmdType,
         reason,
+        goldOnce,
       });
       showHintMessage('Dyplomacja: ' + ownerDiploLabel(ownerId) + ' — ' + diploPendingTitle(cmdType), 4500);
       refreshD1bHud();
@@ -6210,7 +6224,11 @@ async function boot(): Promise<void> {
           setDiploRelation(0, p.ownerId, applyDiplomaticEvent(curRel, 'pokoj'));
           showHintMessage('Pokój z: ' + p.civName, 4000);
         } else {
-          const cmd = { type: p.cmdType, powod: p.reason } as AIDiplomacyCommand;
+          const cmd = {
+            type: p.cmdType,
+            powod: p.reason,
+            goldOnce: p.goldOnce,
+          } as AIDiplomacyCommand;
           const pending = aiCommandToPendingProposal(cmd, p.ownerId, 0, turn);
           if (pending) {
             const result = resolvePlayerAcceptsAiPending(pending, turn);
@@ -12032,6 +12050,7 @@ async function boot(): Promise<void> {
                 agresja: resolveArchetypeAggression(aiTyp, ARCHETYPE_AGGRESSION[aiTyp] ?? 0.5),
                 handlowosc: resolveArchetypeTrade(aiTyp, ARCHETYPE_TRADE[aiTyp] ?? 0.5),
                 epoka: player.era,
+                skarbiecGold: aiSkarbiecByOwner.get(ownerId) ?? 0,
               };
               const dipLayer = diplomacyLayerForOwner(
                 ownerId,
@@ -12999,6 +13018,9 @@ async function boot(): Promise<void> {
           worldDensity: _menuWorldDensity,
           mapSizeMenuLabel: _menuMapSize,
           landFraction: (params.landFractionPercent ?? 30) / 100,
+          difficulty: _menuDifficulty,
+          civTypesCount: _menuCivTypesCount,
+          cityStatesCount: _menuCityStates,
         }, (faza, pct, phaseNum, phaseTotal) => {
           loading.setProgress(faza, pct, phaseNum, phaseTotal);
         });
@@ -13073,6 +13095,9 @@ async function boot(): Promise<void> {
           worldDensity: _menuWorldDensity,
           mapSizeMenuLabel: _menuMapSize,
           landFraction: (params.landFractionPercent ?? 30) / 100,
+          difficulty: _menuDifficulty,
+          civTypesCount: _menuCivTypesCount,
+          cityStatesCount: _menuCityStates,
         }, (faza, pct, phaseNum, phaseTotal) => {
           loading.setProgress(faza, pct, phaseNum, phaseTotal);
         });
@@ -13719,6 +13744,9 @@ async function boot(): Promise<void> {
       const newMap = await generujSwiatAsync(PLAYTEST_MAPA_SEED, rozmiar, 'kontynenty', {
         worldDensity: ptMapDensity.preset,
         mapSizeMenuLabel: 'Maly',
+        difficulty: _menuDifficulty,
+        civTypesCount: _menuCivTypesCount,
+        cityStatesCount: _menuCityStates,
       }, (faza, pct, phaseNum, phaseTotal) => {
         loading.setProgress(faza, pct, phaseNum, phaseTotal);
       });
