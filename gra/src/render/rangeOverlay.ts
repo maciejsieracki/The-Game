@@ -237,6 +237,40 @@ export const RELIGION_RANGE_STYLE: RangeOverlayStyle = {
   yOffset: 0.055,
 };
 
+/** Delikatny obrys granicy państwa (tylko linia, bez tintu). */
+export const TERRITORY_BORDER_OPACITY = 0.3;
+export const TERRITORY_BORDER_Y_OFFSET = 0.042;
+
+/** Obrys zewnętrznej krawędzi terytorium per właściciel (kolor cywilizacji, ~30% alpha). */
+export function buildTerritoryBorderGroup(
+  map: GameMap,
+  hexKeysByOwner: Map<number, Set<string>>,
+  colorFn: (ownerId: number) => number,
+  opacity = TERRITORY_BORDER_OPACITY,
+): THREE.Group {
+  const group = new THREE.Group();
+  group.name = 'territory-border-overlay';
+  const yOff = TERRITORY_BORDER_Y_OFFSET;
+  const flatBorderY = terrainSurfaceTopY(TerenBazowy.Laka, GAME_MAP_RENDER_STYLE, yOff + 0.008);
+
+  for (const [ownerId, hexKeys] of hexKeysByOwner) {
+    if (hexKeys.size === 0) continue;
+    const border = buildBorderLine(
+      map,
+      hexKeys,
+      colorFn(ownerId),
+      opacity,
+      yOff + 0.008,
+      flatBorderY,
+    );
+    if (border) {
+      border.name = `territory-border-${ownerId}`;
+      group.add(border);
+    }
+  }
+  return group;
+}
+
 /** Buduje grupę obiektów 3D (tint + obrys) dla podanego zbioru heksów. */
 export function buildRangeOverlayGroup(
   map: GameMap,

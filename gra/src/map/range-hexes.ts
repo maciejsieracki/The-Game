@@ -2,7 +2,7 @@
  * range-hexes.ts — heksy zasięgu kultury i religii (logika MAPA, bez Three.js).
  */
 import type { GameMap } from '../types/map';
-import { axialDistance, cityTerritoryRadius, type CityNode } from './territory';
+import { axialDistance, cityTerritoryRadius, territoryOwnerAt, type CityNode, type TerritoryNode } from './territory';
 import { citySightRadius } from '../game/okolica';
 import {
   dominantReligion,
@@ -19,6 +19,34 @@ export interface RangeCityInput {
   kultura: number;
   isOutpost?: boolean;
   isFort?: boolean;
+}
+
+/**
+ * Heksy terytorium państw (territoryOwnerAt) pogrupowane po ownerId.
+ * Opcjonalny filterHex — np. mgła: gracz zawsze, AI tylko visible/explored.
+ */
+export function collectTerritoryHexKeysByOwner(
+  map: GameMap,
+  territoryNodes: readonly TerritoryNode[],
+  filterHex?: (key: string, ownerId: number) => boolean,
+): Map<number, Set<string>> {
+  const byOwner = new Map<number, Set<string>>();
+  for (const key of Object.keys(map.hexes)) {
+    const parts = key.split(',');
+    const q = Number(parts[0]);
+    const r = Number(parts[1]);
+    if (!Number.isFinite(q) || !Number.isFinite(r)) continue;
+    const owner = territoryOwnerAt(q, r, territoryNodes);
+    if (owner == null) continue;
+    if (filterHex && !filterHex(key, owner)) continue;
+    let set = byOwner.get(owner);
+    if (!set) {
+      set = new Set<string>();
+      byOwner.set(owner, set);
+    }
+    set.add(key);
+  }
+  return byOwner;
 }
 
 /** Zasięg kultury imperium: ∪ heksów w promieniu okolica + pierścienie kultury. */

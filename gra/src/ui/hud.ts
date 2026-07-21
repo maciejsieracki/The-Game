@@ -695,7 +695,7 @@ function buildMinimapLayers(): MinimapLayerHooks | undefined {
       if (data) showReligionOverlay(data);
     };
   }
-  const hasAny = layers.onToggleCulture || layers.onToggleReligion
+  const hasAny = layers.onToggleCulture || layers.onToggleReligion || layers.onToggleTerritory
     || layers.onOpenCulturePanel || layers.onOpenReligionPanel;
   return hasAny ? layers : undefined;
 }

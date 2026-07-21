@@ -64,7 +64,7 @@ import {
 import { fogBrightnessForHex, applyFogDimToObject3D } from './render/fogDim';
 import { CameraController, type CameraControllerOptions } from './render/camera';
 import { HEX_R, axialToWorld, worldToAxial } from './render/hexutil';
-import { computeStartPlacements, computeReachable, computePath, listUnitTypes, pathCost, configureTerrainMovement, hexDistance, categoryOf, terrainMoveCost } from './units/setup';
+import { computeStartPlacements, computeReachable, computePath, listUnitTypes, pathCost, configureTerrainMovement, hexDistance, categoryOf, terrainMoveCost, isCivilianUnit } from './units/setup';
 import type { RuntimeUnit } from './units/setup';
 import { UnitRenderer, type UnitRingStance } from './render/units';
 // Import keyOf from picker only (avoids duplicate identifier with setup.ts keyOf)
@@ -332,10 +332,12 @@ import type { EmpireDetailSnap } from './ui/empireDetailTypes';
 import {
   collectCultureRangeHexKeys,
   collectReligionRangeHexKeys,
+  collectTerritoryHexKeysByOwner,
   type RangeCityInput,
 } from './map/range-hexes';
 import {
   buildRangeOverlayGroup,
+  buildTerritoryBorderGroup,
   disposeRangeOverlayGroup,
   CULTURE_RANGE_STYLE,
   RELIGION_RANGE_STYLE,
@@ -405,7 +407,7 @@ import { empireHasKopalniaNaZlozuZelaza } from './game/zelazo-access';
 import {
   tryDeductUnitSpawnCosts, empirePoborTotals, rekrutUnitEquivalents, formatManpower,
   cityManpowerSnapshot, civManpowerRegenMult, cityManpowerMax, unitManpowerCost,
-  refundUnitSpawnToCity,
+  canAffordUnitManpower, refundUnitSpawnToCity,
 } from './game/manpower';
 import { computeObjectivePower, battlePowerPointsFromDefeatedEnemy, type ObjectivePowerResult } from './game/power-objective';
 import { loadPowerOpcje } from './game/power-options';
@@ -1558,6 +1560,59 @@ async function boot(): Promise<void> {
       return { prod: prodAfterAdvance };
     }
 
+    /** Opłacenie rekrutacji za złoto — pobiera Manpower od razu (kolejka rekrutacji). */
+    function purchaseRecruitmentUnit(cityId: string, itemId: string, koszt: number): boolean {
+      if (player.skarbiec < koszt) return false;
+      const city = cities.find(ct => ct.id === cityId);
+      if (!city || city.ownerId !== 0) return false;
+      const ep = empireEpochForOwner(0);
+      if (!canAffordUnitManpower(city, ep)) {
+        showHintMessage('Za mało rekrutów (Manpower) w tym mieście', 2800);
+        return false;
+      }
+      const item = unitProductionItem(
+        itemId,
+        data,
+        civBonusyForOwnerId(0),
+        player.kosztJednostekPace ?? 'niski',
+        0,
+        _menuDifficulty,
+      );
+      if (!item) return false;
+      const d = tryDeductUnitSpawnCosts(city, ep, UNIT_POPULATION_COST);
+      if (!d.ok) {
+        showHintMessage('Za mało rekrutów (Manpower) w tym mieście', 2800);
+        return false;
+      }
+      player.skarbiec -= koszt;
+      city.population = d.population;
+      city.manpower = d.manpower;
+      markCityStateDirty();
+      const prod0 = cityProd.get(cityId) ?? { kolejka: [], postep: 0 };
+      cityProd.set(cityId, enqueueRecruitment(prod0, { ...item, koszt }));
+      updateHud();
+      refreshCityPanelIfOpen();
+      console.log(
+        `[Rekrutacja] ${city.name}: ${itemId} oplacone ${koszt} — kolejka (−${d.kosztManpower} MP)`,
+      );
+      return true;
+    }
+
+    /** Anulowanie opłaconej rekrutacji — zwrot złota i Manpower. */
+    function cancelRecruitmentPurchase(cityId: string, koszt: number): void {
+      const city = cities.find(ct => ct.id === cityId);
+      if (!city || city.ownerId !== 0) return;
+      const ep = empireEpochForOwner(0);
+      const refunded = refundUnitSpawnToCity(city, ep, UNIT_POPULATION_COST);
+      city.population = refunded.population;
+      city.manpower = refunded.manpower;
+      player.skarbiec += koszt;
+      markCityStateDirty();
+      updateHud();
+      refreshCityPanelIfOpen();
+      console.log(`[Rekrutacja] ${city.name}: anulowano — zwrot ${koszt} ¤ + MP`);
+    }
+
     function sanitizeProductionQueue(ownerId: number, prod: CityProduction): CityProduction {
       const kolejka = prod.kolejka.filter((item) => {
         const wid = parseWonderProdId(item.id);
@@ -1936,6 +1991,7 @@ async function boot(): Promise<void> {
       // (widoczność miast ustawia cityRenderer.sync; poprawność mgły dają realne zdarzenia: ruch/tura).
       cityRenderer.sync(cities, _cityRenderOpts());
       refreshRangeOverlays();
+      refreshTerritoryBorderOverlay();
       refreshWorkerFieldOverlay();
       refreshTradeRoutesOverlay();
     }
@@ -2137,10 +2193,12 @@ async function boot(): Promise<void> {
     function dismissMapOverlayModes(): void {
       dismissToolbarSidePanels();
       if (buildModeOpen) exitBuildMode();
-      if (cultureRangeVisible || religionRangeVisible) {
+      if (cultureRangeVisible || religionRangeVisible || territoryBorderVisible) {
         cultureRangeVisible = false;
         religionRangeVisible = false;
+        territoryBorderVisible = false;
         refreshRangeOverlays();
+        refreshTerritoryBorderOverlay();
       }
       hideWondersPicker();
       hideEmpireOverlay();
@@ -3738,6 +3796,7 @@ async function boot(): Promise<void> {
       }
       if (d1bHudActive) refreshD1bHud();
       checkNewDiplomaticContacts();
+      if (territoryBorderVisible) refreshTerritoryBorderOverlay();
     }
 
     /** Dev/playtest: pełne wyłączenie FoW (F / baton obok minimapy). */
@@ -3959,14 +4018,14 @@ async function boot(): Promise<void> {
       } else if (forceVisibleUnitId) {
         display.visibleIds.add(forceVisibleUnitId);
       }
-      // MAP-Q1: czaszka głodu — per-państwo (wszystkie jednostki właściciela,
-      // gdy jego państwo głoduje wg isArmyStarving()).
+      // MAP-Q1: czaszka głodu — tylko jednostki wojskowe (nie zwiadowca/osadnik/robotnik),
+      // gdy państwo głoduje wg isArmyStarving().
       const unitById = new Map<string, RuntimeUnit>();
       for (const u of src) unitById.set(u.id, u);
       const starvingOwnerCache = new Map<number, boolean>();
       for (const repId of display.visibleIds) {
         const rep = unitById.get(repId);
-        if (!rep) continue;
+        if (!rep || isCivilianUnit(rep)) continue;
         let starving = starvingOwnerCache.get(rep.ownerId);
         if (starving === undefined) {
           starving = isArmyStarving(rep.ownerId);
@@ -4231,11 +4290,13 @@ async function boot(): Promise<void> {
     let buildModeOpen = false;
     let activeImprovementKey: ImprovementKey | null = null;
 
-    // --- Warstwy zasięgu kultury / religii na mapie 3D (A1-Q12 + toolbar [C]) ---
+    // --- Warstwy zasięgu kultury / religii / państwa na mapie 3D (A1-Q12 + toolbar [C]) ---
     let cultureRangeVisible = false;
     let religionRangeVisible = false;
+    let territoryBorderVisible = false;
     let cultureRangeGroup: THREE.Group | null = null;
     let religionRangeGroup: THREE.Group | null = null;
+    let territoryBorderGroup: THREE.Group | null = null;
 
     // --- E7 (epik Handel): łuki tras handlowych na mapie 3D ---
     let tradeRoutesOverlayGroup: THREE.Group | null = null;
@@ -4324,6 +4385,37 @@ async function boot(): Promise<void> {
           religionRangeGroup = null;
         }
       }
+    }
+
+    function clearTerritoryBorderOverlay(): void {
+      if (!territoryBorderGroup) return;
+      scene.remove(territoryBorderGroup);
+      disposeRangeOverlayGroup(territoryBorderGroup);
+      territoryBorderGroup = null;
+    }
+
+    function refreshTerritoryBorderOverlay(): void {
+      clearTerritoryBorderOverlay();
+      if (!territoryBorderVisible || isCityPanelOpen()) return;
+      const nodes = buildAllTerritoryNodes();
+      const byOwner = collectTerritoryHexKeysByOwner(map, nodes, (key, ownerId) => {
+        if (ownerId === 0) return true;
+        if (!fogOn) return true;
+        const vis = currentVisible();
+        const explored = fogExploredForRender();
+        return vis.has(key) || explored.has(key);
+      });
+      if (byOwner.size === 0) return;
+      territoryBorderGroup = buildTerritoryBorderGroup(map, byOwner, civColorFn);
+      scene.add(territoryBorderGroup);
+    }
+
+    function toggleTerritoryBorderOnMap(): void {
+      territoryBorderVisible = !territoryBorderVisible;
+      hideEmpireOverlay();
+      hideHexContextPanel();
+      refreshTerritoryBorderOverlay();
+      refreshD1bHud();
     }
 
     function refreshRangeOverlays(): void {
@@ -7624,8 +7716,10 @@ async function boot(): Promise<void> {
         minimapLayers: {
           onToggleCulture: () => toggleCultureRangeOnMap(),
           onToggleReligion: () => toggleReligionRangeOnMap(),
+          onToggleTerritory: () => toggleTerritoryBorderOnMap(),
           isCultureActive: () => cultureRangeVisible,
           isReligionActive: () => religionRangeVisible,
+          isTerritoryActive: () => territoryBorderVisible,
         },
         minimapWorkerOverlay: {
           onToggleWorkers: () => toggleWorkerOverlayOnMap(),
@@ -7799,30 +7893,10 @@ async function boot(): Promise<void> {
         }
       },
       onPurchaseUnit: (cityId: string, itemId: string, koszt: number) => {
-        if (player.skarbiec < koszt) return;
-        const city = cities.find(ct => ct.id === cityId);
-        if (!city || city.ownerId !== 0) return;
-        const item = unitProductionItem(
-          itemId,
-          data,
-          civBonusyForOwnerId(0),
-          player.kosztJednostekPace ?? 'niski',
-          0,
-          _menuDifficulty,
-        );
-        if (!item) return;
-        player.skarbiec -= koszt;
-        const prod0 = cityProd.get(cityId) ?? { kolejka: [], postep: 0 };
-        cityProd.set(cityId, enqueueRecruitment(prod0, { ...item, koszt }));
-        updateHud();
-        console.log(`[Rekrutacja] ${city.name}: ${itemId} oplacone ${koszt} — kolejka`);
+        purchaseRecruitmentUnit(cityId, itemId, koszt);
       },
       onCancelRecruitment: (cityId: string, koszt: number) => {
-        const city = cities.find(ct => ct.id === cityId);
-        if (!city || city.ownerId !== 0) return;
-        player.skarbiec += koszt;
-        updateHud();
-        console.log(`[Rekrutacja] ${city.name}: anulowano — zwrot ${koszt} do skarbca`);
+        cancelRecruitmentPurchase(cityId, koszt);
       },
       getCivBonusy: (ownerId: number) => civBonusyForOwnerId(ownerId),
       getCivKey: (ownerId: number) => civKeyForOwnerId(ownerId),
@@ -11208,6 +11282,7 @@ async function boot(): Promise<void> {
           _lastKulturaRate = playerEcon.kultura;
           _lastKultura = playerEcon.kultura;
           if (cultureRangeVisible || religionRangeVisible) refreshRangeOverlays();
+          if (territoryBorderVisible) refreshTerritoryBorderOverlay();
           refreshTradeRoutesOverlay();
           for (const [hexKey, st] of hexClearingStates) {
             if (st.ownerId !== 0) continue;
@@ -11668,7 +11743,7 @@ async function boot(): Promise<void> {
               }
 
               const recResult = advanceRecruitmentGated(
-                prodFinal, city, empireEpochForOwner(city.ownerId), 1,
+                prodFinal, city, empireEpochForOwner(city.ownerId), 1, true,
               );
               prodFinal = recResult.prod;
               city.population = recResult.population;
@@ -12801,22 +12876,7 @@ async function boot(): Promise<void> {
           }
         },
         onPurchaseUnit: (cityId: string, itemId: string, koszt: number) => {
-          if (player.skarbiec < koszt) return;
-          const city = cities.find(ct => ct.id === cityId);
-          if (!city || city.ownerId !== 0) return;
-          const item = unitProductionItem(
-            itemId,
-            data,
-            civBonusyForOwnerId(0),
-            player.kosztJednostekPace ?? 'niski',
-            0,
-            _menuDifficulty,
-          );
-          if (!item) return;
-          player.skarbiec -= koszt;
-          const prod0 = cityProd.get(cityId) ?? { kolejka: [], postep: 0 };
-          cityProd.set(cityId, enqueueRecruitment(prod0, { ...item, koszt }));
-          updateHud();
+          purchaseRecruitmentUnit(cityId, itemId, koszt);
         },
         getCivBonusy: (ownerId: number) => civBonusyForOwnerId(ownerId),
         getCivKey: (ownerId: number) => civKeyForOwnerId(ownerId),
@@ -12931,6 +12991,7 @@ async function boot(): Promise<void> {
         disposeScene = newSceneResult.dispose;
         cultureRangeGroup = null;
         religionRangeGroup = null;
+        territoryBorderGroup = null;
         camCtrl = new CameraController(camera, canvas, center, cameraControllerOpts());
         unitRenderer = new UnitRenderer(scene, map);
         wireUnitRendererRingStance();
@@ -13013,6 +13074,7 @@ async function boot(): Promise<void> {
       disposeScene = newSceneResult.dispose;
       cultureRangeGroup = null;
       religionRangeGroup = null;
+      territoryBorderGroup = null;
 
       // Rebuild camera controller with new scene center
       camCtrl = new CameraController(camera, canvas, center, cameraControllerOpts());
@@ -13242,6 +13304,7 @@ async function boot(): Promise<void> {
       disposeScene = newSceneResult.dispose;
       cultureRangeGroup = null;
       religionRangeGroup = null;
+      territoryBorderGroup = null;
 
       camCtrl = new CameraController(camera, canvas, center, cameraControllerOpts());
 
@@ -13462,6 +13525,7 @@ async function boot(): Promise<void> {
       disposeScene = newSceneResult.dispose;
       cultureRangeGroup = null;
       religionRangeGroup = null;
+      territoryBorderGroup = null;
 
       camCtrl = new CameraController(camera, canvas, center, cameraControllerOpts());
 
@@ -13648,6 +13712,7 @@ async function boot(): Promise<void> {
       disposeScene = newSceneResult.dispose;
       cultureRangeGroup = null;
       religionRangeGroup = null;
+      territoryBorderGroup = null;
 
       camCtrl = new CameraController(camera, canvas, center, cameraControllerOpts());
 

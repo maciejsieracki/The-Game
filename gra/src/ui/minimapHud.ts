@@ -40,15 +40,17 @@ export interface MinimapData {
   markers?: MinimapMarkerData[];
 }
 
-/** F2 / D15: przełączniki zasięgu kultury i religii obok minimapy. */
+/** F2 / D15: przełączniki zasięgu kultury, religii i państwa obok minimapy. */
 export interface MinimapLayerHooks {
   onToggleCulture?: () => void;
   onToggleReligion?: () => void;
+  onToggleTerritory?: () => void;
   /** A1-Q12 — dblclick ikony obok minimapy → panel imperium (osobno od toggle). */
   onOpenCulturePanel?: () => void;
   onOpenReligionPanel?: () => void;
   isCultureActive?: () => boolean;
   isReligionActive?: () => boolean;
+  isTerritoryActive?: () => boolean;
 }
 
 /** Tymczasowe (playtest/dev): przyciski F/M obok minimapy — wyłączone w produkcji. */
@@ -106,6 +108,7 @@ const DEFAULT_W = 280;
 const DEFAULT_H = 170;
 
 const SEARCH_SVG = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20 16 16"/></svg>';
+const TERRITORY_SVG = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M12 2 20 7v10L12 22 4 17V7z"/><path d="M12 2v20M4 7l8 5 8-5M4 17l8-5 8 5"/></svg>';
 
 const SQRT3 = Math.sqrt(3);
 
@@ -312,6 +315,7 @@ export function createMinimapHud(config: MinimapHudConfig): MinimapHudApi {
 
   let mapBtn: HTMLButtonElement | null = null;
   let searchBtn: HTMLButtonElement | null = null;
+  let territoryBtn: HTMLButtonElement | null = null;
   let workerBtn: HTMLButtonElement | null = null;
   let fogFullBtn: HTMLButtonElement | null = null;
   let landRevealBtn: HTMLButtonElement | null = null;
@@ -393,8 +397,18 @@ export function createMinimapHud(config: MinimapHudConfig): MinimapHudApi {
       }
       tools.appendChild(searchBtn);
     }
+    if (L?.onToggleTerritory && !territoryBtn) {
+      territoryBtn = document.createElement('button');
+      territoryBtn.type = 'button';
+      territoryBtn.className = 'mini-tool-btn';
+      territoryBtn.title = 'Zasięg państwa (klik)';
+      territoryBtn.innerHTML = TERRITORY_SVG;
+      territoryBtn.onclick = () => L.onToggleTerritory?.();
+      tools.appendChild(territoryBtn);
+    }
     if (mapBtn) mapBtn.classList.toggle('on', L?.isCultureActive?.() ?? false);
     if (searchBtn) searchBtn.classList.toggle('on', L?.isReligionActive?.() ?? false);
+    if (territoryBtn) territoryBtn.classList.toggle('on', L?.isTerritoryActive?.() ?? false);
     if (workerBtn) workerBtn.classList.toggle('on', W?.isWorkersActive?.() ?? false);
   }
 
