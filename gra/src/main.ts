@@ -431,6 +431,7 @@ import {
   freshClearingState,
   isImprovementTechUnlocked,
   tickHexClearing,
+  getImprovementMeta,
   type HexClearingState,
 } from './game/improvement-tech';
 import { PendingImprovementsTurn, type PendingImprovementEntry } from './game/pending-improvements';
@@ -3055,6 +3056,12 @@ async function boot(): Promise<void> {
     let activeDeals: ActiveDeal[] = [];
     /** v1.1: skarbiec AI do ticka trybutu (T1A). */
     const aiSkarbiecByOwner = new Map<number, number>();
+    /** D-IMPROVEMENTS: pula Pracy AI (symetryczna do aiSkarbiecByOwner) -- zasilana z
+     *  aiEcon.doPuli w bloku bankowania AI (patrz sumEconomyForOwner), zużywana przy
+     *  budowie ulepszeń terenu (planCityImprovements w game/ai.ts). Podpięta pod
+     *  ownerPracaPool/setOwnerPracaPool -- przy przejęciu stolicy AI ta pula PRZEPADA
+     *  (jak playerPracaPool gracza), patrz capital-capture.ts. */
+    const aiPracaPoolByOwner = new Map<number, number>();
     /** P6: tech + surowiec boolean z koszyka PN (save/load meta.surowiecBooleanGrants). */
     let basketTransferCtx: BasketTransferContext = createEmptyBasketTransferContext(data.tech);
     let _dipUnitSeq = 0;
@@ -3200,6 +3207,7 @@ async function boot(): Promise<void> {
       resetDiplomaticDiscoveryUiState();
       activeDeals = [];
       aiSkarbiecByOwner.clear();
+      aiPracaPoolByOwner.clear();
       diplomacyPairMeta.clear();
       zlozeGrants = [];
       basketTransferCtx = createEmptyBasketTransferContext(data.tech);
@@ -9450,14 +9458,21 @@ async function boot(): Promise<void> {
       if (ownerId === 0) player.skarbiec = v;
       else aiSkarbiecByOwner.set(ownerId, v);
     }
-    /** AI dziś NIE MA puli pracy (nie buduje z niej ulepszeń) — no-op dla ownerId>0. */
+    /** D-IMPROVEMENTS: AI MA teraz pulę Pracy (aiPracaPoolByOwner) -- buduje z niej
+     *  ulepszenia terenu (planCityImprovements). Podpięcie pod przejęcie stolicy:
+     *  applyCapitalCapturePlunder wywołuje setPracaPool(oldOwner, 0) bezwarunkowo
+     *  (pula PRZEPADA, nie do zwycięzcy) -- symetryczne z graczem. */
     function ownerPracaPool(ownerId: number): number {
-      return ownerId === 0 ? playerPracaPool : 0;
+      return ownerId === 0 ? playerPracaPool : (aiPracaPoolByOwner.get(ownerId) ?? 0);
     }
     function setOwnerPracaPool(ownerId: number, value: number): void {
-      if (ownerId !== 0) return;
-      playerPracaPool = Math.max(0, value);
-      _lastPraca = playerPracaPool;
+      const v = Math.max(0, value);
+      if (ownerId === 0) {
+        playerPracaPool = v;
+        _lastPraca = playerPracaPool;
+      } else {
+        aiPracaPoolByOwner.set(ownerId, v);
+      }
     }
     /** AI dziś NIE MA osobnej puli punktów nauki (chooseAIResearch kończy techy od
      *  razu, bez kosztu z banku) — no-op dla ownerId>0. Patrz raport: asymetria danych. */
@@ -9610,6 +9625,7 @@ async function boot(): Promise<void> {
       eliminatedOwners.add(ownerId);
 
       aiSkarbiecByOwner.delete(ownerId);
+      aiPracaPoolByOwner.delete(ownerId);
       aiResearchDone.delete(ownerId);
       aiOwnerCivMap.delete(ownerId);
       ownerDisplayName.delete(ownerId);
@@ -10465,6 +10481,7 @@ async function boot(): Promise<void> {
           surowiecBooleanGrants: basketTransferCtx.surowiecBooleanGrants,
           battlePowerPtsByOwner: Array.from(battlePowerPtsByOwner.entries()),
           capitalCityIdByOwner: Array.from(capitalCityIdByOwner.entries()),
+          aiPracaPoolByOwner: Array.from(aiPracaPoolByOwner.entries()),
           zdobyczePowerByOwner: Array.from(zdobyczePowerByOwner.entries()),
           eliminatedOwners: Array.from(eliminatedOwners),
           ownerEraByOwner: Array.from(ownerEraByOwner.entries()),
@@ -10943,6 +10960,10 @@ async function boot(): Promise<void> {
                 aiSkarb -= aiBalance.utrzymanieRazem;
               }
               aiSkarbiecByOwner.set(oid, Math.max(0, aiSkarb));
+
+              // D-IMPROVEMENTS: pula Pracy AI -- symetryczna do
+              // `playerPracaPool += playerEcon.doPuli` (patrz wyżej w tej samej funkcji).
+              aiPracaPoolByOwner.set(oid, (aiPracaPoolByOwner.get(oid) ?? 0) + aiEcon.doPuli);
             }
 
             // Auto-research: spend banked science on the cheapest available tech.
@@ -11227,9 +11248,18 @@ async function boot(): Promise<void> {
               const { prod: prodPo, completed, overflowToPool } = advanceProduction(prod0, pracaBudynki);
               let prodFinal = prodPo;
               cityProd.set(cid, prodPo);
-              if (overflowToPool && overflowToPool > 0 && city.ownerId === 0) {
-                playerPracaPool += overflowToPool;
-                _lastPraca = playerPracaPool;
+              if (overflowToPool && overflowToPool > 0) {
+                if (city.ownerId === 0) {
+                  playerPracaPool += overflowToPool;
+                  _lastPraca = playerPracaPool;
+                } else {
+                  // D-IMPROVEMENTS: nadmiar Pracy kolejki AI (miasto nie ma co budować) ->
+                  // pula empire-wide AI, symetryczne z graczem.
+                  aiPracaPoolByOwner.set(
+                    city.ownerId,
+                    (aiPracaPoolByOwner.get(city.ownerId) ?? 0) + overflowToPool,
+                  );
+                }
               }
 
               if (completed) {
@@ -11323,6 +11353,14 @@ async function boot(): Promise<void> {
               cityBuildings: Object.fromEntries(
                 [...cityBuilt.entries()].filter(([cid]) => cities.find(c => c.id === cid && c.ownerId === ownerId))
               ),
+              // D-IMPROVEMENTS: AI buduje ulepszenia terenu (planCityImprovements w game/ai.ts) --
+              // territoryNodes świeże per owner (odzwierciedla miasta założone wcześniej W TEJ
+              // SAMEJ turze przez inne AI, jak refreshBuildApi() dla gracza).
+              territoryNodes: buildAllTerritoryNodes(),
+              placedImprovements,
+              improvementTechs: aiResearchDone.get(ownerId) ?? new Set<string>(),
+              pracaAvailable: aiPracaPoolByOwner.get(ownerId) ?? 0,
+              civEra: empireEpochForOwner(ownerId),
             };
             const myCivTyp = aiOwnerCivMap.get(ownerId);
             const tc = clusterPlacement?.klastry.find(k => k.typ === myCivTyp);
@@ -11687,6 +11725,33 @@ async function boot(): Promise<void> {
                       console.warn(`[AI ${ownerId}] Build no-op: nieznany ${cmd.buildingId}`);
                     }
                   }
+                  continue;
+                }
+
+                if (cmd.type === 'buildImprovement') {
+                  // D-IMPROVEMENTS: egzekucja jak applyBuildRequest (gracz), ale AI commituje
+                  // od razu -- brak pendingImprovementsTurn/cofnięcia w tej samej turze.
+                  const researchedAi = aiResearchDone.get(ownerId) ?? new Set<string>();
+                  if (!isImprovementTechUnlocked(cmd.key, researchedAi)) continue;
+                  const meta = getImprovementMeta(cmd.key);
+                  const koszt = meta?.kosztPraca ?? 0;
+                  const poolBefore = aiPracaPoolByOwner.get(ownerId) ?? 0;
+                  if (poolBefore < koszt) continue;
+                  const hexKey = keyOf(cmd.q, cmd.r);
+                  if (!map.hexes[hexKey]) continue;
+                  const prevLayers = placedImprovements.get(hexKey) ?? [];
+                  // Bezpiecznik wyścigu: hex już ma ten klucz (np. inne miasto TEGO SAMEGO AI
+                  // zdążyło go postawić wcześniej w tej samej turze) -- pomiń bez kosztu.
+                  if (prevLayers.includes(cmd.key)) continue;
+                  aiPracaPoolByOwner.set(ownerId, poolBefore - koszt);
+                  const nextLayers: PlacedLayers = [...prevLayers, cmd.key];
+                  placedImprovements.set(hexKey, nextLayers);
+                  syncHexUlepszenieFields(hexKey, nextLayers);
+                  spawnImprovementMesh(hexKey);
+                  // Perf (patrz raport pkt d): O(1) sync zamiast pełnomapowego
+                  // rebuildResourceOverlays() -- AI buduje to co turę, dla wielu właścicieli.
+                  syncResourceOverlayAtHex(hexKey);
+                  console.log(`[AI ${ownerId}] Ulepszenie: ${cmd.key} @ (${cmd.q},${cmd.r}) (-${koszt} Pracy)`);
                   continue;
                 }
 
@@ -12521,6 +12586,7 @@ async function boot(): Promise<void> {
       resetDiplomaticDiscoveryUiState();
       activeDeals = [];
       aiSkarbiecByOwner.clear();
+      aiPracaPoolByOwner.clear();
       basketTransferCtx = createEmptyBasketTransferContext(data.tech);
       _dipUnitSeq = 0;
       pendingDiplomacyInbox.length = 0;
@@ -13450,6 +13516,11 @@ async function boot(): Promise<void> {
       const savedCapitalIds = saved.meta?.capitalCityIdByOwner as Array<[number, string]> | undefined;
       if (savedCapitalIds?.length) {
         for (const [oid, cid] of savedCapitalIds) capitalCityIdByOwner.set(oid, cid);
+      }
+      aiPracaPoolByOwner.clear();
+      const savedAiPracaPool = saved.meta?.aiPracaPoolByOwner as Array<[number, number]> | undefined;
+      if (savedAiPracaPool?.length) {
+        for (const [oid, v] of savedAiPracaPool) aiPracaPoolByOwner.set(oid, v);
       }
       zdobyczePowerByOwner.clear();
       const savedZdobycze = saved.meta?.zdobyczePowerByOwner as Array<[number, number]> | undefined;

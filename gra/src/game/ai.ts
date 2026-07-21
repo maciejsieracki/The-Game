@@ -20,6 +20,12 @@ import type { RuntimeUnit } from '../units/setup';
 import { hexDistance, computePath, keyOf } from '../units/setup';
 import type { City }       from './cities';
 import { canFoundCity }    from './cities';
+import type { ImprovementKey } from '../render/improvements';
+import type { TerritoryNode } from '../map/territory';
+import { cityTerritoryRadius } from '../map/territory';
+import { buildImprovementQualifier, type ImprovementBuildState } from '../map/improvement-build';
+import { hexKeysWithinRadius } from './okolica';
+import { getImprovementMeta, isImprovementTechUnlocked } from './improvement-tech';
 
 // ---------------------------------------------------------------------------
 // AICommand discriminated union
@@ -54,6 +60,20 @@ export interface AICmdBuild {
   buildingId: string;
 }
 
+/**
+ * D-IMPROVEMENTS: AI buduje ulepszenie terenu na (q,r) w swoim terytorium.
+ * Egzekucja main.ts -- jak `applyBuildRequest` (tech gate + koszt Pracy z puli AI),
+ * ale AI commituje od razu (bez `pendingImprovementsTurn`/cofnięcia w tej samej turze).
+ * @see planCityImprovements
+ */
+export interface AICmdBuildImprovement {
+  type: 'buildImprovement';
+  ownerId: number;
+  q: number;
+  r: number;
+  key: ImprovementKey;
+}
+
 /** Signal end of this AI player's turn. */
 export interface AICmdEndTurn {
   type: 'endTurn';
@@ -65,6 +85,7 @@ export type AICommand =
   | AICmdFoundCity
   | AICmdAttack
   | AICmdBuild
+  | AICmdBuildImprovement
   | AICmdEndTurn;
 
 // ---------------------------------------------------------------------------
@@ -212,6 +233,39 @@ export interface AITurnOpts {
    * @see cluster-start.ts `typCityCopyOwners`
    */
   sisterCityStates?: Array<{ ownerId: number; q: number; r: number }>;
+  /**
+   * D-IMPROVEMENTS (AI buduje ulepszenia terenu): węzły terytorium WSZYSTKICH
+   * właścicieli -- silnik podaje `buildAllTerritoryNodes()` (main.ts), świeżo
+   * per owner/turę (odzwierciedla miasta założone wcześniej W TEJ SAMEJ turze
+   * przez inne AI). Rozstrzyga nakładanie się zasięgów -- ta sama funkcja co dla
+   * gracza (`buildImprovementQualifier`, map/improvement-build.ts). Gdy brak --
+   * `planCityImprovements` nic nie planuje (bezpieczny no-op, zero regresji).
+   */
+  territoryNodes?: readonly TerritoryNode[];
+  /**
+   * D-IMPROVEMENTS: heks → warstwy ulepszeń już postawionych NA MAPIE (ta sama
+   * mapa co dla gracza -- ulepszenia stoją na terenie, nie per-owner). Silnik
+   * podaje main.ts `placedImprovements`.
+   */
+  placedImprovements?: ReadonlyMap<string, string | readonly string[]>;
+  /**
+   * D-IMPROVEMENTS: zbadane technologie TEGO AI (main.ts `aiResearchDone.get(ownerId)`).
+   * Bramkuje typy ulepszeń dostępne do budowy (jak `player.zbadane` dla gracza).
+   */
+  improvementTechs?: ReadonlySet<string>;
+  /**
+   * D-IMPROVEMENTS: dostępna Praca w puli TEGO AI (main.ts
+   * `aiPracaPoolByOwner.get(ownerId)`). Poniżej progu nadwyżki
+   * (`AI_IMPROVEMENT_PRACA_SURPLUS`) AI nie próbuje budować -- throttling
+   * wydajności (większość tur wraca [] natychmiast, bez skanu heksów).
+   */
+  pracaAvailable?: number;
+  /**
+   * D-IMPROVEMENTS: epoka TEGO AI (main.ts `empireEpochForOwner(ownerId)`) --
+   * wymagane przez qualifier dla hodowli Inków (bydło/owce poza lamą dopiero
+   * od epoki 3, patrz livestock-unlock.ts). Domyślnie 1 gdy brak.
+   */
+  civEra?: number;
 }
 
 /**
@@ -749,6 +803,135 @@ function chooseCityProduction(
 }
 
 // ---------------------------------------------------------------------------
+// Terrain improvements (D-IMPROVEMENTS): AI buduje ulepszenia terenu
+// ---------------------------------------------------------------------------
+
+/**
+ * Kolejność priorytetów AI (Maciej ABC -- PRÓG DO AKCEPTACJI): plony pierwsze
+ * (farma/pastwiska/tarasy/łowiectwo/rybołówstwo), potem surowce/rzemiosło,
+ * na końcu infrastruktura (droga/fort). `wyrab` CELOWO pominięty -- złożony
+ * stan wieloturowy (hexClearingStates w main.ts), poza zakresem AI na tym
+ * etapie (Maciej decyzja 5). Stała lista -- zero Math.random(), determinizm A=B.
+ */
+const AI_IMPROVEMENT_PRIORITY: readonly ImprovementKey[] = [
+  'farma', 'bydlo', 'owce', 'lama', 'tarasy', 'oboz_lowiecki', 'lodzie_rybackie',
+  'irygacja', 'kopalnia', 'kopalnia_miedzi', 'kamieniolom', 'glinianka', 'stadnina',
+  'warzelnia_soli', 'tartak', 'posterunek', 'droga', 'droga_brukowana', 'fort',
+];
+
+/**
+ * Próg nadwyżki Pracy (PRÓG DO AKCEPTACJI WŁAŚCICIELA): AI zaczyna wybierać
+ * ulepszenia terenu dopiero gdy jego pula Pracy PRZEKRACZA tę wartość --
+ * rezerwa na inne wydatki (Osadnik/wycinka, poza tym systemem) i throttling
+ * wydajności (większość tur AI ma za mało Pracy, więc `planCityImprovements`
+ * wraca [] natychmiast, bez skanowania jakichkolwiek heksów).
+ */
+const AI_IMPROVEMENT_PRACA_SURPLUS = 30;
+
+/**
+ * D-IMPROVEMENTS: planuje maks. JEDNO ulepszenie terenu NA MIASTO na turę dla
+ * AI `ownerId` (throttling wydajności -- patrz raport pkt d). Reużywa
+ * `buildImprovementQualifier` (map/improvement-build.ts) -- IDENTYCZNA
+ * kwalifikacja terenu/terytorium/sektora jak dla gracza (zero nowej logiki
+ * kwalifikacji). Wołane z OBU ścieżek (decideAITurn i decideDefensiveCopyTurn
+ * -- ta sama intensywność dla miast-państw, Maciej decyzja 4).
+ *
+ * Wydajność (Maciej decyzja 2): skan heksów OGRANICZONY do promienia
+ * terytorium KAŻDEGO miasta (+1, jak `candidateHexKeys` w
+ * `createImprovementBuildApi`) -- NIGDY całej mapy. Typy tech-zablokowane
+ * pomijane PRZED skanem heksów (w praniu AI ma zwykle 2-4 odblokowane typy,
+ * nie 19). `roadKeys` CELOWO pominięte przy budowie stanu -- `isRoadQualified`
+ * ma fallback na `hexHasRoad(map.hexes[...])` wprost z danych heksa; bez tego
+ * trzeba by `collectRoadKeys(map)` = pełny skan mapy PER OWNER PER TURĘ
+ * (dokładnie to, czego unikamy).
+ *
+ * Determinizm: miasta posortowane po id (string), heksy po (q,r) rosnąco,
+ * typy w stałej kolejności `AI_IMPROVEMENT_PRIORITY`. Zero `Math.random()`.
+ *
+ * Zwraca [] gdy: brak miast, `opts.territoryNodes` nie dostarczone (silnik
+ * jeszcze nie wpiął), lub Praca dostępna <= `AI_IMPROVEMENT_PRACA_SURPLUS`.
+ */
+function planCityImprovements(
+  myCities: AICity[],
+  ownerId: number,
+  map: GameMap,
+  opts: AITurnOpts,
+): AICmdBuildImprovement[] {
+  if (myCities.length === 0) return [];
+  const territoryNodes = opts.territoryNodes;
+  if (!territoryNodes) return []; // silnik nie dostarczył danych -- bezpieczny no-op
+
+  let pracaLeft = opts.pracaAvailable ?? 0;
+  if (pracaLeft <= AI_IMPROVEMENT_PRACA_SURPLUS) return [];
+
+  const researchedTechs = opts.improvementTechs ?? new Set<string>();
+  const civArchetype = opts.civType;
+  const civEra = opts.civEra ?? 1;
+
+  // Kopia robocza placedImprovements -- MUTOWANA w trakcie planowania tej funkcji,
+  // żeby dwa miasta TEGO SAMEGO AI (zasięgi terytorium mogą się nakładać) nie
+  // "wybrały" niezależnie tego samego heksa+typu w jednej turze (qualifies() czyta
+  // ten stan na bieżąco przy każdym wywołaniu -- patrz getHexLayers w
+  // improvement-build.ts). Referencja przekazana do buildImprovementQualifier jest
+  // ta sama -- mutacje w trakcie pętli miast są od razu widoczne kolejnym wywołaniom.
+  const workingPlaced = new Map<string, string[]>();
+  if (opts.placedImprovements) {
+    for (const [hk, v] of opts.placedImprovements) {
+      workingPlaced.set(hk, Array.isArray(v) ? [...v] : [v]);
+    }
+  }
+
+  const state: ImprovementBuildState = {
+    map,
+    cityNodes: myCities.map(c => ({ q: c.q, r: c.r, pop: c.population, level: 1 })),
+    territoryNodes,
+    playerOwnerIdNum: ownerId,
+    placedImprovements: workingPlaced,
+    researchedTechs,
+    playerCivArchetype: civArchetype,
+    playerEra: civEra,
+  };
+  const qualifies = buildImprovementQualifier(state);
+
+  const orderedCities = [...myCities].sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
+  const commands: AICmdBuildImprovement[] = [];
+
+  for (const city of orderedCities) {
+    if (pracaLeft <= AI_IMPROVEMENT_PRACA_SURPLUS) break; // budżet wyczerpany -- reszta miast czeka
+
+    const radius = cityTerritoryRadius({ q: city.q, r: city.r, pop: city.population, level: 1 }) + 1;
+    const candidateHexes = hexKeysWithinRadius(city.q, city.r, radius, map)
+      .map(k => {
+        const [qs, rs] = k.split(',');
+        return { q: Number(qs), r: Number(rs) };
+      })
+      .sort((a, b) => (a.q - b.q) || (a.r - b.r));
+
+    for (const key of AI_IMPROVEMENT_PRIORITY) {
+      const meta = getImprovementMeta(key);
+      if (!meta) continue;
+      if (meta.kosztPraca > pracaLeft) continue;
+      if (!isImprovementTechUnlocked(key, researchedTechs)) continue;
+
+      let placed = false;
+      for (const { q, r } of candidateHexes) {
+        if (!qualifies(key, q, r)) continue;
+        commands.push({ type: 'buildImprovement', ownerId, q, r, key });
+        pracaLeft -= meta.kosztPraca;
+        const hexKey = `${q},${r}`;
+        const cur = workingPlaced.get(hexKey) ?? [];
+        workingPlaced.set(hexKey, [...cur, key]);
+        placed = true;
+        break;
+      }
+      if (placed) break; // maks. 1 ulepszenie / miasto / turę
+    }
+  }
+
+  return commands;
+}
+
+// ---------------------------------------------------------------------------
 // Unit helpers
 // ---------------------------------------------------------------------------
 
@@ -877,6 +1060,13 @@ export function decideAITurn(
     if (buildId !== null) {
       commands.push({ type: 'build', cityId: city.id, buildingId: buildId });
     }
+  }
+
+  // -------------------------------------------------------------------------
+  // Step 2b: TERRAIN IMPROVEMENTS -- max 1/miasto/turę (patrz planCityImprovements)
+  // -------------------------------------------------------------------------
+  for (const cmd of planCityImprovements(myCities, playerId, map, opts)) {
+    commands.push(cmd);
   }
 
   // -------------------------------------------------------------------------
@@ -1089,6 +1279,12 @@ function decideDefensiveCopyTurn(
     if (buildId !== null) {
       commands.push({ type: 'build', cityId: city.id, buildingId: buildId });
     }
+  }
+
+  // Ulepszenia terenu -- ta sama intensywność co zwykłe miasto AI (Maciej decyzja 4:
+  // miasta-państwa NIE dostają osobnego throttlingu, wspólny helper).
+  for (const cmd of planCityImprovements(myCities, playerId, map, opts)) {
+    commands.push(cmd);
   }
 
   // ---------------------------------------------------------------------------
