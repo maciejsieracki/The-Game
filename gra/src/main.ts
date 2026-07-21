@@ -543,7 +543,7 @@ import { showDiplomacyProposalBanner } from './ui/diplomacyProposalBanner';
 import { proposalActionIdFromPayload, actionNeedsNegotiation } from './ui/diplomacyNegotiationModal';
 import {
   evaluateProposal, applyAcceptedProposal, aiCommandToPendingProposal,
-  evaluatePendingFromAI, formatAiDiplomacyPlayerMessage,
+  evaluatePendingFromAI, resolvePlayerAcceptsAiPending, formatAiDiplomacyPlayerMessage,
   type ProposalEvalContext, type ProposalPayload,
 } from './game/diplomacy-proposals';
 import {
@@ -553,7 +553,7 @@ import {
 } from './game/diplomacy-treaties';
 import {
   activeDealsToPaymentDeals, tickDiplomacyPayments, applyOneShotGoldTransfer,
-  tributeBreakPairsFromDeals,
+  applyDiplomaticGoldGrant, tributeBreakPairsFromDeals,
 } from './game/diplomacy-economy';
 import { RodzajTraktatu } from './types/diplomacy';
 import {
@@ -3612,7 +3612,13 @@ async function boot(): Promise<void> {
       }
       const gold = payload.goldOnce ?? 0;
       if (gold > 0) {
-        applyOneShotGoldTransfer(proposerId, responderId, gold, buildDiploTreasury());
+        const treasury = buildDiploTreasury();
+        if (proposerId !== 0 && responderId === 0) {
+          applyDiplomaticGoldGrant(proposerId, responderId, gold, treasury);
+        } else {
+          applyOneShotGoldTransfer(proposerId, responderId, gold, treasury);
+        }
+        if (responderId === 0 || proposerId === 0) updateHud();
       }
     }
 
@@ -6207,8 +6213,7 @@ async function boot(): Promise<void> {
           const cmd = { type: p.cmdType, powod: p.reason } as AIDiplomacyCommand;
           const pending = aiCommandToPendingProposal(cmd, p.ownerId, 0, turn);
           if (pending) {
-            const ctx = buildProposalEvalContext(p.ownerId, 0);
-            const result = evaluatePendingFromAI(pending, ctx);
+            const result = resolvePlayerAcceptsAiPending(pending, turn);
             applyProposalOutcome(p.ownerId, 0, result, pending.payload, pending.actionId);
             if (result.accepted) showHintMessage('Przyjęto: ' + p.civName, 3500);
           } else {

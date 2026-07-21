@@ -13,7 +13,7 @@ const entryFile = path.resolve(__dirname, '.dip-economy-entry.ts');
 fs.writeFileSync(entryFile, `
 export {
   activeDealsToPaymentDeals, tickDiplomacyPayments, applyOneShotGoldTransfer,
-  tributeBreakPairsFromDeals,
+  applyDiplomaticGoldGrant, tributeBreakPairsFromDeals,
 } from '../src/game/diplomacy-economy.ts';
 `);
 
@@ -29,7 +29,7 @@ esbuild.buildSync({
 
 const {
   activeDealsToPaymentDeals, tickDiplomacyPayments, applyOneShotGoldTransfer,
-  tributeBreakPairsFromDeals,
+  applyDiplomaticGoldGrant, tributeBreakPairsFromDeals,
 } = require(BUNDLE);
 
 let pass = 0;
@@ -70,6 +70,14 @@ ok(expired.length === 0, 'expired deal pominięty');
 const t3 = treasury({ 1: 50, 4: 0 });
 const once = applyOneShotGoldTransfer(1, 4, 30, t3);
 ok(once.ok && t3._map[1] === 20 && t3._map[4] === 30, 'one-shot handel T3A');
+
+const t4 = treasury({ 5: 0, 0: 100 });
+const grant = applyDiplomaticGoldGrant(5, 0, 20, t4);
+ok(grant.ok && grant.granted === 20 && t4._map[0] === 120 && t4._map[5] === 0, 'AI grant 20 → gracz bez skarbca AI');
+
+const t5 = treasury({ 5: 8, 0: 100 });
+const grantPartial = applyDiplomaticGoldGrant(5, 0, 20, t5);
+ok(grantPartial.ok && t5._map[0] === 120 && t5._map[5] === 0, 'AI grant 20 — AI płaci 8, reszta grant');
 
 const pairs = tributeBreakPairsFromDeals([{
   id: 'tb', rodzaj: 'wasalizacja', strony: [0, 2], wygasaTura: null,

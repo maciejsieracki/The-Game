@@ -2673,3 +2673,15 @@ Domknięcie przerwane limitem 07-21: raport audytu (73 znaleziska) i plan+napraw
 - Reguła równoległości: jedna paczka dotykająca `main.ts` naraz (F0→F2→F3→F5→F6/F7); F4 (dane) może iść obok F1.
 
 CZEKAM-NA: **Maciej** — akceptacja planu (całość albo `OK audyt F0` na same krytyczne).
+
+---
+
+## [01:00] INTEGRATOR → Maciej — DYPL: akceptacja AI handel → +20 ¤
+
+Bug Macieja: AKCEPTUJ propozycji Mykeny „20 ¤ na rzecz twojego państwa" — skarbiec gracza bez zmian.
+Przyczyna: `applyOneShotGoldTransfer` wymagał pełnego salda AI (często 0 ¤) — transfer cicho failował; brak `updateHud()`.
+Fix: `resolvePlayerAcceptsAiPending` (bez re-eval przy AKCEPTUJ) · `applyDiplomaticGoldGrant` (gracz dostaje pełne 20 ¤).
+Pliki: `diplomacy-proposals.ts`, `diplomacy-economy.ts`, `main.ts`.
+Bramki: tsc=0 · diplomacy-proposal 57/57 · diplomacy-economy 8/8.
+Publish ROBOCZA: stamp **f9bd9a75** · md5 `f9bd9a7522500410d4340d5deb9acb9d`.
+CZEKAM-NA: Maciej — `git pull` → Ctrl+F5 START.html → stamp `f9bd9a75` → propozycja handlu AI → AKCEPTUJ → skarbiec +20 ¤.

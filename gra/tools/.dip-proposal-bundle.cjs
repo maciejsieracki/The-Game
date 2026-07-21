@@ -20,6 +20,7 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 // tools/.dip-proposal-entry.ts
 var dip_proposal_entry_exports = {};
 __export(dip_proposal_entry_exports, {
+  AI_TRADE_GOLD_ONCE: () => AI_TRADE_GOLD_ONCE,
   addTreaty: () => addTreaty,
   aiCommandToPendingProposal: () => aiCommandToPendingProposal,
   applyAcceptedProposal: () => applyAcceptedProposal,
@@ -29,6 +30,7 @@ __export(dip_proposal_entry_exports, {
   hasTreaty: () => hasTreaty,
   makeDealId: () => makeDealId,
   proposalHasResourceAccess: () => proposalHasResourceAccess,
+  resolvePlayerAcceptsAiPending: () => resolvePlayerAcceptsAiPending,
   resolvePokojTrustTier: () => resolvePokojTrustTier,
   treatiesBrokenByWar: () => treatiesBrokenByWar
 });
@@ -5088,7 +5090,7 @@ var units_default = [
     Ludno\u015B\u0107: 1,
     Surowiec: "-",
     "Surowiec (ilo\u015B\u0107)": 0,
-    "Utrzymanie (Pieni\u0105dz/tur\u0119)": 1,
+    "Utrzymanie (Pieni\u0105dz/tur\u0119)": 0,
     "\u017Cywno\u015B\u0107/tur\u0119": 0,
     Atak: 0,
     Uderzenie: 2,
@@ -10754,6 +10756,27 @@ function applyAcceptedProposal(deals, result) {
   if (!result.accepted || !result.deal) return deals;
   return addTreaty(deals, result.deal);
 }
+var AI_TRADE_GOLD_ONCE = 20;
+var AI_TRIBUTE_PER_TURN = 15;
+var AI_TRIBUTE_PEACE_ONCE = 50;
+function formatAiDiplomacyPlayerMessage(cmd) {
+  switch (cmd.type) {
+    case "zaproponuj_handel":
+      return `Proponujemy jednorazow\u0105 wymian\u0119: ${AI_TRADE_GOLD_ONCE} \xA4 na rzecz twojego pa\u0144stwa.`;
+    case "zaproponuj_sojusz":
+      return "Proponujemy pe\u0142ny sojusz \u2014 wsp\xF3lna obrona i wsparcie militarnie.";
+    case "zaproponuj_pokoj":
+      return "Proponujemy zawarcie pokoju i zako\u0144czenie wojny.";
+    case "zadaj_trybut":
+      return `\u017B\u0105damy trybut: ${AI_TRIBUTE_PER_TURN} \xA4 co tur\u0119 na rzecz naszego pa\u0144stwa.`;
+    case "oferuj_trybut_za_pokoj":
+      return `Oferujemy jednorazow\u0105 zap\u0142at\u0119 ${AI_TRIBUTE_PEACE_ONCE} \xA4 w zamian za pok\xF3j.`;
+    case "wypowiedz_wojne":
+      return "Wypowiadamy wojn\u0119 \u2014 nasze wojska s\u0105 gotowe do walki.";
+    default:
+      return "Propozycja dyplomatyczna od tego pa\u0144stwa.";
+  }
+}
 function aiCommandToPendingProposal(cmd, fromOwnerId, toOwnerId, turn) {
   const base = {
     fromOwnerId,
@@ -10761,7 +10784,7 @@ function aiCommandToPendingProposal(cmd, fromOwnerId, toOwnerId, turn) {
     createdTurn: turn,
     expiresTurn: turn + 5,
     source: "ai",
-    aiPowod: cmd.powod
+    aiPowod: formatAiDiplomacyPlayerMessage(cmd)
   };
   switch (cmd.type) {
     case "zaproponuj_sojusz":
@@ -10775,7 +10798,7 @@ function aiCommandToPendingProposal(cmd, fromOwnerId, toOwnerId, turn) {
       return {
         ...base,
         id: makeDealId("pending-handel", turn, fromOwnerId, toOwnerId),
-        payload: { goldOnce: 20 },
+        payload: { goldOnce: AI_TRADE_GOLD_ONCE },
         actionId: "handel"
       };
     case "zadaj_trybut":
@@ -10783,21 +10806,80 @@ function aiCommandToPendingProposal(cmd, fromOwnerId, toOwnerId, turn) {
         ...base,
         id: makeDealId("pending-trybut", turn, fromOwnerId, toOwnerId),
         actionId: "trybut_zadanie",
-        payload: { goldPerTurn: 15 }
+        payload: { goldPerTurn: AI_TRIBUTE_PER_TURN }
       };
     case "oferuj_trybut_za_pokoj":
       return {
         ...base,
         id: makeDealId("pending-trybut-oferta", turn, fromOwnerId, toOwnerId),
         actionId: "trybut_oferta",
-        payload: { goldOnce: 50 }
+        payload: { goldOnce: AI_TRIBUTE_PEACE_ONCE }
       };
     default:
       return null;
   }
 }
+function resolvePlayerAcceptsAiPending(pending, turn) {
+  const { actionId, fromOwnerId, toOwnerId, payload } = pending;
+  switch (actionId) {
+    case "sojusz_pelny": {
+      const deal = buildDeal(
+        "sojusz_pelny",
+        fromOwnerId,
+        toOwnerId,
+        turn,
+        null
+      );
+      return { accepted: true, reason: "Sojusz pe\u0142ny zawarty", deal };
+    }
+    case "handel": {
+      if (payload.goldOnce != null && payload.goldOnce > 0) {
+        return { accepted: true, reason: "Wymiana jednorazowa (T3A)", oneShotTrade: true };
+      }
+      return { accepted: true, reason: "Wymiana PN zaakceptowana", oneShotTrade: true };
+    }
+    case "trybut_zadanie": {
+      const perTurn = payload.goldPerTurn ?? AI_TRIBUTE_PER_TURN;
+      const deal = buildDeal(
+        "wasalizacja" /* Wasalizacja */,
+        fromOwnerId,
+        toOwnerId,
+        turn,
+        payload.turns != null ? turn + payload.turns : null,
+        {
+          payerOwnerId: toOwnerId,
+          receiverOwnerId: fromOwnerId,
+          pieniadzePerTura: perTurn
+        }
+      );
+      return { accepted: true, reason: `Trybut ${perTurn} \xA4/tur\u0119`, deal };
+    }
+    case "trybut_oferta": {
+      if (payload.goldOnce != null && payload.goldOnce > 0) {
+        return { accepted: true, reason: "Jednorazowy trybut za pok\xF3j", oneShotTrade: true };
+      }
+      const perTurn = payload.goldPerTurn ?? 0;
+      const deal = buildDeal(
+        "wasalizacja" /* Wasalizacja */,
+        fromOwnerId,
+        toOwnerId,
+        turn,
+        payload.turns != null ? turn + payload.turns : null,
+        {
+          payerOwnerId: fromOwnerId,
+          receiverOwnerId: toOwnerId,
+          pieniadzePerTura: perTurn
+        }
+      );
+      return { accepted: true, reason: `Oferta trybutu ${perTurn} \xA4/tur\u0119 przyj\u0119ta`, deal };
+    }
+    default:
+      return { accepted: false, reason: "Nieznana akcja dyplomatyczna" };
+  }
+}
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
+  AI_TRADE_GOLD_ONCE,
   addTreaty,
   aiCommandToPendingProposal,
   applyAcceptedProposal,
@@ -10807,6 +10889,7 @@ function aiCommandToPendingProposal(cmd, fromOwnerId, toOwnerId, turn) {
   hasTreaty,
   makeDealId,
   proposalHasResourceAccess,
+  resolvePlayerAcceptsAiPending,
   resolvePokojTrustTier,
   treatiesBrokenByWar
 });

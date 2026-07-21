@@ -14,6 +14,7 @@ fs.writeFileSync(entryFile, `
 export {
   evaluateProposal, applyAcceptedProposal, aiCommandToPendingProposal,
   makeDealId, proposalHasResourceAccess, clampDealTurns,
+  resolvePlayerAcceptsAiPending, AI_TRADE_GOLD_ONCE,
 } from '../src/game/diplomacy-proposals.ts';
 export { addTreaty, hasTreaty, treatiesBrokenByWar, resolvePokojTrustTier } from '../src/game/diplomacy-treaties.ts';
 export { getEffectiveDiplomacyParams } from '../src/game/diplomacy.ts';
@@ -33,6 +34,7 @@ const {
   evaluateProposal, applyAcceptedProposal, aiCommandToPendingProposal,
   addTreaty, hasTreaty, treatiesBrokenByWar, resolvePokojTrustTier,
   getEffectiveDiplomacyParams, proposalHasResourceAccess, clampDealTurns,
+  resolvePlayerAcceptsAiPending, AI_TRADE_GOLD_ONCE,
 } = require(BUNDLE);
 
 let pass = 0;
@@ -348,6 +350,22 @@ const pending = aiCommandToPendingProposal(
   2, 0, 10,
 );
 ok(pending?.actionId === 'sojusz_pelny' && pending.fromOwnerId === 2, 'AI pending sojusz');
+
+// 16 AI handel — gracz akceptuje → oneShotTrade + goldOnce 20
+const pendingHandel = aiCommandToPendingProposal(
+  { type: 'zaproponuj_handel', targetId: 'p0', powod: 'test' },
+  3, 0, 12,
+);
+ok(
+  pendingHandel?.actionId === 'handel'
+    && pendingHandel.payload.goldOnce === AI_TRADE_GOLD_ONCE,
+  'AI pending handel goldOnce 20',
+);
+const acceptHandel = resolvePlayerAcceptsAiPending(pendingHandel, 12);
+ok(
+  acceptHandel.accepted && acceptHandel.oneShotTrade && !acceptHandel.deal,
+  'gracz akceptuje AI handel → oneShotTrade',
+);
 
 console.log(`\n${pass}/${pass + fail} PASS`);
 process.exit(fail ? 1 : 0);

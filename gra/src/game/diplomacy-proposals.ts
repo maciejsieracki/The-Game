@@ -558,7 +558,7 @@ export function applyAcceptedProposal(
 }
 
 /** Domyślne payloady propozycji AI (sync z aiCommandToPendingProposal). */
-const AI_TRADE_GOLD_ONCE = 20;
+export const AI_TRADE_GOLD_ONCE = 20;
 const AI_TRIBUTE_PER_TURN = 15;
 const AI_TRIBUTE_PEACE_ONCE = 50;
 
@@ -647,4 +647,70 @@ export function evaluatePendingFromAI(
     payload: pending.payload,
   };
   return evaluateProposal(proposal, ctx);
+}
+
+/**
+ * Gracz klika AKCEPTUJ na propozycji AI — bez ponownej oceny progów AI/respondenta.
+ * Zwraca wynik gotowy do applyProposalOutcome (deal / oneShotTrade).
+ */
+export function resolvePlayerAcceptsAiPending(
+  pending: PendingProposal,
+  turn: number,
+): ProposalEvalResult {
+  const { actionId, fromOwnerId, toOwnerId, payload } = pending;
+  switch (actionId) {
+    case 'sojusz_pelny': {
+      const deal = buildDeal(
+        'sojusz_pelny',
+        fromOwnerId,
+        toOwnerId,
+        turn,
+        null,
+      );
+      return { accepted: true, reason: 'Sojusz pełny zawarty', deal };
+    }
+    case 'handel': {
+      if (payload.goldOnce != null && payload.goldOnce > 0) {
+        return { accepted: true, reason: 'Wymiana jednorazowa (T3A)', oneShotTrade: true };
+      }
+      return { accepted: true, reason: 'Wymiana PN zaakceptowana', oneShotTrade: true };
+    }
+    case 'trybut_zadanie': {
+      const perTurn = payload.goldPerTurn ?? AI_TRIBUTE_PER_TURN;
+      const deal = buildDeal(
+        RodzajTraktatu.Wasalizacja,
+        fromOwnerId,
+        toOwnerId,
+        turn,
+        payload.turns != null ? turn + payload.turns : null,
+        {
+          payerOwnerId: toOwnerId,
+          receiverOwnerId: fromOwnerId,
+          pieniadzePerTura: perTurn,
+        },
+      );
+      return { accepted: true, reason: `Trybut ${perTurn} ¤/turę`, deal };
+    }
+    case 'trybut_oferta': {
+      if (payload.goldOnce != null && payload.goldOnce > 0) {
+        return { accepted: true, reason: 'Jednorazowy trybut za pokój', oneShotTrade: true };
+      }
+      const perTurn = payload.goldPerTurn ?? 0;
+      const deal = buildDeal(
+        RodzajTraktatu.Wasalizacja,
+        fromOwnerId,
+        toOwnerId,
+        turn,
+        payload.turns != null ? turn + payload.turns : null,
+        {
+          payerOwnerId: fromOwnerId,
+          receiverOwnerId: toOwnerId,
+          pieniadzePerTura: perTurn,
+        },
+      );
+      return { accepted: true, reason: `Oferta trybutu ${perTurn} ¤/turę przyjęta`, deal };
+    }
+    default:
+      return { accepted: false, reason: 'Nieznana akcja dyplomatyczna' };
+  }
 }

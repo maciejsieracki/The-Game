@@ -4,7 +4,20 @@
 > **Czat:** krótko **`✅ Gotowe:`** / **`⏸️ Czeka:`** · **Ten plik:** pełniejszy zapis tego samego.  
 > Szczegóły techniczne → handoff w `dyspozycje/_handoff/` · operacja → `dyspozycje/DZIENNIK-MASTERA.md`
 
-**Ostatnia aktualizacja:** 2026-07-22 (granice państwa na mapie)
+**Ostatnia aktualizacja:** 2026-07-22 (akceptacja AI handel → +20 ¤)
+
+---
+
+## [01:00] INTEGRATOR → Maciej — DYPL: akceptacja AI handel → +20 ¤ graczowi
+
+| | |
+|---|---|
+| **Co** | Po AKCEPTUJ propozycji AI „20 ¤ na rzecz twojego państwa" gracz dostaje pełne 20 ¤ do skarbca |
+| **Bug** | `applyOneShotGoldTransfer` wymagał pełnego salda AI (często 0) — transfer cicho failował; brak `updateHud()` |
+| **Fix** | `resolvePlayerAcceptsAiPending` + `applyDiplomaticGoldGrant` w `diplomacy-economy.ts`; `executePnDealTransfer` w `main.ts` |
+| **md5** | `f9bd9a7522500410d4340d5deb9acb9d` · stamp `f9bd9a75` |
+| **Bramki** | tsc=0 · diplomacy-proposal-test 57/57 · diplomacy-economy-test 8/8 |
+| **Od Ciebie** | `git pull` → Ctrl+F5 · `gra-robocza/START.html` → stamp `f9bd9a75` → poczekaj na propozycję handlu AI → AKCEPTUJ → skarbiec +20 ¤ |
 
 ---
 

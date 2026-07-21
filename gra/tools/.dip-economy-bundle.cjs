@@ -21,6 +21,7 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 var dip_economy_entry_exports = {};
 __export(dip_economy_entry_exports, {
   activeDealsToPaymentDeals: () => activeDealsToPaymentDeals,
+  applyDiplomaticGoldGrant: () => applyDiplomaticGoldGrant,
   applyOneShotGoldTransfer: () => applyOneShotGoldTransfer,
   tickDiplomacyPayments: () => tickDiplomacyPayments,
   tributeBreakPairsFromDeals: () => tributeBreakPairsFromDeals
@@ -108,9 +109,18 @@ function applyOneShotGoldTransfer(fromOwnerId, toOwnerId, amount, treasury) {
   treasury.add(toOwnerId, amount);
   return { ok: true };
 }
+function applyDiplomaticGoldGrant(fromOwnerId, toOwnerId, amount, treasury) {
+  if (amount <= 0) return { ok: false, granted: 0, reason: "Kwota musi by\u0107 > 0" };
+  const fromBalance = treasury.getPieniadze(fromOwnerId);
+  const deduct = Math.min(fromBalance, amount);
+  if (deduct > 0) treasury.add(fromOwnerId, -deduct);
+  treasury.add(toOwnerId, amount);
+  return { ok: true, granted: amount };
+}
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   activeDealsToPaymentDeals,
+  applyDiplomaticGoldGrant,
   applyOneShotGoldTransfer,
   tickDiplomacyPayments,
   tributeBreakPairsFromDeals

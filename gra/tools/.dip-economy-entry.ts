@@ -1,5 +1,5 @@
 
 export {
   activeDealsToPaymentDeals, tickDiplomacyPayments, applyOneShotGoldTransfer,
-  tributeBreakPairsFromDeals,
+  applyDiplomaticGoldGrant, tributeBreakPairsFromDeals,
 } from '../src/game/diplomacy-economy.ts';

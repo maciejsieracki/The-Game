@@ -158,3 +158,21 @@ export function applyOneShotGoldTransfer(
   treasury.add(toOwnerId, amount);
   return { ok: true };
 }
+
+/**
+ * Propozycja AI → gracz (zaproponuj_handel / oferuj_trybut_za_pokoj):
+ * gracz dostaje pełną kwotę; AI płaci tyle, ile ma w skarbcu (reszta = grant dyplomatyczny).
+ */
+export function applyDiplomaticGoldGrant(
+  fromOwnerId: number,
+  toOwnerId: number,
+  amount: number,
+  treasury: TreasuryAdapter,
+): { ok: boolean; granted: number; reason?: string } {
+  if (amount <= 0) return { ok: false, granted: 0, reason: 'Kwota musi być > 0' };
+  const fromBalance = treasury.getPieniadze(fromOwnerId);
+  const deduct = Math.min(fromBalance, amount);
+  if (deduct > 0) treasury.add(fromOwnerId, -deduct);
+  treasury.add(toOwnerId, amount);
+  return { ok: true, granted: amount };
+}
