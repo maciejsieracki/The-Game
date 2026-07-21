@@ -4,7 +4,21 @@
 > **Czat:** krótko **`✅ Gotowe:`** / **`⏸️ Czeka:`** · **Ten plik:** pełniejszy zapis tego samego.  
 > Szczegóły techniczne → handoff w `dyspozycje/_handoff/` · operacja → `dyspozycje/DZIENNIK-MASTERA.md`
 
-**Ostatnia aktualizacja:** 2026-07-08 (metadata drift START + stamp)
+**Ostatnia aktualizacja:** 2026-07-21 (fala 4 deploy)
+
+---
+
+## [2026-07-21] ✅ Gotowe — Fala 4: trasa przez mgłę (C-RUCH-Q1=B)
+
+| | |
+|---|---|
+| **Co** | Marsz można prowadzić optymalną trasą przez mgłę/nieodkryty teren — bez ucinania na granicy widoczności |
+| **Decyzja** | C-RUCH-Q1=B (wariant Macieja) |
+| **md5** | `14b3a1b05833ba24add367ec93b9beb3` · stamp `14b3a1b0` |
+| **Bramki** | tsc=0 · planned-march 18/18 · logic 203/203 · VERIFY OK |
+| **Od Ciebie** | Ctrl+F5 · `gra-robocza/START.html` · zaznacz armię → klik cel za mgłą → trasa idzie do celu (nie staje na brzegu mgły) |
+
+**Paczka 14 tematów audytu — komplet wdrożony w ROBOCZA.**
 
 ---
 

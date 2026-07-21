@@ -74,19 +74,19 @@ var terrain_improvements_default = {
     odblokowuje: ""
   },
   bydlo: {
-    nazwa: "Byd\u0142o",
+    nazwa: "Trzoda",
     epoka: 1,
     bonus: {
       zywnosc: 2,
       praca: 3
     },
     surowiecOdblokowany: "bydlo",
-    surowiecOdblokowany_uwaga: "ABC-18: dost\u0119p dopiero po postawieniu na z\u0142o\u017Cu byd\u0142a",
+    surowiecOdblokowany_uwaga: "ABC-18: dost\u0119p dopiero po postawieniu na z\u0142o\u017Cu trzody",
     teren: "\u0141\u0105ka, R\xF3wnina",
     warunek: "plaski l\u0105d; pierwsze: z\u0142o\u017Ce byd\u0142a; potem po odblokowaniu \u2014 bez z\u0142o\u017Ca; + farma lub solo; NIE na Pustyni",
     koszt_praca: 20,
     tech: "Oswojenie zwierz\u0105t",
-    odblokowuje: "Byd\u0142o (Rydwan po odblokowaniu)"
+    odblokowuje: "Trzoda (Rydwan po odblokowaniu)"
   },
   owce: {
     nazwa: "Owce",
@@ -112,8 +112,8 @@ var terrain_improvements_default = {
     },
     surowiecOdblokowany: "lama",
     surowiecOdblokowany_uwaga: "TYLKO Inkowie; solo \u2014 bez innych ulepszen na heksie; pierwsze na zlozu lamy",
-    teren: "\u0141\u0105ka, R\xF3wnina, Wzg\xF3rza",
-    warunek: "solo; tylko cyw. Inkowie; pierwsze: z\u0142o\u017Ce lamy; NIE na Pustyni",
+    teren: "Wzg\xF3rza, G\xF3ry",
+    warunek: "solo; tylko cyw. Inkowie; wzg\xF3rza/g\xF3ry; pierwsze: z\u0142o\u017Ce lamy; NIE na \u0141\u0105ce/R\xF3wninie/Pustyni",
     koszt_praca: 20,
     tech: "Oswojenie zwierz\u0105t",
     odblokowuje: "Lama (transport / \u017Cywno\u015B\u0107)"
@@ -150,10 +150,11 @@ var terrain_improvements_default = {
     nazwa: "Glinianka",
     epoka: 2,
     bonus: {
-      praca: 1
+      praca: 1,
+      glina: 2
     },
     surowiecOdblokowany: "glina",
-    surowiecOdblokowany_uwaga: "klucz 'glina' wg Surowiec='Glina' w resources.json; brak pola id \u2014 propozycja EKONOMIA",
+    surowiecOdblokowany_uwaga: "GLINA-Q1=A (Maciej 2026-07-20): stala ilosc 2 glina/ture z ulepszenia (bonus.glina), analogicznie do drewna/kamienia. Klucz 'glina' wg Surowiec='Glina' w resources.json.",
     teren: "z\u0142o\u017Ce Gliny",
     warunek: "glina \u2192 ceg\u0142a (wa\u017Cne w br\u0105zie)",
     koszt_praca: 20,
@@ -197,12 +198,12 @@ var terrain_improvements_default = {
     bonus: {},
     surowiecOdblokowany: null,
     teren: "Las",
-    warunek: "koszt 5 Pracy na start; +20 Pracy/tur\u0119 \xD7 3 tury (=60); potem teren bazowy bez lasu",
+    warunek: "koszt 5 Pracy na start; +5 Pracy \xD7 1 tura (=5, netto zero); potem teren bazowy bez lasu",
     koszt_praca: 5,
     tech: null,
     wycinka: {
-      praca_per_tura: 20,
-      tury: 3,
+      praca_per_tura: 5,
+      tury: 1,
       usuwa_nakladke: "las"
     },
     odblokowuje: ""
@@ -279,7 +280,7 @@ var terrain_improvements_default = {
     teren: "dowolny l\u0105d w terytorium",
     warunek: "+100% Obrony jednostkom obozuj\u0105cym na polu fortu (bez plon\xF3w); rozszerza zasi\u0119g terytorium o promie\u0144 10 p\xF3l",
     koszt_praca: 25,
-    tech: "Wojskowosc",
+    tech: "Wojskowo\u015B\u0107",
     odblokowuje: "",
     uwagi: "ABC-10 Maciej 2026-07-04: Fort (mapa) \u2260 Cytadela (miasto). \u017Belazo ep.3; zasi\u0119g 10; +100% Obrona obozowanie"
   },
@@ -311,8 +312,8 @@ var terrain_improvements_default = {
     odblokowuje: "",
     uwagi: "T-TECH-9 Maciej 2026-07-04"
   },
-  popalnia_brazu: {
-    nazwa: "Popalnia br\u0105zu",
+  kopalnia_miedzi: {
+    nazwa: "Kopalnia miedzi",
     epoka: 2,
     bonus: {
       praca: 2
@@ -543,63 +544,8 @@ function truncatePathAtFogFrontier(path, visible, keyOf2) {
   }
   return { path: out, fogLimited: out.length < path.length };
 }
-function applyFogToPathPlan(plan, map, perTurnMove, movementBudget, fog) {
-  if (!fog?.fogActive || fog.attackOnVisibleEnemy || plan.fullPath.length === 0) {
-    return plan;
-  }
-  const { path: clamped, fogLimited } = truncatePathAtFogFrontier(
-    plan.fullPath,
-    fog.visible,
-    fog.keyOf
-  );
-  if (!fogLimited) return plan;
-  if (clamped.length === 0) {
-    return {
-      ...plan,
-      fullPath: [],
-      turnStops: [],
-      segmentPath: [],
-      segmentCost: 0,
-      reachable: false,
-      stopReason: "fog"
-    };
-  }
-  const budget = movementBudget ?? perTurnMove;
-  const segmentPath = truncatePathToBudget(clamped, budget, map);
-  const segmentCost = segmentPath.length > 0 ? pathCost(segmentPath, map) : 0;
-  const turnStops = [];
-  let turnAcc = 0;
-  let turnNum = 1;
-  const perTurn = Math.max(1, perTurnMove);
-  for (let i = 0; i < clamped.length; i++) {
-    const stepCost = pathCost(clamped.slice(0, i + 1), map) - (i > 0 ? pathCost(clamped.slice(0, i), map) : 0);
-    if (turnAcc + stepCost > perTurn) {
-      if (i > 0) {
-        const prev = clamped[i - 1];
-        const last2 = turnStops[turnStops.length - 1];
-        if (!last2 || last2.q !== prev.q || last2.r !== prev.r) {
-          turnStops.push({ q: prev.q, r: prev.r, turn: turnNum });
-        }
-      }
-      turnNum++;
-      turnAcc = stepCost;
-    } else {
-      turnAcc += stepCost;
-    }
-  }
-  const last = clamped[clamped.length - 1];
-  const lastStop = turnStops[turnStops.length - 1];
-  if (!lastStop || lastStop.q !== last.q || lastStop.r !== last.r) {
-    turnStops.push({ q: last.q, r: last.r, turn: turnNum });
-  }
-  return {
-    fullPath: clamped,
-    turnStops,
-    segmentPath,
-    segmentCost,
-    reachable: true,
-    fogLimited: true
-  };
+function applyFogToPathPlan(plan, _map, _perTurnMove, _movementBudget, _fog) {
+  return plan;
 }
 function isMarchAttackDest(q, r, dest) {
   return q === dest.destQ && r === dest.destR;
@@ -865,6 +811,7 @@ function deserializeGame(json) {
     diploRelations: obj2.diploRelations,
     autoMarch: obj2.autoMarch,
     plannedMarches: obj2.plannedMarches,
+    tradeRoutes: Array.isArray(obj2.tradeRoutes) ? obj2.tradeRoutes : void 0,
     meta: obj.meta,
     mapQuality: obj2.mapQuality,
     renderQuality: obj2.renderQuality,

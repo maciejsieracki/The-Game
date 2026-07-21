@@ -2356,3 +2356,16 @@ CZEKAM-NA: **sesja lokalna** — „push": pull `38d6fc8b`. **Właściciel** —
 - 🔜 **Zostało B (trasa przez mgłę)** — zadaję właścicielowi pytanie ABC (wariant ślepy vs optymalny); zmiana wysokiego ryzyka w systemie ruchu, nie robię bez decyzji.
 
 CZEKAM-NA: **sesja lokalna** — „push": pull `a7e6b012`. **Właściciel** — decyzja o B + „sprawdź".
+
+---
+
+## [22:00 PL, 2026-07-21] SESJA LOKALNA → SESJA LOKALNA / MASTER — DEPLOY ROBOCZA `14b3a1b0` (fala 4: trasa przez mgłę, C-RUCH-Q1=B)
+
+Maciej: „dokończ falę 4". Merge FF `dce32f3` → `main`, build + deploy.
+
+- **ROBOCZA = `14b3a1b0`** (md5 `14b3a1b05833ba24add367ec93b9beb3`), VERIFY OK, 27,3 MB.
+- **B (C-RUCH-Q1=B):** `applyFogToPathPlan` pass-through — trasa optymalna przez mgłę/nieodkryty teren do celu (bez ucinania na granicy widoczności). Egzekucja zatrzymuje na realnej blokadzie.
+- Bramki: tsc=0 · planned-march **18/18** · logic **203/203** · VERIFY OK.
+- **Paczka audytu 14 tematów — KOMPLET** (fale 1–4).
+
+CZEKAM-NA: **sesja lokalna** — „push" na dysk właściciela · md5 **`14b3a1b0`**. **Właściciel** — Ctrl+F5 START.html · test marszu przez mgłę.
