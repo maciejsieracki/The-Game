@@ -387,6 +387,10 @@ import {
   applyCityCaptureAfterBattle,
   type MapBattleWinner,
 } from './game/post-battle-map';
+import {
+  applyCapitalCapturePlunder,
+  type OwnerResourceAccess,
+} from './game/capital-capture';
 import { civBonusyForCivKey } from './game/economy';
 import { advanceProduction, rushProduction, rushCost, populationCostOf, UNIT_POPULATION_COST,
   enqueueRecruitment, advanceRecruitment, advanceRecruitmentGated, unitProductionItem,
@@ -2813,6 +2817,14 @@ async function boot(): Promise<void> {
     const aiResearchDone = new Map<number, Set<string>>();
 
     /**
+     * Cywilizacje SKASOWANE (przejęcie-stolicy Zdarzenie 2 — ostatnie miasto
+     * stracone). Q5=B: pełne usunięcie z listy graczy/dyplomacji. Filtrowane z
+     * aiOwnerList (pętla tur AI) niezależnie od ewentualnych osamotnionych
+     * jednostek w polu — patrz eliminateOwner() (~stolica-przejęcie ~9410).
+     */
+    const eliminatedOwners = new Set<number>();
+
+    /**
      * Mapa ownerId -> civType (ikonaId z civs.json) dla AI rywali.
      * Wypełniana przy starcie gry z aiStartHexes (bez osadników AI na mapie).
      * Gracz (ownerId 0) zawsze dostaje typ z player.civType.
@@ -3160,6 +3172,7 @@ async function boot(): Promise<void> {
       typCityCopyOwners.clear();
       ownerEraByOwner.clear();
       ownerStartEraByOwner.clear();
+      eliminatedOwners.clear();
       for (const [oid, civ] of plan.aiOwnerCivMap) {
         aiOwnerCivMap.set(oid, civ);
         initOwnerEra(oid, gameStartEra());
@@ -5213,6 +5226,7 @@ async function boot(): Promise<void> {
         }
         syncCityGarnizon(city);
         if (newOwner === 0) playerEverOwnedCity = true;
+        runCapitalCapturePlunder(city, oldOwner, newOwner);
         showHintMessage(
           city.name + ' — kapitulacja z głodu! Miasto przejęte przez ' + civLabelForOwner(newOwner) + '.',
           5500,
@@ -9407,6 +9421,147 @@ async function boot(): Promise<void> {
       }];
     }
 
+    // -----------------------------------------------------------------------
+    // PRZEJĘCIE STOLICY — akcesory zasobów owner-agnostyczne (gracz ownerId 0 =
+    // playerState.ts; AI ownerId>0 = mapy *ByOwner poniżej). Patrz capital-capture.ts.
+    // -----------------------------------------------------------------------
+
+    function ownerTreasury(ownerId: number): number {
+      return ownerId === 0 ? player.skarbiec : (aiSkarbiecByOwner.get(ownerId) ?? 0);
+    }
+    function setOwnerTreasury(ownerId: number, value: number): void {
+      const v = Math.max(0, value);
+      if (ownerId === 0) player.skarbiec = v;
+      else aiSkarbiecByOwner.set(ownerId, v);
+    }
+    /** AI dziś NIE MA puli pracy (nie buduje z niej ulepszeń) — no-op dla ownerId>0. */
+    function ownerPracaPool(ownerId: number): number {
+      return ownerId === 0 ? playerPracaPool : 0;
+    }
+    function setOwnerPracaPool(ownerId: number, value: number): void {
+      if (ownerId !== 0) return;
+      playerPracaPool = Math.max(0, value);
+      _lastPraca = playerPracaPool;
+    }
+    /** AI dziś NIE MA osobnej puli punktów nauki (chooseAIResearch kończy techy od
+     *  razu, bez kosztu z banku) — no-op dla ownerId>0. Patrz raport: asymetria danych. */
+    function ownerNaukaPool(ownerId: number): number {
+      return ownerId === 0 ? player.nauka : 0;
+    }
+    function setOwnerNaukaPool(ownerId: number, value: number): void {
+      if (ownerId !== 0) return;
+      player.nauka = Math.max(0, value);
+    }
+    function ownerResearchedTechs(ownerId: number): ReadonlySet<string> {
+      return ownerId === 0 ? player.zbadane : (aiResearchDone.get(ownerId) ?? new Set<string>());
+    }
+    function addOwnerResearchedTechs(ownerId: number, ids: Iterable<string>): void {
+      if (ownerId === 0) {
+        for (const id of ids) player.zbadane.add(id);
+        return;
+      }
+      if (!aiResearchDone.has(ownerId)) aiResearchDone.set(ownerId, new Set<string>());
+      const set = aiResearchDone.get(ownerId)!;
+      for (const id of ids) set.add(id);
+    }
+
+    const capitalCaptureResourceAccess: OwnerResourceAccess = {
+      getTreasury: ownerTreasury,
+      setTreasury: setOwnerTreasury,
+      getPracaPool: ownerPracaPool,
+      setPracaPool: setOwnerPracaPool,
+      getNaukaPool: ownerNaukaPool,
+      setNaukaPool: setOwnerNaukaPool,
+      getResearchedTechs: ownerResearchedTechs,
+      addResearchedTechs: addOwnerResearchedTechs,
+    };
+
+    /** Czy klucz pary dyplomatycznej "min_max" (diploPairKey) dotyczy ownerId. */
+    function diploPairKeyHasOwner(key: string, ownerId: number): boolean {
+      const parts = key.split('_');
+      return parts.length === 2 && (Number(parts[0]) === ownerId || Number(parts[1]) === ownerId);
+    }
+
+    /**
+     * Q5=B — pełne usunięcie skasowanej cywilizacji (ownerId, po utracie ostatniego
+     * miasta) z list graczy i dyplomacji. NIE usuwa ewentualnych osamotnionych
+     * jednostek w polu (poza zakresem RDZENIA) — te po prostu przestają być
+     * dowodzone (ownerId filtrowany z aiOwnerList), a wszystkie *ByOwner gettery
+     * mają fallback ?? domyślna wartość, więc nie ma ryzyka wyjątku w UI/rendererze.
+     */
+    function eliminateOwner(ownerId: number): void {
+      if (ownerId === 0 || eliminatedOwners.has(ownerId)) return;
+      eliminatedOwners.add(ownerId);
+
+      aiSkarbiecByOwner.delete(ownerId);
+      aiResearchDone.delete(ownerId);
+      aiOwnerCivMap.delete(ownerId);
+      ownerDisplayName.delete(ownerId);
+      simplifiedDiplomacyOwners.delete(ownerId);
+      foreignTypeOwners.delete(ownerId);
+      typCityCopyOwners.delete(ownerId);
+      ownerEraByOwner.delete(ownerId);
+      ownerStartEraByOwner.delete(ownerId);
+      clusterCapitalOwnerIds.delete(ownerId);
+      diplomaticContactEstablished.delete(ownerId);
+      battlePowerPtsByOwner.delete(ownerId);
+
+      for (const key of Array.from(diplomacyRelations.keys())) {
+        if (diploPairKeyHasOwner(key, ownerId)) diplomacyRelations.delete(key);
+      }
+      for (const key of Array.from(diplomacyPairMeta.keys())) {
+        if (diploPairKeyHasOwner(key, ownerId)) diplomacyPairMeta.delete(key);
+      }
+      activeDeals = activeDeals.filter(d => !d.strony.includes(ownerId));
+
+      // Oblężenia PROWADZONE przez ownerId gdzie indziej (inne miasto niż to
+      // właśnie przejęte) — porzucamy, bo nie ma już kto ich kontynuować.
+      for (const c of cities) {
+        if (c.oblegajacyOwnerId === ownerId) {
+          delete c.oblegajacyOwnerId;
+          c.oblegane = false;
+          c.siegeCapitulationPending = false;
+        }
+      }
+      for (const [cid, besieger] of Array.from(siegeBesiegerByCity.entries())) {
+        if (besieger === ownerId) {
+          siegeBesiegerByCity.delete(cid);
+          siegeTurnByCity.delete(cid);
+        }
+      }
+      const siegeKeyPrefix = ownerId + ':';
+      for (const key of Array.from(siegeAiStateByKey.keys())) {
+        if (key.startsWith(siegeKeyPrefix)) siegeAiStateByKey.delete(key);
+      }
+
+      console.log(`[Eliminacja] Cywilizacja ownerId=${ownerId} skasowana (utrata ostatniego miasta).`);
+    }
+
+    /**
+     * RDZEŃ „przejęcie stolicy" — wołane z OBU ścieżek zdobycia (post-battle +
+     * kapitulacja z głodu) TUŻ PO zmianie city.ownerId. Zwraca się cicho (no-op)
+     * gdy przejęte miasto nie było stolicą oldOwner — patrz capital-capture.ts.
+     */
+    function runCapitalCapturePlunder(city: City, oldOwner: number, newOwner: number): void {
+      const outcome = applyCapitalCapturePlunder(
+        city, oldOwner, newOwner, cities, capitalCaptureResourceAccess,
+      );
+      if (!outcome) return;
+
+      if (outcome.event === 'przejecie_stolicy') {
+        showHintMessage(
+          `${city.name}: stolica ${civLabelForOwner(oldOwner)} przejęta przez ${civLabelForOwner(newOwner)} — skarbiec i pula pracy przepadły.`,
+          5000,
+        );
+      } else {
+        showHintMessage(
+          `${civLabelForOwner(oldOwner)} — ELIMINACJA! Ostatnie miasto (${city.name}) przejęte przez ${civLabelForOwner(newOwner)}. Skarbiec, nauka i ${outcome.techSkopiowane.length} tech(y) przejęte.`,
+          6000,
+        );
+        eliminateOwner(oldOwner);
+      }
+    }
+
     /** ST-2/ST-3: przejęcie miasta — tylko obrońca na centrum (B); pierścień zostaje. */
     function applyCityCaptureToMap(
       city: City,
@@ -9418,7 +9573,7 @@ async function boot(): Promise<void> {
       if (atkOwner === 0) playerEverOwnedCity = true;
       syncCityGarnizon(city);
       endMapSiege(city.id);
-      void oldOwner;
+      runCapitalCapturePlunder(city, oldOwner, atkOwner);
       return lead;
     }
 
@@ -10162,6 +10317,7 @@ async function boot(): Promise<void> {
           zlozeGrants: zlozeGrants.slice(),
           surowiecBooleanGrants: basketTransferCtx.surowiecBooleanGrants,
           battlePowerPtsByOwner: Array.from(battlePowerPtsByOwner.entries()),
+          eliminatedOwners: Array.from(eliminatedOwners),
           ownerEraByOwner: Array.from(ownerEraByOwner.entries()),
           ownerStartEraByOwner: Array.from(ownerStartEraByOwner.entries()),
           placedImprovements: Array.from(placedImprovements.entries()),
@@ -10991,6 +11147,7 @@ async function boot(): Promise<void> {
               const s = new Set<number>();
               for (const u of units) { if (u.ownerId > 0) s.add(u.ownerId); }
               for (const c of cities) { if (c.ownerId > 0) s.add(c.ownerId); }
+              for (const oid of eliminatedOwners) s.delete(oid); // cywilizacje skasowane nie grają
               return [...s];
             })();
             const startOi = aiCmdResume?.ownerIdx ?? 0;
@@ -11000,6 +11157,9 @@ async function boot(): Promise<void> {
 
             ownerLoop: for (let oi = startOi; oi < aiOwnerList.length; oi++) {
               const ownerId = aiOwnerList[oi]!;
+              // Bezpiecznik: gdyby lista pochodziła z aiCmdResume sprzed eliminacji
+              // (skasowanie w trakcie tej samej fazy AI) — pomiń bez przetwarzania.
+              if (eliminatedOwners.has(ownerId)) continue;
               const aiPct = 38 + Math.round((54 * (oi + 1)) / Math.max(1, aiOwnerList.length));
               setTurnTransition(aiPct, 'Ruchy i decyzje…', ownerDiploLabel(ownerId), nextTurnNum);
               await yieldTurnTransitionUi();
@@ -12238,6 +12398,7 @@ async function boot(): Promise<void> {
       aiResearchDone.clear();
       ownerEraByOwner.clear();
       ownerStartEraByOwner.clear();
+      eliminatedOwners.clear();
       barbCamps = [];
       gameOver = false;
       selectedId = null;
@@ -12454,6 +12615,7 @@ async function boot(): Promise<void> {
       orderValueMap.clear();
       growthMultMap.clear();
       aiResearchDone.clear();
+      eliminatedOwners.clear();
       barbCamps = [];
       gameOver = false;
       selectedId = null;
@@ -12672,6 +12834,7 @@ async function boot(): Promise<void> {
       growthMultMap.clear();
       autoManageCities.clear();
       aiResearchDone.clear();
+      eliminatedOwners.clear();
       barbCamps = [];
       gameOver = false;
       selectedId = null;
@@ -12861,6 +13024,7 @@ async function boot(): Promise<void> {
       growthMultMap.clear();
       autoManageCities.clear();
       aiResearchDone.clear();
+      eliminatedOwners.clear();
       barbCamps = [];
       gameOver = false;
       selectedId = null;
@@ -13111,6 +13275,11 @@ async function boot(): Promise<void> {
       aiResearchDone.clear();
       if (saved.aiResearchDone) {
         for (const [oid, zbadane] of saved.aiResearchDone) aiResearchDone.set(oid, new Set(zbadane));
+      }
+      eliminatedOwners.clear();
+      const savedEliminated = saved.meta?.eliminatedOwners as number[] | undefined;
+      if (savedEliminated?.length) {
+        for (const oid of savedEliminated) eliminatedOwners.add(oid);
       }
       battlePowerPtsByOwner.clear();
       const savedPts = saved.meta?.battlePowerPtsByOwner as Array<[number, number]> | undefined;
