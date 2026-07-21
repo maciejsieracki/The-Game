@@ -2,7 +2,6 @@
  * diploListHud.ts — lista cywilizacji do dyplomacji (toolbar tb-diplomacy).
  */
 
-import type { CivBonusLite } from '../game/production';
 import { tierLabel } from './diplomacyPanel';
 import {
   civPennantHtml,
@@ -26,8 +25,6 @@ export interface DiploListHudConfig {
   getEntries: () => DiploListEntry[];
   onSelectEntry: (ownerId: number) => void;
   onClose?: () => void;
-  /** Bonusy cywilizacji rywala (civs.json) — SILNIK: civBonusyForOwnerId. */
-  getCivBonusy?: (ownerId: number) => readonly CivBonusLite[];
 }
 
 export interface DiploListHudApi {
@@ -83,7 +80,6 @@ ${DIPLO_1E_SHARED_CSS}
 .civ-diplo-list-hud .dl-name{font-family:Georgia,'Times New Roman',serif;font-size:1.12em;font-weight:700;color:#e8e0c8;line-height:1.2;}
 .civ-diplo-list-hud .dl-meta{font-size:0.72em;color:#8a8070;margin-top:0.18em;line-height:1.35;}
 .civ-diplo-list-hud .dl-tier-row{margin-top:0.35em;}
-.civ-diplo-list-hud .dl-bonus{font-size:0.68em;color:#a8a090;margin-top:0.28em;line-height:1.35;font-style:italic;}
 .civ-diplo-list-hud .dl-hint{font-size:0.72em;color:#8a8070;margin-top:0.65em;line-height:1.45;padding:0 0.15em;}
 `;
   const s = document.createElement('style');
@@ -177,29 +173,11 @@ export function createDiploListHud(config: DiploListHudConfig): DiploListHudApi 
         tierRow.className = 'dl-tier-row';
         tierRow.innerHTML = tierBadgeHtml(e.tier, tierLabel(e.tier));
         body.appendChild(tierRow);
-        if (e.detailLine && !e.detailLine.startsWith(tierLabel(e.tier))) {
+        if (e.detailLine) {
           const stats = document.createElement('div');
           stats.className = 'dl-meta';
           stats.textContent = e.detailLine;
           body.appendChild(stats);
-        }
-        const oid = parseInt(e.id, 10);
-        if (Number.isFinite(oid) && config.getCivBonusy) {
-          const bonusLine = config.getCivBonusy(oid)
-            .map(b => (b.opis ?? '').trim())
-            .filter(Boolean)
-            .slice(0, 2)
-            .join(' · ');
-          if (bonusLine) {
-            const bon = document.createElement('div');
-            bon.className = 'dl-bonus';
-            bon.textContent = bonusLine;
-            bon.title = config.getCivBonusy(oid)
-              .map(b => (b.opis ?? '').trim())
-              .filter(Boolean)
-              .join('\n');
-            body.appendChild(bon);
-          }
         }
         row.appendChild(pennant.firstElementChild ?? pennant);
         row.appendChild(body);
@@ -291,6 +269,11 @@ export function destroyDiploListHud(): void {
   api = null;
 }
 
+/** Relacja widoczna w liście = Zaufanie + Respekt z mocy (jak audiencja). */
+function listRelTotal(zaufanie: number, respekt: number): number {
+  return Math.round(Math.max(0, Math.min(200, zaufanie + respekt)));
+}
+
 /** Pomocnik: wpis listy z relacji silnika. */
 export function diploListEntryFromRelation(rel: {
   ownerId?: number;
@@ -301,13 +284,13 @@ export function diploListEntryFromRelation(rel: {
   contactEstablished?: boolean;
 }): DiploListEntry | null {
   if (rel.ownerId === undefined) return null;
-  const stats: string[] = [tierLabel(rel.tier)];
-  if (rel.respekt != null) stats.push('Respekt ' + rel.respekt + '%');
+  const zauf = rel.zaufanie ?? 0;
+  const relTotal = listRelTotal(zauf, rel.respekt ?? 0);
   return {
     id: String(rel.ownerId),
     name: rel.civ,
     tier: rel.tier,
-    detailLine: stats.join(' · '),
+    detailLine: 'Relacja: ' + relTotal + ' · Zaufanie: ' + zauf,
     metaLine: rel.contactEstablished ? 'Audiencja — kontakt nawiązany' : 'Audiencja — nawiąż kontakt',
   };
 }

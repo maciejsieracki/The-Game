@@ -2498,14 +2498,14 @@ CZEKAM-NA: **Maciej** `git pull` → Ctrl+F5 START.html → stamp `41656451`; Gr
 
 ## [00:15 PL, 2026-07-22] INTEGRATOR → Maciej — D3-TRUST-TICK: Zaufanie/turę + trwały handel surowcami
 
-Maciej: **push** — decyzje 2026-07-21 (natural trust + persistent resource deals).
+Maciej: **push** — decyzje 2026-07-21 (natural trust + persistent resource deals + czas umowy 1–20 tur).
 
-- **ROBOCZA = `c1b7327a`** (md5 `c1b7327a494fbf0d3e348f0b5b78791e`), na `87d0d359`.
+- **ROBOCZA = `e20a20ad`** (md5 `e20a20ad2814e87a319c02db34e177d6`), na `c63dd3f4`.
 - **Zaufanie/turę:** sojusz +3 · NAP +2 · pokój +1 (wykluczające tiery) · UmowaHandlowa +1 stackuje.
-- **Handel złoża:** `umowa_handlowa` 10–20 tur, ZlozeGrant z dealId, wygasa z traktatem/wojną; PN/¤ bez surowców = one-shot.
-- tsc=0 · diplomacy-proposal 53/53 · docs: `docs/decyzje/D3-TRUST-TICK-2026-07-21.md`.
+- **Handel surowców:** `umowa_handlowa` **1–20 tur** (koszyk), ZlozeGrant, wygasa bez auto-odnowienia; PN/¤ bez surowców = one-shot.
+- tsc=0 · diplomacy-proposal 55/55 · docs: `docs/decyzje/D3-TRUST-TICK-2026-07-21.md`.
 
-CZEKAM-NA: **Maciej** `git pull` → Ctrl+F5 START.html → stamp `c1b7327a`; NAP/sojusz szybciej buduje Zaufanie; handel z dostępem do złoża = umowa wieloturowa.
+CZEKAM-NA: **Maciej** `git pull` → Ctrl+F5 START.html → stamp `e20a20ad`; handel z złożem → wybór czasu umowy; po wygaśnięciu re-negocjacja.
 
 ## [00:45 PL, 2026-07-22] INTEGRATOR → Maciej — FIX: Farma na lesie bez wyrębu
 
@@ -2517,3 +2517,15 @@ Maciej bug 2026-07-21: Farma zablokowana na heksach z Las — wymagał Wyrębu.
 - tsc=0 · map-improvement-qualify 54/54 · VERIFY OK.
 
 CZEKAM-NA: **Maciej** `git pull` → Ctrl+F5 START.html → stamp `c63dd3f4`; 🔨 Farma na lesistym heksie bez Wyrębu.
+
+## [23:55 PL, 2026-07-21] INTEGRATOR → Maciej — FIX: lista dyplomacji Relacja+Zaufanie
+
+Maciej UI fix 2026-07-21: panel dyplomacji (toolbar uścisk dłoni).
+
+- **ROBOCZA = `a5b836a1`** (md5 `a5b836a1c7a2f0f5b7a947fd4c0a63b9`), na `c63dd3f4`.
+- **Usunięto:** kursywny opis bonusów cywilizacji pod wpisem listy.
+- **Dodano:** `Relacja: X · Zaufanie: Y` (Zaufanie + live Respekt z mocy, jak audiencja).
+- Pliki: `diploListHud.ts`, `diplomacyPanel.ts`, `main.ts`.
+- tsc=0 · publish OK.
+
+CZEKAM-NA: **Maciej** `git pull` → Ctrl+F5 START.html → stamp `a5b836a1`; uścisk dłoni → lista bez bonusów Falanga/Hoplita.

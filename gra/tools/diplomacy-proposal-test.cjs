@@ -13,9 +13,9 @@ const entryFile = path.resolve(__dirname, '.dip-proposal-entry.ts');
 fs.writeFileSync(entryFile, `
 export {
   evaluateProposal, applyAcceptedProposal, aiCommandToPendingProposal,
-  makeDealId,
+  makeDealId, proposalHasResourceAccess, clampDealTurns,
 } from '../src/game/diplomacy-proposals.ts';
-export { addTreaty, hasTreaty, treatiesBrokenByWar } from '../src/game/diplomacy-treaties.ts';
+export { addTreaty, hasTreaty, treatiesBrokenByWar, resolvePokojTrustTier } from '../src/game/diplomacy-treaties.ts';
 export { getEffectiveDiplomacyParams } from '../src/game/diplomacy.ts';
 `);
 
@@ -31,8 +31,8 @@ esbuild.buildSync({
 
 const {
   evaluateProposal, applyAcceptedProposal, aiCommandToPendingProposal,
-  addTreaty, hasTreaty, treatiesBrokenByWar,
-  getEffectiveDiplomacyParams,
+  addTreaty, hasTreaty, treatiesBrokenByWar, resolvePokojTrustTier,
+  getEffectiveDiplomacyParams, proposalHasResourceAccess, clampDealTurns,
 } = require(BUNDLE);
 
 let pass = 0;
@@ -274,6 +274,25 @@ ok(r.accepted, 'handel accept relacja 30 easy');
 // 10 Handel unfair (strict PN W4-A)
 r = evaluateProposal(prop('handel', 0, 1, { givePn: 50, receivePn: 100 }), ctx({ relation: rel(25, 20) }));
 ok(!r.accepted, 'handel reject unfair PN');
+
+// 10b Handel z dostępem do złoża → trwała UmowaHandlowa (nie oneShot)
+r = evaluateProposal(prop('handel', 0, 1, {
+  giveItems: [{ typ: 'zloze', id: 'zelazo', hexKey: '10,20' }],
+  receiveItems: [{ typ: 'zloze', id: 'miedz', hexKey: '5,8' }],
+  turns: 7,
+}), ctx({ relation: rel(60, 50), turn: 10 }));
+ok(r.accepted && r.deal?.rodzaj === 'umowa_handlowa' && !r.oneShotTrade, 'handel zloze -> UmowaHandlowa trwała');
+ok(r.deal?.wygasaTura === 17, 'handel zloze wygasa turn+7');
+ok(clampDealTurns(25) === 20 && clampDealTurns(0) === 1, 'clampDealTurns 1-20');
+ok(proposalHasResourceAccess({ giveItems: [{ typ: 'zloze', id: 'zelazo' }] }), 'proposalHasResourceAccess zloze');
+
+// 10c resolvePokojTrustTier — sojusz > NAP > pokoj
+let tierDeals = [{ id: 'nap1', rodzaj: 'pakt_nieagresji', strony: [0, 1], wygasaTura: 30 }];
+ok(resolvePokojTrustTier(tierDeals, 0, 1, { contactEstablished: true, atWar: false }) === 'nap', 'tier NAP');
+tierDeals = [{ id: 's1', rodzaj: 'sojusz_pelny', strony: [0, 1], wygasaTura: null }];
+ok(resolvePokojTrustTier(tierDeals, 0, 1, { contactEstablished: true, atWar: false }) === 'sojusz', 'tier sojusz');
+ok(resolvePokojTrustTier([], 0, 1, { contactEstablished: true, atWar: false }) === 'pokoj', 'tier pokoj kontakt');
+ok(resolvePokojTrustTier([], 0, 1, { contactEstablished: false, atWar: false }) === undefined, 'brak tier bez kontaktu');
 
 // 11 Namów wojna
 r = evaluateProposal(prop('namow_wojne', 0, 1, { targetOwnerId: 2, bribeGold: 60 }), ctx({

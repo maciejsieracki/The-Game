@@ -3,6 +3,8 @@
  * Decyzja Maciej 2026-07-01 (A2-Q5).
  */
 
+import { formatArmiaLabel } from './formatPl';
+
 export interface CityUnitPickOptions {
   cityName: string;
   unitLabel: string;
@@ -129,7 +131,7 @@ export function showCityUnitPick(opts: CityUnitPickOptions): void {
   btnUnit.type = 'button';
   btnUnit.className = 'civ-cup-act unit';
   const stackHint = opts.stackCount && opts.stackCount > 1
-    ? 'Stos \u00d7' + String(opts.stackCount)
+    ? formatArmiaLabel(opts.stackCount)
     : 'Zaznacz i rozkazuj';
   btnUnit.innerHTML =
     '<span class="civ-cup-act-ic">\u2694</span>' +

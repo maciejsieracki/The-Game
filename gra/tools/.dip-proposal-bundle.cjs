@@ -23,10 +23,13 @@ __export(dip_proposal_entry_exports, {
   addTreaty: () => addTreaty,
   aiCommandToPendingProposal: () => aiCommandToPendingProposal,
   applyAcceptedProposal: () => applyAcceptedProposal,
+  clampDealTurns: () => clampDealTurns,
   evaluateProposal: () => evaluateProposal,
   getEffectiveDiplomacyParams: () => getEffectiveDiplomacyParams,
   hasTreaty: () => hasTreaty,
   makeDealId: () => makeDealId,
+  proposalHasResourceAccess: () => proposalHasResourceAccess,
+  resolvePokojTrustTier: () => resolvePokojTrustTier,
   treatiesBrokenByWar: () => treatiesBrokenByWar
 });
 module.exports = __toCommonJS(dip_proposal_entry_exports);
@@ -50,6 +53,9 @@ var diplomacy_default = {
     trybut_respekt: 10,
     wspolnyWrogAkceptacja_respekt: 10,
     handel_zaufanie_perTura: 1,
+    sojusz_zaufanie_perTura: 3,
+    nap_zaufanie_perTura: 2,
+    pokoj_zaufanie_perTura: 1,
     aktywnyPakt_zaufanie_perTura: 1,
     dobraWola_zaufanie_perTura: 1,
     wspolnyWrog_zaufanie_perTura: 1,
@@ -3641,9 +3647,15 @@ var DIPLOMACY_PARAMS = {
   /** "Wspolny wrog zaakceptowany" (+10 Respekt, jednorazowo) */
   wspolnyWrogAkceptacja_respekt: 10,
   // ---- per-turn Zaufanie deltas (co ture) ----
-  /** "Aktywny handel (trwa umowa handlowa)" (+1/ture) */
+  /** "Aktywny handel (trwa umowa handlowa)" (+1/ture) — stackuje z tierem pokoju */
   handel_zaufanie_perTura: 1,
-  /** "Dotrzymany pakt (NAP lub sojusz trwa)" (+1/ture) */
+  /** "Aktywny sojusz wojskowy" (+3/ture, Maciej 2026-07-21) */
+  sojusz_zaufanie_perTura: 3,
+  /** "Aktywny pakt nieagresji" (+2/ture, Maciej 2026-07-21) */
+  nap_zaufanie_perTura: 2,
+  /** "Pokojowy kontakt bez wojny/NAP/sojuszu" (+1/ture, Maciej 2026-07-21) */
+  pokoj_zaufanie_perTura: 1,
+  /** @deprecated — zastąpione przez nap/sojusz/pokoj (2026-07-21); zostaje w JSON roundtrip */
   aktywnyPakt_zaufanie_perTura: 1,
   /** "Efekt dobrej woli (podarunek)" (+1/ture przez kilka tur) */
   dobraWola_zaufanie_perTura: 1,
@@ -4044,6 +4056,9 @@ function aiDiplomacyStance(aiPlayer, otherPlayer, rel, context, params = getEffe
 function pairKey(a, b) {
   return a < b ? [a, b] : [b, a];
 }
+function isAllianceKind(rodzaj) {
+  return rodzaj === "sojusz_wojskowy" /* SojuszWojskowy */ || rodzaj === "sojusz_defensywny" || rodzaj === "sojusz_pelny";
+}
 function normalizeTreatyKind(rodzaj) {
   if (rodzaj === "sojusz_wojskowy" /* SojuszWojskowy */) return "sojusz_pelny";
   return rodzaj;
@@ -4078,6 +4093,19 @@ var BREAK_ON_WAR = /* @__PURE__ */ new Set([
 function treatiesBrokenByWar(state, a, b) {
   const pair = dealsForPair(state, a, b);
   return pair.filter((d) => BREAK_ON_WAR.has(normalizeTreatyKind(d.rodzaj))).map((d) => d.id);
+}
+function resolvePokojTrustTier(state, ownerA, ownerB, opts) {
+  if (opts.atWar) return void 0;
+  const [p0, p1] = pairKey(ownerA, ownerB);
+  const pairDeals = state.filter((d) => d.strony[0] === p0 && d.strony[1] === p1);
+  if (pairDeals.some((d) => isAllianceKind(normalizeTreatyKind(d.rodzaj)))) {
+    return "sojusz";
+  }
+  if (pairDeals.some((d) => normalizeTreatyKind(d.rodzaj) === "pakt_nieagresji" /* PaktNieagresji */)) {
+    return "nap";
+  }
+  if (opts.contactEstablished) return "pokoj";
+  return void 0;
 }
 
 // data/tech.json
@@ -4531,8 +4559,8 @@ var terrain_improvements_default = {
       zywnosc: 3
     },
     surowiecOdblokowany: null,
-    teren: "\u0141\u0105ka, R\xF3wnina",
-    warunek: "ziemia uprawna; DZIA\u0141A BEZ rzeki (podstawowy)",
+    teren: "\u0141\u0105ka, R\xF3wnina; Wzg\xF3rza z lasem",
+    warunek: "ziemia uprawna; DZIA\u0141A BEZ rzeki (podstawowy); MO\u017BE na lesie (Las) \u2014 bez wyr\u0119bu (Maciej 2026-07-21)",
     koszt_praca: 20,
     tech: "Rolnictwo",
     odblokowuje: ""
@@ -10410,15 +10438,24 @@ function stanceForEval(ctx) {
   };
   return aiDiplomacyStance(responder, proposer, ctx.relation, dipCtx);
 }
-function buildDeal(rodzaj, a, b, turn, wygasaTura, ekonomia, handelJednorazowy) {
+function buildDeal(rodzaj, a, b, turn, wygasaTura, ekonomia, handelJednorazowy, handelPayload) {
   return {
     id: makeDealId(rodzaj, turn, a, b),
     rodzaj,
     strony: a < b ? [a, b] : [b, a],
     wygasaTura,
     ekonomia,
-    handelJednorazowy
+    handelJednorazowy,
+    handelPayload
   };
+}
+var RESOURCE_ACCESS_TYPES = /* @__PURE__ */ new Set(["zloze", "surowiec_boolean"]);
+function proposalHasResourceAccess(payload) {
+  const items = [...payload.giveItems ?? [], ...payload.receiveItems ?? []];
+  return items.some((i) => RESOURCE_ACCESS_TYPES.has(i.typ));
+}
+function clampDealTurns(turns, defaultTurns = 15) {
+  return clamp2(turns ?? defaultTurns, 1, 20);
 }
 function evaluateProposal(proposal, ctx) {
   const { actionId, proposerOwnerId, responderOwnerId, payload } = proposal;
@@ -10566,6 +10603,32 @@ function evaluateProposal(proposal, ctx) {
         return { accepted: false, reason: `Relacja zbyt niska na handel (wymagane \u2265 ${p.progHandelRelacja})` };
       }
       const hasPnPath = givePn > 0 || receivePn > 0 || payload.giveItems?.length || payload.receiveItems?.length;
+      const hasResourceAccess = proposalHasResourceAccess(payload);
+      if (hasResourceAccess) {
+        if (!pnDealAcceptedByAi(givePn, receivePn, relTotal)) {
+          return { accepted: false, reason: "Oferta poni\u017Cej uczciwej warto\u015Bci PN @ Relacji" };
+        }
+        const turns = clampDealTurns(payload.turns);
+        const handelPayload = {
+          giveItems: payload.giveItems?.length ? [...payload.giveItems] : void 0,
+          receiveItems: payload.receiveItems?.length ? [...payload.receiveItems] : void 0
+        };
+        const deal = buildDeal(
+          "umowa_handlowa" /* UmowaHandlowa */,
+          proposerOwnerId,
+          responderOwnerId,
+          ctx.turn,
+          ctx.turn + turns,
+          void 0,
+          false,
+          handelPayload
+        );
+        return {
+          accepted: true,
+          reason: `Umowa handlowa (dost\u0119p do surowc\xF3w) na ${turns} tur`,
+          deal
+        };
+      }
       if (hasPnPath) {
         if (!pnDealAcceptedByAi(givePn, receivePn, relTotal)) {
           return { accepted: false, reason: "Oferta poni\u017Cej uczciwej warto\u015Bci PN @ Relacji" };
@@ -10738,9 +10801,12 @@ function aiCommandToPendingProposal(cmd, fromOwnerId, toOwnerId, turn) {
   addTreaty,
   aiCommandToPendingProposal,
   applyAcceptedProposal,
+  clampDealTurns,
   evaluateProposal,
   getEffectiveDiplomacyParams,
   hasTreaty,
   makeDealId,
+  proposalHasResourceAccess,
+  resolvePokojTrustTier,
   treatiesBrokenByWar
 });

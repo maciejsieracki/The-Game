@@ -86,6 +86,9 @@ ${DIPLO_1E_SHARED_CSS}
 .civ-diplo-basket .cdb-add-btn{margin-top:6px;}
 .civ-diplo-basket .cdb-btns{display:flex;gap:8px;justify-content:flex-end;margin-top:14px;}
 .civ-diplo-basket .cdb-submit:disabled{opacity:0.4;cursor:not-allowed;}
+.civ-diplo-basket .cdb-duration{margin-top:10px;padding:10px;border-radius:8px;
+  border:1px solid rgba(232,216,138,.22);background:rgba(24,30,40,0.55);}
+.civ-diplo-basket .cdb-duration label{margin-top:0;}
 .civ-diplo-basket .cdb-fields-extra{display:none;}
 .civ-diplo-basket .cdb-fields-extra.visible{display:block;}
 `;
@@ -128,6 +131,24 @@ function defaultResourceOptions(): Array<{ id: string; label: string }> {
     id,
     label: id + ' (' + pn + ' PN)',
   }));
+}
+
+function basketHasResourceAccess(...lists: ReadonlyArray<readonly BasketItem[]>): boolean {
+  for (const items of lists) {
+    if (items.some(i => i.typ === 'zloze' || i.typ === 'surowiec_boolean')) return true;
+  }
+  return false;
+}
+
+function dealDurationHtml(turns: number, visible: boolean): string {
+  if (!visible) return '';
+  return (
+    '<div class="cdb-duration">' +
+      '<label for="cdb-deal-turns">Czas umowy (tur, max 20)</label>' +
+      '<input type="number" id="cdb-deal-turns" class="cdb-deal-turns" value="' + turns + '" min="1" max="20" />' +
+      '<p class="cdb-sub">Dostęp do surowców trwa przez wybrany czas. Po wygaśnięciu umowa wymaga odnowienia (re-negocjacji).</p>' +
+    '</div>'
+  );
 }
 
 function itemLabel(item: BasketItem, ctx: NegotiationModalContext): string {
@@ -365,6 +386,7 @@ function renderBasket(
   ctx: NegotiationModalContext,
   giveItems: BasketItem[],
   receiveItems: BasketItem[],
+  dealTurns: number,
 ): void {
   const rel = ctx.relacjaTotal ?? 0;
   const progHandel = ctx.progHandelRelacja ?? PROG_HANDEL_REL;
@@ -397,12 +419,15 @@ function renderBasket(
       '</div>'
     : '';
 
+  const showDealDuration = mode === 'trade' && basketHasResourceAccess(giveItems, receiveItems);
+
   box.className = 'civ-diplo-basket' + (mode === 'gift' ? ' cdb-gift' : '');
   box.innerHTML =
     '<h3>' + esc(title) + '</h3>' +
     '<div class="cdb-sub">' + sub + '</div>' +
     blocked +
     (blocked ? '' : '<div class="cdb-cols">' + giveCol + recvCol + '</div>') +
+    (blocked ? '' : dealDurationHtml(dealTurns, showDealDuration)) +
     (blocked ? '' : summaryHtml(mode, giveItems, receiveItems, ctx)) +
     '<div class="cdb-btns">' +
       '<button type="button" class="dip-muted-btn cdb-cancel">Anuluj</button>' +
@@ -422,6 +447,7 @@ export function showTradeBasketModal(
 
   let giveItems: BasketItem[] = [];
   let receiveItems: BasketItem[] = [];
+  let dealTurns = 15;
 
   overlay = document.createElement('div');
   overlay.className = 'civ-diplo-basket-overlay';
@@ -431,8 +457,14 @@ export function showTradeBasketModal(
   overlay.appendChild(box);
   document.body.appendChild(overlay);
 
+  const readDealTurnsFromDom = (): void => {
+    const inp = box.querySelector('.cdb-deal-turns') as HTMLInputElement | null;
+    if (inp) dealTurns = Math.max(1, Math.min(20, parseInt(inp.value, 10) || 15));
+  };
+
   const refresh = (): void => {
-    renderBasket(box, mode, action, ctx, giveItems, receiveItems);
+    readDealTurnsFromDom();
+    renderBasket(box, mode, action, ctx, giveItems, receiveItems, dealTurns);
     bindEvents();
   };
 
@@ -481,6 +513,7 @@ export function showTradeBasketModal(
         : 0;
       if (givePn == null || (mode === 'trade' && receivePn == null)) return;
 
+      readDealTurnsFromDom();
       const payload: NegotiationPayload = {
         actionId: '5',
         giveItems,
@@ -489,6 +522,9 @@ export function showTradeBasketModal(
         receivePn: mode === 'trade' ? (receivePn ?? undefined) : 0,
         isGift: mode === 'gift',
       };
+      if (mode === 'trade' && basketHasResourceAccess(giveItems, receiveItems)) {
+        payload.turns = dealTurns;
+      }
       closeModal();
       onSubmit(payload);
     });

@@ -4,6 +4,7 @@
  */
 
 import { unitIconSvg } from './icons/brandAssets';
+import { formatArmiaLabel } from './formatPl';
 
 export interface ArmyMergeUnitRow {
   id: string;
@@ -143,9 +144,7 @@ export function showArmyMergePanel(opts: ArmyMergePanelOpts): void {
 
   const arriveN = opts.arrivingCount ?? 1;
   const total = opts.existing.length + arriveN;
-  const resultLabel = 'Stos: ' + total + ' '
-    + (total === 1 ? 'jednostka' : total < 5 ? 'jednostki' : 'jednostek')
-    + ' na ' + opts.hexLabel;
+  const resultLabel = formatArmiaLabel(total) + ' na ' + opts.hexLabel;
 
   root = document.createElement('div');
   root.className = 'civ-amp-overlay';

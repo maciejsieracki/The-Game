@@ -102,6 +102,9 @@ var diplomacy_default = {
     trybut_respekt: 10,
     wspolnyWrogAkceptacja_respekt: 10,
     handel_zaufanie_perTura: 1,
+    sojusz_zaufanie_perTura: 3,
+    nap_zaufanie_perTura: 2,
+    pokoj_zaufanie_perTura: 1,
     aktywnyPakt_zaufanie_perTura: 1,
     dobraWola_zaufanie_perTura: 1,
     wspolnyWrog_zaufanie_perTura: 1,
@@ -126,8 +129,8 @@ var diplomacy_default = {
     progPoboczneHandel: 30,
     progPoboczneWojna: 15,
     progNapZaufanie: 40,
-    progNapRelacja: 110,
-    progHandelRelacja: 100,
+    progNapRelacja: 50,
+    progHandelRelacja: 40,
     progSojuszPartnerRwMin: 0.4,
     progSojuszPartnerRwMax: 0.7,
     progSojuszPremiaSilniejszyMax: 0.25,
@@ -232,7 +235,7 @@ var diplomacy_default = {
       zrodlo: "spichlerz miasta",
       decyzja: "D3-W6b korekta Maciej 2026-06-30 \u2014 1 PN = 1 \u017Cywno\u015B\u0107 (by\u0142o 4)"
     },
-    handel_prog_relacja: 100,
+    handel_prog_relacja: 40,
     dostep_zloze_wojna: {
       utrata_w_trakcie_wojny: true,
       wymaga_renegocjacji_po_pokoju: true,
@@ -3698,9 +3701,15 @@ var DIPLOMACY_PARAMS = {
   /** "Wspolny wrog zaakceptowany" (+10 Respekt, jednorazowo) */
   wspolnyWrogAkceptacja_respekt: 10,
   // ---- per-turn Zaufanie deltas (co ture) ----
-  /** "Aktywny handel (trwa umowa handlowa)" (+1/ture) */
+  /** "Aktywny handel (trwa umowa handlowa)" (+1/ture) — stackuje z tierem pokoju */
   handel_zaufanie_perTura: 1,
-  /** "Dotrzymany pakt (NAP lub sojusz trwa)" (+1/ture) */
+  /** "Aktywny sojusz wojskowy" (+3/ture, Maciej 2026-07-21) */
+  sojusz_zaufanie_perTura: 3,
+  /** "Aktywny pakt nieagresji" (+2/ture, Maciej 2026-07-21) */
+  nap_zaufanie_perTura: 2,
+  /** "Pokojowy kontakt bez wojny/NAP/sojuszu" (+1/ture, Maciej 2026-07-21) */
+  pokoj_zaufanie_perTura: 1,
+  /** @deprecated — zastąpione przez nap/sojusz/pokoj (2026-07-21); zostaje w JSON roundtrip */
   aktywnyPakt_zaufanie_perTura: 1,
   /** "Efekt dobrej woli (podarunek)" (+1/ture przez kilka tur) */
   dobraWola_zaufanie_perTura: 1,
@@ -3753,10 +3762,10 @@ var DIPLOMACY_PARAMS = {
   // ---- propozycje v1.1 (Panel-D → evaluateProposal) ----
   /** Zaufanie >= wartość wymagane do NAP */
   progNapZaufanie: 40,
-  /** Relacja >= wartość wymagana do NAP (Maciej 2026-06-30: 110, bez innych progów) */
-  progNapRelacja: 110,
-  /** Relacja >= wartość wymagana do handlu ¤/Praca/złoża (Maciej 2026-06-30: 100) */
-  progHandelRelacja: 100,
+  /** Relacja >= wartość wymagana do NAP (Maciej 2026-07-21: 50 @ normal) */
+  progNapRelacja: 50,
+  /** Relacja >= wartość wymagana do handlu ¤/Praca/złoża (Maciej 2026-07-21: 40 @ normal) */
+  progHandelRelacja: 40,
   /** @deprecated v1.2 — usunięte „tylko równi”; zostaje w JSON dla roundtrip */
   progSojuszPartnerRwMin: 0.4,
   progSojuszPartnerRwMax: 0.7,
@@ -3814,6 +3823,8 @@ var DIPLOMACY_PARAMS = {
   progNamowWojneBribeBase: 30,
   /** Zaufanie min dla otwartych granic */
   progGraniceZaufanie: 45,
+  /** Relacja min dla otwartych granic / przemarszu (G1-A) */
+  progGraniceRelacja: 100,
   /** Respekt min dla prawa wojskowego przemarszu */
   progGraniceWojskoweRespekt: 55,
   /** militaryRatio min dla ultimatum */
@@ -3837,15 +3848,65 @@ function loadDiplomacyParams(json) {
   }
   return out;
 }
-var _effectiveDiplomacyParams = null;
-function getEffectiveDiplomacyParams() {
-  if (!_effectiveDiplomacyParams) {
-    _effectiveDiplomacyParams = {
+var _baseDiplomacyParams = null;
+var DIPLOMACY_DIFFICULTY_DELTA = {
+  easy: -10,
+  normal: 0,
+  hard: 10
+};
+var DIPLO_RELATION_THRESHOLD_KEYS = [
+  "progMinimalnyRelacja",
+  "progSojuszRelacja",
+  "progUmowaMinRelacja",
+  "progNapRelacja",
+  "progHandelRelacja",
+  "progGraniceRelacja",
+  "progPoboczneHandel",
+  "progPoboczneWojna"
+];
+var DIPLO_ZAUFANIE_THRESHOLD_KEYS = [
+  "progSojuszZaufanie",
+  "progWymianaTechZaufanie",
+  "progNapZaufanie",
+  "progNamowWojneZaufanie",
+  "progGraniceZaufanie",
+  "progTrybutOfertaNearWarZaufanie",
+  "progSojuszPremiaGracz2xMinZaufanie",
+  "progSojuszPremiaGracz3xMinZaufanie"
+];
+var DIPLO_RESPEKT_THRESHOLD_KEYS = [
+  "progWasalizacjaRespekt",
+  "progWchloniecieRespekt",
+  "progGraniceWojskoweRespekt",
+  "progTrybutZadanieMinRespekt",
+  "progPoboczneAkceptacja"
+];
+function getBaseDiplomacyParams() {
+  if (!_baseDiplomacyParams) {
+    _baseDiplomacyParams = {
       ...DIPLOMACY_PARAMS,
       ...loadDiplomacyParams(diplomacy_default)
     };
   }
-  return _effectiveDiplomacyParams;
+  return _baseDiplomacyParams;
+}
+function scaleDiplomacyParamsForDifficulty(base, difficulty = "normal") {
+  const delta = DIPLOMACY_DIFFICULTY_DELTA[difficulty];
+  if (delta === 0) return { ...base };
+  const out = { ...base };
+  for (const k of DIPLO_RELATION_THRESHOLD_KEYS) {
+    out[k] = Math.max(0, Math.min(200, base[k] + delta));
+  }
+  for (const k of DIPLO_ZAUFANIE_THRESHOLD_KEYS) {
+    out[k] = Math.max(0, Math.min(100, base[k] + delta));
+  }
+  for (const k of DIPLO_RESPEKT_THRESHOLD_KEYS) {
+    out[k] = Math.max(0, Math.min(100, base[k] + delta));
+  }
+  return out;
+}
+function getEffectiveDiplomacyParams(difficulty = "normal") {
+  return scaleDiplomacyParamsForDifficulty(getBaseDiplomacyParams(), difficulty);
 }
 function diplomacyTreatyMinRelacja(adjustedThreshold, params = getEffectiveDiplomacyParams()) {
   return Math.max(params.progUmowaMinRelacja, adjustedThreshold);
@@ -4202,7 +4263,18 @@ function tickDiplomacy(rdip, ctx) {
   const p = getEffectiveDiplomacyParams();
   let dZ = 0;
   if (ctx.aktywnyHandel) dZ += p.handel_zaufanie_perTura;
-  if (ctx.aktywnyPakt) dZ += p.aktywnyPakt_zaufanie_perTura;
+  const peaceTier = ctx.pokojTrustTier ?? (ctx.aktywnyPakt ? "nap" : void 0);
+  switch (peaceTier) {
+    case "sojusz":
+      dZ += p.sojusz_zaufanie_perTura;
+      break;
+    case "nap":
+      dZ += p.nap_zaufanie_perTura;
+      break;
+    case "pokoj":
+      dZ += p.pokoj_zaufanie_perTura;
+      break;
+  }
   if (ctx.dobraWolaAktywna) dZ += p.dobraWola_zaufanie_perTura;
   if (ctx.wspolnyWrog) dZ += p.wspolnyWrog_zaufanie_perTura;
   if (ctx.wspolnaReligia) dZ += p.wspolnaReligia_zaufanie_perTura;

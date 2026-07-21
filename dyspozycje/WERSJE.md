@@ -11,9 +11,13 @@ swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drug
 
 ## ROBOCZA (gra-robocza\Gra-ROBOCZA.html — wskazywana przez START.html)
 
+- 2026-07-21 · stempel: ROBOCZA · **a5b836a1** · md5 pliku `a5b836a1c7a2f0f5b7a947fd4c0a63b9` · **FIX: lista dyplomacji — Relacja+Zaufanie, bez bonusów cyw** — na `c63dd3f4`:
+  **Usunięto:** kursywny opis bonusów cywilizacji pod wpisem (Falanga, Hoplita…). **Dodano:** linia `Relacja: X · Zaufanie: Y` (formuła audiencji: Zaufanie + live Respekt z mocy). Zachowano: nazwa, miasto-państwo, badge tier, status audiencji.
+  tsc=0 · publish `gra-robocza/Gra-ROBOCZA.html`. · **AKTUALNA** · Test: Ctrl+F5 START.html → stamp `a5b836a1`; toolbar uścisk dłoni → lista bez bonusów; wiersz pokazuje Relacja i Zaufanie.
+
 - 2026-07-21 · stempel: ROBOCZA · **c63dd3f4** · md5 pliku `c63dd3f4df7e51f9300f2ba0265d69ac` · **FIX: Farma na lesie (Las) bez wyrębu** — na `41656451`:
   **Bug:** budowa Farmy wymagała wycinki lasu (Wyrąb) albo nie działała na wzgórzach z lasem; kępa drzew zasłaniała model ulepszenia. **Fix:** `isFarmBaseTerrain()` — Łąka/Równina zawsze + Wzgórza gdy nakładka Las; po postawieniu farmy/hodowli/irygacji na lesie schowanie dekoru lasu (nakładka Las zostaje); test `map-improvement-qualify-test.cjs` 54/54.
-  tsc=0 · map-improvement-qualify 54/54 · VERIFY OK · publish `gra-robocza/Gra-ROBOCZA.html`. · **AKTUALNA** · Test: Ctrl+F5 START.html → stamp `c63dd3f4`; 🔨 Budowa → Farma → klik heks z lasem bez Wyrębu → postawienie OK, drzewa schowane.
+  tsc=0 · map-improvement-qualify 54/54 · VERIFY OK · publish `gra-robocza/Gra-ROBOCZA.html`. · **ZASTĄPIONA** (→ `a5b836a1`) · Test: Ctrl+F5 START.html → stamp `c63dd3f4`; 🔨 Budowa → Farma → klik heks z lasem bez Wyrębu → postawienie OK, drzewa schowane.
 
 - 2026-07-21 · stempel: ROBOCZA · **41656451** · md5 pliku `41656451acc3344d2863fcdf0375f4e7` · **FIX: Lama ukryta w panelu budowy poza Inkowie** — na `c1b7327a`:
   **Bug:** ulepszenie Lama widoczne dla wszystkich cywilizacji (np. Grecy) jako wyszarzone „Brak heksów w twoim terytorium". **Fix:** `isImprovementVisibleInBuildPanel` filtruje listę 🔨 ULEPSZENIA TERENU; bramka `isLivestockAllowed` w `applyBuildRequest`. Lama tylko `typCywilizacji` inkowie (`isIncaCiv`).

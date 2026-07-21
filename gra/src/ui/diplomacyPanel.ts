@@ -3,11 +3,10 @@
  * Panel Dyplomacji — lista relacji gracza z innymi cywilizacjami + etykiety statusu.
  *
  * CEL: wyświetlić przegląd relacji (cywilizacja, tier, Zaufanie/Respekt).
- * DOM-only; dane przez getRelations() / getCivBonusy() w konfiguracji.
+ * DOM-only; dane przez getRelations() w konfiguracji.
  *
  * Panel v1.0 = podgląd + audiencja (D3). Callbacki wpina SILNIK.
  */
-import type { CivBonusLite } from '../game/production';
 import { formatEntityDisplayName } from '../game/display-names';
 import {
   civPennantHtml,
@@ -80,8 +79,6 @@ export interface DiplomacyPanelConfig {
   getKnownWarsBetweenOthers?: () => KnownWarBetweenCivs[];
   /** D3 audiencja — otwórz ekran 2. */
   onOpenAudience?: (ownerId: number) => void;
-  /** Bonusy cywilizacji — tooltip przy nazwie (SILNIK: civBonusyForOwnerId). */
-  getCivBonusy?: (ownerId: number) => readonly CivBonusLite[];
 }
 
 // ---------------------------------------------------------------------------
@@ -168,8 +165,6 @@ ${DIPLO_1E_SHARED_CSS}
 .civ-diplo .cd-civ{display:block;color:var(--tg-text-primary,#e8e0c8);font-weight:700;
   font-family:var(--tg-font-title,Georgia,serif);font-size:0.95em;
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.civ-diplo .cd-bonus-hint{display:inline-flex;vertical-align:middle;margin-left:4px;color:#e8d88a;cursor:help;}
-.civ-diplo .cd-bonus-hint .dip-ic{width:12px;height:12px;}
 .civ-diplo .cd-stats{font-size:0.72em;color:#8a8070;margin-top:3px;line-height:1.35;}
 .civ-diplo .cd-tier-row{margin-top:4px;}
 .civ-diplo .cd-empty{font-size:0.86em;color:#8a8070;text-align:center;padding:12px 0;font-style:italic;}
@@ -200,12 +195,8 @@ const PLACEHOLDER_RELATIONS: DiploRelation[] = [
 // Render
 // ---------------------------------------------------------------------------
 
-function bonusTooltip(ownerId: number | undefined): string {
-  if (ownerId === undefined || !cfg?.getCivBonusy) return '';
-  return cfg.getCivBonusy(ownerId)
-    .map(b => (b.opis ?? '').trim())
-    .filter(Boolean)
-    .join('\n');
+function panelRelTotal(zaufanie: number, respekt: number): number {
+  return Math.round(Math.max(0, Math.min(200, zaufanie + respekt)));
 }
 
 function renderRow(rel: DiploRelation, isPlaceholder: boolean): string {
@@ -215,18 +206,11 @@ function renderRow(rel: DiploRelation, isPlaceholder: boolean): string {
     actionBtn = '<button type="button" class="dip-gold-btn cd-aud-btn" data-act="audience" data-oid="' + rel.ownerId + '">'
       + esc(btnLabel) + '</button>';
   }
-  const tipRaw = bonusTooltip(rel.ownerId);
-  const tip = tipRaw.replace(/\n/g, ' · ');
-  const civTitle = tip ? ' title="' + esc(tip) + '"' : '';
-  const bonusMark = tip
-    ? ' <span class="cd-bonus-hint" title="' + esc(tip) + '">' + (dipBrandIconHtml('chip-star', 24, 'dip-ic') || '') + '</span>'
-    : '';
   const tierBadge = '<div class="cd-tier-row">' + tierBadgeHtml(rel.tier, tierLabel(rel.tier)) + '</div>';
-  const statsParts: string[] = [];
-  if (rel.zaufanie != null) statsParts.push('Zaufanie ' + rel.zaufanie + '%');
-  if (rel.respekt != null) statsParts.push('Respekt ' + rel.respekt + '%');
-  const stats = statsParts.length
-    ? '<div class="cd-stats">' + esc(statsParts.join(' · ')) + '</div>'
+  const zauf = rel.zaufanie ?? 0;
+  const relTotal = panelRelTotal(zauf, rel.respekt ?? 0);
+  const stats = (rel.zaufanie != null || rel.respekt != null)
+    ? '<div class="cd-stats">' + esc('Relacja: ' + relTotal + ' · Zaufanie: ' + zauf) + '</div>'
     : '';
   const rowCls = rel.tier === 0 ? 'cd-row cd-war' : 'cd-row';
   const pennant = rel.ikonaId
@@ -236,7 +220,7 @@ function renderRow(rel: DiploRelation, isPlaceholder: boolean): string {
     '<div class="' + rowCls + '" data-owner="' + (rel.ownerId ?? '') + '">' +
       pennant +
       '<div class="cd-civ-wrap">' +
-        '<span class="cd-civ"' + civTitle + '>' + esc(rel.civ) + bonusMark + '</span>' +
+        '<span class="cd-civ">' + esc(rel.civ) + '</span>' +
         tierBadge + stats +
       '</div>' +
       actionBtn +

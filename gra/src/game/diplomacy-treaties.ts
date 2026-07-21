@@ -3,8 +3,15 @@
  * SILNIK trzyma tablicę ActiveDeal[] + save/load; EKO tick płatności osobno.
  */
 import { RodzajTraktatu } from '../types/diplomacy';
+import type { BasketItem } from './diplomacy-pn-engine';
 
 export type TreatyKind = RodzajTraktatu | 'sojusz_defensywny' | 'sojusz_pelny';
+
+/** Payload trwałej umowy handlowej (dostęp do surowców/złóż). */
+export interface HandelDealPayload {
+  giveItems?: BasketItem[];
+  receiveItems?: BasketItem[];
+}
 
 /** Aktywny traktat między dwoma ownerId (gra używa number). */
 export interface ActiveDeal {
@@ -21,6 +28,8 @@ export interface ActiveDeal {
   };
   /** T3A: handel jednorazowy — już rozliczony po akceptacji */
   handelJednorazowy?: boolean;
+  /** Trwała wymiana dostępu do surowców/złóż (UmowaHandlowa). */
+  handelPayload?: HandelDealPayload;
 }
 
 export type AllianceEvent =
@@ -221,4 +230,27 @@ export function tributeDeals(state: ActiveDeal[]): ActiveDeal[] {
   return state.filter(
     d => d.ekonomia?.pieniadzePerTura != null && d.ekonomia.pieniadzePerTura > 0,
   );
+}
+
+/** Wzajemnie wykluczające tiery per-turowego Zaufania (Maciej 2026-07-21). */
+export type PokojTrustTier = 'sojusz' | 'nap' | 'pokoj';
+
+/** Sojusz > NAP > pokojowy kontakt (wymaga braku wojny + kontaktu dla tieru pokoj). */
+export function resolvePokojTrustTier(
+  state: readonly ActiveDeal[],
+  ownerA: number,
+  ownerB: number,
+  opts: { contactEstablished: boolean; atWar: boolean },
+): PokojTrustTier | undefined {
+  if (opts.atWar) return undefined;
+  const [p0, p1] = pairKey(ownerA, ownerB);
+  const pairDeals = state.filter(d => d.strony[0] === p0 && d.strony[1] === p1);
+  if (pairDeals.some(d => isAllianceKind(normalizeTreatyKind(d.rodzaj)))) {
+    return 'sojusz';
+  }
+  if (pairDeals.some(d => normalizeTreatyKind(d.rodzaj) === RodzajTraktatu.PaktNieagresji)) {
+    return 'nap';
+  }
+  if (opts.contactEstablished) return 'pokoj';
+  return undefined;
 }

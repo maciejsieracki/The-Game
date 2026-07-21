@@ -1,7 +1,7 @@
 
 export {
   evaluateProposal, applyAcceptedProposal, aiCommandToPendingProposal,
-  makeDealId,
+  makeDealId, proposalHasResourceAccess, clampDealTurns,
 } from '../src/game/diplomacy-proposals.ts';
-export { addTreaty, hasTreaty, treatiesBrokenByWar } from '../src/game/diplomacy-treaties.ts';
+export { addTreaty, hasTreaty, treatiesBrokenByWar, resolvePokojTrustTier } from '../src/game/diplomacy-treaties.ts';
 export { getEffectiveDiplomacyParams } from '../src/game/diplomacy.ts';

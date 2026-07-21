@@ -27,6 +27,8 @@ export interface ZlozeGrant {
   zlozeId: string;
   hexKey: string;
   active: boolean;
+  /** Powiązanie z ActiveDeal UmowaHandlowa — wygasa z traktatem. */
+  dealId?: string;
 }
 
 export interface BasketItem {
@@ -167,4 +169,12 @@ export function suspendZlozeGrantsForWar(
     if (!involves || !g.active) return g;
     return { ...g, active: false };
   });
+}
+
+/** Wygaszenie grantów powiązanych z wygasłym/zerwanym traktatem handlowym. */
+export function deactivateZlozeGrantsForDeal(
+  grants: ZlozeGrant[],
+  dealId: string,
+): ZlozeGrant[] {
+  return grants.map(g => (g.dealId === dealId && g.active ? { ...g, active: false } : g));
 }

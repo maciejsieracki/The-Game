@@ -98,9 +98,15 @@ export const DIPLOMACY_PARAMS = {
   wspolnyWrogAkceptacja_respekt:    10,
 
   // ---- per-turn Zaufanie deltas (co ture) ----
-  /** "Aktywny handel (trwa umowa handlowa)" (+1/ture) */
+  /** "Aktywny handel (trwa umowa handlowa)" (+1/ture) — stackuje z tierem pokoju */
   handel_zaufanie_perTura:          1,
-  /** "Dotrzymany pakt (NAP lub sojusz trwa)" (+1/ture) */
+  /** "Aktywny sojusz wojskowy" (+3/ture, Maciej 2026-07-21) */
+  sojusz_zaufanie_perTura:          3,
+  /** "Aktywny pakt nieagresji" (+2/ture, Maciej 2026-07-21) */
+  nap_zaufanie_perTura:             2,
+  /** "Pokojowy kontakt bez wojny/NAP/sojuszu" (+1/ture, Maciej 2026-07-21) */
+  pokoj_zaufanie_perTura:           1,
+  /** @deprecated — zastąpione przez nap/sojusz/pokoj (2026-07-21); zostaje w JSON roundtrip */
   aktywnyPakt_zaufanie_perTura:     1,
   /** "Efekt dobrej woli (podarunek)" (+1/ture przez kilka tur) */
   dobraWola_zaufanie_perTura:       1,
@@ -1329,12 +1335,20 @@ export function computeMilitaryRatioFromArmyM(
  * Flagi odzwierciedlają aktywne stany relacji w danej turze.
  * SILNIK ustawia flagi na podstawie traktatów, ustawień mapy i AI.
  */
+/** Wzajemnie wykluczające tiery naturalnego budowania Zaufania (Maciej 2026-07-21). */
+export type PokojTrustTier = 'sojusz' | 'nap' | 'pokoj';
+
 export interface TickCtx {
   /** Numer bieżącej tury (używany do wygasania traktatów i zaniku urazów). */
   turn: number;
-  /** Czy aktywna UmowaHandlowa? (+1 Zaufanie/turę). */
+  /** Czy aktywna UmowaHandlowa? (+1 Zaufanie/turę, stackuje z tierem pokoju). */
   aktywnyHandel?:       boolean;
-  /** Czy aktywny PaktNieagresji lub SojuszWojskowy? (+1 Zaufanie/turę). */
+  /**
+   * Tier pokoju: sojusz (+3) > NAP (+2) > kontakt pokojowy (+1).
+   * Wymaga braku wojny; tier pokoju wymaga nawiązanego kontaktu dyplomatycznego.
+   */
+  pokojTrustTier?:      PokojTrustTier;
+  /** @deprecated — użyj pokojTrustTier (2026-07-21) */
   aktywnyPakt?:         boolean;
   /** Czy aktywny efekt dobrej woli (podarunek)? (+1 Zaufanie/turę). */
   dobraWolaAktywna?:   boolean;
@@ -1353,8 +1367,8 @@ export interface TickCtx {
  * (immutable — nie mutuje wejścia).
  *
  * Efekty per-turowe (DIPLOMACY_PARAMS):
- *   handel         +1 Zaufanie
- *   pakt           +1 Zaufanie
+ *   handel (UmowaHandlowa) +1 Zaufanie (stackuje)
+ *   pokojTrustTier: sojusz +3 | nap +2 | pokoj +1 (wzajemnie wykluczające)
  *   dobraWola      +1 Zaufanie
  *   wspolnyWrog    +1 Zaufanie
  *   wspolnaReligia +0.5 Zaufanie  (TODO: cap akumulacyjny +15/−10 per religia)
@@ -1377,7 +1391,13 @@ export function tickDiplomacy(rdip: RelacjaDyplomatyczna, ctx: TickCtx): Relacja
   // --- delta Zaufania z flag per-turowych ---
   let dZ = 0;
   if (ctx.aktywnyHandel)        dZ += p.handel_zaufanie_perTura;
-  if (ctx.aktywnyPakt)          dZ += p.aktywnyPakt_zaufanie_perTura;
+  const peaceTier = ctx.pokojTrustTier
+    ?? (ctx.aktywnyPakt ? 'nap' as PokojTrustTier : undefined);
+  switch (peaceTier) {
+    case 'sojusz': dZ += p.sojusz_zaufanie_perTura; break;
+    case 'nap':    dZ += p.nap_zaufanie_perTura; break;
+    case 'pokoj':  dZ += p.pokoj_zaufanie_perTura; break;
+  }
   if (ctx.dobraWolaAktywna)     dZ += p.dobraWola_zaufanie_perTura;
   if (ctx.wspolnyWrog)          dZ += p.wspolnyWrog_zaufanie_perTura;
   if (ctx.wspolnaReligia)       dZ += p.wspolnaReligia_zaufanie_perTura;

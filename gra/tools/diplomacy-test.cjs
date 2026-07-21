@@ -488,12 +488,27 @@ function mkRdip(zaufanie, respekt, urazyHistoryczne = 0, traktaty = []) {
   };
 }
 {
-  // handel + pakt -> +2 Zaufanie/turę; immutable
+  // handel + NAP -> +1 + +2 = +3 Zaufanie/turę; immutable (Maciej 2026-07-21)
   const r0 = mkRdip(30, 20);
-  const r1 = tickDiplomacy(r0, { turn: 1, aktywnyHandel: true, aktywnyPakt: true });
+  const r1 = tickDiplomacy(r0, { turn: 1, aktywnyHandel: true, pokojTrustTier: 'nap' });
   eq(r0.zaufanie, 30, 'tickDiplomacy: nie mutuje wejścia');
-  eq(r1.zaufanie, 32, 'tickDiplomacy: handel+pakt -> +2 Zaufanie');
-  eq(r1.relacjaOgolna, 52, 'tickDiplomacy: relacjaOgolna = zaufanie + respekt');
+  eq(r1.zaufanie, 33, 'tickDiplomacy: handel+nap -> +3 Zaufanie');
+  eq(r1.relacjaOgolna, 53, 'tickDiplomacy: relacjaOgolna = zaufanie + respekt');
+}
+{
+  // sojusz tier +3 (bez dodatkowego pokoj +1)
+  const r = tickDiplomacy(mkRdip(40, 20), { turn: 1, pokojTrustTier: 'sojusz' });
+  eq(r.zaufanie, 43, 'tickDiplomacy: sojusz -> +3 Zaufanie');
+}
+{
+  // pokojowy kontakt +1
+  const r = tickDiplomacy(mkRdip(50, 20), { turn: 1, pokojTrustTier: 'pokoj' });
+  eq(r.zaufanie, 51, 'tickDiplomacy: pokoj -> +1 Zaufanie');
+}
+{
+  // UmowaHandlowa stackuje z tierem pokoju: +1 + +1 = +2
+  const r = tickDiplomacy(mkRdip(20, 20), { turn: 1, aktywnyHandel: true, pokojTrustTier: 'pokoj' });
+  eq(r.zaufanie, 22, 'tickDiplomacy: handel+pokoj -> +2 Zaufanie');
 }
 {
   // ekspansja przy granicy -> -2 Zaufanie/turę

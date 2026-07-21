@@ -10,6 +10,7 @@ import {
   mapUnitCloseBtnHtml,
   MAP_UNIT_1E_SHARED_CSS,
 } from './mapUnitHudSkin';
+import { formatJednostkiCount } from './formatPl';
 import { unitIconSvg } from './icons/brandAssets';
 
 export interface ArmyStackCard {
@@ -139,7 +140,7 @@ export function createArmyStackHud(config: ArmyStackHudConfig): ArmyStackHudApi 
     let html = '<div class="ash-hdr"><div class="ash-title-wrap">'
       + armyIc
       + '<div><div class="ash-title">Armia · ' + esc(st.hexLabel) + '</div>'
-      + '<div class="ash-meta">' + st.unitCount + ' jedn. na heksie</div></div></div>'
+      + '<div class="ash-meta">' + formatJednostkiCount(st.unitCount) + ' na heksie</div></div></div>'
       + '<div class="ash-hdr-actions">';
 
     if (config.onOpenArmyList) {

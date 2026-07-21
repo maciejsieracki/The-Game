@@ -131,7 +131,7 @@ function buildForm(action: AudienceAction, ctx: NegotiationModalContext): string
     }
 
     case '5':
-      return sub + '<p class="cdn-sub">Handel PN — użyj koszyka (diplomacyTradeBasket).</p>';
+      return sub + '<p class="cdn-sub">Handel PN — koszyk. Przy dostępie do surowców/złóż wybierz czas umowy (1–20 tur).</p>';
     case '13':
       return sub + '<p class="cdn-sub">Dar PN — użyj koszyka (diplomacyTradeBasket).</p>';
 

@@ -314,6 +314,7 @@ import {
   type DiploListEntry,
 } from './ui/diploListHud';
 import type { ArmyStackHudState } from './ui/armyStackHud';
+import { formatArmiaLabel } from './ui/formatPl';
 import type {
   HudState, WarWithPlayer, SidePanelEvent,
   PowerOverlayData, CultureOverlayData, ReligionOverlayData,
@@ -2507,7 +2508,7 @@ async function boot(): Promise<void> {
           ? lead.typeId
           : types.length === 1
             ? `${types[0]!} ×${group.length}`
-            : `Stos · ${group.length} jedn.`;
+            : formatArmiaLabel(group.length);
         const ruchLeft = Math.min(...group.map(u => u.ruchLeft));
         const ruchMax = Math.max(...group.map(u => u.ruch));
         out.push({
@@ -7117,7 +7118,6 @@ async function boot(): Promise<void> {
         getRelations: () => buildPlayerDiploRelations(),
         getKnownWarsBetweenOthers: collectKnownWarsBetweenOthers,
         onOpenAudience: (ownerId: number) => openDiplomacyAudience(ownerId),
-        getCivBonusy: civBonusyForOwnerId,
       };
     }
 
@@ -7363,7 +7363,6 @@ async function boot(): Promise<void> {
           refreshD1bHud();
         },
         onClose: () => refreshD1bHud(),
-        getCivBonusy: civBonusyForOwnerId,
       });
       createScienceHubHud({
         getProgress: () => {

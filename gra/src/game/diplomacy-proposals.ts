@@ -18,6 +18,7 @@ import type { AIDiplomacyCommand } from './ai';
 import {
   addTreaty,
   type ActiveDeal,
+  type HandelDealPayload,
   type TreatyKind,
   normalizeTreatyKind,
 } from './diplomacy-treaties';
@@ -189,6 +190,7 @@ function buildDeal(
   wygasaTura: number | null,
   ekonomia?: ActiveDeal['ekonomia'],
   handelJednorazowy?: boolean,
+  handelPayload?: HandelDealPayload,
 ): ActiveDeal {
   return {
     id: makeDealId(rodzaj, turn, a, b),
@@ -197,7 +199,24 @@ function buildDeal(
     wygasaTura,
     ekonomia,
     handelJednorazowy,
+    handelPayload,
   };
+}
+
+const RESOURCE_ACCESS_TYPES = new Set<BasketItem['typ']>(['zloze', 'surowiec_boolean']);
+
+/** Czy propozycja obejmuje trwały dostęp do surowców/złóż (nie jednorazowy PN). */
+export function proposalHasResourceAccess(payload: {
+  giveItems?: readonly BasketItem[];
+  receiveItems?: readonly BasketItem[];
+}): boolean {
+  const items = [...(payload.giveItems ?? []), ...(payload.receiveItems ?? [])];
+  return items.some(i => RESOURCE_ACCESS_TYPES.has(i.typ));
+}
+
+/** Czas trwałej umowy handlowej: 1–20 tur (Maciej 2026-07-21). */
+export function clampDealTurns(turns: number | undefined, defaultTurns = 15): number {
+  return clamp(turns ?? defaultTurns, 1, 20);
 }
 
 /**
@@ -369,6 +388,34 @@ export function evaluateProposal(
       }
 
       const hasPnPath = givePn > 0 || receivePn > 0 || payload.giveItems?.length || payload.receiveItems?.length;
+      const hasResourceAccess = proposalHasResourceAccess(payload);
+
+      if (hasResourceAccess) {
+        if (!pnDealAcceptedByAi(givePn, receivePn, relTotal)) {
+          return { accepted: false, reason: 'Oferta poniżej uczciwej wartości PN @ Relacji' };
+        }
+        const turns = clampDealTurns(payload.turns);
+        const handelPayload: HandelDealPayload = {
+          giveItems: payload.giveItems?.length ? [...payload.giveItems] : undefined,
+          receiveItems: payload.receiveItems?.length ? [...payload.receiveItems] : undefined,
+        };
+        const deal = buildDeal(
+          RodzajTraktatu.UmowaHandlowa,
+          proposerOwnerId,
+          responderOwnerId,
+          ctx.turn,
+          ctx.turn + turns,
+          undefined,
+          false,
+          handelPayload,
+        );
+        return {
+          accepted: true,
+          reason: `Umowa handlowa (dostęp do surowców) na ${turns} tur`,
+          deal,
+        };
+      }
+
       if (hasPnPath) {
         if (!pnDealAcceptedByAi(givePn, receivePn, relTotal)) {
           return { accepted: false, reason: 'Oferta poniżej uczciwej wartości PN @ Relacji' };

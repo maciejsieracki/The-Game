@@ -5,6 +5,7 @@
 
 import { bindHudPanelOutsideDismiss } from './hudPanelDismiss';
 import { brandIconSvg } from './icons/brandAssets';
+import { formatJednostkiCount, formatZaznaczArmieLabel } from './formatPl';
 
 export interface ArmyListEntry {
   /** Id reprezentatywnej jednostki (do zaznaczenia). */
@@ -151,7 +152,9 @@ export function createArmyListHud(config: ArmyListHudConfig): ArmyListHudApi {
         row.className = 'al-item' + (selectedHighlightId === a.id ? ' on' : '');
         row.setAttribute('role', 'button');
         row.tabIndex = 0;
-        row.title = 'Zaznacz ' + a.name;
+        row.title = a.unitCount > 1
+          ? formatZaznaczArmieLabel(a.unitCount)
+          : 'Zaznacz ' + a.name;
         const ico = document.createElement('span');
         ico.className = 'al-ico';
         ico.innerHTML = brandIconSvg('tb-army', 18);
@@ -164,7 +167,7 @@ export function createArmyListHud(config: ArmyListHudConfig): ArmyListHudApi {
         const hex = document.createElement('div');
         hex.className = 'al-hex';
         hex.textContent = 'Heks ' + a.hexLabel
-          + (a.unitCount > 1 ? ' · ' + a.unitCount + ' jedn.' : '');
+          + (a.unitCount > 1 ? ' · ' + formatJednostkiCount(a.unitCount) : '');
         body.appendChild(hex);
         if (typeof a.ruchMax === 'number' && a.ruchMax > 0) {
           const pct = Math.max(0, Math.min(100, Math.round(((a.ruchLeft ?? 0) / a.ruchMax) * 100)));
