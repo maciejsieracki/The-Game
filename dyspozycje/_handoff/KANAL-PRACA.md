@@ -2484,3 +2484,36 @@ Maciej: **push** — szybki test bugfixu propozycji handlu od nieodkrytych pańs
 - tsc=0 · ai-test T10a–c OK (234 pass, 4 pre-existing fail).
 
 CZEKAM-NA: **Maciej** `git pull` → Ctrl+F5 START.html → stamp `87d0d359`; Nowa gra bez odkrycia państw-miast → brak propozycji handlu.
+
+## [23:55 PL, 2026-07-21] INTEGRATOR → Maciej — FIX Lama tylko Inkowie w panelu budowy
+
+Maciej: **push** — Lama w 🔨 ULEPSZENIA TERENU tylko dla Inków (nie wyszarzona u innych cyw).
+
+- **ROBOCZA = `41656451`** (md5 `41656451acc3344d2863fcdf0375f4e7`), na `c1b7327a`.
+- **Fix:** `isImprovementVisibleInBuildPanel` + `applyBuildRequest` bramka `isLivestockAllowed`.
+- **Civ id:** `inkowie` (`typCywilizacji` / `ikonaId` w civs.json; `isIncaCiv`).
+- tsc=0 · map-improvement-qualify lama AC OK.
+
+CZEKAM-NA: **Maciej** `git pull` → Ctrl+F5 START.html → stamp `41656451`; Grecy 🔨 → brak Lama; Inkowie → Lama na liście.
+
+## [00:15 PL, 2026-07-22] INTEGRATOR → Maciej — D3-TRUST-TICK: Zaufanie/turę + trwały handel surowcami
+
+Maciej: **push** — decyzje 2026-07-21 (natural trust + persistent resource deals).
+
+- **ROBOCZA = `c1b7327a`** (md5 `c1b7327a494fbf0d3e348f0b5b78791e`), na `87d0d359`.
+- **Zaufanie/turę:** sojusz +3 · NAP +2 · pokój +1 (wykluczające tiery) · UmowaHandlowa +1 stackuje.
+- **Handel złoża:** `umowa_handlowa` 10–20 tur, ZlozeGrant z dealId, wygasa z traktatem/wojną; PN/¤ bez surowców = one-shot.
+- tsc=0 · diplomacy-proposal 53/53 · docs: `docs/decyzje/D3-TRUST-TICK-2026-07-21.md`.
+
+CZEKAM-NA: **Maciej** `git pull` → Ctrl+F5 START.html → stamp `c1b7327a`; NAP/sojusz szybciej buduje Zaufanie; handel z dostępem do złoża = umowa wieloturowa.
+
+## [00:45 PL, 2026-07-22] INTEGRATOR → Maciej — FIX: Farma na lesie bez wyrębu
+
+Maciej bug 2026-07-21: Farma zablokowana na heksach z Las — wymagał Wyrębu.
+
+- **ROBOCZA = `c63dd3f4`** (md5 `c63dd3f4df7e51f9300f2ba0265d69ac`), na `41656451`.
+- **`isFarmBaseTerrain`:** Łąka/Równina + Wzgórza z nakładką Las (bez wycinki).
+- **`syncImprovementDecorForHex`:** farma/hodowla/irygacja na lesie → schowanie kępy drzew (Las zostaje w danych — drewno/plony).
+- tsc=0 · map-improvement-qualify 54/54 · VERIFY OK.
+
+CZEKAM-NA: **Maciej** `git pull` → Ctrl+F5 START.html → stamp `c63dd3f4`; 🔨 Farma na lesistym heksie bez Wyrębu.

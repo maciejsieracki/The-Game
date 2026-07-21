@@ -360,6 +360,7 @@ import { buildWioska, buildObozBarbarzyncow, WIOSKA_OBOZ_LAYOUT } from './render
 import { buildWzgorze, rotacjaDlaHeksa } from './render/teren-gory-wzgorza';
 import { buildTarasy, tarasyWariantDlaHeksa } from './render/tarasy-model';
 import { foodLayerFromAnimalDeposit, improvementKeysForHex } from './game/terrain-improvements';
+import { isLivestockAllowed } from './game/livestock-unlock';
 import { ikonaIdToBronzeCiv, type BronzeCiv } from './render/bronzeCity';
 import { buildSettlementModel } from './render/settlementModel';
 import { BattleScene } from './battle/battleScene';
@@ -541,7 +542,7 @@ import {
 import {
   type ActiveDeal, hasTreaty, expireTreaties, treatiesBrokenByWar,
   removeTreatiesById, allianceObligationsForWarDeclaration, treatiesBrokenByRefusal,
-  normalizeTreatyKind, hydrateActiveDeals, addTreaty,
+  normalizeTreatyKind, hydrateActiveDeals, addTreaty, resolvePokojTrustTier,
 } from './game/diplomacy-treaties';
 import {
   activeDealsToPaymentDeals, tickDiplomacyPayments, applyOneShotGoldTransfer,
@@ -555,6 +556,7 @@ import {
   relationTotal,
   resolveProposalPn,
   suspendZlozeGrantsForWar,
+  deactivateZlozeGrantsForDeal,
   tickDobraWolaOnRelation,
   type BasketItem,
   type DiploPairMeta,
@@ -3427,6 +3429,7 @@ async function boot(): Promise<void> {
       fromOwnerId: number,
       toOwnerId: number,
       items: readonly BasketItem[] | undefined,
+      dealId?: string,
     ): void {
       if (!items?.length) return;
       syncBasketResearchFromEngine();
@@ -3474,6 +3477,7 @@ async function boot(): Promise<void> {
               zlozeId: item.id,
               hexKey,
               active: true,
+              dealId,
             });
             break;
           }
@@ -4867,6 +4871,10 @@ async function boot(): Promise<void> {
         showHintMessage('Wymaga technologii', 2500);
         return;
       }
+      if (!isLivestockAllowed(String(player.civType || ''), req.key, player.era)) {
+        showHintMessage('To ulepszenie niedostępne dla twojej cywilizacji', 2500);
+        return;
+      }
       if (playerPracaPool < req.kosztPraca) {
         showHintMessage('Za mało Pracy (potrzeba ' + req.kosztPraca + ')', 3000);
         return;
@@ -4925,6 +4933,13 @@ async function boot(): Promise<void> {
       const teren = hex.terenBazowy;
       const elevated = teren === TerenBazowy.Wzgorza || teren === TerenBazowy.Gory;
       if (layers.includes('tarasy')) {
+        hideDecorAtHex(hexKey);
+        return;
+      }
+      // Maciej 2026-07-21: farma/hodowla na lesie bez wyrębu — schowaj kępę (nakładka Las zostaje).
+      const foodOnForest = hex.nakladka === Nakladka.Las
+        && layers.some(k => k === 'farma' || k === 'bydlo' || k === 'irygacja');
+      if (foodOnForest) {
         hideDecorAtHex(hexKey);
         return;
       }
@@ -5046,7 +5061,7 @@ async function boot(): Promise<void> {
       const n = hex.nakladka;
       if (t === TerenBazowy.Morze) return [];
       if (t === TerenBazowy.Wybrzeze) return ['lodzie_rybackie'];
-      if (n === Nakladka.Las) return ['tartak', 'oboz_lowiecki', 'droga'];
+      if (n === Nakladka.Las) return ['farma', 'tartak', 'oboz_lowiecki', 'droga'];
       const out: ImprovementKey[] = [];
       if (n === Nakladka.ZlozeKonia) out.push('stadnina');
       else if (n === Nakladka.ZlozeGliny) out.push('glinianka');
@@ -6558,6 +6573,9 @@ async function boot(): Promise<void> {
       const brokenIds = treatiesBrokenByWar(activeDeals, a, b);
       if (!brokenIds.length) return;
       activeDeals = removeTreatiesById(activeDeals, brokenIds);
+      for (const id of brokenIds) {
+        zlozeGrants = deactivateZlozeGrantsForDeal(zlozeGrants, id);
+      }
       const cur = getDiploRelation(a, b);
       const ev = breakerIsPlayer ? 'zlamana_obietnica' as const : 'zlamana_obietnica_ai' as const;
       setDiploRelation(a, b, applyDiplomaticEvent(cur, ev));
@@ -6621,7 +6639,13 @@ async function boot(): Promise<void> {
     }
 
     function runDiplomacyTurnTick(): void {
+      const dealsBeforeExpire = activeDeals;
       activeDeals = expireTreaties(activeDeals, turn);
+      for (const d of dealsBeforeExpire) {
+        if (!activeDeals.some(x => x.id === d.id)) {
+          zlozeGrants = deactivateZlozeGrantsForDeal(zlozeGrants, d.id);
+        }
+      }
       const treasury = buildDiploTreasury();
       const payDeals = activeDealsToPaymentDeals(activeDeals, turn);
       const { broken, messages } = tickDiplomacyPayments(payDeals, treasury, turn);
@@ -6641,6 +6665,7 @@ async function boot(): Promise<void> {
       }
       for (const id of broken) {
         activeDeals = removeTreatiesById(activeDeals, [id]);
+        zlozeGrants = deactivateZlozeGrantsForDeal(zlozeGrants, id);
         if (!tributeBreaks.some(p => p.dealId === id)) {
           showHintMessage('Trybut zerwany — brak środków w skarbcu', 3500);
         }
@@ -6741,6 +6766,20 @@ async function boot(): Promise<void> {
       if (result.deal) {
         activeDeals = applyAcceptedProposal(activeDeals, result);
         syncRelationFromDeals(proposerId, responderId);
+        if (normalizeTreatyKind(result.deal.rodzaj) === RodzajTraktatu.UmowaHandlowa) {
+          const dealId = result.deal.id;
+          const items = result.deal.handelPayload;
+          transferBasketItems(proposerId, responderId, items?.giveItems, dealId);
+          transferBasketItems(responderId, proposerId, items?.receiveItems, dealId);
+          const { givePn, receivePn } = resolveProposalPn(payload);
+          const isGift = payload.isGift === true
+            || ((payload.giveItems?.length ?? 0) > 0 && !(payload.receiveItems?.length) && (payload.receivePn ?? 0) <= 0);
+          if (cywAction === 'handel') {
+            applyPnTrustForPair(proposerId, responderId, givePn, receivePn, isGift);
+            const cur = getDiploRelation(proposerId, responderId);
+            setDiploRelation(proposerId, responderId, applyDiplomaticEvent(cur, isGift ? 'dar' : 'handel'));
+          }
+        }
       }
       if (result.oneShotTrade) {
         executePnDealTransfer(proposerId, responderId, payload);
@@ -11850,14 +11889,17 @@ async function boot(): Promise<void> {
               setDiploRelation(0, ownerId, relWithRespekt);
 
               // --- tickDiplomacy: per-turn shift ---
+              const relStatus = (relWithRespekt as Relation).status;
               const tickCtx: TickCtx = {
                 turn,
                 aktywnyHandel: activeDeals.some(
                   d => dealInvolvesOwners(d, 0, ownerId)
                     && normalizeTreatyKind(d.rodzaj) === RodzajTraktatu.UmowaHandlowa,
                 ),
-                aktywnyPakt: hasTreaty(activeDeals, 0, ownerId, RodzajTraktatu.PaktNieagresji)
-                  || activeDeals.some(d => dealInvolvesOwners(d, 0, ownerId) && isAllianceDealKind(d.rodzaj)),
+                pokojTrustTier: resolvePokojTrustTier(activeDeals, 0, ownerId, {
+                  contactEstablished: diplomaticContactEstablished.has(ownerId),
+                  atWar: relStatus === 'wojna',
+                }),
                 dobraWolaAktywna: false,
                 wspolnyWrog: false,
                 wspolnaReligia: false,

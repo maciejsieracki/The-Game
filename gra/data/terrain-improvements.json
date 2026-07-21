@@ -15,8 +15,8 @@
       "zywnosc": 3
     },
     "surowiecOdblokowany": null,
-    "teren": "Łąka, Równina",
-    "warunek": "ziemia uprawna; DZIAŁA BEZ rzeki (podstawowy)",
+    "teren": "Łąka, Równina; Wzgórza z lasem",
+    "warunek": "ziemia uprawna; DZIAŁA BEZ rzeki (podstawowy); MOŻE na lesie (Las) — bez wyrębu (Maciej 2026-07-21)",
     "koszt_praca": 20,
     "tech": "Rolnictwo",
     "odblokowuje": ""

@@ -15,6 +15,8 @@ export {
   hexHasDepositReserve,
   depositAllowsPlayerImprovement,
   isTarasyCiv,
+  isImprovementVisibleInBuildPanel,
+  isFarmBaseTerrain,
 } from '../src/map/improvement-build';
 export { TerenBazowy, Nakladka } from '../src/types/hex';
 `, 'utf8');
@@ -75,6 +77,7 @@ hexes['8,0'] = mkHex(8, 0, TB.Laka);
 hexes['8,0'].ulepszenia = ['farma'];
 hexes['9,0'] = mkHex(9, 0, TB.Morze);
 hexes['12,0'] = mkHex(12, 0, TB.Morze);
+hexes['10,0'] = mkHex(10, 0, TB.Wzgorza, NK.Las);
 
 const map = { hexes, riverPaths: [[{ q: 0, r: 2 }], [{ q: 6, r: 2 }]], startPositions: [{ q: 0, r: 0 }] };
 
@@ -95,15 +98,17 @@ const qRzym = qual({ civ: 'rzym' });
 const qChiny = qual({ civ: 'chinczycy' });
 
 ok(qInka('farma', 1, 0), 'farma on laka');
-ok(!qInka('farma', 7, 0), 'AC-M1: farma NOT on mineral zloze hex');
+ok(qInka('farma', 3, 1), 'BUG-2026-07-21: farma on laka+las');
+ok(qInka('farma', 10, 0), 'BUG-2026-07-21: farma on wzgorza+las');
+ok(!qInka('farma', 0, 1), 'farma NOT on wzgorza without las');
+ok(qInka('farma', 7, 0), 'WOLNE-WSPOL: farma on mineral zloze hex');
 ok(!qInka('farma', 5, 0), 'farma NOT on wybrzeze');
-ok(!qInka('irygacja', 7, 0), 'AC-M1: irygacja NOT on mineral zloze');
-ok(!qRzym('farma', 2, 0), 'REMIND-A: farma NOT on zloze bydla nakladka');
-ok(!qInka('fort', 2, 0), 'REMIND-A: fort NOT on zloze hex');
+ok(qRzym('farma', 2, 0), 'WOLNE-WSPOL: farma on zloze bydla nakladka');
+ok(qInka('fort', 2, 0), 'WOLNE-WSPOL: fort on zloze hex');
 ok(qInka('glinianka', 5, 1), 'REMIND-A: glinianka ON zloze gliny');
-ok(!qInka('tartak', 5, 1), 'REMIND-A: tartak NOT on zloze gliny');
+ok(qInka('tartak', 5, 1), 'tartak ON zloze gliny (rownina — teren OK, współistnienie)');
 ok(qRzym('bydlo', 2, 0), 'ABC-18: bydlo buildable on zloze bydla (pierwsze pastwisko)');
-ok(!qRzym('bydlo', 1, 0), 'bydlo without unlock/deposit');
+ok(qRzym('bydlo', 1, 0), 'bydlo after empire unlock on plain');
 ok(qRzym('owce', 1, 1), 'ABC-18: owce buildable on zloze owiec (pierwsze pastwisko)');
 ok(!qRzym('owce', 1, 0), 'owce NOT on flat');
 ok(qInka('tarasy', 0, 1), 'AC-M2: tarasy inkowie wzgorza');
@@ -115,7 +120,7 @@ ok(!qInka('bydlo', 6, 0), 'AC-M6: bydlo NOT pustynia');
 ok(!qInka('owce', 6, 0), 'AC-M6: owce NOT pustynia');
 ok(!qInka('lama', 6, 0), 'AC-M6: lama NOT pustynia');
 ok(qInka('warzelnia_soli', 4, 0), 'warzelnia sol');
-ok(qInka('kopalnia', 2, 1), 'kopalnia gory miedz');
+ok(qInka('kopalnia_miedzi', 2, 1), 'kopalnia_miedzi gory miedz');
 ok(qInka('lodzie_rybackie', 0, -1), 'A-R7: lodzie wybrzeze IN territory');
 const qA7small = M.buildImprovementQualifier({
   map,
@@ -143,13 +148,23 @@ ok(qRzymUnlock('bydlo', 1, 0), 'bydlo after empire unlock from pastwisko on zloz
 const qInkaE3 = qual({ civ: 'inkowie', era: 3, placed: new Map([['2,0', ['bydlo']]]) });
 ok(qInkaE3('bydlo', 1, 0), 'inkowie ep3: bydlo on plain after unlock+era');
 
-ok(M.hasBlockingDepositForFarm(hexes['7,0']), 'hasBlockingDeposit zloze string');
+ok(M.isFarmBaseTerrain(TB.Laka, NK.Las), 'isFarmBaseTerrain laka+las');
+ok(M.isFarmBaseTerrain(TB.Wzgorza, NK.Las), 'isFarmBaseTerrain wzgorza+las');
+ok(!M.isFarmBaseTerrain(TB.Wzgorza, NK.Brak), 'isFarmBaseTerrain wzgorza bez lasu');
+
+ok(!M.hasBlockingDepositForFarm(hexes['7,0']), 'hasBlockingDeposit zloze string — no block');
 ok(M.hexHasDepositReserve(hexes['2,0']), 'hexHasDepositReserve nakladka bydlo');
 ok(!M.hexHasDepositReserve(hexes['1,0']), 'hexHasDepositReserve plain laka');
 ok(!M.depositAllowsPlayerImprovement('farma', hexes['4,0']), 'depositAllows NOT farma sol');
 ok(M.depositAllowsPlayerImprovement('warzelnia_soli', hexes['4,0']), 'depositAllows warzelnia sol');
 ok(!M.hasBlockingDepositForFarm(hexes['1,0']), 'no block plain laka');
 ok(M.isTarasyCiv('chiny'), 'isTarasyCiv chiny');
+
+ok(!M.isImprovementVisibleInBuildPanel('lama', 'grecy', 1), 'lama hidden in panel for grecy');
+ok(!M.isImprovementVisibleInBuildPanel('lama', 'rzymianie', 1), 'lama hidden in panel for rzym');
+ok(M.isImprovementVisibleInBuildPanel('lama', 'inkowie', 1), 'lama visible in panel for inkowie');
+ok(!qRzym('lama', 0, 1), 'lama NOT buildable for non-inka on wzgorza');
+ok(qInka('lama', 0, 1), 'lama buildable for inkowie on wzgorza');
 
 hexes['4,0'] = mkHex(4, 0, TB.Laka, NK.Las);
 hexes['2,1'] = mkHex(2, 1, TB.Laka, NK.Las);

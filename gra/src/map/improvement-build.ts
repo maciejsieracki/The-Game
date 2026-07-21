@@ -22,6 +22,7 @@ import {
   computeEmpireLivestockUnlocks,
   isLivestockAllowed,
   isLivestockUnlockedForPlacement,
+  livestockKeyFromImprovement,
 } from '../game/livestock-unlock';
 import { improvementKeysForHex, normalizeImprovementKey } from '../game/terrain-improvements';
 import { hexHasRoad, isRoadImprovementKey } from './road-movement';
@@ -135,6 +136,12 @@ const FLAT_IRR = new Set<TerenBazowy>([
   TerenBazowy.Laka, TerenBazowy.Rownina, TerenBazowy.Pustynia,
 ]);
 
+/** Maciej 2026-07-21: farma bez wycinki lasu — Łąka/Równina zawsze; Wzgórza gdy nakładka Las. */
+export function isFarmBaseTerrain(teren: TerenBazowy, nakladka: Nakladka): boolean {
+  if (FLAT_FARM.has(teren)) return true;
+  return nakladka === Nakladka.Las && teren === TerenBazowy.Wzgorza;
+}
+
 export const FOOD_LAYER_KEYS = new Set<string>([
   'farma', 'irygacja', 'bydlo', 'owce', 'lama', 'tarasy',
 ]);
@@ -191,6 +198,19 @@ const TERRAIN_ALLOW: Partial<Record<ImprovementKey, TerenSet | null>> = {
   posterunek: null,
   kopalnia_miedzi: new Set([TerenBazowy.Wzgorza, TerenBazowy.Gory]),
 };
+
+/**
+ * Panel 🔨 ULEPSZENIA TERENU — pozycje niedostępne dla cywilizacji są UKRYTE (nie wyszarzone).
+ * Lama: tylko Inkowie (`typCywilizacji` inkowie / isIncaCiv). Hodowla Nowego Świata: epoka ≥3.
+ */
+export function isImprovementVisibleInBuildPanel(
+  key: ImprovementKey,
+  civType: string | undefined | null,
+  era: number = 1,
+): boolean {
+  if (!livestockKeyFromImprovement(key)) return true;
+  return isLivestockAllowed(civType, key, era);
+}
 
 /** @deprecated T-TECH-4 (2026-07-05): tarasy po Rolnictwie dla wszystkich cyw — funkcja zostaje dla testów legacy. */
 export function isTarasyCiv(civ: string | undefined | null): boolean {
@@ -452,7 +472,7 @@ function createQualifier(state: ImprovementBuildState) {
 
     switch (key) {
       case 'farma':
-        if (!FLAT_FARM.has(teren)) return false;
+        if (!isFarmBaseTerrain(teren, nakladka)) return false;
         if (hasBlockingDepositForFarm(hex)) return false;
         if (!inPlayerTerritory(q, r)) return false;
         return true;
@@ -554,6 +574,7 @@ export function buildImprovementQualifier(state: ImprovementBuildState): (
 export function galleryTerrainEligible(key: ImprovementKey, teren: TerenBazowy): boolean {
   switch (key) {
     case 'farma':
+      return FLAT_FARM.has(teren) || teren === TerenBazowy.Wzgorza;
     case 'bydlo':
       return FLAT_FARM.has(teren);
     case 'irygacja':
@@ -697,8 +718,13 @@ export function createImprovementBuildApi(
     return out;
   };
 
+  const playerCiv = state.playerCivArchetype;
+  const playerEraNum = state.playerEra ?? 1;
+
   const listTypes = (): ImprovementTypeInfo[] =>
-    IMPROVEMENTS.map(({ key, label, epoka }) => {
+    IMPROVEMENTS.filter(({ key }) =>
+      isImprovementVisibleInBuildPanel(key, playerCiv, playerEraNum),
+    ).map(({ key, label, epoka }) => {
       const meta = getImprovementMeta(key);
       const techId = meta?.techId ?? null;
       const typ = meta?.typ ?? 'ulepszenie';
