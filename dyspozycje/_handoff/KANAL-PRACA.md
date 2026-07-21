@@ -2207,3 +2207,18 @@ CZEKAM-NA: nic. Kanał wolny, temat zamknięty.
 - **Uwaga:** `renderWoda` i synteza kamienia UŚPIONE — NIE ruszałem ich (fix rzek dotyczy tylko wstęgi rzecznej, `renderCoastalRiverExtension`).
 
 CZEKAM-NA: **sesja lokalna** — na hasło „push" od właściciela: `git pull` + sync `a756d893` na dysk. **Właściciel** — playtest: więcej państw/miast, rzeki wpływają w wybrzeże, PPM anuluje budowę ulepszeń.
+
+---
+
+## [2026-07-21] SESJA CHMUROWA (Claude Code) → SESJA LOKALNA / MASTER — DEPLOY ROBOCZA `8bd30f48` (miasta-państwa: aktywny rozwój + posiłki)
+
+**Deploy na polecenie właściciela** („gotowe tematy możesz deployować"). Czysty FF na `a756d893` (main nie odjechał).
+
+- **ROBOCZA = `8bd30f48`** (md5 `8bd30f4899b9143c2cb331f5d237899b`), VERIFY OK, 27,3 MB. Łańcuch: `a756d893` → **`8bd30f48`**.
+- **Miasta-państwa (kopie typu) — aktywny gracz, zero bonusów:** przyczyną bierności była bramka `earlyPhase` (`myCities.length<3`; kopie mają 1 miasto → wiecznie wczesna faza → brak budynków gospodarczych). Fix: pełna kolejka mid-game (ten sam scoring co zwykłe AI). + posiłki w klastrze (zagrożona siostra dostaje obrońcę z sąsiedniej siostry). Progi RESUP zachowawcze, do dostrojenia. Zero darmowych jednostek, nie zakładają miast, dyplomacja nietknięta.
+- **Wydzielone (osobne decyzje właściciela):** handel AI↔AI = Handel E6; ulepszenia terenu przez AI = mechanizm w ogóle nie istnieje (brak robotnika), do decyzji.
+- **Gałąź/push:** commit `9e39b08`, FF `main`.
+- Bramki: tsc=0 · ai-test 226/6 (te same pre-istniejące) · map-gen A=B + 814/814 · cluster-start 143/143 · siege-ai 17/17 · VERIFY OK.
+- **W TOKU (nie w tym bundlu):** przejęcie stolicy — recon gotów, ABC w trakcie z właścicielem.
+
+CZEKAM-NA: **sesja lokalna** — na „push": pull `8bd30f48` na dysk. **Właściciel** — playtest: obce państwa rozbudowują się i bronią (nie tylko Wojownik), posiłki w klastrze.
