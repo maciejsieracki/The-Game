@@ -100,9 +100,12 @@ import {
   cityRangeForPopulation,
   resolveWorkedTiles,
   rebalanceWorkersAfterPopulationChange,
+  reconcileAllWorkedTiles,
   hexKeysWithinRadius,
   type TileYield as OkolicaTileYield,
 } from './okolica';
+import { buildTerritoryNodesFromCities } from '../map/territory-work';
+import type { TerritoryNode } from '../map/territory';
 import type { OrderYieldMults } from './order';
 import { getEmpireFoodSplit } from './empire-food';
 import { pickOsiedlePopBonus, osiedlePopLabel } from './society-breakdown';
@@ -482,7 +485,11 @@ export function workedTilesForCity(city: City, map: GameMap): WorkedTile[] {
  *
  * Zwraca WorkedTile[] = [centrum, ...przypisane_pola_obok].
  */
-export function cityWorkedTilesForEconomy(city: City, map: GameMap): WorkedTile[] {
+export function cityWorkedTilesForEconomy(
+  city: City,
+  map: GameMap,
+  territoryNodes?: readonly TerritoryNode[],
+): WorkedTile[] {
   const tiles: WorkedTile[] = [];
 
   const centreHex = map.hexes[`${city.q},${city.r}`];
@@ -507,7 +514,11 @@ export function cityWorkedTilesForEconomy(city: City, map: GameMap): WorkedTile[
   };
 
   // Przypisz N najlepszych pol (auto lub reczny) w zasiegu.
-  const assigned = resolveWorkedTiles(city, map, yieldOf, { radius });
+  const assigned = resolveWorkedTiles(city, map, yieldOf, {
+    radius,
+    territoryNodes,
+    ownerId: city.ownerId,
+  });
 
   // Konwertuj przypisane pozycje na WorkedTile.
   for (const t of assigned) {
@@ -519,7 +530,11 @@ export function cityWorkedTilesForEconomy(city: City, map: GameMap): WorkedTile[
 }
 
 /** Współrzędne pól obrabianych (bez centrum) — podgląd okolicy w panelu miasta. */
-export function workedHexCoordsForCity(city: City, map: GameMap): Array<{ q: number; r: number }> {
+export function workedHexCoordsForCity(
+  city: City,
+  map: GameMap,
+  territoryNodes?: readonly TerritoryNode[],
+): Array<{ q: number; r: number }> {
   const pop = Math.max(0, Math.floor(city.population ?? 0));
   if (pop <= 0) return [];
   const radius = cityRangeForPopulation(pop);
@@ -530,7 +545,11 @@ export function workedHexCoordsForCity(city: City, map: GameMap): Array<{ q: num
     const y = tileYield(wt);
     return { zywnosc: y.zywnosc, praca: y.praca, handel: y.handel };
   };
-  const assigned = resolveWorkedTiles(city, map, yieldOf, { radius });
+  const assigned = resolveWorkedTiles(city, map, yieldOf, {
+    radius,
+    territoryNodes,
+    ownerId: city.ownerId,
+  });
   return assigned.map(t => ({ q: t.q, r: t.r }));
 }
 
@@ -799,6 +818,7 @@ export function previewCityEconomy(
   resolveOwnerTech?: OwnerTechResolver,
   tradeRouteCountByCity: ReadonlyMap<string, number> = new Map(),
   tradeIncomeByCity: ReadonlyMap<string, number> = new Map(),
+  territoryNodes?: readonly TerritoryNode[],
 ): Pick<EconomyTickResult, 'perCity'> {
   const params = buildEconParams(data, difficulty);
   const noBuildings: CityBuildingEntry[] = [];
@@ -819,7 +839,7 @@ export function previewCityEconomy(
     const isCapital = !capitalSeen.has(city.ownerId);
     capitalSeen.add(city.ownerId);
 
-    const worked = cityWorkedTilesForEconomy(city, map);
+    const worked = cityWorkedTilesForEconomy(city, map, territoryNodes);
     const builtIds = builtByCity.get(city.id) ?? [];
     const hasWater = cityHasWaterAccess(city, map);
     const zdrowie = computeCityHealth(city.population, worked, builtIds, healthParams, hasWater, { city, map });
@@ -972,6 +992,9 @@ export function advanceCityEconomy(
   const params = buildEconParams(data, difficulty);
   const noBuildings: CityBuildingEntry[] = [];
 
+  const territoryNodes = buildTerritoryNodesFromCities(cities);
+  reconcileAllWorkedTiles(cities, territoryNodes);
+
   // Load upkeep + storage params from the same econ-params.json blob.
   const rawEconParams = data.econParams as unknown as Parameters<typeof loadUpkeepParams>[0];
   const upkeepParams  = loadUpkeepParams(rawEconParams, difficulty);
@@ -1026,7 +1049,7 @@ export function advanceCityEconomy(
     const isCapital = !capitalSeen.has(city.ownerId);
     capitalSeen.add(city.ownerId);
 
-    const worked    = cityWorkedTilesForEconomy(city, map);
+    const worked    = cityWorkedTilesForEconomy(city, map, territoryNodes);
     const builtIds  = builtByCity.get(city.id) ?? [];
 
     // WIRE 1: oblicz zdrowie miasta (D17-A: dostęp do wody z mapy, nie tylko pól plonów)
@@ -1202,7 +1225,7 @@ export function advanceCityEconomy(
     city.population = grow.nowaLudnosc;
 
     if (grow.nowaLudnosc !== before) {
-      rebalanceWorkersAfterPopulationChange(city, map, before, grow.nowaLudnosc);
+      rebalanceWorkersAfterPopulationChange(city, map, before, grow.nowaLudnosc, territoryNodes);
     }
 
     const ownerEpoka = ownerEra;

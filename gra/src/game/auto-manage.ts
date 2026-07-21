@@ -11,6 +11,7 @@
 import type { City, BudowaFocus } from './cities';
 import { DEFAULT_BUDOWA_FOCUS, DEFAULT_BUDOWA_TRYB } from './cities';
 import type { GameMap } from '../types/map';
+import type { TerritoryNode } from '../map/territory';
 import {
   assignWorkedTiles,
   cityRangeForPopulation,
@@ -136,6 +137,8 @@ export interface AutoManageInput {
   unlockedTechs?: readonly string[];
   ctx?: AvailabilityContext;
   isWorkable?: (q: number, r: number) => boolean;
+  /** Węzły terytorium — filtr własności heksów (overlap → najbliższe miasto). */
+  territoryNodes?: readonly TerritoryNode[];
 }
 
 /**
@@ -218,7 +221,13 @@ export function autoManageCity(
     city.population,
     map,
     input.yieldOf,
-    { radius, isWorkable: input.isWorkable, wagi: wagiForFocus(focus) },
+    {
+      radius,
+      isWorkable: input.isWorkable,
+      territoryNodes: input.territoryNodes,
+      ownerId: city.ownerId,
+      wagi: wagiForFocus(focus),
+    },
   );
 
   // --- 2. Auto-budowa: zaproponuj element jesli kolejka pusta i tryb auto ---

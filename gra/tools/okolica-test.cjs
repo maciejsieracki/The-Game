@@ -34,7 +34,10 @@ export {
   seedReczneFromAuto,
   toggleTileWorker,
   rebalanceWorkersAfterPopulationChange,
+  buildTerritoryNodesFromCities,
+  isTerritoryHexOwnedBy,
 } from '../src/game/okolica';
+export { territoryOwnerAt } from '../src/map/territory';
 `;
 
 fs.writeFileSync(ENTRY_FILE, ENTRY_TS, 'utf8');
@@ -56,7 +59,7 @@ try {
 }
 
 const M = require(BUNDLE_FILE);
-const { OKOLICA_RADIUS, okolicaTiles, tileScore, assignWorkedTiles, cityRangeForPopulation, adjustTileWorker, seedReczneFromAuto, toggleTileWorker, rebalanceWorkersAfterPopulationChange } = M;
+const { OKOLICA_RADIUS, okolicaTiles, tileScore, assignWorkedTiles, cityRangeForPopulation, adjustTileWorker, seedReczneFromAuto, toggleTileWorker, rebalanceWorkersAfterPopulationChange, buildTerritoryNodesFromCities, isTerritoryHexOwnedBy, territoryOwnerAt } = M;
 
 // --- test harness ----------------------------------------------------------
 let passed = 0;
@@ -229,6 +232,33 @@ const cityAutoGrow = {
 };
 rebalanceWorkersAfterPopulationChange(cityAutoGrow, map, 3, 4);
 eq(cityAutoGrow.okolicaReczne, undefined, 'auto mode: no manual reczne written');
+
+// Test 14: overlap terytoriów — gracz nie pracuje na heksie AI
+console.log('\n14. foreign territory — no worker assignment');
+const territoryNodes = buildTerritoryNodesFromCities([
+  { q: 0, r: 0, population: 10, ownerId: 0 },
+  { q: 4, r: 0, population: 10, ownerId: 1 },
+]);
+// Heks (3,0) w zasięgu obu miast; bliżej AI (dist 1 vs 3) → właściciel AI
+eq(territoryOwnerAt(3, 0, territoryNodes), 1, 'hex (3,0) owned by AI (closer city)');
+eq(isTerritoryHexOwnedBy(3, 0, 0, territoryNodes), false, 'hex (3,0) not player-owned');
+function yieldHighAt3(q, r) {
+  if (q === 3 && r === 0) return { zywnosc: 99 };
+  return { zywnosc: 1 };
+}
+const workedOwn = assignWorkedTiles(0, 0, 3, map, yieldHighAt3, {
+  radius: 10,
+  territoryNodes,
+  ownerId: 0,
+});
+assert(!workedOwn.some(function(t) { return t.q === 3 && t.r === 0; }),
+  'player city skips foreign hex even if best yield');
+const foreignToggle = toggleTileWorker(
+  { q: 0, r: 0, population: 3, ownerId: 0, okolicaTryb: 'reczny', okolicaReczne: {} },
+  map, 3, 0, undefined, territoryNodes,
+);
+eq(foreignToggle.ok, false, 'manual assign on foreign hex rejected');
+eq(foreignToggle.reason, 'obce_terytorium', 'foreign hex reason code');
 
 // --- summary ---------------------------------------------------------------
 const total = passed + failed;

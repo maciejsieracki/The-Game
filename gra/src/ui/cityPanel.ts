@@ -115,6 +115,7 @@ import {
   type CityHealthLine,
   type Difficulty,
 } from '../game/turn-economy';
+import { buildTerritoryNodesFromCities } from '../map/territory-work';
 import { tileYield } from '../game/economy';
 import {
   tradeRouteDistanceIncome,
@@ -681,13 +682,18 @@ function isCapital(city: City): boolean {
   const first = all.find(c => c.ownerId === city.ownerId);
   return first ? first.id === city.id : true;
 }
+function territoryNodesForPanel() {
+  const all = cfg.getCities?.();
+  return all ? buildTerritoryNodesFromCities(all) : undefined;
+}
+
 function computeView(city: City, map: GameMap, data: GameData): CityView | null {
   try {
     const params = buildEconParams(data, cfg.difficulty ?? 'normal');
     const built = cfg.getBuiltBuildingIds?.(city.id) ?? [];
     const maSpichlerz = built.includes('spichlerz');
     const maAkwedukt = built.includes('akwedukt');
-    const worked = cityWorkedTilesForEconomy(city, map);
+    const worked = cityWorkedTilesForEconomy(city, map, territoryNodesForPanel());
     const healthBd = computeCityHealthBreakdown(
       city.population,
       worked,
@@ -2044,7 +2050,7 @@ function resolveCityHealth(city: City, map: GameMap, data: GameData): { total: n
   const live = cfg.getCityHealth?.(city.id);
   if (live) return { ...live, fromEngine: true };
   const builtIds = cfg.getBuiltBuildingIds?.(city.id) ?? [];
-  const tiles = cityWorkedTilesForEconomy(city, map);
+  const tiles = cityWorkedTilesForEconomy(city, map, territoryNodesForPanel());
   const br = computeCityHealthBreakdown(
     city.population, tiles, builtIds, data.societyParams, cfg.difficulty ?? 'normal',
     { city, map },

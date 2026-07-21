@@ -2568,3 +2568,13 @@ Maciej requirement 2026-07-21: brak obrysu granic państw na mapie 3D.
 - tsc=0 · publish OK · push na `main`.
 
 CZEKAM-NA: **Maciej** `git pull` → Ctrl+F5 START.html → stamp `e5d1ebad`; klik hex-grid obok minimapy → granice państw widoczne.
+
+## [00:06] INTEGRATOR → Maciej — FIX obce terytorium + granice państw
+
+- **Stamp ROBOCZA:** `13cb70c2` (md5 `13cb70c217f2e899a712af962cfb176a`)
+- **Bug:** overlap zasięgów — gracz przypisywał 👤 i zbierał plony z heksów AI (budowa ulepszeń już blokowana).
+- **Fix:** `territoryOwnerAt` filtruje auto+ręczny przydział; `reconcileAllWorkedTiles` co turę; 👤 overlay tylko własne heksy.
+- **Granice:** toggle sześciokąt na minimapie (już podpięty w tym buildzie).
+- tsc=0 · okolica-test 39/39.
+
+CZEKAM-NA: **Maciej** `git pull` → Ctrl+F5 START.html → stamp `13cb70c2`; overlap przy Sparcie — brak 👤/plonów na lesie AI; minimapa → granice państw ON.

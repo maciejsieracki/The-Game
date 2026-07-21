@@ -11,10 +11,14 @@ swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drug
 
 ## ROBOCZA (gra-robocza\Gra-ROBOCZA.html — wskazywana przez START.html)
 
+- 2026-07-22 · stempel: ROBOCZA · **13cb70c2** · md5 pliku `13cb70c217f2e899a712af962cfb176a` · **FIX: obywatele nie pracują na obcym terytorium + granice państw** — na `d33863ab`:
+  **Bug:** w overlapie zasięgów miast gracz widział 👤 i zbierał plony z heksów faktycznie należących do AI (budowa ulepszeń już blokowana). **Fix:** `territoryOwnerAt` filtruje auto/ręczny przydział pól, reconcile co turę i przy założeniu miasta; 👤 overlay tylko na własnych heksach; toggle granic państw (minimapa, sześciokąt) — już podpięty.
+  tsc=0 · okolica-test 39/39 · publish `gra-robocza/Gra-ROBOCZA.html`. · **AKTUALNA** · Test: Ctrl+F5 START.html → stamp `13cb70c2`; overlap przy Sparcie — brak 👤/plonów na lesie AI; minimapa → granice państw ON.
+
 - 2026-07-22 · stempel: ROBOCZA · **d33863ab** · md5 pliku `d33863ab2e47ec6fd8b5b8dcf2cd3a3f` · **FIX: zwiadowca bez głodu + Manpower przy rekrutacji** — na `e1ac8503`:
   **Bug1:** czaszka głodu i utrata HP na zwiadowcy gdy imperium głoduje — overlay per-państwo bez filtra cywilnych + utrzymanie złoto Zwiadowca=1 w JSON. **Fix:** `isCivilianUnit` (zwiadowca/osadnik/robotnik) pomijany w overlay i `applyArmyStarvationHpLoss`; cywilne upkeep/food=0.
   **Bug2:** rekrutacja za złoto nie odejmowała Manpower przy kliknięciu. **Fix:** `purchaseRecruitmentUnit` pobiera MP od razu; anulowanie zwraca MP; kolejka spawn bez ponownego poboru.
-  tsc=0 · manpower-test 24/24 · upkeep-test 58/58 · publish `gra-robocza/Gra-ROBOCZA.html`. · **AKTUALNA** · Test: Ctrl+F5 START.html → stamp `d33863ab`; zwiadowca bez czaszki przy głodzie wojska; rekrutuj → pula rekrutów spada natychmiast.
+  tsc=0 · manpower-test 24/24 · upkeep-test 58/58 · publish `gra-robocza/Gra-ROBOCZA.html`. · **ZASTĄPIONA** (→ `13cb70c2`) · Test: Ctrl+F5 START.html → stamp `d33863ab`; zwiadowca bez czaszki przy głodzie wojska; rekrutuj → pula rekrutów spada natychmiast.
 
 - 2026-07-22 · stempel: ROBOCZA · **e1ac8503** · md5 pliku `e1ac85039004206b42257db32921ebac` · **UI: Stos → Armia (etykiety stosu jednostek)** — na `c7301135`:
   **Zmiana Macieja:** `Stos · 2 jedn.` → `Armia — 2 jednostki` (odmiana 1/2–4/5+); tooltip `Zaznacz armię — N jednostek`; spójnie panel stosu, merge, wybór miasto/jednostka.

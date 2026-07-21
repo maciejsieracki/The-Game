@@ -2071,6 +2071,7 @@ async function boot(): Promise<void> {
         const msg: Record<string, string> = {
           limit_populacji: 'Brak wolnych obywateli — najpierw zabierz 👤 z innego pola.',
           poza_zasiegiem: 'To pole jest poza zasięgiem okolicy.',
+          obce_terytorium: 'Tylko w swoim terytorium — ten heks należy do innego państwa.',
           centrum_miasta: 'Centrum miasta nie przyjmuje 👤 — wybierz pole obok.',
           brak_ludnosci: 'Miasto nie ma ludności do pracy w polu.',
           brak_robotnika: 'Na tym polu nie ma przypisanego 👤.',
@@ -2820,7 +2821,7 @@ async function boot(): Promise<void> {
         getWorkedTiles: (cityId: string) => {
           const city = cities.find(c => c.id === cityId);
           if (!city) return undefined;
-          return workedHexCoordsForCity(city, map);
+          return workedHexCoordsForCity(city, map, buildAllTerritoryNodes());
         },
         onOkolicaFocusChange: (cityId: string, focus: import('./game/cities').OkolicaFocus) => {
           const city = cities.find(c => c.id === cityId);
@@ -2847,7 +2848,7 @@ async function boot(): Promise<void> {
           if (!city) return;
           city.okolicaTryb = 'reczny';
           const hasReczne = city.okolicaReczne && Object.values(city.okolicaReczne).some(n => n > 0);
-          if (!hasReczne) city.okolicaReczne = seedReczneFromAuto(city, map);
+          if (!hasReczne) city.okolicaReczne = seedReczneFromAuto(city, map, buildAllTerritoryNodes());
           showHintMessage(
             `${city.name}: tryb ręczny — klik heks = przypisz/zabierz 👤`,
             3200,
@@ -4346,6 +4347,7 @@ async function boot(): Promise<void> {
       if (!showWorkerOverlay || isCityPanelOpen()) return;
       const keys = collectWorkedHexKeysForOwner(cities, map, 0, {
         isWorkable: okolicaHexWorkable,
+        territoryNodes: buildAllTerritoryNodes(),
       });
       if (keys.size === 0) return;
       workerFieldOverlayGroup = syncWorkerFieldOverlay(scene, null, map, keys);
@@ -4834,6 +4836,7 @@ async function boot(): Promise<void> {
       }
       ensureCitySaveDefaults(c);
       cities.push(c);
+      reconcileAllWorkedTiles(cities, buildAllTerritoryNodes());
       finalizeCityFounding(c, q, r);
       spawnPendingSameTypeRivals(q, r);
       refreshFog();
@@ -6299,6 +6302,9 @@ async function boot(): Promise<void> {
         orderMultMap,
         empireEpochForOwner,
         unlockedTechSetForOwner,
+        undefined,
+        undefined,
+        buildAllTerritoryNodes(),
       );
       const playerEcon = sumEconomyForPlayerCities(preview, cities);
       _lastPracaRate = playerEcon.doPuli;
@@ -7909,7 +7915,7 @@ async function boot(): Promise<void> {
         const city = cities.find(c => c.id === cityId);
         if (!city) return null;
         const builtIds = cityBuilt.get(cityId) ?? [];
-        const tiles = cityWorkedTilesForEconomy(city, map);
+        const tiles = cityWorkedTilesForEconomy(city, map, buildAllTerritoryNodes());
         return computeCityHealthBreakdown(
           city.population, tiles, builtIds, data.societyParams, _menuDifficulty,
           { city, map },
@@ -11691,6 +11697,8 @@ async function boot(): Promise<void> {
                       cityPraca: praca,
                       udzialBudynki: 0.7,
                       unlockedTechs,
+                      territoryNodes: buildAllTerritoryNodes(),
+                      isWorkable: okolicaHexWorkable,
                       ctx: {
                         builtBuildingIds: builtForCity,
                         productionQueue: prod0.kolejka,
@@ -12889,7 +12897,7 @@ async function boot(): Promise<void> {
           const city = cities.find(c => c.id === cityId);
           if (!city) return null;
           const builtIds = cityBuilt.get(cityId) ?? [];
-          const tiles = cityWorkedTilesForEconomy(city, map);
+          const tiles = cityWorkedTilesForEconomy(city, map, buildAllTerritoryNodes());
           return computeCityHealthBreakdown(
             city.population, tiles, builtIds, data.societyParams, _menuDifficulty,
             { city, map },

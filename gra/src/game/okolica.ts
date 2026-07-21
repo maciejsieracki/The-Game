@@ -19,6 +19,17 @@ import miastoParams from '../../data/miasto-params.json';
 import { cityBorderRadius } from './culture-religion';
 import type { City, OkolicaFocus, OkolicaTryb } from './cities';
 import { DEFAULT_OKOLICA_FOCUS, DEFAULT_OKOLICA_TRYB } from './cities';
+import {
+  isTerritoryHexOwnedBy,
+  makeTerritoryWorkableFilter,
+  type TerritoryNode,
+} from '../map/territory-work';
+export {
+  buildTerritoryNodesFromCities,
+  reconcileWorkedTilesForOwner,
+  reconcileAllWorkedTiles,
+  isTerritoryHexOwnedBy,
+} from '../map/territory-work';
 
 export const OKOLICA_RADIUS = (miastoParams.zasieg_okolicy_miasta?.wartosc as number) ?? 5;
 
@@ -105,6 +116,17 @@ export interface AssignOptions {
   radius?: number;
   isWorkable?: (q: number, r: number) => boolean;
   wagi?: { zywnosc?: number; praca?: number; handel?: number };
+  /** Gdy podane z ownerId — tylko heksy należące do tego państwa (overlap → najbliższe miasto). */
+  territoryNodes?: readonly TerritoryNode[];
+  ownerId?: number;
+}
+
+function effectiveIsWorkable(opts: AssignOptions): ((q: number, r: number) => boolean) | undefined {
+  const { territoryNodes, ownerId, isWorkable } = opts;
+  if (territoryNodes != null && ownerId != null) {
+    return makeTerritoryWorkableFilter(territoryNodes, ownerId, isWorkable);
+  }
+  return isWorkable;
 }
 
 /**
@@ -121,7 +143,7 @@ export function assignWorkedTiles(
   opts: AssignOptions = {},
 ): OkolicaTile[] {
   const radius = opts.radius ?? cityRangeForPopulation(population);
-  const tiles = okolicaTiles(centerQ, centerR, radius, map, opts.isWorkable);
+  const tiles = okolicaTiles(centerQ, centerR, radius, map, effectiveIsWorkable(opts));
   const scored = tiles.map(t => ({ t, s: tileScore(yieldOf(t.q, t.r), opts.wagi) }));
   scored.sort((a, b) => {
     if (b.s !== a.s) return b.s - a.s;
@@ -153,11 +175,13 @@ export interface ResolveWorkedTilesOpts {
   reczne?: Record<string, number>;
   radius?: number;
   isWorkable?: (q: number, r: number) => boolean;
+  territoryNodes?: readonly TerritoryNode[];
+  ownerId?: number;
 }
 
 /** Auto lub ręczne przypisanie pól — jedno źródło prawdy dla ekonomii i UI. */
 export function resolveWorkedTiles(
-  city: Pick<City, 'q' | 'r' | 'population' | 'okolicaFocus' | 'okolicaTryb' | 'okolicaReczne'>,
+  city: Pick<City, 'q' | 'r' | 'population' | 'okolicaFocus' | 'okolicaTryb' | 'okolicaReczne' | 'ownerId'>,
   map: GameMap,
   yieldOf: (q: number, r: number) => TileYield,
   opts: ResolveWorkedTilesOpts = {},
@@ -166,11 +190,11 @@ export function resolveWorkedTiles(
   const radius = opts.radius ?? cityRangeForPopulation(pop);
   const tryb = opts.tryb ?? city.okolicaTryb ?? DEFAULT_OKOLICA_TRYB;
   const focus = opts.focus ?? city.okolicaFocus ?? DEFAULT_OKOLICA_FOCUS;
-  const isWorkable = opts.isWorkable;
+  const workFilter = effectiveIsWorkable(opts);
 
   if (tryb === 'reczny') {
     const reczne = opts.reczne ?? city.okolicaReczne ?? {};
-    const tiles = okolicaTiles(city.q, city.r, radius, map, isWorkable);
+    const tiles = okolicaTiles(city.q, city.r, radius, map, workFilter);
     const tileMap = new Map(tiles.map(t => [t.key, t]));
     const out: OkolicaTile[] = [];
     for (const [key, count] of Object.entries(reczne)) {
@@ -184,7 +208,9 @@ export function resolveWorkedTiles(
 
   return assignWorkedTiles(city.q, city.r, pop, map, yieldOf, {
     radius,
-    isWorkable,
+    isWorkable: opts.isWorkable,
+    territoryNodes: opts.territoryNodes,
+    ownerId: opts.ownerId ?? city.ownerId,
     wagi: wagiForFocus(focus),
   });
 }
@@ -204,8 +230,9 @@ export function yieldOfMapHex(map: GameMap, q: number, r: number): TileYield {
 
 /** Pierwsze wejście w tryb ręczny — kopia bieżącego auto-przydziału (nie reset do 1 pola). */
 export function seedReczneFromAuto(
-  city: Pick<City, 'q' | 'r' | 'population' | 'okolicaFocus'>,
+  city: Pick<City, 'q' | 'r' | 'population' | 'okolicaFocus' | 'ownerId'>,
   map: GameMap,
+  territoryNodes?: readonly TerritoryNode[],
 ): Record<string, number> {
   const pop = Math.max(0, Math.floor(city.population ?? 0));
   if (pop <= 0) return {};
@@ -213,6 +240,8 @@ export function seedReczneFromAuto(
   const focus = city.okolicaFocus ?? DEFAULT_OKOLICA_FOCUS;
   const tiles = assignWorkedTiles(city.q, city.r, pop, map, (q, r) => yieldOfMapHex(map, q, r), {
     radius,
+    territoryNodes,
+    ownerId: city.ownerId,
     wagi: wagiForFocus(focus),
   });
   const reczne: Record<string, number> = {};
@@ -240,6 +269,7 @@ export function rebalanceWorkersAfterPopulationChange(
   map: GameMap,
   popBefore: number,
   popAfter: number,
+  territoryNodes?: readonly TerritoryNode[],
 ): void {
   const tryb = city.okolicaTryb ?? DEFAULT_OKOLICA_TRYB;
   const pop = Math.max(0, Math.floor(popAfter));
@@ -252,14 +282,17 @@ export function rebalanceWorkersAfterPopulationChange(
   const radius = cityRangeForPopulation(pop);
   const focus = city.okolicaFocus ?? DEFAULT_OKOLICA_FOCUS;
   const wagi = wagiForFocus(focus);
-  const tiles = okolicaTiles(city.q, city.r, radius, map);
+  const workFilter = territoryNodes
+    ? makeTerritoryWorkableFilter(territoryNodes, city.ownerId)
+    : undefined;
+  const tiles = okolicaTiles(city.q, city.r, radius, map, workFilter);
   const yieldOf = (q: number, r: number) => yieldOfMapHex(map, q, r);
 
   let reczne: Record<string, number> = { ...(city.okolicaReczne ?? {}) };
 
   if (popAfter > popBefore) {
     if (countAssignedWorkers(reczne) === 0 && pop > 0) {
-      city.okolicaReczne = seedReczneFromAuto({ ...city, population: pop }, map);
+      city.okolicaReczne = seedReczneFromAuto({ ...city, population: pop }, map, territoryNodes);
       return;
     }
     let need = pop - countAssignedWorkers(reczne);
@@ -307,19 +340,20 @@ export function rebalanceWorkersAfterPopulationChange(
 
 /** Walidowany delta 👤 na heksie (SILNIK/UI woła przy kliku). */
 export function adjustTileWorker(
-  city: Pick<City, 'population' | 'okolicaReczne' | 'okolicaTryb' | 'okolicaFocus' | 'q' | 'r'>,
+  city: Pick<City, 'population' | 'okolicaReczne' | 'okolicaTryb' | 'okolicaFocus' | 'q' | 'r' | 'ownerId'>,
   map: GameMap,
   q: number,
   r: number,
   delta: 1 | -1,
   radius?: number,
+  territoryNodes?: readonly TerritoryNode[],
 ): { ok: boolean; reczne: Record<string, number>; reason?: string } {
   const pop = Math.max(0, Math.floor(city.population ?? 0));
   const rad = radius ?? cityRangeForPopulation(pop);
   const key = `${q},${r}`;
   let reczne = { ...(city.okolicaReczne ?? {}) };
   if ((city.okolicaTryb ?? DEFAULT_OKOLICA_TRYB) !== 'reczny') {
-    reczne = seedReczneFromAuto(city, map);
+    reczne = seedReczneFromAuto(city, map, territoryNodes);
   }
   const current = reczne[key] ?? 0;
   const assigned = Object.values(reczne).reduce((s, n) => s + (n > 0 ? 1 : 0), 0);
@@ -330,8 +364,16 @@ export function adjustTileWorker(
       return { ok: true, reczne };
     }
     if (assigned >= pop) return { ok: false, reczne, reason: 'limit_populacji' };
-    const tiles = okolicaTiles(city.q, city.r, rad, map);
-    if (!tiles.some(t => t.key === key)) return { ok: false, reczne, reason: 'poza_zasiegiem' };
+    const workFilter = territoryNodes
+      ? makeTerritoryWorkableFilter(territoryNodes, city.ownerId)
+      : undefined;
+    const tiles = okolicaTiles(city.q, city.r, rad, map, workFilter);
+    if (!tiles.some(t => t.key === key)) {
+      if (territoryNodes && !isTerritoryHexOwnedBy(q, r, city.ownerId, territoryNodes)) {
+        return { ok: false, reczne, reason: 'obce_terytorium' };
+      }
+      return { ok: false, reczne, reason: 'poza_zasiegiem' };
+    }
     reczne[key] = 1;
     return { ok: true, reczne };
   }
@@ -355,11 +397,12 @@ export function surroundingWorkerCap(population: number): number {
  * Pula = population (N 👤 obok); centrum daje plony bez 👤 (Maciej B1 / 4C).
  */
 export function toggleTileWorker(
-  city: Pick<City, 'population' | 'okolicaReczne' | 'okolicaTryb' | 'okolicaFocus' | 'q' | 'r'>,
+  city: Pick<City, 'population' | 'okolicaReczne' | 'okolicaTryb' | 'okolicaFocus' | 'q' | 'r' | 'ownerId'>,
   map: GameMap,
   q: number,
   r: number,
   radius?: number,
+  territoryNodes?: readonly TerritoryNode[],
 ): { ok: boolean; reczne: Record<string, number>; reason?: string } {
   const pop = surroundingWorkerCap(city.population);
   if (pop <= 0) return { ok: false, reczne: {}, reason: 'brak_ludnosci' };
@@ -371,7 +414,7 @@ export function toggleTileWorker(
   const tryb = city.okolicaTryb ?? DEFAULT_OKOLICA_TRYB;
 
   if (tryb !== 'reczny') {
-    const autoReczne = seedReczneFromAuto(city, map);
+    const autoReczne = seedReczneFromAuto(city, map, territoryNodes);
     if ((autoReczne[key] ?? 0) >= 1) {
       reczne = autoReczne;
     } else {
@@ -380,8 +423,16 @@ export function toggleTileWorker(
     }
   }
 
-  const inRange = okolicaTiles(city.q, city.r, rad, map).some(t => t.key === key);
-  if (!inRange) return { ok: false, reczne, reason: 'poza_zasiegiem' };
+  const workFilter = territoryNodes
+    ? makeTerritoryWorkableFilter(territoryNodes, city.ownerId)
+    : undefined;
+  const inRange = okolicaTiles(city.q, city.r, rad, map, workFilter).some(t => t.key === key);
+  if (!inRange) {
+    if (territoryNodes && !isTerritoryHexOwnedBy(q, r, city.ownerId, territoryNodes)) {
+      return { ok: false, reczne, reason: 'obce_terytorium' };
+    }
+    return { ok: false, reczne, reason: 'poza_zasiegiem' };
+  }
 
   const current = reczne[key] ?? 0;
   if (current >= 1) {
@@ -403,13 +454,20 @@ export function collectWorkedHexKeysForOwner(
   cities: Array<Pick<City, 'q' | 'r' | 'population' | 'okolicaFocus' | 'okolicaTryb' | 'okolicaReczne' | 'ownerId'>>,
   map: GameMap,
   ownerId: number,
-  opts: { isWorkable?: (q: number, r: number) => boolean } = {},
+  opts: {
+    isWorkable?: (q: number, r: number) => boolean;
+    territoryNodes?: readonly TerritoryNode[];
+  } = {},
 ): Set<string> {
   const keys = new Set<string>();
   const yieldOf = (q: number, r: number) => yieldOfMapHex(map, q, r);
   for (const city of cities) {
     if (city.ownerId !== ownerId) continue;
-    const worked = resolveWorkedTiles(city, map, yieldOf, { isWorkable: opts.isWorkable });
+    const worked = resolveWorkedTiles(city, map, yieldOf, {
+      isWorkable: opts.isWorkable,
+      territoryNodes: opts.territoryNodes,
+      ownerId,
+    });
     for (const t of worked) keys.add(t.key);
   }
   return keys;
