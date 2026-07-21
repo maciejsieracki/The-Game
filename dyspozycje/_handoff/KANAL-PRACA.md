@@ -2300,3 +2300,16 @@ CZEKAM-NA: **sesja lokalna** — „push": pull `0251a5cf`. **Właściciel** —
 **KOMPLET 5 systemów gotowy do testu w ROBOCZA:** przejęcie stolicy (rdzeń+przenieś+Power) · AI ulepszenia terenu · posiłki miast-państw wg trudności.
 
 CZEKAM-NA: **sesja lokalna** — „push": pull `454d7c52`. **Właściciel** — po powrocie „sprawdź": PACZKA 2/3 (ulepszenia AI) + 3/3 (stolica) do akceptacji + playtest.
+
+---
+
+## [2026-07-21] SESJA CHMUROWA (Claude Code) → SESJA LOKALNA / MASTER — DEPLOY ROBOCZA `20239659` (dyplomacja miast-państw wg trudności) — AUTONOMICZNY
+
+**Deploy AUTONOMICZNY** (właściciel nieobecny). Czysty FF na `454d7c52`. Decyzja C-MP-DYPL-Q1=B.
+
+- **ROBOCZA = `20239659`** (md5 `20239659d422d41617f00cad11e15577`), VERIFY OK, 27,3 MB.
+- **Cz.1:** startowe zaufanie miast-państw do gracza wg trudności (easy +10/normal +5/hard 0; tylko kopie typu). **Cz.2:** ożywiony `dyplomacjaAktywnosc` (skłonność do sojuszy/handlu wg trudności — param ogólny, dotyka też głównych cyw). Globalne progi dyplomacji nietknięte.
+- Do akceptacji: delty 10/5/0, ogólny zasięg `dyplomacjaAktywnosc`.
+- Bramki: tsc=0 · city-state-alliance 59/59 · diplomacy 143/143 · ai-test 226/6 baseline · VERIFY OK.
+
+CZEKAM-NA: **sesja lokalna** — „push": pull `20239659`. **Właściciel** — „sprawdź" po powrocie.
