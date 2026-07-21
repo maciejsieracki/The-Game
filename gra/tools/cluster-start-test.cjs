@@ -11,7 +11,7 @@ const bundle = path.join(__dirname, '.cluster-start-bundle.cjs');
 
 fs.writeFileSync(entry, `
 export { buildClusterStartPlan } from '../src/game/cluster-start';
-export { buildClusterSpawnPlan, buildSameTypeRivalSlots, groupForeignTypeClusters } from '../src/map/cluster-spawn';
+export { buildClusterSpawnPlan, buildSameTypeRivalSlots, buildSameTypeRivalCandidateHexes, groupForeignTypeClusters } from '../src/map/cluster-spawn';
 export { generateMap } from '../src/map/generator';
 export { MIN_DIST_START_CITY_STATE, MIN_DIST_FOREIGN_FROM_PLAYER, MIN_DIST_FOREIGN_IN_CLUSTER, clusterPackRadius } from '../src/map/clusters';
 export { hexDistanceAxial } from '../src/map/gen-helpers';
@@ -61,11 +61,34 @@ assert(plan.typCityCopyOwners.size === plan.spawnCities.length - plan.clusterCap
   'typCityCopyOwners = państwa bez stolic klastrów');
 assert(plan.clusterCapitalOwnerIds.length === foreignCount,
   'każdy obcy typ ma stolicę klastra (ekspansyjna AI)');
-assert(plan.pendingSameTypeRivalHexes.length === plan.pendingSameTypeRivals,
-  'pre-planowane hexy państw gracza');
+// E-START-CS-Q1 C: spawn wokół FAKTYCZNEJ stolicy gracza, nie pre-planu mapgen
+const prePlanHexes = plan.pendingSameTypeRivalHexes;
+assert(prePlanHexes.length === plan.pendingSameTypeRivals,
+  'pre-planowane hexy państw gracza (podgląd mapgen)');
 
-// Symulacja: gracz założył miasto → spawn państw z pre-planu klastra
-const deferredHexes = plan.pendingSameTypeRivalHexes;
+// Gracz stawia stolicę w innym miejscu niż sugerowany hex algorytmu
+const offsetCore = { q: plan.playerStartHex.q + 6, r: plan.playerStartHex.r + 4 };
+const actualCandidates = M.buildSameTypeRivalCandidateHexes(
+  map, offsetCore, plan.pendingSameTypeRivals, 4242,
+);
+assert(actualCandidates.length >= plan.pendingSameTypeRivals,
+  'kandydaci wokół faktycznej stolicy >= liczba państw');
+const packRActual = M.clusterPackRadius(plan.pendingSameTypeRivals + 1, M.MIN_DIST_START_CITY_STATE);
+const packReachActual = packRActual + M.MIN_DIST_START_CITY_STATE * 6;
+for (const h of actualCandidates.slice(0, plan.pendingSameTypeRivals)) {
+  const dCore = M.hexDistanceAxial(h.q, h.r, offsetCore.q, offsetCore.r);
+  assert(dCore <= packReachActual,
+    `rywal przy offsetCore w zasięgu klastra (${dCore} <= ${packReachActual})`);
+  const dPrePlan = M.hexDistanceAxial(h.q, h.r, prePlanHexes[0].q, prePlanHexes[0].r);
+  assert(
+    M.hexDistanceAxial(h.q, h.r, offsetCore.q, offsetCore.r)
+      <= M.hexDistanceAxial(prePlanHexes[0].q, prePlanHexes[0].r, offsetCore.q, offsetCore.r) + packReachActual,
+    'kandydaci skupieni wokół offsetCore, nie pre-planu',
+  );
+}
+
+// Symulacja: gracz założył miasto → spawn państw z pre-planu klastra (legacy podgląd)
+const deferredHexes = prePlanHexes;
 assert(deferredHexes.length === 4, '4 deferred same-type po founding');
 const sameType = deferredHexes.map((h, i) => ({ q: h.q, r: h.r, name: 'mp' + (i + 1), ownerId: i + 1 }));
 for (const oid of [1, 2, 3, 4]) {

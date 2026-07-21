@@ -95,7 +95,7 @@ import { getWondersForCiv, getWonderById, getWonderAbsolutEpoka, type WonderDef 
 import { gameEpochHudLabel, type CivEntryEpochRow } from './game/civ-entry-epoch';
 import type { ProductionItem } from './game/production';
 import { resolveArchetypeAggression, resolveArchetypeTrade } from './game/civ-ai-data';
-import { buildClusterStartPlan, buildSameTypeRivalSlots } from './game/cluster-start';
+import { buildClusterStartPlan, buildSameTypeRivalCandidateHexes } from './game/cluster-start';
 import { clusterPackRadius, MIN_DIST_START_CITY_STATE, type ClusterPlacement } from './map/clusters';
 import { playerStartCityName, clusterRivalCityName, pickAiFoundedCityName, suggestPlayerFoundCityName } from './game/civ-names';
 import {
@@ -393,7 +393,7 @@ import {
   oldestCityOfOwner,
   type OwnerResourceAccess,
 } from './game/capital-capture';
-import { civBonusyForCivKey } from './game/economy';
+import { civBonusyForCivKey, cityPopulationCap, loadEconParams } from './game/economy';
 import { advanceProduction, rushProduction, rushCost, populationCostOf, UNIT_POPULATION_COST,
   enqueueRecruitment, advanceRecruitment, advanceRecruitmentGated, unitProductionItem,
   enqueue, buildingProductionItem, splitPraca, availableProduction, availableReplacementsFor,
@@ -2246,7 +2246,10 @@ async function boot(): Promise<void> {
       const mpRefund = unitManpowerCost(ep);
       const refundCity = cityAtUnit(u) ?? cities.find(c => c.ownerId === 0);
       if (refundCity) {
-        const refunded = refundUnitSpawnToCity(refundCity, ep, popRefund);
+        const built = cityBuilt.get(refundCity.id) ?? [];
+        const maAkwedukt = built.includes('akwedukt');
+        const popCap = cityPopulationCap(maAkwedukt, loadEconParams(data.econParams, _menuDifficulty));
+        const refunded = refundUnitSpawnToCity(refundCity, ep, popRefund, popCap);
         refundCity.population = refunded.population;
         refundCity.manpower = refunded.manpower;
       }
@@ -3302,34 +3305,38 @@ async function boot(): Promise<void> {
       );
     }
 
-    /** Po pierwszym mieście gracza — państwa z pre-planu klastra (Maciej 2026-07-07). */
+    /** Po pierwszym mieście gracza — państwa wokół FAKTYCZNEJ stolicy (E-START-CS-Q1 C). */
     function spawnPendingSameTypeRivals(_coreQ: number, _coreR: number): void {
       if (pendingSameTypeRivalCount <= 0) return;
+      const targetCount = pendingSameTypeRivalCount;
+      pendingSameTypeRivalCount = 0;
+      // Pre-plan z mapgen zostaje tylko do podglądu UI — nie używamy go do spawnu.
+      pendingSameTypeRivalHexes = [];
+
       let nextOwnerId = 1;
       for (const c of cities) if (c.ownerId >= nextOwnerId) nextOwnerId = c.ownerId + 1;
       for (const u of units) if (u.ownerId >= nextOwnerId) nextOwnerId = u.ownerId + 1;
 
-      const hexes = pendingSameTypeRivalHexes.length >= pendingSameTypeRivalCount
-        ? pendingSameTypeRivalHexes.slice(0, pendingSameTypeRivalCount)
-        : buildSameTypeRivalSlots(
-          map,
+      const core = { q: _coreQ, r: _coreR };
+      const candidates = buildSameTypeRivalCandidateHexes(
+        map,
+        core,
+        targetCount,
+        clusterStartSeed,
+      );
+
+      let _rivalsFounded = 0;
+      let _rivalsRejected = 0;
+      for (const pos of candidates) {
+        if (_rivalsFounded >= targetCount) break;
+
+        const ownerId = nextOwnerId + _rivalsFounded;
+        const nazwa = clusterRivalCityName(
           data.civs,
-          { q: _coreQ, r: _coreR },
           _menuCivId,
-          pendingSameTypeRivalCount,
-          clusterStartSeed,
-          nextOwnerId,
-        ).map(s => ({ q: s.q, r: s.r }));
-
-      const rivalCount = Math.min(pendingSameTypeRivalCount, hexes.length);
-      pendingSameTypeRivalCount = 0;
-      pendingSameTypeRivalHexes = [];
-
-      let _rivalsFounded = 0, _rivalsRejected = 0;
-      for (let idx = 0; idx < rivalCount; idx++) {
-        const pos = hexes[idx]!;
-        const ownerId = nextOwnerId + idx;
-        const nazwa = clusterRivalCityName(data.civs, _menuCivId, idx + 1, data.cityNamesPools);
+          _rivalsFounded + 1,
+          data.cityNamesPools,
+        );
         aiOwnerCivMap.set(ownerId, _menuCivId);
         setupAiOwnerEpoch(ownerId, _menuEpochId);
         ownerDisplayName.set(ownerId, nazwa);
@@ -3345,13 +3352,13 @@ async function boot(): Promise<void> {
           0, ownerId,
           applyCityStateDifficultyTrust(startRelationForPair(true), _menuDifficulty),
         );
-        aiStartHexes.push({ q: pos.q, r: pos.r, ownerId });
 
         const c = foundCityAt(pos.q, pos.r, ownerId, cities, map, nazwa, true);
         if (c) {
           c.startCityState = true;
           cities.push(c);
           finalizeCityFounding(c, pos.q, pos.r);
+          aiStartHexes.push({ q: pos.q, r: pos.r, ownerId });
           _rivalsFounded++;
         } else {
           _rivalsRejected++;
@@ -3361,9 +3368,11 @@ async function boot(): Promise<void> {
       // D12: refreshFog + cityRenderer.sync robi wywołujący (tryFoundPlayerCityAt) RAZ po spawnie —
       // nie dublujemy tu (było 2× pełny fog + 2× odbudowa WSZYSTKICH miast na Super Huge).
       initDiplomaticContactSnapshot();
-      console.log('[ClusterStart] deferred same-type rivals=' + _rivalsFounded + '/' + rivalCount +
-        (_rivalsRejected > 0 ? ' (' + _rivalsRejected + ' odrzuconych przez canFoundCity)' : '') +
-        ' (pre-planned cluster)');
+      console.log(
+        '[ClusterStart] deferred same-type rivals=' + _rivalsFounded + '/' + targetCount +
+        (_rivalsRejected > 0 ? ' (' + _rivalsRejected + ' odrzuconych, backfill)' : '') +
+        ' (actual player capital @ ' + core.q + ',' + core.r + ')',
+      );
     }
 
     function setDiploRelation(a: number, b: number, rel: Relation): void {
@@ -5079,12 +5088,17 @@ async function boot(): Promise<void> {
       diagInfo('demo', `zasiano ulepszenia na ${count} heksach (tryb pokazowy)`);
     }
 
+    /** Wydarzenia wymagające akcji gracza (WYKONAJ). Nagrody z chatek są już rozliczone — tylko podgląd. */
+    function isActionableEvent(ev: SidePanelEvent): boolean {
+      return !ev.id.startsWith('village-');
+    }
+
     function countBlockingEvents(): number {
-      return collectTurnEvents().length;
+      return collectTurnEvents().filter(isActionableEvent).length;
     }
 
     function executeFirstBlockingEvent(): void {
-      const ev = collectTurnEvents()[0];
+      const ev = collectTurnEvents().find(isActionableEvent);
       if (!ev) return;
       if (ev.id.startsWith('diplo-pend-')) {
         openDiplomacyPendingById(ev.id);
@@ -7582,6 +7596,14 @@ async function boot(): Promise<void> {
             openCityPanelForPlayer(city);
           }
         },
+        onEventDismiss: (id) => {
+          if (!id.startsWith('village-')) return;
+          const idx = villageEventLog.findIndex(e => e.id === id);
+          if (idx >= 0) {
+            villageEventLog.splice(idx, 1);
+            refreshD1bHud();
+          }
+        },
       });
       mountEmpireDetailPanel(() => buildEmpireDetailSnap());
     }
@@ -8200,6 +8222,11 @@ async function boot(): Promise<void> {
           for (const done of step.completed) {
             summary += ' \xb7 zbadano ' + done.id;
             if (done.awansEpoki) summary += ' (epoka ' + done.era + ')';
+          }
+          if (step.completed.some(d => d.awansEpoki)) {
+            overlayDepositEra = player.era;
+            rebuildResourceOverlays();
+            setEra(player.era);
           }
         }
       } else {
@@ -10976,6 +11003,9 @@ async function boot(): Promise<void> {
         await yieldTurnTransitionUi();
         turn++;
 
+        // Chatki: nagroda już przyznana — wpis w WYDARZENIACH tylko do końca tury bieżącej.
+        villageEventLog.length = 0;
+
         // M: rotacyjny autozapis co N tur (domyślnie co turę) — 10 ostatnich wstecz.
         if (turn % getAutosaveFrequency() === 0) doRotatingAutosave();
 
@@ -11705,16 +11735,19 @@ async function boot(): Promise<void> {
               const aiTechChoice = chooseAIResearch(
                 data.tech as any,
                 aiDone,
-                { myCitiesCount: aiCitiesCount, allBuiltBuildings: allBuiltForAI },
+                {
+                  myCitiesCount: aiCitiesCount,
+                  allBuiltBuildings: allBuiltForAI,
+                  techData: data.tech as any,
+                  researchGate: researchGateForOwner(ownerId),
+                },
               );
               if (aiTechChoice !== null && !aiDone.has(aiTechChoice)) {
                 const techDef = data.tech.find(t => t.Technologia === aiTechChoice);
                 const eraAdvance = techDef && isEraAdvanceTech(techDef as import('./data/loader').TechDef);
-                if (!eraAdvance) {
-                  aiDone.add(aiTechChoice);
-                  refreshCityRenderIfEraChanged(syncOwnerEraFromResearch(ownerId));
-                  console.log(`[AI ${ownerId}] Zbadano: ${aiTechChoice}`);
-                }
+                aiDone.add(aiTechChoice);
+                refreshCityRenderIfEraChanged(syncOwnerEraFromResearch(ownerId));
+                console.log(`[AI ${ownerId}] Zbadano: ${aiTechChoice}${eraAdvance ? ' (awans epoki)' : ''}`);
               }
             } catch (eAIRes) {
               console.error(`[AI ${ownerId}] Blad wyboru technologii:`, eAIRes);

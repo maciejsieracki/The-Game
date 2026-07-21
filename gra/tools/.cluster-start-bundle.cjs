@@ -25,6 +25,7 @@ __export(cluster_start_entry_exports, {
   MIN_DIST_START_CITY_STATE: () => MIN_DIST_START_CITY_STATE,
   buildClusterSpawnPlan: () => buildClusterSpawnPlan,
   buildClusterStartPlan: () => buildClusterStartPlan,
+  buildSameTypeRivalCandidateHexes: () => buildSameTypeRivalCandidateHexes,
   buildSameTypeRivalSlots: () => buildSameTypeRivalSlots,
   clusterPackRadius: () => clusterPackRadius,
   generateMap: () => generateMap,
@@ -189,10 +190,6 @@ var map_gen_params_default = {
     glina: { rarity: 0.1 },
     konie: { rarity: 0.025 },
     wegiel: { rarity: 0.1 },
-    owce: { rarity: 0.14 },
-    bydlo: { rarity: 0.12 },
-    lama: { rarity: 0.06 },
-    luksus: { rarity: 0.06 },
     sol: { rarity: 0.12 }
   },
   metal_deposit_min_era: {
@@ -936,8 +933,6 @@ function generateMap(width = DEFAULT_WIDTH, height = DEFAULT_HEIGHT, seed = 42, 
   }
   enforceMapBorderOcean(hexes, width, height);
   if (typ !== "pangea") {
-    purgeInlandWaterForMultiLandTyp(hexes, width, height);
-  } else {
     purgeInlandWaterForMultiLandTyp(hexes, width, height);
   }
   finalizeCoastAndInlandWater(hexes, width, height, 3, coastOpts);
@@ -2498,6 +2493,7 @@ function pickReliefForceHex(land, hexes, scratch, width, height, want, avoid, ra
     if (avoid.has(k)) return false;
     const hex = hexes[k];
     if (!hex || hex.terenBazowy === "morze" /* Morze */) return false;
+    if (hex.terenBazowy === "wybrzeze" /* Wybrzeze */) return false;
     if (want === "mountain" && hex.terenBazowy === "gory" /* Gory */) return false;
     if (want === "highland" && hex.terenBazowy === "wzgorza" /* Wzgorza */) return false;
     if (want === "mountain" && protectHighland && hex.terenBazowy === "wzgorza" /* Wzgorza */) {
@@ -2560,6 +2556,7 @@ function forceReliefTypeInCell(land, hexes, scratch, width, height, rand, want, 
         if (placed.has(k2)) return false;
         const hex = hexes[k2];
         if (!hex || hex.terenBazowy === "morze" /* Morze */) return false;
+        if (hex.terenBazowy === "wybrzeze" /* Wybrzeze */) return false;
         if (want === "mountain" && hex.terenBazowy === "gory" /* Gory */) return false;
         if (want === "highland" && hex.terenBazowy === "wzgorza" /* Wzgorza */) return false;
         return true;
@@ -5704,7 +5701,7 @@ function computeClusters(map, opts) {
   const nTypy = Math.min(aktywneTypy, ROSTER_KLUCZE.length);
   const ladowe = [];
   for (const h of allHexes) {
-    if (h.terenBazowy !== "morze" /* Morze */ && h.terenBazowy !== "gory" /* Gory */) {
+    if (h.terenBazowy !== "morze" /* Morze */ && h.terenBazowy !== "gory" /* Gory */ && h.terenBazowy !== "wybrzeze" /* Wybrzeze */) {
       ladowe.push({ q: h.coords.q, r: h.coords.r });
     }
   }
@@ -5847,7 +5844,7 @@ function computeClusters(map, opts) {
 function landHexesFromMap(map) {
   const out = [];
   for (const h of Object.values(map.hexes)) {
-    if (h.terenBazowy === "morze" /* Morze */ || h.terenBazowy === "gory" /* Gory */) continue;
+    if (h.terenBazowy === "morze" /* Morze */ || h.terenBazowy === "gory" /* Gory */ || h.terenBazowy === "wybrzeze" /* Wybrzeze */) continue;
     out.push({ q: h.coords.q, r: h.coords.r });
   }
   return out;
@@ -5875,6 +5872,33 @@ function buildSameTypeRivalSlots(map, civs, core, playerTyp, rivalCount, seed, f
     });
   });
   return slots;
+}
+function buildSameTypeRivalCandidateHexes(map, core, rivalCount, seed) {
+  if (rivalCount <= 0) return [];
+  const land = landHexesFromMap(map);
+  const poolSize = Math.max(rivalCount * 3, rivalCount + 4);
+  const seen = /* @__PURE__ */ new Set();
+  const out = [];
+  const coreKey = `${core.q},${core.r}`;
+  function mergePass(extraSeed) {
+    const hexes = packRivalCitiesAroundCore(
+      land,
+      core,
+      poolSize,
+      MIN_DIST_START_CITY_STATE,
+      extraSeed
+    );
+    for (const h of hexes) {
+      const k = `${h.q},${h.r}`;
+      if (k === coreKey || seen.has(k)) continue;
+      seen.add(k);
+      out.push(h);
+    }
+  }
+  mergePass((seed ^ 2654435769) >>> 0);
+  mergePass(seed + 1367130551 >>> 0);
+  mergePass(seed + 2246822507 >>> 0);
+  return out;
 }
 function capitalOf(klaster) {
   const cap = klaster.miasta.find((m) => m.isCapital) ?? klaster.miasta[0];
@@ -6247,6 +6271,7 @@ function buildClusterStartPlan(input) {
   MIN_DIST_START_CITY_STATE,
   buildClusterSpawnPlan,
   buildClusterStartPlan,
+  buildSameTypeRivalCandidateHexes,
   buildSameTypeRivalSlots,
   clusterPackRadius,
   generateMap,

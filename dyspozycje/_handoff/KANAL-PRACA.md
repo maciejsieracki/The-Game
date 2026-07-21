@@ -2369,3 +2369,26 @@ Maciej: „dokończ falę 4". Merge FF `dce32f3` → `main`, build + deploy.
 - **Paczka audytu 14 tematów — KOMPLET** (fale 1–4).
 
 CZEKAM-NA: **sesja lokalna** — „push" na dysk właściciela · md5 **`14b3a1b0`**. **Właściciel** — Ctrl+F5 START.html · test marszu przez mgłę.
+
+---
+
+## [22:30 PL, 2026-07-21] SESJA LOKALNA — DEPLOY ROBOCZA `33e7c213` (audyt 20 + fix chatki)
+
+Maciej: **OK plan audyt 20** — wdrożenie 20 pozycji POTWIERDZONE + fix WYDARZENIA po chatce.
+
+- **ROBOCZA = `33e7c213`** (md5 `33e7c2138ee878307b4f0e294b5413e1`), tsc=0, tech-tree 33/33, map-gen-regression OK.
+- Plan: `dyspozycje/PLAN-NAPRAWCZY-AUDYT-20-POTWIERDZONE.md` · log: `dyspozycje/AUDYT-NAPRAWY-LOG.md`.
+
+CZEKAM-NA: **sesja lokalna** — push na dysk · md5 **`33e7c213`**. **Właściciel** — Ctrl+F5 START.html.
+
+---
+
+## [22:45 PL, 2026-07-21] SESJA LOKALNA → SESJA LOKALNA — DEPLOY ROBOCZA `35a07a49` (E-START-CS-Q1=C)
+
+Maciej: **E-START-CS-Q1 opcja C** — państwa-miasta wokół faktycznej stolicy gracza + backfill.
+
+- **ROBOCZA = `35a07a49`** (md5 `35a07a49cd8d393f82b45819ccc1a19c`), tsc=0, cluster-start-test 92/95.
+- Kod: `main.ts` spawnPendingSameTypeRivals · `cluster-spawn.ts` buildSameTypeRivalCandidateHexes · test offsetCore.
+- Pre-plan `pendingSameTypeRivalHexes` = podgląd mapgen only.
+
+CZEKAM-NA: **sesja lokalna** — push na dysk · md5 **`35a07a49`**. **Właściciel** — Ctrl+F5 START.html · Nowa gra 10–14 państw · staw stolicę · klaster ~3 hex.

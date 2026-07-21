@@ -4,7 +4,31 @@
 > **Czat:** krótko **`✅ Gotowe:`** / **`⏸️ Czeka:`** · **Ten plik:** pełniejszy zapis tego samego.  
 > Szczegóły techniczne → handoff w `dyspozycje/_handoff/` · operacja → `dyspozycje/DZIENNIK-MASTERA.md`
 
-**Ostatnia aktualizacja:** 2026-07-21 (fala 4 deploy)
+**Ostatnia aktualizacja:** 2026-07-21 (audyt 20 deploy)
+
+---
+
+## [2026-07-21] ✅ Gotowe — E-START-CS-Q1=C: państwa wokół faktycznej stolicy
+
+| | |
+|---|---|
+| **Co** | Państwa-miasta spawnują się wokół hexu, gdzie gracz postawi stolicę (nie pre-plan mapgen); backfill gdy hex odrzucony |
+| **Decyzja** | E-START-CS-Q1 **C** (fallback → A jeśli nie zadziała) |
+| **md5** | `35a07a49cd8d393f82b45819ccc1a19c` · stamp `35a07a49` |
+| **Bramki** | tsc=0 · cluster-start-test 92/95 (3 pre-existing) |
+| **Od Ciebie** | Ctrl+F5 · `gra-robocza/START.html` · Nowa gra · 10–14 państw · postaw stolicę (możesz w innym miejscu niż podgląd) · sprawdź gęsty klaster ~3 hex wokół Twojej stolicy |
+
+---
+
+## [2026-07-21] ✅ Gotowe — Audyt 20 POTWIERDZONE + fix chatki WYDARZENIA
+
+| | |
+|---|---|
+| **Co** | 20 napraw z audytu Fable (ekonomia, AI, audio, mapa, zwycięstwo nauka…) + chatka znika po turze, WYKONAJ nie blokuje |
+| **Decyzja** | OK plan audyt 20 (ABC: #6A #4A #62B #64A) |
+| **md5** | `33e7c2138ee878307b4f0e294b5413e1` · stamp `33e7c213` |
+| **Bramki** | tsc=0 · tech-tree 33/33 · map-gen-regression OK |
+| **Od Ciebie** | Ctrl+F5 · `gra-robocza/START.html` · chatka → zakończ turę (komunikat znika) · AI bada po awansie epoki |
 
 ---
 

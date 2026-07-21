@@ -11,9 +11,17 @@ swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drug
 
 ## ROBOCZA (gra-robocza\Gra-ROBOCZA.html — wskazywana przez START.html)
 
+- 2026-07-21 · stempel: ROBOCZA · **35a07a49** · md5 pliku `35a07a49cd8d393f82b45819ccc1a19c` · **E-START-CS-Q1=C — państwa-miasta wokół faktycznej stolicy gracza** — na `33e7c213`:
+  **C:** spawn deferred same-type rivals używa `buildSameTypeRivalCandidateHexes` wokół hexu gracza (nie pre-planu mapgen); backfill przy odrzuceniu `foundCityAt`; pre-plan zostaje tylko do podglądu UI.
+  tsc=0 · cluster-start-test 92/95 (3 pre-existing map 50×50) · publish `gra-robocza/Gra-ROBOCZA.html`. · **AKTUALNA** · Test: Ctrl+F5 START.html → stamp `35a07a49`; Nowa gra 10–14 państw → postaw stolicę w innym miejscu niż sugerowane → gęsty klaster ~3 hex wokół Twojej stolicy.
+
+- 2026-07-21 · stempel: ROBOCZA · **33e7c213** · md5 pliku `33e7c2138ee878307b4f0e294b5413e1` · **AUDYT 20 POTWIERDZONE (Maciej OK plan audyt 20)** + fix chatki WYDARZENIA:
+  **E1–E8:** #3 dupe ludności rekrut/disband · #4 suwak 0% nie kasuje głodu · #5/#37 AI badania (awans epoki + epoch/tier gates) · #6 zwycięstwo nauka bez rakiety (NAUKA_WYMAGA_RAKIETY) · #7 relief bez Gór na Wybrzeżu · #8/#9/#39/#65 audio intro/awans epoki/natura/crossfade · #34 parametry głodu z ekonomia_miasta · #35 zdrowie nie zeruje deficytu żywności · #36 utrzymanie budynków w upkeep · #38 cuda nie na Wybrzeżu · #59 Praca→¤ po splitPraca · #60/#61 wioska setEra + parser prereków · #62 pangea bez purge jezior · #63 scoring start dist=4 · #64 martwe deposit_rules usunięte · **extra:** chatka znika po turze, WYKONAJ nie blokuje na nagrodzie.
+  tsc=0 · tech-tree 33/33 · map-gen-regression OK · publish `gra-robocza/Gra-ROBOCZA.html`. · **ZASTĄPIONA** (→ `35a07a49`) · Test: Ctrl+F5 START.html → stamp `33e7c213`; chatka → komunikat znika po zakończeniu tury; AI bada dalej po awansie epoki.
+
 - 2026-07-21 · stempel: ROBOCZA · **14b3a1b0** · md5 pliku `14b3a1b05833ba24add367ec93b9beb3` · commit `dce32f3` (FF `main`, PUSHNIĘTE) · **TRASA PRZEZ MGŁĘ (fala 4, C-RUCH-Q1=B)** — na `a7e6b012`:
   **B:** `applyFogToPathPlan` nie ucina już trasy na granicy widoczności — można prowadzić marsz **optymalną trasą przez mgłę i nieodkryty teren** do celu. Pathfinding omija teren nieprzejezdny; egzekucja zatrzymuje jednostkę na realnej blokadzie (`shouldStopAtObstacle`). Dawna logika „ślepa" przeniesiona do `_applyFogToPathPlanBlind` (nieużywana).
-  tsc=0 · planned-march 18/18 · logic 203/203 · VERIFY OK. Bundel **27,3 MB**. · **AKTUALNA** · Deploy sesja lokalna (Maciej: „dokończ falę 4"). Test: zaznacz armię → klik cel za mgłą → trasa prowadzi przez mgłę do celu (nie staje na granicy widoczności); Ctrl+F5 START.html → stamp `14b3a1b0`.
+  tsc=0 · planned-march 18/18 · logic 203/203 · VERIFY OK. Bundel **27,3 MB**. · **ZASTĄPIONA** (→ `33e7c213`) · Deploy sesja lokalna (Maciej: „dokończ falę 4"). Test: zaznacz armię → klik cel za mgłą → trasa prowadzi przez mgłę do celu (nie staje na granicy widoczności); Ctrl+F5 START.html → stamp `14b3a1b0`.
 
 - 2026-07-21 · stempel: ROBOCZA · **a7e6b012** · md5 pliku `a7e6b01281d10853974faa884d79ef5b` · commit `dba6e6e` (branch `claude/sprawdzenie-funkcjonalnosci-ek4ra0`, PUSHNIĘTE) · **AUTOSAVE ROTACYJNY (fala 3): 10 ostatnich wstecz + ustawienie częstotliwości** — na `38d6fc8b`:
   **M:** automatyczny autozapis co N tur (domyślnie **co turę**) do rotacji 10 slotów (autosave-1…10) — zawsze **10 ostatnich stanów wstecz**. Częstotliwość N (1..20 tur) ustawiana w **menu pauzy** („Autozapis co N tur"). Slot Ctrl+S („autosave") pozostaje osobny. Rotacyjne sloty pojawiają się w oknie Wczytaj. `setLastPlayedSlotId` → „Kontynuuj" wskazuje najnowszy autozapis.

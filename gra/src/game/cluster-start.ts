@@ -8,7 +8,7 @@ import type { GameMap } from '../types/map';
 import type { CityNamesPoolsData } from './city-names-pool';
 import {
   buildClusterSpawnPlan,
-  buildSameTypeRivalSlots,
+  buildSameTypeRivalCandidateHexes,
   displayLabelForSlot,
   type ClusterSpawnPlan,
   type ClusterSpawnSlot,
@@ -18,7 +18,7 @@ import { startRelationForPair } from './diplomacy-layers';
 import type { Relation } from './diplomacy';
 
 export type { ClusterSpawnSlot, ClusterSpawnPlan, ForeignTypeClusterGroup };
-export { buildSameTypeRivalSlots };
+export { buildSameTypeRivalSlots, buildSameTypeRivalCandidateHexes } from '../map/cluster-spawn';
 
 export interface ClusterStartPlan {
   playerStartHex: { q: number; r: number };

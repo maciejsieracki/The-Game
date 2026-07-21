@@ -96,6 +96,45 @@ export function buildSameTypeRivalSlots(
   return slots;
 }
 
+/**
+ * Rozszerzona pula kandydatów na państwa-miasta wokół FAKTYCZNEJ stolicy gracza.
+ * Pre-plan z mapgen = podgląd; spawn używa rdzenia gracza + backfill (E-START-CS-Q1 C).
+ */
+export function buildSameTypeRivalCandidateHexes(
+  map: GameMap,
+  core: { q: number; r: number },
+  rivalCount: number,
+  seed: number,
+): Array<{ q: number; r: number }> {
+  if (rivalCount <= 0) return [];
+  const land = landHexesFromMap(map);
+  const poolSize = Math.max(rivalCount * 3, rivalCount + 4);
+  const seen = new Set<string>();
+  const out: Array<{ q: number; r: number }> = [];
+  const coreKey = `${core.q},${core.r}`;
+
+  function mergePass(extraSeed: number): void {
+    const hexes = packRivalCitiesAroundCore(
+      land,
+      core,
+      poolSize,
+      MIN_DIST_START_CITY_STATE,
+      extraSeed,
+    );
+    for (const h of hexes) {
+      const k = `${h.q},${h.r}`;
+      if (k === coreKey || seen.has(k)) continue;
+      seen.add(k);
+      out.push(h);
+    }
+  }
+
+  mergePass((seed ^ 0x9e3779b9) >>> 0);
+  mergePass((seed + 0x517cc1b7) >>> 0);
+  mergePass((seed + 0x85ebca6b) >>> 0);
+  return out;
+}
+
 export interface BuildClusterSpawnInput {
   map: GameMap;
   civs: CivsData;

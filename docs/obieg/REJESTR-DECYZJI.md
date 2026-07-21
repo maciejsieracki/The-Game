@@ -44,6 +44,7 @@
 
 | ID | Data | Decyzja Macieja (skrót) | Grupa | Status | Dowód / gdzie | Notatki |
 |---|---|---|---|---|---|---|
+| **E-START-CS-Q1** | 2026-07-21 | **C** — wybór stolicy gracza zostaje; państwa-miasta pakowane wokół FAKTYCZNEGO hexu gracza + backfill przy odrzuceniu; pre-plan mapgen = podgląd | E+F | 🔵 **W TRAKCIE** | `main.ts` spawnPendingSameTypeRivals · `cluster-spawn.ts` buildSameTypeRivalCandidateHexes · cluster-start-test | Maciej: „sprawdźmy C, jak nie zadziała → A" |
 | **EKO-TECH-P1** | 2026-07-04 | Paczka 1/3 (patrz doc) | B+MASTER | 🟢 WDROŻONA | kanon md5 `afd8770d…` · test 9/9 | playtest Maciej |
 | **EKO-TECH-P2** | 2026-07-04 | Paczka 2/3 ABC-10/11/14 = **A** | B+MAPA | 🟢 WDROŻONA | robocza md5 `395f12c3…` · test 9/9 | 2026-07-05 rebuild |
 | **EKO-TECH-P3** | 2026-07-04 | Paczka 3/5 ABC-12/13/15 | B+EKONOMIA+F | 🟢 WDROŻONA | robocza md5 `395f12c3…` · test 10/10 | kanon czeka Opus |
