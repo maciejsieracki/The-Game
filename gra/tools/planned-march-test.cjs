@@ -160,7 +160,11 @@ const fogApplied = applyFogToPathPlan(fogPlan, map, 2, 2, {
   attackOnVisibleEnemy: false,
   keyOf: (q, r) => q + ',' + r,
 });
-assert(fogApplied.fullPath.length === 1 && fogApplied.fogLimited, 'applyFog limits march into fog');
+// C-RUCH-Q1=B (2026-07-21): applyFogToPathPlan NIE ucina już trasy na mgle (wariant
+// „optymalna trasa przez mgłę") — trasa prowadzi przez mgłę/nieodkryty teren do celu;
+// egzekucja marszu zatrzymuje jednostkę na realnej blokadzie (shouldStopAtObstacle).
+assert(fogApplied.fullPath.length === fogPlan.fullPath.length && !fogApplied.fogLimited,
+  'applyFog: wariant B — trasa przez mgłę NIE jest ucinana');
 
 const attackMarch = executeMarchStep(
   unit,

@@ -50,8 +50,28 @@ export function truncatePathAtFogFrontier(
   return { path: out, fogLimited: out.length < path.length };
 }
 
-/** Zastosuj reguły mgły do planu trasy (bez mutacji wejścia). */
+/**
+ * Zastosuj reguły mgły do planu trasy (bez mutacji wejścia).
+ *
+ * C-RUCH-Q1=B (Maciej 2026-07-21, wariant „optymalna trasa przez mgłę"):
+ * NIE ucinamy już trasy na granicy widoczności — trasę można prowadzić przez mgłę
+ * i nieodkryty teren. `computePath` (silnik) i tak omija teren nieprzejezdny, a
+ * egzekucja marszu zatrzymuje jednostkę na realnej blokadzie (wróg/miasto) przez
+ * `shouldStopAtObstacle`. Parametry map/perTurnMove/movementBudget/fog zostają w
+ * sygnaturze dla zgodności z wywołaniami (i ewentualnego przyszłego wariantu ślepego).
+ */
 export function applyFogToPathPlan(
+  plan: PathTurnPlan,
+  _map: GameMap,
+  _perTurnMove: number,
+  _movementBudget: number | undefined,
+  _fog: MarchFogContext | undefined,
+): PathTurnPlan & { fogLimited?: boolean } {
+  return plan;
+}
+
+/** [DEPRECATED wariant ślepy] dawna logika ucinania na mgle — nieużywana od C-RUCH-Q1=B. */
+function _applyFogToPathPlanBlind(
   plan: PathTurnPlan,
   map: GameMap,
   perTurnMove: number,
