@@ -4,7 +4,20 @@
 > **Czat:** krótko **`✅ Gotowe:`** / **`⏸️ Czeka:`** · **Ten plik:** pełniejszy zapis tego samego.  
 > Szczegóły techniczne → handoff w `dyspozycje/_handoff/` · operacja → `dyspozycje/DZIENNIK-MASTERA.md`
 
-**Ostatnia aktualizacja:** 2026-07-22 (akceptacja AI handel → +20 ¤)
+**Ostatnia aktualizacja:** 2026-07-22 (granice państwa — ciągły kontur)
+
+---
+
+## [2026-07-22] ✅ Gotowe — granice państwa: ciągły obwód per państwo
+
+| | |
+|---|---|
+| **Co** | Każde państwo ma **ciągły kolorowy obwód** wokół **całego** terytorium — nie rozłączone paski per heks |
+| **Jak włączyć** | Minimapa → ikona **granice państwa** (toggle) |
+| **Co naprawiono** | Algorytm konturów (pętle polyline) zamiast segmentów per heks; poprawne mapowanie krawędzi hex; alpha **50%**, szerokość **0.15** world units (+50% od poprzedniego) |
+| **md5** | `826cc00bda20eccc5392ae3924a7aae0` · stamp `826cc00b` |
+| **Bramki** | tsc=0 · territory-border-test 9/9 · picker-test 136/136 · map-gen-regression PASS |
+| **Od Ciebie** | `git pull` → Ctrl+F5 · `gra-robocza/START.html` → stamp `826cc00b` → mapa → granice państwa ON → Ateny, Mykeny i każde AI z własnym obwodem |
 
 ---
 

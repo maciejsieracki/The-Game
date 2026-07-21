@@ -6,6 +6,10 @@ import type { GameMap } from '../types/map';
 import { TerenBazowy } from '../types/hex';
 import { axialToWorld, HEX_R } from './hexutil';
 import { GAME_MAP_RENDER_STYLE, terrainSurfaceTopY } from './mapRenderStyle';
+import {
+  computeTerritoryBorderLoops,
+  type BorderLoopPoint,
+} from '../map/territory-border';
 
 const HEX_DIRS: { dq: number; dr: number }[] = [
   { dq: 1, dr: 0 },
@@ -99,8 +103,8 @@ function buildBorderLine(
       const nq = q + dir.dq;
       const nr = r + dir.dr;
       if (!hexKeys.has(`${nq},${nr}`)) {
-        const va = verts[i]!;
-        const vb = verts[(i + 1) % 6]!;
+        const va = verts[(i + 1) % 6]!;
+        const vb = verts[(i + 2) % 6]!;
         positions.push(va.x, va.y, va.z, vb.x, vb.y, vb.z);
       }
     }
@@ -170,8 +174,8 @@ function buildBorderBandMesh(
       const nr = r + dir.dr;
       if (hexKeys.has(`${nq},${nr}`)) continue;
 
-      const va = verts[i]!;
-      const vb = verts[(i + 1) % 6]!;
+      const va = verts[(i + 1) % 6]!;
+      const vb = verts[(i + 2) % 6]!;
       const { nx, nz } = edgeOutwardNormal(cx, cz, va.x, va.z, vb.x, vb.z);
       const ax0 = va.x;
       const az0 = va.z;
@@ -238,16 +242,105 @@ export const RELIGION_RANGE_STYLE: RangeOverlayStyle = {
 };
 
 /** Obrys granicy państwa — szeroki pas (world units), nie cienka linia WebGL 1px. */
-export const TERRITORY_BORDER_BAND_WIDTH = 0.10;
-export const TERRITORY_BORDER_OPACITY = 0.48;
+export const TERRITORY_BORDER_BAND_WIDTH = 0.15;
+export const TERRITORY_BORDER_OPACITY = 0.5;
 export const TERRITORY_BORDER_Y_OFFSET = 0.042;
 
-function borderVertexKey(x: number, z: number): string {
-  return `${x.toFixed(5)},${z.toFixed(5)}`;
+function segmentOutwardNormal(
+  ax: number,
+  az: number,
+  bx: number,
+  bz: number,
+  loop: BorderLoopPoint[],
+): { nx: number; nz: number } {
+  const dx = bx - ax;
+  const dz = bz - az;
+  const len = Math.hypot(dx, dz) || 1;
+  // Prawa normalna do kierunku A→B (obwód CCW → na zewnątrz terytorium).
+  let nx = dz / len;
+  let nz = -dx / len;
+  // Korekta: jeśli normalna wskazuje do środka pętli, odwróć.
+  let cx = 0;
+  let cz = 0;
+  for (const p of loop) {
+    cx += p.x;
+    cz += p.z;
+  }
+  cx /= loop.length;
+  cz /= loop.length;
+  const midx = (ax + bx) * 0.5;
+  const midz = (az + bz) * 0.5;
+  if ((cx - midx) * nx + (cz - midz) * nz > 0) {
+    nx = -nx;
+    nz = -nz;
+  }
+  return { nx, nz };
+}
+
+/** Pas wzdłuż zamkniętej pętli obwodu — ciągły kontur, joiny w wierzchołkach. */
+function appendBorderBandLoop(
+  loop: BorderLoopPoint[],
+  bandWidth: number,
+  y: number,
+  positions: number[],
+  indices: number[],
+  viRef: { v: number },
+): void {
+  const n = loop.length;
+  if (n < 3) return;
+
+  const outers: { x: number; z: number }[] = new Array(n);
+
+  for (let i = 0; i < n; i++) {
+    const prev = loop[(i + n - 1) % n]!;
+    const cur = loop[i]!;
+    const next = loop[(i + 1) % n]!;
+    const nPrev = segmentOutwardNormal(prev.x, prev.z, cur.x, cur.z, loop);
+    const nNext = segmentOutwardNormal(cur.x, cur.z, next.x, next.z, loop);
+    outers[i] = {
+      x: cur.x + (nPrev.nx + nNext.nx) * 0.5 * bandWidth,
+      z: cur.z + (nPrev.nz + nNext.nz) * 0.5 * bandWidth,
+    };
+  }
+
+  for (let i = 0; i < n; i++) {
+    const j = (i + 1) % n;
+    const a0 = loop[i]!;
+    const a1 = loop[j]!;
+    const b0 = outers[i]!;
+    const b1 = outers[j]!;
+    let vi = viRef.v;
+    positions.push(
+      a0.x, y, a0.z,
+      a1.x, y, a1.z,
+      b1.x, y, b1.z,
+      b0.x, y, b0.z,
+    );
+    indices.push(vi, vi + 1, vi + 2, vi, vi + 2, vi + 3);
+    viRef.v += 4;
+  }
+
+  for (let i = 0; i < n; i++) {
+    const cur = loop[i]!;
+    const prev = loop[(i + n - 1) % n]!;
+    const next = loop[(i + 1) % n]!;
+    const nPrev = segmentOutwardNormal(prev.x, prev.z, cur.x, cur.z, loop);
+    const nNext = segmentOutwardNormal(cur.x, cur.z, next.x, next.z, loop);
+    const oPrev = { x: cur.x + nPrev.nx * bandWidth, z: cur.z + nPrev.nz * bandWidth };
+    const oNext = { x: cur.x + nNext.nx * bandWidth, z: cur.z + nNext.nz * bandWidth };
+    let vi = viRef.v;
+    positions.push(
+      oPrev.x, y, oPrev.z,
+      oNext.x, y, oNext.z,
+      cur.x, y, cur.z,
+    );
+    indices.push(vi, vi + 1, vi + 2);
+    viRef.v += 3;
+  }
 }
 
 /**
- * Szeroki pas wzdłuż zewnętrznych krawędzi terytorium + trójkąty w narożnikach (spójny obwód).
+ * Szeroki pas wzdłuż zamkniętych konturów terytorium (polyline loops, nie segmenty per heks).
  * flatY — jedna wysokość dla całego obwodu (bez szczelin między heksami o różnym terenie).
  */
 function buildTerritoryBorderMesh(
@@ -259,78 +352,23 @@ function buildTerritoryBorderMesh(
   flatY: number,
 ): THREE.Mesh | null {
   if (bandWidth <= 0) return null;
-  const positions: number[] = [];
-  const indices: number[] = [];
-  let vi = 0;
   const y = flatY + 0.004;
 
-  type CornerNormal = { nx: number; nz: number };
-  const cornerNormals = new Map<string, { x: number; z: number; normals: CornerNormal[] }>();
+  const hexCenter = (q: number, r: number): { x: number; z: number } | null => {
+    const hex = map.hexes[`${q},${r}`];
+    if (!hex) return null;
+    return axialToWorld(q, r, HEX_R);
+  };
 
-  function recordCorner(x: number, z: number, nx: number, nz: number): void {
-    const key = borderVertexKey(x, z);
-    let entry = cornerNormals.get(key);
-    if (!entry) {
-      entry = { x, z, normals: [] };
-      cornerNormals.set(key, entry);
-    }
-    const dup = entry.normals.some(n => Math.abs(n.nx - nx) < 1e-4 && Math.abs(n.nz - nz) < 1e-4);
-    if (!dup) entry.normals.push({ nx, nz });
-  }
+  const loops = computeTerritoryBorderLoops(hexKeys, hexCenter);
+  if (loops.length === 0) return null;
 
-  for (const key of hexKeys) {
-    const hex = map.hexes[key];
-    if (!hex) continue;
-    const { q, r } = hex.coords;
-    const { x: cx, z: cz } = axialToWorld(q, r, HEX_R);
-    const verts = hexVertices(cx, flatY, cz, HEX_R);
+  const positions: number[] = [];
+  const indices: number[] = [];
+  const viRef = { v: 0 };
 
-    for (let i = 0; i < 6; i++) {
-      const dir = HEX_DIRS[i]!;
-      const nq = q + dir.dq;
-      const nr = r + dir.dr;
-      if (hexKeys.has(`${nq},${nr}`)) continue;
-
-      const va = verts[i]!;
-      const vb = verts[(i + 1) % 6]!;
-      const { nx, nz } = edgeOutwardNormal(cx, cz, va.x, va.z, vb.x, vb.z);
-
-      recordCorner(va.x, va.z, nx, nz);
-      recordCorner(vb.x, vb.z, nx, nz);
-
-      const ax0 = va.x;
-      const az0 = va.z;
-      const bx0 = vb.x;
-      const bz0 = vb.z;
-      const ax1 = ax0 + nx * bandWidth;
-      const az1 = az0 + nz * bandWidth;
-      const bx1 = bx0 + nx * bandWidth;
-      const bz1 = bz0 + nz * bandWidth;
-
-      positions.push(
-        ax0, y, az0,
-        bx0, y, bz0,
-        bx1, y, bz1,
-        ax1, y, az1,
-      );
-      indices.push(vi, vi + 1, vi + 2, vi, vi + 2, vi + 3);
-      vi += 4;
-    }
-  }
-
-  for (const { x, z, normals } of cornerNormals.values()) {
-    if (normals.length < 2) continue;
-    for (let i = 0; i < normals.length; i++) {
-      const n1 = normals[i]!;
-      const n2 = normals[(i + 1) % normals.length]!;
-      positions.push(
-        x + n1.nx * bandWidth, y, z + n1.nz * bandWidth,
-        x + n2.nx * bandWidth, y, z + n2.nz * bandWidth,
-        x, y, z,
-      );
-      indices.push(vi, vi + 1, vi + 2);
-      vi += 3;
-    }
+  for (const loop of loops) {
+    appendBorderBandLoop(loop, bandWidth, y, positions, indices, viRef);
   }
 
   if (positions.length === 0) return null;

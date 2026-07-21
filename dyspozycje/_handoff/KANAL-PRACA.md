@@ -2685,3 +2685,14 @@ Pliki: `diplomacy-proposals.ts`, `diplomacy-economy.ts`, `main.ts`.
 Bramki: tsc=0 · diplomacy-proposal 57/57 · diplomacy-economy 8/8.
 Publish ROBOCZA: stamp **f9bd9a75** · md5 `f9bd9a7522500410d4340d5deb9acb9d`.
 CZEKAM-NA: Maciej — `git pull` → Ctrl+F5 START.html → stamp `f9bd9a75` → propozycja handlu AI → AKCEPTUJ → skarbiec +20 ¤.
+
+---
+
+## [01:15] INTEGRATOR → Maciej — MAPA: granice państwa — ciągły kontur (fix 2)
+
+Poprzedni fix `07beb443` nadal dawał efekt rozłączonych pasków per heks.
+Przyczyna: (1) błędne mapowanie krawędzi hex (rog i zamiast rog i+1,i+2 wg scene.ts); (2) pas offsetowany per heks od własnego środka zamiast wzdłuż zamkniętego konturu.
+Fix: `territory-border.ts` (pętle obwodu) + `rangeOverlay.ts` (pas wzdłuż pętli, alpha 0.5, width 0.15).
+Bramki: tsc=0 · territory-border-test 9/9 · picker-test 136/136 · map-gen-regression PASS.
+Publish ROBOCZA: stamp **826cc00b** · md5 `826cc00bda20eccc5392ae3924a7aae0`.
+CZEKAM-NA: Maciej — `git pull` → Ctrl+F5 START.html → stamp `826cc00b` → granice państwa ON → ciągły obwód każdego państwa.

@@ -11,9 +11,13 @@ swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drug
 
 ## ROBOCZA (gra-robocza\Gra-ROBOCZA.html — wskazywana przez START.html)
 
+- 2026-07-22 · stempel: ROBOCZA · **826cc00b** · md5 pliku `826cc00bda20eccc5392ae3924a7aae0` · **MAPA: granice państwa — ciągły kontur per państwo** — na `f9bd9a75`:
+  **Bug:** poprzedni fix (`07beb443`) nadal dawał rozłączone paski — per-heks offset normalnych od środka każdego heksa + błędne mapowanie krawędzi (rog i zamiast rog i+1,i+2). **Fix:** `territory-border.ts` — zbieranie krawędzi granicznych → graf → zamknięte pętle (polyline loops); `rangeOverlay.ts` — pas mesh wzdłuż pętli z joinami w wierzchołkach; alpha **0.5**, szerokość **0.15** world units; per ownerId osobny obwód w kolorze cywilizacji.
+  tsc=0 · territory-border-test 9/9 · map-gen-regression determinizm PASS · picker-test 136/136 · publish `gra-robocza/Gra-ROBOCZA.html`. · **AKTUALNA** · Test: Ctrl+F5 START.html → stamp `826cc00b`; mapa → minimapa → granice państwa ON → każde państwo ma ciągły obwód wokół całego terytorium (Ateny, Mykeny, AI).
+
 - 2026-07-22 · stempel: ROBOCZA · **f9bd9a75** · md5 pliku `f9bd9a7522500410d4340d5deb9acb9d` · **DYPL: akceptacja AI handel → +20 ¤ graczowi** — na `07beb443`:
   **Bug:** po AKCEPTUJ propozycji Mykeny „20 ¤ na rzecz twojego państwa" skarbiec gracza się nie zwiększał. **Przyczyna:** `applyOneShotGoldTransfer` wymagał pełnego salda AI (często 0) + ponowna ocena `evaluateProposal` przy akceptacji. **Fix:** `resolvePlayerAcceptsAiPending` (gracz klika AKCEPTUJ bez re-eval); `applyDiplomaticGoldGrant` — gracz dostaje pełne 20 ¤, AI płaci tyle ile ma; `updateHud()` po transferze.
-  tsc=0 · diplomacy-proposal-test 57/57 · diplomacy-economy-test 8/8 · publish `gra-robocza/Gra-ROBOCZA.html`. · **AKTUALNA** · Test: Ctrl+F5 START.html → stamp `f9bd9a75`; poczekaj na propozycję handlu AI → AKCEPTUJ → skarbiec +20 ¤.
+  tsc=0 · diplomacy-proposal-test 57/57 · diplomacy-economy-test 8/8 · publish `gra-robocza/Gra-ROBOCZA.html`. · **ZASTĄPIONA** (→ `826cc00b`) · Test: Ctrl+F5 START.html → stamp `f9bd9a75`; poczekaj na propozycję handlu AI → AKCEPTUJ → skarbiec +20 ¤.
 
 - 2026-07-22 · stempel: ROBOCZA · **07beb443** · md5 pliku `07beb443d7efc6dd1bd35efa29bfebae` · **MAPA: granice państwa — widoczny spójny obwód** — na `2e46903e`:
   **Bug:** granica praktycznie niewidoczna (cienka linia WebGL 1px @ 30% alpha) + efekt rozłączonych pasków per heks. **Fix:** `rangeOverlay.ts` — `buildTerritoryBorderMesh`: szeroki pas `TERRITORY_BORDER_BAND_WIDTH=0.10` (world units), flat Y dla całego obwodu, trójkąty w narożnikach łączą segmenty; alpha 0.48. Toggle minimapy bez zmian.
