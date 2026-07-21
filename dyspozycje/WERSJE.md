@@ -11,9 +11,25 @@ swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drug
 
 ## ROBOCZA (gra-robocza\Gra-ROBOCZA.html — wskazywana przez START.html)
 
-- 2026-07-21 · stempel: ROBOCZA · **c7301135** · md5 pliku `c730113537ad8855f07f53a948566f28` · **FIX: lista dyplomacji — Relacja+Zaufanie, bez bonusów cyw** — na `c63dd3f4`:
-  **Usunięto:** kursywny opis bonusów cywilizacji pod wpisem (Falanga, Hoplita…). **Dodano:** linia `Relacja: X · Zaufanie: Y` (formuła audiencji: Zaufanie + live Respekt z mocy). Zachowano: nazwa, miasto-państwo, badge tier, status audiencji.
-  tsc=0 · publish `gra-robocza/Gra-ROBOCZA.html`. · **AKTUALNA** · Test: Ctrl+F5 START.html → stamp `c7301135`; toolbar uścisk dłoni → lista bez bonusów; wiersz pokazuje Relacja i Zaufanie.
+- 2026-07-22 · stempel: ROBOCZA · **e5d1ebad** · md5 pliku `e5d1ebadf440f2f722a641698f79fa07` · **Granice państw (zasięg terytorium) — przywrócone + toggle minimapa** — na `4a4047a4`:
+  **Bug/feature:** brak obrysu granic państw na mapie 3D (kultura/religia działają). **Fix:** `collectTerritoryHexKeysByOwner` + `buildTerritoryBorderGroup` — zewnętrzna krawędź terytorium w kolorze cywilizacji (~30% alpha); przycisk **Zasięg państwa** obok minimapy (hex-grid SVG); gracz + odkryte AI; odświeżanie przy mgle/turze.
+  tsc=0 · publish `gra-robocza/Gra-ROBOCZA.html`. · **AKTUALNA** · Test: Ctrl+F5 START.html → stamp `e5d1ebad`; klik hex-grid obok minimapy → obrys granic w kolorze cywilizacji; ponowny klik wyłącza.
+
+- 2026-07-22 · stempel: ROBOCZA · **4a4047a4** · md5 pliku `4a4047a4d8551a2cf7d4a36aee6aa7ca` · **FIX: zwiadowca bez głodu + Manpower przy rekrutacji** — na `e1ac8503`:
+  **Bug1:** czaszka głodu i utrata HP na zwiadowcy gdy imperium głoduje — overlay per-państwo bez filtra cywilnych + utrzymanie złoto Zwiadowca=1 w JSON. **Fix:** `isCivilianUnit` (zwiadowca/osadnik/robotnik) pomijany w overlay i `applyArmyStarvationHpLoss`; cywilne upkeep/food=0.
+  **Bug2:** rekrutacja za złoto nie odejmowała Manpower przy kliknięciu. **Fix:** `purchaseRecruitmentUnit` pobiera MP od razu; anulowanie zwraca MP; kolejka spawn bez ponownego poboru.
+  tsc=0 · manpower-test 24/24 · upkeep-test 58/58 · publish `gra-robocza/Gra-ROBOCZA.html`. · **ZASTĄPIONA** (→ `e5d1ebad`) · Test: Ctrl+F5 START.html → stamp `4a4047a4`; zwiadowca bez czaszki przy głodzie wojska; rekrutuj → pula rekrutów spada natychmiast.
+
+- 2026-07-22 · stempel: ROBOCZA · **e1ac8503** · md5 pliku `e1ac85039004206b42257db32921ebac` · **UI: Stos → Armia (etykiety stosu jednostek)** — na `c7301135`:
+  **Zmiana Macieja:** `Stos · 2 jedn.` → `Armia — 2 jednostki` (odmiana 1/2–4/5+); tooltip `Zaznacz armię — N jednostek`; spójnie panel stosu, merge, wybór miasto/jednostka.
+  Pliki: `gra/src/ui/formatPl.ts`, `main.ts`, `armyListHud.ts`, `armyStackHud.ts`, `armyMergePanel.ts`, `cityUnitPick.ts`. tsc=0 · VERIFY OK · publish `gra-robocza/Gra-ROBOCZA.html`. · **ZASTĄPIONA** (→ `4a4047a4`) · Test: Ctrl+F5 START.html → md5 `e1ac8503`; ⚔ lista armii → „Armia — N jednostki", hover „Zaznacz armię — …".
+
+- 2026-07-22 · stempel: ROBOCZA · **a6820979** · md5 pliku `a6820979252257f6df87e881c729509d` · **D3-TRUST-TICK + lista dyplomacji Relacja/Zaufanie** — na `c63dd3f4`:
+  **Zaufanie/turę (wykluczające tiery):** sojusz +3 · NAP +2 · pokój +1 · UmowaHandlowa +1 stackuje. **Handel surowców/złóż:** `UmowaHandlowa` trwała, czas umowy **1–20 tur** (koszyk), wygasa bez auto-odnowienia; PN/¤ bez surowców = one-shot. **UI lista dyplomacji:** `Relacja: X · Zaufanie: Y`, bez bonusów cyw.
+  tsc=0 · diplomacy-proposal 55/55 · docs `docs/decyzje/D3-TRUST-TICK-2026-07-21.md` · publish `gra-robocza/Gra-ROBOCZA.html`. · **ZASTĄPIONA** (→ `e1ac8503`) · Test: Ctrl+F5 START.html → stamp `a6820979`; handel z złożem → wybór 1–20 tur; uścisk dłoni → Relacja+Zaufanie.
+
+- 2026-07-21 · stempel: ROBOCZA · **c7301135** · md5 pliku `c730113537ad8855f07f53a948566f28` · **D3-TRUST-TICK + lista dyplomacji** (push `4a41c43`, kod `eab45c1`) — na `c63dd3f4`:
+  Ten sam zakres co `a6820979` — pierwszy publish na `main` po `eab45c1`. · **NA origin/main** (do nowszego lokalnego publishu).
 
 - 2026-07-21 · stempel: ROBOCZA · **c63dd3f4** · md5 pliku `c63dd3f4df7e51f9300f2ba0265d69ac` · **FIX: Farma na lesie (Las) bez wyrębu** — na `41656451`:
   **Bug:** budowa Farmy wymagała wycinki lasu (Wyrąb) albo nie działała na wzgórzach z lasem; kępa drzew zasłaniała model ulepszenia. **Fix:** `isFarmBaseTerrain()` — Łąka/Równina zawsze + Wzgórza gdy nakładka Las; po postawieniu farmy/hodowli/irygacji na lesie schowanie dekoru lasu (nakładka Las zostaje); test `map-improvement-qualify-test.cjs` 54/54.

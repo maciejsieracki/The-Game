@@ -2500,12 +2500,12 @@ CZEKAM-NA: **Maciej** `git pull` → Ctrl+F5 START.html → stamp `41656451`; Gr
 
 Maciej: **push** — decyzje 2026-07-21 (natural trust + persistent resource deals + czas umowy 1–20 tur).
 
-- **ROBOCZA = `e20a20ad`** (md5 `e20a20ad2814e87a319c02db34e177d6`), na `c63dd3f4`.
+- **ROBOCZA = `c7301135`** (md5 `c730113537ad8855f07f53a948566f28`), kod `eab45c1`, na `c63dd3f4`.
 - **Zaufanie/turę:** sojusz +3 · NAP +2 · pokój +1 (wykluczające tiery) · UmowaHandlowa +1 stackuje.
 - **Handel surowców:** `umowa_handlowa` **1–20 tur** (koszyk), ZlozeGrant, wygasa bez auto-odnowienia; PN/¤ bez surowców = one-shot.
 - tsc=0 · diplomacy-proposal 55/55 · docs: `docs/decyzje/D3-TRUST-TICK-2026-07-21.md`.
 
-CZEKAM-NA: **Maciej** `git pull` → Ctrl+F5 START.html → stamp `e20a20ad`; handel z złożem → wybór czasu umowy; po wygaśnięciu re-negocjacja.
+CZEKAM-NA: **Maciej** `git pull` → Ctrl+F5 START.html → stamp `a6820979`; handel z złożem → wybór czasu umowy; po wygaśnięciu re-negocjacja.
 
 ## [00:45 PL, 2026-07-22] INTEGRATOR → Maciej — FIX: Farma na lesie bez wyrębu
 
@@ -2522,10 +2522,49 @@ CZEKAM-NA: **Maciej** `git pull` → Ctrl+F5 START.html → stamp `c63dd3f4`; �
 
 Maciej UI fix 2026-07-21: panel dyplomacji (toolbar uścisk dłoni).
 
-- **ROBOCZA = `c7301135`** (md5 `c730113537ad8855f07f53a948566f28`), na `c63dd3f4`.
+- **ROBOCZA = `c7301135`** (md5 `c730113537ad8855f07f53a948566f28`), kod `eab45c1`, na `c63dd3f4`.
 - **Usunięto:** kursywny opis bonusów cywilizacji pod wpisem listy.
 - **Dodano:** `Relacja: X · Zaufanie: Y` (Zaufanie + live Respekt z mocy, jak audiencja).
 - Pliki: `diploListHud.ts`, `diplomacyPanel.ts`, `main.ts`.
 - tsc=0 · publish OK.
 
 CZEKAM-NA: **Maciej** `git pull` → Ctrl+F5 START.html → stamp `c7301135`; uścisk dłoni → lista bez bonusów Falanga/Hoplita.
+
+## [23:58 PL, 2026-07-21] INTEGRATOR → Maciej — UI: Stos → Armia (stos jednostek)
+
+Maciej UI text change 2026-07-21: etykiety stosu na mapie.
+
+- **ROBOCZA = `e1ac8503`** (md5 `e1ac85039004206b42257db32921ebac`), na `c7301135`.
+- `Stos · 2 jedn.` → **`Armia — 2 jednostki`** (odmiana PL: 1/2–4/5+).
+- Tooltip listy: **`Zaznacz armię — N jednostek`**.
+- Spójnie: panel stosu, merge, wybór miasto/jednostka.
+- tsc=0 · VERIFY OK · push na `main`.
+
+## [00:10 PL, 2026-07-22] INTEGRATOR → Maciej — D3-TRUST deploy stamp `a6820979`
+
+Republish ROBOCZA (czysty build z `eab45c1`+`4a41c43`): **`a6820979`**. WERSJE + kanał zsynchronizowane.
+
+CZEKAM-NA: **Maciej** `git pull` → Ctrl+F5 START.html → stamp `a6820979`.
+
+CZEKAM-NA: **Maciej** `git pull` → Ctrl+F5 START.html → md5 `e1ac8503`; ⚔ lista armii → hover stosu wielojednostkowego.
+
+## [00:15 PL, 2026-07-22] INTEGRATOR → Maciej — FIX zwiadowca głód + Manpower rekrutacja · stamp `4a4047a4`
+
+- **ROBOCZA = `4a4047a4`** (md5 `4a4047a4d8551a2cf7d4a36aee6aa7ca`), na `e1ac8503`.
+- Zwiadowca/osadnik/robotnik: brak czaszki głodu, brak utraty HP, upkeep 0.
+- Rekrutacja za złoto: Manpower odejmowany przy kliknięciu (zwrot przy anulowaniu).
+- tsc=0 · manpower 24/24 · upkeep 58/58 · push na `main`.
+
+CZEKAM-NA: **Maciej** `git pull` → Ctrl+F5 START.html → stamp `4a4047a4`; zwiadowca bez czaszki; rekrut → pula rekrutów spada od razu.
+
+## [00:30 PL, 2026-07-22] INTEGRATOR → Maciej — granice państw (zasięg terytorium) · stamp `e5d1ebad`
+
+Maciej requirement 2026-07-21: brak obrysu granic państw na mapie 3D.
+
+- **ROBOCZA = `e5d1ebad`** (md5 `e5d1ebadf440f2f722a641698f79fa07`), na `4a4047a4`.
+- Przywrócono delikatny obrys zewnętrznej krawędzi terytorium (`territoryOwnerAt`) w kolorze cywilizacji (~30% opacity).
+- Nowy przycisk obok minimapy: **Zasięg państwa** (hex-grid SVG) — toggle on/off, stan sesji jak kultura/religia.
+- Pliki: `range-hexes.ts`, `rangeOverlay.ts`, `main.ts`, `minimapHud.ts`, `hud.ts`.
+- tsc=0 · publish OK · push na `main`.
+
+CZEKAM-NA: **Maciej** `git pull` → Ctrl+F5 START.html → stamp `e5d1ebad`; klik hex-grid obok minimapy → granice państw widoczne.
