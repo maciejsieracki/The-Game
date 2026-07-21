@@ -11,9 +11,21 @@ swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drug
 
 ## ROBOCZA (gra-robocza\Gra-ROBOCZA.html — wskazywana przez START.html)
 
+- 2026-07-22 · stempel: ROBOCZA · **3d2e4f32** · md5 pliku `3d2e4f329dc66bc40aadf23c7c4d9623` · **UI: stan dyplomatyczny vs nastawienie w audiencji** — na `40a77974`:
+  **Cel:** jednoznaczny formalny stan umów (wojna/pokój/sojusz/pakt/handel/brak kontaktu) odrębny od nastawienia (score). **Fix:** `resolveFormalDiplomaticStatus` + `nastawienieLabelFromScore` w `diplomacy-display.ts`; audiencja — prominentny box „Stan dyplomatyczny" z ikoną mieczy przy wojnie; nastawienie z podpisem wyjaśniającym; usunięto mylące „Pokój (neutralne)" i badge tier w sekcji relacji.
+  tsc=0 · diplomacy-display-test 14/14 · publish `gra-robocza/Gra-ROBOCZA.html`. · **AKTUALNA** · Test: Ctrl+F5 START.html → stamp `3d2e4f32`; dyplomacja → audiencja → „Stan dyplomatyczny: Pokój" + osobno „Nastawienie: Neutralny"; przy wojnie → ⚔ Wojna.
+
+- 2026-07-22 · stempel: ROBOCZA · **40a77974** · md5 pliku `40a77974b45d7aedb7bd17bc7abf2dfa` · **BALANS: badania x2, budynki -50% produkcji** — na `345cf8e2`:
+  **Decyzja Macieja (flat, bez trudności):** koszty badań ×2 (`GLOBAL_RESEARCH_COST_MULT` w `difficulty-cost.ts` → `scaledResearchCost`); koszt Pracy budynków ×0.5 (`GLOBAL_BUILDING_PROD_MULT` w `production.ts` → `buildingWorkCost`). JSON bez zmian.
+  tsc=0 · research-test 33/33 · tech-tree-test 19/19 · difficulty-cost-test 22/22 · publish `gra-robocza/Gra-ROBOCZA.html`. · **ZASTĄPIONA** (→ `3d2e4f32`) · Test: Ctrl+F5 START.html → stamp `40a77974`; drzewko: Obróbka drewna 12→24 PN (szybka); Świątynia 25→13 Pracy (niski tempo).
+
+- 2026-07-22 · stempel: ROBOCZA · **345cf8e2** · md5 pliku `345cf8e2c9a72fcc45fdb63fc9e62a62` · **UI: etykieta kultury w audiencji dyplomatycznej** — na `e90f27d4`:
+  **Cel:** gracz widzi okręg kulturowy rozmówcy (np. „Kultura: Grecka" / „Chetycka") oraz wskazówkę ten sam okręg vs obca kultura. **Fix:** `diplomacy-display.ts` mapowanie typCywilizacji → przymiotnik PL; `diplomacyAudience.ts` linia pod tytułem; `main.ts` przekazuje `otherCultureLabel` + `cultureCircleSame`.
+  tsc=0 · VERIFY OK · publish `gra-robocza/Gra-ROBOCZA.html`. · **ZASTĄPIONA** (→ `40a77974`) · Test: Ctrl+F5 START.html → stamp `345cf8e2`; dyplomacja → audiencja Argos → „Kultura: Grecka · Ten sam okręg kulturowy"; obcy typ → „Obca kultura".
+
 - 2026-07-22 · stempel: ROBOCZA · **e90f27d4** · md5 pliku `e90f27d4a8e40d79d19c410d21641ed4` · **FIX: propozycje dyplomacji AI — tekst dla gracza** — na `8b53ffd7`:
   **Bug:** popup propozycji handlu (i innych) pokazywał debug silnika (`willingnessTrade=0.58 …`). **Fix:** `formatAiDiplomacyPlayerMessage` w `diplomacy-proposals.ts` — polskie opisy oferty (złoto/trybut/sojusz/pokój); `cmd.powod` tylko w `console.log`; UI inbox/modal bez współczynników.
-  tsc=0 · VERIFY OK · publish `gra-robocza/Gra-ROBOCZA.html`. · **AKTUALNA** · Test: Ctrl+F5 START.html → stamp `e90f27d4`; propozycja handlu od miasta-państwa → „Proponujemy jednorazową wymianę: 20 ¤…” bez willingnessTrade.
+  tsc=0 · VERIFY OK · publish `gra-robocza/Gra-ROBOCZA.html`. · **ZASTĄPIONA** (→ `345cf8e2`) · Test: Ctrl+F5 START.html → stamp `e90f27d4`; propozycja handlu od miasta-państwa → „Proponujemy jednorazową wymianę: 20 ¤…” bez willingnessTrade.
 
 - 2026-07-22 · stempel: ROBOCZA · **8b53ffd7** · md5 pliku `8b53ffd7328af8e421b094d5dc290460` · **FIX: picking heksów mapy świata (offset w dół)** — na `0440dbe4`:
   **Bug:** klik w heks na mapie trafiał w sąsiada „w dół" — trzeba było klikać środek kafelka (`95be60fc` raycast terenu nie wystarczył). **Przyczyna:** (1) `camera.aspect`/`setSize` z `innerWidth/innerHeight` vs `getBoundingClientRect` canvas (scrollbar/DPR drift → przesunięcie Y promienia); (2) `worldToAxial` na trafieniu w bok pryzmu zamiast hex z `instanceId`. **Fix:** `scene.ts` — rozmiar kamery z `canvas.clientWidth/Height`; `terrainPickKeys` + `resolveTerrainPick(instanceId)`; `picker.ts` — `updateMatrixWorld`, world-space normal, test `picker-test.cjs`.

@@ -28,6 +28,12 @@ import {
 
 export type GameDifficulty = 'easy' | 'normal' | 'hard';
 
+/**
+ * Maciej 2026-07-22: globalna korekta balansu — koszt badan x2 (flat, przed asymetria trudnosci).
+ * Baza = tech.json + tempo kreatora; NIE dotyka JSON ani progu trudnosci.
+ */
+export const GLOBAL_RESEARCH_COST_MULT = 2;
+
 /** Gracz ludzki — ownerId 0. Wszystko inne (AI, miasta-panstwa) = strona AI. */
 export function isPlayerOwner(ownerId: number): boolean {
   return ownerId === 0;
@@ -56,7 +62,7 @@ export function applyDifficultyCostMultiplier(
   return Math.max(1, Math.round(costAfterPace * mult));
 }
 
-/** Koszt badania: tempo gry + asymetria trudnosci. */
+/** Koszt badania: tempo gry + globalny balans + asymetria trudnosci. */
 export function scaledResearchCost(
   baseCost: number,
   tempo: TempoGry,
@@ -64,7 +70,8 @@ export function scaledResearchCost(
   difficulty: GameDifficulty,
 ): number {
   const afterTempo = applyTempoKoszt(baseCost, tempo);
-  return applyDifficultyCostMultiplier(afterTempo, ownerId, difficulty);
+  const afterGlobal = Math.max(1, Math.round(afterTempo * GLOBAL_RESEARCH_COST_MULT));
+  return applyDifficultyCostMultiplier(afterGlobal, ownerId, difficulty);
 }
 
 /**

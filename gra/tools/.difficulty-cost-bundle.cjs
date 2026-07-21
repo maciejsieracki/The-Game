@@ -54,6 +54,7 @@ function applyGrowthThresholdPace(bazowyProg, pace) {
 }
 
 // src/game/difficulty-cost.ts
+var GLOBAL_RESEARCH_COST_MULT = 2;
 function isPlayerOwner(ownerId) {
   return ownerId === 0;
 }
@@ -68,7 +69,8 @@ function applyDifficultyCostMultiplier(costAfterPace, ownerId, difficulty) {
 }
 function scaledResearchCost(baseCost, tempo, ownerId, difficulty) {
   const afterTempo = applyTempoKoszt(baseCost, tempo);
-  return applyDifficultyCostMultiplier(afterTempo, ownerId, difficulty);
+  const afterGlobal = Math.max(1, Math.round(afterTempo * GLOBAL_RESEARCH_COST_MULT));
+  return applyDifficultyCostMultiplier(afterGlobal, ownerId, difficulty);
 }
 function getPopulationGrowthDifficultyMultiplier(ownerId, difficulty) {
   if (difficulty === "normal") return 1;

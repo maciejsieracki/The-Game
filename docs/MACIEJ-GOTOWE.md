@@ -4,7 +4,58 @@
 > **Czat:** krótko **`✅ Gotowe:`** / **`⏸️ Czeka:`** · **Ten plik:** pełniejszy zapis tego samego.  
 > Szczegóły techniczne → handoff w `dyspozycje/_handoff/` · operacja → `dyspozycje/DZIENNIK-MASTERA.md`
 
-**Ostatnia aktualizacja:** 2026-07-21 (fix picking heksów)
+**Ostatnia aktualizacja:** 2026-07-22 (stan dyplomatyczny w audiencji)
+
+---
+
+## [2026-07-22] ✅ Gotowe — stan dyplomatyczny vs nastawienie (audiencja)
+
+| | |
+|---|---|
+| **Co** | Rozdzielono formalny **stan dyplomatyczny** (wojna/pokój/sojusz/pakt/handel/brak kontaktu) od **nastawienia** (ocena relacji ze score) |
+| **Gdzie** | Dyplomacja → audiencja — box „Stan dyplomatyczny" pod nazwą nacji; przy wojnie ikona ⚔ |
+| **Przykłady** | Pokój + Nastawienie: Neutralny · Wojna: ⚔ Wojna · Sojusz wojskowy · Pakt o nieagresji |
+| **md5** | `3d2e4f329dc66bc40aadf23c7c4d9623` · stamp `3d2e4f32` |
+| **Bramki** | tsc=0 · diplomacy-display-test 14/14 |
+| **Od Ciebie** | `git pull` → Ctrl+F5 · `gra-robocza/START.html` → stamp `3d2e4f32` · dyplomacja → audiencja |
+
+---
+
+## [2026-07-22] ✅ Gotowe — BALANS: badania ×2, budynki −50% produkcji
+
+| | |
+|---|---|
+| **Co** | Globalne mnożniki: koszty badań ×2, koszt Pracy budynków ×0.5 (flat, niezależnie od trudności) |
+| **Hooki** | `GLOBAL_RESEARCH_COST_MULT` → `scaledResearchCost()` · `GLOBAL_BUILDING_PROD_MULT` → `buildingWorkCost()` |
+| **Przykład** | Obróbka drewna: 12→24 PN (tempo szybka) · Świątynia: 25→13 Pracy (tempo niski) |
+| **md5** | `40a77974b45d7aedb7bd17bc7abf2dfa` · stamp `40a77974` |
+| **Bramki** | tsc=0 · research-test 33/33 · tech-tree-test 19/19 · difficulty-cost-test 22/22 |
+| **Od Ciebie** | `git pull` → Ctrl+F5 · `gra-robocza/START.html` → stamp `40a77974` · drzewko nauki + panel produkcji miasta |
+
+---
+
+## [2026-07-22] ✅ Gotowe — etykieta kultury w audiencji dyplomatycznej
+
+| | |
+|---|---|
+| **Co** | Panel audiencji pokazuje okręg kulturowy rozmówcy + czy to ta sama kultura co gracz |
+| **Przykłady** | Argos (Grecy): „Kultura: **Grecka** · Ten sam okręg kulturowy" · Hattusa: „Kultura: **Chetycka** · Obca kultura" |
+| **Gdzie** | Dyplomacja → audiencja → pod linią PRZEDSTAWICIEL · epoka |
+| **md5** | `345cf8e2c9a72fcc45fdb63fc9e62a62` · stamp `345cf8e2` |
+| **Bramki** | tsc=0 · VERIFY OK |
+| **Od Ciebie** | `git pull` → Ctrl+F5 · `gra-robocza/START.html` → stamp `345cf8e2` · otwórz audiencję z Argos i z obcym typem |
+
+---
+
+## [2026-07-22] ✅ Gotowe — FIX propozycje dyplomacji AI (czytelny tekst)
+
+| | |
+|---|---|
+| **Co** | Popup/inbox propozycji od państw-miast pokazuje opis oferty po polsku zamiast debugu silnika (`willingnessTrade`, progi) |
+| **Przykład** | „Proponujemy jednorazową wymianę: 20 ¤ na rzecz twojego państwa.” |
+| **md5** | `e90f27d4a8e40d79d19c410d21641ed4` · stamp `e90f27d4` |
+| **Bramki** | tsc=0 · VERIFY OK |
+| **Od Ciebie** | `git pull` → Ctrl+F5 · `gra-robocza/START.html` → stamp `e90f27d4` · poczekaj na propozycję handlu (np. Argos) — bez współczynników w tekście |
 
 ---
 

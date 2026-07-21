@@ -2606,3 +2606,30 @@ CZEKAM-NA: **Maciej** `git pull` → Ctrl+F5 START.html → stamp `8b53ffd7`; kl
 - tsc=0 · VERIFY OK · commit+push main.
 
 CZEKAM-NA: **Maciej** `git pull` → Ctrl+F5 START.html → stamp `e90f27d4`; propozycja handlu od AI → czytelny tekst bez współczynników.
+
+## [01:00 PL, 2026-07-22] INTEGRATOR → Maciej — UI etykieta kultury w audiencji dyplomatycznej
+
+- **Stamp ROBOCZA:** `345cf8e2` (md5 `345cf8e2c9a72fcc45fdb63fc9e62a62`)
+- **Cel:** gracz widzi okręg kulturowy rozmówcy (Kultura: Grecka / Chetycka…) + ten sam okręg vs obca kultura.
+- **Pliki:** `diplomacy-display.ts` (mapowanie typCywilizacji → przymiotnik PL), `diplomacyAudience.ts` (linia UI), `main.ts` (stan audiencji).
+- tsc=0 · VERIFY OK · commit+push main.
+
+CZEKAM-NA: **Maciej** `git pull` → Ctrl+F5 START.html → stamp `345cf8e2`; dyplomacja → audiencja Argos → „Kultura: Grecka · Ten sam okręg kulturowy".
+
+## [01:20 PL, 2026-07-22] INTEGRATOR → Maciej — BALANS: badania x2, budynki -50% produkcji
+
+- **Stamp ROBOCZA:** `40a77974` (md5 `40a77974b45d7aedb7bd17bc7abf2dfa`)
+- **Decyzja Macieja (flat):** badania wolniej (×2), budynki szybciej (½ Pracy).
+- **Hooki:** `GLOBAL_RESEARCH_COST_MULT=2` w `gra/src/game/difficulty-cost.ts` (`scaledResearchCost`); `GLOBAL_BUILDING_PROD_MULT=0.5` w `gra/src/game/production.ts` (`buildingWorkCost`). JSON bez zmian.
+- tsc=0 · research-test 33/33 · tech-tree-test 19/19 · difficulty-cost-test 22/22 · commit+push main.
+
+CZEKAM-NA: **Maciej** `git pull` → Ctrl+F5 START.html → stamp `40a77974`; drzewko: Obróbka drewna 24 PN; Świątynia 13 Pracy (niski tempo).
+
+## [01:25 PL, 2026-07-22] INTEGRATOR → Maciej — UI: stan dyplomatyczny vs nastawienie (audiencja)
+
+- **Stamp ROBOCZA:** `3d2e4f32` (md5 `3d2e4f329dc66bc40aadf23c7c4d9623`)
+- **Cel:** jednoznaczny formalny stan umów (wojna/pokój/sojusz/pakt/handel/brak kontaktu) odrębny od nastawienia (score zaufania+respektu).
+- **Pliki:** `diplomacy-display.ts` (`resolveFormalDiplomaticStatus`, `nastawienieLabelFromScore`), `diplomacyAudience.ts` (box + ikona ⚔ przy wojnie), `main.ts` (stan audiencji).
+- tsc=0 · diplomacy-display-test 14/14 · publish `gra-robocza/Gra-ROBOCZA.html` · commit+push main.
+
+CZEKAM-NA: **Maciej** `git pull` → Ctrl+F5 START.html → stamp `3d2e4f32`; dyplomacja → audiencja → „Stan dyplomatyczny: Pokój" + osobno „Nastawienie: …"; przy wojnie → ⚔ Wojna.

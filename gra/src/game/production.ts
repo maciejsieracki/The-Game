@@ -391,7 +391,13 @@ export interface AvailabilityContext {
   difficulty?: GameDifficulty;
 }
 
-/** Koszt Pracy budynku: ulga cywilizacji + tempo kreatora + asymetria trudnosci. */
+/**
+ * Maciej 2026-07-22: globalna korekta balansu — koszt Pracy budynkow x0.5 (flat).
+ * Dotyczy tylko budynkow (nie jednostek); przed asymetria trudnosci.
+ */
+export const GLOBAL_BUILDING_PROD_MULT = 0.5;
+
+/** Koszt Pracy budynku: ulga cywilizacji + tempo kreatora + globalny balans + asymetria trudnosci. */
 export function buildingWorkCost(
   baseCost: number,
   civBonusy?: readonly CivBonusLite[],
@@ -401,7 +407,8 @@ export function buildingWorkCost(
 ): number {
   const afterCiv = buildingCostAfterCivDiscount(baseCost, civBonusy);
   const afterPace = pace ? applyBuildingCostPace(afterCiv, pace) : afterCiv;
-  return applyDifficultyCostMultiplier(afterPace, ownerId, difficulty);
+  const afterGlobal = Math.max(1, Math.round(afterPace * GLOBAL_BUILDING_PROD_MULT));
+  return applyDifficultyCostMultiplier(afterGlobal, ownerId, difficulty);
 }
 
 /** Koszt rekrutacji jednostki (Pieniadz): ulga cywilizacji + tempo + trudnosc. */
