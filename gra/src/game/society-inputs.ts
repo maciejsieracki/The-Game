@@ -5,6 +5,7 @@
 import type { City } from './cities';
 import type { Difficulty } from './order';
 import { dominantReligion, type ReligionParams, type ReligionState } from './culture-religion';
+import { cityFoundOrder } from './capital-capture';
 
 /** Czy dominująca religia miasta ≠ religia cywilizacji właściciela. */
 export function isForeignReligionDominant(
@@ -27,13 +28,21 @@ export function resolveOwnCultureShare(city: { ownCultureShare?: number; kultura
   return 1;
 }
 
-/** Pierwsze miasto gracza (najniższe id właściciela 0). */
+/** Pierwsze miasto gracza (najniższy numer założenia wg cityFoundOrder, ownerId 0).
+ *  UWAGA: porównanie numeryczne (nie localeCompare) — spójne z capital-capture.ts
+ *  (patrz cityFoundOrder), żeby przy 10+ miastach globalnie "city10" nie wygrywał
+ *  leksykograficznie z faktycznie starszym "city9". */
 export function isPlayerCapitalCity(city: City, allCities: readonly City[]): boolean {
   if (city.ownerId !== 0) return false;
   let first: City | null = null;
+  let firstOrder = Number.POSITIVE_INFINITY;
   for (const c of allCities) {
     if (c.ownerId !== 0) continue;
-    if (!first || c.id.localeCompare(first.id) < 0) first = c;
+    const order = cityFoundOrder(c.id);
+    if (!first || order < firstOrder) {
+      first = c;
+      firstOrder = order;
+    }
   }
   return first?.id === city.id;
 }

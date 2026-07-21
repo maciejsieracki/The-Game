@@ -24,8 +24,9 @@
  * society-inputs.ts:isPlayerCapitalCity — ten porównuje id jako stringi, co dla
  * ownerów z 10+ miastami globalnie daje błędną kolejność (np. "city10" < "city9"
  * leksykograficznie, mimo że city9 założone wcześniej). Ten moduł parsuje N
- * numerycznie, żeby uniknąć tego błędu. isPlayerCapitalCity NIE zostało tu zmienione
- * (poza zakresem zadania) — zgłoszone właścicielowi osobno w raporcie.
+ * numerycznie, żeby uniknąć tego błędu. isPlayerCapitalCity (society-inputs.ts)
+ * naprawione 2026-07-21 — teraz importuje i używa cityFoundOrder z tego modułu,
+ * więc oba miejsca liczą wiek miasta identycznie (numerycznie, nie leksykograficznie).
  *
  * WOŁANE PO zmianie city.ownerId (city.ownerId === newOwner już ustawione przez
  * wywołującego) — patrz applyCityCaptureAfterBattle (post-battle-map.ts) i
