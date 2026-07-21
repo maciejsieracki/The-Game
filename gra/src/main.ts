@@ -7890,6 +7890,36 @@ async function boot(): Promise<void> {
       }
     }
 
+    // --- Konfiguracja pickera badań (przed hubem — getScienceHubSnapshot wymaga hooków) ---
+    (window as any).__civ_getResearchedTechs = () => Array.from(player.zbadane);
+
+    configureSciencePicker({
+      getResearchState: (_ownerId: number) => {
+        const st = getResearchState(player, data.tech, 0, _menuDifficulty);
+        return {
+          pula:           st.pula,
+          targetId:       st.targetId ? techToSlug(st.targetId) : null,
+          kosztCelu:      st.kosztCelu,
+          postepFraction: st.postepFraction,
+          turnsLeft:      st.turnsLeft ?? 0,
+        };
+      },
+      getResearchedTechs: (_ownerId: number) => {
+        return Array.from(player.zbadane).map(techToSlug);
+      },
+      getAvailableTechs: (_ownerId: number) => {
+        return availableTechs(data.tech, player.zbadane, researchGateForOwner(0)).map(t =>
+          techToSlug((t.Technologia ?? '').trim()),
+        );
+      },
+      onSelectTarget: (techSlug: string) => {
+        selectPlayerResearchSlug(techSlug);
+      },
+      getPlayerEra: (_ownerId: number) => player.era,
+      getTempoGry: (_ownerId: number) => player.tempoGry ?? 'standardowa',
+      getDifficulty: (_ownerId: number) => _menuDifficulty,
+    });
+
     // Initial HUD (D1B — moduł hud.ts)
     mountD1bHud();
     refreshObjectivePowerCache();
@@ -8003,37 +8033,6 @@ async function boot(): Promise<void> {
     });
 
     configurePreBattle({ getCivBonusy: civBonusyForOwnerId });
-
-    // --- Konfiguracja pickera badań (P1a: nowe API drzewka) ---
-    // window.__civ_getResearchedTechs: wymagany przez drzewko do oznaczenia zbadanych węzłów
-    (window as any).__civ_getResearchedTechs = () => Array.from(player.zbadane);
-
-    configureSciencePicker({
-      getResearchState: (_ownerId: number) => {
-        const st = getResearchState(player, data.tech, 0, _menuDifficulty);
-        return {
-          pula:           st.pula,
-          targetId:       st.targetId ? techToSlug(st.targetId) : null,
-          kosztCelu:      st.kosztCelu,
-          postepFraction: st.postepFraction,
-          turnsLeft:      st.turnsLeft ?? 0,
-        };
-      },
-      getResearchedTechs: (_ownerId: number) => {
-        return Array.from(player.zbadane).map(techToSlug);
-      },
-      getAvailableTechs: (_ownerId: number) => {
-        return availableTechs(data.tech, player.zbadane, researchGateForOwner(0)).map(t =>
-          techToSlug((t.Technologia ?? '').trim()),
-        );
-      },
-      onSelectTarget: (techSlug: string) => {
-        selectPlayerResearchSlug(techSlug);
-      },
-      getPlayerEra: (_ownerId: number) => player.era,
-      getTempoGry: (_ownerId: number) => player.tempoGry ?? 'standardowa',
-      getDifficulty: (_ownerId: number) => _menuDifficulty,
-    });
 
     // -----------------------------------------------------------------------
     // Animation state

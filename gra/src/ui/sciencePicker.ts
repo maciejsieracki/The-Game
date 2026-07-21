@@ -18,6 +18,7 @@ import { scaledResearchCost, type GameDifficulty } from '../game/difficulty-cost
 import { scienceOwlIconHtml } from './icons/scienceOwlIcon';
 import type { ScienceHubEntry, ScienceHubProgress } from './scienceHubHud';
 import { refreshScienceHubIfOpen } from './scienceHubHud';
+import { buildHubTechEntries } from './scienceHubSnapshotLogic';
 
 // ---------------------------------------------------------------------------
 // Typy wewnętrzne (dane z tech.json)
@@ -228,15 +229,13 @@ export function getScienceHubSnapshot(ownerId: number): {
 } {
   const state = cfg.getResearchState?.(ownerId) ?? null;
   const targetId = state?.targetId ?? null;
-  const researched = new Set(cfg.getResearchedTechs?.(ownerId) ?? []);
-  const available = new Set(cfg.getAvailableTechs?.(ownerId) ?? []);
-  if (targetId && !researched.has(targetId)) available.add(targetId);
+  const targetSlug = targetId ? techToSlug(targetId) : null;
+  const targetNode = targetSlug ? TECH_MAP.get(targetSlug) : null;
 
-  const targetNode = targetId ? TECH_MAP.get(targetId) : null;
   const progress: ScienceHubProgress | null = state
     ? {
-      targetName: targetNode?.nazwa ?? (targetId ? techNameFromSlug(targetId) : null),
-      targetId,
+      targetName: targetNode?.nazwa ?? (targetSlug ? techNameFromSlug(targetSlug) : null),
+      targetId: targetSlug,
       pula: state.pula,
       kosztCelu: state.kosztCelu,
       postepFraction: state.postepFraction,
@@ -244,41 +243,28 @@ export function getScienceHubSnapshot(ownerId: number): {
     }
     : null;
 
-  const eraNodes = filterNodesForEpoch(Array.from(TECH_MAP.values()), ownerId);
-  const entries: ScienceHubEntry[] = [];
-  let lockedCount = 0;
+  const drafts = buildHubTechEntries({
+    techById: TECH_MAP,
+    slugify,
+    researchedRaw: cfg.getResearchedTechs?.(ownerId) ?? [],
+    availableRaw: cfg.getAvailableTechs?.(ownerId) ?? [],
+    targetSlug,
+    playerEra: cfg.getPlayerEra?.(ownerId),
+    costFor: (base) => effectiveTechCost(base, ownerId),
+  });
 
-  for (const node of eraNodes) {
-    if (researched.has(node.id)) continue;
-    const isAvail = available.has(node.id);
-    if (isAvail) {
-      entries.push({
-        id: node.id,
-        name: node.nazwa,
-        epoka: node.epoka,
-        koszt: effectiveTechCost(node.koszt, ownerId),
-        unlockLine: techUnlockSummary(node.id) || undefined,
-        locked: false,
-        isTarget: node.id === targetId,
-      });
-    } else if (lockedCount < 4) {
-      entries.push({
-        id: node.id,
-        name: node.nazwa,
-        epoka: node.epoka,
-        koszt: effectiveTechCost(node.koszt, ownerId),
-        unlockLine: techUnlockSummary(node.id) || undefined,
-        locked: true,
-        isTarget: false,
-        lockHint: prereqHint(node),
-      });
-      lockedCount++;
-    }
-  }
-
-  entries.sort((a, b) => {
-    if (a.locked !== b.locked) return a.locked ? 1 : -1;
-    return a.name.localeCompare(b.name, 'pl');
+  const entries: ScienceHubEntry[] = drafts.map(d => {
+    const node = TECH_MAP.get(d.id);
+    return {
+      id: d.id,
+      name: d.name,
+      epoka: d.epoka,
+      koszt: d.koszt,
+      unlockLine: techUnlockSummary(d.id) || undefined,
+      locked: d.locked,
+      isTarget: d.isTarget,
+      lockHint: d.locked && node ? prereqHint(node) : undefined,
+    };
   });
 
   return { progress, entries };
@@ -1313,7 +1299,7 @@ function ensureDimBackdrop(): void {
  * Moze byc wywolane wielokrotnie — nadpisuje poprzednia konfiguracje.
  */
 export function configureSciencePicker(newCfg: SciencePickerConfig): void {
-  cfg = newCfg;
+  cfg = { ...cfg, ...newCfg };
 }
 
 /**

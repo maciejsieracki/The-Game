@@ -4,7 +4,19 @@
 > **Czat:** krótko **`✅ Gotowe:`** / **`⏸️ Czeka:`** · **Ten plik:** pełniejszy zapis tego samego.  
 > Szczegóły techniczne → handoff w `dyspozycje/_handoff/` · operacja → `dyspozycje/DZIENNIK-MASTERA.md`
 
-**Ostatnia aktualizacja:** 2026-07-22 (cooldown darów dyplomacji)
+**Ostatnia aktualizacja:** 2026-07-22 (panel badań — lista tech)
+
+---
+
+## [2026-07-22] ✅ Gotowe — panel badań: lista „Możesz wybrać" znowu pełna
+
+| | |
+|---|---|
+| **Co** | Hub badań (sidebar) pokazuje wszystkie techy do wyboru w bieżącej epoce — nie tylko aktywne badanie |
+| **Przykład** | Badania → MOŻESZ WYBRAĆ: Garncarstwo, Obróbka drewna, Łowiectwo… (zgodnie z drzewkiem), nie „Brak dostępnych technologii" |
+| **md5** | `24cdcfe843e8c0b28db7cb3f17ecf7d9` · stamp `24cdcfe8` |
+| **Bramki** | tsc=0 · science-hub-test 7/7 · research-test 33/33 · tech-tree-test 19/19 |
+| **Od Ciebie** | `git pull` → Ctrl+F5 · `gra-robocza/START.html` → stamp `24cdcfe8` → ikona Badania → sprawdź listę MOŻESZ WYBRAĆ |
 
 ---
 

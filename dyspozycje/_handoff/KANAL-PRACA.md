@@ -2779,3 +2779,12 @@ Fix: canAiProposeOneShotGoldGift — cooldown easy 15 / normal 25 / hard 35 tur 
 Pliki: diplomacy-economy.ts, ai.ts, main.ts; testy diplomacy-economy 16/16, ai T2S-b2.
 Publish ROBOCZA: stamp **2c72af63** · md5 `2c72af6335dfc5c456f62b7d23649af1` (zastępuje `5ce0dfb7`).
 CZEKAM-NA: Maciej — `git pull` → Ctrl+F5 START.html → stamp `2c72af63` → pierwszy dar od miasta-państwa → akcept/odrzut → brak kolejnych ofert złota ~25 tur (normal).
+
+## [02:45 PL, 2026-07-22] INTEGRATOR → Maciej — FIX: panel badań lista „Możesz wybrać"
+
+Bug Macieja: hub badań pokazywał tylko aktywne badanie; MOŻESZ WYBRAĆ puste mimo techów w drzewku.
+Przyczyna: getScienceHubSnapshot — brak normalizacji slugów + filtr epoki tylko z player.era (nie epoki celu); configureSciencePicker po mountD1bHud.
+Fix: scienceHubSnapshotLogic.ts (buildHubTechEntries); configureSciencePicker przed hubem; merge config.
+Bramki: tsc=0 · science-hub-test 7/7 · research-test 33/33 · tech-tree-test 19/19.
+Publish ROBOCZA: stamp **24cdcfe8** · md5 `24cdcfe843e8c0b28db7cb3f17ecf7d9`.
+CZEKAM-NA: Maciej — `git pull` → Ctrl+F5 START.html → stamp `24cdcfe8` → Badania → pełna lista techów do wyboru w epoce.
