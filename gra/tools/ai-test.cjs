@@ -2188,16 +2188,31 @@ console.log('\n--- T7D-b: defensiveCopy -> osadnik bez ruchu ekspansyjnego ---')
   assert(found.length === 0, 'T7D-b: osadnik kopia_typu nie zaklada miasta');
 }
 
-console.log('\n--- T7D-c: defensiveCopy -> riposta na sasiedniego wroga ---');
+console.log('\n--- T7D-c: defensiveCopy -> riposta na sasiedniego wroga (AI, nie gracz) ---');
 {
   const map7c = makeMap(10, 10);
   const warrior = makeUnit('w2', 4, 5, 5, 'miecznik');
-  const enemy = makeUnit('e1', 0, 6, 5, 'miecznik');
+  const enemy = makeUnit('e1', 9, 6, 5, 'miecznik');
   const city = makeCity('c2', 4, 3, 3);
   const result = decideAITurn(4, [warrior, enemy], [city], map7c, makeGameData(), { defensiveCopy: true });
   const attacks = result.filter(c => c.type === 'attack' && c.unitId === 'w2');
   assert(attacks.length === 1, 'T7D-c: atak na sasiedniego wroga');
   eq(attacks[0].targetUnitId, 'e1', 'T7D-c: cel = sasiedni wróg');
+}
+
+console.log('\n--- T7D-g: defensiveCopy -> brak ataku na gracza bez wojny ---');
+{
+  const map7g = makeMap(10, 10);
+  const warrior = makeUnit('wg1', 4, 5, 5, 'miecznik');
+  const playerScout = makeUnit('ps1', 0, 6, 5, 'zwiadowca');
+  const city = makeCity('cg1', 4, 3, 3);
+  const noWar = (targetOwnerId) => targetOwnerId !== 0;
+  const result = decideAITurn(4, [warrior, playerScout], [city], map7g, makeGameData(), {
+    defensiveCopy: true,
+    canEngageOwner: noWar,
+  });
+  const attacks = result.filter(c => c.type === 'attack');
+  assert(attacks.length === 0, 'T7D-g: brak ataku na gracza gdy canEngageOwner blokuje ownerId 0');
 }
 
 console.log('\n--- T7D-d: defensiveCopy -> brak marszu na odlegle miasto wroga ---');

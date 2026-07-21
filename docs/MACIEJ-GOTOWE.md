@@ -4,7 +4,19 @@
 > **Czat:** krótko **`✅ Gotowe:`** / **`⏸️ Czeka:`** · **Ten plik:** pełniejszy zapis tego samego.  
 > Szczegóły techniczne → handoff w `dyspozycje/_handoff/` · operacja → `dyspozycje/DZIENNIK-MASTERA.md`
 
-**Ostatnia aktualizacja:** 2026-07-21 (audyt 20 deploy)
+**Ostatnia aktualizacja:** 2026-07-21 (bugfix miasta-państwa vs gracz)
+
+---
+
+## [2026-07-21] ✅ Gotowe — BUGFIX: miasta-państwa nie atakują bez wojny
+
+| | |
+|---|---|
+| **Co** | Państwa-miasta (Gamla Uppsala itd.) nie uruchamiają preBattle na zwiadowcy gracza, dopóki nie ma wojny — spójne z PRZYJAZNY/neutralni w dyplomacji |
+| **Przyczyna** | AI atakowało każdego sąsiada + riposta przy jednostce obok miasta bez `isAtWar` |
+| **md5** | `eeace0a7477674272f86583795d60826` · stamp `eeace0a7` |
+| **Bramki** | tsc=0 · diplomacy-test 143/143 · ai-test T7D-g OK |
+| **Od Ciebie** | Ctrl+F5 · `gra-robocza/START.html` · Nowa gra · prowadź zwiadowcę obok państwa-miasta (PRZYJAZNY) → **brak ataku**. Opcjonalnie: wypowiedz wojnę → wtedy atak możliwy |
 
 ---
 

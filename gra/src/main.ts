@@ -69,7 +69,7 @@ import type { RuntimeUnit } from './units/setup';
 import { UnitRenderer, type UnitRingStance } from './render/units';
 // Import keyOf from picker only (avoids duplicate identifier with setup.ts keyOf)
 import { pixelToHex, unitAt, keyOf } from './input/picker';
-import { computeVisible, addExplored, allHexKeys, allRevealLandKeys, exploredSetForRender, DEFAULT_SIGHT, computeVisibleAt, buildUnitSightResolver } from './game/visibility';
+import { computeVisible, addExplored, allHexKeys, allRevealLandKeys, exploredSetForRender, DEFAULT_SIGHT, computeVisibleAt, buildUnitSightResolver, unitsVisibleOnMap } from './game/visibility';
 import { runScoutsAutoExplore } from './game/scout-auto-explore';
 import { startRevealRadiusForDifficulty } from './map/startScoring';
 import { canFoundCity, foundCity, foundCityAt, ensureCitySaveDefaults, DEFAULT_PODZIAL_HANDLU, DEFAULT_BUDOWA_TRYB, type City, type BudowaFocus } from './game/cities';
@@ -3695,10 +3695,7 @@ async function boot(): Promise<void> {
      * Garnizon (inGarnizon) — niewidoczny na mapie.
      */
     function visibleUnitsList(vis: Set<string>): RuntimeUnit[] {
-      return units.filter(u => {
-        if (isUnitInGarnizon(u)) return false;
-        return u.ownerId === 0 || vis.has(keyOf(u.q, u.r));
-      });
+      return unitsVisibleOnMap(units, vis, 0);
     }
 
     /**
@@ -3947,7 +3944,9 @@ async function boot(): Promise<void> {
         cityRenderer.syncStatChips(cities, _cityRenderOpts());
         return;
       }
-      const src = list ?? units;
+      // FoW: bez jawnej listy filtruj wroga — syncUnitsRender() sam z siebie nie może
+      // pokazać obcych poza bieżącym zasięgiem (regresja: czerwone pierścienie w czerni).
+      const src = list ?? (fogOn ? visibleUnitsList(currentVisible()) : units);
       const display = computeStackDisplay(src, unitAttackScore);
       if (anim?.movingStackIds?.length) {
         for (const sid of anim.movingStackIds) display.visibleIds.add(sid);
@@ -11653,6 +11652,12 @@ async function boot(): Promise<void> {
               civType: aiOwnerCivMap.get(ownerId), // nacja AI z rostera civs.json
               poziomTrudnosci: aiDiffLevel,
               defensiveCopy: typCityCopyOwners.has(ownerId),
+              canEngageOwner: (targetOwnerId: number) => {
+                if (targetOwnerId === 0) {
+                  return getDiploRelation(ownerId, 0).status === 'wojna';
+                }
+                return true;
+              },
               cityBuildings: Object.fromEntries(
                 [...cityBuilt.entries()].filter(([cid]) => cities.find(c => c.id === cid && c.ownerId === ownerId))
               ),
@@ -11939,6 +11944,13 @@ async function boot(): Promise<void> {
                   const attacker = units.find(x => x.id === cmd.unitId);
                   const defender = units.find(x => x.id === cmd.targetUnitId);
                   if (!attacker || !defender || attacker.ownerId !== ownerId) continue;
+                  if (
+                    defender.ownerId === 0
+                    && getDiploRelation(ownerId, 0).status !== 'wojna'
+                  ) {
+                    console.warn(`[AI ${ownerId}] Atak na gracza bez wojny — pominięto`);
+                    continue;
+                  }
                   const atkRoster = collectBattleRoster(attacker, units);
                   const defRoster = collectBattleRoster(defender, units);
                   const hexKey = keyOf(defender.q, defender.r);

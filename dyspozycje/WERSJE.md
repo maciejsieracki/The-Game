@@ -11,9 +11,13 @@ swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drug
 
 ## ROBOCZA (gra-robocza\Gra-ROBOCZA.html — wskazywana przez START.html)
 
+- 2026-07-21 · stempel: ROBOCZA · **eeace0a7** · md5 pliku `eeace0a7477674272f86583795d60826` · **BUGFIX: miasta-państwa atakują gracza tylko w wojnie** — na `5793da54`:
+  **Fix:** `canEngageOwner` w AI (ai.ts) + bramka w main.ts — bez statusu `wojna` brak preBattle/ataku na jednostki gracza (riposta przy zwiadowcy obok miasta-państwa). Dyplomacja PRZYJAZNY/neutralni spójna z brakiem walki.
+  tsc=0 · diplomacy-test 143/143 · ai-test T7D-g OK · publish `gra-robocza/Gra-ROBOCZA.html`. · **AKTUALNA** · Test: Ctrl+F5 START.html → stamp `eeace0a7`; zwiadowca obok Gamla Uppsala → brak ataku; po wypowiedzeniu wojny → atak dozwolony.
+
 - 2026-07-21 · stempel: ROBOCZA · **5793da54** · md5 pliku `5793da543dc71b9a5ea61f6776f8c241` · **AUDYT 20 POTWIERDZONE + E-START-CS-Q1=C (merge commit)** — na `35a07a49`:
   **Audyt E1–E8:** #3–#9 #34–#39 #59–#65 + fix chatki WYDARZENIA (pełny opis: `dyspozycje/AUDYT-NAPRAWY-LOG.md`). **E-START-CS:** państwa-miasta wokół faktycznej stolicy (już w `35a07a49`, zachowane).
-  tsc=0 · tech-tree 19/19 · map-gen-regression OK · publish `gra-robocza/Gra-ROBOCZA.html`. · **AKTUALNA** · Test: Ctrl+F5 START.html → stamp `5793da54`; chatka + AI badania + klaster państw po stolicy.
+  tsc=0 · tech-tree 19/19 · map-gen-regression OK · publish `gra-robocza/Gra-ROBOCZA.html`. · **ZASTĄPIONA** (→ `eeace0a7`) · Test: Ctrl+F5 START.html → stamp `5793da54`; chatka + AI badania + klaster państw po stolicy.
 
 - 2026-07-21 · stempel: ROBOCZA · **35a07a49** · md5 pliku `35a07a49cd8d393f82b45819ccc1a19c` · **E-START-CS-Q1=C — państwa-miasta wokół faktycznej stolicy gracza** — na `33e7c213`:
   **C:** spawn deferred same-type rivals używa `buildSameTypeRivalCandidateHexes` wokół hexu gracza (nie pre-planu mapgen); backfill przy odrzuceniu `foundCityAt`; pre-plan zostaje tylko do podglądu UI.

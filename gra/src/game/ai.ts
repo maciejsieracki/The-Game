@@ -282,6 +282,18 @@ export interface AITurnOpts {
    * 'normal' (= dzisiejsze stałe 1/2/1, zero regresji domyślnej).
    */
   citySupportLevel?: 'low' | 'normal' | 'strong';
+  /**
+   * Silnik: czy AI (playerId) może prowadzić walkę z ownerId celu.
+   * main.ts ustawia: gracz (0) tylko przy status 'wojna' — bez tego miasta-państwa
+   * atakowały zwiadowcę przy PRZYJAZNY/neutralni (bug 2026-07-21).
+   * Gdy brak — brak filtra (testy lane / stare save).
+   */
+  canEngageOwner?: (targetOwnerId: number) => boolean;
+}
+
+/** Bramka walki AI — domyślnie przepuszcza (testy bez silnika). */
+function aiCanEngageOwner(opts: AITurnOpts, targetOwnerId: number): boolean {
+  return opts.canEngageOwner ? opts.canEngageOwner(targetOwnerId) : true;
 }
 
 /**
@@ -1066,13 +1078,15 @@ export function decideAITurn(
   const myCities     = cities.filter(c => c.ownerId === playerId);
   const enemyUnits   = units.filter(u => u.ownerId !== playerId);
   const enemyCities  = cities.filter(c => c.ownerId !== playerId);
+  const engageableEnemyUnits = enemyUnits.filter(u => aiCanEngageOwner(opts, u.ownerId));
+  const engageableEnemyCities = enemyCities.filter(c => aiCanEngageOwner(opts, c.ownerId));
 
   // Faza 1: konsolidacja własnego klastra (Maciej 2026-07-07) — przed ekspansją poza region.
   const clusterTargetOwnerIds = new Set(
     (opts.clusterStateTargets ?? []).map(t => t.ownerId),
   );
   const clusterConsolidationPhase = clusterTargetOwnerIds.size > 0;
-  const clusterEnemyCities = enemyCities.filter(c => clusterTargetOwnerIds.has(c.ownerId));
+  const clusterEnemyCities = engageableEnemyCities.filter(c => clusterTargetOwnerIds.has(c.ownerId));
 
   // (archetyp + trudność policzone na górze funkcji — wspólne dla obu ścieżek)
   const minCityDist = getAiParam(data, 'ekspansja_min_dystans_miast', 5);
@@ -1150,8 +1164,8 @@ export function decideAITurn(
     // Military
     if (unit.ruchLeft <= 0) continue;
 
-    // 4b: adjacent enemy unit -> attack
-    const adjacentEnemy = enemyUnits.find(
+    // 4b: adjacent enemy unit -> attack (tylko engageable — np. gracz tylko w wojnie)
+    const adjacentEnemy = engageableEnemyUnits.find(
       eu => isAdjacent(unit.q, unit.r, eu.q, eu.r),
     );
     if (adjacentEnemy !== undefined) {
@@ -1161,9 +1175,9 @@ export function decideAITurn(
     }
 
     // 4b: adjacent enemy city -> move onto it (engine handles capture)
-    const adjacentEnemyCity = (clusterConsolidationPhase ? clusterEnemyCities : enemyCities).find(
+    const adjacentEnemyCity = (clusterConsolidationPhase ? clusterEnemyCities : engageableEnemyCities).find(
       ec => isAdjacent(unit.q, unit.r, ec.q, ec.r),
-    ) ?? enemyCities.find(
+    ) ?? engageableEnemyCities.find(
       ec => isAdjacent(unit.q, unit.r, ec.q, ec.r),
     );
     if (adjacentEnemyCity !== undefined) {
@@ -1175,7 +1189,7 @@ export function decideAITurn(
     // 4c: march toward enemy city — faza 1: najpierw państwa w klastrze, potem reszta
     const citiesForMarch = clusterConsolidationPhase && clusterEnemyCities.length > 0
       ? clusterEnemyCities
-      : enemyCities;
+      : engageableEnemyCities;
     const targetCity = (() => {
       if (citiesForMarch.length === 0) return undefined;
       if (difficultyParams.celObranie <= 0) {
@@ -1192,7 +1206,7 @@ export function decideAITurn(
       return bestCity;
     })();
     if (targetCity !== undefined) {
-      const nearestEnemyUnit = nearest(unit.q, unit.r, enemyUnits, u => u.q, u => u.r);
+      const nearestEnemyUnit = nearest(unit.q, unit.r, engageableEnemyUnits, u => u.q, u => u.r);
       const distToCity = hexDistance(unit.q, unit.r, targetCity.q, targetCity.r);
       const distToUnit = nearestEnemyUnit !== undefined
         ? hexDistance(unit.q, unit.r, nearestEnemyUnit.q, nearestEnemyUnit.r)
@@ -1317,6 +1331,7 @@ function decideDefensiveCopyTurn(
   const myUnits = units.filter(u => u.ownerId === playerId);
   const myCities = cities.filter(c => c.ownerId === playerId);
   const enemyUnits = units.filter(u => u.ownerId !== playerId);
+  const engageableEnemyUnits = enemyUnits.filter(u => aiCanEngageOwner(opts, u.ownerId));
 
   // PRODUKCJA — garnizon+mury najpierw (patrz opts.defensiveCopy w chooseCityProduction),
   // potem PEŁNA kolejka jak zwykłe miasto AI (budynki gospodarcze, Koszary, jednostki);
@@ -1359,7 +1374,7 @@ function decideDefensiveCopyTurn(
   // siostrze — bez tego wędrujący własny garnizon sąsiedniej siostry fałszywie wyzwalałby
   // posiłki co turę. Dyplomacja poza tym nierozszerzana (zgodnie z poleceniem).
   const sisterOwnerIds = new Set(sisterCityStates.map(s => s.ownerId));
-  const nonSisterEnemyUnits = enemyUnits.filter(eu => !sisterOwnerIds.has(eu.ownerId));
+  const nonSisterEnemyUnits = engageableEnemyUnits.filter(eu => !sisterOwnerIds.has(eu.ownerId));
 
   // Garnizon startowy per miasto (jednostki własne w promieniu 1) — migawka sprzed ruchów
   // w tej turze; wystarcza jako brama "nadwyżki", bo RESUP_MAX_PER_TURN=1 i tak ogranicza
@@ -1378,7 +1393,7 @@ function decideDefensiveCopyTurn(
     if (isSettler(unit)) continue;
     if (unit.ruchLeft <= 0) continue;
 
-    const adjacentEnemy = enemyUnits.find(
+    const adjacentEnemy = engageableEnemyUnits.find(
       eu => isAdjacent(unit.q, unit.r, eu.q, eu.r),
     );
     if (adjacentEnemy !== undefined) {
@@ -1388,7 +1403,7 @@ function decideDefensiveCopyTurn(
 
     let moved = false;
     for (const city of myCities) {
-      const threat = enemyUnits.find(
+      const threat = engageableEnemyUnits.find(
         eu => isAdjacent(eu.q, eu.r, city.q, city.r),
       );
       if (threat === undefined) continue;

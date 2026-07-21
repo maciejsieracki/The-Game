@@ -2404,3 +2404,14 @@ Maciej: **commit / push** — kod audytu 20 POTWIERDZONE + rebuild ROBOCZA (łą
 - WERSJE.md zaktualizowane · `35a07a49` → ZASTĄPIONA.
 
 CZEKAM-NA: **właściciel** — Ctrl+F5 START.html → stamp **`5793da54`**. **main** na origin po push.
+
+---
+
+## [22:45 PL, 2026-07-21] INTEGRATOR → Maciej — BUGFIX miasta-państwa atak bez wojny
+
+- **ROBOCZA = `eeace0a7`** (md5 `eeace0a7477674272f86583795d60826`), na `5793da54`.
+- **Przyczyna:** AI (decideAITurn + decideDefensiveCopyTurn) atakowało każdego sąsiada bez sprawdzenia wojny — riposta przy zwiadowcy obok miasta-państwa uruchamiała preBattle mimo PRZYJAZNY/neutralni.
+- **Fix:** `canEngageOwner` w opts AI — gracz (0) tylko gdy `status === 'wojna'`; druga bramka w main.ts przy wykonaniu rozkazu attack.
+- tsc=0 · diplomacy-test 143/143 · ai-test T7D-g OK · publish OK.
+
+CZEKAM-NA: **sesja lokalna** — commit+push main · **Maciej** Ctrl+F5 → stamp `eeace0a7` · zwiadowca obok państwa-miasta bez wojny = brak bitwy.
