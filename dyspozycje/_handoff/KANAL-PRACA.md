@@ -2522,10 +2522,10 @@ CZEKAM-NA: **Maciej** `git pull` → Ctrl+F5 START.html → stamp `c63dd3f4`; �
 
 Maciej UI fix 2026-07-21: panel dyplomacji (toolbar uścisk dłoni).
 
-- **ROBOCZA = `a5b836a1`** (md5 `a5b836a1c7a2f0f5b7a947fd4c0a63b9`), na `c63dd3f4`.
+- **ROBOCZA = `c7301135`** (md5 `c730113537ad8855f07f53a948566f28`), na `c63dd3f4`.
 - **Usunięto:** kursywny opis bonusów cywilizacji pod wpisem listy.
 - **Dodano:** `Relacja: X · Zaufanie: Y` (Zaufanie + live Respekt z mocy, jak audiencja).
 - Pliki: `diploListHud.ts`, `diplomacyPanel.ts`, `main.ts`.
 - tsc=0 · publish OK.
 
-CZEKAM-NA: **Maciej** `git pull` → Ctrl+F5 START.html → stamp `a5b836a1`; uścisk dłoni → lista bez bonusów Falanga/Hoplita.
+CZEKAM-NA: **Maciej** `git pull` → Ctrl+F5 START.html → stamp `c7301135`; uścisk dłoni → lista bez bonusów Falanga/Hoplita.
