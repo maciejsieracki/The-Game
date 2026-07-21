@@ -53,6 +53,11 @@ export interface DiplomacyAudienceState {
   powerRatioLabel?: string;
   /** Aktywne traktaty do wyświetlenia (v1.1). */
   activeTreaties?: readonly { label: string; detail?: string }[];
+  /**
+   * J: JAWNY formalny status relacji (odrębny od nastawienia/tier). Odpowiada na
+   * pytanie „wojna czy tylko nastawienie?": wojna / sojusz / pakt / pokój / brak kontaktu.
+   */
+  formalStatus?: { label: string; kind: 'wojna' | 'sojusz' | 'pakt' | 'pokoj' | 'brak' };
   /** Tagi charakteru (D3-UX-3B) — bez liczb. */
   personalityTags?: readonly string[];
   /** Epoka rozmówcy (etykieta PL). */
@@ -224,6 +229,16 @@ function progressBarHtml(label: string, value: number, max: number, tooltip?: st
 function relationSectionHtml(st: DiplomacyAudienceState): string {
   const relTotal = st.relacjaTotal ?? (st.zaufanie + st.respekt);
   let html = '<div class="civ-diplo-aud-rel">';
+  if (st.formalStatus) {
+    const fsColors: Record<string, string> = {
+      wojna: '#e05a5a', sojusz: '#5ad07a', pakt: '#8ec5ff', pokoj: '#d4cba0', brak: '#8b97a8',
+    };
+    const c = fsColors[st.formalStatus.kind] ?? '#d4cba0';
+    html += '<div class="civ-diplo-aud-formal" title="Formalny stan relacji — odrębny od nastawienia"' +
+      ' style="font-weight:700;letter-spacing:.05em;text-transform:uppercase;font-size:0.8em;color:' + c +
+      ';border:1px solid ' + c + '66;border-radius:5px;padding:3px 9px;margin-bottom:7px;display:inline-block">' +
+      'STATUS: ' + esc(st.formalStatus.label) + '</div>';
+  }
   html += '<div class="civ-diplo-aud-rel-badge">' + tierBadgeHtml(st.tier, tierLabel(st.tier)) + '</div>';
   html += '<div>Relacja <b>' + relTotal + '</b></div>';
   html += progressBarHtml('Zaufanie', st.zaufanie, 100);

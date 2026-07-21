@@ -6938,7 +6938,22 @@ async function boot(): Promise<void> {
           const powerLine = formatPowerRelationLine(playerPower, otherPower);
           const respektNorm = powerLine.respekt;
           const pairMeta = getDiploPairMeta(0, ownerId);
+          // J: jawny formalny status (odrębny od nastawienia/tier).
+          let _fsAlly = false, _fsPakt = false;
+          for (const d of activeDeals) {
+            if (!d.strony.includes(0) || !d.strony.includes(ownerId)) continue;
+            if (isAllianceDealKind(d.rodzaj)) _fsAlly = true;
+            else if (normalizeTreatyKind(d.rodzaj) === RodzajTraktatu.PaktNieagresji) _fsPakt = true;
+          }
+          const _fsContact = diplomaticContactEstablished.has(ownerId);
+          const formalStatus: { label: string; kind: 'wojna' | 'sojusz' | 'pakt' | 'pokoj' | 'brak' } =
+            rel.status === 'wojna' ? { label: 'W trakcie wojny', kind: 'wojna' }
+            : _fsAlly ? { label: 'Sojusz wojskowy', kind: 'sojusz' }
+            : _fsPakt ? { label: 'Pakt o nieagresji', kind: 'pakt' }
+            : _fsContact ? { label: 'Pokój (neutralne)', kind: 'pokoj' }
+            : { label: 'Brak formalnego kontaktu', kind: 'brak' };
           return {
+            formalStatus,
             playerTitle: 'Władca · ' + epochLabelForOwner(0),
             playerCivName,
             otherTitle: 'Przedstawiciel',
