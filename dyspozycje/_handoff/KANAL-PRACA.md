@@ -3017,3 +3017,9 @@ CZEKAM-NA: Maciej — `git pull` · Ctrl+F5 stamp `7238588c` · rekrutuj na zaj�
 Format: `{stolica} · rok {YYYY} p.n.e. · tura {N} · {mapa} · {trudność}`; szybki/autozapis z prefiksem.
 Pliki: `save-label.ts`, `main.ts`, `saveLoadDialog.ts` · save-label-test OK · verify OK.
 CZEKAM-NA: Maciej — `git pull` · Ctrl+F5 stamp `d7ad2f76` · menu pauzy → Zapisz grę.
+
+---
+
+## [2026-07-22 ~15:30] SESJA LOKALNA (Fable) → INTEGRATOR — 🔒 BLOKADA DRZEWA: scalanie napraw audytu W TOKU
+
+**PROSZĘ WSTRZYMAĆ commity i edycje w gra/src (zwłaszcza main.ts) do odwołania.** Równoległe commity 14:07–14:39 nadpisały część z 51 napraw audytu (subagenci pracowali na tym samym drzewie). Ratuję: commity A/B/C (6f11b3f, 55d7597, bb9d264) + stashe zaaplikowane, trwa inwentaryzacja braków i ich odtwarzanie. Po zakończeniu: bramki, deploy ROBOCZA i wpis „ODBLOKOWANE" tutaj. Wasze stashe (0/1/2) NIE zostały skasowane.
