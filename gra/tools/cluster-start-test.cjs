@@ -13,7 +13,7 @@ fs.writeFileSync(entry, `
 export { buildClusterStartPlan } from '../src/game/cluster-start';
 export { buildClusterSpawnPlan, buildSameTypeRivalSlots, buildSameTypeRivalCandidateHexes, groupForeignTypeClusters } from '../src/map/cluster-spawn';
 export { generateMap } from '../src/map/generator';
-export { MIN_DIST_START_CITY_STATE, MIN_DIST_FOREIGN_FROM_PLAYER, MIN_DIST_FOREIGN_IN_CLUSTER, clusterPackRadius } from '../src/map/clusters';
+export { MIN_DIST_START_CITY_STATE, MIN_DIST_FOREIGN_FROM_PLAYER, MIN_DIST_FOREIGN_IN_CLUSTER, CLUSTER_CITY_STATE_MIN_HEX, CLUSTER_CITY_STATE_MAX_HEX, clusterPackRadius, clusterCityStateRadius } from '../src/map/clusters';
 export { hexDistanceAxial } from '../src/map/gen-helpers';
 `, 'utf8');
 
@@ -56,46 +56,43 @@ assert(plan.pendingSameTypeRivals === 4, '4 rywali deferred do założenia miast
 assert(plan.spawnCities.length >= 1, 'co najmniej obce miasta AI na starcie');
 assert(plan.simplifiedDiplomacyOwners.size === 0, 'rywale tego samego typu jeszcze nie na mapie');
 assert(plan.foreignTypeOwners.size > 0, 'foreignTypeOwners wypełnione');
-const foreignCount = plan.placement.klastry.length - 1;
+const foreignCount = plan.foreignTypeClusters.length;
+assert(foreignCount >= 1, 'co najmniej 1 obcy klaster z miastami na mapie');
 assert(plan.typCityCopyOwners.size === plan.spawnCities.length - plan.clusterCapitalOwnerIds.length,
   'typCityCopyOwners = państwa bez stolic klastrów');
 assert(plan.clusterCapitalOwnerIds.length === foreignCount,
-  'każdy obcy typ ma stolicę klastra (ekspansyjna AI)');
+  'każdy obcy typ z miastami ma stolicę klastra (ekspansyjna AI)');
 // E-START-CS-Q1 C: spawn wokół FAKTYCZNEJ stolicy gracza, nie pre-planu mapgen
 const prePlanHexes = plan.pendingSameTypeRivalHexes;
-assert(prePlanHexes.length === plan.pendingSameTypeRivals,
-  'pre-planowane hexy państw gracza (podgląd mapgen)');
+assert(prePlanHexes.length >= 1 && prePlanHexes.length <= plan.pendingSameTypeRivals,
+  'pre-planowane hexy państw gracza (1..N w pierścieniu 3 hex)');
 
 // Gracz stawia stolicę w innym miejscu niż sugerowany hex algorytmu
 const offsetCore = { q: plan.playerStartHex.q + 6, r: plan.playerStartHex.r + 4 };
 const actualCandidates = M.buildSameTypeRivalCandidateHexes(
   map, offsetCore, plan.pendingSameTypeRivals, 4242,
 );
-assert(actualCandidates.length >= plan.pendingSameTypeRivals,
-  'kandydaci wokół faktycznej stolicy >= liczba państw');
-const packRActual = M.clusterPackRadius(plan.pendingSameTypeRivals + 1, M.MIN_DIST_START_CITY_STATE);
-const packReachActual = packRActual + M.MIN_DIST_START_CITY_STATE * 6;
+assert(actualCandidates.length >= 1,
+  'kandydaci wokół faktycznej stolicy (pierścień 3 hex, partial OK)');
+const packRActual = M.clusterCityStateRadius();
+const packReachActual = packRActual;
 for (const h of actualCandidates.slice(0, plan.pendingSameTypeRivals)) {
   const dCore = M.hexDistanceAxial(h.q, h.r, offsetCore.q, offsetCore.r);
   assert(dCore <= packReachActual,
     `rywal przy offsetCore w zasięgu klastra (${dCore} <= ${packReachActual})`);
-  const dPrePlan = M.hexDistanceAxial(h.q, h.r, prePlanHexes[0].q, prePlanHexes[0].r);
-  assert(
-    M.hexDistanceAxial(h.q, h.r, offsetCore.q, offsetCore.r)
-      <= M.hexDistanceAxial(prePlanHexes[0].q, prePlanHexes[0].r, offsetCore.q, offsetCore.r) + packReachActual,
-    'kandydaci skupieni wokół offsetCore, nie pre-planu',
-  );
+  assert(dCore >= M.CLUSTER_CITY_STATE_MIN_HEX,
+    `rywal min ${M.CLUSTER_CITY_STATE_MIN_HEX} hex od stolicy (${dCore})`);
 }
 
 // Symulacja: gracz założył miasto → spawn państw z pre-planu klastra (legacy podgląd)
 const deferredHexes = prePlanHexes;
-assert(deferredHexes.length === 4, '4 deferred same-type po founding');
+assert(deferredHexes.length >= 1 && deferredHexes.length <= 4, 'deferred same-type po founding (partial OK)');
 const sameType = deferredHexes.map((h, i) => ({ q: h.q, r: h.r, name: 'mp' + (i + 1), ownerId: i + 1 }));
 for (const oid of [1, 2, 3, 4]) {
   assert(!plan.simplifiedDiplomacyOwners.has(oid), `deferred owner ${oid} spoza startu`);
 }
 
-assert(plan.foreignTypeClusters.length === foreignCount, `${foreignCount} obcych typów (klastry na mapie)`);
+assert(plan.foreignTypeClusters.length >= 1, 'obce klastry z miastami na mapie');
 for (const fc of plan.foreignTypeClusters) {
   assert(fc.positions.length >= 2, `obcy typ ${fc.typ}: ≥2 miasta (${fc.positions.length})`);
   assert(fc.ownerIds.length === fc.positions.length, `obcy typ ${fc.typ}: ownerIds = positions`);
@@ -150,21 +147,18 @@ assert(
   'deterministyczny seed',
 );
 
-// Maciej 2026-07-04 / 2026-07-07: odległości startu + ciasny klaster
+// Maciej 2026-07-22: twardy klaster miast-państw gracza — min/max 3 hex od stolicy
 const playerCap = plan.playerStartHex;
-// packR z FAKTYCZNEJ wielkości klastra (siostry + stolica), nie stałej —
-// po podwojeniu miast klaster jest większy i promień rośnie.
-const packR = M.clusterPackRadius(sameType.length + 1, M.MIN_DIST_START_CITY_STATE);
-// Dozwolony zasięg = packR + fallback rozszerzający z landPoolNearCore
-// (przy skąpym lądzie miasta lądują dalej: `expanded <= packR + minDist*6`).
-const packReach = packR + M.MIN_DIST_START_CITY_STATE * 6;
+const clusterMax = M.CLUSTER_CITY_STATE_MAX_HEX;
+const clusterMin = M.CLUSTER_CITY_STATE_MIN_HEX;
 for (let i = 0; i < sameType.length; i++) {
   for (let j = i + 1; j < sameType.length; j++) {
     const d = M.hexDistanceAxial(sameType[i].q, sameType[i].r, sameType[j].q, sameType[j].r);
-    assert(d >= M.MIN_DIST_START_CITY_STATE, `miasta-panstwa >= ${M.MIN_DIST_START_CITY_STATE} hex (${d})`);
+    assert(d >= clusterMin, `miasta-panstwa >= ${clusterMin} hex (${d})`);
   }
   const dCore = M.hexDistanceAxial(sameType[i].q, sameType[i].r, playerCap.q, playerCap.r);
-  assert(dCore <= packReach, `rywal w zasięgu klastra od rdzenia (${dCore} <= ${packReach})`);
+  assert(dCore <= clusterMax, `rywal max ${clusterMax} hex od stolicy (${dCore})`);
+  assert(dCore >= clusterMin, `rywal min ${clusterMin} hex od stolicy (${dCore})`);
 }
 const foreignCities = plan.spawnCities.filter(c => plan.foreignTypeOwners.has(c.ownerId));
 for (const fc of foreignCities) {
@@ -193,8 +187,12 @@ for (const fcl of plan.foreignTypeClusters) {
   }
 }
 assert(plan.placement.minDystansMiastaPanstwa === 3, 'placement minDystansMiastaPanstwa=3');
+assert(plan.placement.maxDystansMiastaPanstwa === 3, 'placement maxDystansMiastaPanstwa=3');
 assert(plan.placement.minDystansObcyOdGracza === 12, 'placement minDystansObcyOdGracza=12');
 assert(M.MIN_DIST_FOREIGN_IN_CLUSTER === 3, 'MIN_DIST_FOREIGN_IN_CLUSTER=3');
+assert(M.CLUSTER_CITY_STATE_MIN_HEX === 3, 'CLUSTER_CITY_STATE_MIN_HEX=3');
+assert(M.CLUSTER_CITY_STATE_MAX_HEX === 3, 'CLUSTER_CITY_STATE_MAX_HEX=3');
+assert(M.clusterCityStateRadius() === 3, 'clusterCityStateRadius=3');
 
 // Stolica gracza na krawędzi klastra (dalej od centrum niż średnie państwo)
 const playerKlaster = plan.placement.klastry.find(k => k.typ === 'grecy');

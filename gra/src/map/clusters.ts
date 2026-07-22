@@ -18,8 +18,8 @@
  *   < 100000 → ogromna → 8 typów
  *   ≥ 100000 → super → 10 typów
  *
- * Odległości startu (Maciej 2026-07-04, tylko spawn):
- *   miasta-państwa w klastrze gracza → min 3 hexy, skupisko wokół rdzenia (nie cały Voronoi)
+ * Odległości startu (Maciej 2026-07-04 / 2026-07-22, tylko spawn):
+ *   miasta-państwa w klastrze gracza → min 3 hex, max 3 hex od stolicy (twardy pierścień)
  *   miasta obcych typów od stolicy gracza → min 12 hexów (poza oświetleniem startu)
  *   miasta-państwa w klastrze obcego typu → min 3 hexy, też skupisko wokół centrum typu
  *
@@ -35,8 +35,18 @@
 
 import { mulberry32, hexDistanceAxial } from './gen-helpers';
 
+/**
+ * Twardy promień skupiska miast-państw (Maciej 2026-07-22).
+ * Min odległość między dowolnymi dwoma miastami-państwami w klastrze.
+ */
+export const CLUSTER_CITY_STATE_MIN_HEX = 3;
+/**
+ * Max odległość miasta-państwa od stolicy/rdzenia klastra (ciasne skupisko).
+ * Wraz z MIN = dokładnie pierścień 3 hex wokół stolicy gracza.
+ */
+export const CLUSTER_CITY_STATE_MAX_HEX = 3;
 /** Min odległość między startowymi miastami-państwami (ten sam typ co gracz). Tylko spawn. */
-export const MIN_DIST_START_CITY_STATE = 3;
+export const MIN_DIST_START_CITY_STATE = CLUSTER_CITY_STATE_MIN_HEX;
 /**
  * Min odległość miast obcych typów od hexu stolicy gracza. Tylko spawn.
  * 12 hex > promień oświetlenia startu (8 normal) — obce nacje nie widać przy założeniu miasta.
@@ -99,6 +109,8 @@ export interface ClusterPlacement {
   aktywneTypy: number;
   /** min odległość miast-państw w klastrze gracza (start). */
   minDystansMiastaPanstwa: number;
+  /** max promień skupiska miast-państw od rdzenia klastra (start). */
+  maxDystansMiastaPanstwa: number;
   /** min odległość obcych miast od stolicy gracza (start). */
   minDystansObcyOdGracza: number;
   playerTypIndex: number;     // indeks klastra gracza (zawsze 0)
@@ -136,10 +148,15 @@ function shuffleInPlace<T>(arr: T[], rand: () => number): void {
   }
 }
 
-/** Promień skupiska miast wokół rdzenia (hexy) — ciasne paki, nie cały region Voronoi. */
+/** Promień skupiska miast wokół rdzenia (hexy) — heurystyka dla AI/ekspansji (legacy). */
 export function clusterPackRadius(maxMiast: number, minDist: number): number {
   const rings = Math.max(2, Math.ceil(Math.sqrt(Math.max(1, maxMiast)) * 1.35));
   return Math.max(minDist * 2, rings * minDist);
+}
+
+/** Twardy promień klastra miast-państw — spawn + AI resupply (Maciej 2026-07-22). */
+export function clusterCityStateRadius(): number {
+  return CLUSTER_CITY_STATE_MAX_HEX;
 }
 
 /** Pola lądowe w promieniu od rdzenia, posortowane od najbliższych (do ciasnego pakowania). */
@@ -148,15 +165,20 @@ function landPoolNearCore(
   centrum: { q: number; r: number },
   maxMiast: number,
   minDist: number,
+  maxRadius?: number,
 ): Array<{ q: number; r: number }> {
-  const packR = clusterPackRadius(maxMiast, minDist);
+  const packR = maxRadius != null
+    ? maxRadius
+    : clusterPackRadius(maxMiast, minDist);
   const near = region
     .map(c => ({ c, d: hexDistanceAxial(c.q, c.r, centrum.q, centrum.r) }))
     .filter(x => x.d <= packR)
     .sort((a, b) => a.d - b.d || a.c.q - b.c.q || a.c.r - b.c.r)
     .map(x => x.c);
   if (near.length >= maxMiast) return near;
-  // Za mało pól w pierwszym pierścieniu — rozszerz promień stopniowo.
+  // Twardy limit klastra miast-państw — bez rozszerzania poza maxRadius.
+  if (maxRadius != null) return near.length > 0 ? near : region;
+  // Za mało pól w pierwszym pierścieniu — rozszerz promień stopniowo (legacy / obce typy).
   let expanded = packR + minDist;
   while (near.length < maxMiast && expanded <= packR + minDist * 6) {
     for (const c of region) {
@@ -227,7 +249,12 @@ export function packRivalCitiesAroundCore(
 ): Array<{ q: number; r: number }> {
   if (rivalCount <= 0) return [];
   const rand = mulberry32((seed ^ 0x9e3779b9) >>> 0);
-  const pool = landPoolNearCore(landHexes, core, rivalCount, minDist);
+  // Pierścień [minDist .. maxDist] wokół stolicy — ciasne skupisko (Maciej 2026-07-22).
+  const pool = landHexes
+    .map(h => ({ h, d: hexDistanceAxial(h.q, h.r, core.q, core.r) }))
+    .filter(x => x.d >= minDist && x.d <= CLUSTER_CITY_STATE_MAX_HEX)
+    .sort((a, b) => b.d - a.d || a.h.q - b.h.q || a.h.r - b.h.r)
+    .map(x => x.h);
   return poissonPickCities(pool, rivalCount, minDist, rand, { excludeHex: core });
 }
 
@@ -430,6 +457,7 @@ export function computeClusters(
     return {
       rozmiarMapy, aktywneTypy: nTypy,
       minDystansMiastaPanstwa: minDystMiastaPanstwa,
+      maxDystansMiastaPanstwa: CLUSTER_CITY_STATE_MAX_HEX,
       minDystansObcyOdGracza: minDystObcyOdGracza,
       playerTypIndex: 0, klastry: [],
     };
@@ -539,19 +567,29 @@ export function computeClusters(
     minDystMiastaPanstwa,
     rand,
   );
-  klastry.push({
-    typIndex: 0,
-    typ: aktywneKlucze[0] ?? playerKlucz,
-    centrum: playerCentrum,
-    miasta: playerLayout.cities,
-    pendingStateSlots: playerLayout.pendingStateSlots,
-    growthSlot: playerLayout.growthSlot,
-  });
 
   const playerCapital = playerLayout.cities.find(m => m.isCapital) ?? playerLayout.cities[0];
   const playerCapitalPos = playerCapital
     ? { q: playerCapital.q, r: playerCapital.r }
     : playerCentrum;
+
+  // Pre-plan państw gracza: ciasne skupisko wokół stolicy (min/max 3 hex — Maciej 2026-07-22).
+  const playerStateSlots = packRivalCitiesAroundCore(
+    ladowe,
+    playerCapitalPos,
+    stateCityCount,
+    minDystMiastaPanstwa,
+    seed,
+  );
+
+  klastry.push({
+    typIndex: 0,
+    typ: aktywneKlucze[0] ?? playerKlucz,
+    centrum: playerCentrum,
+    miasta: playerLayout.cities,
+    pendingStateSlots: playerStateSlots,
+    growthSlot: playerLayout.growthSlot,
+  });
 
   for (let ci = 1; ci < centrumy.length; ci++) {
     const centrum = centrumy[ci]!;
@@ -591,6 +629,7 @@ export function computeClusters(
     rozmiarMapy,
     aktywneTypy: nTypy,
     minDystansMiastaPanstwa: minDystMiastaPanstwa,
+    maxDystansMiastaPanstwa: CLUSTER_CITY_STATE_MAX_HEX,
     minDystansObcyOdGracza: minDystObcyOdGracza,
     playerTypIndex: 0,
     klastry,

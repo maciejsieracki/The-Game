@@ -20,6 +20,8 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 // tools/.cluster-start-entry.ts
 var cluster_start_entry_exports = {};
 __export(cluster_start_entry_exports, {
+  CLUSTER_CITY_STATE_MAX_HEX: () => CLUSTER_CITY_STATE_MAX_HEX,
+  CLUSTER_CITY_STATE_MIN_HEX: () => CLUSTER_CITY_STATE_MIN_HEX,
   MIN_DIST_FOREIGN_FROM_PLAYER: () => MIN_DIST_FOREIGN_FROM_PLAYER,
   MIN_DIST_FOREIGN_IN_CLUSTER: () => MIN_DIST_FOREIGN_IN_CLUSTER,
   MIN_DIST_START_CITY_STATE: () => MIN_DIST_START_CITY_STATE,
@@ -27,6 +29,7 @@ __export(cluster_start_entry_exports, {
   buildClusterStartPlan: () => buildClusterStartPlan,
   buildSameTypeRivalCandidateHexes: () => buildSameTypeRivalCandidateHexes,
   buildSameTypeRivalSlots: () => buildSameTypeRivalSlots,
+  clusterCityStateRadius: () => clusterCityStateRadius,
   clusterPackRadius: () => clusterPackRadius,
   generateMap: () => generateMap,
   groupForeignTypeClusters: () => groupForeignTypeClusters,
@@ -44,10 +47,17 @@ function nazwaKlastraAt(names, index, fallback) {
 function poolEntry(pools, ikonaId) {
   return pools[ikonaId];
 }
+function rivalPoolIndex(rivalIndex1Based, poolLen) {
+  if (poolLen <= 1) return 0;
+  const rivalSlots = poolLen - 1;
+  return (Math.max(1, rivalIndex1Based) - 1) % rivalSlots + 1;
+}
 function stateCityNameAt(pools, ikonaId, index, fallback) {
   const pan = poolEntry(pools, ikonaId)?.miasta_panstwa;
-  if (pan && index >= 0 && index < pan.length && pan[index]) {
-    return pan[index];
+  if (!pan?.length) return fallback;
+  const idx = index >= 1 ? rivalPoolIndex(index, pan.length) : index;
+  if (idx >= 0 && idx < pan.length && pan[idx]) {
+    return pan[idx];
   }
   return fallback;
 }
@@ -55,10 +65,41 @@ function playerCapitalFromPool(pools, ikonaId) {
   return stateCityNameAt(pools, ikonaId, 0, "Stolica");
 }
 function clusterRivalFromPool(pools, ikonaId, rivalIndex1Based) {
-  return stateCityNameAt(pools, ikonaId, rivalIndex1Based, `Rywal ${rivalIndex1Based}`);
+  const entry = poolEntry(pools, ikonaId);
+  const pan = entry?.miasta_panstwa ?? [];
+  const fallback = `Rywal ${rivalIndex1Based}`;
+  if (!pan.length || rivalIndex1Based < 1) {
+    return fallback;
+  }
+  const rivalSlots = pan.length - 1;
+  if (rivalIndex1Based <= rivalSlots) {
+    const idx = rivalPoolIndex(rivalIndex1Based, pan.length);
+    const name = pan[idx];
+    if (name) return name;
+  }
+  const regular = entry?.miasta_cywilizacji ?? [];
+  const usedInCluster = new Set(pan.filter(Boolean));
+  const overflowIndex = rivalIndex1Based - rivalSlots - 1;
+  let skipped = 0;
+  for (const name of regular) {
+    if (!name || usedInCluster.has(name)) continue;
+    if (skipped === overflowIndex) return name;
+    skipped++;
+  }
+  const base = regular.find((n) => n && !usedInCluster.has(n));
+  if (base) {
+    return cityNameWithSuffix(base, overflowIndex + 2);
+  }
+  return fallback;
 }
 function foreignCapitalFromPool(pools, ikonaId) {
   return stateCityNameAt(pools, ikonaId, 0, ikonaId);
+}
+function cityNameWithSuffix(base, ordinal) {
+  if (ordinal <= 1) return base;
+  const roman = ["", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"];
+  const suffix = ordinal <= 10 ? roman[ordinal] : String(ordinal);
+  return `${base} ${suffix}`;
 }
 
 // src/game/civ-names.ts
@@ -81,7 +122,9 @@ function clusterRivalCityName(civs, playerCivId, rivalIndex1Based, pools) {
     return clusterRivalFromPool(pools, playerCivId, rivalIndex1Based);
   }
   const names = getNazwyKlastra(civs, playerCivId);
-  return nazwaKlastraAt(names, rivalIndex1Based, `Rywal ${rivalIndex1Based}`);
+  if (!names.length) return `Rywal ${rivalIndex1Based}`;
+  const idx = rivalIndex1Based >= 1 ? rivalPoolIndex(rivalIndex1Based, names.length) : rivalIndex1Based;
+  return nazwaKlastraAt(names, idx, `Rywal ${rivalIndex1Based}`);
 }
 function foreignCapitalCityName(civs, typIkonaId, pools) {
   if (pools?.[typIkonaId]) {
@@ -338,12 +381,12 @@ var e_start_params_default = {
     render_quality_bundled: "medium"
   },
   skala_mapy: {
-    Malenki: { rywale_ai: 2, miasta_panstwa: 8, typy_cywilizacji: 7, hex_w: 76, hex_h: 52 },
-    Ma\u0142y: { rywale_ai: 3, miasta_panstwa: 10, typy_cywilizacji: 10, hex_w: 108, hex_h: 74 },
-    Standardowy: { rywale_ai: 6, miasta_panstwa: 12, typy_cywilizacji: 12, hex_w: 168, hex_h: 120 },
-    Du\u017Cy: { rywale_ai: 7, miasta_panstwa: 14, typy_cywilizacji: 14, hex_w: 240, hex_h: 168 },
-    Ogromny: { rywale_ai: 8, miasta_panstwa: 16, typy_cywilizacji: 15, hex_w: 336, hex_h: 238 },
-    "Super Huge": { rywale_ai: 10, miasta_panstwa: 16, typy_cywilizacji: 15, hex_w: 672, hex_h: 476 }
+    Malenki: { rywale_ai: 2, miasta_panstwa: 3, typy_cywilizacji: 7, hex_w: 76, hex_h: 52 },
+    Ma\u0142y: { rywale_ai: 3, miasta_panstwa: 4, typy_cywilizacji: 10, hex_w: 108, hex_h: 74 },
+    Standardowy: { rywale_ai: 6, miasta_panstwa: 6, typy_cywilizacji: 12, hex_w: 168, hex_h: 120 },
+    Du\u017Cy: { rywale_ai: 7, miasta_panstwa: 7, typy_cywilizacji: 14, hex_w: 240, hex_h: 168 },
+    Ogromny: { rywale_ai: 8, miasta_panstwa: 8, typy_cywilizacji: 15, hex_w: 336, hex_h: 238 },
+    "Super Huge": { rywale_ai: 10, miasta_panstwa: 8, typy_cywilizacji: 15, hex_w: 672, hex_h: 476 }
   },
   generator_e2: {
     resource_mult_low: 0.6,
@@ -411,6 +454,22 @@ function normPlMenuLabel(label) {
 
 // src/data/e-start-params-loader.ts
 var R = e_start_params_default;
+var MENU_KEYS = ["Malenki", "Ma\u0142y", "Standardowy", "Du\u017Cy", "Ogromny", "Super Huge"];
+function normMenuLabel(label) {
+  return normPlMenuLabel(label);
+}
+function skalaRow(menuLabel) {
+  const n = normMenuLabel(menuLabel);
+  const m = R.skala_mapy;
+  if (!m) return void 0;
+  for (const key of Object.keys(m)) {
+    if (normMenuLabel(key) === n) return m[key];
+  }
+  for (const key of MENU_KEYS) {
+    if (normMenuLabel(key) === n) return m[key];
+  }
+  return void 0;
+}
 function eStartPlayerCivId() {
   return R.defaulty?.player_civ_id ?? "rzymianie";
 }
@@ -422,11 +481,34 @@ function eStartRenderQualityBundled() {
   if (q === "low" || q === "high") return q;
   return "medium";
 }
+function eStartTypyCywilizacji(menuLabel) {
+  return skalaRow(menuLabel)?.typy_cywilizacji;
+}
+function eStartMiastaPanstwa(menuLabel) {
+  return skalaRow(menuLabel)?.miasta_panstwa;
+}
 
 // src/map/villages.ts
+var VILLAGE_HUTS_PER_CITY = {
+  hard: 1,
+  normal: 2,
+  easy: 3
+};
 var VILLAGE_LAND_HEX_PER_VILLAGE = 140;
-var VILLAGE_MIN_DIST_FROM_CITY = 4;
-var VILLAGE_MIN_SPACING = 5;
+function expectedStartCityCount(civTypesCount, cityStatesCount) {
+  const types = Math.max(1, Math.floor(civTypesCount));
+  const states = Math.max(0, Math.floor(cityStatesCount));
+  return types * (1 + states);
+}
+function villageHutsPerCityMultiplier(difficulty = "normal") {
+  return VILLAGE_HUTS_PER_CITY[difficulty] ?? VILLAGE_HUTS_PER_CITY.normal;
+}
+function targetVillageHutCount(cityCount, difficulty = "normal") {
+  const cities = Math.max(0, Math.floor(cityCount));
+  return cities * villageHutsPerCityMultiplier(difficulty);
+}
+var VILLAGE_MIN_DIST_FROM_CITY = 3;
+var VILLAGE_MIN_SPACING = 3;
 function lcgNext(state) {
   const next = state * 1664525 + 1013904223 >>> 0;
   return [next, next / 4294967296];
@@ -449,7 +531,7 @@ function placeVillages(hexes, cities, existingCamps, seed, opts) {
     if (isVillageExcludedTerrain(hex.terenBazowy)) continue;
     candidates.push({ q: hex.coords.q, r: hex.coords.r });
   }
-  const targetCount = Math.max(1, Math.round(landHexCount / landHexPerVillage));
+  const targetCount = opts?.targetCount != null && Number.isFinite(opts.targetCount) ? Math.max(0, Math.floor(opts.targetCount)) : Math.max(1, Math.round(landHexCount / landHexPerVillage));
   if (candidates.length === 0) return [];
   let lcg = seed >>> 0;
   for (let i = candidates.length - 1; i > 0; i--) {
@@ -496,8 +578,8 @@ var terrain_improvements_default = {
       zywnosc: 3
     },
     surowiecOdblokowany: null,
-    teren: "\u0141\u0105ka, R\xF3wnina",
-    warunek: "ziemia uprawna; DZIA\u0141A BEZ rzeki (podstawowy)",
+    teren: "\u0141\u0105ka, R\xF3wnina; Wzg\xF3rza z lasem",
+    warunek: "ziemia uprawna; DZIA\u0141A BEZ rzeki (podstawowy); MO\u017BE na lesie (Las) \u2014 bez wyr\u0119bu (Maciej 2026-07-21)",
     koszt_praca: 20,
     tech: "Rolnictwo",
     odblokowuje: ""
@@ -1038,7 +1120,17 @@ function generateMap(width = DEFAULT_WIDTH, height = DEFAULT_HEIGHT, seed = 42, 
     minDist: 5,
     absMinDist: 2
   });
-  const villageSites = placeVillages(hexes, startPositions, [], (effectiveSeed ^ 24301) >>> 0);
+  const mapMenuLabel = genOpts?.mapSizeMenuLabel ?? "Standardowy";
+  const startCityCount = expectedStartCityCount(
+    genOpts?.civTypesCount ?? defaultCivTypesFromMapLabel(mapMenuLabel),
+    clampMiastaPanstwaCount(
+      genOpts?.cityStatesCount ?? defaultMiastaPanstwaFromMapLabel(mapMenuLabel)
+    )
+  );
+  const targetHuts = targetVillageHutCount(startCityCount, genOpts?.difficulty ?? "normal");
+  const villageSites = placeVillages(hexes, startPositions, [], (effectiveSeed ^ 24301) >>> 0, {
+    targetCount: targetHuts
+  });
   for (const site of villageSites) {
     const hex = hexes[`${site.q},${site.r}`];
     if (hex) hex.wioska = { istnieje: true, ludnosc: 1 };
@@ -1054,11 +1146,11 @@ function generateMap(width = DEFAULT_WIDTH, height = DEFAULT_HEIGHT, seed = 42, 
   };
 }
 var ROZMIAR_DIMS = mapGenRozmiarDims();
-function normMenuLabel(label) {
+function normMenuLabel2(label) {
   return normPlMenuLabel(label);
 }
 function rozmiarFromMenuLabel(label) {
-  const n = normMenuLabel(label);
+  const n = normMenuLabel2(label);
   if (n.startsWith("malen") || n === "malenki") return "malenki";
   if (n.startsWith("mal") || n === "maly" || n === "small") return "maly";
   if (n.startsWith("stand") || n.startsWith("sre") || n === "standardowy" || n === "medium") return "standardowy";
@@ -1181,6 +1273,59 @@ function resolveWorldGenNumbers(opts) {
     highlandThreshold: highlandNoiseThresholdFromTier(reliefTier),
     riverTrace: resolveRiverTraceForMap(mapLabel, wd.rivers)
   };
+}
+var MAX_MIAST_PANSTWA = 9;
+function clampMiastaPanstwaCount(raw) {
+  const n = Math.floor(Number(raw));
+  if (!Number.isFinite(n) || n < 1) return 1;
+  return Math.min(n, MAX_MIAST_PANSTWA);
+}
+var MAX_TYPY_CYWILIZACJI_MENU = 15;
+var MAP_MENU_TIER_ORDER = [
+  "malenki",
+  "maly",
+  "standardowy",
+  "duzy",
+  "ogromny",
+  "superogromny"
+];
+var MIASTA_PANSTWA_MENU_BY_TIER = [
+  { min: 2, default: 3, max: 4 },
+  { min: 3, default: 4, max: 5 },
+  { min: 4, default: 6, max: 7 },
+  { min: 5, default: 7, max: 8 },
+  { min: 6, default: 8, max: MAX_MIAST_PANSTWA },
+  { min: 7, default: 8, max: MAX_MIAST_PANSTWA }
+];
+var TYPY_CYWILIZACJI_MENU_BY_TIER = [
+  // Maleński: 7 (nie 8) — na najmniejszej mapie 8 klastrów czasem się nie mieści
+  // (pofragmentowany ląd → 1 państwo z 0 miast). Decyzja właściciela 2026-07-20.
+  { min: 6, default: 7, max: 10 },
+  { min: 8, default: 10, max: 12 },
+  { min: 10, default: 12, max: 14 },
+  { min: 12, default: 14, max: MAX_TYPY_CYWILIZACJI_MENU },
+  { min: 13, default: MAX_TYPY_CYWILIZACJI_MENU, max: MAX_TYPY_CYWILIZACJI_MENU },
+  { min: 13, default: MAX_TYPY_CYWILIZACJI_MENU, max: MAX_TYPY_CYWILIZACJI_MENU }
+];
+function mapMenuTierIndex(menuLabel) {
+  const idx = MAP_MENU_TIER_ORDER.indexOf(rozmiarFromMenuLabel(menuLabel));
+  return idx >= 0 ? idx : 2;
+}
+function miastaPanstwaTriple(menuLabel) {
+  return MIASTA_PANSTWA_MENU_BY_TIER[mapMenuTierIndex(menuLabel)] ?? MIASTA_PANSTWA_MENU_BY_TIER[2];
+}
+function typyCywilizacjiTriple(menuLabel) {
+  return TYPY_CYWILIZACJI_MENU_BY_TIER[mapMenuTierIndex(menuLabel)] ?? TYPY_CYWILIZACJI_MENU_BY_TIER[2];
+}
+function defaultMiastaPanstwaFromMapLabel(menuLabel) {
+  const fromE = eStartMiastaPanstwa(menuLabel);
+  if (fromE != null && fromE > 0) return clampMiastaPanstwaCount(fromE);
+  return miastaPanstwaTriple(menuLabel).default;
+}
+function defaultCivTypesFromMapLabel(menuLabel) {
+  const fromE = eStartTypyCywilizacji(menuLabel);
+  if (fromE != null && fromE > 0) return Math.min(fromE, MAX_TYPY_CYWILIZACJI_MENU);
+  return typyCywilizacjiTriple(menuLabel).default;
 }
 
 // src/map/earth-land-mask.generated.ts
@@ -5482,7 +5627,9 @@ function computeStartPositions(hexes, seed, opts = {}) {
 }
 
 // src/map/clusters.ts
-var MIN_DIST_START_CITY_STATE = 3;
+var CLUSTER_CITY_STATE_MIN_HEX = 3;
+var CLUSTER_CITY_STATE_MAX_HEX = 3;
+var MIN_DIST_START_CITY_STATE = CLUSTER_CITY_STATE_MIN_HEX;
 var MIN_DIST_FOREIGN_FROM_PLAYER = 12;
 var MIN_DIST_FOREIGN_IN_CLUSTER = MIN_DIST_START_CITY_STATE;
 var CLUSTER_GROWTH_RESERVE = 1;
@@ -5533,10 +5680,14 @@ function clusterPackRadius(maxMiast, minDist) {
   const rings = Math.max(2, Math.ceil(Math.sqrt(Math.max(1, maxMiast)) * 1.35));
   return Math.max(minDist * 2, rings * minDist);
 }
-function landPoolNearCore(region, centrum, maxMiast, minDist) {
-  const packR = clusterPackRadius(maxMiast, minDist);
+function clusterCityStateRadius() {
+  return CLUSTER_CITY_STATE_MAX_HEX;
+}
+function landPoolNearCore(region, centrum, maxMiast, minDist, maxRadius) {
+  const packR = maxRadius != null ? maxRadius : clusterPackRadius(maxMiast, minDist);
   const near = region.map((c) => ({ c, d: hexDistanceAxial(c.q, c.r, centrum.q, centrum.r) })).filter((x) => x.d <= packR).sort((a, b) => a.d - b.d || a.c.q - b.c.q || a.c.r - b.c.r).map((x) => x.c);
   if (near.length >= maxMiast) return near;
+  if (maxRadius != null) return near.length > 0 ? near : region;
   let expanded = packR + minDist;
   while (near.length < maxMiast && expanded <= packR + minDist * 6) {
     for (const c of region) {
@@ -5579,7 +5730,7 @@ function poissonPickCities(region, maxMiast, minDist, rand, opts) {
 function packRivalCitiesAroundCore(landHexes, core, rivalCount, minDist, seed) {
   if (rivalCount <= 0) return [];
   const rand = mulberry32((seed ^ 2654435769) >>> 0);
-  const pool = landPoolNearCore(landHexes, core, rivalCount, minDist);
+  const pool = landHexes.map((h) => ({ h, d: hexDistanceAxial(h.q, h.r, core.q, core.r) })).filter((x) => x.d >= minDist && x.d <= CLUSTER_CITY_STATE_MAX_HEX).sort((a, b) => b.d - a.d || a.h.q - b.h.q || a.h.r - b.h.r).map((x) => x.h);
   return poissonPickCities(pool, rivalCount, minDist, rand, { excludeHex: core });
 }
 function centroidOf(hexes) {
@@ -5710,6 +5861,7 @@ function computeClusters(map, opts) {
       rozmiarMapy,
       aktywneTypy: nTypy,
       minDystansMiastaPanstwa: minDystMiastaPanstwa,
+      maxDystansMiastaPanstwa: CLUSTER_CITY_STATE_MAX_HEX,
       minDystansObcyOdGracza: minDystObcyOdGracza,
       playerTypIndex: 0,
       klastry: []
@@ -5791,16 +5943,23 @@ function computeClusters(map, opts) {
     minDystMiastaPanstwa,
     rand
   );
+  const playerCapital = playerLayout.cities.find((m) => m.isCapital) ?? playerLayout.cities[0];
+  const playerCapitalPos = playerCapital ? { q: playerCapital.q, r: playerCapital.r } : playerCentrum;
+  const playerStateSlots = packRivalCitiesAroundCore(
+    ladowe,
+    playerCapitalPos,
+    stateCityCount,
+    minDystMiastaPanstwa,
+    seed
+  );
   klastry.push({
     typIndex: 0,
     typ: aktywneKlucze[0] ?? playerKlucz,
     centrum: playerCentrum,
     miasta: playerLayout.cities,
-    pendingStateSlots: playerLayout.pendingStateSlots,
+    pendingStateSlots: playerStateSlots,
     growthSlot: playerLayout.growthSlot
   });
-  const playerCapital = playerLayout.cities.find((m) => m.isCapital) ?? playerLayout.cities[0];
-  const playerCapitalPos = playerCapital ? { q: playerCapital.q, r: playerCapital.r } : playerCentrum;
   for (let ci = 1; ci < centrumy.length; ci++) {
     const centrum = centrumy[ci];
     const region = regiony[ci];
@@ -5834,6 +5993,7 @@ function computeClusters(map, opts) {
     rozmiarMapy,
     aktywneTypy: nTypy,
     minDystansMiastaPanstwa: minDystMiastaPanstwa,
+    maxDystansMiastaPanstwa: CLUSTER_CITY_STATE_MAX_HEX,
     minDystansObcyOdGracza: minDystObcyOdGracza,
     playerTypIndex: 0,
     klastry
@@ -6029,9 +6189,15 @@ var DIPLOMACY_PARAMS = {
   /** "Wspolny wrog zaakceptowany" (+10 Respekt, jednorazowo) */
   wspolnyWrogAkceptacja_respekt: 10,
   // ---- per-turn Zaufanie deltas (co ture) ----
-  /** "Aktywny handel (trwa umowa handlowa)" (+1/ture) */
+  /** "Aktywny handel (trwa umowa handlowa)" (+1/ture) — stackuje z tierem pokoju */
   handel_zaufanie_perTura: 1,
-  /** "Dotrzymany pakt (NAP lub sojusz trwa)" (+1/ture) */
+  /** "Aktywny sojusz wojskowy" (+3/ture, Maciej 2026-07-21) */
+  sojusz_zaufanie_perTura: 3,
+  /** "Aktywny pakt nieagresji" (+2/ture, Maciej 2026-07-21) */
+  nap_zaufanie_perTura: 2,
+  /** "Pokojowy kontakt bez wojny/NAP/sojuszu" (+1/ture, Maciej 2026-07-21) */
+  pokoj_zaufanie_perTura: 1,
+  /** @deprecated — zastąpione przez nap/sojusz/pokoj (2026-07-21); zostaje w JSON roundtrip */
   aktywnyPakt_zaufanie_perTura: 1,
   /** "Efekt dobrej woli (podarunek)" (+1/ture przez kilka tur) */
   dobraWola_zaufanie_perTura: 1,
@@ -6084,10 +6250,10 @@ var DIPLOMACY_PARAMS = {
   // ---- propozycje v1.1 (Panel-D → evaluateProposal) ----
   /** Zaufanie >= wartość wymagane do NAP */
   progNapZaufanie: 40,
-  /** Relacja >= wartość wymagana do NAP (Maciej 2026-06-30: 110, bez innych progów) */
-  progNapRelacja: 110,
-  /** Relacja >= wartość wymagana do handlu ¤/Praca/złoża (Maciej 2026-06-30: 100) */
-  progHandelRelacja: 100,
+  /** Relacja >= wartość wymagana do NAP (Maciej 2026-07-21: 50 @ normal) */
+  progNapRelacja: 50,
+  /** Relacja >= wartość wymagana do handlu ¤/Praca/złoża (Maciej 2026-07-21: 40 @ normal) */
+  progHandelRelacja: 40,
   /** @deprecated v1.2 — usunięte „tylko równi”; zostaje w JSON dla roundtrip */
   progSojuszPartnerRwMin: 0.4,
   progSojuszPartnerRwMax: 0.7,
@@ -6145,6 +6311,8 @@ var DIPLOMACY_PARAMS = {
   progNamowWojneBribeBase: 30,
   /** Zaufanie min dla otwartych granic */
   progGraniceZaufanie: 45,
+  /** Relacja min dla otwartych granic / przemarszu (G1-A) */
+  progGraniceRelacja: 100,
   /** Respekt min dla prawa wojskowego przemarszu */
   progGraniceWojskoweRespekt: 55,
   /** militaryRatio min dla ultimatum */
@@ -6266,6 +6434,8 @@ function buildClusterStartPlan(input) {
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
+  CLUSTER_CITY_STATE_MAX_HEX,
+  CLUSTER_CITY_STATE_MIN_HEX,
   MIN_DIST_FOREIGN_FROM_PLAYER,
   MIN_DIST_FOREIGN_IN_CLUSTER,
   MIN_DIST_START_CITY_STATE,
@@ -6273,6 +6443,7 @@ function buildClusterStartPlan(input) {
   buildClusterStartPlan,
   buildSameTypeRivalCandidateHexes,
   buildSameTypeRivalSlots,
+  clusterCityStateRadius,
   clusterPackRadius,
   generateMap,
   groupForeignTypeClusters,

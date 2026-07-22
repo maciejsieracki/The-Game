@@ -2949,3 +2949,12 @@ CZEKAM-NA: Maciej — `git pull` → stamp `6865baf8` → Nowa gra Standardowy �
 Pliki: `newGameMapDefaults.ts`, `e-start-params.json`, `map-scale-menu-test.cjs`, bundle robocza.
 Bramki: tsc=0 · map-scale-menu 32/32 · verify OK.
 CZEKAM-NA: Maciej — `git pull` → Ctrl+F5 → stamp `4760325c` → Super Huge → suwak 7·8·9.
+
+## [10:45 PL, 2026-07-22] INTEGRATOR → Maciej — twardy klaster miast-państw 3 hex
+
+**md5:** `05d689e333d9d29543f1da9e1bebaa9b` · stamp `05d689e3`
+**Decyzja Macieja:** miasta-państwa w ciasnym skupisku — min 3 hex między sobą, max 3 hex od stolicy gracza.
+**Fix:** `CLUSTER_CITY_STATE_MIN_HEX` / `CLUSTER_CITY_STATE_MAX_HEX` = 3; `packRivalCitiesAroundCore` pierścień [3..3]; pre-plan mapgen spójny; AI resupply `clusterCityStateRadius()=3`.
+Pliki: `gra/src/map/clusters.ts`, `gra/src/main.ts`, `gra/tools/cluster-start-test.cjs`, bundle robocza.
+Bramki: tsc=0 · cluster-start 93/93 · map-gen-regression OK · publish OK.
+CZEKAM-NA: Maciej — `git pull` → Ctrl+F5 START.html → stamp `05d689e3` → Nowa gra → załóż stolicę → państwa w pierścieniu 3 hex od stolicy.

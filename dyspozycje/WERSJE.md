@@ -11,9 +11,13 @@ swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drug
 
 ## ROBOCZA (gra-robocza\Gra-ROBOCZA.html — wskazywana przez START.html)
 
+- 2026-07-22 · stempel: ROBOCZA · **05d689e3** · md5 pliku `05d689e333d9d29543f1da9e1bebaa9b` · **MAPA: twardy klaster miast-państw 3 hex** — na `4760325c`:
+  **Miasta-państwa (Maciej):** spawn w pierścieniu **min 3 / max 3 hex** od stolicy gracza — ciasne skupisko (stałe `CLUSTER_CITY_STATE_MIN_HEX` / `CLUSTER_CITY_STATE_MAX_HEX`). Pre-plan mapgen + runtime spawn (`packRivalCitiesAroundCore`) spójne. AI resupply/konsolidacja: promień 3 hex (`clusterCityStateRadius`).
+  tsc=0 · cluster-start 93/93 · map-gen-regression OK · publish `gra-robocza/Gra-ROBOCZA.html`. · **AKTUALNA** · Test: stamp `05d689e3` · Nowa gra → załóż stolicę → miasta-państwa w pierścieniu 3 hex (Sparta, Kapua…).
+
 - 2026-07-22 · stempel: ROBOCZA · **4760325c** · md5 pliku `4760325c0191876a107104b75622297b` · **BALANS: Super Huge miasta-państwa 7·8·9** — na `6865baf8`:
   **Super Huge (`superogromny`):** menu miast-państw min **7** · domyślnie **8** · max **9** (było 6·9·9). Panel-E `e-start-params.json` default **8**. `MAX_MIAST_PANSTWA=9` bez zmian.
-  tsc=0 · map-scale-menu 32/32 · publish `gra-robocza/Gra-ROBOCZA.html`. · **AKTUALNA** · Test: stamp `4760325c` · Super Huge → kreator MP 7·8·9 · domyślnie 8.
+  tsc=0 · map-scale-menu 32/32 · publish `gra-robocza/Gra-ROBOCZA.html`. · **ZASTĄPIONA** (→ `05d689e3`) · Test: stamp `4760325c` · Super Huge → kreator MP 7·8·9 · domyślnie 8.
 
 - 2026-07-22 · stempel: ROBOCZA · **6865baf8** · md5 pliku `6865baf802e6ced6a0721e2a1f4d9c0b` · **BALANS: cap miast-państw max 9 + FIX chatki spawn** — na `ae64786b`:
   **(1) Miasta-państwa (Maciej):** za dużo w klastrze (do 18 po ×2 2026-07-20). Przywrócono kanon max **9** (+ stolica = 10); skala: Malenki 3 · Mały 4 · Standard 6 · Duży 7 · Ogromny 8 · Super Huge 9. `clampMiastaPanstwaCount` w spawn/generator/kreator; Panel-E `e-start-params.json`.

@@ -96,7 +96,7 @@ import { gameEpochHudLabel, type CivEntryEpochRow } from './game/civ-entry-epoch
 import type { ProductionItem } from './game/production';
 import { resolveArchetypeAggression, resolveArchetypeTrade } from './game/civ-ai-data';
 import { buildClusterStartPlan, buildSameTypeRivalCandidateHexes } from './game/cluster-start';
-import { clusterPackRadius, MIN_DIST_START_CITY_STATE, type ClusterPlacement } from './map/clusters';
+import { clusterCityStateRadius, MIN_DIST_START_CITY_STATE, type ClusterPlacement } from './map/clusters';
 import { playerStartCityName, clusterRivalCityName, pickAiFoundedCityName, suggestPlayerFoundCityName } from './game/civ-names';
 import {
   formatOwnerDiploLabel,
@@ -12075,7 +12075,7 @@ async function boot(): Promise<void> {
             if (tc && clusterCapitalOwnerIds.has(ownerId)) {
               const slotCount = tc.miasta.length + (tc.growthSlot ? 1 : 0);
               opts.clusterCenter = tc.centrum;
-              opts.clusterRadius = clusterPackRadius(slotCount, MIN_DIST_START_CITY_STATE);
+              opts.clusterRadius = clusterCityStateRadius();
               opts.clusterStateTargets = cities
                 .filter(c =>
                   c.startCityState
@@ -12086,7 +12086,7 @@ async function boot(): Promise<void> {
                 .map(c => ({ ownerId: c.ownerId, q: c.q, r: c.r }));
             } else if (tc && !typCityCopyOwners.has(ownerId)) {
               opts.clusterCenter = tc.centrum;
-              opts.clusterRadius = clusterPackRadius(tc.miasta.length + 1, MIN_DIST_START_CITY_STATE);
+              opts.clusterRadius = clusterCityStateRadius();
             } else if (tc && typCityCopyOwners.has(ownerId)) {
               // D-START posiłki w klastrze (Maciej 2026-07-20, bramkowane sojuszem
               // 2026-07-21): pozostałe miasta-siostry (profil kopia_typu_obronna) TEGO
@@ -12097,7 +12097,7 @@ async function boot(): Promise<void> {
               // ai.ts nie wie nic o dyplomacji, filtrujemy TUTAJ, przed przekazaniem.
               // Ten sam promień co dla clusterStateTargets (spójność z konsolidacją
               // klastra powyżej).
-              const resupRadius = clusterPackRadius(tc.miasta.length + (tc.growthSlot ? 1 : 0), MIN_DIST_START_CITY_STATE);
+              const resupRadius = clusterCityStateRadius();
               opts.sisterCityStates = cities
                 .filter(c =>
                   c.ownerId !== ownerId

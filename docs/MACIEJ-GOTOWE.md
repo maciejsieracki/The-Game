@@ -4,7 +4,19 @@
 > **Czat:** krótko **`✅ Gotowe:`** / **`⏸️ Czeka:`** · **Ten plik:** pełniejszy zapis tego samego.  
 > Szczegóły techniczne → handoff w `dyspozycje/_handoff/` · operacja → `dyspozycje/DZIENNIK-MASTERA.md`
 
-**Ostatnia aktualizacja:** 2026-07-22 (Super Huge MP 7·8·9 @ 4760325c)
+**Ostatnia aktualizacja:** 2026-07-22 (klaster MP 3 hex @ 05d689e3)
+
+---
+
+## [10:45] ✅ Gotowe — MAPA: twardy klaster miast-państw 3 hex
+
+| | |
+|---|---|
+| **Co** | Miasta-państwa spawnują w pierścieniu **min 3 / max 3 hex** od Twojej stolicy — ciasne skupisko |
+| **Stałe** | `CLUSTER_CITY_STATE_MIN_HEX=3`, `CLUSTER_CITY_STATE_MAX_HEX=3` w `clusters.ts` |
+| **Pliki** | `clusters.ts`, `main.ts`, `cluster-start-test.cjs` |
+| **md5** | `05d689e333d9d29543f1da9e1bebaa9b` · stamp `05d689e3` |
+| **Od Ciebie** | `git pull` → Ctrl+F5 · stamp `05d689e3` · Nowa gra → załóż stolicę → państwa w pierścieniu 3 hex |
 
 ---
 
