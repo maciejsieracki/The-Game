@@ -15,10 +15,10 @@ export function scienceProgressRingHtml(
 ): string {
   const f = Math.max(0, Math.min(1, fraction));
   const cx = size / 2;
-  const r = (size - strokeWidth) / 2;
+  const r = cx - strokeWidth / 2;
   const circ = 2 * Math.PI * r;
   const dashOffset = circ * (1 - f);
-  return `<svg class="civ-science-prog-ring" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" aria-hidden="true">`
+  return `<svg class="civ-science-prog-ring" viewBox="0 0 ${size} ${size}" aria-hidden="true">`
     + `<circle cx="${cx}" cy="${cx}" r="${r}" fill="none" stroke="${RING_GOLD}" stroke-width="${strokeWidth}"/>`
     + `<circle cx="${cx}" cy="${cx}" r="${r}" fill="none" stroke="${RING_BLUE}" stroke-width="${strokeWidth}"`
     + ` stroke-dasharray="${circ.toFixed(2)}" stroke-dashoffset="${dashOffset.toFixed(2)}"`

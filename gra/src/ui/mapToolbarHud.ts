@@ -38,7 +38,7 @@ export interface MapToolbarHudApi {
   destroy: () => void;
 }
 
-const STYLE_ID = 'civ-map-toolbar-hud-css-w2ring1';
+const STYLE_ID = 'civ-map-toolbar-hud-css-w2ring2';
 
 function ensureStyles(): void {
   ensureBrandRootTokens();
@@ -58,7 +58,7 @@ function ensureStyles(): void {
 .civ-map-toolbar .tb.science{border:none;color:#7cb4e4;
   background:radial-gradient(circle at 38% 30%,#12202e,#0a0d14);
   box-shadow:inset 0 2px 4px rgba(90,155,212,.2),0 4px 10px rgba(0,0,0,.55);}
-.civ-map-toolbar .tb.science > .civ-science-prog-ring{position:absolute;inset:0;pointer-events:none;}
+.civ-map-toolbar .tb.science > .civ-science-prog-ring{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;}
 .civ-map-toolbar .tb.science .tb-ring-wrap{position:relative;width:100%;height:100%;
   display:flex;align-items:center;justify-content:center;z-index:1;}
 .civ-map-toolbar .tb:hover{filter:brightness(1.06);}
@@ -68,7 +68,7 @@ function ensureStyles(): void {
   box-shadow:inset 0 2px 4px rgba(90,155,212,.28),0 0 20px rgba(90,155,212,.35);color:#9ec8f0;}
 .civ-map-toolbar .tb.at-war{border-color:rgba(200,64,64,.65);}
 .civ-map-toolbar .tb.science .civ-science-owl-ic{width:26px;height:26px;color:#7cb4e4;}
-.civ-map-toolbar .tb svg,.civ-map-toolbar .tb .civ-ic{width:26px;height:26px;display:block;}
+.civ-map-toolbar .tb svg:not(.civ-science-prog-ring),.civ-map-toolbar .tb .civ-ic{width:26px;height:26px;display:block;}
 .civ-map-toolbar .badge{position:absolute;top:0;right:0;min-width:14px;height:14px;
   border-radius:7px;background:#c84040;color:#fff;font-size:9px;font-weight:700;
   display:flex;align-items:center;justify-content:center;padding:0 3px;}

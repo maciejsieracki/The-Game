@@ -2900,3 +2900,13 @@ CZEKAM-NA: Maciej — `git pull` → Ctrl+F5 START.html → stamp `43510348` →
 **Fix:** epoka tylko w `applyClusterStartPlan` / `initAllAiOwnersForNewGame`; `aiResearchDone.clear()` w klastrze; reconcile przed sync + po init; `repairAiRosterFromMap` → `setupAiOwnerEpoch`.
 Bramki: tsc=0 · owner-epoch-test 13/13 · VERIFY OK.
 CZEKAM-NA: Maciej — `git pull` → Ctrl+F5 START.html → stamp `35fd5449` · Nowa gra Kamień → załóż miasto → miasta-państwa tipi (P1), nie megaron.
+
+## [08:15 PL, 2026-07-22] INTEGRATOR → Maciej — FIX pierścień Nauki wyśrodkowanie (offset)
+
+**md5:** `59d90c13cf1056f05f669465a760f758` · stamp `59d90c13`
+**Bug:** pierścień postępu Nauki przesunięty w lewy górny róg medalionu (toolbar 52px + chip 30px).
+**Przyczyna:** `.tb svg` / `.civ-hud-chip-med svg` wymuszały 26×26 / 17×17 px także na `.civ-science-prog-ring`; brak width/height 100%.
+**Fix:** `:not(.civ-science-prog-ring)`; ring `inset:0;width:100%;height:100%`; SVG bez pixel width/height; chip stroke 1px.
+Pliki: `scienceProgressRing.ts`, `mapToolbarHud.ts`, `hudChip6c.ts`, `hud.ts`.
+Bramki: tsc=0 · publish robocza OK.
+CZEKAM-NA: Maciej — `git pull` → Ctrl+F5 START.html → stamp `59d90c13` → pierścień koncentryczny; 0%/50%/100%.

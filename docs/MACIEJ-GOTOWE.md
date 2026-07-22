@@ -4,7 +4,20 @@
 > **Czat:** krótko **`✅ Gotowe:`** / **`⏸️ Czeka:`** · **Ten plik:** pełniejszy zapis tego samego.  
 > Szczegóły techniczne → handoff w `dyspozycje/_handoff/` · operacja → `dyspozycje/DZIENNIK-MASTERA.md`
 
-**Ostatnia aktualizacja:** 2026-07-22 (fix epoka miast-państw AI @ Kamień)
+**Ostatnia aktualizacja:** 2026-07-22 (fix pierścień Nauki wyśrodkowanie)
+
+---
+
+## [08:15] ✅ Gotowe — FIX: pierścień Nauki wyśrodkowany (toolbar + chip)
+
+| | |
+|---|---|
+| **Co** | Pierścień postępu Nauki **koncentryczny** z medalionem — jak złote bordery innych ikon toolbaru (52px) i chipu górnego (30px) |
+| **Przyczyna** | CSS `.tb svg` / `.civ-hud-chip-med svg` zmniejszał ring do 26×26 / 17×17 px → offset w lewy górny róg |
+| **Fix** | `:not(.civ-science-prog-ring)` + `width/height:100%` na ring; SVG tylko viewBox; chip stroke 1px |
+| **Pliki** | `scienceProgressRing.ts` · `mapToolbarHud.ts` · `hudChip6c.ts` · `hud.ts` |
+| **md5** | `59d90c13cf1056f05f669465a760f758` · stamp `59d90c13` |
+| **Od Ciebie** | `git pull` → Ctrl+F5 · `gra-robocza/START.html` → stamp `59d90c13` → pierścień wyśrodkowany; 0%/50%/100% |
 
 ---
 
