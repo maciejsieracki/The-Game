@@ -185,6 +185,16 @@ export interface TerrainPreset {
   riverMode: RiverMode;
   /** Ford count for 'winding'/'wide' modes; undefined = today's formula. */
   fordCount?: number;
+  /**
+   * [min,max] SMALL OVAL PONDS (2-4 tiles across, deep River water) scattered
+   * on the FLANK column ranges that survive battleScene's deploy-rank carve
+   * (owner 2026-07-22 #4: the accidental "torn river ponds" look of the
+   * failed wide-river iteration was liked -- "zostawic dla innych terenow,
+   * np. laki czy rowniny" -- so Laka/Rownina now get it deliberately).
+   * Undefined (every other preset + DEFAULT_PRESET) = no ponds and NO extra
+   * rng consumption, keeping those streams untouched.
+   */
+  lakeCount?: readonly [number, number];
   /** Extra Rocks scattered near the field's outer edges (Wzgorza/Gory "ring"). */
   edgeRocks: boolean;
   /** Hard-zero forest (Pustynia: "ZERO drzew"). */
@@ -192,14 +202,17 @@ export interface TerrainPreset {
   /** battleScene swaps the floor/hill/grass palette for sand tones when true. */
   desertPalette: boolean;
   /**
-   * Concentrate HILLS (and, with edgeRocks, the edge-rock scatter) into
-   * `GenerateOpts.safeCols` -- the column ranges that survive battleScene's
-   * _carveBattleBox deployment-lane clearing, which unconditionally wipes
-   * MOST of the playable width back to Plains regardless of preset. Without
-   * this, "more hills" mostly lands in lanes that get carved away and never
-   * reads as hillier on screen. false (DEFAULT_PRESET) => today's plain
-   * whole-interior scatter, byte-for-byte unchanged. See battleScene.ts
-   * `battleSafeCols()`.
+   * true (Wzgorza/Gory/Pustynia) => generate HILLS as irregular, curved
+   * CHAINS of overlapping variable-radius blobs (a wandering ridge/dune line)
+   * plus a minority of solitary hillocks scattered across the WHOLE interior,
+   * instead of independent single blobs -- reads as a natural mountain/dune
+   * range, not scattered dots or (the earlier, owner-rejected 2026-07-22 #3
+   * version of this flag) a column concentrated into battleScene's old wide
+   * deploy-lane carve, which read as a straight rectangular bar. false
+   * (DEFAULT_PRESET, Laka's few gentle hills) => the plain independent-blob
+   * whole-interior scatter, byte-for-byte unchanged from before this feature.
+   * Edge rocks (see `edgeRocks` below) still use `GenerateOpts.safeCols` for
+   * their own, separate flank concentration -- unrelated to this flag.
    */
   biasSafeCols: boolean;
 }
@@ -254,11 +267,13 @@ export function presetForWorldTerrain(wt?: WorldTerrainInput): TerrainPreset {
   switch (baza) {
     case 'laka':
       p = { forestBlobsMul: 1.1, hillBlobsMul: 0.3, rockCountMul: 0.9, hillRadiusBoost: 0,
-            riverMode: 'winding', edgeRocks: false, noForest: false, desertPalette: false, biasSafeCols: false };
+            riverMode: 'winding', edgeRocks: false, noForest: false, desertPalette: false, biasSafeCols: false,
+            lakeCount: [2, 4] };
       break;
     case 'rownina':
       p = { forestBlobsMul: 0.5, hillBlobsMul: 0, rockCountMul: 0.6, hillRadiusBoost: 0,
-            riverMode: wt.rzeka ? 'winding' : 'none', edgeRocks: false, noForest: false, desertPalette: false, biasSafeCols: false };
+            riverMode: wt.rzeka ? 'winding' : 'none', edgeRocks: false, noForest: false, desertPalette: false, biasSafeCols: false,
+            lakeCount: [0, 2] };
       break;
     case 'wzgorza':
       // 2026-07-22 korekta #2 (za mało wyraźne z dystansu): mocno wyższy
@@ -299,7 +314,10 @@ export function presetForWorldTerrain(wt?: WorldTerrainInput): TerrainPreset {
   // own river default -- EXCEPT Pustynia (zero rivers, always) and Wybrzeze
   // (already has its own single-edge water feature).
   if (wt.rzeka && !p.noForest && baza !== 'wybrzeze') {
-    p = { ...p, riverMode: 'wide', fordCount: p.fordCount ?? 3 };
+    // lakeCount dropped on purpose: the wide-river preset must have NO water
+    // besides the single continuous S-channel (owner 2026-07-22 #4 -- "zadnych
+    // odseparowanych plam wody"), so a baza's ponds (Rownina/Laka) are removed.
+    p = { ...p, riverMode: 'wide', fordCount: p.fordCount ?? 3, lakeCount: undefined };
   }
 
   return p;
@@ -329,11 +347,13 @@ export interface GenerateOpts {
   /**
    * Column ranges [loInclusive, hiInclusive] that will remain visible AFTER
    * battleScene's _carveBattleBox deployment-lane clearing (see
-   * battleScene.ts `battleSafeCols()`). Only consulted when
-   * `preset.biasSafeCols` (hills) / `preset.riverMode==='wide'` (river) /
-   * `preset.edgeRocks` (edge rocks) request it -- DEFAULT_PRESET never reads
-   * this, so passing it alongside the default preset is a no-op (safe to
-   * always pass from battleScene).
+   * battleScene.ts `battleSafeCols()`). Only consulted by `preset.edgeRocks`
+   * (flank rock concentration) and `preset.lakeCount` (flank pond placement)
+   * -- hills (`preset.biasSafeCols`) and the wide river
+   * (`preset.riverMode==='wide'`) generate organically across the whole
+   * interior since the 2026-07-22 #3 meander correction and no longer read
+   * this. DEFAULT_PRESET never reads it either, so passing it alongside the
+   * default preset is a no-op (safe to always pass from battleScene).
    */
   safeCols?: ReadonlyArray<readonly [number, number]>;
   /** World-terrain-derived generation preset. Omit for the pre-existing default. */
@@ -443,54 +463,98 @@ export function generateBattleTerrain(opts: GenerateOpts): BattleTerrainMap {
       }
     }
   } else if (preset.riverMode === 'wide') {
-    // --- RZEKA overlay: a broad crossing (owner spec: ~30% of the PLAYABLE
-    // zone's width) through the whole no-man's-land, with wide (2-row) FORDS
-    // so the attacker must forsake speed to force a crossing but always has
-    // one. IMPORTANT: battleScene's _carveBattleBox unconditionally wipes
-    // most of the playable width back to Plains for deployment lanes
-    // (regardless of preset -- see battleSafeCols()), so a band merely drawn
-    // at "30% of the full field" mostly lands in lanes that get carved away
-    // and renders far narrower than intended (~8% instead of ~30%, 2026-07-22
-    // owner review). When `safeCols` is available we instead flood EVERY
-    // safe range with River, guaranteeing the river fills the entire
-    // architectural maximum that can ever survive the carve (see
-    // battleScene.ts battleSafeCols() for the exact numbers/why).
-    if (safeCols) {
-      for (const [lo, hi] of safeCols) {
-        const c0 = Math.max(lo, riverLo);
-        const c1 = Math.min(hi, riverHi);
-        if (c1 < c0) continue;
-        for (let r = 0; r < rows; r++) {
-          for (let c = c0; c <= c1; c++) tiles[idx(c, r)] = BTerrain.River;
-        }
+    // --- RZEKA overlay: ONE CONTINUOUS S-SHAPED CHANNEL (owner spec
+    // 2026-07-22 #4, verbatim: "Rzeka musi miec kontynuacje przez cala
+    // odleglosc [...] w ksztalcie litery S i jest ciagla, ale nie rowna i
+    // zmeandrowana"). The previous iteration's channel got chopped into
+    // disconnected ponds by battleScene's deploy-rank carve; the fix is
+    // two-sided: (a) here, a channel whose water body is provably 4-connected
+    // (centre step clamped to +/-2 per row, every row's span overlaps the
+    // previous row's span by >=1 column, width never below 3), and (b) in
+    // battleScene._carveBattleBox, preset battles now DOWNGRADE River under
+    // the deploy rank bands to FORD (still water, passable) instead of
+    // erasing it to Plains -- so the channel is never interrupted anywhere.
+    //
+    // Shape: the centre column follows a gentle sine -- 2-3 "zakola" (half-
+    // periods) across the PLAYABLE rows (rowMargin..rows-1-rowMargin), so the
+    // visible field shows a full S (2 bends) or an S plus one extra curl (3).
+    // Amplitude ~25-30% of the central band (owner: 25-35% of the interior).
+    // Per-row deterministic tileJitter roughs up the centre (+/-1) and EACH
+    // BANK independently (+/-1) so the edges are ragged, while the width
+    // itself breathes 3-6 tiles on a slower wave. Continuity is re-enforced
+    // explicitly afterwards, so no amount of jitter can tear the channel.
+    const availSpan = Math.max(6, riverHi - riverLo + 1);
+    const amplitude = Math.max(4, Math.round(availSpan * 0.25));
+    const centreBase = riverLo + Math.floor(availSpan / 2);
+    const playRows = Math.max(8, rows - 2 * rowMargin);
+    const zakola = 2 + Math.floor(rng() * 2); // 2-3 gentle bends over the visible field
+    const wavelength = Math.max(24, Math.round((2 * playRows) / zakola));
+    const phase = rng() * Math.PI * 2;
+    let prevCentre = centreBase;
+    let prevC0 = -1, prevC1 = -1;
+    for (let r = 0; r < rows; r++) {
+      const sine = Math.sin(((r - rowMargin) / wavelength) * Math.PI * 2 + phase);
+      const cJit = (tileJitter(r, 0, 811) - 0.5) * 2; // [-1,1] wobble off the pure sinusoid
+      let centre = Math.round(centreBase + sine * amplitude + cJit * 1.2);
+      // Row-to-row step clamp: the channel centre wanders at most +/-2
+      // columns per row (owner spec: bank continuity, no sideways teleports).
+      if (centre > prevCentre + 2) centre = prevCentre + 2;
+      else if (centre < prevCentre - 2) centre = prevCentre - 2;
+      if (centre < riverLo) centre = riverLo;
+      if (centre > riverHi) centre = riverHi;
+      prevCentre = centre;
+      // Width breathes 3-6 on a slower, phase-shifted wave + per-row jitter.
+      const wSine = Math.sin(((r - rowMargin) / (wavelength * 0.47)) * Math.PI * 2 + phase * 1.7);
+      const wJit = (tileJitter(r, 1, 812) - 0.5) * 1.6;
+      const width = Math.max(3, Math.min(6, Math.round(4.5 + wSine * 1.3 + wJit)));
+      let c0 = centre - (width >> 1);
+      let c1 = c0 + width - 1;
+      // Ragged banks: independent +/-1 jitter per bank (owner: "brzegi
+      // nierowne, jitter +/-1 kafla").
+      const j0 = tileJitter(r, 2, 813);
+      const j1 = tileJitter(r, 3, 814);
+      c0 += j0 < 0.33 ? -1 : j0 > 0.66 ? 1 : 0;
+      c1 += j1 < 0.33 ? -1 : j1 > 0.66 ? 1 : 0;
+      if (c1 - c0 < 2) { c0 = centre - 1; c1 = centre + 1; } // never thinner than 3
+      // Keep inside the central band (deploy margins stay dry), preserving width.
+      if (c0 < riverLo) { c1 += riverLo - c0; c0 = riverLo; }
+      if (c1 > riverHi) { c0 -= c1 - riverHi; c1 = riverHi; }
+      c0 = Math.max(riverLo, c0);
+      c1 = Math.min(riverHi, c1);
+      // HARD continuity guarantee: this row's span must overlap the previous
+      // row's span by >=1 column (4-neighbourhood connectivity of the water
+      // body), whatever the jitter/clamps did. Widening toward the previous
+      // span stays inside [riverLo,riverHi] because that span was inside too.
+      if (prevC0 >= 0) {
+        if (c0 > prevC1) c0 = prevC1;
+        if (c1 < prevC0) c1 = prevC0;
       }
-    } else {
-      // Fallback (no safeCols supplied, e.g. a standalone/test caller):
-      // the old centred-band approximation.
-      const bandWidthDesired = Math.max(3, Math.round(cols * 0.30));
-      const availSpan = Math.max(3, riverHi - riverLo + 1);
-      const bandWidth = Math.min(bandWidthDesired, availSpan);
-      let bandStart = midCol - Math.floor(bandWidth / 2);
-      if (bandStart < riverLo) bandStart = riverLo;
-      if (bandStart + bandWidth - 1 > riverHi) bandStart = riverHi - bandWidth + 1;
-
-      for (let r = 0; r < rows; r++) {
-        // Gentle wobble so the band edge reads as a river, not a ruler line.
-        const wobble = rng() < 0.3 ? (rng() < 0.5 ? -1 : 1) : 0;
-        let s = bandStart + wobble;
-        if (s < riverLo) s = riverLo;
-        if (s + bandWidth - 1 > riverHi) s = riverHi - bandWidth + 1;
-        for (let c = s; c < s + bandWidth; c++) tiles[idx(c, r)] = BTerrain.River;
-      }
+      for (let c = c0; c <= c1; c++) tiles[idx(c, r)] = BTerrain.River;
+      prevC0 = c0; prevC1 = c1;
     }
 
-    // Fords: 2 ROWS deep each (owner ask: "szersze, 2-3 kafle") so the
-    // crossing is a real ford, not a single-tile pinch point.
-    const fordCount = preset.fordCount ?? 3;
-    const fordRows = pickSpreadRows(rng, rows, fordCount);
-    for (const r0 of fordRows) {
-      for (let dr = 0; dr < 2; dr++) {
-        const r = Math.min(rows - 1, r0 + dr);
+    // Fords: 2-3 crossings (owner spec) at the channel's NATURAL narrow
+    // points -- seed rows spread evenly across the PLAYABLE rows (so no
+    // crossing is wasted inside the fenced camera margin), each snapped to
+    // the narrowest row in a small window, then converted to Ford in a band
+    // 2-3 rows deep (the owner's "szer. 2-3 kafle"). The ford spans the full
+    // channel width there -- it must, to be crossable.
+    const fordCount = preset.fordCount ?? (2 + Math.floor(rng() * 2)); // 2-3
+    const playR0 = Math.min(rows - 2, rowMargin + 2);
+    const playR1 = Math.max(playR0, rows - 3 - rowMargin);
+    const fordBand = (playR1 - playR0 + 1) / fordCount;
+    for (let k = 0; k < fordCount; k++) {
+      const r0 = playR0 + Math.floor(fordBand * (k + 0.2 + rng() * 0.6));
+      let bestR = r0, bestCount = Infinity;
+      for (let dr = -5; dr <= 5; dr++) {
+        const rr = Math.max(playR0, Math.min(playR1, r0 + dr));
+        let cnt = 0;
+        for (let c = 0; c < cols; c++) if (tiles[idx(c, rr)] === BTerrain.River) cnt++;
+        if (cnt > 0 && cnt < bestCount) { bestCount = cnt; bestR = rr; }
+      }
+      const depth = 2 + (rng() < 0.5 ? 0 : 1); // 2-3 rows deep
+      for (let dr = 0; dr < depth; dr++) {
+        const r = Math.min(playR1, bestR + dr);
         for (let c = 0; c < cols; c++) {
           if (tiles[idx(c, r)] === BTerrain.River) tiles[idx(c, r)] = BTerrain.Ford;
         }
@@ -512,6 +576,43 @@ export function generateBattleTerrain(opts: GenerateOpts): BattleTerrainMap {
     }
   }
   // preset.riverMode === 'none' -> no water tiles at all (ROWNINA/PUSTYNIA default).
+
+  // --- LAKES (Laka 2-4 / Rownina 0-2, owner 2026-07-22 #4): small OVAL PONDS
+  // of deep River water, 2-4 tiles across, scattered on the FLANK column
+  // ranges that survive battleScene's deploy-rank carve -- so they never sit
+  // under a formation (the carve would turn them into odd ford-puddles), never
+  // land in the clash corridor, and being tiny local blobs on the flanks they
+  // can never wall attacker from defender (the _carveBattleBox BFS guard stays
+  // as the hard net regardless). Gated on preset.lakeCount, so every preset
+  // without ponds (incl. DEFAULT_PRESET -> legacy) consumes NO extra rng. ---
+  if (preset.lakeCount) {
+    const [lakeLoN, lakeHiN] = preset.lakeCount;
+    const nLakes = lakeLoN + Math.floor(rng() * (lakeHiN - lakeLoN + 1));
+    const flankRanges: ReadonlyArray<readonly [number, number]> =
+      safeCols && safeCols.length >= 2
+        ? [safeCols[0]!, safeCols[safeCols.length - 1]!]
+        : [[interiorLo, interiorLo + interiorSpan - 1]];
+    const lakeR0 = Math.min(rows - 3, rowMargin + 2);
+    const lakeR1 = Math.max(lakeR0, rows - 3 - rowMargin);
+    for (let k = 0; k < nLakes; k++) {
+      const cc = pickFromRanges(rng, flankRanges);
+      const cr = lakeR0 + Math.floor(rng() * (lakeR1 - lakeR0 + 1));
+      const rx = 1 + (rng() < 0.4 ? 1 : 0); // ellipse radii 1-2 => ponds 2-4 tiles across
+      const ry = 1 + (rng() < 0.4 ? 1 : 0);
+      for (let dr = -ry; dr <= ry; dr++) {
+        for (let dc = -rx; dc <= rx; dc++) {
+          const c = cc + dc, r = cr + dr;
+          if (c < 0 || c >= cols || r < 0 || r >= rows) continue;
+          if (inDeploy(c)) continue;
+          const norm = (dc * dc) / (rx * rx + 0.3) + (dr * dr) / (ry * ry + 0.3);
+          if (norm > 1) continue;
+          // ragged fringe (deterministic per tile) for an organic pond outline
+          if (norm > 0.5 && tileJitter(c, r, 815) < 0.35) continue;
+          tiles[idx(c, r)] = BTerrain.River;
+        }
+      }
+    }
+  }
 
   // --- helper: stamp a roughly circular blob of a terrain kind. ---
   const stampBlob = (cc: number, cr: number, radius: number, kind: BTerrain) => {
@@ -546,25 +647,64 @@ export function generateBattleTerrain(opts: GenerateOpts): BattleTerrainMap {
     stampBlob(cc, cr, radius, BTerrain.Forest);
   }
 
-  // --- 4) HILLS clusters: raised strongpoints across the field. hillRadiusBoost
-  // (Gory) grows the blobs into bigger "masywy" without touching passability --
-  // Hills always cost 2 to enter, never Infinity, so density alone never blocks
-  // a crossing (only River/Wall/Gate do; see BattleScene._carveBattleBox).
-  // biasSafeCols (Wzgorza/Gory/Pustynia): battleScene's deploy-lane carve
-  // wipes MOST of the playable width back to Plains regardless of preset (see
-  // battleSafeCols()), so a plain uniform scatter mostly lands where it will
-  // never be seen and the field reads as "a few sparse dots" even at high
-  // hillBlobsMul (2026-07-22 owner review). When biasSafeCols is set and
-  // safeCols is available, most blob centres are drawn from safeCols instead
-  // so the generated density actually survives to be visible. ---
-  const HILL_BIAS_PROB = 0.75;
-  const useHillBias = preset.biasSafeCols && !!safeCols;
+  // --- 4) HILLS: raised strongpoints across the field. hillRadiusBoost (Gory)
+  // grows blobs into bigger "masywy" without touching passability -- Hills
+  // always cost 2 to enter, never Infinity, so density alone never blocks a
+  // crossing (only River/Wall/Gate do; see BattleScene._carveBattleBox).
+  //
+  // biasSafeCols (Wzgorza/Gory/Pustynia) now selects an IRREGULAR CHAIN
+  // generator instead of the old safeCols column-concentration (owner
+  // correction 2026-07-22 #3: "wzgorza MEANDRUJACE/NIEROWNOMIERNE, a nie
+  // pasek-linia" -- concentrating blob centres into the 3 narrow columns
+  // that survived _carveBattleBox's old wide carve read as straight
+  // rectangular bars). _carveBattleBox now only lightly clears the deploy
+  // lanes for preset battles (see battleScene.ts), so hills have the WHOLE
+  // interior to occupy again -- no column bias is needed to stay visible.
+  // Each CHAIN is a short random-walk of overlapping blobs (curved
+  // "pasmo"/ridge, not a straight line): the walk steps mostly along the rank
+  // axis with a wandering column drift so it snakes instead of running
+  // parallel to the front. A minority of the budget is spent on solitary
+  // hillocks scattered anywhere in the interior ("trochę pojedynczych
+  // pagórków rozrzuconych po polu", owner spec). Other presets (Laka's few
+  // gentle hills, DEFAULT_PRESET) keep the original plain independent-blob
+  // scatter unchanged -- this is what LEGACY (no worldTerrain) always used,
+  // since biasSafeCols is false there, so legacy stays bit-for-bit. ---
   const hillBlobs = Math.round(Math.max(5, Math.round(fieldArea / 100)) * preset.hillBlobsMul); // ~10 on 34x28 baseline
-  for (let b = 0; b < hillBlobs; b++) {
-    const cr = 1 + Math.floor(rng() * (rows - 2));
-    const cc = useHillBias && rng() < HILL_BIAS_PROB ? pickFromRanges(rng, safeCols!) : randInteriorCol();
-    const radius = (rng() < 0.20 ? 3 : 1 + Math.floor(rng() * 2)) + preset.hillRadiusBoost;
-    stampBlob(cc, cr, radius, BTerrain.Hills);
+  if (preset.biasSafeCols) {
+    const loneCount = Math.round(hillBlobs * 0.25);
+    const chainBudget = hillBlobs - loneCount;
+    const chainCount = Math.max(1, Math.min(5, Math.round(chainBudget / 3)));
+    let placed = 0;
+    for (let ch = 0; ch < chainCount && placed < chainBudget; ch++) {
+      let cc = randInteriorCol();
+      let cr = 1 + Math.floor(rng() * (rows - 2));
+      const colDrift = rng() < 0.5 ? -1 : 1; // overall lean of this chain, left or right
+      const links = Math.min(2 + Math.floor(rng() * 4), chainBudget - placed); // 2-5 links per chain
+      for (let li = 0; li < links; li++) {
+        const radius = (rng() < 0.25 ? 3 : 1 + Math.floor(rng() * 2)) + preset.hillRadiusBoost;
+        stampBlob(cc, cr, radius, BTerrain.Hills);
+        placed++;
+        // Step to the next link: mostly along the rank axis, wandering in
+        // columns (not a fixed direction) so the ridge curves.
+        cr += Math.round(rows * 0.10) + Math.floor(rng() * 3) - 1;
+        cc += colDrift * (rng() < 0.6 ? 1 : 0) + (Math.floor(rng() * 3) - 1);
+        cc = Math.max(interiorLo, Math.min(interiorLo + interiorSpan - 1, cc));
+        cr = Math.max(1, Math.min(rows - 2, cr));
+      }
+    }
+    for (let k = placed; k < hillBlobs; k++) {
+      const cr = 1 + Math.floor(rng() * (rows - 2));
+      const cc = randInteriorCol();
+      const radius = 1 + preset.hillRadiusBoost;
+      stampBlob(cc, cr, radius, BTerrain.Hills);
+    }
+  } else {
+    for (let b = 0; b < hillBlobs; b++) {
+      const cr = 1 + Math.floor(rng() * (rows - 2));
+      const cc = randInteriorCol();
+      const radius = (rng() < 0.20 ? 3 : 1 + Math.floor(rng() * 2)) + preset.hillRadiusBoost;
+      stampBlob(cc, cr, radius, BTerrain.Hills);
+    }
   }
 
   // --- 5) ROCK accents: a generous scatter of single tiles on open ground. ---

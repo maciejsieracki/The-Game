@@ -513,25 +513,54 @@ const ATK_COL_STEP  = -1;           // attacker rear ranks step LEFT (toward -X 
 const DEF_COL_STEP  = 1;            // defender rear ranks step RIGHT (toward +X edge)
 
 /**
+ * How many rank columns deep _carveBattleBox clears to Plains on each side.
+ *
+ * LEGACY (presetActive=false, i.e. no worldTerrain / no ?bt= override): the
+ * exact pre-existing formula, UNTOUCHED -- verified bit-for-bit against the
+ * pre-2026-07-22 generator (3 seeds). Sized generously (MAX_RANKS+12) so even
+ * a fully-mounted MAX_PER_SIDE army (mounted deploy the deepest, see
+ * arrangeFlankCavalry/_placeUnits) always lands on clean ground.
+ *
+ * PRESET-ACTIVE: owner correction 2026-07-22 #3 ("odblokuj teren poza
+ * prostymi pasami") -- the legacy depth wipes 36 of the 48 playable columns
+ * to Plains on EVERY row, leaving only three narrow 4-column bands for the
+ * generator's terrain to ever be visible in, which is what forced hills/river
+ * into straight rectangular-looking bars. Preset battles use a tighter depth
+ * (still comfortably deeper than MAX_RANKS=6 and the real per-side rank
+ * count) that keeps the actual deployment columns clean while giving the
+ * meandering river/hill generation roughly DOUBLE the surviving interior
+ * width to occupy. The BFS connectivity guard in _carveBattleBox (unchanged)
+ * remains the hard safety net for the attacker/defender crossing regardless
+ * of this number, and _placeUnits' own scoring-based placement loop already
+ * tolerates a Hills/Forest/Rocks tile under a unit (only River/Wall/Gate are
+ * impassable) -- so shrinking this is a rendering/variety change only, not a
+ * gameplay-safety one.
+ */
+function deployClearRanksFor(presetActive: boolean): number {
+  return presetActive
+    ? Math.max(MAX_RANKS + 4, Math.ceil(MAX_PER_SIDE / 12) + 3)
+    : Math.max(MAX_RANKS + 12, Math.ceil(MAX_PER_SIDE / 12) + 8);
+}
+
+/**
  * Column ranges that survive _carveBattleBox's deployment-rank clearing (see
  * that method): it unconditionally wipes columns
  * [ATK_FRONT_COL .. ATK_FRONT_COL+(DEPLOY_CLEAR_RANKS-1)*ATK_COL_STEP] and
  * [DEF_FRONT_COL .. DEF_FRONT_COL+(DEPLOY_CLEAR_RANKS-1)*DEF_COL_STEP] back to
  * Plains for EVERY playable row, regardless of what the generator drew there
  * -- so it applies equally to every preset (this is pre-existing behaviour,
- * not something the world-terrain presets introduced). With today's
- * constants that wipes 36 of the 48 playable columns, leaving three narrow
- * 4-column-wide bands: the left flank, the ATK/DEF front-line gap, and the
- * right flank. Passed to generateBattleTerrain as `safeCols` (2026-07-22
- * owner review: "rzeka too narrow" / "hills read as sparse dots") so hills,
- * edge rocks and the wide river concentrate where they will actually remain
- * visible instead of mostly landing in lanes that get carved away. Computed
- * independently of _carveBattleBox's own Set<number> (duplicated formula,
- * verified to match exactly) so this stays a pure, side-effect-free query
- * callable before generation runs.
+ * not something the world-terrain presets introduced). `presetActive` MUST
+ * match the value _carveBattleBox will use for the same battle (see
+ * deployClearRanksFor) so this stays in sync with what actually survives.
+ * Passed to generateBattleTerrain as `safeCols`, consulted only by
+ * `preset.edgeRocks` (flank rock concentration) since the 2026-07-22 #3
+ * meander correction -- hills and the wide river no longer read it (see
+ * battle-terrain.ts). Computed independently of _carveBattleBox's own
+ * Set<number> (duplicated formula, verified to match exactly) so this stays
+ * a pure, side-effect-free query callable before generation runs.
  */
-function battleSafeCols(): Array<[number, number]> {
-  const deployClearRanks = Math.max(MAX_RANKS + 12, Math.ceil(MAX_PER_SIDE / 12) + 8);
+function battleSafeCols(presetActive: boolean): Array<[number, number]> {
+  const deployClearRanks = deployClearRanksFor(presetActive);
   const atkRankEnd = ATK_FRONT_COL + (deployClearRanks - 1) * ATK_COL_STEP;
   const defRankEnd = DEF_FRONT_COL + (deployClearRanks - 1) * DEF_COL_STEP;
   const atkLo = Math.min(ATK_FRONT_COL, atkRankEnd);
@@ -2103,6 +2132,12 @@ export class BattleScene {
     const worldTerrain = debugWorldTerrainOverride() ?? opts.worldTerrain;
     const terrainPreset = presetForWorldTerrain(worldTerrain);
     this._desertPalette = terrainPreset.desertPalette;
+    // presetActive gates BOTH battleSafeCols() below and _carveBattleBox():
+    // true whenever a world-hex terrain (or the ?bt= debug override) shaped
+    // this battle, false for every legacy/no-worldTerrain call -- which keeps
+    // the legacy carve (and therefore the legacy terrain) bit-for-bit
+    // unchanged (owner correction 2026-07-22 #3).
+    const presetActive = worldTerrain != null;
 
     // Deterministic procedural terrain for the big square field. Seeded from the
     // battle terrain name so the same matchup terrain reproduces every run.
@@ -2114,15 +2149,15 @@ export class BattleScene {
       rowMargin:    PLAY_ROW0,
       preset:       terrainPreset,
       // Always passed: only consulted by generator branches gated on preset
-      // flags (riverMode==='wide' / biasSafeCols / edgeRocks), all false on
-      // DEFAULT_PRESET, so this is a no-op for every legacy/no-worldTerrain
-      // call (verified bit-for-bit, see report).
-      safeCols:     battleSafeCols(),
+      // flags (edgeRocks), false on DEFAULT_PRESET, so this is a no-op for
+      // every legacy/no-worldTerrain call (verified bit-for-bit, see report).
+      safeCols:     battleSafeCols(presetActive),
     });
     // Flatten the deploy ranks + the clash corridor to clean plains so the two
     // even lines stand on flat, even ground and reach melee fast; terrain stays
-    // on the flanks (top/bottom rows + outer columns) as a backdrop.
-    this._carveBattleBox();
+    // everywhere else (flanks AND, for preset battles, most of the no-man's-land
+    // too -- see deployClearRanksFor) as a backdrop.
+    this._carveBattleBox(presetActive);
     this._fencePlayableZone();
 
     // SIEGE MODE: carve wall tiles into terrainMap before the scene is built.
@@ -3102,7 +3137,7 @@ export class BattleScene {
   //      defender band is reachable over passable tiles; if some pathological
   //      terrain still blocks it, punch fords straight across the centre row.
   // -------------------------------------------------------------------------
-  private _carveBattleBox(): void {
+  private _carveBattleBox(presetActive: boolean): void {
     const tm = this.terrainMap;
     const tiles = tm.tiles;
     if (!tiles) return;
@@ -3114,8 +3149,12 @@ export class BattleScene {
     const rLo = PLAY_ROW0;
     const rHi = PLAY_ROW1;
 
-    // --- 1) Kolumny formacji + tyl konnicy (glebsze niz MAX_RANKS piechoty). ---
-    const DEPLOY_CLEAR_RANKS = Math.max(MAX_RANKS + 12, Math.ceil(MAX_PER_SIDE / 12) + 8);
+    // --- 1) Kolumny formacji + tyl konnicy (glebsze niz MAX_RANKS piechoty).
+    // presetActive=false (legacy): DOKLADNIE ta sama formula co przed
+    // korekta -- bit-for-bit. presetActive=true: plytszy carve (patrz
+    // deployClearRanksFor) tak, by srodek pola ("ziemia niczyja") zostal
+    // wolny na meandrujacy teren (owner correction 2026-07-22 #3). ---
+    const DEPLOY_CLEAR_RANKS = deployClearRanksFor(presetActive);
     const rankCols = new Set<number>();
     for (let k = 0; k < DEPLOY_CLEAR_RANKS; k++) {
       const ac = ATK_FRONT_COL + k * ATK_COL_STEP;
@@ -3124,7 +3163,20 @@ export class BattleScene {
       if (dc >= 0 && dc < BF_COLS) rankCols.add(dc);
     }
     for (let r = rLo; r <= rHi; r++) {
-      for (const c of rankCols) tiles[idx(c, r)] = BTerrain.Plains;
+      for (const c of rankCols) {
+        const i = idx(c, r);
+        if (presetActive && (tiles[i] === BTerrain.River || tiles[i] === BTerrain.Ford)) {
+          // Preset battles (owner spec 2026-07-22 #4 "rzeka ciagla przez cala
+          // odleglosc"): WATER under a rank band becomes a FORD -- passable,
+          // so formations still deploy there, but STILL WATER, so the
+          // S-channel is never chopped into disconnected ponds (which is
+          // exactly what the previous iteration's Plains-wipe here did).
+          tiles[i] = BTerrain.Ford;
+        } else {
+          // Legacy (presetActive=false): the exact pre-existing wipe, bit-for-bit.
+          tiles[i] = BTerrain.Plains;
+        }
+      }
     }
 
     // --- 2) Korytarz starcia: cala wysokosc strefy gry, rzeka -> bród. ---
