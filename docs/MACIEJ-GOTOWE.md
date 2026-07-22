@@ -4,7 +4,20 @@
 > **Czat:** krótko **`✅ Gotowe:`** / **`⏸️ Czeka:`** · **Ten plik:** pełniejszy zapis tego samego.  
 > Szczegóły techniczne → handoff w `dyspozycje/_handoff/` · operacja → `dyspozycje/DZIENNIK-MASTERA.md`
 
-**Ostatnia aktualizacja:** 2026-07-22 (Ranking Moc ↔ FoW @ 2f32fbea)
+**Ostatnia aktualizacja:** 2026-07-22 (FIX jednostki end-turn @ c72ab1b8)
+
+---
+
+## [14:15] ✅ Gotowe — jednostki widoczne dopiero po ruchu AI
+
+| | |
+|---|---|
+| **Co** | Nowe jednostki z produkcji/rekrutacji nie pojawiają się na mapie w trakcie „Zakończ turę" |
+| **Bug** | Token jednostki był widoczny od razu po kliknięciu end-turn, zanim przeciwnicy ruszyli |
+| **Fix** | Odłożony reveal (`deferredPlayerUnitRevealIds`) — widoczne dopiero gdy overlay pokazuje „Tura N — twoja kolej" |
+| **Wykup (rush)** | Bez zmian — jednostka od razu w trakcie Twojej tury |
+| **md5** | `c72ab1b8c45c61364f754daf085ae41f` · stamp `c72ab1b8` |
+| **Od Ciebie** | Ctrl+F5 · stamp `c72ab1b8` · zrekrutuj jednostkę → Zakończ turę → sprawdź że pojawia się dopiero po AI |
 
 ---
 

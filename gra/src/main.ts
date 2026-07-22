@@ -184,6 +184,7 @@ import {
   clearSiegeMachines,
   consumeReadyMachines,
   ensureSiegeMachines,
+  peekReadyMachines,
   queueSiegeMachine,
   SIEGE_MACHINE_TYPE_ID,
   type SiegeMachineKind,
@@ -416,7 +417,7 @@ import {
 import { computeObjectivePower, battlePowerPointsFromDefeatedEnemy, type ObjectivePowerResult } from './game/power-objective';
 import { filterOwnersForPowerRanking } from './game/power-ranking';
 import { loadPowerOpcje } from './game/power-options';
-import { armyFieldPower } from './game/unit-power';
+import { armyFieldPower, isSiegeUnit, siegePower } from './game/unit-power';
 import { loadOrderParams, orderEffectsToYieldMults, pickRevoltMigrationTarget, type OrderYieldMults } from './game/order';
 import { loadCultureParams, accumulateCulture, cultureHappiness, cityBorderRadius, cultureThresholds,
          loadReligionParams, civReligion, civReligionForKey, religionHappiness, dominantReligion,
@@ -802,6 +803,11 @@ async function boot(): Promise<void> {
     /** Follow-up „Power-zdobycze" (2026-07-21): trwały bonus Power po eliminacji
      *  wroga, per zwycięzca (ownerId) — patrz eliminateOwner()/buildObjectivePowerForOwner. */
     const zdobyczePowerByOwner = new Map<number, number>();
+    /** Audyt #13 (2026-07-22): heksy wiosek zlupionych w tej sesji (klucz "q,r") — mapa
+     *  wraca do stanu z generatora (wioska.istnieje=true) po regeneracji z seeda przy
+     *  load/nowej grze, wiec stan zlupienia trzeba trzymac osobno i reaplikowac po
+     *  wczytaniu (patrz checkVillageRewardAt/buildSaveGameSnapshot/restoreGameFromSave). */
+    const lootedVillageHexKeys = new Set<string>();
 
     const ERA_ID_TO_NUM: Record<string, number> = { kamien: 1, braz: 2, zelazo: 3 };
 
@@ -1051,33 +1057,41 @@ async function boot(): Promise<void> {
     }
 
     /** Opcje renderowania miast — epoka i cywilizacja per właściciel. */
-    let cityFogVisible: ((city: City) => boolean) | undefined;
-    const _cityRenderOpts = (): CityRenderOptions => ({
-      getEra:   (ownerId: number) => empireEpochForOwner(ownerId),
-      getCiv:   (ownerId: number) => {
-        const civId = ownerId === 0
-          ? (player.civType as string || _menuCivId || 'grecja')
-          : (aiOwnerCivMap.get(ownerId) ?? 'grecja');
-        return ikonaIdToBronzeCiv(civId);
-      },
-      getLevel: (cityId: string) => {
-        const c = cities.find(x => x.id === cityId);
-        return c ? Math.max(1, Math.min(10, c.population ?? 1)) : 1;
-      },
-      getWalls: (cityId: string) => cities.find(c => c.id === cityId)?.maMur === true,
-      getRevolt: (cityId: string) => {
-        const st = cityOrderState.get(cityId);
-        return st?.bunt === true || st?.revoltWarning === true;
-      },
-      getUnitCountOnHex: (q, r) => unitCountOnHex(q, r),
-      getMapOutlineKind: (ownerId) => cityMapOutlineKindForOwner(ownerId),
-      isVisible: (city) => {
-        if (cityPanelViewCityId !== null) return city.id === cityPanelViewCityId;
-        return cityFogVisible?.(city) ?? true;
-      },
-      hideStatChips: isCityPanelOpen(),
-      ownerColorFn: civColorFn,
-    });
+    let cityFogVisible: ((city: City, vis?: Set<string>) => boolean) | undefined;
+    const _cityRenderOpts = (): CityRenderOptions => {
+      // #27 perf: policz widoczność RAZ per wywołanie _cityRenderOpts (nie osobno dla
+      // każdego obcego miasta w isVisible) — reużywane przez cache'ujący cityFogVisible.
+      // Guard `cityFogVisible &&` celowo PRZED `fogOn`: _cityRenderOpts() jest wołane raz
+      // przy starcie (linia ~1091) zanim `fogOn`/`cityFogVisible` (deklarowane niżej w tym
+      // samym scope) w ogóle istnieją — short-circuit na cityFogVisible=undefined omija TDZ.
+      const _visCache = (cityFogVisible && fogOn) ? currentVisible() : undefined;
+      return {
+        getEra:   (ownerId: number) => empireEpochForOwner(ownerId),
+        getCiv:   (ownerId: number) => {
+          const civId = ownerId === 0
+            ? (player.civType as string || _menuCivId || 'grecja')
+            : (aiOwnerCivMap.get(ownerId) ?? 'grecja');
+          return ikonaIdToBronzeCiv(civId);
+        },
+        getLevel: (cityId: string) => {
+          const c = cities.find(x => x.id === cityId);
+          return c ? Math.max(1, Math.min(10, c.population ?? 1)) : 1;
+        },
+        getWalls: (cityId: string) => cities.find(c => c.id === cityId)?.maMur === true,
+        getRevolt: (cityId: string) => {
+          const st = cityOrderState.get(cityId);
+          return st?.bunt === true || st?.revoltWarning === true;
+        },
+        getUnitCountOnHex: (q, r) => unitCountOnHex(q, r),
+        getMapOutlineKind: (ownerId) => cityMapOutlineKindForOwner(ownerId),
+        isVisible: (city) => {
+          if (cityPanelViewCityId !== null) return city.id === cityPanelViewCityId;
+          return cityFogVisible?.(city, _visCache) ?? true;
+        },
+        hideStatChips: isCityPanelOpen(),
+        ownerColorFn: civColorFn,
+      };
+    };
 
     cityRenderer.sync(cities, _cityRenderOpts());
 
@@ -1251,11 +1265,32 @@ async function boot(): Promise<void> {
     const villageMeshes = new Map<string, THREE.Group>();
     const campMeshes = new Map<string, THREE.Group>();
 
+    /** Audyt #57: cache heksów z wioskami — syncVillageMeshes jest wołane z refreshFog
+     *  (34 miejsca w tym pliku) i wcześniej skanowało WSZYSTKIE heksy mapy za każdym razem.
+     *  Wioski nie przybywają w trakcie gry (placeVillages działa raz przy generacji mapy),
+     *  tylko znikają (checkVillageRewardAt usuwa z cache poniżej), więc wystarczy zeskanować
+     *  raz i trzymać zbiór. Pełna inwalidacja, gdy zmieni się referencja `map` (nowa gra/load/
+     *  regeneracja z seeda — patrz przypisania `map = ...` w tym pliku).
+     */
+    let villageHexKeyCache: Set<string> | null = null;
+    let villageHexKeyCacheMap: typeof map | null = null;
+
+    function villageHexKeysCached(): Set<string> {
+      if (villageHexKeyCache && villageHexKeyCacheMap === map) return villageHexKeyCache;
+      const keys = new Set<string>();
+      for (const hexKey in map.hexes) {
+        if (map.hexes[hexKey]?.wioska?.istnieje) keys.add(hexKey);
+      }
+      villageHexKeyCache = keys;
+      villageHexKeyCacheMap = map;
+      return keys;
+    }
+
     function syncVillageMeshes(): void {
       const wanted = new Set<string>();
       let changed = false;
-      // for..in zamiast Object.values — brak alokacji tablicy ~N heksów na każde refreshFog.
-      for (const hexKey in map.hexes) {
+      // Audyt #57: iteracja po cache zamiast po wszystkich heksach mapy (~N -> ~kilka).
+      for (const hexKey of villageHexKeysCached()) {
         const hex = map.hexes[hexKey];
         if (!hex?.wioska?.istnieje) continue;
         const q = hex.coords.q, r = hex.coords.r;
@@ -1577,7 +1612,11 @@ async function boot(): Promise<void> {
       });
       maybeHintArmyFoodOnFirstPlayerUnit(city.ownerId);
       if (city.ownerId === 0) {
-        afterPlayerUnitSpawned(newUnitId);
+        if (endTurnInProgress) {
+          deferredPlayerUnitRevealIds.add(newUnitId);
+        } else {
+          afterPlayerUnitSpawned(newUnitId);
+        }
       }
       console.log(
         `[Produkcja] Tura ${turn} ${city.name}: jednostka ${completed.id} @ (${city.q},${city.r}) (−${d.kosztManpower} MP)`,
@@ -1851,6 +1890,25 @@ async function boot(): Promise<void> {
         level: 1,
         ownerId: c.ownerId,
       }));
+    }
+
+    /**
+     * Ulepszenia terenu (np. kopalnia miedzi / kopalnia na złożu żelaza) WYŁĄCZNIE w terytorium
+     * danego ownera — audyt #33: placedImprovements to jedna globalna mapa bez ownera, więc
+     * hasBrazAccess/empireHasKopalniaNaZlozuZelaza (wołane z globalną mapą) widziały kopalnie
+     * DOWOLNEGO imperium — kopalnia AI odblokowywała Brąz/Żelazo graczowi i odwrotnie. Filtr
+     * przez territoryOwnerAt — ta sama logika co isPlayerTerritoryHex/enrichBorderMarchPairsWithMilitary.
+     */
+    function placedImprovementsForOwner(ownerId: number): Map<string, PlacedLayers> {
+      const nodes = buildAllTerritoryNodes();
+      const out = new Map<string, PlacedLayers>();
+      for (const [hexKey, layers] of placedImprovements) {
+        const [qStr, rStr] = hexKey.split(',');
+        if (territoryOwnerAt(Number(qStr), Number(rStr), nodes) === ownerId) {
+          out.set(hexKey, layers);
+        }
+      }
+      return out;
     }
 
     function buildCapitalHexByOwner(): Map<number, { q: number; r: number }> {
@@ -2431,13 +2489,17 @@ async function boot(): Promise<void> {
     /** Kontekst dostępności dla availableReplacementsFor — jak productionCtxForCity (cityPanel.ts),
      *  per-miasto garnizonu (bramka koszary/braz-access per to miasto, gdy jednostka w nim stoi). */
     function replaceAvailabilityCtxForCity(city: City): AvailabilityContext {
+      const ownImprovements = placedImprovementsForOwner(city.ownerId);
       return {
         epoch: empireEpochForOwner(city.ownerId),
         builtBuildingIds: cityBuilt.get(city.id) ?? [],
         civBonusy: civBonusyForOwnerId(city.ownerId),
         civUnitNacja: unitNacjaForCivKey(civKeyForOwnerId(city.ownerId)),
-        placedImprovements,
-        hasKopalniaNaZlozuZelaza: empireHasKopalniaNaZlozuZelaza(placedImprovements, map),
+        placedImprovements: ownImprovements,
+        hasKopalniaNaZlozuZelaza: empireHasKopalniaNaZlozuZelaza(ownImprovements, map),
+        // audyt #11: "Zastąp" nie może dać drugiej żywej Super-jednostka -- ta sama
+        // bramka co productionCtxForCity (cityPanel.ts).
+        aliveUnitTypeNames: new Set(units.filter(x => x.ownerId === city.ownerId).map(x => x.typeId)),
         kosztJednostekPace: player.kosztJednostekPace ?? 'niski',
         ownerId: city.ownerId,
         difficulty: _menuDifficulty,
@@ -2455,13 +2517,16 @@ async function boot(): Promise<void> {
         if (c.ownerId !== 0) continue;
         for (const id of cityBuilt.get(c.id) ?? []) builtUnion.add(id);
       }
+      const ownImprovements = placedImprovementsForOwner(0);
       return {
         epoch: empireEpochForOwner(0),
         builtBuildingIds: Array.from(builtUnion),
         civBonusy: civBonusyForOwnerId(0),
         civUnitNacja: unitNacjaForCivKey(civKeyForOwnerId(0)),
-        placedImprovements,
-        hasKopalniaNaZlozuZelaza: empireHasKopalniaNaZlozuZelaza(placedImprovements, map),
+        placedImprovements: ownImprovements,
+        hasKopalniaNaZlozuZelaza: empireHasKopalniaNaZlozuZelaza(ownImprovements, map),
+        // audyt #11: jak wyżej (replaceAvailabilityCtxForCity) — całe terytorium gracza.
+        aliveUnitTypeNames: new Set(units.filter(x => x.ownerId === 0).map(x => x.typeId)),
         kosztJednostekPace: player.kosztJednostekPace ?? 'niski',
         ownerId: 0,
         difficulty: _menuDifficulty,
@@ -2768,14 +2833,23 @@ async function boot(): Promise<void> {
               kulturaSkumulowana: (c as { kultura?: number }).kultura ?? 0,
             },
             map,
-            placedImprovements,
+            placedImprovementsForOwner(0),
             player.era,
             { builtIds, ownerId: String(0) },
           );
         },
-        getHasKopalniaNaZlozuZelaza: () => empireHasKopalniaNaZlozuZelaza(placedImprovements, map),
+        getHasKopalniaNaZlozuZelaza: () => empireHasKopalniaNaZlozuZelaza(placedImprovementsForOwner(0), map),
+        // audyt #11: limit 1 żywej Super-jednostka na cywilizację -- nazwy (typeId)
+        // jednostek TEGO ownera aktualnie żywych na mapie (respawn po śmierci działa
+        // samoczynnie, bo liczymy z bieżącego rosteru `units`, nie z historii).
+        getAliveUnitTypeNames: (ownerId: number) =>
+          new Set(units.filter(x => x.ownerId === ownerId).map(x => x.typeId)),
         isAutoManageEnabled: (cityId: string) => autoManageCities.has(cityId),
         getGrowthMult: (cityId: string) => growthMultMap.get(cityId) ?? 1,
+        // #17: Bilans plonów w panelu miasta musi mnożyć plony Porządkiem tak samo
+        // jak silnik (turn-economy.ts applyOrderYieldMults) — bez tego panel zaniżał
+        // Pracę/Pieniądz/Naukę/Kulturę względem realnego ticku.
+        getOrderYieldMults: (cityId: string) => orderMultMap.get(cityId) ?? null,
         getEmpireFoodState: (oid: number) => empireFoodStates.get(oid) ?? null,
         getEmpireFoodTick: (oid: number) => getLastEmpireFoodTick(oid) ?? null,
         onEmpireFoodSplitChange: (oid: number, pct: number) => {
@@ -3180,6 +3254,7 @@ async function boot(): Promise<void> {
       if (!city || (city.budowaTryb ?? DEFAULT_BUDOWA_TRYB) !== 'auto') return null;
       const prod0 = cityProd.get(cityId) ?? { kolejka: [], postep: 0 };
       if (frontItem(prod0) !== null) return null;
+      const ownImprovements = placedImprovementsForOwner(city.ownerId);
       const item = pickAutoBuildItem(city, prod0, data, {
         unlockedTechs: unlockedTechsForOwner(city.ownerId),
         ctx: {
@@ -3188,8 +3263,8 @@ async function boot(): Promise<void> {
           epoch: empireEpochForOwner(city.ownerId),
           civBonusy: civBonusyForOwnerId(city.ownerId),
           civUnitNacja: unitNacjaForCivKey(civKeyForOwnerId(city.ownerId)),
-          placedImprovements,
-          hasKopalniaNaZlozuZelaza: empireHasKopalniaNaZlozuZelaza(placedImprovements, map),
+          placedImprovements: ownImprovements,
+          hasKopalniaNaZlozuZelaza: empireHasKopalniaNaZlozuZelaza(ownImprovements, map),
         },
       });
       if (!item) return null;
@@ -3557,6 +3632,36 @@ async function boot(): Promise<void> {
       }
     }
 
+    /**
+     * Audyt #16: czy `ownerId` faktycznie POSIADA zasoby zadeklarowane w koszyku
+     * (zloto/praca/zywnosc) — bramka wywoływana PRZED naliczeniem Zaufania za dar/handel,
+     * żeby transakcja bez pokrycia w zasobach nie generowała darmowego trustu co turę.
+     * Nie zmienia samego transferu (transferBasketItems ma osobne, już istniejące
+     * zabezpieczenia/ograniczenia — patrz audyt #1/#47, poza zakresem tej naprawy).
+     */
+    function basketItemsAffordable(
+      ownerId: number,
+      items: readonly BasketItem[] | undefined,
+      treasury: ReturnType<typeof buildDiploTreasury>,
+    ): boolean {
+      if (!items?.length) return true;
+      for (const item of items) {
+        const qty = item.ilosc ?? 1;
+        if (item.typ === 'zloto') {
+          const gold = diplomacyPnZloto(qty);
+          if (gold > 0 && treasury.getPieniadze(ownerId) < gold) return false;
+        } else if (item.typ === 'praca') {
+          const praca = diplomacyPnPraca(qty);
+          const have = ownerId === 0 ? playerPracaPool : (aiPracaPoolByOwner.get(ownerId) ?? 0);
+          if (praca > 0 && have < praca) return false;
+        } else if (item.typ === 'zywnosc') {
+          const have = empireFoodStates.get(ownerId)?.zapasyPanstwa ?? 0;
+          if (qty > 0 && have < qty) return false;
+        }
+      }
+      return true;
+    }
+
     function transferBasketItems(
       fromOwnerId: number,
       toOwnerId: number,
@@ -3575,18 +3680,12 @@ async function boot(): Promise<void> {
             break;
           }
           case 'praca': {
+            // Audyt #47: dawca (gracz LUB AI) realnie traci Pracę, odbiorca (gracz LUB AI)
+            // dostaje ją do WŁASNEJ puli Pracy — nie do skarbca złota AI. Wcześniej AI jako
+            // dawca nic nie traciło (mint), a Praca gracza trafiała do aiSkarbiecByOwner.
             const praca = diplomacyPnPraca(qty);
-            if (fromOwnerId === 0) {
-              playerPracaPool = Math.max(0, playerPracaPool - praca);
-              _lastPraca = playerPracaPool;
-            }
-            if (toOwnerId === 0) {
-              playerPracaPool += praca;
-              _lastPraca = playerPracaPool;
-            } else {
-              const cur = aiSkarbiecByOwner.get(toOwnerId) ?? 0;
-              aiSkarbiecByOwner.set(toOwnerId, cur + praca);
-            }
+            setOwnerPracaPool(fromOwnerId, ownerPracaPool(fromOwnerId) - praca);
+            setOwnerPracaPool(toOwnerId, ownerPracaPool(toOwnerId) + praca);
             break;
           }
           case 'zywnosc': {
@@ -3637,25 +3736,11 @@ async function boot(): Promise<void> {
             break;
           }
           case 'jednostka': {
-            const r = spawnTransferredUnit(item.id, toOwnerId, null, {
-              units,
-              capitalHexByOwner: buildCapitalHexByOwner(),
-              allocateUnitId: allocateDipUnitId,
-              getUnitDef: (typeId) => {
-                const def = data.units.find(u => u.Jednostka === typeId);
-                if (!def) return undefined;
-                return {
-                  Ruch: def.Ruch ?? undefined,
-                  'Rola (linia)': def['Rola (linia)'] ?? undefined,
-                  'Super-jednostka': def['Super-jednostka'] ?? undefined,
-                };
-              },
-            });
-            if (r.ok && r.unit) {
-              units.push(r.unit);
-              maybeHintArmyFoodOnFirstPlayerUnit(toOwnerId);
-              syncUnitsRender();
-            }
+            // TODO(A1 — audyt #1): spawnTransferredUnit tworzy jednostkę wyłącznie
+            // u odbiorcy i nic nie zdejmuje dawcy (darmowy zasób). Pozycja "jednostka"
+            // jest ukryta w koszyku (ui/diplomacyTradeBasket.ts), ale odrzucamy ją
+            // defensywnie i tu — na wypadek starych zapisów/deali z tą pozycją —
+            // dopóki transfer nie zdejmuje wskazanej jednostki dawcy.
             break;
           }
           default:
@@ -3706,6 +3791,8 @@ async function boot(): Promise<void> {
     /** Flag: game ended (victory or defeat). Prevents repeated end-game messages. */
     let gameOver = false;
     let endTurnInProgress = false;
+    /** Jednostki gracza ukończone w ticku end-turn — ukryte do końca tury AI. */
+    const deferredPlayerUnitRevealIds = new Set<string>();
 
     // -----------------------------------------------------------------------
     // Fog of War state
@@ -3812,10 +3899,10 @@ async function boot(): Promise<void> {
       return new Set<string>();
     }
 
-    cityFogVisible = (city) => {
+    cityFogVisible = (city, vis) => {
       if (!fogOn) return true;
       if (city.ownerId === 0) return true;
-      return currentVisible().has(keyOf(city.q, city.r));
+      return (vis ?? currentVisible()).has(keyOf(city.q, city.r));
     };
 
     /** Ukryta w garnizonie (po Ufort. w mieście) — niewidoczna na mapie świata. */
@@ -4093,7 +4180,10 @@ async function boot(): Promise<void> {
       }
       // FoW: bez jawnej listy filtruj wroga — syncUnitsRender() sam z siebie nie może
       // pokazać obcych poza bieżącym zasięgiem (regresja: czerwone pierścienie w czerni).
-      const src = list ?? (fogOn ? visibleUnitsList(currentVisible()) : units);
+      const rawSrc = list ?? (fogOn ? visibleUnitsList(currentVisible()) : units);
+      const src = deferredPlayerUnitRevealIds.size > 0
+        ? rawSrc.filter(u => !deferredPlayerUnitRevealIds.has(u.id))
+        : rawSrc;
       const display = computeStackDisplay(src, unitAttackScore);
       if (anim?.movingStackIds?.length) {
         for (const sid of anim.movingStackIds) display.visibleIds.add(sid);
@@ -4324,6 +4414,16 @@ async function boot(): Promise<void> {
         return;
       }
       selectPlayerUnit(newUnitId);
+    }
+
+    /** Po fazie AI: pokaż jednostki ukończone w ticku end-turn (produkcja/rekrutacja). */
+    function flushDeferredPlayerUnitReveals(): void {
+      if (deferredPlayerUnitRevealIds.size === 0) return;
+      const ids = [...deferredPlayerUnitRevealIds];
+      deferredPlayerUnitRevealIds.clear();
+      syncUnitsRender();
+      const lastId = ids[ids.length - 1];
+      if (lastId) afterPlayerUnitSpawned(lastId);
     }
 
     function openSplitPanelForSelected(): void {
@@ -5796,7 +5896,8 @@ async function boot(): Promise<void> {
         Pancerz: normFieldVal(def['armor'], 0),
         Przebicie: normFieldVal(def['piercing'], 0),
         weaponDamage: normFieldVal(def['weaponDamage'], unitAtak(def)),
-        Health: unitHealth(def),
+        // Health = biezace HP (u.hp), nie max z definicji — siegeAi.ts skaluje sile po fraction biezacego HP.
+        Health: u.hp ?? unitHealth(def),
         progDezercji: prog === null || prog === undefined ? null : normFieldVal(prog, 0.25),
       };
     }
@@ -5842,8 +5943,12 @@ async function boot(): Promise<void> {
       roster: RuntimeUnit[],
       city: City,
       ownerId: number,
+      consume: boolean = true,
     ): RuntimeUnit[] {
-      const kinds = consumeReadyMachines(city);
+      // #50: preBattle (consume=false) tylko PODGLĄDA gotowe machiny — realne zużycie
+      // (consumeReadyMachines) następuje dopiero po potwierdzonym szturmie, żeby
+      // anulowanie preBattle/deploy nie traciło machin zbudowanych przez wiele tur.
+      const kinds = consume ? consumeReadyMachines(city) : peekReadyMachines(city);
       if (kinds.length === 0) return roster;
       const out = roster.slice();
       kinds.forEach((kind, i) => {
@@ -7008,9 +7113,18 @@ async function boot(): Promise<void> {
           const isGift = payload.isGift === true
             || ((payload.giveItems?.length ?? 0) > 0 && !(payload.receiveItems?.length) && (payload.receivePn ?? 0) <= 0);
           if (cywAction === 'handel') {
-            applyPnTrustForPair(proposerId, responderId, givePn, receivePn, isGift);
-            const cur = getDiploRelation(proposerId, responderId);
-            setDiploRelation(proposerId, responderId, applyDiplomaticEvent(cur, isGift ? 'dar' : 'handel'));
+            // Audyt #16: Zaufanie tylko gdy obie strony faktycznie POSIADAJĄ zadeklarowane
+            // zasoby (zloto/praca/zywnosc) — bez tego dar/handel bez pokrycia dawał darmowy trust.
+            const dealTreasury = buildDiploTreasury();
+            const dealCovered = basketItemsAffordable(proposerId, items?.giveItems, dealTreasury)
+              && basketItemsAffordable(responderId, items?.receiveItems, dealTreasury);
+            if (dealCovered) {
+              applyPnTrustForPair(proposerId, responderId, givePn, receivePn, isGift);
+              const cur = getDiploRelation(proposerId, responderId);
+              setDiploRelation(proposerId, responderId, applyDiplomaticEvent(cur, isGift ? 'dar' : 'handel'));
+            } else {
+              showHintMessage('Zaufanie nie naliczone — brak pokrycia w zasobach', 3500);
+            }
           }
         }
       }
@@ -7020,9 +7134,23 @@ async function boot(): Promise<void> {
         const isGift = payload.isGift === true
           || ((payload.giveItems?.length ?? 0) > 0 && !(payload.receiveItems?.length) && (payload.receivePn ?? 0) <= 0);
         if (cywAction === 'handel') {
-          applyPnTrustForPair(proposerId, responderId, givePn, receivePn, isGift);
-          const cur = getDiploRelation(proposerId, responderId);
-          setDiploRelation(proposerId, responderId, applyDiplomaticEvent(cur, isGift ? 'dar' : 'handel'));
+          // Audyt #16: jak wyżej — jednorazowy dar/handel bez pokrycia (koszyk lub legacy
+          // goldOnce) nie generuje Zaufania.
+          const oneShotTreasury = buildDiploTreasury();
+          const legacyGoldOk = !(payload.giveItems?.length) && !(payload.receiveItems?.length)
+            && (payload.goldOnce ?? 0) > 0
+            ? oneShotTreasury.getPieniadze(proposerId) >= (payload.goldOnce ?? 0)
+            : true;
+          const oneShotCovered = legacyGoldOk
+            && basketItemsAffordable(proposerId, payload.giveItems, oneShotTreasury)
+            && basketItemsAffordable(responderId, payload.receiveItems, oneShotTreasury);
+          if (oneShotCovered) {
+            applyPnTrustForPair(proposerId, responderId, givePn, receivePn, isGift);
+            const cur = getDiploRelation(proposerId, responderId);
+            setDiploRelation(proposerId, responderId, applyDiplomaticEvent(cur, isGift ? 'dar' : 'handel'));
+          } else {
+            showHintMessage('Zaufanie nie naliczone — brak pokrycia w zasobach', 3500);
+          }
         } else if (cywAction === 'trybut_oferta') {
           const cur = getDiploRelation(proposerId, responderId);
           setDiploRelation(proposerId, responderId, applyDiplomaticEvent(cur, 'trybut_oferta_przyjeta'));
@@ -7388,7 +7516,7 @@ async function boot(): Promise<void> {
           id: u.id,
           name: u.typeId,
           icon: unitIconSvg(udef, u.typeId),
-          hp: hpMax,
+          hp: u.hp ?? hpMax,
           hpMax,
           ruchLeft: stack.length > 1 ? stackRuch : u.ruchLeft,
           ruchMax: movMax,
@@ -7432,7 +7560,7 @@ async function boot(): Promise<void> {
         def: unitObrona(def),
         mov: normFieldVal(def['Ruch'], 2),
         rng: normFieldVal(def['Zasi\u0119g'] ?? def['Zasieg'], 0),
-        hp: unitHealth(def),
+        hp: active.hp ?? unitHealth(def),
         hpMax: unitHealth(def),
         actions,
       };
@@ -8010,7 +8138,9 @@ async function boot(): Promise<void> {
       getOwnerColor: civColorFn,
       getUnlockedTechs: (_ownerId: number) => Array.from(player.zbadane),
       getBuiltBuildingIds: (cityId: string) => cityBuilt.get(cityId) ?? [],
-      getPlacedImprovements: () => placedImprovements,
+      // audyt #33: panel miasta jest tylko dla gracza (openCityPanelForPlayer) -- ulepszenia
+      // WYŁĄCZNIE z terytorium gracza (owner 0), inaczej kopalnia AI odblokowywała Brąz/Żelazo.
+      getPlacedImprovements: () => placedImprovementsForOwner(0),
       getProduction: (cityId: string) => {
         const p = cityProd.get(cityId);
         return p ? { ...p, kolejka: [...p.kolejka] } : null;
@@ -8501,6 +8631,10 @@ async function boot(): Promise<void> {
       if (!hex?.wioska?.istnieje) return;
       hex.wioska.istnieje = false;
       hex.wioska.ludnosc = 0;
+      villageHexKeyCache?.delete(keyOf(q, r)); // Audyt #57: usuń z cache syncVillageMeshes
+      // Audyt #13: zapamiętaj zlupienie poza hexem — inaczej regeneracja mapy z seeda
+      // przy save/load wskrzesza wioskę (hex.wioska.istnieje wraca na true).
+      lootedVillageHexKeys.add(keyOf(q, r));
 
       // D: zbieramy JEDEN czytelny opis nagrody + ikonę + kind zdarzenia (zamiast
       // kilku nadpisujących się toastów). Na końcu: jeden toast + trwały wpis w WYDARZENIA.
@@ -8761,6 +8895,11 @@ async function boot(): Promise<void> {
         return;
       }
 
+      // Kursor zależy tylko od heksa pod myszą — pomijamy pełny recompute
+      // (w tym kosztowne currentVisible()) dopóki mysz nie zmieni heksa (#30).
+      const k = keyOf(hitEarly.q, hitEarly.r);
+      if (k === hoverKey) return;
+
       applyMapCanvasCursor(resolveMapUnitCursor({
         selected: uSel,
         hoverQ: hitEarly.q,
@@ -8773,8 +8912,6 @@ async function boot(): Promise<void> {
         keyOf,
       }));
 
-      const k = keyOf(hitEarly.q, hitEarly.r);
-      if (k === hoverKey) return;
       hoverKey = k;
       lastBHex = { q: hitEarly.q, r: hitEarly.r };
 
@@ -9367,9 +9504,10 @@ async function boot(): Promise<void> {
       defRoster: RuntimeUnit[],
       terrain: string,
       structBonusPct: number,
+      atkSiegeBonus: number = 0,
     ): number {
       const aLeadDef = unitDefFor(atkRoster[0]!);
-      const mAtk = rosterFieldPowerM(atkRoster);
+      const mAtk = rosterFieldPowerM(atkRoster) + atkSiegeBonus;
       const mDef = effectiveDefenderM(defRoster, terrain, structBonusPct, aLeadDef);
       return autoBattleWinPct(mAtk, mDef);
     }
@@ -9635,6 +9773,17 @@ async function boot(): Promise<void> {
       return sumRosterFieldM(
         roster.map(u => ({ typeId: u.typeId, def: unitDefFor(u) })),
       );
+    }
+
+    /** #51: machiny (Rola=Oblężnicza) nie liczą się w rosterFieldPowerM (decyzja 2A, pole) —
+     *  ich wkład do M ataku SZTURMU muru liczy się osobno przez siegePower(). */
+    function rosterSiegeMachinePowerM(roster: RuntimeUnit[]): number {
+      let sum = 0;
+      for (const u of roster) {
+        const def = unitDefFor(u);
+        if (isSiegeUnit(def)) sum += siegePower(def).total;
+      }
+      return Math.round(sum * 10) / 10;
     }
 
     function effectiveDefenderM(
@@ -10297,6 +10446,11 @@ async function boot(): Promise<void> {
      * bitwy/tech w snapshotcie, gdyby liczyć go po.
      */
     function runCapitalCapturePlunder(city: City, oldOwner: number, newOwner: number): void {
+      // #25: frakcja rebeliancka (-99) nie jest realną cywilizacją — nie ma
+      // skarbca/stolicy/Power. Bez tego guarda odbicie jej miasta wpadało w
+      // ścieżkę "ostatnie miasto -> eliminacja": fałszywy komunikat ELIMINACJA
+      // i eliminateOwner(-99) zaśmiecały eliminatedOwners/sejw wpisem -99.
+      if (oldOwner === REBEL_FACTION_OWNER_ID) return;
       const designatedCapitalId = capitalCityIdByOwner.get(oldOwner) ?? undefined;
       const outcome = applyCapitalCapturePlunder(
         city, oldOwner, newOwner, cities, capitalCaptureResourceAccess, designatedCapitalId,
@@ -10547,7 +10701,7 @@ async function boot(): Promise<void> {
       try {
         const atkStartSnap = snapshotRosterPositions(atkRoster);
         const aLeadDef = unitDefFor(atkRoster[0]!);
-        const mAtk = rosterFieldPowerM(atkRoster);
+        const mAtk = rosterFieldPowerM(atkRoster) + rosterSiegeMachinePowerM(atkRoster);
         const mDef = effectiveDefenderM(defRoster, dTeren, dStructBonus, aLeadDef);
         const powerRes = resolveAutoBattleByPower({ mAtk, mDef });
         if (powerRes.winner === 'none') return;
@@ -10596,17 +10750,22 @@ async function boot(): Promise<void> {
         return;
       }
 
+      // #50: peek (nie konsumuj) — machiny znikają z city.siegeMachines.ready dopiero gdy
+      // gracz potwierdzi szturm (Auto / Pole bitwy), nie przy samym otwarciu preBattle.
       const atkRoster = appendReadyMachinesToRoster(
         collectSiegeAtkRoster(city, anchor),
         city,
         anchor.ownerId,
+        false,
       );
       if (!cityHasDefenders(city)) {
+        consumeReadyMachines(city);
         captureCityWithoutBattle(city, anchor, atkRoster);
         return;
       }
       const defRoster = collectSiegeDefRoster(city);
       if (defRoster.length === 0) {
+        consumeReadyMachines(city);
         captureCityWithoutBattle(city, anchor, atkRoster);
         return;
       }
@@ -10620,7 +10779,13 @@ async function boot(): Promise<void> {
       const defSideTitle = defRoster[0]!.typeId === 'Milicja'
         ? 'Milicja (~' + Math.floor((city.population ?? 0) * 0.2) + ')'
         : (defRoster.length > 1 ? 'Garnizon (' + defRoster.length + ')' : defRoster[0]!.typeId);
-      const szanse = preBattleSzanseAtkPct(atkRoster, defRoster, dTeren, dStructBonus);
+      const szanse = preBattleSzanseAtkPct(
+        atkRoster,
+        defRoster,
+        dTeren,
+        dStructBonus,
+        rosterSiegeMachinePowerM(atkRoster),
+      );
 
       const atkCivLabel = civLabelForOwner(anchor.ownerId);
       const defCivLabel = civLabelForOwner(city.ownerId);
@@ -10675,10 +10840,12 @@ async function boot(): Promise<void> {
       }
 
       function doSiegeAutoResolve(): void {
+        // #50: gracz potwierdził Auto-szturm — dopiero teraz realnie zużyj machiny.
+        consumeReadyMachines(city!);
         try {
           const atkLead = atkRosterRef[0]!;
           const aLeadDef = unitDefFor(atkLead);
-          const mAtk = rosterFieldPowerM(atkRosterRef);
+          const mAtk = rosterFieldPowerM(atkRosterRef) + rosterSiegeMachinePowerM(atkRosterRef);
           const mDef = effectiveDefenderM(defRosterRef, dTeren, dStructBonus, aLeadDef);
           const powerRes = resolveAutoBattleByPower({ mAtk, mDef });
           if (powerRes.winner === 'none') {
@@ -10727,6 +10894,9 @@ async function boot(): Promise<void> {
             onCancel: () => setMood('mapa'),
           });
           bs.play((res) => {
+            // #50: scena bitwy zwróciła wynik (deploy nie anulowany) — dopiero teraz
+            // realnie zużyj machiny; anulowanie deployu (onCancel powyżej) ich nie traci.
+            consumeReadyMachines(city);
             finishSiegeStormBattle(city, atkRosterRef, defRosterRef, res, {
               atkStart: atkStartSnap,
               summary: siegeSummaryMeta('manual'),
@@ -11097,10 +11267,14 @@ async function boot(): Promise<void> {
           surowiecBooleanGrants: basketTransferCtx.surowiecBooleanGrants,
           battlePowerPtsByOwner: Array.from(battlePowerPtsByOwner.entries()),
           capitalCityIdByOwner: Array.from(capitalCityIdByOwner.entries()),
+          // Audyt #44: aiSkarbiecByOwner nie bylo w snapshotcie -- czyszczone przy
+          // load bez odtworzenia, wiec skarbiec AI zerowal sie po kazdym wczytaniu.
+          aiSkarbiecByOwner: Array.from(aiSkarbiecByOwner.entries()),
           aiPracaPoolByOwner: Array.from(aiPracaPoolByOwner.entries()),
           aiNaukaPoolByOwner: Array.from(aiNaukaPoolByOwner.entries()),
           aiBadanaByOwner: Array.from(aiBadanaByOwner.entries()),
           zdobyczePowerByOwner: Array.from(zdobyczePowerByOwner.entries()),
+          lootedVillageHexKeys: Array.from(lootedVillageHexKeys),
           eliminatedOwners: Array.from(eliminatedOwners),
           ownerEraByOwner: Array.from(ownerEraByOwner.entries()),
           ownerStartEraByOwner: Array.from(ownerStartEraByOwner.entries()),
@@ -11109,6 +11283,22 @@ async function boot(): Promise<void> {
           pendingImprovementsTurn: pendingImprovementsTurn.toSave(),
           completedWorldWonders: completedWorldWonders.slice(),
           placedWorldWonders: placedWorldWonders.slice(),
+          // Audyt #15: profile miast-panstw i klastrow -- byly wypelniane WYLACZNIE
+          // w nowej grze (applyClusterStartPlan/spawnPendingSameTypeRivals) i nigdy
+          // nie trafialy do snapshotu.
+          simplifiedDiplomacyOwners: Array.from(simplifiedDiplomacyOwners),
+          foreignTypeOwners: Array.from(foreignTypeOwners),
+          typCityCopyOwners: Array.from(typCityCopyOwners),
+          clusterCapitalOwnerIds: Array.from(clusterCapitalOwnerIds),
+          clusterPlacement,
+          // Audyt #42: barbCamps nie bylo w snapshotcie -- obozy z zapisu
+          // przepadaly (lub zostawaly z poprzedniej gry na innej mapie).
+          barbCamps: barbCamps.slice(),
+          // Audyt #43: cityRelig/autoManageCities nie byly ani zapisywane, ani
+          // czyszczone -- kolizja id 'cityN' po restarcie skutkowala zombie
+          // stanem religii/auto-zarzadzania z poprzedniej gry.
+          cityRelig: Array.from(cityRelig.entries()),
+          autoManageCities: Array.from(autoManageCities),
         },
         mapQuality: _currentRenderOptions.renderQuality,
         renderQuality: _currentRenderOptions.renderQuality,
@@ -11313,6 +11503,8 @@ async function boot(): Promise<void> {
       // --- N: End turn ---
       if (e.key.toLowerCase() === 'n') {
         if (playtestWalkaActive) return;
+        // #12 fix: trwa modalna bitwa / zawieszona faza AI (preBattle) — nie startuj drugiej tury.
+        if (isPreBattleOpen() || aiTurnAwaitingBattle || aiCmdResume) return;
         // Gallery mode: ignore end-turn key.
         if (galleryOn) return;
         // P3b: Block turns after game over.
@@ -11569,14 +11761,32 @@ async function boot(): Promise<void> {
               const oblCity = cities.find(c => c.id === tick.cityId);
               if (!oblCity) continue;
 
-              const garnizonBefore = oblCity.garnizon ?? 0;
-              if (garnizonBefore > 0) {
-                const atrycja = Math.max(1, Math.floor(garnizonBefore * 0.08));
-                oblCity.garnizon = Math.max(0, garnizonBefore - atrycja);
+              const realGarnizonUnits = units.filter(
+                u => u.ownerId === oblCity.ownerId
+                  && u.q === oblCity.q
+                  && u.r === oblCity.r
+                  && u.inGarnizon === true,
+              );
+              if (realGarnizonUnits.length > 0) {
+                const garnizonBefore = realGarnizonUnits.length;
+                // Atrycja zdejmuje realne HP garnizonu (nie tylko licznik pochodny) —
+                // jednostki, które w ten sposób umrą, realnie znikają z obrony przy szturmie.
+                const starv = applyArmyStarvationHpLoss(
+                  realGarnizonUnits,
+                  oblCity.ownerId,
+                  0.08,
+                  (typeId) => unitHealth(data.units.find(u => u.Jednostka === typeId) ?? {}),
+                );
+                if (starv.destroyedIds.length > 0) {
+                  for (let i = units.length - 1; i >= 0; i--) {
+                    if (starv.destroyedIds.includes(units[i]!.id)) units.splice(i, 1);
+                  }
+                }
+                syncGarnizonForCity(oblCity);
                 console.log(
                   '[Oblezenie] Tura ' + turn + ' ' + oblCity.name +
                   ': atrycja garnizonu ' + garnizonBefore + ' -> ' + oblCity.garnizon +
-                  ' (-' + atrycja + ')',
+                  ' (-' + (garnizonBefore - (oblCity.garnizon ?? 0)) + ')',
                 );
               }
 
@@ -11754,10 +11964,10 @@ async function boot(): Promise<void> {
                 data.buildings,
                 bdef => buildingLevelForEpoch(
                   bdef.epokaWejscia,
-                  player.era,
+                  empireEpochForOwner(city.ownerId),
                   bdef.maksPoziom,
                   bdef.poziomTechGate ?? null,
-                  player.zbadane,
+                  unlockedTechSetForOwner(city.ownerId),
                 ),
               );
               const haWealth  = econTick ? econTick.wealthZadowolenie : 0;
@@ -11770,7 +11980,7 @@ async function boot(): Promise<void> {
               const ordPct = evaluateOrderFromBreakdown(
                 {
                   difficulty,
-                  era: player.era,
+                  era: empireEpochForOwner(city.ownerId),
                   population: city.population,
                   buildingZadowolenie: haBuildings,
                   haKult,
@@ -11786,7 +11996,7 @@ async function boot(): Promise<void> {
                 },
                 {
                   difficulty,
-                  era: player.era,
+                  era: empireEpochForOwner(city.ownerId),
                   population: city.population,
                   garnizonCount: gCountLaw,
                   hasRatusz: builtIds.includes('ratusz'),
@@ -11883,6 +12093,7 @@ async function boot(): Promise<void> {
                     ? Array.from(player.zbadane)
                     : Array.from(aiResearchDone.get(city.ownerId) ?? new Set<string>());
                   const builtForCity = cityBuilt.get(cid) ?? [];
+                  const ownImprovements = placedImprovementsForOwner(city.ownerId);
                   const amDecision = autoManageCity(
                     city,
                     map,
@@ -11912,8 +12123,8 @@ async function boot(): Promise<void> {
                         epoch: empireEpochForOwner(city.ownerId),
                         civBonusy: civBonusyForOwnerId(city.ownerId),
                         civUnitNacja: unitNacjaForCivKey(civKeyForOwnerId(city.ownerId)),
-                        placedImprovements,
-                        hasKopalniaNaZlozuZelaza: empireHasKopalniaNaZlozuZelaza(placedImprovements, map),
+                        placedImprovements: ownImprovements,
+                        hasKopalniaNaZlozuZelaza: empireHasKopalniaNaZlozuZelaza(ownImprovements, map),
                       },
                     },
                   );
@@ -12007,7 +12218,11 @@ async function boot(): Promise<void> {
                 });
                 maybeHintArmyFoodOnFirstPlayerUnit(city.ownerId);
                 if (city.ownerId === 0) {
-                  afterPlayerUnitSpawned(newUnitId);
+                  if (endTurnInProgress) {
+                    deferredPlayerUnitRevealIds.add(newUnitId);
+                  } else {
+                    afterPlayerUnitSpawned(newUnitId);
+                  }
                 }
                 console.log(`[Rekrutacja] Tura ${turn} ${city.name}: ${rec.id} gotowa @ (${city.q},${city.r})`);
               }
@@ -12387,13 +12602,16 @@ async function boot(): Promise<void> {
                 if (cmd.type === 'build') {
                   const city = cities.find(c => c.id === cmd.cityId && c.ownerId === ownerId);
                   if (!city) continue;
-                  const buildingNames = new Set(data.buildings.map(b => b.nazwa));
+                  // #31: klasyfikacja po id budynku (katalog buildings.json), nie po nazwie --
+                  // buildingProductionItem/findBuilding niżej porównują wyłącznie b.id.
+                  const buildingNames = new Set(data.buildings.map(b => b.id));
                   const isBuilding = buildingNames.has(cmd.buildingId);
                   const prod0 = cityProd.get(cmd.cityId) ?? { kolejka: [], postep: 0 };
                   // Don't re-enqueue if already in queue
                   const alreadyQueued = prod0.kolejka.some(it => it.id === cmd.buildingId);
                   if (!alreadyQueued) {
                     const builtIds = cityBuilt.get(city.id) ?? [];
+                    const ownImprovements = placedImprovementsForOwner(ownerId);
                     const allowed = availableProduction(
                       city,
                       data,
@@ -12404,8 +12622,12 @@ async function boot(): Promise<void> {
                         productionQueue: prod0.kolejka,
                         civBonusy: civBonusyForOwnerId(ownerId),
                         civUnitNacja: unitNacjaForCivKey(civKeyForOwnerId(ownerId)),
-                        placedImprovements,
-                        hasKopalniaNaZlozuZelaza: empireHasKopalniaNaZlozuZelaza(placedImprovements, map),
+                        placedImprovements: ownImprovements,
+                        hasKopalniaNaZlozuZelaza: empireHasKopalniaNaZlozuZelaza(ownImprovements, map),
+                        // audyt #11: AI też podlega limitowi 1 żywej Super-jednostka.
+                        aliveUnitTypeNames: new Set(
+                          units.filter(x => x.ownerId === ownerId).map(x => x.typeId),
+                        ),
                         buildingCostPace: player.buildingCostPace ?? 'niski',
                         ownerId,
                         difficulty: _menuDifficulty,
@@ -12613,6 +12835,10 @@ async function boot(): Promise<void> {
             const allOwners = new Set<number>([0]);
             for (const u of units) { if (u.ownerId >= 0) allOwners.add(u.ownerId); }
             for (const c of cities) { if (c.ownerId >= 0) allOwners.add(c.ownerId); }
+            // #48: cywilizacje wyeliminowane (jednostki-sieroty w polu) wykluczone
+            // z mianownika dominacji — inaczej ich Power liczy się podwójnie
+            // (raz jako zdobycz zwycięzcy, raz jako moc ownera-widma).
+            for (const oid of eliminatedOwners) allOwners.delete(oid);
             const vPlayers: VictoryPlayer[] = [];
             for (const oid of allOwners) {
               vPlayers.push({
@@ -12675,11 +12901,13 @@ async function boot(): Promise<void> {
         // Refresh fog after end-turn so new unit positions update visibility.
         refreshFog();
         executePlannedMarchesEndTurn();
+        flushDeferredPlayerUnitReveals();
         setTurnTransition(100, `Tura ${turn} — twoja kolej`, 'Gracz', turn);
         await yieldTurnTransitionUi();
         } catch (errEndTurn) {
           console.error('[EndTurn] Blad przejscia tury:', errEndTurn);
         } finally {
+          flushDeferredPlayerUnitReveals();
           endTurnTransition();
           endTurnInProgress = false;
         }
@@ -13038,7 +13266,9 @@ async function boot(): Promise<void> {
       getOwnerColor: civColorFn,
         getUnlockedTechs: (_ownerId: number) => Array.from(player.zbadane),
         getBuiltBuildingIds: (cityId: string) => cityBuilt.get(cityId) ?? [],
-        getPlacedImprovements: () => placedImprovements,
+        // audyt #33: panel miasta jest tylko dla gracza (openCityPanelForPlayer) -- ulepszenia
+        // WYŁĄCZNIE z terytorium gracza (owner 0), inaczej kopalnia AI odblokowywała Brąz/Żelazo.
+        getPlacedImprovements: () => placedImprovementsForOwner(0),
         getProduction: (cityId: string) => {
           const p = cityProd.get(cityId);
           return p ? { ...p, kolejka: [...p.kolejka] } : null;
@@ -13372,7 +13602,14 @@ async function boot(): Promise<void> {
       eliminatedOwners.clear();
       capitalCityIdByOwner.clear();
       zdobyczePowerByOwner.clear();
+      battlePowerPtsByOwner.clear();
+      lootedVillageHexKeys.clear();
       barbCamps = [];
+      // Audyt #43: cityRelig/autoManageCities przezywaly restart (id 'cityN'
+      // koliduja miedzy rozgrywkami) -- nowe miasto dziedziczylo zombie stan
+      // religii/auto-zarzadzania z poprzedniej gry bez przeladowania strony.
+      cityRelig.clear();
+      autoManageCities.clear();
       gameOver = false;
       selectedId = null;
       reachable = new Set<string>();
@@ -14280,6 +14517,35 @@ async function boot(): Promise<void> {
       if (savedEliminated?.length) {
         for (const oid of savedEliminated) eliminatedOwners.add(oid);
       }
+      // Audyt #15: profile miast-panstw i klastrow -- odtworz z sejwu.
+      simplifiedDiplomacyOwners.clear();
+      const savedSimplified = saved.meta?.simplifiedDiplomacyOwners as number[] | undefined;
+      if (savedSimplified?.length) {
+        for (const oid of savedSimplified) simplifiedDiplomacyOwners.add(oid);
+      }
+      foreignTypeOwners.clear();
+      const savedForeignType = saved.meta?.foreignTypeOwners as number[] | undefined;
+      if (savedForeignType?.length) {
+        for (const oid of savedForeignType) foreignTypeOwners.add(oid);
+      }
+      typCityCopyOwners.clear();
+      const savedTypCityCopy = saved.meta?.typCityCopyOwners as number[] | undefined;
+      if (savedTypCityCopy?.length) {
+        for (const oid of savedTypCityCopy) typCityCopyOwners.add(oid);
+      } else {
+        // Legacy zapis sprzed tej naprawy (brak pola w meta) -- c.startCityState
+        // jest rownowazne typCityCopyOwners.has(ownerId) (patrz applyClusterStartPlan/
+        // spawnPendingSameTypeRivals), rekonstruuj z flagi juz obecnej w miastach.
+        for (const c of cities) {
+          if (c.startCityState) typCityCopyOwners.add(c.ownerId);
+        }
+      }
+      clusterCapitalOwnerIds.clear();
+      const savedClusterCapitalIds = saved.meta?.clusterCapitalOwnerIds as number[] | undefined;
+      if (savedClusterCapitalIds?.length) {
+        for (const oid of savedClusterCapitalIds) clusterCapitalOwnerIds.add(oid);
+      }
+      clusterPlacement = (saved.meta?.clusterPlacement as ClusterPlacement | undefined) ?? null;
       battlePowerPtsByOwner.clear();
       const savedPts = saved.meta?.battlePowerPtsByOwner as Array<[number, number]> | undefined;
       if (savedPts?.length) {
@@ -14309,6 +14575,38 @@ async function boot(): Promise<void> {
       const savedZdobycze = saved.meta?.zdobyczePowerByOwner as Array<[number, number]> | undefined;
       if (savedZdobycze?.length) {
         for (const [oid, n] of savedZdobycze) zdobyczePowerByOwner.set(oid, n);
+      }
+      // Audyt #13: reaplikuj zlupienie wiosek na (ewentualnie świeżo zregenerowanej
+      // z seeda) mapie -- generator/placeVillages zawsze stawia je jako istnieje=true.
+      lootedVillageHexKeys.clear();
+      const savedLootedVillages = saved.meta?.lootedVillageHexKeys as string[] | undefined;
+      if (savedLootedVillages?.length) {
+        for (const hk of savedLootedVillages) {
+          lootedVillageHexKeys.add(hk);
+          const villageHex = map.hexes[hk];
+          if (villageHex?.wioska) {
+            villageHex.wioska.istnieje = false;
+            villageHex.wioska.ludnosc = 0;
+          }
+        }
+      }
+      // Audyt #42: barbCamps nie bylo ani zapisywane, ani resetowane przy load --
+      // obozy starej gry zostawaly w pamieci i renderowaly sie na nowej mapie.
+      // Odtworz z zapisu; brak pola (stary zapis) = reset do pustej tablicy.
+      const savedBarbCamps = saved.meta?.barbCamps as BarbCamp[] | undefined;
+      barbCamps = Array.isArray(savedBarbCamps) ? savedBarbCamps.slice() : [];
+      // Audyt #43: cityRelig/autoManageCities nie byly ani zapisywane, ani
+      // czyszczone przy load -- id 'cityN' koliduja miedzy rozgrywkami, wiec
+      // bez tego nowe miasto dziedziczylo zombie stan z poprzedniej gry/sejwu.
+      cityRelig.clear();
+      const savedCityRelig = saved.meta?.cityRelig as Array<[string, ReligionState]> | undefined;
+      if (savedCityRelig?.length) {
+        for (const [cid, state] of savedCityRelig) cityRelig.set(cid, state);
+      }
+      autoManageCities.clear();
+      const savedAutoManageCities = saved.meta?.autoManageCities as string[] | undefined;
+      if (savedAutoManageCities?.length) {
+        for (const cid of savedAutoManageCities) autoManageCities.add(cid);
       }
       ownerEraByOwner.clear();
       ownerStartEraByOwner.clear();
@@ -14400,7 +14698,14 @@ async function boot(): Promise<void> {
         for (const [oid, t] of savedGiftCooldown) aiOneShotGiftLastTurn.set(oid, t);
       }
       activeDeals = [];
+      // Audyt #44: aiSkarbiecByOwner bylo czyszczone bez petli odtwarzajacej
+      // (w przeciwienstwie do symetrycznej aiPracaPoolByOwner) -- skarbiec AI
+      // zerowal sie po kazdym wczytaniu zapisu.
       aiSkarbiecByOwner.clear();
+      const savedAiSkarbiec = saved.meta?.aiSkarbiecByOwner as Array<[number, number]> | undefined;
+      if (savedAiSkarbiec?.length) {
+        for (const [oid, v] of savedAiSkarbiec) aiSkarbiecByOwner.set(oid, v);
+      }
       const savedDeals = saved.meta?.diplomacyDeals as ActiveDeal[] | undefined;
       if (savedDeals?.length) activeDeals = hydrateActiveDeals(savedDeals);
       diplomacyPairMeta.clear();

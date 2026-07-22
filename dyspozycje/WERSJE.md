@@ -11,9 +11,13 @@ swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drug
 
 ## ROBOCZA (gra-robocza\Gra-ROBOCZA.html — wskazywana przez START.html)
 
+- 2026-07-22 · stempel: ROBOCZA · **c72ab1b8** · md5 pliku `c72ab1b8c45c61364f754daf085ae41f` · **FIX: widoczność nowych jednostek po end-turn** — na `2f32fbea`:
+  **Bug Macieja:** jednostki z produkcji/rekrutacji pojawiały się na mapie od razu po „Zakończ turę", zanim ruch AI. **Fix:** `deferredPlayerUnitRevealIds` — ukryte w renderze do końca fazy AI; `flushDeferredPlayerUnitReveals()` przy starcie nowej tury gracza. Rush-buy w trakcie tury bez zmian (natychmiast).
+  tsc=0 · unit-replace 10/10 · publish `gra-robocza/Gra-ROBOCZA.html`. · **AKTUALNA** · Test: stamp `c72ab1b8` · Rekrutuj → Zakończ turę → jednostka widoczna dopiero po ruchu AI.
+
 - 2026-07-22 · stempel: ROBOCZA · **2f32fbea** · md5 pliku `2f32fbea89183d908099e984414db2cb` · **UI: Ranking Moc ↔ mgła wojny (FoW)** — na `6a9b8e72`:
   **Ranking Moc (Maciej):** widoczność listy powiązana ze stanem mgły wojny zamiast osobnego przełącznika testowego. **FoW włączony (domyślnie / F):** tylko odkryte pełne cywilizacje + gracz (bez miast-państw). **FoW wyłączony (F / baton minimapy):** wszystkie pełne cywilizacje. Usunięto `debugPowerRankingAll` (URL/localStorage/checkbox [TEST]).
-  tsc=0 · power-ranking 10/10 · display-names 11/11 · publish `gra-robocza/Gra-ROBOCZA.html`. · **AKTUALNA** · Test: stamp `2f32fbea` · FoW ON → ranking tylko odkryte · F (FoW OFF) → wszystkie pełne nacje.
+  tsc=0 · power-ranking 10/10 · display-names 11/11 · publish `gra-robocza/Gra-ROBOCZA.html`. · **ZASTĄPIONA** (→ `c72ab1b8`) · Test: stamp `2f32fbea` · FoW ON → ranking tylko odkryte · F (FoW OFF) → wszystkie pełne nacje.
 
 - 2026-07-22 · stempel: ROBOCZA · **6a9b8e72** · md5 pliku `6a9b8e729d52f1adb2ea556a265b12e0` · **UI: Ranking Moc — bez miast-państw + mgła wojny** — na `cd615c1e`:
   **Ranking Moc (Maciej):** lista pokazywała miasta-państwa (np. „Ur · miasto-państwo") i nieodkryte cywilizacje. **Fix:** `filterOwnersForPowerRanking` — tylko pełne nacje + odkryte (`diplomaticallyDiscoveredOwners`); gracz zawsze widoczny. **TEMP test:** `?debugPowerRankingAll=1` lub `localStorage civ.debugPowerRankingAll=true` + checkbox [TEST] w panelu Moc (ROBOCZA) — pokaż wszystkie pełne cywilizacje bez mgły (miasta-państwa nadal ukryte).

@@ -2995,3 +2995,10 @@ Usunięto `debugPowerRankingAll` (URL/localStorage/checkbox [TEST]).
 Pliki: `power-ranking.ts`, `main.ts`, `empireDetailPanel.ts`, `powerOverlayHud.ts`.
 Bramki: tsc=0 · power-ranking 10/10 · verify OK.
 CZEKAM-NA: Maciej — Ctrl+F5 stamp `2f32fbea` → FoW ON ranking tylko odkryte · F (FoW OFF) → wszystkie pełne nacje.
+
+## [14:15] INTEGRATOR → Maciej — FIX widoczność jednostek po end-turn
+
+**Bug:** nowe jednostki (produkcja/rekrutacja) pojawiały się na mapie od razu po „Zakończ turę", przed ruchem AI.
+**Fix:** `deferredPlayerUnitRevealIds` w `main.ts` — render ukrywa do `flushDeferredPlayerUnitReveals()` po fazie AI.
+**Deploy ROBOCZA:** stamp `c72ab1b8` · md5 `c72ab1b8c45c61364f754daf085ae41f` · verify OK.
+CZEKAM-NA: Maciej — `git pull` · Ctrl+F5 stamp `c72ab1b8` · rekrutuj → end-turn → jednostka po AI.
