@@ -4,7 +4,20 @@
 > **Czat:** krótko **`✅ Gotowe:`** / **`⏸️ Czeka:`** · **Ten plik:** pełniejszy zapis tego samego.  
 > Szczegóły techniczne → handoff w `dyspozycje/_handoff/` · operacja → `dyspozycje/DZIENNIK-MASTERA.md`
 
-**Ostatnia aktualizacja:** 2026-07-22 (pierścień badań HUD + researchProgress hook)
+**Ostatnia aktualizacja:** 2026-07-22 (fix Praca pula imperium — rounding)
+
+---
+
+## [07:30] ✅ Gotowe — FIX: Praca → pula imperium bez utraty 1 jednostki
+
+| | |
+|---|---|
+| **Co** | Pusta kolejka budynków: **cała** Praca miasta (np. Ateny 3+7=**10**) trafia na pulę imperium; z budynkiem w kolejce — tylko część DO PULI (+3) |
+| **Przyczyna** | `Math.floor` na Pracy + ułamkowy mnożnik Porządku → silnik 9 vs podział HUD 7+3=10 |
+| **Pliki** | `production.ts` (`cityPracaInteger`, `pracaImperialPoolGain`) · `economy.ts` · `turn-economy.ts` · `main.ts` |
+| **md5** | `30e510b1885bf1da7362f1b45b62b392` · stamp `30e510b1` |
+| **Bramki** | tsc=0 · production-overflow 20/20 · wire-ekonomia 37/37 |
+| **Od Ciebie** | `git pull` → Ctrl+F5 · `gra-robocza/START.html` → stamp `30e510b1` → Ateny bez budynku: pula +10/turę (nie +9) |
 
 ---
 

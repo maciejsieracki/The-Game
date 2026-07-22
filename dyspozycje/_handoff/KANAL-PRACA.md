@@ -2873,3 +2873,12 @@ Progress = `researchProgress` (`player.nauka / koszt badanej tech` w `buildHudSt
 Bramki: tsc=0 · verify OK.
 Publish ROBOCZA: stamp **9b539cb7** · md5 `9b539cb74bfc487a8c1fd7ef5d4af27b`.
 CZEKAM-NA: sesja lokalna — `git pull` → Ctrl+F5 START.html → stamp `9b539cb7` → wybierz tech → obserwuj pierścień na medalionie Nauki.
+
+## [07:30 PL, 2026-07-22] INTEGRATOR → Maciej — FIX Praca pula imperium (rounding)
+
+**md5:** `30e510b1885bf1da7362f1b45b62b392` · stamp `30e510b1`
+**Bug:** Ateny 10 Pracy (3 DO PULI + 7 DO BUDYNKÓW), pusta kolejka → pula +9 zamiast +10.
+**Przyczyna:** floor(pracaNetto) + ułamkowy mnożnik Porządku → silnik liczył 9, HUD split 7+3 na 10.
+**Fix:** `cityPracaInteger` (round) · `pracaImperialPoolGain` per miasto (całość gdy brak budynku).
+Bramki: tsc=0 · production-overflow 20/20 · wire-ekonomia 37/37.
+CZEKAM-NA: Maciej — `git pull` → Ctrl+F5 `gra-robocza/START.html` → stamp `30e510b1` → Ateny bez budynku: pula +10/turę.

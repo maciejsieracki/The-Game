@@ -20,7 +20,7 @@ const ENTRY_FILE = path.resolve(__dirname, '.production-overflow-entry.ts');
 const BUNDLE_FILE = path.resolve(__dirname, '.production-overflow-bundle.cjs');
 
 const ENTRY_TS = `
-export { advanceProduction, splitPraca } from '../src/game/production';
+export { advanceProduction, splitPraca, cityPracaInteger, pracaImperialPoolGain } from '../src/game/production';
 `;
 
 fs.writeFileSync(ENTRY_FILE, ENTRY_TS, 'utf8');
@@ -89,6 +89,30 @@ console.log('\n4. Ukończenie budynku: reszta nadal overflow (regresja B10)');
   const r = M.advanceProduction(prod, 9);
   eq(r.completed?.id, 'koszary', 'budynek ukończony');
   eq(r.overflowToPool, 4, 'reszta 4 → overflow');
+}
+
+console.log('\n5. Ateny: 10 Pracy, 70/30, pusta kolejka → całe +10 na pulę');
+{
+  const pracaInt = M.cityPracaInteger(9.6);
+  eq(pracaInt, 10, 'cityPracaInteger(9.6) = 10 (Po Porządku)');
+  const split = M.splitPraca(10, 0.7);
+  eq(split.doBudynkow, 7, 'doBudynkow = 7');
+  eq(split.doPuli, 3, 'doPuli = 3');
+  const poolGain = M.pracaImperialPoolGain(split, true);
+  eq(poolGain, 10, 'pula imperium = 10 (3+7, bez gubienia reszty)');
+  eq(split.doBudynkow + split.doPuli, poolGain, 'split suma = poolGain');
+}
+
+console.log('\n6. Budynek w kolejce: tylko doPuli na pulę');
+{
+  const split = M.splitPraca(10, 0.7);
+  eq(M.pracaImperialPoolGain(split, false), 3, 'tylko doPuli gdy budynek w kolejce');
+  const r = M.advanceProduction(
+    { kolejka: [{ kind: 'budynek', id: 'koszary', koszt: 50 }], postep: 0 },
+    split.doBudynkow,
+  );
+  eq(r.overflowToPool, undefined, 'brak overflow — Praca idzie na postęp');
+  eq(r.prod.postep, 7, 'postep = 7');
 }
 
 console.log('\n--- production-overflow-test: ' + passed + ' OK, ' + failed + ' FAIL ---');

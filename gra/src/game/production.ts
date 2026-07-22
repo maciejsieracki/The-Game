@@ -1213,11 +1213,27 @@ export function rushProduction(prod: CityProduction): AdvanceProductionResult {
  * (turn-economy.ts, real stan gry) i UI (cityPanel.ts, empireDetailPanel.ts,
  * gorny pasek) -- jedno zrodlo prawdy, zero gubionych jednostek.
  */
+/** Jedno zaokrąglenie Pracy miasta (po mnożnikach Porządku itd.) — silnik + UI. */
+export function cityPracaInteger(raw: number): number {
+  return Number.isFinite(raw) && raw > 0 ? Math.round(raw) : 0;
+}
+
 export function splitPraca(cityPraca: number, udzialBudynki: number): { doBudynkow: number; doPuli: number } {
-  const total = Number.isFinite(cityPraca) && cityPraca > 0 ? Math.round(cityPraca) : 0;
+  const total = cityPracaInteger(cityPraca);
   const u = Math.min(1, Math.max(0, Number.isFinite(udzialBudynki) ? udzialBudynki : 1));
   const doBudynkow = Math.round(total * u);
   return { doBudynkow, doPuli: total - doBudynkow };
+}
+
+/**
+ * Ile Pracy miasta trafia do puli imperium w tej turze.
+ * Kolejka pusta → całość (doPuli + niewykorzystane doBudynkow); inaczej tylko doPuli.
+ */
+export function pracaImperialPoolGain(
+  split: { doBudynkow: number; doPuli: number },
+  queueEmpty: boolean,
+): number {
+  return queueEmpty ? split.doPuli + split.doBudynkow : split.doPuli;
 }
 
 /** Q1: tryb kosztu jednostki -- zawsze 'pieniadz' (zakup ze skarbca) we WSZYSTKICH epokach.

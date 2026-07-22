@@ -86,6 +86,7 @@ import {
 } from './converters';
 import {
   splitPraca,
+  cityPracaInteger,
   buildingLevelForEpoch,
 } from './production';
 import {
@@ -887,6 +888,7 @@ export function previewCityEconomy(
     const yld = cityYieldPerTurn(econCity, worked, noBuildings, params, ctx);
     const orderMult = orderMultByCity.get(city.id);
     if (orderMult) applyOrderYieldMults(yld, orderMult);
+    yld.praca = cityPracaInteger(yld.praca);
 
     const prevWealth: WealthState = city.wealthState ?? freshWealthState();
     const wealthImmunity = (city.wealthImmunityRemaining ?? 0) > 0;
@@ -1100,6 +1102,7 @@ export function advanceCityEconomy(
 
     const orderMult = orderMultByCity.get(city.id);
     if (orderMult) applyOrderYieldMults(yld, orderMult);
+    yld.praca = cityPracaInteger(yld.praca);
 
     // WIRE 3: Luksus -> Wealth tick
     // wealthState per miasto -- persystowane na city jako pole dynamiczne

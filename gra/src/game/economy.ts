@@ -27,7 +27,8 @@
  *   7. econ-params.json uses difficulty keys "easy"/"normal"/"hard".
  *      All functions accept an EconParams struct; call loadEconParams() once at start.
  *   8. buildingValue() supports any BuildingYieldKey so it can serve cost/maint math.
- *   9. Rounding: all fractional yields are floored (Math.floor) per Spec ss.1.3 ex.
+ *   9. Rounding: fractional yields floored (Math.floor) per Spec ss.1.3 — wyjątek:
+ *      Praca miasta zaokrąglana Math.round (splitPraca + pula imperium, patrz production.ts).
  *  10. productionProgress: returns { completed, newZebranaPraca, remainder }.
  */
 
@@ -39,7 +40,7 @@ export type { HexCoords } from '../types/hex';
 import { TerenBazowy, Nakladka } from '../types/hex';
 import terrainYieldsData from '../../data/terrain-yields.json';
 import type { TerrainModifierDef, TerrainTypeDef } from '../data/loader';
-import { buildingEffectAtLevel, BUILDING_LEVEL_FACTOR } from './production';
+import { buildingEffectAtLevel, BUILDING_LEVEL_FACTOR, cityPracaInteger, splitPraca } from './production';
 import { applyImprovementBonuses } from './terrain-improvements';
 
 // ---------------------------------------------------------------------------
@@ -744,7 +745,8 @@ export function cityYieldPerTurn(
   // doPuli = pracaNetto * (1 - podziałPracy.procentBudynki/100) -- computed by caller (splitPraca).
   // Tutaj obliczamy wewnetrznie z pracaNetto i suwaka, zeby wynik był w CityYieldResult.
   const pctPracaBudynki = city.podziałPracy.procentBudynki / 100;
-  const doPuli = Math.floor(Math.floor(pracaNetto) * (1 - pctPracaBudynki));
+  const pracaInt = cityPracaInteger(pracaNetto);
+  const { doPuli } = splitPraca(pracaInt, pctPracaBudynki);
   const pieniadzZPracy = (ctx.maTargowisko && walutaActive)
     ? Math.floor(doPuli * params.targowiskoPracaMnoznik)
     : 0;
@@ -763,7 +765,7 @@ export function cityYieldPerTurn(
   const zywnoscNetto  = zywnoscBrutto - zywnoscZuzyta;
 
   return {
-    praca:          Math.floor(pracaNetto),
+    praca:          pracaInt,
     pieniadz:       Math.floor(pieniadzTotal),
     zywnosc:        Math.floor(zywnoscNetto),
     nauka:          naukaLokalna,

@@ -11,9 +11,14 @@ swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drug
 
 ## ROBOCZA (gra-robocza\Gra-ROBOCZA.html — wskazywana przez START.html)
 
+- 2026-07-22 · stempel: ROBOCZA · **30e510b1** · md5 pliku `30e510b1885bf1da7362f1b45b62b392` · **FIX: Praca — pula imperium bez utraty 1 jednostki (zaokrąglanie)** — na `c254006d`:
+  **Przyczyna:** `Math.floor(pracaNetto)` + ułamkowy mnożnik Porządku dawało np. 9 w silniku przy podziale HUD 7+3=10; pula dostawała doPuli+overflow=9 zamiast 10.
+  **Fix:** `cityPracaInteger` (Math.round) w `economy.ts`/`turn-economy.ts`; `pracaImperialPoolGain` w `main.ts` — pusta kolejka → całe `doPuli+doBudynkow`, aktywny budynek → tylko `doPuli`.
+  tsc=0 · production-overflow-test 20/20 · wire-ekonomia 37/37 · publish `gra-robocza/Gra-ROBOCZA.html`. · **AKTUALNA** · Test: Ctrl+F5 START.html → stamp `30e510b1` → Ateny bez budynku w kolejce, 10 Pracy (3+7) → pula +10/turę.
+
 - 2026-07-22 · stempel: ROBOCZA · **c254006d** · md5 pliku `c254006dccb94e25a4121b3f377c157a` · **HUD: pierścień postępu badań (Nauka) + hook researchProgress** — na `9b539cb7`:
   **Medalion Nauki** (górny chip 6C + lewy toolbar mapy): złoty pierścień = pozostało; niebieski rośnie zgodnie z ruchem wskazówek. Hook: `researchProgress` z `buildHudState` (`player.nauka / koszt badanej tech`), nie postęp epoki. Moduł `scienceProgressRing.ts`; `resolveResearchProgress` w `hud.ts`.
-  tsc=0 · verify OK · publish `gra-robocza/Gra-ROBOCZA.html`. · **AKTUALNA** · Test: Ctrl+F5 START.html → stamp `c254006d` → wybierz tech → pierścień rośnie co turę; po odkryciu reset.
+  tsc=0 · verify OK · publish `gra-robocza/Gra-ROBOCZA.html`. · **ZASTĄPIONA** (→ `30e510b1`) · Test: Ctrl+F5 START.html → stamp `c254006d` → wybierz tech → pierścień rośnie co turę; po odkryciu reset.
 
 - 2026-07-22 · stempel: ROBOCZA · **9b539cb7** · md5 pliku `9b539cb74bfc487a8c1fd7ef5d4af27b` · **UI: pierścień postępu badań na HUD Nauki** — na `c54dae3b`:
   **Lewy toolbar + chip Nauka (górny pasek):** pierścień timer złoto→niebieski (SVG stroke-dashoffset), rośnie zgodnie z ruchem wskazówek od góry; progress = `researchProgress` z `buildHudState` (`player.nauka / koszt badanej tech`), nie postęp epoki. Nowy moduł `scienceProgressRing.ts`; hooki w `mapToolbarHud.ts`, `hudChip6c.ts`, `hud.ts`.

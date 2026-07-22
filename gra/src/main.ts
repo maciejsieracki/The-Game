@@ -402,7 +402,7 @@ import {
 import { civBonusyForCivKey, cityPopulationCap, loadEconParams, sumBuildingHappinessFromBuiltIds } from './game/economy';
 import { advanceProduction, rushProduction, rushCost, populationCostOf, UNIT_POPULATION_COST,
   enqueueRecruitment, advanceRecruitment, advanceRecruitmentGated, unitProductionItem,
-  enqueue, buildingProductionItem, splitPraca, availableProduction, availableReplacementsFor,
+  enqueue, buildingProductionItem, splitPraca, cityPracaInteger, pracaImperialPoolGain, availableProduction, availableReplacementsFor,
   buildingLevelForEpoch, buildingEffectAtLevel, frontItem, unitNacjaForCivKey, applyCompletedBuildingIds,
   type CityProduction, type AvailabilityContext } from './game/production';
 import { empireHasKopalniaNaZlozuZelaza } from './game/zelazo-access';
@@ -11371,9 +11371,7 @@ async function boot(): Promise<void> {
           // P3a: HUD + pula pracy — tylko miasta gracza (econ.total* = suma WSZYSTKICH cywilizacji).
           const playerEcon = sumEconomyForPlayerCities(econ, cities);
           const playerCityCount = cities.filter(c => c.ownerId === 0).length;
-          playerPracaPool += playerEcon.doPuli;
-          _lastPraca = playerPracaPool;
-          _lastPracaRate = playerEcon.doPuli;
+          _lastPracaRate = 0;
           _lastPieniadzRate = playerEcon.pieniadz;
           _lastNaukaRate = playerEcon.nauka;
           _lastKulturaRate = playerEcon.kultura;
@@ -11528,9 +11526,7 @@ async function boot(): Promise<void> {
               }
               aiSkarbiecByOwner.set(oid, Math.max(0, aiSkarb));
 
-              // D-IMPROVEMENTS: pula Pracy AI -- symetryczna do
-              // `playerPracaPool += playerEcon.doPuli` (patrz wyżej w tej samej funkcji).
-              aiPracaPoolByOwner.set(oid, (aiPracaPoolByOwner.get(oid) ?? 0) + aiEcon.doPuli);
+              // Pula Pracy AI — per miasto w pętli produkcji (doPuli / całość gdy brak budynku).
             }
 
             // Auto-research: spend banked science on the cheapest available tech.
@@ -11815,11 +11811,32 @@ async function boot(): Promise<void> {
                 if (enq) prod0 = cityProd.get(cid) ?? prod0;
               }
 
-              // PRODUKCJA (D2=A plaster: tylko doBudynkow idzie na kolejkę budynków)
-              const pracaBudynki = econTick ? econTick.doBudynkow : praca;
+              // PRODUKCJA (D2=A: doBudynkow → kolejka; pula imperium per miasto)
+              const prodPaused = prod0.wstrzymana === true;
+              const queueEmpty = frontItem(prod0) === null;
+              if (econTick && !prodPaused) {
+                const poolGain = pracaImperialPoolGain(
+                  { doBudynkow: econTick.doBudynkow, doPuli: econTick.doPuli },
+                  queueEmpty,
+                );
+                if (poolGain > 0) {
+                  if (city.ownerId === 0) {
+                    playerPracaPool += poolGain;
+                    _lastPraca = playerPracaPool;
+                    _lastPracaRate += poolGain;
+                  } else {
+                    aiPracaPoolByOwner.set(
+                      city.ownerId,
+                      (aiPracaPoolByOwner.get(city.ownerId) ?? 0) + poolGain,
+                    );
+                  }
+                }
+              }
+              const pracaBudynki = (econTick && !queueEmpty && !prodPaused) ? econTick.doBudynkow : 0;
               const { prod: prodPo, completed, overflowToPool } = advanceProduction(prod0, pracaBudynki);
               let prodFinal = prodPo;
               cityProd.set(cid, prodPo);
+              // Nadwyżka po ukończeniu budynku (reszta doBudynkow) — nie dotyczy pustej kolejki.
               if (overflowToPool && overflowToPool > 0) {
                 if (city.ownerId === 0) {
                   playerPracaPool += overflowToPool;
