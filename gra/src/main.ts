@@ -109,6 +109,7 @@ import {
   defaultNeutralRelation,
   diplomacyLayerForOwner,
   filterDiplomacyCommandsForLayer,
+  filterDiplomacyCommandsForEstablishedContact,
   playerDiplomacyActionAllowed,
   startRelationForPair,
   applyCityStateDifficultyTrust,
@@ -807,6 +808,12 @@ async function boot(): Promise<void> {
       return ERA_ID_TO_NUM[epochId] ?? 1;
     }
 
+    function epochIdFromEraNumber(era: number): string {
+      if (era >= 3) return 'zelazo';
+      if (era >= 2) return 'braz';
+      return 'kamien';
+    }
+
     /** Epoka startowa gry z kreatora — nie bieżąca epoka gracza po awansie tech. */
     function gameStartEra(): number {
       return eraNumberFromEpochId(_menuEpochId || 'kamien');
@@ -922,7 +929,8 @@ async function boot(): Promise<void> {
       });
       for (const [oid, civ] of aiMap) aiOwnerCivMap.set(oid, civ);
       syncOwnerDisplayNamesFromCities();
-      for (const oid of missing) ensureAiOwnerStartEra(oid, startEra);
+      const epochId = epochIdFromEraNumber(startEra);
+      for (const oid of missing) setupAiOwnerEpoch(oid, epochId);
     }
 
     function sumRosterFieldMLocal(roster: RuntimeUnit[]): number {
@@ -2617,7 +2625,6 @@ async function boot(): Promise<void> {
     }
 
     function buildPlayerDiploRelations(): DiploRelation[] {
-      const contacted = getDiplomaticContacts();
       const rels: DiploRelation[] = [];
       for (const [key, rel] of diplomacyRelations.entries()) {
         const parts = key.split('_');
@@ -2625,7 +2632,8 @@ async function boot(): Promise<void> {
         const b = parseInt(parts[1] ?? '0', 10);
         if (a !== 0 && b !== 0) continue;
         const otherId = a === 0 ? b : a;
-        if (!contacted.has(otherId)) continue;
+        if (!diplomaticContactEstablished.has(otherId)) continue;
+        const contacted = getDiplomaticContacts();
         const layer = diplomacyLayerForOwner(
           otherId,
           simplifiedDiplomacyOwners,
@@ -3028,7 +3036,6 @@ async function boot(): Promise<void> {
       });
       for (const [oid, civ] of aiMap) {
         aiOwnerCivMap.set(oid, civ);
-        setupAiOwnerEpoch(oid, _menuEpochId || 'kamien');
       }
     }
 
@@ -3200,6 +3207,8 @@ async function boot(): Promise<void> {
     let zlozeGrants: ZlozeGrant[] = [];
     /** D3-Q2: nacje, z którymi gracz nawiązał kontakt dyplomatyczny (save/load w meta). */
     const diplomaticContactEstablished = new Set<number>();
+    /** Odkryte na mapie (widoczne choć raz) — osobno od formalnego kontaktu. */
+    const diplomaticallyDiscoveredOwners = new Set<number>();
     /** Odkrycie w mgle — auto-okno audiencji już pokazane (save/load meta). */
     const diplomaticDiscoveryPopupShown = new Set<number>();
     let lastDiplomaticContactsSnapshot = new Set<number>();
@@ -3353,6 +3362,7 @@ async function boot(): Promise<void> {
       typCityCopyOwners.clear();
       ownerEraByOwner.clear();
       ownerStartEraByOwner.clear();
+      aiResearchDone.clear();
       eliminatedOwners.clear();
       capitalCityIdByOwner.clear();
       zdobyczePowerByOwner.clear();
@@ -3367,6 +3377,7 @@ async function boot(): Promise<void> {
 
       diplomacyRelations.clear();
       diplomaticContactEstablished.clear();
+      diplomaticallyDiscoveredOwners.clear();
       resetDiplomaticDiscoveryUiState();
       activeDeals = [];
       aiSkarbiecByOwner.clear();
@@ -3403,6 +3414,8 @@ async function boot(): Promise<void> {
 
       refreshFog();
       initDiplomaticContactSnapshot();
+      // B12: epoka wizualna = epoka startu gry + tylko tech awansujące epokę (fair play).
+      reconcileAllOwnerErasFromResearch();
       cityRenderer.sync(cities, _cityRenderOpts());
 
       initEmpireFoodStates();
@@ -3447,7 +3460,7 @@ async function boot(): Promise<void> {
           data.cityNamesPools,
         );
         aiOwnerCivMap.set(ownerId, _menuCivId);
-        setupAiOwnerEpoch(ownerId, _menuEpochId);
+        setupAiOwnerEpoch(ownerId, _menuEpochId || 'kamien');
         ownerDisplayName.set(ownerId, nazwa);
         simplifiedDiplomacyOwners.add(ownerId);
         typCityCopyOwners.add(ownerId);
@@ -3822,6 +3835,7 @@ async function boot(): Promise<void> {
       if (galleryOn) return;
       markMinimapDirty(); // D11: zmiana mgły/mapy → minimapa do przerysowania (poza tym pomijana)
       const vis = currentVisible();
+      updateDiplomaticDiscovery(vis);
       addExplored(explored, vis);
       const exploredForRender = fogExploredForRender();
       const useFogRender = fogOn || revealAllLand;
@@ -6234,6 +6248,7 @@ async function boot(): Promise<void> {
     }
 
     function enqueueDiplomacyPendingFromCmd(ownerId: number, cmd: AIDiplomacyCommand): void {
+      if (!diplomaticContactEstablished.has(ownerId)) return;
       const balance = aiSkarbiecByOwner.get(ownerId) ?? 0;
       const enriched = enrichAiCommandWithTreasury(cmd, balance);
       if (!enriched) return;
@@ -6538,7 +6553,13 @@ async function boot(): Promise<void> {
     }
 
     function getDiplomaticContacts(): Set<number> {
-      return computeDiplomaticContacts(explored, cities, units);
+      return diplomaticallyDiscoveredOwners;
+    }
+
+    /** Aktualizuje trwały zbiór odkrytych nacji wg bieżącego zasięgu widzenia. */
+    function updateDiplomaticDiscovery(visible: ReadonlySet<string>): void {
+      const seenNow = computeDiplomaticContacts(visible, cities, units);
+      for (const oid of seenNow) diplomaticallyDiscoveredOwners.add(oid);
     }
 
     function resetDiplomaticDiscoveryUiState(): void {
@@ -10983,6 +11004,7 @@ async function boot(): Promise<void> {
           pendingDiplomacyInbox: pendingDiplomacyInbox.slice(),
           aiOneShotGiftLastTurn: Array.from(aiOneShotGiftLastTurn.entries()),
           diplomaticContactEstablished: Array.from(diplomaticContactEstablished),
+          diplomaticallyDiscoveredOwners: Array.from(diplomaticallyDiscoveredOwners),
           diplomaticDiscoveryPopupShown: Array.from(diplomaticDiscoveryPopupShown),
           diplomacyDeals: activeDeals.slice(),
           diplomacyPairMeta: Array.from(diplomacyPairMeta.entries()),
@@ -12048,6 +12070,9 @@ async function boot(): Promise<void> {
 
             // --- Diplomacy stance + computeRespekt + decideAIDiplomacy ---
             try {
+              if (!diplomaticallyDiscoveredOwners.has(ownerId)) {
+                // Brak odkrycia na mapie — zero dyplomacji wobec gracza (w tym darów).
+              } else {
               const militaryRatio = militaryRatioFromArmyM(
                 sumArmyMForOwner(ownerId),
                 sumArmyMForOwner(0),
@@ -12136,9 +12161,12 @@ async function boot(): Promise<void> {
                 diploInp, undefined, diffParams.agresjaMnoznik, diffParams.dyplomacjaAktywnosc,
                 _menuDifficulty,
               );
-              const dipCmds: AIDiplomacyCommand[] = filterDiplomacyCommandsForLayer(
-                Array.isArray(dipCmdsRaw) ? dipCmdsRaw : [],
-                dipLayer,
+              const dipCmds: AIDiplomacyCommand[] = filterDiplomacyCommandsForEstablishedContact(
+                filterDiplomacyCommandsForLayer(
+                  Array.isArray(dipCmdsRaw) ? dipCmdsRaw : [],
+                  dipLayer,
+                ),
+                diplomaticContactEstablished.has(ownerId),
               );
               for (const cmd of dipCmds) {
                 try {
@@ -12175,6 +12203,7 @@ async function boot(): Promise<void> {
                   ` respektAI=${respektAI}`,
                 );
               }
+              } // discovered owner
             } catch (eDiplo) {
               console.error(`[Dyplomacja] Blad dyplomacji AI${ownerId}:`, eDiplo);
             }
@@ -13236,6 +13265,7 @@ async function boot(): Promise<void> {
       rebuildAllKeys();
       diplomacyRelations.clear();
       diplomaticContactEstablished.clear();
+      diplomaticallyDiscoveredOwners.clear();
       resetDiplomaticDiscoveryUiState();
       activeDeals = [];
       aiSkarbiecByOwner.clear();
@@ -13289,6 +13319,7 @@ async function boot(): Promise<void> {
 
       applyClusterStartPlan(_menuCivId, newSeed, _menuCityStates);
       initAllAiOwnersForNewGame(params.epochId || 'kamien');
+      reconcileAllOwnerErasFromResearch();
 
       if (params.startPreview) {
         console.log(
@@ -13467,6 +13498,7 @@ async function boot(): Promise<void> {
       aiOwnerCivMap.set(preset.aiOwnerId, 'grecy');
       diplomacyRelations.clear();
       diplomaticContactEstablished.clear();
+      diplomaticallyDiscoveredOwners.clear();
       resetDiplomaticDiscoveryUiState();
       setDiploRelation(0, preset.aiOwnerId, { zaufanie: 0, respekt: 30, status: 'wojna' });
       playerEverOwnedCity = false;
@@ -13689,6 +13721,7 @@ async function boot(): Promise<void> {
       aiOwnerCivMap.clear();
       diplomacyRelations.clear();
       diplomaticContactEstablished.clear();
+      diplomaticallyDiscoveredOwners.clear();
       resetDiplomaticDiscoveryUiState();
       playerEverOwnedCity = true;
 
@@ -13883,8 +13916,10 @@ async function boot(): Promise<void> {
       aiOwnerCivMap.set(preset.aiOwnerId, 'grecy');
       diplomacyRelations.clear();
       diplomaticContactEstablished.clear();
+      diplomaticallyDiscoveredOwners.clear();
       resetDiplomaticDiscoveryUiState();
       diplomaticContactEstablished.add(preset.aiOwnerId);
+      diplomaticallyDiscoveredOwners.add(preset.aiOwnerId);
       setDiploRelation(0, preset.aiOwnerId, { zaufanie: 0, respekt: 30, status: 'wojna' });
 
       playerEverOwnedCity = true;
@@ -14225,10 +14260,17 @@ async function boot(): Promise<void> {
       }
       diplomacyRelations.clear();
       diplomaticContactEstablished.clear();
+      diplomaticallyDiscoveredOwners.clear();
       resetDiplomaticDiscoveryUiState();
       const savedContacts = saved.meta?.diplomaticContactEstablished as number[] | undefined;
       if (savedContacts?.length) {
         for (const oid of savedContacts) diplomaticContactEstablished.add(oid);
+      }
+      const savedDiscovered = saved.meta?.diplomaticallyDiscoveredOwners as number[] | undefined;
+      if (savedDiscovered?.length) {
+        for (const oid of savedDiscovered) diplomaticallyDiscoveredOwners.add(oid);
+      } else {
+        for (const oid of diplomaticContactEstablished) diplomaticallyDiscoveredOwners.add(oid);
       }
       const savedDiscoveryPopups = saved.meta?.diplomaticDiscoveryPopupShown as number[] | undefined;
       if (savedDiscoveryPopups?.length) {
@@ -14268,6 +14310,11 @@ async function boot(): Promise<void> {
       pendingDiplomacyInbox.length = 0;
       const savedPending = saved.meta?.pendingDiplomacyInbox as typeof pendingDiplomacyInbox | undefined;
       if (savedPending?.length) pendingDiplomacyInbox.push(...savedPending);
+      for (let pi = pendingDiplomacyInbox.length - 1; pi >= 0; pi--) {
+        if (!diplomaticContactEstablished.has(pendingDiplomacyInbox[pi]!.ownerId)) {
+          pendingDiplomacyInbox.splice(pi, 1);
+        }
+      }
       aiOneShotGiftLastTurn.clear();
       const savedGiftCooldown = saved.meta?.aiOneShotGiftLastTurn as Array<[number, number]> | undefined;
       if (savedGiftCooldown?.length) {

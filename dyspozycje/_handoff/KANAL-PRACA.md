@@ -2891,3 +2891,12 @@ CZEKAM-NA: Maciej — `git pull` → Ctrl+F5 `gra-robocza/START.html` → stamp 
 Pliki: `scienceProgressRing.ts`, `mapToolbarHud.ts`, `hudChip6c.ts`, `hud.ts`.
 Bramki: tsc=0 · publish robocza OK.
 CZEKAM-NA: Maciej — `git pull` → Ctrl+F5 START.html → stamp `43510348` → jeden pierścień; 0%/50%/100%.
+
+## [08:00 PL, 2026-07-22] INTEGRATOR → Maciej — FIX epoka miast-państw AI @ Kamień (regresja)
+
+**md5:** `35fd54491f7fda7921bf60e218bac727` · stamp `35fd5449`
+**Bug:** miasta-państwa / obcy AI wyglądają jak Brąz (megaron) mimo startu w Kamieniu.
+**Przyczyna:** `fillAiOwnerCivMap` wołało `setupAiOwnerEpoch` na starych ownerId przed regeneracją mapy; brak `reconcileAllOwnerErasFromResearch` przed pierwszym sync klastra → `ownerEraByOwner=2` gdy Brązownictwo w `aiResearchDone`.
+**Fix:** epoka tylko w `applyClusterStartPlan` / `initAllAiOwnersForNewGame`; `aiResearchDone.clear()` w klastrze; reconcile przed sync + po init; `repairAiRosterFromMap` → `setupAiOwnerEpoch`.
+Bramki: tsc=0 · owner-epoch-test 13/13 · VERIFY OK.
+CZEKAM-NA: Maciej — `git pull` → Ctrl+F5 START.html → stamp `35fd5449` · Nowa gra Kamień → załóż miasto → miasta-państwa tipi (P1), nie megaron.

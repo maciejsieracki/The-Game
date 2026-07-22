@@ -11,10 +11,14 @@ swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drug
 
 ## ROBOCZA (gra-robocza\Gra-ROBOCZA.html — wskazywana przez START.html)
 
+- 2026-07-22 · stempel: ROBOCZA · **35fd5449** · md5 pliku `35fd54491f7fda7921bf60e218bac727` · **FIX: epoka startowa miast-państw AI (Kamień, regresja)** — na `43510348`:
+  **Bug Macieja:** miasta-państwa / obcy AI wyglądają jak Brąz (megaron) mimo startu w Kamieniu. **Przyczyna:** `fillAiOwnerCivMap` wołało `setupAiOwnerEpoch` na starych ownerId przed regeneracją mapy — ryzyko niespójnego `aiResearchDone` (Brązownictwo → era 2); brak `reconcileAllOwnerErasFromResearch` przed pierwszym `cityRenderer.sync` w klastrze. **Fix:** epoka tylko w `applyClusterStartPlan` / `initAllAiOwnersForNewGame` / rywale; `aiResearchDone.clear()` w klastrze; reconcile przed sync klastra + po `initAllAiOwners`; `repairAiRosterFromMap` → `setupAiOwnerEpoch`.
+  tsc=0 · owner-epoch-test 13/13 · publish `gra-robocza/Gra-ROBOCZA.html`. · **AKTUALNA** · Test: Ctrl+F5 START.html → stamp `35fd5449` · Nowa gra Kamień → załóż miasto → miasta-państwa: tipi/ognisko (P1), nie megaron.
+
 - 2026-07-22 · stempel: ROBOCZA · **43510348** · md5 pliku `435103481edfde9081d2207425ac18a3` · **FIX: pierścień Nauki — jeden rant (bez ring-in-ring)** — na `30e510b1`:
   **Przyczyna:** CSS `border:2px gold` na medalionie Nauki + nakładka SVG = podwójny pierścień (złoty w złotym).
   **Fix:** usunięto CSS border na `.tb.science` i chipie z pierścieniem; SVG (`scienceProgressRing.ts`) **jest** rantem postępu (złoto `#a08030` = `--tg-gold-dim`, niebieski rośnie zgodnie z ruchem wskazówek). Toolbar 52px stroke 2px; chip 30px stroke 2px.
-  tsc=0 · publish `gra-robocza/Gra-ROBOCZA.html`. · **AKTUALNA** · Test: Ctrl+F5 START.html → stamp `43510348` → ikona Nauki: jeden pierścień; 0% cały złoty, ~50% pół niebieski, 100% cały niebieski.
+  tsc=0 · publish `gra-robocza/Gra-ROBOCZA.html`. · **ZASTĄPIONA** (→ `35fd5449`) · Test: Ctrl+F5 START.html → stamp `43510348` → ikona Nauki: jeden pierścień; 0% cały złoty, ~50% pół niebieski, 100% cały niebieski.
 
 - 2026-07-22 · stempel: ROBOCZA · **30e510b1** · md5 pliku `30e510b1885bf1da7362f1b45b62b392` · **FIX: Praca — pula imperium bez utraty 1 jednostki (zaokrąglanie)** — na `c254006d`:
   **Przyczyna:** `Math.floor(pracaNetto)` + ułamkowy mnożnik Porządku dawało np. 9 w silniku przy podziale HUD 7+3=10; pula dostawała doPuli+overflow=9 zamiast 10.

@@ -86,5 +86,15 @@ assert(
   'setupAiOwnerEpoch braz → era 2 (Brązownictwo wchłonięte przy starcie)',
 );
 
+// B12 regression guard: stale Brązownictwo in aiResearchDone @ Kamień start → Bronze visuals
+assert(
+  computeOwnerEraFromResearch(1, new Set(['Brązownictwo']), tech) === 2,
+  'REGRESSION: Brązownictwo w aiResearchDone @ Kamień → era 2 (megaron)',
+);
+assert(
+  computeOwnerEraFromResearch(1, kamienPrior, tech) === 1,
+  'REGRESSION: po setupAiOwnerEpoch(kamien) reconcile → era 1 (tipi)',
+);
+
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
 process.exit(failed > 0 ? 1 : 0);

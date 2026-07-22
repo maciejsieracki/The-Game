@@ -4,7 +4,20 @@
 > **Czat:** krótko **`✅ Gotowe:`** / **`⏸️ Czeka:`** · **Ten plik:** pełniejszy zapis tego samego.  
 > Szczegóły techniczne → handoff w `dyspozycje/_handoff/` · operacja → `dyspozycje/DZIENNIK-MASTERA.md`
 
-**Ostatnia aktualizacja:** 2026-07-22 (fix pierścień Nauki — jeden rant)
+**Ostatnia aktualizacja:** 2026-07-22 (fix epoka miast-państw AI @ Kamień)
+
+---
+
+## [08:00] ✅ Gotowe — FIX: miasta-państwa AI w Kamieniu (nie Brąz)
+
+| | |
+|---|---|
+| **Co** | Obce AI / miasta-państwa na starcie gry w epoce Kamienia renderują **tipi/ognisko** (P1), nie megaron Brązu |
+| **Przyczyna** | Niespójny `aiResearchDone` / brak reconcile przed pierwszym sync renderu klastra — `ownerEraByOwner` mogło iść na 2 przez Brązownictwo |
+| **Fix** | `setupAiOwnerEpoch` tylko przy spawnie klastra; `aiResearchDone.clear()` + `reconcileAllOwnerErasFromResearch` przed sync; test 13/13 |
+| **Pliki** | `gra/src/main.ts` · `gra/tools/owner-epoch-test.cjs` |
+| **md5** | `35fd54491f7fda7921bf60e218bac727` · stamp `35fd5449` |
+| **Od Ciebie** | `git pull` → Ctrl+F5 · `gra-robocza/START.html` → stamp `35fd5449` · Nowa gra Kamień → załóż miasto → sprawdź miasta-państwa |
 
 ---
 
