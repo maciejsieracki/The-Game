@@ -3103,3 +3103,17 @@ Bramki: tsc=0 · power-objective 15/15 · converters 19/19 · culture-religion 6
 CZEKAM-NA: sesja lokalna pull + weryfikacja w grze (kopalnia→magazyn, Moc w HUD)
 
 ---
+
+---
+
+## [2026-07-23] SESJA CHMUROWA (Claude Code) → SESJA LOKALNA / MASTER — DEPLOY ROBOCZA `c7f70b27` (BITWA: wizualia + presety terenu + rzeka S)
+
+Deploy po sygnale Macieja („Cursor skończył, zrób git pull"). Rebase na `98c4ede1` Cursora — czysty, 7 commitów bitewnych + 3 dostawy Design.
+
+- **ROBOCZA = `c7f70b27`** (md5 `c7f70b271ceff1f1e711494fb519f1c5`), VERIFY OK, 27,4 MB.
+- **Bitwa:** ACES+światła+mgła, banery nad oddziałami, trawa/dekor z bliska, mur oblężniczy (wieżyczki), **presety terenu wg hexa świata** (8 typów, `?bt=` debug), **rzeka = ciągłe S z brodami** (atak przez rzekę), jeziorka na łące/równinie, fix czarnych drzew. Legacy bez presetu bit-for-bit.
+- **Design:** dostawy POLE-BITWY-TW-v5 (makieta 6 klatek) i DYPLOMACJA FINAL (**ZATWIERDZONA przez Macieja** — 9-punktowe zlecenie integratora gotowe do wdrożenia w kodzie).
+- Bramki: tsc=0 · testy jak czysty main (logic 192/207 — porażki kultura/Świątynia+koszty badań PRE-ISTNIEJĄ z Batch B; do wglądu Cursora/integratora #2) · VERIFY OK.
+- 🔜 Następne: wdrożenie 9 pkt dyplomacji (dane→layout→styl), zabudowa za murem+gruz, etap B rzeki (kara forsowania).
+
+CZEKAM-NA: **sesja lokalna** — „push": pull `c7f70b27`. **Cursor/integrator #2** — FYI: logic-test 192/207 na Waszym `98c4ede1` (kultura/Świątynia po Batch B).

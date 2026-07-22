@@ -9,7 +9,14 @@ UWAGA: KANON i FINALNA promują się teraz OSOBNYMI skryptami (`gra/tools/publis
 wyraźne polecenie właściciela) — dlatego są logowane NIEZALEŻNIE, każdy w swojej sekcji, ze
 swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drugiego.
 
-## ROBOCZA `98c4ede1` — 2026-07-23 · AUDYT 9a0ca985 luki: ruda stock + KULT-04 Power + warzelnia — **AKTUALNA**
+## ROBOCZA `c7f70b27` — 2026-07-23 · BITWA: wizualia sceny + presety terenu wg hexa + rzeka S — **AKTUALNA**
+
+- **Zawartość (na `98c4ede1` Cursora, rebase czysty):** uatrakcyjnienie sceny 3D bitwy (ACES tone mapping, HemisphereLight, cieplejsza mgła/tło, MeshStandard kafli + wariacja, wyciszona siatka, banery stron nad oddziałami, kępy trawy 7944 + drobny dekor, gęstszy las, mur oblężniczy: materiały+wieżyczki+wariacja segmentów); **PRESETY plansz bitwy wg terenu hexa świata** (łąka/równina/wzgórza/góry/las/pustynia/wybrzeże/rzeka; wpięte w 4 ścieżki startu bitwy; debug `?bt=`); **rzeka = ciągłe koryto S** przez całe pole z brodami (carve zamienia wodę pod formacjami na Ford — koryto nieprzerwane), jeziorka na łące/równinie; fix czarnych drzew (instanceColor). Legacy bez presetu bit-for-bit. + dostawy Design: POLE-BITWY-TW-v5, DYPLOMACJA v1.1→FINAL (ZATWIERDZONA).
+- **Bramki:** tsc=0 · tech-tree 19/19 · research 33/33 · unit-replace 10/10 · manpower 36/36 · map-gen determinizm+rzeki PASS · logic 192/207 — **identycznie jak czysty origin/main** (porażki kultura/Świątynia + koszty badań pre-istnieją z Batch B, nie z tej paczki) · VERIFY OK.
+- **md5:** `c7f70b271ceff1f1e711494fb519f1c5` · stamp `c7f70b27`. Bundel 27,4 MB. Publikował: sesja chmurowa (Claude Code) po sygnale Macieja „Cursor skończył".
+- **Test:** bitwa na hexie z rzeką → ciągłe S + brody; wzgórza/góry → grzbiety; pustynia → piach; `?bt=rzeka` itd. wymusza planszę; oblężenie → mur z wieżyczkami.
+
+## ROBOCZA `98c4ede1` — 2026-07-23 · AUDYT 9a0ca985 luki: ruda stock + KULT-04 Power + warzelnia — **ZASTĄPIONA** (→ `c7f70b27`)
 
 - **Zawartość:** Stock ruda/ruda_zelaza z kopalni_miedzi/kopalnia → `city.surowce` (2/t, łańcuch konwerterów brąz/żelazo); **KULT-04 A** — składniki Power: kultura imperium (×0,5) + jedność religii (×25/miasto) w `power-objective.ts` + wpięcie `main.ts`; warzelnia_soli teren wybrzeże w JSON; resources.json ruda miedzi vs ruda żelaza; fix palac techUnlock `-`; kuznia wymagania bez legacy cyna.
 - **Odłożone:** faza 3 koszty materiałowe budynków/jednostek (B-SUROW-BUD — tylko access gates, nie stock costs); KULT-DYP-01 dyplomacja (osobna decyzja).
