@@ -4,7 +4,19 @@
 > **Czat:** krótko **`✅ Gotowe:`** / **`⏸️ Czeka:`** · **Ten plik:** pełniejszy zapis tego samego.  
 > Szczegóły techniczne → handoff w `dyspozycje/_handoff/` · operacja → `dyspozycje/DZIENNIK-MASTERA.md`
 
-**Ostatnia aktualizacja:** 2026-07-22 (panel badań — lista tech)
+**Ostatnia aktualizacja:** 2026-07-22 (wsparcie ATK po zdobyciu miasta)
+
+---
+
+## [2026-07-22] ✅ Gotowe — wsparcie ATK zostaje na swoim hexie po zdobyciu miasta
+
+| | |
+|---|---|
+| **Co** | Po wygranej ataku na miasto: kotwica wchodzi na hex miasta; wspierający z sąsiedniego heksa **nie** merge'ują się na stos (osobno od fixu zwiadu 5ce0dfb7) |
+| **Przykład** | A atakuje Teby, B (Lucznik) wspiera z sąsiedniego heksa → wygrana → A na mieście, B zostaje tam gdzie stał |
+| **md5** | `caa23af35f45ae9b7b0dbe4d6b2ab561` · stamp `caa23af3` |
+| **Bramki** | tsc=0 · post-battle-map-test 17/17 · battle-roster-test 5/5 |
+| **Od Ciebie** | `git pull` → Ctrl+F5 · `gra-robocza/START.html` → stamp `caa23af3` → scenariusz A+B vs miasto |
 
 ---
 

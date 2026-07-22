@@ -11,9 +11,13 @@ swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drug
 
 ## ROBOCZA (gra-robocza\Gra-ROBOCZA.html — wskazywana przez START.html)
 
+- 2026-07-22 · stempel: ROBOCZA · **caa23af3** · md5 pliku `caa23af35f45ae9b7b0dbe4d6b2ab561` · **FIX: wsparcie ATK zostaje po zdobyciu miasta** — na `24cdcfe8`:
+  **Bug (kanon §14):** po wygranej M×W+ cały roster ATK lądował na hexie miasta (`moveAtkRosterOntoBattleHex`); wspierający z sąsiedniego heksa merge'owali się ze stosem jak zwiadowca (fix 5ce0dfb7 dotyczył tylko cywilów). **Decyzja:** §13a M×W+ / §13b — tylko kotwica wchodzi na hex miasta; wspierający zostają. **Fix:** `post-battle-map.ts` — ruch tylko kotwicy + jednostek ze wspólnego hexu startowego (stos).
+  tsc=0 · post-battle-map-test 17/17 · battle-roster-test 5/5 · publish `gra-robocza/Gra-ROBOCZA.html`. · **AKTUALNA** · Test: Ctrl+F5 START.html → stamp `caa23af3`; A atakuje miasto + B wspiera z sąsiedniego heksa → wygrana → A na mieście, B na swoim hexie.
+
 - 2026-07-22 · stempel: ROBOCZA · **24cdcfe8** · md5 pliku `24cdcfe843e8c0b28db7cb3f17ecf7d9` · **FIX: panel badań — lista „Możesz wybrać"** — na `2c72af63`:
   **Bug Macieja:** sekcja MOŻESZ WYBRAĆ pusta („Brak dostępnych technologii"), podczas gdy drzewko pokazywało techy do wyboru. **Przyczyna:** hub budował listę tylko przez `available.has(node.id)` po iteracji `eraNodes` — bez normalizacji slugów (nazwa vs slug) i bez epoki aktywnego celu; hooki pickera konfigurowane po utworzeniu huba. **Fix:** `scienceHubSnapshotLogic.ts` — normalizacja ID, iteracja pickable z silnika, epoka UI = epoka celu; `configureSciencePicker` przed `mountD1bHud`; merge config pickera.
-  tsc=0 · science-hub-test 7/7 · research-test 33/33 · tech-tree-test 19/19 · publish `gra-robocza/Gra-ROBOCZA.html`. · **AKTUALNA** · Test: Ctrl+F5 START.html → stamp `24cdcfe8`; Badania → MOŻESZ WYBRAĆ = pełna lista techów Kamienia (niezbadane, spełnione prereq).
+  tsc=0 · science-hub-test 7/7 · research-test 33/33 · tech-tree-test 19/19 · publish `gra-robocza/Gra-ROBOCZA.html`. · **ZASTĄPIONA** (→ `caa23af3`) · Test: Ctrl+F5 START.html → stamp `24cdcfe8`; Badania → MOŻESZ WYBRAĆ = pełna lista techów Kamienia (niezbadane, spełnione prereq).
 
 - 2026-07-22 · stempel: ROBOCZA · **2c72af63** · md5 pliku `2c72af6335dfc5c456f62b7d23649af1` · **DYPL: cooldown jednorazowych darów ¤ od miast-państw** — na `5ce0dfb7`:
   **Bug Macieja:** miasta-państwa proponowały handel ze złotem co turę (accept → stały dopływ ¤ bez haraczu/trybutu). **Było:** `decideAIDiplomacy` P6 bez cooldownu — warunki spełnione co turę → nowy popup. **Jest:** cooldown per ownerId (easy 15 / normal 25 / hard 35 tur); zapis w save (`aiOneShotGiftLastTurn`); mnożnik kwoty easy ×1.25 / hard ×0.75; trybut per-tura (`zadaj_trybut`) bez zmian.

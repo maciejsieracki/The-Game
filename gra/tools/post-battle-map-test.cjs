@@ -104,7 +104,34 @@ applyPostBattleMap({
 });
 assert(units.filter(u => u.ownerId === 0).length === 2, 'auto win: both atk units remain');
 assert(units.find(u => u.id === 'u0')?.q === 11 && units.find(u => u.id === 'u0')?.r === 22, 'lead on city hex');
-assert(units.find(u => u.id === 'u1')?.q === 11 && units.find(u => u.id === 'u1')?.r === 22, 'stacked atk on city hex');
+assert(units.find(u => u.id === 'u1')?.q === 11 && units.find(u => u.id === 'u1')?.r === 21, 'support stays on start hex (M×W+ §14)');
+
+// Pole P×W+: kotwica wchodzi; wspierający z sąsiedniego heksa zostaje
+const fieldSupportUnits = [
+  { id: 'f0', ownerId: 0, typeId: 'Hastati', q: 10, r: 23, ruchLeft: 2 },
+  { id: 'f1', ownerId: 0, typeId: 'Lucznik', q: 11, r: 23, ruchLeft: 2 },
+  { id: 'fe0', ownerId: 1, typeId: 'Wojownik', q: 11, r: 22, ruchLeft: 2 },
+];
+applyPostBattleMap({
+  units: fieldSupportUnits,
+  map: { hexes: {} },
+  cities: [],
+  battleQ: 11,
+  battleR: 22,
+  atkAnchor: fieldSupportUnits[0],
+  atkRoster: [fieldSupportUnits[0], fieldSupportUnits[1]],
+  defRoster: [fieldSupportUnits[2]],
+  atkStart: new Map([['f0', { q: 10, r: 23 }], ['f1', { q: 11, r: 23 }]]),
+  winner: 'atakujacy',
+  lossAtkPct: 0,
+  lossDefPct: 1,
+  getDef: () => ({ Health: 100 }),
+  maxHpOf: () => 100,
+  isPassableHex,
+  isUnitAt: () => false,
+});
+assert(fieldSupportUnits.find(u => u.id === 'f0')?.q === 11 && fieldSupportUnits.find(u => u.id === 'f0')?.r === 22, 'field win: anchor enters battle hex');
+assert(fieldSupportUnits.find(u => u.id === 'f1')?.q === 11 && fieldSupportUnits.find(u => u.id === 'f1')?.r === 23, 'field win: support stays on neighbor hex');
 
 // Pole P×W+: połączona armia ATK zostaje razem na heksie zwycięstwa
 const stackedAtk = [

@@ -2788,3 +2788,12 @@ Fix: scienceHubSnapshotLogic.ts (buildHubTechEntries); configureSciencePicker pr
 Bramki: tsc=0 · science-hub-test 7/7 · research-test 33/33 · tech-tree-test 19/19.
 Publish ROBOCZA: stamp **24cdcfe8** · md5 `24cdcfe843e8c0b28db7cb3f17ecf7d9`.
 CZEKAM-NA: Maciej — `git pull` → Ctrl+F5 START.html → stamp `24cdcfe8` → Badania → pełna lista techów do wyboru w epoce.
+
+## [06:15 PL, 2026-07-22] INTEGRATOR → Maciej — FIX: wsparcie ATK zostaje po zdobyciu miasta
+
+Pytanie Macieja: gdzie ląduje kotwica vs wspierający po M×W+?
+Kanon §13a/§13b/§14: kotwica wchodzi na hex miasta; wspierający z sąsiedniego heksa zostają (jak na polu). Fix 5ce0dfb7 wykluczał tylko cywilów z rosteru — bojowe wsparcie nadal merge'owało się przez `moveAtkRosterOntoBattleHex`.
+Fix: `post-battle-map.ts` — ruch na hex bitwy tylko kotwica + jednostki ze wspólnego hexu startowego (stos).
+Bramki: tsc=0 · post-battle-map 17/17 · battle-roster 5/5.
+Publish ROBOCZA: stamp **caa23af3** · md5 `caa23af35f45ae9b7b0dbe4d6b2ab561`.
+CZEKAM-NA: Maciej — `git pull` → Ctrl+F5 START.html → stamp `caa23af3` → A atakuje miasto + B wspiera z sąsiedniego heksa → wygrana → A na mieście, B na swoim hexie.

@@ -234,18 +234,30 @@ function retreatDefendersOnTie(input: PostBattleMapInput): void {
   placeFanOutGroup(input, defAlive, lead, dir, !!input.cityOnBattleHex);
 }
 
-/** Po wygranej ATK: cały ocalony skład na heksie bitwy (stos, nie rozdział). */
+/**
+ * Po wygranej ATK: kotwica (i ewentualny stos na jej hexie startowym) wchodzi na heks bitwy.
+ * Wspierający z sąsiednich hexów zostają — §13b / §14 AUTO-WALKA-MOC-ALGORYTM.
+ */
 function moveAtkRosterOntoBattleHex(input: PostBattleMapInput): void {
+  const anchor = input.atkAnchor;
+  const anchorStart = input.atkStart.get(anchor.id);
   const liveAtk = input.atkRoster
     .map(r => liveUnit(input.units, r.id))
     .filter((u): u is RuntimeUnit => !!u);
   if (liveAtk.length === 0) return;
 
+  const moved: RuntimeUnit[] = [];
   for (const u of liveAtk) {
+    const start = input.atkStart.get(u.id);
+    const onAnchorStartHex =
+      u.id === anchor.id
+      || (anchorStart != null && start != null && start.q === anchorStart.q && start.r === anchorStart.r);
+    if (!onAnchorStartHex) continue;
     u.q = input.battleQ;
     u.r = input.battleR;
+    moved.push(u);
   }
-  if (liveAtk.length > 1) syncStackRuchLeft(liveAtk);
+  if (moved.length > 1) syncStackRuchLeft(moved);
 }
 
 function retreatAtkRosterToStart(input: PostBattleMapInput): void {
