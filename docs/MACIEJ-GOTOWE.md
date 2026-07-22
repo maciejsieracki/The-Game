@@ -4,7 +4,20 @@
 > **Czat:** krótko **`✅ Gotowe:`** / **`⏸️ Czeka:`** · **Ten plik:** pełniejszy zapis tego samego.  
 > Szczegóły techniczne → handoff w `dyspozycje/_handoff/` · operacja → `dyspozycje/DZIENNIK-MASTERA.md`
 
-**Ostatnia aktualizacja:** 2026-07-22 (klaster MP 3 hex @ 05d689e3)
+**Ostatnia aktualizacja:** 2026-07-22 (FIX odstęp MP para-po-parze @ e5cb5ab6)
+
+---
+
+## [11:30] ✅ Gotowe — MAPA: FIX odstęp 3 hex między miastami-państwami
+
+| | |
+|---|---|
+| **Co** | Miasta-państwa min **3 hex od siebie nawzajem** (nie tylko od stolicy) |
+| **Bug** | Kandydaci runtime łączeni z wielu seedów bez filtra — mogły być 1 hex od siebie |
+| **Fix** | `tryAdd()` w `cluster-spawn.ts` — para-po-parze min 3 hex |
+| **Pliki** | `cluster-spawn.ts`, `cluster-start-test.cjs` |
+| **md5** | `e5cb5ab6a5dbe77b618e34ebd767951d` · stamp `e5cb5ab6` |
+| **Od Ciebie** | `git pull` → Ctrl+F5 · stamp `e5cb5ab6` · Nowa gra → stolica → państwa min 3 hex od siebie |
 
 ---
 

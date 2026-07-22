@@ -11,9 +11,13 @@ swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drug
 
 ## ROBOCZA (gra-robocza\Gra-ROBOCZA.html — wskazywana przez START.html)
 
+- 2026-07-22 · stempel: ROBOCZA · **e5cb5ab6** · md5 pliku `e5cb5ab6a5dbe77b618e34ebd767951d` · **MAPA: FIX odstęp 3 hex między miastami-państwami** — na `05d689e3`:
+  **Miasta-państwa (Maciej):** `buildSameTypeRivalCandidateHexes` scalało przepustki bez sprawdzania odległości para-po-parze (bug: kandydaci 1 hex od siebie). **Fix:** `tryAdd` wymaga min 3 hex od rdzenia, max 3 hex, i min 3 hex od już zebranych hexów. Pre-plan (`packRivalCitiesAroundCore`) bez zmian — już OK.
+  tsc=0 · cluster-start 103/103 · map-gen-regression OK (timing standard 5.12s — znany flake) · publish `gra-robocza/Gra-ROBOCZA.html`. · **AKTUALNA** · Test: stamp `e5cb5ab6` · Nowa gra → stolica → państwa min 3 hex od siebie i od stolicy.
+
 - 2026-07-22 · stempel: ROBOCZA · **05d689e3** · md5 pliku `05d689e333d9d29543f1da9e1bebaa9b` · **MAPA: twardy klaster miast-państw 3 hex** — na `4760325c`:
   **Miasta-państwa (Maciej):** spawn w pierścieniu **min 3 / max 3 hex** od stolicy gracza — ciasne skupisko (stałe `CLUSTER_CITY_STATE_MIN_HEX` / `CLUSTER_CITY_STATE_MAX_HEX`). Pre-plan mapgen + runtime spawn (`packRivalCitiesAroundCore`) spójne. AI resupply/konsolidacja: promień 3 hex (`clusterCityStateRadius`).
-  tsc=0 · cluster-start 93/93 · map-gen-regression OK · publish `gra-robocza/Gra-ROBOCZA.html`. · **AKTUALNA** · Test: stamp `05d689e3` · Nowa gra → załóż stolicę → miasta-państwa w pierścieniu 3 hex (Sparta, Kapua…).
+  tsc=0 · cluster-start 93/93 · map-gen-regression OK · publish `gra-robocza/Gra-ROBOCZA.html`. · **ZASTĄPIONA** (→ `e5cb5ab6`) · Test: stamp `05d689e3` · Nowa gra → załóż stolicę → miasta-państwa w pierścieniu 3 hex (Sparta, Kapua…).
 
 - 2026-07-22 · stempel: ROBOCZA · **4760325c** · md5 pliku `4760325c0191876a107104b75622297b` · **BALANS: Super Huge miasta-państwa 7·8·9** — na `6865baf8`:
   **Super Huge (`superogromny`):** menu miast-państw min **7** · domyślnie **8** · max **9** (było 6·9·9). Panel-E `e-start-params.json` default **8**. `MAX_MIAST_PANSTWA=9` bez zmian.

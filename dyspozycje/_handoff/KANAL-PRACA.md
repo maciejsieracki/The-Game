@@ -2958,3 +2958,13 @@ CZEKAM-NA: Maciej — `git pull` → Ctrl+F5 → stamp `4760325c` → Super Huge
 Pliki: `gra/src/map/clusters.ts`, `gra/src/main.ts`, `gra/tools/cluster-start-test.cjs`, bundle robocza.
 Bramki: tsc=0 · cluster-start 93/93 · map-gen-regression OK · publish OK.
 CZEKAM-NA: Maciej — `git pull` → Ctrl+F5 START.html → stamp `05d689e3` → Nowa gra → załóż stolicę → państwa w pierścieniu 3 hex od stolicy.
+
+## [11:30 PL, 2026-07-22] INTEGRATOR → Maciej — FIX odstęp 3 hex między miastami-państwami
+
+**md5:** `e5cb5ab6a5dbe77b618e34ebd767951d` · stamp `e5cb5ab6`
+**Decyzja Macieja:** min 3 hex nie tylko od stolicy, ale **między sobą** (para-po-parze).
+**Bug:** `buildSameTypeRivalCandidateHexes` scalało wielu seedów bez filtra odległości — kandydaci runtime mogli być 1 hex od siebie (minPair=1 przy n=9).
+**Fix:** `tryAdd()` w `cluster-spawn.ts` — pierścień [3..3] od rdzenia + min 3 hex od każdego już dodanego hexu.
+Pliki: `gra/src/map/cluster-spawn.ts`, `gra/tools/cluster-start-test.cjs`, bundle robocza.
+Bramki: tsc=0 · cluster-start 103/103 · map-gen-regression OK · verify OK.
+CZEKAM-NA: Maciej — `git pull` → Ctrl+F5 → stamp `e5cb5ab6` → Nowa gra → stolica → państwa min 3 hex od siebie i od stolicy (max ~6 na pierścieniu).

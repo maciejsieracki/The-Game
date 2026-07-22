@@ -11,7 +11,15 @@ import {
   foreignCapitalCityName,
   playerStartCityName,
 } from '../game/civ-names';
-import { computeClusters, packRivalCitiesAroundCore, MIN_DIST_START_CITY_STATE, type ClusterPlacement, type TypeCluster } from './clusters';
+import {
+  computeClusters,
+  packRivalCitiesAroundCore,
+  MIN_DIST_START_CITY_STATE,
+  CLUSTER_CITY_STATE_MAX_HEX,
+  type ClusterPlacement,
+  type TypeCluster,
+} from './clusters';
+import { hexDistanceAxial } from './gen-helpers';
 import { TerenBazowy } from '../types/hex';
 
 /** Slot startowy — kontrakt dla SILNIK (D-START). */
@@ -108,30 +116,36 @@ export function buildSameTypeRivalCandidateHexes(
 ): Array<{ q: number; r: number }> {
   if (rivalCount <= 0) return [];
   const land = landHexesFromMap(map);
-  const poolSize = Math.max(rivalCount * 3, rivalCount + 4);
-  const seen = new Set<string>();
+  const minDist = MIN_DIST_START_CITY_STATE;
+  const maxDist = CLUSTER_CITY_STATE_MAX_HEX;
   const out: Array<{ q: number; r: number }> = [];
+  const seen = new Set<string>();
   const coreKey = `${core.q},${core.r}`;
 
-  function mergePass(extraSeed: number): void {
-    const hexes = packRivalCitiesAroundCore(
-      land,
-      core,
-      poolSize,
-      MIN_DIST_START_CITY_STATE,
-      extraSeed,
-    );
-    for (const h of hexes) {
-      const k = `${h.q},${h.r}`;
-      if (k === coreKey || seen.has(k)) continue;
-      seen.add(k);
-      out.push(h);
-    }
+  /** Dodaj hex tylko gdy pierścień [minDist..maxDist] od rdzenia i minDist od już zebranych. */
+  function tryAdd(h: { q: number; r: number }): boolean {
+    const k = `${h.q},${h.r}`;
+    if (k === coreKey || seen.has(k)) return false;
+    const dCore = hexDistanceAxial(h.q, h.r, core.q, core.r);
+    if (dCore < minDist || dCore > maxDist) return false;
+    if (out.some(p => hexDistanceAxial(p.q, p.r, h.q, h.r) < minDist)) return false;
+    seen.add(k);
+    out.push(h);
+    return true;
   }
 
-  mergePass((seed ^ 0x9e3779b9) >>> 0);
-  mergePass((seed + 0x517cc1b7) >>> 0);
-  mergePass((seed + 0x85ebca6b) >>> 0);
+  function mergePass(extraSeed: number, count: number): void {
+    const hexes = packRivalCitiesAroundCore(land, core, count, minDist, extraSeed);
+    for (const h of hexes) tryAdd(h);
+  }
+
+  // Główny pakiet + zapasowe seedy gdy founding odrzuci pole (teren).
+  mergePass(seed, rivalCount);
+  if (out.length < rivalCount) {
+    mergePass((seed + 0x517cc1b7) >>> 0, rivalCount);
+    mergePass((seed + 0x85ebca6b) >>> 0, rivalCount);
+    mergePass((seed + 0xc2b2ae35) >>> 0, rivalCount);
+  }
   return out;
 }
 

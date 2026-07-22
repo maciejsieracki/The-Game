@@ -33,7 +33,8 @@ __export(cluster_start_entry_exports, {
   clusterPackRadius: () => clusterPackRadius,
   generateMap: () => generateMap,
   groupForeignTypeClusters: () => groupForeignTypeClusters,
-  hexDistanceAxial: () => hexDistanceAxial
+  hexDistanceAxial: () => hexDistanceAxial,
+  packRivalCitiesAroundCore: () => packRivalCitiesAroundCore
 });
 module.exports = __toCommonJS(cluster_start_entry_exports);
 
@@ -6036,28 +6037,31 @@ function buildSameTypeRivalSlots(map, civs, core, playerTyp, rivalCount, seed, f
 function buildSameTypeRivalCandidateHexes(map, core, rivalCount, seed) {
   if (rivalCount <= 0) return [];
   const land = landHexesFromMap(map);
-  const poolSize = Math.max(rivalCount * 3, rivalCount + 4);
-  const seen = /* @__PURE__ */ new Set();
+  const minDist = MIN_DIST_START_CITY_STATE;
+  const maxDist = CLUSTER_CITY_STATE_MAX_HEX;
   const out = [];
+  const seen = /* @__PURE__ */ new Set();
   const coreKey = `${core.q},${core.r}`;
-  function mergePass(extraSeed) {
-    const hexes = packRivalCitiesAroundCore(
-      land,
-      core,
-      poolSize,
-      MIN_DIST_START_CITY_STATE,
-      extraSeed
-    );
-    for (const h of hexes) {
-      const k = `${h.q},${h.r}`;
-      if (k === coreKey || seen.has(k)) continue;
-      seen.add(k);
-      out.push(h);
-    }
+  function tryAdd(h) {
+    const k = `${h.q},${h.r}`;
+    if (k === coreKey || seen.has(k)) return false;
+    const dCore = hexDistanceAxial(h.q, h.r, core.q, core.r);
+    if (dCore < minDist || dCore > maxDist) return false;
+    if (out.some((p) => hexDistanceAxial(p.q, p.r, h.q, h.r) < minDist)) return false;
+    seen.add(k);
+    out.push(h);
+    return true;
   }
-  mergePass((seed ^ 2654435769) >>> 0);
-  mergePass(seed + 1367130551 >>> 0);
-  mergePass(seed + 2246822507 >>> 0);
+  function mergePass(extraSeed, count) {
+    const hexes = packRivalCitiesAroundCore(land, core, count, minDist, extraSeed);
+    for (const h of hexes) tryAdd(h);
+  }
+  mergePass(seed, rivalCount);
+  if (out.length < rivalCount) {
+    mergePass(seed + 1367130551 >>> 0, rivalCount);
+    mergePass(seed + 2246822507 >>> 0, rivalCount);
+    mergePass(seed + 3266489909 >>> 0, rivalCount);
+  }
   return out;
 }
 function capitalOf(klaster) {
@@ -6447,5 +6451,6 @@ function buildClusterStartPlan(input) {
   clusterPackRadius,
   generateMap,
   groupForeignTypeClusters,
-  hexDistanceAxial
+  hexDistanceAxial,
+  packRivalCitiesAroundCore
 });

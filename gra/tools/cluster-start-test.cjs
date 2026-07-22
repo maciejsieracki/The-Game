@@ -13,7 +13,7 @@ fs.writeFileSync(entry, `
 export { buildClusterStartPlan } from '../src/game/cluster-start';
 export { buildClusterSpawnPlan, buildSameTypeRivalSlots, buildSameTypeRivalCandidateHexes, groupForeignTypeClusters } from '../src/map/cluster-spawn';
 export { generateMap } from '../src/map/generator';
-export { MIN_DIST_START_CITY_STATE, MIN_DIST_FOREIGN_FROM_PLAYER, MIN_DIST_FOREIGN_IN_CLUSTER, CLUSTER_CITY_STATE_MIN_HEX, CLUSTER_CITY_STATE_MAX_HEX, clusterPackRadius, clusterCityStateRadius } from '../src/map/clusters';
+export { MIN_DIST_START_CITY_STATE, MIN_DIST_FOREIGN_FROM_PLAYER, MIN_DIST_FOREIGN_IN_CLUSTER, CLUSTER_CITY_STATE_MIN_HEX, CLUSTER_CITY_STATE_MAX_HEX, clusterPackRadius, clusterCityStateRadius, packRivalCitiesAroundCore } from '../src/map/clusters';
 export { hexDistanceAxial } from '../src/map/gen-helpers';
 `, 'utf8');
 
@@ -194,6 +194,35 @@ assert(M.CLUSTER_CITY_STATE_MIN_HEX === 3, 'CLUSTER_CITY_STATE_MIN_HEX=3');
 assert(M.CLUSTER_CITY_STATE_MAX_HEX === 3, 'CLUSTER_CITY_STATE_MAX_HEX=3');
 assert(M.clusterCityStateRadius() === 3, 'clusterCityStateRadius=3');
 
+// Maciej 2026-07-22: kandydaci runtime — para po parze min 3 hex (nie tylko od stolicy)
+const runtimeCandidates = M.buildSameTypeRivalCandidateHexes(map, playerCap, 9, 4242);
+for (let i = 0; i < runtimeCandidates.length; i++) {
+  for (let j = i + 1; j < runtimeCandidates.length; j++) {
+    const d = M.hexDistanceAxial(
+      runtimeCandidates[i].q, runtimeCandidates[i].r,
+      runtimeCandidates[j].q, runtimeCandidates[j].r,
+    );
+    assert(d >= clusterMin, `runtimeCandidates pairwise >= ${clusterMin} hex (${d})`);
+  }
+  const dCore = M.hexDistanceAxial(runtimeCandidates[i].q, runtimeCandidates[i].r, playerCap.q, playerCap.r);
+  assert(dCore >= clusterMin && dCore <= clusterMax,
+    `runtimeCandidate pierścień ${clusterMin}..${clusterMax} od stolicy (${dCore})`);
+}
+const packedNine = M.buildSameTypeRivalCandidateHexes(map, playerCap, 9, 7777);
+assert(packedNine.length <= 6,
+  'max ~6 państw na pierścieniu 3 hex z odstępem 3 (got ' + packedNine.length + ')');
+
+// packRivalCitiesAroundCore — pairwise min 3 hex między państwami
+const landHexes = Object.values(map.hexes)
+  .filter(h => h.terenBazowy !== 'Morze' && h.terenBazowy !== 'Gory' && h.terenBazowy !== 'Wybrzeze')
+  .map(h => ({ q: h.coords.q, r: h.coords.r }));
+const packedDirect = M.packRivalCitiesAroundCore(landHexes, playerCap, 9, clusterMin, 4242);
+for (let i = 0; i < packedDirect.length; i++) {
+  for (let j = i + 1; j < packedDirect.length; j++) {
+    const d = M.hexDistanceAxial(packedDirect[i].q, packedDirect[i].r, packedDirect[j].q, packedDirect[j].r);
+    assert(d >= clusterMin, `packRivalCitiesAroundCore pairwise >= ${clusterMin} hex (${d})`);
+  }
+}
 // Stolica gracza na krawędzi klastra (dalej od centrum niż średnie państwo)
 const playerKlaster = plan.placement.klastry.find(k => k.typ === 'grecy');
 if (playerKlaster && sameType.length > 0) {
