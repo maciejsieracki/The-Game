@@ -31,8 +31,10 @@ __export(cluster_start_entry_exports, {
   buildSameTypeRivalSlots: () => buildSameTypeRivalSlots,
   clusterCityStateRadius: () => clusterCityStateRadius,
   clusterPackRadius: () => clusterPackRadius,
+  computeClusters: () => computeClusters,
   generateMap: () => generateMap,
   groupForeignTypeClusters: () => groupForeignTypeClusters,
+  groupHabitableMasses: () => groupHabitableMasses,
   hexDistanceAxial: () => hexDistanceAxial,
   packRivalCitiesAroundCore: () => packRivalCitiesAroundCore
 });
@@ -5677,6 +5679,104 @@ function shuffleInPlace(arr, rand) {
     arr[j] = tmp;
   }
 }
+var MIN_MASS_HEXES_FOR_CENTER = 12;
+function groupHabitableMasses(ladowe) {
+  const keySet = new Set(ladowe.map((h) => `${h.q},${h.r}`));
+  const visited = /* @__PURE__ */ new Set();
+  const masses = [];
+  for (const h of ladowe) {
+    const startKey = `${h.q},${h.r}`;
+    if (visited.has(startKey)) continue;
+    const mass = [];
+    const stack = [h];
+    visited.add(startKey);
+    while (stack.length) {
+      const cur = stack.pop();
+      mass.push(cur);
+      for (const [dq, dr] of HEX_DIRECTIONS) {
+        const nq = cur.q + dq;
+        const nr = cur.r + dr;
+        const nk = `${nq},${nr}`;
+        if (!keySet.has(nk) || visited.has(nk)) continue;
+        visited.add(nk);
+        stack.push({ q: nq, r: nr });
+      }
+    }
+    if (mass.length >= MIN_MASS_HEXES_FOR_CENTER) masses.push(mass);
+  }
+  masses.sort((a, b) => b.length - a.length);
+  return masses;
+}
+function massCentroid(mass) {
+  let sq = 0;
+  let sr = 0;
+  for (const h of mass) {
+    sq += h.q;
+    sr += h.r;
+  }
+  return { q: sq / mass.length, r: sr / mass.length };
+}
+function pickCenterInMass(mass, existing, minDist, preferNear, rand) {
+  const centroid = massCentroid(mass);
+  const candidates = mass.filter((h) => existing.every((p) => hexDistanceAxial(h.q, h.r, p.q, p.r) >= minDist)).map((h) => ({
+    h,
+    score: hexDistanceAxial(h.q, h.r, centroid.q, centroid.r) + (preferNear ? hexDistanceAxial(h.q, h.r, preferNear.q, preferNear.r) * 0.05 : 0) + (rand ? rand() * 0.01 : 0)
+  })).sort((a, b) => a.score - b.score);
+  return candidates[0]?.h ?? null;
+}
+function placeClusterCentersAcrossLandmasses(ladowe, nNeeded, minDistBase, mapCenter, rand, marginBrzeg, bounds) {
+  const { minQ, maxQ, minR, maxR } = bounds;
+  const masses = groupHabitableMasses(ladowe);
+  const centers = [];
+  function okMargins(q, r, relax) {
+    if (relax) return true;
+    return q - minQ >= marginBrzeg && maxQ - q >= marginBrzeg && r - minR >= marginBrzeg && maxR - r >= marginBrzeg;
+  }
+  function hasCenter(c) {
+    return centers.some((p) => p.q === c.q && p.r === c.r);
+  }
+  function tryPlace(c, minDist, relaxMargin) {
+    if (!c || hasCenter(c)) return false;
+    if (!okMargins(c.q, c.r, relaxMargin)) return false;
+    if (centers.some((p) => hexDistanceAxial(c.q, c.r, p.q, p.r) < minDist)) return false;
+    centers.push(c);
+    return true;
+  }
+  for (let minDist = minDistBase; minDist >= 6 && centers.length < nNeeded; minDist -= 2) {
+    const relaxMargin = minDist < minDistBase;
+    if (centers.length === 0) {
+      if (masses.length > 0) {
+        tryPlace(pickCenterInMass(masses[0], [], minDist, mapCenter, rand), minDist, relaxMargin);
+      }
+      if (centers.length === 0 && ladowe.length > 0) {
+        tryPlace(ladowe[0], minDist, true);
+      }
+    }
+    for (let mi = 1; mi < masses.length && centers.length < nNeeded; mi++) {
+      tryPlace(pickCenterInMass(masses[mi], centers, minDist, void 0, rand), minDist, relaxMargin);
+    }
+    let stagnant = 0;
+    while (centers.length < nNeeded && stagnant < masses.length + 2) {
+      let placed = false;
+      for (const mass of masses) {
+        if (centers.length >= nNeeded) break;
+        if (tryPlace(pickCenterInMass(mass, centers, minDist, void 0, rand), minDist, relaxMargin)) {
+          placed = true;
+        }
+      }
+      stagnant = placed ? 0 : stagnant + 1;
+    }
+  }
+  if (centers.length < nNeeded) {
+    const shuffled = ladowe.slice();
+    shuffleInPlace(shuffled, rand);
+    for (const c of shuffled) {
+      if (centers.length >= nNeeded) break;
+      tryPlace(c, 4, true);
+    }
+  }
+  return centers.slice(0, nNeeded);
+}
 function clusterPackRadius(maxMiast, minDist) {
   const rings = Math.max(2, Math.ceil(Math.sqrt(Math.max(1, maxMiast)) * 1.35));
   return Math.max(minDist * 2, rings * minDist);
@@ -5811,7 +5911,7 @@ function layoutToClusterCities(layout) {
   }
   return cities;
 }
-function buildClusterCities(region, centrum, stateCityCount, minDist, rand, anchor) {
+function buildClusterCities(region, centrum, stateCityCount, minDist, rand, anchor, seed) {
   const layout = buildClusterLayoutWithEdgeCapital(
     region,
     centrum,
@@ -5822,7 +5922,14 @@ function buildClusterCities(region, centrum, stateCityCount, minDist, rand, anch
     CLUSTER_GROWTH_RESERVE
   );
   if (!layout) {
-    return { cities: [], pendingStateSlots: [], growthSlot: null };
+    return buildClusterCitiesSimpleFallback(
+      region,
+      centrum,
+      stateCityCount,
+      minDist,
+      anchor,
+      seed ?? 42
+    );
   }
   return {
     cities: layoutToClusterCities(layout),
@@ -5830,11 +5937,36 @@ function buildClusterCities(region, centrum, stateCityCount, minDist, rand, anch
     growthSlot: layout.growthSlot
   };
 }
+function buildClusterCitiesSimpleFallback(region, centrum, stateCityCount, minDist, anchor, seed) {
+  let pool = region;
+  if (anchor) {
+    const filtered = region.filter(
+      (h) => hexDistanceAxial(h.q, h.r, anchor.q, anchor.r) >= anchor.minDist
+    );
+    if (filtered.length > 0) pool = filtered;
+  }
+  if (pool.length === 0) {
+    return { cities: [], pendingStateSlots: [], growthSlot: null };
+  }
+  const cen = centroidOf(pool);
+  const capSorted = pool.slice().sort((a, b) => {
+    const da = hexDistanceAxial(a.q, a.r, cen.q, cen.r);
+    const db = hexDistanceAxial(b.q, b.r, cen.q, cen.r);
+    return db - da || a.q - b.q || a.r - b.r;
+  });
+  const capital = capSorted[0] ?? centrum;
+  const stateCities = packRivalCitiesAroundCore(pool, capital, stateCityCount, minDist, seed);
+  const cities = [{ q: capital.q, r: capital.r, isCapital: true }];
+  for (const s of stateCities) {
+    cities.push({ q: s.q, r: s.r, isCapital: false });
+  }
+  return { cities, pendingStateSlots: stateCities, growthSlot: null };
+}
 function computeClusters(map, opts) {
   const seed = opts?.seed ?? 42;
   const playerTypKlucz = opts?.playerTyp ?? ROSTER_KLUCZE[0];
   const rywaleNaKlaster = opts?.rywaleNaKlaster ?? 9;
-  const minDystKlastrow = opts?.minDystansKlastrow ?? 12;
+  const minDystKlastrowBase = opts?.minDystansKlastrow ?? 12;
   const minDystMiastaPanstwa = opts?.minDystans ?? MIN_DIST_START_CITY_STATE;
   const minDystObcyOdGracza = MIN_DIST_FOREIGN_FROM_PLAYER;
   const rand = mulberry32(seed);
@@ -5851,6 +5983,11 @@ function computeClusters(map, opts) {
   const rozmiarMapy = mapSizeLabel(W, H);
   const aktywneTypy = opts?.aktywneTypy ?? aktywneTypyFromSize(rozmiarMapy);
   const nTypy = Math.min(aktywneTypy, ROSTER_KLUCZE.length);
+  const area = W * H;
+  const minDystKlastrow = Math.max(
+    6,
+    Math.min(minDystKlastrowBase, Math.floor(Math.sqrt(area / Math.max(nTypy, 1)) * 0.9))
+  );
   const ladowe = [];
   for (const h of allHexes) {
     if (h.terenBazowy !== "morze" /* Morze */ && h.terenBazowy !== "gory" /* Gory */ && h.terenBazowy !== "wybrzeze" /* Wybrzeze */) {
@@ -5860,7 +5997,8 @@ function computeClusters(map, opts) {
   if (ladowe.length === 0) {
     return {
       rozmiarMapy,
-      aktywneTypy: nTypy,
+      aktywneTypy: 0,
+      requestedTypy: nTypy,
       minDystansMiastaPanstwa: minDystMiastaPanstwa,
       maxDystansMiastaPanstwa: CLUSTER_CITY_STATE_MAX_HEX,
       minDystansObcyOdGracza: minDystObcyOdGracza,
@@ -5869,46 +6007,22 @@ function computeClusters(map, opts) {
     };
   }
   const shuffledLad = ladowe.slice();
-  for (let i = shuffledLad.length - 1; i > 0; i--) {
-    const j = Math.floor(rand() * (i + 1));
-    const tmp = shuffledLad[i];
-    shuffledLad[i] = shuffledLad[j];
-    shuffledLad[j] = tmp;
-  }
-  const centrumy = [];
-  const marginBrzeg = Math.floor(minDystKlastrow / 3);
-  function dalekoOdBrzegow(q, r) {
-    return q - minQ >= marginBrzeg && maxQ - q >= marginBrzeg && r - minR >= marginBrzeg && maxR - r >= marginBrzeg;
-  }
-  for (const c of shuffledLad) {
-    if (dalekoOdBrzegow(c.q, c.r)) {
-      centrumy.push(c);
-      break;
-    }
-  }
-  if (centrumy.length === 0) centrumy.push(shuffledLad[0]);
-  const maxProb = shuffledLad.length;
-  let attempt = 0;
-  while (centrumy.length < nTypy && attempt < maxProb) {
-    const c = shuffledLad[attempt];
-    attempt++;
-    const tooClose = centrumy.some(
-      (p) => hexDistanceAxial(c.q, c.r, p.q, p.r) < minDystKlastrow
+  shuffleInPlace(shuffledLad, rand);
+  const mapCenter = { q: (minQ + maxQ) / 2, r: (minR + maxR) / 2 };
+  const marginBrzeg = Math.max(2, Math.floor(minDystKlastrow / 3));
+  const centrumy = placeClusterCentersAcrossLandmasses(
+    ladowe,
+    nTypy,
+    minDystKlastrow,
+    mapCenter,
+    rand,
+    marginBrzeg,
+    { minQ, maxQ, minR, maxR }
+  );
+  if (centrumy.length < nTypy && typeof console !== "undefined") {
+    console.warn(
+      `[clusters] Tylko ${centrumy.length}/${nTypy} \u015Brodk\xF3w klastr\xF3w \u2014 mapa za ciasna lub zbyt pofragmentowany l\u0105d`
     );
-    if (!tooClose && dalekoOdBrzegow(c.q, c.r)) {
-      centrumy.push(c);
-    }
-  }
-  if (centrumy.length < nTypy) {
-    attempt = 0;
-    while (centrumy.length < nTypy && attempt < maxProb) {
-      const c = shuffledLad[attempt];
-      attempt++;
-      const tooClose = centrumy.some(
-        (p) => hexDistanceAxial(c.q, c.r, p.q, p.r) < minDystKlastrow
-      );
-      if (!tooClose) centrumy.push(c);
-    }
   }
   const playerIdx = ROSTER_KLUCZE.indexOf(playerTypKlucz);
   const playerKlucz = playerIdx >= 0 ? playerTypKlucz : ROSTER_KLUCZE[0];
@@ -5942,7 +6056,9 @@ function computeClusters(map, opts) {
     playerCentrum,
     stateCityCount,
     minDystMiastaPanstwa,
-    rand
+    rand,
+    void 0,
+    seed
   );
   const playerCapital = playerLayout.cities.find((m) => m.isCapital) ?? playerLayout.cities[0];
   const playerCapitalPos = playerCapital ? { q: playerCapital.q, r: playerCapital.r } : playerCentrum;
@@ -5970,7 +6086,8 @@ function computeClusters(map, opts) {
       stateCityCount,
       MIN_DIST_FOREIGN_IN_CLUSTER,
       rand,
-      { q: playerCapitalPos.q, r: playerCapitalPos.r, minDist: minDystObcyOdGracza }
+      { q: playerCapitalPos.q, r: playerCapitalPos.r, minDist: minDystObcyOdGracza },
+      seed
     );
     klastry.push({
       typIndex: ci,
@@ -5990,9 +6107,11 @@ function computeClusters(map, opts) {
       }
     }
   }
+  const placedTypy = klastry.filter((k) => k.miasta.length > 0).length;
   return {
     rozmiarMapy,
-    aktywneTypy: nTypy,
+    aktywneTypy: placedTypy,
+    requestedTypy: nTypy,
     minDystansMiastaPanstwa: minDystMiastaPanstwa,
     maxDystansMiastaPanstwa: CLUSTER_CITY_STATE_MAX_HEX,
     minDystansObcyOdGracza: minDystObcyOdGracza,
@@ -6449,8 +6568,10 @@ function buildClusterStartPlan(input) {
   buildSameTypeRivalSlots,
   clusterCityStateRadius,
   clusterPackRadius,
+  computeClusters,
   generateMap,
   groupForeignTypeClusters,
+  groupHabitableMasses,
   hexDistanceAxial,
   packRivalCitiesAroundCore
 });

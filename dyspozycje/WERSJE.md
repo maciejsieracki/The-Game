@@ -11,9 +11,15 @@ swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drug
 
 ## ROBOCZA (gra-robocza\Gra-ROBOCZA.html — wskazywana przez START.html)
 
+- 2026-07-22 · stempel: ROBOCZA · **cd615c1e** · md5 pliku `cd615c1e5a332919b72a183a7f980c60` · **MAPA: FIX spawn cywilizacji — continent-aware + fallback** — na `e5cb5ab6`:
+  **Bug Macieja:** suwak 15 cywilizacji → na mapie ~10; puste kontynenty, reszta zatłoczona; „brak miejsca".
+  **Przyczyna:** `computeClusters` stawiał środki klastrów greedy-shuffle (bez kontynentów); twardy min 12 hex + brzeg → za mało środków; `buildClusterLayoutWithEdgeCapital` zwracał pusty klaster na małym regionie; `aktywneTypy` raportowało żądaną liczbę zamiast faktycznej.
+  **Fix:** rozmieszczenie środków po masach lądu (flood-fill) → po 1 na kontynent, potem round-robin; adaptacyjny min dystans; progresywne luzowanie 12→6; fallback layout gdy edge-capital nie mieści się; `requestedTypy` vs faktyczne `aktywneTypy`.
+  tsc=0 · cluster-start 109/109 · map-gen-regression OK · map-scale-menu 32/32 · publish `gra-robocza/Gra-ROBOCZA.html`. · **AKTUALNA** · Test: stamp `cd615c1e` · Super Huge 15 typów → 15 klastrów · kontynenty z cywilizacjami.
+
 - 2026-07-22 · stempel: ROBOCZA · **e5cb5ab6** · md5 pliku `e5cb5ab6a5dbe77b618e34ebd767951d` · **MAPA: FIX odstęp 3 hex między miastami-państwami** — na `05d689e3`:
   **Miasta-państwa (Maciej):** `buildSameTypeRivalCandidateHexes` scalało przepustki bez sprawdzania odległości para-po-parze (bug: kandydaci 1 hex od siebie). **Fix:** `tryAdd` wymaga min 3 hex od rdzenia, max 3 hex, i min 3 hex od już zebranych hexów. Pre-plan (`packRivalCitiesAroundCore`) bez zmian — już OK.
-  tsc=0 · cluster-start 103/103 · map-gen-regression OK (timing standard 5.12s — znany flake) · publish `gra-robocza/Gra-ROBOCZA.html`. · **AKTUALNA** · Test: stamp `e5cb5ab6` · Nowa gra → stolica → państwa min 3 hex od siebie i od stolicy.
+  tsc=0 · cluster-start 103/103 · map-gen-regression OK (timing standard 5.12s — znany flake) · publish `gra-robocza/Gra-ROBOCZA.html`. · **ZASTĄPIONA** (→ `cd615c1e`) · Test: stamp `e5cb5ab6` · Nowa gra → stolica → państwa min 3 hex od siebie i od stolicy.
 
 - 2026-07-22 · stempel: ROBOCZA · **05d689e3** · md5 pliku `05d689e333d9d29543f1da9e1bebaa9b` · **MAPA: twardy klaster miast-państw 3 hex** — na `4760325c`:
   **Miasta-państwa (Maciej):** spawn w pierścieniu **min 3 / max 3 hex** od stolicy gracza — ciasne skupisko (stałe `CLUSTER_CITY_STATE_MIN_HEX` / `CLUSTER_CITY_STATE_MAX_HEX`). Pre-plan mapgen + runtime spawn (`packRivalCitiesAroundCore`) spójne. AI resupply/konsolidacja: promień 3 hex (`clusterCityStateRadius`).

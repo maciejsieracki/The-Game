@@ -33,7 +33,7 @@
  *           AI ekspanduje rywali wewnątrz regionu swojego typu.
  */
 
-import { mulberry32, hexDistanceAxial } from './gen-helpers';
+import { mulberry32, hexDistanceAxial, HEX_DIRECTIONS } from './gen-helpers';
 
 /**
  * Twardy promień skupiska miast-państw (Maciej 2026-07-22).
@@ -106,7 +106,10 @@ export interface TypeCluster {
 /** Pełny wynik rozmieszczenia klastrów dla całej mapy. */
 export interface ClusterPlacement {
   rozmiarMapy: 'mala' | 'srednia' | 'duza' | 'ogromna' | 'super';
+  /** Typy faktycznie rozmieszczone (≥1 miasto w klastrze). */
   aktywneTypy: number;
+  /** Żądana liczba typów z kreatora (może być > aktywneTypy gdy mapa za ciasna). */
+  requestedTypy?: number;
   /** min odległość miast-państw w klastrze gracza (start). */
   minDystansMiastaPanstwa: number;
   /** max promień skupiska miast-państw od rdzenia klastra (start). */
@@ -146,6 +149,151 @@ function shuffleInPlace<T>(arr: T[], rand: () => number): void {
     arr[i] = arr[j]!;
     arr[j] = tmp;
   }
+}
+
+/** Min. pól lądu w masie, żeby rozważyć środek klastra (małe wysepki pomijamy). */
+const MIN_MASS_HEXES_FOR_CENTER = 12;
+
+/** Grupy spójnych pól lądu (flood-fill) — każdy kontynent / wyspa osobno. Eksport do testów. */
+export function groupHabitableMasses(
+  ladowe: Array<{ q: number; r: number }>,
+): Array<Array<{ q: number; r: number }>> {
+  const keySet = new Set(ladowe.map(h => `${h.q},${h.r}`));
+  const visited = new Set<string>();
+  const masses: Array<Array<{ q: number; r: number }>> = [];
+  for (const h of ladowe) {
+    const startKey = `${h.q},${h.r}`;
+    if (visited.has(startKey)) continue;
+    const mass: Array<{ q: number; r: number }> = [];
+    const stack = [h];
+    visited.add(startKey);
+    while (stack.length) {
+      const cur = stack.pop()!;
+      mass.push(cur);
+      for (const [dq, dr] of HEX_DIRECTIONS) {
+        const nq = cur.q + dq;
+        const nr = cur.r + dr;
+        const nk = `${nq},${nr}`;
+        if (!keySet.has(nk) || visited.has(nk)) continue;
+        visited.add(nk);
+        stack.push({ q: nq, r: nr });
+      }
+    }
+    if (mass.length >= MIN_MASS_HEXES_FOR_CENTER) masses.push(mass);
+  }
+  masses.sort((a, b) => b.length - a.length);
+  return masses;
+}
+
+function massCentroid(mass: Array<{ q: number; r: number }>): { q: number; r: number } {
+  let sq = 0;
+  let sr = 0;
+  for (const h of mass) { sq += h.q; sr += h.r; }
+  return { q: sq / mass.length, r: sr / mass.length };
+}
+
+/** Najlepszy hex w masie lądu: wnętrze masy, minDist od istniejących środków. */
+function pickCenterInMass(
+  mass: Array<{ q: number; r: number }>,
+  existing: Array<{ q: number; r: number }>,
+  minDist: number,
+  preferNear?: { q: number; r: number },
+  rand?: () => number,
+): { q: number; r: number } | null {
+  const centroid = massCentroid(mass);
+  const candidates = mass
+    .filter(h => existing.every(p => hexDistanceAxial(h.q, h.r, p.q, p.r) >= minDist))
+    .map(h => ({
+      h,
+      score: hexDistanceAxial(h.q, h.r, centroid.q, centroid.r)
+        + (preferNear ? hexDistanceAxial(h.q, h.r, preferNear.q, preferNear.r) * 0.05 : 0)
+        + (rand ? rand() * 0.01 : 0),
+    }))
+    .sort((a, b) => a.score - b.score);
+  return candidates[0]?.h ?? null;
+}
+
+/**
+ * Rozmieszcza środki klastrów równomiernie po masach lądu (kontynenty/wyspy),
+ * z progresywnym luzowaniem min odległości gdy żądana liczba nie mieści się na mapie.
+ */
+function placeClusterCentersAcrossLandmasses(
+  ladowe: Array<{ q: number; r: number }>,
+  nNeeded: number,
+  minDistBase: number,
+  mapCenter: { q: number; r: number },
+  rand: () => number,
+  marginBrzeg: number,
+  bounds: { minQ: number; maxQ: number; minR: number; maxR: number },
+): Array<{ q: number; r: number }> {
+  const { minQ, maxQ, minR, maxR } = bounds;
+  const masses = groupHabitableMasses(ladowe);
+  const centers: Array<{ q: number; r: number }> = [];
+
+  function okMargins(q: number, r: number, relax: boolean): boolean {
+    if (relax) return true;
+    return (
+      q - minQ >= marginBrzeg && maxQ - q >= marginBrzeg &&
+      r - minR >= marginBrzeg && maxR - r >= marginBrzeg
+    );
+  }
+
+  function hasCenter(c: { q: number; r: number }): boolean {
+    return centers.some(p => p.q === c.q && p.r === c.r);
+  }
+
+  function tryPlace(c: { q: number; r: number } | null, minDist: number, relaxMargin: boolean): boolean {
+    if (!c || hasCenter(c)) return false;
+    if (!okMargins(c.q, c.r, relaxMargin)) return false;
+    if (centers.some(p => hexDistanceAxial(c.q, c.r, p.q, p.r) < minDist)) return false;
+    centers.push(c);
+    return true;
+  }
+
+  // Progresywne luzowanie: 12 → 10 → 8 → 6 hex między środkami.
+  for (let minDist = minDistBase; minDist >= 6 && centers.length < nNeeded; minDist -= 2) {
+    const relaxMargin = minDist < minDistBase;
+
+    // Faza 1: gracz na największej masie lądu (blisko geometrycznego środka mapy).
+    if (centers.length === 0) {
+      if (masses.length > 0) {
+        tryPlace(pickCenterInMass(masses[0]!, [], minDist, mapCenter, rand), minDist, relaxMargin);
+      }
+      if (centers.length === 0 && ladowe.length > 0) {
+        tryPlace(ladowe[0]!, minDist, true);
+      }
+    }
+
+    // Faza 2: po jednym środku na każdej masie lądu (puste kontynenty dostają własny klaster).
+    for (let mi = 1; mi < masses.length && centers.length < nNeeded; mi++) {
+      tryPlace(pickCenterInMass(masses[mi]!, centers, minDist, undefined, rand), minDist, relaxMargin);
+    }
+
+    // Faza 3: round-robin — kolejne środki proporcjonalnie na największe masy.
+    let stagnant = 0;
+    while (centers.length < nNeeded && stagnant < masses.length + 2) {
+      let placed = false;
+      for (const mass of masses) {
+        if (centers.length >= nNeeded) break;
+        if (tryPlace(pickCenterInMass(mass, centers, minDist, undefined, rand), minDist, relaxMargin)) {
+          placed = true;
+        }
+      }
+      stagnant = placed ? 0 : stagnant + 1;
+    }
+  }
+
+  // Ostateczny fallback: dowolne pola lądu (min 4 hex między środkami).
+  if (centers.length < nNeeded) {
+    const shuffled = ladowe.slice();
+    shuffleInPlace(shuffled, rand);
+    for (const c of shuffled) {
+      if (centers.length >= nNeeded) break;
+      tryPlace(c, 4, true);
+    }
+  }
+
+  return centers.slice(0, nNeeded);
 }
 
 /** Promień skupiska miast wokół rdzenia (hexy) — heurystyka dla AI/ekspansji (legacy). */
@@ -376,18 +524,60 @@ function buildClusterCities(
   minDist: number,
   rand: () => number,
   anchor?: { q: number; r: number; minDist: number },
+  seed?: number,
 ): { cities: ClusterCity[]; pendingStateSlots: Array<{ q: number; r: number }>; growthSlot: { q: number; r: number } | null } {
   const layout = buildClusterLayoutWithEdgeCapital(
     region, centrum, stateCityCount, minDist, rand, anchor, CLUSTER_GROWTH_RESERVE,
   );
   if (!layout) {
-    return { cities: [], pendingStateSlots: [], growthSlot: null };
+    return buildClusterCitiesSimpleFallback(
+      region, centrum, stateCityCount, minDist, anchor, seed ?? 42,
+    );
   }
   return {
     cities: layoutToClusterCities(layout),
     pendingStateSlots: layout.stateCities,
     growthSlot: layout.growthSlot,
   };
+}
+
+/**
+ * Uproszczony fallback gdy edge-capital layout nie mieści się w regionie
+ * (mały kontynent, fragmentacja lądu, restrykcja 12 hex od gracza).
+ */
+function buildClusterCitiesSimpleFallback(
+  region: Array<{ q: number; r: number }>,
+  centrum: { q: number; r: number },
+  stateCityCount: number,
+  minDist: number,
+  anchor: { q: number; r: number; minDist: number } | undefined,
+  seed: number,
+): { cities: ClusterCity[]; pendingStateSlots: Array<{ q: number; r: number }>; growthSlot: null } {
+  let pool = region;
+  if (anchor) {
+    const filtered = region.filter(
+      h => hexDistanceAxial(h.q, h.r, anchor.q, anchor.r) >= anchor.minDist,
+    );
+    if (filtered.length > 0) pool = filtered;
+  }
+  if (pool.length === 0) {
+    return { cities: [], pendingStateSlots: [], growthSlot: null };
+  }
+
+  const cen = centroidOf(pool);
+  const capSorted = pool.slice().sort((a, b) => {
+    const da = hexDistanceAxial(a.q, a.r, cen.q, cen.r);
+    const db = hexDistanceAxial(b.q, b.r, cen.q, cen.r);
+    return db - da || a.q - b.q || a.r - b.r;
+  });
+  const capital = capSorted[0] ?? centrum;
+
+  const stateCities = packRivalCitiesAroundCore(pool, capital, stateCityCount, minDist, seed);
+  const cities: ClusterCity[] = [{ q: capital.q, r: capital.r, isCapital: true }];
+  for (const s of stateCities) {
+    cities.push({ q: s.q, r: s.r, isCapital: false });
+  }
+  return { cities, pendingStateSlots: stateCities, growthSlot: null };
 }
 
 // ---------------------------------------------------------------------------
@@ -419,7 +609,7 @@ export function computeClusters(
   const seed             = opts?.seed ?? 42;
   const playerTypKlucz   = opts?.playerTyp ?? ROSTER_KLUCZE[0]!;
   const rywaleNaKlaster  = opts?.rywaleNaKlaster ?? 9;
-  const minDystKlastrow  = opts?.minDystansKlastrow ?? 12;
+  const minDystKlastrowBase = opts?.minDystansKlastrow ?? 12;
   const minDystMiastaPanstwa = opts?.minDystans ?? MIN_DIST_START_CITY_STATE;
   const minDystObcyOdGracza = MIN_DIST_FOREIGN_FROM_PLAYER;
 
@@ -440,6 +630,12 @@ export function computeClusters(
   const rozmiarMapy = mapSizeLabel(W, H);
   const aktywneTypy = opts?.aktywneTypy ?? aktywneTypyFromSize(rozmiarMapy);
   const nTypy = Math.min(aktywneTypy, ROSTER_KLUCZE.length);
+  const area = W * H;
+  /** Skaluje min odległość środków — więcej typów na dużej mapie = ciaśniejszy szyk. */
+  const minDystKlastrow = Math.max(
+    6,
+    Math.min(minDystKlastrowBase, Math.floor(Math.sqrt(area / Math.max(nTypy, 1)) * 0.9)),
+  );
 
   // --- Pola lądowe (zamieszkiwalne — bez Morza, Gór i Wybrzeża) ---
   // Wybrzeze wykluczone, bo canFoundCity je odrzuca (cities.ts) — trzymanie go w
@@ -455,7 +651,7 @@ export function computeClusters(
   if (ladowe.length === 0) {
     // Fallback: brak lądu — zwróć pustą strukturę
     return {
-      rozmiarMapy, aktywneTypy: nTypy,
+      rozmiarMapy, aktywneTypy: 0, requestedTypy: nTypy,
       minDystansMiastaPanstwa: minDystMiastaPanstwa,
       maxDystansMiastaPanstwa: CLUSTER_CITY_STATE_MAX_HEX,
       minDystansObcyOdGracza: minDystObcyOdGracza,
@@ -463,63 +659,28 @@ export function computeClusters(
     };
   }
 
-  // Tasowanie lądowych pól (dla losowego wyboru środków)
+  // Tasowanie lądowych pól (dla fallbacku)
   const shuffledLad = ladowe.slice();
-  for (let i = shuffledLad.length - 1; i > 0; i--) {
-    const j = Math.floor(rand() * (i + 1));
-    const tmp = shuffledLad[i]!;
-    shuffledLad[i] = shuffledLad[j]!;
-    shuffledLad[j] = tmp;
-  }
+  shuffleInPlace(shuffledLad, rand);
 
-  // --- ŚRODKI TYPÓW (greedy Poisson z min_dystans_klastrow = 15) ---
-  // Gracz zawsze aktywny (playerTypIndex = 0).
-  const centrumy: Array<{ q: number; r: number }> = [];
+  const mapCenter = { q: (minQ + maxQ) / 2, r: (minR + maxR) / 2 };
+  const marginBrzeg = Math.max(2, Math.floor(minDystKlastrow / 3));
 
-  // Priorytetowo wybieramy środek gracza — pierwsze pasujące pole z tasowanej listy
-  // z marginesem od brzegu (≥ minDystKlastrow/2)
-  const marginBrzeg = Math.floor(minDystKlastrow / 3);
+  // --- ŚRODKI TYPÓW: równomiernie po masach lądu (kontynenty/wyspy), nie tylko greedy shuffle ---
+  const centrumy = placeClusterCentersAcrossLandmasses(
+    ladowe,
+    nTypy,
+    minDystKlastrow,
+    mapCenter,
+    rand,
+    marginBrzeg,
+    { minQ, maxQ, minR, maxR },
+  );
 
-  function dalekoOdBrzegow(q: number, r: number): boolean {
-    return (
-      q - minQ >= marginBrzeg && maxQ - q >= marginBrzeg &&
-      r - minR >= marginBrzeg && maxR - r >= marginBrzeg
+  if (centrumy.length < nTypy && typeof console !== 'undefined') {
+    console.warn(
+      `[clusters] Tylko ${centrumy.length}/${nTypy} środków klastrów — mapa za ciasna lub zbyt pofragmentowany ląd`,
     );
-  }
-
-  // Pierwszy środek = gracz
-  for (const c of shuffledLad) {
-    if (dalekoOdBrzegow(c.q, c.r)) {
-      centrumy.push(c);
-      break;
-    }
-  }
-  if (centrumy.length === 0) centrumy.push(shuffledLad[0]!); // fallback
-
-  // Kolejne środki (rywale) — greedy, min minDystKlastrow od istniejących
-  const maxProb = shuffledLad.length;
-  let attempt = 0;
-  while (centrumy.length < nTypy && attempt < maxProb) {
-    const c = shuffledLad[attempt]!;
-    attempt++;
-    const tooClose = centrumy.some(
-      p => hexDistanceAxial(c.q, c.r, p.q, p.r) < minDystKlastrow,
-    );
-    if (!tooClose && dalekoOdBrzegow(c.q, c.r)) {
-      centrumy.push(c);
-    }
-  }
-  // Fallback jeśli za mało środków z ograniczeniem brzegu — luzujemy
-  if (centrumy.length < nTypy) {
-    attempt = 0;
-    while (centrumy.length < nTypy && attempt < maxProb) {
-      const c = shuffledLad[attempt]!;
-      attempt++;
-      const tooClose = centrumy.some(
-        p => hexDistanceAxial(c.q, c.r, p.q, p.r) < minDystKlastrow,
-      );
-      if (!tooClose) centrumy.push(c);
-    }
   }
 
   // --- Roster typów — gracz na pozycji 0, reszta bez powtórzeń ---
@@ -566,6 +727,8 @@ export function computeClusters(
     stateCityCount,
     minDystMiastaPanstwa,
     rand,
+    undefined,
+    seed,
   );
 
   const playerCapital = playerLayout.cities.find(m => m.isCapital) ?? playerLayout.cities[0];
@@ -601,6 +764,7 @@ export function computeClusters(
       MIN_DIST_FOREIGN_IN_CLUSTER,
       rand,
       { q: playerCapitalPos.q, r: playerCapitalPos.r, minDist: minDystObcyOdGracza },
+      seed,
     );
 
     klastry.push({
@@ -625,9 +789,12 @@ export function computeClusters(
     }
   }
 
+  const placedTypy = klastry.filter(k => k.miasta.length > 0).length;
+
   return {
     rozmiarMapy,
-    aktywneTypy: nTypy,
+    aktywneTypy: placedTypy,
+    requestedTypy: nTypy,
     minDystansMiastaPanstwa: minDystMiastaPanstwa,
     maxDystansMiastaPanstwa: CLUSTER_CITY_STATE_MAX_HEX,
     minDystansObcyOdGracza: minDystObcyOdGracza,

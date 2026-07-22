@@ -4,7 +4,20 @@
 > **Czat:** krótko **`✅ Gotowe:`** / **`⏸️ Czeka:`** · **Ten plik:** pełniejszy zapis tego samego.  
 > Szczegóły techniczne → handoff w `dyspozycje/_handoff/` · operacja → `dyspozycje/DZIENNIK-MASTERA.md`
 
-**Ostatnia aktualizacja:** 2026-07-22 (FIX odstęp MP para-po-parze @ e5cb5ab6)
+**Ostatnia aktualizacja:** 2026-07-22 (FIX spawn cywilizacji @ cd615c1e)
+
+---
+
+## [12:15] ✅ Gotowe — MAPA: FIX spawn cywilizacji (continent-aware)
+
+| | |
+|---|---|
+| **Co** | Suwak „Liczba cywilizacji" (np. 15) → faktycznie tyle klastrów na mapie; kontynenty nie zostają puste |
+| **Bug** | 15 żądanych → ~10 na mapie; cywilizacje skupione na jednym kontynencie, inne puste |
+| **Fix** | Środki klastrów rozłożone po masach lądu (kontynenty/wyspy); fallback gdy layout nie mieści się w regionie |
+| **Pliki** | `clusters.ts`, `main.ts`, `cluster-start-test.cjs` |
+| **md5** | `cd615c1e5a332919b72a183a7f980c60` · stamp `cd615c1e` |
+| **Od Ciebie** | Ctrl+F5 · stamp `cd615c1e` · Super Huge + 15 cywilizacji → wszystkie frakcje na mapie, rozłożone |
 
 ---
 

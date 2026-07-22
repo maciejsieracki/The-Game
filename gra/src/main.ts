@@ -3429,7 +3429,10 @@ async function boot(): Promise<void> {
         '[ClusterStart] typ=' + playerCivId +
         ' rywale=' + rywaleNaKlaster + ' (deferred)' +
         ' AI=' + plan.spawnCities.length +
-        ' typow=' + plan.placement.aktywneTypy,
+        ' typow=' + plan.placement.aktywneTypy +
+        (plan.placement.requestedTypy != null && plan.placement.requestedTypy > plan.placement.aktywneTypy
+          ? ' (żądano ' + plan.placement.requestedTypy + ' — mapa nie zmieściła wszystkich)'
+          : ''),
       );
     }
 

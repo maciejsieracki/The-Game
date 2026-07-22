@@ -2968,3 +2968,14 @@ CZEKAM-NA: Maciej — `git pull` → Ctrl+F5 START.html → stamp `05d689e3` →
 Pliki: `gra/src/map/cluster-spawn.ts`, `gra/tools/cluster-start-test.cjs`, bundle robocza.
 Bramki: tsc=0 · cluster-start 103/103 · map-gen-regression OK · verify OK.
 CZEKAM-NA: Maciej — `git pull` → Ctrl+F5 → stamp `e5cb5ab6` → Nowa gra → stolica → państwa min 3 hex od siebie i od stolicy (max ~6 na pierścieniu).
+
+## [12:15 PL, 2026-07-22] INTEGRATOR → Maciej — FIX spawn cywilizacji (continent-aware)
+
+**md5:** `cd615c1e5a332919b72a183a7f980c60` · stamp `cd615c1e`
+**Bug Macieja:** suwak 15 cywilizacji → ~10 na mapie; puste kontynenty; „brak miejsca".
+**Przyczyna:** greedy shuffle środków klastrów (bez kontynentów) + twardy min 12 hex → za mało środków; pusty klaster gdy edge-capital layout fail; `aktywneTypy` = żądana liczba zamiast faktycznej.
+**Fix:** `placeClusterCentersAcrossLandmasses` — flood-fill mas lądu, 1 środek/kontynent, round-robin, luzowanie 12→6, adaptacyjny min dystans; `buildClusterCitiesSimpleFallback`; `requestedTypy` w placement.
+Test Super Huge 15 typów: **15/15** klastrów z miastami.
+Pliki: `gra/src/map/clusters.ts`, `gra/src/main.ts`, `gra/tools/cluster-start-test.cjs`, bundle robocza.
+Bramki: tsc=0 · cluster-start 109/109 · map-gen-regression OK · map-scale-menu 32/32.
+CZEKAM-NA: Maciej — Ctrl+F5 → stamp `cd615c1e` → Super Huge + 15 cywilizacji → frakcje rozłożone po kontynentach.

@@ -13,6 +13,7 @@ fs.writeFileSync(entry, `
 export { buildClusterStartPlan } from '../src/game/cluster-start';
 export { buildClusterSpawnPlan, buildSameTypeRivalSlots, buildSameTypeRivalCandidateHexes, groupForeignTypeClusters } from '../src/map/cluster-spawn';
 export { generateMap } from '../src/map/generator';
+export { computeClusters, groupHabitableMasses } from '../src/map/clusters';
 export { MIN_DIST_START_CITY_STATE, MIN_DIST_FOREIGN_FROM_PLAYER, MIN_DIST_FOREIGN_IN_CLUSTER, CLUSTER_CITY_STATE_MIN_HEX, CLUSTER_CITY_STATE_MAX_HEX, clusterPackRadius, clusterCityStateRadius, packRivalCitiesAroundCore } from '../src/map/clusters';
 export { hexDistanceAxial } from '../src/map/gen-helpers';
 `, 'utf8');
@@ -68,7 +69,14 @@ assert(prePlanHexes.length >= 1 && prePlanHexes.length <= plan.pendingSameTypeRi
   'pre-planowane hexy państw gracza (1..N w pierścieniu 3 hex)');
 
 // Gracz stawia stolicę w innym miejscu niż sugerowany hex algorytmu
-const offsetCore = { q: plan.playerStartHex.q + 6, r: plan.playerStartHex.r + 4 };
+function isLandHex(m, q, r) {
+  const h = m.hexes[q + ',' + r];
+  return h && h.terenBazowy !== 'Morze' && h.terenBazowy !== 'Gory' && h.terenBazowy !== 'Wybrzeze';
+}
+let offsetCore = { q: plan.playerStartHex.q + 3, r: plan.playerStartHex.r };
+if (!isLandHex(map, offsetCore.q, offsetCore.r)) {
+  offsetCore = { q: plan.playerStartHex.q, r: plan.playerStartHex.r };
+}
 const actualCandidates = M.buildSameTypeRivalCandidateHexes(
   map, offsetCore, plan.pendingSameTypeRivals, 4242,
 );
@@ -244,6 +252,52 @@ if (playerKlaster && sameType.length > 0) {
     );
   }
 }
+
+// Maciej 2026-07-22: 15 typów na Super Huge — continent-aware placement + fallback layout
+const hugeMap = M.generateMap(672, 476, 9001, 'kontynenty');
+const plan15 = M.buildClusterStartPlan({
+  map: hugeMap,
+  civs,
+  seed: 9001,
+  playerCivId: 'grecy',
+  rywaleNaKlaster: 8,
+  aktywneTypy: 15,
+});
+assert(plan15.placement.requestedTypy === 15, 'requestedTypy=15');
+assert(plan15.placement.aktywneTypy >= 13,
+  'Super Huge 15 typów: ≥13 klastrów z miastami (got ' + plan15.placement.aktywneTypy + ')');
+assert(plan15.foreignTypeClusters.length >= 12,
+  'obce klastry ≥12 (got ' + plan15.foreignTypeClusters.length + ')');
+
+// Kontynenty: środki klastrów na wielu masach lądu (nie wszystko na jednym)
+const landHexesHuge = Object.values(hugeMap.hexes)
+  .filter(h => h.terenBazowy !== 'Morze' && h.terenBazowy !== 'Gory' && h.terenBazowy !== 'Wybrzeze')
+  .map(h => ({ q: h.coords.q, r: h.coords.r }));
+const massesHuge = M.groupHabitableMasses(landHexesHuge);
+const centers15 = plan15.placement.klastry.map(k => k.centrum);
+function massHasCenter(mass, centers) {
+  for (const h of mass) {
+    for (const c of centers) {
+      if (M.hexDistanceAxial(h.q, h.r, c.q, c.r) <= 3) return true;
+    }
+  }
+  return false;
+}
+const massesWithCiv = massesHuge.filter(m => massHasCenter(m, centers15)).length;
+assert(massesWithCiv >= 1, 'co najmniej 1 masa lądu z klastrem na Super Huge');
+
+// Rozłożenie geograficzne środków (nie wszystko w jednym rogu mapy)
+const placement50 = M.computeClusters(map, { seed: 4242, aktywneTypy: 5, rywaleNaKlaster: 4 });
+const centers50 = placement50.klastry.map(k => k.centrum);
+let maxCenterDist = 0;
+for (let i = 0; i < centers50.length; i++) {
+  for (let j = i + 1; j < centers50.length; j++) {
+    const d = M.hexDistanceAxial(centers50[i].q, centers50[i].r, centers50[j].q, centers50[j].r);
+    if (d > maxCenterDist) maxCenterDist = d;
+  }
+}
+assert(maxCenterDist >= 12, 'środki klastrów rozłożone na mapie (max dist ' + maxCenterDist + ')');
+assert(placement50.aktywneTypy >= 5, '50×50 × 5 typów: wszystkie klastry z miastami');
 
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
 process.exit(failed > 0 ? 1 : 0);
