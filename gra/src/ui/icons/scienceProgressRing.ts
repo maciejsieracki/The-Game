@@ -3,7 +3,8 @@
  * Złoto = pozostała część; niebieski rośnie zgodnie z ruchem wskazówek od góry.
  */
 
-const RING_GOLD = '#e0b24a';
+/** Zgodne z --tg-gold-dim (rant medalionu przed pierścieniem postępu). */
+const RING_GOLD = '#a08030';
 const RING_BLUE = '#5a9bd4';
 
 /** SVG pierścienia [0..1] — fraction=0 całe złote, fraction=1 całe niebieskie. */

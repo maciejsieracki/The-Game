@@ -45,7 +45,7 @@ export function chip6cHtml(opts: Chip6cOpts): string {
   const rateCls = opts.rateWarn ? ' warn' : '';
   const showRing = opts.iconId === 'res-science' && opts.researchProgress !== undefined;
   const medInner = showRing
-    ? scienceProgressRingHtml(opts.researchProgress!, 30, 2) + chipIconHtml(opts.iconId, med)
+    ? `${scienceProgressRingHtml(opts.researchProgress!, 30, 2)}<span class="civ-hud-chip-med-ic">${chipIconHtml(opts.iconId, med)}</span>`
     : chipIconHtml(opts.iconId, med);
   const medCls = showRing ? `${med} civ-science-med-ring` : med;
   let html = `<span class="civ-hud-chip${clickCls}"${actAttr}>`

@@ -2882,3 +2882,12 @@ CZEKAM-NA: sesja lokalna — `git pull` → Ctrl+F5 START.html → stamp `9b539c
 **Fix:** `cityPracaInteger` (round) · `pracaImperialPoolGain` per miasto (całość gdy brak budynku).
 Bramki: tsc=0 · production-overflow 20/20 · wire-ekonomia 37/37.
 CZEKAM-NA: Maciej — `git pull` → Ctrl+F5 `gra-robocza/START.html` → stamp `30e510b1` → Ateny bez budynku: pula +10/turę.
+
+## [07:45 PL, 2026-07-22] INTEGRATOR → Maciej — FIX pierścień Nauki (ring-in-ring)
+
+**md5:** `435103481edfde9081d2207425ac18a3` · stamp `43510348`
+**Bug:** ikona Nauki miała podwójny pierścień — CSS border złoty + nakładka SVG.
+**Fix:** usunięto CSS border na medalionie Nauki; SVG zastępuje rant (`#a08030`); toolbar + chip górny.
+Pliki: `scienceProgressRing.ts`, `mapToolbarHud.ts`, `hudChip6c.ts`, `hud.ts`.
+Bramki: tsc=0 · publish robocza OK.
+CZEKAM-NA: Maciej — `git pull` → Ctrl+F5 START.html → stamp `43510348` → jeden pierścień; 0%/50%/100%.

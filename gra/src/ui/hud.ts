@@ -273,8 +273,9 @@ function ensureStyles(): void {
   display:inline-flex;align-items:center;justify-content:center;box-shadow:0 1px 3px rgba(0,0,0,.6);}
 .civ-hud .civ-hud-chip-med.gold{background:radial-gradient(circle at 35% 30%,#f4e0a0,#a9861f);border:1px solid #6a5212;color:#3a2e08;}
 .civ-hud .civ-hud-chip-med.science{background:radial-gradient(circle at 35% 30%,#8fb6e0,#3a5f8a);border:none;color:#0e2038;}
-.civ-hud .civ-hud-chip-med.science.civ-science-med-ring{position:relative;}
-.civ-hud .civ-hud-chip-med.science .civ-science-prog-ring{position:absolute;inset:0;pointer-events:none;}
+.civ-hud .civ-hud-chip-med.science.civ-science-med-ring{position:relative;border:none;box-shadow:none;}
+.civ-hud .civ-hud-chip-med.science.civ-science-med-ring > .civ-science-prog-ring{position:absolute;inset:0;pointer-events:none;}
+.civ-hud .civ-hud-chip-med.science.civ-science-med-ring .civ-hud-chip-med-ic{position:relative;z-index:1;display:flex;align-items:center;justify-content:center;}
 .civ-hud .civ-hud-chip-med.science .civ-science-owl-ic{width:17px;height:17px;color:#0a1628;position:relative;z-index:1;}
 .civ-hud .civ-hud-chip-med svg{width:17px;height:17px;display:block;}
 .civ-hud .civ-hud-chip-lbl{font-size:11px;color:var(--civ-text-muted);}

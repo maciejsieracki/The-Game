@@ -4,7 +4,21 @@
 > **Czat:** krótko **`✅ Gotowe:`** / **`⏸️ Czeka:`** · **Ten plik:** pełniejszy zapis tego samego.  
 > Szczegóły techniczne → handoff w `dyspozycje/_handoff/` · operacja → `dyspozycje/DZIENNIK-MASTERA.md`
 
-**Ostatnia aktualizacja:** 2026-07-22 (fix Praca pula imperium — rounding)
+**Ostatnia aktualizacja:** 2026-07-22 (fix pierścień Nauki — jeden rant)
+
+---
+
+## [07:45] ✅ Gotowe — FIX: pierścień Nauki bez ring-in-ring
+
+| | |
+|---|---|
+| **Co** | Ikona Nauki (toolbar lewy + chip górny): **jeden** pierścień postępu — złoty = pozostało, niebieski rośnie zgodnie z ruchem wskazówek |
+| **Przed** | CSS border złoty + nakładka SVG = podwójny pierścień (ring-in-ring) |
+| **Po** | CSS border usunięty; SVG **zastępuje** rant medalionu (`#a08030` = `--tg-gold-dim`) |
+| **Pliki** | `scienceProgressRing.ts` · `mapToolbarHud.ts` · `hudChip6c.ts` · `hud.ts` |
+| **md5** | `435103481edfde9081d2207425ac18a3` · stamp `43510348` |
+| **Bramki** | tsc=0 · publish robocza OK |
+| **Od Ciebie** | `git pull` → Ctrl+F5 · `gra-robocza/START.html` → stamp `43510348` → wybierz tech → jeden pierścień; 0%/50%/100% czysto |
 
 ---
 
