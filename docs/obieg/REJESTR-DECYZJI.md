@@ -127,7 +127,7 @@
 | **B-KULT-REL-Q1** | 2026-07-22 | **A** — kultura poszerza terytorium (+0…+3 hex), nie tylko mgłę | B+F | 🟡 **ZAPISANA** | `docs/decyzje/B-KULT-REL-2026-07-22.md` · audyt `KULTURA-RELIGIA-AUDYT-2026-07-22.md` | `cityBorderRadius` → `territory.ts` |
 | **B-KULT-REL-Q2** | 2026-07-22 | **A** — stopniowa konwersja religii po podboju; wire `convertViaTemple()` | B | 🟡 **ZAPISANA** | j.w. | + `convertCulture()` co turę |
 | **B-KULT-REL-Q3** | 2026-07-22 | **A** — wpiąć `cityTradeMultiplier()` (Waluta+Mennica + dominująca wiara) | B | 🟡 **ZAPISANA** | j.w. | Grecy `mnoznikHandelPieniadz` |
-| **B-KULT-REL-Q4** | 2026-07-22 | **C custom** — kultura + relikie (cuda) → składniki **Power**; bez zwycięstwa kulturowego | B+F | 🟡 **ZAPISANA** | j.w. · `power-objective.ts` (plan) | dominacja Power >50% bez nowego ekranu |
+| **B-KULT-REL-Q4** | 2026-07-22 | **C custom** — kultura + **religia** → składniki **Power**; bez zwycięstwa kulturowego | B+F | 🟡 **ZAPISANA** | j.w. · `power-objective.ts` (plan) | korekta: nie relikie/cuda · dominacja Power >50% |
 | **B-KULT-REL-Q5** | 2026-07-22 | **A** — podwoić bonusy/kary szczęścia kultura/religia w `society-params.json` | B | 🟡 **ZAPISANA** | j.w. | **po** Q1–Q3 wpięciu |
 
 ---
