@@ -731,8 +731,8 @@ function chooseCityProduction(
 
   // §4.3 Under threat: walls first, then guard
   if (underThreat) {
-    if (!built.includes('Mury')) {
-      candidates.push({ id: 'Mury', score: 300 + defenseScore });
+    if (!built.includes('mury')) {
+      candidates.push({ id: 'mury', score: 300 + defenseScore });
     }
     candidates.push({ id: 'Wojownik', score: 280 + militaryScore });
   }
@@ -747,23 +747,23 @@ function chooseCityProduction(
       // dzięki temu państwo-kopia przestaje być łatwym łupem od 1. tury.
       candidates.push({ id: 'Wojownik', score: 340 + militaryScore });
     }
-    if (!built.includes('Mury')) {
-      candidates.push({ id: 'Mury', score: 320 + defenseScore });
+    if (!built.includes('mury')) {
+      candidates.push({ id: 'mury', score: 320 + defenseScore });
     }
     // Spichlerz dopisany tu (a nie w gałęzi early-phase §4.1, bo defensiveCopy nigdy tam nie
     // trafia — patrz earlyPhase wyżej) — TA SAMA pozycja/score co dla normalnego miasta AI
     // w fazie startowej (250), żeby nie zaburzyć kolejności względem Mury/Wojownik powyżej ani
     // względem budynków gospodarczych z gałęzi "else" niżej. Bez tego defensiveCopy nigdy nie
     // zobaczyłoby Spichlerza (brak wpływu na zwykłe AI — ta gałąź działa tylko gdy defensiveCopy).
-    if (!built.includes('Spichlerz')) {
-      candidates.push({ id: 'Spichlerz', score: 250 });
+    if (!built.includes('spichlerz')) {
+      candidates.push({ id: 'spichlerz', score: 250 });
     }
   }
 
   if (earlyPhase) {
     // §4.1 Early phase
-    if (!built.includes('Spichlerz')) {
-      candidates.push({ id: 'Spichlerz', score: 250 });
+    if (!built.includes('spichlerz')) {
+      candidates.push({ id: 'spichlerz', score: 250 });
     }
     // Settler if < 3 cities (państwa-kopie nigdy nie ekspandują)
     if (myCities.length < 3 && !opts.defensiveCopy) {
@@ -776,16 +776,18 @@ function chooseCityProduction(
     if (cityGuard.length === 0) {
       candidates.push({ id: 'Wojownik', score: 190 + militaryScore });
     }
-    candidates.push({ id: 'Lucznik',   score: 180 + militaryScore });
+    candidates.push({ id: 'Łucznik',   score: 180 + militaryScore });
   } else {
     // §4.2 Mid phase
-    if (!built.includes('Koszary')) {
-      candidates.push({ id: 'Koszary', score: 200 + militaryScore });
+    if (!built.includes('koszary')) {
+      candidates.push({ id: 'koszary', score: 200 + militaryScore });
     }
     candidates.push({ id: 'Wojownik',  score: 170 + militaryScore });
-    candidates.push({ id: 'Lucznik',   score: 165 + militaryScore });
+    candidates.push({ id: 'Łucznik',   score: 165 + militaryScore });
 
-    for (const b of ['Tartak', 'Cegielnia', 'Huta', 'Magazyn', 'Targowisko']) {
+    // id-y katalogu budynków (buildings.json) -- NIE nazwy wyświetlane; Tartak/Huta
+    // to legacy nazwy bez odpowiednika po id, realne budynki to stolarnia/odlewnia_brazu.
+    for (const b of ['stolarnia', 'cegielnia', 'odlewnia_brazu', 'magazyn', 'targowisko']) {
       if (!built.includes(b)) {
         candidates.push({ id: b, score: 140 + economyScore });
       }
@@ -794,7 +796,8 @@ function chooseCityProduction(
   }
 
   // §4.4 Filter out buildings already built (units can be built multiple times)
-  const buildingNames = new Set(data.buildings.map(b => b.nazwa));
+  // built (opts.cityBuildings) i candidates -- oba po id budynku (patrz cityBuilt w main.ts).
+  const buildingNames = new Set(data.buildings.map(b => b.id));
   const available = candidates.filter(c => {
     if (buildingNames.has(c.id) && built.includes(c.id)) return false;
     return true;
@@ -1126,6 +1129,24 @@ export function decideAITurn(
   // Track which units received at least one action command this turn (for fallback).
   const unitActed = new Set<string>();
 
+  // Audyt #56: lista wolnych (neutralnych) wiosek liczona LENIWIE i RAZ na to wywołanie
+  // decideAITurn (per gracz AI, per turę) zamiast pełnego Object.keys(map.hexes) + skanu
+  // mapy dla KAŻDEJ jednostki wojskowej osobno (patrz findNearestVillage niżej).
+  let neutralVillagesCache: { q: number; r: number }[] | null = null;
+  const getNeutralVillages = (): { q: number; r: number }[] => {
+    if (neutralVillagesCache === null) {
+      neutralVillagesCache = [];
+      for (const key of Object.keys(map.hexes)) {
+        const hex = map.hexes[key];
+        if (hex === undefined) continue;
+        if (!hex.wioska.istnieje) continue;
+        if (hex.wlasciciel !== null) continue;
+        neutralVillagesCache.push(hex.coords);
+      }
+    }
+    return neutralVillagesCache;
+  };
+
   for (const unit of sortedUnits) {
     const cmdsBefore = commands.length;
 
@@ -1249,7 +1270,7 @@ export function decideAITurn(
     }
 
     // 4d: neutral village exploration (Spec-AI §3.1 / §2.1 priority 3)
-    const villageTarget = findNearestVillage(unit, map, playerId);
+    const villageTarget = findNearestVillage(unit, getNeutralVillages());
     if (villageTarget !== null) {
       const step = firstStep(unit, map, villageTarget.q, villageTarget.r, units);
       if (step !== null) {
@@ -1539,34 +1560,26 @@ function findSettlerTarget(
 /**
  * Returns the nearest hex with an unclaimed village (wioska.istnieje &&
  * wlasciciel === null), or null if none found.
+ *
+ * Audyt #56: przyjmuje gotową listę wolnych wiosek (zob. getNeutralVillages
+ * w decideAITurn) zamiast samodzielnie skanować map.hexes — eliminuje
+ * alokację Object.keys(320k) + pełny skan mapy przy KAŻDYM wywołaniu
+ * (poprzednio: raz na jednostkę wojskową).
  */
 function findNearestVillage(
   unit: RuntimeUnit,
-  map: GameMap,
-  playerId: number,
+  villages: { q: number; r: number }[],
 ): { q: number; r: number } | null {
   let bestDist = Infinity;
   let bestHex: { q: number; r: number } | null = null;
 
-  const playerStr = String(playerId);
-
-  for (const key of Object.keys(map.hexes)) {
-    const hex = map.hexes[key];
-    if (hex === undefined) continue;
-    if (!hex.wioska.istnieje) continue;
-    // Skip if owned by anyone (including this player)
-    if (hex.wlasciciel !== null) continue;
-
-    const { q, r } = hex.coords;
-    const d = hexDistance(unit.q, unit.r, q, r);
+  for (const v of villages) {
+    const d = hexDistance(unit.q, unit.r, v.q, v.r);
     if (d < bestDist) {
       bestDist = d;
-      bestHex = { q, r };
+      bestHex = v;
     }
   }
-
-  // Suppress unused-variable warning: playerStr used in condition above implicitly
-  void playerStr;
 
   return bestHex;
 }

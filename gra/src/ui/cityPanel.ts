@@ -64,6 +64,7 @@ import {
   buildingWorkCost,
   itemCost,
   splitPraca,
+  cityPracaInteger,
   buildingGoldPurchaseCost,
   buildingTypeQueued,
   enqueueRecruitment,
@@ -126,7 +127,7 @@ import {
 } from '../game/trade-routes';
 import { normalizeImprovementKey } from '../game/terrain-improvements';
 import type { Hex } from '../types/hex';
-import { loadOrderParams } from '../game/order';
+import { loadOrderParams, type OrderYieldMults } from '../game/order';
 import {
   evaluateOrderFromBreakdown,
   porPctBand,
@@ -143,6 +144,8 @@ import {
   cityYieldPerTurn,
   cityPopulationCap,
   sumBuildingHappinessFromBuiltIds,
+  mnoznikHandelPieniadzForCiv,
+  civEconomyYieldMultipliers,
   type CityYieldContext,
 } from '../game/economy';
 import { UI_PARAMS } from './uiParams';
@@ -225,6 +228,12 @@ export interface CityPanelConfig {
   getEmpireFoodState?: (ownerId: number) => EmpireFoodState | null;
   /** Mnożnik wzrostu z Porządku (z poprzedniej tury — jak w silniku). */
   getGrowthMult?: (cityId: string) => number;
+  /**
+   * #17: mnożniki Praca/Pieniądz/Nauka/Kultura z Porządku (z poprzedniej tury —
+   * jak w silniku, turn-economy.ts applyOrderYieldMults). Brak hooka → panel
+   * pomija Porządek w Bilansie plonów (stary, zaniżony wynik).
+   */
+  getOrderYieldMults?: (cityId: string) => OrderYieldMults | null;
   /** EKONOMIA — snapshot rekrutów (Manpower) per miasto. */
   getManpowerSnapshot?: (cityId: string) => CityManpowerSnapshot | null;
   getEmpireFoodTick?: (ownerId: number) => EmpireFoodTick | null;
@@ -293,6 +302,9 @@ export interface CityPanelConfig {
   /** Kopalnia na złożu żelaza gdziekolwiek w imperium gracza (bramka żelaza, dec. 2026-07-19) —
    *  całe imperium, nie per-miasto (jak Popalnia brązu). */
   getHasKopalniaNaZlozuZelaza?: () => boolean;
+  /** Nazwy jednostek ("Jednostka") aktualnie żywych tego ownera -- limit 1 żywej
+   *  Super-jednostka=TAK na cywilizację (audyt #11, decyzja A3=A). */
+  getAliveUnitTypeNames?: (ownerId: number) => ReadonlySet<string>;
   /** Mnoznik kosztow budynkow z kreatora (globalny dla rozgrywki). */
   getBuildingCostPace?: () => import('../game/building-cost-tempo').BuildingCostPace;
   /** Mnoznik kosztow rekrutacji jednostek z kreatora (globalny dla rozgrywki). */
@@ -705,12 +717,47 @@ function computeView(city: City, map: GameMap, data: GameData): CityView | null 
     );
     const zdrowie = healthBd.total;
     const econCity = toEconomyCity(city, params, isCapital(city), zdrowie, { maSpichlerz, maAkwedukt });
+    // #17 fix: base ctx miał flagi budynków/Waluty/bonusów cyw. na sztywno false/1/undefined,
+    // więc Bilans plonów pomijał Młyn/Cegielnię/Targowisko/Bibliotekę/Mennicę, Walutę i bonusy
+    // cyw. — panel pokazywał inne liczby niż silnik (turn-economy.ts tickCityEconomy). Odtwarzamy
+    // tu dokładnie tę samą budowę kontekstu co silnik, z tych samych hooków co reszta panelu
+    // (getBuiltBuildingIds/getUnlockedTechs/getCivKey/getCivBonusy używane już np. w buildHandelDetailCard).
+    const techs = cfg.getUnlockedTechs?.(city.ownerId) ?? [];
+    const walutaOdkryta = techs.includes('Waluta') || techs.includes('waluta');
+    const maMennica = built.includes('mennica');
+    const civKey = cfg.getCivKey?.(city.ownerId);
+    const walutaMnoznikOverride = walutaOdkryta && civKey
+      ? mnoznikHandelPieniadzForCiv(civKey, cfg.data?.civs, params.walutaMnoznik)
+      : undefined;
+    const { handel: civHandelMult, nauka: civNaukaMult } =
+      civEconomyYieldMultipliers(cfg.getCivBonusy?.(city.ownerId) ?? []);
     const base: CityYieldContext = {
       wojskoZuzycieZywnosci: 0, strataFraction: 0,
-      maMlyn: false, maCegielnia: false, maTargowisko: false, maMennica: false, mennicaMnoznik: 1,
+      maMlyn: built.includes('mlyn'),
+      maCegielnia: built.includes('cegielnia'),
+      maTargowisko: built.includes('targowisko'),
+      maBiblioteka: built.includes('biblioteka'),
+      maMennica,
+      // Mennica dziala TYLKO gdy zbudowana ORAZ Waluta odkryta (jak w silniku).
+      mennicaMnoznik: maMennica && walutaOdkryta ? params.mennicaMnoznikPoWalucie : 1,
+      walutaOdkryta,
+      walutaMnoznikOverride,
+      civHandelMult,
+      civNaukaMult,
     };
     const ctx: CityYieldContext = { ...base, ...(cfg.getCityBuildingFlags?.(city.id) ?? {}) };
     const y = cityYieldPerTurn(econCity, worked, [], params, ctx);
+    // Porządek (B2-Q6): silnik mnoży plony PO cityYieldPerTurn, PRZED Wealth/splitPraca
+    // (turn-economy.ts applyOrderYieldMults) — panel musi odtworzyć to samo, inaczej
+    // Bilans plonów rozjeżdża się z silnikiem gdy miasto ma karę/bonus Porządku.
+    const orderMult = cfg.getOrderYieldMults?.(city.id);
+    if (orderMult) {
+      if (orderMult.productionMult !== 1) y.praca *= orderMult.productionMult;
+      if (orderMult.pieniadzMult !== 1) y.pieniadz *= orderMult.pieniadzMult;
+      if (orderMult.naukaMult !== 1) y.nauka *= orderMult.naukaMult;
+      if (orderMult.kulturaMult !== 1) y.kultura *= orderMult.kulturaMult;
+    }
+    y.praca = cityPracaInteger(y.praca);
     const pctRozwoj = getEmpireFoodSplit(city.ownerId);
     const growthMult = cfg.getGrowthMult?.(city.id) ?? 1;
     const healthMod = Math.max(0, 1 + zdrowie * params.zdrowieModyfikatorWspolczynnik);
@@ -5139,6 +5186,7 @@ function productionCtxForCity(city: City): AvailabilityContext {
     civUnitNacja: unitNacjaForCivKey(cfg.getCivKey?.(city.ownerId)),
     placedImprovements: cfg.getPlacedImprovements?.() ?? null,
     hasKopalniaNaZlozuZelaza: cfg.getHasKopalniaNaZlozuZelaza?.() ?? false,
+    aliveUnitTypeNames: cfg.getAliveUnitTypeNames?.(city.ownerId),
     buildingCostPace: cfg.getBuildingCostPace?.() ?? 'niski',
     kosztJednostekPace: cfg.getKosztJednostekPace?.() ?? 'niski',
     ownerId: city.ownerId,

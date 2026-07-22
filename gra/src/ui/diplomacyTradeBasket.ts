@@ -184,6 +184,11 @@ function buildAddForm(side: 'give' | 'receive', ctx: NegotiationModalContext, mo
   const prefix = side === 'give' ? 'give' : 'recv';
   const typOpts = (Object.keys(TYP_LABELS) as WartoscPozycjaTyp[])
     .filter(t => {
+      // TODO(A1 — audyt #1): pozycja "jednostka" ukryta do czasu, gdy transfer
+      // faktycznie zdejmuje WSKAZANĄ jednostkę dawcy (wymaga unitOptions ograniczonych
+      // do posiadanych jednostek w getNegotiationContext). Patrz też defensywne
+      // odrzucenie w main.ts transferBasketItems (case 'jednostka').
+      if (t === 'jednostka') return false;
       if (mode === 'gift') return true;
       if (t === 'tech' && side === 'receive') {
         const rel = ctx.relacjaTotal ?? 0;

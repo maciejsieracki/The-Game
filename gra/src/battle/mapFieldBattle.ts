@@ -187,7 +187,11 @@ export function validateOpenCityFieldBattle(
   return null;
 }
 
-/** PURE: plan potyczki (rostery + preBattle) dla miasta bez muru. */
+/**
+ * PURE poza opcjonalnym registerMilitiaDef: plan potyczki (rostery + preBattle) dla miasta bez muru.
+ * #53: militiaDefs rejestrujemy w silniku ZARAZ po ich obliczeniu, PRZED preBattleSzanseAtkPct —
+ * inaczej unitDefFor(Milicja) spada na fallback 'wojownika' w prognozie, a walka/Auto liczy na realnej Milicji.
+ */
 export function planOpenCityFieldBattle(
   action: MapFieldBattleAction,
   city: City,
@@ -203,6 +207,7 @@ export function planOpenCityFieldBattle(
     | 'unitAtak'
     | 'civLabelForOwner'
     | 'terrainCombatData'
+    | 'registerMilitiaDef'
   >,
 ): OpenCityFieldBattlePlan | null {
   if (city.maMur) return null;
@@ -210,6 +215,12 @@ export function planOpenCityFieldBattle(
 
   const { roster: defRoster, militiaDefs } = collectCityDefRoster(city, units);
   if (defRoster.length === 0) return null;
+
+  if (deps.registerMilitiaDef) {
+    for (const [id, def] of militiaDefs) {
+      deps.registerMilitiaDef(id, def);
+    }
+  }
 
   const atkRoster = collectAtkRosterNearCity(city, anchor, units);
   const terrain = deps.getTerrainAt(city.q, city.r);
@@ -291,12 +302,7 @@ export function launchFieldBattleFromMap(
     return;
   }
   const plan = planOrNull;
-
-  if (deps.registerMilitiaDef) {
-    for (const [id, def] of plan.militiaDefs) {
-      deps.registerMilitiaDef(id, def);
-    }
-  }
+  // #53: militiaDefs sa juz zarejestrowane wewnatrz planOpenCityFieldBattle (przed prognoza szans).
 
   const atkRosterRef = plan.atkRoster.slice();
   const defRosterRef = plan.defRoster.slice();

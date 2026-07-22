@@ -63,6 +63,14 @@ export function consumeReadyMachines(
   return out;
 }
 
+/** #50: podgląd gotowych machin bez ich zużycia — do rosteru preBattle, przed potwierdzeniem szturmu. */
+export function peekReadyMachines(
+  city: { siegeMachines?: SiegeMachinesState },
+): SiegeMachineKind[] {
+  const m = ensureSiegeMachines(city);
+  return m.ready.slice();
+}
+
 export function clearSiegeMachines(city: { siegeMachines?: SiegeMachinesState }): void {
   delete city.siegeMachines;
 }

@@ -234,6 +234,21 @@ r = evaluateProposal(prop('trybut_zadanie', 0, 1, { goldPerTurn: 15 }), ctx({
 }));
 ok(!r.accepted, 'trybut żądanie reject słabszy');
 
+// 7a Trybut żądanie reject — kwota powyżej limitu przy danym Respekcie (audyt #21)
+r = evaluateProposal(prop('trybut_zadanie', 0, 1, { goldPerTurn: 150 }), ctx({
+  proposerRespekt: 80,
+  responderRespekt: 40,
+}));
+ok(!r.accepted, 'trybut żądanie reject kwota powyżej limitu (Respekt 80)');
+
+// 7b Trybut żądanie reject — duplikat, wasalizacja już aktywna dla tej pary (audyt #21)
+r = evaluateProposal(prop('trybut_zadanie', 0, 1, { goldPerTurn: 15 }), ctx({
+  proposerRespekt: 80,
+  responderRespekt: 40,
+  activeDeals: [{ id: 'wasalizacja-0-1-t5', rodzaj: 'wasalizacja', strony: [0, 1], wygasaTura: null }],
+}));
+ok(!r.accepted, 'trybut żądanie reject duplikat wasalizacja aktywna');
+
 // 8 Trybut oferta near war
 r = evaluateProposal(prop('trybut_oferta', 0, 1, { goldOnce: 50 }), ctx({
   relation: rel(25, 30),

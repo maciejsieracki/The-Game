@@ -229,8 +229,13 @@ const DEFAULT_COST_BY_ROLE: Readonly<Record<string, number>> = {
 
 function unitCostFromDef(def: UnitDef): number {
   const raw = def['Pieniądz (koszt)'];
-  if (typeof raw === 'number' && Number.isFinite(raw) && raw > 0) {
-    return raw;
+  if (typeof raw === 'number' && Number.isFinite(raw)) {
+    if (raw > 0) return raw;
+    // Super-jednostka (audyt #11): koszt 0 w danych = naprawdę bezpłatna wg
+    // designu ("max 1, bezpłatna") -- nie spada na fallback roli jak zwykłe
+    // jednostki z brakującym/zerowym kosztem (limit 1 żywej sztuki egzekwowany
+    // osobno w availableProduction/availableReplacementsFor przez aliveUnitTypeNames).
+    if (raw === 0 && def['Super-jednostka'] === 'TAK') return 0;
   }
   const rola = def['Rola (linia)'];
   if (rola != null) {
@@ -381,6 +386,13 @@ export interface AvailabilityContext {
    * jest pure-logic i nie zna mapy. Patrz game/zelazo-access.ts hasZelazoAccess().
    */
   hasKopalniaNaZlozuZelaza?: boolean;
+  /**
+   * Nazwy ("Jednostka") aktualnie żywych jednostek TEGO właściciela na mapie —
+   * limit 1 żywej sztuki dla Super-jednostka=TAK (audyt #11, decyzja A3=A).
+   * WYLICZONE przez wołającego (main.ts/cityPanel.ts zna roster `units`);
+   * production.ts jest pure-logic i nie ma dostępu do mapy/rosteru.
+   */
+  aliveUnitTypeNames?: ReadonlySet<string>;
   /** Mnoznik kosztow budynkow z kreatora (Niski x1 / Normalny x2 / Wysoki x4). */
   buildingCostPace?: BuildingCostPace;
   /** Mnoznik kosztow rekrutacji jednostek z kreatora (Niski x1 / Normalny x2 / Wysoki x4). */
@@ -725,6 +737,10 @@ export function availableProduction(
       && !hasZelazoAccess(ctx.hasKopalniaNaZlozuZelaza, builtList)) {
       continue;
     }
+    // Super-jednostka (audyt #11, decyzja A3=A): max 1 ŻYWA sztuka na cywilizację --
+    // znika z listy produkcji dopóki egzemplarz danej nazwy żyje (respawn po śmierci
+    // działa samoczynnie, bo aliveUnitTypeNames liczy się z bieżącego rosteru).
+    if (u['Super-jednostka'] === 'TAK' && ctx.aliveUnitTypeNames?.has(u.Jednostka)) continue;
     const koszt = unitMoneyCost(
       itemCost('jednostka', u.Jednostka, data, 1),
       ctx.civBonusy,
@@ -809,6 +825,9 @@ export function availableReplacementsFor(
     if (surowiec === 'braz' && !hasBrazAccess(ctx.placedImprovements, builtList)) return false;
     if (surowiec === 'zelazo'
       && !hasZelazoAccess(ctx.hasKopalniaNaZlozuZelaza, builtList)) return false;
+    // Super-jednostka (audyt #11, decyzja A3=A): "Zastąp" nie może dać drugiej żywej
+    // sztuki -- ta sama bramka co availableProduction (aliveUnitTypeNames).
+    if (u['Super-jednostka'] === 'TAK' && ctx.aliveUnitTypeNames?.has(u.Jednostka)) return false;
     return true;
   }
 

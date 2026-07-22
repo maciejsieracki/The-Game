@@ -324,6 +324,19 @@ export function evaluateProposal(
           reason: `Żądanie trybutu wymaga Respekt > ${p.progTrybutZadanieMinRespekt} (masz ${ctx.proposerRespekt})`,
         };
       }
+      // Górny limit kwoty — skaluje się z Respektem proponenta (audyt #21, decyzja A5=A).
+      const maxPerTurn = p.progTrybutZadanieMaxGoldBase
+        + Math.max(0, ctx.proposerRespekt - p.progTrybutZadanieMinRespekt) * p.progTrybutZadanieMaxGoldPerRespekt;
+      if (perTurn > maxPerTurn) {
+        return {
+          accepted: false,
+          reason: `Żądanie trybutu przekracza limit przy tym Respekcie (max ${Math.round(maxPerTurn)} ¤/turę)`,
+        };
+      }
+      // Guard duplikatu — bez tego trybut/wasalizacja stackuje się co turę (audyt #21).
+      if (pairHasKind(ctx.activeDeals, proposerOwnerId, responderOwnerId, RodzajTraktatu.Wasalizacja)) {
+        return { accepted: false, reason: 'Trybut/wasalizacja z tym państwem już obowiązuje' };
+      }
       const deal = buildDeal(
         RodzajTraktatu.Wasalizacja,
         proposerOwnerId,
@@ -499,7 +512,7 @@ export function evaluateProposal(
       if (!granZaufOk) {
         return { accepted: false, reason: `Zaufanie zbyt niskie (wymagane ≥ ${p.progGraniceZaufanie})` };
       }
-      if (payload.borderMilitary && ctx.responderRespekt < p.progGraniceWojskoweRespekt) {
+      if (payload.borderMilitary && ctx.proposerRespekt < p.progGraniceWojskoweRespekt) {
         return { accepted: false, reason: `Prawo wojskowe wymaga Respekt ≥ ${p.progGraniceWojskoweRespekt}` };
       }
       const rodzaj = payload.borderMilitary
@@ -531,7 +544,7 @@ export function evaluateProposal(
     }
 
     case 'wasal': {
-      if (ctx.responderRespekt < p.progWasalizacjaRespekt) {
+      if (ctx.proposerRespekt < p.progWasalizacjaRespekt) {
         return { accepted: false, reason: `Wasalizacja wymaga Respekt ≥ ${p.progWasalizacjaRespekt}` };
       }
       const perTurn = payload.goldPerTurn ?? p.progWasalDefaultGoldPerTurn;
