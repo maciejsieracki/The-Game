@@ -274,7 +274,7 @@ export function computeHappinessBreakdown(
   const era = input.era ?? 1;
 
   if (input.buildingZadowolenie !== 0) {
-    lines.push({ id: 'budynki', label: 'Budynki', value: input.buildingZadowolenie });
+    lines.push({ id: 'budynki', label: 'Budynki (+1/budynek)', value: input.buildingZadowolenie });
   }
   if (input.haKult) {
     lines.push({ id: 'kultura', label: 'Kultura dominująca', value: input.haKult });

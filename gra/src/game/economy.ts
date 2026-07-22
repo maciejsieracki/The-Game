@@ -418,6 +418,56 @@ export function buildingValue(
   return Math.floor(buildingEffectAtLevel(b.baza[key], level));
 }
 
+/** Każdy zbudowany budynek daje +1 szczęścia (decyzja Macieja 2026-07-22). */
+export const BUILDING_HAPPINESS_BASE_PER_BUILDING = 1;
+
+/**
+ * Szczęście z jednego budynku: globalne +1 + ewentualny bonus z `baza.zadowolenie`.
+ * Np. Świątynia (zadowolenie 3, poziom 1) → 4; Mury (0) → 1.
+ */
+export function buildingHappinessAtLevel(
+  b: Pick<BuildingRecord, 'baza'>,
+  level: number,
+): number {
+  const extra = typeof b.baza.zadowolenie === 'number' && b.baza.zadowolenie !== 0
+    ? buildingValue(b as BuildingRecord, level, 'zadowolenie')
+    : 0;
+  return BUILDING_HAPPINESS_BASE_PER_BUILDING + extra;
+}
+
+/** Minimalny kształt wpisu katalogu budynków do liczenia szczęścia. */
+export interface BuildingHappinessCatalogEntry {
+  id: string;
+  baza: BuildingYields;
+  epokaWejscia: number;
+  maksPoziom: number;
+  poziomTechGate?: Record<string, string> | null;
+}
+
+/** Suma szczęścia ze wszystkich zbudowanych budynków miasta. */
+export function sumBuildingHappinessFromBuiltIds(
+  builtIds: readonly string[],
+  catalog: readonly BuildingHappinessCatalogEntry[],
+  levelFor: (bdef: BuildingHappinessCatalogEntry) => number,
+): number {
+  let sum = 0;
+  for (const bid of builtIds) {
+    const bdef = catalog.find(b => b.id === bid);
+    if (!bdef) continue;
+    sum += buildingHappinessAtLevel(bdef, levelFor(bdef));
+  }
+  return sum;
+}
+
+/** Suma szczęścia z wpisów `{ record, level }` (cityYieldPerTurn). */
+export function sumBuildingHappiness(cityBuildings: readonly CityBuildingEntry[]): number {
+  let sum = 0;
+  for (const { record, level } of cityBuildings) {
+    sum += buildingHappinessAtLevel(record, level);
+  }
+  return sum;
+}
+
 // ---------------------------------------------------------------------------
 // 2. cityYieldPerTurn
 // ---------------------------------------------------------------------------
@@ -644,7 +694,7 @@ export function cityYieldPerTurn(
     zywnoscBudynkow  += buildingValue(record, level, 'zywnosc');
     naukaBudynkow    += buildingValue(record, level, 'nauka');
     kulturaBudynkow  += buildingValue(record, level, 'kultura');
-    zadBudynkow      += buildingValue(record, level, 'zadowolenie');
+    zadBudynkow      += buildingHappinessAtLevel(record, level);
   }
 
   // --- Step 5: Sum non-combat mnoznik% and apply to combined Praca ---

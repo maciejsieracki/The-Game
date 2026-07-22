@@ -2815,3 +2815,12 @@ Jest: `0.375` / `0.3` — `gra/src/render/rangeOverlay.ts`.
 Bramki: tsc=0 · territory-border-test 9/9.
 Publish ROBOCZA: stamp **4332ae45** · md5 `4332ae45d7d58b706e5a68a9882f8503`.
 CZEKAM-NA: Maciej — `git pull` → Ctrl+F5 START.html → stamp `4332ae45` → mapa → granice wyraźnie szersze, delikatniejsze.
+
+## [06:50 PL, 2026-07-22] INTEGRATOR → Maciej — EKONOMIA: +1 szczęścia per budynek
+
+Decyzja Macieja: każdy zbudowany budynek +1 szczęścia; `baza.zadowolenie` z JSON dokładany (nie zastępuje).
+Hook: `buildingHappinessAtLevel` / `sumBuildingHappinessFromBuiltIds` w `gra/src/game/economy.ts` → main, cityPanel, cityYieldPerTurn.
+Tooltip breakdown: „Budynki (+1/budynek)". Przykład: Świątynia zad.3 → efekt 4; hipotetyczne 2 → 3.
+Bramki: tsc=0 · building-happiness-test 8/8 · society-breakdown 40/40 · VERIFY OK.
+Publish ROBOCZA: stamp **81e95aaa** · md5 `81e95aaae7cbea9034c0df360ce34845`.
+CZEKAM-NA: Maciej — `git pull` → Ctrl+F5 START.html → stamp `81e95aaa` → miasto z budynkami → panel Sz.

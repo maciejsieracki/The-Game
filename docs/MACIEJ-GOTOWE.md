@@ -4,7 +4,31 @@
 > **Czat:** krótko **`✅ Gotowe:`** / **`⏸️ Czeka:`** · **Ten plik:** pełniejszy zapis tego samego.  
 > Szczegóły techniczne → handoff w `dyspozycje/_handoff/` · operacja → `dyspozycje/DZIENNIK-MASTERA.md`
 
-**Ostatnia aktualizacja:** 2026-07-22 (granice państwa — szerokość + alpha)
+**Ostatnia aktualizacja:** 2026-07-22 (+1 szczęścia per budynek)
+
+---
+
+## [06:45] INTEGRATOR → MASTER — EKONOMIA: +1 szczęścia per budynek
+
+Decyzja Macieja: każdy budynek +1 szczęścia; istniejący `baza.zadowolenie` dokładany.
+Hook: `buildingHappinessAtLevel` / `sumBuildingHappinessFromBuiltIds` (`economy.ts`).
+ROBOCZA stamp **`81e95aaa`** · md5 `81e95aaae7cbea9034c0df360ce34845`.
+Bramki: tsc=0 · building-happiness-test 8/8 · society-breakdown 40/40 · VERIFY OK.
+CZEKAM-NA: playtest miasta (panel Sz / tooltip „Budynki (+1/budynek)")
+
+---
+
+## [2026-07-22] ✅ Gotowe — +1 szczęścia za każdy budynek
+
+| | |
+|---|---|
+| **Co** | Każdy zbudowany budynek daje **+1 szczęścia**; bonus z JSON (`baza.zadowolenie`) **dokładany** |
+| **Hook** | `gra/src/game/economy.ts` — `buildingHappinessAtLevel`, `sumBuildingHappinessFromBuiltIds` |
+| **Przykład** | Świątynia zadowolenie 3 → **4**; budynek z 2 w JSON → **3**; Mury (0) → **1** |
+| **Test** | 3 budynki (mury+świątynia+studnia) → **7** (= 3×+1 + bonusy JSON) |
+| **md5** | `81e95aaae7cbea9034c0df360ce34845` · stamp `81e95aaa` |
+| **Bramki** | tsc=0 · building-happiness-test 8/8 · society-breakdown 40/40 |
+| **Od Ciebie** | `git pull` → Ctrl+F5 · `gra-robocza/START.html` → stamp `81e95aaa` → miasto → panel Sz |
 
 ---
 

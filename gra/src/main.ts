@@ -399,7 +399,7 @@ import {
   oldestCityOfOwner,
   type OwnerResourceAccess,
 } from './game/capital-capture';
-import { civBonusyForCivKey, cityPopulationCap, loadEconParams } from './game/economy';
+import { civBonusyForCivKey, cityPopulationCap, loadEconParams, sumBuildingHappinessFromBuiltIds } from './game/economy';
 import { advanceProduction, rushProduction, rushCost, populationCostOf, UNIT_POPULATION_COST,
   enqueueRecruitment, advanceRecruitment, advanceRecruitmentGated, unitProductionItem,
   enqueue, buildingProductionItem, splitPraca, availableProduction, availableReplacementsFor,
@@ -11610,15 +11610,18 @@ async function boot(): Promise<void> {
                 }
               }
 
-              // SZCZĘŚCIE
-              let haBuildings = 0;
-              for (const bid of builtIds) {
-                const bdef = data.buildings.find(b => b.id === bid);
-                if (bdef && typeof bdef.baza.zadowolenie === 'number') {
-                  const lvl = buildingLevelForEpoch(bdef.epokaWejscia, player.era, bdef.maksPoziom, bdef.poziomTechGate, player.zbadane);
-                  haBuildings += buildingEffectAtLevel(bdef.baza.zadowolenie, lvl);
-                }
-              }
+              // SZCZĘŚCIE (+1 per budynek + baza.zadowolenie — economy.ts)
+              const haBuildings = sumBuildingHappinessFromBuiltIds(
+                builtIds,
+                data.buildings,
+                bdef => buildingLevelForEpoch(
+                  bdef.epokaWejscia,
+                  player.era,
+                  bdef.maksPoziom,
+                  bdef.poziomTechGate ?? null,
+                  player.zbadane,
+                ),
+              );
               const haWealth  = econTick ? econTick.wealthZadowolenie : 0;
               const podzial = city.podzialHandlu ?? DEFAULT_PODZIAL_HANDLU;
               const gCountLaw = lawGarrisonCountForCity(city);

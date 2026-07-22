@@ -11,9 +11,13 @@ swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drug
 
 ## ROBOCZA (gra-robocza\Gra-ROBOCZA.html — wskazywana przez START.html)
 
+- 2026-07-22 · stempel: ROBOCZA · **81e95aaa** · md5 pliku `81e95aaae7cbea9034c0df360ce34845` · **EKONOMIA: +1 szczęścia per budynek** — na `4332ae45`:
+  **Decyzja Macieja:** każdy zbudowany budynek daje +1 szczęścia; bonus z `baza.zadowolenie` w JSON **dokładany** (nie zastępuje). **Hook:** `buildingHappinessAtLevel` / `sumBuildingHappinessFromBuiltIds` w `gra/src/game/economy.ts` → `main.ts`, `cityPanel.ts`, `cityYieldPerTurn`. Tooltip: „Budynki (+1/budynek)". Przykład: Świątynia zadowolenie 3 → efekt 4; hipotetyczne 2 → 3.
+  tsc=0 · building-happiness-test 8/8 · society-breakdown-test OK · publish `gra-robocza/Gra-ROBOCZA.html`. · **AKTUALNA** · Test: Ctrl+F5 START.html → stamp `81e95aaa` → miasto z 3 budynkami → Sz +3 bazowe + bonusy z JSON.
+
 - 2026-07-22 · stempel: ROBOCZA · **4332ae45** · md5 pliku `4332ae45d7d58b706e5a68a9882f8503` · **MAPA: granice państwa — szersze + bardziej przezroczyste** — na `04f98d66`:
   **Decyzja Macieja:** szerokość pasa ×2,5 (wzrost ~150%); alpha 30%. **Było:** `TERRITORY_BORDER_BAND_WIDTH=0.15`, `TERRITORY_BORDER_OPACITY=0.5`. **Jest:** `0.375` / `0.3` w `gra/src/render/rangeOverlay.ts`.
-  tsc=0 · territory-border-test 9/9 · publish `gra-robocza/Gra-ROBOCZA.html`. · **AKTUALNA** · Test: Ctrl+F5 START.html → stamp `4332ae45` → mapa → granice państwa wyraźnie szersze, delikatniejsze (30% alpha).
+  tsc=0 · territory-border-test 9/9 · publish `gra-robocza/Gra-ROBOCZA.html`. · **ZASTĄPIONA** (→ `81e95aaa`) · Test: Ctrl+F5 START.html → stamp `4332ae45` → mapa → granice państwa wyraźnie szersze, delikatniejsze (30% alpha).
 
 - 2026-07-22 · stempel: ROBOCZA · **04f98d66** · md5 pliku `04f98d66da71c76b3880dce7121dc916` · **FIX: zwiadowca sąsiad — domknięcie regresji Teby x3** — na `caa23af3`:
   **Bug (Maciej):** po ataku na miasto zwiadowca sąsiad nadal wchodził/merge'ował mimo fixów 5ce0dfb7 + caa23af3. **Luka:** `isCivilianUnit` tylko po `category` — jednostki ze starym zapisem / `domyslny` przechodziły do rosteru; `applyCityCaptureAfterBattle` używał `atkRoster[0]` zamiast kotwicy; brak guardów cywilów w `moveAtkRosterOntoBattleHex` / capture. **Fix:** `CIVILIAN_TYPE_IDS` fallback (typeId); kotwica zawsze pierwsza w rosterze; cywile nigdy nie relocate/capture/MP poza kotwicą; test Teby A+B vs miasto C.

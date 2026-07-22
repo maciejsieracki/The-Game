@@ -142,6 +142,7 @@ import {
 import {
   cityYieldPerTurn,
   cityPopulationCap,
+  sumBuildingHappinessFromBuiltIds,
   type CityYieldContext,
 } from '../game/economy';
 import { UI_PARAMS } from './uiParams';
@@ -1925,15 +1926,17 @@ function PH(): string {
 function buildingHappinessSum(cityId: string, data: GameData, era: number, ownerId: number): number {
   const builtIds = cfg.getBuiltBuildingIds?.(cityId) ?? [];
   const techs = cfg.getUnlockedTechs?.(ownerId) ?? [];
-  let sum = 0;
-  for (const bid of builtIds) {
-    const bdef = data.buildings.find(b => b.id === bid);
-    if (bdef && typeof bdef.baza.zadowolenie === 'number') {
-      const lvl = buildingLevelForEpoch(bdef.epokaWejscia, era, bdef.maksPoziom, bdef.poziomTechGate, techs);
-      sum += buildingEffectAtLevel(bdef.baza.zadowolenie, lvl);
-    }
-  }
-  return sum;
+  return sumBuildingHappinessFromBuiltIds(
+    builtIds,
+    data.buildings,
+    bdef => buildingLevelForEpoch(
+      bdef.epokaWejscia,
+      era,
+      bdef.maksPoziom,
+      bdef.poziomTechGate ?? null,
+      techs,
+    ),
+  );
 }
 
 /** B2-Q7=1C: pełny model % z silnika lub lokalnie (evaluateOrderFromBreakdown). */
