@@ -11,9 +11,13 @@ swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drug
 
 ## ROBOCZA (gra-robocza\Gra-ROBOCZA.html — wskazywana przez START.html)
 
+- 2026-07-22 · stempel: ROBOCZA · **6865baf8** · md5 pliku `6865baf802e6ced6a0721e2a1f4d9c0b` · **FIX: chatki ze skarbem — pełny spawn wg trudności (miasta×mnożnik)** — na `ae64786b`:
+  **Bug Macieja:** za mało chat na mapie mimo ustawień trudności (HART=1 · NORMAL=2 · EZ=3 na miasto). **Przyczyna:** formuła `typy×(1+państwa)×trudność` była OK, ale `VILLAGE_MIN_SPACING=5` + `MIN_DIST_FROM_CITY=4` ucinały spawn do ~30% celu (np. 99/312). **Fix:** spacing 3 hex, min od miasta 3 hex — pełne wypełnienie celu na mapie standardowej.
+  tsc=0 · villages-test 39/39 · map-gen-regression (spawn chat ≥90% celu) · publish `gra-robocza/Gra-ROBOCZA.html`. · **AKTUALNA** · Test: stamp `6865baf8` · Nowa gra Normal → mapa pokryta chatkami (~2× liczba miast startowych).
+
 - 2026-07-22 · stempel: ROBOCZA · **ae64786b** · md5 pliku `ae64786b05cd77d6dbb8d807ac209b4e` · **FIX: AI/miasta-państwa — farmy dopiero po Rolnictwie (koszt nauki)** — na `59d90c13`:
   **Bug Macieja:** obce cywilizacje mają farmy w turze 2–3, zanim gracz zdąży zbadać Rolnictwo. **Przyczyna:** AI kończyło tech natychmiast (`aiDone.add` co turę), bez puli Nauki i `researchStep`; brak bankowania `aiEcon.nauka`. **Fix:** `aiNaukaPoolByOwner` + `aiBadanaByOwner` + `runAiResearchForOwner` (symetria z graczem: bank nauki → chooseAIResearch → researchStep); usunięto instant-unlock w pętli AI.
-  tsc=0 · ai-improvements-test 15/15 · owner-epoch-test 13/13 · publish `gra-robocza/Gra-ROBOCZA.html`. · **AKTUALNA** · Test: stamp `ae64786b` · Nowa gra Kamień → obserwuj miasto-państwo: brak farm w turach 1–3; farmy dopiero po ~koszt Rolnictwa (8 PN szybko / 16 standard).
+  tsc=0 · ai-improvements-test 15/15 · owner-epoch-test 13/13 · publish `gra-robocza/Gra-ROBOCZA.html`. · **ZASTĄPIONA** (→ `6865baf8`) · Test: stamp `ae64786b` · Nowa gra Kamień → obserwuj miasto-państwo: brak farm w turach 1–3; farmy dopiero po ~koszt Rolnictwa (8 PN szybko / 16 standard).
 
 - 2026-07-22 · stempel: ROBOCZA · **59d90c13** · md5 pliku `59d90c13cf1056f05f669465a760f758` · **FIX: pierścień Nauki wyśrodkowanie + dyplomacja pierwszy kontakt** — na `35fd5449`:
   **(1) Nauka:** pierścień postępu koncentryczny z rantem ikon (`.civ-science-prog-ring`, bez podwójnego ringu).

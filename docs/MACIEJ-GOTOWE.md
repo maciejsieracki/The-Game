@@ -4,7 +4,20 @@
 > **Czat:** krótko **`✅ Gotowe:`** / **`⏸️ Czeka:`** · **Ten plik:** pełniejszy zapis tego samego.  
 > Szczegóły techniczne → handoff w `dyspozycje/_handoff/` · operacja → `dyspozycje/DZIENNIK-MASTERA.md`
 
-**Ostatnia aktualizacja:** 2026-07-22 (fix AI farmy przed Rolnictwem @ ae64786b)
+**Ostatnia aktualizacja:** 2026-07-22 (fix chatki ze skarbem @ 6865baf8)
+
+---
+
+## [10:15] ✅ Gotowe — FIX: chatki ze skarbem (spawn wg trudności)
+
+| | |
+|---|---|
+| **Co** | Chatki spawnują pełną liczbę wg trudności: HART=1 · NORMAL=2 · EZ=3 na każde miasto startowe |
+| **Przyczyna** | Formuła miast×trudność była OK, ale zbyt duży spacing (5 hex) — na mapie mieściło się tylko ~30% celu |
+| **Fix** | Spacing 3 hex, min od miasta 3 hex (`villages.ts`) |
+| **Pliki** | `gra/src/map/villages.ts`, `gra/tools/map-gen-regression-test.cjs` |
+| **md5** | `6865baf802e6ced6a0721e2a1f4d9c0b` · stamp `6865baf8` |
+| **Od Ciebie** | `git pull` → Ctrl+F5 · stamp `6865baf8` · Nowa gra Normal → dużo więcej chat na mapie |
 
 ---
 

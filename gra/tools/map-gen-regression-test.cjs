@@ -160,10 +160,16 @@ const mapVillages = M.generujSwiat(42, 'standardowy', 'kontynenty', {
 });
 const placed = countVillages(mapVillages);
 console.log(`  miasta=${stdCities} typow=${stdTypes} panstw=${stdStates} -> target=${stdTargetNormal}, placed=${placed}`);
+const example10 = M.expectedStartCityCount(1, 10);
+const example10Target = M.targetVillageHutCount(example10, 'normal');
+console.log(`  przyklad 1 typ + 10 panstw Normal -> ${example10Target} chat (${example10} miast): ${example10Target === 22 ? 'PASS' : 'FAIL'}`);
+if (example10Target !== 22) fail++;
 const example8 = M.targetVillageHutCount(8, 'normal');
 console.log(`  przyklad 8 miast Normal -> ${example8} chat: ${example8 === 16 ? 'PASS' : 'FAIL'}`);
-const villageOk = placed <= stdTargetNormal && placed > 0;
-console.log(`  spawn chat (<=target, >0): ${villageOk ? 'PASS' : 'FAIL'}`);
+if (example8 !== 16) fail++;
+const minPlaced = Math.floor(stdTargetNormal * 0.9);
+const villageOk = placed >= minPlaced && placed <= stdTargetNormal;
+console.log(`  spawn chat (${minPlaced}..${stdTargetNormal}): ${villageOk ? 'PASS' : 'FAIL'}`);
 if (!villageOk) fail++;
 
 const allOk = stdOk && duzyOk && totalBad === 0 && totalBadReal === 0 && detOk && fail === 0 && villageOk;

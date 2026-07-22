@@ -2920,3 +2920,13 @@ CZEKAM-NA: Maciej — `git pull` → Ctrl+F5 START.html → stamp `59d90c13` →
 Plik: `gra/src/main.ts`.
 Bramki: tsc=0 · ai-improvements 15/15 · owner-epoch 13/13 · publish robocza OK.
 CZEKAM-NA: Maciej — `git pull` → Ctrl+F5 START.html → stamp `ae64786b` → Nowa gra Kamień → obserwuj sąsiada: brak farm wcześnie; farmy dopiero po czasie badania Rolnictwa.
+
+## [10:15 PL, 2026-07-22] INTEGRATOR → Maciej — FIX chatki ze skarbem (spawn wg trudności)
+
+**md5:** `6865baf802e6ced6a0721e2a1f4d9c0b` · stamp `6865baf8`
+**Bug:** za mało chat na mapie (Maciej: HART=1 · NORMAL=2 · EZ=3 na miasto — nie widać).
+**Przyczyna:** cel `typy×(1+państwa)×mnożnik` OK, ale spacing 5 hex ucinał do ~30% (99/312).
+**Fix:** `VILLAGE_MIN_SPACING` 5→3, `VILLAGE_MIN_DIST_FROM_CITY` 4→3 w `villages.ts`.
+Pliki: `gra/src/map/villages.ts`, `gra/tools/map-gen-regression-test.cjs`.
+Bramki: tsc=0 · villages-test 39/39 · map-gen spawn chat PASS · publish robocza OK.
+CZEKAM-NA: Maciej — `git pull` → Ctrl+F5 START.html → stamp `6865baf8` → Nowa gra Normal → znacznie więcej chat (≈2× miasta startowe).

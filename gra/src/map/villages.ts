@@ -56,11 +56,17 @@ export function targetVillageHutCount(
   return cities * villageHutsPerCityMultiplier(difficulty);
 }
 
-/** Minimalny dystans (heksy) wioski od dowolnego miasta / pozycji startowej. */
-export const VILLAGE_MIN_DIST_FROM_CITY = 4;
+/**
+ * Minimalny dystans (heksy) wioski od dowolnego miasta / pozycji startowej.
+ * 3 hex — przy target = miasta×trudność (do ~300+ chat) spacing 4+ ucina spawn do ~30% celu.
+ */
+export const VILLAGE_MIN_DIST_FROM_CITY = 3;
 
-/** Minimalny dystans (heksy) wioski od innej wioski oraz od obozu barbarzyńców. */
-export const VILLAGE_MIN_SPACING = 5;
+/**
+ * Minimalny dystans (heksy) wioski od innej wioski oraz od obozu barbarzyńców.
+ * 3 hex — gęstość wymagana przez kanon (2–3 chat na miasto przy 12 typach × 12 państw).
+ */
+export const VILLAGE_MIN_SPACING = 3;
 
 // ---------------------------------------------------------------------------
 // Types
