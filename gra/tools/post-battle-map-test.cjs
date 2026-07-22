@@ -14,8 +14,9 @@ import {
   pickRetreatTargetAwayFromAttacker,
   pickRetreatTargetTowardAttackerSide,
   applyPostBattleMap,
+  applyCityCaptureAfterBattle,
 } from '../src/game/post-battle-map';
-export { pickRetreatTargetAwayFromAttacker, pickRetreatTargetTowardAttackerSide, applyPostBattleMap };
+export { pickRetreatTargetAwayFromAttacker, pickRetreatTargetTowardAttackerSide, applyPostBattleMap, applyCityCaptureAfterBattle };
 `,
 );
 
@@ -32,6 +33,7 @@ const {
   pickRetreatTargetAwayFromAttacker,
   pickRetreatTargetTowardAttackerSide,
   applyPostBattleMap,
+  applyCityCaptureAfterBattle,
 } = require(BUNDLE);
 
 let pass = 0;
@@ -254,6 +256,55 @@ applyPostBattleMap({
 });
 const scoutAfter = scoutSideUnits.find(u => u.id === 'scout');
 assert(scoutAfter?.q === 10 && scoutAfter?.r === 21, 'scout neighbor stays on original hex after city win');
+
+// Teby x3 repro: armia 2 na A, zwiadowca B (domyslny), miasto C — pełna ścieżka capture
+const tebyUnits = [
+  { id: 'a0', ownerId: 0, typeId: 'Hastati', category: 'miecznik', q: 10, r: 22, ruchLeft: 2 },
+  { id: 'a1', ownerId: 0, typeId: 'Hastati', category: 'miecznik', q: 10, r: 22, ruchLeft: 2 },
+  {
+    id: 'scout-b',
+    ownerId: 0,
+    typeId: 'Zwiadowca',
+    category: 'domyslny',
+    q: 10,
+    r: 21,
+    ruchLeft: 3,
+  },
+  { id: 'e0', ownerId: 1, typeId: 'Falanga', category: 'wlocznik', q: 11, r: 22, ruchLeft: 0 },
+];
+const tebyCity = { id: 'teby', ownerId: 1, q: 11, r: 22, name: 'Teby' };
+const tebyAnchor = tebyUnits[0];
+const tebyRoster = [tebyAnchor, tebyUnits[1]];
+applyPostBattleMap({
+  units: tebyUnits,
+  map: { hexes: {} },
+  cities: [tebyCity],
+  battleQ: 11,
+  battleR: 22,
+  atkAnchor: tebyAnchor,
+  atkRoster: tebyRoster,
+  defRoster: [tebyUnits[3]],
+  atkStart: new Map([
+    ['a0', { q: 10, r: 22 }],
+    ['a1', { q: 10, r: 22 }],
+  ]),
+  winner: 'atakujacy',
+  lossAtkPct: 0,
+  lossDefPct: 1,
+  getDef: () => ({ Health: 100 }),
+  maxHpOf: () => 100,
+  isPassableHex: () => true,
+  isUnitAt: () => false,
+  cityOnBattleHex: tebyCity,
+});
+applyCityCaptureAfterBattle(tebyCity, tebyRoster, 0, tebyUnits, tebyAnchor.id);
+const tebyScout = tebyUnits.find(u => u.id === 'scout-b');
+const tebyA0 = tebyUnits.find(u => u.id === 'a0');
+const tebyA1 = tebyUnits.find(u => u.id === 'a1');
+assert(tebyScout?.q === 10 && tebyScout?.r === 21, 'Teby: scout stays on hex B');
+assert(tebyA0?.q === 11 && tebyA0?.r === 22, 'Teby: anchor on city');
+assert(tebyA1?.q === 11 && tebyA1?.r === 22, 'Teby: stacked army on city with anchor');
+assert(tebyScout?.q !== tebyA0?.q || tebyScout?.r !== tebyA0?.r, 'Teby: scout not merged on city hex');
 
 console.log('post-battle-map-test: ' + pass + ' pass, ' + fail + ' fail');
 process.exit(fail > 0 ? 1 : 0);

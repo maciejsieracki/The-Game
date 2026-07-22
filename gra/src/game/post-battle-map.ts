@@ -7,7 +7,7 @@
 import type { GameMap } from '../types/map';
 import type { City } from './cities';
 import type { RuntimeUnit } from '../units/setup';
-import { hexNeighborCoords } from '../units/setup';
+import { hexNeighborCoords, isCivilianUnit } from '../units/setup';
 import { syncStackRuchLeft } from './armyMerge';
 import { applyLossPctToRoster } from './auto-battle-power';
 import type { UnitPowerInput } from './unit-power';
@@ -248,6 +248,7 @@ function moveAtkRosterOntoBattleHex(input: PostBattleMapInput): void {
 
   const moved: RuntimeUnit[] = [];
   for (const u of liveAtk) {
+    if (isCivilianUnit(u) && u.id !== anchor.id) continue;
     const start = input.atkStart.get(u.id);
     const onAnchorStartHex =
       u.id === anchor.id
@@ -272,8 +273,13 @@ function retreatAtkRosterToStart(input: PostBattleMapInput): void {
   }
 }
 
-function spendAttackMpOnLive(units: RuntimeUnit[], atkRoster: RuntimeUnit[]): void {
+function spendAttackMpOnLive(
+  units: RuntimeUnit[],
+  atkRoster: RuntimeUnit[],
+  anchorId: string | number | undefined,
+): void {
   for (const ref of atkRoster) {
+    if (isCivilianUnit(ref) && ref.id !== anchorId) continue;
     const u = units.find(x => x.id === ref.id);
     if (u) u.ruchLeft = Math.max(0, u.ruchLeft - 1);
   }
@@ -309,7 +315,7 @@ export function applyPostBattleMap(input: PostBattleMapInput): PostBattleMapResu
     retreatDefendersOnTie(input);
   }
 
-  spendAttackMpOnLive(input.units, input.atkRoster);
+  spendAttackMpOnLive(input.units, input.atkRoster, input.atkAnchor.id);
   return { removedIds };
 }
 
@@ -328,6 +334,7 @@ export function applyCityCaptureAfterBattle(
   atkRoster: RuntimeUnit[],
   atkOwner: number,
   units: RuntimeUnit[],
+  anchorId: string | number = atkRoster[0]?.id ?? '',
 ): RuntimeUnit | null {
   for (let i = units.length - 1; i >= 0; i--) {
     const u = units[i]!;
@@ -340,11 +347,13 @@ export function applyCityCaptureAfterBattle(
   for (const ref of atkRoster) {
     const live = units.find(x => x.id === ref.id);
     if (!live) continue;
-    if (ref.id === atkRoster[0]?.id) {
+    const isAnchor = ref.id === anchorId;
+    if (isAnchor && !isCivilianUnit(live)) {
       live.q = city.q;
       live.r = city.r;
       lead = live;
     }
+    if (isCivilianUnit(live) && !isAnchor) continue;
     live.ruchLeft = Math.max(0, live.ruchLeft - 1);
     if (live.inGarnizon) delete live.inGarnizon;
     if (live.oblegaCityId === city.id) delete live.oblegaCityId;

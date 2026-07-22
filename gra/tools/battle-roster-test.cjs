@@ -148,5 +148,22 @@ assert(
   'shouldInclude: neighbor scout not in atk battle',
 );
 
+const scoutWrongCat = {
+  id: 'u-scout-badcat',
+  ownerId: 0,
+  typeId: 'Zwiadowca',
+  category: 'domyslny',
+  q: 6,
+  r: 1,
+  ruchLeft: 2,
+  ruch: 3,
+};
+const atkBadCat = collectAtkRosterNearCity(openCity, hastati, [hastati, ally, scoutWrongCat]);
+assert(
+  atkBadCat.length === 2 && !atkBadCat.some(u => u.typeId === 'Zwiadowca'),
+  'city atk roster: scout excluded even with wrong category (typeId fallback)',
+);
+assert(atkBadCat[0].id === hastati.id, 'city atk roster: anchor is always first');
+
 console.log('---', ok, 'ok,', fail, 'fail');
 process.exit(fail > 0 ? 1 : 0);

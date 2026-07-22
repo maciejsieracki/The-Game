@@ -348,8 +348,10 @@ var ROAD_MIN_MOVE_COST = 1 / 3;
 
 // src/units/setup.ts
 var CIVILIAN_CATEGORIES = /* @__PURE__ */ new Set(["osadnik", "robotnik", "zwiadowca"]);
+var CIVILIAN_TYPE_IDS = /* @__PURE__ */ new Set(["Zwiadowca", "Osadnik", "Robotnik"]);
 function isCivilianUnit(u) {
-  return CIVILIAN_CATEGORIES.has(u.category);
+  if (CIVILIAN_CATEGORIES.has(u.category)) return true;
+  return CIVILIAN_TYPE_IDS.has(u.typeId);
 }
 function hexDistance(aq, ar, bq, br) {
   const dq = Math.abs(aq - bq);
@@ -386,6 +388,11 @@ function collectUnitsInRadius(anchor, allUnits, radiusFrom, ctx) {
     out.push(u);
   }
   if (!out.some((x) => x.id === anchor.id) && shouldIncludeInBattleRoster(anchor, ctx)) {
+    out.unshift(anchor);
+  }
+  const anchorIdx = out.findIndex((x) => x.id === anchor.id);
+  if (anchorIdx > 0) {
+    out.splice(anchorIdx, 1);
     out.unshift(anchor);
   }
   return out;

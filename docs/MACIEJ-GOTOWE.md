@@ -4,7 +4,19 @@
 > **Czat:** krótko **`✅ Gotowe:`** / **`⏸️ Czeka:`** · **Ten plik:** pełniejszy zapis tego samego.  
 > Szczegóły techniczne → handoff w `dyspozycje/_handoff/` · operacja → `dyspozycje/DZIENNIK-MASTERA.md`
 
-**Ostatnia aktualizacja:** 2026-07-22 (wsparcie ATK po zdobyciu miasta)
+**Ostatnia aktualizacja:** 2026-07-22 (zwiadowca sąsiad po zdobyciu miasta)
+
+---
+
+## [2026-07-22] ✅ Gotowe — zwiadowca sąsiad nie wchodzi / nie merge po zdobyciu miasta
+
+| | |
+|---|---|
+| **Co** | Domknięcie regresji Teby x3: zwiadowca/osadnik/robotnik sąsiad **nie** trafia do rosteru (nawet przy złej `category`), **nie** wchodzi na hex miasta, **nie** scala się z armią |
+| **Przykład** | Armia 2 na hex A, zwiadowca na hex B, atak miasta C → wygrana → kotwica+armia na C, zwiadowca zostaje na B |
+| **md5** | `04f98d66da71c76b3880dce7121dc916` · stamp `04f98d66` |
+| **Bramki** | tsc=0 · battle-roster-test 7/7 · post-battle-map-test 21/21 |
+| **Od Ciebie** | `git pull` → Ctrl+F5 · `gra-robocza/START.html` → stamp `04f98d66` → scenariusz armia+zwiadowca vs miasto |
 
 ---
 

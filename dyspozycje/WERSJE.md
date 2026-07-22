@@ -11,9 +11,13 @@ swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drug
 
 ## ROBOCZA (gra-robocza\Gra-ROBOCZA.html — wskazywana przez START.html)
 
+- 2026-07-22 · stempel: ROBOCZA · **04f98d66** · md5 pliku `04f98d66da71c76b3880dce7121dc916` · **FIX: zwiadowca sąsiad — domknięcie regresji Teby x3** — na `caa23af3`:
+  **Bug (Maciej):** po ataku na miasto zwiadowca sąsiad nadal wchodził/merge'ował mimo fixów 5ce0dfb7 + caa23af3. **Luka:** `isCivilianUnit` tylko po `category` — jednostki ze starym zapisem / `domyslny` przechodziły do rosteru; `applyCityCaptureAfterBattle` używał `atkRoster[0]` zamiast kotwicy; brak guardów cywilów w `moveAtkRosterOntoBattleHex` / capture. **Fix:** `CIVILIAN_TYPE_IDS` fallback (typeId); kotwica zawsze pierwsza w rosterze; cywile nigdy nie relocate/capture/MP poza kotwicą; test Teby A+B vs miasto C.
+  tsc=0 · battle-roster-test 7/7 · post-battle-map-test 21/21 · publish `gra-robocza/Gra-ROBOCZA.html`. · **AKTUALNA** · Test: Ctrl+F5 START.html → stamp `04f98d66`; armia 2 hex A + zwiadowca hex B → atak miasta C → wygrana → armia na mieście, zwiadowca na B bez merge.
+
 - 2026-07-22 · stempel: ROBOCZA · **caa23af3** · md5 pliku `caa23af35f45ae9b7b0dbe4d6b2ab561` · **FIX: wsparcie ATK zostaje po zdobyciu miasta** — na `24cdcfe8`:
   **Bug (kanon §14):** po wygranej M×W+ cały roster ATK lądował na hexie miasta (`moveAtkRosterOntoBattleHex`); wspierający z sąsiedniego heksa merge'owali się ze stosem jak zwiadowca (fix 5ce0dfb7 dotyczył tylko cywilów). **Decyzja:** §13a M×W+ / §13b — tylko kotwica wchodzi na hex miasta; wspierający zostają. **Fix:** `post-battle-map.ts` — ruch tylko kotwicy + jednostek ze wspólnego hexu startowego (stos).
-  tsc=0 · post-battle-map-test 17/17 · battle-roster-test 5/5 · publish `gra-robocza/Gra-ROBOCZA.html`. · **AKTUALNA** · Test: Ctrl+F5 START.html → stamp `caa23af3`; A atakuje miasto + B wspiera z sąsiedniego heksa → wygrana → A na mieście, B na swoim hexie.
+  tsc=0 · post-battle-map-test 17/17 · battle-roster-test 5/5 · publish `gra-robocza/Gra-ROBOCZA.html`. · **ZASTĄPIONA** (→ `04f98d66`) · Test: Ctrl+F5 START.html → stamp `caa23af3`; A atakuje miasto + B wspiera z sąsiedniego heksa → wygrana → A na mieście, B na swoim hexie.
 
 - 2026-07-22 · stempel: ROBOCZA · **24cdcfe8** · md5 pliku `24cdcfe843e8c0b28db7cb3f17ecf7d9` · **FIX: panel badań — lista „Możesz wybrać"** — na `2c72af63`:
   **Bug Macieja:** sekcja MOŻESZ WYBRAĆ pusta („Brak dostępnych technologii"), podczas gdy drzewko pokazywało techy do wyboru. **Przyczyna:** hub budował listę tylko przez `available.has(node.id)` po iteracji `eraNodes` — bez normalizacji slugów (nazwa vs slug) i bez epoki aktywnego celu; hooki pickera konfigurowane po utworzeniu huba. **Fix:** `scienceHubSnapshotLogic.ts` — normalizacja ID, iteracja pickable z silnika, epoka UI = epoka celu; `configureSciencePicker` przed `mountD1bHud`; merge config pickera.

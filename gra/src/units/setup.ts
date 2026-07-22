@@ -75,9 +75,13 @@ export interface RuntimeUnit {
 /** Kategorie cywilne — bez utrzymania, bez głodu wojska, bez ataku miast. */
 export const CIVILIAN_CATEGORIES = new Set(['osadnik', 'robotnik', 'zwiadowca']);
 
+/** typeId z units.json — fallback gdy category zapis/load jest błędny (domyslny). */
+export const CIVILIAN_TYPE_IDS = new Set(['Zwiadowca', 'Osadnik', 'Robotnik']);
+
 /** Czy jednostka jest cywilna (zwiadowca/osadnik/robotnik). */
-export function isCivilianUnit(u: Pick<RuntimeUnit, 'category'>): boolean {
-  return CIVILIAN_CATEGORIES.has(u.category);
+export function isCivilianUnit(u: Pick<RuntimeUnit, 'category' | 'typeId'>): boolean {
+  if (CIVILIAN_CATEGORIES.has(u.category)) return true;
+  return CIVILIAN_TYPE_IDS.has(u.typeId);
 }
 
 /**

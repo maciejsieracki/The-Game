@@ -9856,7 +9856,7 @@ async function boot(): Promise<void> {
         && cityOnHex.ownerId !== atkRoster[0]?.ownerId
       ) {
         const atkOwner = atkRoster[0]!.ownerId;
-        applyCityCaptureToMap(cityOnHex, atkRoster, atkOwner);
+        applyCityCaptureToMap(cityOnHex, atkRoster, atkOwner, atkRoster[0] ?? null);
         if (!opts?.siegeContext && cityOwnerBefore !== undefined && cityOnHex.ownerId === atkOwner) {
           const lead = units.find(u => u.id === atkRoster[0]?.id) ?? null;
           refreshMapAfterCityCapture(lead);
@@ -10211,9 +10211,16 @@ async function boot(): Promise<void> {
       city: City,
       atkRoster: RuntimeUnit[],
       atkOwner: number,
+      anchor: RuntimeUnit | null = atkRoster[0] ?? null,
     ): RuntimeUnit | null {
       const oldOwner = city.ownerId;
-      const lead = applyCityCaptureAfterBattle(city, atkRoster, atkOwner, units);
+      const lead = applyCityCaptureAfterBattle(
+        city,
+        atkRoster,
+        atkOwner,
+        units,
+        anchor?.id ?? atkRoster[0]?.id ?? '',
+      );
       if (atkOwner === 0) playerEverOwnedCity = true;
       syncCityGarnizon(city);
       endMapSiege(city.id);
@@ -10258,7 +10265,7 @@ async function boot(): Promise<void> {
       hideCityAttackChoice();
 
       const atkOwner = anchor.ownerId;
-      const lead = applyCityCaptureToMap(city, atkRoster, atkOwner);
+      const lead = applyCityCaptureToMap(city, atkRoster, atkOwner, anchor);
       refreshMapAfterCityCapture(lead ?? anchor);
 
       showCityCaptureNotice(city.name, {

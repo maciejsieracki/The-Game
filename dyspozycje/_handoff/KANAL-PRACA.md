@@ -2797,3 +2797,12 @@ Fix: `post-battle-map.ts` — ruch na hex bitwy tylko kotwica + jednostki ze wsp
 Bramki: tsc=0 · post-battle-map 17/17 · battle-roster 5/5.
 Publish ROBOCZA: stamp **caa23af3** · md5 `caa23af35f45ae9b7b0dbe4d6b2ab561`.
 CZEKAM-NA: Maciej — `git pull` → Ctrl+F5 START.html → stamp `caa23af3` → A atakuje miasto + B wspiera z sąsiedniego heksa → wygrana → A na mieście, B na swoim hexie.
+
+## [06:30 PL, 2026-07-22] INTEGRATOR → Maciej — FIX: zwiadowca sąsiad (domknięcie Teby x3)
+
+Regresja Macieja: zwiadowca sąsiad nadal w rosterze / wchodził na miasto / merge mimo 5ce0dfb7 + caa23af3.
+Luka: `isCivilianUnit` tylko po `category` (stary save `domyslny` omijał filtr); `applyCityCaptureAfterBattle` używał `atkRoster[0]` zamiast kotwicy; brak guardów cywilów w post-battle relocate/capture.
+Fix: `CIVILIAN_TYPE_IDS` fallback; kotwica zawsze pierwsza w rosterze; cywile nigdy relocate/capture/MP poza kotwicą; test Teby A+B vs C.
+Bramki: tsc=0 · battle-roster 7/7 · post-battle-map 21/21.
+Publish ROBOCZA: stamp **04f98d66** · md5 `04f98d66da71c76b3880dce7121dc916`.
+CZEKAM-NA: Maciej — `git pull` → Ctrl+F5 START.html → stamp `04f98d66` → armia 2 hex A + zwiadowca hex B → atak miasta C → wygrana → armia na C, zwiadowca na B bez merge.

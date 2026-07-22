@@ -50,6 +50,12 @@ function collectUnitsInRadius(
   if (!out.some(x => x.id === anchor.id) && shouldIncludeInBattleRoster(anchor, ctx)) {
     out.unshift(anchor);
   }
+  // Kotwica zawsze pierwsza — lead capture / post-battle używa atkRoster[0].
+  const anchorIdx = out.findIndex(x => x.id === anchor.id);
+  if (anchorIdx > 0) {
+    out.splice(anchorIdx, 1);
+    out.unshift(anchor);
+  }
   return out;
 }
 
