@@ -2979,3 +2979,9 @@ Test Super Huge 15 typów: **15/15** klastrów z miastami.
 Pliki: `gra/src/map/clusters.ts`, `gra/src/main.ts`, `gra/tools/cluster-start-test.cjs`, bundle robocza.
 Bramki: tsc=0 · cluster-start 109/109 · map-gen-regression OK · map-scale-menu 32/32.
 CZEKAM-NA: Maciej — Ctrl+F5 → stamp `cd615c1e` → Super Huge + 15 cywilizacji → frakcje rozłożone po kontynentach.
+
+## [13:00] INTEGRATOR → Maciej — Ranking Moc: bez miast-państw + mgła + toggle test
+Ranking Moc: tylko pełne cywilizacje (bez „· miasto-państwo"), tylko odkryte (+ gracz). TEMP test: `?debugPowerRankingAll=1` / `localStorage civ.debugPowerRankingAll=true` / checkbox [TEST] w panelu Moc (ROBOCZA).
+md5 `6a9b8e729d52f1adb2ea556a265b12e0` · stamp `6a9b8e72` · tsc=0 · power-ranking 10/10.
+Pliki: `power-ranking.ts`, `main.ts`, `empireDetailPanel.ts`, `powerOverlayHud.ts`, `hud.ts`.
+CZEKAM-NA: Maciej — Ctrl+F5 stamp `6a9b8e72` → panel Moc → brak miast-państw w rankingu.

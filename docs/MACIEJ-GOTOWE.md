@@ -4,7 +4,20 @@
 > **Czat:** krótko **`✅ Gotowe:`** / **`⏸️ Czeka:`** · **Ten plik:** pełniejszy zapis tego samego.  
 > Szczegóły techniczne → handoff w `dyspozycje/_handoff/` · operacja → `dyspozycje/DZIENNIK-MASTERA.md`
 
-**Ostatnia aktualizacja:** 2026-07-22 (FIX spawn cywilizacji @ cd615c1e)
+**Ostatnia aktualizacja:** 2026-07-22 (Ranking Moc @ 6a9b8e72)
+
+---
+
+## [13:00] ✅ Gotowe — Ranking Moc: bez miast-państw + mgła wojny
+
+| | |
+|---|---|
+| **Co** | Ranking Moc pokazuje tylko **pełne cywilizacje** (nie miasta-państwa) i tylko **odkryte** nacje; gracz zawsze na liście |
+| **Bug** | W rankingu były wpisy typu „Ur · miasto-państwo" oraz nieodkryte AI |
+| **Fix** | `gra/src/game/power-ranking.ts` + filtr w `buildPowerRankingByOwner` |
+| **TEMP test** | Checkbox **[TEST] Pokaż moc wszystkich cywilizacji** w panelu Moc (ROBOCZA) · lub konsola: `localStorage.setItem('civ.debugPowerRankingAll','true')` + F5 · lub URL `?debugPowerRankingAll=1` · wyłącz: `'false'` lub checkbox odznacz |
+| **md5** | `6a9b8e729d52f1adb2ea556a265b12e0` · stamp `6a9b8e72` |
+| **Od Ciebie** | Ctrl+F5 · stamp `6a9b8e72` · Nowa gra → panel Moc → Ranking: brak „· miasto-państwo" · tylko Ty dopóki nie odkryjesz innych |
 
 ---
 

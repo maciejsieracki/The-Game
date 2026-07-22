@@ -11,11 +11,15 @@ swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drug
 
 ## ROBOCZA (gra-robocza\Gra-ROBOCZA.html — wskazywana przez START.html)
 
+- 2026-07-22 · stempel: ROBOCZA · **6a9b8e72** · md5 pliku `6a9b8e729d52f1adb2ea556a265b12e0` · **UI: Ranking Moc — bez miast-państw + mgła wojny** — na `cd615c1e`:
+  **Ranking Moc (Maciej):** lista pokazywała miasta-państwa (np. „Ur · miasto-państwo") i nieodkryte cywilizacje. **Fix:** `filterOwnersForPowerRanking` — tylko pełne nacje + odkryte (`diplomaticallyDiscoveredOwners`); gracz zawsze widoczny. **TEMP test:** `?debugPowerRankingAll=1` lub `localStorage civ.debugPowerRankingAll=true` + checkbox [TEST] w panelu Moc (ROBOCZA) — pokaż wszystkie pełne cywilizacje bez mgły (miasta-państwa nadal ukryte).
+  tsc=0 · power-ranking 10/10 · power-objective 12/12 · display-names 11/11 · publish `gra-robocza/Gra-ROBOCZA.html`. · **AKTUALNA** · Test: stamp `6a9b8e72` · Nowa gra → Ranking Moc bez „· miasto-państwo" · odkryj AI → pojawia się w rankingu.
+
 - 2026-07-22 · stempel: ROBOCZA · **cd615c1e** · md5 pliku `cd615c1e5a332919b72a183a7f980c60` · **MAPA: FIX spawn cywilizacji — continent-aware + fallback** — na `e5cb5ab6`:
   **Bug Macieja:** suwak 15 cywilizacji → na mapie ~10; puste kontynenty, reszta zatłoczona; „brak miejsca".
   **Przyczyna:** `computeClusters` stawiał środki klastrów greedy-shuffle (bez kontynentów); twardy min 12 hex + brzeg → za mało środków; `buildClusterLayoutWithEdgeCapital` zwracał pusty klaster na małym regionie; `aktywneTypy` raportowało żądaną liczbę zamiast faktycznej.
   **Fix:** rozmieszczenie środków po masach lądu (flood-fill) → po 1 na kontynent, potem round-robin; adaptacyjny min dystans; progresywne luzowanie 12→6; fallback layout gdy edge-capital nie mieści się; `requestedTypy` vs faktyczne `aktywneTypy`.
-  tsc=0 · cluster-start 109/109 · map-gen-regression OK · map-scale-menu 32/32 · publish `gra-robocza/Gra-ROBOCZA.html`. · **AKTUALNA** · Test: stamp `cd615c1e` · Super Huge 15 typów → 15 klastrów · kontynenty z cywilizacjami.
+  tsc=0 · cluster-start 109/109 · map-gen-regression OK · map-scale-menu 32/32 · publish `gra-robocza/Gra-ROBOCZA.html`. · **ZASTĄPIONA** (→ `6a9b8e72`) · Test: stamp `cd615c1e` · Super Huge 15 typów → 15 klastrów · kontynenty z cywilizacjami.
 
 - 2026-07-22 · stempel: ROBOCZA · **e5cb5ab6** · md5 pliku `e5cb5ab6a5dbe77b618e34ebd767951d` · **MAPA: FIX odstęp 3 hex między miastami-państwami** — na `05d689e3`:
   **Miasta-państwa (Maciej):** `buildSameTypeRivalCandidateHexes` scalało przepustki bez sprawdzania odległości para-po-parze (bug: kandydaci 1 hex od siebie). **Fix:** `tryAdd` wymaga min 3 hex od rdzenia, max 3 hex, i min 3 hex od już zebranych hexów. Pre-plan (`packRivalCitiesAroundCore`) bez zmian — już OK.

@@ -555,7 +555,14 @@ function handleHudBarAction(act: string): void {
     if (cfg.onOpenEmpireDetail) cfg.onOpenEmpireDetail(empireSectionFromHudAct('moc'));
     else {
       const data = cfg.getPowerOverlay?.();
-      if (data) showPowerOverlay(data);
+      if (data) {
+        const hudCfg = cfg;
+        const refreshPower = () => {
+          const fresh = hudCfg.getPowerOverlay?.();
+          if (fresh) showPowerOverlay(fresh, undefined, refreshPower);
+        };
+        showPowerOverlay(data, undefined, refreshPower);
+      }
     }
   } else if (act === 'religia' || act === 'kultura' || act === 'skarbiec' || act === 'praca' || act === 'nauka'
     || act === 'ludnosc' || act === 'rekruci' || act === 'zywnosc') {
