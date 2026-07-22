@@ -92,6 +92,8 @@ Powstają **wyłącznie w budynku miasta** (konwerter co turę). Wymagają **akt
 
 **Reguła:** gracz **nie może** wznieść **Spichlerza** (`spichlerz`), dopóki **nie ma ceramiki** — budynek **nie pojawia się** (lub jest zablokowany) w panelu produkcji miasta.
 
+**Uzasadnienie projektowe (Maciej):** O spichlerzu — przecież wszystko się składa w ceramice: żywność i zapasy przechowywane są w naczyniach ceramicznych (amforach, dzbanch, beczkach glinianych), stąd **ceramika jest wymagana do budowy Spichlerza** — gracz musi najpierw uruchomić produkcję Garncarni.
+
 | Aspekt | Kanon |
 |---|---|
 | **Konsument główny** | **Spichlerz** (`spichlerz`, `buildings.json` id potwierdzone) |
