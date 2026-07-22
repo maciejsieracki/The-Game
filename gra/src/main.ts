@@ -465,7 +465,18 @@ import {
   ARCHETYPE_AGGRESSION, ARCHETYPE_TRADE, DEFAULT_POTEGA_WAGI,
   relationScore, sisterAllianceDiplomacyParams, sisterAllianceEligible,
   type Relation, type AIDiplomacyContext, type PotegaKomponenty, type TickCtx,
+  type DiplomaticEvent, type DiplomacyParams,
 } from './game/diplomacy';
+import {
+  resolveDiplomacyActionLock,
+  type DiplomacyActionLockContext,
+} from './game/diplomacy-locks';
+import {
+  appendDiploFactor,
+  buildRelationBreakdown,
+  type DiploFactorLog,
+  type ContinuousFactorFlags,
+} from './game/diplomacy-factors';
 import {
   civCultureLabelForKey,
   diplomacyPersonalityTags,
@@ -3377,6 +3388,13 @@ async function boot(): Promise<void> {
     const diplomacyRelations = new Map<string, Relation>();
     /** D4-WYMIANA-PN: meta per para (limit PN/turę, dobra wola). */
     const diplomacyPairMeta = new Map<string, DiploPairMeta>();
+    /**
+     * FAZA 1 (Makieta DYPLOMACJA v1.1, KROK 3 pkt 6) — rejestr per-para jednorazowych
+     * zdarzeń dyplomatycznych {eventKey,delta,tura}, klucz jak diplomacyPairMeta
+     * (diploPairKey). Zasilany wyłącznie przez recordDiploFactor/applyDiploEventTracked
+     * poniżej — moduł game/diplomacy-factors.ts zostaje czysty. Save/load: meta.diplomacyFactorLog.
+     */
+    const diplomacyFactorLog = new Map<string, DiploFactorLog>();
     /** D4-W10-A+: trwały dostęp do złoża (active=false w wojnie). */
     let zlozeGrants: ZlozeGrant[] = [];
     /** D3-Q2: nacje, z którymi gracz nawiązał kontakt dyplomatyczny (save/load w meta). */
@@ -3563,6 +3581,7 @@ async function boot(): Promise<void> {
       aiNaukaPoolByOwner.clear();
       aiBadanaByOwner.clear();
       diplomacyPairMeta.clear();
+      diplomacyFactorLog.clear();
       zlozeGrants = [];
       basketTransferCtx = createEmptyBasketTransferContext(data.tech);
       _dipUnitSeq = 0;
@@ -3705,6 +3724,38 @@ async function boot(): Promise<void> {
       diplomacyPairMeta.set(diploPairKey(a, b), meta);
     }
 
+    /**
+     * FAZA 1 pkt 6 — dopisuje jednorazowe zdarzenie {eventKey,delta,tura} do rejestru
+     * pary (diplomacy-factors.ts). Pomija delta===0 (appendDiploFactor jest no-op).
+     */
+    function recordDiploFactor(a: number, b: number, eventKey: string, delta: number): void {
+      if (delta === 0) return;
+      const key = diploPairKey(a, b);
+      const log = diplomacyFactorLog.get(key) ?? [];
+      diplomacyFactorLog.set(key, appendDiploFactor(log, { eventKey, delta, tura: turn }));
+    }
+
+    /**
+     * Wrapper na applyDiplomaticEvent — liczy DELTĘ RZECZYWIŚCIE zastosowaną (nie
+     * nominał z DIPLOMACY_PARAMS) i dopisuje ją do rejestru pary. Używać we
+     * WSZYSTKICH miejscach, gdzie dotąd był goły `applyDiplomaticEvent(cur, ev)`
+     * (FAZA 1 pkt 6 zlecenia: „przy każdym applyDiplomaticEvent zapisuj do mapy pary").
+     */
+    function applyDiploEventTracked(
+      a: number,
+      b: number,
+      cur: Relation,
+      event: DiplomaticEvent,
+      params?: Partial<DiplomacyParams>,
+    ): Relation {
+      const next = applyDiplomaticEvent(cur, event, params);
+      const dZ = next.zaufanie - cur.zaufanie;
+      const dR = next.respekt - cur.respekt;
+      if (dZ !== 0) recordDiploFactor(a, b, event, dZ);
+      if (dR !== 0) recordDiploFactor(a, b, event + '_respekt', dR);
+      return next;
+    }
+
     function resetTrustPnGainedForPlayerTurn(): void {
       for (const [key, meta] of diplomacyPairMeta.entries()) {
         if (meta.trustPnGainedThisTurn !== 0) {
@@ -3725,6 +3776,10 @@ async function boot(): Promise<void> {
       const applied = applyPnTrustToRelation(cur, meta, givePn, receivePn, isGift);
       setDiploRelation(proposerId, responderId, applied.rel);
       setDiploPairMeta(proposerId, responderId, applied.meta);
+      // FAZA 1 pkt 6: to jest RZECZYWISTA delta Zaufania z PN (dar/handel) — inna niż
+      // nominał applyDiplomaticEvent('dar'|'handel') poniżej, który tu celowo zwraca 0
+      // (D3-W1-A/D4-WYMIANA-PN: Zaufanie liczone wyłącznie z wartości PN, patrz diplomacy.ts).
+      recordDiploFactor(proposerId, responderId, isGift ? 'dar_pn' : 'handel_pn', applied.deltaZaufanie);
       if (applied.dobraWolaStarted) {
         showHintMessage('Dobra wola: +1 Zauf./turę × 3 (nadmiar ≥ 100 PN)', 3500);
       }
@@ -6552,7 +6607,7 @@ async function boot(): Promise<void> {
       const curRel = getDiploRelation(0, p.ownerId);
       if (accept) {
         if (p.cmdType === 'zaproponuj_pokoj') {
-          setDiploRelation(0, p.ownerId, applyDiplomaticEvent(curRel, 'pokoj'));
+          setDiploRelation(0, p.ownerId, applyDiploEventTracked(0, p.ownerId, curRel, 'pokoj'));
           showHintMessage('Pokój z: ' + p.civName, 4000);
         } else {
           const cmd = {
@@ -6571,7 +6626,7 @@ async function boot(): Promise<void> {
         }
       } else {
         if (p.cmdType === 'zadaj_trybut' || p.cmdType === 'oferuj_trybut_za_pokoj') {
-          setDiploRelation(0, p.ownerId, applyDiplomaticEvent(curRel, 'trybut_odmowa'));
+          setDiploRelation(0, p.ownerId, applyDiploEventTracked(0, p.ownerId, curRel, 'trybut_odmowa'));
         }
         if (p.cmdType === 'zaproponuj_handel') {
           aiOneShotGiftLastTurn.set(p.ownerId, turn);
@@ -6978,6 +7033,40 @@ async function boot(): Promise<void> {
     }
 
     /**
+     * FAZA 1 (Makieta DYPLOMACJA v1.1, KROK 3 pkt 6) — rozbicie relacji „za/przeciw"
+     * dla pary (a,b). Łączy REJESTR jednorazowych zdarzeń (diplomacyFactorLog) z
+     * czynnikami CIĄGŁYMI wyliczonymi NA ŻYWO z activeDeals/stanu — ten sam materiał
+     * co TickCtx przekazywany do tickDiplomacy w pętli AI (patrz niżej „aktywnyHandel:
+     * activeDeals.some(...)" itd.), więc wartości są spójne z paskami Zaufanie/Respekt.
+     */
+    function getRelationBreakdown(a: number, b: number): ReturnType<typeof buildRelationBreakdown> {
+      const rel = getDiploRelation(a, b);
+      const dip = _diplomacyParams();
+      const log = diplomacyFactorLog.get(diploPairKey(a, b)) ?? [];
+      const atWar = rel.status === 'wojna';
+      const civA = a === 0 ? (player.civType ?? 'rzymianie') : (aiOwnerCivMap.get(a) ?? 'grecy');
+      const civB = b === 0 ? (player.civType ?? 'rzymianie') : (aiOwnerCivMap.get(b) ?? 'grecy');
+      const sameCulture = sameCultureCircle(civKeyForOwner(a), civKeyForOwner(b));
+      const religionA = ownerReligionForOwnerId(a);
+      const religionB = ownerReligionForOwnerId(b);
+      const continuous: ContinuousFactorFlags = {
+        aktywnyHandel: hasTreaty(activeDeals, a, b, RodzajTraktatu.UmowaHandlowa),
+        pokojTrustTier: resolvePokojTrustTier(activeDeals, a, b, {
+          contactEstablished: a === 0 ? diplomaticContactEstablished.has(b)
+            : (b === 0 ? diplomaticContactEstablished.has(a) : true),
+          atWar,
+        }),
+        wspolnaReligia: sameCulture && !!religionA && !!religionB && religionA === religionB,
+        odmiennaReligia: !!religionA && !!religionB && religionA !== religionB,
+        ekspansjaPrzyGranicy:
+          cities.filter(c => c.ownerId === a).length > 2 && cities.filter(c => c.ownerId === b).length > 2,
+        rywalizacjaTenSamTyp: civA === civB,
+        roznicaKulturowa: sameCulture === false,
+      };
+      return buildRelationBreakdown(log, continuous, dip);
+    }
+
+    /**
      * D-START posiłki v2 (Maciej 2026-07-21, pkt C): proaktywne sojusze AI↔AI między
      * SIOSTRAMI tego samego klastra (profil kopia_typu_obronna) gdy jedna z nich jest
      * zagrożona — dyplomacja AI↔AI dziś NIE ISTNIEJE poza gracz↔AI (ownerLoop diplo
@@ -7074,7 +7163,7 @@ async function boot(): Promise<void> {
       }
       const cur = getDiploRelation(a, b);
       const ev = breakerIsPlayer ? 'zlamana_obietnica' as const : 'zlamana_obietnica_ai' as const;
-      setDiploRelation(a, b, applyDiplomaticEvent(cur, ev));
+      setDiploRelation(a, b, applyDiploEventTracked(a, b, cur, ev));
     }
 
     function applyAllianceObligationsOnWar(attackerId: number, victimId: number): void {
@@ -7108,7 +7197,7 @@ async function boot(): Promise<void> {
           setDiploRelation(
             allyId,
             ob.mustDeclareWarOn,
-            applyDiplomaticEvent(getDiploRelation(allyId, ob.mustDeclareWarOn), 'wojna_wypowiedziana'),
+            applyDiploEventTracked(allyId, ob.mustDeclareWarOn, getDiploRelation(allyId, ob.mustDeclareWarOn), 'wojna_wypowiedziana'),
           );
           joinedWarOwnerIds.push(allyId);
         }
@@ -7149,7 +7238,7 @@ async function boot(): Promise<void> {
       for (const pair of tributeBreaks) {
         const { payerOwnerId, receiverOwnerId } = pair;
         const cur = getDiploRelation(payerOwnerId, receiverOwnerId);
-        setDiploRelation(payerOwnerId, receiverOwnerId, applyDiplomaticEvent(cur, 'trybut_odmowa'));
+        setDiploRelation(payerOwnerId, receiverOwnerId, applyDiploEventTracked(payerOwnerId, receiverOwnerId, cur, 'trybut_odmowa'));
         if (payerOwnerId === 0) {
           showHintMessage('Trybut zerwany — brak środków w skarbcu', 3500);
         } else if (receiverOwnerId === 0) {
@@ -7255,7 +7344,7 @@ async function boot(): Promise<void> {
       if (!result.accepted) {
         if (cywAction === 'trybut_zadanie' || cywAction === 'trybut_oferta') {
           const cur = getDiploRelation(proposerId, responderId);
-          setDiploRelation(proposerId, responderId, applyDiplomaticEvent(cur, 'trybut_odmowa'));
+          setDiploRelation(proposerId, responderId, applyDiploEventTracked(proposerId, responderId, cur, 'trybut_odmowa'));
         }
         return;
       }
@@ -7279,7 +7368,7 @@ async function boot(): Promise<void> {
             if (dealCovered) {
               applyPnTrustForPair(proposerId, responderId, givePn, receivePn, isGift);
               const cur = getDiploRelation(proposerId, responderId);
-              setDiploRelation(proposerId, responderId, applyDiplomaticEvent(cur, isGift ? 'dar' : 'handel'));
+              setDiploRelation(proposerId, responderId, applyDiploEventTracked(proposerId, responderId, cur, isGift ? 'dar' : 'handel'));
             } else {
               showHintMessage('Zaufanie nie naliczone — brak pokrycia w zasobach', 3500);
             }
@@ -7305,17 +7394,17 @@ async function boot(): Promise<void> {
           if (oneShotCovered) {
             applyPnTrustForPair(proposerId, responderId, givePn, receivePn, isGift);
             const cur = getDiploRelation(proposerId, responderId);
-            setDiploRelation(proposerId, responderId, applyDiplomaticEvent(cur, isGift ? 'dar' : 'handel'));
+            setDiploRelation(proposerId, responderId, applyDiploEventTracked(proposerId, responderId, cur, isGift ? 'dar' : 'handel'));
           } else {
             showHintMessage('Zaufanie nie naliczone — brak pokrycia w zasobach', 3500);
           }
         } else if (cywAction === 'trybut_oferta') {
           const cur = getDiploRelation(proposerId, responderId);
-          setDiploRelation(proposerId, responderId, applyDiplomaticEvent(cur, 'trybut_oferta_przyjeta'));
+          setDiploRelation(proposerId, responderId, applyDiploEventTracked(proposerId, responderId, cur, 'trybut_oferta_przyjeta'));
         }
       } else if (cywAction === 'trybut_zadanie') {
         const cur = getDiploRelation(proposerId, responderId);
-        setDiploRelation(proposerId, responderId, applyDiplomaticEvent(cur, 'trybut_zaakceptowany'));
+        setDiploRelation(proposerId, responderId, applyDiploEventTracked(proposerId, responderId, cur, 'trybut_zaakceptowany'));
       }
     }
 
@@ -7354,25 +7443,55 @@ async function boot(): Promise<void> {
       return m ? m[1]! : akcja;
     }
 
-    function diplomacyDualGateTooltip(
-      relTotal: number,
-      zaufanie: number,
-      minRel: number,
-      minZauf: number,
-    ): { ok: boolean; tooltip: string } {
-      const relOk = relTotal >= minRel;
-      const zaufOk = zaufanie >= minZauf;
-      if (relOk && zaufOk) return { ok: true, tooltip: '' };
-      if (!relOk && !zaufOk) {
-        return { ok: false, tooltip: `Wymagana Relacja ≥ ${minRel} i Zaufanie ≥ ${minZauf}` };
-      }
-      if (!relOk) return { ok: false, tooltip: `Wymagana Relacja ≥ ${minRel}` };
-      return { ok: false, tooltip: `Wymagane Zaufanie ≥ ${minZauf}` };
-    }
-
     /** Relacja widoczna w audiencji = Zaufanie + Respekt z mocy (jak w panelu). */
     function audienceRelTotal(ownerId: number, rel: Relation): number {
       return Math.round(Math.max(0, Math.min(200, (rel.zaufanie ?? 0) + objectiveRespektPctToward(ownerId))));
+    }
+
+    /**
+     * FAZA 1 (Makieta DYPLOMACJA v1.1, KROK 3 pkt 4) — kontekst progowy dla
+     * resolveDiplomacyActionLock (diplomacy-locks.ts), wspólny dla wszystkich akcji
+     * poza '1' (kontakt, bramkowany osobno). Progi REALNE z silnika
+     * (getEffectiveDiplomacyParams — już przeskalowane wg trudności), NIE z makiety.
+     */
+    function buildDiplomacyLockContextBase(
+      ownerId: number,
+      rel: Relation,
+      relTotal: number,
+      dip: ReturnType<typeof _diplomacyParams>,
+    ): Omit<DiplomacyActionLockContext, 'actionId'> {
+      const atWar = rel.status === 'wojna';
+      const hasSojusz = activeDeals.some(
+        d => dealInvolvesOwners(d, 0, ownerId) && isAllianceDealKind(d.rodzaj),
+      );
+      const brokenIds = atWar ? [] : treatiesBrokenByWar(activeDeals, 0, ownerId);
+      const breakingDeal = brokenIds.length > 0
+        ? activeDeals.find(d => d.id === brokenIds[0])
+        : undefined;
+      return {
+        contact: true,
+        atWar,
+        relTotal,
+        zaufanie: rel.zaufanie ?? 0,
+        respekt: rel.respekt ?? 0,
+        hasNap: hasTreaty(activeDeals, 0, ownerId, RodzajTraktatu.PaktNieagresji),
+        hasHandel: hasTreaty(activeDeals, 0, ownerId, RodzajTraktatu.UmowaHandlowa),
+        hasSojusz,
+        breaksTreatyLabel: breakingDeal ? treatyDisplayLabel(breakingDeal.rodzaj) : undefined,
+        sellableTechCount: getSellableTechForPlayer().length,
+        knownRivalsCount: getKnownRivalsFor(ownerId).length,
+        progNapRelacja: dip.progNapRelacja,
+        progHandelRelacja: dip.progHandelRelacja,
+        progSojuszRelacja: dip.progSojuszRelacja,
+        progSojuszZaufanie: dip.progSojuszZaufanie,
+        progGraniceRelacja: dip.progGraniceRelacja,
+        progGraniceZaufanie: dip.progGraniceZaufanie,
+        progWymianaTechZaufanie: dip.progWymianaTechZaufanie,
+        progNamowWojneZaufanie: dip.progNamowWojneZaufanie,
+        progWasalizacjaRespekt: dip.progWasalizacjaRespekt,
+        progTrybutZadanieMinRespekt: dip.progTrybutZadanieMinRespekt,
+        progDarRelacja: diplomacyProgDarRelacja(undefined, _menuDifficulty),
+      };
     }
 
     function buildAudienceActions(
@@ -7387,6 +7506,7 @@ async function boot(): Promise<void> {
       const isSimplified = layer === 'simplified';
       const akcje = (data.diplomacy as { akcje_dyplomatyczne?: Array<Record<string, string>> }).akcje_dyplomatyczne ?? [];
       const out: AudienceAction[] = [];
+      const lockCtxBase = contact ? buildDiplomacyLockContextBase(ownerId, rel, relTotal, dip) : null;
 
       for (const row of akcje) {
         const raw = row['Akcja'] ?? '';
@@ -7396,6 +7516,9 @@ async function boot(): Promise<void> {
         const label = raw.replace(/^\d+\.\s*/, '');
         let enabled = true;
         let tooltip = row['Opis'] ?? '';
+        let locked: boolean | undefined;
+        let lockNote: string | undefined;
+        let active: boolean | undefined;
 
         if (!contact && id !== '1') {
           enabled = false;
@@ -7403,79 +7526,23 @@ async function boot(): Promise<void> {
         } else if (id === '1' && contact) {
           enabled = false;
           tooltip = 'Kontakt już nawiązany';
-        } else if (id === '11') {
-          if (tier === 0) { enabled = false; tooltip = 'Już w stanie wojny'; }
-          else if (!playerDiplomacyActionAllowed(layer, 'war')) {
-            enabled = false;
-            tooltip = 'Niedostępne';
-          }
-        } else if (id === '10') {
-          if (tier !== 0) { enabled = false; tooltip = 'Brak aktywnej wojny'; }
-        } else if (id === '5') {
-          if (!playerDiplomacyActionAllowed(layer, 'trade')) {
-            enabled = false;
-            tooltip = 'Handel niedostępny';
-          } else if (relTotal < dip.progHandelRelacja) {
-            enabled = false;
-            tooltip = 'Wymagana Relacja ≥ ' + dip.progHandelRelacja;
-          }
-        } else if (id === '2') {
-          if (rel.status === 'wojna') { enabled = false; tooltip = 'Niedostępne w wojnie'; }
-          else if (hasTreaty(activeDeals, 0, ownerId, RodzajTraktatu.PaktNieagresji)) {
-            enabled = false; tooltip = 'Pakt już obowiązuje';
-          } else if (relTotal < dip.progNapRelacja) {
-            enabled = false;
-            tooltip = 'Wymagana Relacja ≥ ' + dip.progNapRelacja;
-          }
-        } else if (id === '3') {
-          if (rel.status === 'wojna') { enabled = false; tooltip = 'Niedostępne w wojnie'; }
-          else {
-            const gate = diplomacyDualGateTooltip(
-              relTotal, rel.zaufanie ?? 0, dip.progSojuszRelacja, dip.progSojuszZaufanie,
-            );
-            if (!gate.ok) { enabled = false; tooltip = gate.tooltip; }
-          }
-        } else if (id === '4') {
-          if (rel.status === 'wojna') { enabled = false; tooltip = 'Niedostępne w wojnie'; }
-          else {
-            const gate = diplomacyDualGateTooltip(
-              relTotal, rel.zaufanie ?? 0, dip.progGraniceRelacja, dip.progGraniceZaufanie,
-            );
-            if (!gate.ok) { enabled = false; tooltip = gate.tooltip; }
-          }
-        } else if (id === '6') {
-          const gate = diplomacyDualGateTooltip(
-            relTotal, rel.zaufanie ?? 0, dip.progHandelRelacja, dip.progWymianaTechZaufanie,
-          );
-          if (!gate.ok) {
-            enabled = false; tooltip = gate.tooltip;
-          } else if (getSellableTechForPlayer().length === 0) {
-            enabled = false; tooltip = 'Brak technologii do wymiany';
-          }
-        } else if (id === '7') {
-          if ((rel.zaufanie ?? 0) < dip.progNamowWojneZaufanie) {
-            enabled = false; tooltip = 'Wymagane zaufanie ≥ ' + dip.progNamowWojneZaufanie;
-          } else if (getKnownRivalsFor(ownerId).length === 0) {
-            enabled = false; tooltip = 'Brak znanych celów wojny';
-          }
-        } else if (id === '8') {
-          if (rel.status === 'wojna') { enabled = false; tooltip = 'Niedostępne w wojnie'; }
-        } else if (id === '9') {
-          if (rel.status === 'wojna') { enabled = false; tooltip = 'Ultimatum wymaga pokoju'; }
-        } else if (id === '12') {
-          if (rel.status === 'wojna') { enabled = false; tooltip = 'Niedostępne w wojnie'; }
-          else if ((rel.respekt ?? 0) < dip.progWasalizacjaRespekt) {
-            enabled = false; tooltip = 'Wymagany Respekt ≥ ' + dip.progWasalizacjaRespekt;
-          }
-        } else if (id === '13') {
-          if (rel.status === 'wojna') { enabled = false; tooltip = 'Dar niedostępny w wojnie'; }
-          else if (relTotal < diplomacyProgDarRelacja(undefined, _menuDifficulty)) {
-            enabled = false;
-            tooltip = 'Wymagana Relacja ≥ ' + diplomacyProgDarRelacja(undefined, _menuDifficulty);
-          }
+        } else if (id === '11' && !playerDiplomacyActionAllowed(layer, 'war')) {
+          // Bramka warstwy uproszczonej (miasta-państwa/obcy typ) — dominuje nad progiem.
+          enabled = false;
+          tooltip = 'Niedostępne';
+        } else if (id === '5' && !playerDiplomacyActionAllowed(layer, 'trade')) {
+          enabled = false;
+          tooltip = 'Handel niedostępny';
+        } else if (lockCtxBase) {
+          const result = resolveDiplomacyActionLock({ actionId: id, ...lockCtxBase });
+          locked = result.locked;
+          enabled = !result.locked;
+          lockNote = result.note || undefined;
+          tooltip = result.note || tooltip;
+          active = result.active;
         }
 
-        out.push({ id, label, enabled, tooltip, opis: row['Opis'] });
+        out.push({ id, label, enabled, tooltip, opis: row['Opis'], locked, lockNote, active });
       }
       return out;
     }
@@ -7503,7 +7570,7 @@ async function boot(): Promise<void> {
           if (!playerDiplomacyActionAllowed(layer, 'war')) return;
           breakTreatiesOnWar(0, ownerId, true);
           applyAllianceObligationsOnWar(0, ownerId);
-          setDiploRelation(0, ownerId, applyDiplomaticEvent(getDiploRelation(0, ownerId), 'wojna_wypowiedziana'));
+          setDiploRelation(0, ownerId, applyDiploEventTracked(0, ownerId, getDiploRelation(0, ownerId), 'wojna_wypowiedziana'));
           showHintMessage('\u2694 Wypowiedziałeś wojnę: ' + civName, 4500);
           updateDiplomacyAudience();
           updateDiplomacyPanel();
@@ -7519,7 +7586,7 @@ async function boot(): Promise<void> {
           break;
         case '10':
           if (!playerDiplomacyActionAllowed(layer, 'peace')) return;
-          setDiploRelation(0, ownerId, applyDiplomaticEvent(getDiploRelation(0, ownerId), 'pokoj'));
+          setDiploRelation(0, ownerId, applyDiploEventTracked(0, ownerId, getDiploRelation(0, ownerId), 'pokoj'));
           showHintMessage('\u{1F54A} Pokój z: ' + civName, 4000);
           break;
         case '5':
@@ -7602,6 +7669,7 @@ async function boot(): Promise<void> {
             layer: layer === 'pre_contact' ? 'full' : layer,
             contactEstablished: diplomaticContactEstablished.has(ownerId),
             actions: buildAudienceActions(ownerId, layer),
+            relationBreakdown: getRelationBreakdown(0, ownerId),
           };
         },
         onAction: applyAudienceAction,
@@ -10580,6 +10648,9 @@ async function boot(): Promise<void> {
       for (const key of Array.from(diplomacyPairMeta.keys())) {
         if (diploPairKeyHasOwner(key, ownerId)) diplomacyPairMeta.delete(key);
       }
+      for (const key of Array.from(diplomacyFactorLog.keys())) {
+        if (diploPairKeyHasOwner(key, ownerId)) diplomacyFactorLog.delete(key);
+      }
       activeDeals = activeDeals.filter(d => !d.strony.includes(ownerId));
 
       // Oblężenia PROWADZONE przez ownerId gdzie indziej (inne miasto niż to
@@ -11461,6 +11532,7 @@ async function boot(): Promise<void> {
           diplomaticDiscoveryPopupShown: Array.from(diplomaticDiscoveryPopupShown),
           diplomacyDeals: activeDeals.slice(),
           diplomacyPairMeta: Array.from(diplomacyPairMeta.entries()),
+          diplomacyFactorLog: Array.from(diplomacyFactorLog.entries()),
           aiOwnerCivMap: Array.from(aiOwnerCivMap.entries()),
           ownerDisplayName: Array.from(ownerDisplayName.entries()),
           zlozeGrants: zlozeGrants.slice(),
@@ -12768,7 +12840,7 @@ async function boot(): Promise<void> {
                   if (cmd.type === 'wypowiedz_wojne') {
                     breakTreatiesOnWar(0, ownerId, false);
                     applyAllianceObligationsOnWar(ownerId, 0);
-                    const newRel = applyDiplomaticEvent(curRel, 'wojna_wypowiedziana');
+                    const newRel = applyDiploEventTracked(0, ownerId, curRel, 'wojna_wypowiedziana');
                     setDiploRelation(0, ownerId, newRel);
                     console.log(`[Dyplomacja] AI${ownerId} wypowiada wojne: ${cmd.powod}`);
                     showHintMessage('\u2694 ' + ownerDiploLabel(ownerId) + ' — ' + formatAiDiplomacyPlayerMessage(cmd), 4500);
@@ -15030,6 +15102,13 @@ async function boot(): Promise<void> {
       const savedPairMeta = saved.meta?.diplomacyPairMeta as Array<[string, DiploPairMeta]> | undefined;
       if (savedPairMeta?.length) {
         for (const [key, meta] of savedPairMeta) diplomacyPairMeta.set(key, meta);
+      }
+      // FAZA 1 pkt 6: rejestr czynników — pole opcjonalne, stary save (bez pola) = pusty
+      // rejestr, bez crasha (jak diplomacyPairMeta wyżej).
+      diplomacyFactorLog.clear();
+      const savedFactorLog = saved.meta?.diplomacyFactorLog as Array<[string, DiploFactorLog]> | undefined;
+      if (savedFactorLog?.length) {
+        for (const [key, log] of savedFactorLog) diplomacyFactorLog.set(key, log);
       }
       zlozeGrants = [];
       const savedZloze = saved.meta?.zlozeGrants as ZlozeGrant[] | undefined;

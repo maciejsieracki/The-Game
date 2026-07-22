@@ -29,6 +29,16 @@ export interface AudienceAction {
   enabled: boolean;
   tooltip?: string;
   opis?: string;
+  /**
+   * FAZA 1 (Makieta DYPLOMACJA v1.1, KROK 3 pkt 4) — blokada progowa spójna z
+   * diplomacy-locks.ts. `locked` === `!enabled` z powodu progu/stanu (nie
+   * "brak kontaktu", ta bramka zostaje osobna — patrz buildAudienceActions).
+   */
+  locked?: boolean;
+  /** Notka w formacie makiety: „zablokowana — wymaga Zaufania 91 (masz 34)". */
+  lockNote?: string;
+  /** Umowa/traktat już zawarta między stronami (stan `active` z makiety v1.1). */
+  active?: boolean;
 }
 
 export interface DiplomacyAudienceState {
@@ -75,6 +85,12 @@ export interface DiplomacyAudienceState {
   cultureCircleSame?: boolean;
   /** Progi na paskach (readonly z JSON). */
   thresholds?: { sojuszZaufanie?: number; techZaufanie?: number };
+  /**
+   * FAZA 1 (Makieta DYPLOMACJA v1.1, KROK 3 pkt 6) — rozbicie relacji „za/przeciw"
+   * z DIPLOMACY_PARAMS (rejestr jednorazowych zdarzeń + czynniki ciągłe aktywne
+   * teraz). UI (kafelki) dopiero w fazie 2/3 — na razie dane płyną w stanie.
+   */
+  relationBreakdown?: { pozytywne: readonly { label: string; value: number; perTurn?: boolean }[]; negatywne: readonly { label: string; value: number; perTurn?: boolean }[] };
 }
 
 export interface DiplomacyAudienceConfig {
@@ -188,6 +204,7 @@ ${DIPLO_1E_SHARED_CSS}
   border:1px solid rgba(232,216,138,.22);background:rgba(232,216,138,.05);color:#e8e0c8;font-family:inherit;}
 .civ-diplo-aud-card:hover:not(.locked){background:rgba(232,216,138,.14);border-color:rgba(232,216,138,.45);}
 .civ-diplo-aud-card.locked{opacity:0.45;cursor:not-allowed;border-color:rgba(80,90,100,0.35);}
+.civ-diplo-aud-card.active{border-color:rgba(142,197,255,.55);background:rgba(142,197,255,.08);}
 .civ-diplo-aud-card-title{font-weight:700;font-size:0.84em;margin-bottom:3px;color:#e8d88a;}
 .civ-diplo-aud-card-hint{font-size:0.68em;color:#8a8070;}
 .civ-diplo-modal-overlay{position:fixed;inset:0;z-index:500;background:rgba(0,0,0,0.55);
@@ -333,12 +350,13 @@ function render(): void {
   }
 
   const cards = st.actions.map(a => {
-    const cls = a.enabled ? 'civ-diplo-aud-card' : 'civ-diplo-aud-card locked';
-    const hint = a.tooltip || a.opis || '';
+    let cls = a.enabled ? 'civ-diplo-aud-card' : 'civ-diplo-aud-card locked';
+    if (a.active) cls += ' active';
+    const hint = a.lockNote || a.tooltip || a.opis || '';
     return (
       '<button type="button" class="' + cls + '" data-aid="' + esc(a.id) + '"' +
       (a.enabled ? '' : ' disabled title="' + esc(hint) + '"') + '>' +
-      '<div class="civ-diplo-aud-card-title">' + esc(a.label) + '</div>' +
+      '<div class="civ-diplo-aud-card-title">' + esc(a.label) + (a.active ? ' ✓' : '') + '</div>' +
       (hint ? '<div class="civ-diplo-aud-card-hint">' + esc(hint.length > 80 ? hint.slice(0, 77) + '…' : hint) + '</div>' : '') +
       '</button>'
     );
