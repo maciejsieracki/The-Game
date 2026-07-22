@@ -2910,3 +2910,13 @@ CZEKAM-NA: Maciej — `git pull` → Ctrl+F5 START.html → stamp `35fd5449` · 
 Pliki: `diplomacy-layers.ts`, `main.ts`, `diplomacy-layers-test.cjs`.
 Bramki: tsc=0 · diplomacy-layers 8/8 · diplomacy-proposal 64/64 · publish robocza OK.
 CZEKAM-NA: Maciej — `git pull` → Ctrl+F5 START.html → stamp `59d90c13` → spotkaj miasto-państwo → auto-audiencja → kontakt → lista dyplomacji.
+
+## [10:05 PL, 2026-07-22] INTEGRATOR → Maciej — FIX AI farmy przed Rolnictwem
+
+**md5:** `ae64786b05cd77d6dbb8d807ac209b4e` · stamp `ae64786b`
+**Bug:** miasta-państwa / AI mają farmy w turze 2–3, gracz jeszcze nie ma Rolnictwa.
+**Przyczyna:** AI natychmiast dodawało tech do `aiResearchDone` (bez kosztu nauki); brak puli Nauki AI.
+**Fix:** `runAiResearchForOwner` — bank `aiEcon.nauka` + `researchStep` + `chooseAIResearch`; save/load meta.
+Plik: `gra/src/main.ts`.
+Bramki: tsc=0 · ai-improvements 15/15 · owner-epoch 13/13 · publish robocza OK.
+CZEKAM-NA: Maciej — `git pull` → Ctrl+F5 START.html → stamp `ae64786b` → Nowa gra Kamień → obserwuj sąsiada: brak farm wcześnie; farmy dopiero po czasie badania Rolnictwa.

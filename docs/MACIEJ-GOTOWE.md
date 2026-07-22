@@ -4,7 +4,20 @@
 > **Czat:** krótko **`✅ Gotowe:`** / **`⏸️ Czeka:`** · **Ten plik:** pełniejszy zapis tego samego.  
 > Szczegóły techniczne → handoff w `dyspozycje/_handoff/` · operacja → `dyspozycje/DZIENNIK-MASTERA.md`
 
-**Ostatnia aktualizacja:** 2026-07-22 (fix dyplomacja pierwszy kontakt @ 59d90c13)
+**Ostatnia aktualizacja:** 2026-07-22 (fix AI farmy przed Rolnictwem @ ae64786b)
+
+---
+
+## [10:05] ✅ Gotowe — FIX: AI/miasta-państwa — farmy dopiero po Rolnictwie
+
+| | |
+|---|---|
+| **Co** | AI i miasta-państwa budują farmy dopiero po ukończeniu tech Rolnictwo (z kosztem nauki), tak jak gracz |
+| **Przyczyna** | AI kończyło każdą tech natychmiast co turę (`aiDone.add`), bez puli Nauki i `researchStep` |
+| **Fix** | `aiNaukaPoolByOwner` + `runAiResearchForOwner` (bank nauki → chooseAIResearch → researchStep) |
+| **Pliki** | `gra/src/main.ts` |
+| **md5** | `ae64786b05cd77d6dbb8d807ac209b4e` · stamp `ae64786b` |
+| **Od Ciebie** | `git pull` → Ctrl+F5 · stamp `ae64786b` · Nowa gra Kamień → sąsiednie miasto-państwo bez farm w turach 1–3 |
 
 ---
 

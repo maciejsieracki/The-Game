@@ -2981,7 +2981,7 @@ async function boot(): Promise<void> {
 
     /**
      * Per-AI research state: Set of zbadane tech ids per ownerId.
-     * Seeded lazily; grows as chooseAIResearch + researchStep complete techs.
+     * Uzupełniane przez runAiResearchForOwner (researchStep + pula Nauki).
      */
     const aiResearchDone = new Map<number, Set<string>>();
 
@@ -3224,6 +3224,10 @@ async function boot(): Promise<void> {
      *  ownerPracaPool/setOwnerPracaPool -- przy przejęciu stolicy AI ta pula PRZEPADA
      *  (jak playerPracaPool gracza), patrz capital-capture.ts. */
     const aiPracaPoolByOwner = new Map<number, number>();
+    /** Pula Nauki AI (symetryczna do player.nauka) — bankowana z aiEcon.nauka co turę. */
+    const aiNaukaPoolByOwner = new Map<number, number>();
+    /** Bieżąca tech badana przez AI (symetryczna do player.badana). */
+    const aiBadanaByOwner = new Map<number, string | null>();
     /** P6: tech + surowiec boolean z koszyka PN (save/load meta.surowiecBooleanGrants). */
     let basketTransferCtx: BasketTransferContext = createEmptyBasketTransferContext(data.tech);
     let _dipUnitSeq = 0;
@@ -3382,6 +3386,8 @@ async function boot(): Promise<void> {
       activeDeals = [];
       aiSkarbiecByOwner.clear();
       aiPracaPoolByOwner.clear();
+      aiNaukaPoolByOwner.clear();
+      aiBadanaByOwner.clear();
       diplomacyPairMeta.clear();
       zlozeGrants = [];
       basketTransferCtx = createEmptyBasketTransferContext(data.tech);
@@ -9998,14 +10004,79 @@ async function boot(): Promise<void> {
         aiPracaPoolByOwner.set(ownerId, v);
       }
     }
-    /** AI dziś NIE MA osobnej puli punktów nauki (chooseAIResearch kończy techy od
-     *  razu, bez kosztu z banku) — no-op dla ownerId>0. Patrz raport: asymetria danych. */
     function ownerNaukaPool(ownerId: number): number {
-      return ownerId === 0 ? player.nauka : 0;
+      return ownerId === 0 ? player.nauka : (aiNaukaPoolByOwner.get(ownerId) ?? 0);
     }
     function setOwnerNaukaPool(ownerId: number, value: number): void {
-      if (ownerId !== 0) return;
-      player.nauka = Math.max(0, value);
+      const v = Math.max(0, value);
+      if (ownerId === 0) {
+        player.nauka = v;
+        return;
+      }
+      aiNaukaPoolByOwner.set(ownerId, v);
+    }
+
+    /** Symetryczny researchStep dla AI — koszt nauki z puli, nie natychmiastowe odblokowanie. */
+    function runAiResearchForOwner(ownerId: number): void {
+      if (ownerId === 0 || eliminatedOwners.has(ownerId)) return;
+      let done = aiResearchDone.get(ownerId);
+      if (!done) {
+        done = new Set<string>();
+        aiResearchDone.set(ownerId, done);
+      }
+      const gate = researchGateForOwner(ownerId);
+      const aiCitiesCount = cities.filter(c => c.ownerId === ownerId).length;
+      const allBuiltForAI: string[] = [];
+      for (const [cid, blt] of cityBuilt.entries()) {
+        const c = cities.find(ct => ct.id === cid && ct.ownerId === ownerId);
+        if (c) { for (const b of blt) allBuiltForAI.push(b); }
+      }
+      let badana = aiBadanaByOwner.get(ownerId) ?? null;
+      const badanaStillValid = badana !== null
+        && !done.has(badana)
+        && availableTechs(data.tech, done, gate).some(t => t.Technologia === badana);
+      if (!badanaStillValid) {
+        badana = chooseAIResearch(
+          data.tech as any,
+          done,
+          {
+            myCitiesCount: aiCitiesCount,
+            allBuiltBuildings: allBuiltForAI,
+            techData: data.tech as any,
+            researchGate: gate,
+          },
+        );
+        aiBadanaByOwner.set(ownerId, badana);
+      }
+      const aiState: PlayerState = {
+        skarbiec: aiSkarbiecByOwner.get(ownerId) ?? 0,
+        nauka: aiNaukaPoolByOwner.get(ownerId) ?? 0,
+        zbadane: new Set(done),
+        badana,
+        playerResearchTargetId: badana,
+        era: empireEpochForOwner(ownerId),
+        pieniadzMnoznik: 1,
+        tempoGry: player.tempoGry,
+        buildingCostPace: player.buildingCostPace,
+        kosztJednostekPace: player.kosztJednostekPace,
+        wzrostLudnosciPace: player.wzrostLudnosciPace,
+        civType: aiOwnerCivMap.get(ownerId) ?? 'grecy',
+        civBonusy: [],
+        rakietaWystrzelona: false,
+      };
+      const step = researchStep(aiState, data.tech, gate, _menuDifficulty);
+      aiNaukaPoolByOwner.set(ownerId, aiState.nauka);
+      aiBadanaByOwner.set(ownerId, aiState.badana);
+      aiResearchDone.set(ownerId, aiState.zbadane);
+      if (step.completed.length > 0) {
+        refreshCityRenderIfEraChanged(syncOwnerEraFromResearch(ownerId));
+        for (const c of step.completed) {
+          console.log(
+            `[AI ${ownerId}] Zbadano: ${c.id} (-${c.koszt} nauki)` +
+            (c.awansEpoki ? ' (awans epoki)' : ''),
+          );
+        }
+      }
     }
     function ownerResearchedTechs(ownerId: number): ReadonlySet<string> {
       return ownerId === 0 ? player.zbadane : (aiResearchDone.get(ownerId) ?? new Set<string>());
@@ -10150,6 +10221,8 @@ async function boot(): Promise<void> {
 
       aiSkarbiecByOwner.delete(ownerId);
       aiPracaPoolByOwner.delete(ownerId);
+      aiNaukaPoolByOwner.delete(ownerId);
+      aiBadanaByOwner.delete(ownerId);
       aiResearchDone.delete(ownerId);
       aiOwnerCivMap.delete(ownerId);
       ownerDisplayName.delete(ownerId);
@@ -11015,6 +11088,8 @@ async function boot(): Promise<void> {
           battlePowerPtsByOwner: Array.from(battlePowerPtsByOwner.entries()),
           capitalCityIdByOwner: Array.from(capitalCityIdByOwner.entries()),
           aiPracaPoolByOwner: Array.from(aiPracaPoolByOwner.entries()),
+          aiNaukaPoolByOwner: Array.from(aiNaukaPoolByOwner.entries()),
+          aiBadanaByOwner: Array.from(aiBadanaByOwner.entries()),
           zdobyczePowerByOwner: Array.from(zdobyczePowerByOwner.entries()),
           eliminatedOwners: Array.from(eliminatedOwners),
           ownerEraByOwner: Array.from(ownerEraByOwner.entries()),
@@ -11548,7 +11623,20 @@ async function boot(): Promise<void> {
               }
               aiSkarbiecByOwner.set(oid, Math.max(0, aiSkarb));
 
-              // Pula Pracy AI — per miasto w pętli produkcji (doPuli / całość gdy brak budynku).
+              // Pula Nauki AI — symetryczna z graczem (totalNauka z ekonomii miast).
+              aiNaukaPoolByOwner.set(
+                oid,
+                (aiNaukaPoolByOwner.get(oid) ?? 0) + aiEcon.nauka,
+              );
+            }
+
+            // AI research: bank nauka + researchStep (PRZED pętlą decideAITurn).
+            for (const oid of aiOwnerIds) {
+              try {
+                runAiResearchForOwner(oid);
+              } catch (eAiRes) {
+                console.error(`[AI ${oid}] Blad badania:`, eAiRes);
+              }
             }
 
             // Auto-research: spend banked science on the cheapest available tech.
@@ -12033,39 +12121,6 @@ async function boot(): Promise<void> {
             } catch (eAI) {
               console.error(`[AI] decideAITurn owner=${ownerId} error:`, eAI);
               continue;
-            }
-
-            // --- AI Research: chooseAIResearch fills slot when empty (STEP B) ---
-            try {
-              if (!aiResearchDone.has(ownerId)) {
-                aiResearchDone.set(ownerId, new Set<string>());
-              }
-              const aiDone = aiResearchDone.get(ownerId)!;
-              const aiCitiesCount = cities.filter(c => c.ownerId === ownerId).length;
-              const allBuiltForAI: string[] = [];
-              for (const [cid, blt] of cityBuilt.entries()) {
-                const c = cities.find(ct => ct.id === cid && ct.ownerId === ownerId);
-                if (c) { for (const b of blt) allBuiltForAI.push(b); }
-              }
-              const aiTechChoice = chooseAIResearch(
-                data.tech as any,
-                aiDone,
-                {
-                  myCitiesCount: aiCitiesCount,
-                  allBuiltBuildings: allBuiltForAI,
-                  techData: data.tech as any,
-                  researchGate: researchGateForOwner(ownerId),
-                },
-              );
-              if (aiTechChoice !== null && !aiDone.has(aiTechChoice)) {
-                const techDef = data.tech.find(t => t.Technologia === aiTechChoice);
-                const eraAdvance = techDef && isEraAdvanceTech(techDef as import('./data/loader').TechDef);
-                aiDone.add(aiTechChoice);
-                refreshCityRenderIfEraChanged(syncOwnerEraFromResearch(ownerId));
-                console.log(`[AI ${ownerId}] Zbadano: ${aiTechChoice}${eraAdvance ? ' (awans epoki)' : ''}`);
-              }
-            } catch (eAIRes) {
-              console.error(`[AI ${ownerId}] Blad wyboru technologii:`, eAIRes);
             }
 
             // --- Diplomacy stance + computeRespekt + decideAIDiplomacy ---
@@ -13270,6 +13325,8 @@ async function boot(): Promise<void> {
       activeDeals = [];
       aiSkarbiecByOwner.clear();
       aiPracaPoolByOwner.clear();
+      aiNaukaPoolByOwner.clear();
+      aiBadanaByOwner.clear();
       basketTransferCtx = createEmptyBasketTransferContext(data.tech);
       _dipUnitSeq = 0;
       pendingDiplomacyInbox.length = 0;
@@ -14225,6 +14282,16 @@ async function boot(): Promise<void> {
       const savedAiPracaPool = saved.meta?.aiPracaPoolByOwner as Array<[number, number]> | undefined;
       if (savedAiPracaPool?.length) {
         for (const [oid, v] of savedAiPracaPool) aiPracaPoolByOwner.set(oid, v);
+      }
+      aiNaukaPoolByOwner.clear();
+      const savedAiNaukaPool = saved.meta?.aiNaukaPoolByOwner as Array<[number, number]> | undefined;
+      if (savedAiNaukaPool?.length) {
+        for (const [oid, v] of savedAiNaukaPool) aiNaukaPoolByOwner.set(oid, v);
+      }
+      aiBadanaByOwner.clear();
+      const savedAiBadana = saved.meta?.aiBadanaByOwner as Array<[number, string | null]> | undefined;
+      if (savedAiBadana?.length) {
+        for (const [oid, t] of savedAiBadana) aiBadanaByOwner.set(oid, t);
       }
       zdobyczePowerByOwner.clear();
       const savedZdobycze = saved.meta?.zdobyczePowerByOwner as Array<[number, number]> | undefined;
