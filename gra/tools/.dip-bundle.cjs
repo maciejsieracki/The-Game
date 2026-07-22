@@ -3809,6 +3809,10 @@ var DIPLOMACY_PARAMS = {
   progTrybutMinGoldPerTurn: 10,
   /** Respekt proponenta musi być > tej wartości, by żądać trybutu (spokój) */
   progTrybutZadanieMinRespekt: 70,
+  /** Limit górny żądania trybutu (¤/turę) przy Respekt tuż powyżej progu (audyt #21) */
+  progTrybutZadanieMaxGoldBase: 50,
+  /** Limit górny: dodatek ¤/turę za każdy punkt Respektu ponad próg żądania (audyt #21) */
+  progTrybutZadanieMaxGoldPerRespekt: 5,
   /** militaryRatio > wartość → „blisko wojny” (oferta trybutu) */
   progTrybutOfertaNearWarRatio: 1.2,
   /** Zaufanie < wartość → „blisko wojny” (oferta trybutu) */
