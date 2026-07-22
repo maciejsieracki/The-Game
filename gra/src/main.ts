@@ -239,6 +239,7 @@ import {
   getResearchState,
   techCost,
   isEraAdvanceTech,
+  eraAdvanceTarget,
   type PlayerState,
   type EmpireResearchGate,
 } from './game/playerState';
@@ -2879,10 +2880,13 @@ async function boot(): Promise<void> {
           const ownRel = ownerReligionForOwnerId(city.ownerId);
           const rel = resolvedCityReligion(city);
           const dom = dominantReligion(rel, rp);
+          // #70: bramka świątyni jak w silniku (turn tick main.ts ~11981) — bez niej
+          // panel pokazywał wpływ szczęścia = 0 zamiast realnej kary karaBrakReligii.
+          const builtIds = cityBuilt.get(cityId) ?? [];
           return {
             dominujaca: dom.religion ?? '—',
             udzialPct: Math.round(dom.share * 100),
-            wplywSzczescie: religionHappiness(rel, ownRel, rp),
+            wplywSzczescie: religionHappiness(rel, ownRel, rp, builtIds.includes('swiatynia')),
             przyrostWiernych: lastReligionSpreadByCity.get(cityId) ?? 0,
           };
         },
@@ -3720,6 +3724,14 @@ async function boot(): Promise<void> {
               if (toOwnerId === 0) {
                 for (const t of basketTransferCtx.researchedByOwner.get(0) ?? []) {
                   player.zbadane.add(t);
+                }
+                // #66: tech-kamień milowy z dyplomacji ma awansować epokę gracza
+                // tą samą ścieżką co własne badanie (playerState.researchStep) —
+                // inaczej zbadane/era się rozjeżdżają (Ludy Morza itp. gatują po era).
+                const grantedDef = data.tech.find(t => t.Technologia === item.id);
+                if (grantedDef) {
+                  const awansTarget = eraAdvanceTarget(grantedDef);
+                  if (awansTarget !== null) player.era = Math.max(player.era, awansTarget);
                 }
               } else {
                 aiResearchDone.set(
@@ -7644,6 +7656,10 @@ async function boot(): Promise<void> {
       // nie mają odpowiednika na ekranach przedgrowych, więc po prostu milkną.
       stopMusic();
       stopAmbience();
+      // Defensywnie zdejmij ewentualną blokadę ambBattleMuted (wyjście z menu
+      // pauzy w trakcie bitwy, patrz #40) — setMood('mapa') to jedyny hak
+      // wpięty w ambApplyBattleMute(), więc kolejna gra nie startuje z niemą naturą.
+      setMood('mapa');
       resumeIntroMusic();
       showMainMenu({
         hasSave: hasAnySaveSlot,
@@ -11702,10 +11718,38 @@ async function boot(): Promise<void> {
                 refreshFog();
               }
               if (starv.destroyedIds.length > 0) {
+                // #72: sprzątanie oblężenia/garnizonu jak w disbandPlayerUnit — jednostka
+                // ginąca z głodu nie może zostawić za sobą wiszącego oblegaCityId ani
+                // zawyżonego licznika city.garnizon.
+                const destroyedSet = new Set(starv.destroyedIds);
+                const siegeCityIdsAffected = new Set<string>();
+                const garnizonCitiesAffected = new Map<string, City>();
+                for (const u of units) {
+                  if (!destroyedSet.has(u.id)) continue;
+                  if (u.oblegaCityId) siegeCityIdsAffected.add(u.oblegaCityId);
+                  if (u.inGarnizon === true) {
+                    const c = cityAtUnit(u);
+                    if (c) garnizonCitiesAffected.set(c.id, c);
+                  }
+                }
                 for (let i = units.length - 1; i >= 0; i--) {
-                  if (starv.destroyedIds.includes(units[i]!.id)) units.splice(i, 1);
+                  if (destroyedSet.has(units[i]!.id)) units.splice(i, 1);
                 }
                 syncUnitsRender();
+                for (const siegeCityId of siegeCityIdsAffected) {
+                  const stillMarked = units.some(x => x.oblegaCityId === siegeCityId);
+                  if (!stillMarked) {
+                    const sc = cities.find(c => c.id === siegeCityId);
+                    if (sc?.oblegane) {
+                      const bId = sc.oblegajacyOwnerId ?? siegeBesiegerByCity.get(siegeCityId);
+                      const adj = bId !== undefined && units.some(
+                        x => x.ownerId === bId && hexDistance(x.q, x.r, sc.q, sc.r) === 1,
+                      );
+                      if (!adj) endMapSiege(siegeCityId);
+                    }
+                  }
+                }
+                for (const c of garnizonCitiesAffected.values()) syncGarnizonForCity(c);
                 showHintMessage(`Głód: utracono ${starv.destroyedIds.length} jednostek`, 3500);
               } else if (starv.damagedCount > 0) {
                 showHintMessage(`Głód wojska: −${Math.round(efParams.glodWojskaHpFrac * 100)}% max HP u ${starv.damagedCount} jednostek`, 2800);
@@ -13494,6 +13538,7 @@ async function boot(): Promise<void> {
         cultureRangeGroup = null;
         religionRangeGroup = null;
         territoryBorderGroup = null;
+        try { camCtrl.dispose(); } catch { /* ignore */ }
         camCtrl = new CameraController(camera, canvas, center, cameraControllerOpts());
         unitRenderer = new UnitRenderer(scene, map);
         wireUnitRendererRingStance();
@@ -13584,6 +13629,7 @@ async function boot(): Promise<void> {
       territoryBorderGroup = null;
 
       // Rebuild camera controller with new scene center
+      try { camCtrl.dispose(); } catch (_) { /* ignore */ }
       camCtrl = new CameraController(camera, canvas, center, cameraControllerOpts());
 
       // Rebuild unit and city renderers
@@ -13827,6 +13873,7 @@ async function boot(): Promise<void> {
       religionRangeGroup = null;
       territoryBorderGroup = null;
 
+      try { camCtrl.dispose(); } catch (_) { /* ignore */ }
       camCtrl = new CameraController(camera, canvas, center, cameraControllerOpts());
 
       unitRenderer = new UnitRenderer(scene, map);
@@ -14051,6 +14098,7 @@ async function boot(): Promise<void> {
       religionRangeGroup = null;
       territoryBorderGroup = null;
 
+      try { camCtrl.dispose(); } catch (_) { /* ignore */ }
       camCtrl = new CameraController(camera, canvas, center, cameraControllerOpts());
 
       unitRenderer = new UnitRenderer(scene, map);
@@ -14244,6 +14292,7 @@ async function boot(): Promise<void> {
       religionRangeGroup = null;
       territoryBorderGroup = null;
 
+      try { camCtrl.dispose(); } catch (_) { /* ignore */ }
       camCtrl = new CameraController(camera, canvas, center, cameraControllerOpts());
 
       unitRenderer = new UnitRenderer(scene, map);
