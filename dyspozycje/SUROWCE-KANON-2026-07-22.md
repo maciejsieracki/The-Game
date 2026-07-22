@@ -19,7 +19,7 @@
 | 5 | **Reguła dostępu** | **Każdy surowiec oprócz żywności** wymaga **ulepszenia terenu LUB budynku miasta**, aby być **produkowany / aktywny**. Żywność = wyjątek (plony bazowe lądu). | Faza 1 wdrożona z wyjątkami tartak/kamieniołom; **do domknięcia** wyjątek żywności w kodzie. |
 | 6 | **Receptura cegły** | **2 glina + 1 paliwo → 1 cegła** (nie 1+1). | `converters.ts` dziś: `glina:1, paliwo:1` — **do zmiany faza 2**. |
 | 7 | **Stal** | Potrzebna dopiero w **epoce Klasycznej** (Antyk wysoki / po Żelazo). **Niespójność do decyzji:** `buildings.json` → `wielka_kuznia` ma `epokaWejscia: 4` (Średniowiecze), tech „Obróbka żelaza" jest w epoce Żelazo (3). | Brak receptury `wielka_kuznia` w `converters.ts`. Żadna jednostka nie ma kosztu `stal`. |
-| 8 | **Ceramika + Sól → Spichlerz** | **Konsument główny:** budynek **Spichlerz** (`spichlerz`). **Dwie twarde bramki budowy** (Maciej 2026-07-22): (1) **Ceramika** — naczynia do składowania (amfora, dzbany); (2) **Sól** — konserwacja żywności; **bez soli nie można składować żywności** → Spichlerz niedostępny bez **aktywnej soli** (warzelnia na wybrzeżu). Wzorzec: `wymagania` / `building-resource-gate` jak glina→Garncarnia. Efekt zdrowia z Garncarni = **wtórny**; **sól zachowana w magazynie** = znaczący bonus zdrowia + szczęścia (konserwacja). Faza 2: bramki widoczności; faza 3: opcjonalny koszt materiałowy przy budowie. | `buildings.json` → `spichlerz`: brak bramek ceramiki i soli; brak wpisu Sól w `resources.json`; `turn-economy.ts`: bug id `ceramika` vs `garncarnia`. **Do wdrożenia faza 2.** |
+| 8 | **Spichlerz two-tier (Maciej 2026-07-22)** | **Spichlerz I (zbór):** bramka **tylko Ceramika** (Garncarnia). **Spichlerz II (upgrade):** wymaga **Soli** (warzelnia, wybrzeże). Bufor wzrostu po awansie: I = **50%**, II = **70%**. Zapasy wojska: I = **100 🍞**/spichlerz (jak dziś); II = **150 🍞**/spichlerz *(rekomendacja)* + opcj. +1 Zdrowie / +1 Sz w mieście. Szczegóły → **§ Spichlerz two-tier** poniżej. | Kod: jeden `spichlerz`, brak tierów; brak bramki ceramiki; brak soli w JSON. **Do wdrożenia faza 2.** |
 
 ---
 
@@ -88,27 +88,56 @@ Powstają **wyłącznie w budynku miasta** (konwerter co turę). Wymagają **akt
 - `odlewnia_brazu` → `odlewnia_zelaza` (produkcja żelaza)
 - `kuznia_zelaza` → `wielka_kuznia` (mnożnik wojska + stal)
 
-### Ceramika + Sól → Spichlerz — twarde bramki budowy (Maciej 2026-07-22)
+### Ceramika + Sól → Spichlerz — archiwum v1 (Maciej 2026-07-22 rano)
 
-**Reguła:** gracz **nie może** wznieść **Spichlerza** (`spichlerz`), dopóki **nie spełni obu warunków** — budynek **nie pojawia się** (lub jest zablokowany) w panelu produkcji miasta:
+> **Superseded:** model **two-tier** (§ poniżej). Wcześniejsza wersja: **jeden** Spichlerz wymagał **ceramiki i soli naraz**.
 
-1. **Ceramika** — naczynia do składowania (amfora, dzbany, beczki gliniane).
-2. **Sól** — konserwacja żywności; **bez soli nie można składować żywności** → Spichlerz niedostępny bez **aktywnej soli** (warzelnia soli na wybrzeżu).
-
-**Uzasadnienie projektowe (Maciej):** O spichlerzu — przecież wszystko się składa w ceramice: żywność i zapasy przechowywane są w naczyniach ceramicznych (amforach, dzbanch, beczkach glinianych), stąd **ceramika jest wymagana do budowy Spichlerza** — gracz musi najpierw uruchomić produkcję Garncarni. Do konserwacji potrzebna jest też **sól** (druga bramka: Warzelnia soli na wybrzeżu).
-
-| Aspekt | Kanon |
+| Aspekt | Kanon (archiwum) |
 |---|---|
-| **Konsument główny** | **Spichlerz** (`spichlerz`, `buildings.json` id potwierdzone) |
-| **Typ bramki** | **Dwie twarde bramki budowy** — ceramika **i** sól; nie „opcjonalny koszt fazy 3" |
-| **Wzorzec implementacji** | Jak **Glina → Garncarnia:** `wymagania` w JSON + wpis w `building-resource-gate.ts` (osobne wpisy dla `ceramika` i `sol`) |
-| **Warunek ceramiki (faza 2)** | **Aktywna produkcja ceramiki** w imperium (Garncarnia + łańcuch glina/paliwo) **lub** zapas `ceramika` w magazynie miasta — minimum = bramka katalogu jak u Garncarni |
-| **Warunek soli (faza 2)** | **Aktywna produkcja soli** w imperium (warzelnia na złożu soli **wybrzeżu**) **lub** zapas `sol` w magazynie miasta — minimum = bramka katalogu jak u Garncarni |
-| **Faza 3 (opcjonalnie)** | Dodatkowy **koszt materiałowy** ceramiki i/lub soli przy budowie Spichlerza (ilość → balans) |
-| **Efekt wtórny — Garncarnia** | Bonus zdrowia z Garncarni — **zostaje**, nie zastępuje bramki |
-| **Efekt soli zachowanej** | Znaczący bonus **zdrowia + szczęścia** (konserwacja / preservation) — pomysł Macieja; wdrożenie faza 2+ |
+| Bramki | Ceramika **+** Sól — obie do budowy |
+| Łańcuch | glina → Garncarnia → ceramika · wybrzeże → warzelnia → sól → Spichlerz |
 
-**Łańcuch gameplay:** glina (teren) → Garncarnia → **ceramika** · złoże soli (wybrzeże) → Warzelnia → **sól** → **oba** odblokowują **Spichlerz** → magazyn żywności / bufor wzrostu.
+---
+
+## Spichlerz two-tier — propozycja kanonu (Maciej 2026-07-22)
+
+> **Cel:** rozdzielić wczesny magazyn (naczynia) od konserwacji solnej (upgrade). Sól **nie** blokuje Spichlerza I — tylko upgrade do II.
+>
+> **Stan kodu:** jeden `spichlerz`, bufor 50%, cap armii 100×liczba Spichlerzy (B5-SPICH).
+
+### Tabela — Spichlerz I vs Spichlerz II
+
+| Aspekt | **Spichlerz I — Zbór** | **Spichlerz II — Konserwowany** |
+|---|---|---|
+| **Bramka** | **Aktywna ceramika** (Garncarnia) | **Upgrade** Spichlerza I + **aktywna sól** (warzelnia, wybrzeże) |
+| **Tech** | Garncarstwo | Garncarstwo (+ dostęp soli) |
+| **Bufor po wzroście pop** | **50%** (`spichlerz_zachowanie_po_wzroscie=0,5`) | **70%** (`spichlerz_ii_zachowanie=0,7`) |
+| **Odkładanie armii** | **100%** netto → zapasy państwa | **100%** *(rekomendacja: bez zmiany)* |
+| **Cap zapasów armii** | **+100 🍞** / spichlerz | **+150 🍞** / spichlerz *(zastępuje 100)* |
+| **Bonus miasta** | — | **+1 Zdrowie**, **+1 Szczęście** (konserwacja) |
+| **UI** | „Spichlerz — zbór" | „Spichlerz — konserwowany" |
+
+### Ścieżka upgrade
+
+```
+Glina → Garncarnia → ceramika → Spichlerz I (50%, cap 100)
+                                    ↓ sól aktywna
+                              Spichlerz II (70%, cap 150, +1 Zd, +1 Sz)
+```
+
+**Bez Spichlerza (B5):** bufor → 0 po wzroście; armia bez kumulacji. Rekrutacja **nigdy** blokowana.
+
+### Wojsko — rekomendacja tier II
+
+**Opcja A (rekomendacja):** wyższy **cap** (150 zamiast 100), % odkładania bez zmian (100%).
+
+**Opcja B:** cap bez zmian, wyższy bufor (70%) jako jedyna nagroda tier II.
+
+**Opcja C:** cap 150 **i** bufor 70% — dla imperiów morskich; ryzyko OP.
+
+### Reguła ogólna — każdy budynek i surowiec daje bonus
+
+Bonus z **aktywnego dostępu w imperium**, domyślnie **nie** ze stocku magazynu. Pełne listy propozycji → czat Master 2026-07-22.
 
 ---
 
@@ -125,7 +154,8 @@ Powstają **wyłącznie w budynku miasta** (konwerter co turę). Wymagają **akt
 | Piec hutniczy | ruda miedzi, paliwo | brąz |
 | Odlewnia żelaza | ruda żelaza, paliwo | żelazo |
 | Wielka kuźnia | żelazo, paliwo | stal |
-| **Spichlerz** | **ceramika + sól** (dwie bramki budowy) | magazyn żywności, bufor wzrostu |
+| **Spichlerz I** | **ceramika** (bramka budowy) | bufor 50%, zapasy armii +100 |
+| **Spichlerz II** | upgrade + **sól** | bufor 70%, zapasy armii +150, +Zd/+Sz |
 
 ### C.2 Ulepszenia terenu — mapa (nie magazyn hodowli)
 
@@ -355,4 +385,4 @@ złoże soli (wybrzeże) ──→ warzelnia ──→ sól ──┐
 
 ---
 
-*Plik: `dyspozycje/SUROWCE-KANON-2026-07-22.md` · v4: sól→Spichlerz (Maciej 2026-07-22) · v3 audyt ceramika/cegła/sól · bez implementacji kodu.*
+*Plik: `dyspozycje/SUROWCE-KANON-2026-07-22.md` · v5: Spichlerz two-tier + reguła bonusów (Maciej 2026-07-22) · v4: sól→Spichlerz · v3 audyt ceramika/cegła/sól · bez implementacji kodu.*
