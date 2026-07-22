@@ -1,0 +1,11 @@
+PACZKA: DYPLOMACJA-v1.1 · 2026-07-23
+Styl: 1E (Painted Imperial) · adaptacja TW:WH3 · status: PROPOZYCJA do akceptacji (nie kanon)
+
+ZAWARTOŚĆ (3 pliki):
+1. DYSPOZYCJA-WDROZENIE.md ................................. instrukcja: gdzie wgrać, zlecenie
+                                                             dla integratora, changelog v1→v1.1
+2. MANIFEST.txt ............................................ ten plik
+3. brand-book/Makieta DYPLOMACJA v1.1 -TW-adapt- 1E-.html .. makieta (zwykły .html, bez runtime)
+
+BAZA: mockup v1 Macieja (MakietaDYPLOMACJAv1TWWH3.html) + poprawki logiczne i stylistyczne.
+CEL W REPO: docs/ux/claude-design/01-propozycje-z-design/brand-book/
