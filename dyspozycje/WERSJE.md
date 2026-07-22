@@ -11,9 +11,13 @@ swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drug
 
 ## ROBOCZA (gra-robocza\Gra-ROBOCZA.html — wskazywana przez START.html)
 
+- 2026-07-22 · stempel: ROBOCZA · **c254006d** · md5 pliku `c254006dccb94e25a4121b3f377c157a` · **HUD: pierścień postępu badań (Nauka) + hook researchProgress** — na `9b539cb7`:
+  **Medalion Nauki** (górny chip 6C + lewy toolbar mapy): złoty pierścień = pozostało; niebieski rośnie zgodnie z ruchem wskazówek. Hook: `researchProgress` z `buildHudState` (`player.nauka / koszt badanej tech`), nie postęp epoki. Moduł `scienceProgressRing.ts`; `resolveResearchProgress` w `hud.ts`.
+  tsc=0 · verify OK · publish `gra-robocza/Gra-ROBOCZA.html`. · **AKTUALNA** · Test: Ctrl+F5 START.html → stamp `c254006d` → wybierz tech → pierścień rośnie co turę; po odkryciu reset.
+
 - 2026-07-22 · stempel: ROBOCZA · **9b539cb7** · md5 pliku `9b539cb74bfc487a8c1fd7ef5d4af27b` · **UI: pierścień postępu badań na HUD Nauki** — na `c54dae3b`:
-  **Lewy toolbar + chip Nauka (górny pasek):** pierścień timer złoto→niebieski (SVG stroke-dashoffset), rośnie zgodnie z ruchem wskazówek od góry; progress = `epokaPostep` (pula/koszt celu). Nowy moduł `scienceProgressRing.ts`; hooki w `mapToolbarHud.ts`, `hudChip6c.ts`, `hud.ts`.
-  tsc=0 · verify OK · publish `gra-robocza/Gra-ROBOCZA.html`. · **AKTUALNA** · Test: Ctrl+F5 START.html → stamp `9b539cb7`; wybierz tech → pierścień złoty z rosnącym niebieskim segmentem; po ukończeniu cały niebieski; nowy cel = reset złoty + mały niebieski.
+  **Lewy toolbar + chip Nauka (górny pasek):** pierścień timer złoto→niebieski (SVG stroke-dashoffset), rośnie zgodnie z ruchem wskazówek od góry; progress = `researchProgress` z `buildHudState` (`player.nauka / koszt badanej tech`), nie postęp epoki. Nowy moduł `scienceProgressRing.ts`; hooki w `mapToolbarHud.ts`, `hudChip6c.ts`, `hud.ts`.
+  tsc=0 · verify OK · publish `gra-robocza/Gra-ROBOCZA.html`. · **ZASTĄPIONA** (→ `c254006d`) · Test: Ctrl+F5 START.html → stamp `9b539cb7`; wybierz tech → pierścień złoty z rosnącym niebieskim segmentem; po ukończeniu cały niebieski; nowy cel = reset złoty + mały niebieski.
 
 - 2026-07-22 · stempel: ROBOCZA · **c54dae3b** · md5 pliku `c54dae3be8b3ab1cc0e5eebf7d04f9f0` · **FIX: Zwiadowca 0 Manpower** — na `98889578`:
   **Zwiadowca (`typeId=Zwiadowca`)** nie zużywa puli Manpower przy rekrutacji (zakup złotem + ukończenie kolejki produkcji). Hook: `unitManpowerCostForType` w `manpower.ts`; `tryDeductUnitSpawnCosts` / `canAffordUnitManpower` / `refundUnitSpawnToCity` z opcjonalnym `typeId`; `production.manpowerCostOf`; UI karty rekrutacji pokazuje `0 👤`.

@@ -6492,6 +6492,7 @@ async function boot(): Promise<void> {
         tura: turn,
         epoka: gameEpochHudLabel(player.era),
         epokaPostep,
+        researchProgress: epokaPostep,
         badana: player.badana,
         sojusze: chips.sojusze,
         pakty: chips.pakty,
