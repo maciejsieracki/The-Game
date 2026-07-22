@@ -69,7 +69,9 @@ import {
   BTerrain,
   generateBattleTerrain,
   tileJitter,
+  presetForWorldTerrain,
   type BattleTerrainMap,
+  type WorldTerrainInput,
 } from './battle-terrain';
 import { buildTestArmies } from './testBattle';
 import { buildSiegeWall, attachRowBreachPanels } from './siegeWall';
@@ -316,6 +318,16 @@ export interface BattleOpts {
   attacker: BattleUnit[];
   defender: BattleUnit[];
   teren: string;
+  /**
+   * World-map hex the fight is happening on (defender's/target's hex): drives
+   * the battle-terrain preset (forest/hills/river density + palette) so the
+   * tactical field echoes the world terrain. OPTIONAL -- omit it and the field
+   * generates exactly as before (no regression for callers that don't pass it).
+   * See battle-terrain.ts `presetForWorldTerrain`. Overridable for playtests
+   * via the `?bt=laka|rownina|wzgorza|gory|las|pustynia|wybrzeze|rzeka` query
+   * param (see debugWorldTerrainOverride() below).
+   */
+  worldTerrain?: WorldTerrainInput;
   data?: any;
   onCancel?: () => void;
   /** When set, activates siege mode: a wall + gate are placed near the defender. */
@@ -346,6 +358,36 @@ export interface BattleResult {
   winner: 'atakujacy' | 'obronca' | 'remis';
   survivors: BattleUnit[];
   log: string[];
+}
+
+// ---------------------------------------------------------------------------
+// DEBUG: ?bt=<preset> query param forces a battle-terrain preset regardless of
+// opts.worldTerrain -- for playtest/screenshot use only. Absent param = zero
+// behaviour change. Each maps to a synthetic WorldTerrainInput; 'las'/'rzeka'
+// demo the two OVERLAYS (forest / river) on a neutral 'rownina' base since
+// those are hex NAKLADKA flags, not a TerenBazowy of their own.
+// ---------------------------------------------------------------------------
+const BT_DEBUG_PRESETS: Record<string, WorldTerrainInput> = {
+  laka:     { baza: 'laka' },
+  rownina:  { baza: 'rownina' },
+  wzgorza:  { baza: 'wzgorza' },
+  gory:     { baza: 'gory' },
+  pustynia: { baza: 'pustynia' },
+  wybrzeze: { baza: 'wybrzeze' },
+  las:      { baza: 'rownina', las: true },
+  rzeka:    { baza: 'rownina', rzeka: true },
+};
+
+/** Reads `?bt=...` from the page URL, if any. Never throws (SSR/test safety). */
+function debugWorldTerrainOverride(): WorldTerrainInput | undefined {
+  try {
+    if (typeof window === 'undefined' || !window.location) return undefined;
+    const bt = new URLSearchParams(window.location.search).get('bt');
+    if (!bt) return undefined;
+    return BT_DEBUG_PRESETS[bt.trim().toLowerCase()];
+  } catch {
+    return undefined;
+  }
 }
 
 /** Kopia armii startowej do „Rozegraj ponownie” (pelne HP). */
@@ -469,6 +511,40 @@ const ATK_FRONT_COL = PLAY_COL0 + Math.floor((PLAYABLE_COLS - FRONT_GAP) / 2);
 const DEF_FRONT_COL = ATK_FRONT_COL + FRONT_GAP;
 const ATK_COL_STEP  = -1;           // attacker rear ranks step LEFT (toward -X edge)
 const DEF_COL_STEP  = 1;            // defender rear ranks step RIGHT (toward +X edge)
+
+/**
+ * Column ranges that survive _carveBattleBox's deployment-rank clearing (see
+ * that method): it unconditionally wipes columns
+ * [ATK_FRONT_COL .. ATK_FRONT_COL+(DEPLOY_CLEAR_RANKS-1)*ATK_COL_STEP] and
+ * [DEF_FRONT_COL .. DEF_FRONT_COL+(DEPLOY_CLEAR_RANKS-1)*DEF_COL_STEP] back to
+ * Plains for EVERY playable row, regardless of what the generator drew there
+ * -- so it applies equally to every preset (this is pre-existing behaviour,
+ * not something the world-terrain presets introduced). With today's
+ * constants that wipes 36 of the 48 playable columns, leaving three narrow
+ * 4-column-wide bands: the left flank, the ATK/DEF front-line gap, and the
+ * right flank. Passed to generateBattleTerrain as `safeCols` (2026-07-22
+ * owner review: "rzeka too narrow" / "hills read as sparse dots") so hills,
+ * edge rocks and the wide river concentrate where they will actually remain
+ * visible instead of mostly landing in lanes that get carved away. Computed
+ * independently of _carveBattleBox's own Set<number> (duplicated formula,
+ * verified to match exactly) so this stays a pure, side-effect-free query
+ * callable before generation runs.
+ */
+function battleSafeCols(): Array<[number, number]> {
+  const deployClearRanks = Math.max(MAX_RANKS + 12, Math.ceil(MAX_PER_SIDE / 12) + 8);
+  const atkRankEnd = ATK_FRONT_COL + (deployClearRanks - 1) * ATK_COL_STEP;
+  const defRankEnd = DEF_FRONT_COL + (deployClearRanks - 1) * DEF_COL_STEP;
+  const atkLo = Math.min(ATK_FRONT_COL, atkRankEnd);
+  const atkHi = Math.max(ATK_FRONT_COL, atkRankEnd);
+  const defLo = Math.min(DEF_FRONT_COL, defRankEnd);
+  const defHi = Math.max(DEF_FRONT_COL, defRankEnd);
+  const ranges: Array<[number, number]> = [
+    [PLAY_COL0, atkLo - 1],
+    [atkHi + 1, defLo - 1],
+    [defHi + 1, PLAY_COL1],
+  ];
+  return ranges.filter(([lo, hi]) => hi >= lo);
+}
 
 // Faza rozstawiania: lewa połowa STREFY GRY = ATK, prawa = DEF (mgła wojny).
 const DEPLOY_MID_COL       = PLAY_MID_COL;
@@ -781,6 +857,20 @@ const BT_FLOOR_COLOR: Record<number, number> = {
   [BTerrain.Gate]:   0x7a6a50, // gate tile -- dark arch floor
 };
 
+// PUSTYNIA preset palette: swapped in wholesale by _buildBattlefield when
+// this._desertPalette is true (sand tiles, sand "dune" hills, warm rocks --
+// forest never spawns on desert so no crown/trunk override is needed).
+const BT_FLOOR_COLOR_DESERT: Record<number, number> = {
+  [BTerrain.Plains]: 0xd7b877, // open sand
+  [BTerrain.Forest]: 0x3a6b34, // unused (noForest), kept for completeness
+  [BTerrain.Hills]:  0xc9a662, // dune sand (slightly darker/warmer than flat sand)
+  [BTerrain.River]:  0x3a86b5, // unused (noForest preset also has riverMode 'none')
+  [BTerrain.Ford]:   0x6a93a8, // unused
+  [BTerrain.Rocks]:  0x9c8a63, // sandstone outcrop
+  [BTerrain.Wall]:   0x9a9080,
+  [BTerrain.Gate]:   0x7a6a50,
+};
+
 const FOREST_CONE_COLOR  = 0x2f6b34; // tree crown (scene.ts)
 const FOREST_CONE_COLOR2 = 0x3d7a3a; // 2nd crown shade -- deterministic per-tree mix, avoids a flat forest
 const FOREST_TRUNK_COLOR = 0x5b4327; // tree trunk (scene.ts)
@@ -789,6 +879,11 @@ const SHRUB_COLOR        = 0x356b2c; // hill shrub
 const ROCK_COLOR         = 0x6f7a85; // low-poly rock (scene.ts PEAK_ROCK)
 const RIVER_WATER_COLOR  = 0x3a86b5; // water plane
 
+// PUSTYNIA variants of the hill/rock decoration colours above (dune + sandstone).
+const HILL_GRASS_COLOR_DESERT = 0xcaa863; // dune sand bump
+const SHRUB_COLOR_DESERT      = 0x8a6f3f; // dry scrub, not green
+const ROCK_COLOR_DESERT       = 0x9c8a63; // sandstone
+
 // Close-up ground detail (B10 "z bliska"): grass tufts + tiny clutter that only
 // read when the camera is zoomed in on the units, per owner feedback.
 const GRASS_TUFT_COLOR_A = 0x7ab84c; // grass blade -- lighter/fresher than the floor tile
@@ -796,14 +891,25 @@ const GRASS_TUFT_COLOR_B = 0x5c9a3c; // grass blade -- 2nd shade, darker mix
 const PEBBLE_COLOR       = 0x8a8478; // tiny loose pebble (paler than the ROCK boulders)
 const TINY_BUSH_COLOR    = 0x3f7a34; // small ground bush -- between grass and forest shade
 
+// PUSTYNIA variants of the close-up ground detail above (dry, not green).
+const GRASS_TUFT_COLOR_A_DESERT = 0xc9ae7a; // dry pale tuft
+const GRASS_TUFT_COLOR_B_DESERT = 0xb08f55; // dry darker tuft
+
 // Elevation lift (world units) applied to a hill tile's slab + its decorations.
 const HILL_LIFT  = 0.18;
+// Footprint radius of the raised grass dome (SphereGeometry) drawn on a hill
+// tile. 2026-07-22 owner review ("wzgorza look like sparse dots from a
+// distance"): widened from TILE_S*0.60 so neighbouring hill-tile domes
+// visibly OVERLAP (diameter > the TILE_S tile spacing) and read as one
+// continuous rolling ridge instead of isolated bumps -- purely a mesh-size
+// change, does not touch tile generation/movement cost.
+const HILL_BUMP_RADIUS = TILE_S * 0.78;
 // The VISIBLE top (summit) of the raised grass dome drawn on a hill tile. The
-// half-dome is a SphereGeometry(TILE_S*0.60) placed at y=0 and scaled in Y to
-// (HILL_LIFT + 0.16)/(TILE_S*0.60), so its apex sits at exactly HILL_LIFT+0.16.
-// Units standing on a hill rest their feet here (see tileTopY). This single
-// constant is reused by the bump's Y-scale so the walking surface and the drawn
-// dome can never drift apart.
+// half-dome is a SphereGeometry(HILL_BUMP_RADIUS) placed at y=0 and scaled in Y
+// to (HILL_LIFT + 0.16)/HILL_BUMP_RADIUS, so its apex sits at exactly
+// HILL_LIFT+0.16. Units standing on a hill rest their feet here (see
+// tileTopY). This single constant is reused by the bump's Y-scale so the
+// walking surface and the drawn dome can never drift apart.
 const HILL_SUMMIT_Y = HILL_LIFT + 0.16;
 // River/ford tiles sit slightly LOWER so water reads as a sunken channel.
 const RIVER_DROP = 0.08;
@@ -1948,6 +2054,9 @@ export class BattleScene {
   // Procedural per-tile battle terrain (B8). Drives rendering, per-tile move
   // cost / passability and the per-tile defender terrain fed to the combat math.
   private terrainMap:  BattleTerrainMap;
+  // Pustynia preset: swap the floor/hill/grass palette for sand tones (see
+  // _buildBattlefield). Set from opts.worldTerrain / ?bt= debug override.
+  private _desertPalette = false;
 
   // Turn loop bookkeeping.
   // A TURN is one pass over EVERY living unit (both sides interleaved by
@@ -1987,6 +2096,14 @@ export class BattleScene {
     this._defenderCivIconId = opts.defenderCivIconId
       ?? civIconIdFromLabel(civRows, this._defenderCivLabel);
 
+    // World-hex-derived terrain preset (forest/hills/river density + palette).
+    // ?bt=... (debug/screenshot only) wins over opts.worldTerrain; both are
+    // optional -- with neither, presetForWorldTerrain() returns DEFAULT_PRESET
+    // and generation is identical to before this feature existed.
+    const worldTerrain = debugWorldTerrainOverride() ?? opts.worldTerrain;
+    const terrainPreset = presetForWorldTerrain(worldTerrain);
+    this._desertPalette = terrainPreset.desertPalette;
+
     // Deterministic procedural terrain for the big square field. Seeded from the
     // battle terrain name so the same matchup terrain reproduces every run.
     this.terrainMap = generateBattleTerrain({
@@ -1994,6 +2111,13 @@ export class BattleScene {
       rows:         BF_ROWS,
       seed:         'bf:' + opts.teren,
       deployMargin: DEPLOY_MARGIN,
+      rowMargin:    PLAY_ROW0,
+      preset:       terrainPreset,
+      // Always passed: only consulted by generator branches gated on preset
+      // flags (riverMode==='wide' / biasSafeCols / edgeRocks), all false on
+      // DEFAULT_PRESET, so this is a no-op for every legacy/no-worldTerrain
+      // call (verified bit-for-bit, see report).
+      safeCols:     battleSafeCols(),
     });
     // Flatten the deploy ranks + the clash corridor to clean plains so the two
     // even lines stand on flat, even ground and reach melee fast; terrain stays
@@ -3509,6 +3633,18 @@ export class BattleScene {
     this._battleGroundPickMeshes = [];
     const tm = this.terrainMap;
 
+    // PUSTYNIA preset: swap the whole ground-decoration palette for sand
+    // tones. Forest never spawns on desert (preset.noForest) so crown/trunk
+    // colours are never picked, only floor/hills/rocks/tufts need a variant.
+    const desert = this._desertPalette;
+    const floorColors  = desert ? BT_FLOOR_COLOR_DESERT : BT_FLOOR_COLOR;
+    const hillColor    = desert ? HILL_GRASS_COLOR_DESERT : HILL_GRASS_COLOR;
+    const shrubColor   = desert ? SHRUB_COLOR_DESERT : SHRUB_COLOR;
+    const rockColor    = desert ? ROCK_COLOR_DESERT : ROCK_COLOR;
+    const tuftColorA   = desert ? GRASS_TUFT_COLOR_A_DESERT : GRASS_TUFT_COLOR_A;
+    const tuftColorB   = desert ? GRASS_TUFT_COLOR_B_DESERT : GRASS_TUFT_COLOR_B;
+    const bushColor    = desert ? SHRUB_COLOR_DESERT : TINY_BUSH_COLOR;
+
     // Flat SQUARE tile: a thin slab BoxGeometry(S, h, S). A tiny gap (0.98)
     // keeps a faint grid line between adjacent tiles for readability; centres
     // are exactly TILE_S apart so the squares effectively touch. The grass slab
@@ -3550,7 +3686,7 @@ export class BattleScene {
       for (let row = 0; row < BF_ROWS; row++) {
         const kind = tm.at(col, row);
         const checker = ((col + row) % 2 === 0) ? 0.0 : 0.022;
-        let c = lighten(BT_FLOOR_COLOR[kind] ?? 0x6fa84a, checker);
+        let c = lighten(floorColors[kind] ?? 0x6fa84a, checker);
         // Subtle deterministic per-tile tint (hash of position, not Math.random),
         // quantised to a handful of buckets so the material CACHE above still
         // collapses to a few dozen shared materials instead of one per tile.
@@ -3577,7 +3713,12 @@ export class BattleScene {
     if (forestTiles > 0) {
       const maxTrees = forestTiles * FOREST_TREES;
       const crownGeo = new THREE.ConeGeometry(TILE_S * 0.20, TILE_S * 0.62, 6);
-      const crownMat = new THREE.MeshLambertMaterial({ color: FOREST_CONE_COLOR, flatShading: true });
+      // White base material: instanceColor (crownColorA/B below) is the ONLY
+      // source of hue. Any instance that never gets setColorAt() defaults to
+      // white (three.js InstancedBufferAttribute fills with 1, not 0), so a
+      // gap in coverage would read as a washed-out crown, never a black one --
+      // and every crown below IS given a colour, so there is no gap either way.
+      const crownMat = new THREE.MeshLambertMaterial({ color: 0xffffff, flatShading: true });
       const trunkGeo = new THREE.CylinderGeometry(TILE_S * 0.035, TILE_S * 0.05, TILE_S * 0.22, 5);
       const trunkMat = new THREE.MeshLambertMaterial({ color: FOREST_TRUNK_COLOR });
       this.ownedGeos.push(crownGeo, trunkGeo);
@@ -3625,10 +3766,10 @@ export class BattleScene {
 
     // --- HILLS: instanced raised grass bumps (half-dome) + shrubs ---
     if (hillTiles > 0) {
-      const bumpGeo = new THREE.SphereGeometry(TILE_S * 0.60, 8, 5, 0, Math.PI * 2, 0, Math.PI * 0.5);
-      const bumpMat = new THREE.MeshLambertMaterial({ color: HILL_GRASS_COLOR, flatShading: true });
+      const bumpGeo = new THREE.SphereGeometry(HILL_BUMP_RADIUS, 8, 5, 0, Math.PI * 2, 0, Math.PI * 0.5);
+      const bumpMat = new THREE.MeshLambertMaterial({ color: hillColor, flatShading: true });
       const shrubGeo = new THREE.ConeGeometry(TILE_S * 0.13, TILE_S * 0.34, 6);
-      const shrubMat = new THREE.MeshLambertMaterial({ color: SHRUB_COLOR, flatShading: true });
+      const shrubMat = new THREE.MeshLambertMaterial({ color: shrubColor, flatShading: true });
       this.ownedGeos.push(bumpGeo, shrubGeo);
       this.ownedMats.push(bumpMat, shrubMat);
       const bumps  = new THREE.InstancedMesh(bumpGeo, bumpMat, hillTiles);
@@ -3643,7 +3784,7 @@ export class BattleScene {
           const { x, z } = cellToWorld(col, row);
           // raised grass dome (sits ON the y=0 surface; its apex = HILL_SUMMIT_Y)
           dummy.position.set(x, 0, z);
-          dummy.scale.set(1, HILL_SUMMIT_Y / (TILE_S * 0.60), 1);
+          dummy.scale.set(1, HILL_SUMMIT_Y / HILL_BUMP_RADIUS, 1);
           dummy.rotation.set(0, tileJitter(col, row, 3) * Math.PI, 0);
           dummy.updateMatrix();
           bumps.setMatrixAt(bi++, dummy.matrix);
@@ -3699,7 +3840,7 @@ export class BattleScene {
     // --- ROCKS: small instanced low-poly boulders on rock tiles ---
     if (rockTiles > 0) {
       const rockGeo = new THREE.IcosahedronGeometry(TILE_S * 0.22, 0);
-      const rockMat = new THREE.MeshLambertMaterial({ color: ROCK_COLOR, flatShading: true });
+      const rockMat = new THREE.MeshLambertMaterial({ color: rockColor, flatShading: true });
       this.ownedGeos.push(rockGeo);
       this.ownedMats.push(rockMat);
       const rocks = new THREE.InstancedMesh(rockGeo, rockMat, rockTiles * 2);
@@ -3768,13 +3909,16 @@ export class BattleScene {
         const bladeGeo = new THREE.ConeGeometry(TILE_S * 0.016, TILE_S * 0.20, 3);
         bladeGeo.translate(0, TILE_S * 0.10, 0);
         this.ownedGeos.push(bladeGeo);
-        const grassMat = new THREE.MeshLambertMaterial({ color: GRASS_TUFT_COLOR_A, flatShading: true });
+        // White base (same reasoning as the forest crowns above): instanceColor
+        // (grassColorA/B) is the sole hue source so both shades render true
+        // instead of tinting through GRASS_TUFT_COLOR_A a second time.
+        const grassMat = new THREE.MeshLambertMaterial({ color: 0xffffff, flatShading: true });
         this.ownedMats.push(grassMat);
         const grass = new THREE.InstancedMesh(bladeGeo, grassMat, maxBlades);
         grass.castShadow = false; // too thin to be worth the shadow-pass cost
         grass.receiveShadow = false;
-        const grassColorA = new THREE.Color(GRASS_TUFT_COLOR_A);
-        const grassColorB = new THREE.Color(GRASS_TUFT_COLOR_B);
+        const grassColorA = new THREE.Color(tuftColorA);
+        const grassColorB = new THREE.Color(tuftColorB);
         const dummy = new THREE.Object3D();
         let gi = 0;
         outerGrass:
@@ -3834,7 +3978,7 @@ export class BattleScene {
         const pebbleMat = new THREE.MeshLambertMaterial({ color: PEBBLE_COLOR, flatShading: true });
         const bushGeo = new THREE.ConeGeometry(TILE_S * 0.09, TILE_S * 0.16, 5);
         bushGeo.translate(0, TILE_S * 0.08, 0);
-        const bushMat = new THREE.MeshLambertMaterial({ color: TINY_BUSH_COLOR, flatShading: true });
+        const bushMat = new THREE.MeshLambertMaterial({ color: bushColor, flatShading: true });
         this.ownedGeos.push(pebbleGeo, bushGeo);
         this.ownedMats.push(pebbleMat, bushMat);
         const pebbles = new THREE.InstancedMesh(pebbleGeo, pebbleMat, plainsTiles);

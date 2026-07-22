@@ -375,6 +375,7 @@ import { BattleScene } from './battle/battleScene';
 import { buildTestArmies, ensureSiegeMachines as ensureSiegeMachinesPreset } from './battle/testBattle';
 import type { PresetName } from './battle/testBattle';
 import type { BattleResult, BattleUnit, BattleOpts } from './battle/battleScene';
+import type { WorldTerrainInput } from './battle/battle-terrain';
 import {
   startMusic, stopMusic, setMood, setEra, setMusicVolume, getMood,
   startIntroMusic, stopIntroMusic,
@@ -614,6 +615,24 @@ import {
 import {
   spawnTransferredUnit,
 } from './game/diplomacy-unit-transfer';
+
+/**
+ * BattleScene.worldTerrain input derived from a world-map hex: baza terenu +
+ * las/rzeka nakladki. Used everywhere a battle is launched from a map hex so
+ * the tactical field echoes the world terrain (see battle-terrain.ts
+ * presetForWorldTerrain). Loosely typed (not `Hex`) so callers can pass either
+ * a real Hex or a partial lookup result without extra narrowing.
+ */
+function worldTerrainFromHex(
+  hex: { terenBazowy?: unknown; nakladka?: unknown; rzeka?: { obecna?: boolean } } | undefined | null,
+): WorldTerrainInput | undefined {
+  if (!hex) return undefined;
+  return {
+    baza: String(hex.terenBazowy ?? ''),
+    las: hex.nakladka === Nakladka.Las,
+    rzeka: !!hex.rzeka?.obecna,
+  };
+}
 
 // Bootstrap
 // Wrapped in boot() so we can defer execution until DOMContentLoaded.
@@ -9808,6 +9827,7 @@ async function boot(): Promise<void> {
             attacker: atkBus,
             defender: defBus,
             teren: dTeren4,
+            worldTerrain: worldTerrainFromHex(dHex4),
             data,
             deploy: true,
             deployPlayerSide: 'atk',
@@ -9999,6 +10019,7 @@ async function boot(): Promise<void> {
       structBonusPct: number,
       contextLabel: string,
       onResolved: () => void,
+      worldTerrain?: WorldTerrainInput,
     ): void {
       const atkRosterRef = atkRoster.slice();
       const defRosterRef = defRoster.slice();
@@ -10109,6 +10130,7 @@ async function boot(): Promise<void> {
             attacker: atkBus,
             defender: defBus,
             teren: terrain,
+            worldTerrain,
             data,
             deploy: true,
             deployPlayerSide: 'def',
@@ -11044,6 +11066,7 @@ async function boot(): Promise<void> {
             attacker: rosterToBattleUnits(atkRosterRef, 0xffd54a),
             defender: rosterToBattleUnits(defRosterRef, 0xc84040),
             teren: dTeren,
+            worldTerrain: worldTerrainFromHex(dHex),
             data,
             deploy: true,
             deployPlayerSide: 'atk',
@@ -12869,6 +12892,7 @@ async function boot(): Promise<void> {
                       structBonusAI,
                       'Atak AI — ' + ownerDiploLabel(ownerId),
                       () => { void runAiPhase(); },
+                      worldTerrainFromHex(hexObj),
                     );
                     break ownerLoop;
                   }
@@ -13093,6 +13117,7 @@ async function boot(): Promise<void> {
                       structBonusBarb,
                       'Atak barbarzyńców',
                       () => { /* reszta tury już poszła — tylko odśwież mapę */ },
+                      worldTerrainFromHex(hexObj2),
                     );
                     continue;
                   }
