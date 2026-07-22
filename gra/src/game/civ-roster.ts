@@ -101,7 +101,8 @@ export function assignAiCivTypes(input: AssignAiCivInput): Map<number, string> {
   const out = new Map<number, string>();
   const fallback = allCivIds.find((id) => id && id !== playerCivId) ?? 'grecy';
   sorted.forEach((ownerId, idx) => {
-    out.set(ownerId, shuffledAi[idx] ?? fallback);
+    // Audyt #71: round-robin z puli aktywnych
+    out.set(ownerId, shuffledAi.length > 0 ? shuffledAi[idx % shuffledAi.length]! : fallback);
   });
   return out;
 }
