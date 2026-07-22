@@ -4,7 +4,19 @@
 > **Czat:** krótko **`✅ Gotowe:`** / **`⏸️ Czeka:`** · **Ten plik:** pełniejszy zapis tego samego.  
 > Szczegóły techniczne → handoff w `dyspozycje/_handoff/` · operacja → `dyspozycje/DZIENNIK-MASTERA.md`
 
-**Ostatnia aktualizacja:** 2026-07-22 (FIX dialog POŁĄCZENIE ARMII @ 7238588c)
+**Ostatnia aktualizacja:** 2026-07-22 (FIX suwak żywność per miasto @ 7e038328)
+
+---
+
+## [22:45] ✅ Gotowe — suwak żywność→armia osobno w każdym mieście
+
+| | |
+|---|---|
+| **Co** | Suwak „Wzrost / Armia" w panelu miasta działa per miasto, nie globalnie |
+| **Bug** | Zmiana w mieście A zmieniała też ustawienie w mieście B |
+| **Fix** | `City.procentRozwoj` — zapis per miasto; stary save migrowany z empireFoodStates |
+| **md5** | `7e038328910eb09f9ca90beaf06a5e59` · stamp `7e038328` |
+| **Od Ciebie** | Ctrl+F5 · stamp `7e038328` · 2+ miasta → różne suwaki → każde trzyma własne % |
 
 ---
 

@@ -29,7 +29,7 @@
  *   WIRE 3: Luksus->Wealth -- advanceWealth() per miasto, mnoznik na pieniadz.
  *   WIRE 4: oblezenie -- gdy city.oblegane=true: brak dochodu zywnosci z pol,
  *           magazyn maleje o (population+garnizon)/ture, clamp do 0.
- *   WIRE 5: B5 hybryda -- split % rozwój miast (getEmpireFoodSplit); koszt wojska
+ *   WIRE 5: B5 hybryda -- split % rozwój miast (getCityFoodSplit per miasto); koszt wojska
  *           NIE schodzi z netto miasta (advanceEmpireFood + zapasy państwa).
  */
 
@@ -108,7 +108,7 @@ import {
 import { buildTerritoryNodesFromCities } from '../map/territory-work';
 import type { TerritoryNode } from '../map/territory';
 import type { OrderYieldMults } from './order';
-import { getEmpireFoodSplit } from './empire-food';
+import { getCityFoodSplit } from './empire-food';
 import { pickOsiedlePopBonus, osiedlePopLabel } from './society-breakdown';
 import { hexDistance } from '../units/setup';
 
@@ -681,6 +681,8 @@ export interface CityEconomyTick {
   magazynPoTurze: number;          // stan bufora wzrostu (magazynZywnosci) po turze
   /** B5-SPICH: miasto ma wybudowany Spichlerz (wpływa na zapasy państwa imperium). */
   maSpichlerz:    boolean;
+  /** B5: % netto żywności tego miasta na wzrost ludności (reszta → zapasy armii). */
+  procentRozwoj:  number;
 }
 
 /** Aggregate of one full economy tick across all processed cities. */
@@ -847,6 +849,7 @@ export function previewCityEconomy(
 
     const maSpichlerz = builtIds.includes('spichlerz');
     const maAkwedukt = builtIds.includes('akwedukt');
+    const pctRozwoj = getCityFoodSplit(city);
     const econCity = toEconomyCity(city, params, isCapital, zdrowie, { maSpichlerz, maAkwedukt });
 
     const ownerEra = resolveOwnerEra
@@ -935,6 +938,7 @@ export function previewCityEconomy(
         obleganyGlod: getCityFood(city) <= 0,
         magazynPoTurze: getCityFood(city),
         maSpichlerz,
+        procentRozwoj: pctRozwoj,
       });
       continue;
     }
@@ -964,6 +968,7 @@ export function previewCityEconomy(
       obleganyGlod: false,
       magazynPoTurze: getCityFood(city),
       maSpichlerz,
+      procentRozwoj: pctRozwoj,
     });
   }
 
@@ -1060,6 +1065,7 @@ export function advanceCityEconomy(
 
     const maSpichlerz = builtIds.includes('spichlerz');
     const maAkwedukt  = builtIds.includes('akwedukt');
+    const pctRozwoj = getCityFoodSplit(city);
     const econCity = toEconomyCity(city, params, isCapital, zdrowie, { maSpichlerz, maAkwedukt });
 
     const ownerEra = resolveOwnerEra
@@ -1182,6 +1188,7 @@ export function advanceCityEconomy(
         obleganyGlod,
         magazynPoTurze,
         maSpichlerz,
+        procentRozwoj: pctRozwoj,
       };
       result.perCity.push(tick);
 
@@ -1206,7 +1213,6 @@ export function advanceCityEconomy(
     // growthMult (7.4): scale food inflow BEFORE populationGrowth so the
     // threshold crossing is affected.  growthMult < 1 under unrest slows growth
     // (food accumulates slower); growthMult > 1 speeds it up.  Default = 1 (no effect).
-    const pctRozwoj = Math.min(100, Math.max(0, getEmpireFoodSplit(city.ownerId)));
     const surplus = Math.max(0, yld.zywnosc) * (pctRozwoj / 100);
     const deficit = Math.min(0, yld.zywnosc);
     const zywnoscDoRozwoju = surplus + deficit;
@@ -1316,6 +1322,7 @@ export function advanceCityEconomy(
       obleganyGlod:      false,
       magazynPoTurze,
       maSpichlerz,
+      procentRozwoj: pctRozwoj,
     };
     result.perCity.push(tick);
 

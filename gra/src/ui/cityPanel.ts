@@ -83,7 +83,7 @@ import {
   cityHasBibliotekaLine,
   cityHasAmfiteatrLine,
 } from '../game/building-upgrades';
-import { getEmpireFoodSplit, getEmpireFoodMaxCap } from '../game/empire-food';
+import { getCityFoodSplit, getEmpireFoodMaxCap } from '../game/empire-food';
 import type { CityManpowerSnapshot } from '../game/manpower';
 import { civManpowerMaxMult, formatManpower, unitManpowerCostForType } from '../game/manpower';
 import { defaultOwnerColor, mountUnitMiniPreview } from './unitMiniPreview';
@@ -224,7 +224,7 @@ export interface CityPanelConfig {
     przyrostWiernych?: number;
     zrodla?: { nazwa: string; wartosc: number }[];
   } | null;
-  /** B5-Q1=A — suwak split + zapasy państwa (global per owner). */
+  /** B5-Q1=A — zapasy państwa (global per owner); suwak split jest per miasto (city.procentRozwoj). */
   getEmpireFoodState?: (ownerId: number) => EmpireFoodState | null;
   /** Mnożnik wzrostu z Porządku (z poprzedniej tury — jak w silniku). */
   getGrowthMult?: (cityId: string) => number;
@@ -237,7 +237,7 @@ export interface CityPanelConfig {
   /** EKONOMIA — snapshot rekrutów (Manpower) per miasto. */
   getManpowerSnapshot?: (cityId: string) => CityManpowerSnapshot | null;
   getEmpireFoodTick?: (ownerId: number) => EmpireFoodTick | null;
-  onEmpireFoodSplitChange?: (ownerId: number, procentRozwoj: number) => void;
+  onCityFoodSplitChange?: (cityId: string, procentRozwoj: number) => void;
   /** Okolica 4C — profile + ręczna korekta. */
   getOkolicaState?: (cityId: string) => {
     focus: OkolicaFocus;
@@ -657,7 +657,7 @@ interface CityView {
   popCapAktualny: number;
   /** Wzrost zablokowany — ludność ≥ aktualny cap. */
   atPopCap: boolean;
-  /** Żywność/turę idąca do bufora wzrostu (po suwaku imperium; z bonusami wzrostu/zdrowia). */
+  /** Żywność/turę idąca do bufora wzrostu (po suwaku tego miasta; z bonusami wzrostu/zdrowia). */
   zywnoscDoWzrostu: number;
   /**
    * Żywność/turę tego miasta przeznaczona na zapasy armii państwa = wkład miasta do
@@ -758,7 +758,7 @@ function computeView(city: City, map: GameMap, data: GameData): CityView | null 
       if (orderMult.kulturaMult !== 1) y.kultura *= orderMult.kulturaMult;
     }
     y.praca = cityPracaInteger(y.praca);
-    const pctRozwoj = getEmpireFoodSplit(city.ownerId);
+    const pctRozwoj = getCityFoodSplit(city);
     const growthMult = cfg.getGrowthMult?.(city.id) ?? 1;
     const healthMod = Math.max(0, 1 + zdrowie * params.zdrowieModyfikatorWspolczynnik);
     const zywnoscDoWzrostu = Math.floor(y.zywnosc * (pctRozwoj / 100) * growthMult * healthMod);
@@ -819,7 +819,7 @@ function cityPracaSplit(city: City, view: CityView, data: GameData | null): {
   };
 }
 
-/** Podział netto żywności miasta (suwak imperium: wzrost vs armia). */
+/** Podział netto żywności miasta (suwak miasta: wzrost vs armia). */
 function cityFoodSplit(view: CityView): { total: number; doWzrostu: number; doArmii: number } {
   const total = Math.round(view.zywnoscNetto);
   const doWzrostu = Math.round(view.zywnoscDoWzrostu);
@@ -3545,7 +3545,7 @@ function renderMagazyn(mount: HTMLElement, city: City, view: CityView | null): v
   const pct = Math.max(0, Math.min(100, Math.round((mag / Math.max(1, prog)) * 100)));
   const st = cfg.getEmpireFoodState?.(city.ownerId);
   const tick = cfg.getEmpireFoodTick?.(city.ownerId);
-  const pctRozwoj = st?.procentRozwoj ?? getEmpireFoodSplit(city.ownerId);
+  const pctRozwoj = getCityFoodSplit(city);
   const pctArmia = 100 - pctRozwoj;
   const foodSplit = cityFoodSplit(view);
   const doWzrostu = foodSplit.doWzrostu;
@@ -3622,7 +3622,7 @@ function renderMagazyn(mount: HTMLElement, city: City, view: CityView | null): v
   appendTabIndicators(mount, spichlerzChips);
 
   const player = city.ownerId === 0;
-  const sliderEditable = player && !!cfg.onEmpireFoodSplitChange && st != null;
+  const sliderEditable = player && !!cfg.onCityFoodSplitChange;
 
   const block = el('div', 'food-grow-block');
   const track = el('div', 'food-grow-track');
@@ -3663,7 +3663,7 @@ function renderMagazyn(mount: HTMLElement, city: City, view: CityView | null): v
     attachFoodSplitBar(
       barWrap,
       pctRozwoj,
-      (v) => cfg.onEmpireFoodSplitChange?.(city.ownerId, v),
+      (v) => cfg.onCityFoodSplitChange?.(city.id, v),
       () => rerender(),
     );
   } else if (st) {
@@ -3690,7 +3690,7 @@ function buildSpichlerzDetailCard(
   const mag = Math.round(view.magazyn);
   const eta = etaTurns(prog, mag, Math.max(0, view.zywnoscDoWzrostu));
   const hasSpichlerz = ownerHasSpichlerz(city.ownerId);
-  const pctRozwoj = st?.procentRozwoj ?? getEmpireFoodSplit(city.ownerId);
+  const pctRozwoj = getCityFoodSplit(city);
   const pctArmia = 100 - pctRozwoj;
   const reserve = st?.zapasyPanstwa;
   const doArmii = view.zywnoscDoArmii;   // BUGFIX 2026-07-10: realny udział, nie rezyduał netto−wzrost
@@ -3703,7 +3703,7 @@ function buildSpichlerzDetailCard(
 
   const intro = el('div', 'dc-note');
   setNoteHtml(intro,
-    'Bufor 🍞 kumuluje się w każdym mieście osobno. Suwak imperium dzieli świeżą żywność między wzrost miast a zapasy armii.',
+    'Bufor 🍞 kumuluje się w każdym mieście osobno. Suwak tego miasta dzieli jego świeżą żywność między wzrost ludności a zapasy armii państwa.',
   );
   card.appendChild(intro);
 
@@ -3727,7 +3727,7 @@ function buildSpichlerzDetailCard(
   appendDetailFormula(card, `Po wzroście: bufor = ${view.maSpichlerz ? `floor(bufor × ${spichlerzKeep}%)` : '0'}`);
 
   appendDetailAlgo(card, 'Algorytm wzrostu (populationGrowth)', [
-    `zywnoscDoWzrostu = zywnoscNetto_miasta × ${pctRozwoj}% (suwak imperium).`,
+    `zywnoscDoWzrostu = zywnoscNetto_miasta × ${pctRozwoj}% (suwak miasta).`,
     'effectiveFlow = zywnoscDoWzrostu × max(0, 1 + zdrowie × wsp_zdrowia).',
     'Bufor += floor(effectiveFlow). Gdy bufor ≥ próg i ludność < cap → +1 mieszkaniec.',
     'Deficyt: bufor maleje; bufor=0 i nadal deficyt → −1 ludność (min 1).',
@@ -3776,7 +3776,7 @@ function buildTopBarZywnoscDetailCard(
   const st = cfg.getEmpireFoodState?.(city.ownerId);
   const tick = cfg.getEmpireFoodTick?.(city.ownerId);
   const cityNet = Math.round(view.zywnoscNetto);
-  const pctRozwoj = st?.procentRozwoj ?? getEmpireFoodSplit(city.ownerId);
+  const pctRozwoj = getCityFoodSplit(city);
   const pctArmia = 100 - pctRozwoj;
   const doWzrostu = Math.round(view.zywnoscDoWzrostu);
   const doArmiiMiasto = view.zywnoscDoArmii;   // BUGFIX 2026-07-10: realny udział, nie rezyduał netto−wzrost
@@ -3808,8 +3808,8 @@ function buildTopBarZywnoscDetailCard(
   gridDetailRow(g1, 'Pola i okolica', 'Obrabiane heksy (🌾), ulepszenia, hodowla — patrz mapa okolicy po prawej.');
   gridDetailRow(g1, 'Budynki', 'Spichlerz, Targowisko, Świątynia itd. — plony z kart budynków.');
   gridDetailRow(g1, 'Netto', `${signed(cityNet)} 🍞 — suma po kosztach utrzymania miasta.`);
-  gridDetailRow(g1, '→ na wzrost', `${signed(doWzrostu)} (${pctRozwoj}% suwaka imperium)`);
-  gridDetailRow(g1, '→ na armię', `${signed(doArmiiMiasto)} (${pctArmia}% suwaka imperium)`);
+  gridDetailRow(g1, '→ na wzrost', `${signed(doWzrostu)} (${pctRozwoj}% suwaka miasta)`);
+  gridDetailRow(g1, '→ na armię', `${signed(doArmiiMiasto)} (${pctArmia}% suwaka miasta)`);
 
   appendDetailSection(card, 'Bufor wzrostu ludności (osobno!)');
   const g2 = appendDetailGrid(card);
@@ -3821,7 +3821,7 @@ function buildTopBarZywnoscDetailCard(
 
   appendDetailSection(card, 'Całe państwo (tick żywności)');
   const g3 = appendDetailGrid(card);
-  gridDetailRow(g3, 'Suwak imperium', `${pctRozwoj}% wzrost miast · ${pctArmia}% armia`);
+  gridDetailRow(g3, 'Suwak miasta', `${pctRozwoj}% wzrost · ${pctArmia}% armia`);
   if (tick) {
     gridDetailRow(g3, 'Produkcja brutto', `+${Math.round(tick.zywnoscBrutto)} (suma miast, bez oblężonych)`);
     gridDetailRow(g3, '→ wzrost miast', `+${Math.round(tick.doRozwoju)}`);
@@ -5177,6 +5177,10 @@ function formatBuildingPreviewHint(
 }
 
 function productionCtxForCity(city: City): AvailabilityContext {
+  const raw = cfg.getResourceAccess?.(city.id);
+  const activeResourceLabels = Array.isArray(raw)
+    ? raw
+    : (raw?.active ?? []);
   return {
     epoch: cfg.getEpoch?.(city.ownerId) ?? 1,
     builtBuildingIds: cfg.getBuiltBuildingIds?.(city.id) ?? [],
@@ -5191,6 +5195,7 @@ function productionCtxForCity(city: City): AvailabilityContext {
     kosztJednostekPace: cfg.getKosztJednostekPace?.() ?? 'niski',
     ownerId: city.ownerId,
     difficulty: cfg.getDifficulty?.() ?? 'normal',
+    activeResourceLabels,
   };
 }
 

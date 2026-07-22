@@ -429,7 +429,7 @@ import { loadCultureParams, accumulateCulture, cultureHappiness, cityBorderRadiu
 import {
   advanceEmpireFood, bindEmpireFoodRuntime, freshEmpireFoodState,
   buildEmpireFoodParams, getLastEmpireFoodTick, getEmpireFoodReserve, getEmpireFoodMaxCap, getEmpireFoodSplit, isArmyStarving,
-  computeEmpireFoodNetDelta, clearLastEmpireFoodTicks, computeEmpireFoodMaxCap,
+  computeEmpireFoodNetDelta, computeEmpireFoodNetDeltaFromCityFoods, getCityFoodSplit, clearLastEmpireFoodTicks, computeEmpireFoodMaxCap,
   type EmpireFoodState,
 } from './game/empire-food';
 import { loadUpkeepParams, buildUnitFoodTable, militaryFoodConsumption } from './game/economy-upkeep';
@@ -2036,10 +2036,20 @@ async function boot(): Promise<void> {
         }
       }
       bindEmpireFoodRuntime(empireFoodStates);
+      syncCityFoodSplitsFromEmpire();
     }
 
     function empireFoodDefaultPct(): number {
       return buildEmpireFoodParams(data.econParams, _menuDifficulty).procentRozwojDefault;
+    }
+
+    /** Stary zapis: empireFoodStates.procentRozwoj → każde miasto osobno (B5 per-city slider). */
+    function syncCityFoodSplitsFromEmpire(): void {
+      const def = empireFoodDefaultPct();
+      for (const city of cities) {
+        if (city.procentRozwoj !== undefined) continue;
+        city.procentRozwoj = empireFoodStates.get(city.ownerId)?.procentRozwoj ?? def;
+      }
     }
 
     /** Miasto w trybie ręcznej okolicy na mapie 3D (po „Mapa” w panelu). */
@@ -2854,12 +2864,12 @@ async function boot(): Promise<void> {
         getOrderYieldMults: (cityId: string) => orderMultMap.get(cityId) ?? null,
         getEmpireFoodState: (oid: number) => empireFoodStates.get(oid) ?? null,
         getEmpireFoodTick: (oid: number) => getLastEmpireFoodTick(oid) ?? null,
-        onEmpireFoodSplitChange: (oid: number, pct: number) => {
-          const st = empireFoodStates.get(oid) ?? freshEmpireFoodState(empireFoodDefaultPct());
-          st.procentRozwoj = pct;
-          empireFoodStates.set(oid, st);
+        onCityFoodSplitChange: (cityId: string, pct: number) => {
+          const city = cities.find(c => c.id === cityId);
+          if (!city || city.ownerId !== 0) return;
+          city.procentRozwoj = Math.min(100, Math.max(0, pct));
           markCityStateDirty(); // D10: podział żywności (wojsko vs miasto) → przelicz
-          if (oid === 0) updateHud();
+          updateHud();
         },
         getCultureState: (cityId: string) => {
           const city = cities.find(c => c.id === cityId);
@@ -5483,8 +5493,8 @@ async function boot(): Promise<void> {
     function maybeHintArmyFoodOnFirstPlayerUnit(ownerId: number): void {
       if (ownerId !== 0 || playerArmyFoodHintShown) return;
       playerArmyFoodHintShown = true;
-      const pctRozwoj = empireFoodStates.get(0)?.procentRozwoj ?? getEmpireFoodSplit(0);
-      if (pctRozwoj < 100) return;
+      const allGrowth = cities.filter(c => c.ownerId === 0).every(c => getCityFoodSplit(c) >= 100);
+      if (!allGrowth) return;
       showHintMessage(
         'Masz wojsko — przesuń suwak żywności w stronę <b>Armia</b> (panel miasta). ' +
         'Inaczej jednostki tracą 8% max HP co turę. Zapasy państwa wymagają budynku Spichlerz.',
@@ -6530,19 +6540,40 @@ async function boot(): Promise<void> {
     /** Projekcja +X/t zapasów armii — bieżący suwak, nie stary tick. */
     function projectPlayerFoodNetRate(): number {
       const efParams = buildEmpireFoodParams(data.econParams, _menuDifficulty);
-      const st = empireFoodStates.get(0);
-      const pctRozwoj = st?.procentRozwoj ?? efParams.procentRozwojDefault;
-      const foodTick = getLastEmpireFoodTick(0);
-      const brutto = foodTick?.zywnoscBrutto ?? _liveFoodBrutto;
       const upkeepParams = loadUpkeepParams(data.econParams, _menuDifficulty);
       const playerUnits: EconUnit[] = units
         .filter(u => u.ownerId === 0)
         .map(u => ({ ownerId: u.ownerId, typeId: u.typeId, camping: false }));
       const kosztArmii = militaryFoodConsumption(playerUnits, upkeepParams, unitFoodTbl);
-      return computeEmpireFoodNetDelta(
-        brutto,
+      const playerCities = cities.filter(c => c.ownerId === 0 && !c.oblegane);
+      const preview = previewCityEconomy(
+        playerCities,
+        map,
+        data,
+        _menuDifficulty,
+        cityBuilt,
+        player.era,
+        player.zbadane,
+        new Map([[0, (player.civType as string) || 'grecy']]),
+        orderMultMap,
+        empireEpochForOwner,
+        unlockedTechSetForOwner,
+        undefined,
+        undefined,
+        buildAllTerritoryNodes(),
+      );
+      const cityFoods = preview.perCity
+        .filter(tk => tk.ownerId === 0 && !tk.oblegany)
+        .map(tk => {
+          const c = cities.find(x => x.id === tk.cityId);
+          return {
+            zywnoscNetto: Math.max(0, tk.zywnoscNetto),
+            procentRozwoj: c ? getCityFoodSplit(c) : tk.procentRozwoj,
+          };
+        });
+      return computeEmpireFoodNetDeltaFromCityFoods(
+        cityFoods,
         kosztArmii,
-        pctRozwoj,
         countPlayerSpichlerze(),
         efParams,
       );
@@ -14775,6 +14806,7 @@ async function boot(): Promise<void> {
         initEmpireFoodStates();
       }
       bindEmpireFoodRuntime(empireFoodStates);
+      syncCityFoodSplitsFromEmpire();
       const savedPracaPool = saved.meta?.playerPracaPool as number | undefined;
       playerPracaPool = typeof savedPracaPool === 'number' ? savedPracaPool : 0;
       const playerCityCountOnLoad = cities.filter(c => c.ownerId === 0).length;

@@ -15,7 +15,8 @@ fs.writeFileSync(ENTRY, `
 export {
   advanceEmpireFood, freshEmpireFoodState, buildEmpireFoodParams,
   bindEmpireFoodRuntime, getEmpireFoodSplit, getEmpireFoodMaxCap, isArmyStarving,
-  computeEmpireFoodNetDelta, clearLastEmpireFoodTicks, computeEmpireFoodMaxCap,
+  computeEmpireFoodNetDelta, computeEmpireFoodNetDeltaFromCityFoods, getCityFoodSplit,
+  clearLastEmpireFoodTicks, computeEmpireFoodMaxCap,
 } from '../src/game/empire-food';
 export { advanceCityEconomy } from '../src/game/turn-economy';
 export { applyArmyStarvationHpLoss } from '../src/game/army-starvation';
@@ -41,7 +42,7 @@ const params = M.buildEmpireFoodParams({
 
 // --- advanceEmpireFood ---
 const states = new Map([[0, M.freshEmpireFoodState(70)]]);
-const econ = { perCity: [{ ownerId: 0, zywnoscNetto: 100, oblegany: false }] };
+const econ = { perCity: [{ ownerId: 0, zywnoscNetto: 100, oblegany: false, procentRozwoj: 70 }] };
 const units1 = [{ ownerId: 0, typeId: 'woj', camping: false }];
 const ef = M.advanceEmpireFood(econ, units1, states, upkeep, params);
 const t0 = ef.byOwner.get(0);
@@ -49,20 +50,34 @@ ok(t0.doPanstwa === 30, 'split 30% to state reserves');
 ok(states.get(0).zapasyPanstwa === 15, 'bez Spichlerza: 50% netto armii kumuluje round((30−1)×50%)=15');
 
 const statesSp = new Map([[0, M.freshEmpireFoodState(70)]]);
-const econSp = { perCity: [{ ownerId: 0, zywnoscNetto: 100, oblegany: false, maSpichlerz: true }] };
+const econSp = { perCity: [{ ownerId: 0, zywnoscNetto: 100, oblegany: false, maSpichlerz: true, procentRozwoj: 70 }] };
 const efSp = M.advanceEmpireFood(econSp, units1, statesSp, upkeep, params);
 ok(statesSp.get(0).zapasyPanstwa === 29, 'ze Spichlerzem: reserve after army cost 1');
 
 const states2 = new Map([[0, M.freshEmpireFoodState(70)]]);
 const econ2 = {
   perCity: [
-    { ownerId: 0, zywnoscNetto: 50, oblegany: false },
-    { ownerId: 0, zywnoscNetto: 50, oblegany: false },
+    { ownerId: 0, zywnoscNetto: 50, oblegany: false, procentRozwoj: 70 },
+    { ownerId: 0, zywnoscNetto: 50, oblegany: false, procentRozwoj: 70 },
   ],
 };
 const ef2 = M.advanceEmpireFood(econ2, [], states2, upkeep, params);
 ok(ef2.byOwner.get(0).zywnoscBrutto === 100, 'brutto sums cities');
 ok(ef2.byOwner.get(0).doPanstwa === 30, '30% of 100 to state');
+
+// Per-city split: city A 100% wzrost, city B 0% wzrost → doPanstwa tylko z B
+const statesPerCity = new Map([[0, M.freshEmpireFoodState(70)]]);
+const econPerCity = {
+  perCity: [
+    { ownerId: 0, zywnoscNetto: 40, oblegany: false, procentRozwoj: 100 },
+    { ownerId: 0, zywnoscNetto: 60, oblegany: false, procentRozwoj: 0 },
+  ],
+};
+const efPerCity = M.advanceEmpireFood(econPerCity, [], statesPerCity, upkeep, params);
+ok(efPerCity.byOwner.get(0).doPanstwa === 60, 'per-city: 60 z miasta B (0% wzrost)');
+ok(efPerCity.byOwner.get(0).doRozwoju === 40, 'per-city: 40 wzrostu z miasta A');
+
+ok(M.getCityFoodSplit({ procentRozwoj: 55 }) === 55, 'getCityFoodSplit reads city field');
 
 const states3 = new Map([[0, { zapasyPanstwa: 0, procentRozwoj: 70 }]]);
 const units20 = Array.from({ length: 20 }, () => ({ ownerId: 0, typeId: 'woj', camping: false }));

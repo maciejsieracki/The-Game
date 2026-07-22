@@ -3040,3 +3040,11 @@ CZEKAM-NA: Maciej — playtest + decyzja #41 (Wielka Kuźnia: odparkować czy zo
 ## [2026-07-22] SESJA LOKALNA → WSZYSCY — re-deploy ROBOCZA `b6353296`: #48 WYCOFANE (celowy gameplay)
 
 Maciej: Moc wyeliminowanych w mianowniku dominacji = decyzja projektowa. Naprawa #48 cofnięta, dopisana do listy „celowe — nie raportować". Reszta 50 napraw bez zmian. VERIFY OK.
+
+---
+
+## [2026-07-22 ~22:45] SESJA LOKALNA → WSZYSCY — deploy ROBOCZA `7e038328`: suwak żywność→armia per miasto
+
+Bug Macieja: suwak wzrost/armia w panelu miasta był globalny (`EmpireFoodState.procentRozwoj`). Fix: `City.procentRozwoj` + migracja save + `advanceEmpireFood` sumuje per miasto.
+md5 `7e038328910eb09f9ca90beaf06a5e59` · stamp `7e038328` · tsc=0 · empire-food-b5 25/25 · VERIFY OK.
+CZEKAM-NA: Maciej — Ctrl+F5 stamp `7e038328` · 2 miasta · różne suwaki · każde trzyma własne %.

@@ -96,8 +96,27 @@ export function computeEmpireFoodNetDelta(
   spichlerzCount: number,
   params: EmpireFoodParams,
 ): number {
-  const pct = Math.min(100, Math.max(0, pctRozwoj));
+  const pct = clampFoodSplitPct(pctRozwoj);
   const doPanstwa = brutto - brutto * (pct / 100);
+  const depositFrac = spichlerzCount > 0
+    ? params.armiaOdkladZeSpichlerzem
+    : params.armiaOdkladBezSpichlerza;
+  return armyFoodDepositDelta(doPanstwa, kosztArmii, depositFrac);
+}
+
+/** HUD: suma wkładów miast z indywidualnymi suwakami (nie jeden % imperium). */
+export function computeEmpireFoodNetDeltaFromCityFoods(
+  cityFoods: ReadonlyArray<{ zywnoscNetto: number; procentRozwoj: number }>,
+  kosztArmii: number,
+  spichlerzCount: number,
+  params: EmpireFoodParams,
+): number {
+  let doPanstwa = 0;
+  for (const c of cityFoods) {
+    const z = Math.max(0, c.zywnoscNetto);
+    const pct = clampFoodSplitPct(c.procentRozwoj);
+    doPanstwa += z * (1 - pct / 100);
+  }
   const depositFrac = spichlerzCount > 0
     ? params.armiaOdkladZeSpichlerzem
     : params.armiaOdkladBezSpichlerza;
@@ -114,6 +133,18 @@ export function computeEmpireFoodMaxCap(
     : 0;
 }
 
+export function clampFoodSplitPct(n: number): number {
+  return Math.min(100, Math.max(0, n));
+}
+
+/** Per-miasto suwak wzrost vs armia. Brak pola → defaultPct (migrateCityFoodSplits przy load). */
+export function getCityFoodSplit(
+  city: { procentRozwoj?: number },
+  defaultPct = 100,
+): number {
+  return clampFoodSplitPct(city.procentRozwoj ?? defaultPct);
+}
+
 export function freshEmpireFoodState(procentRozwojDefault = 100): EmpireFoodState {
   return { zapasyPanstwa: 0, procentRozwoj: procentRozwojDefault };
 }
@@ -126,7 +157,6 @@ export function advanceEmpireFood(
   params: EmpireFoodParams,
   foodTable: UnitFoodTable = {},
 ): EmpireFoodTickResult {
-  const bruttoByOwner = new Map<number, number>();
   const spichlerzCountByOwner = new Map<number, number>();
   for (const tick of econ.perCity) {
     if (tick.maSpichlerz) {
@@ -135,16 +165,13 @@ export function advanceEmpireFood(
         (spichlerzCountByOwner.get(tick.ownerId) ?? 0) + 1,
       );
     }
-    if (tick.oblegany) continue;
-    const z = Math.max(0, tick.zywnoscNetto);
-    bruttoByOwner.set(tick.ownerId, (bruttoByOwner.get(tick.ownerId) ?? 0) + z);
   }
 
   const perOwner: EmpireFoodTick[] = [];
   const byOwner  = new Map<number, EmpireFoodTick>();
 
   const ownerIds = new Set<number>([
-    ...bruttoByOwner.keys(),
+    ...econ.perCity.map(t => t.ownerId),
     ...states.keys(),
     ...units.map(u => u.ownerId),
   ]);
@@ -153,10 +180,22 @@ export function advanceEmpireFood(
     const st = states.get(ownerId) ?? freshEmpireFoodState(params.procentRozwojDefault);
     if (!states.has(ownerId)) states.set(ownerId, st);
 
-    const pctRozwoj = Math.min(100, Math.max(0, st.procentRozwoj));
-    const brutto    = bruttoByOwner.get(ownerId) ?? 0;
-    const doRozwoju = brutto * (pctRozwoj / 100);
-    const doPanstwa = brutto - doRozwoju;
+    let bruttoSum = 0;
+    let doRozwoju = 0;
+    let doPanstwa = 0;
+    for (const tick of econ.perCity) {
+      if (tick.ownerId !== ownerId || tick.oblegany) continue;
+      const z = Math.max(0, tick.zywnoscNetto);
+      const pctRozwoj = clampFoodSplitPct(
+        tick.procentRozwoj ?? st.procentRozwoj ?? params.procentRozwojDefault,
+      );
+      bruttoSum += z;
+      doRozwoju += z * (pctRozwoj / 100);
+      doPanstwa += z * (1 - pctRozwoj / 100);
+    }
+    doRozwoju = Math.round(doRozwoju);
+    doPanstwa = Math.round(doPanstwa);
+    const brutto = bruttoSum;
 
     const ownerUnits = units.filter(u => u.ownerId === ownerId);
     const kosztArmii = militaryFoodConsumption(ownerUnits, upkeep, foodTable);

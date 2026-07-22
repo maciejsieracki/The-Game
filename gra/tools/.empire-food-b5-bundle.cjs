@@ -28,7 +28,9 @@ __export(empire_food_b5_entry_exports, {
   clearLastEmpireFoodTicks: () => clearLastEmpireFoodTicks,
   computeEmpireFoodMaxCap: () => computeEmpireFoodMaxCap,
   computeEmpireFoodNetDelta: () => computeEmpireFoodNetDelta,
+  computeEmpireFoodNetDeltaFromCityFoods: () => computeEmpireFoodNetDeltaFromCityFoods,
   freshEmpireFoodState: () => freshEmpireFoodState,
+  getCityFoodSplit: () => getCityFoodSplit,
   getEmpireFoodMaxCap: () => getEmpireFoodMaxCap,
   getEmpireFoodSplit: () => getEmpireFoodSplit,
   isArmyStarving: () => isArmyStarving
@@ -62,23 +64,23 @@ function applyPopulationGrowthThreshold(baseThreshold, ownerId, pace, difficulty
 
 // data/epoka-ludnosc-manpower.json
 var epoka_ludnosc_manpower_default = {
-  _opis: "Skala ludno\u015Bci i Manpower per epoka imperium (wiersze 1\u201310). 1 ludek = ludno\u015B\u0107 absolutna na slot population (1\u201310). manpowerNaLudka = 10% ludekNaLudka. manpowerNaJednostke = 10% manpowerNaLudka (koszt rekrutacji 1 jednostki).",
+  _opis: "Skala ludno\u015Bci i Manpower per epoka imperium (wiersze 1\u201310). 1 ludek = ludno\u015B\u0107 absolutna na slot population (1\u201310). manpowerNaLudka = 10% ludekNaLudka. manpowerNaJednostke = manpowerNaLudka (koszt rekrutacji 1 jednostki = pe\u0142ny slot manpower; 1 ludek = 1 jednostka przy pe\u0142nej puli).",
   _formuly: {
     ludnoscAbsolutna: "population \xD7 ludekNaLudka[epoka]",
     manpowerMax: "population \xD7 manpowerNaLudka[epoka]",
-    kosztRekrutacji: "manpowerNaJednostke[epoka] per jednostka"
+    kosztRekrutacji: "manpowerNaJednostke[epoka] = manpowerNaLudka[epoka] per jednostka"
   },
   epoki: [
-    { epoka: 1, ludekNaLudka: 1e4, manpowerNaLudka: 1e3, manpowerNaJednostke: 100 },
-    { epoka: 2, ludekNaLudka: 2e4, manpowerNaLudka: 2e3, manpowerNaJednostke: 200 },
-    { epoka: 3, ludekNaLudka: 4e4, manpowerNaLudka: 4e3, manpowerNaJednostke: 400 },
-    { epoka: 4, ludekNaLudka: 8e4, manpowerNaLudka: 8e3, manpowerNaJednostke: 800 },
-    { epoka: 5, ludekNaLudka: 16e4, manpowerNaLudka: 16e3, manpowerNaJednostke: 1600 },
-    { epoka: 6, ludekNaLudka: 32e4, manpowerNaLudka: 32e3, manpowerNaJednostke: 3200 },
-    { epoka: 7, ludekNaLudka: 64e4, manpowerNaLudka: 64e3, manpowerNaJednostke: 6400 },
-    { epoka: 8, ludekNaLudka: 12e5, manpowerNaLudka: 12e4, manpowerNaJednostke: 12e3 },
-    { epoka: 9, ludekNaLudka: 24e5, manpowerNaLudka: 24e4, manpowerNaJednostke: 24e3 },
-    { epoka: 10, ludekNaLudka: 48e5, manpowerNaLudka: 48e4, manpowerNaJednostke: 48e3 }
+    { epoka: 1, ludekNaLudka: 1e4, manpowerNaLudka: 1e3, manpowerNaJednostke: 1e3 },
+    { epoka: 2, ludekNaLudka: 2e4, manpowerNaLudka: 2e3, manpowerNaJednostke: 2e3 },
+    { epoka: 3, ludekNaLudka: 4e4, manpowerNaLudka: 4e3, manpowerNaJednostke: 4e3 },
+    { epoka: 4, ludekNaLudka: 8e4, manpowerNaLudka: 8e3, manpowerNaJednostke: 8e3 },
+    { epoka: 5, ludekNaLudka: 16e4, manpowerNaLudka: 16e3, manpowerNaJednostke: 16e3 },
+    { epoka: 6, ludekNaLudka: 32e4, manpowerNaLudka: 32e3, manpowerNaJednostke: 32e3 },
+    { epoka: 7, ludekNaLudka: 64e4, manpowerNaLudka: 64e3, manpowerNaJednostke: 64e3 },
+    { epoka: 8, ludekNaLudka: 12e5, manpowerNaLudka: 12e4, manpowerNaJednostke: 12e4 },
+    { epoka: 9, ludekNaLudka: 24e5, manpowerNaLudka: 24e4, manpowerNaJednostke: 24e4 },
+    { epoka: 10, ludekNaLudka: 48e5, manpowerNaLudka: 48e4, manpowerNaJednostke: 48e4 }
   ]
 };
 
@@ -95,14 +97,14 @@ var miasto_params_default = {
     opis: "Mnoznik compound (procent skladany) efektu I kosztu budynku za kazdy poziom: wartosc^(poziom-1). Decyzja Naster = +10%/epoke. Uzywany w production.itemCost (koszt) i buildingEffectAtLevel (efekt)."
   },
   jednostka_koszt_ludnosci: {
-    wartosc: 1,
+    wartosc: 0,
     jednostka: "ludnosc",
-    opis: "Ile ludnosci kosztuje miasto ukonczenie jednostki z kolejki (rekrutacja). production.populationCostOf; odjecie + clamp do min.1 robi petla tury."
+    opis: "Koszt ludnosci miasta za ukonczenie jednostki z kolejki (rekrutacja). USTAWIONE 0 (Maciej 2026-07-21): rekrutacja NIE zabiera juz populacji miasta \u2014 jedynym kosztem werbu jest pula Manpower (epoka-ludnosc-manpower.json / manpower.ts). production.populationCostOf; przy 0 populacja pozostaje bez zmian."
   },
   manpower_regen_proc_max_tura: {
-    wartosc: 10,
+    wartosc: 2,
     jednostka: "% max/ture",
-    opis: "Co koniec tury miasto odzyskuje floor(manpowerMax \xD7 wartosc/100) Manpower (do cap). Ep1, 10 ludkow, max=10k \u2192 +1000/ture. Pusta pula \u224810 tur do pelna. manpower.tickManpowerRegen."
+    opis: "Co koniec tury miasto odzyskuje floor(manpowerMax \xD7 wartosc/100) Manpower (do cap). Ep1, 10 ludkow, max=10k \u2192 +200/ture. Pusta pula \u224850 tur do pelna. manpower.tickManpowerRegen."
   },
   manpower_regen_blok_oblezenie: {
     wartosc: 1,
@@ -205,7 +207,7 @@ var miasto_params_default = {
 var ROWS = epoka_ludnosc_manpower_default.epoki;
 var MAX_EPOKA = 10;
 var DEFAULT_REGEN = {
-  regenProcMaxPerTurn: 10,
+  regenProcMaxPerTurn: 2,
   blockWhenBesieged: true
 };
 function loadManpowerRegenParams(raw = miasto_params_default) {
@@ -228,18 +230,39 @@ function civManpowerRegenMult(bonusy) {
   }
   return Math.max(0.1, mult);
 }
-function manpowerRegenGain(ludki, epoka, params = DEFAULT_REGEN, regenMult = 1) {
-  const max = cityManpowerMax(ludki, epoka);
+function civManpowerMaxMult(bonusy) {
+  let mult = 1;
+  if (!bonusy?.length) return mult;
+  for (const b of bonusy) {
+    if (b.typ === "bonus_pobor_pula" && typeof b.wartosc === "number") {
+      mult *= 1 + b.wartosc;
+    } else if (b.typ === "mnoznik_manpower_max" && typeof b.wartosc === "number") {
+      mult *= b.wartosc;
+    }
+  }
+  return Math.max(0.1, mult);
+}
+function civManpowerMults(bonusy) {
+  return {
+    regenMult: civManpowerRegenMult(bonusy),
+    maxMult: civManpowerMaxMult(bonusy)
+  };
+}
+function scaledManpower(base, maxMult) {
+  return Math.floor(base * Math.max(0.1, maxMult));
+}
+function manpowerRegenGain(ludki, epoka, params = DEFAULT_REGEN, regenMult = 1, maxMult = 1) {
+  const max = cityManpowerMax(ludki, epoka, maxMult);
   if (max <= 0 || params.regenProcMaxPerTurn <= 0) return 0;
   const pct = Math.min(100, params.regenProcMaxPerTurn) / 100;
   return Math.floor(max * pct * Math.max(0, regenMult));
 }
-function tickManpowerRegen(city, epoka, params = DEFAULT_REGEN, regenMult = 1) {
-  const max = cityManpowerMax(city.population, epoka);
-  const cur = cityManpowerCurrent(city, epoka);
+function tickManpowerRegen(city, epoka, params = DEFAULT_REGEN, regenMult = 1, maxMult = 1) {
+  const max = cityManpowerMax(city.population, epoka, maxMult);
+  const cur = cityManpowerCurrent(city, epoka, maxMult);
   if (cur >= max) return max;
   if (params.blockWhenBesieged && city.oblegane) return cur;
-  const gain = manpowerRegenGain(city.population, epoka, params, regenMult);
+  const gain = manpowerRegenGain(city.population, epoka, params, regenMult, maxMult);
   if (gain <= 0) return cur;
   return Math.min(max, cur + gain);
 }
@@ -250,20 +273,20 @@ function epokaManpowerRow(epoka) {
 function clampLudki(population) {
   return Math.max(1, Math.floor(population) || 1);
 }
-function cityManpowerMax(ludki, epoka) {
+function cityManpowerMax(ludki, epoka, maxMult = 1) {
   const row = epokaManpowerRow(epoka);
-  return clampLudki(ludki) * row.manpowerNaLudka;
+  return scaledManpower(clampLudki(ludki) * row.manpowerNaLudka, maxMult);
 }
-function cityManpowerCurrent(city, epoka) {
-  const max = cityManpowerMax(city.population, epoka);
+function cityManpowerCurrent(city, epoka, maxMult = 1) {
+  const max = cityManpowerMax(city.population, epoka, maxMult);
   if (city.manpower === void 0 || !Number.isFinite(city.manpower)) return max;
   return Math.max(0, Math.min(max, Math.floor(city.manpower)));
 }
-function refreshManpowerAfterPopChange(city, epoka, previousPop) {
-  const max = cityManpowerMax(city.population, epoka);
-  const cur = cityManpowerCurrent(city, epoka);
+function refreshManpowerAfterPopChange(city, epoka, previousPop, maxMult = 1) {
+  const max = cityManpowerMax(city.population, epoka, maxMult);
+  const cur = cityManpowerCurrent(city, epoka, maxMult);
   if (previousPop !== void 0 && previousPop !== city.population) {
-    const oldMax = cityManpowerMax(previousPop, epoka);
+    const oldMax = cityManpowerMax(previousPop, epoka, maxMult);
     if (city.population > previousPop) {
       return Math.min(max, cur + (max - oldMax));
     }
@@ -290,8 +313,8 @@ var terrain_improvements_default = {
       zywnosc: 3
     },
     surowiecOdblokowany: null,
-    teren: "\u0141\u0105ka, R\xF3wnina",
-    warunek: "ziemia uprawna; DZIA\u0141A BEZ rzeki (podstawowy)",
+    teren: "\u0141\u0105ka, R\xF3wnina; Wzg\xF3rza z lasem",
+    warunek: "ziemia uprawna; DZIA\u0141A BEZ rzeki (podstawowy); MO\u017BE na lesie (Las) \u2014 bez wyr\u0119bu (Maciej 2026-07-21)",
     koszt_praca: 20,
     tech: "Rolnictwo",
     odblokowuje: ""
@@ -386,10 +409,11 @@ var terrain_improvements_default = {
     nazwa: "Glinianka",
     epoka: 2,
     bonus: {
-      praca: 1
+      praca: 1,
+      glina: 2
     },
     surowiecOdblokowany: "glina",
-    surowiecOdblokowany_uwaga: "klucz 'glina' wg Surowiec='Glina' w resources.json; brak pola id \u2014 propozycja EKONOMIA",
+    surowiecOdblokowany_uwaga: "GLINA-Q1=A (Maciej 2026-07-20): stala ilosc 2 glina/ture z ulepszenia (bonus.glina), analogicznie do drewna/kamienia. Klucz 'glina' wg Surowiec='Glina' w resources.json.",
     teren: "z\u0142o\u017Ce Gliny",
     warunek: "glina \u2192 ceg\u0142a (wa\u017Cne w br\u0105zie)",
     koszt_praca: 20,
@@ -433,12 +457,12 @@ var terrain_improvements_default = {
     bonus: {},
     surowiecOdblokowany: null,
     teren: "Las",
-    warunek: "koszt 5 Pracy na start; +20 Pracy/tur\u0119 \xD7 3 tury (=60); potem teren bazowy bez lasu",
+    warunek: "koszt 5 Pracy na start; +5 Pracy \xD7 1 tura (=5, netto zero); potem teren bazowy bez lasu",
     koszt_praca: 5,
     tech: null,
     wycinka: {
-      praca_per_tura: 20,
-      tury: 3,
+      praca_per_tura: 5,
+      tury: 1,
       usuwa_nakladke: "las"
     },
     odblokowuje: ""
@@ -515,7 +539,7 @@ var terrain_improvements_default = {
     teren: "dowolny l\u0105d w terytorium",
     warunek: "+100% Obrony jednostkom obozuj\u0105cym na polu fortu (bez plon\xF3w); rozszerza zasi\u0119g terytorium o promie\u0144 10 p\xF3l",
     koszt_praca: 25,
-    tech: "Wojskowosc",
+    tech: "Wojskowo\u015B\u0107",
     odblokowuje: "",
     uwagi: "ABC-10 Maciej 2026-07-04: Fort (mapa) \u2260 Cytadela (miasto). \u017Belazo ep.3; zasi\u0119g 10; +100% Obrona obozowanie"
   },
@@ -608,6 +632,7 @@ function applyImprovementBonus(yld, improvementKey) {
   if (b.pieniadz) yld.handel += b.pieniadz;
   if (b.drewno) yld.drewno += b.drewno;
   if (b.kamien) yld.kamien += b.kamien;
+  if (b.glina) yld.glina += b.glina;
 }
 function applyImprovementBonuses(yld, improvementKeys) {
   for (const key of improvementKeys) {
@@ -625,6 +650,21 @@ function improvementKeysForHex(hex) {
 
 // src/game/production.ts
 var BUILDING_LEVEL_FACTOR = miasto_params_default.budynek_mnoznik_poziomu?.wartosc ?? 1.1;
+function buildingLevelForEpoch(epokaWejscia, cityEpoch, maksPoziom, poziomTechGate, unlockedTechs) {
+  const lvl = Math.floor(cityEpoch) - Math.floor(epokaWejscia) + 1;
+  const cap = Number.isFinite(maksPoziom) && maksPoziom > 0 ? Math.floor(maksPoziom) : 1;
+  let level = Math.max(1, Math.min(cap, lvl));
+  if (poziomTechGate) {
+    const unlocked = unlockedTechs instanceof Set ? unlockedTechs : new Set(unlockedTechs ?? []);
+    for (const [levelKey, techName] of Object.entries(poziomTechGate)) {
+      const gateLevel = Number(levelKey);
+      if (Number.isFinite(gateLevel) && level >= gateLevel && !unlocked.has(techName)) {
+        level = Math.min(level, gateLevel - 1);
+      }
+    }
+  }
+  return level;
+}
 function buildingEffectAtLevel(baza, level) {
   const n = Math.max(1, Math.floor(level));
   return baza * Math.pow(BUILDING_LEVEL_FACTOR, n - 1);
@@ -639,8 +679,11 @@ var DEFAULT_COST_BY_ROLE = {
   Konnica: miasto_params_default.jednostka_koszt_rola_konnica?.wartosc ?? 16
 };
 var UNIT_POPULATION_COST = miasto_params_default.jednostka_koszt_ludnosci?.wartosc ?? 1;
+function cityPracaInteger(raw) {
+  return Number.isFinite(raw) && raw > 0 ? Math.round(raw) : 0;
+}
 function splitPraca(cityPraca, udzialBudynki) {
-  const total = Number.isFinite(cityPraca) && cityPraca > 0 ? Math.round(cityPraca) : 0;
+  const total = cityPracaInteger(cityPraca);
   const u = Math.min(1, Math.max(0, Number.isFinite(udzialBudynki) ? udzialBudynki : 1));
   const doBudynkow = Math.round(total * u);
   return { doBudynkow, doPuli: total - doBudynkow };
@@ -714,9 +757,9 @@ function totalBuildingUpkeep(buildings, flatOverride) {
   return sum;
 }
 var DEFAULT_UNIT_UPKEEP_BY_CATEGORY = {
-  osadnik: 1,
-  robotnik: 1,
-  zwiadowca: 1,
+  osadnik: 0,
+  robotnik: 0,
+  zwiadowca: 0,
   procarz: 1,
   oszczepnik: 1,
   lucznik: 1,
@@ -733,9 +776,10 @@ var DEFAULT_UNIT_UPKEEP_BY_CATEGORY = {
   domyslny: 1
 };
 function unitUpkeep(unit, table, standardUpkeep) {
+  const byCat = DEFAULT_UNIT_UPKEEP_BY_CATEGORY[unit.category];
+  if (typeof byCat === "number" && byCat === 0) return 0;
   const byType = table[unit.typeId];
   if (typeof byType === "number" && Number.isFinite(byType)) return byType;
-  const byCat = DEFAULT_UNIT_UPKEEP_BY_CATEGORY[unit.category];
   if (typeof byCat === "number" && Number.isFinite(byCat)) return byCat;
   return Number.isFinite(standardUpkeep) ? standardUpkeep : 0;
 }
@@ -811,12 +855,13 @@ function pick(row, d, fallback) {
   return Number.isFinite(v) ? v : fallback;
 }
 function buildEmpireFoodParams(raw, difficulty = "normal") {
+  const section = raw.ekonomia_miasta ?? raw;
   return {
-    procentRozwojDefault: pick(raw.suwak_zywnosc_rozwoj_domyslnie, difficulty, 100),
-    glodWojskaHpFrac: pick(raw.glod_wojska_hp_frac, difficulty, 0.08),
-    armiaOdkladBezSpichlerza: pick(raw.armia_odklad_bez_spichlerza, difficulty, 0.5),
-    armiaOdkladZeSpichlerzem: pick(raw.armia_odklad_ze_spichlerzem, difficulty, 1),
-    spichlerzPojemnoscZapasowPanstwa: pick(raw.spichlerz_pojemnosc_zapasow_panstwa, difficulty, 100)
+    procentRozwojDefault: pick(section.suwak_zywnosc_rozwoj_domyslnie, difficulty, 100),
+    glodWojskaHpFrac: pick(section.glod_wojska_hp_frac, difficulty, 0.08),
+    armiaOdkladBezSpichlerza: pick(section.armia_odklad_bez_spichlerza, difficulty, 0.5),
+    armiaOdkladZeSpichlerzem: pick(section.armia_odklad_ze_spichlerzem, difficulty, 1),
+    spichlerzPojemnoscZapasowPanstwa: pick(section.spichlerz_pojemnosc_zapasow_panstwa, difficulty, 100)
   };
 }
 function armyFoodDepositDelta(doPanstwa, kosztArmii, depositFrac) {
@@ -825,19 +870,34 @@ function armyFoodDepositDelta(doPanstwa, kosztArmii, depositFrac) {
   return net;
 }
 function computeEmpireFoodNetDelta(brutto, kosztArmii, pctRozwoj, spichlerzCount, params) {
-  const pct = Math.min(100, Math.max(0, pctRozwoj));
+  const pct = clampFoodSplitPct(pctRozwoj);
   const doPanstwa = brutto - brutto * (pct / 100);
+  const depositFrac = spichlerzCount > 0 ? params.armiaOdkladZeSpichlerzem : params.armiaOdkladBezSpichlerza;
+  return armyFoodDepositDelta(doPanstwa, kosztArmii, depositFrac);
+}
+function computeEmpireFoodNetDeltaFromCityFoods(cityFoods, kosztArmii, spichlerzCount, params) {
+  let doPanstwa = 0;
+  for (const c of cityFoods) {
+    const z = Math.max(0, c.zywnoscNetto);
+    const pct = clampFoodSplitPct(c.procentRozwoj);
+    doPanstwa += z * (1 - pct / 100);
+  }
   const depositFrac = spichlerzCount > 0 ? params.armiaOdkladZeSpichlerzem : params.armiaOdkladBezSpichlerza;
   return armyFoodDepositDelta(doPanstwa, kosztArmii, depositFrac);
 }
 function computeEmpireFoodMaxCap(spichlerzCount, params) {
   return spichlerzCount > 0 ? spichlerzCount * params.spichlerzPojemnoscZapasowPanstwa : 0;
 }
+function clampFoodSplitPct(n) {
+  return Math.min(100, Math.max(0, n));
+}
+function getCityFoodSplit(city, defaultPct = 100) {
+  return clampFoodSplitPct(city.procentRozwoj ?? defaultPct);
+}
 function freshEmpireFoodState(procentRozwojDefault = 100) {
   return { zapasyPanstwa: 0, procentRozwoj: procentRozwojDefault };
 }
 function advanceEmpireFood(econ, units, states, upkeep, params, foodTable = {}) {
-  const bruttoByOwner = /* @__PURE__ */ new Map();
   const spichlerzCountByOwner = /* @__PURE__ */ new Map();
   for (const tick of econ.perCity) {
     if (tick.maSpichlerz) {
@@ -846,24 +906,33 @@ function advanceEmpireFood(econ, units, states, upkeep, params, foodTable = {}) 
         (spichlerzCountByOwner.get(tick.ownerId) ?? 0) + 1
       );
     }
-    if (tick.oblegany) continue;
-    const z = Math.max(0, tick.zywnoscNetto);
-    bruttoByOwner.set(tick.ownerId, (bruttoByOwner.get(tick.ownerId) ?? 0) + z);
   }
   const perOwner = [];
   const byOwner = /* @__PURE__ */ new Map();
   const ownerIds = /* @__PURE__ */ new Set([
-    ...bruttoByOwner.keys(),
+    ...econ.perCity.map((t) => t.ownerId),
     ...states.keys(),
     ...units.map((u) => u.ownerId)
   ]);
   for (const ownerId of ownerIds) {
     const st = states.get(ownerId) ?? freshEmpireFoodState(params.procentRozwojDefault);
     if (!states.has(ownerId)) states.set(ownerId, st);
-    const pctRozwoj = Math.min(100, Math.max(0, st.procentRozwoj));
-    const brutto = bruttoByOwner.get(ownerId) ?? 0;
-    const doRozwoju = brutto * (pctRozwoj / 100);
-    const doPanstwa = brutto - doRozwoju;
+    let bruttoSum = 0;
+    let doRozwoju = 0;
+    let doPanstwa = 0;
+    for (const tick2 of econ.perCity) {
+      if (tick2.ownerId !== ownerId || tick2.oblegany) continue;
+      const z = Math.max(0, tick2.zywnoscNetto);
+      const pctRozwoj = clampFoodSplitPct(
+        tick2.procentRozwoj ?? st.procentRozwoj ?? params.procentRozwojDefault
+      );
+      bruttoSum += z;
+      doRozwoju += z * (pctRozwoj / 100);
+      doPanstwa += z * (1 - pctRozwoj / 100);
+    }
+    doRozwoju = Math.round(doRozwoju);
+    doPanstwa = Math.round(doPanstwa);
+    const brutto = bruttoSum;
     const ownerUnits = units.filter((u) => u.ownerId === ownerId);
     const kosztArmii = militaryFoodConsumption(ownerUnits, upkeep, foodTable);
     const zapasyPrzed = st.zapasyPanstwa;
@@ -922,6 +991,12 @@ function clearLastEmpireFoodTicks() {
 var ROAD_MIN_MOVE_COST = 1 / 3;
 
 // src/units/setup.ts
+var CIVILIAN_CATEGORIES = /* @__PURE__ */ new Set(["osadnik", "robotnik", "zwiadowca"]);
+var CIVILIAN_TYPE_IDS = /* @__PURE__ */ new Set(["Zwiadowca", "Osadnik", "Robotnik"]);
+function isCivilianUnit(u) {
+  if (CIVILIAN_CATEGORIES.has(u.category)) return true;
+  return CIVILIAN_TYPE_IDS.has(u.typeId);
+}
 function hexDistance(aq, ar, bq, br) {
   const dq = Math.abs(aq - bq);
   const dr = Math.abs(ar - br);
@@ -1153,7 +1228,7 @@ var terrain_yields_default = {
 };
 
 // src/game/economy.ts
-var ZERO_YIELD = { zywnosc: 0, praca: 0, handel: 0, drewno: 0, kamien: 0 };
+var ZERO_YIELD = { zywnosc: 0, praca: 0, handel: 0, drewno: 0, kamien: 0, glina: 0 };
 var TERRAIN_NAME_TO_ENUM = {
   "\u0141\u0105ka": "laka" /* Laka */,
   "R\xF3wnina": "rownina" /* Rownina */,
@@ -1169,7 +1244,10 @@ function terrainRowToTileYield(row) {
     praca: Number(row["Praca"] ?? 0),
     handel: Number(row["Handel"] ?? 0),
     drewno: Number(row["Drewno"] ?? 0),
-    kamien: Number(row["Kamie\u0144"] ?? 0)
+    kamien: Number(row["Kamie\u0144"] ?? 0),
+    // Glina nie ma bazy terenu ani modyfikatora w terrain-yields.json -- wylacznie z bonusu
+    // ulepszenia (glinianka, GLINA-Q1=A), doklejane w tileYield() nizej.
+    glina: 0
   };
 }
 function buildTerrainYields() {
@@ -1194,6 +1272,7 @@ function tileYield(tile) {
   let handel = base.handel;
   let drewno = base.drewno;
   let kamien = base.kamien;
+  let glina = base.glina;
   if (tile.nakladka === "las" /* Las */) {
     zywnosc += FOREST_MODIFIER.zywnosc;
     praca += FOREST_MODIFIER.praca;
@@ -1210,7 +1289,8 @@ function tileYield(tile) {
     praca: Math.max(0, praca),
     handel: Math.max(0, handel),
     drewno: Math.max(0, drewno),
-    kamien: Math.max(0, kamien)
+    kamien: Math.max(0, kamien),
+    glina: Math.max(0, glina)
   };
   const impKeys = tile.ulepszeniaKeys?.length ? tile.ulepszeniaKeys : tile.ulepszenieKey ? [tile.ulepszenieKey] : [];
   if (impKeys.length) {
@@ -1220,11 +1300,17 @@ function tileYield(tile) {
     out.handel = Math.max(0, out.handel);
     out.drewno = Math.max(0, out.drewno);
     out.kamien = Math.max(0, out.kamien);
+    out.glina = Math.max(0, out.glina);
   }
   return out;
 }
 function buildingValue(b, level, key) {
   return Math.floor(buildingEffectAtLevel(b.baza[key], level));
+}
+var BUILDING_HAPPINESS_BASE_PER_BUILDING = 1;
+function buildingHappinessAtLevel(b, level) {
+  const extra = typeof b.baza.zadowolenie === "number" && b.baza.zadowolenie !== 0 ? buildingValue(b, level, "zadowolenie") : 0;
+  return BUILDING_HAPPINESS_BASE_PER_BUILDING + extra;
 }
 function mnoznikHandelPieniadzForCiv(civKey, civs, fallback = 2) {
   if (!civKey || !civs?.cywilizacje?.length) return fallback;
@@ -1268,11 +1354,17 @@ function cityYieldPerTurn(city, workedTiles, cityBuildings, params, ctx) {
   let zywnoscTerenu = 0;
   let pracaTerenu = 0;
   let handelTerenu = 0;
+  let drewnoTerenu = 0;
+  let kamienTerenu = 0;
+  let glinaTerenu = 0;
   for (const tile of workedTiles) {
     const y = tileYield(tile);
     zywnoscTerenu += y.zywnosc;
     pracaTerenu += y.praca;
     handelTerenu += y.handel;
+    drewnoTerenu += y.drewno;
+    kamienTerenu += y.kamien;
+    glinaTerenu += y.glina;
   }
   let pracaBruttoTerenu;
   if (ctx.maMlyn) {
@@ -1293,6 +1385,10 @@ function cityYieldPerTurn(city, workedTiles, cityBuildings, params, ctx) {
   if (civHandelMult !== 1) {
     handelBrutto *= civHandelMult;
   }
+  const liczbaTrasHandlowych = ctx.liczbaAktywnychTrasHandlowych ?? 0;
+  if (liczbaTrasHandlowych > 0) {
+    handelBrutto *= 1 + 0.05 * liczbaTrasHandlowych;
+  }
   let pracaBudynkow = 0;
   let pieniadzBudynkow = 0;
   let zywnoscBudynkow = 0;
@@ -1305,7 +1401,7 @@ function cityYieldPerTurn(city, workedTiles, cityBuildings, params, ctx) {
     zywnoscBudynkow += buildingValue(record, level, "zywnosc");
     naukaBudynkow += buildingValue(record, level, "nauka");
     kulturaBudynkow += buildingValue(record, level, "kultura");
-    zadBudynkow += buildingValue(record, level, "zadowolenie");
+    zadBudynkow += buildingHappinessAtLevel(record, level);
   }
   let totalMnoznikProc = 0;
   for (const { record, level } of cityBuildings) {
@@ -1336,7 +1432,8 @@ function cityYieldPerTurn(city, workedTiles, cityBuildings, params, ctx) {
   const civNaukaMult = ctx.civNaukaMult ?? 1;
   const naukaLokalna = civNaukaMult !== 1 ? Math.floor(naukaLokalnaRaw * civNaukaMult) : naukaLokalnaRaw;
   const pctPracaBudynki = city.podzia\u0142Pracy.procentBudynki / 100;
-  const doPuli = Math.floor(Math.floor(pracaNetto) * (1 - pctPracaBudynki));
+  const pracaInt = cityPracaInteger(pracaNetto);
+  const { doPuli } = splitPraca(pracaInt, pctPracaBudynki);
   const pieniadzZPracy = ctx.maTargowisko && walutaActive ? Math.floor(doPuli * params.targowiskoPracaMnoznik) : 0;
   let pieniadzTotal = pieniadzZHandlu + pieniadzBudynkow + pieniadzZPracy;
   for (const spec of city.specjalisci) {
@@ -1348,7 +1445,7 @@ function cityYieldPerTurn(city, workedTiles, cityBuildings, params, ctx) {
   const zywnoscZuzyta = city.ludnosc * params.zywnoscZuzytkaPopulacja + ctx.wojskoZuzycieZywnosci;
   const zywnoscNetto = zywnoscBrutto - zywnoscZuzyta;
   return {
-    praca: Math.floor(pracaNetto),
+    praca: pracaInt,
     pieniadz: Math.floor(pieniadzTotal),
     zywnosc: Math.floor(zywnoscNetto),
     nauka: naukaLokalna,
@@ -1359,7 +1456,10 @@ function cityYieldPerTurn(city, workedTiles, cityBuildings, params, ctx) {
     handelBrutto: Math.floor(handelBrutto),
     pracaTerenu: Math.floor(pracaBruttoTerenu),
     pracaBudynkow: Math.floor(pracaBudynkow),
-    pieniadzZPracy
+    pieniadzZPracy,
+    drewnoTerenu: Math.floor(drewnoTerenu),
+    kamienTerenu: Math.floor(kamienTerenu),
+    glinaTerenu: Math.floor(glinaTerenu)
   };
 }
 function cityPopulationCap(maAkwedukt, params) {
@@ -1368,7 +1468,7 @@ function cityPopulationCap(maAkwedukt, params) {
 function populationGrowth(city, zywnoscNetto, params, wzrostThresholdMult = 1) {
   const { ludnosc, zdrowie, maSpichlerz, maAkwedukt, magazynZywnosci } = city;
   const healthModifier = Math.max(0, 1 + zdrowie * params.zdrowieModyfikatorWspolczynnik);
-  const effectiveFlow = zywnoscNetto * healthModifier;
+  const effectiveFlow = zywnoscNetto >= 0 ? zywnoscNetto * healthModifier : zywnoscNetto;
   const popCap = cityPopulationCap(maAkwedukt, params);
   let nowaLudnosc = ludnosc;
   let nowyMagazynZywnosci = magazynZywnosci;
@@ -1483,6 +1583,83 @@ var FALLBACK_RELIGION_PARAMS = Object.freeze({
   konwersjaSwiatyniaPct: 2
 });
 
+// src/map/territory.ts
+function axialDistance(aq, ar, bq, br) {
+  const as_ = -aq - ar;
+  const bs = -bq - br;
+  return (Math.abs(aq - bq) + Math.abs(ar - br) + Math.abs(as_ - bs)) / 2;
+}
+function cityTerritoryRadius(node) {
+  if (node.isFort) return 10;
+  if (node.isOutpost) return 5;
+  return cityRangeForPopulation(node.pop);
+}
+function territoryOwnerAt(q, r, nodes) {
+  let bestOwner = null;
+  let bestDist = Infinity;
+  for (const node of nodes) {
+    const radius = cityTerritoryRadius(node);
+    const dist = axialDistance(q, r, node.q, node.r);
+    if (dist > radius) continue;
+    if (dist < bestDist) {
+      bestDist = dist;
+      bestOwner = node.ownerId;
+    }
+  }
+  return bestOwner;
+}
+
+// src/map/territory-work.ts
+function buildTerritoryNodesFromCities(cities) {
+  return cities.map((c) => ({
+    q: c.q,
+    r: c.r,
+    pop: c.population,
+    level: 1,
+    ownerId: c.ownerId
+  }));
+}
+function isTerritoryHexOwnedBy(q, r, ownerId, territoryNodes) {
+  if (!territoryNodes.length) return true;
+  return territoryOwnerAt(q, r, territoryNodes) === ownerId;
+}
+function makeTerritoryWorkableFilter(territoryNodes, ownerId, baseWorkable) {
+  return (q, r) => {
+    if (baseWorkable && !baseWorkable(q, r)) return false;
+    return isTerritoryHexOwnedBy(q, r, ownerId, territoryNodes);
+  };
+}
+function reconcileWorkedTilesForOwner(cities, territoryNodes, ownerId) {
+  let changed = false;
+  for (const city of cities) {
+    if (city.ownerId !== ownerId) continue;
+    if (!city.okolicaReczne) continue;
+    const reczne = { ...city.okolicaReczne };
+    let cityChanged = false;
+    for (const key of Object.keys(reczne)) {
+      const parts = key.split(",");
+      const q = Number(parts[0]);
+      const r = Number(parts[1]);
+      if (!Number.isFinite(q) || !Number.isFinite(r)) continue;
+      if (!isTerritoryHexOwnedBy(q, r, ownerId, territoryNodes)) {
+        delete reczne[key];
+        cityChanged = true;
+      }
+    }
+    if (cityChanged) {
+      city.okolicaReczne = reczne;
+      changed = true;
+    }
+  }
+  return changed;
+}
+function reconcileAllWorkedTiles(cities, territoryNodes) {
+  const owners = new Set(cities.map((c) => c.ownerId));
+  for (const oid of owners) {
+    reconcileWorkedTilesForOwner(cities, territoryNodes, oid);
+  }
+}
+
 // src/game/okolica.ts
 var OKOLICA_RADIUS = miasto_params_default.zasieg_okolicy_miasta?.wartosc ?? 5;
 var CITY_RANGE_MIN = miasto_params_default.zasieg_okolicy_baza?.wartosc ?? 5;
@@ -1526,9 +1703,16 @@ function tileScore(y, wagi) {
   const wh = wagi?.handel ?? 1;
   return (y.zywnosc ?? 0) * wz + (y.praca ?? 0) * wp + (y.handel ?? 0) * wh;
 }
+function effectiveIsWorkable(opts) {
+  const { territoryNodes, ownerId, isWorkable } = opts;
+  if (territoryNodes != null && ownerId != null) {
+    return makeTerritoryWorkableFilter(territoryNodes, ownerId, isWorkable);
+  }
+  return isWorkable;
+}
 function assignWorkedTiles(centerQ, centerR, population, map, yieldOf, opts = {}) {
   const radius = opts.radius ?? cityRangeForPopulation(population);
-  const tiles = okolicaTiles(centerQ, centerR, radius, map, opts.isWorkable);
+  const tiles = okolicaTiles(centerQ, centerR, radius, map, effectiveIsWorkable(opts));
   const scored = tiles.map((t) => ({ t, s: tileScore(yieldOf(t.q, t.r), opts.wagi) }));
   scored.sort((a, b) => {
     if (b.s !== a.s) return b.s - a.s;
@@ -1556,10 +1740,10 @@ function resolveWorkedTiles(city, map, yieldOf, opts = {}) {
   const radius = opts.radius ?? cityRangeForPopulation(pop);
   const tryb = opts.tryb ?? city.okolicaTryb ?? DEFAULT_OKOLICA_TRYB;
   const focus = opts.focus ?? city.okolicaFocus ?? DEFAULT_OKOLICA_FOCUS;
-  const isWorkable = opts.isWorkable;
+  const workFilter = effectiveIsWorkable(opts);
   if (tryb === "reczny") {
     const reczne = opts.reczne ?? city.okolicaReczne ?? {};
-    const tiles = okolicaTiles(city.q, city.r, radius, map, isWorkable);
+    const tiles = okolicaTiles(city.q, city.r, radius, map, workFilter);
     const tileMap = new Map(tiles.map((t) => [t.key, t]));
     const out = [];
     for (const [key, count] of Object.entries(reczne)) {
@@ -1572,7 +1756,9 @@ function resolveWorkedTiles(city, map, yieldOf, opts = {}) {
   }
   return assignWorkedTiles(city.q, city.r, pop, map, yieldOf, {
     radius,
-    isWorkable,
+    isWorkable: opts.isWorkable,
+    territoryNodes: opts.territoryNodes,
+    ownerId: opts.ownerId ?? city.ownerId,
     wagi: wagiForFocus(focus)
   });
 }
@@ -1587,13 +1773,15 @@ function yieldOfMapHex(map, q, r) {
   });
   return { zywnosc: y.zywnosc, praca: y.praca, handel: y.handel };
 }
-function seedReczneFromAuto(city, map) {
+function seedReczneFromAuto(city, map, territoryNodes) {
   const pop = Math.max(0, Math.floor(city.population ?? 0));
   if (pop <= 0) return {};
   const radius = cityRangeForPopulation(pop);
   const focus = city.okolicaFocus ?? DEFAULT_OKOLICA_FOCUS;
   const tiles = assignWorkedTiles(city.q, city.r, pop, map, (q, r) => yieldOfMapHex(map, q, r), {
     radius,
+    territoryNodes,
+    ownerId: city.ownerId,
     wagi: wagiForFocus(focus)
   });
   const reczne = {};
@@ -1607,7 +1795,7 @@ function pickDeterministicIndex(seed, length) {
   if (length <= 0) return 0;
   return (seed % length + length) % length;
 }
-function rebalanceWorkersAfterPopulationChange(city, map, popBefore, popAfter) {
+function rebalanceWorkersAfterPopulationChange(city, map, popBefore, popAfter, territoryNodes) {
   const tryb = city.okolicaTryb ?? DEFAULT_OKOLICA_TRYB;
   const pop = Math.max(0, Math.floor(popAfter));
   if (popBefore === popAfter) return;
@@ -1617,12 +1805,13 @@ function rebalanceWorkersAfterPopulationChange(city, map, popBefore, popAfter) {
   const radius = cityRangeForPopulation(pop);
   const focus = city.okolicaFocus ?? DEFAULT_OKOLICA_FOCUS;
   const wagi = wagiForFocus(focus);
-  const tiles = okolicaTiles(city.q, city.r, radius, map);
+  const workFilter = territoryNodes ? makeTerritoryWorkableFilter(territoryNodes, city.ownerId) : void 0;
+  const tiles = okolicaTiles(city.q, city.r, radius, map, workFilter);
   const yieldOf = (q, r) => yieldOfMapHex(map, q, r);
   let reczne = { ...city.okolicaReczne ?? {} };
   if (popAfter > popBefore) {
     if (countAssignedWorkers(reczne) === 0 && pop > 0) {
-      city.okolicaReczne = seedReczneFromAuto({ ...city, population: pop }, map);
+      city.okolicaReczne = seedReczneFromAuto({ ...city, population: pop }, map, territoryNodes);
       return;
     }
     let need = pop - countAssignedWorkers(reczne);
@@ -1709,6 +1898,7 @@ function buildEconParams(data, difficulty = "normal") {
   const raw = data.econParams;
   const em = raw.ekonomia_miasta ?? {};
   const bu = raw.budynki ?? {};
+  const gl = raw.globalne ?? {};
   const d = difficulty;
   const num = (group, key, fallback) => {
     const row = group[key];
@@ -1731,6 +1921,7 @@ function buildEconParams(data, difficulty = "normal") {
     budynekTargowiskoBonusHandlu: num(bu, "budynek_targowisko_bonus_handlu", 0.5),
     budynekBibliotekaBonusNauki: num(bu, "budynek_biblioteka_bonus_nauki", 0.5),
     budynekMennicaMnoznik: num(bu, "budynek_mennica_mnoznik", 1),
+    mennicaMnoznikPoWalucie: num(gl, "mennica_mnoznik_po_walucie", 1.5),
     walutaMnoznik: num(bu, "waluta_mnoznik", 2),
     targowiskoPracaMnoznik: num(bu, "targowisko_praca_na_pieniadz_mnoznik", 2),
     suwaakHandelNaukaDefault: num(em, "suwak_handel_nauka_domyslnie", 60),
@@ -1855,7 +2046,7 @@ function hexToWorkedTile(hex) {
     ulepszeniaKeys: ulepszeniaKeys.length ? ulepszeniaKeys : void 0
   };
 }
-function cityWorkedTilesForEconomy(city, map) {
+function cityWorkedTilesForEconomy(city, map, territoryNodes) {
   const tiles = [];
   const centreHex = map.hexes[`${city.q},${city.r}`];
   if (centreHex) tiles.push(hexToWorkedTile(centreHex));
@@ -1873,7 +2064,11 @@ function cityWorkedTilesForEconomy(city, map) {
       handel: y.handel
     };
   };
-  const assigned = resolveWorkedTiles(city, map, yieldOf, { radius });
+  const assigned = resolveWorkedTiles(city, map, yieldOf, {
+    radius,
+    territoryNodes,
+    ownerId: city.ownerId
+  });
   for (const t of assigned) {
     const h = map.hexes[t.key];
     if (h) tiles.push(hexToWorkedTile(h));
@@ -1915,10 +2110,12 @@ function growthFoodStorageCap(population, maSpichlerz, params, storageParams, pa
 function getCityFood(city) {
   return readCityFoodBufferFromCity(city);
 }
-function advanceCityEconomy(cities, map, data, difficulty = "normal", econUnits = [], growthMultByCity = /* @__PURE__ */ new Map(), builtByCity = /* @__PURE__ */ new Map(), playerEra = 1, playerZbadane = /* @__PURE__ */ new Set(), ownerCivByOwnerId = /* @__PURE__ */ new Map(), orderMultByCity = /* @__PURE__ */ new Map(), resolveOwnerEra, resolveOwnerTech, wzrostLudnosciPace = "wysoki") {
+function advanceCityEconomy(cities, map, data, difficulty = "normal", econUnits = [], growthMultByCity = /* @__PURE__ */ new Map(), builtByCity = /* @__PURE__ */ new Map(), playerEra = 1, playerZbadane = /* @__PURE__ */ new Set(), ownerCivByOwnerId = /* @__PURE__ */ new Map(), orderMultByCity = /* @__PURE__ */ new Map(), resolveOwnerEra, resolveOwnerTech, wzrostLudnosciPace = "wysoki", tradeRouteCountByCity = /* @__PURE__ */ new Map(), tradeIncomeByCity = /* @__PURE__ */ new Map()) {
   const gameDifficulty = difficulty;
   const params = buildEconParams(data, difficulty);
   const noBuildings = [];
+  const territoryNodes = buildTerritoryNodesFromCities(cities);
+  reconcileAllWorkedTiles(cities, territoryNodes);
   const rawEconParams = data.econParams;
   const upkeepParams = loadUpkeepParams(rawEconParams, difficulty);
   const storageParams = loadStorageParams(rawEconParams, difficulty);
@@ -1960,12 +2157,13 @@ function advanceCityEconomy(cities, map, data, difficulty = "normal", econUnits 
   for (const city of cities) {
     const isCapital = !capitalSeen.has(city.ownerId);
     capitalSeen.add(city.ownerId);
-    const worked = cityWorkedTilesForEconomy(city, map);
+    const worked = cityWorkedTilesForEconomy(city, map, territoryNodes);
     const builtIds = builtByCity.get(city.id) ?? [];
     const hasWater = cityHasWaterAccess(city, map);
     const zdrowie = computeCityHealth(city.population, worked, builtIds, healthParams, hasWater, { city, map });
     const maSpichlerz = builtIds.includes("spichlerz");
     const maAkwedukt = builtIds.includes("akwedukt");
+    const pctRozwoj = getCityFoodSplit(city);
     const econCity = toEconomyCity(city, params, isCapital, zdrowie, { maSpichlerz, maAkwedukt });
     const ownerEra = resolveOwnerEra ? resolveOwnerEra(city.ownerId) : city.ownerId === 0 ? playerEra : 1;
     const ownerTech = resolveOwnerTech ? resolveOwnerTech(city.ownerId) : playerZbadane;
@@ -1974,6 +2172,7 @@ function advanceCityEconomy(cities, map, data, difficulty = "normal", econUnits 
     const walutaMnoznikOverride = walutaOdkryta && ownerCivKey ? mnoznikHandelPieniadzForCiv(ownerCivKey, data.civs, params.walutaMnoznik) : void 0;
     const ownerBonusy = ownerCivKey ? civBonusyForCivKey(ownerCivKey, data.civs) : [];
     const { handel: civHandelMult, nauka: civNaukaMult } = civEconomyYieldMultipliers(ownerBonusy);
+    const liczbaTrasHandlowych = tradeRouteCountByCity.get(city.id) ?? 0;
     const ctx = {
       wojskoZuzycieZywnosci: 0,
       // B5: wojsko → zapasy państwa (advanceEmpireFood)
@@ -1984,19 +2183,24 @@ function advanceCityEconomy(cities, map, data, difficulty = "normal", econUnits 
       maTargowisko: builtIds.includes("targowisko"),
       maBiblioteka: builtIds.includes("biblioteka"),
       maMennica: builtIds.includes("mennica"),
-      mennicaMnoznik: 1,
+      // Zadanie 1 (E1): Mennica dziala TYLKO gdy zbudowana ORAZ Waluta odkryta (spojne
+      // z tym, ze Mennica i tak wymaga techu Waluta do postawienia -- patrz buildings.json).
+      mennicaMnoznik: builtIds.includes("mennica") && walutaOdkryta ? params.mennicaMnoznikPoWalucie : 1,
       walutaOdkryta,
       // P1b: mnoznik Handel->Pieniadz gdy Waluta zbadana
       walutaMnoznikOverride,
       // RDY-11: per-cyw 1.7-2.4 gdy ownerCivByOwnerId podane
       civHandelMult,
       // RDY-01: bonus_zloto handel (Grecy +15%)
-      civNaukaMult
+      civNaukaMult,
       // RDY-01: bonus_nauka (Inkowie +15%)
+      liczbaAktywnychTrasHandlowych: liczbaTrasHandlowych
+      // Handel E3: +5%/trasa
     };
     const yld = cityYieldPerTurn(econCity, worked, noBuildings, params, ctx);
     const orderMult = orderMultByCity.get(city.id);
     if (orderMult) applyOrderYieldMults(yld, orderMult);
+    yld.praca = cityPracaInteger(yld.praca);
     const prevWealth = city.wealthState ?? freshWealthState();
     const wealthImmunity = (city.wealthImmunityRemaining ?? 0) > 0;
     const wt = advanceWealth(
@@ -2014,8 +2218,14 @@ function advanceCityEconomy(cities, map, data, difficulty = "normal", econUnits 
     }
     city.wealthState = { poziom: wt.poziom, pula: wt.pula };
     const pieniadzPoWealth = Math.floor(yld.pieniadz * wt.mnoznik);
+    const pieniadzZTras = tradeIncomeByCity.get(city.id) ?? 0;
     const udzialBudynki = (city.podzialPracy?.procentBudynki ?? params.suwaakPracaBudynki) / 100;
     const { doBudynkow, doPuli } = splitPraca(yld.praca, udzialBudynki);
+    if (ctx.maTargowisko && walutaOdkryta) {
+      const pieniadzZPracyPoSplit = Math.floor(doPuli * params.targowiskoPracaMnoznik);
+      yld.pieniadz = yld.pieniadz - yld.pieniadzZPracy + pieniadzZPracyPoSplit;
+      yld.pieniadzZPracy = pieniadzZPracyPoSplit;
+    }
     const isOblegane = city.oblegane === true;
     let magazynPoTurze;
     let obleganyGlod = false;
@@ -2030,7 +2240,7 @@ function advanceCityEconomy(cities, map, data, difficulty = "normal", econUnits 
         cityId: city.id,
         ownerId: city.ownerId,
         praca: yld.praca,
-        pieniadz: pieniadzPoWealth,
+        pieniadz: pieniadzPoWealth + pieniadzZTras,
         pieniadzBrutto: yld.pieniadz,
         zywnoscNetto: 0,
         // brak dochodu podczas oblezenia
@@ -2048,16 +2258,18 @@ function advanceCityEconomy(cities, map, data, difficulty = "normal", econUnits 
         wealthMnoznik: wt.mnoznik,
         wealthZadowolenie: wt.zadowolenie,
         pieniadzZPracy: yld.pieniadzZPracy,
+        pieniadzZTras,
         oblegany: true,
         obleganyGlod,
         magazynPoTurze,
-        maSpichlerz
+        maSpichlerz,
+        procentRozwoj: pctRozwoj
       };
       result.perCity.push(tick2);
-      incomeByOwner.set(city.ownerId, (incomeByOwner.get(city.ownerId) ?? 0) + pieniadzPoWealth);
+      incomeByOwner.set(city.ownerId, (incomeByOwner.get(city.ownerId) ?? 0) + tick2.pieniadz);
       result.cities += 1;
       result.totalPraca += yld.praca;
-      result.totalPieniadz += pieniadzPoWealth;
+      result.totalPieniadz += tick2.pieniadz;
       result.totalNauka += yld.nauka;
       result.totalLuksus += yld.luksus;
       result.totalKultura += yld.kultura;
@@ -2065,8 +2277,9 @@ function advanceCityEconomy(cities, map, data, difficulty = "normal", econUnits 
       result.totalPracaPula += doPuli;
       continue;
     }
-    const pctRozwoj = Math.min(100, Math.max(0, getEmpireFoodSplit(city.ownerId)));
-    const zywnoscDoRozwoju = yld.zywnosc * (pctRozwoj / 100);
+    const surplus = Math.max(0, yld.zywnosc) * (pctRozwoj / 100);
+    const deficit = Math.min(0, yld.zywnosc);
+    const zywnoscDoRozwoju = surplus + deficit;
     const growthMult = growthMultByCity.get(city.id) ?? 1;
     const zywnoscDlaWzrostu = growthMult !== 1 ? zywnoscDoRozwoju * growthMult : zywnoscDoRozwoju;
     const wzrostThresholdMult = getPopulationGrowthThresholdMultiplier(
@@ -2078,19 +2291,21 @@ function advanceCityEconomy(cities, map, data, difficulty = "normal", econUnits 
     const before = city.population;
     city.population = grow.nowaLudnosc;
     if (grow.nowaLudnosc !== before) {
-      rebalanceWorkersAfterPopulationChange(city, map, before, grow.nowaLudnosc);
+      rebalanceWorkersAfterPopulationChange(city, map, before, grow.nowaLudnosc, territoryNodes);
     }
     const ownerEpoka = ownerEra;
+    const mpMults = civManpowerMults(ownerBonusy);
     if (city.manpower === void 0) {
-      city.manpower = cityManpowerMax(city.population, ownerEpoka);
+      city.manpower = cityManpowerMax(city.population, ownerEpoka, mpMults.maxMult);
     } else if (grow.nowaLudnosc !== before) {
-      city.manpower = refreshManpowerAfterPopChange(city, ownerEpoka, before);
+      city.manpower = refreshManpowerAfterPopChange(city, ownerEpoka, before, mpMults.maxMult);
     }
     city.manpower = tickManpowerRegen(
       city,
       ownerEpoka,
       loadManpowerRegenParams(),
-      civManpowerRegenMult(ownerBonusy)
+      mpMults.regenMult,
+      mpMults.maxMult
     );
     const foodCap = growthFoodStorageCap(
       city.population,
@@ -2103,13 +2318,18 @@ function advanceCityEconomy(cities, map, data, difficulty = "normal", econUnits 
     );
     city.magazynZywnosci = Math.min(grow.nowyMagazynZywnosci, foodCap);
     magazynPoTurze = city.magazynZywnosci;
-    incomeByOwner.set(city.ownerId, (incomeByOwner.get(city.ownerId) ?? 0) + pieniadzPoWealth);
-    const maMagazyn = false;
+    incomeByOwner.set(city.ownerId, (incomeByOwner.get(city.ownerId) ?? 0) + pieniadzPoWealth + pieniadzZTras);
+    const maMagazyn = builtIds.includes("magazyn");
     const resCap = resourceStorageCapacityPerType(maMagazyn, storageParams);
-    const citySurowce = city.surowce ?? {};
-    if (Object.keys(citySurowce).length > 0) {
+    if (!city.surowce) city.surowce = {};
+    const citySurowce = city.surowce;
+    citySurowce.drewno = Math.min(resCap, (citySurowce.drewno ?? 0) + yld.drewnoTerenu);
+    citySurowce.kamien = Math.min(resCap, (citySurowce.kamien ?? 0) + yld.kamienTerenu);
+    citySurowce.glina = Math.min(resCap, (citySurowce.glina ?? 0) + yld.glinaTerenu);
+    const activeRecipes = DEFAULT_CONVERTER_RECIPES.filter((r) => builtIds.includes(r.id));
+    if (activeRecipes.length > 0) {
       const convResult = runConverters(
-        DEFAULT_CONVERTER_RECIPES,
+        activeRecipes,
         citySurowce,
         converterThroughputs,
         () => resCap
@@ -2120,7 +2340,7 @@ function advanceCityEconomy(cities, map, data, difficulty = "normal", econUnits 
       cityId: city.id,
       ownerId: city.ownerId,
       praca: yld.praca,
-      pieniadz: pieniadzPoWealth,
+      pieniadz: pieniadzPoWealth + pieniadzZTras,
       pieniadzBrutto: yld.pieniadz,
       zywnoscNetto: yld.zywnosc,
       nauka: yld.nauka,
@@ -2136,15 +2356,17 @@ function advanceCityEconomy(cities, map, data, difficulty = "normal", econUnits 
       wealthMnoznik: wt.mnoznik,
       wealthZadowolenie: wt.zadowolenie,
       pieniadzZPracy: yld.pieniadzZPracy,
+      pieniadzZTras,
       oblegany: false,
       obleganyGlod: false,
       magazynPoTurze,
-      maSpichlerz
+      maSpichlerz,
+      procentRozwoj: pctRozwoj
     };
     result.perCity.push(tick);
     result.cities += 1;
     result.totalPraca += yld.praca;
-    result.totalPieniadz += pieniadzPoWealth;
+    result.totalPieniadz += tick.pieniadz;
     result.totalNauka += yld.nauka;
     result.totalLuksus += yld.luksus;
     result.totalKultura += yld.kultura;
@@ -2157,10 +2379,31 @@ function advanceCityEconomy(cities, map, data, difficulty = "normal", econUnits 
     ...cities.map((c) => c.ownerId),
     ...econUnits.map((u) => u.ownerId)
   ]);
+  const buildingsByOwner = /* @__PURE__ */ new Map();
+  for (const city of cities) {
+    const builtIds = builtByCity.get(city.id) ?? [];
+    if (builtIds.length === 0) continue;
+    const ownerEra = resolveOwnerEra ? resolveOwnerEra(city.ownerId) : city.ownerId === 0 ? playerEra : 1;
+    const ownerTech = resolveOwnerTech ? resolveOwnerTech(city.ownerId) : playerZbadane;
+    const list = buildingsByOwner.get(city.ownerId) ?? [];
+    for (const bid of builtIds) {
+      const bdef = data.buildings.find((b) => b.id === bid);
+      if (!bdef) continue;
+      const level = buildingLevelForEpoch(
+        bdef.epokaWejscia,
+        ownerEra,
+        bdef.maksPoziom,
+        bdef.poziomTechGate,
+        ownerTech
+      );
+      list.push({ record: bdef, level });
+    }
+    buildingsByOwner.set(city.ownerId, list);
+  }
   for (const oid of ownerIds) {
     const income = incomeByOwner.get(oid) ?? 0;
     const ounits = econUnits.filter((u) => u.ownerId === oid);
-    const balance = upkeepBalance(income, [], ounits, unitUpkeepTbl, upkeepParams);
+    const balance = upkeepBalance(income, buildingsByOwner.get(oid) ?? [], ounits, unitUpkeepTbl, upkeepParams);
     result.upkeepByOwner.set(oid, balance);
   }
   return result;
@@ -2174,6 +2417,7 @@ function applyArmyStarvationHpLoss(units, ownerId, hpFrac, getMaxHp) {
   let damagedCount = 0;
   for (const u of units) {
     if (u.ownerId !== ownerId) continue;
+    if (isCivilianUnit(u)) continue;
     const maxHp = u.hpMax ?? getMaxHp(u.typeId);
     if (maxHp <= 0) continue;
     if (u.hpMax == null) u.hpMax = maxHp;
@@ -2195,7 +2439,9 @@ function applyArmyStarvationHpLoss(units, ownerId, hpFrac, getMaxHp) {
   clearLastEmpireFoodTicks,
   computeEmpireFoodMaxCap,
   computeEmpireFoodNetDelta,
+  computeEmpireFoodNetDeltaFromCityFoods,
   freshEmpireFoodState,
+  getCityFoodSplit,
   getEmpireFoodMaxCap,
   getEmpireFoodSplit,
   isArmyStarving

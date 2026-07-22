@@ -13,8 +13,6 @@ import { freshWealthState, type WealthState } from './wealth';
 import { readCityFoodBuffer } from './economy-upkeep';
 import type { SiegeMachinesState } from './siegeMachines';
 import miastoParams from '../../data/miasto-params.json';
-
-/** Per-miasto suwak Handlu (Nauka / Pieniadz / Luksus). */
 export interface CityPodzialHandlu {
   procentNauka:    number;
   procentPieniadz: number;
@@ -61,6 +59,9 @@ export const DEFAULT_PODZIAL_HANDLU: Readonly<CityPodzialHandlu> = {
 export const DEFAULT_PODZIAL_PRACY: Readonly<CityPodzialPracy> = {
   procentBudynki: 70,
 };
+
+/** Domyślny suwak żywność→wzrost (reszta idzie do zapasów armii). Zgodny z suwak_zywnosc_rozwoj_domyslnie normal=100. */
+export const DEFAULT_PROCENT_ROZWOJ = 100;
 
 /** Suwak podziału handlu — tylko wielokrotności 10 (0, 10, …, 100). */
 export const HANDEL_PCT_STEP = 10;
@@ -157,6 +158,12 @@ export interface City {
   podzialHandlu?: CityPodzialHandlu;
   /** Per-miasto suwak Pracy; brak = global default w toEconomyCity. */
   podzialPracy?: CityPodzialPracy;
+  /**
+   * Per-miasto suwak podziału świeżej żywności: % na wzrost ludności (bufor 🍞).
+   * Reszta (100 − procentRozwoj) idzie do zapasów armii państwa. Brak w starym zapisie
+   * → migrateCityFoodSplits w silniku (legacy empireFoodStates.procentRozwoj).
+   */
+  procentRozwoj?: number;
   /** Profil skupienia pól okolicy (auto-assign). */
   okolicaFocus?: OkolicaFocus;
   /** auto | reczny — ręczne 👤 na heksach. */
@@ -263,6 +270,7 @@ export function foundCity(
     wealthImmunityRemaining: 5,
     podzialHandlu: podzial.podzialHandlu,
     podzialPracy:  podzial.podzialPracy,
+    procentRozwoj: DEFAULT_PROCENT_ROZWOJ,
   };
 }
 
@@ -292,6 +300,7 @@ export function foundCityAt(
     wealthImmunityRemaining: 5,
     podzialHandlu: podzial.podzialHandlu,
     podzialPracy:  podzial.podzialPracy,
+    procentRozwoj: DEFAULT_PROCENT_ROZWOJ,
   };
 }
 

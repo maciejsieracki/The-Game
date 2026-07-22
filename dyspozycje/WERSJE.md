@@ -9,7 +9,14 @@ UWAGA: KANON i FINALNA promują się teraz OSOBNYMI skryptami (`gra/tools/publis
 wyraźne polecenie właściciela) — dlatego są logowane NIEZALEŻNIE, każdy w swojej sekcji, ze
 swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drugiego.
 
-## ROBOCZA `b6353296` — 2026-07-22 · wycofanie #48 (decyzja gameplayowa Macieja) — **AKTUALNA**
+## ROBOCZA `7e038328` — 2026-07-22 · FIX: suwak żywność→armia per miasto — **AKTUALNA**
+
+- **Bug Macieja:** suwak podziału żywności (wzrost vs armia) w panelu miasta był wspólny dla całego imperium (`EmpireFoodState.procentRozwoj` per ownerId).
+- **Fix:** pole `City.procentRozwoj` per miasto; silnik (`turn-economy`, `advanceEmpireFood`) i panel czytają/zapisują per miasto; migracja starych save z `empireFoodStates.procentRozwoj`.
+- **Bramki:** tsc=0 · empire-food-b5 25/25 · research GREEN · upkeep 58/58.
+- **md5:** `7e038328910eb09f9ca90beaf06a5e59` · stamp `7e038328`.
+
+## ROBOCZA `b6353296` — 2026-07-22 · wycofanie #48 (decyzja gameplayowa Macieja) — **ZASTĄPIONA** (→ `7e038328`)
 
 - **Jedyna zmiana vs `80a32769`:** cofnięta naprawa #48 — Moc wyeliminowanych cywilizacji ZNÓW liczy się w mianowniku dominacji (Maciej: „to była decyzja z gameplayu"). Commity `4fdc0ed` + `773f49c`. Przyszłe audyty: NIE zgłaszać jako błąd.
 
@@ -22,9 +29,13 @@ swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drug
 
 ## ROBOCZA (gra-robocza\Gra-ROBOCZA.html — wskazywana przez START.html)
 
+- 2026-07-22 · stempel: ROBOCZA · **7e038328** · md5 pliku `7e038328910eb09f9ca90beaf06a5e59` · **FIX: suwak żywność→armia per miasto** — na `7238588c`:
+  **Bug Macieja:** zmiana suwaka wzrost/armia w jednym mieście zmieniała ustawienie we wszystkich miastach. **Fix:** `City.procentRozwoj` per miasto; panel zapisuje tylko bieżące miasto; silnik sumuje wkłady per miasto do zapasów armii.
+  tsc=0 · empire-food-b5 25/25 · publish `gra-robocza/Gra-ROBOCZA.html`. · **AKTUALNA** · Test: stamp `7e038328` · 2 miasta → różne suwaki → każde zachowuje własne %.
+
 - 2026-07-22 · stempel: ROBOCZA · **7238588c** · md5 pliku `7238588c73778b8761ec5bf999268b09` · **FIX: dialog POŁĄCZENIE ARMII odłożony do startu tury gracza** — na `d7ad2f76`:
   **Bug Macieja:** dialog łączenia armii („POŁĄCZENIE ARMII") pojawiał się w trakcie tury przeciwnika (produkcja end-turn: np. Wojownik na heks z Oszczepnikiem). **Fix:** `deferredMergePrompts` — kolejka promptów; `promptMergeIfCoLocated` odłożone gdy `endTurnInProgress`; `flushDeferredMergePrompts()` po „Tura N — twoja kolej" (razem z `flushDeferredPlayerUnitReveals`). Rush-buy / ruch w swojej turze bez zmian (natychmiast).
-  tsc=0 · unit-replace 10/10 · publish `gra-robocza/Gra-ROBOCZA.html`. · **AKTUALNA** · Test: stamp `7238588c` · Rekrutuj na heks z jednostką → Zakończ turę → dialog dopiero po AI.
+  tsc=0 · unit-replace 10/10 · publish `gra-robocza/Gra-ROBOCZA.html`. · **ZASTĄPIONA** (→ `7e038328`) · Test: stamp `7238588c` · Rekrutuj na heks z jednostką → Zakończ turę → dialog dopiero po AI.
 
 - 2026-07-22 · stempel: ROBOCZA · **d7ad2f76** · md5 pliku `d7ad2f76e755e42352bb421a1a19c2fa` · **UI: opisowe nazwy zapisów** — na `c72ab1b8`:
   **Zapis gry (Maciej):** domyślna nazwa sejwu z kontekstu rozgrywki zamiast generycznego „Zapis · tura N". Format: `{stolica} · rok {YYYY} p.n.e. · tura {N} · {rozmiar mapy} · {trudność}`; szybki zapis i autozapis z prefiksem. Moduł `save-label.ts`, pole nazwy max 72 znaki.
