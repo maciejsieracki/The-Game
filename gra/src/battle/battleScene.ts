@@ -789,6 +789,13 @@ const SHRUB_COLOR        = 0x356b2c; // hill shrub
 const ROCK_COLOR         = 0x6f7a85; // low-poly rock (scene.ts PEAK_ROCK)
 const RIVER_WATER_COLOR  = 0x3a86b5; // water plane
 
+// Close-up ground detail (B10 "z bliska"): grass tufts + tiny clutter that only
+// read when the camera is zoomed in on the units, per owner feedback.
+const GRASS_TUFT_COLOR_A = 0x7ab84c; // grass blade -- lighter/fresher than the floor tile
+const GRASS_TUFT_COLOR_B = 0x5c9a3c; // grass blade -- 2nd shade, darker mix
+const PEBBLE_COLOR       = 0x8a8478; // tiny loose pebble (paler than the ROCK boulders)
+const TINY_BUSH_COLOR    = 0x3f7a34; // small ground bush -- between grass and forest shade
+
 // Elevation lift (world units) applied to a hill tile's slab + its decorations.
 const HILL_LIFT  = 0.18;
 // The VISIBLE top (summit) of the raised grass dome drawn on a hill tile. The
@@ -3547,8 +3554,8 @@ export class BattleScene {
         // Subtle deterministic per-tile tint (hash of position, not Math.random),
         // quantised to a handful of buckets so the material CACHE above still
         // collapses to a few dozen shared materials instead of one per tile.
-        const varianceStep = Math.floor(tileJitter(col, row, 101) * 5) - 2; // -2..2
-        const variance = varianceStep * 0.02; // -4%, -2%, 0, +2%, +4%
+        const varianceStep = Math.floor(tileJitter(col, row, 101) * 7) - 3; // -3..3
+        const variance = varianceStep * 0.0225; // -6.75% .. +6.75% (was -4%..+4%)
         c = variance >= 0 ? lighten(c, variance) : blend(c, 0x000000, -variance);
         // Faint side tint marks the attacker / defender deploy ground.
         if (col <= ATK_FRONT_COL)      c = lighten(c, 0.05);
@@ -3719,6 +3726,155 @@ export class BattleScene {
       rocks.count = ri;
       rocks.instanceMatrix.needsUpdate = true;
       this.scene.add(rocks);
+    }
+
+    // --- GRASS TUFTS: close-up ground detail (B10). The floor tile is a flat
+    // colour slab that only reads as "a nice hex" from far away; up close (and
+    // the owner zooms in on the units to actually play) it looks bare. This adds
+    // a SINGLE InstancedMesh of thin blade cones scattered as small clumps over
+    // Plains/Hills tiles (never on water/rock/forest-canopy tiles). Deterministic
+    // via tileJitter (no Math.random). Restricted to the PLAYABLE rectangle: the
+    // margin outside it is already covered by the dark overlay in
+    // _buildPlayableMarginVisuals, so tufts there would be instances nobody sees.
+    {
+      const GRASS_CAP = 8000;        // hard instance cap (perf, per owner brief)
+      const BLADES_PER_TUFT = 3;     // 2-3 thin blades forming one clump
+      const MAX_TUFTS_PER_TILE = 2;  // up to 2 clumps/tile -> up to 6 blades/tile
+
+      let grassTiles = 0;
+      for (let col = PLAY_COL0; col <= PLAY_COL1; col++) {
+        for (let row = PLAY_ROW0; row <= PLAY_ROW1; row++) {
+          const k = tm.at(col, row);
+          if (k === BTerrain.Plains || k === BTerrain.Hills) grassTiles++;
+        }
+      }
+
+      if (grassTiles > 0) {
+        // Keep-probability per tuft SLOT, chosen so the EXPECTED total stays at
+        // the hard cap. A sequential "fill tiles in scan order, stop at the cap"
+        // approach would empty out one whole side of the field once the budget
+        // runs out (columns are scanned low-to-high) -- a hard-to-miss bare
+        // patch right where a formation stands. Per-slot probabilistic keep
+        // (hashed from tile position, so still fully deterministic) spends the
+        // same budget spread UNIFORMLY across the whole playable rectangle
+        // instead, and doubles as the "organic sparsity" (not every tile shows
+        // a tuft) the forest fringe already uses the same trick for.
+        const rawSlots = grassTiles * MAX_TUFTS_PER_TILE;
+        const keepProb = Math.min(1, GRASS_CAP / (rawSlots * BLADES_PER_TUFT));
+        const maxBlades = GRASS_CAP; // allocate the hard cap; trimmed to actual gi below
+
+        // Thin cone "blade": base at y=0 (translate up by half its own height)
+        // so it stands upright on the tile surface instead of being centred on it.
+        const bladeGeo = new THREE.ConeGeometry(TILE_S * 0.016, TILE_S * 0.20, 3);
+        bladeGeo.translate(0, TILE_S * 0.10, 0);
+        this.ownedGeos.push(bladeGeo);
+        const grassMat = new THREE.MeshLambertMaterial({ color: GRASS_TUFT_COLOR_A, flatShading: true });
+        this.ownedMats.push(grassMat);
+        const grass = new THREE.InstancedMesh(bladeGeo, grassMat, maxBlades);
+        grass.castShadow = false; // too thin to be worth the shadow-pass cost
+        grass.receiveShadow = false;
+        const grassColorA = new THREE.Color(GRASS_TUFT_COLOR_A);
+        const grassColorB = new THREE.Color(GRASS_TUFT_COLOR_B);
+        const dummy = new THREE.Object3D();
+        let gi = 0;
+        outerGrass:
+        for (let col = PLAY_COL0; col <= PLAY_COL1; col++) {
+          for (let row = PLAY_ROW0; row <= PLAY_ROW1; row++) {
+            const k = tm.at(col, row);
+            if (k !== BTerrain.Plains && k !== BTerrain.Hills) continue;
+            const { x, z } = cellToWorld(col, row);
+            const baseY = k === BTerrain.Hills ? HILL_LIFT : 0;
+            for (let tft = 0; tft < MAX_TUFTS_PER_TILE; tft++) {
+              if (tileJitter(col, row, 200 + tft) >= keepProb) continue; // uniformly-thinned slot
+              const cx = (tileJitter(col, row, 210 + tft * 3) - 0.5) * TILE_S * 0.8;
+              const cz = (tileJitter(col, row, 211 + tft * 3) - 0.5) * TILE_S * 0.8;
+              for (let b = 0; b < BLADES_PER_TUFT; b++) {
+                if (gi >= maxBlades) break outerGrass;
+                const salt = 220 + tft * 10 + b * 7;
+                const jx = cx + (tileJitter(col, row, salt) - 0.5) * TILE_S * 0.10;
+                const jz = cz + (tileJitter(col, row, salt + 1) - 0.5) * TILE_S * 0.10;
+                const sc = 0.6 + tileJitter(col, row, salt + 2) * 0.8;
+                dummy.position.set(x + jx, baseY, z + jz);
+                dummy.rotation.set(
+                  (tileJitter(col, row, salt + 3) - 0.5) * 0.5,
+                  tileJitter(col, row, salt + 4) * Math.PI * 2,
+                  (tileJitter(col, row, salt + 5) - 0.5) * 0.5,
+                );
+                dummy.scale.setScalar(sc);
+                dummy.updateMatrix();
+                grass.setMatrixAt(gi, dummy.matrix);
+                grass.setColorAt(gi, tileJitter(col, row, salt + 6) < 0.5 ? grassColorA : grassColorB);
+                gi++;
+              }
+            }
+          }
+        }
+        grass.count = gi;
+        grass.instanceMatrix.needsUpdate = true;
+        if (grass.instanceColor) grass.instanceColor.needsUpdate = true;
+        this.scene.add(grass);
+      }
+    }
+
+    // --- TINY CLUTTER: sparse pebbles + tiny bushes on open Plains tiles, one
+    // extra InstancedMesh each, so close-up ground never reads as empty between
+    // grass tufts. Deliberately small/sparse -- the trees/hills/rocks decor
+    // above stays the main terrain read, this is just "not bare" filler. ---
+    {
+      let plainsTiles = 0;
+      for (let col = PLAY_COL0; col <= PLAY_COL1; col++) {
+        for (let row = PLAY_ROW0; row <= PLAY_ROW1; row++) {
+          if (tm.at(col, row) === BTerrain.Plains) plainsTiles++;
+        }
+      }
+      if (plainsTiles > 0) {
+        const PEBBLE_CHANCE = 0.10;
+        const BUSH_CHANCE   = 0.06;
+        const pebbleGeo = new THREE.IcosahedronGeometry(TILE_S * 0.045, 0);
+        const pebbleMat = new THREE.MeshLambertMaterial({ color: PEBBLE_COLOR, flatShading: true });
+        const bushGeo = new THREE.ConeGeometry(TILE_S * 0.09, TILE_S * 0.16, 5);
+        bushGeo.translate(0, TILE_S * 0.08, 0);
+        const bushMat = new THREE.MeshLambertMaterial({ color: TINY_BUSH_COLOR, flatShading: true });
+        this.ownedGeos.push(pebbleGeo, bushGeo);
+        this.ownedMats.push(pebbleMat, bushMat);
+        const pebbles = new THREE.InstancedMesh(pebbleGeo, pebbleMat, plainsTiles);
+        const bushes  = new THREE.InstancedMesh(bushGeo, bushMat, plainsTiles);
+        pebbles.receiveShadow = true;
+        bushes.castShadow = true; bushes.receiveShadow = true;
+        const dummy = new THREE.Object3D();
+        let pi = 0, bi2 = 0;
+        for (let col = PLAY_COL0; col <= PLAY_COL1; col++) {
+          for (let row = PLAY_ROW0; row <= PLAY_ROW1; row++) {
+            if (tm.at(col, row) !== BTerrain.Plains) continue;
+            const { x, z } = cellToWorld(col, row);
+            if (tileJitter(col, row, 300) < PEBBLE_CHANCE) {
+              const jx = (tileJitter(col, row, 301) - 0.5) * TILE_S * 0.7;
+              const jz = (tileJitter(col, row, 302) - 0.5) * TILE_S * 0.7;
+              const sc = 0.7 + tileJitter(col, row, 303) * 0.8;
+              dummy.position.set(x + jx, TILE_S * 0.02 * sc, z + jz);
+              dummy.scale.setScalar(sc);
+              dummy.rotation.set(tileJitter(col, row, 304) * Math.PI, tileJitter(col, row, 305) * Math.PI, 0);
+              dummy.updateMatrix();
+              pebbles.setMatrixAt(pi++, dummy.matrix);
+            }
+            if (tileJitter(col, row, 310) < BUSH_CHANCE) {
+              const jx = (tileJitter(col, row, 311) - 0.5) * TILE_S * 0.7;
+              const jz = (tileJitter(col, row, 312) - 0.5) * TILE_S * 0.7;
+              const sc = 0.6 + tileJitter(col, row, 313) * 0.6;
+              dummy.position.set(x + jx, 0, z + jz);
+              dummy.scale.setScalar(sc);
+              dummy.rotation.set(0, tileJitter(col, row, 314) * Math.PI * 2, 0);
+              dummy.updateMatrix();
+              bushes.setMatrixAt(bi2++, dummy.matrix);
+            }
+          }
+        }
+        pebbles.count = pi; bushes.count = bi2;
+        pebbles.instanceMatrix.needsUpdate = true;
+        bushes.instanceMatrix.needsUpdate = true;
+        this.scene.add(pebbles);
+        this.scene.add(bushes);
+      }
     }
 
     // --- Surrounding dark ground plane + side banners ---
