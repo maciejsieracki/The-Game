@@ -49,7 +49,7 @@ const EXPECT = {
   Standardowy: { mp: [4, 6, 7], typy: [10, 12, 14] },
   Duży: { mp: [5, 7, 8], typy: [12, 14, 15] },
   Ogromny: { mp: [6, 8, 9], typy: [13, 15, 15] },
-  'Super Huge': { mp: [6, 9, 9], typy: [13, 15, 15] },
+  'Super Huge': { mp: [7, 8, 9], typy: [13, 15, 15] },
 };
 
 console.log('map-scale-menu-test (Panel-E + menu kreatora)\n');

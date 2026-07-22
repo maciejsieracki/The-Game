@@ -4,7 +4,19 @@
 > **Czat:** krótko **`✅ Gotowe:`** / **`⏸️ Czeka:`** · **Ten plik:** pełniejszy zapis tego samego.  
 > Szczegóły techniczne → handoff w `dyspozycje/_handoff/` · operacja → `dyspozycje/DZIENNIK-MASTERA.md`
 
-**Ostatnia aktualizacja:** 2026-07-22 (cap miast-państw max 9 @ 6865baf8)
+**Ostatnia aktualizacja:** 2026-07-22 (Super Huge MP 7·8·9 @ 4760325c)
+
+---
+
+## [10:20] ✅ Gotowe — BALANS: Super Huge miasta-państwa 7·8·9
+
+| | |
+|---|---|
+| **Co** | Super Huge: menu miast-państw min **7** · domyślnie **8** · max **9** (było 6·9·9) |
+| **Decyzja** | Maciej 2026-07-22 — mniej domyślnej gęstości na największej mapie |
+| **Pliki** | `newGameMapDefaults.ts`, `e-start-params.json`, `map-scale-menu-test.cjs` |
+| **md5** | `4760325c0191876a107104b75622297b` · stamp `4760325c` |
+| **Od Ciebie** | `git pull` → Ctrl+F5 · stamp `4760325c` · Nowa gra Super Huge → suwak MP 7·8·9 · domyślnie 8 |
 
 ---
 

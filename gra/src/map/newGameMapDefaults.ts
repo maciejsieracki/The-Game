@@ -458,7 +458,7 @@ const MIASTA_PANSTWA_MENU_BY_TIER: readonly MapScaleTriple[] = [
   { min: 4, default: 6, max: 7 },
   { min: 5, default: 7, max: 8 },
   { min: 6, default: 8, max: MAX_MIAST_PANSTWA },
-  { min: 6, default: MAX_MIAST_PANSTWA, max: MAX_MIAST_PANSTWA },
+  { min: 7, default: 8, max: MAX_MIAST_PANSTWA },
 ];
 
 /**

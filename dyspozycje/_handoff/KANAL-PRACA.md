@@ -2940,3 +2940,12 @@ CZEKAM-NA: Maciej — `git pull` → Ctrl+F5 START.html → stamp `6865baf8` →
 Pliki: `newGameMapDefaults.ts`, `e-start-params.json`, `main.ts`, `generator.ts`, `newGameFlow.ts`, `start-preview.ts`.
 Bramki: tsc=0 · map-scale-menu 32/32 · city-names-pool 12/12 · map-gen-regression OK · verify OK.
 CZEKAM-NA: Maciej — `git pull` → stamp `6865baf8` → Nowa gra Standardowy → kreator max 7 MP · klaster ~6 rywali + stolica.
+
+## [10:20 PL, 2026-07-22] INTEGRATOR → Maciej — Super Huge miasta-państwa 7·8·9
+
+**md5:** `4760325c0191876a107104b75622297b` · stamp `4760325c`
+**Decyzja Macieja:** Super Huge menu MP min **7** · default **8** · max **9** (było 6·9·9).
+**Fix:** `MIASTA_PANSTWA_MENU_BY_TIER` ostatni wiersz; Panel-E Super Huge `miasta_panstwa: 8`.
+Pliki: `newGameMapDefaults.ts`, `e-start-params.json`, `map-scale-menu-test.cjs`, bundle robocza.
+Bramki: tsc=0 · map-scale-menu 32/32 · verify OK.
+CZEKAM-NA: Maciej — `git pull` → Ctrl+F5 → stamp `4760325c` → Super Huge → suwak 7·8·9.

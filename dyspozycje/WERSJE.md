@@ -11,10 +11,14 @@ swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drug
 
 ## ROBOCZA (gra-robocza\Gra-ROBOCZA.html — wskazywana przez START.html)
 
+- 2026-07-22 · stempel: ROBOCZA · **4760325c** · md5 pliku `4760325c0191876a107104b75622297b` · **BALANS: Super Huge miasta-państwa 7·8·9** — na `6865baf8`:
+  **Super Huge (`superogromny`):** menu miast-państw min **7** · domyślnie **8** · max **9** (było 6·9·9). Panel-E `e-start-params.json` default **8**. `MAX_MIAST_PANSTWA=9` bez zmian.
+  tsc=0 · map-scale-menu 32/32 · publish `gra-robocza/Gra-ROBOCZA.html`. · **AKTUALNA** · Test: stamp `4760325c` · Super Huge → kreator MP 7·8·9 · domyślnie 8.
+
 - 2026-07-22 · stempel: ROBOCZA · **6865baf8** · md5 pliku `6865baf802e6ced6a0721e2a1f4d9c0b` · **BALANS: cap miast-państw max 9 + FIX chatki spawn** — na `ae64786b`:
   **(1) Miasta-państwa (Maciej):** za dużo w klastrze (do 18 po ×2 2026-07-20). Przywrócono kanon max **9** (+ stolica = 10); skala: Malenki 3 · Mały 4 · Standard 6 · Duży 7 · Ogromny 8 · Super Huge 9. `clampMiastaPanstwaCount` w spawn/generator/kreator; Panel-E `e-start-params.json`.
   **(2) Chatki:** spacing 3 hex / min od miasta 3 hex — pełny spawn wg `typy×(1+państwa)×trudność` (mniej chat na mniejszej mapie po cap MP).
-  tsc=0 · map-scale-menu 32/32 · city-names-pool 12/12 · villages 39/39 · map-gen-regression OK · verify OK. · **AKTUALNA** · Test: stamp `6865baf8` · Standardowy → kreator max 7 MP · klaster ~7 miast tego typu · chatki proporcjonalne.
+  tsc=0 · map-scale-menu 32/32 · city-names-pool 12/12 · villages 39/39 · map-gen-regression OK · verify OK. · **ZASTĄPIONA** (→ `4760325c`) · Test: stamp `6865baf8` · Standardowy → kreator max 7 MP · klaster ~7 miast tego typu · chatki proporcjonalne.
 
 - 2026-07-22 · stempel: ROBOCZA · **ae64786b** · md5 pliku `ae64786b05cd77d6dbb8d807ac209b4e` · **FIX: AI/miasta-państwa — farmy dopiero po Rolnictwie (koszt nauki)** — na `59d90c13`:
   **Bug Macieja:** obce cywilizacje mają farmy w turze 2–3, zanim gracz zdąży zbadać Rolnictwo. **Przyczyna:** AI kończyło tech natychmiast (`aiDone.add` co turę), bez puli Nauki i `researchStep`; brak bankowania `aiEcon.nauka`. **Fix:** `aiNaukaPoolByOwner` + `aiBadanaByOwner` + `runAiResearchForOwner` (symetria z graczem: bank nauki → chooseAIResearch → researchStep); usunięto instant-unlock w pętli AI.
