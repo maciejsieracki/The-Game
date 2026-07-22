@@ -367,4 +367,22 @@ Np. +4 / +2 / −2 / −4 dla progów kultury; religia ±3.
 
 ---
 
-*Koniec audytu · następny krok: decyzje ABC Macieja → dyspozycja lane B + Integrator.*
+---
+
+## 10. Zamknięte ABC Macieja (2026-07-22)
+
+| ID | Decyzja | Status rejestru | Następny krok |
+|----|---------|-----------------|---------------|
+| **B-KULT-REL-Q1** | **A** — kultura poszerza **terytorium** (+0…+3 hex), nie tylko mgłę | 🟡 ZAPISANA | `territory.ts` + `CityNode.kultura` |
+| **B-KULT-REL-Q2** | **A** — stopniowa konwersja religii; wire `convertViaTemple()` | 🟡 ZAPISANA | pętla tury `main.ts` |
+| **B-KULT-REL-Q3** | **A** — `cityTradeMultiplier()` (gate Waluta+Mennica) | 🟡 ZAPISANA | `turn-economy.ts` |
+| **B-KULT-REL-Q4** | **C custom** — kultura + relikie → **Power**; bez zwycięstwa kulturowego | 🟡 ZAPISANA | `power-objective.ts` + JSON |
+| **B-KULT-REL-Q5** | **A** — podwoić bonusy/kary szczęścia w society-params | 🟡 ZAPISANA | JSON **po** Paczce A |
+
+**Pełny zapis + formuła Power:** `docs/decyzje/B-KULT-REL-2026-07-22.md`
+
+**Relikie — audyt kodu:** osobny system przedmiotów „relikii" **nie istnieje**. Najbliższy odpowiednik gameplayowy: **ukończone cuda świata** (`completedWorldWonders`, `placedWorldWonders` w `main.ts`, dane `wonders.json`). Q4C mapuje relikie → cuda do składnika Power do czasu osobnej decyzji o relikach jako loot.
+
+---
+
+*Koniec audytu · decyzje zapisane → czeka `działaj` / dyspozycja lane B + Integrator.*
