@@ -327,9 +327,9 @@ var terrain_improvements_default = {
       praca: 2
     },
     surowiecOdblokowany: "ruda",
-    surowiecOdblokowany_uwaga: "klucz 'ruda' wg Surowiec='Ruda' w resources.json; brak pola id \u2014 propozycja EKONOMIA, wymaga uzgodnienia z DANE",
-    teren: "Wzg\xF3rza, G\xF3ry, z\u0142o\u017Ce Rudy",
-    warunek: "wydobycie rudy do magazynu",
+    surowiecOdblokowany_uwaga: "ruda miedzi lub ruda_zelaza (zale\u017Cnie od z\u0142o\u017Ca); plon 2/t z kopalni",
+    teren: "Wzg\xF3rza, G\xF3ry, z\u0142o\u017Ce rudy miedzi lub \u017Celaza",
+    warunek: "wydobycie rudy do magazynu miasta (ruda / ruda_zelaza)",
     koszt_praca: 25,
     tech: "Murarstwo",
     odblokowuje: "Metal/Br\u0105z (jednostki br\u0105zowe, mury)"
@@ -409,7 +409,7 @@ var terrain_improvements_default = {
     warunek: "sta\u0142e ulepszenie; MO\u017BE na lesie \u2014 las NIE znika; odblokowuje dost\u0119p do drewna (v0.1 bez ilo\u015Bci)",
     koszt_praca: 25,
     tech: "Obr\xF3bka drewna",
-    odblokowuje: "Deski (z budynkiem miejskim Tartak)"
+    odblokowuje: "Drewno (TYP 1 \u2014 bez desek, B-SUROW-BUD-03)"
   },
   tarasy: {
     nazwa: "Tarasy uprawne",
@@ -449,8 +449,8 @@ var terrain_improvements_default = {
     },
     surowiecOdblokowany: "sol",
     surowiecOdblokowany_uwaga: "klucz 'sol' \u2014 Sol nie ma wpisu w resources.json v0.1 (brak Surowiec='Sol'); propozycja EKONOMIA: dodac 'sol' do resources.json; wymaga uzgodnienia z DANE",
-    teren: "z\u0142o\u017Ce soli (Pustynia/R\xF3wnina \u2014 hex.zloze=sol)",
-    warunek: "s\xF3l (konserwacja \u017Cywno\u015Bci + handel); bez wybrze\u017Ca bez z\u0142o\u017Ca",
+    teren: "Wybrze\u017Ce, z\u0142o\u017Ce soli (hex.zloze=sol)",
+    warunek: "s\xF3l \u2014 wy\u0142\u0105cznie wybrze\u017Ce morskie (kanon: z\u0142o\u017Ca soli przy brzegu) lub hex.zloze=sol",
     koszt_praca: 20,
     tech: "Garncarstwo",
     odblokowuje: "S\xF3l"
@@ -507,8 +507,9 @@ var terrain_improvements_default = {
       praca: 2
     },
     surowiecOdblokowany: "ruda",
-    teren: "Wzg\xF3rza, G\xF3ry, z\u0142o\u017Ce Rudy",
-    warunek: "wst\u0119pne przetwarzanie rudy (przed Odlewni\u0105 w mie\u015Bcie)",
+    surowiecOdblokowany_uwaga: "ruda miedzi (Odlewnia br\u0105zu); plon 2/t z kopalni_miedzi",
+    teren: "Wzg\xF3rza, G\xF3ry, z\u0142o\u017Ce miedzi (hex.zloze=miedz)",
+    warunek: "ruda miedzi \u2192 magazyn (Odlewnia br\u0105zu)",
     koszt_praca: 22,
     tech: "Br\u0105zownictwo",
     odblokowuje: "Odlewnia br\u0105zu (budynek miejski)",
@@ -581,6 +582,57 @@ function cityHasOdlewniaZelaza(builtIds) {
 }
 function hasZelazoAccess(hasKopalniaNaZlozuZelaza, builtIds) {
   return !!hasKopalniaNaZlozuZelaza && cityHasOdlewniaZelaza(builtIds);
+}
+
+// src/game/building-resource-gate.ts
+var LABEL_BY_ASCII = {
+  drewno: "Drewno",
+  kamien: "Kamie\u0144",
+  glina: "Glina",
+  ruda: "Ruda",
+  zelazo: "\u017Belazo",
+  stal: "Stal",
+  braz: "Br\u0105z",
+  sol: "S\xF3l",
+  cegla: "Ceg\u0142a",
+  ceramika: "Ceramika"
+};
+var ERA_ACCESS_LABELS = {
+  1: ["Drewno"],
+  2: ["Drewno", "Kamie\u0144"],
+  3: ["Drewno", "Kamie\u0144", "Ceg\u0142a"],
+  4: ["Drewno", "Kamie\u0144", "Ceg\u0142a"]
+};
+var DEPOSIT_LINKED_BUILDING_LABELS = {
+  garncarnia: ["Glina"],
+  cegielnia: ["Glina"],
+  spichlerz: ["Ceramika"],
+  spichlerz_ii: ["S\xF3l"]
+};
+function empireLabelSatisfied(label, activeLabels, empireBuiltIds) {
+  if (activeLabels.includes(label)) return true;
+  if (label === "Ceg\u0142a" && empireBuiltIds?.includes("cegielnia")) return true;
+  if (label === "Ceramika" && empireBuiltIds?.includes("garncarnia")) return true;
+  return false;
+}
+function eraAccessLabels(epokaWejscia) {
+  if (epokaWejscia >= 4) return ERA_ACCESS_LABELS[4] ?? [];
+  return ERA_ACCESS_LABELS[epokaWejscia] ?? [];
+}
+function buildingRequiredActiveLabels(building) {
+  const out = /* @__PURE__ */ new Set();
+  const hard = DEPOSIT_LINKED_BUILDING_LABELS[building.id];
+  if (hard) hard.forEach((l) => out.add(l));
+  const key = building.wymaganySurowiec?.trim().toLowerCase();
+  if (key && LABEL_BY_ASCII[key]) out.add(LABEL_BY_ASCII[key]);
+  for (const l of eraAccessLabels(building.epokaWejscia ?? 1)) out.add(l);
+  return [...out];
+}
+function buildingResourceGateMet(building, activeLabels, empireBuiltIds) {
+  const required = buildingRequiredActiveLabels(building);
+  if (required.length === 0) return true;
+  const active = activeLabels ?? [];
+  return required.every((label) => empireLabelSatisfied(label, active, empireBuiltIds));
 }
 
 // src/game/building-upgrades.ts
@@ -761,6 +813,10 @@ function availableProduction(city, data, unlockedTechs, ctx = {}) {
     const tech = (b.techUnlock ?? "").trim();
     if (tech.length > 0 && !techs.has(tech)) continue;
     if (b.id === PIEC_HUTNICZY_BUILDING_ID && !empireHasKopalniaMiedzi(ctx.placedImprovements)) {
+      continue;
+    }
+    const gateLabels = ctx.empireActiveResourceLabels?.length ? ctx.empireActiveResourceLabels : ctx.activeResourceLabels;
+    if (!buildingResourceGateMet(b, gateLabels, ctx.empireBuiltIds)) {
       continue;
     }
     items.push({

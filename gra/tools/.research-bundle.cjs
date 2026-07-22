@@ -127,9 +127,9 @@ var terrain_improvements_default = {
       praca: 2
     },
     surowiecOdblokowany: "ruda",
-    surowiecOdblokowany_uwaga: "klucz 'ruda' wg Surowiec='Ruda' w resources.json; brak pola id \u2014 propozycja EKONOMIA, wymaga uzgodnienia z DANE",
-    teren: "Wzg\xF3rza, G\xF3ry, z\u0142o\u017Ce Rudy",
-    warunek: "wydobycie rudy do magazynu",
+    surowiecOdblokowany_uwaga: "ruda miedzi lub ruda_zelaza (zale\u017Cnie od z\u0142o\u017Ca); plon 2/t z kopalni",
+    teren: "Wzg\xF3rza, G\xF3ry, z\u0142o\u017Ce rudy miedzi lub \u017Celaza",
+    warunek: "wydobycie rudy do magazynu miasta (ruda / ruda_zelaza)",
     koszt_praca: 25,
     tech: "Murarstwo",
     odblokowuje: "Metal/Br\u0105z (jednostki br\u0105zowe, mury)"
@@ -209,7 +209,7 @@ var terrain_improvements_default = {
     warunek: "sta\u0142e ulepszenie; MO\u017BE na lesie \u2014 las NIE znika; odblokowuje dost\u0119p do drewna (v0.1 bez ilo\u015Bci)",
     koszt_praca: 25,
     tech: "Obr\xF3bka drewna",
-    odblokowuje: "Deski (z budynkiem miejskim Tartak)"
+    odblokowuje: "Drewno (TYP 1 \u2014 bez desek, B-SUROW-BUD-03)"
   },
   tarasy: {
     nazwa: "Tarasy uprawne",
@@ -249,8 +249,8 @@ var terrain_improvements_default = {
     },
     surowiecOdblokowany: "sol",
     surowiecOdblokowany_uwaga: "klucz 'sol' \u2014 Sol nie ma wpisu w resources.json v0.1 (brak Surowiec='Sol'); propozycja EKONOMIA: dodac 'sol' do resources.json; wymaga uzgodnienia z DANE",
-    teren: "z\u0142o\u017Ce soli (Pustynia/R\xF3wnina \u2014 hex.zloze=sol)",
-    warunek: "s\xF3l (konserwacja \u017Cywno\u015Bci + handel); bez wybrze\u017Ca bez z\u0142o\u017Ca",
+    teren: "Wybrze\u017Ce, z\u0142o\u017Ce soli (hex.zloze=sol)",
+    warunek: "s\xF3l \u2014 wy\u0142\u0105cznie wybrze\u017Ce morskie (kanon: z\u0142o\u017Ca soli przy brzegu) lub hex.zloze=sol",
     koszt_praca: 20,
     tech: "Garncarstwo",
     odblokowuje: "S\xF3l"
@@ -307,8 +307,9 @@ var terrain_improvements_default = {
       praca: 2
     },
     surowiecOdblokowany: "ruda",
-    teren: "Wzg\xF3rza, G\xF3ry, z\u0142o\u017Ce Rudy",
-    warunek: "wst\u0119pne przetwarzanie rudy (przed Odlewni\u0105 w mie\u015Bcie)",
+    surowiecOdblokowany_uwaga: "ruda miedzi (Odlewnia br\u0105zu); plon 2/t z kopalni_miedzi",
+    teren: "Wzg\xF3rza, G\xF3ry, z\u0142o\u017Ce miedzi (hex.zloze=miedz)",
+    warunek: "ruda miedzi \u2192 magazyn (Odlewnia br\u0105zu)",
     koszt_praca: 22,
     tech: "Br\u0105zownictwo",
     odblokowuje: "Odlewnia br\u0105zu (budynek miejski)",
@@ -716,7 +717,7 @@ function epochTierGateMet(tech, techData, done) {
 }
 
 // src/game/economy.ts
-var ZERO_YIELD = { zywnosc: 0, praca: 0, handel: 0, drewno: 0, kamien: 0, glina: 0 };
+var ZERO_YIELD = { zywnosc: 0, praca: 0, handel: 0, drewno: 0, kamien: 0, glina: 0, ruda: 0, ruda_zelaza: 0 };
 var TERRAIN_NAME_TO_ENUM = {
   "\u0141\u0105ka": "laka" /* Laka */,
   "R\xF3wnina": "rownina" /* Rownina */,
@@ -735,7 +736,9 @@ function terrainRowToTileYield(row) {
     kamien: Number(row["Kamie\u0144"] ?? 0),
     // Glina nie ma bazy terenu ani modyfikatora w terrain-yields.json -- wylacznie z bonusu
     // ulepszenia (glinianka, GLINA-Q1=A), doklejane w tileYield() nizej.
-    glina: 0
+    glina: 0,
+    ruda: 0,
+    ruda_zelaza: 0
   };
 }
 function buildTerrainYields() {
@@ -767,7 +770,11 @@ var FALLBACK_CULTURE_PARAMS = Object.freeze({
   konwersjaBaza: 1,
   konwersjaSwiatynia: 1.5,
   konwersjaAmfiteatr: 1,
-  konwersjaBiblioteka: 0.5,
+  konwersjaBiblioteka: 2,
+  konwersjaPalac: 2,
+  konwersjaStela: 0.5,
+  konwersjaSad: 2,
+  konwersjaLaznia: 1,
   konwersjaCapTura: 5
 });
 var FALLBACK_RELIGION_PARAMS = Object.freeze({
@@ -779,7 +786,8 @@ var FALLBACK_RELIGION_PARAMS = Object.freeze({
   karaObca: -2,
   karaBrakReligii: -1,
   konwersjaBazaPct: 2,
-  konwersjaSwiatyniaPct: 2
+  konwersjaSwiatyniaPct: 4,
+  konwersjaKregiPct: 2
 });
 
 // src/game/okolica.ts

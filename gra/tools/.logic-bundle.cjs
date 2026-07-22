@@ -5183,9 +5183,9 @@ var terrain_improvements_default = {
       praca: 2
     },
     surowiecOdblokowany: "ruda",
-    surowiecOdblokowany_uwaga: "klucz 'ruda' wg Surowiec='Ruda' w resources.json; brak pola id \u2014 propozycja EKONOMIA, wymaga uzgodnienia z DANE",
-    teren: "Wzg\xF3rza, G\xF3ry, z\u0142o\u017Ce Rudy",
-    warunek: "wydobycie rudy do magazynu",
+    surowiecOdblokowany_uwaga: "ruda miedzi lub ruda_zelaza (zale\u017Cnie od z\u0142o\u017Ca); plon 2/t z kopalni",
+    teren: "Wzg\xF3rza, G\xF3ry, z\u0142o\u017Ce rudy miedzi lub \u017Celaza",
+    warunek: "wydobycie rudy do magazynu miasta (ruda / ruda_zelaza)",
     koszt_praca: 25,
     tech: "Murarstwo",
     odblokowuje: "Metal/Br\u0105z (jednostki br\u0105zowe, mury)"
@@ -5265,7 +5265,7 @@ var terrain_improvements_default = {
     warunek: "sta\u0142e ulepszenie; MO\u017BE na lesie \u2014 las NIE znika; odblokowuje dost\u0119p do drewna (v0.1 bez ilo\u015Bci)",
     koszt_praca: 25,
     tech: "Obr\xF3bka drewna",
-    odblokowuje: "Deski (z budynkiem miejskim Tartak)"
+    odblokowuje: "Drewno (TYP 1 \u2014 bez desek, B-SUROW-BUD-03)"
   },
   tarasy: {
     nazwa: "Tarasy uprawne",
@@ -5305,8 +5305,8 @@ var terrain_improvements_default = {
     },
     surowiecOdblokowany: "sol",
     surowiecOdblokowany_uwaga: "klucz 'sol' \u2014 Sol nie ma wpisu w resources.json v0.1 (brak Surowiec='Sol'); propozycja EKONOMIA: dodac 'sol' do resources.json; wymaga uzgodnienia z DANE",
-    teren: "z\u0142o\u017Ce soli (Pustynia/R\xF3wnina \u2014 hex.zloze=sol)",
-    warunek: "s\xF3l (konserwacja \u017Cywno\u015Bci + handel); bez wybrze\u017Ca bez z\u0142o\u017Ca",
+    teren: "Wybrze\u017Ce, z\u0142o\u017Ce soli (hex.zloze=sol)",
+    warunek: "s\xF3l \u2014 wy\u0142\u0105cznie wybrze\u017Ce morskie (kanon: z\u0142o\u017Ca soli przy brzegu) lub hex.zloze=sol",
     koszt_praca: 20,
     tech: "Garncarstwo",
     odblokowuje: "S\xF3l"
@@ -5363,8 +5363,9 @@ var terrain_improvements_default = {
       praca: 2
     },
     surowiecOdblokowany: "ruda",
-    teren: "Wzg\xF3rza, G\xF3ry, z\u0142o\u017Ce Rudy",
-    warunek: "wst\u0119pne przetwarzanie rudy (przed Odlewni\u0105 w mie\u015Bcie)",
+    surowiecOdblokowany_uwaga: "ruda miedzi (Odlewnia br\u0105zu); plon 2/t z kopalni_miedzi",
+    teren: "Wzg\xF3rza, G\xF3ry, z\u0142o\u017Ce miedzi (hex.zloze=miedz)",
+    warunek: "ruda miedzi \u2192 magazyn (Odlewnia br\u0105zu)",
     koszt_praca: 22,
     tech: "Br\u0105zownictwo",
     odblokowuje: "Odlewnia br\u0105zu (budynek miejski)",
@@ -5419,6 +5420,22 @@ function applyImprovementBonus(yld, improvementKey) {
   if (b.drewno) yld.drewno += b.drewno;
   if (b.kamien) yld.kamien += b.kamien;
   if (b.glina) yld.glina += b.glina;
+}
+var ORE_YIELD_PER_MINE = 2;
+function oreYieldFromImprovements(improvementKeys, zloze) {
+  let ruda = 0;
+  let ruda_zelaza = 0;
+  const z = zloze == null ? void 0 : zloze.trim().toLowerCase();
+  for (const raw of improvementKeys) {
+    const key = normalizeImprovementKey(raw);
+    if (key === "kopalnia_miedzi") {
+      ruda += ORE_YIELD_PER_MINE;
+    } else if (key === "kopalnia") {
+      if (z === "zelazo") ruda_zelaza += ORE_YIELD_PER_MINE;
+      else ruda += ORE_YIELD_PER_MINE;
+    }
+  }
+  return { ruda, ruda_zelaza };
 }
 function applyImprovementBonuses(yld, improvementKeys) {
   for (const key of improvementKeys) {
@@ -5673,11 +5690,13 @@ function computeReachable(unit, map, occupied) {
   reachable.delete(startKey);
   return reachable;
 }
+var PATH_SEARCH_RADIUS_BUFFER = 12;
 function computePath(unit, map, destQ, destR, occupied) {
   const startKey = keyOf(unit.q, unit.r);
   const destKey = keyOf(destQ, destR);
   if (!(destKey in map.hexes)) return [];
   if (startKey === destKey) return [];
+  const maxSearchRadius = hexDistance(unit.q, unit.r, destQ, destR) * 2 + PATH_SEARCH_RADIUS_BUFFER;
   const dist = /* @__PURE__ */ new Map();
   const parent = /* @__PURE__ */ new Map();
   dist.set(startKey, 0);
@@ -5733,6 +5752,7 @@ function computePath(unit, map, destQ, destR, occupied) {
       const nq = cq + dq;
       const nr = cr + dr;
       const nKey = keyOf(nq, nr);
+      if (hexDistance(unit.q, unit.r, nq, nr) > maxSearchRadius) continue;
       if (dist.has(nKey) && dist.get(nKey) <= cost) continue;
       if (!(nKey in map.hexes)) continue;
       const hex = map.hexes[nKey];
@@ -6629,7 +6649,7 @@ function researchGatesMet(tech, gate) {
 }
 
 // src/game/economy.ts
-var ZERO_YIELD = { zywnosc: 0, praca: 0, handel: 0, drewno: 0, kamien: 0, glina: 0 };
+var ZERO_YIELD = { zywnosc: 0, praca: 0, handel: 0, drewno: 0, kamien: 0, glina: 0, ruda: 0, ruda_zelaza: 0 };
 var TERRAIN_NAME_TO_ENUM = {
   "\u0141\u0105ka": "laka" /* Laka */,
   "R\xF3wnina": "rownina" /* Rownina */,
@@ -6648,7 +6668,9 @@ function terrainRowToTileYield(row) {
     kamien: Number(row["Kamie\u0144"] ?? 0),
     // Glina nie ma bazy terenu ani modyfikatora w terrain-yields.json -- wylacznie z bonusu
     // ulepszenia (glinianka, GLINA-Q1=A), doklejane w tileYield() nizej.
-    glina: 0
+    glina: 0,
+    ruda: 0,
+    ruda_zelaza: 0
   };
 }
 function buildTerrainYields() {
@@ -6675,6 +6697,8 @@ function tileYield(tile) {
   let drewno = base.drewno;
   let kamien = base.kamien;
   let glina = base.glina;
+  let ruda = 0;
+  let ruda_zelaza = 0;
   if (tile.nakladka === "las" /* Las */) {
     zywnosc += FOREST_MODIFIER.zywnosc;
     praca += FOREST_MODIFIER.praca;
@@ -6692,7 +6716,9 @@ function tileYield(tile) {
     handel: Math.max(0, handel),
     drewno: Math.max(0, drewno),
     kamien: Math.max(0, kamien),
-    glina: Math.max(0, glina)
+    glina: Math.max(0, glina),
+    ruda: 0,
+    ruda_zelaza: 0
   };
   const impKeys = ((_a10 = tile.ulepszeniaKeys) == null ? void 0 : _a10.length) ? tile.ulepszeniaKeys : tile.ulepszenieKey ? [tile.ulepszenieKey] : [];
   if (impKeys.length) {
@@ -6703,6 +6729,9 @@ function tileYield(tile) {
     out.drewno = Math.max(0, out.drewno);
     out.kamien = Math.max(0, out.kamien);
     out.glina = Math.max(0, out.glina);
+    const ore = oreYieldFromImprovements(impKeys, tile.zloze);
+    out.ruda += ore.ruda;
+    out.ruda_zelaza += ore.ruda_zelaza;
   }
   return out;
 }
@@ -6713,20 +6742,6 @@ var BUILDING_HAPPINESS_BASE_PER_BUILDING = 1;
 function buildingHappinessAtLevel(b, level) {
   const extra = typeof b.baza.zadowolenie === "number" && b.baza.zadowolenie !== 0 ? buildingValue(b, level, "zadowolenie") : 0;
   return BUILDING_HAPPINESS_BASE_PER_BUILDING + extra;
-}
-function mnoznikHandelPieniadzForCiv(civKey, civs, fallback = 2) {
-  var _a10;
-  if (!civKey || !((_a10 = civs == null ? void 0 : civs.cywilizacje) == null ? void 0 : _a10.length)) return fallback;
-  const key = civKey.toLowerCase();
-  for (const row of civs.cywilizacje) {
-    if (!row) continue;
-    const ids = [row.ikonaId, row.typCywilizacji, row.Cywilizacja].filter((s) => typeof s === "string" && s.length > 0).map((s) => s.toLowerCase());
-    if (!ids.includes(key)) continue;
-    const v = row.mnoznikHandelPieniadz;
-    if (typeof v === "number" && Number.isFinite(v) && v > 0) return v;
-    return fallback;
-  }
-  return fallback;
 }
 function civBonusyForCivKey(civKey, civs) {
   var _a10;
@@ -6761,6 +6776,8 @@ function cityYieldPerTurn(city, workedTiles, cityBuildings, params, ctx) {
   let drewnoTerenu = 0;
   let kamienTerenu = 0;
   let glinaTerenu = 0;
+  let rudaTerenu = 0;
+  let rudaZelazaTerenu = 0;
   for (const tile of workedTiles) {
     const y = tileYield(tile);
     zywnoscTerenu += y.zywnosc;
@@ -6769,6 +6786,8 @@ function cityYieldPerTurn(city, workedTiles, cityBuildings, params, ctx) {
     drewnoTerenu += y.drewno;
     kamienTerenu += y.kamien;
     glinaTerenu += y.glina;
+    rudaTerenu += y.ruda;
+    rudaZelazaTerenu += y.ruda_zelaza;
   }
   let pracaBruttoTerenu;
   if (ctx.maMlyn) {
@@ -6863,14 +6882,16 @@ function cityYieldPerTurn(city, workedTiles, cityBuildings, params, ctx) {
     pieniadzZPracy,
     drewnoTerenu: Math.floor(drewnoTerenu),
     kamienTerenu: Math.floor(kamienTerenu),
-    glinaTerenu: Math.floor(glinaTerenu)
+    glinaTerenu: Math.floor(glinaTerenu),
+    rudaTerenu: Math.floor(rudaTerenu),
+    rudaZelazaTerenu: Math.floor(rudaZelazaTerenu)
   };
 }
 function cityPopulationCap(maAkwedukt, params) {
   return maAkwedukt ? params.akweduktMaxLudnosci : params.akweduktProgLudnosci;
 }
 function populationGrowth(city, zywnoscNetto, params, wzrostThresholdMult = 1) {
-  const { ludnosc, zdrowie, maSpichlerz, maAkwedukt, magazynZywnosci } = city;
+  const { ludnosc, zdrowie, maSpichlerz, maSpichlerzII, maAkwedukt, magazynZywnosci } = city;
   const healthModifier = Math.max(0, 1 + zdrowie * params.zdrowieModyfikatorWspolczynnik);
   const effectiveFlow = zywnoscNetto >= 0 ? zywnoscNetto * healthModifier : zywnoscNetto;
   const popCap = cityPopulationCap(maAkwedukt, params);
@@ -6892,7 +6913,8 @@ function populationGrowth(city, zywnoscNetto, params, wzrostThresholdMult = 1) {
   if (nowyMagazynZywnosci >= threshold && ludnosc < popCap) {
     nowaLudnosc = ludnosc + 1;
     wzrost = true;
-    nowyMagazynZywnosci = maSpichlerz ? Math.floor(nowyMagazynZywnosci * params.spichlerzZachowaniePoPrzroscie) : 0;
+    const retainFrac = maSpichlerzII ? 0.7 : maSpichlerz ? params.spichlerzZachowaniePoPrzroscie : 0;
+    nowyMagazynZywnosci = maSpichlerz || maSpichlerzII ? Math.floor(nowyMagazynZywnosci * retainFrac) : 0;
   }
   return { nowaLudnosc, nowyMagazynZywnosci, wzrost, ubytek };
 }
@@ -6923,7 +6945,11 @@ var FALLBACK_CULTURE_PARAMS = Object.freeze({
   konwersjaBaza: 1,
   konwersjaSwiatynia: 1.5,
   konwersjaAmfiteatr: 1,
-  konwersjaBiblioteka: 0.5,
+  konwersjaBiblioteka: 2,
+  konwersjaPalac: 2,
+  konwersjaStela: 0.5,
+  konwersjaSad: 2,
+  konwersjaLaznia: 1,
   konwersjaCapTura: 5
 });
 function loadCultureParams(society, difficulty = "normal") {
@@ -6942,6 +6968,10 @@ function loadCultureParams(society, difficulty = "normal") {
     konwersjaSwiatynia: pick(k.kultura_konwersja_swiatynia, difficulty, f.konwersjaSwiatynia),
     konwersjaAmfiteatr: pick(k.kultura_konwersja_amfiteatr, difficulty, f.konwersjaAmfiteatr),
     konwersjaBiblioteka: pick(k.kultura_konwersja_biblioteka, difficulty, f.konwersjaBiblioteka),
+    konwersjaPalac: pick(k.kultura_konwersja_palac, difficulty, f.konwersjaPalac),
+    konwersjaStela: pick(k.kultura_konwersja_stela, difficulty, f.konwersjaStela),
+    konwersjaSad: pick(k.kultura_konwersja_sad, difficulty, f.konwersjaSad),
+    konwersjaLaznia: pick(k.kultura_konwersja_laznia, difficulty, f.konwersjaLaznia),
     konwersjaCapTura: pick(k.kultura_konwersja_cap_tura, difficulty, f.konwersjaCapTura)
   };
 }
@@ -6979,9 +7009,12 @@ function cultureHappiness(city, params = FALLBACK_CULTURE_PARAMS) {
 function convertCulture(city, buildings, params = FALLBACK_CULTURE_PARAMS) {
   const share = clamp(finiteOr(city.ownCultureShare ?? 0, 0), 0, 1);
   let ratePct = params.konwersjaBaza;
-  if (buildings.hasSwiatynia) ratePct += params.konwersjaSwiatynia;
   if (buildings.hasAmfiteatr) ratePct += params.konwersjaAmfiteatr;
   if (buildings.hasBiblioteka) ratePct += params.konwersjaBiblioteka;
+  if (buildings.hasPalac) ratePct += params.konwersjaPalac;
+  if (buildings.hasStela) ratePct += params.konwersjaStela;
+  if (buildings.hasSad) ratePct += params.konwersjaSad;
+  if (buildings.hasLaznia) ratePct += params.konwersjaLaznia;
   ratePct = clamp(ratePct, 0, params.konwersjaCapTura);
   const appliedRate = ratePct / 100;
   const next = clamp(share + appliedRate, 0, 1);
@@ -7000,7 +7033,8 @@ var FALLBACK_RELIGION_PARAMS = Object.freeze({
   karaObca: -2,
   karaBrakReligii: -1,
   konwersjaBazaPct: 2,
-  konwersjaSwiatyniaPct: 2
+  konwersjaSwiatyniaPct: 4,
+  konwersjaKregiPct: 2
 });
 function loadReligionParams(society, difficulty = "normal") {
   const r = society && society.religia || {};
@@ -7014,7 +7048,8 @@ function loadReligionParams(society, difficulty = "normal") {
     karaObca: pick(r.religia_kara_obca, difficulty, f.karaObca),
     karaBrakReligii: pick(r.religia_kara_brak_religii, difficulty, f.karaBrakReligii),
     konwersjaBazaPct: pick(r.religia_konwersja_bazowa, difficulty, f.konwersjaBazaPct),
-    konwersjaSwiatyniaPct: pick(r.religia_konwersja_swiatynia, difficulty, f.konwersjaSwiatyniaPct)
+    konwersjaSwiatyniaPct: pick(r.religia_konwersja_swiatynia, difficulty, f.konwersjaSwiatyniaPct),
+    konwersjaKregiPct: pick(r.religia_konwersja_kregi, difficulty, f.konwersjaKregiPct)
   };
 }
 function civReligion(civName, society) {
@@ -7123,17 +7158,21 @@ function spreadReligion(source, neighbors, params = FALLBACK_RELIGION_PARAMS, op
   }
   return { events, reached: events.length };
 }
-function convertViaTemple(state, targetReligion, hasTemple, params = FALLBACK_RELIGION_PARAMS) {
+function religionConversionRatePct(buildings, params) {
+  let ratePct = params.konwersjaBazaPct;
+  if (buildings.hasSwiatynia) ratePct += params.konwersjaSwiatyniaPct;
+  if (buildings.hasKamienneKregi) ratePct += params.konwersjaKregiPct;
+  return Math.max(0, ratePct);
+}
+function convertViaTemple(state, targetReligion, religiousBuildings, params = FALLBACK_RELIGION_PARAMS) {
+  const buildings = typeof religiousBuildings === "boolean" ? { hasSwiatynia: religiousBuildings } : religiousBuildings;
   const total = totalAdherents(state);
   const cloneCounts = {};
   for (const k in state.counts) {
     const v = state.counts[k];
     if (typeof v === "number" && Number.isFinite(v) && v > 0) cloneCounts[k] = v;
   }
-  const ratePct = Math.max(
-    0,
-    params.konwersjaBazaPct + (hasTemple ? params.konwersjaSwiatyniaPct : 0)
-  );
+  const ratePct = religionConversionRatePct(buildings, params);
   const appliedRate = ratePct / 100;
   const targetCount = targetReligion && cloneCounts[targetReligion] || 0;
   const convertible = total - targetCount;
@@ -7175,6 +7214,37 @@ function convertViaTemple(state, targetReligion, hasTemple, params = FALLBACK_RE
     targetShare,
     fullyConverted: targetShare >= 1
   };
+}
+var FALLBACK_TRADE_MULT = 1;
+function cityTradeMultiplier(cityReligion, ownerCivName, civs, religionParams = FALLBACK_RELIGION_PARAMS, gated = false) {
+  const civList = civs && civs.cywilizacje || [];
+  let civRow = null;
+  if (ownerCivName) {
+    for (const row of civList) {
+      if (row && row.Cywilizacja === ownerCivName) {
+        civRow = row;
+        break;
+      }
+    }
+  }
+  let civBaseMultiplier = null;
+  if (civRow !== null) {
+    const v = civRow.mnoznikHandelPieniadz;
+    if (typeof v === "number" && Number.isFinite(v) && v > 0) {
+      civBaseMultiplier = v;
+    }
+  }
+  const dom = dominantReligion(cityReligion, religionParams);
+  const domReligion = dom.status === "dominant" ? dom.religion : null;
+  let ownerReligion = null;
+  if (civRow !== null) {
+    const r = civRow.Religia;
+    if (typeof r === "string" && r.length > 0) ownerReligion = r;
+  }
+  const religionMatches = domReligion !== null && ownerReligion !== null && domReligion === ownerReligion;
+  const applied = gated && religionMatches && civBaseMultiplier !== null;
+  const multiplier = applied ? civBaseMultiplier : FALLBACK_TRADE_MULT;
+  return { multiplier, civBaseMultiplier, dominantReligion: domReligion, applied };
 }
 
 // src/game/wealth.ts
@@ -7414,6 +7484,7 @@ var DEFAULT_PODZIAL_HANDLU = {
 var DEFAULT_PODZIAL_PRACY = {
   procentBudynki: 70
 };
+var DEFAULT_PROCENT_ROZWOJ = 100;
 var HANDEL_PCT_STEP = 10;
 function snapHandelPct(n) {
   return Math.max(0, Math.min(100, Math.round(n / HANDEL_PCT_STEP) * HANDEL_PCT_STEP));
@@ -7482,7 +7553,8 @@ function foundCity(settler, cities, map, name, opts) {
     wealthState: freshWealthState(),
     wealthImmunityRemaining: 5,
     podzialHandlu: podzial.podzialHandlu,
-    podzialPracy: podzial.podzialPracy
+    podzialPracy: podzial.podzialPracy,
+    procentRozwoj: DEFAULT_PROCENT_ROZWOJ
   };
 }
 function foundCityAt(q, r, ownerId, cities, map, name, foundingCityState = false) {
@@ -7501,7 +7573,8 @@ function foundCityAt(q, r, ownerId, cities, map, name, foundingCityState = false
     wealthState: freshWealthState(),
     wealthImmunityRemaining: 5,
     podzialHandlu: podzial.podzialHandlu,
-    podzialPracy: podzial.podzialPracy
+    podzialPracy: podzial.podzialPracy,
+    procentRozwoj: DEFAULT_PROCENT_ROZWOJ
   };
 }
 var CITY_NAMES = [
@@ -8401,7 +8474,7 @@ var units_default = [
     Tech: "\u017Begluga",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
-    Surowiec: "Deski",
+    Surowiec: "Drewno",
     "Surowiec (ilo\u015B\u0107)": 4,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 3,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
@@ -9099,7 +9172,7 @@ var units_default = [
     "Morale bazowe": 85,
     "Morale ucieczki": 25,
     "Nazwa EN": "Slinger (Huaraca)",
-    Typ: "Distance",
+    Typ: "Slinger",
     Klasa: "Specjalna",
     Nacja: "Inkowie",
     "Bonus vs Swordsman %": 0,
@@ -10081,7 +10154,7 @@ var units_default = [
     Tech: "Obr\xF3bka \u017Celaza",
     "Pieni\u0105dz (koszt)": 14,
     Ludno\u015B\u0107: 1,
-    Surowiec: "zelazo",
+    Surowiec: "stal",
     "Surowiec (ilo\u015B\u0107)": 3,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 1,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
@@ -10134,7 +10207,7 @@ var units_default = [
     Epoka: "\u017Belazo",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
-    Surowiec: "zelazo",
+    Surowiec: "stal",
     "Surowiec (ilo\u015B\u0107)": 5,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
@@ -10246,7 +10319,7 @@ var units_default = [
     Tech: "Obr\xF3bka \u017Celaza",
     "Pieni\u0105dz (koszt)": 16,
     Ludno\u015B\u0107: 1,
-    Surowiec: "zelazo",
+    Surowiec: "stal",
     "Surowiec (ilo\u015B\u0107)": 0,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
@@ -10302,7 +10375,7 @@ var units_default = [
     Tech: "Obr\xF3bka \u017Celaza",
     "Pieni\u0105dz (koszt)": 16,
     Ludno\u015B\u0107: 1,
-    Surowiec: "zelazo",
+    Surowiec: "stal",
     "Surowiec (ilo\u015B\u0107)": 3,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
@@ -11920,7 +11993,7 @@ var buildings_default = [
     epokaWejscia: 1,
     maksPoziom: 10,
     nazwyPoziomow: [
-      "Obrobka desek",
+      "Warsztat drewna",
       "Stolarnia",
       "Manufaktura drewna",
       "Ciesielstwo",
@@ -11956,7 +12029,7 @@ var buildings_default = [
     utrzymanie: 1,
     przyrostUtrzymania: 0,
     wymagania: "las w zasiegu",
-    uwagi: "",
+    uwagi: "B-SUROW-BUD-03: bonus Pracy only \u2014 bez konwertera desek",
     techUnlock: "Obr\xF3bka drewna"
   },
   {
@@ -12060,7 +12133,7 @@ var buildings_default = [
     przyrostKosztu: 10,
     utrzymanie: 2,
     przyrostUtrzymania: 1,
-    wymagania: "miedz lub cyna w zasiegu",
+    wymagania: "ruda miedzi w zasi\u0119gu (kopalnia miedzi)",
     uwagi: "Mnoznik % dotyczy sily jednostek produkowanych w miescie",
     techUnlock: "Br\u0105zownictwo"
   },
@@ -12319,8 +12392,44 @@ var buildings_default = [
     utrzymanie: 1,
     przyrostUtrzymania: 0,
     wymagania: "",
-    uwagi: "",
+    uwagi: "B-SPIC: bramka Ceramika (garncarnia imperium); tier I cap 100",
     techUnlock: "Garncarstwo"
+  },
+  {
+    id: "spichlerz_ii",
+    nazwa: "Spichlerz II",
+    kategoria: "Zywnosc",
+    epokaWejscia: 2,
+    maksPoziom: 10,
+    upgradeFrom: "spichlerz",
+    nazwyPoziomow: [],
+    baza: {
+      praca: 0,
+      pieniadz: 0,
+      zywnosc: 3,
+      nauka: 0,
+      kultura: 0,
+      zadowolenie: 2,
+      obrona: 0,
+      mnoznik: 0
+    },
+    przyrost: {
+      praca: 0,
+      pieniadz: 0,
+      zywnosc: 1,
+      nauka: 0,
+      kultura: 0,
+      zadowolenie: 0,
+      obrona: 0,
+      mnoznik: 0
+    },
+    kosztBudowy: 35,
+    przyrostKosztu: 12,
+    utrzymanie: 2,
+    przyrostUtrzymania: 0,
+    wymagania: "upgrade ze Spichlerza I",
+    uwagi: "B-SPIC: bramka S\xF3l; cap armii 150; bufor 70% po wzro\u015Bcie",
+    techUnlock: "Warzelnia soli"
   },
   {
     id: "garncarnia",
@@ -12334,7 +12443,7 @@ var buildings_default = [
       pieniadz: 0,
       zywnosc: 0,
       nauka: 0,
-      kultura: 1,
+      kultura: 0,
       zadowolenie: 0,
       obrona: 0,
       mnoznik: 0
@@ -12395,7 +12504,7 @@ var buildings_default = [
   {
     id: "kamienne_kregi",
     nazwa: "Kamienne kr\u0119gi",
-    kategoria: "Kultura",
+    kategoria: "Religia",
     epokaWejscia: 1,
     maksPoziom: 10,
     nazwyPoziomow: [],
@@ -12424,13 +12533,13 @@ var buildings_default = [
     utrzymanie: 1,
     przyrostUtrzymania: 0,
     wymagania: "",
-    uwagi: "T-TECH-8: pierwszy poziom kultu \u2014 upgrade do \u015Awi\u0105tyni",
+    uwagi: "B-KULT-REL + KULT-BUD-02: budynek RELIGIJNY \u2014 konwersja religii +2%/t (religia_konwersja_kregi, additive do bazy); plon kultury OK, bez bonusu konwersji kultury. Upgrade \u2192 \u015Awi\u0105tynia.",
     techUnlock: "Mistycyzm"
   },
   {
     id: "swiatynia",
     nazwa: "\u015Awi\u0105tynia",
-    kategoria: "Kultura",
+    kategoria: "Religia",
     epokaWejscia: 2,
     maksPoziom: 10,
     nazwyPoziomow: [],
@@ -12459,7 +12568,7 @@ var buildings_default = [
     utrzymanie: 1,
     przyrostUtrzymania: 1,
     wymagania: "upgrade Kamiennych kr\u0119g\xF3w",
-    uwagi: "T-TECH-8: suma bonus\xF3w kr\u0119gi+\u015Bwi\u0105tynia w JSON",
+    uwagi: "B-KULT-REL + KULT-BUD-02: budynek RELIGIJNY \u2014 konwersja religii +4%/t (religia_konwersja_swiatynia, additive do bazy); plon kultury OK, bez bonusu konwersji kultury.",
     techUnlock: "Religia",
     upgradeFrom: "kamienne_kregi"
   },
@@ -12486,7 +12595,7 @@ var buildings_default = [
       pieniadz: 0,
       zywnosc: 0,
       nauka: 3,
-      kultura: 1,
+      kultura: 2,
       zadowolenie: 0,
       obrona: 0,
       mnoznik: 0
@@ -12801,8 +12910,8 @@ var buildings_default = [
     utrzymanie: 2,
     przyrostUtrzymania: 1,
     wymagania: "-",
-    uwagi: "1 na miasto; glowne zrodlo kultury + Prawo (society-params prawo_palac)",
-    techUnlock: ""
+    uwagi: "1 na miasto; g\u0142\xF3wne \u017Ar\xF3d\u0142o kultury + Prawo (society-params prawo_palac); budynek startowy \u2014 bez bramki tech",
+    techUnlock: "-"
   },
   {
     id: "kuznia_zelaza",
@@ -13034,7 +13143,7 @@ var buildings_default = [
       pieniadz: 2,
       zywnosc: 0,
       nauka: 0,
-      kultura: 1,
+      kultura: 5,
       zadowolenie: 2,
       obrona: 0,
       mnoznik: 0
@@ -13044,7 +13153,7 @@ var buildings_default = [
       pieniadz: 1,
       zywnosc: 0,
       nauka: 0,
-      kultura: 1,
+      kultura: 0,
       zadowolenie: 1,
       obrona: 0,
       mnoznik: 0
@@ -13054,7 +13163,7 @@ var buildings_default = [
     utrzymanie: 2,
     przyrostUtrzymania: 1,
     wymagania: "",
-    uwagi: "Redukuje korupcje (anty-korupcja); zwiekszony porzadek publiczny; zadowolenie z praworz.",
+    uwagi: "KULT-BUD-01: +5 kultura baza, +2% konwersji; redukuje korupcje; zadowolenie z praworz.",
     techUnlock: "Prawo"
   },
   {
@@ -13139,7 +13248,7 @@ var buildings_default = [
       pieniadz: 0,
       zywnosc: 1,
       nauka: 0,
-      kultura: 1,
+      kultura: 3,
       zadowolenie: 3,
       obrona: 0,
       mnoznik: 0
@@ -13159,7 +13268,7 @@ var buildings_default = [
     utrzymanie: 2,
     przyrostUtrzymania: 1,
     wymagania: "wymaga Studnia",
-    uwagi: "Termy rzymskie \u2014 zadowolenie, kultura, zdrowie; wymaga Studni i tech Medycyna.",
+    uwagi: "KULT-BUD-01: +3 kultura baza, +1% konwersji; termy \u2014 zadowolenie, zdrowie; wymaga Studni i tech Medycyna.",
     techUnlock: "Medycyna"
   },
   {
@@ -13264,8 +13373,14 @@ var resources_default = [
   {
     Surowiec: "Ruda",
     Typ: "surowy",
-    "\u0179r\xF3d\u0142o / budynek": "z\u0142o\u017Ce Ruda + Kopalnia",
-    Uwagi: "wejscie Huty"
+    "\u0179r\xF3d\u0142o / budynek": "z\u0142o\u017Ce miedzi + Kopalnia miedzi",
+    Uwagi: "wejscie Odlewni br\u0105zu (klucz stock: ruda)"
+  },
+  {
+    Surowiec: "Ruda \u017Celaza",
+    Typ: "surowy",
+    "\u0179r\xF3d\u0142o / budynek": "z\u0142o\u017Ce \u017Celaza + Kopalnia",
+    Uwagi: "wejscie Odlewni \u017Celaza (klucz stock: ruda_zelaza)"
   },
   {
     Surowiec: "Byd\u0142o (krowa/w\xF3\u0142)",
@@ -13292,16 +13407,16 @@ var resources_default = [
     Uwagi: "Konnica (Br\u0105z) i rydwany konne; NIEDOST\u0118PNY u Maj\xF3w/Ameryki (konie wygin\u0119\u0142y w Nowym \u015Awiecie ~10 000 p.n.e.)"
   },
   {
-    Surowiec: "Deski",
-    Typ: "przetworzony",
-    "\u0179r\xF3d\u0142o / budynek": "Tartak (z drewna)",
-    Uwagi: "budulec"
-  },
-  {
     Surowiec: "Paliwo (w\u0119giel drzewny)",
     Typ: "przetworzony",
-    "\u0179r\xF3d\u0142o / budynek": "Mielerz (z drewna)",
+    "\u0179r\xF3d\u0142o / budynek": "Mielerz (2 drewno \u2192 1 paliwo)",
     Uwagi: "wejscie Cegielni, Garncarni i Huty"
+  },
+  {
+    Surowiec: "S\xF3l",
+    Typ: "surowy",
+    "\u0179r\xF3d\u0142o / budynek": "z\u0142o\u017Ce S\xF3l (wybrze\u017Ce) + Warzelnia soli",
+    Uwagi: "bramka Spichlerz II; konserwacja \u017Cywno\u015Bci"
   },
   {
     Surowiec: "Ceg\u0142a",
@@ -13353,7 +13468,7 @@ var tech_default = {
       "Dost\u0119p do surowca.": "Dost\u0119p do drewna",
       "wymagany budynek": null,
       "Wymaga (prereq)": "\u2014",
-      "Odblokowuje surowiec.": "deski, paliwo, drewno",
+      "Odblokowuje surowiec.": "paliwo, drewno",
       "Odblokowuje budynek": "Stolarnia, Mielerz",
       "Koszt nauki": 12,
       Uwagi: null,
@@ -13507,7 +13622,7 @@ var tech_default = {
       Technologia: "\u017Begluga",
       Epoka: "Br\u0105z",
       Poziom: 4,
-      "Dost\u0119p do surowca.": "Deski",
+      "Dost\u0119p do surowca.": "Drewno",
       "wymagany budynek": null,
       "Wymaga (prereq)": "Obr\xF3bka drewna",
       "Odblokowuje surowiec.": null,
@@ -20611,18 +20726,25 @@ var society_params_default = {
       opis: "Kara Zadowolenia w czasie stanu wojennego (zm\u0119czenie wojn\u0105 \u2014 dotyczy ca\u0142ej cywilizacji). [PT]"
     },
     szczescie_kara_obca_kultura: {
-      easy: -0.75,
-      normal: -1,
-      hard: -1.25,
+      easy: -1.5,
+      normal: -2,
+      hard: -2.5,
       jednostka: "pkt Zadowolenia",
       opis: "Kara Zadowolenia za dominuj\u0105c\u0105 obc\u0105 kultur\u0119 w mie\u015Bcie (<50% w\u0142asnej kultury). [PT \u2014 do strojenia]"
     },
     szczescie_kara_obca_religia: {
-      easy: -1,
-      normal: -2,
-      hard: -3,
+      easy: -2,
+      normal: -4,
+      hard: -6,
       jednostka: "pkt Zadowolenia",
       opis: "Kara Zadowolenia gdy obca religia dominuje w mie\u015Bcie (po podboju). [PT]"
+    },
+    szczescie_kara_podboj_podwojna_obca: {
+      easy: -1.5,
+      normal: -2,
+      hard: -2.5,
+      jednostka: "pkt Zadowolenia",
+      opis: "Dodatkowa kara Sz gdy po podboju jednocze\u015Bnie obca kultura (<50%) i obca dominuj\u0105ca religia. [B-KULT-REL]"
     },
     szczescie_kara_wysokie_podatki: {
       easy: 0,
@@ -20774,15 +20896,15 @@ var society_params_default = {
       opis: "Pr\xF3g kultury do 3. ekspansji granic. [PT]"
     },
     kultura_zadowolenie_100pct: {
-      easy: 3,
-      normal: 2,
-      hard: 1,
+      easy: 6,
+      normal: 4,
+      hard: 2,
       jednostka: "pkt Zadowolenia",
       opis: "Bonus Zadowolenia gdy 100% kultury w mie\u015Bcie to nasza kultura (pe\u0142na jedno\u015B\u0107 kulturowa). [PT \u2014 do strojenia]"
     },
     kultura_zadowolenie_75pct: {
-      easy: 2,
-      normal: 1,
+      easy: 4,
+      normal: 2,
       hard: 0,
       jednostka: "pkt Zadowolenia",
       opis: "Bonus Zadowolenia gdy \u226575% kultury naszej (wysoka jedno\u015B\u0107 kulturowa). [PT \u2014 do strojenia]"
@@ -20795,16 +20917,16 @@ var society_params_default = {
       opis: "Zadowolenie neutralne gdy 50% kultury naszej (mieszane miasto). [PT \u2014 do strojenia]"
     },
     kultura_kara_zadowolenie_lt50: {
-      easy: -0.75,
-      normal: -1,
-      hard: -1.25,
+      easy: -1.5,
+      normal: -2,
+      hard: -2.5,
       jednostka: "pkt Zadowolenia",
       opis: "Kara Zadowolenia gdy <50% kultury naszej (obca kultura dominuje \u2192 napi\u0119cia spo\u0142eczne). [PT \u2014 do strojenia]"
     },
     kultura_kara_zadowolenie_lt25: {
-      easy: -1,
-      normal: -2,
-      hard: -3,
+      easy: -2,
+      normal: -4,
+      hard: -6,
       jednostka: "pkt Zadowolenia",
       opis: "Kara Zadowolenia gdy <25% kultury naszej (wyra\u017Ana dominacja obcej kultury \u2192 ryzyko buntu). [PT \u2014 do strojenia]"
     },
@@ -20820,7 +20942,7 @@ var society_params_default = {
       normal: 1.5,
       hard: 1.12,
       jednostka: "%/tur\u0119",
-      opis: "Dodatkowa pr\u0119dko\u015B\u0107 konwersji kulturowej ze \u015Awi\u0105tyni w mie\u015Bcie (+% w\u0142asnej kultury/tur\u0119 per budynek). [PT \u2014 do strojenia]"
+      opis: "LEGACY (B-KULT-REL split): \u015Awi\u0105tynia = budynek religijny \u2014 konwersja kultury w kodzie NIE czyta tego wiersza. Bonus przeniesiony do religia_konwersja_swiatynia."
     },
     kultura_konwersja_amfiteatr: {
       easy: 2,
@@ -20830,11 +20952,39 @@ var society_params_default = {
       opis: "Dodatkowa pr\u0119dko\u015B\u0107 konwersji kulturowej z Amfiteatru (widowiska = soft power). [PT \u2014 do strojenia]"
     },
     kultura_konwersja_biblioteka: {
+      easy: 2.5,
+      normal: 2,
+      hard: 1.5,
+      jednostka: "%/tur\u0119",
+      opis: "Dodatkowa pr\u0119dko\u015B\u0107 konwersji kulturowej z Biblioteki. [KULT-BUD-01: 2%/t normal]"
+    },
+    kultura_konwersja_palac: {
+      easy: 2.5,
+      normal: 2,
+      hard: 1.5,
+      jednostka: "%/tur\u0119",
+      opis: "Dodatkowa pr\u0119dko\u015B\u0107 konwersji kulturowej z Pa\u0142acu. [KULT-BUD-01: 2%/t normal]"
+    },
+    kultura_konwersja_stela: {
       easy: 0.62,
       normal: 0.5,
       hard: 0.38,
       jednostka: "%/tur\u0119",
-      opis: "Dodatkowa pr\u0119dko\u015B\u0107 konwersji kulturowej z Biblioteki. [PT \u2014 do strojenia]"
+      opis: "Dodatkowa pr\u0119dko\u015B\u0107 konwersji kulturowej ze Steli / Pomnika. [KULT-BUD-01: 0,5%/t normal]"
+    },
+    kultura_konwersja_sad: {
+      easy: 2.5,
+      normal: 2,
+      hard: 1.5,
+      jednostka: "%/tur\u0119",
+      opis: "Dodatkowa pr\u0119dko\u015B\u0107 konwersji kulturowej z S\u0105du. [KULT-BUD-01: 2%/t normal]"
+    },
+    kultura_konwersja_laznia: {
+      easy: 1.25,
+      normal: 1,
+      hard: 0.75,
+      jednostka: "%/tur\u0119",
+      opis: "Dodatkowa pr\u0119dko\u015B\u0107 konwersji kulturowej z \u0141a\u017Ani publicznej. [KULT-BUD-01: 1%/t normal]"
     },
     kultura_konwersja_cel_100pct: {
       easy: 100,
@@ -20849,6 +20999,13 @@ var society_params_default = {
       hard: 4,
       jednostka: "%/tur\u0119",
       opis: "Maksymalna \u0142\u0105czna pr\u0119dko\u015B\u0107 konwersji na tur\u0119 (cap, niezale\u017Cnie od liczby budynk\xF3w kulturalnych). [PT \u2014 do strojenia]"
+    },
+    kultura_presja_proc_tura: {
+      easy: 7,
+      normal: 5,
+      hard: 3,
+      jednostka: "%/tur\u0119",
+      opis: "KULT-PRESJA-03 (2026-07-23): gdy suma kultury imperium \u017Ar\xF3d\u0142a > obro\u0144cy i miasto w zasi\u0119gu okolicy \u2014 przyrost udzia\u0142u kultury \u017Ar\xF3d\u0142a na mie\u015Bcie celu co tur\u0119. Symetrycznie. [WDRO\u017BENIE: czeka dzia\u0142aj \u2014 tylko JSON na razie]"
     }
   },
   religia: {
@@ -20881,9 +21038,9 @@ var society_params_default = {
       opis: "Maksymalny dystans w heksach, na kt\xF3ry religia mo\u017Ce si\u0119 szerzy\u0107 bez budynk\xF3w misyjnych. [PT \u2014 do strojenia]"
     },
     religia_zadowolenie_dominujaca: {
-      easy: 3,
-      normal: 2,
-      hard: 1,
+      easy: 6,
+      normal: 4,
+      hard: 2,
       jednostka: "pkt Zadowolenia",
       opis: "Bonus Zadowolenia gdy nasza religia dominuje w mie\u015Bcie (jedno\u015B\u0107 wyznaniowa). [PT]"
     },
@@ -20902,16 +21059,16 @@ var society_params_default = {
       opis: "Bonus do produkcji (Pracy) gdy >80% miast cywilizacji wyznaje t\u0119 sam\u0105 religi\u0119 (jedno\u015B\u0107 wyznaniowa). [PT \u2014 do strojenia]"
     },
     religia_kara_obca: {
-      easy: -1,
-      normal: -2,
-      hard: -3,
+      easy: -2,
+      normal: -4,
+      hard: -6,
       jednostka: "pkt Zadowolenia",
       opis: "Kara Zadowolenia gdy obca religia dominuje w mie\u015Bcie (po podboju lub konwersji przez rywala). [PT]"
     },
     religia_kara_brak_religii: {
-      easy: -0.75,
-      normal: -1,
-      hard: -1.25,
+      easy: -1.5,
+      normal: -2,
+      hard: -2.5,
       jednostka: "pkt Zadowolenia",
       opis: "Kara Zadowolenia gdy miasto nie ma \u017Cadnej dominuj\u0105cej religii (brak duchowo\u015Bci = niepok\xF3j spo\u0142eczny). [PT \u2014 do strojenia]"
     },
@@ -20944,11 +21101,18 @@ var society_params_default = {
       opis: "Bazowa pr\u0119dko\u015B\u0107 konwersji religijnej podbitego miasta (% wyznawc\xF3w nowej religii na tur\u0119). [PT]"
     },
     religia_konwersja_swiatynia: {
+      easy: 6,
+      normal: 4,
+      hard: 2,
+      jednostka: "%/tur\u0119",
+      opis: "Bonus konwersji religijnej ze \u015Awi\u0105tyni \u2014 DODAWANY do religia_konwersja_bazowa (normal: +4%/t \u2192 \u0142\u0105cznie 6%/t). Budynek religijny \u2014 bez bonusu konwersji kultury. [KULT-BUD-02]"
+    },
+    religia_konwersja_kregi: {
       easy: 3,
       normal: 2,
       hard: 1,
       jednostka: "%/tur\u0119",
-      opis: "Przyspieszenie konwersji religijnej ze \u015Awi\u0105tyni w podbitym mie\u015Bcie. [PT \u2014 do strojenia]"
+      opis: "Bonus konwersji religijnej z Kamiennych kr\u0119g\xF3w \u2014 DODAWANY do religia_konwersja_bazowa (normal: +2%/t \u2192 \u0142\u0105cznie 4%/t). [KULT-BUD-02]"
     },
     religia_konwersja_cel: {
       easy: 100,
@@ -20956,6 +21120,13 @@ var society_params_default = {
       hard: 100,
       jednostka: "%",
       opis: "Cel konwersji = 100% wyznawc\xF3w naszej religii. Dop\xF3ki poni\u017Cej: kara Zadowolenia (obca religia). [PT]"
+    },
+    religia_presja_proc_tura: {
+      easy: 7,
+      normal: 5,
+      hard: 3,
+      jednostka: "%/tur\u0119",
+      opis: "KULT-PRESJA-04 (2026-07-23): mirror kultura_presja_proc_tura \u2014 gdy suma religii imperium \u017Ar\xF3d\u0142a > obro\u0144cy i miasto w zasi\u0119gu okolicy \u2014 przyrost udzia\u0142u religii \u017Ar\xF3d\u0142a na mie\u015Bcie celu co tur\u0119. Symetrycznie (06). [WDRO\u017BENIE: czeka dzia\u0142aj \u2014 tylko JSON na razie]"
     }
   },
   religie_cywilizacji: [
@@ -21163,6 +21334,13 @@ var society_params_default = {
       hard: -3,
       jednostka: "pkt Prawa",
       opis: "Kara gdy pop\u22656 i brak garnizonu (opcjonalne v1.0)."
+    },
+    prawo_kara_podboj_bez_garnizonu: {
+      easy: -2,
+      normal: -3,
+      hard: -4,
+      jednostka: "pkt Prawa",
+      opis: "Kara Prawa gdy po podboju obca kultura+religia i brak jednostek w mie\u015Bcie. [B-KULT-REL]"
     },
     prawo_bonus_osada: {
       easy: 4,
@@ -22033,12 +22211,13 @@ function loadThroughput(raw, paramKey, difficulty, fallback) {
   return typeof v === "number" && Number.isFinite(v) ? v : fallback;
 }
 var DEFAULT_CONVERTER_RECIPES = [
-  { id: "tartak", inputs: { drewno: 1 }, output: "deski", outputAmount: 1, throughputParamKey: "budynek_tartak_przepustowosc", throughputFallback: 2 },
-  { id: "mielerz", inputs: { drewno: 1 }, output: "paliwo", outputAmount: 1, throughputParamKey: "budynek_mielerz_przepustowosc", throughputFallback: 2 },
-  { id: "cegielnia", inputs: { glina: 1, paliwo: 1 }, output: "cegla", outputAmount: 1, throughputParamKey: "budynek_cegielnia_przepustowosc", throughputFallback: 2 },
+  { id: "mielerz", inputs: { drewno: 2 }, output: "paliwo", outputAmount: 1, throughputParamKey: "budynek_mielerz_przepustowosc", throughputFallback: 2 },
+  { id: "cegielnia", inputs: { glina: 2, paliwo: 1 }, output: "cegla", outputAmount: 1, throughputParamKey: "budynek_cegielnia_przepustowosc", throughputFallback: 2 },
+  { id: "garncarnia", inputs: { glina: 1, paliwo: 1 }, output: "ceramika", outputAmount: 1, throughputParamKey: "budynek_garncarnia_przepustowosc", throughputFallback: 1 },
   { id: "huta", inputs: { ruda: 1, paliwo: 1 }, output: "braz", outputAmount: 1, throughputParamKey: "budynek_huta_przepustowosc", throughputFallback: 1 },
   { id: "odlewnia_brazu", inputs: { ruda: 1, paliwo: 1 }, output: "braz", outputAmount: 1, throughputParamKey: "budynek_huta_przepustowosc", throughputFallback: 1 },
-  { id: "garncarnia", inputs: { glina: 1, paliwo: 1 }, output: "ceramika", outputAmount: 1, throughputParamKey: "budynek_garncarnia_przepustowosc", throughputFallback: 1 }
+  { id: "odlewnia_zelaza", inputs: { ruda_zelaza: 1, paliwo: 1 }, output: "zelazo", outputAmount: 1, throughputParamKey: "budynek_odlewnia_zelaza_przepustowosc", throughputFallback: 1 },
+  { id: "wielka_kuznia", inputs: { zelazo: 1, paliwo: 1 }, output: "stal", outputAmount: 1, throughputParamKey: "budynek_wielka_kuznia_przepustowosc", throughputFallback: 1 }
 ];
 function runConverter(recipe, stores, throughput, outputCapacity) {
   const have = (k) => {
@@ -22088,10 +22267,11 @@ function runConverters(recipes, stores, throughputs, capacityOf) {
 }
 
 // src/game/empire-food.ts
-var _statesRef = /* @__PURE__ */ new Map();
-function getEmpireFoodSplit(ownerId) {
-  var _a10;
-  return ((_a10 = _statesRef.get(ownerId)) == null ? void 0 : _a10.procentRozwoj) ?? 100;
+function clampFoodSplitPct(n) {
+  return Math.min(100, Math.max(0, n));
+}
+function getCityFoodSplit(city, defaultPct = 100) {
+  return clampFoodSplitPct(city.procentRozwoj ?? defaultPct);
 }
 
 // src/game/order.ts
@@ -22243,6 +22423,31 @@ function applyOrderYieldMults(yld, mults) {
   if (mults.naukaMult !== 1) yld.nauka *= mults.naukaMult;
   if (mults.kulturaMult !== 1) yld.kultura *= mults.kulturaMult;
 }
+function civDisplayNameForKey(civKey, civs) {
+  var _a10;
+  if (!civKey || !((_a10 = civs == null ? void 0 : civs.cywilizacje) == null ? void 0 : _a10.length)) return null;
+  const key = civKey.toLowerCase();
+  for (const row of civs.cywilizacje) {
+    if (!row) continue;
+    const ids = [row.ikonaId, row.typCywilizacji, row.Cywilizacja].filter((s) => typeof s === "string" && s.length > 0).map((s) => s.toLowerCase());
+    if (ids.includes(key)) return row.Cywilizacja ?? null;
+  }
+  return null;
+}
+function religionTradeWalutaOverride(cityReligion, ownerCivKey, builtIds, walutaOdkryta, civs, societyParams, difficulty) {
+  if (!walutaOdkryta || !builtIds.includes("mennica") || !cityReligion) return void 0;
+  const civName = civDisplayNameForKey(ownerCivKey, civs);
+  if (!civName) return void 0;
+  const rp = loadReligionParams(societyParams, difficulty);
+  const trade = cityTradeMultiplier(
+    cityReligion,
+    civName,
+    civs,
+    rp,
+    true
+  );
+  return trade.applied ? trade.multiplier : void 0;
+}
 function buildEconParams(data, difficulty = "normal") {
   const raw = data.econParams;
   const em = raw.ekonomia_miasta ?? {};
@@ -22359,7 +22564,7 @@ function computeCityHealth(ludnosc, tiles, builtIds, hp, hasWaterAccess, mapCtx)
   const maStudnie = builtIds.includes("studnia");
   const maTargowisko = builtIds.includes("targowisko");
   const maAkwedukt = builtIds.includes("akwedukt");
-  const maCeramike = builtIds.includes("ceramika");
+  const maCeramike = builtIds.includes("garncarnia");
   if (maRzeke) z += hp.rzeka;
   if (maAkwedukt) z += hp.akwedukt;
   if (maStudnie) z += hp.studnia;
@@ -22392,6 +22597,7 @@ function hexToWorkedTile(hex) {
     terenBazowy: hex.terenBazowy,
     nakladka: hex.nakladka ?? "brak" /* Brak */,
     maRzeke: !!(hex.rzeka && hex.rzeka.obecna),
+    zloze: hex.zloze,
     ulepszenieKey: ulepszeniaKeys[0],
     ulepszeniaKeys: ulepszeniaKeys.length ? ulepszeniaKeys : void 0
   };
@@ -22442,6 +22648,7 @@ function toEconomyCity(city, params, isCapital, zdrowie = 0, buildings = {}) {
     zdrowie,
     czyStolica: isCapital,
     maSpichlerz: buildings.maSpichlerz ?? false,
+    maSpichlerzII: buildings.maSpichlerzII ?? false,
     maAkwedukt: buildings.maAkwedukt ?? false,
     magazynZywnosci: readCityFoodBufferFromCity(city),
     specjalisci: [],
@@ -22470,7 +22677,7 @@ function growthFoodStorageCap(population, maSpichlerz, params, storageParams, pa
 function getCityFood(city) {
   return readCityFoodBufferFromCity(city);
 }
-function advanceCityEconomy(cities, map, data, difficulty = "normal", econUnits = [], growthMultByCity = /* @__PURE__ */ new Map(), builtByCity = /* @__PURE__ */ new Map(), playerEra = 1, playerZbadane = /* @__PURE__ */ new Set(), ownerCivByOwnerId = /* @__PURE__ */ new Map(), orderMultByCity = /* @__PURE__ */ new Map(), resolveOwnerEra, resolveOwnerTech, wzrostLudnosciPace = "wysoki", tradeRouteCountByCity = /* @__PURE__ */ new Map(), tradeIncomeByCity = /* @__PURE__ */ new Map()) {
+function advanceCityEconomy(cities, map, data, difficulty = "normal", econUnits = [], growthMultByCity = /* @__PURE__ */ new Map(), builtByCity = /* @__PURE__ */ new Map(), playerEra = 1, playerZbadane = /* @__PURE__ */ new Set(), ownerCivByOwnerId = /* @__PURE__ */ new Map(), orderMultByCity = /* @__PURE__ */ new Map(), resolveOwnerEra, resolveOwnerTech, wzrostLudnosciPace = "wysoki", tradeRouteCountByCity = /* @__PURE__ */ new Map(), tradeIncomeByCity = /* @__PURE__ */ new Map(), cityReligionByCityId = /* @__PURE__ */ new Map()) {
   var _a10;
   const gameDifficulty = difficulty;
   const params = buildEconParams(data, difficulty);
@@ -22522,14 +22729,25 @@ function advanceCityEconomy(cities, map, data, difficulty = "normal", econUnits 
     const builtIds = builtByCity.get(city.id) ?? [];
     const hasWater = cityHasWaterAccess(city, map);
     const zdrowie = computeCityHealth(city.population, worked, builtIds, healthParams, hasWater, { city, map });
-    const maSpichlerz = builtIds.includes("spichlerz");
+    const maSpichlerzII = builtIds.includes("spichlerz_ii");
+    const maSpichlerz = maSpichlerzII || builtIds.includes("spichlerz");
     const maAkwedukt = builtIds.includes("akwedukt");
-    const econCity = toEconomyCity(city, params, isCapital, zdrowie, { maSpichlerz, maAkwedukt });
+    const pctRozwoj = getCityFoodSplit(city);
+    const econCity = toEconomyCity(city, params, isCapital, zdrowie, { maSpichlerz, maSpichlerzII, maAkwedukt });
     const ownerEra = resolveOwnerEra ? resolveOwnerEra(city.ownerId) : city.ownerId === 0 ? playerEra : 1;
     const ownerTech = resolveOwnerTech ? resolveOwnerTech(city.ownerId) : playerZbadane;
     const walutaOdkryta = ownerTech.has("Waluta") || ownerTech.has("waluta");
     const ownerCivKey = ownerCivByOwnerId.get(city.ownerId);
-    const walutaMnoznikOverride = walutaOdkryta && ownerCivKey ? mnoznikHandelPieniadzForCiv(ownerCivKey, data.civs, params.walutaMnoznik) : void 0;
+    const cityReligion = cityReligionByCityId.get(city.id);
+    const walutaMnoznikOverride = religionTradeWalutaOverride(
+      cityReligion,
+      ownerCivKey,
+      builtIds,
+      walutaOdkryta,
+      data.civs,
+      data.societyParams,
+      difficulty
+    );
     const ownerBonusy = ownerCivKey ? civBonusyForCivKey(ownerCivKey, data.civs) : [];
     const { handel: civHandelMult, nauka: civNaukaMult } = civEconomyYieldMultipliers(ownerBonusy);
     const liczbaTrasHandlowych = tradeRouteCountByCity.get(city.id) ?? 0;
@@ -22622,7 +22840,9 @@ function advanceCityEconomy(cities, map, data, difficulty = "normal", econUnits 
         oblegany: true,
         obleganyGlod,
         magazynPoTurze,
-        maSpichlerz
+        maSpichlerz,
+        maSpichlerzII,
+        procentRozwoj: pctRozwoj
       };
       result.perCity.push(tick2);
       incomeByOwner.set(city.ownerId, (incomeByOwner.get(city.ownerId) ?? 0) + tick2.pieniadz);
@@ -22636,7 +22856,6 @@ function advanceCityEconomy(cities, map, data, difficulty = "normal", econUnits 
       result.totalPracaPula += doPuli;
       continue;
     }
-    const pctRozwoj = Math.min(100, Math.max(0, getEmpireFoodSplit(city.ownerId)));
     const surplus = Math.max(0, yld.zywnosc) * (pctRozwoj / 100);
     const deficit = Math.min(0, yld.zywnosc);
     const zywnoscDoRozwoju = surplus + deficit;
@@ -22686,6 +22905,8 @@ function advanceCityEconomy(cities, map, data, difficulty = "normal", econUnits 
     citySurowce.drewno = Math.min(resCap, (citySurowce.drewno ?? 0) + yld.drewnoTerenu);
     citySurowce.kamien = Math.min(resCap, (citySurowce.kamien ?? 0) + yld.kamienTerenu);
     citySurowce.glina = Math.min(resCap, (citySurowce.glina ?? 0) + yld.glinaTerenu);
+    citySurowce.ruda = Math.min(resCap, (citySurowce.ruda ?? 0) + yld.rudaTerenu);
+    citySurowce.ruda_zelaza = Math.min(resCap, (citySurowce.ruda_zelaza ?? 0) + yld.rudaZelazaTerenu);
     const activeRecipes = DEFAULT_CONVERTER_RECIPES.filter((r) => builtIds.includes(r.id));
     if (activeRecipes.length > 0) {
       const convResult = runConverters(
@@ -22720,7 +22941,9 @@ function advanceCityEconomy(cities, map, data, difficulty = "normal", econUnits 
       oblegany: false,
       obleganyGlod: false,
       magazynPoTurze,
-      maSpichlerz
+      maSpichlerz,
+      maSpichlerzII,
+      procentRozwoj: pctRozwoj
     };
     result.perCity.push(tick);
     result.cities += 1;
