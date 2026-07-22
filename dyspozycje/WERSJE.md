@@ -11,11 +11,10 @@ swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drug
 
 ## ROBOCZA (gra-robocza\Gra-ROBOCZA.html — wskazywana przez START.html)
 
-- 2026-07-22 · stempel: ROBOCZA · **59d90c13** · md5 pliku `59d90c13cf1056f05f669465a760f758` · **FIX: pierścień Nauki — wyśrodkowanie (offset top-left)** — na `35fd5449`:
-  **Bug Macieja:** pierścień postępu Nauki „pływał" w lewym górnym rogu medalionu zamiast być koncentryczny z rantem innych ikon toolbaru.
-  **Przyczyna:** globalne reguły `.tb svg` / `.civ-hud-chip-med svg` wymuszały 26×26 / 17×17 px także na `.civ-science-prog-ring`; brak `width/height:100%` na SVG mimo `inset:0`.
-  **Fix:** `:not(.civ-science-prog-ring)` w selektorach ikon; ring `position:absolute;inset:0;width:100%;height:100%`; SVG bez atrybutów width/height (tylko viewBox); chip 30px stroke 1px (proporcjonalnie do 1px border gold).
-  tsc=0 · publish `gra-robocza/Gra-ROBOCZA.html`. · **AKTUALNA** · Test: Ctrl+F5 START.html → stamp `59d90c13` → pierścień Nauki wyśrodkowany na 52px toolbar + chip 30px; 0% złoty, ~50% pół niebieski, 100% niebieski; bez podwójnego ringu.
+- 2026-07-22 · stempel: ROBOCZA · **59d90c13** · md5 pliku `59d90c13cf1056f05f669465a760f758` · **FIX: pierścień Nauki wyśrodkowanie + dyplomacja pierwszy kontakt** — na `35fd5449`:
+  **(1) Nauka:** pierścień postępu koncentryczny z rantem ikon (`.civ-science-prog-ring`, bez podwójnego ringu).
+  **(2) Dyplomacja (Maciej):** Syrakuzy w liście mimo braku miasta w mgle; dar przed kontaktem. **Przyczyna:** kontakt z `explored` (hex widziany kiedyś) ≠ render miasta (`visible`); lista po odkryciu mgły, nie po formalnym kontakcie; AI darowało po samym hexie. **Fix:** `diplomaticallyDiscoveredOwners` (widoczność choć raz) + auto-audiencja; lista tylko po `diplomaticContactEstablished`; dary/handele/trybut/sojusz AI dopiero po audiencji.
+  tsc=0 · diplomacy-layers-test 8/8 · diplomacy-proposal 64/64 · publish `gra-robocza/Gra-ROBOCZA.html`. · **AKTUALNA** · Test: stamp `59d90c13` → pierścień Nauki OK · Nowa gra → spotkaj miasto-państwo → auto-audiencja → „Nawiąż kontakt" → wpis w dyplomacji; niewidoczne miasta nie w liście; brak darów przed kontaktem.
 
 - 2026-07-22 · stempel: ROBOCZA · **35fd5449** · md5 pliku `35fd54491f7fda7921bf60e218bac727` · **FIX: epoka startowa miast-państw AI (Kamień, regresja)** — na `43510348`:
   **Bug Macieja:** miasta-państwa / obcy AI wyglądają jak Brąz (megaron) mimo startu w Kamieniu. **Przyczyna:** `fillAiOwnerCivMap` wołało `setupAiOwnerEpoch` na starych ownerId przed regeneracją mapy — ryzyko niespójnego `aiResearchDone` (Brązownictwo → era 2); brak `reconcileAllOwnerErasFromResearch` przed pierwszym `cityRenderer.sync` w klastrze. **Fix:** epoka tylko w `applyClusterStartPlan` / `initAllAiOwnersForNewGame` / rywale; `aiResearchDone.clear()` w klastrze; reconcile przed sync klastra + po `initAllAiOwners`; `repairAiRosterFromMap` → `setupAiOwnerEpoch`.

@@ -86,10 +86,12 @@ export function defaultNeutralRelation(): Relation {
 }
 
 /**
- * D-START-3A: kontakt = odkryty heks miasta AI lub jednostki AI (mgła).
+ * D-START-3A: odkrycie na mapie = heks miasta AI lub jednostki AI w bieżącym
+ * zasięgu widzenia (visible — NIE explored). Explored utrzymywał fałszywe kontakty:
+ * miasto znika z renderu poza zasięgiem, ale hex zostaje w explored → wpis w dyplomacji.
  */
 export function computeDiplomaticContacts(
-  explored: ReadonlySet<string>,
+  visible: ReadonlySet<string>,
   cities: ReadonlyArray<{ ownerId: number; q: number; r: number }>,
   units: ReadonlyArray<{ ownerId: number; q: number; r: number }>,
   playerOwnerId = 0,
@@ -97,11 +99,11 @@ export function computeDiplomaticContacts(
   const contacted = new Set<number>();
   for (const c of cities) {
     if (c.ownerId === playerOwnerId) continue;
-    if (explored.has(hexKey(c.q, c.r))) contacted.add(c.ownerId);
+    if (visible.has(hexKey(c.q, c.r))) contacted.add(c.ownerId);
   }
   for (const u of units) {
     if (u.ownerId === playerOwnerId) continue;
-    if (explored.has(hexKey(u.q, u.r))) contacted.add(u.ownerId);
+    if (visible.has(hexKey(u.q, u.r))) contacted.add(u.ownerId);
   }
   return contacted;
 }
@@ -135,6 +137,26 @@ export function filterDiplomacyCommandsForLayer(
   if (layer === 'pre_contact') return [];
   if (layer === 'full') return list;
   return list.filter(c => SIMPLIFIED_CMD.has(c.type));
+}
+
+const ESTABLISHED_CONTACT_CMDS = new Set<string>([
+  'zaproponuj_pokoj',
+  'zaproponuj_sojusz',
+  'zaproponuj_handel',
+  'zadaj_trybut',
+  'oferuj_trybut_za_pokoj',
+]);
+
+/**
+ * Dar/handele/trybut/sojusz dopiero po formalnym kontakcie w audiencji (D3-Q2).
+ * Wojna może nastąpić po samym odkryciu na mapie.
+ */
+export function filterDiplomacyCommandsForEstablishedContact(
+  cmds: AIDiplomacyCommand[],
+  contactEstablished: boolean,
+): AIDiplomacyCommand[] {
+  if (contactEstablished) return cmds;
+  return cmds.filter(c => !ESTABLISHED_CONTACT_CMDS.has(c.type));
 }
 
 /** Etykiety dozwolonych akcji w UI (podgląd v1). */

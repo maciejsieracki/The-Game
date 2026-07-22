@@ -4,7 +4,20 @@
 > **Czat:** krótko **`✅ Gotowe:`** / **`⏸️ Czeka:`** · **Ten plik:** pełniejszy zapis tego samego.  
 > Szczegóły techniczne → handoff w `dyspozycje/_handoff/` · operacja → `dyspozycje/DZIENNIK-MASTERA.md`
 
-**Ostatnia aktualizacja:** 2026-07-22 (fix pierścień Nauki wyśrodkowanie)
+**Ostatnia aktualizacja:** 2026-07-22 (fix dyplomacja pierwszy kontakt @ 59d90c13)
+
+---
+
+## [08:30] ✅ Gotowe — FIX: dyplomacja pierwszy kontakt (Syrakuzy / dary)
+
+| | |
+|---|---|
+| **Co** | Lista dyplomacji tylko po formalnym kontakcie; auto-audiencja przy pierwszym spotkaniu; brak darów AI przed kontaktem |
+| **Przyczyna** | Kontakt z `explored` (hex widziany kiedyś) — miasto znika z mapy, wpis zostaje; AI darowało po samym hexie |
+| **Fix** | `diplomaticallyDiscoveredOwners` · lista = `diplomaticContactEstablished` · filter AI darów/handlu |
+| **Pliki** | `diplomacy-layers.ts` · `main.ts` · `diplomacy-layers-test.cjs` |
+| **md5** | `59d90c13cf1056f05f669465a760f758` · stamp `59d90c13` |
+| **Od Ciebie** | `git pull` → Ctrl+F5 · stamp `59d90c13` · spotkaj miasto-państwo → auto-audiencja → „Nawiąż kontakt" → wpis w dyplomacji |
 
 ---
 
