@@ -53,7 +53,7 @@ Surowiec pozyskiwany z heksów w zasięgu miasta. **Nie przechodzi przez budynek
 | **Glina** | złoże **glina** | **Glinianka** | złoże + glinianka | **2 gliny/turę** z ulepszenia (GLINA-Q1). |
 | **Ruda miedzi** | złoże `miedz` — **Wzgórza** | **Kopalnia miedzi** | złoże + kopalnia (imperium) | Od epoki Brązu. → brąz w mieście. |
 | **Ruda żelaza** | złoże `zelazo` — **Góry** | **Kopalnia** | złoże + kopalnia (imperium) | Od epoki Żelaza. → żelazo w mieście. |
-| **Sól** | złoże `sol` — **tylko Wybrzeże** | **Warzelnia soli** | złoże soli na wybrzeżu + warzelnia | **Bez** soli lądowej. Brak wpisu w `resources.json` v0.1. |
+| **Sól** | złoże `sol` — **tylko Wybrzeże** | **Warzelnia soli** | złoże soli na wybrzeżu + warzelnia | **Bez** soli lądowej. **Konsument:** bramka **Spichlerz** (§8) — bez soli nie składasz żywności. **Efekt zachowanej soli:** znaczący bonus zdrowia + szczęścia (konserwacja). Brak wpisu w `resources.json` v0.1. |
 | **Koń** | złoże `kon` | **Stadnina** + tech Jeździectwo | złoże + stadnina | Jednostki konne; Majowie/Ameryka bez koni. |
 
 **Poza zakresem v0.1 (nie w tabeli A gameplayu):**
@@ -76,7 +76,7 @@ Powstają **wyłącznie w budynku miasta** (konwerter co turę). Wymagają **akt
 | **Deski** | **Stolarnia** | 1 drewno | 1 deska | max **2/t** [PT] | W `converters.ts` id receptury = `tartak` (legacy) — docelowo `stolarnia`. |
 | **Paliwo** | **Mielerz** | **2 drewno** | 1 paliwo | max **2/t** [PT] | **Kanon: 2→1.** Kod dziś 1→1 — faza 2. |
 | **Cegła** | **Cegielnia** | **2 glina + 1 paliwo** | 1 cegła | max **2/t** [PT] | **Kanon Macieja 2026-07-22.** Kod dziś 1+1 — faza 2. |
-| **Ceramika** | **Garncarnia** | 1 glina + 1 paliwo | 1 ceramika | max **1/t** [PT] | **Konsument:** bramka **Spichlerz** (`spichlerz`) — bez ceramiki budynek **niedostępny** w panelu (§8). Zdrowie z Garncarni = efekt wtórny. |
+| **Ceramika** | **Garncarnia** | 1 glina + 1 paliwo | 1 ceramika | max **1/t** [PT] | **Konsument:** bramka **Spichlerz** (§8) — naczynia do składowania. Zdrowie z Garncarni = efekt wtórny. |
 | **Brąz** | **Piec hutniczy** (`odlewnia_brazu`) | 1 ruda miedzi + 1 paliwo | 1 brąz | max **1/t** [PT] | AND-gate: kopalnia miedzi (mapa) + piec w mieście. |
 | **Żelazo** | **Odlewnia żelaza** | 1 ruda żelaza + 1 paliwo | 1 żelazo | max **1/t** [PT] | AND-gate: kopalnia na złożu + odlewnia. Receptura **brak** w `converters.ts` — placeholder. |
 | **Stal** | **Wielka kuźnia** | 1 żelazo + 1 paliwo | 1 stal | max **1/t** [PT] | Epoka **Klasyczna** (decyzja Macieja). **Flaga:** `epokaWejscia:4` w JSON vs tech ep.3. Receptura **brak** w `converters.ts`. |
@@ -88,22 +88,27 @@ Powstają **wyłącznie w budynku miasta** (konwerter co turę). Wymagają **akt
 - `odlewnia_brazu` → `odlewnia_zelaza` (produkcja żelaza)
 - `kuznia_zelaza` → `wielka_kuznia` (mnożnik wojska + stal)
 
-### Ceramika → Spichlerz — twarda bramka budowy (Maciej 2026-07-22)
+### Ceramika + Sól → Spichlerz — twarde bramki budowy (Maciej 2026-07-22)
 
-**Reguła:** gracz **nie może** wznieść **Spichlerza** (`spichlerz`), dopóki **nie ma ceramiki** — budynek **nie pojawia się** (lub jest zablokowany) w panelu produkcji miasta.
+**Reguła:** gracz **nie może** wznieść **Spichlerza** (`spichlerz`), dopóki **nie spełni obu warunków** — budynek **nie pojawia się** (lub jest zablokowany) w panelu produkcji miasta:
 
-**Uzasadnienie projektowe (Maciej):** O spichlerzu — przecież wszystko się składa w ceramice: żywność i zapasy przechowywane są w naczyniach ceramicznych (amforach, dzbanch, beczkach glinianych), stąd **ceramika jest wymagana do budowy Spichlerza** — gracz musi najpierw uruchomić produkcję Garncarni.
+1. **Ceramika** — naczynia do składowania (amfora, dzbany, beczki gliniane).
+2. **Sól** — konserwacja żywności; **bez soli nie można składować żywności** → Spichlerz niedostępny bez **aktywnej soli** (warzelnia soli na wybrzeżu).
+
+**Uzasadnienie projektowe (Maciej):** Żywność i zapasy przechowywane są w naczyniach ceramicznych **i** wymagają soli do konserwacji — stąd obie bramki przed Spichlerzem. Gracz musi uruchomić **Garncarnię** (ceramika) **oraz** **Warzelnię soli** na wybrzeżu (sól).
 
 | Aspekt | Kanon |
 |---|---|
 | **Konsument główny** | **Spichlerz** (`spichlerz`, `buildings.json` id potwierdzone) |
-| **Typ bramki** | **Twarda bramka budowy** — nie „opcjonalny koszt fazy 3" |
-| **Wzorzec implementacji** | Jak **Glina → Garncarnia:** `wymagania` w JSON + wpis w `building-resource-gate.ts` |
-| **Warunek ceramiki (faza 2)** | **Aktywna produkcja ceramiki** w imperium (Garncarnia + łańcuch glina/paliwo) **lub** zapas `ceramika` w magazynie miasta — dokładny wariant przy wdrożeniu; minimum = bramka katalogu jak u Garncarni |
-| **Faza 3 (opcjonalnie)** | Dodatkowy **koszt materiałowy** ceramiki przy budowie Spichlerza (ilość → balans) |
-| **Efekt wtórny** | Bonus zdrowia z Garncarni — **zostaje**, nie zastępuje bramki |
+| **Typ bramki** | **Dwie twarde bramki budowy** — ceramika **i** sól; nie „opcjonalny koszt fazy 3" |
+| **Wzorzec implementacji** | Jak **Glina → Garncarnia:** `wymagania` w JSON + wpis w `building-resource-gate.ts` (osobne wpisy dla `ceramika` i `sol`) |
+| **Warunek ceramiki (faza 2)** | **Aktywna produkcja ceramiki** w imperium (Garncarnia + łańcuch glina/paliwo) **lub** zapas `ceramika` w magazynie miasta — minimum = bramka katalogu jak u Garncarni |
+| **Warunek soli (faza 2)** | **Aktywna produkcja soli** w imperium (warzelnia na złożu soli **wybrzeżu**) **lub** zapas `sol` w magazynie miasta — minimum = bramka katalogu jak u Garncarni |
+| **Faza 3 (opcjonalnie)** | Dodatkowy **koszt materiałowy** ceramiki i/lub soli przy budowie Spichlerza (ilość → balans) |
+| **Efekt wtórny — Garncarnia** | Bonus zdrowia z Garncarni — **zostaje**, nie zastępuje bramki |
+| **Efekt soli zachowanej** | Znaczący bonus **zdrowia + szczęścia** (konserwacja / preservation) — pomysł Macieja; wdrożenie faza 2+ |
 
-**Łańcuch gameplay:** glina (teren) → Garncarnia → **ceramika** → odblokowanie **Spichlerza** → magazyn żywności / bufor wzrostu.
+**Łańcuch gameplay:** glina (teren) → Garncarnia → **ceramika** · złoże soli (wybrzeże) → Warzelnia → **sól** → **oba** odblokowują **Spichlerz** → magazyn żywności / bufor wzrostu.
 
 ---
 
@@ -120,7 +125,7 @@ Powstają **wyłącznie w budynku miasta** (konwerter co turę). Wymagają **akt
 | Piec hutniczy | ruda miedzi, paliwo | brąz |
 | Odlewnia żelaza | ruda żelaza, paliwo | żelazo |
 | Wielka kuźnia | żelazo, paliwo | stal |
-| **Spichlerz** | **ceramika** (bramka budowy) | magazyn żywności, bufor wzrostu |
+| **Spichlerz** | **ceramika + sól** (dwie bramki budowy) | magazyn żywności, bufor wzrostu |
 
 ### C.2 Ulepszenia terenu — mapa (nie magazyn hodowli)
 
@@ -143,8 +148,8 @@ Powstają **wyłącznie w budynku miasta** (konwerter co turę). Wymagają **akt
 | Faza | Zakres | Status |
 |---|---|---|
 | **1 — dostęp realistyczny** | potencjał/aktywny; wyjątek żywności; koń=złoże; hodowla≠surowiec | **WDROŻONE** (ROBOCZA); wyjątek 🍞 w kodzie — otwarte |
-| **2 — bramki budynków** | receptury 2 drewno→paliwo, **2 glina+1 paliwo→cegła**; pełne zbieranie rud; odlewnia żelaza + wielka kuźnia w `converters.ts`; **Spichlerz wymaga ceramiki** (twarda bramka katalogu) | **KOLEJNY KROK** |
-| **3 — magazyny + koszty** | magazyn ×5 per typ; koszty jednostek/budynków z A i B; spichlerz=🍞; opcjonalny koszt materiałowy ceramiki przy budowie Spichlerza | **PLAN** |
+| **2 — bramki budynków** | receptury 2 drewno→paliwo, **2 glina+1 paliwo→cegła**; pełne zbieranie rud; odlewnia żelaza + wielka kuźnia w `converters.ts`; **Spichlerz wymaga ceramiki + soli** (dwie twarde bramki katalogu, wzorzec `building-resource-gate`); efekt soli zachowanej: zdrowie+szczęście | **KOLEJNY KROK** |
+| **3 — magazyny + koszty** | magazyn ×5 per typ; koszty jednostek/budynków z A i B; spichlerz=🍞; opcjonalny koszt materiałowy ceramiki **i soli** przy budowie Spichlerza | **PLAN** |
 
 ---
 
@@ -153,8 +158,8 @@ Powstają **wyłącznie w budynku miasta** (konwerter co turę). Wymagają **akt
 1. **Wyjątek żywności w kodzie** — `resource-access.ts` stosuje regułę ulepszenia także dla 🍞.
 2. **Stal vs Wielka Kuźnia** — epoka Klasyczna (Maciej) vs `epokaWejscia:4` vs tech ep.3 — **decyzja ABC**.
 3. **Legacy `Ruda`** — migracja kluczy `ruda_miedzi` / `ruda_zelaza`.
-4. **Sól** — dodać do `resources.json`; generator tylko wybrzeże.
-5. ~~**Ceramika**~~ — **✅ rozstrzygnięte:** konsument = **Spichlerz**, twarda bramka budowy (§8). Pozostałe: **Cegła / Kamień / Deski** — konsumentów fazy 3 (§3).
+4. **Sól** — dodać do `resources.json`; generator tylko wybrzeże; ~~konsument~~ **✅ rozstrzygnięte:** bramka **Spichlerz** (§8) + efekt zdrowie+szczęście z zachowanej soli.
+5. ~~**Ceramika**~~ — **✅ rozstrzygnięte:** konsument = **Spichlerz**, twarda bramka budowy (§8). ~~**Sól**~~ — **✅ rozstrzygnięte:** konsument = **Spichlerz** (bramka) + welfare z magazynu. Pozostałe: **Cegła / Kamień / Deski** — konsumentów fazy 3 (§3).
 6. **Rydwan (woły)** — koszt `bydlo` → bramka Trzoda (nie surowiec).
 7. **Przepustowości [PT]** — po balansie.
 
@@ -180,7 +185,7 @@ Powstają **wyłącznie w budynku miasta** (konwerter co turę). Wymagają **akt
 | **Glina** | złoże glina | Glinianka | 2 | 2/t z ulepszenia |
 | **Ruda miedzi** | złoże miedz (wzgórza) | Kopalnia miedzi | 2 | Klucz legacy: `ruda` |
 | **Ruda żelaza** | złoże zelazo (góry) | Kopalnia | 3 | Osobne od miedzi |
-| **Sól** | złoże sol (**wybrzeże**) | Warzelnia soli | 2 | Brak w `resources.json` |
+| **Sól** | złoże sol (**wybrzeże**) | Warzelnia soli | 2 | Brak w `resources.json`; **konsument:** bramka **Spichlerz** (§8) |
 | **Koń** | złoże kon | Stadnina + Jeździectwo | 2 | **Złoże**, nie hodowla |
 
 **Ulepszenia terenu (NIE surowce magazynu):**
@@ -200,7 +205,7 @@ Powstają **wyłącznie w budynku miasta** (konwerter co turę). Wymagają **akt
 | **Deski** | Stolarnia | 1 drewno → 1 deska | drewno (A) |
 | **Paliwo** | Mielerz | **2 drewno → 1 paliwo** | drewno (A) |
 | **Cegła** | Cegielnia | **2 glina + 1 paliwo → 1 cegła** | glina (A) + paliwo (B) |
-| **Ceramika** | Garncarnia | 1 glina + 1 paliwo → 1 ceramika | glina (A) + paliwo (B) → **Spichlerz** (bramka) |
+| **Ceramika** | Garncarnia | 1 glina + 1 paliwo → 1 ceramika | glina (A) + paliwo (B) → **Spichlerz** (bramka ceramika; + sól §8) |
 | **Brąz** | Piec hutniczy | 1 ruda miedzi + 1 paliwo → 1 brąz | ruda miedzi (A) |
 | **Żelazo** | Odlewnia żelaza | 1 ruda żelaza + 1 paliwo → 1 żelazo | ruda żelaza (A) |
 | **Stal** | Wielka kuźnia | 1 żelazo + 1 paliwo → 1 stal | żelazo (B); epoka **Klasyczna** |
@@ -224,11 +229,11 @@ Powstają **wyłącznie w budynku miasta** (konwerter co turę). Wymagają **akt
 | **Brąz** | piec hutniczy | **19 jednostek** | ✅ używany |
 | **Żelazo** | odlewnia żelaza *(brak receptury)* | **25 jednostek**; bramka Kuźnia żelaza | ✅ używany (jednostki); produkcja niepełna |
 | **Stal** | wielka kuźnia *(brak receptury)* | bramka Wielka Kuźnia; **0 jednostek** z kosztem stal | 🔴 **osierocony** |
-| **Sól** | warzelnia *(brak wpisu resources)* | handel dyplomacyjny (`sol: 50`); **brak konsumenta gameplay** | 🔴 **osierocony** + brak w JSON |
+| **Sól** | warzelnia *(brak wpisu resources)* | **bramka Spichlerz** (`spichlerz`) — kanon Macieja 2026-07-22; handel dyplomacyjny (`sol: 50`); efekt zdrowie+szczęście z zachowanej soli (faza 2+) | ✅ **przypisany** (bramka faza 2 — **nie wdrożone** w kodzie) + brak w JSON |
 | **Bydło / Owce / Lama** | — (to ulepszenia) | wpisy legacy w `resources.json`; Rydwan: koszt `bydlo` | 🗑️ **wycofać z surowców** |
 | **Węgiel** | — | generator mapy only | ⏸️ **poza v0.1** |
 
-**Podsumowanie osieroconych (materiał):** Cegła · Stal · Sól · Kamień (częściowo) · Deski (częściowo). ~~Ceramika~~ → **Spichlerz** (rozstrzygnięte 2026-07-22).
+**Podsumowanie osieroconych (materiał):** Cegła · Stal · Kamień (częściowo) · Deski (częściowo). ~~Ceramika~~ · ~~Sól~~ → **Spichlerz** (rozstrzygnięte 2026-07-22).
 
 ---
 
@@ -236,18 +241,18 @@ Powstają **wyłącznie w budynku miasta** (konwerter co turę). Wymagają **akt
 
 | Surowiec | Konwertery (wejście → wyjście) | Budynki (przyszły koszt materiałowy) | Jednostki (`units.json`) | Brak zastosowania / do decyzji Macieja |
 |---|---|---|---|---|
-| **Żywność** | — (TYP 1) | Spichlerz (magazyn 🍞; **wymaga ceramiki** — bramka budowy) | utrzymanie wszystkich | — |
+| **Żywność** | — (TYP 1) | Spichlerz (magazyn 🍞; **wymaga ceramiki + soli** — dwie bramki budowy) | utrzymanie wszystkich | — |
 | **Drewno** | → deski, paliwo | Stolarnia, Mielerz (bramka las) | Łucznik, Proca, Łucznik kompozytowy, Katapulta… (**5**) | — |
 | **Kamień** | — | **Mury**, Warsztat kamieniarski, Kamienne kręgi, Cytadela | *(brak dziś)* | **Przypisać:** koszt murów / fortyfikacji |
 | **Glina** | → cegła, ceramika (via paliwo) | Cegielnia, Garncarnia | *(brak dziś)* | — |
 | **Ruda miedzi** | → brąz | Piec hutniczy, Kuźnia (bramka) | pośrednio → brąz | — |
 | **Ruda żelaza** | → żelazo *(do wdrożenia)* | Odlewnia żelaza | pośrednio → żelazo | — |
-| **Sól** | — | konserwacja / handel | *(brak)* | **Przypisać:** żywność+?, luksus, dyplomacja |
+| **Sól** | — | **Spichlerz** (twarda bramka budowy); warzelnia (zdrowie+szczęście z zachowanej soli); handel złożem | *(brak jednostek)* | **✅ Rozstrzygnięte** (Maciej 2026-07-22): bramka Spichlerz + welfare |
 | **Koń** | — | Stadnina (bramka) | Konnica, Rydwan konny, Konnica Xiongnu… (**8**) | — |
 | **Deski** | drewno → deski | Stolarnia, Port (?) | **Galera** (4) | **Przypisać:** statki, molo, palisada? |
 | **Paliwo** | drewno → paliwo | Mielerz | pośrednik | — |
 | **Cegła** | 2 glina + 1 paliwo → cegła | **Pismo** (bramka Cegielnia imperium) | *(brak)* | **Przypisać:** mury ceglane, agora, świątynie |
-| **Ceramika** | glina + paliwo → ceramika | **Spichlerz** (twarda bramka budowy); Garncarnia (+zdrowie wtórne) | *(brak)* | **✅ Rozstrzygnięte** (Maciej 2026-07-22) |
+| **Ceramika** | glina + paliwo → ceramika | **Spichlerz** (bramka ceramika); Garncarnia (+zdrowie wtórne) | *(brak)* | **✅ Rozstrzygnięte** (Maciej 2026-07-22) |
 | **Brąz** | ruda + paliwo → brąz | Piec hutniczy, Kuźnia | Hoplita, Falanga, Khopesh… (**19**) | — |
 | **Żelazo** | ruda żelaza + paliwo → żelazo | Odlewnia, Kuźnia żelaza | Legion, Pretorian, Gaesatae… (**25**) | — |
 | **Stal** | żelazo + paliwo → stal | Wielka Kuźnia (**epoka?**) | tech zapowiada elitę żelazną — **0 z kosztem stal dziś** | **Decyzja ABC:** epoka Klasyczna vs JSON ep.4; kto zużywa stal? |
@@ -259,10 +264,14 @@ Powstają **wyłącznie w budynku miasta** (konwerter co turę). Wymagają **akt
 ```
 drewno ──→ deski ──→ (statki faza 3)
     └──→ paliwo ──┬→ cegła (2 glina + 1 paliwo)
-                  ├→ ceramika ──→ Spichlerz (bramka budowy)
+                  ├→ ceramika ──┐
                   ├→ brąz (ruda miedzi)
                   ├→ żelazo (ruda żelaza)
                   └→ stal (żelazo)
+
+złoże soli (wybrzeże) ──→ warzelnia ──→ sól ──┐
+                                               ├──→ Spichlerz (dwie bramki: ceramika + sól)
+                                               └──→ zdrowie + szczęście (zachowana sól)
 ```
 
 ### Niespójności danych → backlog wdrożenia
@@ -272,8 +281,8 @@ drewno ──→ deski ──→ (statki faza 3)
 | `resources.json` | Bydło, Owce, Lama jako surowce; brak Soli; Koń Typ=`hodowla` |
 | `converters.ts` | Cegła 1+1; Mielerz 1→1; brak odlewnia_zelaza, wielka_kuznia |
 | `units.json` | Rydwan koszt `bydlo` (powinno: bramka Trzoda) |
-| `buildings.json` | `wielka_kuznia` epoka 4 vs stal epoka Klasyczna; **`spichlerz` brak bramki ceramiki** (kanon: twarda bramka faza 2) |
-| `building-resource-gate.ts` | brak wpisu `spichlerz` → ceramika (wzorzec: `garncarnia` → Glina) |
+| `buildings.json` | `wielka_kuznia` epoka 4 vs stal epoka Klasyczna; **`spichlerz` brak bramek ceramiki i soli** (kanon: dwie twarde bramki faza 2) |
+| `building-resource-gate.ts` | brak wpisów `spichlerz` → ceramika **i** `spichlerz` → sol (wzorzec: `garncarnia` → Glina) |
 | `terrain-improvements.json` | Sól: warunek nie ogranicza do wybrzeża w tekście terenu |
 | `turn-economy.ts` | `builtIds.includes('ceramika')` — powinno `garncarnia` |
 | `map-gen-params.json` | Spawn węgla — OK technicznie, gameplay off |
@@ -294,7 +303,7 @@ drewno ──→ deski ──→ (statki faza 3)
 | **Bramka budynku** | Tech Garncarstwo; aktywna Glina (`building-resource-gate.ts`) | ✅ |
 | **Magazyn** | `city.surowce.ceramika` — rośnie co turę | ⚠️ bez konsumenta |
 | **Konsument materiałowy** | **Brak** w units/buildings/production | 🔴 osierocony |
-| **Spichlerz (plan)** | Diagram § łańcuch konwerterów: bramka ceramika → Spichlerz; **kod:** brak wpisu w `building-resource-gate.ts`, brak `wymaganySurowiec` w `buildings.json` | ⏸️ plan faza 2, nie wdrożone |
+| **Spichlerz (plan)** | Diagram § łańcuch: bramki **ceramika + sól** → Spichlerz; **kod:** brak wpisów w `building-resource-gate.ts`, brak `wymaganySurowiec` w `buildings.json` | ⏸️ plan faza 2, nie wdrożone |
 | **Odlewnia żelaza / stal** | `odlewnia_zelaza`, `kuznia_zelaza`, `wielka_kuznia` — **zero** ceramiki | ❌ hipoteza hutnicza **niepotwierdzona** |
 | **Tech Pismo / Religia** | „Dostęp do surowca.: Ceramika" — etykieta; bramka = **Cegielnia** imperium (ABC-8) | ⚠️ mylące |
 | **Zdrowie** | `turn-economy.ts`: `builtIds.includes('ceramika')` + `zdrowie_ceramika` (+1 normal) | 🔴 **martwe** — id budynku = `garncarnia` |
@@ -318,14 +327,15 @@ drewno ──→ deski ──→ (statki faza 3)
 
 | Warstwa | Połączenie | Status |
 |---|---|---|
-| **resources.json** | Brak wpisu Sól | 🔴 |
+| **resources.json** | Brak wpisu Sól | 🔴 (dodać faza 2) |
 | **Złoże mapy** | `gen-helpers.ts`: Pustynia/Równina (nie wybrzeże w spawnie) | ⚠️ vs kanon „tylko wybrzeże" |
 | **Ulepszenie** | `warzelnia_soli`: Garncarstwo, 20 pracy | ✅ |
 | **Warunek** | Złoże `sol` **lub** Wybrzeże (`resource-access.ts`, `improvement-build.ts`) | ✅ w kodzie |
-| **Plon** | **+1 ¤, +1 🍞** na heksie — **nie** magazyn soli | ✅ yield bezpośredni |
-| **Magazyn / konwerter** | Brak | — |
+| **Plon** | **+1 ¤, +1 🍞** na heksie — docelowo też magazyn `sol` (faza 2) | ⚠️ yield bezpośredni dziś |
+| **Magazyn / konwerter** | Brak dziś; docelowo stock soli w magazynie miasta | ⏸️ faza 2 |
+| **Konsument materiałowy** | **Spichlerz** — twarda bramka budowy (§8); bez soli nie składasz żywności | ✅ **przypisany** (kanon Macieja 2026-07-22; kod: faza 2) |
 | **Handel dyplomacyjny** | `sol: 50` PN (`diplomacy.json`, `diplomacy-deposit-trade.ts`) | ✅ dostęp do hex |
-| **Zdrowie / szczęście** | Brak (pomysł Macieja: konserwacja — nie wdrożony) | 🔴 do decyzji |
+| **Zdrowie / szczęście** | **Kanon Macieja:** znaczący bonus zdrowia + szczęścia z **zachowanej soli** w magazynie (konserwacja / preservation) | ⏸️ faza 2+ |
 
 ### 4. Werdykt A / B / C
 
@@ -333,7 +343,7 @@ drewno ──→ deski ──→ (statki faza 3)
 |---|---|---|---|
 | **Ceramika** | Naprawić bug zdrowia na `garncarnia`; opcj. szczęście | Garncarnia + kultura; ceramika = koszt Spichlerz/Mury?; **nie** do hut | Usunąć garncarnia + konwerter |
 | **Cegła** | Niski sens | Cegielnia (Pismo, +25% Pracy); cegła = koszt Mury faza 3 | Wymaga przepięcia Pismo |
-| **Sól** | Zdrowie+szczęście z warzelni; złoże tylko wybrzeże | Warzelnia = +1🍞/¤ + handel złożem | Usunąć warzelnia + złoże |
+| **Sól** | Zdrowie+szczęście z **zachowanej soli** w magazynie (konserwacja) | **Spichlerz** (bramka budowy); warzelnia + handel złożem | Usunąć warzelnia + złoże |
 
 ### 5. Rekomendacja Mastera
 
@@ -341,8 +351,8 @@ drewno ──→ deski ──→ (statki faza 3)
 |---|---|
 | **Ceramika** | **B** — Garncarnia zostaje; naprawić zdrowie na budynku `garncarnia`; materiał pod Spichlerz/koszty fazy 3; **nie** do hut żelaza. |
 | **Cegła** | **B** — Cegielnia zostaje (Pismo, +25% Pracy); cegła = koszt budynków faza 3; zero welfare ze stocku. |
-| **Sól** | **A uproszczone** — efekt zdrowie+szczęście z warzelni (bez magazynu soli) + złoże tylko wybrzeże; alt. **B** jeśli wystarczy +1🍞/¤. |
+| **Sól** | **B + A** — bramka **Spichlerz** (§8, faza 2); magazyn soli + znaczący bonus zdrowia+szczęścia z zachowanej soli; złoże tylko wybrzeże. |
 
 ---
 
-*Plik: `dyspozycje/SUROWCE-KANON-2026-07-22.md` · v3 audyt ceramika/cegła/sól: 2026-07-22 · bez implementacji kodu.*
+*Plik: `dyspozycje/SUROWCE-KANON-2026-07-22.md` · v4: sól→Spichlerz (Maciej 2026-07-22) · v3 audyt ceramika/cegła/sól · bez implementacji kodu.*
