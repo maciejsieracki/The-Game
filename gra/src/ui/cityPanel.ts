@@ -84,7 +84,7 @@ import {
 } from '../game/building-upgrades';
 import { getEmpireFoodSplit, getEmpireFoodMaxCap } from '../game/empire-food';
 import type { CityManpowerSnapshot } from '../game/manpower';
-import { formatManpower } from '../game/manpower';
+import { civManpowerMaxMult, formatManpower, unitManpowerCostForType } from '../game/manpower';
 import { defaultOwnerColor, mountUnitMiniPreview } from './unitMiniPreview';
 import {
   unitInfographicMedallionHtml,
@@ -273,7 +273,7 @@ export interface CityPanelConfig {
   /** Kup jednostke za Pieniadz ze skarbca (purchasableUnits). */
   onPurchaseUnit?: (cityId: string, itemId: string, koszt: number) => void;
   /** B11-A: anulowanie opłaconej pozycji w kolejce rekrutacji — pełny zwrot kosztu. */
-  onCancelRecruitment?: (cityId: string, koszt: number) => void;
+  onCancelRecruitment?: (cityId: string, itemId: string, koszt: number) => void;
   /** Kup budynek za Pieniadz (koszt 1:1 z kosztem Pracy — natychmiastowa budowa). */
   onPurchaseBuilding?: (cityId: string, item: ProductionItem, kosztGold: number) => void;
   /** Bonusy cywilizacji per owner (civs.json) — koszty budynkow/jednostek. */
@@ -4753,6 +4753,12 @@ function appendBuildableItemRow(
   scroll.appendChild(wrap);
 }
 
+function recruitManpowerCost(city: City, typeId: string): number {
+  const ep = cfg.getEpoch?.(city.ownerId) ?? 1;
+  const maxMult = civManpowerMaxMult(cfg.getCivBonusy?.(city.ownerId));
+  return unitManpowerCostForType(typeId, ep, maxMult);
+}
+
 function appendUnitRecruitCard(
   grid: HTMLElement,
   city: City,
@@ -4762,8 +4768,9 @@ function appendUnitRecruitCard(
 ): void {
   const udef = findUnitDef(data, item.id);
   if (!udef) return;
+  const mpCost = recruitManpowerCost(city, item.id);
   const mpSnap = cfg.getManpowerSnapshot?.(city.id);
-  const canMp = !mpSnap || mpSnap.manpowerBiezacy >= mpSnap.kosztJednostki;
+  const canMp = mpCost <= 0 || !mpSnap || mpSnap.manpowerBiezacy >= mpCost;
   const cardWrap = buildUnitRecruitCard({
     udef,
     item,
@@ -4771,6 +4778,8 @@ function appendUnitRecruitCard(
     skarb,
     canPurchase: !!cfg.onPurchaseUnit && canMp,
     treasuryIconHtml: cityPanelChipIconWrap('res-treasury', 14),
+    mpCost,
+    mpCostLabel: formatManpower(mpCost),
     onRecruit: () => recruitUnit(city, item),
   });
   const card = cardWrap.querySelector('.unit-recruit-card');
@@ -4783,8 +4792,9 @@ function appendUnitRecruitCard(
 function recruitUnit(city: City, item: ProductionItem): void {
   const skarb = cfg.getTreasury?.(city.ownerId);
   if (skarb !== undefined && skarb < item.koszt) return;
+  const mpCost = recruitManpowerCost(city, item.id);
   const mpSnap = cfg.getManpowerSnapshot?.(city.id);
-  if (mpSnap && mpSnap.manpowerBiezacy < mpSnap.kosztJednostki) return;
+  if (mpCost > 0 && mpSnap && mpSnap.manpowerBiezacy < mpCost) return;
   if (cfg.onPurchaseUnit) {
     cfg.onPurchaseUnit(city.id, item.id, item.koszt);
   } else {
@@ -4852,7 +4862,7 @@ function appendRecruitmentQueue(mount: HTMLElement, city: City, player: boolean,
           const idx = i;
           x.title = 'Usuń z kolejki (zwrot opłaty do skarbca)';
           x.addEventListener('click', () => {
-            cfg.onCancelRecruitment?.(city.id, it.koszt);
+            cfg.onCancelRecruitment?.(city.id, it.id, it.koszt);
             setProd(city.id, dequeueRecruitment(getProd(city.id), idx));
             rerender();
           });
@@ -4883,7 +4893,7 @@ function appendRecruitmentQueue(mount: HTMLElement, city: City, player: boolean,
         const idx = i;
         x.title = 'Usuń z kolejki (zwrot opłaty do skarbca)';
         x.addEventListener('click', () => {
-          cfg.onCancelRecruitment?.(city.id, it.koszt);
+          cfg.onCancelRecruitment?.(city.id, it.id, it.koszt);
           setProd(city.id, dequeueRecruitment(getProd(city.id), idx));
           rerender();
         });

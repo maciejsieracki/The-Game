@@ -32,6 +32,12 @@ import {
 
   unitManpowerCost,
 
+  unitManpowerCostForType,
+
+  isScoutTypeId,
+
+  SCOUT_TYPE_ID,
+
   cityLudnoscAbsolutna,
 
   cityManpowerMax,
@@ -65,6 +71,12 @@ module.exports = {
   cityManpowerSnapshot,
 
   unitManpowerCost,
+
+  unitManpowerCostForType,
+
+  isScoutTypeId,
+
+  SCOUT_TYPE_ID,
 
   cityLudnoscAbsolutna,
 
@@ -274,7 +286,15 @@ const cityRecruit = { population: 10, manpower: 10_000 };
 
 ok(mp.spendManpower(cityRecruit, 1) === 9_000, 'enqueue rekrutacji: spendManpower od razu');
 
-
+// Zwiadowca (Scout): 0 MP przy rekrutacji
+ok(mp.isScoutTypeId('Zwiadowca'), 'scout typeId rozpoznany');
+ok(mp.unitManpowerCostForType('Zwiadowca', 1) === 0, 'zwiadowca koszt MP 0 ep1');
+ok(mp.unitManpowerCostForType('Zwiadowca', 1, 2) === 0, 'zwiadowca koszt MP 0 ep1 roman');
+ok(mp.unitManpowerCostForType('Wojownik', 1) === 1000, 'wojownik koszt MP bez zmian');
+const scoutDed = mp.tryDeductUnitSpawnCosts({ population: 10, manpower: 50 }, 1, 0, 1, 'Zwiadowca');
+ok(scoutDed.ok && scoutDed.kosztManpower === 0 && scoutDed.manpower === 50, 'zwiadowca: brak MP nawet przy pustej puli');
+const scoutDed2 = mp.tryDeductUnitSpawnCosts({ population: 10, manpower: 10_000 }, 1, 0, 1, 'Zwiadowca');
+ok(scoutDed2.ok && scoutDed2.manpower === 10_000, 'zwiadowca: pula MP bez zmian po rekrutacji');
 
 console.log(`[manpower-test] ${pass} OK, ${fail} FAIL`);
 

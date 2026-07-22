@@ -11,9 +11,13 @@ swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drug
 
 ## ROBOCZA (gra-robocza\Gra-ROBOCZA.html — wskazywana przez START.html)
 
+- 2026-07-22 · stempel: ROBOCZA · **c54dae3b** · md5 pliku `c54dae3be8b3ab1cc0e5eebf7d04f9f0` · **FIX: Zwiadowca 0 Manpower** — na `98889578`:
+  **Zwiadowca (`typeId=Zwiadowca`)** nie zużywa puli Manpower przy rekrutacji (zakup złotem + ukończenie kolejki produkcji). Hook: `unitManpowerCostForType` w `manpower.ts`; `tryDeductUnitSpawnCosts` / `canAffordUnitManpower` / `refundUnitSpawnToCity` z opcjonalnym `typeId`; `production.manpowerCostOf`; UI karty rekrutacji pokazuje `0 👤`.
+  tsc=0 · manpower-test 36/36 · publish `gra-robocza/Gra-ROBOCZA.html`. · **AKTUALNA** · Test: Ctrl+F5 START.html → stamp `c54dae3b`; rekrutuj Zwiadowcę przy pustej puli MP → jednostka powstaje, MP bez zmian.
+
 - 2026-07-22 · stempel: ROBOCZA · **98889578** · md5 pliku `98889578644a90da33d1dc45d1a67994` · **BALANS: regen Manpower 5%→2%** — na `a28c034e`:
   **Regen bazowy:** `manpower_regen_proc_max_tura` **5 → 2** (`miasto-params.json`, fallback `DEFAULT_REGEN` w `manpower.ts`). **Rzymianie bez zmian bonusów:** `mnoznik_manpower_max` **2.0** (2× pula max) + `bonus_pobor_regen` **1.0** (2× tempo regen). Ep1 Kamień, 10 ludków: standard max **10k** regen **+200/t** (~50 tur do pełna); Rzym max **20k** regen **+800/t** (4% max = 2%×2 bonus).
-  tsc=0 · manpower-test 30/30 · publish `gra-robocza/Gra-ROBOCZA.html`. · **AKTUALNA** · Test: Ctrl+F5 START.html → stamp `98889578` → ep1 10 ludków: inna cyw. +200/t, Rzym +800/t.
+  tsc=0 · manpower-test 30/30 · publish `gra-robocza/Gra-ROBOCZA.html`. · **ZASTĄPIONA** (→ `c54dae3b`) · Test: Ctrl+F5 START.html → stamp `98889578` → ep1 10 ludków: inna cyw. +200/t, Rzym +800/t.
 
 - 2026-07-22 · stempel: ROBOCZA · **a28c034e** · md5 pliku `a28c034e03223ec6fb4cd52401b0d86c` · **CYWIL: bonus Manpower Rzymianie** — na `3613d5d4`:
   **Rzymianie:** `mnoznik_manpower_max` **2.0** (2× pula max per ludek) + `bonus_pobor_regen` **1.0** (2× tempo regen). Hook: `manpower.ts` (`getCivManpowerMaxMultiplier`, `getCivManpowerRegenBonus`) · `turn-economy.ts` · `main.ts` (HUD breakdown). Przykład ep1, 10 ludków: max **20k** MP (vs 10k bazowo); regen **+1000/t** (vs +500).

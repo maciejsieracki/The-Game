@@ -8,6 +8,19 @@
 
 ---
 
+## [07:45] ✅ Gotowe — Zwiadowca 0 Manpower
+
+| | |
+|---|---|
+| **Co** | Zwiadowca (`typeId=Zwiadowca`) **nie zużywa** puli Manpower przy rekrutacji (zakup złotem + ukończenie kolejki) |
+| **Pliki** | `manpower.ts` · `production.ts` · `main.ts` · `cityPanel.ts` · `unitRecruitCard.ts` · `manpower-test.cjs` |
+| **Przykład** | Pula MP = 0 → rekrutacja Zwiadowcy OK; Wojownik nadal wymaga pełnego kosztu epoki |
+| **md5** | `c54dae3be8b3ab1cc0e5eebf7d04f9f0` · stamp `c54dae3b` |
+| **Bramki** | tsc=0 · manpower-test 36/36 |
+| **Od Ciebie** | `git pull` → Ctrl+F5 · `gra-robocza/START.html` → stamp `c54dae3b` → panel miasta → Zwiadowca pokazuje `0 👤` |
+
+---
+
 ## [07:30] ✅ Gotowe — regen Manpower 2% (Rzym 4%)
 
 | | |

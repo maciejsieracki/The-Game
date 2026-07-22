@@ -139,12 +139,15 @@ export interface UnitRecruitCardOpts {
   skarb: number | undefined;
   canPurchase: boolean;
   treasuryIconHtml: string;
+  /** Koszt Manpower (0 = Zwiadowca). */
+  mpCost?: number;
+  mpCostLabel?: string;
   onRecruit: () => void;
 }
 
 /** Karta jednostki C09 v2 do katalogu rekrutacji. */
 export function buildUnitRecruitCard(opts: UnitRecruitCardOpts): HTMLDivElement {
-  const { udef, item, skarb, canPurchase, treasuryIconHtml, onRecruit } = opts;
+  const { udef, item, skarb, canPurchase, treasuryIconHtml, mpCost, mpCostLabel, onRecruit } = opts;
   const cat = unitCategory(udef);
   const theme = themeForCategory(cat);
   const canBuy = canPurchase && (skarb === undefined || skarb >= item.koszt);
@@ -191,7 +194,10 @@ export function buildUnitRecruitCard(opts: UnitRecruitCardOpts): HTMLDivElement 
 
   const ft = el('div', 'unit-recruit-ft');
   const cost = el('div', 'unit-recruit-cost');
-  cost.innerHTML = `${item.koszt} ${treasuryIconHtml}`;
+  const mpPart = mpCostLabel != null
+    ? ` · ${mpCostLabel} 👤`
+    : '';
+  cost.innerHTML = `${item.koszt} ${treasuryIconHtml}${mpPart}`;
   ft.appendChild(cost);
   const btn = el('button', 'btn btn-sm btn-g') as HTMLButtonElement;
   btn.textContent = 'Rekrutuj';

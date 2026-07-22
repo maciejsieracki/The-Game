@@ -219,8 +219,16 @@ function cityManpowerMax(ludki, epoka, maxMult = 1) {
   const row = epokaManpowerRow(epoka);
   return scaledManpower(clampLudki(ludki) * row.manpowerNaLudka, maxMult);
 }
+var SCOUT_TYPE_ID = "Zwiadowca";
+function isScoutTypeId(typeId) {
+  return typeId === SCOUT_TYPE_ID;
+}
 function unitManpowerCost(epoka, maxMult = 1) {
   return scaledManpower(epokaManpowerRow(epoka).manpowerNaJednostke, maxMult);
+}
+function unitManpowerCostForType(typeId, epoka, maxMult = 1) {
+  if (isScoutTypeId(typeId)) return 0;
+  return unitManpowerCost(epoka, maxMult);
 }
 function cityManpowerCurrent(city, epoka, maxMult = 1) {
   const max = cityManpowerMax(city.population, epoka, maxMult);
@@ -258,8 +266,8 @@ function cityManpowerSnapshot(city, epoka, regenMult = 1, maxMult = 1) {
     werbMaxPrzyPelnejPuli: kosztJednostki > 0 ? Math.floor(manpowerBiezacy / kosztJednostki) : 0
   };
 }
-function tryDeductUnitSpawnCosts(city, epoka, popCost = 1, maxMult = 1) {
-  const kosztManpower = unitManpowerCost(epoka, maxMult);
+function tryDeductUnitSpawnCosts(city, epoka, popCost = 1, maxMult = 1, typeId) {
+  const kosztManpower = unitManpowerCostForType(typeId, epoka, maxMult);
   const cur = cityManpowerCurrent(city, epoka, maxMult);
   if (cur < kosztManpower) {
     return {
@@ -307,6 +315,9 @@ function formatPopulationAbs(n) {
 module.exports = {
   cityManpowerSnapshot,
   unitManpowerCost,
+  unitManpowerCostForType,
+  isScoutTypeId,
+  SCOUT_TYPE_ID,
   cityLudnoscAbsolutna,
   cityManpowerMax,
   spendManpower,

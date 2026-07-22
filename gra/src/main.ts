@@ -409,7 +409,7 @@ import { empireHasKopalniaNaZlozuZelaza } from './game/zelazo-access';
 import {
   tryDeductUnitSpawnCosts, empirePoborTotals, rekrutUnitEquivalents, formatManpower,
   cityManpowerSnapshot, civManpowerRegenMult, civManpowerMaxMult, civManpowerMults,
-  cityManpowerMax, unitManpowerCost,
+  cityManpowerMax, unitManpowerCost, unitManpowerCostForType,
   canAffordUnitManpower, refundUnitSpawnToCity,
 } from './game/manpower';
 import { computeObjectivePower, battlePowerPointsFromDefeatedEnemy, type ObjectivePowerResult } from './game/power-objective';
@@ -1535,7 +1535,9 @@ async function boot(): Promise<void> {
       }
       const ep = empireEpochForOwner(city.ownerId);
       const mpMults = civManpowerMultsForOwner(city.ownerId);
-      const d = tryDeductUnitSpawnCosts(city, ep, populationCostOf(completed), mpMults.maxMult);
+      const d = tryDeductUnitSpawnCosts(
+        city, ep, populationCostOf(completed), mpMults.maxMult, completed.id,
+      );
       if (!d.ok) {
         console.log(`[Produkcja] Tura ${turn} ${city.name}: brak Manpower — odlozono ${completed.id}`);
         return {
@@ -1581,7 +1583,7 @@ async function boot(): Promise<void> {
       if (!city || city.ownerId !== 0) return false;
       const ep = empireEpochForOwner(0);
       const mpMults = civManpowerMultsForOwner(0);
-      if (!canAffordUnitManpower(city, ep, mpMults.maxMult)) {
+      if (!canAffordUnitManpower(city, ep, mpMults.maxMult, itemId)) {
         showHintMessage('Za mało rekrutów (Manpower) w tym mieście', 2800);
         return false;
       }
@@ -1594,7 +1596,9 @@ async function boot(): Promise<void> {
         _menuDifficulty,
       );
       if (!item) return false;
-      const d = tryDeductUnitSpawnCosts(city, ep, UNIT_POPULATION_COST, mpMults.maxMult);
+      const d = tryDeductUnitSpawnCosts(
+        city, ep, UNIT_POPULATION_COST, mpMults.maxMult, itemId,
+      );
       if (!d.ok) {
         showHintMessage('Za mało rekrutów (Manpower) w tym mieście', 2800);
         return false;
@@ -1614,12 +1618,14 @@ async function boot(): Promise<void> {
     }
 
     /** Anulowanie opłaconej rekrutacji — zwrot złota i Manpower. */
-    function cancelRecruitmentPurchase(cityId: string, koszt: number): void {
+    function cancelRecruitmentPurchase(cityId: string, itemId: string, koszt: number): void {
       const city = cities.find(ct => ct.id === cityId);
       if (!city || city.ownerId !== 0) return;
       const ep = empireEpochForOwner(0);
       const mpMults = civManpowerMultsForOwner(0);
-      const refunded = refundUnitSpawnToCity(city, ep, UNIT_POPULATION_COST, undefined, mpMults.maxMult);
+      const refunded = refundUnitSpawnToCity(
+        city, ep, UNIT_POPULATION_COST, undefined, mpMults.maxMult, itemId,
+      );
       city.population = refunded.population;
       city.manpower = refunded.manpower;
       player.skarbiec += koszt;
@@ -2330,13 +2336,15 @@ async function boot(): Promise<void> {
       const ep = empireEpochForOwner(0);
       const mpMults = civManpowerMultsForOwner(0);
       const popRefund = UNIT_POPULATION_COST;
-      const mpRefund = unitManpowerCost(ep, mpMults.maxMult);
+      const mpRefund = unitManpowerCostForType(u.typeId, ep, mpMults.maxMult);
       const refundCity = cityAtUnit(u) ?? cities.find(c => c.ownerId === 0);
       if (refundCity) {
         const built = cityBuilt.get(refundCity.id) ?? [];
         const maAkwedukt = built.includes('akwedukt');
         const popCap = cityPopulationCap(maAkwedukt, loadEconParams(data.econParams, _menuDifficulty));
-        const refunded = refundUnitSpawnToCity(refundCity, ep, popRefund, popCap, mpMults.maxMult);
+        const refunded = refundUnitSpawnToCity(
+          refundCity, ep, popRefund, popCap, mpMults.maxMult, u.typeId,
+        );
         refundCity.population = refunded.population;
         refundCity.manpower = refunded.manpower;
       }
@@ -8025,8 +8033,8 @@ async function boot(): Promise<void> {
       onPurchaseUnit: (cityId: string, itemId: string, koszt: number) => {
         purchaseRecruitmentUnit(cityId, itemId, koszt);
       },
-      onCancelRecruitment: (cityId: string, koszt: number) => {
-        cancelRecruitmentPurchase(cityId, koszt);
+      onCancelRecruitment: (cityId: string, itemId: string, koszt: number) => {
+        cancelRecruitmentPurchase(cityId, itemId, koszt);
       },
       getCivBonusy: (ownerId: number) => civBonusyForOwnerId(ownerId),
       getCivKey: (ownerId: number) => civKeyForOwnerId(ownerId),

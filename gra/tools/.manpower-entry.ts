@@ -6,6 +6,12 @@ import {
 
   unitManpowerCost,
 
+  unitManpowerCostForType,
+
+  isScoutTypeId,
+
+  SCOUT_TYPE_ID,
+
   cityLudnoscAbsolutna,
 
   cityManpowerMax,
@@ -39,6 +45,12 @@ module.exports = {
   cityManpowerSnapshot,
 
   unitManpowerCost,
+
+  unitManpowerCostForType,
+
+  isScoutTypeId,
+
+  SCOUT_TYPE_ID,
 
   cityLudnoscAbsolutna,
 

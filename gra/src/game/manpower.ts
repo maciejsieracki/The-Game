@@ -190,9 +190,26 @@ export function cityManpowerMax(ludki: number, epoka: number, maxMult = 1): numb
   return scaledManpower(clampLudki(ludki) * row.manpowerNaLudka, maxMult);
 }
 
+/** typeId z units.json (pole Jednostka) — zwiadowca nie zużywa puli Manpower. */
+export const SCOUT_TYPE_ID = 'Zwiadowca';
+
+export function isScoutTypeId(typeId: string | undefined): boolean {
+  return typeId === SCOUT_TYPE_ID;
+}
+
 /** Koszt Manpower jednej jednostki wojskowej (= pełny slot manpower w epoce × bonus cyw.). */
 export function unitManpowerCost(epoka: number, maxMult = 1): number {
   return scaledManpower(epokaManpowerRow(epoka).manpowerNaJednostke, maxMult);
+}
+
+/** Koszt Manpower per typ jednostki (Zwiadowca = 0; reszta jak unitManpowerCost). */
+export function unitManpowerCostForType(
+  typeId: string | undefined,
+  epoka: number,
+  maxMult = 1,
+): number {
+  if (isScoutTypeId(typeId)) return 0;
+  return unitManpowerCost(epoka, maxMult);
 }
 
 /** Bieżąca pula: zapisana w city.manpower lub domyślnie max. */
@@ -282,9 +299,11 @@ export function canAffordUnitManpower(
   city: Pick<City, 'population' | 'manpower'>,
   epoka: number,
   maxMult = 1,
+  typeId?: string,
 ): boolean {
-  const snap = cityManpowerSnapshot(city, epoka, 1, maxMult);
-  return snap.manpowerBiezacy >= snap.kosztJednostki;
+  const cost = unitManpowerCostForType(typeId, epoka, maxMult);
+  if (cost <= 0) return true;
+  return cityManpowerCurrent(city, epoka, maxMult) >= cost;
 }
 
 export type UnitSpawnBlockReason = 'brak_manpower' | 'brak_ludnosci';
@@ -306,8 +325,9 @@ export function tryDeductUnitSpawnCosts(
   epoka: number,
   popCost = 1,
   maxMult = 1,
+  typeId?: string,
 ): UnitSpawnDeduction {
-  const kosztManpower = unitManpowerCost(epoka, maxMult);
+  const kosztManpower = unitManpowerCostForType(typeId, epoka, maxMult);
   const cur = cityManpowerCurrent(city, epoka, maxMult);
   if (cur < kosztManpower) {
     return {
@@ -345,8 +365,9 @@ export function refundUnitSpawnToCity(
   popCost = 1,
   popCap?: number,
   maxMult = 1,
+  typeId?: string,
 ): { population: number; manpower: number } {
-  const mpRefund = unitManpowerCost(epoka, maxMult);
+  const mpRefund = unitManpowerCostForType(typeId, epoka, maxMult);
   const rawPop = city.population + popCost;
   const population = popCap != null ? Math.min(popCap, rawPop) : rawPop;
   const max = cityManpowerMax(population, epoka, maxMult);

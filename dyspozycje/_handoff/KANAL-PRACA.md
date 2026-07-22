@@ -2849,3 +2849,11 @@ Ep1 Kamień, 10 ludków: standard max 10k regen +200/t (~50 tur do pełna); Rzym
 Bramki: tsc=0 · manpower-test 30/30.
 Publish ROBOCZA: stamp **98889578** · md5 `98889578644a90da33d1dc45d1a67994`.
 CZEKAM-NA: sesja lokalna — `git pull` → Ctrl+F5 START.html → stamp `98889578` → porównaj regen standard vs Rzym.
+
+## [07:45 PL, 2026-07-22] CHMURA → LOKALNA — FIX Zwiadowca 0 Manpower · stamp `c54dae3b`
+
+Zwiadowca (`typeId=Zwiadowca`) nie kosztuje puli Manpower przy rekrutacji (złoto + kolejka produkcji). Inne jednostki bez zmian.
+Pliki: `manpower.ts` · `production.ts` · `main.ts` · `cityPanel.ts` · `unitRecruitCard.ts` · `manpower-test.cjs`.
+Bramki: tsc=0 · manpower-test 36/36.
+Publish ROBOCZA: stamp **c54dae3b** · md5 `c54dae3be8b3ab1cc0e5eebf7d04f9f0`.
+CZEKAM-NA: sesja lokalna — `git pull` → Ctrl+F5 START.html → stamp `c54dae3b` → rekrutuj Zwiadowcę przy pustej puli MP.

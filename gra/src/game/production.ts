@@ -55,7 +55,7 @@ import {
   type GameDifficulty,
 } from './difficulty-cost';
 import { buildingCostAfterCivDiscount } from './civ-bonuses';
-import { unitManpowerCost, tryDeductUnitSpawnCosts, cityManpowerCurrent } from './manpower';
+import { unitManpowerCostForType, tryDeductUnitSpawnCosts, cityManpowerCurrent } from './manpower';
 import {
   empireHasKopalniaMiedzi,
   hasBrazAccess,
@@ -1021,9 +1021,9 @@ export function populationCostOf(item: ProductionItem): number {
   return item.kind === 'jednostka' ? UNIT_POPULATION_COST : 0;
 }
 
-/** Manpower cost of completing a unit at empire epoch (10% slotu manpower w epoce). */
-export function manpowerCostOf(item: ProductionItem, epoka: number): number {
-  return item.kind === 'jednostka' ? unitManpowerCost(epoka) : 0;
+/** Manpower cost of completing a unit at empire epoch (Zwiadowca = 0). */
+export function manpowerCostOf(item: ProductionItem, epoka: number, maxMult = 1): number {
+  return item.kind === 'jednostka' ? unitManpowerCostForType(item.id, epoka, maxMult) : 0;
 }
 
 /** Set/clear the Wstrzymaj (pause) flag. Returns a fresh CityProduction. */
@@ -1105,7 +1105,14 @@ export function advanceRecruitmentGated(
       n++;
       continue;
     }
-    const d = tryDeductUnitSpawnCosts({ population: pop, manpower: mp }, epoka, UNIT_POPULATION_COST);
+    const front = rq[0]!;
+    const d = tryDeductUnitSpawnCosts(
+      { population: pop, manpower: mp },
+      epoka,
+      UNIT_POPULATION_COST,
+      1,
+      front.id,
+    );
     if (!d.ok) break;
     completed.push(rq.shift()!);
     pop = d.population;
