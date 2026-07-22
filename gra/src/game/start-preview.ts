@@ -14,6 +14,7 @@ import {
 import {
   defaultCivTypesFromMapLabel,
   defaultMiastaPanstwaFromMapLabel,
+  clampMiastaPanstwaCount,
 } from '../map/newGameMapDefaults';
 
 /** Kontrakt przekazywany w NewGameParams.startPreview → weryfikacja w SILNIK. */
@@ -59,7 +60,9 @@ export function buildStartPreview(input: BuildStartPreviewInput): StartPreview {
     civs, cityNamesPools, playerCivId, mapSizeMenuLabel, cityStatesCount, activeTypesCount, rivalsCount,
   } = input;
   const mapLabel = mapSizeMenuLabel ?? 'Standardowy';
-  const rivalN = cityStatesCount ?? rivalsCount ?? defaultMiastaPanstwaFromMapLabel(mapLabel);
+  const rivalN = clampMiastaPanstwaCount(
+    cityStatesCount ?? rivalsCount ?? defaultMiastaPanstwaFromMapLabel(mapLabel),
+  );
   const activeTypes = activeTypesCount ?? defaultCivTypesFromMapLabel(mapLabel);
   const foreignTypes = Math.max(0, activeTypes - 1);
 

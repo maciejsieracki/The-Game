@@ -87,6 +87,7 @@ import {
   resolveLandFraction,
   defaultCivTypesFromMapLabel,
   defaultMiastaPanstwaFromMapLabel,
+  clampMiastaPanstwaCount,
   type WorldGenOptions,
 } from './newGameMapDefaults';
 import { mapGenRozmiarDims } from '../data/map-gen-params-loader';
@@ -430,7 +431,9 @@ export function generateMap(
   const mapMenuLabel = genOpts?.mapSizeMenuLabel ?? 'Standardowy';
   const startCityCount = expectedStartCityCount(
     genOpts?.civTypesCount ?? defaultCivTypesFromMapLabel(mapMenuLabel),
-    genOpts?.cityStatesCount ?? defaultMiastaPanstwaFromMapLabel(mapMenuLabel),
+    clampMiastaPanstwaCount(
+      genOpts?.cityStatesCount ?? defaultMiastaPanstwaFromMapLabel(mapMenuLabel),
+    ),
   );
   const targetHuts = targetVillageHutCount(startCityCount, genOpts?.difficulty ?? 'normal');
   const villageSites = placeVillages(hexes, startPositions, [], (effectiveSeed ^ 0x5eed) >>> 0, {

@@ -44,17 +44,17 @@ function assert(c, msg) {
 }
 
 const EXPECT = {
-  Malenki: { mp: [6, 8, 10], typy: [6, 7, 10] },
-  Mały: { mp: [8, 10, 12], typy: [8, 10, 12] },
-  Standardowy: { mp: [10, 12, 14], typy: [10, 12, 14] },
-  Duży: { mp: [12, 14, 16], typy: [12, 14, 15] },
-  Ogromny: { mp: [14, 16, 18], typy: [13, 15, 15] },
-  'Super Huge': { mp: [14, 16, 18], typy: [13, 15, 15] },
+  Malenki: { mp: [2, 3, 4], typy: [6, 7, 10] },
+  Mały: { mp: [3, 4, 5], typy: [8, 10, 12] },
+  Standardowy: { mp: [4, 6, 7], typy: [10, 12, 14] },
+  Duży: { mp: [5, 7, 8], typy: [12, 14, 15] },
+  Ogromny: { mp: [6, 8, 9], typy: [13, 15, 15] },
+  'Super Huge': { mp: [6, 9, 9], typy: [13, 15, 15] },
 };
 
 console.log('map-scale-menu-test (Panel-E + menu kreatora)\n');
 
-assert(M.MAX_MIAST_PANSTWA === 18, 'MAX_MIAST_PANSTWA=18');
+assert(M.MAX_MIAST_PANSTWA === 9, 'MAX_MIAST_PANSTWA=9');
 assert(M.MAX_TYPY_CYWILIZACJI_MENU === 15, 'MAX_TYPY_CYWILIZACJI_MENU=15');
 
 for (const [label, exp] of Object.entries(EXPECT)) {

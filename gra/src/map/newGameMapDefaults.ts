@@ -427,13 +427,20 @@ export function resolveWorldGenNumbers(opts?: WorldGenOptions): {
   };
 }
 
-/** Twardy sufit miast-państw w klastrze (Maciej 2026-07-04; ×2 balans 2026-07-20). */
-export const MAX_MIAST_PANSTWA = 18;
+/** Twardy sufit miast-państw w klastrze (Maciej 2026-07-04: max 9 + stolica gracza = 10). */
+export const MAX_MIAST_PANSTWA = 9;
+
+/** Ogranicza liczbę miast-państw do [1, MAX_MIAST_PANSTWA]. */
+export function clampMiastaPanstwaCount(raw: number): number {
+  const n = Math.floor(Number(raw));
+  if (!Number.isFinite(n) || n < 1) return 1;
+  return Math.min(n, MAX_MIAST_PANSTWA);
+}
 
 /** Twardy sufit typów cywilizacji w menu (roster silnika: 15 nacji). */
 export const MAX_TYPY_CYWILIZACJI_MENU = 15;
 
-/** Menu „Miasta-państwa" — drabinka Maciej: Ogromny/Super 14·16·18, każdy mniejszy rozmiar −2 (×2 balans 2026-07-20). */
+/** Menu „Miasta-państwa" — drabinka Maciej: max 9 (Super Huge), mniejsze mapy proporcjonalnie mniej. */
 const MAP_MENU_TIER_ORDER: readonly RozmiarSwiata[] = [
   'malenki', 'maly', 'standardowy', 'duzy', 'ogromny', 'superogromny',
 ];
@@ -444,14 +451,14 @@ interface MapScaleTriple {
   max: number;
 }
 
-/** min · domyślne · max — miasta-państwa per klaster (×2 balans 2026-07-20). */
+/** min · domyślne · max — miasta-państwa per klaster (sufit 9, skala z mapą). */
 const MIASTA_PANSTWA_MENU_BY_TIER: readonly MapScaleTriple[] = [
-  { min: 6, default: 8, max: 10 },
-  { min: 8, default: 10, max: 12 },
-  { min: 10, default: 12, max: 14 },
-  { min: 12, default: 14, max: 16 },
-  { min: 14, default: 16, max: MAX_MIAST_PANSTWA },
-  { min: 14, default: 16, max: MAX_MIAST_PANSTWA },
+  { min: 2, default: 3, max: 4 },
+  { min: 3, default: 4, max: 5 },
+  { min: 4, default: 6, max: 7 },
+  { min: 5, default: 7, max: 8 },
+  { min: 6, default: 8, max: MAX_MIAST_PANSTWA },
+  { min: 6, default: MAX_MIAST_PANSTWA, max: MAX_MIAST_PANSTWA },
 ];
 
 /**
@@ -500,7 +507,7 @@ function menuBundleFromTriple(
 /** Domyślna liczba miast-państw w klastrze (Panel-E → fallback drabinka tier). */
 export function defaultMiastaPanstwaFromMapLabel(menuLabel: string): number {
   const fromE = eStartMiastaPanstwa(menuLabel);
-  if (fromE != null && fromE > 0) return Math.min(fromE, MAX_MIAST_PANSTWA);
+  if (fromE != null && fromE > 0) return clampMiastaPanstwaCount(fromE);
   return miastaPanstwaTriple(menuLabel).default;
 }
 

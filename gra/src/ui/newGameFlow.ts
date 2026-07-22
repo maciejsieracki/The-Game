@@ -32,6 +32,7 @@ import {
   civTypesMenuForMapLabel,
   defaultCivTypesFromMapLabel,
   defaultMiastaPanstwaFromMapLabel,
+  clampMiastaPanstwaCount,
   miastaPanstwaMenuForMapLabel,
   qualityTierFromLabel,
   qualityTierToLabel,
@@ -1220,7 +1221,9 @@ function buildParams(): NewGameParams {
     renderQuality: bundle.renderQuality,
     mapDetailQuality: bundle.mapDetailQuality,
     civTypesCount: Number.isFinite(civTypesCount) ? civTypesCount : typesDefault,
-    cityStatesCount: Number.isFinite(cityStatesCount) ? cityStatesCount : cityDefault,
+    cityStatesCount: clampMiastaPanstwaCount(
+      Number.isFinite(cityStatesCount) ? cityStatesCount : cityDefault,
+    ),
     worldDensity,
     worldDensityLabels: densityLabels,
     landFractionPercent: advOpts.landFractionPercent,

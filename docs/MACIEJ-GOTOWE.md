@@ -4,7 +4,20 @@
 > **Czat:** krótko **`✅ Gotowe:`** / **`⏸️ Czeka:`** · **Ten plik:** pełniejszy zapis tego samego.  
 > Szczegóły techniczne → handoff w `dyspozycje/_handoff/` · operacja → `dyspozycje/DZIENNIK-MASTERA.md`
 
-**Ostatnia aktualizacja:** 2026-07-22 (fix chatki ze skarbem @ 6865baf8)
+**Ostatnia aktualizacja:** 2026-07-22 (cap miast-państw max 9 @ 6865baf8)
+
+---
+
+## [10:30] ✅ Gotowe — BALANS: cap miast-państw max 9 (skala z mapą)
+
+| | |
+|---|---|
+| **Co** | W klastrze gracza max **9** miast-państw (+ Twoja stolica = 10); mniejsze mapy mają mniej (np. Standard domyślnie 6) |
+| **Przyczyna** | ×2 balans 2026-07-20 podniósł sufit do 18 — za gęsto wokół gracza |
+| **Fix** | `MAX_MIAST_PANSTWA=9`, drabinka per tier, clamp przy spawnie i w kreatorze; chatki ze skarbami liczone od nowej liczby miast |
+| **Pliki** | `newGameMapDefaults.ts`, `e-start-params.json`, `main.ts`, `generator.ts`, `newGameFlow.ts` |
+| **md5** | `6865baf802e6ced6a0721e2a1f4d9c0b` · stamp `6865baf8` |
+| **Od Ciebie** | `git pull` → Ctrl+F5 · stamp `6865baf8` · Nowa gra Standardowy → suwak MP max 7 · w klastrze ~6 satelitów + stolica |
 
 ---
 

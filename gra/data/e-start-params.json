@@ -7,12 +7,12 @@
     "render_quality_bundled": "medium"
   },
   "skala_mapy": {
-    "Malenki": { "rywale_ai": 2, "miasta_panstwa": 8, "typy_cywilizacji": 7, "hex_w": 76, "hex_h": 52 },
-    "Mały": { "rywale_ai": 3, "miasta_panstwa": 10, "typy_cywilizacji": 10, "hex_w": 108, "hex_h": 74 },
-    "Standardowy": { "rywale_ai": 6, "miasta_panstwa": 12, "typy_cywilizacji": 12, "hex_w": 168, "hex_h": 120 },
-    "Duży": { "rywale_ai": 7, "miasta_panstwa": 14, "typy_cywilizacji": 14, "hex_w": 240, "hex_h": 168 },
-    "Ogromny": { "rywale_ai": 8, "miasta_panstwa": 16, "typy_cywilizacji": 15, "hex_w": 336, "hex_h": 238 },
-    "Super Huge": { "rywale_ai": 10, "miasta_panstwa": 16, "typy_cywilizacji": 15, "hex_w": 672, "hex_h": 476 }
+    "Malenki": { "rywale_ai": 2, "miasta_panstwa": 3, "typy_cywilizacji": 7, "hex_w": 76, "hex_h": 52 },
+    "Mały": { "rywale_ai": 3, "miasta_panstwa": 4, "typy_cywilizacji": 10, "hex_w": 108, "hex_h": 74 },
+    "Standardowy": { "rywale_ai": 6, "miasta_panstwa": 6, "typy_cywilizacji": 12, "hex_w": 168, "hex_h": 120 },
+    "Duży": { "rywale_ai": 7, "miasta_panstwa": 7, "typy_cywilizacji": 14, "hex_w": 240, "hex_h": 168 },
+    "Ogromny": { "rywale_ai": 8, "miasta_panstwa": 8, "typy_cywilizacji": 15, "hex_w": 336, "hex_h": 238 },
+    "Super Huge": { "rywale_ai": 10, "miasta_panstwa": 9, "typy_cywilizacji": 15, "hex_w": 672, "hex_h": 476 }
   },
   "generator_e2": {
     "resource_mult_low": 0.6,

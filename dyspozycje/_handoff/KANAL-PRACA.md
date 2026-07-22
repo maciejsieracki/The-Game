@@ -2930,3 +2930,13 @@ CZEKAM-NA: Maciej — `git pull` → Ctrl+F5 START.html → stamp `ae64786b` →
 Pliki: `gra/src/map/villages.ts`, `gra/tools/map-gen-regression-test.cjs`.
 Bramki: tsc=0 · villages-test 39/39 · map-gen spawn chat PASS · publish robocza OK.
 CZEKAM-NA: Maciej — `git pull` → Ctrl+F5 START.html → stamp `6865baf8` → Nowa gra Normal → znacznie więcej chat (≈2× miasta startowe).
+
+## [10:30 PL, 2026-07-22] INTEGRATOR → Maciej — BALANS cap miast-państw max 9 (skala z mapą)
+
+**md5:** `6865baf802e6ced6a0721e2a1f4d9c0b` · stamp `6865baf8` (ten sam bundle co chatki — rebuild zbiorczy)
+**Problem:** za dużo miast-państw w klastrze (do 18); gracz ma 1 miasto, AI wiele satelitów.
+**Fix:** `MAX_MIAST_PANSTWA=9`; drabinka Malenki 3 · Mały 4 · Standard 6 · Duży 7 · Ogromny 8 · Super Huge 9; `clampMiastaPanstwaCount` w main/generator/kreator; Panel-E zaktualizowany.
+**Chatki:** formula `typy×(1+państwa)×trudność` — po cap mniej chat na małych mapach (np. Standard 84 miasta → 168 chat Normal, było 156→312).
+Pliki: `newGameMapDefaults.ts`, `e-start-params.json`, `main.ts`, `generator.ts`, `newGameFlow.ts`, `start-preview.ts`.
+Bramki: tsc=0 · map-scale-menu 32/32 · city-names-pool 12/12 · map-gen-regression OK · verify OK.
+CZEKAM-NA: Maciej — `git pull` → stamp `6865baf8` → Nowa gra Standardowy → kreator max 7 MP · klaster ~6 rywali + stolica.

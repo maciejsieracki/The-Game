@@ -79,7 +79,7 @@ export function playerCapitalFromPool(pools: CityNamesPoolsData, ikonaId: string
 /**
  * N-2A / N-3A: rywal klastra (1-based).
  * Indeksy 1..(len-1) z miasta_panstwa; powyżej — kolejne unikalne z miasta_cywilizacji
- * (MAX_MIAST_PANSTWA=18 vs 10 nazw klastra — bez „Rywal N" gdy jest pula regularna).
+ * (MAX_MIAST_PANSTWA=9 vs 10 nazw klastra — indeksy 1..9 z puli, bez „Rywal N").
  */
 export function clusterRivalFromPool(
   pools: CityNamesPoolsData,

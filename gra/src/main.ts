@@ -45,7 +45,7 @@ import { loadGameData } from './data/loader';
 import { generateMap, DEFAULT_WIDTH, DEFAULT_HEIGHT, rozmiarFromMenuLabel } from './map/generator';
 import { generujSwiatAsync } from './map/mapGenAsync';
 import type { TypSwiata } from './map/gen-helpers';
-import { typSwiataFromMenuLabel, aktywneTypyFromMapLabel, defaultCivTypesFromMapLabel, defaultMiastaPanstwaFromMapLabel, type WorldGenerationPreset, DEFAULT_WORLD_DENSITY } from './map/newGameMapDefaults';
+import { typSwiataFromMenuLabel, aktywneTypyFromMapLabel, defaultCivTypesFromMapLabel, defaultMiastaPanstwaFromMapLabel, clampMiastaPanstwaCount, type WorldGenerationPreset, DEFAULT_WORLD_DENSITY } from './map/newGameMapDefaults';
 import { buildScene, getLastSetFogMs } from './render/scene';
 import {
   CIV_PERF_DEBUG_MARKER,
@@ -12945,9 +12945,11 @@ async function boot(): Promise<void> {
       _menuCivId = params.civId || 'rzymianie';
       _menuMapSize = params.mapSize || 'Standardowy';
       _menuCivTypesCount = params.civTypesCount || defaultCivTypesFromMapLabel(_menuMapSize);
-      _menuCityStates = params.cityStatesCount
+      _menuCityStates = clampMiastaPanstwaCount(
+        params.cityStatesCount
         || parseInt(String(params.rivals), 10)
-        || defaultMiastaPanstwaFromMapLabel(_menuMapSize);
+        || defaultMiastaPanstwaFromMapLabel(_menuMapSize),
+      );
       _menuRivals = _menuCityStates;
       _menuWorldDensity = params.worldDensity ?? { ...DEFAULT_WORLD_DENSITY };
 

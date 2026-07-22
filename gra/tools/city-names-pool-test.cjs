@@ -56,8 +56,7 @@ assert(M.validateCityNamesPools(pools, civs).length === 0, 'pule: 15×(100+10), 
 assert(M.playerStartCityName(civs, 'grecy', pools) === 'Ateny', 'stolica gracza Grecy → Ateny');
 assert(M.clusterRivalCityName(civs, 'grecy', 1, pools) === 'Sparta', 'państwo-miasto [1] → Sparta');
 assert(M.clusterRivalCityName(civs, 'grecy', 9, pools) === 'Delfy', 'państwo-miasto [9] → Delfy');
-assert(M.clusterRivalCityName(civs, 'grecy', 10, pools) === 'Olimpia', 'państwo-miasto [10] → Olimpia (pula regularna)');
-assert(M.clusterRivalCityName(civs, 'grecy', 18, pools) === 'Nafplion', 'państwo-miasto [18] → Nafplion (pula regularna)');
+assert(M.clusterRivalCityName(civs, 'grecy', 10, pools) === 'Olimpia', 'overflow [10] → Olimpia (pula regularna, poza spawnem)');
 assert(M.clusterRivalCityName(civs, 'chinczycy', 1, pools) === 'Qi', 'Chińczycy państwo [1] → Qi (królestwo)');
 
 const used = new Set(['Ateny', 'Sparta', 'Korynt']);
