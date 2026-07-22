@@ -1,0 +1,17 @@
+PACZKA: POLE-BITWY-TW-v5 · 2026-07-23
+Styl: 1E (Painted Imperial) · kierunek TW:WH3 · zatwierdzone przez Macieja 2026-07-22/23
+
+ZAWARTOŚĆ (7 plików):
+1. DYSPOZYCJA-WDROZENIE.md ......................................... instrukcja: co, gdzie, dla kogo
+2. brand-book/KANON/mockupy/The Game - C06 Pole bitwy odswiezenie (1E).dc.html
+   NOWA MAKIETA — 6 klatek: bitwa ręczna · AUTO · rozstawianie · C-23 · C-12 · C-09 stany+tooltip
+3. brand-book/KANON/mockupy/support.js ............................. runtime .dc.html (mockupy/)
+4. brand-book/KANON/CANON.md ....................................... ZAKTUALIZOWANY kanon (2026-07-23)
+5. brand-book/KANON/START - KANON aktualny (1E).dc.html ............ ZAKTUALIZOWANY hub (karta ★ TW v5)
+6. brand-book/KANON/support.js ..................................... runtime .dc.html (KANON/)
+7. brand-book/DESIGN-do-UI_POLE-BITWY-TW-v5.md ..................... nota wdrożeniowa dla integratora
+
+ZASTĘPUJE WIZUALNIE: C06 Deployment v4 · C07 Pole HUD bitwy v2 · C23 v1 · C12 v3
+DECYZJE: strzałka „↓" przy „Ty" USUNIĘTA · cluster liczb NIE lustrzany · panele ~70%+blur ·
+ikony z podpisem na hover · tempo+AUTO przy minimapie · ustawienia (muzyka/dźwięk/pomoc) pod kołem zębatym
+CEL W REPO: docs/ux/claude-design/01-propozycje-z-design/brand-book/
