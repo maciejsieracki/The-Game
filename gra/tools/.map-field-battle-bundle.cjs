@@ -27,6 +27,7 @@ __export(map_field_battle_entry_exports, {
   hasCityDefenders: () => hasCityDefenders,
   planOpenCityFieldBattle: () => planOpenCityFieldBattle,
   resolveEnemyCityClick: () => resolveEnemyCityClick,
+  shouldIncludeInBattleRoster: () => shouldIncludeInBattleRoster,
   validateOpenCityFieldBattle: () => validateOpenCityFieldBattle
 });
 module.exports = __toCommonJS(map_field_battle_entry_exports);
@@ -49,8 +50,8 @@ var terrain_improvements_default = {
       zywnosc: 3
     },
     surowiecOdblokowany: null,
-    teren: "\u0141\u0105ka, R\xF3wnina",
-    warunek: "ziemia uprawna; DZIA\u0141A BEZ rzeki (podstawowy)",
+    teren: "\u0141\u0105ka, R\xF3wnina; Wzg\xF3rza z lasem",
+    warunek: "ziemia uprawna; DZIA\u0141A BEZ rzeki (podstawowy); MO\u017BE na lesie (Las) \u2014 bez wyr\u0119bu (Maciej 2026-07-21)",
     koszt_praca: 20,
     tech: "Rolnictwo",
     odblokowuje: ""
@@ -69,19 +70,19 @@ var terrain_improvements_default = {
     odblokowuje: ""
   },
   bydlo: {
-    nazwa: "Byd\u0142o",
+    nazwa: "Trzoda",
     epoka: 1,
     bonus: {
       zywnosc: 2,
       praca: 3
     },
     surowiecOdblokowany: "bydlo",
-    surowiecOdblokowany_uwaga: "ABC-18: dost\u0119p dopiero po postawieniu na z\u0142o\u017Cu byd\u0142a",
+    surowiecOdblokowany_uwaga: "ABC-18: dost\u0119p dopiero po postawieniu na z\u0142o\u017Cu trzody",
     teren: "\u0141\u0105ka, R\xF3wnina",
     warunek: "plaski l\u0105d; pierwsze: z\u0142o\u017Ce byd\u0142a; potem po odblokowaniu \u2014 bez z\u0142o\u017Ca; + farma lub solo; NIE na Pustyni",
     koszt_praca: 20,
     tech: "Oswojenie zwierz\u0105t",
-    odblokowuje: "Byd\u0142o (Rydwan po odblokowaniu)"
+    odblokowuje: "Trzoda (Rydwan po odblokowaniu)"
   },
   owce: {
     nazwa: "Owce",
@@ -107,8 +108,8 @@ var terrain_improvements_default = {
     },
     surowiecOdblokowany: "lama",
     surowiecOdblokowany_uwaga: "TYLKO Inkowie; solo \u2014 bez innych ulepszen na heksie; pierwsze na zlozu lamy",
-    teren: "\u0141\u0105ka, R\xF3wnina, Wzg\xF3rza",
-    warunek: "solo; tylko cyw. Inkowie; pierwsze: z\u0142o\u017Ce lamy; NIE na Pustyni",
+    teren: "Wzg\xF3rza, G\xF3ry",
+    warunek: "solo; tylko cyw. Inkowie; wzg\xF3rza/g\xF3ry; pierwsze: z\u0142o\u017Ce lamy; NIE na \u0141\u0105ce/R\xF3wninie/Pustyni",
     koszt_praca: 20,
     tech: "Oswojenie zwierz\u0105t",
     odblokowuje: "Lama (transport / \u017Cywno\u015B\u0107)"
@@ -145,10 +146,11 @@ var terrain_improvements_default = {
     nazwa: "Glinianka",
     epoka: 2,
     bonus: {
-      praca: 1
+      praca: 1,
+      glina: 2
     },
     surowiecOdblokowany: "glina",
-    surowiecOdblokowany_uwaga: "klucz 'glina' wg Surowiec='Glina' w resources.json; brak pola id \u2014 propozycja EKONOMIA",
+    surowiecOdblokowany_uwaga: "GLINA-Q1=A (Maciej 2026-07-20): stala ilosc 2 glina/ture z ulepszenia (bonus.glina), analogicznie do drewna/kamienia. Klucz 'glina' wg Surowiec='Glina' w resources.json.",
     teren: "z\u0142o\u017Ce Gliny",
     warunek: "glina \u2192 ceg\u0142a (wa\u017Cne w br\u0105zie)",
     koszt_praca: 20,
@@ -192,12 +194,12 @@ var terrain_improvements_default = {
     bonus: {},
     surowiecOdblokowany: null,
     teren: "Las",
-    warunek: "koszt 5 Pracy na start; +20 Pracy/tur\u0119 \xD7 3 tury (=60); potem teren bazowy bez lasu",
+    warunek: "koszt 5 Pracy na start; +5 Pracy \xD7 1 tura (=5, netto zero); potem teren bazowy bez lasu",
     koszt_praca: 5,
     tech: null,
     wycinka: {
-      praca_per_tura: 20,
-      tury: 3,
+      praca_per_tura: 5,
+      tury: 1,
       usuwa_nakladke: "las"
     },
     odblokowuje: ""
@@ -274,7 +276,7 @@ var terrain_improvements_default = {
     teren: "dowolny l\u0105d w terytorium",
     warunek: "+100% Obrony jednostkom obozuj\u0105cym na polu fortu (bez plon\xF3w); rozszerza zasi\u0119g terytorium o promie\u0144 10 p\xF3l",
     koszt_praca: 25,
-    tech: "Wojskowosc",
+    tech: "Wojskowo\u015B\u0107",
     odblokowuje: "",
     uwagi: "ABC-10 Maciej 2026-07-04: Fort (mapa) \u2260 Cytadela (miasto). \u017Belazo ep.3; zasi\u0119g 10; +100% Obrona obozowanie"
   },
@@ -306,8 +308,8 @@ var terrain_improvements_default = {
     odblokowuje: "",
     uwagi: "T-TECH-9 Maciej 2026-07-04"
   },
-  popalnia_brazu: {
-    nazwa: "Popalnia br\u0105zu",
+  kopalnia_miedzi: {
+    nazwa: "Kopalnia miedzi",
     epoka: 2,
     bonus: {
       praca: 2
@@ -350,6 +352,10 @@ var IMPROVEMENT_KEYS = Object.keys(IMPROVEMENTS).filter((k) => !k.startsWith("_"
 var ROAD_MIN_MOVE_COST = 1 / 3;
 
 // src/units/setup.ts
+var CIVILIAN_CATEGORIES = /* @__PURE__ */ new Set(["osadnik", "robotnik", "zwiadowca"]);
+function isCivilianUnit(u) {
+  return CIVILIAN_CATEGORIES.has(u.category);
+}
 function hexDistance(aq, ar, bq, br) {
   const dq = Math.abs(aq - bq);
   const dr = Math.abs(ar - br);
@@ -368,30 +374,78 @@ var DEFAULT_TERRAIN_COSTS = {
 var _terrainCosts = { ...DEFAULT_TERRAIN_COSTS };
 
 // src/units/battleRoster.ts
-function collectBattleRoster(anchor, allUnits) {
+function shouldIncludeInBattleRoster(u, ctx) {
+  if (!isCivilianUnit(u)) return true;
+  if (ctx.side === "attacker") return u.id === ctx.anchor.id;
+  return u.q === ctx.battleHex.q && u.r === ctx.battleHex.r;
+}
+function collectUnitsInRadius(anchor, allUnits, radiusFrom, ctx) {
   const out = [];
   const seen = /* @__PURE__ */ new Set();
   for (const u of allUnits) {
     if (u.ownerId !== anchor.ownerId) continue;
-    if (hexDistance(anchor.q, anchor.r, u.q, u.r) > 1) continue;
+    if (radiusFrom(u) > 1) continue;
+    if (!shouldIncludeInBattleRoster(u, ctx)) continue;
     if (seen.has(u.id)) continue;
     seen.add(u.id);
     out.push(u);
   }
-  if (!out.some((x) => x.id === anchor.id)) out.unshift(anchor);
+  if (!out.some((x) => x.id === anchor.id) && shouldIncludeInBattleRoster(anchor, ctx)) {
+    out.unshift(anchor);
+  }
   return out;
 }
+function collectBattleRoster(anchor, allUnits, side = "attacker") {
+  const battleHex = { q: anchor.q, r: anchor.r };
+  const ctx = { side, anchor, battleHex };
+  return collectUnitsInRadius(
+    anchor,
+    allUnits,
+    (u) => hexDistance(anchor.q, anchor.r, u.q, u.r),
+    ctx
+  );
+}
 function collectAtkRosterNearCity(city, anchor, allUnits) {
+  const ctx = {
+    side: "attacker",
+    anchor,
+    battleHex: { q: city.q, r: city.r }
+  };
+  return collectUnitsInRadius(
+    anchor,
+    allUnits,
+    (u) => hexDistance(u.q, u.r, city.q, city.r),
+    ctx
+  );
+}
+function collectDefRosterNearCity(city, allUnits) {
+  const anchorOnCity = allUnits.find(
+    (u) => u.q === city.q && u.r === city.r
+  );
+  const anchor = anchorOnCity ?? {
+    id: "__city_hex__",
+    ownerId: allUnits.find((u) => hexDistance(u.q, u.r, city.q, city.r) <= 1)?.ownerId ?? -1,
+    typeId: "__anchor__",
+    category: "domyslny",
+    q: city.q,
+    r: city.r,
+    ruch: 0,
+    ruchLeft: 0
+  };
+  const ctx = {
+    side: "defender",
+    anchor,
+    battleHex: { q: city.q, r: city.r }
+  };
   const out = [];
   const seen = /* @__PURE__ */ new Set();
   for (const u of allUnits) {
-    if (u.ownerId !== anchor.ownerId) continue;
     if (hexDistance(u.q, u.r, city.q, city.r) > 1) continue;
+    if (!shouldIncludeInBattleRoster(u, ctx)) continue;
     if (seen.has(u.id)) continue;
     seen.add(u.id);
     out.push(u);
   }
-  if (!out.some((x) => x.id === anchor.id)) out.unshift(anchor);
   return out;
 }
 
@@ -430,9 +484,9 @@ var miasto_params_default = {
     opis: "Mnoznik compound (procent skladany) efektu I kosztu budynku za kazdy poziom: wartosc^(poziom-1). Decyzja Naster = +10%/epoke. Uzywany w production.itemCost (koszt) i buildingEffectAtLevel (efekt)."
   },
   jednostka_koszt_ludnosci: {
-    wartosc: 1,
+    wartosc: 0,
     jednostka: "ludnosc",
-    opis: "Ile ludnosci kosztuje miasto ukonczenie jednostki z kolejki (rekrutacja). production.populationCostOf; odjecie + clamp do min.1 robi petla tury."
+    opis: "Koszt ludnosci miasta za ukonczenie jednostki z kolejki (rekrutacja). USTAWIONE 0 (Maciej 2026-07-21): rekrutacja NIE zabiera juz populacji miasta \u2014 jedynym kosztem werbu jest pula Manpower (epoka-ludnosc-manpower.json / manpower.ts). production.populationCostOf; przy 0 populacja pozostaje bez zmian."
   },
   manpower_regen_proc_max_tura: {
     wartosc: 10,
@@ -694,9 +748,7 @@ function makeMilitia(population, popFraction = MILITIA_POP_FRACTION, strengthFra
 
 // src/game/siegeDefenders.ts
 function defenderUnitsNearCity(city, units) {
-  return units.filter(
-    (u) => u.ownerId === city.ownerId && hexDistance(u.q, u.r, city.q, city.r) <= 1
-  );
+  return collectDefRosterNearCity(city, units).filter((u) => u.ownerId === city.ownerId);
 }
 function hasCityDefenders(city, units) {
   if ((city.garnizon ?? 0) > 0) return true;
@@ -826,6 +878,269 @@ function autoBattleWinPct(mAtk, mDef) {
   if (d <= 0) return 100;
   return Math.round(a / (a + d) * 100);
 }
+
+// src/audio/filePlayer.ts
+var import_meta = {};
+var CROSSFADE_SEC = 1.5;
+var STOP_FADE_SEC = 0.4;
+var MONITOR_STEP_MS = 100;
+var RAMP_STEP_MS = 40;
+function volCurve(v) {
+  return Math.pow(Math.max(0, Math.min(1, v)), 1.6);
+}
+function shuffle(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    const tmp = a[i];
+    a[i] = a[j];
+    a[j] = tmp;
+  }
+  return a;
+}
+function buildShuffledQueue(trackCount, avoidFirst) {
+  const idx = Array.from({ length: trackCount }, (_, i) => i);
+  const q = shuffle(idx);
+  if (avoidFirst !== null && q.length > 1 && q[0] === avoidFirst) {
+    const j = 1 + Math.floor(Math.random() * (q.length - 1));
+    const tmp = q[0];
+    q[0] = q[j];
+    q[j] = tmp;
+  }
+  return q;
+}
+function createPlaylist(trackUrls, repeatsPerTrack, kolejnosc = "losowa") {
+  const els = [null, null];
+  let activeIdx = 0;
+  let queue = [];
+  let queuePos = 0;
+  let repeatsLeft = repeatsPerTrack;
+  let playing = false;
+  let volume01 = 0.8;
+  let monitorTimer = null;
+  let stopFadeTimer = null;
+  let crossfading = false;
+  let crossfadeTimer = null;
+  let crossfadeT0 = 0;
+  let crossfadeDur = CROSSFADE_SEC;
+  let crossfadeFromIdx = 0;
+  let crossfadeToIdx = 1;
+  function hasTracks() {
+    return trackUrls.length > 0;
+  }
+  function currentUrl() {
+    const i = queue[queuePos];
+    return i === void 0 ? null : trackUrls[i] ?? null;
+  }
+  function selectNext() {
+    repeatsLeft--;
+    if (repeatsLeft > 0) return;
+    queuePos++;
+    repeatsLeft = repeatsPerTrack;
+    if (queuePos >= queue.length) {
+      const lastOfOldQueue = queue[queue.length - 1] ?? null;
+      queue = kolejnosc === "stala" ? Array.from({ length: trackUrls.length }, (_, i) => i) : buildShuffledQueue(trackUrls.length, lastOfOldQueue);
+      queuePos = 0;
+    }
+  }
+  function clearMonitor() {
+    if (monitorTimer !== null) {
+      window.clearInterval(monitorTimer);
+      monitorTimer = null;
+    }
+  }
+  function clearCrossfadeTimer() {
+    if (crossfadeTimer !== null) {
+      window.clearInterval(crossfadeTimer);
+      crossfadeTimer = null;
+    }
+  }
+  function clearStopFade() {
+    if (stopFadeTimer !== null) {
+      window.clearInterval(stopFadeTimer);
+      stopFadeTimer = null;
+    }
+  }
+  const endedHandlers = [null, null];
+  const errorHandlers = [null, null];
+  const metaHandlers = [null, null];
+  function ensureEl(idx) {
+    let el = els[idx];
+    if (el) return el;
+    el = new Audio();
+    el.preload = "auto";
+    el.volume = 0;
+    const onEndedH = () => onEnded(idx);
+    const onErrorH = () => onError(idx);
+    const onMetaH = () => {
+      if (idx === activeIdx && playing && !crossfading) monitorTick();
+    };
+    el.addEventListener("ended", onEndedH);
+    el.addEventListener("error", onErrorH);
+    el.addEventListener("loadedmetadata", onMetaH);
+    endedHandlers[idx] = onEndedH;
+    errorHandlers[idx] = onErrorH;
+    metaHandlers[idx] = onMetaH;
+    els[idx] = el;
+    return el;
+  }
+  function playOn(idx, url) {
+    const el = ensureEl(idx);
+    el.src = url;
+    el.currentTime = 0;
+    el.volume = volCurve(volume01);
+    void el.play().catch(() => {
+      playing = false;
+    });
+  }
+  function onEnded(idx) {
+    if (!playing || crossfading || idx !== activeIdx) return;
+    selectNext();
+    const url = currentUrl();
+    if (!url) return;
+    playOn(idx, url);
+  }
+  function onError(idx) {
+    if (!playing) return;
+    const isIncomingCrossfade = crossfading && idx === crossfadeToIdx;
+    if (idx !== activeIdx && !isIncomingCrossfade) return;
+    if (isIncomingCrossfade) {
+      clearCrossfadeTimer();
+      crossfading = false;
+      const fromEl = els[crossfadeFromIdx];
+      if (fromEl) fromEl.pause();
+    }
+    selectNext();
+    const url = currentUrl();
+    if (!url) return;
+    playOn(idx, url);
+  }
+  function crossfadeStep() {
+    const u = Math.min(1, (performance.now() - crossfadeT0) / 1e3 / crossfadeDur);
+    const base = volCurve(volume01);
+    const ang = u * (Math.PI / 2);
+    const fromEl = els[crossfadeFromIdx];
+    const toEl = els[crossfadeToIdx];
+    if (fromEl) fromEl.volume = base * Math.cos(ang);
+    if (toEl) toEl.volume = base * Math.sin(ang);
+    if (u >= 1) {
+      clearCrossfadeTimer();
+      if (fromEl) fromEl.pause();
+      activeIdx = crossfadeToIdx;
+      crossfading = false;
+    }
+  }
+  function beginCrossfade(fadeDur) {
+    if (!playing || crossfading) return;
+    selectNext();
+    const url = currentUrl();
+    if (!url) return;
+    const fromIdx = activeIdx;
+    const toIdx = fromIdx === 0 ? 1 : 0;
+    playOn(toIdx, url);
+    const toEl = els[toIdx];
+    if (toEl) toEl.volume = 0;
+    crossfading = true;
+    crossfadeFromIdx = fromIdx;
+    crossfadeToIdx = toIdx;
+    crossfadeDur = Math.max(0.05, fadeDur);
+    crossfadeT0 = performance.now();
+    clearCrossfadeTimer();
+    crossfadeTimer = window.setInterval(crossfadeStep, RAMP_STEP_MS);
+  }
+  function monitorTick() {
+    if (!playing || crossfading) return;
+    const el = els[activeIdx];
+    if (!el) return;
+    const dur = el.duration;
+    if (!Number.isFinite(dur) || dur <= 0) return;
+    const fadeDur = Math.min(CROSSFADE_SEC, dur * 0.4);
+    const remain = dur - el.currentTime;
+    if (remain <= fadeDur) beginCrossfade(fadeDur);
+  }
+  function start() {
+    if (!hasTracks() || playing) return;
+    clearStopFade();
+    playing = true;
+    if (queue.length === 0) {
+      queue = kolejnosc === "stala" ? Array.from({ length: trackUrls.length }, (_, i) => i) : buildShuffledQueue(trackUrls.length, null);
+      queuePos = 0;
+      repeatsLeft = repeatsPerTrack;
+    }
+    activeIdx = 0;
+    const url = currentUrl();
+    if (url) playOn(0, url);
+    clearMonitor();
+    monitorTimer = window.setInterval(monitorTick, MONITOR_STEP_MS);
+  }
+  function stop() {
+    playing = false;
+    clearMonitor();
+    clearCrossfadeTimer();
+    crossfading = false;
+    clearStopFade();
+    const a = els[0];
+    const b = els[1];
+    if (!a && !b) return;
+    const startVolA = a ? a.volume : 0;
+    const startVolB = b ? b.volume : 0;
+    const t0 = performance.now();
+    stopFadeTimer = window.setInterval(() => {
+      const u = Math.min(1, (performance.now() - t0) / 1e3 / STOP_FADE_SEC);
+      const k = 1 - u;
+      if (a) a.volume = startVolA * k;
+      if (b) b.volume = startVolB * k;
+      if (u >= 1) {
+        clearStopFade();
+        releaseEl(0);
+        releaseEl(1);
+      }
+    }, RAMP_STEP_MS);
+  }
+  function releaseEl(idx) {
+    const el = els[idx];
+    if (!el) return;
+    el.pause();
+    const eh = endedHandlers[idx], erh = errorHandlers[idx], mh = metaHandlers[idx];
+    if (eh) el.removeEventListener("ended", eh);
+    if (erh) el.removeEventListener("error", erh);
+    if (mh) el.removeEventListener("loadedmetadata", mh);
+    el.removeAttribute("src");
+    el.load();
+    els[idx] = null;
+    endedHandlers[idx] = null;
+    errorHandlers[idx] = null;
+    metaHandlers[idx] = null;
+  }
+  function setVolume(v) {
+    volume01 = Math.max(0, Math.min(1, v));
+    if (!crossfading) {
+      const el = els[activeIdx];
+      if (el) el.volume = volCurve(volume01);
+    }
+  }
+  function isPlaying() {
+    return playing;
+  }
+  return { hasTracks, start, stop, setVolume, isPlaying };
+}
+var kamienModules = import_meta.glob("./utwory/kamien/*.mp3", {
+  eager: true,
+  import: "default"
+});
+var KAMIEN_URLS = Object.keys(kamienModules).sort().map((k) => kamienModules[k]);
+var introModules = import_meta.glob("./utwory/intro/*.mp3", {
+  eager: true,
+  import: "default"
+});
+var INTRO_KOLEJNOSC = [
+  "Dawn_of_the_Architect",
+  "Seven_Hills_Rising",
+  "Ascent_to_Zenith"
+];
+var INTRO_URLS = INTRO_KOLEJNOSC.map((nazwa) => Object.keys(introModules).find((k) => k.includes(nazwa))).filter((k) => Boolean(k)).map((k) => introModules[k]);
+var kamienPlaylist = createPlaylist(KAMIEN_URLS, 3);
+var introPlaylist = createPlaylist(INTRO_URLS, 1, "stala");
 
 // src/battle/mapFieldBattle.ts
 function preBattleUnitFromRuntime(u, unitDefFor, unitHealth, unitAtak) {
@@ -962,7 +1277,7 @@ function canInitiateSiege(atakujacy, city) {
 // src/map/map-attack-city.ts
 function adjacentPlayerAttackers(city, units, playerOwnerId) {
   return units.filter(
-    (u) => u.ownerId === playerOwnerId && u.ruchLeft > 0 && hexDistance(u.q, u.r, city.q, city.r) === 1
+    (u) => u.ownerId === playerOwnerId && u.ruchLeft > 0 && !isCivilianUnit(u) && hexDistance(u.q, u.r, city.q, city.r) === 1
   );
 }
 function resolveAttacker(adjacent, selectedUnit, playerOwnerId) {
@@ -990,6 +1305,9 @@ function resolveEnemyCityClick(input) {
         ctx: classifyCityAttack(besieger, city, units)
       };
     }
+  }
+  if (selectedUnit && selectedUnit.ownerId === playerOwnerId && isCivilianUnit(selectedUnit) && hexDistance(selectedUnit.q, selectedUnit.r, city.q, city.r) === 1) {
+    return { kind: "hint_civilian", cityName: city.name };
   }
   const adjacent = adjacentPlayerAttackers(city, units, playerOwnerId);
   const attackerPick = resolveAttacker(adjacent, selectedUnit, playerOwnerId);
@@ -1022,5 +1340,6 @@ function resolveEnemyCityClick(input) {
   hasCityDefenders,
   planOpenCityFieldBattle,
   resolveEnemyCityClick,
+  shouldIncludeInBattleRoster,
   validateOpenCityFieldBattle
 });

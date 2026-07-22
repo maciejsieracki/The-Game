@@ -1,82 +1,8 @@
 {
-  "publisher": "Integrator F",
-  "bundle": "Gra-ROBOCZA.html",
-  "note": "Grywalna ROBOCZA. Plik: gra-robocza/Gra-ROBOCZA.html",
-  "publishedAt": "2026-07-22T06:25:49",
-  "sourceBuild": "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\gra\\dist",
-  "md5": "81e95aaae7cbea9034c0df360ce34845",
-  "hubGeneratedAt": "2026-07-22T04:32:28",
-  "bundles": [
-    {
-      "file": "Gra-ROBOCZA.html",
-      "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
-      "label": "Pełna gra ROBOCZA",
-      "md5": "81e95aaae7cbea9034c0df360ce34845",
-      "sizeBytes": 27410217
-    },
-    {
-      "file": "Gra-ROBOCZA.html",
-      "href": "Gra-ROBOCZA.html",
-      "label": "Pełna gra (z menu)",
-      "md5": "81e95aaae7cbea9034c0df360ce34845",
-      "sizeBytes": 27410217
-    },
-    {
-      "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
-      "href": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
-      "label": "Playtest: DUŻA bitwa (pole) — NOWE",
-      "md5": "9392e2e9b336d7d98d6ae4c57e87daeb",
-      "sizeBytes": 9805217
-    },
-    {
-      "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
-      "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-DUZE.html",
-      "label": "Playtest: DUŻE oblężenie (mur) — NOWE",
-      "md5": "9392e2e9b336d7d98d6ae4c57e87daeb",
-      "sizeBytes": 9805217
-    },
-    {
-      "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
-      "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
-      "label": "Playtest: mapa świat",
-      "md5": "81e95aaae7cbea9034c0df360ce34845",
-      "sizeBytes": 27410217
-    },
-    {
-      "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
-      "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
-      "label": "Playtest: miasto / ekonomia",
-      "md5": "81e95aaae7cbea9034c0df360ce34845",
-      "sizeBytes": 27410217
-    },
-    {
-      "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
-      "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
-      "label": "Playtest: walka na mapie",
-      "md5": "81e95aaae7cbea9034c0df360ce34845",
-      "sizeBytes": 27410217
-    },
-    {
-      "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
-      "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
-      "label": "Playtest: odskok 3v3",
-      "md5": "81e95aaae7cbea9034c0df360ce34845",
-      "sizeBytes": 27410217
-    },
-    {
-      "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
-      "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
-      "label": "Playtest: odskok + oblężenie",
-      "md5": "81e95aaae7cbea9034c0df360ce34845",
-      "sizeBytes": 27410217
-    },
-    {
-      "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
-      "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
-      "label": "Playtest: oblężenie 3v3",
-      "md5": "81e95aaae7cbea9034c0df360ce34845",
-      "sizeBytes": 27410217
-    }
-  ],
-  "startHub": "START.html"
+    "publisher":  "Integrator F",
+    "bundle":  "Gra-ROBOCZA.html",
+    "note":  "Grywalna ROBOCZA. Plik: gra-robocza/Gra-ROBOCZA.html",
+    "publishedAt":  "2026-07-22T06:55:34",
+    "sourceBuild":  "C:\\Users\\macie\\AppData\\Local\\Temp\\civ-dist",
+    "md5":  "3613d5d4ca248a3fa3f6879061aad3dc"
 }

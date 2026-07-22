@@ -52,8 +52,8 @@ var terrain_improvements_default = {
       zywnosc: 3
     },
     surowiecOdblokowany: null,
-    teren: "\u0141\u0105ka, R\xF3wnina",
-    warunek: "ziemia uprawna; DZIA\u0141A BEZ rzeki (podstawowy)",
+    teren: "\u0141\u0105ka, R\xF3wnina; Wzg\xF3rza z lasem",
+    warunek: "ziemia uprawna; DZIA\u0141A BEZ rzeki (podstawowy); MO\u017BE na lesie (Las) \u2014 bez wyr\u0119bu (Maciej 2026-07-21)",
     koszt_praca: 20,
     tech: "Rolnictwo",
     odblokowuje: ""
@@ -148,10 +148,11 @@ var terrain_improvements_default = {
     nazwa: "Glinianka",
     epoka: 2,
     bonus: {
-      praca: 1
+      praca: 1,
+      glina: 2
     },
     surowiecOdblokowany: "glina",
-    surowiecOdblokowany_uwaga: "klucz 'glina' wg Surowiec='Glina' w resources.json; brak pola id \u2014 propozycja EKONOMIA",
+    surowiecOdblokowany_uwaga: "GLINA-Q1=A (Maciej 2026-07-20): stala ilosc 2 glina/ture z ulepszenia (bonus.glina), analogicznie do drewna/kamienia. Klucz 'glina' wg Surowiec='Glina' w resources.json.",
     teren: "z\u0142o\u017Ce Gliny",
     warunek: "glina \u2192 ceg\u0142a (wa\u017Cne w br\u0105zie)",
     koszt_praca: 20,
@@ -195,12 +196,12 @@ var terrain_improvements_default = {
     bonus: {},
     surowiecOdblokowany: null,
     teren: "Las",
-    warunek: "koszt 5 Pracy na start; +20 Pracy/tur\u0119 \xD7 3 tury (=60); potem teren bazowy bez lasu",
+    warunek: "koszt 5 Pracy na start; +5 Pracy \xD7 1 tura (=5, netto zero); potem teren bazowy bez lasu",
     koszt_praca: 5,
     tech: null,
     wycinka: {
-      praca_per_tura: 20,
-      tury: 3,
+      praca_per_tura: 5,
+      tury: 1,
       usuwa_nakladke: "las"
     },
     odblokowuje: ""
@@ -277,7 +278,7 @@ var terrain_improvements_default = {
     teren: "dowolny l\u0105d w terytorium",
     warunek: "+100% Obrony jednostkom obozuj\u0105cym na polu fortu (bez plon\xF3w); rozszerza zasi\u0119g terytorium o promie\u0144 10 p\xF3l",
     koszt_praca: 25,
-    tech: "Wojskowosc",
+    tech: "Wojskowo\u015B\u0107",
     odblokowuje: "",
     uwagi: "ABC-10 Maciej 2026-07-04: Fort (mapa) \u2260 Cytadela (miasto). \u017Belazo ep.3; zasi\u0119g 10; +100% Obrona obozowanie"
   },
@@ -362,6 +363,7 @@ function applyImprovementBonus(yld, improvementKey) {
   if (b.pieniadz) yld.handel += b.pieniadz;
   if (b.drewno) yld.drewno += b.drewno;
   if (b.kamien) yld.kamien += b.kamien;
+  if (b.glina) yld.glina += b.glina;
 }
 function applyImprovementBonuses(yld, improvementKeys) {
   for (const key of improvementKeys) {
@@ -511,9 +513,9 @@ var miasto_params_default = {
     opis: "Mnoznik compound (procent skladany) efektu I kosztu budynku za kazdy poziom: wartosc^(poziom-1). Decyzja Naster = +10%/epoke. Uzywany w production.itemCost (koszt) i buildingEffectAtLevel (efekt)."
   },
   jednostka_koszt_ludnosci: {
-    wartosc: 1,
+    wartosc: 0,
     jednostka: "ludnosc",
-    opis: "Ile ludnosci kosztuje miasto ukonczenie jednostki z kolejki (rekrutacja). production.populationCostOf; odjecie + clamp do min.1 robi petla tury."
+    opis: "Koszt ludnosci miasta za ukonczenie jednostki z kolejki (rekrutacja). USTAWIONE 0 (Maciej 2026-07-21): rekrutacja NIE zabiera juz populacji miasta \u2014 jedynym kosztem werbu jest pula Manpower (epoka-ludnosc-manpower.json / manpower.ts). production.populationCostOf; przy 0 populacja pozostaje bez zmian."
   },
   manpower_regen_proc_max_tura: {
     wartosc: 10,
@@ -781,7 +783,7 @@ var terrain_yields_default = {
 };
 
 // src/game/economy.ts
-var ZERO_YIELD = { zywnosc: 0, praca: 0, handel: 0, drewno: 0, kamien: 0 };
+var ZERO_YIELD = { zywnosc: 0, praca: 0, handel: 0, drewno: 0, kamien: 0, glina: 0 };
 var TERRAIN_NAME_TO_ENUM = {
   "\u0141\u0105ka": "laka" /* Laka */,
   "R\xF3wnina": "rownina" /* Rownina */,
@@ -797,7 +799,10 @@ function terrainRowToTileYield(row) {
     praca: Number(row["Praca"] ?? 0),
     handel: Number(row["Handel"] ?? 0),
     drewno: Number(row["Drewno"] ?? 0),
-    kamien: Number(row["Kamie\u0144"] ?? 0)
+    kamien: Number(row["Kamie\u0144"] ?? 0),
+    // Glina nie ma bazy terenu ani modyfikatora w terrain-yields.json -- wylacznie z bonusu
+    // ulepszenia (glinianka, GLINA-Q1=A), doklejane w tileYield() nizej.
+    glina: 0
   };
 }
 function buildTerrainYields() {
@@ -822,6 +827,7 @@ function tileYield(tile) {
   let handel = base.handel;
   let drewno = base.drewno;
   let kamien = base.kamien;
+  let glina = base.glina;
   if (tile.nakladka === "las" /* Las */) {
     zywnosc += FOREST_MODIFIER.zywnosc;
     praca += FOREST_MODIFIER.praca;
@@ -838,7 +844,8 @@ function tileYield(tile) {
     praca: Math.max(0, praca),
     handel: Math.max(0, handel),
     drewno: Math.max(0, drewno),
-    kamien: Math.max(0, kamien)
+    kamien: Math.max(0, kamien),
+    glina: Math.max(0, glina)
   };
   const impKeys = tile.ulepszeniaKeys?.length ? tile.ulepszeniaKeys : tile.ulepszenieKey ? [tile.ulepszenieKey] : [];
   if (impKeys.length) {
@@ -848,6 +855,7 @@ function tileYield(tile) {
     out.handel = Math.max(0, out.handel);
     out.drewno = Math.max(0, out.drewno);
     out.kamien = Math.max(0, out.kamien);
+    out.glina = Math.max(0, out.glina);
   }
   return out;
 }
@@ -858,11 +866,17 @@ function cityYieldPerTurn(city, workedTiles, cityBuildings, params, ctx) {
   let zywnoscTerenu = 0;
   let pracaTerenu = 0;
   let handelTerenu = 0;
+  let drewnoTerenu = 0;
+  let kamienTerenu = 0;
+  let glinaTerenu = 0;
   for (const tile of workedTiles) {
     const y = tileYield(tile);
     zywnoscTerenu += y.zywnosc;
     pracaTerenu += y.praca;
     handelTerenu += y.handel;
+    drewnoTerenu += y.drewno;
+    kamienTerenu += y.kamien;
+    glinaTerenu += y.glina;
   }
   let pracaBruttoTerenu;
   if (ctx.maMlyn) {
@@ -882,6 +896,10 @@ function cityYieldPerTurn(city, workedTiles, cityBuildings, params, ctx) {
   const civHandelMult = ctx.civHandelMult ?? 1;
   if (civHandelMult !== 1) {
     handelBrutto *= civHandelMult;
+  }
+  const liczbaTrasHandlowych = ctx.liczbaAktywnychTrasHandlowych ?? 0;
+  if (liczbaTrasHandlowych > 0) {
+    handelBrutto *= 1 + 0.05 * liczbaTrasHandlowych;
   }
   let pracaBudynkow = 0;
   let pieniadzBudynkow = 0;
@@ -949,7 +967,10 @@ function cityYieldPerTurn(city, workedTiles, cityBuildings, params, ctx) {
     handelBrutto: Math.floor(handelBrutto),
     pracaTerenu: Math.floor(pracaBruttoTerenu),
     pracaBudynkow: Math.floor(pracaBudynkow),
-    pieniadzZPracy
+    pieniadzZPracy,
+    drewnoTerenu: Math.floor(drewnoTerenu),
+    kamienTerenu: Math.floor(kamienTerenu),
+    glinaTerenu: Math.floor(glinaTerenu)
   };
 }
 
@@ -1043,6 +1064,7 @@ function buildEconParams(data, difficulty = "normal") {
   const raw = data.econParams;
   const em = raw.ekonomia_miasta ?? {};
   const bu = raw.budynki ?? {};
+  const gl = raw.globalne ?? {};
   const d = difficulty;
   const num = (group, key, fallback) => {
     const row = group[key];
@@ -1065,6 +1087,7 @@ function buildEconParams(data, difficulty = "normal") {
     budynekTargowiskoBonusHandlu: num(bu, "budynek_targowisko_bonus_handlu", 0.5),
     budynekBibliotekaBonusNauki: num(bu, "budynek_biblioteka_bonus_nauki", 0.5),
     budynekMennicaMnoznik: num(bu, "budynek_mennica_mnoznik", 1),
+    mennicaMnoznikPoWalucie: num(gl, "mennica_mnoznik_po_walucie", 1.5),
     walutaMnoznik: num(bu, "waluta_mnoznik", 2),
     targowiskoPracaMnoznik: num(bu, "targowisko_praca_na_pieniadz_mnoznik", 2),
     suwaakHandelNaukaDefault: num(em, "suwak_handel_nauka_domyslnie", 60),

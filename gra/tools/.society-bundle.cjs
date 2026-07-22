@@ -55,8 +55,8 @@ var terrain_improvements_default = {
       zywnosc: 3
     },
     surowiecOdblokowany: null,
-    teren: "\u0141\u0105ka, R\xF3wnina",
-    warunek: "ziemia uprawna; DZIA\u0141A BEZ rzeki (podstawowy)",
+    teren: "\u0141\u0105ka, R\xF3wnina; Wzg\xF3rza z lasem",
+    warunek: "ziemia uprawna; DZIA\u0141A BEZ rzeki (podstawowy); MO\u017BE na lesie (Las) \u2014 bez wyr\u0119bu (Maciej 2026-07-21)",
     koszt_praca: 20,
     tech: "Rolnictwo",
     odblokowuje: ""
@@ -75,19 +75,19 @@ var terrain_improvements_default = {
     odblokowuje: ""
   },
   bydlo: {
-    nazwa: "Byd\u0142o",
+    nazwa: "Trzoda",
     epoka: 1,
     bonus: {
       zywnosc: 2,
       praca: 3
     },
     surowiecOdblokowany: "bydlo",
-    surowiecOdblokowany_uwaga: "ABC-18: dost\u0119p dopiero po postawieniu na z\u0142o\u017Cu byd\u0142a",
+    surowiecOdblokowany_uwaga: "ABC-18: dost\u0119p dopiero po postawieniu na z\u0142o\u017Cu trzody",
     teren: "\u0141\u0105ka, R\xF3wnina",
     warunek: "plaski l\u0105d; pierwsze: z\u0142o\u017Ce byd\u0142a; potem po odblokowaniu \u2014 bez z\u0142o\u017Ca; + farma lub solo; NIE na Pustyni",
     koszt_praca: 20,
     tech: "Oswojenie zwierz\u0105t",
-    odblokowuje: "Byd\u0142o (Rydwan po odblokowaniu)"
+    odblokowuje: "Trzoda (Rydwan po odblokowaniu)"
   },
   owce: {
     nazwa: "Owce",
@@ -113,8 +113,8 @@ var terrain_improvements_default = {
     },
     surowiecOdblokowany: "lama",
     surowiecOdblokowany_uwaga: "TYLKO Inkowie; solo \u2014 bez innych ulepszen na heksie; pierwsze na zlozu lamy",
-    teren: "\u0141\u0105ka, R\xF3wnina, Wzg\xF3rza",
-    warunek: "solo; tylko cyw. Inkowie; pierwsze: z\u0142o\u017Ce lamy; NIE na Pustyni",
+    teren: "Wzg\xF3rza, G\xF3ry",
+    warunek: "solo; tylko cyw. Inkowie; wzg\xF3rza/g\xF3ry; pierwsze: z\u0142o\u017Ce lamy; NIE na \u0141\u0105ce/R\xF3wninie/Pustyni",
     koszt_praca: 20,
     tech: "Oswojenie zwierz\u0105t",
     odblokowuje: "Lama (transport / \u017Cywno\u015B\u0107)"
@@ -151,10 +151,11 @@ var terrain_improvements_default = {
     nazwa: "Glinianka",
     epoka: 2,
     bonus: {
-      praca: 1
+      praca: 1,
+      glina: 2
     },
     surowiecOdblokowany: "glina",
-    surowiecOdblokowany_uwaga: "klucz 'glina' wg Surowiec='Glina' w resources.json; brak pola id \u2014 propozycja EKONOMIA",
+    surowiecOdblokowany_uwaga: "GLINA-Q1=A (Maciej 2026-07-20): stala ilosc 2 glina/ture z ulepszenia (bonus.glina), analogicznie do drewna/kamienia. Klucz 'glina' wg Surowiec='Glina' w resources.json.",
     teren: "z\u0142o\u017Ce Gliny",
     warunek: "glina \u2192 ceg\u0142a (wa\u017Cne w br\u0105zie)",
     koszt_praca: 20,
@@ -198,12 +199,12 @@ var terrain_improvements_default = {
     bonus: {},
     surowiecOdblokowany: null,
     teren: "Las",
-    warunek: "koszt 5 Pracy na start; +20 Pracy/tur\u0119 \xD7 3 tury (=60); potem teren bazowy bez lasu",
+    warunek: "koszt 5 Pracy na start; +5 Pracy \xD7 1 tura (=5, netto zero); potem teren bazowy bez lasu",
     koszt_praca: 5,
     tech: null,
     wycinka: {
-      praca_per_tura: 20,
-      tury: 3,
+      praca_per_tura: 5,
+      tury: 1,
       usuwa_nakladke: "las"
     },
     odblokowuje: ""
@@ -280,7 +281,7 @@ var terrain_improvements_default = {
     teren: "dowolny l\u0105d w terytorium",
     warunek: "+100% Obrony jednostkom obozuj\u0105cym na polu fortu (bez plon\xF3w); rozszerza zasi\u0119g terytorium o promie\u0144 10 p\xF3l",
     koszt_praca: 25,
-    tech: "Wojskowosc",
+    tech: "Wojskowo\u015B\u0107",
     odblokowuje: "",
     uwagi: "ABC-10 Maciej 2026-07-04: Fort (mapa) \u2260 Cytadela (miasto). \u017Belazo ep.3; zasi\u0119g 10; +100% Obrona obozowanie"
   },
@@ -312,8 +313,8 @@ var terrain_improvements_default = {
     odblokowuje: "",
     uwagi: "T-TECH-9 Maciej 2026-07-04"
   },
-  popalnia_brazu: {
-    nazwa: "Popalnia br\u0105zu",
+  kopalnia_miedzi: {
+    nazwa: "Kopalnia miedzi",
     epoka: 2,
     bonus: {
       praca: 2
@@ -402,9 +403,9 @@ var miasto_params_default = {
     opis: "Mnoznik compound (procent skladany) efektu I kosztu budynku za kazdy poziom: wartosc^(poziom-1). Decyzja Naster = +10%/epoke. Uzywany w production.itemCost (koszt) i buildingEffectAtLevel (efekt)."
   },
   jednostka_koszt_ludnosci: {
-    wartosc: 1,
+    wartosc: 0,
     jednostka: "ludnosc",
-    opis: "Ile ludnosci kosztuje miasto ukonczenie jednostki z kolejki (rekrutacja). production.populationCostOf; odjecie + clamp do min.1 robi petla tury."
+    opis: "Koszt ludnosci miasta za ukonczenie jednostki z kolejki (rekrutacja). USTAWIONE 0 (Maciej 2026-07-21): rekrutacja NIE zabiera juz populacji miasta \u2014 jedynym kosztem werbu jest pula Manpower (epoka-ludnosc-manpower.json / manpower.ts). production.populationCostOf; przy 0 populacja pozostaje bez zmian."
   },
   manpower_regen_proc_max_tura: {
     wartosc: 10,
@@ -721,7 +722,7 @@ function computeHappinessBreakdown(input, society = null) {
   const pop = Math.max(0, Math.floor(input.population ?? 0));
   const era = input.era ?? 1;
   if (input.buildingZadowolenie !== 0) {
-    lines.push({ id: "budynki", label: "Budynki", value: input.buildingZadowolenie });
+    lines.push({ id: "budynki", label: "Budynki (+1/budynek)", value: input.buildingZadowolenie });
   }
   if (input.haKult) {
     lines.push({ id: "kultura", label: "Kultura dominuj\u0105ca", value: input.haKult });

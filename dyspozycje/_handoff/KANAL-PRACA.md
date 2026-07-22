@@ -2824,3 +2824,11 @@ Tooltip breakdown: „Budynki (+1/budynek)". Przykład: Świątynia zad.3 → ef
 Bramki: tsc=0 · building-happiness-test 8/8 · society-breakdown 40/40 · VERIFY OK.
 Publish ROBOCZA: stamp **81e95aaa** · md5 `81e95aaae7cbea9034c0df360ce34845`.
 CZEKAM-NA: Maciej — `git pull` → Ctrl+F5 START.html → stamp `81e95aaa` → miasto z budynkami → panel Sz.
+
+## [07:00 PL, 2026-07-22] CHMURA → LOKALNA — BATCH: Manpower + deploy sesji
+
+Balans Manpower: koszt rekrutacji ×10 (`manpowerNaJednostke = manpowerNaLudka`); regen 10%→5% (`miasto-params.json` + `manpower.ts`).
+Zbiorczy deploy całej sesji 2026-07-22 (dyplomacja, badania ×2, budynki ÷2, granice, nazwy CS, overflow Pracy, epoka CS Kamień, zwiadowca/wsparcie post-battle, cooldown darów AI, panel badań, +1 szczęścia/budynek, cap ofert AI).
+Bramki: tsc=0 · manpower-test 24/24.
+Publish ROBOCZA: stamp **3613d5d4** · md5 `3613d5d4ca248a3fa3f6879061aad3dc`.
+CZEKAM-NA: sesja lokalna — `git pull` na dysk właściciela → Ctrl+F5 START.html → stamp `3613d5d4` → rekrutacja + regen Manpower + smoke sesji.

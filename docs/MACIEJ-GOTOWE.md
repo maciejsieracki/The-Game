@@ -4,7 +4,30 @@
 > **Czat:** krótko **`✅ Gotowe:`** / **`⏸️ Czeka:`** · **Ten plik:** pełniejszy zapis tego samego.  
 > Szczegóły techniczne → handoff w `dyspozycje/_handoff/` · operacja → `dyspozycje/DZIENNIK-MASTERA.md`
 
-**Ostatnia aktualizacja:** 2026-07-22 (+1 szczęścia per budynek)
+**Ostatnia aktualizacja:** 2026-07-22 (balans Manpower + batch sesji)
+
+---
+
+## [07:00] CHMURA → LOKALNA — BATCH: Manpower + deploy sesji 2026-07-22
+
+ROBOCZA stamp **`3613d5d4`** · md5 `3613d5d4ca248a3fa3f6879061aad3dc`.
+Bramki: tsc=0 · manpower-test 24/24.
+CZEKAM-NA: sesja lokalna — `git pull` → Ctrl+F5 START.html → stamp `3613d5d4`.
+
+---
+
+## [2026-07-22] ✅ Gotowe — balans Manpower (rekrutacja ×10, regen 5%)
+
+| | |
+|---|---|
+| **Co** | Koszt rekrutacji ×10: **1 ludek = 1 jednostka** przy pełnej puli Manpower; odnowa puli **10% → 5%** max/turę |
+| **Pliki** | `gra/data/epoka-ludnosc-manpower.json` · `gra/data/miasto-params.json` · `gra/src/game/manpower.ts` |
+| **Przykład** | Ep1, 10 ludków, max 10k MP → rekrutacja 1 włócznika = 1000 MP (1 slot); regen +500/turę (~20 tur do pełna) |
+| **md5** | `3613d5d4ca248a3fa3f6879061aad3dc` · stamp `3613d5d4` |
+| **Bramki** | tsc=0 · manpower-test 24/24 |
+| **Od Ciebie** | `git pull` → Ctrl+F5 · `gra-robocza/START.html` → stamp `3613d5d4` → rekrutuj jednostkę → sprawdź pulę i regen co turę |
+
+**W tym samym bundlu (sesja 2026-07-22):** dyplomacja (komunikaty AI, kultura, status vs postawa, ikona wojny) · badania koszt ×2 · budynki koszt ÷2 · granice państwa (ciągłe, grubsze, 30% alpha) · nazwy miast-państw 10–18 · overflow Pracy → pula cywilizacji · epoka startowa CS = Kamień · fix zwiadowca/wsparcie ATK post-battle · cooldown darów ¤ AI · panel badań lista techów · +1 szczęścia/budynek · cap ofert AI do skarbca.
 
 ---
 

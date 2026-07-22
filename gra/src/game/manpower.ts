@@ -6,7 +6,7 @@
  *   - epoka imperium (1–10) → mnożniki z epoka-ludnosc-manpower.json.
  *   - ludnoscAbs = ludki × ludekNaLudka[epoka]
  *   - manpowerMax = ludki × manpowerNaLudka[epoka]  (= 10% ludnoscAbs)
- *   - koszt 1 jednostki = manpowerNaJednostke[epoka] (= 10% jednego slotu manpower)
+ *   - koszt 1 jednostki = manpowerNaJednostke[epoka] (= manpowerNaLudka; 1 ludek = 1 jednostka przy pełnej puli)
  *
  * Faza 2: odejmowanie przy rekrutacji (tryDeductUnitSpawnCosts).
  * Faza 2b: odnowa co turę (tickManpowerRegen) — parametry w miasto-params.json.
@@ -44,14 +44,14 @@ const MAX_EPOKA = 10;
 type ParamRow = { wartosc?: number };
 
 export interface ManpowerRegenParams {
-  /** Procent manpowerMax dodawany co turę (0–100). Domyślnie 10. */
+  /** Procent manpowerMax dodawany co turę (0–100). Domyślnie 5. */
   regenProcMaxPerTurn: number;
   /** Gdy true — brak regen podczas oblężenia. */
   blockWhenBesieged: boolean;
 }
 
 const DEFAULT_REGEN: ManpowerRegenParams = {
-  regenProcMaxPerTurn: 10,
+  regenProcMaxPerTurn: 5,
   blockWhenBesieged: true,
 };
 
@@ -109,7 +109,7 @@ export function manpowerRegenGain(
 
 /**
  * Koniec tury: uzupełnij Manpower w kierunku max.
- * Model domyślny: +regenProcMaxPerTurn% max/turę (np. 10% → pełna pula w ~10 turach od zera).
+ * Model domyślny: +regenProcMaxPerTurn% max/turę (np. 5% → pełna pula w ~20 turach od zera).
  */
 export function tickManpowerRegen(
   city: Pick<City, 'population' | 'manpower' | 'oblegane'>,
@@ -155,7 +155,7 @@ export function cityManpowerMax(ludki: number, epoka: number): number {
   return clampLudki(ludki) * row.manpowerNaLudka;
 }
 
-/** Koszt Manpower jednej jednostki wojskowej (= 10% slotu manpower w epoce). */
+/** Koszt Manpower jednej jednostki wojskowej (= pełny slot manpower w epoce). */
 export function unitManpowerCost(epoka: number): number {
   return epokaManpowerRow(epoka).manpowerNaJednostke;
 }

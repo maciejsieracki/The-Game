@@ -11,9 +11,13 @@ swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drug
 
 ## ROBOCZA (gra-robocza\Gra-ROBOCZA.html — wskazywana przez START.html)
 
+- 2026-07-22 · stempel: ROBOCZA · **3613d5d4** · md5 pliku `3613d5d4ca248a3fa3f6879061aad3dc` · **BATCH: balans Manpower + sesja 2026-07-22** — na `81e95aaa`:
+  **MANPOWER (audyt/balans):** koszt rekrutacji ×10 — `manpowerNaJednostke = manpowerNaLudka` w `epoka-ludnosc-manpower.json` (1 ludek = 1 jednostka przy pełnej puli); regen **10% → 5%** (`manpower_regen_proc_max_tura` w `miasto-params.json`, fallback `DEFAULT_REGEN` w `manpower.ts`). **Sesja (już w poprzednich wpisach, zbiorczy deploy):** dyplomacja (komunikaty AI, etykieta kultury, status formalny vs postawa, ikona wojny); badania ×2 koszt; budynki ÷2 koszt produkcji; granice państwa (ciągłe pętle, grubsze, 30% alpha); nazwy miast-państw (pula 10–18); overflow Pracy → pula cywilizacji; epoka startowa miast-państw Kamień; zwiadowca/wsparcie ATK post-battle; cooldown darów ¤ AI; panel badań lista techów; +1 szczęścia per budynek; cap ofert AI do skarbca.
+  tsc=0 · manpower-test 24/24 · publish `gra-robocza/Gra-ROBOCZA.html`. · **AKTUALNA** · Test: Ctrl+F5 START.html → stamp `3613d5d4` → rekrutacja 1 jednostki przy pełnej puli = 1 slot ludek; regen ~20 tur do pełna (ep1, 10 ludków).
+
 - 2026-07-22 · stempel: ROBOCZA · **81e95aaa** · md5 pliku `81e95aaae7cbea9034c0df360ce34845` · **EKONOMIA: +1 szczęścia per budynek** — na `4332ae45`:
   **Decyzja Macieja:** każdy zbudowany budynek daje +1 szczęścia; bonus z `baza.zadowolenie` w JSON **dokładany** (nie zastępuje). **Hook:** `buildingHappinessAtLevel` / `sumBuildingHappinessFromBuiltIds` w `gra/src/game/economy.ts` → `main.ts`, `cityPanel.ts`, `cityYieldPerTurn`. Tooltip: „Budynki (+1/budynek)". Przykład: Świątynia zadowolenie 3 → efekt 4; hipotetyczne 2 → 3.
-  tsc=0 · building-happiness-test 8/8 · society-breakdown-test OK · publish `gra-robocza/Gra-ROBOCZA.html`. · **AKTUALNA** · Test: Ctrl+F5 START.html → stamp `81e95aaa` → miasto z 3 budynkami → Sz +3 bazowe + bonusy z JSON.
+  tsc=0 · building-happiness-test 8/8 · society-breakdown-test OK · publish `gra-robocza/Gra-ROBOCZA.html`. · **ZASTĄPIONA** (→ `3613d5d4`) · Test: Ctrl+F5 START.html → stamp `81e95aaa` → miasto z 3 budynkami → Sz +3 bazowe + bonusy z JSON.
 
 - 2026-07-22 · stempel: ROBOCZA · **4332ae45** · md5 pliku `4332ae45d7d58b706e5a68a9882f8503` · **MAPA: granice państwa — szersze + bardziej przezroczyste** — na `04f98d66`:
   **Decyzja Macieja:** szerokość pasa ×2,5 (wzrost ~150%); alpha 30%. **Było:** `TERRITORY_BORDER_BAND_WIDTH=0.15`, `TERRITORY_BORDER_OPACITY=0.5`. **Jest:** `0.375` / `0.3` w `gra/src/render/rangeOverlay.ts`.

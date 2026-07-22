@@ -1,6 +1,6 @@
 # STAN PRACY — HANDOFF
 
-**Ostatnia aktualizacja: 2026-07-21** · Projekt: Civ „The Game"
+**Ostatnia aktualizacja: 2026-07-22** · Projekt: Civ „The Game"
 
 > **Ten plik jest punktem wejścia dla KAŻDEJ nowej sesji** — lokalnej, chmurowej, telefonicznej.
 > Mówi: co jest zrobione, co w toku, czego NIE wolno ruszać i czy można pracować.
@@ -21,7 +21,9 @@ git status --short
 - Jeśli w `gra/src` lub `gra/data` są **niezacommitowane zmiany** — ktoś jest w połowie pracy. NIE nadpisuj ich, NIE rób `git checkout`/`git stash` na tych plikach. Najpierw ustal z właścicielem, co to jest.
 - **Zawsze przed pracą uruchom bramki** (sekcja 7), żeby wiedzieć, co jest sprawne, a co było zepsute PRZED Tobą.
 
-**Stan na 2026-07-21 (sesja 2, wieczór):** drzewo **czyste**, ostatni commit deploy (bundel ROBOCZA **`20239659`**), **wypchnięte na `main`**. Duża sesja systemów strategicznych — 7 nowych systemów zdeployowanych AUTONOMICZNIE (właściciel dał zgodę na deploye pod nieobecność, C-ORG-Q17=A). **Czeka: playtest właściciela + wsteczna akceptacja liczb strojeniowych** (patrz koniec §3a-2 i §10). Nic nie jest w toku.
+**Stan na 2026-07-22 (sesja batch):** deploy ROBOCZA **`3613d5d4`** (md5 `3613d5d4ca248a3fa3f6879061aad3dc`) — balans Manpower + zbiorczy deploy fixów sesji (dyplomacja, ekonomia, mapa, bitwa, badania). **Manpower:** koszt rekrutacji ×10 (`manpowerNaJednostke = manpowerNaLudka`); regen max/turę **5%** (było 10%). Czeka: `git pull` lokalnie + smoke właściciela.
+
+*(poprzedni stan 2026-07-21: deploy `20239659`)*
 
 *(poprzedni stan 2026-07-20: deploy `ea4d679` / ROBOCZA `a31ebe6f`)* — dawniej: drzewo czyste, nic nie jest w toku — nowa sesja startuje bez ryzyka.
 

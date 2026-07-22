@@ -45,10 +45,17 @@ function nazwaKlastraAt(names, index, fallback) {
 function poolEntry(pools, ikonaId) {
   return pools[ikonaId];
 }
+function rivalPoolIndex(rivalIndex1Based, poolLen) {
+  if (poolLen <= 1) return 0;
+  const rivalSlots = poolLen - 1;
+  return (Math.max(1, rivalIndex1Based) - 1) % rivalSlots + 1;
+}
 function stateCityNameAt(pools, ikonaId, index, fallback) {
   const pan = poolEntry(pools, ikonaId)?.miasta_panstwa;
-  if (pan && index >= 0 && index < pan.length && pan[index]) {
-    return pan[index];
+  if (!pan?.length) return fallback;
+  const idx = index >= 1 ? rivalPoolIndex(index, pan.length) : index;
+  if (idx >= 0 && idx < pan.length && pan[idx]) {
+    return pan[idx];
   }
   return fallback;
 }
@@ -56,7 +63,32 @@ function playerCapitalFromPool(pools, ikonaId) {
   return stateCityNameAt(pools, ikonaId, 0, "Stolica");
 }
 function clusterRivalFromPool(pools, ikonaId, rivalIndex1Based) {
-  return stateCityNameAt(pools, ikonaId, rivalIndex1Based, `Rywal ${rivalIndex1Based}`);
+  const entry = poolEntry(pools, ikonaId);
+  const pan = entry?.miasta_panstwa ?? [];
+  const fallback = `Rywal ${rivalIndex1Based}`;
+  if (!pan.length || rivalIndex1Based < 1) {
+    return fallback;
+  }
+  const rivalSlots = pan.length - 1;
+  if (rivalIndex1Based <= rivalSlots) {
+    const idx = rivalPoolIndex(rivalIndex1Based, pan.length);
+    const name = pan[idx];
+    if (name) return name;
+  }
+  const regular = entry?.miasta_cywilizacji ?? [];
+  const usedInCluster = new Set(pan.filter(Boolean));
+  const overflowIndex = rivalIndex1Based - rivalSlots - 1;
+  let skipped = 0;
+  for (const name of regular) {
+    if (!name || usedInCluster.has(name)) continue;
+    if (skipped === overflowIndex) return name;
+    skipped++;
+  }
+  const base = regular.find((n) => n && !usedInCluster.has(n));
+  if (base) {
+    return cityNameWithSuffix(base, overflowIndex + 2);
+  }
+  return fallback;
 }
 function collectUsedCityNamesFromCities(cities, civTypeForOwner, targetCivId) {
   const used = /* @__PURE__ */ new Set();
@@ -139,7 +171,9 @@ function clusterRivalCityName(civs, playerCivId, rivalIndex1Based, pools) {
     return clusterRivalFromPool(pools, playerCivId, rivalIndex1Based);
   }
   const names = getNazwyKlastra(civs, playerCivId);
-  return nazwaKlastraAt(names, rivalIndex1Based, `Rywal ${rivalIndex1Based}`);
+  if (!names.length) return `Rywal ${rivalIndex1Based}`;
+  const idx = rivalIndex1Based >= 1 ? rivalPoolIndex(rivalIndex1Based, names.length) : rivalIndex1Based;
+  return nazwaKlastraAt(names, idx, `Rywal ${rivalIndex1Based}`);
 }
 function validateNazwyKlastra(civs) {
   const errs = [];

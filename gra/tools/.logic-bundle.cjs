@@ -444,6 +444,22 @@ function normPlMenuLabel(label) {
 
 // src/data/e-start-params-loader.ts
 var R = e_start_params_default;
+var MENU_KEYS = ["Malenki", "Ma\u0142y", "Standardowy", "Du\u017Cy", "Ogromny", "Super Huge"];
+function normMenuLabel(label) {
+  return normPlMenuLabel(label);
+}
+function skalaRow(menuLabel) {
+  const n = normMenuLabel(menuLabel);
+  const m = R.skala_mapy;
+  if (!m) return void 0;
+  for (const key of Object.keys(m)) {
+    if (normMenuLabel(key) === n) return m[key];
+  }
+  for (const key of MENU_KEYS) {
+    if (normMenuLabel(key) === n) return m[key];
+  }
+  return void 0;
+}
 function eStartPlayerCivId() {
   var _a10;
   return ((_a10 = R.defaulty) == null ? void 0 : _a10.player_civ_id) ?? "rzymianie";
@@ -457,6 +473,14 @@ function eStartRenderQualityBundled() {
   const q = ((_a10 = R.defaulty) == null ? void 0 : _a10.render_quality_bundled) ?? "medium";
   if (q === "low" || q === "high") return q;
   return "medium";
+}
+function eStartTypyCywilizacji(menuLabel) {
+  var _a10;
+  return (_a10 = skalaRow(menuLabel)) == null ? void 0 : _a10.typy_cywilizacji;
+}
+function eStartMiastaPanstwa(menuLabel) {
+  var _a10;
+  return (_a10 = skalaRow(menuLabel)) == null ? void 0 : _a10.miasta_panstwa;
 }
 
 // src/map/newGameMapDefaults.ts
@@ -565,6 +589,54 @@ function resolveWorldGenNumbers(opts) {
     highlandThreshold: highlandNoiseThresholdFromTier(reliefTier),
     riverTrace: resolveRiverTraceForMap(mapLabel, wd.rivers)
   };
+}
+var MAX_MIAST_PANSTWA = 18;
+var MAX_TYPY_CYWILIZACJI_MENU = 15;
+var MAP_MENU_TIER_ORDER = [
+  "malenki",
+  "maly",
+  "standardowy",
+  "duzy",
+  "ogromny",
+  "superogromny"
+];
+var MIASTA_PANSTWA_MENU_BY_TIER = [
+  { min: 6, default: 8, max: 10 },
+  { min: 8, default: 10, max: 12 },
+  { min: 10, default: 12, max: 14 },
+  { min: 12, default: 14, max: 16 },
+  { min: 14, default: 16, max: MAX_MIAST_PANSTWA },
+  { min: 14, default: 16, max: MAX_MIAST_PANSTWA }
+];
+var TYPY_CYWILIZACJI_MENU_BY_TIER = [
+  // Maleński: 7 (nie 8) — na najmniejszej mapie 8 klastrów czasem się nie mieści
+  // (pofragmentowany ląd → 1 państwo z 0 miast). Decyzja właściciela 2026-07-20.
+  { min: 6, default: 7, max: 10 },
+  { min: 8, default: 10, max: 12 },
+  { min: 10, default: 12, max: 14 },
+  { min: 12, default: 14, max: MAX_TYPY_CYWILIZACJI_MENU },
+  { min: 13, default: MAX_TYPY_CYWILIZACJI_MENU, max: MAX_TYPY_CYWILIZACJI_MENU },
+  { min: 13, default: MAX_TYPY_CYWILIZACJI_MENU, max: MAX_TYPY_CYWILIZACJI_MENU }
+];
+function mapMenuTierIndex(menuLabel) {
+  const idx = MAP_MENU_TIER_ORDER.indexOf(rozmiarFromMenuLabel(menuLabel));
+  return idx >= 0 ? idx : 2;
+}
+function miastaPanstwaTriple(menuLabel) {
+  return MIASTA_PANSTWA_MENU_BY_TIER[mapMenuTierIndex(menuLabel)] ?? MIASTA_PANSTWA_MENU_BY_TIER[2];
+}
+function typyCywilizacjiTriple(menuLabel) {
+  return TYPY_CYWILIZACJI_MENU_BY_TIER[mapMenuTierIndex(menuLabel)] ?? TYPY_CYWILIZACJI_MENU_BY_TIER[2];
+}
+function defaultMiastaPanstwaFromMapLabel(menuLabel) {
+  const fromE = eStartMiastaPanstwa(menuLabel);
+  if (fromE != null && fromE > 0) return Math.min(fromE, MAX_MIAST_PANSTWA);
+  return miastaPanstwaTriple(menuLabel).default;
+}
+function defaultCivTypesFromMapLabel(menuLabel) {
+  const fromE = eStartTypyCywilizacji(menuLabel);
+  if (fromE != null && fromE > 0) return Math.min(fromE, MAX_TYPY_CYWILIZACJI_MENU);
+  return typyCywilizacjiTriple(menuLabel).default;
 }
 
 // src/map/earth-land-mask.generated.ts
@@ -4932,7 +5004,24 @@ function computeStartPositions(hexes, seed, opts = {}) {
 }
 
 // src/map/villages.ts
+var VILLAGE_HUTS_PER_CITY = {
+  hard: 1,
+  normal: 2,
+  easy: 3
+};
 var VILLAGE_LAND_HEX_PER_VILLAGE = 140;
+function expectedStartCityCount(civTypesCount, cityStatesCount) {
+  const types = Math.max(1, Math.floor(civTypesCount));
+  const states = Math.max(0, Math.floor(cityStatesCount));
+  return types * (1 + states);
+}
+function villageHutsPerCityMultiplier(difficulty = "normal") {
+  return VILLAGE_HUTS_PER_CITY[difficulty] ?? VILLAGE_HUTS_PER_CITY.normal;
+}
+function targetVillageHutCount(cityCount, difficulty = "normal") {
+  const cities = Math.max(0, Math.floor(cityCount));
+  return cities * villageHutsPerCityMultiplier(difficulty);
+}
 var VILLAGE_MIN_DIST_FROM_CITY = 4;
 var VILLAGE_MIN_SPACING = 5;
 function lcgNext(state) {
@@ -4957,7 +5046,7 @@ function placeVillages(hexes, cities, existingCamps, seed, opts) {
     if (isVillageExcludedTerrain(hex.terenBazowy)) continue;
     candidates.push({ q: hex.coords.q, r: hex.coords.r });
   }
-  const targetCount = Math.max(1, Math.round(landHexCount / landHexPerVillage));
+  const targetCount = (opts == null ? void 0 : opts.targetCount) != null && Number.isFinite(opts.targetCount) ? Math.max(0, Math.floor(opts.targetCount)) : Math.max(1, Math.round(landHexCount / landHexPerVillage));
   if (candidates.length === 0) return [];
   let lcg = seed >>> 0;
   for (let i = candidates.length - 1; i > 0; i--) {
@@ -5004,8 +5093,8 @@ var terrain_improvements_default = {
       zywnosc: 3
     },
     surowiecOdblokowany: null,
-    teren: "\u0141\u0105ka, R\xF3wnina",
-    warunek: "ziemia uprawna; DZIA\u0141A BEZ rzeki (podstawowy)",
+    teren: "\u0141\u0105ka, R\xF3wnina; Wzg\xF3rza z lasem",
+    warunek: "ziemia uprawna; DZIA\u0141A BEZ rzeki (podstawowy); MO\u017BE na lesie (Las) \u2014 bez wyr\u0119bu (Maciej 2026-07-21)",
     koszt_praca: 20,
     tech: "Rolnictwo",
     odblokowuje: ""
@@ -5990,7 +6079,15 @@ function generateMap(width = DEFAULT_WIDTH, height = DEFAULT_HEIGHT, seed = 42, 
     minDist: 5,
     absMinDist: 2
   });
-  const villageSites = placeVillages(hexes, startPositions, [], (effectiveSeed ^ 24301) >>> 0);
+  const mapMenuLabel = (genOpts == null ? void 0 : genOpts.mapSizeMenuLabel) ?? "Standardowy";
+  const startCityCount = expectedStartCityCount(
+    (genOpts == null ? void 0 : genOpts.civTypesCount) ?? defaultCivTypesFromMapLabel(mapMenuLabel),
+    (genOpts == null ? void 0 : genOpts.cityStatesCount) ?? defaultMiastaPanstwaFromMapLabel(mapMenuLabel)
+  );
+  const targetHuts = targetVillageHutCount(startCityCount, (genOpts == null ? void 0 : genOpts.difficulty) ?? "normal");
+  const villageSites = placeVillages(hexes, startPositions, [], (effectiveSeed ^ 24301) >>> 0, {
+    targetCount: targetHuts
+  });
   for (const site of villageSites) {
     const hex = hexes[`${site.q},${site.r}`];
     if (hex) hex.wioska = { istnieje: true, ludnosc: 1 };
@@ -6006,11 +6103,11 @@ function generateMap(width = DEFAULT_WIDTH, height = DEFAULT_HEIGHT, seed = 42, 
   };
 }
 var ROZMIAR_DIMS = mapGenRozmiarDims();
-function normMenuLabel(label) {
+function normMenuLabel2(label) {
   return normPlMenuLabel(label);
 }
 function rozmiarFromMenuLabel(label) {
-  const n = normMenuLabel(label);
+  const n = normMenuLabel2(label);
   if (n.startsWith("malen") || n === "malenki") return "malenki";
   if (n.startsWith("mal") || n === "maly" || n === "small") return "maly";
   if (n.startsWith("stand") || n.startsWith("sre") || n === "standardowy" || n === "medium") return "standardowy";
@@ -6144,6 +6241,7 @@ var WZROST_LUDNOSCI_PACE = {
 };
 
 // src/game/difficulty-cost.ts
+var GLOBAL_RESEARCH_COST_MULT = 2;
 function isPlayerOwner(ownerId) {
   return ownerId === 0;
 }
@@ -6158,7 +6256,8 @@ function applyDifficultyCostMultiplier(costAfterPace, ownerId, difficulty) {
 }
 function scaledResearchCost(baseCost, tempo, ownerId, difficulty) {
   const afterTempo = applyTempoKoszt(baseCost, tempo);
-  return applyDifficultyCostMultiplier(afterTempo, ownerId, difficulty);
+  const afterGlobal = Math.max(1, Math.round(afterTempo * GLOBAL_RESEARCH_COST_MULT));
+  return applyDifficultyCostMultiplier(afterGlobal, ownerId, difficulty);
 }
 function getPopulationGrowthDifficultyMultiplier(ownerId, difficulty) {
   if (difficulty === "normal") return 1;
@@ -7195,9 +7294,9 @@ function totalBuildingUpkeep(buildings, flatOverride) {
   return sum;
 }
 var DEFAULT_UNIT_UPKEEP_BY_CATEGORY = {
-  osadnik: 1,
-  robotnik: 1,
-  zwiadowca: 1,
+  osadnik: 0,
+  robotnik: 0,
+  zwiadowca: 0,
   procarz: 1,
   oszczepnik: 1,
   lucznik: 1,
@@ -7214,9 +7313,10 @@ var DEFAULT_UNIT_UPKEEP_BY_CATEGORY = {
   domyslny: 1
 };
 function unitUpkeep(unit, table, standardUpkeep) {
+  const byCat = DEFAULT_UNIT_UPKEEP_BY_CATEGORY[unit.category];
+  if (typeof byCat === "number" && byCat === 0) return 0;
   const byType = table[unit.typeId];
   if (typeof byType === "number" && Number.isFinite(byType)) return byType;
-  const byCat = DEFAULT_UNIT_UPKEEP_BY_CATEGORY[unit.category];
   if (typeof byCat === "number" && Number.isFinite(byCat)) return byCat;
   return Number.isFinite(standardUpkeep) ? standardUpkeep : 0;
 }
@@ -7388,6 +7488,89 @@ function cityName(index) {
   return "Miasto " + (index + 1);
 }
 
+// src/map/territory.ts
+function axialDistance(aq, ar, bq, br) {
+  const as_ = -aq - ar;
+  const bs = -bq - br;
+  return (Math.abs(aq - bq) + Math.abs(ar - br) + Math.abs(as_ - bs)) / 2;
+}
+function cityTerritoryRadius(node) {
+  if (node.isFort) return 10;
+  if (node.isOutpost) return 5;
+  return cityRangeForPopulation(node.pop);
+}
+function isInTerritory(q, r, nodes) {
+  for (const node of nodes) {
+    if (axialDistance(q, r, node.q, node.r) <= cityTerritoryRadius(node)) return true;
+  }
+  return false;
+}
+function territoryOwnerAt(q, r, nodes) {
+  let bestOwner = null;
+  let bestDist = Infinity;
+  for (const node of nodes) {
+    const radius = cityTerritoryRadius(node);
+    const dist = axialDistance(q, r, node.q, node.r);
+    if (dist > radius) continue;
+    if (dist < bestDist) {
+      bestDist = dist;
+      bestOwner = node.ownerId;
+    }
+  }
+  return bestOwner;
+}
+
+// src/map/territory-work.ts
+function buildTerritoryNodesFromCities(cities) {
+  return cities.map((c) => ({
+    q: c.q,
+    r: c.r,
+    pop: c.population,
+    level: 1,
+    ownerId: c.ownerId
+  }));
+}
+function isTerritoryHexOwnedBy(q, r, ownerId, territoryNodes) {
+  if (!territoryNodes.length) return true;
+  return territoryOwnerAt(q, r, territoryNodes) === ownerId;
+}
+function makeTerritoryWorkableFilter(territoryNodes, ownerId, baseWorkable) {
+  return (q, r) => {
+    if (baseWorkable && !baseWorkable(q, r)) return false;
+    return isTerritoryHexOwnedBy(q, r, ownerId, territoryNodes);
+  };
+}
+function reconcileWorkedTilesForOwner(cities, territoryNodes, ownerId) {
+  let changed = false;
+  for (const city of cities) {
+    if (city.ownerId !== ownerId) continue;
+    if (!city.okolicaReczne) continue;
+    const reczne = { ...city.okolicaReczne };
+    let cityChanged = false;
+    for (const key of Object.keys(reczne)) {
+      const parts = key.split(",");
+      const q = Number(parts[0]);
+      const r = Number(parts[1]);
+      if (!Number.isFinite(q) || !Number.isFinite(r)) continue;
+      if (!isTerritoryHexOwnedBy(q, r, ownerId, territoryNodes)) {
+        delete reczne[key];
+        cityChanged = true;
+      }
+    }
+    if (cityChanged) {
+      city.okolicaReczne = reczne;
+      changed = true;
+    }
+  }
+  return changed;
+}
+function reconcileAllWorkedTiles(cities, territoryNodes) {
+  const owners = new Set(cities.map((c) => c.ownerId));
+  for (const oid of owners) {
+    reconcileWorkedTilesForOwner(cities, territoryNodes, oid);
+  }
+}
+
 // src/game/okolica.ts
 var _a7;
 var OKOLICA_RADIUS = ((_a7 = miasto_params_default.zasieg_okolicy_miasta) == null ? void 0 : _a7.wartosc) ?? 5;
@@ -7439,9 +7622,16 @@ function tileScore(y, wagi) {
   const wh = (wagi == null ? void 0 : wagi.handel) ?? 1;
   return (y.zywnosc ?? 0) * wz + (y.praca ?? 0) * wp + (y.handel ?? 0) * wh;
 }
+function effectiveIsWorkable(opts) {
+  const { territoryNodes, ownerId, isWorkable } = opts;
+  if (territoryNodes != null && ownerId != null) {
+    return makeTerritoryWorkableFilter(territoryNodes, ownerId, isWorkable);
+  }
+  return isWorkable;
+}
 function assignWorkedTiles(centerQ, centerR, population, map, yieldOf, opts = {}) {
   const radius = opts.radius ?? cityRangeForPopulation(population);
-  const tiles = okolicaTiles(centerQ, centerR, radius, map, opts.isWorkable);
+  const tiles = okolicaTiles(centerQ, centerR, radius, map, effectiveIsWorkable(opts));
   const scored = tiles.map((t) => ({ t, s: tileScore(yieldOf(t.q, t.r), opts.wagi) }));
   scored.sort((a, b) => {
     if (b.s !== a.s) return b.s - a.s;
@@ -7469,10 +7659,10 @@ function resolveWorkedTiles(city, map, yieldOf, opts = {}) {
   const radius = opts.radius ?? cityRangeForPopulation(pop);
   const tryb = opts.tryb ?? city.okolicaTryb ?? DEFAULT_OKOLICA_TRYB;
   const focus = opts.focus ?? city.okolicaFocus ?? DEFAULT_OKOLICA_FOCUS;
-  const isWorkable = opts.isWorkable;
+  const workFilter = effectiveIsWorkable(opts);
   if (tryb === "reczny") {
     const reczne = opts.reczne ?? city.okolicaReczne ?? {};
-    const tiles = okolicaTiles(city.q, city.r, radius, map, isWorkable);
+    const tiles = okolicaTiles(city.q, city.r, radius, map, workFilter);
     const tileMap = new Map(tiles.map((t) => [t.key, t]));
     const out = [];
     for (const [key, count] of Object.entries(reczne)) {
@@ -7485,7 +7675,9 @@ function resolveWorkedTiles(city, map, yieldOf, opts = {}) {
   }
   return assignWorkedTiles(city.q, city.r, pop, map, yieldOf, {
     radius,
-    isWorkable,
+    isWorkable: opts.isWorkable,
+    territoryNodes: opts.territoryNodes,
+    ownerId: opts.ownerId ?? city.ownerId,
     wagi: wagiForFocus(focus)
   });
 }
@@ -7500,13 +7692,15 @@ function yieldOfMapHex(map, q, r) {
   });
   return { zywnosc: y.zywnosc, praca: y.praca, handel: y.handel };
 }
-function seedReczneFromAuto(city, map) {
+function seedReczneFromAuto(city, map, territoryNodes) {
   const pop = Math.max(0, Math.floor(city.population ?? 0));
   if (pop <= 0) return {};
   const radius = cityRangeForPopulation(pop);
   const focus = city.okolicaFocus ?? DEFAULT_OKOLICA_FOCUS;
   const tiles = assignWorkedTiles(city.q, city.r, pop, map, (q, r) => yieldOfMapHex(map, q, r), {
     radius,
+    territoryNodes,
+    ownerId: city.ownerId,
     wagi: wagiForFocus(focus)
   });
   const reczne = {};
@@ -7520,7 +7714,7 @@ function pickDeterministicIndex(seed, length) {
   if (length <= 0) return 0;
   return (seed % length + length) % length;
 }
-function rebalanceWorkersAfterPopulationChange(city, map, popBefore, popAfter) {
+function rebalanceWorkersAfterPopulationChange(city, map, popBefore, popAfter, territoryNodes) {
   const tryb = city.okolicaTryb ?? DEFAULT_OKOLICA_TRYB;
   const pop = Math.max(0, Math.floor(popAfter));
   if (popBefore === popAfter) return;
@@ -7530,12 +7724,13 @@ function rebalanceWorkersAfterPopulationChange(city, map, popBefore, popAfter) {
   const radius = cityRangeForPopulation(pop);
   const focus = city.okolicaFocus ?? DEFAULT_OKOLICA_FOCUS;
   const wagi = wagiForFocus(focus);
-  const tiles = okolicaTiles(city.q, city.r, radius, map);
+  const workFilter = territoryNodes ? makeTerritoryWorkableFilter(territoryNodes, city.ownerId) : void 0;
+  const tiles = okolicaTiles(city.q, city.r, radius, map, workFilter);
   const yieldOf = (q, r) => yieldOfMapHex(map, q, r);
   let reczne = { ...city.okolicaReczne ?? {} };
   if (popAfter > popBefore) {
     if (countAssignedWorkers(reczne) === 0 && pop > 0) {
-      city.okolicaReczne = seedReczneFromAuto({ ...city, population: pop }, map);
+      city.okolicaReczne = seedReczneFromAuto({ ...city, population: pop }, map, territoryNodes);
       return;
     }
     let need = pop - countAssignedWorkers(reczne);
@@ -7891,7 +8086,7 @@ var units_default = [
     Ludno\u015B\u0107: 1,
     Surowiec: "-",
     "Surowiec (ilo\u015B\u0107)": 0,
-    "Utrzymanie (Pieni\u0105dz/tur\u0119)": 1,
+    "Utrzymanie (Pieni\u0105dz/tur\u0119)": 0,
     "\u017Cywno\u015B\u0107/tur\u0119": 0,
     Atak: 0,
     Uderzenie: 2,
@@ -17884,6 +18079,9 @@ var diplomacy_default = {
     trybut_respekt: 10,
     wspolnyWrogAkceptacja_respekt: 10,
     handel_zaufanie_perTura: 1,
+    sojusz_zaufanie_perTura: 3,
+    nap_zaufanie_perTura: 2,
+    pokoj_zaufanie_perTura: 1,
     aktywnyPakt_zaufanie_perTura: 1,
     dobraWola_zaufanie_perTura: 1,
     wspolnyWrog_zaufanie_perTura: 1,
@@ -17908,8 +18106,8 @@ var diplomacy_default = {
     progPoboczneHandel: 30,
     progPoboczneWojna: 15,
     progNapZaufanie: 40,
-    progNapRelacja: 110,
-    progHandelRelacja: 100,
+    progNapRelacja: 50,
+    progHandelRelacja: 40,
     progSojuszPartnerRwMin: 0.4,
     progSojuszPartnerRwMax: 0.7,
     progSojuszPremiaSilniejszyMax: 0.25,
@@ -18014,7 +18212,7 @@ var diplomacy_default = {
       zrodlo: "spichlerz miasta",
       decyzja: "D3-W6b korekta Maciej 2026-06-30 \u2014 1 PN = 1 \u017Cywno\u015B\u0107 (by\u0142o 4)"
     },
-    handel_prog_relacja: 100,
+    handel_prog_relacja: 40,
     dostep_zloze_wojna: {
       utrata_w_trakcie_wojny: true,
       wymaga_renegocjacji_po_pokoju: true,
@@ -22164,7 +22362,7 @@ function workedTilesForCity(city, map) {
   }
   return tiles;
 }
-function cityWorkedTilesForEconomy(city, map) {
+function cityWorkedTilesForEconomy(city, map, territoryNodes) {
   const tiles = [];
   const centreHex = map.hexes[`${city.q},${city.r}`];
   if (centreHex) tiles.push(hexToWorkedTile(centreHex));
@@ -22182,7 +22380,11 @@ function cityWorkedTilesForEconomy(city, map) {
       handel: y.handel
     };
   };
-  const assigned = resolveWorkedTiles(city, map, yieldOf, { radius });
+  const assigned = resolveWorkedTiles(city, map, yieldOf, {
+    radius,
+    territoryNodes,
+    ownerId: city.ownerId
+  });
   for (const t of assigned) {
     const h = map.hexes[t.key];
     if (h) tiles.push(hexToWorkedTile(h));
@@ -22229,6 +22431,8 @@ function advanceCityEconomy(cities, map, data, difficulty = "normal", econUnits 
   const gameDifficulty = difficulty;
   const params = buildEconParams(data, difficulty);
   const noBuildings = [];
+  const territoryNodes = buildTerritoryNodesFromCities(cities);
+  reconcileAllWorkedTiles(cities, territoryNodes);
   const rawEconParams = data.econParams;
   const upkeepParams = loadUpkeepParams(rawEconParams, difficulty);
   const storageParams = loadStorageParams(rawEconParams, difficulty);
@@ -22270,7 +22474,7 @@ function advanceCityEconomy(cities, map, data, difficulty = "normal", econUnits 
   for (const city of cities) {
     const isCapital = !capitalSeen.has(city.ownerId);
     capitalSeen.add(city.ownerId);
-    const worked = cityWorkedTilesForEconomy(city, map);
+    const worked = cityWorkedTilesForEconomy(city, map, territoryNodes);
     const builtIds = builtByCity.get(city.id) ?? [];
     const hasWater = cityHasWaterAccess(city, map);
     const zdrowie = computeCityHealth(city.population, worked, builtIds, healthParams, hasWater, { city, map });
@@ -22402,7 +22606,7 @@ function advanceCityEconomy(cities, map, data, difficulty = "normal", econUnits 
     const before = city.population;
     city.population = grow.nowaLudnosc;
     if (grow.nowaLudnosc !== before) {
-      rebalanceWorkersAfterPopulationChange(city, map, before, grow.nowaLudnosc);
+      rebalanceWorkersAfterPopulationChange(city, map, before, grow.nowaLudnosc, territoryNodes);
     }
     const ownerEpoka = ownerEra;
     if (city.manpower === void 0) {
@@ -23057,24 +23261,6 @@ function hexDistanceAxial2(q1, r1, q2, r2) {
   const z2 = r2;
   const y2 = -x2 - z2;
   return (Math.abs(x1 - x2) + Math.abs(y1 - y2) + Math.abs(z1 - z2)) / 2;
-}
-
-// src/map/territory.ts
-function axialDistance(aq, ar, bq, br) {
-  const as_ = -aq - ar;
-  const bs = -bq - br;
-  return (Math.abs(aq - bq) + Math.abs(ar - br) + Math.abs(as_ - bs)) / 2;
-}
-function cityTerritoryRadius(node) {
-  if (node.isFort) return 10;
-  if (node.isOutpost) return 5;
-  return cityRangeForPopulation(node.pop);
-}
-function isInTerritory(q, r, nodes) {
-  for (const node of nodes) {
-    if (axialDistance(q, r, node.q, node.r) <= cityTerritoryRadius(node)) return true;
-  }
-  return false;
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
