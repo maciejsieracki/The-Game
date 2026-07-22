@@ -2985,3 +2985,13 @@ Ranking Moc: tylko pełne cywilizacje (bez „· miasto-państwo"), tylko odkryt
 md5 `6a9b8e729d52f1adb2ea556a265b12e0` · stamp `6a9b8e72` · tsc=0 · power-ranking 10/10.
 Pliki: `power-ranking.ts`, `main.ts`, `empireDetailPanel.ts`, `powerOverlayHud.ts`, `hud.ts`.
 CZEKAM-NA: Maciej — Ctrl+F5 stamp `6a9b8e72` → panel Moc → brak miast-państw w rankingu.
+
+## [13:30 PL, 2026-07-22] INTEGRATOR → Maciej — Ranking Moc ↔ mgła wojny (FoW)
+
+**md5:** `2f32fbea89183d908099e984414db2cb` · stamp `2f32fbea`
+**Decyzja Macieja:** widoczność rankingu Moc powiązana ze stanem mgły wojny (F), nie osobnym togglem testowym.
+**FoW ON:** ranking = odkryte pełne cywilizacje + gracz (bez miast-państw). **FoW OFF (F):** wszystkie pełne cywilizacje.
+Usunięto `debugPowerRankingAll` (URL/localStorage/checkbox [TEST]).
+Pliki: `power-ranking.ts`, `main.ts`, `empireDetailPanel.ts`, `powerOverlayHud.ts`.
+Bramki: tsc=0 · power-ranking 10/10 · verify OK.
+CZEKAM-NA: Maciej — Ctrl+F5 stamp `2f32fbea` → FoW ON ranking tylko odkryte · F (FoW OFF) → wszystkie pełne nacje.

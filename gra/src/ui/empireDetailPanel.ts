@@ -7,11 +7,6 @@ import type { EmpireDetailSnap } from './empireDetailTypes';
 import { formatObywateleLabel } from '../game/manpower';
 import { mocLabel, mocWithValue } from './power-labels';
 import { brandIconSvg } from './icons/brandAssets';
-import {
-  powerRankingDebugToggleHtml,
-  wirePowerRankingDebugToggle,
-} from '../game/power-ranking';
-
 export type { EmpireDetailSnap } from './empireDetailTypes';
 
 const STYLE_ID = 'civ-empire-panel-css';
@@ -271,7 +266,6 @@ function render(): void {
   moc += `<div class="civ-emp-foot">Respekt w dyplomacji = stosunek Twojej Mocy do Mocy rozmówcy (nie to samo co % udziału w tabeli).</div>`;
   if (p.ranking.length > 0) {
     moc += `<div class="civ-emp-title" style="margin-top:12px">Ranking ${esc(mocLabel())}</div>`;
-    moc += powerRankingDebugToggleHtml();
     moc += `<div class="civ-emp-rank">`;
     for (const r of p.ranking) {
       if (r.isPlayer) {
@@ -365,7 +359,6 @@ function render(): void {
   sur += `</div>`;
 
   bodyEl.innerHTML = params + moc + zasoby + kult + sur;
-  wirePowerRankingDebugToggle(bodyEl, () => { /* odświeżenie przez onPowerRankingDebugToggle w main */ });
 
   const scrollTarget = pendingScrollSection;
   pendingScrollSection = null;

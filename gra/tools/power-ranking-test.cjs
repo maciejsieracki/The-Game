@@ -52,7 +52,7 @@ const discovered = new Set([0, 1, 3]);
 const prod = M.filterOwnersForPowerRanking(all, {
   cityStateOpts,
   discoveredOwners: discovered,
-  debugShowAll: false,
+  showAllCivs: false,
 });
 assert(JSON.stringify(prod) === JSON.stringify([0, 1]),
   'produkcja: gracz + odkryte pełne cywilizacje, bez miast-państw i nieodkrytych');
@@ -61,15 +61,15 @@ assert(!prod.includes(3), 'produkcja: wyklucza odkryte miasto-państwo (owner 3)
 assert(!prod.includes(4), 'produkcja: wyklucza nieodkryte (owner 4)');
 assert(prod.includes(0), 'produkcja: gracz zawsze widoczny');
 
-const debug = M.filterOwnersForPowerRanking(all, {
+const fogOff = M.filterOwnersForPowerRanking(all, {
   cityStateOpts,
   discoveredOwners: discovered,
-  debugShowAll: true,
+  showAllCivs: true,
 });
-assert(JSON.stringify(debug) === JSON.stringify([0, 1, 4]),
-  'debug: wszystkie pełne cywilizacje, nadal bez miast-państw');
-assert(!debug.includes(2), 'debug: miasto-państwo nadal ukryte');
-assert(!debug.includes(3), 'debug: odkryte miasto-państwo nadal ukryte');
+assert(JSON.stringify(fogOff) === JSON.stringify([0, 1, 4]),
+  'FoW wyłączony: wszystkie pełne cywilizacje, nadal bez miast-państw');
+assert(!fogOff.includes(2), 'FoW wyłączony: miasto-państwo nadal ukryte');
+assert(!fogOff.includes(3), 'FoW wyłączony: odkryte miasto-państwo nadal ukryte');
 
 assert(M.isOwnerClusterCityState(2, cityStateOpts) === true, 'fixture: owner 2 = miasto-państwo');
 assert(M.isOwnerClusterCityState(1, cityStateOpts) === false, 'fixture: owner 1 = pełna cywilizacja');

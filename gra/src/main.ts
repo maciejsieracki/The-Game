@@ -414,12 +414,7 @@ import {
   canAffordUnitManpower, refundUnitSpawnToCity,
 } from './game/manpower';
 import { computeObjectivePower, battlePowerPointsFromDefeatedEnemy, type ObjectivePowerResult } from './game/power-objective';
-import {
-  filterOwnersForPowerRanking,
-  isPowerRankingDebugShowAll,
-  onPowerRankingDebugToggle,
-  setPowerRankingDebugShowAll,
-} from './game/power-ranking';
+import { filterOwnersForPowerRanking } from './game/power-ranking';
 import { loadPowerOpcje } from './game/power-options';
 import { armyFieldPower } from './game/unit-power';
 import { loadOrderParams, orderEffectsToYieldMults, pickRevoltMigrationTarget, type OrderYieldMults } from './game/order';
@@ -3886,6 +3881,7 @@ async function boot(): Promise<void> {
       fogOn = !fogOn;
       if (!fogOn) revealAllLand = false;
       refreshFog();
+      updateHud();
       showHintMessage(
         fogOn
           ? 'FoW włączony (F): normalna mgła'
@@ -5972,7 +5968,7 @@ async function boot(): Promise<void> {
       const eligible = filterOwnersForPowerRanking(allPowerOwnerIds(), {
         cityStateOpts: ownerCityStateOpts(),
         discoveredOwners: getDiplomaticContacts(),
-        debugShowAll: isPowerRankingDebugShowAll(),
+        showAllCivs: !fogOn,
       });
       const rows = eligible.map(oid => ({
         civ: oid === 0 ? civDisplayNameForKey(civKeyForOwner(0)) : ownerDiploLabel(oid),
@@ -7941,15 +7937,6 @@ async function boot(): Promise<void> {
         },
       });
       mountEmpireDetailPanel(() => buildEmpireDetailSnap());
-      // TEMP test-only: ?debugPowerRankingAll=1 → zapis w localStorage
-      if (typeof location !== 'undefined') {
-        const qsDbg = new URLSearchParams(location.search).get('debugPowerRankingAll');
-        if (qsDbg === '1' || qsDbg === 'true') setPowerRankingDebugShowAll(true);
-        else if (qsDbg === '0' || qsDbg === 'false') setPowerRankingDebugShowAll(false);
-      }
-      onPowerRankingDebugToggle(() => {
-        if (isEmpireDetailPanelOpen()) refreshEmpireDetailPanel();
-      });
     }
 
     function updateHud(): void {

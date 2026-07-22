@@ -3,10 +3,6 @@
  */
 
 import { mocLabel, mocTitle, mocWithValue } from './power-labels';
-import {
-  powerRankingDebugToggleHtml,
-  wirePowerRankingDebugToggle,
-} from '../game/power-ranking';
 
 export interface PowerComponentRow {
   key: string;
@@ -81,7 +77,6 @@ export function showPowerOverlay(data: PowerOverlayData, onClose?: () => void, o
   }
   if (data.ranking.length > 0) {
     html += '<div class="civ-pow-rank"><b>Ranking ' + esc(mocLabel()) + '</b><br>';
-    html += powerRankingDebugToggleHtml();
     for (const r of data.ranking) {
       html += (r.isPlayer ? '▸ ' : '  ') + '#' + r.rank + ' ' + esc(r.civ)
         + ' — ' + esc(mocWithValue(r.power)) + '<br>';
@@ -96,9 +91,6 @@ export function showPowerOverlay(data: PowerOverlayData, onClose?: () => void, o
   html += '<button type="button" class="civ-pow-close">Zamknij</button>';
   box.innerHTML = html;
   root.appendChild(box);
-  wirePowerRankingDebugToggle(box, () => {
-    onRefresh?.();
-  });
   document.body.appendChild(root);
   root.addEventListener('click', (e) => {
     if (e.target === root) { hidePowerOverlay(); onClose?.(); }

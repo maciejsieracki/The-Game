@@ -4,7 +4,20 @@
 > **Czat:** krótko **`✅ Gotowe:`** / **`⏸️ Czeka:`** · **Ten plik:** pełniejszy zapis tego samego.  
 > Szczegóły techniczne → handoff w `dyspozycje/_handoff/` · operacja → `dyspozycje/DZIENNIK-MASTERA.md`
 
-**Ostatnia aktualizacja:** 2026-07-22 (Ranking Moc @ 6a9b8e72)
+**Ostatnia aktualizacja:** 2026-07-22 (Ranking Moc ↔ FoW @ 2f32fbea)
+
+---
+
+## [13:30] ✅ Gotowe — Ranking Moc ↔ mgła wojny (FoW)
+
+| | |
+|---|---|
+| **Co** | Widoczność rankingu Moc zależy od mgły wojny — bez osobnego przełącznika testowego |
+| **FoW włączony** | Ranking: tylko odkryte pełne cywilizacje + Ty (bez miast-państw) |
+| **FoW wyłączony (F)** | Ranking: wszystkie pełne cywilizacje (dev/test) |
+| **Usunięto** | Checkbox [TEST], `?debugPowerRankingAll=1`, `localStorage civ.debugPowerRankingAll` |
+| **md5** | `2f32fbea89183d908099e984414db2cb` · stamp `2f32fbea` |
+| **Od Ciebie** | Ctrl+F5 · stamp `2f32fbea` · panel Moc → FoW ON = tylko odkryte · naciśnij **F** (FoW OFF) = pełna lista |
 
 ---
 
