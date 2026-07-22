@@ -1148,10 +1148,17 @@ var civs_default = {
           realizuje: "walka"
         },
         {
+          typ: "mnoznik_manpower_max",
+          cel: "rekruci",
+          wartosc: 2,
+          opis: "Legiony: 2\xD7 pula Manpower na obywatela (np. 2000 vs 1000 w epoce Kamie\u0144)",
+          realizuje: "ekonomia"
+        },
+        {
           typ: "bonus_pobor_regen",
           cel: "rekruci",
-          wartosc: 0.35,
-          opis: "Dyscyplina legion\xF3w: szybsza odnowa poboru (+35% regen/tur\u0119 vs standard 10%)",
+          wartosc: 1,
+          opis: "Dyscyplina legion\xF3w: 2\xD7 szybsza odnowa poboru (4% max/tur\u0119 vs standard 2%)",
           realizuje: "ekonomia"
         }
       ],
@@ -10743,7 +10750,7 @@ function evaluateProposal(proposal, ctx) {
       return { accepted: false, reason: "Ultimatum odrzucone \u2014 warunki zbyt surowe" };
     }
     case "wasal": {
-      if (ctx.responderRespekt < p.progWasalizacjaRespekt) {
+      if (ctx.proposerRespekt < p.progWasalizacjaRespekt) {
         return { accepted: false, reason: `Wasalizacja wymaga Respekt \u2265 ${p.progWasalizacjaRespekt}` };
       }
       const perTurn = payload.goldPerTurn ?? p.progWasalDefaultGoldPerTurn;

@@ -5671,6 +5671,7 @@ async function boot(): Promise<void> {
       if (newOwner !== null && newOwner !== city.ownerId) {
         const oldOwner = city.ownerId;
         city.ownerId = newOwner;
+        if (city.rebelState) city.rebelState = false;
         city.population = Math.max(1, city.population);
         for (let i = units.length - 1; i >= 0; i--) {
           const u = units[i]!;
@@ -5928,14 +5929,16 @@ async function boot(): Promise<void> {
       const def = unitDefFor(u);
       const prog = def['Próg dezercji (% health)'] ?? def['Prog dezercji (% health)'];
       // SiegeUnit legacy field names; values from TW v3 EN JSON (same as combat.ts).
+      // Fallback to legacy PL columns (Uderzenie/Pancerz/Przebicie) when EN block missing
+      // (~25 units.json rows), same as combatUnitFromDef in game/combat.ts.
       return {
         typNazwa: u.typeId,
         rola: String(def['Rola (linia)'] ?? 'Wrecz'),
         Atak: unitAtak(def),
         Obrona: unitObrona(def),
-        Uderzenie: normFieldVal(def['chargeBonus'], 0),
-        Pancerz: normFieldVal(def['armor'], 0),
-        Przebicie: normFieldVal(def['piercing'], 0),
+        Uderzenie: normFieldVal(def['chargeBonus'] ?? def['Uderzenie'], 0),
+        Pancerz: normFieldVal(def['armor'] ?? def['Pancerz'], 0),
+        Przebicie: normFieldVal(def['piercing'] ?? def['Przebicie'], 0),
         weaponDamage: normFieldVal(def['weaponDamage'], unitAtak(def)),
         // Health = biezace HP (u.hp), nie max z definicji — siegeAi.ts skaluje sile po fraction biezacego HP.
         Health: u.hp ?? unitHealth(def),

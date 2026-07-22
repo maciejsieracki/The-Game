@@ -174,9 +174,13 @@ export function combatUnitFromDef(
     meleeAttack: combatNormField(def['meleeAttack'], 0),
     meleeDefence: combatNormField(def['meleeDefence'], 0),
     weaponDamage: combatNormField(def['weaponDamage'], 0),
-    armor: combatNormField(def['armor'], 0),
-    piercing: combatNormField(def['piercing'], 0),
-    chargeBonus: combatNormField(def['chargeBonus'], 0),
+    // Legacy PL fallback (Pancerz/Przebicie/Uderzenie): ~25 units.json rows never got the
+    // TW v3 EN block authored. Same fallback pattern unitRowStat already uses elsewhere
+    // (see battleScene.ts unitRowStat(s, 'chargeBonus', 'Uderzenie', ...)) so they don't
+    // fight with armor/piercing/chargeBonus silently defaulted to 0.
+    armor: unitRowStat(def, 'armor', 'Pancerz', 0),
+    piercing: unitRowStat(def, 'piercing', 'Przebicie', 0),
+    chargeBonus: unitRowStat(def, 'chargeBonus', 'Uderzenie', 0),
     health: opts.hp ?? maxHp,
     'Prog dezercji (% health)': prog,
     missileAttack: combatNormField(def['missileAttack'], 0),

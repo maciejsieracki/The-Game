@@ -361,5 +361,6 @@ export function applyCityCaptureAfterBattle(
 
   city.ownerId = atkOwner;
   city.oblegane = false;
+  if (city.rebelState) city.rebelState = false;
   return lead;
 }

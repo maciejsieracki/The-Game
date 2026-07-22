@@ -637,8 +637,18 @@ export function computeReachable(
  *          i.e. [first-step, ..., dest].  Start hex is NOT included.
  *          Returns [] if dest == start OR dest is unreachable.
  *
+ * SEARCH RADIUS CAP: an unreachable dest (different continent, sealed by
+ * mountains/sea, etc.) would otherwise make Dijkstra flood every reachable
+ * hex before giving up (O(continent size) per call). Neighbors farther from
+ * the start than (2x beeline distance to dest + PATH_SEARCH_RADIUS_BUFFER)
+ * are pruned from the frontier -- generous enough for realistic detours
+ * (coastlines, mountain passes) while bounding worst-case search size
+ * regardless of true reachability.
+ *
  * Pure function -- no DOM, no THREE, no side effects.
  */
+const PATH_SEARCH_RADIUS_BUFFER = 12;
+
 export function computePath(
   unit: RuntimeUnit,
   map: GameMap,
@@ -654,6 +664,11 @@ export function computePath(
 
   // Trivial case: already there.
   if (startKey === destKey) return [];
+
+  // Search radius cap (see doc comment above). Destination distance is
+  // always <= this bound, so the destination itself is never pruned.
+  const maxSearchRadius =
+    hexDistance(unit.q, unit.r, destQ, destR) * 2 + PATH_SEARCH_RADIUS_BUFFER;
 
   // Dijkstra: dist + parent maps.
   // Entry: [accumulatedCost, q, r]
@@ -726,6 +741,11 @@ export function computePath(
       const nq   = cq + dq;
       const nr   = cr + dr;
       const nKey = keyOf(nq, nr);
+
+      // Radius cap: keep the frontier from spilling past a generous
+      // multiple of the beeline distance (prevents flooding the whole
+      // reachable landmass when dest is on another continent/sealed off).
+      if (hexDistance(unit.q, unit.r, nq, nr) > maxSearchRadius) continue;
 
       // Already settled with optimal cost.
       if (dist.has(nKey) && dist.get(nKey)! <= cost) continue;

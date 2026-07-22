@@ -1147,6 +1147,21 @@ export function decideAITurn(
     return neutralVillagesCache;
   };
 
+  // findSettlerTarget nie zależy od konkretnego osadnika (tylko od map/cities/
+  // enemyCities/data/minCityDist/opts — stałych w obrębie tego wywołania decideAITurn),
+  // więc przy wielu osadnikach tego samego gracza wynik jest identyczny za każdym razem.
+  // Liczymy pełny skan mapy x miast co najwyżej raz na turę (leniwie — tylko jeśli
+  // jakiś osadnik faktycznie tego potrzebuje), zamiast per osadnik (#29).
+  let settlerTargetComputed = false;
+  let cachedSettlerTarget: { q: number; r: number } | null = null;
+  const getSettlerTarget = (unit: RuntimeUnit): { q: number; r: number } | null => {
+    if (!settlerTargetComputed) {
+      cachedSettlerTarget = findSettlerTarget(unit, map, cities, enemyCities, data, minCityDist, opts);
+      settlerTargetComputed = true;
+    }
+    return cachedSettlerTarget;
+  };
+
   for (const unit of sortedUnits) {
     const cmdsBefore = commands.length;
 
@@ -1165,7 +1180,7 @@ export function decideAITurn(
         continue;
       }
 
-      const bestTarget = findSettlerTarget(unit, map, cities, enemyCities, data, minCityDist, opts);
+      const bestTarget = getSettlerTarget(unit);
       if (bestTarget !== null) {
         const step = firstStep(unit, map, bestTarget.q, bestTarget.r, units);
         if (step !== null) {

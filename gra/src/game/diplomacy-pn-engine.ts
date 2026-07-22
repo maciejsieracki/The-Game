@@ -51,14 +51,20 @@ export function relationTotal(rel: Relation): number {
   return Math.max(0, Math.min(200, (rel.zaufanie ?? 0) + (rel.respekt ?? 0)));
 }
 
-/** W4-A: AI akceptuje gdy givePn ≥ fair min @ Relacji. */
+/**
+ * W4-A: AI akceptuje gdy givePn ≥ fair min @ Relacji.
+ * Kurs Rel/100 klampowany do 100 (fix #20): Relacja > 100 nie może obniżyć
+ * progu poniżej parytetu 1:1 — inaczej proponent zawsze zarabia netto na
+ * dobrej Relacji (symetria względem obu stron: dobra Relacja najwyżej
+ * wyrównuje ofertę do parytetu, nigdy nie robi z niej zysku).
+ */
 export function pnDealAcceptedByAi(
   givePn: number,
   receivePn: number,
   relacja: number,
 ): boolean {
   if (givePn <= 0 && receivePn <= 0) return false;
-  const fairMin = diplomacyFairGivePn(receivePn, relacja);
+  const fairMin = diplomacyFairGivePn(receivePn, Math.min(100, relacja));
   return givePn >= fairMin;
 }
 
