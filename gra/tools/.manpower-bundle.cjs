@@ -40,9 +40,9 @@ var miasto_params_default = {
     opis: "Koszt ludnosci miasta za ukonczenie jednostki z kolejki (rekrutacja). USTAWIONE 0 (Maciej 2026-07-21): rekrutacja NIE zabiera juz populacji miasta \u2014 jedynym kosztem werbu jest pula Manpower (epoka-ludnosc-manpower.json / manpower.ts). production.populationCostOf; przy 0 populacja pozostaje bez zmian."
   },
   manpower_regen_proc_max_tura: {
-    wartosc: 5,
+    wartosc: 2,
     jednostka: "% max/ture",
-    opis: "Co koniec tury miasto odzyskuje floor(manpowerMax \xD7 wartosc/100) Manpower (do cap). Ep1, 10 ludkow, max=10k \u2192 +500/ture. Pusta pula \u224820 tur do pelna. manpower.tickManpowerRegen."
+    opis: "Co koniec tury miasto odzyskuje floor(manpowerMax \xD7 wartosc/100) Manpower (do cap). Ep1, 10 ludkow, max=10k \u2192 +200/ture. Pusta pula \u224850 tur do pelna. manpower.tickManpowerRegen."
   },
   manpower_regen_blok_oblezenie: {
     wartosc: 1,
@@ -145,7 +145,7 @@ var miasto_params_default = {
 var ROWS = epoka_ludnosc_manpower_default.epoki;
 var MAX_EPOKA = 10;
 var DEFAULT_REGEN = {
-  regenProcMaxPerTurn: 5,
+  regenProcMaxPerTurn: 2,
   blockWhenBesieged: true
 };
 function loadManpowerRegenParams(raw = miasto_params_default) {

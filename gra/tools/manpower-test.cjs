@@ -204,15 +204,15 @@ ok(mp.formatPopulationAbs(1_200_000).includes('mln'), 'format mln');
 
 
 
-ok(mp.manpowerRegenGain(10, 1, { regenProcMaxPerTurn: 5, blockWhenBesieged: true }) === 500, 'regen 5% max');
+ok(mp.manpowerRegenGain(10, 1, { regenProcMaxPerTurn: 2, blockWhenBesieged: true }) === 200, 'regen 2% max');
 
-const afterRegen = mp.tickManpowerRegen({ population: 10, manpower: 0, oblegane: false }, 1, { regenProcMaxPerTurn: 5, blockWhenBesieged: true });
+const afterRegen = mp.tickManpowerRegen({ population: 10, manpower: 0, oblegane: false }, 1, { regenProcMaxPerTurn: 2, blockWhenBesieged: true });
 
-ok(afterRegen === 500, 'tick 0→500');
+ok(afterRegen === 200, 'tick 0→200');
 
-const siegeBlock = mp.tickManpowerRegen({ population: 10, manpower: 500, oblegane: true }, 1, { regenProcMaxPerTurn: 5, blockWhenBesieged: true });
+const siegeBlock = mp.tickManpowerRegen({ population: 10, manpower: 200, oblegane: true }, 1, { regenProcMaxPerTurn: 2, blockWhenBesieged: true });
 
-ok(siegeBlock === 500, 'oblezenie blokuje regen');
+ok(siegeBlock === 200, 'oblezenie blokuje regen');
 
 
 
@@ -240,15 +240,15 @@ const romanMults = mp.civManpowerMults(romanBonusy);
 
 ok(romanMults.regenMult === 2 && romanMults.maxMult === 2, 'roman mults 2x2');
 
-ok(mp.manpowerRegenGain(10, 1, { regenProcMaxPerTurn: 5, blockWhenBesieged: true }, 2, 2) === 2000, 'rzym regen 2000/ture');
+ok(mp.manpowerRegenGain(10, 1, { regenProcMaxPerTurn: 2, blockWhenBesieged: true }, 2, 2) === 800, 'rzym regen 800/ture');
 
-const greekRegen = mp.manpowerRegenGain(10, 1, { regenProcMaxPerTurn: 5, blockWhenBesieged: true }, 1, 1);
+const greekRegen = mp.manpowerRegenGain(10, 1, { regenProcMaxPerTurn: 2, blockWhenBesieged: true }, 1, 1);
 
-ok(greekRegen === 500, 'grecy regen 500/ture');
+ok(greekRegen === 200, 'grecy regen 200/ture');
 
 const romanSnap = mp.cityManpowerSnapshot(city10, 1, romanMults.regenMult, romanMults.maxMult);
 
-ok(romanSnap.manpowerMax === 20_000 && romanSnap.kosztJednostki === 2000 && romanSnap.regenPerTurn === 2000, 'roman snapshot ep1 10 ludkow');
+ok(romanSnap.manpowerMax === 20_000 && romanSnap.kosztJednostki === 2000 && romanSnap.regenPerTurn === 800, 'roman snapshot ep1 10 ludkow');
 
 
 

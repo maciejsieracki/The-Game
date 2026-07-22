@@ -44,14 +44,14 @@ const MAX_EPOKA = 10;
 type ParamRow = { wartosc?: number };
 
 export interface ManpowerRegenParams {
-  /** Procent manpowerMax dodawany co turę (0–100). Domyślnie 5. */
+  /** Procent manpowerMax dodawany co turę (0–100). Domyślnie 2. */
   regenProcMaxPerTurn: number;
   /** Gdy true — brak regen podczas oblężenia. */
   blockWhenBesieged: boolean;
 }
 
 const DEFAULT_REGEN: ManpowerRegenParams = {
-  regenProcMaxPerTurn: 5,
+  regenProcMaxPerTurn: 2,
   blockWhenBesieged: true,
 };
 
@@ -143,7 +143,7 @@ export function manpowerRegenGain(
 
 /**
  * Koniec tury: uzupełnij Manpower w kierunku max.
- * Model domyślny: +regenProcMaxPerTurn% max/turę (np. 5% → pełna pula w ~20 turach od zera).
+ * Model domyślny: +regenProcMaxPerTurn% max/turę (np. 2% → pełna pula w ~50 turach od zera).
  */
 export function tickManpowerRegen(
   city: Pick<City, 'population' | 'manpower' | 'oblegane'>,

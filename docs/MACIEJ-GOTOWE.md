@@ -4,11 +4,22 @@
 > **Czat:** krótko **`✅ Gotowe:`** / **`⏸️ Czeka:`** · **Ten plik:** pełniejszy zapis tego samego.  
 > Szczegóły techniczne → handoff w `dyspozycje/_handoff/` · operacja → `dyspozycje/DZIENNIK-MASTERA.md`
 
-**Ostatnia aktualizacja:** 2026-07-22 (bonus Manpower Rzymianie)
+**Ostatnia aktualizacja:** 2026-07-22 (regen Manpower 2% + bonus Rzym zachowany)
 
 ---
 
-## [07:15] ✅ Gotowe — bonus Manpower Rzymianie
+## [07:30] ✅ Gotowe — regen Manpower 2% (Rzym 4%)
+
+| | |
+|---|---|
+| **Co** | Bazowy regen **5% → 2%** max/turę; bonusy Rzymianie **bez zmian** (2× pula + 2× regen) |
+| **Pliki** | `miasto-params.json` · `manpower.ts` · `civs.json` (opis) · `manpower-test.cjs` |
+| **Przykład ep1, 10 ludków** | Standard: max **10k**, regen **+200/t** · Rzym: max **20k**, regen **+800/t** |
+| **md5** | `98889578644a90da33d1dc45d1a67994` · stamp `98889578` |
+| **Bramki** | tsc=0 · manpower-test 30/30 |
+| **Od Ciebie** | `git pull` → Ctrl+F5 · `gra-robocza/START.html` → stamp `98889578` → porównaj regen standard vs Rzym |
+
+---
 
 | | |
 |---|---|

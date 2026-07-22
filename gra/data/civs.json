@@ -226,7 +226,7 @@
           "typ": "bonus_pobor_regen",
           "cel": "rekruci",
           "wartosc": 1.0,
-          "opis": "Dyscyplina legionów: 2× szybsza odnowa poboru (10% max/turę vs standard 5%)",
+          "opis": "Dyscyplina legionów: 2× szybsza odnowa poboru (4% max/turę vs standard 2%)",
           "realizuje": "ekonomia"
         }
       ],

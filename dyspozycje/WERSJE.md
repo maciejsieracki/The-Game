@@ -11,9 +11,13 @@ swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drug
 
 ## ROBOCZA (gra-robocza\Gra-ROBOCZA.html — wskazywana przez START.html)
 
+- 2026-07-22 · stempel: ROBOCZA · **98889578** · md5 pliku `98889578644a90da33d1dc45d1a67994` · **BALANS: regen Manpower 5%→2%** — na `a28c034e`:
+  **Regen bazowy:** `manpower_regen_proc_max_tura` **5 → 2** (`miasto-params.json`, fallback `DEFAULT_REGEN` w `manpower.ts`). **Rzymianie bez zmian bonusów:** `mnoznik_manpower_max` **2.0** (2× pula max) + `bonus_pobor_regen` **1.0** (2× tempo regen). Ep1 Kamień, 10 ludków: standard max **10k** regen **+200/t** (~50 tur do pełna); Rzym max **20k** regen **+800/t** (4% max = 2%×2 bonus).
+  tsc=0 · manpower-test 30/30 · publish `gra-robocza/Gra-ROBOCZA.html`. · **AKTUALNA** · Test: Ctrl+F5 START.html → stamp `98889578` → ep1 10 ludków: inna cyw. +200/t, Rzym +800/t.
+
 - 2026-07-22 · stempel: ROBOCZA · **a28c034e** · md5 pliku `a28c034e03223ec6fb4cd52401b0d86c` · **CYWIL: bonus Manpower Rzymianie** — na `3613d5d4`:
   **Rzymianie:** `mnoznik_manpower_max` **2.0** (2× pula max per ludek) + `bonus_pobor_regen` **1.0** (2× tempo regen). Hook: `manpower.ts` (`getCivManpowerMaxMultiplier`, `getCivManpowerRegenBonus`) · `turn-economy.ts` · `main.ts` (HUD breakdown). Przykład ep1, 10 ludków: max **20k** MP (vs 10k bazowo); regen **+1000/t** (vs +500).
-  tsc=0 · manpower-test 30/30 · publish `gra-robocza/Gra-ROBOCZA.html`. · **AKTUALNA** · Test: Ctrl+F5 START.html → stamp `a28c034e` → Nowa gra Rzymianie → panel Manpower: wyższy max i szybsza odnowa vs inne cywilizacje.
+  tsc=0 · manpower-test 30/30 · publish `gra-robocza/Gra-ROBOCZA.html`. · **ZASTĄPIONA** (→ `98889578`) · Test: Ctrl+F5 START.html → stamp `a28c034e` → Nowa gra Rzymianie → panel Manpower: wyższy max i szybsza odnowa vs inne cywilizacje.
 
 - 2026-07-22 · stempel: ROBOCZA · **3613d5d4** · md5 pliku `3613d5d4ca248a3fa3f6879061aad3dc` · **BATCH: balans Manpower + sesja 2026-07-22** — na `81e95aaa`:
   **MANPOWER (audyt/balans):** koszt rekrutacji ×10 — `manpowerNaJednostke = manpowerNaLudka` w `epoka-ludnosc-manpower.json` (1 ludek = 1 jednostka przy pełnej puli); regen **10% → 5%** (`manpower_regen_proc_max_tura` w `miasto-params.json`, fallback `DEFAULT_REGEN` w `manpower.ts`). **Sesja (już w poprzednich wpisach, zbiorczy deploy):** dyplomacja (komunikaty AI, etykieta kultury, status formalny vs postawa, ikona wojny); badania ×2 koszt; budynki ÷2 koszt produkcji; granice państwa (ciągłe pętle, grubsze, 30% alpha); nazwy miast-państw (pula 10–18); overflow Pracy → pula cywilizacji; epoka startowa miast-państw Kamień; zwiadowca/wsparcie ATK post-battle; cooldown darów ¤ AI; panel badań lista techów; +1 szczęścia per budynek; cap ofert AI do skarbca.

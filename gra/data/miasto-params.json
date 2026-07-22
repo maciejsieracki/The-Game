@@ -15,9 +15,9 @@
     "opis": "Koszt ludnosci miasta za ukonczenie jednostki z kolejki (rekrutacja). USTAWIONE 0 (Maciej 2026-07-21): rekrutacja NIE zabiera juz populacji miasta — jedynym kosztem werbu jest pula Manpower (epoka-ludnosc-manpower.json / manpower.ts). production.populationCostOf; przy 0 populacja pozostaje bez zmian."
   },
   "manpower_regen_proc_max_tura": {
-    "wartosc": 5,
+    "wartosc": 2,
     "jednostka": "% max/ture",
-    "opis": "Co koniec tury miasto odzyskuje floor(manpowerMax × wartosc/100) Manpower (do cap). Ep1, 10 ludkow, max=10k → +500/ture. Pusta pula ≈20 tur do pelna. manpower.tickManpowerRegen."
+    "opis": "Co koniec tury miasto odzyskuje floor(manpowerMax × wartosc/100) Manpower (do cap). Ep1, 10 ludkow, max=10k → +200/ture. Pusta pula ≈50 tur do pelna. manpower.tickManpowerRegen."
   },
   "manpower_regen_blok_oblezenie": {
     "wartosc": 1,

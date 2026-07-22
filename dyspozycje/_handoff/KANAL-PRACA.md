@@ -2840,3 +2840,12 @@ Pliki: `civs.json` · `manpower.ts` · `turn-economy.ts` · `main.ts` · `manpow
 Bramki: tsc=0 · manpower-test 30/30.
 Publish ROBOCZA: stamp **a28c034e** · md5 `a28c034e03223ec6fb4cd52401b0d86c`.
 CZEKAM-NA: sesja lokalna — `git pull` → Ctrl+F5 START.html → stamp `a28c034e` → Nowa gra Rzymianie → Manpower max/regen vs inna cywilizacja.
+
+## [07:30 PL, 2026-07-22] CHMURA → LOKALNA — BALANS: regen Manpower 5%→2%
+
+Decyzja Macieja: bazowy regen **2% max/turę** (było 5%). Bonusy Rzymianie **zachowane**: `mnoznik_manpower_max` 2.0 + `bonus_pobor_regen` 1.0.
+Pliki: `miasto-params.json` · `manpower.ts` · `civs.json` (opis) · `manpower-test.cjs`.
+Ep1 Kamień, 10 ludków: standard max 10k regen +200/t (~50 tur do pełna); Rzym max 20k regen +800/t (4% = 2%×2).
+Bramki: tsc=0 · manpower-test 30/30.
+Publish ROBOCZA: stamp **98889578** · md5 `98889578644a90da33d1dc45d1a67994`.
+CZEKAM-NA: sesja lokalna — `git pull` → Ctrl+F5 START.html → stamp `98889578` → porównaj regen standard vs Rzym.
