@@ -24,6 +24,10 @@ import {
 
   civManpowerRegenMult,
 
+  civManpowerMaxMult,
+
+  civManpowerMults,
+
   empirePoborTotals,
 
 } from '../src/game/manpower';
@@ -51,6 +55,10 @@ module.exports = {
   manpowerRegenGain,
 
   civManpowerRegenMult,
+
+  civManpowerMaxMult,
+
+  civManpowerMults,
 
   empirePoborTotals,
 

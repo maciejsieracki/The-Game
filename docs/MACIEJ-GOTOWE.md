@@ -4,7 +4,20 @@
 > **Czat:** krótko **`✅ Gotowe:`** / **`⏸️ Czeka:`** · **Ten plik:** pełniejszy zapis tego samego.  
 > Szczegóły techniczne → handoff w `dyspozycje/_handoff/` · operacja → `dyspozycje/DZIENNIK-MASTERA.md`
 
-**Ostatnia aktualizacja:** 2026-07-22 (balans Manpower + batch sesji)
+**Ostatnia aktualizacja:** 2026-07-22 (bonus Manpower Rzymianie)
+
+---
+
+## [07:15] ✅ Gotowe — bonus Manpower Rzymianie
+
+| | |
+|---|---|
+| **Co** | Rzymianie: **2× pula Manpower max** per ludek + **2× tempo odnowy** puli |
+| **Pliki** | `gra/data/civs.json` · `gra/src/game/manpower.ts` · `turn-economy.ts` · `main.ts` |
+| **Przykład** | Ep1, 10 ludków: max **20k** MP (inne cyw. 10k); regen **+1000/t** (inne +500) |
+| **md5** | `a28c034e03223ec6fb4cd52401b0d86c` · stamp `a28c034e` |
+| **Bramki** | tsc=0 · manpower-test 30/30 |
+| **Od Ciebie** | `git pull` → Ctrl+F5 · `gra-robocza/START.html` → stamp `a28c034e` → Nowa gra Rzymianie → sprawdź max i regen vs np. Grecy |
 
 ---
 

@@ -62,7 +62,7 @@ import {
   type BuildingRecord,
 } from './economy';
 import { improvementKeysForHex } from './terrain-improvements';
-import { cityManpowerMax, refreshManpowerAfterPopChange, tickManpowerRegen, civManpowerRegenMult, loadManpowerRegenParams } from './manpower';
+import { cityManpowerMax, refreshManpowerAfterPopChange, tickManpowerRegen, civManpowerMults, loadManpowerRegenParams } from './manpower';
 import {
   loadStorageParams,
   foodStorageCapacity,
@@ -1229,16 +1229,18 @@ export function advanceCityEconomy(
     }
 
     const ownerEpoka = ownerEra;
+    const mpMults = civManpowerMults(ownerBonusy);
     if (city.manpower === undefined) {
-      city.manpower = cityManpowerMax(city.population, ownerEpoka);
+      city.manpower = cityManpowerMax(city.population, ownerEpoka, mpMults.maxMult);
     } else if (grow.nowaLudnosc !== before) {
-      city.manpower = refreshManpowerAfterPopChange(city, ownerEpoka, before);
+      city.manpower = refreshManpowerAfterPopChange(city, ownerEpoka, before, mpMults.maxMult);
     }
     city.manpower = tickManpowerRegen(
       city,
       ownerEpoka,
       loadManpowerRegenParams(),
-      civManpowerRegenMult(ownerBonusy),
+      mpMults.regenMult,
+      mpMults.maxMult,
     );
 
     // Clamp bufor wzrostu to capacity (s.7.1 — nadwyżka ponad cap ginie).

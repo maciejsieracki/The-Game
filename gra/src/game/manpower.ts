@@ -77,7 +77,7 @@ export interface CivBonusPoborLite {
 
 /**
  * Mnożnik odnowy rekrutów per cywilizacja (domyślnie 1.0).
- * bonus_pobor_regen +0.35 → ×1.35 (Rzymianie); −0.15 → ×0.85 (Grecy).
+ * bonus_pobor_regen +1.0 → ×2 (Rzymianie); −0.15 → ×0.85 (Grecy).
  */
 export function civManpowerRegenMult(
   bonusy?: readonly CivBonusPoborLite[],
@@ -94,14 +94,48 @@ export function civManpowerRegenMult(
   return Math.max(0.1, mult);
 }
 
+/**
+ * Mnożnik puli Manpower per obywatela (domyślnie 1.0).
+ * mnoznik_manpower_max 2.0 → ×2 (Rzymianie); bonus_pobor_pula +1.0 → ×2.
+ */
+export function civManpowerMaxMult(
+  bonusy?: readonly CivBonusPoborLite[],
+): number {
+  let mult = 1;
+  if (!bonusy?.length) return mult;
+  for (const b of bonusy) {
+    if (b.typ === 'bonus_pobor_pula' && typeof b.wartosc === 'number') {
+      mult *= 1 + b.wartosc;
+    } else if (b.typ === 'mnoznik_manpower_max' && typeof b.wartosc === 'number') {
+      mult *= b.wartosc;
+    }
+  }
+  return Math.max(0.1, mult);
+}
+
+/** Mnożniki Manpower z bonusów cywilizacji (regen + max/koszt). */
+export function civManpowerMults(
+  bonusy?: readonly CivBonusPoborLite[],
+): { regenMult: number; maxMult: number } {
+  return {
+    regenMult: civManpowerRegenMult(bonusy),
+    maxMult: civManpowerMaxMult(bonusy),
+  };
+}
+
+function scaledManpower(base: number, maxMult: number): number {
+  return Math.floor(base * Math.max(0.1, maxMult));
+}
+
 /** Ile MP miasto odzyska w tej turze (przed limitem cap). */
 export function manpowerRegenGain(
   ludki: number,
   epoka: number,
   params: ManpowerRegenParams = DEFAULT_REGEN,
   regenMult = 1,
+  maxMult = 1,
 ): number {
-  const max = cityManpowerMax(ludki, epoka);
+  const max = cityManpowerMax(ludki, epoka, maxMult);
   if (max <= 0 || params.regenProcMaxPerTurn <= 0) return 0;
   const pct = Math.min(100, params.regenProcMaxPerTurn) / 100;
   return Math.floor(max * pct * Math.max(0, regenMult));
@@ -116,12 +150,13 @@ export function tickManpowerRegen(
   epoka: number,
   params: ManpowerRegenParams = DEFAULT_REGEN,
   regenMult = 1,
+  maxMult = 1,
 ): number {
-  const max = cityManpowerMax(city.population, epoka);
-  const cur = cityManpowerCurrent(city, epoka);
+  const max = cityManpowerMax(city.population, epoka, maxMult);
+  const cur = cityManpowerCurrent(city, epoka, maxMult);
   if (cur >= max) return max;
   if (params.blockWhenBesieged && city.oblegane) return cur;
-  const gain = manpowerRegenGain(city.population, epoka, params, regenMult);
+  const gain = manpowerRegenGain(city.population, epoka, params, regenMult, maxMult);
   if (gain <= 0) return cur;
   return Math.min(max, cur + gain);
 }
@@ -150,19 +185,23 @@ export function formatObywateleLabel(count: number): string {
 }
 
 /** Maksymalna pula Manpower przy danej liczbie ludków i epoce. */
-export function cityManpowerMax(ludki: number, epoka: number): number {
+export function cityManpowerMax(ludki: number, epoka: number, maxMult = 1): number {
   const row = epokaManpowerRow(epoka);
-  return clampLudki(ludki) * row.manpowerNaLudka;
+  return scaledManpower(clampLudki(ludki) * row.manpowerNaLudka, maxMult);
 }
 
-/** Koszt Manpower jednej jednostki wojskowej (= pełny slot manpower w epoce). */
-export function unitManpowerCost(epoka: number): number {
-  return epokaManpowerRow(epoka).manpowerNaJednostke;
+/** Koszt Manpower jednej jednostki wojskowej (= pełny slot manpower w epoce × bonus cyw.). */
+export function unitManpowerCost(epoka: number, maxMult = 1): number {
+  return scaledManpower(epokaManpowerRow(epoka).manpowerNaJednostke, maxMult);
 }
 
 /** Bieżąca pula: zapisana w city.manpower lub domyślnie max. */
-export function cityManpowerCurrent(city: Pick<City, 'population' | 'manpower'>, epoka: number): number {
-  const max = cityManpowerMax(city.population, epoka);
+export function cityManpowerCurrent(
+  city: Pick<City, 'population' | 'manpower'>,
+  epoka: number,
+  maxMult = 1,
+): number {
+  const max = cityManpowerMax(city.population, epoka, maxMult);
   if (city.manpower === undefined || !Number.isFinite(city.manpower)) return max;
   return Math.max(0, Math.min(max, Math.floor(city.manpower)));
 }
@@ -188,8 +227,8 @@ export function empireSumaLudkow(
 }
 
 /** Ekwiwalent jednostek z bieżącej puli rekrutów (kanon P-A Power). */
-export function rekrutUnitEquivalents(rekruci: number, epoka: number): number {
-  const cost = unitManpowerCost(epoka);
+export function rekrutUnitEquivalents(rekruci: number, epoka: number, maxMult = 1): number {
+  const cost = unitManpowerCost(epoka, maxMult);
   if (cost <= 0) return 0;
   return Math.floor(Math.max(0, rekruci) / cost);
 }
@@ -198,6 +237,7 @@ export function empirePoborTotals(
   cities: ReadonlyArray<Pick<City, 'ownerId' | 'population' | 'manpower'>>,
   ownerId: number,
   epoka: number,
+  maxMult = 1,
 ): EmpirePoborTotals {
   let sumaLudkow = 0;
   let ludnoscAbsolutna = 0;
@@ -206,7 +246,7 @@ export function empirePoborTotals(
     if (c.ownerId !== ownerId) continue;
     sumaLudkow += clampLudki(c.population);
     ludnoscAbsolutna += cityLudnoscAbsolutna(c.population, epoka);
-    rekruci += cityManpowerCurrent(c, epoka);
+    rekruci += cityManpowerCurrent(c, epoka, maxMult);
   }
   return { sumaLudkow, ludnoscAbsolutna, rekruci, poborRaw: ludnoscAbsolutna + rekruci };
 }
@@ -215,13 +255,14 @@ export function cityManpowerSnapshot(
   city: Pick<City, 'population' | 'manpower'>,
   epoka: number,
   regenMult = 1,
+  maxMult = 1,
 ): CityManpowerSnapshot {
   const ludki = clampLudki(city.population);
   const row = epokaManpowerRow(epoka);
   const ludnoscAbsolutna = ludki * row.ludekNaLudka;
-  const manpowerMax = ludki * row.manpowerNaLudka;
-  const kosztJednostki = row.manpowerNaJednostke;
-  const manpowerBiezacy = cityManpowerCurrent(city, epoka);
+  const manpowerMax = scaledManpower(ludki * row.manpowerNaLudka, maxMult);
+  const kosztJednostki = scaledManpower(row.manpowerNaJednostke, maxMult);
+  const manpowerBiezacy = cityManpowerCurrent(city, epoka, maxMult);
   const regenParams = loadManpowerRegenParams();
   return {
     epoka: row.epoka,
@@ -230,7 +271,7 @@ export function cityManpowerSnapshot(
     manpowerMax,
     manpowerBiezacy,
     kosztJednostki,
-    regenPerTurn: manpowerRegenGain(ludki, epoka, regenParams, regenMult),
+    regenPerTurn: manpowerRegenGain(ludki, epoka, regenParams, regenMult, maxMult),
     werbMaxPrzyPelnejPuli: kosztJednostki > 0
       ? Math.floor(manpowerBiezacy / kosztJednostki)
       : 0,
@@ -240,8 +281,9 @@ export function cityManpowerSnapshot(
 export function canAffordUnitManpower(
   city: Pick<City, 'population' | 'manpower'>,
   epoka: number,
+  maxMult = 1,
 ): boolean {
-  const snap = cityManpowerSnapshot(city, epoka);
+  const snap = cityManpowerSnapshot(city, epoka, 1, maxMult);
   return snap.manpowerBiezacy >= snap.kosztJednostki;
 }
 
@@ -263,9 +305,10 @@ export function tryDeductUnitSpawnCosts(
   city: Pick<City, 'population' | 'manpower'>,
   epoka: number,
   popCost = 1,
+  maxMult = 1,
 ): UnitSpawnDeduction {
-  const kosztManpower = unitManpowerCost(epoka);
-  const cur = cityManpowerCurrent(city, epoka);
+  const kosztManpower = unitManpowerCost(epoka, maxMult);
+  const cur = cityManpowerCurrent(city, epoka, maxMult);
   if (cur < kosztManpower) {
     return {
       ok: false,
@@ -301,12 +344,13 @@ export function refundUnitSpawnToCity(
   epoka: number,
   popCost = 1,
   popCap?: number,
+  maxMult = 1,
 ): { population: number; manpower: number } {
-  const mpRefund = unitManpowerCost(epoka);
+  const mpRefund = unitManpowerCost(epoka, maxMult);
   const rawPop = city.population + popCost;
   const population = popCap != null ? Math.min(popCap, rawPop) : rawPop;
-  const max = cityManpowerMax(population, epoka);
-  const manpower = Math.min(max, cityManpowerCurrent(city, epoka) + mpRefund);
+  const max = cityManpowerMax(population, epoka, maxMult);
+  const manpower = Math.min(max, cityManpowerCurrent(city, epoka, maxMult) + mpRefund);
   return { population, manpower };
 }
 
@@ -317,11 +361,12 @@ export function refreshManpowerAfterPopChange(
   city: Pick<City, 'population' | 'manpower'>,
   epoka: number,
   previousPop?: number,
+  maxMult = 1,
 ): number {
-  const max = cityManpowerMax(city.population, epoka);
-  const cur = cityManpowerCurrent(city, epoka);
+  const max = cityManpowerMax(city.population, epoka, maxMult);
+  const cur = cityManpowerCurrent(city, epoka, maxMult);
   if (previousPop !== undefined && previousPop !== city.population) {
-    const oldMax = cityManpowerMax(previousPop, epoka);
+    const oldMax = cityManpowerMax(previousPop, epoka, maxMult);
     if (city.population > previousPop) {
       return Math.min(max, cur + (max - oldMax));
     }
@@ -335,9 +380,10 @@ export function spendManpower(
   city: Pick<City, 'population' | 'manpower'>,
   epoka: number,
   amount?: number,
+  maxMult = 1,
 ): number {
-  const cost = amount ?? unitManpowerCost(epoka);
-  const cur = cityManpowerCurrent(city, epoka);
+  const cost = amount ?? unitManpowerCost(epoka, maxMult);
+  const cur = cityManpowerCurrent(city, epoka, maxMult);
   return Math.max(0, cur - cost);
 }
 

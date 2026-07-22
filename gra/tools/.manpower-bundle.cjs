@@ -168,18 +168,39 @@ function civManpowerRegenMult(bonusy) {
   }
   return Math.max(0.1, mult);
 }
-function manpowerRegenGain(ludki, epoka, params = DEFAULT_REGEN, regenMult = 1) {
-  const max = cityManpowerMax(ludki, epoka);
+function civManpowerMaxMult(bonusy) {
+  let mult = 1;
+  if (!bonusy?.length) return mult;
+  for (const b of bonusy) {
+    if (b.typ === "bonus_pobor_pula" && typeof b.wartosc === "number") {
+      mult *= 1 + b.wartosc;
+    } else if (b.typ === "mnoznik_manpower_max" && typeof b.wartosc === "number") {
+      mult *= b.wartosc;
+    }
+  }
+  return Math.max(0.1, mult);
+}
+function civManpowerMults(bonusy) {
+  return {
+    regenMult: civManpowerRegenMult(bonusy),
+    maxMult: civManpowerMaxMult(bonusy)
+  };
+}
+function scaledManpower(base, maxMult) {
+  return Math.floor(base * Math.max(0.1, maxMult));
+}
+function manpowerRegenGain(ludki, epoka, params = DEFAULT_REGEN, regenMult = 1, maxMult = 1) {
+  const max = cityManpowerMax(ludki, epoka, maxMult);
   if (max <= 0 || params.regenProcMaxPerTurn <= 0) return 0;
   const pct = Math.min(100, params.regenProcMaxPerTurn) / 100;
   return Math.floor(max * pct * Math.max(0, regenMult));
 }
-function tickManpowerRegen(city, epoka, params = DEFAULT_REGEN, regenMult = 1) {
-  const max = cityManpowerMax(city.population, epoka);
-  const cur = cityManpowerCurrent(city, epoka);
+function tickManpowerRegen(city, epoka, params = DEFAULT_REGEN, regenMult = 1, maxMult = 1) {
+  const max = cityManpowerMax(city.population, epoka, maxMult);
+  const cur = cityManpowerCurrent(city, epoka, maxMult);
   if (cur >= max) return max;
   if (params.blockWhenBesieged && city.oblegane) return cur;
-  const gain = manpowerRegenGain(city.population, epoka, params, regenMult);
+  const gain = manpowerRegenGain(city.population, epoka, params, regenMult, maxMult);
   if (gain <= 0) return cur;
   return Math.min(max, cur + gain);
 }
@@ -194,19 +215,19 @@ function cityLudnoscAbsolutna(ludki, epoka) {
   const row = epokaManpowerRow(epoka);
   return clampLudki(ludki) * row.ludekNaLudka;
 }
-function cityManpowerMax(ludki, epoka) {
+function cityManpowerMax(ludki, epoka, maxMult = 1) {
   const row = epokaManpowerRow(epoka);
-  return clampLudki(ludki) * row.manpowerNaLudka;
+  return scaledManpower(clampLudki(ludki) * row.manpowerNaLudka, maxMult);
 }
-function unitManpowerCost(epoka) {
-  return epokaManpowerRow(epoka).manpowerNaJednostke;
+function unitManpowerCost(epoka, maxMult = 1) {
+  return scaledManpower(epokaManpowerRow(epoka).manpowerNaJednostke, maxMult);
 }
-function cityManpowerCurrent(city, epoka) {
-  const max = cityManpowerMax(city.population, epoka);
+function cityManpowerCurrent(city, epoka, maxMult = 1) {
+  const max = cityManpowerMax(city.population, epoka, maxMult);
   if (city.manpower === void 0 || !Number.isFinite(city.manpower)) return max;
   return Math.max(0, Math.min(max, Math.floor(city.manpower)));
 }
-function empirePoborTotals(cities, ownerId, epoka) {
+function empirePoborTotals(cities, ownerId, epoka, maxMult = 1) {
   let sumaLudkow = 0;
   let ludnoscAbsolutna = 0;
   let rekruci = 0;
@@ -214,17 +235,17 @@ function empirePoborTotals(cities, ownerId, epoka) {
     if (c.ownerId !== ownerId) continue;
     sumaLudkow += clampLudki(c.population);
     ludnoscAbsolutna += cityLudnoscAbsolutna(c.population, epoka);
-    rekruci += cityManpowerCurrent(c, epoka);
+    rekruci += cityManpowerCurrent(c, epoka, maxMult);
   }
   return { sumaLudkow, ludnoscAbsolutna, rekruci, poborRaw: ludnoscAbsolutna + rekruci };
 }
-function cityManpowerSnapshot(city, epoka, regenMult = 1) {
+function cityManpowerSnapshot(city, epoka, regenMult = 1, maxMult = 1) {
   const ludki = clampLudki(city.population);
   const row = epokaManpowerRow(epoka);
   const ludnoscAbsolutna = ludki * row.ludekNaLudka;
-  const manpowerMax = ludki * row.manpowerNaLudka;
-  const kosztJednostki = row.manpowerNaJednostke;
-  const manpowerBiezacy = cityManpowerCurrent(city, epoka);
+  const manpowerMax = scaledManpower(ludki * row.manpowerNaLudka, maxMult);
+  const kosztJednostki = scaledManpower(row.manpowerNaJednostke, maxMult);
+  const manpowerBiezacy = cityManpowerCurrent(city, epoka, maxMult);
   const regenParams = loadManpowerRegenParams();
   return {
     epoka: row.epoka,
@@ -233,13 +254,13 @@ function cityManpowerSnapshot(city, epoka, regenMult = 1) {
     manpowerMax,
     manpowerBiezacy,
     kosztJednostki,
-    regenPerTurn: manpowerRegenGain(ludki, epoka, regenParams, regenMult),
+    regenPerTurn: manpowerRegenGain(ludki, epoka, regenParams, regenMult, maxMult),
     werbMaxPrzyPelnejPuli: kosztJednostki > 0 ? Math.floor(manpowerBiezacy / kosztJednostki) : 0
   };
 }
-function tryDeductUnitSpawnCosts(city, epoka, popCost = 1) {
-  const kosztManpower = unitManpowerCost(epoka);
-  const cur = cityManpowerCurrent(city, epoka);
+function tryDeductUnitSpawnCosts(city, epoka, popCost = 1, maxMult = 1) {
+  const kosztManpower = unitManpowerCost(epoka, maxMult);
+  const cur = cityManpowerCurrent(city, epoka, maxMult);
   if (cur < kosztManpower) {
     return {
       ok: false,
@@ -265,9 +286,9 @@ function tryDeductUnitSpawnCosts(city, epoka, popCost = 1) {
     kosztManpower
   };
 }
-function spendManpower(city, epoka, amount) {
-  const cost = amount ?? unitManpowerCost(epoka);
-  const cur = cityManpowerCurrent(city, epoka);
+function spendManpower(city, epoka, amount, maxMult = 1) {
+  const cost = amount ?? unitManpowerCost(epoka, maxMult);
+  const cur = cityManpowerCurrent(city, epoka, maxMult);
   return Math.max(0, cur - cost);
 }
 function formatPopulationAbs(n) {
@@ -294,5 +315,7 @@ module.exports = {
   tickManpowerRegen,
   manpowerRegenGain,
   civManpowerRegenMult,
+  civManpowerMaxMult,
+  civManpowerMults,
   empirePoborTotals
 };

@@ -216,10 +216,17 @@
           "realizuje": "walka"
         },
         {
+          "typ": "mnoznik_manpower_max",
+          "cel": "rekruci",
+          "wartosc": 2.0,
+          "opis": "Legiony: 2× pula Manpower na obywatela (np. 2000 vs 1000 w epoce Kamień)",
+          "realizuje": "ekonomia"
+        },
+        {
           "typ": "bonus_pobor_regen",
           "cel": "rekruci",
-          "wartosc": 0.35,
-          "opis": "Dyscyplina legionów: szybsza odnowa poboru (+35% regen/turę vs standard 10%)",
+          "wartosc": 1.0,
+          "opis": "Dyscyplina legionów: 2× szybsza odnowa poboru (10% max/turę vs standard 5%)",
           "realizuje": "ekonomia"
         }
       ],

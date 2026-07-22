@@ -408,7 +408,8 @@ import { advanceProduction, rushProduction, rushCost, populationCostOf, UNIT_POP
 import { empireHasKopalniaNaZlozuZelaza } from './game/zelazo-access';
 import {
   tryDeductUnitSpawnCosts, empirePoborTotals, rekrutUnitEquivalents, formatManpower,
-  cityManpowerSnapshot, civManpowerRegenMult, cityManpowerMax, unitManpowerCost,
+  cityManpowerSnapshot, civManpowerRegenMult, civManpowerMaxMult, civManpowerMults,
+  cityManpowerMax, unitManpowerCost,
   canAffordUnitManpower, refundUnitSpawnToCity,
 } from './game/manpower';
 import { computeObjectivePower, battlePowerPointsFromDefeatedEnemy, type ObjectivePowerResult } from './game/power-objective';
@@ -983,7 +984,8 @@ async function boot(): Promise<void> {
 
     function buildObjectivePowerForOwner(ownerId: number): ObjectivePowerResult {
       const epoka = empireEpochForOwner(ownerId);
-      const pobor = empirePoborTotals(cities, ownerId, epoka);
+      const mpMults = civManpowerMultsForOwner(ownerId);
+      const pobor = empirePoborTotals(cities, ownerId, epoka, mpMults.maxMult);
       return computeObjectivePower({
         ownerId,
         epoka,
@@ -991,7 +993,7 @@ async function boot(): Promise<void> {
         bitwyPktSum: battlePowerPtsByOwner.get(ownerId) ?? 0,
         wygraneBitwy: 0,
         sumaLudkow: pobor.sumaLudkow,
-        rekrutEkw: rekrutUnitEquivalents(pobor.rekruci, epoka),
+        rekrutEkw: rekrutUnitEquivalents(pobor.rekruci, epoka, mpMults.maxMult),
         miasta: cities.filter(c => c.ownerId === ownerId).length,
         heksyTerytorium: countTerritoryHexes(cityNodesForOwner(ownerId)),
         budynki: countBuildingsForOwner(ownerId),
@@ -1532,7 +1534,8 @@ async function boot(): Promise<void> {
         return { prod: prodAfterAdvance };
       }
       const ep = empireEpochForOwner(city.ownerId);
-      const d = tryDeductUnitSpawnCosts(city, ep, populationCostOf(completed));
+      const mpMults = civManpowerMultsForOwner(city.ownerId);
+      const d = tryDeductUnitSpawnCosts(city, ep, populationCostOf(completed), mpMults.maxMult);
       if (!d.ok) {
         console.log(`[Produkcja] Tura ${turn} ${city.name}: brak Manpower — odlozono ${completed.id}`);
         return {
@@ -1577,7 +1580,8 @@ async function boot(): Promise<void> {
       const city = cities.find(ct => ct.id === cityId);
       if (!city || city.ownerId !== 0) return false;
       const ep = empireEpochForOwner(0);
-      if (!canAffordUnitManpower(city, ep)) {
+      const mpMults = civManpowerMultsForOwner(0);
+      if (!canAffordUnitManpower(city, ep, mpMults.maxMult)) {
         showHintMessage('Za mało rekrutów (Manpower) w tym mieście', 2800);
         return false;
       }
@@ -1590,7 +1594,7 @@ async function boot(): Promise<void> {
         _menuDifficulty,
       );
       if (!item) return false;
-      const d = tryDeductUnitSpawnCosts(city, ep, UNIT_POPULATION_COST);
+      const d = tryDeductUnitSpawnCosts(city, ep, UNIT_POPULATION_COST, mpMults.maxMult);
       if (!d.ok) {
         showHintMessage('Za mało rekrutów (Manpower) w tym mieście', 2800);
         return false;
@@ -1614,7 +1618,8 @@ async function boot(): Promise<void> {
       const city = cities.find(ct => ct.id === cityId);
       if (!city || city.ownerId !== 0) return;
       const ep = empireEpochForOwner(0);
-      const refunded = refundUnitSpawnToCity(city, ep, UNIT_POPULATION_COST);
+      const mpMults = civManpowerMultsForOwner(0);
+      const refunded = refundUnitSpawnToCity(city, ep, UNIT_POPULATION_COST, undefined, mpMults.maxMult);
       city.population = refunded.population;
       city.manpower = refunded.manpower;
       player.skarbiec += koszt;
@@ -1927,7 +1932,8 @@ async function boot(): Promise<void> {
         const ownerCities = cities.filter(c => c.ownerId === oid);
         const nodes = cityNodesForOwner(oid);
         const ownerEpoka = empireEpochForOwner(oid);
-        const pobor = empirePoborTotals(cities, oid, ownerEpoka);
+        const mpMults = civManpowerMultsForOwner(oid);
+        const pobor = empirePoborTotals(cities, oid, ownerEpoka, mpMults.maxMult);
         rows.push({
           ownerId: oid,
           population: ownerCities.reduce((s, c) => s + c.population, 0),
@@ -2322,14 +2328,15 @@ async function boot(): Promise<void> {
       if (u.ownerId !== 0) return false;
 
       const ep = empireEpochForOwner(0);
+      const mpMults = civManpowerMultsForOwner(0);
       const popRefund = UNIT_POPULATION_COST;
-      const mpRefund = unitManpowerCost(ep);
+      const mpRefund = unitManpowerCost(ep, mpMults.maxMult);
       const refundCity = cityAtUnit(u) ?? cities.find(c => c.ownerId === 0);
       if (refundCity) {
         const built = cityBuilt.get(refundCity.id) ?? [];
         const maAkwedukt = built.includes('akwedukt');
         const popCap = cityPopulationCap(maAkwedukt, loadEconParams(data.econParams, _menuDifficulty));
-        const refunded = refundUnitSpawnToCity(refundCity, ep, popRefund, popCap);
+        const refunded = refundUnitSpawnToCity(refundCity, ep, popRefund, popCap, mpMults.maxMult);
         refundCity.population = refunded.population;
         refundCity.manpower = refunded.manpower;
       }
@@ -3139,6 +3146,10 @@ async function boot(): Promise<void> {
     function civBonusyForOwnerId(ownerId: number) {
       if (ownerId === 0 && player.civBonusy.length > 0) return player.civBonusy;
       return civBonusyForCivKey(civKeyForOwnerId(ownerId), data.civs);
+    }
+
+    function civManpowerMultsForOwner(ownerId: number) {
+      return civManpowerMults(civBonusyForOwnerId(ownerId));
     }
 
     function unlockedTechsForOwner(ownerId: number): string[] {
@@ -6057,7 +6068,8 @@ async function boot(): Promise<void> {
         formulaNote: powerNotes[c.key],
       }));
       const epoka = empireEpochForOwner(0);
-      const pobor = empirePoborTotals(cities, 0, epoka);
+      const mpMults = civManpowerMultsForOwner(0);
+      const pobor = empirePoborTotals(cities, 0, epoka, mpMults.maxMult);
       const civKey = String(player.civType || _menuCivId || 'grecy');
       const civRow = data.civs.cywilizacje.find(
         (c: { ikonaId?: string; typCywilizacji?: string }) =>
@@ -6073,7 +6085,7 @@ async function boot(): Promise<void> {
         }))
         .filter(b => b.opis.length > 0);
       const pc = cities.filter(c => c.ownerId === 0);
-      const regenMult = civManpowerRegenMult(civBonusyForOwnerId(0));
+      const { regenMult, maxMult } = mpMults;
       const cityEcon = pc.map(c => {
         const tk = _lastPlayerCityEcon.find(t => t.cityId === c.id);
         return {
@@ -6085,7 +6097,7 @@ async function boot(): Promise<void> {
         };
       });
       const cityPobor = pc.map(c => {
-        const mp = cityManpowerSnapshot(c, epoka, regenMult);
+        const mp = cityManpowerSnapshot(c, epoka, regenMult, maxMult);
         return {
           name: c.name,
           ludki: mp.ludki,
@@ -6096,7 +6108,7 @@ async function boot(): Promise<void> {
         };
       });
       let rekruciMax = 0;
-      for (const c of pc) rekruciMax += cityManpowerMax(c.population, epoka);
+      for (const c of pc) rekruciMax += cityManpowerMax(c.population, epoka, maxMult);
       const unitsOnMap = units.filter(u => u.ownerId === 0 && u.category !== 'osadnik').length;
       return {
         global: {
@@ -6128,11 +6140,11 @@ async function boot(): Promise<void> {
           ludnoscAbsLabel: economy.ludnoscAbsLabel ?? formatManpower(pobor.ludnoscAbsolutna),
           rekruci: pobor.rekruci,
           rekruciLabel: economy.rekruciLabel ?? formatManpower(pobor.rekruci),
-          rekrutEkw: rekrutUnitEquivalents(pobor.rekruci, epoka),
+          rekrutEkw: rekrutUnitEquivalents(pobor.rekruci, epoka, maxMult),
           rekruciMax,
           rekruciMaxLabel: formatManpower(rekruciMax),
           unitsOnMap,
-          kosztJednostki: unitManpowerCost(epoka),
+          kosztJednostki: unitManpowerCost(epoka, maxMult),
         },
         cityEcon,
         cityPobor,
@@ -6424,7 +6436,7 @@ async function boot(): Promise<void> {
       }
       const pc = cities.filter(c => c.ownerId === 0);
       const pop = pc.reduce((s, c) => s + c.population, 0);
-      const pobor = empirePoborTotals(cities, 0, player.era);
+      const pobor = empirePoborTotals(cities, 0, player.era, civManpowerMultsForOwner(0).maxMult);
       const chips = collectDiploChipCounts();
       const power = objectivePowerForOwner(0);
       const foodReserve = Math.floor(getEmpireFoodReserve(0));
@@ -7946,7 +7958,8 @@ async function boot(): Promise<void> {
         const c = cities.find(x => x.id === cityId);
         if (!c) return null;
         const ep = empireEpochForOwner(c.ownerId);
-        return cityManpowerSnapshot(c, ep, civManpowerRegenMult(civBonusyForOwnerId(c.ownerId)));
+        const mpMults = civManpowerMultsForOwner(c.ownerId);
+        return cityManpowerSnapshot(c, ep, mpMults.regenMult, mpMults.maxMult);
       },
       getOwnerColor: civColorFn,
       getUnlockedTechs: (_ownerId: number) => Array.from(player.zbadane),
@@ -12897,7 +12910,8 @@ async function boot(): Promise<void> {
         const c = cities.find(x => x.id === cityId);
         if (!c) return null;
         const ep = empireEpochForOwner(c.ownerId);
-        return cityManpowerSnapshot(c, ep, civManpowerRegenMult(civBonusyForOwnerId(c.ownerId)));
+        const mpMults = civManpowerMultsForOwner(c.ownerId);
+        return cityManpowerSnapshot(c, ep, mpMults.regenMult, mpMults.maxMult);
       },
       getOwnerColor: civColorFn,
         getUnlockedTechs: (_ownerId: number) => Array.from(player.zbadane),

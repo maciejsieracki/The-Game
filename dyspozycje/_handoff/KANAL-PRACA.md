@@ -2832,3 +2832,11 @@ Zbiorczy deploy całej sesji 2026-07-22 (dyplomacja, badania ×2, budynki ÷2, g
 Bramki: tsc=0 · manpower-test 24/24.
 Publish ROBOCZA: stamp **3613d5d4** · md5 `3613d5d4ca248a3fa3f6879061aad3dc`.
 CZEKAM-NA: sesja lokalna — `git pull` na dysk właściciela → Ctrl+F5 START.html → stamp `3613d5d4` → rekrutacja + regen Manpower + smoke sesji.
+
+## [07:15 PL, 2026-07-22] CHMURA → LOKALNA — CYWIL: bonus Manpower Rzymianie
+
+Rzymianie: `mnoznik_manpower_max` 2.0 (2× pula max/ludek) + `bonus_pobor_regen` 1.0 (2× regen).
+Pliki: `civs.json` · `manpower.ts` · `turn-economy.ts` · `main.ts` · `manpower-test.cjs`.
+Bramki: tsc=0 · manpower-test 30/30.
+Publish ROBOCZA: stamp **a28c034e** · md5 `a28c034e03223ec6fb4cd52401b0d86c`.
+CZEKAM-NA: sesja lokalna — `git pull` → Ctrl+F5 START.html → stamp `a28c034e` → Nowa gra Rzymianie → Manpower max/regen vs inna cywilizacja.
