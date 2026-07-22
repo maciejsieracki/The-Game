@@ -534,16 +534,13 @@ function isRangedUnit(unit: CombatUnit): boolean {
   return (unit.missileAttack ?? 0) > 0;
 }
 
-/** Spear/phalanx-type units that negate attacker charge when bracing. */
+/** Spear/phalanx-type units that negate attacker charge when bracing.
+ *  Matches on counterTyp (the 'Typ' data field: Spearman/Falangite), not the
+ *  display name, so elite spear units with non-obvious names (Triari, Mur
+ *  tarcz...) brace too — consistent with counterMultiplier's use of counterTyp. */
 function negatesCharge(unit: CombatUnit): boolean {
-  const n = unit.typNazwa.toLowerCase();
-  return (
-    n.includes('wlocznik') ||
-    n.includes('włócznik') ||
-    n.includes('falanga') ||
-    n.includes('impi') ||
-    n.includes('wloczn')
-  );
+  const t = unit.counterTyp.toLowerCase();
+  return t === 'spearman' || t === 'falangite';
 }
 
 // ---------------------------------------------------------------------------

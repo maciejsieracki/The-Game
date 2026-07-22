@@ -207,7 +207,10 @@ export function showGamePauseMenu(): void {
     cfg?.onSave();
   });
   box.querySelector('[data-act="load"]')?.addEventListener('click', () => {
-    if (!hasSave) return;
+    // Nie polegamy na stałej `hasSave` z chwili otwarcia menu — przycisk mógł
+    // zostać odblokowany w międzyczasie przez refreshGamePauseMenuLoadState()
+    // (patrz #69: zapis wykonany bez zamykania menu).
+    if (!(cfg?.hasSave?.() ?? false)) return;
     hideGamePauseMenu();
     cfg?.onLoad();
   });
@@ -226,6 +229,23 @@ export function hideGamePauseMenu(): void {
     root.remove();
     root = null;
   }
+}
+
+/**
+ * Odświeża stan przycisku „Wczytaj grę" wg aktualnego cfg.hasSave(), bez
+ * przebudowy całego menu. Menu pauzy zostaje otwarte w tle pod dialogiem
+ * zapisu (save nie zamyka menu) — po udanym zapisie trzeba odblokować
+ * przycisk ręcznie, inaczej zostaje zablokowany do następnego pełnego
+ * zamknięcia/otwarcia menu (#69). No-op, gdy menu jest zamknięte.
+ */
+export function refreshGamePauseMenuLoadState(): void {
+  if (root === null || !cfg) return;
+  const has = cfg.hasSave?.() ?? false;
+  const loadBtn = root.querySelector('[data-act="load"]') as HTMLButtonElement | null;
+  if (!loadBtn) return;
+  loadBtn.disabled = !has;
+  if (has) loadBtn.removeAttribute('title');
+  else loadBtn.setAttribute('title', 'Brak zapisu');
 }
 
 export function toggleGamePauseMenu(): void {

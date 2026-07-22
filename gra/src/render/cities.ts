@@ -582,7 +582,9 @@ export class CityRenderer {
     const s = this.statSprites.get(cityId);
     if (s) {
       parent.remove(s);
-      (s.material as THREE.SpriteMaterial).map?.dispose();
+      // Uwaga: NIE dispose'ować (s.material as THREE.SpriteMaterial).map — tekstura jest
+      // współdzielona przez statTexCache (klucz nazwa|pop) i może być używana przez inny
+      // sprite. Cache czyszczony całościowo w disposeCityStatChipTextures() (dispose()).
       (s.material as THREE.SpriteMaterial).dispose();
       this.statSprites.delete(cityId);
       this.statSpriteKeys.delete(cityId);

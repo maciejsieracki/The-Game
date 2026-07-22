@@ -529,7 +529,7 @@ import { showMainMenu, hideMainMenu, isMainMenuOpen } from './ui/mainMenu';
 import { showPerfTestPanel } from './ui/perfTestPanel';
 import {
   configureGamePauseMenu, hideGamePauseMenu,
-  toggleGamePauseMenu, isGamePauseMenuOpen,
+  toggleGamePauseMenu, isGamePauseMenuOpen, refreshGamePauseMenuLoadState,
 } from './ui/gamePauseMenu';
 import {
   showSaveGameDialog, showLoadGameDialog, hideSaveLoadDialog,
@@ -7514,6 +7514,12 @@ async function boot(): Promise<void> {
             trustPnGainedThisTurn: getDiploPairMeta(0, ownerId).trustPnGainedThisTurn,
             progDarRelacja: diplomacyProgDarRelacja(undefined, _menuDifficulty),
             progHandelRelacja: dip.progHandelRelacja,
+            // #45: miasta gracza z zapasem spichlerza — bez tego koszyk PN "zywnosc" byl martwy
+            // (readItemFromForm zawsze dostawal cityId='' -> null). Transfer w silniku dziala
+            // per-panstwo (empireFoodStates/zapasyPanstwa), nie per-miasto (main.ts:3592-3601).
+            cityOptions: cities
+              .filter(c => c.ownerId === 0)
+              .map(c => ({ id: c.id, label: c.name, spichlerz: c.magazynZywnosci ?? 0 })),
           };
         },
       });
@@ -7620,6 +7626,9 @@ async function boot(): Promise<void> {
           if (ok) {
             showHintMessage(`Gra zapisana: «${label}» (tura ${turn})`, 3500);
             console.log('[Save] slot=' + slotId + ' label=' + label + ' tura=' + turn);
+            // #69: menu pauzy zostaje otwarte pod dialogiem zapisu — odblokuj
+            // „Wczytaj grę" bez czekania na pełne zamknięcie/otwarcie menu.
+            refreshGamePauseMenuLoadState();
           } else {
             showHintMessage('Zapis nieudany (brak localStorage?)', 3000);
           }
@@ -10643,7 +10652,10 @@ async function boot(): Promise<void> {
       city: City,
       atkRoster: RuntimeUnit[],
       defRoster: RuntimeUnit[],
-      res: BattleResult,
+      // survivors opcjonalne: auto-szturm (executeSilentSiegeStorm/doSiegeAutoResolve) nie ma
+      // realnej listy ocalałych — undefined pozwala applyMapBattleOutcome przejść na gałąź
+      // applyAutoLosses (lossAtkPct/lossDefPct), zamiast pustego [] kasującego obie armie (#2).
+      res: { winner: BattleResult['winner']; survivors?: BattleUnit[]; log: string[] },
       opts?: {
         atkStart?: Map<string | number, { q: number; r: number }>;
         lossAtkPct?: number;
@@ -10760,7 +10772,10 @@ async function boot(): Promise<void> {
           city,
           atkRoster,
           defRoster,
-          { winner, log: [], survivors: [] },
+          // survivors: undefined (nie []!) — puste [] = manualSurvivors=[] = kasacja
+          // CAŁEJ armii obu stron w post-battle-map.ts. undefined = straty liczone
+          // proporcjonalnie z lossAtkPct/lossDefPct (applyAutoLosses), patrz #2.
+          { winner, log: [] },
           {
             atkStart: atkStartSnap,
             lossAtkPct: powerRes.lossAtkPct,
@@ -10906,7 +10921,8 @@ async function boot(): Promise<void> {
             city!,
             atkRosterRef,
             defRosterRef,
-            { winner, log: [], survivors: [] },
+            // survivors: undefined (nie []) — patrz komentarz w executeSilentSiegeStorm / #2.
+            { winner, log: [] },
             {
               atkStart: atkStartSnap,
               lossAtkPct: powerRes.lossAtkPct,
