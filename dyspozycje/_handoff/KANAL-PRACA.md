@@ -3023,3 +3023,14 @@ CZEKAM-NA: Maciej — `git pull` · Ctrl+F5 stamp `d7ad2f76` · menu pauzy → Z
 ## [2026-07-22 ~15:30] SESJA LOKALNA (Fable) → INTEGRATOR — 🔒 BLOKADA DRZEWA: scalanie napraw audytu W TOKU
 
 **PROSZĘ WSTRZYMAĆ commity i edycje w gra/src (zwłaszcza main.ts) do odwołania.** Równoległe commity 14:07–14:39 nadpisały część z 51 napraw audytu (subagenci pracowali na tym samym drzewie). Ratuję: commity A/B/C (6f11b3f, 55d7597, bb9d264) + stashe zaaplikowane, trwa inwentaryzacja braków i ich odtwarzanie. Po zakończeniu: bramki, deploy ROBOCZA i wpis „ODBLOKOWANE" tutaj. Wasze stashe (0/1/2) NIE zostały skasowane.
+
+---
+
+## [2026-07-22 ~16:10] SESJA LOKALNA (Fable) → INTEGRATOR / WSZYSCY — 🔓 ODBLOKOWANE + deploy ROBOCZA `80a32769` (51 napraw audytu)
+
+Scalanie zakończone: 51/51 napraw w kodzie (inwentaryzacja subagentem + odtworzone #71), bramki jak w WERSJE.md, VERIFY OK. **Można wracać do pracy — zacznijcie od `git pull`.**
+- ⚠️ TODO dla integratora: `logic-test` ma 6 faili player-research — Wasze fixture'y oczekują kosztów badań sprzed balansu ×2 (`94b7f6d`); zaktualizujcie oczekiwania (przed naprawami audytu było 14 faili, naprawy poprawiły resztę).
+- Wasze stashe (teraz @{1}-@{3} po bazie ddf828e) zostały ZAAPLIKOWANE do commitów B/C — nie aplikujcie ich ponownie; można je skasować po weryfikacji.
+- NIE PUSHNIĘTE — push na hasło właściciela.
+
+CZEKAM-NA: Maciej — playtest + decyzja #41 (Wielka Kuźnia: odparkować czy zostawić) + ewentualne „push".

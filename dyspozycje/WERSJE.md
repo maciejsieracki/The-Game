@@ -9,6 +9,13 @@ UWAGA: KANON i FINALNA promują się teraz OSOBNYMI skryptami (`gra/tools/publis
 wyraźne polecenie właściciela) — dlatego są logowane NIEZALEŻNIE, każdy w swojej sekcji, ze
 swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drugiego.
 
+## ROBOCZA `80a32769` — 2026-07-22 · NAPRAWY AUDYTU: 51 błędów (subagenci Sonnet) — **AKTUALNA**
+
+- **Zawartość:** komplet napraw audytu-53 — m.in. KRYTYCZNE: #2 auto-szturm nie kasuje już całej armii (straty proporcjonalne), #1 koszyk „jednostka" wyłączony (etap 1); dyplomacja bez exploitów (zaufanie z pokryciem #16, kursy symetryczne #20, trybut z limitem #21, bramki wasalizacji/przemarszu #19/#46); save/load kompletny (wioski #13, obozy #42, religia #43, skarbce AI #44, profile miast-państw #15); AI buduje budynki #31 i nie atakuje sióstr #24; combat: 25 jednostek odzyskało pancerz #10, super-jednostki max 1 #11; wydajność (#27-30, #56-57); UI-prawda (#17 bilans, #18 HP). Pełny log: `AUDYT-NAPRAWY-LOG.md`.
+- **Commity:** A-D `6f11b3f`/`55d7597`/`bb9d264`/`d6837e1` + docs `90369f8` (po incydencie kolizji z integratorem — naprawy uratowane ze stashy, inwentaryzacja 50/51 + odtworzenie #71).
+- **Bramki:** tsc=0 · combat 6/6 · tech-tree 19/0 · research GREEN · unit-replace 10/10 · logic-test 6 faili = dług integratora po balansie badania ×2 (94b7f6d; przed naprawami było 14).
+- **Poza zakresem:** #41 Wielka Kuźnia (decyzja Macieja), #22 (już naprawione `b1a7a61`).
+
 ## ROBOCZA (gra-robocza\Gra-ROBOCZA.html — wskazywana przez START.html)
 
 - 2026-07-22 · stempel: ROBOCZA · **7238588c** · md5 pliku `7238588c73778b8761ec5bf999268b09` · **FIX: dialog POŁĄCZENIE ARMII odłożony do startu tury gracza** — na `d7ad2f76`:
