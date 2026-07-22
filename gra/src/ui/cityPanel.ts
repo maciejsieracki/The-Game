@@ -2419,7 +2419,7 @@ function renderSurowce(mount: HTMLElement, city: City): void {
     }
     if (potential.length > 0) {
       const subP = el('div', 'civ-w4-surowce-sub');
-      subP.textContent = 'Potencjał (złoże)';
+      subP.textContent = 'Potencjał (złoże — zbuduj ulepszenie)';
       wrap.appendChild(subP);
       appendSurowceGrid(wrap, potential, 'potential');
     }
@@ -2449,7 +2449,7 @@ function buildSurowceDetailCard(
   intro.style.fontStyle = 'normal';
   intro.textContent = legacy
     ? 'Surowce na mapie w zasięgu miasta odblokowują budynki i bonusy (ikona = dostęp). v0.1: tylko boolean dostęp — ilości w wersji 2.0.'
-    : 'Potencjał = złoże widoczne w zasięgu (szare). Dostęp aktywny = po ulepszeniu terenu, hodowli na złożu lub bramce brązu (Popalnia + Piec hutniczy).';
+    : 'Potencjał (szare) = złoże widoczne w zasięgu — jeszcze nieużywalne. Dostęp aktywny = po ulepszeniu terenu na tym heksie (lub wyjątkach: tartak, kamieniołom, warzelnia na wybrzeżu, hodowla bez złoża). Brąz wymaga Popalni + Piec hutniczy.';
   card.appendChild(intro);
   if (active.length > 0) {
     appendDetailSection(card, legacy ? 'Lista' : 'Dostęp aktywny');
@@ -2467,8 +2467,10 @@ function buildSurowceDetailCard(
       'Brak surowca = budynek zablokowany do czasu podboju/heksu z zasobem.',
     ]
     : [
-      'Złoże w zasięgu ≠ dostęp — zbuduj ulepszenie (tartak, pastwisko, kopalnia…).',
-      'Dostęp aktywny odblokowuje budynki, jednostki i handel surowcem.',
+      'Złoże w zasięgu ≠ dostęp — zbuduj ulepszenie na tym heksie (glinianka, kopalnia, stadnina…).',
+      'Wyjątki bez złoża: tartak (drewno), kamieniołom (kamień), hodowla trzody/owiec/lam.',
+      'Warzelnia soli: złoże soli LUB wybrzeże (sól z morza).',
+      'Dostęp aktywny odblokowuje produkcję i handel surowcem (v0.1: boolean, bez magazynów).',
     ]);
   return card;
 }

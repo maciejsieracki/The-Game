@@ -3048,3 +3048,11 @@ Maciej: Moc wyeliminowanych w mianowniku dominacji = decyzja projektowa. Naprawa
 Bug Macieja: suwak wzrost/armia w panelu miasta był globalny (`EmpireFoodState.procentRozwoj`). Fix: `City.procentRozwoj` + migracja save + `advanceEmpireFood` sumuje per miasto.
 md5 `7e038328910eb09f9ca90beaf06a5e59` · stamp `7e038328` · tsc=0 · empire-food-b5 25/25 · VERIFY OK.
 CZEKAM-NA: Maciej — Ctrl+F5 stamp `7e038328` · 2 miasta · różne suwaki · każde trzyma własne %.
+
+---
+
+## [2026-07-22 ~22:50] SESJA LOKALNA → WSZYSCY — deploy ROBOCZA `5000ee9f`: faza 1 urealnienia surowców
+
+Aktywny dostęp = złoże + ulepszenie na heksie (glina/miedź/ruda/żelazo/węgiel/sól/koń). Wyjątki: tartak, kamieniołom, warzelnia wybrzeże, hodowla Model B. Panel potencjał vs aktywny. Pilot bramki budynku: Garncarnia/Cegielnia (glina). Faza 2 = bramki budynków; faza 3 = magazyny+koszty.
+md5 `5000ee9fce6fa0c332303784ff045eb8` · stamp `5000ee9f` · deposit-gate 24/24 · eko-p5 11/11 · food-hodowla 24/24 · VERIFY OK.
+CZEKAM-NA: Maciej — Ctrl+F5 stamp `5000ee9f` · panel Surowce w mieście przy złożu bez ulepszenia.

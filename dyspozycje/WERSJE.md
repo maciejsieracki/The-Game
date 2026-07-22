@@ -9,7 +9,14 @@ UWAGA: KANON i FINALNA promują się teraz OSOBNYMI skryptami (`gra/tools/publis
 wyraźne polecenie właściciela) — dlatego są logowane NIEZALEŻNIE, każdy w swojej sekcji, ze
 swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drugiego.
 
-## ROBOCZA `7e038328` — 2026-07-22 · FIX: suwak żywność→armia per miasto — **AKTUALNA**
+## ROBOCZA `5000ee9f` — 2026-07-22 · FAZA 1: urealnienie dostępu surowców — **AKTUALNA**
+
+- **Zawartość:** `resource-access.ts` — aktywny dostęp wymaga złoże+ulepszenie na heksie (glina, miedź, ruda/żelazo/węgiel, sól, koń); wyjątki: tartak, kamieniołom, warzelnia na wybrzeżu; hodowla Model B (bydło/owce/lama bez złoża). Panel miasta: potencjał vs dostęp aktywny. Pilot bramki budynku: Garncarnia/Cegielnia (glina) — bez rozszerzania.
+- **Odłożone (faza 2):** pełne bramki budynków per surowiec; faza 3: magazyny + koszty materiałowe.
+- **Bramki:** tsc=0 · deposit-building-gate 24/24 · eko-tech-p5 11/11 · food-hodowla 24/24.
+- **md5:** `5000ee9fce6fa0c332303784ff045eb8` · stamp `5000ee9f`.
+
+## ROBOCZA `7e038328` — 2026-07-22 · FIX: suwak żywność→armia per miasto — **ZASTĄPIONA** (→ `5000ee9f`)
 
 - **Bug Macieja:** suwak podziału żywności (wzrost vs armia) w panelu miasta był wspólny dla całego imperium (`EmpireFoodState.procentRozwoj` per ownerId).
 - **Fix:** pole `City.procentRozwoj` per miasto; silnik (`turn-economy`, `advanceEmpireFood`) i panel czytają/zapisują per miasto; migracja starych save z `empireFoodStates.procentRozwoj`.

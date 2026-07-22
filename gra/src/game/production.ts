@@ -62,6 +62,7 @@ import {
   PIEC_HUTNICZY_BUILDING_ID,
 } from './braz-access';
 import { hasZelazoAccess } from './zelazo-access';
+import { buildingResourceGateMet } from './building-resource-gate';
 import {
   isBuildingSuppressedFromProduction,
   upgradeProductionDisplayName,
@@ -401,6 +402,11 @@ export interface AvailabilityContext {
   ownerId?: number;
   /** Poziom trudnosci rozgrywki — latwa/normalna/trudna. */
   difficulty?: GameDifficulty;
+  /**
+   * Aktywny dostep surowcow miasta (etykiety z getResourceAccessForCity) —
+   * bramka budynkow wymagajacych zloza + ulepszenia w zasiegu.
+   */
+  activeResourceLabels?: readonly string[];
 }
 
 /**
@@ -682,6 +688,9 @@ export function availableProduction(
     if (tech.length > 0 && !techs.has(tech)) continue;
     if (b.id === PIEC_HUTNICZY_BUILDING_ID
       && !empireHasKopalniaMiedzi(ctx.placedImprovements)) {
+      continue;
+    }
+    if (!buildingResourceGateMet(b, ctx.activeResourceLabels)) {
       continue;
     }
     items.push({

@@ -4,7 +4,20 @@
 > **Czat:** krótko **`✅ Gotowe:`** / **`⏸️ Czeka:`** · **Ten plik:** pełniejszy zapis tego samego.  
 > Szczegóły techniczne → handoff w `dyspozycje/_handoff/` · operacja → `dyspozycje/DZIENNIK-MASTERA.md`
 
-**Ostatnia aktualizacja:** 2026-07-22 (FIX suwak żywność per miasto @ 7e038328)
+## [22:50] ✅ Gotowe — faza 1: realistyczny dostęp surowców (złoże + ulepszenie)
+
+| | |
+|---|---|
+| **Co** | Panel miasta rozróżnia potencjał (złoże) vs dostęp aktywny (po ulepszeniu terenu) |
+| **Reguła** | Glina, miedź, ruda/żelazo/węgiel, sól, koń = złoże + ulepszenie na tym heksie |
+| **Wyjątki** | Tartak, kamieniołom (bez złoża); warzelnia na wybrzeżu; hodowla bez złoża (Model B) |
+| **Pilot budynku** | Garncarnia/Cegielnia wymagają aktywnej Gliny — reszta budynków w fazie 2 |
+| **md5** | `5000ee9fce6fa0c332303784ff045eb8` · stamp `5000ee9f` |
+| **Od Ciebie** | Ctrl+F5 · stamp `5000ee9f` · panel miasta → Surowce: szare = złoże, kolor = aktywne |
+
+---
+
+**Ostatnia aktualizacja:** 2026-07-22 (FAZA 1 surowce @ 5000ee9f)
 
 ---
 

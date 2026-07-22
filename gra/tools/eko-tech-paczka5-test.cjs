@@ -38,14 +38,14 @@ function mapWith(...hexes) {
   return { hexes: hexesObj };
 }
 
-// złoże bez ulepszenia → potencjał, nie active
+// złoże miedzi bez ulepszenia → potencjał, nie active
 {
-  const map = mapWith({
-    coords: { q: 1, r: 0 }, terenBazowy: TB.Laka, nakladka: NK.ZlozeBydla, wlasciciel: '0',
-  });
+  const map = mapWith(
+    { coords: { q: 1, r: 0 }, terenBazowy: TB.Wzgorza, zloze: 'miedz', wlasciciel: '0' },
+  );
   const split = M.getCityResourceAccessForCity(city, map, new Map(), 99, { ownerId: '0' });
-  ok(split.potential.includes('Bydło (krowa/wół)'), 'ABC-19 bydło = potencjał bez pastwiska');
-  ok(!split.active.includes('Bydło (krowa/wół)'), 'ABC-19 bydło NIE active bez pastwiska');
+  ok(split.potential.includes('Ruda miedzi'), 'miedz = potencjał bez kopalni');
+  ok(!split.active.includes('Ruda miedzi'), 'miedz NIE active bez kopalni');
   ok(M.getResourceAccessForCity(city, map, new Map(), 99).length === 0, 'getResourceAccessForCity = tylko active');
 }
 
@@ -61,15 +61,15 @@ function mapWith(...hexes) {
   ok(!split.potential.includes('Drewno'), 'Drewno nie w potencjale gdy active');
 }
 
-// pastwisko na złożu → active bydło, brak duplikatu w potencjale
+// Model B: bydlo bez złoża → active (brak potencjału zwierzęcego)
 {
   const map = mapWith({
-    coords: { q: 1, r: 0 }, terenBazowy: TB.Laka, nakladka: NK.ZlozeBydla, wlasciciel: '0',
+    coords: { q: 1, r: 0 }, terenBazowy: TB.Laka, nakladka: NK.Brak, wlasciciel: '0',
   });
   const placed = new Map([['1,0', 'bydlo']]);
   const split = M.getCityResourceAccessForCity(city, map, placed, 99, { ownerId: '0' });
-  ok(split.active.includes('Bydło (krowa/wół)'), 'pastwisko → active bydło');
-  ok(!split.potential.includes('Bydło (krowa/wół)'), 'bydło nie w potencjale gdy active');
+  ok(split.active.includes('Trzoda (krowa/świnia)'), 'Model B bydlo → active bez złoża');
+  ok(!split.potential.includes('Trzoda (krowa/świnia)'), 'bydlo nie w potencjale gdy active');
 }
 
 // brąz: popalnia + piec → active Brąz; ruda miedzi = potencjał bez popalni
@@ -81,10 +81,10 @@ function mapWith(...hexes) {
   ok(noPop.potential.includes('Ruda miedzi'), 'miedz = potencjał bez popalni');
   ok(!noPop.active.includes('Brąz'), 'brak Brązu bez popalni mimo Pieca');
 
-  const placed = new Map([['1,0', 'popalnia_brazu']]);
+  const placed = new Map([['1,0', 'kopalnia_miedzi']]);
   const withBraz = M.getCityResourceAccessForCity(city, map, placed, 99, { builtIds: [PIEC] });
-  ok(withBraz.active.includes('Brąz'), 'Popalnia + Piec → active Brąz');
-  ok(withBraz.active.includes('Ruda'), 'popalnia → active Ruda');
+  ok(withBraz.active.includes('Brąz'), 'Kopalnia miedzi + Piec → active Brąz');
+  ok(withBraz.active.includes('Ruda'), 'kopalnia_miedzi → active Ruda');
 }
 
 console.log(`\neko-tech-paczka5: ${pass} pass, ${fail} fail`);

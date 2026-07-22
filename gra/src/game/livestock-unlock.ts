@@ -1,6 +1,7 @@
 /**
- * livestock-unlock.ts — odblokowanie hodowli po pastwisku/stadninie na złożu (ABC-18 Maciej 2026-07-05).
- * Złoże w terytorium ≠ dostęp — wymaga ulepszenia na złożu (bydło/owce/lama/koń→stadnina).
+ * livestock-unlock.ts — odblokowanie hodowli (Model B 2026-07-09).
+ * Bydło/owce/lama: czyste ulepszenie bez złoża (jak farma).
+ * Koń: stadnina na złożu konia → odblokowanie imperium (ABC-18).
  */
 import { Nakladka } from '../types/hex';
 import type { GameMap } from '../types/map';
@@ -100,7 +101,8 @@ function keysOnPlacedHex(imp: string | readonly string[]): string[] {
 }
 
 /**
- * Hodowle odblokowane imperium — tylko po postawieniu pastwiska/stadniny NA złożu (ABC-18).
+ * Hodowle odblokowane imperium — Model B: tylko koń ze stadniny na złożu konia (ABC-18).
+ * Bydło/owce/lama nie mają złoża na mapie — brak odblokowania imperium.
  */
 export function computeEmpireLivestockUnlocks(
   placedImprovements: ReadonlyMap<string, string | readonly string[]>,
@@ -113,10 +115,10 @@ export function computeEmpireLivestockUnlocks(
     if (!hex) continue;
     if (ownerId != null && hex.wlasciciel !== ownerId) continue;
     for (const impKey of keysOnPlacedHex(impRaw)) {
-      const lk = livestockKeyFromImprovement(impKey);
-      if (!lk) continue;
+      const norm = normalizeImprovementKey(impKey) ?? impKey;
+      if (norm !== 'stadnina') continue;
       if (!improvementMatchesLivestockDeposit(impKey, hex)) continue;
-      unlocked.add(lk);
+      unlocked.add('kon');
     }
   }
   return unlocked;

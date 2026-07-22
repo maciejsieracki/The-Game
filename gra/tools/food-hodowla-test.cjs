@@ -99,25 +99,15 @@ console.log('\nAC-E2: tileYield suma warstw (delta ulepszen)');
   eq(layered.praca - base.praca, 3, 'farma+bydlo delta = +3 praca');
 }
 
-console.log('\nAC-E3: unlock hodowli po zlozu');
+console.log('\nAC-E3: Model B — bydlo bez złoża (aktywny dostęp lokalny)');
 {
   const map = {
     hexes: {
-      '0,0': {
-        coords: { q: 0, r: 0 },
-        terenBazowy: M.TerenBazowy.Rownina,
-        nakladka: M.Nakladka.ZlozeBydla,
-        ulepszenie: 'bydlo',
-        wlasciciel: 'p1',
-        wioska: { istnieje: false, ludnosc: 0 },
-        rzeka: { obecna: false, krawedzie: [] },
-        widocznosc: {},
-      },
       '1,0': {
         coords: { q: 1, r: 0 },
         terenBazowy: M.TerenBazowy.Laka,
         nakladka: M.Nakladka.Brak,
-        ulepszenie: 'brak',
+        ulepszenie: 'bydlo',
         wlasciciel: 'p1',
         wioska: { istnieje: false, ludnosc: 0 },
         rzeka: { obecna: false, krawedzie: [] },
@@ -125,44 +115,39 @@ console.log('\nAC-E3: unlock hodowli po zlozu');
       },
     },
   };
-  const placed = new Map([['0,0', 'bydlo']]);
-  const unlocks = M.computeEmpireLivestockUnlocks(placed, map, 'p1');
-  ok(unlocks.has('bydlo'), 'bydlo odblokowane po pastwisku na zlozu');
-  ok(
-    M.isLivestockUnlockedForPlacement('bydlo', map.hexes['1,0'], unlocks),
-    'bydlo na polu bez zloza po unlock',
-  );
+  const placed = new Map([['1,0', 'bydlo']]);
   const access = M.getResourceAccessForCity(
-    { id: 'c1', q: 1, r: 0, population: 5 },
+    { id: 'c1', q: 0, r: 0, population: 10 },
     map,
     placed,
     99,
-    { ownerId: 'p1', empireLivestockUnlocks: unlocks },
+    { ownerId: 'p1' },
   );
-  ok(access.includes('Bydło (krowa/wół)'), 'panel surowce: Bydlo po unlock imperium');
+  ok(access.includes('Trzoda (krowa/świnia)'), 'Model B: bydlo w zasięgu → active Trzoda');
+  ok(M.isLivestockUnlockedForPlacement('bydlo', map.hexes['1,0'], new Set()), 'bydlo bez unlock — zawsze dozwolone');
 }
 
 console.log('\nAC-E4: Inkowie era<3');
 {
   ok(!M.isLivestockAllowed('inkowie', 'bydlo', 2), 'Inkowie ep2: bydlo false');
   ok(!M.isLivestockAllowed('inkowie', 'owce', 1), 'Inkowie ep1: owce false');
-  ok(!M.isLivestockAllowed('inkowie', 'kon', 2), 'Inkowie ep2: kon false');
+  ok(M.isLivestockAllowed('inkowie', 'kon', 2), 'Inkowie ep2: kon dozwolony (bramka złoża osobno)');
   ok(M.isLivestockAllowed('inkowie', 'lama', 1), 'Inkowie ep1: lama true');
   ok(M.isLivestockAllowed('inkowie', 'bydlo', 3), 'Inkowie ep3: bydlo true');
   ok(M.isLivestockAllowed('rzymianie', 'bydlo', 1), 'Rzym ep1: bydlo true');
 }
 
-console.log('\nAC-E5: zloze bez pastwiska — brak implicit plonow (ABC-18)');
+console.log('\nAC-E5: Model B — brak złoża zwierzęcego, bydlo daje dostęp lokalnie');
 {
   const hexDeposit = {
     ulepszenie: 'brak',
-    nakladka: M.Nakladka.ZlozeBydla,
+    nakladka: M.Nakladka.Brak,
   };
   const keys = M.improvementKeysForHex(hexDeposit);
-  ok(!keys.includes('bydlo'), 'ZlozeBydla bez budowy -> brak warstwy bydlo');
+  ok(!keys.includes('bydlo'), 'Brak nakladki zwierzeczej -> brak warstwy bydlo');
   const plain = M.tileYield({
     terenBazowy: M.TerenBazowy.Laka,
-    nakladka: M.Nakladka.ZlozeBydla,
+    nakladka: M.Nakladka.Brak,
     maRzeke: false,
     ulepszeniaKeys: keys,
   });
@@ -171,15 +156,15 @@ console.log('\nAC-E5: zloze bez pastwiska — brak implicit plonow (ABC-18)');
     nakladka: M.Nakladka.Brak,
     maRzeke: false,
   });
-  eq(plain.zywnosc, basePlain.zywnosc, 'zloze bez pastwiska = brak bonusu zywnosci');
+  eq(plain.zywnosc, basePlain.zywnosc, 'pole bez bydla = brak bonusu zywnosci');
 
   const mapOwned = {
     hexes: {
       '0,0': {
         coords: { q: 0, r: 0 },
         terenBazowy: M.TerenBazowy.Laka,
-        nakladka: M.Nakladka.ZlozeBydla,
-        ulepszenie: 'brak',
+        nakladka: M.Nakladka.Brak,
+        ulepszenie: 'bydlo',
         wlasciciel: 'p1',
         wioska: { istnieje: false, ludnosc: 0 },
         rzeka: { obecna: false, krawedzie: [] },
@@ -187,15 +172,17 @@ console.log('\nAC-E5: zloze bez pastwiska — brak implicit plonow (ABC-18)');
       },
     },
   };
-  const unlocksOwned = M.computeEmpireLivestockUnlocks(new Map(), mapOwned, 'p1');
-  ok(!unlocksOwned.has('bydlo'), 'terytorium ze zlozem BEZ pastwiska = brak unlock');
-  ok(
-    unlocksOwned.has('bydlo') === false,
-    'ABC-18: wymaga postawienia bydlo na zlozu',
-  );
   const placedPasture = new Map([['0,0', 'bydlo']]);
   const unlocksBuilt = M.computeEmpireLivestockUnlocks(placedPasture, mapOwned, 'p1');
-  ok(unlocksBuilt.has('bydlo'), 'pastwisko na zlozu = unlock bydlo');
+  ok(!unlocksBuilt.has('bydlo'), 'Model B: bydlo NIE odblokowuje imperium');
+  const access = M.getResourceAccessForCity(
+    { id: 'c1', q: 0, r: 0, population: 10 },
+    mapOwned,
+    placedPasture,
+    99,
+    { ownerId: 'p1' },
+  );
+  ok(access.includes('Trzoda (krowa/świnia)'), 'bydlo w zasięgu → active Trzoda');
 }
 
 console.log('\n--- food-hodowla-test: ' + passed + ' OK, ' + failed + ' FAIL ---');

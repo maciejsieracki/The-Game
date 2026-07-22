@@ -21,7 +21,9 @@ git status --short
 - Jeśli w `gra/src` lub `gra/data` są **niezacommitowane zmiany** — ktoś jest w połowie pracy. NIE nadpisuj ich, NIE rób `git checkout`/`git stash` na tych plikach. Najpierw ustal z właścicielem, co to jest.
 - **Zawsze przed pracą uruchom bramki** (sekcja 7), żeby wiedzieć, co jest sprawne, a co było zepsute PRZED Tobą.
 
-**Stan na 2026-07-22 (NAJNOWSZY, po naprawach audytu):** deploy ROBOCZA **`80a32769`** — 51 napraw audytu-53 (log: `dyspozycje/AUDYT-NAPRAWY-LOG.md`), po incydencie kolizji sesji (opis w KANAL-PRACA). Drzewo czyste, 7 commitów lokalnych czeka na „push" właściciela. Bramki: tsc=0, combat/tech/research/unit-replace zielone; logic-test 6 faili = dług fixture po balansie badania ×2 (TODO integratora).
+**Stan na 2026-07-22 (NAJNOWSZY):** deploy ROBOCZA **`5000ee9f`** — faza 1 urealnienia surowców (złoże+ulepszenie, Model B hodowla, panel potencjał/aktywny). Poprzedni: `7e038328` (suwak żywność per miasto).
+
+**Roadmap surowców (2026-07-22):** Faza 1 = realistyczny dostęp (złoże widoczne vs aktywne po ulepszeniu) · Faza 2 = twarde bramki budynków per surowiec · Faza 3 = magazyny + koszty materiałowe jednostek/budynków.
 
 *(poprzedni stan 2026-07-22, sesja batch):* deploy ROBOCZA **`3613d5d4`** (md5 `3613d5d4ca248a3fa3f6879061aad3dc`) — balans Manpower + zbiorczy deploy fixów sesji (dyplomacja, ekonomia, mapa, bitwa, badania). **Manpower:** koszt rekrutacji ×10 (`manpowerNaJednostke = manpowerNaLudka`); regen max/turę **5%** (było 10%). Czeka: `git pull` lokalnie + smoke właściciela.
 
