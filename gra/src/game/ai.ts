@@ -1370,9 +1370,10 @@ function decideDefensiveCopyTurn(
   const RESUP_MAX_PER_TURN      = resupTier.maxPerTurn;
 
   const sisterCityStates = opts.sisterCityStates ?? [];
-  // Jednostki sióstr (ten sam klaster/typ) nigdy nie liczą się jako "wróg" zagrażający innej
-  // siostrze — bez tego wędrujący własny garnizon sąsiedniej siostry fałszywie wyzwalałby
-  // posiłki co turę. Dyplomacja poza tym nierozszerzana (zgodnie z poleceniem).
+  // Jednostki sióstr (ten sam klaster/typ) nigdy nie liczą się jako "wróg": ani jako
+  // zagrożenie wyzwalające posiłki, ani jako cel riposty/marszu obronnego poniżej —
+  // bez tego posiłek maszerujący do siostry albo jej wędrujący garnizon prowokowałby
+  // bratobójczy atak (Maciej 2026-07-22 fix #24: filtr sojuszu też przy WYBORZE CELU).
   const sisterOwnerIds = new Set(sisterCityStates.map(s => s.ownerId));
   const nonSisterEnemyUnits = engageableEnemyUnits.filter(eu => !sisterOwnerIds.has(eu.ownerId));
 
@@ -1393,7 +1394,7 @@ function decideDefensiveCopyTurn(
     if (isSettler(unit)) continue;
     if (unit.ruchLeft <= 0) continue;
 
-    const adjacentEnemy = engageableEnemyUnits.find(
+    const adjacentEnemy = nonSisterEnemyUnits.find(
       eu => isAdjacent(unit.q, unit.r, eu.q, eu.r),
     );
     if (adjacentEnemy !== undefined) {
@@ -1403,7 +1404,7 @@ function decideDefensiveCopyTurn(
 
     let moved = false;
     for (const city of myCities) {
-      const threat = engageableEnemyUnits.find(
+      const threat = nonSisterEnemyUnits.find(
         eu => isAdjacent(eu.q, eu.r, city.q, city.r),
       );
       if (threat === undefined) continue;

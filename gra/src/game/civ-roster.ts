@@ -101,7 +101,10 @@ export function assignAiCivTypes(input: AssignAiCivInput): Map<number, string> {
   const out = new Map<number, string>();
   const fallback = allCivIds.find((id) => id && id !== playerCivId) ?? 'grecy';
   sorted.forEach((ownerId, idx) => {
-    out.set(ownerId, shuffledAi[idx] ?? fallback);
+    // Nadmiarowi AI (idx poza shuffledAi.length) dostają typ okrężnie (round-robin)
+    // z wylosowanej puli aktywnych zamiast identycznego typu spoza puli (#71).
+    const type = shuffledAi.length > 0 ? shuffledAi[idx % shuffledAi.length] : fallback;
+    out.set(ownerId, type ?? fallback);
   });
   return out;
 }

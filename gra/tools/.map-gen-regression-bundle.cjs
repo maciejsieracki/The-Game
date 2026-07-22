@@ -277,12 +277,12 @@ var e_start_params_default = {
     render_quality_bundled: "medium"
   },
   skala_mapy: {
-    Malenki: { rywale_ai: 2, miasta_panstwa: 8, typy_cywilizacji: 7, hex_w: 76, hex_h: 52 },
-    Ma\u0142y: { rywale_ai: 3, miasta_panstwa: 10, typy_cywilizacji: 10, hex_w: 108, hex_h: 74 },
-    Standardowy: { rywale_ai: 6, miasta_panstwa: 12, typy_cywilizacji: 12, hex_w: 168, hex_h: 120 },
-    Du\u017Cy: { rywale_ai: 7, miasta_panstwa: 14, typy_cywilizacji: 14, hex_w: 240, hex_h: 168 },
-    Ogromny: { rywale_ai: 8, miasta_panstwa: 16, typy_cywilizacji: 15, hex_w: 336, hex_h: 238 },
-    "Super Huge": { rywale_ai: 10, miasta_panstwa: 16, typy_cywilizacji: 15, hex_w: 672, hex_h: 476 }
+    Malenki: { rywale_ai: 2, miasta_panstwa: 3, typy_cywilizacji: 7, hex_w: 76, hex_h: 52 },
+    Ma\u0142y: { rywale_ai: 3, miasta_panstwa: 4, typy_cywilizacji: 10, hex_w: 108, hex_h: 74 },
+    Standardowy: { rywale_ai: 6, miasta_panstwa: 6, typy_cywilizacji: 12, hex_w: 168, hex_h: 120 },
+    Du\u017Cy: { rywale_ai: 7, miasta_panstwa: 7, typy_cywilizacji: 14, hex_w: 240, hex_h: 168 },
+    Ogromny: { rywale_ai: 8, miasta_panstwa: 8, typy_cywilizacji: 15, hex_w: 336, hex_h: 238 },
+    "Super Huge": { rywale_ai: 10, miasta_panstwa: 8, typy_cywilizacji: 15, hex_w: 672, hex_h: 476 }
   },
   generator_e2: {
     resource_mult_low: 0.6,
@@ -491,7 +491,12 @@ function resolveWorldGenNumbers(opts) {
     riverTrace: resolveRiverTraceForMap(mapLabel, wd.rivers)
   };
 }
-var MAX_MIAST_PANSTWA = 18;
+var MAX_MIAST_PANSTWA = 9;
+function clampMiastaPanstwaCount(raw) {
+  const n = Math.floor(Number(raw));
+  if (!Number.isFinite(n) || n < 1) return 1;
+  return Math.min(n, MAX_MIAST_PANSTWA);
+}
 var MAX_TYPY_CYWILIZACJI_MENU = 15;
 var MAP_MENU_TIER_ORDER = [
   "malenki",
@@ -502,12 +507,12 @@ var MAP_MENU_TIER_ORDER = [
   "superogromny"
 ];
 var MIASTA_PANSTWA_MENU_BY_TIER = [
-  { min: 6, default: 8, max: 10 },
-  { min: 8, default: 10, max: 12 },
-  { min: 10, default: 12, max: 14 },
-  { min: 12, default: 14, max: 16 },
-  { min: 14, default: 16, max: MAX_MIAST_PANSTWA },
-  { min: 14, default: 16, max: MAX_MIAST_PANSTWA }
+  { min: 2, default: 3, max: 4 },
+  { min: 3, default: 4, max: 5 },
+  { min: 4, default: 6, max: 7 },
+  { min: 5, default: 7, max: 8 },
+  { min: 6, default: 8, max: MAX_MIAST_PANSTWA },
+  { min: 7, default: 8, max: MAX_MIAST_PANSTWA }
 ];
 var TYPY_CYWILIZACJI_MENU_BY_TIER = [
   // Maleński: 7 (nie 8) — na najmniejszej mapie 8 klastrów czasem się nie mieści
@@ -531,7 +536,7 @@ function typyCywilizacjiTriple(menuLabel) {
 }
 function defaultMiastaPanstwaFromMapLabel(menuLabel) {
   const fromE = eStartMiastaPanstwa(menuLabel);
-  if (fromE != null && fromE > 0) return Math.min(fromE, MAX_MIAST_PANSTWA);
+  if (fromE != null && fromE > 0) return clampMiastaPanstwaCount(fromE);
   return miastaPanstwaTriple(menuLabel).default;
 }
 function defaultCivTypesFromMapLabel(menuLabel) {
@@ -4857,8 +4862,8 @@ function targetVillageHutCount(cityCount, difficulty = "normal") {
   const cities = Math.max(0, Math.floor(cityCount));
   return cities * villageHutsPerCityMultiplier(difficulty);
 }
-var VILLAGE_MIN_DIST_FROM_CITY = 4;
-var VILLAGE_MIN_SPACING = 5;
+var VILLAGE_MIN_DIST_FROM_CITY = 3;
+var VILLAGE_MIN_SPACING = 3;
 function lcgNext(state) {
   const next = state * 1664525 + 1013904223 >>> 0;
   return [next, next / 4294967296];
@@ -5473,7 +5478,9 @@ function generateMap(width = DEFAULT_WIDTH, height = DEFAULT_HEIGHT, seed = 42, 
   const mapMenuLabel = genOpts?.mapSizeMenuLabel ?? "Standardowy";
   const startCityCount = expectedStartCityCount(
     genOpts?.civTypesCount ?? defaultCivTypesFromMapLabel(mapMenuLabel),
-    genOpts?.cityStatesCount ?? defaultMiastaPanstwaFromMapLabel(mapMenuLabel)
+    clampMiastaPanstwaCount(
+      genOpts?.cityStatesCount ?? defaultMiastaPanstwaFromMapLabel(mapMenuLabel)
+    )
   );
   const targetHuts = targetVillageHutCount(startCityCount, genOpts?.difficulty ?? "normal");
   const villageSites = placeVillages(hexes, startPositions, [], (effectiveSeed ^ 24301) >>> 0, {

@@ -531,7 +531,7 @@ export function evaluateProposal(
     }
 
     case 'wasal': {
-      if (ctx.responderRespekt < p.progWasalizacjaRespekt) {
+      if (ctx.proposerRespekt < p.progWasalizacjaRespekt) {
         return { accepted: false, reason: `Wasalizacja wymaga Respekt ≥ ${p.progWasalizacjaRespekt}` };
       }
       const perTurn = payload.goldPerTurn ?? p.progWasalDefaultGoldPerTurn;

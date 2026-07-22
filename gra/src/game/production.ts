@@ -715,7 +715,11 @@ export function availableProduction(
     if (tech.length > 0 && tech !== '-' && tech !== '—' && !techs.has(tech)) continue;
     // Koszary gate (decyzja Maciej 2026-06-25): jednostki epoki Brazu wymagaja
     // wybudowanych Koszar (id='koszary') w miescie. Inne epoki bez zmian.
-    if (epochNumber(u.Epoka) === 2 && !built.has('koszary')) continue;
+    // Ulepszenie Koszary->Akademia wojskowa usuwa 'koszary' z builtIds (fix #32) —
+    // bramka akceptuje wiec tez budynek nadrzedny (ten sam wzorzec co przy
+    // zelazo-access.ts dla odlewni), inaczej ulepszenie odbiera miastu Braz.
+    if (epochNumber(u.Epoka) === 2 && !built.has('koszary')
+      && !isBuildingSupersededByUpgrade('koszary', builtList, data.buildings)) continue;
     const surowiec = (u.Surowiec ?? '').toString().trim().toLowerCase();
     if (surowiec === 'braz'
       && !hasBrazAccess(ctx.placedImprovements, builtList)) {
@@ -804,7 +808,9 @@ export function availableReplacementsFor(
     // Blank-tech marker bywa '-' LUB '—' (em dash) -- patrz uwaga w availableProduction.
     if (tech.length > 0 && tech !== '-' && tech !== '—' && !techs.has(tech)) return false;
     // Koszary gate (decyzja Maciej 2026-06-25): jednostki epoki Brazu wymagaja Koszar.
-    if (epochNumber(u.Epoka) === 2 && !built.has('koszary')) return false;
+    // Ulepszenie do Akademii wojskowej tez sie liczy (fix #32) — patrz uwaga w availableProduction.
+    if (epochNumber(u.Epoka) === 2 && !built.has('koszary')
+      && !isBuildingSupersededByUpgrade('koszary', builtList, data.buildings)) return false;
     const surowiec = (u.Surowiec ?? '').toString().trim().toLowerCase();
     if (surowiec === 'braz' && !hasBrazAccess(ctx.placedImprovements, builtList)) return false;
     if (surowiec === 'zelazo'
