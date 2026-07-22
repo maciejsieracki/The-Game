@@ -190,7 +190,7 @@ export function showSaveGameDialog(opts: SaveDialogOptions): void {
   const input = document.createElement('input');
   input.id = 'civ-sl-name';
   input.type = 'text';
-  input.maxLength = 48;
+  input.maxLength = 72;
   input.value = opts.defaultLabel;
   input.autocomplete = 'off';
   field.appendChild(input);
@@ -215,7 +215,7 @@ export function showSaveGameDialog(opts: SaveDialogOptions): void {
   saveBtn.textContent = 'Zapisz';
 
   const commit = () => {
-    const label = input.value.trim() || `Zapis · tura ${opts.turn}`;
+    const label = input.value.trim() || opts.defaultLabel;
     const existing = existingAtCommit();
     let slotId: string;
     if (existing) {

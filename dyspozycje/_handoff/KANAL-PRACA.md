@@ -3002,3 +3002,18 @@ CZEKAM-NA: Maciej — Ctrl+F5 stamp `2f32fbea` → FoW ON ranking tylko odkryte 
 **Fix:** `deferredPlayerUnitRevealIds` w `main.ts` — render ukrywa do `flushDeferredPlayerUnitReveals()` po fazie AI.
 **Deploy ROBOCZA:** stamp `c72ab1b8` · md5 `c72ab1b8c45c61364f754daf085ae41f` · verify OK.
 CZEKAM-NA: Maciej — `git pull` · Ctrl+F5 stamp `c72ab1b8` · rekrutuj → end-turn → jednostka po AI.
+
+## [14:35] INTEGRATOR → Maciej — FIX dialog POŁĄCZENIE ARMII po end-turn
+
+**Bug:** dialog „POŁĄCZENIE ARMII" w trakcie tury AI gdy produkcja end-turn stawia jednostkę na heks z inną (np. Wojownik + Oszczepnik).
+**Fix:** `deferredMergePrompts` + `flushDeferredMergePrompts()` po „Tura N — twoja kolej" (`main.ts`).
+**Deploy ROBOCZA:** stamp `7238588c` · md5 `7238588c73778b8761ec5bf999268b09` · tsc=0 · unit-replace 10/10.
+CZEKAM-NA: Maciej — `git pull` · Ctrl+F5 stamp `7238588c` · rekrutuj na zajęty heks → end-turn → dialog po AI.
+
+## [14:30 PL, 2026-07-22] INTEGRATOR → Maciej — opisowe nazwy zapisów
+
+**md5:** `d7ad2f76e755e42352bb421a1a19c2fa` · stamp `d7ad2f76`
+**Zadanie Macieja:** domyślna nazwa sejwu z kontekstu gry (stolica, rok, tura, mapa, trudność).
+Format: `{stolica} · rok {YYYY} p.n.e. · tura {N} · {mapa} · {trudność}`; szybki/autozapis z prefiksem.
+Pliki: `save-label.ts`, `main.ts`, `saveLoadDialog.ts` · save-label-test OK · verify OK.
+CZEKAM-NA: Maciej — `git pull` · Ctrl+F5 stamp `d7ad2f76` · menu pauzy → Zapisz grę.

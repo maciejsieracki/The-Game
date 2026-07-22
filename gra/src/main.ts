@@ -475,6 +475,7 @@ import {
   setLastPlayedSlotId, checkSaveIntegrity, AUTOSAVE_SLOT_ID,
   type SaveGame,
 } from './game/save';
+import { buildDefaultSaveLabel, type SaveLabelKind } from './game/save-label';
 import {
   diagInfo, diagWarn, diagError, installGlobalDiagHooks,
   toggleDiagPanel, copyDiagReport,
@@ -1598,7 +1599,7 @@ async function boot(): Promise<void> {
       const def = lookupUnitDef(completed.id);
       const ruch = normFieldVal(def['Ruch'], 2);
       const role = String(def['Rola'] ?? def['Rola (linia)'] ?? '');
-      const isSuper = normFieldVal(def['Super'], 0) === 1;
+      const isSuper = def['Super-jednostka'] === 'TAK';
       const newUnitId = 'prod_' + turn + '_' + cityId + '_' + Math.random().toString(36).slice(2);
       units.push({
         id: newUnitId,
@@ -3793,6 +3794,14 @@ async function boot(): Promise<void> {
     let endTurnInProgress = false;
     /** Jednostki gracza ukończone w ticku end-turn — ukryte do końca tury AI. */
     const deferredPlayerUnitRevealIds = new Set<string>();
+    /** Prompty połączenia armii odłożone do startu tury gracza (produkcja / ruch w ticku end-turn). */
+    type DeferredMergePrompt = {
+      movedUnitIds: string[];
+      fromQ: number;
+      fromR: number;
+      moveCost: number;
+    };
+    const deferredMergePrompts: DeferredMergePrompt[] = [];
 
     // -----------------------------------------------------------------------
     // Fog of War state
@@ -4329,6 +4338,16 @@ async function boot(): Promise<void> {
       const existing = onHex.filter(x => !movedSet.has(x.id));
       if (existing.length === 0) return;
 
+      if (endTurnInProgress) {
+        deferredMergePrompts.push({
+          movedUnitIds: [...movedUnitIds],
+          fromQ,
+          fromR,
+          moveCost,
+        });
+        return;
+      }
+
       const arrivingUnits = onHex.filter(x => movedSet.has(x.id));
       const arrivingRow = arrivingUnits.length === 1
         ? mergeUnitRow(arrivingUnits[0]!)
@@ -4366,6 +4385,7 @@ async function boot(): Promise<void> {
             }
           }
           refreshD1bHud();
+          flushDeferredMergePrompts();
         },
         onSeparate: () => {
           const bounces = assignBounceHexesForUnits(
@@ -4399,8 +4419,17 @@ async function boot(): Promise<void> {
             2800,
           );
           refreshD1bHud();
+          flushDeferredMergePrompts();
         },
       });
+    }
+
+    /** Po starcie tury gracza: pokaż odłożone prompty połączenia armii (kolejno). */
+    function flushDeferredMergePrompts(): void {
+      if (deferredMergePrompts.length === 0 || endTurnInProgress) return;
+      if (isArmyMergePanelOpen()) return;
+      const next = deferredMergePrompts.shift()!;
+      promptMergeIfCoLocated(next.movedUnitIds, next.fromQ, next.fromR, next.moveCost);
     }
 
     function afterPlayerUnitSpawned(newUnitId: string): void {
@@ -7572,7 +7601,7 @@ async function boot(): Promise<void> {
 
     function openSaveGameDialog(): void {
       showSaveGameDialog({
-        defaultLabel: `Zapis · tura ${turn}`,
+        defaultLabel: currentSaveLabel('manual'),
         turn,
         onSave: (slotId, label) => {
           const ok = persistSaveToSlot(slotId, label);
@@ -8685,7 +8714,7 @@ async function boot(): Promise<void> {
           const def = lookupUnitDef(typeId);
           const ruch = normFieldVal(def['Ruch'], 2);
           const role = String(def['Rola'] ?? def['Rola (linia)'] ?? '');
-          const isSuper = normFieldVal(def['Super'], 0) === 1;
+          const isSuper = def['Super-jednostka'] === 'TAK';
           const newUnitId = 'wioska_' + turn + '_' + q + '_' + r + '_' + Math.random().toString(36).slice(2);
           units.push({
             id: newUnitId,
@@ -11199,6 +11228,24 @@ async function boot(): Promise<void> {
       }, { defaultAction: 'manual' });
     }
 
+    /** Domyślna nazwa sejwu z kontekstu bieżącej rozgrywki (stolica, rok, mapa, trudność). */
+    function currentSaveLabel(kind: SaveLabelKind = 'manual'): string {
+      const capId = capitalCityIdForOwner(0);
+      let headline = capId ? (cities.find(c => c.id === capId)?.name ?? '') : '';
+      if (!headline) headline = cities.find(c => c.ownerId === 0)?.name ?? '';
+      if (!headline) {
+        headline = clusterPlayerStartCityName
+          || playerStartCityName(data.civs, _menuCivId, data.cityNamesPools);
+      }
+      return buildDefaultSaveLabel({
+        kind,
+        turn,
+        headline,
+        mapSize: _menuMapSize,
+        difficulty: _menuDifficulty,
+      });
+    }
+
     /**
      * Snapshot stanu gry do SaveGame (bez zapisu na dysk).
      */
@@ -11239,7 +11286,7 @@ async function boot(): Promise<void> {
         diploRelations: diploSave,
         tradeRoutes:    tradeRoutes.slice(),
         meta: {
-          label: label ?? `Zapis · tura ${turn}`,
+          label: label ?? currentSaveLabel('manual'),
           savedAt,
           saveOrigin: _saveOrigin,
           newGameParams: _lastNewGameParams
@@ -11321,7 +11368,7 @@ async function boot(): Promise<void> {
      * Szybki zapis (Ctrl+S, przed bitwą) — slot autosave bez okna dialogowego.
      */
     function doQuickSave(showHintOnSuccess = true): boolean {
-      const ok = persistSaveToSlot(AUTOSAVE_SLOT_ID, `Szybki zapis · tura ${turn}`);
+      const ok = persistSaveToSlot(AUTOSAVE_SLOT_ID, currentSaveLabel('quick'));
       if (ok) {
         if (showHintOnSuccess) showHintMessage('Szybki zapis (tura ' + turn + ')', 3000);
         console.log('[Save] autosave tura=' + turn);
@@ -11359,7 +11406,7 @@ async function boot(): Promise<void> {
       } catch { idx = 0; }
       const slot = 'autosave-' + (idx + 1);
       try {
-        const ok = saveToLocal(slot, buildSaveGameSnapshot('Autozapis · tura ' + turn));
+        const ok = saveToLocal(slot, buildSaveGameSnapshot(currentSaveLabel('autosave')));
         if (ok) {
           setLastPlayedSlotId(slot);
           try { localStorage.setItem(AUTOSAVE_ROT_IDX_KEY, String(idx)); } catch { /* ignore */ }
@@ -12204,7 +12251,7 @@ async function boot(): Promise<void> {
                 const def = lookupUnitDef(rec.id);
                 const ruch = normFieldVal(def['Ruch'], 2);
                 const role = String(def['Rola'] ?? def['Rola (linia)'] ?? '');
-                const isSuper = normFieldVal(def['Super'], 0) === 1;
+                const isSuper = def['Super-jednostka'] === 'TAK';
                 const newUnitId = 'rec_' + turn + '_' + cid + '_' + Math.random().toString(36).slice(2);
                 units.push({
                   id: newUnitId,
@@ -12901,15 +12948,15 @@ async function boot(): Promise<void> {
         // Refresh fog after end-turn so new unit positions update visibility.
         refreshFog();
         executePlannedMarchesEndTurn();
-        flushDeferredPlayerUnitReveals();
         setTurnTransition(100, `Tura ${turn} — twoja kolej`, 'Gracz', turn);
         await yieldTurnTransitionUi();
         } catch (errEndTurn) {
           console.error('[EndTurn] Blad przejscia tury:', errEndTurn);
         } finally {
-          flushDeferredPlayerUnitReveals();
           endTurnTransition();
           endTurnInProgress = false;
+          flushDeferredPlayerUnitReveals();
+          flushDeferredMergePrompts();
         }
         })();
         return;

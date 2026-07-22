@@ -11,9 +11,17 @@ swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drug
 
 ## ROBOCZA (gra-robocza\Gra-ROBOCZA.html — wskazywana przez START.html)
 
+- 2026-07-22 · stempel: ROBOCZA · **7238588c** · md5 pliku `7238588c73778b8761ec5bf999268b09` · **FIX: dialog POŁĄCZENIE ARMII odłożony do startu tury gracza** — na `d7ad2f76`:
+  **Bug Macieja:** dialog łączenia armii („POŁĄCZENIE ARMII") pojawiał się w trakcie tury przeciwnika (produkcja end-turn: np. Wojownik na heks z Oszczepnikiem). **Fix:** `deferredMergePrompts` — kolejka promptów; `promptMergeIfCoLocated` odłożone gdy `endTurnInProgress`; `flushDeferredMergePrompts()` po „Tura N — twoja kolej" (razem z `flushDeferredPlayerUnitReveals`). Rush-buy / ruch w swojej turze bez zmian (natychmiast).
+  tsc=0 · unit-replace 10/10 · publish `gra-robocza/Gra-ROBOCZA.html`. · **AKTUALNA** · Test: stamp `7238588c` · Rekrutuj na heks z jednostką → Zakończ turę → dialog dopiero po AI.
+
+- 2026-07-22 · stempel: ROBOCZA · **d7ad2f76** · md5 pliku `d7ad2f76e755e42352bb421a1a19c2fa` · **UI: opisowe nazwy zapisów** — na `c72ab1b8`:
+  **Zapis gry (Maciej):** domyślna nazwa sejwu z kontekstu rozgrywki zamiast generycznego „Zapis · tura N". Format: `{stolica} · rok {YYYY} p.n.e. · tura {N} · {rozmiar mapy} · {trudność}`; szybki zapis i autozapis z prefiksem. Moduł `save-label.ts`, pole nazwy max 72 znaki.
+  tsc=0 · save-label-test OK · publish `gra-robocza/Gra-ROBOCZA.html`. · **ZASTĄPIONA** (→ `7238588c`) · Test: stamp `d7ad2f76` · Menu pauzy → Zapisz grę → nazwa np. „Ateny · rok 3500 p.n.e. · tura 10 · Standardowy · Normalny".
+
 - 2026-07-22 · stempel: ROBOCZA · **c72ab1b8** · md5 pliku `c72ab1b8c45c61364f754daf085ae41f` · **FIX: widoczność nowych jednostek po end-turn** — na `2f32fbea`:
   **Bug Macieja:** jednostki z produkcji/rekrutacji pojawiały się na mapie od razu po „Zakończ turę", zanim ruch AI. **Fix:** `deferredPlayerUnitRevealIds` — ukryte w renderze do końca fazy AI; `flushDeferredPlayerUnitReveals()` przy starcie nowej tury gracza. Rush-buy w trakcie tury bez zmian (natychmiast).
-  tsc=0 · unit-replace 10/10 · publish `gra-robocza/Gra-ROBOCZA.html`. · **AKTUALNA** · Test: stamp `c72ab1b8` · Rekrutuj → Zakończ turę → jednostka widoczna dopiero po ruchu AI.
+  tsc=0 · unit-replace 10/10 · publish `gra-robocza/Gra-ROBOCZA.html`. · **ZASTĄPIONA** (→ `d7ad2f76`) · Test: stamp `c72ab1b8` · Rekrutuj → Zakończ turę → jednostka widoczna dopiero po ruchu AI.
 
 - 2026-07-22 · stempel: ROBOCZA · **2f32fbea** · md5 pliku `2f32fbea89183d908099e984414db2cb` · **UI: Ranking Moc ↔ mgła wojny (FoW)** — na `6a9b8e72`:
   **Ranking Moc (Maciej):** widoczność listy powiązana ze stanem mgły wojny zamiast osobnego przełącznika testowego. **FoW włączony (domyślnie / F):** tylko odkryte pełne cywilizacje + gracz (bez miast-państw). **FoW wyłączony (F / baton minimapy):** wszystkie pełne cywilizacje. Usunięto `debugPowerRankingAll` (URL/localStorage/checkbox [TEST]).

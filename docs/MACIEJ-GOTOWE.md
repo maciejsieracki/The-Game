@@ -4,7 +4,32 @@
 > **Czat:** krótko **`✅ Gotowe:`** / **`⏸️ Czeka:`** · **Ten plik:** pełniejszy zapis tego samego.  
 > Szczegóły techniczne → handoff w `dyspozycje/_handoff/` · operacja → `dyspozycje/DZIENNIK-MASTERA.md`
 
-**Ostatnia aktualizacja:** 2026-07-22 (FIX jednostki end-turn @ c72ab1b8)
+**Ostatnia aktualizacja:** 2026-07-22 (FIX dialog POŁĄCZENIE ARMII @ 7238588c)
+
+---
+
+## [14:35] ✅ Gotowe — dialog POŁĄCZENIE ARMII dopiero na starcie Twojej tury
+
+| | |
+|---|---|
+| **Co** | Dialog łączenia armii nie wyskakuje w trakcie tury przeciwnika |
+| **Bug** | Nowa jednostka z produkcji end-turn na heks z inną jednostką → dialog „POŁĄCZENIE ARMII" w trakcie ruchów AI |
+| **Fix** | Kolejka `deferredMergePrompts` — prompt po overlay „Tura N — twoja kolej" (spójnie z odłożonym revealem jednostek) |
+| **Rush / ruch w turze** | Bez zmian — dialog natychmiast |
+| **md5** | `7238588c73778b8761ec5bf999268b09` · stamp `7238588c` |
+| **Od Ciebie** | Ctrl+F5 · stamp `7238588c` · rekrutuj na heks z jednostką → Zakończ turę → dialog dopiero po AI |
+
+---
+
+## [14:30] ✅ Gotowe — opisowe nazwy zapisów
+
+| | |
+|---|---|
+| **Co** | Dialog „Zapisz grę" proponuje nazwę z kontekstu rozgrywki zamiast „Zapis · tura N" |
+| **Format** | `{stolica} · rok {YYYY} p.n.e. · tura {N} · {mapa} · {trudność}` — np. „Ateny · rok 3500 p.n.e. · tura 10 · Standardowy · Normalny" |
+| **Szybki zapis / autozapis** | Ten sam kontekst z prefiksem „Szybki zapis ·" / „Autozapis ·" |
+| **md5** | `d7ad2f76e755e42352bb421a1a19c2fa` · stamp `d7ad2f76` |
+| **Od Ciebie** | Ctrl+F5 · stamp `d7ad2f76` · menu pauzy → Zapisz grę → sprawdź proponowaną nazwę |
 
 ---
 
