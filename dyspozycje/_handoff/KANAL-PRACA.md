@@ -2806,3 +2806,12 @@ Fix: `CIVILIAN_TYPE_IDS` fallback; kotwica zawsze pierwsza w rosterze; cywile ni
 Bramki: tsc=0 · battle-roster 7/7 · post-battle-map 21/21.
 Publish ROBOCZA: stamp **04f98d66** · md5 `04f98d66da71c76b3880dce7121dc916`.
 CZEKAM-NA: Maciej — `git pull` → Ctrl+F5 START.html → stamp `04f98d66` → armia 2 hex A + zwiadowca hex B → atak miasta C → wygrana → armia na C, zwiadowca na B bez merge.
+
+## [06:45 PL, 2026-07-22] INTEGRATOR → Maciej — MAPA: granice państwa szersze + 30% alpha
+
+Decyzja Macieja: szerokość pasa ×2,5 (~+150%); przezroczystość 30%.
+Było: `TERRITORY_BORDER_BAND_WIDTH=0.15`, `TERRITORY_BORDER_OPACITY=0.5`.
+Jest: `0.375` / `0.3` — `gra/src/render/rangeOverlay.ts`.
+Bramki: tsc=0 · territory-border-test 9/9.
+Publish ROBOCZA: stamp **1adb8d25** · md5 `1adb8d25fe20ad3ef0ce45341f55092a`.
+CZEKAM-NA: Maciej — `git pull` → Ctrl+F5 START.html → stamp `1adb8d25` → mapa → granice wyraźnie szersze, delikatniejsze.

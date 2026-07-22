@@ -4,7 +4,20 @@
 > **Czat:** krótko **`✅ Gotowe:`** / **`⏸️ Czeka:`** · **Ten plik:** pełniejszy zapis tego samego.  
 > Szczegóły techniczne → handoff w `dyspozycje/_handoff/` · operacja → `dyspozycje/DZIENNIK-MASTERA.md`
 
-**Ostatnia aktualizacja:** 2026-07-22 (zwiadowca sąsiad po zdobyciu miasta)
+**Ostatnia aktualizacja:** 2026-07-22 (granice państwa — szerokość + alpha)
+
+---
+
+## [2026-07-22] ✅ Gotowe — granice państwa szersze i bardziej przezroczyste
+
+| | |
+|---|---|
+| **Co** | Obrys terytorium na mapie: pas **2,5× szerszy**, alpha **30%** (było 50%) |
+| **Plik** | `gra/src/render/rangeOverlay.ts` — `TERRITORY_BORDER_BAND_WIDTH` / `TERRITORY_BORDER_OPACITY` |
+| **Było → jest** | width **0.15 → 0.375** · opacity **0.5 → 0.3** |
+| **md5** | `1adb8d25fe20ad3ef0ce45341f55092a` · stamp `1adb8d25` |
+| **Bramki** | tsc=0 · territory-border-test 9/9 |
+| **Od Ciebie** | `git pull` → Ctrl+F5 · `gra-robocza/START.html` → stamp `1adb8d25` → mapa → sprawdź widoczność granic |
 
 ---
 

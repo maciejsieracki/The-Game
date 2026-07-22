@@ -242,8 +242,8 @@ export const RELIGION_RANGE_STYLE: RangeOverlayStyle = {
 };
 
 /** Obrys granicy państwa — szeroki pas (world units), nie cienka linia WebGL 1px. */
-export const TERRITORY_BORDER_BAND_WIDTH = 0.15;
-export const TERRITORY_BORDER_OPACITY = 0.5;
+export const TERRITORY_BORDER_BAND_WIDTH = 0.375;
+export const TERRITORY_BORDER_OPACITY = 0.3;
 export const TERRITORY_BORDER_Y_OFFSET = 0.042;
 
 function segmentOutwardNormal(
