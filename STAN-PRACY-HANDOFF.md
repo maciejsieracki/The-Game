@@ -21,7 +21,9 @@ git status --short
 - Jeśli w `gra/src` lub `gra/data` są **niezacommitowane zmiany** — ktoś jest w połowie pracy. NIE nadpisuj ich, NIE rób `git checkout`/`git stash` na tych plikach. Najpierw ustal z właścicielem, co to jest.
 - **Zawsze przed pracą uruchom bramki** (sekcja 7), żeby wiedzieć, co jest sprawne, a co było zepsute PRZED Tobą.
 
-**Stan na 2026-07-22 (sesja batch):** deploy ROBOCZA **`3613d5d4`** (md5 `3613d5d4ca248a3fa3f6879061aad3dc`) — balans Manpower + zbiorczy deploy fixów sesji (dyplomacja, ekonomia, mapa, bitwa, badania). **Manpower:** koszt rekrutacji ×10 (`manpowerNaJednostke = manpowerNaLudka`); regen max/turę **5%** (było 10%). Czeka: `git pull` lokalnie + smoke właściciela.
+**Stan na 2026-07-22 (NAJNOWSZY, po naprawach audytu):** deploy ROBOCZA **`80a32769`** — 51 napraw audytu-53 (log: `dyspozycje/AUDYT-NAPRAWY-LOG.md`), po incydencie kolizji sesji (opis w KANAL-PRACA). Drzewo czyste, 7 commitów lokalnych czeka na „push" właściciela. Bramki: tsc=0, combat/tech/research/unit-replace zielone; logic-test 6 faili = dług fixture po balansie badania ×2 (TODO integratora).
+
+*(poprzedni stan 2026-07-22, sesja batch):* deploy ROBOCZA **`3613d5d4`** (md5 `3613d5d4ca248a3fa3f6879061aad3dc`) — balans Manpower + zbiorczy deploy fixów sesji (dyplomacja, ekonomia, mapa, bitwa, badania). **Manpower:** koszt rekrutacji ×10 (`manpowerNaJednostke = manpowerNaLudka`); regen max/turę **5%** (było 10%). Czeka: `git pull` lokalnie + smoke właściciela.
 
 *(poprzedni stan 2026-07-21: deploy `20239659`)*
 
@@ -200,6 +202,8 @@ node tools/trade-routes-income-test.cjs  # 49/49
 ---
 
 ## 8. 📋 CO ZOSTAŁO DO ZROBIENIA
+- **[ODLOZONE — decyzja Macieja 2026-07-22] Wielka Kuznia (epokaWejscia=4) i Lazaret (5) niebudowalne** (audyt #41): epoka gracza konczy sie na 3, a techy tier 8-9 obiecuja te budynki. UWAGA: w buildings.json:1283 jest komentarz "PARKOWANIE poza cap v0.1" — moze byc celowe. Opcje: A) obnizyc epokaWejscia do 3 (odparkowac), B) zostawic + mechanizm parkowania jak przy cudach. Wracamy na sygnal Macieja; do tego czasu NIE zmieniac.
+
 
 **Handel — kolejne etapy epiku (design zamknięty, patrz §9):**
 - **E6** — AI proaktywnie proponujące umowy handlowe + **obniżony próg** zawarcia (dziś `progHandelRelacja=100` ≈ sojusz; dar ma 30). Dziś trasy powstają tylko z perspektywy gracza; AI↔AI trade nie istnieje.
