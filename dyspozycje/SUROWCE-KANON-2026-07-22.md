@@ -95,7 +95,7 @@ Powstają **wyłącznie w budynku miasta** (konwerter co turę). Wymagają **akt
 1. **Ceramika** — naczynia do składowania (amfora, dzbany, beczki gliniane).
 2. **Sól** — konserwacja żywności; **bez soli nie można składować żywności** → Spichlerz niedostępny bez **aktywnej soli** (warzelnia soli na wybrzeżu).
 
-**Uzasadnienie projektowe (Maciej):** Żywność i zapasy przechowywane są w naczyniach ceramicznych **i** wymagają soli do konserwacji — stąd obie bramki przed Spichlerzem. Gracz musi uruchomić **Garncarnię** (ceramika) **oraz** **Warzelnię soli** na wybrzeżu (sól).
+**Uzasadnienie projektowe (Maciej):** O spichlerzu — przecież wszystko się składa w ceramice: żywność i zapasy przechowywane są w naczyniach ceramicznych (amforach, dzbanch, beczkach glinianych), stąd **ceramika jest wymagana do budowy Spichlerza** — gracz musi najpierw uruchomić produkcję Garncarni. Do konserwacji potrzebna jest też **sól** (druga bramka: Warzelnia soli na wybrzeżu).
 
 | Aspekt | Kanon |
 |---|---|
