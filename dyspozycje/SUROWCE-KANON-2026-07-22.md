@@ -19,7 +19,7 @@
 | 5 | **Reguła dostępu** | **Każdy surowiec oprócz żywności** wymaga **ulepszenia terenu LUB budynku miasta**, aby być **produkowany / aktywny**. Żywność = wyjątek (plony bazowe lądu). | Faza 1 wdrożona z wyjątkami tartak/kamieniołom; **do domknięcia** wyjątek żywności w kodzie. |
 | 6 | **Receptura cegły** | **2 glina + 1 paliwo → 1 cegła** (nie 1+1). | `converters.ts` dziś: `glina:1, paliwo:1` — **do zmiany faza 2**. |
 | 7 | **Stal** | Potrzebna dopiero w **epoce Klasycznej** (Antyk wysoki / po Żelazo). **Niespójność do decyzji:** `buildings.json` → `wielka_kuznia` ma `epokaWejscia: 4` (Średniowiecze), tech „Obróbka żelaza" jest w epoce Żelazo (3). | Brak receptury `wielka_kuznia` w `converters.ts`. Żadna jednostka nie ma kosztu `stal`. |
-| 8 | **Spichlerz two-tier (Maciej 2026-07-22)** | **Spichlerz I (zbór):** bramka **tylko Ceramika** (Garncarnia). **Spichlerz II (upgrade):** wymaga **Soli** (warzelnia, wybrzeże). Bufor wzrostu po awansie: I = **50%**, II = **70%**. Zapasy wojska: I = **100 🍞**/spichlerz (jak dziś); II = **150 🍞**/spichlerz *(rekomendacja)* + opcj. +1 Zdrowie / +1 Sz w mieście. Szczegóły → **§ Spichlerz two-tier** poniżej. | Kod: jeden `spichlerz`, brak tierów; brak bramki ceramiki; brak soli w JSON. **Do wdrożenia faza 2.** |
+| 8 | **Spichlerz two-tier (Maciej 2026-07-22)** | **Spichlerz I (zbór):** bramka **tylko Ceramika** (Garncarnia). **Spichlerz II (upgrade):** wymaga **Soli** (warzelnia, wybrzeże). Bufor wzrostu po awansie: I = **50%**, II = **70%**. Zapasy wojska: I = **100 🍞**/spichlerz (jak dziś); II = **150 🍞**/spichlerz *(rekomendacja)*. Bonus miasta: I = **+1 Zdrowie / +1 Szczęście**; II = **+2 Zdrowie / +2 Szczęście**. Szczegóły → **§ Spichlerz two-tier** poniżej. | Kod: jeden `spichlerz`, brak tierów; brak bramki ceramiki; brak soli w JSON. **Do wdrożenia faza 2.** |
 
 ---
 
@@ -99,7 +99,7 @@ Powstają **wyłącznie w budynku miasta** (konwerter co turę). Wymagają **akt
 
 ---
 
-## Spichlerz two-tier — propozycja kanonu (Maciej 2026-07-22)
+## Spichlerz two-tier — kanon (Maciej 2026-07-22)
 
 > **Cel:** rozdzielić wczesny magazyn (naczynia) od konserwacji solnej (upgrade). Sól **nie** blokuje Spichlerza I — tylko upgrade do II.
 >
@@ -114,15 +114,15 @@ Powstają **wyłącznie w budynku miasta** (konwerter co turę). Wymagają **akt
 | **Bufor po wzroście pop** | **50%** (`spichlerz_zachowanie_po_wzroscie=0,5`) | **70%** (`spichlerz_ii_zachowanie=0,7`) |
 | **Odkładanie armii** | **100%** netto → zapasy państwa | **100%** *(rekomendacja: bez zmiany)* |
 | **Cap zapasów armii** | **+100 🍞** / spichlerz | **+150 🍞** / spichlerz *(zastępuje 100)* |
-| **Bonus miasta** | — | **+1 Zdrowie**, **+1 Szczęście** (konserwacja) |
+| **Bonus miasta** | **+1 Zdrowie**, **+1 Szczęście** (naczynia / zbiór) | **+2 Zdrowie**, **+2 Szczęście** (konserwacja solna; zastępuje bonus I w tym mieście) |
 | **UI** | „Spichlerz — zbór" | „Spichlerz — konserwowany" |
 
 ### Ścieżka upgrade
 
 ```
-Glina → Garncarnia → ceramika → Spichlerz I (50%, cap 100)
+Glina → Garncarnia → ceramika → Spichlerz I (50%, cap 100, +1 Zd, +1 Sz)
                                     ↓ sól aktywna
-                              Spichlerz II (70%, cap 150, +1 Zd, +1 Sz)
+                              Spichlerz II (70%, cap 150, +2 Zd, +2 Sz)
 ```
 
 **Bez Spichlerza (B5):** bufor → 0 po wzroście; armia bez kumulacji. Rekrutacja **nigdy** blokowana.
@@ -139,6 +139,25 @@ Glina → Garncarnia → ceramika → Spichlerz I (50%, cap 100)
 
 Bonus z **aktywnego dostępu w imperium**, domyślnie **nie** ze stocku magazynu. Pełne listy propozycji → czat Master 2026-07-22.
 
+### Decyzja Macieja — bonusy Spichlerza (2026-07-22 wieczór)
+
+| Tier | Zdrowie | Szczęście | Status |
+|---|---|---|---|
+| **Spichlerz I (zbór)** | **+1** | **+1** | ✅ **ZAMKNIĘTE** |
+| **Spichlerz II (konserwowany)** | **+2** | **+2** | ✅ **ZAMKNIĘTE** |
+
+Supersedes wcześniejszą propozycję Mastera (I = brak, II = +1/+1).
+
+**Konflikt z paczką ABC SP-TIER-Q1–Q5 (czat Master):**
+
+| ID | Temat | Po decyzji Macieja |
+|---|---|---|
+| **SP-TIER-Q1** | Cap armii tier II (100 vs 150) | **otwarte** — bonusy zamknięte; cap nadal rekomendacja A (150) |
+| **SP-TIER-Q2** | Zasięg bonusu soli | **otwarte** — bonus Spichlerza = lokalny w mieście z tierem (nie stock soli) |
+| **SP-TIER-Q3** | Per miasto vs imperium | **otwarte** |
+| **SP-TIER-Q4** | Koszt upgrade II | **otwarte** |
+| **SP-TIER-Q5** | Wyjątki „czystej infrastruktury" | **ZAMKNIĘTE częściowo** — Maciej: **Spichlerz I też daje +1/+1** (odrzucony wariant B: I bez bonusu) |
+
 ---
 
 ## C. Cross-reference — budynki vs surowce terenu
@@ -154,8 +173,8 @@ Bonus z **aktywnego dostępu w imperium**, domyślnie **nie** ze stocku magazynu
 | Piec hutniczy | ruda miedzi, paliwo | brąz |
 | Odlewnia żelaza | ruda żelaza, paliwo | żelazo |
 | Wielka kuźnia | żelazo, paliwo | stal |
-| **Spichlerz I** | **ceramika** (bramka budowy) | bufor 50%, zapasy armii +100 |
-| **Spichlerz II** | upgrade + **sól** | bufor 70%, zapasy armii +150, +Zd/+Sz |
+| **Spichlerz I** | **ceramika** (bramka budowy) | bufor 50%, zapasy armii +100, **+1 Zd / +1 Sz** |
+| **Spichlerz II** | upgrade + **sól** | bufor 70%, zapasy armii +150, **+2 Zd / +2 Sz** |
 
 ### C.2 Ulepszenia terenu — mapa (nie magazyn hodowli)
 
@@ -385,4 +404,4 @@ złoże soli (wybrzeże) ──→ warzelnia ──→ sól ──┐
 
 ---
 
-*Plik: `dyspozycje/SUROWCE-KANON-2026-07-22.md` · v5: Spichlerz two-tier + reguła bonusów (Maciej 2026-07-22) · v4: sól→Spichlerz · v3 audyt ceramika/cegła/sól · bez implementacji kodu.*
+*Plik: `dyspozycje/SUROWCE-KANON-2026-07-22.md` · v6: bonusy Spichlerz I +1/+1 · II +2/+2 (Maciej 2026-07-22 wieczór) · v5: two-tier · v4: sól→Spichlerz · bez implementacji kodu.*
