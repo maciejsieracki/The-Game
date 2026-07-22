@@ -1,6 +1,14 @@
-<title>Panel Dyplomacji — mockup v1.1 (TW:WH3-adapt, stół negocjacji · poprawki logiczne + styl 1E)</title>
-<style>
-  :root{
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><meta name="design_doc_mode" content="canvas"><style>
+:root{
     --gold:#e8d88a; --gold-dim:rgba(232,216,138,.30); --gold-bright:#f4e6a8;
     --panel:linear-gradient(180deg,rgba(18,24,32,.97),rgba(8,10,16,.97));
     --panel-solid:#0e141c; --border:rgba(232,216,138,.45); --border-soft:rgba(232,216,138,.22);
@@ -201,9 +209,7 @@
 
   /* Węższe ekrany: najpierw zwijamy TYLKO wewnętrzne 3 kolumny stołu negocjacji —
      karty stron ZOSTAJĄ lewo/prawo. Dopiero na telefonie (≤720px) stackujemy pionowo. */
-  @media (max-width:1120px){.neg-table{grid-template-columns:1fr}.card{flex:0 0 220px;width:220px}}
-  @media (max-width:900px){.wrap{padding:10px}.newtag{display:none}.relbreak{grid-template-columns:1fr}.relcol.pos{border-right:none;border-bottom:1px solid var(--border-soft)}}
-  @media (max-width:720px){.main-row{flex-wrap:wrap}.card{width:100%;flex:1 1 auto}}
+  /* KANON: media-queries usunięte — stała szerokość projektowa 1792px (responsywność w wersji roboczej .html) */
 
   /* v1.1 — hover 1E + złoty primary z kanonu */
   .deal:not(.locked):not(.active):hover{border-color:var(--gold);box-shadow:0 0 10px rgba(232,216,138,.25)}
@@ -220,7 +226,9 @@
   .treaty .ttip{margin-left:auto;align-self:center}
   .treaty .brk{margin-left:0;padding:5px 6px;display:inline-flex;align-items:center;line-height:0}
   .treaty .brk svg{width:14px;height:14px}
-</style>
+/* KANON: stała szerokość projektowa (canvas pan/zoom) — media-queries poglądowe, nieaktywne */
+.wrap{width:1792px;max-width:1792px}
+</style></helmet>
 
 <div class="wrap">
   <div class="caption">
@@ -504,3 +512,7 @@
     <span class="fk" style="width:100%;margin-top:2px;color:var(--dim)">Bez zmian z kanonu: paski Zaufanie/Respekt, badge nastawienia, lista znanych frakcji (zasygnalizowana zakładką u góry środka).</span>
   </div>
 </div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{ &quot;$preview&quot;: { &quot;width&quot;: 1792 } }"></script>
+</body>
+</html>
