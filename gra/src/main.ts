@@ -12945,10 +12945,6 @@ async function boot(): Promise<void> {
             const allOwners = new Set<number>([0]);
             for (const u of units) { if (u.ownerId >= 0) allOwners.add(u.ownerId); }
             for (const c of cities) { if (c.ownerId >= 0) allOwners.add(c.ownerId); }
-            // #48: cywilizacje wyeliminowane (jednostki-sieroty w polu) wykluczone
-            // z mianownika dominacji — inaczej ich Power liczy się podwójnie
-            // (raz jako zdobycz zwycięzcy, raz jako moc ownera-widma).
-            for (const oid of eliminatedOwners) allOwners.delete(oid);
             const vPlayers: VictoryPlayer[] = [];
             for (const oid of allOwners) {
               vPlayers.push({

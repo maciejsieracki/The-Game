@@ -282,3 +282,7 @@ Pełna lista: `PLAN-NAPRAWCZY-AUDYT-20-POTWIERDZONE.md` § „Zakres — NIE”.
 | #71 | niska | assignAiCivTypes: nadmiarowi AI dostaja identyczny typ spoza wylosowanej puli aktywnych | Plik: gra/src/game/civ-roster.ts, funkcja assignAiCivTypes, linie ~101-107 (przed naprawą)… | ✅ |
 | #72 | niska | Śmierć z głodu usuwa jednostki bez sprzątania oblężenia i sync garnizonu | Bug #72 (NISKA) w gra/src/main.ts — blok obsługi śmierci z głodu wojska gracza (wywołanie applyArmyStarvationHpLoss w sekcji EmpireFood, wewnątrz `if (starv.destroyedIds.length > 0) { ..… | ✅ |
 | #73 | niska | _removeStatChip dispose'uje teksture wspoldzielona z statTexCache; cache serwuje martwe tekstur… | Plik: gra/src/render/cities.ts, metoda _removeStatChip (linie ~581-590)… | ✅ |
+
+## KOREKTA 2026-07-22: #48 WYCOFANE — decyzja właściciela (gameplay)
+
+Maciej: liczenie Mocy wyeliminowanych cywilizacji w mianowniku dominacji to CELOWA decyzja gameplayowa, nie błąd. Naprawa #48 (pętla `allOwners.delete(oid)` w VICTORY CHECK) usunięta, przywrócony stan sprzed. Status #48 w raporcie: NIE-BŁĄD / decyzja projektowa. ⚠️ PRZYSZŁE AUDYTY: NIE raportować tego jako defektu (dopisane do listy „celowe").
