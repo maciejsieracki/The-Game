@@ -2813,5 +2813,5 @@ Decyzja Macieja: szerokość pasa ×2,5 (~+150%); przezroczystość 30%.
 Było: `TERRITORY_BORDER_BAND_WIDTH=0.15`, `TERRITORY_BORDER_OPACITY=0.5`.
 Jest: `0.375` / `0.3` — `gra/src/render/rangeOverlay.ts`.
 Bramki: tsc=0 · territory-border-test 9/9.
-Publish ROBOCZA: stamp **1adb8d25** · md5 `1adb8d25fe20ad3ef0ce45341f55092a`.
-CZEKAM-NA: Maciej — `git pull` → Ctrl+F5 START.html → stamp `1adb8d25` → mapa → granice wyraźnie szersze, delikatniejsze.
+Publish ROBOCZA: stamp **4332ae45** · md5 `4332ae45d7d58b706e5a68a9882f8503`.
+CZEKAM-NA: Maciej — `git pull` → Ctrl+F5 START.html → stamp `4332ae45` → mapa → granice wyraźnie szersze, delikatniejsze.

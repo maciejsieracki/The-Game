@@ -11,13 +11,13 @@ swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drug
 
 ## ROBOCZA (gra-robocza\Gra-ROBOCZA.html — wskazywana przez START.html)
 
-- 2026-07-22 · stempel: ROBOCZA · **1adb8d25** · md5 pliku `1adb8d25fe20ad3ef0ce45341f55092a` · **MAPA: granice państwa — szersze + bardziej przezroczyste** — na `04f98d66`:
+- 2026-07-22 · stempel: ROBOCZA · **4332ae45** · md5 pliku `4332ae45d7d58b706e5a68a9882f8503` · **MAPA: granice państwa — szersze + bardziej przezroczyste** — na `04f98d66`:
   **Decyzja Macieja:** szerokość pasa ×2,5 (wzrost ~150%); alpha 30%. **Było:** `TERRITORY_BORDER_BAND_WIDTH=0.15`, `TERRITORY_BORDER_OPACITY=0.5`. **Jest:** `0.375` / `0.3` w `gra/src/render/rangeOverlay.ts`.
-  tsc=0 · territory-border-test 9/9 · publish `gra-robocza/Gra-ROBOCZA.html`. · **AKTUALNA** · Test: Ctrl+F5 START.html → stamp `1adb8d25` → mapa → granice państwa wyraźnie szersze, delikatniejsze (30% alpha).
+  tsc=0 · territory-border-test 9/9 · publish `gra-robocza/Gra-ROBOCZA.html`. · **AKTUALNA** · Test: Ctrl+F5 START.html → stamp `4332ae45` → mapa → granice państwa wyraźnie szersze, delikatniejsze (30% alpha).
 
 - 2026-07-22 · stempel: ROBOCZA · **04f98d66** · md5 pliku `04f98d66da71c76b3880dce7121dc916` · **FIX: zwiadowca sąsiad — domknięcie regresji Teby x3** — na `caa23af3`:
   **Bug (Maciej):** po ataku na miasto zwiadowca sąsiad nadal wchodził/merge'ował mimo fixów 5ce0dfb7 + caa23af3. **Luka:** `isCivilianUnit` tylko po `category` — jednostki ze starym zapisem / `domyslny` przechodziły do rosteru; `applyCityCaptureAfterBattle` używał `atkRoster[0]` zamiast kotwicy; brak guardów cywilów w `moveAtkRosterOntoBattleHex` / capture. **Fix:** `CIVILIAN_TYPE_IDS` fallback (typeId); kotwica zawsze pierwsza w rosterze; cywile nigdy nie relocate/capture/MP poza kotwicą; test Teby A+B vs miasto C.
-  tsc=0 · battle-roster-test 7/7 · post-battle-map-test 21/21 · publish `gra-robocza/Gra-ROBOCZA.html`. · **ZASTĄPIONA** (→ `1adb8d25`) · Test: Ctrl+F5 START.html → stamp `04f98d66`; armia 2 hex A + zwiadowca hex B → atak miasta C → wygrana → armia na mieście, zwiadowca na B bez merge.
+  tsc=0 · battle-roster-test 7/7 · post-battle-map-test 21/21 · publish `gra-robocza/Gra-ROBOCZA.html`. · **ZASTĄPIONA** (→ `4332ae45`) · Test: Ctrl+F5 START.html → stamp `04f98d66`; armia 2 hex A + zwiadowca hex B → atak miasta C → wygrana → armia na mieście, zwiadowca na B bez merge.
 
 - 2026-07-22 · stempel: ROBOCZA · **caa23af3** · md5 pliku `caa23af35f45ae9b7b0dbe4d6b2ab561` · **FIX: wsparcie ATK zostaje po zdobyciu miasta** — na `24cdcfe8`:
   **Bug (kanon §14):** po wygranej M×W+ cały roster ATK lądował na hexie miasta (`moveAtkRosterOntoBattleHex`); wspierający z sąsiedniego heksa merge'owali się ze stosem jak zwiadowca (fix 5ce0dfb7 dotyczył tylko cywilów). **Decyzja:** §13a M×W+ / §13b — tylko kotwica wchodzi na hex miasta; wspierający zostają. **Fix:** `post-battle-map.ts` — ruch tylko kotwicy + jednostek ze wspólnego hexu startowego (stos).

@@ -15,9 +15,9 @@
 | **Co** | Obrys terytorium na mapie: pas **2,5× szerszy**, alpha **30%** (było 50%) |
 | **Plik** | `gra/src/render/rangeOverlay.ts` — `TERRITORY_BORDER_BAND_WIDTH` / `TERRITORY_BORDER_OPACITY` |
 | **Było → jest** | width **0.15 → 0.375** · opacity **0.5 → 0.3** |
-| **md5** | `1adb8d25fe20ad3ef0ce45341f55092a` · stamp `1adb8d25` |
+| **md5** | `4332ae45d7d58b706e5a68a9882f8503` · stamp `4332ae45` |
 | **Bramki** | tsc=0 · territory-border-test 9/9 |
-| **Od Ciebie** | `git pull` → Ctrl+F5 · `gra-robocza/START.html` → stamp `1adb8d25` → mapa → sprawdź widoczność granic |
+| **Od Ciebie** | `git pull` → Ctrl+F5 · `gra-robocza/START.html` → stamp `4332ae45` → mapa → sprawdź widoczność granic |
 
 ---
 
