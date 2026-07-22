@@ -782,6 +782,7 @@ const BT_FLOOR_COLOR: Record<number, number> = {
 };
 
 const FOREST_CONE_COLOR  = 0x2f6b34; // tree crown (scene.ts)
+const FOREST_CONE_COLOR2 = 0x3d7a3a; // 2nd crown shade -- deterministic per-tree mix, avoids a flat forest
 const FOREST_TRUNK_COLOR = 0x5b4327; // tree trunk (scene.ts)
 const HILL_GRASS_COLOR   = 0x52823f; // raised grass bump (scene.ts)
 const SHRUB_COLOR        = 0x356b2c; // hill shrub
@@ -2600,10 +2601,14 @@ export class BattleScene {
     this.renderer.setPixelRatio(window.devicePixelRatio);
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type    = THREE.PCFSoftShadowMap;
+    // Filmic tone mapping gives the battlefield a "golden hour" depth instead
+    // of the flat, un-tonemapped look (same recipe as render/scene.ts civ style).
+    this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    this.renderer.toneMappingExposure = 1.05;
 
     this.scene = new THREE.Scene();
-    this.scene.background = new THREE.Color(0x12100e);
-    this.scene.fog = new THREE.FogExp2(0x12100e, 0.012);
+    this.scene.background = new THREE.Color(0x2a2620);
+    this.scene.fog = new THREE.FogExp2(0x2a2620, 0.012);
 
     // Camera centred on the PLAYABLE zone (default zoom). Full BF_COLS×BF_ROWS
     // map is larger — pan (strzałki / WASD) or drag to explore the margins.
@@ -2627,8 +2632,10 @@ export class BattleScene {
     this.camera = new THREE.PerspectiveCamera(48, 1, 0.1, 4000);
     this._applyCamera();
 
-    this.scene.add(new THREE.AmbientLight(0xfff8e0, 0.58));
-    const sun = new THREE.DirectionalLight(0xfff5c0, 1.25);
+    this.scene.add(new THREE.AmbientLight(0xfff8e0, 0.45));
+    const hemi = new THREE.HemisphereLight(0xbfd4ff, 0x4a4030, 0.35);
+    this.scene.add(hemi);
+    const sun = new THREE.DirectionalLight(0xffe8b0, 1.15);
     sun.position.set(cx + 20, 70, cz - 30);
     sun.target.position.set(cx, 0, cz);
     sun.castShadow = true;
@@ -2645,7 +2652,7 @@ export class BattleScene {
     fill.position.set(cx - 20, 24, cz + 30);
     this.scene.add(fill);
     // Softer fog so the far half of the big field doesn't grey out.
-    this.scene.fog = new THREE.FogExp2(0x12100e, 0.006);
+    this.scene.fog = new THREE.FogExp2(0x2a2620, 0.005);
 
     this._orderLinesGroup = new THREE.Group();
     this._orderLinesGroup.name = 'orderLines';
@@ -3502,17 +3509,17 @@ export class BattleScene {
     // surface, however, follows tileTopY(): on a hill it rises to the dome's
     // summit (HILL_SUMMIT_Y) so the figure stands ON the bump instead of being
     // buried in it; on flat ground it is y = 0 (= UNIT_Y).
-    const tileGeo = new THREE.BoxGeometry(TILE_S * 0.98, TILE_H, TILE_S * 0.98);
+    const tileGeo = new THREE.BoxGeometry(TILE_S * 0.995, TILE_H, TILE_S * 0.995);
     this.ownedGeos.push(tileGeo);
 
     // Material CACHE: thousands of tiles collapse onto a few dozen shared
     // materials keyed by quantised colour, so we don't allocate 1440 materials.
-    const matCache = new Map<number, THREE.MeshLambertMaterial>();
-    const tileMat = (color: number): THREE.MeshLambertMaterial => {
+    const matCache = new Map<number, THREE.MeshStandardMaterial>();
+    const tileMat = (color: number): THREE.MeshStandardMaterial => {
       const key = color & 0xffffff;
       let m = matCache.get(key);
       if (!m) {
-        m = new THREE.MeshLambertMaterial({ color: key });
+        m = new THREE.MeshStandardMaterial({ color: key, roughness: 0.95, metalness: 0.0 });
         matCache.set(key, m);
         this.ownedMats.push(m);
       }
@@ -3520,8 +3527,8 @@ export class BattleScene {
     };
 
     // Decoration tallies for instanced-mesh sizing.
-    const FOREST_TREES = 5; // crowns per forest tile
-    const HILL_SHRUBS  = 3; // shrubs per hill tile
+    const FOREST_TREES = 7; // crowns per forest tile
+    const HILL_SHRUBS  = 4; // shrubs per hill tile
     let forestTiles = 0, hillTiles = 0, waterTiles = 0, rockTiles = 0;
     for (let i = 0; i < tm.tiles.length; i++) {
       const k = tm.tiles[i] as number;
@@ -3535,8 +3542,14 @@ export class BattleScene {
     for (let col = 0; col < BF_COLS; col++) {
       for (let row = 0; row < BF_ROWS; row++) {
         const kind = tm.at(col, row);
-        const checker = ((col + row) % 2 === 0) ? 0.0 : 0.045;
+        const checker = ((col + row) % 2 === 0) ? 0.0 : 0.022;
         let c = lighten(BT_FLOOR_COLOR[kind] ?? 0x6fa84a, checker);
+        // Subtle deterministic per-tile tint (hash of position, not Math.random),
+        // quantised to a handful of buckets so the material CACHE above still
+        // collapses to a few dozen shared materials instead of one per tile.
+        const varianceStep = Math.floor(tileJitter(col, row, 101) * 5) - 2; // -2..2
+        const variance = varianceStep * 0.02; // -4%, -2%, 0, +2%, +4%
+        c = variance >= 0 ? lighten(c, variance) : blend(c, 0x000000, -variance);
         // Faint side tint marks the attacker / defender deploy ground.
         if (col <= ATK_FRONT_COL)      c = lighten(c, 0.05);
         else if (col >= DEF_FRONT_COL) c = blend(c, 0x9090a0, 0.07);
@@ -3567,6 +3580,8 @@ export class BattleScene {
       crowns.castShadow = true; crowns.receiveShadow = true;
       trunks.castShadow = true;
       const dummy = new THREE.Object3D();
+      const crownColorA = new THREE.Color(FOREST_CONE_COLOR);
+      const crownColorB = new THREE.Color(FOREST_CONE_COLOR2);
       let ti = 0;
       for (let col = 0; col < BF_COLS; col++) {
         for (let row = 0; row < BF_ROWS; row++) {
@@ -3586,6 +3601,9 @@ export class BattleScene {
             dummy.position.set(x + jx, (TILE_S * 0.22 + TILE_S * 0.31) * sc, z + jz);
             dummy.updateMatrix();
             crowns.setMatrixAt(ti, dummy.matrix);
+            // Two deterministic crown shades (hash of tile+tree index, not
+            // Math.random) so a forest reads as a mix of trees, not one flat colour.
+            crowns.setColorAt(ti, tileJitter(col, row, t + 50) < 0.5 ? crownColorA : crownColorB);
             ti++;
           }
         }
@@ -3593,6 +3611,7 @@ export class BattleScene {
       crowns.count = ti; trunks.count = ti;
       crowns.instanceMatrix.needsUpdate = true;
       trunks.instanceMatrix.needsUpdate = true;
+      if (crowns.instanceColor) crowns.instanceColor.needsUpdate = true;
       this.scene.add(trunks);
       this.scene.add(crowns);
     }
@@ -3709,8 +3728,8 @@ export class BattleScene {
     const worldW = BF_COLS * TILE_S;
     const worldH = BF_ROWS * TILE_S;
 
-    const gGeo = new THREE.PlaneGeometry(worldW * 1.5, worldH * 1.7);
-    const gMat = new THREE.MeshLambertMaterial({ color: 0x0a0908 });
+    const gGeo = new THREE.PlaneGeometry(worldW * 2.2, worldH * 2.2);
+    const gMat = new THREE.MeshLambertMaterial({ color: 0x1a1712 });
     this.ownedGeos.push(gGeo);
     this.ownedMats.push(gMat);
     const ground = new THREE.Mesh(gGeo, gMat);
@@ -3743,7 +3762,7 @@ export class BattleScene {
       g.rotateX(-Math.PI / 2);
       this.ownedGeos.push(g);
       const m = new THREE.MeshBasicMaterial({
-        color: 0x080808, transparent: true, opacity: 0.62, depthWrite: false,
+        color: 0x1c1813, transparent: true, opacity: 0.5, depthWrite: false,
       });
       this.ownedMats.push(m);
       const mesh = new THREE.Mesh(g, m);
@@ -16211,6 +16230,26 @@ function makeUnitBars(outlineColor: number, ammoShown: boolean = false): {
     ammo.fg.visible = false;
     ammo.bg.visible = false;
   }
+
+  // Small decorative side-colour pennant on a short mast above the bars.
+  // Lives in the SAME billboard group as the bars (frame/hp/ammo/morale), so it
+  // inherits their lookAt() billboarding and their disposal path automatically
+  // (all 4 unit-spawn call sites already traverse hpBarGroup and register every
+  // mesh's geometry/material for disposal) -- no changes needed elsewhere.
+  const mastH = 0.22;
+  const mastTopY = AMMOBAR_Y + BAR_OUTLINE_PAD + mastH;
+  const mastGeo = new THREE.CylinderGeometry(0.006, 0.008, mastH, 5);
+  const mastMat = new THREE.MeshBasicMaterial({ color: 0x2a2018 });
+  const mast    = new THREE.Mesh(mastGeo, mastMat);
+  mast.position.set(0, AMMOBAR_Y + BAR_OUTLINE_PAD + mastH * 0.5, BAR_OUTLINE_Z);
+  group.add(mast);
+
+  const flagW = 0.16, flagH = 0.11;
+  const flagGeo = new THREE.PlaneGeometry(flagW, flagH);
+  const flagMat = new THREE.MeshBasicMaterial({ color: outlineColor, side: THREE.DoubleSide });
+  const flag    = new THREE.Mesh(flagGeo, flagMat);
+  flag.position.set(flagW * 0.5, mastTopY - flagH * 0.5, BAR_OUTLINE_Z);
+  group.add(flag);
 
   return {
     hpBarGroup:  group,

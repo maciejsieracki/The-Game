@@ -244,7 +244,7 @@ export function generateBattleTerrain(opts: GenerateOpts): BattleTerrainMap {
   // --- 3) FOREST clusters: many woods scattered across the whole field, with a
   // couple of larger stands. Density scales with field area. ---
   const fieldArea = cols * rows;
-  const forestBlobs = Math.max(6, Math.round(fieldArea / 90)); // ~10-11 on 34x28
+  const forestBlobs = Math.max(6, Math.round(fieldArea / 70)); // ~13-14 on 34x28
   for (let b = 0; b < forestBlobs; b++) {
     const cr = 1 + Math.floor(rng() * (rows - 2));
     const cc = randInteriorCol();
@@ -254,7 +254,7 @@ export function generateBattleTerrain(opts: GenerateOpts): BattleTerrainMap {
   }
 
   // --- 4) HILLS clusters: raised strongpoints across the field. ---
-  const hillBlobs = Math.max(5, Math.round(fieldArea / 120)); // ~8 on 34x28
+  const hillBlobs = Math.max(5, Math.round(fieldArea / 100)); // ~10 on 34x28
   for (let b = 0; b < hillBlobs; b++) {
     const cr = 1 + Math.floor(rng() * (rows - 2));
     const cc = randInteriorCol();
@@ -263,7 +263,7 @@ export function generateBattleTerrain(opts: GenerateOpts): BattleTerrainMap {
   }
 
   // --- 5) ROCK accents: a generous scatter of single tiles on open ground. ---
-  const rockCount = Math.max(8, Math.round(fieldArea / 60)); // ~16 on 34x28
+  const rockCount = Math.max(8, Math.round(fieldArea / 50)); // ~19 on 34x28
   for (let k = 0; k < rockCount; k++) {
     const c = randInteriorCol();
     const r = Math.floor(rng() * rows);
