@@ -3034,3 +3034,9 @@ Scalanie zakończone: 51/51 napraw w kodzie (inwentaryzacja subagentem + odtworz
 - NIE PUSHNIĘTE — push na hasło właściciela.
 
 CZEKAM-NA: Maciej — playtest + decyzja #41 (Wielka Kuźnia: odparkować czy zostawić) + ewentualne „push".
+
+---
+
+## [2026-07-22] SESJA LOKALNA → WSZYSCY — re-deploy ROBOCZA `b6353296`: #48 WYCOFANE (celowy gameplay)
+
+Maciej: Moc wyeliminowanych w mianowniku dominacji = decyzja projektowa. Naprawa #48 cofnięta, dopisana do listy „celowe — nie raportować". Reszta 50 napraw bez zmian. VERIFY OK.
