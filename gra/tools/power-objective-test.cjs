@@ -76,6 +76,17 @@ const solo = P.computeObjectivePower({
 });
 ok(solo.power === 0, 'empty empire power 0');
 
+const kult = P.computeObjectivePower({
+  ...kalibracja,
+  kulturaImperium: 200,
+  miastaJednoscReligii: 4,
+});
+ok(kult.components.some(c => c.key === 'kultura' && c.points === 100),
+  'KULT-04: kultura 200 × 0.5 = 100');
+ok(kult.components.some(c => c.key === 'religia' && c.points === 100),
+  'KULT-04: religia 4 miasta × 25 = 100');
+ok(kult.power === r.power + 200, 'KULT-04: +200 power vs kalibracja');
+
 try { fs.unlinkSync(ENTRY); fs.unlinkSync(BUNDLE); } catch (_) {}
 
 console.log(`[power-objective-test] ${pass} OK, ${fail} FAIL`);

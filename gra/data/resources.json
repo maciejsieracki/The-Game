@@ -26,8 +26,14 @@
   {
     "Surowiec": "Ruda",
     "Typ": "surowy",
-    "Źródło / budynek": "złoże Ruda + Kopalnia",
-    "Uwagi": "wejscie Huty"
+    "Źródło / budynek": "złoże miedzi + Kopalnia miedzi",
+    "Uwagi": "wejscie Odlewni brązu (klucz stock: ruda)"
+  },
+  {
+    "Surowiec": "Ruda żelaza",
+    "Typ": "surowy",
+    "Źródło / budynek": "złoże żelaza + Kopalnia",
+    "Uwagi": "wejscie Odlewni żelaza (klucz stock: ruda_zelaza)"
   },
   {
     "Surowiec": "Bydło (krowa/wół)",
@@ -54,16 +60,16 @@
     "Uwagi": "Konnica (Brąz) i rydwany konne; NIEDOSTĘPNY u Majów/Ameryki (konie wyginęły w Nowym Świecie ~10 000 p.n.e.)"
   },
   {
-    "Surowiec": "Deski",
-    "Typ": "przetworzony",
-    "Źródło / budynek": "Tartak (z drewna)",
-    "Uwagi": "budulec"
-  },
-  {
     "Surowiec": "Paliwo (węgiel drzewny)",
     "Typ": "przetworzony",
-    "Źródło / budynek": "Mielerz (z drewna)",
+    "Źródło / budynek": "Mielerz (2 drewno → 1 paliwo)",
     "Uwagi": "wejscie Cegielni, Garncarni i Huty"
+  },
+  {
+    "Surowiec": "Sól",
+    "Typ": "surowy",
+    "Źródło / budynek": "złoże Sól (wybrzeże) + Warzelnia soli",
+    "Uwagi": "bramka Spichlerz II; konserwacja żywności"
   },
   {
     "Surowiec": "Cegła",

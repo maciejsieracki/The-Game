@@ -185,6 +185,21 @@ Skrót: bufor wzrostu zawsze; bez Spichlerza zerowanie przy awansie + wojsko bez
 | **Testy** | society **26/26** · wealth **28/28** · culture-religion **51/51** |
 
 ## 🧾 DECYZJE MACIEJA (świeże — echo, przed wdrożeniem)
+
+### Spichlerz / sól / bonusy (2026-07-23) — `B-SPIC-Q1…Q5`
+- **B-SPIC-Q1:** **C** — tier II: cap 150 + bufor 70% + Zd/Sz lokalnie · 🟡 ZAPISANA · `docs/decyzje/B-SPIC-2026-07-23.md`
+- **B-SPIC-Q2:** **A** — bonus soli tylko miasto ze Spichlerzem II
+- **B-SPIC-Q3:** **A** — budynki lokalnie; surowce imperium (aktywny dostęp)
+- **B-SPIC-Q4:** **A** — upgrade II przez kolejkę produkcji
+- **B-SPIC-Q5:** **B** — infrastruktura bez Sz/Zd
+- **Korekta:** odpowiedzi Q1C–Q5A z 2026-07-23 **nie** dotyczą kultury — błędny zapis w B-KULT-REL wycofany.
+
+### Kultura / religia (2026-07-22) — `B-KULT-REL-Q1…Q5`
+- **B-KULT-REL-Q1:** **A** — terytorium z progów kultury · ⏸️ hex-claim wdrożony błędnie — czeka revert
+- **B-KULT-REL-Q2:** **A** — konwersja religii → ✅ conquest-stability
+- **B-KULT-REL-Q3:** **A** — `cityTradeMultiplier` → 🔵 W TRAKCIE
+- **B-KULT-REL-Q4:** **C** — kultura+religia → Power · ⏸️ victory kultura wdrożone błędnie — czeka revert
+- **B-KULT-REL-Q5:** **A** — podwojone bonusy Sz → ✅ society-params
 - **P-C2-DEF (2026-07-01):** **A** — pkt Mocy z bitwy = **suma M_pole wroga przed walką**; **bez bonusu underdog**; remis = 0 → `docs/decyzje/P-C2-DEF-wygrana-bitwa-2026-07-01.md` · lane B ✅ · Integrator F 🟡
 - **P-C2-B* / P-ARMIA-B (2026-06-26):** Moc — Armia=suma siły bojowej; pkt za bitwę ważone siłą pokonanego. **Gate:** testy kalibracji + osobne ABC **P-C2-DEF** (wygrana mniejsza/większa armia).
 - **REMIND-START-A (2026-06-26):** złoże rezerwuje hex — brak ulepszenia gracza na złożu (handoff A+B).

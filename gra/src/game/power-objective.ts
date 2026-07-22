@@ -20,6 +20,8 @@ export interface PowerCoefficients {
   budynki: number;
   techZbadane: number;
   ulepszenieTerenu: number;
+  kulturaImperium: number;
+  religiaJednosc: number;
 }
 
 export interface EmpirePowerRaw {
@@ -40,6 +42,10 @@ export interface EmpirePowerRaw {
   budynki: number;
   techZbadane: number;
   ulepszeniaTerenu: number;
+  /** KULT-04 A — suma kulturaSkumulowana imperium. */
+  kulturaImperium?: number;
+  /** KULT-04 A — liczba miast z dominującą wiarą państwa. */
+  miastaJednoscReligii?: number;
   /**
    * Follow-up „Power-zdobycze" (Maciej 2026-07-21): trwały bonus po ELIMINACJI wroga
    * — CAŁE Power pokonanego w chwili eliminacji, zsumowane (per zwycięzca), nie
@@ -98,6 +104,8 @@ const DEFAULT_COEFF: PowerCoefficients = {
   budynki: 5,
   techZbadane: 20,
   ulepszenieTerenu: 5,
+  kulturaImperium: 0.5,
+  religiaJednosc: 25,
 };
 
 export function loadPowerCoefficients(raw: ParamsFile = powerParams as unknown as ParamsFile): PowerCoefficients {
@@ -116,6 +124,8 @@ export function loadPowerCoefficients(raw: ParamsFile = powerParams as unknown a
     budynki: n('budynki', DEFAULT_COEFF.budynki),
     techZbadane: n('tech_zbadane', DEFAULT_COEFF.techZbadane),
     ulepszenieTerenu: n('ulepszenie_terenu', DEFAULT_COEFF.ulepszenieTerenu),
+    kulturaImperium: n('kultura_imperium', DEFAULT_COEFF.kulturaImperium),
+    religiaJednosc: n('religia_jednosc', DEFAULT_COEFF.religiaJednosc),
   };
 }
 
@@ -159,6 +169,8 @@ export function computeObjectivePower(
     row('infra', 'Infrastruktura (budynki)', Math.max(0, input.budynki), coeff.budynki),
     row('tech', 'Odkrycia / tech', Math.max(0, input.techZbadane), coeff.techZbadane),
     row('ulepszenia', 'Ulepszenia terenu', Math.max(0, input.ulepszeniaTerenu), coeff.ulepszenieTerenu),
+    row('kultura', 'Kultura imperium', Math.max(0, input.kulturaImperium ?? 0), coeff.kulturaImperium),
+    row('religia', 'Jedność religii (miasta)', Math.max(0, input.miastaJednoscReligii ?? 0), coeff.religiaJednosc),
     // Follow-up „Power-zdobycze": wartość to już punkty (nie surowy licznik) -> coeff=1 stały.
     row('zdobycze', 'Zdobycze (eliminacje)', Math.max(0, input.zdobyczePower ?? 0), 1),
   ];

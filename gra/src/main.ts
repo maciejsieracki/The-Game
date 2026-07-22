@@ -422,6 +422,7 @@ import { armyFieldPower, isSiegeUnit, siegePower } from './game/unit-power';
 import { loadOrderParams, orderEffectsToYieldMults, pickRevoltMigrationTarget, type OrderYieldMults } from './game/order';
 import { loadCultureParams, accumulateCulture, cultureHappiness, cityBorderRadius, cultureThresholds,
          loadReligionParams, civReligion, civReligionForKey, religionHappiness, dominantReligion,
+         empireCultureTotal, countCitiesWithDominantStateReligion,
          makeRng, type CultureCity, type ReligionState,
          spreadReligion, type ReligionNeighbor,
          aggregateReligionEmpire, resolveCityReligionState, defaultCityReligionState,
@@ -437,6 +438,16 @@ import { computePowerContributionsCityEconomy, buildPowerSnapshots, type PowerOw
 import { citySightRadius, toggleTileWorker, cityRangeForPopulation, yieldOfMapHex, resolveWorkedTiles, seedReczneFromAuto, collectWorkedHexKeysForOwner, hexKeysWithinRadius, reconcileAllWorkedTiles } from './game/okolica';
 import { getCityResourceAccessForCity } from './game/resource-access';
 import { isForeignReligionDominant, resolveOwnCultureShare, stolicaEasyBonusActive } from './game/society-inputs';
+import {
+  tickCityCultureReligion,
+  conquestUnstableHappinessPenalty,
+  conquestNoGarrisonLawPenalty,
+  conquestRevoltRiskMultiplier,
+} from './game/conquest-stability';
+import {
+  applyCultureReligionPressureToTarget,
+  loadCulturePressureParams,
+} from './game/culture-religion';
 import { loadWealthParams, type RawWealthParamsJson } from './game/wealth';
 import { applyArmyStarvationHpLoss } from './game/army-starvation';
 import {
@@ -1003,6 +1014,21 @@ async function boot(): Promise<void> {
       const epoka = empireEpochForOwner(ownerId);
       const mpMults = civManpowerMultsForOwner(ownerId);
       const pobor = empirePoborTotals(cities, ownerId, epoka, mpMults.maxMult);
+      const ownerCities = cities.filter(c => c.ownerId === ownerId);
+      const cultureCities = ownerCities.map(c => ({
+        id: c.id,
+        ownerId: c.ownerId,
+        q: c.q,
+        r: c.r,
+        population: c.population,
+        kulturaSkumulowana: (c as { kultura?: number }).kultura ?? 0,
+      }));
+      const religionParams = loadReligionParams(data.societyParams, _menuDifficulty);
+      const stateRel = ownerReligionForOwnerId(ownerId);
+      const religionCities = ownerCities.map(c => ({
+        ownerId: c.ownerId,
+        religionState: resolvedCityReligion(c),
+      }));
       return computeObjectivePower({
         ownerId,
         epoka,
@@ -1011,11 +1037,15 @@ async function boot(): Promise<void> {
         wygraneBitwy: 0,
         sumaLudkow: pobor.sumaLudkow,
         rekrutEkw: rekrutUnitEquivalents(pobor.rekruci, epoka, mpMults.maxMult),
-        miasta: cities.filter(c => c.ownerId === ownerId).length,
+        miasta: ownerCities.length,
         heksyTerytorium: countTerritoryHexes(cityNodesForOwner(ownerId)),
         budynki: countBuildingsForOwner(ownerId),
         techZbadane: countTechForOwner(ownerId),
         ulepszeniaTerenu: countImprovementsForOwner(ownerId),
+        kulturaImperium: empireCultureTotal(cultureCities, ownerId),
+        miastaJednoscReligii: countCitiesWithDominantStateReligion(
+          religionCities, ownerId, stateRel, religionParams,
+        ),
         // Follow-up „Power-zdobycze": trwały bonus po eliminacji wroga (rekurencyjnie
         // złożony — jeśli ownerId sam kiedyś eliminował kogoś, tamten snapshot już
         // jest tu wliczony, więc łańcuch eliminacji sumuje się poprawnie).
@@ -1386,6 +1416,33 @@ async function boot(): Promise<void> {
         for (const bid of blt) ids.add(bid);
       }
       return ids;
+    }
+
+    /** Union aktywnych etykiet surowców imperium — bramki epok B-SUROW-BUD. */
+    function empireActiveResourceLabelsForOwner(ownerId: number): string[] {
+      const labels = new Set<string>();
+      const builtEmpire = empireBuiltIdsForOwner(ownerId);
+      for (const c of cities) {
+        if (c.ownerId !== ownerId) continue;
+        const builtIds = cityBuilt.get(c.id) ?? [];
+        const access = getCityResourceAccessForCity(
+          {
+            id: c.id,
+            q: c.q,
+            r: c.r,
+            population: c.population,
+            kulturaSkumulowana: (c as { kultura?: number }).kultura ?? 0,
+          },
+          map,
+          placedImprovementsForOwner(ownerId),
+          empireEpochForOwner(ownerId),
+          { builtIds, ownerId: String(ownerId) },
+        );
+        for (const l of access.active) labels.add(l);
+      }
+      if (builtEmpire.has('cegielnia')) labels.add('Cegła');
+      if (builtEmpire.has('garncarnia')) labels.add('Ceramika');
+      return [...labels];
     }
 
     /**
@@ -1878,6 +1935,10 @@ async function boot(): Promise<void> {
     const lastCityKulturaTick = new Map<string, number>();
     let powerSnapshotsForTurn: PowerOwnerSnapshot[] = [];
 
+    function territoryOwnerAtLive(q: number, r: number): number | null {
+      return territoryOwnerAt(q, r, buildAllTerritoryNodes());
+    }
+
     function cityNodesForOwner(ownerId: number): CityNode[] {
       return cities
         .filter(c => c.ownerId === ownerId)
@@ -1906,7 +1967,7 @@ async function boot(): Promise<void> {
       const out = new Map<string, PlacedLayers>();
       for (const [hexKey, layers] of placedImprovements) {
         const [qStr, rStr] = hexKey.split(',');
-        if (territoryOwnerAt(Number(qStr), Number(rStr), nodes) === ownerId) {
+        if (territoryOwnerAtLive(Number(qStr), Number(rStr)) === ownerId) {
           out.set(hexKey, layers);
         }
       }
@@ -2836,6 +2897,7 @@ async function boot(): Promise<void> {
           const c = cities.find(x => x.id === cityId);
           if (!c) return { potential: [], active: [] };
           const builtIds = cityBuilt.get(cityId) ?? [];
+          const oid = c.ownerId;
           return getCityResourceAccessForCity(
             {
               id: c.id,
@@ -2845,11 +2907,13 @@ async function boot(): Promise<void> {
               kulturaSkumulowana: (c as { kultura?: number }).kultura ?? 0,
             },
             map,
-            placedImprovementsForOwner(0),
-            player.era,
-            { builtIds, ownerId: String(0) },
+            placedImprovementsForOwner(oid),
+            empireEpochForOwner(oid),
+            { builtIds, ownerId: String(oid) },
           );
         },
+        getEmpireResourceAccess: (ownerId: number) => empireActiveResourceLabelsForOwner(ownerId),
+        getEmpireBuiltIds: (ownerId: number) => [...empireBuiltIdsForOwner(ownerId)],
         getHasKopalniaNaZlozuZelaza: () => empireHasKopalniaNaZlozuZelaza(placedImprovementsForOwner(0), map),
         // audyt #11: limit 1 żywej Super-jednostka na cywilizację -- nazwy (typeId)
         // jednostek TEGO ownera aktualnie żywych na mapie (respawn po śmierci działa
@@ -11747,6 +11811,7 @@ async function boot(): Promise<void> {
             empireEpochForOwner, unlockedTechSetForOwner,
             player.wzrostLudnosciPace ?? 'wysoki',
             tradeRouteCountByCity, tradeIncomeByCity,
+            cityRelig,
           );
           powerSnapshotsForTurn = buildPowerSnapshotsForTurn(econ);
           refreshObjectivePowerCache();
@@ -12045,23 +12110,39 @@ async function boot(): Promise<void> {
               const pracaRaw    = econTick ? econTick.praca   : 0;
               const kulturaTick = econTick ? econTick.kultura : 0;
 
-              const ownCultureShare = resolveOwnCultureShare(city as { ownCultureShare?: number; kulturaOwnShare?: number });
+              let ownCultureShare = resolveOwnCultureShare(city as { ownCultureShare?: number; kulturaOwnShare?: number });
 
-              // KULTURA
+              const builtIds = cityBuilt.get(cid) ?? [];
+
+              // RELIGIA (stan przed konwersją)
+              const ownRel = ownerReligionForOwnerId(city.ownerId);
+              let curRel: ReligionState = resolvedCityReligion(city);
+              let foreignReligionDominant = isForeignReligionDominant(curRel, ownRel, rp);
+
+              // Konwersja kultury + religii (B-KULT-REL Q2A)
+              const convTick = tickCityCultureReligion(
+                ownCultureShare,
+                curRel,
+                builtIds,
+                ownRel,
+                foreignReligionDominant,
+                cp,
+                rp,
+              );
+              ownCultureShare = convTick.ownCultureShare;
+              (city as { ownCultureShare?: number }).ownCultureShare = ownCultureShare;
+              curRel = convTick.religionState;
+              cityRelig.set(cid, curRel);
+              foreignReligionDominant = isForeignReligionDominant(curRel, ownRel, rp);
+
+              // KULTURA (kumulacja po konwersji share)
               const ccIn: CultureCity = { kulturaSkumulowana: (city as any).kultura ?? 0, ownCultureShare };
               const acc = accumulateCulture(ccIn, kulturaTick, cp);
               (city as any).kultura = acc.kulturaSkumulowana;
               const ccOut: CultureCity = { kulturaSkumulowana: acc.kulturaSkumulowana, ownCultureShare };
               const haKult = cultureHappiness(ccOut, cp);
 
-              const builtIds = cityBuilt.get(cid) ?? [];
-
-              // RELIGIA
-              const ownRel = ownerReligionForOwnerId(city.ownerId);
-              const curRel: ReligionState = resolvedCityReligion(city);
               const haRel = religionHappiness(curRel, ownRel, rp, builtIds.includes('swiatynia'));
-              const foreignReligionDominant = isForeignReligionDominant(curRel, ownRel, rp);
-              cityRelig.set(cid, curRel);
 
               // SPREAD RELIGION (step H): spread dominant faith to neighbours
               {
@@ -12099,6 +12180,58 @@ async function boot(): Promise<void> {
                 }
               }
 
+              // KULT-PRESJA: presja kultury/religii z sąsiednich miast w zasięgu okolicy
+              {
+                const cpPresja = loadCulturePressureParams(data.societyParams, difficulty);
+                const pressureRange = cityRangeForPopulation(city.population);
+                const stateRelMap = new Map<number, string | null>();
+                for (const oid of new Set(cities.map(cc => cc.ownerId))) {
+                  stateRelMap.set(oid, ownerReligionForOwnerId(oid));
+                }
+                const pressureCities = cities.map(cc => ({
+                  id: cc.id,
+                  ownerId: cc.ownerId,
+                  q: cc.q,
+                  r: cc.r,
+                  population: cc.population,
+                  kulturaSkumulowana: (cc as { kultura?: number }).kultura ?? 0,
+                  ownCultureShare: resolveOwnCultureShare(cc as { ownCultureShare?: number; kulturaOwnShare?: number }),
+                  religionState: resolvedCityReligion(cc),
+                  religionPressurePct: (cc as { religionPressurePct?: Record<number, number> }).religionPressurePct,
+                }));
+                const sources = cities.filter(oc => {
+                  if (oc.id === cid) return false;
+                  return hexDistance(oc.q, oc.r, city.q, city.r) <= pressureRange;
+                }).map(oc => ({
+                  id: oc.id,
+                  ownerId: oc.ownerId,
+                  q: oc.q,
+                  r: oc.r,
+                  population: oc.population,
+                  kulturaSkumulowana: (oc as { kultura?: number }).kultura ?? 0,
+                  ownCultureShare: resolveOwnCultureShare(oc as { ownCultureShare?: number; kulturaOwnShare?: number }),
+                }));
+                const pres = applyCultureReligionPressureToTarget(
+                  {
+                    id: city.id,
+                    ownerId: city.ownerId,
+                    q: city.q,
+                    r: city.r,
+                    population: city.population,
+                    ownCultureShare,
+                    religionState: curRel,
+                    religionPressurePct: (city as { religionPressurePct?: Record<number, number> }).religionPressurePct,
+                  },
+                  sources,
+                  pressureCities,
+                  cpPresja.presjaProcTura,
+                  stateRelMap,
+                );
+                ownCultureShare = pres.ownCultureShare;
+                (city as { ownCultureShare?: number }).ownCultureShare = ownCultureShare;
+                (city as { religionPressurePct?: Record<number, number> }).religionPressurePct = pres.religionPressurePct;
+              }
+
               // SZCZĘŚCIE (+1 per budynek + baza.zadowolenie — economy.ts)
               const haBuildings = sumBuildingHappinessFromBuiltIds(
                 builtIds,
@@ -12114,6 +12247,12 @@ async function boot(): Promise<void> {
               const haWealth  = econTick ? econTick.wealthZadowolenie : 0;
               const podzial = city.podzialHandlu ?? DEFAULT_PODZIAL_HANDLU;
               const gCountLaw = lawGarrisonCountForCity(city);
+              const conquestUnstablePen = conquestUnstableHappinessPenalty(
+                ownCultureShare, foreignReligionDominant, data.societyParams, difficulty,
+              );
+              const conquestNoGarPen = conquestNoGarrisonLawPenalty(
+                ownCultureShare, foreignReligionDominant, gCountLaw, data.societyParams, difficulty,
+              );
               const playerAtWar = city.ownerId === 0 && isPlayerAtWar();
               const stolicaBonus = stolicaEasyBonusActive(difficulty, turn, city, cities, 10, capitalCityIdForOwner(0));
               const revoltParams = loadRevoltParams(data.societyParams, difficulty);
@@ -12133,6 +12272,7 @@ async function boot(): Promise<void> {
                   hasAmfiteatr: builtIds.includes('teatr') || builtIds.includes('akademia'),
                   ownCultureShare,
                   foreignReligionDominant,
+                  conquestUnstablePenalty: conquestUnstablePen,
                   stolicaEasyBonus: stolicaBonus,
                 },
                 {
@@ -12145,6 +12285,7 @@ async function boot(): Promise<void> {
                   hasSad: builtIds.includes('sad'),
                   hasPalac: builtIds.includes('palac'),
                   brakGarnizonuKara: city.population >= 6 && gCountLaw === 0,
+                  conquestNoGarrisonPenalty: conquestNoGarPen,
                   stolicaEasyBonus: stolicaBonus,
                 },
                 data.societyParams,
@@ -12153,6 +12294,10 @@ async function boot(): Promise<void> {
 
               const orderEff = ordPct.effects;
               const tier = ordPct.tier;
+              const conquestRevoltMult = conquestRevoltRiskMultiplier(
+                ownCultureShare, foreignReligionDominant, gCountLaw,
+              );
+              const effectiveRevoltRisk = orderEff.revoltRisk * conquestRevoltMult;
 
               const osiedleImmune = isOsiedleRevoltImmune(
                 city.population, data.societyParams, difficulty,
@@ -12189,7 +12334,7 @@ async function boot(): Promise<void> {
                 && !graceUpd.revoltWarning
                 && !city.rebelState
                 && orderEff.revoltRisk > 0
-                && rng() < orderEff.revoltRisk
+                && rng() < effectiveRevoltRisk
               ) {
                 const targetId = pickRevoltMigrationTarget(
                   cid, city.ownerId, cities, orderValueMap,
@@ -12542,7 +12687,12 @@ async function boot(): Promise<void> {
                 }),
                 dobraWolaAktywna: false,
                 wspolnyWrog: false,
-                wspolnaReligia: false,
+                wspolnaReligia: (() => {
+                  const sameCulture = sameCultureCircle(civKeyForOwner(0), civKeyForOwner(ownerId));
+                  const pr = ownerReligionForOwnerId(0);
+                  const ar = ownerReligionForOwnerId(ownerId);
+                  return sameCulture && !!pr && !!ar && pr === ar;
+                })(),
                 odmiennaReligia: false,
                 ekspansjaPrzyGranicy:
                   cities.filter(c => c.ownerId === ownerId).length > 2 &&

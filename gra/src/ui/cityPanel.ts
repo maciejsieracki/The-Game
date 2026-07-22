@@ -135,6 +135,7 @@ import {
 } from '../game/society-breakdown';
 import { stolicaEasyBonusActive } from '../game/society-inputs';
 import { cultureHappiness, loadCultureParams, loadReligionParams, FALLBACK_RELIGION_PARAMS } from '../game/culture-religion';
+import { resolveOwnCultureShare } from '../game/society-inputs';
 import {
   buildOrderSectionHtml,
   orderTierUi,
@@ -260,6 +261,10 @@ export interface CityPanelConfig {
   onArtView?: (cityId: string) => void;
   /** Surowce w zasięgu: aktywny dostęp (legacy string[]) lub split ABC-19 { potential, active }. */
   getResourceAccess?: (cityId: string) => string[] | { potential: string[]; active: string[] };
+  /** Union aktywnych etykiet surowców imperium (bramki epok B-SUROW-BUD). */
+  getEmpireResourceAccess?: (ownerId: number) => string[];
+  /** Union id budynków imperium (bramka cegła/ceramika). */
+  getEmpireBuiltIds?: (ownerId: number) => string[];
   /**
    * Promień okolicy roboczej (pól obrabianych) wg EKONOMII:
    * cityRangeForPopulation(pop): pop<5 -> 5, pop>=5 -> 10, pop>=10 -> 15.
@@ -2020,7 +2025,8 @@ function computeOrderStateLocal(city: City, data: GameData): { state: OrderState
   const kulturaSkumulowana = cultState?.kulturaSuma
     ?? (city as { kultura?: number }).kultura
     ?? 0;
-  const haKult = cultureHappiness({ kulturaSkumulowana, ownCultureShare: 1 }, cp);
+  const ownCultureShare = resolveOwnCultureShare(city as { ownCultureShare?: number; kulturaOwnShare?: number });
+  const haKult = cultureHappiness({ kulturaSkumulowana, ownCultureShare }, cp);
   const haRel = relState?.wplywSzczescie ?? 0;
 
   const ws = city.wealthState ?? freshWealthState();
@@ -5183,6 +5189,8 @@ function productionCtxForCity(city: City): AvailabilityContext {
   const activeResourceLabels = Array.isArray(raw)
     ? raw
     : (raw?.active ?? []);
+  const empireActiveResourceLabels = cfg.getEmpireResourceAccess?.(city.ownerId);
+  const empireBuiltIds = cfg.getEmpireBuiltIds?.(city.ownerId);
   return {
     epoch: cfg.getEpoch?.(city.ownerId) ?? 1,
     builtBuildingIds: cfg.getBuiltBuildingIds?.(city.id) ?? [],
@@ -5198,6 +5206,8 @@ function productionCtxForCity(city: City): AvailabilityContext {
     ownerId: city.ownerId,
     difficulty: cfg.getDifficulty?.() ?? 'normal',
     activeResourceLabels,
+    empireActiveResourceLabels,
+    empireBuiltIds,
   };
 }
 

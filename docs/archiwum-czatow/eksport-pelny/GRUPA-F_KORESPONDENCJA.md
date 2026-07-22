@@ -38492,3 +38492,1910 @@ Bez zmian od `start` minutę temu.
 **Czekam na Ciebie:** `OK UI` · `OK B0.9` · `OK popupy` · `UI gotowe` · `BUG: …` · `działaj` + temat.
 
 [REDACTED]
+
+
+---
+
+## Dopisek synchronizacji — 2026-07-22 21:57 UTC (linie 3845–3992)
+
+
+### Linia 3845 — MACIEJ
+
+<timestamp>Tuesday, Jul 21, 2026, 10:00 PM (UTC+2)</timestamp>
+
+Audyt częściowo przeszedł, ale muszę być z Tobą szczery co do zasięgu: w trakcie biegu trafiliśmy na awarię API (6 obszarów w ogóle nie zostało zbadanych) i limit sesji (część weryfikacji padła). Mam 41 surowych znalezisk, 20 twardo potwierdzonych — ale to audyt 7 z 13 wymiarów. Sprawdzam godzinę (limit resetował się 19:40) i wyciągam pełne wyniki:
+
+Ran 5 commands
+Ran workflow
+audyt-kodu-civ-runda2
+Runda 2 w toku. W międzyczasie masz już 20 twardo potwierdzonych znalezisk (każde przeszło podwójną weryfikację sceptyków) — mogę je pokazać od razu, bo ich status się nie zmieni:
+
+🔴 WYSOKA waga — 7 potwierdzonych
+#	Gdzie	Co się dzieje
+1	manpower.ts:279	Dupe ludności: rekrutacja przy populacji 1 nie kosztuje ludka, a rozwiązanie jednostki zawsze oddaje +1 → pętla produkuje darmową populację ponad cap Akweduktu
+2	turn-economy.ts:1176	Suwak żywności 0% = immunitet na głód — deficyt miasta znika z ksiąg, nie obciąża ani miasta, ani zapasów państwa
+3	main.ts:11545	AI trwale przestaje badać technologie po dojściu do techu awansu epoki — komputer zostaje w tyle na zawsze
+4	victory.ts:39	Zwycięstwo naukowe nieosiągalne — flaga rakiety nigdy nie jest ustawiana
+5	gen-helpers.ts:1601	Fair-play relief potrafi postawić górę w morzu (zamienia heks Wybrzeża na Góry)
+6	filePlayer.ts:347	Odrzucone play() zostawia playing=true → menu startowe może zostać bez muzyki (martwy fallback gestu)
+7	muzyka-antyczna.ts:1601	Awans kamień→brąz = trwała cisza zamiast muzyki brązu (spawnEngine no-op, bo ctx===null)
+🟡 ŚREDNIA — 6 potwierdzonych
+empire-food.ts:61 — parametry głodu czytane ze złego miejsca JSON (działają wartości domyślne, nie te z panelu)
+economy.ts:767 — zdrowie ≤ −20 daje immunitet na głód (modyfikator mnoży ujemną żywność)
+turn-economy.ts:1306 — utrzymanie budynków nigdy nie jest naliczane (zawsze pusta lista)
+ai.ts:404 — AI bada poza kolejnością (nie stosuje Twoich zasad tier-gatingu ani bramek budynków)
+wonder-placement.ts:33 — cud świata może stanąć na wodzie
+muzyka-antyczna.ts:1782 — toggle natury OFF→ON podwaja soundscape (stare źródła nie są zatrzymywane)
+🟢 NISKA — 7 potwierdzonych
+Drobiazgi: rozjazd formuł Praca→Pieniądz, awans epoki z wioski pomija odświeżenie złóż, drobna asymetria parsowania prereków research↔playerState, martwa bramka pangei (jeziora zawsze kasowane), martwy warunek punktowania gór w scoringu startu, martwe reguły złóż w JSON, błąd elementu audio może trwale uciszyć playlistę.
+
+Ciekawostka: sceptycy odrzucili 0 — wszystkie 20 przetrwało próbę obalenia z cytatami z kodu. Audytorzy pracowali precyzyjnie.
+
+Czekam na rundę 2 (6 brakujących obszarów: walka, dyplomacja, handel, systemy strategiczne, wydajność, zwycięstwo + weryfikacja 19 zawieszonych — wśród nich groźnie wyglądające „wioski wskrzeszane przez save/load" i „25 jednostek walczy z pancerzem 0"). Po niej dostaniesz pełny raport + plan naprawczy w paczkach do zlecenia subagentom. Zero napraw po drodze — obiecane.
+
+### Linia 3846 — AGENT
+
+Przyjąłem — dzięki za szczerość co do zasięgu.
+
+**Stan audytu (jak rozumiem):**
+
+| | |
+|---|---|
+| **Pokrycie** | 7 / 13 wymiarów · runda 2 w toku (6 obszarów + 19 zawieszonych) |
+| **Twarde** | **20 / 20** potwierdzone (sceptycy 0 odrzuceń) |
+| **Surowe** | 41 łącznie — reszta czeka na weryfikację |
+| **Kod** | **zero zmian** do pełnego raportu + planu w `dyspozycje/` |
+
+W repo jest szkic [`dyspozycje/AUDYT-KODU-2026-07-21.md`](dyspozycje/AUDYT-KODU-2026-07-21.md) — po rundzie 2 potraktuję go jako **zastąpiony** finalnym raportem, nie jako listę do naprawy.
+
+---
+
+**20 potwierdzonych — zapisane w głowie sesji:**
+
+- **WYSOKA (7):** dupe ludności · suwak 0% głód · AI badania · zwycięstwo naukowe · góra w morzu · intro muzyka · cisza po awansie epoki  
+- **ŚREDNIA (6):** JSON głodu · zdrowie −20 · utrzymanie budynków · AI tier-gating · cud na wodzie · podwójny soundscape  
+- **NISKA (7):** formuły Praca→¤ · złoża po awansie · prerek research · pangea · scoring gór · martwe JSON · audio error  
+
+**Czekam na rundę 2** — szczególnie walka, dyplomacja, handel, systemy strategiczne, wydajność, zwycięstwo + te 19 zawieszonych (wioski save/load, 25 jednostek armor=0 itd.).
+
+---
+
+**Ty:** grasz dalej. Jeśli coś z tabeli „czujesz” w grze — `BUG: …` w jednej linii; po rundzie 2 skleję to z raportem. **Ja:** nie ruszam kodu, nie robię planu naprawczego przed pełną paczką.
+
+Daj znać, gdy runda 2 skończy albo gdy chcesz od razu zobaczyć pełny tekst tych 20 w jednym miejscu w repo.
+
+[REDACTED]
+
+### Linia 3847 — MACIEJ
+
+<timestamp>Tuesday, Jul 21, 2026, 10:00 PM (UTC+2)</timestamp>
+
+niestety skończył się limit i nie skończył.
+
+### Linia 3848 — AGENT
+
+[REDACTED]
+
+### Linia 3849 — AGENT
+
+Rozumiem — frustrujące, ale **nie straciliśmy pracy**. Mamy twardy rdzeń.
+
+---
+
+### Co mamy (pewne)
+
+| | |
+|---|---|
+| **20 potwierdzonych** | podwójna weryfikacja sceptyków · **0 odrzuceń** |
+| **Szkic pełny** | [`dyspozycje/AUDYT-KODU-2026-07-21.md`](dyspozycje/AUDYT-KODU-2026-07-21.md) — 73 wpisy, ale **tylko 20 jest „twardych”** |
+| **Reszta** | 41 surowych + 2 krytyczne z dyplomacji/walki — **nie ruszamy** bez weryfikacji |
+
+---
+
+### Czego nie dokończono (runda 2)
+
+6 obszarów w ogóle nie zbadanych + **19 zawieszonych** (m.in. wioski save/load, 25 jednostek armor=0, koszyk PN, auto-szturm). Te mogą być realne — ale **nie wchodzą do planu napraw**, dopóki sceptycy ich nie prześlą.
+
+---
+
+### Sensowne opcje (Ty wybierasz)
+
+**A — Naprawy z tego, co mamy**  
+Plan naprawczy **tylko z 20 potwierdzonych** → paczki do subagentów → grasz i testujesz. Reszta audytu **odłożona**.
+
+**B — Dokończyć audyt później**  
+Jedna sesja Fable = **tylko brakujące 6 obszarów** + weryfikacja 19 zawieszonych (bez powtarzania ekonomii/audio). Potem pełny raport + plan.
+
+**C — Hybryda (rekomenduję)**  
+Teraz **A** na 20 twardych (7 wysokich to realne bugi gameplayu). Runda 2 **w tle**, gdy limit pozwoli — bez blokowania napraw.
+
+---
+
+**Moja propozycja:** nie czekać na ideal. **20 potwierdzonych wystarczy**, żeby zacząć sensowne paczki (ekonomia, audio, mapa relief, AI badania, victory). Krytyczne z dyplomacji/walki — **oznaczę jako „do weryfikacji w rundzie 2”**, nie jako P0.
+
+Napisz **`A`**, **`B`** albo **`C`** — albo **`działaj`** jeśli chcesz, żebym od razu złożył plan naprawczy z samych 20 potwierdzonych w `dyspozycje/`.
+
+[REDACTED]
+
+### Linia 3850 — MACIEJ
+
+<timestamp>Tuesday, Jul 21, 2026, 10:01 PM (UTC+2)</timestamp>
+
+a ale zrób mi listę z tego, co chcesz naprawić, żebym mógł ją zaakceptować, bo potem przekażę Fable , co już zostało zrobione, żeby się tym nie zajmowałem.
+
+### Linia 3851 — AGENT
+
+Przeglądam 20 potwierdzonych znalezisk i układam listę do Twojej akceptacji.
+
+[REDACTED]
+
+### Linia 3852 — AGENT
+
+[REDACTED]
+
+### Linia 3853 — AGENT
+
+Tworzę dokument do akceptacji — tylko 20 potwierdzonych znalezisk; reszta zostaje dla Fable.
+
+[REDACTED]
+
+### Linia 3854 — AGENT
+
+Lista do akceptacji jest w pliku:
+
+**[`dyspozycje/PLAN-NAPRAWCZY-AUDYT-20-POTWIERDZONE.md`](dyspozycje/PLAN-NAPRAWCZY-AUDYT-20-POTWIERDZONE.md)**
+
+---
+
+### Co **chcę naprawić** (20 twardych — Cursor)
+
+| Waga | ID | Temat |
+|------|-----|--------|
+| **WYSOKA (7)** | #3 | Dupe ludności rekrutacja/disband |
+| | #4 | Suwak żywności 0% = brak głodu |
+| | #5 | AI przestaje badać po techu epoki |
+| | #6 | Zwycięstwo naukowe nieosiągalne |
+| | #7 | Góra na Wybrzeżu (relief) |
+| | #8 | Menu bez muzyki (`playing=true`) |
+| | #9 | Cisza po awansie kamień→brąz |
+| **ŚREDNIA (6)** | #34 | Zły odczyt JSON głodu imperium |
+| | #35 | Zdrowie × ujemna żywność / immunitet |
+| | #36 | Utrzymanie budynków = 0 |
+| | #37 | AI omija tier-gating badań |
+| | #38 | Cud na wodzie |
+| | #39 | Podwójny soundscape natury |
+| **NISKA (7)** | #59–#65 | Formuły Praca→¤, wioska/era, prerek, pangea, scoring startu, martwy JSON, audio onError |
+
+**8 paczek** (E1–E8), bez kolizji plików — szczegóły w planie.
+
+---
+
+### Czego **NIE** ruszam (zostaje Fable)
+
+- **#1, #2** (krytyczne: koszyk PN, auto-szturm) — niepotwierdzone  
+- **#10–#33, #40–#58, #66–#73** — wykryte, bez podwójnej weryfikacji  
+- **6 brakujących obszarów** audytu — dokończenie u Fable
+
+---
+
+### 4 pytania ABC (jeśli nie odpowiesz — biorę rekomendację z planu)
+
+| ID | Rekomendacja |
+|----|----------------|
+| **#6** zwycięstwo nauka | **A** — wygrana bez rakiety, dopóki nie ma projektu rakietowego |
+| **#4** suwak 0% | **A** — 0% tylko blokuje dodatni wzrost; deficyt nadal liczy się |
+| **#62** jeziora pangea | **B** — naprawić gałąź generatora |
+| **#64** martwy JSON | **A** — wyczyścić wpisy |
+
+---
+
+### Jak zaakceptować
+
+Napisz np.:
+
+- **`OK plan audyt 20`** — startuję paczki  
+- albo **`OK plan audyt 20 z wyjątkami: #6=B, …`**
+
+---
+
+### Blok do wklejenia Fable (żeby nie dublował)
+
+```
+ZLECONE CURSOR (po OK Macieja): #3 #4 #5 #6 #7 #8 #9 #34 #35 #36 #37 #38 #39 #59 #60 #61 #62 #63 #64 #65
+Plan: dyspozycje/PLAN-NAPRAWCZY-AUDYT-20-POTWIERDZONE.md
+NIE DUPLIKOWAĆ. Fable: dokończyć audyt (#1 #2 #10–#33 + 6 obszarów) + weryfikacja zawieszonych.
+```
+
+Czekam na **`OK plan audyt 20`**.
+
+[REDACTED]
+
+### Linia 3855 — MACIEJ
+
+<timestamp>Tuesday, Jul 21, 2026, 10:10 PM (UTC+2)</timestamp>
+
+Okej, opisz mi szczegółowo każdy z tych tematów, który chciałbyś zrealizować i jakie masz rozwiązania dla każdego. Po prostu rozwiń to, co wcześniej napisałeś.
+
+### Linia 3856 — AGENT
+
+Sprawdzam kod przy każdym z 20 tematów, żeby opisać konkretne rozwiązania.
+
+[REDACTED]
+
+### Linia 3857 — AGENT
+
+[REDACTED]
+
+### Linia 3858 — AGENT
+
+[REDACTED]
+
+### Linia 3859 — MACIEJ
+
+<timestamp>Tuesday, Jul 21, 2026, 10:10 PM (UTC+2)</timestamp>
+
+Okej, opisz mi szczegółowo każdy z tych tematów, który chciałbyś zrealizować i jakie masz rozwiązania dla każdego. Po prostu rozwiń to, co wcześniej napisałeś.
+
+### Linia 3860 — AGENT
+
+[REDACTED]
+
+### Linia 3861 — AGENT
+
+[REDACTED]
+
+### Linia 3862 — AGENT
+
+Poniżej rozwinięcie **wszystkich 20 potwierdzonych** tematów: co jest nie tak, dlaczego, i **konkretnie** co proponuję zrobić. To jest plan do akceptacji — nic z tego nie wdrażam bez Twojego **`OK plan audyt 20`**.
+
+Źródło audytu: [`dyspozycje/AUDYT-KODU-2026-07-21.md`](dyspozycje/AUDYT-KODU-2026-07-21.md) · skrót paczek: [`dyspozycje/PLAN-NAPRAWCZY-AUDYT-20-POTWIERDZONE.md`](dyspozycje/PLAN-NAPRAWCZY-AUDYT-20-POTWIERDZONE.md)
+
+---
+
+## WYSOKA waga (7)
+
+### #3 — Dupe ludności przy rekrutacji i rozwiązaniu
+
+**Co się dzieje w grze**  
+Miasto z populacją 1 możesz weryfikować jak „fabrykę ludzi”: rekrutujesz wiele jednostek (ludność zostaje 1, bo `Math.max(1, 1−1)=1`), potem rozwiązujesz je — każda oddaje +1 ludność bez limitu capu Akweduktu. Efekt: +10 ludności z niczego, obok normalnego wzrostu z żywności.
+
+**Przyczyna**  
+- `manpower.ts` → `tryDeductUnitSpawnCosts`: `population: Math.max(1, city.population - popCost)` — przy pop=1 koszt ludności **nie schodzi**.  
+- `refundUnitSpawnToCity`: `population = city.population + popCost` **bez** `cityPopulationCap` / `akweduktMaxLudnosci`.
+
+**Rozwiązanie**  
+1. **Rekrutacja:** jeśli `city.population - popCost < 1` → `ok: false` (reason: `brak_ludnosci`) **albo** wymóg min. 2 ludności do werbu — zgodnie z intencją „1 ludź zostaje w mieście”.  
+2. **Disband:** `population = Math.min(popCap, city.population + popCost)` z tym samym capem co `populationGrowth`.  
+3. Spójność: ten sam cap w `production.ts` (`advanceRecruitmentGated`), jeśli tam jest duplikat logiki.
+
+**Weryfikacja:** scenariusz audytu (pop=1 → 10 rekrutacji → disband → pop ≤ cap) · testy manpower/production jeśli są.
+
+**ABC:** nie — to czysty bug ekonomiczny.
+
+---
+
+### #4 — Suwak żywności 0% = immunitet na głód
+
+**Co się dzieje**  
+Ustawiasz suwak „Rozwój imperium” na 0% — miasto z **ujemnym** bilansem żywności przestaje głodować: magazyn nie maleje, ludność nie spada, zapasy państwa też nie widzą deficytu.
+
+**Przyczyna**  
+W `turn-economy.ts` (~1176):
+
+```ts
+const zywnoscDoRozwoju = yld.zywnosc * (pctRozwoj / 100);
+```
+
+Przy ujemnym `yld.zywnosc` i `pctRozwoj=0` wychodzi **0** — deficyt znika.  
+`advanceEmpireFood` bierze tylko `Math.max(0, tick.zywnoscNetto)` do puli państwa, więc **ujemna strona nigdy nie trafia do ksiąg**.
+
+**Rozwiązanie (rekomendacja A)**  
+Rozdzielić bilans na dwie ścieżki:
+- **Dodatnia żywność** → mnożnik suwakiem `% rozwoju` (0% = nic nie idzie do wzrostu / puli rozwoju).
+- **Ujemna żywność (deficyt)** → **zawsze w pełni** obciąża magazyn miasta (i ewentualnie państwo), **niezależnie** od suwaka.
+
+Implementacja: np.  
+`const surplus = Math.max(0, yld.zywnosc) * pct/100`  
+`const deficit = Math.min(0, yld.zywnosc)`  
+`const zywnoscDlaWzrostu = surplus + deficit`
+
+**Weryfikacja:** miasto netto −6, suwak 0% → magazyn maleje co turę · przy 50% deficyt nie jest „połowiczny”.
+
+**ABC:** sens suwaka 0% — rekomenduję A (wyżej); jeśli chcesz inaczej, powiedz przed `działaj`.
+
+---
+
+### #5 — AI przestaje badać po techu awansu epoki
+
+**Co się dzieje**  
+AI dobija do Brazownictwa / Hutnictwa żelaza (tech z `awansDoEpoki`) i **na zawsze** przestaje logować `[AI] Zbadano: …`. Zostaje w epoce kamienia pod względem jednostek, ulepszeń terenu i awansu ery z badań.
+
+**Przyczyna**  
+`main.ts` ~11710–11717:
+
+```ts
+if (!eraAdvance) {
+  aiDone.add(aiTechChoice);
+}
+```
+
+Gdy `chooseAIResearch` **zawsze** zwraca ten sam tech awansu (najwyższy score), pętla **nigdy** nie dodaje nic do `aiDone`, ale też **nie awansuje epoki AI** ani nie wybiera następnego techu.
+
+**Rozwiązanie**  
+1. Gdy wybrany tech ma `awansDoEpoki`:  
+   - dodać go do `aiDone` (żeby nie zapętlać), **oraz**  
+   - wywołać ten sam łańcuch co u gracza: awans ery AI, `syncOwnerEraFromResearch`, ewentualnie kolejny `chooseAIResearch` w tej samej turze lub następnej z wykluczeniem już „zużytych” techów awansu.  
+2. Alternatywnie prostsze: w `chooseAIResearch` **wykluczyć** techy `awansDoEpoki` z puli AI (AI nie „bada” kamienia milowego — epoka rośnie inaczej). To wymaga ABC — **nie** robię bez pytania.
+
+**Rekomendacja:** ścieżka 1 (AI faktycznie przechodzi epokę i bada dalej) — inaczej gra vs AI jest zepsuta.
+
+**Weryfikacja:** nowa gra, 100+ tur, AI ma techy brązu/żelaza · log `[AI] Zbadano` wraca.
+
+**Warstwa:** 🟡 — dotyka pętli AI w `main.ts` → handoff **Integrator F**.
+
+---
+
+### #6 — Zwycięstwo naukowe nieosiągalne
+
+**Co się dzieje**  
+W kreatorze wybierasz zwycięstwo oparte na nauce / „moc” bez dominacji. Badasz **wszystkie** techy w scope v0.1 — gra **nigdy** nie daje zwycięstwa.
+
+**Przyczyna**  
+`victory.ts` → `isNaukaVictory(wszystkieTechZbadane, rakietaWystrzelona)` wymaga **obu**.  
+`player.rakietaWystrzelona` jest zawsze `false` — w `gra/src` **nigdzie** nie ustawiane na `true`.  
+Flaga `NAUKA_WYMAGA_RAKIETY` / JSON `nauka_wymaga_rakiety` istnieją, ale **nie są użyte** w `isNaukaVictory`.
+
+**Rozwiązanie (rekomendacja A)**  
+W `isNaukaVictory` / `checkVictory`:
+
+```ts
+return wszystkieTechZbadane && (!NAUKA_WYMAGA_RAKIETY || rakietaWystrzelona);
+```
+
+Domyślnie `NAUKA_WYMAGA_RAKIETY = false` w v0.1 (brak projektu rakietowego). Gdy SILNIK doda rakietę — włączysz flagę w JSON.
+
+**ABC:** **tak** — A = wygrana po wszystkich techach bez rakiety (v0.1) · B = zostaw niemożliwe do czasu rakiet · C = wyłączyć ścieżkę nauka w kreatorze.
+
+---
+
+### #7 — Góra / wzgórze na Wybrzeżu (morze)
+
+**Co się dzieje**  
+Na mapie pojawia się samotna **góra w morzu** lub dziwna wysepka — generator fair-play relief wybiera heks **Wybrzeża** (traktowane jak ląd w rankingu).
+
+**Przyczyna**  
+`gen-helpers.ts` → `pickReliefForceHex`: odrzuca tylko `Morze`, Wybrzeże tylko `-0.15` do score.  
+`forceReliefTypeInCell` fallback filtruje Morze, **nie** Wybrzeże.  
+Po ZADANIU 1 Wybrzeże = woda gameplayowo.
+
+**Rozwiązanie**  
+We wszystkich filtrach relief (pick + fallback + ewent. `groupLandMassKeys`):  
+`hex.terenBazowy === TerenBazowy.Wybrzeze` → **wykluczyć** tak jak Morze.
+
+**Weryfikacja:** `map-gen-regression-test` · `weryfikacja-mapy` · grep `openOceanLandSpecks=0`.
+
+---
+
+### #8 — Menu startowe bez muzyki (martwy fallback gestu)
+
+**Co się dzieje**  
+Otwierasz grę bez wcześniejszego gestu (autoplay zablokowany). Menu jest **całkowicie ciche**. Kliknięcie w menu **nie** uruchamia muzyki — dopiero wejście do rozgrywki czasem „odblokowuje” stan.
+
+**Przyczyna**  
+`filePlayer.ts` → `playOn`: `void el.play().catch(() => {})` — przy odrzuceniu **`playing` zostaje `true`** (ustawione w `start()` przed `play`).  
+`start()` guard: `if (!hasTracks() || playing) return` — fallback gestu w `main.ts` woła `start()` ponownie → **no-op**.
+
+**Rozwiązanie**  
+W `catch` po `play()`: `playing = false` (i ewent. wyczyścić monitor).  
+Opcjonalnie: `start()` najpierw próbuje `play`, dopiero po sukcesie ustawia `playing=true`.
+
+**Weryfikacja:** świeże otwarcie → klik w menu → muzyka intro gra.
+
+---
+
+### #9 — Cisza po awansie kamień → brąz
+
+**Co się dzieje**  
+Grasz z muzyką z plików (epoka kamienia). Po zbadaniu Brazownictwa — **nagła i trwała cisza** zamiast muzyki brązu / syntezy. Bitwy też nieme.
+
+**Przyczyna**  
+Tor plikowy kamienia **nie tworzy** `AudioContext` (`startMusic` wraca wcześniej).  
+`setEra(2)` → `kamienPlaylist.stop()` + `spawnEngine(2, …)`, ale `spawnEngine` ma `if (!ctx || !graf) return` — **nic nie startuje**, `playing` zostaje w złym stanie.
+
+**Rozwiązanie**  
+Przy przejściu pliki → synteza (i ogólnie przy pierwszym `setEra` / `startMusic` po geście):  
+- **leniwie utworzyć** `AudioContext` + graf syntezy, jeśli `ctx === null`,  
+- dopiero potem `spawnEngine`.  
+Alternatywa: przy awansie epoki **nie zatrzymywać** playlisty kamienia, dopóki synteza nie gra (crossfade) — bezpieczniejsze UX.
+
+**Weryfikacja:** nowa gra kamień → awans brąz → słychać muzykę epoki 2 bez przełączania OFF/ON w pauzie.
+
+---
+
+## ŚREDNIA waga (6)
+
+### #34 — Parametry głodu imperium ze złego miejsca JSON
+
+**Co się dzieje**  
+Zmieniasz trudność / parametry w `econ-params.json` (głód wojska, odkład armii, cap spichlerza) — **w grze nic się nie zmienia**. Zawsze lecą wartości domyślne (8% HP, 50% odkład, cap 100).
+
+**Przyczyna**  
+`buildEmpireFoodParams(raw)` czyta klucze na **top-level** `raw`.  
+Call site'y przekazują **cały** `data.econParams`, a klucze siedzą w **`ekonomia_miasta`**.
+
+**Rozwiązanie**  
+Jedna linia kontraktu:  
+`buildEmpireFoodParams(raw.ekonomia_miasta ?? raw)`  
+albo poprawić wszystkie call site'y — preferuję **jedną funkcję-wrapper** w `empire-food.ts`, żeby nie rozsiać zmian.
+
+**Weryfikacja:** gra na hard → atrycja wojska 10% (nie 8%) · porównanie z JSON.
+
+---
+
+### #35 — Zdrowie mnoży ujemną żywność; zdrowie ≤ −20 = brak głodu
+
+**Co się dzieje**  
+Chore/przeludnione miasto (zdrowie bardzo niskie) **nie głodnieje**, podczas gdy zdrowe miasto z deficytem żywności traci magazyn **szybciej** niż powinno (bo dodatnie zdrowie **pogłębia** ubytek).
+
+**Przyczyna**  
+`economy.ts` → `populationGrowth`:
+
+```ts
+const healthModifier = Math.max(0, 1 + zdrowie * wsp);
+const effectiveFlow = zywnoscNetto * healthModifier;
+```
+
+Dla ujemnego `zywnoscNetto` i zdrowia ≤ −20: modyfikator = 0 → **zero głodu**.
+
+**Rozwiązanie**  
+- **Surplus:** mnożnik zdrowia może przyspieszać wzrost (jak dziś).  
+- **Deficyt:** osobna gałąź — deficyt **nie** jest mnożony przez dodatnie zdrowie „w górę”; przy skrajnym zdrowiu deficyt **nie** znika.  
+Np. `effectiveFlow = zywnoscNetto >= 0 ? zywnoscNetto * healthModifier : zywnoscNetto` (deficyt pełny), ewentualnie łagodzony tylko przy zdrowiu > 0.
+
+**Weryfikacja:** dwa miasta, ten sam deficyt −10, zdrowie +6 vs −20 → oba tracą magazyn; pierwsze nie traci **więcej** od „bonusowego” zdrowia.
+
+---
+
+### #36 — Utrzymanie budynków zawsze 0
+
+**Co się dzieje**  
+Budynki z `utrzymanie` w JSON **nigdy** nie kosztują. Ekonomia jest zawyż
+
+[REDACTED]
+
+### Linia 3863 — AGENT
+
+Kontynuuję od #36 — reszta tematów i podsumowanie.
+
+[REDACTED]
+
+### Linia 3864 — AGENT
+
+[REDACTED]
+
+### Linia 3865 — AGENT
+
+[REDACTED]
+
+### Linia 3866 — AGENT
+
+[REDACTED]
+
+### Linia 3867 — AGENT
+
+[REDACTED]
+
+### Linia 3868 — AGENT
+
+[REDACTED]
+
+### Linia 3869 — AGENT
+
+[REDACTED]
+
+### Linia 3870 — AGENT
+
+[REDACTED]
+
+### Linia 3871 — AGENT
+
+[REDACTED]
+
+### Linia 3872 — AGENT
+
+[REDACTED]
+
+### Linia 3873 — AGENT
+
+[REDACTED]
+
+### Linia 3874 — AGENT
+
+Poniżej **dokończenie** od #36 oraz **skrót** #3–#35 (pierwsza część mogła się uciąć). Pełny plan paczek: [`dyspozycje/PLAN-NAPRAWCZY-AUDYT-20-POTWIERDZONE.md`](dyspozycje/PLAN-NAPRAWCZY-AUDYT-20-POTWIERDZONE.md).
+
+---
+
+## Skrót #3–#35 (już opisane)
+
+| ID | Problem | Rozwiązanie (skrót) |
+|----|---------|---------------------|
+| **#3** | Dupe ludności rekrut/disband | Bramka przy pop≤koszt + refund z capem Akweduktu |
+| **#4** | Suwak 0% kasuje głód | Deficyt żywności **poza** suwakiem (ABC **A**) |
+| **#5** | AI zapętla tech awansu epoki | Po `awansDoEpoki`: awans ery AI + następny tech (**F** / `main.ts`) |
+| **#6** | Nauka bez rakiety niemożliwa | Użyć `NAUKA_WYMAGA_RAKIETY` (ABC **A**) |
+| **#7** | Góra na Wybrzeżu | Wykluczyć `Wybrzeze` jak `Morze` w relief |
+| **#8** | Martwy fallback intro | `playing=false` po rejected `play()` |
+| **#9** | Cisza kamień→brąz | Leniwy `AudioContext` przy awansie z toru plikowego |
+| **#34** | Zły poziom JSON głodu | `buildEmpireFoodParams(raw.ekonomia_miasta ?? raw)` |
+| **#35** | Zdrowie × ujemna żywność | Deficyt bez mnożnika zdrowia / bez zerowania |
+
+---
+
+## ŚREDNIA waga — ciąg dalszy
+
+### #36 — Utrzymanie budynków zawsze 0
+
+**Co widzi gracz**  
+Budynki z kosztem utrzymania w `buildings.json` i `econ-params.json` **nigdy nie kosztują**. Imperium z wieloma miastami i pełnymi slotami płaci tylko za wojsko — ekonomia jest zawyżona, deficyt skarbca jest mylący.
+
+**Przyczyna**  
+`advanceCityEconomy` w `turn-economy.ts` (~1306) woła:
+
+```ts
+upkeepBalance(income, [], ounits, ...)
+```
+
+— zawsze **pustą** listę budynków, mimo że ta sama funkcja już ma `builtByCity` i używa go do Spichlerza, Mennicy itd. Komentarz „No buildings in runtime yet” jest nieaktualny.
+
+**Rozwiązanie**  
+1. Dla każdego `ownerId` zebrać listę zbudowanych budynków ze wszystkich miast tego właściciela (z `builtByCity`).  
+2. Przekazać do `upkeepBalance(income, buildingIds, units, ...)`.  
+3. Upewnić się, że `upkeepBalance` / `totalBuildingUpkeep` czytają `utrzymanie` z definicji budynków (już istnieje w danych).
+
+**Weryfikacja:** 5 miast × ~8 budynków × `utrzymanie_budynek=1` → ~40 ¤/turę mniej w skarbcu.
+
+**Paczka:** E1 (lane B) · warstwa 🟢.
+
+---
+
+### #37 — AI omija tier-gating i bramki budynków
+
+**Co widzi gracz**  
+AI w „kamieniu” może mieć Port, Bibliotekę, Żeglugę — podczas gdy gracz musi domknąć całą epokę Kamienia i postawić Cegielnię / Tartak.
+
+**Przyczyna**  
+`ai.ts` → `scoreTech` sprawdza tylko: czy tech już zbadany + czy prereq tekstowe spełnione. **Nie** woła:
+- `epochGateMet` / `epochTierGateMet` (Zasada 1 i 2 z `research.ts`),
+- `researchGatesMet` (wymagany budynek / ulepszenie).
+
+`allBuiltBuildings` służy tylko do **punktacji** (+120 za Spichlerz), nie do **odrzucenia** techu.
+
+**Rozwiązanie**  
+W `scoreTech` (lub na wejściu `chooseAIResearch`):
+1. Import / wspólna logika z `research.ts` + `playerState` (komentarz w `playerState.ts:175` wymaga zgodności).
+2. Jeśli `!epochGateMet(tech, …)` lub `!epochTierGateMet(…)` → `return -Infinity`.
+3. Jeśli `!researchGatesMet(tech, gates, allBuilt, …)` → `return -Infinity`.
+4. `chooseAIResearch` w `main.ts` musi przekazywać `researchGateForOwner(aiId)` i listę budynków AI (jak u gracza).
+
+**Weryfikacja:** AI z 1 techiem w Kamieniu nie wybiera techów Brązu bez domknięcia epoki · testy `research-test.cjs` / `tech-tree-test.cjs`.
+
+**Paczka:** E3 (lane D + handoff **F** jeśli pętla w `main.ts`) · warstwa 🟡.
+
+---
+
+### #38 — Cud na Wybrzeżu (woda)
+
+**Co widzi gracz**  
+Po ukończeniu cudu model stoi na **płytkiej wodzie** przy mieście nadmorskim — wygląda jak cud w morzu.
+
+**Przyczyna**  
+`wonder-placement.ts` → `isLandBuildable` odrzuca tylko `Morze` i `Gory`. Od 2026-07-20 **Wybrzeże = woda** wszędzie indziej (ruch, miasta, złoża).  
+`pickWonderHexForCity` sortuje kandydatów po `(dist, q, r)` — heks Wybrzeża może wygrać z lądem przy tym samym dystansie.
+
+**Rozwiązanie**  
+1. W `isLandBuildable`: `Wybrzeze` → **false** (jak Morze).  
+2. Opcjonalnie (lepsze UX): przy remisie preferować suchy ląd (`Równina`, `Łąka`, `Wzgórza`) — nie jest wymagane do naprawy buga.
+
+**Weryfikacja:** miasto przy wybrzeżu, ukończony cud → heks **nie** jest `Wybrzeze`.
+
+**Paczka:** E6 · warstwa 🟢.
+
+---
+
+### #39 — Podwójny soundscape po OFF→ON
+
+**Co słyszy gracz**  
+W pauzie: Odgłosy natury OFF, potem ON → przez **~10–13 s** podwójny wiatr/ptaki. Wariant: OFF w bitwie, szybki powrót na mapę → „wyłączone” odgłosy wracają z resztek starej sceny.
+
+**Przyczyna**  
+`stopAmbience()` tylko **ściemnia gain busa** i zatrzymuje timer. Zaplanowane `AudioBufferSourceNode` (lookahead ~2,6 s, segmenty do ~11 s) **grają dalej** na wyciszonym busie.  
+`startAmbience()` natychmiast podnosi gain na **tym samym** busie → stare + nowe źródła słyszalne równolegle.  
+`ambApplyBattleMute('mapa')` może podnieść gain bez sprawdzenia `ambPlaying`.
+
+**Rozwiązanie**  
+1. Przy `stopAmbience`: **zatrzymać / odłączyć** wszystkie aktywne źródła ambience (lista w `ambState`), nie tylko gain.  
+2. Przy `startAmbience`: nowa czysta scena (`newState`), zero resztek.  
+3. W `ambApplyBattleMute`: rampuj gain tylko gdy `ambPlaying === true`.
+
+**Weryfikacja:** pauza OFF→ON × 3 — brak podwojenia · bitwa→mapa z wyłączoną naturą — cisza do włączenia.
+
+**Paczka:** E7 (audio) · warstwa 🟢 (ew. minimalny hook w `main.ts` przez F).
+
+---
+
+## NISKA waga (7)
+
+### #59 — Praca→Pieniądz bez kar Porządku
+
+**Co widzi gracz**  
+Miasto z niepokojami (kara produkcji 50%) nadal konwertuje **pełną** Pracę na Pieniądz przez Targowisko+Walutę. Panel pokazuje inną „pulę Pracy” niż faktyczne zasilenie puli (floor vs round).
+
+**Przyczyna**  
+`economy.ts` liczy `pieniadzZPracy` z wewnętrznego `doPuli = floor(floor(pracaNetto) * (1-pct))` **przed** karą Porządku.  
+`turn-economy.ts` woła `splitPraca` **po** `applyOrderYieldMults` — inna baza i inna metoda zaokrąglenia.
+
+**Rozwiązanie**  
+1. **Jedno źródło prawdy:** `pieniadzZPracy` liczyć z tej samej `doPuli` co `splitPraca` (albo przenieść konwersję do `turn-economy` po split).  
+2. Użyć `praca` **po** mnożniku Porządku.  
+3. Ujednolicić `floor` vs `round` (preferuję to, co już robi `splitPraca`).
+
+**Weryfikacja:** praca 20, suwak 50%, `productionMult=0.5` → pieniądz z pracy ~10, nie 20.
+
+**Paczka:** E1 · priorytet niski, ale spójność panelu.
+
+---
+
+### #60 — Awans epoki z wioski bez `setEra`
+
+**Co widzi gracz**  
+Chatka daje +nauki i domyka Brazownictwo → epoka w danych = 2, ale:
+- złoża miedzi/żelaza **niewidoczne** na overlay (zostaje era 1),
+- **muzyka** nie przechodzi na brąz,
+- brak spójności z awansem z końca tury.
+
+**Przyczyna**  
+Nagroda wioski (`main.ts` ~8199): tylko `researchStep` + toast.  
+Koniec tury (~11252–11255): przy `awansEpoki` dodatkowo `overlayDepositEra`, `rebuildResourceOverlays()`, `setEra(player.era)`.
+
+**Rozwiązanie**  
+Wyekstrahować helper `applyPlayerEraAdvanceEffects(era)` i wołać go z **obu** ścieżek (wioska + koniec tury + ewentualnie picker nauki, jeśli tam też jest awans). Zawartość: to, co dziś jest w bloku 11252–11255.
+
+**Weryfikacja:** Brazownictwo domknięte nagrodą z chatki → overlay złóż epoki 2 + zmiana motywu muzycznego.
+
+**Paczka:** E8 · warstwa 🟡 (`main.ts` → **F**).
+
+---
+
+### #61 — Parser prereków ≠ `research.ts`
+
+**Co się psuje (latentnie)**  
+Dziś w `tech.json` jest tylko `—`. Jeśli ktoś wpisze `-` lub `brak`:
+- walidacja grafu OK,
+- `research.ts` traktuje jako brak prereq,
+- `playerState.parsePrereqs` szuka techu o nazwie `"-"` → tech **nieosiągalny** dla gracza.
+
+**Rozwiązanie**  
+W `playerState.ts` skopiować ten sam zestaw `BRAK_PREREQ` co w `research.ts` (`''`, `-`, `—`, `–`, `brak`, `none`) + filtrowanie per człon.  
+Opcjonalnie: jedna wspólna funkcja w `research.ts` eksportowana do `playerState` i `ai.ts` (trzeci wariant parsera w AI też ujednolicić).
+
+**Weryfikacja:** test jednostkowy: `parsePrereqs('-')` → `[]` wszędzie.
+
+**Paczka:** E8 · warstwa 🟢.
+
+---
+
+### #62 — Martwa gałąź pangei (jeziora kasowane)
+
+**Co widzi gracz**  
+Mapa typu **pangea** nigdy nie ma jezior / większych zbiorników śródlądowych — mimo że parametry mówią `maxInlandPoolSize: 24`.
+
+**Przyczyna**  
+`generator.ts` ~283–287: `if (typ !== 'pangea')` i `else` wołają **to samo** `purgeInlandWaterForMultiLandTyp`. Późniejsze wywołania (315, 334, 363) są bezwarunkowe. Cała logika chronienia basenów >24 hex na pangei jest martwa.
+
+**Rozwiązanie (ABC B)**  
+1. Gałąź `pangea`: **nie** wołać agresywnego purge (albo wariant z limitem 24).  
+2. Gałąź `kontynenty`/`wyspy`: purge z limitem 8 (jak dziś).  
+3. Przejrzeć `trimEnclosedOceanOnly` (linia 248) — czy nie kasuje basenów zaraz po `removeSmallInlandWaterPools`.
+
+**Weryfikacja:** `generujSwiat(..., 'pangea')` → seed z dużym morzem śródlądowym zachowuje jezioro ≤24 hex · `map-gen-regression-test`.
+
+**ABC:** **B** — naprawić gałąź bez zmiany innych typów map.
+
+---
+
+### #63 — Góry w dist=4 nie punktowane przy starcie
+
+**Co się psuje**  
+`startScoring.ts` obiecuje bonus za góry w dystansie 2–4, ale pętla `dq,dr ∈ [-3,3]` daje max `dist=3`. Warunek `dist >= 2 && dist <= 4` **nigdy** nie widzi dist=4.
+
+**Rozwiązanie**  
+Albo rozszerzyć pętlę do `[-4,4]`, albo zmienić warunek na `dist === 3` i zaktualizować komentarz — rekomenduję **pętlę [-4,4]**, żeby zgadzało się z dokumentacją Macieja 2026-06-27.
+
+**Weryfikacja:** dwa heksy — jeden z górami w dist=4 dostaje wyższy score.
+
+**Paczka:** E5 (mapa).
+
+---
+
+### #64 — Martwe reguły złóż w JSON
+
+**Co się psuje**  
+W `map-gen-params.json` → `deposit_rules` są `owce`, `bydlo`, `lama`, `luksus` — generator ich **nie używa** (Model B 2026-07-09: hodowla = ulepszenie, nie złoże). Zmiana rarity w Excelu **zero efektu**, bez ostrzeżenia.
+
+**Rozwiązanie (ABC A)**  
+Usunąć martwe klucze z JSON (i zsynchronizować panel Excel → `gen-panel` jeśli trzeba). Zostawić: `miedz`, `zelazo`, `glina`, `konie`, `wegiel`, `sol`.
+
+**Weryfikacja:** diff JSON · `map-deposits-era-test` · brak wpisów bez odpowiednika w `BASE_DEPOSIT_RULES`.
+
+---
+
+### #65 — `onError` przy crossfade ucisza playlistę
+
+**Co słyszy gracz**  
+Uszkodzony plik MP3 w bundlu → przy przejściu na ten utwór muzyka **milczy na stałe** (do restartu gry).
+
+**Przyczyna**  
+`filePlayer.ts` → `onError`: guard `idx !== activeIdx` odrzuca błąd elementu **docelowego** crossfade (jeszcze nie `activeIdx`). Crossfade kończy się z **martwym** aktywnym elementem → `monitorTick` nie widzi `duration`, `ended` nie przychodzi.
+
+**Rozwiązanie**  
+1. W `onError`: obsłużyć też `crossfading && idx === crossfadeToIdx` → `selectNext()` + restart na zdrowym utworze.  
+2. Po błędzie: `crossfading = false`, wyczyścić timer crossfade.  
+3. Powiązane z **#8**: po rejected `play()` reset `playing`.
+
+**Weryfikacja:** mock uszkodzonego URL w playliście → skip do następnego utworu.
+
+**Paczka:** E7.
+
+---
+
+## Mapa paczek (kolejność)
+
+```mermaid
+flowchart LR
+  E1[E1 Ekonomia #3#4#35#36#59]
+  E2[E2 JSON głód #34]
+  E3[E3 AI #5#37]
+  E7[E7 Audio #8#9#39#65]
+  E5[E5 Mapa #7#62#63#64]
+  E6[E6 Cuda #38]
+  E4[E4 Zwycięstwo #6]
+  E8[E8 Wioski/research #60#61]
+  E1 --> E3
+  E3 --> E7
+  E7 --> E5
+  E5 --> E4
+  E4 --> E8
+```
+
+| Paczka | ID | Kto | `main.ts`? |
+|--------|-----|-----|------------|
+| **E1** | #3, #4, #35, #36, #59 | lane B | nie |
+| **E2** | #34 | lane B | nie |
+| **E3** | #5, #37 | lane D → F | **tak** (pętla AI) |
+| **E4** | #6 | lane E | nie |
+| **E5** | #7, #62, #63, #64 | lane A | nie |
+| **E6** | #38 | lane A | nie |
+| **E7** | #8, #9, #39, #65 | lane E / audio | ewent. F |
+| **E8** | #60, #61 | lane E → F | **tak** (wioska) |
+
+---
+
+## ABC — 4 decyzje przed kodem
+
+| ID | Pytanie | Rekomendacja |
+|----|---------|--------------|
+| **#6** | Zwycięstwo nauka bez rakiety w v0.1? | **A** — flaga `NAUKA_WYMAGA_RAKIETY` |
+| **#4** | Suwak 0% a deficyt? | **A** — 0% tylko na surplus |
+| **#62** | Jeziora na pangei? | **B** — naprawić gałąź `if/else` |
+| **#64** | Martwe wpisy złóż? | **A** — wyczyścić JSON |
+
+Bez odpowiedzi stosuję rekomendacje z tabeli.
+
+---
+
+## Jak zaakceptować
+
+Napisz np.: **`OK plan audyt 20`** albo z wyjątkami: **`OK plan audyt 20 z wyjątkami: #6=B`**.
+
+Po akceptacji realizuję paczki E1→E8; **#1, #2** i reszta bez statusu POTWIERDZONE zostaje dla Fable.
+
+Chcesz któryś temat rozłożyć jeszcze bardziej (np. dokładny diff dla #5 w `main.ts`) — napisz numer ID.
+
+[REDACTED]
+
+### Linia 3875 — MACIEJ
+
+[Image]
+<image_files>
+The following images were provided by the user and saved to the workspace for future use:
+1. C:\Users\macie\.cursor\projects\c-Users-macie-OneDrive-NASTER-S-A-NOWA-STRUKTURA-06-Prywatne-Gry-Civ/assets/c__Users_macie_AppData_Roaming_Cursor_User_workspaceStorage_empty-window_images_image-23be0851-417d-4917-90c0-7423af876c7c.png
+
+These images can be copied for use in other locations.
+</image_files>
+<timestamp>Tuesday, Jul 21, 2026, 10:16 PM (UTC+2)</timestamp>
+
+kolejny błąd, który widzę to niestety po odkryciu chatki przez zwiadowcę jest komunikat, ale on powinien po pierwszej turze zniknąć. Jeżeli nie znika w następnej turze to jeszcze nie da się go włączyć.
+
+### Linia 3876 — AGENT
+
+Szukam w kodzie logiki powiadomień po odkryciu chatki i warunków ich zamykania.
+
+[REDACTED]
+
+### Linia 3877 — AGENT
+
+[REDACTED]
+
+### Linia 3878 — AGENT
+
+[REDACTED]
+
+### Linia 3879 — AGENT
+
+[REDACTED]
+
+### Linia 3880 — AGENT
+
+[REDACTED]
+
+### Linia 3881 — AGENT
+
+[REDACTED]
+
+### Linia 3882 — AGENT
+
+[REDACTED]
+
+### Linia 3883 — AGENT
+
+[REDACTED]
+
+### Linia 3884 — AGENT
+
+[REDACTED]
+
+### Linia 3885 — AGENT
+
+Znalazłem przyczynę: wpis chatki trafia do `villageEventLog`, który **nigdy nie jest czyszczony**, a jednocześnie liczy się jako „blokujące wydarzenie” — stąd świecący, ale niedziałający przycisk WYKONAJ. Naprawiam to.
+
+[REDACTED]
+
+### Linia 3886 — AGENT
+
+[REDACTED]
+
+### Linia 3887 — AGENT
+
+Masz rację — to był bug w logice panelu WYDARZENIA, nie w samej nagrodzie z chatki.
+
+## Co się psuło
+
+Po odkryciu chatki gra:
+1. **Przyznawała nagrodę** (jednostka / złoto / nauka) — to działało.
+2. **Dopisywała wpis** „Odkryto chatkę” do `villageEventLog` w panelu WYDARZENIA.
+3. **Nigdy go nie usuwała** — log żył w nieskończoność (max 6 wpisów).
+4. **Liczył go jako „blokujące wydarzenie”** → przycisk **WYKONAJ** się podświetlał.
+5. **WYKONAJ nie obsługiwał chatki** — działa tylko dla dyplomacji, buntu i pustej kolejki produkcji.
+
+Efekt: komunikat zostawał na ekranie, WYKONAJ świecił, ale klik nic nie robił.
+
+## Co zmieniłem (`main.ts`)
+
+1. **Czyszczenie po zakończeniu tury** — `villageEventLog` jest opróżniany przy `turn++`. Wpis widać tylko do końca tury, w której odkryto chatkę.
+2. **Chatka nie blokuje WYKONAJ** — nagrody z chatek to podgląd, nie akcja do wykonania.
+3. **Przycisk ✕ na karcie** — można zamknąć wpis ręcznie w tej samej turze (wcześniej `onEventDismiss` nie był podpięty).
+
+## Jak sprawdzić
+
+Po wdrożeniu do roboczej (`gra-robocza`):
+- Zwiadowca wchodzi na chatkę → komunikat się pojawia, jednostka dołącza.
+- **Zakończ turę** → komunikat znika.
+- **WYKONAJ** nie świeci się tylko z powodu chatki (może nadal świecić przy pustej kolejce produkcji w mieście — to osobne przypomnienie).
+
+Żeby zobaczyć fix w grze, potrzebny jest build do `gra-robocza` (Integrator). Jeśli chcesz, mogę przygotować handoff albo od razu zrobić deploy — napisz **`deploy`** albo **`push`**.
+
+[REDACTED]
+
+### Linia 3888 — MACIEJ
+
+<timestamp>Tuesday, Jul 21, 2026, 10:22 PM (UTC+2)</timestamp>
+
+OK plan audyt 20 - wykonaj sam te zmiany, a potem wprowadź do wersji roboczej.
+
+### Linia 3889 — AGENT
+
+Przyjmuję plan audytu 20 i wdrażam wszystkie paczki, potem publikuję do `gra-robocza`.
+
+[REDACTED]
+
+### Linia 3890 — AGENT
+
+[REDACTED]
+
+### Linia 3891 — AGENT
+
+[REDACTED]
+
+### Linia 3892 — AGENT
+
+[REDACTED]
+
+### Linia 3893 — AGENT
+
+[REDACTED]
+
+### Linia 3894 — AGENT
+
+[REDACTED]
+
+### Linia 3895 — AGENT
+
+[REDACTED]
+
+### Linia 3896 — AGENT
+
+[REDACTED]
+
+### Linia 3897 — AGENT
+
+[REDACTED]
+
+### Linia 3898 — AGENT
+
+[REDACTED]
+
+### Linia 3899 — AGENT
+
+[REDACTED]
+
+### Linia 3900 — AGENT
+
+Wdrażam zmiany paczkami — zaczynam od modułów izolowanych, potem `main.ts`.
+
+[REDACTED]
+
+### Linia 3901 — AGENT
+
+[REDACTED]
+
+### Linia 3902 — AGENT
+
+[REDACTED]
+
+### Linia 3903 — AGENT
+
+[REDACTED]
+
+### Linia 3904 — AGENT
+
+[REDACTED]
+
+### Linia 3905 — AGENT
+
+[REDACTED]
+
+### Linia 3906 — AGENT
+
+[REDACTED]
+
+### Linia 3907 — AGENT
+
+[REDACTED]
+
+### Linia 3908 — AGENT
+
+[REDACTED]
+
+### Linia 3909 — AGENT
+
+[REDACTED]
+
+### Linia 3910 — AGENT
+
+[REDACTED]
+
+### Linia 3911 — AGENT
+
+[REDACTED]
+
+### Linia 3912 — AGENT
+
+[REDACTED]
+
+### Linia 3913 — AGENT
+
+[REDACTED]
+
+### Linia 3914 — AGENT
+
+[REDACTED]
+
+### Linia 3915 — AGENT
+
+[REDACTED]
+
+### Linia 3916 — AGENT
+
+[REDACTED]
+
+### Linia 3917 — AGENT
+
+[REDACTED]
+
+### Linia 3918 — AGENT
+
+[REDACTED]
+
+### Linia 3919 — AGENT
+
+[REDACTED]
+
+### Linia 3920 — AGENT
+
+[REDACTED]
+
+### Linia 3921 — AGENT
+
+[REDACTED]
+
+### Linia 3922 — AGENT
+
+[REDACTED]
+
+### Linia 3923 — AGENT
+
+[REDACTED]
+
+### Linia 3924 — AGENT
+
+[REDACTED]
+
+### Linia 3925 — AGENT
+
+[REDACTED]
+
+### Linia 3926 — AGENT
+
+[REDACTED]
+
+### Linia 3927 — AGENT
+
+[REDACTED]
+
+### Linia 3928 — AGENT
+
+[REDACTED]
+
+### Linia 3929 — AGENT
+
+[REDACTED]
+
+### Linia 3930 — AGENT
+
+[REDACTED]
+
+### Linia 3931 — AGENT
+
+[REDACTED]
+
+### Linia 3932 — AGENT
+
+[REDACTED]
+
+### Linia 3933 — AGENT
+
+**✅ Gotowe:** audyt 20 wdrożony + opublikowany w roboczej.
+
+## Wersja robocza
+
+| | |
+|---|---|
+| **Wejście** | `gra-robocza/START.html` |
+| **md5** | `33e7c2138ee878307b4f0e294b5413e1` |
+| **Stamp** | `33e7c213` |
+
+Ctrl+F5 przed testem (stary bundle w cache).
+
+## Co weszło (20 + bonus chatki)
+
+| Obszar | ID | Skrót naprawy |
+|--------|-----|----------------|
+| Ekonomia | #3, #4, #35, #36, #59 | Brak dupe ludności · suwak 0% nie kasuje głodu · zdrowie/deficyt · utrzymanie budynków · Praca→¤ po split |
+| JSON | #34 | Parametry głodu z `ekonomia_miasta` |
+| AI | #5, #37 | Awans epoki + te same bramki co gracz |
+| Zwycięstwo | #6 | Nauka bez rakiety (gdy flaga wyłączona) |
+| Mapa | #7, #62, #63, #64 | Relief bez Wybrzeża · jeziora pangei · scoring dist=4 · martwe złoża w JSON |
+| Cuda | #38 | Nie na Wybrzeżu |
+| Audio | #8, #9, #39, #65 | Intro · kamień→brąz · natura OFF/ON · crossfade error |
+| Research | #60, #61 | Wioska → setEra/overlay · parser prereków |
+| **Bonus** | chatka | Wpis znika po turze · WYKONAJ nie blokuje |
+
+ABC zastosowane: **#6A · #4A · #62B · #64A**
+
+## Bramki
+
+- `tsc --noEmit` — 0 błędów  
+- `tech-tree-test` — 33/33  
+- `map-gen-regression` — OK  
+
+## Dokumentacja
+
+- Log: `dyspozycje/AUDYT-NAPRAWY-LOG.md`  
+- Wersja: `dyspozycje/WERSJE.md`  
+- Kanał: `dyspozycje/_handoff/KANAL-PRACA.md`
+
+## Co sprawdzić u Ciebie
+
+1. **Chatka** — odkryj, zakończ turę → komunikat znika, WYKONAJ nie świeci tylko z tego powodu  
+2. **AI** — po kilkudziesięciu turach AI ma techy brązu/żelaza  
+3. **Suwak żywności 0%** — deficyt nadal obciąża magazyn  
+4. **Awans epoki** — muzyka/overlay złóż po Brazownictwie (także z nagrody wioski)
+
+Kod źródłowy jest w `gra/src/` — jeśli chcesz commit + push na `main`, napisz **`commit`** / **`push`**.
+
+[REDACTED]
+
+### Linia 3934 — MACIEJ
+
+<timestamp>Tuesday, Jul 21, 2026, 10:34 PM (UTC+2)</timestamp>
+
+Okej, czy wszystko jest w wersji roboczej?
+
+### Linia 3935 — MACIEJ
+
+<available_subagent_types>
+Available subagent_types and a quick description of what they do:
+- generalPurpose: General-purpose agent for researching complex questions, searching for code, and executing multi-step tasks. Use when searching for a keyword or file and not confident you'll find the match quickly.
+- explore: Fast agent specialized for exploring codebases. Use this when you need to quickly find files by patterns (eg. "src/components/**/*.tsx"), search code for keywords (eg. "API endpoints"), or answer questions about the codebase (eg. "how do API endpoints work?"). When calling this agent, specify the desired thoroughness level: "quick" for basic searches, "medium" for moderate exploration, or "very thorough" for comprehensive analysis across multiple locations and naming conventions.
+- cursor-guide: Read Cursor product documentation to answer questions about how Cursor Desktop, IDE, CLI, Cloud Agents, Bugbot, and other features work. Use when the user asks 'In Cursor, how do I...?' or similar questions about Cursor products.
+- ci-investigator: Investigate a single failing PR CI check and return a short root-cause summary. Use when the user asks to summarize, explain, diagnose, or investigate a specific failed check from a pull request.
+- bugbot: Use only when the user *explicitly* asks for a Bugbot-like review of local code changes. When launching this subagent, set the Task description to exactly "Bugbot". Launch exactly one Bugbot subagent with `run_in_background: false` unless the user explicitly asks to run in background. Use this fixed prompt form: "Full Repository Path: ...\nDiff: <one of: \"branch changes\", \"uncommitted changes\", \"natural language\">\nChange Description: ...\nCustom Instructions: ..."; default to `Diff: branch changes`; include `Change Description` only when `Diff` is `natural language`, formatting it as one block per changed file (a `<path> (added|modified|deleted|renamed)` header followed by bullets of what changed, mentioning line numbers or ranges inline where helpful), and only use `natural language` as a last resort after a regular diff-based review failed because the diff could not be computed; include `Custom Instructions` only when the user gave specific review instructions. This subagent is single-shot and does not support `resume`; always launch a fresh subagent instead.
+- security-review: Use only when the user *explicitly* asks for a security review of local code changes. When launching this subagent, set the Task description to exactly "Security Review". Launch exactly one security-review subagent with `run_in_background: false` unless the user explicitly asks to run in background. Use this fixed prompt form: "Full Repository Path: ...\nDiff: <one of: \"branch changes\", \"uncommitted changes\">\nCustom Instructions: ..."; default to `Diff: branch changes`; include `Custom Instructions` only when the user gave specific review instructions. This subagent is single-shot and does not support `resume`; always launch a fresh subagent instead.
+- best-of-n-runner: Run a task in an isolated git worktree. Each best-of-n-runner gets its own branch and working directory. Use for best-of-N parallel attempts or isolated experiments.
+</available_subagent_types>
+
+<available_subagent_models>
+If the user explicitly asks for the model of a subagent/task, you may ONLY use model slugs from this list:
+- inherit (default; required unless the user explicitly requested another model)
+- claude-fable-5-thinking-high
+- claude-opus-4-8-thinking-high
+- claude-sonnet-5-thinking-high
+- composer-2.5
+- composer-2.5-fast
+- cursor-grok-4.5-high-fast
+- gpt-5.6-sol-medium
+- gpt-5.6-terra-medium
+- kimi-k2.7-code
+
+If the user isn't asking for a specific version, prefer the latest version of the model family. As an example, if the user just says "gpt" or "claude", use the latest available version of GPT or Claude.
+
+IMPORTANT: If the user requests a model that is NOT in the list above, do NOT substitute a different model or guess. Instead, skip launching the subagent with that model and tell the user which model was unavailable and which models are available.
+
+When speaking to the USER about which model you selected for a subagent, do NOT use the kebab-case model names unless the user requested the model using that format. Ue the same naming scheme the user used to discuss the model when they requested it.
+</available_subagent_models>
+
+<mcp_meta_tools>
+You have access to MCP (Model Context Protocol) tools through `GetMcpTools` and `CallMcpTool`.
+
+## MCP Tool Discovery and Invocation
+
+Use `GetMcpTools` to discover tool schemas, then `CallMcpTool` to invoke them. Aim to minimize round-trips: ideally one `GetMcpTools` call followed by one `CallMcpTool` call.
+
+If the user mentions, references, or links to a product or service that corresponds to an available MCP server, and the request likely depends on information from that service, proactively inspect that MCP server before answering. Do not wait for the user to explicitly ask you to use MCP. If you are unsure which server matches, use `GetMcpTools` with a pattern based on the service name.
+
+`GetMcpTools` supports four modes:
+
+1. `{"server":"<id>"}`: returns full input schemas and full descriptions for every tool on that server. Preferred when you know which server to use.
+2. `{"server":"<id>","toolName":"<name>"}`: returns the full schema and full description for one tool.
+3. `{"pattern":"<regex>"}`: searches tool and server names across all servers using RE2 syntax (no backreferences, lookahead, or lookbehind). Use when you're unsure which server has the tool you need.
+4. No arguments: returns a catalog of all servers with tool names and short descriptions. Only use this if you have no idea which server or tool to look for — in most cases, prefer fetching by server or pattern instead.
+
+Pattern-search and catalog results shorten long descriptions, marked by a trailing "... [truncated]"; server and single-tool lookups always return the complete description.
+
+MANDATORY - Always call `GetMcpTools` to discover a tool's schema before invoking it with `CallMcpTool`. If you already know the server, go directly to it rather than listing the full catalog first.
+
+If the available MCP tools do not fully support what the user asked you to do, complete the work you can with the current tool set. In your work summary, include what you were unable to do with MCP and why. Do not use browser automation to work around missing or unavailable MCP tools unless the user explicitly asks you to use the browser.
+
+Available MCP servers:
+
+<mcp_meta_tool_servers>
+<mcp_meta_tool_server name="cursor-app-control" tools="move_agent_to_root, move_agent_to_cloned_root, create_project, rename_chat, cursor_dialog, open_resource, open_automation" serverUseInstructions="Controls the Cursor application itself (workspace root, projects, opening resources and automations, user rules, chat title). See each tool description for usage." />
+<mcp_meta_tool_server name="cursor-ide-browser" tools="browser_navigate, browser_snapshot, browser_click, browser_mouse_click_xy, browser_type, browser_fill, browser_select_option, browser_press_key, browser_scroll, browser_drag, browser_get_bounding_box, browser_highlight, browser_tabs, browser_cdp, browser_take_screenshot, browser_lock" serverUseInstructions="The cursor-ide-browser MCP server provides a Cursor-owned browser tab plus a raw Chrome DevTools Protocol command tool.
+
+CORE WORKFLOW:
+1. Start by understanding the user's goal and what success looks like on the page.
+2. Use browser_tabs with action "list" to inspect open tabs and URLs before acting.
+3. Use browser_navigate to create or navigate the target tab. Omit the position parameter for background automation so focus is preserved.
+4. Use browser_lock before longer automation on an existing tab, then browser_lock with action "unlock" when finished.
+5. Use browser_snapshot for accessibility context and browser_take_screenshot for visual verification.
+6. Use browser_click, browser_type, browser_fill, browser_select_option, browser_press_key, browser_scroll, and browser_drag for page interactions.
+7. Use browser_highlight and browser_get_bounding_box for visual grounding and coordinate diagnostics.
+8. Use browser_cdp for page inspection, profiling, runtime evaluation, DOM/CSS queries, and performance data.
+
+AVOID RABBIT HOLES:
+1. Do not repeat the same failing action more than once without new evidence such as a fresh snapshot, a different ref, a changed page state, or a clear new hypothesis.
+2. IMPORTANT: If four attempts fail or progress stalls, stop acting and report what you observed, what blocked progress, and the most likely next step.
+3. Prefer gathering evidence over brute force. If the page is confusing, use browser_snapshot, browser_take_screenshot, or CDP inspection before trying more actions.
+4. If you encounter a blocker such as login, passkey/manual user interaction, permissions, captchas, destructive confirmations, missing data, or an unexpected state, stop and report it instead of improvising repeated actions.
+5. Do not get stuck in wait-action-wait loops. Every retry should be justified by something newly observed.
+
+CRITICAL - Lock/unlock workflow:
+1. browser_lock requires an existing browser tab - you CANNOT call browser_lock with action: "lock" before browser_navigate
+2. Correct order: browser_navigate -> browser_lock({ action: "lock" }) -> (interactions) -> browser_lock({ action: "unlock" })
+3. If a browser tab already exists (check with browser_tabs list), call browser_lock with action: "lock" FIRST before any interactions
+4. Only call browser_lock with action: "unlock" when completely done with ALL browser operations for this turn
+
+IMPORTANT - Waiting strategy:
+When waiting for page changes, prefer short CDP polling loops with Runtime.evaluate, DOM queries, Page lifecycle signals, or browser_snapshot checks rather than a single long wait.
+
+CDP USAGE:
+- Use browser_cdp with a DevTools Protocol method and params object, for example Runtime.evaluate, DOM.getDocument, CSS.getComputedStyleForNode, Profiler.start/stop, Performance.getMetrics, Log.enable, and Network.enable.
+- Do not use browser_cdp with CDP Input.* methods. They are denied because they are focus-sensitive in Electron webviews and can route input to Cursor UI instead of the browser page.
+- Use browser_click, browser_type, browser_fill, browser_select_option, browser_press_key, browser_scroll, and browser_drag for clicks, typing, filling inputs, selecting options, keyboard actions, scrolling, and drag-and-drop.
+- Use Runtime.evaluate for advanced DOM-scoped interactions that the dedicated browser tools do not cover.
+- For profiling, call Profiler.enable, Profiler.start, reproduce the behavior, then Profiler.stop. The profile is saved to a file and returned as a log_file; read that file only when you need to inspect details.
+- For JavaScript evaluation, prefer Runtime.evaluate with returnByValue when possible.
+- Some browser-wide or sensitive CDP methods are denied, especially cookie, storage, permission, download, target-management, filesystem-backed file-input commands, system-level commands, and CDP navigation/history navigation commands.
+- Large CDP responses are saved to files instead of being inlined. Prefer using the returned file path over immediately stuffing large payloads into context; read focused sections only when needed.
+
+VISION:
+- browser_take_screenshot attaches an image result that the model can inspect. CDP Page.captureScreenshot returns data inside JSON and should not replace browser_take_screenshot when visual verification is needed.
+
+NOTES:
+- browser_snapshot returns snapshot YAML and is the main source of truth for page structure.
+- Refs are opaque handles tied to the latest browser_snapshot for that tab.
+- Iframe content is not accessible - only elements outside iframes can be interacted with.
+- When you stop to report a blocker, include the current page, the target you were trying to reach, the blocker you observed, and the best next action. If the blocker requires manual user interaction, ask the user to take over at that point rather than assuming it in advance." />
+<mcp_meta_tool_server name="plugin-notion-workspace-notion" />
+<mcp_meta_tool_server name="plugin-slack-slack" tools="slack_send_message, slack_schedule_message, slack_add_reaction, slack_create_conversation, slack_create_canvas, slack_update_canvas, slack_search_public, slack_search_public_and_private, slack_search_channels, slack_search_users, slack_read_channel, slack_read_thread, slack_read_canvas, slack_read_user_profile, slack_list_channel_members, slack_read_file, slack_send_message_draft, slack_search_emojis, slack_get_reactions" />
+<mcp_meta_tool_server name="plugin-datadog-datadog" />
+</mcp_meta_tool_servers>
+
+## MCP Resource Access
+
+You also have access to MCP resources via `FetchMcpResource`.
+If a relevant server is marked as needing authentication, or if an MCP tool call fails with an authentication/authorization error, call `mcp_auth` for that server, then inspect that server again and retry the original request if appropriate. Do not call `mcp_auth` just because it is listed, and do not repeatedly call it if authentication did not fix the failure. Do not call `mcp_auth` in parallel; authenticate only one server at a time.
+</mcp_meta_tools>
+
+### Linia 3936 — MACIEJ
+
+<timestamp>Tuesday, Jul 21, 2026, 10:34 PM (UTC+2)</timestamp>
+
+Okej, czy wszystko jest w wersji roboczej?
+
+### Linia 3937 — AGENT
+
+Sprawdzam, czy źródła i opublikowany bundle w `gra-robocza` są spójne.
+
+[REDACTED]
+
+### Linia 3938 — AGENT
+
+[REDACTED]
+
+### Linia 3939 — AGENT
+
+[REDACTED]
+
+### Linia 3940 — AGENT
+
+[REDACTED]
+
+### Linia 3941 — AGENT
+
+[REDACTED]
+
+### Linia 3942 — AGENT
+
+[REDACTED]
+
+### Linia 3943 — AGENT
+
+[REDACTED]
+
+### Linia 3944 — AGENT
+
+[REDACTED]
+
+### Linia 3945 — AGENT
+
+[REDACTED]
+
+### Linia 3946 — AGENT
+
+[REDACTED]
+
+### Linia 3947 — AGENT
+
+**Tak — jeśli grasz przez główny bundel.** Audyt 20 + fix chatki są w roboczej; są drobne wyjątki w hubie i logach.
+
+## Co jest aktualne (audyt 20 + chatka)
+
+| Plik | Stamp | Stan |
+|------|-------|------|
+| `gra-robocza/Gra-ROBOCZA.html` | `aa380840` · 2026-07-21 22:29 | ✅ nowy build |
+| 6 playtestów pełnej gry (MAPA, MIASTO, WALKA, ODSKOK…) | ten sam `aa380840` | ✅ skopiowane z głównego bundla |
+| Kod źródłowy w `gra/src/` | — | ✅ naprawy E1–E8 + `villageEventLog` |
+
+**Wejście:** `gra-robocza/START.html` → **Pełna gra ROBOCZA** → **Ctrl+F5**.  
+W lewym dolnym rogu powinno być: `ROBOCZA · aa380840 · 2026-07-21 22:29`.
+
+## Czego NIE dotyczy ten publish (to normalne)
+
+- **`gra-kanon/`** — nie promowane; tylko robocza.
+- **`Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html`** i **`…-OBLEZENIE-DUZE.html`** — osobne, mniejsze bundele pola bitwy ze **starego** stampu `ec3750ac` (9 lipca). Publish ich nie nadpisuje — to nie pełna gra, więc **nie mają** napraw z audytu 20.
+- **`START.html`** — linki są OK, ale metadane w hubie nadal pokazują stary `14b3a1b0` (kosmetyka; publish nie aktualizuje huba).
+
+## Drobna niespójność w logach
+
+`ROBOCZA-MANIFEST.json` i `WERSJE.md` mają `33e7c213`, a pieczęć na pliku to `aa380840`. **Źródło prawdy = pieczęć na bundlu** (inject liczy md5 po wstrzyknięciu). Sam plik gry jest spójny; manifest warto zsynchronizować przy następnym publishu.
+
+## Git
+
+Publish lokalny był zrobiony; **commit/push nie był** w tej sesji. Na dysku masz aktualną roboczą; druga maszyna po samym `git pull` może nie mieć jeszcze zmian w `gra/src/`.
+
+---
+
+**Podsumowanie:** pełna gra robocza = **tak, wszystko z audytu 20 jest w bundlu** (`aa380840`). Wyjątki: dwa stare playtesty „DUŻA bitwa/oblężenie” (osobne bundele) i przestarzały opis w `START.html`.
+
+Chcesz, żebym zaktualizował `START.html` + manifest do `aa380840`, albo zrobił commit/push?
+
+[REDACTED]
+
+### Linia 3948 — MACIEJ
+
+<timestamp>Tuesday, Jul 21, 2026, 10:35 PM (UTC+2)</timestamp>
+
+potem zapisz w dyspozycjach w odpowiednim miejscu co wykonałeś, co zmieniłeś, co usprawniłeś, co naprawiłeś.
+
+### Linia 3949 — AGENT
+
+Sprawdzam strukturę `dyspozycje/` i uzupełnię dokumentację wykonanej pracy.
+
+[REDACTED]
+
+### Linia 3950 — AGENT
+
+[REDACTED]
+
+### Linia 3951 — AGENT
+
+[REDACTED]
+
+### Linia 3952 — AGENT
+
+[REDACTED]
+
+### Linia 3953 — AGENT
+
+[REDACTED]
+
+### Linia 3954 — AGENT
+
+[REDACTED]
+
+### Linia 3955 — AGENT
+
+[REDACTED]
+
+### Linia 3956 — AGENT
+
+[REDACTED]
+
+### Linia 3957 — AGENT
+
+[REDACTED]
+
+### Linia 3958 — AGENT
+
+[REDACTED]
+
+### Linia 3959 — AGENT
+
+[REDACTED]
+
+### Linia 3960 — AGENT
+
+[REDACTED]
+
+### Linia 3961 — AGENT
+
+[REDACTED]
+
+### Linia 3962 — AGENT
+
+[REDACTED]
+
+### Linia 3963 — AGENT
+
+Uzupełniam `AUDYT-NAPRAWY-LOG.md` o pełny raport wykonania i aktualizuję status w planie.
+
+[REDACTED]
+
+### Linia 3964 — AGENT
+
+Zapisane.
+
+## Gdzie
+
+Główny raport: **`dyspozycje/AUDYT-NAPRAWY-LOG.md`** — rozszerzony o pełną dokumentację sesji.
+
+Dopisek statusu: **`dyspozycje/PLAN-NAPRAWCZY-AUDYT-20-POTWIERDZONE.md`** (sekcja „Status wdrożenia” na końcu).
+
+## Co jest w logu
+
+1. **Podsumowanie** — 20 napraw + fix chatki, bramki, publish, co jeszcze nie jest w git
+2. **Paczki E1–E8** — tabela statusów
+3. **ABC** — #6A, #4A, #62B, #64A
+4. **Szczegóły per ID** — problem → naprawa → plik (wszystkie 20 + extra chatka)
+5. **Lista zmienionych plików** — `gra/src/` + artefakty `gra-robocza/`
+6. **Co jest / czego nie ma w roboczej** — w tym 2 stare playtesty DUŻA bitwa/oblężenie
+7. **Poza zakresem** — lista dla Fable (bez duplikacji)
+8. **Jak sprawdzić** — 5 punktów po Ctrl+F5
+
+Wcześniejsze wpisy (`WERSJE.md`, `KANAL-PRACA.md`, `MACIEJ-GOTOWE.md`) zostają; **`AUDYT-NAPRAWY-LOG.md`** jest teraz jednym miejscem na pełny opis wykonania.
+
+[REDACTED]
+
+### Linia 3965 — MACIEJ
+
+<timestamp>Tuesday, Jul 21, 2026, 10:37 PM (UTC+2)</timestamp>
+
+commit / push
+
+### Linia 3966 — AGENT
+
+[REDACTED]
+
+### Linia 3967 — AGENT
+
+[REDACTED]
+
+### Linia 3968 — AGENT
+
+[REDACTED]
+
+### Linia 3969 — AGENT
+
+[REDACTED]
+
+### Linia 3970 — AGENT
+
+[REDACTED]
+
+### Linia 3971 — AGENT
+
+[REDACTED]
+
+### Linia 3972 — AGENT
+
+[REDACTED]
+
+### Linia 3973 — AGENT
+
+Przywracam przypadkowo uszkodzony POLE-BITWY, buduję roboczą z pełnym kodem audytu, potem commit i push.
+
+[REDACTED]
+
+### Linia 3974 — AGENT
+
+[REDACTED]
+
+### Linia 3975 — AGENT
+
+[REDACTED]
+
+### Linia 3976 — AGENT
+
+[REDACTED]
+
+### Linia 3977 — AGENT
+
+[REDACTED]
+
+### Linia 3978 — AGENT
+
+[REDACTED]
+
+### Linia 3979 — AGENT
+
+[REDACTED]
+
+### Linia 3980 — AGENT
+
+[REDACTED]
+
+### Linia 3981 — AGENT
+
+[REDACTED]
+
+### Linia 3982 — AGENT
+
+[REDACTED]
+
+### Linia 3983 — AGENT
+
+[REDACTED]
+
+### Linia 3984 — AGENT
+
+[REDACTED]
+
+### Linia 3985 — AGENT
+
+Gotowe.
+
+## Commit + push
+
+| | |
+|---|---|
+| **Commit** | `6adfb79` — `fix(audyt-20): 20 napraw POTWIERDZONE + deploy ROBOCZA 5793da54` |
+| **Push** | `main` → `origin` (`794befe..6adfb79`) |
+| **ROBOCZA** | stamp **`5793da54`** · md5 `5793da543dc71b9a5ea61f6776f8c241` |
+
+## Co poszło w commit (29 plików)
+
+- **Kod audytu E1–E8:** `gra/src/` (manpower, turn-economy, economy, empire-food, ai, victory, map, audio, playerState)
+- **Dane:** `gra/data/map-gen-params.json`
+- **Bundel:** `gra-robocza/Gra-ROBOCZA.html` + 6 playtestów + manifest
+- **Dyspozycje:** `AUDYT-KODU`, `AUDYT-NAPRAWY-LOG`, `PLAN-NAPRAWCZY`, `WERSJE.md`, `KANAL-PRACA.md`
+- **Test bundles:** `.research-bundle.cjs`, `.map-gen-regression-bundle.cjs`
+
+## Co celowo pominięte
+
+- Eksporty czatów (`docs/archiwum-czatow/eksport-pelny/*`) — auto-sync, nie dotyczy audytu
+
+## U Ciebie
+
+**Ctrl+F5** na `gra-robocza/START.html` → pieczęć w lewym dolnym rogu: **`5793da54`**.
+
+Ten bundel łączy **audyt 20** z wcześniejszym **E-START-CS** (państwa wokół stolicy).
+
+[REDACTED]
+
+### Linia 3987 — MACIEJ
+
+<timestamp>Tuesday, Jul 21, 2026, 10:43 PM (UTC+2)</timestamp>
+
+Hej, przygotuj mi rozszerzoną wersję wszystkich rzeczy, które udało Cię naprawić, które wkleję do Fable, żeby już wiedział, że to jest zrobione. Napisz, co było problemem, jak go rozwiązałeś.
+
+### Linia 3988 — AGENT
+
+Przygotowuję pełny handoff dla Fable — sprawdzam log i kluczowe zmiany w kodzie.
+
+[REDACTED]
+
+### Linia 3989 — AGENT
+
+[REDACTED]
+
+### Linia 3990 — AGENT
+
+[REDACTED]
+
+### Linia 3991 — AGENT
+
+Poniżej gotowy blok do wklejenia do Fable.
+
+---
+
+# HANDOFF DLA FABLE — audyt 20 POTWIERDZONE (JUŻ WDROŻONE)
+
+**Data:** 2026-07-21  
+**Akceptacja Macieja:** `OK plan audyt 20`  
+**Wykonawca:** Cursor (sesja lokalna)  
+**Commit:** `6adfb79` na `main` (pushnięte)  
+**ROBOCZA:** stamp `5793da54` · md5 `5793da543dc71b9a5ea61f6776f8c241`  
+**Źródła w repo:** `dyspozycje/AUDYT-NAPRAWY-LOG.md`, `dyspozycje/PLAN-NAPRAWCZY-AUDYT-20-POTWIERDZONE.md`, `dyspozycje/AUDYT-KODU-2026-07-21.md`
+
+---
+
+## INSTRUKCJA DLA FABLE
+
+**NIE duplikuj napraw poniżej** — są na `main` i w bundlu roboczym.  
+Kontynuuj audyt od pozycji **poza tą listą** (#1, #2, #10–#33, #40–#58, #66–#73 + 6 obszarów niezbadanych z rundy 1).
+
+**ID już zrobione przez Cursor:**  
+`#3 #4 #5 #6 #7 #8 #9 #34 #35 #36 #37 #38 #39 #59 #60 #61 #62 #63 #64 #65`  
+**+ extra (poza audytem):** fix chatki / panel WYDARZENIA
+
+---
+
+## DECYZJE ABC (Maciej)
+
+| ID | Decyzja | Skutek |
+|----|---------|--------|
+| **#6** | **A** | Zwycięstwo naukowe bez rakiety, dopóki `NAUKA_WYMAGA_RAKIETY=false` |
+| **#4** | **A** | Suwak rozwoju 0% = zero **dodatniej** żywności do wzrostu; **ujemny** bilans nadal obciąża magazyn |
+| **#62** | **B** | Pangea: naprawiona gałąź `if/else` — jeziora wewnętrzne mogą zostać (bez zmiany innych typów map) |
+| **#64** | **A** | Usunięte martwe wpisy z JSON (bez nowych mechanik) |
+
+---
+
+## SZCZEGÓŁY — PROBLEM → ROZWIĄZANIE
+
+### #3 — Duplikacja ludności przy rekrutacji / disband (WYSOKA)
+
+**Problem:** Przy `population=1` rekrutacja mogła zejść do 0 ludności, a disband oddawał +1 ludność ponad cap — exploit na duplikowanie populacji.
+
+**Rozwiązanie:**
+- `tryDeductUnitSpawnCosts()` — rekrutacja blokowana, gdy `popCost > 0` i `population <= popCost` (reason: `brak_ludnosci`).
+- `refundUnitSpawnToCity()` — zwrot ludności clampowany do opcjonalnego `popCap`; manpower clampowany do `cityManpowerMax`.
+
+**Plik:** `gra/src/game/manpower.ts`
+
+---
+
+### #4 — Suwak żywności 0% kasował deficyt (WYSOKA)
+
+**Problem:** Gdy suwak „Rozwój miast” (podział żywności imperium) był na 0%, cały bilans żywności miasta był mnożony przez 0 — w tym ujemny. Deficyt znikał z ksiąg zamiast nadal obciążać magazyn.
+
+**Rozwiązanie (ABC A):** Rozdzielenie przepływu:
+- `surplus = max(0, yld.zywnosc) * (pctRozwoj / 100)` — suwak dotyczy tylko nadwyżki,
+- `deficit = min(0, yld.zywnosc)` — deficyt w całości,
+- `zywnoscDoRozwoju = surplus + deficit` — wzrost i magazyn widzą prawdziwy ujemny bilans.
+
+**Plik:** `gra/src/game/turn-economy.ts`
+
+---
+
+### #5 — AI przestaje badać po techu awansu epoki (WYSOKA)
+
+**Problem:** Po zbadaniu technologii z flagą `awansDoEpoki` AI nie wybierało kolejnego techu — brak kontynuacji w pętli badań (efekt: AI „stoi” w epoce kamienia).
+
+**Rozwiązanie:** W pętli tury AI (`main.ts`, blok ~11723–11751):
+- `chooseAIResearch()` wywoływane co turę, gdy AI ma pusty slot,
+- ukończony tech dodawany do `aiResearchDone`,
+- `syncOwnerEraFromResearch(ownerId)` po awansie,
+- log `[AI N] Zbadano: … (awans epoki)`.
+
+**Pliki:** `gra/src/main.ts`, `gra/src/game/ai.ts`
+
+---
+
+### #6 — Zwycięstwo naukowe nieosiągalne (WYSOKA)
+
+**Problem:** `isNaukaVictory()` wymagało `rakietaWystrzelona === true`, ale mechanizm rakiety nie istnieje w v0.1 — zwycięstwo naukowe było matematycznie niemożliwe.
+
+**Rozwiązanie (ABC A):**
+- Stała `NAUKA_WYMAGA_RAKIETY` z `e-start-params.json` (`eStartNaukaWymagaRakiety()`).
+- `isNaukaVictory()`: jeśli wszystkie tech zbadane i `!NAUKA_WYMAGA_RAKIETY` → `true` bez rakiety.
+
+**Plik:** `gra/src/game/victory.ts`
+
+---
+
+### #7 — Relief fair-play stawia Góry na Wybrzeżu (WYSOKA)
+
+**Problem:** System reliefu (fair-play / noise rank) mógł nadać `TerenBazowy.Gory` heksom `Wybrzeze` — góry na wodzie przy brzegu.
+
+**Rozwiązanie:** W `applyReliefByNoiseRank` i powiązanych siatkach reliefu — wczesny `continue` / skip dla `Morze` i `Wybrzeze` (heks musi być lądem przed nałożeniem reliefu).
+
+**Plik:** `gra/src/map/gen-helpers.ts`
+
+---
+
+### #8 — Odrzucone `play()` → martwy fallback intro (WYSOKA)
+
+**Problem:** Gdy przeglądarka odrzucała `HTMLAudioElement.play()` (autoplay policy), flaga `playing` zostawała `true`. Kolejne `start()` myślało, że odtwarzanie trwa — intro menu milczało na stałe.
+
+**Rozwiązanie:** W `playOn()` — w `.catch()` na `el.play()` ustawiane `playing = false`, żeby `start()` mógł ponowić próbę po geście użytkownika.
+
+**Plik:** `gra/src/audio/filePlayer.ts`
+
+---
+
+### #9 — Awans kamień→brąz: cisza przy torze plikowym (WYSOKA)
+
+**Problem:** Przy muzyce z plików (`filePlayer`) `AudioContext` w `muzyka-antyczna.ts` był `null` w momencie awansu epoki — przejście na ścieżkę proceduralną nie startowało, gracz słyszał ciszę.
+
+**Rozwiązanie:** Lazy inicjalizacja `AudioContext` przy awansie epoki z toru plikowego + synchronizacja `setEra` / mood tak, by proceduralny bus dźwiękowy wstał od razu po awansie.
+
+**Plik:** `gra/src/audio/muzyka-antyczna.ts`
+
+---
+
+### #34 — Parametry głodu ze złego poziomu JSON (ŚREDNIA)
+
+**Problem:** `empire-food.ts` czytał `suwak_zywnosc_*`, `glod_*`, `spichlerz_*` z roota `econ-params.json`, podczas gdy kanon danych ma je w sekcji `ekonomia_miasta` — trudność i suwaki imperium nie działały zgodnie z panelem.
+
+**Rozwiązanie:** `const section = raw.ekonomia_miasta ?? raw` — odczyt z właściwej sekcji z fallbackiem na root.
+
+**Plik:** `gra/src/game/empire-food.ts`
+
+---
+
+### #35 — Zdrowie mnoży ujemną żywność → immunitet głodu (ŚREDNIA)
+
+**Problem:** W `populationGrowth()` modyfikator zdrowia (`1 + zdrowie * 0.05`) mnożył **cały** `zywnoscNetto`, także ujemny. Przy zdrowiu ≤ −20 ujemny bilans stawał się dodatni — miasto nie głodowało mimo deficytu.
+
+**Rozwiązanie:**
+```ts
+effectiveFlow = zywnoscNetto >= 0
+  ? zywnoscNetto * healthModifier
+  : zywnoscNetto;  // deficyt bez mnożnika zdrowiem
+```
+
+**Plik:** `gra/src/game/economy.ts` (`populationGrowth`)
+
+---
+
+### #36 — Utrzymanie budynków zawsze 0 (ŚREDNIA)
+
+**Problem:** `upkeepBalance()` dostawało pustą listę budynków — koszt utrzymania budynków był zawsze 0, mimo wybudowanych obiektów.
+
+**Rozwiązanie:** W `processTurnEconomy` / końcówce ekonomii tury — mapa `builtByCity` (cityId → id budynków) konwertowana na `BuildingInstanceLike[]` per owner (z poziomem z `buildingLevelForEpoch`), potem przekazana do `upkeepBalance`.
+
+**Plik:** `gra/src/game/turn-economy.ts`
+
+---
+
+### #37 — AI omija bramki epoki / tier / budynków (ŚREDNIA)
+
+**Problem:** `chooseAIResearch()` / `scoreTech()` nie stosowało tych samych bramek co gracz (`epochGate`, `epochTierGate`, `researchGates`) — AI mogło „wylosować” tech z przyszłej epoki lub bez wymaganych budynków.
+
+**Rozwiązanie:** W `scoreTech()`:
+- `if (!epochGateMet(...)) return -Infinity`
+- `if (!epochTierGateMet(...)) return -Infinity`
+- `if (opts.researchGate && !researchGatesMet(...)) return -Infinity`
+
+Z `main.ts` przekazywane: `techData`, `researchGate: researchGateForOwner(ownerId)`.
+
+**Plik:** `gra/src/game/ai.ts`
+
+---
+
+### #38 — Cud może stanąć na Wybrzeżu (ŚREDNIA)
+
+**Problem:** `isLandBuildable()` odrzucało Morze i Góry, ale nie Wybrzeże — cud świata mógł zostać postawiony na heksie wodnym przy brzegu.
+
+**Rozwiązanie:** `isLandBuildable` zwraca `false` także dla `TerenBazowy.Wybrzeze`.
+
+**Plik:** `gra/src/map/wonder-placement.ts`
+
+---
+
+### #39 — Toggle natury OFF→ON podwaja soundscape (ŚREDNIA)
+
+**Problem:** Wyłączenie i ponowne włączenie ambience natury nie zatrzymywało zaplanowanych źródeł dźwiękowych — druga warstwa nakładała się na pierwszą (podwojony wiatr/ptaki itd.).
+
+**Rozwiązanie:** `stopAmbience()` czyści zaplanowane timery / źródła przed ponownym `startAmbience()`.
+
+**Plik:** `gra/src/audio/muzyka-antyczna.ts`
+
+---
+
+### #59 — Formuła Praca→Pieniądz: floor vs round (NISKA)
+
+**Problem:** Ścieżka Praca→Pieniądz (`doPuli` po `splitPraca`) używała innej semantyki zaokrąglania niż reszta ekonomii — drobne rozjazdy z karą Porządku i sumami w HUD.
+
+**Rozwiązanie:** Ujednolicenie: `doPuli = Math.floor(Math.floor(pracaNetto) * (1 - pctPracaBudynki/100))` — spójne z resztą pipeline'u.
+
+**Plik:** `gra/src/game/economy.ts`
+
+---
+
+### #60 — Awans epoki z wioski bez setEra / overlay (NISKA)
+
+**Problem:** Nagroda „postęp badań” z chatki/wioski mogła zakończyć tech z `awansEpoki`, ale nie wywoływała `setEra()` ani `rebuildResourceOverlays()` — muzyka epoki i nakładki surowców zostawały w starej epoce.
+
+**Rozwiązanie:** Po `researchStep` z ukończonym techiem z `awansEpoki`:
+```ts
+rebuildResourceOverlays();
+setEra(player.era);
+```
+
+**Plik:** `gra/src/main.ts` (~8226–8230)
+
+---
+
+### #61 — Parser prereków ≠ research.ts (NISKA)
+
+**Problem:** `playerState.ts` traktował tylko pusty string i `—` jako „brak prereq”. W `tech.json` występują też `'-'`, `'brak'`, `'none'` — część techów miała fałszywe prereq lub była niedostępna.
+
+**Rozwiązanie:** Wspólny zestaw `BRAK_PREREQ`:
+```ts
+new Set(['', '-', '\u2014', '\u2013', 'brak', 'none'])
+```
++ filtrowanie tokenów po split na `+`.
+
+**Plik:** `gra/src/game/playerState.ts`
+
+---
+
+### #62 — Martwa gałąź pangei — jeziora zawsze kasowane (NISKA)
+
+**Problem:** Dla `typ === 'pangea'` generator ustawiał `maxInlandPoolSize: 24`, ale później **zawsze** wołał `purgeInlandWaterForMultiLandTyp` — jeziora wewnętrzne były kasowane mimo intencji pangei.
+
+**Rozwiązanie (ABC B):** `purgeInlandWaterForMultiLandTyp` wywoływane tylko gdy `typ !== 'pangea'` (dwa miejsca w pipeline generatora). Gałąź pangei z `removeInlandSeaPools` + `finalizeCoastAndInlandWater` z `maxInlandPoolSize: 24` działa jak zaprojektowano.
+
+**Plik:** `gra/src/map/generator.ts`
+
+---
+
+### #63 — Góry w dist=4 nie punktowane przy starcie (NISKA)
+
+**Problem:** W `scoreCityStartHex` pętla sąsiadów miała warunek `dist >= 2 && dist < 4` — heksy w **dystansie dokładnie 4** (w tym Góry) nigdy nie dostawały punktów.
+
+**Rozwiązanie:** Zmiana na `dist >= 2 && dist <= 4` dla bonusów Góry (+3) i Wzgórza (+1.5).
+
+**Plik:** `gra/src/map/startScoring.ts`
+
+---
+
+### #64 — Martwe reguły złóż w JSON (NISKA)
+
+**Problem:** W `map-gen-params.json` sekcja `deposit_rules` zawierała wpisy dla zasobów nieużywanych w grze (`owce`, `bydlo`, `lama`, `luksus`) — martwy balast, mylący przy audycie danych.
+
+**Rozwiązanie (ABC A):** Usunięte 4 martwe klucze z `deposit_rules`. **Uwaga:** plik to `gra/data/map-gen-params.json`, nie `deposits.json`.
+
+**Plik:** `gra/data/map-gen-params.json`
+
+---
+
+### #65 — onError przy crossfade ucisza playlistę (NISKA)
+
+**Problem:** Błąd ładowania/odtwarzania w trakcie crossfade w `filePlayer` mógł zostawić `playing=true` bez aktywnego źródła — playlista menu „umierała” bez recovery.
+
+**Rozwiązanie:** W handlerze błędu — reset `playing`, bezpieczny fallback (`selectNext` / ponowienie) zamiast trwałego wyciszenia.
+
+**Plik:** `gra/src/audio/filePlayer.ts`
+
+---
+
+## EXTRA — Chatka / panel WYDARZENIA (poza audytem 20, ten sam deploy)
+
+**Problem (zgłoszenie Macieja w playteście):**
+- Komunikat „Odkryto chatkę” / nagroda w WYDARZENIACH nie znikała po turze.
+- Przycisk **WYKONAJ** był zablokowany, bo `villageEventLog` liczył się jako blocking event.
+
+**Przyczyna:** `villageEventLog` nigdy nie był czyszczony; `countBlockingEvents()` liczyła wszystkie wydarzenia, w tym informacyjne z chatki.
+
+**Rozwiązanie:**
+- `isActionableEvent(ev)` — wpisy z id `village-*` **nie blokują** WYKONAJ (nagroda już przyznana przy wejściu).
+- `villageEventLog.length = 0` na końcu tury gracza (po `turn++`).
+- Dismiss pojedynczego wpisu: `villageEventLog.splice(idx, 1)`.
+
+**Plik:** `gra/src/main.ts` (wdrożone wcześniej w `ea7b967`, obecne w bundlu `5793da54`)
+
+---
+
+## POZA ZAKRESEM — NADAL DO FABLE (NIE RUSZANE)
+
+| ID | Waga | Temat (skrót) |
+|----|------|----------------|
+| **#1, #2** | KRYTYCZNA | Koszyk PN jednostka · auto-szturm `survivors:[]` |
+| **#10–#33** | WYSOKA | armor EN, super-jednostki, save/load wioski, dyplomacja, wydajność, AI build, handel… |
+| **#40–#58** | ŚREDNIA | ambBattleMuted, save barbCamps, panel miasta bilans, HP pasek armii… |
+| **#66–#73** | NISKA | UI listenery, religia panel, stat chip dispose… |
+
++ **6 obszarów** niezbadanych w rundzie 1 (walka pełna, dyplomacja moduły, handel, systemy strategiczne, wydajność zbiorczo, zwycięstwo save).
+
+---
+
+## BRAMKI PRZY WDROŻENIU
+
+- `npx tsc --noEmit` → 0 błędów  
+- `node tools/tech-tree-test.cjs` → pass  
+- `node tools/map-gen-regression-test.cjs` → determinizm A=B, rzeki OK  
+
+---
+
+## SZYBKI TEST REGRESJI (dla Fable)
+
+1. Ctrl+F5 `gra-robocza/START.html` → stamp **`5793da54`**
+2. Chatka → nagroda w WYDARZENIACH → koniec tury → wpis znika, WYKONAJ działa
+3. Suwak rozwoju 0% + deficyt żywności → magazyn maleje
+4. AI po awansie epoki → kolejne techy w logu konsoli
+5. Nowa gra pangea → możliwe jeziora wewnętrzne; brak gór na wybrzeżu
+6. Zbadaj wszystkie tech → zwycięstwo naukowe (bez rakiety w v0.1)
+
+---
+
+*Koniec handoffu · Cursor → Fable · 2026-07-21 · commit `6adfb79`*
+
+---
+
+Możesz wkleić cały blok powyżej do Fable. Jeśli chcesz, mogę też zapisać go jako plik `dyspozycje/FABLE-HANDOFF-AUDYT-20-WDROZONE.md` w repo.
+
+[REDACTED]

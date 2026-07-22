@@ -9,7 +9,21 @@ UWAGA: KANON i FINALNA promują się teraz OSOBNYMI skryptami (`gra/tools/publis
 wyraźne polecenie właściciela) — dlatego są logowane NIEZALEŻNIE, każdy w swojej sekcji, ze
 swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drugiego.
 
-## ROBOCZA `5000ee9f` — 2026-07-22 · FAZA 1: urealnienie dostępu surowców — **AKTUALNA**
+## ROBOCZA `98c4ede1` — 2026-07-23 · AUDYT 9a0ca985 luki: ruda stock + KULT-04 Power + warzelnia — **AKTUALNA**
+
+- **Zawartość:** Stock ruda/ruda_zelaza z kopalni_miedzi/kopalnia → `city.surowce` (2/t, łańcuch konwerterów brąz/żelazo); **KULT-04 A** — składniki Power: kultura imperium (×0,5) + jedność religii (×25/miasto) w `power-objective.ts` + wpięcie `main.ts`; warzelnia_soli teren wybrzeże w JSON; resources.json ruda miedzi vs ruda żelaza; fix palac techUnlock `-`; kuznia wymagania bez legacy cyna.
+- **Odłożone:** faza 3 koszty materiałowe budynków/jednostek (B-SUROW-BUD — tylko access gates, nie stock costs); KULT-DYP-01 dyplomacja (osobna decyzja).
+- **Bramki:** tsc=0 · power-objective 15/15 · converters 19/19 · culture-religion 65/65 · VERIFY OK.
+- **md5:** `98c4ede16e506df393369a49dabe25bb` · stamp `98c4ede1`.
+
+## ROBOCZA `9a0ca985` — 2026-07-23 · FAZA 2: surowce+budynki+spichlerz tier+kultura presja — **ZASTĄPIONA** (→ `98c4ede1`)
+
+- **Zawartość:** B-SUROW-BUD-03 deski wycofane (resources/tech/units/tartak/converters); bramki epok drewno/kamień/cegła w `building-resource-gate.ts` + imperium w `production.ts`/panel; 7 konwerterów (mielerz 2→1, cegielnia 2+1, odlewnia żelaza, wielka kuźnia); Spichlerz II (`spichlerz_ii` upgrade, cap 150, bufor 70%); Sól w resources; KULT-PRESJA tick w turze; KULT-PRESJA-05 capture mix; KULT-DYP-01 dyplomacja AND; fix garncarnia w turn-economy.
+- **Odłożone (znane luki):** stock ruda miedzi/żelaza z terenu do magazynu miasta; KULT-04 Power składniki; warzelnia_soli teren wybrzeże w JSON; kamień/cegła jako koszt materiałowy (faza 3).
+- **Bramki:** tsc=0 · converters-test 18/18 · conquest-stability 27/27 · vite build OK.
+- **md5:** `9a0ca98598c7d89af47dbb10789df868` · stamp `9a0ca985`.
+
+## ROBOCZA `5000ee9f` — 2026-07-22 · FAZA 1: urealnienie dostępu surowców — **ZASTĄPIONA** (→ `9a0ca985`)
 
 - **Zawartość:** `resource-access.ts` — aktywny dostęp wymaga złoże+ulepszenie na heksie (glina, miedź, ruda/żelazo/węgiel, sól, koń); wyjątki: tartak, kamieniołom, warzelnia na wybrzeżu; hodowla Model B (bydło/owce/lama bez złoża). Panel miasta: potencjał vs dostęp aktywny. Pilot bramki budynku: Garncarnia/Cegielnia (glina) — bez rozszerzania.
 - **Odłożone (faza 2):** pełne bramki budynków per surowiec; faza 3: magazyny + koszty materiałowe.

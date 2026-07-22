@@ -182,6 +182,8 @@ export interface City {
   wealthState?: WealthState;
   /** Skumulowana kultura miasta (UI / playtest). */
   kulturaSkumulowana?: number;
+  /** Udział kultury właściciela [0..1]; brak = 1 (miasto założone). Po podboju = 0. */
+  ownCultureShare?: number;
   /** D16-A: pozostałe tury immunitetu przed spadkiem poziomu W (start 5). */
   wealthImmunityRemaining?: number;
   /** Tura założenia miasta (opcjonalnie; immunitet W liczy też wealthImmunityRemaining). */

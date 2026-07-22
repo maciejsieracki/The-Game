@@ -231,7 +231,11 @@ function migrateAdvanced(raw: Record<string, unknown>): NewGameAdvancedOptions {
   } else if (raw.barbariansEnabled === false) {
     base.barbariansLevel = 'wylaczeni';
   }
-  if (raw.victoryMode === 'moc' || raw.victoryMode === 'dominacja' || raw.victoryMode === 'moc_i_dominacja') {
+  if (
+    raw.victoryMode === 'moc'
+    || raw.victoryMode === 'dominacja'
+    || raw.victoryMode === 'moc_i_dominacja'
+  ) {
     base.victoryMode = raw.victoryMode;
   } else if (raw.victoryPowerAndDominance === false) {
     base.victoryMode = 'dominacja';

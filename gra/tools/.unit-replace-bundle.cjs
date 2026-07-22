@@ -624,8 +624,9 @@ var DEFAULT_COST_BY_ROLE = {
 };
 function unitCostFromDef(def) {
   const raw = def["Pieni\u0105dz (koszt)"];
-  if (typeof raw === "number" && Number.isFinite(raw) && raw > 0) {
-    return raw;
+  if (typeof raw === "number" && Number.isFinite(raw)) {
+    if (raw > 0) return raw;
+    if (raw === 0 && def["Super-jednostka"] === "TAK") return 0;
   }
   const rola = def["Rola (linia)"];
   if (rola != null) {
@@ -802,6 +803,7 @@ function availableProduction(city, data, unlockedTechs, ctx = {}) {
     if (surowiec === "zelazo" && !hasZelazoAccess(ctx.hasKopalniaNaZlozuZelaza, builtList)) {
       continue;
     }
+    if (u["Super-jednostka"] === "TAK" && ctx.aliveUnitTypeNames?.has(u.Jednostka)) continue;
     const koszt = unitMoneyCost(
       itemCost("jednostka", u.Jednostka, data, 1),
       ctx.civBonusy,
@@ -844,6 +846,7 @@ function availableReplacementsFor(currentUnitName, data, unlockedTechs, ctx = {}
     const surowiec = (u.Surowiec ?? "").toString().trim().toLowerCase();
     if (surowiec === "braz" && !hasBrazAccess(ctx.placedImprovements, builtList)) return false;
     if (surowiec === "zelazo" && !hasZelazoAccess(ctx.hasKopalniaNaZlozuZelaza, builtList)) return false;
+    if (u["Super-jednostka"] === "TAK" && ctx.aliveUnitTypeNames?.has(u.Jednostka)) return false;
     return true;
   }
   function costOf(u) {

@@ -55,6 +55,31 @@ export function applyImprovementBonus(yld: TileYield, improvementKey: string | u
   if (b.glina)   yld.glina   += b.glina;
 }
 
+/** Ilość rudy wydobywanej z kopalni na turę (analogicznie do glina=2 z glinianki). */
+export const ORE_YIELD_PER_MINE = 2;
+
+/**
+ * Plon rudy miedzi vs żelaza z ulepszeń kopalni (kopalnia_miedzi → ruda; kopalnia + zloze zelazo → ruda_zelaza).
+ */
+export function oreYieldFromImprovements(
+  improvementKeys: readonly string[],
+  zloze?: string | null,
+): { ruda: number; ruda_zelaza: number } {
+  let ruda = 0;
+  let ruda_zelaza = 0;
+  const z = zloze?.trim().toLowerCase();
+  for (const raw of improvementKeys) {
+    const key = normalizeImprovementKey(raw);
+    if (key === 'kopalnia_miedzi') {
+      ruda += ORE_YIELD_PER_MINE;
+    } else if (key === 'kopalnia') {
+      if (z === 'zelazo') ruda_zelaza += ORE_YIELD_PER_MINE;
+      else ruda += ORE_YIELD_PER_MINE;
+    }
+  }
+  return { ruda, ruda_zelaza };
+}
+
 /** Suma bonusów wielu warstw ulepszeń na jednym heksie (kanon §3). */
 export function applyImprovementBonuses(yld: TileYield, improvementKeys: readonly string[]): void {
   for (const key of improvementKeys) {

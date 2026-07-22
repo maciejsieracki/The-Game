@@ -48,6 +48,7 @@ export {
   accumulateCulture,
   cityBorderRadius,
   cultureHappiness,
+  convertCulture,
   convertViaTemple,
 } from '../src/game/culture-religion';
 `;
@@ -311,6 +312,58 @@ eq(
 );
 assert(CR.isEmptyReligionState({ counts: {} }), 'E5: empty counts -> isEmpty');
 assert(!CR.isEmptyReligionState(empty), 'E6: seeded state -> not empty');
+
+// ===========================================================================
+// F. B-KULT-REL split — kultura vs religia budynki
+// ===========================================================================
+
+const CP = CR.FALLBACK_CULTURE_PARAMS;
+const convBase = CR.convertCulture({ kulturaSkumulowana: 0, ownCultureShare: 0 }, {}, CP);
+const convSwiatynia = CR.convertCulture(
+  { kulturaSkumulowana: 0, ownCultureShare: 0 },
+  { hasSwiatynia: true },
+  CP,
+);
+near(convBase.ownCultureShare, 0.01, 'F1: culture base 1%/t');
+eq(
+  convSwiatynia.ownCultureShare,
+  convBase.ownCultureShare,
+  'F2: swiatynia does NOT boost culture conversion',
+);
+const convBib = CR.convertCulture(
+  { kulturaSkumulowana: 0, ownCultureShare: 0 },
+  { hasBiblioteka: true },
+  CP,
+);
+near(convBib.ownCultureShare, 0.03, 'F3: biblioteka adds 2% culture conversion (1+2)');
+
+const convStela = CR.convertCulture(
+  { kulturaSkumulowana: 0, ownCultureShare: 0 },
+  { hasStela: true },
+  CP,
+);
+near(convStela.ownCultureShare, 0.015, 'F3b: stela adds 0.5% culture conversion');
+
+const convPalacBibSad = CR.convertCulture(
+  { kulturaSkumulowana: 0, ownCultureShare: 0 },
+  { hasPalac: true, hasBiblioteka: true, hasSad: true },
+  CP,
+);
+near(convPalacBibSad.ownCultureShare, 0.05, 'F3c: palac+bib+sad capped at 5%');
+
+const relStart = { counts: { 'Obca wiara': 100 } };
+const relNoBld = CR.convertViaTemple(relStart, 'Nasza wiara', {}, CR.FALLBACK_RELIGION_PARAMS);
+const relSwiat = CR.convertViaTemple(relStart, 'Nasza wiara', { hasSwiatynia: true }, CR.FALLBACK_RELIGION_PARAMS);
+const relKregi = CR.convertViaTemple(relStart, 'Nasza wiara', { hasKamienneKregi: true }, CR.FALLBACK_RELIGION_PARAMS);
+assert(relSwiat.converted > relNoBld.converted, 'F4: swiatynia boosts religion conversion');
+assert(relKregi.converted > relNoBld.converted, 'F5: kregi boosts religion conversion');
+assert(relSwiat.converted > relKregi.converted, 'F6: swiatynia faster than kregi');
+eq(relNoBld.converted, 2, 'F7: base 2%/t → 2 converted from 100');
+eq(relKregi.converted, 4, 'F8: kregi +2%/t → 4%/t total → 4 converted');
+eq(relSwiat.converted, 6, 'F9: swiatynia +4%/t → 6%/t total → 6 converted');
+near(relNoBld.appliedRate, 0.02, 'F7b: base appliedRate 2%');
+near(relKregi.appliedRate, 0.04, 'F8b: kregi appliedRate 4%');
+near(relSwiat.appliedRate, 0.06, 'F9b: swiatynia appliedRate 6%');
 
 // ---------------------------------------------------------------------------
 // Summary

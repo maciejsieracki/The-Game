@@ -6,7 +6,7 @@
     "epokaWejscia": 1,
     "maksPoziom": 10,
     "nazwyPoziomow": [
-      "Obrobka desek",
+      "Warsztat drewna",
       "Stolarnia",
       "Manufaktura drewna",
       "Ciesielstwo",
@@ -42,7 +42,7 @@
     "utrzymanie": 1,
     "przyrostUtrzymania": 0,
     "wymagania": "las w zasiegu",
-    "uwagi": "",
+    "uwagi": "B-SUROW-BUD-03: bonus Pracy only — bez konwertera desek",
     "techUnlock": "Obróbka drewna"
   },
   {
@@ -146,7 +146,7 @@
     "przyrostKosztu": 10,
     "utrzymanie": 2,
     "przyrostUtrzymania": 1,
-    "wymagania": "miedz lub cyna w zasiegu",
+    "wymagania": "ruda miedzi w zasięgu (kopalnia miedzi)",
     "uwagi": "Mnoznik % dotyczy sily jednostek produkowanych w miescie",
     "techUnlock": "Brązownictwo"
   },
@@ -405,8 +405,44 @@
     "utrzymanie": 1,
     "przyrostUtrzymania": 0,
     "wymagania": "",
-    "uwagi": "",
+    "uwagi": "B-SPIC: bramka Ceramika (garncarnia imperium); tier I cap 100",
     "techUnlock": "Garncarstwo"
+  },
+  {
+    "id": "spichlerz_ii",
+    "nazwa": "Spichlerz II",
+    "kategoria": "Zywnosc",
+    "epokaWejscia": 2,
+    "maksPoziom": 10,
+    "upgradeFrom": "spichlerz",
+    "nazwyPoziomow": [],
+    "baza": {
+      "praca": 0,
+      "pieniadz": 0,
+      "zywnosc": 3,
+      "nauka": 0,
+      "kultura": 0,
+      "zadowolenie": 2,
+      "obrona": 0,
+      "mnoznik": 0
+    },
+    "przyrost": {
+      "praca": 0,
+      "pieniadz": 0,
+      "zywnosc": 1,
+      "nauka": 0,
+      "kultura": 0,
+      "zadowolenie": 0,
+      "obrona": 0,
+      "mnoznik": 0
+    },
+    "kosztBudowy": 35,
+    "przyrostKosztu": 12,
+    "utrzymanie": 2,
+    "przyrostUtrzymania": 0,
+    "wymagania": "upgrade ze Spichlerza I",
+    "uwagi": "B-SPIC: bramka Sól; cap armii 150; bufor 70% po wzroście",
+    "techUnlock": "Warzelnia soli"
   },
   {
     "id": "garncarnia",
@@ -420,7 +456,7 @@
       "pieniadz": 0,
       "zywnosc": 0,
       "nauka": 0,
-      "kultura": 1,
+      "kultura": 0,
       "zadowolenie": 0,
       "obrona": 0,
       "mnoznik": 0
@@ -481,7 +517,7 @@
   {
     "id": "kamienne_kregi",
     "nazwa": "Kamienne kręgi",
-    "kategoria": "Kultura",
+    "kategoria": "Religia",
     "epokaWejscia": 1,
     "maksPoziom": 10,
     "nazwyPoziomow": [],
@@ -510,13 +546,13 @@
     "utrzymanie": 1,
     "przyrostUtrzymania": 0,
     "wymagania": "",
-    "uwagi": "T-TECH-8: pierwszy poziom kultu — upgrade do Świątyni",
+    "uwagi": "B-KULT-REL + KULT-BUD-02: budynek RELIGIJNY — konwersja religii +2%/t (religia_konwersja_kregi, additive do bazy); plon kultury OK, bez bonusu konwersji kultury. Upgrade → Świątynia.",
     "techUnlock": "Mistycyzm"
   },
   {
     "id": "swiatynia",
     "nazwa": "Świątynia",
-    "kategoria": "Kultura",
+    "kategoria": "Religia",
     "epokaWejscia": 2,
     "maksPoziom": 10,
     "nazwyPoziomow": [],
@@ -545,7 +581,7 @@
     "utrzymanie": 1,
     "przyrostUtrzymania": 1,
     "wymagania": "upgrade Kamiennych kręgów",
-    "uwagi": "T-TECH-8: suma bonusów kręgi+świątynia w JSON",
+    "uwagi": "B-KULT-REL + KULT-BUD-02: budynek RELIGIJNY — konwersja religii +4%/t (religia_konwersja_swiatynia, additive do bazy); plon kultury OK, bez bonusu konwersji kultury.",
     "techUnlock": "Religia",
     "upgradeFrom": "kamienne_kregi"
   },
@@ -572,7 +608,7 @@
       "pieniadz": 0,
       "zywnosc": 0,
       "nauka": 3,
-      "kultura": 1,
+      "kultura": 2,
       "zadowolenie": 0,
       "obrona": 0,
       "mnoznik": 0
@@ -887,8 +923,8 @@
     "utrzymanie": 2,
     "przyrostUtrzymania": 1,
     "wymagania": "-",
-    "uwagi": "1 na miasto; glowne zrodlo kultury + Prawo (society-params prawo_palac)",
-    "techUnlock": ""
+    "uwagi": "1 na miasto; główne źródło kultury + Prawo (society-params prawo_palac); budynek startowy — bez bramki tech",
+    "techUnlock": "-"
   },
   {
     "id": "kuznia_zelaza",
@@ -1120,7 +1156,7 @@
       "pieniadz": 2,
       "zywnosc": 0,
       "nauka": 0,
-      "kultura": 1,
+      "kultura": 5,
       "zadowolenie": 2,
       "obrona": 0,
       "mnoznik": 0
@@ -1130,7 +1166,7 @@
       "pieniadz": 1,
       "zywnosc": 0,
       "nauka": 0,
-      "kultura": 1,
+      "kultura": 0,
       "zadowolenie": 1,
       "obrona": 0,
       "mnoznik": 0
@@ -1140,7 +1176,7 @@
     "utrzymanie": 2,
     "przyrostUtrzymania": 1,
     "wymagania": "",
-    "uwagi": "Redukuje korupcje (anty-korupcja); zwiekszony porzadek publiczny; zadowolenie z praworz.",
+    "uwagi": "KULT-BUD-01: +5 kultura baza, +2% konwersji; redukuje korupcje; zadowolenie z praworz.",
     "techUnlock": "Prawo"
   },
   {
@@ -1225,7 +1261,7 @@
       "pieniadz": 0,
       "zywnosc": 1,
       "nauka": 0,
-      "kultura": 1,
+      "kultura": 3,
       "zadowolenie": 3,
       "obrona": 0,
       "mnoznik": 0
@@ -1245,7 +1281,7 @@
     "utrzymanie": 2,
     "przyrostUtrzymania": 1,
     "wymagania": "wymaga Studnia",
-    "uwagi": "Termy rzymskie — zadowolenie, kultura, zdrowie; wymaga Studni i tech Medycyna.",
+    "uwagi": "KULT-BUD-01: +3 kultura baza, +1% konwersji; termy — zadowolenie, zdrowie; wymaga Studni i tech Medycyna.",
     "techUnlock": "Medycyna"
   },
   {

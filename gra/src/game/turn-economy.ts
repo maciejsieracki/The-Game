@@ -50,7 +50,6 @@ import { normalizePodzialHandlu } from './cities';
 import {
   cityYieldPerTurn,
   populationGrowth,
-  mnoznikHandelPieniadzForCiv,
   civBonusyForCivKey,
   civEconomyYieldMultipliers,
   tileYield,
@@ -107,6 +106,11 @@ import {
 } from './okolica';
 import { buildTerritoryNodesFromCities } from '../map/territory-work';
 import type { TerritoryNode } from '../map/territory';
+import {
+  cityTradeMultiplier,
+  loadReligionParams,
+  type ReligionState,
+} from './culture-religion';
 import type { OrderYieldMults } from './order';
 import { getCityFoodSplit } from './empire-food';
 import { pickOsiedlePopBonus, osiedlePopLabel } from './society-breakdown';
@@ -121,6 +125,43 @@ function applyOrderYieldMults(
   if (mults.pieniadzMult !== 1) yld.pieniadz *= mults.pieniadzMult;
   if (mults.naukaMult !== 1) yld.nauka *= mults.naukaMult;
   if (mults.kulturaMult !== 1) yld.kultura *= mults.kulturaMult;
+}
+
+/** Nazwa wyświetlana cywilizacji z klucza (grecy → Grecy) — pod cityTradeMultiplier. */
+function civDisplayNameForKey(
+  civKey: string | undefined,
+  civs: GameData['civs'],
+): string | null {
+  if (!civKey || !civs?.cywilizacje?.length) return null;
+  const key = civKey.toLowerCase();
+  for (const row of civs.cywilizacje) {
+    if (!row) continue;
+    const ids = [row.ikonaId, (row as { typCywilizacji?: string }).typCywilizacji, row.Cywilizacja]
+      .filter((s): s is string => typeof s === 'string' && s.length > 0)
+      .map(s => s.toLowerCase());
+    if (ids.includes(key)) return row.Cywilizacja ?? null;
+  }
+  return null;
+}
+
+/** B-KULT-REL-Q3A — mnożnik handlu z religii (gate: Waluta + Mennica + dominująca wiara). */
+function religionTradeWalutaOverride(
+  cityReligion: ReligionState | undefined,
+  ownerCivKey: string | undefined,
+  builtIds: readonly string[],
+  walutaOdkryta: boolean,
+  civs: GameData['civs'],
+  societyParams: GameData['societyParams'],
+  difficulty: Difficulty,
+): number | undefined {
+  if (!walutaOdkryta || !builtIds.includes('mennica') || !cityReligion) return undefined;
+  const civName = civDisplayNameForKey(ownerCivKey, civs);
+  if (!civName) return undefined;
+  const rp = loadReligionParams(societyParams, difficulty);
+  const trade = cityTradeMultiplier(
+    cityReligion, civName, civs as unknown as import('./culture-religion').CivsDataLike, rp, true,
+  );
+  return trade.applied ? trade.multiplier : undefined;
 }
 
 // ---------------------------------------------------------------------------
@@ -345,7 +386,7 @@ function computeCityHealth(
   const maStudnie    = builtIds.includes('studnia');
   const maTargowisko = builtIds.includes('targowisko');
   const maAkwedukt   = builtIds.includes('akwedukt');
-  const maCeramike   = builtIds.includes('ceramika');
+  const maCeramike   = builtIds.includes('garncarnia');
 
   // Bonusy
   if (maRzeke)      z += hp.rzeka;
@@ -411,7 +452,7 @@ export function computeCityHealthBreakdown(
   const maStudnie    = builtIds.includes('studnia');
   const maTargowisko = builtIds.includes('targowisko');
   const maAkwedukt   = builtIds.includes('akwedukt');
-  const maCeramike   = builtIds.includes('ceramika');
+  const maCeramike   = builtIds.includes('garncarnia');
 
   if (maRzeke)      lines.push({ label: 'Rzeka', value: hp.rzeka });
   if (maAkwedukt)   lines.push({ label: 'Akwedukt', value: hp.akwedukt });
@@ -451,12 +492,13 @@ const HEX_NEIGHBORS: ReadonlyArray<readonly [number, number]> = [
   [+1,  0], [-1,  0], [ 0, +1], [ 0, -1], [+1, -1], [-1, +1],
 ];
 
-export function hexToWorkedTile(hex: Hex & { ulepszenia?: readonly string[] | null }): WorkedTile {
+export function hexToWorkedTile(hex: Hex & { ulepszenia?: readonly string[] | null; zloze?: string }): WorkedTile {
   const ulepszeniaKeys = improvementKeysForHex(hex);
   return {
     terenBazowy: hex.terenBazowy,
     nakladka:    hex.nakladka ?? Nakladka.Brak,
     maRzeke:     !!(hex.rzeka && hex.rzeka.obecna),
+    zloze:       hex.zloze,
     ulepszenieKey: ulepszeniaKeys[0],
     ulepszeniaKeys: ulepszeniaKeys.length ? ulepszeniaKeys : undefined,
   };
@@ -569,15 +611,16 @@ export function toEconomyCity(
   params: EconParams,
   isCapital: boolean,
   zdrowie: number = 0,
-  buildings: { maSpichlerz?: boolean; maAkwedukt?: boolean } = {},
+  buildings: { maSpichlerz?: boolean; maSpichlerzII?: boolean; maAkwedukt?: boolean } = {},
 ): EconomyCity {
   return {
     id:              city.id,
     ludnosc:         city.population,
     zdrowie,
     czyStolica:      isCapital,
-    maSpichlerz:     buildings.maSpichlerz ?? false,
-    maAkwedukt:      buildings.maAkwedukt ?? false,
+  maSpichlerz:     buildings.maSpichlerz ?? false,
+  maSpichlerzII:   buildings.maSpichlerzII ?? false,
+  maAkwedukt:      buildings.maAkwedukt ?? false,
     magazynZywnosci: readCityFoodBufferFromCity(city),
     specjalisci:     [],
     kolejkaProdukcji: [],
@@ -681,6 +724,8 @@ export interface CityEconomyTick {
   magazynPoTurze: number;          // stan bufora wzrostu (magazynZywnosci) po turze
   /** B5-SPICH: miasto ma wybudowany Spichlerz (wpływa na zapasy państwa imperium). */
   maSpichlerz:    boolean;
+  /** B-SPIC: tier II — cap 150, bufor 70%. */
+  maSpichlerzII?: boolean;
   /** B5: % netto żywności tego miasta na wzrost ludności (reszta → zapasy armii). */
   procentRozwoj:  number;
 }
@@ -822,6 +867,7 @@ export function previewCityEconomy(
   tradeRouteCountByCity: ReadonlyMap<string, number> = new Map(),
   tradeIncomeByCity: ReadonlyMap<string, number> = new Map(),
   territoryNodes?: readonly TerritoryNode[],
+  cityReligionByCityId: ReadonlyMap<string, ReligionState> = new Map(),
 ): Pick<EconomyTickResult, 'perCity'> {
   const params = buildEconParams(data, difficulty);
   const noBuildings: CityBuildingEntry[] = [];
@@ -847,10 +893,11 @@ export function previewCityEconomy(
     const hasWater = cityHasWaterAccess(city, map);
     const zdrowie = computeCityHealth(city.population, worked, builtIds, healthParams, hasWater, { city, map });
 
-    const maSpichlerz = builtIds.includes('spichlerz');
+    const maSpichlerzII = builtIds.includes('spichlerz_ii');
+    const maSpichlerz = maSpichlerzII || builtIds.includes('spichlerz');
     const maAkwedukt = builtIds.includes('akwedukt');
     const pctRozwoj = getCityFoodSplit(city);
-    const econCity = toEconomyCity(city, params, isCapital, zdrowie, { maSpichlerz, maAkwedukt });
+    const econCity = toEconomyCity(city, params, isCapital, zdrowie, { maSpichlerz, maSpichlerzII, maAkwedukt });
 
     const ownerEra = resolveOwnerEra
       ? resolveOwnerEra(city.ownerId)
@@ -860,9 +907,16 @@ export function previewCityEconomy(
       : playerZbadane;
     const walutaOdkryta = ownerTech.has('Waluta') || ownerTech.has('waluta');
     const ownerCivKey = ownerCivByOwnerId.get(city.ownerId);
-    const walutaMnoznikOverride = walutaOdkryta && ownerCivKey
-      ? mnoznikHandelPieniadzForCiv(ownerCivKey, data.civs, params.walutaMnoznik)
-      : undefined;
+    const cityReligion = cityReligionByCityId.get(city.id);
+    const walutaMnoznikOverride = religionTradeWalutaOverride(
+      cityReligion,
+      ownerCivKey,
+      builtIds,
+      walutaOdkryta,
+      data.civs,
+      data.societyParams,
+      difficulty,
+    );
     const ownerBonusy = ownerCivKey
       ? civBonusyForCivKey(ownerCivKey, data.civs)
       : [];
@@ -938,6 +992,7 @@ export function previewCityEconomy(
         obleganyGlod: getCityFood(city) <= 0,
         magazynPoTurze: getCityFood(city),
         maSpichlerz,
+        maSpichlerzII,
         procentRozwoj: pctRozwoj,
       });
       continue;
@@ -968,6 +1023,7 @@ export function previewCityEconomy(
       obleganyGlod: false,
       magazynPoTurze: getCityFood(city),
       maSpichlerz,
+      maSpichlerzII,
       procentRozwoj: pctRozwoj,
     });
   }
@@ -994,6 +1050,7 @@ export function advanceCityEconomy(
   tradeRouteCountByCity: ReadonlyMap<string, number> = new Map(),
   /** Handel E3: cityId -> dochod dystansowy z tras tej tury (czysto do skarbca). */
   tradeIncomeByCity: ReadonlyMap<string, number> = new Map(),
+  cityReligionByCityId: ReadonlyMap<string, ReligionState> = new Map(),
 ): EconomyTickResult {
   const gameDifficulty = difficulty as GameDifficulty;
   const params = buildEconParams(data, difficulty);
@@ -1063,10 +1120,11 @@ export function advanceCityEconomy(
     const hasWater = cityHasWaterAccess(city, map);
     const zdrowie = computeCityHealth(city.population, worked, builtIds, healthParams, hasWater, { city, map });
 
-    const maSpichlerz = builtIds.includes('spichlerz');
+    const maSpichlerzII = builtIds.includes('spichlerz_ii');
+    const maSpichlerz = maSpichlerzII || builtIds.includes('spichlerz');
     const maAkwedukt  = builtIds.includes('akwedukt');
     const pctRozwoj = getCityFoodSplit(city);
-    const econCity = toEconomyCity(city, params, isCapital, zdrowie, { maSpichlerz, maAkwedukt });
+    const econCity = toEconomyCity(city, params, isCapital, zdrowie, { maSpichlerz, maSpichlerzII, maAkwedukt });
 
     const ownerEra = resolveOwnerEra
       ? resolveOwnerEra(city.ownerId)
@@ -1076,9 +1134,16 @@ export function advanceCityEconomy(
       : playerZbadane;
     const walutaOdkryta = ownerTech.has('Waluta') || ownerTech.has('waluta');
     const ownerCivKey = ownerCivByOwnerId.get(city.ownerId);
-    const walutaMnoznikOverride = walutaOdkryta && ownerCivKey
-      ? mnoznikHandelPieniadzForCiv(ownerCivKey, data.civs, params.walutaMnoznik)
-      : undefined;
+    const cityReligion = cityReligionByCityId.get(city.id);
+    const walutaMnoznikOverride = religionTradeWalutaOverride(
+      cityReligion,
+      ownerCivKey,
+      builtIds,
+      walutaOdkryta,
+      data.civs,
+      data.societyParams,
+      difficulty,
+    );
     const ownerBonusy = ownerCivKey
       ? civBonusyForCivKey(ownerCivKey, data.civs)
       : [];
@@ -1188,6 +1253,7 @@ export function advanceCityEconomy(
         obleganyGlod,
         magazynPoTurze,
         maSpichlerz,
+        maSpichlerzII,
         procentRozwoj: pctRozwoj,
       };
       result.perCity.push(tick);
@@ -1280,6 +1346,10 @@ export function advanceCityEconomy(
     citySurowce.kamien = Math.min(resCap, (citySurowce.kamien ?? 0) + yld.kamienTerenu);
     citySurowce.glina  = Math.min(resCap, (citySurowce.glina ?? 0) + yld.glinaTerenu);
 
+    // Ruda miedzi / ruda żelaza — numeryczny stock do łańcucha konwerterów (audit 9a0ca985).
+    citySurowce.ruda = Math.min(resCap, (citySurowce.ruda ?? 0) + yld.rudaTerenu);
+    citySurowce.ruda_zelaza = Math.min(resCap, (citySurowce.ruda_zelaza ?? 0) + yld.rudaZelazaTerenu);
+
     // Uruchamiamy tylko konwertery, ktorych budynek jest FAKTYCZNIE wybudowany w tym
     // miescie (inaczej drewno konwertowaloby sie samoistnie bez Mielerza/Cegielni/...).
     // Uwaga: 'tartak' i 'huta' (id w DEFAULT_CONVERTER_RECIPES) nie maja dzis
@@ -1322,6 +1392,7 @@ export function advanceCityEconomy(
       obleganyGlod:      false,
       magazynPoTurze,
       maSpichlerz,
+      maSpichlerzII,
       procentRozwoj: pctRozwoj,
     };
     result.perCity.push(tick);

@@ -1,7 +1,6 @@
 /**
  * building-resource-gate.ts — bramka budynków miasta vs aktywny dostęp surowca.
- * Aktywny dostęp = złoże w zasięgu miasta + wymagane ulepszenie na tym heksie
- * (resource-access.ts). Dotyczy par złoże↔ulepszenie z terrain-improvements.json.
+ * B-SUROW-BUD (2026-07-23): bramki epokowe (dostęp AND, nie stock).
  */
 import type { BuildingDef } from '../data/loader';
 
@@ -14,33 +13,62 @@ const LABEL_BY_ASCII: Record<string, string> = {
   stal: 'Stal',
   braz: 'Brąz',
   sol: 'Sól',
+  cegla: 'Cegła',
+  ceramika: 'Ceramika',
 };
 
-/** Budynki wymagające aktywnego dostępu (złoże + ulepszenie) — faza 1. */
+/** Bramki per epoka budynku — aktywny dostęp imperium (B-SUROW-BUD). */
+const ERA_ACCESS_LABELS: Readonly<Record<number, readonly string[]>> = {
+  1: ['Drewno'],
+  2: ['Drewno', 'Kamień'],
+  3: ['Drewno', 'Kamień', 'Cegła'],
+  4: ['Drewno', 'Kamień', 'Cegła'],
+};
+
+/** Budynki wymagające aktywnego dostępu złoże + ulepszenie lub stock. */
 const DEPOSIT_LINKED_BUILDING_LABELS: Readonly<Record<string, readonly string[]>> = {
   garncarnia: ['Glina'],
   cegielnia: ['Glina'],
+  spichlerz: ['Ceramika'],
+  spichlerz_ii: ['Sól'],
 };
 
-/** Etykiety aktywnego dostępu wymagane przez budynek (pusta = brak bramki surowca). */
-export function buildingRequiredActiveLabels(building: Pick<BuildingDef, 'id'> & {
-  wymaganySurowiec?: string | null;
-}): readonly string[] {
-  const hard = DEPOSIT_LINKED_BUILDING_LABELS[building.id];
-  if (hard) return hard;
-  const key = building.wymaganySurowiec?.trim().toLowerCase();
-  if (key && LABEL_BY_ASCII[key]) return [LABEL_BY_ASCII[key]!];
-  return [];
+/** Cegła = Cegielnia w imperium; Sól = warzelnia aktywna (etykieta Sól). */
+function empireLabelSatisfied(
+  label: string,
+  activeLabels: readonly string[],
+  empireBuiltIds: readonly string[] | undefined,
+): boolean {
+  if (activeLabels.includes(label)) return true;
+  if (label === 'Cegła' && empireBuiltIds?.includes('cegielnia')) return true;
+  if (label === 'Ceramika' && empireBuiltIds?.includes('garncarnia')) return true;
+  return false;
 }
 
-/** Czy miasto ma aktywny dostęp do wszystkich surowców wymaganych przez budynek. */
+export function eraAccessLabels(epokaWejscia: number): readonly string[] {
+  if (epokaWejscia >= 4) return ERA_ACCESS_LABELS[4] ?? [];
+  return ERA_ACCESS_LABELS[epokaWejscia] ?? [];
+}
+
+export function buildingRequiredActiveLabels(building: Pick<BuildingDef, 'id' | 'epokaWejscia'> & {
+  wymaganySurowiec?: string | null;
+}): readonly string[] {
+  const out = new Set<string>();
+  const hard = DEPOSIT_LINKED_BUILDING_LABELS[building.id];
+  if (hard) hard.forEach(l => out.add(l));
+  const key = building.wymaganySurowiec?.trim().toLowerCase();
+  if (key && LABEL_BY_ASCII[key]) out.add(LABEL_BY_ASCII[key]!);
+  for (const l of eraAccessLabels(building.epokaWejscia ?? 1)) out.add(l);
+  return [...out];
+}
+
 export function buildingResourceGateMet(
-  building: Pick<BuildingDef, 'id'> & { wymaganySurowiec?: string | null },
+  building: Pick<BuildingDef, 'id' | 'epokaWejscia'> & { wymaganySurowiec?: string | null },
   activeLabels: readonly string[] | undefined,
+  empireBuiltIds?: readonly string[],
 ): boolean {
   const required = buildingRequiredActiveLabels(building);
   if (required.length === 0) return true;
-  if (!activeLabels?.length) return false;
-  const active = new Set(activeLabels);
-  return required.every(label => active.has(label));
+  const active = activeLabels ?? [];
+  return required.every(label => empireLabelSatisfied(label, active, empireBuiltIds));
 }

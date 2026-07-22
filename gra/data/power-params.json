@@ -62,6 +62,14 @@
     "ulepszenie_terenu": {
       "pkt": 5,
       "opis": "Ulepszenia terenu w terytorium imperium (farmy, drogi, hodowla…)."
+    },
+    "kultura_imperium": {
+      "pkt": 0.5,
+      "opis": "KULT-04 A — suma kulturaSkumulowana wszystkich miast imperium × pkt."
+    },
+    "religia_jednosc": {
+      "pkt": 25,
+      "opis": "KULT-04 A — każde miasto z dominującą wiarą państwa × pkt."
     }
   },
   "kalibracja": {

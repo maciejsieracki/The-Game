@@ -108,13 +108,17 @@ function makeGameData(aiParamsOverride = {}) {
   return {
     units: [
       { Jednostka: 'Wojownik', Health: 30, Ruch: 2 },
-      { Jednostka: 'Lucznik', Health: 20, Ruch: 2 },
+      { Jednostka: 'Łucznik', Health: 20, Ruch: 2 },
       { Jednostka: 'Osadnik', Health: 10, Ruch: 2 },
     ],
+    // id-y zgodne z prawdziwym data/buildings.json -- ai.ts (chooseCityProduction)
+    // klasyfikuje/dopasowuje budynki wylacznie po b.id (#31), nie po nazwie wyswietlanej.
     buildings: [
-      { nazwa: 'Spichlerz' }, { nazwa: 'Koszary' }, { nazwa: 'Mury' },
-      { nazwa: 'Tartak' }, { nazwa: 'Cegielnia' }, { nazwa: 'Huta' },
-      { nazwa: 'Magazyn' }, { nazwa: 'Targowisko' },
+      { id: 'spichlerz', nazwa: 'Spichlerz' }, { id: 'koszary', nazwa: 'Koszary' },
+      { id: 'mury', nazwa: 'Mury' },
+      { id: 'stolarnia', nazwa: 'Stolarnia' }, { id: 'cegielnia', nazwa: 'Cegielnia' },
+      { id: 'odlewnia_brazu', nazwa: 'Piec hutniczy' },
+      { id: 'magazyn', nazwa: 'Magazyn' }, { id: 'targowisko', nazwa: 'Targowisko (Rynek)' },
     ],
     terrainYields: {
       terrain_types: [
@@ -155,11 +159,11 @@ const aiParamsT1 = {
 
 // Score analysis przy poprawnym odczycie ekonomia_priorytet=5:
 //   economyScore = 100 + 5*20 = 200 → kandydaci budynki ekonom: score = 140+200 = 340
-//   militaryScore = 100 + 0*20 = 100 → Koszary (niezbud): score = 200+100 = 300
-// Wynik z fixem: ekonomia (340) > koszary (300) → miasto wybierze Tartak/Cegielnia/itp.
-// Wynik bez fixa (wartosc nieodczytane → 0): ekonomia score = 140+100 = 240 < koszary 300 → Koszary
+//   militaryScore = 100 + 0*20 = 100 → koszary (niezbud): score = 200+100 = 300
+// Wynik z fixem: ekonomia (340) > koszary (300) → miasto wybierze stolarnia/cegielnia/itp.
+// Wynik bez fixa (wartosc nieodczytane → 0): ekonomia score = 140+100 = 240 < koszary 300 → koszary
 
-const ECON_BUILDINGS = new Set(['Tartak', 'Cegielnia', 'Huta', 'Magazyn', 'Targowisko']);
+const ECON_BUILDINGS = new Set(['stolarnia', 'cegielnia', 'odlewnia_brazu', 'magazyn', 'targowisko']);
 
 const map = makeMap(10, 10);
 const data = makeGameData(aiParamsT1);
@@ -223,7 +227,7 @@ console.log('\n--- T1b: wartosc (ASCII) read discriminator ---');
   // Przy poprawnym odczycie wartosc=5: ekonomia wygrywa
   // Przy starym bugu wartość=undefined→0: koszary wygrywają
   const econBuilds = buildCmds.filter(c => ECON_BUILDINGS.has(c.buildingId));
-  const kasarBuild = buildCmds.filter(c => c.buildingId === 'Koszary');
+  const kasarBuild = buildCmds.filter(c => c.buildingId === 'koszary');
   
   assert(
     econBuilds.length > 0,
@@ -284,15 +288,15 @@ console.log('\n--- T1d: early phase builds and settler expansion ---');
   // Osadnik powinien być kandydatem gdy myCities < 3
   const settler = buildCmds.find(c => c.buildingId === 'Osadnik');
   // Łucznik/Wojownik mogą wygrać z powodu score, ale Osadnik powinien być przynajmniej
-  // dla jednego z 2 miast — OR Spichlerz jeśli wygrał
+  // dla jednego z 2 miast — OR spichlerz jeśli wygrał
   const hasValidBuild = buildCmds.every(c =>
-    ['Spichlerz', 'Osadnik', 'Wojownik', 'Lucznik'].includes(c.buildingId)
+    ['spichlerz', 'Osadnik', 'Wojownik', 'Łucznik'].includes(c.buildingId)
   );
   assert(hasValidBuild, 'early phase: all builds are valid early-game choices; got: ' + buildCmds.map(c=>c.buildingId).join(', '));
-  
-  // Spichlerz jest priorytetem gdy nie zbudowany — sprawdź że score 250 > Osadnik 200
-  // przez weryfikację że jeśli Spichlerz jest wybrany w danym mieście, to nie jest tam zbudowany
-  const spichlerz = buildCmds.filter(c => c.buildingId === 'Spichlerz');
+
+  // spichlerz jest priorytetem gdy nie zbudowany — sprawdź że score 250 > Osadnik 200
+  // przez weryfikację że jeśli spichlerz jest wybrany w danym mieście, to nie jest tam zbudowany
+  const spichlerz = buildCmds.filter(c => c.buildingId === 'spichlerz');
   if (spichlerz.length > 0) {
     assert(true, 'Spichlerz chosen in at least one city');
   }
@@ -395,24 +399,24 @@ console.log('\n--- T2b: higher difficulty → stronger economy production score 
     makeCity('c2', 1, 5, 1),
     makeCity('c3', 1, 8, 1),
   ];
-  // Koszary ZBUDOWANE w każdym mieście — żeby usunąć je z kandydatów
-  const builtKoszary = { c1: ['Koszary'], c2: ['Koszary'], c3: ['Koszary'] };
-  
+  // koszary ZBUDOWANE w każdym mieście — żeby usunąć je z kandydatów
+  const builtKoszary = { c1: ['koszary'], c2: ['koszary'], c3: ['koszary'] };
+
   // Level 1 (bonus=0): economyScore=100, econBuild score=240, wojownik=270 → wojownik wygra
   const r1 = decideAITurn(1, [], citiesMid, map, diffData, {
     civType: 'grecy', poziomTrudnosci: 1, cityBuildings: builtKoszary,
   });
   const build1 = r1.filter(c => c.type === 'build');
   const econ1 = build1.filter(c => ECON_BUILDINGS.has(c.buildingId));
-  const mil1  = build1.filter(c => c.buildingId === 'Wojownik' || c.buildingId === 'Lucznik');
-  
+  const mil1  = build1.filter(c => c.buildingId === 'Wojownik' || c.buildingId === 'Łucznik');
+
   // Level 3 (bonus=0.25, diffProdBonus=50): economyScore=150, econBuild score=290, wojownik=270 → ekonomia wygra
   const r3 = decideAITurn(1, [], citiesMid, map, diffData, {
     civType: 'grecy', poziomTrudnosci: 3, cityBuildings: builtKoszary,
   });
   const build3 = r3.filter(c => c.type === 'build');
   const econ3 = build3.filter(c => ECON_BUILDINGS.has(c.buildingId));
-  const mil3  = build3.filter(c => c.buildingId === 'Wojownik' || c.buildingId === 'Lucznik');
+  const mil3  = build3.filter(c => c.buildingId === 'Wojownik' || c.buildingId === 'Łucznik');
   
   // Level 1: wojownik wygra (mil > econ)
   assert(
@@ -527,7 +531,7 @@ console.log('\n--- T3a: Celtowie archetype readArchMods ---');
   const buildCmds = result.filter(c => c.type === 'build');
   assert(buildCmds.length > 0, 'Celtowie: at least one build command');
 
-  const koszaryBuilds = buildCmds.filter(c => c.buildingId === 'Koszary');
+  const koszaryBuilds = buildCmds.filter(c => c.buildingId === 'koszary');
   const econBuilds    = buildCmds.filter(c => ECON_BUILDINGS.has(c.buildingId));
   assert(
     koszaryBuilds.length > econBuilds.length,
@@ -574,7 +578,7 @@ console.log('\n--- T3b: Germanie archetype readArchMods ---');
   const buildCmds = result.filter(c => c.type === 'build');
   assert(buildCmds.length > 0, 'Germanie: at least one build command');
 
-  const koszaryBuilds = buildCmds.filter(c => c.buildingId === 'Koszary');
+  const koszaryBuilds = buildCmds.filter(c => c.buildingId === 'koszary');
   const econBuilds    = buildCmds.filter(c => ECON_BUILDINGS.has(c.buildingId));
   assert(
     koszaryBuilds.length > econBuilds.length,
@@ -668,7 +672,7 @@ console.log('\n--- T3f: Harappa own archetype path (ekonomia discriminator) ---'
   });
   const buildCmds = result.filter(c => c.type === 'build');
   assert(buildCmds.length > 0, 'Harappa: at least one build command');
-  const koszaryBuilds = buildCmds.filter(c => c.buildingId === 'Koszary');
+  const koszaryBuilds = buildCmds.filter(c => c.buildingId === 'koszary');
   const econBuilds    = buildCmds.filter(c => ECON_BUILDINGS.has(c.buildingId));
   assert(
     econBuilds.length >= koszaryBuilds.length,
@@ -699,7 +703,7 @@ console.log('\n--- T3g: Asyria wojsko>ekonomia (imperium oblężnicze) ---');
   });
   const buildCmds = result.filter(c => c.type === 'build');
   assert(buildCmds.length > 0, 'Asyria: at least one build command');
-  const koszaryBuilds = buildCmds.filter(c => c.buildingId === 'Koszary');
+  const koszaryBuilds = buildCmds.filter(c => c.buildingId === 'koszary');
   const econBuilds    = buildCmds.filter(c => ECON_BUILDINGS.has(c.buildingId));
   assert(
     koszaryBuilds.length > econBuilds.length,
@@ -907,10 +911,10 @@ console.log('\n--- T4d: idle fallback does NOT force move when unit already at/a
 
 // ============================================================================
 // TEST 15: T5 - canAfford gate (pkt5)
-// Scenariusz: faza środkowa (3 miasta), canAfford zwraca false dla 'Koszary'
+// Scenariusz: faza środkowa (3 miasta), canAfford zwraca false dla 'koszary'
 // Oczekiwany wynik: żadne miasto NIE wybiera Koszar; zamiast tego wybiera dozwolone budynki
 // ============================================================================
-console.log('\n--- T5a: canAfford gate — Koszary blocked, fallback to affordable ---');
+console.log('\n--- T5a: canAfford gate — koszary blocked, fallback to affordable ---');
 {
   const midData = makeGameData({
     'archetype_grecy_wojsko_priorytet':   { wartosc: 0, sekcja: 'test', opis: '' },
@@ -931,8 +935,8 @@ console.log('\n--- T5a: canAfford gate — Koszary blocked, fallback to affordab
     makeCity('c2', 1, 5, 1),
     makeCity('c3', 1, 8, 1),
   ];
-  // canAfford blocks ONLY Koszary
-  const canAfford = (cityId, buildingId) => buildingId !== 'Koszary';
+  // canAfford blocks ONLY koszary
+  const canAfford = (cityId, buildingId) => buildingId !== 'koszary';
 
   let result;
   let threw = false;
@@ -955,7 +959,7 @@ console.log('\n--- T5a: canAfford gate — Koszary blocked, fallback to affordab
   const buildCmds = result.filter(c => c.type === 'build');
   assert(buildCmds.length > 0, 'T5a: at least one build command issued');
 
-  const koszaryBuilds = buildCmds.filter(c => c.buildingId === 'Koszary');
+  const koszaryBuilds = buildCmds.filter(c => c.buildingId === 'koszary');
   assert(
     koszaryBuilds.length === 0,
     'T5a: canAfford=false for Koszary -> NO Koszary chosen; got: ' + buildCmds.map(c=>c.buildingId).join(', ')
@@ -2023,9 +2027,9 @@ console.log('\n--- T5a: canAfford odfiltrowuje wszystkich -> brak build (AI oszc
 
 console.log('\n--- T5b: canAfford filtruje drogie, AI wybiera tansze o lepszym score ---');
 {
-  // Tylko 'Osadnik' i 'Lucznik' dostepne; canAfford odrzuca 'Koszary'/'Spichlerz'
+  // Tylko 'Osadnik' i 'Łucznik' dostepne; canAfford odrzuca 'koszary'/'spichlerz'
   const citiesEarly2 = [makeCity('e1', 1, 1, 1), makeCity('e2', 1, 5, 1)];
-  const allowed = new Set(['Osadnik', 'Lucznik', 'Wojownik']);
+  const allowed = new Set(['Osadnik', 'Łucznik', 'Wojownik']);
   const result = decideAITurn(1, [], citiesEarly2, map, data, {
     civType: 'chinczycy',
     poziomTrudnosci: 2,
@@ -2064,42 +2068,42 @@ console.log('\n--- T5c: brak canAfford -> zachowanie jak dotad (regresja=0) ---'
 console.log('\n--- T5d: itemCost prefers cheaper items w tym samym score-band ---');
 {
   // Faza srednia (3 miasta): Wojownik score=170+militaryScore(100)=270 koszt=20,
-  //   Tartak/Cegielnia/Huta etc. score=140+economyScore(100)=240 koszt=10
-  // canAfford=true dla obu; topScore=270 (Wojownik), 70%*270=189; Tartak 240>=189 -> w bandzie
-  // Ratio: Wojownik 270/20=13.5, Tartak 240/10=24 -> Tartak WYGRYWA przez ratio
+  //   stolarnia/cegielnia/odlewnia_brazu etc. score=140+economyScore(100)=240 koszt=10
+  // canAfford=true dla obu; topScore=270 (Wojownik), 70%*270=189; stolarnia 240>=189 -> w bandzie
+  // Ratio: Wojownik 270/20=13.5, stolarnia 240/10=24 -> stolarnia WYGRYWA przez ratio
   // Bez itemCost: Wojownik wygrywa (wyzszy score 270 > 240)
   const citiesMid3ForRatio = [makeCity('f1', 1, 1, 1), makeCity('f2', 1, 5, 1), makeCity('f3', 1, 8, 1)];
-  const costs = { Wojownik: 20, Lucznik: 20, Tartak: 10, Cegielnia: 10, Huta: 10, Magazyn: 10, Targowisko: 10, Koszary: 80, Osadnik: 50 };
-  const ECON_SET = new Set(['Tartak', 'Cegielnia', 'Huta', 'Magazyn', 'Targowisko']);
+  const costs = { Wojownik: 20, Łucznik: 20, stolarnia: 10, cegielnia: 10, odlewnia_brazu: 10, magazyn: 10, targowisko: 10, koszary: 80, Osadnik: 50 };
+  const ECON_SET = new Set(['stolarnia', 'cegielnia', 'odlewnia_brazu', 'magazyn', 'targowisko']);
 
   const resultWithCost = decideAITurn(1, [], citiesMid3ForRatio, map, data, {
     civType: 'grecy',
     poziomTrudnosci: 2,
-    cityBuildings: { f1: ['Koszary'], f2: ['Koszary'], f3: ['Koszary'] }, // Koszary juz zbudowane
+    cityBuildings: { f1: ['koszary'], f2: ['koszary'], f3: ['koszary'] }, // koszary juz zbudowane
     canAfford: (_cityId, _itemId) => true,  // wszystko stac
     itemCost: (itemId) => costs[itemId] ?? 50,
   });
   const buildWithCost = resultWithCost.filter(c => c.type === 'build');
   const econWithCost = buildWithCost.filter(c => ECON_SET.has(c.buildingId));
-  const milWithCost  = buildWithCost.filter(c => c.buildingId === 'Wojownik' || c.buildingId === 'Lucznik');
+  const milWithCost  = buildWithCost.filter(c => c.buildingId === 'Wojownik' || c.buildingId === 'Łucznik');
 
   // Z itemCost: ekonomia (ratio 24) bije wojownika (ratio 13.5) w tym samym bandzie
   assert(
     econWithCost.length > milWithCost.length,
     `T5d: z itemCost ekonomia (ratio 24) > wojownik (ratio 13.5) w bandzie; ekon=${econWithCost.length} mil=${milWithCost.length}`
   );
-  
+
   // Bez itemCost: Wojownik (score 270) bije ekonomie (score 240)
   const resultNoItemCost = decideAITurn(1, [], citiesMid3ForRatio, map, data, {
     civType: 'grecy',
     poziomTrudnosci: 2,
-    cityBuildings: { f1: ['Koszary'], f2: ['Koszary'], f3: ['Koszary'] },
+    cityBuildings: { f1: ['koszary'], f2: ['koszary'], f3: ['koszary'] },
     canAfford: (_cityId, _itemId) => true,
     // itemCost BRAK -> wybor wg score
   });
   const buildNoItemCost = resultNoItemCost.filter(c => c.type === 'build');
   const econNoItemCost = buildNoItemCost.filter(c => ECON_SET.has(c.buildingId));
-  const milNoItemCost  = buildNoItemCost.filter(c => c.buildingId === 'Wojownik' || c.buildingId === 'Lucznik');
+  const milNoItemCost  = buildNoItemCost.filter(c => c.buildingId === 'Wojownik' || c.buildingId === 'Łucznik');
 
   // Bez itemCost: wojownik (score 270) wygrywa z ekonomia (240)
   assert(
@@ -2114,7 +2118,7 @@ console.log('\n--- T5e: Kamien (Praca) - canAfford z epoką Kamień nie blokuje 
   // Model: canAfford sprawdza budzet Pracy (symulacja EKONOMII)
   // Test: jesli canAfford(city,'Wojownik')=true (Praca wystarczy), AI powinna budowac Wojownika
   const citiesKamien = [makeCity('k1', 1, 1, 1)];
-  const prakaAllowed = new Set(['Wojownik', 'Lucznik', 'Osadnik']);  // Praca wystarczy na te
+  const prakaAllowed = new Set(['Wojownik', 'Łucznik', 'Osadnik']);  // Praca wystarczy na te
   let buildResult;
   try {
     buildResult = decideAITurn(1, [], citiesKamien, map, data, {
@@ -2137,18 +2141,18 @@ console.log('\n--- T5e: Kamien (Praca) - canAfford z epoką Kamień nie blokuje 
 
 console.log('\n--- T5f: canAfford=true dla jednego, reszta false -> buduje to jedno ---');
 {
-  // Tylko Koszary stac; reszta odfiltrowana
+  // Tylko koszary stac; reszta odfiltrowana
   const citiesMid3 = [makeCity('g1', 1, 1, 1), makeCity('g2', 1, 5, 1), makeCity('g3', 1, 8, 1)];
   const result = decideAITurn(1, [], citiesMid3, map, data, {
     civType: 'grecy',
     poziomTrudnosci: 2,
     cityBuildings: {},
-    canAfford: (_cityId, itemId) => itemId === 'Koszary',
+    canAfford: (_cityId, itemId) => itemId === 'koszary',
   });
   const buildCmds = result.filter(c => c.type === 'build');
-  assert(buildCmds.length > 0, 'T5f: AI buduje Koszary (jedyna dostepna)');
-  const allKoszary = buildCmds.every(c => c.buildingId === 'Koszary');
-  assert(allKoszary, `T5f: wszystkie build=Koszary; got: ${buildCmds.map(c=>c.buildingId).join(', ')}`);
+  assert(buildCmds.length > 0, 'T5f: AI buduje koszary (jedyna dostepna)');
+  const allKoszary = buildCmds.every(c => c.buildingId === 'koszary');
+  assert(allKoszary, `T5f: wszystkie build=koszary; got: ${buildCmds.map(c=>c.buildingId).join(', ')}`);
 }
 
 console.log('\n--- T5g: itemCost bez canAfford -> brak efektu (regresja) ---');
@@ -2179,7 +2183,7 @@ console.log('\n--- T5h: endTurn zawsze ostatni przy roznym canAfford ---');
   for (const canAffordFn of [
     () => true,   // wszystko stac
     () => false,  // nic nie stac
-    (_c, id) => id === 'Koszary',  // tylko Koszary
+    (_c, id) => id === 'koszary',  // tylko koszary
   ]) {
     const r = decideAITurn(1, [], citiesMid3, map, data, {
       civType: 'grecy',

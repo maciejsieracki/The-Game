@@ -186,6 +186,8 @@ function displayKindBanner(rodzaj: VictoryRodzaj): string {
       return 'Zwycięstwo naukowe';
     case 'przegrana':
       return 'Twoje imperium upadło';
+    default:
+      return 'Koniec gry';
   }
 }
 
@@ -197,6 +199,8 @@ function displayHeadline(rodzaj: VictoryRodzaj): string {
       return 'ZWYCIĘSTWO NAUKOWE';
     case 'przegrana':
       return 'KLĘSKA';
+    default:
+      return 'KONIEC GRY';
   }
 }
 
@@ -214,6 +218,8 @@ function displayFlavorLine(data: VictoryScreenData): string {
       return civ
         ? `${civ} — koniec epoki`
         : 'Twoje panowanie dobiegło końca.';
+    default:
+      return '';
   }
 }
 

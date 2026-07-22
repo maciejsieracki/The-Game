@@ -6,6 +6,7 @@
 
 import type { GameMap } from '../types/map';
 import type { City } from './cities';
+import { onCityCapturedCulture } from './conquest-stability';
 import type { RuntimeUnit } from '../units/setup';
 import { hexNeighborCoords, isCivilianUnit } from '../units/setup';
 import { syncStackRuchLeft } from './armyMerge';
@@ -336,6 +337,7 @@ export function applyCityCaptureAfterBattle(
   units: RuntimeUnit[],
   anchorId: string | number = atkRoster[0]?.id ?? '',
 ): RuntimeUnit | null {
+  const prevOwner = city.ownerId;
   for (let i = units.length - 1; i >= 0; i--) {
     const u = units[i]!;
     if (u.ownerId === city.ownerId && u.q === city.q && u.r === city.r) {
@@ -362,5 +364,6 @@ export function applyCityCaptureAfterBattle(
   city.ownerId = atkOwner;
   city.oblegane = false;
   if (city.rebelState) city.rebelState = false;
+  onCityCapturedCulture(city, atkOwner, prevOwner);
   return lead;
 }

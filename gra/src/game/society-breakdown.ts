@@ -76,6 +76,8 @@ export interface HappinessBreakdownInput {
   ownCultureShare?: number;
   ownReligionDominant?: boolean;
   foreignReligionDominant?: boolean;
+  /** Kara za podwójnie obce miasto po podboju (kultura + religia). */
+  conquestUnstablePenalty?: number;
   /** D18-4: pierwsze miasto gracza na easy (T1–T10). */
   stolicaEasyBonus?: boolean;
 }
@@ -93,6 +95,8 @@ export interface LawBreakdownInput {
   /** Pałac — główne źródło Prawa cywilizacyjnego (≠ garnizon). */
   hasPalac?: boolean;
   brakGarnizonuKara?: boolean;
+  /** Kara Prawa: niestabilny podbój bez garnizonu. */
+  conquestNoGarrisonPenalty?: number;
   /** D18-4: pierwsze miasto gracza na easy (T1–T10). */
   stolicaEasyBonus?: boolean;
 }
@@ -329,6 +333,13 @@ export function computeHappinessBreakdown(
     const v = pickSociety(szBlock, 'szczescie_kara_obca_religia', diff, -2);
     if (v) lines.push({ id: 'obca_religia', label: 'Obca religia', value: v });
   }
+  if (input.conquestUnstablePenalty) {
+    lines.push({
+      id: 'podboj_niestabilny',
+      label: 'Podbój: obca kultura i religia',
+      value: input.conquestUnstablePenalty,
+    });
+  }
   if (input.stolicaEasyBonus) {
     const v = pickSociety(szBlock, 'szczescie_bonus_stolica_easy', diff, 1);
     if (v) lines.push({ id: 'stolica_easy', label: 'Stolica imperium (easy)', value: v });
@@ -396,6 +407,13 @@ export function computeLawBreakdown(
   if (input.brakGarnizonuKara) {
     const v = pickSociety(prBlock, 'prawo_kara_brak_garnizonu', diff, -2);
     if (v) lines.push({ id: 'brak_garnizonu', label: 'Brak garnizonu (duże miasto)', value: v });
+  }
+  if (input.conquestNoGarrisonPenalty) {
+    lines.push({
+      id: 'podboj_bez_garnizonu',
+      label: 'Podbój bez garnizonu',
+      value: input.conquestNoGarrisonPenalty,
+    });
   }
 
   const pop = Math.max(0, Math.floor(input.population ?? 0));

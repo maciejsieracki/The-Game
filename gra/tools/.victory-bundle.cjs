@@ -41,12 +41,12 @@ var e_start_params_default = {
     render_quality_bundled: "medium"
   },
   skala_mapy: {
-    Malenki: { rywale_ai: 2, miasta_panstwa: 4, typy_cywilizacji: 4, hex_w: 76, hex_h: 52 },
-    Ma\u0142y: { rywale_ai: 3, miasta_panstwa: 5, typy_cywilizacji: 5, hex_w: 108, hex_h: 74 },
-    Standardowy: { rywale_ai: 6, miasta_panstwa: 6, typy_cywilizacji: 6, hex_w: 168, hex_h: 120 },
-    Du\u017Cy: { rywale_ai: 7, miasta_panstwa: 7, typy_cywilizacji: 7, hex_w: 240, hex_h: 168 },
-    Ogromny: { rywale_ai: 8, miasta_panstwa: 8, typy_cywilizacji: 10, hex_w: 336, hex_h: 238 },
-    "Super Huge": { rywale_ai: 10, miasta_panstwa: 8, typy_cywilizacji: 12, hex_w: 672, hex_h: 476 }
+    Malenki: { rywale_ai: 2, miasta_panstwa: 3, typy_cywilizacji: 7, hex_w: 76, hex_h: 52 },
+    Ma\u0142y: { rywale_ai: 3, miasta_panstwa: 4, typy_cywilizacji: 10, hex_w: 108, hex_h: 74 },
+    Standardowy: { rywale_ai: 6, miasta_panstwa: 6, typy_cywilizacji: 12, hex_w: 168, hex_h: 120 },
+    Du\u017Cy: { rywale_ai: 7, miasta_panstwa: 7, typy_cywilizacji: 14, hex_w: 240, hex_h: 168 },
+    Ogromny: { rywale_ai: 8, miasta_panstwa: 8, typy_cywilizacji: 15, hex_w: 336, hex_h: 238 },
+    "Super Huge": { rywale_ai: 10, miasta_panstwa: 8, typy_cywilizacji: 15, hex_w: 672, hex_h: 476 }
   },
   generator_e2: {
     resource_mult_low: 0.6,
@@ -68,9 +68,19 @@ var e_start_params_default = {
     forest_threshold_high: 0.5
   },
   tempo_gry: {
-    szybka: 0.2,
-    standardowa: 1,
-    dluga: 5
+    szybka: 1,
+    standardowa: 2,
+    dluga: 4
+  },
+  koszt_budynkow_pace: {
+    niski: 1,
+    normalny: 2,
+    wysoki: 4
+  },
+  koszt_jednostek_pace: {
+    niski: 1,
+    normalny: 2,
+    wysoki: 4
   },
   zwyciestwo: {
     ostatnia_epoka_v1: 3,
@@ -146,7 +156,9 @@ function isDominacjaVictory(potegaGracza, potegi, graczEra, ostatniaEpoka = OSTA
   return powerShare(potegaGracza, potegi) > PROG_DOMINACJI_POWER;
 }
 function isNaukaVictory(wszystkieTechZbadane, rakietaWystrzelona) {
-  return wszystkieTechZbadane && rakietaWystrzelona;
+  if (!wszystkieTechZbadane) return false;
+  if (!NAUKA_WYMAGA_RAKIETY) return true;
+  return rakietaWystrzelona;
 }
 function allTechInScopeResearched(researched, techIdsInScope) {
   if (techIdsInScope.length === 0) return false;

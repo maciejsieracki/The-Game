@@ -18,8 +18,9 @@
 | 4 | **Sól** | Złoża **wyłącznie na wybrzeżu** (brak soli lądowej / w głębi kontynentu). Warzelnia soli na heksie z złożem soli na wybrzeżu. | `warzelnia_soli` w JSON ma jeszcze „Pustynia/Równina" — **do korekty mapy/DANE**. Brak wpisu „Sól" w `resources.json`. |
 | 5 | **Reguła dostępu** | **Każdy surowiec oprócz żywności** wymaga **ulepszenia terenu LUB budynku miasta**, aby być **produkowany / aktywny**. Żywność = wyjątek (plony bazowe lądu). | Faza 1 wdrożona z wyjątkami tartak/kamieniołom; **do domknięcia** wyjątek żywności w kodzie. |
 | 6 | **Receptura cegły** | **2 glina + 1 paliwo → 1 cegła** (nie 1+1). | `converters.ts` dziś: `glina:1, paliwo:1` — **do zmiany faza 2**. |
-| 7 | **Stal** | Potrzebna dopiero w **epoce Klasycznej** (Antyk wysoki / po Żelazo). **Niespójność do decyzji:** `buildings.json` → `wielka_kuznia` ma `epokaWejscia: 4` (Średniowiecze), tech „Obróbka żelaza" jest w epoce Żelazo (3). | Brak receptury `wielka_kuznia` w `converters.ts`. Żadna jednostka nie ma kosztu `stal`. |
+| 7 | **Stal** | Potrzebna dopiero w **epoce Klasycznej** (Antyk wysoki / po Żelazo). **✅ Potwierdzone Maciej 2026-07-23 (`B-SUROW-BUD-02`):** epoka **4 = Klasyczna**; stal = konsumenci ep.4. **Niespójność techniczna:** tech „Obróbka żelaza" w `tech.json` = Epoka Żelazo (3) vs `wielka_kuznia` ep.4 — sync przy wdrożeniu. | Brak receptury `wielka_kuznia` w `converters.ts`. Żadna jednostka nie ma kosztu `stal`. |
 | 8 | **Spichlerz two-tier (Maciej 2026-07-22)** | **Spichlerz I (zbór):** bramka **tylko Ceramika** (Garncarnia). **Spichlerz II (upgrade):** wymaga **Soli** (warzelnia, wybrzeże). Bufor wzrostu po awansie: I = **50%**, II = **70%**. Zapasy wojska: I = **100 🍞**/spichlerz (jak dziś); II = **150 🍞**/spichlerz *(rekomendacja)*. Bonus miasta: I = **+1 Zdrowie / +1 Szczęście**; II = **+2 Zdrowie / +2 Szczęście**. Szczegóły → **§ Spichlerz two-tier** poniżej. | Kod: jeden `spichlerz`, brak tierów; brak bramki ceramiki; brak soli w JSON. **Do wdrożenia faza 2.** |
+| 9 | **REMOVE-DESKI (Maciej 2026-07-23 — `B-SUROW-BUD-03`)** | Surowiec **deski wycofany**. **Stolarnia** = **tylko bonus Pracy** (produkcja miasta), **bez** konwertera drewno→deski. **Tartak** = drewno (TYP 1). Bramki budynków: Brąz → drewno+kamień · Żelazo → drewno+kamień+cegła. | `resources.json` ma Deski · `converters.ts` tartak→deski · Galera 4×Deski · tech odblokowuje deski — **do usunięcia przy `działaj`**. |
 
 ---
 
@@ -73,7 +74,7 @@ Powstają **wyłącznie w budynku miasta** (konwerter co turę). Wymagają **akt
 
 | Surowiec | Budynek | Wejście (surowce) | Wyjście | Konwerter / turę | Uwagi |
 |---|---|---|---|---|---|
-| **Deski** | **Stolarnia** | 1 drewno | 1 deska | max **2/t** [PT] | W `converters.ts` id receptury = `tartak` (legacy) — docelowo `stolarnia`. |
+| ~~**Deski**~~ | ~~Stolarnia~~ | — | — | — | **WYCofane** (`B-SUROW-BUD-03`). Stolarnia = bonus **Pracy** only. |
 | **Paliwo** | **Mielerz** | **2 drewno** | 1 paliwo | max **2/t** [PT] | **Kanon: 2→1.** Kod dziś 1→1 — faza 2. |
 | **Cegła** | **Cegielnia** | **2 glina + 1 paliwo** | 1 cegła | max **2/t** [PT] | **Kanon Macieja 2026-07-22.** Kod dziś 1+1 — faza 2. |
 | **Ceramika** | **Garncarnia** | 1 glina + 1 paliwo | 1 ceramika | max **1/t** [PT] | **Konsument:** bramka **Spichlerz** (§8) — naczynia do składowania. Zdrowie z Garncarni = efekt wtórny. |
@@ -148,15 +149,19 @@ Bonus z **aktywnego dostępu w imperium**, domyślnie **nie** ze stocku magazynu
 
 Supersedes wcześniejszą propozycję Mastera (I = brak, II = +1/+1).
 
-**Konflikt z paczką ABC SP-TIER-Q1–Q5 (czat Master):**
+**Paczka ABC SP-TIER → B-SPIC (Maciej 2026-07-23, korekta routingu):**
 
-| ID | Temat | Po decyzji Macieja |
-|---|---|---|
-| **SP-TIER-Q1** | Cap armii tier II (100 vs 150) | **otwarte** — bonusy zamknięte; cap nadal rekomendacja A (150) |
-| **SP-TIER-Q2** | Zasięg bonusu soli | **otwarte** — bonus Spichlerza = lokalny w mieście z tierem (nie stock soli) |
-| **SP-TIER-Q3** | Per miasto vs imperium | **otwarte** |
-| **SP-TIER-Q4** | Koszt upgrade II | **otwarte** |
-| **SP-TIER-Q5** | Wyjątki „czystej infrastruktury" | **ZAMKNIĘTE częściowo** — Maciej: **Spichlerz I też daje +1/+1** (odrzucony wariant B: I bez bonusu) |
+| ID (nowy) | Temat | Maciej | Status |
+|---|---|---|---|
+| **B-SPIC-Q1** | Tier II wojsko (cap / bufor / oba) | **C** — cap 150 + bufor 70% + Zd/Sz lokalnie | 🟡 ZAPISANA · `docs/decyzje/B-SPIC-2026-07-23.md` |
+| **B-SPIC-Q2** | Zasięg bonusu soli | **A** — tylko miasto ze Spichlerzem II | 🟡 ZAPISANA |
+| **B-SPIC-Q3** | Zasięg bonusów ogólnie | **A** — budynki lokalnie; surowce imperium | 🟡 ZAPISANA |
+| **B-SPIC-Q4** | Koszt upgrade II | **A** — kolejka produkcji | 🟡 ZAPISANA |
+| **B-SPIC-Q5** | Wyjątki infrastruktury | **B** — infrastruktura bez Sz/Zd | 🟡 ZAPISANA |
+
+Bonusy Spichlerz I +1/+1 · II +2/+2 — **ZAMKNIĘTE** 2026-07-22 (nie zmienione).
+
+> **Uwaga:** Te odpowiedzi **nie** dotyczą `B-KULT-REL` — błędny zapis w `B-KULT-REL-2026-07-22.md` wycofany 2026-07-23.
 
 ---
 
@@ -166,7 +171,7 @@ Supersedes wcześniejszą propozycję Mastera (I = brak, II = +1/+1).
 
 | Budynek | Zużywa | Produkuje |
 |---|---|---|
-| Stolarnia | drewno | deski |
+| ~~Stolarnia~~ | — | ~~deski~~ → **bonus Pracy** (B-SUROW-BUD-03) |
 | Mielerz | drewno (×2 kanon) | paliwo |
 | Cegielnia | glina (×2 kanon), paliwo | cegła |
 | Garncarnia | glina, paliwo | ceramika |
@@ -202,13 +207,29 @@ Supersedes wcześniejszą propozycję Mastera (I = brak, II = +1/+1).
 
 ---
 
+## F. Bramki budynków wg epoki (Maciej 2026-07-23 — `B-SUROW-BUD`)
+
+> **Pełna spec + tabele budynków:** `docs/decyzje/B-SUROW-BUD-2026-07-23.md` · handoff: `dyspozycje/_handoff/B-SUROW-BUD-do-INTEGRATOR.md` · status 🟡 ZAPISANA (implementacja po `działaj`).
+
+| Epoka | Reguła bramki (tylko **dostęp**, nie stock) |
+|---|---|
+| **1 Kamień** | Każdy budynek → **drewno** aktywne (Tartak) |
+| **2 Brąz** | Każdy budynek → **drewno** + **kamień** aktywne (Tartak + Kamieniołom) |
+| **3 Żelazo** | Każdy budynek → **drewno** + **kamień** + **cegła** aktywne; minimum **Mury** |
+| **4 Klasyczna** | **Stal** — `wielka_kuznia` (+ jednostki ep. Klasyczna) |
+| **Magazyn** | **Bez limitu** v0.1 — rola: skład pod **eksport i handel**; pełne limity magazynów → faza 3 |
+
+> **B-SUROW-BUD-03 (2026-07-23):** surowiec **deski usunięty**; ~~Brąz→deski~~ · ~~Żelazo→deski~~ superseded.
+
+---
+
 ## E. Otwarte doprecyzowania
 
 1. **Wyjątek żywności w kodzie** — `resource-access.ts` stosuje regułę ulepszenia także dla 🍞.
-2. **Stal vs Wielka Kuźnia** — epoka Klasyczna (Maciej) vs `epokaWejscia:4` vs tech ep.3 — **decyzja ABC**.
+2. ~~**Stal vs Wielka Kuźnia**~~ — **✅ `B-SUROW-BUD-02`:** stal = epoka **Klasyczna** (4); sync tech przy wdrożeniu.
 3. **Legacy `Ruda`** — migracja kluczy `ruda_miedzi` / `ruda_zelaza`.
 4. **Sól** — dodać do `resources.json`; generator tylko wybrzeże; ~~konsument~~ **✅ rozstrzygnięte:** bramka **Spichlerz** (§8) + efekt zdrowie+szczęście z zachowanej soli.
-5. ~~**Ceramika**~~ — **✅ rozstrzygnięte:** konsument = **Spichlerz**, twarda bramka budowy (§8). ~~**Sól**~~ — **✅ rozstrzygnięte:** konsument = **Spichlerz** (bramka) + welfare z magazynu. Pozostałe: **Cegła / Kamień / Deski** — konsumentów fazy 3 (§3).
+5. ~~**Ceramika**~~ — **✅ rozstrzygnięte:** konsument = **Spichlerz**, twarda bramka budowy (§8). ~~**Sól**~~ — **✅ rozstrzygnięte:** konsument = **Spichlerz** (bramka) + welfare z magazynu. Pozostałe: **Cegła / Kamień** — konsumentów fazy 3 (§3). ~~**Deski**~~ — **wycofane** B-SUROW-BUD-03.
 6. **Rydwan (woły)** — koszt `bydlo` → bramka Trzoda (nie surowiec).
 7. **Przepustowości [PT]** — po balansie.
 
@@ -251,7 +272,7 @@ Supersedes wcześniejszą propozycję Mastera (I = brak, II = +1/+1).
 
 | Surowiec | Budynek | Receptura (kanon) | Łańcuch |
 |---|---|---|---|
-| **Deski** | Stolarnia | 1 drewno → 1 deska | drewno (A) |
+| ~~**Deski**~~ | — | **wycofane** | B-SUROW-BUD-03 |
 | **Paliwo** | Mielerz | **2 drewno → 1 paliwo** | drewno (A) |
 | **Cegła** | Cegielnia | **2 glina + 1 paliwo → 1 cegła** | glina (A) + paliwo (B) |
 | **Ceramika** | Garncarnia | 1 glina + 1 paliwo → 1 ceramika | glina (A) + paliwo (B) → **Spichlerz** (bramka ceramika; + sól §8) |
@@ -271,7 +292,7 @@ Supersedes wcześniejszą propozycję Mastera (I = brak, II = +1/+1).
 | **Glina** | glinianka | Cegielnia, Garncarnia | ✅ używany |
 | **Ruda** (miedź) | kopalnia miedzi | Piec hutniczy (`huta`, `odlewnia_brazu`) | ✅ używany |
 | **Koń** | stadnina | **8 typów jednostek** konnych + rydwany konne | ✅ używany |
-| **Deski** | stolarnia | **Galera** (1 jednostka, 4 deski) | ⚠️ **słabo używany** — brak innych konsumentów |
+| **Deski** | ~~stolarnia~~ | ~~Galera (4)~~ → **Galera: drewno** przy wdrożeniu | 🗑️ **wycofane** B-SUROW-BUD-03 |
 | **Paliwo** | mielerz | wejście Cegielni, Garncarni, Huty (łańcuch) | ✅ pośrednik (nie orphan) |
 | **Cegła** | cegielnia | **brak** — Pismo wymaga **budynku** Cegielnia, nie surowca cegła | 🔴 **osierocony** |
 | **Ceramika** | garncarnia | **bramka Spichlerz** (`spichlerz`) — kanon Macieja 2026-07-22; efekt zdrowia = wtórny (bug: id `ceramika` vs `garncarnia` w `turn-economy.ts`) | ✅ **przypisany** (bramka faza 2 — **nie wdrożone** w kodzie) |
@@ -282,7 +303,7 @@ Supersedes wcześniejszą propozycję Mastera (I = brak, II = +1/+1).
 | **Bydło / Owce / Lama** | — (to ulepszenia) | wpisy legacy w `resources.json`; Rydwan: koszt `bydlo` | 🗑️ **wycofać z surowców** |
 | **Węgiel** | — | generator mapy only | ⏸️ **poza v0.1** |
 
-**Podsumowanie osieroconych (materiał):** Cegła · Stal · Kamień (częściowo) · Deski (częściowo). ~~Ceramika~~ · ~~Sól~~ → **Spichlerz** (rozstrzygnięte 2026-07-22).
+**Podsumowanie osieroconych (materiał):** Cegła · Stal · Kamień (częściowo). ~~Deski~~ wycofane. ~~Ceramika~~ · ~~Sól~~ → **Spichlerz** (rozstrzygnięte 2026-07-22).
 
 ---
 
@@ -291,14 +312,14 @@ Supersedes wcześniejszą propozycję Mastera (I = brak, II = +1/+1).
 | Surowiec | Konwertery (wejście → wyjście) | Budynki (przyszły koszt materiałowy) | Jednostki (`units.json`) | Brak zastosowania / do decyzji Macieja |
 |---|---|---|---|---|
 | **Żywność** | — (TYP 1) | Spichlerz (magazyn 🍞; **wymaga ceramiki + soli** — dwie bramki budowy) | utrzymanie wszystkich | — |
-| **Drewno** | → deski, paliwo | Stolarnia, Mielerz (bramka las) | Łucznik, Proca, Łucznik kompozytowy, Katapulta… (**5**) | — |
+| **Drewno** | → paliwo | Stolarnia (**Praca**), Mielerz (bramka las) | Łucznik, Proca, Łucznik kompozytowy, Katapulta… (**5**) · **Galera** (→ drewno) | — |
 | **Kamień** | — | **Mury**, Warsztat kamieniarski, Kamienne kręgi, Cytadela | *(brak dziś)* | **Przypisać:** koszt murów / fortyfikacji |
 | **Glina** | → cegła, ceramika (via paliwo) | Cegielnia, Garncarnia | *(brak dziś)* | — |
 | **Ruda miedzi** | → brąz | Piec hutniczy, Kuźnia (bramka) | pośrednio → brąz | — |
 | **Ruda żelaza** | → żelazo *(do wdrożenia)* | Odlewnia żelaza | pośrednio → żelazo | — |
 | **Sól** | — | **Spichlerz** (twarda bramka budowy); warzelnia (zdrowie+szczęście z zachowanej soli); handel złożem | *(brak jednostek)* | **✅ Rozstrzygnięte** (Maciej 2026-07-22): bramka Spichlerz + welfare |
 | **Koń** | — | Stadnina (bramka) | Konnica, Rydwan konny, Konnica Xiongnu… (**8**) | — |
-| **Deski** | drewno → deski | Stolarnia, Port (?) | **Galera** (4) | **Przypisać:** statki, molo, palisada? |
+| ~~**Deski**~~ | — | — | — | **Wycofane** B-SUROW-BUD-03 |
 | **Paliwo** | drewno → paliwo | Mielerz | pośrednik | — |
 | **Cegła** | 2 glina + 1 paliwo → cegła | **Pismo** (bramka Cegielnia imperium) | *(brak)* | **Przypisać:** mury ceglane, agora, świątynie |
 | **Ceramika** | glina + paliwo → ceramika | **Spichlerz** (bramka ceramika); Garncarnia (+zdrowie wtórne) | *(brak)* | **✅ Rozstrzygnięte** (Maciej 2026-07-22) |
@@ -311,12 +332,13 @@ Supersedes wcześniejszą propozycję Mastera (I = brak, II = +1/+1).
 ### Łańcuchy konwerterów (docelowa kolejność tury)
 
 ```
-drewno ──→ deski ──→ (statki faza 3)
-    └──→ paliwo ──┬→ cegła (2 glina + 1 paliwo)
-                  ├→ ceramika ──┐
-                  ├→ brąz (ruda miedzi)
-                  ├→ żelazo (ruda żelaza)
-                  └→ stal (żelazo)
+drewno ──→ paliwo ──┬→ cegła (2 glina + 1 paliwo)
+                    ├→ ceramika ──┐
+                    ├→ brąz (ruda miedzi)
+                    ├→ żelazo (ruda żelaza)
+                    └→ stal (żelazo)
+
+Stolarnia → bonus Pracy (bez desek — B-SUROW-BUD-03)
 
 złoże soli (wybrzeże) ──→ warzelnia ──→ sól ──┐
                                                ├──→ Spichlerz (dwie bramki: ceramika + sól)
@@ -328,7 +350,7 @@ złoże soli (wybrzeże) ──→ warzelnia ──→ sól ──┐
 | Plik | Problem |
 |---|---|
 | `resources.json` | Bydło, Owce, Lama jako surowce; brak Soli; Koń Typ=`hodowla` |
-| `converters.ts` | Cegła 1+1; Mielerz 1→1; brak odlewnia_zelaza, wielka_kuznia |
+| `converters.ts` | Cegła 1+1; Mielerz 1→1; **tartak→deski USUNĄĆ**; brak odlewnia_zelaza, wielka_kuznia |
 | `units.json` | Rydwan koszt `bydlo` (powinno: bramka Trzoda) |
 | `buildings.json` | `wielka_kuznia` epoka 4 vs stal epoka Klasyczna; **`spichlerz` brak bramek ceramiki i soli** (kanon: dwie twarde bramki faza 2) |
 | `building-resource-gate.ts` | brak wpisów `spichlerz` → ceramika **i** `spichlerz` → sol (wzorzec: `garncarnia` → Glina) |
@@ -404,4 +426,4 @@ złoże soli (wybrzeże) ──→ warzelnia ──→ sól ──┐
 
 ---
 
-*Plik: `dyspozycje/SUROWCE-KANON-2026-07-22.md` · v6: bonusy Spichlerz I +1/+1 · II +2/+2 (Maciej 2026-07-22 wieczór) · v5: two-tier · v4: sól→Spichlerz · bez implementacji kodu.*
+*Plik: `dyspozycje/SUROWCE-KANON-2026-07-22.md` · v8: B-SUROW-BUD-03 REMOVE-DESKI · bez implementacji kodu.*

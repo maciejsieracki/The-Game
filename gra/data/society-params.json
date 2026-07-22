@@ -243,18 +243,25 @@
       "opis": "Kara Zadowolenia w czasie stanu wojennego (zmęczenie wojną — dotyczy całej cywilizacji). [PT]"
     },
     "szczescie_kara_obca_kultura": {
-      "easy": -0.75,
-      "normal": -1,
-      "hard": -1.25,
+      "easy": -1.5,
+      "normal": -2,
+      "hard": -2.5,
       "jednostka": "pkt Zadowolenia",
       "opis": "Kara Zadowolenia za dominującą obcą kulturę w mieście (<50% własnej kultury). [PT — do strojenia]"
     },
     "szczescie_kara_obca_religia": {
-      "easy": -1,
-      "normal": -2,
-      "hard": -3,
+      "easy": -2,
+      "normal": -4,
+      "hard": -6,
       "jednostka": "pkt Zadowolenia",
       "opis": "Kara Zadowolenia gdy obca religia dominuje w mieście (po podboju). [PT]"
+    },
+    "szczescie_kara_podboj_podwojna_obca": {
+      "easy": -1.5,
+      "normal": -2,
+      "hard": -2.5,
+      "jednostka": "pkt Zadowolenia",
+      "opis": "Dodatkowa kara Sz gdy po podboju jednocześnie obca kultura (<50%) i obca dominująca religia. [B-KULT-REL]"
     },
     "szczescie_kara_wysokie_podatki": {
       "easy": 0,
@@ -406,15 +413,15 @@
       "opis": "Próg kultury do 3. ekspansji granic. [PT]"
     },
     "kultura_zadowolenie_100pct": {
-      "easy": 3,
-      "normal": 2,
-      "hard": 1,
+      "easy": 6,
+      "normal": 4,
+      "hard": 2,
       "jednostka": "pkt Zadowolenia",
       "opis": "Bonus Zadowolenia gdy 100% kultury w mieście to nasza kultura (pełna jedność kulturowa). [PT — do strojenia]"
     },
     "kultura_zadowolenie_75pct": {
-      "easy": 2,
-      "normal": 1,
+      "easy": 4,
+      "normal": 2,
       "hard": 0,
       "jednostka": "pkt Zadowolenia",
       "opis": "Bonus Zadowolenia gdy ≥75% kultury naszej (wysoka jedność kulturowa). [PT — do strojenia]"
@@ -427,16 +434,16 @@
       "opis": "Zadowolenie neutralne gdy 50% kultury naszej (mieszane miasto). [PT — do strojenia]"
     },
     "kultura_kara_zadowolenie_lt50": {
-      "easy": -0.75,
-      "normal": -1,
-      "hard": -1.25,
+      "easy": -1.5,
+      "normal": -2,
+      "hard": -2.5,
       "jednostka": "pkt Zadowolenia",
       "opis": "Kara Zadowolenia gdy <50% kultury naszej (obca kultura dominuje → napięcia społeczne). [PT — do strojenia]"
     },
     "kultura_kara_zadowolenie_lt25": {
-      "easy": -1,
-      "normal": -2,
-      "hard": -3,
+      "easy": -2,
+      "normal": -4,
+      "hard": -6,
       "jednostka": "pkt Zadowolenia",
       "opis": "Kara Zadowolenia gdy <25% kultury naszej (wyraźna dominacja obcej kultury → ryzyko buntu). [PT — do strojenia]"
     },
@@ -452,7 +459,7 @@
       "normal": 1.5,
       "hard": 1.12,
       "jednostka": "%/turę",
-      "opis": "Dodatkowa prędkość konwersji kulturowej ze Świątyni w mieście (+% własnej kultury/turę per budynek). [PT — do strojenia]"
+      "opis": "LEGACY (B-KULT-REL split): Świątynia = budynek religijny — konwersja kultury w kodzie NIE czyta tego wiersza. Bonus przeniesiony do religia_konwersja_swiatynia."
     },
     "kultura_konwersja_amfiteatr": {
       "easy": 2,
@@ -462,11 +469,39 @@
       "opis": "Dodatkowa prędkość konwersji kulturowej z Amfiteatru (widowiska = soft power). [PT — do strojenia]"
     },
     "kultura_konwersja_biblioteka": {
+      "easy": 2.5,
+      "normal": 2,
+      "hard": 1.5,
+      "jednostka": "%/turę",
+      "opis": "Dodatkowa prędkość konwersji kulturowej z Biblioteki. [KULT-BUD-01: 2%/t normal]"
+    },
+    "kultura_konwersja_palac": {
+      "easy": 2.5,
+      "normal": 2,
+      "hard": 1.5,
+      "jednostka": "%/turę",
+      "opis": "Dodatkowa prędkość konwersji kulturowej z Pałacu. [KULT-BUD-01: 2%/t normal]"
+    },
+    "kultura_konwersja_stela": {
       "easy": 0.62,
       "normal": 0.5,
       "hard": 0.38,
       "jednostka": "%/turę",
-      "opis": "Dodatkowa prędkość konwersji kulturowej z Biblioteki. [PT — do strojenia]"
+      "opis": "Dodatkowa prędkość konwersji kulturowej ze Steli / Pomnika. [KULT-BUD-01: 0,5%/t normal]"
+    },
+    "kultura_konwersja_sad": {
+      "easy": 2.5,
+      "normal": 2,
+      "hard": 1.5,
+      "jednostka": "%/turę",
+      "opis": "Dodatkowa prędkość konwersji kulturowej z Sądu. [KULT-BUD-01: 2%/t normal]"
+    },
+    "kultura_konwersja_laznia": {
+      "easy": 1.25,
+      "normal": 1,
+      "hard": 0.75,
+      "jednostka": "%/turę",
+      "opis": "Dodatkowa prędkość konwersji kulturowej z Łaźni publicznej. [KULT-BUD-01: 1%/t normal]"
     },
     "kultura_konwersja_cel_100pct": {
       "easy": 100,
@@ -481,6 +516,13 @@
       "hard": 4,
       "jednostka": "%/turę",
       "opis": "Maksymalna łączna prędkość konwersji na turę (cap, niezależnie od liczby budynków kulturalnych). [PT — do strojenia]"
+    },
+    "kultura_presja_proc_tura": {
+      "easy": 7,
+      "normal": 5,
+      "hard": 3,
+      "jednostka": "%/turę",
+      "opis": "KULT-PRESJA-03 (2026-07-23): gdy suma kultury imperium źródła > obrońcy i miasto w zasięgu okolicy — przyrost udziału kultury źródła na mieście celu co turę. Symetrycznie. [WDROŻENIE: czeka działaj — tylko JSON na razie]"
     }
   },
   "religia": {
@@ -513,9 +555,9 @@
       "opis": "Maksymalny dystans w heksach, na który religia może się szerzyć bez budynków misyjnych. [PT — do strojenia]"
     },
     "religia_zadowolenie_dominujaca": {
-      "easy": 3,
-      "normal": 2,
-      "hard": 1,
+      "easy": 6,
+      "normal": 4,
+      "hard": 2,
       "jednostka": "pkt Zadowolenia",
       "opis": "Bonus Zadowolenia gdy nasza religia dominuje w mieście (jedność wyznaniowa). [PT]"
     },
@@ -534,16 +576,16 @@
       "opis": "Bonus do produkcji (Pracy) gdy >80% miast cywilizacji wyznaje tę samą religię (jedność wyznaniowa). [PT — do strojenia]"
     },
     "religia_kara_obca": {
-      "easy": -1,
-      "normal": -2,
-      "hard": -3,
+      "easy": -2,
+      "normal": -4,
+      "hard": -6,
       "jednostka": "pkt Zadowolenia",
       "opis": "Kara Zadowolenia gdy obca religia dominuje w mieście (po podboju lub konwersji przez rywala). [PT]"
     },
     "religia_kara_brak_religii": {
-      "easy": -0.75,
-      "normal": -1,
-      "hard": -1.25,
+      "easy": -1.5,
+      "normal": -2,
+      "hard": -2.5,
       "jednostka": "pkt Zadowolenia",
       "opis": "Kara Zadowolenia gdy miasto nie ma żadnej dominującej religii (brak duchowości = niepokój społeczny). [PT — do strojenia]"
     },
@@ -576,11 +618,18 @@
       "opis": "Bazowa prędkość konwersji religijnej podbitego miasta (% wyznawców nowej religii na turę). [PT]"
     },
     "religia_konwersja_swiatynia": {
+      "easy": 6,
+      "normal": 4,
+      "hard": 2,
+      "jednostka": "%/turę",
+      "opis": "Bonus konwersji religijnej ze Świątyni — DODAWANY do religia_konwersja_bazowa (normal: +4%/t → łącznie 6%/t). Budynek religijny — bez bonusu konwersji kultury. [KULT-BUD-02]"
+    },
+    "religia_konwersja_kregi": {
       "easy": 3,
       "normal": 2,
       "hard": 1,
       "jednostka": "%/turę",
-      "opis": "Przyspieszenie konwersji religijnej ze Świątyni w podbitym mieście. [PT — do strojenia]"
+      "opis": "Bonus konwersji religijnej z Kamiennych kręgów — DODAWANY do religia_konwersja_bazowa (normal: +2%/t → łącznie 4%/t). [KULT-BUD-02]"
     },
     "religia_konwersja_cel": {
       "easy": 100,
@@ -588,6 +637,13 @@
       "hard": 100,
       "jednostka": "%",
       "opis": "Cel konwersji = 100% wyznawców naszej religii. Dopóki poniżej: kara Zadowolenia (obca religia). [PT]"
+    },
+    "religia_presja_proc_tura": {
+      "easy": 7,
+      "normal": 5,
+      "hard": 3,
+      "jednostka": "%/turę",
+      "opis": "KULT-PRESJA-04 (2026-07-23): mirror kultura_presja_proc_tura — gdy suma religii imperium źródła > obrońcy i miasto w zasięgu okolicy — przyrost udziału religii źródła na mieście celu co turę. Symetrycznie (06). [WDROŻENIE: czeka działaj — tylko JSON na razie]"
     }
   },
   "religie_cywilizacji": [
@@ -795,6 +851,13 @@
       "hard": -3,
       "jednostka": "pkt Prawa",
       "opis": "Kara gdy pop≥6 i brak garnizonu (opcjonalne v1.0)."
+    },
+    "prawo_kara_podboj_bez_garnizonu": {
+      "easy": -2,
+      "normal": -3,
+      "hard": -4,
+      "jednostka": "pkt Prawa",
+      "opis": "Kara Prawa gdy po podboju obca kultura+religia i brak jednostek w mieście. [B-KULT-REL]"
     },
     "prawo_bonus_osada": {
       "easy": 4,

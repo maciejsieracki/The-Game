@@ -73,7 +73,12 @@ interface RawKulturaBlock {
   kultura_konwersja_swiatynia?: RawSocietyParam;
   kultura_konwersja_amfiteatr?: RawSocietyParam;
   kultura_konwersja_biblioteka?: RawSocietyParam;
+  kultura_konwersja_palac?: RawSocietyParam;
+  kultura_konwersja_stela?: RawSocietyParam;
+  kultura_konwersja_sad?: RawSocietyParam;
+  kultura_konwersja_laznia?: RawSocietyParam;
   kultura_konwersja_cap_tura?: RawSocietyParam;
+  kultura_presja_proc_tura?: RawSocietyParam;
 }
 
 /** "religia" block of society-params.json (only the keys this module reads). */
@@ -87,6 +92,8 @@ interface RawReligiaBlock {
   religia_kara_brak_religii?: RawSocietyParam;
   religia_konwersja_bazowa?: RawSocietyParam;
   religia_konwersja_swiatynia?: RawSocietyParam;
+  religia_konwersja_kregi?: RawSocietyParam;
+  religia_presja_proc_tura?: RawSocietyParam;
 }
 
 /** One row of religie_cywilizacji[] (civ -> religion mapping) in society-params.json. */
@@ -175,12 +182,20 @@ export interface CultureParams {
   karaLt25: number;
   /** Base culture conversion of a conquered city, % per turn. */
   konwersjaBaza: number;
-  /** Extra conversion %/turn from a Swiatynia. */
+  /** @deprecated B-KULT-REL split: Świątynia = budynek religijny, nie kulturowy. Pole zostaje w JSON dla kompatybilności loadera. */
   konwersjaSwiatynia: number;
-  /** Extra conversion %/turn from an Amfiteatr. */
+  /** Extra conversion %/turn from Teatr / Akademia (budynki kulturalne). */
   konwersjaAmfiteatr: number;
-  /** Extra conversion %/turn from a Biblioteka. */
+  /** Extra conversion %/turn from Biblioteka (budynek kulturalny). */
   konwersjaBiblioteka: number;
+  /** Extra conversion %/turn from Pałac. */
+  konwersjaPalac: number;
+  /** Extra conversion %/turn from Stela / Pomnik. */
+  konwersjaStela: number;
+  /** Extra conversion %/turn from Sąd. */
+  konwersjaSad: number;
+  /** Extra conversion %/turn from Łaźnia publiczna. */
+  konwersjaLaznia: number;
   /** Max total conversion %/turn (cap, regardless of building count). */
   konwersjaCapTura: number;
 }
@@ -201,7 +216,11 @@ export const FALLBACK_CULTURE_PARAMS: Readonly<CultureParams> = Object.freeze({
   konwersjaBaza:       1,
   konwersjaSwiatynia:  1.5,
   konwersjaAmfiteatr:  1,
-  konwersjaBiblioteka: 0.5,
+  konwersjaBiblioteka: 2,
+  konwersjaPalac:      2,
+  konwersjaStela:      0.5,
+  konwersjaSad:        2,
+  konwersjaLaznia:     1,
   konwersjaCapTura:    5,
 });
 
@@ -232,6 +251,10 @@ export function loadCultureParams(
     konwersjaSwiatynia:  pick(k.kultura_konwersja_swiatynia,    difficulty, f.konwersjaSwiatynia),
     konwersjaAmfiteatr:  pick(k.kultura_konwersja_amfiteatr,    difficulty, f.konwersjaAmfiteatr),
     konwersjaBiblioteka: pick(k.kultura_konwersja_biblioteka,   difficulty, f.konwersjaBiblioteka),
+    konwersjaPalac:      pick(k.kultura_konwersja_palac,         difficulty, f.konwersjaPalac),
+    konwersjaStela:      pick(k.kultura_konwersja_stela,         difficulty, f.konwersjaStela),
+    konwersjaSad:        pick(k.kultura_konwersja_sad,           difficulty, f.konwersjaSad),
+    konwersjaLaznia:     pick(k.kultura_konwersja_laznia,        difficulty, f.konwersjaLaznia),
     konwersjaCapTura:    pick(k.kultura_konwersja_cap_tura,     difficulty, f.konwersjaCapTura),
   };
 }
@@ -374,11 +397,18 @@ export function cultureHappiness(
 // convertCulture (conquered-tile cultural conversion, per turn)
 // ---------------------------------------------------------------------------
 
-/** Which culture-accelerating buildings a city has (for conversion speed). */
+/**
+ * Budynki KULTURALNE — przyspieszają wyłącznie konwersję kultury (ownCultureShare).
+ * Kanon ID: biblioteka, teatr, akademia, palac, stela, sad, laznia_publiczna.
+ * Garncarnia wyłączona (KULT-BUD-01). Plon kultury passive bez konwersji: brak osobnego bonusu.
+ */
 export interface CultureBuildings {
-  hasSwiatynia?: boolean;
   hasAmfiteatr?: boolean;
   hasBiblioteka?: boolean;
+  hasPalac?: boolean;
+  hasStela?: boolean;
+  hasSad?: boolean;
+  hasLaznia?: boolean;
 }
 
 /** Result of one turn of cultural conversion toward our culture. */
@@ -395,13 +425,13 @@ export interface CultureConversionResult {
  * Advance the cultural conversion of a (typically conquered) city by one turn,
  * moving its own-culture share toward 100% (Spec SS3 "Konwersja kulturowa").
  *
- * Rate = base + temple + amphitheatre + library accelerators, summed then capped
- * by konwersjaCapTura. Params store the rates as PERCENT/turn (e.g. 1 == 1%),
- * so they are divided by 100 to step the [0,1] share.
+ * Rate = base + per-building accelerators (amfiteatr, biblioteka, pałac, stela,
+ * sąd, łaźnia), summed then capped by konwersjaCapTura. Świątynia i Kamienne kręgi
+ * NIE wpływają na kulturę (B-KULT-REL split). Garncarnia wyłączona (KULT-BUD-01).
  *
  * @param city      - CultureCity (uses ownCultureShare; defaults to 0 for a
  *                    freshly conquered city with none of our culture).
- * @param buildings - culture buildings present (each adds its accelerator).
+ * @param buildings - budynki kulturalne (biblioteka, teatr/akademia, pałac, stela, sąd, łaźnia).
  * @param params    - CultureParams.
  */
 export function convertCulture(
@@ -411,9 +441,12 @@ export function convertCulture(
 ): CultureConversionResult {
   const share = clamp(finiteOr(city.ownCultureShare ?? 0, 0), 0, 1);
   let ratePct = params.konwersjaBaza;
-  if (buildings.hasSwiatynia) ratePct += params.konwersjaSwiatynia;
   if (buildings.hasAmfiteatr) ratePct += params.konwersjaAmfiteatr;
   if (buildings.hasBiblioteka) ratePct += params.konwersjaBiblioteka;
+  if (buildings.hasPalac) ratePct += params.konwersjaPalac;
+  if (buildings.hasStela) ratePct += params.konwersjaStela;
+  if (buildings.hasSad) ratePct += params.konwersjaSad;
+  if (buildings.hasLaznia) ratePct += params.konwersjaLaznia;
   ratePct = clamp(ratePct, 0, params.konwersjaCapTura);
   const appliedRate = ratePct / 100;
   const next = clamp(share + appliedRate, 0, 1);
@@ -450,8 +483,10 @@ export interface ReligionParams {
   karaBrakReligii: number;
   /** Base religious conversion of a conquered city, % per turn. */
   konwersjaBazaPct: number;
-  /** Extra conversion %/turn from a Swiatynia in the converted city. */
+  /** Additive bonus %/turn from Świątynia (summed with konwersjaBazaPct). KULT-BUD-02: +4 normal. */
   konwersjaSwiatyniaPct: number;
+  /** Additive bonus %/turn from Kamienne kręgi (summed with konwersjaBazaPct). KULT-BUD-02: +2 normal. */
+  konwersjaKregiPct: number;
 }
 
 /** Sane default Religion params (mirror the "normal" difficulty in the JSON). */
@@ -464,7 +499,8 @@ export const FALLBACK_RELIGION_PARAMS: Readonly<ReligionParams> = Object.freeze(
   karaObca:               -2,
   karaBrakReligii:        -1,
   konwersjaBazaPct:        2,
-  konwersjaSwiatyniaPct:   2,
+  konwersjaSwiatyniaPct:   4,
+  konwersjaKregiPct:       2,
 });
 
 /**
@@ -488,6 +524,7 @@ export function loadReligionParams(
     karaBrakReligii:         pick(r.religia_kara_brak_religii,          difficulty, f.karaBrakReligii),
     konwersjaBazaPct:        pick(r.religia_konwersja_bazowa,           difficulty, f.konwersjaBazaPct),
     konwersjaSwiatyniaPct:   pick(r.religia_konwersja_swiatynia,        difficulty, f.konwersjaSwiatyniaPct),
+    konwersjaKregiPct:       pick(r.religia_konwersja_kregi,            difficulty, f.konwersjaKregiPct),
   };
 }
 
@@ -881,8 +918,29 @@ export function spreadReligion(
 }
 
 // ---------------------------------------------------------------------------
-// convertViaTemple (temple-driven religious conversion toward owner religion)
+// ReligionBuildings + convertViaTemple (religious conversion toward owner faith)
 // ---------------------------------------------------------------------------
+
+/**
+ * Budynki RELIGIJNE — przyspieszają wyłącznie konwersję religii (ReligionState).
+ * Kanon ID: kamienne_kregi, swiatynia. Mogą dawać plon kultury i szczęście
+ * (buildings.json), ale konwersja kultury jest osobna (CultureBuildings).
+ */
+export interface ReligionBuildings {
+  hasSwiatynia?: boolean;
+  hasKamienneKregi?: boolean;
+}
+
+/** Łączna stawka %/turę = baza (religia_konwersja_bazowa) + bonus budynku religijnego. */
+function religionConversionRatePct(
+  buildings: ReligionBuildings,
+  params: ReligionParams,
+): number {
+  let ratePct = params.konwersjaBazaPct;
+  if (buildings.hasSwiatynia) ratePct += params.konwersjaSwiatyniaPct;
+  if (buildings.hasKamienneKregi) ratePct += params.konwersjaKregiPct;
+  return Math.max(0, ratePct);
+}
 
 /** Result of one turn of religious conversion in a city. */
 export interface ReligionConversionResult {
@@ -900,12 +958,12 @@ export interface ReligionConversionResult {
 
 /**
  * Convert a city's population toward the owner civ's religion for one turn
- * (Spec SS4 "Konwersja religijna podbitych miast"). A Swiatynia speeds it up, so
- * a temple converts strictly faster than no temple (when there is anyone left to
- * convert).
+ * (Spec SS4 "Konwersja religijna podbitych miast"). Budynki religijne (Świątynia,
+ * Kamienne kręgi) przyspieszają konwersję — bez wpływu na konwersję kultury.
  *
  * Mechanics:
- *   - rate%/turn = konwersjaBazaPct + (hasTemple ? konwersjaSwiatyniaPct : 0).
+ *   - rate%/turn = religia_konwersja_bazowa + bonus świątyni + bonus kręgów
+ *     (additive; KULT-BUD-02: kręgi +2%, świątynia +4% normal — nie zastępują bazy).
  *   - The number converted = round(rate/100 * convertibleAdherents), at least 1
  *     when a fractional amount rounds to 0 but some non-target adherents remain
  *     (so progress never stalls), but never more than the convertible pool.
@@ -917,15 +975,20 @@ export interface ReligionConversionResult {
  * @param state          - the city's ReligionState.
  * @param targetReligion - the owner civ's religion to convert toward (from
  *                         civReligion()); if null/empty, nothing happens.
- * @param hasTemple      - whether the city has a Swiatynia (speeds conversion).
- * @param params         - ReligionParams.
+ * @param religiousBuildings - budynki religijne w mieście (Świątynia, Kręgi).
+ *                             Dla kompatybilności wstecznej: boolean = tylko Świątynia.
+ * @param params             - ReligionParams.
  */
 export function convertViaTemple(
   state: ReligionState,
   targetReligion: string | null,
-  hasTemple: boolean,
+  religiousBuildings: ReligionBuildings | boolean,
   params: ReligionParams = FALLBACK_RELIGION_PARAMS,
 ): ReligionConversionResult {
+  const buildings: ReligionBuildings = typeof religiousBuildings === 'boolean'
+    ? { hasSwiatynia: religiousBuildings }
+    : religiousBuildings;
+
   const total = totalAdherents(state);
   const cloneCounts: Record<string, number> = {};
   for (const k in state.counts) {
@@ -933,10 +996,7 @@ export function convertViaTemple(
     if (typeof v === 'number' && Number.isFinite(v) && v > 0) cloneCounts[k] = v;
   }
 
-  const ratePct = Math.max(
-    0,
-    params.konwersjaBazaPct + (hasTemple ? params.konwersjaSwiatyniaPct : 0),
-  );
+  const ratePct = religionConversionRatePct(buildings, params);
   const appliedRate = ratePct / 100;
 
   // Nothing to do: no target, no people, or already fully target.
@@ -1098,4 +1158,161 @@ export function cityTradeMultiplier(
   const multiplier = applied ? (civBaseMultiplier as number) : FALLBACK_TRADE_MULT;
 
   return { multiplier, civBaseMultiplier, dominantReligion: domReligion, applied };
+}
+
+// ===========================================================================
+// KULT-PRESJA — presja kultury / religii (2026-07-23)
+// ===========================================================================
+
+/** Miasto w zasięgu presji — minimalny kształt dla tickCulturePressure. */
+export interface PressureCity {
+  id: string;
+  ownerId: number;
+  q: number;
+  r: number;
+  population: number;
+  kulturaSkumulowana?: number;
+  ownCultureShare?: number;
+  religionPressurePct?: Record<number, number>;
+}
+
+export interface CulturePressureParams {
+  presjaProcTura: number;
+}
+
+export interface ReligionPressureParams {
+  presjaProcTura: number;
+}
+
+function clampPct(x: number): number {
+  return clamp(finiteOr(x, 0), 0, 100);
+}
+
+/** Suma skumulowanej kultury imperium (KULT-PRESJA-01). */
+export function empireCultureTotal(
+  cities: readonly PressureCity[],
+  ownerId: number,
+): number {
+  let sum = 0;
+  for (const c of cities) {
+    if (c.ownerId !== ownerId) continue;
+    sum += Math.max(0, finiteOr(c.kulturaSkumulowana ?? 0, 0));
+  }
+  return sum;
+}
+
+/** Miasta z dominującą wiarą państwa (KULT-04 A → składnik Power). */
+export function countCitiesWithDominantStateReligion(
+  cities: readonly { ownerId: number; religionState?: ReligionState }[],
+  ownerId: number,
+  stateReligion: string | null,
+  religionParams: ReligionParams = FALLBACK_RELIGION_PARAMS,
+): number {
+  if (!stateReligion) return 0;
+  let n = 0;
+  for (const c of cities) {
+    if (c.ownerId !== ownerId) continue;
+    const dom = dominantReligion(c.religionState ?? { counts: {} }, religionParams);
+    if (dom.religion === stateReligion) n++;
+  }
+  return n;
+}
+
+/** Suma wyznawców religii państwowej imperium (proxy siły religii — KULT-PRESJA-04). */
+export function empireReligionTotal(
+  cities: readonly { ownerId: number; religionState?: ReligionState }[],
+  ownerId: number,
+  stateReligion: string | null,
+): number {
+  if (!stateReligion) return 0;
+  let sum = 0;
+  for (const c of cities) {
+    if (c.ownerId !== ownerId) continue;
+    sum += countReligionAdherents(c.religionState ?? { counts: {} }, stateReligion);
+  }
+  return sum;
+}
+
+export function loadCulturePressureParams(
+  society: SocietyParamsLike | null | undefined,
+  difficulty: Difficulty = 'normal',
+): CulturePressureParams {
+  const row = society?.kultura?.kultura_presja_proc_tura;
+  return { presjaProcTura: pick(row, difficulty, 5) };
+}
+
+export function loadReligionPressureParams(
+  society: SocietyParamsLike | null | undefined,
+  difficulty: Difficulty = 'normal',
+): ReligionPressureParams {
+  const row = society?.religia?.religia_presja_proc_tura;
+  return { presjaProcTura: pick(row, difficulty, 5) };
+}
+
+export interface PressureTickResult {
+  ownCultureShare: number;
+  religionPressurePct: Record<number, number>;
+}
+
+/**
+ * Jedna tura presji kultury + religii dla miasta celu (KULT-PRESJA 01–06).
+ * @param target — miasto celu
+ * @param sources — miasta źródłowe w zasięgu (już przefiltrowane)
+ * @param ratePct — tempo %/turę (7/5/3 wg trudności)
+ */
+export function applyCultureReligionPressureToTarget(
+  target: PressureCity & { religionState?: ReligionState; religionPressurePct?: Record<number, number> },
+  sources: readonly PressureCity[],
+  cities: readonly PressureCity[],
+  ratePct: number,
+  stateReligionByOwner: ReadonlyMap<number, string | null>,
+): PressureTickResult {
+  let share = clamp(finiteOr(target.ownCultureShare ?? 1, 1), 0, 1);
+  const relPct: Record<number, number> = { ...(target.religionPressurePct ?? {}) };
+  const rate = Math.max(0, ratePct) / 100;
+  const oT = target.ownerId;
+  const totalRelT = empireReligionTotal(
+    cities as unknown as { ownerId: number; religionState?: ReligionState }[],
+    oT,
+    stateReligionByOwner.get(oT) ?? null,
+  );
+
+  for (const src of sources) {
+    if (src.ownerId === oT) continue;
+    const oS = src.ownerId;
+    const cultS = empireCultureTotal(cities, oS);
+    const cultT = empireCultureTotal(cities, oT);
+    if (cultS > cultT) {
+      share = clamp(share - rate, 0, 1);
+    } else if (cultT > cultS) {
+      share = clamp(share - rate, 0, 1);
+    }
+
+    const relS = empireReligionTotal(
+      cities as unknown as { ownerId: number; religionState?: ReligionState }[],
+      oS,
+      stateReligionByOwner.get(oS) ?? null,
+    );
+    if (relS > totalRelT) {
+      relPct[oS] = clampPct((relPct[oS] ?? 0) + ratePct);
+    } else if (totalRelT > relS) {
+      const cur = relPct[oT] ?? 100;
+      relPct[oT] = clampPct(cur - ratePct);
+    }
+  }
+
+  return { ownCultureShare: share, religionPressurePct: relPct };
+}
+
+/** KULT-PRESJA-05: po podboju zachowaj mix z presji — nie zeruj. */
+export function onCityCapturedPreservePressure(
+  city: { ownCultureShare?: number; kulturaOwnShare?: number },
+  newOwnerId: number,
+  previousOwnerId: number,
+): void {
+  const prev = clamp(finiteOr(city.ownCultureShare ?? city.kulturaOwnShare ?? 1, 1), 0, 1);
+  if (newOwnerId === previousOwnerId) return;
+  // Udział kultury nowego właściciela = odwrotność udziału poprzednika (presja pre-konquest).
+  city.ownCultureShare = clamp(1 - prev, 0, 1);
+  city.kulturaOwnShare = city.ownCultureShare;
 }

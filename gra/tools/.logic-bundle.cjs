@@ -5673,13 +5673,11 @@ function computeReachable(unit, map, occupied) {
   reachable.delete(startKey);
   return reachable;
 }
-var PATH_SEARCH_RADIUS_BUFFER = 12;
 function computePath(unit, map, destQ, destR, occupied) {
   const startKey = keyOf(unit.q, unit.r);
   const destKey = keyOf(destQ, destR);
   if (!(destKey in map.hexes)) return [];
   if (startKey === destKey) return [];
-  const maxSearchRadius = hexDistance(unit.q, unit.r, destQ, destR) * 2 + PATH_SEARCH_RADIUS_BUFFER;
   const dist = /* @__PURE__ */ new Map();
   const parent = /* @__PURE__ */ new Map();
   dist.set(startKey, 0);
@@ -5735,7 +5733,6 @@ function computePath(unit, map, destQ, destR, occupied) {
       const nq = cq + dq;
       const nr = cr + dr;
       const nKey = keyOf(nq, nr);
-      if (hexDistance(unit.q, unit.r, nq, nr) > maxSearchRadius) continue;
       if (dist.has(nKey) && dist.get(nKey) <= cost) continue;
       if (!(nKey in map.hexes)) continue;
       const hex = map.hexes[nKey];

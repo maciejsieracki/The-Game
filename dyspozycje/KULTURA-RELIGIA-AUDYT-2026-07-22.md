@@ -77,12 +77,14 @@
 
 ## 4. Co jest **martwe / UI-only / niewpięte**
 
+> **Aktualizacja 2026-07-22 (Paczka A — część podbój):** `convertCulture`, `convertViaTemple`, `ownCultureShare` po podboju, kary garnizonu i podwójne Sz — **wdrożone** w `conquest-stability.ts` + `main.ts` + `post-battle-map.ts`. Testy: `conquest-stability-test.cjs` 13/13. **Czeka deploy ROBOCZA.**
+
 | Element | Status | Dowód |
 |---------|--------|-------|
-| **`convertCulture()`** | ❌ Nigdy wywołane | Brak wywołań poza `culture-religion.ts` |
-| **`ownCultureShare` / `kulturaOwnShare`** | ❌ Nigdy zapisywane | Zawsze domyślnie **1.0** → gracz **zawsze** dostaje bonus +2, nigdy kary |
+| **`convertCulture()`** | ✅ Wdrożone | `tickCityCultureReligion()` co turę w `main.ts` |
+| **`ownCultureShare` / `kulturaOwnShare`** | ✅ Wdrożone | Pole `City.ownCultureShare`; zapis w `cities[]`; po podboju = 0 |
 | **Ekspansja granic z kultury → terytorium** | ❌ | `territory.ts`: promień = **tylko populacja** (`max(5,pop)`); `buildTerritoryNodesFromCities` **ignoruje kulturę** |
-| **`convertViaTemple()`** | ❌ | Podbite miasto zachowuje stary skład w `cityRelig`, ale brak konwersji/turę |
+| **`convertViaTemple()`** | ✅ Wdrożone | `tickCityCultureReligion()` gdy obca religia dominuje |
 | **`cityTradeMultiplier()`** | ❌ | Grecy 2.3× handel przy dominującej religii — funkcja istnieje, **zero wywołań** |
 | **Dyplomacja: wspólna/obca religia** | ❌ | `main.ts` ~12545: `wspolnaReligia: false`, `odmiennaReligia: false` **na sztywno** |
 | **`religia_jednosc_bonus_produkcja`** | ❌ | Parametr w JSON, brak kodu |
@@ -90,7 +92,7 @@
 | **Presja kultury per hex** | ❌ | Opisana w poradniku §91 — **brak implementacji mapowej** |
 | **Zwycięstwo kulturowe** | ❌ | `victory.ts`: tylko `dominacja` \| `nauka` \| `przegrana` |
 | **Artysta (specjalista)** | ❌ | Parametr `kultura_specjalista_artysta` — brak jednostki/assign |
-| **Panel miasta: kultura własna** | ⚠️ Bug UI | `cityPanel.ts` ~2023: `ownCultureShare: 1` **na sztywno** w podglądzie szczęścia |
+| **Panel miasta: kultura własna** | ✅ Naprawione | `cityPanel.ts` czyta `resolveOwnCultureShare(city)` |
 | **Toast / event przy progu kultury** | ❌ | `granicaRozszerzona` liczone, **nie pokazywane graczowi** |
 
 ---
@@ -386,3 +388,134 @@ Np. +4 / +2 / −2 / −4 dla progów kultury; religia ±3.
 ---
 
 *Koniec audytu · decyzje zapisane → czeka `działaj` / dyspozycja lane B + Integrator.*
+
+---
+
+## 11. Podział budynków: KULTURALNE vs RELIGIJNE (B-KULT-REL split, 2026-07-23)
+
+**Decyzja Macieja:** budynki religijne konwertują **tylko religię** (mogą dawać szczęście i plon kultury); budynki kulturalne konwertują **tylko kulturę**.
+
+### A) Budynki kulturalne
+
+| Budynek | Plon kultury (baza + przyrost/lvl) | Bonus konwersji kultury | Szczęście (baza + przyrost/lvl) |
+|---------|-----------------------------------|-------------------------|----------------------------------|
+| **Biblioteka** | +2 / +1 | +2 %/t (`kultura_konwersja_biblioteka`) | 0 |
+| **Teatr** | +4 / +2 | +1 %/t (`kultura_konwersja_amfiteatr`) | +3 / +1 |
+| **Akademia** | +7 / +4 | +1 %/t (amfiteatr — merge z Teatrem) | +3 / +1 |
+| **Pałac** | +5 / +3 | +2 %/t (`kultura_konwersja_palac`) | +2 / +1 |
+| **Stela / Pomnik** | +1 / +1 | +0,5 %/t (`kultura_konwersja_stela`) | 0 |
+| **Garncarnia** | 0 / 0 | — (wyłączona) | 0 |
+| **Sąd** | +5 / 0 | +2 %/t (`kultura_konwersja_sad`) | +2 / +1 |
+| **Łaźnia publiczna** | +3 / 0 | +1 %/t (`kultura_konwersja_laznia`) | +3 / +1 |
+
+**Cap konwersji kultury:** `kultura_konwersja_cap_tura` = 5 %/t (normal) · baza `kultura_konwersja_baza_tura` = 1 %/t.
+
+### B) Budynki religijne
+
+| Budynek | Bonus konwersji religii | Szczęście (baza + przyrost/lvl) | Plon kultury (passive — bez konwersji kultury) |
+|---------|-------------------------|----------------------------------|------------------------------------------------|
+| **Kamienne kręgi** | +2 %/t (`religia_konwersja_kregi`) | +1 / +1 | +1 / +1 |
+| **Świątynia** | +4 %/t (`religia_konwersja_swiatynia`) | +3 / +2 | +3 / +2 |
+
+**Baza konwersji religii:** `religia_konwersja_bazowa` = 2 %/t (normal). Bonus budynku **dodawany** do bazy (np. kręgi → 4 %/t łącznie, świątynia → 6 %/t). Świątynia **nie** zwiększa konwersji kultury (`kultura_konwersja_swiatynia` = LEGACY, nieczytane w kodzie).
+
+### Kod
+
+| Plik | Zmiana |
+|------|--------|
+| `culture-religion.ts` | `CultureBuildings` bez Świątyni; `ReligionBuildings` + bonus kręgów; `convertViaTemple(religiousBuildings)` |
+| `conquest-stability.ts` | `cultureBuildingsFromIds()` + `religionBuildingsFromIds()` |
+| `society-params.json` | `religia_konwersja_kregi`; opis LEGACY na `kultura_konwersja_swiatynia` |
+| `buildings.json` | kategoria Religia dla kręgów i świątyni |
+
+**Testy:** `conquest-stability-test.cjs` · `culture-religion-test.cjs` §F.
+
+---
+
+## 13. Balans budynków kulturalnych (KULT-BUD-01, 2026-07-23)
+
+**Decyzja Macieja:** nowe stawki plonu kultury i konwersji kultury dla budynków kulturalnych.
+
+| Budynek | Plon kultury (/t) | Konwersja kultury (%/t) |
+|---------|-------------------|-------------------------|
+| **Pałac** | bez zmian (+5 / +3) | **+2%** |
+| **Biblioteka** | **+2 baza + +1/lvl** | **+2%** |
+| **Stela / Pomnik** | bez zmian (+1 / +1) | **+0,5%** |
+| **Garncarnia** | **0** (wyłączona) | **0** |
+| **Sąd** | **+5** | **+2%** |
+| **Łaźnia publiczna** | **+3** | **+1%** |
+
+**Bez zmian:** Teatr, Akademia (amfiteatr), Kamienne kręgi, Świątynia (religia only).
+
+**Pliki:** `buildings.json` · `society-params.json` (`kultura_konwersja_*`) · `culture-religion.ts` · `conquest-stability.ts`.
+
+**Pełny zapis:** `docs/decyzje/B-KULT-REL-2026-07-22.md` § KULT-BUD-01.
+
+---
+
+## 14. Presja kultury (KULT-PRESJA, 2026-07-23) — paczka 1/2
+
+**Decyzja Macieja:** nowy **główny** efekt kultury na mapie — zastępuje hex-claim (KULT-01) i model „tylko terytorium" jako primary payoff.
+
+| ID | Decyzja | Mechanizm |
+|----|---------|-----------|
+| **KULT-PRESJA-01** | **A** | Siła = **suma skumulowanej kultury imperium** (licznik HUD) |
+| **KULT-PRESJA-02** | **A** | Zasięg = **okolica miasta** (pop + pierścienie 100/250/500) |
+| **KULT-PRESJA-03** | **Custom** | Tempo: easy **7%** · normal **5%** · hard **3%** /turę gdy silniejsi w zasięgu |
+
+**Zasady gameplay (Maciej):**
+
+- Silniejsza kultura w zasięgu **popycha %** własnej kultury na wrogich miastach.
+- **Symetrycznie** — wróg może odpchnąć.
+- **Pre-konquest:** miasto może mieć wysoki % naszej kultury **przed** podbojem (softening).
+- Konwersja po podboju (`convertCulture`) **nadal** obowiązuje — presja to osobna warstwa mapowa.
+
+**Stan kodu:** 🟡 tylko parametr JSON `kultura_presja_proc_tura` — **brak** pętli silnika do `działaj`.
+
+**Pliki planowane:** `culture-religion.ts` (logika) · `main.ts` (wpięcie — **F**) · `culture-religion-test.cjs` · overlay HUD (opcjonalnie).
+
+**Pełny ECHO:** `docs/decyzje/B-KULT-PRESJA-2026-07-23.md` · handoff: `dyspozycje/_handoff/B-KULT-PRESJA-do-INTEGRATOR.md`
+
+**Paczka 2 (zamknięta 2026-07-23):** mirror **religii** — KULT-PRESJA-04…06 ✅ · **KULT-04** (Power) · **KULT-DYP-01** (dyplomacja) — pełny checklist: audyt §15.
+
+---
+
+## 12. Korekta routingu ABC 2026-07-23
+
+Odpowiedzi **Q1C · Q2A · Q3A · Q4A · Q5A** z sesji 2026-07-23 dotyczą **Spichlerz / sól / bonusy surowców** (`B-SPIC-Q1…Q5`), **nie** tej paczki kultura/religia.
+
+**Decyzje kultury z §10 (2026-07-22) pozostają w mocy:** Q1**A** · Q2**A** · Q3**A** · Q4**C** · Q5**A**.
+
+Kod wdrożony błędnie na podstawie mylonego Q1C/Q4A: `culture-hex-claim.ts`, zwycięstwo kulturowe — do revertu. Szczegóły: `docs/decyzje/B-KULT-REL-2026-07-22.md` · Spichlerz: `docs/decyzje/B-SPIC-2026-07-23.md`.
+
+---
+
+## 15. ✅ PACZKA DECYZJI ZAMKNIĘTA (2026-07-23)
+
+**Status:** wszystkie pytania ABC kultura/religia **zamknięte decyzją Macieja** · rejestr 🟡 ZAPISANA · **kod czeka `działaj`** (bez wdrożenia w sesji ECHO).
+
+### Checklist ID
+
+| ID | Decyzja | Dokument | Wdrożenie |
+|----|---------|----------|-----------|
+| **B-KULT-REL-Q1** | **A** — terytorium z kultury (+0…+3 hex) | `B-KULT-REL-2026-07-22.md` | ⏸ po presji |
+| **B-KULT-REL-Q2** | **A** — konwersja religii po podboju | j.w. | ✅ conquest-stability |
+| **B-KULT-REL-Q3** | **A** — `cityTradeMultiplier()` | j.w. | ✅ turn-economy |
+| **B-KULT-REL-Q4** | **C** — kultura+religia → Power | j.w. | ⏸ → **KULT-04** |
+| **B-KULT-REL-Q5** | **A** — podwoić Sz kultura/religia | j.w. | ✅ society-params |
+| **KULT-BUD-01** | Balans budynków kulturalnych | j.w. §KULT-BUD-01 | 🔵 kod B |
+| **KULT-BUD-02** | Balans budynków religijnych | j.w. §KULT-BUD-02 | 🔵 kod B |
+| **KULT-PRESJA-01** | **A** — siła = suma kultury imperium | `B-KULT-PRESJA-2026-07-23.md` | 🟡 czeka `działaj` |
+| **KULT-PRESJA-02** | **A** — zasięg = okolica miasta | j.w. | 🟡 |
+| **KULT-PRESJA-03** | **Custom** — 7/5/3 %/t | j.w. | 🟡 |
+| **KULT-PRESJA-04** | **A** — religia mirror presji | j.w. | 🟡 |
+| **KULT-PRESJA-05** | **A** — zachować % po podboju | j.w. | 🟡 |
+| **KULT-PRESJA-06** | **A** — symetria obniżania | j.w. | 🟡 |
+| **KULT-04** | **A** — składniki Power (formuła objective) | `B-KULT-REL-2026-07-22.md` §KULT-04 | 🟡 czeka `działaj` |
+| **KULT-DYP-01** | **A mod.** — bonus AND wiara+kultura; bez kar | j.w. §KULT-DYP-01 | 🟡 · handoff `B-KULT-DYP-do-INTEGRATOR.md` |
+| **KULT-01 / hex-claim** | ❌ **Superseded** | — | revert błędnego kodu |
+
+**Paczka 2/2 presji:** ✅ zamknięta (04–06).  
+**Paczka Power + dyplomacja:** ✅ zamknięta (KULT-04, KULT-DYP-01).
+
+**Następny krok Macieja:** **`działaj`** → lane B + Integrator F (batch według handoffów).

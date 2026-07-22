@@ -3056,3 +3056,50 @@ CZEKAM-NA: Maciej — Ctrl+F5 stamp `7e038328` · 2 miasta · różne suwaki · 
 Aktywny dostęp = złoże + ulepszenie na heksie (glina/miedź/ruda/żelazo/węgiel/sól/koń). Wyjątki: tartak, kamieniołom, warzelnia wybrzeże, hodowla Model B. Panel potencjał vs aktywny. Pilot bramki budynku: Garncarnia/Cegielnia (glina). Faza 2 = bramki budynków; faza 3 = magazyny+koszty.
 md5 `5000ee9fce6fa0c332303784ff045eb8` · stamp `5000ee9f` · deposit-gate 24/24 · eko-p5 11/11 · food-hodowla 24/24 · VERIFY OK.
 CZEKAM-NA: Maciej — Ctrl+F5 stamp `5000ee9f` · panel Surowce w mieście przy złożu bez ulepszenia.
+
+---
+
+## [2026-07-22 ~23:55] SESJA LOKALNA → INTEGRATOR — kod gotowy: kultura/religia po podboju (bez deploy)
+
+Paczka A część 1: `conquest-stability.ts` (nowy), wpięcie tick konwersji w `main.ts`, `onCityCapturedCulture` w `post-battle-map.ts`, fix `cityPanel`, Q5A w `society-params.json`.
+tsc=0 · conquest-stability 13/13 · **NIE ZBUDOWANO gra-robocza** — deploy na hasło Macieja.
+CZEKAM-NA: deploy ROBOCZA + push · potem Q1A (terytorium), Q3A (handel), Q4C (Power).
+
+---
+
+## [00:45] SESJA LOKALNA → INTEGRATOR — revert błędnego kodu kultury (Q1C/Q4A)
+
+Wycofano kod wdrożony błędnie (Spichlerz ≠ kultura): `culture-hex-claim.ts`, zwycięstwo kulturowe, Shift+klik claim hex, `kultura_koszt_claim_hex`.
+Zostaje: conquest-stability, podział budynków, handel religijny Q3A, podwójne szczęście Q5A.
+**B-SPIC (Spichlerz)** czeka wdrożenia — `docs/decyzje/B-SPIC-2026-07-23.md`.
+CZEKAM-NA: deploy ROBOCZA na hasło Macieja (po tsc + testy lane).
+
+---
+
+## [2026-07-23 ~00:15] SESJA LOKALNA → INTEGRATOR — B-KULT-REL Q1–Q5 wdrożone (bez deploy)
+
+Maciej ABC: Q1**C** Q2A Q3A Q4**A** Q5A (nadpisuje wcześniejszy Q1A/Q4C).
+Nowe: `culture-hex-claim.ts` (Shift+klik claim hex), `cityTradeMultiplier` w `turn-economy.ts`, zwycięstwo kulturowe w `victory.ts`.
+Q2A+Q5A już były (conquest-stability + society-params).
+tsc + culture-hex-claim-test + victory-test + culture-religion-test — uruchomić przed deploy.
+CZEKAM-NA: deploy ROBOCZA na hasło Macieja.
+
+---
+
+## [01:10 PL, 2026-07-23] INTEGRATOR → Maciej / kanał — deploy ROBOCZA faza 2 surowce+budynki
+
+ROBOCZA **`9a0ca985`** · md5 `9a0ca98598c7d89af47dbb10789df868` · `gra-robocza/Gra-ROBOCZA.html`
+Paczka: deski out, bramki epok, konwertery, Spichlerz II, presja kultury, capture mix, dyplomacja KULT-DYP.
+Bramki: tsc=0 · converters 18/18 · conquest 27/27.
+CZEKAM-NA: smoke właściciela (panel produkcji, bramki ep.2/3, Spichlerz II w kolejce)
+
+---
+
+## [01:15] INTEGRATOR → Maciej / sesja lokalna — deploy ROBOCZA audyt luki (98c4ede1)
+
+ROBOCZA **`98c4ede1`** · md5 `98c4ede16e506df393369a49dabe25bb` · `gra-robocza/Gra-ROBOCZA.html`
+Paczka: stock ruda/ruda_zelaza z terenu, KULT-04 Power (kultura+religia), warzelnia JSON wybrzeże, fix palac/kuznia.
+Bramki: tsc=0 · power-objective 15/15 · converters 19/19 · culture-religion 65/65 · VERIFY OK.
+CZEKAM-NA: sesja lokalna pull + weryfikacja w grze (kopalnia→magazyn, Moc w HUD)
+
+---

@@ -32,7 +32,7 @@ export enum SurowiecId {
   Lama     = 'lama',       // TYLKO Inkowie / Ameryka Pd.; substytut bydla
 
   // Przetworzone
-  Deski    = 'deski',      // Tartak: 1 drewno -> 1 deski
+  Deski    = 'deski',      // WYCOFANE (B-SUROW-BUD-03) — nie używać
   Paliwo   = 'paliwo',     // Mielerz: 1 drewno -> 1 paliwo (wegiel drzewny)
   Cegla    = 'cegla',      // Cegielnia: glina + paliwo -> cegla
   Ceramika = 'ceramika',   // Garncarnia: glina + paliwo -> ceramika (luksus)

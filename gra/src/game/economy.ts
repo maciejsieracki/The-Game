@@ -41,7 +41,7 @@ import { TerenBazowy, Nakladka } from '../types/hex';
 import terrainYieldsData from '../../data/terrain-yields.json';
 import type { TerrainModifierDef, TerrainTypeDef } from '../data/loader';
 import { buildingEffectAtLevel, BUILDING_LEVEL_FACTOR, cityPracaInteger, splitPraca } from './production';
-import { applyImprovementBonuses } from './terrain-improvements';
+import { applyImprovementBonuses, oreYieldFromImprovements } from './terrain-improvements';
 
 // ---------------------------------------------------------------------------
 // Building record shape (mirrors buildings.json)
@@ -209,6 +209,10 @@ export interface TileYield {
   kamien:  number;
   /** GLINA-Q1=A (2026-07-20): stala ilosc z bonusu ulepszenia (glinianka); baza terenu zawsze 0. */
   glina:   number;
+  /** Ruda miedzi (kopalnia_miedzi / kopalnia na złożu miedzi) — stock do Odlewni brązu. */
+  ruda:          number;
+  /** Ruda żelaza (kopalnia na złożu żelaza) — stock do Odlewni żelaza. */
+  ruda_zelaza:   number;
 }
 
 /** A worked tile passed to cityYieldPerTurn. */
@@ -216,6 +220,8 @@ export interface WorkedTile {
   terenBazowy: TerenBazowy;
   nakladka:    Nakladka;
   maRzeke:     boolean;
+  /** Złoże surowcowe heksa (miedz, zelazo, sol…) — do rozróżnienia rudy miedzi vs żelaza. */
+  zloze?: string;
   /** Klucz z terrain-improvements.json (np. farma, kopalnia). @deprecated Prefer ulepszeniaKeys. */
   ulepszenieKey?: string;
   /** Wiele warstw ulepszeń na heksie (farma+irygacja, farma+bydło). */
@@ -237,6 +243,7 @@ export interface EconomyCity {
   zdrowie:         number;
   czyStolica:      boolean;
   maSpichlerz:     boolean;
+  maSpichlerzII?:  boolean;
   maAkwedukt:      boolean;
   magazynZywnosci: number;
   specjalisci:     Array<'uczony' | 'poborca' | 'artysta'>;
@@ -272,12 +279,14 @@ export interface CityYieldResult {
   /**
    * E1 Zadanie 2: surowce logistyczne zebrane z pol tej tury (przed magazynem/converterami).
    * Drewno/kamien/glina maja numeryczny plon terenu/ulepszen (tileYield); glina dodana
-   * GLINA-Q1=A (2026-07-20, stala ilosc 2/ture z glinianki). Ruda pozostaje wylacznie
-   * boolean "dostep" (surowiecOdblokowany), bez ilosci -- GLINA-Q2=A: rudy NIE ruszamy.
+   * GLINA-Q1=A (2026-07-20, stala ilosc 2/ture z glinianki). Ruda miedzi/żelaza — numeryczny
+   * plon z kopalni_miedzi / kopalnia (audit ROBOCZA 9a0ca985, 2026-07-23).
    */
   drewnoTerenu:   number;
   kamienTerenu:   number;
   glinaTerenu:    number;
+  rudaTerenu:     number;
+  rudaZelazaTerenu: number;
 }
 
 export interface PopulationGrowthResult {
@@ -297,7 +306,7 @@ export interface ProductionProgressResult {
 // Terrain yield tables (from terrain-yields.json / Spec-ekonomia.md ss.1.1)
 // ---------------------------------------------------------------------------
 
-const ZERO_YIELD: TileYield = { zywnosc: 0, praca: 0, handel: 0, drewno: 0, kamien: 0, glina: 0 };
+const ZERO_YIELD: TileYield = { zywnosc: 0, praca: 0, handel: 0, drewno: 0, kamien: 0, glina: 0, ruda: 0, ruda_zelaza: 0 };
 
 const TERRAIN_NAME_TO_ENUM: Record<string, TerenBazowy> = {
   'Łąka':     TerenBazowy.Laka,
@@ -319,6 +328,8 @@ function terrainRowToTileYield(row: TerrainTypeDef | TerrainModifierDef): TileYi
     // Glina nie ma bazy terenu ani modyfikatora w terrain-yields.json -- wylacznie z bonusu
     // ulepszenia (glinianka, GLINA-Q1=A), doklejane w tileYield() nizej.
     glina:   0,
+    ruda:    0,
+    ruda_zelaza: 0,
   };
 }
 
@@ -353,6 +364,8 @@ export function tileYield(tile: WorkedTile): TileYield {
   let drewno  = base.drewno;
   let kamien  = base.kamien;
   let glina   = base.glina;
+  let ruda    = 0;
+  let ruda_zelaza = 0;
 
   if (tile.nakladka === Nakladka.Las) {
     zywnosc += FOREST_MODIFIER.zywnosc;
@@ -374,6 +387,8 @@ export function tileYield(tile: WorkedTile): TileYield {
     drewno:  Math.max(0, drewno),
     kamien:  Math.max(0, kamien),
     glina:   Math.max(0, glina),
+    ruda:    0,
+    ruda_zelaza: 0,
   };
 
   const impKeys = tile.ulepszeniaKeys?.length
@@ -387,6 +402,9 @@ export function tileYield(tile: WorkedTile): TileYield {
     out.drewno  = Math.max(0, out.drewno);
     out.kamien  = Math.max(0, out.kamien);
     out.glina   = Math.max(0, out.glina);
+    const ore = oreYieldFromImprovements(impKeys, tile.zloze);
+    out.ruda += ore.ruda;
+    out.ruda_zelaza += ore.ruda_zelaza;
   }
 
   return out;
@@ -639,6 +657,8 @@ export function cityYieldPerTurn(
   let drewnoTerenu  = 0;
   let kamienTerenu  = 0;
   let glinaTerenu   = 0;
+  let rudaTerenu    = 0;
+  let rudaZelazaTerenu = 0;
 
   for (const tile of workedTiles) {
     const y = tileYield(tile);
@@ -648,6 +668,8 @@ export function cityYieldPerTurn(
     drewnoTerenu  += y.drewno;
     kamienTerenu  += y.kamien;
     glinaTerenu   += y.glina;
+    rudaTerenu    += y.ruda;
+    rudaZelazaTerenu += y.ruda_zelaza;
   }
 
   // --- Step 2: Mlyn multiplier on tile Praca (Spec ss.1.2) ---
@@ -780,6 +802,8 @@ export function cityYieldPerTurn(
     drewnoTerenu:   Math.floor(drewnoTerenu),
     kamienTerenu:   Math.floor(kamienTerenu),
     glinaTerenu:    Math.floor(glinaTerenu),
+    rudaTerenu:     Math.floor(rudaTerenu),
+    rudaZelazaTerenu: Math.floor(rudaZelazaTerenu),
   };
 }
 
@@ -813,7 +837,7 @@ export function populationGrowth(
   params: EconParams,
   wzrostThresholdMult: number = 1,
 ): PopulationGrowthResult {
-  const { ludnosc, zdrowie, maSpichlerz, maAkwedukt, magazynZywnosci } = city;
+  const { ludnosc, zdrowie, maSpichlerz, maSpichlerzII, maAkwedukt, magazynZywnosci } = city;
 
   const healthModifier  = Math.max(0, 1 + zdrowie * params.zdrowieModyfikatorWspolczynnik);
   const effectiveFlow   = zywnoscNetto >= 0
@@ -844,8 +868,11 @@ export function populationGrowth(
   if (nowyMagazynZywnosci >= threshold && ludnosc < popCap) {
     nowaLudnosc = ludnosc + 1;
     wzrost      = true;
-    nowyMagazynZywnosci = maSpichlerz
-      ? Math.floor(nowyMagazynZywnosci * params.spichlerzZachowaniePoPrzroscie)
+    const retainFrac = maSpichlerzII
+      ? 0.7
+      : (maSpichlerz ? params.spichlerzZachowaniePoPrzroscie : 0);
+    nowyMagazynZywnosci = (maSpichlerz || maSpichlerzII)
+      ? Math.floor(nowyMagazynZywnosci * retainFrac)
       : 0;
   }
 

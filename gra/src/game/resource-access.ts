@@ -63,6 +63,7 @@ const SUROWIEC_KEY_LABEL: Record<string, string> = {
   kamien: 'Kamień',
   glina:  'Glina',
   ruda:   'Ruda',
+  ruda_zelaza: 'Ruda żelaza',
   zelazo: 'Żelazo',
   stal:   'Stal',
   bydlo:  'Trzoda (krowa/świnia)',
@@ -179,8 +180,8 @@ export function improvementUnlockActiveOnHex(
   if (LIVESTOCK_NO_DEPOSIT.has(norm)) return true;
 
   if (norm === 'warzelnia_soli') {
-    return hex.zloze === 'sol'
-      || hex.terenBazowy === TerenBazowy.Wybrzeze;
+    return hex.terenBazowy === TerenBazowy.Wybrzeze
+      || hex.zloze === 'sol';
   }
 
   if (DEPOSIT_LINKED_IMPROVEMENTS.has(norm)) {
@@ -196,7 +197,8 @@ export function improvementUnlockActiveOnHex(
 /** Etykiety aktywnego dostępu z kopalni — typ surowca wynika ze złoża pod ulepszeniem. */
 function labelsForKopalniaOnHex(hex: HexZloze): string[] {
   const z = hex.zloze?.trim().toLowerCase();
-  if (z === 'zelazo') return [SUROWIEC_KEY_LABEL.zelazo!];
+  if (z === 'zelazo') return [SUROWIEC_KEY_LABEL.ruda_zelaza!];
+  if (z === 'miedz') return [SUROWIEC_KEY_LABEL.ruda!];
   if (z === 'wegiel') return [ZLOZE_LABEL.wegiel!];
   return labelsForImprovementUnlock('kopalnia');
 }

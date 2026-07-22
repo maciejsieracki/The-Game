@@ -100,9 +100,9 @@
       "praca": 2
     },
     "surowiecOdblokowany": "ruda",
-    "surowiecOdblokowany_uwaga": "klucz 'ruda' wg Surowiec='Ruda' w resources.json; brak pola id — propozycja EKONOMIA, wymaga uzgodnienia z DANE",
-    "teren": "Wzgórza, Góry, złoże Rudy",
-    "warunek": "wydobycie rudy do magazynu",
+    "surowiecOdblokowany_uwaga": "ruda miedzi lub ruda_zelaza (zależnie od złoża); plon 2/t z kopalni",
+    "teren": "Wzgórza, Góry, złoże rudy miedzi lub żelaza",
+    "warunek": "wydobycie rudy do magazynu miasta (ruda / ruda_zelaza)",
     "koszt_praca": 25,
     "tech": "Murarstwo",
     "odblokowuje": "Metal/Brąz (jednostki brązowe, mury)"
@@ -182,7 +182,7 @@
     "warunek": "stałe ulepszenie; MOŻE na lesie — las NIE znika; odblokowuje dostęp do drewna (v0.1 bez ilości)",
     "koszt_praca": 25,
     "tech": "Obróbka drewna",
-    "odblokowuje": "Deski (z budynkiem miejskim Tartak)"
+    "odblokowuje": "Drewno (TYP 1 — bez desek, B-SUROW-BUD-03)"
   },
   "tarasy": {
     "nazwa": "Tarasy uprawne",
@@ -222,8 +222,8 @@
     },
     "surowiecOdblokowany": "sol",
     "surowiecOdblokowany_uwaga": "klucz 'sol' — Sol nie ma wpisu w resources.json v0.1 (brak Surowiec='Sol'); propozycja EKONOMIA: dodac 'sol' do resources.json; wymaga uzgodnienia z DANE",
-    "teren": "złoże soli (Pustynia/Równina — hex.zloze=sol)",
-    "warunek": "sól (konserwacja żywności + handel); bez wybrzeża bez złoża",
+    "teren": "Wybrzeże, złoże soli (hex.zloze=sol)",
+    "warunek": "sól — wyłącznie wybrzeże morskie (kanon: złoża soli przy brzegu) lub hex.zloze=sol",
     "koszt_praca": 20,
     "tech": "Garncarstwo",
     "odblokowuje": "Sól"
@@ -280,8 +280,9 @@
       "praca": 2
     },
     "surowiecOdblokowany": "ruda",
-    "teren": "Wzgórza, Góry, złoże Rudy",
-    "warunek": "wstępne przetwarzanie rudy (przed Odlewnią w mieście)",
+    "surowiecOdblokowany_uwaga": "ruda miedzi (Odlewnia brązu); plon 2/t z kopalni_miedzi",
+    "teren": "Wzgórza, Góry, złoże miedzi (hex.zloze=miedz)",
+    "warunek": "ruda miedzi → magazyn (Odlewnia brązu)",
     "koszt_praca": 22,
     "tech": "Brązownictwo",
     "odblokowuje": "Odlewnia brązu (budynek miejski)",

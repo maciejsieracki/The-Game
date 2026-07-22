@@ -407,6 +407,10 @@ export interface AvailabilityContext {
    * bramka budynkow wymagajacych zloza + ulepszenia w zasiegu.
    */
   activeResourceLabels?: readonly string[];
+  /** Aktywny dostęp surowców imperium (union miast) — bramki epok B-SUROW-BUD. */
+  empireActiveResourceLabels?: readonly string[];
+  /** Wszystkie id budynków w imperium (union) — bramka cegła/ceramika. */
+  empireBuiltIds?: readonly string[];
 }
 
 /**
@@ -690,7 +694,10 @@ export function availableProduction(
       && !empireHasKopalniaMiedzi(ctx.placedImprovements)) {
       continue;
     }
-    if (!buildingResourceGateMet(b, ctx.activeResourceLabels)) {
+    const gateLabels = ctx.empireActiveResourceLabels?.length
+      ? ctx.empireActiveResourceLabels
+      : ctx.activeResourceLabels;
+    if (!buildingResourceGateMet(b, gateLabels, ctx.empireBuiltIds)) {
       continue;
     }
     items.push({

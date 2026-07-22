@@ -49,14 +49,21 @@ export interface VictoryPlayer {
 }
 
 /** Warunki zwycięstwa z kreatora (Maciej 2026-07-04). */
-export type VictoryMode = 'moc' | 'dominacja' | 'moc_i_dominacja';
+export type VictoryMode =
+  | 'moc'
+  | 'dominacja'
+  | 'moc_i_dominacja';
 
 export function victoryModeAllowsDominacja(mode: VictoryMode | undefined): boolean {
-  return mode === undefined || mode === 'dominacja' || mode === 'moc_i_dominacja';
+  return mode === undefined
+    || mode === 'dominacja'
+    || mode === 'moc_i_dominacja';
 }
 
 export function victoryModeAllowsMoc(mode: VictoryMode | undefined): boolean {
-  return mode === undefined || mode === 'moc' || mode === 'moc_i_dominacja';
+  return mode === undefined
+    || mode === 'moc'
+    || mode === 'moc_i_dominacja';
 }
 
 export interface VictoryInput {

@@ -4,6 +4,137 @@
 > **Czat:** krótko **`✅ Gotowe:`** / **`⏸️ Czeka:`** · **Ten plik:** pełniejszy zapis tego samego.  
 > Szczegóły techniczne → handoff w `dyspozycje/_handoff/` · operacja → `dyspozycje/DZIENNIK-MASTERA.md`
 
+## [01:15] ✅ Gotowe — audyt 9a0ca985 luki: ruda stock + KULT-04 Power + deploy ROBOCZA `98c4ede1`
+
+| | |
+|---|---|
+| **Deploy** | ROBOCZA **`98c4ede1`** · md5 `98c4ede16e506df393369a49dabe25bb` · `gra-robocza/Gra-ROBOCZA.html` |
+| **Ruda** | Kopalnia miedzi → stock `ruda` · kopalnia (żelazo) → `ruda_zelaza` · 2/t → Odlewnia brązu/żelaza |
+| **Power KULT-04** | Kultura imperium ×0,5 + miasta z jedną wiarą ×25 w formule Mocy |
+| **Dane** | warzelnia_soli wybrzeże w JSON · palac tech `-` · kuznia bez „cyna" |
+| **Odłożone** | Faza 3 koszty materiałowe (tylko access gates w B-SUROW-BUD) |
+
+---
+
+## [01:10] ✅ Gotowe — faza 2 surowce + audyt budynków + deploy ROBOCZA `9a0ca985`
+
+| | |
+|---|---|
+| **Deploy** | ROBOCZA **`9a0ca985`** · `gra-robocza/Gra-ROBOCZA.html` |
+| **Surowce** | Deski wycofane · 7 konwerterów · bramki epok imperium · Spichlerz II · Sól w kanonie danych |
+| **Kultura** | Presja co turę · capture zachowuje mix · dyplomacja bonus AND (wiara+okręg) |
+| **Luki otwarte** | Stock rudy do magazynu · KULT-04 Power · warzelnia teren w JSON |
+
+---
+
+
+Decyzja zapisana: **deski wylatują**, Stolarnia = bonus Pracy, bramki Brąz (drewno+kamień) · Żelazo (+cegła). Handoff + checklist Integratora. Kod czeka **`działaj`**.
+
+---
+
+## [12:34] ✅ Gotowe — kultura/religia: Power + dyplomacja (KULT-04, KULT-DYP-01, zapis bez kodu)
+
+| | |
+|---|---|
+| **Decyzje** | **KULT-04=A** kultura+religia → składniki **Power** (nie victory kultura) · **KULT-DYP-01=A mod.** bonus +0,5/t **tylko** wspólna wiara **+** okręg kulturowy · **bez kar** obca wiara/kultura |
+| **Pliki** | `B-KULT-REL-2026-07-22.md` §KULT-04/§KULT-DYP-01 · rejestr 🟡 ×2 · handoff `B-KULT-DYP-do-INTEGRATOR.md` · audyt §15 PACZKA ZAMKNIĘTA |
+| **Kod** | **Brak** — czeka **`działaj`** |
+| **Paczka** | Wszystkie ID kultura/religia **zamknięte** (checklist w audycie §15) |
+
+---
+
+## [12:31] ✅ Gotowe — presja kultury+religii paczka 2/2 (KULT-PRESJA-04…06, zapis bez kodu)
+
+| | |
+|---|---|
+| **Decyzje** | **04=A** religia mirror 7/5/3% · **05=A** zachować % po podboju · **06=A** symetria obniżania u granicy |
+| **Pliki** | `B-KULT-PRESJA-2026-07-23.md` §04–06 · rejestr 🟡 ×3 · JSON `religia_presja_proc_tura` · handoff zaktualizowany |
+| **Kod** | **Brak** — czeka `działaj` |
+
+---
+
+## [01:30] ✅ Gotowe — presja kultury paczka 1/2 (KULT-PRESJA, zapis bez kodu)
+
+| | |
+|---|---|
+| **Decyzje** | **01=A** siła imperium (HUD) · **02=A** zasięg okolicy · **03** easy 7% / normal 5% / hard 3% /t |
+| **Pliki** | `docs/decyzje/B-KULT-PRESJA-2026-07-23.md` · rejestr 🟡 · JSON `kultura_presja_proc_tura` · handoff Integrator |
+| **Kod** | **Brak** — czeka `działaj` · KULT-01 hex-claim superseded |
+| **Następny krok** | **Paczka 2/2** — mirror **religii** (REL-PRESJA-01…03) |
+
+---
+
+## [01:00] ⏸️ Czeka deploy — balans budynków kultura/religia (KULT-BUD-01 + 02)
+
+| | |
+|---|---|
+| **KULT-BUD-01** | Pałac +2% konw. · Bib +2/+1/lvl +2% · Stela +0,5% · Garncarnia 0 · Sąd +5/+2% · Łaźnia +3/+1% |
+| **KULT-BUD-02** | Kręgi +2%/t religii · Świątynia +4%/t religii · baza 2%/t bez zmian |
+| **Testy** | conquest-stability 27/27 · culture-religion 65/65 · tsc OK |
+| **Deploy** | Jeszcze nie |
+
+---
+
+## [00:45] ✅ Gotowe — revert błędnego kodu kultury (Q1C/Q4A)
+
+| | |
+|---|---|
+| **Wycofano** | `culture-hex-claim.ts` (Shift+klik claim hex), zwycięstwo kulturowe w `victory.ts`, opcja „Tylko kultura" w kreatorze, `kultura_koszt_claim_hex` z society-params |
+| **Zostaje** | conquest-stability, podział budynków kultura/religia, handel religijny Q3A, podwójne szczęście Q5A, post-battle-map |
+| **Testy** | tsc + conquest-stability + culture-religion + victory — uruchomić przed deploy |
+| **Następny krok** | **B-SPIC** (Spichlerz) — decyzje w `docs/decyzje/B-SPIC-2026-07-23.md`, czeka `działaj` |
+
+---
+
+## [00:25] ⏸️ Czeka deploy — podział budynków kultura / religia
+
+| | |
+|---|---|
+| **Zasada** | Kulturalne → tylko konwersja kultury · Religijne → tylko konwersja religii (szczęście mogą dawać oba) |
+| **Zmiana** | Świątynia nie przyspiesza już kultury po podboju; Kręgi +1%/t religii |
+| **Testy** | conquest-stability 20/20 · culture-religion 57/57 · tsc OK |
+| **Deploy** | Jeszcze nie — razem z paczką kultura/religia |
+
+---
+
+## [00:30] ✅ Gotowe — korekta routingu ABC (Spichlerz ≠ kultura)
+
+| | |
+|---|---|
+| **Błąd** | Odpowiedzi **Q1C · Q2A · Q3A · Q4A · Q5A** z 2026-07-23 zapisano jako B-KULT-REL — to były pytania **Spichlerz / sól / bonusy** |
+| **Spichlerz** | **B-SPIC-Q1=C · Q2=A · Q3=A · Q4=A · Q5=B** → `docs/decyzje/B-SPIC-2026-07-23.md` · 🟡 czeka `działaj` |
+| **Kultura** | Przywrócono decyzje **2026-07-22:** Q1**A** · Q2**A** · Q3**A** · Q4**C** · Q5**A** → `docs/decyzje/B-KULT-REL-2026-07-22.md` |
+| **Kod błędny** | `culture-hex-claim.ts` i zwycięstwo kulturowe — **niezgodne** z Twoją decyzją kultury; do revertu w batchu B/F |
+| **Deploy** | Bez zmian — nadal czeka na „deploy" |
+
+---
+
+## [00:15] ⚠️ UNIEWAŻNIONE — błędnie przypisane B-KULT-REL (2026-07-23)
+
+| | |
+|---|---|
+| **Status** | Wpis **unieważniony** — patrz korekta [00:30] powyżej |
+| **Było** | Q1C hex-claim · Q4A victory kultura — **to nie były Twoje odpowiedzi o kulturze** |
+| **Faktycznie** | Te same literki = paczka **Spichlerz** (B-SPIC-Q1…Q5) |
+
+---
+
+## [23:55] ⏸️ Czeka deploy — kultura i religia po podboju (Paczka A, część 1)
+
+| | |
+|---|---|
+| **Co** | Podbite miasto startuje z 0% naszej kultury; co turę konwersja kultury (1–5%/t) i religii (2–4%/t ze Świątynią) |
+| **Utrzymanie** | Obca kultura + obca religia → −2 Sz, bez garnizonu −3 Prawo i ×1,5 ryzyko buntu |
+| **Budynki** | Świątynia/Teatr/Akademia/Biblioteka przyspieszają konwersję kultury; Świątynia — religię |
+| **Q5A** | Podwojone bonusy/kary szczęścia z kultury/religii w `society-params.json` |
+| **Testy** | `conquest-stability-test.cjs` 13/13 · `tsc` zielony |
+| **Deploy** | **Jeszcze nie** — kod w repo; po deploy dam stamp md5 |
+| **Od Ciebie** | Po deploy: podbij obce miasto → panel Sz/Prawo bez garnizonu vs ze Świątynią |
+
+**Jeszcze nie wdrożone:** dyplomacja wspólna/obca wiara (A5 z audytu).
+
+---
+
 ## [22:50] ✅ Gotowe — faza 1: realistyczny dostęp surowców (złoże + ulepszenie)
 
 | | |

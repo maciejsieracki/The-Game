@@ -158,11 +158,25 @@ export function advanceEmpireFood(
   foodTable: UnitFoodTable = {},
 ): EmpireFoodTickResult {
   const spichlerzCountByOwner = new Map<number, number>();
+  const spichlerzCapByOwner = new Map<number, number>();
   for (const tick of econ.perCity) {
-    if (tick.maSpichlerz) {
+    if (tick.maSpichlerzII) {
       spichlerzCountByOwner.set(
         tick.ownerId,
         (spichlerzCountByOwner.get(tick.ownerId) ?? 0) + 1,
+      );
+      spichlerzCapByOwner.set(
+        tick.ownerId,
+        (spichlerzCapByOwner.get(tick.ownerId) ?? 0) + 150,
+      );
+    } else if (tick.maSpichlerz) {
+      spichlerzCountByOwner.set(
+        tick.ownerId,
+        (spichlerzCountByOwner.get(tick.ownerId) ?? 0) + 1,
+      );
+      spichlerzCapByOwner.set(
+        tick.ownerId,
+        (spichlerzCapByOwner.get(tick.ownerId) ?? 0) + params.spichlerzPojemnoscZapasowPanstwa,
       );
     }
   }
@@ -205,7 +219,7 @@ export function advanceEmpireFood(
     const depositFrac = spichlerzCount > 0
       ? params.armiaOdkladZeSpichlerzem
       : params.armiaOdkladBezSpichlerza;
-    const maxZapasy = computeEmpireFoodMaxCap(spichlerzCount, params);
+    const maxZapasy = spichlerzCapByOwner.get(ownerId) ?? 0;
     const maxZapasyFinite = maxZapasy > 0 ? maxZapasy : Number.POSITIVE_INFINITY;
 
     let zapasyPo = zapasyPrzed + armyFoodDepositDelta(doPanstwa, kosztArmii, depositFrac);

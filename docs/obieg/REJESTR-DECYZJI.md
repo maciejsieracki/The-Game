@@ -124,11 +124,28 @@
 | **E-WORKER-1** | 2026-07-07 | **A** — overlay robotników: wszystkie pola 👤 ze wszystkich miast gracza | E→F | 🟢 **WDROŻONA** | `workerFieldOverlay.ts` · robocza md5 `eead06d7…` | `docs/decyzje/E-map-worker-overlay-2026-07-07.md` |
 | **D-DISPLAY-MIASTO** | 2026-07-07 | Dopisek `· miasto-państwo` dla państw klastra (nie imperium) | D | 🟢 **WDROŻONA** | `display-names.ts` · test 6/6 | `docs/decyzje/D-display-miasto-panstwo-2026-07-07.md` |
 | **B-KOLORY-CYW** | 2026-07-07 | **B** — `kolorHex` per cywilizacja (mapa, jednostki, dyplomacja, HUD) | B→F | 🟢 **WDROŻONA** | `civ-visual.ts` · robocza md5 `ee4355af…` · test 54/54 | obwódki frakcji w `e2c5c711…` |
-| **B-KULT-REL-Q1** | 2026-07-22 | **A** — kultura poszerza terytorium (+0…+3 hex), nie tylko mgłę | B+F | 🟡 **ZAPISANA** | `docs/decyzje/B-KULT-REL-2026-07-22.md` · audyt `KULTURA-RELIGIA-AUDYT-2026-07-22.md` | `cityBorderRadius` → `territory.ts` |
-| **B-KULT-REL-Q2** | 2026-07-22 | **A** — stopniowa konwersja religii po podboju; wire `convertViaTemple()` | B | 🟡 **ZAPISANA** | j.w. | + `convertCulture()` co turę |
-| **B-KULT-REL-Q3** | 2026-07-22 | **A** — wpiąć `cityTradeMultiplier()` (Waluta+Mennica + dominująca wiara) | B | 🟡 **ZAPISANA** | j.w. | Grecy `mnoznikHandelPieniadz` |
-| **B-KULT-REL-Q4** | 2026-07-22 | **C custom** — kultura + **religia** → składniki **Power**; bez zwycięstwa kulturowego | B+F | 🟡 **ZAPISANA** | j.w. · `power-objective.ts` (plan) | korekta: nie relikie/cuda · dominacja Power >50% |
-| **B-KULT-REL-Q5** | 2026-07-22 | **A** — podwoić bonusy/kary szczęścia kultura/religia w `society-params.json` | B | 🟡 **ZAPISANA** | j.w. | **po** Q1–Q3 wpięciu |
+| **B-SPIC-Q1** | 2026-07-23 | **C** — Spichlerz II: cap 150 + bufor 70% + Zd/Sz lokalnie (wszystko naraz) | B | 🟡 **ZAPISANA** | `docs/decyzje/B-SPIC-2026-07-23.md` · `SUROWCE-KANON-2026-07-22.md` | **NIE** B-KULT-REL — korekta routingu |
+| **B-SPIC-Q2** | 2026-07-23 | **A** — bonus soli tylko miasto ze Spichlerzem II | B | 🟡 **ZAPISANA** | j.w. | |
+| **B-SPIC-Q3** | 2026-07-23 | **A** — budynki lokalnie; surowce z aktywnego dostępu imperium | B | 🟡 **ZAPISANA** | j.w. | |
+| **B-SPIC-Q4** | 2026-07-23 | **A** — upgrade Spichlerz II przez kolejkę produkcji | B | 🟡 **ZAPISANA** | j.w. · handoff `B-SPIC-do-INTEGRATOR_*` | |
+| **B-SPIC-Q5** | 2026-07-23 | **B** — infrastruktura bez Sz/Zd; reszta z bonusami | B | 🟡 **ZAPISANA** | j.w. | |
+| **B-KULT-REL-Q1** | 2026-07-22 | **A** — kultura poszerza terytorium (+0…+3 hex), nie hex-claim | B+F | 🔵 **W TRAKCIE** | `docs/decyzje/B-KULT-REL-2026-07-22.md` | ⚠️ hex-claim wdrożony **błędnie** (Q1C=Spichlerz) — revert |
+| **B-KULT-REL-Q2** | 2026-07-22 | **A** — stopniowa konwersja religii po podboju; wire `convertViaTemple()` | B | 🔵 **W TRAKCIE** | j.w. | ✅ conquest-stability |
+| **B-KULT-REL-Q3** | 2026-07-22 | **A** — wpiąć `cityTradeMultiplier()` (Waluta+Mennica + dominująca wiara) | B | 🔵 **W TRAKCIE** | j.w. | `turn-economy.ts` |
+| **B-KULT-REL-Q4** | 2026-07-22 | **C** — kultura+religia → **Power**; bez zwycięstwa kulturowego v1 | B | 🔵 **W TRAKCIE** | j.w. | ⚠️ victory kultura wdrożone **błędnie** (Q4A=Spichlerz) — revert |
+| **B-KULT-REL-Q5** | 2026-07-22 | **A** — podwoić bonusy/kary szczęścia kultura/religia w `society-params.json` | B | 🔵 **W TRAKCIE** | j.w. | ✅ society-params |
+| **KULT-BUD-01** | 2026-07-23 | Balans budynków kulturalnych: plon + konwersja (Pałac, Bib, Stela, Garncarnia, Sąd, Łaźnia) | B | 🔵 **W TRAKCIE** | `docs/decyzje/B-KULT-REL-2026-07-22.md` §KULT-BUD-01 | buildings.json + society-params + culture-religion.ts |
+| **KULT-BUD-02** | 2026-07-23 | Balans budynków religijnych: kręgi +2%/t, świątynia +4%/t (additive do bazy) | B | 🔵 **W TRAKCIE** | `docs/decyzje/B-KULT-REL-2026-07-22.md` §KULT-BUD-02 | society-params + culture-religion.ts FALLBACK |
+| **KULT-PRESJA-01** | 2026-07-23 | **A** — siła kultury = suma skumulowanej kultury imperium (licznik HUD) | B | 🟡 **ZAPISANA** | `docs/decyzje/B-KULT-PRESJA-2026-07-23.md` | presja kultury paczka 1/2 |
+| **KULT-PRESJA-02** | 2026-07-23 | **A** — zasięg presji = zasięg okolicy miasta (+ pierścienie 100/250/500) | B | 🟡 **ZAPISANA** | j.w. | reuse `citySightRadius` / okolica |
+| **KULT-PRESJA-03** | 2026-07-23 | **Custom** — tempo presji: easy **7%** · normal **5%** · hard **3%** /turę | B | 🟡 **ZAPISANA** | j.w. · `society-params.json` `kultura_presja_proc_tura` | handoff Integrator · czeka `działaj` |
+| **KULT-PRESJA-04** | 2026-07-23 | **A** — religia lustrzanie jak kultura (siła imperium · zasięg okolicy · tempo 7/5/3%) | B | 🟡 **ZAPISANA** | j.w. · `society-params.json` `religia_presja_proc_tura` | paczka 2/2 · cytat: „KULT-PRESJA-04 a" |
+| **KULT-PRESJA-05** | 2026-07-23 | **A** — po podboju zachować aktualny % kultury/religii z presji | B | 🟡 **ZAPISANA** | j.w. · `conquest-stability.ts` (plan) | pre-konquest mix → capture |
+| **KULT-PRESJA-06** | 2026-07-23 | **A** — symetria: wróg może obniżać nasz % u granicy (7/5/3%) | B | 🟡 **ZAPISANA** | j.w. | push+pull obustronnie kultura+religia |
+| **KULT-04** | 2026-07-23 | **A** — kultura + religia jako składniki **Power** (`power-objective`); bez victory kultura | B+F | 🟢 **WDROŻONA** | `power-objective.ts` · `power-params.json` · `main.ts` · ROBOCZA `98c4ede1` | KULT-04 A |
+| **KULT-DYP-01** | 2026-07-23 | **A mod.** — dyplomacja: bonus +0,5/t **tylko** gdy wspólna wiara **I** okręg kulturowy; **bez** kar obca wiara/kultura | B+D+F | 🟡 **ZAPISANA** | j.w. §KULT-DYP-01 · handoff `B-KULT-DYP-do-INTEGRATOR.md` | `wspolnaReligia` AND `sameCultureCircle`; `odmiennaReligia=false` |
+| **B-SUROW-BUD** | 2026-07-23 | Bramki dostępu surowców wg epoki: Kamień→drewno · Brąz→drewno+kamień · **Żelazo→drewno+kamień+cegła** · **Klasyczna→stal (budynki + jednostki)** · Magazyn bez limitu | B | 🟡 **ZAPISANA** | `docs/decyzje/B-SUROW-BUD-2026-07-23.md` · handoff `B-SUROW-BUD-do-INTEGRATOR.md` | zaktualizowano po B-SUROW-BUD-03 · czeka `działaj` |
+| **B-SUROW-BUD-03** | 2026-07-23 | **REMOVE-DESKI** — surowiec deski wycofany; Stolarnia = bonus Pracy only; bramki bez desek; Galera→drewno | B | 🟡 **ZAPISANA** | j.w. §B-SUROW-BUD-03 · `SUROWCE-KANON` korekta #9 | supersede deski w B-SUROW-BUD-01/03/05 · czeka `działaj` |
 
 ---
 
