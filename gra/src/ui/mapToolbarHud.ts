@@ -8,6 +8,7 @@
 
 import { iconHtml } from './icons/iconRegistry';
 import { scienceOwlIconSized } from './icons/scienceOwlIcon';
+import { scienceProgressRingHtml } from './icons/scienceProgressRing';
 import { ensureBrandRootTokens, CIV_BRAND_SCOPE_VARS } from './brandTokenVars';
 
 export interface MapToolbarHudConfig {
@@ -23,6 +24,8 @@ export interface MapToolbarHudConfig {
   isArmyListActive?: () => boolean;
   isDiploListActive?: () => boolean;
   isScienceHubActive?: () => boolean;
+  /** Postęp badań [0..1] — pierścień na medalionie Nauki. */
+  getResearchProgress?: () => number;
   getWarBadge?: () => number;
   isBuildModeActive?: () => boolean;
   isCultureRangeActive?: () => boolean;
@@ -52,9 +55,12 @@ function ensureStyles(): void {
   box-shadow:inset 0 2px 4px rgba(232,216,138,.16),0 4px 10px rgba(0,0,0,.55);
   color:var(--civ-gold-primary);display:flex;align-items:center;justify-content:center;
   transition:border-color .15s,box-shadow .15s,color .15s;}
-.civ-map-toolbar .tb.science{border-color:#3a6a94;color:#7cb4e4;
+.civ-map-toolbar .tb.science{border-color:var(--tg-gold-dim);color:#7cb4e4;
   background:radial-gradient(circle at 38% 30%,#12202e,#0a0d14);
   box-shadow:inset 0 2px 4px rgba(90,155,212,.2),0 4px 10px rgba(0,0,0,.55);}
+.civ-map-toolbar .tb.science .tb-ring-wrap{position:relative;width:100%;height:100%;
+  display:flex;align-items:center;justify-content:center;}
+.civ-map-toolbar .tb.science .civ-science-prog-ring{position:absolute;inset:0;pointer-events:none;}
 .civ-map-toolbar .tb:hover{filter:brightness(1.06);}
 .civ-map-toolbar .tb.on{border:var(--tg-rant-active);background:rgba(232,216,138,.1);
   box-shadow:inset 0 2px 4px rgba(232,216,138,.2),0 0 20px rgba(232,216,138,.3);color:#f4e6a8;}
@@ -89,10 +95,13 @@ export function createMapToolbarHud(config: MapToolbarHudConfig): MapToolbarHudA
     const armyListOn = config.isArmyListActive?.() ?? false;
     const diploListOn = config.isDiploListActive?.() ?? false;
     const scienceOn = config.isScienceHubActive?.() ?? false;
+    const researchFrac = config.getResearchProgress?.() ?? 0;
+    const scienceRing = scienceProgressRingHtml(researchFrac, 52, 2.5);
 
     let html = '';
     html += `<button type="button" class="tb${cityListOn ? ' on' : ''}" data-act="cities" title="Miasto — lista i produkcja">${tbIcon('tb-cities')}</button>`;
-    html += `<button type="button" class="tb science${scienceOn ? ' on' : ''}" data-act="science" title="Badania">${tbIcon('tb-science')}</button>`;
+    html += `<button type="button" class="tb science${scienceOn ? ' on' : ''}" data-act="science" title="Badania">`
+      + `<span class="tb-ring-wrap">${scienceRing}${tbIcon('tb-science')}</span></button>`;
     html += `<button type="button" class="tb${diploListOn ? ' on' : ''}" data-act="diplo" title="Dyplomacja">${tbIcon('tb-diplomacy')}</button>`;
     const armyExtra = (wars > 0 ? ' at-war' : '') + (armyListOn ? ' on' : '');
     html += `<button type="button" class="tb${armyExtra}" data-act="army" title="Wojsko">${tbIcon('tb-army')}`

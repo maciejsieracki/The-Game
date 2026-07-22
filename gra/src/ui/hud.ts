@@ -90,6 +90,8 @@ export interface HudState {
   tura: number;
   epoka: string;
   epokaPostep?: number;
+  /** Postęp aktywnej technologii [0..1] — nauka skumulowana / koszt badanej tech. */
+  researchProgress?: number;
   badana?: string | null;
   /** Chipy dyplomacji na [A] (A1-revB) */
   sojusze?: number;
@@ -270,8 +272,10 @@ function ensureStyles(): void {
 .civ-hud .civ-hud-chip-med{width:30px;height:30px;border-radius:50%;flex-shrink:0;
   display:inline-flex;align-items:center;justify-content:center;box-shadow:0 1px 3px rgba(0,0,0,.6);}
 .civ-hud .civ-hud-chip-med.gold{background:radial-gradient(circle at 35% 30%,#f4e0a0,#a9861f);border:1px solid #6a5212;color:#3a2e08;}
-.civ-hud .civ-hud-chip-med.science{background:radial-gradient(circle at 35% 30%,#8fb6e0,#3a5f8a);border:1px solid #26456a;color:#0e2038;}
-.civ-hud .civ-hud-chip-med.science .civ-science-owl-ic{width:17px;height:17px;color:#0a1628;}
+.civ-hud .civ-hud-chip-med.science{background:radial-gradient(circle at 35% 30%,#8fb6e0,#3a5f8a);border:none;color:#0e2038;}
+.civ-hud .civ-hud-chip-med.science.civ-science-med-ring{position:relative;}
+.civ-hud .civ-hud-chip-med.science .civ-science-prog-ring{position:absolute;inset:0;pointer-events:none;}
+.civ-hud .civ-hud-chip-med.science .civ-science-owl-ic{width:17px;height:17px;color:#0a1628;position:relative;z-index:1;}
 .civ-hud .civ-hud-chip-med svg{width:17px;height:17px;display:block;}
 .civ-hud .civ-hud-chip-lbl{font-size:11px;color:var(--civ-text-muted);}
 .civ-hud .civ-hud-chip-val{font-size:15px;font-weight:700;color:var(--civ-gold-primary);}
@@ -363,6 +367,12 @@ function res(icon: string, val: string, lbl: string, rate?: string, rateO?: bool
 
 function signed(n: number): string { return (n > 0 ? '+' : '') + String(n); }
 
+/** Pierścień Nauki: postęp bieżącej tech (nie epoki). buildHudState ustawia researchProgress. */
+function resolveResearchProgress(s: HudState): number {
+  const p = s.researchProgress ?? s.epokaPostep ?? 0;
+  return Math.max(0, Math.min(1, p));
+}
+
 function formatFoodHudLabel(s: HudState): string {
   const max = s.zywnoscMax;
   if (max != null && max > 0) return `${s.zywnoscLabel} / ${max}`;
@@ -429,6 +439,7 @@ function renderBarD1B(s: HudState): string {
       valClass: ' science',
       act: 'nauka',
       title: 'Nauka — kliknij po podsumowanie imperium',
+      researchProgress: resolveResearchProgress(s),
     }),
   ];
   const rightChips: string[] = [
@@ -830,6 +841,7 @@ function mountMapToolbar(): void {
     isArmyListActive: base.isArmyListActive,
     isDiploListActive: base.isDiploListActive,
     isScienceHubActive: base.isScienceHubActive,
+    getResearchProgress: () => resolveResearchProgress(cfg!.getState()),
   });
 }
 

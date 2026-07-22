@@ -2857,3 +2857,11 @@ Pliki: `manpower.ts` · `production.ts` · `main.ts` · `cityPanel.ts` · `unitR
 Bramki: tsc=0 · manpower-test 36/36.
 Publish ROBOCZA: stamp **c54dae3b** · md5 `c54dae3be8b3ab1cc0e5eebf7d04f9f0`.
 CZEKAM-NA: sesja lokalna — `git pull` → Ctrl+F5 START.html → stamp `c54dae3b` → rekrutuj Zwiadowcę przy pustej puli MP.
+
+## [08:00 PL, 2026-07-22] CHMURA → LOKALNA — UI pierścień postępu badań HUD · stamp `9b539cb7`
+
+Pierścień timer na ikonie Nauki (lewy toolbar + chip górny): złoto = pozostało, niebieski rośnie od góry zgodnie z ruchem wskazówek.
+Progress = `epokaPostep` (pula/koszt celu). Moduł `scienceProgressRing.ts`; hooki `mapToolbarHud`, `hudChip6c`, `hud`.
+Bramki: tsc=0 · verify OK.
+Publish ROBOCZA: stamp **9b539cb7** · md5 `9b539cb74bfc487a8c1fd7ef5d4af27b`.
+CZEKAM-NA: sesja lokalna — `git pull` → Ctrl+F5 START.html → stamp `9b539cb7` → wybierz tech → obserwuj pierścień na medalionie Nauki.

@@ -4,7 +4,20 @@
 > **Czat:** krótko **`✅ Gotowe:`** / **`⏸️ Czeka:`** · **Ten plik:** pełniejszy zapis tego samego.  
 > Szczegóły techniczne → handoff w `dyspozycje/_handoff/` · operacja → `dyspozycje/DZIENNIK-MASTERA.md`
 
-**Ostatnia aktualizacja:** 2026-07-22 (regen Manpower 2% + bonus Rzym zachowany)
+**Ostatnia aktualizacja:** 2026-07-22 (pierścień postępu badań HUD)
+
+---
+
+## [08:00] ✅ Gotowe — pierścień postępu badań (HUD Nauki)
+
+| | |
+|---|---|
+| **Co** | Pierścień wokół ikony Nauki (toolbar lewy + chip górny): **złoty** = pozostało, **niebieski** rośnie zgodnie z ruchem wskazówek od góry |
+| **Pliki** | `scienceProgressRing.ts` · `mapToolbarHud.ts` · `hudChip6c.ts` · `hud.ts` |
+| **Dane** | `epokaPostep` (= pula nauki / koszt celu); odświeża się co turę i przy zmianie celu |
+| **md5** | `9b539cb74bfc487a8c1fd7ef5d4af27b` · stamp `9b539cb7` |
+| **Bramki** | tsc=0 · verify OK |
+| **Od Ciebie** | `git pull` → Ctrl+F5 · `gra-robocza/START.html` → stamp `9b539cb7` → wybierz tech → patrz pierścień na medalionie Nauki (lewy toolbar) |
 
 ---
 

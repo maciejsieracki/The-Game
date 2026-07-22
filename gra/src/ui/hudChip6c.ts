@@ -7,6 +7,7 @@ import { brandIconSvg } from './icons/brandAssets';
 import type { IconId } from './icons/iconRegistry';
 import { iconHtml } from './icons/iconRegistry';
 import { scienceOwlIconSized } from './icons/scienceOwlIcon';
+import { scienceProgressRingHtml } from './icons/scienceProgressRing';
 
 export type ChipMedVariant = 'gold' | 'science';
 
@@ -20,6 +21,8 @@ export interface Chip6cOpts {
   valClass?: string;
   act?: string;
   title?: string;
+  /** Postęp badań [0..1] — pierścień wokół medalionu Nauki. */
+  researchProgress?: number;
 }
 
 function chipIconHtml(id: IconId, _medVariant: ChipMedVariant): string {
@@ -40,8 +43,13 @@ export function chip6cHtml(opts: Chip6cOpts): string {
     : '';
   const valCls = opts.valClass ?? (med === 'science' ? ' science' : '');
   const rateCls = opts.rateWarn ? ' warn' : '';
+  const showRing = opts.iconId === 'res-science' && opts.researchProgress !== undefined;
+  const medInner = showRing
+    ? scienceProgressRingHtml(opts.researchProgress!, 30, 2) + chipIconHtml(opts.iconId, med)
+    : chipIconHtml(opts.iconId, med);
+  const medCls = showRing ? `${med} civ-science-med-ring` : med;
   let html = `<span class="civ-hud-chip${clickCls}"${actAttr}>`
-    + `<span class="civ-hud-chip-med ${med}">${chipIconHtml(opts.iconId, med)}</span>`
+    + `<span class="civ-hud-chip-med ${medCls}">${medInner}</span>`
     + `<span class="civ-hud-chip-lbl">${opts.label}</span>`
     + `<span class="civ-hud-chip-val${valCls}">${opts.value}</span>`;
   if (opts.rate !== undefined) {
