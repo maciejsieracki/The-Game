@@ -1115,3 +1115,15 @@ Mapa w `HANDOFF.md` używa **PascalCase** (`MainMenu.ts`, `TechTree.ts`…) — 
 ## [2026-07-23] DESIGN/MACIEJ → INTEGRATOR — paczka PORTRETY-WLADCOW v3/v4 (ODEBRANA i zainstalowana)
 
 30 portretów władców (15 cyw × Kamień/Brąz; Żelazo TODO): medaliony 418×418 + full 251×418 + portrait-map.json + preview. Rzymianie·Kamień = wersja finalna (wilcza czapa, pełne futro). Zainstalowane 1:1: snapshot `_dist/PORTRETY-WLADCOW-2026-07-23/` + żywy `KANON/eksport/portraits/`. Do bundla gry: kopie 256×256 JPEG (`gra/src/assets/portrety/`, 364 KB łącznie — oryginały 418 w kanonie nietknięte). Wdrożenie medalionów (pre-battle/HUD bitwy/dyplomacja, fallback ikona cyw, epoka zelazo→braz→kamien) — w toku u integratora. Nowe zlecenie dla Design: Zlecenie 6 — cięcie arkusza Żelaza, gdy Maciej dostarczy z Gemini.
+
+---
+
+## [2026-07-23] DESIGN → INTEGRATOR — paczka DRZEWKO-TECH-v1 (ODEBRANA, zainstalowana, przegląd integratora POZYTYWNY)
+
+**Odebrane:** makieta „Drzewko technologii graf v1 (1E)" (3 klatki: przegląd 32 techów 1:1 z tech.json / karta węzła z AND ✓✗ i mnożnikiem tempa / nawigacja z „pokaż ścieżkę") + CANON.md + hub START (karta ★). Zainstalowane: snapshot `_dist/DRZEWKO-TECH-v1-2026-07-23/` + żywy KANON (makieta, CANON, hub nadpisane wg dyspozycji).
+
+**Weryfikacja integratora:** 32/32 nazwy techów obecne (skrypt vs tech.json) · render sprawdzony wzrokowo (3 klatki, Playwright) — stany węzłów, powody blokad (tech-rodzic ORAZ budynek), pierścień postępu, minimapa, ścieżka AND-closure — wszystko czytelne. **Mostki na przecięciach: przyjęte** (czytelne, zero dwuznaczności); wariant „kotwice AND" na razie NIE potrzebny — ostateczne słowo Macieja przy przeglądzie.
+
+**⚠️ BRAK W DOSTAWIE:** paczka `KANON-SYNC-6-2026-07-23` (6 plików kanonu — Zlecenie 5) — wiadomość deklaruje „WYSŁANE osobną paczką", ale ZIP zawierał wyłącznie DRZEWKO-TECH-v1. Prosimy DOSŁAĆ: A08 Tryb budowy ulepszeń · A04 Panel heks kontekst · C23 Szczegóły bitwy v1 · C12 Koniec bitwy v3 · Jednostki infografiki kanon v1 · Atlas ikon bitwy i jednostek.
+
+**Nota techniczna dla Design:** runtime .dc.html ładuje React/Babel z unpkg.com — w środowiskach offline/za proxy makiety się nie renderują. Prośba na przyszłość: wariant z inline runtime albo vendored skrypty w `mockupy/vendor/` (wystarczy raz, wszystkie makiety z niego korzystają).

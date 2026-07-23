@@ -979,6 +979,45 @@ const HILL_SUMMIT_Y = HILL_LIFT + 0.16;
 const RIVER_DROP = 0.08;
 
 // ---------------------------------------------------------------------------
+// SIEGE: low-poly city buildings behind the wall (defender interior).
+// Same earthy/stone family as siegeWall.ts (grecja/rzym/sumer/egipt palette),
+// jittered per-instance the same way the wall's segments/merlons are.
+// ---------------------------------------------------------------------------
+const SIEGE_BLDG_BODY_COLORS = [0xcdb896, 0xb8a179, 0xc7a97e, 0xa89272, 0xbfae8c];
+const SIEGE_BLDG_ROOF_COLORS = [0x8b4a35, 0x6b3d2a, 0x9c6b3f, 0x7a4530];
+
+/**
+ * makeGableRoofGeometry — unit gable ("dach dwuspadowy") roof prism: base
+ * rectangle at y=0 spanning x/z in [-0.5,0.5] (matches BoxGeometry(1,1,1)'s
+ * footprint convention so body/roof share the same X/Z instance scale),
+ * ridge line along X at y=1 (apex height = 1 before the per-instance Y
+ * scale). No underside face (hidden inside the building body). 6 triangles.
+ * Built ONCE and shared across every instance via InstancedMesh.
+ */
+function makeGableRoofGeometry(): THREE.BufferGeometry {
+  const A: [number, number, number]  = [-0.5, 0, -0.5];
+  const B: [number, number, number]  = [ 0.5, 0, -0.5];
+  const C: [number, number, number]  = [ 0.5, 0,  0.5];
+  const D: [number, number, number]  = [-0.5, 0,  0.5];
+  const R0: [number, number, number] = [-0.5, 1,  0];
+  const R1: [number, number, number] = [ 0.5, 1,  0];
+  const verts: number[] = [];
+  const tri = (p1: readonly number[], p2: readonly number[], p3: readonly number[]) => {
+    verts.push(...p1, ...p2, ...p3);
+  };
+  tri(A, R1, B);  // front slope (part 1)
+  tri(A, R0, R1); // front slope (part 2)
+  tri(D, C, R0);  // back slope (part 1)
+  tri(C, R1, R0); // back slope (part 2)
+  tri(A, D, R0);  // left gable end
+  tri(B, R1, C);  // right gable end
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.Float32BufferAttribute(verts, 3));
+  geo.computeVertexNormals();
+  return geo;
+}
+
+// ---------------------------------------------------------------------------
 // Stat helpers
 // ---------------------------------------------------------------------------
 
@@ -2837,6 +2876,8 @@ export class BattleScene {
     if (opts.siege) {
       // SIEGE v2: prefer defCiv (defender's civilization) for the wall style.
       this._placeSiegeWall((opts.siege.defCiv ?? opts.siege.civ) ?? 'rzym');
+      // Zadanie #8: prosta zabudowa miejska za murem (strona obrońcy) — dekor.
+      this._buildSiegeInteriorBuildings();
     }
     this._deployMode = opts.deploy === true;
     this._deployPlayerSideOpt = opts.deployPlayerSide ?? 'atk';
@@ -3373,6 +3414,159 @@ export class BattleScene {
         else if (mm) this.ownedMats.push(mm as THREE.Material);
       }
     });
+  }
+
+  /**
+   * SIEGE: proste, tanie bryły zabudowy miejskiej PO WEWNĘTRZNEJ stronie muru
+   * (strona obrońcy) — czysto wizualna dekoracja (nie zmienia przejezdności:
+   * kafle pod budynkami zostają Plains, jednostki mogą przez nie "przechodzić"
+   * tak jak przez każdy inny dekor w tym pliku — lasy/skały/kępy trawy powyżej
+   * też nie kolidują).
+   *
+   * Umiejscowienie: kolumny [siegeWallCol+5 .. PLAY_COL1-1] (głębia miasta za
+   * murem, z marginesem od pasa gdzie ląduje odwrót obrońców z wyburzonego
+   * muru i gdzie _placeSiegeDefenders stawia "resztę" obrony tuż za murem),
+   * wiersze w obrębie PLAY_ROW0..PLAY_ROW1 z wyłączeniem korytarza wokół rzędu
+   * bramy (SIEGE_STREET_HALF) — tak by "ulica" od bramy w głąb miasta zostawała
+   * czytelna, a nie zastawiona domami. Slotu-kandydaci sortowani wg odległości
+   * od rzędu bramy i przycięci do budżetu (BUILDING_CAP) — stąd zabudowa
+   * gęstnieje bliżej centrum (bramy) i rzednie ku flankom.
+   *
+   * Deterministyczne: tileJitter(col,row,salt) — sam mechanizm co drzewa/
+   * skały/kępy trawy w _buildBattlefield (zero Math.random()). InstancedMesh
+   * (3 siatki: korpus, dach dwuspadowy, dach płaski) — budżet dziesiątki
+   * trójkątów na budynek, do ~40 budynków.
+   */
+  private _buildSiegeInteriorBuildings(): void {
+    if (this.siegeWallCol < 0) return;
+    const tm = this.terrainMap;
+    if (!tm.tiles) return;
+
+    const wallCol = this.siegeWallCol;
+    const gateRow = this.siegeGateRow;
+
+    const colLo = wallCol + 5;
+    const colHi = PLAY_COL1 - 1;
+    const rowLo = PLAY_ROW0 + 2;
+    const rowHi = PLAY_ROW1 - 2;
+    if (colHi < colLo || rowHi < rowLo) return;
+
+    const STREET_HALF = 3;  // korytarz od bramy w głąb miasta, wolny od zabudowy
+    const STEP_COL = 3;
+    const STEP_ROW = 3;
+    const BUILDING_CAP = 38;
+
+    type Plot = { col: number; row: number; dist: number };
+    const plots: Plot[] = [];
+    for (let col = colLo; col <= colHi; col += STEP_COL) {
+      for (let row = rowLo; row <= rowHi; row += STEP_ROW) {
+        if (Math.abs(row - gateRow) <= STREET_HALF) continue;
+        if (tm.at(col, row) !== BTerrain.Plains) continue;
+        // Organiczna rzadkość (nie każdy slot zabudowany) — deterministyczna.
+        if (tileJitter(col, row, 901) > 0.82) continue;
+        plots.push({ col, row, dist: Math.abs(row - gateRow) });
+      }
+    }
+    if (plots.length === 0) return;
+    plots.sort((a, b) => a.dist - b.dist);
+    const chosen = plots.length > BUILDING_CAP ? plots.slice(0, BUILDING_CAP) : plots;
+    const n = chosen.length;
+    if (n === 0) return;
+
+    const bodyGeo  = new THREE.BoxGeometry(1, 1, 1);
+    const gableGeo = makeGableRoofGeometry();
+    this.ownedGeos.push(bodyGeo, gableGeo);
+
+    // Biały materiał bazowy: instanceColor jest jedynym źródłem barwy (ten sam
+    // wzorzec co korony drzew / kępy trawy powyżej) — brak luk = brak "białych" instancji.
+    const bodyMat  = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.92, metalness: 0.0 });
+    const gableMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.88, metalness: 0.0 });
+    const flatMat  = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.88, metalness: 0.0 });
+    this.ownedMats.push(bodyMat, gableMat, flatMat);
+
+    const bodies     = new THREE.InstancedMesh(bodyGeo, bodyMat, n);
+    const gableRoofs = new THREE.InstancedMesh(gableGeo, gableMat, n);
+    const flatRoofs  = new THREE.InstancedMesh(bodyGeo, flatMat, n);
+    bodies.castShadow = true; bodies.receiveShadow = true;
+    gableRoofs.castShadow = true;
+    flatRoofs.castShadow = true;
+
+    const dummy = new THREE.Object3D();
+    const colorObj = new THREE.Color();
+    let gi = 0, fi = 0;
+
+    for (let i = 0; i < n; i++) {
+      const { col, row } = chosen[i]!;
+      const { x, z } = cellToWorld(col, row);
+      const px = x + (tileJitter(col, row, 902) - 0.5) * TILE_S * 0.8;
+      const pz = z + (tileJitter(col, row, 903) - 0.5) * TILE_S * 0.8;
+
+      // 2 najbliższe centrum (bramie) plotu = skromne "budynki publiczne"
+      // (większe), reszta = 3 warianty wielkości mieszkalnej zabudowy.
+      const isPublic = i < 2;
+      const sizeRoll = tileJitter(col, row, 904);
+      let w: number, d: number, bodyH: number, roofH: number;
+      if (isPublic) {
+        w = 1.5 + sizeRoll * 0.3; d = 1.1 + sizeRoll * 0.2; bodyH = 1.7; roofH = 0.55;
+      } else if (sizeRoll < 0.33) {
+        w = 0.55; d = 0.5; bodyH = 0.85; roofH = 0.35;
+      } else if (sizeRoll < 0.7) {
+        w = 0.72; d = 0.6; bodyH = 1.0; roofH = 0.4;
+      } else {
+        w = 0.85; d = 0.7; bodyH = 1.15; roofH = 0.45;
+      }
+
+      const yaw = tileJitter(col, row, 905) * Math.PI * 2;
+
+      // Korpus
+      dummy.position.set(px, bodyH / 2, pz);
+      dummy.rotation.set(0, yaw, 0);
+      dummy.scale.set(w, bodyH, d);
+      dummy.updateMatrix();
+      bodies.setMatrixAt(i, dummy.matrix);
+      const bColIdx = Math.floor(tileJitter(col, row, 906) * SIEGE_BLDG_BODY_COLORS.length) % SIEGE_BLDG_BODY_COLORS.length;
+      const bJit = (tileJitter(col, row, 907) - 0.5) * 0.14;
+      colorObj.set(lighten(SIEGE_BLDG_BODY_COLORS[bColIdx]!, bJit));
+      bodies.setColorAt(i, colorObj);
+
+      // Dach: dwuspadowy (~62%) lub płaski (~38%)
+      const roofRoll = tileJitter(col, row, 908);
+      const rColIdx = Math.floor(tileJitter(col, row, 909) * SIEGE_BLDG_ROOF_COLORS.length) % SIEGE_BLDG_ROOF_COLORS.length;
+      const rJit = (tileJitter(col, row, 910) - 0.5) * 0.12;
+      colorObj.set(lighten(SIEGE_BLDG_ROOF_COLORS[rColIdx]!, rJit));
+
+      if (roofRoll < 0.62) {
+        dummy.position.set(px, bodyH, pz);
+        dummy.rotation.set(0, yaw, 0);
+        dummy.scale.set(w * 1.06, roofH, d * 1.06);
+        dummy.updateMatrix();
+        gableRoofs.setMatrixAt(gi, dummy.matrix);
+        gableRoofs.setColorAt(gi, colorObj);
+        gi++;
+      } else {
+        dummy.position.set(px, bodyH + roofH * 0.4, pz);
+        dummy.rotation.set(0, yaw, 0);
+        dummy.scale.set(w * 1.08, roofH * 0.8, d * 1.08);
+        dummy.updateMatrix();
+        flatRoofs.setMatrixAt(fi, dummy.matrix);
+        flatRoofs.setColorAt(fi, colorObj);
+        fi++;
+      }
+    }
+
+    bodies.count = n;
+    gableRoofs.count = gi;
+    flatRoofs.count = fi;
+    bodies.instanceMatrix.needsUpdate = true;
+    gableRoofs.instanceMatrix.needsUpdate = true;
+    flatRoofs.instanceMatrix.needsUpdate = true;
+    if (bodies.instanceColor) bodies.instanceColor.needsUpdate = true;
+    if (gableRoofs.instanceColor) gableRoofs.instanceColor.needsUpdate = true;
+    if (flatRoofs.instanceColor) flatRoofs.instanceColor.needsUpdate = true;
+
+    this.scene.add(bodies);
+    if (gi > 0) this.scene.add(gableRoofs);
+    if (fi > 0) this.scene.add(flatRoofs);
   }
 
   /**
@@ -6008,24 +6202,41 @@ export class BattleScene {
         const segs = wallMeshes.get(wallRow);
         if (segs) segs.forEach(m => { m.visible = false; });
       }
-      // Gruz — kilka małych boxów w miejscu wyłomu (world space).
+      // Gruz — nieregularna sterta boxów/odłamków skalnych w miejscu wyłomu
+      // (world space). Deterministyczny jitter (tileJitter — sam mechanizm co
+      // reszta dekoracji pola bitwy w _buildBattlefield), zasiany z (wallCol,
+      // wallRow) tego konkretnego kafla, więc każdy wyłom wygląda nieco
+      // inaczej, ale powtarzalnie. Czysto wizualne — kafel jest już Plains
+      // (patrz wyżej), gruz NIE dostaje kolizji, jednostki przechodzą swobodnie.
       const { x: rubbleX, z: rubbleZ } = cellToWorld(wallCol, wallRow);
-      const rubbleMat = new THREE.MeshLambertMaterial({ color: 0x6b5040 });
-      const rubbleOffsets: [number, number, number, number, number, number][] = [
-        [ 0.0,  0.12,  0.1,  0.40, 0.24, 0.35],
-        [-0.2,  0.08, -0.1,  0.35, 0.20, 0.30],
-        [ 0.3,  0.06,  0.0,  0.32, 0.16, 0.28],
-        [-0.1,  0.10,  0.2,  0.28, 0.18, 0.25],
-      ];
-      for (const [ox, oy, oz, gw, gh, gd] of rubbleOffsets) {
-        const geo = new THREE.BoxGeometry(gw, gh, gd);
-        const mesh = new THREE.Mesh(geo, rubbleMat);
+      const RUBBLE_DUST_COLOR = 0x6b5040; // przybrudzony kamień/glina muru
+      const RUBBLE_ROCK_COLOR = 0x5a5850; // ciemniejszy odłamek skalny
+      const RUBBLE_PIECES = 7;
+      for (let i = 0; i < RUBBLE_PIECES; i++) {
+        const s = 200 + i * 11; // salt bucket per piece (unikalne od reszty tileJitter w pliku)
+        const ox = (tileJitter(wallCol, wallRow, s + 1) - 0.5) * TILE_S * 0.85;
+        const oz = (tileJitter(wallCol, wallRow, s + 2) - 0.5) * TILE_S * 0.7;
+        const sc = 0.55 + tileJitter(wallCol, wallRow, s + 3) * 0.55;
+        const isRock = tileJitter(wallCol, wallRow, s + 4) < 0.4;
+        const colorJit = (tileJitter(wallCol, wallRow, s + 5) - 0.5) * 0.16;
+        const color = lighten(isRock ? RUBBLE_ROCK_COLOR : RUBBLE_DUST_COLOR, colorJit);
+        const geo = isRock
+          ? new THREE.IcosahedronGeometry(0.16 * sc, 0)
+          : new THREE.BoxGeometry(0.34 * sc, 0.20 * sc, 0.30 * sc);
+        const mat = new THREE.MeshLambertMaterial({ color, flatShading: true });
+        const mesh = new THREE.Mesh(geo, mat);
+        const oy = (isRock ? 0.06 : 0.10) * sc;
         mesh.position.set(rubbleX + ox, oy, rubbleZ + oz);
-        const angle = (ox * 3.7 + oz * 2.1); // pseudo-deterministyczny obrót
-        mesh.rotation.y = angle;
+        mesh.rotation.set(
+          tileJitter(wallCol, wallRow, s + 6) * Math.PI,
+          tileJitter(wallCol, wallRow, s + 7) * Math.PI * 2,
+          tileJitter(wallCol, wallRow, s + 8) * Math.PI
+        );
+        mesh.castShadow = true;
+        mesh.receiveShadow = true;
         this.scene.add(mesh);
         this.ownedGeos.push(geo);
-        this.ownedMats.push(rubbleMat);
+        this.ownedMats.push(mat);
       }
     }
 
