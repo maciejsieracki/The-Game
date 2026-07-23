@@ -69,6 +69,8 @@ export interface HappinessBreakdownInput {
   haKult?: number;
   haRel?: number;
   haWealth?: number;
+  /** CUDA-EKON-01 (2026-07-23): suma bonusy.miasto.zadowolenie cudów ukończonych (× każde miasto ownera). */
+  haCuda?: number;
   podzialHandlu?: CityPodzialHandlu;
   atWar?: boolean;
   hasSwiatynia?: boolean;
@@ -288,6 +290,9 @@ export function computeHappinessBreakdown(
   }
   if (input.haWealth) {
     lines.push({ id: 'wealth', label: 'Wealth (pula luksusu)', value: input.haWealth });
+  }
+  if (input.haCuda) {
+    lines.push({ id: 'cuda', label: 'Cuda świata', value: input.haCuda });
   }
   if (input.hasSwiatynia) {
     const v = pickSociety(szBlock, 'szczescie_swiatynia', diff, 1);

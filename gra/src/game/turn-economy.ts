@@ -119,6 +119,7 @@ import type { OrderYieldMults } from './order';
 import { getCityFoodSplit } from './empire-food';
 import { pickOsiedlePopBonus, osiedlePopLabel } from './society-breakdown';
 import { hexDistance } from '../units/setup';
+import { type WonderYieldBonus } from './wonders-data';
 
 /** Stosuje mnożniki Porządku na plony (B2-Q6) — przed Wealth i splitPraca. */
 function applyOrderYieldMults(
@@ -129,6 +130,32 @@ function applyOrderYieldMults(
   if (mults.pieniadzMult !== 1) yld.pieniadz *= mults.pieniadzMult;
   if (mults.naukaMult !== 1) yld.nauka *= mults.naukaMult;
   if (mults.kulturaMult !== 1) yld.kultura *= mults.kulturaMult;
+}
+
+// ---------------------------------------------------------------------------
+// CUDA-EKON-01 (2026-07-23): "+wonder yields" — KROK CELOWO ODDZIELNY od reszty
+// ekonomii/Pracy (patrz raport C-CUDA-BONUS=A). Dolicza flat bonusy.miasto
+// ukończonych cudów świata (sumWonderCityYieldsForOwner, wonders-data.ts) DO
+// KAŻDEGO miasta właściciela, PO cityYieldPerTurn()/cityPracaInteger(), PRZED
+// Wealth/splitPraca (traktowane jak zwykły dochód bazowy miasta — tak samo jak
+// dochody z budynków). Nie modyfikuje economy.ts/cityYieldPerTurn w ogóle —
+// zero konfliktu z równoległymi zmianami w formułach Pracy z terenu/ulepszeń.
+// Obrona (miasto.obrona z Dur-Sharrukin/Yerkapı) NIE ma dziś odpowiednika w
+// CityYieldResult (brak city-defense yield) — TODO, poza zakresem ekonomii.
+function applyWonderCityYields(
+  yld: { pieniadz: number; zywnosc: number; nauka: number; kultura: number; praca: number },
+  bonus: Readonly<WonderYieldBonus> | undefined,
+): void {
+  if (!bonus) return;
+  if (bonus.pieniadz) yld.pieniadz += bonus.pieniadz;
+  if (bonus.zywnosc) yld.zywnosc += bonus.zywnosc;
+  if (bonus.nauka) yld.nauka += bonus.nauka;
+  if (bonus.kultura) yld.kultura += bonus.kultura;
+  if (bonus.praca) yld.praca += bonus.praca;
+  // zadowolenie: patrz society-breakdown.ts computeHappinessBreakdown (haCuda) —
+  // to jest realny happiness pipeline; CityYieldResult.zadowolenie nie jest
+  // dziś propagowane do CityEconomyTick (pre-istniejący dead field), więc
+  // dopisywanie tu nic by nie zmieniło w rozgrywce.
 }
 
 /** Nazwa wyświetlana cywilizacji z klucza (grecy → Grecy) — pod cityTradeMultiplier. */
@@ -943,6 +970,8 @@ export function previewCityEconomy(
   tradeIncomeByCity: ReadonlyMap<string, number> = new Map(),
   territoryNodes?: readonly TerritoryNode[],
   cityReligionByCityId: ReadonlyMap<string, ReligionState> = new Map(),
+  /** CUDA-EKON-01: ownerId -> suma bonusy.miasto cudów ukończonych (× każde miasto ownera). */
+  wonderCityYieldsByOwner: ReadonlyMap<number, WonderYieldBonus> = new Map(),
 ): Pick<EconomyTickResult, 'perCity'> {
   const params = buildEconParams(data, difficulty);
   const noBuildings: CityBuildingEntry[] = [];
@@ -1023,6 +1052,8 @@ export function previewCityEconomy(
     const orderMult = orderMultByCity.get(city.id);
     if (orderMult) applyOrderYieldMults(yld, orderMult);
     yld.praca = cityPracaInteger(yld.praca);
+    // +wonder yields (CUDA-EKON-01) — patrz applyWonderCityYields, krok osobny od reszty.
+    applyWonderCityYields(yld, wonderCityYieldsByOwner.get(city.ownerId));
 
     const prevWealth: WealthState = city.wealthState ?? freshWealthState();
     const wealthImmunity = (city.wealthImmunityRemaining ?? 0) > 0;
@@ -1128,6 +1159,8 @@ export function advanceCityEconomy(
   /** Handel E3: cityId -> dochod dystansowy z tras tej tury (czysto do skarbca). */
   tradeIncomeByCity: ReadonlyMap<string, number> = new Map(),
   cityReligionByCityId: ReadonlyMap<string, ReligionState> = new Map(),
+  /** CUDA-EKON-01: ownerId -> suma bonusy.miasto cudów ukończonych (× każde miasto ownera). */
+  wonderCityYieldsByOwner: ReadonlyMap<number, WonderYieldBonus> = new Map(),
 ): EconomyTickResult {
   const gameDifficulty = difficulty as GameDifficulty;
   const params = buildEconParams(data, difficulty);
@@ -1282,6 +1315,9 @@ export function advanceCityEconomy(
     const orderMult = orderMultByCity.get(city.id);
     if (orderMult) applyOrderYieldMults(yld, orderMult);
     yld.praca = cityPracaInteger(yld.praca);
+    // +wonder yields (CUDA-EKON-01) — patrz applyWonderCityYields, krok osobny od reszty
+    // ekonomii/Pracy (nie dotyka economy.ts ani formul terenu/ulepszen powyzej).
+    applyWonderCityYields(yld, wonderCityYieldsByOwner.get(city.ownerId));
 
     // WIRE 3: Luksus -> Wealth tick
     // wealthState per miasto -- persystowane na city jako pole dynamiczne

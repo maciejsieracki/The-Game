@@ -17,18 +17,19 @@ var __copyProps = (to, from, except, desc) => {
 };
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
-// tools/.owner-economy-entry.ts
-var owner_economy_entry_exports = {};
-__export(owner_economy_entry_exports, {
+// tools/.wonder-yields-entry.ts
+var wonder_yields_entry_exports = {};
+__export(wonder_yields_entry_exports, {
   advanceCityEconomy: () => advanceCityEconomy,
   canFoundCity: () => canFoundCity,
   foundCityAt: () => foundCityAt,
-  freshWealthState: () => freshWealthState,
   generateMap: () => generateMap,
+  getWonderById: () => getWonderById,
+  hasAnyWonderCityYield: () => hasAnyWonderCityYield,
   sumEconomyForOwner: () => sumEconomyForOwner,
-  sumEconomyForPlayerCities: () => sumEconomyForPlayerCities
+  sumWonderCityYieldsForOwner: () => sumWonderCityYieldsForOwner
 });
-module.exports = __toCommonJS(owner_economy_entry_exports);
+module.exports = __toCommonJS(wonder_yields_entry_exports);
 
 // src/game/population-growth-tempo.ts
 var WZROST_LUDNOSCI_PACE = {
@@ -2728,6 +2729,46 @@ var wonders_default = {
 // src/game/wonders-data.ts
 var data = wonders_default;
 var wonderById = new Map(data.cuda.map((w) => [w.id, w]));
+function getWonderById(id) {
+  return wonderById.get(id);
+}
+function getWonderAbsolutEpoka(w) {
+  if (w.absolut != null) return w.absolut;
+  const meta = data._meta.absolut;
+  return meta?.domyslnie_antyk ?? meta?.koniec_sredniowiecza ?? 6;
+}
+function isWonderBonusActive(w, eraImperium) {
+  return eraImperium <= getWonderAbsolutEpoka(w);
+}
+var ZERO_WONDER_CITY_YIELD = {
+  pieniadz: 0,
+  zywnosc: 0,
+  nauka: 0,
+  kultura: 0,
+  zadowolenie: 0,
+  praca: 0,
+  obrona: 0
+};
+function sumWonderCityYieldsForOwner(ownerWonderIds, ownerEra) {
+  const totals = { ...ZERO_WONDER_CITY_YIELD };
+  for (const id of ownerWonderIds) {
+    const w = wonderById.get(id);
+    const m = w?.bonusy?.miasto;
+    if (!w || !m) continue;
+    if (!isWonderBonusActive(w, ownerEra)) continue;
+    totals.pieniadz += m.pieniadz ?? 0;
+    totals.zywnosc += m.zywnosc ?? 0;
+    totals.nauka += m.nauka ?? 0;
+    totals.kultura += m.kultura ?? 0;
+    totals.zadowolenie += m.zadowolenie ?? 0;
+    totals.praca += m.praca ?? 0;
+    totals.obrona += m.obrona ?? 0;
+  }
+  return totals;
+}
+function hasAnyWonderCityYield(b) {
+  return (b.pieniadz ?? 0) !== 0 || (b.zywnosc ?? 0) !== 0 || (b.nauka ?? 0) !== 0 || (b.kultura ?? 0) !== 0 || (b.zadowolenie ?? 0) !== 0 || (b.praca ?? 0) !== 0 || (b.obrona ?? 0) !== 0;
+}
 
 // src/game/turn-economy.ts
 function applyOrderYieldMults(yld, mults) {
@@ -3032,27 +3073,6 @@ function sumEconomyForOwner(result, ownerId) {
   let pieniadzZTras = 0;
   for (const tk of result.perCity) {
     if (tk.ownerId !== ownerId) continue;
-    pieniadz += tk.pieniadz;
-    nauka += tk.nauka;
-    doPuli += tk.doPuli;
-    praca += tk.praca;
-    kultura += tk.kultura;
-    pieniadzZTras += tk.pieniadzZTras;
-  }
-  return { pieniadz, nauka, doPuli, praca, kultura, pieniadzZTras };
-}
-function sumEconomyForPlayerCities(result, cities) {
-  const playerCityIds = new Set(
-    cities.filter((c) => c.ownerId === 0).map((c) => c.id)
-  );
-  let pieniadz = 0;
-  let nauka = 0;
-  let doPuli = 0;
-  let praca = 0;
-  let kultura = 0;
-  let pieniadzZTras = 0;
-  for (const tk of result.perCity) {
-    if (!playerCityIds.has(tk.cityId)) continue;
     pieniadz += tk.pieniadz;
     nauka += tk.nauka;
     doPuli += tk.doPuli;
@@ -8570,8 +8590,9 @@ function menuLabelToDims(label) {
   advanceCityEconomy,
   canFoundCity,
   foundCityAt,
-  freshWealthState,
   generateMap,
+  getWonderById,
+  hasAnyWonderCityYield,
   sumEconomyForOwner,
-  sumEconomyForPlayerCities
+  sumWonderCityYieldsForOwner
 });

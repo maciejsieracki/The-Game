@@ -5622,8 +5622,8 @@ function computeStartPlacements(map, _data, targetAiOverride) {
     aiStarts
   };
 }
-function placeStartingUnits(map, data, targetAiOverride) {
-  computeStartPlacements(map, data, targetAiOverride);
+function placeStartingUnits(map, data2, targetAiOverride) {
+  computeStartPlacements(map, data2, targetAiOverride);
   return [];
 }
 var HEX_NEIGHBORS = [
@@ -22724,12 +22724,24 @@ function pickOsiedlePopBonus(block, key, pop, difficulty, legacyFlatFallback = 0
   return legacyFlatFallback;
 }
 
+// src/game/wonders-data.ts
+var data = wonders_default;
+var wonderById = new Map(data.cuda.map((w) => [w.id, w]));
+
 // src/game/turn-economy.ts
 function applyOrderYieldMults(yld, mults) {
   if (mults.productionMult !== 1) yld.praca *= mults.productionMult;
   if (mults.pieniadzMult !== 1) yld.pieniadz *= mults.pieniadzMult;
   if (mults.naukaMult !== 1) yld.nauka *= mults.naukaMult;
   if (mults.kulturaMult !== 1) yld.kultura *= mults.kulturaMult;
+}
+function applyWonderCityYields(yld, bonus) {
+  if (!bonus) return;
+  if (bonus.pieniadz) yld.pieniadz += bonus.pieniadz;
+  if (bonus.zywnosc) yld.zywnosc += bonus.zywnosc;
+  if (bonus.nauka) yld.nauka += bonus.nauka;
+  if (bonus.kultura) yld.kultura += bonus.kultura;
+  if (bonus.praca) yld.praca += bonus.praca;
 }
 function civDisplayNameForKey(civKey, civs) {
   var _a10;
@@ -22756,8 +22768,8 @@ function religionTradeWalutaOverride(cityReligion, ownerCivKey, builtIds, waluta
   );
   return trade.applied ? trade.multiplier : void 0;
 }
-function buildEconParams(data, difficulty = "normal") {
-  const raw = data.econParams;
+function buildEconParams(data2, difficulty = "normal") {
+  const raw = data2.econParams;
   const em = raw.ekonomia_miasta ?? {};
   const bu = raw.budynki ?? {};
   const gl = raw.globalne ?? {};
@@ -23022,19 +23034,19 @@ function growthFoodStorageCap(population, maSpichlerz, params, storageParams, pa
 function getCityFood(city) {
   return readCityFoodBufferFromCity(city);
 }
-function advanceCityEconomy(cities, map, data, difficulty = "normal", econUnits = [], growthMultByCity = /* @__PURE__ */ new Map(), builtByCity = /* @__PURE__ */ new Map(), playerEra = 1, playerZbadane = /* @__PURE__ */ new Set(), ownerCivByOwnerId = /* @__PURE__ */ new Map(), orderMultByCity = /* @__PURE__ */ new Map(), resolveOwnerEra, resolveOwnerTech, wzrostLudnosciPace = "wysoki", tradeRouteCountByCity = /* @__PURE__ */ new Map(), tradeIncomeByCity = /* @__PURE__ */ new Map(), cityReligionByCityId = /* @__PURE__ */ new Map()) {
+function advanceCityEconomy(cities, map, data2, difficulty = "normal", econUnits = [], growthMultByCity = /* @__PURE__ */ new Map(), builtByCity = /* @__PURE__ */ new Map(), playerEra = 1, playerZbadane = /* @__PURE__ */ new Set(), ownerCivByOwnerId = /* @__PURE__ */ new Map(), orderMultByCity = /* @__PURE__ */ new Map(), resolveOwnerEra, resolveOwnerTech, wzrostLudnosciPace = "wysoki", tradeRouteCountByCity = /* @__PURE__ */ new Map(), tradeIncomeByCity = /* @__PURE__ */ new Map(), cityReligionByCityId = /* @__PURE__ */ new Map(), wonderCityYieldsByOwner = /* @__PURE__ */ new Map()) {
   var _a10;
   const gameDifficulty = difficulty;
-  const params = buildEconParams(data, difficulty);
+  const params = buildEconParams(data2, difficulty);
   const noBuildings = [];
   const territoryNodes = buildTerritoryNodesFromCities(cities);
   reconcileAllWorkedTiles(cities, territoryNodes);
   const territoryResourceByCity = computeTerritoryResourceYieldByCity(cities, map, territoryNodes);
-  const rawEconParams = data.econParams;
+  const rawEconParams = data2.econParams;
   const upkeepParams = loadUpkeepParams(rawEconParams, difficulty);
   const storageParams = loadStorageParams(rawEconParams, difficulty);
-  const unitUpkeepTbl = buildUnitUpkeepTable(data.units);
-  const rawForConverters = data.econParams;
+  const unitUpkeepTbl = buildUnitUpkeepTable(data2.units);
+  const rawForConverters = data2.econParams;
   const converterThroughputs = {};
   for (const recipe of DEFAULT_CONVERTER_RECIPES) {
     converterThroughputs[recipe.id] = loadThroughput(
@@ -23068,11 +23080,11 @@ function advanceCityEconomy(cities, map, data, difficulty = "normal", econUnits 
     }
   }
   const healthParams = loadHealthParams(
-    data.societyParams,
+    data2.societyParams,
     difficulty
   );
   const wealthParams = loadWealthParams(
-    data.econParams,
+    data2.econParams,
     difficulty
   );
   const capitalSeen = /* @__PURE__ */ new Set();
@@ -23113,11 +23125,11 @@ function advanceCityEconomy(cities, map, data, difficulty = "normal", econUnits 
       ownerCivKey,
       builtIds,
       walutaOdkryta,
-      data.civs,
-      data.societyParams,
+      data2.civs,
+      data2.societyParams,
       difficulty
     );
-    const ownerBonusy = ownerCivKey ? civBonusyForCivKey(ownerCivKey, data.civs) : [];
+    const ownerBonusy = ownerCivKey ? civBonusyForCivKey(ownerCivKey, data2.civs) : [];
     const { handel: civHandelMult, nauka: civNaukaMult } = civEconomyYieldMultipliers(ownerBonusy);
     const liczbaTrasHandlowych = tradeRouteCountByCity.get(city.id) ?? 0;
     const ctx = {
@@ -23150,6 +23162,7 @@ function advanceCityEconomy(cities, map, data, difficulty = "normal", econUnits 
     const orderMult = orderMultByCity.get(city.id);
     if (orderMult) applyOrderYieldMults(yld, orderMult);
     yld.praca = cityPracaInteger(yld.praca);
+    applyWonderCityYields(yld, wonderCityYieldsByOwner.get(city.ownerId));
     const prevWealth = city.wealthState ?? freshWealthState();
     const wealthImmunity = (city.wealthImmunityRemaining ?? 0) > 0;
     const wt = advanceWealth(
@@ -23343,7 +23356,7 @@ function advanceCityEconomy(cities, map, data, difficulty = "normal", econUnits 
     const ownerTech = resolveOwnerTech ? resolveOwnerTech(city.ownerId) : playerZbadane;
     const list = buildingsByOwner.get(city.ownerId) ?? [];
     for (const bid of builtIds) {
-      const bdef = data.buildings.find((b) => b.id === bid);
+      const bdef = data2.buildings.find((b) => b.id === bid);
       if (!bdef) continue;
       const level = buildingLevelForEpoch(
         bdef.epokaWejscia,

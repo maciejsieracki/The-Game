@@ -180,3 +180,67 @@ export function getWonderTourismTradeBonus(): number {
   const po = (data._meta as { absolut?: WonderAbsolutMeta }).absolut?.po_absolut?.jedyny_efekt;
   return po?.typ === 'handel_turystyka' ? (po.wartosc ?? 0) : 0;
 }
+
+// ---------------------------------------------------------------------------
+// CUDA-EKON-01 (2026-07-23): wpięcie bonusów bonusy.miasto cudów w ekonomię.
+// Czysty helper (brak DOM/THREE) — czytany przez turn-economy.ts (osobny krok
+// "+wonder yields", NIE przeplatany z resztą ekonomii/Pracy) oraz
+// society-breakdown.ts (linia "Cuda świata" w rozbiciu Szczęścia).
+//
+// Zakres (decyzja, patrz raport C-CUDA-BONUS=A): bonusy.miasto działają
+// "× KAŻDE miasto" wg _meta.bonus_miasto w wonders.json ("Yield +/turę × KAŻDE
+// miasto") i wonderEffectsLabel() w main.ts (etykieta "(× każde miasto)") —
+// a więc są FLAT dodatkiem do KAŻDEGO miasta właściciela, nie tylko do miasta,
+// w którym cud stoi. Wartości brane WPROST z JSON (BEZ ponownego mnożenia przez
+// _meta.bonus_miasto_mnoznik=3 — to pole dokumentuje HISTORYCZNE skalowanie
+// v0.1→kanon 2026; liczby w cuda[].bonusy.miasto JUŻ je zawierają, a
+// wonderEffectsLabel też czyta je wprost — podwojenie rozjechałoby UI vs silnik).
+//
+// bonusy.teren / bonusy.hex (też ilościowe, ale przypisane do KONKRETNYCH heksów
+// w terytorium, nie "każde miasto") oraz bonusy.specjalne (wpływ/zaufanie/%/armia
+// — imperium, nie yield miasta) NIE są tu liczone — TODO, patrz raport zadania.
+
+/** Akumulator startowy dla sumWonderCityYieldsForOwner. */
+const ZERO_WONDER_CITY_YIELD: Required<WonderYieldBonus> = {
+  pieniadz: 0, zywnosc: 0, nauka: 0, kultura: 0, zadowolenie: 0, praca: 0, obrona: 0,
+};
+
+/**
+ * Suma bonusy.miasto (flat, × KAŻDE miasto właściciela) po wszystkich cudach
+ * ukończonych i posiadanych przez właściciela (ownerWonderIds), z bramką absolut
+ * (isWonderBonusActive) — po końcu Średniowiecza bonusy miasta wygasają (zostaje
+ * tylko po_absolut.jedyny_efekt — handel_turystyka, patrz getWonderTourismTradeBonus).
+ * Zwraca sumę gotową do dodania DO KAŻDEGO miasta tego właściciela (nie sumowana
+ * per-miasto — caller dolicza ten sam obiekt do każdego miasta ownera).
+ */
+export function sumWonderCityYieldsForOwner(
+  ownerWonderIds: readonly string[],
+  ownerEra: number,
+): Required<WonderYieldBonus> {
+  const totals = { ...ZERO_WONDER_CITY_YIELD };
+  for (const id of ownerWonderIds) {
+    const w = wonderById.get(id);
+    const m = w?.bonusy?.miasto;
+    if (!w || !m) continue;
+    if (!isWonderBonusActive(w, ownerEra)) continue;
+    totals.pieniadz     += m.pieniadz ?? 0;
+    totals.zywnosc      += m.zywnosc ?? 0;
+    totals.nauka        += m.nauka ?? 0;
+    totals.kultura      += m.kultura ?? 0;
+    totals.zadowolenie  += m.zadowolenie ?? 0;
+    totals.praca        += m.praca ?? 0;
+    totals.obrona       += m.obrona ?? 0;
+  }
+  return totals;
+}
+
+/** True gdy suma bonusów niezerowa (unika wpisywania pustych map/linii UI). */
+export function hasAnyWonderCityYield(b: Readonly<WonderYieldBonus>): boolean {
+  return (b.pieniadz ?? 0) !== 0
+    || (b.zywnosc ?? 0) !== 0
+    || (b.nauka ?? 0) !== 0
+    || (b.kultura ?? 0) !== 0
+    || (b.zadowolenie ?? 0) !== 0
+    || (b.praca ?? 0) !== 0
+    || (b.obrona ?? 0) !== 0;
+}

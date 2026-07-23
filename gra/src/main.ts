@@ -97,7 +97,10 @@ import {
   getWonderAbsolutEpoka,
   getWondersData,
   getWonderTourismTradeBonus,
+  sumWonderCityYieldsForOwner,
+  hasAnyWonderCityYield,
   type WonderDef,
+  type WonderYieldBonus,
 } from './game/wonders-data';
 import { gameEpochHudLabel, type CivEntryEpochRow } from './game/civ-entry-epoch';
 import type { ProductionItem } from './game/production';
@@ -1843,6 +1846,37 @@ async function boot(): Promise<void> {
       }));
     }
 
+    /**
+     * CUDA-EKON-01 (2026-07-23): id cudów ukończonych I POSIADANYCH przez ownerId.
+     * Źródło ownerId = placedWorldWonders (zapisywane w save, patrz completeWonderBuilt) —
+     * jedyny istniejący ownerId-per-cud w silniku; NIE dubluje stanu completedWorldWonders.
+     * Uwaga (znany, rzadki brzeg): jeśli completeWonderBuilt nie znalazł wolnego heksa
+     * (log "Brak wolnego heksa..."), cud trafia do completedWorldWonders ale NIE do
+     * placedWorldWonders — wtedy nie ma tu ownerId i jego yieldy ekonomiczne się nie
+     * doliczą. Pre-istniejący, osobny problem renderu/mapy — poza zakresem tego zadania.
+     */
+    function wonderIdsOwnedBy(ownerId: number): string[] {
+      return placedWorldWonders.filter(pw => pw.ownerId === ownerId).map(pw => pw.wonderId);
+    }
+
+    /** Suma bonusy.miasto cudów właściciela (× każde jego miasto), z bramką absolut. */
+    function wonderCityYieldBonusForOwner(ownerId: number): WonderYieldBonus {
+      return sumWonderCityYieldsForOwner(wonderIdsOwnedBy(ownerId), empireEpochForOwner(ownerId));
+    }
+
+    /** Mapa ownerId -> suma bonusy.miasto, do previewCityEconomy/advanceCityEconomy. */
+    function buildWonderCityYieldsByOwnerMap(ownerIds: Iterable<number>): Map<number, WonderYieldBonus> {
+      const out = new Map<number, WonderYieldBonus>();
+      const seen = new Set<number>();
+      for (const oid of ownerIds) {
+        if (seen.has(oid)) continue;
+        seen.add(oid);
+        const bonus = wonderCityYieldBonusForOwner(oid);
+        if (hasAnyWonderCityYield(bonus)) out.set(oid, bonus);
+      }
+      return out;
+    }
+
     function reapplyWonderHexDecorHides(): void {
       for (const w of placedWorldWonders) hideDecorAtHex(keyOf(w.q, w.r));
     }
@@ -2307,6 +2341,7 @@ async function boot(): Promise<void> {
         player.era, player.zbadane, ownerCivMap, orderMultMap,
         empireEpochForOwner, unlockedTechSetForOwner,
         undefined, undefined, buildAllTerritoryNodes(),
+        undefined, buildWonderCityYieldsByOwnerMap([city.ownerId]),
       );
       return preview.perCity[0]?.doBudynkow ?? 0;
     }
@@ -7675,6 +7710,8 @@ async function boot(): Promise<void> {
         undefined,
         undefined,
         buildAllTerritoryNodes(),
+        undefined,
+        buildWonderCityYieldsByOwnerMap([0]),
       );
       const cityFoods = preview.perCity
         .filter(tk => tk.ownerId === 0 && !tk.oblegany)
@@ -7723,6 +7760,8 @@ async function boot(): Promise<void> {
         undefined,
         undefined,
         buildAllTerritoryNodes(),
+        undefined,
+        buildWonderCityYieldsByOwnerMap([0]),
       );
       const playerEcon = sumEconomyForPlayerCities(preview, cities);
       _lastPracaRate = playerEcon.doPuli;
@@ -13277,6 +13316,8 @@ async function boot(): Promise<void> {
             player.wzrostLudnosciPace ?? 'wysoki',
             tradeRouteCountByCity, tradeIncomeByCity,
             cityRelig,
+            // CUDA-EKON-01: dotyczy gracza I AI (ownerId-agnostic) — patrz raport C-CUDA-BONUS=A.
+            buildWonderCityYieldsByOwnerMap(cities.map(c => c.ownerId)),
           );
           powerSnapshotsForTurn = buildPowerSnapshotsForTurn(econ);
           refreshObjectivePowerCache();
@@ -13719,6 +13760,10 @@ async function boot(): Promise<void> {
                 ),
               );
               const haWealth  = econTick ? econTick.wealthZadowolenie : 0;
+              // CUDA-EKON-01: bonusy.miasto.zadowolenie cudów ownera (× każde jego miasto) —
+              // jedyny sensowny wpiecie punkt dla zadowolenia (CityYieldResult.zadowolenie
+              // nie jest propagowane do CityEconomyTick, patrz turn-economy.ts).
+              const haCuda = wonderCityYieldBonusForOwner(city.ownerId).zadowolenie ?? 0;
               const podzial = city.podzialHandlu ?? DEFAULT_PODZIAL_HANDLU;
               const gCountLaw = lawGarrisonCountForCity(city);
               const conquestUnstablePen = conquestUnstableHappinessPenalty(
@@ -13740,6 +13785,7 @@ async function boot(): Promise<void> {
                   haKult,
                   haRel,
                   haWealth,
+                  haCuda,
                   podzialHandlu: podzial,
                   atWar: playerAtWar,
                   hasSwiatynia: builtIds.includes('swiatynia'),
