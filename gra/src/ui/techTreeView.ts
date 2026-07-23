@@ -22,6 +22,7 @@ import { TEMPO_GRY, type TempoGry } from '../game/tech-tempo';
 import { scaledResearchCost, type GameDifficulty } from '../game/difficulty-cost';
 import { epochIconSvg } from './icons/brandAssets';
 import { scienceProgressRingHtml } from './icons/scienceProgressRing';
+import { techIconSvg } from './techIcons';
 
 // ---------------------------------------------------------------------------
 // Konfiguracja (haki wstrzykiwane przez silnik — main.ts)
@@ -331,6 +332,11 @@ function ensureStyles(): void {
   display:flex;gap:8px;align-items:flex-start;
   background:linear-gradient(180deg,rgba(24,30,42,.96),rgba(10,13,20,.97));
   border:1.5px solid rgba(232,216,138,.28);box-shadow:0 3px 10px rgba(0,0,0,.45);}
+.civ-ttv-tn .ti{flex-shrink:0;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;
+  justify-content:center;background:radial-gradient(circle at 38% 30%,rgba(232,216,138,.14),rgba(10,13,20,.4));
+  border:1.5px solid rgba(232,216,138,.4);color:#e8d88a;}
+.civ-ttv-tn .ti svg{width:19px;height:19px;}
+.civ-ttv-tn .ti:empty{display:none;}
 .civ-ttv-tn .tx{flex:1;min-width:0;}
 .civ-ttv-tn .tx b{display:block;font-size:11.5px;color:#e8e0c8;line-height:1.2;}
 .civ-ttv-tn .tx i{display:block;font-style:normal;font-size:9px;color:#8a8070;margin-top:2px;
@@ -393,6 +399,9 @@ function ensureStyles(): void {
 .civ-ttv-tt .h{padding:12px 15px 10px;border-bottom:1px solid rgba(232,216,138,.2);
   background:linear-gradient(90deg,rgba(232,216,138,.1),transparent);}
 .civ-ttv-tt .h .r1{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.civ-ttv-tt .h .tic{display:inline-flex;width:15px;height:15px;flex-shrink:0;color:#e8d88a;}
+.civ-ttv-tt .h .tic svg{width:100%;height:100%;}
+.civ-ttv-tt .h .tic:empty{display:none;}
 .civ-ttv-tt .h b{font-family:Georgia,serif;font-size:16px;color:#e8d88a;font-weight:600;}
 .civ-ttv-tt.lk .h b{color:#d8c8a0;}
 .civ-ttv-tt.ip .h b{color:#cfe0f4;}
@@ -413,8 +422,11 @@ function ensureStyles(): void {
   white-space:nowrap;}
 .civ-ttv-tt .ch.u{border-color:rgba(143,182,224,.4);color:#8fb6e0;background:rgba(58,106,208,.06);}
 .civ-ttv-tt .ch.s{border-color:rgba(200,168,120,.4);color:#c8a878;background:rgba(200,168,120,.06);}
-.civ-ttv-tt .dep{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;border-radius:6px;
+.civ-ttv-tt .dep{display:inline-flex;align-items:center;gap:4px;font-size:10.5px;border-radius:6px;
   padding:3px 9px;white-space:nowrap;}
+.civ-ttv-tt .dep .di{display:inline-flex;width:12px;height:12px;flex-shrink:0;}
+.civ-ttv-tt .dep .di svg{width:100%;height:100%;}
+.civ-ttv-tt .dep .di:empty{display:none;}
 .civ-ttv-tt .dep.ok{color:#7ad0a0;border:1px solid rgba(122,208,160,.35);background:rgba(122,208,160,.06);}
 .civ-ttv-tt .dep.no{color:#ff9b8a;border:1px solid rgba(200,90,70,.4);background:rgba(200,90,70,.07);}
 .civ-ttv-tt .ft{padding:9px 15px;border-top:1px solid rgba(232,216,138,.16);font-size:10px;color:#8a8070;
@@ -580,7 +592,8 @@ function renderWorldHTML(s: TtvState): string {
   // Węzły
   for (const node of NODES.values()) {
     const st = statusOf(node, s);
-    let inner = `<span class="tx"><b>${esc(node.nazwa)}</b>`;
+    let inner = `<span class="ti">${techIconSvg(node.nazwa, 19) ?? ''}</span>`;
+    inner += `<span class="tx"><b>${esc(node.nazwa)}</b>`;
     if (st === 'ip') {
       const pct = Math.max(0, Math.min(100, Math.round(s.postepFraction * 100)));
       const eta = s.turnsLeft > 0 ? s.turnsLeft + ' tur' : '<1 tury';
@@ -651,8 +664,9 @@ function renderMini(s: TtvState): void {
 // Karta węzła (hover)
 // ---------------------------------------------------------------------------
 
-function depChip(ok: boolean, label: string): string {
-  return `<span class="dep ${ok ? 'ok' : 'no'}">${ok ? '✓' : '✗'} ${esc(label)}</span>`;
+function depChip(ok: boolean, label: string, iconHtml?: string | null): string {
+  const icon = iconHtml ? `<span class="di">${iconHtml}</span>` : '';
+  return `<span class="dep ${ok ? 'ok' : 'no'}">${icon}${ok ? '✓' : '✗'} ${esc(label)}</span>`;
 }
 
 function unlockChips(node: TreeNode): string {
@@ -671,7 +685,8 @@ function buildCardHTML(node: TreeNode, st: TtvStatus, s: TtvState): string {
   const rate = s.naukaRate;
   const deps = node.dependents.map(d => NODES.get(d)?.nazwa ?? d);
 
-  let h = `<div class="h"><div class="r1"><b>${esc(node.nazwa)}</b>`
+  const tIcon = techIconSvg(node.nazwa, 15);
+  let h = `<div class="h"><div class="r1"><span class="tic">${tIcon ?? ''}</span><b>${esc(node.nazwa)}</b>`
     + `<span class="ep"><span class="eic">${epochIconSvg(epochIconIdFor(node.epoka), 12)}</span>`
     + `${esc(node.epoka)} · Poziom ${node.poziom}</span></div>`;
   if (node.star !== null) h += `<div class="sub">${esc(node.star)}</div>`;
@@ -700,7 +715,8 @@ function buildCardHTML(node: TreeNode, st: TtvStatus, s: TtvState): string {
   // Wymagania AND (techy + budynek + ulepszenie)
   const reqChips: string[] = [];
   for (const pid of node.prereqIds) {
-    reqChips.push(depChip(s.researched.has(pid), NODES.get(pid)?.nazwa ?? pid));
+    const pname = NODES.get(pid)?.nazwa ?? pid;
+    reqChips.push(depChip(s.researched.has(pid), pname, techIconSvg(pname, 12)));
   }
   if (node.wymaganyBudynek !== '') {
     const ok = cfg.isBuildingGateMet ? cfg.isBuildingGateMet(activeOwner, node.nazwa) : true;
