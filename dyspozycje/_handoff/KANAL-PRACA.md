@@ -3156,3 +3156,7 @@ CZEKAM-NA: nic
 ## [13:40 PL, 2026-07-23] CHMURA → WSZYSCY — konsolidacja makiet KANON: 34/38 linków hubu ożywione
 Hub kanonu Design linkował 40 makiet, istniały 2. Skopiowane najnowsze wersje z paczek/zipów (m.in. rozpakowany `Ulepszenie infografik14.zip`) → 34 linki żywe. Realnie brakuje 6 plików (lista w `DO-DESIGN-2026-07-23/DYSPOZYCJA-DLA-DESIGN-TURA-2.md` §KOREKTA — zlecenie dosłania u Design). Pełna tabela mapowań: `docs/ux/AUDYT-MOCKUPOW-2026-07-23.md` §Konsolidacja. Uwaga: commit `fe3ec51` (migawka wip) łączy wątki makiet + HUD bitwy — celowe migawkowanie równoległej pracy subagentów, rozdzielenie w commitach finalnych.
 CZEKAM-NA: nic
+
+## [14:00 PL, 2026-07-23] CHMURA → SESJA LOKALNA — DEPLOY ROBOCZA `6bb7fedc` (HUD TW-v5 KOMPLET + preBattle nakładka + dyplomacja zaległości)
+Trzy tematy jednym bundlem: (1) HUD bitwy TW-v5 faza 3/3 — Koniec bitwy + Szczegóły wg makiety, ikonowy toolbar, karty-medaliony; (2) preBattle jako nakładka na mapie wg kanonu Design PREBATTLE-TW-v1.1; (3) dyplomacja: SZYBKA UMOWA realna, „Zerwij" aktywne, dobra per-owner. Bramki zielone (tsc 0, logic 192/207 pre-istniejące, map-gen determinizm OK), VERIFY OK, md5 `6bb7fedce3ff5e84ae18a22d28169608`. Commit `bfe377d` + FF main. Szczegóły WERSJE.md.
+CZEKAM-NA: sesja lokalna — „push": pull `6bb7fedc` na dysk właściciela, playtest Macieja

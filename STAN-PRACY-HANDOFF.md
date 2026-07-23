@@ -21,7 +21,7 @@ git status --short
 - Jeśli w `gra/src` lub `gra/data` są **niezacommitowane zmiany** — ktoś jest w połowie pracy. NIE nadpisuj ich, NIE rób `git checkout`/`git stash` na tych plikach. Najpierw ustal z właścicielem, co to jest.
 - **Zawsze przed pracą uruchom bramki** (sekcja 7), żeby wiedzieć, co jest sprawne, a co było zepsute PRZED Tobą.
 
-**Stan na 2026-07-23 (NAJNOWSZY):** deploy ROBOCZA **`2c19fcb3`** — HUD bitwy TW-v5 fazy 1–2 (karty dowódców + zegar + przewaga, tempo przy minimapie, stany kart rosteru, bogaty tooltip, likwidacja raila → zębatka). Łańcuch 2026-07-23: `c7f70b27` (pakiet bitewny: plansze wg terenu + rzeka S + upiększenie pola) → `8aff7266` (dyplomacja dwustronna FINAL 3/3) → `2c67014c` (usunięte obramówki, czarne tło pola) → **`2c19fcb3`**. **W TOKU: faza 3 HUD TW-v5** (subagent — C-12 Koniec bitwy, C-23 Szczegóły, ikonowy toolbar, karty-medaliony) — pliki `battleScene.ts`/`battleHudTheme.ts`/`endDetails1E.ts` mogą być niezacommitowane; NIE ruszać. Osobny deploy po bramkach.
+**Stan na 2026-07-23 (NAJNOWSZY):** deploy ROBOCZA **`6bb7fedc`** — PAKIET: HUD TW-v5 KOMPLET 3/3 + preBattle nakładka v1.1 (kanon Design) + dyplomacja zaległości (SZYBKA UMOWA/Zerwij/dobra per-owner). Drzewo CZYSTE, nic w toku. Wcześniej: deploy ROBOCZA **`2c19fcb3`** — HUD bitwy TW-v5 fazy 1–2 (karty dowódców + zegar + przewaga, tempo przy minimapie, stany kart rosteru, bogaty tooltip, likwidacja raila → zębatka). Łańcuch 2026-07-23: `c7f70b27` (pakiet bitewny: plansze wg terenu + rzeka S + upiększenie pola) → `8aff7266` (dyplomacja dwustronna FINAL 3/3) → `2c67014c` (usunięte obramówki, czarne tło pola) → **`2c19fcb3`**. **W TOKU: faza 3 HUD TW-v5** (subagent — C-12 Koniec bitwy, C-23 Szczegóły, ikonowy toolbar, karty-medaliony) — pliki `battleScene.ts`/`battleHudTheme.ts`/`endDetails1E.ts` mogą być niezacommitowane; NIE ruszać. Osobny deploy po bramkach.
 
 **Roadmap surowców (2026-07-22):** Faza 1 = realistyczny dostęp (złoże widoczne vs aktywne po ulepszeniu) · Faza 2 = twarde bramki budynków per surowiec · Faza 3 = magazyny + koszty materiałowe jednostek/budynków.
 
@@ -129,7 +129,7 @@ Wszystko poniżej jest **zdeployowane i na GitHubie**. ID decyzji w nawiasach �
 
 ## 5. ⏳ W TRAKCIE
 
-**2026-07-23 — HUD bitwy TW-v5 FAZA 3 w toku** (sesja chmurowa, subagent): C-12 „Koniec bitwy" + C-23 „Szczegóły" wg makiety Design `POLE-BITWY-TW-v5` (klatki 4–5), unifikacja paneli 70%+blur, ikonowy dolny toolbar 46×46 z podpisem na hover, karty rosteru z medalionem typu. Dotyka: `gra/src/battle/battleScene.ts`, `battleHudTheme.ts`, `endDetails1E.ts`, `endScreen1E.ts`. Fazy 1–2 są zacommitowane (`0f1455e`, `4726e97`) i ZDEPLOYOWANE (`2c19fcb3`). Jeśli widzisz niezacommitowane zmiany w tych plikach — to faza 3, nie nadpisuj.
+**2026-07-23 — NIC NIE JEST W TOKU po deployu `6bb7fedc`** (faza 3 HUD, preBattle i dyplomacja ZDEPLOYOWANE; poniższy wpis historyczny) — HUD bitwy TW-v5 FAZA 3 w toku (sesja chmurowa, subagent): C-12 „Koniec bitwy" + C-23 „Szczegóły" wg makiety Design `POLE-BITWY-TW-v5` (klatki 4–5), unifikacja paneli 70%+blur, ikonowy dolny toolbar 46×46 z podpisem na hover, karty rosteru z medalionem typu. Dotyka: `gra/src/battle/battleScene.ts`, `battleHudTheme.ts`, `endDetails1E.ts`, `endScreen1E.ts`. Fazy 1–2 są zacommitowane (`0f1455e`, `4726e97`) i ZDEPLOYOWANE (`2c19fcb3`). Jeśli widzisz niezacommitowane zmiany w tych plikach — to faza 3, nie nadpisuj.
 
 ---
 
