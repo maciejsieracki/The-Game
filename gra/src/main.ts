@@ -91,7 +91,14 @@ import {
   listBuildableWondersForCiv,
   buildTechEpochMap,
 } from './game/wonder-availability';
-import { getWondersForCiv, getWonderById, getWonderAbsolutEpoka, type WonderDef } from './game/wonders-data';
+import {
+  getWondersForCiv,
+  getWonderById,
+  getWonderAbsolutEpoka,
+  getWondersData,
+  getWonderTourismTradeBonus,
+  type WonderDef,
+} from './game/wonders-data';
 import { gameEpochHudLabel, type CivEntryEpochRow } from './game/civ-entry-epoch';
 import type { ProductionItem } from './game/production';
 import { resolveArchetypeAggression, resolveArchetypeTrade } from './game/civ-ai-data';
@@ -195,7 +202,7 @@ import { showUnitReplacePicker } from './ui/unitReplacePicker';
 import { showCityCaptureNotice } from './ui/cityCaptureNotice';
 import { showArmyMergePanel, hideArmyMergePanel, isArmyMergePanelOpen } from './ui/armyMergePanel';
 import { showArmySplitPanel, hideArmySplitPanel, isArmySplitPanelOpen } from './ui/armySplitPanel';
-import { unitIconSvg } from './ui/icons/brandAssets';
+import { unitIconSvg, epochIconSvg } from './ui/icons/brandAssets';
 import {
   visibleStackOnHex,
   computeStackDisplay,
@@ -565,6 +572,18 @@ import {
   showWikiHubHud,
   toggleWikiHubHud,
 } from './ui/wikiHubHud';
+import {
+  createWondersView,
+  hideWondersView,
+  isWondersViewOpen,
+  toggleWondersView,
+  refreshWondersViewIfOpen,
+  type WonderCardVM,
+  type WonderCardState,
+  type WonderEpochBand,
+  type WonderDetailVM,
+} from './ui/wondersView';
+import { showWonderCompletedNotice } from './ui/wonderCompletedNotice';
 import { decideAITurn, chooseAIResearch, decideAIDiplomacy, loadDifficultyParams, RESUP_TIERS, type AICommand } from './game/ai';
 import type { AITurnOpts, RelacjaWejscie, DiplomacjaInputs, AIDiplomacyCommand } from './game/ai';
 import { checkVictory, techIdsInGameScope, allTechInScopeResearched, OSTATNIA_EPOKA_GRY_V1, powerShare } from './game/victory';
@@ -1751,11 +1770,36 @@ async function boot(): Promise<void> {
       const w = getWonderById(wonderId);
       const label = w?.nazwa ?? wonderId;
       console.log(`[Cuda] Tura ${turn} ${city.name}: ukończono ${label}${hex ? ` @ ${hex.q},${hex.r}` : ''}`);
+      // TEMAT #16 — powiadomienie „Cud ukończony" (klatka C makiety): złote (nasze) vs cudze.
       if (city.ownerId === 0) {
-        showHintMessage(`Cud ukończony: <b>${label}</b> (${city.name})`, 4500);
+        const civLabel = civWonderDisplayName(player.civType as string);
+        showWonderCompletedNotice({
+          variant: 'mine',
+          nazwa: label,
+          locationLabel: `${city.name} · Tura ${turn} · ${civLabel} — Ty`,
+          bodyHtml: w ? wonderEffectsLabel(w) : '',
+          noteHtml: w?.dostep === 'E'
+            ? `Ekskluzywny cud ${civLabel}. Bonusy aktywne do końca Średniowiecza, potem zostaje atrakcją (+10 handel, utrzymanie ÷2).`
+            : 'Wygraliśmy wyścig. Bonusy aktywne do końca Średniowiecza, potem zostaje atrakcją (+10 handel, utrzymanie ÷2).',
+          onShowOnMap: hex ? () => focusCameraOnWonder(wonderId) : undefined,
+        });
+      } else {
+        const civLabel = civWonderDisplayName(civTypeForOwner(city.ownerId));
+        showWonderCompletedNotice({
+          variant: 'rival',
+          nazwa: label,
+          locationLabel: `${city.name} · Tura ${turn} · ${civLabel}`,
+          bodyHtml: w?.dostep === 'R'
+            ? `Wyścig rozstrzygnięty — ${civLabel} ubiegli wszystkich.`
+            : `Ekskluzywny cud ${civLabel}.`,
+          noteHtml: w?.dostep === 'R'
+            ? `Każdy cud może powstać tylko raz na świecie. <b>${escWonderHtml(label)}</b> przepada dla pozostałych cywilizacji — usuwany z listy dostępnych.`
+            : undefined,
+        });
       }
       refreshCityPanelIfOpen();
       refreshWondersPickerIfOpen();
+      refreshWondersViewIfOpen();
       refreshFog();
     }
 
@@ -1772,10 +1816,16 @@ async function boot(): Promise<void> {
           console.log(`[Cuda] ${city.name}: wyścig przegrany — ${wonderId} już na świecie`);
           if (city.ownerId === 0) {
             const w = getWonderById(wonderId);
-            showHintMessage(
-              `Cuda <b>${w?.nazwa ?? wonderId}</b> zbudowana przez innego — projekt anulowany`,
-              4000,
-            );
+            const label = w?.nazwa ?? wonderId;
+            const placed = placedWorldWonders.find(p => p.wonderId === wonderId);
+            const builderLabel = placed ? civWonderDisplayName(civTypeForOwner(placed.ownerId)) : 'inna cywilizacja';
+            showWonderCompletedNotice({
+              variant: 'rival',
+              nazwa: label,
+              locationLabel: `Tura ${turn} · ${builderLabel}`,
+              bodyHtml: `Wyścig rozstrzygnięty — ${builderLabel} ubiegli wszystkich. Twoja Praca w to nie wraca.`,
+              noteHtml: `Każdy cud może powstać tylko raz na świecie. <b>${escWonderHtml(label)}</b> przepada — projekt anulowany.`,
+            });
           }
         } else {
           completeWonderBuilt(city, wonderId);
@@ -2043,6 +2093,350 @@ async function boot(): Promise<void> {
       }
       wondersPickerEl.style.display = 'block';
       renderWondersPickerContent();
+    }
+
+    // -----------------------------------------------------------------
+    // TEMAT #16 — ekran „Cuda świata” (wondersView.ts). Czyta REALNY stan
+    // silnika (completedWorldWonders/placedWorldWonders/cityProd/aiResearchDone);
+    // zero zmian logiki silnika — patrz STAN-PRACY-HANDOFF / dyspozycja.
+    // -----------------------------------------------------------------
+
+    function escWonderHtml(s: string): string {
+      return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    const WONDER_YIELD_LABELS: Record<string, string> = {
+      pieniadz: 'złota', zywnosc: 'żywności', nauka: 'nauki', kultura: 'kultury',
+      zadowolenie: 'zadowolenia', praca: 'produkcji', obrona: 'obrony', drewno: 'drewna',
+    };
+
+    function civWonderDisplayName(civType: string | undefined | null): string {
+      if (!civType) return civType ?? '?';
+      return getWondersData().panstwa[civType]?.nazwa ?? civType;
+    }
+
+    function wonderPolishCount(n: number): string {
+      if (n === 1) return `${n} cud`;
+      const mod10 = n % 10;
+      const mod100 = n % 100;
+      if (mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20)) return `${n} cuda`;
+      return `${n} cudów`;
+    }
+
+    function formatWonderYieldBonus(b?: Record<string, number | undefined>): string {
+      if (!b) return '';
+      return Object.entries(b)
+        .filter((entry): entry is [string, number] => typeof entry[1] === 'number' && entry[1] !== 0)
+        .map(([k, v]) => `+${v} ${WONDER_YIELD_LABELS[k] ?? k}`)
+        .join(', ');
+    }
+
+    function wonderReqLabelHtml(w: WonderDef): string {
+      const tech = (w.techUnlock ?? []).join(' + ');
+      const teren = (w.wymagaTerenu ?? []).join(' / ');
+      return `Tech: <b>${tech}</b> · teren: ${teren}`;
+    }
+
+    function wonderCostLabelHtml(w: WonderDef): string {
+      const utrz = w.utrzymanie != null ? ` · utrzymanie ${w.utrzymanie}/turę` : '';
+      return `Koszt <b>${w.kosztBudowy}</b> Pracy${utrz}`;
+    }
+
+    function wonderEffectsLabel(w: WonderDef): string {
+      const parts: string[] = [];
+      const miasto = formatWonderYieldBonus(w.bonusy?.miasto as Record<string, number | undefined> | undefined);
+      if (miasto) parts.push(`Miasto ${miasto} (× każde miasto)`);
+      const hex = formatWonderYieldBonus(w.bonusy?.hex as Record<string, number | undefined> | undefined);
+      if (hex) parts.push(`Hex cudu ${hex}`);
+      for (const t of w.bonusy?.teren ?? []) {
+        const y = formatWonderYieldBonus(t as unknown as Record<string, number | undefined>);
+        if (y) parts.push(`${t.typTerenu} ${y}`);
+      }
+      for (const s of w.bonusy?.specjalne ?? []) parts.push(s.opis);
+      return parts.length > 0 ? parts.join(' · ') : '(brak opisanych bonusów)';
+    }
+
+    function wonderAccessLabel(w: WonderDef): string {
+      if (w.dostep === 'R') return 'Wyścig — wszystkie 15';
+      const civ = w.cywilizacje[0];
+      if (civ === player.civType) return 'Ekskluzywny: Ty';
+      return `Ekskluzywny: ${civWonderDisplayName(civ)}`;
+    }
+
+    /**
+     * Miasto (dowolnego właściciela — dziś realnie tylko gracz) z tym cudem w kolejce
+     * produkcji. Jeśli cud NIE jest na froncie kolejki, Praca jeszcze w niego nie płynie
+     * (silnik liczy postęp tylko dla frontu) — postep wtedy 0, isFront=false.
+     */
+    function wonderBuildingCityInfo(
+      wonderId: string,
+    ): { city: City; postep: number; koszt: number; isFront: boolean } | null {
+      for (const c of cities) {
+        const prod = cityProd.get(c.id);
+        if (!prod) continue;
+        const idx = prod.kolejka.findIndex(it => parseWonderProdId(it.id) === wonderId);
+        if (idx === -1) continue;
+        const item = prod.kolejka[idx]!;
+        const isFront = idx === 0;
+        return { city: c, postep: isFront ? prod.postep : 0, koszt: item.koszt, isFront };
+      }
+      return null;
+    }
+
+    /** Praca/turę realnie idąca w kolejkę produkcji danego miasta (previewCityEconomy — read-only). */
+    function wonderCityPracaPerTurn(cityId: string): number {
+      const city = cities.find(c => c.id === cityId);
+      if (!city) return 0;
+      const ownerCivMap = new Map<number, string>([[0, (player.civType as string) || 'grecy']]);
+      for (const [oid, civ] of aiOwnerCivMap) ownerCivMap.set(oid, civ);
+      const preview = previewCityEconomy(
+        [city], map, data, _menuDifficulty, cityBuilt,
+        player.era, player.zbadane, ownerCivMap, orderMultMap,
+        empireEpochForOwner, unlockedTechSetForOwner,
+        undefined, undefined, buildAllTerritoryNodes(),
+      );
+      return preview.perCity[0]?.doBudynkow ?? 0;
+    }
+
+    interface WonderClassification {
+      state: WonderCardState;
+      gate: ReturnType<typeof evaluateWonderBuildGate>;
+      builtOwnerId?: number;
+      buildingCity?: City;
+      buildingPostep?: number;
+      buildingKoszt?: number;
+      /** Czy cud jest na froncie kolejki (Praca realnie w niego płynie) czy czeka w kolejce za innym projektem. */
+      buildingIsFront?: boolean;
+      raceWarning?: string;
+    }
+
+    /** Klasyfikacja stanu cudu z perspektywy gracza — jedyne miejsce liczące stan ekranu. */
+    function classifyWonder(w: WonderDef): WonderClassification {
+      const gate = evaluateWonderBuildGate({
+        wonder: w,
+        civType: (player.civType as string) || 'grecy',
+        civRow: civRowForType((player.civType as string) || 'grecy'),
+        playerEra: empireEpochForOwner(0),
+        unlockedTechs: unlockedTechSetForOwner(0),
+        completedWonderIds: completedWorldWonders,
+        techMap: wonderTechEpochMap,
+      });
+
+      if (completedWorldWonders.includes(w.id)) {
+        const placed = placedWorldWonders.find(p => p.wonderId === w.id);
+        const ownerId = placed?.ownerId ?? 0;
+        if (ownerId === 0) return { state: 'built_mine', gate, builtOwnerId: ownerId };
+        return { state: w.dostep === 'R' ? 'lost' : 'built_other', gate, builtOwnerId: ownerId };
+      }
+
+      const building = wonderBuildingCityInfo(w.id);
+      if (building) {
+        return {
+          state: 'building', gate,
+          buildingCity: building.city, buildingPostep: building.postep, buildingKoszt: building.koszt,
+          buildingIsFront: building.isFront,
+        };
+      }
+
+      if (gate.reasons.includes('civ_not_exclusive')) {
+        return { state: 'exclusive_other', gate };
+      }
+
+      if (!gate.ok) {
+        let raceWarning: string | undefined;
+        if (w.dostep === 'R') {
+          for (const [oid, civ] of aiOwnerCivMap) {
+            const techs = aiResearchDone.get(oid) ?? new Set<string>();
+            const era = empireEpochForOwner(oid);
+            const hasAll = (w.techUnlock ?? []).every(t => techs.has(t));
+            if (hasAll && era >= w.epokaWejscia) {
+              raceWarning = `${civWonderDisplayName(civ)} ma komplet techów — może zacząć w każdej chwili`;
+              break;
+            }
+          }
+          if (!raceWarning && gate.missingTech.length > 0) {
+            raceWarning = `brak: ${gate.missingTech.join(', ')} — rywale mogą ubiec`;
+          }
+        }
+        return { state: 'locked', gate, raceWarning };
+      }
+
+      return { state: 'available', gate };
+    }
+
+    const WONDER_STATE_BADGE: Record<WonderCardState, (cls: WonderClassification, w: WonderDef) => string> = {
+      available: () => 'Dostępny',
+      locked: () => 'Zablokowany',
+      exclusive_other: () => 'Niezbudowany',
+      building: (cls) => cls.buildingIsFront
+        ? `W budowie · ${Math.round(((cls.buildingPostep ?? 0) / Math.max(1, cls.buildingKoszt ?? 1)) * 100)}%`
+        : 'W kolejce',
+      built_mine: () => 'Nasz ✓',
+      built_other: (cls) => `Zbudowany · ${civWonderDisplayName(civTypeForOwner(cls.builtOwnerId ?? -1))}`,
+      lost: (cls) => `Przepadł · ${civWonderDisplayName(civTypeForOwner(cls.builtOwnerId ?? -1))}`,
+    };
+
+    function buildWonderCardVM(w: WonderDef): WonderCardVM {
+      const cls = classifyWonder(w);
+      const progressPct = (cls.state === 'building' && cls.buildingIsFront)
+        ? Math.round(((cls.buildingPostep ?? 0) / Math.max(1, cls.buildingKoszt ?? 1)) * 100)
+        : undefined;
+      return {
+        id: w.id,
+        nazwa: w.nazwa,
+        dostep: w.dostep,
+        accessLabel: wonderAccessLabel(w),
+        state: cls.state,
+        badgeLabel: WONDER_STATE_BADGE[cls.state](cls, w),
+        reqLabel: wonderReqLabelHtml(w),
+        costLabel: wonderCostLabelHtml(w),
+        effectsLabel: wonderEffectsLabel(w),
+        progressPct,
+        whyLocked: cls.state === 'locked' ? cls.raceWarning : undefined,
+      };
+    }
+
+    const WONDER_EPOCH_META: Record<1 | 2 | 3, { label: string; color: string; iconId: string }> = {
+      1: { label: 'Epoka Kamienia', color: '#8fc9a0', iconId: 'kamien' },
+      2: { label: 'Epoka Brązu', color: '#d8a05a', iconId: 'braz' },
+      3: { label: 'Epoka Żelaza', color: '#9fb8d8', iconId: 'zelazo' },
+    };
+
+    function buildWonderEpochBands(): WonderEpochBand[] {
+      const all = getWondersData().cuda;
+      return ([1, 2, 3] as const).map((epoch) => {
+        const cuda = all.filter(w => w.epokaWejscia === epoch);
+        const meta = WONDER_EPOCH_META[epoch];
+        return {
+          epoch,
+          label: meta.label,
+          accentColor: meta.color,
+          iconSvg: epochIconSvg(meta.iconId, 24),
+          sub: `wejście: ep. ${epoch} · ${wonderPolishCount(cuda.length)}`,
+          cards: cuda.map(buildWonderCardVM),
+        };
+      });
+    }
+
+    function wonderDetailDepsHtml(w: WonderDef): string {
+      const techs = w.techUnlock ?? [];
+      const unlocked = unlockedTechSetForOwner(0);
+      return techs.map(t => {
+        const ok = unlocked.has(t);
+        return `<span class="cw-dep ${ok ? 'cw-dep-ok' : 'cw-dep-no'}">${ok ? '✓' : '✗'} ${t}</span>`;
+      }).join('') + `<span class="cw-dep cw-dep-ok" style="opacity:.75">teren: ${(w.wymagaTerenu ?? []).join('/')}</span>`;
+    }
+
+    function buildWonderDetailVM(id: string): WonderDetailVM | null {
+      const w = getWonderById(id);
+      if (!w) return null;
+      const cls = classifyWonder(w);
+      const badgeLabel = WONDER_STATE_BADGE[cls.state](cls, w);
+      const epokaLabel = WONDER_EPOCH_META[w.epokaWejscia as 1 | 2 | 3]?.label ?? `Epoka ${w.epokaWejscia}`;
+      const subtitle = `${w.nazwaAlt ?? w.nazwa} · ${epokaLabel} · ${wonderAccessLabel(w)}`;
+      const isRuin = cls.state === 'built_mine' && wonderIsRuin(w.id, 0);
+      const rows: { label: string; html: string }[] = [];
+      let footerHtml: string | undefined;
+      let footerColor: string | undefined;
+      let ctaBuildLabel: string | undefined;
+      let ctaShowOnMap = false;
+      let borderColor = 'rgba(232,216,138,.5)';
+
+      if (cls.state === 'available') {
+        rows.push({ label: 'Koszt', html: wonderCostLabelHtml(w) });
+        rows.push({ label: 'Wymaga', html: wonderDetailDepsHtml(w) });
+        rows.push({ label: 'Efekty', html: wonderEffectsLabel(w) });
+        if (w.dostep === 'R') {
+          rows.push({ label: 'Wyścig', html: 'nikt jeszcze nie buduje · cud powstaje tylko raz na świecie' });
+        }
+        ctaBuildLabel = 'Wybierz hex budowy';
+      } else if (cls.state === 'locked') {
+        borderColor = 'rgba(200,90,70,.45)';
+        rows.push({ label: 'Koszt', html: wonderCostLabelHtml(w) });
+        rows.push({ label: 'Wymaga', html: wonderDetailDepsHtml(w) });
+        rows.push({ label: 'Efekty', html: wonderEffectsLabel(w) });
+        if (cls.raceWarning) {
+          rows.push({ label: 'Wyścig', html: `<span style="color:#ff9b8a">${cls.raceWarning}</span>` });
+        }
+        footerColor = '#c88a7a';
+        footerHtml = `Odblokuj: zbadaj ${cls.gate.missingTech.join(' + ') || '(techy)'}`;
+      } else if (cls.state === 'exclusive_other') {
+        rows.push({ label: 'Koszt', html: wonderCostLabelHtml(w) });
+        rows.push({ label: 'Efekty', html: wonderEffectsLabel(w) });
+        footerHtml = `Ekskluzywny cud — tylko ${wonderAccessLabel(w).replace('Ekskluzywny: ', '')} może go wznieść.`;
+      } else if (cls.state === 'building') {
+        borderColor = 'rgba(143,182,224,.55)';
+        const postep = cls.buildingPostep ?? 0;
+        const koszt = cls.buildingKoszt ?? w.kosztBudowy;
+        const pct = Math.round((postep / Math.max(1, koszt)) * 100);
+        const rate = (cls.buildingIsFront && cls.buildingCity) ? wonderCityPracaPerTurn(cls.buildingCity.id) : 0;
+        const turnsLeft = rate > 0 ? Math.ceil((koszt - postep) / rate) : null;
+        if (cls.buildingIsFront) {
+          rows.push({
+            label: 'Postęp',
+            html: `<b style="color:#8fb6e0">${postep} / ${koszt} Pracy</b> · ${pct}%`
+              + (turnsLeft != null ? ` · ${turnsLeft} tur do końca przy ${rate} Pracy/turę` : ''),
+          });
+        } else {
+          rows.push({
+            label: 'Postęp',
+            html: `W kolejce miasta — Praca płynie najpierw w poprzedni projekt (0 / ${koszt} Pracy)`,
+          });
+        }
+        rows.push({
+          label: 'Budowa',
+          html: `Miasto: ${escWonderHtml(cls.buildingCity?.name ?? '?')} · hex zostanie wybrany automatycznie w terytorium po ukończeniu`
+            + ' · przerwanie budowy nie zwraca Pracy',
+        });
+        rows.push({ label: 'Efekty', html: wonderEffectsLabel(w) });
+        footerColor = '#8fb6e0';
+        footerHtml = w.dostep === 'E'
+          ? 'Ekskluzywny — tylko Ty możesz go wznieść; wyścig nie grozi.'
+          : 'Wyścig w toku — inna cywilizacja może ukończyć pierwsza.';
+      } else if (cls.state === 'built_mine') {
+        rows.push({ label: 'Efekty', html: isRuin ? `(wygasłe) +${getWonderTourismTradeBonus()} handel — atrakcja turystyczna` : wonderEffectsLabel(w) });
+        rows.push({
+          label: 'Po Antyku',
+          html: 'bonusy wygasają z końcem Średniowiecza; cud zostaje jako atrakcja (+10 handel, utrzymanie ÷2)',
+        });
+        const placed = placedWorldWonders.find(p => p.wonderId === w.id);
+        footerHtml = isRuin ? 'Cud wygasły — działa już tylko jako atrakcja turystyczna.' : 'Zbudowany przez Ciebie.';
+        ctaShowOnMap = !!placed;
+      } else if (cls.state === 'built_other') {
+        borderColor = 'rgba(232,216,138,.35)';
+        rows.push({ label: 'Efekty', html: wonderEffectsLabel(w) });
+        footerHtml = `Ekskluzywny cud — zbudowany przez ${civWonderDisplayName(civTypeForOwner(cls.builtOwnerId ?? -1))}.`;
+      } else if (cls.state === 'lost') {
+        borderColor = 'rgba(200,90,70,.55)';
+        rows.push({
+          label: 'Wyścig',
+          html: `Wyścig rozstrzygnięty — ${civWonderDisplayName(civTypeForOwner(cls.builtOwnerId ?? -1))} ubiegli pozostałych.`,
+        });
+        footerColor = '#ff9b8a';
+        footerHtml = 'Każdy cud powstaje tylko raz na świecie — przepada dla pozostałych cywilizacji.';
+      }
+
+      return {
+        id: w.id,
+        nazwa: w.nazwa,
+        subtitle,
+        state: cls.state,
+        badgeLabel,
+        borderColor,
+        rows,
+        footerHtml,
+        footerColor,
+        ctaBuildLabel,
+        ctaShowOnMap,
+      };
+    }
+
+    function focusCameraOnWonder(wonderId: string): void {
+      const placed = placedWorldWonders.find(p => p.wonderId === wonderId);
+      if (!placed) return;
+      const { x, z } = axialToWorld(placed.q, placed.r, HEX_R);
+      const { dist } = camCtrl.getFocusState();
+      camCtrl.focusAt(x, z, dist);
     }
 
     function ownerCivKeyForReligion(ownerId: number): string | null {
@@ -2603,6 +2997,7 @@ async function boot(): Promise<void> {
         refreshTerritoryBorderOverlay();
       }
       hideWondersPicker();
+      hideWondersView();
       hideEmpireOverlay();
       hideEmpireDetailPanel();
       hideCityUnitPick();
@@ -3050,6 +3445,7 @@ async function boot(): Promise<void> {
       hideSciencePicker();
       hideTechTreeView();
       hideEmpireDetailPanel();
+      hideWondersView();
       if (isDiplomacyAudienceOpen()) {
         hideDiplomacyAudience();
         diplomacyAudienceOwnerId = null;
@@ -8634,6 +9030,26 @@ async function boot(): Promise<void> {
       createWikiHubHud({
         onClose: () => refreshD1bHud(),
       });
+      createWondersView({
+        getSubtitle: () => `19 cudów 1:1 z gra/data/wonders.json · gracz: ${civWonderDisplayName(player.civType as string)}`
+          + ` · tura ${turn} · każdy cud powstaje tylko raz na świecie`,
+        getBands: () => buildWonderEpochBands(),
+        getDetail: (id) => buildWonderDetailVM(id),
+        onBuild: (id) => {
+          // Zamknij pełnoekranowy overlay PRZED akcją — hintToast (feedback
+          // enqueueWonderForPlayer, np. „Brak miasta gracza") ma niższy
+          // z-index niż ekran Cudów i byłby niewidoczny pod nim.
+          hideWondersView();
+          refreshD1bHud();
+          enqueueWonderForPlayer(id);
+        },
+        onShowOnMap: (id) => {
+          hideWondersView();
+          refreshD1bHud();
+          focusCameraOnWonder(id);
+        },
+        onClose: () => refreshD1bHud(),
+      });
 
       showHud({
         getState: buildHudState,
@@ -8688,20 +9104,16 @@ async function boot(): Promise<void> {
           onOpenWonders: () => {
             clearPlayerUnitSelection();
             hideWondersPicker();
-            if (buildModeOpen) {
-              exitBuildMode();
+            if (isWondersViewOpen()) {
+              hideWondersView();
               refreshD1bHud();
               return;
             }
             closeAllMapToolbarModes();
-            buildModeOpen = true;
-            autoEnableWorkerOverlayForBuildMode();
-            foundCityMode = false;
-            activeImprovementKey = null;
-            refreshBuildApi();
-            refreshBuildHighlight();
+            toggleWondersView();
             refreshD1bHud();
           },
+          isWondersViewActive: () => isWondersViewOpen(),
           onOpenDiplomacy: () => {
             clearPlayerUnitSelection();
             toggleDiploListFromToolbar();

@@ -24,6 +24,7 @@ export interface MapToolbarHudConfig {
   isArmyListActive?: () => boolean;
   isDiploListActive?: () => boolean;
   isScienceHubActive?: () => boolean;
+  isWondersViewActive?: () => boolean;
   /** Postęp badań [0..1] — pierścień na medalionie Nauki. */
   getResearchProgress?: () => number;
   getWarBadge?: () => number;
@@ -84,6 +85,13 @@ function tbIcon(id: 'tb-cities' | 'tb-diplomacy' | 'tb-army' | 'tb-build' | 'tb-
   return iconHtml(id, 40).replace(/width="40"/, 'width="26"').replace(/height="40"/, 'height="26"');
 }
 
+/** Świątynia/kolumny — emblemat „Cuda świata” (KANON 1E: mockupy/Cuda swiata v1). */
+function tbWondersIcon(): string {
+  return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4">'
+    + '<path d="M12 3 4 9h16Z"></path><path d="M5 9v8M9.5 9v8M14.5 9v8M19 9v8"></path>'
+    + '<path d="M3 17h18v3H3Z"></path></svg>';
+}
+
 /** Toolbar imperium — medaliony 1E (strefa B mockupu). */
 export function createMapToolbarHud(config: MapToolbarHudConfig): MapToolbarHudApi {
   ensureStyles();
@@ -97,6 +105,7 @@ export function createMapToolbarHud(config: MapToolbarHudConfig): MapToolbarHudA
     const armyListOn = config.isArmyListActive?.() ?? false;
     const diploListOn = config.isDiploListActive?.() ?? false;
     const scienceOn = config.isScienceHubActive?.() ?? false;
+    const wondersOn = config.isWondersViewActive?.() ?? false;
     const researchFrac = config.getResearchProgress?.() ?? 0;
     const scienceRing = scienceProgressRingHtml(researchFrac, 52, 2);
 
@@ -109,6 +118,9 @@ export function createMapToolbarHud(config: MapToolbarHudConfig): MapToolbarHudA
     html += `<button type="button" class="tb${armyExtra}" data-act="army" title="Wojsko">${tbIcon('tb-army')}`
       + (wars > 0 ? `<span class="badge">${wars}</span>` : '') + '</button>';
     html += `<button type="button" class="tb${buildOn ? ' on' : ''}" data-act="build" title="Budowa ulepszeń">${tbIcon('tb-build')}</button>`;
+    if (config.onOpenWonders) {
+      html += `<button type="button" class="tb${wondersOn ? ' on' : ''}" data-act="wonders" title="Cuda świata">${tbWondersIcon()}</button>`;
+    }
     el.innerHTML = html;
 
     const map: Record<string, (() => void) | undefined> = {
@@ -117,6 +129,7 @@ export function createMapToolbarHud(config: MapToolbarHudConfig): MapToolbarHudA
       diplo: config.onOpenDiplomacy,
       army: config.onOpenArmy,
       build: config.onOpenBuild,
+      wonders: config.onOpenWonders,
     };
     el.querySelectorAll('.tb[data-act]').forEach(b => {
       b.addEventListener('click', () => {
