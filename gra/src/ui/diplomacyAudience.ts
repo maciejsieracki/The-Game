@@ -533,6 +533,18 @@ function goodsHtml(goods: readonly string[] | undefined): string {
   return '<div class="da-goods">' + goods.map(g => '<span class="da-good">' + esc(g) + '</span>').join('') + '</div>';
 }
 
+/** Imię władcy gracza (civs.json wodzowie) pod nazwą cywilizacji, pusty string gdy brak. */
+function playerLeaderHtml(st: DiplomacyAudienceState): string {
+  const name = leaderName(st.playerIkonaId, st.playerEra ?? 1);
+  return name ? '<div class="da-civleader">' + esc(name) + '</div>' : '';
+}
+
+/** Imię władcy rozmówcy (civs.json wodzowie) pod nazwą cywilizacji, pusty string gdy brak. */
+function otherLeaderHtml(st: DiplomacyAudienceState): string {
+  const name = leaderName(st.otherIkonaId, st.otherEra ?? 1);
+  return name ? '<div class="da-civleader">' + esc(name) + '</div>' : '';
+}
+
 /** FAZA 2 pkt 1 — LEWA karta (gracz): medalion, atrybuty, SKARBIEC, dobra handlowe. */
 function playerCardHtml(st: DiplomacyAudienceState, playerBon: readonly CivBonusLite[]): string {
   const maxPower = Math.max(st.playerPower ?? 0, st.otherPower ?? 0, 1);
@@ -545,6 +557,7 @@ function playerCardHtml(st: DiplomacyAudienceState, playerBon: readonly CivBonus
       '<div class="da-portrait">' +
         civLeaderMedallionHtmlById(st.playerIkonaId ?? 'rzymianie', st.playerKolorHex, st.playerEra) +
         '<div class="da-civname">' + esc(st.playerCivName) + '</div>' +
+        playerLeaderHtml(st) +
         '<div class="da-civtitle">' + esc(st.playerTitle) + '</div>' +
       '</div>' +
       '<div>' +
@@ -578,6 +591,7 @@ function otherCardHtml(st: DiplomacyAudienceState, otherBon: readonly CivBonusLi
       '<div class="da-portrait">' +
         civLeaderMedallionHtmlById(st.otherIkonaId ?? 'grecy', st.otherKolorHex, st.otherEra) +
         '<div class="da-civname">' + esc(st.otherCivName) + '</div>' +
+        otherLeaderHtml(st) +
         '<div class="da-civtitle">' + esc(st.otherTitle) + (st.otherEpochLabel ? ' · ' + esc(st.otherEpochLabel) : '') + '</div>' +
         stanceBadgeHtml(st) +
       '</div>' +
