@@ -1077,3 +1077,21 @@ Mapa w `HANDOFF.md` używa **PascalCase** (`MainMenu.ts`, `TechTree.ts`…) — 
 
 **Status:** CZEKA: Design — paczka PREBATTLE-TW + eksport/.
 
+---
+
+## [2026-07-23] INTEGRATOR (sesja chmurowa) — instalacja KANON do żywego brand-booka (KROK 1, paczka DYPLOMACJA FINAL)
+
+**Co:** pliki KANON leżały tylko w snapshocie `_dist/DYPLOMACJA-FINAL-2026-07-23/brand-book/KANON/`. Zainstalowane do żywego `docs/ux/claude-design/01-propozycje-z-design/brand-book/KANON/`:
+- `CANON.md`
+- `START - KANON aktualny (1E).dc.html` (hub)
+- `mockupy/The Game - Dyplomacja panel negocjacji v1.1 -1E-.dc.html`
+- `mockupy/support.js`
+
+**Źródło potwierdzone jako nowsze** względem `_dist/POLE-BITWY-TW-v5-2026-07-23/brand-book/KANON/` (jedyny inny snapshot z folderem KANON) — porównanie md5 + diff `CANON.md`/`START…html` pokazało, że wersja POLE-BITWY-TW-v5 NIE ma jeszcze wpisu „Dyplomacja — panel negocjacji v1.1", więc jest starsza.
+
+**Backupy:** żaden — w żywym brand-booku folder `KANON/` wcześniej nie istniał, więc nie było czego nadpisywać.
+
+**Weryfikacja linków hubu:** hub linkuje 39 unikalnych plików `mockupy/*.dc.html`. Po instalacji: **1 działający** (Dyplomacja panel negocjacji v1.1), **38 martwych** (plik nie istnieje w `KANON/mockupy/`). To jest lista brakujących dostaw Design — część z tych 38 nazw istnieje gdzieś indziej w repo pod innymi ścieżkami (starsze paczki/snapshoty), ale nie w kanonicznym `KANON/mockupy/`. Pełna lista martwych linków w raporcie sesji.
+
+**Nie robione:** żadna zmiana kodu gry, brak commita (zgodnie ze zleceniem — commit robi Maciej).
+

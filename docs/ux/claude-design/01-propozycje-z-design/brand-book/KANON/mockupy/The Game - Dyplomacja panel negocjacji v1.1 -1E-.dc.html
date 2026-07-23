@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><meta name="design_doc_mode" content="canvas"><style>
+:root{
+    --gold:#e8d88a; --gold-dim:rgba(232,216,138,.30); --gold-bright:#f4e6a8;
+    --panel:linear-gradient(180deg,rgba(18,24,32,.97),rgba(8,10,16,.97));
+    --panel-solid:#0e141c; --border:rgba(232,216,138,.45); --border-soft:rgba(232,216,138,.22);
+    --text:#e8e0c8; --dim:#8a8070;
+    --you:#3a6ad0; --you-txt:#8fb6e0; --you-bg:rgba(58,106,208,.14);
+    --foe:#c84040; --foe-txt:#e08a8a; --foe-bg:rgba(200,64,64,.12);
+    --wary:#d08030; --wary-txt:#e0a868; --wary-bg:rgba(210,120,30,.12);
+    --ally:#5ad07a; --ally-txt:#7ad0a0; --ally-bg:rgba(80,176,112,.10);
+    --pact:#8ec5ff; --pact-bg:rgba(142,197,255,.10);
+    --peace:#d4cba0; --peace-bg:rgba(212,203,160,.08);
+    --f-title:Georgia,'Times New Roman',serif; --f-ui:'Segoe UI',Tahoma,sans-serif;
+    --shadow:0 6px 30px rgba(0,0,0,.55);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#05070b;color:var(--text);font-family:var(--f-ui);}
+  .wrap{max-width:1760px;margin:0 auto;padding:14px 16px 26px;}
+  .caption{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px 18px;margin:0 2px 12px;}
+  .caption h1{white-space:nowrap;font-family:var(--f-title);font-size:19px;font-weight:600;color:var(--gold);letter-spacing:.02em;}
+  .caption .sub{font-size:12.5px;color:var(--dim);}
+  .caption .tag{font-size:11px;color:var(--gold);border:1px solid var(--gold-dim);border-radius:999px;padding:2px 10px;letter-spacing:.04em;}
+
+  /* ===== SCREEN FRAME ===== */
+  .screen{position:relative;width:100%;border-radius:14px;border:2px solid var(--border-soft);box-shadow:var(--shadow);
+    padding:16px 18px 14px;display:flex;flex-direction:column;gap:12px;
+    background:
+      radial-gradient(140% 100% at 50% -10%, rgba(55,50,32,.45) 0%, transparent 40%),
+      linear-gradient(180deg,#111722 0%,#0b0f16 40%,#070a0f 100%);
+  }
+  .screen::before{content:"";position:absolute;inset:0;pointer-events:none;border-radius:14px;
+    background:repeating-linear-gradient(115deg, rgba(232,216,138,.02) 0 2px, transparent 2px 6px);opacity:.5}
+
+  /* ===== STATUS FORMALNY (NEW) ===== */
+  .status-banner{position:relative;display:flex;align-items:center;justify-content:center;gap:12px;
+    padding:9px 20px;border-radius:10px;border:1px solid var(--border);background:var(--panel);box-shadow:var(--shadow);}
+  .status-banner svg{width:20px;height:20px}
+  .status-banner .lb{font-family:var(--f-title);font-size:18px;font-weight:700;letter-spacing:.03em}
+  .status-banner .sub2{font-size:11px;color:var(--dim);letter-spacing:.02em;padding-left:10px;border-left:1px solid var(--border-soft)}
+  .status-banner.tone-pact{color:var(--pact)} .status-banner.tone-war{color:var(--foe-txt)}
+  .status-banner.tone-ally{color:var(--ally-txt)} .status-banner.tone-peace{color:var(--peace)}
+
+  /* ===== MAIN ROW ===== */
+  /* Dwustronny układ: LEWA karta | środek | PRAWA karta — trzyma się poziomo.
+     Zawija do pionu dopiero na wąskim telefonie (patrz media-query na dole). */
+  .main-row{display:flex;flex-wrap:nowrap;gap:12px;align-items:stretch;min-width:0;}
+
+  /* ===== FACTION CARDS ===== */
+  .card{position:relative;width:248px;flex:0 0 248px;background:var(--panel);border:2px solid var(--border-soft);
+    border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:11px;box-shadow:var(--shadow)}
+  .card.you{border-color:rgba(58,106,208,.55)}
+  .card.them{border-color:rgba(210,120,30,.5)}
+  .portrait-row{display:flex;flex-direction:column;align-items:center;gap:7px;text-align:center;padding-bottom:9px;border-bottom:1px solid var(--border-soft)}
+  .medallion{width:86px;height:86px;border-radius:50%;border:3px solid var(--gold);flex:none;position:relative;
+    background:radial-gradient(circle at 38% 30%,#2c3446,#11141c);display:flex;align-items:center;justify-content:center;
+    box-shadow:inset 0 3px 10px rgba(232,216,138,.2),0 0 22px rgba(0,0,0,.5)}
+  .card.you .medallion{border-color:var(--you-txt);box-shadow:inset 0 3px 10px rgba(58,106,208,.3),0 0 22px rgba(58,106,208,.18)}
+  .card.them .medallion{border-color:var(--wary-txt);box-shadow:inset 0 3px 10px rgba(210,120,30,.3),0 0 22px rgba(210,120,30,.16)}
+  .medallion svg{width:42px;height:42px}
+  .civname{font-family:var(--f-title);font-size:17px;color:var(--gold);letter-spacing:.02em}
+  .civtitle{font-size:11px;color:var(--dim);line-height:1.5}
+  .stance-badge{display:inline-flex;align-items:center;gap:6px;font-size:10.5px;font-weight:700;letter-spacing:.06em;
+    text-transform:uppercase;border-radius:999px;padding:3px 11px;margin-top:2px;
+    color:var(--wary-txt);border:1px solid rgba(210,120,30,.5);background:var(--wary-bg)}
+  .stance-badge svg{width:12px;height:12px}
+
+  .sec-title{font-size:10px;text-transform:uppercase;letter-spacing:.09em;color:var(--dim);
+    display:flex;align-items:center;gap:7px;margin-bottom:6px}
+  .sec-title::after{content:"";flex:1;height:1px;background:var(--border-soft)}
+  .sec-title svg{width:12px;height:12px;color:var(--gold);flex:none}
+
+  .attr-row{display:flex;align-items:baseline;justify-content:space-between;font-size:11.5px;margin-bottom:3px}
+  .attr-row .k{color:var(--dim);display:flex;align-items:center;gap:6px}
+  .attr-row .k svg{width:12px;height:12px;color:var(--gold)}
+  .attr-row .v{font-weight:700;font-variant-numeric:tabular-nums;color:var(--text)}
+  .abar{height:6px;border-radius:4px;background:rgba(0,0,0,.4);overflow:hidden;margin-bottom:9px;border:1px solid rgba(0,0,0,.3)}
+  .abar i{display:block;height:100%}
+  .abar.you i{background:linear-gradient(90deg,#2c53ad,#5a8ae8)}
+  .abar.them i{background:linear-gradient(90deg,#a86018,#e0a868)}
+  .abar.gold i{background:linear-gradient(90deg,#9a7420,var(--gold))}
+
+  .rel-row{display:flex;align-items:baseline;justify-content:space-between;font-size:11.5px;margin-bottom:3px}
+  .rel-row .k{color:var(--dim);display:flex;align-items:center;gap:6px}
+  .rel-row .k svg{width:12px;height:12px}
+  .rel-row .v{font-weight:700;font-variant-numeric:tabular-nums}
+  .rel-row.trust .v{color:var(--ally-txt)} .rel-row.respect .v{color:var(--gold-bright)}
+  .rbar{height:7px;border-radius:4px;background:rgba(0,0,0,.4);overflow:hidden;margin-bottom:8px;border:1px solid rgba(0,0,0,.3)}
+  .rbar i{display:block;height:100%}
+  .rbar.trust i{background:linear-gradient(90deg,#2f7a4a,var(--ally))}
+  .rbar.respect i{background:linear-gradient(90deg,#9a7420,var(--gold))}
+
+  .goods-row{display:flex;flex-wrap:wrap;gap:6px}
+  .good{display:flex;flex-direction:column;align-items:center;gap:3px;width:52px;padding:5px 2px 4px;border-radius:7px;
+    border:1px solid var(--border-soft);background:linear-gradient(180deg,rgba(24,30,42,.8),rgba(12,16,24,.8))}
+  .good svg{width:18px;height:18px;color:var(--gold)}
+  .good span{font-size:8px;color:var(--text);text-align:center;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:48px}
+
+  /* ===== CENTER COLUMN ===== */
+  .center-col{flex:1;min-width:0;display:flex;flex-direction:column;gap:10px}
+  .mode-tabs{display:flex;justify-content:center;gap:6px}
+  .mtab{font-size:11.5px;padding:6px 16px;border-radius:999px;border:1px solid var(--border-soft);color:var(--dim);
+    background:rgba(0,0,0,.2);cursor:default;display:flex;align-items:center;gap:7px;font-weight:600;letter-spacing:.02em}
+  .mtab svg{width:13px;height:13px}
+  .mtab.on{color:#1a1206;background:linear-gradient(180deg,var(--gold),#cdb45f);border-color:var(--gold);font-weight:700}
+
+  .neg-table{flex:1;display:grid;grid-template-columns:1.15fr 0.95fr 1.1fr;gap:11px;min-height:0}
+  .neg-col{background:rgba(0,0,0,.22);border:1px solid var(--border-soft);border-radius:10px;
+    padding:10px 10px 11px;display:flex;flex-direction:column;gap:7px;max-height:398px;overflow-y:auto}
+  .neg-col::-webkit-scrollbar{width:6px}
+  .neg-col::-webkit-scrollbar-thumb{background:var(--gold-dim);border-radius:4px}
+  .neg-col h3{font-family:var(--f-title);font-size:12.5px;color:var(--gold);letter-spacing:.03em;
+    display:flex;align-items:center;gap:7px;padding-bottom:7px;border-bottom:1px solid var(--border-soft);margin-bottom:2px}
+  .neg-col h3 svg{width:14px;height:14px}
+  .neg-col h3 .cnt{margin-left:auto;font-size:10px;color:var(--dim);font-weight:400}
+
+  .deal{display:flex;align-items:center;gap:9px;padding:7px 9px;border-radius:8px;border:1px solid var(--border-soft);
+    background:linear-gradient(180deg,rgba(26,32,44,.75),rgba(12,16,24,.75));cursor:pointer}
+  .deal svg.di{width:16px;height:16px;color:var(--gold);flex:none}
+  .deal .body{flex:1;min-width:0}
+  .deal .nm{font-size:12px;font-weight:600;color:var(--text)}
+  .deal .note{font-size:9.5px;color:var(--dim);margin-top:1px}
+  .deal .end{flex:none}
+  .deal.locked{opacity:.48;cursor:not-allowed}
+  .deal.locked .note{color:var(--foe-txt)}
+  .deal.active{border-color:rgba(142,197,255,.5);background:linear-gradient(180deg,rgba(142,197,255,.09),rgba(12,16,24,.75))}
+  .deal.active .note{color:var(--pact)}
+  .deal.war{border-color:rgba(200,64,64,.45)} .deal.war svg.di{color:var(--foe-txt)}
+  .deal.peace{border-color:rgba(90,208,122,.4)} .deal.peace svg.di{color:var(--ally-txt)}
+  .lockic{width:13px;height:13px;color:var(--foe-txt)}
+  .checkic{width:14px;height:14px;color:var(--pact)}
+
+  .treaty{display:flex;align-items:flex-start;gap:9px;padding:8px 9px;border-radius:8px;border:1px solid var(--border-soft);
+    background:linear-gradient(180deg,rgba(26,32,44,.75),rgba(12,16,24,.75))}
+  .treaty svg.ti{width:16px;height:16px;color:var(--pact);flex:none;margin-top:1px}
+  .treaty .nm{font-size:12px;font-weight:600;color:var(--text)}
+  .treaty .meta{font-size:9.5px;color:var(--dim);margin-top:2px}
+  .treaty .pen{font-size:9.5px;color:var(--foe-txt);margin-top:3px;display:flex;align-items:center;gap:4px}
+  .treaty .pen svg{width:10px;height:10px}
+  .treaty .brk{margin-left:auto;font-size:10px;color:var(--foe-txt);border:1px solid rgba(200,64,64,.45);
+    border-radius:6px;padding:3px 8px;white-space:nowrap;cursor:pointer;align-self:center}
+
+  .offer-sub{font-size:9.5px;color:var(--dim);text-transform:uppercase;letter-spacing:.06em;margin:5px 0 5px}
+  .offer-chip{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:7px;margin-bottom:5px;
+    border:1px solid var(--border-soft);background:rgba(0,0,0,.18);font-size:11.5px}
+  .offer-chip.give{border-color:rgba(58,106,208,.4)}
+  .offer-chip.want{border-color:rgba(210,120,30,.4)}
+  .offer-chip svg{width:14px;height:14px;color:var(--gold);flex:none}
+  .offer-chip b{margin-left:auto;font-variant-numeric:tabular-nums;color:var(--text)}
+  .balance{margin-top:auto;border-top:1px solid var(--border-soft);padding-top:9px;display:flex;flex-direction:column;gap:6px}
+  .balance .row{display:flex;justify-content:space-between;font-size:11px;color:var(--dim)}
+  .balance .row b{color:var(--text);font-variant-numeric:tabular-nums}
+  .balance .verdict{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:700;color:var(--ally-txt);
+    background:var(--ally-bg);border:1px solid rgba(90,208,122,.4);border-radius:8px;padding:6px 10px}
+  .balance .verdict svg{width:15px;height:15px}
+  .accept-btn{margin-top:2px;text-align:center;font-size:12.5px;font-weight:700;letter-spacing:.03em;color:#1a1206;
+    background:linear-gradient(180deg,var(--gold),#cdb45f);border-radius:8px;padding:9px;cursor:pointer;
+    box-shadow:0 2px 8px rgba(0,0,0,.4)}
+
+  /* ===== RELATIONS BREAKDOWN (NEW) ===== */
+  .relbreak{position:relative;display:grid;grid-template-columns:1fr 1fr;gap:0;
+    background:rgba(0,0,0,.22);border:1px solid var(--border-soft);border-radius:10px;overflow:hidden}
+  .relcol{padding:10px 14px 11px}
+  .relcol.pos{border-right:1px solid var(--border-soft)}
+  .relcol h4{font-size:11px;text-transform:uppercase;letter-spacing:.05em;display:flex;align-items:center;gap:7px;margin-bottom:7px}
+  .relcol.pos h4{color:var(--ally-txt)} .relcol.neg h4{color:var(--foe-txt)}
+  .relcol h4 svg{width:13px;height:13px}
+  .rfact{display:flex;align-items:center;justify-content:space-between;font-size:11.5px;padding:3.5px 0;color:var(--text)}
+  .rfact .lbl{color:var(--dim)}
+  .rfact .val{font-weight:700;font-variant-numeric:tabular-nums;flex:none;margin-left:10px}
+  .relcol.pos .val{color:var(--ally-txt)} .relcol.neg .val{color:var(--foe-txt)}
+
+  /* ===== BOTTOM ACTION BAR ===== */
+  .action-bar{display:flex;align-items:center;gap:9px;justify-content:center;padding-top:2px}
+  .abtn{width:46px;height:46px;border-radius:10px;border:1px solid var(--gold-dim);
+    background:linear-gradient(180deg,#161c28,#0a0d14);color:var(--gold);display:flex;flex-direction:column;
+    align-items:center;justify-content:center;gap:3px;cursor:pointer;box-shadow:0 1px 6px rgba(0,0,0,.4)}
+  .abtn svg{width:19px;height:19px}
+  
+  .abtn.warbtn{border-color:rgba(200,64,64,.5);color:var(--foe-txt)}
+  .abtn.peacebtn{border-color:rgba(90,208,122,.45);color:var(--ally-txt)}
+  .quickdeal{height:52px;padding:0 22px;border-radius:10px;border:1px solid var(--gold);
+    background:linear-gradient(180deg,var(--gold),#cdb45f);color:#1a1206;display:flex;align-items:center;gap:9px;
+    font-family:var(--f-title);font-size:14px;font-weight:700;letter-spacing:.02em;cursor:pointer;
+    box-shadow:0 3px 12px rgba(232,216,138,.3);margin-left:8px}
+  .quickdeal svg{width:19px;height:19px}
+  .quickdeal small{display:block;font-family:var(--f-ui);font-size:9px;font-weight:400;color:#3a2e0c;letter-spacing:0}
+
+  /* NEW-element tags */
+  .newtag{position:absolute;z-index:8;font-size:9px;font-weight:700;letter-spacing:.05em;color:#0c1018;
+    background:linear-gradient(180deg,#ffe08a,#e0b24a);border-radius:999px;padding:2px 8px;box-shadow:0 2px 8px rgba(0,0,0,.5);
+    white-space:nowrap;border:1px solid rgba(120,90,20,.5);top:-9px;right:14px}
+  .newtag::before{content:"◆ ";}
+  .newtag.left{right:auto;left:14px}
+  .newtag.center{left:50%;transform:translateX(-50%);right:auto}
+
+  .foot{margin:14px 2px 0;display:flex;flex-wrap:wrap;gap:8px 20px;align-items:center;font-size:12px;color:var(--dim)}
+  .foot .fk{display:flex;align-items:center;gap:7px}
+  .foot .fk b{color:var(--gold);font-weight:600}
+  .foot .badge{font-size:10px;color:#0c1018;background:linear-gradient(180deg,#ffe08a,#e0b24a);border-radius:999px;padding:1px 8px;font-weight:700}
+
+  /* Węższe ekrany: najpierw zwijamy TYLKO wewnętrzne 3 kolumny stołu negocjacji —
+     karty stron ZOSTAJĄ lewo/prawo. Dopiero na telefonie (≤720px) stackujemy pionowo. */
+  /* KANON: media-queries usunięte — stała szerokość projektowa 1792px (responsywność w wersji roboczej .html) */
+
+  /* v1.1 — hover 1E + złoty primary z kanonu */
+  .deal:not(.locked):not(.active):hover{border-color:var(--gold);box-shadow:0 0 10px rgba(232,216,138,.25)}
+  .abtn:hover{border-color:var(--gold);color:var(--gold-bright);box-shadow:0 0 10px rgba(232,216,138,.3)}
+  .abtn.warbtn:hover{border-color:var(--foe);color:#f0a0a0;box-shadow:0 0 10px rgba(200,64,64,.35)}
+  .abtn.peacebtn:hover{border-color:var(--ally);color:#8ee0ae;box-shadow:0 0 10px rgba(90,208,122,.3)}
+  .brk:hover{background:rgba(200,64,64,.14)}
+  .quickdeal:hover,.accept-btn:hover{filter:brightness(1.07)}
+  .mtab.on,.accept-btn,.quickdeal{background:linear-gradient(180deg,#f0dc88,#b99a28);border:1px solid #6a5212;border-top-color:#f8eea8;color:#2e2708}
+  .quickdeal small{color:#3a2e0c}
+  .ttip{position:relative;display:inline-flex}
+  .ttip>.lbl{position:absolute;bottom:54px;left:50%;transform:translateX(-50%);opacity:0;pointer-events:none;transition:opacity .12s;white-space:nowrap;background:rgba(8,10,16,.96);border:1px solid var(--border);color:var(--gold);padding:3px 9px;border-radius:6px;font-size:9.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;box-shadow:0 4px 12px rgba(0,0,0,.55);z-index:9}
+  .ttip:hover>.lbl,.ttip>.lbl.demo{opacity:1}
+  .treaty .ttip{margin-left:auto;align-self:center}
+  .treaty .brk{margin-left:0;padding:5px 6px;display:inline-flex;align-items:center;line-height:0}
+  .treaty .brk svg{width:14px;height:14px}
+/* KANON: stała szerokość projektowa (canvas pan/zoom) — media-queries poglądowe, nieaktywne */
+.wrap{width:1792px;max-width:1792px}
+</style></helmet>
+
+<div class="wrap">
+  <div class="caption">
+    <h1>Panel Dyplomacji — mockup v1.1</h1>
+    <span class="sub">Adaptacja Total War: Warhammer 3 · układ dwustronny (karta gracza + karta rozmówcy) + <b style="color:var(--gold)">stół negocjacji 3-kolumnowy</b></span>
+    <span class="tag">MOCKUP DO CLAUDE DESIGN</span>
+    <span class="tag">1E · złoto/pergamin/ciemność</span>
+    <span class="tag">v1.1 · poprawki logiczne</span>
+  </div>
+
+  <div class="screen">
+
+    <!-- ===== STATUS FORMALNY (NEW) ===== -->
+    <div class="newtag center" style="top:-9px">status formalny — odrębny od nastawienia</div>
+    <div class="status-banner tone-pact">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M5 4h14v3a7 7 0 01-7 7 7 7 0 01-7-7z"/><path d="M12 14v6M8 20h8"/><circle cx="9" cy="7" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="7" r="1" fill="currentColor" stroke="none"/></svg>
+      <span class="lb">PAKT O NIEAGRESJI</span>
+      <span class="sub2">Grecy ⇄ Rzymianie · obowiązuje od 12 tur · zerwanie: −20 Zaufania</span>
+    </div>
+
+    <div class="main-row">
+
+      <!-- ===== LEWA KARTA — GRACZ ===== -->
+      <div class="newtag left" style="top:-9px">karta gracza po lewej (dziś brak)</div>
+      <div class="card you">
+        <div class="portrait-row">
+          <div class="medallion">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#8fb6e0" stroke-width="1.5"><path d="M12 3l7 4v5c0 4-3 7-7 9-4-2-7-5-7-9V7z"/><path d="M9 12l2 2 4-4"/></svg>
+          </div>
+          <div class="civname">Grecy</div>
+          <div class="civtitle">Temistokles · Władca<br>Epoka Brązu</div>
+        </div>
+
+        <div>
+          <div class="sec-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 2l1.5 12L12 22l-1.5-8z"/><path d="M8 6h8"/></svg>Atrybuty</div>
+          <div class="attr-row"><span class="k">Moc militarna</span><span class="v">3 161</span></div>
+          <div class="abar you"><i style="width:74%"></i></div>
+          <div class="attr-row"><span class="k">Potencjał sojuszniczy</span><span class="v">Wysoki</span></div>
+          <div class="abar gold"><i style="width:66%"></i></div>
+        </div>
+
+        <div>
+          <div class="sec-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="7"/><path d="M9.2 10.4c0-1.1 1.2-1.9 2.8-1.9s2.8.8 2.8 1.9-1.2 1.5-2.8 1.5-2.8.6-2.8 1.7 1.2 1.9 2.8 1.9 2.8-.8 2.8-1.9"/></svg>Skarbiec</div>
+          <div class="attr-row"><span class="k">Złoto</span><span class="v">1 240</span></div>
+          <div class="abar gold"><i style="width:58%"></i></div>
+          <div class="attr-row"><span class="k">Dochód</span><span class="v">+18 / turę</span></div>
+          <div class="abar gold"><i style="width:40%"></i></div>
+        </div>
+
+        <div>
+          <div class="sec-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 10l9-6 9 6-9 6z"/><path d="M5 12v6l7 4 7-4v-6"/></svg>Dobra handlowe</div>
+          <div class="goods-row">
+            <div class="good"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 2l8 5-3 13H7L4 7z"/></svg><span>Żelazo</span></div>
+            <div class="good"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3v11M12 3c-3 2-4 5-4 5M12 3c3 2 4 5 4 5"/><path d="M6 12c0 6 2 9 6 9s6-3 6-9"/></svg><span>Zboże</span></div>
+            <div class="good"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 20l3-11h8l3 11z"/></svg><span>Kamień</span></div>
+            <div class="good"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="9" r="6"/><path d="M9 8.2c0-1 1.3-1.8 3-1.8s3 .8 3 1.8-1.3 1.4-3 1.4-3 .5-3 1.6 1.3 1.8 3 1.8 3-.8 3-1.8"/></svg><span>Filozofia</span></div>
+            <div class="good"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 16c3 0 5-8 8-8s5 8 8 8"/><path d="M4 16l1 3h14l1-3"/><path d="M12 8V3"/></svg><span>Żeglarstwo</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== ŚRODEK ===== -->
+      <div class="center-col">
+        <div class="mode-tabs">
+          <span class="mtab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 6h16M4 12h16M4 18h16"/></svg>Znane frakcje</span>
+          <span class="mtab on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 20V6l8-3 8 3v14"/><path d="M9 20v-6h6v6"/></svg>Stół negocjacji</span>
+        </div>
+
+        <div style="position:relative">
+        <div class="newtag" style="top:-9px;right:6px">stół negocjacji — 3 kolumny</div>
+        <div class="neg-table">
+
+          <!-- MOŻLIWE UMOWY -->
+          <div class="neg-col">
+            <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 5v14M5 12h14"/></svg>Możliwe umowy<span class="cnt">12</span></h3>
+
+            <div class="deal active">
+              <svg class="di" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M5 4h14v3a7 7 0 01-7 7 7 7 0 01-7-7z"/></svg>
+              <div class="body"><div class="nm">Pakt o nieagresji</div><div class="note">już zawarty</div></div>
+              <svg class="checkic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 13l4 4 10-10"/></svg>
+            </div>
+            <div class="deal locked">
+              <svg class="di" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 20V6l8-3 8 3v14"/></svg>
+              <div class="body"><div class="nm">Sojusz obronny</div><div class="note">zablokowany — wymaga Zaufania 45 (masz 34)</div></div>
+              <svg class="lockic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg>
+            </div>
+            <div class="deal locked">
+              <svg class="di" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 20V6l8-3 8 3v14"/><path d="M9 20v-6h6v6"/></svg>
+              <div class="body"><div class="nm">Sojusz wojskowy</div><div class="note">zablokowany — wymaga Zaufania 90 (masz 34)</div></div>
+              <svg class="lockic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg>
+            </div>
+            <div class="deal">
+              <svg class="di" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 10h6M4 14h6M14 10h6M14 14h6"/><path d="M9 6v12M15 6v12"/></svg>
+              <div class="body"><div class="nm">Otwarte granice</div><div class="note">przemarsz wojsk dozwolony</div></div>
+            </div>
+            <div class="deal active">
+              <svg class="di" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></svg>
+              <div class="body"><div class="nm">Umowa handlowa</div><div class="note">już zawarta · +1 Zaufania / turę</div></div>
+              <svg class="checkic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 13l4 4 10-10"/></svg>
+            </div>
+            <div class="deal locked">
+              <svg class="di" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M7 7l-3 3 3 3M17 7l3 3-3 3"/><path d="M4 10h16"/></svg>
+              <div class="body"><div class="nm">Wymiana technologii</div><div class="note">zablokowana — wymaga Zaufania 70 (masz 34)</div></div>
+              <svg class="lockic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg>
+            </div>
+            <div class="deal">
+              <svg class="di" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 20L20 4M15 4h5v5M20 20L4 4"/></svg>
+              <div class="body"><div class="nm">Wspólny wróg</div><div class="note">Persowie — kooperacja +5 Zaufania</div></div>
+            </div>
+            <div class="deal locked">
+              <svg class="di" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="9" r="3"/><path d="M6 9c0-2 1-4 2-4M18 9c0-2-1-4-2-4"/><path d="M5 20c1-4 3-6 7-6s6 2 7 6"/></svg>
+              <div class="body"><div class="nm">Żądanie trybutu</div><div class="note">zablokowane — wymaga Respektu 70 (masz 61)</div></div>
+              <svg class="lockic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg>
+            </div>
+            <div class="deal">
+              <svg class="di" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="4" y="9" width="16" height="11" rx="1.5"/><path d="M4 9l8-5 8 5"/><path d="M12 4v5"/></svg>
+              <div class="body"><div class="nm">Dar</div><div class="note">jednorazowo +6 Zaufania</div></div>
+            </div>
+            <div class="deal locked">
+              <svg class="di" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 18l2-9 4 4 2-6 2 6 4-4 2 9z"/></svg>
+              <div class="body"><div class="nm">Wasalizacja</div><div class="note">zablokowana — wymaga Respektu 70 (masz 61)</div></div>
+              <svg class="lockic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg>
+            </div>
+            <div class="deal war">
+              <svg class="di" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 5l-7 7 7 7M20 5l-7 7 7 7"/></svg>
+              <div class="body"><div class="nm">Wypowiedzenie wojny</div><div class="note">zrywa Pakt o nieagresji</div></div>
+            </div>
+            <div class="deal locked">
+              <svg class="di" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 16c3 0 4-6 8-6s4 4 8 4"/></svg>
+              <div class="body"><div class="nm">Propozycja pokoju</div><div class="note">niedostępna — nie trwa wojna</div></div>
+              <svg class="lockic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg>
+            </div>
+          </div>
+
+          <!-- AKTYWNE TRAKTATY -->
+          <div class="neg-col">
+            <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg>Aktywne traktaty<span class="cnt">2</span></h3>
+
+            <div class="treaty">
+              <svg class="ti" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M5 4h14v3a7 7 0 01-7 7 7 7 0 01-7-7z"/></svg>
+              <div>
+                <div class="nm">Pakt o nieagresji</div>
+                <div class="meta">od 12 tur</div>
+                <div class="pen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9L2.7 18a2 2 0 001.7 3h15.2a2 2 0 001.7-3L13.7 3.9a2 2 0 00-3.4 0z"/></svg>kara zerwania: −20 Zaufania</div>
+              </div>
+              <span class="ttip"><span class="lbl" style="bottom:34px">Zerwij traktat</span><span class="brk" title="Zerwij traktat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M9 6.5 7.5 5A3.2 3.2 0 003 9.5L5.5 12"/><path d="M15 17.5l1.5 1.5a3.2 3.2 0 004.5-4.5L18.5 12"/><path d="M9.5 14.5 7 19M14.5 9.5 17 5"/></svg></span></span>
+            </div>
+
+            <div class="treaty">
+              <svg class="ti" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></svg>
+              <div>
+                <div class="nm">Umowa handlowa</div>
+                <div class="meta">od 8 tur · +1 Zaufania / turę</div>
+                <div class="pen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9L2.7 18a2 2 0 001.7 3h15.2a2 2 0 001.7-3L13.7 3.9a2 2 0 00-3.4 0z"/></svg>kara zerwania: −8 Zaufania</div>
+              </div>
+              <span class="ttip"><span class="lbl" style="bottom:34px">Zerwij traktat</span><span class="brk" title="Zerwij traktat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M9 6.5 7.5 5A3.2 3.2 0 003 9.5L5.5 12"/><path d="M15 17.5l1.5 1.5a3.2 3.2 0 004.5-4.5L18.5 12"/><path d="M9.5 14.5 7 19M14.5 9.5 17 5"/></svg></span></span>
+            </div>
+          </div>
+
+          <!-- ŻĄDANIA / OFERTY -->
+          <div class="neg-col">
+            <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 12h16M14 6l6 6-6 6"/></svg>Żądania / Oferty</h3>
+
+            <div class="offer-sub">Ty oferujesz</div>
+            <div class="offer-chip give">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="9" r="6"/><path d="M9 8.2c0-1 1.3-1.8 3-1.8s3 .8 3 1.8-1.3 1.4-3 1.4-3 .5-3 1.6 1.3 1.8 3 1.8 3-.8 3-1.8"/></svg>
+              Rozszerzenie handlu <b>+ Żelazo</b>
+            </div>
+            <div class="offer-chip give">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 2l8 5-3 13H7L4 7z"/></svg>
+              Dobro dodatkowe <b>Filozofia</b>
+            </div>
+
+            <div class="offer-sub">AI żąda</div>
+            <div class="offer-chip want">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="9" r="3"/><path d="M5 20c1-4 3-6 7-6s6 2 7 6"/></svg>
+              Dopłata <b>40 złota (raz)</b>
+            </div>
+
+            <div class="balance">
+              <div class="row">Zyskujesz <b>+2 Zaufania / turę · +8 złota / turę</b></div>
+              <div class="row">Oddajesz <b>Filozofia (dobro) · 40 złota (raz)</b></div>
+              <div class="verdict"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 13l4 4 10-10"/></svg>Bilans oferty: opłacalna (zwrot po 5 turach)</div>
+              <div class="accept-btn">Zaakceptuj ofertę</div>
+            </div>
+          </div>
+
+        </div>
+        </div>
+
+        <!-- ===== ROZBICIE RELACJI (NEW) ===== -->
+        <div style="position:relative">
+        <div class="newtag" style="top:-9px;right:6px">rozbicie relacji — za/przeciw</div>
+        <div class="relbreak">
+          <div class="relcol pos">
+            <h4><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 5v14M5 12h14"/></svg>Za co Cię lubią</h4>
+            <div class="rfact"><span class="lbl">Dar przekazany</span><span class="val">+6</span></div>
+            <div class="rfact"><span class="lbl">Aktywny handel</span><span class="val">+2 / turę</span></div>
+            <div class="rfact"><span class="lbl">Trwający pakt</span><span class="val">+1 / turę</span></div>
+            <div class="rfact"><span class="lbl">Pomoc w wojnie (historia)</span><span class="val">+10</span></div>
+            <div class="rfact"><span class="lbl">Wspólna religia</span><span class="val">+0,5 / turę</span></div>
+          </div>
+          <div class="relcol neg">
+            <h4><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 12h14"/></svg>Za co Cię nie lubią</h4>
+            <div class="rfact"><span class="lbl">Rywalizacja (ten sam typ nacji)</span><span class="val">−20</span></div>
+            <div class="rfact"><span class="lbl">Ekspansja przy granicy</span><span class="val">−2 / turę</span></div>
+            <div class="rfact"><span class="lbl">Zerwana umowa (przeszłość)</span><span class="val">−15</span></div>
+            <div class="rfact"><span class="lbl">Różna kultura</span><span class="val">−5</span></div>
+            <div class="rfact"><span class="lbl">Urazy historyczne</span><span class="val">−2 / turę</span></div>
+          </div>
+          <div style="grid-column:1/-1;border-top:1px solid var(--border-soft);padding:7px 14px;font-size:11px;color:var(--dim)">Stan bieżący: <b style="color:var(--ally-txt)">Zaufanie 34 / 100</b> · <b style="color:var(--gold-bright)">Respekt 61 / 100</b> · nastawienie: <b style="color:var(--wary-txt)">Nieufny</b></div>
+        </div>
+        </div>
+      </div>
+
+      <!-- ===== PRAWA KARTA — ROZMÓWCA ===== -->
+      <div class="card them">
+        <div class="portrait-row">
+          <div class="medallion">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#e0a868" stroke-width="1.5"><path d="M12 3l7 4v5c0 4-3 7-7 9-4-2-7-5-7-9V7z"/><path d="M9 9l6 6M15 9l-6 6"/></svg>
+          </div>
+          <div class="civname">Rzymianie</div>
+          <div class="civtitle">Marek Furiusz · Konsul<br>Epoka Brązu</div>
+          <span class="stance-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M9 9.5c.3-1 1.2-1.5 3-1.5M15 9.5c-.3-1-1.2-1.5-3-1.5"/><path d="M8.5 15c1-1.2 2.2-1.8 3.5-1.8s2.5.6 3.5 1.8"/></svg>Nieufny</span>
+        </div>
+
+        <div>
+          <div class="sec-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 2l1.5 12L12 22l-1.5-8z"/><path d="M8 6h8"/></svg>Atrybuty</div>
+          <div class="attr-row"><span class="k">Moc militarna</span><span class="v">1 980</span></div>
+          <div class="abar them"><i style="width:46%"></i></div>
+          <div class="attr-row"><span class="k">Potencjał sojuszniczy</span><span class="v">Niski</span></div>
+          <div class="abar gold"><i style="width:28%"></i></div>
+        </div>
+
+        <div>
+          <div class="sec-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 21s-7-4.35-9.5-9C1 8 2 4 6 4c2 0 3.5 1.2 4 2 .5-.8 2-2 4-2 4 0 5 4 3.5 8C19 16.65 12 21 12 21z"/></svg>Relacje z Tobą</div>
+          <div class="rel-row trust"><span class="k"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 21s-7-4.35-9.5-9C1 8 2 4 6 4c2 0 3.5 1.2 4 2 .5-.8 2-2 4-2 4 0 5 4 3.5 8C19 16.65 12 21 12 21z"/></svg>Zaufanie</span><span class="v">34 / 100</span></div>
+          <div class="rbar trust"><i style="width:34%"></i></div>
+          <div class="rel-row respect"><span class="k"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 18l2-9 4 4 2-6 2 6 4-4 2 9z"/><path d="M4 18h16v2H4z"/></svg>Respekt</span><span class="v">61 / 100</span></div>
+          <div class="rbar respect"><i style="width:61%"></i></div>
+        </div>
+
+        <div>
+          <div class="sec-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 10l9-6 9 6-9 6z"/><path d="M5 12v6l7 4 7-4v-6"/></svg>Dobra handlowe</div>
+          <div class="goods-row">
+            <div class="good"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M8 3v4M16 3v4M6 21V10c0-3 2.5-5 6-5s6 2 6 5v11"/><path d="M6 15h12"/></svg><span>Wino</span></div>
+            <div class="good"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6 21V9l6-5 6 5v12"/><path d="M9 21v-7h6v7"/></svg><span>Marmur</span></div>
+            <div class="good"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6 4h12v3H6zM7 7v13M17 7v13M7 20h10"/></svg><span>Prawo</span></div>
+            <div class="good"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/></svg><span>Inżynieria</span></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ===== PASEK SZYBKICH AKCJI (NEW) ===== -->
+    <div style="position:relative">
+    <div class="newtag center" style="top:-9px">pasek szybkich akcji + Szybka Umowa</div>
+    <div class="action-bar">
+      <span class="ttip"><span class="lbl">Wypowiedz wojnę</span><div class="abtn warbtn" title="Wypowiedz wojnę"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 5l-7 7 7 7M20 5l-7 7 7 7"/></svg></div></span>
+      <span class="ttip"><span class="lbl">Zaproponuj pokój</span><div class="abtn peacebtn" title="Zaproponuj pokój"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 16c3 0 4-6 8-6s4 4 8 4"/><path d="M4 16l1 3h14l1-3"/><path d="M12 8V3"/></svg></div></span>
+      <span class="ttip"><span class="lbl">Sojusz</span><div class="abtn" title="Sojusz"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M7 12l3 3 7-7"/><path d="M4 20V6l8-3 8 3v14"/></svg></div></span>
+      <span class="ttip"><span class="lbl">Pakt o nieagresji</span><div class="abtn" title="Pakt o nieagresji"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M5 4h14v3a7 7 0 01-7 7 7 7 0 01-7-7z"/></svg></div></span>
+      <span class="ttip"><span class="lbl">Umowa handlowa</span><div class="abtn" title="Umowa handlowa"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></svg></div></span>
+      <span class="ttip"><span class="lbl">Przekaż dar</span><div class="abtn" title="Przekaż dar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="4" y="9" width="16" height="11" rx="1.5"/><path d="M4 9l8-5 8 5"/><path d="M12 4v5"/></svg></div></span>
+      <span class="ttip"><span class="lbl">Wasalizacja</span><div class="abtn" title="Wasalizacja"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 18l2-9 4 4 2-6 2 6 4-4 2 9z"/><path d="M4 18h16v2H4z"/></svg></div></span>
+      <div class="quickdeal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3 7 7 .5-5.5 4.5 2 7L12 17l-6.5 4 2-7L2 9.5 9 9z"/></svg><span>SZYBKA UMOWA<small>auto-uczciwa oferta</small></span></div>
+    </div>
+    </div>
+
+  </div>
+
+  <div class="foot">
+    <span class="fk"><span class="badge">◆ NOWE</span> elementy zaadaptowane z TW:WH3</span>
+    <span class="fk"><b>Karta gracza</b> po lewej, lustrzana do karty rozmówcy</span>
+    <span class="fk"><b>Stół negocjacji</b> 3-kolumnowy (możliwe umowy · aktywne traktaty · żądania/oferty + bilans)</span>
+    <span class="fk"><b>Status formalny</b> odrębny od nastawienia</span>
+    <span class="fk"><b>Pasek szybkich akcji</b> + Szybka Umowa</span>
+    <span class="fk"><b>Rozbicie relacji</b> (za/przeciw z wartościami DIPLOMACY_PARAMS)</span>
+    <span class="fk" style="width:100%;margin-top:2px;color:var(--dim)"><b>v1.1 poprawki:</b> spójne blokady „wymaga X (masz Y)" · Sojusz obronny i Żądanie trybutu zablokowane zgodnie z wartościami · Umowa handlowa oznaczona jako zawarta · relacje raz (karta rozmówcy), u gracza Skarbiec · bilans oferty z zyskami/kosztami i zwrotem · tło granat 1E · hover na kafelkach/akcjach · złoty primary z kanonu · pasek akcji i „Zerwij" jako same ikony z podpisem na hover (mniej batonów).</span>
+    <span class="fk" style="width:100%;margin-top:2px;color:var(--dim)">Bez zmian z kanonu: paski Zaufanie/Respekt, badge nastawienia, lista znanych frakcji (zasygnalizowana zakładką u góry środka).</span>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{ &quot;$preview&quot;: { &quot;width&quot;: 1792 } }"></script>
+</body>
+</html>
