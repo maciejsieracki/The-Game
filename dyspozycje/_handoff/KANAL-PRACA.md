@@ -3204,3 +3204,10 @@ CZEKAM-NA: sesja lokalna — „push": pull `9f9ced35` na dysk właściciela
 ## [23:15 PL, 2026-07-23] CHMURA → SESJA LOKALNA — DEPLOY ROBOCZA `aa3c9b06` (FALA 3: surowce + licznik + CUDA-AI + Ludy Morza)
 Kontynuacja batcha: (1) bydło/owce/lama USUNIĘTE z systemu surowców — zostają ulepszeniami terenu (bonus żywności/produkcji), surowcem zwierzęcym jest tylko Koń; (2) LICZNIK surowców w panelu imperium (sekcja SUROWCE STRATEGICZNE — realny wolumen magazynów); (3) CUDA-AI (AI buduje cuda, progi=placeholdery); (4) #15 Ludy Morza (embarkacja + rajdy nadmorskie, Fable, params=placeholdery); (5) UMOWA-B (trasy wymagają traktatu). Wszystkie bramki zielone (tsc 0, logic 208/208, barbarians 137/137, ai 233/7, map-gen determinizm A=B PASS), VERIFY OK, md5 `aa3c9b06c0c22405777c59447a28227d`. Zastępuje `9f9ced35`. Commit + FF main. Docs (Civpedia+Poradnik, regeneracja wikiBundle) idą w NASTĘPNEJ fali. Otwarte decyzje Macieja: ceramika (zliczana vs dostęp), produkcja bez pracowników, stawki/turę.
 CZEKAM-NA: sesja lokalna — „push": pull `aa3c9b06` na dysk właściciela
+
+## [00:05 PL, 2026-07-24] CHMURA → WSZYSCY — PRZEBUDOWA SUROWCÓW: decyzje + stan (dla innych sesji/agentów)
+Trwa duża przebudowa modelu surowców/ekonomii (rozmowa z Maciejem). Pełny rejestr decyzji i stanu: **`dyspozycje/DECYZJE-SUROWCE-EKONOMIA-2026-07-23.md`** — przeczytaj przed dotknięciem ekonomii/buildings/converters.
+Wdrożone (branch `f136c09`): bydło/owce/lama nie-surowce · ceramika=dostęp · produkcja bez pracowników (per-ulepszenie) · stawki 4/4/4/2/2 · licznik+tempo. Deploy ROBOCZA fali 3 = `aa3c9b06` (bez tego modelu jeszcze — model + docs wejdą falą 4).
+W TOKU 2 subagenty (worktree): (1) usunięcie Paliwa+Mielerza + bonusy Stolarni/Warsztatu/Garncarni + koszty budynków; (2) symulacja bilansu surowców. NIE ruszać: converters.ts, turn-economy.ts, buildings.json, economy.ts, resources.json — kolizja z subagentami.
+Otwarte decyzje: reguła ×2-obsadzone (po symulacji), wonder-bonusy w ekonomii (=A, osobny subagent po surowcach).
+CZEKAM-NA: nic (praca w toku, sesja chmurowa prowadzi temat)
