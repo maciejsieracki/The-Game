@@ -13090,31 +13090,40 @@ export class BattleScene {
     const bar = this._deployQuickSelectBar;
     if (!bar || !this.deployPhase) return;
     bar.innerHTML = '';
+    // Dwa piętra (decyzja Macieja 2026-07-23): rząd 1 = klasy + Wszystkie (+ Generał w walce),
+    // rząd 2 = grupy G1/G2/...
     Object.assign(bar.style, {
-      flexDirection: 'row',
-      flexWrap: 'wrap',
+      flexDirection: 'column',
+      flexWrap: 'nowrap',
       gap: '5px',
     });
+    const mkRow = (): HTMLDivElement => {
+      const r = document.createElement('div');
+      Object.assign(r.style, { display: 'flex', flexWrap: 'wrap', gap: '5px' });
+      return r;
+    };
+    const row1 = mkRow();
+    bar.appendChild(row1);
 
-    bar.appendChild(this._makeDeployQuickBtn(
+    row1.appendChild(this._makeDeployQuickBtn(
       'Konnica',
       this._isDeploySelectionExactlyKind('mounted'),
       () => this._selectDeployByKindToggle('mounted'),
       { kind: 'mounted', fullWidth: false },
     ));
-    bar.appendChild(this._makeDeployQuickBtn(
+    row1.appendChild(this._makeDeployQuickBtn(
       'Piechota',
       this._isDeploySelectionExactlyKind('melee'),
       () => this._selectDeployByKindToggle('melee'),
       { kind: 'melee', fullWidth: false },
     ));
-    bar.appendChild(this._makeDeployQuickBtn(
+    row1.appendChild(this._makeDeployQuickBtn(
       DEPLOY_KIND_LABEL.ranged,
       this._isDeploySelectionExactlyKind('ranged'),
       () => this._selectDeployByKindToggle('ranged'),
       { kind: 'ranged', fullWidth: false },
     ));
-    bar.appendChild(this._makeDeployQuickBtn(
+    row1.appendChild(this._makeDeployQuickBtn(
       'Wszystkie',
       this._isDeploySelectionAll(),
       () => this._selectDeployAllToggle(),
@@ -13122,15 +13131,19 @@ export class BattleScene {
     ));
 
     const groups = this._sortedGroupIds();
-    for (const gid of groups) {
-      const managing = this._deployActiveGroupId === gid;
-      const selected = this._isDeploySelectionExactlyGroup(gid);
-      bar.appendChild(this._makeDeployQuickBtn(
-        this._groupDisplayLabel(gid),
-        managing || selected,
-        () => this._handleDeployGroupTabClick(gid),
-        { kind: 'group', groupId: gid, fullWidth: false },
-      ));
+    if (groups.length > 0) {
+      const row2 = mkRow();
+      bar.appendChild(row2);
+      for (const gid of groups) {
+        const managing = this._deployActiveGroupId === gid;
+        const selected = this._isDeploySelectionExactlyGroup(gid);
+        row2.appendChild(this._makeDeployQuickBtn(
+          this._groupDisplayLabel(gid),
+          managing || selected,
+          () => this._handleDeployGroupTabClick(gid),
+          { kind: 'group', groupId: gid, fullWidth: false },
+        ));
+      }
     }
   }
 
@@ -16981,9 +16994,19 @@ export class BattleScene {
     this._battleQuickSelectSig = sig;
 
     bar.innerHTML = '';
+    // Dwa piętra (decyzja Macieja 2026-07-23): rząd 1 = klasy + Wszystkie + Generał (walka),
+    // rząd 2 = grupy G1/G2/...
+    Object.assign(bar.style, { flexDirection: 'column', flexWrap: 'nowrap', gap: '5px' });
+    const mkRow = (): HTMLDivElement => {
+      const r = document.createElement('div');
+      Object.assign(r.style, { display: 'flex', flexWrap: 'wrap', gap: '5px' });
+      return r;
+    };
+    const row1 = mkRow();
+    bar.appendChild(row1);
 
     const mkKind = (label: string, kind: 'mounted' | 'melee' | 'ranged'): void => {
-      bar!.appendChild(this._makeDeployQuickBtn(
+      row1.appendChild(this._makeDeployQuickBtn(
         label,
         this._isDeploySelectionExactlyKind(kind),
         () => this.deployPhase
@@ -16995,7 +17018,7 @@ export class BattleScene {
     mkKind('Konnica', 'mounted');
     mkKind('Piechota', 'melee');
     mkKind(DEPLOY_KIND_LABEL.ranged, 'ranged');
-    bar.appendChild(this._makeDeployQuickBtn(
+    row1.appendChild(this._makeDeployQuickBtn(
       'Wszystkie',
       this._isDeploySelectionAll(),
       () => {
@@ -17016,11 +17039,22 @@ export class BattleScene {
       { kind: 'all-icon', fullWidth: false },
     ));
 
+    if (!this.deployPhase) {
+      row1.appendChild(this._makeDeployQuickBtn(
+        'Genera\u0142',
+        !!this._generalPanel,
+        () => this._toggleGeneralPanel(),
+        { kind: 'general-icon', fullWidth: false },
+      ));
+    }
+
     if (groups.length > 0) {
+      const row2 = mkRow();
+      bar.appendChild(row2);
       for (const gid of groups) {
         const managing = this.deployPhase && this._deployActiveGroupId === gid;
         const selected = this._isDeploySelectionExactlyGroup(gid);
-        bar.appendChild(this._makeDeployQuickBtn(
+        row2.appendChild(this._makeDeployQuickBtn(
           this._groupDisplayLabel(gid),
           managing || selected,
           () => this.deployPhase
@@ -17029,15 +17063,6 @@ export class BattleScene {
           { kind: 'group', groupId: gid, fullWidth: false },
         ));
       }
-    }
-
-    if (!this.deployPhase) {
-      bar.appendChild(this._makeDeployQuickBtn(
-        'Genera\u0142',
-        !!this._generalPanel,
-        () => this._toggleGeneralPanel(),
-        { kind: 'general-icon', fullWidth: false },
-      ));
     }
   }
 
