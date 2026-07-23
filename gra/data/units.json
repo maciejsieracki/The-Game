@@ -768,7 +768,7 @@
     "Bonus vs Falangite %": 0,
     "Bonus vs Offensive %": 0,
     "Bonus vs Distance %": 0,
-    "Bonus vs Mount %": 0,
+    "Bonus vs Mount %": 50,
     "Bonus vs Slinger %": 0,
     "Zmiana na": "—",
     "Zastąp specjalnie": "—",

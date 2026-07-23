@@ -28,3 +28,11 @@ Uwagi z akceptacji:
 - Rzym-Kamień = Romulus spójny z portretem (wilcza czapa).
 - Asyria-Antyk: Sennacheryb historycznie wcześniejszy niż Aszurbanipal — świadomie (ikoniczność > chronologia); alternatywa odrzucona: Aszur-uballit II.
 - Kobiety: Dydona-Elissa (Żelazo), Kleopatra VII, Boudika (Antyk).
+
+---
+
+# DECYZJE BATCHA 2026-07-23 (wieczór, dopisek)
+
+- **Wielka Kuźnia + Lazaret: USUNIĘTE Z PLANÓW NA STAŁE** (decyzja Macieja) — nie odparkowujemy; zamiast tego w przyszłości projektujemy NOWE budynki kolejnych epok od zera (przyszłe zlecenie dla Claude Design: lista + infografiki).
+- **Batch 14 tematów zlecony do samodzielnej realizacji** (1,2,3,4,5,6,7,8,9,10,11,15,21,23 z listy sesji; po jednym subagencie per temat, trudne=Fable: #2 drzewko, #15 Ludy Morza).
+- **Lista NA PÓŹNIEJ** (nie ruszać bez sygnału): 13 glina/ruda→brąz ilościowy · 14 balans Fenicjan ×11,4 · 20 większe plansze bitwy (czarne tło→rysowany ląd) · 22 muzyka Brązu/Żelaza z plików · zewnętrzne: 16 Cuda (Design) · 17 portrety Żelaza/Antyku (Maciej/Gemini) · 18 playtest Macieja · 19 promocja KANON (sesja lokalna).

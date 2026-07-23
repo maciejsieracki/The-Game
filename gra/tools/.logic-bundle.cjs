@@ -13908,6 +13908,12 @@ var civs_default = {
       ],
       mnoznikHandelPieniadz: 2.3,
       ikonaId: "grecy",
+      wodzowie: {
+        kamien: "Minos",
+        braz: "Agamemnon",
+        zelazo: "Leonidas",
+        antyk: "Aleksander Wielki"
+      },
       kolorHex: "#1E5AA8",
       bonusy: [
         {
@@ -14075,6 +14081,12 @@ var civs_default = {
       ],
       mnoznikHandelPieniadz: 2,
       ikonaId: "rzymianie",
+      wodzowie: {
+        kamien: "Romulus",
+        braz: "Numa Pompiliusz",
+        zelazo: "Scypion Afryka\u0144ski",
+        antyk: "Juliusz Cezar"
+      },
       kolorHex: "#8B1A1A",
       bonusy: [
         {
@@ -14247,6 +14259,12 @@ var civs_default = {
       ],
       mnoznikHandelPieniadz: 2.4,
       ikonaId: "chinczycy",
+      wodzowie: {
+        kamien: "Huang Di",
+        braz: "Yu Wielki",
+        zelazo: "Qin Shi Huang",
+        antyk: "Han Wudi"
+      },
       kolorHex: "#C41E3A",
       bonusy: [
         {
@@ -14406,6 +14424,12 @@ var civs_default = {
       ],
       mnoznikHandelPieniadz: 1.9,
       ikonaId: "inkowie",
+      wodzowie: {
+        kamien: "Manco C\xE1pac",
+        braz: "Wirakocza Inka",
+        zelazo: "Pachacuti",
+        antyk: "T\xFApac Inca Yupanqui"
+      },
       kolorHex: "#D4A017",
       bonusy: [
         {
@@ -14567,6 +14591,12 @@ var civs_default = {
       ],
       mnoznikHandelPieniadz: 1.8,
       ikonaId: "zulusi",
+      wodzowie: {
+        kamien: "Zulu kaMalandela",
+        braz: "Senzangakhona",
+        zelazo: "Czaka",
+        antyk: "Cetshwayo"
+      },
       kolorHex: "#2E7D32",
       bonusy: [
         {
@@ -14726,6 +14756,12 @@ var civs_default = {
       ],
       mnoznikHandelPieniadz: 2.1,
       ikonaId: "egipt",
+      wodzowie: {
+        kamien: "Narmer",
+        braz: "Chufu",
+        zelazo: "Ramzes II",
+        antyk: "Kleopatra VII"
+      },
       kolorHex: "#E8C547",
       bonusy: [
         {
@@ -14886,6 +14922,12 @@ var civs_default = {
       ],
       mnoznikHandelPieniadz: 2.2,
       ikonaId: "sumer",
+      wodzowie: {
+        kamien: "Alulim",
+        braz: "Gilgamesz",
+        zelazo: "Ur-Nammu",
+        antyk: "Szulgi"
+      },
       kolorHex: "#6B4226",
       bonusy: [
         {
@@ -15047,6 +15089,12 @@ var civs_default = {
       ],
       mnoznikHandelPieniadz: 1.9,
       ikonaId: "celtowie",
+      wodzowie: {
+        kamien: "Ambigatos",
+        braz: "Brennus",
+        zelazo: "Wercyngetoryks",
+        antyk: "Boudika"
+      },
       kolorHex: "#3D6B35",
       bonusy: [
         {
@@ -15206,6 +15254,12 @@ var civs_default = {
       ],
       mnoznikHandelPieniadz: 1.7,
       ikonaId: "germanie",
+      wodzowie: {
+        kamien: "Mannus",
+        braz: "Ariowist",
+        zelazo: "Arminiusz",
+        antyk: "Alaryk I"
+      },
       kolorHex: "#4A5568",
       bonusy: [
         {
@@ -15363,6 +15417,12 @@ var civs_default = {
       ],
       mnoznikHandelPieniadz: 2.4,
       ikonaId: "harappa",
+      wodzowie: {
+        kamien: "Starszy z Mehrgarh",
+        braz: "Kap\u0142an-Kr\xF3l z Mohend\u017Co-Daro",
+        zelazo: "Rad\u017Ca Dholaviry",
+        antyk: "A\u015Boka"
+      },
       kolorHex: "#C67B4E",
       bonusy: [
         {
@@ -15522,6 +15582,12 @@ var civs_default = {
       ],
       mnoznikHandelPieniadz: 2,
       ikonaId: "hetyci",
+      wodzowie: {
+        kamien: "Labarna I",
+        braz: "Hattusili I",
+        zelazo: "Suppiluliuma I",
+        antyk: "Suppiluliuma II"
+      },
       kolorHex: "#7B4B8A",
       bonusy: [
         {
@@ -15681,6 +15747,12 @@ var civs_default = {
       ],
       mnoznikHandelPieniadz: 1.8,
       ikonaId: "slowianie",
+      wodzowie: {
+        kamien: "Lech",
+        braz: "Krak",
+        zelazo: "Samo",
+        antyk: "Mieszko I"
+      },
       kolorHex: "#B83232",
       bonusy: [
         {
@@ -15839,6 +15911,12 @@ var civs_default = {
       ],
       mnoznikHandelPieniadz: 2.3,
       ikonaId: "babilonia",
+      wodzowie: {
+        kamien: "Sumu-abum",
+        braz: "Hammurabi",
+        zelazo: "Nabuchodonozor II",
+        antyk: "Nabonid"
+      },
       kolorHex: "#2B5F8A",
       bonusy: [
         {
@@ -15998,6 +16076,12 @@ var civs_default = {
       ],
       mnoznikHandelPieniadz: 1.7,
       ikonaId: "asyria",
+      wodzowie: {
+        kamien: "Puzur-Aszur I",
+        braz: "Tiglat-Pileser I",
+        zelazo: "Aszurbanipal",
+        antyk: "Sennacheryb"
+      },
       kolorHex: "#5C4033",
       bonusy: [
         {
@@ -16157,6 +16241,12 @@ var civs_default = {
       ],
       mnoznikHandelPieniadz: 2.6,
       ikonaId: "fenicjanie",
+      wodzowie: {
+        kamien: "Agenor",
+        braz: "Hiram I",
+        zelazo: "Dydona-Elissa",
+        antyk: "Hannibal Barkas"
+      },
       kolorHex: "#9B2335",
       bonusy: [
         {
@@ -19609,6 +19699,57 @@ var econ_params_default = {
       hard: 1,
       jednostka: "pieniadz/ture",
       opis: "Handel E3: dolna podloga dochodu dystansowego -- aktywna trasa nigdy nie daje mniej niz to, nawet przy dystansie bliskim progowi max."
+    }
+  },
+  handel_surowce: {
+    cena_drewno: {
+      easy: 2,
+      normal: 2,
+      hard: 2,
+      jednostka: "\xA4/szt.",
+      opis: "C-DYP-SUROWCE-Q1=B (2026-07-23): cena jednostkowa Drewna w koszyku PN dyplomacji (pozycja surowiec_ilosc, diplomacy-value-catalog.ts) \u2014 warto\u015B\u0107 PN pozycji = pakiety \xD7 pakiet_wielkosc \xD7 cena. PLACEHOLDER do strojenia przez w\u0142a\u015Bciciela w panelu Excel (gen-panel-*.py) \u2014 nie warto\u015B\u0107 finalna. Ta sama cena na wszystkich trudno\u015Bciach (parametr handlu, nie skalowania trudno\u015Bci)."
+    },
+    cena_kamien: {
+      easy: 3,
+      normal: 3,
+      hard: 3,
+      jednostka: "\xA4/szt.",
+      opis: "C-DYP-SUROWCE-Q1=B: cena jednostkowa Kamienia w koszyku PN dyplomacji. PLACEHOLDER \u2014 patrz cena_drewno."
+    },
+    cena_glina: {
+      easy: 2,
+      normal: 2,
+      hard: 2,
+      jednostka: "\xA4/szt.",
+      opis: "C-DYP-SUROWCE-Q1=B: cena jednostkowa Gliny w koszyku PN dyplomacji. PLACEHOLDER \u2014 patrz cena_drewno."
+    },
+    cena_cegla: {
+      easy: 5,
+      normal: 5,
+      hard: 5,
+      jednostka: "\xA4/szt.",
+      opis: "C-DYP-SUROWCE-Q1=B: cena jednostkowa Ceg\u0142y w koszyku PN dyplomacji. PLACEHOLDER \u2014 patrz cena_drewno."
+    },
+    cena_ceramika: {
+      easy: 6,
+      normal: 6,
+      hard: 6,
+      jednostka: "\xA4/szt.",
+      opis: "C-DYP-SUROWCE-Q1=B: cena jednostkowa Ceramiki w koszyku PN dyplomacji. PLACEHOLDER \u2014 patrz cena_drewno."
+    },
+    cena_ruda: {
+      easy: 4,
+      normal: 4,
+      hard: 4,
+      jednostka: "\xA4/szt.",
+      opis: "C-DYP-SUROWCE-Q1=B: cena jednostkowa Rudy w koszyku PN dyplomacji. PLACEHOLDER \u2014 patrz cena_drewno."
+    },
+    pakiet_wielkosc: {
+      easy: 10,
+      normal: 10,
+      hard: 10,
+      jednostka: "szt.",
+      opis: "C-DYP-SUROWCE-Q1=B: wielko\u015B\u0107 pakietu handlu ilo\u015Bciowego (surowiec_ilosc) \u2014 handel odbywa si\u0119 w pakietach po tyle sztuk. Ta sama warto\u015B\u0107 na wszystkich trudno\u015Bciach."
     }
   }
 };
@@ -23236,6 +23377,13 @@ var combat_params_default = {
   },
   counter_multiplier: 1.5,
   river_attack_mult: 0.75,
+  brod: {
+    _opis: "C-BTL-BROD-Q1 wariant C -- mechanika brodu (Ford) na planszy bitwy taktycznej (battleScene.ts). karaAtak/karaObrona sa numerycznie te same co river_attack_mult (0.75=1-0.25) ale to OSOBNY, dedykowany dla brodu wpis (tamten zasila swiatowy resolveCombat/instant-resolve dla starcia z obronca-na-rzece; ten zasila per-tile Ford w bitwie taktycznej -- oba moga byc strojone niezaleznie w przyszlosci).",
+    ruchMult: 0.5,
+    karaAtak: 0.25,
+    karaObrona: 0.25,
+    bonusObronaBrzegu: 0.15
+  },
   obl\u0119\u017Cenie: {
     wall_base_obrona: 5,
     wall_per_level_obrona: 3,

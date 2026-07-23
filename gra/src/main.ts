@@ -4346,8 +4346,13 @@ async function boot(): Promise<void> {
     // preferencje, zero wpływu na muzykę i odwrotnie. setAmbienceVolume() jest
     // tak samo bezpieczne przed startem jak setMusicVolume() powyżej (nie
     // tworzy AudioContext).
+    // `ambienceEnabled` (WŁ/WYCISZ) jest CELOWO ulotny — NIE wczytujemy go z
+    // localStorage (TEMAT #9, ten sam błąd co C-AUD-Q5=A): wyciszenie z menu
+    // pauzy ma dotyczyć tylko bieżącej rozgrywki, patrz komentarz w
+    // audio/ambiencePrefs.ts. Resetowany do WŁ. na każdym starcie rozgrywki —
+    // patrz startGameMusic() niżej. Głośność (`volume`) ZOSTAJE trwała.
     const _ambiencePrefsAtBoot = loadAmbiencePrefs();
-    let ambienceEnabled = _ambiencePrefsAtBoot.enabled;
+    let ambienceEnabled = true;
     let ambienceVolumeState = _ambiencePrefsAtBoot.volume;
     setAmbienceVolume(ambienceVolumeState);
 
@@ -4362,6 +4367,10 @@ async function boot(): Promise<void> {
       // dokonane w POPRZEDNIEJ rozgrywce (przełącznik w menu pauzy) jest
       // ulotne i nie ma tu żadnego znaczenia (patrz audio/musicPrefs.ts).
       musicEnabled = true;
+      // TEMAT #9 (ten sam wzorzec): nowa rozgrywka zawsze startuje z odgłosami
+      // natury WŁ. — wyciszenie z POPRZEDNIEJ rozgrywki jest ulotne (patrz
+      // audio/ambiencePrefs.ts).
+      ambienceEnabled = true;
       stopIntroMusic();
       setEra(player.era);
       if (musicEnabled) startMusic(mood);
@@ -8165,13 +8174,16 @@ async function boot(): Promise<void> {
       getAmbienceEnabled: () => ambienceEnabled,
       getAmbienceVolume: () => ambienceVolumeState,
       onAmbienceToggle: (enabled) => {
+        // TEMAT #9 (ten sam wzorzec co C-AUD-Q5=A): `enabled` jest ulotny
+        // (tylko bieżąca rozgrywka) — celowo NIE wchodzi do
+        // saveAmbiencePrefs (patrz audio/ambiencePrefs.ts).
         ambienceEnabled = enabled;
-        saveAmbiencePrefs({ enabled: ambienceEnabled, volume: ambienceVolumeState });
+        saveAmbiencePrefs({ volume: ambienceVolumeState });
         if (enabled) startAmbience(); else stopAmbience();
       },
       onAmbienceVolumeChange: (v) => {
         ambienceVolumeState = v;
-        saveAmbiencePrefs({ enabled: ambienceEnabled, volume: ambienceVolumeState });
+        saveAmbiencePrefs({ volume: ambienceVolumeState });
         setAmbienceVolume(v);
       },
       getAutosaveFreq: () => getAutosaveFrequency(),
