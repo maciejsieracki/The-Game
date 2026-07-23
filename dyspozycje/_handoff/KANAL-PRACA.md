@@ -3172,3 +3172,7 @@ CZEKAM-NA: sesja lokalna — „push": pull `f736ca21` na dysk właściciela
 ## [17:55 PL, 2026-07-23] CHMURA → SESJA LOKALNA — DEPLOY ROBOCZA `49563095` (bród C · handel surowcami B · HUD wg uwag Macieja)
 Trzy decyzje właściciela wdrożone: mechanika brodu (wariant C, wartości w combat-params.json), handel ilościowy surowcami miast (wariant B, ceny-placeholdery w econ-params.json sekcja handel_surowce — do strojenia w panelu), HUD bitwy: ikony na górze rosteru + likwidacja dolnego paska + minimapa/TEMPO na prawym dole. Bramki zielone, VERIFY OK, md5 `49563095b8a5d8552b4368ff4dca9ea3`. Zastępuje `f736ca21`. Commit + FF main.
 CZEKAM-NA: sesja lokalna — „push": pull `49563095` na dysk właściciela
+
+## [18:35 PL, 2026-07-23] CHMURA → SESJA LOKALNA — DEPLOY ROBOCZA `1d2f86fc` (ikonowe filtry rosteru)
+Filtry klas rosteru bitwy = same ikony z pigułką na hover (uwaga Macieja). VERIFY OK, md5 `1d2f86fc930cc7d132de9ed4322c0da7`. Zastępuje `49563095` (zawiera wszystko z niej). Wyjaśnienie dla Macieja: minimapa BITWY jest po prawej od `49563095` — jeśli widzi ją po lewej, gra na starym bundlu (stempel w lewym-dolnym rogu). Minimapa MAPY ŚWIATA celowo bez zmian (po lewej).
+CZEKAM-NA: sesja lokalna — „push": pull `1d2f86fc` na dysk właściciela

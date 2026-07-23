@@ -9,7 +9,14 @@ UWAGA: KANON i FINALNA promują się teraz OSOBNYMI skryptami (`gra/tools/publis
 wyraźne polecenie właściciela) — dlatego są logowane NIEZALEŻNIE, każdy w swojej sekcji, ze
 swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drugiego.
 
-## ROBOCZA `49563095` — 2026-07-23 · BRÓD (wariant C) · HANDEL SUROWCAMI (wariant B) · HUD: ikony na rosterze + minimapa prawy-dół — **AKTUALNA**
+## ROBOCZA `1d2f86fc` — 2026-07-23 · FILTRY ROSTERU JAKO IKONY (Konnica/Piechota/Dystansowe) — **AKTUALNA**
+
+- **Zawartość (commit `ff01479`, na `49563095`):** filtry klas jednostek w panelu rosteru bitwy = SAME IKONY 32px (podkowa/skrzyżowane miecze/łuk — te same co na medalionach kart, spójne z makietą C06; ikona „tarczy" z battle-class-map.json Design świadomie odrzucona jako niespójna), polska nazwa TYLKO w pigułce na hover, aktywny = złota obwódka+glow; chipy WSZYSTKIE/GRUPA N/GENERAŁ zostają tekstowe (dynamiczne). Uwaga Macieja „infografiki, nie napisy". Logika filtrowania bez zmian.
+- **Bramki:** tsc=0 · smoke deploy+walka 0 błędów konsoli · VERIFY OK.
+- **md5:** `1d2f86fc930cc7d132de9ed4322c0da7` · stamp `1d2f86fc`. Publikowała sesja chmurowa.
+- **Test:** roster bitwy → trzy ikonki nad listą (hover = KONNICA/PIECHOTA/DYSTANSOWE z licznikiem), klik filtruje jak dotąd.
+
+## ROBOCZA `49563095` — 2026-07-23 · BRÓD (wariant C) · HANDEL SUROWCAMI (wariant B) · HUD: ikony na rosterze + minimapa prawy-dół — **ZASTĄPIONA** (→ `1d2f86fc`)
 
 - **Zawartość (commity `81d0cef`+`dd0f651`+`67e698f`):** trzy decyzje Macieja z 2026-07-23:
   1. **Bród C-BTL-BROD-Q1=C:** ruch ×0,5 w brodzie · −25% obrony walcząc w brodzie (kara ataku −25% już istniała jako `river_attack_mult` — udokumentowana, osobne strojenie) · obrońca brzegu przy brodzie +15% obrony · tooltip jednostki pokazuje aktywny status (wiersz TEREN, czerwony/zielony) · wartości w `combat-params.json` klucz `brod` · AI: kawaleria unika zatrzymania w brodzie · legacy (bez Fordów) bit-for-bit.
