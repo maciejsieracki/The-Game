@@ -1,0 +1,21 @@
+PACZKA: PREBATTLE-TW-v1.1 · 2026-07-23
+Odpowiedź na DO-DESIGN-2026-07-23 (Zlecenie 1: pre-battle nakładka → kanon · Zlecenie 2: eksport/)
+Styl: 1E (Painted Imperial) · adaptacja TW Troy/WH3
+
+ZAWARTOŚĆ:
+1. DYSPOZYCJA-WDROZENIE.md ..................................... instrukcja: gdzie wgrać, logika stanów A/B/C
+2. MANIFEST.txt ................................................ ten plik
+3. brand-book/KANON/mockupy/The Game - PreBattle nakladka v1.1 (1E).dc.html
+   NOWY KANON — 3 klatki: atak w polu · atak na miasto (Oblegaj/Szturm) · obrona (bez Wycofaj)
+4. brand-book/KANON/mockupy/support.js ......................... runtime .dc.html (jeśli brak w repo)
+5. brand-book/KANON/CANON.md ................................... ZAKTUALIZOWANY (wiersz: Pre-battle nakładka)
+6. brand-book/KANON/START - KANON aktualny (1E).dc.html ........ ZAKTUALIZOWANY hub (karta ★; C-01 = stare)
+7. brand-book/KANON/eksport/ ................................... ZLECENIE 2 (zaległe) — tokens.css · tokens.json ·
+                                                                 motion.css · icons/* · *-icon-map.json · manifest
+8. WYMIANA-UI-DESIGN.md ........................................ NADPISZ (odpowiedź + log 2026-07-23)
+
+TWARDE ZASADY (zachowane): teren bitwy w panelu OBOWIĄZKOWY (ikona+nazwa) · mapa w tle czytelna
+(panele ~75%+blur, środek odsłonięty) · tylko realne akcje (preBattle.ts / cityAttackChoice.ts) ·
+obrona bez Wycofaj (canRetreat=false).
+ZASTĘPUJE: C-01 Pre-bitwa v3 (pełnoekranowy).
+CEL W REPO: docs/ux/claude-design/01-propozycje-z-design/brand-book/

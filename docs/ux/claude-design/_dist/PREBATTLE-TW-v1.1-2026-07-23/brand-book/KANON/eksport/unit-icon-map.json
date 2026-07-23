@@ -1,0 +1,29 @@
+{
+  "note": "unit-icon-map — 18 kategorii jednostek → eksport/icons/units/unit-*.svg (POZIOM B, 24×24, stroke currentColor, 1E). Aliasy nazw z gry poniżej.",
+  "map": {
+    "lucznik": "unit-lucznik",
+    "procarz": "unit-procarz",
+    "oszczepnik": "unit-oszczepnik",
+    "wlocznik": "unit-wlocznik",
+    "falanga": "unit-falanga",
+    "legionista": "unit-legionista",
+    "miecznik": "unit-miecznik",
+    "maczuga": "unit-maczuga",
+    "topor": "unit-topor",
+    "konnica": "unit-konnica",
+    "rydwan": "unit-rydwan",
+    "obleznicza": "unit-obleznicza",
+    "zwiadowca": "unit-zwiadowca",
+    "osadnik": "unit-osadnik",
+    "robotnik": "unit-robotnik",
+    "galera": "unit-galera",
+    "super": "unit-super",
+    "domyslny": "unit-domyslny"
+  },
+  "aliasy": {
+    "hastati": "legionista", "principes": "legionista", "triarii": "wlocznik",
+    "hoplita": "falanga", "peltasta": "oszczepnik", "kataphraktos": "konnica",
+    "balista": "obleznicza", "taran": "obleznicza", "katapulta": "obleznicza",
+    "osadnicy": "osadnik", "pionierzy": "robotnik", "trirema": "galera"
+  }
+}

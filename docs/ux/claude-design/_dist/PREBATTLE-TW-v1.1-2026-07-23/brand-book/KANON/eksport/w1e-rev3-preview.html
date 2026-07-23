@@ -1,0 +1,11 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><style>body{margin:0;background:#080a12;display:flex;gap:26px;padding:44px;flex-wrap:wrap;font-family:sans-serif}.c{text-align:center}.m{width:120px;height:120px;border-radius:50%;background:radial-gradient(circle at 38% 30%,#1a2230,#0a0d14);border:2px solid #a08030;display:inline-flex;align-items:center;justify-content:center;color:#e8d88a}.m svg{width:66px;height:66px}.l{color:#c8b898;font-size:12px;margin-top:8px}</style></head><body>
+<div class="c"><div class="m" id="a"></div><div class="l">epoch-kamien (topór)</div></div>
+<div class="c"><div class="m" id="b"></div><div class="l">epoch-braz (miecz)</div></div>
+<div class="c"><div class="m" id="c"></div><div class="l">epoch-zelazo</div></div>
+<div class="c"><div class="m" id="d"></div><div class="l">civ-rzymianie (aquila)</div></div>
+<div class="c"><div class="m" id="e"></div><div class="l">civ-chinczycy (mianguan)</div></div>
+<script>
+const f=(id,p)=>fetch(p).then(r=>r.text()).then(s=>document.getElementById(id).innerHTML=s);
+f('a','icons/epochs/epoch-kamien.svg');f('b','icons/epochs/epoch-braz.svg');f('c','icons/epochs/epoch-zelazo.svg');
+f('d','icons/civilizations/civ-rzymianie.svg');f('e','icons/civilizations/civ-chinczycy.svg');
+</script></body></html>

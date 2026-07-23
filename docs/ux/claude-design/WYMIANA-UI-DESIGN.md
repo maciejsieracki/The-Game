@@ -1095,3 +1095,17 @@ Mapa w `HANDOFF.md` używa **PascalCase** (`MainMenu.ts`, `TechTree.ts`…) — 
 
 **Nie robione:** żadna zmiana kodu gry, brak commita (zgodnie ze zleceniem — commit robi Maciej).
 
+
+---
+
+## [2026-07-23] DESIGN → INTEGRATOR/MACIEJ — paczka PREBATTLE-TW-v1.1 + eksport/ (ODEBRANA i zainstalowana)
+
+**Od Design (treść odpowiedzi z paczki):** Zlecenie 1 wykonane — `PreBattle nakladka v1.1 (1E).dc.html`, 3 klatki dopracowane do kanonu: panele ~75% + blur (mapa czytelna), kanoniczne CTA i pasek szans jak w TW-v5, znacznik hexa miasta w klatce B, pulsujące markery, kbd-chipy. Twarde zasady zachowane: teren obowiązkowy, realne akcje, obrona bez Wycofaj. Hub: nowa karta ★, C-01 oznaczony jako stare. Zlecenie 2 wykonane — cały `eksport/` (348 plików: tokens.css/json, motion.css, icons/, icon-mapy) w paczce.
+
+**Instalacja (integrator, 2026-07-23):**
+- snapshot → `_dist/PREBATTLE-TW-v1.1-2026-07-23/` (komplet z paczki);
+- żywy KANON → `01-propozycje-z-design/brand-book/KANON/`: makieta PreBattle v1.1, `CANON.md` (nadpisany — wiersz Pre-battle), hub START (nadpisany — karta ★), **cały `eksport/`** (348 plików — Zlecenie 2 ZAMKNIĘTE);
+- `support.js` już był w repo — nie nadpisywany;
+- ten plik: NIE nadpisany wersją z paczki (zasada append-only) — odpowiedź Design dopisana powyżej.
+
+**Status:** PREBATTLE v1.1 = NOWY KANON. Wdrożenie w kodzie (`preBattle.ts` / `cityAttackChoice.ts`) — w toku, zlecone subagentowi wg DYSPOZYCJA-WDROZENIE (logika stanów A/B/C). Nowe zlecenia dla Design: `DO-DESIGN-2026-07-23/DYSPOZYCJA-DLA-DESIGN-TURA-2.md` (drzewko technologii · Cuda · dosłanie 8 plików kanonu).
