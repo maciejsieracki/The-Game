@@ -94,6 +94,7 @@ import {
   applyFilterChip1E,
   applyFilterIconChip1E,
   FILTER_ALL_SVG,
+  FILTER_GENERAL_SVG,
   applyGroupBadge1E,
   applyMinimap1E,
   applyModeHint1E,
@@ -13020,13 +13021,13 @@ export class BattleScene {
     label: string, active: boolean, onClick: () => void,
     opts?: {
       fullWidth?: boolean;
-      kind?: 'mounted' | 'melee' | 'ranged' | 'all' | 'all-icon' | 'group';
+      kind?: 'mounted' | 'melee' | 'ranged' | 'all' | 'all-icon' | 'general-icon' | 'group';
       groupId?: string;
     },
   ): HTMLElement {
     const fullWidth = opts?.fullWidth !== false;
     const kind = opts?.kind ?? 'all';
-    const isClassIcon = kind === 'mounted' || kind === 'melee' || kind === 'ranged' || kind === 'all-icon';
+    const isClassIcon = kind === 'mounted' || kind === 'melee' || kind === 'ranged' || kind === 'all-icon' || kind === 'general-icon';
     const btn = document.createElement('button');
     btn.type = 'button';
     if (!isClassIcon) btn.textContent = label;
@@ -13035,17 +13036,21 @@ export class BattleScene {
       btn.dataset.groupId = opts.groupId;
     } else if (kind === 'all' || kind === 'all-icon') {
       btn.dataset.rosterChip = 'all';
+    } else if (kind === 'general-icon') {
+      btn.dataset.rosterChip = 'general';
     } else {
       btn.dataset.rosterChip = 'kind-' + kind;
     }
     if (isClassIcon) {
       btn.innerHTML = kind === 'all-icon'
         ? FILTER_ALL_SVG
-        : ROSTER_TYPE_SVG[kind]
-          .replace(/width="14"/g, 'width="16"')
-          .replace(/height="14"/g, 'height="16"');
+        : kind === 'general-icon'
+          ? FILTER_GENERAL_SVG
+          : ROSTER_TYPE_SVG[kind]
+            .replace(/width="14"/g, 'width="16"')
+            .replace(/height="14"/g, 'height="16"');
       btn.setAttribute('aria-label', label);
-      applyFilterIconChip1E(btn, active, kind === 'all-icon' ? 'all' : kind);
+      applyFilterIconChip1E(btn, active, kind === 'all-icon' ? 'all' : kind === 'general-icon' ? 'group' : kind);
     } else {
       applyFilterChip1E(btn, active, kind);
     }
@@ -17017,7 +17022,7 @@ export class BattleScene {
         'Genera\u0142',
         !!this._generalPanel,
         () => this._toggleGeneralPanel(),
-        { kind: 'group', fullWidth: false },
+        { kind: 'general-icon', fullWidth: false },
       ));
     }
   }

@@ -1133,3 +1133,9 @@ Mapa w `HANDOFF.md` używa **PascalCase** (`MainMenu.ts`, `TechTree.ts`…) — 
 ## [2026-07-23] MACIEJ → DESIGN — werdykt DRZEWKO-TECH-v1: USUNĄĆ WSZYSTKIE KRAWĘDZIE
 
 Decyzja właściciela: krawędzie (magistrale+mostki) w obecnej formie NIECZYTELNE — usunąć W CAŁOŚCI. Drzewko = siatka węzłów w pasmach epok; zależności wyłącznie opisowo (węzeł: „brak: X · Y"; karta węzła: AND ✓/✗). „Pokaż ścieżkę" działa na węzłach (podświetlenie łańcucha, bez linii). Wariant „kotwice AND" — nie robić. Oczekiwana paczka DRZEWKO-TECH-v1.1 + zaległy KANON-SYNC-6. Koryguje to wcześniejszą wstępną akceptację mostków przez integratora — werdykt właściciela nadrzędny.
+
+---
+
+## [2026-07-23] DESIGN → INTEGRATOR — paczka DRZEWKO-TECH-v1.1 + KANON-SYNC-6 (ODEBRANA, zainstalowana)
+
+**v1.1 wg werdyktu Macieja:** siatka BEZ krawędzi (klatki A i C; badge i legenda krawędzi zdjęte), „pokaż ścieżkę" działa na węzłach, karty węzłów bez ikon epok. Wariant STANDALONE (~1 MB, React/Babel wbudowane) — działa offline, render zweryfikowany. **KANON-SYNC-6 dojechał w komplecie:** A08 Tryb budowy ulepszen · A04 Panel heks kontekst · C23 Szczegoly bitwy v1 · C12 Koniec bitwy v3 · Jednostki infografiki kanon v1 · Atlas ikon bitwy i jednostek — hub kanonu ma teraz 100% żywych linków. Zainstalowane: snapshot `_dist/DRZEWKO-TECH-v1.1-2026-07-23/` + KANON (7 makiet, CANON.md, hub). Propozycja Design „ikony per-technologia (32 szt.) osobnym zleceniem" — CZEKA na decyzję Macieja.

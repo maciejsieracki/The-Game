@@ -1,0 +1,14 @@
+PACZKA: DRZEWKO-TECH-v1.1 · 2026-07-23
+Werdykt Macieja: bez krawędzi. + KANON-SYNC-6 (ponownie) + STANDALONE inline (proxy/unpkg).
+
+ZAWARTOŚĆ:
+1. DYSPOZYCJA-WDROZENIE.md ..... zmiany wg werdyktu + wgranie + rozwiązanie proxy
+2. MANIFEST.txt ................ ten plik
+3. brand-book/KANON/mockupy/The Game - Drzewko technologii siatka v1.1 (1E).dc.html  ← NOWY KANON
+4. brand-book/KANON/mockupy/The Game - Drzewko technologii graf v1 (1E).dc.html      ← stare (link z hubu)
+5. brand-book/KANON/mockupy/ A08 · A04 · C23 v1 · C12 v3 · Jednostki infografiki v1 · Atlas ikon  ← KANON-SYNC-6
+6. brand-book/KANON/mockupy/support.js
+7. brand-book/KANON/CANON.md · START - KANON aktualny (1E).dc.html · WYMIANA-UI-DESIGN.md  ← NADPISZ
+8. standalone/Drzewko technologii siatka v1.1 - STANDALONE.html  ← 1 plik, działa bez unpkg/za proxy
+
+CEL W REPO: docs/ux/claude-design/01-propozycje-z-design/brand-book/

@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Georgia&display=swap');
+  * { box-sizing: border-box; }
+  body { margin: 0; }
+  .imp-row:hover { border-color: rgba(232,216,138,.5) !important; background: rgba(232,216,138,.06) !important; }
+  .a08-scroll::-webkit-scrollbar { width: 8px; }
+  .a08-scroll::-webkit-scrollbar-track { background: rgba(0,0,0,.3); }
+  .a08-scroll::-webkit-scrollbar-thumb { background: rgba(232,216,138,.28); border-radius: 4px; }
+</style>
+</helmet>
+<section data-screen-label="A-08 Tryb budowy ulepszeń" style="width:1920px;height:1080px;position:relative;overflow:hidden;background:#0a1410;font-family:'Segoe UI',Tahoma,sans-serif;">
+
+  <!-- MAP placeholder (silnik 3D) -->
+  <div style="position:absolute;inset:0;background:
+      radial-gradient(120% 80% at 40% 30%, #17301f, #0a1410 70%),
+      repeating-linear-gradient(60deg, rgba(255,255,255,.018) 0 2px, transparent 2px 46px),
+      repeating-linear-gradient(-60deg, rgba(255,255,255,.018) 0 2px, transparent 2px 46px);"></div>
+  <!-- hex highlight (selected tile in build mode) -->
+  <div style="position:absolute;left:760px;top:470px;width:150px;height:130px;">
+    <svg width="150" height="130" viewBox="0 0 150 130" fill="none"><polygon points="37,4 113,4 149,65 113,126 37,126 1,65" stroke="#e8d88a" stroke-width="2.5" fill="rgba(232,216,138,.08)"/></svg>
+    <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);color:#e8d88a;"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20V9l4-3 4 3v11Z"/><path d="M3 13h8"/><path d="M14 20c0-3 1-5 3.5-5S21 17 21 20"/><path d="M17.5 15v5"/></svg></div>
+  </div>
+
+  <!-- TOP BANNER -->
+  <div style="position:absolute;top:26px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:18px;padding:14px 26px;border:2px solid rgba(232,216,138,.45);border-radius:12px;background:linear-gradient(180deg,rgba(18,24,32,.96),rgba(8,10,16,.96));box-shadow:0 12px 40px rgba(0,0,0,.6);">
+    <span style="width:40px;height:40px;flex:none;border-radius:50%;background:radial-gradient(circle at 38% 30%,#1a2230,#0a0d14);border:2px solid #e8d88a;display:flex;align-items:center;justify-content:center;color:#e8d88a;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 6l4 4-9 9-4 1 1-4Z"/><path d="M12 8l4 4"/></svg></span>
+    <div>
+      <div style="font-family:Georgia,serif;font-size:19px;color:#e8d88a;letter-spacing:.02em;">Tryb budowy ulepszeń</div>
+      <div style="font-size:12px;color:#8a8070;margin-top:2px;">Wybierz ulepszenie z panelu, następnie kliknij pole na mapie</div>
+    </div>
+    <div style="width:1px;height:34px;background:rgba(232,216,138,.25);margin:0 4px;"></div>
+    <button style="display:flex;align-items:center;gap:8px;padding:9px 16px;border:2px solid rgba(232,216,138,.4);border-radius:8px;background:linear-gradient(180deg,#161c28,#0a0d14);color:#e8d88a;font-family:'Segoe UI';font-weight:600;letter-spacing:.12em;text-transform:uppercase;font-size:12px;cursor:pointer;">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6 18 18M18 6 6 18"/></svg> Wyjdź · ESC
+    </button>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div style="position:absolute;top:26px;right:26px;bottom:26px;width:340px;display:flex;flex-direction:column;border:2px solid rgba(232,216,138,.45);border-radius:14px;overflow:hidden;background:linear-gradient(180deg,rgba(18,24,32,.97),rgba(8,10,16,.97));box-shadow:0 16px 40px rgba(0,0,0,.6);">
+    <!-- header -->
+    <div style="padding:16px 20px;border-bottom:1px solid rgba(232,216,138,.2);background:linear-gradient(90deg,rgba(232,216,138,.1),transparent);">
+      <div style="font-family:Georgia,serif;font-size:18px;color:#e8d88a;">Budowa na polu</div>
+      <div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#8a8070;margin-top:2px;">Równiny · rzeka · (14, 8)</div>
+    </div>
+
+    <div class="a08-scroll" style="flex:1;overflow-y:auto;padding:16px 18px;">
+      <!-- MIASTO -->
+      <div style="font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:#a08030;margin-bottom:10px;">Osadnictwo</div>
+      <div class="imp-row" style="display:flex;align-items:center;gap:12px;padding:11px 12px;border:1px solid rgba(232,216,138,.4);border-radius:10px;background:rgba(232,216,138,.05);margin-bottom:18px;cursor:pointer;">
+        <span style="width:38px;height:38px;flex:none;border-radius:50%;background:radial-gradient(circle at 38% 30%,#1a2230,#0a0d14);border:2px solid #e8d88a;display:flex;align-items:center;justify-content:center;color:#e8d88a;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V11l5-4 5 4v9Z"/><path d="M14 20v-6h5v6"/><path d="M8 20v-4h2v4"/></svg></span>
+        <div style="flex:1;"><div style="font-size:14px;color:#e8e0c8;font-weight:600;">Załóż miasto</div><div style="font-size:11px;color:#8a8070;">Nowa osada na tym polu</div></div>
+        <div style="font-size:12px;color:#e8d88a;font-weight:700;">1 osad.</div>
+      </div>
+
+      <!-- ULEPSZENIA -->
+      <div style="font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:#a08030;margin-bottom:10px;">Ulepszenia terenu</div>
+      <div style="display:flex;flex-direction:column;gap:7px;">
+
+        <!-- SELECTED -->
+        <div class="imp-row" style="display:flex;align-items:center;gap:11px;padding:10px 11px;border:2px solid #e8d88a;border-radius:10px;background:rgba(232,216,138,.08);cursor:pointer;box-shadow:0 0 18px rgba(232,216,138,.18);">
+          <span style="width:34px;height:34px;flex:none;border-radius:50%;background:radial-gradient(circle at 38% 30%,#1a2230,#0a0d14);border:2px solid #e8d88a;display:flex;align-items:center;justify-content:center;color:#e8d88a;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20V9l4-3 4 3v11Z"/><path d="M3 13h8"/><path d="M14 20c0-3 1-5 3.5-5S21 17 21 20"/><path d="M17.5 15v5"/></svg></span>
+          <div style="flex:1;"><div style="font-size:13.5px;color:#f4e6a8;font-weight:600;">Farma</div><div style="font-size:11px;color:#7ad0a0;">+3 żywność</div></div>
+          <div style="font-size:12px;color:#e8d88a;font-weight:700;">2 P</div>
+        </div>
+
+        <!-- Irygacja -->
+        <div class="imp-row" style="display:flex;align-items:center;gap:11px;padding:10px 11px;border:1px solid rgba(232,216,138,.16);border-radius:10px;background:rgba(255,255,255,.02);cursor:pointer;">
+          <span style="width:34px;height:34px;flex:none;border-radius:50%;background:radial-gradient(circle at 38% 30%,#1a2230,#0a0d14);border:2px solid #a08030;display:flex;align-items:center;justify-content:center;color:#e8d88a;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M4 12h16M4 17h16"/><path d="M8 4v3M14 4v3M11 9v3M17 14v3M6 14v3"/></svg></span>
+          <div style="flex:1;"><div style="font-size:13.5px;color:#e8e0c8;">Irygacja</div><div style="font-size:11px;color:#7ad0a0;">+5 żywność</div></div>
+          <div style="font-size:12px;color:#e8d88a;font-weight:700;">4 P</div>
+        </div>
+
+        <!-- Bydło -->
+        <div class="imp-row" style="display:flex;align-items:center;gap:11px;padding:10px 11px;border:1px solid rgba(232,216,138,.16);border-radius:10px;background:rgba(255,255,255,.02);cursor:pointer;">
+          <span style="width:34px;height:34px;flex:none;border-radius:50%;background:radial-gradient(circle at 38% 30%,#1a2230,#0a0d14);border:2px solid #a08030;display:flex;align-items:center;justify-content:center;color:#e8d88a;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8c-1.6-.4-2.8-1.8-3-3.5 1.7-.1 3.2 1 3.6 2.6M18 8c1.6-.4 2.8-1.8 3-3.5-1.7-.1-3.2 1-3.6 2.6"/><path d="M6.4 7.2C6.4 5 8.9 3.8 12 3.8s5.6 1.2 5.6 3.4c0 3.4-2.5 6.2-5.6 6.2S6.4 10.6 6.4 7.2Z"/><circle cx="10" cy="7.4" r="1"/><circle cx="14" cy="7.4" r="1"/><path d="M9.5 11.5c1.5.9 3.5.9 5 0"/></svg></span>
+          <div style="flex:1;"><div style="font-size:13.5px;color:#e8e0c8;">Bydło</div><div style="font-size:11px;color:#8a8070;">+2 żywność · +1 handel</div></div>
+          <div style="font-size:12px;color:#e8d88a;font-weight:700;">3 P</div>
+        </div>
+
+        <!-- Owce -->
+        <div class="imp-row" style="display:flex;align-items:center;gap:11px;padding:10px 11px;border:1px solid rgba(232,216,138,.16);border-radius:10px;background:rgba(255,255,255,.02);cursor:pointer;">
+          <span style="width:34px;height:34px;flex:none;border-radius:50%;background:radial-gradient(circle at 38% 30%,#1a2230,#0a0d14);border:2px solid #a08030;display:flex;align-items:center;justify-content:center;color:#e8d88a;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 15c-1.4 0-2.5-1-2.5-2.3S4.6 10.4 6 10.4c.2-1.3 1.4-2.2 2.8-2 .6-1 1.9-1.4 3.1-1 1-.8 2.7-.6 3.4.6 1.3 0 2.4 1 2.4 2.3 0 .5-.2 1-.5 1.4"/><path d="M17 12.6c.5-1 1.6-1.3 1.6-.1"/><path d="M6.5 15v2.6M9.5 15.3v2.3M12.5 15.3v2.3M15.3 14.8v2.8"/></svg></span>
+          <div style="flex:1;"><div style="font-size:13.5px;color:#e8e0c8;">Owce</div><div style="font-size:11px;color:#8a8070;">+1 żywność · +1 handel</div></div>
+          <div style="font-size:12px;color:#e8d88a;font-weight:700;">3 P</div>
+        </div>
+
+        <!-- Kopalnia -->
+        <div class="imp-row" style="display:flex;align-items:center;gap:11px;padding:10px 11px;border:1px solid rgba(232,216,138,.16);border-radius:10px;background:rgba(255,255,255,.02);cursor:pointer;">
+          <span style="width:34px;height:34px;flex:none;border-radius:50%;background:radial-gradient(circle at 38% 30%,#1a2230,#0a0d14);border:2px solid #a08030;display:flex;align-items:center;justify-content:center;color:#e8d88a;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4l6 6-2 2-6-6Z"/><path d="M12 6 4 14l-1 5 5-1 8-8"/></svg></span>
+          <div style="flex:1;"><div style="font-size:13.5px;color:#e8e0c8;">Kopalnia</div><div style="font-size:11px;color:#8a8070;">+2 produkcja</div></div>
+          <div style="font-size:12px;color:#e8d88a;font-weight:700;">3 P</div>
+        </div>
+
+        <!-- Glinianka -->
+        <div class="imp-row" style="display:flex;align-items:center;gap:11px;padding:10px 11px;border:1px solid rgba(232,216,138,.16);border-radius:10px;background:rgba(255,255,255,.02);cursor:pointer;">
+          <span style="width:34px;height:34px;flex:none;border-radius:50%;background:radial-gradient(circle at 38% 30%,#1a2230,#0a0d14);border:2px solid #a08030;display:flex;align-items:center;justify-content:center;color:#e8d88a;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10c2.5 1.4 5.5 2.1 9 2.1s6.5-.7 9-2.1"/><path d="M3 10c0 3.3 4 6 9 6s9-2.7 9-6"/><path d="M9 15.6l1-4.2M15 15.6l-1-4.2"/></svg></span>
+          <div style="flex:1;"><div style="font-size:13.5px;color:#e8e0c8;">Glinianka</div><div style="font-size:11px;color:#8a8070;">+1 produkcja · +1 handel</div></div>
+          <div style="font-size:12px;color:#e8d88a;font-weight:700;">2 P</div>
+        </div>
+
+        <!-- Obóz łowiecki -->
+        <div class="imp-row" style="display:flex;align-items:center;gap:11px;padding:10px 11px;border:1px solid rgba(232,216,138,.16);border-radius:10px;background:rgba(255,255,255,.02);cursor:pointer;">
+          <span style="width:34px;height:34px;flex:none;border-radius:50%;background:radial-gradient(circle at 38% 30%,#1a2230,#0a0d14);border:2px solid #a08030;display:flex;align-items:center;justify-content:center;color:#e8d88a;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 18 10 6l6 12Z"/><path d="M10 18v-6"/><path d="M14 4 21 18"/><path d="M21 18l-2.4-.4M21 18l-.5-2.4"/></svg></span>
+          <div style="flex:1;"><div style="font-size:13.5px;color:#e8e0c8;">Obóz łowiecki</div><div style="font-size:11px;color:#8a8070;">+2 żywność</div></div>
+          <div style="font-size:12px;color:#e8d88a;font-weight:700;">2 P</div>
+        </div>
+
+        <!-- Wyrąb lasu -->
+        <div class="imp-row" style="display:flex;align-items:center;gap:11px;padding:10px 11px;border:1px solid rgba(232,216,138,.16);border-radius:10px;background:rgba(255,255,255,.02);cursor:pointer;">
+          <span style="width:34px;height:34px;flex:none;border-radius:50%;background:radial-gradient(circle at 38% 30%,#1a2230,#0a0d14);border:2px solid #a08030;display:flex;align-items:center;justify-content:center;color:#e8d88a;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 7 11h3l-4 7h12l-4-7h3Z"/><path d="M12 18v3"/></svg></span>
+          <div style="flex:1;"><div style="font-size:13.5px;color:#e8e0c8;">Wyrąb lasu</div><div style="font-size:11px;color:#8a8070;">+2 produkcja</div></div>
+          <div style="font-size:12px;color:#e8d88a;font-weight:700;">2 P</div>
+        </div>
+
+        <!-- Droga -->
+        <div class="imp-row" style="display:flex;align-items:center;gap:11px;padding:10px 11px;border:1px solid rgba(232,216,138,.16);border-radius:10px;background:rgba(255,255,255,.02);cursor:pointer;">
+          <span style="width:34px;height:34px;flex:none;border-radius:50%;background:radial-gradient(circle at 38% 30%,#1a2230,#0a0d14);border:2px solid #a08030;display:flex;align-items:center;justify-content:center;color:#e8d88a;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3 6 21M15 3l3 18"/><path d="M12 5v2M12 11v2M12 17v2"/></svg></span>
+          <div style="flex:1;"><div style="font-size:13.5px;color:#e8e0c8;">Droga</div><div style="font-size:11px;color:#8a8070;">+ruch · +handel</div></div>
+          <div style="font-size:12px;color:#e8d88a;font-weight:700;">1 P</div>
+        </div>
+
+        <!-- LOCKED: Kamieniołom -->
+        <div style="display:flex;align-items:center;gap:11px;padding:10px 11px;border:1px solid rgba(232,216,138,.1);border-radius:10px;background:rgba(255,255,255,.01);opacity:.5;cursor:not-allowed;">
+          <span style="width:34px;height:34px;flex:none;border-radius:50%;background:radial-gradient(circle at 38% 30%,#151a22,#0a0d14);border:2px solid #5a5442;display:flex;align-items:center;justify-content:center;color:#8a8070;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16"/><path d="M6 20l3-9 4 3 3-6 4 12"/></svg></span>
+          <div style="flex:1;"><div style="font-size:13.5px;color:#a8a290;">Kamieniołom</div><div style="font-size:11px;color:#8a8070;">Wymaga: Murarstwo</div></div>
+          <span style="color:#8a8070;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></span>
+        </div>
+
+        <!-- LOCKED: Tarasy -->
+        <div style="display:flex;align-items:center;gap:11px;padding:10px 11px;border:1px solid rgba(232,216,138,.1);border-radius:10px;background:rgba(255,255,255,.01);opacity:.5;cursor:not-allowed;">
+          <span style="width:34px;height:34px;flex:none;border-radius:50%;background:radial-gradient(circle at 38% 30%,#151a22,#0a0d14);border:2px solid #5a5442;display:flex;align-items:center;justify-content:center;color:#8a8070;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20h4v-3h4v-3h4v-3h4"/><path d="M3 20v-2M7 17v-2M11 14v-2M15 11V9"/></svg></span>
+          <div style="flex:1;"><div style="font-size:13.5px;color:#a8a290;">Tarasy</div><div style="font-size:11px;color:#8a8070;">Wymaga: Uprawa roli</div></div>
+          <span style="color:#8a8070;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></span>
+        </div>
+
+      </div>
+
+      <!-- CUDA ŚWIATA -->
+      <div style="font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:#c9a84c;margin:20px 0 10px;">Cuda świata</div>
+      <div class="imp-row" style="display:flex;align-items:center;gap:11px;padding:11px 12px;border:1px solid rgba(232,216,138,.35);border-radius:10px;background:linear-gradient(180deg,rgba(232,216,138,.09),rgba(232,216,138,.02));cursor:pointer;">
+        <span style="width:36px;height:36px;flex:none;border-radius:50%;background:radial-gradient(circle at 38% 30%,#2a2416,#12100a);border:2px solid #e8d88a;display:flex;align-items:center;justify-content:center;color:#f4e6a8;"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l2.4 5 5.6.5-4.2 3.7 1.3 5.5L12 20l-5.1 2.7 1.3-5.5L4 13.5l5.6-.5Z"/></svg></span>
+        <div style="flex:1;"><div style="font-size:13.5px;color:#f4e6a8;font-weight:600;">Wielka Piramida</div><div style="font-size:11px;color:#c9a84c;">Cud · dostępny na tym polu</div></div>
+        <div style="font-size:12px;color:#e8d88a;font-weight:700;">18 P</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- caption -->
+  <div style="position:absolute;left:30px;bottom:24px;font-size:12px;color:#5a6558;letter-spacing:.1em;">A-08 · Tryb budowy ulepszeń · brand-book 1E · zero emoji</div>
+
+</section>
+</x-dc>
+</body>
+</html>

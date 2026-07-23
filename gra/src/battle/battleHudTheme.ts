@@ -548,33 +548,39 @@ export function applyFilterChip1E(
  * złota obwódka + delikatne złote wypełnienie, jak dotychczasowy pełny chip
  * (C09 v5 · uwaga właściciela: filtry klas mają być ikonami, nie napisami).
  */
-/** „Wszystkie" — cztery kropki ułożone w kwadrat (uwaga Macieja 2026-07-23). */
+/** „Wszystkie" — cztery kropki w kwadracie, 1:1 z makiety C06 Pole bitwy odswiezenie (1E). */
 export const FILTER_ALL_SVG =
-  '<svg width="16" height="16" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true">' +
-  '<circle cx="4.5" cy="4.5" r="1.8"/><circle cx="9.5" cy="4.5" r="1.8"/>' +
-  '<circle cx="4.5" cy="9.5" r="1.8"/><circle cx="9.5" cy="9.5" r="1.8"/></svg>';
+  '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">' +
+  '<circle cx="7" cy="7" r="2.1"/><circle cx="17" cy="7" r="2.1"/>' +
+  '<circle cx="7" cy="17" r="2.1"/><circle cx="17" cy="17" r="2.1"/></svg>';
+
+/** „Generał" — gwiazdka, 1:1 z makiety C06 Pole bitwy odswiezenie (1E). */
+export const FILTER_GENERAL_SVG =
+  '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" aria-hidden="true">' +
+  '<path d="M12 3.5 14.1 9h5.6l-4.5 3.4 1.7 5.6L12 15.7 7.1 21l1.7-5.6L4.3 9h5.6Z"/></svg>';
 
 export function applyFilterIconChip1E(
   el: HTMLButtonElement,
   active: boolean,
-  kind: 'mounted' | 'melee' | 'ranged' | 'all',
+  kind: 'mounted' | 'melee' | 'ranged' | 'all' | 'group',
 ): void {
   const k = FILTER_CHIP_KIND[kind];
+  // 1:1 z makietą C06: aktywny = pełne złoto + ciemna ikona; nieaktywny = gradient granatowy.
   Object.assign(el.style, {
     display: 'inline-flex',
     alignItems: 'center',
     justifyContent: 'center',
-    width: '32px',
-    height: '32px',
+    width: '34px',
+    height: '34px',
     padding: '0',
     flexShrink: '0',
-    borderRadius: '8px',
+    borderRadius: '9px',
     cursor: 'pointer',
     boxSizing: 'border-box',
     lineHeight: '0',
-    border: active ? `2px solid ${BATTLE_GOLD}` : `1px solid ${k.border}`,
-    background: active ? 'rgba(232,216,138,0.16)' : 'rgba(255,255,255,0.02)',
-    color: active ? '#f4e6a8' : k.color,
+    border: active ? 'none' : `1px solid ${k.border}`,
+    background: active ? '#e8d88a' : 'linear-gradient(180deg,#161c28,#0a0d14)',
+    color: active ? '#2e2708' : k.color,
     boxShadow: active ? '0 0 8px rgba(232,216,138,0.35)' : 'none',
     transition: 'border-color 0.12s, box-shadow 0.12s, color 0.12s, background 0.12s',
   });
