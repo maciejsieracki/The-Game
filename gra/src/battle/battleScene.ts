@@ -93,6 +93,7 @@ import {
   applyDeployToolbarBar,
   applyFilterChip1E,
   applyFilterIconChip1E,
+  FILTER_ALL_SVG,
   applyGroupBadge1E,
   applyMinimap1E,
   applyModeHint1E,
@@ -13019,30 +13020,32 @@ export class BattleScene {
     label: string, active: boolean, onClick: () => void,
     opts?: {
       fullWidth?: boolean;
-      kind?: 'mounted' | 'melee' | 'ranged' | 'all' | 'group';
+      kind?: 'mounted' | 'melee' | 'ranged' | 'all' | 'all-icon' | 'group';
       groupId?: string;
     },
   ): HTMLElement {
     const fullWidth = opts?.fullWidth !== false;
     const kind = opts?.kind ?? 'all';
-    const isClassIcon = kind === 'mounted' || kind === 'melee' || kind === 'ranged';
+    const isClassIcon = kind === 'mounted' || kind === 'melee' || kind === 'ranged' || kind === 'all-icon';
     const btn = document.createElement('button');
     btn.type = 'button';
     if (!isClassIcon) btn.textContent = label;
     if (kind === 'group' && opts?.groupId) {
       btn.dataset.rosterChip = 'group';
       btn.dataset.groupId = opts.groupId;
-    } else if (kind === 'all') {
+    } else if (kind === 'all' || kind === 'all-icon') {
       btn.dataset.rosterChip = 'all';
     } else {
       btn.dataset.rosterChip = 'kind-' + kind;
     }
     if (isClassIcon) {
-      btn.innerHTML = ROSTER_TYPE_SVG[kind]
-        .replace(/width="14"/g, 'width="16"')
-        .replace(/height="14"/g, 'height="16"');
+      btn.innerHTML = kind === 'all-icon'
+        ? FILTER_ALL_SVG
+        : ROSTER_TYPE_SVG[kind]
+          .replace(/width="14"/g, 'width="16"')
+          .replace(/height="14"/g, 'height="16"');
       btn.setAttribute('aria-label', label);
-      applyFilterIconChip1E(btn, active, kind);
+      applyFilterIconChip1E(btn, active, kind === 'all-icon' ? 'all' : kind);
     } else {
       applyFilterChip1E(btn, active, kind);
     }
@@ -13096,7 +13099,7 @@ export class BattleScene {
       'Wszystkie',
       this._isDeploySelectionAll(),
       () => this._selectDeployAllToggle(),
-      { kind: 'all', fullWidth: false },
+      { kind: 'all-icon', fullWidth: false },
     ));
 
     const groups = this._sortedGroupIds();
@@ -16991,7 +16994,7 @@ export class BattleScene {
           this._showBattleRosterFeedback('Wszystkie: ' + ids.length);
         }
       },
-      { kind: 'all', fullWidth: false },
+      { kind: 'all-icon', fullWidth: false },
     ));
 
     if (groups.length > 0) {

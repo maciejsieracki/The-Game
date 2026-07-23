@@ -548,10 +548,16 @@ export function applyFilterChip1E(
  * złota obwódka + delikatne złote wypełnienie, jak dotychczasowy pełny chip
  * (C09 v5 · uwaga właściciela: filtry klas mają być ikonami, nie napisami).
  */
+/** „Wszystkie" — cztery kropki ułożone w kwadrat (uwaga Macieja 2026-07-23). */
+export const FILTER_ALL_SVG =
+  '<svg width="16" height="16" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true">' +
+  '<circle cx="4.5" cy="4.5" r="1.8"/><circle cx="9.5" cy="4.5" r="1.8"/>' +
+  '<circle cx="4.5" cy="9.5" r="1.8"/><circle cx="9.5" cy="9.5" r="1.8"/></svg>';
+
 export function applyFilterIconChip1E(
   el: HTMLButtonElement,
   active: boolean,
-  kind: 'mounted' | 'melee' | 'ranged',
+  kind: 'mounted' | 'melee' | 'ranged' | 'all',
 ): void {
   const k = FILTER_CHIP_KIND[kind];
   Object.assign(el.style, {
