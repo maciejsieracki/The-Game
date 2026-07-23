@@ -52,6 +52,9 @@ POZA ZAKRESEM: Wielka Kuźnia (ep.4), Lazaret (ep.5) — usunięte z planów (#1
 6. Strojenie po playteście: stawki wydobycia, bonusy 10%, progi CUDA, params Ludy Morza.
 7. Sync paneli Excel z nowymi parametrami (po wszystkim).
 
+## ⛔ ZASADA NADRZĘDNA — PARYTET AI (Maciej 2026-07-24)
+**Każda zmiana gameplayowa/ekonomiczna dla cywilizacji GRACZA obowiązuje TAK SAMO dla KAŻDEJ cywilizacji AI. ZERO uproszczeń dla AI.** Jeśli gracz ma magazyn/handel/koszty surowcowe/upkeep/cuda — AI też, wg tych samych reguł. Cały kod ekonomii/dyplomacji ma być **ownerId-agnostic** (liczony per owner dla wszystkich, ownerId=0 gracz + AI). Gałąź „tylko gracz / tylko `ownerId===0`" w mechanice = błąd do uogólnienia. Przy KAŻDYM zadaniu POTWIERDŹ, że działa dla AI (najlepiej asercją na ownerId≠0). Maciej wielokrotnie łapał braki parytetu — to ma się skończyć.
+
 ## F. UWAGI DLA INNYCH AGENTÓW
 
 - Budowanie TYLKO: `node ./node_modules/vite/bin/vite.js build --outDir dist --emptyOutDir` z `gra/`. NIGDY `npm run build/dev`.
