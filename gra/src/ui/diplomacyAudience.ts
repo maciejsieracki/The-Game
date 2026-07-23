@@ -20,7 +20,7 @@ import {
   type NegotiationModalContext,
   type NegotiationPayload,
 } from './diplomacyNegotiationModal';
-import { actionUsesTradeBasket, showTradeBasketModal } from './diplomacyTradeBasket';
+import { actionUsesTradeBasket, showTradeBasketModal, openQuickDealBasket } from './diplomacyTradeBasket';
 
 export interface AudienceAction {
   id: string;
@@ -148,6 +148,11 @@ export interface DiplomacyAudienceConfig {
   getCivBonusy?: (ownerId: number) => readonly CivBonusLite[];
   /** Kontekst modali negocjacji (wrogowie, tech, opłaty granic). */
   getNegotiationContext?: (actionId: string) => NegotiationModalContext | null;
+  /**
+   * Zaległość #2 — „Zerwij": dobrowolne zerwanie traktatu wskazanego przez `id`
+   * (kolumna „Aktywne traktaty"). Brak = przycisk pozostaje wyłączony ("wkrótce").
+   */
+  onBreakTreaty?: (dealId: string) => void;
 }
 
 let cfg: DiplomacyAudienceConfig | null = null;
@@ -303,12 +308,15 @@ ${DIPLO_1E_SHARED_CSS}
 .da-treaty .da-nm{font-size:0.72em;font-weight:600;color:#e8e0c8;}
 .da-treaty .da-meta{font-size:0.62em;color:#8a8070;margin-top:2px;}
 .da-treaty .da-pen{font-size:0.62em;color:#e08a8a;margin-top:3px;}
-/* FAZA 3 pkt 8 — „Zerwij" = SAMA IKONA rozerwanego ogniwa (SVG z makiety) + podpis na hover
-   (.da-ttip); pozostaje disabled dopóki silnik nie ma mechanizmu zrywania (jak w fazie 2). */
+/* Zaległość #2 — „Zerwij" = SAMA IKONA rozerwanego ogniwa (SVG z makiety) + podpis na hover
+   (.da-ttip); aktywny gdy SILNIK dostarcza onBreakTreaty (main.ts breakTreatyVoluntarily). */
 .da-treaty .da-ttip{margin-left:auto;align-self:center;}
 .da-treaty .da-brk{font-size:0;color:#8a8070;border:1px solid rgba(140,150,165,.3);
   border-radius:6px;padding:5px 6px;white-space:nowrap;align-self:center;background:none;font-family:inherit;
-  cursor:not-allowed;opacity:.6;display:inline-flex;align-items:center;line-height:0;}
+  cursor:pointer;opacity:.85;display:inline-flex;align-items:center;line-height:0;}
+.da-treaty .da-brk:hover{border-color:rgba(200,64,64,.6);color:#e08a8a;}
+.da-treaty .da-brk:disabled{cursor:not-allowed;opacity:.45;}
+.da-treaty .da-brk:disabled:hover{border-color:rgba(140,150,165,.3);color:#8a8070;}
 .da-treaty .da-brk svg{width:14px;height:14px;}
 .da-empty{font-size:0.68em;color:#6a7280;padding:6px 2px;}
 
@@ -402,6 +410,40 @@ export function showWarConfirmModal(civName: string, onConfirm: () => void): voi
       '<div class="cd-modal-btns">' +
         '<button type="button" class="dip-muted-btn cd-modal-cancel">Anuluj</button>' +
         '<button type="button" class="dip-gold-btn cd-modal-ok" style="border-color:rgba(200,64,64,.5);color:#e08a8a;">Tak</button>' +
+      '</div></div>';
+  document.body.appendChild(modalOverlay);
+  const close = (): void => {
+    if (modalOverlay !== null) { modalOverlay.remove(); modalOverlay = null; }
+  };
+  modalOverlay.querySelector('.cd-modal-cancel')?.addEventListener('click', close);
+  modalOverlay.querySelector('.cd-modal-ok')?.addEventListener('click', () => { close(); onConfirm(); });
+  modalOverlay.addEventListener('click', (e) => { if (e.target === modalOverlay) close(); });
+}
+
+/**
+ * Zaległość #2 — potwierdzenie dobrowolnego zerwania traktatu (przycisk „Zerwij" w kolumnie
+ * „Aktywne traktaty"). Ten sam wzorzec co showWarConfirmModal (drugi klik = modal, nie
+ * pojedynczy klik na krytyczną, nieodwracalną akcję).
+ */
+export function showBreakTreatyConfirmModal(
+  treatyLabel: string,
+  penaltyLabel: string | undefined,
+  onConfirm: () => void,
+): void {
+  if (modalOverlay !== null) modalOverlay.remove();
+  modalOverlay = document.createElement('div');
+  modalOverlay.className = 'civ-diplo-modal-overlay';
+  const penaltyLine = penaltyLabel
+    ? '<p style="color:#e08a8a">Kara: ' + esc(penaltyLabel) + '</p>'
+    : '';
+  modalOverlay.innerHTML =
+    '<div class="civ-diplo-modal" role="dialog" aria-modal="true">' +
+      '<h3>Zerwać traktat?</h3>' +
+      '<p>Na pewno zrywasz: <strong>' + esc(treatyLabel) + '</strong>?</p>' +
+      penaltyLine +
+      '<div class="cd-modal-btns">' +
+        '<button type="button" class="dip-muted-btn cd-modal-cancel">Anuluj</button>' +
+        '<button type="button" class="dip-gold-btn cd-modal-ok" style="border-color:rgba(200,64,64,.5);color:#e08a8a;">Zerwij</button>' +
       '</div></div>';
   document.body.appendChild(modalOverlay);
   const close = (): void => {
@@ -628,8 +670,9 @@ const ACTION_BAR_SPECS: ReadonlyArray<{ svg: keyof typeof ACTION_BAR_SVG; aid: s
  * tylko na hover (pigułka .da-ttip). Każdy przycisk używa TEGO SAMEGO id/action co
  * kafelek w kolumnie „Możliwe umowy" — data-aid trafia w istniejący listener (render()),
  * więc onAction/blokady/negocjacje są dokładnie te same, disabled gdy `locked`.
- * „Szybka Umowa" (jedyny tekstowy CTA) mapuje na tę samą akcję co Handel (id 5) —
- * dziś otwiera koszyk PN w trybie handel (istniejący flow, showTradeBasketModal).
+ * „Szybka Umowa" (jedyny tekstowy CTA) BEZ data-aid — ma WŁASNY listener (render(),
+ * `.da-quickdeal`) który woła openQuickDealBasket (zaległość #1: realna auto-uczciwa
+ * oferta, nie zaślepka) zamiast generycznego handlera po data-aid.
  */
 function actionBarHtml(st: DiplomacyAudienceState): string {
   const byId = new Map(st.actions.map(a => [a.id, a] as const));
@@ -650,7 +693,7 @@ function actionBarHtml(st: DiplomacyAudienceState): string {
   const handelEnabled = handel ? handel.enabled : false;
   const qdTitle = handelEnabled ? 'auto-uczciwa oferta' : (handel?.lockNote || handel?.tooltip || 'Handel niedostępny');
   const quickdeal =
-    '<button type="button" class="da-quickdeal" data-aid="5"' + (handelEnabled ? '' : ' disabled') +
+    '<button type="button" class="da-quickdeal"' + (handelEnabled ? '' : ' disabled') +
     ' title="' + esc(qdTitle) + '">' + ACTION_BAR_SVG.quickdeal +
     '<span>SZYBKA UMOWA<small>auto-uczciwa oferta</small></span></button>';
 
@@ -686,9 +729,10 @@ function dealsColumnHtml(st: DiplomacyAudienceState): string {
   );
 }
 
-/** FAZA 2 pkt 3 kol.2 — „Aktywne traktaty" (od ilu tur + kara zerwania; „Zerwij" — brak mechanizmu, wkrótce). */
+/** FAZA 2 pkt 3 kol.2 — „Aktywne traktaty" (od ilu tur + kara zerwania + „Zerwij" — zaległość #2). */
 function treatiesColumnHtml(st: DiplomacyAudienceState): string {
   const treaties = st.activeTreaties ?? [];
+  const canBreak = typeof cfg?.onBreakTreaty === 'function';
   const items = treaties.map(t => {
     const icon = dipBrandIconHtml(treatyIconId(t.label), 14, 'da-ti');
     const metaParts: string[] = [];
@@ -696,12 +740,18 @@ function treatiesColumnHtml(st: DiplomacyAudienceState): string {
     else if (t.detail) metaParts.push(t.detail);
     const meta = metaParts.length > 0 ? '<div class="da-meta">' + esc(metaParts.join(' · ')) + '</div>' : '';
     const pen = t.breakPenaltyLabel ? '<div class="da-pen">kara zerwania: ' + esc(t.breakPenaltyLabel) + '</div>' : '';
+    const dealId = t.id;
+    const enabled = canBreak && !!dealId;
+    const brkTitle = enabled
+      ? 'Zerwij traktat' + (t.breakPenaltyLabel ? ' — kara: ' + t.breakPenaltyLabel : '')
+      : 'Zerwij traktat — niedostępne';
     return (
       '<div class="da-treaty">' + icon +
         '<div><div class="da-nm">' + esc(t.label) + '</div>' + meta + pen + '</div>' +
-        /* FAZA 3 pkt 8 — ikona rozerwanego ogniwa + podpis „Zerwij traktat" TYLKO na hover. */
+        /* Zaległość #2 — ikona rozerwanego ogniwa + podpis „Zerwij traktat" TYLKO na hover. */
         '<span class="da-ttip"><span class="da-ttip-lbl" style="bottom:34px">Zerwij traktat</span>' +
-        '<button type="button" class="da-brk" disabled title="Zerwij traktat — wkrótce">' + ACTION_BAR_SVG.brk + '</button></span>' +
+        '<button type="button" class="da-brk" data-deal-id="' + esc(dealId ?? '') + '"' +
+        (enabled ? '' : ' disabled') + ' title="' + esc(brkTitle) + '">' + ACTION_BAR_SVG.brk + '</button></span>' +
       '</div>'
     );
   }).join('');
@@ -804,6 +854,15 @@ function render(): void {
       actionBarHtml(st) +
     '</div>';
 
+  /** Dopełnia kontekst koszyka polami wspólnymi ze stanu audiencji (jak dotąd inline w handlerze). */
+  const mergeBasketCtx = (negCtx: NegotiationModalContext): NegotiationModalContext => ({
+    ...negCtx,
+    relacjaTotal: negCtx.relacjaTotal ?? st.relacjaTotal ?? (st.zaufanie + st.respekt),
+    trustPnGainedThisTurn: negCtx.trustPnGainedThisTurn ?? st.trustPnGainedThisTurn ?? 0,
+    progDarRelacja: negCtx.progDarRelacja ?? st.progDarRelacja,
+    playerSkarbiec: negCtx.playerSkarbiec ?? st.playerSkarbiec,
+  });
+
   rootEl.querySelector('.civ-diplo-aud-back')?.addEventListener('click', () => cfg!.onBack());
   rootEl.querySelector('.da-tab-known')?.addEventListener('click', () => cfg!.onOpenKnownFactions?.());
   rootEl.querySelectorAll<HTMLButtonElement>('button[data-aid]').forEach(btn => {
@@ -816,16 +875,10 @@ function render(): void {
       if (action && action.enabled && cfg.getNegotiationContext) {
         const negCtx = cfg.getNegotiationContext(aid);
         if (negCtx && actionUsesTradeBasket(aid)) {
-          const basketCtx: NegotiationModalContext = {
-            ...negCtx,
-            relacjaTotal: negCtx.relacjaTotal ?? st.relacjaTotal ?? (st.zaufanie + st.respekt),
-            trustPnGainedThisTurn: negCtx.trustPnGainedThisTurn ?? st.trustPnGainedThisTurn ?? 0,
-            progDarRelacja: negCtx.progDarRelacja ?? st.progDarRelacja,
-          };
           showTradeBasketModal(
             aid === '13' ? 'gift' : 'trade',
             action,
-            basketCtx,
+            mergeBasketCtx(negCtx),
             (payload) => cfg!.onAction(cfg!.ownerId, aid, payload),
             () => { /* anulowano */ },
           );
@@ -842,6 +895,37 @@ function render(): void {
         }
       }
       cfg.onAction(cfg.ownerId, aid);
+    });
+  });
+
+  /** Zaległość #1 — „SZYBKA UMOWA" realna: bez data-aid (osobny listener), otwiera koszyk
+   *  WYPEŁNIONY auto-uczciwą propozycją (openQuickDealBasket — diplomacyTradeBasket.ts). */
+  rootEl.querySelector('.da-quickdeal')?.addEventListener('click', () => {
+    if (cfg === null) return;
+    const handel = st.actions.find(a => a.id === '5');
+    if (!handel || !handel.enabled || !cfg.getNegotiationContext) return;
+    const negCtx = cfg.getNegotiationContext('5');
+    if (!negCtx) return;
+    openQuickDealBasket(
+      handel,
+      mergeBasketCtx(negCtx),
+      (payload) => cfg!.onAction(cfg!.ownerId, '5', payload),
+      () => { /* anulowano */ },
+    );
+  });
+
+  /** Zaległość #2 — „Zerwij": potwierdzenie (modal) → onBreakTreaty(dealId) w SILNIKU. */
+  rootEl.querySelectorAll<HTMLButtonElement>('.da-brk[data-deal-id]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (btn.disabled || cfg === null) return;
+      const dealId = btn.getAttribute('data-deal-id');
+      if (!dealId) return;
+      const treaty = (st.activeTreaties ?? []).find(t => t.id === dealId);
+      showBreakTreatyConfirmModal(
+        treaty?.label ?? 'Traktat',
+        treaty?.breakPenaltyLabel,
+        () => { cfg!.onBreakTreaty?.(dealId); },
+      );
     });
   });
 }

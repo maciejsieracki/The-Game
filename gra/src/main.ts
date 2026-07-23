@@ -409,7 +409,11 @@ import { advanceProduction, rushProduction, rushCost, populationCostOf, UNIT_POP
   enqueue, buildingProductionItem, splitPraca, cityPracaInteger, pracaImperialPoolGain, availableProduction, availableReplacementsFor,
   buildingLevelForEpoch, buildingEffectAtLevel, frontItem, unitNacjaForCivKey, applyCompletedBuildingIds,
   type CityProduction, type AvailabilityContext } from './game/production';
-import { empireHasKopalniaNaZlozuZelaza } from './game/zelazo-access';
+import { empireHasKopalniaNaZlozuZelaza, hasZelazoAccess } from './game/zelazo-access';
+import {
+  tradableGoodsForOwner as tradableGoodsIndexForOwnerPure, sumCitySurowce,
+  type TradeGoodEntry,
+} from './game/diplomacy-goods';
 import {
   tryDeductUnitSpawnCosts, empirePoborTotals, rekrutUnitEquivalents, formatManpower,
   cityManpowerSnapshot, civManpowerRegenMult, civManpowerMaxMult, civManpowerMults,
@@ -1475,6 +1479,60 @@ async function boot(): Promise<void> {
       if (builtEmpire.has('cegielnia')) labels.add('Cegła');
       if (builtEmpire.has('garncarnia')) labels.add('Ceramika');
       return [...labels];
+    }
+
+    /**
+     * Zaległość #3 (Makieta DYPLOMACJA v1.1, 2026-07-23) — civ-wide Żelazo NIE jest w
+     * empireActiveResourceLabelsForOwner powyżej (resource-access.ts nie liczy tej bramki —
+     * ta funkcja służy gdzie indziej T-TECH-7/B-SUROW-BUD, celowo nietknięta). Dopisujemy
+     * Żelazo TU, osobno, tylko dla indeksu dóbr dyplomacji.
+     */
+    function diplomacyActiveResourceLabelsForOwner(ownerId: number): string[] {
+      const labels = new Set(empireActiveResourceLabelsForOwner(ownerId));
+      if (!labels.has('Żelazo')) {
+        const ownImprovements = placedImprovementsForOwner(ownerId);
+        const hasKopalniaZelazo = empireHasKopalniaNaZlozuZelaza(ownImprovements, map);
+        if (hasKopalniaZelazo) {
+          for (const c of cities) {
+            if (c.ownerId !== ownerId) continue;
+            if (hasZelazoAccess(hasKopalniaZelazo, cityBuilt.get(c.id) ?? [])) {
+              labels.add('Żelazo');
+              break;
+            }
+          }
+        }
+      }
+      return [...labels];
+    }
+
+    /** Suma City.surowce (magazyn per-miasto, cities.ts) po wszystkich miastach ownera. */
+    function citySurowceSumForOwner(ownerId: number): Record<string, number> {
+      return sumCitySurowce(cities.filter(c => c.ownerId === ownerId).map(c => c.surowce));
+    }
+
+    /**
+     * Zaległość #3 — indeks dóbr handlowych FAKTYCZNIE posiadanych przez ownera (różny per
+     * owner). Naprawia dawny tradeGoodsForOwner: ten sam globalny katalog surowców po OBU
+     * stronach negocjacji niezależnie od faktycznego posiadania (patrz komentarz przy
+     * starym tradeGoodsForOwner poniżej — usunięty razem z ad-hoc listą).
+     */
+    function tradableGoodsIndexForOwner(ownerId: number): TradeGoodEntry[] {
+      return tradableGoodsIndexForOwnerPure({
+        activeResourceLabels: diplomacyActiveResourceLabelsForOwner(ownerId),
+        citySurowceSum: citySurowceSumForOwner(ownerId),
+      });
+    }
+
+    /**
+     * Zaległość #3 — podzbiór indeksu WYCENIONY w katalogu PN (surowiec_boolean, patrz
+     * diplomacyResourceAccessCatalog) — jedyny gotowy do koszyka negocjacji (Brąz/Żelazo
+     * nie mają dziś ceny PN — widoczne tylko w kartach „Dobra handlowe", patrz tradeGoodsForOwner).
+     */
+    function priceableTradableGoodOptions(ownerId: number): Array<{ id: string; label: string }> {
+      const priceable = diplomacyResourceAccessCatalog();
+      return tradableGoodsIndexForOwner(ownerId)
+        .filter(g => Object.prototype.hasOwnProperty.call(priceable, g.key))
+        .map(g => ({ id: g.key, label: g.ilosc != null ? g.label + ' ×' + g.ilosc : g.label }));
     }
 
     /**
@@ -7013,19 +7071,52 @@ async function boot(): Promise<void> {
 
     /**
      * FAZA 2 (Makieta DYPLOMACJA v1.1, KROK 3 pkt 2+3) — etykieta kary zerwania per rodzaj
-     * traktatu. Silnik dziś modeluje zerwanie GENERYCZNIE (breakTreatiesOnWar →
-     * 'zlamana_obietnica' → DIPLOMACY_PARAMS.zlamanaPaktGracz_zaufanie, RAZ na parę,
-     * niezależnie od liczby zerwanych traktatów) — jedyny wyjątek to Umowa handlowa,
-     * dla której diplomacy.ts ma osobny case 'zerwanie_handlu' (Dyplomacja-szablon §1.5).
-     * Mapujemy więc: Umowa handlowa → -10 Zaufania; reszta → wartość generyczna z params
-     * (domyślnie -40). Wartość informacyjna (baner/tabela) — NIE steruje zrywaniem.
+     * traktatu, pokazana w bannerze/tabeli I w tooltipie przycisku „Zerwij" (zaległość #2).
+     * To jest kara DOBROWOLNEGO zerwania (przycisk „Zerwij" → breakTreatyVoluntarily poniżej):
+     * Umowa handlowa → 'zerwanie_handlu' (-10 Zaufania); reszta (NAP/sojusz/granice/wasal)
+     * → 'zerwanie_traktatu' (-15 Zaufania). ODRĘBNE od kary za zerwanie WYMUSZONE wojną
+     * (breakTreatiesOnWar → 'zlamana_obietnica', -40 — inny, cięższy scenariusz, nietknięty).
      */
     function treatyBreakPenaltyLabel(rodzaj: ActiveDeal['rodzaj']): string {
       const k = normalizeTreatyKind(rodzaj);
       if (k === RodzajTraktatu.UmowaHandlowa) return '-10 Zaufania';
-      const dip = _diplomacyParams();
-      const v = Math.round(dip.zlamanaPaktGracz_zaufanie ?? -40);
-      return v + ' Zaufania';
+      return '-15 Zaufania';
+    }
+
+    /**
+     * Zaległość #2 (Makieta DYPLOMACJA v1.1, 2026-07-23) — „Zerwij": dobrowolne zerwanie
+     * traktatu PRZED czasem (przycisk w kolumnie „Aktywne traktaty"). Reużywa mechanizmy
+     * usuwania traktatu (removeTreatiesById/deactivateZlozeGrantsForDeal — te same co
+     * breakTreatiesOnWar dla zerwania wymuszonego wojną), ale z osobną, lżejszą karą
+     * ('zerwanie_traktatu'/'zerwanie_handlu' — patrz treatyBreakPenaltyLabel) i bez efektów
+     * ubocznych wojny (obligacje sojusznicze itd. — to dobrowolna decyzja, nie casus belli).
+     * Sojusz zerwany dobrowolnie → status pary wraca do 'pokoj' (nie zostaje błędnie
+     * „sojusz" mimo braku traktatu — patrz resolveFormalDiplomaticStatus/diplomacy-display.ts).
+     */
+    function breakTreatyVoluntarily(dealId: string): void {
+      const deal = activeDeals.find(d => d.id === dealId);
+      if (!deal) return;
+      const [a, b] = deal.strony;
+      const wasAlliance = isAllianceDealKind(deal.rodzaj);
+      const isTrade = normalizeTreatyKind(deal.rodzaj) === RodzajTraktatu.UmowaHandlowa;
+
+      activeDeals = removeTreatiesById(activeDeals, [dealId]);
+      zlozeGrants = deactivateZlozeGrantsForDeal(zlozeGrants, dealId);
+
+      const cur = getDiploRelation(a, b);
+      const ev = isTrade ? 'zerwanie_handlu' as const : 'zerwanie_traktatu' as const;
+      let next = applyDiploEventTracked(a, b, cur, ev);
+      if (wasAlliance && next.status === 'sojusz') {
+        const stillAllied = activeDeals.some(d => dealInvolvesOwners(d, a, b) && isAllianceDealKind(d.rodzaj));
+        if (!stillAllied) next = { ...next, status: 'pokoj' };
+      }
+      setDiploRelation(a, b, next);
+
+      const otherId = a === 0 ? b : a;
+      showHintMessage('Zerwano traktat: ' + treatyDisplayLabel(deal.rodzaj) + ' — ' + ownerDiploLabel(otherId), 4000);
+      updateDiplomacyAudience();
+      updateDiplomacyPanel();
+      updateHud();
     }
 
     function activeTreatiesForPair(a: number, b: number): {
@@ -7668,24 +7759,21 @@ async function boot(): Promise<void> {
     }
 
     /**
-     * FAZA 2 (Makieta DYPLOMACJA v1.1, KROK 3 pkt 1) — „Dobra handlowe": BEZ wymyślania
-     * nowego systemu (Maciej — zakaz), złożone z dwóch realnych źródeł, jak wskazano w
-     * dyspozycji: (a) technologie zbadane przez WŁAŚCICIELA (to samo źródło co akcja
-     * id 6 „Wymiana/sprzedaż technologii" — getSellableTechForPlayer dla gracza,
-     * ownerResearchedTechs ogólnie), (b) katalog surowców strategicznych handlowalnych
-     * (diplomacyResourceAccessCatalog — te same surowce, co pozycja 'surowiec_boolean'
-     * w koszyku PN akcji id 5). Katalog surowców jest GLOBALNY (silnik nie trzyma dziś
-     * indeksu "który właściciel ma dostęp do którego surowca") — ta sama lista pojawia
-     * się więc po obu stronach; różnicuje realnie tylko lista technologii (per-owner).
+     * FAZA 2 (Makieta DYPLOMACJA v1.1, KROK 3 pkt 1) — „Dobra handlowe": (a) technologie
+     * zbadane przez WŁAŚCICIELA (to samo źródło co akcja id 6 „Wymiana/sprzedaż technologii"
+     * — ownerResearchedTechs), (b) indeks realnie posiadanych surowców (zaległość #3,
+     * 2026-07-23 — game/diplomacy-goods.ts przez tradableGoodsIndexForOwner). PRZED tą
+     * zmianą (b) był globalny katalog (diplomacyResourceAccessCatalog) — ta sama lista po
+     * OBU stronach niezależnie od faktycznego posiadania; teraz różni się realnie per owner.
      */
     function tradeGoodsForOwner(ownerId: number): string[] {
       const techs = Array.from(ownerResearchedTechs(ownerId))
         .map(slug => techNameFromSlug(slug) ?? slug)
         .slice(0, 3);
-      const resources = Object.keys(diplomacyResourceAccessCatalog())
-        .map(id => id.charAt(0).toUpperCase() + id.slice(1))
-        .slice(0, 3);
-      return [...resources, ...techs].slice(0, 6);
+      const goods = tradableGoodsIndexForOwner(ownerId)
+        .map(g => (g.ilosc != null ? g.label + ' ×' + g.ilosc : g.label))
+        .slice(0, 4);
+      return [...goods, ...techs].slice(0, 7);
     }
 
     function openDiplomacyAudience(ownerId: number): void {
@@ -7814,8 +7902,16 @@ async function boot(): Promise<void> {
             cityOptions: cities
               .filter(c => c.ownerId === 0)
               .map(c => ({ id: c.id, label: c.name, spichlerz: c.magazynZywnosci ?? 0 })),
+            // Zaległość #3 (2026-07-23): resourceOptions PER STRONA — realnie posiadane dobra
+            // (diplomacy-goods.ts), nie globalny katalog identyczny po obu stronach.
+            resourceOptions: priceableTradableGoodOptions(0),
+            giveResourceOptions: priceableTradableGoodOptions(0),
+            receiveResourceOptions: priceableTradableGoodOptions(ownerId),
+            // Zaległość #1 (SZYBKA UMOWA) — górny limit złota-dopełniacza w propozycji.
+            playerSkarbiec: Math.floor(player.skarbiec),
           };
         },
+        onBreakTreaty: (dealId: string) => breakTreatyVoluntarily(dealId),
       });
     }
 

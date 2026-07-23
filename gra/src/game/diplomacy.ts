@@ -624,7 +624,11 @@ export type DiplomaticEvent =
   | 'trybut_odmowa'             // 1.8 tribute demand refused (-10 Zaufanie; casus belli)
   | 'trybut_oferta_przyjeta'    // 1.8 tribute OFFER accepted: payer avoids attack (+5 Zaufanie)
   | 'wymiana_tech_gratis'       // 1.6 free technology exchange (+5 Zaufanie)
-  | 'zerwanie_handlu';         // 1.5 zerwanie umowy handlowej (−10 Zaufanie; szablon §1.5: −15 Relacja/−10 Zaufanie)
+  | 'zerwanie_handlu'          // 1.5 zerwanie umowy handlowej (−10 Zaufanie; szablon §1.5: −15 Relacja/−10 Zaufanie)
+  // --- Makieta DYPLOMACJA v1.1 domknięcie zaległości (2026-07-23) ---
+  | 'zerwanie_traktatu';       // dobrowolne zerwanie traktatu (NAP/sojusz/granice/wasal) przez
+                               // stronę — NIE wymuszone wojną (to 'zlamana_obietnica', -40,
+                               // main.ts breakTreatiesOnWar). Kara mniejsza: -15 Zaufanie.
 
 // ---------------------------------------------------------------------------
 // applyDiplomaticEvent
@@ -783,6 +787,13 @@ export function applyDiplomaticEvent(
       // Szablon podaje: −15 Relacja / −10 Zaufanie; modelujemy −10 Zaufanie
       // (Relacja = Zaufanie + Respekt, więc −10 Z = −10 Relacja bez dotykania R).
       dZ = -10;
+      break;
+
+    case 'zerwanie_traktatu':
+      // Dobrowolne zerwanie traktatu (przycisk „Zerwij" — Makieta DYPLOMACJA v1.1):
+      // -15 Zaufanie jednorazowo. Mniejsze niż 'zlamana_obietnica' (-40), bo to
+      // świadoma decyzja BEZ złamania w trakcie wojny/ataku.
+      dZ = -15;
       break;
   }
 

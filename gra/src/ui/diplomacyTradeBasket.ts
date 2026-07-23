@@ -4,7 +4,7 @@
  */
 import type { AudienceAction } from './diplomacyAudience';
 import type { NegotiationModalContext, NegotiationPayload } from './diplomacyNegotiationModal';
-import type { BasketItem } from '../game/diplomacy-pn-engine';
+import { computeQuickDealBasket, type BasketItem } from '../game/diplomacy-pn-engine';
 import type { TempoGry } from '../game/tech-tempo';
 import {
   diplomacySumPn,
@@ -220,7 +220,12 @@ function buildAddForm(side: 'give' | 'receive', ctx: NegotiationModalContext, mo
   const units = ctx.unitOptions ?? defaultUnitOptions();
   const unitSel = units.map(u => '<option value="' + esc(u.id) + '">' + esc(u.label) + '</option>').join('');
 
-  const resources = ctx.resourceOptions ?? defaultResourceOptions();
+  // Zaległość #3 (2026-07-23): per-strona — dawca oferuje TYLKO to, co realnie posiada
+  // (game/diplomacy-goods.ts, wpięte przez main.ts getNegotiationContext); `resourceOptions`
+  // zostaje jako fallback dla wywołań, które jeszcze go nie ustawiają.
+  const resources = side === 'give'
+    ? (ctx.giveResourceOptions ?? ctx.resourceOptions ?? defaultResourceOptions())
+    : (ctx.receiveResourceOptions ?? ctx.resourceOptions ?? defaultResourceOptions());
   const resSel = resources.map(r => '<option value="' + esc(r.id) + '">' + esc(r.label) + '</option>').join('');
 
   const zywnHint = diplomacyZywnoscNaPn();
@@ -477,18 +482,26 @@ function renderBasket(
     '</div>';
 }
 
+export interface TradeBasketInitial {
+  giveItems?: readonly BasketItem[];
+  receiveItems?: readonly BasketItem[];
+}
+
 export function showTradeBasketModal(
   mode: TradeBasketMode,
   action: AudienceAction,
   ctx: NegotiationModalContext,
   onSubmit: (payload: NegotiationPayload) => void,
   onCancel: () => void,
+  initial?: TradeBasketInitial,
 ): void {
   closeModal();
   ensureStyles();
 
-  let giveItems: BasketItem[] = [];
-  let receiveItems: BasketItem[] = [];
+  // Zaległość #1 (SZYBKA UMOWA) — koszyk może otwierać się WYPEŁNIONY propozycją
+  // (computeQuickDealBasket), użytkownik dalej może edytować/usuwać pozycje normalnie.
+  let giveItems: BasketItem[] = initial?.giveItems ? [...initial.giveItems] : [];
+  let receiveItems: BasketItem[] = initial?.receiveItems ? [...initial.receiveItems] : [];
   let dealTurns = 15;
 
   overlay = document.createElement('div');
@@ -581,6 +594,28 @@ export function showTradeBasketModal(
 
 export function hideTradeBasketModal(): void {
   closeModal();
+}
+
+/**
+ * Zaległość #1 — „SZYBKA UMOWA" realna, nie zaślepka: dobiera greedy zestaw z realnie
+ * posiadanych pozycji obu stron (ctx.giveResourceOptions/receiveResourceOptions —
+ * game/diplomacy-goods.ts przez main.ts) tak, by bilans osiągnął próg fair @ Relacji —
+ * TA SAMA wycena, którą AI ocenia ofertę (diplomacyFairGivePn/pnDealAcceptedByAi). Otwiera
+ * koszyk WYPEŁNIONY propozycją; użytkownik może dalej edytować/usuwać pozycje.
+ */
+export function openQuickDealBasket(
+  action: AudienceAction,
+  ctx: NegotiationModalContext,
+  onSubmit: (payload: NegotiationPayload) => void,
+  onCancel: () => void,
+): void {
+  const quick = computeQuickDealBasket({
+    relacjaTotal: ctx.relacjaTotal ?? 0,
+    ourGoldAvailable: ctx.playerSkarbiec ?? 0,
+    ourResourceOptions: ctx.giveResourceOptions ?? ctx.resourceOptions ?? defaultResourceOptions(),
+    theirResourceOptions: ctx.receiveResourceOptions ?? ctx.resourceOptions ?? defaultResourceOptions(),
+  });
+  showTradeBasketModal('trade', action, ctx, onSubmit, onCancel, quick);
 }
 
 /** Akcje obsługiwane przez koszyk PN (handel + dar). */

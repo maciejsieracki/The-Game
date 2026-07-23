@@ -12,6 +12,7 @@ import {
   diplomacyProgDarRelacja,
   diplomacySumPn,
   diplomacyPnZloto,
+  diplomacyPnSurowiecBoolean,
   type WartoscPozycjaTyp,
 } from './diplomacy-value-catalog';
 
@@ -183,4 +184,94 @@ export function deactivateZlozeGrantsForDeal(
   dealId: string,
 ): ZlozeGrant[] {
   return grants.map(g => (g.dealId === dealId && g.active ? { ...g, active: false } : g));
+}
+
+// ---------------------------------------------------------------------------
+// SZYBKA UMOWA — auto-uczciwa oferta (zaległość #1, DYSPOZYCJA-WDROZENIE 2026-07-23)
+// ---------------------------------------------------------------------------
+
+export interface QuickDealGoodOption {
+  id: string;
+  label: string;
+}
+
+export interface QuickDealInput {
+  /** Relacja (Zaufanie+Respekt) pary — ten sam kurs co reszta koszyka PN. */
+  relacjaTotal: number;
+  /** Złoto dostępne u NAS (skarbiec) — górny limit dopełniacza. */
+  ourGoldAvailable: number;
+  /** Surowce boolean, które MY faktycznie mamy i możemy oddać (już wycenione w katalogu PN). */
+  ourResourceOptions: readonly QuickDealGoodOption[];
+  /** Surowce boolean, które partner faktycznie ma (to co możemy dostać). */
+  theirResourceOptions: readonly QuickDealGoodOption[];
+}
+
+export interface QuickDealResult {
+  giveItems: BasketItem[];
+  receiveItems: BasketItem[];
+}
+
+const QUICK_DEAL_FALLBACK_GOLD = 20;
+const QUICK_DEAL_GOLD_STEP = 5;
+const QUICK_DEAL_MAX_GOLD = 200;
+
+function pricedSortedAscending(
+  options: readonly QuickDealGoodOption[],
+): Array<{ id: string; label: string; pn: number }> {
+  return options
+    .map(o => ({ ...o, pn: diplomacyPnSurowiecBoolean(o.id) }))
+    .filter((o): o is { id: string; label: string; pn: number } => o.pn != null && o.pn > 0)
+    .sort((a, b) => a.pn - b.pn);
+}
+
+/**
+ * FAZA 3 (zaległość #1 — SZYBKA UMOWA to dziś zaślepka: otwiera zwykły koszyk pusty).
+ * Auto-uczciwa oferta: greedy — jedna najtańsza pozycja partnera jako „co dostaję", potem
+ * NASZE najtańsze pozycje (+złoto jako dopełniacz) aż suma osiągnie próg fair @ Relacji —
+ * DOKŁADNIE ten sam próg, którym AI ocenia ofertę (diplomacyFairGivePn / pnDealAcceptedByAi
+ * w diplomacy-proposals.ts). Wynik zawsze edytowalny dalej w koszyku (UI).
+ */
+export function computeQuickDealBasket(input: QuickDealInput): QuickDealResult {
+  const theirPriced = pricedSortedAscending(input.theirResourceOptions);
+  const receiveItems: BasketItem[] = [];
+  if (theirPriced.length > 0) {
+    receiveItems.push({ typ: 'surowiec_boolean', id: theirPriced[0]!.id });
+  }
+  const receivePn = diplomacySumPn(receiveItems.map(i => ({ typ: i.typ, id: i.id }))) ?? 0;
+
+  const giveItems: BasketItem[] = [];
+
+  if (receivePn <= 0) {
+    // Brak wycenialnych dóbr po stronie partnera — otwórz negocjacje drobnym gestem złota
+    // (użytkownik dogrywa resztę ręcznie w koszyku; brak zgadywania czego partner NIE ma).
+    if (input.ourGoldAvailable > 0) {
+      giveItems.push({
+        typ: 'zloto',
+        id: 'zloto',
+        ilosc: Math.min(QUICK_DEAL_FALLBACK_GOLD, Math.floor(input.ourGoldAvailable)),
+      });
+    }
+    return { giveItems, receiveItems };
+  }
+
+  const fairMin = diplomacyFairGivePn(receivePn, input.relacjaTotal);
+  const ourPriced = pricedSortedAscending(input.ourResourceOptions);
+  let giveSum = 0;
+  for (const item of ourPriced) {
+    if (giveSum >= fairMin) break;
+    giveItems.push({ typ: 'surowiec_boolean', id: item.id });
+    giveSum += item.pn;
+  }
+
+  if (giveSum < fairMin && input.ourGoldAvailable > 0) {
+    const cap = Math.min(Math.floor(input.ourGoldAvailable), QUICK_DEAL_MAX_GOLD);
+    let goldQty = 0;
+    while (goldQty < cap) {
+      goldQty = Math.min(cap, goldQty + QUICK_DEAL_GOLD_STEP);
+      if (giveSum + diplomacyPnZloto(goldQty) >= fairMin) break;
+    }
+    if (goldQty > 0) giveItems.push({ typ: 'zloto', id: 'zloto', ilosc: goldQty });
+  }
+
+  return { giveItems, receiveItems };
 }

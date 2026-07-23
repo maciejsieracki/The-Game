@@ -55,6 +55,15 @@ export interface NegotiationModalContext {
   progHandelRelacja?: number;
   /** Próg Relacji na dar (domyślnie 30) */
   progDarRelacja?: number;
+  /**
+   * Zaległość #3 (Makieta DYPLOMACJA v1.1, 2026-07-23) — surowce boolean per STRONA
+   * (realnie posiadane, patrz game/diplomacy-goods.ts), zamiast jednego globalnego
+   * `resourceOptions` po obu stronach. `resourceOptions` zostaje jako fallback/legacy.
+   */
+  giveResourceOptions?: ReadonlyArray<{ id: string; label: string }>;
+  receiveResourceOptions?: ReadonlyArray<{ id: string; label: string }>;
+  /** Skarbiec gracza (¤) — SZYBKA UMOWA: górny limit złota-dopełniacza. */
+  playerSkarbiec?: number;
 }
 
 const STYLE_ID = 'civ-diplo-neg-css-1e';
