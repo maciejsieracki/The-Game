@@ -1062,3 +1062,18 @@ Mapa w `HANDOFF.md` używa **PascalCase** (`MainMenu.ts`, `TechTree.ts`…) — 
 ---
 
 *Lane UI · protokół wymiany v3 · DOGADANE 2026-07-01*
+
+---
+
+## [2026-07-23] INTEGRATOR (sesja chmurowa) → DESIGN — paczka DO-DESIGN-2026-07-23 (PRE-BATTLE nakładka TW)
+
+**Wklejka dla Design (Maciej):** cały folder `docs/ux/claude-design/DO-DESIGN-2026-07-23/` — START od `INSTRUKCJA-DLA-CLAUDE-DESIGN.md`.
+
+**Zlecenie 1 (GŁÓWNE):** dopracować makietę PRE-BATTLE (nakładka na widocznej mapie, 3 klatki: atak w polu / atak na miasto Oblegaj-Szturm / obrona bez wycofania) → kanon `.dc.html`. Baza: `makiety/Makieta-PREBATTLE-v1-TW-nakladka.html` + zrzuty klatek w `zrzuty-makiet/`.
+
+**Zlecenie 2 (zaległe):** dosłać `eksport/` (tokens.css/json, motion.css, icons/*.svg, *-icon-map.json) — nie dojechał w żadnej z 3 paczek.
+
+**Statusy:** DYPLOMACJA FINAL — wdrożona w grze 1:1, ZAMKNIĘTA (zrzut w paczce) · plansze bitwy wg terenu + czyste pole na czarnym tle — WDROŻONE (8 zrzutów w paczce) · POLE-BITWY-TW-v5 (6 klatek) — przyjęte, wdrożenie po stronie integratora.
+
+**Status:** CZEKA: Design — paczka PREBATTLE-TW + eksport/.
+
