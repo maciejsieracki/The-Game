@@ -9,7 +9,17 @@ UWAGA: KANON i FINALNA promują się teraz OSOBNYMI skryptami (`gra/tools/publis
 wyraźne polecenie właściciela) — dlatego są logowane NIEZALEŻNIE, każdy w swojej sekcji, ze
 swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drugiego.
 
-## ROBOCZA `f736ca21` — 2026-07-23 · OBLĘŻENIE: zabudowa za murem + gruz wyłomu · IMIONA WŁADCÓW (60, z Antykiem) — **AKTUALNA**
+## ROBOCZA `49563095` — 2026-07-23 · BRÓD (wariant C) · HANDEL SUROWCAMI (wariant B) · HUD: ikony na rosterze + minimapa prawy-dół — **AKTUALNA**
+
+- **Zawartość (commity `81d0cef`+`dd0f651`+`67e698f`):** trzy decyzje Macieja z 2026-07-23:
+  1. **Bród C-BTL-BROD-Q1=C:** ruch ×0,5 w brodzie · −25% obrony walcząc w brodzie (kara ataku −25% już istniała jako `river_attack_mult` — udokumentowana, osobne strojenie) · obrońca brzegu przy brodzie +15% obrony · tooltip jednostki pokazuje aktywny status (wiersz TEREN, czerwony/zielony) · wartości w `combat-params.json` klucz `brod` · AI: kawaleria unika zatrzymania w brodzie · legacy (bez Fordów) bit-for-bit.
+  2. **Handel surowcami C-DYP-SUROWCE-Q1=B:** koszyk negocjacji handluje ilościowymi surowcami miast w pakietach po 10 (drewno 2/kamień 3/glina 2/cegła 5/ceramika 6/ruda 4 za szt. — PLACEHOLDERY, sekcja `handel_surowce` w `econ-params.json`, strojenie w panelu) · transfer od największych zapasów dawcy → stolica biorcy · SZYBKA UMOWA dopełnia bilans pakietami przed złotem · AI wycenia przez ten sam katalog.
+  3. **HUD bitwy (uwagi Macieja):** pełnoszerokościowy dolny pasek USUNIĘTY; ikony Formacja/Konnica/Linie/Taktyka/Strategia (deploy) i zegar/budynek (walka) = mały rządek 38px NA GÓRZE panelu rosteru z hover-pillami; START WALKI+Reset = pływający klaster prawy-dół; **minimapa+TEMPO przeniesione na prawy-dół**; popupy dropdownów fixed (bez obcięcia).
+- **Bramki:** tsc=0 · combat 6/6 · tech-tree 19/19 · research 33/33 · unit-replace 10/10 · logic 192/207 (te same 15) · trade-routes 35/35 + income 49/49 · basket-transfer 8/8 · map-gen determinizm A=B PASS · smoke deploy/walka/rzeka 0 błędów konsoli · VERIFY OK.
+- **md5:** `49563095b8a5d8552b4368ff4dca9ea3` · stamp `49563095`. Bundel 27,9 MB. Publikowała sesja chmurowa.
+- **Test:** bitwa na hexie z rzeką → jednostka w brodzie ma w tooltipie karę, obrońca brzegu bonus; dyplomacja → koszyk z pozycją „Drewno ×10 (pakiet)"; bitwa → ikony nad rosterem (hover = nazwa), minimapa na prawym dole, brak dolnego paska.
+
+## ROBOCZA `f736ca21` — 2026-07-23 · OBLĘŻENIE: zabudowa za murem + gruz wyłomu · IMIONA WŁADCÓW (60, z Antykiem) — **ZASTĄPIONA** (→ `49563095`)
 
 - **Zawartość (commity `115484a`+`8770bdc`, na `48249d90`):**
   1. **Oblężenie (#8):** miasto za murem ma ZABUDOWĘ (do 38 budynków low-poly: 3 rozmiary + 2 „publiczne", dachy dwuspadowe/płaskie, paleta ziemisto-kamienna z jitterem; deterministycznie z `tileJitter`, gęściej przy bramie, korytarz od bramy wolny; InstancedMesh, zero wpływu na pathfinding — tylko w bitwach `siege`). **Gruz wyłomu:** 7 brył (boxy+kamienie) z jitterem pozycji/rozmiaru/koloru per kafel wyłomu (było 4 identyczne).

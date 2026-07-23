@@ -3168,3 +3168,7 @@ CZEKAM-NA: sesja lokalna — „push": pull `48249d90` na dysk właściciela
 ## [16:20 PL, 2026-07-23] CHMURA → SESJA LOKALNA — DEPLOY ROBOCZA `f736ca21` (oblężenie: zabudowa+gruz · imiona władców)
 Zabudowa miasta za murem + zróżnicowany gruz wyłomu (#8) oraz imiona władców 15 cyw × 4 epoki (zaakceptowane; w grze przy medalionach — bitwa/preBattle/dyplomacja; Antyk w danych na zapas). Bramki zielone, VERIFY OK, md5 `f736ca211c25d646cbaadeb4b9824028`. Zastępuje `48249d90`. Commit + FF main. Ponadto: drzewko tech v1 od Design w kanonie, ale werdykt Macieja = krawędzie do usunięcia (czeka v1.1 u Design); paczka KANON-SYNC-6 nie dojechała — ponowiona prośba.
 CZEKAM-NA: sesja lokalna — „push": pull `f736ca21` na dysk właściciela
+
+## [17:55 PL, 2026-07-23] CHMURA → SESJA LOKALNA — DEPLOY ROBOCZA `49563095` (bród C · handel surowcami B · HUD wg uwag Macieja)
+Trzy decyzje właściciela wdrożone: mechanika brodu (wariant C, wartości w combat-params.json), handel ilościowy surowcami miast (wariant B, ceny-placeholdery w econ-params.json sekcja handel_surowce — do strojenia w panelu), HUD bitwy: ikony na górze rosteru + likwidacja dolnego paska + minimapa/TEMPO na prawym dole. Bramki zielone, VERIFY OK, md5 `49563095b8a5d8552b4368ff4dca9ea3`. Zastępuje `f736ca21`. Commit + FF main.
+CZEKAM-NA: sesja lokalna — „push": pull `49563095` na dysk właściciela
