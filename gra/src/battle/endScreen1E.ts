@@ -1,9 +1,18 @@
 /**
- * endScreen1E.ts — ekran końca bitwy C-12 v2 (Design 1E, 2026-07-03).
+ * endScreen1E.ts — C-12 „Koniec bitwy" (Design TW v5, klatka 5).
+ * Karta Zwycięstwo (złota, laur) / Porażka (czerwona, złamane miecze); 3 kafle
+ * statystyk; CTA: Powrót na mapę (primary) + Rozegraj ponownie + Szczegóły
+ * bitwy (outline); stopka-hint.
  */
 import {
-  applyBtnOutline, applyBtnPrimary, BATTLE_ENEMY_TEXT, BATTLE_FONT, BATTLE_FONT_TITLE,
-  BATTLE_GOLD, BATTLE_PLAYER_TEXT, BATTLE_TEXT_DIM,
+  BATTLE_ENEMY_TEXT,
+  BATTLE_FONT,
+  BATTLE_FONT_TITLE,
+  BATTLE_GOLD,
+  BATTLE_PLAYER_TEXT,
+  BATTLE_TEXT_DIM,
+  CMD_SVG,
+  FMT_SVG,
 } from './battleHudTheme';
 
 export interface EndScreenSideStats {
@@ -33,12 +42,46 @@ export interface EndScreen1ECallbacks {
   onFinish: () => void;
 }
 
-const WREATH_SVG =
-  '<svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M8 4h8v4a4 4 0 0 1-8 0Z"/><path d="M8 4H6a2 2 0 0 0 2 2M16 4h2a2 2 0 0 1-2 2"/><path d="M10 12.5h4M9.5 18h5M12 12.5V18"/></svg>';
+function resizeSvg(svg: string, px: number): string {
+  return svg.replace(/width="\d+"/, `width="${px}"`).replace(/height="\d+"/, `height="${px}"`);
+}
+
+/** Laur/puchar — Zwycięstwo (1:1 wg makiety klatka 5). */
+const VICTORY_ICON_SVG =
+  '<svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">' +
+  '<path d="M5 4c-1.5 6 1.5 10 7 12 5.5-2 8.5-6 7-12"/>' +
+  '<path d="M5 4h14M9 19h6M12 16v3M8 21h8"/></svg>';
+
+/** Złamane miecze — Porażka (1:1 wg makiety klatka 5). */
+const DEFEAT_ICON_SVG =
+  '<svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3">' +
+  '<path d="M5 4 13 12M14.5 13.5 18 17M13 15l2-2M19 4l-4.5 4.5M6 20l3.5-3.5M4 17l3 3"/></svg>';
+
+/** Zwój mapy — CTA „Powrót na mapę". */
+const MAP_ICON_SVG =
+  '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7">' +
+  '<path d="M9 4 4 6v14l5-2 6 2 5-2V4l-5 2Z"/></svg>';
+
+/** Ikona info (kółko) — stopka-hint. */
+const INFO_ICON_SVG =
+  '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">' +
+  '<circle cx="12" cy="12" r="9"/><path d="M12 8v.01M12 11v5"/></svg>';
 
 /** Ponad deploy-toolbar (100200) i rail (100080) — mount na document.body. */
 const END_SCREEN_Z_BACK = '100500';
 const END_SCREEN_Z_WRAP = '100501';
+
+function statTileHtml(
+  value: string, label: string, color: string, border: string, bg: string,
+): string {
+  return (
+    '<div class="tnum" style="border:1px solid ' + border + ';border-radius:10px;padding:10px;' +
+    'text-align:center;background:' + bg + ';">' +
+    '<div style="font:700 17px ' + BATTLE_FONT + ';color:' + color + ';">' + value + '</div>' +
+    '<div style="font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:' + BATTLE_TEXT_DIM + ';margin-top:2px;">' +
+    label + '</div></div>'
+  );
+}
 
 export function showEndScreen1E(
   _overlay: HTMLElement,
@@ -48,79 +91,126 @@ export function showEndScreen1E(
   const backdrop = document.createElement('div');
   backdrop.dataset.battleEndScreen = 'backdrop';
   Object.assign(backdrop.style, {
-    position: 'fixed', inset: '0', background: 'rgba(4,8,18,0.55)', zIndex: END_SCREEN_Z_BACK,
+    position: 'fixed', inset: '0', zIndex: END_SCREEN_Z_BACK,
+    background: 'rgba(4,8,18,0.62)',
+    backdropFilter: 'blur(3px)',
+    boxShadow: 'inset 0 0 260px 110px rgba(0,0,0,0.55)',
   });
   document.body.appendChild(backdrop);
 
   const wrap = document.createElement('div');
   wrap.dataset.battleEndScreen = 'wrap';
   Object.assign(wrap.style, {
-    position: 'fixed', inset: '0', zIndex: END_SCREEN_Z_WRAP, pointerEvents: 'none',
-    fontFamily: BATTLE_FONT, color: '#e8e0c8', textAlign: 'center',
+    position: 'fixed', inset: '0', zIndex: END_SCREEN_Z_WRAP,
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    fontFamily: BATTLE_FONT, color: '#e8e0c8',
   });
 
-  const winWord = p.playerWon ? 'ZWYCI\u0118STWO' : 'PORA\u017BKA';
+  const won = p.playerWon;
+  const winWord = won ? 'Zwycięstwo' : 'Porażka';
+  const accent = won ? BATTLE_GOLD : BATTLE_ENEMY_TEXT;
+  const border = won ? 'rgba(232,216,138,0.5)' : 'rgba(200,64,64,0.5)';
+  const glow = won ? 'rgba(232,216,138,0.12)' : 'rgba(200,64,64,0.12)';
+  const bg = won
+    ? 'linear-gradient(180deg,rgba(22,28,38,0.96),rgba(8,10,16,0.97))'
+    : 'linear-gradient(180deg,rgba(30,18,18,0.96),rgba(12,7,7,0.97))';
+  const iconBg = won
+    ? 'radial-gradient(circle at 38% 30%,#2a2416,#12100a)'
+    : 'radial-gradient(circle at 38% 30%,#3a1c1c,#160a0a)';
+  const iconGlow = won ? '0 0 30px rgba(232,216,138,0.4)' : '0 0 30px rgba(200,64,64,0.35)';
+  const headTint = won
+    ? 'radial-gradient(400px 160px at 50% 0%,rgba(232,216,138,0.14),transparent)'
+    : 'radial-gradient(400px 160px at 50% 0%,rgba(200,64,64,0.16),transparent)';
+
   const loot = p.lootGold ?? 0;
-  const hero = p.heroLabel ?? '—';
-  const promo = p.heroPromo ?? '';
+  const atkLost = Math.max(0, p.atk.hpMax - p.atk.hp);
+  const defLost = Math.max(0, p.def.hpMax - p.def.hp);
 
-  wrap.innerHTML =
-    `<div style="position:absolute;top:80px;left:0;right:0;">
-      <div style="display:flex;justify-content:center;margin-bottom:18px;">
-        <span style="width:96px;height:96px;border-radius:50%;background:radial-gradient(circle at 40% 34%,#2a2416,#12100a);border:2px solid ${BATTLE_GOLD};box-shadow:0 0 40px rgba(232,216,138,0.3);display:inline-flex;align-items:center;justify-content:center;color:#f4e6a8;">${WREATH_SVG}</span>
-      </div>
-      <div style="font-size:14px;letter-spacing:0.5em;text-transform:uppercase;color:#a08030;">${p.battleTitle}</div>
-      <h1 style="font-family:${BATTLE_FONT_TITLE};font-weight:400;font-size:72px;letter-spacing:0.12em;margin:10px 0 0;color:${BATTLE_GOLD};text-shadow:0 2px 20px rgba(0,0,0,0.7);">${winWord}</h1>
-      <div style="font-size:14px;color:${BATTLE_TEXT_DIM};margin-top:8px;">${p.winnerLabel}</div>
-    </div>
-    <div style="position:absolute;top:430px;left:50%;transform:translateX(-50%);display:flex;gap:18px;pointer-events:none;">
-      <div style="width:200px;border:2px solid rgba(90,155,212,0.4);border-radius:12px;background:linear-gradient(180deg,rgba(18,26,40,0.96),rgba(8,12,20,0.96));padding:22px;">
-        <div style="font-size:11px;letter-spacing:0.16em;text-transform:uppercase;color:${BATTLE_PLAYER_TEXT};margin-bottom:8px;">Twoje straty</div>
-        <div style="font-family:${BATTLE_FONT_TITLE};font-size:38px;color:${BATTLE_PLAYER_TEXT};">${p.atk.lost}</div>
-        <div style="font-size:12px;color:${BATTLE_TEXT_DIM};">z ${p.atk.total} jednostek</div>
-      </div>
-      <div style="width:200px;border:2px solid rgba(200,64,64,0.4);border-radius:12px;background:linear-gradient(180deg,rgba(26,14,14,0.96),rgba(14,8,8,0.96));padding:22px;">
-        <div style="font-size:11px;letter-spacing:0.16em;text-transform:uppercase;color:${BATTLE_ENEMY_TEXT};margin-bottom:8px;">Straty wroga</div>
-        <div style="font-family:${BATTLE_FONT_TITLE};font-size:38px;color:${BATTLE_ENEMY_TEXT};">${p.def.lost}</div>
-        <div style="font-size:12px;color:${BATTLE_TEXT_DIM};">z ${p.def.total} jednostek</div>
-      </div>
-      <div style="width:200px;border:2px solid rgba(232,216,138,0.4);border-radius:12px;background:linear-gradient(180deg,rgba(28,24,16,0.96),rgba(12,10,6,0.96));padding:22px;">
-        <div style="font-size:11px;letter-spacing:0.16em;text-transform:uppercase;color:#a08030;margin-bottom:8px;">\u0141upy</div>
-        <div style="font-family:${BATTLE_FONT_TITLE};font-size:38px;color:${BATTLE_GOLD};">+${loot}</div>
-        <div style="font-size:12px;color:${BATTLE_TEXT_DIM};">${p.lootNote ?? 'z\u0142ota'}</div>
-      </div>
-    </div>
-    <div style="position:absolute;top:640px;left:50%;transform:translateX(-50%);width:min(712px,92vw);border:1px solid rgba(232,216,138,0.25);border-radius:12px;background:rgba(255,255,255,0.02);padding:18px 22px;display:flex;align-items:center;gap:16px;text-align:left;">
-      <span style="width:52px;height:52px;flex:none;border-radius:50%;background:radial-gradient(circle at 38% 30%,#2a2416,#12100a);border:2px solid ${BATTLE_GOLD};display:inline-flex;align-items:center;justify-content:center;color:#f4e6a8;">${WREATH_SVG.replace('52', '28').replace('52', '28')}</span>
-      <div style="flex:1;"><div style="font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:#a08030;">Bohater bitwy</div><div style="font-family:${BATTLE_FONT_TITLE};font-size:20px;color:${BATTLE_GOLD};">${hero}</div></div>
-      ${promo ? `<div style="font-size:12px;letter-spacing:0.14em;text-transform:uppercase;color:#7ad0a0;">${promo}</div>` : ''}
-    </div>
-    <div style="position:absolute;bottom:72px;left:50%;transform:translateX(-50%);font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:${BATTLE_TEXT_DIM};pointer-events:none;">Ta sama armia · pełne HP · wynik na mapę dopiero po Powrocie</div>
-    <div style="position:absolute;bottom:48px;left:50%;transform:translateX(-50%);display:flex;flex-wrap:wrap;justify-content:center;gap:14px;pointer-events:auto;max-width:min(920px,96vw);"></div>`;
+  const card = document.createElement('div');
+  Object.assign(card.style, {
+    width: 'min(560px, 92vw)',
+    borderRadius: '18px',
+    border: `2px solid ${border}`,
+    background: bg,
+    boxShadow: `0 30px 80px rgba(0,0,0,0.8), 0 0 60px ${glow}`,
+    overflow: 'hidden',
+    display: 'flex',
+    flexDirection: 'column',
+    pointerEvents: 'auto',
+  });
 
+  card.innerHTML =
+    `<div style="padding:30px 30px 22px;text-align:center;background:${headTint};">` +
+      `<span style="display:inline-flex;width:74px;height:74px;border-radius:50%;background:${iconBg};` +
+      `border:2px solid ${accent};align-items:center;justify-content:center;color:${accent};box-shadow:${iconGlow};">` +
+      (won ? VICTORY_ICON_SVG : DEFEAT_ICON_SVG) + `</span>` +
+      `<div style="font-family:${BATTLE_FONT_TITLE};font-size:34px;color:${accent};letter-spacing:0.06em;` +
+      `margin-top:14px;text-shadow:0 0 24px ${glow.replace('0.12', '0.4')};">${winWord}</div>` +
+      `<div class="tnum" style="font-size:12px;color:${BATTLE_TEXT_DIM};margin-top:5px;">${p.battleTitle}</div>` +
+    `</div>` +
+    `<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;padding:0 30px 20px;">` +
+      statTileHtml('−' + atkLost, 'Twoje straty', BATTLE_PLAYER_TEXT, 'rgba(58,106,208,0.35)', 'rgba(58,106,208,0.07)') +
+      statTileHtml('−' + defLost, 'Straty wroga', BATTLE_ENEMY_TEXT, 'rgba(200,64,64,0.35)', 'rgba(200,64,64,0.07)') +
+      statTileHtml(
+        loot > 0 ? '+' + loot : '0',
+        loot > 0 ? (p.lootNote ?? 'Łupy · złoto') : 'Łupy',
+        loot > 0 ? BATTLE_GOLD : BATTLE_TEXT_DIM,
+        loot > 0 ? 'rgba(232,216,138,0.35)' : 'rgba(232,216,138,0.25)',
+        loot > 0 ? 'rgba(232,216,138,0.06)' : 'rgba(232,216,138,0.04)',
+      ) +
+    `</div>` +
+    `<div style="display:flex;flex-direction:column;gap:9px;padding:0 30px 22px;"></div>` +
+    `<div style="padding:11px 30px;border-top:1px solid rgba(232,216,138,0.16);background:rgba(232,216,138,0.04);` +
+    `display:flex;align-items:center;gap:9px;">` +
+      `<span style="color:${BATTLE_GOLD};display:inline-flex;flex-shrink:0;">${INFO_ICON_SVG}</span>` +
+      `<span style="font-size:11px;color:#c8b898;line-height:1.4;">` +
+      `„Rozegraj ponownie": ta sama armia · pełne HP · wynik zapisze się na mapę dopiero po „Powrocie".</span>` +
+    `</div>`;
+
+  wrap.appendChild(card);
   document.body.appendChild(wrap);
-  const btnRow = wrap.lastElementChild as HTMLDivElement;
 
-  const btnReplay = document.createElement('button');
-  btnReplay.textContent = 'Rozegraj ponownie';
-  applyBtnPrimary(btnReplay);
-  Object.assign(btnReplay.style, { flex: '1 1 220px', minWidth: '200px', maxWidth: '280px' });
+  const ctaCol = card.children[2] as HTMLDivElement;
+
+  const btnMap = document.createElement('button');
+  btnMap.type = 'button';
+  btnMap.innerHTML = `<span style="display:inline-flex;line-height:0;">${MAP_ICON_SVG}</span>Powrót na mapę`;
+  Object.assign(btnMap.style, {
+    display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '9px',
+    height: '48px', borderRadius: '9px',
+    background: 'linear-gradient(180deg,#f0dc88,#b99a28)',
+    border: '1px solid #6a5212', borderTopColor: '#f8eea8',
+    color: '#2e2708', font: `700 13px ${BATTLE_FONT}`,
+    letterSpacing: '0.12em', textTransform: 'uppercase', cursor: 'pointer',
+    boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.4), 0 6px 18px rgba(232,216,138,0.22)',
+  });
+  btnMap.onclick = () => cb.onFinish();
+  ctaCol.appendChild(btnMap);
+
+  const btnRow = document.createElement('div');
+  Object.assign(btnRow.style, { display: 'flex', gap: '9px' });
+  ctaCol.appendChild(btnRow);
+
+  const mkOutlineBtn = (svg: string, label: string): HTMLButtonElement => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.innerHTML = `<span style="display:inline-flex;line-height:0;">${svg}</span>${label}`;
+    Object.assign(b.style, {
+      flex: '1', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+      height: '42px', borderRadius: '9px', border: '2px solid rgba(232,216,138,0.4)',
+      background: 'linear-gradient(180deg,#161c28,#0a0d14)', color: BATTLE_GOLD,
+      font: `600 11px ${BATTLE_FONT}`, letterSpacing: '0.1em', textTransform: 'uppercase', cursor: 'pointer',
+    });
+    return b;
+  };
+
+  const btnReplay = mkOutlineBtn(resizeSvg(FMT_SVG.reset, 15), 'Rozegraj ponownie');
   btnReplay.onclick = () => (cb.onReplay ? cb.onReplay() : undefined);
   btnRow.appendChild(btnReplay);
 
-  const btnDetails = document.createElement('button');
-  btnDetails.textContent = 'Szczeg\u00F3\u0142y bitwy';
-  applyBtnOutline(btnDetails);
-  Object.assign(btnDetails.style, { flex: '1 1 180px', minWidth: '160px', maxWidth: '240px' });
+  const btnDetails = mkOutlineBtn(resizeSvg(CMD_SVG.bars, 15), 'Szczegóły bitwy');
   btnDetails.onclick = () => cb.onDetails();
   btnRow.appendChild(btnDetails);
-
-  const btnMap = document.createElement('button');
-  btnMap.textContent = 'Powr\u00F3t do mapy \u2192';
-  applyBtnOutline(btnMap);
-  Object.assign(btnMap.style, { flex: '1 1 180px', minWidth: '160px', maxWidth: '240px' });
-  btnMap.onclick = () => cb.onFinish();
-  btnRow.appendChild(btnMap);
 
   return { backdrop, wrap };
 }

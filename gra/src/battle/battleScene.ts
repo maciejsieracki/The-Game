@@ -2127,6 +2127,8 @@ export class BattleScene {
   private _endScreenWrap: HTMLDivElement | null = null;
   /** Overlay Szczegoly bitwy (jeden na raz). */
   private _battleStatsOpen = false;
+  /** C-23 „Szczegóły bitwy" (endDetails1E, TW v5) — otwierany z ekranu końca (C-12). */
+  private _endDetailsEl: HTMLDivElement | null = null;
   private _endWinner: 'atakujacy' | 'obronca' | null = null;
   private _endSurvivors: BattleUnit[] = [];
 
@@ -2851,6 +2853,7 @@ export class BattleScene {
       this._initDeployUI();
       this._syncBattleToolbarMode();
       this._updateArmyMoraleBars();
+      this._syncMinimapPhaseChrome();
     }
 
     window.addEventListener('resize', this._onResize);
@@ -7851,15 +7854,64 @@ export class BattleScene {
     this._showBattleStatsOverlay(mode);
   }
 
-  /** Szczegóły bitwy z ekranu końca — ten sam widok co wynik na mapie. */
+  /** Zbiera dane strony (ATK/OBR) dla C-23 „Szczegóły bitwy" (endDetails1E). */
+  private _buildEndDetailsSide(side: 'atk' | 'def'): EndDetailsSideData {
+    const roster = side === 'atk' ? this.atk : this.def;
+    const snaps = side === 'atk' ? this._startAtkSnaps : this._startDefSnaps;
+    const snapById = new Map(snaps.map(s => [s.id, s]));
+    const units: EndDetailsUnitRow[] = roster.map(ru => {
+      const snap = snapById.get(ru.bu.id);
+      const hpBefore = Math.max(0, Math.round(snap ? snap.hp : ru.bu.maxHp));
+      const hpAfter = ru.dead ? 0 : Math.max(0, Math.round(ru.bu.hp));
+      const fate: EndDetailsUnitRow['fate'] = ru.dead ? 'destroyed' : ru.routed ? 'routed' : 'survived';
+      return {
+        name: this._unitDisplayLabel(ru),
+        kind: this._unitBattleClass(ru),
+        hpBefore, hpAfter, fate,
+      };
+    });
+    const totalBefore = units.reduce((s, u) => s + u.hpBefore, 0);
+    const totalAfter = units.reduce((s, u) => s + u.hpAfter, 0);
+    return {
+      civLabel: side === 'atk' ? this._attackerCivLabel : this._defenderCivLabel,
+      roleLabel: side === 'atk' ? 'Atakujący' : 'Obrońca',
+      totalBefore, totalAfter, units,
+    };
+  }
+
+  /** C-23 „Szczegóły bitwy" — otwierana z „Szczegóły bitwy" na ekranie końca (C-12). */
   private _showEndDetails(): void {
-    this._showBattleStatsOverlay('end');
+    if (this._endScreenBackdrop) this._endScreenBackdrop.style.visibility = 'hidden';
+    if (this._endScreenWrap) this._endScreenWrap.style.visibility = 'hidden';
+    this._hideEndDetails();
+
+    const playerWon = this._battleSummaryWinner() === 'atakujacy';
+    const elapsedMs = (this.started && this._battleStartVNow !== null)
+      ? Math.max(0, this.vNow - this._battleStartVNow)
+      : 0;
+    const battleSubtitle = 'Tura ' + this.roundNo + ' · ' + this._fmtBattleClock(elapsedMs);
+    const winnerCiv = playerWon ? this._attackerCivLabel : this._defenderCivLabel;
+    const params: EndDetails1EParams = {
+      battleSubtitle,
+      resultLabel: 'zwycięstwo ' + winnerCiv,
+      playerWon,
+      atk: this._buildEndDetailsSide('atk'),
+      def: this._buildEndDetailsSide('def'),
+    };
+    this._endDetailsEl = showEndDetails1E(this.overlay, params, {
+      onClose: () => { this._hideEndDetails(); },
+    });
+    this._battleStatsOpen = true;
   }
 
   private _hideEndDetails(): void {
     if (this._battleStatsOpen || isPostBattleSummaryOpen()) {
       hidePostBattleSummary();
     }
+    if (this._endDetailsEl?.parentNode) {
+      this._endDetailsEl.parentNode.removeChild(this._endDetailsEl);
+    }
+    this._endDetailsEl = null;
     this._battleStatsOpen = false;
     if (this._endScreenBackdrop) this._endScreenBackdrop.style.visibility = '';
     if (this._endScreenWrap) this._endScreenWrap.style.visibility = '';
@@ -7994,6 +8046,7 @@ export class BattleScene {
       this.hint.textContent =
         'TURA 1 — wydaj rozkazy (klik / G1-G3 / Generał) · SPACJA = start tury · R = AUTO';
     }
+    this._syncMinimapPhaseChrome();
   }
 
   /**
@@ -8063,10 +8116,13 @@ export class BattleScene {
         if (isMounted(u.bu)) break;
       }
     }
+    const elapsedMsEnd = (this.started && this._battleStartVNow !== null)
+      ? Math.max(0, this.vNow - this._battleStartVNow)
+      : 0;
     const endUi = showEndScreen1E(this.overlay, {
       playerWon,
       winnerLabel: winSub,
-      battleTitle: 'Bitwa rozstrzygni\u0119ta',
+      battleTitle: 'Tura ' + this.roundNo + ' \u00b7 ' + this._fmtBattleClock(elapsedMsEnd),
       atk: sA,
       def: sD,
       lootGold: loot,
@@ -9258,6 +9314,17 @@ export class BattleScene {
       applyTempoBtn1E(btn, { active: !this.paused && this.speedIdx === i });
     });
     if (this._tempoAutoBtn) applyTempoBtn1E(this._tempoAutoBtn, { active: !this._manualMode, auto: true });
+  }
+
+  /**
+   * Panel Tempo+minimapa: w DEPLOYU pokazuje nagłówek „Minimapa · rozstawianie"
+   * (tempo nie ma jeszcze sensu — bitwa startuje dopiero po rozstawieniu);
+   * w WALCE pokazuje rząd Tempo (pauza/×1/×2/×3/AUTO) — makieta TW v5 §3.
+   */
+  private _syncMinimapPhaseChrome(): void {
+    const deploy = this.deployPhase;
+    if (this._minimapDeployHeaderRow) this._minimapDeployHeaderRow.style.display = deploy ? 'flex' : 'none';
+    if (this._tempoRow) this._tempoRow.style.display = deploy ? 'none' : 'flex';
   }
 
   private _collectMinimapData(): BattleMinimapData {
@@ -14170,6 +14237,7 @@ export class BattleScene {
     // Zresetuj vLastWall zeby nie skoczyc czasu po dlugiej fazie deploy
     this.vLastWall = 0;
     this._startBattle();
+    this._syncMinimapPhaseChrome();
   }
 
   // =========================================================================
