@@ -7841,6 +7841,7 @@ async function boot(): Promise<void> {
             activeTreaties: activeTreatiesForPair(0, ownerId),
             otherEpochLabel: epochLabelForOwner(ownerId),
             otherIkonaId: civTypeForOwner(ownerId),
+            otherEra: empireEpochForOwner(ownerId),
             otherKolorHex: civKolorHexFn(ownerId),
             otherCultureLabel: civCultureLabelForKey(civKeyForOwner(ownerId)),
             cultureCircleSame: sameCultureCircle(civKeyForOwner(0), civKeyForOwner(ownerId)),
@@ -7860,6 +7861,7 @@ async function boot(): Promise<void> {
             otherGoods: tradeGoodsForOwner(ownerId),
             playerIkonaId: civTypeForOwner(0),
             playerKolorHex: civKolorHexFn(0),
+            playerEra: empireEpochForOwner(0),
           };
         },
         onAction: applyAudienceAction,

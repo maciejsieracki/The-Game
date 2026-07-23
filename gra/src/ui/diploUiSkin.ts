@@ -4,6 +4,7 @@
 import { brandIconSvg, civIconSvg, type BrandIconSize } from './icons/brandAssets';
 import civMapJson from './icons/brand/civ-icon-map.json';
 import { CIV_BRAND_SCOPE_VARS, ensureBrandRootTokens } from './brandTokenVars';
+import { leaderPortraitUrl } from './leaderPortraits';
 
 export function ensureDiploBrandScope(): void {
   ensureBrandRootTokens();
@@ -76,12 +77,23 @@ export function civLeaderMedallionHtml(civName: string): string {
   return civLeaderMedallionHtmlById(iconId, undefined);
 }
 
-/** Hero audiencji — duży emblem + ramka w kolorHex nacji. */
-export function civLeaderMedallionHtmlById(iconId: string, kolorHex: string | undefined): string {
-  const svg = civIconSvg(iconId, 72);
-  const ic = svg
-    ? svg.replace('<svg ', '<svg class="dip-leader-ic" ')
-    : dipBrandIconHtml('tb-diplomacy', 72, 'dip-leader-ic');
+/**
+ * Hero audiencji — duży emblem + ramka w kolorHex nacji. `era` (opcjonalne, patrz
+ * dyspozycja PORTRETY-WLADCOW-2026-07-23 KROK 2 pkt 2c) -- gdy podane i leaderPortraits.ts
+ * ma plik dla tej civ/epoki, w środku medalionu ląduje portret zamiast ikony SVG. Fallback
+ * obowiązkowy: brak portretu -> dotychczasowa ikona civIconSvg, bez zmian.
+ */
+export function civLeaderMedallionHtmlById(iconId: string, kolorHex: string | undefined, era?: number): string {
+  const portraitUrl = era !== undefined ? leaderPortraitUrl(iconId, era) : null;
+  let ic: string;
+  if (portraitUrl) {
+    ic = `<img class="dip-leader-ic" src="${portraitUrl}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%;display:block;">`;
+  } else {
+    const svg = civIconSvg(iconId, 72);
+    ic = svg
+      ? svg.replace('<svg ', '<svg class="dip-leader-ic" ')
+      : dipBrandIconHtml('tb-diplomacy', 72, 'dip-leader-ic');
+  }
   const border = kolorHex ?? 'var(--tg-gold-primary,#e8d88a)';
   const glow = kolorHex ? `${kolorHex}33` : 'rgba(232,216,138,.2)';
   const style = ` style="border-color:${border};box-shadow:inset 0 3px 8px ${glow},0 0 40px ${glow}"`;

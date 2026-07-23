@@ -86,6 +86,8 @@ export interface DiplomacyAudienceState {
   otherEpochLabel?: string;
   /** ikonaId rozmówcy (z civs.json — nie po nazwie wyświetlanej). */
   otherIkonaId?: string;
+  /** Epoka rozmówcy (1=kamien,2=braz,3=zelazo) — portret władcy w medalionie (leaderPortraits.ts). */
+  otherEra?: number;
   /** kolorHex rozmówcy (#RRGGBB). */
   otherKolorHex?: string;
   /** Etykieta okręgu kulturowego rozmówcy (np. „Grecka", „Chetycka"). */
@@ -108,6 +110,8 @@ export interface DiplomacyAudienceState {
   playerIkonaId?: string;
   /** kolorHex gracza (#RRGGBB) — ramka medalionu karty lewej. */
   playerKolorHex?: string;
+  /** Epoka gracza (1=kamien,2=braz,3=zelazo) — portret władcy w medalionie (leaderPortraits.ts). */
+  playerEra?: number;
   /** Skarbiec gracza (kwota złota) — pkt 5: u gracza zamiast paska Zaufanie/Respekt. */
   playerSkarbiec?: number;
   /** Dochód złota/turę gracza (informacyjnie, jeśli dostępny — cache silnika). */
@@ -537,7 +541,7 @@ function playerCardHtml(st: DiplomacyAudienceState, playerBon: readonly CivBonus
   return (
     '<div class="da-card you">' +
       '<div class="da-portrait">' +
-        civLeaderMedallionHtmlById(st.playerIkonaId ?? 'rzymianie', st.playerKolorHex) +
+        civLeaderMedallionHtmlById(st.playerIkonaId ?? 'rzymianie', st.playerKolorHex, st.playerEra) +
         '<div class="da-civname">' + esc(st.playerCivName) + '</div>' +
         '<div class="da-civtitle">' + esc(st.playerTitle) + '</div>' +
       '</div>' +
@@ -570,7 +574,7 @@ function otherCardHtml(st: DiplomacyAudienceState, otherBon: readonly CivBonusLi
   return (
     '<div class="da-card them">' +
       '<div class="da-portrait">' +
-        civLeaderMedallionHtmlById(st.otherIkonaId ?? 'grecy', st.otherKolorHex) +
+        civLeaderMedallionHtmlById(st.otherIkonaId ?? 'grecy', st.otherKolorHex, st.otherEra) +
         '<div class="da-civname">' + esc(st.otherCivName) + '</div>' +
         '<div class="da-civtitle">' + esc(st.otherTitle) + (st.otherEpochLabel ? ' · ' + esc(st.otherEpochLabel) : '') + '</div>' +
         stanceBadgeHtml(st) +
