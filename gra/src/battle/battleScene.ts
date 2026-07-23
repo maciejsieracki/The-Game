@@ -73,6 +73,7 @@ import {
   type BattleTerrainMap,
   type WorldTerrainInput,
 } from './battle-terrain';
+import combatParamsData from '../../data/combat-params.json';
 import { buildTestArmies } from './testBattle';
 import { buildSiegeWall, attachRowBreachPanels } from './siegeWall';
 import type { BronzeCiv } from '../render/bronzeCity';
@@ -707,6 +708,26 @@ const MELEE_SAFE_GAP = 2;
 
 const TILE_H = 0.10;  // tile slab thickness; top face at y = 0
 const UNIT_Y = 0;     // units stand on the top face
+
+// ---------------------------------------------------------------------------
+// C-BTL-BROD-Q1 (wariant C): ford (BTerrain.Ford) tactical mechanic constants.
+// Source of truth: data/combat-params.json "brod". A unit that is FIGHTING
+// while standing on a Ford tile is slowed (ruchMult) and weakened in combat
+// (karaAtak/karaObrona); a unit defending on dry ground next to a Ford, when
+// its attacker is wading in that Ford, gets a shore bonus (bonusObronaBrzegu).
+// Battles with zero Ford tiles (no river preset) never hit these branches --
+// legacy behaviour is bit-for-bit unchanged.
+// ---------------------------------------------------------------------------
+const BROD = combatParamsData.brod;
+const BROD_RUCH_MULT   = BROD.ruchMult;             // 0.5 -> half speed while wading a ford
+const BROD_KARA_ATAK   = BROD.karaAtak;              // 0.25 -> -25% Atak while fighting in a ford
+const BROD_KARA_OBRONA = BROD.karaObrona;            // 0.25 -> -25% Obrona while fighting in a ford
+const BROD_BONUS_BRZEG = BROD.bonusObronaBrzegu;     // 0.15 -> +15% Obrona defending the shore vs a ford attacker
+// Small tie-breaking penalty added to the cavalry tile-scoring functions below
+// (the only existing "score a candidate tile" AI logic in this file) so a
+// rider prefers a same-progress dry tile over stopping to fight IN a ford.
+// Not a rebuild of the AI -- just one extra term in an existing score formula.
+const FORD_AI_AVOID_PENALTY = 3;
 
 // ---------------------------------------------------------------------------
 // Combat animation constants
@@ -1518,6 +1539,26 @@ function tileTopY(tm: BattleTerrainMap, col: number, row: number): number {
     case BTerrain.Ford:            return -RIVER_DROP;
     default:                       return 0; // Plains, Forest, Rocks: flat ground
   }
+}
+
+/** True if (col,row) is a Ford tile -- a wadeable river crossing (C-BTL-BROD-Q1). */
+function isFordTile(tm: BattleTerrainMap, col: number, row: number): boolean {
+  return tm.at(col, row) === BTerrain.Ford;
+}
+
+/**
+ * "Obrona brzegu" adjacency (C-BTL-BROD-Q1): true if (col,row) is itself DRY
+ * ground (not River/Ford) and orthogonally touches at least one Ford tile.
+ * 4-directional, matching this square grid's adjacency model everywhere else
+ * (DIR_DELTA / manhattan).
+ */
+function isShoreAdjacentToFord(tm: BattleTerrainMap, col: number, row: number): boolean {
+  const own = tm.at(col, row);
+  if (own === BTerrain.River || own === BTerrain.Ford) return false;
+  for (const [dc, dr] of DIR_DELTA) {
+    if (tm.at(col + dc, row + dr) === BTerrain.Ford) return true;
+  }
+  return false;
 }
 
 /** Manhattan (4-directional) distance in tiles. */
@@ -5198,8 +5239,11 @@ export class BattleScene {
       for (const e of this._enemiesOf(ru)) {
         if (e.antiCavSpear && manhattan(nc, nr, e.q, e.r) === 1) { spearAdj = true; break; }
       }
-      // Prefer closing on target; if front blocked, allow flank/lateral (-dTgt still scores)
-      const score = (dNow - dTgt) * 12 - dTgt + (spearAdj ? 0 : 5);
+      // Prefer closing on target; if front blocked, allow flank/lateral (-dTgt still scores).
+      // C-BTL-BROD-Q1: small penalty for a candidate tile that is itself a Ford,
+      // so the rider prefers an equal-progress dry tile over parking in the ford.
+      const fordPenalty = isFordTile(this.terrainMap, nc, nr) ? FORD_AI_AVOID_PENALTY : 0;
+      const score = (dNow - dTgt) * 12 - dTgt + (spearAdj ? 0 : 5) - fordPenalty;
       if (score > bestScore) { bestScore = score; best = nk; }
     }
 
@@ -6773,6 +6817,8 @@ export class BattleScene {
     // to the summit and descends coming off it (mirrors the world-map y-lerp).
     const fromTopY = tileTopY(this.terrainMap, ru.q, ru.r);
     const toTopY   = tileTopY(this.terrainMap, col, row);
+    const oldCol = ru.q;
+    const oldRow = ru.r; // captured BEFORE reassignment, for the ford speed check below
 
     ru.q = col; ru.r = row;
     // Per-tile movement cost (B8): forest/hills cost 2, a river ford costs 3,
@@ -6781,7 +6827,15 @@ export class BattleScene {
     // A river ford is finite-but-expensive; deep river is never entered (walled
     // out of pathing). Always spend at least 1 so a unit can take its step.
     const enterCost = Math.max(1, Math.min(this.terrainMap.moveCost(col, row), 99));
-    ru.moveLeft = Math.max(0, ru.moveLeft - enterCost);
+    // C-BTL-BROD-Q1 (wariant C): a unit standing on OR entering a Ford tile
+    // wades at half speed -- ADDITIONAL on top of the move-cost table above
+    // (not a replacement for it), via brod.ruchMult (data/combat-params.json).
+    // Fires when either end of this single step is a Ford tile; a field with
+    // zero Ford tiles (no river preset) never triggers it => legacy battles
+    // spend exactly enterCost as before, bit-for-bit.
+    const wadingFord = isFordTile(this.terrainMap, oldCol, oldRow) || isFordTile(this.terrainMap, col, row);
+    const stepCost = wadingFord ? enterCost / BROD_RUCH_MULT : enterCost;
+    ru.moveLeft = Math.max(0, ru.moveLeft - stepCost);
 
     // Re-orient toward the nearest enemy from the NEW tile so the FRONT keeps
     // tracking the enemy line as the unit advances. Drives the SS5l facing
@@ -6862,7 +6916,23 @@ export class BattleScene {
     const terrDefMult  = defender.onWallWalkway
       ? 3.0  // bonus_obrona_mur_proc=200 => x3.0 (miasto-params.json)
       : terrainDefenseMultiplier(defTerrain, cuA.rola, this.terrainData);
+    // River-crossing Atak penalty (SS5j, pre-existing): the ATTACKER's own
+    // tile decides this -- -25% Atak when it is wading a Ford (river_attack_mult
+    // in combat-params.json, numerically the same as brod.karaAtak below).
     const terrRiverMlt = terrainRiverAttackMultiplier(atkTerrain, this.terrainData);
+
+    // C-BTL-BROD-Q1 (wariant C): the Obrona-side half of the ford mechanic, plus
+    // the "obrona brzegu" shore bonus. Both are NEW and additive on top of the
+    // pre-existing river Atak penalty above (which already covers karaAtak) --
+    // extends the SAME per-tile terrain-modifier mechanism rather than a
+    // parallel one. Zero Ford tiles on the field (no river preset) => both
+    // booleans false => defFordMlt/shoreBonusMlt stay 1.0 => bit-for-bit legacy.
+    const atkOnFord = isFordTile(this.terrainMap, attacker.q, attacker.r);
+    const defOnFord = !defender.onWallWalkway && isFordTile(this.terrainMap, defender.q, defender.r);
+    const defFordMlt = defOnFord ? (1 - BROD_KARA_OBRONA) : 1; // -25% Obrona fighting IN the ford
+    const shoreBonusApplies = !defOnFord && !defender.onWallWalkway && atkOnFord
+      && isShoreAdjacentToFord(this.terrainMap, defender.q, defender.r);
+    const shoreBonusMlt = shoreBonusApplies ? (1 + BROD_BONUS_BRZEG) : 1; // +15% Obrona defending the shore
 
     // FACING (SS5l): where does this blow land relative to the DEFENDER's
     // facing? Front = no penalty; flank/rear reduce the defender's effective
@@ -6897,7 +6967,7 @@ export class BattleScene {
 
     const defMeleeDef = applyMultiplier(cuD.meleeDefence, defMods.obrona);
     const defEffObrona   = Math.max(0, defMeleeDef * (1 - defPenaltyFrac));
-    const defFinalObrona = defEffObrona * terrDefMult;
+    const defFinalObrona = defEffObrona * terrDefMult * defFordMlt * shoreBonusMlt;
     const atkMelee       = applyMultiplier(cuA.meleeAttack, atkMods.atk) * terrRiverMlt;
     const atkMissile     = applyMultiplier(cuA.missileAttack ?? 0, atkMods.rangedAtk);
     const defArmor       = applyMultiplier(cuD.armor, defMods.pancerz);
@@ -9659,6 +9729,19 @@ export class BattleScene {
     const hasAmmo = ru.ammoBarShown && Number.isFinite(ru.ammoMax) && ru.ammoMax > 0;
     const ammoPct = hasAmmo ? Math.round(100 * Math.max(0, ru.ammoLeft) / ru.ammoMax) : 0;
 
+    // C-BTL-BROD-Q1 (wariant C): active ford / shore status for THIS unit's
+    // current tile. Mutually exclusive -- a tile is either the ford itself or
+    // dry shore next to one, never both. Not shown at all off the river preset
+    // (both isFordTile/isShoreAdjacentToFord read the terrain map directly, so
+    // a field with zero Ford tiles never matches).
+    const onFord = !ru.onWallWalkway && isFordTile(this.terrainMap, ru.q, ru.r);
+    const onShore = !onFord && !ru.onWallWalkway && isShoreAdjacentToFord(this.terrainMap, ru.q, ru.r);
+    const fordStatus = onFord
+      ? { text: 'W brodzie: −25% atak/obrona, ruch ×0,5', color: '#e08a8a' }
+      : onShore
+        ? { text: 'Obrona brzegu: +15% obrony', color: '#7ad0a0' }
+        : null;
+
     const row = (label: string, value: string, color = '#e8e0c8'): string =>
       '<div style="display:flex;align-items:flex-start;gap:10px;font-size:12px;line-height:1.35;">' +
       '<span style="color:#8a8070;min-width:58px;letter-spacing:.04em;text-transform:uppercase;font-size:10px;font-weight:700;padding-top:1px;">' + label + '</span>' +
@@ -9691,6 +9774,7 @@ export class BattleScene {
       '<div style="padding:10px 14px;display:flex;flex-direction:column;gap:8px;">' +
       row('Postawa', postawa) +
       row('Grupa', groupLabel, gNum != null ? BATTLE_PLAYER_TEXT : '#8a8070') +
+      (fordStatus ? row('Teren', fordStatus.text, fordStatus.color) : '') +
       '</div>' +
       '<div style="padding:9px 12px;border-top:1px solid rgba(232,216,138,0.16);display:grid;grid-template-columns:1fr 1fr;gap:7px 12px;">' +
       statCells.join('') +
@@ -14781,7 +14865,9 @@ export class BattleScene {
           for (const e of this._enemiesOf(ru)) {
             if (e.antiCavSpear && manhattan(nc, nr, e.q, e.r) === 1) { spearAdj = true; break; }
           }
-          const score = (dNow - dTgt) * 12 - dTgt + (spearAdj ? 0 : 4);
+          // C-BTL-BROD-Q1: same shore-preferring tie-break as _cavManeuverStep above.
+          const fordPenalty = isFordTile(this.terrainMap, nc, nr) ? FORD_AI_AVOID_PENALTY : 0;
+          const score = (dNow - dTgt) * 12 - dTgt + (spearAdj ? 0 : 4) - fordPenalty;
           if (score > bestScore) { bestScore = score; best = nk; }
         }
         if (best) return best;
@@ -17073,6 +17159,30 @@ function computeInstantResult(
       const defTerrain = terrainMap
         ? terrainMap.combatTerrainName(d.ru.q, d.ru.r)
         : terrain;
+
+      // C-BTL-BROD-Q1 (wariant C), skip-resolve parity: pre-scale the
+      // defender's Obrona for the ford penalty / shore bonus the animated
+      // battle applies per-blow (resolveCombat has no per-attacker-tile
+      // concept, so it is folded in here as a stat multiplier instead). No
+      // terrainMap (legacy caller) or zero Ford tiles => both multipliers
+      // stay 1.0 => unchanged result.
+      if (terrainMap) {
+        const dOnFord = isFordTile(terrainMap, d.ru.q, d.ru.r);
+        if (dOnFord) {
+          cu_d.meleeDefence *= (1 - BROD_KARA_OBRONA);
+        } else if (
+          isFordTile(terrainMap, a.ru.q, a.ru.r) &&
+          isShoreAdjacentToFord(terrainMap, d.ru.q, d.ru.r)
+        ) {
+          cu_d.meleeDefence *= (1 + BROD_BONUS_BRZEG);
+        }
+      }
+      // NOTE: the Atak-side ford penalty (karaAtak) is already covered here by
+      // resolveCombat's own pre-existing terrainRiverAttackMultiplier (fires
+      // off defTerrain, i.e. when the DEFENDER stands in the ford) -- a
+      // legacy, defender-tile-based approximation of the same rule kept as-is
+      // for this skip-resolve path. The animated engine (_singleBlow) checks
+      // the ATTACKER's own tile instead, which is the precise per-blow rule.
 
       const res = resolveCombat(cu_a, cu_d, {
         maxRounds:        30,
