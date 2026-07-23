@@ -1139,3 +1139,9 @@ Decyzja właściciela: krawędzie (magistrale+mostki) w obecnej formie NIECZYTEL
 ## [2026-07-23] DESIGN → INTEGRATOR — paczka DRZEWKO-TECH-v1.1 + KANON-SYNC-6 (ODEBRANA, zainstalowana)
 
 **v1.1 wg werdyktu Macieja:** siatka BEZ krawędzi (klatki A i C; badge i legenda krawędzi zdjęte), „pokaż ścieżkę" działa na węzłach, karty węzłów bez ikon epok. Wariant STANDALONE (~1 MB, React/Babel wbudowane) — działa offline, render zweryfikowany. **KANON-SYNC-6 dojechał w komplecie:** A08 Tryb budowy ulepszen · A04 Panel heks kontekst · C23 Szczegoly bitwy v1 · C12 Koniec bitwy v3 · Jednostki infografiki kanon v1 · Atlas ikon bitwy i jednostek — hub kanonu ma teraz 100% żywych linków. Zainstalowane: snapshot `_dist/DRZEWKO-TECH-v1.1-2026-07-23/` + KANON (7 makiet, CANON.md, hub). Propozycja Design „ikony per-technologia (32 szt.) osobnym zleceniem" — CZEKA na decyzję Macieja.
+
+---
+
+## [2026-07-23] DESIGN → INTEGRATOR — paczka CUDA-SWIATA-v1 (ODEBRANA, zainstalowana). Zlecenia 1-5 ZAMKNIĘTE
+
+Makieta „Cuda swiata v1 (1E)" — 3 klatki (przegląd 19 cudów Antyku 1:1 z wonders.json wg pasm epok, karta cudu 3 stany, powiadomienia nasz/cudzy). Weryfikacja integratora: 19/19 cudów obecnych (3 nazwy w wariantach zapisu — OK), reguły E/R + wygasanie po Średniowieczu odwzorowane. Zainstalowane: snapshot `_dist/CUDA-SWIATA-v1-2026-07-23/` + żywy KANON (makieta, CANON, hub). Wdrożenie ekranu w grze — zlecone subagentowi (worktree). U Design otwarte już tylko: Zlecenie 6 (portrety Żelaza/Antyku — czeka na arkusze Macieja) i Zlecenie 7 (ikony 32 technologii — dyspozycja przekazana).

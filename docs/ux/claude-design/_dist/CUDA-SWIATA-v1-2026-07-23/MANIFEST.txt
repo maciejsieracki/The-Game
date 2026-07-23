@@ -1,0 +1,13 @@
+PACZKA: CUDA-SWIATA-v1 · 2026-07-23
+Zlecenie 4 (TURA 2): galeria Cudów świata Antyku — 19 cudów 1:1 z gra/data/wonders.json · styl 1E
+
+ZAWARTOŚĆ:
+1. DYSPOZYCJA-WDROZENIE.md ..... gdzie wgrać + opis klatek + reguły
+2. MANIFEST.txt ................ ten plik
+3. brand-book/KANON/mockupy/The Game - Cuda swiata v1 (1E).dc.html  ← NOWY KANON (3 klatki)
+4. brand-book/KANON/mockupy/support.js
+5. brand-book/KANON/CANON.md · START - KANON aktualny (1E).dc.html · WYMIANA-UI-DESIGN.md ← NADPISZ
+
+WYMAGA: eksport/icons/epochs/*.svg w repo.
+CEL W REPO: docs/ux/claude-design/01-propozycje-z-design/brand-book/
+PO TEJ PACZCE: otwarte tylko Zlecenie 6 (portrety Żelaza — czeka na arkusz).
