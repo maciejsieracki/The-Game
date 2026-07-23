@@ -21,6 +21,7 @@ import {
   type NegotiationPayload,
 } from './diplomacyNegotiationModal';
 import { actionUsesTradeBasket, showTradeBasketModal, openQuickDealBasket } from './diplomacyTradeBasket';
+import { leaderName } from './leaderPortraits';
 
 export interface AudienceAction {
   id: string;
@@ -233,6 +234,7 @@ ${DIPLO_1E_SHARED_CSS}
 .da-portrait .dip-leader-medallion{width:64px;height:64px;}
 .da-portrait .dip-leader-ic{width:32px;height:32px;}
 .da-civname{font-family:var(--tg-font-title,Georgia,serif);font-size:1.05em;color:var(--tg-gold-primary,#e8d88a);letter-spacing:.02em;}
+.da-civleader{font-size:0.72em;font-style:italic;color:var(--tg-gold-dim,#c9a84c);line-height:1.3;}
 .da-civtitle{font-size:0.68em;color:#8a8070;line-height:1.5;}
 .da-stance-badge{display:inline-flex;align-items:center;gap:5px;font-size:0.6em;font-weight:700;letter-spacing:.05em;
   text-transform:uppercase;border-radius:999px;padding:3px 10px;margin-top:2px;

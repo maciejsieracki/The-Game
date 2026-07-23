@@ -15,12 +15,17 @@
 import civsRaw from '../../data/civs.json';
 import type { CivsData } from '../data/loader';
 
-type EpochKey = 'kamien' | 'braz' | 'zelazo';
+type EpochKey = 'kamien' | 'braz' | 'zelazo' | 'antyk';
 
-/** Kolejność epok gry: 1=kamien, 2=braz, 3=zelazo (patrz main.ts ERA_ID_TO_NUM). */
-const EPOCH_BY_ERA: readonly EpochKey[] = ['kamien', 'braz', 'zelazo'];
+/**
+ * Kolejność epok gry: 1=kamien, 2=braz, 3=zelazo, 4=antyk (na zapas — gra dziś kończy na
+ * Żelazie; portrety mają pliki tylko dla kamien/braz/zelazo, więc era 4 zawsze spada przez
+ * fallback do zelazo/braz/kamien w leaderPortraitUrl; leaderName ma faktyczne imiona "antyk"
+ * w civs.json).
+ */
+const EPOCH_BY_ERA: readonly EpochKey[] = ['kamien', 'braz', 'zelazo', 'antyk'];
 
-/** civId (ikonaId) -> wodzowie{kamien/braz/zelazo}, zbudowane raz z civs.json (loader.ts wczytuje ten sam plik). */
+/** civId (ikonaId) -> wodzowie{kamien/braz/zelazo/antyk}, zbudowane raz z civs.json (loader.ts wczytuje ten sam plik). */
 const LEADER_MAP: Record<string, Partial<Record<EpochKey, string>>> = {};
 for (const civ of (civsRaw as CivsData).cywilizacje) {
   if (civ.ikonaId && civ.wodzowie) {
@@ -68,7 +73,7 @@ export function leaderPortraitUrl(civId: string | null | undefined, era: number)
 
 /**
  * Imię władcy danej cywilizacji w danej epoce, albo `null` gdy civId nieznany lub brak
- * wpisu `wodzowie` w civs.json. Fallback epoki jak przy portretach (zelazo→braz→kamien).
+ * wpisu `wodzowie` w civs.json. Fallback epoki jak przy portretach (antyk→zelazo→braz→kamien).
  */
 export function leaderName(civId: string | null | undefined, era: number): string | null {
   const key = String(civId ?? '').trim().toLowerCase();
