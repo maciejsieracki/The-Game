@@ -1926,6 +1926,10 @@ export class BattleScene {
   private _tempoPauseBtn: HTMLButtonElement | null = null;
   private _tempoSpeedBtns: HTMLButtonElement[] = [];
   private _tempoAutoBtn: HTMLButtonElement | null = null;
+  /** Nagłówek „Minimapa · rozstawianie" (deploy, BEZ tempa) — makieta TW v5 §3/klatka 3. */
+  private _minimapDeployHeaderRow: HTMLDivElement | null = null;
+  /** Rząd Tempo (pauza/×1/×2/×3/AUTO) — widoczny TYLKO w walce, nie w deployu. */
+  private _tempoRow: HTMLDivElement | null = null;
   /** Q2: minimap canvas (lewy-dolny rog). */
   private _minimapCanvas: HTMLCanvasElement | null = null;
   private _minimapWrap: HTMLDivElement | null = null;
@@ -9128,7 +9132,23 @@ export class BattleScene {
     this.overlay.appendChild(wrap);
     this._minimapWrap = wrap;
 
-    // --- Rząd Tempo: pauza + ×1/×2/×3 + AUTO-rozegranie ---
+    // --- Nagłówek deploy (BEZ tempa — start dopiero po rozstawieniu, makieta §3) ---
+    const deployHeaderRow = document.createElement('div');
+    Object.assign(deployHeaderRow.style, {
+      display: 'none', alignItems: 'center', gap: '6px',
+      padding: '8px 12px', borderBottom: '1px solid rgba(232,216,138,0.2)', flexShrink: '0',
+    });
+    const deployHeaderLbl = document.createElement('span');
+    Object.assign(deployHeaderLbl.style, {
+      font: '700 9px ' + BATTLE_FONT, letterSpacing: '0.1em', textTransform: 'uppercase',
+      color: BATTLE_TEXT_DIM,
+    });
+    deployHeaderLbl.textContent = 'Minimapa · rozstawianie';
+    deployHeaderRow.appendChild(deployHeaderLbl);
+    wrap.appendChild(deployHeaderRow);
+    this._minimapDeployHeaderRow = deployHeaderRow;
+
+    // --- Rząd Tempo: pauza + ×1/×2/×3 + AUTO-rozegranie (TYLKO w walce) ---
     const tempoRow = document.createElement('div');
     applyTempoRow1E(tempoRow);
     const tempoLbl = document.createElement('span');
@@ -9164,7 +9184,9 @@ export class BattleScene {
     tempoRow.appendChild(tempoSpacer);
     this._tempoAutoBtn = mkTempoBtn(TEMPO_SVG.auto, 'AUTO-rozegranie bitwy (R)', () => { this._toggleManualMode(); });
     wrap.appendChild(tempoRow);
+    this._tempoRow = tempoRow;
     this._syncTempoPanelHighlight();
+    this._syncMinimapPhaseChrome();
 
     // --- Minimapa (canvasBox — ramka #6a5212 wg tokenow, bez zmian wobec v4) ---
     const canvasBox = document.createElement('div');
@@ -11798,7 +11820,6 @@ export class BattleScene {
   private _createRosterGroupBlock(
     gid: string, deploy: boolean,
   ): { wrapper: HTMLDivElement; header: HTMLDivElement; cards: HTMLDivElement } {
-    const cardH = deploy ? DEPLOY_ROSTER_CARD_H : BATTLE_ROSTER_CARD_H;
     const wrapper = document.createElement('div');
     wrapper.className = 'roster-group-block';
     wrapper.dataset.groupId = gid;
@@ -11810,29 +11831,50 @@ export class BattleScene {
       overflow: 'hidden', boxSizing: 'border-box',
     });
 
+    // Nagłówek grupy (makieta TW v5 §7): kolorowy pionowy znacznik 3px + „Grupa
+    // N · X" + linia wypełniająca + chevron zwijania (SVG) — zastępuje dawną
+    // pełną „zakładkę" TW (solidny złoty blok na całą wysokość kart).
     const header = document.createElement('div');
     header.className = deploy ? 'deploy-group-tab' : 'battle-group-tab';
     header.dataset.groupId = gid;
-    applyTwGroupTabStyle(header, cardH);
     Object.assign(header.style, {
-      width: '100%', height: cardH + 'px', cursor: 'default',
-      flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-      fontSize: '12px', padding: '2px 4px', boxSizing: 'border-box',
+      display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '8px',
+      width: '100%', minHeight: '18px', cursor: 'default',
+      padding: '0 1px', marginBottom: '2px', boxSizing: 'border-box',
+      fontFamily: BATTLE_FONT,
     });
+
+    const bar = document.createElement('span');
+    bar.className = 'roster-grp-bar';
+    Object.assign(bar.style, {
+      width: '3px', height: '14px', borderRadius: '2px', flexShrink: '0',
+    });
+    header.appendChild(bar);
 
     const body = document.createElement('div');
     body.className = 'roster-grp-select';
     Object.assign(body.style, {
-      flex: '1', textAlign: 'center', lineHeight: '1.2', cursor: 'pointer',
-      whiteSpace: 'nowrap', userSelect: 'none', fontSize: '11px',
-    });
-    const chev = document.createElement('div');
-    chev.className = 'roster-grp-chev';
-    Object.assign(chev.style, {
-      width: '16px', flexShrink: '0', fontSize: '10px', opacity: '0.8',
-      textAlign: 'center', cursor: 'pointer', userSelect: 'none',
+      cursor: 'pointer', userSelect: 'none', flexShrink: '0',
+      fontSize: '11px', fontWeight: '700', letterSpacing: '0.1em', textTransform: 'uppercase',
+      whiteSpace: 'nowrap',
     });
     header.appendChild(body);
+
+    const rule = document.createElement('span');
+    rule.className = 'roster-grp-rule';
+    Object.assign(rule.style, { flex: '1', height: '1px', background: 'rgba(232,216,138,0.12)' });
+    header.appendChild(rule);
+
+    const chev = document.createElement('span');
+    chev.className = 'roster-grp-chev';
+    Object.assign(chev.style, {
+      display: 'inline-flex', alignItems: 'center', flexShrink: '0',
+      color: '#8a8070', cursor: 'pointer', userSelect: 'none', lineHeight: '0',
+      transition: 'transform 0.15s',
+    });
+    chev.innerHTML =
+      '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">' +
+      '<path d="M6 9l6 6 6-6"/></svg>';
     header.appendChild(chev);
 
     body.addEventListener('click', (e: MouseEvent) => {
@@ -11873,9 +11915,13 @@ export class BattleScene {
     }
   }
 
+  /** Paleta pask\u00F3w grup \u2014 cykliczna, ta sama co akcenty typ\u00F3w (mockup Grupa 1/2/3). */
+  private static readonly ROSTER_GROUP_BAR_PALETTE = [BATTLE_PLAYER_TEXT, BATTLE_GOLD, '#c8a878'] as const;
+
   private _updateRosterGroupHeaderLabel(header: HTMLDivElement, gid: string): void {
+    const bar = header.querySelector('.roster-grp-bar') as HTMLSpanElement | null;
     const body = header.querySelector('.roster-grp-select') as HTMLDivElement | null;
-    const chev = header.querySelector('.roster-grp-chev') as HTMLDivElement | null;
+    const chev = header.querySelector('.roster-grp-chev') as HTMLSpanElement | null;
     const collapsed = this._rosterGroupCollapsed.has(gid);
     const n = this._groupDisplayNum(gid);
     const cnt = this._liveGroupMemberIds(gid).length;
@@ -11884,29 +11930,17 @@ export class BattleScene {
     const partialSel = !allSel && liveIds.some(id => this._selectedUnits.has(id));
     const managing = this.deployPhase && this._deployActiveGroupId === gid;
     const active = managing || allSel || partialSel;
+    const palette = BattleScene.ROSTER_GROUP_BAR_PALETTE;
+    const barColor = active ? BATTLE_GOLD : palette[n != null ? (n - 1) % palette.length : 0]!;
+    if (bar) {
+      bar.style.background = barColor;
+      bar.style.boxShadow = active ? '0 0 6px ' + barColor : 'none';
+    }
     if (body) {
       body.textContent = 'Grupa ' + (n != null ? String(n) : '?') + ' \u00B7 ' + cnt;
-      body.style.fontWeight = 'bold';
-      body.style.color = managing ? '#ffe066' : allSel ? '#fff' : partialSel ? '#fff8dc' : '#fff8dc';
+      body.style.color = active ? '#e8e0c8' : '#c8b898';
     }
-    if (chev) chev.textContent = collapsed ? '\u25B6' : '\u25BC';
-    header.style.border = allSel
-      ? `2px solid ${BATTLE_PLAYER}`
-      : managing || partialSel
-        ? `2px solid ${BATTLE_GOLD}`
-        : `1px solid ${BATTLE_GOLD_DIM}`;
-    header.style.boxShadow = allSel
-      ? '0 0 12px rgba(58,106,208,0.55)'
-      : managing
-        ? '0 0 10px rgba(232,216,138,0.45)'
-        : partialSel ? '0 0 8px rgba(232,216,138,0.4)' : 'inset 0 1px 0 rgba(255,255,255,0.15)';
-    header.style.background = allSel
-      ? 'linear-gradient(180deg,rgba(58,106,208,0.65),rgba(40,70,160,0.55))'
-      : managing
-        ? 'rgba(232,216,138,0.28)'
-        : partialSel
-          ? 'linear-gradient(180deg,rgba(232,216,138,0.65),rgba(160,130,50,0.50))'
-          : 'linear-gradient(180deg,rgba(232,216,138,0.55),rgba(140,110,40,0.40))';
+    if (chev) chev.style.transform = collapsed ? 'rotate(-90deg)' : 'rotate(0deg)';
     header.title = 'Klik = zaznacz grupe \u00B7 strzalka = zwin/rozwin karty';
   }
 
@@ -15875,6 +15909,26 @@ export class BattleScene {
     card.appendChild(iconEl);
     (card as any)._iconEl = iconEl;
 
+    // C-06/09 v5 (makieta): pod ikon\u0105 nazwa jednostki (7px, elipsa) \u2014 NIE liczba
+    // HP (ta \u017cyje w bogatym tooltipie). Stany dead/rout (F2) zachowane bez zmian.
+    const hpLbl = document.createElement('div');
+    Object.assign(hpLbl.style, {
+      fontSize: (isDead || isRouted) ? '7px' : '7px',
+      fontWeight: (isDead || isRouted) ? '700' : '600',
+      letterSpacing: isDead ? '0.06em' : isRouted ? '0.08em' : '0',
+      textTransform: (isDead || isRouted) ? 'uppercase' : 'none',
+      color: isDead ? ROSTER_DEAD_COLOR : isRouted ? BATTLE_ENEMY_TEXT : '#c8b898',
+      maxWidth: '100%',
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
+      whiteSpace: 'nowrap',
+    });
+    hpLbl.textContent = isDead ? 'Pad\u0142a' : isRouted ? 'Rout' : this._unitDisplayLabel(ru);
+    card.appendChild(hpLbl);
+    (card as any)._hpLbl = hpLbl;
+    (card as any)._grpLbl = null;
+    (card as any)._selBadge = null;
+
     const hpTrack = document.createElement('div');
     Object.assign(hpTrack.style, {
       width: '100%', height: '4px', background: 'rgba(255,255,255,0.1)', borderRadius: '2px',
@@ -15905,20 +15959,6 @@ export class BattleScene {
     card.appendChild(morTrack);
     (card as any)._morFill = morFill;
     (card as any)._morTrack = morTrack;
-
-    const hpLbl = document.createElement('div');
-    Object.assign(hpLbl.style, {
-      fontSize: (isDead || isRouted) ? '7px' : '8px',
-      fontWeight: '700',
-      letterSpacing: isDead ? '0.06em' : isRouted ? '0.08em' : '0',
-      textTransform: (isDead || isRouted) ? 'uppercase' : 'none',
-      color: isDead ? ROSTER_DEAD_COLOR : isRouted ? BATTLE_ENEMY_TEXT : '#c8b898',
-    });
-    hpLbl.textContent = isDead ? 'Pad\u0142a' : isRouted ? 'Rout' : String(Math.max(0, Math.round(ru.bu.hp)));
-    card.appendChild(hpLbl);
-    (card as any)._hpLbl = hpLbl;
-    (card as any)._grpLbl = null;
-    (card as any)._selBadge = null;
 
     card.addEventListener('pointerdown', (e: PointerEvent) => {
       e.stopPropagation();
@@ -15995,8 +16035,8 @@ export class BattleScene {
           hpFill.style.width = (hpPct * 100).toFixed(0) + '%';
           hpFill.style.background = hpPct > 0.25 ? '#4caf50' : BATTLE_ENEMY;
         }
-        const hpLbl = (card as any)._hpLbl as HTMLDivElement | undefined;
-        if (hpLbl) hpLbl.textContent = Math.round(ru.bu.hp) + '/' + ru.bu.maxHp;
+        // Etykieta karty = nazwa jednostki (ustawiona raz w _createUnitCard, statyczna —
+        // deploy nie zna stanów dead/rout, więc nie ma czego tu przemalowywać).
         let gBadge = (card as any)._gBadge as HTMLDivElement | undefined;
         if (ru.groupId && !isDead) {
           if (!gBadge) {
@@ -16116,11 +16156,14 @@ export class BattleScene {
       }
       const hpLbl = (card as any)._hpLbl as HTMLDivElement | undefined;
       if (hpLbl) {
-        hpLbl.textContent = isDead ? 'Pad\u0142a' : isRouted ? 'Rout' : String(Math.max(0, Math.round(ru.bu.hp)));
+        // Makieta TW v5: etykieta = nazwa jednostki w stanie normalnym; dead/rout
+        // (F2) nadpisuj\u0105 j\u0105 chwilowym stanem \u2014 nazwa wraca, gdy jednostka o\u017cyje
+        // (np. scalanie rannych) bo _createUnitCard j\u0105 tam zapisa\u0142 raz na starcie.
+        hpLbl.textContent = isDead ? 'Pad\u0142a' : isRouted ? 'Rout' : this._unitDisplayLabel(ru);
         hpLbl.style.color = isDead ? ROSTER_DEAD_COLOR : isRouted ? BATTLE_ENEMY_TEXT : '#c8b898';
         hpLbl.style.textTransform = (isDead || isRouted) ? 'uppercase' : 'none';
         hpLbl.style.letterSpacing = isDead ? '0.06em' : isRouted ? '0.08em' : '0';
-        hpLbl.style.fontSize = (isDead || isRouted) ? '7px' : '8px';
+        hpLbl.style.fontSize = '7px';
       }
     }
     this._paintTwGroupTabs(this._battleGroupTabs);
