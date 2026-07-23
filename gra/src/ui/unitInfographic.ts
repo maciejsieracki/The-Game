@@ -96,7 +96,7 @@ const CATEGORY_LABEL: Record<string, string> = {
 
 export function unitInfographicCategory(u: UnitDef | undefined, id?: string): string {
   const isSuper = u?.['Super-jednostka'] === 'TAK';
-  return categoryOf(u?.Jednostka ?? id ?? '', u?.['Rola (linia)'] ?? '', isSuper);
+  return categoryOf(u?.Jednostka ?? id ?? '', u?.['Rola (linia)'] ?? '', isSuper, u?.['Typ']);
 }
 
 export function unitInfographicLabel(cat: string): string {

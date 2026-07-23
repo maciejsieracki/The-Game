@@ -85,9 +85,24 @@ export function isCivilianUnit(u: Pick<RuntimeUnit, 'category' | 'typeId'>): boo
 }
 
 /**
- * Returns the model category key for a unit given its name, role string, and
- * super-unit flag.  All matching is case-insensitive and done on both name and
- * role.  isSuper is checked first and always returns 'super' when true.
+ * Returns the model category key for a unit given its name, role string,
+ * super-unit flag, and (optionally) its combat "Typ" from units.json.  All
+ * name/role matching is case-insensitive and done on both name and role.
+ * isSuper is checked first and always returns 'super' when true.
+ *
+ * TEMAT #10B fallback: many Iron-age / foreign-culture units carry no
+ * weapon-revealing word in their name or role (e.g. "Piechota hetycka",
+ * "Gwardia Ishtar", generic "Wojownik") and used to fall through every
+ * name/role keyword check into 'domyslny'. When `typ` is passed and no
+ * name/role keyword matched, this now buckets by the units.json "Typ" field
+ * (Swordsman -> miecznik, Spearman -> wlocznik, Falangite -> falanga,
+ * Mount -> konnica, Distance -> lucznik, Slinger -> procarz, Naval -> galera,
+ * Siege -> obleznicza) so real units always resolve to a real model category.
+ * "Typ" = "Offensive" is deliberately NOT bucketed here (it already covers two
+ * distinct weapon families -- club vs axe -- and picking one would be a
+ * guess); those units must be resolved by an explicit name/keyword match
+ * instead (see maczugKw/toporKw below). Callers that omit `typ` keep the
+ * exact prior behaviour.
  *
  * Valid return values:
  *   'osadnik' | 'miecznik' | 'wlocznik' | 'lucznik' | 'procarz' |
@@ -107,7 +122,7 @@ function normalizeForMatch(s: string): string {
   return nfd.replace(/[Łł]/g, 'l').toLowerCase();
 }
 
-export function categoryOf(name: string, role: string, isSuper: boolean): string {
+export function categoryOf(name: string, role: string, isSuper: boolean, typ?: string | null): string {
   if (isSuper) return 'super';
   const n = normalizeForMatch(name ?? '');
   const r = normalizeForMatch(role ?? '');
@@ -142,13 +157,35 @@ export function categoryOf(name: string, role: string, isSuper: boolean): string
   if (procarKw.some(kw => n.includes(kw) || r.includes(kw))) return 'procarz';
   const oszczepKw = ['oszczep', 'javelin', 'atlatl', 'estolic'];
   if (oszczepKw.some(kw => n.includes(kw) || r.includes(kw))) return 'oszczepnik';
-  const maczugKw = ['maczug', 'chaska', 'club', 'mace'];
+  // 'champi' = the Inca "champi" (star-headed mace) named IN the unit's own
+  // name (units.json Uwagi: "maczuga gwiazdzista (champi)") -- same pattern as
+  // 'khopesh'/'atlatl' above, not a guess.
+  const maczugKw = ['maczug', 'chaska', 'club', 'mace', 'champi'];
   if (maczugKw.some(kw => n.includes(kw) || r.includes(kw))) return 'maczuga';
   const toporKw = ['topor', 'axe'];
   if (toporKw.some(kw => n.includes(kw) || r.includes(kw))) return 'topor';
   // Machiny oblężnicze (by name or by role "Oblężnicza").
   const oblezKw = ['taran', 'katapult', 'oblezn', 'siege', 'battering', 'trebuchet'];
   if (oblezKw.some(kw => n.includes(kw) || r.includes(kw))) return 'obleznicza';
+  // "Wojownik tyrreński" (Sea Peoples / Tursza, Typ=Offensive): units.json
+  // Uwagi documents the actual weapon as "TOPOR/tasak" -- the historical name
+  // itself carries no weapon word, so this is an explicit exception (same
+  // precedent as the legionista/hastati name-based special case above), not a
+  // guess: it is read straight off the canonical data note.
+  if (n.includes('tyrren')) return 'topor';
+  // TEMAT #10B: units.json "Typ" fallback -- see the JSDoc above for why
+  // "Offensive" is intentionally excluded (ambiguous maczuga/topor).
+  if (typ) {
+    const t = normalizeForMatch(typ);
+    if (t === 'swordsman') return 'miecznik';
+    if (t === 'spearman')  return 'wlocznik';
+    if (t === 'falangite') return 'falanga';
+    if (t === 'mount')     return 'konnica';
+    if (t === 'distance')  return 'lucznik';
+    if (t === 'slinger')   return 'procarz';
+    if (t === 'naval')     return 'galera';
+    if (t === 'siege')     return 'obleznicza';
+  }
   return 'domyslny';
 }
 
@@ -174,9 +211,10 @@ export function listUnitTypes(
     seen.add(unitName);
     const role: string = u['Rola (linia)'] ?? '';
     const isSuper: boolean = u['Super-jednostka'] === 'TAK';
+    const typ: string = u['Typ'] ?? '';
     result.push({
       typeId: unitName,
-      category: categoryOf(unitName, role, isSuper),
+      category: categoryOf(unitName, role, isSuper, typ),
       name: unitName,
     });
   }

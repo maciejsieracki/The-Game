@@ -129,6 +129,7 @@ function makeUnit(
       typeId,
       def?.['Rola (linia)'] ?? '',
       def?.['Super-jednostka'] === 'TAK',
+      def?.['Typ'],
     ),
     q,
     r,

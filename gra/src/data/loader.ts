@@ -125,6 +125,14 @@ export interface BuildingDef {
    * Przyklad (Biblioteka): { "6": "Astronomia" } = poziom 6 "Obserwatorium".
    */
   poziomTechGate?: Record<string, string>;
+  /**
+   * TEMAT #6 (2026-07-23): koszt dodatkowy pobierany z magazynu MIASTA (City.surowce,
+   * game/cities.ts) przy starcie budowy — konsument cegły/ceramiki (produkty
+   * Cegielni/Garncarni, game/converters.ts). Klucze ASCII zgodne z City.surowce
+   * (np. "cegla", "ceramika"). Opcjonalne — brak = budynek bez kosztu surowcowego
+   * (zachowanie sprzed TEMAT #6, zero regresji). Patrz game/building-stock-cost.ts.
+   */
+  koszt_surowce?: Partial<Record<string, number>>;
 }
 
 /** Wiersz z arkusza Surowce.xlsx. */

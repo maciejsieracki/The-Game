@@ -101,7 +101,7 @@ function el<K extends keyof HTMLElementTagNameMap>(tag: K, cls?: string): HTMLEl
 
 function unitCategory(u: UnitDef): string {
   const isSuper = u['Super-jednostka'] === 'TAK';
-  return categoryOf(u.Jednostka ?? '', u['Rola (linia)'] ?? '', isSuper);
+  return categoryOf(u.Jednostka ?? '', u['Rola (linia)'] ?? '', isSuper, u['Typ']);
 }
 
 function themeForCategory(cat: string): UrTheme {

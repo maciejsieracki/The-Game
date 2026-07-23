@@ -43,6 +43,7 @@ import {
   parsePrereqs, prereqsMet, techCost, isEraAdvanceTech, isMoneyTech, PIENIADZ_MNOZNIK,
   setPlayerResearchTarget, getResearchState,
 } from '../src/game/playerState';
+import { scaledResearchCost } from '../src/game/difficulty-cost';
 import {
   placeDeposits, computeStartPositions, DEPOSIT_RULES, isLandTerrain, hexDistanceAxial,
 } from '../src/map/gen-helpers';
@@ -77,7 +78,7 @@ export {
   advanceCityEconomy, buildEconParams, workedTilesForCity,
   createPlayerState, researchStep, cheapestAvailable, availableTechs,
   parsePrereqs, prereqsMet, techCost, isEraAdvanceTech, isMoneyTech, PIENIADZ_MNOZNIK,
-  setPlayerResearchTarget, getResearchState,
+  setPlayerResearchTarget, getResearchState, scaledResearchCost,
   placeDeposits, computeStartPositions, DEPOSIT_RULES, isLandTerrain, hexDistanceAxial,
   cityDefenseBonus, resolveSiegeAttack, canCaptureCity, captureCity, canEnemyCapture,
   applyCityBonus, terrainDefenseMult, makeMilitia, effectiveGarrison,
@@ -128,7 +129,7 @@ const {
   advanceCityEconomy, buildEconParams, workedTilesForCity,
   createPlayerState, researchStep, cheapestAvailable, availableTechs,
   parsePrereqs, prereqsMet, techCost, isEraAdvanceTech, isMoneyTech, PIENIADZ_MNOZNIK,
-  setPlayerResearchTarget, getResearchState,
+  setPlayerResearchTarget, getResearchState, scaledResearchCost,
   placeDeposits, computeStartPositions, DEPOSIT_RULES, isLandTerrain, hexDistanceAxial,
   cityDefenseBonus, resolveSiegeAttack, canCaptureCity, captureCity, canEnemyCapture,
   applyCityBonus, terrainDefenseMult, makeMilitia, effectiveGarrison,
@@ -504,16 +505,20 @@ assert('research: after all Kamień tier 1-2 techs, Brązownictwo becomes availa
   afterGarn.some(t => t.Technologia === 'Brązownictwo'));
 
 // Completing a tech: enough science -> moves to zbadane and deducts cost.
-// tempoGry='szybka' pins the effective cost to the raw tech.json value (x1) so
-// this test exercises researchStep's own logic, not the separate tech-tempo
-// x2/x4 multiplier (that has its own dedicated bramka: tech-tempo-test.cjs).
+// tempoGry='szybka' pins the tempo-kreatora multiplier to x1 so this test exercises
+// researchStep's own logic, not the separate tech-tempo x2/x4 multiplier (that has
+// its own dedicated bramka: tech-tempo-test.cjs). The effective cost researchStep
+// actually charges also includes GLOBAL_RESEARCH_COST_MULT (Maciej 2026-07-22,
+// "Balans: badania x2") + difficulty asymmetry, applied by scaledResearchCost() —
+// compute the same way here so the fixture tracks the real balance knob.
 const psA = createPlayerState();
 psA.tempoGry = 'szybka';
-const obrobka = techData.find(t => t.Technologia === 'Obróbka drewna'); // cost 12 (tech.json), no prereq
+const obrobka = techData.find(t => t.Technologia === 'Obróbka drewna'); // raw cost 12 (tech.json), no prereq
 assert('research: found Obróbka drewna (cost 12)', !!obrobka && techCost(obrobka) === 12,
   `cost=${obrobka ? techCost(obrobka) : 'N/A'}`);
+const obrobkaEffCost = scaledResearchCost(techCost(obrobka), 'szybka', 0, 'normal');
 psA.badana = 'Obróbka drewna';
-psA.nauka = 12; // exactly enough for Obróbka drewna (cost 12, tempo='szybka')
+psA.nauka = obrobkaEffCost; // exactly enough for Obróbka drewna at the current effective cost
 const resA = researchStep(psA, techData);
 assert('research: completing a tech moves it into zbadane',
   psA.zbadane.has('Obróbka drewna'), `zbadane=${[...psA.zbadane].join(',')}`);
@@ -540,7 +545,9 @@ const psC = createPlayerState();
 psC.tempoGry = 'szybka';
 psC.zbadane = new Set(kamienBeforeBraz);
 psC.badana = 'Brązownictwo';
-psC.nauka = techCost(techData.find(t => t.Technologia === 'Brązownictwo')); // exact cost (tempo='szybka')
+psC.nauka = scaledResearchCost(
+  techCost(techData.find(t => t.Technologia === 'Brązownictwo')), 'szybka', 0, 'normal',
+); // exact effective cost (tempo='szybka' + GLOBAL_RESEARCH_COST_MULT)
 const eraBefore = psC.era;
 const resC = researchStep(psC, techData);
 assert('research: era tech (Brązownictwo) marks the era-advance flag',
@@ -565,7 +572,7 @@ const allKamien = techData.filter(t => t.Epoka === 'Kamień').map(t => t.Technol
 const brazBeforeWaluta = sameEpochLowerTierIds('Waluta'); // Brąz tiers 4-5
 psD.zbadane = new Set([...allKamien, ...brazBeforeWaluta]);
 psD.badana = 'Waluta';
-psD.nauka = techCost(walutaDef); // exact cost (tempo='szybka')
+psD.nauka = scaledResearchCost(techCost(walutaDef), 'szybka', 0, 'normal'); // exact effective cost (tempo='szybka' + GLOBAL_RESEARCH_COST_MULT)
 const resD = researchStep(psD, techData);
 assert('research: money tech (Waluta) sets the money flag in completion',
   resD.completed.some(c => c.id === 'Waluta' && c.pieniadz === true));
@@ -627,11 +634,11 @@ assert('research: cascade leaves no available tech behind when fully funded',
 // Brązownictwo cost in real data: check what the test data says
 {
   const ps4 = createPlayerState();
-  ps4.tempoGry = 'szybka'; // pin cost to the raw tech.json value (x1)
+  ps4.tempoGry = 'szybka'; // pin the tempo-kreatora multiplier to x1
   ps4.zbadane = new Set(kamienBeforeBraz);
   const brazDef = techData.find(t => t.Technologia === 'Brązownictwo');
   const brazCost = brazDef ? (typeof brazDef['Koszt nauki'] === 'number' ? brazDef['Koszt nauki'] : 0) : 0;
-  ps4.nauka = brazCost; // exact cost of Brązownictwo
+  ps4.nauka = scaledResearchCost(brazCost, 'szybka', 0, 'normal'); // exact effective cost of Brązownictwo
   setPlayerResearchTarget(ps4, 'Brązownictwo', techData);
   assert('player-research: target set before researchStep',
     ps4.playerResearchTargetId === 'Brązownictwo', `id=${ps4.playerResearchTargetId}`);
@@ -659,11 +666,14 @@ assert('research: cascade leaves no available tech behind when fully funded',
 // P6: getResearchState returns correct snapshot
 {
   const ps6 = createPlayerState();
-  ps6.tempoGry = 'szybka'; // pin cost to the raw tech.json value (x1)
+  ps6.tempoGry = 'szybka'; // pin the tempo-kreatora multiplier to x1
   ps6.zbadane = new Set(kamienBeforeBraz);
   const brazDef6 = techData.find(t => t.Technologia === 'Brązownictwo');
-  const brazCost6 = brazDef6 ? (typeof brazDef6['Koszt nauki'] === 'number' ? brazDef6['Koszt nauki'] : 0) : 0;
-  ps6.nauka = brazCost6 / 2; // half the cost
+  const brazCostRaw6 = brazDef6 ? (typeof brazDef6['Koszt nauki'] === 'number' ? brazDef6['Koszt nauki'] : 0) : 0;
+  // Effective cost includes GLOBAL_RESEARCH_COST_MULT + difficulty asymmetry (scaledResearchCost),
+  // same as getResearchState computes internally for kosztCelu.
+  const brazCost6 = scaledResearchCost(brazCostRaw6, 'szybka', 0, 'normal');
+  ps6.nauka = brazCost6 / 2; // half the effective cost
   setPlayerResearchTarget(ps6, 'Brązownictwo', techData);
   const naukaPerTurn = 4;
   const rsi = getResearchState(ps6, techData, naukaPerTurn);
@@ -1222,14 +1232,23 @@ assert('culture: cultureHappiness penalises foreign-dominated cities (<50% and <
 assert('culture: cultureHappiness defaults missing share to 100% (full bonus)',
   cultureHappiness({ kulturaSkumulowana: 0 }, cultureParams) === cultureParams.zadowolenie100);
 
-// convertCulture: a conquered city converts toward our culture; a temple is faster.
+// convertCulture: a conquered city converts toward our culture; a Biblioteka is faster.
+// B-KULT-REL split (Maciej 2026-07-22/23, commit 80d4287): Świątynia is a RELIGIOUS
+// building only from here on — it no longer touches culture conversion (that's now
+// convertViaTemple/religion, covered separately below by the "religion:" assertions).
+// convertCulture's own accelerators are the culture buildings (Biblioteka, Amfiteatr,
+// Pałac, Stela, Sąd, Łaźnia) per CultureBuildings.
 const convNoTemple = convertCulture({ kulturaSkumulowana: 0, ownCultureShare: 0 }, {}, cultureParams);
-const convTemple   = convertCulture({ kulturaSkumulowana: 0, ownCultureShare: 0 }, { hasSwiatynia: true }, cultureParams);
+const convBiblioteka = convertCulture({ kulturaSkumulowana: 0, ownCultureShare: 0 }, { hasBiblioteka: true }, cultureParams);
 assert('culture: convertCulture raises own-culture share toward 1.0',
   convNoTemple.ownCultureShare > 0 && convNoTemple.ownCultureShare < 1);
-assert('culture: a Swiatynia converts culture strictly faster than without',
-  convTemple.ownCultureShare > convNoTemple.ownCultureShare,
-  `temple=${convTemple.ownCultureShare} vs none=${convNoTemple.ownCultureShare}`);
+assert('culture: a Biblioteka converts culture strictly faster than without',
+  convBiblioteka.ownCultureShare > convNoTemple.ownCultureShare,
+  `biblioteka=${convBiblioteka.ownCultureShare} vs none=${convNoTemple.ownCultureShare}`);
+assert('culture: Swiatynia (religious-only building, B-KULT-REL split) has NO effect on culture conversion',
+  convertCulture({ kulturaSkumulowana: 0, ownCultureShare: 0 }, { hasSwiatynia: true }, cultureParams).ownCultureShare
+    === convNoTemple.ownCultureShare,
+  `swiatynia (ignored key) should equal none=${convNoTemple.ownCultureShare}`);
 assert('culture: convertCulture caps the per-turn rate (cap from params)',
   convertCulture({ kulturaSkumulowana: 0, ownCultureShare: 0 },
     { hasSwiatynia: true, hasAmfiteatr: true, hasBiblioteka: true }, cultureParams)

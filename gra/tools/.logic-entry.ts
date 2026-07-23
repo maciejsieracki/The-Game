@@ -10,6 +10,7 @@ import {
   parsePrereqs, prereqsMet, techCost, isEraAdvanceTech, isMoneyTech, PIENIADZ_MNOZNIK,
   setPlayerResearchTarget, getResearchState,
 } from '../src/game/playerState';
+import { scaledResearchCost } from '../src/game/difficulty-cost';
 import {
   placeDeposits, computeStartPositions, DEPOSIT_RULES, isLandTerrain, hexDistanceAxial,
 } from '../src/map/gen-helpers';
@@ -44,7 +45,7 @@ export {
   advanceCityEconomy, buildEconParams, workedTilesForCity,
   createPlayerState, researchStep, cheapestAvailable, availableTechs,
   parsePrereqs, prereqsMet, techCost, isEraAdvanceTech, isMoneyTech, PIENIADZ_MNOZNIK,
-  setPlayerResearchTarget, getResearchState,
+  setPlayerResearchTarget, getResearchState, scaledResearchCost,
   placeDeposits, computeStartPositions, DEPOSIT_RULES, isLandTerrain, hexDistanceAxial,
   cityDefenseBonus, resolveSiegeAttack, canCaptureCity, captureCity, canEnemyCapture,
   applyCityBonus, terrainDefenseMult, makeMilitia, effectiveGarrison,

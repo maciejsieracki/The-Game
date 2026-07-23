@@ -1779,7 +1779,7 @@ async function boot(): Promise<void> {
         id: newUnitId,
         ownerId: city.ownerId,
         typeId: completed.id,
-        category: categoryOf(completed.id, role, isSuper),
+        category: categoryOf(completed.id, role, isSuper, def['Typ']),
         q: city.q,
         r: city.r,
         ruch,
@@ -2802,7 +2802,7 @@ async function boot(): Promise<void> {
       const oldTypeId = u.typeId;
       const isSuper = newDef['Super-jednostka'] === 'TAK';
       u.typeId = newTypeId;
-      u.category = categoryOf(newTypeId, newDef['Rola (linia)'] ?? '', isSuper);
+      u.category = categoryOf(newTypeId, newDef['Rola (linia)'] ?? '', isSuper, newDef['Typ']);
       u.hp = newHp;
       u.ruchLeft = 0;
       u.replaceUsedThisTurn = true;
@@ -9193,7 +9193,7 @@ async function boot(): Promise<void> {
             id: newUnitId,
             ownerId: 0,
             typeId,
-            category: categoryOf(typeId, role, isSuper),
+            category: categoryOf(typeId, role, isSuper, def['Typ']),
             q: dest.q,
             r: dest.r,
             ruch,
@@ -11454,7 +11454,7 @@ async function boot(): Promise<void> {
       const name: string = def['Jednostka'] ?? 'Jednostka';
       const role: string = def['Rola (linia)'] ?? '';
       const isSuper: boolean = def['Super-jednostka'] === 'TAK';
-      const kat = categoryOf(name, role, isSuper);
+      const kat = categoryOf(name, role, isSuper, def['Typ']);
       const hp = unitHealth(def);
       return {
         id: 'synth_' + idx + '_' + name,
@@ -11546,7 +11546,7 @@ async function boot(): Promise<void> {
           const nm: string = u['Jednostka'] ?? '';
           const rl: string = u['Rola (linia)'] ?? '';
           const isSup: boolean = u['Super-jednostka'] === 'TAK';
-          return categoryOf(nm, rl, isSup) === 'miecznik';
+          return categoryOf(nm, rl, isSup, u['Typ']) === 'miecznik';
         });
         console.warn('[launchTestBattle] Hastati not found, using fallback:', legDef?.['Jednostka'] ?? 'NONE');
       }
@@ -11556,7 +11556,7 @@ async function boot(): Promise<void> {
           const nm: string = u['Jednostka'] ?? '';
           const rl: string = u['Rola (linia)'] ?? '';
           const isSup: boolean = u['Super-jednostka'] === 'TAK';
-          return categoryOf(nm, rl, isSup) === 'wlocznik';
+          return categoryOf(nm, rl, isSup, u['Typ']) === 'wlocznik';
         });
         console.warn('[launchTestBattle] Falanga not found, using fallback:', falDef?.['Jednostka'] ?? 'NONE');
       }
@@ -12871,7 +12871,7 @@ async function boot(): Promise<void> {
                   id: newUnitId,
                   ownerId: city.ownerId,
                   typeId: rec.id,
-                  category: categoryOf(rec.id, role, isSuper),
+                  category: categoryOf(rec.id, role, isSuper, def['Typ']),
                   q: city.q,
                   r: city.r,
                   ruch,
