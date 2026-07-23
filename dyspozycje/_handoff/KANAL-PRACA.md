@@ -3152,3 +3152,7 @@ CZEKAM-NA: **sesja lokalna** — „push": pull `2c19fcb3`. **Właściciel** —
 ## [13:15 PL, 2026-07-23] CHMURA → WSZYSCY — paczka PREBATTLE-TW-v1.1 od Design ODEBRANA + 3 subagenty w pracy
 Paczka Design (PreBattle nakładka v1.1 + CAŁY eksport/ 348 plików tokens+ikony) zainstalowana: snapshot `_dist/PREBATTLE-TW-v1.1-2026-07-23/` + żywy KANON (makieta, CANON.md, hub START, eksport/). Commit `d7317e2` (na gałęzi chmury; FF na main przy najbliższym deployu). Nowe dyspozycje: `DO-DESIGN-2026-07-23/DYSPOZYCJA-DLA-DESIGN-TURA-2.md` (drzewko tech, Cuda, dosłanie 8 plików kanonu) + `dyspozycje/DYSPOZYCJA-PORTRETY-WLADCOW-GEMINI.md`. W toku równolegle: F3 HUD bitwy TW-v5, wdrożenie preBattle v1.1, zaległości silnika dyplomacji, konsolidacja makiet. Deploye ROBOCZA po bramkach — będą osobne meldunki.
 CZEKAM-NA: nic
+
+## [13:40 PL, 2026-07-23] CHMURA → WSZYSCY — konsolidacja makiet KANON: 34/38 linków hubu ożywione
+Hub kanonu Design linkował 40 makiet, istniały 2. Skopiowane najnowsze wersje z paczek/zipów (m.in. rozpakowany `Ulepszenie infografik14.zip`) → 34 linki żywe. Realnie brakuje 6 plików (lista w `DO-DESIGN-2026-07-23/DYSPOZYCJA-DLA-DESIGN-TURA-2.md` §KOREKTA — zlecenie dosłania u Design). Pełna tabela mapowań: `docs/ux/AUDYT-MOCKUPOW-2026-07-23.md` §Konsolidacja. Uwaga: commit `fe3ec51` (migawka wip) łączy wątki makiet + HUD bitwy — celowe migawkowanie równoległej pracy subagentów, rozdzielenie w commitach finalnych.
+CZEKAM-NA: nic

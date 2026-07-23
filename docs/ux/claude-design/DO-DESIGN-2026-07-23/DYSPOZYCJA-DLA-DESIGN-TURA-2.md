@@ -54,3 +54,8 @@ Maciej wkleja Design JEDEN blok bez załączników: zamiast odsyłaczy do plikó
 - Zlecenie 5 (8 plików kanonu) bez zmian.
 
 Pełna treść bloku — patrz rozmowa sesji chmurowej z 2026-07-23; treść merytoryczna identyczna z sekcjami powyżej.
+
+## KOREKTA ZLECENIA 5 (po konsolidacji makiet 2026-07-23)
+Konsolidacja ożywiła 34/38 martwych linków hubu (źródła: stare paczki, w tym nierozpakowany `Ulepszenie infografik14.zip`). Z pierwotnej listy 8 plików ZNALEZIONE w repo: HUD Panele stany · HUD Jednostka wybrana · HUD Miasto wybrane (+ C07 Pole HUD bitwy v2). **Realnie brakuje już tylko 6:**
+`A08 Tryb budowy ulepszen (1E)` · `A04 Panel heks kontekst (1E)` · `C23 Szczegoly bitwy v1 (1E)` · `C12 Koniec bitwy v3 (1E)` (mamy tylko v2) · `Jednostki infografiki kanon v1 (1E)` · `Atlas ikon bitwy i jednostek (1E)`.
+Jeśli Design dostał już starą listę 8 — wystarczy dosłać te 6.

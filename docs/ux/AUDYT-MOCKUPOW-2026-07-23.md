@@ -283,3 +283,77 @@ Trzy pakiety wpłynęły do `docs/ux/claude-design/_dist/` i `DO-DESIGN-2026-07-
 | — z tego JEDYNE ŹRÓDŁO (brak odpowiednika w Design) | 15 (w tym 12 to referencje artystyczne 3D poza zakresem Design) |
 | **Kandydaci do wymiany/archiwizacji (główny deliverable, §3)** | **9** (+8 martwych redirectów niezależnie od Design) |
 | Prawdziwe luki UI wymagające przyszłego mockupu Design | 3 (drzewko technologii, Cuda świata, placement/ulepszenia terenu) |
+
+---
+
+## Konsolidacja 2026-07-23 (wykonana)
+
+Zadanie dokumentacyjne: naprawa martwych linków huba kanonu (`01-propozycje-z-design/brand-book/KANON/START - KANON aktualny (1E).dc.html`). Przed konsolidacją hub linkował **40 unikalnych plików** `mockupy/*.dc.html`, z czego fizycznie w `KANON/mockupy/` istniały tylko **2** (+ `support.js`) — **38 linków martwych**.
+
+**Metoda:** parsowanie hrefów huba skryptem, `find`/`md5sum` po repo (w tym rozpakowanie `.zip` z `01-propozycje-z-design/brand-book/` — okazało się, że 4 z „brakujących" plików były spakowane w archiwach roboczych Design, nierozpakowane na dysku). Przy kilku wariantach tego samego pliku wybierano najnowszy wg daty w nazwie folderu dostawy / zip, przy remisie — md5 najnowszego zipu. Nic w `KANON/mockupy/` nie zostało nadpisane; hub i `CANON.md` nie były dotykane.
+
+**Wynik: 34 linki ożywione, 6 nadal brak w repo.**
+
+### Tabela mapowań
+
+| # | Link huba (`mockupy/…`) | Źródło skopiowane | Status |
+|---|---|---|---|
+| 1 | The Game - Design System v1 (1E).dc.html | `01-propozycje-z-design/brand-book/The Game - Design System v1 (1E).dc.html` | OŻYWIONY |
+| 2 | The Game - Komponenty (1E).dc.html | `01-propozycje-z-design/brand-book/The Game - Komponenty (1E).dc.html` | OŻYWIONY |
+| 3 | The Game - Ikony (biblioteka 1E).dc.html | `01-propozycje-z-design/brand-book/The Game - Ikony (biblioteka 1E).dc.html` | OŻYWIONY |
+| 4 | The Game - HUD Kit (1E).dc.html | `01-propozycje-z-design/brand-book/The Game - HUD Kit (1E).dc.html` | OŻYWIONY |
+| 5 | The Game - Motion (1E).dc.html | `01-propozycje-z-design/brand-book/The Game - Motion (1E).dc.html` | OŻYWIONY |
+| 6 | The Game - Ekran Menu Hero (1E).dc.html | `01-propozycje-z-design/ekrany-hero/The Game - Ekran Menu Hero (1E).dc.html` (+ `assets/hero-menu.png` dokopiowany, plik go wymagał) | OŻYWIONY |
+| 7 | The Game - Ekran Intro Hero (1E).dc.html | `01-propozycje-z-design/ekrany-hero/The Game - Ekran Intro Hero (1E).dc.html` (+ `assets/hero-intro.png` dokopiowany) | OŻYWIONY |
+| 8 | The Game - Ekran Kreator (1E).dc.html | `01-propozycje-z-design/brand-book/The Game - Ekran Kreator (1E).dc.html` | OŻYWIONY |
+| 9 | The Game - Kreator Kroki (1E).dc.html | `01-propozycje-z-design/brand-book/The Game - Kreator Kroki (1E).dc.html` | OŻYWIONY |
+| 10 | The Game - Ekran Koniec Gry (1E).dc.html | `01-propozycje-z-design/brand-book/The Game - Ekran Koniec Gry (1E).dc.html` | OŻYWIONY |
+| 11 | The Game - Koniec Porazka (1E).dc.html | `01-propozycje-z-design/brand-book/The Game - Koniec Porażka (1E).dc.html` (nazwa źródła z polskimi znakami „ż" → skopiowano pod nazwą ASCII oczekiwaną przez hub) | OŻYWIONY |
+| 12 | The Game - Ekran Badania (1E).dc.html | `01-propozycje-z-design/brand-book/The Game - Ekran Badania (1E).dc.html` | OŻYWIONY |
+| 13 | The Game - Ekran Dyplomacja (1E).dc.html | `01-propozycje-z-design/brand-book/The Game - Ekran Dyplomacja (1E).dc.html` | OŻYWIONY |
+| 14 | The Game - Dyplomacja panel negocjacji v1.1 -1E-.dc.html | już w `KANON/mockupy/` | JUŻ ISTNIAŁ (nietknięty) |
+| 15 | The Game - Ekran Wojsko (1E).dc.html | `01-propozycje-z-design/brand-book/The Game - Ekran Wojsko (1E).dc.html` | OŻYWIONY |
+| 16 | The Game - HUD Mapy layout (1E).dc.html | `claude-design/The Game - HUD Mapy layout (1E).dc.html` (płaska kopia robocza) | OŻYWIONY |
+| 17 | The Game - HUD Panele stany (1E).dc.html | rozpakowane z `claude-design/Ulepszenie infografik14.zip` → `brand-book/The Game - HUD Panele stany (1E).dc.html` (najnowsza z 5 kopii w różnych zipach, 2026-07-04 06:20) | OŻYWIONY |
+| 18 | The Game - HUD Jednostka wybrana (1E).dc.html | jw., ten sam zip | OŻYWIONY |
+| 19 | The Game - HUD Miasto wybrane (1E).dc.html | jw., ten sam zip (uwaga: starsze zipy z 07-03 mają inny md5 tego pliku — odrzucone jako nieaktualne) | OŻYWIONY |
+| 20 | The Game - A08 Tryb budowy ulepszen (1E).dc.html | — | **BRAK W REPO** (sprawdzono też wszystkie `.zip` w `claude-design/`) |
+| 21 | The Game - A04 Panel heks kontekst (1E).dc.html | — | **BRAK W REPO** (jw.) |
+| 22 | The Game - Ekran Miasto W3 v3 (1E).dc.html | `claude-design/The Game - Ekran Miasto W3 v3 (1E).dc.html` | OŻYWIONY |
+| 23 | The Game - Miasto Zakladki W3 6klatek (1E).dc.html | `claude-design/The Game - Miasto Zakladki W3 v3 6klatek (1E).dc.html` (hub oczekuje nazwy bez „v3" — rozbieżność nazw, ten sam ekran) | OŻYWIONY |
+| 24 | The Game - PreBattle nakladka v1.1 (1E).dc.html | już w `KANON/mockupy/` | JUŻ ISTNIAŁ (nietknięty) |
+| 25 | The Game - C01 Pre-bitwa v3 (1E).dc.html | `claude-design/The Game - C01 Pre-bitwa v3 (1E).dc.html` | OŻYWIONY |
+| 26 | The Game - C06 Pole bitwy odswiezenie (1E).dc.html | `_dist/POLE-BITWY-TW-v5-2026-07-23/brand-book/KANON/mockupy/The Game - C06 Pole bitwy odswiezenie (1E).dc.html` | OŻYWIONY |
+| 27 | The Game - C06 Deployment v4 (1E).dc.html | `claude-design/The Game - C06 Deployment v4 2026-07-04 (1E).dc.html` (hub bez daty; uwaga: w różnych paczkach `_dist/` krążą warianty tego pliku o różnych md5 — wybrano wersję z płaskiej kopii roboczej, spójną z większością paczek `poprawki-v4.1`) | OŻYWIONY |
+| 28 | The Game - C06 Popup Strategia v4 (1E).dc.html | `claude-design/The Game - C06 Popup Strategia v4 2026-07-04 (1E).dc.html` (hub bez daty) | OŻYWIONY |
+| 29 | The Game - C07 Pole HUD bitwy v2 (1E).dc.html | rozpakowane z `claude-design/Ulepszenie infografik14.zip` → `brand-book/The Game - C07 Pole HUD bitwy v2 (1E).dc.html` | OŻYWIONY |
+| 30 | The Game - C09 Roster lewy panel v4 (1E).dc.html | `claude-design/The Game - C09 Roster lewy panel v4 2026-07-04 (1E).dc.html` (hub bez daty) | OŻYWIONY |
+| 31 | The Game - C04 Atak miasto wybor v2 (1E).dc.html | `claude-design/The Game - C04 Atak miasto wybor v2 (1E).dc.html` | OŻYWIONY |
+| 32 | The Game - C05 Panel oblezenie v2 (1E).dc.html | `claude-design/The Game - C05 Panel oblezenie v2 (1E).dc.html` | OŻYWIONY |
+| 33 | The Game - A19 Miasto zdobyte v2 (1E).dc.html | `claude-design/The Game - A19 Miasto zdobyte v2 (1E).dc.html` | OŻYWIONY |
+| 34 | The Game - C23 Szczegoly bitwy v1 (1E).dc.html | — | **BRAK W REPO** |
+| 35 | The Game - C12 Koniec bitwy v3 (1E).dc.html | — | **BRAK W REPO** (w repo istnieje tylko `C12 Koniec bitwy v2`, żadna wersja v3 nie znaleziona nawet w zipach) |
+| 36 | The Game - Popupy deploy v5 (1E).dc.html | `claude-design/The Game - Popupy deploy v5 2026-07-05 (1E).dc.html` (hub bez daty) | OŻYWIONY |
+| 37 | The Game - Jednostki infografiki kanon v1 (1E).dc.html | — | **BRAK W REPO** |
+| 38 | The Game - Budynki infografiki kanon v1 (1E).dc.html | `claude-design/The Game - Budynki infografiki kanon v1 2026-07-05 (1E).dc.html` (hub bez daty) | OŻYWIONY |
+| 39 | The Game - Atlas ikon bitwy i jednostek (1E).dc.html | — | **BRAK W REPO** |
+| 40 | The Game - Panel Moc imperium v3 (1E).dc.html | `claude-design/Panel Moc imperium v3 2026-07-06 (1E).dc.html..html` (plik źródłowy ma uszkodzone podwójne rozszerzenie, patrz §6 — skopiowany pod poprawną nazwą oczekiwaną przez hub) | OŻYWIONY |
+
+### Do dosłania przez Design (6 plików, nigdzie w repo, w tym w archiwach `.zip`)
+
+- `The Game - A08 Tryb budowy ulepszen (1E).dc.html` — A-08, tryb budowy ulepszeń terenu
+- `The Game - A04 Panel heks kontekst (1E).dc.html` — A-04, panel kontekstu heksu
+- `The Game - C23 Szczegoly bitwy v1 (1E).dc.html` — C-23, raport szczegółów bitwy
+- `The Game - C12 Koniec bitwy v3 (1E).dc.html` — tylko v2 istnieje w repo, hub oczekuje v3
+- `The Game - Jednostki infografiki kanon v1 (1E).dc.html` — infografiki jednostek
+- `The Game - Atlas ikon bitwy i jednostek (1E).dc.html` — atlas ikon
+
+Pokrywa się dokładnie z 8-elementową listą luk z §6 audytu, pomniejszoną o 4 plik(i), które okazały się fizycznie obecne w archiwach `.zip` katalogu głównego `claude-design/` (nierozpakowane): `HUD Panele stany`, `HUD Jednostka wybrana`, `HUD Miasto wybrane` oraz dodatkowo `C07 Pole HUD bitwy v2` (ten ostatni nie był wcześniej wymieniony w §6 jako luka, ale hub go linkuje i też siedział tylko w zipach). Do 6 pozycji powyżej doszedł też `C12 Koniec bitwy v3` (poprzednio §6 nie flagowało tego jako luki, bo `C12 v2` fizycznie istnieje — ale hub żąda konkretnie wersji „v3", której nigdzie nie ma).
+
+### Uwaga o `support.js`
+
+Wszystkie skopiowane pliki referują `./support.js` relatywnie — działa bez zmian, bo `support.js` już siedzi w `KANON/mockupy/`. Skrypt jest generycznym runtime'em bez allowlisty nazw plików (czyta manifest/template wbudowany inline w każdym `.dc.html`), więc obsługuje nowe pliki automatycznie. Jeden plik — `The Game - Panel Moc imperium v3 (1E).dc.html` — ma własny inline `<script>` (nie korzysta z `support.js` w ogóle) — zgodnie z przewidywaniem zadania, nic nie trzeba było robić.
+
+### Znalezisko poboczne (nie naprawiane — poza zakresem)
+
+Kilka skopiowanych plików ma wewnętrzne linki nawigacyjne (stopka) do innych ekranów pod nazwami z myślnikiem em-dash „—" i starszymi nazwami (np. `The Game — Przegląd (1E).dc.html`, `The Game — Ekran Menu (1E).dc.html`), których nie ma w `KANON/mockupy/` pod tymi nazwami. To wewnętrzna nawigacja poszczególnych makiet Design (nie hub), obecna w plikach już przed konsolidacją — nie ruszane, bo to treść własności Design, a zadanie dotyczyło wyłącznie linków huba.
