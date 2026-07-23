@@ -132,11 +132,24 @@ Sprawdź **macierz typów** przed atakiem — włócznik vs kawaleria to inna ma
 
 ---
 
-## 60. Bitwa ręczna 3D
+## 60. Bitwa ręczna 3D — HUD TW-v5
 
-### 60.1. Layout
+### 60.1. Layout (kompletny, 2026-07-23)
 
-**Minimapa** (góra), **panel rozkazów**, **pasek** u dołu z rosterem jednostek. Styl spójny z mapą strategiczną (Total War v1.0).
+HUD przeszedł pełne przeprojektowanie na makietę **POLE-BITWY-TW-v5** (3 fazy, dziś w komplecie):
+
+| Element | Gdzie | Co pokazuje |
+|---------|-------|-------------|
+| **Karty dowódców** | Górne rogi (obie strony) | Medalion z **portretem władcy** (wg cywilizacji + epoki, fallback żelazo→brąz→kamień→ikona) + pierścień HP + liczniki typów jednostek |
+| **Zegar bitwy + pasek przewagi** | Górny środek | Czas starcia; złoty marker przesuwa się w stronę silniejszej armii |
+| **Roster jednostek** | Krawędź ekranu, karty z medalionem typu | Puste sloty „+", jednostka **martwa** = „✕ Padła", **rozbita** = „Rout" |
+| **Filtry rosteru** | Rząd ikon nad kartami, dwa piętra | Rząd 1: ikony klas (podkowa=Konnica z niebieską obwódką, skrzyżowane miecze=Piechota, tarcza=Dystansowe) + **Wszystkie** (4 kropki) + **★ Generał**; rząd 2: grupy **G1/G2/G3** jako kompaktowe chipy |
+| **Minimapa + panel TEMPO** | **Prawy dolny róg** (jeden wspólny panel) | Minimapa bitwy nad rzędem przycisków Pauza / ×1 / ×2 / ×4 / AUTO |
+| **Toolbar dolny** | Ikony 46×46, bez podpisów | Formacja/Konnica/Linie/Taktyka/Strategia (rozstawianie) lub zegar/budynek (walka) — pełna nazwa w pigułce **na hover** |
+| **Start walki / Reset / Wycofaj** | Pływający klaster prawy-dół (osobno od minimapy) | — |
+| **Zębatka ⚙** | Przy „Wycofaj się" | Popup z dawnym prawym railem (Muzyka/Historia/Info/Pomoc) — sam rail 56px zlikwidowany |
+
+Nazewnictwo dokładnych etykiet może się nieznacznie różnić w buildzie — szukaj wg **funkcji z tabeli**, nie dosłownego tekstu.
 
 ### 60.2. Sterowanie
 
@@ -144,14 +157,15 @@ Sprawdź **macierz typów** przed atakiem — włócznik vs kawaleria to inna ma
 - **S / P / H / M** — formacje / postawy (wg buildu).
 - **Ctrl+M** — menu / mapa.
 - Przeciąganie z listy — wybór wielu jednostek.
+- Klik ikony filtra rosteru — zawęża listę do klasy/grupy/Generała; hover pokazuje pełną nazwę w pigułce.
 
-### 60.3. Efekty v1.0
+### 60.3. Efekty i wizualia (2026-07-23)
 
-Odróżnienie łuku i miecza, **linie rozkazów**, uproszczone trafienia (bez pełnej fizyki).
+Scena 3D ma dziś: **plansze wg terenu hexa** (§63.0), tonację ACES + światło + mgła, kępy trawy i dekor z bliska, banery stron nad oddziałami, mur oblężniczy z wieżyczkami. Odróżnienie łuku i miecza, **linie rozkazów**, uproszczone trafienia (bez pełnej fizyki).
 
-### 60.4. Wynik strategiczny
+### 60.4. Wynik strategiczny — ekrany Koniec bitwy i Szczegóły
 
-Zwycięstwo — wróg znika lub ucieka. Porażka — straty na mapie. Po bitwie — ekran podsumowania (§65).
+Po starciu: **ekran Koniec bitwy** (karta Zwycięstwo złota/laur lub Porażka czerwona/złamane miecze, 3 kafle strat, CTA „Powrót na mapę" + „Rozegraj ponownie" + „Szczegóły bitwy"). **Szczegóły bitwy** — dwie kolumny ATK/OBR, rozbicie Zniszczone/Rozbite/Ocalałe, licznik ludzi przed→po (np. „1240→862 ludzi po bitwie"). Zwycięstwo — wróg znika lub ucieka; Porażka — straty na mapie.
 
 
 ### Przykład liczbowy
@@ -182,11 +196,11 @@ Sprawdź **macierz typów** przed atakiem — włócznik vs kawaleria to inna ma
 | **Oblężnicza** | Katapulta, taran, wieża |
 | **Wsparcie** | Zwiadowca |
 
-Pełna lista 50 jednostek: [`57-katalog-jednostek.md`](57-katalog-jednostek.md).
+Pełna lista jednostek (73, nie 50 — roster urósł 2026-07-21): [`57-katalog-jednostek.md`](57-katalog-jednostek.md).
 
-### 61.2. Counter ×1,5
+### 61.2. Counter ×1,5 i włócznia vs Mount +50%
 
-Atak **skuteczny** vs słaby typ wroga — ok. **×1,5** obrażeń plus bonus procentowy z definicji jednostki. Tooltipy pokazują ikony „silny vs słaby".
+Atak **skuteczny** vs słaby typ wroga — ok. **×1,5** obrażeń plus bonus procentowy z definicji jednostki. Tooltipy pokazują ikony „silny vs słaby". Konkretny, potwierdzony przykład: **każda** jednostka uzbrojona we włócznię/pikę (12 jednostek — typ `Spearman` **i** `Falangite`, kryterium to broń, nie etykieta) ma **+50% obrażeń vs Mount** (kawaleria/rydwany) — pełna lista w katalogu jednostek §„Bonus vs Mount".
 
 ### 61.3. Balans Panel-C
 
@@ -253,21 +267,33 @@ Czytaj **rozpiskę plusów i minusów** w panelu — naprawiaj największy minus
 
 ## 63. Teren na polu bitwy
 
-### 63.1. Rzeka
+### 63.0. Plansze wg terenu hexa świata (2026-07-23)
 
-Atak przez/z rzeki — ok. **×0,75** obrażeń atakującego. Obrona na brzegu korzystna.
+Pole bitwy 3D **odzwierciedla teren heksu**, na którym starcie się rozgrywa — 8 presetów: **łąka** (jeziorka, gęstsza trawa), **równina** (rzadszy las), **wzgórza** (grzbiety, skały brzegowe), **góry** (mocniejsze wzniesienia niż wzgórza), **las** (nakładka gęstego lasu na dowolnej bazie), **pustynia** (paleta piasku, bez lasu), **wybrzeże** (pas wody wzdłuż jednej krawędzi), **rzeka** (patrz §63.1). Tryb debug `?bt=<nazwa>` w URL wymusza konkretną planszę do testów. Bitwy „legacy" (bez informacji o hexie źródłowym) renderują się dokładnie jak dawniej.
+
+### 63.1. Rzeka — koryto ciągłe + brody
+
+Rzeka na polu bitwy to dziś **ciągłe koryto w kształcie litery S** przez całe pole (nie porozrzucane kałuże) — z **brodami** (Ford) w kilku miejscach, gdzie przejście jest możliwe. Mechanika brodu (wariant C, `combat-params.json` klucz `brod`):
+
+| Efekt w brodzie | Wartość |
+|-------------------|---------|
+| **Ruch** | **×0,5** (dwa razy wolniej) |
+| **Kara ataku** walcząc w brodzie | **−25%** |
+| **Bonus obrońcy** stojącego na brzegu (broniącego brodu) | **+15%** obrony |
+
+Tooltip jednostki w brodzie pokazuje aktywny status w wierszu TEREN (kolor czerwony/zielony wg tego, czy to ty atakujesz, czy bronisz). Atak przez/z rzeki poza brodem (starcie światowe, nie taktyczna plansza 3D) — osobna, numerycznie podobna kara ok. **×0,75** obrażeń atakującego (`river_attack_mult`) — dwa niezależne parametry, strojone osobno.
 
 ### 63.2. Wzgórze i góra
 
-**Wzgórze** — obrona ×1,5; **góra** — ×1,75. Atak z dołu trudniejszy.
+**Wzgórze** — obrona ×1,5; **góra** — obrona ×1,75. Atak z dołu trudniejszy. Na planszy „góry"/„wzgórza" (§63.0) wzniesienia są też **gęściej rozmieszczone i wyższe** niż na pozostałych presetach — łatwiej o naturalną osłonę.
 
-### 63.3. Las, miasto, morze
+### 63.3. Las, miasto, morze, pustynia, wybrzeże
 
-Las — cover dla dystansu. Miasto/mur — wysoka obrona w szturmie. Morze — jednostki morskie.
+Las — cover dla dystansu (gęściej na presecie „las"). Miasto/mur — wysoka obrona w szturmie, zabudowa za murem i gruz w wyłomie (Część XI §70). Morze — jednostki morskie. Pustynia — brak lasu, twardszy teren otwarty. Wybrzeże — pas wody wzdłuż krawędzi planszy.
 
 ### 63.4. Strategia vs taktyka
 
-Auto bierze teren **heksu startowego**. W 3D część terenu ustawiona z mapy — wybieraj heks przed atakiem.
+Auto bierze teren **heksu startowego**. W 3D plansza generuje się **automatycznie** wg presetu tego heksu (§63.0) — wybieraj heks pod kątem tego, jaki teren chcesz mieć w starciu (np. wciągnij kawalerię wroga w bród, zanim odpalisz kontratak włócznikami).
 
 
 ### Przykład liczbowy
@@ -356,4 +382,4 @@ Czytaj **rozpiskę plusów i minusów** w panelu — naprawiaj największy minus
 
 ---
 
-*Poradnik‑L · Część X · rev. E · 2026-07-03 · dane: `units.json`, `counters.json` · katalog: [`57-katalog-jednostek.md`](57-katalog-jednostek.md)*
+*Poradnik‑L · Część X · rev. F · 2026-07-23 (HUD TW-v5 komplet, plansze wg terenu hexa, bród, ekrany Koniec/Szczegóły bitwy, Bonus vs Mount) · pierwotnie rev. E 2026-07-03 · dane: `units.json`, `counters.json`, `combat-params.json`, `battle-terrain.ts` · katalog: [`57-katalog-jednostek.md`](57-katalog-jednostek.md)*

@@ -15,20 +15,21 @@
 
 ## Wiki‑S
 
-**Wojownik Sherden** (Wręcz, Brąz): rekrutacja **18** ¤ + **1** mieszk., utrzymanie **2** ¤/t i **1** żywn./t. Siła w polu **28.5**.
+**Wojownik Sherden** (Wręcz, Brąz): rekrutacja **18** ¤ + **1** mieszk., utrzymanie **2** ¤/t i **1** żywn./t. Siła w polu **35.5**.
 
 ---
 
 ## Wiki‑M
 
 ### Rola
-Wojownik Sherden to jednostka typu **Wręcz** z epoki **Brąz**. Dostępna wielu cywilizacjom po odblokowaniu epoki/tech.
+Wojownik Sherden to jednostka typu **Wręcz** z epoki **Brąz**. Unikalna dla **Ludy Morza** (grywalne jako barbarzyńcy epoki Brąz — obozy spawnują naprzemiennie Wojownika Sherden/szekelesz).
 ### Rekrutacja i utrzymanie
 - **Koszt:** 18 ¤, 1 mieszkańców
+- **Surowiec:** 5× brąz
 - **Tech:** Brązownictwo
 - **Utrzymanie:** 2 ¤/t, 1 żywności/t
 - **Ruch:** 2 (mapa) / 3 (bitwa)
-- **Siła w polu:** 28.5
+- **Siła w polu:** 35.5
 ### Countery i taktyka
 - Bonus vs włócznik: **+15%**
 - Słabsza od strony: masowe dystansowce z tyłu
@@ -45,7 +46,7 @@ Wojownik Sherden to jednostka typu **Wręcz** z epoki **Brąz**. Dostępna wielu
 - Złoto: 2 × 20 = **40 ¤**
 - Żywność: 1 × 20 = **20** (z zapasów państwa, jeśli masz Spichlerz; inaczej z bieżącej produkcji)
 
-**Siła w polu:** **28.5** — porównaj z **Wojownikiem (~21,5)** lub **Wojownikiem z mieczem (~25)** na tym samym terenie.
+**Siła w polu:** **35.5** — porównaj z **Wojownikiem (~27)** lub **Wojownikiem z mieczem (~39)** na tym samym terenie.
 
 **Ruch 2** na mapie: z miasta A do B (3 heksy lasu) ≈ **2** tur marszu lub mniej na drodze.
 

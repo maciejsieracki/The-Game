@@ -27,6 +27,7 @@
 **Jednostka specjalna:** Medżaj (Gwardia Faraona).
 **Religia państwa:** Religia egipska — faraon-bóg.
 **Przykładowe miasta w klastrze:** Memfis, Teby, Heliopolis, Abydos, Nekhen….
+**Władcy (imiona per epoka):** Kamień — Narmer · Brąz — Chufu · Żelazo — Ramzes II · Antyk — Kleopatra VII.
 
 **Bonus startowy:** +Atak dystansowy łuczników; rydwany szybsze, z atakiem dystansowym i dużym zapasem strzału (rydwany-łucznicy).
 

@@ -28,6 +28,7 @@ Spichlerz wzmacnia miasto w kategorii **Zywnosc**. Poziom 1: **+2 żywności** (
 - **Każdy kolejny poziom:** +8 pracy
 - **Utrzymanie:** 1 ¤/turę
 - Technologia **Garncarstwo**.
+- **Surowiec do budowy poz. 2 (Spichlerz II):** 10× cegła (poz. 1 bez kosztu surowcowego)
 ### Strategia gracza
 Priorytet we **wczesnej grze**, jeśli bufor wzrostu stoi w miejscu. Łącz ze Spichlerzem w imperium, żeby żywność nie przepadała po awansie ludności.
 ### Typowe błędy

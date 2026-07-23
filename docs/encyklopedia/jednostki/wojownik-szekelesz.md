@@ -15,21 +15,23 @@
 
 ## Wiki‑S
 
-**Wojownik szekelesz** (Wręcz, Brąz): rekrutacja **14** ¤ + **1** mieszk., utrzymanie **2** ¤/t i **1** żywn./t. Siła w polu **25**.
+**Wojownik szekelesz** (Wręcz, Brąz): rekrutacja **14** ¤ + **1** mieszk., utrzymanie **2** ¤/t i **1** żywn./t. Siła w polu **32**.
 
 ---
 
 ## Wiki‑M
 
 ### Rola
-Wojownik szekelesz to jednostka typu **Wręcz** z epoki **Brąz**. Unikalna dla **Rzymska**.
+Wojownik szekelesz to jednostka typu **Wręcz** z epoki **Brąz**. Unikalna dla **Ludy Morza** (grywalne jako barbarzyńcy epoki Brąz — obozy spawnują naprzemiennie Wojownika Sherden/szekelesz).
 ### Rekrutacja i utrzymanie
 - **Koszt:** 14 ¤, 1 mieszkańców
+- **Surowiec:** 3× brąz
 - **Tech:** Brązownictwo
 - **Utrzymanie:** 2 ¤/t, 1 żywności/t
 - **Ruch:** 2 (mapa) / 3 (bitwa)
-- **Siła w polu:** 25
+- **Siła w polu:** 32
 ### Countery i taktyka
+- **Bonus vs kawaleria/rydwany (Mount): +50%** — jak wszyscy włócznicy w grze (typ Spearman)
 - Słabsza od strony: masowe dystansowce z tyłu
 - W bitwie ręcznej: trzymaj linię, nie rozdzielaj na pojedyncze walki
 **Powiązane:** Rekrutacja · Walka · Wręcz
@@ -44,7 +46,7 @@ Wojownik szekelesz to jednostka typu **Wręcz** z epoki **Brąz**. Unikalna dla 
 - Złoto: 2 × 20 = **40 ¤**
 - Żywność: 1 × 20 = **20** (z zapasów państwa, jeśli masz Spichlerz; inaczej z bieżącej produkcji)
 
-**Siła w polu:** **25** — porównaj z **Wojownikiem (~21,5)** lub **Wojownikiem z mieczem (~25)** na tym samym terenie.
+**Siła w polu:** **32** — porównaj z **Wojownikiem (~27)** lub **Wojownikiem z mieczem (~39)** na tym samym terenie.
 
 **Ruch 2** na mapie: z miasta A do B (3 heksy lasu) ≈ **2** tur marszu lub mniej na drodze.
 

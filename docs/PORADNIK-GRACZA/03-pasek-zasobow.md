@@ -187,11 +187,11 @@ Czytaj **rozpiskę plusów i minusów** w panelu — naprawiaj największy minus
 
 ---
 
-## 17. Lewy panel — Cuda i Budowa
+## 17. Lewy panel (toolbar mapy) — Cuda i Budowa
 
-### 17.1. Cuda świata
+### 17.1. Cuda świata — galeria pełnoekranowa (2026-07-23)
 
-Ikona otwiera listę cudów do wzniesienia na twoim terytorium. Warunki: technologia, koszt pracy, często **jeden na świat** (typ wyścigowy). Szczegóły — Część XV §87.
+Medalion (kolumna okrągłych ikon po lewej krawędzi, pod paskiem zasobów) otwiera dziś **pełnoekranową galerię 19 cudów** Antyku ze stanem każdej karty (Dostępny/Zablokowany/W budowie/Nasz/Ekskluzywny-cudzy/Przepadł) — nie prostą listę jak wcześniej. Warunki budowy: technologia, teren, koszt pracy, często **jeden na świat** (typ E wyłączny lub R wyścigowy). Szczegóły — Część XV §94.
 
 ### 17.2. Budowa (ulepszenia terenu)
 
@@ -368,4 +368,4 @@ Postaw **pierwszy Spichlerz** przed masową rekrutacją — jeden budynek w impe
 
 ---
 
-*Poradnik‑L · Część III · rev. E · 2026-07-03 · źródła: `buildings.json`, `econ-params.json`, decyzja B5 (Spichlerz)*
+*Poradnik‑L · Część III · rev. F · 2026-07-23 (§17.1: Cuda świata = galeria pełnoekranowa, nie lista; fix cross-referencji do Część XV) · pierwotnie rev. E 2026-07-03 · źródła: `buildings.json`, `econ-params.json`, decyzja B5 (Spichlerz)*

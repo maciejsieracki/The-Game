@@ -15,7 +15,7 @@
 
 ## Wiki‑S
 
-**Pretorium** — budynek (Administracja), epoka Żelazo. Koszt od **75** pracy, utrzymanie **3** ¤/t. Technologia **Kodeks prawa**.
+**Pretorium** — budynek (Administracja), epoka Żelazo. Koszt od **75** pracy, utrzymanie **3** ¤/t. Technologia **Prawo**.
 
 ---
 
@@ -27,7 +27,8 @@ Pretorium wzmacnia miasto w kategorii **Administracja**. Poziom 1: **+2 pracy** 
 - **Budowa poz. 1:** 75 pracy
 - **Każdy kolejny poziom:** +15 pracy
 - **Utrzymanie:** 3 ¤/turę (+1 ¤/poziom)
-- Technologia **Kodeks prawa**.
+- **Surowiec do budowy:** 9× cegła (poz. 1)
+- Technologia **Prawo**.
 - **Uwaga:** Centrum administracji prowincji; bonus do utrzymania porzadku (garnizon); mnoznik % do przychodu podatkowego
 ### Strategia gracza
 Buduj **przed** przekroczeniem progu zagęszczenia (pop > 4) lub po podboju obcego miasta — szczęście podnosi też **porządek**.

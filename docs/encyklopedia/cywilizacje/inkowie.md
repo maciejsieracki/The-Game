@@ -27,6 +27,7 @@
 **Jednostka specjalna:** Chaska (maczuga gwiaździsta) + Królewska Gwardia (elita).
 **Religia państwa:** Kult Słońca Inti.
 **Przykładowe miasta w klastrze:** Cusco, Machu Picchu, Ollantaytambo, Pisac, Sacsayhuamán….
+**Władcy (imiona per epoka):** Kamień — Manco Cápac · Brąz — Wirakocza Inka · Żelazo — Pachacuti · Antyk — Túpac Inca Yupanqui.
 
 **Bonus startowy:** +Nauka/Kultura (kalendarz); bonus w lesie/dżungli.
 

@@ -15,7 +15,7 @@
 
 ## Wiki‑S
 
-**Gaesatae** (Wręcz, Żelazo): rekrutacja **14** ¤ + **1** mieszk., utrzymanie **1** ¤/t i **1** żywn./t. Siła w polu **24**.
+**Gaesatae** (Wręcz, Żelazo): rekrutacja **14** ¤ + **1** mieszk., utrzymanie **1** ¤/t i **1** żywn./t. Siła w polu **29.5**.
 
 ---
 
@@ -25,10 +25,11 @@
 Gaesatae to jednostka typu **Wręcz** z epoki **Żelazo**. Unikalna dla **Celtowie**.
 ### Rekrutacja i utrzymanie
 - **Koszt:** 14 ¤, 1 mieszkańców
-- **Tech:** Brązownictwo
+- **Surowiec:** 3× stal
+- **Tech:** Obróbka żelaza
 - **Utrzymanie:** 1 ¤/t, 1 żywności/t
 - **Ruch:** 3 (mapa) / 5 (bitwa)
-- **Siła w polu:** 24
+- **Siła w polu:** 29.5
 ### Countery i taktyka
 - Bonus vs włócznik: **+15%**
 - Słabsza od strony: masowe dystansowce z tyłu
@@ -45,7 +46,7 @@ Gaesatae to jednostka typu **Wręcz** z epoki **Żelazo**. Unikalna dla **Celtow
 - Złoto: 1 × 20 = **20 ¤**
 - Żywność: 1 × 20 = **20** (z zapasów państwa, jeśli masz Spichlerz; inaczej z bieżącej produkcji)
 
-**Siła w polu:** **24** — porównaj z **Wojownikiem (~21,5)** lub **Wojownikiem z mieczem (~25)** na tym samym terenie.
+**Siła w polu:** **29.5** — porównaj z **Wojownikiem (~27)** lub **Wojownikiem z mieczem (~39)** na tym samym terenie.
 
 **Ruch 3** na mapie: z miasta A do B (3 heksy lasu) ≈ **3** tur marszu lub mniej na drodze.
 

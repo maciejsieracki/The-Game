@@ -27,6 +27,7 @@ Swiatynia wzmacnia miasto w kategorii **Kultura**. Poziom 1: **+2 kultury** (+1 
 - **Budowa poz. 1:** 25 pracy
 - **Każdy kolejny poziom:** +10 pracy
 - **Utrzymanie:** 1 ¤/turę (+1 ¤/poziom)
+- **Surowiec do budowy:** 6× ceramika (poz. 1)
 - Technologia **Mistycyzm**.
 ### Strategia gracza
 Buduj **przed** przekroczeniem progu zagęszczenia (pop > 4) lub po podboju obcego miasta — szczęście podnosi też **porządek**.

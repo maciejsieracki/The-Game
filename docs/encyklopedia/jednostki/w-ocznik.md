@@ -15,7 +15,7 @@
 
 ## Wiki‑S
 
-**Włócznik** (Wręcz, Brąz): rekrutacja **16** ¤ + **1** mieszk., utrzymanie **2** ¤/t i **1** żywn./t. Siła w polu **36**.
+**Włócznik** (Wręcz, Brąz): rekrutacja **16** ¤ + **1** mieszk., utrzymanie **2** ¤/t i **1** żywn./t. Siła w polu **44**.
 
 ---
 
@@ -25,11 +25,13 @@
 Włócznik to jednostka typu **Wręcz** z epoki **Brąz**. Dostępna wielu cywilizacjom po odblokowaniu epoki/tech.
 ### Rekrutacja i utrzymanie
 - **Koszt:** 16 ¤, 1 mieszkańców
+- **Surowiec:** 4× brąz
 - **Tech:** Brązownictwo
 - **Utrzymanie:** 2 ¤/t, 1 żywności/t
 - **Ruch:** 2 (mapa) / 3 (bitwa)
-- **Siła w polu:** 36
+- **Siła w polu:** 44
 ### Countery i taktyka
+- **Bonus vs kawaleria/rydwany (Mount): +50%** — grot ustawiony na szarżę; sztandarowy „stop" dla jazdy i rydwanów w grze (dotyczy wszystkich 12 jednostek typu Włócznik/Spearman, patrz niżej)
 - Słabsza od strony: masowe dystansowce z tyłu
 - W bitwie ręcznej: trzymaj linię, nie rozdzielaj na pojedyncze walki
 **Powiązane:** Rekrutacja · Walka · Wręcz
@@ -44,7 +46,7 @@ Włócznik to jednostka typu **Wręcz** z epoki **Brąz**. Dostępna wielu cywil
 - Złoto: 2 × 20 = **40 ¤**
 - Żywność: 1 × 20 = **20** (z zapasów państwa, jeśli masz Spichlerz; inaczej z bieżącej produkcji)
 
-**Siła w polu:** **36** — porównaj z **Wojownikiem (~21,5)** lub **Wojownikiem z mieczem (~25)** na tym samym terenie.
+**Siła w polu:** **44** — porównaj z **Wojownikiem (~27)** lub **Wojownikiem z mieczem (~39)** na tym samym terenie.
 
 **Ruch 2** na mapie: z miasta A do B (3 heksy lasu) ≈ **2** tur marszu lub mniej na drodze.
 

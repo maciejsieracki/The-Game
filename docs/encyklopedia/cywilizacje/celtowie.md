@@ -27,6 +27,7 @@
 **Jednostka specjalna:** Miecznik galijski.
 **Religia państwa:** Religia celtycka (druidyzm).
 **Przykładowe miasta w klastrze:** Bibracte, Gergowia, Alezja, Avaricum, Uxellodunum….
+**Władcy (imiona per epoka):** Kamień — Ambigatos · Brąz — Brennus · Żelazo — Wercyngetoryks · Antyk — Boudika.
 
 **Bonus startowy:** +Atak/Morale piechoty przy szarży (brawura); długie miecze — premia do Uderzenia.
 

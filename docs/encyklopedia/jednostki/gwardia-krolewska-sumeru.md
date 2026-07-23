@@ -15,7 +15,7 @@
 
 ## Wiki‑S
 
-**Gwardia Królewska Sumeru** (Wręcz, Brąz): rekrutacja **0** ¤ + **1** mieszk., utrzymanie **0** ¤/t i **1** żywn./t. Siła w polu **52.5**.
+**Gwardia Królewska Sumeru** (Wręcz, Brąz): rekrutacja **0** ¤ + **1** mieszk., utrzymanie **0** ¤/t i **1** żywn./t. Siła w polu **63**.
 
 ---
 
@@ -28,7 +28,7 @@ Gwardia Królewska Sumeru to jednostka typu **Wręcz** z epoki **Brąz**. Unikal
 - **Tech:** —
 - **Utrzymanie:** 0 ¤/t, 1 żywności/t
 - **Ruch:** 2 (mapa) / 4 (bitwa)
-- **Siła w polu:** 52.5
+- **Siła w polu:** 63
 ### Countery i taktyka
 - Bonus vs włócznik: **+15%**
 - Słabsza od strony: masowe dystansowce z tyłu
@@ -45,7 +45,7 @@ Gwardia Królewska Sumeru to jednostka typu **Wręcz** z epoki **Brąz**. Unikal
 - Złoto: 1 × 20 = **20 ¤**
 - Żywność: 1 × 20 = **20** (z zapasów państwa, jeśli masz Spichlerz; inaczej z bieżącej produkcji)
 
-**Siła w polu:** **52.5** — porównaj z **Wojownikiem (~21,5)** lub **Wojownikiem z mieczem (~25)** na tym samym terenie.
+**Siła w polu:** **63** — porównaj z **Wojownikiem (~27)** lub **Wojownikiem z mieczem (~39)** na tym samym terenie.
 
 **Ruch 2** na mapie: z miasta A do B (3 heksy lasu) ≈ **2** tur marszu lub mniej na drodze.
 

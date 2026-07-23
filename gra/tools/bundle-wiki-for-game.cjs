@@ -87,6 +87,7 @@ function bundlePoradnik() {
 function walkMd(dir, rel = '') {
   const out = [];
   for (const name of fs.readdirSync(dir)) {
+    if (name.startsWith('_')) continue; // np. _archiwum/ — hasła wycofane, NIE bundlować do gry
     const full = path.join(dir, name);
     const st = fs.statSync(full);
     if (st.isDirectory()) {

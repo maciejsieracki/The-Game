@@ -15,7 +15,7 @@
 
 ## Wiki‑S
 
-**Katapulta** (Oblężnicza, Żelazo): rekrutacja **18** ¤ + **1** mieszk., utrzymanie **2** ¤/t i **1** żywn./t. Siła w polu **67.5**.
+**Katapulta** (Oblężnicza, Żelazo): rekrutacja **18** ¤ + **1** mieszk., utrzymanie **2** ¤/t i **1** żywn./t. Siła w polu **128**.
 
 ---
 
@@ -28,8 +28,8 @@ Katapulta to jednostka typu **Oblężnicza** z epoki **Żelazo**. Dostępna wiel
 - **Tech:** Oblężnictwo
 - **Utrzymanie:** 2 ¤/t, 1 żywności/t
 - **Ruch:** 1 (mapa) / 1 (bitwa)
-- **Zasięg:** 10 heksów
-- **Siła w polu:** 67.5
+- **Zasięg:** 6 heksów
+- **Siła w polu:** 128
 ### Countery i taktyka
 - Słabsza od strony: masowe dystansowce z tyłu
 - W bitwie ręcznej: trzymaj linię, nie rozdzielaj na pojedyncze walki
@@ -45,7 +45,7 @@ Katapulta to jednostka typu **Oblężnicza** z epoki **Żelazo**. Dostępna wiel
 - Złoto: 2 × 20 = **40 ¤**
 - Żywność: 1 × 20 = **20** (z zapasów państwa, jeśli masz Spichlerz; inaczej z bieżącej produkcji)
 
-**Siła w polu:** **67.5** — porównaj z **Wojownikiem (~21,5)** lub **Wojownikiem z mieczem (~25)** na tym samym terenie.
+**Siła w polu:** **128** — porównaj z **Wojownikiem (~27)** lub **Wojownikiem z mieczem (~39)** na tym samym terenie.
 
 **Ruch 1** na mapie: z miasta A do B (3 heksy lasu) ≈ **1** tur marszu lub mniej na drodze.
 

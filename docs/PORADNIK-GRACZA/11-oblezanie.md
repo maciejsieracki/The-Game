@@ -55,7 +55,7 @@ Czytaj **rozpiskę plusów i minusów** w panelu — naprawiaj największy minus
 
 ### 67.1. Informacje
 
-- **Mur** — aktualne HP / maksimum.
+- **Mur** — na panelu strategicznym to dziś **znacznik „Mur miejski"** (jest/nie ma), **nie** pasek HP/maksimum — poziom muru daje stały bonus **Obrony** (5 + 3/poziom, `buildings.json`), a numeryczne HP kafli muru istnieje **tylko wewnątrz bitwy taktycznej 3D** przy szturmie (§70, §73), nie na tym overlayu.
 - **Garnizon** — liczba i siła obrońców.
 - **Machiny** — liczba i postęp.
 - **Zapasy** miasta — żywność obrońców.
@@ -102,7 +102,7 @@ Gdy zapasy żywności **w mieście** się skończą — **kapitulacja**. Miasto 
 
 ### 68.2. Atrycja garnizonu
 
-Obrońcy tracą ok. **8%** siły na turę oblężenia. Milicja + garnizon w jednym pulu (§69). Machiny przyspieszają spadek **muru**, nie zastępują głodu.
+Obrońcy tracą ok. **8%** siły na turę oblężenia. Milicja + garnizon w jednym pulu (§69). **Mur sam się nie niszczy** — czekanie w oblężeniu głodzi garnizon, ale nie kruszy muru; jedyny sposób na fizyczne wyburzenie kafla muru to **ostrzał katapultą** wewnątrz bitwy taktycznej (§70.4). „Machiny przyspieszają zdobycie" znaczy: więcej/lepsze machiny → szybszy wyłom w szturmie, nie szybszy spadek jakiegoś licznika w tle.
 
 ### 68.3. Brak auto-upadku od HP miasta
 
@@ -188,9 +188,13 @@ Większa armia — **szybsze** niszczenie muru. Mała grupa — wolny postęp, r
 
 Mur wysoki — szturm bez machin bardzo kosztowny. Porównaj **czas machin vs głód**.
 
-### 70.4. Machiny a 3D
+### 70.4. Machiny a 3D — tylko katapulta wyburza mur
 
-Szturm z machinami — bonus vs mur w preBattle/3D. W polu katapulta słaba (Część X §64).
+**Mur nie niszczy się sam.** Wewnątrz bitwy taktycznej 3D każdy kafel muru ma HP; jedyny sposób, by je zdjąć do zera i otworzyć wyłom, to **ostrzał katapultą** (dystansowy atak na kafel muru — inne jednostki nie atakują muru wprost). Taran działa wyłącznie na **bramę**, nie na kafle muru. Bez katapulty w armii szturmującej mur **zostaje nienaruszony** — jedyne wejście to brama (po zburzeniu taranem) lub głód (§68). Szturm z machinami — bonus vs mur w preBattle/3D. W polu (poza oblężeniem) katapulta słaba (Część X §64).
+
+### 70.5. Zabudowa za murem i gruz w wyłomie (2026-07-23)
+
+Miasto broniące się w bitwie taktycznej ma dziś **zabudowę widoczną za murem** (do 38 domów niskopolygonowych — różne rozmiary, gęściej przy bramie, korytarz przy samej bramie zostaje wolny dla ruchu) — czysto wizualne, bez wpływu na ścieżki ruchu jednostek. Po wyłomieniu kafla muru katapultą zostaje **gruz** (7 brył kamienia/desek z losowym ułożeniem per kafel — już nie identyczne stosy jak dawniej) w miejscu wyrwy.
 
 
 ### Przykład liczbowy
@@ -313,4 +317,4 @@ Czytaj **rozpiskę plusów i minusów** w panelu — naprawiaj największy minus
 
 ---
 
-*Poradnik‑L · Część XI · rev. E · 2026-07-03 · powiązane: `siege.ts`, Część X walka*
+*Poradnik‑L · Część XI · rev. F · 2026-07-23 (mur = znacznik nie pasek HP na panelu strategicznym; mur nie niszczy się sam, tylko katapulta; zabudowa za murem + gruz wyłomu) · pierwotnie rev. E 2026-07-03 · powiązane: `siege.ts`, `battleScene.ts` (siege), Część X walka*

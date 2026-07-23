@@ -15,7 +15,7 @@
 
 ## Wiki‑S
 
-**Rydwan egipski** (Flanka, Brąz): rekrutacja **32** ¤ + **1** mieszk., utrzymanie **3** ¤/t i **1** żywn./t. Siła w polu **41.5**.
+**Rydwan egipski** (Flanka, Brąz): rekrutacja **32** ¤ + **1** mieszk., utrzymanie **3** ¤/t i **1** żywn./t. Siła w polu **53**.
 
 ---
 
@@ -25,11 +25,12 @@
 Rydwan egipski to jednostka typu **Flanka** z epoki **Brąz**. Unikalna dla **Egipt**.
 ### Rekrutacja i utrzymanie
 - **Koszt:** 32 ¤, 1 mieszkańców
+- **Surowiec:** 1× koń
 - **Tech:** Jeździectwo
 - **Utrzymanie:** 3 ¤/t, 1 żywności/t
 - **Ruch:** 5 (mapa) / 6 (bitwa)
-- **Zasięg:** 5 heksów
-- **Siła w polu:** 41.5
+- **Zasięg:** 3 heksów
+- **Siła w polu:** 53
 ### Countery i taktyka
 - Słabsza od strony: masowe dystansowce z tyłu
 - W bitwie ręcznej: trzymaj linię, nie rozdzielaj na pojedyncze walki
@@ -45,7 +46,7 @@ Rydwan egipski to jednostka typu **Flanka** z epoki **Brąz**. Unikalna dla **Eg
 - Złoto: 3 × 20 = **60 ¤**
 - Żywność: 1 × 20 = **20** (z zapasów państwa, jeśli masz Spichlerz; inaczej z bieżącej produkcji)
 
-**Siła w polu:** **41.5** — porównaj z **Wojownikiem (~21,5)** lub **Wojownikiem z mieczem (~25)** na tym samym terenie.
+**Siła w polu:** **53** — porównaj z **Wojownikiem (~27)** lub **Wojownikiem z mieczem (~39)** na tym samym terenie.
 
 **Ruch 5** na mapie: z miasta A do B (3 heksy lasu) ≈ **3** tur marszu lub mniej na drodze.
 

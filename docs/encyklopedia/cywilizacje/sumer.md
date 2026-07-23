@@ -27,6 +27,7 @@
 **Jednostka specjalna:** Gwardia Królewska Sumeru.
 **Religia państwa:** Religia sumeryjska (mezopotamska) — Enlil/Anu.
 **Przykładowe miasta w klastrze:** Uruk, Ur, Lagasz, Kisz, Nippur….
+**Władcy (imiona per epoka):** Kamień — Alulim · Brąz — Gilgamesz · Żelazo — Ur-Nammu · Antyk — Szulgi.
 
 **Bonus startowy:** +Obrona i Health ciężkiej piechoty; silni łucznicy pieszni; ciężkie, mocne rydwany bojowe.
 

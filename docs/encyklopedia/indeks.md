@@ -73,7 +73,7 @@
 - [Halabardnik Shang](jednostki/halabardnik-shang.md)
 - [Rydwan Shang](jednostki/rydwan-shang.md)
 - [Łucznik akadyjski](jednostki/ucznik-akadyjski.md)
-- [Wojownik celtycki](jednostki/wojownik-celtycki.md)
+- [Soldurii](jednostki/wojownik-celtycki.md) *(dawniej „Wojownik celtycki" — ta jednostka zmieniła nazwę na Gaesatae, plik przepisany na odrębną jednostkę Soldurii, 2026-07-23)*
 - [Gaesatae](jednostki/gaesatae.md)
 - [Rydwan celtycki](jednostki/rydwan-celtycki.md)
 - [Wojownik germański](jednostki/wojownik-germanski.md)
@@ -128,4 +128,4 @@
 
 ## Pojęcia (ręczne)
 
-Folder `pojecia/` — szczęście, porządek, bunt, suwaki, Spichlerz…
+Folder `pojecia/` — szczęście, porządek, bunt, suwaki, Spichlerz, [drzewko technologii](pojecia/drzewko-technologii.md), [cuda świata — przegląd](pojecia/cuda-swiata.md), [bród w bitwie](pojecia/brod.md), [szlaki handlowe](pojecia/szlaki-handlowe.md), [handel surowcami — dyplomacja](pojecia/handel-surowcami-dyplomacja.md), [władcy — portrety i imiona](pojecia/wladcy.md)…

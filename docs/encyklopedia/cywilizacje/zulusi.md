@@ -27,6 +27,7 @@
 **Jednostka specjalna:** Impi.
 **Religia państwa:** Kult przodków / animizm.
 **Przykładowe miasta w klastrze:** uMgungundlovu, Ondini, Ulundi, kwaBulawayo, eMakhosini….
+**Władcy (imiona per epoka):** Kamień — Zulu kaMalandela · Brąz — Senzangakhona · Żelazo — Czaka · Antyk — Cetshwayo.
 
 **Bonus startowy:** +Ruch i +Morale piechoty; tania, silna w grupie.
 

@@ -27,8 +27,9 @@ Akademia wzmacnia miasto w kategorii **Nauka**. Poziom 1: **+6 nauki** (+3 na po
 - **Budowa poz. 1:** 70 pracy
 - **Każdy kolejny poziom:** +15 pracy
 - **Utrzymanie:** 3 ¤/turę (+1 ¤/poziom)
+- **Surowiec do budowy:** 14× cegła (poz. 1)
 - Technologia **Filozofia**.
-Warunek: wymaga Biblioteka.
+Warunek: upgrade Biblioteki (merge z Teatrem — 1 slot budynku).
 - **Uwaga:** Mnoznik % dotyczy globalnej puli nauki (nadbudowka nad Biblioteka)
 ### Strategia gracza
 Miasto naukowe: ustaw suwak handlu więcej na **naukę (20%)**, suwak pracy **70% budynki**.

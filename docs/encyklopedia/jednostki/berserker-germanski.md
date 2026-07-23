@@ -15,7 +15,7 @@
 
 ## Wiki‑S
 
-**Berserker germański** (Wręcz, Żelazo): rekrutacja **16** ¤ + **1** mieszk., utrzymanie **2** ¤/t i **1** żywn./t. Siła w polu **27**.
+**Berserker germański** (Wręcz, Żelazo): rekrutacja **16** ¤ + **1** mieszk., utrzymanie **2** ¤/t i **1** żywn./t. Siła w polu **33**.
 
 ---
 
@@ -25,10 +25,11 @@
 Berserker germański to jednostka typu **Wręcz** z epoki **Żelazo**. Unikalna dla **Germanie**.
 ### Rekrutacja i utrzymanie
 - **Koszt:** 16 ¤, 1 mieszkańców
-- **Tech:** Brązownictwo
+- **Surowiec:** 3× stal
+- **Tech:** Obróbka żelaza
 - **Utrzymanie:** 2 ¤/t, 1 żywności/t
 - **Ruch:** 3 (mapa) / 5 (bitwa)
-- **Siła w polu:** 27
+- **Siła w polu:** 33
 ### Countery i taktyka
 - Bonus vs włócznik: **+15%**
 - Słabsza od strony: masowe dystansowce z tyłu
@@ -45,7 +46,7 @@ Berserker germański to jednostka typu **Wręcz** z epoki **Żelazo**. Unikalna 
 - Złoto: 2 × 20 = **40 ¤**
 - Żywność: 1 × 20 = **20** (z zapasów państwa, jeśli masz Spichlerz; inaczej z bieżącej produkcji)
 
-**Siła w polu:** **27** — porównaj z **Wojownikiem (~21,5)** lub **Wojownikiem z mieczem (~25)** na tym samym terenie.
+**Siła w polu:** **33** — porównaj z **Wojownikiem (~27)** lub **Wojownikiem z mieczem (~39)** na tym samym terenie.
 
 **Ruch 3** na mapie: z miasta A do B (3 heksy lasu) ≈ **3** tur marszu lub mniej na drodze.
 

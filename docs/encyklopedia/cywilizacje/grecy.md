@@ -27,6 +27,7 @@
 **Jednostka specjalna:** Falanga (Hoplita).
 **Religia państwa:** Politeizm olimpijski.
 **Przykładowe miasta w klastrze:** Ateny, Sparta, Korynt, Teby, Argos….
+**Władcy (imiona per epoka):** Kamień — Minos · Brąz — Agamemnon · Żelazo — Leonidas · Antyk — Aleksander Wielki.
 
 **Bonus startowy:** +Obrona piechoty; silna od frontu, odpiera szarżę.
 

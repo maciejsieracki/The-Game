@@ -151,11 +151,11 @@ Na pasku: **+X badań**, nazwa **aktualnej tech**, pasek **%** (Część III §1
 
 | Tempo | Mnożnik kosztu tech |
 |-------|---------------------|
-| Szybka | ×0,2 |
-| Standard | ×1 |
-| Długa | ×5 |
+| Szybka | ×1 |
+| Standard | ×2 |
+| Długa | ×4 |
 
-Wyboru **nie zmienisz** w trakcie partii.
+Wyboru **nie zmienisz** w trakcie partii. **Koszt finalny na karcie tech to nie tylko to** — dochodzi jeszcze **×2 korekta globalna** (2026-07-22) i **mnożnik trudności** (asymetria gracz↔AI: Normalny ×1/×1, Łatwy gracz×1/AI×2, Trudny gracz×2/AI×1). Pełny wzór i przykład liczbowy — Część IX §54.6.
 
 ### 51.3. Wybór technologii
 
@@ -248,43 +248,92 @@ Czytaj **rozpiskę plusów i minusów** w panelu — naprawiaj największy minus
 
 ---
 
-## 53. Surowce — stan v1.0
+## 53. Surowce — stan po urealnieniu (2026-07-22/23)
 
-### 53.1. Katalog i dostęp boolean
+### 53.1. Dostęp aktywny = złoże **I** ulepszenie na tym samym heksie
 
-W danych gry istnieją m.in.: drewno, kamień, miedź, żelazo, sól, glina, bydło, lama…
+Model zmienił się z prostego „masz tech = masz surowiec" na **dwuwarunkowy**: potrzebujesz **złoża widocznego na heksie** ORAZ **postawionego na nim właściwego ulepszenia**. Panel miasta pokazuje obie warstwy osobno — **potencjał** (złoża w zasięgu, nawet bez ulepszenia) vs **dostęp aktywny** (faktycznie produkujący).
 
-| Reguła v1.0 | Znaczenie dla gracza |
-|-------------|----------------------|
-| **Dostęp = tech LUB ulepszenie** | Flaga **masz / nie masz** — bez magazynu sztuk |
-| **Złoże rezerwuje heks** | Nie postawisz farmy na miedzi |
-| **Ukryte złoża** | Miedź od Brązu, żelazo od Żelaza — tylko **Góry** (E3) |
+| Surowiec | Wymaga na heksie |
+|----------|-------------------|
+| Glina, miedź/ruda, żelazo, węgiel, koń | Złoże **+** ulepszenie (glinianka, kopalnia…) |
+| **Wyjątki bez złoża:** tartak (drewno), kamieniołom (kamień) | Samo ulepszenie na właściwym terenie wystarcza |
+| Warzelnia soli | Wyjątek — działa na **wybrzeżu**, bez złoża soli |
+| Hodowla (Model B: bydło/owce/lama) | Bez złoża — wystarczy pastwisko/teren |
 
-### 53.2. Co UI pokazuje vs co silnik egzekwuje
+**Złoże rezerwuje heks** — nie postawisz farmy na miedzi. **Ukryte złoża** — miedź/ruda od Brązu, żelazo od Żelaza, tylko w **Górach**.
 
-| W UI v1.0 | W produkcji v1.0 |
-|-----------|------------------|
-| Ikona dostępności surowca | Koszt budowy/rekrutacji: **złoto + ludność + tech** |
-| Wymagania surowcowe w JSON | **Referencja** na v2.0 — nie odejmują się sztuki z magazynu |
+### 53.2. Magazyn per miasto i koszty materiałowe budynków (2026-07-23)
 
-**Nie planuj** gospodarki wokół magazynów drewna — ich jeszcze nie ma. Priorytet: **technologia** odblokowująca złoże → **ulepszenie** (kopalnia, tartak) na właściwym heksie.
+Surowce **logistyczne** (drewno, kamień, glina, ruda, **cegła**, **ceramika**) kumulują się teraz w **magazynie miasta** (`city.surowce`) — nie tylko flaga dostępu. Konwertery zamieniają surowiec bazowy na przetworzony: **Garncarnia** (glina→ceramika), **Cegielnia** (glina→cegła), **Odlewnia żelaza**, **Wielka kuźnia** itd. Brąz, żelazo i hodowla (bydło/owce/lama) **zostają na razie civ-wide** (dostęp tak/nie dla całego imperium, nie per-miasto magazyn) — to świadomie odłożone (patrz §10 poniżej).
 
-### 53.3. Dostęp a dyplomacja
+Od 2026-07-23 **10 budynków epoki Brązu/Żelaza** mają realny **koszt materiałowy** pobierany z tego magazynu przy zapisaniu do kolejki (placeholdery cenowe, do strojenia w panelu):
 
-Możesz **negocjować dostęp** do złoża u sąsiada (Część XII §78). Bez dostępu nie produkujesz z obcego heksu nawet po podboju terytorium — do momentu spełnienia tech/epoki.
+| Budynek | Koszt surowca |
+|---------|----------------|
+| Karawanseraj | 4 ceramiki |
+| Świątynia | 6 ceramiki |
+| Biblioteka | 5 ceramiki |
+| Spichlerz II | 10 cegły |
+| Akwedukt | 12 cegły |
+| Pretorium | 9 cegły |
+| Łaźnia publiczna | 10 cegły |
+| Akademia | 14 cegły |
+| Mury | 15 cegły |
+| Cytadela | 18 cegły |
 
-### 53.4. Strategia w v1.0
+Brak materiału w magazynie **blokuje** wejście do kolejki (karta budynku pokazuje brakujący chip surowca), AI omija budynek, jeśli mu brakuje. **To dlatego Cegielnia i Garncarnia w końcu mają sens** — bez nich nie zbudujesz nic z tabeli powyżej, niezależnie od zapasu Pracy.
 
-1. Odkryj **góry** zwiadowcą przed Brązem.  
-2. Po wejściu w epokę — szukaj ikony miedzi; postaw **kopalnię** po Murarstwie.  
-3. Planuj **posterunki** i miasta tak, by złoże było w **okolicy** (Część VII §44).  
-4. Pełna produkcja i handel surowcami — 🔮 v2.0 (apendyks E.1).
+### 53.3. Szlaki handlowe — dochód, dostęp, powiadomienia
+
+**Wymóg — traktat Umowa Handlowa.** Trasa **gracz↔obca cywilizacja** istnieje tylko między miastami połączonymi (ląd: dystans ≤12 heksów + przechodniość; morze: przez Port w obu miastach, ≤20 heksów po wodzie) **i** tylko gdy strony mają **zawarty i aktywny traktat Umowa Handlowa** — od 2026-07-23 sam stan pokoju **już nie wystarcza** (Część XII §78.6). AI **proponuje** tę umowę proaktywnie (skrzynka propozycji, próg relacji ≈40) i zawiera ją też AI↔AI (maks. 1 nowa/turę) — nie tylko Ty musisz o nią zabiegać.
+
+**Dochód** ma dwa niezależne składniki, oba do skarbca **czysto** (pomijają suwak Wealth):
+
+1. **Wzór dystansowy** — baza + dystans × mnożnik, z podłogą (placeholdery `econ-params.json`: baza 8 ¤/turę, +0,4 ¤/heks, podłoga 1 ¤/turę). Obie strony trasy zarabiają pełną kwotę.
+2. **+5% do Handlu za każdą aktywną trasę** — osobny, kumulatywny mnożnik miasta (nie łączony z bonusem Targowiska/Waluty, żeby uniknąć podwójnego liczenia).
+
+**Dostęp do surowca** — aktywna trasa daje też dostęp do **brązu, żelaza lub konia**, których nie masz u siebie (Handel E3b) — czysta pochodna trasy: zerwanie traktatu lub wojna **automatycznie cofa** dostęp. Panel miasta pokazuje adnotację „szlak handlowy z **X**" przy takim surowcu.
+
+**Limit tras na miasto** = liczba zbudowanych budynków handlowych (Targowisko/Karawanseraj/Port/Port wielki) — więcej budynków, więcej równoległych tras.
+
+**Powiadomienia** — toast + wpis w Wydarzeniach przy powstaniu **nowej** trasy i przy jej **zerwaniu** (z podanym powodem: koniec traktatu, wojna, zerwane połączenie terenowe).
+
+**UI:** sekcja „Szlaki handlowe" w panelu miasta (cel, medium ląd/morze, dystans, dochód/turę, bonus %) + **łuki na mapie** (złoto = szlak lądowy, błękit = morski).
+
+### 53.4. Dostęp a dyplomacja (negocjacje punktowe)
+
+Osobno od szlaków możesz **negocjować dostęp** do konkretnego złoża u sąsiada wprost w audiencji (Część XII §78.5) — jednorazowa transakcja punktowa, nie trwała trasa. Bez żadnej z dwóch ścieżek nie produkujesz z obcego heksu nawet po podboju terytorium — do momentu spełnienia tech/epoki.
+
+### 53.5. Handel surowcami w koszyku dyplomacji (pakiety po 10)
+
+Koszyk negocjacji (Część XII) handluje dziś **ilościowymi** surowcami miast, w **pakietach po 10 sztuk**, cenniki-placeholdery (do strojenia w panelu Excel):
+
+| Surowiec | Cena/szt. w PN |
+|----------|-----------------|
+| Drewno | 2 |
+| Glina | 2 |
+| Kamień | 3 |
+| Ruda | 4 |
+| Cegła | 5 |
+| Ceramika | 6 |
+
+Transfer bierze surowiec **od największych zapasów dawcy** i dostarcza do **stolicy** biorcy. **SZYBKA UMOWA** (Część XII) dopełnia bilans oferty tymi pakietami przed sięgnięciem po złoto; AI wycenia oferty przez ten sam cennik.
+
+### 53.6. Strategia
+
+1. Odkryj **góry** zwiadowcą przed Brązem — tam są złoża miedzi/rudy/żelaza.
+2. Po wejściu w epokę — postaw **kopalnię** na złożu (po Murarstwie), nie tylko odkryj tech.
+3. Planuj **Cegielnię/Garncarnię** zanim zaczniesz kolejkować Mury, Akwedukt czy Cytadelę — bez cegły/ceramiki w magazynie kolejka stoi.
+4. Zawrzyj **Umowę Handlową** z sąsiadem w pokoju, zanim zbudujesz drugi Karawanseraj — bez niej szlak i tak nie powstanie; brak brązu/żelaza u siebie to często tańsze rozwiązanie niż czekanie na własne złoże.
+5. Nadwyżkę drewna/kamienia/gliny — sprzedawaj w koszyku dyplomacji zamiast trzymać martwy zapas.
 
 
 ### Przykład liczbowy
 
-Tartak **+3** drewno/pole × **2** pola = **+6** drewna/t do miasta (model v1 uproszczony).
-Kamieniołom **+1** kamień — mur poz.1 koszt **35** pracy ≈ **4 tury** przy **9** pracy/t na budynki.
+Tartak **+3** drewno/pole × **2** pola = **+6** drewna/t do miasta magazynu (bez wymogu złoża — wyjątek §53.1).
+Mury koszt **15** cegły — Cegielnia produkująca **1** cegłę/turę potrzebuje **15** tur zapasu, zanim odblokuje budowę.
+Pakiet **10** drewna w koszyku dyplomacji = **20** PN (cena 2/szt.) — tyle samo co ok. **20** żywności bazowej.
 
 ### Strategia gracza
 
@@ -294,6 +343,7 @@ Czytaj **rozpiskę plusów i minusów** w panelu — naprawiaj największy minus
 
 - Patrzenie tylko na **sumę** zasobu zamiast **przyrostu**/turę.
 - Odkładanie reakcji na **pomarańczowe** alerty — za turę mogą być **czerwone**.
+- Kolejkowanie Murów/Akweduktu/Cytadeli bez sprawdzenia zapasu cegły — kolejka **utknie** bez komunikatu tak głośnego jak przy braku Pracy.
 
 ---
 
@@ -306,7 +356,7 @@ Czytaj **rozpiskę plusów i minusów** w panelu — naprawiaj największy minus
 | **Praca** | Pasek | Tartaki, profil Produkcja w okolicy |
 | **Nauka** | Pasek Badania | Biblioteki, % nauki w suwaku |
 | **Siła państwa** | Minimapa / panel | Armia + wygrane bitwy + ludność |
-| **Surowce** | Ikony dostępu | Tech + ulepszenie na złożu (E3) |
+| **Surowce** | Ikony dostępu + magazyn miasta | Złoże **+** ulepszenie na heksie; cegła/ceramika z Cegielni/Garncarni; brąz/żelazo/koń przez szlak handlowy (§53) |
 
 
 ### Przykład liczbowy
@@ -326,4 +376,4 @@ Czytaj **rozpiskę plusów i minusów** w panelu — naprawiaj największy minus
 
 ---
 
-*Poradnik‑L · Część VIII · rev. E · 2026-07-03 · decyzje: B5, E2, E3 · dane: `econ-params.json`, `buildings.json` · spis §49–53*
+*Poradnik‑L · Część VIII · rev. F · 2026-07-23 (§51.2 wzór kosztu tech poprawiony, §53 surowce przepisane: dostęp złoże+ulepszenie, magazyn miasta, koszty materiałowe budynków, dostęp przez szlak, handel pakietami) · pierwotnie rev. E 2026-07-03 · decyzje: B5, E2, E3, B-SUROW-BUD, C-DYP-SUROWCE · dane: `econ-params.json`, `buildings.json`, `resource-access.ts` · spis §49–53*

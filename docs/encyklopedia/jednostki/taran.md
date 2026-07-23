@@ -15,7 +15,7 @@
 
 ## Wiki‑S
 
-**Taran** (Oblężnicza, Kamień): rekrutacja **14** ¤ + **1** mieszk., utrzymanie **1** ¤/t i **1** żywn./t. Siła w polu **177.5**.
+**Taran** (Oblężnicza, Kamień): rekrutacja **14** ¤ + **1** mieszk., utrzymanie **1** ¤/t i **1** żywn./t. Siła w polu **352.5**.
 
 ---
 
@@ -25,10 +25,10 @@
 Taran to jednostka typu **Oblężnicza** z epoki **Kamień**. Dostępna wielu cywilizacjom po odblokowaniu epoki/tech.
 ### Rekrutacja i utrzymanie
 - **Koszt:** 14 ¤, 1 mieszkańców
-- **Tech:** brak (poza epoką)
+- **Tech:** Obróbka drewna
 - **Utrzymanie:** 1 ¤/t, 1 żywności/t
 - **Ruch:** 1 (mapa) / 2 (bitwa)
-- **Siła w polu:** 177.5
+- **Siła w polu:** 352.5
 ### Countery i taktyka
 - Słabsza od strony: masowe dystansowce z tyłu
 - W bitwie ręcznej: trzymaj linię, nie rozdzielaj na pojedyncze walki
@@ -44,7 +44,7 @@ Taran to jednostka typu **Oblężnicza** z epoki **Kamień**. Dostępna wielu cy
 - Złoto: 1 × 20 = **20 ¤**
 - Żywność: 1 × 20 = **20** (z zapasów państwa, jeśli masz Spichlerz; inaczej z bieżącej produkcji)
 
-**Siła w polu:** **177.5** — porównaj z **Wojownikiem (~21,5)** lub **Wojownikiem z mieczem (~25)** na tym samym terenie.
+**Siła w polu:** **352.5** — porównaj z **Wojownikiem (~27)** lub **Wojownikiem z mieczem (~39)** na tym samym terenie.
 
 **Ruch 1** na mapie: z miasta A do B (3 heksy lasu) ≈ **1** tur marszu lub mniej na drodze.
 

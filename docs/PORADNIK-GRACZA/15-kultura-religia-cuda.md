@@ -120,6 +120,23 @@ Czytaj **rozpiskę plusów i minusów** w panelu — naprawiaj największy minus
 
 ## 94. Cuda świata — podstawy
 
+### 94.0. Ekran Cudów świata — galeria pełnoekranowa (2026-07-23)
+
+Nowy ekran **Cuda świata** — wejście przez **medalion na toolbarze mapy** (kolumna okrągłych ikon po lewej krawędzi ekranu, pod paskiem zasobów — ten sam pasek co Nauka/Handel/inne tryby, świątynia/kolumny jako emblemat). Otwiera **galerię wszystkich 19 cudów Antyku** wg makiety CUDA-v1, każdy jako karta z bieżącym stanem gry:
+
+| Stan karty | Znaczenie |
+|------------|-----------|
+| **Dostępny** | Możesz zacząć budowę (masz tech + teren + cywilizację uprawnioną, jeśli typ E) |
+| **Zablokowany** | Brakuje tech, terenu lub epoki wejścia — karta mówi czego |
+| **W budowie** | Ty lub inne państwo już wznosi ten cud |
+| **Nasz ✓** | Masz go zbudowanego — bonusy aktywne |
+| **Ekskluzywny / cudzy** | Cud typu **E** zarezerwowany dla innej cywilizacji — nie zobaczysz go jako budowalnego |
+| **Przepadł** | Przegrałeś wyścig (typ R) — ktoś inny ukończył pierwszy |
+
+Karta ma CTA (przycisk akcji zależny od stanu) i **powiadomienia** — toast, gdy Ty lub rywal ukończy cud. **Znany błąd zamknięty tego samego dnia:** cud stojący w kolejce budowy raportował się błędnie jako „Dostępny" zamiast „W budowie" — poprawione.
+
+**Obserwacja z 2026-07-23:** AI **dziś nie buduje cudów** samodzielnie — decyzja właściciela (**CUDA-AI=A**, „AI ma zacząć budować cuda") zapadła wieczorem tego samego dnia, ale **nie jest jeszcze wdrożona w kodzie** — traktuj to jako zapowiedź na kolejną sesję, nie stan bieżący.
+
 ### 94.1. Typ E vs R
 
 | Typ | Zasada |
@@ -127,7 +144,7 @@ Czytaj **rozpiskę plusów i minusów** w panelu — naprawiaj największy minus
 | **E (wyłączny)** | Max **1 na świat**; tylko wskazane cywilizacje widzą cud w panelu |
 | **R (wyścig)** | Wszyscy gracze mogą budować; wygrywa pierwszy ukończony |
 
-Ikona **Cuda** — lewy panel mapy (Część III §17.1).
+Ikona **Cuda** — 6. medalion na toolbarze mapy (§94.0), nie osobny panel boczny.
 
 ### 94.2. Wyścigowe Antyk
 
@@ -248,4 +265,4 @@ Czytaj **rozpiskę plusów i minusów** w panelu — naprawiaj największy minus
 
 ---
 
-*Poradnik‑L · Część XV · rev. E · 2026-07-03 · dane: `wonders.json`, `culture-religion.ts` · katalog: [`91-katalog-cudow-antyk.md`](91-katalog-cudow-antyk.md)*
+*Poradnik‑L · Część XV · rev. F · 2026-07-23 (nowy ekran Cudów świata — galeria 19 kart, stany, medalion toolbara; AI nie buduje cudów jeszcze mimo decyzji CUDA-AI=A) · pierwotnie rev. E 2026-07-03 · dane: `wonders.json`, `culture-religion.ts`, `wondersView.ts` · katalog: [`91-katalog-cudow-antyk.md`](91-katalog-cudow-antyk.md)*

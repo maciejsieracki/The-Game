@@ -27,6 +27,7 @@
 **Jednostka specjalna:** Wojownik germański (framea).
 **Religia państwa:** Religia germańska (Wotan / Odyn).
 **Przykładowe miasta w klastrze:** Mattium, Feddersen Wierde, Hodde, Grøntoft, Flögeln….
+**Władcy (imiona per epoka):** Kamień — Mannus · Brąz — Ariowist · Żelazo — Arminiusz · Antyk — Alaryk I.
 
 **Bonus startowy:** +walka w lesie i +zasadzka (pierwszy cios); furia bojowa (+Atak na starciu).
 

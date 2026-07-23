@@ -80,12 +80,14 @@ Czytaj **rozpiskę plusów i minusów** w panelu — naprawiaj największy minus
 
 ## 88. AI miast-kopii (klaster)
 
-### 88.1. Defensywne — bez ekspansji
+### 88.1. Aktywny rozwój, ale bez ekspansji ani bonusów
 
-**Miasta-państwa** w twoim klastrze (np. Sparta, Kapua, Teby):
+**Miasta-państwa** w twoim klastrze (np. Sparta, Kapua, Teby) — od 2026-07-21 to **aktywni gracze ekonomiczni**, nie bierny łup:
 
-- **Nie zakładają** nowych miast — brak ekspansji osadniczej.
-- Bronią własnego terytorium i produkują jednostki jak normalne miasto.
+- **Nie zakładają** nowych miast — brak ekspansji osadniczej (jedyne wyłączenie).
+- W pełni **rozwijają się**: budują budynki gospodarcze, jednostki i **ulepszenia terenu** (w tym wyrąb lasu — §88.5) jak każde AI.
+- **Zero bonusów, zero darmowych jednostek** — dokładnie te same zasady kosztów co gracz.
+- Mogą otrzymać **posiłki** od „sióstr" (miast tego samego klastra), ale **tylko w sojuszu** — siła posiłków skaluje się z trudnością gry.
 - Są **celem podboju** — dla ciebie i dla głównego AI tego typu.
 
 ### 88.2. Rywale tego samego typu
@@ -103,6 +105,10 @@ Profil ekspansyjny (Rzym, Zulusi) + przewaga armii → AI może zdobyć sąsiada
 1. **Wczesny podbój** słabszego sąsiada (np. Kapua), zanim zrobi to Rzym AI.
 2. **Dyplomacja selektywna** — pakt z jednym, wojna z drugim w tym samym klastrze.
 3. **Unikaj dwóch frontów** w jednym regionie — najpierw zjednocz klaster.
+
+### 88.5. AI buduje ulepszenia terenu — w tym wyrąb lasu (2026-07-23)
+
+**Wszystkie** AI (główne cywilizacje i miasta-państwa) stawiają ulepszenia terenu automatycznie — throttlowane do 1 ulepszenia/miasto/turę, priorytet żywności najpierw, deterministyczne. Od 2026-07-23 doszedł **wyrąb lasu** jako **ostatni priorytet** kolejki AI (po innych, „ważniejszych" ulepszeniach) — AI wycina drzewo tylko gdy w promieniu miasta zostaje **min. 3 lasy**, żeby nie ogołocić całej okolicy z jednego zamachu. Efekt dla gracza: AI konkuruje o dobre pola tak samo jak Ty — nie licz, że lasy przy granicy AI zostaną nietknięte na zawsze.
 4. Traktuj klaster jako **strefę treningową** przed spotkaniem **innego typu** cywilizacji.
 
 
@@ -240,4 +246,4 @@ Czytaj **rozpiskę plusów i minusów** w panelu — naprawiaj największy minus
 
 ---
 
-*Poradnik gracza rev. E · 2026-07-03 · źródło: `ai-params.json`, `ai.ts`, `barbarians.ts`*
+*Poradnik gracza rev. F · 2026-07-23 (miasta-państwa aktywne od 2026-07-21, AI buduje ulepszenia terenu w tym wyrąb z ochroną lasu) · pierwotnie rev. E 2026-07-03 · źródło: `ai-params.json`, `ai.ts`, `barbarians.ts`*

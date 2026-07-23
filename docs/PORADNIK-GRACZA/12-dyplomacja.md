@@ -83,21 +83,29 @@ Wysyłaj **prezenty** przed prośbą o pakt — relacja **+20** taniej niż wojn
 
 ---
 
-## 76. Audiencja (król ↔ król)
+## 76. Audiencja (król ↔ król) — panel dwustronny TW (2026-07-23)
 
-### 76.1. Panel audiencji v1.0
+### 76.1. Panel audiencji — layout dwustronny
 
-Ekran rozmowy: portret władcy, relacja, zaufanie, szacunek, lista **akcji** wg progów.
+Ekran rozmowy jest dziś **dwustronny**, nie jedna kolumna: **karta gracza** (twój medalion + imię władcy, Moc, potencjał sojuszniczy, Skarbiec, twoje dobra) naprzeciw **karty rozmówcy** (relacje — Zaufanie/Szacunek/Relacja pokazane **tylko po jego stronie** — i nastawienie). Poniżej **baner statusu formalnego**, jeśli obowiązuje traktat (nazwa traktatu + „od X tur" + informacja o karze zerwania), oraz **stół negocjacji w 3 kolumnach**: Możliwe / Aktywne / Żądania-Oferty.
 
-### 76.2. Władcy główni — 12 akcji
+### 76.2. Portrety i imiona władców
 
-Handel, pakt o nieagresji, sojusz, prezent, ultimatum, ustalenie granic, trybut, przemarsz… Pełna tabela — §77. Niedostępne — wyszarzone z tooltipem „wymaga relacji X".
+Każdy medalion (twój i rozmówcy) pokazuje **portret władcy** dobrany wg **cywilizacji i epoki** (Kamień/Brąz/Żelazo mają osobne portrety u 15 typów; Żelazo i Antyk część cywilizacji jeszcze bez grafiki — fallback żelazo→brąz→kamień→ikona cywilizacji) oraz **imię władcy** pod nazwą cywilizacji (60 imion — 15 typów × 4 epoki, np. Rzym/Kamień = Romulus, Rzym/Żelazo = Scypion Afrykański). Te same portrety/imiona pojawiają się na kartach dowódców w bitwie i w preBattle (Część X §60.1).
 
-### 76.3. Władcy poboczni — 5 akcji
+### 76.3. Ikonowy pasek akcji + SZYBKA UMOWA
 
-**Miasta-państwa** — te same typy, ale progi **−20 pkt** relacji (trudniejszy handel, łatwiejsze ultimatum wojskowe).
+Zamiast listy tekstowej — **pasek ikon 46px** na dole panelu: WOJNA / POKÓJ / SOJUSZ / PAKT / HANDEL / DAR / WASAL, z pigułką nazwy na hover; niedostępne akcje są wyszarzone (`disabled`) z **konkretnym powodem** w tooltipie (np. „zablokowana — wymaga Zaufania 91, masz 64"), nie tylko ogólnym „wymaga relacji X". Osobny przycisk **SZYBKA UMOWA** automatycznie wypełnia koszyk negocjacji **uczciwą ofertą** (algorytm greedy do progu uczciwości `diplomacyFairGivePn`) — punkt startowy do dalszej ręcznej korekty, nie gotowa umowa do ślepego zatwierdzenia.
 
-### 76.4. Audiencja a Wykonaj
+### 76.4. Zerwij traktat (−15 Zaufania)
+
+Aktywny traktat (pakt, sojusz, granice, NAP) ma teraz ikonę **„Zerwij"** — dobrowolne, świadome zerwanie **z twojej strony** (różne od zerwania WYMUSZONEGO przez wypowiedzenie wojny). Klik otwiera **modal potwierdzenia**; po zatwierdzeniu: **−15 Zaufania jednorazowo** (mniejsza kara niż złamana obietnica w trakcie wojny, −40), a sojusz cofa się do pokoju. Używaj świadomie — to nadal koszt, nie „darmowy reset".
+
+### 76.5. Władcy główni vs miasta-państwa
+
+**Miasta-państwa** — ten sam panel i ten sam zestaw akcji, ale progi **−20 pkt** relacji (trudniejszy handel, łatwiejsze ultimatum wojskowe) — patrz też start-zaufanie wg trudności gry (Część XIV §88).
+
+### 76.6. Audiencja a Wykonaj
 
 Oczekująca propozycja wroga może być **blocking** (katalog A1-Q9). W wojnie część akcji niedostępna.
 
@@ -120,15 +128,19 @@ Czytaj **rozpiskę plusów i minusów** w panelu — naprawiaj największy minus
 
 ## 77. Progi relacji — tabela akcji
 
-### 77.1. Podstawowe progi
+### 77.1. Podstawowe progi (zweryfikowane z silnika 2026-07-23)
 
-| Akcja | Min. relacja |
-|-------|----------------|
-| **Handel** | ≥ 100 |
-| **Pakt o nieagresji (NAP)** | ≥ 110 |
-| **Sojusz** | > 150 |
-| **Prezent** | ≥ 30 |
-| **Ustalenie granic** | ≥ 100 |
+Od paczki DYPLOMACJA FINAL wszystkie blokady w panelu (§76.3) czytają **wprost te same progi silnika** — tooltip na przycisku wyszarzonym pokazuje dokładną liczbę, którą Ci brakuje.
+
+| Akcja | Próg |
+|-------|------|
+| **Handel** (¤/Praca/dostęp do złoża) | Relacja ≥ **40** |
+| **Pakt o nieagresji (NAP)** | Relacja ≥ **50** **oraz** Zaufanie ≥ **40** |
+| **Otwarte granice / prawo przemarszu** | Relacja ≥ **100** **oraz** Zaufanie ≥ **45** |
+| **Sojusz** | Relacja ≥ **151** **oraz** Zaufanie ≥ **91** (przeskalowane wg trudności gry) |
+| **Umowa Handlowa** (traktat pod szlaki handlowe, Część VIII §53.3) | Osobny traktat, próg AI-propozycji ≈ **40** relacji (decyzja 2026-07-21) — **wymagany**, żeby jakikolwiek szlak handlowy istniał; sam pokój **już nie wystarcza** (zmiana 2026-07-23) |
+
+**Poprzednia wersja tego poradnika podawała Handel ≥100 i NAP ≥110 — to były nieaktualne liczby; realny próg Handlu to 40, a NAP to dual-gate 50/40, nie pojedynczy próg 110.**
 
 ### 77.2. Granice, trybut, ultimatum
 
@@ -138,7 +150,7 @@ Czytaj **rozpiskę plusów i minusów** w panelu — naprawiaj największy minus
 
 ### 77.3. Wojna i traktaty
 
-Deklaracja wojny — zawsze możliwa (kary relacji). Zerwanie paktu/sojuszu — duży minus zaufania. Pokój — negocjacje (status v1).
+Deklaracja wojny — zawsze możliwa (kary relacji). **Dwa różne sposoby stracić traktat**: (1) **wojna wymuszona** (wypowiedzenie w trakcie obowiązywania paktu) — kara „złamana obietnica" **−40** Zaufania, duża; (2) **Zerwij** — świadomy, dobrowolny przycisk w panelu (§76.4) — **−15** Zaufania, mniejsza kara, bo to nie zaskoczenie w środku wojny. Pokój — negocjacje w audiencji.
 
 ### 77.4. Jak podnieść relację
 
@@ -172,22 +184,41 @@ Porównuj **koszt pracy ÷ bonus** — tańsze ulepszenie z lepszym 🍞/praca w
 - **Tech** — koszt w PN = koszt badania w punktach nauki.
 - Bilans umowy musi się zgadzać.
 
-### 78.2. Czego nie handlujemy w v1.0
+### 78.2. Surowce miast w koszyku — pakiety po 10 (2026-07-23)
 
-| Nie w handlu v1 | Zamiast tego |
+Koszyk PN handluje dziś też **ilościowymi surowcami miast**, zawsze w **pakietach po 10 sztuk** (nie pojedynczo):
+
+| Surowiec | Cena/szt. w PN | Pakiet (10 szt.) |
+|----------|-----------------|-------------------|
+| Drewno | 2 | 20 PN |
+| Glina | 2 | 20 PN |
+| Kamień | 3 | 30 PN |
+| Ruda | 4 | 40 PN |
+| Cegła | 5 | 50 PN |
+| Ceramika | 6 | 60 PN |
+
+Ceny są **placeholderami** (strojenie w panelu Excel). Transfer bierze surowiec **od największych zapasów dawcy** i dostarcza do **stolicy** biorcy; **SZYBKA UMOWA** (§76.3) dopełnia bilans tymi pakietami przed sięgnięciem po złoto.
+
+### 78.3. Czego nadal nie handlujemy
+
+| Nie w handlu | Zamiast tego |
 |-----------------|--------------|
 | Ulepszenia, budynki, hex terytorium | Własna produkcja |
 | Cała technologia | Tylko **punkty postępu** tech |
 | Kultura, religia | 🔮 v2 |
 | Jednostki, cuda | Nie |
 
-### 78.3. Nadmiar PN → zaufanie
+### 78.4. Nadmiar PN → zaufanie
 
 Za każde **100 PN** nadwyżki w korzystnej umowie → **+1 zaufanie**. **Max +5 zaufania/turę** z handlu.
 
-### 78.4. Dostęp do złoża
+### 78.5. Dostęp do złoża — dwie ścieżki
 
-Kupno **prawa dostępu** do złoża u sąsiada — cennik w PN. W **wojnie** wartość rośnie. Bez umowy — nie wydobywasz (model boolean v1, Część VIII §53).
+**(a) Negocjacje punktowe** — kupno prawa dostępu do konkretnego złoża u sąsiada, cennik w PN wprost w audiencji; w **wojnie** wartość rośnie. **(b) Szlak handlowy** — jeśli macie aktywny traktat **Umowa Handlowa** i połączenie miast, dostęp do **brązu, żelaza lub konia** przychodzi automatycznie jako efekt uboczny trasy (Część VIII §53.3) — zerwanie traktatu lub wojna cofa go bez dodatkowych kroków. Bez żadnej z tych dwóch — nie wydobywasz z cudzego złoża (model dostępu, Część VIII §53.1).
+
+### 78.6. Umowa Handlowa jako fundament szlaków
+
+**Szlaki handlowe** (łuki na mapie, dochód/turę, Część VIII §53) wymagają dziś **zawartego traktatu Umowa Handlowa** — sam stan pokoju **już nie wystarcza** (zmiana 2026-07-23, wcześniej trasy powstawały z samego pokoju). AI **proaktywnie proponuje** tę umowę graczowi (skrzynka propozycji przychodzących) i zawiera ją z innym AI (maks. 1 nowa umowa AI↔AI na turę, próg relacji ≈40). Zerwanie Umowy Handlowej (przyciskiem Zerwij albo wojną) **natychmiast kasuje** wszystkie szlaki oparte na niej.
 
 
 ### Przykład liczbowy
@@ -276,23 +307,27 @@ Czytaj **rozpiskę plusów i minusów** w panelu — naprawiaj największy minus
 
 ---
 
-## 81. Dyplomacja v1.1 — roadmap
+## 81. Dyplomacja v1.1 — stan wdrożenia (zweryfikowane 2026-07-23)
 
-### 81.1. T1A — trybut ze skarbca co turę
+Ten roadmap był pisany, gdy poniższe funkcje jeszcze nie istniały — **dziś większość już działa w grze**:
 
-Automatyczny transfer **¤/turę** po umowie trybutu.
+### 81.1. T1A — trybut ze skarbca co turę — ✅ WDROŻONE
 
-### 81.2. T2 — dwa typy sojuszu
+Automatyczny transfer **¤/turę** ze skarbca płatnika do odbiorcy po zawarciu umowy trybutu; zerwanie trybutu = casus belli.
 
-Sojusz **defensywny** vs **pełny** (wspólna ofensywa). v1.0 — jeden typ sojuszu; verify in game.
+### 81.2. T2 — dwa typy sojuszu — ✅ WDROŻONE
 
-### 81.3. T3A — handel jednorazowy
+Sojusz **defensywny** vs **pełny** (wspólna ofensywa) — oba typy realne w silniku (`sojusz_defensywny` / `sojusz_pelny`), różny próg i zakres zobowiązań.
 
-Duża wymiana PN — event dyplomatyczny (🔮 po v1.0).
+### 81.3. T3A — handel jednorazowy — częściowo (stół negocjacji)
 
-### 81.4. T4B — fazy wdrożenia
+Dedykowanego „eventu" handlu jednorazowego nie ma, ale **stół negocjacji 3-kolumnowy** (§76.1: Możliwe/Aktywne/Żądania-Oferty) + koszyk PN z bilansem jednorazowo-vs-/turę pokrywa ten sam cel: dużą, jednorazową wymianę dóbr/surowców/tech w jednej turze.
 
-Kolejność: trybut → sojusze → handel jednorazowy. Poradnik v1 opisuje **minimum działające dziś** + powyższy roadmap.
+### 81.4. Co realnie zostaje w kolejce (2026-07-23)
+
+- **Indeks dóbr handlowych per właściciel** — dziś dobra surowcowe w koszyku są globalne (nie w pełni per-owner), do dociągnięcia.
+- **Konfederacja / aneksja / handel mapami** — nie wdrożone, czeka na ABC.
+- Poza tym poradnik v1 opisuje **stan faktyczny w grze**, nie życzeniowy roadmap — jeśli coś tu nie działa tak, jak opisano, to build ma inną wersję niż ta weryfikowana 2026-07-23.
 
 
 ### Przykład liczbowy
@@ -311,4 +346,4 @@ Wysyłaj **prezenty** przed prośbą o pakt — relacja **+20** taniej niż wojn
 
 ---
 
-*Poradnik‑L · Część XII · rev. E · 2026-07-03 · dane: `diplomacy.json`, `diplomacy.ts`*
+*Poradnik‑L · Część XII · rev. F · 2026-07-23 (panel dwustronny, portrety/imiona władców, SZYBKA UMOWA, Zerwij −15 Zaufania, progi poprawione: Handel 40/NAP 50+40, surowce w koszyku po 10, Umowa Handlowa jako fundament szlaków, roadmap T1A/T2 oznaczony jako wdrożony) · pierwotnie rev. E 2026-07-03 · dane: `diplomacy.json`, `diplomacy.ts`, `diplomacy-locks.ts`, `diplomacy-proposals.ts`, `econ-params.json`*

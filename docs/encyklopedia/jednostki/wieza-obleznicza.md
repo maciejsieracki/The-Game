@@ -15,7 +15,7 @@
 
 ## Wiki‑S
 
-**Wieża oblężnicza** (Oblężnicza, Brąz): rekrutacja **20** ¤ + **1** mieszk., utrzymanie **2** ¤/t i **1** żywn./t. Siła w polu **226**.
+**Wieża oblężnicza** (Oblężnicza, Brąz): rekrutacja **20** ¤ + **1** mieszk., utrzymanie **2** ¤/t i **1** żywn./t. Siła w polu **451**.
 
 ---
 
@@ -28,7 +28,7 @@ Wieża oblężnicza to jednostka typu **Oblężnicza** z epoki **Brąz**. Dostę
 - **Tech:** Brązownictwo
 - **Utrzymanie:** 2 ¤/t, 1 żywności/t
 - **Ruch:** 1 (mapa) / 2 (bitwa)
-- **Siła w polu:** 226
+- **Siła w polu:** 451
 ### Countery i taktyka
 - Słabsza od strony: masowe dystansowce z tyłu
 - W bitwie ręcznej: trzymaj linię, nie rozdzielaj na pojedyncze walki
@@ -44,7 +44,7 @@ Wieża oblężnicza to jednostka typu **Oblężnicza** z epoki **Brąz**. Dostę
 - Złoto: 2 × 20 = **40 ¤**
 - Żywność: 1 × 20 = **20** (z zapasów państwa, jeśli masz Spichlerz; inaczej z bieżącej produkcji)
 
-**Siła w polu:** **226** — porównaj z **Wojownikiem (~21,5)** lub **Wojownikiem z mieczem (~25)** na tym samym terenie.
+**Siła w polu:** **451** — porównaj z **Wojownikiem (~27)** lub **Wojownikiem z mieczem (~39)** na tym samym terenie.
 
 **Ruch 1** na mapie: z miasta A do B (3 heksy lasu) ≈ **1** tur marszu lub mniej na drodze.
 

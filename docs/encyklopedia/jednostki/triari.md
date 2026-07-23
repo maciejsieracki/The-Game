@@ -15,7 +15,7 @@
 
 ## Wiki‑S
 
-**Triari** (Wręcz, Żelazo): rekrutacja **0** ¤ + **1** mieszk., utrzymanie **0** ¤/t i **1** żywn./t. Siła w polu **51.5**.
+**Triari** (Wręcz, Żelazo): rekrutacja **0** ¤ + **1** mieszk., utrzymanie **0** ¤/t i **1** żywn./t. Siła w polu **62**.
 
 ---
 
@@ -25,12 +25,13 @@
 Triari to jednostka typu **Wręcz** z epoki **Żelazo**. Unikalna dla **Rzymska**.
 ### Rekrutacja i utrzymanie
 - **Koszt:** 0 ¤, 1 mieszkańców
-- **Tech:** —
+- **Tech:** Hutnictwo żelaza
 - **Utrzymanie:** 0 ¤/t, 1 żywności/t
 - **Ruch:** 2 (mapa) / 4 (bitwa)
-- **Siła w polu:** 51.5
+- **Siła w polu:** 62
 ### Countery i taktyka
 - Bonus vs włócznik: **+15%**
+- **Bonus vs kawaleria/rydwany (Mount): +50%** — typ Spearman (hasta), jak wszyscy włócznicy w grze
 - Słabsza od strony: masowe dystansowce z tyłu
 - W bitwie ręcznej: trzymaj linię, nie rozdzielaj na pojedyncze walki
 **Powiązane:** Rekrutacja · Walka · Wręcz
@@ -45,7 +46,7 @@ Triari to jednostka typu **Wręcz** z epoki **Żelazo**. Unikalna dla **Rzymska*
 - Złoto: 1 × 20 = **20 ¤**
 - Żywność: 1 × 20 = **20** (z zapasów państwa, jeśli masz Spichlerz; inaczej z bieżącej produkcji)
 
-**Siła w polu:** **51.5** — porównaj z **Wojownikiem (~21,5)** lub **Wojownikiem z mieczem (~25)** na tym samym terenie.
+**Siła w polu:** **62** — porównaj z **Wojownikiem (~27)** lub **Wojownikiem z mieczem (~39)** na tym samym terenie.
 
 **Ruch 2** na mapie: z miasta A do B (3 heksy lasu) ≈ **2** tur marszu lub mniej na drodze.
 

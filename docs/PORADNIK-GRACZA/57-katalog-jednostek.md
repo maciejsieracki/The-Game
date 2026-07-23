@@ -3,7 +3,9 @@
 > **Poradnik gracza (Pełny)** · Część X + XIII · dane: `gra/data/units.json`
 > Pełne karty Wiki: `docs/encyklopedia/jednostki/` · rekrutacja: Część VII §47
 
-W grze jest **50** jednostek — standardowe (dla wielu cywilizacji), specjalne kulturowe i super-jednostki stolicy. Rekrutacja kosztuje **złoto** i **ludność**; utrzymanie — złoto i żywność co turę.
+> **WERYFIKACJA 2026-07-23:** `units.json` ma dziś **73** jednostki (nie 50) — roster urósł wraz z podwojeniem cywilizacji do 15 typów (2026-07-21: Harappa, Hetyci, Słowianie, Babilonia, Asyria, Fenicjanie doszły jako w pełni grywalne, plus dodatkowe jednostki żelaza dla części starych typów). Tabela zbiorcza niżej jest **przeliczona na bieżące dane** (Moc/koszt/tech — wiele wartości „Moc" było nieaktualne, patrz przypis pod tabelą); **24 nowe jednostki** (głównie 6 nowych cywilizacji) mają osobną tabelę w sekcji [„Nowe jednostki (2026-07-21+)"](#nowe-jednostki-2026-07-21-i-pozniej---bez-pelnego-opisu-wiki) — bez pełnego opisu prozą/Wiki, bo `docs/encyklopedia/jednostki/` też ich jeszcze nie ma (poza zakresem tej sesji — poradnik dotyczy tylko `docs/PORADNIK-GRACZA/`). **Kusznik** i epoka „Średniowiecze" pozostają nieaktualne (usunięte z gry 2026-07-10) — usunięte z tabeli zbiorczej, sekcja historyczna niżej zostawiona z ostrzeżeniem. **Wojownik celtycki** zmienił nazwę i staty na **Miecznik galijski** (koszt/tech/moc poprawione).
+
+W grze jest **73** jednostki — standardowe (dla wielu cywilizacji), specjalne kulturowe i super-jednostki stolicy. Rekrutacja kosztuje **złoto** (super-jednostki: część nadal **0 ¤**, ale np. **Triari** i **Wojownik germański** mają dziś realny koszt złota — sprawdź kartę [H] przed zakładaniem, że super = darmowe) oraz **Manpower** z puli miasta (Część VII §47.2) — **nie** ludność wprost. Utrzymanie — złoto i żywność co turę.
 
 ## Skrót ról bojowych
 
@@ -18,58 +20,112 @@ W grze jest **50** jednostek — standardowe (dla wielu cywilizacji), specjalne 
 
 ## Tabela zbiorcza
 
-| Jednostka | Epoka | Rola | Koszt ¤ | Ludność | Tech | Klasa | Moc | Wiki |
-|-----------|-------|------|---------|---------|------|-------|-----|------|
-| Wojownik | Kamień | Wręcz | 10 | 1 | — | Standardowa | 21.5 | [Wojownik](../encyklopedia/jednostki/wojownik.md) |
-| Procarz | Brąz | Dystans | 8 | 1 | — | Standardowa | 10 | [Procarz](../encyklopedia/jednostki/procarz.md) |
-| Oszczepnik | Kamień | Dystans | 6 | 1 | — | Standardowa | 10 | [Oszczepnik](../encyklopedia/jednostki/oszczepnik.md) |
-| Łucznik | Kamień | Dystans | 6 | 1 | Łucznictwo | Standardowa | 15 | [Łucznik](../encyklopedia/jednostki/ucznik.md) |
-| Zwiadowca | Kamień | Wsparcie | 8 | 1 | — | Standardowa | 3.5 | [Zwiadowca](../encyklopedia/jednostki/zwiadowca.md) |
-| Włócznik | Brąz | Wręcz | 16 | 1 | Brązownictwo | Standardowa | 36 | [Włócznik](../encyklopedia/jednostki/w-ocznik.md) |
-| Wojownik z mieczem i tarczą | Brąz | Wręcz | 16 | 1 | Brązownictwo | Standardowa | 32 | [Wojownik z mieczem i tarczą](../encyklopedia/jednostki/wojownik-z-mieczem-i-tarcza.md) |
-| Rydwan (woły) | Brąz | Flanka | 30 | 1 | Koło | Standardowa | 40 | [Rydwan (woły)](../encyklopedia/jednostki/rydwan-wo-y.md) |
-| Konnica | Brąz | Flanka | 22 | 1 | Jeździectwo | Standardowa | 42 | [Konnica](../encyklopedia/jednostki/konnica.md) |
-| Galera | Brąz | Morska | 18 | 1 | Żegluga | Standardowa | 19 | [Galera](../encyklopedia/jednostki/galera.md) |
-| Falanga | Brąz | Wręcz | 18 | 1 | Brązownictwo | Specjalna | 45 | [Falanga](../encyklopedia/jednostki/falanga.md) |
-| Hieros Lochos (Święty Zastęp) | Brąz | Wręcz | 0 (super) | 1 | — | Super | 52.5 | [Hieros Lochos (Święty Zastęp)](../encyklopedia/jednostki/hieros-lochos-swiety-zastep.md) |
-| Hastati | Żelazo | Wręcz | 18 | 1 | Brązownictwo | Specjalna | 50 | [Hastati](../encyklopedia/jednostki/hastati.md) |
-| Triari | Żelazo | Wręcz | 0 (super) | 1 | — | Super | 51.5 | [Triari](../encyklopedia/jednostki/triari.md) |
-| Jeździec chiński | Brąz | Flanka | 28 | 1 | Jeździectwo | Specjalna | 34.5 | [Jeździec chiński](../encyklopedia/jednostki/jezdziec-chinski.md) |
-| Kusznik [NIEAKTUALNE — brak w units.json, 2026-07-23] | Średniowiecze | Dystans | 20 | 1 | Brązownictwo | Standardowa | 16.5 | [Kusznik](../encyklopedia/jednostki/_archiwum/kusznik.md) |
-| Hu Ben Wei (Gwardia Tygrysa) | Brąz | Wręcz | 0 (super) | 1 | — | Super | 51 | [Hu Ben Wei (Gwardia Tygrysa)](../encyklopedia/jednostki/hu-ben-wei-gwardia-tygrysa.md) |
-| Impi | Brąz | Wręcz | 16 | 1 | Brązownictwo | Specjalna | 29.5 | [Impi](../encyklopedia/jednostki/impi.md) |
-| Oszczepnik Zulu (Izijula) | Kamień | Dystans | 20 | 1 | — | Specjalna | 13.5 | [Oszczepnik Zulu (Izijula)](../encyklopedia/jednostki/oszczepnik-zulu-izijula.md) |
-| uThulwana (Białe Tarcze) | Brąz | Wręcz | 0 (super) | 1 | — | Super | 50.5 | [uThulwana (Białe Tarcze)](../encyklopedia/jednostki/uthulwana-bia-e-tarcze.md) |
-| Wojownik z maczugą (Chaska) | Kamień | Wręcz | 26 | 1 | — | Specjalna | 27 | [Wojownik z maczugą (Chaska)](../encyklopedia/jednostki/wojownik-z-maczuga-chaska.md) |
-| Wojownik z toporem | Brąz | Wręcz | 18 | 1 | Brązownictwo | Specjalna | 26.5 | [Wojownik z toporem](../encyklopedia/jednostki/wojownik-z-toporem.md) |
-| Procarz (Huaracoc) | Brąz | Dystans | 8 | 1 | — | Specjalna | 10 | [Procarz (Huaracoc)](../encyklopedia/jednostki/procarz-huaracoc.md) |
-| Oszczepnik (Estólica) | Kamień | Dystans | 9 | 1 | — | Specjalna | 10 | [Oszczepnik (Estólica)](../encyklopedia/jednostki/oszczepnik-estolica.md) |
-| Królewska Gwardia | Brąz | Wręcz | 0 (super) | 1 | — | Super | 52 | [Królewska Gwardia](../encyklopedia/jednostki/krolewska-gwardia.md) |
-| Rydwan konny | Brąz | Flanka | 28 | 1 | Jeździectwo | Standardowa | 40 | [Rydwan konny](../encyklopedia/jednostki/rydwan-konny.md) |
-| Łucznik egipski | Kamień | Dystans | 14 | 1 | Łucznictwo | Specjalna | 13.5 | [Łucznik egipski](../encyklopedia/jednostki/ucznik-egipski.md) |
-| Rydwan egipski | Brąz | Flanka | 32 | 1 | Jeździectwo | Specjalna | 41.5 | [Rydwan egipski](../encyklopedia/jednostki/rydwan-egipski.md) |
-| Wojownik z khopesh | Brąz | Wręcz | 18 | 1 | Brązownictwo | Specjalna | 27.5 | [Wojownik z khopesh](../encyklopedia/jednostki/wojownik-z-khopesh.md) |
-| Medżaj (Gwardia Faraona) | Brąz | Wręcz | 0 (super) | 1 | — | Super | 55.5 | [Medżaj (Gwardia Faraona)](../encyklopedia/jednostki/medzaj-gwardia-faraona.md) |
-| Łucznik sumeryjski | Kamień | Dystans | 9 | 1 | Łucznictwo | Specjalna | 10 | [Łucznik sumeryjski](../encyklopedia/jednostki/ucznik-sumeryjski.md) |
-| Rydwan sumeryjski | Brąz | Flanka | 38 | 1 | Jeździectwo | Specjalna | 40.5 | [Rydwan sumeryjski](../encyklopedia/jednostki/rydwan-sumeryjski.md) |
-| Włócznik sumeryjski | Brąz | Wręcz | 18 | 1 | Brązownictwo | Specjalna | 31 | [Włócznik sumeryjski](../encyklopedia/jednostki/w-ocznik-sumeryjski.md) |
-| Gwardia Królewska Sumeru | Brąz | Wręcz | 0 (super) | 1 | — | Super | 52.5 | [Gwardia Królewska Sumeru](../encyklopedia/jednostki/gwardia-krolewska-sumeru.md) |
-| Wojownik mykeński | Brąz | Wręcz | 18 | 1 | Brązownictwo | Specjalna | 27.5 | [Wojownik mykeński](../encyklopedia/jednostki/wojownik-mykenski.md) |
-| Rydwan mykeński | Brąz | Flanka | 30 | 1 | Jeździectwo | Specjalna | 39.5 | [Rydwan mykeński](../encyklopedia/jednostki/rydwan-mykenski.md) |
-| Wojownik Sherden | Brąz | Wręcz | 18 | 1 | Brązownictwo | Specjalna | 28.5 | [Wojownik Sherden](../encyklopedia/jednostki/wojownik-sherden.md) |
-| Halabardnik Shang | Brąz | Wręcz | 18 | 1 | Brązownictwo | Specjalna | 30 | [Halabardnik Shang](../encyklopedia/jednostki/halabardnik-shang.md) |
-| Rydwan Shang | Brąz | Flanka | 32 | 1 | Jeździectwo | Specjalna | 43 | [Rydwan Shang](../encyklopedia/jednostki/rydwan-shang.md) |
-| Łucznik akadyjski | Brąz | Dystans | 16 | 1 | Łucznictwo | Specjalna | 13.5 | [Łucznik akadyjski](../encyklopedia/jednostki/ucznik-akadyjski.md) |
-| Wojownik celtycki | Żelazo | Wręcz | 18 | 1 | Brązownictwo | Specjalna | 27.5 | [Wojownik celtycki](../encyklopedia/jednostki/wojownik-celtycki.md) |
-| Gaesatae | Żelazo | Wręcz | 14 | 1 | Brązownictwo | Specjalna | 24 | [Gaesatae](../encyklopedia/jednostki/gaesatae.md) |
-| Rydwan celtycki | Żelazo | Flanka | 28 | 1 | Jeździectwo | Specjalna | 40 | [Rydwan celtycki](../encyklopedia/jednostki/rydwan-celtycki.md) |
-| Wojownik germański | Żelazo | Wręcz | 16 | 1 | Brązownictwo | Specjalna | 32 | [Wojownik germański](../encyklopedia/jednostki/wojownik-germanski.md) |
-| Berserker germański | Żelazo | Wręcz | 16 | 1 | Brązownictwo | Specjalna | 27 | [Berserker germański](../encyklopedia/jednostki/berserker-germanski.md) |
-| Taran | Kamień | Oblężnicza | 14 | 1 | — | Specjalna | 177.5 | [Taran](../encyklopedia/jednostki/taran.md) |
-| Katapulta | Żelazo | Oblężnicza | 18 | 1 | Oblężnictwo | Specjalna | 67.5 | [Katapulta](../encyklopedia/jednostki/katapulta.md) |
-| Wieża oblężnicza | Brąz | Oblężnicza | 20 | 1 | Brązownictwo | Specjalna | 226 | [Wieża oblężnicza](../encyklopedia/jednostki/wieza-obleznicza.md) |
-| Wojownik tyrreński | Brąz | Wręcz | 15 | 1 | Brązownictwo | Specjalna | 27.5 | [Wojownik tyrreński](../encyklopedia/jednostki/wojownik-tyrrenski.md) |
-| Wojownik szekelesz | Brąz | Wręcz | 14 | 1 | Brązownictwo | Specjalna | 25 | [Wojownik szekelesz](../encyklopedia/jednostki/wojownik-szekelesz.md) |
+| Jednostka | Epoka | Rola | Koszt ¤ | Ludność | Tech | Klasa | Moc | Bonus vs Mount % | Wiki |
+|-----------|-------|------|---------|---------|------|-------|-----|-------------------|------|
+| Wojownik | Kamień | Wręcz | 10 | 1 | — | Standardowa | 27 | 0 | [Wojownik](../encyklopedia/jednostki/wojownik.md) |
+| Procarz | Brąz | Dystans | 8 | 1 | — | Standardowa | 12 | 0 | [Procarz](../encyklopedia/jednostki/procarz.md) |
+| Oszczepnik | Kamień | Dystans | 6 | 1 | — | Standardowa | 12 | 0 | [Oszczepnik](../encyklopedia/jednostki/oszczepnik.md) |
+| Łucznik | Kamień | Dystans | 6 | 1 | Łucznictwo | Standardowa | 17.5 | 0 | [Łucznik](../encyklopedia/jednostki/ucznik.md) |
+| Zwiadowca | Kamień | Wsparcie | 8 | 1 | — | Standardowa | 6 | 0 | [Zwiadowca](../encyklopedia/jednostki/zwiadowca.md) |
+| Włócznik | Brąz | Wręcz | 16 | 1 | Brązownictwo | Standardowa | 44 | 50 | [Włócznik](../encyklopedia/jednostki/w-ocznik.md) |
+| Wojownik z mieczem i tarczą | Brąz | Wręcz | 16 | 1 | Brązownictwo | Standardowa | 39 | 0 | [Wojownik z mieczem i tarczą](../encyklopedia/jednostki/wojownik-z-mieczem-i-tarcza.md) |
+| Rydwan (woły) | Brąz | Flanka | 30 | 1 | Koło | Standardowa | 52 | 0 | [Rydwan (woły)](../encyklopedia/jednostki/rydwan-wo-y.md) |
+| Konnica | Brąz | Flanka | 22 | 1 | Jeździectwo | Standardowa | 49 | 0 | [Konnica](../encyklopedia/jednostki/konnica.md) |
+| Galera | Brąz | Morska | 18 | 1 | Żegluga | Standardowa | 25 | 0 | [Galera](../encyklopedia/jednostki/galera.md) |
+| Falanga | Żelazo | Wręcz | 18 | 1 | Hutnictwo żelaza | Specjalna | 52.5 | 50 | [Falanga](../encyklopedia/jednostki/falanga.md) |
+| Hieros Lochos (Święty Zastęp) | Żelazo | Wręcz | 0 (super) | 1 | — | Super | 63 | 50 | [Hieros Lochos (Święty Zastęp)](../encyklopedia/jednostki/hieros-lochos-swiety-zastep.md) |
+| Hastati | Żelazo | Wręcz | 18 | 1 | Hutnictwo żelaza | Specjalna | 57.5 | 0 | [Hastati](../encyklopedia/jednostki/hastati.md) |
+| Triari | Żelazo | Wręcz | 18 (super) | 1 | Hutnictwo żelaza | Specjalna | 62 | 50 | [Triari](../encyklopedia/jednostki/triari.md) |
+| Jeździec chiński | Brąz | Flanka | 28 | 1 | Jeździectwo | Specjalna | 45.5 | 0 | [Jeździec chiński](../encyklopedia/jednostki/jezdziec-chinski.md) |
+| Hu Ben Wei (Gwardia Tygrysa) | Brąz | Wręcz | 0 (super) | 1 | — | Super | 61 | 0 | [Hu Ben Wei (Gwardia Tygrysa)](../encyklopedia/jednostki/hu-ben-wei-gwardia-tygrysa.md) |
+| Impi | Brąz | Wręcz | 16 | 1 | Brązownictwo | Specjalna | 38.5 | 50 | [Impi](../encyklopedia/jednostki/impi.md) |
+| Oszczepnik Zulu (Izijula) | Kamień | Dystans | 20 | 1 | — | Specjalna | 16 | 0 | [Oszczepnik Zulu (Izijula)](../encyklopedia/jednostki/oszczepnik-zulu-izijula.md) |
+| uThulwana (Białe Tarcze) | Brąz | Wręcz | 0 (super) | 1 | — | Super | 61 | 0 | [uThulwana (Białe Tarcze)](../encyklopedia/jednostki/uthulwana-bia-e-tarcze.md) |
+| Wojownik z maczugą (Chaska) | Kamień | Wręcz | 26 | 1 | — | Specjalna | 32 | 0 | [Wojownik z maczugą (Chaska)](../encyklopedia/jednostki/wojownik-z-maczuga-chaska.md) |
+| Wojownik z toporem | Brąz | Wręcz | 18 | 1 | Brązownictwo | Specjalna | 32.5 | 0 | [Wojownik z toporem](../encyklopedia/jednostki/wojownik-z-toporem.md) |
+| Procarz (Huaracoc) | Brąz | Dystans | 8 | 1 | — | Specjalna | 12 | 0 | [Procarz (Huaracoc)](../encyklopedia/jednostki/procarz-huaracoc.md) |
+| Oszczepnik (Estólica) | Kamień | Dystans | 9 | 1 | — | Specjalna | 12 | 0 | [Oszczepnik (Estólica)](../encyklopedia/jednostki/oszczepnik-estolica.md) |
+| Królewska Gwardia | Brąz | Wręcz | 0 (super) | 1 | — | Super | 62 | 0 | [Królewska Gwardia](../encyklopedia/jednostki/krolewska-gwardia.md) |
+| Rydwan konny | Brąz | Flanka | 28 | 1 | Jeździectwo | Standardowa | 54 | 0 | [Rydwan konny](../encyklopedia/jednostki/rydwan-konny.md) |
+| Łucznik egipski | Kamień | Dystans | 14 | 1 | Łucznictwo | Specjalna | 15 | 0 | [Łucznik egipski](../encyklopedia/jednostki/ucznik-egipski.md) |
+| Rydwan egipski | Brąz | Flanka | 32 | 1 | Jeździectwo | Specjalna | 53 | 0 | [Rydwan egipski](../encyklopedia/jednostki/rydwan-egipski.md) |
+| Wojownik z khopesh | Brąz | Wręcz | 18 | 1 | Brązownictwo | Specjalna | 33.5 | 0 | [Wojownik z khopesh](../encyklopedia/jednostki/wojownik-z-khopesh.md) |
+| Medżaj (Gwardia Faraona) | Brąz | Wręcz | 0 (super) | 1 | — | Super | 64.5 | 0 | [Medżaj (Gwardia Faraona)](../encyklopedia/jednostki/medzaj-gwardia-faraona.md) |
+| Łucznik sumeryjski | Kamień | Dystans | 9 | 1 | Łucznictwo | Specjalna | 12 | 0 | [Łucznik sumeryjski](../encyklopedia/jednostki/ucznik-sumeryjski.md) |
+| Rydwan sumeryjski | Brąz | Flanka | 38 | 1 | Jeździectwo | Specjalna | 54.5 | 0 | [Rydwan sumeryjski](../encyklopedia/jednostki/rydwan-sumeryjski.md) |
+| Włócznik sumeryjski | Brąz | Wręcz | 18 | 1 | Brązownictwo | Specjalna | 41 | 50 | [Włócznik sumeryjski](../encyklopedia/jednostki/w-ocznik-sumeryjski.md) |
+| Gwardia Królewska Sumeru | Brąz | Wręcz | 0 (super) | 1 | — | Super | 63 | 0 | [Gwardia Królewska Sumeru](../encyklopedia/jednostki/gwardia-krolewska-sumeru.md) |
+| Wojownik mykeński | Brąz | Wręcz | 18 | 1 | Brązownictwo | Specjalna | 34.5 | 50 | [Wojownik mykeński](../encyklopedia/jednostki/wojownik-mykenski.md) |
+| Rydwan mykeński | Brąz | Flanka | 30 | 1 | Jeździectwo | Specjalna | 52.5 | 0 | [Rydwan mykeński](../encyklopedia/jednostki/rydwan-mykenski.md) |
+| Wojownik Sherden | Brąz | Wręcz | 18 | 1 | Brązownictwo | Specjalna | 35.5 | 0 | [Wojownik Sherden](../encyklopedia/jednostki/wojownik-sherden.md) |
+| Halabardnik Shang | Brąz | Wręcz | 18 | 1 | Brązownictwo | Specjalna | 36 | 0 | [Halabardnik Shang](../encyklopedia/jednostki/halabardnik-shang.md) |
+| Rydwan Shang | Brąz | Flanka | 32 | 1 | Jeździectwo | Specjalna | 58 | 0 | [Rydwan Shang](../encyklopedia/jednostki/rydwan-shang.md) |
+| Łucznik akadyjski | Brąz | Dystans | 16 | 1 | Łucznictwo | Specjalna | 15.5 | 0 | [Łucznik akadyjski](../encyklopedia/jednostki/ucznik-akadyjski.md) |
+| Miecznik galijski | Żelazo | Wręcz | 14 | 1 | Hutnictwo żelaza | Specjalna | 35 | 0 | [Miecznik galijski](../encyklopedia/jednostki/wojownik-celtycki.md) |
+| Gaesatae | Żelazo | Wręcz | 14 | 1 | Obróbka żelaza | Specjalna | 29.5 | 0 | [Gaesatae](../encyklopedia/jednostki/gaesatae.md) |
+| Rydwan celtycki | Żelazo | Flanka | 28 | 1 | Hutnictwo żelaza | Specjalna | 53 | 0 | [Rydwan celtycki](../encyklopedia/jednostki/rydwan-celtycki.md) |
+| Wojownik germański | Żelazo | Wręcz | 16 (super) | 1 | Obróbka żelaza | Super | 37 | 50 | [Wojownik germański](../encyklopedia/jednostki/wojownik-germanski.md) |
+| Berserker germański | Żelazo | Wręcz | 16 | 1 | Obróbka żelaza | Specjalna | 33 | 0 | [Berserker germański](../encyklopedia/jednostki/berserker-germanski.md) |
+| Taran | Kamień | Oblężnicza | 14 | 1 | Obróbka drewna | Specjalna | 352.5 | 0 | [Taran](../encyklopedia/jednostki/taran.md) |
+| Katapulta | Żelazo | Oblężnicza | 18 | 1 | Oblężnictwo | Specjalna | 128 | 0 | [Katapulta](../encyklopedia/jednostki/katapulta.md) |
+| Wieża oblężnicza | Brąz | Oblężnicza | 20 | 1 | Brązownictwo | Specjalna | 451 | 0 | [Wieża oblężnicza](../encyklopedia/jednostki/wieza-obleznicza.md) |
+| Wojownik tyrreński | Brąz | Wręcz | 15 | 1 | Brązownictwo | Specjalna | 33.5 | 0 | [Wojownik tyrreński](../encyklopedia/jednostki/wojownik-tyrrenski.md) |
+| Wojownik szekelesz | Brąz | Wręcz | 14 | 1 | Brązownictwo | Specjalna | 32 | 50 | [Wojownik szekelesz](../encyklopedia/jednostki/wojownik-szekelesz.md) |
+
+> **Przypis (weryfikacja 2026-07-23):** kolumna **Moc** to `fieldPower` z `units.json` — w poprzedniej wersji katalogu (rev. E) wartości pochodziły ze starszego snapshotu i były średnio o 20–100% niższe niż dziś (globalny rebalans jednostek między sesjami; nie zmiana z 2026-07-23). Opisy per-jednostka niżej (śródtytuły „###") **nie zostały jeszcze przeliczone jeden po drugim** — jeśli liczba w prozie różni się od tabeli powyżej, tabela jest aktualna. **Koszt w Manpower** (osobna pula, nie ludność miasta) — patrz Część VII §47.2; tu podano tylko koszt w złocie.
+
+## Bonus vs Mount +50% — jednostki z włócznią
+
+Decyzja Macieja **SPEAR** (2026-07-23): **każda** jednostka uzbrojona we włócznię/pikę dostaje **+50% obrażeń vs Mount** (kawaleria/rydwany), niezależnie od tego, czy jej `Typ` to `Spearman` czy `Falangite` — kryterium to broń, nie etykieta typu. Stan w danych: **12 jednostek**, wszystkie już na +50 (audyt „niespójne wartości u niektórych Spearmanów" z wieczora 2026-07-23 — **zamknięty**, poprawka `C-BTL-SPEAR` wdrożona tego samego dnia):
+
+| Jednostka | Cywilizacja/kultura | Epoka | Typ |
+|-----------|----------------------|-------|-----|
+| Włócznik | (uniwersalna) | Brąz | Spearman |
+| Włócznik sumeryjski | Sumerowie | Brąz | Spearman |
+| Impi | Zulusi | Brąz | Spearman |
+| Wojownik mykeński | Grecy | Brąz | Spearman |
+| Wojownik szekelesz | Ludy Morza (barbarzyńcy Brązu) | Brąz | Spearman |
+| Falanga | Grecy | Żelazo | Falangite |
+| Triari | Rzymianie (super, stolica) | Żelazo | Spearman |
+| Thorakites | Grecy | Żelazo | Spearman |
+| iButho z iklwa | Zulusi | Żelazo | Spearman |
+| Mur tarcz (Sargonid) | Sumerowie | Żelazo | Spearman |
+| Piechota induska | Harappa | Brąz | Spearman |
+| Strażnik bram Harappy | Harappa | Brąz | Spearman |
+| Piechota hetycka | Hetyci | Brąz | Spearman |
+
+**Wskazówka:** kontruj konnicę wroga włócznikami, nie mieczem — różnica +50% jest duża w auto-walce i w 3D.
+
+## Nowe jednostki (2026-07-21+) — bez pełnego opisu Wiki
+
+24 jednostki doszły wraz z podwojeniem rosteru cywilizacji do 15 typów (Część XIII §82). Statystyki poniżej są aktualne (`units.json`), ale **nie mają jeszcze** ani śródtytułu „###" z opisem fabularnym, ani karty w `docs/encyklopedia/jednostki/` — regeneracja katalogu (`gen-poradnik-batch.py` / `generate-encyklopedia.cjs`, Część XVII §102.4) to osobne zadanie.
+
+| Jednostka | Cywilizacja | Epoka | Rola | Koszt ¤ | Tech | Klasa | Moc | Bonus vs Mount % |
+|-----------|-------------|-------|------|---------|------|-------|-----|-------------------|
+| Garnizon Harappy | Harappa | Żelazo | Wręcz | 18 | Hutnictwo żelaza | Specjalna | 30 | 0 |
+| Piechota induska | Harappa | Brąz | Wręcz | 18 | Brązownictwo | Specjalna | 28 | 50 |
+| Strażnik bram Harappy | Harappa | Brąz | Wręcz | 18 | Brązownictwo | Specjalna | 37 | 50 |
+| Gwardia hetycka | Hetyci | Żelazo | Wręcz | 18 | Hutnictwo żelaza | Specjalna | 40 | 0 |
+| Piechota hetycka | Hetyci | Brąz | Wręcz | 18 | Brązownictwo | Specjalna | 37 | 50 |
+| Rydwan Kapadokijski | Hetyci | Brąz | Flanka | 34 | Jeździectwo | Specjalna | 35 | 0 |
+| Drużynnik | Słowianie | Żelazo | Wręcz | 18 | Hutnictwo żelaza | Specjalna | 36 | 0 |
+| Jeździec z oszczepami | Słowianie | Żelazo | Flanka | 26 | Hutnictwo żelaza | Specjalna | 32.5 | 0 |
+| Gwardia Ishtar | Babilonia | Brąz | Wręcz | 18 | Brązownictwo | Specjalna | 39.5 | 0 |
+| Piechota neobabilońska | Babilonia | Żelazo | Wręcz | 18 | Hutnictwo żelaza | Specjalna | 31 | 0 |
+| Wojownik babiloński | Babilonia | Brąz | Wręcz | 18 | Brązownictwo | Specjalna | 28 | 0 |
+| Konnica lancowa asyryjska | Asyria | Żelazo | Flanka | 32 | Hutnictwo żelaza | Specjalna | 39 | 0 |
+| Konnica łucznicza asyryjska | Asyria | Żelazo | Flanka | 30 | Hutnictwo żelaza | Specjalna | 27 | 0 |
+| Łucznik asyryjski | Asyria | Brąz | Dystans | 14 | Łucznictwo | Specjalna | 17 | 0 |
+| Gwardia Tyreńska | Fenicjanie | Żelazo | Wręcz | 18 | Hutnictwo żelaza | Specjalna | 31 | 0 |
+| Tyrski miecznik | Fenicjanie | Żelazo | Wręcz | 18 | Hutnictwo żelaza | Specjalna | 28 | 0 |
+| Wojownik fenicki | Fenicjanie | Brąz | Wręcz | 18 | Brązownictwo | Specjalna | 23 | 0 |
+| Thorakites | Grecja | Żelazo | Wręcz | 16 | Hutnictwo żelaza | Specjalna | 41 | 50 |
+| Evocati | Rzym | Żelazo | Wręcz | 0 (super) | Hutnictwo żelaza | Super | 54.5 | 0 |
+| iButho z iklwa | Zulu | Żelazo | Wręcz | 16 | Hutnictwo żelaza | Specjalna | 30.5 | 50 |
+| Gwardzista z champi | Inkowie | Brąz | Wręcz | 18 | Brązownictwo | Specjalna | 44.5 | 0 |
+| Wojownik z żelaznym khopesh | Egipt | Żelazo | Wręcz | 18 | Hutnictwo żelaza | Specjalna | 29.5 | 0 |
+| Mur tarcz (Sargonid) | Sumer | Żelazo | Wręcz | 18 | Hutnictwo żelaza | Specjalna | 34 | 50 |
+| Soldurii | Celtowie | Żelazo | Wręcz | 18 | Obróbka żelaza | Specjalna | 36 | 0 |
 
 ---
 
@@ -595,9 +651,11 @@ Bonus **+2 żywność** — przy **4** polach w okolicy suma skalowana liniowo z
 Utrzymanie **0** ¤/t × **10** tur = **0** ¤ — uwzględnij w bilansie skarbca.
 → [`docs/encyklopedia/jednostki/triari.md`](../encyklopedia/jednostki/triari.md)
 
-### Wojownik celtycki
+### Miecznik galijski
 
-**Wojownik celtycki** — wręcz, typ **Swordsman**. Rekrutacja: **18** ¤ i **1** mieszkańców; technologia **Brązownictwo**. Utrzymanie **2** ¤/turę, **1** żywności/turę. Ruch na mapie: **2** heksów. Jednostka **specjalna** cywilizacji **Celtowie**. Moc w polu: **27.5**. NOWA; celtycki wojownik z długim żelaznym mieczem siecznym + wysoką owalną tarczą; tunika w paski + torc; gwałtowna szarża, słabsza obrona
+> **[Zmiana nazwy 2026-07-23]** dawniej „Wojownik celtycki" w tym katalogu — `units.json` dziś nie ma jednostki o tej nazwie; najbliższy odpowiednik (piechota mieczowa Celtów w Żelazie, zastępuje „Wojownik z mieczem i tarczą") to **Miecznik galijski**, staty poniżej z bieżących danych.
+
+**Miecznik galijski** — wręcz, typ **Swordsman**. Rekrutacja: **14** ¤ i **1** mieszkańców (koszt Manpower osobno, Część VII §47.2); technologia **Hutnictwo żelaza**. Utrzymanie **1** ¤/turę, **1** żywności/turę. Ruch na mapie: **3** heksów. Jednostka **specjalna** cywilizacji **Celtowie**. Moc w polu: **35**. Ofensywna piechota galijska; długi miecz + szarża; uzupełnienie linii Celtów (uzasadnienie z `units.json` „Uwagi").
 
 
 ### Przykład liczbowy
@@ -685,4 +743,4 @@ Utrzymanie **2** ¤/t × **10** tur = **20** ¤ — uwzględnij w bilansie skarb
 
 ---
 
-*Wygenerowano z `units.json` · rev. E · 2026-07-03*
+*Wygenerowano z `units.json` · zweryfikowano ręcznie 2026-07-23 (73 jednostki, Bonus vs Mount, Miecznik galijski) · pierwotnie rev. E · 2026-07-03*

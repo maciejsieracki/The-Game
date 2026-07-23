@@ -15,7 +15,7 @@
 
 ## Wiki‑S
 
-**Procarz** (Dystans, Brąz): rekrutacja **8** ¤ + **1** mieszk., utrzymanie **1** ¤/t i **1** żywn./t. Siła w polu **10**.
+**Procarz** (Dystans, Brąz): rekrutacja **8** ¤ + **1** mieszk., utrzymanie **1** ¤/t i **1** żywn./t. Siła w polu **12**.
 
 ---
 
@@ -28,8 +28,8 @@ Procarz to jednostka typu **Dystans** z epoki **Brąz**. Dostępna wielu cywiliz
 - **Tech:** brak (poza epoką)
 - **Utrzymanie:** 1 ¤/t, 1 żywności/t
 - **Ruch:** 2 (mapa) / 3 (bitwa)
-- **Zasięg:** 6 heksów
-- **Siła w polu:** 10
+- **Zasięg:** 4 heksów
+- **Siła w polu:** 12
 ### Countery i taktyka
 - Słabsza od strony: kawaleria w zwarciu, flanki
 - W bitwie ręcznej: stój za piechotą, nie wpuść wroga w zasięg 1
@@ -45,7 +45,7 @@ Procarz to jednostka typu **Dystans** z epoki **Brąz**. Dostępna wielu cywiliz
 - Złoto: 1 × 20 = **20 ¤**
 - Żywność: 1 × 20 = **20** (z zapasów państwa, jeśli masz Spichlerz; inaczej z bieżącej produkcji)
 
-**Siła w polu:** **10** — porównaj z **Wojownikiem (~21,5)** lub **Wojownikiem z mieczem (~25)** na tym samym terenie.
+**Siła w polu:** **12** — porównaj z **Wojownikiem (~27)** lub **Wojownikiem z mieczem (~39)** na tym samym terenie.
 
 **Ruch 2** na mapie: z miasta A do B (3 heksy lasu) ≈ **2** tur marszu lub mniej na drodze.
 

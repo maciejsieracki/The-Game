@@ -27,6 +27,7 @@
 **Jednostka specjalna:** Legion (Legionista).
 **Religia państwa:** Religia rzymska / kult państwa.
 **Przykładowe miasta w klastrze:** Rzym, Ostia, Kapua, Pompeje, Tarent….
+**Władcy (imiona per epoka):** Kamień — Romulus · Brąz — Numa Pompiliusz · Żelazo — Scypion Afrykański · Antyk — Juliusz Cezar.
 
 **Bonus startowy:** silny atak + pancerz; szybsza budowa dróg/budynków; +Morale (dyscyplina).
 

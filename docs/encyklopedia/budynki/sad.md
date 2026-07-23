@@ -15,7 +15,7 @@
 
 ## Wiki‑S
 
-**Sąd** — budynek (Administracja), epoka Żelazo. Koszt od **55** pracy, utrzymanie **2** ¤/t. Technologia **Kodeks prawa**.
+**Sąd** — budynek (Administracja), epoka Żelazo. Koszt od **55** pracy, utrzymanie **2** ¤/t. Technologia **Prawo**.
 
 ---
 
@@ -27,7 +27,7 @@ Sąd wzmacnia miasto w kategorii **Administracja**. Poziom 1: **+2 złota** (+1 
 - **Budowa poz. 1:** 55 pracy
 - **Każdy kolejny poziom:** +12 pracy
 - **Utrzymanie:** 2 ¤/turę (+1 ¤/poziom)
-- Technologia **Kodeks prawa**.
+- Technologia **Prawo**.
 - **Uwaga:** Redukuje korupcje (anty-korupcja); zwiekszony porzadek publiczny; zadowolenie z praworz.
 ### Strategia gracza
 Buduj **przed** przekroczeniem progu zagęszczenia (pop > 4) lub po podboju obcego miasta — szczęście podnosi też **porządek**.

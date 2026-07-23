@@ -27,6 +27,7 @@ Karawanseraj wzmacnia miasto w kategorii **Pieniadz**. Poziom 1: **+6 złota** (
 - **Budowa poz. 1:** 25 pracy
 - **Każdy kolejny poziom:** +10 pracy
 - **Utrzymanie:** 2 ¤/turę (+1 ¤/poziom)
+- **Surowiec do budowy:** 4× ceramika (poz. 1; wymaga Garncarstwa + Cegielni/Garncarni w mieście)
 - Technologia **Handel**.
 - **Uwaga:** Mnoznik % dotyczy handlu ladowego (szlaki miedzy miastami)
 ### Strategia gracza

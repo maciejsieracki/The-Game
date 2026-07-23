@@ -15,7 +15,7 @@
 
 ## Wiki‑S
 
-**Rydwan (woły)** (Flanka, Brąz): rekrutacja **30** ¤ + **1** mieszk., utrzymanie **3** ¤/t i **1** żywn./t. Siła w polu **40**.
+**Rydwan (woły)** (Flanka, Brąz): rekrutacja **30** ¤ + **1** mieszk., utrzymanie **3** ¤/t i **1** żywn./t. Siła w polu **52**.
 
 ---
 
@@ -25,10 +25,11 @@
 Rydwan (woły) to jednostka typu **Flanka** z epoki **Brąz**. Dostępna wielu cywilizacjom po odblokowaniu epoki/tech.
 ### Rekrutacja i utrzymanie
 - **Koszt:** 30 ¤, 1 mieszkańców
+- **Surowiec:** 1× bydło
 - **Tech:** Koło
 - **Utrzymanie:** 3 ¤/t, 1 żywności/t
 - **Ruch:** 3 (mapa) / 5 (bitwa)
-- **Siła w polu:** 40
+- **Siła w polu:** 52
 ### Countery i taktyka
 - Słabsza od strony: masowe dystansowce z tyłu
 - W bitwie ręcznej: trzymaj linię, nie rozdzielaj na pojedyncze walki
@@ -44,7 +45,7 @@ Rydwan (woły) to jednostka typu **Flanka** z epoki **Brąz**. Dostępna wielu c
 - Złoto: 3 × 20 = **60 ¤**
 - Żywność: 1 × 20 = **20** (z zapasów państwa, jeśli masz Spichlerz; inaczej z bieżącej produkcji)
 
-**Siła w polu:** **40** — porównaj z **Wojownikiem (~21,5)** lub **Wojownikiem z mieczem (~25)** na tym samym terenie.
+**Siła w polu:** **52** — porównaj z **Wojownikiem (~27)** lub **Wojownikiem z mieczem (~39)** na tym samym terenie.
 
 **Ruch 3** na mapie: z miasta A do B (3 heksy lasu) ≈ **3** tur marszu lub mniej na drodze.
 

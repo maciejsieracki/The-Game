@@ -179,9 +179,14 @@ Koszt w **¤ na turę** per budynek — sumuje się w skarbcu państwa. Stela ni
 
 Szare na liście = brak tech. Przykłady: Murarstwo → kamieniarski; Brązownictwo → kuźnia i koszary; Oblężnictwo → warsztat oblężniczy (odblokowuje katapultę w mieście).
 
-### 45.5. Surowce (v1.0)
+### 45.5. Surowce — dostęp i koszt materiałowy (zaktualizowane 2026-07-23)
 
-Panel może pokazywać wymaganie lasu, żelaza, brązu — w v1.0 model to często **dostęp tak/nie** po ulepszeniu złoża, nie magazyn sztuk. Pełne zużycie surowców — plan v2.0.
+Dwa osobne mechanizmy działają razem:
+
+- **Dostęp** do surowca na mapie (miedź, żelazo, koń, drewno…) — nadal **tak/nie** po złożu + ulepszeniu na heksie (Część VIII §53.1), nie magazyn sztuk.
+- **Koszt materiałowy** — **10 budynków** epoki Brązu/Żelazo (Karawanseraj, Świątynia, Biblioteka, Spichlerz II, Akwedukt, Pretorium, Łaźnia publiczna, Akademia, Mury, Cytadela) pobierają **cegłę** lub **ceramikę** z magazynu miasta przy wejściu do kolejki — realne odejmowanie sztuk, nie flaga. Pełna tabela kosztów i strategia — Część VIII §53.2.
+
+**To dlatego Cegielnia i Garncarnia wreszcie mają sens** — bez zapasu cegły/ceramiki karta budynku pokazuje brakujący chip surowca i nie wejdzie do kolejki, nawet przy pełnej puli Pracy.
 
 ### 45.6. Przyrost i mnożniki
 
@@ -253,16 +258,36 @@ Katalog 50 jednostek: [`57-katalog-jednostek.md`](57-katalog-jednostek.md).
 
 Sekcja wojska w **Produkcji** — lista jednostek dostępnych po technologii i budynkach (koszary, warsztat oblężniczy dla katapulty). Jednostki **unikalne** cywilizacji zamiast standardowego włócznika czy łucznika — Część XIII §85.
 
-### 47.2. Koszt (v1.0)
+### 47.2. Koszt — złoto + pula Manpower (nie ludność)
 
 | Składnik | Znaczenie |
 |----------|-----------|
 | **Złoto** | Płacisz ze skarbca imperium (np. wojownik 10 ¤, włócznik 16 ¤) |
-| **Ludność** | Zwykle 1 mieszkaniec — spada populacja miasta |
-| **Technologia** | Brązownictwo, Łucznictwo, Jeździectwo… |
-| **Surowiec** (w danych) | Referencja v1 — dostęp po tartaku / złożu; pełne odejmowanie w v2 |
+| **Manpower** | Pula rekrutów **per miasto** — patrz §47.2b niżej. **Prawdziwy** koszt „ludzki" werbu |
+| **Ludność miasta** | **0** — rekrutacja **nie** zabiera mieszkańców (zmiana 2026-07-21); populacja rośnie niezależnie od tego, ile werbujesz |
+| **Technologia** | Brązownictwo, Łucznictwo (wymaga Łowiectwa — Część IX §56.2), Jeździectwo… |
+| **Surowiec** (w danych) | Referencja v1 — dostęp po tartaku/złożu (Część VIII §53); pełne odejmowanie surowca przy rekrutacji jednostek — 🔮 v2.0 |
 
-**Super-jednostki** stolicy (Triari, Medżaj, gwardie) — koszt 0 ¤, max 1, odradzają się po stracie stolicy.
+**Super-jednostki** stolicy — **większość** kosztuje **0 ¤** (Hieros Lochos, Hu Ben Wei, uThulwana, Królewska Gwardia, Medżaj, Gwardia Królewska Sumeru, Evocati), ale **Triari** (18 ¤) i **Wojownik germański** (16 ¤) mają dziś realny koszt złota — sprawdź kartę **[H]**, nie zakładaj automatycznie „super = darmowe". Wszystkie: max 1 na raz, odradzają się po stracie stolicy.
+
+### 47.2b. Pula Manpower (per miasto)
+
+Rekrutacja jednostek **bojowych** (nie zwiadowcy — patrz niżej) zużywa **Manpower**: osobna pula per miasto, obok złota.
+
+| Element | Wartość |
+|---------|---------|
+| **Pula maksymalna** | Skaluje się z ludnością miasta i epoką (`epoka-ludnosc-manpower.json`) |
+| **Koszt 1 jednostki** | Pełny „slot" Manpower epoki (tabela per epokę w danych) |
+| **Regeneracja** | **2% puli maksymalnej na turę** (od pustej do pełnej ≈ 50 tur) |
+| **Blokada regeneracji** | Miasto **oblężone** — Manpower **nie** odnawia się w tej turze |
+| **Zwiadowca** | Koszt Manpower = **0** — rekrutuj bez ograniczenia puli |
+| **Bonus cywilizacji** | Rzymianie: **×2** pula i **×2** regeneracja (przykład z danych; inne typy mają własne mnożniki w `civs.json`) |
+
+Pusta pula Manpower **blokuje** rekrutację tej jednostki, nawet gdy masz złoto w skarbcu — poczekaj na regenerację lub werbuj w innym mieście z pełniejszą pulą.
+
+### 47.2c. Zwiadowca — szczególne zasady
+
+**Zwiadowca** to jedyna jednostka bez kosztu Manpower — rekrutuj go swobodnie do zwiadu. W zamian **zwiadowca (i inne jednostki cywilne: osadnik, robotnik) nie mogą zdobywać miast** — gra blokuje taką próbę komunikatem „jednostka cywilna nie może zdobywać miast, użyj jednostki bojowej". Trzymaj przy zwiadowcy osobną jednostkę bojową, jeśli planujesz szturm.
 
 ### 47.3. Kolejka
 
@@ -361,4 +386,4 @@ Czytaj **rozpiskę plusów i minusów** w panelu — naprawiaj największy minus
 
 ---
 
-*Poradnik‑L · Część VII · rev. E · 2026-07-03 · dane: `buildings.json`, `units.json`, `terrain-improvements.json`*
+*Poradnik‑L · Część VII · rev. F · 2026-07-23 (rekrutacja: pula Manpower zamiast ludności, zwiadowca bez kosztu/bez zdobywania miast, koszty materiałowe budynków) · pierwotnie rev. E 2026-07-03 · dane: `buildings.json`, `units.json`, `terrain-improvements.json`, `manpower.ts`*

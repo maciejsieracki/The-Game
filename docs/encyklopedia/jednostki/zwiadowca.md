@@ -15,7 +15,7 @@
 
 ## Wiki‑S
 
-**Zwiadowca** (Wsparcie, Kamień): rekrutacja **8** ¤ + **1** mieszk., utrzymanie **1** ¤/t i **1** żywn./t. Siła w polu **3.5**.
+**Zwiadowca** (Wsparcie, Kamień): rekrutacja **8** ¤ + **1** mieszk., utrzymanie **1** ¤/t i **1** żywn./t. Siła w polu **6**.
 
 ---
 
@@ -28,7 +28,7 @@ Zwiadowca to jednostka typu **Wsparcie** z epoki **Kamień**. Dostępna wielu cy
 - **Tech:** brak (poza epoką)
 - **Utrzymanie:** 1 ¤/t, 1 żywności/t
 - **Ruch:** 3 (mapa) / 5 (bitwa)
-- **Siła w polu:** 3.5
+- **Siła w polu:** 6
 ### Countery i taktyka
 - Słabsza od strony: masowe dystansowce z tyłu
 - W bitwie ręcznej: trzymaj linię, nie rozdzielaj na pojedyncze walki
@@ -44,7 +44,7 @@ Zwiadowca to jednostka typu **Wsparcie** z epoki **Kamień**. Dostępna wielu cy
 - Złoto: 1 × 20 = **20 ¤**
 - Żywność: 1 × 20 = **20** (z zapasów państwa, jeśli masz Spichlerz; inaczej z bieżącej produkcji)
 
-**Siła w polu:** **3.5** — porównaj z **Wojownikiem (~21,5)** lub **Wojownikiem z mieczem (~25)** na tym samym terenie.
+**Siła w polu:** **6** — porównaj z **Wojownikiem (~27)** lub **Wojownikiem z mieczem (~39)** na tym samym terenie.
 
 **Ruch 3** na mapie: z miasta A do B (3 heksy lasu) ≈ **3** tur marszu lub mniej na drodze.
 

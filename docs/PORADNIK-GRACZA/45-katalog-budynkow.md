@@ -3,9 +3,28 @@
 > **Poradnik gracza (Pełny)** · Część VII §45 · dane: `gra/data/buildings.json`
 > Pełne karty Wiki: `docs/encyklopedia/budynki/` · spis: `docs/PORADNIK-GRACZA-SPIS-TRESCI.md`
 
-Budynki wznosisz w zakładce **Produkcja** panelu miasta. Koszt budowy to **praca** z puli imperium; utrzymanie — **złoto** co turę. Każdy budynek ma do **10 poziomów** — kolejny poziom droższy, ale daje większy przyrost.
+> **WERYFIKACJA 2026-07-23:** `buildings.json` ma dziś **37** budynków, nie 26 — brakuje w tym katalogu: Mielerz, Piec hutniczy, Odlewnia żelaza, Port wielki, Spichlerz II, Garncarnia, Cegielnia, Kamienne kręgi, Akwedukt, Mennica, Trybunał (11 pozycji, spoza zakresu tej sesji dokumentacyjnej — poradnik dotyczy `docs/PORADNIK-GRACZA/`, nie regeneracji katalogu). **„Fort" zmienił nazwę na „Cytadela"** (ten sam `id: fort` w danych) i stał się **upgrade'em Murów** (1 slot, nie osobny budynek) — poprawione niżej; osobno istnieje **Fort terenowy** jako ulepszenie na mapie ([`28-katalog-ulepszen.md`](28-katalog-ulepszen.md)), to inny system. **Koszt materiałowy budynków** (cegła/ceramika z magazynu miasta, nowość 2026-07-23) — tabela w §„Koszt materiałowy" poniżej.
 
-## Tabela wszystkich budynków (26)
+Budynki wznosisz w zakładce **Produkcja** panelu miasta. Koszt budowy to **praca** z puli imperium; utrzymanie — **złoto** co turę. Każdy budynek ma do **10 poziomów** — kolejny poziom droższy, ale daje większy przyrost. **10 budynków** epoki Brązu/Żelaza dodatkowo kosztują **cegłę lub ceramikę** z magazynu miasta przy wejściu do kolejki (Część VIII §53.2) — tabela niżej.
+
+## Koszt materiałowy — 10 budynków (2026-07-23)
+
+| Budynek | Koszt materiałowy | Skąd brać |
+|---------|---------------------|-----------|
+| Karawanseraj | 4 ceramiki | Garncarnia |
+| Świątynia | 6 ceramiki | Garncarnia |
+| Biblioteka | 5 ceramiki | Garncarnia |
+| Spichlerz II *(brak w tabeli głównej — §82.1c)* | 10 cegły | Cegielnia |
+| Akwedukt *(brak w tabeli głównej)* | 12 cegły | Cegielnia |
+| Pretorium | 9 cegły | Cegielnia |
+| Łaźnia publiczna | 10 cegły | Cegielnia |
+| Akademia | 14 cegły | Cegielnia |
+| Mury | 15 cegły | Cegielnia |
+| Cytadela (dawny Fort) | 18 cegły | Cegielnia |
+
+Brak materiału w magazynie blokuje wejście do kolejki — karta budynku pokazuje brakujący chip surowca. Pełny mechanizm (magazyn per miasto, dostęp do złóż) — Część VIII §53.
+
+## Tabela wszystkich budynków (26 z 37 — patrz weryfikacja wyżej)
 
 | Budynek | Kategoria | Epoka | Tech | Koszt (poz. 1) | Utrzymanie | Bonus poz. 1 | Wiki |
 |---------|-----------|-------|------|----------------|------------|--------------|------|
@@ -26,7 +45,7 @@ Budynki wznosisz w zakładce **Produkcja** panelu miasta. Koszt budowy to **prac
 | Palac | Kultura/Administracja | Kamień | — | 40 pracy | 2 ¤/t | +3 kultura, +1 szczęście (+5% mnożnik) | [Palac](../encyklopedia/budynki/palac.md) |
 | Kuźnia żelaza | Produkcja+Wojsko | Żelazo | Obróbka żelaza | 60 pracy | 3 ¤/t | +8 praca, +2 złoto (+8% mnożnik) | [Kuźnia żelaza](../encyklopedia/budynki/kuznia_zelaza.md) |
 | Wielka Kuźnia | Produkcja | Średniowiecze | Hutnictwo żelaza | 90 pracy | 4 ¤/t | +12 praca, +3 złoto (+15% mnożnik) | [Wielka Kuźnia](../encyklopedia/budynki/wielka_kuznia.md) |
-| Fort | Obrona | Żelazo | Inżynieria | 70 pracy | 3 ¤/t | +10 obrona | [Fort](../encyklopedia/budynki/fort.md) |
+| Cytadela (dawny Fort) | Obrona | Żelazo | Inżynieria | 70 pracy + 18 cegły | 3 ¤/t | +15 obrona (upgrade Murów, 1 slot) | [Fort](../encyklopedia/budynki/fort.md) |
 | Warsztat oblężniczy | Wojsko | Żelazo | Oblężnictwo | 65 pracy | 3 ¤/t | +4 praca, +2 złoto (+10% mnożnik) | [Warsztat oblężniczy](../encyklopedia/budynki/warsztat_oblezniczy.md) |
 | Akademia | Nauka | Żelazo | Filozofia | 70 pracy | 3 ¤/t | +6 nauka, +2 kultura (+10% mnożnik) | [Akademia](../encyklopedia/budynki/akademia.md) |
 | Teatr | Kultura | Żelazo | Filozofia | 55 pracy | 2 ¤/t | +4 kultura, +3 szczęście | [Teatr](../encyklopedia/budynki/teatr.md) |
@@ -301,12 +320,14 @@ Bonus **+12 praca, +3 złoto** — przy **4** polach w okolicy suma skalowana li
 Utrzymanie **4** ¤/t × **10** tur = **40** ¤ — uwzględnij w bilansie skarbca.
 → Pełna karta: [`docs/encyklopedia/budynki/wielka_kuznia.md`](../encyklopedia/budynki/wielka_kuznia.md)
 
-### Fort
+### Cytadela (dawny Fort)
 
-**Fort** (Obrona) odblokowuje się w epoce **Żelazo** po technologii **Inżynieria**. Pierwsze wzniesienie kosztuje **70** pracy; każdy kolejny poziom +**15**. Utrzymanie: **3** ¤ na turę (rosnie o **1** per poziom).
+> **[Zmiana nazwy]** ten budynek nazywał się „Fort" w tym katalogu — dane (`id: fort`) mają dziś wyświetlaną nazwę **Cytadela** i status **upgrade Murów** (1 slot, nie osobny budynek). Osobno na mapie istnieje **Fort terenowy** (ulepszenie budowane przez robotnika, nie budynek miasta) — to inny system, patrz [`28-katalog-ulepszen.md`](28-katalog-ulepszen.md).
 
-Na poziomie 1 daje: **+10 obrona**. Każdy kolejny poziom dodaje: **+5 obrona**.
-**Wymagania:** brak.
+**Cytadela** (Obrona) odblokowuje się w epoce **Żelazo** po technologii **Inżynieria**. Pierwsze wzniesienie kosztuje **70** pracy **+ 18 cegły** z magazynu miasta (Część VIII §53.2); każdy kolejny poziom +**15** pracy. Utrzymanie: **3** ¤ na turę (rosnie o **1** per poziom).
+
+Na poziomie 1 daje: **+15 obrona**. Każdy kolejny poziom dodaje: **+8 obrona**.
+**Wymagania:** upgrade Murów.
 **Uwaga:** +100% obrona przy obozowaniu jednostek (zasieg 10); styk MAPA/civ-bonusy-obronne-mapa.md
 
 
@@ -447,4 +468,4 @@ Utrzymanie **4** ¤/t × **10** tur = **40** ¤ — uwzględnij w bilansie skarb
 
 ---
 
-*Wygenerowano z `buildings.json` · rev. E · 2026-07-03*
+*Wygenerowano z `buildings.json` · zweryfikowano ręcznie 2026-07-23 (37 budynków vs 26 w katalogu, Fort→Cytadela, koszt materiałowy 10 budynków) · pierwotnie rev. E 2026-07-03*

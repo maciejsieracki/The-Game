@@ -15,7 +15,7 @@
 
 ## Wiki‑S
 
-**Medżaj (Gwardia Faraona)** (Wręcz, Brąz): rekrutacja **0** ¤ + **1** mieszk., utrzymanie **0** ¤/t i **1** żywn./t. Siła w polu **55.5**.
+**Medżaj (Gwardia Faraona)** (Wręcz, Brąz): rekrutacja **0** ¤ + **1** mieszk., utrzymanie **0** ¤/t i **1** żywn./t. Siła w polu **64.5**.
 
 ---
 
@@ -29,7 +29,7 @@ Medżaj (Gwardia Faraona) to jednostka typu **Wręcz** z epoki **Brąz**. Unikal
 - **Utrzymanie:** 0 ¤/t, 1 żywności/t
 - **Ruch:** 3 (mapa) / 4 (bitwa)
 - **Zasięg:** 2 heksów
-- **Siła w polu:** 55.5
+- **Siła w polu:** 64.5
 ### Countery i taktyka
 - Bonus vs włócznik: **+15%**
 - Słabsza od strony: masowe dystansowce z tyłu
@@ -46,7 +46,7 @@ Medżaj (Gwardia Faraona) to jednostka typu **Wręcz** z epoki **Brąz**. Unikal
 - Złoto: 1 × 20 = **20 ¤**
 - Żywność: 1 × 20 = **20** (z zapasów państwa, jeśli masz Spichlerz; inaczej z bieżącej produkcji)
 
-**Siła w polu:** **55.5** — porównaj z **Wojownikiem (~21,5)** lub **Wojownikiem z mieczem (~25)** na tym samym terenie.
+**Siła w polu:** **64.5** — porównaj z **Wojownikiem (~27)** lub **Wojownikiem z mieczem (~39)** na tym samym terenie.
 
 **Ruch 3** na mapie: z miasta A do B (3 heksy lasu) ≈ **3** tur marszu lub mniej na drodze.
 

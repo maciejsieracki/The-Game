@@ -27,6 +27,7 @@
 - **Budowa poz. 1:** 50 pracy
 - **Każdy kolejny poziom:** +12 pracy
 - **Utrzymanie:** 2 ¤/turę (+1 ¤/poziom)
+- **Surowiec do budowy:** 10× cegła (poz. 1)
 - Technologia **Medycyna**.
 Warunek: wymaga Studnia.
 - **Uwaga:** Termy rzymskie — zadowolenie, kultura, zdrowie; wymaga Studni i tech Medycyna.

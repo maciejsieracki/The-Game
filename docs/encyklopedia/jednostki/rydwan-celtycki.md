@@ -15,7 +15,7 @@
 
 ## Wiki‑S
 
-**Rydwan celtycki** (Flanka, Żelazo): rekrutacja **28** ¤ + **1** mieszk., utrzymanie **3** ¤/t i **1** żywn./t. Siła w polu **40**.
+**Rydwan celtycki** (Flanka, Żelazo): rekrutacja **28** ¤ + **1** mieszk., utrzymanie **3** ¤/t i **1** żywn./t. Siła w polu **53**.
 
 ---
 
@@ -25,10 +25,11 @@
 Rydwan celtycki to jednostka typu **Flanka** z epoki **Żelazo**. Unikalna dla **Celtowie**.
 ### Rekrutacja i utrzymanie
 - **Koszt:** 28 ¤, 1 mieszkańców
-- **Tech:** Jeździectwo
+- **Surowiec:** 1× żelazo
+- **Tech:** Hutnictwo żelaza
 - **Utrzymanie:** 3 ¤/t, 1 żywności/t
 - **Ruch:** 4 (mapa) / 6 (bitwa)
-- **Siła w polu:** 40
+- **Siła w polu:** 53
 ### Countery i taktyka
 - Słabsza od strony: masowe dystansowce z tyłu
 - W bitwie ręcznej: trzymaj linię, nie rozdzielaj na pojedyncze walki
@@ -44,7 +45,7 @@ Rydwan celtycki to jednostka typu **Flanka** z epoki **Żelazo**. Unikalna dla *
 - Złoto: 3 × 20 = **60 ¤**
 - Żywność: 1 × 20 = **20** (z zapasów państwa, jeśli masz Spichlerz; inaczej z bieżącej produkcji)
 
-**Siła w polu:** **40** — porównaj z **Wojownikiem (~21,5)** lub **Wojownikiem z mieczem (~25)** na tym samym terenie.
+**Siła w polu:** **53** — porównaj z **Wojownikiem (~27)** lub **Wojownikiem z mieczem (~39)** na tym samym terenie.
 
 **Ruch 4** na mapie: z miasta A do B (3 heksy lasu) ≈ **3** tur marszu lub mniej na drodze.
 

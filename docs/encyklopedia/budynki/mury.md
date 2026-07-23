@@ -27,6 +27,7 @@ Mury wzmacnia miasto w kategorii **Obrona**. Poziom 1: **+5 obrony** (+3 na pozi
 - **Budowa poz. 1:** 35 pracy
 - **Każdy kolejny poziom:** +12 pracy
 - **Utrzymanie:** 2 ¤/turę (+1 ¤/poziom)
+- **Surowiec do budowy:** 15× cegła (poz. 1)
 - Technologia **Budownictwo**.
 ### Strategia gracza
 Przed wojnou z sąsiadem: mury/fort **przed** masową rekrutacją. Oblężenie bez muru kończy się szybciej.

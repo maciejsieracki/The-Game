@@ -27,6 +27,7 @@
 **Jednostka specjalna:** Kusznik (lepszy łucznik) [NIEAKTUALNE — brak w units.json, 2026-07-23; realnie budowany jest bazowy Łucznik, bonus liczbowy zostaje].
 **Religia państwa:** Konfucjanizm / Taoizm.
 **Przykładowe miasta w klastrze:** Qin, Qi, Chu, Jin, Yan….
+**Władcy (imiona per epoka):** Kamień — Huang Di · Brąz — Yu Wielki · Żelazo — Qin Shi Huang · Antyk — Han Wudi.
 
 **Bonus startowy:** lepsi łucznicy (+Atak/zasięg) i lepsza konnica (+Uderzenie).
 

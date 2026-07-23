@@ -1,6 +1,6 @@
 # Poradnik gracza — tracker postępu
 
-> **Rev. E** · 2026-07-03 · **pogłębienie + przykłady liczbowe wszędzie**  
+> **Rev. E** (baza 2026-07-03) **+ przejście weryfikacyjne rev. F 2026-07-23** — 12 rozdziałów zaktualizowane po sesji z drzewkiem tech/Cudami/HUD bitwy/handlem/dyplomacją/rekrutacją (Manpower); stopka każdego zmienionego pliku ma dopisek „rev. F". Reszta plików (00–06, 16–17, 28, 91) nadal rev. E — nie miały nieścisłości względem sesji 2026-07-23 przy przeglądzie tego dnia.  
 > Spis: [`PORADNIK-GRACZA-SPIS-TRESCI.md`](../PORADNIK-GRACZA-SPIS-TRESCI.md) · handoff rev D: [`HANDOFF-rev-D-2026-07-03.md`](HANDOFF-rev-D-2026-07-03.md)
 
 Legenda: ✅ Poradnik‑L gotowy · 📋 katalog (lista + akapit) · 🔗 Wiki‑S/M
