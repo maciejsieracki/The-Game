@@ -1883,8 +1883,11 @@ import type { GameDifficulty } from './difficulty-cost';
 import {
   AI_TRADE_GOLD_MAX,
   AI_TRIBUTE_PEACE_MAX,
+  AI_TRADE_AGREEMENT_SWEETENER_MARGIN,
+  AI_TRADE_AGREEMENT_SWEETENER_MAX,
   aiOneShotGiftGoldMultiplier,
   canAiProposeOneShotGoldGift,
+  canAiProposeTradeAgreement,
   capAiGoldOffer,
 } from './diplomacy-economy';
 
@@ -1954,6 +1957,22 @@ export interface RelacjaWejscie {
   stanWojny: boolean;
   /** Tura ostatniej propozycji/rozliczenia jednorazowego daru ¤ (cooldown per para). */
   lastOneShotGiftTurn?: number;
+  /**
+   * E6 (2026-07-23): czy z partnerem już obowiązuje aktywna Umowa Handlowa
+   * (RodzajTraktatu.UmowaHandlowa) — silnik (main.ts) sprawdza activeDeals.
+   * Brak/undefined = traktowane jak brak umowy (nie blokuje propozycji).
+   */
+  hasHandelTreaty?: boolean;
+  /**
+   * E6: czy istnieje geometrycznie możliwe połączenie tras handlowych między
+   * miastami obu stron (silnik: game/trade-routes.ts findCityConnection /
+   * citiesHaveTradeConnection). Wymagane === true, by AI zaproponowało Umowę
+   * Handlową — bez tego pola (undefined) propozycja się NIE pojawia (bezpieczny
+   * domyślny brak zachowania dla wywołujących, które go nie dostarczają).
+   */
+  hasTradeConnection?: boolean;
+  /** Tura ostatniej PROAKTYWNEJ propozycji Umowy Handlowej (E6, cooldown per para). */
+  lastTradeAgreementProposalTurn?: number;
 }
 
 /**
@@ -1999,7 +2018,8 @@ export type AIDiplomacyCommand =
   | { type: 'zadaj_trybut';          targetId: string; powod: string }
   | { type: 'oferuj_trybut_za_pokoj'; targetId: string; powod: string; goldOnce?: number }
   | { type: 'zaproponuj_sojusz';     targetId: string; powod: string }
-  | { type: 'zaproponuj_handel';     targetId: string; powod: string; goldOnce?: number };
+  | { type: 'zaproponuj_handel';     targetId: string; powod: string; goldOnce?: number }
+  | { type: 'zaproponuj_umowe_handlowa'; targetId: string; powod: string; sweetenerGold?: number };
 
 // ---------------------------------------------------------------------------
 // Opcjonalne overridy progów (dla testów lub trudności)
@@ -2073,7 +2093,8 @@ export function loadDefaultAIDiplomacyProgs(difficulty: GameDifficulty = 'normal
  *                            (P5 sojusz / P6 handel) — D-MP-DYPL Q1 (Maciej 2026-07-21).
  * @returns       Tablica komend (0..N); jeden gracz może dostać max jedną komendę.
  *
- * Priorytety 5 (zaproponuj_sojusz) i 6 (zaproponuj_handel) zaimplementowane ponizej
+ * Priorytety 5 (zaproponuj_sojusz), 5b (zaproponuj_umowe_handlowa, E6) i 6
+ * (zaproponuj_handel) zaimplementowane ponizej
  * (v0.2), skalowane dyplomacjaAktywnosc.
  */
 export function decideAIDiplomacy(
@@ -2219,6 +2240,42 @@ export function decideAIDiplomacy(
         type:     'zaproponuj_sojusz',
         targetId: rel.partnerId,
         powod:    `willingnessAlly=${stance.willingnessAlly.toFixed(2)} (eff=${effWillingnessAlly.toFixed(2)} x aktywnosc=${dyplomacjaAktywnosc.toFixed(2)}) >= prog=${minSojuszAlly.toFixed(2)} (rw=${rw.toFixed(2)}): proponujemy sojusz`,
+      });
+      continue;
+    }
+
+    // ---- Priorytet 5b: zaproponuj_umowe_handlowa (E6, Maciej 2026-07-23) ----
+    // AI proaktywnie proponuje STALA Umowe Handlowa (RodzajTraktatu.UmowaHandlowa,
+    // silnik: diplomacy-proposals.ts) gdy: !stanWojny, brak juz aktywnej umowy z
+    // partnerem (rel.hasHandelTreaty), Relacja >= progHandelRelacja (ten sam prog
+    // co realny handel), istnieje geometrycznie mozliwe polaczenie tras miedzy
+    // miastami obu stron (rel.hasTradeConnection -- dostarczane przez wywolujacego,
+    // main.ts; bez tego pola propozycja NIE powstaje) i throttling deterministyczny
+    // co N tur per para (PLACEHOLDER N=5, AI_TRADE_AGREEMENT_PROPOSAL_COOLDOWN_TURNS
+    // w diplomacy-economy.ts -- do strojenia przez wlasciciela). Gdy Relacja jest
+    // blisko progu (w marginesie AI_TRADE_AGREEMENT_SWEETENER_MARGIN, placeholder),
+    // AI dokleja drobny jednorazowy oslodzik w zlocie -- uproszczenie
+    // computeQuickDealBasket (ktory wymaga introspekcji realnych zasobow per-owner,
+    // dostepnej tylko w main.ts, nie w tej czystej funkcji).
+    const currentTurnForTrade = inp.currentTurn ?? 0;
+    if (
+      !rel.stanWojny &&
+      !rel.hasHandelTreaty &&
+      rel.hasTradeConnection === true &&
+      score >= p.progHandelRelacjaMin &&
+      canAiProposeTradeAgreement(currentTurnForTrade, rel.lastTradeAgreementProposalTurn)
+    ) {
+      const closeToThreshold = score < p.progHandelRelacjaMin + AI_TRADE_AGREEMENT_SWEETENER_MARGIN;
+      const sweetenerRaw = closeToThreshold
+        ? capAiGoldOffer(inp.skarbiecGold ?? 0, AI_TRADE_AGREEMENT_SWEETENER_MAX)
+        : 0;
+      const sweetenerGold = sweetenerRaw > 0 ? sweetenerRaw : undefined;
+      komendy.push({
+        type:     'zaproponuj_umowe_handlowa',
+        targetId: rel.partnerId,
+        powod:    `Relacja=${score} >= prog=${p.progHandelRelacjaMin}, polaczenie tras mozliwe, brak aktywnej umowy` +
+          (sweetenerGold ? `: dokladamy oslodzik ${sweetenerGold} ¤ (Relacja blisko progu)` : ': proponujemy stala Umowe Handlowa'),
+        sweetenerGold,
       });
       continue;
     }

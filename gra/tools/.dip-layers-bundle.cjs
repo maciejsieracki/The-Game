@@ -96,6 +96,7 @@ var ESTABLISHED_CONTACT_CMDS = /* @__PURE__ */ new Set([
   "zaproponuj_pokoj",
   "zaproponuj_sojusz",
   "zaproponuj_handel",
+  "zaproponuj_umowe_handlowa",
   "zadaj_trybut",
   "oferuj_trybut_za_pokoj"
 ]);

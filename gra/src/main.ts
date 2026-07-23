@@ -233,6 +233,7 @@ import {
   diffTradeRoutes,
   findCityConnection,
   tradeRouteDistanceIncome,
+  citiesHaveTradeConnection,
   type TradeRoute,
   type TradeRouteCityRef,
   type TradeRouteParams,
@@ -596,7 +597,7 @@ import { proposalActionIdFromPayload, actionNeedsNegotiation } from './ui/diplom
 import {
   evaluateProposal, applyAcceptedProposal, aiCommandToPendingProposal,
   evaluatePendingFromAI, resolvePlayerAcceptsAiPending, formatAiDiplomacyPlayerMessage,
-  enrichAiCommandWithTreasury,
+  enrichAiCommandWithTreasury, clampDealTurns,
   type ProposalEvalContext, type ProposalPayload,
 } from './game/diplomacy-proposals';
 import {
@@ -606,7 +607,7 @@ import {
 } from './game/diplomacy-treaties';
 import {
   activeDealsToPaymentDeals, tickDiplomacyPayments, applyOneShotGoldTransfer,
-  tributeBreakPairsFromDeals,
+  tributeBreakPairsFromDeals, canAiProposeTradeAgreement,
 } from './game/diplomacy-economy';
 import { RodzajTraktatu } from './types/diplomacy';
 import {
@@ -4471,6 +4472,17 @@ async function boot(): Promise<void> {
     /** Tura ostatniej propozycji jednorazowego daru ¤ AI→gracz (cooldown per ownerId). */
     const aiOneShotGiftLastTurn = new Map<number, number>();
 
+    /**
+     * E6 (2026-07-23): tura ostatniej PROAKTYWNEJ propozycji Umowy Handlowej
+     * AI→gracz (cooldown per ownerId — gracz jest zawsze druga strona, 0).
+     */
+    const aiTradeAgreementLastProposalTurn = new Map<number, number>();
+    /**
+     * E6: tura ostatniej zawartej Umowy Handlowej AI↔AI (cooldown per para,
+     * klucz diploPairKey(a,b) — patrz formAiAiTradeAgreementsIfEligible).
+     */
+    const aiAiTradeAgreementLastTurn = new Map<string, number>();
+
     function unitAttackScore(u: RuntimeUnit): number {
       return normFieldVal(lookupUnitDef(u.typeId)['meleeAttack'], 0);
     }
@@ -6819,6 +6831,7 @@ async function boot(): Promise<void> {
         case 'zaproponuj_pokoj': return 'Propozycja pokoju';
         case 'zaproponuj_sojusz': return 'Propozycja sojuszu';
         case 'zaproponuj_handel': return 'Propozycja handlu';
+        case 'zaproponuj_umowe_handlowa': return 'Propozycja umowy handlowej';
         case 'zadaj_trybut': return 'Żądanie trybutu';
         case 'oferuj_trybut_za_pokoj': return 'Trybut za pokój';
         default: return 'Propozycja dyplomatyczna';
@@ -6834,13 +6847,18 @@ async function boot(): Promise<void> {
       if (enriched.type === 'zaproponuj_handel') {
         aiOneShotGiftLastTurn.set(ownerId, turn);
       }
+      if (enriched.type === 'zaproponuj_umowe_handlowa') {
+        aiTradeAgreementLastProposalTurn.set(ownerId, turn);
+      }
       enqueueDiplomacyPending(
         ownerId,
         enriched.type,
         formatAiDiplomacyPlayerMessage(enriched),
-        (enriched.type === 'zaproponuj_handel' || enriched.type === 'oferuj_trybut_za_pokoj')
+        enriched.type === 'zaproponuj_handel' || enriched.type === 'oferuj_trybut_za_pokoj'
           ? enriched.goldOnce
-          : undefined,
+          : enriched.type === 'zaproponuj_umowe_handlowa'
+            ? enriched.sweetenerGold
+            : undefined,
       );
     }
 
@@ -6877,8 +6895,13 @@ async function boot(): Promise<void> {
         } else {
           const cmd = {
             type: p.cmdType,
+            targetId: '0',
             powod: p.reason,
             goldOnce: p.goldOnce,
+            // E6: 'zaproponuj_umowe_handlowa' niesie oslodzik jako sweetenerGold, nie
+            // goldOnce -- pendingDiplomacyInbox przechowuje oba pod jednym polem `goldOnce`,
+            // wiec dublujemy tutaj by aiCommandToPendingProposal odczytal wlasciwe pole.
+            sweetenerGold: p.goldOnce,
           } as AIDiplomacyCommand;
           const pending = aiCommandToPendingProposal(cmd, p.ownerId, 0, turn);
           if (pending) {
@@ -6895,6 +6918,9 @@ async function boot(): Promise<void> {
         }
         if (p.cmdType === 'zaproponuj_handel') {
           aiOneShotGiftLastTurn.set(p.ownerId, turn);
+        }
+        if (p.cmdType === 'zaproponuj_umowe_handlowa') {
+          aiTradeAgreementLastProposalTurn.set(p.ownerId, turn);
         }
         showDiplomacyProposalBanner(false, 'Odrzucono propozycję');
         showHintMessage('Odrzucono: ' + p.civName, 3000);
@@ -7478,6 +7504,73 @@ async function boot(): Promise<void> {
       }
     }
 
+    /**
+     * E6 (2026-07-23): AI↔AI proaktywnie zawiera STAŁĄ Umowę Handlową
+     * (RodzajTraktatu.UmowaHandlowa) — analogicznie do formSisterAlliancesIfThreatened
+     * (dyplomacja AI↔AI poza gracz↔AI dziś NIE ISTNIEJE inaczej), ale bez ograniczenia
+     * do sióstr tego samego klastra — dowolna para "pełnych" AI (pomija miasta-państwa,
+     * simplifiedDiplomacyOwners — ich handel to uproszczona ścieżka gracz↔AI, patrz
+     * diplomacy-layers.ts SIMPLIFIED_CMD).
+     *
+     * Warunki per para: !wojna, brak już aktywnej Umowy Handlowej, Relacja >=
+     * progHandelRelacja, geometrycznie możliwe połączenie tras (citiesHaveTradeConnection),
+     * throttling deterministyczny co N tur PER PARA (aiAiTradeAgreementLastTurn,
+     * canAiProposeTradeAgreement — ta sama stała co gracz↔AI). DODATKOWO: throttling
+     * GLOBALNY — maks. JEDNA nowa umowa AI↔AI na turę (brak spamu przy wielu AI),
+     * pierwsza kwalifikująca się para w stałej kolejności (ownerId rosnąco) wygrywa.
+     *
+     * Determinizm: pary iterowane w stałej kolejności, brak Math.random().
+     */
+    function formAiAiTradeAgreementsIfEligible(): void {
+      const fullAiOwners = Array.from(aiOwnerCivMap.keys())
+        .filter(oid => oid !== 0 && !simplifiedDiplomacyOwners.has(oid))
+        .sort((a, b) => a - b); // determinizm: kolejność par po id
+      if (fullAiOwners.length < 2) return;
+
+      const dip = _diplomacyParams();
+
+      for (let i = 0; i < fullAiOwners.length; i++) {
+        for (let j = i + 1; j < fullAiOwners.length; j++) {
+          const a = fullAiOwners[i]!;
+          const b = fullAiOwners[j]!;
+
+          const rel = getDiploRelation(a, b);
+          if (rel.status === 'wojna') continue;
+          if (relationScore(rel) < dip.progHandelRelacja) continue;
+          if (activeDeals.some(
+            d => normalizeTreatyKind(d.rodzaj) === RodzajTraktatu.UmowaHandlowa && dealInvolvesOwners(d, a, b),
+          )) continue; // już obowiązuje
+
+          const pairKey = diploPairKey(a, b);
+          if (!canAiProposeTradeAgreement(turn, aiAiTradeAgreementLastTurn.get(pairKey))) continue;
+
+          const hasConnection = citiesHaveTradeConnection(
+            cities.filter(c => c.ownerId === a),
+            cities.filter(c => c.ownerId === b),
+            map,
+            cityBuilt,
+          );
+          if (!hasConnection) continue;
+
+          const [p0, p1] = pairOwnerIds(a, b);
+          activeDeals = addTreaty(activeDeals, {
+            id: `umowa_handlowa_aiai_${p0}_${p1}_t${turn}`,
+            rodzaj: RodzajTraktatu.UmowaHandlowa,
+            strony: [p0, p1],
+            wygasaTura: turn + clampDealTurns(undefined),
+            zawartaTura: turn,
+          });
+          syncRelationFromDeals(a, b);
+          aiAiTradeAgreementLastTurn.set(pairKey, turn);
+          console.log(
+            `[Dyplomacja] AI↔AI Umowa Handlowa ${ownerDiploLabel(p0)}(${p0})-${ownerDiploLabel(p1)}(${p1}) ` +
+            `(Relacja=${relationScore(rel)} >= ${dip.progHandelRelacja}, połączenie tras możliwe)`,
+          );
+          return; // throttling globalny: max 1 nowa umowa AI↔AI na turę
+        }
+      }
+    }
+
     function breakTreatiesOnWar(a: number, b: number, breakerIsPlayer: boolean): void {
       suspendZlozeOnWar(a, b);
       const brokenIds = treatiesBrokenByWar(activeDeals, a, b);
@@ -7684,7 +7777,7 @@ async function boot(): Promise<void> {
           const { givePn, receivePn } = resolveProposalPn(payload);
           const isGift = payload.isGift === true
             || ((payload.giveItems?.length ?? 0) > 0 && !(payload.receiveItems?.length) && (payload.receivePn ?? 0) <= 0);
-          if (cywAction === 'handel') {
+          if (cywAction === 'handel' || cywAction === 'umowa_handlowa') {
             // Audyt #16: Zaufanie tylko gdy obie strony faktycznie POSIADAJĄ zadeklarowane
             // zasoby (zloto/praca/zywnosc) — bez tego dar/handel bez pokrycia dawał darmowy trust.
             const dealTreasury = buildDiploTreasury();
@@ -7697,6 +7790,13 @@ async function boot(): Promise<void> {
             } else {
               showHintMessage('Zaufanie nie naliczone — brak pokrycia w zasobach', 3500);
             }
+          }
+          // E6 (2026-07-23): oslodzik jednorazowy (AI -> gracz) towarzyszacy
+          // proaktywnej propozycji Umowy Handlowej — payload.goldOnce, przelew
+          // NIEZALEZNY od result.oneShotTrade (ktory tu nie jest ustawiony, bo
+          // deal juz obsluzyl akceptacje traktatu).
+          if (cywAction === 'umowa_handlowa' && (payload.goldOnce ?? 0) > 0) {
+            executePnDealTransfer(proposerId, responderId, payload);
           }
         }
       }
@@ -12008,6 +12108,8 @@ async function boot(): Promise<void> {
           siegeAiStateByKey: Array.from(siegeAiStateByKey.entries()),
           pendingDiplomacyInbox: pendingDiplomacyInbox.slice(),
           aiOneShotGiftLastTurn: Array.from(aiOneShotGiftLastTurn.entries()),
+          aiTradeAgreementLastProposalTurn: Array.from(aiTradeAgreementLastProposalTurn.entries()),
+          aiAiTradeAgreementLastTurn: Array.from(aiAiTradeAgreementLastTurn.entries()),
           diplomaticContactEstablished: Array.from(diplomaticContactEstablished),
           diplomaticallyDiscoveredOwners: Array.from(diplomaticallyDiscoveredOwners),
           diplomaticDiscoveryPopupShown: Array.from(diplomaticDiscoveryPopupShown),
@@ -13318,6 +13420,16 @@ async function boot(): Promise<void> {
               const respektWzgledny = (potAI + potPlr) > 0
                 ? potAI / (potAI + potPlr)
                 : 0.5;
+              // E6 (2026-07-23): "polaczenie mozliwe" geometryczne (ignoruje limit
+              // slotow budynkow handlowych — patrz citiesHaveTradeConnection) miedzy
+              // miastami gracza i tego AI. Tania: liczba miast na cywilizacje jest
+              // mala, a wynik jest cache'owany per mapa w findCityConnection.
+              const hasTradeConnectionToPlayer = citiesHaveTradeConnection(
+                cities.filter(c => c.ownerId === 0),
+                cities.filter(c => c.ownerId === ownerId),
+                map,
+                cityBuilt,
+              );
               const diploInp: DiplomacjaInputs = {
                 myPlayerId: String(ownerId),
                 relacje: [{
@@ -13326,6 +13438,9 @@ async function boot(): Promise<void> {
                   respektWzgledny,
                   stanWojny: (relTicked as any).status === 'wojna',
                   lastOneShotGiftTurn: aiOneShotGiftLastTurn.get(ownerId),
+                  hasHandelTreaty: tickCtx.aktywnyHandel,
+                  hasTradeConnection: hasTradeConnectionToPlayer,
+                  lastTradeAgreementProposalTurn: aiTradeAgreementLastProposalTurn.get(ownerId),
                 }],
                 agresja: resolveArchetypeAggression(aiTyp, ARCHETYPE_AGGRESSION[aiTyp] ?? 0.5),
                 handlowosc: resolveArchetypeTrade(aiTyp, ARCHETYPE_TRADE[aiTyp] ?? 0.5),
@@ -13370,6 +13485,8 @@ async function boot(): Promise<void> {
                   } else if (cmd.type === 'zaproponuj_sojusz') {
                     enqueueDiplomacyPendingFromCmd(ownerId, cmd);
                   } else if (cmd.type === 'zaproponuj_handel') {
+                    enqueueDiplomacyPendingFromCmd(ownerId, cmd);
+                  } else if (cmd.type === 'zaproponuj_umowe_handlowa') {
                     enqueueDiplomacyPendingFromCmd(ownerId, cmd);
                   }
                 } catch (eCmdDiplo) {
@@ -13658,6 +13775,13 @@ async function boot(): Promise<void> {
               formSisterAlliancesIfThreatened();
             } catch (eSisterAlly) {
               console.error('[Dyplomacja] Blad sojuszy siostrzanych:', eSisterAlly);
+            }
+
+            // E6 (2026-07-23): AI↔AI proaktywne Umowy Handlowe (patrz formAiAiTradeAgreementsIfEligible).
+            try {
+              formAiAiTradeAgreementsIfEligible();
+            } catch (eAiAiTrade) {
+              console.error('[Dyplomacja] Blad Umow Handlowych AI-AI:', eAiAiTrade);
             }
 
             if (!aiTurnAwaitingBattle) {
@@ -14527,6 +14651,8 @@ async function boot(): Promise<void> {
       _dipUnitSeq = 0;
       pendingDiplomacyInbox.length = 0;
       aiOneShotGiftLastTurn.clear();
+      aiTradeAgreementLastProposalTurn.clear();
+      aiAiTradeAgreementLastTurn.clear();
       units.length = 0;
       plannedMarches.clear();
       marchExecQueue.length = 0;
@@ -15654,6 +15780,16 @@ async function boot(): Promise<void> {
       const savedGiftCooldown = saved.meta?.aiOneShotGiftLastTurn as Array<[number, number]> | undefined;
       if (savedGiftCooldown?.length) {
         for (const [oid, t] of savedGiftCooldown) aiOneShotGiftLastTurn.set(oid, t);
+      }
+      aiTradeAgreementLastProposalTurn.clear();
+      const savedTradeAgreementCooldown = saved.meta?.aiTradeAgreementLastProposalTurn as Array<[number, number]> | undefined;
+      if (savedTradeAgreementCooldown?.length) {
+        for (const [oid, t] of savedTradeAgreementCooldown) aiTradeAgreementLastProposalTurn.set(oid, t);
+      }
+      aiAiTradeAgreementLastTurn.clear();
+      const savedAiAiTradeCooldown = saved.meta?.aiAiTradeAgreementLastTurn as Array<[string, number]> | undefined;
+      if (savedAiAiTradeCooldown?.length) {
+        for (const [key, t] of savedAiAiTradeCooldown) aiAiTradeAgreementLastTurn.set(key, t);
       }
       activeDeals = [];
       // Audyt #44: aiSkarbiecByOwner bylo czyszczone bez petli odtwarzajacej

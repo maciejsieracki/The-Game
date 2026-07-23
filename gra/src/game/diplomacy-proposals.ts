@@ -51,6 +51,14 @@ export type ProposalActionId =
   | 'sojusz_defensywny'
   | 'sojusz_pelny'
   | 'handel'
+  /**
+   * E6 (2026-07-23): STAŁA Umowa Handlowa (RodzajTraktatu.UmowaHandlowa)
+   * proponowana PROAKTYWNIE przez AI (decideAIDiplomacy zaproponuj_umowe_handlowa),
+   * bez pełnego koszyka PN gracza — prostsza siostra 'handel' (hasResourceAccess).
+   * Wyłącznie ścieżka AI→gracz (aiCommandToPendingProposal / resolvePlayerAcceptsAiPending);
+   * evaluateProposal jej nie ocenia (gracz nie inicjuje tej akcji z UI negocjacji).
+   */
+  | 'umowa_handlowa'
   | 'trybut_zadanie'
   | 'trybut_oferta'
   | 'granice'
@@ -609,6 +617,10 @@ export function formatAiDiplomacyPlayerMessage(cmd: AIDiplomacyCommand): string 
   switch (cmd.type) {
     case 'zaproponuj_handel':
       return `Proponujemy jednorazową wymianę: ${cmd.goldOnce ?? 0} ¤ na rzecz twojego państwa.`;
+    case 'zaproponuj_umowe_handlowa':
+      return cmd.sweetenerGold
+        ? `Proponujemy stałą umowę handlową (szlaki handlowe) — w geście dobrej woli dokładamy ${cmd.sweetenerGold} ¤.`
+        : 'Proponujemy stałą umowę handlową — otwiera i utrzymuje szlaki handlowe między naszymi miastami.';
     case 'zaproponuj_sojusz':
       return 'Proponujemy pełny sojusz — wspólna obrona i wsparcie militarnie.';
     case 'zaproponuj_pokoj':
@@ -656,6 +668,14 @@ export function aiCommandToPendingProposal(
         id: makeDealId('pending-handel', turn, fromOwnerId, toOwnerId),
         payload: { goldOnce },
         actionId: 'handel',
+      };
+    }
+    case 'zaproponuj_umowe_handlowa': {
+      return {
+        ...base,
+        id: makeDealId('pending-umowahandlowa', turn, fromOwnerId, toOwnerId),
+        actionId: 'umowa_handlowa',
+        payload: cmd.sweetenerGold ? { goldOnce: cmd.sweetenerGold } : {},
       };
     }
     case 'zadaj_trybut':
@@ -719,6 +739,21 @@ export function resolvePlayerAcceptsAiPending(
         return { accepted: true, reason: 'Wymiana jednorazowa (T3A)', oneShotTrade: true };
       }
       return { accepted: true, reason: 'Wymiana PN zaakceptowana', oneShotTrade: true };
+    }
+    case 'umowa_handlowa': {
+      // E6 (2026-07-23): gracz akceptuje propozycję STAŁEJ Umowy Handlowej od AI —
+      // AI już oceniła próg (progHandelRelacja) w decideAIDiplomacy, bez ponownej
+      // oceny (jak reszta tej funkcji). payload.goldOnce = opcjonalny jednorazowy
+      // "osłodzik" towarzyszący traktatowi (przelew osobno w applyProposalOutcome,
+      // main.ts — result.deal tu nie niesie transferu jednorazowego).
+      const deal = buildDeal(
+        RodzajTraktatu.UmowaHandlowa,
+        fromOwnerId,
+        toOwnerId,
+        turn,
+        turn + clampDealTurns(payload.turns),
+      );
+      return { accepted: true, reason: 'Umowa handlowa zawarta', deal };
     }
     case 'trybut_zadanie': {
       const perTurn = payload.goldPerTurn ?? AI_TRIBUTE_PER_TURN;

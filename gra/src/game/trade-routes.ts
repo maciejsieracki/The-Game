@@ -502,6 +502,35 @@ function detectBestConnection(
 }
 
 /**
+ * E6 (2026-07-23) — czy istnieje geometrycznie MOŻLIWE połączenie tras handlowych
+ * (ląd LUB morze, zgodnie z findCityConnection) między KTÓRĄKOLWIEK parą miast z
+ * `citiesA` i `citiesB`. Używane przez AI↔gracz/AI↔AI proaktywne propozycje Umowy
+ * Handlowej (decideAIDiplomacy) — bramka "połączenie możliwe", NIE "trasa aktywna
+ * dziś": ignoruje limit slotów z tradeRouteLimitForCity (budynki handlowe), bo ten
+ * limit dotyczy przepustowości istniejących tras, nie tego, czy fizyczne
+ * połączenie w ogóle istnieje. Wymóg Portu dla morza pozostaje (wbudowany w
+ * findCityConnection).
+ *
+ * Czysta, zwraca na pierwszym trafieniu (short-circuit) — tanie dla typowej
+ * liczby miast per cywilizacja.
+ */
+export function citiesHaveTradeConnection(
+  citiesA: readonly TradeRouteCityRef[],
+  citiesB: readonly TradeRouteCityRef[],
+  map: GameMap,
+  builtByCity: ReadonlyMap<string, readonly string[]>,
+  params: TradeRouteParams = DEFAULT_TRADE_ROUTE_PARAMS,
+): boolean {
+  for (const a of citiesA) {
+    for (const b of citiesB) {
+      if (findCityConnection(a, b, map, 'lad', params, builtByCity).connected) return true;
+      if (findCityConnection(a, b, map, 'morze', params, builtByCity).connected) return true;
+    }
+  }
+  return false;
+}
+
+/**
  * refreshTradeRoutes — E3: ustala aktywne trasy handlowe gracza na tę turę.
  *
  * Reguły (decyzje właściciela, patrz STAN-PRACY-HANDOFF.md, epik Handel):

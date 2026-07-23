@@ -187,6 +187,40 @@ export function capAiGoldOffer(balance: number, maxOffer: number): number {
   return Math.min(Math.floor(balance), maxOffer);
 }
 
+// ---------------------------------------------------------------------------
+// E6 (2026-07-23): AI proaktywnie proponuje STAŁĄ Umowę Handlową (RodzajTraktatu.
+// UmowaHandlowa) — gracz↔AI, przez istniejący mechanizm propozycji przychodzących
+// (pendingDiplomacyInbox). Wartości poniżej to PLACEHOLDERY do strojenia przez
+// właściciela po playteście — nie balansowane na żywej rozgrywce.
+// ---------------------------------------------------------------------------
+
+/**
+ * Cooldown proaktywnej propozycji Umowy Handlowej — co N tur, deterministycznie
+ * per para (bez Math.random(), analogicznie do AI_ONESHOT_GIFT_COOLDOWN_TURNS).
+ * PLACEHOLDER (Maciej, do strojenia): N=5.
+ */
+export const AI_TRADE_AGREEMENT_PROPOSAL_COOLDOWN_TURNS = 5;
+
+/**
+ * Margines Relacji poniżej którego oferta dokłada drobny jednorazowy "osłodzik"
+ * w złocie (Relacja blisko progu = AI chce przekonać, nie tylko zaproponować).
+ * PLACEHOLDER (Maciej, do strojenia): próg + 15.
+ */
+export const AI_TRADE_AGREEMENT_SWEETENER_MARGIN = 15;
+
+/** Maks. kwota osłodzika (¤) — jak AI_TRADE_GOLD_MAX, ale osobna stała do strojenia. */
+export const AI_TRADE_AGREEMENT_SWEETENER_MAX = 15;
+
+/** Czy AI może zaproponować kolejną STAŁĄ Umowę Handlową tej samej parze. */
+export function canAiProposeTradeAgreement(
+  currentTurn: number,
+  lastProposalTurn: number | undefined,
+  cooldownTurns: number = AI_TRADE_AGREEMENT_PROPOSAL_COOLDOWN_TURNS,
+): boolean {
+  if (lastProposalTurn == null || lastProposalTurn <= 0) return true;
+  return currentTurn >= lastProposalTurn + cooldownTurns;
+}
+
 /** T3A: jednorazowy transfer złota po akceptacji handlu / trybutu oferta. */
 export function applyOneShotGoldTransfer(
   fromOwnerId: number,

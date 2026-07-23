@@ -143,6 +143,7 @@ const ESTABLISHED_CONTACT_CMDS = new Set<string>([
   'zaproponuj_pokoj',
   'zaproponuj_sojusz',
   'zaproponuj_handel',
+  'zaproponuj_umowe_handlowa',
   'zadaj_trybut',
   'oferuj_trybut_za_pokoj',
 ]);
