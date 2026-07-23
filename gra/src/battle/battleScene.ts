@@ -2773,8 +2773,8 @@ export class BattleScene {
     this.renderer.toneMappingExposure = 1.05;
 
     this.scene = new THREE.Scene();
-    this.scene.background = new THREE.Color(0x2a2620);
-    this.scene.fog = new THREE.FogExp2(0x2a2620, 0.012);
+    this.scene.background = new THREE.Color(0x05070b);
+    this.scene.fog = new THREE.FogExp2(0x05070b, 0.012);
 
     // Camera centred on the PLAYABLE zone (default zoom). Full BF_COLS×BF_ROWS
     // map is larger — pan (strzałki / WASD) or drag to explore the margins.
@@ -2790,7 +2790,7 @@ export class BattleScene {
 
     this.camTarget.set(cx, 0, cz);
     // Default: strefa gry wygodnie w kadrze; zoom-out pokazuje całe duże pole.
-    this.camDist       = playSpan * 1.08;
+    this.camDist       = playSpan * 0.92;
     this.camDistTarget = this.camDist;
     this.camDistMin = Math.max(2, playSpan * 0.07);
     this.camDistMax = fieldSpan * 1.65;
@@ -2818,7 +2818,7 @@ export class BattleScene {
     fill.position.set(cx - 20, 24, cz + 30);
     this.scene.add(fill);
     // Softer fog so the far half of the big field doesn't grey out.
-    this.scene.fog = new THREE.FogExp2(0x2a2620, 0.005);
+    this.scene.fog = new THREE.FogExp2(0x05070b, 0.005);
 
     this._orderLinesGroup = new THREE.Group();
     this._orderLinesGroup.name = 'orderLines';
@@ -4081,7 +4081,7 @@ export class BattleScene {
     const worldH = BF_ROWS * TILE_S;
 
     const gGeo = new THREE.PlaneGeometry(worldW * 2.2, worldH * 2.2);
-    const gMat = new THREE.MeshLambertMaterial({ color: 0x1a1712 });
+    const gMat = new THREE.MeshLambertMaterial({ color: 0x050505 });
     this.ownedGeos.push(gGeo);
     this.ownedMats.push(gMat);
     const ground = new THREE.Mesh(gGeo, gMat);
@@ -4090,48 +4090,74 @@ export class BattleScene {
     ground.receiveShadow = true;
     this.scene.add(ground);
 
-    // Subtelne znaczniki boku mapy (nie mury): lewo = TY niebieski, prawo = wróg czerwony.
-    const stripH = worldH * 0.72;
-    const mkStrip = (color: number, xPos: number) => {
-      const sg = new THREE.BoxGeometry(0.06, 0.18, stripH);
-      const sm = new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.55 });
-      this.ownedGeos.push(sg);
-      this.ownedMats.push(sm);
-      const m  = new THREE.Mesh(sg, sm);
-      m.position.set(xPos, 0.12, mz);
-      this.scene.add(m);
-    };
-    mkStrip(0x3a6ad0, cellToWorld(PLAY_COL0 - 1, PLAY_MID_ROW).x - TILE_S * 0.42);
-    mkStrip(0xc84040, cellToWorld(PLAY_COL1 + 1, PLAY_MID_ROW).x + TILE_S * 0.42);
+    // Boczne pasy TY/wróg (niebieski/czerwony) USUNIĘTE na decyzję właściciela
+    // (2026-07-23): tło pola bitwy ma być jednolicie czarne, bez kolorowych
+    // obramówek. Zostawiono tylko czarny grunt + przyciemnione marginesy.
 
     this._buildPlayableMarginVisuals();
   }
 
   /** Przyciemnione marginesy poza strefą gry (wizualna granica 50% powierzchni). */
   private _buildPlayableMarginVisuals(): void {
-    const mkMargin = (w: number, h: number, x: number, z: number): void => {
+    const ts = TILE_S;
+    // Cały margines poza strefą gry generator wypełnia głęboką rzeką (kafle
+    // River) niezależnie od wybranego biomu -- to świadome zachowanie tabel
+    // terenu (nie ruszamy generatora), ale wizualnie oznacza dość jasny,
+    // nasycony niebieski kolor pod spodem. Stąd wysoka nieprzezroczystość
+    // (0.94) tej nakładki -- niżej tło "poza strefą gry" przestawało być
+    // niemal niewidoczne, przebijając wyraźnym niebieskim odcieniem.
+    //
+    // Prostokąty budujemy z jawnych GRANIC (min/max), nie szerokość+środek --
+    // pozwala to naddać PAD na zewnętrzną krawędź (poza prawdziwy skraj
+    // BF_COLS/BF_ROWS, w czerń tła) i BLEED na styki z sąsiednimi
+    // prostokątami/strefą gry, bez ryzyka niedomkniętej szpary z zaokrągleń.
+    const PAD = ts * 3;      // naddatek na zewnątrz (w tło) -- z zapasem
+    const INNER = ts * 0.15; // maly zachodzenie na strefe gry (jak zlota ramka)
+    const CORNER = ts * 0.5; // zachodzenie lewo/prawo na strefe gora/dol (w tle, niewidoczne)
+    const mkMarginBounds = (xMin: number, xMax: number, zMin: number, zMax: number): void => {
+      const w = xMax - xMin, h = zMax - zMin;
+      if (w <= 0.05 || h <= 0.05) return;
       const g = new THREE.PlaneGeometry(w, h);
       g.rotateX(-Math.PI / 2);
       this.ownedGeos.push(g);
       const m = new THREE.MeshBasicMaterial({
-        color: 0x1c1813, transparent: true, opacity: 0.5, depthWrite: false,
+        color: 0x030303, transparent: true, opacity: 0.94, depthWrite: false,
       });
       this.ownedMats.push(m);
       const mesh = new THREE.Mesh(g, m);
-      mesh.position.set(x, 0.04, z);
+      mesh.position.set((xMin + xMax) * 0.5, 0.04, (zMin + zMax) * 0.5);
+      // Wymuś rysowanie PO wodzie/innych półprzezroczystych kaflach terenu --
+      // bez tego sortowanie przezroczystości po odległości potrafiło (przy
+      // pewnych kątach kamery) zostawić cienką, jaśniejszą smugę wody na
+      // granicy marginesu zamiast jednolitej czerni.
+      mesh.renderOrder = 5;
       this.scene.add(mesh);
     };
-    const ts = TILE_S;
-    const leftW = PLAY_COL0 * ts;
-    const rightW = (BF_COLS - PLAY_COL1 - 1) * ts;
-    const topH = PLAY_ROW0 * ts;
-    const botH = (BF_ROWS - PLAY_ROW1 - 1) * ts;
-    const midZ = (PLAY_ROW0 + PLAY_ROW1 + 1) * ts * 0.5;
-    const midX = (PLAY_COL0 + PLAY_COL1 + 1) * ts * 0.5;
-    if (leftW > 0.1) mkMargin(leftW, PLAYABLE_ROWS * ts, leftW * 0.5, midZ);
-    if (rightW > 0.1) mkMargin(rightW, PLAYABLE_ROWS * ts, (PLAY_COL1 + 1) * ts + rightW * 0.5, midZ);
-    if (topH > 0.1) mkMargin(BF_COLS * ts, topH, BF_COLS * ts * 0.5, topH * 0.5);
-    if (botH > 0.1) mkMargin(BF_COLS * ts, botH, BF_COLS * ts * 0.5, (PLAY_ROW1 + 1) * ts + botH * 0.5);
+    // UWAGA na tile-CENTER vs tile-EDGE: cellToWorld(col,row) daje środek kafla
+    // (kafle mają szerokość ts, więc krawędź jest o pół kafla dalej). Granice
+    // pól poniżej są liczone jako PRAWDZIWE krawędzie (±HALF), nie środki --
+    // wcześniejsza wersja (bez HALF) myliła środek pierwszego kafla marginesu
+    // z granicą strefy gry, zostawiając ~0.35 kafla NIEZAKRYTEJ szpary po
+    // stronie xMax/zMax (prawo/dół), przez którą przebijał surowy kolor
+    // kafla-rzeki spod spodu jako cienka jasna kreska.
+    const HALF = ts * 0.5;
+    const fieldXMin = -HALF;
+    const fieldXMax = (BF_COLS - 1) * ts + HALF;
+    const fieldZMin = -HALF;
+    const fieldZMax = (BF_ROWS - 1) * ts + HALF;
+    const playXMin  = PLAY_COL0 * ts - HALF;
+    const playXMax  = PLAY_COL1 * ts + HALF;
+    const playZMin  = PLAY_ROW0 * ts - HALF;
+    const playZMax  = PLAY_ROW1 * ts + HALF;
+    // Lewo / prawo: pełna wysokość strefy gry, zachodzą lekko (CORNER) na
+    // strefy góra/dół (tam to wciąż tło, więc bezpieczne) i o INNER na samą
+    // strefę gry (tyle samo rzędu co złota ramka, żeby nie odgryzać terenu).
+    mkMarginBounds(fieldXMin - PAD, playXMin + INNER, playZMin - CORNER, playZMax + CORNER);
+    mkMarginBounds(playXMax - INNER, fieldXMax + PAD, playZMin - CORNER, playZMax + CORNER);
+    // Góra / dół: pełna szerokość CAŁEGO pola (+ PAD po bokach, żeby zakryć
+    // rogi), zachodzą o INNER na strefę gry.
+    mkMarginBounds(fieldXMin - PAD, fieldXMax + PAD, fieldZMin - PAD, playZMin + INNER);
+    mkMarginBounds(fieldXMin - PAD, fieldXMax + PAD, playZMax - INNER, fieldZMax + PAD);
 
     // Obwódka strefy gry (złota linia)
     const frameW = PLAYABLE_COLS * ts;
@@ -4147,6 +4173,7 @@ export class BattleScene {
     this.ownedMats.push(frameMat);
     const frame = new THREE.Mesh(frameGeo, frameMat);
     frame.position.set(fx, 0.038, fz);
+    frame.renderOrder = 6;
     this.scene.add(frame);
   }
 
