@@ -9,7 +9,14 @@ UWAGA: KANON i FINALNA promują się teraz OSOBNYMI skryptami (`gra/tools/publis
 wyraźne polecenie właściciela) — dlatego są logowane NIEZALEŻNIE, każdy w swojej sekcji, ze
 swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drugiego.
 
-## ROBOCZA `6bb7fedc` — 2026-07-23 · PAKIET: HUD TW-v5 F3 (komplet 3/3) + PREBATTLE nakładka v1.1 + DYPLOMACJA zaległości silnika — **AKTUALNA**
+## ROBOCZA `48249d90` — 2026-07-23 · PORTRETY WŁADCÓW w medalionach (bitwa + preBattle + dyplomacja) — **AKTUALNA**
+
+- **Zawartość (commit `2cb3685`, na `6bb7fedc`):** wdrożenie paczki Design PORTRETY-WLADCOW v3/v4 (30 portretów: 15 cywilizacji × Kamień/Brąz, źródło Gemini/Maciej, cięcie Design). Nowy `leaderPortraits.ts` (30×256px JPEG inline, +0,38 MB bundla). Medaliony pokazują portret władcy wg CYWILIZACJI i EPOKI (żelazo→brąz→kamień przy braku; Żelazo TODO — czeka na arkusz): karty dowódców HUD bitwy (obwódki stron bez zmian), karty dowódców preBattle nakładki, medalion rozmówcy i gracza w dyplomacji (hero 150px + 64px). Fallback obowiązkowy: brak portretu → dotychczasowa ikona cywilizacji. `BattleOpts.attackerEra/defenderEra` opcjonalne (legacy=kamień); ery z `empireEpochForOwner` we wszystkich ścieżkach startu bitwy.
+- **Bramki:** tsc=0 · zrzut E2E: Rzym/Grecja z portretami w kołach medalionów, cover-fit, obwódki OK · VERIFY OK.
+- **md5:** `48249d9089c15bc3967e55365601b719` · stamp `48249d90`. Bundel 27,9 MB. Publikowała sesja chmurowa.
+- **Test:** bitwa → karty dowódców z twarzami władców; atak na wroga → preBattle z portretami w rogach; dyplomacja → portret rozmówcy w medalionie. Cywilizacja bez portretu (nie powinno być) → ikona jak dotąd.
+
+## ROBOCZA `6bb7fedc` — 2026-07-23 · PAKIET: HUD TW-v5 F3 (komplet 3/3) + PREBATTLE nakładka v1.1 + DYPLOMACJA zaległości silnika — **ZASTĄPIONA** (→ `48249d90`)
 
 - **Zawartość (commit `bfe377d`):** trzy tematy jednym bundlem:
   1. **HUD TW-v5 FAZA 3 (finał makiety):** C-12 Koniec bitwy 1:1 z klatką 5 (medalion laur/miecze, kafle strat „ludzi", CTA, hint), C-23 Szczegóły bitwy 1:1 z klatką 4 (2 kolumny ATK/OBR, Zniszczone/Rozbite/Ocalałe, „1240→862 ludzi po bitwie") — przepięte z odrzuconego postBattleSummary; dolny toolbar deploy = SAME IKONY 46×46 z pigułką na hover; karty rosteru z nazwą jednostki (medaliony typu); nagłówki grup pasek+chevron (fix nadpisywania stylu); minimapa „rozstawianie" bez Tempo w deploy; panele ~72–86%+blur 7–9; sprzątnięcie martwych pól F1/F2.

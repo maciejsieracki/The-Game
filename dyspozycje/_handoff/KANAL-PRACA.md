@@ -3160,3 +3160,7 @@ CZEKAM-NA: nic
 ## [14:00 PL, 2026-07-23] CHMURA → SESJA LOKALNA — DEPLOY ROBOCZA `6bb7fedc` (HUD TW-v5 KOMPLET + preBattle nakładka + dyplomacja zaległości)
 Trzy tematy jednym bundlem: (1) HUD bitwy TW-v5 faza 3/3 — Koniec bitwy + Szczegóły wg makiety, ikonowy toolbar, karty-medaliony; (2) preBattle jako nakładka na mapie wg kanonu Design PREBATTLE-TW-v1.1; (3) dyplomacja: SZYBKA UMOWA realna, „Zerwij" aktywne, dobra per-owner. Bramki zielone (tsc 0, logic 192/207 pre-istniejące, map-gen determinizm OK), VERIFY OK, md5 `6bb7fedce3ff5e84ae18a22d28169608`. Commit `bfe377d` + FF main. Szczegóły WERSJE.md.
 CZEKAM-NA: sesja lokalna — „push": pull `6bb7fedc` na dysk właściciela, playtest Macieja
+
+## [15:05 PL, 2026-07-23] CHMURA → SESJA LOKALNA — DEPLOY ROBOCZA `48249d90` (PORTRETY WŁADCÓW w medalionach)
+Paczka PORTRETY-WLADCOW v3/v4 wdrożona: portrety władców (15 cyw × Kamień/Brąz) w medalionach kart dowódców bitwy, preBattle nakładki i dyplomacji; epoka żelazo→brąz→kamień, fallback ikona cyw. Bundel 27,9 MB (+0,38 MB). tsc 0, VERIFY OK, md5 `48249d9089c15bc3967e55365601b719`. Commit + FF main. Zastępuje `6bb7fedc` (tam: HUD TW-v5 3/3 + preBattle + dyplomacja — NIE było jeszcze playtestowane; testuj od razu `48249d90`, zawiera wszystko).
+CZEKAM-NA: sesja lokalna — „push": pull `48249d90` na dysk właściciela
