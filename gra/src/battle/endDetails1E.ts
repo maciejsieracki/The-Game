@@ -1,176 +1,185 @@
 /**
- * endDetails1E.ts — pełnoekranowe „Szczegóły bitwy” (Design 1E / C-12 rodzina).
+ * endDetails1E.ts — C-23 „Szczegóły bitwy" (Design TW v5, klatka 4).
+ * Dwie kolumny ATK/OBR: nagłówek dowódcy + sekcje Zniszczone/Rozbite (rout)/
+ * Ocalałe, każda jednostka jako wiersz ikona+nazwa+HP przed→po.
  */
 import {
-  applyBtnOutline,
-  applyBtnPrimary,
+  BATTLE_ENEMY,
   BATTLE_ENEMY_TEXT,
   BATTLE_FONT,
   BATTLE_FONT_TITLE,
   BATTLE_GOLD,
+  BATTLE_PANEL_BORDER,
+  BATTLE_PLAYER,
   BATTLE_PLAYER_TEXT,
   BATTLE_TEXT,
   BATTLE_TEXT_DIM,
+  PB_SVG,
+  ROSTER_TYPE_SVG,
+  rosterRowAccent,
 } from './battleHudTheme';
 
+export type EndDetailsUnitFate = 'destroyed' | 'routed' | 'survived';
+export type EndDetailsUnitKind = 'mounted' | 'melee' | 'ranged';
+
+/** Pojedynczy oddział na liście Zniszczone/Rozbite/Ocalałe (klatka 4). */
 export interface EndDetailsUnitRow {
   name: string;
-  n: number;
+  kind: EndDetailsUnitKind;
+  hpBefore: number;
+  hpAfter: number;
+  fate: EndDetailsUnitFate;
 }
 
-/** Pojedyncza jednostka w rosterze szczegółów (HP przed/po). */
-export interface EndDetailsUnitHpRow {
-  name: string;
-  fate: 'destroyed' | 'routed' | 'survived';
-  hpBeforePct: number;
-  hpAfterPct: number;
-  lossPct: number;
-  dead: boolean;
-}
-
-export interface EndDetailsSideFates {
-  destroyed: EndDetailsUnitRow[];
-  routed: EndDetailsUnitRow[];
-  survived: EndDetailsUnitRow[];
-  /** Pełna lista jednostek z utratą HP (opcjonalnie — gdy brak, tylko agregaty). */
-  units?: EndDetailsUnitHpRow[];
+export interface EndDetailsSideData {
+  /** Nazwa u góry kolumny (civLabel — spójne z panelem dowódców C-06/TW v5). */
+  civLabel: string;
+  /** „Atakujący" / „Obrońca". */
+  roleLabel: string;
+  totalBefore: number;
+  totalAfter: number;
+  units: EndDetailsUnitRow[];
 }
 
 export interface EndDetails1EParams {
-  atk: EndDetailsSideFates;
-  def: EndDetailsSideFates;
-  atkLabel?: string;
-  defLabel?: string;
-  battleTitle?: string;
+  /** Podtytuł nagłówka, np. „Tura 3 · 04:12". */
+  battleSubtitle: string;
+  /** np. „zwycięstwo Greków" — kolor dobierany wg playerWon. */
+  resultLabel: string;
+  playerWon: boolean;
+  atk: EndDetailsSideData;
+  def: EndDetailsSideData;
 }
 
 export interface EndDetails1ECallbacks {
   onClose: () => void;
-  onReplay?: () => void;
 }
 
 function esc(s: string): string {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
-function total(items: EndDetailsUnitRow[]): number {
-  return items.reduce((s, it) => s + it.n, 0);
+function resizeSvg(svg: string, px: number): string {
+  return svg.replace(/width="\d+"/, `width="${px}"`).replace(/height="\d+"/, `height="${px}"`);
 }
 
-function fateBlock(
-  title: string,
-  accent: string,
-  items: EndDetailsUnitRow[],
-): string {
-  const cnt = total(items);
-  const rows = items.length
-    ? items.map(it =>
-      '<div style="display:flex;justify-content:space-between;align-items:center;gap:12px;' +
-      'padding:7px 0;border-bottom:1px solid rgba(255,255,255,0.05);">' +
-      '<span style="font-size:13px;color:' + BATTLE_TEXT + ';overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' +
-      esc(it.name) + '</span>' +
-      '<span style="font-family:' + BATTLE_FONT_TITLE + ';font-size:16px;color:' + accent + ';flex:none;">×' + it.n + '</span>' +
-      '</div>',
-    ).join('')
-    : '<div style="font-size:12px;color:' + BATTLE_TEXT_DIM + ';padding:10px 0;font-style:italic;text-align:center;">Brak</div>';
-
-  return (
-    '<div style="margin-bottom:16px;">' +
-    '<div style="font-size:11px;letter-spacing:0.16em;text-transform:uppercase;color:' + accent + ';margin-bottom:6px;">' +
-    title + '</div>' +
-    '<div style="font-family:' + BATTLE_FONT_TITLE + ';font-size:34px;line-height:1;color:' + accent + ';margin-bottom:8px;">' +
-    cnt + '</div>' +
-    '<div style="background:rgba(0,0,0,0.28);border-radius:10px;padding:4px 12px;border:1px solid rgba(255,255,255,0.06);">' +
-    rows +
-    '</div></div>'
-  );
+function hexToRgba(hex: string, alpha: number): string {
+  const h = hex.replace('#', '');
+  const r = parseInt(h.substring(0, 2), 16);
+  const g = parseInt(h.substring(2, 4), 16);
+  const b = parseInt(h.substring(4, 6), 16);
+  return `rgba(${r},${g},${b},${alpha})`;
 }
 
-function unitHpRowHtml(
-  row: EndDetailsUnitHpRow,
-  barGrad: string,
-): string {
-  const fateLabel =
-    row.fate === 'destroyed' ? 'zniszczona'
-      : row.fate === 'routed' ? 'zrootowana'
-        : 'ocalała';
-  const fateColor =
-    row.fate === 'destroyed' ? '#ff7b7b'
-      : row.fate === 'routed' ? '#ffd54a'
-        : '#7ad0a0';
-  const hpTxt = row.dead
-    ? 'HP ' + row.hpBeforePct + '% \u2192 0%'
-    : 'HP ' + row.hpBeforePct + '% \u2192 ' + row.hpAfterPct + '%';
-  const lossTxt = row.dead ? '\u2212100%' : '\u2212' + row.lossPct + '%';
-  const lossColor =
-    row.dead || row.lossPct >= 50 ? '#ff7070'
-      : row.lossPct === 0 ? '#7ad0a0'
-        : BATTLE_TEXT_DIM;
-  const afterW = row.dead ? 0 : row.hpAfterPct;
+const FATE_ORDER: readonly EndDetailsUnitFate[] = ['destroyed', 'routed', 'survived'];
+const FATE_META: Record<EndDetailsUnitFate, { label: string; color: string }> = {
+  destroyed: { label: 'Zniszczone', color: '#ff7b7b' },
+  routed: { label: 'Rozbite (rout)', color: '#ffd54a' },
+  survived: { label: 'Ocalałe', color: '#7ad0a0' },
+};
 
+function unitRowHtml(u: EndDetailsUnitRow, color: string): string {
+  const iconColor = rosterRowAccent(u.kind);
+  const icon = resizeSvg(ROSTER_TYPE_SVG[u.kind], 15);
+  const right = u.fate === 'destroyed'
+    ? u.hpBefore + ' → 0'
+    : u.fate === 'routed'
+      ? u.hpBefore + ' → ' + u.hpAfter + ' · uciekli'
+      : u.hpBefore + ' → ' + u.hpAfter;
+  const bg = hexToRgba(color, u.fate === 'destroyed' ? 0.06 : 0.05);
+  const border = hexToRgba(color, u.fate === 'survived' ? 0.16 : u.fate === 'routed' ? 0.18 : 0.2);
   return (
-    '<div style="margin-bottom:10px;padding:10px 11px;border-radius:8px;' +
-    'border:1px solid ' + (row.dead ? 'rgba(200,64,64,.45)' : 'rgba(255,255,255,.1)') + ';' +
-    'background:rgba(0,0,0,0.22);">' +
-    '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:6px;">' +
-    '<span style="font-size:13px;color:' + BATTLE_TEXT + ';line-height:1.25;">' + esc(row.name) + '</span>' +
-    '<span style="font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:' + fateColor + ';flex:none;">' +
-    fateLabel + '</span></div>' +
-    '<div style="height:6px;border-radius:4px;overflow:hidden;position:relative;background:rgba(255,255,255,.08);margin-bottom:5px;">' +
-    '<div style="position:absolute;inset:0;width:' + row.hpBeforePct + '%;background:rgba(255,255,255,.12);border-radius:4px;"></div>' +
-    '<div style="position:absolute;left:0;top:0;bottom:0;width:' + afterW + '%;background:' + barGrad + ';border-radius:4px;"></div>' +
-    '</div>' +
-    '<div style="display:flex;justify-content:space-between;font-size:10px;color:' + BATTLE_TEXT_DIM + ';">' +
-    '<span>' + hpTxt + '</span>' +
-    '<span style="font-weight:700;color:' + lossColor + ';">' + lossTxt + '</span>' +
-    '</div></div>'
-  );
-}
-
-function unitRosterBlock(
-  units: EndDetailsUnitHpRow[] | undefined,
-  accent: string,
-  barGrad: string,
-): string {
-  if (!units?.length) return '';
-  const rows = units.map(u => unitHpRowHtml(u, barGrad)).join('');
-  return (
-    '<div style="margin-top:20px;padding-top:16px;border-top:1px solid rgba(255,255,255,0.08);">' +
-    '<div style="font-size:11px;letter-spacing:0.16em;text-transform:uppercase;color:' + accent + ';margin-bottom:10px;">' +
-    'Stan jednostek \u00B7 ' + units.length + '</div>' +
-    '<div style="max-height:min(42vh,360px);overflow-y:auto;padding-right:4px;">' +
-    rows +
-    '</div></div>'
-  );
-}
-
-function sideColumn(
-  label: string,
-  accent: string,
-  border: string,
-  bg: string,
-  barGrad: string,
-  f: EndDetailsSideFates,
-): string {
-  return (
-    '<div style="flex:1;min-width:min(360px,44vw);max-width:460px;' +
-    'border:2px solid ' + border + ';border-radius:12px;background:' + bg + ';padding:22px 20px;">' +
-    '<div style="font-family:' + BATTLE_FONT_TITLE + ';font-size:22px;letter-spacing:0.14em;' +
-    'text-transform:uppercase;color:' + accent + ';text-align:center;margin-bottom:18px;' +
-    'padding-bottom:12px;border-bottom:1px solid rgba(255,255,255,0.08);">' +
-    esc(label) + '</div>' +
-    fateBlock('Zniszczone', '#ff7b7b', f.destroyed) +
-    fateBlock('Zrootowane', '#ffd54a', f.routed) +
-    fateBlock('Ocalałe', '#7ad0a0', f.survived) +
-    unitRosterBlock(f.units, accent, barGrad) +
+    '<div class="tnum" style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;' +
+    'background:' + bg + ';border:1px solid ' + border + ';">' +
+    '<span style="color:' + iconColor + ';display:inline-flex;line-height:0;flex-shrink:0;">' + icon + '</span>' +
+    '<span style="flex:1;min-width:0;font-size:13px;color:' + BATTLE_TEXT + ';overflow:hidden;' +
+    'text-overflow:ellipsis;white-space:nowrap;">' + esc(u.name) + '</span>' +
+    '<span style="font-size:12px;color:' + color + ';white-space:nowrap;flex-shrink:0;">' + right + '</span>' +
     '</div>'
   );
+}
+
+function sectionHtml(fate: EndDetailsUnitFate, units: readonly EndDetailsUnitRow[]): string {
+  const meta = FATE_META[fate];
+  const rows = units.filter(u => u.fate === fate);
+  const header =
+    '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">' +
+    '<span style="width:10px;height:10px;border-radius:3px;background:' + meta.color + ';flex-shrink:0;"></span>' +
+    '<span style="font:700 11px ' + BATTLE_FONT + ';letter-spacing:0.14em;text-transform:uppercase;' +
+    'white-space:nowrap;color:' + meta.color + ';">' + meta.label + ' · ' + rows.length + '</span>' +
+    '<span style="flex:1;height:1px;background:' + hexToRgba(meta.color, 0.2) + ';"></span>' +
+    '</div>';
+  const body = rows.length
+    ? '<div style="display:flex;flex-direction:column;gap:6px;">' + rows.map(u => unitRowHtml(u, meta.color)).join('') + '</div>'
+    : '<div style="font-size:11px;color:' + BATTLE_TEXT_DIM + ';font-style:italic;padding:2px 12px;">Brak</div>';
+  return '<div>' + header + body + '</div>';
+}
+
+/** Kolumna ATK/OBR: nagłówek dowódcy (medalion + civ + rola + suma ludzi) + sekcje. */
+function buildSideColumn(side: 'atk' | 'def', data: EndDetailsSideData, isWinner: boolean): HTMLDivElement {
+  const isAtk = side === 'atk';
+  const sideColor = isAtk ? BATTLE_PLAYER : BATTLE_ENEMY;
+  const sideTextColor = isAtk ? BATTLE_PLAYER_TEXT : BATTLE_ENEMY_TEXT;
+
+  const col = document.createElement('div');
+  Object.assign(col.style, {
+    display: 'flex',
+    flexDirection: 'column',
+    overflow: 'hidden',
+    minHeight: '0',
+    borderRight: isAtk ? '1px solid rgba(232,216,138,0.18)' : 'none',
+  });
+
+  const hdr = document.createElement('div');
+  Object.assign(hdr.style, {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '12px',
+    padding: '14px 24px',
+    borderBottom: '1px solid rgba(232,216,138,0.16)',
+    flexShrink: '0',
+    background: isAtk
+      ? 'linear-gradient(90deg,rgba(58,106,208,0.12),transparent)'
+      : 'linear-gradient(-90deg,rgba(200,64,64,0.12),transparent)',
+  });
+  const afterColor = isWinner ? '#7ad0a0' : '#ff7b7b';
+  hdr.innerHTML =
+    '<span style="width:40px;height:40px;border-radius:50%;flex-shrink:0;' +
+    'background:' + (isAtk ? 'radial-gradient(circle at 38% 30%,#22314c,#0c1626)' : 'radial-gradient(circle at 38% 30%,#3a1c1c,#160a0a)') + ';' +
+    'border:2px solid ' + sideColor + ';display:flex;align-items:center;justify-content:center;' +
+    'color:' + sideTextColor + ';line-height:0;">' + resizeSvg(PB_SVG.commander, 20) + '</span>' +
+    '<div style="flex:1;min-width:0;">' +
+    '<div style="font-family:' + BATTLE_FONT_TITLE + ';font-size:16px;color:' + (isAtk ? '#cfe0f4' : '#f0c8c8') + ';' +
+    'overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + esc(data.civLabel) + '</div>' +
+    '<div style="font-size:10px;color:' + BATTLE_TEXT_DIM + ';letter-spacing:0.06em;text-transform:uppercase;">' +
+    esc(data.roleLabel) + '</div></div>' +
+    '<div class="tnum" style="text-align:right;flex-shrink:0;">' +
+    '<div style="font:700 15px ' + BATTLE_FONT + ';color:' + BATTLE_TEXT + ';">' +
+    data.totalBefore + ' → <b style="color:' + afterColor + ';">' + data.totalAfter + '</b></div>' +
+    '<div style="font-size:10px;color:' + BATTLE_TEXT_DIM + ';">ludzi po bitwie</div></div>';
+  col.appendChild(hdr);
+
+  const scroll = document.createElement('div');
+  Object.assign(scroll.style, {
+    flex: '1',
+    overflowY: 'auto',
+    overflowX: 'hidden',
+    padding: '16px 24px',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '16px',
+    minHeight: '0',
+  });
+  scroll.innerHTML = FATE_ORDER.map(f => sectionHtml(f, data.units)).join('');
+  col.appendChild(scroll);
+
+  return col;
 }
 
 /** Ponad ekranem końca walki (endScreen1E = 100500). */
 const END_DETAILS_Z = '100530';
 
-/** Pełny breakdown bitwy — overlay C-12, otwierany z ekranu końca walki. */
+/** C-23 — pełny breakdown bitwy, otwierany z „Szczegóły bitwy" na ekranie końca (C-12). */
 export function showEndDetails1E(
   _overlay: HTMLElement,
   p: EndDetails1EParams,
@@ -183,94 +192,98 @@ export function showEndDetails1E(
     position: 'fixed',
     inset: '0',
     zIndex: END_DETAILS_Z,
-    background: 'radial-gradient(1100px 800px at 50% 30%, rgba(232,216,138,0.08), transparent 60%), rgba(4,8,18,0.88)',
-    boxShadow: 'inset 0 0 300px 90px rgba(0,0,0,0.75)',
+    background: 'rgba(5,7,10,0.62)',
+    backdropFilter: 'blur(3px)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
     fontFamily: BATTLE_FONT,
     color: BATTLE_TEXT,
-    overflowY: 'auto',
-    textAlign: 'center',
   });
 
-  const titleLine = p.battleTitle ?? 'Pełny stan oddziałów po zakończeniu starcia';
+  const vignette = document.createElement('div');
+  Object.assign(vignette.style, {
+    position: 'absolute', inset: '0',
+    boxShadow: 'inset 0 0 260px 110px rgba(0,0,0,0.7)',
+    pointerEvents: 'none',
+  });
+  back.appendChild(vignette);
 
+  const panel = document.createElement('div');
+  Object.assign(panel.style, {
+    position: 'relative',
+    width: 'min(1220px, 96vw)',
+    maxHeight: 'min(950px, 92vh)',
+    display: 'flex',
+    flexDirection: 'column',
+    borderRadius: '18px',
+    border: `2px solid ${BATTLE_PANEL_BORDER}`,
+    background: 'linear-gradient(180deg,rgba(20,26,36,0.94),rgba(8,10,16,0.96))',
+    boxShadow: '0 30px 80px rgba(0,0,0,0.8)',
+    overflow: 'hidden',
+  });
+
+  const resultColor = p.playerWon ? BATTLE_PLAYER_TEXT : BATTLE_ENEMY_TEXT;
   const head = document.createElement('div');
-  head.style.cssText = 'position:relative;padding:72px 24px 0;';
+  Object.assign(head.style, {
+    padding: '20px 28px 16px',
+    borderBottom: '1px solid rgba(232,216,138,0.22)',
+    background: 'linear-gradient(90deg,rgba(232,216,138,0.08),transparent 40%,transparent 60%,rgba(232,216,138,0.08))',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '16px',
+    flexShrink: '0',
+  });
   head.innerHTML =
-    '<div style="font-size:14px;letter-spacing:0.5em;text-transform:uppercase;color:#a08030;margin-bottom:10px;">' +
-    esc(titleLine) + '</div>' +
-    '<h2 style="font-family:' + BATTLE_FONT_TITLE + ';font-weight:400;font-size:56px;letter-spacing:0.12em;' +
-    'margin:0;color:' + BATTLE_GOLD + ';text-shadow:0 2px 20px rgba(0,0,0,0.7),0 0 40px rgba(232,216,138,0.15);">' +
-    'Szczeg\u00F3\u0142y bitwy</h2>' +
-    '<div style="display:flex;align-items:center;justify-content:center;gap:16px;margin-top:18px;">' +
-    '<span style="height:1px;width:min(150px,18vw);background:linear-gradient(90deg,transparent,#a08030);"></span>' +
-    '<span style="color:#a08030;">◆</span>' +
-    '<span style="height:1px;width:min(150px,18vw);background:linear-gradient(90deg,#a08030,transparent);"></span>' +
-    '</div>';
-  back.appendChild(head);
-
-  const cols = document.createElement('div');
-  cols.innerHTML =
-    sideColumn(
-      p.atkLabel ?? 'Atakuj\u0105cy',
-      BATTLE_PLAYER_TEXT,
-      'rgba(90,155,212,0.4)',
-      'linear-gradient(180deg,rgba(18,26,40,0.96),rgba(8,12,20,0.96))',
-      'linear-gradient(90deg,#3a6ad0,#5a9bd4)',
-      p.atk,
-    ) +
-    sideColumn(
-      p.defLabel ?? 'Obro\u0144ca',
-      BATTLE_ENEMY_TEXT,
-      'rgba(200,64,64,0.4)',
-      'linear-gradient(180deg,rgba(26,14,14,0.96),rgba(14,8,8,0.96))',
-      'linear-gradient(90deg,#c05050,#8a3a3a)',
-      p.def,
-    );
-  Object.assign(cols.style, {
-    display: 'flex',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
-    gap: '18px',
-    alignItems: 'stretch',
-    padding: '36px 24px 120px',
-    maxWidth: '980px',
-    margin: '0 auto',
-    boxSizing: 'border-box',
-  });
-  back.appendChild(cols);
-
-  const btnRow = document.createElement('div');
-  Object.assign(btnRow.style, {
-    position: 'sticky',
-    bottom: '0',
-    left: '0',
-    right: '0',
-    display: 'flex',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
-    gap: '14px',
-    padding: '20px 24px 32px',
-    background: 'linear-gradient(180deg, transparent, rgba(4,8,18,0.95) 35%)',
-  });
+    '<span style="width:44px;height:44px;border-radius:50%;flex-shrink:0;' +
+    'background:radial-gradient(circle at 38% 30%,#2a2416,#12100a);border:2px solid ' + BATTLE_GOLD + ';' +
+    'display:flex;align-items:center;justify-content:center;color:#f4e6a8;line-height:0;">' +
+    resizeSvg(PB_SVG.commander, 22) + '</span>' +
+    '<div style="flex:1;min-width:0;">' +
+    '<div style="font-family:' + BATTLE_FONT_TITLE + ';font-size:24px;color:' + BATTLE_GOLD + ';line-height:1.1;">' +
+    'Szczegóły bitwy</div>' +
+    '<div class="tnum" style="font-size:12px;color:' + BATTLE_TEXT_DIM + ';margin-top:3px;">' +
+    esc(p.battleSubtitle) + ' · <b style="color:' + resultColor + ';">' + esc(p.resultLabel) + '</b></div></div>';
+  panel.appendChild(head);
 
   const btnClose = document.createElement('button');
   btnClose.type = 'button';
-  btnClose.textContent = '\u2190 Wr\u00F3\u0107 do podsumowania';
-  applyBtnOutline(btnClose);
-  Object.assign(btnClose.style, { padding: '14px 28px', fontSize: '12px', minWidth: '220px' });
+  btnClose.textContent = 'Wróć do podsumowania';
+  Object.assign(btnClose.style, {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '8px',
+    height: '38px',
+    padding: '0 18px',
+    borderRadius: '8px',
+    border: '2px solid rgba(232,216,138,0.4)',
+    background: 'linear-gradient(180deg,#161c28,#0a0d14)',
+    color: BATTLE_GOLD,
+    fontFamily: BATTLE_FONT,
+    fontSize: '11px',
+    fontWeight: '600',
+    letterSpacing: '0.1em',
+    textTransform: 'uppercase',
+    cursor: 'pointer',
+    flexShrink: '0',
+    whiteSpace: 'nowrap',
+  });
   btnClose.onclick = () => cb.onClose();
-  btnRow.appendChild(btnClose);
+  head.appendChild(btnClose);
 
-  if (cb.onReplay) {
-    const btnReplay = document.createElement('button');
-    btnReplay.type = 'button';
-    btnReplay.textContent = 'Rozegraj ponownie';
-    applyBtnPrimary(btnReplay);
-    btnReplay.onclick = () => cb.onReplay!();
-    btnRow.appendChild(btnReplay);
-  }
+  const body = document.createElement('div');
+  Object.assign(body.style, {
+    flex: '1',
+    display: 'grid',
+    gridTemplateColumns: '1fr 1fr',
+    overflow: 'hidden',
+    minHeight: '0',
+  });
+  body.appendChild(buildSideColumn('atk', p.atk, p.playerWon));
+  body.appendChild(buildSideColumn('def', p.def, !p.playerWon));
+  panel.appendChild(body);
 
-  back.appendChild(btnRow);
+  back.appendChild(panel);
   document.body.appendChild(back);
   return back;
 }

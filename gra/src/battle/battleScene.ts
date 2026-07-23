@@ -106,6 +106,10 @@ import {
   applyRosterPanel1E,
   applySelectionActionBtn1E,
   applyToolbarBtn1E,
+  applyToolbarIconBtn1E,
+  applyDeployDropdownPanel1E,
+  wrapWithHoverTooltip1E,
+  DEPLOY_TOOLBAR_MAIN_SVG,
   applyTopBar1E,
   applyUnitCardIconCircle,
   groupBtnLabelHtml,
@@ -137,7 +141,6 @@ import {
   rosterCardBaseStyle,
   rosterRowAccent,
   applyTwRosterTrayStyle,
-  applyTwGroupTabStyle,
   applyRosterGridStyle,
   computeRosterGridMetrics,
   applyBattleRosterScrollbar,
@@ -183,6 +186,12 @@ import {
 } from './battleHudTheme';
 import { civIconSvg } from '../ui/icons/brandAssets';
 import { showEndScreen1E } from './endScreen1E';
+import {
+  showEndDetails1E,
+  type EndDetails1EParams,
+  type EndDetailsSideData,
+  type EndDetailsUnitRow,
+} from './endDetails1E';
 import { buildPostBattleSummary } from '../game/battle-summary';
 import type { BattleSummaryWinner, BattleUnitBeforeSnap } from '../game/battle-summary';
 import {
@@ -1813,6 +1822,8 @@ export class BattleScene {
   private _deployToolbarDocClick: ((e: MouseEvent) => void) | null = null;
   /** Płaski pasek formacji + akcji nad rosterem. */
   private _deployToolbar: HTMLDivElement | null = null;
+  /** Separator 1px miedzy ikonami Formacja..Strategia a Reset/Start (ukryty w walce). */
+  private _deployToolbarSep: HTMLSpanElement | null = null;
   /** Podpowiedz w pasku deploy (legacy — feedback w rosterze). */
   private _deployHint: HTMLDivElement | null = null;
   /** Lewy panel: licznik rozstawionych jednostek. */
@@ -9925,7 +9936,7 @@ export class BattleScene {
       fmtPopup.appendChild(ob);
     }
     center.appendChild(this._makeDeployToolbarDropdown(
-      'Formacja', 'formation', fmtPopup,
+      'Formacja', 'formation', fmtPopup, DEPLOY_TOOLBAR_MAIN_SVG.formation,
     ));
     this._deployFmtRow = center;
 
@@ -9955,7 +9966,7 @@ export class BattleScene {
       cavPopup.appendChild(ob);
     }
     center.appendChild(this._makeDeployToolbarDropdown(
-      'Konnica', 'cavalry', cavPopup, FMT_SVG.cavHelm,
+      'Konnica', 'cavalry', cavPopup, DEPLOY_TOOLBAR_MAIN_SVG.cavalry,
     ));
     this._deployCavRow = center;
 
@@ -9963,24 +9974,33 @@ export class BattleScene {
     linesPopup.id = 'deploy-lines-popup';
     Object.assign(linesPopup.style, { minWidth: '240px' });
     center.appendChild(this._makeDeployToolbarDropdown(
-      'Linie', 'lines', linesPopup,
+      'Linie', 'lines', linesPopup, DEPLOY_TOOLBAR_MAIN_SVG.lines,
     ));
 
     const tacticsPopup = document.createElement('div');
     tacticsPopup.id = 'deploy-tactics-popup';
     Object.assign(tacticsPopup.style, { minWidth: '300px' });
     center.appendChild(this._makeDeployToolbarDropdown(
-      'Taktyka', 'tactics', tacticsPopup,
+      'Taktyka', 'tactics', tacticsPopup, DEPLOY_TOOLBAR_MAIN_SVG.tactics,
     ));
 
     const stratPopup = document.createElement('div');
     stratPopup.id = 'deploy-strategy-popup';
     Object.assign(stratPopup.style, { minWidth: '360px', maxWidth: '360px' });
     center.appendChild(this._makeDeployToolbarDropdown(
-      'Strategia', 'strategy', stratPopup,
+      'Strategia', 'strategy', stratPopup, STRATEGY_HEADER_SVG,
     ));
 
     bar.appendChild(center);
+
+    // Separator 1px (makieta TW v5 §8) — oddziela ikony Formacja..Strategia od Reset/Start.
+    const toolbarSep = document.createElement('span');
+    Object.assign(toolbarSep.style, {
+      width: '1px', height: '34px', background: 'rgba(232,216,138,0.2)',
+      margin: '0 2px', flexShrink: '0',
+    });
+    bar.appendChild(toolbarSep);
+    this._deployToolbarSep = toolbarSep;
 
     const actionRow = document.createElement('div');
     Object.assign(actionRow.style, {
@@ -9992,17 +10012,17 @@ export class BattleScene {
     const btnReset = document.createElement('button');
     btnReset.id = 'deploy-toolbar-reset';
     btnReset.type = 'button';
-    applyToolbarBtn1E(btnReset);
+    applyToolbarIconBtn1E(btnReset);
     btnReset.style.color = '#c8b898';
     btnReset.style.borderColor = 'rgba(232,216,138,0.25)';
-    btnReset.innerHTML = FMT_SVG.reset + ' Reset';
+    btnReset.innerHTML = FMT_SVG.reset;
     btnReset.onclick = (e) => {
       e.stopPropagation();
       this._resetDeployAttacker();
       this._showDeployFeedback('Jednostki przywr\u00F3cone do domy\u015Blnego rozstawienia.');
       this._updateDeployToolbarStatus();
     };
-    actionRow.appendChild(btnReset);
+    actionRow.appendChild(wrapWithHoverTooltip1E(btnReset, 'Reset rozstawienia', 'above'));
 
     const btnStart = document.createElement('button');
     btnStart.id = 'deploy-toolbar-start';
@@ -10013,7 +10033,7 @@ export class BattleScene {
     btnStart.style.padding = '0 34px';
     btnStart.style.fontSize = '14px';
     btnStart.style.boxShadow = 'inset 0 1px 0 rgba(255,255,255,0.25),0 6px 20px rgba(200,64,64,0.4)';
-    btnStart.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 5 19 12 8 19Z"/></svg>Start walki';
+    btnStart.innerHTML = '<span style="display:inline-flex;line-height:0;">' + FMT_SVG.start + '</span>Start walki';
     btnStart.onclick = (e) => { e.stopPropagation(); this._endDeployPhase(); };
     actionRow.appendChild(btnStart);
 
@@ -10053,30 +10073,28 @@ export class BattleScene {
     Object.assign(popup.style, {
       position: 'absolute', bottom: '100%', left: '50%', transform: 'translateX(-50%)',
       marginBottom: '8px', display: 'none', flexDirection: 'column', gap: '8px',
-      padding: '12px 14px', borderRadius: '8px', zIndex: '100210',
-      background: 'linear-gradient(180deg,rgba(32,26,14,.98),rgba(18,14,8,.98))',
-      border: `1px solid ${BATTLE_GOLD_DIM}`,
-      boxShadow: '0 -4px 20px rgba(0,0,0,0.55)',
+      padding: '12px 14px', zIndex: '100210',
       pointerEvents: 'auto',
     });
+    applyDeployDropdownPanel1E(popup);
     popup.appendChild(popupBody);
     this._deployDropdownPopups[key] = popup;
 
+    // Dolny toolbar = WYŁĄCZNIE ikony (makieta TW v5 §8) — podpis tylko na hover
+    // (pigułka 1E), nie w treści przycisku.
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.dataset.deployMainBtn = key;
-    applyToolbarBtn1E(btn);
-    btn.style.minWidth = '84px';
-    btn.innerHTML = toolbarIcon
-      ? `<span style="display:inline-flex;line-height:0;">${toolbarIcon}</span>${label}`
-      : label;
+    applyToolbarIconBtn1E(btn);
+    btn.innerHTML = toolbarIcon ?? label;
     btn.addEventListener('click', (e) => {
       e.stopPropagation();
       this._toggleDeployDropdown(key);
     });
+    const btnWithTip = wrapWithHoverTooltip1E(btn, label, 'above');
 
     wrap.appendChild(popup);
-    wrap.appendChild(btn);
+    wrap.appendChild(btnWithTip);
     return wrap;
   }
 
@@ -10111,12 +10129,7 @@ export class BattleScene {
         `button[data-deploy-main-btn="${key}"]`,
       ) as HTMLButtonElement | null;
       if (!btn) return;
-      Object.assign(btn.style, {
-        border: open ? `2px solid ${BATTLE_GOLD}` : `1px solid ${BATTLE_GOLD_DIM}`,
-        background: open ? 'rgba(232,216,138,0.22)' : 'rgba(255,255,255,0.04)',
-        color: open ? '#fff8dc' : BATTLE_GOLD,
-        boxShadow: open ? '0 0 10px rgba(232,216,138,0.35)' : 'none',
-      });
+      applyToolbarIconBtn1E(btn, open);
     };
     paint('formation', this._deployOpenDropdown === 'formation');
     paint('cavalry', this._deployOpenDropdown === 'cavalry');
@@ -11575,8 +11588,9 @@ export class BattleScene {
     }
     const resetBtn = document.getElementById('deploy-toolbar-reset');
     const startBtn = document.getElementById('deploy-toolbar-start');
-    if (resetBtn) resetBtn.style.display = battleOnly ? 'none' : '';
+    if (resetBtn?.parentElement) resetBtn.parentElement.style.display = battleOnly ? 'none' : '';
     if (startBtn) startBtn.style.display = battleOnly ? 'none' : '';
+    if (this._deployToolbarSep) this._deployToolbarSep.style.display = battleOnly ? 'none' : '';
 
     if (showToolbar) {
       this._syncDeployToolbarOffset();

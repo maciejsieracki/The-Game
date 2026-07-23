@@ -74,6 +74,100 @@ export function applyToolbarBtn1E(el: HTMLButtonElement, active = false): void {
   });
 }
 
+/**
+ * Dolny toolbar — przycisk WYŁĄCZNIE ikonowy 46×46 (makieta TW v5 §8: Formacja/
+ * Konnica/Linie/Taktyka/Strategia/Reset). Podpis żyje w pigułce hover
+ * (wrapWithHoverTooltip1E), nie w treści przycisku.
+ */
+export function applyToolbarIconBtn1E(el: HTMLButtonElement, active = false): void {
+  Object.assign(el.style, {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '46px',
+    height: '46px',
+    padding: '0',
+    flexShrink: '0',
+    borderRadius: '9px',
+    border: active ? '2px solid #e8d88a' : '2px solid rgba(232,216,138,0.4)',
+    background: 'linear-gradient(180deg,#161c28,#0a0d14)',
+    color: active ? '#f4e6a8' : BATTLE_GOLD,
+    cursor: 'pointer',
+    lineHeight: '0',
+    boxShadow: active ? '0 0 10px rgba(232,216,138,0.3)' : 'none',
+    transition: 'border-color 0.12s, box-shadow 0.12s, color 0.12s',
+  });
+}
+
+const HUD_TOOLTIP_STYLE_ID = 'civ-battle-hud-tooltip-styles';
+
+/** Wstrzykuje CSS pigułki podpisu na hover (1E) — czysty hover, bez JS. */
+export function injectHudTooltipStyles(): void {
+  if (document.getElementById(HUD_TOOLTIP_STYLE_ID)) return;
+  const style = document.createElement('style');
+  style.id = HUD_TOOLTIP_STYLE_ID;
+  style.textContent = `
+    .civ-hud-tip { position: relative; display: inline-flex; }
+    .civ-hud-tip > .civ-hud-tip-lbl { position: absolute; opacity: 0; pointer-events: none; transition: opacity .12s; z-index: 20; }
+    .civ-hud-tip:hover > .civ-hud-tip-lbl { opacity: 1; }
+  `;
+  document.head.appendChild(style);
+}
+
+/**
+ * Owija element (zwykle ikonowy przycisk) w kontener z pigułką podpisu, widoczną
+ * TYLKO na hover — mockup 1E (roster filtry / dyplomacja): tło rgba(8,10,16,.96),
+ * border złoty .45, tekst złoty 9px uppercase, ~8px odstępu od wrappera.
+ */
+export function wrapWithHoverTooltip1E(
+  el: HTMLElement,
+  label: string,
+  placement: 'above' | 'below' = 'above',
+): HTMLSpanElement {
+  injectHudTooltipStyles();
+  const wrap = document.createElement('span');
+  wrap.className = 'civ-hud-tip';
+  const pill = document.createElement('span');
+  pill.className = 'civ-hud-tip-lbl';
+  pill.textContent = label;
+  Object.assign(pill.style, {
+    left: '50%',
+    transform: 'translateX(-50%)',
+    background: 'rgba(8,10,16,0.96)',
+    border: '1px solid rgba(232,216,138,0.45)',
+    color: '#e8d88a',
+    padding: '3px 8px',
+    borderRadius: '6px',
+    font: '700 9px ' + BATTLE_FONT,
+    letterSpacing: '0.06em',
+    textTransform: 'uppercase',
+    boxShadow: '0 4px 12px rgba(0,0,0,0.55)',
+    whiteSpace: 'nowrap',
+  });
+  if (placement === 'above') pill.style.bottom = 'calc(100% + 8px)';
+  else pill.style.top = 'calc(100% + 8px)';
+  wrap.appendChild(el);
+  wrap.appendChild(pill);
+  return wrap;
+}
+
+/** Ikony przycisków głównych dolnego toolbara — 1:1 wg makiety TW v5 (klatka 3). */
+export const DEPLOY_TOOLBAR_MAIN_SVG = {
+  formation:
+    '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">' +
+    '<path d="M4 7h16M4 12h16M4 17h16"/></svg>',
+  cavalry:
+    '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">' +
+    '<path d="M7 20c-2-2.6-3-5.6-3-8.2a8 8 0 0 1 16 0c0 2.6-1 5.6-3 8.2"/>' +
+    '<path d="M8.7 8.4v.01M15.3 8.4v.01M6.7 12.2v.01M17.3 12.2v.01"/></svg>',
+  lines:
+    '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">' +
+    '<path d="M4 8h16M4 12h16M4 16h16"/></svg>',
+  tactics:
+    '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">' +
+    '<circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></svg>',
+} as const;
+
 /** Prawy rail 56px — klasa .rail-b z C06 v4. */
 export function applyRailBtn1E(
   el: HTMLButtonElement,
@@ -109,15 +203,35 @@ export function applyRailBtn1E(
   });
 }
 
-/** Kontener dolnego toolbara deploy (C06 v4). */
+/**
+ * Kontener dolnego toolbara deploy/walka — ~70% + blur wg makiety TW v5 (§1/§8:
+ * `rgba(20,26,38,.72)/rgba(8,10,16,.74)` + `blur(7px)`, teren widoczny pod HUD-em).
+ */
 export function applyDeployToolbarBar(el: HTMLElement): void {
   Object.assign(el.style, {
-    background: 'linear-gradient(180deg,rgba(20,26,38,.96),rgba(8,10,16,.97))',
+    background: 'linear-gradient(180deg,rgba(20,26,38,0.72),rgba(8,10,16,0.74))',
+    backdropFilter: 'blur(7px)',
     border: '2px solid rgba(232,216,138,0.4)',
     borderRadius: '14px',
-    boxShadow: '0 12px 30px rgba(0,0,0,0.6)',
+    boxShadow: '0 12px 30px rgba(0,0,0,0.55)',
     fontFamily: BATTLE_FONT,
     padding: '12px 16px',
+  });
+}
+
+/**
+ * Popup dropdown dolnego toolbara (Formacja/Konnica/Linie/Taktyka/Strategia) —
+ * ~80% + blur (mniej przezroczysty niż panele-ramy, bo to overlay NAD toolbarem
+ * wymagający czytelności treści; wciąż zgodny z duchem §1: teren delikatnie
+ * prześwituje). Zastępuje dawne pełne krycie `.98/.98` bez blur.
+ */
+export function applyDeployDropdownPanel1E(el: HTMLElement): void {
+  Object.assign(el.style, {
+    background: 'linear-gradient(180deg,rgba(32,26,14,0.85),rgba(18,14,8,0.88))',
+    backdropFilter: 'blur(8px)',
+    border: `1px solid ${BATTLE_GOLD_DIM}`,
+    borderRadius: '8px',
+    boxShadow: '0 -4px 20px rgba(0,0,0,0.5)',
   });
 }
 
