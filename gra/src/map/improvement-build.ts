@@ -65,6 +65,14 @@ export interface ImprovementBuildState {
   clearingHexKeys?: ReadonlySet<string>;
   /** Id pending w tej turze (`hexKey:improvementKey`) — ponowny klik = cofnięcie. */
   pendingUndoKeys?: ReadonlySet<string>;
+  /**
+   * Temat #4 (Handel E3b): gracz ma aktywny grant "z trasy handlowej" na Konia
+   * (partner ma odblokowaną Stadninę u siebie) — traktowane tak samo jak własne
+   * empireUnlocks.has('kon') (stadnina bez wymogu złoża konia). Liczone przez
+   * wołającego (main.ts: hasTradeRouteResourceAccess(tradeRouteResourceGrants,
+   * playerOwnerIdNum, 'kon')) — ten moduł nie zna tras handlowych.
+   */
+  tradeRouteKonUnlocked?: boolean;
 }
 
 export interface ImprovementTypeInfo {
@@ -396,6 +404,10 @@ function createQualifier(state: ImprovementBuildState) {
     map,
     state.playerOwnerId,
   );
+  // Temat #4: grant "z trasy handlowej" dolicza się do własnego odblokowania —
+  // OR, nie substytut (własny grant zawsze wygrywa, trasa tylko dokłada 'kon'
+  // gdy jeszcze go nie ma).
+  if (state.tradeRouteKonUnlocked) empireUnlocks.add('kon');
 
   function inPlayerTerritory(q: number, r: number): boolean {
     return isPlayerTerritoryHex(q, r, cityNodes, territoryNodes, playerOwnerIdNum);

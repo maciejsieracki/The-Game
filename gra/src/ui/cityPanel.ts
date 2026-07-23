@@ -266,8 +266,17 @@ export interface CityPanelConfig {
   onBudowaFocusChange?: (cityId: string, focus: BudowaFocus) => void;
   onBudowaEnterManual?: (cityId: string) => void;
   onArtView?: (cityId: string) => void;
-  /** Surowce w zasięgu: aktywny dostęp (legacy string[]) lub split ABC-19 { potential, active }. */
-  getResourceAccess?: (cityId: string) => string[] | { potential: string[]; active: string[] };
+  /**
+   * Surowce w zasięgu: aktywny dostęp (legacy string[]) lub split ABC-19 { potential, active }.
+   * Temat #4 (Handel E3b): opcjonalny `tradeSources` — mapa etykieta -> opis źródła
+   * (np. "szlak handlowy z Rzym"), gdy dostęp do tej etykiety pochodzi (częściowo lub
+   * całkowicie) z aktywnej trasy handlowej, nie z własnej infrastruktury.
+   */
+  getResourceAccess?: (cityId: string) => string[] | {
+    potential: string[];
+    active: string[];
+    tradeSources?: Record<string, string>;
+  };
   /** Union aktywnych etykiet surowców imperium (bramki epok B-SUROW-BUD). */
   getEmpireResourceAccess?: (ownerId: number) => string[];
   /** Union id budynków imperium (bramka cegła/ceramika). */
@@ -2375,29 +2384,39 @@ function buildZdrowieDetailCard(
   return card;
 }
 
-function normalizeResourceAccess(raw: string[] | { potential: string[]; active: string[] } | undefined): {
+function normalizeResourceAccess(
+  raw: string[] | { potential: string[]; active: string[]; tradeSources?: Record<string, string> } | undefined,
+): {
   potential: string[];
   active: string[];
   legacy: boolean;
+  tradeSources: Record<string, string>;
 } {
-  if (!raw) return { potential: [], active: [], legacy: false };
-  if (Array.isArray(raw)) return { potential: [], active: raw, legacy: true };
-  return { potential: raw.potential ?? [], active: raw.active ?? [], legacy: false };
+  if (!raw) return { potential: [], active: [], legacy: false, tradeSources: {} };
+  if (Array.isArray(raw)) return { potential: [], active: raw, legacy: true, tradeSources: {} };
+  return {
+    potential: raw.potential ?? [],
+    active: raw.active ?? [],
+    legacy: false,
+    tradeSources: raw.tradeSources ?? {},
+  };
 }
 
 function appendSurowceGrid(
   parent: HTMLElement,
   labels: string[],
   mode: 'active' | 'potential',
+  tradeSources: Record<string, string> = {},
 ): void {
   if (labels.length === 0) return;
   const grid = el('div', 'civ-w4-surowce-grid');
   for (const nazwa of labels) {
     const row = el('span', `civ-w4-surowce-item ${mode}`);
+    const src = tradeSources[nazwa];
     row.title = mode === 'active'
-      ? `${nazwa} — dostęp aktywny (ulepszenie / bramka spełniona)`
+      ? (src ? `${nazwa} — dostęp aktywny (${src})` : `${nazwa} — dostęp aktywny (ulepszenie / bramka spełniona)`)
       : `${nazwa} — złoże w zasięgu (potencjał — zbuduj ulepszenie)`;
-    row.innerHTML = `${resourceBrandIconHtml(nazwa)}<span>${nazwa}</span>`;
+    row.innerHTML = `${resourceBrandIconHtml(nazwa)}<span>${nazwa}${src ? ' 🔗' : ''}</span>`;
     grid.appendChild(row);
   }
   parent.appendChild(grid);
@@ -2406,14 +2425,14 @@ function appendSurowceGrid(
 function renderSurowce(mount: HTMLElement, city: City): void {
   mount.innerHTML = '';
   const raw = cfg.getResourceAccess?.(city.id);
-  const { potential, active, legacy } = normalizeResourceAccess(raw);
+  const { potential, active, legacy, tradeSources } = normalizeResourceAccess(raw);
   const wrap = el('div', 'civ-w4-surowce-foot');
   const hd = el('div', 'civ-w4-surowce-hd');
   hd.innerHTML =
     '<span class="civ-w4-surowce-title">Surowce w zasięgu</span>' +
     '<span class="civ-w4-surowce-detail gold">i szczegóły</span>';
   wrap.appendChild(hd);
-  attachHoverDetail(hd, () => buildSurowceDetailCard(potential, active, legacy), 220);
+  attachHoverDetail(hd, () => buildSurowceDetailCard(potential, active, legacy, tradeSources), 220);
 
   const preview = ['Trzoda', 'Glina', 'Koń', 'Sól'];
   const hasSplit = raw !== undefined && !legacy;
@@ -2429,7 +2448,7 @@ function renderSurowce(mount: HTMLElement, city: City): void {
       const subA = el('div', 'civ-w4-surowce-sub');
       subA.textContent = 'Dostęp aktywny';
       wrap.appendChild(subA);
-      appendSurowceGrid(wrap, active, 'active');
+      appendSurowceGrid(wrap, active, 'active', tradeSources);
     }
     if (potential.length > 0) {
       const subP = el('div', 'civ-w4-surowce-sub');
@@ -2439,7 +2458,7 @@ function renderSurowce(mount: HTMLElement, city: City): void {
     }
   } else {
     const items = raw !== undefined ? active : preview;
-    appendSurowceGrid(wrap, items, 'active');
+    appendSurowceGrid(wrap, items, 'active', tradeSources);
   }
 
   if (raw === undefined) {
@@ -2456,6 +2475,7 @@ function buildSurowceDetailCard(
   potential: string[],
   active: string[],
   legacy: boolean,
+  tradeSources: Record<string, string> = {},
 ): HTMLDivElement {
   const card = el('div', 'detail-card');
   card.appendChild(el('div', 'dc-h', '<span>Surowce — szczegóły</span>'));
@@ -2463,12 +2483,15 @@ function buildSurowceDetailCard(
   intro.style.fontStyle = 'normal';
   intro.textContent = legacy
     ? 'Surowce na mapie w zasięgu miasta odblokowują budynki i bonusy (ikona = dostęp). v0.1: tylko boolean dostęp — ilości w wersji 2.0.'
-    : 'Potencjał (szare) = złoże widoczne w zasięgu — jeszcze nieużywalne. Dostęp aktywny = po ulepszeniu terenu na tym heksie (lub wyjątkach: tartak, kamieniołom, warzelnia na wybrzeżu, hodowla bez złoża). Brąz wymaga Popalni + Piec hutniczy.';
+    : 'Potencjał (szare) = złoże widoczne w zasięgu — jeszcze nieużywalne. Dostęp aktywny = po ulepszeniu terenu na tym heksie (lub wyjątkach: tartak, kamieniołom, warzelnia na wybrzeżu, hodowla bez złoża). Brąz wymaga Popalni + Piec hutniczy. 🔗 = dostęp (częściowo) z aktywnej trasy handlowej.';
   card.appendChild(intro);
   if (active.length > 0) {
     appendDetailSection(card, legacy ? 'Lista' : 'Dostęp aktywny');
     const g = appendDetailGrid(card);
-    for (const n of active) gridDetailRow(g, resourceBrandIconHtml(n), n);
+    for (const n of active) {
+      const src = tradeSources[n];
+      gridDetailRow(g, resourceBrandIconHtml(n), src ? `${n} — ${src}` : n);
+    }
   }
   if (!legacy && potential.length > 0) {
     appendDetailSection(card, 'Potencjał (złoże)');

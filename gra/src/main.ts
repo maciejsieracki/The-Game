@@ -228,6 +228,9 @@ import {
   refreshTradeRoutes,
   computeTradeRouteIncomeByCity,
   computeTradeRouteCountByCity,
+  computeTradeRouteResourceGrants,
+  hasTradeRouteResourceAccess,
+  firstTradeRouteResourceGrant,
   loadTradeRouteParams,
   loadTradeRouteIncomeParams,
   diffTradeRoutes,
@@ -238,7 +241,15 @@ import {
   type TradeRouteCityRef,
   type TradeRouteParams,
   type TradeRouteIncomeParams,
+  type TradeRouteResourceGrant,
+  type TradeRouteResourceKey,
 } from './game/trade-routes';
+import {
+  empireHasKopalniaMiedzi,
+  cityHasPiecHutniczy,
+  KOPALNIA_MIEDZI_KEY,
+} from './game/braz-access';
+import { computeEmpireLivestockUnlocks } from './game/livestock-unlock';
 import {
   createPlayerState,
   researchStep,
@@ -1460,6 +1471,16 @@ async function boot(): Promise<void> {
     /** Handel E3: liczba aktywnych tras per miasto (odswiezane razem z tradeRoutes) — wejście
      *  do UI (panel miasta E7) i do mnożnika Handlu (getCityBuildingFlags, cityYieldPerTurn). */
     let tradeRouteCountByCity: Map<string, number> = new Map();
+    /**
+     * Temat #4 (Handel E3b): granty dostępu do surowca civ-wide (braz/zelazo/kon)
+     * "z trasy handlowej" — CELOWO NIEZAPISYWANE w save (patrz trade-routes.ts,
+     * computeTradeRouteResourceGrants): czysta pochodna `tradeRoutes` + własnego
+     * dostępu obu stron, przeliczana funkcją recomputeTradeRouteResourceGrants()
+     * zaraz po każdym odświeżeniu `tradeRoutes` (koniec tury / wczytanie zapisu).
+     * Dzięki temu cofnięcie trasy (wojna/zerwanie/utrata połączenia) automatycznie
+     * cofa grant przy najbliższym przeliczeniu — bez osobnego mechanizmu dezaktywacji.
+     */
+    let tradeRouteResourceGrants: TradeRouteResourceGrant[] = [];
     const lastReligionSpreadByCity = new Map<string, number>();
     let _lastReligionSpreadTotal = 0;
 
@@ -2107,6 +2128,87 @@ async function boot(): Promise<void> {
       return out;
     }
 
+    // -------------------------------------------------------------------
+    // Temat #4 (Handel E3b): dostęp do surowca civ-wide (braz/zelazo/kon)
+    // przez trasę handlową — patrz trade-routes.ts computeTradeRouteResourceGrants
+    // dla architektury (liczone na bieżąco, nie zapisywane).
+    // -------------------------------------------------------------------
+
+    /** Klucz syntetycznego wpisu — patrz placedImprovementsWithBrazTradeGrant. */
+    const TRADE_GRANT_BRAZ_SYNTHETIC_KEY = '__trasa_braz__';
+
+    /**
+     * Czy WŁASNE imperium ownera ma dostęp do `key` BEZ handlu — wejście do
+     * computeTradeRouteResourceGrants (ownerHasNativeAccess). Świadomie NIE liczy
+     * grantów z trasy (są POCHODNĄ tego wyniku — liczenie ich tu byłoby cyklem)
+     * ani grantów z koszyka PN (zloze/surowiec_boolean, osobny, wcześniejszy temat).
+     */
+    function ownerHasNativeResourceAccess(ownerId: number, key: TradeRouteResourceKey): boolean {
+      const ownImprovements = placedImprovementsForOwner(ownerId);
+      if (key === 'braz') {
+        if (!empireHasKopalniaMiedzi(ownImprovements)) return false;
+        for (const c of cities) {
+          if (c.ownerId === ownerId && cityHasPiecHutniczy(cityBuilt.get(c.id) ?? [])) return true;
+        }
+        return false;
+      }
+      if (key === 'zelazo') {
+        const hasKopalniaZelazo = empireHasKopalniaNaZlozuZelaza(ownImprovements, map);
+        if (!hasKopalniaZelazo) return false;
+        for (const c of cities) {
+          if (c.ownerId === ownerId && hasZelazoAccess(hasKopalniaZelazo, cityBuilt.get(c.id) ?? [])) return true;
+        }
+        return false;
+      }
+      // 'kon'
+      return computeEmpireLivestockUnlocks(ownImprovements, map, String(ownerId)).has('kon');
+    }
+
+    /** Przelicza tradeRouteResourceGrants NA BIEŻĄCO z aktualnej `tradeRoutes` — wołaj
+     *  zaraz po każdym odświeżeniu tradeRoutes (koniec tury / wczytanie zapisu / reset). */
+    function recomputeTradeRouteResourceGrants(): void {
+      tradeRouteResourceGrants = computeTradeRouteResourceGrants(tradeRoutes, ownerHasNativeResourceAccess);
+    }
+
+    /**
+     * Kopiuje `ownImprovements` i (gdy `ownerId` ma aktywny grant "z trasy" na braz)
+     * dokleja syntetyczny wpis 'kopalnia_miedzi' pod nieistniejącym na mapie kluczem.
+     * BEZPIECZNE dokładnie dlatego, że empireHasKopalniaMiedzi (braz-access.ts) skanuje
+     * WYŁĄCZNIE wartości mapy — nigdy nie odwołuje się do heksa pod kluczem — więc ten
+     * wpis poprawnie symuluje "imperium ma miedź" bez fałszowania żadnego realnego
+     * heksa ani innych odczytów tej samej mapy (te zawsze filtrują `if (!map.hexes[hexKey])
+     * continue`, patrz empireHasKopalniaNaZlozuZelaza / computeEmpireLivestockUnlocks /
+     * resource-access.ts collectActiveAccess — syntetyczny klucz jest tam po prostu
+     * pomijany). Miasto nadal MUSI mieć własny Piec hutniczy — trasa daje surowiec
+     * (rudę), nie budynek (cityHasPiecHutniczy w hasBrazAccess bez zmian).
+     */
+    function placedImprovementsWithBrazTradeGrant(
+      ownerId: number,
+      ownImprovements: Map<string, PlacedLayers>,
+    ): Map<string, PlacedLayers> {
+      if (!hasTradeRouteResourceAccess(tradeRouteResourceGrants, ownerId, 'braz')) return ownImprovements;
+      const augmented = new Map(ownImprovements);
+      augmented.set(TRADE_GRANT_BRAZ_SYNTHETIC_KEY, [KOPALNIA_MIEDZI_KEY]);
+      return augmented;
+    }
+
+    /** empireHasKopalniaNaZlozuZelaza własne LUB grant "z trasy" na zelazo. */
+    function hasKopalniaNaZlozuZelazaOrTradeGrant(
+      ownerId: number,
+      ownImprovements: Map<string, PlacedLayers>,
+    ): boolean {
+      return empireHasKopalniaNaZlozuZelaza(ownImprovements, map)
+        || hasTradeRouteResourceAccess(tradeRouteResourceGrants, ownerId, 'zelazo');
+    }
+
+    /** UI: "źródło dostępu" dla panelu miasta — undefined gdy brak grantu z trasy. */
+    function tradeRouteResourceSourceLabel(ownerId: number, key: TradeRouteResourceKey): string | undefined {
+      const grant = firstTradeRouteResourceGrant(tradeRouteResourceGrants, ownerId, key);
+      if (!grant) return undefined;
+      const civName = civDisplayNameForOwner(grant.viaOwnerId) ?? `cywilizacja #${grant.viaOwnerId}`;
+      return `szlak handlowy z ${civName}`;
+    }
+
     function buildCapitalHexByOwner(): Map<number, { q: number; r: number }> {
       const map = new Map<number, { q: number; r: number }>();
       for (const c of cities) {
@@ -2701,8 +2803,11 @@ async function boot(): Promise<void> {
         builtBuildingIds: cityBuilt.get(city.id) ?? [],
         civBonusy: civBonusyForOwnerId(city.ownerId),
         civUnitNacja: unitNacjaForCivKey(civKeyForOwnerId(city.ownerId)),
-        placedImprovements: ownImprovements,
-        hasKopalniaNaZlozuZelaza: empireHasKopalniaNaZlozuZelaza(ownImprovements, map),
+        // Temat #4: grant "z trasy" dolicza się AND-owo (braz syntetycznie,
+        // zelazo OR-em) — patrz placedImprovementsWithBrazTradeGrant/
+        // hasKopalniaNaZlozuZelazaOrTradeGrant.
+        placedImprovements: placedImprovementsWithBrazTradeGrant(city.ownerId, ownImprovements),
+        hasKopalniaNaZlozuZelaza: hasKopalniaNaZlozuZelazaOrTradeGrant(city.ownerId, ownImprovements),
         // audyt #11: "Zastąp" nie może dać drugiej żywej Super-jednostka -- ta sama
         // bramka co productionCtxForCity (cityPanel.ts).
         aliveUnitTypeNames: new Set(units.filter(x => x.ownerId === city.ownerId).map(x => x.typeId)),
@@ -2729,8 +2834,8 @@ async function boot(): Promise<void> {
         builtBuildingIds: Array.from(builtUnion),
         civBonusy: civBonusyForOwnerId(0),
         civUnitNacja: unitNacjaForCivKey(civKeyForOwnerId(0)),
-        placedImprovements: ownImprovements,
-        hasKopalniaNaZlozuZelaza: empireHasKopalniaNaZlozuZelaza(ownImprovements, map),
+        placedImprovements: placedImprovementsWithBrazTradeGrant(0, ownImprovements),
+        hasKopalniaNaZlozuZelaza: hasKopalniaNaZlozuZelazaOrTradeGrant(0, ownImprovements),
         // audyt #11: jak wyżej (replaceAvailabilityCtxForCity) — całe terytorium gracza.
         aliveUnitTypeNames: new Set(units.filter(x => x.ownerId === 0).map(x => x.typeId)),
         kosztJednostekPace: player.kosztJednostekPace ?? 'niski',
@@ -3033,7 +3138,14 @@ async function boot(): Promise<void> {
           if (!c) return { potential: [], active: [] };
           const builtIds = cityBuilt.get(cityId) ?? [];
           const oid = c.ownerId;
-          return getCityResourceAccessForCity(
+          const ownImprovements = placedImprovementsForOwner(oid);
+          // Temat #4: Koń "z trasy" dolicza się do odblokowania imperium (jak w
+          // improvement-build.ts) — OR, nigdy substytut własnego odblokowania.
+          const empireLivestockUnlocks = computeEmpireLivestockUnlocks(ownImprovements, map, String(oid));
+          if (hasTradeRouteResourceAccess(tradeRouteResourceGrants, oid, 'kon')) {
+            empireLivestockUnlocks.add('kon');
+          }
+          const access = getCityResourceAccessForCity(
             {
               id: c.id,
               q: c.q,
@@ -3042,14 +3154,23 @@ async function boot(): Promise<void> {
               kulturaSkumulowana: (c as { kultura?: number }).kultura ?? 0,
             },
             map,
-            placedImprovementsForOwner(oid),
+            placedImprovementsWithBrazTradeGrant(oid, ownImprovements),
             empireEpochForOwner(oid),
-            { builtIds, ownerId: String(oid) },
+            { builtIds, ownerId: String(oid), empireLivestockUnlocks },
           );
+          // Temat #4 (UI): źródło "szlak handlowy z X" dla etykiet przyznanych przez
+          // trasę — tylko gdy etykieta faktycznie aktywna (grant + dostęp lokalny
+          // spełniony, np. Brąz nadal wymaga własnego Pieca hutniczego w TYM mieście).
+          const tradeSources: Record<string, string> = {};
+          const brazSrc = tradeRouteResourceSourceLabel(oid, 'braz');
+          if (brazSrc && access.active.includes('Brąz')) tradeSources['Brąz'] = brazSrc;
+          const konSrc = tradeRouteResourceSourceLabel(oid, 'kon');
+          if (konSrc && access.active.includes('Koń')) tradeSources['Koń'] = konSrc;
+          return Object.keys(tradeSources).length ? { ...access, tradeSources } : access;
         },
         getEmpireResourceAccess: (ownerId: number) => empireActiveResourceLabelsForOwner(ownerId),
         getEmpireBuiltIds: (ownerId: number) => [...empireBuiltIdsForOwner(ownerId)],
-        getHasKopalniaNaZlozuZelaza: () => empireHasKopalniaNaZlozuZelaza(placedImprovementsForOwner(0), map),
+        getHasKopalniaNaZlozuZelaza: () => hasKopalniaNaZlozuZelazaOrTradeGrant(0, placedImprovementsForOwner(0)),
         // audyt #11: limit 1 żywej Super-jednostka na cywilizację -- nazwy (typeId)
         // jednostek TEGO ownera aktualnie żywych na mapie (respawn po śmierci działa
         // samoczynnie, bo liczymy z bieżącego rosteru `units`, nie z historii).
@@ -3477,8 +3598,8 @@ async function boot(): Promise<void> {
           epoch: empireEpochForOwner(city.ownerId),
           civBonusy: civBonusyForOwnerId(city.ownerId),
           civUnitNacja: unitNacjaForCivKey(civKeyForOwnerId(city.ownerId)),
-          placedImprovements: ownImprovements,
-          hasKopalniaNaZlozuZelaza: empireHasKopalniaNaZlozuZelaza(ownImprovements, map),
+          placedImprovements: placedImprovementsWithBrazTradeGrant(city.ownerId, ownImprovements),
+          hasKopalniaNaZlozuZelaza: hasKopalniaNaZlozuZelazaOrTradeGrant(city.ownerId, ownImprovements),
         },
       });
       if (!item) return null;
@@ -5266,6 +5387,9 @@ async function boot(): Promise<void> {
           researchedTechs: player.zbadane,
           clearingHexKeys: new Set(hexClearingStates.keys()),
           pendingUndoKeys: pendingImprovementsTurn.getUndoKeySet(),
+          // Temat #4: Stadnina bez własnego złoża konia, gdy gracz ma aktywny
+          // grant "z trasy" na Konia (patrz ImprovementBuildState.tradeRouteKonUnlocked).
+          tradeRouteKonUnlocked: hasTradeRouteResourceAccess(tradeRouteResourceGrants, 0, 'kon'),
         },
         {
           activeKey: activeImprovementKey,
@@ -8935,7 +9059,7 @@ async function boot(): Promise<void> {
       getBuiltBuildingIds: (cityId: string) => cityBuilt.get(cityId) ?? [],
       // audyt #33: panel miasta jest tylko dla gracza (openCityPanelForPlayer) -- ulepszenia
       // WYŁĄCZNIE z terytorium gracza (owner 0), inaczej kopalnia AI odblokowywała Brąz/Żelazo.
-      getPlacedImprovements: () => placedImprovementsForOwner(0),
+      getPlacedImprovements: () => placedImprovementsWithBrazTradeGrant(0, placedImprovementsForOwner(0)),
       getProduction: (cityId: string) => {
         const p = cityProd.get(cityId);
         return p ? { ...p, kolejka: [...p.kolejka] } : null;
@@ -12481,6 +12605,11 @@ async function boot(): Promise<void> {
             console.error('[Handel] Blad odswiezania tras:', eTrade);
           }
           tradeRouteCountByCity = computeTradeRouteCountByCity(tradeRoutes);
+          try {
+            recomputeTradeRouteResourceGrants();
+          } catch (eTradeGrant) {
+            console.error('[Handel] Blad przeliczania grantow z trasy:', eTradeGrant);
+          }
           const tradeIncomeParams = loadTradeRouteIncomeParams(
             data.econParams as unknown as Parameters<typeof loadTradeRouteIncomeParams>[0],
             _menuDifficulty,
@@ -13102,8 +13231,8 @@ async function boot(): Promise<void> {
                         epoch: empireEpochForOwner(city.ownerId),
                         civBonusy: civBonusyForOwnerId(city.ownerId),
                         civUnitNacja: unitNacjaForCivKey(civKeyForOwnerId(city.ownerId)),
-                        placedImprovements: ownImprovements,
-                        hasKopalniaNaZlozuZelaza: empireHasKopalniaNaZlozuZelaza(ownImprovements, map),
+                        placedImprovements: placedImprovementsWithBrazTradeGrant(city.ownerId, ownImprovements),
+                        hasKopalniaNaZlozuZelaza: hasKopalniaNaZlozuZelazaOrTradeGrant(city.ownerId, ownImprovements),
                       },
                     },
                   );
@@ -13642,8 +13771,8 @@ async function boot(): Promise<void> {
                         productionQueue: prod0.kolejka,
                         civBonusy: civBonusyForOwnerId(ownerId),
                         civUnitNacja: unitNacjaForCivKey(civKeyForOwnerId(ownerId)),
-                        placedImprovements: ownImprovements,
-                        hasKopalniaNaZlozuZelaza: empireHasKopalniaNaZlozuZelaza(ownImprovements, map),
+                        placedImprovements: placedImprovementsWithBrazTradeGrant(ownerId, ownImprovements),
+                        hasKopalniaNaZlozuZelaza: hasKopalniaNaZlozuZelazaOrTradeGrant(ownerId, ownImprovements),
                         // audyt #11: AI też podlega limitowi 1 żywej Super-jednostka.
                         aliveUnitTypeNames: new Set(
                           units.filter(x => x.ownerId === ownerId).map(x => x.typeId),
@@ -14344,7 +14473,7 @@ async function boot(): Promise<void> {
         getBuiltBuildingIds: (cityId: string) => cityBuilt.get(cityId) ?? [],
         // audyt #33: panel miasta jest tylko dla gracza (openCityPanelForPlayer) -- ulepszenia
         // WYŁĄCZNIE z terytorium gracza (owner 0), inaczej kopalnia AI odblokowywała Brąz/Żelazo.
-        getPlacedImprovements: () => placedImprovementsForOwner(0),
+        getPlacedImprovements: () => placedImprovementsWithBrazTradeGrant(0, placedImprovementsForOwner(0)),
         getProduction: (cityId: string) => {
           const p = cityProd.get(cityId);
           return p ? { ...p, kolejka: [...p.kolejka] } : null;
@@ -14635,6 +14764,7 @@ async function boot(): Promise<void> {
       cities.length = 0;
       tradeRoutes.length = 0;
       tradeRouteCountByCity.clear();
+      tradeRouteResourceGrants.length = 0;
       clearTradeRoutesOverlay();
       explored.clear();
       rebuildAllKeys();
@@ -14893,6 +15023,7 @@ async function boot(): Promise<void> {
       cities.length = 0;
       tradeRoutes.length = 0;
       tradeRouteCountByCity.clear();
+      tradeRouteResourceGrants.length = 0;
       clearTradeRoutesOverlay();
       for (const c of preset.cities) {
         ensureCitySaveDefaults(c);
@@ -15116,6 +15247,7 @@ async function boot(): Promise<void> {
       cities.length = 0;
       tradeRoutes.length = 0;
       tradeRouteCountByCity.clear();
+      tradeRouteResourceGrants.length = 0;
       clearTradeRoutesOverlay();
       for (const c of preset.cities) {
         ensureCitySaveDefaults(c);
@@ -15316,6 +15448,7 @@ async function boot(): Promise<void> {
       cities.length = 0;
       tradeRoutes.length = 0;
       tradeRouteCountByCity.clear();
+      tradeRouteResourceGrants.length = 0;
       clearTradeRoutesOverlay();
       for (const c of preset.cities) {
         ensureCitySaveDefaults(c);
@@ -15495,6 +15628,11 @@ async function boot(): Promise<void> {
         syncUnitsRender();
         cityRenderer.sync(cities, _cityRenderOpts());
         tradeRouteCountByCity = computeTradeRouteCountByCity(tradeRoutes);
+        try {
+          recomputeTradeRouteResourceGrants();
+        } catch (eTradeGrantLoad) {
+          console.error('[Handel] Blad przeliczania grantow z trasy (load):', eTradeGrantLoad);
+        }
         refreshTradeRoutesOverlay();
         refreshSiegeMarkers();
         refreshFog();

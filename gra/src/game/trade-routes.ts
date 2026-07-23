@@ -788,3 +788,114 @@ export function diffTradeRoutes(
     removed: prevRoutes.filter(r => !nextIds.has(r.id)),
   };
 }
+
+// ---------------------------------------------------------------------------
+// E3b: dostęp do surowca civ-wide przez trasę handlową (temat #4, HANDEL-Q11=B —
+// boolean grant) + cofanie przy wojnie/zerwaniu.
+//
+// Wzorowane na grantSurowiecBooleanAccess/hasSurowiecBooleanAccess z koszyka PN
+// (diplomacy-basket-transfer.ts) i na cyklu życia ZlozeGrant (diplomacy-pn-engine.ts:
+// suspendZlozeGrantsForWar / deactivateZlozeGrantsForDeal), ALE bez ich osobnego
+// stanu `active`/save i osobnej funkcji cofającej: grant "z trasy" jest CZYSTĄ
+// POCHODNĄ aktualnej listy `routes` (tej samej, którą co turę przelicza
+// refreshTradeRoutes — a ta już sama usuwa trasę przy wojnie/zerwaniu/utracie
+// połączenia, patrz komentarz nad refreshTradeRoutes). Wywołujący (main.ts) ma
+// więc RECOMPUTOWAĆ tę listę zaraz po każdym refreshTradeRoutes(), zamiast
+// persystować ją w save — gdy trasa zniknie z `routes`, jej grant po prostu nie
+// pojawi się w kolejnym wyniku (brak stanu osieroconego, brak osobnej "dezaktywacji").
+// ---------------------------------------------------------------------------
+
+/**
+ * Surowce civ-wide, których dostęp może "przeciekać" przez aktywną trasę handlową.
+ * Odpowiadają trzem silnikowym bramkom dostępu: braz-access.ts (hasBrazAccess),
+ * zelazo-access.ts (hasZelazoAccess), livestock-unlock.ts (computeEmpireLivestockUnlocks
+ * — tylko 'kon', jedyny surowiec hodowlany z civ-wide odblokowaniem, Model B).
+ */
+export type TradeRouteResourceKey = 'braz' | 'zelazo' | 'kon';
+
+export const TRADE_ROUTE_RESOURCE_KEYS: readonly TradeRouteResourceKey[] = ['braz', 'zelazo', 'kon'];
+
+/**
+ * Jeden przyznany dostęp "z trasy": `ownerId` (odbiorca) korzysta z dostępu, jaki
+ * `viaOwnerId` (partner handlowy) ma WE WŁASNYM imperium do `resourceKey`, dzięki
+ * aktywnej trasie `routeId`. `viaCityId` = koniec trasy należący do ODBIORCY (do
+ * wyświetlenia w panelu TEGO miasta "źródło: szlak handlowy z <partner>").
+ */
+export interface TradeRouteResourceGrant {
+  ownerId: number;
+  resourceKey: TradeRouteResourceKey;
+  viaOwnerId: number;
+  viaCityId: string;
+  routeId: string;
+}
+
+/**
+ * Przelicza granty "z trasy" NA BIEŻĄCO z aktualnej listy `routes` — patrz nagłówek
+ * sekcji: żadnego zapisu/dezaktywacji, tylko czysta funkcja wejście→wyjście. Trasa
+ * bez statusu 'polaczony' nie daje żadnego grantu. Symetryczne: gdy OBIE strony mają
+ * u siebie ten sam surowiec, żadna nie dostaje grantu (ownerHasNativeAccess już true
+ * u niej), ale mogą jednocześnie wymieniać RÓŻNE surowce w obie strony jedną trasą.
+ *
+ * @param ownerHasNativeAccess czy WŁASNE imperium ownera ma już dostęp do resourceKey
+ *   bez handlu (empireHasKopalniaMiedzi+piec hutniczy / empireHasKopalniaNaZlozuZelaza+
+ *   odlewnia / computeEmpireLivestockUnlocks 'kon') — liczone przez wołającego
+ *   (main.ts), bo wymaga mapy/placedImprovements, których ten moduł celowo nie zna.
+ */
+export function computeTradeRouteResourceGrants(
+  routes: readonly TradeRoute[],
+  ownerHasNativeAccess: (ownerId: number, resourceKey: TradeRouteResourceKey) => boolean,
+  resourceKeys: readonly TradeRouteResourceKey[] = TRADE_ROUTE_RESOURCE_KEYS,
+): TradeRouteResourceGrant[] {
+  const grants: TradeRouteResourceGrant[] = [];
+  for (const route of routes) {
+    if (route.status !== 'polaczony') continue;
+    for (const key of resourceKeys) {
+      // Grant idzie do route.toOwnerId TYLKO gdy (a) route.ownerId ma dostęp natywnie
+      // i (b) route.toOwnerId GO JESZCZE NIE MA natywnie — inaczej dwie cywilizacje,
+      // które obie mają np. własną Kopalnię miedzi, dostałyby sobie nawzajem zbędny
+      // (choć nieszkodliwy) grant na surowiec, który już mają wprost.
+      if (ownerHasNativeAccess(route.ownerId, key) && !ownerHasNativeAccess(route.toOwnerId, key)) {
+        grants.push({
+          ownerId: route.toOwnerId,
+          resourceKey: key,
+          viaOwnerId: route.ownerId,
+          viaCityId: route.toCityId,
+          routeId: route.id,
+        });
+      }
+      if (ownerHasNativeAccess(route.toOwnerId, key) && !ownerHasNativeAccess(route.ownerId, key)) {
+        grants.push({
+          ownerId: route.ownerId,
+          resourceKey: key,
+          viaOwnerId: route.toOwnerId,
+          viaCityId: route.fromCityId,
+          routeId: route.id,
+        });
+      }
+    }
+  }
+  return grants;
+}
+
+/** Czy `ownerId` ma (dowolny) grant "z trasy" na `resourceKey`. */
+export function hasTradeRouteResourceAccess(
+  grants: readonly TradeRouteResourceGrant[],
+  ownerId: number,
+  resourceKey: TradeRouteResourceKey,
+): boolean {
+  return grants.some(g => g.ownerId === ownerId && g.resourceKey === resourceKey);
+}
+
+/**
+ * Pierwszy grant (deterministyczny — sortowany po routeId) dla pary owner+surowiec —
+ * do UI ("źródło dostępu: szlak handlowy z <partner>"). `undefined` gdy brak grantu.
+ */
+export function firstTradeRouteResourceGrant(
+  grants: readonly TradeRouteResourceGrant[],
+  ownerId: number,
+  resourceKey: TradeRouteResourceKey,
+): TradeRouteResourceGrant | undefined {
+  return grants
+    .filter(g => g.ownerId === ownerId && g.resourceKey === resourceKey)
+    .sort((a, b) => a.routeId.localeCompare(b.routeId))[0];
+}
