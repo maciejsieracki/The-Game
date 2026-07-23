@@ -1906,13 +1906,13 @@ export class BattleScene {
   private _deployToolbarCenter: HTMLDivElement | null = null;
   /** Otwarty dropdown toolbara deploy. */
   private _deployOpenDropdown: 'formation' | 'cavalry' | 'lines' | 'tactics' | 'strategy' | null = null;
-  /** Popupy dropdownow toolbara. */
+  /** Popupy dropdownow toolbara — position:fixed, dzieci document.body (jak popup zebatki). */
   private _deployDropdownPopups: Partial<Record<'formation' | 'cavalry' | 'lines' | 'tactics' | 'strategy', HTMLDivElement>> = {};
   private _deployToolbarDocClick: ((e: MouseEvent) => void) | null = null;
-  /** Płaski pasek formacji + akcji nad rosterem. */
+  /** Zadanie #17: pływający klaster Reset + Start walki (prawy dół, WYŁĄCZNIE deploy) — dawny pełnoszerokościowy pasek zlikwidowany. */
   private _deployToolbar: HTMLDivElement | null = null;
-  /** Separator 1px miedzy ikonami Formacja..Strategia a Reset/Start (ukryty w walce). */
-  private _deployToolbarSep: HTMLSpanElement | null = null;
+  /** Zadanie #17: rządek ikon Formacja/Konnica/Linie/Taktyka/Strategia — pierwszy rząd panelu rosteru. */
+  private _deployIconRow: HTMLDivElement | null = null;
   /** Podpowiedz w pasku deploy (legacy — feedback w rosterze). */
   private _deployHint: HTMLDivElement | null = null;
   /** Lewy panel: licznik rozstawionych jednostek. */
@@ -3084,13 +3084,14 @@ export class BattleScene {
     hint.textContent = 'SPACJA = następna tura';
   }
 
-  /** Pozycja hintu trybu — nad toolbarem Taktyka/Strategia lub przy dolnej krawędzi w AUTO. */
+  /**
+   * Pozycja hintu trybu (dolny srodek). Zadanie #17: dawny pelnoszerokosciowy
+   * dolny pasek zlikwidowany — klaster Reset/Start i minimapa siedza teraz po
+   * prawej, wiec hint nie musi juz robic miejsca u dolu niezaleznie od fazy.
+   */
   private _syncModeHintPosition(): void {
     if (!this._modeBanner) return;
-    const toolbarUp = !!this._deployToolbar
-      && this._deployToolbar.style.display !== 'none'
-      && (this.deployPhase || (this.started && !this.finished && this._manualMode));
-    this._modeBanner.style.bottom = (toolbarUp ? 96 : 18) + 'px';
+    this._modeBanner.style.bottom = '18px';
   }
 
   /** Podświetlenie rail R gdy tryb ręczny (C06 v4) + AUTO-rozegranie przy minimapie (TW v5 §3). */
@@ -9453,7 +9454,9 @@ export class BattleScene {
     const TEMPO_ROW_H = 42;
     const wrap = document.createElement('div');
     Object.assign(wrap.style, {
-      position: 'absolute', left: '12px', bottom: '156px',
+      // Zadanie #17: prawy dolny rog — patrz _syncMinimapPosition (wywolane
+      // ponizej), te left/bottom sa tylko fallbackiem przed pierwszym sync.
+      position: 'absolute', right: '16px', bottom: '16px',
       width: TEMPO_PANEL_W + 'px', height: (TEMPO_ROW_H + MINIMAP_H) + 'px',
       zIndex: '10008', display: 'flex', flexDirection: 'column',
     });
@@ -10243,13 +10246,16 @@ export class BattleScene {
   private _buildDeployToolbar(): void {
     if (this._deployToolbar) return;
 
+    // Zadanie #17: pływający klaster Reset + Start walki (prawy dół) — dawny
+    // pełnoszerokościowy pasek zlikwidowany; zostaje ciasny klaster z własnym
+    // tłem (~72%+blur), widoczny WYŁĄCZNIE w deployu (patrz _syncBattleToolbarMode).
     const bar = document.createElement('div');
     bar.id = 'deploy-toolbar';
     Object.assign(bar.style, {
       position:       'fixed',
-      left:           '0',
-      right:          '88px',
+      right:          '16px',
       bottom:         '16px',
+      width:          'auto',
       minHeight:      DEPLOY_TOOLBAR_H + 'px',
       height:         'auto',
       zIndex:         '100200',
@@ -10276,13 +10282,19 @@ export class BattleScene {
     chipsCol.appendChild(chips);
     bar.appendChild(chipsCol);
 
+    // Zadanie #17: rzadek ikon Formacja/Konnica/Linie/Taktyka/Strategia — pierwszy
+    // rzad panelu rosteru (nad naglowkiem "Roster N jednostek"), nie dolny pasek.
     const center = document.createElement('div');
+    center.id = 'deploy-icon-row';
     Object.assign(center.style, {
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      gap: '10px', flexWrap: 'nowrap', pointerEvents: 'auto',
-      position: 'relative', zIndex: '3', flex: '1',
+      display: 'flex', flexDirection: 'row', flexWrap: 'wrap',
+      alignItems: 'center', justifyContent: 'center',
+      gap: '6px', flexShrink: '0',
+      padding: '10px 10px 8px',
+      borderBottom: '1px solid rgba(232,216,138,0.2)',
     });
     this._deployToolbarCenter = center;
+    this._deployIconRow = center;
 
     const fmtDefs: Array<{ fmt: 'F1' | 'F2' | 'F3'; label: string; subtitle: string; icon: string; msg: string }> = [
       { fmt: 'F1', label: 'Dystans', subtitle: '\u0141ucznicy z przodu', icon: FMT_SVG.f1, msg: '\u0141ucznicy z przodu' },
@@ -10367,16 +10379,9 @@ export class BattleScene {
       'Strategia', 'strategy', stratPopup, STRATEGY_HEADER_SVG,
     ));
 
-    bar.appendChild(center);
-
-    // Separator 1px (makieta TW v5 §8) — oddziela ikony Formacja..Strategia od Reset/Start.
-    const toolbarSep = document.createElement('span');
-    Object.assign(toolbarSep.style, {
-      width: '1px', height: '34px', background: 'rgba(232,216,138,0.2)',
-      margin: '0 2px', flexShrink: '0',
-    });
-    bar.appendChild(toolbarSep);
-    this._deployToolbarSep = toolbarSep;
+    // Rzadek ikon NIE jest juz czescia dolnego paska — wpiety do panelu rosteru
+    // (pierwszy rzad, nad naglowkiem), patrz _mountDeployIconRow.
+    this._mountDeployIconRow();
 
     const actionRow = document.createElement('div');
     Object.assign(actionRow.style, {
@@ -10420,7 +10425,11 @@ export class BattleScene {
     this._deployToolbarDocClick = (e: MouseEvent) => {
       const t = e.target as Node | null;
       if (!t) return;
+      if (this._deployIconRow?.contains(t)) return;
       if (this._deployToolbar?.contains(t)) return;
+      for (const popup of Object.values(this._deployDropdownPopups)) {
+        if (popup?.contains(t)) return;
+      }
       this._closeDeployDropdowns();
     };
     document.addEventListener('click', this._deployToolbarDocClick);
@@ -10434,7 +10443,15 @@ export class BattleScene {
     this._updateRightRailLayout();
   }
 
-  /** Dropdown u gory nad przyciskiem glownym (Formacja / Konnica / Taktyka / Strategia). */
+  /** Wpina rzadek ikon (Formacja..Strategia) jako pierwszy rzad panelu rosteru, nad naglowkiem. */
+  private _mountDeployIconRow(): void {
+    if (!this._deployIconRow || !this._rosterBar) return;
+    if (this._deployIconRow.parentElement !== this._rosterBar) {
+      this._rosterBar.insertBefore(this._deployIconRow, this._rosterBar.firstChild);
+    }
+  }
+
+  /** Dropdown w rzadku ikon nad rosterem (Formacja / Konnica / Linie / Taktyka / Strategia). */
   private _makeDeployToolbarDropdown(
     label: string,
     key: 'formation' | 'cavalry' | 'lines' | 'tactics' | 'strategy',
@@ -10444,37 +10461,63 @@ export class BattleScene {
     const wrap = document.createElement('div');
     Object.assign(wrap.style, { position: 'relative', flexShrink: '0' });
 
+    // Popup NIE zyje wewnatrz panelu rosteru (overflow:hidden by go obcial) —
+    // osobny element position:fixed, dziecko document.body, pozycjonowany z
+    // realnego rect przycisku (jak popup zebatki ustawien), patrz
+    // _positionDeployDropdownPopup / _toggleDeployDropdown.
     const popup = document.createElement('div');
     popup.dataset.deployDropdown = key;
     Object.assign(popup.style, {
-      position: 'absolute', bottom: '100%', left: '50%', transform: 'translateX(-50%)',
-      marginBottom: '8px', display: 'none', flexDirection: 'column', gap: '8px',
+      position: 'fixed', display: 'none', flexDirection: 'column', gap: '8px',
       padding: '12px 14px', zIndex: '100210',
       pointerEvents: 'auto',
     });
     applyDeployDropdownPanel1E(popup);
     popup.appendChild(popupBody);
     this._deployDropdownPopups[key] = popup;
+    document.body.appendChild(popup);
 
-    // Dolny toolbar = WYŁĄCZNIE ikony (makieta TW v5 §8) — podpis tylko na hover
-    // (pigułka 1E), nie w treści przycisku.
+    // Rzadek ikon nad rosterem = WYLACZNIE ikony (jak dawny dolny toolbar) —
+    // podpis tylko na hover (pigulka 1E), nie w tresci przycisku.
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.dataset.deployMainBtn = key;
     applyToolbarIconBtn1E(btn);
+    btn.style.width = '38px';
+    btn.style.height = '38px';
     btn.innerHTML = toolbarIcon ?? label;
     btn.addEventListener('click', (e) => {
       e.stopPropagation();
-      this._toggleDeployDropdown(key);
+      this._toggleDeployDropdown(key, btn);
     });
-    const btnWithTip = wrapWithHoverTooltip1E(btn, label, 'above');
+    const btnWithTip = wrapWithHoverTooltip1E(btn, label, 'below');
 
-    wrap.appendChild(popup);
     wrap.appendChild(btnWithTip);
     return wrap;
   }
 
-  private _toggleDeployDropdown(key: 'formation' | 'cavalry' | 'lines' | 'tactics' | 'strategy'): void {
+  /** Pozycjonuje popup dropdownu wzgledem realnego rect przycisku (fixed, poza overflow rosteru). */
+  private _positionDeployDropdownPopup(popup: HTMLDivElement, btn: HTMLButtonElement): void {
+    const r = btn.getBoundingClientRect();
+    popup.style.visibility = 'hidden';
+    popup.style.display = 'flex';
+    const popupW = popup.offsetWidth || 220;
+    const popupH = popup.offsetHeight || 0;
+    let left = r.left + r.width / 2 - popupW / 2;
+    left = Math.max(8, Math.min(left, window.innerWidth - popupW - 8));
+    let top = r.bottom + 8;
+    if (top + popupH > window.innerHeight - 8) {
+      top = Math.max(8, r.top - popupH - 8);
+    }
+    popup.style.left = Math.round(left) + 'px';
+    popup.style.top = Math.round(top) + 'px';
+    popup.style.visibility = 'visible';
+  }
+
+  private _toggleDeployDropdown(
+    key: 'formation' | 'cavalry' | 'lines' | 'tactics' | 'strategy',
+    btn?: HTMLButtonElement,
+  ): void {
     if (this._deployOpenDropdown === key) {
       this._closeDeployDropdowns();
       return;
@@ -10483,10 +10526,11 @@ export class BattleScene {
     this._deployOpenDropdown = key;
     const popup = this._deployDropdownPopups[key];
     if (popup) {
-      popup.style.display = 'flex';
       if (key === 'tactics') this._renderDeployTacticsPopup(popup);
       if (key === 'strategy') this._renderDeployStrategyPopup(popup);
       if (key === 'lines') this._renderDeployLinesPopup(popup);
+      if (btn) this._positionDeployDropdownPopup(popup, btn);
+      else popup.style.display = 'flex';
     }
     this._paintDeployMainButtons();
   }
@@ -10501,7 +10545,7 @@ export class BattleScene {
 
   private _paintDeployMainButtons(): void {
     const paint = (key: string, open: boolean): void => {
-      const btn = this._deployToolbar?.querySelector(
+      const btn = this._deployIconRow?.querySelector(
         `button[data-deploy-main-btn="${key}"]`,
       ) as HTMLButtonElement | null;
       if (!btn) return;
@@ -11356,13 +11400,13 @@ export class BattleScene {
     }
   }
 
-  /** Dolny inset lewego panelu rosteru — nad toolbarem Taktyka/Strategia. */
+  /**
+   * Dolny inset lewego panelu rosteru. Zadanie #17: dawny pelnoszerokosciowy
+   * dolny pasek zlikwidowany (klaster Reset/Start jest teraz pływajacy, prawy
+   * dol) — panel rosteru (lewa strona) nie musi juz robic mu miejsca u dolu.
+   */
   private _rosterBottomInsetPx(): number {
-    const toolbarUp = !!this._deployToolbar
-      && this._deployToolbar.style.display !== 'none'
-      && (this.deployPhase || (this.started && !this.finished && this._manualMode));
-    if (!toolbarUp) return ROSTER_SCREEN_BOTTOM_GAP;
-    return ROSTER_SCREEN_BOTTOM_GAP + DEPLOY_TOOLBAR_RESERVE;
+    return ROSTER_SCREEN_BOTTOM_GAP;
   }
 
   /** Ustawia bottom rosteru + minimapy względem dolnego toolbara (rail 56px — usunięty w TW v5). */
@@ -11884,11 +11928,14 @@ export class BattleScene {
 
   /** Po teardown deploy — odswiez referencje do chipow i popupow (DOM zostaje). */
   private _rebindDeployToolbarRefs(): void {
-    if (!this._deployToolbar) return;
-    const chips = this._deployToolbar.querySelector('#deploy-toolbar-chips') as HTMLDivElement | null;
-    if (chips) this._deployToolbarStatus = chips;
+    if (this._deployToolbar) {
+      const chips = this._deployToolbar.querySelector('#deploy-toolbar-chips') as HTMLDivElement | null;
+      if (chips) this._deployToolbarStatus = chips;
+    }
+    // Popupy zyja w document.body (position:fixed), nie w wewnatrz paska/rzedu
+    // ikon — szukamy ich globalnie, zeby przetrwac ewentualna odbudowe DOM.
     for (const key of ['formation', 'cavalry', 'lines', 'tactics', 'strategy'] as const) {
-      const popup = this._deployToolbar.querySelector(
+      const popup = document.querySelector(
         `[data-deploy-dropdown="${key}"]`,
       ) as HTMLDivElement | null;
       if (popup) this._deployDropdownPopups[key] = popup;
@@ -11897,32 +11944,47 @@ export class BattleScene {
       this._deployToolbarDocClick = (e: MouseEvent) => {
         const t = e.target as Node | null;
         if (!t) return;
+        if (this._deployIconRow?.contains(t)) return;
         if (this._deployToolbar?.contains(t)) return;
+        for (const popup of Object.values(this._deployDropdownPopups)) {
+          if (popup?.contains(t)) return;
+        }
         this._closeDeployDropdowns();
       };
       document.addEventListener('click', this._deployToolbarDocClick);
     }
   }
 
-  /** Pokaz/ukryj dolny pasek Taktyka+Strategia (deploy + reczna walka). */
+  /**
+   * Widocznosc rzadku ikon (Formacja..Strategia, gora rosteru) + pływajacego
+   * klastra Reset/Start (prawy dol, WYLACZNIE deploy). Zadanie #17 — dawny
+   * pelnoszerokosciowy dolny pasek zlikwidowany.
+   */
   private _syncBattleToolbarMode(): void {
     if (this._battleChromeSuppressed) return;
     this._syncSiegeHudChromeVisibility();
     const battleManual = this.started && !this.deployPhase && !this.finished && this._manualMode;
-    const showToolbar = this.deployPhase || battleManual;
+    const showIconRow = this.deployPhase || battleManual;
+    const showActionCluster = this.deployPhase;
 
     if (battleManual && !this._deployToolbar) {
       this._buildDeployToolbar();
     }
-    if (!this._deployToolbar) return;
+    this._mountDeployIconRow();
     this._rebindDeployToolbarRefs();
 
-    this._deployToolbar.style.display = showToolbar ? 'grid' : 'none';
-    this._deployToolbar.style.pointerEvents = showToolbar ? 'auto' : 'none';
+    if (this._deployIconRow) {
+      this._deployIconRow.style.display = showIconRow ? 'flex' : 'none';
+      this._deployIconRow.style.pointerEvents = showIconRow ? 'auto' : 'none';
+    }
+    if (this._deployToolbar) {
+      this._deployToolbar.style.display = showActionCluster ? 'flex' : 'none';
+      this._deployToolbar.style.pointerEvents = showActionCluster ? 'auto' : 'none';
+    }
 
     const battleOnly = battleManual && !this.deployPhase;
     for (const key of ['formation', 'cavalry', 'lines'] as const) {
-      const btn = this._deployToolbar.querySelector(`[data-deploy-main-btn="${key}"]`);
+      const btn = this._deployIconRow?.querySelector(`[data-deploy-main-btn="${key}"]`);
       const wrap = btn?.parentElement as HTMLElement | null;
       if (wrap) wrap.style.display = battleOnly ? 'none' : '';
     }
@@ -11930,9 +11992,8 @@ export class BattleScene {
     const startBtn = document.getElementById('deploy-toolbar-start');
     if (resetBtn?.parentElement) resetBtn.parentElement.style.display = battleOnly ? 'none' : '';
     if (startBtn) startBtn.style.display = battleOnly ? 'none' : '';
-    if (this._deployToolbarSep) this._deployToolbarSep.style.display = battleOnly ? 'none' : '';
 
-    if (showToolbar) {
+    if (showIconRow) {
       this._syncDeployToolbarOffset();
       this._updateDeployToolbarStatus();
       this._updateDeployGroupsBar();
@@ -11959,44 +12020,35 @@ export class BattleScene {
     return 16 + ROSTER_PANEL_FIXED_W;
   }
 
-  /** Toolbar deploy zaczyna sie za lewym panelem rosteru. */
+  /**
+   * Zadanie #17: klaster Reset/Start jest teraz pływajacy (prawy dol, stały
+   * `right`) — nie zalezy juz od szerokosci lewego panelu rosteru. Funkcja
+   * zostaje (wywolywana z wielu miejsc) jako cienki wrapper na rzecz grup —
+   * uproszczone wzgledem dawnego liczenia lewej krawedzi paska.
+   */
   private _syncDeployToolbarOffset(): void {
-    const edge = this._deployRosterRightEdgePx();
-    if (this._deployToolbar) {
-      if (edge > 0 && (this.deployPhase || this._manualMode)) {
-        this._deployToolbar.style.left = edge + 'px';
-      } else {
-        this._deployToolbar.style.left = '0';
-      }
-    }
     this._syncDeployGroupManagerRailLayout();
   }
 
-  /** Minimapa: obok rosteru deploy / walki recznej. */
+  /**
+   * Minimapa + panel Tempo: prawy dolny rog (decyzja Macieja — „minimapa w
+   * bitwie na prawej stronie"). W deployu unosi sie NAD pływajacym klastrem
+   * Reset/Start (mierzymy jego realny gorny brzeg); w walce klaster jest
+   * ukryty, wiec minimapa siedzi przy samej krawedzi.
+   */
   private _syncMinimapPosition(): void {
     if (!this._minimapWrap) return;
-    let rosterW = 0;
-    if (this.deployPhase && this._deployRosterDock) {
-      rosterW = this._deployRosterDock.offsetWidth;
-    } else if (this._manualMode && this._rosterBar) {
-      rosterW = this._rosterBar.offsetWidth;
-    }
-    const leftOff = rosterW > 0 ? rosterW + 10 : 12;
-    const toolbarUp = this._deployToolbar
+    const clusterUp = !!this._deployToolbar
       && this._deployToolbar.style.display !== 'none'
-      && (this.deployPhase || (this.started && !this.finished && this._manualMode));
-    let bottomOff = toolbarUp ? DEPLOY_TOOLBAR_RESERVE + 10 : 156;
-    // TW v5 §3: panel Tempo+minimapa urosl (rzad Tempo nad canvasem) — zamiast
-    // stalej rezerwy (moze byc nieaktualna gdy toolbar deploy ma wiecej wierszy,
-    // np. widoczny pasek grup), zmierz realny gorny brzeg toolbara i ustaw
-    // odstep od niego, zeby NIGDY nie zachodzil na minimape/tempo.
-    if (toolbarUp && this._deployToolbar!.isConnected) {
-      const toolbarTop = this._deployToolbar!.getBoundingClientRect().top;
-      const measured = Math.round(window.innerHeight - toolbarTop) + 10;
-      if (measured > bottomOff) bottomOff = measured;
+      && this._deployToolbar.isConnected;
+    let bottomOff = 16;
+    if (clusterUp) {
+      const r = this._deployToolbar!.getBoundingClientRect();
+      if (r.height > 0) bottomOff = Math.round(window.innerHeight - r.top) + 10;
     }
     Object.assign(this._minimapWrap.style, {
-      left: leftOff + 'px',
+      left: 'auto',
+      right: '16px',
       bottom: bottomOff + 'px',
       zIndex: '100060',
     });
@@ -16002,6 +16054,10 @@ export class BattleScene {
     this._updateBattleRosterHeader();
     this._updateBattleSelectionBar();
     this._updateBattleQuickSelectBar();
+    // Zadanie #17: rzadek ikon Formacja..Strategia musi byc PIERWSZYM dzieckiem
+    // panelu (nad naglowkiem) — wymuszamy to na koniec, niezaleznie od tego w
+    // jakiej kolejnosci powstaly reszta elementow chrome powyzej.
+    this._mountDeployIconRow();
   }
 
   /** Lewy panel pionowy — karty jednostek (walka ręczna). */
@@ -16032,6 +16088,10 @@ export class BattleScene {
     applyRosterPanel1E(bar);
     this.overlay.appendChild(bar);
     this._rosterBar = bar;
+    // Zadanie #17: rzadek ikon Formacja..Strategia — jesli juz zbudowany
+    // (_buildDeployToolbar dziala PRZED _buildRosterBar w fazie deploy), wpinamy
+    // go jako pierwsze dziecko, PRZED naglowkiem "Roster".
+    this._mountDeployIconRow();
 
     const hdr = document.createElement('div');
     hdr.id = 'battle-roster-header';
