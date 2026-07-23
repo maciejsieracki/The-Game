@@ -630,8 +630,6 @@ const DEPLOY_POWER_BAR_H   = 38;
 const BATTLE_TOP_BAR_H     = 68;
 /** Laczna wysokosc naglowka: pasek fazy + pasek mocy. */
 const BATTLE_HEADER_H      = BATTLE_TOP_BAR_H + DEPLOY_POWER_BAR_H;
-/** Maks. szerokosc paska mocy wzgledem widoku (centrowany). */
-const BATTLE_POWER_BAR_MAX_W = '70%';
 /** Szerokosc kolumny kart w lewym panelu (tab + karta + odstep). */
 const ROSTER_COL_W         = ROSTER_PANEL_FIXED_W;
 /** Wysokość karty rosteru deploy — lewy panel pionowy. */
@@ -2067,28 +2065,6 @@ export class BattleScene {
   private clashLog:        HTMLDivElement | null = null;
   private clashLogEntries: string[]             = [];
 
-  // ARMY-MORALE BARS (TASK 5): two vertical meters pinned to the screen EDGES --
-  // LEFT = ATTACKER army (red frame), RIGHT = DEFENDER army (blue frame). The
-  // inner FILL height = that side's army-morale ratio and its colour runs
-  // green -> red as the ratio drops. Updated live each frame by
-  // _updateArmyMoraleBars. armyMoraleFill* is the inner coloured fill;
-  // armyMoraleLabel* shows the percentage.
-  private armyMoraleFillA:  HTMLDivElement | null = null;
-  private armyMoraleFillD:  HTMLDivElement | null = null;
-  private armyMoraleLabelA: HTMLDivElement | null = null;
-  private armyMoraleLabelD: HTMLDivElement | null = null;
-  /** Dolny pasek mocy: zielony (gracz) | czerwony (wróg), spotyka sie w srodku. */
-  private _bottomPowerBar: HTMLDivElement | null = null;
-  private _bottomPowerFillA: HTMLDivElement | null = null;
-  private _bottomPowerFillD: HTMLDivElement | null = null;
-  private _bottomPowerLblA: HTMLSpanElement | null = null;
-  private _bottomPowerLblD: HTMLSpanElement | null = null;
-  /** @deprecated Prawy rail 56px ZLIKWIDOWANY (TW v5 §2) — pole zostaje null, layout siege-hud go zeruje bezpiecznie. */
-  private _rightSettingsRail: HTMLDivElement | null = null;
-  private _rightSpeedLbl: HTMLSpanElement | null = null;
-  /** @deprecated Rail M/MUZ zlikwidowany — przyciski dźwięku żyją teraz w popupie zębatki (patrz _settings*Toggle). */
-  private _soundBtn: HTMLButtonElement | null = null;
-  private _musicBtn: HTMLButtonElement | null = null;
   /** Zębatka ustawień top-right (TW v5 §2) — zastępuje prawy rail: Muzyka/Efekty/Paski/Statystyki/Pomoc. */
   private _settingsGearWrap: HTMLDivElement | null = null;
   private _settingsPopup: HTMLDivElement | null = null;
@@ -2712,23 +2688,11 @@ export class BattleScene {
 
     // TW v5 SS2: stary pelnoszerokosciowy pasek "Ostatnie starcia" (PASEK MOCY v4)
     // zastapiony paskiem przewagi wewnatrz commanderPanel (ta sama dana zrodlowa:
-    // army-morale ratio z _armyMoraleRatio, patrz _updateArmyMoraleBars).
-    // _bottomPowerBar/_bottomPowerFillA/D/_bottomPowerLblA/D zostaja `null` (typy
-    // zachowane) - _battlePowerStackBottomPx() i _syncRosterColumnLayout() maja
-    // juz bezpieczny fallback dla `null`, wiec siege HUD i layout rosteru
-    // dzialaja bez zmian.
+    // army-morale ratio z _armyMoraleRatio, patrz _updateArmyMoraleBars). Stary
+    // pasek + pionowe słupki boczne i prawy rail 56px — USUNIĘTE (TW v5 §2/3,
+    // sprzątnięcie FAZA 3): pola zawsze były `null`, siege-hud/layout rosteru
+    // mają teraz stałe fallbacki zamiast opcjonalnego pola.
     requestAnimationFrame(() => this._syncRosterColumnLayout());
-    // Legacy side-bar refs (nie renderujemy pionowych paskow).
-    this.armyMoraleFillA = null;
-    this.armyMoraleFillD = null;
-    this.armyMoraleLabelA = null;
-    this.armyMoraleLabelD = null;
-
-    // TW v5 § 2/3: prawy pionowy rail 56px ZLIKWIDOWANY. R/AUTO żyje w panelu
-    // Tempo przy minimapie (_buildMinimapOverlay/_tempoAutoBtn); M/MUZ, H, I
-    // przeniesione do popupu zębatki ustawień (patrz gearWrap/settingsPopup w
-    // bloku topRight powyżej); >> i WYCOFAJ też w topRight. _rightSettingsRail
-    // zostaje zawsze null — layout siege-hud/roster ma już bezpieczny fallback.
     this._setSpeedIdx(this.speedIdx);
     this._refreshAudioBtns();
     this._syncManualRailHighlight();
@@ -3119,10 +3083,6 @@ export class BattleScene {
     }
     this._deployRosterDock = null;
     disposeSiegeHud1E();
-    if (this._rightSettingsRail?.parentNode) {
-      this._rightSettingsRail.parentNode.removeChild(this._rightSettingsRail);
-    }
-    this._rightSettingsRail = null;
     document.removeEventListener('click', this._onSettingsDocClick);
     this._settingsGearWrap = null;
     this._settingsPopup = null;
@@ -7098,7 +7058,6 @@ export class BattleScene {
     const label = 'Predkosc: ' + this.speedMul + 'x';
     if (this.speedHud) this.speedHud.textContent = label;
     if (this._topSpeedLbl) this._topSpeedLbl.textContent = 'x' + this.speedMul;
-    if (this._rightSpeedLbl) this._rightSpeedLbl.textContent = 'x' + this.speedMul;
     this._syncTempoPanelHighlight();
   }
 
@@ -8081,7 +8040,6 @@ export class BattleScene {
       }
     };
     apply(this._deployToolbar);
-    apply(this._rightSettingsRail);
     apply(this._modeBanner);
     apply(this._minimapWrap);
     apply(this._deployRosterDock);
@@ -8384,14 +8342,8 @@ export class BattleScene {
     }
   }
 
+  /** Muzyka/Efekty żyją w popupie zębatki (topRight, TW v5 §2) — synchronizuj przełączniki. */
   private _refreshAudioBtns(): void {
-    if (this._soundBtn) {
-      this._soundBtn.style.filter = this._sfxMuted ? 'grayscale(1) brightness(0.55)' : '';
-    }
-    if (this._musicBtn) {
-      this._musicBtn.style.filter = this._musicMuted ? 'grayscale(1) brightness(0.55)' : '';
-    }
-    // TW v5 §2: Muzyka/Efekty żyją teraz w popupie zębatki (topRight) — synchronizuj przełączniki.
     this._settingsMusicToggle?.(!this._musicMuted);
     this._settingsSfxToggle?.(!this._sfxMuted);
   }
@@ -11078,33 +11030,22 @@ export class BattleScene {
     return ROSTER_SCREEN_BOTTOM_GAP + DEPLOY_TOOLBAR_RESERVE;
   }
 
-  /** Ustawia bottom rosteru + minimapy + prawego raila względem dolnego toolbara. */
+  /** Ustawia bottom rosteru + minimapy względem dolnego toolbara (rail 56px — usunięty w TW v5). */
   private _syncRosterBottomInset(): void {
     const bottom = this._rosterBottomInsetPx() + 'px';
     if (this._rosterBar) this._rosterBar.style.bottom = bottom;
     if (this._deployRosterDock) this._deployRosterDock.style.bottom = bottom;
-    if (this._rightSettingsRail) {
-      const toolbarVisible = !!this._deployToolbar
-        && this._deployToolbar.style.display !== 'none'
-        && (this.deployPhase || (this.started && !this.finished && this._manualMode));
-      const railBottom = toolbarVisible ? DEPLOY_TOOLBAR_RESERVE : 0;
-      this._rightSettingsRail.style.bottom = railBottom + 'px';
-    }
     this._syncSiegeHudLayout();
     this._syncMinimapPosition();
     this._syncDeployToolbarOffset();
   }
 
-  /** Dolna krawędź paska mocy (Grecy/ %) — panele oblężenia zaczynają się poniżej. */
+  /** Dolna krawędź paska fazy — panele oblężenia zaczynają się poniżej (stary pasek mocy usunięty). */
   private _battlePowerStackBottomPx(): number {
-    const el = this._bottomPowerBar;
-    if (el?.isConnected) {
-      return el.offsetTop + el.offsetHeight + 10;
-    }
     return BATTLE_HEADER_H + 8;
   }
 
-  /** Panele oblężenia — poza rosterem, paskiem mocy (Grecy) i prawym railem. */
+  /** Panele oblężenia — poza rosterem i paskiem fazy (prawy rail 56px zlikwidowany w TW v5). */
   private _syncSiegeHudLayout(): void {
     if (this.siegeWallCol < 0) return;
     let rosterW = 0;
@@ -11114,8 +11055,8 @@ export class BattleScene {
         ? this._rosterBar
         : this._deployRosterDock);
     if (rosterEl?.isConnected) rosterW = rosterEl.offsetWidth + 16;
-    // 88px = ten sam inset co górny pasek (rail 56 + margines), żeby panel nie wchodził pod przyciski P/R/…
-    const railW = Math.max(88, (this._rightSettingsRail?.offsetWidth ?? 56) + 24);
+    // 88px = ten sam inset co górny pasek (dawny rail 56 + margines), żeby panel nie wchodził pod przyciski.
+    const railW = 88;
     layoutSiegeHud1E({
       rosterLeftPx: rosterW > 0 ? rosterW : 16,
       railRightPx: railW,
@@ -11525,10 +11466,9 @@ export class BattleScene {
   }
 
   /**
-   * Lewa kolumna rosteru od razu pod paskiem fazy; pasek mocy tylko nad mapą (nie nad rosterem).
+   * Lewa kolumna rosteru od razu pod paskiem fazy (dawny pasek mocy nad mapą — usunięty w TW v5).
    */
   private _syncRosterColumnLayout(): void {
-    let rosterW = 0;
     const rosterEl = (this.deployPhase && this._rosterBar)
       ? this._rosterBar
       : (this._rosterBar && (this._manualMode || this.started) ? this._rosterBar : this._deployRosterDock);
@@ -11536,30 +11476,6 @@ export class BattleScene {
       rosterEl.style.top = (BATTLE_TOP_BAR_H + 8) + 'px';
       if (this.deployPhase || this._manualMode || this.started) {
         rosterEl.style.bottom = this._rosterBottomInsetPx() + 'px';
-      }
-      rosterW = rosterEl.offsetWidth + 16;
-    }
-    if (this._bottomPowerBar) {
-      const railW = (this._rightSettingsRail?.offsetWidth ?? 56) + 16;
-      const powerTop = (BATTLE_TOP_BAR_H + 8) + 'px';
-      if (rosterW > 0) {
-        Object.assign(this._bottomPowerBar.style, {
-          top: powerTop,
-          left: rosterW + 'px',
-          right: railW + 'px',
-          transform: 'none',
-          width: 'auto',
-          maxWidth: 'none',
-        });
-      } else {
-        Object.assign(this._bottomPowerBar.style, {
-          top: powerTop,
-          left: '50%',
-          right: 'auto',
-          transform: 'translateX(-50%)',
-          width: '520px',
-          maxWidth: BATTLE_POWER_BAR_MAX_W,
-        });
       }
     }
     this._syncSiegeHudLayout();
@@ -12056,24 +11972,14 @@ export class BattleScene {
     return this._createRosterGroupBlock(gid, deploy).header;
   }
 
-  /** Podświetla zakładki grup wg zaznaczenia. */
+  /**
+   * Podświetla nagłówki grup wg zaznaczenia — deleguje do wspólnego malowania
+   * (_updateRosterGroupHeaderLabel, makieta TW v5 §7). Dawniej osobna „zakładka"
+   * TW z pełnym kolorowym tłem; teraz jeden spójny styl nagłówka.
+   */
   private _paintTwGroupTabs(tabs: Map<string, HTMLDivElement>): void {
     for (const [gid, tab] of tabs) {
-      const liveIds = this._liveGroupMemberIds(gid);
-      const allSel = liveIds.length > 0 && liveIds.every(id => this._selectedUnits.has(id));
-      const partialSel = !allSel && liveIds.some(id => this._selectedUnits.has(id));
-      tab.style.border = allSel
-        ? `2px solid ${BATTLE_PLAYER}`
-        : partialSel ? `2px solid ${BATTLE_GOLD}` : `1px solid ${BATTLE_GOLD_DIM}`;
-      tab.style.boxShadow = allSel
-        ? '0 0 12px rgba(58,106,208,0.55)'
-        : partialSel ? '0 0 8px rgba(232,216,138,0.4)' : 'inset 0 1px 0 rgba(255,255,255,0.15)';
-      tab.style.background = allSel
-        ? 'linear-gradient(180deg,rgba(58,106,208,0.65),rgba(40,70,160,0.55))'
-        : partialSel
-          ? 'linear-gradient(180deg,rgba(232,216,138,0.65),rgba(160,130,50,0.50))'
-          : 'linear-gradient(180deg,rgba(232,216,138,0.55),rgba(140,110,40,0.40))';
-      tab.style.color = allSel ? '#fff' : '#fff8dc';
+      this._updateRosterGroupHeaderLabel(tab, gid);
     }
   }
 
