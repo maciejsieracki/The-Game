@@ -1,6 +1,13 @@
 /**
- * cityAttackChoice.ts — wybór akcji przy ataku miasta z murem (C3-Q1=A).
- * Paleta spójna z preBattle + armyStackHud (złoto / slate).
+ * cityAttackChoice.ts -- wybor akcji przy ataku miasta z murem (C3-Q1=A).
+ * KANON v1.1 (2026-07-23): kompaktowa nakladka dol-srodek nad mapa swiata (KLATKA B),
+ * spojna z preBattle.ts (te same tokeny -- panel gradient + blur, zloty primary/danger CTA).
+ * Zrodlo wizualne: docs/ux/claude-design/01-propozycje-z-design/brand-book/KANON/mockupy/
+ *   "The Game - PreBattle nakladka v1.1 (1E).dc.html" (KLATKA B) + DYSPOZYCJA-WDROZENIE.md.
+ * Kontrakt danych (MapSiegeContext / CityAttackChoiceActions) NIEZMIENIONY -- restyling +
+ * rekompozycja layoutu, bez zmian logiki silnika. Sekcje bez zrodla danych (Teren, Tura,
+ * Region, "Szanse szturmu", pigulki modyfikatorow) pominiete -- patrz komentarze TODO nizej;
+ * MapSiegeContext nie niesie tych pol (nie wymyslamy nowych mechanik silnika).
  */
 
 import type { MapSiegeContext } from '../game/mapSiegeDetect';
@@ -15,97 +22,87 @@ export interface CityAttackChoiceActions {
 let root: HTMLDivElement | null = null;
 let keyHandler: ((e: KeyboardEvent) => void) | null = null;
 
-const STYLE_ID = 'civ-city-attack-css-v2';
+const STYLE_ID = 'civ-city-attack-css-v3';
 
 function ensureStyles(): void {
   if (document.getElementById(STYLE_ID)) return;
   const css = `
-@keyframes cac-fadeIn{from{opacity:0;transform:scale(.97) translateY(6px)}to{opacity:1;transform:none}}
+@keyframes cac-fadeIn{from{opacity:0}to{opacity:1}}
 .civ-cac-overlay{
-  position:fixed;inset:0;z-index:650;display:flex;align-items:center;justify-content:center;
-  background:rgba(4,8,18,0.62);backdrop-filter:blur(3px);
-  animation:cac-fadeIn .22s ease-out;
+  position:fixed;inset:0;z-index:650;pointer-events:none;
+  animation:cac-fadeIn .18s ease-out;
 }
 .civ-cac{
-  --gold:#e8d88a;--gold-dim:#c9a84c;--muted:#7a8498;--text:#e8ebf0;--sub:#b8c0cc;
-  --panel:linear-gradient(165deg,rgba(14,20,36,0.97) 0%,rgba(8,12,24,0.98) 100%);
-  --border:rgba(232,216,138,0.38);--border-hi:rgba(232,216,138,0.62);
+  --gold:#e8d88a;--gold-bright:#f4e6a8;--gold-dim:#c9a84c;--muted:#7a8498;--text:#e8e0c8;--sub:#b8c0cc;
+  --panel:linear-gradient(180deg,rgba(22,28,40,.78),rgba(8,10,16,.84));
+  --border:rgba(232,216,138,.45);--border-soft:rgba(232,216,138,.22);
   --siege:#c87840;--storm:#3a6ad0;
+  position:absolute;bottom:18px;left:50%;transform:translateX(-50%);pointer-events:auto;
   font:13px "Segoe UI",Tahoma,sans-serif;color:var(--text);
-  min-width:min(420px,calc(100vw - 32px));max-width:480px;
-  background:var(--panel);border:1px solid var(--border);border-radius:14px;
-  box-shadow:0 20px 60px rgba(0,0,0,0.65),inset 0 1px 0 rgba(255,255,255,0.06);
+  width:min(560px,calc(100vw - 32px));
+  background:var(--panel);backdrop-filter:blur(8px);border:2px solid var(--border);border-radius:14px;
+  box-shadow:0 14px 44px rgba(0,0,0,.65),inset 0 1px 0 rgba(232,216,138,.12);
   padding:0;overflow:hidden;
-  animation:cac-fadeIn .28s ease-out;
 }
 .civ-cac *{box-sizing:border-box;}
 .civ-cac-hdr{
-  padding:18px 22px 14px;text-align:center;
-  border-bottom:1px solid rgba(232,216,138,0.15);
-  background:linear-gradient(180deg,rgba(232,216,138,0.06) 0%,transparent 100%);
+  padding:9px 20px 8px;text-align:center;border-bottom:1px solid var(--border-soft);
+  background:linear-gradient(180deg,rgba(232,216,138,.09),transparent);
 }
-.civ-cac-orn{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:8px;}
-.civ-cac-orn i{display:block;height:1px;width:48px;background:linear-gradient(90deg,transparent,var(--gold-dim));}
-.civ-cac-orn i.r{background:linear-gradient(270deg,transparent,var(--gold-dim));}
-.civ-cac-orn span{font-size:18px;line-height:1;}
+.civ-cac-kick{font-size:9.5px;letter-spacing:.28em;text-transform:uppercase;color:#b09a55;white-space:nowrap}
 .civ-cac-title{
-  font:700 11px/1.2 Georgia,"Times New Roman",serif;
-  letter-spacing:.14em;text-transform:uppercase;color:var(--gold);
+  font:20px/1.3 Georgia,"Times New Roman",serif;color:var(--gold);letter-spacing:.03em;margin-top:2px;
 }
-.civ-cac-body{padding:16px 20px 18px;}
-.civ-cac-target{
-  display:flex;align-items:center;gap:12px;padding:10px 12px;margin-bottom:14px;
-  background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:10px;
-}
-.civ-cac-target-ic{
-  width:44px;height:44px;border-radius:8px;flex-shrink:0;
-  display:flex;align-items:center;justify-content:center;
-  background:rgba(200,120,64,0.12);border:1px solid rgba(200,120,64,0.35);
-}
-.civ-cac-target-ic .siege-modal-ic{width:28px;height:28px;color:var(--gold);}
-.civ-cac-act-ic,.civ-cac-attacker-ic,.civ-cac-orn span{display:inline-flex;align-items:center;justify-content:center;line-height:0;}
-.civ-cac-act-ic .siege-modal-ic,.civ-cac-attacker-ic .siege-modal-ic{width:22px;height:22px;color:var(--gold);}
-.civ-cac-orn .siege-modal-ic{width:20px;height:20px;color:var(--gold);}
-.civ-cac-tag .siege-modal-ic{display:inline-flex;width:12px;height:12px;vertical-align:middle;margin-right:3px;}
-.civ-cac-target-meta{flex:1;min-width:0;}
-.civ-cac-target-name{font-size:15px;font-weight:700;color:var(--gold);letter-spacing:.02em;}
-.civ-cac-target-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:5px;}
+.civ-cac-body{padding:10px 20px 14px;}
+.civ-cac-tags{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-bottom:10px;}
 .civ-cac-tag{
-  font-size:10px;font-weight:600;padding:2px 8px;border-radius:4px;
-  background:rgba(232,216,138,0.1);border:1px solid rgba(232,216,138,0.22);color:#f0e8b8;
+  display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:600;padding:2px 9px;border-radius:999px;
+  white-space:nowrap;font-variant-numeric:tabular-nums;
+  background:rgba(232,216,138,.09);border:1px solid rgba(232,216,138,.22);color:#f0e8b8;
 }
-.civ-cac-tag.wall{background:rgba(200,120,64,0.12);border-color:rgba(200,120,64,0.35);color:#ffc898;}
+.civ-cac-tag.wall{background:rgba(200,120,64,.12);border-color:rgba(200,120,64,.4);color:#ffc898;}
+.civ-cac-tag svg{width:11px;height:11px;}
 .civ-cac-attacker{
-  display:flex;align-items:center;gap:8px;margin-bottom:16px;font-size:12px;color:var(--sub);
+  display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:12px;font-size:11.5px;color:var(--sub);
+  text-align:center;
 }
 .civ-cac-attacker b{color:var(--text);font-weight:600;}
-.civ-cac-attacker-ic{font-size:16px;}
-.civ-cac-prompt{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;}
-.civ-cac-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.civ-cac-attacker svg{width:14px;height:14px;color:var(--gold);flex:none;}
+.civ-cac-note{font-size:10.5px;color:var(--muted);line-height:1.5;text-align:center;margin-bottom:10px;}
+.civ-cac-prompt{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.14em;text-align:center;margin-bottom:8px;}
+.civ-cac-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;}
 .civ-cac-act{
-  display:flex;flex-direction:column;align-items:flex-start;gap:4px;
-  padding:14px 12px;border-radius:10px;cursor:pointer;text-align:left;
-  border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.03);
-  color:var(--text);font:inherit;transition:border-color .15s,background .15s,transform .12s;
+  position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:4px;
+  padding:10px 12px;border-radius:10px;cursor:pointer;text-align:left;font:inherit;
+  border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.03);color:var(--text);
+  transition:border-color .15s,background .15s,box-shadow .15s,transform .12s;
 }
-.civ-cac-act:hover{border-color:var(--border-hi);background:rgba(255,255,255,0.06);transform:translateY(-1px);}
+.civ-cac-act:hover{transform:translateY(-1px);}
 .civ-cac-act:active{transform:translateY(0);}
-.civ-cac-act-ic{font-size:22px;line-height:1;margin-bottom:2px;}
-.civ-cac-act-label{font-size:13px;font-weight:700;color:var(--gold);}
+.civ-cac-kb{
+  position:absolute;top:8px;right:9px;font-size:9px;font-weight:700;color:#c8b898;
+  border:1px solid rgba(232,216,138,.3);border-radius:4px;padding:0 5px;background:rgba(232,216,138,.06);
+}
+.civ-cac-act-lbl{display:flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;letter-spacing:.06em;}
+.civ-cac-act-lbl svg{width:15px;height:15px;}
 .civ-cac-act-desc{font-size:10px;line-height:1.35;color:var(--muted);}
-.civ-cac-act.siege:hover{border-color:rgba(200,120,64,0.55);background:rgba(200,120,64,0.08);}
-.civ-cac-act.siege .civ-cac-act-label{color:#ffc898;}
-.civ-cac-act.storm:hover{border-color:rgba(58,106,208,0.55);background:rgba(58,106,208,0.08);}
-.civ-cac-act.storm .civ-cac-act-label{color:#a8c8ff;}
-.civ-cac-foot{
-  padding:0 20px 16px;display:flex;justify-content:center;
-}
+.civ-cac-act.siege{border-color:rgba(200,120,64,.4);}
+.civ-cac-act.siege .civ-cac-act-lbl{color:#ffc898;}
+.civ-cac-act.siege:hover{border-color:rgba(200,120,64,.7);background:rgba(200,120,64,.08);box-shadow:0 0 12px rgba(200,120,64,.2);}
+.civ-cac-act.storm{border-color:rgba(58,106,208,.4);}
+.civ-cac-act.storm .civ-cac-act-lbl{color:#a8c8ff;}
+.civ-cac-act.storm:hover{border-color:rgba(90,155,212,.75);background:rgba(58,106,208,.08);box-shadow:0 0 12px rgba(58,106,208,.25);}
+.civ-cac-btns{display:flex;justify-content:center;margin-bottom:8px;}
 .civ-cac-cancel{
-  font:inherit;font-size:11px;cursor:pointer;padding:6px 14px;
-  background:none;border:1px solid rgba(255,255,255,0.12);border-radius:6px;
-  color:var(--muted);transition:color .15s,border-color .15s;
+  border-radius:9px;padding:8px 15px;font-size:11.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+  display:inline-flex;align-items:center;gap:8px;border:2px solid rgba(200,64,64,.5);color:#e08a8a;
+  background:linear-gradient(180deg,rgba(40,18,18,.85),rgba(20,10,10,.85));font:inherit;cursor:pointer;
+  transition:border-color .15s,box-shadow .15s;
 }
-.civ-cac-cancel:hover{color:var(--sub);border-color:rgba(255,255,255,0.22);}
+.civ-cac-cancel:hover{border-color:#e08a8a;box-shadow:0 0 10px rgba(200,64,64,.3);}
+.civ-cac-cancel svg{width:14px;height:14px;}
+.civ-cac-keys{font-size:9.5px;color:#6a6250;text-align:center;letter-spacing:.05em;}
+.civ-cac-keys b{color:#c8b898;font-weight:600;border:1px solid rgba(232,216,138,.3);border-radius:4px;padding:0 5px;background:rgba(232,216,138,.06);}
 @media(max-width:420px){
   .civ-cac-actions{grid-template-columns:1fr;}
 }
@@ -120,9 +117,9 @@ function esc(s: string): string {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
-function modalIcon(id: string, size: 20 | 24 = 24): string {
+function modalIcon(id: string, size: number = 20): string {
   const svg = brandIconSvg(id, size);
-  return svg ? svg.replace('<svg ', '<svg class="siege-modal-ic" ') : '';
+  return svg ? svg.replace('<svg ', '<svg class="cac-ic" ') : '';
 }
 
 function tagHtml(iconId: string, text: string, extraClass = ''): string {
@@ -176,60 +173,57 @@ export function showCityAttackChoice(ctx: MapSiegeContext, actions: CityAttackCh
   const city = ctx.city;
   const unit = ctx.atakujacy;
   const hasGarrison = ctx.garnizonUnit !== null || (city.garnizon ?? 0) > 0;
+  const garrisonTag = city.garnizon !== undefined && city.garnizon > 0
+    ? tagHtml('tb-army', 'Garnizon: ' + String(city.garnizon) + ' oddz.')
+    : hasGarrison
+      ? tagHtml('tb-army', 'Garnizon')
+      : tagHtml('chip-garrison', 'Pusty garnizon');
 
   root = document.createElement('div');
   root.id = 'civ-city-attack-choice';
   root.className = 'civ-cac-overlay';
-  root.addEventListener('click', (e) => {
-    if (e.target === root) pickAction(actions.onCancel);
-  });
 
   const box = document.createElement('div');
   box.className = 'civ-cac';
   box.innerHTML = `
     <div class="civ-cac-hdr">
-      <div class="civ-cac-orn"><i></i><span>${modalIcon('tb-army', 20)}</span><i class="r"></i></div>
-      <div class="civ-cac-title">Atak na miasto</div>
+      <div class="civ-cac-kick">Atak na miasto</div>
+      <div class="civ-cac-title">Atakujesz: ${esc(city.name)}</div>
     </div>
     <div class="civ-cac-body">
-      <div class="civ-cac-target">
-        <div class="civ-cac-target-ic">${modalIcon('cp-buildings', 24)}</div>
-        <div class="civ-cac-target-meta">
-          <div class="civ-cac-target-name">${esc(city.name)}</div>
-          <div class="civ-cac-target-tags">
-            ${city.maMur ? tagHtml('bld-mury', 'Mur miejski', 'wall') : ''}
-            ${hasGarrison ? tagHtml('tb-army', 'Garnizon') : tagHtml('chip-garrison', 'Pusty garnizon')}
-            ${tagHtml('res-population', String(city.population))}
-          </div>
-        </div>
+      <div class="civ-cac-tags">
+        ${city.maMur ? tagHtml('bld-mury', 'Mur miejski', 'wall') : ''}
+        ${garrisonTag}
+        ${tagHtml('res-population', 'Ludność ' + String(city.population))}
       </div>
-      <div class="civ-cac-attacker">
-        <span class="civ-cac-attacker-ic">${modalIcon('tb-army', 20)}</span>
-        Atakujesz jednostką <b>${esc(unit.typeId)}</b>
-      </div>
+      <div class="civ-cac-attacker">${modalIcon('tb-army', 20)}Atakujesz jednostką <b>${esc(unit.typeId)}</b></div>
+      <!-- TODO (brak danych w kontrakcie MapSiegeContext): makieta KLATKA B pokazuje tu
+           Region/Teren/Ture oraz pasek "Szanse szturmu" + pigulki modyfikatorow --
+           MapSiegeContext niesie tylko city/atakujacy/garnizonUnit, bez sil/tereny/tury/
+           szans walki. Pominieto zamiast wymyslac nowe pola/mechaniki silnika. -->
       <div class="civ-cac-prompt">Wybierz sposób działania</div>
       <div class="civ-cac-actions">
         <button type="button" class="civ-cac-act siege" data-act="siege">
-          <span class="civ-cac-act-ic">${modalIcon('imp-fort', 20)}</span>
-          <span class="civ-cac-act-label">Oblężaj</span>
-          <span class="civ-cac-act-desc">Obóz na mapie · głód garnizonu · machiny oblężnicze</span>
+          <span class="civ-cac-kb">1</span>
+          <span class="civ-cac-act-lbl">${modalIcon('imp-fort', 18)}OBLEGAJ</span>
+          <span class="civ-cac-act-desc">Obóz na mapie · głód garnizonu · czas na machiny oblężnicze</span>
         </button>
         <button type="button" class="civ-cac-act storm" data-act="storm">
-          <span class="civ-cac-act-ic">${modalIcon('dip-war', 20)}</span>
-          <span class="civ-cac-act-label">Szturm</span>
+          <span class="civ-cac-kb">2</span>
+          <span class="civ-cac-act-lbl">${modalIcon('dip-war', 18)}SZTURM</span>
           <span class="civ-cac-act-desc">Bitwa 3D od razu · mur jako przeszkoda</span>
         </button>
       </div>
-    </div>
-    <div class="civ-cac-foot">
-      <button type="button" class="civ-cac-cancel" data-act="cancel">Anuluj · Esc</button>
+      <div class="civ-cac-btns">
+        <button type="button" class="civ-cac-cancel" data-act="cancel">${modalIcon('ui-close', 14)}Wycofaj</button>
+      </div>
+      <div class="civ-cac-keys"><b>1</b> = Oblegaj · <b>2</b> = Szturm · <b>Esc</b> = Wycofaj</div>
     </div>
   `;
 
   box.querySelector('[data-act="siege"]')?.addEventListener('click', () => pickAction(actions.onSiege));
   box.querySelector('[data-act="storm"]')?.addEventListener('click', () => pickAction(actions.onStorm));
   box.querySelector('[data-act="cancel"]')?.addEventListener('click', () => pickAction(actions.onCancel));
-  box.addEventListener('click', (e) => e.stopPropagation());
 
   root.appendChild(box);
   document.body.appendChild(root);
