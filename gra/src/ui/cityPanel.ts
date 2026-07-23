@@ -340,6 +340,13 @@ export interface CityPanelConfig {
   /** E7 — etykieta cywilizacji wlasciciela (jak w panelu dyplomacji) — do „czyje to miasto". */
   getOwnerLabel?: (ownerId: number) => string;
   /**
+   * C-HANDEL-UMOWA=B (2026-07-23) — etykiety obcych cywilizacji, z którymi TO miasto
+   * geometrycznie MOGŁOBY mieć szlak (połączenie możliwe, bez wojny), ale brakuje
+   * Umowy Handlowej — jedyny brakujący warunek jest traktat. Panel „Szlaki handlowe"
+   * pokazuje to jako podpowiedź zamiast ogólnego „brak połączenia".
+   */
+  getTradeTreatyMissingPartners?: (cityId: string) => string[];
+  /**
    * Follow-up „przenieś stolicę" (2026-07-21) — id aktualnie wyznaczonej stolicy
    * danego ownera (silnik już robi fallback na najstarsze miasto, jeśli gracz/AI
    * nigdy nic nie przenosił — patrz main.ts capitalCityIdForOwner).
@@ -7030,9 +7037,9 @@ function buildTradeRoutesDetailCard(city: City, rows: TradeRouteRowInfo[], data:
 
   const intro = el('div', 'dc-note');
   setNoteHtml(intro,
-    'Szlak handlowy łączy to miasto z obcym miastem (cywilizacja spoza tej, nie w wojnie). ' +
-    'Każda aktywna trasa daje osobny dochód (zależny od dystansu) ORAZ mnoży Handel z pól o +' +
-    `${TRADE_ROUTE_HANDEL_BONUS_PCT_PER_ROUTE}%.`,
+    'Szlak handlowy łączy to miasto z obcym miastem (cywilizacja spoza tej, nie w wojnie, ' +
+    'z zawartą Umową Handlową). Każda aktywna trasa daje osobny dochód (zależny od dystansu) ' +
+    `ORAZ mnoży Handel z pól o +${TRADE_ROUTE_HANDEL_BONUS_PCT_PER_ROUTE}%.`,
   );
   card.appendChild(intro);
 
@@ -7041,7 +7048,7 @@ function buildTradeRoutesDetailCard(city: City, rows: TradeRouteRowInfo[], data:
   gridDetailRow(g0, 'Budynek handlowy', maBudynekHandlowy ? 'Tak' : 'Brak — trasy niemożliwe');
   gridDetailRow(g0, 'Limit tras miasta', `${limit} (= liczba budynków: Targowisko/Karawanseraj/Port)`);
   gridDetailRow(g0, 'Aktywne trasy', `${rows.length} / ${limit}`);
-  gridDetailRow(g0, 'Warunek partnera', 'Miasto obcej cywilizacji, bez wojny, w zasięgu (ląd/morze)');
+  gridDetailRow(g0, 'Warunek partnera', 'Miasto obcej cywilizacji, bez wojny, w zasięgu (ląd/morze), z zawartą Umową Handlową');
 
   appendDetailFormula(card, `dochódTrasy = max(${incomeParams.dochodPodloga}, floor(${incomeParams.dochodBazowy} − dystans × ${incomeParams.dochodNaDystans}))`);
   appendDetailFormula(card, `mnożnikHandlu = 1 + ${TRADE_ROUTE_HANDEL_BONUS_PCT_PER_ROUTE / 100} × liczbaAktywnychTras (osobno od Targowiska)`);
@@ -7061,6 +7068,7 @@ function buildTradeRoutesDetailCard(city: City, rows: TradeRouteRowInfo[], data:
   appendDetailAlgo(card, 'Skąd biorą się trasy (refreshTradeRoutes, co turę)', [
     'Filtr: tylko gracz ↔ obca cywilizacja (własne miasta między sobą nigdy nie tworzą trasy).',
     'Filtr pokoju: wojna z danym właścicielem zrywa/blokuje trasę z jego miastami.',
+    'Filtr traktatu: wymaga aktywnej Umowy Handlowej z tym właścicielem — sam pokój już nie wystarcza; zerwanie umowy zrywa trasę.',
     'Limit slotów na miasto = liczba zbudowanych budynków handlowych (obie strony trasy muszą mieć wolny slot).',
     'Dystans ≤ próg (ląd/morze); dla morza wymagany Port w OBU miastach i ciągła droga wodna.',
     'Istniejące trasy mają priorytet nad nowymi kandydaturami (stabilność między turami); wśród nowych wygrywają najbliższe.',
@@ -7110,10 +7118,15 @@ function renderTradeRoutesPanel(mount: HTMLElement, city: City, data: GameData |
   if (rows.length === 0) {
     const built = cfg.getBuiltBuildingIds?.(city.id) ?? [];
     const maBudynekHandlowy = built.some(id => TRADE_BUILDING_IDS.has(id));
+    const missingTreatyWith = cfg.getTradeTreatyMissingPartners?.(city.id) ?? [];
     const hint = el('div', 'muted');
-    hint.textContent = maBudynekHandlowy
-      ? 'Brak tras — brak w zasięgu obcego miasta (bez wojny), z którym dałoby się połączyć.'
-      : 'Brak tras — potrzebny budynek handlowy (Targowisko/Karawanseraj/Port) i połączone obce miasto w pokoju.';
+    if (missingTreatyWith.length > 0) {
+      hint.textContent = `Brak tras — połączenie i pokój są, ale wymaga Umowy Handlowej z ${missingTreatyWith.join(', ')}.`;
+    } else if (maBudynekHandlowy) {
+      hint.textContent = 'Brak tras — brak w zasięgu obcego miasta (bez wojny), z którym dałoby się połączyć.';
+    } else {
+      hint.textContent = 'Brak tras — potrzebny budynek handlowy (Targowisko/Karawanseraj/Port) i połączone obce miasto w pokoju.';
+    }
     mount.appendChild(hint);
     return;
   }

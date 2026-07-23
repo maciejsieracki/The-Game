@@ -16,8 +16,11 @@
  *
  * Zakres E3 (dochód z tras, decyzje właściciela 2026-07-20 -- Q7=A, Q8=B, Q9):
  *   - refreshTradeRoutes() — ustala/utrzymuje/usuwa trasy GRACZ<->OBCA CYWILIZACJA
- *     co turę: filtr obcy właściciel + pokój (nie wojna), limit tras na miasto =
- *     liczba budynków handlowych (Targowisko/Karawanseraj/Port/Port wielki).
+ *     co turę: filtr obcy właściciel + pokój (nie wojna) + AKTYWNA Umowa Handlowa
+ *     (RodzajTraktatu.UmowaHandlowa — decyzja właściciela C-HANDEL-UMOWA=B,
+ *     2026-07-23: sam pokój już NIE wystarcza, trasa wymaga zawartego traktatu),
+ *     limit tras na miasto = liczba budynków handlowych (Targowisko/Karawanseraj/
+ *     Port/Port wielki).
  *   - Dochód = DWA SKŁADNIKI (wpięte oddzielnie):
  *     (1) składnik dystansowy (tradeRouteDistanceIncome / computeTradeRouteIncomeByCity)
  *         — wzór liniowy z podłogą, kredytowany OBU miastom trasy w pełnej kwocie
@@ -539,6 +542,12 @@ export function citiesHaveTradeConnection(
  *   - Filtr pokoju: isAtWar(ownerA, ownerB) === true -> para wykluczona (wojna
  *     zrywa/blokuje trasę). Wszystko poza wojną liczy się jako "pokój" (w tym
  *     neutralni/sojusz) — zgodnie z „filtr: obcy właściciel + pokój (nie wojna)".
+ *   - Filtr traktatu (C-HANDEL-UMOWA=B, decyzja właściciela 2026-07-23 — ZMIENIA
+ *     wcześniejszą HANDEL-Q1/Q8): hasTradeTreaty(ownerA, ownerB) === false -> para
+ *     wykluczona. Sam pokój już NIE wystarcza — trasa wymaga AKTYWNEJ Umowy
+ *     Handlowej (RodzajTraktatu.UmowaHandlowa) między stronami. Wojna nadal zrywa
+ *     trasę niezależnie od traktatu (traktat i tak pada przy wypowiedzeniu wojny,
+ *     patrz breakTreatiesOnWar w main.ts — to tylko druga, redundantna bramka).
  *   - Limit tras NA MIASTO, po OBU stronach (tradeRouteLimitForCity) = liczba
  *     zbudowanych budynków handlowych w TYM mieście. Miasto bez żadnego z nich
  *     ma limit 0 -> nie może uczestniczyć w żadnej trasie.
@@ -563,6 +572,10 @@ export function citiesHaveTradeConnection(
  * @param map           mapa świata (do findCityConnection).
  * @param builtByCity   cityId -> zbudowane budynki (limit tras + wymóg Portu na morzu).
  * @param isAtWar       (ownerA, ownerB) => czy strony są w stanie wojny.
+ * @param hasTradeTreaty (ownerA, ownerB) => czy strony mają AKTYWNĄ Umowę Handlową
+ *                       (RodzajTraktatu.UmowaHandlowa). Wstrzyknięte przez wywołującego
+ *                       (main.ts, z realnych traktatów diplomacy-treaties) — ten moduł
+ *                       CELOWO nie zna stanu dyplomacji, tak samo jak isAtWar.
  * @param params        progi dystansu (handel_szlaki, patrz loadTradeRouteParams).
  */
 export function refreshTradeRoutes(
@@ -571,6 +584,7 @@ export function refreshTradeRoutes(
   map: GameMap,
   builtByCity: ReadonlyMap<string, readonly string[]>,
   isAtWar: (ownerA: number, ownerB: number) => boolean,
+  hasTradeTreaty: (ownerA: number, ownerB: number) => boolean,
   params: TradeRouteParams = DEFAULT_TRADE_ROUTE_PARAMS,
 ): TradeRoute[] {
   const cityById = new Map<string, TradeRouteCityRef>();
@@ -598,6 +612,7 @@ export function refreshTradeRoutes(
     if (!from || !to) continue;
     if (from.ownerId !== 0 || to.ownerId === 0) continue; // musi być nadal gracz->obcy
     if (isAtWar(from.ownerId, to.ownerId)) continue;
+    if (!hasTradeTreaty(from.ownerId, to.ownerId)) continue; // C-HANDEL-UMOWA=B: brak/zerwana Umowa Handlowa -> trasa znika
     const conn = findCityConnection(from, to, map, route.medium, params, builtByCity);
     if (!conn.connected) continue;
     stillValid.push({ from, to, medium: route.medium, distance: conn.distance, id: route.id });
@@ -625,6 +640,7 @@ export function refreshTradeRoutes(
   for (const p of playerCities) {
     for (const f of foreignCities) {
       if (isAtWar(p.ownerId, f.ownerId)) continue;
+      if (!hasTradeTreaty(p.ownerId, f.ownerId)) continue; // C-HANDEL-UMOWA=B: bez Umowy Handlowej trasa nie powstaje
       const best = detectBestConnection(p, f, map, params, builtByCity);
       if (!best) continue;
       const id = tradeRouteId(p.id, f.id, best.medium);

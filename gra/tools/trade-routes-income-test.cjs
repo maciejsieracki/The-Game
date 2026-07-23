@@ -5,7 +5,9 @@
  *
  * Self-contained: bundles trade-routes.ts / economy.ts / turn-economy.ts / cities.ts
  * with esbuild (no runtime imports). Covers:
- *   A. Trasa gracz<->obcy w pokoju -> tworzy sie (refreshTradeRoutes).
+ *   A. Trasa gracz<->obcy w pokoju + Umowa Handlowa -> tworzy sie (refreshTradeRoutes).
+ *   A2. C-HANDEL-UMOWA=B (2026-07-23): brak Umowy Handlowej -> zero tras mimo pokoju;
+ *      zawarcie traktatu -> trasa powstaje; zerwanie traktatu -> trasa znika (bez wojny).
  *   B. Wojna -> trasa znika (nie zostaje z flaga "zawieszona" -- po prostu znika z listy).
  *   C. Wlasne<->wlasne NIGDY nie tworzy trasy (filtr zewnetrzny).
  *   D. Limit tras na miasto = liczba budynkow handlowych -- po stronie gracza I obcego.
@@ -84,16 +86,24 @@ const map = buildMap();
 function city(id, ownerId, q) { return { id, ownerId, q, r: 0 }; }
 
 const NO_WAR = () => false;
+// C-HANDEL-UMOWA=B (2026-07-23): refreshTradeRoutes wymaga teraz jawnego predykatu
+// Umowy Handlowej (6. argument, miedzy isAtWar a params). HAS_TREATY = wszystkie pary
+// maja zawarta umowe -- uzywany we WSZYSTKICH scenariuszach A/B/C/D/E ponizej, ktore
+// testuja geometrie/limit/stabilnosc niezaleznie od traktatu (traktat obecny z gory,
+// tak jak przed C-HANDEL-UMOWA=B "pokoj" byl domyslnie wystarczajacy). Gating samego
+// traktatu ma dedykowana sekcje A2 nizej.
+const HAS_TREATY = () => true;
+const NO_TREATY  = () => false;
 
 // ---------------------------------------------------------------------------
-// A. Trasa gracz<->obcy w pokoju -> tworzy sie
+// A. Trasa gracz<->obcy w pokoju + Umowa Handlowa -> tworzy sie
 // ---------------------------------------------------------------------------
-console.log('\n-- A. refreshTradeRoutes: gracz<->obcy w pokoju tworzy trase --');
+console.log('\n-- A. refreshTradeRoutes: gracz<->obcy w pokoju + Umowa Handlowa tworzy trase --');
 const p1 = city('p1', 0, 0);
 const f1 = city('f1', 1, 5);
 const builtA = new Map([['p1', ['targowisko']], ['f1', ['targowisko']]]);
 
-const routesA = TR.refreshTradeRoutes([p1, f1], [], map, builtA, NO_WAR);
+const routesA = TR.refreshTradeRoutes([p1, f1], [], map, builtA, NO_WAR, HAS_TREATY);
 eq(routesA.length, 1, 'A: dokladnie jedna trasa p1<->f1');
 const routeA = routesA[0];
 eq(routeA.id, TR.tradeRouteId('p1', 'f1', 'lad'), 'A: id trasy deterministyczne');
@@ -106,16 +116,33 @@ eq(routeA.dystans, 5, 'A: dystans = 5');
 eq(routeA.status, 'polaczony', 'A: status polaczony');
 
 // ---------------------------------------------------------------------------
+// A2. C-HANDEL-UMOWA=B: brak Umowy Handlowej -> zero tras mimo pokoju + geometrii OK;
+//     zawarcie traktatu -> trasa powstaje; zerwanie traktatu (bez wojny) -> trasa znika.
+// ---------------------------------------------------------------------------
+console.log('\n-- A2. refreshTradeRoutes: Umowa Handlowa wymagana (C-HANDEL-UMOWA=B) --');
+const routesA2_noTreaty = TR.refreshTradeRoutes([p1, f1], [], map, builtA, NO_WAR, NO_TREATY);
+eq(routesA2_noTreaty.length, 0, 'A2: pokoj + geometria OK, ale BRAK Umowy Handlowej -> zero tras');
+
+const routesA2_signed = TR.refreshTradeRoutes([p1, f1], routesA2_noTreaty, map, builtA, NO_WAR, HAS_TREATY);
+eq(routesA2_signed.length, 1, 'A2: zawarcie Umowy Handlowej -> trasa powstaje');
+eq(routesA2_signed[0].id, TR.tradeRouteId('p1', 'f1', 'lad'), 'A2: powstala trasa to p1<->f1');
+
+const routesA2_broken = TR.refreshTradeRoutes([p1, f1], routesA2_signed, map, builtA, NO_WAR, NO_TREATY);
+eq(routesA2_broken.length, 0, 'A2: zerwanie Umowy Handlowej (nadal pokoj!) -> trasa znika');
+
+// ---------------------------------------------------------------------------
 // B. Wojna -> trasa znika
 // ---------------------------------------------------------------------------
 console.log('\n-- B. refreshTradeRoutes: wojna zrywa trase (znika z listy) --');
 const AT_WAR_0_1 = (a, b) => (a === 0 && b === 1) || (a === 1 && b === 0);
-const routesB = TR.refreshTradeRoutes([p1, f1], routesA, map, builtA, AT_WAR_0_1);
+const routesB = TR.refreshTradeRoutes([p1, f1], routesA, map, builtA, AT_WAR_0_1, HAS_TREATY);
 eq(routesB.length, 0, 'B: wojna -> lista tras pusta (trasa znika, nie zostaje "zawieszona")');
 
 // Powrot do pokoju odtwarza trase (nie jest trwale skasowana z gry -- po prostu
-// nie byla persystowana w stanie wojny).
-const routesBRestored = TR.refreshTradeRoutes([p1, f1], routesB, map, builtA, NO_WAR);
+// nie byla persystowana w stanie wojny). Traktat nadal aktywny (wojna go nie kasuje
+// tutaj -- to symulacja czystej funkcji; w main.ts wojna realnie zrywa traktat, ale
+// to osobna, redundantna bramka -- patrz breakTreatiesOnWar).
+const routesBRestored = TR.refreshTradeRoutes([p1, f1], routesB, map, builtA, NO_WAR, HAS_TREATY);
 eq(routesBRestored.length, 1, 'B: powrot do pokoju -> trasa odtworzona');
 
 // ---------------------------------------------------------------------------
@@ -125,7 +152,7 @@ console.log('\n-- C. refreshTradeRoutes: wlasne<->wlasne nie tworzy trasy --');
 const p1c = city('p1c', 0, 30);
 const p2c = city('p2c', 0, 35); // rowniez gracz -- brak miasta obcego w tym wywolaniu
 const builtC = new Map([['p1c', ['targowisko']], ['p2c', ['targowisko']]]);
-const routesC = TR.refreshTradeRoutes([p1c, p2c], [], map, builtC, NO_WAR);
+const routesC = TR.refreshTradeRoutes([p1c, p2c], [], map, builtC, NO_WAR, HAS_TREATY);
 eq(routesC.length, 0, 'C: dwa miasta gracza, brak obcego -> zero tras (own<->own wykluczone)');
 
 // ---------------------------------------------------------------------------
@@ -142,7 +169,7 @@ const builtD1 = new Map([
   ['fD1', ['targowisko']],
   ['fD2', ['targowisko']],
 ]);
-const routesD1 = TR.refreshTradeRoutes([pD, fD1, fD2], [], map, builtD1, NO_WAR);
+const routesD1 = TR.refreshTradeRoutes([pD, fD1, fD2], [], map, builtD1, NO_WAR, HAS_TREATY);
 eq(routesD1.length, 1, 'D1: limit=1 po stronie gracza -> tylko jedna trasa');
 eq(routesD1[0].toCityId, 'fD1', 'D1: wygrywa blizszy kandydat (dystans 3 < 4)');
 
@@ -152,7 +179,7 @@ const builtD1b = new Map([
   ['fD1', ['targowisko']],
   ['fD2', ['targowisko']],
 ]);
-const routesD1b = TR.refreshTradeRoutes([pD, fD1, fD2], [], map, builtD1b, NO_WAR);
+const routesD1b = TR.refreshTradeRoutes([pD, fD1, fD2], [], map, builtD1b, NO_WAR, HAS_TREATY);
 eq(routesD1b.length, 2, 'D1-bis: limit=2 po stronie gracza -> obie trasy powstaja');
 
 // D2: limit po stronie OBCEGO miasta -- fD ma tylko 1 slot, dwaj gracze konkuruja.
@@ -164,7 +191,7 @@ const builtD2 = new Map([
   ['pF1', ['targowisko']],
   ['pF2', ['targowisko']],
 ]);
-const routesD2 = TR.refreshTradeRoutes([fD, pF1, pF2], [], map, builtD2, NO_WAR);
+const routesD2 = TR.refreshTradeRoutes([fD, pF1, pF2], [], map, builtD2, NO_WAR, HAS_TREATY);
 eq(routesD2.length, 1, 'D2: limit=1 po stronie obcego -> tylko jedna trasa');
 eq(routesD2[0].fromCityId, 'pF1', 'D2: wygrywa blizszy gracz (dystans 1 < 2)');
 
@@ -180,9 +207,9 @@ const builtE = new Map([
   ['fEOld', ['targowisko']],
   ['fENew', ['targowisko']],
 ]);
-const existingE = TR.refreshTradeRoutes([pE, fEOld], [], map, builtE, NO_WAR);
+const existingE = TR.refreshTradeRoutes([pE, fEOld], [], map, builtE, NO_WAR, HAS_TREATY);
 eq(existingE.length, 1, 'E: (setup) trasa poczatkowa pE<->fEOld istnieje');
-const routesE = TR.refreshTradeRoutes([pE, fEOld, fENew], existingE, map, builtE, NO_WAR);
+const routesE = TR.refreshTradeRoutes([pE, fEOld, fENew], existingE, map, builtE, NO_WAR, HAS_TREATY);
 eq(routesE.length, 1, 'E: limit=1 -> nadal tylko jedna trasa');
 eq(routesE[0].toCityId, 'fEOld', 'E: istniejaca trasa PRIORYTETOWO zachowana mimo blizszego fENew');
 

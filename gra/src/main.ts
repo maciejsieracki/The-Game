@@ -6904,6 +6904,7 @@ async function boot(): Promise<void> {
       tradeParams: TradeRouteParams,
       builtByCity: ReadonlyMap<string, readonly string[]>,
       isAtWar: (a: number, b: number) => boolean,
+      hasTradeTreaty: (a: number, b: number) => boolean,
       incomeParams: TradeRouteIncomeParams,
     ): void {
       const { added, removed } = diffTradeRoutes(prevRoutes, nextRoutes);
@@ -6949,6 +6950,8 @@ async function boot(): Promise<void> {
           reason = 'zmiana właściciela miasta';
         } else if (isAtWar(route.ownerId, route.toOwnerId)) {
           reason = 'wojna';
+        } else if (!hasTradeTreaty(route.ownerId, route.toOwnerId)) {
+          reason = 'zerwana Umowa Handlowa';
         } else {
           const conn = findCityConnection(from, to, map, route.medium, tradeParams, builtByCity);
           if (!conn.connected) reason = 'brak połączenia';
@@ -6967,6 +6970,31 @@ async function boot(): Promise<void> {
 
       if (tradeRouteEventLog.length > 6) tradeRouteEventLog.length = 6;
       refreshD1bHud();
+    }
+
+    /**
+     * UI (C-HANDEL-UMOWA=B, 2026-07-23) — dla panelu miasta „Szlaki handlowe": lista
+     * etykiet obcych cywilizacji, z którymi to konkretne miasto MOGŁOBY mieć szlak
+     * (geometrycznie połączone, citiesHaveTradeConnection — ignoruje limit slotów
+     * budynków handlowych, jak w gate AI↔AI/AI↔gracz E6) i z którymi NIE ma wojny,
+     * ale których zabrakło Umowy Handlowej — czyli jedyny brakujący warunek to traktat.
+     * Wywoływana tylko dla miast gracza (panel miasta jest gracz-only).
+     */
+    function foreignCivsMissingTradeTreatyForCity(cityId: string): string[] {
+      const city = cities.find(c => c.id === cityId);
+      if (!city || city.ownerId !== 0) return [];
+      const out: string[] = [];
+      for (const oid of aiOwnerCivMap.keys()) {
+        if (isBarbarian(oid)) continue;
+        if (getDiploRelation(0, oid).status === 'wojna') continue;
+        if (hasTreaty(activeDeals, 0, oid, RodzajTraktatu.UmowaHandlowa)) continue; // juz ma traktat
+        const foreignCities = cities.filter(c => c.ownerId === oid);
+        if (foreignCities.length === 0) continue;
+        if (citiesHaveTradeConnection([city], foreignCities, map, cityBuilt)) {
+          out.push(ownerDiploLabel(oid));
+        }
+      }
+      return out;
     }
 
     function collectTurnEvents(): SidePanelEvent[] {
@@ -9460,6 +9488,7 @@ async function boot(): Promise<void> {
       getCities: () => cities,
       getTradeRoutes: () => tradeRoutes,
       getOwnerLabel: (ownerId: number) => ownerDiploLabel(ownerId),
+      getTradeTreatyMissingPartners: (cityId: string) => foreignCivsMissingTradeTreatyForCity(cityId),
       getCapitalCityId: (ownerId: number) => capitalCityIdForOwner(ownerId),
       onSetCapital: (cityId: string) => { trySetPlayerCapital(cityId); },
       getCityBuildingFlags: (cityId: string) => ({
@@ -13003,13 +13032,19 @@ async function boot(): Promise<void> {
 
           // --- Handel E3: odswiez trasy handlowe gracz<->obca cywilizacja ---
           // Filtr zewnetrzny + pokoj stosuje refreshTradeRoutes samo; tutaj tylko
-          // wykluczamy barbarzyncow (nie sa stronami handlu) i budujemy isAtWar.
+          // wykluczamy barbarzyncow (nie sa stronami handlu) i budujemy isAtWar +
+          // hasTradeTreaty (C-HANDEL-UMOWA=B, 2026-07-23: sam pokoj juz NIE wystarcza,
+          // trasa wymaga aktywnej Umowy Handlowej -- ta sama bramka co activeDeals
+          // uzywana gdzie indziej w tym pliku, tylko wstrzykniete jako predykat, zeby
+          // trade-routes.ts nie musial znac stanu dyplomacji, analogicznie do isAtWar).
           const tradeCities = cities.filter(c => !isBarbarian(c.ownerId));
           const tradeParams = loadTradeRouteParams(
             data.econParams as unknown as Parameters<typeof loadTradeRouteParams>[0],
             _menuDifficulty,
           );
           const isAtWarFn = (a: number, b: number): boolean => getDiploRelation(a, b).status === 'wojna';
+          const hasTradeTreatyFn = (a: number, b: number): boolean =>
+            hasTreaty(activeDeals, a, b, RodzajTraktatu.UmowaHandlowa);
           const prevTradeRoutes = tradeRoutes;
           try {
             tradeRoutes = refreshTradeRoutes(
@@ -13018,6 +13053,7 @@ async function boot(): Promise<void> {
               map,
               cityBuilt,
               isAtWarFn,
+              hasTradeTreatyFn,
               tradeParams,
             );
           } catch (eTrade) {
@@ -13039,7 +13075,7 @@ async function boot(): Promise<void> {
           try {
             reportTradeRouteEvents(
               prevTradeRoutes, tradeRoutes, tradeCities, map, tradeParams, cityBuilt,
-              isAtWarFn, tradeIncomeParams,
+              isAtWarFn, hasTradeTreatyFn, tradeIncomeParams,
             );
           } catch (eTradeEv) {
             console.error('[Handel] Blad powiadomien o trasach:', eTradeEv);
