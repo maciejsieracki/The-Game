@@ -9,7 +9,13 @@ UWAGA: KANON i FINALNA promują się teraz OSOBNYMI skryptami (`gra/tools/publis
 wyraźne polecenie właściciela) — dlatego są logowane NIEZALEŻNIE, każdy w swojej sekcji, ze
 swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drugiego.
 
-## ROBOCZA `1d2f86fc` — 2026-07-23 · FILTRY ROSTERU JAKO IKONY (Konnica/Piechota/Dystansowe) — **AKTUALNA**
+## ROBOCZA `8c774bdd` — 2026-07-23 · FILTR „WSZYSTKIE" = ikona czterech kropek — **AKTUALNA**
+
+- **Zawartość (commit `277abfd`, na `1d2f86fc`):** czwarty filtr rosteru („Wszystkie") również jako ikona — cztery kropki w kwadracie (uwaga Macieja), pigułka „WSZYSTKIE" na hover; komplet czterech ikon filtrów bez napisów. Inne użycia przycisku (popupy taktyk/linii) bez zmian.
+- **Bramki:** tsc=0 · zrzut potwierdzony · VERIFY OK.
+- **md5:** `8c774bdde7851a884e17d76ad773ed0d` · stamp `8c774bdd`. Publikowała sesja chmurowa.
+
+## ROBOCZA `1d2f86fc` — 2026-07-23 · FILTRY ROSTERU JAKO IKONY (Konnica/Piechota/Dystansowe) — **ZASTĄPIONA** (→ `8c774bdd`)
 
 - **Zawartość (commit `ff01479`, na `49563095`):** filtry klas jednostek w panelu rosteru bitwy = SAME IKONY 32px (podkowa/skrzyżowane miecze/łuk — te same co na medalionach kart, spójne z makietą C06; ikona „tarczy" z battle-class-map.json Design świadomie odrzucona jako niespójna), polska nazwa TYLKO w pigułce na hover, aktywny = złota obwódka+glow; chipy WSZYSTKIE/GRUPA N/GENERAŁ zostają tekstowe (dynamiczne). Uwaga Macieja „infografiki, nie napisy". Logika filtrowania bez zmian.
 - **Bramki:** tsc=0 · smoke deploy+walka 0 błędów konsoli · VERIFY OK.

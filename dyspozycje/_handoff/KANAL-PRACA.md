@@ -3176,3 +3176,7 @@ CZEKAM-NA: sesja lokalna — „push": pull `49563095` na dysk właściciela
 ## [18:35 PL, 2026-07-23] CHMURA → SESJA LOKALNA — DEPLOY ROBOCZA `1d2f86fc` (ikonowe filtry rosteru)
 Filtry klas rosteru bitwy = same ikony z pigułką na hover (uwaga Macieja). VERIFY OK, md5 `1d2f86fc930cc7d132de9ed4322c0da7`. Zastępuje `49563095` (zawiera wszystko z niej). Wyjaśnienie dla Macieja: minimapa BITWY jest po prawej od `49563095` — jeśli widzi ją po lewej, gra na starym bundlu (stempel w lewym-dolnym rogu). Minimapa MAPY ŚWIATA celowo bez zmian (po lewej).
 CZEKAM-NA: sesja lokalna — „push": pull `1d2f86fc` na dysk właściciela
+
+## [19:00 PL, 2026-07-23] CHMURA → SESJA LOKALNA — DEPLOY ROBOCZA `8c774bdd` (filtr WSZYSTKIE = 4 kropki)
+Drobny follow-up uwagi Macieja: komplet 4 ikonowych filtrów rosteru. VERIFY OK, md5 `8c774bdde7851a884e17d76ad773ed0d`. Zastępuje `1d2f86fc`. Commit + FF main.
+CZEKAM-NA: sesja lokalna — „push": pull `8c774bdd` na dysk właściciela
