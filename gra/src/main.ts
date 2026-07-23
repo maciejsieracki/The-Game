@@ -611,6 +611,8 @@ import {
   diplomacyPnPraca,
   diplomacyProgDarRelacja,
   diplomacyResourceAccessCatalog,
+  diplomacyHandelSurowcePakietWielkosc,
+  diplomacyHandelSurowceCatalog,
 } from './game/diplomacy-value-catalog';
 import {
   collectUnauthorizedBorderPairs,
@@ -626,6 +628,7 @@ import {
   createEmptyBasketTransferContext,
   grantSurowiecBooleanAccess,
   grantTechToOwner,
+  transferSurowiecIlosc,
   type BasketTransferContext,
   type SurowiecBooleanGrant,
 } from './game/diplomacy-basket-transfer';
@@ -1533,6 +1536,29 @@ async function boot(): Promise<void> {
       return tradableGoodsIndexForOwner(ownerId)
         .filter(g => Object.prototype.hasOwnProperty.call(priceable, g.key))
         .map(g => ({ id: g.key, label: g.ilosc != null ? g.label + ' ×' + g.ilosc : g.label }));
+    }
+
+    /**
+     * C-DYP-SUROWCE-Q1=B (2026-07-23): surowce ILOŚCIOWE (magazyn miast — drewno/kamień/
+     * glina/cegła/ceramika/ruda) FAKTYCZNIE posiadane przez ownera, wycenione prostą
+     * ceną jednostkową (econ-params.json „handel_surowce"). Strona może zaoferować
+     * max tyle pakietów, ile ma pełnych — floor(zapas/pakiet); zero pełnych pakietów
+     * → pozycja pominięta (nie ma czym handlować).
+     */
+    function quantityTradableGoodOptions(ownerId: number): Array<{ id: string; label: string; maxPakiety: number }> {
+      const priced = diplomacyHandelSurowceCatalog();
+      const pakiet = diplomacyHandelSurowcePakietWielkosc();
+      return tradableGoodsIndexForOwner(ownerId)
+        .filter(g => Object.prototype.hasOwnProperty.call(priced, g.key))
+        .map(g => {
+          const maxPakiety = Math.floor((g.ilosc ?? 0) / pakiet);
+          return {
+            id: g.key,
+            label: g.label + ' ×' + pakiet + ' (pakiet)' + (maxPakiety > 0 ? ' — dost. ' + maxPakiety : ''),
+            maxPakiety,
+          };
+        })
+        .filter(g => g.maxPakiety > 0);
     }
 
     /**
@@ -3954,6 +3980,21 @@ async function boot(): Promise<void> {
           case 'surowiec_boolean': {
             const r = grantSurowiecBooleanAccess(item.id, fromOwnerId, toOwnerId, basketTransferCtx);
             basketTransferCtx = r.context;
+            break;
+          }
+          case 'surowiec_ilosc': {
+            // C-DYP-SUROWCE-Q1=B: `qty` z koszyka = liczba PAKIETÓW, nie sztuk.
+            const totalUnits = qty * diplomacyHandelSurowcePakietWielkosc();
+            const capId = capitalCityIdForOwner(toOwnerId);
+            const refs = cities.map(c => ({ id: c.id, ownerId: c.ownerId, surowce: c.surowce ?? {} }));
+            const result = transferSurowiecIlosc(item.id, totalUnits, fromOwnerId, toOwnerId, capId, refs);
+            for (let i = 0; i < cities.length; i++) {
+              const before = refs[i];
+              const after = result.cities[i];
+              if (before && after && after.surowce !== before.surowce) {
+                cities[i]!.surowce = after.surowce;
+              }
+            }
             break;
           }
           case 'jednostka': {
@@ -7909,6 +7950,9 @@ async function boot(): Promise<void> {
             resourceOptions: priceableTradableGoodOptions(0),
             giveResourceOptions: priceableTradableGoodOptions(0),
             receiveResourceOptions: priceableTradableGoodOptions(ownerId),
+            // C-DYP-SUROWCE-Q1=B (2026-07-23): surowce ILOŚCIOWE per STRONA (magazyn miast).
+            giveQuantityResourceOptions: quantityTradableGoodOptions(0),
+            receiveQuantityResourceOptions: quantityTradableGoodOptions(ownerId),
             // Zaległość #1 (SZYBKA UMOWA) — górny limit złota-dopełniacza w propozycji.
             playerSkarbiec: Math.floor(player.skarbiec),
           };

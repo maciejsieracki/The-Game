@@ -64,6 +64,15 @@ export interface NegotiationModalContext {
   receiveResourceOptions?: ReadonlyArray<{ id: string; label: string }>;
   /** Skarbiec gracza (¤) — SZYBKA UMOWA: górny limit złota-dopełniacza. */
   playerSkarbiec?: number;
+  /**
+   * C-DYP-SUROWCE-Q1=B (2026-07-23): surowce ILOŚCIOWE (drewno/kamień/glina/cegła/
+   * ceramika/ruda — City.surowce, patrz diplomacy-goods.ts) per STRONA, z prostą ceną
+   * jednostkową (econ-params.json „handel_surowce"). Odrębne od giveResourceOptions
+   * (surowiec_boolean = dostęp civ-wide) — to realne sztuki z magazynu miast, max
+   * pakietów ograniczony do tego, co strona faktycznie posiada (`maxPakiety`).
+   */
+  giveQuantityResourceOptions?: ReadonlyArray<{ id: string; label: string; maxPakiety: number }>;
+  receiveQuantityResourceOptions?: ReadonlyArray<{ id: string; label: string; maxPakiety: number }>;
 }
 
 const STYLE_ID = 'civ-diplo-neg-css-1e';

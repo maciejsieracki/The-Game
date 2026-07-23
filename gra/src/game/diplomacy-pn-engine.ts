@@ -13,6 +13,7 @@ import {
   diplomacySumPn,
   diplomacyPnZloto,
   diplomacyPnSurowiecBoolean,
+  diplomacyPnSurowiecIlosc,
   type WartoscPozycjaTyp,
 } from './diplomacy-value-catalog';
 
@@ -195,6 +196,14 @@ export interface QuickDealGoodOption {
   label: string;
 }
 
+/** Surowiec ILOŚCIOWY (pakiety) — C-DYP-SUROWCE-Q1=B (2026-07-23), patrz diplomacy-goods.ts. */
+export interface QuickDealQuantityGoodOption {
+  id: string;
+  label: string;
+  /** Max pakietów, ile ta strona może realnie zaoferować (floor(zapas/pakiet)). */
+  maxPakiety: number;
+}
+
 export interface QuickDealInput {
   /** Relacja (Zaufanie+Respekt) pary — ten sam kurs co reszta koszyka PN. */
   relacjaTotal: number;
@@ -204,6 +213,12 @@ export interface QuickDealInput {
   ourResourceOptions: readonly QuickDealGoodOption[];
   /** Surowce boolean, które partner faktycznie ma (to co możemy dostać). */
   theirResourceOptions: readonly QuickDealGoodOption[];
+  /**
+   * Surowce ILOŚCIOWE, które MY faktycznie mamy (pakiety) — tanie, dobrze dopełniają
+   * bilans zamiast/obok złota. Opcjonalne (callery bez wpięcia diplomacy-goods.ts
+   * po prostu nie dostaną tego dopełniacza).
+   */
+  ourQuantityResourceOptions?: readonly QuickDealQuantityGoodOption[];
 }
 
 export interface QuickDealResult {
@@ -261,6 +276,25 @@ export function computeQuickDealBasket(input: QuickDealInput): QuickDealResult {
     if (giveSum >= fairMin) break;
     giveItems.push({ typ: 'surowiec_boolean', id: item.id });
     giveSum += item.pn;
+  }
+
+  // C-DYP-SUROWCE-Q1=B: dopełniacz z surowców ILOŚCIOWYCH (pakiety) — tanie, dobrze
+  // domykają bilans granularnie, zanim sięgniemy po złoto. Najtańszy PN/pakiet pierwszy.
+  if (giveSum < fairMin && input.ourQuantityResourceOptions?.length) {
+    const ourQtyPriced = input.ourQuantityResourceOptions
+      .map(o => ({ ...o, pnPerPakiet: diplomacyPnSurowiecIlosc(o.id, 1) ?? 0 }))
+      .filter(o => o.pnPerPakiet > 0 && o.maxPakiety > 0)
+      .sort((a, b) => a.pnPerPakiet - b.pnPerPakiet);
+
+    for (const item of ourQtyPriced) {
+      if (giveSum >= fairMin) break;
+      let pakiety = 0;
+      while (pakiety < item.maxPakiety && giveSum < fairMin) {
+        pakiety += 1;
+        giveSum += item.pnPerPakiet;
+      }
+      if (pakiety > 0) giveItems.push({ typ: 'surowiec_ilosc', id: item.id, ilosc: pakiety });
+    }
   }
 
   if (giveSum < fairMin && input.ourGoldAvailable > 0) {

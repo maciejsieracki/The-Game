@@ -166,3 +166,101 @@ export function createEmptyBasketTransferContext(
     techCatalog,
   };
 }
+
+// ---------------------------------------------------------------------------
+// C-DYP-SUROWCE-Q1=B (2026-07-23): transfer ILOŚCIOWY surowca miejskiego
+// (pozycja koszyka surowiec_ilosc) — fizycznie przenosi sztuki z City.surowce
+// dawcy do City.surowce biorcy, w odróżnieniu od grantSurowiecBooleanAccess
+// powyżej (to tylko trwały DOSTĘP, bez ruchu sztuk).
+// ---------------------------------------------------------------------------
+
+/** Lekka referencja do miasta — tylko pola potrzebne do transferu ilościowego. */
+export interface ResourceIloscCityRef {
+  id: string;
+  ownerId: number;
+  surowce: Readonly<Record<string, number>>;
+}
+
+export type ResourceIloscTransferReason =
+  | 'brak_ilosci'
+  | 'brak_zapasow_dawcy'
+  | 'brak_miasta_odbiorcy'
+  | 'dawca_rowny_biorcy';
+
+export interface ResourceIloscTransferResult {
+  /** Nowa tablica miast (immutable) — tylko dotknięte miasta dostają nowy obiekt `surowce`. */
+  cities: ResourceIloscCityRef[];
+  /** Ile sztuk faktycznie przeniesiono (może być < totalUnits, jeśli dawca miał mniej). */
+  moved: number;
+  reason?: ResourceIloscTransferReason;
+}
+
+/**
+ * Przenosi `totalUnits` sztuk surowca `surowiecKey` z miast `fromOwnerId` do JEDNEGO
+ * miasta `toOwnerId` (stolica biorcy — `capitalCityId` — lub pierwsze miasto biorcy
+ * w przekazanej tablicy `cities`, gdy stolica nie istnieje/nie należy do biorcy).
+ *
+ * Deterministyczne odejmowanie: miasta dawcy posortowane malejąco po aktualnym
+ * zapasie surowca (remis rozstrzyga id miasta rosnąco), zbiera aż do `totalUnits`
+ * lub wyczerpania zapasów (nigdy nie schodzi poniżej 0 — realny transfer może być
+ * mniejszy niż żądany, patrz `moved`; wołający — main.ts — ogranicza ofertę do
+ * floor(zapas/pakiet) PRZED zawarciem umowy, więc to tylko defensywny fallback).
+ * Pure: nie mutuje wejściowej tablicy `cities`, zwraca nową.
+ */
+export function transferSurowiecIlosc(
+  surowiecKey: string,
+  totalUnits: number,
+  fromOwnerId: number,
+  toOwnerId: number,
+  capitalCityId: string | null | undefined,
+  cities: readonly ResourceIloscCityRef[],
+): ResourceIloscTransferResult {
+  const key = surowiecKey.trim().toLowerCase();
+  if (!key || !Number.isFinite(totalUnits) || totalUnits <= 0) {
+    return { cities: [...cities], moved: 0, reason: 'brak_ilosci' };
+  }
+  if (fromOwnerId === toOwnerId) {
+    return { cities: [...cities], moved: 0, reason: 'dawca_rowny_biorcy' };
+  }
+
+  const donors = cities
+    .filter(c => c.ownerId === fromOwnerId)
+    .slice()
+    .sort((a, b) => (b.surowce[key] ?? 0) - (a.surowce[key] ?? 0) || a.id.localeCompare(b.id));
+
+  const nowySurowiec = new Map<string, number>(); // cityId -> nowa ilość surowca (tylko dotknięte)
+  let remaining = totalUnits;
+  let moved = 0;
+  for (const city of donors) {
+    if (remaining <= 0) break;
+    const have = city.surowce[key] ?? 0;
+    if (have <= 0) continue;
+    const take = Math.min(have, remaining);
+    nowySurowiec.set(city.id, have - take);
+    remaining -= take;
+    moved += take;
+  }
+
+  if (moved <= 0) {
+    return { cities: [...cities], moved: 0, reason: 'brak_zapasow_dawcy' };
+  }
+
+  const recipientCandidates = cities.filter(c => c.ownerId === toOwnerId);
+  const recipient =
+    (capitalCityId ? recipientCandidates.find(c => c.id === capitalCityId) : undefined)
+    ?? recipientCandidates[0];
+
+  if (!recipient) {
+    return { cities: [...cities], moved: 0, reason: 'brak_miasta_odbiorcy' };
+  }
+
+  nowySurowiec.set(recipient.id, (recipient.surowce[key] ?? 0) + moved);
+
+  const next = cities.map(c => {
+    const nv = nowySurowiec.get(c.id);
+    if (nv === undefined) return c;
+    return { ...c, surowce: { ...c.surowce, [key]: nv } };
+  });
+
+  return { cities: next, moved };
+}

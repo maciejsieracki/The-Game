@@ -8,6 +8,7 @@ import techJson from '../../data/tech.json';
 import terrainImprovementsJson from '../../data/terrain-improvements.json';
 import unitsJson from '../../data/units.json';
 import buildingsJson from '../../data/buildings.json';
+import econParamsJson from '../../data/econ-params.json';
 import { diplomacyDepositBasePrice } from './diplomacy-deposit-trade';
 import { applyTempoKoszt, type TempoGry } from './tech-tempo';
 import { scaleRelationThreshold, DIPLOMACY_PARAMS } from './diplomacy';
@@ -21,6 +22,7 @@ export type WartoscPozycjaTyp =
   | 'tech'
   | 'jednostka'
   | 'surowiec_boolean'
+  | 'surowiec_ilosc'
   | 'zywnosc';
 
 export type WartoscKatalogReguly = {
@@ -171,6 +173,76 @@ export function diplomacyResourceAccessCatalog(): Readonly<Record<string, number
   return Object.freeze(Object.fromEntries(_resourceAccessPn));
 }
 
+// ---------------------------------------------------------------------------
+// C-DYP-SUROWCE-Q1=B (2026-07-23): handel ILOŚCIOWY surowcami miejskimi
+// (surowiec_ilosc) — proste ceny jednostkowe z econ-params.json „handel_surowce".
+// Odrębne od surowiec_boolean powyżej (to dostęp civ-wide, nie ilość ze
+// spichlerza miast). Ceny PLACEHOLDER — strojenie właściciela w panelu Excel.
+// ---------------------------------------------------------------------------
+
+type RawHandelSurowceRow = Record<string, number | string | undefined>;
+
+interface RawEconParamsJsonHandelSurowce {
+  handel_surowce?: Record<string, RawHandelSurowceRow>;
+}
+
+const _handelSurowce = (econParamsJson as RawEconParamsJsonHandelSurowce).handel_surowce ?? {};
+
+/** Klucz ASCII surowca (cities.ts City.surowce) → klucz wiersza cennika w econ-params.json. */
+const HANDEL_SUROWCE_CENA_ROW: Readonly<Record<string, string>> = {
+  drewno: 'cena_drewno',
+  kamien: 'cena_kamien',
+  glina: 'cena_glina',
+  cegla: 'cena_cegla',
+  ceramika: 'cena_ceramika',
+  ruda: 'cena_ruda',
+};
+
+const DEFAULT_HANDEL_SUROWCE_PAKIET = 10;
+
+function readHandelSurowceParam(rowKey: string, fallback: number): number {
+  const row = _handelSurowce[rowKey];
+  const v = row?.normal;
+  return typeof v === 'number' && Number.isFinite(v) ? v : fallback;
+}
+
+/** Wielkość pakietu handlu ilościowego (econ-params.json handel_surowce.pakiet_wielkosc). */
+export function diplomacyHandelSurowcePakietWielkosc(): number {
+  const v = readHandelSurowceParam('pakiet_wielkosc', DEFAULT_HANDEL_SUROWCE_PAKIET);
+  return v > 0 ? Math.floor(v) : DEFAULT_HANDEL_SUROWCE_PAKIET;
+}
+
+/** Cena jednostkowa (¤/szt.) surowca ilościowego, lub null gdy surowiec spoza cennika. */
+export function diplomacyHandelSurowiecCenaJednostkowa(surowiecKey: string): number | null {
+  const rowKey = HANDEL_SUROWCE_CENA_ROW[surowiecKey.trim().toLowerCase()];
+  if (!rowKey) return null;
+  const v = readHandelSurowceParam(rowKey, NaN);
+  return Number.isFinite(v) && v >= 0 ? v : null;
+}
+
+/**
+ * PN pozycji koszyka surowiec_ilosc = pakiety × pakiet_wielkosc × cena_jednostkowa.
+ * `pakietyQty` = liczba pakietów (nie sztuk) — spójne z polem `ilosc` w BasketItem.
+ */
+export function diplomacyPnSurowiecIlosc(surowiecKey: string, pakietyQty: number): number | null {
+  const cena = diplomacyHandelSurowiecCenaJednostkowa(surowiecKey);
+  if (cena == null) return null;
+  const pakiety = Math.floor(pakietyQty);
+  if (!Number.isFinite(pakiety) || pakiety <= 0) return 0;
+  const pakiet = diplomacyHandelSurowcePakietWielkosc();
+  return Math.max(0, Math.round(pakiety * pakiet * cena));
+}
+
+/** Lista surowców ilościowych z ceną jednostkową (debug / UI fallback). */
+export function diplomacyHandelSurowceCatalog(): Readonly<Record<string, number>> {
+  const out: Record<string, number> = {};
+  for (const key of Object.keys(HANDEL_SUROWCE_CENA_ROW)) {
+    const cena = diplomacyHandelSurowiecCenaJednostkowa(key);
+    if (cena != null) out[key] = cena;
+  }
+  return Object.freeze(out);
+}
+
 /** Suma PN pozycji w koszyku (null jeśli któraś pozycja nieznana). */
 export function diplomacySumPn(items: Array<{ typ: WartoscPozycjaTyp; id: string; ilosc?: number; level?: number; tempo?: TempoGry | number }>): number | null {
   let sum = 0;
@@ -200,11 +272,19 @@ export function diplomacySumPn(items: Array<{ typ: WartoscPozycjaTyp; id: string
       case 'surowiec_boolean':
         pn = diplomacyPnSurowiecBoolean(item.id);
         break;
+      case 'surowiec_ilosc':
+        // diplomacyPnSurowiecIlosc już mnoży przez qty (pakiety) — jak zloto/praca/zywnosc.
+        pn = diplomacyPnSurowiecIlosc(item.id, qty);
+        break;
       default:
         return null;
     }
     if (pn == null) return null;
-    sum += pn * (item.typ === 'zloto' || item.typ === 'praca' || item.typ === 'zywnosc' ? 1 : qty);
+    sum += pn * (
+      item.typ === 'zloto' || item.typ === 'praca' || item.typ === 'zywnosc' || item.typ === 'surowiec_ilosc'
+        ? 1
+        : qty
+    );
   }
   return sum;
 }

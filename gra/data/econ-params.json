@@ -500,5 +500,56 @@
       "jednostka": "pieniadz/ture",
       "opis": "Handel E3: dolna podloga dochodu dystansowego -- aktywna trasa nigdy nie daje mniej niz to, nawet przy dystansie bliskim progowi max."
     }
+  },
+  "handel_surowce": {
+    "cena_drewno": {
+      "easy": 2,
+      "normal": 2,
+      "hard": 2,
+      "jednostka": "¤/szt.",
+      "opis": "C-DYP-SUROWCE-Q1=B (2026-07-23): cena jednostkowa Drewna w koszyku PN dyplomacji (pozycja surowiec_ilosc, diplomacy-value-catalog.ts) — wartość PN pozycji = pakiety × pakiet_wielkosc × cena. PLACEHOLDER do strojenia przez właściciela w panelu Excel (gen-panel-*.py) — nie wartość finalna. Ta sama cena na wszystkich trudnościach (parametr handlu, nie skalowania trudności)."
+    },
+    "cena_kamien": {
+      "easy": 3,
+      "normal": 3,
+      "hard": 3,
+      "jednostka": "¤/szt.",
+      "opis": "C-DYP-SUROWCE-Q1=B: cena jednostkowa Kamienia w koszyku PN dyplomacji. PLACEHOLDER — patrz cena_drewno."
+    },
+    "cena_glina": {
+      "easy": 2,
+      "normal": 2,
+      "hard": 2,
+      "jednostka": "¤/szt.",
+      "opis": "C-DYP-SUROWCE-Q1=B: cena jednostkowa Gliny w koszyku PN dyplomacji. PLACEHOLDER — patrz cena_drewno."
+    },
+    "cena_cegla": {
+      "easy": 5,
+      "normal": 5,
+      "hard": 5,
+      "jednostka": "¤/szt.",
+      "opis": "C-DYP-SUROWCE-Q1=B: cena jednostkowa Cegły w koszyku PN dyplomacji. PLACEHOLDER — patrz cena_drewno."
+    },
+    "cena_ceramika": {
+      "easy": 6,
+      "normal": 6,
+      "hard": 6,
+      "jednostka": "¤/szt.",
+      "opis": "C-DYP-SUROWCE-Q1=B: cena jednostkowa Ceramiki w koszyku PN dyplomacji. PLACEHOLDER — patrz cena_drewno."
+    },
+    "cena_ruda": {
+      "easy": 4,
+      "normal": 4,
+      "hard": 4,
+      "jednostka": "¤/szt.",
+      "opis": "C-DYP-SUROWCE-Q1=B: cena jednostkowa Rudy w koszyku PN dyplomacji. PLACEHOLDER — patrz cena_drewno."
+    },
+    "pakiet_wielkosc": {
+      "easy": 10,
+      "normal": 10,
+      "hard": 10,
+      "jednostka": "szt.",
+      "opis": "C-DYP-SUROWCE-Q1=B: wielkość pakietu handlu ilościowego (surowiec_ilosc) — handel odbywa się w pakietach po tyle sztuk. Ta sama wartość na wszystkich trudnościach."
+    }
   }
 }

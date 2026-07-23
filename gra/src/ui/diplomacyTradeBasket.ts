@@ -17,6 +17,8 @@ import {
   diplomacyZywnoscNaPn,
   diplomacyResourceAccessCatalog,
   diplomacyHandelZaufaniePerTura,
+  diplomacyHandelSurowcePakietWielkosc,
+  diplomacyHandelSurowceCatalog,
   type WartoscPozycjaTyp,
 } from '../game/diplomacy-value-catalog';
 import { HANDEL_ZLOZE_CENA_BAZA } from '../game/diplomacy-deposit-trade';
@@ -38,6 +40,7 @@ const TYP_LABELS: Record<WartoscPozycjaTyp, string> = {
   tech: 'Technologia',
   jednostka: 'Jednostka',
   surowiec_boolean: 'Dostęp do surowca',
+  surowiec_ilosc: 'Surowiec (sztuki, pakiety)',
 };
 
 const PROG_HANDEL_REL = 100;
@@ -140,6 +143,24 @@ function defaultResourceOptions(): Array<{ id: string; label: string }> {
   }));
 }
 
+/**
+ * Fallback (legacy/testy bez wpięcia diplomacy-goods.ts) — katalog cen, BEZ realnego
+ * stanu magazynu, więc `maxPakiety` jest umowną górną granicą (nie odzwierciedla
+ * faktycznych zapasów). main.ts zawsze podaje realne `giveQuantityResourceOptions` /
+ * `receiveQuantityResourceOptions` — ten fallback praktycznie nie jest używany w grze.
+ */
+const FALLBACK_QUANTITY_MAX_PAKIETY = 99;
+
+function defaultQuantityResourceOptions(): Array<{ id: string; label: string; maxPakiety: number }> {
+  const cat = diplomacyHandelSurowceCatalog();
+  const pakiet = diplomacyHandelSurowcePakietWielkosc();
+  return Object.keys(cat).map(id => ({
+    id,
+    label: id.charAt(0).toUpperCase() + id.slice(1) + ' ×' + pakiet + ' (pakiet)',
+    maxPakiety: FALLBACK_QUANTITY_MAX_PAKIETY,
+  }));
+}
+
 function basketHasResourceAccess(...lists: ReadonlyArray<readonly BasketItem[]>): boolean {
   for (const items of lists) {
     if (items.some(i => i.typ === 'zloze' || i.typ === 'surowiec_boolean')) return true;
@@ -176,6 +197,12 @@ function itemLabel(item: BasketItem, ctx: NegotiationModalContext): string {
       return typLabel + ': ' + item.id;
     case 'surowiec_boolean':
       return typLabel + ': ' + item.id;
+    case 'surowiec_ilosc': {
+      const pakiet = diplomacyHandelSurowcePakietWielkosc();
+      const pakiety = item.ilosc ?? 1;
+      return typLabel + ': ' + item.id + ' ×' + pakiet + ' (pakiet) × ' + pakiety
+        + ' = ' + (pakiety * pakiet) + ' szt.';
+    }
     default:
       return typLabel;
   }
@@ -228,6 +255,16 @@ function buildAddForm(side: 'give' | 'receive', ctx: NegotiationModalContext, mo
     : (ctx.receiveResourceOptions ?? ctx.resourceOptions ?? defaultResourceOptions());
   const resSel = resources.map(r => '<option value="' + esc(r.id) + '">' + esc(r.label) + '</option>').join('');
 
+  // C-DYP-SUROWCE-Q1=B (2026-07-23): surowce ILOŚCIOWE per STRONA (realny magazyn
+  // miast, patrz game/diplomacy-goods.ts) — odrębne od `resources` powyżej (dostęp).
+  const qtyResources = side === 'give'
+    ? (ctx.giveQuantityResourceOptions ?? defaultQuantityResourceOptions())
+    : (ctx.receiveQuantityResourceOptions ?? defaultQuantityResourceOptions());
+  const qtyResSel = qtyResources
+    .map(r => '<option value="' + esc(r.id) + '" data-max="' + r.maxPakiety + '">' + esc(r.label) + '</option>')
+    .join('');
+  const qtyResFirstMax = qtyResources[0]?.maxPakiety ?? 1;
+
   const zywnHint = diplomacyZywnoscNaPn();
 
   return (
@@ -253,6 +290,12 @@ function buildAddForm(side: 'give' | 'receive', ctx: NegotiationModalContext, mo
       '</div>' +
       '<div class="cdb-fields-extra" data-extra="' + prefix + '-res">' +
         '<label>Surowiec</label><select class="cdb-res-bool" data-side="' + prefix + '">' + resSel + '</select>' +
+      '</div>' +
+      '<div class="cdb-fields-extra" data-extra="' + prefix + '-resqty">' +
+        '<label>Surowiec (ilość)</label>' +
+        '<select class="cdb-res-qty-sel" data-side="' + prefix + '">' + qtyResSel + '</select>' +
+        '<label>Liczba pakietów</label>' +
+        '<input type="number" class="cdb-res-qty-num" data-side="' + prefix + '" value="1" min="1" max="' + qtyResFirstMax + '" />' +
       '</div>' +
       '<button type="button" class="dip-gold-btn cdb-add-btn" data-side="' + prefix + '">+ Dodaj pozycję</button>' +
     '</div>'
@@ -402,6 +445,19 @@ function readItemFromForm(side: 'give' | 'receive', box: Element, ctx: Negotiati
       if (!id) return null;
       return { typ, id };
     }
+    case 'surowiec_ilosc': {
+      const sel = box.querySelector('.cdb-res-qty-sel[data-side="' + prefix + '"]') as HTMLSelectElement | null;
+      const id = sel?.value;
+      if (!id) return null;
+      const maxAttr = parseInt(sel!.selectedOptions[0]?.getAttribute('data-max') ?? '0', 10);
+      const rawQty = parseInt(
+        (box.querySelector('.cdb-res-qty-num[data-side="' + prefix + '"]') as HTMLInputElement)?.value ?? '0',
+        10,
+      );
+      if (!(rawQty > 0)) return null;
+      const qty = maxAttr > 0 ? Math.min(rawQty, maxAttr) : rawQty;
+      return { typ, id, ilosc: qty };
+    }
     default:
       return null;
   }
@@ -410,14 +466,14 @@ function readItemFromForm(side: 'give' | 'receive', box: Element, ctx: Negotiati
 function updateTypFields(box: Element, side: 'give' | 'receive'): void {
   const prefix = side === 'give' ? 'give' : 'recv';
   const typ = (box.querySelector('.cdb-typ[data-side="' + prefix + '"]') as HTMLSelectElement)?.value ?? 'zloto';
-  const extras = ['qty', 'city', 'zloze', 'tech', 'unit', 'res'];
+  const extras = ['qty', 'city', 'zloze', 'tech', 'unit', 'res', 'resqty'];
   for (const ex of extras) {
     const el = box.querySelector('[data-extra="' + prefix + '-' + ex + '"]');
     if (el) el.classList.remove('visible');
   }
   const map: Record<string, string> = {
     zloto: 'qty', praca: 'qty', zywnosc: 'city', zloze: 'zloze',
-    tech: 'tech', jednostka: 'unit', surowiec_boolean: 'res',
+    tech: 'tech', jednostka: 'unit', surowiec_boolean: 'res', surowiec_ilosc: 'resqty',
   };
   const show = map[typ];
   if (show) {
@@ -538,6 +594,19 @@ export function showTradeBasketModal(
       updateTypFields(box, uiSide);
     }
 
+    box.querySelectorAll('.cdb-res-qty-sel').forEach(sel => {
+      sel.addEventListener('change', () => {
+        const side = sel.getAttribute('data-side');
+        const opt = (sel as HTMLSelectElement).selectedOptions[0];
+        const max = opt?.getAttribute('data-max');
+        const inp = box.querySelector('.cdb-res-qty-num[data-side="' + side + '"]') as HTMLInputElement | null;
+        if (inp && max) {
+          inp.max = max;
+          if (parseInt(inp.value, 10) > parseInt(max, 10)) inp.value = max;
+        }
+      });
+    });
+
     box.querySelectorAll('.cdb-add-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         const side = btn.getAttribute('data-side') === 'recv' ? 'receive' : 'give';
@@ -614,6 +683,7 @@ export function openQuickDealBasket(
     ourGoldAvailable: ctx.playerSkarbiec ?? 0,
     ourResourceOptions: ctx.giveResourceOptions ?? ctx.resourceOptions ?? defaultResourceOptions(),
     theirResourceOptions: ctx.receiveResourceOptions ?? ctx.resourceOptions ?? defaultResourceOptions(),
+    ourQuantityResourceOptions: ctx.giveQuantityResourceOptions ?? defaultQuantityResourceOptions(),
   });
   showTradeBasketModal('trade', action, ctx, onSubmit, onCancel, quick);
 }
