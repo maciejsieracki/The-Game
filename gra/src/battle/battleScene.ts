@@ -171,6 +171,15 @@ import {
   createRosterEmptySlotElement,
   STRATEGY_HEADER_SVG,
   type BattleClassKind,
+  ROSTER_STATE_SVG,
+  ROSTER_DEAD_COLOR,
+  HP_BAR_LOW_GRADIENT,
+  SETTINGS_GEAR_SVG,
+  applySettingsGearBtn1E,
+  applySettingsPopupPanel1E,
+  applySettingsPopupHeader1E,
+  createSettingsToggleRow1E,
+  createSettingsActionRow1E,
 } from './battleHudTheme';
 import { civIconSvg } from '../ui/icons/brandAssets';
 import { showEndScreen1E } from './endScreen1E';
@@ -2059,11 +2068,29 @@ export class BattleScene {
   private _bottomPowerFillD: HTMLDivElement | null = null;
   private _bottomPowerLblA: HTMLSpanElement | null = null;
   private _bottomPowerLblD: HTMLSpanElement | null = null;
-  /** Prawy pionowy pasek ustawien (predkosc, auto, dzwiek). */
+  /** @deprecated Prawy rail 56px ZLIKWIDOWANY (TW v5 §2) — pole zostaje null, layout siege-hud go zeruje bezpiecznie. */
   private _rightSettingsRail: HTMLDivElement | null = null;
   private _rightSpeedLbl: HTMLSpanElement | null = null;
+  /** @deprecated Rail M/MUZ zlikwidowany — przyciski dźwięku żyją teraz w popupie zębatki (patrz _settings*Toggle). */
   private _soundBtn: HTMLButtonElement | null = null;
   private _musicBtn: HTMLButtonElement | null = null;
+  /** Zębatka ustawień top-right (TW v5 §2) — zastępuje prawy rail: Muzyka/Efekty/Paski/Statystyki/Pomoc. */
+  private _settingsGearWrap: HTMLDivElement | null = null;
+  private _settingsPopup: HTMLDivElement | null = null;
+  private _settingsMusicToggle: ((v: boolean) => void) | null = null;
+  private _settingsSfxToggle: ((v: boolean) => void) | null = null;
+  private _settingsBarsToggle: ((v: boolean) => void) | null = null;
+  private readonly _onSettingsDocClick = (e: MouseEvent): void => {
+    if (!this._settingsPopup || this._settingsPopup.style.display === 'none') return;
+    const t = e.target as Node;
+    // Popup jest teraz osobnym elementem (this.overlay), NIE dzieckiem gearWrap
+    // (patrz komentarz przy budowie) — sprawdź oba, żeby klik WEWNĄTRZ popupu go nie zamykał.
+    const insideGear = this._settingsGearWrap?.contains(t) ?? false;
+    const insidePopup = this._settingsPopup.contains(t);
+    if (!insideGear && !insidePopup) {
+      this._settingsPopup.style.display = 'none';
+    }
+  };
   private _attackerCivLabel = 'Gracz';
   private _defenderCivLabel = 'Przeciwnik';
   private _attackerSideLabel = '';
@@ -2546,12 +2573,102 @@ export class BattleScene {
     commanderPanel.appendChild(clockCell);
     mkCommanderCard('def');
 
-    // Prawa czesc: Wycofaj sie (Pomin jest na prawym pasku)
+    // Prawa czesc gornego paska (TW v5 \u00a72 \u2014 rail 56px zlikwidowany, wszystko tu):
+    // zebatka ustawien (popup Muzyka/Efekty/Paski/Statystyki/Pomoc) + Pomin + Wycofaj sie.
     const topRight = document.createElement('div');
     Object.assign(topRight.style, {
-      display: 'flex', alignItems: 'center', gap: '8px', minWidth: '140px',
+      display: 'flex', alignItems: 'flex-start', gap: '10px', minWidth: '140px',
       justifyContent: 'flex-end', pointerEvents: 'auto',
     });
+
+    // --- Zebatka ustawien: popup Muzyka / Efekty dzwiekowe / Paski HP-Morale / Statystyki / Pomoc ---
+    // UWAGA: popup NIE zyje wewnatrz topBar (z-index 10010) — panel dowodcow ma
+    // 10012 i renderowalby sie NAD popupem (obcinajac go), bo dziecko nie moze
+    // wyjsc poza stacking context rodzica. Popup wiec jest osobnym elementem
+    // fixed, dzieckiem this.overlay, z wlasnym wysokim z-index + pozycja liczona
+    // z realnego rect przycisku zebatki.
+    const gearWrap = document.createElement('div');
+    Object.assign(gearWrap.style, { position: 'relative' });
+    const btnGear = document.createElement('button');
+    applySettingsGearBtn1E(btnGear);
+    btnGear.title = 'Ustawienia';
+    btnGear.innerHTML = SETTINGS_GEAR_SVG;
+    gearWrap.appendChild(btnGear);
+
+    const settingsPopup = document.createElement('div');
+    applySettingsPopupPanel1E(settingsPopup);
+    Object.assign(settingsPopup.style, {
+      position: 'fixed', top: '0', right: '0', left: 'auto',
+      zIndex: '10020',
+    });
+    settingsPopup.style.display = 'none';
+    const popupHeader = document.createElement('div');
+    applySettingsPopupHeader1E(popupHeader);
+    popupHeader.textContent = 'Ustawienia';
+    settingsPopup.appendChild(popupHeader);
+    const popupBody = document.createElement('div');
+    Object.assign(popupBody.style, { padding: '6px' });
+    settingsPopup.appendChild(popupBody);
+
+    const musicRow = createSettingsToggleRow1E(CMD_SVG.music, 'Muzyka', !this._musicMuted, () => { this._toggleMusic(); });
+    popupBody.appendChild(musicRow.row);
+    this._settingsMusicToggle = musicRow.setActive;
+
+    const sfxRow = createSettingsToggleRow1E(CMD_SVG.sound, 'Efekty d\u017awi\u0119kowe', !this._sfxMuted, () => { this._toggleSfx(); });
+    popupBody.appendChild(sfxRow.row);
+    this._settingsSfxToggle = sfxRow.setActive;
+
+    const barsRow = createSettingsToggleRow1E(CMD_SVG.bars, 'Paski HP / Morale', this.barsVisible, () => {
+      this.barsVisible = !this.barsVisible;
+      for (const ru of [...this.atk, ...this.def]) {
+        if (ru.dead || ru.removed) continue;
+        ru.hpBarGroup.visible = this.barsVisible;
+      }
+      barsRow.setActive(this.barsVisible);
+    });
+    popupBody.appendChild(barsRow.row);
+    this._settingsBarsToggle = barsRow.setActive;
+
+    const statsSvg = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">'
+      + '<path d="M4 6h6v12H4zM14 6h6v8h-6z"/><path d="M8 10h2M16 12h2"/></svg>';
+    const statsRow = createSettingsActionRow1E(statsSvg, 'Statystyki oddzia\u0142\u00f3w', () => {
+      this._toggleBattleStatsOverlay('live');
+      settingsPopup.style.display = 'none';
+    });
+    popupBody.appendChild(statsRow);
+
+    const helpSvg = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">'
+      + '<circle cx="12" cy="12" r="9"/><path d="M9.2 9.5a2.8 2.8 0 0 1 5.4.9c0 1.9-2.6 2.3-2.6 4M12 17.5v.01"/></svg>';
+    const helpRow = createSettingsActionRow1E(helpSvg, 'Pomoc / skr\u00f3ty', () => {
+      this._showOrderFeedback('Skr\u00f3ty: P pauza \u00b7 1/2/3 pr\u0119dko\u015b\u0107 \u00b7 R AUTO/r\u0119czne \u00b7 H paski \u00b7 I statystyki \u00b7 M d\u017awi\u0119k');
+      settingsPopup.style.display = 'none';
+    });
+    popupBody.appendChild(helpRow);
+
+    this.overlay.appendChild(settingsPopup);
+    btnGear.onclick = (e) => {
+      e.stopPropagation();
+      const willOpen = settingsPopup.style.display === 'none';
+      if (willOpen) {
+        const r = btnGear.getBoundingClientRect();
+        settingsPopup.style.top = (r.bottom + 8) + 'px';
+        settingsPopup.style.right = (window.innerWidth - r.right) + 'px';
+      }
+      settingsPopup.style.display = willOpen ? 'block' : 'none';
+    };
+    topRight.appendChild(gearWrap);
+    this._settingsGearWrap = gearWrap;
+    this._settingsPopup = settingsPopup;
+    document.addEventListener('click', this._onSettingsDocClick);
+
+    // --- Pomin do wyniku (>>) \u2014 poprzednio na prawym railu, teraz obok zebatki ---
+    const btnSkipTop = document.createElement('button');
+    applySettingsGearBtn1E(btnSkipTop);
+    btnSkipTop.title = 'Pomin do wyniku';
+    btnSkipTop.innerHTML = CMD_SVG.skip;
+    btnSkipTop.onclick = () => { if (!this.finished) this.skip(); };
+    topRight.appendChild(btnSkipTop);
+
     const mkTopBtn = (label: string, title: string, onClick: () => void): HTMLButtonElement => {
       const b = document.createElement('button');
       b.textContent = label;
@@ -2590,117 +2707,11 @@ export class BattleScene {
     this.armyMoraleLabelA = null;
     this.armyMoraleLabelD = null;
 
-    // --- PRAWY PIONOWY PASEK USTAWIEN (predkosc, auto, dzwiek/muzyka) ---
-    const cmdBar = document.createElement('div');
-    Object.assign(cmdBar.style, { display: 'none' });
-    this.overlay.appendChild(cmdBar);
-
-    const makeRailBtn = (
-      svgHtml: string,
-      shortcut: string,
-      tooltip: string,
-      onClick: () => void,
-      opts?: { danger?: boolean },
-    ): HTMLButtonElement => {
-      const btn = document.createElement('button');
-      applyRailBtn1E(btn, opts);
-      btn.title = tooltip;
-      const iconEl = document.createElement('div');
-      Object.assign(iconEl.style, { lineHeight: '1', userSelect: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' });
-      iconEl.innerHTML = svgHtml;
-      const keyEl = document.createElement('div');
-      Object.assign(keyEl.style, {
-        fontSize: '9px', color: 'inherit', fontFamily: HUD_FONT, letterSpacing: '0.04em',
-        marginTop: '2px', userSelect: 'none', textAlign: 'center', fontWeight: '700',
-      });
-      keyEl.textContent = shortcut;
-      btn.appendChild(iconEl);
-      btn.appendChild(keyEl);
-      btn.addEventListener('mouseenter', () => { btn.style.filter = 'brightness(1.35)'; });
-      btn.addEventListener('mouseleave', () => { btn.style.filter = ''; applyRailBtn1E(btn, opts); });
-      btn.addEventListener('mousedown', () => { btn.style.filter = 'brightness(0.75)'; });
-      btn.addEventListener('mouseup',   () => { btn.style.filter = 'brightness(1.35)'; });
-      btn.onclick = onClick;
-      return btn;
-    };
-
-    const rail = document.createElement('div');
-    rail.id = 'battle-settings-rail';
-    Object.assign(rail.style, {
-      position:       'fixed',
-      top:            (BATTLE_HEADER_H + 8) + 'px',
-      right:          '16px',
-      bottom:         '0',
-      width:          '56px',
-      display:        'flex',
-      flexDirection:  'column',
-      alignItems:     'center',
-      gap:            '8px',
-      padding:        '0',
-      background:     'transparent',
-      border:         'none',
-      zIndex:         '100080',
-      boxShadow:      'none',
-      fontFamily:     HUD_FONT,
-      pointerEvents:  'auto',
-      overflowY:      'auto',
-    });
-    document.body.appendChild(rail);
-    this._rightSettingsRail = rail;
-
-    // TW v5 §3: Pauza (P) i Predkosc (V) PRZENIESIONE do panelu Tempo przy
-    // minimapie (patrz _buildMinimapOverlay/mkTempoBtn) — usuniete z prawego
-    // raila, ktory jest teraz krotszy. Klawiature (P/V) dziala jak dotychczas.
-    const btnManual = makeRailBtn(CMD_SVG.manual, 'R', 'AUTO / Reczne sterowanie (R)', () => { this._toggleManualMode(); });
-    rail.appendChild(btnManual);
-    this._manualBtn = btnManual;
-    (btnManual as any)._iconEl = btnManual.children[0] as HTMLElement;
-
-    const railSep = (): HTMLDivElement => {
-      const d = document.createElement('div');
-      Object.assign(d.style, { width: '32px', height: '1px', background: HUD_GOLD_DIM, margin: '2px 0', flexShrink: '0' });
-      return d;
-    };
-    rail.appendChild(railSep());
-
-    const btnSound = makeRailBtn(CMD_SVG.sound, 'M', 'Efekty dzwiekowe on/off (M)', () => { this._toggleSfx(); });
-    rail.appendChild(btnSound);
-    this._soundBtn = btnSound;
-
-    const btnMusic = makeRailBtn(CMD_SVG.music, 'MUZ', 'Muzyka / ambient on/off', () => { this._toggleMusic(); });
-    rail.appendChild(btnMusic);
-    this._musicBtn = btnMusic;
-
-    rail.appendChild(railSep());
-
-    const btnBars = makeRailBtn(CMD_SVG.bars, 'H', 'Paski HP/Morale on/off (H)', () => {
-      this.barsVisible = !this.barsVisible;
-      for (const ru of [...this.atk, ...this.def]) {
-        if (ru.dead || ru.removed) continue;
-        ru.hpBarGroup.visible = this.barsVisible;
-      }
-      btnBars.style.filter = this.barsVisible ? '' : 'grayscale(1) brightness(0.6)';
-    });
-    rail.appendChild(btnBars);
-
-    const btnStats = makeRailBtn(
-      '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">' +
-      '<path d="M4 6h6v12H4zM14 6h6v8h-6z"/><path d="M8 10h2M16 12h2"/></svg>',
-      'I',
-      'Stan oddzialow — utrata HP (I)',
-      () => { this._toggleBattleStatsOverlay('live'); },
-    );
-    rail.appendChild(btnStats);
-
-    const btnSkip = makeRailBtn(CMD_SVG.skip, '>>', 'Pomin do wyniku', () => { if (!this.finished) this.skip(); });
-    rail.appendChild(btnSkip);
-
-    const btnExit = makeRailBtn(CMD_SVG.retreat, 'WYC', 'Wycofaj si\u0119 z bitwy', () => {
-      this.dispose();
-      if (this.onCancelCb) this.onCancelCb();
-    }, { danger: true });
-    rail.appendChild(btnExit);
-
+    // TW v5 § 2/3: prawy pionowy rail 56px ZLIKWIDOWANY. R/AUTO żyje w panelu
+    // Tempo przy minimapie (_buildMinimapOverlay/_tempoAutoBtn); M/MUZ, H, I
+    // przeniesione do popupu zębatki ustawień (patrz gearWrap/settingsPopup w
+    // bloku topRight powyżej); >> i WYCOFAJ też w topRight. _rightSettingsRail
+    // zostaje zawsze null — layout siege-hud/roster ma już bezpieczny fallback.
     this._setSpeedIdx(this.speedIdx);
     this._refreshAudioBtns();
     this._syncManualRailHighlight();
@@ -2728,14 +2739,11 @@ export class BattleScene {
     // --- Q2: MINIMAPA (lewy-dolny rog, nad rosterem) ---
     this._buildMinimapOverlay();
 
-    // --- Q3: hover tooltip (0.3 s) ---
+    // --- Bogaty tooltip jednostki (C-09 v5 klatka 6) — hover na banerze 3D lub karcie rosteru ---
     const hoverTip = document.createElement('div');
     Object.assign(hoverTip.style, {
       position: 'fixed', display: 'none', pointerEvents: 'none', zIndex: '100020',
-      background: HUD_BG, border: '1px solid ' + HUD_GOLD_DIM, borderRadius: '6px',
-      padding: '8px 10px', minWidth: '140px', maxWidth: '220px',
-      fontFamily: HUD_FONT, color: HUD_TEXT, fontSize: '11px',
-      boxShadow: '0 4px 14px rgba(0,0,0,0.65)',
+      fontFamily: BATTLE_FONT,
     });
     document.body.appendChild(hoverTip);
     this._hoverTooltip = hoverTip;
@@ -3097,6 +3105,12 @@ export class BattleScene {
       this._rightSettingsRail.parentNode.removeChild(this._rightSettingsRail);
     }
     this._rightSettingsRail = null;
+    document.removeEventListener('click', this._onSettingsDocClick);
+    this._settingsGearWrap = null;
+    this._settingsPopup = null;
+    this._settingsMusicToggle = null;
+    this._settingsSfxToggle = null;
+    this._settingsBarsToggle = null;
     if (this.overlay.parentNode) this.overlay.parentNode.removeChild(this.overlay);
     this._rosterBar = null;
     this._manualBtn = null;
@@ -8217,6 +8231,7 @@ export class BattleScene {
       if (ru.dead || ru.removed) continue; // keep dead/fled units' bars hidden
       ru.hpBarGroup.visible = this.barsVisible;
     }
+    this._settingsBarsToggle?.(this.barsVisible);
   };
 
   /** I — stan oddziałów (ten sam overlay co po bitwie na mapie). */
@@ -8305,6 +8320,9 @@ export class BattleScene {
     if (this._musicBtn) {
       this._musicBtn.style.filter = this._musicMuted ? 'grayscale(1) brightness(0.55)' : '';
     }
+    // TW v5 §2: Muzyka/Efekty żyją teraz w popupie zębatki (topRight) — synchronizuj przełączniki.
+    this._settingsMusicToggle?.(!this._musicMuted);
+    this._settingsSfxToggle?.(!this._sfxMuted);
   }
 
   /** Dostosuj dolna krawedz prawego paska (nad toolbarem deploy / recznym). */
@@ -9300,23 +9318,99 @@ export class BattleScene {
     if (this._hoverTooltip) this._hoverTooltip.style.display = 'none';
   }
 
+  /**
+   * Postawa jednostki (C-09 v5 klatka 6, tooltip §6) — wyprowadzona WYŁĄCZNIE z
+   * realnych pól silnika: rozkaz gracza (playerOrder: hold/move/attack), doktryna
+   * własna jednostki (unitDoctrine) lub doktryna grupy (_groupMeta.doctrine).
+   * Gdy żadne z tych pól nie jest ustawione -> "Bez rozkazu" (nie zmyślamy treści).
+   */
+  private _unitPostawaLabel(ru: RuntimeBattleUnit): string {
+    if (ru.dead || ru.removed) return 'Poza walką';
+    if (ru.routed) return 'Ucieczka (rozbici)';
+    const order = ru.playerOrder;
+    if (order.type === 'hold') return 'Rozkaz: trzymaj pozycję';
+    if (order.type === 'move') return 'Rozkaz: marsz';
+    if (order.type === 'attack') return 'Rozkaz: atak celu';
+    if (ru.unitDoctrine != null) return 'Doktryna: ' + this._doctrineLabel(ru.unitDoctrine);
+    if (ru.groupId) {
+      const meta = this._groupMeta.get(ru.groupId);
+      if (meta) return 'Doktryna grupy: ' + this._doctrineLabel(meta.doctrine);
+    }
+    return 'Bez rozkazu';
+  }
+
+  /** Buduje treść bogatego tooltipa jednostki (C-09 v5 klatka 6, §6 dokumentu Design). */
+  private _unitTooltipHtml(ru: RuntimeBattleUnit): string {
+    const hp = Math.max(0, Math.round(ru.bu.hp));
+    const hpMax = Math.max(0, Math.round(ru.bu.maxHp));
+    const hpPct = ru.bu.maxHp > 0 ? Math.round(100 * Math.max(0, ru.bu.hp) / ru.bu.maxHp) : 0;
+    const morPct = ru.moraleMax > 0 ? Math.round(100 * Math.max(0, ru.morale) / ru.moraleMax) : 0;
+    const roleLabel = this._unitRoleLabel(ru);
+    const kategoria = String(ru.bu.kategoria ?? '').trim();
+    const subtitle = kategoria ? (kategoria + ' · ' + roleLabel) : roleLabel;
+    const postawa = this._unitPostawaLabel(ru);
+    const gNum = ru.groupId ? this._groupDisplayNum(ru.groupId) : null;
+    const groupLabel = gNum != null ? ('Grupa ' + gNum) : '—';
+    // Amunicja: TYLKO dla jednostek dystansowych z realną, skończoną pulą (ammoBarShown);
+    // silnik ma to pole (ammoLeft/ammoMax, patrz ammoCount) — jeśli go brak, wiersz pomijamy.
+    const hasAmmo = ru.ammoBarShown && Number.isFinite(ru.ammoMax) && ru.ammoMax > 0;
+    const ammoPct = hasAmmo ? Math.round(100 * Math.max(0, ru.ammoLeft) / ru.ammoMax) : 0;
+
+    const row = (label: string, value: string, color = '#e8e0c8'): string =>
+      '<div style="display:flex;align-items:flex-start;gap:10px;font-size:12px;line-height:1.35;">' +
+      '<span style="color:#8a8070;min-width:58px;letter-spacing:.04em;text-transform:uppercase;font-size:10px;font-weight:700;padding-top:1px;">' + label + '</span>' +
+      '<span style="color:' + color + ';flex:1;">' + escapeHtml(value) + '</span></div>';
+
+    const statCell = (svgColor: string, iconSvg: string, label: string, value: string): string =>
+      '<div class="tnum" style="display:flex;align-items:center;gap:6px;font-size:12px;">' +
+      '<span style="color:' + svgColor + ';display:inline-flex;line-height:0;">' + iconSvg + '</span>' +
+      '<span style="color:#8a8070;">' + label + '</span>' +
+      '<b style="margin-left:auto;color:#e8e0c8;">' + value + '</b></div>';
+
+    const ICON_HP = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 6v12M6 12h12"/></svg>';
+    const ICON_MORALE = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6 21V4l12 2v9l-12-2"/></svg>';
+    const ICON_AMMO = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 19 19 5M15 5h4v4"/><path d="M9 5H5v4"/></svg>';
+
+    const statCells = [
+      statCell('#4caf50', ICON_HP, 'Zdrowie', hpPct + '%'),
+      statCell('#ffd54a', ICON_MORALE, 'Morale', morPct + '%'),
+    ];
+    if (hasAmmo) statCells.push(statCell('#c8a878', ICON_AMMO, 'Amunicja', ammoPct + '%'));
+
+    return (
+      '<div style="padding:11px 14px 9px;border-bottom:1px solid rgba(232,216,138,0.2);background:linear-gradient(90deg,rgba(58,106,208,0.14),transparent);border-radius:10px 10px 0 0;">' +
+      '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">' +
+      '<span style="font-family:' + BATTLE_FONT_TITLE + ';font-size:15px;color:#cfe0f4;">' + escapeHtml(String(ru.bu.nazwa)) + '</span>' +
+      '<span class="tnum" style="font-size:12px;font-weight:700;color:' + BATTLE_GOLD + ';white-space:nowrap;">' + hp + ' / ' + hpMax + '</span>' +
+      '</div>' +
+      '<div style="font-size:11px;color:#8a8070;margin-top:2px;">' + escapeHtml(subtitle) + '</div>' +
+      '</div>' +
+      '<div style="padding:10px 14px;display:flex;flex-direction:column;gap:8px;">' +
+      row('Postawa', postawa) +
+      row('Grupa', groupLabel, gNum != null ? BATTLE_PLAYER_TEXT : '#8a8070') +
+      '</div>' +
+      '<div style="padding:9px 12px;border-top:1px solid rgba(232,216,138,0.16);display:grid;grid-template-columns:1fr 1fr;gap:7px 12px;">' +
+      statCells.join('') +
+      '</div>'
+    );
+  }
+
+  /** Bogaty tooltip jednostki (C-09 v5 klatka 6) — pigułka 1E, hover na banerze 3D lub karcie rosteru. */
   private _showHoverTooltip(ru: RuntimeBattleUnit, cx: number, cy: number): void {
     const tip = this._hoverTooltip;
     if (!tip) return;
-    const hpPct = ru.bu.maxHp > 0 ? Math.round(100 * Math.max(0, ru.bu.hp) / ru.bu.maxHp) : 0;
-    const morPct = ru.moraleMax > 0 ? Math.round(100 * Math.max(0, ru.morale) / ru.moraleMax) : 0;
-    const atkStat = unitRowStat(ru.bu.stats as Record<string, unknown>, 'meleeAttack', 'Atak', 0) || '?';
-    const defStat = unitRowStat(ru.bu.stats as Record<string, unknown>, 'meleeDefence', 'Obrona', 0) || '?';
-    const sideClr = ru.side === 'atk' ? FACTION_ATK : FACTION_DEF;
-    tip.innerHTML =
-      '<div style="color:' + HUD_GOLD + ';font-weight:bold;margin-bottom:4px;">' + escapeHtml(ru.bu.nazwa) + '</div>' +
-      '<div style="color:' + HUD_TEXT_DIM + ';font-size:10px;margin-bottom:4px;">' + this._unitRoleLabel(ru) + ' · ' + escapeHtml(String(ru.bu.kategoria ?? '')) + '</div>' +
-      '<div style="margin-bottom:3px;"><div style="display:flex;justify-content:space-between;font-size:9px;color:' + HUD_TEXT_DIM + ';"><span>HP</span><span>' + hpPct + '%</span></div>' +
-      '<div style="height:5px;background:rgba(255,255,255,0.1);border-radius:2px;overflow:hidden;"><div style="width:' + hpPct + '%;height:100%;background:' + sideClr + ';"></div></div></div>' +
-      '<div style="margin-bottom:3px;"><div style="display:flex;justify-content:space-between;font-size:9px;color:' + HUD_TEXT_DIM + ';"><span>Morale</span><span>' + morPct + '%</span></div>' +
-      '<div style="height:4px;background:rgba(255,255,255,0.08);border-radius:2px;overflow:hidden;"><div style="width:' + morPct + '%;height:100%;background:#9c27b0;"></div></div></div>' +
-      '<div style="font-size:9px;color:' + HUD_TEXT + ';">Atk ' + atkStat + ' · Obr ' + defStat + '</div>';
-    tip.style.display = 'block';
+    tip.innerHTML = this._unitTooltipHtml(ru);
+    Object.assign(tip.style, {
+      display: 'block',
+      padding: '0',
+      width: '300px',
+      background: 'linear-gradient(180deg,rgba(22,28,38,0.99),rgba(8,10,16,0.99))',
+      border: '2px solid rgba(232,216,138,0.5)',
+      borderRadius: '12px',
+      boxShadow: '0 18px 44px rgba(0,0,0,0.75)',
+      color: BATTLE_TEXT,
+      overflow: 'hidden',
+    });
     tip.style.left = (cx + 14) + 'px';
     tip.style.top = (cy + 14) + 'px';
   }
@@ -15699,25 +15793,33 @@ export class BattleScene {
     const row = this._deployRowKind(ru);
 
     const card = document.createElement('div');
+    card.dataset.unitId = ru.bu.id;
+    // C-09 v5 klatka 6: karta MARTWA = obw\u00f3dka przerywana + wy\u015brodkowany X (bez pask\u00f3w);
+    // karta ROZBITA/rout = cie\u0144sza pe\u0142na obw\u00f3dka + ikona ucieczki + zaczerwieniony HP.
+    const stateStyle = isDead
+      ? { border: '1px dashed rgba(232,216,138,0.22)', background: 'rgba(255,255,255,0.02)', boxShadow: 'none' }
+      : isRouted
+        ? { border: '1px solid rgba(232,216,138,0.18)', background: 'linear-gradient(180deg,rgba(24,30,40,.96),rgba(10,13,20,.96))', boxShadow: 'none' }
+        : rosterCardBaseStyle(row, isSel);
     Object.assign(card.style, {
       minWidth:       ROSTER_CARD_W + 'px',
       width:          ROSTER_CARD_W + 'px',
       height:         BATTLE_ROSTER_CARD_H + 'px',
-      borderRadius:   '8px',
-      cursor:         isDead ? 'default' : 'pointer',
+      borderRadius:   '7px',
+      cursor:         (isDead || isRouted) ? 'default' : 'pointer',
       display:        'flex',
       flexDirection:  'column',
       alignItems:     'center',
-      justifyContent: 'flex-start',
-      padding:        '5px 4px 4px',
-      gap:            '3px',
+      justifyContent: isDead ? 'center' : 'flex-start',
+      padding:        isDead ? '4px' : '5px 4px 4px',
+      gap:            isDead ? '4px' : '3px',
       userSelect:     'none',
       flexShrink:     '0',
       opacity:        isDead ? '0.4' : isRouted ? '0.5' : '1',
       transition:     'border-color 0.15s, box-shadow 0.15s, opacity 0.3s',
       position:       'relative',
       overflow:       'visible',
-      ...rosterCardBaseStyle(row, isSel),
+      ...stateStyle,
     });
 
     if (ru.groupId && !isDead) {
@@ -15736,27 +15838,50 @@ export class BattleScene {
     }
 
     const iconEl = document.createElement('div');
-    applyUnitCardIconCircle(iconEl, row);
-    iconEl.innerHTML = row === 'mounted' ? ROSTER_TYPE_SVG.mounted
-      : row === 'ranged' ? ROSTER_TYPE_SVG.ranged
-      : ROSTER_TYPE_SVG.melee;
-    const iconSvg = iconEl.querySelector('svg');
-    if (iconSvg) {
-      iconSvg.setAttribute('width', '15');
-      iconSvg.setAttribute('height', '15');
+    if (isDead) {
+      Object.assign(iconEl.style, {
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        color: ROSTER_DEAD_COLOR, lineHeight: '0',
+      });
+      iconEl.innerHTML = ROSTER_STATE_SVG.dead;
+    } else {
+      applyUnitCardIconCircle(iconEl, row);
+      iconEl.innerHTML = isRouted
+        ? ROSTER_STATE_SVG.routed
+        : row === 'mounted' ? ROSTER_TYPE_SVG.mounted
+          : row === 'ranged' ? ROSTER_TYPE_SVG.ranged
+            : ROSTER_TYPE_SVG.melee;
+      if (isRouted) iconEl.style.color = BATTLE_ENEMY_TEXT;
+      const iconSvg = iconEl.querySelector('svg');
+      if (iconSvg) {
+        iconSvg.setAttribute('width', '15');
+        iconSvg.setAttribute('height', '15');
+      }
     }
     card.appendChild(iconEl);
+    (card as any)._iconEl = iconEl;
 
     const hpTrack = document.createElement('div');
-    Object.assign(hpTrack.style, { width: '100%', height: '4px', background: 'rgba(255,255,255,0.1)', borderRadius: '2px', overflow: 'hidden' });
+    Object.assign(hpTrack.style, {
+      width: '100%', height: '4px', background: 'rgba(255,255,255,0.1)', borderRadius: '2px',
+      overflow: 'hidden', display: isDead ? 'none' : '',
+    });
     const hpFill = document.createElement('div');
-    Object.assign(hpFill.style, { width: (hpPct * 100).toFixed(1) + '%', height: '100%', background: hpBarGradient(), transition: 'width 0.25s', borderRadius: '2px' });
+    Object.assign(hpFill.style, {
+      width: (hpPct * 100).toFixed(1) + '%', height: '100%',
+      background: (isRouted || hpPct <= 0.25) ? HP_BAR_LOW_GRADIENT : hpBarGradient(),
+      transition: 'width 0.25s', borderRadius: '2px',
+    });
     hpTrack.appendChild(hpFill);
     card.appendChild(hpTrack);
     (card as any)._hpFill = hpFill;
+    (card as any)._hpTrack = hpTrack;
 
     const morTrack = document.createElement('div');
-    Object.assign(morTrack.style, { width: '100%', height: '4px', background: 'rgba(255,255,255,0.1)', borderRadius: '2px', overflow: 'hidden' });
+    Object.assign(morTrack.style, {
+      width: '100%', height: '4px', background: 'rgba(255,255,255,0.1)', borderRadius: '2px',
+      overflow: 'hidden', display: isDead ? 'none' : '',
+    });
     const morFill = document.createElement('div');
     Object.assign(morFill.style, {
       width: (isDead ? 0 : morPct * 100).toFixed(1) + '%', height: '100%',
@@ -15765,12 +15890,17 @@ export class BattleScene {
     morTrack.appendChild(morFill);
     card.appendChild(morTrack);
     (card as any)._morFill = morFill;
+    (card as any)._morTrack = morTrack;
 
     const hpLbl = document.createElement('div');
     Object.assign(hpLbl.style, {
-      fontSize: '8px', fontWeight: '700', color: isDead ? '#8a5a5a' : isRouted ? BATTLE_ENEMY_TEXT : '#c8b898',
+      fontSize: (isDead || isRouted) ? '7px' : '8px',
+      fontWeight: '700',
+      letterSpacing: isDead ? '0.06em' : isRouted ? '0.08em' : '0',
+      textTransform: (isDead || isRouted) ? 'uppercase' : 'none',
+      color: isDead ? ROSTER_DEAD_COLOR : isRouted ? BATTLE_ENEMY_TEXT : '#c8b898',
     });
-    hpLbl.textContent = isDead ? 'pad\u0142' : isRouted ? 'rout' : String(Math.max(0, Math.round(ru.bu.hp)));
+    hpLbl.textContent = isDead ? 'Pad\u0142a' : isRouted ? 'Rout' : String(Math.max(0, Math.round(ru.bu.hp)));
     card.appendChild(hpLbl);
     (card as any)._hpLbl = hpLbl;
     (card as any)._grpLbl = null;
@@ -15781,13 +15911,28 @@ export class BattleScene {
     });
 
     card.addEventListener('click', (e: MouseEvent) => {
-      if (ru.dead || ru.removed) return;
+      if (ru.dead || ru.removed || ru.routed) return;
       e.stopPropagation();
       if (this.deployPhase) {
         this._handleDeployUnitPick(ru, e.ctrlKey || e.metaKey, e.shiftKey);
         return;
       }
       this._handleBattleUnitPick(ru, e.ctrlKey || e.metaKey, e.shiftKey);
+    });
+
+    // Bogaty tooltip 1E (C-09 v5 klatka 6) \u2014 hover na kart\u0119 rosteru, bez op\u00f3\u017anienia.
+    card.addEventListener('pointerenter', (e: PointerEvent) => {
+      if (ru.dead || ru.removed) return;
+      this._showHoverTooltip(ru, e.clientX, e.clientY);
+    });
+    card.addEventListener('pointermove', (e: PointerEvent) => {
+      if (this._hoverTooltip && this._hoverTooltip.style.display === 'block') {
+        this._hoverTooltip.style.left = (e.clientX + 14) + 'px';
+        this._hoverTooltip.style.top = (e.clientY + 14) + 'px';
+      }
+    });
+    card.addEventListener('pointerleave', () => {
+      this._clearHoverTooltip();
     });
 
     if (!this.deployPhase) {
@@ -15902,9 +16047,17 @@ export class BattleScene {
       const morPct = moraleMax > 0 ? Math.max(0, moraleVal / moraleMax) : hpPct;
       const row = this._deployRowKind(ru);
 
+      // C-09 v5 klatka 6: stan karty (normalna/zaznaczona/rout/martwa) \u2014 pe\u0142ny
+      // przemalunek na wypadek przej\u015bcia \u017cywa->rout->martwa PO utworzeniu karty.
+      const stateStyle = isDead
+        ? { border: '1px dashed rgba(232,216,138,0.22)', background: 'rgba(255,255,255,0.02)', boxShadow: 'none' }
+        : isRouted
+          ? { border: '1px solid rgba(232,216,138,0.18)', background: 'linear-gradient(180deg,rgba(24,30,40,.96),rgba(10,13,20,.96))', boxShadow: 'none' }
+          : rosterCardBaseStyle(row, isSel);
       card.style.opacity = isDead ? '0.4' : isRouted ? '0.5' : '1';
       card.style.cursor = isDead || isRouted ? 'default' : 'pointer';
-      Object.assign(card.style, rosterCardBaseStyle(row, isSel));
+      card.style.justifyContent = isDead ? 'center' : 'flex-start';
+      Object.assign(card.style, stateStyle);
       let gBadge = (card as any)._gBadge as HTMLDivElement | undefined;
       if (ru.groupId && !isDead) {
         if (!gBadge) {
@@ -15920,10 +16073,27 @@ export class BattleScene {
         gBadge.style.display = 'none';
       }
 
+      const iconEl = (card as any)._iconEl as HTMLDivElement | undefined;
+      if (iconEl) {
+        const wantSvg = isDead ? ROSTER_STATE_SVG.dead : isRouted ? ROSTER_STATE_SVG.routed
+          : row === 'mounted' ? ROSTER_TYPE_SVG.mounted : row === 'ranged' ? ROSTER_TYPE_SVG.ranged : ROSTER_TYPE_SVG.melee;
+        if ((iconEl as any)._stateKey !== (isDead ? 'dead' : isRouted ? 'routed' : row)) {
+          iconEl.innerHTML = wantSvg;
+          const sv = iconEl.querySelector('svg');
+          if (sv && !isDead) { sv.setAttribute('width', '15'); sv.setAttribute('height', '15'); }
+          (iconEl as any)._stateKey = isDead ? 'dead' : isRouted ? 'routed' : row;
+        }
+        iconEl.style.color = isDead ? ROSTER_DEAD_COLOR : isRouted ? BATTLE_ENEMY_TEXT : '';
+      }
+      const hpTrack = (card as any)._hpTrack as HTMLDivElement | undefined;
+      if (hpTrack) hpTrack.style.display = isDead ? 'none' : '';
+      const morTrack = (card as any)._morTrack as HTMLDivElement | undefined;
+      if (morTrack) morTrack.style.display = isDead ? 'none' : '';
+
       const hpFill = (card as any)._hpFill as HTMLDivElement | undefined;
       if (hpFill) {
         hpFill.style.width = (hpPct * 100).toFixed(0) + '%';
-        hpFill.style.background = hpBarGradient();
+        hpFill.style.background = (isRouted || hpPct <= 0.25) ? HP_BAR_LOW_GRADIENT : hpBarGradient();
       }
       const morFill = (card as any)._morFill as HTMLDivElement | undefined;
       if (morFill) {
@@ -15932,8 +16102,11 @@ export class BattleScene {
       }
       const hpLbl = (card as any)._hpLbl as HTMLDivElement | undefined;
       if (hpLbl) {
-        hpLbl.textContent = isDead ? 'pad\u0142' : isRouted ? 'rout' : String(Math.max(0, Math.round(ru.bu.hp)));
-        hpLbl.style.color = isDead ? '#8a5a5a' : isRouted ? BATTLE_ENEMY_TEXT : '#c8b898';
+        hpLbl.textContent = isDead ? 'Pad\u0142a' : isRouted ? 'Rout' : String(Math.max(0, Math.round(ru.bu.hp)));
+        hpLbl.style.color = isDead ? ROSTER_DEAD_COLOR : isRouted ? BATTLE_ENEMY_TEXT : '#c8b898';
+        hpLbl.style.textTransform = (isDead || isRouted) ? 'uppercase' : 'none';
+        hpLbl.style.letterSpacing = isDead ? '0.06em' : isRouted ? '0.08em' : '0';
+        hpLbl.style.fontSize = (isDead || isRouted) ? '7px' : '8px';
       }
     }
     this._paintTwGroupTabs(this._battleGroupTabs);

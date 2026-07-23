@@ -1364,7 +1364,12 @@ export function applyBattleCheckbox1E(input: HTMLInputElement): void {
   input.addEventListener('change', paint);
 }
 
-/** Wizualny placeholder pustego slotu w siatce rosteru (6 kol). */
+/** Ikona „+" wyśrodkowana w pustym slocie rosteru (C-09 v5, klatka 6). */
+export const ROSTER_EMPTY_SLOT_SVG =
+  '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">' +
+  '<path d="M12 5v14M5 12h14"/></svg>';
+
+/** Wizualny placeholder pustego slotu w siatce rosteru (6 kol) — C-09 v5 klatka 6. */
 export function createRosterEmptySlotElement(cardH: number): HTMLDivElement {
   const ph = document.createElement('div');
   ph.dataset.rosterEmpty = '1';
@@ -1373,10 +1378,180 @@ export function createRosterEmptySlotElement(cardH: number): HTMLDivElement {
     height: cardH + 'px',
     boxSizing: 'border-box',
     borderRadius: '6px',
-    border: `1px dashed ${BATTLE_GOLD_DIM}`,
+    border: '1px dashed rgba(232,216,138,0.4)',
     background: 'rgba(255,255,255,0.03)',
-    opacity: '0.42',
+    opacity: '0.4',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
     pointerEvents: 'none',
   });
+  const icon = document.createElement('span');
+  icon.style.color = BATTLE_GOLD;
+  icon.style.display = 'inline-flex';
+  icon.style.lineHeight = '0';
+  icon.innerHTML = ROSTER_EMPTY_SLOT_SVG;
+  ph.appendChild(icon);
   return ph;
+}
+
+/** Ikony stanów karty rosteru (C-09 v5, klatka 6) — martwa (X) / rozbita-rout (strzałka). */
+export const ROSTER_STATE_SVG = {
+  dead:
+    '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">' +
+    '<path d="M18 6 6 18M6 6l12 12"/></svg>',
+  routed:
+    '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">' +
+    '<path d="M12 3v18M5 10l7-7 7 7"/></svg>',
+} as const;
+
+/** Kolor tekstu/ikony karty MARTWEJ (C-09 v5). */
+export const ROSTER_DEAD_COLOR = '#8a5a5a';
+
+/** Bordowo-czerwony gradient paska HP przy niskim zdrowiu / rout (C-09 v5, legenda „HP nisko"). */
+export const HP_BAR_LOW_GRADIENT = 'linear-gradient(90deg,#c84040,#e06060)';
+
+// ---------------------------------------------------------------------------
+// ZĘBATKA USTAWIEŃ (top-right, TW v5 §2) — zastępuje prawy rail 56px
+// (Muzyka / Efekty dźwiękowe / Paski HP-Morale / Statystyki / Pomoc).
+// ---------------------------------------------------------------------------
+
+export const SETTINGS_GEAR_SVG =
+  '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4">' +
+  '<circle cx="12" cy="12" r="3.2"/>' +
+  '<path d="M12 2.5v2.5M12 19v2.5M2.5 12H5M19 12h2.5M5 5l1.8 1.8M17.2 17.2 19 19M19 5l-1.8 1.8M6.8 17.2 5 19"/></svg>';
+
+/** Przycisk zębatki 40×40 (C06 v5 §2 — top-right). */
+export function applySettingsGearBtn1E(el: HTMLButtonElement): void {
+  Object.assign(el.style, {
+    width: '40px',
+    height: '40px',
+    borderRadius: '9px',
+    border: '2px solid rgba(232,216,138,0.4)',
+    background: 'linear-gradient(180deg,rgba(22,28,40,0.72),rgba(8,10,16,0.74))',
+    backdropFilter: 'blur(6px)',
+    color: BATTLE_GOLD,
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontFamily: BATTLE_FONT,
+    flexShrink: '0',
+  });
+}
+
+/** Panel popup ustawień, 224px, ancorowany pod zębatką (C06 v5 §2). */
+export function applySettingsPopupPanel1E(el: HTMLElement): void {
+  Object.assign(el.style, {
+    position: 'absolute',
+    top: '48px',
+    right: '0',
+    width: '224px',
+    borderRadius: '12px',
+    border: '2px solid rgba(232,216,138,0.45)',
+    background: 'linear-gradient(180deg,rgba(22,28,38,0.94),rgba(8,10,16,0.96))',
+    backdropFilter: 'blur(8px)',
+    boxShadow: '0 16px 40px rgba(0,0,0,0.7)',
+    overflow: 'hidden',
+    fontFamily: BATTLE_FONT,
+    zIndex: '2',
+  });
+}
+
+export function applySettingsPopupHeader1E(el: HTMLElement): void {
+  Object.assign(el.style, {
+    padding: '9px 13px',
+    borderBottom: '1px solid rgba(232,216,138,0.2)',
+    fontSize: '11px',
+    fontWeight: '700',
+    letterSpacing: '0.12em',
+    textTransform: 'uppercase',
+    color: BATTLE_GOLD,
+    fontFamily: BATTLE_FONT,
+  });
+}
+
+/** Redukuje width/height wpisane w string SVG do zadanego rozmiaru px. */
+function resizeSvg(svg: string, px: number): string {
+  return svg.replace(/width="\d+"/, `width="${px}"`).replace(/height="\d+"/, `height="${px}"`);
+}
+
+/** Wiersz-przełącznik w popupie ustawień (Muzyka / Efekty / Paski) — C06 v5 §2. */
+export function createSettingsToggleRow1E(
+  iconSvg: string,
+  label: string,
+  active: boolean,
+  onToggle: () => void,
+): { row: HTMLDivElement; setActive: (v: boolean) => void } {
+  const row = document.createElement('div');
+  Object.assign(row.style, {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
+    padding: '8px 10px',
+    borderRadius: '8px',
+    cursor: 'pointer',
+    fontFamily: BATTLE_FONT,
+  });
+  const icon = document.createElement('span');
+  icon.innerHTML = resizeSvg(iconSvg, 16);
+  Object.assign(icon.style, { display: 'inline-flex', lineHeight: '0', flexShrink: '0' });
+  const lbl = document.createElement('span');
+  lbl.textContent = label;
+  Object.assign(lbl.style, { flex: '1', fontSize: '13px' });
+  const sw = document.createElement('span');
+  Object.assign(sw.style, {
+    width: '34px', height: '18px', borderRadius: '10px', position: 'relative', flexShrink: '0',
+  });
+  const knob = document.createElement('span');
+  Object.assign(knob.style, {
+    position: 'absolute', top: '2px', width: '14px', height: '14px', borderRadius: '50%',
+  });
+  sw.appendChild(knob);
+  row.appendChild(icon);
+  row.appendChild(lbl);
+  row.appendChild(sw);
+  const setActive = (v: boolean): void => {
+    icon.style.color = v ? BATTLE_GOLD : '#c8b898';
+    lbl.style.color = v ? '#e8e0c8' : '#c8b898';
+    row.style.background = v ? 'rgba(232,216,138,0.06)' : 'transparent';
+    sw.style.background = v ? BATTLE_GOLD : 'rgba(255,255,255,0.12)';
+    knob.style.background = v ? '#2e2708' : '#8a8070';
+    knob.style.left = v ? '' : '2px';
+    knob.style.right = v ? '2px' : '';
+  };
+  setActive(active);
+  row.addEventListener('click', onToggle);
+  return { row, setActive };
+}
+
+/** Wiersz-akcja w popupie ustawień (Statystyki / Pomoc, bez przełącznika) — C06 v5 §2. */
+export function createSettingsActionRow1E(
+  iconSvg: string,
+  label: string,
+  onClick: () => void,
+): HTMLDivElement {
+  const row = document.createElement('div');
+  Object.assign(row.style, {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
+    padding: '8px 10px',
+    borderRadius: '8px',
+    cursor: 'pointer',
+    color: '#c8b898',
+    fontFamily: BATTLE_FONT,
+  });
+  const icon = document.createElement('span');
+  icon.innerHTML = resizeSvg(iconSvg, 16);
+  Object.assign(icon.style, { display: 'inline-flex', lineHeight: '0', flexShrink: '0' });
+  const lbl = document.createElement('span');
+  lbl.textContent = label;
+  Object.assign(lbl.style, { flex: '1', fontSize: '13px' });
+  row.appendChild(icon);
+  row.appendChild(lbl);
+  row.addEventListener('click', onClick);
+  row.addEventListener('mouseenter', () => { row.style.background = 'rgba(232,216,138,0.06)'; });
+  row.addEventListener('mouseleave', () => { row.style.background = 'transparent'; });
+  return row;
 }
