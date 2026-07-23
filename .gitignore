@@ -46,4 +46,5 @@ desktop.ini
 
 # Editor local
 *.swp
-*~.claude/worktrees/
+*~
+.claude/worktrees/
