@@ -100,9 +100,9 @@ const paramsNormal = M.loadOwnerStorageParams(econParamsRaw, 'normal');
 eq(paramsNormal.bazaSurowcePanstwo, 100, 'econ-params.json normal: magazyn_baza_surowce = 100 (nowa semantyka PANSTWO)');
 eq(paramsNormal.bonusSurowceNaBudynek, 100, 'econ-params.json normal: magazyn_bonus_surowce_na_budynek = 100');
 const paramsEasy = M.loadOwnerStorageParams(econParamsRaw, 'easy');
-eq(paramsEasy.bazaSurowcePanstwo, 120, 'econ-params.json easy: 120 (proporcja 1.2x zachowana)');
+eq(paramsEasy.bazaSurowcePanstwo, 100, 'econ-params.json easy: 100 (płaskie, decyzja Macieja 2026-07-24)');
 const paramsHard = M.loadOwnerStorageParams(econParamsRaw, 'hard');
-eq(paramsHard.bazaSurowcePanstwo, 80, 'econ-params.json hard: 80 (proporcja 0.8x zachowana)');
+eq(paramsHard.bazaSurowcePanstwo, 100, 'econ-params.json hard: 100 (płaskie, decyzja Macieja 2026-07-24)');
 
 // fallback gdy brak w JSON
 eq(M.loadOwnerStorageParams({}, 'normal').bazaSurowcePanstwo, 100, 'load: brak JSON -> fallback 100');
