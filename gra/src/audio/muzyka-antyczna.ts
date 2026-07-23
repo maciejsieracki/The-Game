@@ -31,11 +31,18 @@
 // ptaki, świerszcze, wycie wilka/sowy i szum drzew (renderListowie) — przez
 // composeKamien(..., onlyNature=true): zero piszczałki/bębnów/klekotu/
 // grzechotki/głosów, czysty soundscape bez rytmu i tonów. Gra w KAŻDEJ
-// epoce, odcięta od era MUZYKI (setEra() jej nie dotyczy). UWAGA: woda
-// (renderWoda) wypadła z tej listy — USPIONA, patrz jej komentarz przy
-// definicji funkcji:
+// epoce, odcięta od era MUZYKI (setEra() jej nie dotyczy). WODA (renderWoda)
+// — TEMAT #23: obudzona jako dźwięk POZYCYJNY. Gra ciągle jak wiatr (segmenty
+// nakładane, patrz composeKamien blok WODA), ale słyszalna głośność idzie
+// przez osobny gain (ambWaterOut, poniżej) sterowany Z ZEWNĄTRZ przez
+// setAmbienceWaterView(frac, wariant) — main.ts liczy udział heksów wody
+// (Morze/Wybrzeże/rzeka) w kadrze kamery (próbka siatki co ~0.5 s, reużywa
+// computeViewport() z map/minimap.ts — zero raycastów per klatkę) i podaje tu
+// gotową liczbę. Zero wody w kadrze = cisza; ~40%+ kadru = pełna warstwa;
+// rampa ~1 s (setTargetAtTime), więc szybki pan/zoom nie daje skoków głośności.
 //   startAmbience() / stopAmbience() / setAmbienceVolume(v: 0..1) /
-//   isAmbiencePlaying() / setAmbienceMood(mood) [opcjonalne — patrz niżej]
+//   isAmbiencePlaying() / setAmbienceMood(mood) [opcjonalne — patrz niżej] /
+//   setAmbienceWaterView(frac: 0..1, wariant: 0|1) [TEMAT #23, patrz wyżej]
 //   Sterowane wprost z main.ts, w tych samych miejscach co startGameMusic()/
 //   openStartupMainMenu() (patrz komentarze w main.ts).
 //   setMood(mood) MUZYKI — JEDYNY WYJĄTEK od "całkiem odcięta": woła
@@ -130,8 +137,10 @@ function pentToMidi(root: number, deg: number): number {
 const LEVELS = {
   // brąz
   lira: 0.40, aulos: 0.26, dum: 0.60, tek: 0.30, krotal: 0.11,
-  // kamień — natura (woda: USPIONA, patrz renderWoda niżej — czeka na dźwięk
-  // pozycyjny; liście: AKTYWNA w ambience zamiast wody, patrz composeKamien onlyNature)
+  // kamień — natura (woda: POZYCYJNA od TEMAT #23 — ten poziom to głośność
+  // warstwy PRZY PEŁNYM kadrze wody, faktyczna słyszalna głośność mnożona
+  // dodatkowo przez ambWaterOut, patrz sekcja AMBIENCE; liście: AKTYWNA w
+  // ambience OBOK wody — las jest wszędzie, woda tylko przy brzegu/rzece)
   wiatr: 0.30, ptak: 0.17, swierszcz: 0.10, wycie: 0.17, woda: 0.20, liscie: 0.24,
   // kamień — instrumenty i głosy
   piszcz: 0.38, kloda: 0.62, klekot: 0.34, grzechot: 0.18, glos: 0.55,
@@ -170,16 +179,17 @@ const LOOKAHEAD = 2.6;  // s — planowanie do przodu (odporność na throttling
 const WIATR_SEG = 11.0;  // s — długość segmentu
 const WIATR_KROK = 8.0;  // s — odstęp startów (3 s nakładki, equal-power fade)
 
-/** Woda — USPIONA: composeKamien już jej nie planuje (patrz komentarz przy
- *  renderWoda niżej), stałe zostają razem z funkcją na powrót. */
+/** Woda (TEMAT #23 — pozycyjna): segmenty nakładane, ta sama technika co
+ *  wiatr — gra ciągle, bez dziur, niezależnie od kadru; głośność SŁYSZALNA
+ *  sterowana z zewnątrz (ambWaterOut), patrz sekcja AMBIENCE. */
 const WODA_SEG = 13.0;
 const WODA_KROK = 9.5;
 
-/** Liście (szum drzew, TYLKO tryb ambience — patrz composeKamien onlyNature,
- *  zastępuje wodę w tym miejscu): ta sama technika segmentów nakładanych co
- *  wiatr, inny okres niż WIATR_SEG/KROK i inny niż (uśpione) WODA_SEG/KROK —
- *  celowo rozstrojony, żeby wiatr (fundament) i liście (warstwa nad nim) nie
- *  fazowały się. */
+/** Liście (szum drzew, TYLKO tryb ambience — patrz composeKamien onlyNature):
+ *  gra OBOK wody (las jest wszędzie, woda tylko przy brzegu/rzece) — ta sama
+ *  technika segmentów nakładanych co wiatr, inny okres niż WIATR_SEG/KROK i
+ *  niż WODA_SEG/KROK — celowo rozstrojony, żeby wiatr (fundament) i liście
+ *  (warstwa nad nim) nie fazowały się. */
 const LISCIE_SEG = 9.5;
 const LISCIE_KROK = 6.5;
 
@@ -188,7 +198,7 @@ const LISCIE_KROK = 6.5;
 // ---------------------------------------------------------------------------
 type InstrTyp =
   | 'lira' | 'aulos' | 'dum' | 'tek' | 'krotal'                    // brąz
-  | 'wiatr' | 'ptak' | 'swierszcz' | 'wycie' | 'woda' | 'liscie'   // kamień/ambience: natura (woda uśpiona)
+  | 'wiatr' | 'ptak' | 'swierszcz' | 'wycie' | 'woda' | 'liscie'   // kamień/ambience: natura (woda: pozycyjna, TEMAT #23)
   | 'piszcz' | 'kloda' | 'klekot' | 'grzechot' | 'glos';           // kamień: ludzie
 
 interface NoteEvent {
@@ -320,8 +330,9 @@ interface CompState {
   slotDur: number; pattern: string; slot: number; tPerc: number;
   ostinato: number[]; ostDur: number[]; ostPos: number; ostReps: number; tOst: number;
   tKrotal: number;
-  // kamień — natura (tWoda: uśpiona, patrz renderWoda; tListowie: TYLKO tryb
-  // ambience, patrz composeKamien onlyNature)
+  // kamień — natura (tWoda: TYLKO tryb ambience, pozycyjna od TEMAT #23,
+  // patrz renderWoda; tListowie: TYLKO tryb ambience, patrz composeKamien
+  // onlyNature)
   tWiatr: number; tPtak: number; tSwierszcz: number; tWycie: number; tWoda: number;
   tListowie: number;
   // kamień — instrumenty i głosy
@@ -420,22 +431,34 @@ function composeKamien(s: CompState, toT: number, out: NoteEvent[], onlyNature =
       rr(r, 0.8, 1.0) * (bitwa ? 0.75 : 1), 0));
     s.tWiatr += WIATR_KROK;
   }
-  // WODA — USPIONA: composeKamien już jej nie planuje (decyzja właściciela:
-  // woda losowana bez związku z geografią brzmiała fałszywie — fale słychać
-  // było w środku lądu). renderWoda i WODA_SEG/KROK ZOSTAJĄ w kodzie na
-  // powrót, gdy powstanie dźwięk pozycyjny (głośność zależna od bliskości
-  // wody na mapie). W jej miejsce w kanale ambience gra LIŚCIE — las jest
-  // wszędzie, więc ta warstwa nigdy nie zabrzmi geograficznie fałszywie.
-  //
   // LIŚCIE — TYLKO tryb ambience (onlyNature): ta sama logika segmentów co
   // wiatr, gra zawsze (jak wiatr), niezależnie od bitwy. Wariant losowany na
-  // segment: 0 = lekki powiew (częściej), 1 = mocniejszy podmuch.
+  // segment: 0 = lekki powiew (częściej), 1 = mocniejszy podmuch. Gra OBOK
+  // wody (poniżej) — las jest wszędzie, woda tylko przy brzegu/rzece.
+  //
+  // WODA — TYLKO tryb ambience, POZYCYJNA (TEMAT #23 — obudzona): segmenty
+  // nakładane jak wiatr, gra CIĄGLE niezależnie od geografii — decyzja
+  // właściciela (woda losowana bez związku z geografią brzmiała fałszywie)
+  // rozwiązana teraz inaczej: słyszalna głośność idzie przez osobny gain
+  // (ambWaterOut, sekcja AMBIENCE) sterowany Z ZEWNĄTRZ przez main.ts na
+  // podstawie udziału heksów Morze/Wybrzeże/rzeka w kadrze kamery — więc
+  // silnik może grać wodę bez przerwy, mimo że o geografii nic nie wie.
+  // Wariant (0=rzeka, 1=morze) i przycichnięcie rzeki wybiera ambWaterVariant
+  // (main.ts, patrz setAmbienceWaterView() w sekcji AMBIENCE) — tu tylko
+  // odczyt najnowszej wartości przy każdym nowym segmencie.
   if (onlyNature) {
     while (s.tListowie < toT) {
       const wariant = r() < 0.7 ? 0 : 1;
       out.push(ev(s, s.tListowie, 'liscie', wariant, LISCIE_SEG,
         rr(r, 0.5, 0.7) * (bitwa ? 0.85 : 1), rr(r, -0.35, 0.35)));
       s.tListowie += LISCIE_KROK;
+    }
+    while (s.tWoda < toT) {
+      const wariant = ambWaterVariant;
+      out.push(ev(s, s.tWoda, 'woda', wariant, WODA_SEG,
+        (wariant === 1 ? rr(r, 0.85, 1.0) : rr(r, 0.55, 0.75)) * (bitwa ? 0.85 : 1),
+        0));
+      s.tWoda += WODA_KROK;
     }
   }
   if (!onlyNature) {
@@ -873,19 +896,19 @@ function renderWiatr(fs: number, dur: number, seed: number): Float32Array {
   return out;
 }
 
-/** WODA — USPIONA (composeKamien już jej nie planuje — patrz komentarz w
- *  composeKamien, blok WODA/LIŚCIE). NIE KASOWAĆ: funkcja zostaje w kodzie
- *  jako uśpiony fallback, tym samym wzorcem co uśpiona synteza kamienia
- *  (patrz nagłówek pliku) — właściciel wprost planuje do niej wrócić, gdy
- *  powstanie dźwięk POZYCYJNY (głośność zależna od bliskości wody na mapie;
- *  na razie silnik nie zna geografii mapy, więc losowa woda brzmiała
- *  fałszywie — fale słychać było w środku lądu). Szum rzeki (0, węższe/
- *  wyższe pasmo, szybsze falowanie — "bełkot") albo morza (1, szersze/
- *  niższe pasmo + wolny "przypływ"). Dokładnie ta sama technika co
- *  renderWiatr (biały szum przez 2x one-pole LP + LFO na odcięciu/głośności
- *  + cichy bandpass-"pluski"), inne pasmo i wolniejsza obwiednia. Segmenty
- *  nakładane (WODA_SEG/WODA_KROK) — grałaby bez dziur, jak wiatr. UWAGA:
- *  wariant (rzeka vs morze) losuje wywołujący, tu tylko renderowany. */
+/** WODA — POZYCYJNA (TEMAT #23 — obudzona z uśpienia). composeKamien (blok
+ *  WODA/LIŚCIE, onlyNature) planuje ją teraz CIĄGLE jak wiatr — geografia nie
+ *  wpływa na TO, że gra, tylko na to, jak GŁOŚNO jest słyszalna (ambWaterOut,
+ *  sekcja AMBIENCE, mnożony przez udział wody w kadrze z main.ts). Szum rzeki
+ *  (0, węższe/wyższe pasmo, szybsze falowanie — "bełkot") albo morza (1,
+ *  szersze/niższe pasmo + wolny "przypływ", z natury głośniejszy — patrz
+ *  `rzeka ? 1.7 : 2.1` niżej). Dokładnie ta sama technika co renderWiatr
+ *  (biały szum przez 2x one-pole LP + LFO na odcięciu/głośności + cichy
+ *  bandpass-"pluski"), inne pasmo i wolniejsza obwiednia. Segmenty nakładane
+ *  (WODA_SEG/WODA_KROK) — gra bez dziur, jak wiatr. UWAGA: wariant (rzeka vs
+ *  morze) wybiera main.ts (ambWaterVariant, patrz setAmbienceWaterView() w
+ *  sekcji AMBIENCE) na podstawie obecności Morze/Wybrzeże w kadrze, tu tylko
+ *  renderowany. */
 function renderWoda(fs: number, wariant: number, dur: number, seed: number): Float32Array {
   const rng = mulberry32(seed);
   const len = Math.floor(fs * dur);
@@ -920,8 +943,9 @@ function renderWoda(fs: number, wariant: number, dur: number, seed: number): Flo
   return out;
 }
 
-/** LIŚCIE — szum drzew na wietrze, AKTYWNA warstwa ambience w miejscu wody
- *  (patrz jej komentarz powyżej). Ta sama technika co renderWiatr (biały
+/** LIŚCIE — szum drzew na wietrze, warstwa ambience OBOK wody (las jest
+ *  wszędzie, gra zawsze; woda — patrz jej komentarz powyżej — tylko przy
+ *  brzegu/rzece). Ta sama technika co renderWiatr (biały
  *  szum przez 2x one-pole LP + LFO na odcięciu/głośności + cichy bandpass-
  *  "szelest"), ale celowo różna od fundamentu wiatru:
  *   (1) pasmo WYŻEJ — liście nie są fundamentem: fcBaza ok. 850–1700 Hz,
@@ -1702,6 +1726,38 @@ let ambMood: Mood = 'mapa';
 /** Aktywne źródła ambience — stopAmbience() musi je uciąć (nie tylko gain bus). */
 const ambActiveSources: AudioBufferSourceNode[] = [];
 
+/** TEMAT #23 — WODA POZYCYJNA. Osobny gain PODLĄCZONY pod ambOut: dziedziczy
+ *  automatycznie suwak/wyciszenie gracza (setAmbienceVolume) i wyciszenie
+ *  bitewne (ambApplyBattleMute) — zero zmian w tamtej logice, patrz zakaz w
+ *  zadaniu (inny agent zmienia trwałość `enabled` w ambiencePrefs.ts równolegle).
+ *  Sterowany WYŁĄCZNIE przez setAmbienceWaterView() poniżej, wołane z main.ts
+ *  co ~0.5 s na podstawie udziału heksów wody w kadrze kamery. */
+let ambWaterOut: GainNode | null = null;
+/** Ostatni znany udział wody w kadrze (0..1, PRZED krzywą głośności) — pamiętany
+ *  też jako wartość startowa nowo tworzonego ambWaterOut (ensureAmbGraph), żeby
+ *  kolejność startAmbience()/setAmbienceWaterView() nie miała znaczenia. */
+let ambWaterFrac = 0;
+/** Wariant szumu wody: 0 = rzeka (węższe pasmo, cichszy — patrz renderWoda),
+ *  1 = morze (szersze pasmo, głośniejszy). Wybiera main.ts na podstawie
+ *  obecności heksów Morze/Wybrzeże w kadrze (patrz komentarz w composeKamien,
+ *  blok WODA) — domyślnie 'morze', nieszkodliwe przed pierwszym wywołaniem
+ *  setAmbienceWaterView() bo i tak głośność=0 dopóki ambWaterFrac=0. */
+let ambWaterVariant: 0 | 1 = 1;
+
+/** Udział heksów wody w kadrze, przy którym warstwa wody osiąga PEŁNĄ (1.0)
+ *  słyszalną głośność — poniżej rampa liniowa do 0. Właściciel: "pełna
+ *  składowa przy ~40%+ kadru". */
+const WATER_FRAC_PELNIA = 0.40;
+/** Stała czasowa rampy głośności wody (setTargetAtTime, krzywa wykładnicza) —
+ *  ~0.32 s daje ~95% dojścia do celu w ~1 s (właściciel: "ramp ~1s, bez
+ *  skoków przy szybkim pan/zoom"). */
+const WATER_RAMP_TC = 0.32;
+
+function waterVolumeFromFrac(frac: number): number {
+  const f = Math.max(0, Math.min(1, frac));
+  return Math.min(1, f / WATER_FRAC_PELNIA);
+}
+
 /** Wyciszenie kanału natury w bitwie: PEŁNE (cały bus do ciszy, true) czy
  *  TYLKO zwierzęta (ptaki/świerszcze/wycie — wbudowany efekt composeKamien
  *  przez setAmbienceMood(); wiatr/liście grają dalej, false)? Właściciel
@@ -1733,6 +1789,12 @@ function ensureAmbGraph(): { ac: AudioContext; out: GainNode } | null {
     ambOut = ambCtx.createGain();
     ambOut.gain.value = volCurve(ambVolume);
     ambOut.connect(ambCtx.destination);
+    // WODA POZYCYJNA (TEMAT #23) — patrz komentarz przy ambWaterOut wyżej.
+    // Start od razu na ostatnio znanym udziale wody (zwykle 0 przed pierwszym
+    // tick'iem main.ts), żeby nie było cichego "doskoku" głośności po starcie.
+    ambWaterOut = ambCtx.createGain();
+    ambWaterOut.gain.value = waterVolumeFromFrac(ambWaterFrac);
+    ambWaterOut.connect(ambOut);
   }
   return ambOut ? { ac: ambCtx, out: ambOut } : null;
 }
@@ -1749,7 +1811,10 @@ function ambSchedule(e: NoteEvent): void {
   g.gain.value = e.gain * LEVELS[e.typ];
   const pan = ac.createStereoPanner();
   pan.pan.value = e.pan;
-  src.connect(g); g.connect(pan); pan.connect(ambOut);
+  // WODA (TEMAT #23): przez ambWaterOut, nie wprost do ambOut — patrz jego
+  // komentarz. Wszystkie inne typy (wiatr/liście/ptaki/…) jak dotychczas.
+  const dest = e.typ === 'woda' ? (ambWaterOut ?? ambOut) : ambOut;
+  src.connect(g); g.connect(pan); pan.connect(dest);
   const when = Math.max(ac.currentTime + 0.02, ambT0 + e.t);
   ambActiveSources.push(src);
   src.onended = () => {
@@ -1824,6 +1889,31 @@ export function setAmbienceVolume(v: number): void {
   if (ambCtx && ambOut && !(AMB_BITWA_MUTE_PELNE && ambBattleMuted)) {
     ambOut.gain.setTargetAtTime(volCurve(ambVolume), ambCtx.currentTime, 0.05);
   }
+}
+
+/** TEMAT #23 — WODA POZYCYJNA. Wołane z main.ts co ~0.5 s (próbka siatki
+ *  widocznych heksów, patrz computeViewport() w map/minimap.ts — TANIE,
+ *  zero raycastów per klatkę) z gotowym udziałem wody w kadrze kamery.
+ *  `frac` — 0..1, udział heksów Morze/Wybrzeże (pełna waga) + rzeka (waga
+ *  mniejsza, liczy main.ts) w próbkowanej siatce; 0 = brak wody w kadrze
+ *  (cisza), ~0.40+ = pełna warstwa (patrz WATER_FRAC_PELNIA).
+ *  `wariant` — 0=rzeka (cichszy, węższe pasmo) / 1=morze (głośniejszy,
+ *  szersze pasmo); main.ts wybiera 'morze' gdy w kadrze jest choć jeden heks
+ *  Morze/Wybrzeże, inaczej 'rzeka' gdy jest choć jedna rzeka, inaczej bez
+ *  znaczenia (frac=0 i tak wycisza).
+ *  Rampa ~1 s (setTargetAtTime, stała czasowa WATER_RAMP_TC) — bez skoków
+ *  przy szybkim pan/zoom. Bezpieczne wołać przed startAmbience() (nie tworzy
+ *  AudioContext) — wartość zostaje zapamiętana i zastosowana przy starcie.
+ *  Respektuje automatycznie: suwak/wyciszenie gracza i wyciszenie bitewne,
+ *  bo ambWaterOut wisi POD ambOut (patrz jego komentarz) — zero dodatkowej
+ *  logiki tutaj. */
+export function setAmbienceWaterView(frac: number, wariant: 0 | 1): void {
+  ambWaterFrac = Math.max(0, Math.min(1, frac));
+  ambWaterVariant = wariant;
+  if (!ambCtx || !ambWaterOut) return; // kanał jeszcze nie wystartowany — zastosuje się przy starcie
+  ambWaterOut.gain.setTargetAtTime(
+    waterVolumeFromFrac(ambWaterFrac), ambCtx.currentTime, WATER_RAMP_TC,
+  );
 }
 
 export function isAmbiencePlaying(): boolean { return ambPlaying; }

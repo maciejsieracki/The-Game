@@ -70,6 +70,11 @@ export interface AICmdBuild {
  * D-IMPROVEMENTS: AI buduje ulepszenie terenu na (q,r) w swoim terytorium.
  * Egzekucja main.ts -- jak `applyBuildRequest` (tech gate + koszt Pracy z puli AI),
  * ale AI commituje od razu (bez `pendingImprovementsTurn`/cofnięcia w tej samej turze).
+ * Wyjątek: `key: 'wyrab'` (typ 'wycinka') -- AI NIE ma per-owner wieloturowego
+ * `hexClearingStates` (silnik tyka je tylko dla ownerId 0 / gracza), więc main.ts
+ * commituje efekt końcowy (usuwa nakładkę lasu, netto-zero Pracy wg
+ * terrain-improvements.json) od razu, zamiast kolejkować wycinkę na kolejne tury --
+ * patrz egzekucja `cmd.type === 'buildImprovement'` w main.ts (TEMAT #8, 2026-07-23).
  * @see planCityImprovements
  */
 export interface AICmdBuildImprovement {
@@ -851,15 +856,32 @@ function chooseCityProduction(
 /**
  * Kolejność priorytetów AI (Maciej ABC -- PRÓG DO AKCEPTACJI): plony pierwsze
  * (farma/pastwiska/tarasy/łowiectwo/rybołówstwo), potem surowce/rzemiosło,
- * na końcu infrastruktura (droga/fort). `wyrab` CELOWO pominięty -- złożony
- * stan wieloturowy (hexClearingStates w main.ts), poza zakresem AI na tym
- * etapie (Maciej decyzja 5). Stała lista -- zero Math.random(), determinizm A=B.
+ * na końcu infrastruktura (droga/fort). `wyrab` (wyrąb lasu) na SAMYM końcu --
+ * TEMAT #8 (2026-07-23, Maciej „dopnij"): AI wybiera wyrąb tylko gdy żaden
+ * inny typ (food/surowiec/infrastruktura) nie ma już qualifikującego heksa dla
+ * tego miasta w tej turze -- pozycja w liście = "nic pilniejszego" bez osobnej
+ * flagi (struktura pętli w `planCityImprovements`: pierwszy typ z qualifikującym
+ * heksem wygrywa i przerywa pętlę typów). Dodatkowa heurystyka zachowania
+ * zasobu lasu (patrz `AI_WYRAB_MIN_FOREST_IN_RADIUS` + kod w pętli niżej) --
+ * las to trwale znikający zasób, AI nie może wygolić całego promienia miasta.
+ * Stała lista -- zero Math.random(), determinizm A=B.
  */
 const AI_IMPROVEMENT_PRIORITY: readonly ImprovementKey[] = [
   'farma', 'bydlo', 'owce', 'lama', 'tarasy', 'oboz_lowiecki', 'lodzie_rybackie',
   'irygacja', 'kopalnia', 'kopalnia_miedzi', 'kamieniolom', 'glinianka', 'stadnina',
   'warzelnia_soli', 'tartak', 'posterunek', 'droga', 'droga_brukowana', 'fort',
+  'wyrab',
 ];
+
+/**
+ * TEMAT #8: próg zachowania zasobu lasu dla `wyrab`. AI buduje wyrąb na heksie
+ * TYLKO gdy w promieniu miasta (candidateHexes -- ten sam zbiór co reszta typów)
+ * jest >= tyle heksów lasu ŁĄCZNIE (ten wybrany + reszta) -- czyli po wycięciu
+ * jednego zostaje >= (próg - 1) innych. Próg 3 => >=2 innych heksów lasu
+ * zostaje (wymóg (c) z zadania). Rozsądna heurystyka, nie ma odpowiednika w
+ * ai-params.json (temat wąski, jednorazowy próg) -- stała lokalna.
+ */
+const AI_WYRAB_MIN_FOREST_IN_RADIUS = 3;
 
 /**
  * Próg nadwyżki Pracy (PRÓG DO AKCEPTACJI WŁAŚCICIELA): AI zaczyna wybierać
@@ -938,6 +960,12 @@ function planCityImprovements(
   const orderedCities = [...myCities].sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
   const commands: AICmdBuildImprovement[] = [];
 
+  // TEMAT #8: heksy już zaplanowane pod wyrąb W TEJ turze (przez wcześniejsze miasto TEGO
+  // SAMEGO AI, np. zachodzące terytoria) -- `wyrab` NIE dokłada warstwy do `workingPlaced`
+  // (nie jest stałym ulepszeniem, tylko trwałą zmianą terenu -- patrz egzekucja w main.ts),
+  // więc `qualifies('wyrab', …)` sam by nie wykrył duplikatu bez tego zbioru.
+  const scheduledWyrabHexes = new Set<string>();
+
   for (const city of orderedCities) {
     if (pracaLeft <= AI_IMPROVEMENT_PRACA_SURPLUS) break; // budżet wyczerpany -- reszta miast czeka
 
@@ -955,14 +983,36 @@ function planCityImprovements(
       if (meta.kosztPraca > pracaLeft) continue;
       if (!isImprovementTechUnlocked(key, researchedTechs)) continue;
 
+      // TEMAT #8: zachowanie zasobu lasu -- wyrąb usuwa las TRWALE (zero Math.random,
+      // liczone deterministycznie z candidateHexes -- ten sam zbiór, w tej samej kolejności
+      // (q,r) rosnąco, co dla wszystkich innych typów). Buduj TYLKO gdy w promieniu miasta
+      // zostanie >= AI_WYRAB_MIN_FOREST_IN_RADIUS heksów lasu ŁĄCZNIE (ten wycięty + reszta),
+      // czyli >=2 INNE heksy lasu PRZETRWAJĄ wyrąb.
+      if (key === 'wyrab') {
+        const forestCount = candidateHexes.reduce((n, { q, r }) => {
+          const hk = `${q},${r}`;
+          if (scheduledWyrabHexes.has(hk)) return n; // już "wycięty" w tej turze -- nie liczy się do zasobu
+          return map.hexes[hk]?.nakladka === Nakladka.Las ? n + 1 : n;
+        }, 0);
+        if (forestCount < AI_WYRAB_MIN_FOREST_IN_RADIUS) continue;
+      }
+
       let placed = false;
       for (const { q, r } of candidateHexes) {
+        const hexKey = `${q},${r}`;
+        if (key === 'wyrab' && scheduledWyrabHexes.has(hexKey)) continue;
         if (!qualifies(key, q, r)) continue;
         commands.push({ type: 'buildImprovement', ownerId, q, r, key });
         pracaLeft -= meta.kosztPraca;
-        const hexKey = `${q},${r}`;
-        const cur = workingPlaced.get(hexKey) ?? [];
-        workingPlaced.set(hexKey, [...cur, key]);
+        if (key === 'wyrab') {
+          // Nie dokładamy warstwy do workingPlaced -- wyrąb nie jest stałym ulepszeniem
+          // (usuwa nakładkę lasu, patrz egzekucja w main.ts), tylko blokujemy ponowny wybór
+          // TEGO heksa w tej samej turze planowania (inne miasto tego AI).
+          scheduledWyrabHexes.add(hexKey);
+        } else {
+          const cur = workingPlaced.get(hexKey) ?? [];
+          workingPlaced.set(hexKey, [...cur, key]);
+        }
         placed = true;
         break;
       }

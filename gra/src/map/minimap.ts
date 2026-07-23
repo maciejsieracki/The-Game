@@ -121,7 +121,10 @@ function isMinimapMarkerVisible(
   return opts.visible.has(key) || opts.explored.has(key);
 }
 
-function computeViewport(
+/** Wystawiona też na zewnątrz (TEMAT #23 — woda pozycyjna, audio/muzyka-antyczna.ts
+ *  przez main.ts): zwraca dokładnie ten sam prostokąt heksów q/r co ramka widoku na
+ *  minimapie — reużycie zamiast liczenia kadru kamery drugi raz. */
+export function computeViewport(
   map: GameMap,
   camera: MinimapCameraInput,
 ): { x: number; y: number; w: number; h: number } | undefined {

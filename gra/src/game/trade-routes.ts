@@ -722,3 +722,40 @@ export function computeTradeRouteCountByCity(
   }
   return out;
 }
+
+// ---------------------------------------------------------------------------
+// TEMAT #5: powiadomienia o powstaniu/zniknieciu trasy handlowej.
+// ---------------------------------------------------------------------------
+
+/**
+ * Wynik porownania dwoch kolejnych wywolan refreshTradeRoutes (tura N-1 vs N):
+ * ktore trasy sa nowe (powstaly), a ktore zniknely (zerwane/utracone). Trasa
+ * jest tozsama po `id` (para miast + medium, zob. tradeRouteId) -- zmiana
+ * medium dla tej samej pary miast liczy sie jako zerwanie starej + nowa trasa,
+ * co jest poprawne semantycznie (inny szlak, inny dochod).
+ *
+ * Czysta funkcja, deterministyczna (kolejnosc = kolejnosc wejsciowych list,
+ * ktora jest juz deterministyczna dzieki refreshTradeRoutes). Wolanie tej
+ * funkcji wielokrotnie dla tych samych dwoch list zawsze daje ten sam wynik
+ * -- wywolujacy (main.ts) odpowiada za to, by porownywac stan SPRZED i PO
+ * jednym przeliczeniu na ture (nie wolac diff ponownie bez nowego refreshu),
+ * co eliminuje duplikaty zdarzen w tej samej turze.
+ */
+export interface TradeRouteDiff {
+  /** Trasy obecne w `nextRoutes`, ktorych nie bylo w `prevRoutes` (wg id). */
+  added: TradeRoute[];
+  /** Trasy obecne w `prevRoutes`, ktorych zabraklo w `nextRoutes` (wg id). */
+  removed: TradeRoute[];
+}
+
+export function diffTradeRoutes(
+  prevRoutes: readonly TradeRoute[],
+  nextRoutes: readonly TradeRoute[],
+): TradeRouteDiff {
+  const prevIds = new Set(prevRoutes.map(r => r.id));
+  const nextIds = new Set(nextRoutes.map(r => r.id));
+  return {
+    added: nextRoutes.filter(r => !prevIds.has(r.id)),
+    removed: prevRoutes.filter(r => !nextIds.has(r.id)),
+  };
+}

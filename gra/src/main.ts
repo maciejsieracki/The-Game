@@ -216,6 +216,7 @@ import {
 } from './ui/mapUnitCursor';
 import { isInTerritory, territoryOwnerAt, isPlayerTerritoryHex, cityTerritoryRadius } from './map/territory';
 import type { CityNode, TerritoryNode } from './map/territory';
+import type { GameMap } from './types/map';
 import {
   advanceCityEconomy, type EconUnit,
   computeCityHealthBreakdown, cityWorkedTilesForEconomy, workedHexCoordsForCity,
@@ -229,7 +230,13 @@ import {
   computeTradeRouteCountByCity,
   loadTradeRouteParams,
   loadTradeRouteIncomeParams,
+  diffTradeRoutes,
+  findCityConnection,
+  tradeRouteDistanceIncome,
   type TradeRoute,
+  type TradeRouteCityRef,
+  type TradeRouteParams,
+  type TradeRouteIncomeParams,
 } from './game/trade-routes';
 import {
   createPlayerState,
@@ -353,7 +360,7 @@ import {
   type TradeRouteOverlayInput,
 } from './render/tradeRoutesOverlay';
 import { showDiplomacyPendingModal } from './ui/diplomacyPendingHud';
-import { getMinimapData } from './map/minimap';
+import { getMinimapData, computeViewport } from './map/minimap';
 import {
   createImprovementBuildApi,
   collectRoadKeys,
@@ -379,7 +386,7 @@ import type { WorldTerrainInput } from './battle/battle-terrain';
 import {
   startMusic, stopMusic, setMood, setEra, setMusicVolume, getMood,
   startIntroMusic, stopIntroMusic,
-  startAmbience, stopAmbience, setAmbienceVolume,
+  startAmbience, stopAmbience, setAmbienceVolume, setAmbienceWaterView,
 } from './audio/muzyka-antyczna';
 import { loadMusicPrefs, saveMusicPrefs } from './audio/musicPrefs';
 import { loadAmbiencePrefs, saveAmbiencePrefs } from './audio/ambiencePrefs';
@@ -5788,6 +5795,46 @@ async function boot(): Promise<void> {
       };
     }
 
+    /** Waga rzeki przy liczeniu "udziału wody" kadru dla dźwięku pozycyjnego
+     *  (TEMAT #23): rzeka biegnie krawędziami heksa, nie wypełnia go jak
+     *  Morze/Wybrzeże — liczy się słabiej. */
+    const WATER_VIEW_RIVER_WEIGHT = 0.5;
+    /** Górny limit próbek heksów per odczyt (TANIE — patrz computeWaterView()) —
+     *  przy dużym oddaleniu kamery box widoku bywa duży, stride pilnuje kosztu. */
+    const WATER_VIEW_MAX_SAMPLES = 400;
+
+    /** TEMAT #23 — udział wody w kadrze kamery + wariant szumu (0=rzeka/1=morze).
+     *  Reużywa computeViewport() (map/minimap.ts — ta sama ramka co widok na
+     *  minimapie, zero dodatkowej geometrii/raycastów) i próbkuje siatkę
+     *  heksów w tej ramce z ograniczonym krokiem (stride), żeby koszt nie rósł
+     *  z oddaleniem kamery. Wołane z renderLoop() co ~0.5 s, NIE co klatkę. */
+    function computeWaterView(): { frac: number; wariant: 0 | 1 } {
+      const vp = computeViewport(map, cameraGroundTarget());
+      if (!vp) return { frac: 0, wariant: ambLastWaterVariant };
+      const { x, y, w, h } = vp;
+      const total = w * h;
+      if (total <= 0) return { frac: 0, wariant: ambLastWaterVariant };
+      const stride = Math.max(1, Math.round(Math.sqrt(total / WATER_VIEW_MAX_SAMPLES)));
+      let sampled = 0, sea = 0, river = 0;
+      for (let r = y; r < y + h; r += stride) {
+        for (let q = x; q < x + w; q += stride) {
+          const hex = map.hexes[`${q},${r}`];
+          if (!hex) continue;
+          sampled++;
+          if (hex.terenBazowy === TerenBazowy.Morze || hex.terenBazowy === TerenBazowy.Wybrzeze) {
+            sea++;
+          } else if (hex.rzeka.obecna) {
+            river++;
+          }
+        }
+      }
+      if (sampled === 0) return { frac: 0, wariant: ambLastWaterVariant };
+      const frac = Math.min(1, (sea + river * WATER_VIEW_RIVER_WEIGHT) / sampled);
+      const wariant: 0 | 1 = sea > 0 ? 1 : (river > 0 ? 0 : ambLastWaterVariant);
+      ambLastWaterVariant = wariant;
+      return { frac, wariant };
+    }
+
     function isPlayerAtWar(): boolean {
       for (const [key, rel] of diplomacyRelations.entries()) {
         if ((rel as { status?: string }).status !== 'wojna') continue;
@@ -6295,8 +6342,96 @@ async function boot(): Promise<void> {
     // D: trwały log nagród z chatek/wiosek (toast bywa nadpisywany) — pokazywany w WYDARZENIACH.
     const villageEventLog: SidePanelEvent[] = [];
 
+    // TEMAT #5: trwały log powstania/zerwania szlaku handlowego gracza (toast +
+    // wpis w WYDARZENIACH, symetrycznie do villageEventLog — czyszczony co turę
+    // w tym samym miejscu, zob. `villageEventLog.length = 0;` przy turn++).
+    const tradeRouteEventLog: SidePanelEvent[] = [];
+
+    /**
+     * TEMAT #5 — porownuje trasy sprzed i po jednym wywolaniu refreshTradeRoutes
+     * (ta sama tura) i zglasza zdarzenia WYDARZENIA + toast dla kazdej nowej/
+     * zerwanej trasy GRACZA (tradeRoutes zawiera wylacznie pary gracz<->obcy,
+     * wiec kazdy wpis jest z definicji trasa gracza — AI<->AI tu nie istnieje).
+     *
+     * Dedup w tej samej turze: id zdarzenia koduje `turn` + id trasy, wiec
+     * ponowne wywolanie z tym samym diffem (np. bledny retry) nie dodaje
+     * duplikatu — sprawdzamy obecnosc po id przed push.
+     */
+    function reportTradeRouteEvents(
+      prevRoutes: readonly TradeRoute[],
+      nextRoutes: readonly TradeRoute[],
+      tradeCities: readonly TradeRouteCityRef[],
+      map: GameMap,
+      tradeParams: TradeRouteParams,
+      builtByCity: ReadonlyMap<string, readonly string[]>,
+      isAtWar: (a: number, b: number) => boolean,
+      incomeParams: TradeRouteIncomeParams,
+    ): void {
+      const { added, removed } = diffTradeRoutes(prevRoutes, nextRoutes);
+      if (added.length === 0 && removed.length === 0) return;
+
+      const cityById = new Map(cities.map(c => [c.id, c] as const));
+      const pushOnce = (ev: SidePanelEvent): void => {
+        if (tradeRouteEventLog.some(e => e.id === ev.id)) return;
+        tradeRouteEventLog.unshift(ev);
+      };
+
+      for (const route of added) {
+        const from = cityById.get(route.fromCityId);
+        const to = cityById.get(route.toCityId);
+        const fromName = from?.name ?? route.fromCityId;
+        const toName = to?.name ?? route.toCityId;
+        const civLabel = ownerDiploLabel(route.toOwnerId);
+        const income = tradeRouteDistanceIncome(route.dystans, incomeParams);
+        const summary = `${fromName} ↔ ${toName} (${civLabel}) \xb7 +${income} złota/turę`;
+        showHintMessage('\u{1F9ED} Nowy szlak handlowy: ' + summary, 4500);
+        pushOnce({
+          id: 'trade-new-' + turn + '-' + route.id,
+          icon: '\u{1F9ED}', // 🧭
+          title: 'Nowy szlak handlowy',
+          subtitle: summary,
+          kind: 'city',
+        });
+      }
+
+      for (const route of removed) {
+        const from = cityById.get(route.fromCityId);
+        const to = cityById.get(route.toCityId);
+        const fromName = from?.name ?? route.fromCityId;
+        const toName = to?.name ?? route.toCityId;
+        const civLabel = ownerDiploLabel(route.toOwnerId);
+
+        // Powod — tylko tanie, deterministyczne sprawdzenia (bez ponownego BFS
+        // poza jednym findCityConnection, ktory i tak jest cache'owany).
+        let reason: string | null = null;
+        if (!from || !to) {
+          reason = 'miasto zniknęło';
+        } else if (from.ownerId !== route.ownerId || to.ownerId !== route.toOwnerId) {
+          reason = 'zmiana właściciela miasta';
+        } else if (isAtWar(route.ownerId, route.toOwnerId)) {
+          reason = 'wojna';
+        } else {
+          const conn = findCityConnection(from, to, map, route.medium, tradeParams, builtByCity);
+          if (!conn.connected) reason = 'brak połączenia';
+        }
+
+        const summary = `${fromName} ↔ ${toName} (${civLabel})` + (reason ? ' — ' + reason : '');
+        showHintMessage('⛓️ Szlak handlowy zerwany: ' + summary, 4500);
+        pushOnce({
+          id: 'trade-lost-' + turn + '-' + route.id,
+          icon: '⛓️', // ⛓️‍💥 (fallback bez kombinujacego znaku dla zgodnosci fontow)
+          title: 'Szlak handlowy zerwany',
+          subtitle: summary,
+          kind: 'city',
+        });
+      }
+
+      if (tradeRouteEventLog.length > 6) tradeRouteEventLog.length = 6;
+      refreshD1bHud();
+    }
+
     function collectTurnEvents(): SidePanelEvent[] {
-      const events: SidePanelEvent[] = [...villageEventLog];
+      const events: SidePanelEvent[] = [...villageEventLog, ...tradeRouteEventLog];
       for (const city of cities) {
         if (city.ownerId !== 0) continue;
         const st = cityOrderState.get(city.id);
@@ -9352,6 +9487,14 @@ async function boot(): Promise<void> {
     let fpsAccumFrames = 0;
     let fpsAccumTime = 0;
 
+    // TEMAT #23 — woda pozycyjna (ambience): akumulator do próbkowania udziału
+    // wody w kadrze kamery co ~0.5 s (nie co klatkę, patrz computeWaterView()
+    // i renderLoop() niżej). ambLastWaterVariant pamięta ostatni wybrany
+    // wariant (0=rzeka/1=morze), żeby klatka bez ŻADNEJ wody w kadrze (frac=0,
+    // i tak cisza) nie musiała zgadywać wariantu od nowa.
+    let ambWaterSampleAccum = 0;
+    let ambLastWaterVariant: 0 | 1 = 1;
+
     window.addEventListener('keydown', (e: KeyboardEvent) => {
       if (e.key === 'F9') {
         e.preventDefault();
@@ -12177,6 +12320,8 @@ async function boot(): Promise<void> {
 
         // Chatki: nagroda już przyznana — wpis w WYDARZENIACH tylko do końca tury bieżącej.
         villageEventLog.length = 0;
+        // TEMAT #5: log tras handlowych — ta sama zasada (widoczny do końca tury bieżącej).
+        tradeRouteEventLog.length = 0;
 
         // M: rotacyjny autozapis co N tur (domyślnie co turę) — 10 ostatnich wstecz.
         if (turn % getAutosaveFrequency() === 0) doRotatingAutosave();
@@ -12214,18 +12359,20 @@ async function boot(): Promise<void> {
           // --- Handel E3: odswiez trasy handlowe gracz<->obca cywilizacja ---
           // Filtr zewnetrzny + pokoj stosuje refreshTradeRoutes samo; tutaj tylko
           // wykluczamy barbarzyncow (nie sa stronami handlu) i budujemy isAtWar.
+          const tradeCities = cities.filter(c => !isBarbarian(c.ownerId));
+          const tradeParams = loadTradeRouteParams(
+            data.econParams as unknown as Parameters<typeof loadTradeRouteParams>[0],
+            _menuDifficulty,
+          );
+          const isAtWarFn = (a: number, b: number): boolean => getDiploRelation(a, b).status === 'wojna';
+          const prevTradeRoutes = tradeRoutes;
           try {
-            const tradeCities = cities.filter(c => !isBarbarian(c.ownerId));
-            const tradeParams = loadTradeRouteParams(
-              data.econParams as unknown as Parameters<typeof loadTradeRouteParams>[0],
-              _menuDifficulty,
-            );
             tradeRoutes = refreshTradeRoutes(
               tradeCities,
               tradeRoutes,
               map,
               cityBuilt,
-              (a, b) => getDiploRelation(a, b).status === 'wojna',
+              isAtWarFn,
               tradeParams,
             );
           } catch (eTrade) {
@@ -12237,6 +12384,16 @@ async function boot(): Promise<void> {
             _menuDifficulty,
           );
           const tradeIncomeByCity = computeTradeRouteIncomeByCity(tradeRoutes, tradeIncomeParams);
+          // TEMAT #5: powiadomienia WYDARZENIA o powstaniu/zerwaniu szlaku (tylko gracz;
+          // tradeRoutes zawiera WYLACZNIE trasy gracz<->obcy, AI<->AI tu nie istnieje).
+          try {
+            reportTradeRouteEvents(
+              prevTradeRoutes, tradeRoutes, tradeCities, map, tradeParams, cityBuilt,
+              isAtWarFn, tradeIncomeParams,
+            );
+          } catch (eTradeEv) {
+            console.error('[Handel] Blad powiadomien o trasach:', eTradeEv);
+          }
 
           const econ = advanceCityEconomy(
             cities, map, data, _menuDifficulty, econUnits, growthMultMap, cityBuilt,
@@ -13442,7 +13599,31 @@ async function boot(): Promise<void> {
                   const poolBefore = aiPracaPoolByOwner.get(ownerId) ?? 0;
                   if (poolBefore < koszt) continue;
                   const hexKey = keyOf(cmd.q, cmd.r);
-                  if (!map.hexes[hexKey]) continue;
+                  const hexForImprovement = map.hexes[hexKey];
+                  if (!hexForImprovement) continue;
+
+                  // TEMAT #8 (2026-07-23): `wyrab` (wyrąb lasu) = typ 'wycinka', NIE stała
+                  // warstwa -- nie idzie do `placedImprovements` (patrz applyBuildRequest gracza
+                  // wyżej, sekcja `req.action === 'wycinka'`). AI nie ma per-owner wieloturowego
+                  // `hexClearingStates` (tick niżej w pętli tury liczy WYŁĄCZNIE ownerId 0 /
+                  // gracza), więc AI commituje efekt końcowy od razu: usuwa nakładkę lasu,
+                  // netto-zero Pracy (koszt startu zwracany przez `wycinka.praca_per_tura ×
+                  // tury` z terrain-improvements.json -- dziś 5×1=5, czyli symetryczne z kosztem).
+                  if (meta?.typ === 'wycinka') {
+                    if (hexForImprovement.nakladka !== Nakladka.Las) continue; // już wycięte (wyścig miast)
+                    const refund = meta.clearing
+                      ? meta.clearing.pracaPerTura * meta.clearing.tury
+                      : 0;
+                    aiPracaPoolByOwner.set(ownerId, poolBefore - koszt + refund);
+                    hexForImprovement.nakladka = Nakladka.Brak;
+                    hideDecorAtHex(hexKey);
+                    syncResourceOverlayAtHex(hexKey);
+                    console.log(
+                      `[AI ${ownerId}] Wyrąb @ (${cmd.q},${cmd.r}) (-${koszt}+${refund} Pracy, netto ${refund - koszt})`,
+                    );
+                    continue;
+                  }
+
                   const prevLayers = placedImprovements.get(hexKey) ?? [];
                   // Bezpiecznik wyścigu: hex już ma ten klucz (np. inne miasto TEGO SAMEGO AI
                   // zdążyło go postawić wcześniej w tej samej turze) -- pomiń bez kosztu.
@@ -13873,6 +14054,17 @@ async function boot(): Promise<void> {
         const { minDist, maxDist } = camCtrl.getDistLimits();
         setZoomLod(dist, minDist, maxDist);
       }
+
+      // TEMAT #23 — woda pozycyjna (ambience): próbka udziału wody w kadrze co
+      // ~0.5 s, NIE co klatkę (patrz computeWaterView()). setAmbienceWaterView()
+      // jest no-op zanim odgłosy natury wystartują — bezpieczne wołać zawsze.
+      ambWaterSampleAccum += dt;
+      if (ambWaterSampleAccum >= 0.5) {
+        ambWaterSampleAccum = 0;
+        const view = computeWaterView();
+        setAmbienceWaterView(view.frac, view.wariant);
+      }
+
       renderer.info.reset();
       // FPS cienie na żądanie: token jednostki (caster) rusza się co klatkę tylko podczas
       // animacji ruchu; galeria może obracać modele. Poza tym (pan/idle) shadow pass pomijany.

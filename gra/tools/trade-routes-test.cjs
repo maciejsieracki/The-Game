@@ -22,7 +22,7 @@ const BUNDLE_FILE = path.resolve(__dirname, '.trade-routes-bundle.cjs');
 fs.writeFileSync(ENTRY_FILE, `
 export {
   findCityConnection, DEFAULT_TRADE_ROUTE_PARAMS, createTradeRoute, tradeRouteId,
-  loadTradeRouteParams,
+  loadTradeRouteParams, diffTradeRoutes,
 } from '../src/game/trade-routes';
 `, 'utf8');
 
@@ -138,6 +138,49 @@ eq(
   TR.loadTradeRouteParams({}, 'normal').morzeMaxDist,
   TR.DEFAULT_TRADE_ROUTE_PARAMS.morzeMaxDist, 'params: fallback na domyslna gdy brak bloku',
 );
+
+// --- TEMAT #5: diffTradeRoutes (powiadomienia o powstaniu/zerwaniu szlaku) ---
+
+const rA = { id: 'a->b:lad', fromCityId: 'a', toCityId: 'b', ownerId: 0, toOwnerId: 1, medium: 'lad', dystans: 3, status: 'polaczony' };
+const rB = { id: 'a->c:lad', fromCityId: 'a', toCityId: 'c', ownerId: 0, toOwnerId: 2, medium: 'lad', dystans: 5, status: 'polaczony' };
+const rC = { id: 'a->d:morze', fromCityId: 'a', toCityId: 'd', ownerId: 0, toOwnerId: 3, medium: 'morze', dystans: 8, status: 'polaczony' };
+
+// f: brak zmian -> puste added/removed
+const diffNone = TR.diffTradeRoutes([rA, rB], [rA, rB]);
+eq(diffNone.added.length, 0, 'diff f: brak zmian -> added puste');
+eq(diffNone.removed.length, 0, 'diff f: brak zmian -> removed puste');
+
+// g: nowa trasa (rB) dochodzi -> added=[rB], removed=[]
+const diffAdd = TR.diffTradeRoutes([rA], [rA, rB]);
+eq(diffAdd.added.length, 1, 'diff g: jedna nowa trasa wykryta');
+eq(diffAdd.added[0].id, rB.id, 'diff g: nowa trasa to rB');
+eq(diffAdd.removed.length, 0, 'diff g: nic nie zniknelo');
+
+// h: trasa (rA) znika -> added=[], removed=[rA]
+const diffRemove = TR.diffTradeRoutes([rA, rB], [rB]);
+eq(diffRemove.added.length, 0, 'diff h: nic nowego');
+eq(diffRemove.removed.length, 1, 'diff h: jedna trasa zerwana wykryta');
+eq(diffRemove.removed[0].id, rA.id, 'diff h: zerwana trasa to rA');
+
+// i: jednoczesnie nowa + zerwana (rB znika, rC dochodzi)
+const diffBoth = TR.diffTradeRoutes([rA, rB], [rA, rC]);
+eq(diffBoth.added.length, 1, 'diff i: jedna nowa (rC)');
+eq(diffBoth.added[0].id, rC.id, 'diff i: nowa to rC');
+eq(diffBoth.removed.length, 1, 'diff i: jedna zerwana (rB)');
+eq(diffBoth.removed[0].id, rB.id, 'diff i: zerwana to rB');
+
+// j: puste listy wejsciowe -> puste wyjscie (brak wyjatku)
+const diffEmpty = TR.diffTradeRoutes([], []);
+eq(diffEmpty.added.length, 0, 'diff j: puste wejscie -> added puste');
+eq(diffEmpty.removed.length, 0, 'diff j: puste wejscie -> removed puste');
+
+// k: powtorne wywolanie z tymi samymi listami daje ten sam wynik (determinizm,
+// podstawa dla "brak duplikatow przy wielokrotnym przeliczeniu w tej samej turze"
+// -- to wywolujacy w main.ts gwarantuje jedno przeliczenie/ture, ale sama funkcja
+// musi byc czysta i powtarzalna).
+const diffAgain = TR.diffTradeRoutes([rA, rB], [rA, rC]);
+eq(JSON.stringify(diffAgain.added.map(r => r.id)), JSON.stringify(diffBoth.added.map(r => r.id)), 'diff k: determinizm - added identyczne');
+eq(JSON.stringify(diffAgain.removed.map(r => r.id)), JSON.stringify(diffBoth.removed.map(r => r.id)), 'diff k: determinizm - removed identyczne');
 
 console.log(`\ntrade-routes-test: ${passed} passed, ${failed} failed`);
 try { fs.unlinkSync(ENTRY_FILE); } catch (e) {}
