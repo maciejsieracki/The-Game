@@ -9,7 +9,13 @@ UWAGA: KANON i FINALNA promują się teraz OSOBNYMI skryptami (`gra/tools/publis
 wyraźne polecenie właściciela) — dlatego są logowane NIEZALEŻNIE, każdy w swojej sekcji, ze
 swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drugiego.
 
-## ROBOCZA `0500eddf` — 2026-07-23 · KOMPLET filtrów 1:1 z makietą C06 (★ Generał, style aktywne) — **AKTUALNA**
+## ROBOCZA `b6481c25` — 2026-07-23 · RZĄD FILTRÓW W CAŁOŚCI 1:1 z makiety C06 + grupy G1/G2/G3 — **AKTUALNA**
+
+- **Zawartość (commit `1d51e09`):** dokładne rysunki ikon klas z makiety (podkowa z gwoździami / skrzyżowane miecze / łuk z cięciwą), obwódki/kolory per klasa 1:1 (konnica NIEBIESKA), grupy jako kompaktowe chipy **G1/G2/G3** w stylu ikon (decyzja Macieja — „samo G"), pełne nazwy w pigułkach. Makieta rzędu filtrów wyczerpana w całości (ekstrakcja wszystkich elementów).
+- **Bramki:** tsc=0 · zrzut potwierdzony (podkowa/miecze/łuk/kropki/G1-G3/★) · VERIFY OK.
+- **md5:** `b6481c25796e73115a50cd695c795650` · stamp `b6481c25`. Publikowała sesja chmurowa.
+
+## ROBOCZA `0500eddf` — 2026-07-23 · KOMPLET filtrów 1:1 z makietą C06 (★ Generał, style aktywne) — **ZASTĄPIONA** (→ `b6481c25`)
 
 - **Zawartość (commit `3978be4`):** rząd filtrów rosteru w KOMPLECIE 1:1 z makietą „C06 Pole bitwy odswiezenie": Generał = GWIAZDKA (SVG z makiety), Wszystkie = 4 kropki (SVG z makiety, viewBox 24), przyciski 34px/radius 9, **stan aktywny = pełne złoto #e8d88a z ciemną ikoną** (jak w makiecie; było: półprzezroczyste). Korekta po uwadze Macieja o niepełnym wdrażaniu makiet.
 - **Bramki:** tsc=0 · zrzut walki potwierdzony (podkowa/miecze/łuk/kropki/★ + GRUPA 1-3 tekstowo) · VERIFY OK.
