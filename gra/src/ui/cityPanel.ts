@@ -773,6 +773,8 @@ function computeView(city: City, map: GameMap, data: GameData): CityView | null 
       walutaMnoznikOverride,
       civHandelMult,
       civNaukaMult,
+      // Zadanie 2 (2026-07-23): Garncarnia +Zywnosc% LOKALNIE -- liczba sztuk w TYM miescie.
+      liczbaGarncarni: built.filter(id => id === 'garncarnia').length,
     };
     const ctx: CityYieldContext = { ...base, ...(cfg.getCityBuildingFlags?.(city.id) ?? {}) };
     const y = cityYieldPerTurn(econCity, worked, [], params, ctx);

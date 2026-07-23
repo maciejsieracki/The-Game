@@ -177,6 +177,27 @@
       "jednostka": "%",
       "opis": "Premia Targowiska do Handlu brutto (+50%). [PT]"
     },
+    "budynek_stolarnia_bonus_drewna_civ": {
+      "easy": 0.10,
+      "normal": 0.10,
+      "hard": 0.10,
+      "jednostka": "%",
+      "opis": "Zadanie 2 (2026-07-23): Stolarnia +10% produkcji Drewna CALEJ CYWILIZACJI za kazda Stolarnie (civ-wide, stackuje addytywnie: ×(1+0.10×liczbaStolarni_ownera)). Wpiete w turn-economy.ts przy akumulacji City.surowce.drewno. PLACEHOLDER do strojenia."
+    },
+    "budynek_kamieniarski_bonus_kamienia_civ": {
+      "easy": 0.10,
+      "normal": 0.10,
+      "hard": 0.10,
+      "jednostka": "%",
+      "opis": "Zadanie 2 (2026-07-23): Warsztat kamieniarski +10% produkcji Kamienia CALEJ CYWILIZACJI za kazda sztuke (civ-wide, stackuje addytywnie: ×(1+0.10×liczbaWarsztatow_ownera)). Wpiete w turn-economy.ts przy akumulacji City.surowce.kamien. PLACEHOLDER do strojenia."
+    },
+    "budynek_garncarnia_bonus_zywnosci_lokalnie": {
+      "easy": 0.10,
+      "normal": 0.10,
+      "hard": 0.10,
+      "jednostka": "%",
+      "opis": "Zadanie 2 (2026-07-23): Garncarnia +10% Zywnosci LOKALNIE (tylko w miescie, gdzie stoi; NIE civ-wide), stackuje addytywnie: ×(1+0.10×garncarnie_w_miescie). Wpiete w economy.ts cityYieldPerTurn (zywnoscBrutto, przed konsumpcja). PLACEHOLDER do strojenia."
+    },
     "budynek_mennica_mnoznik": {
       "easy": 2,
       "normal": 1,
@@ -212,33 +233,26 @@
       "jednostka": "szt/turę",
       "opis": "Maks konwersja Drewno→Deski w Tartaku na turę. [PT]"
     },
-    "budynek_mielerz_przepustowosc": {
-      "easy": 3,
-      "normal": 2,
-      "hard": 1,
-      "jednostka": "szt/turę",
-      "opis": "Maks konwersja Drewno→Paliwo w Mielerzni na turę. [PT]"
-    },
     "budynek_cegielnia_przepustowosc": {
-      "easy": 3,
-      "normal": 2,
-      "hard": 1,
+      "easy": 4,
+      "normal": 3,
+      "hard": 2,
       "jednostka": "szt/turę",
-      "opis": "Maks konwersja (Glina+Paliwo)→Cegła w Cegielni na turę. [PT]"
+      "opis": "Maks konwersja (Glina+Drewno)→Cegła w Cegielni na turę. [PT] C-SUROW-CEGLA=A (Maciej 2026-07-24): normal 2→3 (odciążenie cegły wg symulacji bilansu)."
     },
     "budynek_huta_przepustowosc": {
       "easy": 2,
       "normal": 1,
       "hard": 0,
       "jednostka": "szt/turę",
-      "opis": "Maks konwersja (Ruda+Paliwo)→Brąz w Hucie na turę. [PT]"
+      "opis": "Maks konwersja (Ruda+Drewno)→Brąz w Hucie na turę. [PT]"
     },
     "budynek_garncarnia_przepustowosc": {
       "easy": 2,
       "normal": 1,
       "hard": 0,
       "jednostka": "szt/turę",
-      "opis": "Maks konwersja (Glina+Paliwo)→Ceramika w Garncarni na turę. [PT]"
+      "opis": "Maks konwersja (Glina+Drewno)→Ceramika w Garncarni na turę. [PT]"
     },
     "utrzymanie_budynek": {
       "easy": 1,

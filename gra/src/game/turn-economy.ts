@@ -222,6 +222,7 @@ export function buildEconParams(data: GameData, difficulty: Difficulty = 'normal
     budynekCegielniBonusPracy:      num(bu, 'budynek_cegielnia_bonus_pracy', 0.25),
     budynekTargowiskoBonusHandlu:   num(bu, 'budynek_targowisko_bonus_handlu', 0.5),
     budynekBibliotekaBonusNauki:    num(bu, 'budynek_biblioteka_bonus_nauki', 0.5),
+    budynekGarncarniaBonusZywnosci: num(bu, 'budynek_garncarnia_bonus_zywnosci_lokalnie', 0.10),
     budynekMennicaMnoznik:          num(bu, 'budynek_mennica_mnoznik', 1),
     mennicaMnoznikPoWalucie:        num(gl, 'mennica_mnoznik_po_walucie', 1.5),
     walutaMnoznik:                  num(bu, 'waluta_mnoznik', 2),
@@ -1014,6 +1015,8 @@ export function previewCityEconomy(
       civHandelMult,
       civNaukaMult,
       liczbaAktywnychTrasHandlowych: liczbaTrasHandlowych,
+      // Zadanie 2 (2026-07-23): Garncarnia +Zywnosc% LOKALNIE -- liczba sztuk w TYM miescie.
+      liczbaGarncarni: builtIds.filter(id => id === 'garncarnia').length,
     };
 
     const yld = cityYieldPerTurn(econCity, worked, noBuildings, params, ctx);
@@ -1154,6 +1157,31 @@ export function advanceCityEconomy(
     );
   }
 
+  // Zadanie 2 (2026-07-23): Stolarnia / Warsztat kamieniarski -- bonus CIV-WIDE do
+  // produkcji Drewna/Kamienia (+10% za kazda sztuke zbudowana GDZIEKOLWIEK w imperium
+  // ownera, stackuje addytywnie). Parametr 10% w econ-params.json (budynki.*) --
+  // PLACEHOLDER do strojenia, wczytywany tym samym generycznym loaderem co przepustowosci
+  // konwerterow (loadThroughput dziala na kazdym kluczu budynki.<key>.<difficulty>).
+  const stolarniaBonusDrewnaCiv = loadThroughput(
+    rawForConverters, 'budynek_stolarnia_bonus_drewna_civ', difficulty, 0.10,
+  );
+  const kamieniarskiBonusKamieniaCiv = loadThroughput(
+    rawForConverters, 'budynek_kamieniarski_bonus_kamienia_civ', difficulty, 0.10,
+  );
+  // Liczba Stolarni / Warsztatow kamieniarskich PER OWNER (suma po wszystkich miastach --
+  // stad "civ-wide"), policzona RAZ przed petla po miastach.
+  const stolarniaCountByOwner = new Map<number, number>();
+  const kamieniarskiCountByOwner = new Map<number, number>();
+  for (const c of cities) {
+    const bIds = builtByCity.get(c.id) ?? [];
+    if (bIds.includes('stolarnia')) {
+      stolarniaCountByOwner.set(c.ownerId, (stolarniaCountByOwner.get(c.ownerId) ?? 0) + 1);
+    }
+    if (bIds.includes('kamieniarski')) {
+      kamieniarskiCountByOwner.set(c.ownerId, (kamieniarskiCountByOwner.get(c.ownerId) ?? 0) + 1);
+    }
+  }
+
   // WIRE 1: parametry zdrowia z society-params.json
   const healthParams = loadHealthParams(
     (data as unknown as Record<string, unknown>).societyParams,
@@ -1245,6 +1273,8 @@ export function advanceCityEconomy(
       civHandelMult,         // RDY-01: bonus_zloto handel (Grecy +15%)
       civNaukaMult,          // RDY-01: bonus_nauka (Inkowie +15%)
       liczbaAktywnychTrasHandlowych: liczbaTrasHandlowych, // Handel E3: +5%/trasa
+      // Zadanie 2 (2026-07-23): Garncarnia +Zywnosc% LOKALNIE -- liczba sztuk w TYM miescie.
+      liczbaGarncarni:       builtIds.filter(id => id === 'garncarnia').length,
     };
 
     const yld = cityYieldPerTurn(econCity, worked, noBuildings, params, ctx);
@@ -1421,9 +1451,15 @@ export function advanceCityEconomy(
     const resCap = resourceStorageCapacityPerType(maMagazyn, storageParams);
     if (!city.surowce) city.surowce = {};
     const citySurowce: Record<string, number> = city.surowce;
+    // Produkcja per-ulepszenie (SUROW-TERYT-01, f136c09) × mnoznik civ-wide bonusow
+    // (Stolarnia drewno / Warsztat kamieniarski kamien, Zadanie 2 2026-07-23): stala liczba
+    // sztuk tego ownera (policzona przed petla) → mnoznik ten sam dla kazdego miasta ownera
+    // = odpowiednik przemnozenia SUMY drewna/kamienia imperium przez (1 + 0.10 × liczba_ownera).
     const terrYield = territoryResourceByCity.get(city.id);
-    citySurowce.drewno = Math.min(resCap, (citySurowce.drewno ?? 0) + (terrYield?.drewno ?? 0));
-    citySurowce.kamien = Math.min(resCap, (citySurowce.kamien ?? 0) + (terrYield?.kamien ?? 0));
+    const drewnoMultCiv = 1 + stolarniaBonusDrewnaCiv * (stolarniaCountByOwner.get(city.ownerId) ?? 0);
+    const kamienMultCiv = 1 + kamieniarskiBonusKamieniaCiv * (kamieniarskiCountByOwner.get(city.ownerId) ?? 0);
+    citySurowce.drewno = Math.min(resCap, (citySurowce.drewno ?? 0) + Math.floor((terrYield?.drewno ?? 0) * drewnoMultCiv));
+    citySurowce.kamien = Math.min(resCap, (citySurowce.kamien ?? 0) + Math.floor((terrYield?.kamien ?? 0) * kamienMultCiv));
     citySurowce.glina  = Math.min(resCap, (citySurowce.glina ?? 0) + (terrYield?.glina ?? 0));
 
     // Ruda miedzi / ruda żelaza — numeryczny stock do łańcucha konwerterów (audit 9a0ca985).
@@ -1431,7 +1467,7 @@ export function advanceCityEconomy(
     citySurowce.ruda_zelaza = Math.min(resCap, (citySurowce.ruda_zelaza ?? 0) + (terrYield?.ruda_zelaza ?? 0));
 
     // Uruchamiamy tylko konwertery, ktorych budynek jest FAKTYCZNIE wybudowany w tym
-    // miescie (inaczej drewno konwertowaloby sie samoistnie bez Mielerza/Cegielni/...).
+    // miescie (inaczej drewno konwertowaloby sie samoistnie bez Cegielni/Garncarni/...).
     // Uwaga: 'tartak' i 'huta' (id w DEFAULT_CONVERTER_RECIPES) nie maja dzis
     // odpowiednika w buildings.json (Tartak istnieje tylko jako ulepszenie terenu;
     // Huta w ogole nie istnieje -- zastapiona przez 'odlewnia_brazu') -- te dwie

@@ -1688,7 +1688,8 @@ async function boot(): Promise<void> {
      *   • Sól / Koń / Ceramika — czysty DOSTĘP (nie kumulują sztuk, Maciej 2026-07-23:
      *     Garncarnia = dostęp, nie stock) → stock zawsze 0, kolumna „dostęp".
      *   • Bydło / Owce / Lama — NIE są surowcami (pominięte całkowicie).
-     *   • Reszta (drewno/kamień/glina/ruda/ruda żelaza/paliwo/cegła/brąz/żelazo/stal) — zliczana.
+     *   • Reszta (drewno/kamień/glina/ruda/ruda żelaza/cegła/brąz/żelazo/stal) — zliczana.
+     *   • Paliwo USUNIĘTE calkowicie (decyzja Macieja 2026-07-23) — konwertery biorą DREWNO 1:1.
      * Tempo/turę (ratePerTurn) — BRUTTO produkcji tej tury (SUROW-TERYT-01 dla teren,
      * przepustowość nominalna konwerterów dla miasto); 0 dla wierszy czystego dostępu.
      */
@@ -1704,7 +1705,6 @@ async function boot(): Promise<void> {
         { id: 'glina',       label: 'Glina',       icon: '🟫', typ: 'surowy' },
         { id: 'ruda',        label: 'Ruda miedzi', icon: '🔶', typ: 'surowy' },
         { id: 'ruda_zelaza', label: 'Ruda żelaza', icon: '⛏️', typ: 'surowy' },
-        { id: 'paliwo',      label: 'Paliwo',      icon: '🔥', typ: 'przetworzony' },
         { id: 'cegla',       label: 'Cegła',       icon: '🧱', typ: 'przetworzony' },
         { id: 'ceramika',    label: 'Ceramika',    icon: '🏺', typ: 'przetworzony', access: true },
         { id: 'braz',        label: 'Brąz',        icon: '🥉', typ: 'przetworzony' },

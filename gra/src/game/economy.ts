@@ -107,6 +107,12 @@ export interface EconParams {
   budynekCegielniBonusPracy:        number;
   budynekTargowiskoBonusHandlu:     number;
   budynekBibliotekaBonusNauki:      number;  // Biblioteka -> +Nauka% (master par.2a)
+  /**
+   * Zadanie 2 (2026-07-23): Garncarnia -> +Zywnosc% LOKALNIE (tylko w miescie gdzie
+   * stoi), stackuje addytywnie za kazda sztuke: ×(1 + wartosc × liczbaGarncarni).
+   * PLACEHOLDER 10% (econ-params.json budynek_garncarnia_bonus_zywnosci_lokalnie).
+   */
+  budynekGarncarniaBonusZywnosci:   number;
   budynekMennicaMnoznik:            number;  // Mennica: Handel->Pieniadz x mnoznik (par.2.3)
   /**
    * E1 Zadanie 1: Mennica mnoznik Handel->Pieniadz AKTYWNY DOPIERO gdy Waluta odkryta
@@ -185,6 +191,7 @@ export function loadEconParams(
     budynekCegielniBonusPracy:      read(bu, 'budynek_cegielnia_bonus_pracy', 0.25),
     budynekTargowiskoBonusHandlu:   read(bu, 'budynek_targowisko_bonus_handlu', 0.5),
     budynekBibliotekaBonusNauki:    read(bu, 'budynek_biblioteka_bonus_nauki', 0.5),
+    budynekGarncarniaBonusZywnosci: read(bu, 'budynek_garncarnia_bonus_zywnosci_lokalnie', 0.10),
     budynekMennicaMnoznik:          read(bu, 'budynek_mennica_mnoznik', 1),
     mennicaMnoznikPoWalucie:        read(gl, 'mennica_mnoznik_po_walucie', 1.5),
     walutaMnoznik:                  read(bu, 'waluta_mnoznik', 2),
@@ -542,6 +549,13 @@ export interface CityYieldContext {
    * liczenia (STAN-PRACY-HANDOFF.md, epik Handel E3). Domyslnie 0 (brak tras).
    */
   liczbaAktywnychTrasHandlowych?: number;
+  /**
+   * Zadanie 2 (2026-07-23): liczba Garncarni ZBUDOWANYCH W TYM MIESCIE (nie civ-wide).
+   * Kazda dodaje +budynekGarncarniaBonusZywnosci (domyslnie 10%) do lokalnej Zywnosci
+   * brutto, stackuje addytywnie: ×(1 + wartosc × liczbaGarncarni). Domyslnie 0 (brak
+   * Garncarni) tak, zeby istniejace literaly ctx zostaly wazne.
+   */
+  liczbaGarncarni?: number;
 }
 
 /** Minimalny ksztalt wpisu bonusy[] z civs.json (unikamy importu loader). */
@@ -638,7 +652,8 @@ export function civEconomyYieldMultipliers(
  *   7. Split Handel via trade slider into Nauka / Pieniadz / Luksus.
  *   8. Apply Mennica multiplier to Pieniadz; Biblioteka bonus to Nauka.
  *   9. Add building direct Pieniadz + specialist Poborca bonuses.
- *  10. Compute net food = gross food - (population + military) consumption.
+ *  10. Apply Garncarnia +Zywnosc% (lokalnie, per miasto, ctx.liczbaGarncarni) to
+ *      gross food, THEN compute net food = gross food - (population + military).
  *
  * All fractional results are floored.
  */
@@ -781,7 +796,14 @@ export function cityYieldPerTurn(
   }
 
   // --- Step 10: Net food ---
-  const zywnoscBrutto = zywnoscTerenu + zywnoscBudynkow;
+  // Garncarnia (Zadanie 2, 2026-07-23): +Zywnosc% LOKALNIE po zsumowaniu bazowej
+  // Zywnosci (teren+budynki), PRZED odjeciem konsumpcji. Stackuje za kazda sztuke
+  // zbudowana w TYM miescie (civ-wide NIE dotyczy -- patrz Stolarnia/Warsztat kamieniarski
+  // w turn-economy.ts, ktore dzialaja na drewno/kamien, nie zywnosc).
+  const zywnoscBruttoBaza = zywnoscTerenu + zywnoscBudynkow;
+  const liczbaGarncarni = ctx.liczbaGarncarni ?? 0;
+  const garncarniaMnoznikZywnosci = 1 + params.budynekGarncarniaBonusZywnosci * liczbaGarncarni;
+  const zywnoscBrutto = zywnoscBruttoBaza * garncarniaMnoznikZywnosci;
   const zywnoscZuzyta = city.ludnosc * params.zywnoscZuzytkaPopulacja
                        + ctx.wojskoZuzycieZywnosci;
   const zywnoscNetto  = zywnoscBrutto - zywnoscZuzyta;

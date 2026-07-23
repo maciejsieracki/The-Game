@@ -127,7 +127,7 @@ export interface City {
   /**
    * E1 Zadanie 2: magazyn PER-MIASTO surowcow logistycznych zasilajacych converters
    * (game/converters.ts): drewno/kamien (dzis zbierane), docelowo glina/ruda.
-   * Klucze ASCII zgodne z DEFAULT_CONVERTER_RECIPES (drewno/kamien/paliwo/glina/
+   * Klucze ASCII zgodne z DEFAULT_CONVERTER_RECIPES (drewno/kamien/glina/
    * ruda/deski/cegla/braz/ceramika). Pole addytywne/opcjonalne -- brak w starym
    * zapisie = {} (ensureCitySaveDefaults). NIE myl z civ-wide bramkami braz/zelazo/
    * hodowla (zelazo-access.ts / braz-access.ts / livestock-unlock.ts) -- te zostaja

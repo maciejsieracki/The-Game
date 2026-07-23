@@ -208,23 +208,33 @@ function simulateConverterTick(builtIds, stores) {
   return M.runConverters(active, stores, throughputs, () => resCap);
 }
 
-// Bez Mielerza: drewno NIE zamienia sie na paliwo mimo obecnosci surowca.
-const withoutMielerz = simulateConverterTick([], { drewno: 5 });
-eq(withoutMielerz.stores.drewno, 5, 'brak Mielerza: drewno niezmienione (converter nieaktywny)');
-eq(withoutMielerz.stores.paliwo, undefined, 'brak Mielerza: brak paliwa (converter nieaktywny)');
+// Zadanie 1 (2026-07-23): PALIWO USUNIETE calkowicie, Mielerz skasowany -- konwertery
+// biora DREWNO 1:1 zamiast paliwa. Test zaktualizowany: Cegielnia bierze teraz
+// { glina: 2, drewno: 1 } zamiast { glina: 2, paliwo: 1 }.
+//
+// Bez Cegielni: glina+drewno NIE zamieniaja sie w cegle mimo obecnosci surowcow.
+const withoutCegielnia = simulateConverterTick([], { glina: 4, drewno: 5 });
+eq(withoutCegielnia.stores.glina, 4, 'brak Cegielni: glina niezmieniona (converter nieaktywny)');
+eq(withoutCegielnia.stores.drewno, 5, 'brak Cegielni: drewno niezmienione (converter nieaktywny)');
+eq(withoutCegielnia.stores.cegla, undefined, 'brak Cegielni: brak cegly (converter nieaktywny)');
 
-// Z Mielerzem: drewno zamienia sie na paliwo (do przepustowosci).
-const withMielerz = simulateConverterTick(['mielerz'], { drewno: 5 });
-assert(withMielerz.stores.paliwo > 0, `z Mielerzem: paliwo > 0 (got ${withMielerz.stores.paliwo})`);
-assert(withMielerz.stores.drewno < 5, 'z Mielerzem: drewno zmalalo (skonsumowane)');
+// Z Cegielnia: glina+drewno zamieniaja sie w cegle (do przepustowosci).
+const withCegielnia = simulateConverterTick(['cegielnia'], { glina: 4, drewno: 5 });
+assert(withCegielnia.stores.cegla > 0, `z Cegielnia: cegla > 0 (got ${withCegielnia.stores.cegla})`);
+assert(withCegielnia.stores.glina < 4, 'z Cegielnia: glina zmalala (skonsumowana)');
+assert(withCegielnia.stores.drewno < 5, 'z Cegielnia: drewno zmalalo (skonsumowane, bylo paliwo:1 -> teraz drewno:1)');
 
 // 'tartak' i 'huta' nie maja odpowiednika w buildings.json -- nigdy nie beda w builtIds,
 // wiec te dwie receptury pozostaja nieaktywne (pre-istniejacy stan danych, patrz raport E1).
+// Mielerz USUNIETY calkowicie z buildings.json (Zadanie 1, 2026-07-23) -- pozostaje
+// 5 receptur z odpowiednikiem budynku (cegielnia/garncarnia/odlewnia_brazu/odlewnia_zelaza/
+// wielka_kuznia); test sprawdza jak dawniej tylko podzbior uzywany dalej w tym pliku.
 const buildingIds = new Set((Array.isArray(buildings) ? buildings : buildings.buildings || []).map(b => b.id));
 assert(!buildingIds.has('tartak'), 'potwierdzenie: brak budynku "tartak" w buildings.json (recepta nieaktywna)');
 assert(!buildingIds.has('huta'), 'potwierdzenie: brak budynku "huta" w buildings.json (recepta nieaktywna, duplikat odlewnia_brazu)');
-assert(buildingIds.has('mielerz') && buildingIds.has('cegielnia') && buildingIds.has('garncarnia') && buildingIds.has('odlewnia_brazu'),
-  'budynek Garncarnia istnieje w buildings.json (dostep do Ceramiki), ale BEZ receptury konwertera (mielerz/cegielnia/odlewnia_brazu -- 3 aktywne receptury)');
+assert(!buildingIds.has('mielerz'), 'Mielerz NIE istnieje juz w buildings.json (usuniety 2026-07-23)');
+assert(buildingIds.has('cegielnia') && buildingIds.has('garncarnia') && buildingIds.has('odlewnia_brazu'),
+  'Cegielnia/Garncarnia/odlewnia_brazu MAJA budynek (Garncarnia = dostep Ceramiki, BEZ receptury konwertera)');
 
 // ---------------------------------------------------------------------------
 // G. GLINA-Q1=A (2026-07-20): glinianka daje 2 glina/ture, dokladnie jak drewno/kamien
@@ -242,46 +252,46 @@ const yldClay = M.cityYieldPerTurn(city, [clayTile, clayTile], [], pNormal, make
 eq(yldClay.glinaTerenu, 4, 'cityYieldPerTurn: 2 pola z glinianka -> glinaTerenu = 4 (2 x 2/ture)');
 
 // ---------------------------------------------------------------------------
-// H. Cegielnia oziywa: glina+paliwo -> cegla; Garncarnia NIE konwertuje (Maciej
-// 2026-07-23: Ceramika = tylko dostep, NIE surowiec magazynowy -- receptura
-// 'garncarnia' USUNIETA z DEFAULT_CONVERTER_RECIPES, patrz converters.ts);
+// H. Cegielnia oziywa: glina+drewno -> cegla; Garncarnia NIE konwertuje (Maciej 2026-07-23:
+// Ceramika = tylko dostep, receptura 'garncarnia' USUNIETA z DEFAULT_CONVERTER_RECIPES,
+// patrz converters.ts). Paliwo usuniete (Zadanie 1) -- Cegielnia bierze drewno 1:1;
 // odlewnia_brazu NIE bez rudy.
 // ---------------------------------------------------------------------------
-console.log('\n-- H. Cegielnia produkuje z gliny+paliwa; Garncarnia = dostep (bez konwersji); odlewnia_brazu NIE bez rudy --');
+console.log('\n-- H. Cegielnia produkuje z gliny+drewna; Garncarnia = dostep (bez konwersji); odlewnia_brazu NIE bez rudy --');
 
-// Cegielnia + Garncarnia zbudowane, magazyn ma glina+paliwo (jak po zebraniu z glinianki
-// + Mielerzu) -- TYLKO Cegielnia ma recepture aktywna (Garncarnia usunieta z katalogu).
+// Cegielnia + Garncarnia zbudowane, magazyn glina+drewno -- TYLKO Cegielnia ma recepture
+// aktywna (Garncarnia usunieta z katalogu konwerterow); glina=8 z zapasem.
 const withCegielniaGarncarnia = simulateConverterTick(
   ['cegielnia', 'garncarnia'],
-  { glina: 4, paliwo: 4 },
+  { glina: 8, drewno: 8 },
 );
 assert(withCegielniaGarncarnia.stores.cegla > 0,
-  `Cegielnia: cegla > 0 przy glina+paliwo obecnych (got ${withCegielniaGarncarnia.stores.cegla})`);
+  `Cegielnia: cegla > 0 przy glina+drewno obecnych (got ${withCegielniaGarncarnia.stores.cegla})`);
 eq(withCegielniaGarncarnia.stores.ceramika, undefined,
   'Garncarnia: BRAK ceramiki w magazynie (Maciej 2026-07-23: dostep, nie stock -- receptura usunieta)');
-assert(withCegielniaGarncarnia.stores.glina < 4,
-  'Cegielnia+Garncarnia: glina zmalala (skonsumowana tylko przez Cegielnie)');
+assert(withCegielniaGarncarnia.stores.glina < 8,
+  'Cegielnia+Garncarnia: glina zmalala (skonsumowana przez Cegielnie -- Garncarnia nie konwertuje)');
 
-// Bez budynkow: mimo obecnosci gliny+paliwa w magazynie nic sie nie produkuje (gating builtIds).
-const withoutBuildings = simulateConverterTick([], { glina: 4, paliwo: 4 });
+// Bez budynkow: mimo obecnosci gliny+drewna w magazynie nic sie nie produkuje (gating builtIds).
+const withoutBuildings = simulateConverterTick([], { glina: 8, drewno: 8 });
 eq(withoutBuildings.stores.cegla, undefined, 'brak Cegielni: brak cegly (converter nieaktywny)');
-eq(withoutBuildings.stores.ceramika, undefined, 'Garncarnia: brak ceramiki (receptura nie istnieje w katalogu)');
-eq(withoutBuildings.stores.glina, 4, 'brak budynkow: glina niezmieniona');
+eq(withoutBuildings.stores.ceramika, undefined, 'brak Garncarni jako konwertera: brak ceramiki');
+eq(withoutBuildings.stores.glina, 8, 'brak budynkow: glina niezmieniona');
 
-// odlewnia_brazu zbudowana + paliwo obecne, ale BEZ rudy (GLINA-Q2=A: rudy nie zbieramy) ->
+// odlewnia_brazu zbudowana + drewno obecne, ale BEZ rudy (GLINA-Q2=A: rudy nie zbieramy) ->
 // braz NIE rosnie (limitWejscia=0 bo have('ruda')=0), niezaleznie od gliny/cegielni/garncarni.
 const withOdlewniaNoOre = simulateConverterTick(
   ['odlewnia_brazu', 'cegielnia', 'garncarnia'],
-  { glina: 4, paliwo: 4 },
+  { glina: 8, drewno: 8 },
 );
 eq(withOdlewniaNoOre.stores.braz, undefined,
   'odlewnia_brazu zbudowana ale brak rudy w magazynie -> braz NIE rosnie (undefined, brak-wejscia)');
 assert(withOdlewniaNoOre.stores.cegla > 0 && withOdlewniaNoOre.stores.ceramika === undefined,
-  'odlewnia_brazu bez rudy NIE blokuje Cegielni (nadal produkuje z gliny+paliwa); ceramika nadal brak (dostep, nie stock)');
+  'odlewnia_brazu bez rudy NIE blokuje Cegielni (nadal produkuje z gliny+drewna); ceramika brak (dostep, nie stock)');
 
 // Sanity: gdyby ruda BYLA w magazynie (nie zbierana dzis, ale receptura istnieje), odlewnia
 // zadzialalaby -- potwierdza, ze brak braz wyzej wynika z braku rudy, nie ze zlej receptury.
-const withOdlewniaWithOre = simulateConverterTick(['odlewnia_brazu'], { ruda: 4, paliwo: 4 });
+const withOdlewniaWithOre = simulateConverterTick(['odlewnia_brazu'], { ruda: 4, drewno: 4 });
 assert(withOdlewniaWithOre.stores.braz > 0,
   `kontrola: odlewnia_brazu Z ruda w magazynie -> braz > 0 (got ${withOdlewniaWithOre.stores.braz}) -- receptura sama w sobie sprawna`);
 

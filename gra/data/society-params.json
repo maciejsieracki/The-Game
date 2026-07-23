@@ -104,7 +104,7 @@
       "normal": -1,
       "hard": -1.25,
       "jednostka": "pkt Zdrowia",
-      "opis": "Kara Zdrowia za zanieczyszczenie dymu/przemysłowe (aktywna gdy działają budynki przemysłowe — Huta, Mielerz itp.). Późne epoki. [PT]"
+      "opis": "Kara Zdrowia za zanieczyszczenie dymu/przemysłowe (aktywna gdy działają budynki przemysłowe — Piec hutniczy, Cegielnia itp.). Późne epoki. [PT]"
     },
     "zdrowie_kara_brak_wody": {
       "easy": -1,

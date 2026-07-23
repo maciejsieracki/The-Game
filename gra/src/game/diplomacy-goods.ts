@@ -9,9 +9,9 @@
  *     `empireActiveResourceLabelsForOwner`, już generyczne per ownerId).
  *   - `citySurowceSum`: suma `City.surowce` (magazyn PER-MIASTO surowców logistycznych,
  *     cities.ts) po WSZYSTKICH miastach ownera — klucze ASCII zgodne z
- *     DEFAULT_CONVERTER_RECIPES (drewno/kamien/glina/ruda/cegla/braz/paliwo). Ceramika
+ *     DEFAULT_CONVERTER_RECIPES (drewno/kamien/glina/ruda/cegla/braz). Ceramika
  *     CELOWO NIE kumuluje sztuk (Maciej 2026-07-23) — tylko dostęp (etykieta 'Ceramika'),
- *     stąd `ilosc` dla niej zawsze `undefined` niżej.
+ *     stąd `ilosc` dla niej zawsze `undefined` niżej. Paliwo USUNIĘTE (konwertery biorą drewno).
  *
  * Przed tą zmianą main.ts (tradeGoodsForOwner) pokazywał TEN SAM globalny katalog
  * (diplomacyResourceAccessCatalog) po OBU stronach negocjacji — niezależnie od tego, czy

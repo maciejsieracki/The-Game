@@ -82,7 +82,6 @@ export const STOCK_RESOURCE_LABEL: Readonly<Record<string, string>> = {
   ruda_zelaza: 'Ruda żelaza',
   cegla: 'Cegła',
   ceramika: 'Ceramika',
-  paliwo: 'Paliwo',
   braz: 'Brąz',
   zelazo: 'Żelazo',
   stal: 'Stal',

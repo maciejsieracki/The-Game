@@ -71,7 +71,7 @@ function eq(a, b, msg) {
 // Fixture: minimalne dane tech.json (struktura lustro rzeczywistego pliku)
 // ---------------------------------------------------------------------------
 const TECH_DATA = [
-  { Technologia: 'Obrobka drewna', Epoka: 'Kamien', Poziom: 1, 'Wymaga (prereq)': '—', 'Odblokowuje budynek': 'Tartak, Mielerz', 'Koszt nauki': 10 },
+  { Technologia: 'Obrobka drewna', Epoka: 'Kamien', Poziom: 1, 'Wymaga (prereq)': '—', 'Odblokowuje budynek': 'Tartak, Stolarnia', 'Koszt nauki': 10 },
   { Technologia: 'Garncarstwo',    Epoka: 'Kamien', Poziom: 1, 'Wymaga (prereq)': '—', 'Odblokowuje budynek': 'Spichlerz, Cegielnia, Garncarz', 'Koszt nauki': 12 },
   { Technologia: 'Murarstwo',      Epoka: 'Kamien', Poziom: 1, 'Wymaga (prereq)': '—', 'Odblokowuje budynek': 'Mury, Kopalnia', 'Koszt nauki': 14 },
   { Technologia: 'Lucznictwo',     Epoka: 'Kamien', Poziom: 1, 'Wymaga (prereq)': '—', 'Odblokowuje budynek': 'Lucznik', 'Koszt nauki': 10 },

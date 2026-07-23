@@ -43,42 +43,10 @@
     "przyrostUtrzymania": 0,
     "wymagania": "las w zasiegu",
     "uwagi": "B-SUROW-BUD-03: bonus Pracy only — bez konwertera desek",
-    "techUnlock": "Obróbka drewna"
-  },
-  {
-    "id": "mielerz",
-    "nazwa": "Mielerz",
-    "kategoria": "Produkcja",
-    "epokaWejscia": 1,
-    "maksPoziom": 10,
-    "nazwyPoziomow": [],
-    "baza": {
-      "praca": 4,
-      "pieniadz": 0,
-      "zywnosc": 0,
-      "nauka": 0,
-      "kultura": 0,
-      "zadowolenie": 0,
-      "obrona": 0,
-      "mnoznik": 0
-    },
-    "przyrost": {
-      "praca": 2,
-      "pieniadz": 0,
-      "zywnosc": 0,
-      "nauka": 0,
-      "kultura": 0,
-      "zadowolenie": 0,
-      "obrona": 0,
-      "mnoznik": 0
-    },
-    "kosztBudowy": 18,
-    "przyrostKosztu": 8,
-    "utrzymanie": 1,
-    "przyrostUtrzymania": 0,
-    "wymagania": "las w zasiegu",
-    "uwagi": "ABC-9: drewno → paliwo (konwerter)",
-    "techUnlock": "Obróbka drewna"
+    "techUnlock": "Obróbka drewna",
+    "koszt_surowce": {
+      "drewno": 5
+    }
   },
   {
     "id": "kamieniarski",
@@ -113,7 +81,11 @@
     "przyrostUtrzymania": 0,
     "wymagania": "kamien w zasiegu",
     "uwagi": "",
-    "techUnlock": "Murarstwo"
+    "techUnlock": "Murarstwo",
+    "koszt_surowce": {
+      "drewno": 3,
+      "kamien": 3
+    }
   },
   {
     "id": "kuznia",
@@ -148,7 +120,11 @@
     "przyrostUtrzymania": 1,
     "wymagania": "ruda miedzi w zasięgu (kopalnia miedzi)",
     "uwagi": "Mnoznik % dotyczy sily jednostek produkowanych w miescie",
-    "techUnlock": "Brązownictwo"
+    "techUnlock": "Brązownictwo",
+    "koszt_surowce": {
+      "drewno": 4,
+      "kamien": 4
+    }
   },
   {
     "id": "odlewnia_brazu",
@@ -181,9 +157,13 @@
     "przyrostKosztu": 10,
     "utrzymanie": 2,
     "przyrostUtrzymania": 1,
-    "wymagania": "Popalnia brązu w imperium + ruda + paliwo",
-    "uwagi": "ABC-13: Piec hutniczy (brąz); upgrade → Odlewnia żelaza. Dostęp brąz = Popalnia (mapa) + ten budynek.",
-    "techUnlock": "Brązownictwo"
+    "wymagania": "Popalnia brązu w imperium + ruda + drewno",
+    "uwagi": "ABC-13: Piec hutniczy (brąz); upgrade → Odlewnia żelaza. Dostęp brąz = Popalnia (mapa) + ten budynek. Konwerter bierze drewno 1:1 (paliwo usuniete 2026-07-23).",
+    "techUnlock": "Brązownictwo",
+    "koszt_surowce": {
+      "kamien": 6,
+      "cegla": 4
+    }
   },
   {
     "id": "odlewnia_zelaza",
@@ -219,7 +199,11 @@
     "wymagania": "upgrade Odlewni brązu",
     "uwagi": "ABC-7: suma bonusów z Odlewni brązu + żelazo; placeholder receptury",
     "techUnlock": "Hutnictwo żelaza",
-    "upgradeFrom": "odlewnia_brazu"
+    "upgradeFrom": "odlewnia_brazu",
+    "koszt_surowce": {
+      "cegla": 8,
+      "braz": 4
+    }
   },
   {
     "id": "targowisko",
@@ -265,7 +249,10 @@
     "przyrostUtrzymania": 1,
     "wymagania": "",
     "uwagi": "Mnoznik % dotyczy przychodow z handlu w miescie",
-    "techUnlock": "Wymiana"
+    "techUnlock": "Wymiana",
+    "koszt_surowce": {
+      "drewno": 6
+    }
   },
   {
     "id": "port",
@@ -300,7 +287,10 @@
     "przyrostUtrzymania": 1,
     "wymagania": "wybrzeze morskie lub rzeka",
     "uwagi": "",
-    "techUnlock": "Żegluga"
+    "techUnlock": "Żegluga",
+    "koszt_surowce": {
+      "drewno": 10
+    }
   },
   {
     "id": "port_wielki",
@@ -336,7 +326,11 @@
     "wymagania": "upgrade Portu handlowego; wybrzeże",
     "uwagi": "ABC-20 B: suma bonusów Port + Port wielki w JSON",
     "techUnlock": "Inżynieria",
-    "upgradeFrom": "port"
+    "upgradeFrom": "port",
+    "koszt_surowce": {
+      "cegla": 10,
+      "braz": 4
+    }
   },
   {
     "id": "karawanseraj",
@@ -372,7 +366,9 @@
     "wymagania": "",
     "uwagi": "Mnoznik % dotyczy handlu ladowego (szlaki miedzy miastami)",
     "techUnlock": "Handel",
-    "koszt_surowce": { "cegla": 4 }
+    "koszt_surowce": {
+      "cegla": 4
+    }
   },
   {
     "id": "spichlerz",
@@ -407,7 +403,11 @@
     "przyrostUtrzymania": 0,
     "wymagania": "",
     "uwagi": "B-SPIC: bramka Ceramika (garncarnia imperium); tier I cap 100",
-    "techUnlock": "Garncarstwo"
+    "techUnlock": "Garncarstwo",
+    "koszt_surowce": {
+      "drewno": 5,
+      "kamien": 3
+    }
   },
   {
     "id": "spichlerz_ii",
@@ -444,7 +444,9 @@
     "wymagania": "upgrade ze Spichlerza I",
     "uwagi": "B-SPIC: bramka Sól; cap armii 150; bufor 70% po wzroście",
     "techUnlock": "Warzelnia soli",
-    "koszt_surowce": { "cegla": 10 }
+    "koszt_surowce": {
+      "cegla": 10
+    }
   },
   {
     "id": "garncarnia",
@@ -478,8 +480,12 @@
     "utrzymanie": 1,
     "przyrostUtrzymania": 0,
     "wymagania": "glina w zasiegu",
-    "uwagi": "ABC-6: glina+paliwo→ceramika",
-    "techUnlock": "Garncarstwo"
+    "uwagi": "ABC-6: glina+drewno→ceramika (paliwo usuniete 2026-07-23)",
+    "techUnlock": "Garncarstwo",
+    "koszt_surowce": {
+      "drewno": 4,
+      "kamien": 2
+    }
   },
   {
     "id": "cegielnia",
@@ -512,9 +518,13 @@
     "przyrostKosztu": 9,
     "utrzymanie": 1,
     "przyrostUtrzymania": 0,
-    "wymagania": "glina + paliwo",
-    "uwagi": "ABC-8: bramka Pismo wymaga Cegielni w imperium",
-    "techUnlock": "Garncarstwo"
+    "wymagania": "glina + drewno",
+    "uwagi": "ABC-8: bramka Pismo wymaga Cegielni w imperium. Konwerter bierze drewno 1:1 (paliwo usuniete 2026-07-23).",
+    "techUnlock": "Garncarstwo",
+    "koszt_surowce": {
+      "drewno": 4,
+      "kamien": 4
+    }
   },
   {
     "id": "kamienne_kregi",
@@ -549,7 +559,10 @@
     "przyrostUtrzymania": 0,
     "wymagania": "",
     "uwagi": "B-KULT-REL + KULT-BUD-02: budynek RELIGIJNY — konwersja religii +2%/t (religia_konwersja_kregi, additive do bazy); plon kultury OK, bez bonusu konwersji kultury. Upgrade → Świątynia.",
-    "techUnlock": "Mistycyzm"
+    "techUnlock": "Mistycyzm",
+    "koszt_surowce": {
+      "kamien": 8
+    }
   },
   {
     "id": "swiatynia",
@@ -586,7 +599,9 @@
     "uwagi": "B-KULT-REL + KULT-BUD-02: budynek RELIGIJNY — konwersja religii +4%/t (religia_konwersja_swiatynia, additive do bazy); plon kultury OK, bez bonusu konwersji kultury.",
     "techUnlock": "Religia",
     "upgradeFrom": "kamienne_kregi",
-    "koszt_surowce": { "cegla": 6 }
+    "koszt_surowce": {
+      "cegla": 6
+    }
   },
   {
     "id": "biblioteka",
@@ -636,7 +651,9 @@
     "poziomTechGate": {
       "6": "Astronomia"
     },
-    "koszt_surowce": { "cegla": 5 }
+    "koszt_surowce": {
+      "cegla": 5
+    }
   },
   {
     "id": "studnia",
@@ -671,7 +688,10 @@
     "przyrostUtrzymania": 0,
     "wymagania": "",
     "uwagi": "Studnia miejska — dostęp do czystej wody (+Zdrowie proxy). Osobno: Łaźnia publiczna (termy rzymskie, epoka Żelaza).",
-    "techUnlock": "Gospodarka wodna"
+    "techUnlock": "Gospodarka wodna",
+    "koszt_surowce": {
+      "kamien": 5
+    }
   },
   {
     "id": "akwedukt",
@@ -707,7 +727,9 @@
     "wymagania": "",
     "uwagi": "T-TECH-6: zdrowie++ i cap ludności (turn-economy)",
     "techUnlock": "Budownictwo",
-    "koszt_surowce": { "cegla": 12 }
+    "koszt_surowce": {
+      "cegla": 12
+    }
   },
   {
     "id": "mennica",
@@ -742,7 +764,11 @@
     "przyrostUtrzymania": 1,
     "wymagania": "",
     "uwagi": "T-TECH-6: mnoznik handlu→pieniądz (economy.ts)",
-    "techUnlock": "Waluta"
+    "techUnlock": "Waluta",
+    "koszt_surowce": {
+      "kamien": 6,
+      "braz": 3
+    }
   },
   {
     "id": "mury",
@@ -779,7 +805,9 @@
     "uwagi": "",
     "techUnlock": "Budownictwo",
     "odblokowuje": "maMur",
-    "koszt_surowce": { "cegla": 15 }
+    "koszt_surowce": {
+      "cegla": 15
+    }
   },
   {
     "id": "koszary",
@@ -814,7 +842,12 @@
     "przyrostUtrzymania": 1,
     "wymagania": "",
     "uwagi": "Mnoznik % dotyczy sily i exp jednostek szkolonych w miescie",
-    "techUnlock": "Wojskowość"
+    "techUnlock": "Wojskowość",
+    "koszt_surowce": {
+      "drewno": 6,
+      "kamien": 6,
+      "braz": 4
+    }
   },
   {
     "id": "magazyn",
@@ -849,7 +882,11 @@
     "przyrostUtrzymania": 0,
     "wymagania": "",
     "uwagi": "",
-    "techUnlock": "Handel"
+    "techUnlock": "Handel",
+    "koszt_surowce": {
+      "drewno": 8,
+      "kamien": 4
+    }
   },
   {
     "id": "stela",
@@ -884,7 +921,10 @@
     "przyrostUtrzymania": 0,
     "wymagania": "",
     "uwagi": "Nie wymaga utrzymania",
-    "techUnlock": "Murarstwo"
+    "techUnlock": "Murarstwo",
+    "koszt_surowce": {
+      "kamien": 6
+    }
   },
   {
     "id": "palac",
@@ -930,7 +970,11 @@
     "przyrostUtrzymania": 1,
     "wymagania": "-",
     "uwagi": "1 na miasto; główne źródło kultury + Prawo (society-params prawo_palac); budynek startowy — bez bramki tech",
-    "techUnlock": "-"
+    "techUnlock": "-",
+    "koszt_surowce": {
+      "drewno": 8,
+      "kamien": 8
+    }
   },
   {
     "id": "kuznia_zelaza",
@@ -966,7 +1010,11 @@
     "wymagania": "zelazo w zasiegu",
     "wymaganySurowiec": "zelazo",
     "uwagi": "Mnoznik % dotyczy sily jednostek zelaznych produkowanych w miescie; wymaga dostepu do zelaza",
-    "techUnlock": "Hutnictwo żelaza"
+    "techUnlock": "Hutnictwo żelaza",
+    "koszt_surowce": {
+      "cegla": 6,
+      "braz": 4
+    }
   },
   {
     "id": "wielka_kuznia",
@@ -1041,7 +1089,10 @@
     "techUnlock": "Inżynieria",
     "odblokowuje": "maFort",
     "upgradeFrom": "mury",
-    "koszt_surowce": { "cegla": 18 }
+    "koszt_surowce": {
+      "cegla": 18,
+      "zelazo": 6
+    }
   },
   {
     "id": "warsztat_oblezniczy",
@@ -1077,7 +1128,11 @@
     "wymagania": "wymaga Koszary",
     "uwagi": "Odblokowuje budowę Katapulty w mieście (maWarsztatOblezniczy). Taran i Wieża = in-siege przy oblężeniu — styk UNITS",
     "techUnlock": "Oblężnictwo",
-    "odblokowuje": "maWarsztatOblezniczy"
+    "odblokowuje": "maWarsztatOblezniczy",
+    "koszt_surowce": {
+      "cegla": 8,
+      "zelazo": 6
+    }
   },
   {
     "id": "akademia",
@@ -1114,7 +1169,9 @@
     "uwagi": "ABC-21 B: merge Biblioteka+Akademia+Teatr — suma w JSON; Teatr ukryty z produkcji",
     "techUnlock": "Filozofia",
     "upgradeFrom": "biblioteka",
-    "koszt_surowce": { "cegla": 14 }
+    "koszt_surowce": {
+      "cegla": 14
+    }
   },
   {
     "id": "teatr",
@@ -1150,7 +1207,10 @@
     "wymagania": "",
     "uwagi": "ABC-21 B: wchodzi w merge Akademia — nie buduj osobno",
     "techUnlock": "Filozofia",
-    "suppressed": true
+    "suppressed": true,
+    "koszt_surowce": {
+      "cegla": 10
+    }
   },
   {
     "id": "sad",
@@ -1185,7 +1245,10 @@
     "przyrostUtrzymania": 1,
     "wymagania": "",
     "uwagi": "KULT-BUD-01: +5 kultura baza, +2% konwersji; redukuje korupcje; zadowolenie z praworz.",
-    "techUnlock": "Prawo"
+    "techUnlock": "Prawo",
+    "koszt_surowce": {
+      "cegla": 8
+    }
   },
   {
     "id": "pretorium",
@@ -1221,7 +1284,9 @@
     "wymagania": "",
     "uwagi": "Centrum administracji prowincji; bonus do utrzymania porzadku (garnizon); mnoznik % do przychodu podatkowego",
     "techUnlock": "Prawo",
-    "koszt_surowce": { "cegla": 9 }
+    "koszt_surowce": {
+      "cegla": 9
+    }
   },
   {
     "id": "trybunal",
@@ -1256,7 +1321,10 @@
     "przyrostUtrzymania": 1,
     "wymagania": "",
     "uwagi": "3a: wczesna administracja — +porzadek, anty-korupcja; slabszy niz Sad/Pretorium (Kodeks prawa)",
-    "techUnlock": "Kodeks"
+    "techUnlock": "Kodeks",
+    "koszt_surowce": {
+      "cegla": 8
+    }
   },
   {
     "id": "laznia_publiczna",
@@ -1292,7 +1360,9 @@
     "wymagania": "wymaga Studnia",
     "uwagi": "KULT-BUD-01: +3 kultura baza, +1% konwersji; termy — zadowolenie, zdrowie; wymaga Studni i tech Medycyna.",
     "techUnlock": "Medycyna",
-    "koszt_surowce": { "cegla": 10 }
+    "koszt_surowce": {
+      "cegla": 10
+    }
   },
   {
     "id": "lazaret",
@@ -1363,6 +1433,10 @@
     "wymagania": "upgrade Koszar",
     "uwagi": "Upgrade Koszary → Akademia wojskowa; suma bonusów w JSON; bramka elit UNITS",
     "techUnlock": "Sztuka wojenna",
-    "upgradeFrom": "koszary"
+    "upgradeFrom": "koszary",
+    "koszt_surowce": {
+      "cegla": 12,
+      "zelazo": 6
+    }
   }
 ]

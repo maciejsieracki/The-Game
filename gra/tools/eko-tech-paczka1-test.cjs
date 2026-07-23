@@ -65,15 +65,25 @@ const gateWithCeg = { empireBuiltIds: new Set(['cegielnia']), buildings };
   ok(M.isBuildingSupersededByUpgrade('kamienne_kregi', after, buildings), 'kręgi superseded after upgrade');
 }
 
-// ABC-9: Mielerz po Obróbce drewna
+// ABC-9 (zaktualizowany 2026-07-23): Mielerz USUNIETY calkowicie (decyzja Macieja --
+// paliwo zamydlalo sprawe, konwertery biora DREWNO 1:1). Test dostosowany do nowego
+// modelu: sprawdzamy, ze Stolarnia (ta sama bramka techUnlock="Obróbka drewna",
+// jedyny budynek tej bramki, ktory PRZETRWAL) nadal odblokowuje sie poprawnie, oraz
+// ze Mielerz juz NIGDZIE sie nie pojawia w produkcji (regresja usuniecia).
+// Uwaga: activeResourceLabels:['Drewno'] jest WYMAGANE tu -- Stolarnia (epoka 1) ma
+// bramke eraAccessLabels(1)=['Drewno'] (building-resource-gate.ts); bez tego kontekstu
+// ZADEN budynek epoki 1 nie przejdzie bramki (to samo dotyczylo dawniej Mielerza --
+// PRE-ISTNIEJACY brak w oryginalnym teście, niezwiazany z usunieciem paliwa/Mielerza).
 {
   const items = M.availableProduction(
     { id: 'c1', name: 'X', ownerId: 0, population: 3, q: 0, r: 0 },
     { buildings, units: [] },
     ['Obróbka drewna'],
-    { epoch: 1, builtBuildingIds: [] },
+    { epoch: 1, builtBuildingIds: [], activeResourceLabels: ['Drewno'] },
   );
-  ok(items.some(i => i.id === 'mielerz'), 'Mielerz in production after Obróbka drewna');
+  ok(items.some(i => i.id === 'stolarnia'), 'Stolarnia in production after Obróbka drewna');
+  ok(!items.some(i => i.id === 'mielerz'), 'Mielerz NIE istnieje juz w produkcji (usuniety 2026-07-23)');
+  ok(!buildings.some(b => b.id === 'mielerz'), 'Mielerz NIE istnieje juz w buildings.json');
 }
 
 // playerState gate

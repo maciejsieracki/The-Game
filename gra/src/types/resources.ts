@@ -14,7 +14,7 @@
 /**
  * Identyfikatory wszystkich surowcow w grze.
  * Typ surowy: pochodzi bezposrednio z terenu / zloza.
- * Typ przetworzony: wymaga budynku produkcyjnego (tartak, mielerz, itp.).
+ * Typ przetworzony: wymaga budynku produkcyjnego (tartak, itp.).
  * Typ hodowla: wymaga zloza startowego + pastwiska.
  */
 export enum SurowiecId {
@@ -33,10 +33,10 @@ export enum SurowiecId {
 
   // Przetworzone
   Deski    = 'deski',      // WYCOFANE (B-SUROW-BUD-03) — nie używać
-  Paliwo   = 'paliwo',     // Mielerz: 1 drewno -> 1 paliwo (wegiel drzewny)
-  Cegla    = 'cegla',      // Cegielnia: glina + paliwo -> cegla
-  Ceramika = 'ceramika',   // Garncarnia: glina + paliwo -> ceramika (luksus)
-  Braz     = 'braz',       // Huta: ruda + paliwo -> braz
+  // Paliwo USUNIETE calkowicie (decyzja Macieja 2026-07-23): konwertery biora DREWNO 1:1.
+  Cegla    = 'cegla',      // Cegielnia: glina + drewno -> cegla
+  Ceramika = 'ceramika',   // Garncarnia: glina + drewno -> ceramika (luksus)
+  Braz     = 'braz',       // Piec hutniczy: ruda + drewno -> braz
 }
 
 // ---------------------------------------------------------------------------

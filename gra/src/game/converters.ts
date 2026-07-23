@@ -3,12 +3,13 @@
  * Przetworstwo surowcow (budynki przetworcze) dla The Game -- czysty modul,
  * bez DOM, bez THREE, ZERO importow runtime.
  *
- * Kanon 2026-07-23 (CERAMIKA-DOSTEP, supersedes B-SUROW-BUD-03/SUROWCE-KANON):
- *   Mielerz    | 2 drewno         | 1 paliwo     | 2/t
- *   Cegielnia  | 2 glina + 1 paliwo | 1 cegla    | 2/t
- *   Piec hutniczy | 1 ruda + 1 paliwo | 1 braz  | 1/t
- *   Odlewnia żelaza | 1 ruda_zelaza + 1 paliwo | 1 zelazo | 1/t
- *   Wielka kuźnia | 1 zelazo + 1 paliwo | 1 stal  | 1/t
+ * Kanon 2026-07-23 (CERAMIKA-DOSTEP + PALIWO USUNIETE, supersedes B-SUROW-BUD-03/SUROWCE-KANON):
+ *   - Ceramika = tylko dostep (Garncarnia zbudowana) -- receptura garncarni USUNIETA.
+ *   - Paliwo USUNIETE calkowicie (Mielerz usuniety); konwertery biora DREWNO 1:1 zamiast paliwa.
+ *   Cegielnia  | 2 glina + 1 drewno | 1 cegla    | 2/t (cel 3/t -- decyzja C-SUROW-CEGLA=A)
+ *   Piec hutniczy | 1 ruda + 1 drewno | 1 braz  | 1/t
+ *   Odlewnia żelaza | 1 ruda_zelaza + 1 drewno | 1 zelazo | 1/t
+ *   Wielka kuźnia | 1 zelazo + 1 drewno | 1 stal  | 1/t
  *   Stolarnia / Tartak — NIE konwertują (drewno TYP 1; deski wycofane).
  *   Garncarnia — NIE konwertuje (Maciej 2026-07-23): Ceramika przestaje być
  *     surowcem magazynowym. Garncarnia zbudowana = czysty DOSTĘP (etykieta
@@ -45,16 +46,20 @@ export interface ConverterRecipe {
   throughputFallback: number;
 }
 
-/** Domyslny zestaw receptur (SUROWCE-KANON 2026-07-23). */
+/**
+ * Domyslny zestaw receptur (SUROWCE-KANON 2026-07-23, zaktualizowany tego samego dnia:
+ * PALIWO USUNIETE -- Mielerz skasowany, wszystkie receptury biora DREWNO 1:1 w miejsce
+ * dawnego wejscia paliwo:1).
+ */
 export const DEFAULT_CONVERTER_RECIPES: ReadonlyArray<ConverterRecipe> = [
-  { id: 'mielerz',          inputs: { drewno: 2 },                   output: 'paliwo',   outputAmount: 1, throughputParamKey: 'budynek_mielerz_przepustowosc',    throughputFallback: 2 },
-  { id: 'cegielnia',        inputs: { glina: 2, paliwo: 1 },         output: 'cegla',    outputAmount: 1, throughputParamKey: 'budynek_cegielnia_przepustowosc',  throughputFallback: 2 },
+  { id: 'cegielnia',        inputs: { glina: 2, drewno: 1 },         output: 'cegla',    outputAmount: 1, throughputParamKey: 'budynek_cegielnia_przepustowosc',  throughputFallback: 3 },
   // 'garncarnia' USUNIETA (Maciej 2026-07-23): Ceramika = tylko dostep (Garncarnia
   // zbudowana), nie sztuki w magazynie -- patrz komentarz kanonu powyzej.
-  { id: 'huta',             inputs: { ruda: 1, paliwo: 1 },          output: 'braz',     outputAmount: 1, throughputParamKey: 'budynek_huta_przepustowosc',       throughputFallback: 1 },
-  { id: 'odlewnia_brazu',   inputs: { ruda: 1, paliwo: 1 },          output: 'braz',     outputAmount: 1, throughputParamKey: 'budynek_huta_przepustowosc',       throughputFallback: 1 },
-  { id: 'odlewnia_zelaza',  inputs: { ruda_zelaza: 1, paliwo: 1 },    output: 'zelazo',   outputAmount: 1, throughputParamKey: 'budynek_odlewnia_zelaza_przepustowosc', throughputFallback: 1 },
-  { id: 'wielka_kuznia',    inputs: { zelazo: 1, paliwo: 1 },        output: 'stal',     outputAmount: 1, throughputParamKey: 'budynek_wielka_kuznia_przepustowosc', throughputFallback: 1 },
+  // 'mielerz' USUNIETY (Maciej 2026-07-23): Paliwo usuniete calkowicie; konwertery biora drewno 1:1.
+  { id: 'huta',             inputs: { ruda: 1, drewno: 1 },          output: 'braz',     outputAmount: 1, throughputParamKey: 'budynek_huta_przepustowosc',       throughputFallback: 1 },
+  { id: 'odlewnia_brazu',   inputs: { ruda: 1, drewno: 1 },          output: 'braz',     outputAmount: 1, throughputParamKey: 'budynek_huta_przepustowosc',       throughputFallback: 1 },
+  { id: 'odlewnia_zelaza',  inputs: { ruda_zelaza: 1, drewno: 1 },    output: 'zelazo',   outputAmount: 1, throughputParamKey: 'budynek_odlewnia_zelaza_przepustowosc', throughputFallback: 1 },
+  { id: 'wielka_kuznia',    inputs: { zelazo: 1, drewno: 1 },        output: 'stal',     outputAmount: 1, throughputParamKey: 'budynek_wielka_kuznia_przepustowosc', throughputFallback: 1 },
 ];
 
 export type ConverterReason = 'ok' | 'brak-wejscia' | 'pelny-magazyn' | 'zero-przepustowosci';

@@ -2,7 +2,6 @@
   "note": "id budynku z gry -> bld-{id}.svg @24 (viewBox 24, stroke currentColor). Mapowanie 1:1, bez heurystyki kategorii.",
   "map": {
     "stolarnia": "bld-stolarnia",
-    "mielerz": "bld-mielerz",
     "kamieniarski": "bld-kamieniarski",
     "kuznia": "bld-kuznia",
     "odlewnia_brazu": "bld-odlewnia_brazu",

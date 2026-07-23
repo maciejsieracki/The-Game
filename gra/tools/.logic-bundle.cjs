@@ -5201,8 +5201,8 @@ var terrain_improvements_default = {
       glina: 2
     },
     surowiecOdblokowany: "glina",
-    surowiecOdblokowany_uwaga: "GLINA-Q1=A (Maciej 2026-07-20): stala ilosc 2 glina/ture z ulepszenia (bonus.glina), analogicznie do drewna/kamienia. Klucz 'glina' wg Surowiec='Glina' w resources.json. Stawka SUROW-TERYT-01 (Maciej 2026-07-23, wartosc REALNA nie placeholder) = 4/ture (surowiec_ilosc_tura), NIE bonus.glina (2) -- osobne pola.",
-    surowiec_ilosc_tura: 4,
+    surowiecOdblokowany_uwaga: "GLINA-Q1=A (Maciej 2026-07-20): stala ilosc glina/ture z ulepszenia. Stawka SUROW-TERYT-01: 4/ture, podniesiona do 5 przy C-SUROW-CEGLA=A (Maciej 2026-07-24, odciazenie cegly wg symulacji -- glina musi nadazyc za Cegielnia 3/ture). NIE bonus.glina (2) -- osobne pola.",
+    surowiec_ilosc_tura: 5,
     teren: "z\u0142o\u017Ce Gliny",
     warunek: "glina \u2192 ceg\u0142a (wa\u017Cne w br\u0105zie)",
     koszt_praca: 20,
@@ -6905,7 +6905,10 @@ function cityYieldPerTurn(city, workedTiles, cityBuildings, params, ctx) {
       pieniadzTotal += 2;
     }
   }
-  const zywnoscBrutto = zywnoscTerenu + zywnoscBudynkow;
+  const zywnoscBruttoBaza = zywnoscTerenu + zywnoscBudynkow;
+  const liczbaGarncarni = ctx.liczbaGarncarni ?? 0;
+  const garncarniaMnoznikZywnosci = 1 + params.budynekGarncarniaBonusZywnosci * liczbaGarncarni;
+  const zywnoscBrutto = zywnoscBruttoBaza * garncarniaMnoznikZywnosci;
   const zywnoscZuzyta = city.ludnosc * params.zywnoscZuzytkaPopulacja + ctx.wojskoZuzycieZywnosci;
   const zywnoscNetto = zywnoscBrutto - zywnoscZuzyta;
   return {
@@ -12071,42 +12074,10 @@ var buildings_default = [
     przyrostUtrzymania: 0,
     wymagania: "las w zasiegu",
     uwagi: "B-SUROW-BUD-03: bonus Pracy only \u2014 bez konwertera desek",
-    techUnlock: "Obr\xF3bka drewna"
-  },
-  {
-    id: "mielerz",
-    nazwa: "Mielerz",
-    kategoria: "Produkcja",
-    epokaWejscia: 1,
-    maksPoziom: 10,
-    nazwyPoziomow: [],
-    baza: {
-      praca: 4,
-      pieniadz: 0,
-      zywnosc: 0,
-      nauka: 0,
-      kultura: 0,
-      zadowolenie: 0,
-      obrona: 0,
-      mnoznik: 0
-    },
-    przyrost: {
-      praca: 2,
-      pieniadz: 0,
-      zywnosc: 0,
-      nauka: 0,
-      kultura: 0,
-      zadowolenie: 0,
-      obrona: 0,
-      mnoznik: 0
-    },
-    kosztBudowy: 18,
-    przyrostKosztu: 8,
-    utrzymanie: 1,
-    przyrostUtrzymania: 0,
-    wymagania: "las w zasiegu",
-    uwagi: "ABC-9: drewno \u2192 paliwo (konwerter)",
-    techUnlock: "Obr\xF3bka drewna"
+    techUnlock: "Obr\xF3bka drewna",
+    koszt_surowce: {
+      drewno: 5
+    }
   },
   {
     id: "kamieniarski",
@@ -12141,7 +12112,11 @@ var buildings_default = [
     przyrostUtrzymania: 0,
     wymagania: "kamien w zasiegu",
     uwagi: "",
-    techUnlock: "Murarstwo"
+    techUnlock: "Murarstwo",
+    koszt_surowce: {
+      drewno: 3,
+      kamien: 3
+    }
   },
   {
     id: "kuznia",
@@ -12176,7 +12151,11 @@ var buildings_default = [
     przyrostUtrzymania: 1,
     wymagania: "ruda miedzi w zasi\u0119gu (kopalnia miedzi)",
     uwagi: "Mnoznik % dotyczy sily jednostek produkowanych w miescie",
-    techUnlock: "Br\u0105zownictwo"
+    techUnlock: "Br\u0105zownictwo",
+    koszt_surowce: {
+      drewno: 4,
+      kamien: 4
+    }
   },
   {
     id: "odlewnia_brazu",
@@ -12209,9 +12188,13 @@ var buildings_default = [
     przyrostKosztu: 10,
     utrzymanie: 2,
     przyrostUtrzymania: 1,
-    wymagania: "Popalnia br\u0105zu w imperium + ruda + paliwo",
-    uwagi: "ABC-13: Piec hutniczy (br\u0105z); upgrade \u2192 Odlewnia \u017Celaza. Dost\u0119p br\u0105z = Popalnia (mapa) + ten budynek.",
-    techUnlock: "Br\u0105zownictwo"
+    wymagania: "Popalnia br\u0105zu w imperium + ruda + drewno",
+    uwagi: "ABC-13: Piec hutniczy (br\u0105z); upgrade \u2192 Odlewnia \u017Celaza. Dost\u0119p br\u0105z = Popalnia (mapa) + ten budynek. Konwerter bierze drewno 1:1 (paliwo usuniete 2026-07-23).",
+    techUnlock: "Br\u0105zownictwo",
+    koszt_surowce: {
+      kamien: 6,
+      cegla: 4
+    }
   },
   {
     id: "odlewnia_zelaza",
@@ -12247,7 +12230,11 @@ var buildings_default = [
     wymagania: "upgrade Odlewni br\u0105zu",
     uwagi: "ABC-7: suma bonus\xF3w z Odlewni br\u0105zu + \u017Celazo; placeholder receptury",
     techUnlock: "Hutnictwo \u017Celaza",
-    upgradeFrom: "odlewnia_brazu"
+    upgradeFrom: "odlewnia_brazu",
+    koszt_surowce: {
+      cegla: 8,
+      braz: 4
+    }
   },
   {
     id: "targowisko",
@@ -12293,7 +12280,10 @@ var buildings_default = [
     przyrostUtrzymania: 1,
     wymagania: "",
     uwagi: "Mnoznik % dotyczy przychodow z handlu w miescie",
-    techUnlock: "Wymiana"
+    techUnlock: "Wymiana",
+    koszt_surowce: {
+      drewno: 6
+    }
   },
   {
     id: "port",
@@ -12328,7 +12318,10 @@ var buildings_default = [
     przyrostUtrzymania: 1,
     wymagania: "wybrzeze morskie lub rzeka",
     uwagi: "",
-    techUnlock: "\u017Begluga"
+    techUnlock: "\u017Begluga",
+    koszt_surowce: {
+      drewno: 10
+    }
   },
   {
     id: "port_wielki",
@@ -12364,7 +12357,11 @@ var buildings_default = [
     wymagania: "upgrade Portu handlowego; wybrze\u017Ce",
     uwagi: "ABC-20 B: suma bonus\xF3w Port + Port wielki w JSON",
     techUnlock: "In\u017Cynieria",
-    upgradeFrom: "port"
+    upgradeFrom: "port",
+    koszt_surowce: {
+      cegla: 10,
+      braz: 4
+    }
   },
   {
     id: "karawanseraj",
@@ -12400,7 +12397,9 @@ var buildings_default = [
     wymagania: "",
     uwagi: "Mnoznik % dotyczy handlu ladowego (szlaki miedzy miastami)",
     techUnlock: "Handel",
-    koszt_surowce: { cegla: 4 }
+    koszt_surowce: {
+      cegla: 4
+    }
   },
   {
     id: "spichlerz",
@@ -12435,7 +12434,11 @@ var buildings_default = [
     przyrostUtrzymania: 0,
     wymagania: "",
     uwagi: "B-SPIC: bramka Ceramika (garncarnia imperium); tier I cap 100",
-    techUnlock: "Garncarstwo"
+    techUnlock: "Garncarstwo",
+    koszt_surowce: {
+      drewno: 5,
+      kamien: 3
+    }
   },
   {
     id: "spichlerz_ii",
@@ -12472,7 +12475,9 @@ var buildings_default = [
     wymagania: "upgrade ze Spichlerza I",
     uwagi: "B-SPIC: bramka S\xF3l; cap armii 150; bufor 70% po wzro\u015Bcie",
     techUnlock: "Warzelnia soli",
-    koszt_surowce: { cegla: 10 }
+    koszt_surowce: {
+      cegla: 10
+    }
   },
   {
     id: "garncarnia",
@@ -12506,8 +12511,12 @@ var buildings_default = [
     utrzymanie: 1,
     przyrostUtrzymania: 0,
     wymagania: "glina w zasiegu",
-    uwagi: "ABC-6: glina+paliwo\u2192ceramika",
-    techUnlock: "Garncarstwo"
+    uwagi: "ABC-6: glina+drewno\u2192ceramika (paliwo usuniete 2026-07-23)",
+    techUnlock: "Garncarstwo",
+    koszt_surowce: {
+      drewno: 4,
+      kamien: 2
+    }
   },
   {
     id: "cegielnia",
@@ -12540,9 +12549,13 @@ var buildings_default = [
     przyrostKosztu: 9,
     utrzymanie: 1,
     przyrostUtrzymania: 0,
-    wymagania: "glina + paliwo",
-    uwagi: "ABC-8: bramka Pismo wymaga Cegielni w imperium",
-    techUnlock: "Garncarstwo"
+    wymagania: "glina + drewno",
+    uwagi: "ABC-8: bramka Pismo wymaga Cegielni w imperium. Konwerter bierze drewno 1:1 (paliwo usuniete 2026-07-23).",
+    techUnlock: "Garncarstwo",
+    koszt_surowce: {
+      drewno: 4,
+      kamien: 4
+    }
   },
   {
     id: "kamienne_kregi",
@@ -12577,7 +12590,10 @@ var buildings_default = [
     przyrostUtrzymania: 0,
     wymagania: "",
     uwagi: "B-KULT-REL + KULT-BUD-02: budynek RELIGIJNY \u2014 konwersja religii +2%/t (religia_konwersja_kregi, additive do bazy); plon kultury OK, bez bonusu konwersji kultury. Upgrade \u2192 \u015Awi\u0105tynia.",
-    techUnlock: "Mistycyzm"
+    techUnlock: "Mistycyzm",
+    koszt_surowce: {
+      kamien: 8
+    }
   },
   {
     id: "swiatynia",
@@ -12614,7 +12630,9 @@ var buildings_default = [
     uwagi: "B-KULT-REL + KULT-BUD-02: budynek RELIGIJNY \u2014 konwersja religii +4%/t (religia_konwersja_swiatynia, additive do bazy); plon kultury OK, bez bonusu konwersji kultury.",
     techUnlock: "Religia",
     upgradeFrom: "kamienne_kregi",
-    koszt_surowce: { cegla: 6 }
+    koszt_surowce: {
+      cegla: 6
+    }
   },
   {
     id: "biblioteka",
@@ -12664,7 +12682,9 @@ var buildings_default = [
     poziomTechGate: {
       "6": "Astronomia"
     },
-    koszt_surowce: { cegla: 5 }
+    koszt_surowce: {
+      cegla: 5
+    }
   },
   {
     id: "studnia",
@@ -12699,7 +12719,10 @@ var buildings_default = [
     przyrostUtrzymania: 0,
     wymagania: "",
     uwagi: "Studnia miejska \u2014 dost\u0119p do czystej wody (+Zdrowie proxy). Osobno: \u0141a\u017Ania publiczna (termy rzymskie, epoka \u017Belaza).",
-    techUnlock: "Gospodarka wodna"
+    techUnlock: "Gospodarka wodna",
+    koszt_surowce: {
+      kamien: 5
+    }
   },
   {
     id: "akwedukt",
@@ -12735,7 +12758,9 @@ var buildings_default = [
     wymagania: "",
     uwagi: "T-TECH-6: zdrowie++ i cap ludno\u015Bci (turn-economy)",
     techUnlock: "Budownictwo",
-    koszt_surowce: { cegla: 12 }
+    koszt_surowce: {
+      cegla: 12
+    }
   },
   {
     id: "mennica",
@@ -12770,7 +12795,11 @@ var buildings_default = [
     przyrostUtrzymania: 1,
     wymagania: "",
     uwagi: "T-TECH-6: mnoznik handlu\u2192pieni\u0105dz (economy.ts)",
-    techUnlock: "Waluta"
+    techUnlock: "Waluta",
+    koszt_surowce: {
+      kamien: 6,
+      braz: 3
+    }
   },
   {
     id: "mury",
@@ -12807,7 +12836,9 @@ var buildings_default = [
     uwagi: "",
     techUnlock: "Budownictwo",
     odblokowuje: "maMur",
-    koszt_surowce: { cegla: 15 }
+    koszt_surowce: {
+      cegla: 15
+    }
   },
   {
     id: "koszary",
@@ -12842,7 +12873,12 @@ var buildings_default = [
     przyrostUtrzymania: 1,
     wymagania: "",
     uwagi: "Mnoznik % dotyczy sily i exp jednostek szkolonych w miescie",
-    techUnlock: "Wojskowo\u015B\u0107"
+    techUnlock: "Wojskowo\u015B\u0107",
+    koszt_surowce: {
+      drewno: 6,
+      kamien: 6,
+      braz: 4
+    }
   },
   {
     id: "magazyn",
@@ -12877,7 +12913,11 @@ var buildings_default = [
     przyrostUtrzymania: 0,
     wymagania: "",
     uwagi: "",
-    techUnlock: "Handel"
+    techUnlock: "Handel",
+    koszt_surowce: {
+      drewno: 8,
+      kamien: 4
+    }
   },
   {
     id: "stela",
@@ -12912,7 +12952,10 @@ var buildings_default = [
     przyrostUtrzymania: 0,
     wymagania: "",
     uwagi: "Nie wymaga utrzymania",
-    techUnlock: "Murarstwo"
+    techUnlock: "Murarstwo",
+    koszt_surowce: {
+      kamien: 6
+    }
   },
   {
     id: "palac",
@@ -12958,7 +13001,11 @@ var buildings_default = [
     przyrostUtrzymania: 1,
     wymagania: "-",
     uwagi: "1 na miasto; g\u0142\xF3wne \u017Ar\xF3d\u0142o kultury + Prawo (society-params prawo_palac); budynek startowy \u2014 bez bramki tech",
-    techUnlock: "-"
+    techUnlock: "-",
+    koszt_surowce: {
+      drewno: 8,
+      kamien: 8
+    }
   },
   {
     id: "kuznia_zelaza",
@@ -12994,7 +13041,11 @@ var buildings_default = [
     wymagania: "zelazo w zasiegu",
     wymaganySurowiec: "zelazo",
     uwagi: "Mnoznik % dotyczy sily jednostek zelaznych produkowanych w miescie; wymaga dostepu do zelaza",
-    techUnlock: "Hutnictwo \u017Celaza"
+    techUnlock: "Hutnictwo \u017Celaza",
+    koszt_surowce: {
+      cegla: 6,
+      braz: 4
+    }
   },
   {
     id: "wielka_kuznia",
@@ -13069,7 +13120,10 @@ var buildings_default = [
     techUnlock: "In\u017Cynieria",
     odblokowuje: "maFort",
     upgradeFrom: "mury",
-    koszt_surowce: { cegla: 18 }
+    koszt_surowce: {
+      cegla: 18,
+      zelazo: 6
+    }
   },
   {
     id: "warsztat_oblezniczy",
@@ -13105,7 +13159,11 @@ var buildings_default = [
     wymagania: "wymaga Koszary",
     uwagi: "Odblokowuje budow\u0119 Katapulty w mie\u015Bcie (maWarsztatOblezniczy). Taran i Wie\u017Ca = in-siege przy obl\u0119\u017Ceniu \u2014 styk UNITS",
     techUnlock: "Obl\u0119\u017Cnictwo",
-    odblokowuje: "maWarsztatOblezniczy"
+    odblokowuje: "maWarsztatOblezniczy",
+    koszt_surowce: {
+      cegla: 8,
+      zelazo: 6
+    }
   },
   {
     id: "akademia",
@@ -13142,7 +13200,9 @@ var buildings_default = [
     uwagi: "ABC-21 B: merge Biblioteka+Akademia+Teatr \u2014 suma w JSON; Teatr ukryty z produkcji",
     techUnlock: "Filozofia",
     upgradeFrom: "biblioteka",
-    koszt_surowce: { cegla: 14 }
+    koszt_surowce: {
+      cegla: 14
+    }
   },
   {
     id: "teatr",
@@ -13178,7 +13238,10 @@ var buildings_default = [
     wymagania: "",
     uwagi: "ABC-21 B: wchodzi w merge Akademia \u2014 nie buduj osobno",
     techUnlock: "Filozofia",
-    suppressed: true
+    suppressed: true,
+    koszt_surowce: {
+      cegla: 10
+    }
   },
   {
     id: "sad",
@@ -13213,7 +13276,10 @@ var buildings_default = [
     przyrostUtrzymania: 1,
     wymagania: "",
     uwagi: "KULT-BUD-01: +5 kultura baza, +2% konwersji; redukuje korupcje; zadowolenie z praworz.",
-    techUnlock: "Prawo"
+    techUnlock: "Prawo",
+    koszt_surowce: {
+      cegla: 8
+    }
   },
   {
     id: "pretorium",
@@ -13249,7 +13315,9 @@ var buildings_default = [
     wymagania: "",
     uwagi: "Centrum administracji prowincji; bonus do utrzymania porzadku (garnizon); mnoznik % do przychodu podatkowego",
     techUnlock: "Prawo",
-    koszt_surowce: { cegla: 9 }
+    koszt_surowce: {
+      cegla: 9
+    }
   },
   {
     id: "trybunal",
@@ -13284,7 +13352,10 @@ var buildings_default = [
     przyrostUtrzymania: 1,
     wymagania: "",
     uwagi: "3a: wczesna administracja \u2014 +porzadek, anty-korupcja; slabszy niz Sad/Pretorium (Kodeks prawa)",
-    techUnlock: "Kodeks"
+    techUnlock: "Kodeks",
+    koszt_surowce: {
+      cegla: 8
+    }
   },
   {
     id: "laznia_publiczna",
@@ -13320,7 +13391,9 @@ var buildings_default = [
     wymagania: "wymaga Studnia",
     uwagi: "KULT-BUD-01: +3 kultura baza, +1% konwersji; termy \u2014 zadowolenie, zdrowie; wymaga Studni i tech Medycyna.",
     techUnlock: "Medycyna",
-    koszt_surowce: { cegla: 10 }
+    koszt_surowce: {
+      cegla: 10
+    }
   },
   {
     id: "lazaret",
@@ -13391,7 +13464,11 @@ var buildings_default = [
     wymagania: "upgrade Koszar",
     uwagi: "Upgrade Koszary \u2192 Akademia wojskowa; suma bonus\xF3w w JSON; bramka elit UNITS",
     techUnlock: "Sztuka wojenna",
-    upgradeFrom: "koszary"
+    upgradeFrom: "koszary",
+    koszt_surowce: {
+      cegla: 12,
+      zelazo: 6
+    }
   }
 ];
 
@@ -13407,7 +13484,7 @@ var resources_default = [
     Surowiec: "Drewno",
     Typ: "surowy",
     "\u0179r\xF3d\u0142o / budynek": "Las",
-    Uwagi: "budulec; wejscie Tartaku i Mielerza"
+    Uwagi: "budulec; wejscie Tartaku i konwerterow (Cegielnia/Garncarnia/Piec hutniczy/Odlewnia zelaza/Wielka Kuznia) 1:1 zamiast dawnego Paliwa"
   },
   {
     Surowiec: "Kamie\u0144",
@@ -13440,12 +13517,6 @@ var resources_default = [
     Uwagi: "Konnica (Br\u0105z) i rydwany konne; NIEDOST\u0118PNY u Maj\xF3w/Ameryki (konie wygin\u0119\u0142y w Nowym \u015Awiecie ~10 000 p.n.e.)"
   },
   {
-    Surowiec: "Paliwo (w\u0119giel drzewny)",
-    Typ: "przetworzony",
-    "\u0179r\xF3d\u0142o / budynek": "Mielerz (2 drewno \u2192 1 paliwo)",
-    Uwagi: "wejscie Cegielni, Garncarni i Huty"
-  },
-  {
     Surowiec: "S\xF3l",
     Typ: "surowy",
     "\u0179r\xF3d\u0142o / budynek": "z\u0142o\u017Ce S\xF3l (wybrze\u017Ce) + Warzelnia soli",
@@ -13454,19 +13525,19 @@ var resources_default = [
   {
     Surowiec: "Ceg\u0142a",
     Typ: "przetworzony",
-    "\u0179r\xF3d\u0142o / budynek": "Cegielnia (glina+paliwo)",
+    "\u0179r\xF3d\u0142o / budynek": "Cegielnia (glina+drewno)",
     Uwagi: "budulec"
   },
   {
     Surowiec: "Ceramika",
     Typ: "przetworzony",
-    "\u0179r\xF3d\u0142o / budynek": "Garncarnia (z gliny)",
+    "\u0179r\xF3d\u0142o / budynek": "Garncarnia (glina+drewno)",
     Uwagi: "+zadowolenie, +Zdrowie"
   },
   {
     Surowiec: "Br\u0105z",
     Typ: "przetworzony",
-    "\u0179r\xF3d\u0142o / budynek": "Huta (ruda+paliwo)",
+    "\u0179r\xF3d\u0142o / budynek": "Piec hutniczy (ruda+drewno)",
     Uwagi: "budulec + jednostki brazowe"
   },
   {
@@ -13478,7 +13549,7 @@ var resources_default = [
   {
     Surowiec: "Stal",
     Typ: "przetworzony",
-    "\u0179r\xF3d\u0142o / budynek": "Wielka Ku\u017Ania (\u017Celazo+paliwo)",
+    "\u0179r\xF3d\u0142o / budynek": "Wielka Ku\u017Ania (\u017Celazo+drewno)",
     Uwagi: "odblokowuje tech Obr\xF3bka \u017Celaza; prereq Wielkiej Ku\u017Ani; model dost\u0119pu v0.1 = boolean"
   }
 ];
@@ -13501,8 +13572,8 @@ var tech_default = {
       "Dost\u0119p do surowca.": "Dost\u0119p do drewna",
       "wymagany budynek": null,
       "Wymaga (prereq)": "\u2014",
-      "Odblokowuje surowiec.": "paliwo, drewno",
-      "Odblokowuje budynek": "Stolarnia, Mielerz",
+      "Odblokowuje surowiec.": "drewno",
+      "Odblokowuje budynek": "Stolarnia",
       "Koszt nauki": 12,
       Uwagi: null,
       "Odblokowuje ulepszenie terenu": "Tartak, Posterunek (Stra\u017Cnica)"
@@ -19410,6 +19481,27 @@ var econ_params_default = {
       jednostka: "%",
       opis: "Premia Targowiska do Handlu brutto (+50%). [PT]"
     },
+    budynek_stolarnia_bonus_drewna_civ: {
+      easy: 0.1,
+      normal: 0.1,
+      hard: 0.1,
+      jednostka: "%",
+      opis: "Zadanie 2 (2026-07-23): Stolarnia +10% produkcji Drewna CALEJ CYWILIZACJI za kazda Stolarnie (civ-wide, stackuje addytywnie: \xD7(1+0.10\xD7liczbaStolarni_ownera)). Wpiete w turn-economy.ts przy akumulacji City.surowce.drewno. PLACEHOLDER do strojenia."
+    },
+    budynek_kamieniarski_bonus_kamienia_civ: {
+      easy: 0.1,
+      normal: 0.1,
+      hard: 0.1,
+      jednostka: "%",
+      opis: "Zadanie 2 (2026-07-23): Warsztat kamieniarski +10% produkcji Kamienia CALEJ CYWILIZACJI za kazda sztuke (civ-wide, stackuje addytywnie: \xD7(1+0.10\xD7liczbaWarsztatow_ownera)). Wpiete w turn-economy.ts przy akumulacji City.surowce.kamien. PLACEHOLDER do strojenia."
+    },
+    budynek_garncarnia_bonus_zywnosci_lokalnie: {
+      easy: 0.1,
+      normal: 0.1,
+      hard: 0.1,
+      jednostka: "%",
+      opis: "Zadanie 2 (2026-07-23): Garncarnia +10% Zywnosci LOKALNIE (tylko w miescie, gdzie stoi; NIE civ-wide), stackuje addytywnie: \xD7(1+0.10\xD7garncarnie_w_miescie). Wpiete w economy.ts cityYieldPerTurn (zywnoscBrutto, przed konsumpcja). PLACEHOLDER do strojenia."
+    },
     budynek_mennica_mnoznik: {
       easy: 2,
       normal: 1,
@@ -19445,33 +19537,26 @@ var econ_params_default = {
       jednostka: "szt/tur\u0119",
       opis: "Maks konwersja Drewno\u2192Deski w Tartaku na tur\u0119. [PT]"
     },
-    budynek_mielerz_przepustowosc: {
-      easy: 3,
-      normal: 2,
-      hard: 1,
-      jednostka: "szt/tur\u0119",
-      opis: "Maks konwersja Drewno\u2192Paliwo w Mielerzni na tur\u0119. [PT]"
-    },
     budynek_cegielnia_przepustowosc: {
-      easy: 3,
-      normal: 2,
-      hard: 1,
+      easy: 4,
+      normal: 3,
+      hard: 2,
       jednostka: "szt/tur\u0119",
-      opis: "Maks konwersja (Glina+Paliwo)\u2192Ceg\u0142a w Cegielni na tur\u0119. [PT]"
+      opis: "Maks konwersja (Glina+Drewno)\u2192Ceg\u0142a w Cegielni na tur\u0119. [PT] C-SUROW-CEGLA=A (Maciej 2026-07-24): normal 2\u21923 (odci\u0105\u017Cenie ceg\u0142y wg symulacji bilansu)."
     },
     budynek_huta_przepustowosc: {
       easy: 2,
       normal: 1,
       hard: 0,
       jednostka: "szt/tur\u0119",
-      opis: "Maks konwersja (Ruda+Paliwo)\u2192Br\u0105z w Hucie na tur\u0119. [PT]"
+      opis: "Maks konwersja (Ruda+Drewno)\u2192Br\u0105z w Hucie na tur\u0119. [PT]"
     },
     budynek_garncarnia_przepustowosc: {
       easy: 2,
       normal: 1,
       hard: 0,
       jednostka: "szt/tur\u0119",
-      opis: "Maks konwersja (Glina+Paliwo)\u2192Ceramika w Garncarni na tur\u0119. [PT]"
+      opis: "Maks konwersja (Glina+Drewno)\u2192Ceramika w Garncarni na tur\u0119. [PT]"
     },
     utrzymanie_budynek: {
       easy: 1,
@@ -20809,7 +20894,7 @@ var society_params_default = {
       normal: -1,
       hard: -1.25,
       jednostka: "pkt Zdrowia",
-      opis: "Kara Zdrowia za zanieczyszczenie dymu/przemys\u0142owe (aktywna gdy dzia\u0142aj\u0105 budynki przemys\u0142owe \u2014 Huta, Mielerz itp.). P\xF3\u017Ane epoki. [PT]"
+      opis: "Kara Zdrowia za zanieczyszczenie dymu/przemys\u0142owe (aktywna gdy dzia\u0142aj\u0105 budynki przemys\u0142owe \u2014 Piec hutniczy, Cegielnia itp.). P\xF3\u017Ane epoki. [PT]"
     },
     zdrowie_kara_brak_wody: {
       easy: -1,
@@ -22433,14 +22518,14 @@ function loadThroughput(raw, paramKey, difficulty, fallback) {
   return typeof v === "number" && Number.isFinite(v) ? v : fallback;
 }
 var DEFAULT_CONVERTER_RECIPES = [
-  { id: "mielerz", inputs: { drewno: 2 }, output: "paliwo", outputAmount: 1, throughputParamKey: "budynek_mielerz_przepustowosc", throughputFallback: 2 },
-  { id: "cegielnia", inputs: { glina: 2, paliwo: 1 }, output: "cegla", outputAmount: 1, throughputParamKey: "budynek_cegielnia_przepustowosc", throughputFallback: 2 },
+  { id: "cegielnia", inputs: { glina: 2, drewno: 1 }, output: "cegla", outputAmount: 1, throughputParamKey: "budynek_cegielnia_przepustowosc", throughputFallback: 3 },
   // 'garncarnia' USUNIETA (Maciej 2026-07-23): Ceramika = tylko dostep (Garncarnia
   // zbudowana), nie sztuki w magazynie -- patrz komentarz kanonu powyzej.
-  { id: "huta", inputs: { ruda: 1, paliwo: 1 }, output: "braz", outputAmount: 1, throughputParamKey: "budynek_huta_przepustowosc", throughputFallback: 1 },
-  { id: "odlewnia_brazu", inputs: { ruda: 1, paliwo: 1 }, output: "braz", outputAmount: 1, throughputParamKey: "budynek_huta_przepustowosc", throughputFallback: 1 },
-  { id: "odlewnia_zelaza", inputs: { ruda_zelaza: 1, paliwo: 1 }, output: "zelazo", outputAmount: 1, throughputParamKey: "budynek_odlewnia_zelaza_przepustowosc", throughputFallback: 1 },
-  { id: "wielka_kuznia", inputs: { zelazo: 1, paliwo: 1 }, output: "stal", outputAmount: 1, throughputParamKey: "budynek_wielka_kuznia_przepustowosc", throughputFallback: 1 }
+  // 'mielerz' USUNIETY (Maciej 2026-07-23): Paliwo usuniete calkowicie; konwertery biora drewno 1:1.
+  { id: "huta", inputs: { ruda: 1, drewno: 1 }, output: "braz", outputAmount: 1, throughputParamKey: "budynek_huta_przepustowosc", throughputFallback: 1 },
+  { id: "odlewnia_brazu", inputs: { ruda: 1, drewno: 1 }, output: "braz", outputAmount: 1, throughputParamKey: "budynek_huta_przepustowosc", throughputFallback: 1 },
+  { id: "odlewnia_zelaza", inputs: { ruda_zelaza: 1, drewno: 1 }, output: "zelazo", outputAmount: 1, throughputParamKey: "budynek_odlewnia_zelaza_przepustowosc", throughputFallback: 1 },
+  { id: "wielka_kuznia", inputs: { zelazo: 1, drewno: 1 }, output: "stal", outputAmount: 1, throughputParamKey: "budynek_wielka_kuznia_przepustowosc", throughputFallback: 1 }
 ];
 function runConverter(recipe, stores, throughput, outputCapacity) {
   const have = (k) => {
@@ -22697,6 +22782,7 @@ function buildEconParams(data, difficulty = "normal") {
     budynekCegielniBonusPracy: num(bu, "budynek_cegielnia_bonus_pracy", 0.25),
     budynekTargowiskoBonusHandlu: num(bu, "budynek_targowisko_bonus_handlu", 0.5),
     budynekBibliotekaBonusNauki: num(bu, "budynek_biblioteka_bonus_nauki", 0.5),
+    budynekGarncarniaBonusZywnosci: num(bu, "budynek_garncarnia_bonus_zywnosci_lokalnie", 0.1),
     budynekMennicaMnoznik: num(bu, "budynek_mennica_mnoznik", 1),
     mennicaMnoznikPoWalucie: num(gl, "mennica_mnoznik_po_walucie", 1.5),
     walutaMnoznik: num(bu, "waluta_mnoznik", 2),
@@ -22958,6 +23044,29 @@ function advanceCityEconomy(cities, map, data, difficulty = "normal", econUnits 
       recipe.throughputFallback
     );
   }
+  const stolarniaBonusDrewnaCiv = loadThroughput(
+    rawForConverters,
+    "budynek_stolarnia_bonus_drewna_civ",
+    difficulty,
+    0.1
+  );
+  const kamieniarskiBonusKamieniaCiv = loadThroughput(
+    rawForConverters,
+    "budynek_kamieniarski_bonus_kamienia_civ",
+    difficulty,
+    0.1
+  );
+  const stolarniaCountByOwner = /* @__PURE__ */ new Map();
+  const kamieniarskiCountByOwner = /* @__PURE__ */ new Map();
+  for (const c of cities) {
+    const bIds = builtByCity.get(c.id) ?? [];
+    if (bIds.includes("stolarnia")) {
+      stolarniaCountByOwner.set(c.ownerId, (stolarniaCountByOwner.get(c.ownerId) ?? 0) + 1);
+    }
+    if (bIds.includes("kamieniarski")) {
+      kamieniarskiCountByOwner.set(c.ownerId, (kamieniarskiCountByOwner.get(c.ownerId) ?? 0) + 1);
+    }
+  }
   const healthParams = loadHealthParams(
     data.societyParams,
     difficulty
@@ -23032,8 +23141,10 @@ function advanceCityEconomy(cities, map, data, difficulty = "normal", econUnits 
       // RDY-01: bonus_zloto handel (Grecy +15%)
       civNaukaMult,
       // RDY-01: bonus_nauka (Inkowie +15%)
-      liczbaAktywnychTrasHandlowych: liczbaTrasHandlowych
+      liczbaAktywnychTrasHandlowych: liczbaTrasHandlowych,
       // Handel E3: +5%/trasa
+      // Zadanie 2 (2026-07-23): Garncarnia +Zywnosc% LOKALNIE -- liczba sztuk w TYM miescie.
+      liczbaGarncarni: builtIds.filter((id) => id === "garncarnia").length
     };
     const yld = cityYieldPerTurn(econCity, worked, noBuildings, params, ctx);
     const orderMult = orderMultByCity.get(city.id);
@@ -23163,8 +23274,10 @@ function advanceCityEconomy(cities, map, data, difficulty = "normal", econUnits 
     if (!city.surowce) city.surowce = {};
     const citySurowce = city.surowce;
     const terrYield = territoryResourceByCity.get(city.id);
-    citySurowce.drewno = Math.min(resCap, (citySurowce.drewno ?? 0) + ((terrYield == null ? void 0 : terrYield.drewno) ?? 0));
-    citySurowce.kamien = Math.min(resCap, (citySurowce.kamien ?? 0) + ((terrYield == null ? void 0 : terrYield.kamien) ?? 0));
+    const drewnoMultCiv = 1 + stolarniaBonusDrewnaCiv * (stolarniaCountByOwner.get(city.ownerId) ?? 0);
+    const kamienMultCiv = 1 + kamieniarskiBonusKamieniaCiv * (kamieniarskiCountByOwner.get(city.ownerId) ?? 0);
+    citySurowce.drewno = Math.min(resCap, (citySurowce.drewno ?? 0) + Math.floor(((terrYield == null ? void 0 : terrYield.drewno) ?? 0) * drewnoMultCiv));
+    citySurowce.kamien = Math.min(resCap, (citySurowce.kamien ?? 0) + Math.floor(((terrYield == null ? void 0 : terrYield.kamien) ?? 0) * kamienMultCiv));
     citySurowce.glina = Math.min(resCap, (citySurowce.glina ?? 0) + ((terrYield == null ? void 0 : terrYield.glina) ?? 0));
     citySurowce.ruda = Math.min(resCap, (citySurowce.ruda ?? 0) + ((terrYield == null ? void 0 : terrYield.ruda) ?? 0));
     citySurowce.ruda_zelaza = Math.min(resCap, (citySurowce.ruda_zelaza ?? 0) + ((terrYield == null ? void 0 : terrYield.ruda_zelaza) ?? 0));
