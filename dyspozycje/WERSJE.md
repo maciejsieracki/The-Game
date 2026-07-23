@@ -9,7 +9,13 @@ UWAGA: KANON i FINALNA promują się teraz OSOBNYMI skryptami (`gra/tools/publis
 wyraźne polecenie właściciela) — dlatego są logowane NIEZALEŻNIE, każdy w swojej sekcji, ze
 swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drugiego.
 
-## ROBOCZA `b6481c25` — 2026-07-23 · RZĄD FILTRÓW W CAŁOŚCI 1:1 z makiety C06 + grupy G1/G2/G3 — **AKTUALNA**
+## ROBOCZA `e914e1e5` — 2026-07-23 · FILTRY NA DWÓCH PIĘTRACH (★ obok Wszystkie, grupy niżej) — **AKTUALNA**
+
+- **Zawartość (commit `216a3d5`):** układ filtrów wg uwagi Macieja: rząd 1 = ikony klas + Wszystkie + ★ Generał (obok siebie); rząd 2 (piętro niżej) = grupy G1/G2/G3. Oba buildery (deploy + walka/ręczna).
+- **Bramki:** tsc=0 · zrzut potwierdzony · VERIFY OK.
+- **md5:** `e914e1e52bf5b466c9381ca8849d55f1` · stamp `e914e1e5`. Publikowała sesja chmurowa.
+
+## ROBOCZA `b6481c25` — 2026-07-23 · RZĄD FILTRÓW W CAŁOŚCI 1:1 z makiety C06 + grupy G1/G2/G3 — **ZASTĄPIONA** (→ `e914e1e5`)
 
 - **Zawartość (commit `1d51e09`):** dokładne rysunki ikon klas z makiety (podkowa z gwoździami / skrzyżowane miecze / łuk z cięciwą), obwódki/kolory per klasa 1:1 (konnica NIEBIESKA), grupy jako kompaktowe chipy **G1/G2/G3** w stylu ikon (decyzja Macieja — „samo G"), pełne nazwy w pigułkach. Makieta rzędu filtrów wyczerpana w całości (ekstrakcja wszystkich elementów).
 - **Bramki:** tsc=0 · zrzut potwierdzony (podkowa/miecze/łuk/kropki/G1-G3/★) · VERIFY OK.

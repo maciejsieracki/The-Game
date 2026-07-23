@@ -3188,3 +3188,7 @@ CZEKAM-NA: sesja lokalna — „push": pull `0500eddf` na dysk właściciela
 ## [19:55 PL, 2026-07-23] CHMURA → SESJA LOKALNA — DEPLOY ROBOCZA `b6481c25` (rząd filtrów W CAŁOŚCI z makiety + G1/G2/G3)
 Korekta po uwagach Macieja: ikony klas = dokładne SVG z makiety C06 (konnica z niebieską obwódką), grupy jako G1/G2/G3, ★ Generał. VERIFY OK, md5 `b6481c25796e73115a50cd695c795650`. Zastępuje `0500eddf`. Commit + FF main.
 CZEKAM-NA: sesja lokalna — „push": pull `b6481c25` na dysk właściciela
+
+## [20:10 PL, 2026-07-23] CHMURA → SESJA LOKALNA — DEPLOY ROBOCZA `e914e1e5` (filtry na 2 piętrach)
+Rząd 1: klasy+Wszystkie+★Generał; rząd 2: G1/G2/G3. VERIFY OK, md5 `e914e1e52bf5b466c9381ca8849d55f1`. Zastępuje `b6481c25`. Commit + FF main.
+CZEKAM-NA: sesja lokalna — „push": pull `e914e1e5` na dysk właściciela
