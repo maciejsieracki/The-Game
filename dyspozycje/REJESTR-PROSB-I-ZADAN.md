@@ -16,17 +16,18 @@ Przy zamknięciu tematu: aktualizuj STATUS + wpisz commit/md5. Szczegóły decyz
 
 | ID | Data | Prośba | Status | Uwagi |
 |---|---|---|---|---|
-| R-TRUDNOSC-1 | „jakiś czas temu" (odtworzone 2026-07-24) | **Osobny suwak „Trudność miast-państw" w kreatorze gry**, niezależny od głównej trudności. Steruje 3 mechanizmami miast-państw: (1) startowe zaufanie do gracza, (2) skala sojuszu sióstr, (3) posiłki obronne (RESUP). | **W TOKU** | subagent `a690cdbc`. Recon 2026-07-24: te 3 elementy są pochodną globalnej `_menuDifficulty` (trust easy+10/normal+5/hard0; sojusz sióstr ×0,6/0,3/0,15; RESUP low/normal/strong) **ORAZ przeciek: `bonusWalka` +5% siły walki AI na hard (`trudnosc_poziom3_bonus_walka`) — miasta-państwa też go dostają z globalnej trudności.** Nowa opcja setupu odpina WSZYSTKO (3 mechanizmy + siłę walki miast-państw) od globalnej. Domyślnie = główna trudność (zero regresji). Główna `_menuDifficulty` steruje resztą (ekonomia/AI/mapa). Musi respektować parytet AI. |
+| R-TRUDNOSC-1 | „jakiś czas temu" (odtworzone 2026-07-24) | **Osobny suwak „Trudność miast-państw" w kreatorze gry**, niezależny od głównej trudności. Steruje 3 mechanizmami miast-państw: (1) startowe zaufanie do gracza, (2) skala sojuszu sióstr, (3) posiłki obronne (RESUP). | **ZDEPLOYOWANE `ea75f5ba`** | Suwak w Zaawansowanych opcjach; domyślnie=główna trudność. Recon 2026-07-24: te 3 elementy są pochodną globalnej `_menuDifficulty` (trust easy+10/normal+5/hard0; sojusz sióstr ×0,6/0,3/0,15; RESUP low/normal/strong) **ORAZ przeciek: `bonusWalka` +5% siły walki AI na hard (`trudnosc_poziom3_bonus_walka`) — miasta-państwa też go dostają z globalnej trudności.** Nowa opcja setupu odpina WSZYSTKO (3 mechanizmy + siłę walki miast-państw) od globalnej. Domyślnie = główna trudność (zero regresji). Główna `_menuDifficulty` steruje resztą (ekonomia/AI/mapa). Musi respektować parytet AI. |
 | R-UNIT-KOSZT-ŁUCZ | 2026-07-24 | Łucznicy brązowi = 1 Brąz czy 0? | **WDROŻONE (redeploy 4.1)** | Decyzja: **0** (jednolicie — wszystkie dystansowe darmowe surowcowo, jak Procarz). Łucznik akadyjski/asyryjski 1→0. Reguła kosztów: dystansowe = 0. |
 | R-STAWKI-STROJENIE | 2026-07-24 | Docelowe stawki/koszty po obejrzeniu licznika w playteście | CZEKA-NA-PLAYTEST | Placeholdery: stawki wydobycia, bonusy 10%, upkeep −1 Praca, progi CUDA/Ludy Morza, cap magazynu 100/+100, proporcje capa trudności 120/100/80 vs płaskie 100. |
 | R-DYST-DREWNO | 2026-07-24 | Rozważyć wymóg DREWNA dla jednostek dystansowych (łucznicy) | CZEKA-NA-PLAYTEST (pomysł na przyszłość) | Dziś dystansowe = 0 surowca (Kamień: groty krzemienne/kościane; Brąz/Żelazo też 0). Ewentualnie wymusić drewno TYLKO jeśli playtest pokaże nadwyżki drewna. Blokada dziś: trudno na starcie postawić ulepszenia (brak produkcji drewna) + timing technologii (tech łuczników vs tech drewna mogą się wykluczać). NIE ruszać bez sygnału Macieja. |
+| R-MP-DYPL-PROAKT | 2026-07-25 | Czy proaktywność miast-państw w dyplomacji (`agresjaMnoznik`/`dyplomacjaAktywnosc` w decideAIDiplomacy — propozycje wojna/pokój) też odpiąć od globalnej trudności pod suwak miast-państw? | CZEKA-NA-DECYZJĘ | Dziś globalne (wcześniejsza decyzja „ogólny parametr dla wszystkich AI", D-MP-DYPL Q1 cz.2). 3 mechanizmy (zaufanie/sojusze/posiłki) + aiDiffLevel JUŻ odpięte; to jest 4. potencjalny element. |
 
 ## W TOKU
 
 | ID | Data | Prośba | Status | Uwagi |
 |---|---|---|---|---|
-| R-MAGAZYN-PANSTWO | 2026-07-24 | Magazyn = pula PAŃSTWA: 100 baza + 100/Magazyn (addytywnie), nadmiar przepada, surowce wspólne dla imperium | **W TOKU** | subagent `a704f1e0`; parytet AI wymagany |
-| R-HANDEL-SUROWCE | 2026-07-24 | Handel surowcami w dyplomacji: sprzedaż nadwyżek za pieniądz/Pracę; tryby jednorazowy i przez X tur; AI też handluje | **W TOKU** | subagent `a843b480`; parytet AI wymagany |
+| R-MAGAZYN-PANSTWO | 2026-07-24 | Magazyn = pula PAŃSTWA: 100 + 100/Magazyn, nadmiar przepada, surowce wspólne dla imperium | **ZDEPLOYOWANE `ea75f5ba`** | Cap płaski 100/100/100. Parytet AI 44/44. |
+| R-HANDEL-SUROWCE | 2026-07-24 | Handel surowcami w dyplomacji: za pieniądz/Pracę; jednorazowy i przez X tur; AI też | **ZDEPLOYOWANE `ea75f5ba`** | Parytet AI (AI↔AI) 42/42. |
 
 ## ZAMKNIĘTE (ta sesja, 2026-07-23/24)
 

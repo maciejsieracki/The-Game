@@ -9,7 +9,20 @@ UWAGA: KANON i FINALNA promują się teraz OSOBNYMI skryptami (`gra/tools/publis
 wyraźne polecenie właściciela) — dlatego są logowane NIEZALEŻNIE, każdy w swojej sekcji, ze
 swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drugiego.
 
-## ROBOCZA `cd42837f` — 2026-07-24 · FALA 4: przebudowa ekonomii surowców + wonder-bonusy + koszty budynków/jednostek — **AKTUALNA**
+## ROBOCZA `ea75f5ba` — 2026-07-24 · FALA 4.1: magazyny=pula państwa + handel surowcami + trudność miast-państw + super-jednostki — **AKTUALNA**
+
+- **Zawartość (commity `f136c09`…`0d0db35`; nadbudowa fali 4):**
+  1. **MAGAZYNY = pula PAŃSTWA** (civ-wide): cap per typ = **100 + 100×Magazyn** (płaskie na easy/normal/hard, addytywnie), nadmiar przepada; surowce wspólne dla imperium (budowa płaci z puli). Parytet AI (test 44/44 z asercją na AI).
+  2. **HANDEL SUROWCAMI w dyplomacji:** tryb **jednorazowy** + **cykliczny przez X tur** (za pieniądz/Pracę); AI proponuje/akceptuje/AI↔AI (parytet, test 42/42).
+  3. **TRUDNOŚĆ MIAST-PAŃSTW** osobnym suwakiem w kreatorze (Zaawansowane opcje), odpięta od globalnej trudności: zaufanie startowe + sojusze sióstr + posiłki + aiDiffLevel kopii obronnych (naprawiony przeciek `bonusProdukcja`). Domyślnie = główna trudność.
+  4. **KOSZTY JEDNOSTEK:** Kamień 0 · Brąz/Żelazo; dystansowe **0** (Procarz + łucznicy brązowi) · I linia 2 · premium 3. **Super-jednostki:** bezpłatne pieniężnie (Triari/Wojownik germański 0) + max 1 + respawn stolica + 3 surowca.
+  5. Baza fali 4: ceramika=dostęp · produkcja bez pracowników · paliwo/Mielerz usunięte · bonusy budynków · koszty budynków · −1 Praca upkeep · cegła-A · wonder-bonusy · licznik · docs Civpedia/Poradnik.
+- **Bramki (scalone):** tsc 0 · logic 208/208 · ai 233/7 · storage 44/44 · handel-cykliczny 42/42 · diplomacy-layers 8/8 · converters 24/24 · mennica 41/41 · wonder-yields 11/11 · owner-economy 9/9 · trade-routes 51/51 · trade-grant 38/38 · unit-replace 10/10 · tech-tree 19/19 · map-gen determinizm A=B PASS · VERIFY OK.
+- **md5:** `ea75f5ba4d49cdc6849e829fc52a1887` · manifest. Pieczątka w grze `fe5049dd` (one-iter quirk). Bundel 28,2 MB.
+- **Test:** panel imperium → SUROWCE (pula 100/+100, −Praca za ulepszenia) · dyplomacja → sprzedaj/wymień surowiec (jednorazowo lub co turę, za złoto/Pracę) · kreator → Zaawansowane → „Trudność miast-państw" osobno · jednostki dystansowe darmowe surowcowo.
+- **FLAGI do decyzji Macieja:** (a) `decideAIDiplomacy` (proaktywność miast-państw w propozycjach wojna/pokój — `agresjaMnoznik`) NADAL na globalnej trudności; odpiąć też pod suwak miast-państw? (b) placeholdery do strojenia po playteście.
+
+## ROBOCZA `cd42837f` — 2026-07-24 · FALA 4: przebudowa ekonomii surowców + wonder-bonusy + koszty budynków/jednostek — ZASTĄPIONA
 
 - **Zawartość (commity `07bc172`→`bcd818b`; sesja chmurowa, seria subagentów + scalenia):**
   1. **Model surowców:** ceramika = tylko DOSTĘP (Garncarnia nie konwertuje) · produkcja per-ULEPSZENIE bez wymogu pracowników (naprawiony przeciek bazowego plonu) · stawki Tartak/Kamieniołom/Glinianka 4, Kopalnie 2 (`surowiec_ilosc_tura`).
