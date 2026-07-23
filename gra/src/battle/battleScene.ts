@@ -95,6 +95,7 @@ import {
   applyFilterIconChip1E,
   FILTER_ALL_SVG,
   FILTER_GENERAL_SVG,
+  FILTER_KIND_SVG,
   applyGroupBadge1E,
   applyMinimap1E,
   applyModeHint1E,
@@ -13046,11 +13047,22 @@ export class BattleScene {
         ? FILTER_ALL_SVG
         : kind === 'general-icon'
           ? FILTER_GENERAL_SVG
-          : ROSTER_TYPE_SVG[kind]
-            .replace(/width="14"/g, 'width="16"')
-            .replace(/height="14"/g, 'height="16"');
+          : FILTER_KIND_SVG[kind];
       btn.setAttribute('aria-label', label);
       applyFilterIconChip1E(btn, active, kind === 'all-icon' ? 'all' : kind === 'general-icon' ? 'group' : kind);
+    } else if (kind === 'group' && opts?.groupId) {
+      // Grupy jako kompaktowe "G1"/"G2"... (decyzja Macieja 2026-07-23); pełna nazwa w pigułce.
+      const num = label.match(/\d+/)?.[0] ?? '';
+      btn.textContent = num ? 'G' + num : label;
+      btn.setAttribute('aria-label', label);
+      applyFilterIconChip1E(btn, active, 'group');
+      Object.assign(btn.style, {
+        lineHeight: '1',
+        fontSize: '12px',
+        fontWeight: '700',
+        letterSpacing: '.02em',
+        fontFamily: "'Segoe UI', sans-serif",
+      });
     } else {
       applyFilterChip1E(btn, active, kind);
     }
@@ -13068,7 +13080,9 @@ export class BattleScene {
       e.stopPropagation();
       onClick();
     });
-    return isClassIcon ? wrapWithHoverTooltip1E(btn, label, 'below') : btn;
+    return (isClassIcon || (kind === 'group' && opts?.groupId))
+      ? wrapWithHoverTooltip1E(btn, label, 'below')
+      : btn;
   }
 
   /** Odswieza pasek filtrów — C09 v4 (typy + grupy jak w walce recznej). */
