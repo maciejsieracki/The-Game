@@ -857,7 +857,8 @@ function bindViewportInteractions(): void {
     panStartTx = tx;
     panStartTy = ty;
     vp.classList.add('grabbing');
-    vp.setPointerCapture(e.pointerId);
+    // UWAGA: capture dopiero przy realnym ruchu (pointermove) — capture w
+    // pointerdown przekierowuje pointerup na viewport i zabija 'click' na węźle.
   });
 
   vp.addEventListener('pointermove', (e: PointerEvent) => {
@@ -867,6 +868,7 @@ function bindViewportInteractions(): void {
     if (!panMoved && Math.abs(dx) + Math.abs(dy) > 5) {
       panMoved = true;
       hideCard();
+      try { vp.setPointerCapture(e.pointerId); } catch { /* noop */ }
     }
     if (panMoved) {
       tx = panStartTx + dx;

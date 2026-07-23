@@ -12359,7 +12359,8 @@ var buildings_default = [
     przyrostUtrzymania: 1,
     wymagania: "",
     uwagi: "Mnoznik % dotyczy handlu ladowego (szlaki miedzy miastami)",
-    techUnlock: "Handel"
+    techUnlock: "Handel",
+    koszt_surowce: { ceramika: 4 }
   },
   {
     id: "spichlerz",
@@ -12430,7 +12431,8 @@ var buildings_default = [
     przyrostUtrzymania: 0,
     wymagania: "upgrade ze Spichlerza I",
     uwagi: "B-SPIC: bramka S\xF3l; cap armii 150; bufor 70% po wzro\u015Bcie",
-    techUnlock: "Warzelnia soli"
+    techUnlock: "Warzelnia soli",
+    koszt_surowce: { cegla: 10 }
   },
   {
     id: "garncarnia",
@@ -12571,7 +12573,8 @@ var buildings_default = [
     wymagania: "upgrade Kamiennych kr\u0119g\xF3w",
     uwagi: "B-KULT-REL + KULT-BUD-02: budynek RELIGIJNY \u2014 konwersja religii +4%/t (religia_konwersja_swiatynia, additive do bazy); plon kultury OK, bez bonusu konwersji kultury.",
     techUnlock: "Religia",
-    upgradeFrom: "kamienne_kregi"
+    upgradeFrom: "kamienne_kregi",
+    koszt_surowce: { ceramika: 6 }
   },
   {
     id: "biblioteka",
@@ -12620,7 +12623,8 @@ var buildings_default = [
     techUnlock: "Pismo",
     poziomTechGate: {
       "6": "Astronomia"
-    }
+    },
+    koszt_surowce: { ceramika: 5 }
   },
   {
     id: "studnia",
@@ -12690,7 +12694,8 @@ var buildings_default = [
     przyrostUtrzymania: 1,
     wymagania: "",
     uwagi: "T-TECH-6: zdrowie++ i cap ludno\u015Bci (turn-economy)",
-    techUnlock: "Budownictwo"
+    techUnlock: "Budownictwo",
+    koszt_surowce: { cegla: 12 }
   },
   {
     id: "mennica",
@@ -12761,7 +12766,8 @@ var buildings_default = [
     wymagania: "",
     uwagi: "",
     techUnlock: "Budownictwo",
-    odblokowuje: "maMur"
+    odblokowuje: "maMur",
+    koszt_surowce: { cegla: 15 }
   },
   {
     id: "koszary",
@@ -13022,7 +13028,8 @@ var buildings_default = [
     uwagi: "ABC-22 C: Cytadela = upgrade Mur\xF3w (1 slot). Mapa = osobny Fort terenowy. Suma Mury+Cytadela w JSON.",
     techUnlock: "In\u017Cynieria",
     odblokowuje: "maFort",
-    upgradeFrom: "mury"
+    upgradeFrom: "mury",
+    koszt_surowce: { cegla: 18 }
   },
   {
     id: "warsztat_oblezniczy",
@@ -13094,7 +13101,8 @@ var buildings_default = [
     wymagania: "upgrade Biblioteki (merge Teatr)",
     uwagi: "ABC-21 B: merge Biblioteka+Akademia+Teatr \u2014 suma w JSON; Teatr ukryty z produkcji",
     techUnlock: "Filozofia",
-    upgradeFrom: "biblioteka"
+    upgradeFrom: "biblioteka",
+    koszt_surowce: { cegla: 14 }
   },
   {
     id: "teatr",
@@ -13200,7 +13208,8 @@ var buildings_default = [
     przyrostUtrzymania: 1,
     wymagania: "",
     uwagi: "Centrum administracji prowincji; bonus do utrzymania porzadku (garnizon); mnoznik % do przychodu podatkowego",
-    techUnlock: "Prawo"
+    techUnlock: "Prawo",
+    koszt_surowce: { cegla: 9 }
   },
   {
     id: "trybunal",
@@ -13270,7 +13279,8 @@ var buildings_default = [
     przyrostUtrzymania: 1,
     wymagania: "wymaga Studnia",
     uwagi: "KULT-BUD-01: +3 kultura baza, +1% konwersji; termy \u2014 zadowolenie, zdrowie; wymaga Studni i tech Medycyna.",
-    techUnlock: "Medycyna"
+    techUnlock: "Medycyna",
+    koszt_surowce: { cegla: 10 }
   },
   {
     id: "lazaret",

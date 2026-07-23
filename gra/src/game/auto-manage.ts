@@ -28,6 +28,7 @@ import {
   type ProductionItem,
   type AvailabilityContext,
 } from './production';
+import { buildingStockCost, canAffordBuildingStock } from './building-stock-cost';
 
 // ---------------------------------------------------------------------------
 // Auto-production heuristic
@@ -174,7 +175,15 @@ export function pickAutoBuildItem(
   const focus = city.budowaFocus ?? DEFAULT_BUDOWA_FOCUS;
   const unlockedTechs = input.unlockedTechs ?? [];
   const ctx = input.ctx ?? {};
-  const candidates = buildableProduction(city, data, unlockedTechs, ctx);
+  const allCandidates = buildableProduction(city, data, unlockedTechs, ctx);
+  // TEMAT #6 (2026-07-23): auto-kolejka nigdy nie proponuje budynek, na ktorego koszt
+  // surowcowy (cegla/ceramika — koszt_surowce) nie starcza magazyn miasta (City.surowce).
+  // Jednostki i budynki bez koszt_surowce przechodza bez zmian (zero regresji).
+  const candidates = allCandidates.filter(item => {
+    const def = data.buildings.find(b => b.id === item.id);
+    const cost = buildingStockCost(def);
+    return Object.keys(cost).length === 0 || canAffordBuildingStock(city.surowce, cost);
+  });
 
   if (candidates.length === 0) return null;
 

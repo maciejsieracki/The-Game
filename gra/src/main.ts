@@ -3474,6 +3474,15 @@ async function boot(): Promise<void> {
         },
       });
       if (!item) return null;
+      // TEMAT #6: pickAutoBuildItem juz odfiltrowal budynki bez pokrycia w magazynie —
+      // tu tylko pobieramy koszt (start budowy), symetrycznie z addItem (ui/cityPanel.ts).
+      if (item.kind === 'budynek') {
+        const def = data.buildings.find(b => b.id === item.id);
+        const cost = buildingStockCost(def);
+        if (Object.keys(cost).length > 0) {
+          city.surowce = deductBuildingStockCost(city.surowce, cost);
+        }
+      }
       cityProd.set(cityId, enqueue(prod0, item));
       return item;
     }
@@ -12841,6 +12850,15 @@ async function boot(): Promise<void> {
                   );
                   // Apply auto-enqueue suggestion (only when queue is empty)
                   if (amDecision.enqueue !== null) {
+                    // TEMAT #6: pickAutoBuildItem (wewnatrz autoManageCity) juz odfiltrowal
+                    // budynki bez pokrycia w magazynie — tu tylko pobieramy koszt (start budowy).
+                    if (amDecision.enqueue.kind === 'budynek') {
+                      const def = data.buildings.find(b => b.id === amDecision.enqueue!.id);
+                      const cost = buildingStockCost(def);
+                      if (Object.keys(cost).length > 0) {
+                        city.surowce = deductBuildingStockCost(city.surowce, cost);
+                      }
+                    }
                     prod0 = enqueue(prod0, amDecision.enqueue);
                     cityProd.set(cid, prod0);
                   }
@@ -13005,6 +13023,17 @@ async function boot(): Promise<void> {
               civEra: empireEpochForOwner(ownerId),
               // D-START posiłki v2: setup „Wsparcie miast-państw" -> RESUP_TIERS (ai.ts).
               citySupportLevel: _menuCitySupport,
+              // TEMAT #6 (2026-07-23): AI pomija budynek (skips, nie zawiesza się) gdy magazyn
+              // miasta (City.surowce) nie starcza na koszt_surowce (cegła/ceramika). Jednostki
+              // i budynki bez koszt_surowce zawsze "affordable" (zero regresji na resztę AI).
+              canAfford: (cityId: string, buildingId: string) => {
+                const c = cities.find(x => x.id === cityId);
+                if (!c) return true;
+                const def = data.buildings.find(b => b.id === buildingId);
+                const cost = buildingStockCost(def);
+                if (Object.keys(cost).length === 0) return true;
+                return canAffordBuildingStock(c.surowce, cost);
+              },
             };
             const myCivTyp = aiOwnerCivMap.get(ownerId);
             const tc = clusterPlacement?.klastry.find(k => k.typ === myCivTyp);
@@ -13378,6 +13407,23 @@ async function boot(): Promise<void> {
                         _menuDifficulty,
                       );
                     if (item !== null) {
+                      // TEMAT #6 (2026-07-23): siatka bezpieczeństwa — AI zwykle nie wybiera
+                      // budynku bez pokrycia (opts.canAfford w decideAITurn, patrz wyżej), ale
+                      // sprawdzamy ponownie tu (jedyne miejsce, ktore faktycznie enqueue'uje i
+                      // pobiera surowiec) — AI POMIJA budynek (continue), nie zawiesza tury.
+                      if (item.kind === 'budynek') {
+                        const def = data.buildings.find(b => b.id === item.id);
+                        const cost = buildingStockCost(def);
+                        if (Object.keys(cost).length > 0) {
+                          if (!canAffordBuildingStock(city.surowce, cost)) {
+                            console.warn(
+                              `[AI ${ownerId}] Build skipped (brak surowca w magazynie): ${cmd.buildingId}`,
+                            );
+                            continue;
+                          }
+                          city.surowce = deductBuildingStockCost(city.surowce, cost);
+                        }
+                      }
                       cityProd.set(cmd.cityId, enqueue(prod0, item));
                     } else {
                       console.warn(`[AI ${ownerId}] Build no-op: nieznany ${cmd.buildingId}`);
