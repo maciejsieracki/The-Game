@@ -9,7 +9,23 @@ UWAGA: KANON i FINALNA promują się teraz OSOBNYMI skryptami (`gra/tools/publis
 wyraźne polecenie właściciela) — dlatego są logowane NIEZALEŻNIE, każdy w swojej sekcji, ze
 swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drugiego.
 
-## ROBOCZA `aa3c9b06` — 2026-07-23 · FALA 3: surowce (bydło/owce/lama NIE surowce) + licznik magazynów + CUDA-AI + Ludy Morza + UMOWA-B — **AKTUALNA**
+## ROBOCZA `cd42837f` — 2026-07-24 · FALA 4: przebudowa ekonomii surowców + wonder-bonusy + koszty budynków/jednostek — **AKTUALNA**
+
+- **Zawartość (commity `07bc172`→`bcd818b`; sesja chmurowa, seria subagentów + scalenia):**
+  1. **Model surowców:** ceramika = tylko DOSTĘP (Garncarnia nie konwertuje) · produkcja per-ULEPSZENIE bez wymogu pracowników (naprawiony przeciek bazowego plonu) · stawki Tartak/Kamieniołom/Glinianka 4, Kopalnie 2 (`surowiec_ilosc_tura`).
+  2. **PALIWO + MIELERZ usunięte** — konwertery biorą drewno 1:1 (DEFAULT_CONVERTER_RECIPES 7→5).
+  3. **Bonusy budynków:** Stolarnia +10% drewna civ · Warsztat kamieniarski +10% kamienia civ · Garncarnia +10% żywności lokalnie (placeholdery econ-params).
+  4. **Koszty budynków** (28, `koszt_surowce`) wg tabel Kamień/Brąz/Żelazo. **Cegła-A:** Cegielnia 2→3/turę, Glinianka 4→5.
+  5. **−1 Praca/turę za ulepszenie surowcowe** (wariant B, z Warzelnią/Stadniną) — limit na spam ulepszeń; **fix deadlocka AI** (konwertery przed konsumentami surowca).
+  6. **Koszty jednostek:** Kamień 0 · Brąz→brąz · Żelazo→żelazo; dyst. 1 / I linia 2 / premium 3 (Procarz=0). 73 jednostki.
+  7. **Wonder-bonusy realnie w ekonomii** (C-CUDA-BONUS=A): `bonusy.miasto` × każde miasto właściciela + zadowolenie w happiness pipeline (gracz i AI).
+  8. **LICZNIK surowców** (wolumen + tempo/turę) w panelu imperium; **docs** Civpedia+Poradnik (wikiBundle 134 hasła).
+- **Bramki (scalone):** tsc 0 · logic 208/208 · ai 233/7 (pre-istniejące) · converters 24/24 · mennica 41/41 · wonder-yields 11/11 (NOWY) · owner-economy 9/9 · unit-replace 10/10 · research 33/33 · tech-tree 19/19 · map-gen determinizm A=B PASS · VERIFY OK.
+- **md5:** `cd42837fda237aa7bbea31e429900ca8` · manifest. Pieczątka w grze: `5285a7ec` (one-iter-behind, znany quirk). Bundel 28,2 MB. Publikowała sesja chmurowa.
+- **Test:** panel imperium → SUROWCE STRATEGICZNE (wolumen+tempo, −N Praca za ulepszenia) · buduj budynki/jednostki i patrz na koszty surowcowe · cuda dają realne yieldy · ceramika = dostęp (Garncarnia).
+- **FLAGI do decyzji Macieja:** (a) super-jednostki Triari(18)/Wojownik germański(16) mają koszt PIENIĘŻNY — niespójne z „premium = bezpłatna pieniężnie"; (b) łucznicy brązowi = 1 Brąz (groty) — zostawić czy 0; (c) placeholdery do strojenia po playteście (stawki, bonusy 10%, upkeep, cegła); (d) bonusy cudów teren/hex/specjalne = TODO.
+
+## ROBOCZA `aa3c9b06` — 2026-07-23 · FALA 3: surowce (bydło/owce/lama NIE surowce) + licznik magazynów + CUDA-AI + Ludy Morza + UMOWA-B — ZASTĄPIONA
 
 - **Zawartość (commity `4adefe7`→`6859d9e`; kontynuacja batcha, 1 subagent/temat, trudne=Fable/worktree):**
   1. **SUROWCE — bydło/owce/lama NIE są surowcami (decyzja Macieja, wielokrotna):** usunięte z systemu surowców (resource-access active, resources.json, diplomacy-goods) — zostają ulepszeniami terenu dającymi bonus żywności/produkcji. Surowcem „zwierzęcym" jest tylko Koń.

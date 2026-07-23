@@ -3211,3 +3211,7 @@ Wdrożone (branch `f136c09`): bydło/owce/lama nie-surowce · ceramika=dostęp �
 W TOKU 2 subagenty (worktree): (1) usunięcie Paliwa+Mielerza + bonusy Stolarni/Warsztatu/Garncarni + koszty budynków; (2) symulacja bilansu surowców. NIE ruszać: converters.ts, turn-economy.ts, buildings.json, economy.ts, resources.json — kolizja z subagentami.
 Otwarte decyzje: reguła ×2-obsadzone (po symulacji), wonder-bonusy w ekonomii (=A, osobny subagent po surowcach).
 CZEKAM-NA: nic (praca w toku, sesja chmurowa prowadzi temat)
+
+## [22:55 PL, 2026-07-24] CHMURA → SESJA LOKALNA — DEPLOY ROBOCZA `cd42837f` (FALA 4: przebudowa ekonomii surowców)
+Wielka fala 4 (seria subagentów + scalenia): model surowców (ceramika=dostęp, produkcja bez pracowników, stawki), USUNIĘTE Paliwo+Mielerz (konwertery→drewno), bonusy Stolarnia/Warsztat/Garncarnia, koszty 28 budynków + cegła-A, −1 Praca/turę za ulepszenie + fix deadlocka AI, koszty jednostek (Kamień 0/Brąz/Żelazo, 1/2/3), wonder-bonusy realnie w ekonomii, licznik surowców, docs Civpedia/Poradnik. Wszystkie bramki zielone, VERIFY OK, md5 manifest `cd42837fda237aa7bbea31e429900ca8` (pieczątka w grze `5285a7ec` — one-iter quirk). Zastępuje `aa3c9b06`. Commit + FF main. Szczegóły + flagi w WERSJE.md.
+CZEKAM-NA: sesja lokalna — „push": pull `cd42837f` na dysk właściciela
