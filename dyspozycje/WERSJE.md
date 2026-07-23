@@ -9,7 +9,20 @@ UWAGA: KANON i FINALNA promują się teraz OSOBNYMI skryptami (`gra/tools/publis
 wyraźne polecenie właściciela) — dlatego są logowane NIEZALEŻNIE, każdy w swojej sekcji, ze
 swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drugiego.
 
-## ROBOCZA `9f9ced35` — 2026-07-23 · WIELKI BATCH (12 tematów): drzewko technologii w grze · ekran Cudów · handel E6+E3b · koszty surowcowe budynków · fixy — **AKTUALNA**
+## ROBOCZA `aa3c9b06` — 2026-07-23 · FALA 3: surowce (bydło/owce/lama NIE surowce) + licznik magazynów + CUDA-AI + Ludy Morza + UMOWA-B — **AKTUALNA**
+
+- **Zawartość (commity `4adefe7`→`6859d9e`; kontynuacja batcha, 1 subagent/temat, trudne=Fable/worktree):**
+  1. **SUROWCE — bydło/owce/lama NIE są surowcami (decyzja Macieja, wielokrotna):** usunięte z systemu surowców (resource-access active, resources.json, diplomacy-goods) — zostają ulepszeniami terenu dającymi bonus żywności/produkcji. Surowcem „zwierzęcym" jest tylko Koń.
+  2. **LICZNIK SUROWCÓW (BRAZ-ILOSC=B):** panel imperium → sekcja SUROWCE STRATEGICZNE pokazuje realny wolumen magazynów (suma City.surowce) zamiast pustej zaślepki. Sól/Koń=dostęp; Ceramika przejściowo kumuluje; tempo/turę=TODO.
+  3. **CUDA-AI (C-CUDA-AI=A):** AI pełnych cywilizacji buduje cuda (priorytet E przed R, max 1 cud/cyw, throttle wg trudności, deterministyczne). Progi ai-params.json §9 = PLACEHOLDERY DO AKCEPTACJI. FLAGA: bonusy cudów nadal NIE wpięte w ekonomię dla NIKOGO (gracz też) — TODO ogólnosystemowe.
+  4. **#15 LUDY MORZA (Fable):** embarkacja (RuntimeUnit.embarked, ruch po wodzie koszt 1 z Żeglugą, auto-desant, brak ataku z wody, obrona ×0,5) + obozy nadmorskie i rajdy (epoka Brązu; cel: nadmorskie miasto/ulepszenie). Params §9 PLACEHOLDERY. Render: łódka pod figurką.
+  5. **UMOWA-B (C-HANDEL-UMOWA=B):** trasy handlowe WYMAGAJĄ traktatu Umowa Handlowa (nie sam pokój); teksty pomocy zaktualizowane (rekrutacja: Manpower nie ludność).
+- **Bramki (stan scalony):** tsc=0 · logic 208/208 · ai 233/7 (pre-istniejące) · tech-tree 19/19 · research 33/33 · unit-replace 10/10 · barbarians 137/137 · trade-grant 38/38 · trade-routes 51/51 · category 73/73 · map-gen determinizm A=B PASS (806/806 rzek z ujściem) · VERIFY OK.
+- **md5:** `aa3c9b06c0c22405777c59447a28227d` · stamp `aa3c9b06`. Bundel 28,2 MB. Publikowała sesja chmurowa (autonomicznie, „wypchnij wszystko do roboczej").
+- **Test:** panel imperium → SUROWCE STRATEGICZNE pokazuje sztuki w magazynach; dyplomacja NIE pokazuje już bydła/owiec/lamy jako dóbr; z Żeglugą jednostka wchodzi na wodę (łódka); AI może zakolejkować cud; trasy wymagają Umowy Handlowej.
+- **FLAGI do decyzji Macieja:** (a) ceramika: zliczana vs tylko-dostęp (koliduje z kosztem 3 budynków w ceramice); (b) czy ulepszenie produkuje bez pracowników (dziś: tak tylko gdy pole obsadzone); (c) stawki produkcji/turę per surowiec — do ustalenia po obejrzeniu licznika; (d) placeholdery CUDA/Ludy Morza do strojenia; (e) docs (Civpedia+Poradnik, regeneracja wikiBundle) w NASTĘPNEJ fali.
+
+## ROBOCZA `9f9ced35` — 2026-07-23 · WIELKI BATCH (12 tematów): drzewko technologii w grze · ekran Cudów · handel E6+E3b · koszty surowcowe budynków · fixy — ZASTĄPIONA
 
 - **Zawartość (commity `98ddefe`→`9450559`; batch zlecony przez Macieja, 1 subagent/temat, trudne=Fable):**
   1. **EKRAN DRZEWKA TECHNOLOGII (#2, Fable):** pełnoekranowy graf wg makiety „siatka v1.1" — pasma epok, 4 stany węzłów z powodami blokad, karta węzła (koszt z tempem ×2, tury, AND ✓/✗, odblokowania), zoom/pan/minimapa; wejście złotym przyciskiem z panelu badań; „pokaż ścieżkę" = TODO.
