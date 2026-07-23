@@ -2746,7 +2746,17 @@ export async function buildScene(
     // OBA końce leżą na odkrytym polu — przez przebudowę INDEKSU (pozycje wierzchołków nietknięte
     // → identyczny wygląd, 1 draw-call). Ciemne odcinki po prostu wypadają z indeksu.
     // Delty scalone (bez pointHex) → fallback: ukryj całą wstęgę, gdy KTÓRYKOLWIEK heks w czerni.
-    // Bez mgły (hasFog=false) overlayHidden zawsze false → indeks pełny → cała rzeka widoczna.
+    // Bez mgły (hasFog=false) riverHidden zawsze false → indeks pełny → cała rzeka widoczna.
+    //
+    // FIX (TEMAT #7, 2026-07-23): rzeki reaguja WYLACZNIE na mgle (isHidden), NIGDY na
+    // decorHiddenHexKeys. `overlayHidden` (isHidden || decorHiddenHexKeys) sluzy do chowania
+    // dekoracji terenu POD miastem/ulepszeniem (F-CITY-HEX) — decorHiddenHexKeys jest ustawiane
+    // RAZ (hideDecorAtHex) i NIGDY nie jest czyszczone, wiec uzycie overlayHidden tutaj kasowalo
+    // wstege rzeki na stale w heksie miasta/ulepszenia, niezaleznie od stanu mgly (nie wracala
+    // nawet po pelnym wylaczeniu FoW — zweryfikowane Playwright: rzeka znikala przy zalozeniu
+    // miasta i zostawala niewidoczna takze z FoW=OFF). Rzeka to woda, nie dekor ladu — ma plynac
+    // pod/obok miasta tak samo jak przed jego zalozeniem.
+    const riverHidden = isHidden;
     for (const entry of riverEntries) {
       const ph = entry.pointHex;
       if (ph && ph.length >= 2) {
@@ -2755,13 +2765,13 @@ export async function buildScene(
         // rzece → sam hash, ZERO setIndex/alokacji. Pętla i tak nie odpala się per-klatka.
         let sig = 0;
         for (let k = 0; k < ph.length; k++) {
-          sig = (Math.imul(sig, 31) + (overlayHidden(ph[k]!) ? 1 : 0)) | 0;
+          sig = (Math.imul(sig, 31) + (riverHidden(ph[k]!) ? 1 : 0)) | 0;
         }
         if (sig !== entry.lastFogSig) {
           entry.lastFogSig = sig;
           const idx: number[] = [];
           for (let j = 0; j < ph.length - 1; j++) {
-            if (overlayHidden(ph[j]!) || overlayHidden(ph[j + 1]!)) continue;
+            if (riverHidden(ph[j]!) || riverHidden(ph[j + 1]!)) continue;
             const b = 2 * j; // punkt j → wierzch. 2j/2j+1; quad j..j+1 = 2 trójkąty (winding jak build)
             idx.push(b, b + 2, b + 1, b + 1, b + 2, b + 3);
           }
@@ -2774,7 +2784,7 @@ export async function buildScene(
       } else {
         let allRevealed = true;
         for (const hk of entry.hexKeys) {
-          if (overlayHidden(hk)) { allRevealed = false; break; }
+          if (riverHidden(hk)) { allRevealed = false; break; }
         }
         const riverVis = zoomFlags.rivers && allRevealed;
         entry.waterMesh.visible = riverVis;

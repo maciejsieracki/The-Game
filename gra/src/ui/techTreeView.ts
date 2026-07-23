@@ -801,7 +801,11 @@ function openConfirm(node: TreeNode, s: TtvState): void {
 function tryStartResearch(node: TreeNode): void {
   const s = readState(activeOwner);
   if (statusOf(node, s) !== 'av') return;
-  if (s.targetId !== null && s.targetId !== node.id && !s.researched.has(s.targetId)) {
+  // Potwierdzenie tylko gdy inne ZNANE badanie w trakcie (targetId spoza
+  // tech.json — np. relikt starej nazwy w savie — traktujemy jak brak celu,
+  // spójnie z hubem badań).
+  const cur = s.targetId !== null ? NODES.get(s.targetId) : undefined;
+  if (cur !== undefined && cur.id !== node.id && !s.researched.has(cur.id)) {
     openConfirm(node, s);
     return;
   }
