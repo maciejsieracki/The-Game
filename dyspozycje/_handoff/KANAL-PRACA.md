@@ -3215,3 +3215,7 @@ CZEKAM-NA: nic (praca w toku, sesja chmurowa prowadzi temat)
 ## [22:55 PL, 2026-07-24] CHMURA → SESJA LOKALNA — DEPLOY ROBOCZA `cd42837f` (FALA 4: przebudowa ekonomii surowców)
 Wielka fala 4 (seria subagentów + scalenia): model surowców (ceramika=dostęp, produkcja bez pracowników, stawki), USUNIĘTE Paliwo+Mielerz (konwertery→drewno), bonusy Stolarnia/Warsztat/Garncarnia, koszty 28 budynków + cegła-A, −1 Praca/turę za ulepszenie + fix deadlocka AI, koszty jednostek (Kamień 0/Brąz/Żelazo, 1/2/3), wonder-bonusy realnie w ekonomii, licznik surowców, docs Civpedia/Poradnik. Wszystkie bramki zielone, VERIFY OK, md5 manifest `cd42837fda237aa7bbea31e429900ca8` (pieczątka w grze `5285a7ec` — one-iter quirk). Zastępuje `aa3c9b06`. Commit + FF main. Szczegóły + flagi w WERSJE.md.
 CZEKAM-NA: sesja lokalna — „push": pull `cd42837f` na dysk właściciela
+
+## [23:40 PL, 2026-07-24] CHMURA → WSZYSCY — NOWA ZASADA PROCESU + rejestr próśb
+Maciej: (1) ZASADA NADRZĘDNA — parytet AI (każda zmiana dla gracza obowiązuje tak samo dla AI, kod ownerId-agnostic); (2) ZASADA PROCESU — KAŻDA prośba mająca skończyć się zmianą MUSI trafić do NOWEGO pliku `dyspozycje/REJESTR-PROSB-I-ZADAN.md` (jedyny rejestr statusu próśb — bo prośby z czatu giną; potwierdzony przypadek: „osobny poziom trudności per państwo/miasto" — poproszona dawno, nigdzie nie zapisana, nie wdrożona). Oba zapisane w rejestrze decyzji + handoff. Sprawdzajcie i aktualizujcie rejestr przy każdej prośbie.
+CZEKAM-NA: nic

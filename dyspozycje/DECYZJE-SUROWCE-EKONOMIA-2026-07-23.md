@@ -62,3 +62,21 @@ POZA ZAKRESEM: Wielka Kuźnia (ep.4), Lazaret (ep.5) — usunięte z planów (#1
 - Licznik surowców: panel imperium → sekcja „SUROWCE STRATEGICZNE" (`main.ts buildEmpireResourceRows`).
 - Produkcja per-ulepszenie: `turn-economy.ts computeTerritoryResourceYieldByCity`, `terrain-improvements.ts territoryResourceYieldForImprovement`.
 - Pre-istniejące porażki testów (NIE regresja): combat-test, ai-test (233/7), diplomacy-value-catalog-test (2), eko-tech-paczka1-test (Mielerz — do naprawy w dec.9).
+
+---
+
+## G. DECYZJE 2026-07-24 (dogrywka ekonomii — sesja chmurowa)
+
+| # | Decyzja | Status |
+|---|---|---|
+| G1 | **Magazyny = pula PAŃSTWA (civ-wide), nie per-miasto.** Cap per typ surowca = **100 baza + 100 × (liczba budynków Magazyn w imperium ownera)**, addytywnie. Nadmiar ponad cap **PRZEPADA** co turę. Surowce wspólne dla imperium — budowa w dowolnym mieście płaci z puli ownera. | ⏳ subagent `a704f1e0` |
+| G2 | **Handel surowcami w dyplomacji.** Cywilizacja sprzedaje/wymienia NADWYŻKĘ surowca innej za **pieniądze LUB Pracę**. Dwa tryby: **jednorazowa wymiana** ORAZ **wymiana przez X tur** (deal cykliczny, wygasa/zrywany wojną). AI też handluje (parytet, AI↔AI). | ⏳ subagent `a843b480` |
+| G3 | **Koszty jednostek** (wdrożone): Kamień=0 · Brąz→Brąz · Żelazo→Żelazo. Dystansowe/najtańsze **1** · I linia **2** · premium (super/oblężnicze) **3**. **Procarz=0** (proca=kamienie, zero metalu). Łucznicy brązowi=1 (groty z brązu). Brak premium/super w Kamieniu — nic nie przenoszono. | ✅ `aff3435`,`2b0cd14` |
+| G4 | **Super-jednostki — pełen archetyp premium:** bezpłatne PIENIĘŻNIE (Pieniądz=0), max 1 żywa/cyw, respawn w stolicy (napędza `Super-jednostka=TAK`), ORAZ koszt surowca 3 (żelazo/brąz) — „bezpłatna" = darmowa pieniężnie, surowiec potrzebny. Triari(18→0)/Wojownik germański(16→0) wyzerowane pieniężnie. | ✅ `c2d77fe` |
+| G5 | **Cegła-A** (odciążenie wg symulacji bilansu): Cegielnia 2→3/turę, Glinianka 4→5. | ✅ `2d9f173`,`bcd818b` |
+| G6 | **Reguła ×2-jeśli-obsadzone: ODRZUCONA** — pogłębiała nadwyżkę raw, nie ruszała cegły; a −1 Praca upkeep to już „obsada". | ✅ zamknięte |
+| G7 | **−1 Praca/turę za ulepszenie surowcowe** = wariant B (z Warzelnią soli i Stadniną). Limit na spam ulepszeń, civ-wide. | ✅ `bcd818b` |
+| G8 | **ZASADA NADRZĘDNA: PARYTET AI** — każda zmiana dla gracza obowiązuje tak samo dla AI, kod ownerId-agnostic (patrz sekcja „ZASADA NADRZĘDNA" wyżej). | ✅ obowiązuje |
+
+## H. OTWARTE — do decyzji Macieja
+- **Osobny poziom trudności per PAŃSTWO / per MIASTO** (niezależny od globalnego) — **DZIŚ NIE ISTNIEJE.** Trudność jest JEDNA globalna (`_menuDifficulty` easy/normal/hard z menu), wszystko inne (aiDiffLevel, wsparcie miast, zaufanie miast-państw) jest jej pochodną. Do wdrożenia po wyborze zakresu: **A** per nacja AI · **B** per miasto · **C** oba (globalna baza + nadpisania). Spora zmiana (setup UI + przepięcie trudności z globalnej na per-owner przez wszystkie loadery). Musi respektować parytet AI.
