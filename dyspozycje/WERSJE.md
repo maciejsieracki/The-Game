@@ -9,7 +9,13 @@ UWAGA: KANON i FINALNA promują się teraz OSOBNYMI skryptami (`gra/tools/publis
 wyraźne polecenie właściciela) — dlatego są logowane NIEZALEŻNIE, każdy w swojej sekcji, ze
 swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drugiego.
 
-## ROBOCZA `8aff7266` — 2026-07-23 · DYPLOMACJA TW: dwustronny panel + stół negocjacji + blokady (makieta FINAL 3/3) — **AKTUALNA**
+## ROBOCZA `2c67014c` — 2026-07-23 · BITWA: czyste pole na czarnym tle (bez obramówek) — **AKTUALNA**
+
+- **Zawartość (na `8aff7266`):** usunięte niebieskie/czerwone pasy boczne wokół pola bitwy (decyzja Macieja); tło/mgła/grunt/marginesy → czerń; domyślny kadr ciaśniejszy (pole wypełnia ekran); złota ramka strefy gry zostaje. FIX: przeciek niebieskiego (kolor rzeki w marginesie) przez szparę na krawędziach kafli — marginesy po krawędziach + zakładki, weryfikacja pixel-exact. BACKLOG (decyzja Macieja „kiedyś"): większe plansze — czarne tło zastąpić graficznie ułożonym lądem, strefa walki wydzielona ramką jak obecnie.
+- **Bramki:** tsc=0 · tech-tree 19/19 · research 33/33 · unit-replace 10/10 · map-gen determinizm+rzeki PASS · zrzuty (rzeka/wzgórza/pustynia/legacy) czyste, 0 błędów konsoli · VERIFY OK.
+- **md5:** `2c67014c9ae05e7f86afac445f1ec039` · stamp `2c67014c`. Publikowała sesja chmurowa.
+
+## ROBOCZA `8aff7266` — 2026-07-23 · DYPLOMACJA TW: dwustronny panel + stół negocjacji + blokady (makieta FINAL 3/3) — **ZASTĄPIONA** (→ `2c67014c`)
 
 - **Zawartość (na `c7f70b27`):** pełne wdrożenie ZATWIERDZONEJ makiety DYPLOMACJA FINAL (9 pkt integratora, 3 fazy): **F1 dane** — spójne blokady 13 akcji z progami silnika (notki „zablokowana — wymaga Zaufania 91 (masz X)"), FIX: Żądanie trybutu wcześniej NIE bramkowało Respektu; rejestr czynników relacji per-para (save round-trip) → rozbicie „Za co Cię lubią/nie lubią" z realnych delt. **F2 layout** — dwustronny (karta gracza: medalion/Moc/potencjał sojuszniczy/SKARBIEC/dobra ↔ karta rozmówcy: relacje TYLKO tu + nastawienie), baner statusu formalnego (nazwa+od X tur+kara zerwania), stół negocjacji 3 kolumny (Możliwe/Aktywne/Żądania-Oferty), koszyk PN z bilansem jednorazowo vs /turę + werdykt. **F3 styl** — ikonowy pasek akcji 46px (WOJNA/POKÓJ/SOJUSZ/PAKT/HANDEL/DAR/WASAL, hover-pigułki, disabled wg blokad) + SZYBKA UMOWA, ikonowe „Zerwij", granat 1E + złoty primary z makiety.
 - **Bramki:** tsc=0 · diplomacy 144/146 (2 pre-istniejące fixtury progów) · diplomacy-locks 67/67 (nowy) · tech/research/unit-replace/map-gen zielone · logic 192/207 baseline · E2E pokój→pakt→baner→active zweryfikowane · VERIFY OK.

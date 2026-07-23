@@ -3128,3 +3128,13 @@ CZEKAM-NA: **sesja lokalna** — „push": pull `c7f70b27`. **Cursor/integrator 
 - Znane ograniczenia (świadome, w kodzie jako TODO): „Zerwij traktat" disabled (silnik nie ma dobrowolnego zrywania), SZYBKA UMOWA = wejście w koszyk handlu (auto-uczciwa oferta do zrobienia), dobra handlowe surowcowe globalne (brak per-owner indeksu).
 
 CZEKAM-NA: **sesja lokalna** — „push": pull `8aff7266`. **Właściciel** — playtest dyplomacji (panel, blokady, pakt, pasek ikon).
+
+---
+
+## [2026-07-23] SESJA CHMUROWA → LOKALNA / MASTER — DEPLOY ROBOCZA `2c67014c` (czyste pole bitwy na czarnym tle)
+
+- **ROBOCZA = `2c67014c`** (md5 `2c67014c9ae05e7f86afac445f1ec039`), VERIFY OK. Na `8aff7266`.
+- Usunięte niebieskie obramówki pola bitwy (decyzja Macieja), tło czarne, kadr ciaśniejszy, złota ramka strefy zostaje; fix przecieku koloru rzeki w marginesie.
+- BACKLOG: większe plansze (ląd zamiast czerni) — „kiedyś", zapisane.
+
+CZEKAM-NA: **sesja lokalna** — „push": pull `2c67014c`. **Właściciel** — playtest czystego pola.
