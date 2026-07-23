@@ -9,7 +9,27 @@ UWAGA: KANON i FINALNA promują się teraz OSOBNYMI skryptami (`gra/tools/publis
 wyraźne polecenie właściciela) — dlatego są logowane NIEZALEŻNIE, każdy w swojej sekcji, ze
 swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drugiego.
 
-## ROBOCZA `feda52ec` — 2026-07-23 · Równa gwiazdka Generała + Dystansowe = tarcza (zasoby Design) — **AKTUALNA**
+## ROBOCZA `9f9ced35` — 2026-07-23 · WIELKI BATCH (12 tematów): drzewko technologii w grze · ekran Cudów · handel E6+E3b · koszty surowcowe budynków · fixy — **AKTUALNA**
+
+- **Zawartość (commity `98ddefe`→`9450559`; batch zlecony przez Macieja, 1 subagent/temat, trudne=Fable):**
+  1. **EKRAN DRZEWKA TECHNOLOGII (#2, Fable):** pełnoekranowy graf wg makiety „siatka v1.1" — pasma epok, 4 stany węzłów z powodami blokad, karta węzła (koszt z tempem ×2, tury, AND ✓/✗, odblokowania), zoom/pan/minimapa; wejście złotym przyciskiem z panelu badań; „pokaż ścieżkę" = TODO.
+  2. **EKRAN CUDÓW ŚWIATA (#16):** galeria 19 cudów wg makiety CUDA-v1 (stany z realnego stanu gry, karta z CTA), powiadomienia nasz/cudzy; wejście 6. medalionem toolbara. Fix po drodze: cud w kolejce raportował się jako Dostępny. Obserwacja: AI dziś nie buduje cudów.
+  3. **Handel E6 (#3):** AI proaktywnie proponuje Umowy Handlowe (gracz przez skrzynkę propozycji + AI↔AI max 1/turę; próg 40 z decyzji 21.07, cooldowny w save).
+  4. **Handel E3b (#4):** dostęp brąz/żelazo/koń przez aktywną trasę (czysta pochodna tras — wojna/zerwanie cofa automatycznie); UI: „szlak handlowy z X"; nowy test 30/30.
+  5. **Powiadomienia tras (#5):** toast+WYDARZENIA nowa/zerwana trasa z powodem (+16 asercji).
+  6. **Koszty surowcowe budynków (#6):** koszt_surowce w buildings.json (10 budynków Brąz/Żelazo, PLACEHOLDERY), blokada+pobór przy enqueue, chipy w karcie, AI omija.
+  7. **Wyrąb dla AI (#8):** ostatni priorytet, min. 3 lasy w promieniu, poprawna „wycinka".
+  8. **Fix rzeka↔dekor (#7):** rzeka znikała TRWALE pod miastem/ulepszeniem (decorHiddenHexKeys) — teraz tylko mgła chowa rzekę; potwierdzone zrzutami.
+  9. **Pozycyjny szum wody (#23):** renderWoda wg udziału wody w kadrze (morze/rzeka).
+  10. **Natura ulotna (#9):** wyciszenie nie zapisuje się trwale (wzorzec muzyki).
+  11. **Kontry+kategorie (#10):** Triari/Thorakites vs Mount 0→50 (Typ=Spearman); categoryOf 73/73.
+  12. **logic-test (#1):** nie regresja — fixtury po świadomych zmianach balansu; 208/208.
+- **Bramki (stan scalony):** tsc=0 · logic 208/208 · combat 6/6 · tech-tree 19/19 · research 33/33 · unit-replace 10/10 · trade-routes 51/51 + income 49/49 · trade-grant 30/30 (NOWY) · diplomacy-layers 8/8 · converters 19/19 · ai 233/7 (pre-istniejące) · kategorie 73/73 · VERIFY OK.
+- **md5:** `9f9ced355686a82efe0b9a9edfd0944a` · stamp `9f9ced35`. Bundel 27,9 MB. Publikowała sesja chmurowa (autonomicznie, C-ORG-Q17=A).
+- **Test:** panel badań → złoty „Drzewko — graf epok"; toolbar mapy → medalion Cuda świata; dyplomacja: AI może zaproponować Umowę Handlową; miasto nad rzeką nie kasuje już rzeki; budynki Brązu+ pokazują koszt cegły/ceramiki; zbliż kamerę do morza → szum wody.
+- **FLAGI do decyzji Macieja:** (a) trasy bramkowane POKOJEM (nie Umową) — zgodnie z HANDEL-Q1/Q8, Umowa=relacje+fundament; (b) „pokaż ścieżkę" w drzewku TODO; (c) AI nie buduje cudów (przyszły temat); (d) niespójne Bonus vs Mount u 4 Spearmanów (ABC).
+
+## ROBOCZA `feda52ec` — 2026-07-23 · Równa gwiazdka Generała + Dystansowe = tarcza (zasoby Design) — **ZASTĄPIONA** (→ `9f9ced35`)
 
 - **Zawartość (commit `e5e1c26`):** ★ Generała podmieniona na RÓWNĄ gwiazdkę z eksportu Design (`chip-star-24.svg` — poprzednia z makiety była asymetryczna); filtr Dystansowych = TARCZA STRZELNICZA z torem lotu (`class-ranged.svg` z battle-class-map — decyzja Macieja, przywrócona zamiast łuku).
 - **Bramki:** tsc=0 · zrzut potwierdzony · VERIFY OK.

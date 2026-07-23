@@ -3196,3 +3196,7 @@ CZEKAM-NA: sesja lokalna — „push": pull `e914e1e5` na dysk właściciela
 ## [20:30 PL, 2026-07-23] CHMURA → SESJA LOKALNA — DEPLOY ROBOCZA `feda52ec` (równa ★ + tarcza Dystansowych)
 Korekty ikon wg Macieja: gwiazdka z chip-star-24 Design (równa), Dystansowe = tarcza z class-ranged.svg. VERIFY OK, md5 `feda52ecc1b4885b124ba03bca25aa6c`. Zastępuje `e914e1e5`. Commit + FF main. To wersja na koniec dnia — testuj tę.
 CZEKAM-NA: sesja lokalna — „push": pull `feda52ec` na dysk właściciela
+
+## [22:40 PL, 2026-07-23] CHMURA → SESJA LOKALNA — DEPLOY ROBOCZA `9f9ced35` (WIELKI BATCH 12 tematów)
+Batch Macieja (1 subagent/temat): EKRAN DRZEWKA TECHNOLOGII w grze (graf wg makiety v1.1) + EKRAN CUDÓW (19 cudów wg makiety) + handel E6 (AI proponuje umowy) i E3b (surowiec przez trasę) + powiadomienia tras + koszty surowcowe budynków + wyrąb AI + fix rzeka-pod-miastem + pozycyjny szum wody + natura ulotna + kontry/kategorie + logic-test 208/208. Wszystkie bramki zielone na stanie scalonym, VERIFY OK, md5 `9f9ced355686a82efe0b9a9edfd0944a`. Szczegóły i flagi decyzyjne w WERSJE.md. Commit + FF main.
+CZEKAM-NA: sesja lokalna — „push": pull `9f9ced35` na dysk właściciela
