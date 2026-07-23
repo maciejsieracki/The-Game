@@ -20,6 +20,12 @@ export interface ActiveDeal {
   /** [mniejszy ownerId, większy ownerId] — para kanoniczna */
   strony: [number, number];
   wygasaTura: number | null;
+  /**
+   * FAZA 2 (Makieta DYPLOMACJA v1.1, KROK 3 pkt 2+3) — tura zawarcia, do wyliczenia
+   * „od ilu tur" w banerze statusu formalnego i w kolumnie Aktywne traktaty.
+   * Opcjonalne — legacy save'y i sojusze zawierane poza `buildDeal` mogą go nie mieć.
+   */
+  zawartaTura?: number;
   /** T1A: trybut / wasal — kwota co turę ze skarbca płatnika */
   ekonomia?: {
     payerOwnerId: number;

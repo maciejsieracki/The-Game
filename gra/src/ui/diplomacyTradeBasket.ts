@@ -16,6 +16,7 @@ import {
   diplomacyPnRelacjaParams,
   diplomacyZywnoscNaPn,
   diplomacyResourceAccessCatalog,
+  diplomacyHandelZaufaniePerTura,
   type WartoscPozycjaTyp,
 } from '../game/diplomacy-value-catalog';
 import { HANDEL_ZLOZE_CENA_BAZA } from '../game/diplomacy-deposit-trade';
@@ -82,6 +83,12 @@ ${DIPLO_1E_SHARED_CSS}
   background:rgba(30,36,48,0.8);border:1px solid rgba(232,216,138,.18);font-size:0.78em;line-height:1.55;}
 .civ-diplo-basket .cdb-summary b{color:#e8d88a;}
 .civ-diplo-basket .cdb-warn{color:#e0a868;margin-top:4px;}
+.civ-diplo-basket .cdb-split{margin-top:8px;padding-top:8px;border-top:1px dashed rgba(232,216,138,.15);
+  display:flex;flex-direction:column;gap:3px;font-size:0.95em;}
+.civ-diplo-basket .cdb-verdict{margin-top:7px;padding:6px 9px;border-radius:7px;font-weight:700;font-size:0.92em;}
+.civ-diplo-basket .cdb-verdict-good{color:#7ad0a0;background:rgba(80,176,112,.1);border:1px solid rgba(80,176,112,.4);}
+.civ-diplo-basket .cdb-verdict-neutral{color:#d4cba0;background:rgba(212,203,160,.08);border:1px solid rgba(212,203,160,.3);}
+.civ-diplo-basket .cdb-verdict-bad{color:#e08a8a;background:rgba(200,64,64,.1);border:1px solid rgba(200,64,64,.4);}
 .civ-diplo-basket .cdb-blocked{color:#e08a8a;padding:12px;text-align:center;}
 .civ-diplo-basket .cdb-add-btn{margin-top:6px;}
 .civ-diplo-basket .cdb-btns{display:flex;gap:8px;justify-content:flex-end;margin-top:14px;}
@@ -303,6 +310,36 @@ function summaryHtml(
       if (givePn < fairMin) {
         html += '<div class="cdb-warn">' + brandIconSvg('chip-warning', 14) + ' Oddajesz mniej niż fair min — partner może odrzucić (W4-A).</div>';
       }
+
+      // FAZA 2 (Makieta DYPLOMACJA v1.1, KROK 3 pkt 7): bilans — pozycje JEDNORAZOWE
+      // (nadmiar PN → Zaufanie od razu) vs CO TURĘ (dobra wola + — jeśli oferta ma dostęp
+      // do surowców/złóż — Zaufanie z aktywnej Umowy handlowej przez czas jej trwania).
+      // Same liczby co wyżej, tylko pogrupowane + jeden werdykt z uzasadnieniem.
+      const oneShot: string[] = [];
+      if (preview.deltaZaufanie > 0) oneShot.push('+' + preview.deltaZaufanie + ' Zaufania');
+      const perTurn: string[] = [];
+      if (dobraWola.active) perTurn.push('+' + dobraWola.zaufaniePerTura + ' Zaufania/turę × ' + dobraWola.tur + ' tur');
+      if (basketHasResourceAccess(giveItems, receiveItems)) {
+        perTurn.push('+' + diplomacyHandelZaufaniePerTura() + ' Zaufania/turę (trwa umowa handlowa)');
+      }
+      html += '<div class="cdb-split">' +
+        '<div>Jednorazowo: <b>' + (oneShot.length > 0 ? oneShot.join(', ') : '—') + '</b></div>' +
+        '<div>Co turę: <b>' + (perTurn.length > 0 ? perTurn.join(', ') : '—') + '</b></div>' +
+      '</div>';
+
+      let verdict: string;
+      let verdictCls: string;
+      if (givePn < fairMin) {
+        verdict = 'poniżej progu — ryzyko odrzucenia przez partnera';
+        verdictCls = 'bad';
+      } else if (preview.surplusPn > 0) {
+        verdict = 'korzystna — nadwyżka ' + preview.surplusPn + ' PN przekłada się na Zaufanie';
+        verdictCls = 'good';
+      } else {
+        verdict = 'zrównoważona — dokładnie fair min przy tej Relacji';
+        verdictCls = 'neutral';
+      }
+      html += '<div class="cdb-verdict cdb-verdict-' + verdictCls + '">Werdykt: ' + esc(verdict) + '</div>';
     } else {
       html += '<div class="cdb-warn">' + brandIconSvg('chip-warning', 14) + ' Nieznana wartość PN — sprawdź pozycje.</div>';
     }

@@ -483,6 +483,7 @@ import {
   formatPowerRelationLine,
   resolveFormalDiplomaticStatus,
   sameCultureCircle,
+  type FormalDiplomaticKind,
 } from './game/diplomacy-display';
 import {
   applyFogToPathPlan,
@@ -605,6 +606,7 @@ import {
   diplomacyPnZloto,
   diplomacyPnPraca,
   diplomacyProgDarRelacja,
+  diplomacyResourceAccessCatalog,
 } from './game/diplomacy-value-catalog';
 import {
   collectUnauthorizedBorderPairs,
@@ -7009,12 +7011,38 @@ async function boot(): Promise<void> {
       }
     }
 
-    function activeTreatiesForPair(a: number, b: number): { label: string; detail?: string }[] {
+    /**
+     * FAZA 2 (Makieta DYPLOMACJA v1.1, KROK 3 pkt 2+3) — etykieta kary zerwania per rodzaj
+     * traktatu. Silnik dziś modeluje zerwanie GENERYCZNIE (breakTreatiesOnWar →
+     * 'zlamana_obietnica' → DIPLOMACY_PARAMS.zlamanaPaktGracz_zaufanie, RAZ na parę,
+     * niezależnie od liczby zerwanych traktatów) — jedyny wyjątek to Umowa handlowa,
+     * dla której diplomacy.ts ma osobny case 'zerwanie_handlu' (Dyplomacja-szablon §1.5).
+     * Mapujemy więc: Umowa handlowa → -10 Zaufania; reszta → wartość generyczna z params
+     * (domyślnie -40). Wartość informacyjna (baner/tabela) — NIE steruje zrywaniem.
+     */
+    function treatyBreakPenaltyLabel(rodzaj: ActiveDeal['rodzaj']): string {
+      const k = normalizeTreatyKind(rodzaj);
+      if (k === RodzajTraktatu.UmowaHandlowa) return '-10 Zaufania';
+      const dip = _diplomacyParams();
+      const v = Math.round(dip.zlamanaPaktGracz_zaufanie ?? -40);
+      return v + ' Zaufania';
+    }
+
+    function activeTreatiesForPair(a: number, b: number): {
+      id: string;
+      label: string;
+      detail?: string;
+      sinceTurns?: number;
+      breakPenaltyLabel?: string;
+    }[] {
       return activeDeals
         .filter(d => dealInvolvesOwners(d, a, b))
         .map(d => ({
+          id: d.id,
           label: treatyDisplayLabel(d.rodzaj),
           detail: d.wygasaTura !== null ? `wygasa t.${d.wygasaTura}` : undefined,
+          sinceTurns: d.zawartaTura !== undefined ? Math.max(0, turn - d.zawartaTura) : undefined,
+          breakPenaltyLabel: treatyBreakPenaltyLabel(d.rodzaj),
         }));
     }
 
@@ -7142,6 +7170,7 @@ async function boot(): Promise<void> {
               rodzaj: 'sojusz_pelny',
               strony: [p0, p1],
               wygasaTura: null,
+              zawartaTura: turn,
             });
             syncRelationFromDeals(a, b);
             console.log(
@@ -7601,6 +7630,64 @@ async function boot(): Promise<void> {
       updateHud();
     }
 
+    /**
+     * FAZA 2 (Makieta DYPLOMACJA v1.1, KROK 3 pkt 2) — traktat „dominujący" dla bannera
+     * statusu formalnego (ten sam priorytet co resolveFormalDiplomaticStatus: sojusz >
+     * pakt > handel). Dla wojna/pokój/brak — brak traktatu, baner pokazuje samą etykietę.
+     */
+    function dominantTreatyForFormalStatus(
+      kind: FormalDiplomaticKind,
+      a: number,
+      b: number,
+    ): ActiveDeal | null {
+      const pair = activeDeals.filter(d => dealInvolvesOwners(d, a, b));
+      if (kind === 'sojusz') return pair.find(d => isAllianceDealKind(d.rodzaj)) ?? null;
+      if (kind === 'pakt') return pair.find(d => normalizeTreatyKind(d.rodzaj) === RodzajTraktatu.PaktNieagresji) ?? null;
+      if (kind === 'handel') return pair.find(d => normalizeTreatyKind(d.rodzaj) === RodzajTraktatu.UmowaHandlowa) ?? null;
+      return null;
+    }
+
+    /**
+     * FAZA 2 (Makieta DYPLOMACJA v1.1, KROK 3 pkt 1) — „Potencjał sojuszniczy": jak blisko
+     * jest TA para do progu sojuszu (DIPLOMACY_PARAMS.progSojuszZaufanie/progSojuszRelacja).
+     * Metryka jest per-PARA (Zaufanie/Respekt to relacja 0↔ownerId, nie cecha "wewnętrzna"
+     * jednej cywilizacji) — mockup pokazuje ją mirror na obu kartach; renderujemy tę samą
+     * wartość po obu stronach (uczciwe wobec realnych danych — patrz raport integratora).
+     */
+    function sojuszPotencjalForPair(
+      zaufanie: number,
+      respekt: number,
+      dip: ReturnType<typeof _diplomacyParams>,
+    ): { pct: number; label: string } {
+      const relTotal = zaufanie + respekt;
+      const pctZaufanie = dip.progSojuszZaufanie > 0 ? (zaufanie / dip.progSojuszZaufanie) * 100 : 0;
+      const pctRelacja = dip.progSojuszRelacja > 0 ? (relTotal / dip.progSojuszRelacja) * 100 : 0;
+      const pct = Math.max(0, Math.min(100, Math.round(Math.min(pctZaufanie, pctRelacja))));
+      const label = pct >= 90 ? 'Bardzo wysoki' : pct >= 66 ? 'Wysoki' : pct >= 33 ? 'Średni' : 'Niski';
+      return { pct, label };
+    }
+
+    /**
+     * FAZA 2 (Makieta DYPLOMACJA v1.1, KROK 3 pkt 1) — „Dobra handlowe": BEZ wymyślania
+     * nowego systemu (Maciej — zakaz), złożone z dwóch realnych źródeł, jak wskazano w
+     * dyspozycji: (a) technologie zbadane przez WŁAŚCICIELA (to samo źródło co akcja
+     * id 6 „Wymiana/sprzedaż technologii" — getSellableTechForPlayer dla gracza,
+     * ownerResearchedTechs ogólnie), (b) katalog surowców strategicznych handlowalnych
+     * (diplomacyResourceAccessCatalog — te same surowce, co pozycja 'surowiec_boolean'
+     * w koszyku PN akcji id 5). Katalog surowców jest GLOBALNY (silnik nie trzyma dziś
+     * indeksu "który właściciel ma dostęp do którego surowca") — ta sama lista pojawia
+     * się więc po obu stronach; różnicuje realnie tylko lista technologii (per-owner).
+     */
+    function tradeGoodsForOwner(ownerId: number): string[] {
+      const techs = Array.from(ownerResearchedTechs(ownerId))
+        .map(slug => techNameFromSlug(slug) ?? slug)
+        .slice(0, 3);
+      const resources = Object.keys(diplomacyResourceAccessCatalog())
+        .map(id => id.charAt(0).toUpperCase() + id.slice(1))
+        .slice(0, 3);
+      return [...resources, ...techs].slice(0, 6);
+    }
+
     function openDiplomacyAudience(ownerId: number): void {
       diplomacyAudienceOwnerId = ownerId;
       const playerCivName = String(player.civType || 'Gracz');
@@ -7640,8 +7727,16 @@ async function boot(): Promise<void> {
             hasTrade: _fsTrade,
             contactEstablished: diplomaticContactEstablished.has(ownerId),
           });
+          const dominantTreaty = dominantTreatyForFormalStatus(formalStatus.kind, 0, ownerId);
+          const formalStatusDetail = dominantTreaty ? {
+            sinceTurns: dominantTreaty.zawartaTura !== undefined
+              ? Math.max(0, turn - dominantTreaty.zawartaTura)
+              : undefined,
+            breakPenaltyLabel: treatyBreakPenaltyLabel(dominantTreaty.rodzaj),
+          } : undefined;
           return {
             formalStatus,
+            formalStatusDetail,
             playerTitle: 'Władca · ' + epochLabelForOwner(0),
             playerCivName,
             otherTitle: 'Przedstawiciel',
@@ -7670,6 +7765,13 @@ async function boot(): Promise<void> {
             contactEstablished: diplomaticContactEstablished.has(ownerId),
             actions: buildAudienceActions(ownerId, layer),
             relationBreakdown: getRelationBreakdown(0, ownerId),
+            playerSkarbiec: Math.floor(player.skarbiec),
+            playerZlotoPerTura: Math.floor(_lastPieniadzRate),
+            sojuszPotencjal: sojuszPotencjalForPair(zaufanieNorm, respektNorm, dip),
+            playerGoods: tradeGoodsForOwner(0),
+            otherGoods: tradeGoodsForOwner(ownerId),
+            playerIkonaId: civTypeForOwner(0),
+            playerKolorHex: civKolorHexFn(0),
           };
         },
         onAction: applyAudienceAction,
@@ -7684,6 +7786,13 @@ async function boot(): Promise<void> {
             updateDiplomacyPanel();
           }
           requestAnimationFrame(() => tryOpenNextAutoDiploAudience());
+        },
+        onOpenKnownFactions: () => {
+          hideDiplomacyAudience();
+          diplomacyAudienceOwnerId = null;
+          d1bHudActive = true;
+          showDiploListHud();
+          refreshD1bHud();
         },
         getCivBonusy: civBonusyForOwnerId,
         getNegotiationContext: () => {

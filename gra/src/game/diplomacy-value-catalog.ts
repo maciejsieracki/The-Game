@@ -10,7 +10,7 @@ import unitsJson from '../../data/units.json';
 import buildingsJson from '../../data/buildings.json';
 import { diplomacyDepositBasePrice } from './diplomacy-deposit-trade';
 import { applyTempoKoszt, type TempoGry } from './tech-tempo';
-import { scaleRelationThreshold } from './diplomacy';
+import { scaleRelationThreshold, DIPLOMACY_PARAMS } from './diplomacy';
 import type { GameDifficulty } from './difficulty-cost';
 
 /** Typ pozycji w koszyku wymiany / daru (v1.0). Ulepszenia terenu — poza koszykiem. */
@@ -404,4 +404,13 @@ export function diplomacyProgDarRelacja(
 ): number {
   const base = { ..._pnRelacja, ...params }.prog_dar_relacja;
   return scaleRelationThreshold(base, difficulty);
+}
+
+/**
+ * FAZA 2 (Makieta DYPLOMACJA v1.1, KROK 3 pkt 7) — Zaufanie/turę z AKTYWNEJ umowy
+ * handlowej (dostęp do surowców/złóż, trwa dealTurns tur). Ekspozycja dla UI (bilans
+ * oferty: „co turę" vs „jednorazowo") — informacyjna, silnik nalicza to osobno w ticku.
+ */
+export function diplomacyHandelZaufaniePerTura(): number {
+  return DIPLOMACY_PARAMS.handel_zaufanie_perTura;
 }

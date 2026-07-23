@@ -14,7 +14,6 @@ import {
   DIPLO_1E_SHARED_CSS,
   ensureDiploBrandScope,
 } from './diploUiSkin';
-import { mocLabel } from './power-labels';
 import {
   actionNeedsNegotiation,
   showNegotiationModal,
@@ -64,8 +63,18 @@ export interface DiplomacyAudienceState {
   otherPower?: number;
   /** Stosunek tekstowy np. „2:1". */
   powerRatioLabel?: string;
-  /** Aktywne traktaty do wyświetlenia (v1.1). */
-  activeTreaties?: readonly { label: string; detail?: string }[];
+  /**
+   * Aktywne traktaty do wyświetlenia (v1.1). FAZA 2 (KROK 3 pkt 2+3): rozszerzone o
+   * `sinceTurns`/`breakPenaltyLabel` (kolumna „Aktywne traktaty" stołu negocjacji +
+   * baner statusu formalnego) — dane realne z ActiveDeal.zawartaTura/DIPLOMACY_PARAMS.
+   */
+  activeTreaties?: readonly {
+    id?: string;
+    label: string;
+    detail?: string;
+    sinceTurns?: number;
+    breakPenaltyLabel?: string;
+  }[];
   /**
    * J: JAWNY formalny status relacji (odrębny od nastawienia/tier). Odpowiada na
    * pytanie „wojna czy tylko nastawienie?": wojna / sojusz / pakt / pokój / brak kontaktu.
@@ -91,6 +100,34 @@ export interface DiplomacyAudienceState {
    * teraz). UI (kafelki) dopiero w fazie 2/3 — na razie dane płyną w stanie.
    */
   relationBreakdown?: { pozytywne: readonly { label: string; value: number; perTurn?: boolean }[]; negatywne: readonly { label: string; value: number; perTurn?: boolean }[] };
+
+  // ---------------------------------------------------------------------
+  // FAZA 2 (Makieta DYPLOMACJA v1.1, KROK 3 pkt 1/2/5) — layout dwustronny.
+  // ---------------------------------------------------------------------
+  /** ikonaId gracza (civs.json) — medalion karty lewej. */
+  playerIkonaId?: string;
+  /** kolorHex gracza (#RRGGBB) — ramka medalionu karty lewej. */
+  playerKolorHex?: string;
+  /** Skarbiec gracza (kwota złota) — pkt 5: u gracza zamiast paska Zaufanie/Respekt. */
+  playerSkarbiec?: number;
+  /** Dochód złota/turę gracza (informacyjnie, jeśli dostępny — cache silnika). */
+  playerZlotoPerTura?: number;
+  /**
+   * „Potencjał sojuszniczy" tej PARY (0–100 + etykieta) — dystans do progu sojuszu
+   * (progSojuszZaufanie/progSojuszRelacja). Wartość jest per-relacja (nie per-cywilizacja
+   * niezależnie), więc identyczna na obu kartach — mirror zgodny z makietą.
+   */
+  sojuszPotencjal?: { pct: number; label: string };
+  /** „Dobra handlowe" gracza — nazwy (tech zbadane + katalog surowców, patrz main.ts). */
+  playerGoods?: readonly string[];
+  /** „Dobra handlowe" rozmówcy — nazwy (tech zbadane rozmówcy + katalog surowców). */
+  otherGoods?: readonly string[];
+  /**
+   * Szczegóły bannera statusu formalnego (pkt 2) — od ilu tur trwa DOMINUJĄCY traktat
+   * (ten sam co formalStatus.kind) + kara zerwania. Brak gdy kind=wojna/pokoj/brak
+   * (nie ma traktatu, do którego by się to odnosiło).
+   */
+  formalStatusDetail?: { sinceTurns?: number; breakPenaltyLabel?: string };
 }
 
 export interface DiplomacyAudienceConfig {
@@ -101,6 +138,12 @@ export interface DiplomacyAudienceConfig {
   onBack: () => void;
   /** Etykieta przycisku zamknięcia — „Wróć” (lista) lub „Wyjście” (mapa). */
   backLabel?: string;
+  /**
+   * FAZA 2 (Makieta DYPLOMACJA v1.1, KROK 3) — zakładka „Znane frakcje" w środkowej
+   * kolumnie, przełącza na istniejący ekran diploListHud (osobny od audiencji — patrz
+   * dyspozycja). Brak = zakładka ukryta (np. wywołanie audiencji bez kontekstu listy).
+   */
+  onOpenKnownFactions?: () => void;
   /** Bonusy cywilizacji (civs.json) — SILNIK: civBonusyForOwnerId. */
   getCivBonusy?: (ownerId: number) => readonly CivBonusLite[];
   /** Kontekst modali negocjacji (wrogowie, tech, opłaty granic). */
@@ -139,74 +182,156 @@ function ensureStyles(): void {
   const css = `
 ${DIPLO_1E_SHARED_CSS}
 .civ-diplo-aud{position:fixed;inset:0;z-index:400;background:rgba(5,6,10,.88);
-  display:flex;align-items:center;justify-content:center;padding:16px;
+  display:flex;align-items:center;justify-content:center;padding:14px;
   font:14px 'Segoe UI',Tahoma,sans-serif;color:#e8e0c8;}
-.civ-diplo-aud-box{width:min(860px,96vw);max-height:90vh;overflow:auto;
+.civ-diplo-aud-box{width:min(1720px,98vw);max-height:94vh;overflow:auto;
   background:var(--tg-panel-grad,linear-gradient(180deg,rgba(18,24,32,.98),rgba(8,10,16,.98)));
   border:var(--tg-border-gold,2px solid rgba(232,216,138,.4));border-radius:var(--tg-radius-panel,14px);
-  padding:0;box-shadow:0 16px 44px rgba(0,0,0,.75);}
-.civ-diplo-aud-head{display:flex;justify-content:space-between;align-items:center;padding:16px 20px 12px;gap:0.75em;}
+  padding:14px 16px 16px;box-shadow:0 16px 44px rgba(0,0,0,.75);
+  display:flex;flex-direction:column;gap:11px;}
+.civ-diplo-aud-head{display:flex;justify-content:space-between;align-items:center;gap:0.75em;}
 .civ-diplo-aud-head h2{margin:0;font-family:var(--tg-font-title,Georgia,serif);font-size:1.15em;
   color:var(--tg-gold-primary,#e8d88a);letter-spacing:.04em;display:flex;align-items:center;gap:8px;}
 .civ-diplo-aud-head h2 .dip-ic{width:22px;height:22px;}
-.civ-diplo-aud-hero{height:220px;background:radial-gradient(400px 220px at 50% 40%,rgba(201,162,74,.22),transparent 70%),
-  linear-gradient(180deg,#1a1610,#0c0a08);display:flex;align-items:center;justify-content:center;
-  border-bottom:1px solid rgba(232,216,138,.2);}
-.civ-diplo-aud-body{padding:20px 24px 18px;text-align:center;}
-.civ-diplo-aud-name{font-family:var(--tg-font-title,Georgia,serif);font-weight:700;font-size:1.65em;color:var(--tg-gold-primary,#e8d88a);}
-.civ-diplo-aud-title{font-size:0.72em;color:var(--tg-text-muted,#8a8070);margin-top:4px;
-  letter-spacing:.14em;text-transform:uppercase;}
-.civ-diplo-aud-player{font-size:0.72em;color:var(--tg-text-muted,#8a8070);margin-bottom:12px;text-align:left;padding:0 20px;}
-.civ-diplo-aud-formal{margin:12px auto 0;max-width:420px;padding:10px 16px;border-radius:10px;
-  background:rgba(12,14,20,.65);border:2px solid rgba(232,216,138,.35);text-align:center;}
-.civ-diplo-aud-formal--wojna{border-color:rgba(224,90,90,.55);background:rgba(80,20,20,.25);}
-.civ-diplo-aud-formal-lbl{font-size:0.62em;letter-spacing:.14em;text-transform:uppercase;
-  color:var(--tg-text-muted,#8a8070);margin-bottom:4px;}
-.civ-diplo-aud-formal-val{font-family:var(--tg-font-title,Georgia,serif);font-size:1.15em;
-  font-weight:700;letter-spacing:.06em;display:inline-flex;align-items:center;gap:8px;justify-content:center;}
-.dip-formal-war-ic{width:20px;height:20px;flex-shrink:0;}
-.civ-diplo-aud-mood{display:inline-flex;flex-direction:column;align-items:center;gap:3px;margin-top:12px;
-  padding:6px 16px;border-radius:20px;background:rgba(80,176,112,.08);
-  border:1px solid rgba(80,176,112,.35);font-size:0.72em;letter-spacing:.08em;
-  text-transform:uppercase;color:#7ad0a0;}
-.civ-diplo-aud-mood-hostile{background:rgba(200,64,64,.08);border-color:rgba(200,64,64,.35);color:#e08a8a;}
-.civ-diplo-aud-mood-hint{font-size:0.85em;letter-spacing:.02em;text-transform:none;
-  color:var(--tg-text-muted,#8a8070);font-weight:400;max-width:320px;line-height:1.35;}
-.civ-diplo-aud-bonus{margin-top:10px;text-align:center;font-size:0.68em;line-height:1.4;color:var(--tg-text-muted,#8a8070);}
-.civ-diplo-aud-bonus li{margin:2px 0;padding-left:0;list-style:none;}
-.civ-diplo-aud-bonus li::before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;
-  background:#e8d88a;margin-right:6px;vertical-align:middle;}
-.civ-diplo-aud-rel{text-align:center;padding:12px 20px;margin:0;
-  border-top:1px solid rgba(232,216,138,.18);border-bottom:1px solid rgba(232,216,138,.18);
-  color:var(--civ-text-pergament,#c8b898);font-size:0.84em;}
-.civ-diplo-aud-rel b{color:var(--tg-gold-primary,#e8d88a);}
-.civ-diplo-aud-rel-badge{margin-bottom:8px;}
-.civ-diplo-aud-bar-row{display:flex;align-items:center;gap:8px;margin:5px 0;font-size:0.78em;}
-.civ-diplo-aud-bar-lbl{min-width:72px;text-align:right;color:#8a8070;}
-.civ-diplo-aud-bar-track{flex:1;height:8px;background:rgba(20,26,36,.8);border-radius:4px;overflow:hidden;
-  border:1px solid rgba(232,216,138,.12);}
-.civ-diplo-aud-bar-fill{height:100%;background:linear-gradient(90deg,rgba(232,216,138,.35),rgba(232,216,138,.75));border-radius:4px;}
-.civ-diplo-aud-bar-val{min-width:28px;text-align:left;color:#e8d88a;}
-.civ-diplo-aud-power{margin:6px 0;font-size:0.78em;color:#a8a090;}
-.civ-diplo-aud-treaties{margin:6px 0;font-size:0.72em;color:#8a8070;}
-.civ-diplo-aud-treaty{display:inline-block;padding:2px 8px;margin:2px 3px;border-radius:12px;
-  border:1px solid rgba(80,176,112,.35);background:rgba(80,176,112,.08);color:#a8d8b8;}
-.civ-diplo-aud-tags{margin-top:6px;display:flex;flex-wrap:wrap;gap:4px;justify-content:center;}
-.civ-diplo-aud-tag{font-size:0.65em;padding:3px 8px;border-radius:10px;
-  border:1px solid rgba(160,140,200,.35);background:rgba(100,80,140,.12);color:#c8b8e8;}
-.civ-diplo-aud-epoch{font-size:0.68em;color:#8a8070;margin-top:4px;}
-.civ-diplo-aud-culture{font-size:0.72em;color:#a8c0d8;margin-top:8px;letter-spacing:.04em;}
-.civ-diplo-aud-culture-hint{font-size:0.68em;margin-left:6px;color:#8a8070;}
-.civ-diplo-aud-culture-hint.same{color:#7ad0a0;}
-.civ-diplo-aud-culture-hint.foreign{color:#d4a870;}
-.civ-diplo-aud-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;padding:14px 20px 18px;}
-.civ-diplo-aud-card{text-align:left;padding:10px 12px;border-radius:8px;cursor:pointer;
-  border:1px solid rgba(232,216,138,.22);background:rgba(232,216,138,.05);color:#e8e0c8;font-family:inherit;}
-.civ-diplo-aud-card:hover:not(.locked){background:rgba(232,216,138,.14);border-color:rgba(232,216,138,.45);}
-.civ-diplo-aud-card.locked{opacity:0.45;cursor:not-allowed;border-color:rgba(80,90,100,0.35);}
-.civ-diplo-aud-card.active{border-color:rgba(142,197,255,.55);background:rgba(142,197,255,.08);}
-.civ-diplo-aud-card-title{font-weight:700;font-size:0.84em;margin-bottom:3px;color:#e8d88a;}
-.civ-diplo-aud-card-hint{font-size:0.68em;color:#8a8070;}
+
+/* ===== FAZA 2 pkt 2 — baner statusu formalnego ===== */
+.da-banner{position:relative;display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;
+  padding:8px 18px;border-radius:10px;border:1px solid rgba(232,216,138,.4);
+  background:var(--tg-panel-grad,linear-gradient(180deg,rgba(18,24,32,.9),rgba(8,10,16,.9)));}
+.da-banner .da-b-ic{width:19px;height:19px;flex-shrink:0;}
+.da-banner .da-b-lbl{font-family:var(--tg-font-title,Georgia,serif);font-size:1.05em;font-weight:700;letter-spacing:.03em;}
+.da-banner .da-b-sub{font-size:0.68em;color:#8a8070;letter-spacing:.02em;padding-left:9px;border-left:1px solid rgba(232,216,138,.2);}
+.da-banner.da-tone-wojna{color:#e08a8a;border-color:rgba(200,64,64,.5);}
+.da-banner.da-tone-sojusz{color:#7ad0a0;}
+.da-banner.da-tone-pakt{color:#8ec5ff;}
+.da-banner.da-tone-handel{color:#d4b870;}
+.da-banner.da-tone-pokoj{color:#d4cba0;}
+.da-banner.da-tone-brak{color:#8b97a8;}
+
+/* ===== FAZA 2 pkt 1 — układ dwustronny ===== */
+.da-mainrow{display:flex;gap:11px;align-items:stretch;min-width:0;flex-wrap:nowrap;}
+.da-card{position:relative;width:230px;flex:0 0 230px;min-width:180px;
+  background:var(--tg-panel-grad,linear-gradient(180deg,rgba(18,24,32,.97),rgba(8,10,16,.97)));
+  border:2px solid rgba(232,216,138,.22);border-radius:12px;padding:12px;
+  display:flex;flex-direction:column;gap:9px;box-shadow:0 6px 20px rgba(0,0,0,.4);}
+.da-card.you{border-color:rgba(58,106,208,.5);}
+.da-card.them{border-color:rgba(210,120,30,.45);}
+.da-portrait{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;
+  padding-bottom:8px;border-bottom:1px solid rgba(232,216,138,.18);}
+.da-portrait .dip-leader-medallion{width:64px;height:64px;}
+.da-portrait .dip-leader-ic{width:32px;height:32px;}
+.da-civname{font-family:var(--tg-font-title,Georgia,serif);font-size:1.05em;color:var(--tg-gold-primary,#e8d88a);letter-spacing:.02em;}
+.da-civtitle{font-size:0.68em;color:#8a8070;line-height:1.5;}
+.da-stance-badge{display:inline-flex;align-items:center;gap:5px;font-size:0.6em;font-weight:700;letter-spacing:.05em;
+  text-transform:uppercase;border-radius:999px;padding:3px 10px;margin-top:2px;
+  color:#e0a868;border:1px solid rgba(210,120,30,.5);background:rgba(210,120,30,.1);}
+.da-stance-badge.hostile{color:#e08a8a;border-color:rgba(200,64,64,.5);background:rgba(200,64,64,.1);}
+.da-stance-badge svg{width:11px;height:11px;}
+.da-sec-title{font-size:0.6em;text-transform:uppercase;letter-spacing:.08em;color:#8a8070;
+  display:flex;align-items:center;gap:6px;margin-bottom:4px;}
+.da-sec-title::after{content:"";flex:1;height:1px;background:rgba(232,216,138,.18);}
+.da-sec-title svg{width:11px;height:11px;color:var(--tg-gold-primary,#e8d88a);flex:none;}
+.da-attr-row{display:flex;align-items:baseline;justify-content:space-between;font-size:0.72em;margin-bottom:2px;color:#8a8070;}
+.da-attr-row .v{font-weight:700;font-variant-numeric:tabular-nums;color:#e8e0c8;}
+.da-abar{height:5px;border-radius:4px;background:rgba(0,0,0,.4);overflow:hidden;margin-bottom:7px;border:1px solid rgba(0,0,0,.3);}
+.da-abar i{display:block;height:100%;background:linear-gradient(90deg,#9a7420,#e8d88a);}
+.da-abar.you i{background:linear-gradient(90deg,#2c53ad,#5a8ae8);}
+.da-abar.them i{background:linear-gradient(90deg,#a86018,#e0a868);}
+.da-rel-row{display:flex;align-items:baseline;justify-content:space-between;font-size:0.72em;margin-bottom:2px;color:#8a8070;}
+.da-rel-row .v{font-weight:700;font-variant-numeric:tabular-nums;}
+.da-rel-row.trust .v{color:#7ad0a0;} .da-rel-row.respect .v{color:#e8d88a;}
+.da-rbar{height:6px;border-radius:4px;background:rgba(0,0,0,.4);overflow:hidden;margin-bottom:6px;border:1px solid rgba(0,0,0,.3);}
+.da-rbar i{display:block;height:100%;}
+.da-rbar.trust i{background:linear-gradient(90deg,#2f7a4a,#5ad07a);}
+.da-rbar.respect i{background:linear-gradient(90deg,#9a7420,#e8d88a);}
+.da-goods{display:flex;flex-wrap:wrap;gap:5px;}
+.da-good{font-size:0.62em;padding:3px 8px;border-radius:7px;border:1px solid rgba(232,216,138,.2);
+  background:rgba(24,30,42,.65);color:#c8b898;white-space:nowrap;}
+.da-goods-empty{font-size:0.62em;color:#6a7280;}
+.da-mood{font-size:0.66em;letter-spacing:.04em;padding:2px 0;color:#8a8070;}
+.da-culture{font-size:0.64em;color:#a8c0d8;}
+.da-tags{display:flex;flex-wrap:wrap;gap:4px;}
+.da-tag{font-size:0.6em;padding:2px 7px;border-radius:9px;border:1px solid rgba(160,140,200,.35);
+  background:rgba(100,80,140,.12);color:#c8b8e8;}
+.da-bonus{font-size:0.6em;line-height:1.4;color:#8a8070;}
+.da-bonus li{margin:2px 0;list-style:none;}
+.da-bonus li::before{content:"";display:inline-block;width:5px;height:5px;border-radius:50%;
+  background:#e8d88a;margin-right:5px;vertical-align:middle;}
+
+/* ===== środek: zakładki + stół negocjacji ===== */
+.da-center{flex:1;min-width:0;display:flex;flex-direction:column;gap:9px;}
+.da-tabs{display:flex;justify-content:center;gap:6px;}
+.da-tab{font-size:0.68em;padding:5px 14px;border-radius:999px;border:1px solid rgba(232,216,138,.22);
+  color:#8a8070;background:rgba(0,0,0,.2);cursor:pointer;display:flex;align-items:center;gap:6px;
+  font-weight:600;letter-spacing:.02em;font-family:inherit;}
+.da-tab.on{color:#1a1206;background:linear-gradient(180deg,#e8d88a,#cdb45f);border-color:#e8d88a;font-weight:700;cursor:default;}
+.da-tab:not(.on):hover{border-color:rgba(232,216,138,.5);color:#e8d88a;}
+.da-tab svg{width:12px;height:12px;}
+
+.da-table{flex:1;display:grid;grid-template-columns:1.1fr 0.95fr 1.05fr;gap:10px;min-height:0;}
+.da-col{background:rgba(0,0,0,.22);border:1px solid rgba(232,216,138,.18);border-radius:10px;
+  padding:9px 9px 10px;display:flex;flex-direction:column;gap:6px;max-height:400px;overflow-y:auto;min-width:180px;}
+.da-col h3{font-family:var(--tg-font-title,Georgia,serif);font-size:0.78em;color:var(--tg-gold-primary,#e8d88a);
+  letter-spacing:.02em;display:flex;align-items:center;gap:6px;padding-bottom:6px;
+  border-bottom:1px solid rgba(232,216,138,.18);margin:0 0 2px;}
+.da-col h3 svg{width:12px;height:12px;}
+.da-col h3 .cnt{margin-left:auto;font-size:0.85em;color:#8a8070;font-weight:400;}
+
+.da-deal{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:8px;
+  border:1px solid rgba(232,216,138,.18);background:linear-gradient(180deg,rgba(26,32,44,.7),rgba(12,16,24,.7));
+  cursor:pointer;font-family:inherit;color:#e8e0c8;text-align:left;width:100%;}
+.da-deal svg.da-di{width:14px;height:14px;color:var(--tg-gold-primary,#e8d88a);flex:none;}
+.da-deal .da-body{flex:1;min-width:0;}
+.da-deal .da-nm{font-size:0.72em;font-weight:600;color:#e8e0c8;}
+.da-deal .da-note{font-size:0.62em;color:#8a8070;margin-top:1px;}
+.da-deal.locked{opacity:.48;cursor:not-allowed;}
+.da-deal.locked .da-note{color:#e08a8a;}
+.da-deal.active{border-color:rgba(142,197,255,.5);background:linear-gradient(180deg,rgba(142,197,255,.09),rgba(12,16,24,.75));cursor:default;}
+.da-deal.active .da-note{color:#8ec5ff;}
+.da-deal:not(.locked):not(.active):hover{border-color:#e8d88a;box-shadow:0 0 8px rgba(232,216,138,.25);}
+.da-lockic{width:12px;height:12px;color:#e08a8a;}
+.da-checkic{width:13px;height:13px;color:#8ec5ff;}
+
+.da-treaty{display:flex;align-items:flex-start;gap:8px;padding:7px 8px;border-radius:8px;
+  border:1px solid rgba(232,216,138,.18);background:linear-gradient(180deg,rgba(26,32,44,.7),rgba(12,16,24,.7));}
+.da-treaty svg.da-ti{width:14px;height:14px;color:#8ec5ff;flex:none;margin-top:1px;}
+.da-treaty .da-nm{font-size:0.72em;font-weight:600;color:#e8e0c8;}
+.da-treaty .da-meta{font-size:0.62em;color:#8a8070;margin-top:2px;}
+.da-treaty .da-pen{font-size:0.62em;color:#e08a8a;margin-top:3px;}
+.da-treaty .da-brk{margin-left:auto;font-size:0.6em;color:#8a8070;border:1px solid rgba(140,150,165,.3);
+  border-radius:6px;padding:3px 8px;white-space:nowrap;align-self:center;background:none;font-family:inherit;
+  cursor:not-allowed;opacity:.6;}
+.da-empty{font-size:0.68em;color:#6a7280;padding:6px 2px;}
+
+.da-offer-hint{font-size:0.66em;color:#8a8070;line-height:1.5;padding:2px 2px 4px;}
+.da-offer-hint b{color:#e8d88a;}
+.da-offer-btn{display:flex;align-items:center;gap:8px;padding:7px 9px;border-radius:8px;
+  border:1px solid rgba(232,216,138,.3);background:rgba(232,216,138,.06);color:#e8e0c8;
+  cursor:pointer;font-family:inherit;font-size:0.72em;font-weight:600;text-align:left;width:100%;}
+.da-offer-btn:hover{border-color:#e8d88a;background:rgba(232,216,138,.12);}
+.da-offer-btn svg{width:14px;height:14px;color:var(--tg-gold-primary,#e8d88a);flex:none;}
+.da-offer-btn:disabled{opacity:.4;cursor:not-allowed;}
+
+/* ===== rozbicie relacji ===== */
+.da-relbreak{display:grid;grid-template-columns:1fr 1fr;gap:0;background:rgba(0,0,0,.22);
+  border:1px solid rgba(232,216,138,.18);border-radius:10px;overflow:hidden;}
+.da-relcol{padding:9px 13px 10px;}
+.da-relcol.pos{border-right:1px solid rgba(232,216,138,.18);}
+.da-relcol h4{font-size:0.62em;text-transform:uppercase;letter-spacing:.04em;display:flex;align-items:center;
+  gap:6px;margin:0 0 6px;}
+.da-relcol.pos h4{color:#7ad0a0;} .da-relcol.neg h4{color:#e08a8a;}
+.da-relcol h4 svg{width:11px;height:11px;}
+.da-rfact{display:flex;align-items:center;justify-content:space-between;font-size:0.68em;padding:2.5px 0;color:#e8e0c8;}
+.da-rfact .lbl{color:#8a8070;}
+.da-rfact .val{font-weight:700;font-variant-numeric:tabular-nums;flex:none;margin-left:8px;}
+.da-relcol.pos .val{color:#7ad0a0;} .da-relcol.neg .val{color:#e08a8a;}
+.da-relbreak-foot{grid-column:1/-1;border-top:1px solid rgba(232,216,138,.18);padding:6px 13px;font-size:0.66em;color:#8a8070;}
+.da-relbreak-foot b{color:#e8d88a;}
+
+@media (max-width:1200px){.da-table{grid-template-columns:1fr;}.da-card{flex:0 0 200px;width:200px;}}
+@media (max-width:920px){.da-relbreak{grid-template-columns:1fr;}.da-relcol.pos{border-right:none;border-bottom:1px solid rgba(232,216,138,.18);}}
+@media (max-width:760px){.da-mainrow{flex-wrap:wrap;}.da-card{width:100%;flex:1 1 auto;}}
+
 .civ-diplo-modal-overlay{position:fixed;inset:0;z-index:500;background:rgba(0,0,0,0.55);
   display:flex;align-items:center;justify-content:center;}
 .civ-diplo-modal{background:linear-gradient(180deg,rgba(18,24,32,.98),rgba(8,10,16,.98));
@@ -247,98 +372,292 @@ export function showWarConfirmModal(civName: string, onConfirm: () => void): voi
   modalOverlay.addEventListener('click', (e) => { if (e.target === modalOverlay) close(); });
 }
 
-function bonusListHtml(bonusy: readonly CivBonusLite[]): string {
-  const lines = bonusy.map(b => (b.opis ?? '').trim()).filter(Boolean).slice(0, 3);
-  if (lines.length === 0) return '';
-  return '<ul class="civ-diplo-aud-bonus">' + lines.map(l => '<li>' + esc(l) + '</li>').join('') + '</ul>';
-}
-
-function progressBarHtml(label: string, value: number, max: number, tooltip?: string): string {
-  const pct = Math.max(0, Math.min(100, Math.round((value / max) * 100)));
-  const tip = tooltip ? ' title="' + esc(tooltip) + '"' : '';
-  return (
-    '<div class="civ-diplo-aud-bar-row"' + tip + '>' +
-      '<span class="civ-diplo-aud-bar-lbl">' + esc(label) + '</span>' +
-      '<div class="civ-diplo-aud-bar-track"><div class="civ-diplo-aud-bar-fill" style="width:' + pct + '%"></div></div>' +
-      '<span class="civ-diplo-aud-bar-val">' + value + '</span>' +
-    '</div>'
-  );
-}
-
-function formalStatusHtml(st: DiplomacyAudienceState): string {
+/** FAZA 2 pkt 2 — baner statusu formalnego (odrębny od nastawienia). */
+function formalBannerHtml(st: DiplomacyAudienceState): string {
   if (!st.formalStatus) return '';
-  const fsColors: Record<FormalDiplomaticKind, string> = {
-    wojna: '#e05a5a', sojusz: '#5ad07a', pakt: '#8ec5ff', handel: '#d4b870', pokoj: '#d4cba0', brak: '#8b97a8',
+  const iconByKind: Record<FormalDiplomaticKind, string> = {
+    wojna: 'dip-war', sojusz: 'dip-alliance', pakt: 'dip-pact', handel: 'cp-trade', pokoj: 'dip-peace', brak: 'dip-peace',
   };
-  const c = fsColors[st.formalStatus.kind] ?? '#d4cba0';
-  const warIcon = st.formalStatus.kind === 'wojna'
-    ? (dipBrandIconHtml('dip-war', 20, 'dip-formal-war-ic') || '<span aria-hidden="true">⚔</span>')
+  const icon = dipBrandIconHtml(iconByKind[st.formalStatus.kind] ?? 'dip-peace', 19, 'da-b-ic');
+  const detail = st.formalStatusDetail;
+  const subParts: string[] = [];
+  if (detail?.sinceTurns !== undefined) subParts.push('obowiązuje od ' + detail.sinceTurns + ' tur');
+  if (detail?.breakPenaltyLabel) subParts.push('zerwanie: ' + detail.breakPenaltyLabel);
+  const sub = subParts.length > 0
+    ? '<span class="da-b-sub">' + esc(subParts.join(' · ')) + '</span>'
     : '';
   return (
-    '<div class="civ-diplo-aud-formal civ-diplo-aud-formal--' + st.formalStatus.kind + '"' +
-    ' title="Formalny stan umów — co obowiązuje między państwami">' +
-    '<div class="civ-diplo-aud-formal-lbl">Stan dyplomatyczny</div>' +
-    '<div class="civ-diplo-aud-formal-val" style="color:' + c + '">' +
-    warIcon + esc(st.formalStatus.label) +
-    '</div></div>'
-  );
-}
-
-function nastawienieHtml(st: DiplomacyAudienceState): string {
-  const label = nastawienieLabelFromScore(st.zaufanie, st.respekt);
-  const hostile = label === 'Wrogi' || label === 'Nieufny';
-  const cls = hostile ? 'civ-diplo-aud-mood civ-diplo-aud-mood-hostile' : 'civ-diplo-aud-mood';
-  return (
-    '<div class="' + cls + '" title="' + esc(nastawienieHintPl()) + '">' +
-    '<span>Nastawienie: ' + esc(label) + '</span>' +
-    '<span class="civ-diplo-aud-mood-hint">' + esc(nastawienieHintPl()) + '</span>' +
+    '<div class="da-banner da-tone-' + st.formalStatus.kind + '"' +
+    ' title="Formalny stan umów — odrębny od nastawienia (Zaufanie/Respekt)">' +
+    icon + '<span class="da-b-lbl">' + esc(st.formalStatus.label.toUpperCase()) + '</span>' + sub +
     '</div>'
   );
 }
 
-function relationSectionHtml(st: DiplomacyAudienceState): string {
-  const relTotal = st.relacjaTotal ?? (st.zaufanie + st.respekt);
-  let html = '<div class="civ-diplo-aud-rel">';
-  html += '<div>Relacja <b>' + relTotal + '</b></div>';
-  html += progressBarHtml('Zaufanie', st.zaufanie, 100);
-  html += progressBarHtml('Respekt', st.respekt, 100, RESPEKT_TOOLTIP_PL);
-  if (st.playerPower !== undefined && st.otherPower !== undefined) {
-    const ratio = st.powerRatioLabel ? ' (' + st.powerRatioLabel + ')' : '';
-    html += '<div class="civ-diplo-aud-power">' + esc(mocLabel()) + ': ' +
-      st.playerPower + ' vs ' + st.otherPower + ratio + '</div>';
-  }
-  if (st.activeTreaties && st.activeTreaties.length > 0) {
-    html += '<div class="civ-diplo-aud-treaties">Traktaty: ';
-    html += st.activeTreaties.map(t =>
-      '<span class="civ-diplo-aud-treaty"' +
-      (t.detail ? ' title="' + esc(t.detail) + '"' : '') + '>' + esc(t.label) + '</span>',
-    ).join('');
-    html += '</div>';
-  }
-  if (!st.contactEstablished) {
-    html += '<div style="color:#e0b24a;margin-top:4px">Brak formalnego kontaktu</div>';
-  }
-  html += '</div>';
-  return html;
+function stanceBadgeHtml(st: DiplomacyAudienceState): string {
+  const label = nastawienieLabelFromScore(st.zaufanie, st.respekt);
+  const hostile = label === 'Wrogi' || label === 'Nieufny';
+  const cls = hostile ? 'da-stance-badge hostile' : 'da-stance-badge';
+  return (
+    '<span class="' + cls + '" title="' + esc(nastawienieHintPl()) + '">' +
+    esc(label) + '</span>'
+  );
 }
 
 function personalityTagsHtml(tags: readonly string[] | undefined): string {
   if (!tags || tags.length === 0) return '';
-  return '<div class="civ-diplo-aud-tags">' +
-    tags.map(t => '<span class="civ-diplo-aud-tag">' + esc(t) + '</span>').join('') +
+  return '<div class="da-tags">' +
+    tags.map(t => '<span class="da-tag">' + esc(t) + '</span>').join('') +
     '</div>';
 }
 
 function cultureLineHtml(st: DiplomacyAudienceState): string {
   if (!st.otherCultureLabel?.trim()) return '';
-  let html = '<div class="civ-diplo-aud-culture">Kultura: <b>' + esc(st.otherCultureLabel.trim()) + '</b>';
+  let html = '<div class="da-culture">Kultura: <b>' + esc(st.otherCultureLabel.trim()) + '</b>';
   if (st.cultureCircleSame === true) {
-    html += '<span class="civ-diplo-aud-culture-hint same">· Ten sam okręg kulturowy</span>';
+    html += ' · <span style="color:#7ad0a0">ten sam okręg</span>';
   } else if (st.cultureCircleSame === false) {
-    html += '<span class="civ-diplo-aud-culture-hint foreign">· Obca kultura</span>';
+    html += ' · <span style="color:#d4a870">obca kultura</span>';
   }
   html += '</div>';
   return html;
+}
+
+function bonusListHtml(bonusy: readonly CivBonusLite[]): string {
+  const lines = bonusy.map(b => (b.opis ?? '').trim()).filter(Boolean).slice(0, 2);
+  if (lines.length === 0) return '';
+  return '<ul class="da-bonus">' + lines.map(l => '<li>' + esc(l) + '</li>').join('') + '</ul>';
+}
+
+/** Pasek atrybutu (Moc militarna / Potencjał sojuszniczy) — bez wartości bezwzględnej 0..100. */
+function attrBarHtml(label: string, valueLabel: string, pct: number, tone: 'you' | 'them' | 'gold'): string {
+  const p = Math.max(0, Math.min(100, Math.round(pct)));
+  return (
+    '<div class="da-attr-row"><span>' + esc(label) + '</span><span class="v">' + esc(valueLabel) + '</span></div>' +
+    '<div class="da-abar ' + tone + '"><i style="width:' + p + '%"></i></div>'
+  );
+}
+
+function goodsHtml(goods: readonly string[] | undefined): string {
+  if (!goods || goods.length === 0) {
+    return '<div class="da-goods-empty">Brak danych o dobrach</div>';
+  }
+  return '<div class="da-goods">' + goods.map(g => '<span class="da-good">' + esc(g) + '</span>').join('') + '</div>';
+}
+
+/** FAZA 2 pkt 1 — LEWA karta (gracz): medalion, atrybuty, SKARBIEC, dobra handlowe. */
+function playerCardHtml(st: DiplomacyAudienceState, playerBon: readonly CivBonusLite[]): string {
+  const maxPower = Math.max(st.playerPower ?? 0, st.otherPower ?? 0, 1);
+  const powerPct = ((st.playerPower ?? 0) / maxPower) * 100;
+  const potencjal = st.sojuszPotencjal;
+  const skarbiec = st.playerSkarbiec ?? 0;
+  const dochod = st.playerZlotoPerTura;
+  return (
+    '<div class="da-card you">' +
+      '<div class="da-portrait">' +
+        civLeaderMedallionHtmlById(st.playerIkonaId ?? 'rzymianie', st.playerKolorHex) +
+        '<div class="da-civname">' + esc(st.playerCivName) + '</div>' +
+        '<div class="da-civtitle">' + esc(st.playerTitle) + '</div>' +
+      '</div>' +
+      '<div>' +
+        '<div class="da-sec-title">Atrybuty</div>' +
+        attrBarHtml('Moc militarna', String(st.playerPower ?? 0), powerPct, 'you') +
+        (potencjal ? attrBarHtml('Potencjał sojuszniczy', potencjal.label, potencjal.pct, 'gold') : '') +
+      '</div>' +
+      '<div>' +
+        '<div class="da-sec-title">Skarbiec</div>' +
+        '<div class="da-attr-row"><span>Złoto</span><span class="v">' + skarbiec + '</span></div>' +
+        (dochod !== undefined
+          ? '<div class="da-attr-row"><span>Dochód</span><span class="v">' + (dochod >= 0 ? '+' : '') + dochod + ' / turę</span></div>'
+          : '') +
+      '</div>' +
+      '<div>' +
+        '<div class="da-sec-title">Dobra handlowe</div>' +
+        goodsHtml(st.playerGoods) +
+      '</div>' +
+      bonusListHtml(playerBon) +
+    '</div>'
+  );
+}
+
+/** FAZA 2 pkt 1+5 — PRAWA karta (rozmówca): medalion, atrybuty, RELACJE (raz), dobra. */
+function otherCardHtml(st: DiplomacyAudienceState, otherBon: readonly CivBonusLite[]): string {
+  const maxPower = Math.max(st.playerPower ?? 0, st.otherPower ?? 0, 1);
+  const powerPct = ((st.otherPower ?? 0) / maxPower) * 100;
+  const potencjal = st.sojuszPotencjal;
+  return (
+    '<div class="da-card them">' +
+      '<div class="da-portrait">' +
+        civLeaderMedallionHtmlById(st.otherIkonaId ?? 'grecy', st.otherKolorHex) +
+        '<div class="da-civname">' + esc(st.otherCivName) + '</div>' +
+        '<div class="da-civtitle">' + esc(st.otherTitle) + (st.otherEpochLabel ? ' · ' + esc(st.otherEpochLabel) : '') + '</div>' +
+        stanceBadgeHtml(st) +
+      '</div>' +
+      '<div>' +
+        '<div class="da-sec-title">Atrybuty</div>' +
+        attrBarHtml('Moc militarna', String(st.otherPower ?? 0), powerPct, 'them') +
+        (potencjal ? attrBarHtml('Potencjał sojuszniczy', potencjal.label, potencjal.pct, 'gold') : '') +
+      '</div>' +
+      '<div>' +
+        '<div class="da-sec-title">Relacje z Tobą</div>' +
+        progressBarHtml('Zaufanie', st.zaufanie, 100, undefined, 'trust') +
+        progressBarHtml('Respekt', st.respekt, 100, RESPEKT_TOOLTIP_PL, 'respect') +
+        (!st.contactEstablished ? '<div class="da-mood" style="color:#e0b24a">Brak formalnego kontaktu</div>' : '') +
+      '</div>' +
+      '<div>' +
+        '<div class="da-sec-title">Dobra handlowe</div>' +
+        goodsHtml(st.otherGoods) +
+      '</div>' +
+      cultureLineHtml(st) +
+      personalityTagsHtml(st.personalityTags) +
+      bonusListHtml(otherBon) +
+    '</div>'
+  );
+}
+
+function progressBarHtml(label: string, value: number, max: number, tooltip?: string, kind?: 'trust' | 'respect'): string {
+  const pct = Math.max(0, Math.min(100, Math.round((value / max) * 100)));
+  const tip = tooltip ? ' title="' + esc(tooltip) + '"' : '';
+  const rowCls = kind ? 'da-rel-row ' + kind : 'da-rel-row';
+  const barCls = kind ? 'da-rbar ' + kind : 'da-rbar';
+  return (
+    '<div class="' + rowCls + '"' + tip + '><span>' + esc(label) + '</span><span class="v">' + value + ' / ' + max + '</span></div>' +
+    '<div class="' + barCls + '"><i style="width:' + pct + '%"></i></div>'
+  );
+}
+
+/** Ikona kafelka „Możliwe umowy" — dopasowana per id akcji (data/diplomacy.json akcje_dyplomatyczne). */
+function actionIconId(id: string): string {
+  switch (id) {
+    case '2': return 'dip-pact';
+    case '3': return 'dip-alliance';
+    case '5': return 'cp-trade';
+    case '6': return 'tb-science';
+    case '8': return 'res-treasury';
+    case '9': return 'chip-warning';
+    case '10': return 'dip-peace';
+    case '11': return 'dip-war';
+    case '12': return 'tb-army';
+    case '13': return 'res-culture';
+    default: return 'tb-diplomacy';
+  }
+}
+
+/** Ikona traktatu w kolumnie „Aktywne traktaty" — dopasowana per treść etykiety (treatyDisplayLabel). */
+function treatyIconId(label: string): string {
+  const l = label.toLowerCase();
+  if (l.includes('sojusz')) return 'dip-alliance';
+  if (l.includes('nieagresji')) return 'dip-pact';
+  if (l.includes('handlow')) return 'cp-trade';
+  if (l.includes('rozejm')) return 'dip-peace';
+  if (l.includes('wasal')) return 'tb-army';
+  return 'dip-pact';
+}
+
+/** FAZA 2 pkt 3 kol.1 — „Możliwe umowy" (12 akcji; bez „Nawiązanie kontaktu" gdy kontakt jest). */
+function dealsColumnHtml(st: DiplomacyAudienceState): string {
+  const visible = st.actions.filter(a => !(a.id === '1' && st.contactEstablished));
+  const items = visible.map(a => {
+    let cls = a.enabled ? 'da-deal' : 'da-deal locked';
+    if (a.active) cls += ' active';
+    const note = a.active ? 'już zawarta' : (a.lockNote || a.tooltip || a.opis || '');
+    const icon = dipBrandIconHtml(actionIconId(a.id), 14, 'da-di');
+    const endIc = a.active
+      ? dipBrandIconHtml('ui-check', 13, 'da-checkic')
+      : (!a.enabled ? dipBrandIconHtml('ui-lock', 12, 'da-lockic') : '');
+    return (
+      '<button type="button" class="' + cls + '" data-aid="' + esc(a.id) + '"' +
+      (a.enabled ? '' : ' disabled title="' + esc(note) + '"') + '>' +
+      icon +
+      '<div class="da-body"><div class="da-nm">' + esc(a.label) + '</div>' +
+      (note ? '<div class="da-note">' + esc(note.length > 70 ? note.slice(0, 67) + '…' : note) + '</div>' : '') +
+      '</div>' + endIc +
+      '</button>'
+    );
+  }).join('');
+  return (
+    '<div class="da-col da-col-deals">' +
+      '<h3>Możliwe umowy<span class="cnt">' + visible.length + '</span></h3>' +
+      (items || '<div class="da-empty">Brak dostępnych akcji.</div>') +
+    '</div>'
+  );
+}
+
+/** FAZA 2 pkt 3 kol.2 — „Aktywne traktaty" (od ilu tur + kara zerwania; „Zerwij" — brak mechanizmu, wkrótce). */
+function treatiesColumnHtml(st: DiplomacyAudienceState): string {
+  const treaties = st.activeTreaties ?? [];
+  const items = treaties.map(t => {
+    const icon = dipBrandIconHtml(treatyIconId(t.label), 14, 'da-ti');
+    const metaParts: string[] = [];
+    if (t.sinceTurns !== undefined) metaParts.push('od ' + t.sinceTurns + ' tur');
+    else if (t.detail) metaParts.push(t.detail);
+    const meta = metaParts.length > 0 ? '<div class="da-meta">' + esc(metaParts.join(' · ')) + '</div>' : '';
+    const pen = t.breakPenaltyLabel ? '<div class="da-pen">kara zerwania: ' + esc(t.breakPenaltyLabel) + '</div>' : '';
+    return (
+      '<div class="da-treaty">' + icon +
+        '<div><div class="da-nm">' + esc(t.label) + '</div>' + meta + pen + '</div>' +
+        '<button type="button" class="da-brk" disabled title="Zerwij traktat — wkrótce">Zerwij</button>' +
+      '</div>'
+    );
+  }).join('');
+  return (
+    '<div class="da-col da-col-treaties">' +
+      '<h3>Aktywne traktaty<span class="cnt">' + treaties.length + '</span></h3>' +
+      (items || '<div class="da-empty">Brak aktywnych traktatów.</div>') +
+    '</div>'
+  );
+}
+
+/** FAZA 2 pkt 3 kol.3 — „Żądania/Oferty": wejście do istniejącego koszyka PN (Umowa handlowa/Dar) —
+ * ten sam handler co kafelek w kol. 1 (data-aid), więc modal/logika zostają nietknięte. Pełny
+ * embedded formularz (bilans na żywo w tabeli) — faza 3; tu wpis + uzasadnienie bilansu (pkt 7)
+ * jest już liczony w samym koszyku (diplomacyTradeBasket summaryHtml — Jednorazowo/Co turę/Werdykt). */
+function offersColumnHtml(st: DiplomacyAudienceState): string {
+  const offerActions = st.actions.filter(a => a.id === '5' || a.id === '13');
+  const buttons = offerActions.map(a => {
+    const icon = dipBrandIconHtml(actionIconId(a.id), 14, 'da-di');
+    const disabled = !a.enabled;
+    const hint = disabled ? (a.lockNote || a.tooltip || '') : (a.id === '5' ? 'Otwórz koszyk wymiany (PN)' : 'Otwórz formularz daru (PN)');
+    return (
+      '<button type="button" class="da-offer-btn" data-aid="' + esc(a.id) + '"' +
+      (disabled ? ' disabled title="' + esc(hint) + '"' : ' title="' + esc(hint) + '"') + '>' +
+      icon + '<span>' + esc(a.label) + '</span>' +
+      '</button>'
+    );
+  }).join('');
+  return (
+    '<div class="da-col da-col-offers">' +
+      '<h3>Żądania / Oferty</h3>' +
+      '<div class="da-offer-hint">Otwórz <b>Umowę handlową</b> lub <b>Dar</b>, by ułożyć koszyk PN — ' +
+      'bilans (jednorazowo / co turę) i werdykt liczone są tam na żywo, z tych samych danych co progi obok.</div>' +
+      (buttons || '<div class="da-empty">Brak dostępnych ofert przy obecnych progach.</div>') +
+    '</div>'
+  );
+}
+
+/** FAZA 2 (dyspozycja, sekcja pod stołem) — rozbicie relacji za/przeciw, prosta wersja. */
+function relBreakdownHtml(st: DiplomacyAudienceState): string {
+  const rb = st.relationBreakdown;
+  if (!rb) return '';
+  const fmtVal = (v: number, perTurn?: boolean): string => {
+    const sign = v > 0 ? '+' : '';
+    return sign + (Number.isInteger(v) ? String(v) : v.toFixed(1)) + (perTurn ? ' / turę' : '');
+  };
+  const posRows = rb.pozytywne.map(f =>
+    '<div class="da-rfact"><span class="lbl">' + esc(f.label) + '</span><span class="val">' + fmtVal(f.value, f.perTurn) + '</span></div>',
+  ).join('') || '<div class="da-empty">Brak czynników.</div>';
+  const negRows = rb.negatywne.map(f =>
+    '<div class="da-rfact"><span class="lbl">' + esc(f.label) + '</span><span class="val">' + fmtVal(f.value, f.perTurn) + '</span></div>',
+  ).join('') || '<div class="da-empty">Brak czynników.</div>';
+  const label = nastawienieLabelFromScore(st.zaufanie, st.respekt);
+  return (
+    '<div class="da-relbreak">' +
+      '<div class="da-relcol pos"><h4>Za co Cię lubią</h4>' + posRows + '</div>' +
+      '<div class="da-relcol neg"><h4>Za co Cię nie lubią</h4>' + negRows + '</div>' +
+      '<div class="da-relbreak-foot">Stan bieżący: <b>Zaufanie ' + st.zaufanie + ' / 100</b> · ' +
+        '<b>Respekt ' + st.respekt + ' / 100</b> · nastawienie: <b>' + esc(label) + '</b></div>' +
+    '</div>'
+  );
 }
 
 function render(): void {
@@ -349,22 +668,13 @@ function render(): void {
     return;
   }
 
-  const cards = st.actions.map(a => {
-    let cls = a.enabled ? 'civ-diplo-aud-card' : 'civ-diplo-aud-card locked';
-    if (a.active) cls += ' active';
-    const hint = a.lockNote || a.tooltip || a.opis || '';
-    return (
-      '<button type="button" class="' + cls + '" data-aid="' + esc(a.id) + '"' +
-      (a.enabled ? '' : ' disabled title="' + esc(hint) + '"') + '>' +
-      '<div class="civ-diplo-aud-card-title">' + esc(a.label) + (a.active ? ' ✓' : '') + '</div>' +
-      (hint ? '<div class="civ-diplo-aud-card-hint">' + esc(hint.length > 80 ? hint.slice(0, 77) + '…' : hint) + '</div>' : '') +
-      '</button>'
-    );
-  }).join('');
-
   const playerBon = cfg.getCivBonusy?.(0) ?? [];
   const otherBon = cfg.getCivBonusy?.(cfg.ownerId) ?? [];
   const headIc = dipBrandIconHtml('tb-diplomacy', 24, 'dip-ic') ?? '';
+  const knownFactionsTab = cfg.onOpenKnownFactions
+    ? '<button type="button" class="da-tab da-tab-known">' +
+      dipBrandIconHtml('tb-cities', 12) + 'Znane frakcje</button>'
+    : '';
 
   rootEl.innerHTML =
     '<div class="civ-diplo-aud-box">' +
@@ -372,28 +682,24 @@ function render(): void {
         '<h2>' + headIc + 'Audiencja dyplomatyczna</h2>' +
         '<button type="button" class="dip-muted-btn civ-diplo-aud-back">' + esc(cfg!.backLabel ?? 'Wyjście') + '</button>' +
       '</div>' +
-      '<div class="civ-diplo-aud-player">Ty: ' + esc(st.playerCivName) + ' · ' + esc(st.playerTitle) +
-        (playerBon.length ? ' · ' + esc((playerBon[0]?.opis ?? '').trim()) : '') +
+      formalBannerHtml(st) +
+      '<div class="da-mainrow">' +
+        playerCardHtml(st, playerBon) +
+        '<div class="da-center">' +
+          '<div class="da-tabs">' + knownFactionsTab +
+            '<span class="da-tab on">' + dipBrandIconHtml('tb-diplomacy', 12) + 'Stół negocjacji</span>' +
+          '</div>' +
+          '<div class="da-table">' +
+            dealsColumnHtml(st) + treatiesColumnHtml(st) + offersColumnHtml(st) +
+          '</div>' +
+          relBreakdownHtml(st) +
+        '</div>' +
+        otherCardHtml(st, otherBon) +
       '</div>' +
-      '<div class="civ-diplo-aud-hero">' +
-        civLeaderMedallionHtmlById(st.otherIkonaId ?? 'grecy', st.otherKolorHex) +
-      '</div>' +
-      '<div class="civ-diplo-aud-body">' +
-        '<div class="civ-diplo-aud-name">' + esc(st.otherCivName) + '</div>' +
-        /* otherCivName — sformatowane przez silnik (formatEntityDisplayName / ownerDiploLabel) */
-        '<div class="civ-diplo-aud-title">' + esc(st.otherTitle) +
-          (st.otherEpochLabel ? ' · ' + esc(st.otherEpochLabel) : '') + '</div>' +
-        cultureLineHtml(st) +
-        formalStatusHtml(st) +
-        nastawienieHtml(st) +
-        personalityTagsHtml(st.personalityTags) +
-        bonusListHtml(otherBon) +
-      '</div>' +
-      relationSectionHtml(st) +
-      '<div class="civ-diplo-aud-grid">' + cards + '</div>' +
     '</div>';
 
   rootEl.querySelector('.civ-diplo-aud-back')?.addEventListener('click', () => cfg!.onBack());
+  rootEl.querySelector('.da-tab-known')?.addEventListener('click', () => cfg!.onOpenKnownFactions?.());
   rootEl.querySelectorAll<HTMLButtonElement>('button[data-aid]').forEach(btn => {
     btn.addEventListener('click', () => {
       if (btn.disabled) return;

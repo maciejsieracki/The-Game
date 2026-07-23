@@ -204,6 +204,7 @@ function buildDeal(
     rodzaj,
     strony: a < b ? [a, b] : [b, a],
     wygasaTura,
+    zawartaTura: turn,
     ekonomia,
     handelJednorazowy,
     handelPayload,
