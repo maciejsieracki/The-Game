@@ -542,6 +542,38 @@ export function applyFilterChip1E(
   });
 }
 
+/**
+ * Chip-ikona filtra klasy (Konnica/Piechota/Dystansowe) — kwadrat ~32px, BEZ
+ * tekstu (nazwa tylko w pigułce hover, patrz wrapWithHoverTooltip1E). Aktywny =
+ * złota obwódka + delikatne złote wypełnienie, jak dotychczasowy pełny chip
+ * (C09 v5 · uwaga właściciela: filtry klas mają być ikonami, nie napisami).
+ */
+export function applyFilterIconChip1E(
+  el: HTMLButtonElement,
+  active: boolean,
+  kind: 'mounted' | 'melee' | 'ranged',
+): void {
+  const k = FILTER_CHIP_KIND[kind];
+  Object.assign(el.style, {
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '32px',
+    height: '32px',
+    padding: '0',
+    flexShrink: '0',
+    borderRadius: '8px',
+    cursor: 'pointer',
+    boxSizing: 'border-box',
+    lineHeight: '0',
+    border: active ? `2px solid ${BATTLE_GOLD}` : `1px solid ${k.border}`,
+    background: active ? 'rgba(232,216,138,0.16)' : 'rgba(255,255,255,0.02)',
+    color: active ? '#f4e6a8' : k.color,
+    boxShadow: active ? '0 0 8px rgba(232,216,138,0.35)' : 'none',
+    transition: 'border-color 0.12s, box-shadow 0.12s, color 0.12s, background 0.12s',
+  });
+}
+
 /** Przycisk akcji zaznaczenia — Odznacz / Rozgrupuj (outline) lub Grupuj (złoty). */
 export function applySelectionActionBtn1E(
   el: HTMLButtonElement,

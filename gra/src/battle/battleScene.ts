@@ -92,6 +92,7 @@ import {
   applyBtnStartBattle,
   applyDeployToolbarBar,
   applyFilterChip1E,
+  applyFilterIconChip1E,
   applyGroupBadge1E,
   applyMinimap1E,
   applyModeHint1E,
@@ -10760,8 +10761,9 @@ export class BattleScene {
       display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px',
     });
 
-    const mkDoc = (label: string, d: GroupDoctrine, icon: string): HTMLButtonElement => {
+    const mkDoc = (label: string, d: GroupDoctrine, icon: string): HTMLElement => {
       const active = doc === d;
+      // kind domyslny 'all' (nie klasa) — zawsze zwraca <button>, nie owinięty w pigułkę.
       const b = this._makeDeployQuickBtn(label, active, () => {
         this._setUnitsDoctrine(units, d);
         if (units.length === 1 && units[0]!.groupId) {
@@ -10769,7 +10771,7 @@ export class BattleScene {
         }
         this._renderDeployTacticsPopup(popup);
         this._updateDeployToolbarStatus();
-      }, { fullWidth: true });
+      }, { fullWidth: true }) as HTMLButtonElement;
       b.innerHTML = buildDeployTacticCellHtml(icon, label);
       Object.assign(b.style, {
         padding: '12px 10px', width: '100%', textAlign: 'center',
@@ -11050,6 +11052,7 @@ export class BattleScene {
 
       for (const n of [1, 2, 3] as DeployLineCount[]) {
         const on = active === n;
+        // kind domyslny 'all' (nie klasa) — zawsze zwraca <button>, nie owinięty w pigułkę.
         const b = this._makeDeployQuickBtn(String(n), on, () => {
           if (kind === 'melee') this._setDeployMeleeLines(n);
           else this._setDeployArcherLines(n);
@@ -11058,7 +11061,7 @@ export class BattleScene {
           this._updateDeployToolbarStatus();
           const who = kind === 'melee' ? DEPLOY_KIND_LABEL.melee : DEPLOY_KIND_LABEL.ranged;
           this._showDeployFeedback(who + ': ' + n + ' linie');
-        });
+        }) as HTMLButtonElement;
         b.dataset.deployLinesKind = kind;
         b.dataset.deployLinesCount = String(n);
         Object.assign(b.style, {
@@ -13006,7 +13009,12 @@ export class BattleScene {
     return live.length > 0 && live.every(u => this._selectedUnits.has(u.bu.id));
   }
 
-  /** Przycisk szybkiego zaznaczenia — chip filtra C09 v4. */
+  /**
+   * Przycisk szybkiego zaznaczenia — chip filtra C09 v4. Klasy jednostek
+   * (Konnica/Piechota/Dystansowe) renderują się jako kwadratowa ikona 32px
+   * (bez napisu, nazwa w pigułce hover) — uwaga właściciela; Wszystkie/Grupa/
+   * Generał zostają tekstowe (są dynamiczne — liczby grup, etykiety).
+   */
   private _makeDeployQuickBtn(
     label: string, active: boolean, onClick: () => void,
     opts?: {
@@ -13014,12 +13022,13 @@ export class BattleScene {
       kind?: 'mounted' | 'melee' | 'ranged' | 'all' | 'group';
       groupId?: string;
     },
-  ): HTMLButtonElement {
+  ): HTMLElement {
     const fullWidth = opts?.fullWidth !== false;
     const kind = opts?.kind ?? 'all';
+    const isClassIcon = kind === 'mounted' || kind === 'melee' || kind === 'ranged';
     const btn = document.createElement('button');
     btn.type = 'button';
-    btn.textContent = label;
+    if (!isClassIcon) btn.textContent = label;
     if (kind === 'group' && opts?.groupId) {
       btn.dataset.rosterChip = 'group';
       btn.dataset.groupId = opts.groupId;
@@ -13028,7 +13037,15 @@ export class BattleScene {
     } else {
       btn.dataset.rosterChip = 'kind-' + kind;
     }
-    applyFilterChip1E(btn, active, kind);
+    if (isClassIcon) {
+      btn.innerHTML = ROSTER_TYPE_SVG[kind]
+        .replace(/width="14"/g, 'width="16"')
+        .replace(/height="14"/g, 'height="16"');
+      btn.setAttribute('aria-label', label);
+      applyFilterIconChip1E(btn, active, kind);
+    } else {
+      applyFilterChip1E(btn, active, kind);
+    }
     if (!fullWidth) {
       btn.style.flexShrink = '0';
       btn.style.whiteSpace = 'nowrap';
@@ -13043,7 +13060,7 @@ export class BattleScene {
       e.stopPropagation();
       onClick();
     });
-    return btn;
+    return isClassIcon ? wrapWithHoverTooltip1E(btn, label, 'below') : btn;
   }
 
   /** Odswieza pasek filtrów — C09 v4 (typy + grupy jak w walce recznej). */
