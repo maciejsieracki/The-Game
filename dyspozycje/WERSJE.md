@@ -9,7 +9,13 @@ UWAGA: KANON i FINALNA promują się teraz OSOBNYMI skryptami (`gra/tools/publis
 wyraźne polecenie właściciela) — dlatego są logowane NIEZALEŻNIE, każdy w swojej sekcji, ze
 swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drugiego.
 
-## ROBOCZA `8c774bdd` — 2026-07-23 · FILTR „WSZYSTKIE" = ikona czterech kropek — **AKTUALNA**
+## ROBOCZA `0500eddf` — 2026-07-23 · KOMPLET filtrów 1:1 z makietą C06 (★ Generał, style aktywne) — **AKTUALNA**
+
+- **Zawartość (commit `3978be4`):** rząd filtrów rosteru w KOMPLECIE 1:1 z makietą „C06 Pole bitwy odswiezenie": Generał = GWIAZDKA (SVG z makiety), Wszystkie = 4 kropki (SVG z makiety, viewBox 24), przyciski 34px/radius 9, **stan aktywny = pełne złoto #e8d88a z ciemną ikoną** (jak w makiecie; było: półprzezroczyste). Korekta po uwadze Macieja o niepełnym wdrażaniu makiet.
+- **Bramki:** tsc=0 · zrzut walki potwierdzony (podkowa/miecze/łuk/kropki/★ + GRUPA 1-3 tekstowo) · VERIFY OK.
+- **md5:** `0500eddf184033d9b7bfe2d0a7ab998f` · stamp `0500eddf`. Publikowała sesja chmurowa.
+
+## ROBOCZA `8c774bdd` — 2026-07-23 · FILTR „WSZYSTKIE" = ikona czterech kropek — **ZASTĄPIONA** (→ `0500eddf`)
 
 - **Zawartość (commit `277abfd`, na `1d2f86fc`):** czwarty filtr rosteru („Wszystkie") również jako ikona — cztery kropki w kwadracie (uwaga Macieja), pigułka „WSZYSTKIE" na hover; komplet czterech ikon filtrów bez napisów. Inne użycia przycisku (popupy taktyk/linii) bez zmian.
 - **Bramki:** tsc=0 · zrzut potwierdzony · VERIFY OK.

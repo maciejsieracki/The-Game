@@ -3180,3 +3180,7 @@ CZEKAM-NA: sesja lokalna — „push": pull `1d2f86fc` na dysk właściciela
 ## [19:00 PL, 2026-07-23] CHMURA → SESJA LOKALNA — DEPLOY ROBOCZA `8c774bdd` (filtr WSZYSTKIE = 4 kropki)
 Drobny follow-up uwagi Macieja: komplet 4 ikonowych filtrów rosteru. VERIFY OK, md5 `8c774bdde7851a884e17d76ad773ed0d`. Zastępuje `1d2f86fc`. Commit + FF main.
 CZEKAM-NA: sesja lokalna — „push": pull `8c774bdd` na dysk właściciela
+
+## [19:30 PL, 2026-07-23] CHMURA → SESJA LOKALNA — DEPLOY ROBOCZA `0500eddf` (komplet filtrów 1:1 z makietą) + dostawy Design
+Filtry rosteru w komplecie wg makiety C06 (★ Generał, 4 kropki Wszystkie, aktywny = pełne złoto). VERIFY OK, md5 `0500eddf184033d9b7bfe2d0a7ab998f`. Zastępuje `8c774bdd`. Ponadto docs: DRZEWKO-TECH v1.1 (siatka bez krawędzi wg werdyktu Macieja, standalone offline) + KANON-SYNC-6 — hub kanonu Design ma 100% żywych linków. Commit + FF main.
+CZEKAM-NA: sesja lokalna — „push": pull `0500eddf` na dysk właściciela
