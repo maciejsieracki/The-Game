@@ -3762,6 +3762,10 @@ var DIPLOMACY_PARAMS = {
   progTrybutMinGoldPerTurn: 10,
   /** Respekt proponenta musi być > tej wartości, by żądać trybutu (spokój) */
   progTrybutZadanieMinRespekt: 70,
+  /** Limit górny żądania trybutu (¤/turę) przy Respekt tuż powyżej progu (audyt #21) */
+  progTrybutZadanieMaxGoldBase: 50,
+  /** Limit górny: dodatek ¤/turę za każdy punkt Respektu ponad próg żądania (audyt #21) */
+  progTrybutZadanieMaxGoldPerRespekt: 5,
   /** militaryRatio > wartość → „blisko wojny” (oferta trybutu) */
   progTrybutOfertaNearWarRatio: 1.2,
   /** Zaufanie < wartość → „blisko wojny” (oferta trybutu) */
@@ -4140,7 +4144,7 @@ var tech_default = {
       "Dost\u0119p do surowca.": "Dost\u0119p do drewna",
       "wymagany budynek": null,
       "Wymaga (prereq)": "\u2014",
-      "Odblokowuje surowiec.": "deski, paliwo, drewno",
+      "Odblokowuje surowiec.": "paliwo, drewno",
       "Odblokowuje budynek": "Stolarnia, Mielerz",
       "Koszt nauki": 12,
       Uwagi: null,
@@ -4294,7 +4298,7 @@ var tech_default = {
       Technologia: "\u017Begluga",
       Epoka: "Br\u0105z",
       Poziom: 4,
-      "Dost\u0119p do surowca.": "Deski",
+      "Dost\u0119p do surowca.": "Drewno",
       "wymagany budynek": null,
       "Wymaga (prereq)": "Obr\xF3bka drewna",
       "Odblokowuje surowiec.": null,
@@ -4658,9 +4662,9 @@ var terrain_improvements_default = {
       praca: 2
     },
     surowiecOdblokowany: "ruda",
-    surowiecOdblokowany_uwaga: "klucz 'ruda' wg Surowiec='Ruda' w resources.json; brak pola id \u2014 propozycja EKONOMIA, wymaga uzgodnienia z DANE",
-    teren: "Wzg\xF3rza, G\xF3ry, z\u0142o\u017Ce Rudy",
-    warunek: "wydobycie rudy do magazynu",
+    surowiecOdblokowany_uwaga: "ruda miedzi lub ruda_zelaza (zale\u017Cnie od z\u0142o\u017Ca); plon 2/t z kopalni",
+    teren: "Wzg\xF3rza, G\xF3ry, z\u0142o\u017Ce rudy miedzi lub \u017Celaza",
+    warunek: "wydobycie rudy do magazynu miasta (ruda / ruda_zelaza)",
     koszt_praca: 25,
     tech: "Murarstwo",
     odblokowuje: "Metal/Br\u0105z (jednostki br\u0105zowe, mury)"
@@ -4740,7 +4744,7 @@ var terrain_improvements_default = {
     warunek: "sta\u0142e ulepszenie; MO\u017BE na lesie \u2014 las NIE znika; odblokowuje dost\u0119p do drewna (v0.1 bez ilo\u015Bci)",
     koszt_praca: 25,
     tech: "Obr\xF3bka drewna",
-    odblokowuje: "Deski (z budynkiem miejskim Tartak)"
+    odblokowuje: "Drewno (TYP 1 \u2014 bez desek, B-SUROW-BUD-03)"
   },
   tarasy: {
     nazwa: "Tarasy uprawne",
@@ -4780,8 +4784,8 @@ var terrain_improvements_default = {
     },
     surowiecOdblokowany: "sol",
     surowiecOdblokowany_uwaga: "klucz 'sol' \u2014 Sol nie ma wpisu w resources.json v0.1 (brak Surowiec='Sol'); propozycja EKONOMIA: dodac 'sol' do resources.json; wymaga uzgodnienia z DANE",
-    teren: "z\u0142o\u017Ce soli (Pustynia/R\xF3wnina \u2014 hex.zloze=sol)",
-    warunek: "s\xF3l (konserwacja \u017Cywno\u015Bci + handel); bez wybrze\u017Ca bez z\u0142o\u017Ca",
+    teren: "Wybrze\u017Ce, z\u0142o\u017Ce soli (hex.zloze=sol)",
+    warunek: "s\xF3l \u2014 wy\u0142\u0105cznie wybrze\u017Ce morskie (kanon: z\u0142o\u017Ca soli przy brzegu) lub hex.zloze=sol",
     koszt_praca: 20,
     tech: "Garncarstwo",
     odblokowuje: "S\xF3l"
@@ -4838,8 +4842,9 @@ var terrain_improvements_default = {
       praca: 2
     },
     surowiecOdblokowany: "ruda",
-    teren: "Wzg\xF3rza, G\xF3ry, z\u0142o\u017Ce Rudy",
-    warunek: "wst\u0119pne przetwarzanie rudy (przed Odlewni\u0105 w mie\u015Bcie)",
+    surowiecOdblokowany_uwaga: "ruda miedzi (Odlewnia br\u0105zu); plon 2/t z kopalni_miedzi",
+    teren: "Wzg\xF3rza, G\xF3ry, z\u0142o\u017Ce miedzi (hex.zloze=miedz)",
+    warunek: "ruda miedzi \u2192 magazyn (Odlewnia br\u0105zu)",
     koszt_praca: 22,
     tech: "Br\u0105zownictwo",
     odblokowuje: "Odlewnia br\u0105zu (budynek miejski)",
@@ -5380,7 +5385,7 @@ var units_default = [
     Tech: "\u017Begluga",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
-    Surowiec: "Deski",
+    Surowiec: "Drewno",
     "Surowiec (ilo\u015B\u0107)": 4,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 3,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
@@ -6078,7 +6083,7 @@ var units_default = [
     "Morale bazowe": 85,
     "Morale ucieczki": 25,
     "Nazwa EN": "Slinger (Huaraca)",
-    Typ: "Distance",
+    Typ: "Slinger",
     Klasa: "Specjalna",
     Nacja: "Inkowie",
     "Bonus vs Swordsman %": 0,
@@ -7060,7 +7065,7 @@ var units_default = [
     Tech: "Obr\xF3bka \u017Celaza",
     "Pieni\u0105dz (koszt)": 14,
     Ludno\u015B\u0107: 1,
-    Surowiec: "zelazo",
+    Surowiec: "stal",
     "Surowiec (ilo\u015B\u0107)": 3,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 1,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
@@ -7113,7 +7118,7 @@ var units_default = [
     Epoka: "\u017Belazo",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
-    Surowiec: "zelazo",
+    Surowiec: "stal",
     "Surowiec (ilo\u015B\u0107)": 5,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
@@ -7225,7 +7230,7 @@ var units_default = [
     Tech: "Obr\xF3bka \u017Celaza",
     "Pieni\u0105dz (koszt)": 16,
     Ludno\u015B\u0107: 1,
-    Surowiec: "zelazo",
+    Surowiec: "stal",
     "Surowiec (ilo\u015B\u0107)": 0,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
@@ -7281,7 +7286,7 @@ var units_default = [
     Tech: "Obr\xF3bka \u017Celaza",
     "Pieni\u0105dz (koszt)": 16,
     Ludno\u015B\u0107: 1,
-    Surowiec: "zelazo",
+    Surowiec: "stal",
     "Surowiec (ilo\u015B\u0107)": 3,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
@@ -8899,7 +8904,7 @@ var buildings_default = [
     epokaWejscia: 1,
     maksPoziom: 10,
     nazwyPoziomow: [
-      "Obrobka desek",
+      "Warsztat drewna",
       "Stolarnia",
       "Manufaktura drewna",
       "Ciesielstwo",
@@ -8935,7 +8940,7 @@ var buildings_default = [
     utrzymanie: 1,
     przyrostUtrzymania: 0,
     wymagania: "las w zasiegu",
-    uwagi: "",
+    uwagi: "B-SUROW-BUD-03: bonus Pracy only \u2014 bez konwertera desek",
     techUnlock: "Obr\xF3bka drewna"
   },
   {
@@ -9039,7 +9044,7 @@ var buildings_default = [
     przyrostKosztu: 10,
     utrzymanie: 2,
     przyrostUtrzymania: 1,
-    wymagania: "miedz lub cyna w zasiegu",
+    wymagania: "ruda miedzi w zasi\u0119gu (kopalnia miedzi)",
     uwagi: "Mnoznik % dotyczy sily jednostek produkowanych w miescie",
     techUnlock: "Br\u0105zownictwo"
   },
@@ -9298,8 +9303,44 @@ var buildings_default = [
     utrzymanie: 1,
     przyrostUtrzymania: 0,
     wymagania: "",
-    uwagi: "",
+    uwagi: "B-SPIC: bramka Ceramika (garncarnia imperium); tier I cap 100",
     techUnlock: "Garncarstwo"
+  },
+  {
+    id: "spichlerz_ii",
+    nazwa: "Spichlerz II",
+    kategoria: "Zywnosc",
+    epokaWejscia: 2,
+    maksPoziom: 10,
+    upgradeFrom: "spichlerz",
+    nazwyPoziomow: [],
+    baza: {
+      praca: 0,
+      pieniadz: 0,
+      zywnosc: 3,
+      nauka: 0,
+      kultura: 0,
+      zadowolenie: 2,
+      obrona: 0,
+      mnoznik: 0
+    },
+    przyrost: {
+      praca: 0,
+      pieniadz: 0,
+      zywnosc: 1,
+      nauka: 0,
+      kultura: 0,
+      zadowolenie: 0,
+      obrona: 0,
+      mnoznik: 0
+    },
+    kosztBudowy: 35,
+    przyrostKosztu: 12,
+    utrzymanie: 2,
+    przyrostUtrzymania: 0,
+    wymagania: "upgrade ze Spichlerza I",
+    uwagi: "B-SPIC: bramka S\xF3l; cap armii 150; bufor 70% po wzro\u015Bcie",
+    techUnlock: "Warzelnia soli"
   },
   {
     id: "garncarnia",
@@ -9313,7 +9354,7 @@ var buildings_default = [
       pieniadz: 0,
       zywnosc: 0,
       nauka: 0,
-      kultura: 1,
+      kultura: 0,
       zadowolenie: 0,
       obrona: 0,
       mnoznik: 0
@@ -9374,7 +9415,7 @@ var buildings_default = [
   {
     id: "kamienne_kregi",
     nazwa: "Kamienne kr\u0119gi",
-    kategoria: "Kultura",
+    kategoria: "Religia",
     epokaWejscia: 1,
     maksPoziom: 10,
     nazwyPoziomow: [],
@@ -9403,13 +9444,13 @@ var buildings_default = [
     utrzymanie: 1,
     przyrostUtrzymania: 0,
     wymagania: "",
-    uwagi: "T-TECH-8: pierwszy poziom kultu \u2014 upgrade do \u015Awi\u0105tyni",
+    uwagi: "B-KULT-REL + KULT-BUD-02: budynek RELIGIJNY \u2014 konwersja religii +2%/t (religia_konwersja_kregi, additive do bazy); plon kultury OK, bez bonusu konwersji kultury. Upgrade \u2192 \u015Awi\u0105tynia.",
     techUnlock: "Mistycyzm"
   },
   {
     id: "swiatynia",
     nazwa: "\u015Awi\u0105tynia",
-    kategoria: "Kultura",
+    kategoria: "Religia",
     epokaWejscia: 2,
     maksPoziom: 10,
     nazwyPoziomow: [],
@@ -9438,7 +9479,7 @@ var buildings_default = [
     utrzymanie: 1,
     przyrostUtrzymania: 1,
     wymagania: "upgrade Kamiennych kr\u0119g\xF3w",
-    uwagi: "T-TECH-8: suma bonus\xF3w kr\u0119gi+\u015Bwi\u0105tynia w JSON",
+    uwagi: "B-KULT-REL + KULT-BUD-02: budynek RELIGIJNY \u2014 konwersja religii +4%/t (religia_konwersja_swiatynia, additive do bazy); plon kultury OK, bez bonusu konwersji kultury.",
     techUnlock: "Religia",
     upgradeFrom: "kamienne_kregi"
   },
@@ -9465,7 +9506,7 @@ var buildings_default = [
       pieniadz: 0,
       zywnosc: 0,
       nauka: 3,
-      kultura: 1,
+      kultura: 2,
       zadowolenie: 0,
       obrona: 0,
       mnoznik: 0
@@ -9780,8 +9821,8 @@ var buildings_default = [
     utrzymanie: 2,
     przyrostUtrzymania: 1,
     wymagania: "-",
-    uwagi: "1 na miasto; glowne zrodlo kultury + Prawo (society-params prawo_palac)",
-    techUnlock: ""
+    uwagi: "1 na miasto; g\u0142\xF3wne \u017Ar\xF3d\u0142o kultury + Prawo (society-params prawo_palac); budynek startowy \u2014 bez bramki tech",
+    techUnlock: "-"
   },
   {
     id: "kuznia_zelaza",
@@ -10013,7 +10054,7 @@ var buildings_default = [
       pieniadz: 2,
       zywnosc: 0,
       nauka: 0,
-      kultura: 1,
+      kultura: 5,
       zadowolenie: 2,
       obrona: 0,
       mnoznik: 0
@@ -10023,7 +10064,7 @@ var buildings_default = [
       pieniadz: 1,
       zywnosc: 0,
       nauka: 0,
-      kultura: 1,
+      kultura: 0,
       zadowolenie: 1,
       obrona: 0,
       mnoznik: 0
@@ -10033,7 +10074,7 @@ var buildings_default = [
     utrzymanie: 2,
     przyrostUtrzymania: 1,
     wymagania: "",
-    uwagi: "Redukuje korupcje (anty-korupcja); zwiekszony porzadek publiczny; zadowolenie z praworz.",
+    uwagi: "KULT-BUD-01: +5 kultura baza, +2% konwersji; redukuje korupcje; zadowolenie z praworz.",
     techUnlock: "Prawo"
   },
   {
@@ -10118,7 +10159,7 @@ var buildings_default = [
       pieniadz: 0,
       zywnosc: 1,
       nauka: 0,
-      kultura: 1,
+      kultura: 3,
       zadowolenie: 3,
       obrona: 0,
       mnoznik: 0
@@ -10138,7 +10179,7 @@ var buildings_default = [
     utrzymanie: 2,
     przyrostUtrzymania: 1,
     wymagania: "wymaga Studnia",
-    uwagi: "Termy rzymskie \u2014 zadowolenie, kultura, zdrowie; wymaga Studni i tech Medycyna.",
+    uwagi: "KULT-BUD-01: +3 kultura baza, +1% konwersji; termy \u2014 zadowolenie, zdrowie; wymaga Studni i tech Medycyna.",
     techUnlock: "Medycyna"
   },
   {
@@ -10393,7 +10434,7 @@ function relationTotal(rel) {
 }
 function pnDealAcceptedByAi(givePn, receivePn, relacja) {
   if (givePn <= 0 && receivePn <= 0) return false;
-  const fairMin = diplomacyFairGivePn(receivePn, relacja);
+  const fairMin = diplomacyFairGivePn(receivePn, Math.min(100, relacja));
   return givePn >= fairMin;
 }
 function pnGiftAllowed(relacja, difficulty = "normal") {
@@ -10466,6 +10507,7 @@ function buildDeal(rodzaj, a, b, turn, wygasaTura, ekonomia, handelJednorazowy, 
     rodzaj,
     strony: a < b ? [a, b] : [b, a],
     wygasaTura,
+    zawartaTura: turn,
     ekonomia,
     handelJednorazowy,
     handelPayload
@@ -10560,6 +10602,16 @@ function evaluateProposal(proposal, ctx) {
           accepted: false,
           reason: `\u017B\u0105danie trybutu wymaga Respekt > ${p.progTrybutZadanieMinRespekt} (masz ${ctx.proposerRespekt})`
         };
+      }
+      const maxPerTurn = p.progTrybutZadanieMaxGoldBase + Math.max(0, ctx.proposerRespekt - p.progTrybutZadanieMinRespekt) * p.progTrybutZadanieMaxGoldPerRespekt;
+      if (perTurn > maxPerTurn) {
+        return {
+          accepted: false,
+          reason: `\u017B\u0105danie trybutu przekracza limit przy tym Respekcie (max ${Math.round(maxPerTurn)} \xA4/tur\u0119)`
+        };
+      }
+      if (pairHasKind(ctx.activeDeals, proposerOwnerId, responderOwnerId, "wasalizacja" /* Wasalizacja */)) {
+        return { accepted: false, reason: "Trybut/wasalizacja z tym pa\u0144stwem ju\u017C obowi\u0105zuje" };
       }
       const deal = buildDeal(
         "wasalizacja" /* Wasalizacja */,
@@ -10722,7 +10774,7 @@ function evaluateProposal(proposal, ctx) {
       if (!granZaufOk) {
         return { accepted: false, reason: `Zaufanie zbyt niskie (wymagane \u2265 ${p.progGraniceZaufanie})` };
       }
-      if (payload.borderMilitary && ctx.responderRespekt < p.progGraniceWojskoweRespekt) {
+      if (payload.borderMilitary && ctx.proposerRespekt < p.progGraniceWojskoweRespekt) {
         return { accepted: false, reason: `Prawo wojskowe wymaga Respekt \u2265 ${p.progGraniceWojskoweRespekt}` };
       }
       const rodzaj = payload.borderMilitary ? "prawo_wojskowe_przemarszu" /* PrawoWojskowePrzemarszu */ : "otwarte_granice" /* OtwartGranice */;
