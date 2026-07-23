@@ -43,3 +43,14 @@ Uwaga: **A-08** zamyka jednocześnie lukę nr 3 z audytu (placement/tryb budowy 
 
 ## Kolejność
 Zlecenie 5 (najtańsze, samo dosłanie) → Zlecenie 3 (główne) → Zlecenie 4.
+
+---
+
+## ANEKS 2026-07-23 (wersja samowystarczalna — przekazana Design przez Macieja)
+
+Maciej wkleja Design JEDEN blok bez załączników: zamiast odsyłaczy do plików repo, dane wciągnięte inline:
+- **Drzewko:** pełna lista 32 technologii z `gra/data/tech.json` (nazwa · epoka/tier · prereq · koszt Nauki · odblokowania).
+- **Cuda:** pełna lista 19 cudów z `gra/data/wonders.json` (nazwa · cywilizacja/„WSZYSTKIE" · tech · teren · koszt · główny efekt z `bonusy[].opis`; dostęp „E"=ekskluzywny, „R"=wyścig wszystkich; każdy max 1 na świecie).
+- Zlecenie 5 (8 plików kanonu) bez zmian.
+
+Pełna treść bloku — patrz rozmowa sesji chmurowej z 2026-07-23; treść merytoryczna identyczna z sekcjami powyżej.
