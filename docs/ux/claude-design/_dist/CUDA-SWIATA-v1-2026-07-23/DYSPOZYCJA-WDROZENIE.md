@@ -7,6 +7,7 @@ Odpowiedź na ZLECENIE 4 (ostatnie otwarte moje z TURY 2).
 | KANON/mockupy/The Game - Cuda swiata v1 (1E).dc.html | NOWY KANON — 3 klatki |
 | KANON/mockupy/support.js | runtime (jeśli brak) |
 | KANON/CANON.md · KANON/START….dc.html · WYMIANA-UI-DESIGN.md | NADPISZ (wiersz Cuda, karta ★, log) |
+| standalone/Cuda swiata v1 - STANDALONE.html | podgląd za proxy — 1 plik z wbudowanym runtime |
 
 Commit: `CUDA ŚWIATA galeria Antyku v1 → KANON (Zlecenie 4, TURA 2)`
 Wymaga w repo: `eksport/icons/epochs/` (jak drzewko).
