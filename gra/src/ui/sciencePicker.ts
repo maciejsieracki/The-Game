@@ -16,6 +16,7 @@ import { terrainUnlockLabelsForTech } from '../game/improvement-tech';
 import type { TempoGry } from '../game/tech-tempo';
 import { scaledResearchCost, type GameDifficulty } from '../game/difficulty-cost';
 import { scienceOwlIconHtml } from './icons/scienceOwlIcon';
+import { techIconSvg } from './techIcons';
 import type { ScienceHubEntry, ScienceHubProgress } from './scienceHubHud';
 import { refreshScienceHubIfOpen } from './scienceHubHud';
 import { buildHubTechEntries } from './scienceHubSnapshotLogic';
@@ -823,6 +824,12 @@ function buildSVG(
     const prefix2 = node.epoka === 'Kamień' ? 'K' : node.epoka === 'Brąz' ? 'B' : 'Z';
     lines.push(`<text x="4" y="11" fill="rgba(180,140,50,0.40)" font-size="7.5" font-family="monospace" pointer-events="none">${esc(prefix2 + node.zoneCol)}</text>`);
 
+    // Ikona technologii — mały medalion top-left (pod etykietą strefy)
+    const nodeIcon = techIconSvg(node.nazwa, 14);
+    if (nodeIcon !== null) {
+      lines.push(`<g transform="translate(4,15)" style="color:${textFill};opacity:0.85" pointer-events="none">${nodeIcon}</g>`);
+    }
+
     // Cost top-right (po mnozniku tempa gry)
     lines.push(`<text x="${r(NW - 4)}" y="11" text-anchor="end" fill="rgba(120,180,90,0.45)" font-size="7.5" font-family="monospace" pointer-events="none">${effectiveTechCost(node.koszt, activeOwner)}PN</text>`);
 
@@ -850,7 +857,11 @@ function buildTooltipHTML(node: TechNode, status: NodeStatus): string {
     locked: '🔒 Zablokowana',
   };
 
-  let h = `<div class="tt-name" style="color:${st.label}">${esc(node.nazwa)}</div>`;
+  const ttIcon = techIconSvg(node.nazwa, 15);
+  const ttIconHtml = ttIcon !== null
+    ? `<span style="display:inline-flex;width:15px;height:15px;vertical-align:-3px;margin-right:5px;color:${st.label}">${ttIcon}</span>`
+    : '';
+  let h = `<div class="tt-name" style="color:${st.label}">${ttIconHtml}${esc(node.nazwa)}</div>`;
   h += `<div class="tt-meta" style="color:#7a6028">Epoka: <strong>${esc(node.epoka)}</strong> | Kolumna: ${node.epoka === 'Kamień' ? 'K' : node.epoka === 'Brąz' ? 'B' : 'Z'}${node.zoneCol}</div>`;
   h += `<div class="tt-cost" style="color:#78b058">⚗ Koszt nauki: ${effectiveTechCost(node.koszt, activeOwner)} PN</div>`;
   h += `<div class="tt-status" style="margin-top:4px;font-size:0.73em;font-weight:700">${statusLabel[status]}</div>`;
@@ -858,7 +869,13 @@ function buildTooltipHTML(node: TechNode, status: NodeStatus): string {
   if (node.prereqIds.length > 0) {
     const prereqNames = node.prereqIds.map(pid => TECH_MAP.get(pid)?.nazwa ?? pid);
     h += `<div class="tt-section" style="margin-top:6px;color:#907030;font-size:0.68em;text-transform:uppercase">Wymaga:</div>`;
-    h += `<ul class="tt-items">${prereqNames.map(n => `<li>${esc(n)}</li>`).join('')}</ul>`;
+    h += `<ul class="tt-items">${prereqNames.map(n => {
+      const pic = techIconSvg(n, 12);
+      const picHtml = pic !== null
+        ? `<span style="display:inline-flex;width:12px;height:12px;vertical-align:-2px;margin-right:4px">${pic}</span>`
+        : '';
+      return `<li>${picHtml}${esc(n)}</li>`;
+    }).join('')}</ul>`;
   }
   // Warunek odblokowania badania: budynek w mieście i/lub ulepszenie na mapie.
   if (node.wymaganyBudynek || node.wymaganeUlepszenie) {

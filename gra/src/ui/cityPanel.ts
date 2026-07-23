@@ -101,6 +101,7 @@ import {
 } from './unitInfographic';
 import { buildUnitRecruitCard, UNIT_RECRUIT_CARD_CSS } from './unitRecruitCard';
 import { brandIconSvg, buildingIconSvg, unitIconSvg, mapResourceIconSvg, type BrandIconSize } from './icons/brandAssets';
+import { techIconSvg } from './techIcons';
 import { ensureBrandRootTokens, CIV_BRAND_SCOPE_VARS } from './brandTokenVars';
 import {
   freshWealthState,
@@ -4561,7 +4562,11 @@ function buildBuildingInfocard(
   ft.appendChild(era);
   const ftR = el('span');
   ftR.textContent = def.maksPoziom > 1 ? `max ${def.maksPoziom} poz.` : 'bez upgrade';
-  if (parentName) ftR.textContent = def.techUnlock && !isEmptyDataVal(def.techUnlock) ? String(def.techUnlock) : '↗ upgrade';
+  if (parentName) {
+    ftR.innerHTML = def.techUnlock && !isEmptyDataVal(def.techUnlock)
+      ? `${techIconHintSpan(def.techUnlock, 12)}${String(def.techUnlock)}`
+      : '↗ upgrade';
+  }
   ft.appendChild(ftR);
   bd.appendChild(ft);
 
@@ -4582,7 +4587,7 @@ function buildBuildingInfocard(
     bd.appendChild(tag);
   } else if (opts?.lockHint) {
     const lock = el('div', 'bld-infocard-lock');
-    lock.textContent = opts.lockHint;
+    lock.innerHTML = opts.lockHint;
     bd.appendChild(lock);
   }
 
@@ -4598,6 +4603,14 @@ function epochLabelNum(n: number): string {
 
 function isEmptyDataVal(v: unknown): boolean {
   return v == null || v === '' || v === '—' || v === '-';
+}
+
+/** Mały medalion ikony technologii (14px) do wklejenia w tekst-podpowiedzi (innerHTML). */
+function techIconHintSpan(techName: string | null | undefined, sizePx = 14): string {
+  if (!techName) return '';
+  const svg = techIconSvg(techName, sizePx);
+  if (!svg) return '';
+  return `<span style="display:inline-flex;width:${sizePx}px;height:${sizePx}px;vertical-align:-3px;margin-right:4px;color:var(--gold);">${svg}</span>`;
 }
 
 function unitExtraField(u: UnitDef, key: string): string | number | null {
@@ -4666,7 +4679,7 @@ function appendTechDetailBlock(card: HTMLElement, data: GameData, techName: stri
   }
   const t = getTechDef(data, techName);
   const grid = appendDetailGrid(card);
-  gridDetailRow(grid, 'Odblokowuje tech', techName);
+  gridDetailRow(grid, 'Odblokowuje tech', `${techIconHintSpan(techName)}${techName}`);
   if (!t) return;
 
   if (t.Epoka) gridDetailRow(grid, 'Epoka tech', t.Epoka);
@@ -4675,10 +4688,12 @@ function appendTechDetailBlock(card: HTMLElement, data: GameData, techName: stri
 
   const chain = techPrereqChain(data, techName);
   if (chain.length > 1) {
-    gridDetailRow(grid, 'Łańcuch wymagań', chain.join(' → '));
+    gridDetailRow(grid, 'Łańcuch wymagań', chain.map(n => `${techIconHintSpan(n, 12)}${n}`).join(' → '));
   } else {
     const prereq = t['Wymaga (prereq)'];
-    if (prereq && !isEmptyDataVal(prereq)) gridDetailRow(grid, 'Bezpośredni prereq', String(prereq));
+    if (prereq && !isEmptyDataVal(prereq)) {
+      gridDetailRow(grid, 'Bezpośredni prereq', `${techIconHintSpan(String(prereq))}${String(prereq)}`);
+    }
   }
 
   if (t['wymagany budynek'] && !isEmptyDataVal(t['wymagany budynek'])) {
@@ -5222,7 +5237,9 @@ function formatBuildingCatalogLockHint(
   if (entry.status === 'ready') return '';
 
   const parts: string[] = [];
+  let techIc = '';
   if (entry.missingTech) {
+    techIc = techIconHintSpan(entry.missingTech);
     const unlocked = new Set(unlockedTechs);
     const steps = missingTechSteps(data, entry.missingTech, unlocked);
     if (steps.length > 0) {
@@ -5241,7 +5258,7 @@ function formatBuildingCatalogLockHint(
   if (entry.wymagania && !isEmptyDataVal(entry.wymagania)) {
     parts.push(entry.wymagania);
   }
-  return parts.length > 0 ? `🔒 ${parts.join(' · ')}` : '🔒 Niedostępny';
+  return parts.length > 0 ? `🔒 ${techIc}${parts.join(' · ')}` : '🔒 Niedostępny';
 }
 
 /** Podpowiedź badań do podglądu epoki (toggle B) — łańcuch tech nawet gdy gracz już ma odblokowane. */
@@ -5256,7 +5273,7 @@ function formatBuildingPreviewHint(
   if (tech) {
     const steps = missingTechSteps(data, tech, unlocked);
     if (steps.length > 0) {
-      parts.push(`🔒 Zbadaj: ${steps.join(' → ')}`);
+      parts.push(`🔒 ${techIconHintSpan(tech)}Zbadaj: ${steps.join(' → ')}`);
     } else {
       parts.push('Badania OK — można budować (lista powyżej)');
     }

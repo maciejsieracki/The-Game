@@ -26,6 +26,7 @@ import unitsJson from '../../data/units.json';
 import techJson from '../../data/tech.json';
 import { DIPLO_1E_SHARED_CSS, ensureDiploBrandScope } from './diploUiSkin';
 import { brandIconSvg } from './icons/brandAssets';
+import { techIconSvg } from './techIcons';
 
 export type TradeBasketMode = 'trade' | 'gift';
 
@@ -309,9 +310,13 @@ function itemsListHtml(items: BasketItem[], ctx: NegotiationModalContext, side: 
   return items.map((item, idx) => {
     const pn = itemPn(item, ctx);
     const pnStr = pn != null ? pn + ' PN' : '? PN';
+    const techIcHtml = item.typ === 'tech' ? (techIconSvg(item.id ?? '', 13) ?? '') : '';
+    const techIcWrap = techIcHtml
+      ? '<span style="display:inline-flex;width:13px;height:13px;vertical-align:-2px;margin-right:4px">' + techIcHtml + '</span>'
+      : '';
     return (
       '<div class="cdb-item" data-side="' + side + '" data-idx="' + idx + '">' +
-        '<span>' + esc(itemLabel(item, ctx)) + '</span>' +
+        '<span>' + techIcWrap + esc(itemLabel(item, ctx)) + '</span>' +
         '<span class="cdb-item-pn">' + pnStr + '</span>' +
         '<button type="button" class="cdb-rm" data-side="' + side + '" data-idx="' + idx + '" title="Usuń">×</button>' +
       '</div>'

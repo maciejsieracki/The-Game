@@ -6,6 +6,7 @@
 
 import type { ImprovementKey } from '../render/improvements';
 import { improvementIconSvg } from './icons/brandAssets';
+import { techIconSvg } from './techIcons';
 
 export interface BuildTypeInfo {
   key: ImprovementKey;
@@ -204,12 +205,16 @@ export function createBuildModeHud(config: BuildModeHudConfig): BuildModeHudApi 
       const costLabel = t.kosztPraca <= 0 ? 'FREE' : t.kosztPraca + ' P';
       const hint = locked ? (t.lockHint ?? (t.techLabel ? 'Technologia: «' + t.techLabel + '»' : 'Zablokowane')) : '';
       const techHint = locked ? ' · 🔒' : '';
+      const hintTechIc = (locked && t.techLabel) ? (techIconSvg(t.techLabel, 12) ?? '') : '';
+      const hintTechIcWrap = hintTechIc
+        ? '<span style="display:inline-flex;width:12px;height:12px;vertical-align:-2px;margin-right:3px">' + hintTechIc + '</span>'
+        : '';
       html += '<div class="civ-build-item' + sel + (locked ? ' locked' : '') + '" data-key="' + t.key + '"'
         + (locked && hint ? ' data-lock-hint="' + hint.replace(/"/g, '&quot;') + '"' : '')
         + ' title="' + (locked && hint ? hint : t.label) + '">'
         + '<span class="ic">' + ic + '</span>'
         + '<span>' + t.label + '</span>'
-        + '<span class="meta">' + (locked && hint ? hint : ('E' + t.epoka + ' · ' + costLabel + techHint)) + '</span></div>';
+        + '<span class="meta">' + (locked && hint ? (hintTechIcWrap + hint) : ('E' + t.epoka + ' · ' + costLabel + techHint)) + '</span></div>';
     }
 
     const wonders = config.listWonders?.() ?? [];

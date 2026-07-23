@@ -6,6 +6,7 @@
 import { scienceOwlIconHtml } from './icons/scienceOwlIcon';
 import { brandIconSvg } from './icons/brandAssets';
 import { bindHudPanelOutsideDismiss } from './hudPanelDismiss';
+import { techIconSvg } from './techIcons';
 
 export interface ScienceHubProgress {
   targetName: string | null;
@@ -167,7 +168,8 @@ export function createScienceHubHud(config: ScienceHubHudConfig): ScienceHubHudA
     const pct = Math.max(0, Math.min(100, Math.round(prog.postepFraction * 100)));
     const eta = prog.turnsLeft > 0 ? prog.turnsLeft + ' tur' : '<1 tury';
     const rate = prog.naukaRate !== undefined ? ' · +' + prog.naukaRate + ' PN/t' : '';
-    box.innerHTML = '<div class="sh-prog-target"><span class="sh-owl">' + scienceOwlIconHtml()
+    const targetIcon = techIconSvg(prog.targetName, 16) ?? scienceOwlIconHtml();
+    box.innerHTML = '<div class="sh-prog-target"><span class="sh-owl">' + targetIcon
       + '</span> ' + esc(prog.targetName) + '</div>'
       + '<div class="sh-prog-meta">Pula: ' + Math.round(prog.pula) + ' / ' + Math.round(prog.kosztCelu) + ' PN'
       + ' · ' + pct + '% · ETA ' + esc(eta) + rate + '</div>'
@@ -265,7 +267,9 @@ export function createScienceHubHud(config: ScienceHubHudConfig): ScienceHubHudA
       row.tabIndex = 0;
       const ico = document.createElement('span');
       ico.className = 'sh-ico';
-      ico.innerHTML = lockedRow ? brandIconSvg('ui-lock', 20) : brandIconSvg('res-science', 20);
+      ico.innerHTML = lockedRow
+        ? brandIconSvg('ui-lock', 20)
+        : (techIconSvg(e.name, 20) ?? brandIconSvg('res-science', 20));
       const body = document.createElement('div');
       body.className = 'sh-body';
       const name = document.createElement('div');

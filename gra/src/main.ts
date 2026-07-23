@@ -203,6 +203,7 @@ import { showCityCaptureNotice } from './ui/cityCaptureNotice';
 import { showArmyMergePanel, hideArmyMergePanel, isArmyMergePanelOpen } from './ui/armyMergePanel';
 import { showArmySplitPanel, hideArmySplitPanel, isArmySplitPanelOpen } from './ui/armySplitPanel';
 import { unitIconSvg, epochIconSvg } from './ui/icons/brandAssets';
+import { techIconSvg } from './ui/techIcons';
 import {
   visibleStackOnHex,
   computeStackDisplay,
@@ -2132,9 +2133,13 @@ async function boot(): Promise<void> {
     }
 
     function wonderReqLabelHtml(w: WonderDef): string {
+      const techIcons = (w.techUnlock ?? []).map(t => {
+        const ic = techIconSvg(t, 13);
+        return ic ? `<span style="display:inline-flex;width:13px;height:13px;vertical-align:-2px;margin-right:2px">${ic}</span>` : '';
+      }).join('');
       const tech = (w.techUnlock ?? []).join(' + ');
       const teren = (w.wymagaTerenu ?? []).join(' / ');
-      return `Tech: <b>${tech}</b> · teren: ${teren}`;
+      return `Tech: ${techIcons}<b>${tech}</b> · teren: ${teren}`;
     }
 
     function wonderCostLabelHtml(w: WonderDef): string {
@@ -2323,7 +2328,9 @@ async function boot(): Promise<void> {
       const unlocked = unlockedTechSetForOwner(0);
       return techs.map(t => {
         const ok = unlocked.has(t);
-        return `<span class="cw-dep ${ok ? 'cw-dep-ok' : 'cw-dep-no'}">${ok ? '✓' : '✗'} ${t}</span>`;
+        const ic = techIconSvg(t, 13);
+        const icHtml = ic ? `<span style="display:inline-flex;width:13px;height:13px;vertical-align:-2px;margin-right:3px">${ic}</span>` : '';
+        return `<span class="cw-dep ${ok ? 'cw-dep-ok' : 'cw-dep-no'}">${icHtml}${ok ? '✓' : '✗'} ${t}</span>`;
       }).join('') + `<span class="cw-dep cw-dep-ok" style="opacity:.75">teren: ${(w.wymagaTerenu ?? []).join('/')}</span>`;
     }
 
@@ -13301,7 +13308,11 @@ async function boot(): Promise<void> {
             // Auto-research: spend banked science on the cheapest available tech.
             const step = researchStep(player, data.tech, researchGateForOwner(0), _menuDifficulty);
             for (const done of step.completed) {
-              let msg = 'Zbadano: ' + done.id + ' (-' + done.koszt + ' nauki)';
+              const doneIcon = techIconSvg(done.id, 16);
+              const doneIconHtml = doneIcon
+                ? `<span style="display:inline-flex;width:16px;height:16px;vertical-align:-3px;margin-right:5px;color:#e8d88a">${doneIcon}</span>`
+                : '';
+              let msg = doneIconHtml + 'Zbadano: ' + done.id + ' (-' + done.koszt + ' nauki)';
               if (done.awansEpoki) msg += ' \xb7 nowa epoka ' + done.era;
               if (done.pieniadz)   msg += ' \xb7 Pieni\u0105dz \xd710';
               console.log('[Nauka] Tura ' + turn + ': ' + msg);
