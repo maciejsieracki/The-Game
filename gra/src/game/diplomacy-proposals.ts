@@ -19,6 +19,7 @@ import {
   addTreaty,
   type ActiveDeal,
   type HandelDealPayload,
+  type HandelSurowiecCyklicznyItem,
   type TreatyKind,
   normalizeTreatyKind,
 } from './diplomacy-treaties';
@@ -92,6 +93,15 @@ export interface ProposalPayload {
   receiveItems?: readonly BasketItem[];
   /** Czysty dar (prezent) bez towaru w zamian */
   isGift?: boolean;
+  /**
+   * HANDEL-SUROWCE-CYKL (2026-07-24): tryb wymiany surowca ilościowego
+   * (`surowiec_ilosc` w giveItems/receiveItems). 'once' (domyślnie, brak pola)
+   * = jednorazowy transfer natychmiast (istniejące zachowanie, oneShotTrade).
+   * 'per_turn' = surowiec↔zapłata płynie CO TURĘ przez `turns` tur (deal
+   * cykliczny, ActiveDeal.handelSurowiecCykliczny) — ownerId-agnostyczne,
+   * działa identycznie gdy proponentem jest gracz LUB AI.
+   */
+  resourceTradeMode?: 'once' | 'per_turn';
 }
 
 export interface DiplomaticProposal {
@@ -206,6 +216,7 @@ function buildDeal(
   ekonomia?: ActiveDeal['ekonomia'],
   handelJednorazowy?: boolean,
   handelPayload?: HandelDealPayload,
+  handelSurowiecCykliczny?: HandelSurowiecCyklicznyItem[],
 ): ActiveDeal {
   return {
     id: makeDealId(rodzaj, turn, a, b),
@@ -216,6 +227,7 @@ function buildDeal(
     ekonomia,
     handelJednorazowy,
     handelPayload,
+    handelSurowiecCykliczny,
   };
 }
 
@@ -233,6 +245,49 @@ export function proposalHasResourceAccess(payload: {
 /** Czas trwałej umowy handlowej: 1–20 tur (Maciej 2026-07-21). */
 export function clampDealTurns(turns: number | undefined, defaultTurns = 15): number {
   return clamp(turns ?? defaultTurns, 1, 20);
+}
+
+/**
+ * HANDEL-SUROWCE-CYKL (2026-07-24): koszyk `surowiec_ilosc` (+ opcjonalna zapłata
+ * zloto/praca po stronie przeciwnej) → przepływy CO TURĘ. `ilosc` na pozycji
+ * `surowiec_ilosc` to PAKIETY/turę (ta sama jednostka co w trybie jednorazowym —
+ * main.ts transferBasketItems mnoży przez diplomacyHandelSurowcePakietWielkosc()).
+ * Obsługuje oba kierunki naraz (barter surowiec-za-surowiec) — zwykle jeden wpis.
+ * ownerId-agnostyczne: proposerId/responderId mogą być gracz LUB dowolne AI.
+ */
+export function buildHandelSurowiecCykliczny(
+  proposerId: number,
+  responderId: number,
+  giveItems: readonly BasketItem[] = [],
+  receiveItems: readonly BasketItem[] = [],
+): HandelSurowiecCyklicznyItem[] {
+  const out: HandelSurowiecCyklicznyItem[] = [];
+  const giveRes = giveItems.find(i => i.typ === 'surowiec_ilosc' && (i.ilosc ?? 0) > 0);
+  const givePayment = giveItems.find(i => i.typ === 'zloto' || i.typ === 'praca');
+  const recvRes = receiveItems.find(i => i.typ === 'surowiec_ilosc' && (i.ilosc ?? 0) > 0);
+  const recvPayment = receiveItems.find(i => i.typ === 'zloto' || i.typ === 'praca');
+
+  if (giveRes) {
+    out.push({
+      surowiecKey: giveRes.id,
+      pakietyPerTura: Math.floor(giveRes.ilosc ?? 0),
+      sellerOwnerId: proposerId,
+      buyerOwnerId: responderId,
+      zaplataTyp: recvPayment?.typ as 'zloto' | 'praca' | undefined,
+      zaplataPerTura: recvPayment?.ilosc,
+    });
+  }
+  if (recvRes) {
+    out.push({
+      surowiecKey: recvRes.id,
+      pakietyPerTura: Math.floor(recvRes.ilosc ?? 0),
+      sellerOwnerId: responderId,
+      buyerOwnerId: proposerId,
+      zaplataTyp: givePayment?.typ as 'zloto' | 'praca' | undefined,
+      zaplataPerTura: givePayment?.ilosc,
+    });
+  }
+  return out;
 }
 
 /**
@@ -445,6 +500,42 @@ export function evaluateProposal(
         };
       }
 
+      // HANDEL-SUROWCE-CYKL (2026-07-24): tryb „Wymiana przez X tur" — surowiec_ilosc
+      // (+ ewentualna zapłata zloto/praca) płynie CO TURĘ zamiast raz. ownerId-agnostyczne:
+      // ta sama ścieżka niezależnie od tego, czy proponentem jest gracz czy AI (obie strony
+      // oceniane tym samym pnDealAcceptedByAi — AI realnie może odrzucić ofertę gracza).
+      const hasQuantityResourceItems =
+        (payload.giveItems?.some(i => i.typ === 'surowiec_ilosc') ?? false)
+        || (payload.receiveItems?.some(i => i.typ === 'surowiec_ilosc') ?? false);
+      if (payload.resourceTradeMode === 'per_turn' && hasQuantityResourceItems) {
+        if (!pnDealAcceptedByAi(givePn, receivePn, relTotal)) {
+          return { accepted: false, reason: 'Oferta poniżej uczciwej wartości PN @ Relacji' };
+        }
+        const turns = clampDealTurns(payload.turns);
+        const cyklicznyItems = buildHandelSurowiecCykliczny(
+          proposerOwnerId, responderOwnerId, payload.giveItems, payload.receiveItems,
+        );
+        if (!cyklicznyItems.length) {
+          return { accepted: false, reason: 'Brak surowca do cyklicznej wymiany' };
+        }
+        const deal = buildDeal(
+          RodzajTraktatu.UmowaHandlowa,
+          proposerOwnerId,
+          responderOwnerId,
+          ctx.turn,
+          ctx.turn + turns,
+          undefined,
+          false,
+          undefined,
+          cyklicznyItems,
+        );
+        return {
+          accepted: true,
+          reason: `Umowa handlowa (surowiec co turę) na ${turns} tur`,
+          deal,
+        };
+      }
+
       if (hasPnPath) {
         if (!pnDealAcceptedByAi(givePn, receivePn, relTotal)) {
           return { accepted: false, reason: 'Oferta poniżej uczciwej wartości PN @ Relacji' };
@@ -631,6 +722,11 @@ export function formatAiDiplomacyPlayerMessage(cmd: AIDiplomacyCommand): string 
       return `Oferujemy jednorazową zapłatę ${cmd.goldOnce ?? 0} ¤ w zamian za pokój.`;
     case 'wypowiedz_wojne':
       return 'Wypowiadamy wojnę — nasze wojska są gotowe do walki.';
+    case 'zaproponuj_handel_surowiec': {
+      const zaplataLabel = cmd.zaplataTyp === 'praca' ? 'Praca' : '¤';
+      return `Mamy nadwyżkę surowca ${cmd.label} — oferujemy ${cmd.pakietyPerTura} pakiet(y)/turę`
+        + ` za ${cmd.zaplataPerTura} ${zaplataLabel}/turę przez ${cmd.turns} tur.`;
+    }
     default:
       return 'Propozycja dyplomatyczna od tego państwa.';
   }
@@ -695,6 +791,22 @@ export function aiCommandToPendingProposal(
         payload: { goldOnce },
       };
     }
+    case 'zaproponuj_handel_surowiec': {
+      if (cmd.pakietyPerTura <= 0) return null;
+      return {
+        ...base,
+        id: makeDealId('pending-handelsurowiec', turn, fromOwnerId, toOwnerId),
+        actionId: 'handel',
+        payload: {
+          giveItems: [{ typ: 'surowiec_ilosc', id: cmd.surowiecKey, ilosc: cmd.pakietyPerTura }],
+          receiveItems: cmd.zaplataPerTura > 0
+            ? [{ typ: cmd.zaplataTyp, id: cmd.zaplataTyp, ilosc: cmd.zaplataPerTura }]
+            : undefined,
+          resourceTradeMode: 'per_turn',
+          turns: cmd.turns,
+        },
+      };
+    }
     default:
       return null;
   }
@@ -735,6 +847,34 @@ export function resolvePlayerAcceptsAiPending(
       return { accepted: true, reason: 'Sojusz pełny zawarty', deal };
     }
     case 'handel': {
+      // HANDEL-SUROWCE-CYKL (2026-07-24): AI zaproponowała cykliczny handel
+      // surowcem (zaproponuj_handel_surowiec) — gracz akceptuje DOKŁADNIE tę ofertę
+      // (AI już wyceniła ją fair @ katalog PN przy budowaniu propozycji, main.ts
+      // pickResourceSurplusForOwnerPair), bez ponownej oceny pnDealAcceptedByAi.
+      const hasQuantityResourceItems =
+        (payload.giveItems?.some(i => i.typ === 'surowiec_ilosc') ?? false)
+        || (payload.receiveItems?.some(i => i.typ === 'surowiec_ilosc') ?? false);
+      if (payload.resourceTradeMode === 'per_turn' && hasQuantityResourceItems) {
+        const turns = clampDealTurns(payload.turns);
+        const cyklicznyItems = buildHandelSurowiecCykliczny(
+          fromOwnerId, toOwnerId, payload.giveItems, payload.receiveItems,
+        );
+        if (!cyklicznyItems.length) {
+          return { accepted: false, reason: 'Brak surowca do cyklicznej wymiany' };
+        }
+        const deal = buildDeal(
+          RodzajTraktatu.UmowaHandlowa,
+          fromOwnerId,
+          toOwnerId,
+          turn,
+          turn + turns,
+          undefined,
+          false,
+          undefined,
+          cyklicznyItems,
+        );
+        return { accepted: true, reason: `Umowa handlowa (surowiec co turę) na ${turns} tur`, deal };
+      }
       if (payload.goldOnce != null && payload.goldOnce > 0) {
         return { accepted: true, reason: 'Wymiana jednorazowa (T3A)', oneShotTrade: true };
       }

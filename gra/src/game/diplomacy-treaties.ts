@@ -13,6 +13,28 @@ export interface HandelDealPayload {
   receiveItems?: BasketItem[];
 }
 
+/**
+ * HANDEL-SUROWCE-CYKL (2026-07-24) — pojedynczy przepływ surowiec→zapłata CO TURĘ
+ * w ramach traktatu UmowaHandlowa (tryb „Wymiana przez X tur", odrębny od
+ * jednorazowego transferu w HandelDealPayload/oneShotTrade). ownerId-agnostyczny:
+ * sellerOwnerId/buyerOwnerId mogą być gracz (0) LUB dowolne AI w dowolnej
+ * kombinacji (gracz→AI, AI→gracz, AI→AI) — silnik (main.ts tickCyclicResourceTradeDeals)
+ * nie rozróżnia stron.
+ */
+export interface HandelSurowiecCyklicznyItem {
+  /** Klucz ASCII surowca (cities.ts City.surowce / diplomacy-value-catalog cennik). */
+  surowiecKey: string;
+  /** Ile PAKIETÓW surowca (diplomacyHandelSurowcePakietWielkosc) płynie sprzedawca→kupujący co turę. */
+  pakietyPerTura: number;
+  /** Dawca surowca (traci zapas z magazynu miast). */
+  sellerOwnerId: number;
+  /** Biorca surowca (zyskuje zapas), płaci zaplataPerTura sprzedawcy. */
+  buyerOwnerId: number;
+  /** Forma zapłaty biorcy → dawcy (brak = wymiana bez zapłaty, np. barter surowiec-za-surowiec). */
+  zaplataTyp?: 'zloto' | 'praca';
+  zaplataPerTura?: number;
+}
+
 /** Aktywny traktat między dwoma ownerId (gra używa number). */
 export interface ActiveDeal {
   id: string;
@@ -36,6 +58,14 @@ export interface ActiveDeal {
   handelJednorazowy?: boolean;
   /** Trwała wymiana dostępu do surowców/złóż (UmowaHandlowa). */
   handelPayload?: HandelDealPayload;
+  /**
+   * HANDEL-SUROWCE-CYKL: przepływy surowiec→zapłata CO TURĘ, aktywne dopóki deal
+   * nie wygaśnie (wygasaTura) / nie zostanie zerwany wojną (BREAK_ON_WAR już
+   * obejmuje UmowaHandlowa). SILNIK (main.ts tickCyclicResourceTradeDeals) tika
+   * po expireTreaties w runDiplomacyTurnTick — po wygaśnięciu deal znika z
+   * activeDeals razem z tym polem (brak osobnego cleanupu).
+   */
+  handelSurowiecCykliczny?: HandelSurowiecCyklicznyItem[];
 }
 
 export type AllianceEvent =

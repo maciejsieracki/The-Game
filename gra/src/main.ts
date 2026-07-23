@@ -655,6 +655,7 @@ import {
 import {
   activeDealsToPaymentDeals, tickDiplomacyPayments, applyOneShotGoldTransfer,
   tributeBreakPairsFromDeals, canAiProposeTradeAgreement,
+  AI_RESOURCE_TRADE_DEFAULT_TURNS, AI_RESOURCE_TRADE_MAX_PAKIETY_PER_TURA,
 } from './game/diplomacy-economy';
 import { RodzajTraktatu } from './types/diplomacy';
 import {
@@ -677,6 +678,7 @@ import {
   diplomacyResourceAccessCatalog,
   diplomacyHandelSurowcePakietWielkosc,
   diplomacyHandelSurowceCatalog,
+  diplomacyPnSurowiecIlosc,
 } from './game/diplomacy-value-catalog';
 import {
   collectUnauthorizedBorderPairs,
@@ -5174,6 +5176,13 @@ async function boot(): Promise<void> {
     const pendingDiplomacyInbox: Array<{
       id: string; ownerId: number; civName: string; cmdType: string; reason: string;
       goldOnce?: number;
+      /** HANDEL-SUROWCE-CYKL (2026-07-24): dane 'zaproponuj_handel_surowiec', do odtworzenia cmd przy akceptacji. */
+      surowiecKey?: string;
+      surowiecLabel?: string;
+      pakietyPerTura?: number;
+      zaplataTyp?: 'zloto' | 'praca';
+      zaplataPerTura?: number;
+      resTurns?: number;
     }> = [];
 
     /** Tura ostatniej propozycji jednorazowego daru ¤ AI→gracz (cooldown per ownerId). */
@@ -5189,6 +5198,11 @@ async function boot(): Promise<void> {
      * klucz diploPairKey(a,b) — patrz formAiAiTradeAgreementsIfEligible).
      */
     const aiAiTradeAgreementLastTurn = new Map<string, number>();
+    /**
+     * HANDEL-SUROWCE-CYKL (2026-07-24): tura ostatniej PROAKTYWNEJ propozycji handlu
+     * surowcem AI→gracz (cooldown per ownerId — gracz jest zawsze druga strona, 0).
+     */
+    const aiResourceTradeLastProposalTurn = new Map<number, number>();
 
     function unitAttackScore(u: RuntimeUnit): number {
       return normFieldVal(lookupUnitDef(u.typeId)['meleeAttack'], 0);
@@ -7585,6 +7599,7 @@ async function boot(): Promise<void> {
         case 'zaproponuj_sojusz': return 'Propozycja sojuszu';
         case 'zaproponuj_handel': return 'Propozycja handlu';
         case 'zaproponuj_umowe_handlowa': return 'Propozycja umowy handlowej';
+        case 'zaproponuj_handel_surowiec': return 'Propozycja handlu surowcem';
         case 'zadaj_trybut': return 'Żądanie trybutu';
         case 'oferuj_trybut_za_pokoj': return 'Trybut za pokój';
         default: return 'Propozycja dyplomatyczna';
@@ -7603,6 +7618,9 @@ async function boot(): Promise<void> {
       if (enriched.type === 'zaproponuj_umowe_handlowa') {
         aiTradeAgreementLastProposalTurn.set(ownerId, turn);
       }
+      if (enriched.type === 'zaproponuj_handel_surowiec') {
+        aiResourceTradeLastProposalTurn.set(ownerId, turn);
+      }
       enqueueDiplomacyPending(
         ownerId,
         enriched.type,
@@ -7612,6 +7630,7 @@ async function boot(): Promise<void> {
           : enriched.type === 'zaproponuj_umowe_handlowa'
             ? enriched.sweetenerGold
             : undefined,
+        enriched.type === 'zaproponuj_handel_surowiec' ? enriched : undefined,
       );
     }
 
@@ -7620,6 +7639,7 @@ async function boot(): Promise<void> {
       cmdType: string,
       reason: string,
       goldOnce?: number,
+      resourceCmd?: Extract<AIDiplomacyCommand, { type: 'zaproponuj_handel_surowiec' }>,
     ): void {
       const id = 'diplo-pend-' + ownerId + '-' + cmdType + '-' + turn + '-' + pendingDiplomacyInbox.length;
       if (pendingDiplomacyInbox.some(p => p.ownerId === ownerId && p.cmdType === cmdType)) return;
@@ -7630,6 +7650,12 @@ async function boot(): Promise<void> {
         cmdType,
         reason,
         goldOnce,
+        surowiecKey: resourceCmd?.surowiecKey,
+        surowiecLabel: resourceCmd?.label,
+        pakietyPerTura: resourceCmd?.pakietyPerTura,
+        zaplataTyp: resourceCmd?.zaplataTyp,
+        zaplataPerTura: resourceCmd?.zaplataPerTura,
+        resTurns: resourceCmd?.turns,
       });
       showHintMessage('Dyplomacja: ' + ownerDiploLabel(ownerId) + ' — ' + diploPendingTitle(cmdType), 4500);
       refreshD1bHud();
@@ -7655,6 +7681,13 @@ async function boot(): Promise<void> {
             // goldOnce -- pendingDiplomacyInbox przechowuje oba pod jednym polem `goldOnce`,
             // wiec dublujemy tutaj by aiCommandToPendingProposal odczytal wlasciwe pole.
             sweetenerGold: p.goldOnce,
+            // HANDEL-SUROWCE-CYKL: pola potrzebne do odtworzenia 'zaproponuj_handel_surowiec'.
+            surowiecKey: p.surowiecKey,
+            label: p.surowiecLabel,
+            pakietyPerTura: p.pakietyPerTura,
+            zaplataTyp: p.zaplataTyp,
+            zaplataPerTura: p.zaplataPerTura,
+            turns: p.resTurns,
           } as AIDiplomacyCommand;
           const pending = aiCommandToPendingProposal(cmd, p.ownerId, 0, turn);
           if (pending) {
@@ -7674,6 +7707,9 @@ async function boot(): Promise<void> {
         }
         if (p.cmdType === 'zaproponuj_umowe_handlowa') {
           aiTradeAgreementLastProposalTurn.set(p.ownerId, turn);
+        }
+        if (p.cmdType === 'zaproponuj_handel_surowiec') {
+          aiResourceTradeLastProposalTurn.set(p.ownerId, turn);
         }
         showDiplomacyProposalBanner(false, 'Odrzucono propozycję');
         showHintMessage('Odrzucono: ' + p.civName, 3000);
@@ -8263,6 +8299,40 @@ async function boot(): Promise<void> {
     }
 
     /**
+     * HANDEL-SUROWCE-CYKL (2026-07-24) — nadwyżka surowca sprzedającego, którego
+     * kupujący NIE MA (lub ma najmniej), do zaproponowania jako cykliczny handel
+     * co turę. ownerId-agnostyczne: sellerOwnerId/buyerOwnerId = DOWOLNY właściciel
+     * (gracz=0 lub AI) w DOWOLNEJ kombinacji — ta sama funkcja obsługuje gracz↔AI
+     * (obie strony) i AI↔AI. Cena = katalog PN (diplomacyPnSurowiecIlosc) — fair,
+     * deterministyczna, bez negocjacji (używana tylko do AUTOMATYCZNYCH ofert AI;
+     * gracz nadal może zaoferować dowolną cenę przez koszyk, oceni ją evaluateProposal).
+     */
+    function pickResourceSurplusForOwnerPair(
+      sellerOwnerId: number,
+      buyerOwnerId: number,
+    ): { surowiecKey: string; label: string; pakietyPerTura: number; zaplataPerTura: number } | null {
+      const sellerOpts = quantityTradableGoodOptions(sellerOwnerId);
+      if (!sellerOpts.length) return null;
+      const buyerGoods = tradableGoodsIndexForOwner(buyerOwnerId);
+      const buyerHave = new Set(buyerGoods.filter(g => (g.ilosc ?? 0) > 0).map(g => g.key));
+      const sorted = [...sellerOpts].sort((a, b) => b.maxPakiety - a.maxPakiety);
+      const pick = sorted.find(o => !buyerHave.has(o.id)) ?? sorted[0];
+      if (!pick || pick.maxPakiety <= 0) return null;
+      const pakiety = Math.max(1, Math.min(AI_RESOURCE_TRADE_MAX_PAKIETY_PER_TURA, pick.maxPakiety));
+      const zaplata = diplomacyPnSurowiecIlosc(pick.id, pakiety) ?? 0;
+      if (zaplata <= 0) return null;
+      const label = pick.label.split(' ×')[0] ?? pick.id;
+      return { surowiecKey: pick.id, label, pakietyPerTura: pakiety, zaplataPerTura: zaplata };
+    }
+
+    /** Czy para (a,b) ma już aktywny cykliczny deal surowcowy (dowolny surowiec, dowolny kierunek). */
+    function hasActiveResourceTradeDealForPair(a: number, b: number): boolean {
+      return activeDeals.some(
+        d => dealInvolvesOwners(d, a, b) && (d.handelSurowiecCykliczny?.length ?? 0) > 0,
+      );
+    }
+
+    /**
      * E6 (2026-07-23): AI↔AI proaktywnie zawiera STAŁĄ Umowę Handlową
      * (RodzajTraktatu.UmowaHandlowa) — analogicznie do formSisterAlliancesIfThreatened
      * (dyplomacja AI↔AI poza gracz↔AI dziś NIE ISTNIEJE inaczej), ale bez ograniczenia
@@ -8311,13 +8381,46 @@ async function boot(): Promise<void> {
           if (!hasConnection) continue;
 
           const [p0, p1] = pairOwnerIds(a, b);
+          // HANDEL-SUROWCE-CYKL (2026-07-24): przy okazji zawarcia Umowy Handlowej
+          // AI↔AI, jeśli jedna strona ma wyraźną nadwyżkę surowca, którego druga
+          // nie ma — dołóż cykliczny przepływ surowiec→¤. Nie blokuje zawarcia
+          // samej umowy, gdy nadwyżki brak (handelSurowiecCykliczny zostaje undefined).
+          const offerAtoB = pickResourceSurplusForOwnerPair(a, b);
+          const offerBtoA = pickResourceSurplusForOwnerPair(b, a);
+          const bestOffer = offerAtoB && offerBtoA
+            ? (offerAtoB.pakietyPerTura * offerAtoB.zaplataPerTura
+              >= offerBtoA.pakietyPerTura * offerBtoA.zaplataPerTura
+              ? { seller: a, buyer: b, offer: offerAtoB }
+              : { seller: b, buyer: a, offer: offerBtoA })
+            : offerAtoB
+              ? { seller: a, buyer: b, offer: offerAtoB }
+              : offerBtoA
+                ? { seller: b, buyer: a, offer: offerBtoA }
+                : null;
+          const handelSurowiecCykliczny = bestOffer
+            ? [{
+                surowiecKey: bestOffer.offer.surowiecKey,
+                pakietyPerTura: bestOffer.offer.pakietyPerTura,
+                sellerOwnerId: bestOffer.seller,
+                buyerOwnerId: bestOffer.buyer,
+                zaplataTyp: 'zloto' as const,
+                zaplataPerTura: bestOffer.offer.zaplataPerTura,
+              }]
+            : undefined;
           activeDeals = addTreaty(activeDeals, {
             id: `umowa_handlowa_aiai_${p0}_${p1}_t${turn}`,
             rodzaj: RodzajTraktatu.UmowaHandlowa,
             strony: [p0, p1],
             wygasaTura: turn + clampDealTurns(undefined),
             zawartaTura: turn,
+            handelSurowiecCykliczny,
           });
+          if (handelSurowiecCykliczny) {
+            console.log(
+              `[Dyplomacja] AI↔AI handel surowcem: ${ownerDiploLabel(bestOffer!.seller)} → ` +
+              `${ownerDiploLabel(bestOffer!.buyer)}: ${bestOffer!.offer.label} ×${bestOffer!.offer.pakietyPerTura} pakiet(y)/turę`,
+            );
+          }
           syncRelationFromDeals(a, b);
           aiAiTradeAgreementLastTurn.set(pairKey, turn);
           console.log(
@@ -8399,6 +8502,55 @@ async function boot(): Promise<void> {
       }
     }
 
+    /**
+     * HANDEL-SUROWCE-CYKL (2026-07-24) — co turę: dla każdy aktywny ActiveDeal z
+     * handelSurowiecCykliczny, przenieś pakietyPerTura surowca sprzedawca→kupujący
+     * (transferSurowiecIlosc — magazyn per-miasto, suma ownera, patrz komentarz w
+     * transferBasketItems case 'surowiec_ilosc') i pobierz zapłatę kupujący→sprzedawca
+     * (zloto przez treasury / praca przez ownerPracaPool). ownerId-agnostyczne —
+     * sellerOwnerId/buyerOwnerId mogą być gracz (0) LUB dowolne AI, w dowolnej
+     * kombinacji (gracz↔AI dowolny kierunek, AI↔AI) — brak specjalnego traktowania
+     * ownerId===0. Brak zapasów u dawcy tej tury → pomijamy transfer I zapłatę
+     * (deal NIE jest zrywany — może się odnowić następną turą; wygasa naturalnie
+     * przez wygasaTura/expireTreaties albo zrywa się wojną jak każda UmowaHandlowa).
+     * Brak środków u biorcy → transfer surowca i tak następuje (już przekazany),
+     * ale zapłata się nie wykonuje (applyOneShotGoldTransfer no-op przy niedoborze;
+     * Praca — setOwnerPracaPool klampuje do 0, więc biorca płaci ile ma).
+     */
+    function tickCyclicResourceTradeDeals(): void {
+      if (!activeDeals.some(d => (d.handelSurowiecCykliczny?.length ?? 0) > 0)) return;
+      const treasury = buildDiploTreasury();
+      for (const deal of activeDeals) {
+        const items = deal.handelSurowiecCykliczny;
+        if (!items?.length) continue;
+        for (const item of items) {
+          if (item.sellerOwnerId === item.buyerOwnerId) continue;
+          const capId = capitalCityIdForOwner(item.buyerOwnerId);
+          const refs = cities.map(c => ({ id: c.id, ownerId: c.ownerId, surowce: c.surowce ?? {} }));
+          const totalUnits = item.pakietyPerTura * diplomacyHandelSurowcePakietWielkosc();
+          const result = transferSurowiecIlosc(
+            item.surowiecKey, totalUnits, item.sellerOwnerId, item.buyerOwnerId, capId, refs,
+          );
+          for (let i = 0; i < cities.length; i++) {
+            const before = refs[i];
+            const after = result.cities[i];
+            if (before && after && after.surowce !== before.surowce) {
+              cities[i]!.surowce = after.surowce;
+            }
+          }
+          if (result.moved <= 0) continue; // brak zapasow dawcy ta ture -- pomijamy tez zaplate
+          const zaplata = item.zaplataPerTura ?? 0;
+          if (zaplata > 0 && item.zaplataTyp === 'zloto') {
+            applyOneShotGoldTransfer(item.buyerOwnerId, item.sellerOwnerId, zaplata, treasury);
+          } else if (zaplata > 0 && item.zaplataTyp === 'praca') {
+            setOwnerPracaPool(item.buyerOwnerId, ownerPracaPool(item.buyerOwnerId) - zaplata);
+            setOwnerPracaPool(item.sellerOwnerId, ownerPracaPool(item.sellerOwnerId) + zaplata);
+          }
+        }
+      }
+      if (isDiplomacyPanelOpen()) updateDiplomacyPanel();
+    }
+
     function runDiplomacyTurnTick(): void {
       const dealsBeforeExpire = activeDeals;
       activeDeals = expireTreaties(activeDeals, turn);
@@ -8407,6 +8559,7 @@ async function boot(): Promise<void> {
           zlozeGrants = deactivateZlozeGrantsForDeal(zlozeGrants, d.id);
         }
       }
+      tickCyclicResourceTradeDeals();
       const treasury = buildDiploTreasury();
       const payDeals = activeDealsToPaymentDeals(activeDeals, turn);
       const { broken, messages } = tickDiplomacyPayments(payDeals, treasury, turn);
@@ -8609,6 +8762,7 @@ async function boot(): Promise<void> {
         giveItems: (payload as NegotiationPayload & { giveItems?: BasketItem[] }).giveItems,
         receiveItems: (payload as NegotiationPayload & { receiveItems?: BasketItem[] }).receiveItems,
         isGift: (payload as NegotiationPayload & { isGift?: boolean }).isGift,
+        resourceTradeMode: payload.resourceTradeMode,
       };
       const proposal = {
         actionId: cywAction as import('./game/diplomacy-proposals').ProposalActionId,
@@ -12942,6 +13096,7 @@ async function boot(): Promise<void> {
           aiOneShotGiftLastTurn: Array.from(aiOneShotGiftLastTurn.entries()),
           aiTradeAgreementLastProposalTurn: Array.from(aiTradeAgreementLastProposalTurn.entries()),
           aiAiTradeAgreementLastTurn: Array.from(aiAiTradeAgreementLastTurn.entries()),
+          aiResourceTradeLastProposalTurn: Array.from(aiResourceTradeLastProposalTurn.entries()),
           diplomaticContactEstablished: Array.from(diplomaticContactEstablished),
           diplomaticallyDiscoveredOwners: Array.from(diplomaticallyDiscoveredOwners),
           diplomaticDiscoveryPopupShown: Array.from(diplomaticDiscoveryPopupShown),
@@ -14357,6 +14512,11 @@ async function boot(): Promise<void> {
                 map,
                 cityBuilt,
               );
+              // HANDEL-SUROWCE-CYKL (2026-07-24): ownerId-agnostyczne — ta sama
+              // funkcja liczy nadwyżkę AI(ownerId)→gracz(0) jak w AI↔AI (formAiAiTradeAgreementsIfEligible).
+              const resourceTradeOfferRaw = !relStatus || relStatus !== 'wojna'
+                ? pickResourceSurplusForOwnerPair(ownerId, 0)
+                : null;
               const diploInp: DiplomacjaInputs = {
                 myPlayerId: String(ownerId),
                 relacje: [{
@@ -14368,6 +14528,18 @@ async function boot(): Promise<void> {
                   hasHandelTreaty: tickCtx.aktywnyHandel,
                   hasTradeConnection: hasTradeConnectionToPlayer,
                   lastTradeAgreementProposalTurn: aiTradeAgreementLastProposalTurn.get(ownerId),
+                  resourceTradeOffer: resourceTradeOfferRaw
+                    ? {
+                        surowiecKey: resourceTradeOfferRaw.surowiecKey,
+                        label: resourceTradeOfferRaw.label,
+                        pakietyPerTura: resourceTradeOfferRaw.pakietyPerTura,
+                        zaplataTyp: 'zloto',
+                        zaplataPerTura: resourceTradeOfferRaw.zaplataPerTura,
+                        turns: AI_RESOURCE_TRADE_DEFAULT_TURNS,
+                      }
+                    : undefined,
+                  hasActiveResourceTradeDeal: hasActiveResourceTradeDealForPair(0, ownerId),
+                  lastResourceTradeProposalTurn: aiResourceTradeLastProposalTurn.get(ownerId),
                 }],
                 agresja: resolveArchetypeAggression(aiTyp, ARCHETYPE_AGGRESSION[aiTyp] ?? 0.5),
                 handlowosc: resolveArchetypeTrade(aiTyp, ARCHETYPE_TRADE[aiTyp] ?? 0.5),
@@ -14414,6 +14586,8 @@ async function boot(): Promise<void> {
                   } else if (cmd.type === 'zaproponuj_handel') {
                     enqueueDiplomacyPendingFromCmd(ownerId, cmd);
                   } else if (cmd.type === 'zaproponuj_umowe_handlowa') {
+                    enqueueDiplomacyPendingFromCmd(ownerId, cmd);
+                  } else if (cmd.type === 'zaproponuj_handel_surowiec') {
                     enqueueDiplomacyPendingFromCmd(ownerId, cmd);
                   }
                 } catch (eCmdDiplo) {
@@ -15636,6 +15810,7 @@ async function boot(): Promise<void> {
       aiOneShotGiftLastTurn.clear();
       aiTradeAgreementLastProposalTurn.clear();
       aiAiTradeAgreementLastTurn.clear();
+      aiResourceTradeLastProposalTurn.clear();
       units.length = 0;
       plannedMarches.clear();
       marchExecQueue.length = 0;
@@ -16782,6 +16957,11 @@ async function boot(): Promise<void> {
       const savedAiAiTradeCooldown = saved.meta?.aiAiTradeAgreementLastTurn as Array<[string, number]> | undefined;
       if (savedAiAiTradeCooldown?.length) {
         for (const [key, t] of savedAiAiTradeCooldown) aiAiTradeAgreementLastTurn.set(key, t);
+      }
+      aiResourceTradeLastProposalTurn.clear();
+      const savedResourceTradeCooldown = saved.meta?.aiResourceTradeLastProposalTurn as Array<[number, number]> | undefined;
+      if (savedResourceTradeCooldown?.length) {
+        for (const [oid, t] of savedResourceTradeCooldown) aiResourceTradeLastProposalTurn.set(oid, t);
       }
       activeDeals = [];
       // Audyt #44: aiSkarbiecByOwner bylo czyszczone bez petli odtwarzajacej

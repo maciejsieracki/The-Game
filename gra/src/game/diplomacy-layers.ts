@@ -144,6 +144,7 @@ const ESTABLISHED_CONTACT_CMDS = new Set<string>([
   'zaproponuj_sojusz',
   'zaproponuj_handel',
   'zaproponuj_umowe_handlowa',
+  'zaproponuj_handel_surowiec',
   'zadaj_trybut',
   'oferuj_trybut_za_pokoj',
 ]);

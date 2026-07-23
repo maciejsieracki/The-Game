@@ -2030,6 +2030,7 @@ import {
   aiOneShotGiftGoldMultiplier,
   canAiProposeOneShotGoldGift,
   canAiProposeTradeAgreement,
+  canAiProposeResourceTrade,
   capAiGoldOffer,
 } from './diplomacy-economy';
 
@@ -2115,6 +2116,24 @@ export interface RelacjaWejscie {
   hasTradeConnection?: boolean;
   /** Tura ostatniej PROAKTYWNEJ propozycji Umowy Handlowej (E6, cooldown per para). */
   lastTradeAgreementProposalTurn?: number;
+  /**
+   * HANDEL-SUROWCE-CYKL (2026-07-24): oferta nadwyżki surowca do zaproponowania
+   * TEMU partnerowi — main.ts oblicza z realnych magazynów (pickResourceSurplusForOwnerPair,
+   * ownerId-agnostyczne: działa identycznie gracz↔AI i AI↔AI). Brak/undefined =
+   * brak nadwyżki wartej zaoferowania → AI nie proponuje (bezpieczny domyślny brak).
+   */
+  resourceTradeOffer?: {
+    surowiecKey: string;
+    label: string;
+    pakietyPerTura: number;
+    zaplataTyp: 'zloto' | 'praca';
+    zaplataPerTura: number;
+    turns: number;
+  };
+  /** Czy z partnerem już trwa cykliczna umowa surowcowa (main.ts: activeDeals). */
+  hasActiveResourceTradeDeal?: boolean;
+  /** Tura ostatniej PROAKTYWNEJ propozycji handlu surowcem (cooldown per para). */
+  lastResourceTradeProposalTurn?: number;
 }
 
 /**
@@ -2161,7 +2180,12 @@ export type AIDiplomacyCommand =
   | { type: 'oferuj_trybut_za_pokoj'; targetId: string; powod: string; goldOnce?: number }
   | { type: 'zaproponuj_sojusz';     targetId: string; powod: string }
   | { type: 'zaproponuj_handel';     targetId: string; powod: string; goldOnce?: number }
-  | { type: 'zaproponuj_umowe_handlowa'; targetId: string; powod: string; sweetenerGold?: number };
+  | { type: 'zaproponuj_umowe_handlowa'; targetId: string; powod: string; sweetenerGold?: number }
+  | {
+      type: 'zaproponuj_handel_surowiec'; targetId: string; powod: string;
+      surowiecKey: string; label: string; pakietyPerTura: number;
+      zaplataTyp: 'zloto' | 'praca'; zaplataPerTura: number; turns: number;
+    };
 
 // ---------------------------------------------------------------------------
 // Opcjonalne overridy progów (dla testów lub trudności)
@@ -2418,6 +2442,36 @@ export function decideAIDiplomacy(
         powod:    `Relacja=${score} >= prog=${p.progHandelRelacjaMin}, polaczenie tras mozliwe, brak aktywnej umowy` +
           (sweetenerGold ? `: dokladamy oslodzik ${sweetenerGold} ¤ (Relacja blisko progu)` : ': proponujemy stala Umowe Handlowa'),
         sweetenerGold,
+      });
+      continue;
+    }
+
+    // ---- Priorytet 5c: zaproponuj_handel_surowiec (HANDEL-SUROWCE-CYKL, 2026-07-24) ----
+    // AI proaktywnie proponuje CYKLICZNĄ sprzedaż nadwyżki surowca (co turę, X tur)
+    // — ownerId-agnostyczne: ten sam kod trafia gracz↔AI I AI↔AI (main.ts oblicza
+    // rel.resourceTradeOffer identycznie dla obu wywołań decideAIDiplomacy). Wymaga
+    // realnej nadwyżki dostarczonej przez wywołującego (main.ts pickResourceSurplusForOwnerPair);
+    // bez pola (undefined) — AI NIE proponuje (bezpieczny brak zachowania).
+    if (
+      !rel.stanWojny &&
+      rel.resourceTradeOffer != null &&
+      !rel.hasActiveResourceTradeDeal &&
+      score >= p.progHandelRelacjaMin &&
+      canAiProposeResourceTrade(currentTurnForTrade, rel.lastResourceTradeProposalTurn)
+    ) {
+      const offer = rel.resourceTradeOffer;
+      const zaplataLabel = offer.zaplataTyp === 'praca' ? 'Praca' : '¤';
+      komendy.push({
+        type:     'zaproponuj_handel_surowiec',
+        targetId: rel.partnerId,
+        powod:    `Nadwyżka ${offer.label}: oferujemy ${offer.pakietyPerTura} pakiet(y)/turę` +
+          ` za ${offer.zaplataPerTura} ${zaplataLabel}/turę przez ${offer.turns} tur`,
+        surowiecKey: offer.surowiecKey,
+        label: offer.label,
+        pakietyPerTura: offer.pakietyPerTura,
+        zaplataTyp: offer.zaplataTyp,
+        zaplataPerTura: offer.zaplataPerTura,
+        turns: offer.turns,
       });
       continue;
     }

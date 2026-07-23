@@ -29,6 +29,12 @@ export interface NegotiationPayload {
   receivePn?: number;
   /** Czysty dar bez towaru w zamian */
   isGift?: boolean;
+  /**
+   * HANDEL-SUROWCE-CYKL (2026-07-24): tryb wymiany `surowiec_ilosc` w koszyku —
+   * 'once' (domyślnie) = jednorazowy transfer natychmiast; 'per_turn' = surowiec↔zapłata
+   * co turę przez `turns` tur (deal cykliczny).
+   */
+  resourceTradeMode?: 'once' | 'per_turn';
 }
 
 export interface NegotiationModalContext {

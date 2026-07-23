@@ -221,6 +221,32 @@ export function canAiProposeTradeAgreement(
   return currentTurn >= lastProposalTurn + cooldownTurns;
 }
 
+// ---------------------------------------------------------------------------
+// HANDEL-SUROWCE-CYKL (2026-07-24) — AI proponuje CYKLICZNY handel surowcem
+// (nadwyżka → partner) analogicznie do AI_TRADE_AGREEMENT_* powyżej. Reguły
+// ownerId-agnostyczne — main.ts oblicza nadwyżkę/brak dla DOWOLNEJ pary
+// (gracz↔AI lub AI↔AI) tym samym kodem (pickResourceSurplusForOwnerPair).
+// ---------------------------------------------------------------------------
+
+/** Cooldown proaktywnej propozycji handlu surowcem — co N tur, per para. PLACEHOLDER: N=8. */
+export const AI_RESOURCE_TRADE_PROPOSAL_COOLDOWN_TURNS = 8;
+
+/** Domyślny czas trwania cyklicznej umowy surowcowej proponowanej przez AI (tur). PLACEHOLDER: 10. */
+export const AI_RESOURCE_TRADE_DEFAULT_TURNS = 10;
+
+/** Ile pakietów/turę AI oferuje na raz z nadwyżki (nie wyprzedaje całego zapasu jednorazowo). PLACEHOLDER: 3. */
+export const AI_RESOURCE_TRADE_MAX_PAKIETY_PER_TURA = 3;
+
+/** Czy AI może zaproponować kolejną cykliczną umowę surowcową tej samej parze. */
+export function canAiProposeResourceTrade(
+  currentTurn: number,
+  lastProposalTurn: number | undefined,
+  cooldownTurns: number = AI_RESOURCE_TRADE_PROPOSAL_COOLDOWN_TURNS,
+): boolean {
+  if (lastProposalTurn == null || lastProposalTurn <= 0) return true;
+  return currentTurn >= lastProposalTurn + cooldownTurns;
+}
+
 /** T3A: jednorazowy transfer złota po akceptacji handlu / trybutu oferta. */
 export function applyOneShotGoldTransfer(
   fromOwnerId: number,

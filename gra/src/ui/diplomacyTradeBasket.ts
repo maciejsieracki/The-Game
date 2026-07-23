@@ -169,13 +169,40 @@ function basketHasResourceAccess(...lists: ReadonlyArray<readonly BasketItem[]>)
   return false;
 }
 
-function dealDurationHtml(turns: number, visible: boolean): string {
+/** HANDEL-SUROWCE-CYKL (2026-07-24): czy koszyk zawiera surowiec ILOŚCIOWY (pakiety ze spichlerza miast). */
+function basketHasQuantityResource(...lists: ReadonlyArray<readonly BasketItem[]>): boolean {
+  for (const items of lists) {
+    if (items.some(i => i.typ === 'surowiec_ilosc')) return true;
+  }
+  return false;
+}
+
+function dealDurationHtml(turns: number, visible: boolean, label = 'Czas umowy (tur, max 20)', sub = 'Dostęp do surowców trwa przez wybrany czas. Po wygaśnięciu umowa wymaga odnowienia (re-negocjacji).'): string {
   if (!visible) return '';
   return (
     '<div class="cdb-duration">' +
-      '<label for="cdb-deal-turns">Czas umowy (tur, max 20)</label>' +
+      '<label for="cdb-deal-turns">' + esc(label) + '</label>' +
       '<input type="number" id="cdb-deal-turns" class="cdb-deal-turns" value="' + turns + '" min="1" max="20" />' +
-      '<p class="cdb-sub">Dostęp do surowców trwa przez wybrany czas. Po wygaśnięciu umowa wymaga odnowienia (re-negocjacji).</p>' +
+      '<p class="cdb-sub">' + esc(sub) + '</p>' +
+    '</div>'
+  );
+}
+
+/**
+ * HANDEL-SUROWCE-CYKL (2026-07-24): tryb wymiany surowca ilościowego — Jednorazowo
+ * (transfer natychmiast, istniejące zachowanie) vs Co turę przez X tur (deal cykliczny).
+ * Widoczny tylko gdy koszyk ma pozycję `surowiec_ilosc` i NIE ma trwałego dostępu
+ * (zloze/surowiec_boolean — ten ma własną semantykę czasu trwania, patrz dealDurationHtml).
+ */
+function resourceTradeModeHtml(mode: 'once' | 'per_turn', visible: boolean): string {
+  if (!visible) return '';
+  return (
+    '<div class="cdb-duration">' +
+      '<label for="cdb-res-mode">Tryb wymiany surowca</label>' +
+      '<select id="cdb-res-mode" class="cdb-res-mode">' +
+        '<option value="once"' + (mode === 'once' ? ' selected' : '') + '>Jednorazowo — teraz</option>' +
+        '<option value="per_turn"' + (mode === 'per_turn' ? ' selected' : '') + '>Co turę — przez X tur</option>' +
+      '</select>' +
     '</div>'
   );
 }
@@ -495,6 +522,7 @@ function renderBasket(
   giveItems: BasketItem[],
   receiveItems: BasketItem[],
   dealTurns: number,
+  resourceTradeMode: 'once' | 'per_turn',
 ): void {
   const rel = ctx.relacjaTotal ?? 0;
   const progHandel = ctx.progHandelRelacja ?? PROG_HANDEL_REL;
@@ -527,7 +555,20 @@ function renderBasket(
       '</div>'
     : '';
 
-  const showDealDuration = mode === 'trade' && basketHasResourceAccess(giveItems, receiveItems);
+  const hasResourceAccess = basketHasResourceAccess(giveItems, receiveItems);
+  // HANDEL-SUROWCE-CYKL (2026-07-24): koszyk z surowcem ILOŚCIOWYM, bez trwałego
+  // dostępu (zloze/surowiec_boolean — ten ma własną, wcześniejszą semantykę czasu
+  // trwania poniżej) → pokaż przełącznik Jednorazowo/Co turę.
+  const hasQtyRes = mode === 'trade' && !hasResourceAccess && basketHasQuantityResource(giveItems, receiveItems);
+  const showResModeSelector = hasQtyRes;
+  const showDealDuration = mode === 'trade'
+    && (hasResourceAccess || (hasQtyRes && resourceTradeMode === 'per_turn'));
+  const dealDurationLabel = hasResourceAccess
+    ? 'Czas umowy (tur, max 20)'
+    : 'Co ile tur trwa wymiana (tur, max 20)';
+  const dealDurationSub = hasResourceAccess
+    ? 'Dostęp do surowców trwa przez wybrany czas. Po wygaśnięciu umowa wymaga odnowienia (re-negocjacji).'
+    : 'Surowiec i zapłata płyną CO TURĘ przez wybrany czas. Deal znika po wygaśnięciu, zerwaniu traktatu lub wojnie.';
 
   box.className = 'civ-diplo-basket' + (mode === 'gift' ? ' cdb-gift' : '');
   box.innerHTML =
@@ -535,7 +576,8 @@ function renderBasket(
     '<div class="cdb-sub">' + sub + '</div>' +
     blocked +
     (blocked ? '' : '<div class="cdb-cols">' + giveCol + recvCol + '</div>') +
-    (blocked ? '' : dealDurationHtml(dealTurns, showDealDuration)) +
+    (blocked ? '' : resourceTradeModeHtml(resourceTradeMode, showResModeSelector)) +
+    (blocked ? '' : dealDurationHtml(dealTurns, showDealDuration, dealDurationLabel, dealDurationSub)) +
     (blocked ? '' : summaryHtml(mode, giveItems, receiveItems, ctx)) +
     '<div class="cdb-btns">' +
       '<button type="button" class="dip-muted-btn cdb-cancel">Anuluj</button>' +
@@ -564,6 +606,7 @@ export function showTradeBasketModal(
   let giveItems: BasketItem[] = initial?.giveItems ? [...initial.giveItems] : [];
   let receiveItems: BasketItem[] = initial?.receiveItems ? [...initial.receiveItems] : [];
   let dealTurns = 15;
+  let resourceTradeMode: 'once' | 'per_turn' = 'once';
 
   overlay = document.createElement('div');
   overlay.className = 'civ-diplo-basket-overlay';
@@ -578,9 +621,15 @@ export function showTradeBasketModal(
     if (inp) dealTurns = Math.max(1, Math.min(20, parseInt(inp.value, 10) || 15));
   };
 
+  const readResourceTradeModeFromDom = (): void => {
+    const sel = box.querySelector('.cdb-res-mode') as HTMLSelectElement | null;
+    if (sel) resourceTradeMode = sel.value === 'per_turn' ? 'per_turn' : 'once';
+  };
+
   const refresh = (): void => {
     readDealTurnsFromDom();
-    renderBasket(box, mode, action, ctx, giveItems, receiveItems, dealTurns);
+    readResourceTradeModeFromDom();
+    renderBasket(box, mode, action, ctx, giveItems, receiveItems, dealTurns, resourceTradeMode);
     bindEvents();
   };
 
@@ -598,6 +647,11 @@ export function showTradeBasketModal(
       const uiSide = side === 'recv' ? 'receive' : 'give';
       updateTypFields(box, uiSide);
     }
+
+    box.querySelector('.cdb-res-mode')?.addEventListener('change', () => {
+      readResourceTradeModeFromDom();
+      refresh();
+    });
 
     box.querySelectorAll('.cdb-res-qty-sel').forEach(sel => {
       sel.addEventListener('change', () => {
@@ -643,6 +697,7 @@ export function showTradeBasketModal(
       if (givePn == null || (mode === 'trade' && receivePn == null)) return;
 
       readDealTurnsFromDom();
+      readResourceTradeModeFromDom();
       const payload: NegotiationPayload = {
         actionId: '5',
         giveItems,
@@ -652,6 +707,16 @@ export function showTradeBasketModal(
         isGift: mode === 'gift',
       };
       if (mode === 'trade' && basketHasResourceAccess(giveItems, receiveItems)) {
+        payload.turns = dealTurns;
+      } else if (
+        mode === 'trade'
+        && resourceTradeMode === 'per_turn'
+        && basketHasQuantityResource(giveItems, receiveItems)
+      ) {
+        // HANDEL-SUROWCE-CYKL: „Co turę" wybrane przez gracza — surowiec_ilosc w
+        // koszyku staje się przepływem cyklicznym (main.ts evaluateProposal 'handel'
+        // branch resourceTradeMode==='per_turn') zamiast natychmiastowego transferu.
+        payload.resourceTradeMode = 'per_turn';
         payload.turns = dealTurns;
       }
       closeModal();
