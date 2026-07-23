@@ -18,7 +18,7 @@ W kreatorze nowej gry wybierasz spośród:
 |-----|-----------|-------------------|
 | **Grecy** | Defensywna piechota | Falanga (Hoplita) |
 | **Rzymianie** | Ofensywna piechota + inżynieria | Legion (Legionista) |
-| **Chińczycy** | Dystans + kawaleria | Kusznik |
+| **Chińczycy** | Dystans + kawaleria | Kusznik [NIEAKTUALNE — brak w units.json, 2026-07-23; realnie budowany Łucznik z bonusem] |
 | **Inkowie** | Nauka/kultura + piechota górska | Chaska / Królewska Gwardia |
 | **Zulusi** | Szybka agresywna piechota | Impi |
 | **Egipt** | Rydwany + łucznicy | Medżaj (Gwardia Faraona) |
@@ -231,7 +231,7 @@ Czytaj **rozpiskę plusów i minusów** w panelu — naprawiaj największy minus
 
 ### 85.1. Po jednej linii elitarnej na typ
 
-Każdy typ ma **jedną** (czasem dwie powiązane) jednostkę specjalną — np. Falanga, Impi, Kusznik. Pełne statystyki: katalog `57-katalog-jednostek.md` i karty Wiki w `docs/encyklopedia/jednostki/`.
+Każdy typ ma **jedną** (czasem dwie powiązane) jednostkę specjalną — np. Falanga, Impi, Kusznik [NIEAKTUALNE — Kusznik brak w units.json, 2026-07-23]. Pełne statystyki: katalog `57-katalog-jednostek.md` i karty Wiki w `docs/encyklopedia/jednostki/`.
 
 ### 85.2. Wymagania tech
 

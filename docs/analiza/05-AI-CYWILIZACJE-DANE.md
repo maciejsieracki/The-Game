@@ -121,6 +121,6 @@ Trzy powiązane lane'y (CYWILIZACJE przejęło zakres DANE po zamknięciu sesji 
 
 - **AI civType = stub 'Grecy'** dla wszystkich — realne typy po wpieciu rostera per-właściciel (czeka na format startowego rozmieszczenia z MAPA)
 - **society-params.json 7 vs 9 religii** — re-eksport = master/silnik (export-data.py zakazany)
-- **Rozjazd "Jednostka specjalna"** (civs.json=ikoniczny zamiennik Falanga/Legion/Kusznik/Impi) vs super (units.json) — świadomie (8C); UI/SILNIK ma wiedzieć
+- **Rozjazd "Jednostka specjalna"** (civs.json=ikoniczny zamiennik Falanga/Legion/Kusznik/Impi) vs super (units.json) — świadomie (8C); UI/SILNIK ma wiedzieć [POGŁĘBIONE 2026-07-23: Kusznik od 2026-07-10 nie istnieje w units.json w ŻADNEJ postaci (nie tylko jako super) — civs.json nadal go wymienia jako ikoniczny zamiennik Chińczyków; decyzja czym zastąpić — otwarta, `STAN-PRACY-HANDOFF.md` §8]
 - **ai.ts** czyta STARY ai-params.json (panel AI), NIE civ-ai.json / civ-params.json (rozdźwięk zamknięty decyzją Macieja — profil ZOSTAJE w panelu AI)
 - **civs.json generuje TYLKO export-data.py** (zakazany) — edycja bezpośrednia NIE w xlsx → ponowny eksport skasuje pole `nazwyKlastra`/`mnoznikHandelPieniadz`/`ikonaId`. Rekomendacja A: targeted `export-civs.py` + kolumna w Cywilizacje.xlsx (już zrobione)

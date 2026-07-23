@@ -16,7 +16,7 @@
 ### ZROBIONE (BITWA Gra-podglad-BITWA.html, ~939 KB)
 - **46 jednostek** (Osadnik usunięty decyzja 2A; Zwiadowca zostaje)
 - **Modele 3D** (proceduralne w `units.ts`):
-  - 12 bespoke modeli nacyjnych (Impi, Izijula, Włócznik sumeryjski, Łucznik sumeryjski, Rydwan sumeryjski, Łucznik egipski, Wojownik z khopesh, Rydwan egipski, Estólica, Huaracoc, Jeździec chiński, Kusznik)
+  - 12 bespoke modeli nacyjnych (Impi, Izijula, Włócznik sumeryjski, Łucznik sumeryjski, Rydwan sumeryjski, Łucznik egipski, Wojownik z khopesh, Rydwan egipski, Estólica, Huaracoc, Jeździec chiński, Kusznik [NIEAKTUALNE — jednostka Kusznik usunięta z units.json 2026-07-10, model w `src/render/units.ts` zostaje jako dead code, 2026-07-23])
   - + 11 nowych jednostek (Brąz: Wojownik mykeński, Rydwan mykeński, Wojownik Sherden, Halabardnik Shang, Rydwan Shang, Łucznik akadyjski; Żelazo: Wojownik celtycki, Gaesatae, Rydwan celtycki, Wojownik germański, Berserker germański)
   - Dispatch PO NAZWIE (buildNamedUnit, nie po epoce) — model zostaje po przeniesieniu między epokami w Excelu
 - **RESTrukturyzacja modelu danych** (units.json):

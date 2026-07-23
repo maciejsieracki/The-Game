@@ -35,7 +35,7 @@ W grze jest **50** jednostek — standardowe (dla wielu cywilizacji), specjalne 
 | Hastati | Żelazo | Wręcz | 18 | 1 | Brązownictwo | Specjalna | 50 | [Hastati](../encyklopedia/jednostki/hastati.md) |
 | Triari | Żelazo | Wręcz | 0 (super) | 1 | — | Super | 51.5 | [Triari](../encyklopedia/jednostki/triari.md) |
 | Jeździec chiński | Brąz | Flanka | 28 | 1 | Jeździectwo | Specjalna | 34.5 | [Jeździec chiński](../encyklopedia/jednostki/jezdziec-chinski.md) |
-| Kusznik | Średniowiecze | Dystans | 20 | 1 | Brązownictwo | Standardowa | 16.5 | [Kusznik](../encyklopedia/jednostki/kusznik.md) |
+| Kusznik [NIEAKTUALNE — brak w units.json, 2026-07-23] | Średniowiecze | Dystans | 20 | 1 | Brązownictwo | Standardowa | 16.5 | [Kusznik](../encyklopedia/jednostki/_archiwum/kusznik.md) |
 | Hu Ben Wei (Gwardia Tygrysa) | Brąz | Wręcz | 0 (super) | 1 | — | Super | 51 | [Hu Ben Wei (Gwardia Tygrysa)](../encyklopedia/jednostki/hu-ben-wei-gwardia-tygrysa.md) |
 | Impi | Brąz | Wręcz | 16 | 1 | Brązownictwo | Specjalna | 29.5 | [Impi](../encyklopedia/jednostki/impi.md) |
 | Oszczepnik Zulu (Izijula) | Kamień | Dystans | 20 | 1 | — | Specjalna | 13.5 | [Oszczepnik Zulu (Izijula)](../encyklopedia/jednostki/oszczepnik-zulu-izijula.md) |
@@ -669,6 +669,8 @@ Utrzymanie **2** ¤/t × **10** tur = **20** ¤ — uwzględnij w bilansie skarb
 
 ## Epoka Średniowiecze (1 jednostek)
 
+> **[NIEAKTUALNE — brak w units.json, 2026-07-23]** Sekcja opisuje jednostkę **Kusznik** i epokę „Średniowiecze" — żadne z nich nie istnieje w dzisiejszych danych gry (`gra/data/units.json` ma tylko epoki Kamień/Brąz/Żelazo; Kusznik usunięty 2026-07-10, patrz `dyspozycje/DRZEWKO-TECH-FIX.md`). Treść poniżej zostawiona bez zmian jako zapis historyczny.
+
 ### Kusznik
 
 **Kusznik** — dystans, typ **Distance**. Rekrutacja: **20** ¤ i **1** mieszkańców; technologia **Brązownictwo**. Utrzymanie **2** ¤/turę, **1** żywności/turę. Ruch na mapie: **2** heksów. Jednostka **standardowa** cywilizacji **Chińczycy**. Moc w polu: **16.5**. jednostka specjalna (lepsza piechota dystansowa); na razie informacyjny
@@ -679,7 +681,7 @@ Utrzymanie **2** ¤/t × **10** tur = **20** ¤ — uwzględnij w bilansie skarb
 Koszt **20** pracy przy **7** pracy/t na budynki (70%) → **~2** tury budowy.
 Bonus **+2 żywność** — przy **4** polach w okolicy suma skalowana liniowo z przypisaniem pól.
 Utrzymanie **2** ¤/t × **10** tur = **20** ¤ — uwzględnij w bilansie skarbca.
-→ [`docs/encyklopedia/jednostki/kusznik.md`](../encyklopedia/jednostki/kusznik.md)
+→ [`docs/encyklopedia/jednostki/_archiwum/kusznik.md`](../encyklopedia/jednostki/_archiwum/kusznik.md)
 
 ---
 

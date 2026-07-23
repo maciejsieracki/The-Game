@@ -1,5 +1,7 @@
 # Kusznik
 
+> **[NIEAKTUALNE — brak w units.json, 2026-07-23]** Jednostka **Kusznik** została usunięta z `gra/data/units.json` (patrz `dyspozycje/DRZEWKO-TECH-FIX.md`, FAZA 1, 2026-07-10) — w danych gry nie istnieje, ani epoka „Średniowiecze" (gra ma Kamień/Brąz/Żelazo). Dokument przeniesiony do `_archiwum/` jako martwy — pozostawiony w całości bez zmian treści poniżej, wyłącznie do wglądu historycznego. Chiński unikat dystansowy do zastąpienia — decyzja produktowa nadal otwarta (`STAN-PRACY-HANDOFF.md` §8).
+
 ## Metadane
 
 | Pole | Wartość |

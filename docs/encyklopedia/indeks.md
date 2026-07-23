@@ -48,7 +48,7 @@
 - [Hastati](jednostki/hastati.md)
 - [Triari](jednostki/triari.md)
 - [Jeździec chiński](jednostki/jezdziec-chinski.md)
-- [Kusznik](jednostki/kusznik.md)
+- [Kusznik](jednostki/_archiwum/kusznik.md) [NIEAKTUALNE — brak w units.json, 2026-07-23, dokument w archiwum]
 - [Hu Ben Wei (Gwardia Tygrysa)](jednostki/hu-ben-wei-gwardia-tygrysa.md)
 - [Impi](jednostki/impi.md)
 - [Oszczepnik Zulu (Izijula)](jednostki/oszczepnik-zulu-izijula.md)
