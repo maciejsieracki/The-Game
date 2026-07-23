@@ -3,14 +3,17 @@
  * Przetworstwo surowcow (budynki przetworcze) dla The Game -- czysty modul,
  * bez DOM, bez THREE, ZERO importow runtime.
  *
- * Kanon 2026-07-23 (B-SUROW-BUD-03, SUROWCE-KANON):
+ * Kanon 2026-07-23 (CERAMIKA-DOSTEP, supersedes B-SUROW-BUD-03/SUROWCE-KANON):
  *   Mielerz    | 2 drewno         | 1 paliwo     | 2/t
  *   Cegielnia  | 2 glina + 1 paliwo | 1 cegla    | 2/t
- *   Garncarnia | 1 glina + 1 paliwo | 1 ceramika | 1/t
  *   Piec hutniczy | 1 ruda + 1 paliwo | 1 braz  | 1/t
  *   Odlewnia żelaza | 1 ruda_zelaza + 1 paliwo | 1 zelazo | 1/t
  *   Wielka kuźnia | 1 zelazo + 1 paliwo | 1 stal  | 1/t
  *   Stolarnia / Tartak — NIE konwertują (drewno TYP 1; deski wycofane).
+ *   Garncarnia — NIE konwertuje (Maciej 2026-07-23): Ceramika przestaje być
+ *     surowcem magazynowym. Garncarnia zbudowana = czysty DOSTĘP (etykieta
+ *     'Ceramika' w main.ts empireActiveResourceLabelsForOwner + bramka
+ *     building-resource-gate.ts Spichlerz), bez ilości w City.surowce.
  */
 
 export type Difficulty = 'easy' | 'normal' | 'hard';
@@ -46,7 +49,8 @@ export interface ConverterRecipe {
 export const DEFAULT_CONVERTER_RECIPES: ReadonlyArray<ConverterRecipe> = [
   { id: 'mielerz',          inputs: { drewno: 2 },                   output: 'paliwo',   outputAmount: 1, throughputParamKey: 'budynek_mielerz_przepustowosc',    throughputFallback: 2 },
   { id: 'cegielnia',        inputs: { glina: 2, paliwo: 1 },         output: 'cegla',    outputAmount: 1, throughputParamKey: 'budynek_cegielnia_przepustowosc',  throughputFallback: 2 },
-  { id: 'garncarnia',       inputs: { glina: 1, paliwo: 1 },         output: 'ceramika', outputAmount: 1, throughputParamKey: 'budynek_garncarnia_przepustowosc', throughputFallback: 1 },
+  // 'garncarnia' USUNIETA (Maciej 2026-07-23): Ceramika = tylko dostep (Garncarnia
+  // zbudowana), nie sztuki w magazynie -- patrz komentarz kanonu powyzej.
   { id: 'huta',             inputs: { ruda: 1, paliwo: 1 },          output: 'braz',     outputAmount: 1, throughputParamKey: 'budynek_huta_przepustowosc',       throughputFallback: 1 },
   { id: 'odlewnia_brazu',   inputs: { ruda: 1, paliwo: 1 },          output: 'braz',     outputAmount: 1, throughputParamKey: 'budynek_huta_przepustowosc',       throughputFallback: 1 },
   { id: 'odlewnia_zelaza',  inputs: { ruda_zelaza: 1, paliwo: 1 },    output: 'zelazo',   outputAmount: 1, throughputParamKey: 'budynek_odlewnia_zelaza_przepustowosc', throughputFallback: 1 },

@@ -224,7 +224,7 @@ const buildingIds = new Set((Array.isArray(buildings) ? buildings : buildings.bu
 assert(!buildingIds.has('tartak'), 'potwierdzenie: brak budynku "tartak" w buildings.json (recepta nieaktywna)');
 assert(!buildingIds.has('huta'), 'potwierdzenie: brak budynku "huta" w buildings.json (recepta nieaktywna, duplikat odlewnia_brazu)');
 assert(buildingIds.has('mielerz') && buildingIds.has('cegielnia') && buildingIds.has('garncarnia') && buildingIds.has('odlewnia_brazu'),
-  'pozostale 4 receptury (mielerz/cegielnia/garncarnia/odlewnia_brazu) MAJA budynek -- moga byc aktywne');
+  'budynek Garncarnia istnieje w buildings.json (dostep do Ceramiki), ale BEZ receptury konwertera (mielerz/cegielnia/odlewnia_brazu -- 3 aktywne receptury)');
 
 // ---------------------------------------------------------------------------
 // G. GLINA-Q1=A (2026-07-20): glinianka daje 2 glina/ture, dokladnie jak drewno/kamien
@@ -242,28 +242,30 @@ const yldClay = M.cityYieldPerTurn(city, [clayTile, clayTile], [], pNormal, make
 eq(yldClay.glinaTerenu, 4, 'cityYieldPerTurn: 2 pola z glinianka -> glinaTerenu = 4 (2 x 2/ture)');
 
 // ---------------------------------------------------------------------------
-// H. Cegielnia/Garncarnia oziywaja: glina+paliwo -> cegla/ceramika; brak rudy -> braz=0
+// H. Cegielnia oziywa: glina+paliwo -> cegla; Garncarnia NIE konwertuje (Maciej
+// 2026-07-23: Ceramika = tylko dostep, NIE surowiec magazynowy -- receptura
+// 'garncarnia' USUNIETA z DEFAULT_CONVERTER_RECIPES, patrz converters.ts);
+// odlewnia_brazu NIE bez rudy.
 // ---------------------------------------------------------------------------
-console.log('\n-- H. Cegielnia/Garncarnia produkuja z gliny+paliwa; odlewnia_brazu NIE bez rudy --');
+console.log('\n-- H. Cegielnia produkuje z gliny+paliwa; Garncarnia = dostep (bez konwersji); odlewnia_brazu NIE bez rudy --');
 
 // Cegielnia + Garncarnia zbudowane, magazyn ma glina+paliwo (jak po zebraniu z glinianki
-// + Mielerzu) -- obie receptury powinny odpalic (kolejnosc DEFAULT_CONVERTER_RECIPES: obie
-// czytaja z tego samego wspolnego magazynu 'glina'/'paliwo', wiec kazda zuzywa swoja partie).
+// + Mielerzu) -- TYLKO Cegielnia ma recepture aktywna (Garncarnia usunieta z katalogu).
 const withCegielniaGarncarnia = simulateConverterTick(
   ['cegielnia', 'garncarnia'],
   { glina: 4, paliwo: 4 },
 );
 assert(withCegielniaGarncarnia.stores.cegla > 0,
   `Cegielnia: cegla > 0 przy glina+paliwo obecnych (got ${withCegielniaGarncarnia.stores.cegla})`);
-assert(withCegielniaGarncarnia.stores.ceramika > 0,
-  `Garncarnia: ceramika > 0 przy glina+paliwo obecnych (got ${withCegielniaGarncarnia.stores.ceramika})`);
+eq(withCegielniaGarncarnia.stores.ceramika, undefined,
+  'Garncarnia: BRAK ceramiki w magazynie (Maciej 2026-07-23: dostep, nie stock -- receptura usunieta)');
 assert(withCegielniaGarncarnia.stores.glina < 4,
-  'Cegielnia+Garncarnia: glina zmalala (skonsumowana przez obie receptury)');
+  'Cegielnia+Garncarnia: glina zmalala (skonsumowana tylko przez Cegielnie)');
 
 // Bez budynkow: mimo obecnosci gliny+paliwa w magazynie nic sie nie produkuje (gating builtIds).
 const withoutBuildings = simulateConverterTick([], { glina: 4, paliwo: 4 });
 eq(withoutBuildings.stores.cegla, undefined, 'brak Cegielni: brak cegly (converter nieaktywny)');
-eq(withoutBuildings.stores.ceramika, undefined, 'brak Garncarni: brak ceramiki (converter nieaktywny)');
+eq(withoutBuildings.stores.ceramika, undefined, 'Garncarnia: brak ceramiki (receptura nie istnieje w katalogu)');
 eq(withoutBuildings.stores.glina, 4, 'brak budynkow: glina niezmieniona');
 
 // odlewnia_brazu zbudowana + paliwo obecne, ale BEZ rudy (GLINA-Q2=A: rudy nie zbieramy) ->
@@ -274,8 +276,8 @@ const withOdlewniaNoOre = simulateConverterTick(
 );
 eq(withOdlewniaNoOre.stores.braz, undefined,
   'odlewnia_brazu zbudowana ale brak rudy w magazynie -> braz NIE rosnie (undefined, brak-wejscia)');
-assert(withOdlewniaNoOre.stores.cegla > 0 && withOdlewniaNoOre.stores.ceramika > 0,
-  'odlewnia_brazu bez rudy NIE blokuje Cegielni/Garncarni (nadal produkuja z gliny+paliwa)');
+assert(withOdlewniaNoOre.stores.cegla > 0 && withOdlewniaNoOre.stores.ceramika === undefined,
+  'odlewnia_brazu bez rudy NIE blokuje Cegielni (nadal produkuje z gliny+paliwa); ceramika nadal brak (dostep, nie stock)');
 
 // Sanity: gdyby ruda BYLA w magazynie (nie zbierana dzis, ale receptura istnieje), odlewnia
 // zadzialalaby -- potwierdza, ze brak braz wyzej wynika z braku rudy, nie ze zlej receptury.

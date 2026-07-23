@@ -3,7 +3,8 @@
  * converters-test.cjs -- standalone Node test for src/game/converters.ts.
  * Run from gra/:  node tools/converters-test.cjs
  *
- * Kanon 2026-07-23: bez tartak→deski; mielerz 2→1; 7 receptur.
+ * Kanon 2026-07-23: bez tartak→deski; mielerz 2→1; bez garncarnia→ceramika
+ * (Maciej 2026-07-23: Ceramika = tylko dostep, nie surowiec magazynowy); 6 receptur.
  */
 
 const fs   = require('fs');
@@ -33,8 +34,9 @@ let passed = 0, failed = 0;
 function assert(cond, msg) { if (cond) passed++; else { failed++; console.error('  FAIL:', msg); } }
 function eq(a, b, msg) { assert(a === b, `${msg} (got ${JSON.stringify(a)}, want ${JSON.stringify(b)})`); }
 
-eq(C.DEFAULT_CONVERTER_RECIPES.length, 7, 'kanon: 7 default converters');
+eq(C.DEFAULT_CONVERTER_RECIPES.length, 6, 'kanon: 6 default converters (garncarnia usunieta -- Ceramika = dostep)');
 assert(!C.DEFAULT_CONVERTER_RECIPES.some(r => r.id === 'tartak'), 'B-SUROW-BUD-03: brak tartak→deski');
+assert(!C.DEFAULT_CONVERTER_RECIPES.some(r => r.id === 'garncarnia'), 'Maciej 2026-07-23: brak garncarnia→ceramika (dostep, nie stock)');
 
 const mielerz = C.DEFAULT_CONVERTER_RECIPES.find(r => r.id === 'mielerz');
 const cegielnia = C.DEFAULT_CONVERTER_RECIPES.find(r => r.id === 'cegielnia');

@@ -231,6 +231,7 @@ import {
   sumEconomyForOwner,
   sumEconomyForPlayerCities,
   previewCityEconomy,
+  computeTerritoryResourceYieldByCity,
 } from './game/turn-economy';
 import {
   refreshTradeRoutes,
@@ -691,6 +692,11 @@ import {
 import {
   spawnTransferredUnit,
 } from './game/diplomacy-unit-transfer';
+import {
+  DEFAULT_CONVERTER_RECIPES,
+  loadThroughput,
+  type RawConverterParamsJson,
+} from './game/converters';
 
 /**
  * BattleScene.worldTerrain input derived from a world-map hex: baza terenu +
@@ -1628,21 +1634,69 @@ async function boot(): Promise<void> {
     }
 
     /**
+     * Tempo BRUTTO produkcji surowców logistycznych (TYP 1 — terytorium) imperium tej
+     * tury: suma stawek `surowiec_ilosc_tura` z KAŻDEGO zbudowanego ulepszenia właściciela
+     * (SUROW-TERYT-01) — dokładnie ten sam model co computeTerritoryResourceYieldByCity
+     * w turn-economy.ts, tylko zsumowany po wszystkich miastach ownera zamiast per-miasto.
+     */
+    function empireTerritoryResourceRatesForOwner(ownerId: number): Partial<Record<string, number>> {
+      const territoryNodes = buildAllTerritoryNodes();
+      const byCity = computeTerritoryResourceYieldByCity(cities, map, territoryNodes);
+      const out: Record<string, number> = {};
+      for (const c of cities) {
+        if (c.ownerId !== ownerId) continue;
+        const rec = byCity.get(c.id);
+        if (!rec) continue;
+        for (const [key, amount] of Object.entries(rec)) {
+          out[key] = (out[key] ?? 0) + (amount ?? 0);
+        }
+      }
+      return out;
+    }
+
+    /**
+     * Tempo BRUTTO produkcji surowców przetworzonych (TYP 2 — konwertery) imperium tej
+     * tury: dla każdego budynku-konwertera FAKTYCZNIE zbudowanego w mieście ownera,
+     * dolicz jego przepustowość nominalna (econ-params.json, jak w advanceCityEconomy) ×
+     * outputAmount. BRUTTO = nominalna zdolność produkcyjna, NIE pomniejszona o brak
+     * wejścia (drewna/gliny/rudy) tej konkretnej tury — wystarczające do "ile się
+     * produkuje" w liczniku (Maciej: netto zbyt kosztowne, brutto OK).
+     */
+    function empireConverterResourceRatesForOwner(ownerId: number): Partial<Record<string, number>> {
+      const rawForConverters = data.econParams as unknown as RawConverterParamsJson;
+      const out: Record<string, number> = {};
+      for (const recipe of DEFAULT_CONVERTER_RECIPES) {
+        const throughput = loadThroughput(
+          rawForConverters, recipe.throughputParamKey, _menuDifficulty, recipe.throughputFallback,
+        );
+        for (const c of cities) {
+          if (c.ownerId !== ownerId) continue;
+          const builtIds = cityBuilt.get(c.id) ?? [];
+          if (!builtIds.includes(recipe.id)) continue;
+          out[recipe.output] = (out[recipe.output] ?? 0) + throughput * recipe.outputAmount;
+        }
+      }
+      return out;
+    }
+
+    /**
      * Licznik surowców imperium (BRAZ-ILOSC=B, decyzja Macieja 2026-07-23) — zbiorczy
      * WOLUMEN wszystkich jednostek surowców zgromadzonych w magazynach miast ownera
      * (suma City.surowce). Cel: zobaczyć, ile surowców realnie leży w magazynach, zanim
      * dostroimy stawki produkcji. Reguły składowania (decyzja Macieja):
      *   • Żywność — pominięta (osobny system spichlerza).
-     *   • Sól / Koń — czysty DOSTĘP (nie kumulują sztuk) → stock 0, kolumna „dostęp".
-     *   • Ceramika — docelowo dostęp; dziś przejściowo jeszcze kumuluje (garncarnia) →
-     *     pokazujemy realny zapas do czasu zmiany mechaniki (osobna decyzja).
+     *   • Sól / Koń / Ceramika — czysty DOSTĘP (nie kumulują sztuk, Maciej 2026-07-23:
+     *     Garncarnia = dostęp, nie stock) → stock zawsze 0, kolumna „dostęp".
      *   • Bydło / Owce / Lama — NIE są surowcami (pominięte całkowicie).
      *   • Reszta (drewno/kamień/glina/ruda/ruda żelaza/paliwo/cegła/brąz/żelazo/stal) — zliczana.
-     * Tempo/turę = TODO (dorobić razem ze stawkami produkcji) — na razie „—".
+     * Tempo/turę (ratePerTurn) — BRUTTO produkcji tej tury (SUROW-TERYT-01 dla teren,
+     * przepustowość nominalna konwerterów dla miasto); 0 dla wierszy czystego dostępu.
      */
     function buildEmpireResourceRows(ownerId: number): EmpireResourceRow[] {
       const warehouse = citySurowceSumForOwner(ownerId);
       const accessLabels = new Set(diplomacyActiveResourceLabelsForOwner(ownerId));
+      const territoryRates = empireTerritoryResourceRatesForOwner(ownerId);
+      const converterRates = empireConverterResourceRatesForOwner(ownerId);
       type Cat = { id: string; label: string; icon: string; typ: EmpireResourceRow['typ']; access?: boolean };
       const CATALOG: Cat[] = [
         { id: 'drewno',      label: 'Drewno',      icon: '🪵', typ: 'surowy' },
@@ -1661,10 +1715,14 @@ async function boot(): Promise<void> {
       ];
       const rows: EmpireResourceRow[] = [];
       for (const c of CATALOG) {
-        const stock = Math.floor(warehouse[c.id] ?? 0);
+        // Wiersze czystego dostępu (Sól/Koń/Ceramika) NIE pokazują stocku — nawet gdy
+        // stary zapis gry ma jeszcze niezerowy City.surowce.ceramika (migracja, brak
+        // konsumenta) świadomie go tu ukrywamy (Maciej 2026-07-23: "stock 0/—").
+        const stock = c.access ? 0 : Math.floor(warehouse[c.id] ?? 0);
         const dostep = accessLabels.has(c.label) || stock > 0;
         if (stock <= 0 && !dostep) continue;  // pomiń surowce, których owner w ogóle nie ma
-        rows.push({ id: c.id, label: c.label, icon: c.icon, stock, ratePerTurn: 0, typ: c.typ, dostep });
+        const ratePerTurn = c.access ? 0 : Math.floor((territoryRates[c.id] ?? 0) + (converterRates[c.id] ?? 0));
+        rows.push({ id: c.id, label: c.label, icon: c.icon, stock, ratePerTurn, typ: c.typ, dostep });
       }
       return rows;
     }

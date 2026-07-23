@@ -60,7 +60,11 @@ import {
   type CityYieldContext,
   type BuildingRecord,
 } from './economy';
-import { improvementKeysForHex } from './terrain-improvements';
+import {
+  improvementKeysForHex,
+  territoryResourceYieldForImprovement,
+  type TerritoryResourceKey,
+} from './terrain-improvements';
 import { cityManpowerMax, refreshManpowerAfterPopChange, tickManpowerRegen, civManpowerMults, loadManpowerRegenParams } from './manpower';
 import {
   loadStorageParams,
@@ -105,7 +109,7 @@ import {
   type TileYield as OkolicaTileYield,
 } from './okolica';
 import { buildTerritoryNodesFromCities } from '../map/territory-work';
-import type { TerritoryNode } from '../map/territory';
+import { territoryOwnerAt, type TerritoryNode } from '../map/territory';
 import {
   cityTradeMultiplier,
   loadReligionParams,
@@ -597,6 +601,76 @@ export function workedHexCoordsForCity(
 }
 
 // ---------------------------------------------------------------------------
+// SUROW-TERYT-01 (Maciej 2026-07-23): surowce logistyczne PER ZBUDOWANE
+// ULEPSZENIE w terytorium, niezaleznie od workedTiles.
+// ---------------------------------------------------------------------------
+
+/** Suma surowcow logistycznych/ture per miasto (klucz = City.id). */
+export type TerritoryResourceYieldByCity = ReadonlyMap<string, Partial<Record<TerritoryResourceKey, number>>>;
+
+/**
+ * Nalicza surowce logistyczne (drewno/kamien/glina/ruda/ruda_zelaza) z KAŻDEGO
+ * zbudowanego ulepszenia (tartak/kamieniolom/glinianka/kopalnia_miedzi/kopalnia)
+ * leżącego w terytorium właściciela — niezależnie od tego, czy pole jest
+ * obsadzone populacją (workedTiles). Argumenty Macieja (2026-07-23): złoża bywają
+ * poza zasięgiem pracy miast; na starcie za mało populacji, by obsadzić
+ * wszystkie ulepszenia.
+ *
+ * Przypisanie do miasta: heks → territoryOwnerAt (najbliższy węzeł terytorium,
+ * dowolny właściciel) → jeśli to ten sam ownerId → NAJBLIŻSZE miasto TEGO
+ * ownera (hexDistance). Ulepszenie poza terytorium jakiegokolwiek miasta
+ * (territoryOwnerAt zwraca null) jest pomijane — nie ma właściciela.
+ *
+ * Żywność i Praca — BEZ ZMIAN (zostają przy workedTiles, patrz cityYieldPerTurn).
+ *
+ * Deterministyczne: iteracja po Object.keys(map.hexes) w kolejności wstawienia
+ * (generator mapy jest deterministyczny), zero Math.random(); przy remisie
+ * odległości do miasta wygrywa PIERWSZE miasto w tablicy `cities`.
+ */
+export function computeTerritoryResourceYieldByCity(
+  cities: ReadonlyArray<Pick<City, 'id' | 'q' | 'r' | 'ownerId'>>,
+  map: GameMap,
+  territoryNodes: readonly TerritoryNode[],
+): TerritoryResourceYieldByCity {
+  const out = new Map<string, Partial<Record<TerritoryResourceKey, number>>>();
+  if (!cities.length) return out;
+
+  function nearestOwnerCityId(q: number, r: number, ownerId: number): string | null {
+    let best: string | null = null;
+    let bestDist = Infinity;
+    for (const c of cities) {
+      if (c.ownerId !== ownerId) continue;
+      const d = hexDistance(q, r, c.q, c.r);
+      if (d < bestDist) { bestDist = d; best = c.id; }
+    }
+    return best;
+  }
+
+  for (const hexKey of Object.keys(map.hexes)) {
+    const hex = map.hexes[hexKey];
+    if (!hex) continue;
+    const impKeys = improvementKeysForHex(hex);
+    if (!impKeys.length) continue;
+
+    const { q, r } = hex.coords;
+    const owner = territoryOwnerAt(q, r, territoryNodes);
+    if (owner == null) continue;
+    const cityId = nearestOwnerCityId(q, r, owner);
+    if (!cityId) continue;
+
+    for (const key of impKeys) {
+      const yieldRow = territoryResourceYieldForImprovement(key, (hex as { zloze?: string }).zloze);
+      if (!yieldRow) continue;
+      const rec = out.get(cityId) ?? {};
+      rec[yieldRow.resourceKey] = (rec[yieldRow.resourceKey] ?? 0) + yieldRow.amount;
+      out.set(cityId, rec);
+    }
+  }
+
+  return out;
+}
+
+// ---------------------------------------------------------------------------
 // Runtime City -> EconomyCity adapter
 // ---------------------------------------------------------------------------
 
@@ -1059,6 +1133,10 @@ export function advanceCityEconomy(
   const territoryNodes = buildTerritoryNodesFromCities(cities);
   reconcileAllWorkedTiles(cities, territoryNodes);
 
+  // SUROW-TERYT-01 (Maciej 2026-07-23): surowce logistyczne per ulepszenie w
+  // terytorium, niezaleznie od workedTiles -- liczone RAZ dla calej tury (nie per-city).
+  const territoryResourceByCity = computeTerritoryResourceYieldByCity(cities, map, territoryNodes);
+
   // Load upkeep + storage params from the same econ-params.json blob.
   const rawEconParams = data.econParams as unknown as Parameters<typeof loadUpkeepParams>[0];
   const upkeepParams  = loadUpkeepParams(rawEconParams, difficulty);
@@ -1331,24 +1409,26 @@ export function advanceCityEconomy(
     incomeByOwner.set(city.ownerId, (incomeByOwner.get(city.ownerId) ?? 0) + pieniadzPoWealth + pieniadzZTras);
 
     // --- Converters (s.1.5) -- run after terrain yield, per-city (Zadanie 2 E1) ---
-    // City.surowce jest teraz realnym polem runtime (game/cities.ts). Zbieramy surowce
-    // logistyczne z liczbowym plonem terenu: drewno/kamien/glina (yld.drewnoTerenu/
-    // kamienTerenu/glinaTerenu z tileYield -- economy.ts). Glina dodana GLINA-Q1=A
-    // (Maciej 2026-07-20): stala ilosc 2/ture z glinianki (bonus.glina w
-    // terrain-improvements.json), dokladnie ten sam wzorzec co drewno/kamien.
-    // Ruda pozostaje wylacznie dostep boolean (surowiecOdblokowany) bez ilosci --
-    // GLINA-Q2=A: rudy/brazu NIE ruszamy w tym etapie.
+    // City.surowce jest teraz realnym polem runtime (game/cities.ts).
+    //
+    // SUROW-TERYT-01 (Maciej 2026-07-23): surowce logistyczne (drewno/kamien/glina/
+    // ruda/ruda_zelaza) NIE plyna juz z yld.*Terenu (ktore zalezaly od workedTiles --
+    // pola obsadzone populacja). Zamiast tego kazde ZBUDOWANE ulepszenie w terytorium
+    // wlasciciela produkuje stala stawke/ture, niezaleznie od obsadzenia -- patrz
+    // computeTerritoryResourceYieldByCity (liczone raz dla calej tury, powyzej petli).
+    // Zywnosc i Praca ZOSTAJA przy modelu workedTiles (yld.zywnosc/yld.praca -- bez zmian).
     const maMagazyn = builtIds.includes('magazyn');
     const resCap = resourceStorageCapacityPerType(maMagazyn, storageParams);
     if (!city.surowce) city.surowce = {};
     const citySurowce: Record<string, number> = city.surowce;
-    citySurowce.drewno = Math.min(resCap, (citySurowce.drewno ?? 0) + yld.drewnoTerenu);
-    citySurowce.kamien = Math.min(resCap, (citySurowce.kamien ?? 0) + yld.kamienTerenu);
-    citySurowce.glina  = Math.min(resCap, (citySurowce.glina ?? 0) + yld.glinaTerenu);
+    const terrYield = territoryResourceByCity.get(city.id);
+    citySurowce.drewno = Math.min(resCap, (citySurowce.drewno ?? 0) + (terrYield?.drewno ?? 0));
+    citySurowce.kamien = Math.min(resCap, (citySurowce.kamien ?? 0) + (terrYield?.kamien ?? 0));
+    citySurowce.glina  = Math.min(resCap, (citySurowce.glina ?? 0) + (terrYield?.glina ?? 0));
 
     // Ruda miedzi / ruda żelaza — numeryczny stock do łańcucha konwerterów (audit 9a0ca985).
-    citySurowce.ruda = Math.min(resCap, (citySurowce.ruda ?? 0) + yld.rudaTerenu);
-    citySurowce.ruda_zelaza = Math.min(resCap, (citySurowce.ruda_zelaza ?? 0) + yld.rudaZelazaTerenu);
+    citySurowce.ruda = Math.min(resCap, (citySurowce.ruda ?? 0) + (terrYield?.ruda ?? 0));
+    citySurowce.ruda_zelaza = Math.min(resCap, (citySurowce.ruda_zelaza ?? 0) + (terrYield?.ruda_zelaza ?? 0));
 
     // Uruchamiamy tylko konwertery, ktorych budynek jest FAKTYCZNIE wybudowany w tym
     // miescie (inaczej drewno konwertowaloby sie samoistnie bez Mielerza/Cegielni/...).

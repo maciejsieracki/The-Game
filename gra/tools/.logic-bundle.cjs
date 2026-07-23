@@ -5090,7 +5090,8 @@ var terrain_improvements_default = {
     decyzje_MIASTO: "lodzie_rybackie = TAK teraz; kamieniolom OSOBNO od kopalni (rozne surowce); teren NIE daje +Nauka/+Kultura (te z budynkow/specjalistow/suwaka). Tarasy = +zywnosc (nie kultura).",
     kanon_zywnosc_hodowla: "docs/decyzje/KANON-ULEPSZENIA-ZYWNOSC-HODOWLA.md (2026-06-29 Maciej) \u2014 obowiazuje nad tym plikiem do wdrozenia",
     decyzje_EKONOMIA: "surowiecOdblokowany = klucz ASCII surowca (lub null) wg modelu dostepu boolean v0.1; zasieg_terytorium: posterunek=5 (epoka 2), fort=10 (epoka 3), miasto=10 (stale); zakladanie kolejnego miasta wymaga Straznica LUB zasiegu obecnego miasta. Rozbieznosci kluczy z resources.json (brak pola id) zapisane w EKONOMIA-ulepszenia-terenu-v01.md.",
-    klucze_surowcow_ASCII: "drewno | kamien | glina | ruda | zelazo | stal | bydlo | owce | lama | kon | sol"
+    klucze_surowcow_ASCII: "drewno | kamien | glina | ruda | zelazo | stal | bydlo | owce | lama | kon | sol",
+    pole_surowiec_ilosc_tura: "SUROW-TERYT-01 (Maciej 2026-07-23): produkcja PER ZBUDOWANE ULEPSZENIE w terytorium wlasciciela, niezaleznie od obsadzenia pola populacja (workedTiles). Wartosc = surowiec/ture. Stawki REALNE (Maciej 2026-07-23, korekta po ECHO placeholdera): Tartak->drewno 4, Kamieniolom->kamien 4, Glinianka->glina 4, Kopalnia miedzi->ruda 2, Kopalnia (zloze zelaza)->ruda_zelaza 2. Brak pola w JSON -> domyslnie 2/ture (terrain-improvements.ts TERRITORY_YIELD_DEFAULT_AMOUNT, fallback bezpieczenstwa)."
   },
   farma: {
     nazwa: "Farma",
@@ -5184,7 +5185,8 @@ var terrain_improvements_default = {
       praca: 2
     },
     surowiecOdblokowany: "ruda",
-    surowiecOdblokowany_uwaga: "ruda miedzi lub ruda_zelaza (zale\u017Cnie od z\u0142o\u017Ca); plon 2/t z kopalni",
+    surowiecOdblokowany_uwaga: "ruda miedzi lub ruda_zelaza (zale\u017Cnie od z\u0142o\u017Ca); plon 2/t z kopalni. SUROW-TERYT-01 (Maciej 2026-07-23): stawka REALNA (nie placeholder) = 2/ture dla ruda_zelaza (kopalnia na z\u0142o\u017Cu \u017Celaza).",
+    surowiec_ilosc_tura: 2,
     teren: "Wzg\xF3rza, G\xF3ry, z\u0142o\u017Ce rudy miedzi lub \u017Celaza",
     warunek: "wydobycie rudy do magazynu miasta (ruda / ruda_zelaza)",
     koszt_praca: 25,
@@ -5199,7 +5201,8 @@ var terrain_improvements_default = {
       glina: 2
     },
     surowiecOdblokowany: "glina",
-    surowiecOdblokowany_uwaga: "GLINA-Q1=A (Maciej 2026-07-20): stala ilosc 2 glina/ture z ulepszenia (bonus.glina), analogicznie do drewna/kamienia. Klucz 'glina' wg Surowiec='Glina' w resources.json.",
+    surowiecOdblokowany_uwaga: "GLINA-Q1=A (Maciej 2026-07-20): stala ilosc 2 glina/ture z ulepszenia (bonus.glina), analogicznie do drewna/kamienia. Klucz 'glina' wg Surowiec='Glina' w resources.json. Stawka SUROW-TERYT-01 (Maciej 2026-07-23, wartosc REALNA nie placeholder) = 4/ture (surowiec_ilosc_tura), NIE bonus.glina (2) -- osobne pola.",
+    surowiec_ilosc_tura: 4,
     teren: "z\u0142o\u017Ce Gliny",
     warunek: "glina \u2192 ceg\u0142a (wa\u017Cne w br\u0105zie)",
     koszt_praca: 20,
@@ -5214,7 +5217,8 @@ var terrain_improvements_default = {
       kamien: 1
     },
     surowiecOdblokowany: "kamien",
-    surowiecOdblokowany_uwaga: "klucz 'kamien' wg Surowiec='Kamie\u0144' w resources.json; brak pola id \u2014 propozycja EKONOMIA; UWAGA: 'kamien' pojawia sie rowniez w bonus{} jako efekt plonu \u2014 DANE musi zdecydowac czy bonus.kamien = dostep czy liczba",
+    surowiecOdblokowany_uwaga: "klucz 'kamien' wg Surowiec='Kamie\u0144' w resources.json; brak pola id \u2014 propozycja EKONOMIA; UWAGA: 'kamien' pojawia sie rowniez w bonus{} jako efekt plonu \u2014 DANE musi zdecydowac czy bonus.kamien = dostep czy liczba. Stawka SUROW-TERYT-01 (Maciej 2026-07-23, REALNA) = 4/ture.",
+    surowiec_ilosc_tura: 4,
     teren: "Wzg\xF3rza, G\xF3ry (kamie\u0144)",
     warunek: "budulec \u2014 mury, budynki",
     koszt_praca: 22,
@@ -5261,7 +5265,8 @@ var terrain_improvements_default = {
       praca: 3
     },
     surowiecOdblokowany: "drewno",
-    surowiecOdblokowany_uwaga: "v0.1: tylko dost\u0119p boolean (panel Surowce) \u2014 bez liczenia ilo\u015Bci w magazynie",
+    surowiecOdblokowany_uwaga: "SUROW-TERYT-01 (Maciej 2026-07-23): produkcja per ulepszenie w terytorium, niezaleznie od obsadzenia populacja -- patrz surowiec_ilosc_tura (REALNA stawka 4/ture, nie placeholder).",
+    surowiec_ilosc_tura: 4,
     teren: "L\u0105d w terytorium (\u0142\u0105ka, lasy, wzg\xF3rza\u2026)",
     warunek: "sta\u0142e ulepszenie; MO\u017BE na lesie \u2014 las NIE znika; odblokowuje dost\u0119p do drewna (v0.1 bez ilo\u015Bci)",
     koszt_praca: 25,
@@ -5364,7 +5369,8 @@ var terrain_improvements_default = {
       praca: 2
     },
     surowiecOdblokowany: "ruda",
-    surowiecOdblokowany_uwaga: "ruda miedzi (Odlewnia br\u0105zu); plon 2/t z kopalni_miedzi",
+    surowiecOdblokowany_uwaga: "ruda miedzi (Odlewnia br\u0105zu); plon 2/t z kopalni_miedzi. SUROW-TERYT-01 (Maciej 2026-07-23): stawka REALNA (nie placeholder) = 2/ture.",
+    surowiec_ilosc_tura: 2,
     teren: "Wzg\xF3rza, G\xF3ry, z\u0142o\u017Ce miedzi (hex.zloze=miedz)",
     warunek: "ruda miedzi \u2192 magazyn (Odlewnia br\u0105zu)",
     koszt_praca: 22,
@@ -5441,6 +5447,40 @@ function oreYieldFromImprovements(improvementKeys, zloze) {
 function applyImprovementBonuses(yld, improvementKeys) {
   for (const key of improvementKeys) {
     applyImprovementBonus(yld, key);
+  }
+}
+var TERRITORY_YIELD_IMPROVEMENTS = /* @__PURE__ */ new Set([
+  "tartak",
+  "kamieniolom",
+  "glinianka",
+  "kopalnia_miedzi",
+  "kopalnia"
+]);
+var TERRITORY_YIELD_DEFAULT_AMOUNT = 2;
+function territoryYieldAmountForKey(key) {
+  const row = IMPROVEMENTS[key];
+  const v = row == null ? void 0 : row.surowiec_ilosc_tura;
+  return typeof v === "number" && Number.isFinite(v) && v > 0 ? v : TERRITORY_YIELD_DEFAULT_AMOUNT;
+}
+function territoryResourceYieldForImprovement(key, zloze) {
+  const norm = normalizeImprovementKey(key);
+  if (!norm || !TERRITORY_YIELD_IMPROVEMENTS.has(norm)) return null;
+  const amount = territoryYieldAmountForKey(norm);
+  switch (norm) {
+    case "tartak":
+      return { resourceKey: "drewno", amount };
+    case "kamieniolom":
+      return { resourceKey: "kamien", amount };
+    case "glinianka":
+      return { resourceKey: "glina", amount };
+    case "kopalnia_miedzi":
+      return { resourceKey: "ruda", amount };
+    case "kopalnia": {
+      const z = zloze == null ? void 0 : zloze.trim().toLowerCase();
+      return { resourceKey: z === "zelazo" ? "ruda_zelaza" : "ruda", amount };
+    }
+    default:
+      return null;
   }
 }
 function improvementKeysForHex(hex) {
@@ -5605,7 +5645,7 @@ function terrainMoveCost(hex) {
   }
   return applyRoadMovementModifier(cost, hex);
 }
-function computeReachable(unit, map, occupied) {
+function computeReachable(unit, map, occupied, costFn = terrainMoveCost) {
   var _a10, _b3;
   const reachable = /* @__PURE__ */ new Set();
   const startKey = keyOf(unit.q, unit.r);
@@ -5661,7 +5701,7 @@ function computeReachable(unit, map, occupied) {
       const nKey = keyOf(nq, nr);
       if (!(nKey in map.hexes)) continue;
       const hex = map.hexes[nKey];
-      const movCost = terrainMoveCost(hex);
+      const movCost = costFn(hex);
       if (movCost === Infinity) continue;
       if (occupied.has(nKey)) continue;
       const newCost = cost + movCost;
@@ -5682,7 +5722,7 @@ function computeReachable(unit, map, occupied) {
       const nKey = keyOf(nq, nr);
       if (!(nKey in map.hexes)) continue;
       const hex = map.hexes[nKey];
-      const movCost = terrainMoveCost(hex);
+      const movCost = costFn(hex);
       if (movCost !== Infinity && !occupied.has(nKey)) {
         reachable.add(nKey);
       }
@@ -5692,7 +5732,7 @@ function computeReachable(unit, map, occupied) {
   return reachable;
 }
 var PATH_SEARCH_RADIUS_BUFFER = 12;
-function computePath(unit, map, destQ, destR, occupied) {
+function computePath(unit, map, destQ, destR, occupied, costFn = terrainMoveCost) {
   const startKey = keyOf(unit.q, unit.r);
   const destKey = keyOf(destQ, destR);
   if (!(destKey in map.hexes)) return [];
@@ -5757,7 +5797,7 @@ function computePath(unit, map, destQ, destR, occupied) {
       if (dist.has(nKey) && dist.get(nKey) <= cost) continue;
       if (!(nKey in map.hexes)) continue;
       const hex = map.hexes[nKey];
-      const movCost = terrainMoveCost(hex);
+      const movCost = costFn(hex);
       if (nKey === destKey) {
         const enterCost = movCost === Infinity ? 1 : movCost;
         const newCost2 = cost + enterCost;
@@ -12360,7 +12400,7 @@ var buildings_default = [
     wymagania: "",
     uwagi: "Mnoznik % dotyczy handlu ladowego (szlaki miedzy miastami)",
     techUnlock: "Handel",
-    koszt_surowce: { ceramika: 4 }
+    koszt_surowce: { cegla: 4 }
   },
   {
     id: "spichlerz",
@@ -12574,7 +12614,7 @@ var buildings_default = [
     uwagi: "B-KULT-REL + KULT-BUD-02: budynek RELIGIJNY \u2014 konwersja religii +4%/t (religia_konwersja_swiatynia, additive do bazy); plon kultury OK, bez bonusu konwersji kultury.",
     techUnlock: "Religia",
     upgradeFrom: "kamienne_kregi",
-    koszt_surowce: { ceramika: 6 }
+    koszt_surowce: { cegla: 6 }
   },
   {
     id: "biblioteka",
@@ -12624,7 +12664,7 @@ var buildings_default = [
     poziomTechGate: {
       "6": "Astronomia"
     },
-    koszt_surowce: { ceramika: 5 }
+    koszt_surowce: { cegla: 5 }
   },
   {
     id: "studnia",
@@ -13392,24 +13432,6 @@ var resources_default = [
     Typ: "surowy",
     "\u0179r\xF3d\u0142o / budynek": "z\u0142o\u017Ce \u017Celaza + Kopalnia",
     Uwagi: "wejscie Odlewni \u017Celaza (klucz stock: ruda_zelaza)"
-  },
-  {
-    Surowiec: "Byd\u0142o (krowa/w\xF3\u0142)",
-    Typ: "hodowla",
-    "\u0179r\xF3d\u0142o / budynek": "z\u0142o\u017Ce/handel (zarodek) + Byd\u0142o",
-    Uwagi: "pierwsze pastwisko na z\u0142o\u017Cu odblokowuje hodowle imperium; bonus pola +2 \u017Cywno\u015Bci / +3 produkcji (kanon); Rydwan; Inkowie od epoki 3"
-  },
-  {
-    Surowiec: "Owce",
-    Typ: "hodowla",
-    "\u0179r\xF3d\u0142o / budynek": "z\u0142o\u017Ce/handel (zarodek) + Owce",
-    Uwagi: "solo wzg\xF3rze; +1 \u017Cywno\u015Bci / +2 produkcji; pierwsze na z\u0142o\u017Cu odblokowuje imperium; Inkowie od epoki 3"
-  },
-  {
-    Surowiec: "Lama",
-    Typ: "hodowla",
-    "\u0179r\xF3d\u0142o / budynek": "z\u0142o\u017Ce/handel (zarodek) + Lama",
-    Uwagi: "TYLKO Inkowie; solo; +1 \u017Cywno\u015Bci / +3 produkcji; pierwsze na z\u0142o\u017Cu lamy odblokowuje imperium; brak Rydwanu"
   },
   {
     Surowiec: "Ko\u0144",
@@ -19741,13 +19763,6 @@ var econ_params_default = {
       jednostka: "\xA4/szt.",
       opis: "C-DYP-SUROWCE-Q1=B: cena jednostkowa Ceg\u0142y w koszyku PN dyplomacji. PLACEHOLDER \u2014 patrz cena_drewno."
     },
-    cena_ceramika: {
-      easy: 6,
-      normal: 6,
-      hard: 6,
-      jednostka: "\xA4/szt.",
-      opis: "C-DYP-SUROWCE-Q1=B: cena jednostkowa Ceramiki w koszyku PN dyplomacji. PLACEHOLDER \u2014 patrz cena_drewno."
-    },
     cena_ruda: {
       easy: 4,
       normal: 4,
@@ -20311,6 +20326,61 @@ var ai_params_default = {
     wartosc: 0,
     sekcja: "\xA78 Archetypy",
     opis: "Fenicjanie: delta priorytetu obrona."
+  },
+  cuda_poziom1_prog_koszt_x: {
+    wartosc: 25,
+    sekcja: "\xA79 Cuda AI",
+    opis: "PR\xD3G DO AKCEPTACJI: poziom Prosty \u2014 AI kolejkuje cud gdy koszt <= 25\xD7 Praca/tur\u0119 miasta (rzadko/p\xF3\u017Ano \u2014 tylko gdy miasto ma du\u017C\u0105 nadwy\u017Ck\u0119)."
+  },
+  cuda_poziom1_throttle_tur: {
+    wartosc: 8,
+    sekcja: "\xA79 Cuda AI",
+    opis: "PR\xD3G DO AKCEPTACJI: poziom Prosty \u2014 AI rozwa\u017Ca kolejkowanie cudu tylko co 8 tur (throttle, nie ka\u017Cda tura)."
+  },
+  cuda_poziom2_prog_koszt_x: {
+    wartosc: 45,
+    sekcja: "\xA79 Cuda AI",
+    opis: "PR\xD3G DO AKCEPTACJI: poziom Normalny \u2014 AI kolejkuje cud gdy koszt <= 45\xD7 Praca/tur\u0119 miasta."
+  },
+  cuda_poziom2_throttle_tur: {
+    wartosc: 5,
+    sekcja: "\xA79 Cuda AI",
+    opis: "PR\xD3G DO AKCEPTACJI: poziom Normalny \u2014 AI rozwa\u017Ca kolejkowanie cudu co 5 tur."
+  },
+  cuda_poziom3_prog_koszt_x: {
+    wartosc: 70,
+    sekcja: "\xA79 Cuda AI",
+    opis: "PR\xD3G DO AKCEPTACJI: poziom Trudny \u2014 AI kolejkuje cud agresywnie, nawet przy koszcie <= 70\xD7 Praca/tur\u0119 miasta."
+  },
+  cuda_poziom3_throttle_tur: {
+    wartosc: 3,
+    sekcja: "\xA79 Cuda AI",
+    opis: "PR\xD3G DO AKCEPTACJI: poziom Trudny \u2014 AI rozwa\u017Ca kolejkowanie cudu co 3 tury (agresywnie, cz\u0119\u015Bciej ni\u017C inne poziomy)."
+  },
+  ludy_morza_max_obozy: {
+    wartosc: 3,
+    sekcja: "\xA79 Ludy Morza",
+    opis: "TEMAT #15: maksymalna liczba oboz\xF3w nadmorskich Lud\xF3w Morza (epoka Br\u0105zu; osobny limit obok oboz\xF3w l\u0105dowych)."
+  },
+  ludy_morza_rajd_zasieg: {
+    wartosc: 8,
+    sekcja: "\xA79 Ludy Morza",
+    opis: "TEMAT #15: zasi\u0119g (heksy) szukania celu rajdu \u2014 nadmorskie miasto lub ulepszenie terenu gracza/AI."
+  },
+  ludy_morza_rajd_okres_latwy: {
+    wartosc: 6,
+    sekcja: "\xA79 Ludy Morza",
+    opis: "TEMAT #15 (placeholder do strojenia): fala rajd\xF3w co N tur na poziomie \u0141atwym (rzadko)."
+  },
+  ludy_morza_rajd_okres_normalny: {
+    wartosc: 3,
+    sekcja: "\xA79 Ludy Morza",
+    opis: "TEMAT #15 (placeholder do strojenia): fala rajd\xF3w co N tur na poziomie Normalnym (\u015Brednio)."
+  },
+  ludy_morza_rajd_okres_trudny: {
+    wartosc: 1,
+    sekcja: "\xA79 Ludy Morza",
+    opis: "TEMAT #15 (placeholder do strojenia): fala rajd\xF3w co N tur na poziomie Trudnym (cz\u0119sto \u2014 co tur\u0119)."
   }
 };
 
@@ -22365,7 +22435,8 @@ function loadThroughput(raw, paramKey, difficulty, fallback) {
 var DEFAULT_CONVERTER_RECIPES = [
   { id: "mielerz", inputs: { drewno: 2 }, output: "paliwo", outputAmount: 1, throughputParamKey: "budynek_mielerz_przepustowosc", throughputFallback: 2 },
   { id: "cegielnia", inputs: { glina: 2, paliwo: 1 }, output: "cegla", outputAmount: 1, throughputParamKey: "budynek_cegielnia_przepustowosc", throughputFallback: 2 },
-  { id: "garncarnia", inputs: { glina: 1, paliwo: 1 }, output: "ceramika", outputAmount: 1, throughputParamKey: "budynek_garncarnia_przepustowosc", throughputFallback: 1 },
+  // 'garncarnia' USUNIETA (Maciej 2026-07-23): Ceramika = tylko dostep (Garncarnia
+  // zbudowana), nie sztuki w magazynie -- patrz komentarz kanonu powyzej.
   { id: "huta", inputs: { ruda: 1, paliwo: 1 }, output: "braz", outputAmount: 1, throughputParamKey: "budynek_huta_przepustowosc", throughputFallback: 1 },
   { id: "odlewnia_brazu", inputs: { ruda: 1, paliwo: 1 }, output: "braz", outputAmount: 1, throughputParamKey: "budynek_huta_przepustowosc", throughputFallback: 1 },
   { id: "odlewnia_zelaza", inputs: { ruda_zelaza: 1, paliwo: 1 }, output: "zelazo", outputAmount: 1, throughputParamKey: "budynek_odlewnia_zelaza_przepustowosc", throughputFallback: 1 },
@@ -22793,6 +22864,42 @@ function cityWorkedTilesForEconomy(city, map, territoryNodes) {
   }
   return tiles;
 }
+function computeTerritoryResourceYieldByCity(cities, map, territoryNodes) {
+  const out = /* @__PURE__ */ new Map();
+  if (!cities.length) return out;
+  function nearestOwnerCityId(q, r, ownerId) {
+    let best = null;
+    let bestDist = Infinity;
+    for (const c of cities) {
+      if (c.ownerId !== ownerId) continue;
+      const d = hexDistance(q, r, c.q, c.r);
+      if (d < bestDist) {
+        bestDist = d;
+        best = c.id;
+      }
+    }
+    return best;
+  }
+  for (const hexKey2 of Object.keys(map.hexes)) {
+    const hex = map.hexes[hexKey2];
+    if (!hex) continue;
+    const impKeys = improvementKeysForHex(hex);
+    if (!impKeys.length) continue;
+    const { q, r } = hex.coords;
+    const owner = territoryOwnerAt(q, r, territoryNodes);
+    if (owner == null) continue;
+    const cityId = nearestOwnerCityId(q, r, owner);
+    if (!cityId) continue;
+    for (const key of impKeys) {
+      const yieldRow = territoryResourceYieldForImprovement(key, hex.zloze);
+      if (!yieldRow) continue;
+      const rec = out.get(cityId) ?? {};
+      rec[yieldRow.resourceKey] = (rec[yieldRow.resourceKey] ?? 0) + yieldRow.amount;
+      out.set(cityId, rec);
+    }
+  }
+  return out;
+}
 function toEconomyCity(city, params, isCapital, zdrowie = 0, buildings = {}) {
   return {
     id: city.id,
@@ -22836,6 +22943,7 @@ function advanceCityEconomy(cities, map, data, difficulty = "normal", econUnits 
   const noBuildings = [];
   const territoryNodes = buildTerritoryNodesFromCities(cities);
   reconcileAllWorkedTiles(cities, territoryNodes);
+  const territoryResourceByCity = computeTerritoryResourceYieldByCity(cities, map, territoryNodes);
   const rawEconParams = data.econParams;
   const upkeepParams = loadUpkeepParams(rawEconParams, difficulty);
   const storageParams = loadStorageParams(rawEconParams, difficulty);
@@ -23054,11 +23162,12 @@ function advanceCityEconomy(cities, map, data, difficulty = "normal", econUnits 
     const resCap = resourceStorageCapacityPerType(maMagazyn, storageParams);
     if (!city.surowce) city.surowce = {};
     const citySurowce = city.surowce;
-    citySurowce.drewno = Math.min(resCap, (citySurowce.drewno ?? 0) + yld.drewnoTerenu);
-    citySurowce.kamien = Math.min(resCap, (citySurowce.kamien ?? 0) + yld.kamienTerenu);
-    citySurowce.glina = Math.min(resCap, (citySurowce.glina ?? 0) + yld.glinaTerenu);
-    citySurowce.ruda = Math.min(resCap, (citySurowce.ruda ?? 0) + yld.rudaTerenu);
-    citySurowce.ruda_zelaza = Math.min(resCap, (citySurowce.ruda_zelaza ?? 0) + yld.rudaZelazaTerenu);
+    const terrYield = territoryResourceByCity.get(city.id);
+    citySurowce.drewno = Math.min(resCap, (citySurowce.drewno ?? 0) + ((terrYield == null ? void 0 : terrYield.drewno) ?? 0));
+    citySurowce.kamien = Math.min(resCap, (citySurowce.kamien ?? 0) + ((terrYield == null ? void 0 : terrYield.kamien) ?? 0));
+    citySurowce.glina = Math.min(resCap, (citySurowce.glina ?? 0) + ((terrYield == null ? void 0 : terrYield.glina) ?? 0));
+    citySurowce.ruda = Math.min(resCap, (citySurowce.ruda ?? 0) + ((terrYield == null ? void 0 : terrYield.ruda) ?? 0));
+    citySurowce.ruda_zelaza = Math.min(resCap, (citySurowce.ruda_zelaza ?? 0) + ((terrYield == null ? void 0 : terrYield.ruda_zelaza) ?? 0));
     const activeRecipes = DEFAULT_CONVERTER_RECIPES.filter((r) => builtIds.includes(r.id));
     if (activeRecipes.length > 0) {
       const convResult = runConverters(

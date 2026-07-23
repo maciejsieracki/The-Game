@@ -12,7 +12,7 @@ export type ImprovementBonusKey =
 
 export type ImprovementBonus = Partial<Record<ImprovementBonusKey, number>>;
 
-type ImprovementRow = { bonus?: ImprovementBonus; nazwa?: string };
+type ImprovementRow = { bonus?: ImprovementBonus; nazwa?: string; surowiec_ilosc_tura?: number };
 
 const IMPROVEMENTS = improvementsJson as Record<string, ImprovementRow>;
 
@@ -84,6 +84,70 @@ export function oreYieldFromImprovements(
 export function applyImprovementBonuses(yld: TileYield, improvementKeys: readonly string[]): void {
   for (const key of improvementKeys) {
     applyImprovementBonus(yld, key);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// SUROW-TERYT-01 (Maciej 2026-07-23): produkcja surowcow logistycznych PER
+// ZBUDOWANE ULEPSZENIE w terytorium wlasciciela, niezaleznie od tego czy heks
+// jest obsadzony populacja (workedTiles) -- patrz turn-economy.ts
+// computeTerritoryResourceYieldByCity. Dotyczy WYLACZNIE surowcow wydobywanych
+// (drewno/kamien/glina/ruda/ruda_zelaza); Zywnosc i Praca zostaja przy modelu
+// workedTiles (BEZ ZMIAN).
+//
+// Stawki: pole "surowiec_ilosc_tura" w terrain-improvements.json per ulepszenie.
+// Wartosci REALNE (Maciej 2026-07-23, korekta po ECHO placeholdera 2/ture):
+//   Tartak->drewno 4 · Kamieniolom->kamien 4 · Glinianka->glina 4 ·
+//   Kopalnia miedzi->ruda 2 · Kopalnia (zloze zelaza)->ruda_zelaza 2.
+// Domyslny fallback (gdy pole nieobecne w JSON) = 2/ture -- czysto bezpieczenstwo,
+// nie stawka docelowa; do dalszego strojenia w panelu Excel jesli potrzeba.
+// ---------------------------------------------------------------------------
+
+export type TerritoryResourceKey = 'drewno' | 'kamien' | 'glina' | 'ruda' | 'ruda_zelaza';
+
+export interface TerritoryResourceYield {
+  resourceKey: TerritoryResourceKey;
+  amount: number;
+}
+
+/** Ulepszenia ktore produkuja surowiec logistyczny niezaleznie od workerow. */
+const TERRITORY_YIELD_IMPROVEMENTS: ReadonlySet<string> = new Set([
+  'tartak', 'kamieniolom', 'glinianka', 'kopalnia_miedzi', 'kopalnia',
+]);
+
+/** Fallback bezpieczenstwa gdy JSON nie ma pola `surowiec_ilosc_tura` (wszystkie 5
+ *  ulepszen produkcyjnych maja dzis jawna wartosc w JSON -- patrz komentarz wyzej). */
+export const TERRITORY_YIELD_DEFAULT_AMOUNT = 2;
+
+function territoryYieldAmountForKey(key: string): number {
+  const row = IMPROVEMENTS[key];
+  const v = row?.surowiec_ilosc_tura;
+  return typeof v === 'number' && Number.isFinite(v) && v > 0 ? v : TERRITORY_YIELD_DEFAULT_AMOUNT;
+}
+
+/**
+ * Surowiec + ilosc/ture produkowane przez `key` (ulepszenie terenu), niezaleznie od
+ * obsadzenia pola populacja. Zwraca null gdy ulepszenie nie produkuje surowca
+ * logistycznego (np. Farma, Droga, Stadnina -- kon zostaje czystym dostepem).
+ * `zloze` rozstrzyga ruda vs ruda_zelaza pod Kopalnia (jak oreYieldFromImprovements).
+ */
+export function territoryResourceYieldForImprovement(
+  key: string,
+  zloze?: string | null,
+): TerritoryResourceYield | null {
+  const norm = normalizeImprovementKey(key);
+  if (!norm || !TERRITORY_YIELD_IMPROVEMENTS.has(norm)) return null;
+  const amount = territoryYieldAmountForKey(norm);
+  switch (norm) {
+    case 'tartak':          return { resourceKey: 'drewno', amount };
+    case 'kamieniolom':     return { resourceKey: 'kamien', amount };
+    case 'glinianka':       return { resourceKey: 'glina',  amount };
+    case 'kopalnia_miedzi': return { resourceKey: 'ruda',   amount };
+    case 'kopalnia': {
+      const z = zloze?.trim().toLowerCase();
+      return { resourceKey: z === 'zelazo' ? 'ruda_zelaza' : 'ruda', amount };
+    }
+    default: return null;
   }
 }
 

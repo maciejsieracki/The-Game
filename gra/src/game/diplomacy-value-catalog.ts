@@ -188,13 +188,16 @@ interface RawEconParamsJsonHandelSurowce {
 
 const _handelSurowce = (econParamsJson as RawEconParamsJsonHandelSurowce).handel_surowce ?? {};
 
-/** Klucz ASCII surowca (cities.ts City.surowce) → klucz wiersza cennika w econ-params.json. */
+/**
+ * Klucz ASCII surowca (cities.ts City.surowce) → klucz wiersza cennika w econ-params.json.
+ * Ceramika CELOWO NIEOBECNA (Maciej 2026-07-23): przestaje być dobrem ilościowym —
+ * tylko dostęp (Garncarnia zbudowana), patrz diplomacy-goods.ts / building-resource-gate.ts.
+ */
 const HANDEL_SUROWCE_CENA_ROW: Readonly<Record<string, string>> = {
   drewno: 'cena_drewno',
   kamien: 'cena_kamien',
   glina: 'cena_glina',
   cegla: 'cena_cegla',
-  ceramika: 'cena_ceramika',
   ruda: 'cena_ruda',
 };
 

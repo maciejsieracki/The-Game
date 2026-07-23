@@ -372,7 +372,7 @@
     "wymagania": "",
     "uwagi": "Mnoznik % dotyczy handlu ladowego (szlaki miedzy miastami)",
     "techUnlock": "Handel",
-    "koszt_surowce": { "ceramika": 4 }
+    "koszt_surowce": { "cegla": 4 }
   },
   {
     "id": "spichlerz",
@@ -586,7 +586,7 @@
     "uwagi": "B-KULT-REL + KULT-BUD-02: budynek RELIGIJNY — konwersja religii +4%/t (religia_konwersja_swiatynia, additive do bazy); plon kultury OK, bez bonusu konwersji kultury.",
     "techUnlock": "Religia",
     "upgradeFrom": "kamienne_kregi",
-    "koszt_surowce": { "ceramika": 6 }
+    "koszt_surowce": { "cegla": 6 }
   },
   {
     "id": "biblioteka",
@@ -636,7 +636,7 @@
     "poziomTechGate": {
       "6": "Astronomia"
     },
-    "koszt_surowce": { "ceramika": 5 }
+    "koszt_surowce": { "cegla": 5 }
   },
   {
     "id": "studnia",

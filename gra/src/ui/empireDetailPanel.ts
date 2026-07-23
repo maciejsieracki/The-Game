@@ -343,11 +343,14 @@ function render(): void {
     for (const r of snap.resources) {
       const sub = [r.typ, r.assigned, r.dostep ? '' : 'brak dostępu'].filter(Boolean).join(' · ');
       const rt = r.ratePerTurn === 0 ? '—' : signedTxt(r.ratePerTurn);
+      // Wiersze czystego dostępu (Sól/Koń/Ceramika) mają stock zawsze 0 — pokazujemy
+      // „—" zamiast myslacej liczby (Maciej 2026-07-23: "stock 0/—").
+      const stockTxt = r.stock === 0 ? '—' : String(r.stock);
       sur += miniRow([
         esc(r.icon),
         `<div style="color:${r.dostep ? '#e2e6ec' : '#6f7889'}">${esc(r.label)}</div>`
           + `<div style="font-size:10px;color:#6f7889">${esc(sub)}</div>`,
-        `<span style="text-align:right;font-weight:700">${r.stock}</span>`,
+        `<span style="text-align:right;font-weight:700">${stockTxt}</span>`,
         `<span style="text-align:right;color:#78c95a">${rt}</span>`,
       ], grid);
     }

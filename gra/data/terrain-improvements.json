@@ -6,7 +6,8 @@
     "decyzje_MIASTO": "lodzie_rybackie = TAK teraz; kamieniolom OSOBNO od kopalni (rozne surowce); teren NIE daje +Nauka/+Kultura (te z budynkow/specjalistow/suwaka). Tarasy = +zywnosc (nie kultura).",
     "kanon_zywnosc_hodowla": "docs/decyzje/KANON-ULEPSZENIA-ZYWNOSC-HODOWLA.md (2026-06-29 Maciej) — obowiazuje nad tym plikiem do wdrozenia",
     "decyzje_EKONOMIA": "surowiecOdblokowany = klucz ASCII surowca (lub null) wg modelu dostepu boolean v0.1; zasieg_terytorium: posterunek=5 (epoka 2), fort=10 (epoka 3), miasto=10 (stale); zakladanie kolejnego miasta wymaga Straznica LUB zasiegu obecnego miasta. Rozbieznosci kluczy z resources.json (brak pola id) zapisane w EKONOMIA-ulepszenia-terenu-v01.md.",
-    "klucze_surowcow_ASCII": "drewno | kamien | glina | ruda | zelazo | stal | bydlo | owce | lama | kon | sol"
+    "klucze_surowcow_ASCII": "drewno | kamien | glina | ruda | zelazo | stal | bydlo | owce | lama | kon | sol",
+    "pole_surowiec_ilosc_tura": "SUROW-TERYT-01 (Maciej 2026-07-23): produkcja PER ZBUDOWANE ULEPSZENIE w terytorium wlasciciela, niezaleznie od obsadzenia pola populacja (workedTiles). Wartosc = surowiec/ture. Stawki REALNE (Maciej 2026-07-23, korekta po ECHO placeholdera): Tartak->drewno 4, Kamieniolom->kamien 4, Glinianka->glina 4, Kopalnia miedzi->ruda 2, Kopalnia (zloze zelaza)->ruda_zelaza 2. Brak pola w JSON -> domyslnie 2/ture (terrain-improvements.ts TERRITORY_YIELD_DEFAULT_AMOUNT, fallback bezpieczenstwa)."
   },
   "farma": {
     "nazwa": "Farma",
@@ -100,7 +101,8 @@
       "praca": 2
     },
     "surowiecOdblokowany": "ruda",
-    "surowiecOdblokowany_uwaga": "ruda miedzi lub ruda_zelaza (zależnie od złoża); plon 2/t z kopalni",
+    "surowiecOdblokowany_uwaga": "ruda miedzi lub ruda_zelaza (zależnie od złoża); plon 2/t z kopalni. SUROW-TERYT-01 (Maciej 2026-07-23): stawka REALNA (nie placeholder) = 2/ture dla ruda_zelaza (kopalnia na złożu żelaza).",
+    "surowiec_ilosc_tura": 2,
     "teren": "Wzgórza, Góry, złoże rudy miedzi lub żelaza",
     "warunek": "wydobycie rudy do magazynu miasta (ruda / ruda_zelaza)",
     "koszt_praca": 25,
@@ -115,7 +117,8 @@
       "glina": 2
     },
     "surowiecOdblokowany": "glina",
-    "surowiecOdblokowany_uwaga": "GLINA-Q1=A (Maciej 2026-07-20): stala ilosc 2 glina/ture z ulepszenia (bonus.glina), analogicznie do drewna/kamienia. Klucz 'glina' wg Surowiec='Glina' w resources.json.",
+    "surowiecOdblokowany_uwaga": "GLINA-Q1=A (Maciej 2026-07-20): stala ilosc 2 glina/ture z ulepszenia (bonus.glina), analogicznie do drewna/kamienia. Klucz 'glina' wg Surowiec='Glina' w resources.json. Stawka SUROW-TERYT-01 (Maciej 2026-07-23, wartosc REALNA nie placeholder) = 4/ture (surowiec_ilosc_tura), NIE bonus.glina (2) -- osobne pola.",
+    "surowiec_ilosc_tura": 4,
     "teren": "złoże Gliny",
     "warunek": "glina → cegła (ważne w brązie)",
     "koszt_praca": 20,
@@ -130,7 +133,8 @@
       "kamien": 1
     },
     "surowiecOdblokowany": "kamien",
-    "surowiecOdblokowany_uwaga": "klucz 'kamien' wg Surowiec='Kamień' w resources.json; brak pola id — propozycja EKONOMIA; UWAGA: 'kamien' pojawia sie rowniez w bonus{} jako efekt plonu — DANE musi zdecydowac czy bonus.kamien = dostep czy liczba",
+    "surowiecOdblokowany_uwaga": "klucz 'kamien' wg Surowiec='Kamień' w resources.json; brak pola id — propozycja EKONOMIA; UWAGA: 'kamien' pojawia sie rowniez w bonus{} jako efekt plonu — DANE musi zdecydowac czy bonus.kamien = dostep czy liczba. Stawka SUROW-TERYT-01 (Maciej 2026-07-23, REALNA) = 4/ture.",
+    "surowiec_ilosc_tura": 4,
     "teren": "Wzgórza, Góry (kamień)",
     "warunek": "budulec — mury, budynki",
     "koszt_praca": 22,
@@ -177,7 +181,8 @@
       "praca": 3
     },
     "surowiecOdblokowany": "drewno",
-    "surowiecOdblokowany_uwaga": "v0.1: tylko dostęp boolean (panel Surowce) — bez liczenia ilości w magazynie",
+    "surowiecOdblokowany_uwaga": "SUROW-TERYT-01 (Maciej 2026-07-23): produkcja per ulepszenie w terytorium, niezaleznie od obsadzenia populacja -- patrz surowiec_ilosc_tura (REALNA stawka 4/ture, nie placeholder).",
+    "surowiec_ilosc_tura": 4,
     "teren": "Ląd w terytorium (łąka, lasy, wzgórza…)",
     "warunek": "stałe ulepszenie; MOŻE na lesie — las NIE znika; odblokowuje dostęp do drewna (v0.1 bez ilości)",
     "koszt_praca": 25,
@@ -280,7 +285,8 @@
       "praca": 2
     },
     "surowiecOdblokowany": "ruda",
-    "surowiecOdblokowany_uwaga": "ruda miedzi (Odlewnia brązu); plon 2/t z kopalni_miedzi",
+    "surowiecOdblokowany_uwaga": "ruda miedzi (Odlewnia brązu); plon 2/t z kopalni_miedzi. SUROW-TERYT-01 (Maciej 2026-07-23): stawka REALNA (nie placeholder) = 2/ture.",
+    "surowiec_ilosc_tura": 2,
     "teren": "Wzgórza, Góry, złoże miedzi (hex.zloze=miedz)",
     "warunek": "ruda miedzi → magazyn (Odlewnia brązu)",
     "koszt_praca": 22,

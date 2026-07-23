@@ -530,13 +530,6 @@
       "jednostka": "¤/szt.",
       "opis": "C-DYP-SUROWCE-Q1=B: cena jednostkowa Cegły w koszyku PN dyplomacji. PLACEHOLDER — patrz cena_drewno."
     },
-    "cena_ceramika": {
-      "easy": 6,
-      "normal": 6,
-      "hard": 6,
-      "jednostka": "¤/szt.",
-      "opis": "C-DYP-SUROWCE-Q1=B: cena jednostkowa Ceramiki w koszyku PN dyplomacji. PLACEHOLDER — patrz cena_drewno."
-    },
     "cena_ruda": {
       "easy": 4,
       "normal": 4,
