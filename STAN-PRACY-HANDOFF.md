@@ -1,6 +1,6 @@
 # STAN PRACY — HANDOFF
 
-**Ostatnia aktualizacja: 2026-07-22** · Projekt: Civ „The Game"
+**Ostatnia aktualizacja: 2026-07-23** · Projekt: Civ „The Game"
 
 > **Ten plik jest punktem wejścia dla KAŻDEJ nowej sesji** — lokalnej, chmurowej, telefonicznej.
 > Mówi: co jest zrobione, co w toku, czego NIE wolno ruszać i czy można pracować.
@@ -21,7 +21,7 @@ git status --short
 - Jeśli w `gra/src` lub `gra/data` są **niezacommitowane zmiany** — ktoś jest w połowie pracy. NIE nadpisuj ich, NIE rób `git checkout`/`git stash` na tych plikach. Najpierw ustal z właścicielem, co to jest.
 - **Zawsze przed pracą uruchom bramki** (sekcja 7), żeby wiedzieć, co jest sprawne, a co było zepsute PRZED Tobą.
 
-**Stan na 2026-07-22 (NAJNOWSZY):** deploy ROBOCZA **`5000ee9f`** — faza 1 urealnienia surowców (złoże+ulepszenie, Model B hodowla, panel potencjał/aktywny). Poprzedni: `7e038328` (suwak żywność per miasto).
+**Stan na 2026-07-23 (NAJNOWSZY):** deploy ROBOCZA **`2c19fcb3`** — HUD bitwy TW-v5 fazy 1–2 (karty dowódców + zegar + przewaga, tempo przy minimapie, stany kart rosteru, bogaty tooltip, likwidacja raila → zębatka). Łańcuch 2026-07-23: `c7f70b27` (pakiet bitewny: plansze wg terenu + rzeka S + upiększenie pola) → `8aff7266` (dyplomacja dwustronna FINAL 3/3) → `2c67014c` (usunięte obramówki, czarne tło pola) → **`2c19fcb3`**. **W TOKU: faza 3 HUD TW-v5** (subagent — C-12 Koniec bitwy, C-23 Szczegóły, ikonowy toolbar, karty-medaliony) — pliki `battleScene.ts`/`battleHudTheme.ts`/`endDetails1E.ts` mogą być niezacommitowane; NIE ruszać. Osobny deploy po bramkach.
 
 **Roadmap surowców (2026-07-22):** Faza 1 = realistyczny dostęp (złoże widoczne vs aktywne po ulepszeniu) · Faza 2 = twarde bramki budynków per surowiec · Faza 3 = magazyny + koszty materiałowe jednostek/budynków.
 
@@ -129,7 +129,7 @@ Wszystko poniżej jest **zdeployowane i na GitHubie**. ID decyzji w nawiasach �
 
 ## 5. ⏳ W TRAKCIE
 
-> **NIC NIE JEST W TOKU.** Drzewo czyste, wszystko zbudowane, zdeployowane (`a31ebe6f`) i wypchnięte na `main`. Nowa sesja startuje bez ryzyka przerwania cudzej pracy.
+**2026-07-23 — HUD bitwy TW-v5 FAZA 3 w toku** (sesja chmurowa, subagent): C-12 „Koniec bitwy" + C-23 „Szczegóły" wg makiety Design `POLE-BITWY-TW-v5` (klatki 4–5), unifikacja paneli 70%+blur, ikonowy dolny toolbar 46×46 z podpisem na hover, karty rosteru z medalionem typu. Dotyka: `gra/src/battle/battleScene.ts`, `battleHudTheme.ts`, `endDetails1E.ts`, `endScreen1E.ts`. Fazy 1–2 są zacommitowane (`0f1455e`, `4726e97`) i ZDEPLOYOWANE (`2c19fcb3`). Jeśli widzisz niezacommitowane zmiany w tych plikach — to faza 3, nie nadpisuj.
 
 ---
 
@@ -204,6 +204,18 @@ node tools/trade-routes-income-test.cjs  # 49/49
 ---
 
 ## 8. 📋 CO ZOSTAŁO DO ZROBIENIA
+
+**Kolejka sesji bitewno-UI 2026-07-23 (rejestr integratora chmurowego):**
+- **#6 HUD TW-v5 faza 3** — W TOKU (patrz §5). Po ukończeniu: weryfikacja wzrokowa vs makieta → commit → deploy → log.
+- **#7 Rzeka w bitwie — kara za brodzenie** (etap B mechaniki: jednostka w brodzie wolniejsza/podatna) — do ABC z właścicielem.
+- **#8 Oblężenie — dopracowanie planszy**: budynki miasta za murem + gruz w wyłomie.
+- **#10 Długi silnika dyplomacji**: SZYBKA UMOWA = realna auto-uczciwa oferta; dobrowolne zrywanie traktatów („Zerwij"); indeks dóbr handlowych per właściciel; opcjonalnie Konfederacja/aneksja/handel mapami (ABC).
+- **#11 Stary dług UI (audyt 2026-07-05 §3)**: karty budynków Poziom B, W4 7 zakładek, chipy 6C w raportach — NAJPIERW zweryfikować, czy Cursor już nie zrobił.
+- **#13 preBattle jako nakładka na mapie** — ⏸ CZEKA na kanon Claude Design (zlecenie wysłane w paczce `DO-DESIGN-2026-07-23`); NIE implementować przed kanonem.
+- **#14 Porządek mockupów**: konsolidacja ~20 do `KANON/mockupy` (martwe linki hubu); ~18 brakujących zgłoszone Design.
+- **#12 Brand-book KANON zainstalowany** — ✅ ZROBIONE (commit `9a533e5`, live w `01-propozycje-z-design/brand-book/KANON/`).
+- **Backlog przyszłościowy (Maciej: „kiedyś")**: większe plansze bitwy — czarne tło zastąpione graficznie ułożonym lądem.
+
 - **[ODLOZONE — decyzja Macieja 2026-07-22] Wielka Kuznia (epokaWejscia=4) i Lazaret (5) niebudowalne** (audyt #41): epoka gracza konczy sie na 3, a techy tier 8-9 obiecuja te budynki. UWAGA: w buildings.json:1283 jest komentarz "PARKOWANIE poza cap v0.1" — moze byc celowe. Opcje: A) obnizyc epokaWejscia do 3 (odparkowac), B) zostawic + mechanizm parkowania jak przy cudach. Wracamy na sygnal Macieja; do tego czasu NIE zmieniac.
 
 
