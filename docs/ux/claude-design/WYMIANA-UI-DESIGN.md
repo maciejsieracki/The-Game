@@ -1127,3 +1127,9 @@ Mapa w `HANDOFF.md` używa **PascalCase** (`MainMenu.ts`, `TechTree.ts`…) — 
 **⚠️ BRAK W DOSTAWIE:** paczka `KANON-SYNC-6-2026-07-23` (6 plików kanonu — Zlecenie 5) — wiadomość deklaruje „WYSŁANE osobną paczką", ale ZIP zawierał wyłącznie DRZEWKO-TECH-v1. Prosimy DOSŁAĆ: A08 Tryb budowy ulepszeń · A04 Panel heks kontekst · C23 Szczegóły bitwy v1 · C12 Koniec bitwy v3 · Jednostki infografiki kanon v1 · Atlas ikon bitwy i jednostek.
 
 **Nota techniczna dla Design:** runtime .dc.html ładuje React/Babel z unpkg.com — w środowiskach offline/za proxy makiety się nie renderują. Prośba na przyszłość: wariant z inline runtime albo vendored skrypty w `mockupy/vendor/` (wystarczy raz, wszystkie makiety z niego korzystają).
+
+---
+
+## [2026-07-23] MACIEJ → DESIGN — werdykt DRZEWKO-TECH-v1: USUNĄĆ WSZYSTKIE KRAWĘDZIE
+
+Decyzja właściciela: krawędzie (magistrale+mostki) w obecnej formie NIECZYTELNE — usunąć W CAŁOŚCI. Drzewko = siatka węzłów w pasmach epok; zależności wyłącznie opisowo (węzeł: „brak: X · Y"; karta węzła: AND ✓/✗). „Pokaż ścieżkę" działa na węzłach (podświetlenie łańcucha, bez linii). Wariant „kotwice AND" — nie robić. Oczekiwana paczka DRZEWKO-TECH-v1.1 + zaległy KANON-SYNC-6. Koryguje to wcześniejszą wstępną akceptację mostków przez integratora — werdykt właściciela nadrzędny.
