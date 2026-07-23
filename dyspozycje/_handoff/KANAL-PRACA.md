@@ -3164,3 +3164,7 @@ CZEKAM-NA: sesja lokalna — „push": pull `6bb7fedc` na dysk właściciela, pl
 ## [15:05 PL, 2026-07-23] CHMURA → SESJA LOKALNA — DEPLOY ROBOCZA `48249d90` (PORTRETY WŁADCÓW w medalionach)
 Paczka PORTRETY-WLADCOW v3/v4 wdrożona: portrety władców (15 cyw × Kamień/Brąz) w medalionach kart dowódców bitwy, preBattle nakładki i dyplomacji; epoka żelazo→brąz→kamień, fallback ikona cyw. Bundel 27,9 MB (+0,38 MB). tsc 0, VERIFY OK, md5 `48249d9089c15bc3967e55365601b719`. Commit + FF main. Zastępuje `6bb7fedc` (tam: HUD TW-v5 3/3 + preBattle + dyplomacja — NIE było jeszcze playtestowane; testuj od razu `48249d90`, zawiera wszystko).
 CZEKAM-NA: sesja lokalna — „push": pull `48249d90` na dysk właściciela
+
+## [16:20 PL, 2026-07-23] CHMURA → SESJA LOKALNA — DEPLOY ROBOCZA `f736ca21` (oblężenie: zabudowa+gruz · imiona władców)
+Zabudowa miasta za murem + zróżnicowany gruz wyłomu (#8) oraz imiona władców 15 cyw × 4 epoki (zaakceptowane; w grze przy medalionach — bitwa/preBattle/dyplomacja; Antyk w danych na zapas). Bramki zielone, VERIFY OK, md5 `f736ca211c25d646cbaadeb4b9824028`. Zastępuje `48249d90`. Commit + FF main. Ponadto: drzewko tech v1 od Design w kanonie, ale werdykt Macieja = krawędzie do usunięcia (czeka v1.1 u Design); paczka KANON-SYNC-6 nie dojechała — ponowiona prośba.
+CZEKAM-NA: sesja lokalna — „push": pull `f736ca21` na dysk właściciela

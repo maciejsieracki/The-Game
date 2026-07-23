@@ -9,7 +9,16 @@ UWAGA: KANON i FINALNA promują się teraz OSOBNYMI skryptami (`gra/tools/publis
 wyraźne polecenie właściciela) — dlatego są logowane NIEZALEŻNIE, każdy w swojej sekcji, ze
 swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drugiego.
 
-## ROBOCZA `48249d90` — 2026-07-23 · PORTRETY WŁADCÓW w medalionach (bitwa + preBattle + dyplomacja) — **AKTUALNA**
+## ROBOCZA `f736ca21` — 2026-07-23 · OBLĘŻENIE: zabudowa za murem + gruz wyłomu · IMIONA WŁADCÓW (60, z Antykiem) — **AKTUALNA**
+
+- **Zawartość (commity `115484a`+`8770bdc`, na `48249d90`):**
+  1. **Oblężenie (#8):** miasto za murem ma ZABUDOWĘ (do 38 budynków low-poly: 3 rozmiary + 2 „publiczne", dachy dwuspadowe/płaskie, paleta ziemisto-kamienna z jitterem; deterministycznie z `tileJitter`, gęściej przy bramie, korytarz od bramy wolny; InstancedMesh, zero wpływu na pathfinding — tylko w bitwach `siege`). **Gruz wyłomu:** 7 brył (boxy+kamienie) z jitterem pozycji/rozmiaru/koloru per kafel wyłomu (było 4 identyczne).
+  2. **Imiona władców (ZAAKCEPTOWANE 2×):** `civs.json` pole `wodzowie` — 15 cyw × 4 epoki = 60 imion (Antyk = zapas, patrz `dyspozycje/DECYZJA-IMIONA-WLADCOW-2026-07-23.md`). W grze: imię przy medalionie na karcie dowódcy bitwy, w preBattle i w dyplomacji (obu kartach), dobór wg epoki z fallbackiem antyk→żelazo→brąz→kamień.
+- **Bramki:** tsc=0 · tech-tree 19/19 · research 33/33 · unit-replace 10/10 · logic 192/207 (te same 15 pre-istniejących) · map-gen determinizm A=B PASS · smoke oblężenie+legacy 0 błędów konsoli · VERIFY OK.
+- **md5:** `f736ca211c25d646cbaadeb4b9824028` · stamp `f736ca21`. Bundel 27,9 MB. Publikowała sesja chmurowa (autonomicznie, C-ORG-Q17=A).
+- **Test:** szturm na miasto → za murem domy, przy bramie „ulica"; wyłom katapultami → rumowisko w luce; karty dowódców → portret + IMIĘ władcy (np. Rzym/Kamień = Romulus); dyplomacja → imię pod nazwą cywilizacji.
+
+## ROBOCZA `48249d90` — 2026-07-23 · PORTRETY WŁADCÓW w medalionach (bitwa + preBattle + dyplomacja) — **ZASTĄPIONA** (→ `f736ca21`)
 
 - **Zawartość (commit `2cb3685`, na `6bb7fedc`):** wdrożenie paczki Design PORTRETY-WLADCOW v3/v4 (30 portretów: 15 cywilizacji × Kamień/Brąz, źródło Gemini/Maciej, cięcie Design). Nowy `leaderPortraits.ts` (30×256px JPEG inline, +0,38 MB bundla). Medaliony pokazują portret władcy wg CYWILIZACJI i EPOKI (żelazo→brąz→kamień przy braku; Żelazo TODO — czeka na arkusz): karty dowódców HUD bitwy (obwódki stron bez zmian), karty dowódców preBattle nakładki, medalion rozmówcy i gracza w dyplomacji (hero 150px + 64px). Fallback obowiązkowy: brak portretu → dotychczasowa ikona cywilizacji. `BattleOpts.attackerEra/defenderEra` opcjonalne (legacy=kamień); ery z `empireEpochForOwner` we wszystkich ścieżkach startu bitwy.
 - **Bramki:** tsc=0 · zrzut E2E: Rzym/Grecja z portretami w kołach medalionów, cover-fit, obwódki OK · VERIFY OK.
