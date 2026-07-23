@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><style>html,body{margin:0;padding:0;background:#05060a}*{box-sizing:border-box}</style></helmet>
+<div style="position:relative;width:1920px;height:1080px;overflow:hidden;font-family:'Segoe UI',Tahoma,sans-serif;color:#e8e0c8;background:radial-gradient(1400px 900px at 46% 44%, #1a2418, #0c1016 55%, #070a0e 100%);">
+
+  <div style="position:absolute;inset:0;background-image:linear-gradient(60deg,rgba(255,255,255,.03) 1px,transparent 1px),linear-gradient(-60deg,rgba(255,255,255,.03) 1px,transparent 1px);background-size:70px 120px;opacity:.4"></div>
+  <div style="position:absolute;inset:0;box-shadow:inset 0 0 240px 60px rgba(0,0,0,.7)"></div>
+
+  <!-- wybrane miasto na mapie -->
+  <div style="position:absolute;top:392px;left:720px;z-index:2;display:inline-flex;align-items:center;gap:10px;padding:6px 16px 6px 12px;border-radius:20px;background:linear-gradient(180deg,#151b26,#0a0d14);border:2px solid #e8d88a;box-shadow:0 0 26px rgba(232,216,138,.4),0 5px 14px rgba(0,0,0,.6);"><svg width="16" height="16" viewBox="0 0 24 24" fill="#e8d88a" stroke="none"><path d="M12 3l2.6 6.3L21 9.8l-4.9 4.2L17.6 21 12 17.3 6.4 21l1.5-7L3 9.8l6.4-.5z"/></svg><span style="font-family:Georgia,serif;font-size:19px;color:#f0e6d0;">RZYM</span><span style="width:26px;height:26px;border-radius:50%;background:#e8d88a;color:#2a2208;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;">4</span></div>
+  <div style="position:absolute;top:376px;left:756px;width:120px;height:120px;z-index:1;border-radius:50%;border:2px dashed rgba(232,216,138,.4);"></div>
+
+  <!-- A · pasek zasobów -->
+  <div style="position:absolute;top:16px;left:20px;z-index:3;display:flex;align-items:center;gap:12px;padding:10px 18px;border-radius:12px;background:linear-gradient(180deg,rgba(20,26,38,.94),rgba(8,10,16,.95));border:1px solid rgba(232,216,138,.3);box-shadow:inset 0 1px 0 rgba(232,216,138,.18),0 6px 18px rgba(0,0,0,.55);">
+    <span style="display:inline-flex;align-items:center;gap:7px;"><span style="width:30px;height:30px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#f4e0a0,#a9861f);border:1px solid #6a5212;display:flex;align-items:center;justify-content:center;"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#3a2e08" stroke-width="1.7"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="5.4"/></svg></span><span style="font-size:11px;color:#8a8070;">Skarbiec</span><span style="font-size:15px;font-weight:700;color:#e8d88a;">238</span><span style="font-size:10px;color:#50b070;">+53</span></span>
+    <span style="width:1px;height:24px;background:rgba(232,216,138,.2);"></span>
+    <span style="display:inline-flex;align-items:center;gap:7px;"><span style="width:30px;height:30px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#8fb6e0,#3a5f8a);border:1px solid #26456a;display:flex;align-items:center;justify-content:center;"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#0e2038" stroke-width="1.7"><path d="M6.5 13c0-3.4 2.5-5.8 5.5-5.8s5.5 2.4 5.5 5.8c0 4.4-2.8 6.9-5.5 6.9S6.5 17.4 6.5 13Z"/><circle cx="9.8" cy="11.6" r="1.6"/><circle cx="14.2" cy="11.6" r="1.6"/></svg></span><span style="font-size:11px;color:#8a8070;">Nauka</span><span style="font-size:15px;font-weight:700;color:#7cb4e4;">49</span><span style="font-size:10px;color:#50b070;">+46</span></span>
+    <span style="width:1px;height:24px;background:rgba(232,216,138,.2);"></span>
+    <span style="display:inline-flex;align-items:center;gap:7px;"><span style="width:30px;height:30px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#f4e0a0,#a9861f);border:1px solid #6a5212;display:flex;align-items:center;justify-content:center;"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#3a2e08" stroke-width="1.7"><path d="M4.6 6.6h5.8c.3 0 .5.2.5.6 0 4.4-1.7 7.4-3.4 7.4S4.1 11.6 4.1 7.2c0-.4.2-.6.5-.6Z"/><g transform="translate(6.6 2.6)"><path d="M4.6 6.6h5.8c.3 0 .5.2.5.6 0 4.4-1.7 7.4-3.4 7.4S4.1 11.6 4.1 7.2c0-.4.2-.6.5-.6Z"/></g></svg></span><span style="font-size:11px;color:#8a8070;">Kultura</span><span style="font-size:15px;font-weight:700;color:#e8d88a;">+180</span></span>
+  </div>
+
+  <!-- A2 · MOC -->
+  <div style="position:absolute;top:10px;left:50%;transform:translateX(-50%);z-index:4;display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 30px;border-radius:0 0 16px 16px;background:linear-gradient(180deg,rgba(30,24,12,.96),rgba(14,10,6,.96));border:1px solid #a08030;border-top:none;box-shadow:0 6px 22px rgba(0,0,0,.6),0 0 30px rgba(232,216,138,.18);">
+    <span style="display:inline-flex;align-items:center;gap:8px;"><span style="width:26px;height:26px;border-radius:50%;background:radial-gradient(circle at 38% 30%,#2a2416,#12100a);border:1.5px solid #e8d88a;display:flex;align-items:center;justify-content:center;color:#f4e6a8;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3 5 5.5v5c0 4.5 3 7.6 7 9 4-1.4 7-4.5 7-9v-5Z"/></svg></span><span style="font-family:Georgia,serif;font-size:22px;color:#f4e6a8;">42</span></span>
+    <span style="font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:#a08030;">Moc militarna</span>
+  </div>
+
+  <!-- A3 -->
+  <div style="position:absolute;top:16px;right:20px;z-index:3;display:flex;align-items:center;gap:16px;">
+    <div style="text-align:right;"><div style="font-family:Georgia,serif;font-size:16px;color:#e8d88a;">Epoka 1</div><div style="font-size:11px;color:#8a8070;">Osiedla 4/49</div></div>
+    <div style="display:flex;align-items:center;gap:8px;height:42px;padding:0 16px;border-radius:9px;border:1px solid rgba(232,216,138,.35);background:linear-gradient(180deg,#161c28,#0a0d14);color:#e8d88a;font-size:12px;letter-spacing:.16em;text-transform:uppercase;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 7h16M4 12h16M4 17h16"/></svg>Menu</div>
+  </div>
+
+  <!-- B · toolbar -->
+  <div style="position:absolute;top:104px;left:22px;z-index:3;display:flex;flex-direction:column;gap:12px;">
+    <div style="width:52px;height:52px;border-radius:50%;background:radial-gradient(circle at 38% 30%,#2a2416,#12100a);border:2px solid #e8d88a;box-shadow:inset 0 2px 4px rgba(232,216,138,.2),0 0 20px rgba(232,216,138,.3);display:flex;align-items:center;justify-content:center;color:#f4e6a8;"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M4 9 12 4.5 20 9Z"/><path d="M6.5 11h11"/><path d="M7.5 11v6M10.3 11v6M13.7 11v6M16.5 11v6"/><path d="M5.5 17h13"/></svg></div>
+    <div style="width:52px;height:52px;border-radius:50%;background:radial-gradient(circle at 38% 30%,#12202e,#0a0d14);border:2px solid #3a6a94;box-shadow:inset 0 2px 4px rgba(90,155,212,.2),0 4px 10px rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;color:#7cb4e4;"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M6.5 13c0-3.4 2.5-5.8 5.5-5.8s5.5 2.4 5.5 5.8c0 4.4-2.8 6.9-5.5 6.9S6.5 17.4 6.5 13Z"/><circle cx="9.8" cy="11.6" r="1.7"/><circle cx="14.2" cy="11.6" r="1.7"/></svg></div>
+    <div style="width:52px;height:52px;border-radius:50%;background:radial-gradient(circle at 38% 30%,#1a2230,#0a0d14);border:2px solid #a08030;box-shadow:inset 0 2px 4px rgba(232,216,138,.16),0 4px 10px rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;color:#e8d88a;"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M4.5 5 14 14.5M14.5 15 17.5 18M15.6 14 13.6 16M19.5 5 10 14.5M9.5 15 6.5 18M8.4 14 10.4 16"/></svg></div>
+  </div>
+
+  <!-- C · PANEL MIASTA (wypełniony) -->
+  <div style="position:absolute;top:100px;right:20px;bottom:20px;z-index:4;width:380px;border:2px solid rgba(232,216,138,.45);border-radius:14px;overflow:hidden;background:linear-gradient(180deg,rgba(18,24,32,.97),rgba(8,10,16,.97));box-shadow:0 16px 44px rgba(0,0,0,.65);display:flex;flex-direction:column;">
+    <!-- nagłówek miasta -->
+    <div style="display:flex;align-items:center;gap:14px;padding:18px 20px;border-bottom:1px solid rgba(232,216,138,.2);background:linear-gradient(90deg,rgba(232,216,138,.1),transparent);">
+      <span style="width:50px;height:50px;flex:none;border-radius:50%;background:radial-gradient(circle at 38% 30%,#2a2416,#12100a);border:2px solid #e8d88a;display:flex;align-items:center;justify-content:center;color:#f4e6a8;box-shadow:inset 0 2px 4px rgba(232,216,138,.2);"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M4 9 12 4.5 20 9Z"/><path d="M6.5 11h11"/><path d="M7.5 11v6M10.3 11v6M13.7 11v6M16.5 11v6"/><path d="M5.5 17h13"/></svg></span>
+      <div style="flex:1;"><div style="font-family:Georgia,serif;font-size:24px;color:#e8d88a;">Rzym</div><div style="font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#8a8070;">Stolica · Populacja 4</div></div>
+      <span style="width:30px;height:30px;border-radius:8px;border:1px solid rgba(232,216,138,.3);display:flex;align-items:center;justify-content:center;color:#8a8070;cursor:pointer;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 6 18 18M18 6 6 18"/></svg></span>
+    </div>
+    <div style="padding:18px 20px;overflow:auto;flex:1;">
+      <!-- wskaźniki miasta -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px;">
+        <div style="display:flex;align-items:center;gap:8px;padding:10px 12px;border:1px solid rgba(232,216,138,.16);border-radius:9px;background:rgba(255,255,255,.02);"><span style="color:#e8d88a;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 21V8"/><path d="M12 8c-1.8-.6-2.9-2.2-2.7-4.2 1.9.2 3 1.9 2.7 4.2ZM12 8c1.8-.6 2.9-2.2 2.7-4.2-1.9.2-3 1.9-2.7 4.2Z"/></svg></span><div><div style="font-size:14px;font-weight:700;color:#e8e0c8;">+6</div><div style="font-size:10px;color:#8a8070;">Żywność</div></div></div>
+        <div style="display:flex;align-items:center;gap:8px;padding:10px 12px;border:1px solid rgba(232,216,138,.16);border-radius:9px;background:rgba(255,255,255,.02);"><span style="color:#e8d88a;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><g transform="rotate(16 12 12)"><rect x="5.5" y="4.6" width="13" height="4.2" rx="1.3"/><path d="M12 8.8V20"/></g></svg></span><div><div style="font-size:14px;font-weight:700;color:#e8e0c8;">+9</div><div style="font-size:10px;color:#8a8070;">Produkcja</div></div></div>
+        <div style="display:flex;align-items:center;gap:8px;padding:10px 12px;border:1px solid rgba(232,216,138,.16);border-radius:9px;background:rgba(255,255,255,.02);"><span style="color:#e8d88a;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="5.4"/></svg></span><div><div style="font-size:14px;font-weight:700;color:#e8e0c8;">+4</div><div style="font-size:10px;color:#8a8070;">Złoto</div></div></div>
+        <div style="display:flex;align-items:center;gap:8px;padding:10px 12px;border:1px solid rgba(80,176,112,.25);border-radius:9px;background:rgba(80,176,112,.05);"><span style="color:#7ad0a0;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="8"/><path d="M8.5 13.5c1.6 2 5.4 2 7 0"/><path d="M9.3 10.2h.02M14.7 10.2h.02"/></svg></span><div><div style="font-size:14px;font-weight:700;color:#7ad0a0;">Zadowoleni</div><div style="font-size:10px;color:#8a8070;">Nastroje</div></div></div>
+      </div>
+
+      <!-- produkcja -->
+      <div style="font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:#a08030;margin-bottom:10px;">W produkcji</div>
+      <div style="border:1px solid rgba(232,216,138,.3);border-radius:10px;padding:14px;background:linear-gradient(180deg,rgba(232,216,138,.05),transparent);margin-bottom:12px;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;"><span style="width:34px;height:34px;border-radius:8px;background:radial-gradient(circle at 38% 30%,#1a2230,#0a0d14);border:1.5px solid #a08030;display:flex;align-items:center;justify-content:center;color:#e8d88a;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 3 5 5.5v5c0 4.5 3 7.6 7 9 4-1.4 7-4.5 7-9v-5Z"/></svg></span><div style="flex:1;"><div style="font-size:14px;color:#e8e0c8;">Koszary</div><div style="font-size:11px;color:#8a8070;">3 tury</div></div></div>
+        <div style="height:8px;border-radius:4px;background:rgba(255,255,255,.08);overflow:hidden;"><div style="width:56%;height:100%;background:linear-gradient(90deg,#a08030,#e8d88a);"></div></div>
+        <div style="display:flex;justify-content:space-between;font-size:11px;color:#8a8070;margin-top:6px;"><span>45 / 80</span><span style="color:#50b070;">+9</span></div>
+      </div>
+
+      <!-- kolejka -->
+      <div style="font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:#a08030;margin:14px 0 10px;">Dostępne</div>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid rgba(232,216,138,.16);border-radius:9px;background:rgba(255,255,255,.02);cursor:pointer;"><span style="width:30px;height:30px;border-radius:7px;background:radial-gradient(circle at 38% 30%,#1a2230,#0a0d14);border:1px solid #a08030;display:flex;align-items:center;justify-content:center;color:#e8d88a;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 21V8"/><path d="M12 8c-1.8-.6-2.9-2.2-2.7-4.2 1.9.2 3 1.9 2.7 4.2ZM12 8c1.8-.6 2.9-2.2 2.7-4.2-1.9.2-3 1.9-2.7 4.2Z"/></svg></span><div style="flex:1;"><div style="font-size:13px;color:#e8e0c8;">Spichlerz</div></div><span style="font-size:11px;color:#8a8070;">5 tur</span></div>
+        <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid rgba(232,216,138,.16);border-radius:9px;background:rgba(255,255,255,.02);cursor:pointer;"><span style="width:30px;height:30px;border-radius:7px;background:radial-gradient(circle at 38% 30%,#1a2230,#0a0d14);border:1px solid #a08030;display:flex;align-items:center;justify-content:center;color:#e8d88a;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4.5 5 14 14.5M14.5 15 17.5 18M15.6 14 13.6 16M19.5 5 10 14.5M9.5 15 6.5 18M8.4 14 10.4 16"/></svg></span><div style="flex:1;"><div style="font-size:13px;color:#e8e0c8;">Włócznicy</div></div><span style="font-size:11px;color:#8a8070;">2 tury</span></div>
+      </div>
+    </div>
+    <!-- CTA panelu -->
+    <div style="padding:14px 20px;border-top:1px solid rgba(232,216,138,.2);"><button style="width:100%;height:46px;background:linear-gradient(180deg,#f0dc88,#b99a28);border:1px solid #6a5212;border-top-color:#f8eea8;color:#2e2708;font-size:13px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;border-radius:8px;cursor:pointer;box-shadow:inset 0 1px 0 rgba(255,255,255,.4);">Zarządzaj miastem</button></div>
+  </div>
+
+  <!-- E · minimapa -->
+  <div style="position:absolute;bottom:20px;left:20px;z-index:3;width:280px;height:170px;border-radius:12px;overflow:hidden;background:#0a0f16;border:3px solid #6a5212;box-shadow:inset 0 0 0 2px rgba(232,216,138,.3),0 8px 22px rgba(0,0,0,.7);">
+    <div style="position:absolute;width:110px;height:80px;left:36px;top:26px;background:radial-gradient(circle,#8a7a3a,transparent 70%);"></div>
+    <div style="position:absolute;width:96px;height:70px;left:130px;top:70px;background:radial-gradient(circle,#3a5f8a,transparent 70%);"></div>
+    <div style="position:absolute;width:14px;height:14px;left:150px;top:60px;border-radius:50%;background:#e8d88a;box-shadow:0 0 10px rgba(232,216,138,.6);"></div>
+  </div>
+
+  <!-- G · przyciski tury -->
+  <div style="position:absolute;bottom:20px;right:420px;z-index:3;display:flex;flex-direction:column;gap:10px;align-items:stretch;width:200px;">
+    <button style="height:60px;display:flex;align-items:center;justify-content:center;gap:10px;background:linear-gradient(180deg,#f0dc88,#b99a28);border:1px solid #6a5212;border-top-color:#f8eea8;color:#2e2708;font-size:14px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;border-radius:9px;cursor:pointer;box-shadow:inset 0 1px 0 rgba(255,255,255,.4),0 6px 18px rgba(232,216,138,.22);"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 5l8 7-8 7"/></svg>Zakończ turę</button>
+    <div style="text-align:center;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:#8a8070;">Tura 4 · 100 p.n.e.</div>
+  </div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{ &quot;$preview&quot;: { &quot;width&quot;: 1920, &quot;height&quot;: 1080 } }"></script>
+</body>
+</html>

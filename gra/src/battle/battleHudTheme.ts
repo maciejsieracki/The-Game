@@ -235,10 +235,15 @@ export function applyDeployDropdownPanel1E(el: HTMLElement): void {
   });
 }
 
-/** Lewy panel rosteru 368px (C09 v4). */
+/**
+ * Lewy panel rosteru (C09 v4 / TW v5 §1): `.8/.86` + `blur(9px)` — bardziej
+ * kryjący niż inne panele (roster czytany często), ale teren wciąż lekko
+ * prześwituje pod HUD-em, zgodnie z makietą.
+ */
 export function applyRosterPanel1E(el: HTMLElement): void {
   Object.assign(el.style, {
-    background: 'linear-gradient(180deg,rgba(18,24,32,.97),rgba(8,10,16,.98))',
+    background: 'linear-gradient(180deg,rgba(18,24,32,0.8),rgba(8,10,16,0.86))',
+    backdropFilter: 'blur(9px)',
     border: '2px solid rgba(232,216,138,0.4)',
     borderRadius: '12px',
     boxShadow: '0 12px 34px rgba(0,0,0,0.65)',
@@ -258,10 +263,11 @@ export function applyMinimap1E(el: HTMLElement): void {
   });
 }
 
-/** Górny pasek fazy (C06 v4). */
+/** Górny pasek fazy — ~70% + blur wg makiety TW v5 (§1/§2: `.72/.76` + `blur(7px)`). */
 export function applyTopBar1E(el: HTMLElement): void {
   Object.assign(el.style, {
-    background: 'linear-gradient(180deg,rgba(20,26,38,.95),rgba(8,10,16,.96))',
+    background: 'linear-gradient(180deg,rgba(22,28,40,0.72),rgba(8,10,16,0.76))',
+    backdropFilter: 'blur(7px)',
     border: '1px solid rgba(232,216,138,0.3)',
     borderRadius: '12px',
     boxShadow: '0 6px 16px rgba(0,0,0,0.5)',

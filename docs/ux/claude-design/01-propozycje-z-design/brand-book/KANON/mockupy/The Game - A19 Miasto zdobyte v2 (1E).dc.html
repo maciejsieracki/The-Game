@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><style>html,body{margin:0;padding:0;background:#05060a}*{box-sizing:border-box}</style></helmet>
+<div style="position:relative;width:1920px;height:1080px;overflow:hidden;font-family:'Segoe UI',Tahoma,sans-serif;color:#e8e0c8;background:#0a0c10;">
+
+  <!-- mapa przyciemniona -->
+  <div style="position:absolute;inset:0;z-index:0;background:radial-gradient(1100px 780px at 50% 46%,rgba(150,140,96,.2),transparent 68%),#0c1016;"></div>
+  <div style="position:absolute;inset:0;z-index:1;background:rgba(6,8,12,.74);"></div>
+
+  <!-- MODAL centrum (węższy) -->
+  <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:5;width:520px;border:2px solid rgba(232,216,138,.5);border-radius:16px;overflow:hidden;background:linear-gradient(180deg,rgba(20,26,34,.98),rgba(8,10,16,.98));box-shadow:0 30px 80px rgba(0,0,0,.75),0 0 60px rgba(232,216,138,.1);text-align:center;">
+
+    <div style="padding:34px 40px 8px;background:linear-gradient(180deg,rgba(232,216,138,.08),transparent);">
+      <div style="display:flex;align-items:center;justify-content:center;gap:14px;color:#a08030;margin-bottom:20px;">
+        <span style="height:1px;width:80px;background:linear-gradient(90deg,transparent,#a08030);"></span>
+        <span style="color:#a08030;">◆</span>
+        <span style="height:1px;width:80px;background:linear-gradient(90deg,#a08030,transparent);"></span>
+      </div>
+      <span style="display:inline-flex;width:92px;height:92px;border-radius:50%;background:radial-gradient(circle at 38% 30%,#2a2416,#12100a);border:2px solid #e8d88a;align-items:center;justify-content:center;color:#f4e6a8;box-shadow:inset 0 2px 8px rgba(232,216,138,.25),0 0 34px rgba(232,216,138,.18);"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V9l2-2 2 2 2-2 2 2 2-2 2 2 2-2 2 2v11Z"/><path d="M4 13h16"/><path d="M9.5 20v-4h5v4"/><path d="M12 4.5V7"/></svg></span>
+    </div>
+
+    <div style="padding:16px 40px 6px;">
+      <div style="font-size:13px;letter-spacing:.34em;text-transform:uppercase;color:#8a8070;margin-bottom:10px;">Zwycięstwo bez bitwy</div>
+      <div style="font-family:Georgia,serif;font-size:34px;letter-spacing:.08em;color:#e8d88a;text-shadow:0 2px 14px rgba(0,0,0,.6);">Miasto zdobyte</div>
+      <div style="font-family:Georgia,serif;font-size:22px;color:#e8d0a8;margin-top:6px;">Kapua</div>
+    </div>
+
+    <div style="padding:14px 46px 6px;font-size:14px;color:#b8a888;line-height:1.7;">Garnizon był pusty — Twoje wojsko wkroczyło do miasta bez oporu. Kapua dołącza do Twojego imperium.</div>
+
+    <div style="display:flex;justify-content:center;gap:26px;padding:20px 40px 8px;">
+      <div style="text-align:center;"><div style="font-family:Georgia,serif;font-size:24px;color:#e8d88a;">12</div><div style="font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#8a8070;">Populacja</div></div>
+      <div style="width:1px;background:rgba(232,216,138,.2);"></div>
+      <div style="text-align:center;"><div style="font-family:Georgia,serif;font-size:24px;color:#e8d88a;">+3</div><div style="font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#8a8070;">Osiedla</div></div>
+      <div style="width:1px;background:rgba(232,216,138,.2);"></div>
+      <div style="text-align:center;"><div style="font-family:Georgia,serif;font-size:24px;color:#7ad0a0;">+4</div><div style="font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#8a8070;">Złoto / turę</div></div>
+    </div>
+
+    <div style="padding:18px 40px 28px;">
+      <span style="display:inline-flex;align-items:center;justify-content:center;gap:10px;height:54px;padding:0 60px;background:linear-gradient(180deg,#f0dc88,#b99a28);border:1px solid #6a5212;border-top-color:#f8eea8;color:#2e2708;font-size:15px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;border-radius:9px;cursor:pointer;box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 6px 20px rgba(232,216,138,.22);">Rozumiem</span>
+      <div style="margin-top:12px;font-size:11px;color:#6a6458;letter-spacing:.06em;">Enter</div>
+    </div>
+  </div>
+
+  <div style="position:absolute;bottom:6px;right:16px;z-index:6;font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:#3f3b34;">The Game · A-19 Miasto zdobyte · 1E</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{ &quot;$preview&quot;: { &quot;width&quot;: 1920, &quot;height&quot;: 1080 } }"></script>
+</body>
+</html>
