@@ -70,6 +70,10 @@ export interface RuntimeUnit {
   /** Mechanizm "Zastąp" (ZASTAP-JEDNOSTKI-PLAN.md): raz na turę na jednostkę.
    *  Resetowana na false na starcie tury gracza (main.ts, obok resetu ruchLeft). */
   replaceUsedThisTurn?: boolean;
+  /** TEMAT #15 (Ludy Morza / embarkacja): jednostka LĄDOWA zaokrętowana na
+   *  heksie wody (Morze/Wybrzeże). Ustawiane automatycznie po ruchu wg terenu
+   *  docelowego (woda→true, ląd→false). Stare save'y bez pola = niezaokrętowana. */
+  embarked?: boolean;
 }
 
 /** Kategorie cywilne — bez utrzymania, bez głodu wojska, bez ataku miast. */
@@ -500,6 +504,29 @@ export function terrainMoveCost(hex: Hex): number {
 }
 
 // ---------------------------------------------------------------------------
+// Embarkacja (TEMAT #15) — koszt ruchu po wodzie dla jednostek zaokrętowanych
+// ---------------------------------------------------------------------------
+
+/** True dla terenu wodnego (Morze / Wybrzeże). */
+export function isWaterTerrain(t: TerenBazowy): boolean {
+  return t === TerenBazowy.Morze || t === TerenBazowy.Wybrzeze;
+}
+
+/** Stały koszt wejścia na heks wody dla jednostki zaokrętowanej (decyzja: stały). */
+export const EMBARKED_WATER_MOVE_COST = 1;
+
+/**
+ * Koszt ruchu z obsługą wody: heks wodny kosztuje EMBARKED_WATER_MOVE_COST,
+ * ląd liczy się jak zwykle (terrainMoveCost). Przekazywany jako costFn do
+ * computeReachable/computePath/pathCost dla jednostek, które mogą się
+ * zaokrętować (gracz z Żeglugą, Ludy Morza) lub już są na wodzie.
+ */
+export function embarkMoveCost(hex: Hex): number {
+  if (isWaterTerrain(hex.terenBazowy)) return EMBARKED_WATER_MOVE_COST;
+  return terrainMoveCost(hex);
+}
+
+// ---------------------------------------------------------------------------
 // computeReachable
 // ---------------------------------------------------------------------------
 
@@ -521,11 +548,14 @@ export function terrainMoveCost(hex: Hex): number {
  * @param unit     The moving unit (q, r, ruchLeft used).
  * @param map      Game map for hex lookup.
  * @param occupied Set of "q,r" keys blocked by other units.
+ * @param costFn   Optional per-hex entry cost override (default terrainMoveCost);
+ *                 embarkacja przekazuje embarkMoveCost, by woda była przejezdna.
  */
 export function computeReachable(
   unit: RuntimeUnit,
   map: GameMap,
   occupied: Set<string>,
+  costFn: (hex: Hex) => number = terrainMoveCost,
 ): Set<string> {
   const reachable = new Set<string>();
 
@@ -606,7 +636,7 @@ export function computeReachable(
       if (!(nKey in map.hexes)) continue;
 
       const hex = map.hexes[nKey]!;
-      const movCost = terrainMoveCost(hex);
+      const movCost = costFn(hex);
 
       // Impassable hexes are never entered.
       if (movCost === Infinity) continue;
@@ -639,7 +669,7 @@ export function computeReachable(
       if (!(nKey in map.hexes)) continue;
 
       const hex = map.hexes[nKey]!;
-      const movCost = terrainMoveCost(hex);
+      const movCost = costFn(hex);
 
       // Passable and unoccupied neighbor is always reachable.
       if (movCost !== Infinity && !occupied.has(nKey)) {
@@ -693,6 +723,7 @@ export function computePath(
   destQ: number,
   destR: number,
   occupied: Set<string>,
+  costFn: (hex: Hex) => number = terrainMoveCost,
 ): { q: number; r: number }[] {
   const startKey = keyOf(unit.q, unit.r);
   const destKey  = keyOf(destQ, destR);
@@ -792,7 +823,7 @@ export function computePath(
       if (!(nKey in map.hexes)) continue;
 
       const hex = map.hexes[nKey]!;
-      const movCost = terrainMoveCost(hex);
+      const movCost = costFn(hex);
 
       if (nKey === destKey) {
         // Destination: always passable as final step.
@@ -854,13 +885,17 @@ export function computePath(
  * @param path  Array of hexes after the start (as returned by computePath).
  * @param map   Game map for hex lookup.
  */
-export function pathCost(path: { q: number; r: number }[], map: GameMap): number {
+export function pathCost(
+  path: { q: number; r: number }[],
+  map: GameMap,
+  costFn: (hex: Hex) => number = terrainMoveCost,
+): number {
   let total = 0;
   for (const { q, r } of path) {
     const key = keyOf(q, r);
     const hex = map.hexes[key];
     if (hex) {
-      const c = terrainMoveCost(hex);
+      const c = costFn(hex);
       total += c === Infinity ? 0 : c;
     }
     // missing hex treated as 0 per spec

@@ -31,8 +31,17 @@ export {
   EPOKA_SREDNIOWIECZE_BARBARZY,
   spawnCamps, tickCamps, decideBarbarianMoves,
   LUDY_MORZA_BARB_UNIT_IDS, pickBronzeBarbUnit,
+  FALLBACK_SEA_BARB_PARAMS, loadSeaBarbParams, spawnSeaCamps,
+  decideSeaPeoplesRaids, collectSeaRaidTargets, isCoastalCity,
 } from '../src/game/barbarians';
-export { hexDistance } from '../src/units/setup';
+export {
+  hexDistance, computePath, computeReachable, keyOf,
+  isWaterTerrain, embarkMoveCost, terrainMoveCost, EMBARKED_WATER_MOVE_COST,
+} from '../src/units/setup';
+export {
+  EMBARK_TECH, EMBARK_DEFENSE_MULT,
+  canUnitEmbark, moveCostFnFor, applyEmbarkStateAfterMove, nearestFreeWaterHex,
+} from '../src/game/embarkation';
 `;
 
 fs.writeFileSync(ENTRY_FILE, ENTRY_TS, 'utf8');
@@ -59,7 +68,12 @@ const {
   EPOKA_SREDNIOWIECZE_BARBARZY,
   spawnCamps, tickCamps, decideBarbarianMoves,
   LUDY_MORZA_BARB_UNIT_IDS, pickBronzeBarbUnit,
-  hexDistance,
+  FALLBACK_SEA_BARB_PARAMS, loadSeaBarbParams, spawnSeaCamps,
+  decideSeaPeoplesRaids, collectSeaRaidTargets, isCoastalCity,
+  hexDistance, computePath, computeReachable,
+  isWaterTerrain, embarkMoveCost, EMBARKED_WATER_MOVE_COST,
+  EMBARK_TECH, EMBARK_DEFENSE_MULT,
+  canUnitEmbark, moveCostFnFor, applyEmbarkStateAfterMove,
 } = B;
 
 // --- tiny assertion framework ----------------------------------------------
@@ -76,16 +90,20 @@ function eq(a, b, msg) { assert(a === b, `${msg} (got ${JSON.stringify(a)}, want
 // arrays of "q,r" keys overriding terrain / ownership.
 function makeMap(w, h, opts = {}) {
   const gory  = new Set(opts.gory  || []);
+  const morze = new Set(opts.morze || []);       // TEMAT #15: heksy morza
+  const wybrz = new Set(opts.wybrzeze || []);    // TEMAT #15: heksy wybrzeza
+  const ulepszenia = opts.ulepszenia || {};      // { "q,r": 'farma' }
   const owned = opts.owned || {}; // { "q,r": "playerId" }
   const hexes = {};
   for (let q = 0; q < w; q++) {
     for (let r = 0; r < h; r++) {
       const k = `${q},${r}`;
+      const teren = gory.has(k) ? 'gory' : morze.has(k) ? 'morze' : wybrz.has(k) ? 'wybrzeze' : 'laka';
       hexes[k] = {
         coords: { q, r },
-        terenBazowy: gory.has(k) ? 'gory' : 'laka',
+        terenBazowy: teren,
         nakladka: 'brak',
-        ulepszenie: 'brak',
+        ulepszenie: (k in ulepszenia) ? ulepszenia[k] : 'brak',
         wlasciciel: (k in owned) ? owned[k] : null,
         wioska: { istnieje: false, ludnosc: 0 },
         widocznosc: {},
@@ -369,6 +387,234 @@ assert(barbariansActive(P.startTurn, P, EPOKA_SREDNIOWIECZE_BARBARZY) === false,
     const res = tickCamps([camp], [], [], map, P);
     eq(res.spawns[0].typeId, P.unitTypeId, 'default era: spawn uses FALLBACK unitTypeId (Wojownik)');
     assert(!LUDY_MORZA_BARB_UNIT_IDS.includes(res.spawns[0].typeId), 'default era: never a Ludy Morza unit');
+  }
+}
+
+// ===========================================================================
+// 8. TEMAT #15 -- Embarkacja (setup.ts + embarkation.ts)
+// ===========================================================================
+{
+  eq(EMBARK_TECH, 'Żegluga', 'EMBARK_TECH is Zegluga');
+  eq(EMBARK_DEFENSE_MULT, 0.5, 'embarked defense multiplier is 0.5 (-50%)');
+
+  assert(isWaterTerrain('morze') === true, 'isWaterTerrain(morze) true');
+  assert(isWaterTerrain('wybrzeze') === true, 'isWaterTerrain(wybrzeze) true');
+  assert(isWaterTerrain('laka') === false, 'isWaterTerrain(laka) false');
+
+  // Mapa: pas morza q=3..4 rozdziela dwa lady (r=0..2).
+  const morze = [];
+  for (let q = 3; q <= 4; q++) for (let r = 0; r < 3; r++) morze.push(`${q},${r}`);
+  const map = makeMap(8, 3, { morze });
+
+  const waterHex = map.hexes['3,1'];
+  const landHex  = map.hexes['1,1'];
+  eq(embarkMoveCost(waterHex), EMBARKED_WATER_MOVE_COST, 'water hex costs EMBARKED_WATER_MOVE_COST');
+  assert(Number.isFinite(embarkMoveCost(landHex)), 'land hex keeps finite terrain cost');
+
+  const u = player('u', 2, 1);
+  // Bez costFn: morze nieprzejezdne -- brak trasy na drugi lad.
+  const noPath = computePath(u, map, 6, 1, new Set());
+  eq(noPath.length, 0, 'default costFn: sea strip is impassable');
+  // Z embarkMoveCost: trasa przez morze istnieje.
+  const seaPath = computePath(u, map, 6, 1, new Set(), embarkMoveCost);
+  assert(seaPath.length > 0, 'embark costFn: path crosses the sea strip');
+  assert(seaPath.some(hx => isWaterTerrain(map.hexes[`${hx.q},${hx.r}`].terenBazowy)),
+    'embark path actually enters water hexes');
+
+  // computeReachable: woda osiagalna tylko z costFn.
+  const reachNo = computeReachable(player('r1', 2, 1), map, new Set());
+  assert(!reachNo.has('3,1'), 'default reachable excludes water');
+  const reachEmb = computeReachable(player('r2', 2, 1), map, new Set(), embarkMoveCost);
+  assert(reachEmb.has('3,1'), 'embark reachable includes adjacent water hex');
+
+  // canUnitEmbark / moveCostFnFor.
+  const landUnit = { category: 'miecznik' };
+  assert(canUnitEmbark(landUnit, true) === true,  'land unit + Zegluga -> can embark');
+  assert(canUnitEmbark(landUnit, false) === false, 'land unit bez techa -> cannot embark');
+  assert(canUnitEmbark({ category: 'galera' }, true) === false, 'galera never embarks');
+  assert(canUnitEmbark({ category: 'miecznik', embarked: true }, false) === true,
+    'already embarked unit can always sail (never stuck at sea)');
+  assert(typeof moveCostFnFor(landUnit, true) === 'function', 'moveCostFnFor returns fn with tech');
+  assert(moveCostFnFor(landUnit, false) === undefined, 'moveCostFnFor undefined without tech');
+
+  // applyEmbarkStateAfterMove: woda -> embarked, lad -> zejscie na lad.
+  const mu = player('m1', 3, 1); // na wodzie
+  const changed1 = applyEmbarkStateAfterMove([mu], map);
+  assert(changed1 === true, 'apply on water reports change');
+  assert(mu.embarked === true, 'unit on water becomes embarked');
+  mu.q = 5; mu.r = 1; // lad
+  const changed2 = applyEmbarkStateAfterMove([mu], map);
+  assert(changed2 === true, 'apply on land reports change');
+  assert(mu.embarked === undefined, 'unit on land auto-disembarks (field removed)');
+  // Stary save: jednostka ladowa bez pola -- brak zmiany.
+  const legacy = player('m2', 1, 1);
+  assert(applyEmbarkStateAfterMove([legacy], map) === false, 'legacy land unit unchanged (save compat)');
+}
+
+// ===========================================================================
+// 9. TEMAT #15 -- Obozy nadmorskie Ludow Morza (spawnSeaCamps + tickCamps)
+// ===========================================================================
+{
+  // loadSeaBarbParams: fallbacki wg trudnosci + odczyt override.
+  const dNorm = loadSeaBarbParams({ aiParams: {} }, 'normal');
+  eq(dNorm.maxSeaCamps, FALLBACK_SEA_BARB_PARAMS.maxSeaCamps, 'sea params fallback maxSeaCamps');
+  eq(dNorm.raidRadius, FALLBACK_SEA_BARB_PARAMS.raidRadius, 'sea params fallback raidRadius');
+  eq(dNorm.raidPeriod, 3, 'normal raid period fallback = 3');
+  eq(loadSeaBarbParams({ aiParams: {} }, 'easy').raidPeriod, 6, 'easy raid period fallback = 6 (rzadko)');
+  eq(loadSeaBarbParams({ aiParams: {} }, 'hard').raidPeriod, 1, 'hard raid period fallback = 1 (czesto)');
+  const ovr = loadSeaBarbParams({ aiParams: {
+    ludy_morza_max_obozy: { wartosc: 5 },
+    ludy_morza_rajd_okres_trudny: { wartosc: 2 },
+  } }, 'hard');
+  eq(ovr.maxSeaCamps, 5, 'reads ludy_morza_max_obozy override');
+  eq(ovr.raidPeriod, 2, 'reads per-difficulty raid period override');
+
+  // Mapa: q=0..2 morze, q=3 wybrzeze, reszta lad; wysepka (1,8) na morzu.
+  const morze = [];
+  const wybrzeze = [];
+  for (let r = 0; r < 12; r++) {
+    for (let q = 0; q <= 2; q++) morze.push(`${q},${r}`);
+    wybrzeze.push(`3,${r}`);
+  }
+  const iIdx = morze.indexOf('1,8');
+  morze.splice(iIdx, 1); // (1,8) zostaje ladem-wysepka (sasiedzi = morze)
+  const map = makeMap(12, 12, { morze, wybrzeze });
+
+  const params = Object.assign({}, P, { minDistFromCity: 0, campSpacing: 3 });
+  const seaParams = { maxSeaCamps: 3, raidRadius: 8, raidPeriod: 1 };
+
+  const camps = spawnSeaCamps(map, [], [], params, seaParams, 4242);
+  assert(camps.length > 0, 'spawnSeaCamps produces at least one camp');
+  assert(camps.length <= seaParams.maxSeaCamps, 'respects maxSeaCamps cap');
+  assert(camps.every(c => c.naval === true), 'sea camps are flagged naval');
+  let okSites = true;
+  for (const c of camps) {
+    const t = map.hexes[`${c.q},${c.r}`].terenBazowy;
+    const island = t === 'laka' && c.q === 1 && c.r === 8;
+    if (!(t === 'wybrzeze' || island)) okSites = false;
+  }
+  assert(okSites, 'every sea camp sits on wybrzeze or an island hex');
+
+  const again = spawnSeaCamps(map, [], [], params, seaParams, 4242);
+  eq(JSON.stringify(again), JSON.stringify(camps), 'spawnSeaCamps deterministic for a fixed seed');
+
+  // Limit liczony tylko po obozach naval (ladowe nie zabieraja slotow).
+  const landCamp = [{ id: 'L', q: 8, r: 8, spawnCooldown: 0 }];
+  const withLand = spawnSeaCamps(map, landCamp, [], params, Object.assign({}, seaParams, { maxSeaCamps: 1 }), 7);
+  eq(withLand.length, 1, 'land camps do not consume sea slots');
+  const seaFull = [{ id: 'S', q: 3, r: 5, spawnCooldown: 0, naval: true }];
+  eq(spawnSeaCamps(map, seaFull, [], params, Object.assign({}, seaParams, { maxSeaCamps: 1 }), 7).length, 0,
+    'no new sea camps at maxSeaCamps');
+
+  // tickCamps: oboz naval spawnuje NA WODZIE ze znacznikiem embarked.
+  const navalCamp = { id: 'nc', q: 3, r: 5, spawnCooldown: 0, naval: true };
+  const res = tickCamps([navalCamp], [], [], map, P);
+  eq(res.spawns.length, 1, 'naval camp spawns one unit');
+  const sp = res.spawns[0];
+  assert(sp.embarked === true, 'naval spawn is embarked');
+  assert(isWaterTerrain(map.hexes[`${sp.q},${sp.r}`].terenBazowy), 'naval spawn lands on water');
+
+  // Oboz naval bez wody w poblizu -> fallback ladowy, bez embarked.
+  const inlandNaval = { id: 'in', q: 9, r: 2, spawnCooldown: 0, naval: true };
+  const resIn = tickCamps([inlandNaval], [], [], map, P);
+  eq(resIn.spawns.length, 1, 'inland naval camp still spawns (land fallback)');
+  assert(resIn.spawns[0].embarked === undefined, 'land fallback spawn not embarked');
+
+  // Oboz ladowy: zachowanie bez zmian (spawn na ladzie, bez embarked).
+  const landRes = tickCamps([{ id: 'lc', q: 8, r: 8, spawnCooldown: 0 }], [], [], map, P);
+  assert(landRes.spawns[0].embarked === undefined, 'land camp spawn not embarked (no regression)');
+}
+
+// ===========================================================================
+// 10. TEMAT #15 -- Rajdy Ludow Morza (decideSeaPeoplesRaids)
+// ===========================================================================
+{
+  // Mapa: q=0..2 morze, reszta lad.
+  const morze = [];
+  for (let r = 0; r < 12; r++) for (let q = 0; q <= 2; q++) morze.push(`${q},${r}`);
+  const mapa = (ulepszenia) => makeMap(12, 12, { morze, ulepszenia });
+  const seaParams = { maxSeaCamps: 3, raidRadius: 8, raidPeriod: 3 };
+  const raider = (id, q, r, extra = {}) => barb(id, q, r, Object.assign({ seaRaider: true }, extra));
+
+  // collectSeaRaidTargets + isCoastalCity.
+  {
+    const m = mapa({ '4,5': 'farma' });
+    const targets = collectSeaRaidTargets(m);
+    eq(targets.length, 1, 'collectSeaRaidTargets finds the built improvement');
+    eq(`${targets[0].q},${targets[0].r}`, '4,5', 'target is the farm hex');
+    assert(isCoastalCity(m, { q: 3, r: 5 }) === true, 'city next to sea is coastal');
+    assert(isCoastalCity(m, { q: 8, r: 5 }) === false, 'inland city is not coastal');
+  }
+
+  // 10a. Na wodzie, fala rajdow: krok ku ulepszeniu w zasiegu.
+  {
+    const m = mapa({ '5,5': 'farma' });
+    const b = raider('sr', 1, 5, { embarked: true });
+    const cmds = decideSeaPeoplesRaids([b], [], [], collectSeaRaidTargets(m), m, seaParams, 3);
+    eq(cmds.length, 1, 'raid wave: one command');
+    eq(cmds[0].type, 'move', 'approach is a move');
+    const dNew = hexDistance(cmds[0].toQ, cmds[0].toR, 5, 5);
+    assert(dNew < hexDistance(1, 5, 5, 5), 'step gets closer to the improvement');
+  }
+
+  // 10b. Poza fala rajdow (turn % period != 0): jednostka na wodzie czeka.
+  {
+    const m = mapa({ '5,5': 'farma' });
+    const b = raider('sr', 1, 5, { embarked: true });
+    const cmds = decideSeaPeoplesRaids([b], [], [], collectSeaRaidTargets(m), m, seaParams, 4);
+    eq(cmds.length, 0, 'outside the raid wave embarked unit holds');
+    const cmdsHard = decideSeaPeoplesRaids([b], [], [], collectSeaRaidTargets(m), m,
+      Object.assign({}, seaParams, { raidPeriod: 1 }), 4);
+    eq(cmdsHard.length, 1, 'raidPeriod=1 (hard): raids every turn');
+  }
+
+  // 10c. Sasiednie ulepszenie -> komenda raid (desant + zniszczenie).
+  {
+    const m = mapa({ '3,5': 'farma' });
+    const b = raider('sr', 2, 5, { embarked: true });
+    const cmds = decideSeaPeoplesRaids([b], [], [], collectSeaRaidTargets(m), m, seaParams, 3);
+    eq(cmds.length, 1, 'adjacent improvement: one command');
+    eq(cmds[0].type, 'raid', 'adjacent improvement -> raid');
+    eq(`${cmds[0].toQ},${cmds[0].toR}`, '3,5', 'raid targets the improvement hex');
+  }
+
+  // 10d. Na ladzie: wrog obok -> atak (jak barbarzyncy).
+  {
+    const m = mapa({});
+    const b = raider('sr', 5, 5); // desant (bez embarked)
+    const e = player('e', 6, 5);
+    const cmds = decideSeaPeoplesRaids([b], [e], [], [], m, seaParams, 4);
+    eq(cmds.length, 1, 'ashore: one command');
+    eq(cmds[0].type, 'attack', 'ashore + adjacent enemy -> attack');
+    eq(cmds[0].targetUnitId, 'e', 'attacks the adjacent enemy');
+  }
+
+  // 10e. Na ladzie bez celow -> wraca w morze (krok ku wodzie).
+  {
+    const m = mapa({});
+    const b = raider('sr', 5, 5);
+    const cmds = decideSeaPeoplesRaids([b], [], [], [], m, seaParams, 4);
+    eq(cmds.length, 1, 'ashore with nothing to raid: one command');
+    eq(cmds[0].type, 'move', 'returns to sea (move)');
+    assert(cmds[0].toQ < 5, 'step heads west toward the sea');
+  }
+
+  // 10f. Determinizm: identyczne wejscie -> identyczne komendy.
+  {
+    const m = mapa({ '5,5': 'farma', '7,2': 'kopalnia' });
+    const us = [raider('a', 1, 5, { embarked: true }), raider('b', 2, 8, { embarked: true })];
+    const c1 = decideSeaPeoplesRaids(us, [], [], collectSeaRaidTargets(m), m, seaParams, 3);
+    const c2 = decideSeaPeoplesRaids(us, [], [], collectSeaRaidTargets(m), m, seaParams, 3);
+    eq(JSON.stringify(c1), JSON.stringify(c2), 'decideSeaPeoplesRaids deterministic');
+  }
+
+  // 10g. decideBarbarianMoves pomija rajderow (obsluguje ich logika morska).
+  {
+    const m = mapa({});
+    const b1 = raider('sea', 1, 5, { embarked: true });
+    const e = player('e', 6, 5);
+    const cmds = decideBarbarianMoves([b1], [e], [], [], m, P);
+    eq(cmds.length, 0, 'land logic skips embarked/seaRaider units');
   }
 }
 

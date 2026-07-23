@@ -44,6 +44,8 @@ function adjacentPlayerAttackers(
       u.ownerId === playerOwnerId &&
       u.ruchLeft > 0 &&
       !isCivilianUnit(u) &&
+      // TEMAT #15: BRAK ataku z wody — jednostka zaokrętowana nie atakuje miast.
+      u.embarked !== true &&
       hexDistance(u.q, u.r, city.q, city.r) === 1,
   );
 }

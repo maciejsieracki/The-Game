@@ -4,7 +4,11 @@
  */
 
 import type { GameMap } from '../types/map';
+import type { Hex } from '../types/hex';
 import { computePath, pathCost, type RuntimeUnit } from '../units/setup';
+
+/** TEMAT #15 (embarkacja): opcjonalny koszt wejścia na heks (woda przejezdna). */
+export type MarchCostFn = (hex: Hex) => number;
 
 /** Cel marszu jednostki (runtime + save). */
 export interface PlannedMarchDest {
@@ -179,12 +183,13 @@ export function truncatePathToBudget(
   path: { q: number; r: number }[],
   budget: number,
   map: GameMap,
+  costFn?: MarchCostFn,
 ): { q: number; r: number }[] {
   if (budget <= 0 || path.length === 0) return [];
   const out: { q: number; r: number }[] = [];
   for (let i = 0; i < path.length; i++) {
     const sub = path.slice(0, i + 1);
-    const c = pathCost(sub, map);
+    const c = pathCost(sub, map, costFn);
     if (c > budget) break;
     out.push(path[i]!);
   }
@@ -200,6 +205,7 @@ export function planPathTurns(
   occupied: Set<string>,
   perTurnMove: number,
   movementBudget?: number,
+  costFn?: MarchCostFn,
 ): PathTurnPlan {
   const empty: PathTurnPlan = {
     fullPath: [],
@@ -214,7 +220,7 @@ export function planPathTurns(
     return { ...empty, reachable: true, stopReason: undefined };
   }
 
-  const path = computePath(unit, map, destQ, destR, occupied);
+  const path = computePath(unit, map, destQ, destR, occupied, costFn);
   if (path.length === 0) return empty;
 
   const perTurn = Math.max(1, perTurnMove);
@@ -223,8 +229,8 @@ export function planPathTurns(
   let turnNum = 1;
 
   for (let i = 0; i < path.length; i++) {
-    const stepCost = pathCost(path.slice(0, i + 1), map)
-      - (i > 0 ? pathCost(path.slice(0, i), map) : 0);
+    const stepCost = pathCost(path.slice(0, i + 1), map, costFn)
+      - (i > 0 ? pathCost(path.slice(0, i), map, costFn) : 0);
     if (turnAcc + stepCost > perTurn) {
       if (i > 0) {
         const prev = path[i - 1]!;
@@ -247,8 +253,8 @@ export function planPathTurns(
   }
 
   const budget = movementBudget ?? perTurn;
-  const segmentPath = truncatePathToBudget(path, budget, map);
-  const segmentCost = segmentPath.length > 0 ? pathCost(segmentPath, map) : 0;
+  const segmentPath = truncatePathToBudget(path, budget, map, costFn);
+  const segmentCost = segmentPath.length > 0 ? pathCost(segmentPath, map, costFn) : 0;
 
   return {
     fullPath: path,
@@ -267,12 +273,13 @@ export function shouldStopAtObstacle(
   occupied: Set<string>,
   segmentPath: { q: number; r: number }[],
   movementBudget: number,
+  costFn?: MarchCostFn,
 ): { stop: boolean; reason?: MarchStopReason; detail?: string } {
   if (movementBudget <= 0) {
     return { stop: true, reason: 'no_movement', detail: 'brak punktów ruchu' };
   }
 
-  const path = computePath(unit, map, dest.destQ, dest.destR, occupied);
+  const path = computePath(unit, map, dest.destQ, dest.destR, occupied, costFn);
   if (path.length === 0) {
     return { stop: true, reason: 'no_path', detail: 'brak trasy do celu' };
   }
@@ -282,7 +289,7 @@ export function shouldStopAtObstacle(
     && segmentPath[segmentPath.length - 1]!.r === dest.destR;
   if (arrived) return { stop: false };
 
-  const truncated = truncatePathToBudget(path, movementBudget, map);
+  const truncated = truncatePathToBudget(path, movementBudget, map, costFn);
   if (truncated.length === 0) {
     return { stop: true, reason: 'no_movement', detail: 'brak punktów ruchu' };
   }
@@ -297,8 +304,8 @@ export function shouldStopAtObstacle(
     }
   }
 
-  const fullCost = pathCost(path, map);
-  const segCost = pathCost(truncated, map);
+  const fullCost = pathCost(path, map, costFn);
+  const segCost = pathCost(truncated, map, costFn);
   if (segCost < movementBudget && segEnd.q !== dest.destQ && segEnd.r !== dest.destR
       && truncated.length === path.length && fullCost <= movementBudget) {
     return { stop: false };
@@ -331,8 +338,9 @@ export function executeMarchStep(
   canOccupyHex: (q: number, r: number) => boolean,
   perTurnMove: number,
   fog?: MarchFogContext,
+  costFn?: MarchCostFn,
 ): ExecuteMarchResult {
-  let plan = planPathTurns(unit, dest.destQ, dest.destR, map, occupied, perTurnMove, movementBudget);
+  let plan = planPathTurns(unit, dest.destQ, dest.destR, map, occupied, perTurnMove, movementBudget, costFn);
   plan = applyFogToPathPlan(plan, map, perTurnMove, movementBudget, fog);
   if (!plan.reachable || plan.fullPath.length === 0) {
     return {
@@ -381,7 +389,7 @@ export function executeMarchStep(
   }
 
   const arrived = last.q === dest.destQ && last.r === dest.destR;
-  const obstacle = shouldStopAtObstacle(unit, dest, map, occupied, movePath, movementBudget);
+  const obstacle = shouldStopAtObstacle(unit, dest, map, occupied, movePath, movementBudget, costFn);
   const fogLimited = 'fogLimited' in plan && plan.fogLimited === true;
 
   let stopReason = obstacle.stop && !arrived ? obstacle.reason : undefined;

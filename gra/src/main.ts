@@ -297,6 +297,7 @@ import { collapseToMergedMesh } from './render/mergeDecor';
 import { visibleZloze, ensureDepositEraMeta } from './map/deposit-era';
 import { machinesByCampHex, campOwnerByHex, readyMachinesForCity } from './render/siegeCampSync';
 import { TerenBazowy, Nakladka, Ulepszenie } from './types/hex';
+import type { Hex } from './types/hex';
 import { showCityPanel, hideCityPanel, isCityPanelOpen, refreshCityPanelIfOpen, getOpenCityPanelCityId, closeCityPanelIfOpen } from './ui/cityPanel';
 import { tryCloseCityUxFrameFromKeyboard } from './ui/cityUxFrame';
 import { syncCityOkolicaOverlay, disposeCityOkolicaOverlayGroup } from './render/cityOkolicaOverlay';
@@ -599,8 +600,14 @@ import {
   loadBarbParams, barbariansActive, spawnCamps, tickCamps, decideBarbarianMoves,
   scaleBarbParamsForLevel, pickBronzeBarbUnit,
   BARBARIAN_OWNER_ID, isBarbarian,
+  loadSeaBarbParams, spawnSeaCamps, decideSeaPeoplesRaids, collectSeaRaidTargets,
 } from './game/barbarians';
 import type { BarbCamp, BarbUnit } from './game/barbarians';
+// TEMAT #15 — embarkacja jednostek lądowych (gracz + AI + Ludy Morza).
+import {
+  EMBARK_TECH, EMBARK_DEFENSE_MULT, moveCostFnFor, applyEmbarkStateAfterMove,
+} from './game/embarkation';
+import { isWaterTerrain } from './units/setup';
 import { autoManageCity, pickAutoBuildItem } from './game/auto-manage';
 import { showMainMenu, hideMainMenu, isMainMenuOpen } from './ui/mainMenu';
 import { showPerfTestPanel } from './ui/perfTestPanel';
@@ -5137,6 +5144,19 @@ async function boot(): Promise<void> {
       return addForeignCityBlocks(occupiedExcept(...exceptIds), moverOwnerId, cities);
     }
 
+    // TEMAT #15 — embarkacja: czy właściciel zna Żeglugę (gracz / AI).
+    // Barbarzyńcy (ownerId ujemne): pływają tylko już-zaokrętowani (Ludy Morza).
+    function ownerHasSeafaring(ownerId: number): boolean {
+      if (ownerId === 0) return player.zbadane.has(EMBARK_TECH);
+      if (ownerId > 0) return aiResearchDone.get(ownerId)?.has(EMBARK_TECH) === true;
+      return false;
+    }
+
+    /** Funkcja kosztu ruchu jednostki: woda przejezdna, gdy może się zaokrętować. */
+    function moveCostFnForUnit(u: RuntimeUnit): ((hex: Hex) => number) | undefined {
+      return moveCostFnFor(u, ownerHasSeafaring(u.ownerId));
+    }
+
     /** Wypchnij obce jednostki z heksów miasta (naprawa stanu / AI / barbarzyńcy). */
     function evictForeignUnitsFromCityHexes(): void {
       let moved = false;
@@ -5173,7 +5193,9 @@ async function boot(): Promise<void> {
       const mover = unitWithStackRuch(unit, stack);
       const exceptIds = stack.map(s => s.id);
       const occ = occupiedForMove(unit.ownerId, ...exceptIds);
-      const reach = computeReachable(mover, map, occ);
+      // TEMAT #15: jednostka z Żeglugą (lub zaokrętowana) widzi też heksy wody.
+      const costFn = moveCostFnForUnit(unit);
+      const reach = computeReachable(mover, map, occ, costFn);
       if (mover.ruchLeft <= 0) return reach;
 
       const seenStacks = new Set<string>();
@@ -5184,9 +5206,9 @@ async function boot(): Promise<void> {
         if (seenStacks.has(k)) continue;
         seenStacks.add(k);
 
-        const path = computePath(mover, map, u.q, u.r, occ);
+        const path = computePath(mover, map, u.q, u.r, occ, costFn);
         if (path.length === 0) continue;
-        if (pathCost(path, map) <= mover.ruchLeft) reach.add(k);
+        if (pathCost(path, map, costFn) <= mover.ruchLeft) reach.add(k);
       }
       return reach;
     }
@@ -9716,8 +9738,9 @@ async function boot(): Promise<void> {
       perTurn: number,
       budget: number | undefined,
       fog?: MarchFogContext,
+      costFn?: (hex: Hex) => number,
     ) {
-      const raw = planPathTurns(mover, destQ, destR, map, occ, perTurn, budget);
+      const raw = planPathTurns(mover, destQ, destR, map, occ, perTurn, budget, costFn);
       return applyFogToPathPlan(raw, map, perTurn, budget, fog);
     }
 
@@ -9762,6 +9785,7 @@ async function boot(): Promise<void> {
         perTurnMoveForUnit(u),
         undefined,
         buildMarchFogContext(dest),
+        moveCostFnForUnit(u),
       );
       if (plan.fullPath.length === 0) {
         unitRenderer.clearPathRoute();
@@ -9777,6 +9801,7 @@ async function boot(): Promise<void> {
       const stack = playerStackAt(uSel);
       const occ = occupiedForMove(uSel.ownerId, ...stack.map(s => s.id));
       const mover = unitWithStackRuch(uSel, stack);
+      const hoverCostFn = moveCostFnForUnit(uSel);
       const hoverEnemy = units.find(
         x => x.q === hitQ && x.r === hitR && x.ownerId !== uSel.ownerId,
       );
@@ -9792,6 +9817,7 @@ async function boot(): Promise<void> {
         perTurnMoveForUnit(uSel),
         undefined,
         buildMarchFogContext(hoverDest),
+        hoverCostFn,
       );
       if (plan.fullPath.length > 0) {
         unitRenderer.setPathRoute(
@@ -9850,6 +9876,7 @@ async function boot(): Promise<void> {
         perTurnMoveForUnit(u),
         stackRuchLeft(stack),
         fogCtx,
+        moveCostFnForUnit(u),
       );
       if (plan.fullPath.length === 0) {
         showHintMessage('Marsz przerwany: brak trasy do celu', 3500);
@@ -9961,6 +9988,7 @@ async function boot(): Promise<void> {
         ),
         perTurnMoveForUnit(u),
         fogCtx,
+        moveCostFnForUnit(u),
       );
 
       if (!result.ok || result.movePath.length === 0) {
@@ -10168,7 +10196,8 @@ async function boot(): Promise<void> {
       const exceptIds = stack.map(s => s.id);
       const occ = occupiedForMove(u.ownerId, ...exceptIds);
       const mover = unitWithStackRuch(u, stack);
-      const path = computePath(mover, map, destQ, destR, occ);
+      const moveCostFn = moveCostFnForUnit(u);
+      const path = computePath(mover, map, destQ, destR, occ, moveCostFn);
       if (path.length === 0) return false;
       if (!canUnitOccupyCityHex(u.ownerId, destQ, destR, cities)) {
         showHintMessage(
@@ -10181,12 +10210,12 @@ async function boot(): Promise<void> {
       let movePath = path;
       let moveDestQ = destQ;
       let moveDestR = destR;
-      let cost = pathCost(path, map);
+      let cost = pathCost(path, map, moveCostFn);
       if (cost > stackRuch) {
         let truncated: typeof path = [];
         for (let i = 0; i < path.length; i++) {
           const sub = path.slice(0, i + 1);
-          const c = pathCost(sub, map);
+          const c = pathCost(sub, map, moveCostFn);
           if (c > stackRuch) break;
           truncated = sub;
         }
@@ -10195,7 +10224,7 @@ async function boot(): Promise<void> {
         const last = truncated[truncated.length - 1]!;
         moveDestQ = last.q;
         moveDestR = last.r;
-        cost = pathCost(truncated, map);
+        cost = pathCost(truncated, map, moveCostFn);
       }
 
       startAnimatedMove(u, movePath, moveDestQ, moveDestR, cost);
@@ -10245,6 +10274,49 @@ async function boot(): Promise<void> {
     });
     void CIV_PERF_DEBUG_MARKER;
     (window as unknown as { __civPublishMarkers?: typeof CIV_PUBLISH_MARKERS }).__civPublishMarkers = CIV_PUBLISH_MARKERS;
+    // TEMAT #15 — debug weryfikacji wizualnej embarkacji: przenosi pierwszą
+    // jednostkę gracza na najbliższy heks wody jako zaokrętowaną i centruje
+    // kamerę. Wywołanie z konsoli/Playwright: window.__civEmbarkDebug().
+    (window as unknown as { __civEmbarkDebug?: () => string }).__civEmbarkDebug = () => {
+      let u = units.find(x => x.ownerId === 0 && x.inGarnizon !== true)
+        ?? units.find(x => x.ownerId === 0);
+      if (!u) {
+        // Gra startuje bez jednostek (A-START-01) — stwórz jednostkę debugową.
+        u = {
+          id: 'debug_embark',
+          ownerId: 0,
+          typeId: 'Wojownik',
+          category: 'miecznik',
+          q: 0,
+          r: 0,
+          ruch: 2,
+          ruchLeft: 2,
+        };
+        units.push(u);
+      }
+      u.inGarnizon = false;
+      // Woda najbliżej AKTUALNEGO celu kamery — jednostka pojawia się w kadrze
+      // bez ruszania kamerą (kamera bywa nadpisywana przez tryb playtestu).
+      const st = camCtrl.getFocusState();
+      let best: { q: number; r: number } | null = null;
+      let bestD = Infinity;
+      for (const key of Object.keys(map.hexes)) {
+        const hx = map.hexes[key];
+        if (!hx || !isWaterTerrain(hx.terenBazowy)) continue;
+        const { x, z } = axialToWorld(hx.coords.q, hx.coords.r, HEX_R);
+        const d = (x - st.x) * (x - st.x) + (z - st.z) * (z - st.z);
+        if (d < bestD) { bestD = d; best = { q: hx.coords.q, r: hx.coords.r }; }
+      }
+      if (!best) return 'brak wody na mapie';
+      u.q = best.q;
+      u.r = best.r;
+      u.embarked = true;
+      syncUnitsRender();
+      refreshFog();
+      const pl = unitRenderer.getTokenPlacement(best.q, best.r);
+      camCtrl.focusAt(pl.x, pl.z, 8);
+      return `${u.typeId} zaokrętowana @ (${best.q},${best.r})`;
+    };
 
     // -----------------------------------------------------------------------
     // Click vs Drag detection
@@ -10951,6 +11023,11 @@ async function boot(): Promise<void> {
 
     /** MAP PLAYER ATTACK: jednostka → jednostka (sąsiad) → preBattle C-01 */
     function openPlayerMapUnitAttack(atkUnit: RuntimeUnit, defUnit: RuntimeUnit): void {
+      // TEMAT #15: BRAK ataku z wody — jednostka zaokrętowana musi zejść na ląd.
+      if (atkUnit.embarked === true) {
+        showHintMessage('Jednostka zaokrętowana nie może atakować — zejdź na ląd.', 3800);
+        return;
+      }
       const atkRoster = collectBattleRoster(atkUnit, units, 'attacker');
       const defRoster = collectBattleRoster(defUnit, units, 'defender');
       const dHexKey4 = keyOf(defUnit.q, defUnit.r);
@@ -11230,7 +11307,9 @@ async function boot(): Promise<void> {
         terrainCombatData as unknown as TerrainEntry[],
       );
       const structMult = 1 + structBonusPct / 100;
-      return Math.round(raw * terrMult * structMult * 10) / 10;
+      // TEMAT #15: obrońca zaokrętowany (bitwa na wodzie) — obrona ×0,5 (−50%).
+      const embarkMult = defRoster[0]?.embarked === true ? EMBARK_DEFENSE_MULT : 1;
+      return Math.round(raw * terrMult * structMult * embarkMult * 10) / 10;
     }
 
     /** Auto-walka M v2b + wspólne skutki mapy (identyczne reguły ruchu co ręczna). */
@@ -13013,6 +13092,8 @@ async function boot(): Promise<void> {
               su.r = anim.destR;
             }
             deductStackRuchLeft(stack, anim.cost);
+            // TEMAT #15: woda -> zaokrętowanie, ląd -> zejście na ląd.
+            applyEmbarkStateAfterMove(stack, map);
           }
           anim = null;
           isAnimating = false;
@@ -14208,13 +14289,15 @@ async function boot(): Promise<void> {
                     const occ = addForeignCityBlocks(new Set<string>(), u.ownerId, cities);
                     for (const ou of units) { if (ou.id !== u.id) occ.add(keyOf(ou.q, ou.r)); }
                     return occ;
-                  })());
+                  })(), moveCostFnForUnit(u));
                   if (path.length > 0) {
                     const last = path[path.length - 1]!;
                     if (!canUnitOccupyCityHex(u.ownerId, last.q, last.r, cities)) continue;
                     u.q = last.q;
                     u.r = last.r;
                     u.ruchLeft = 0;
+                    // TEMAT #15: AI z Żeglugą też się (dez)okrętowuje wg terenu.
+                    applyEmbarkStateAfterMove([u], map);
                   }
                   continue;
                 }
@@ -14251,6 +14334,8 @@ async function boot(): Promise<void> {
                   const attacker = units.find(x => x.id === cmd.unitId);
                   const defender = units.find(x => x.id === cmd.targetUnitId);
                   if (!attacker || !defender || attacker.ownerId !== ownerId) continue;
+                  // TEMAT #15: BRAK ataku z wody (jednostka zaokrętowana).
+                  if (attacker.embarked === true) continue;
                   if (
                     defender.ownerId === 0
                     && getDiploRelation(ownerId, 0).status !== 'wojna'
@@ -14487,10 +14572,22 @@ async function boot(): Promise<void> {
           const barbLive = scaleBarbParamsForLevel(barbParams, barbLevel);
           if (barbariansActive(turn, barbLive, player.era, barbLevel)) {
             // Spawn new camps if needed (seed from turn to vary each game).
-            const newCamps = spawnCamps(map, barbCamps, cities, barbLive, turn * 31337);
+            // TEMAT #15: sloty lądowe liczone bez obozów nadmorskich (osobny limit).
+            const newCamps = spawnCamps(map, barbCamps.filter(c => c.naval !== true), cities, barbLive, turn * 31337);
             barbCamps = [...barbCamps, ...newCamps];
             if (newCamps.length > 0) {
               console.log(`[Barbarzyncy] Tura ${turn}: nowe obozy: ${newCamps.length}`);
+            }
+
+            // TEMAT #15 (Ludy Morza na morzu): w epoce Brązu obozy nadmorskie
+            // na Wybrzeżu/wysepkach — jednostki spawnują ZAOKRĘTOWANE na wodzie.
+            const seaBarbParams = loadSeaBarbParams(data, _menuDifficulty);
+            if (player.era === 2) {
+              const newSeaCamps = spawnSeaCamps(map, barbCamps, cities, barbLive, seaBarbParams, turn * 31337 + 7);
+              barbCamps = [...barbCamps, ...newSeaCamps];
+              if (newSeaCamps.length > 0) {
+                console.log(`[Ludy Morza] Tura ${turn}: nowe obozy nadmorskie: ${newSeaCamps.length}`);
+              }
             }
 
             // Tick camps: decrement cooldowns + collect spawns.
@@ -14508,7 +14605,7 @@ async function boot(): Promise<void> {
             for (const spawn of tickRes.spawns) {
               const def = (data.units as any[]).find((u: any) => u['Jednostka'] === spawn.typeId);
               const ruch = def ? normFieldVal(def['Ruch'], 2) : 2;
-              const newUnit: RuntimeUnit = {
+              const newUnit: BarbUnit = {
                 id: 'barb_' + turn + '_' + spawn.campId + '_' + Math.random().toString(36).slice(2),
                 ownerId: BARBARIAN_OWNER_ID,
                 typeId: spawn.typeId,
@@ -14518,14 +14615,29 @@ async function boot(): Promise<void> {
                 ruch,
                 ruchLeft: 0,
               };
+              // TEMAT #15: spawn z obozu nadmorskiego = rajder Ludów Morza,
+              // na wodzie startuje zaokrętowany (permanentnie pływa do rajdu).
+              const fromNavalCamp = barbCamps.find(c => c.id === spawn.campId)?.naval === true;
+              if (fromNavalCamp) newUnit.seaRaider = true;
+              if (spawn.embarked === true) newUnit.embarked = true;
               units.push(newUnit);
-              console.log(`[Barbarzyncy] Spawn: ${spawn.typeId} @ (${spawn.q},${spawn.r})`);
+              console.log(`[Barbarzyncy] Spawn: ${spawn.typeId} @ (${spawn.q},${spawn.r})` + (spawn.embarked ? ' [na wodzie]' : ''));
             }
 
             // Move barbarian units.
+            // TEMAT #15: rajderzy Ludów Morza (seaRaider/zaokrętowani) mają
+            // własną logikę rajdową; reszta = klasyczna logika lądowa.
             const barbUnitsAfterSpawn = units.filter(u => isBarbarian(u.ownerId)) as BarbUnit[];
+            const landBarbs = barbUnitsAfterSpawn.filter(u => u.seaRaider !== true && u.embarked !== true);
+            const seaBarbs = barbUnitsAfterSpawn.filter(u => u.seaRaider === true || u.embarked === true);
             const playerUnitsForBarbs = units.filter(u => !isBarbarian(u.ownerId));
-            const barbCmds = decideBarbarianMoves(barbUnitsAfterSpawn, playerUnitsForBarbs, cities, barbCamps, map, barbLive);
+            const barbCmds = decideBarbarianMoves(landBarbs, playerUnitsForBarbs, cities, barbCamps, map, barbLive);
+            if (seaBarbs.length > 0) {
+              const raidTargets = collectSeaRaidTargets(map);
+              barbCmds.push(...decideSeaPeoplesRaids(
+                seaBarbs, playerUnitsForBarbs, cities, raidTargets, map, seaBarbParams, turn,
+              ));
+            }
             for (const bcmd of barbCmds) {
               try {
                 const bu = units.find(u => u.id === bcmd.unitId);
@@ -14535,6 +14647,23 @@ async function boot(): Promise<void> {
                   bu.q = bcmd.toQ;
                   bu.r = bcmd.toR;
                   bu.ruchLeft = 0;
+                  // TEMAT #15: woda -> zaokrętowanie, ląd -> desant.
+                  applyEmbarkStateAfterMove([bu], map);
+                } else if (bcmd.type === 'raid') {
+                  // TEMAT #15: rajd Ludów Morza — wejście + zniszczenie ulepszenia.
+                  const raidKey = keyOf(bcmd.toQ, bcmd.toR);
+                  const raidHex = map.hexes[raidKey];
+                  if (!raidHex || raidHex.ulepszenie === Ulepszenie.Brak) continue;
+                  if (!canUnitOccupyCityHex(bu.ownerId, bcmd.toQ, bcmd.toR, cities)) continue;
+                  const destroyed = raidHex.ulepszenie;
+                  raidHex.ulepszenie = Ulepszenie.Brak;
+                  spawnImprovementMesh(raidKey);
+                  bu.q = bcmd.toQ;
+                  bu.r = bcmd.toR;
+                  bu.ruchLeft = 0;
+                  applyEmbarkStateAfterMove([bu], map);
+                  console.log(`[Ludy Morza] Rajd: zniszczono '${destroyed}' @ (${bcmd.toQ},${bcmd.toR})`);
+                  showHintMessage(`Rajd Ludów Morza — zniszczone ulepszenie: ${destroyed}!`, 4500);
                 } else if (bcmd.type === 'attack') {
                   const target = units.find(u => u.id === bcmd.targetUnitId);
                   if (!target) continue;
@@ -14572,6 +14701,7 @@ async function boot(): Promise<void> {
               }
             }
             evictForeignUnitsFromCityHexes();
+            syncUnitsRender();
           }
         } catch (eBarb) {
           console.error('[Barbarzyncy] Blad ticku:', eBarb);
@@ -14726,6 +14856,9 @@ async function boot(): Promise<void> {
               su.r = destR;
             }
             deductStackRuchLeft(stack, moveCost);
+            // TEMAT #15: automatyczna (dez)embarkacja wg terenu docelowego
+            // (woda -> embarked, ląd -> zejście na ląd) + przebudowa tokenów.
+            if (applyEmbarkStateAfterMove(stack, map)) syncUnitsRender();
           }
           anim = null;
           isAnimating = false;

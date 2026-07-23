@@ -3905,7 +3905,8 @@ function buildTopBarRekruciDetailCard(
   const intro = el('div', 'dc-note');
   intro.style.fontStyle = 'normal';
   intro.textContent =
-    'Pula rekrutów tego miasta — werb jednostki zużywa rekrutów i ludność. ' +
+    'Pula rekrutów tego miasta — werb jednostki zużywa rekrutów (Manpower), nie ludność miasta ' +
+    '(wyjątek: Zwiadowca — 0 kosztu Manpower). ' +
     'Co turę pula rośnie (regen), chyba że miasto jest oblężone.';
   card.appendChild(intro);
 
@@ -3921,7 +3922,7 @@ function buildTopBarRekruciDetailCard(
 
   appendDetailAlgo(card, 'Skąd bierze się pula', [
     'Max ≈ 10% ludności absolutnej miasta (tabela epok).',
-    'Regen domyślnie +10% max × bonus cywilizacji (np. Rzym +35%).',
+    'Regen = % max (parametr balansu, patrz "Odnowa" wyżej) × bonus cywilizacji (np. Rzym ×2).',
     'Oblężenie blokuje odnowę do czasu zdjęcia oblężenia.',
   ]);
   return card;

@@ -4388,6 +4388,71 @@ function applyCultureOverrides(group: THREE.Group, category: string, culture: Cu
 // UnitRenderer
 // ---------------------------------------------------------------------------
 
+
+// ---------------------------------------------------------------------------
+// TEMAT #15 — embarkacja: prosta łódka (kadłub z desek) pod modelem jednostki
+// ---------------------------------------------------------------------------
+
+/**
+ * Doczepia do gotowego tokenu jednostki prostą łódkę desantową (kadłub z desek,
+ * dziób/rufa, dwie burty) i zmniejsza/unosi figurkę, żeby "siedziała" w łodzi.
+ * Wszystkie materiały/geo idą do group.userData['mats']/['perTokenGeos'] —
+ * sprząta je standardowy _disposeToken. Wywoływana TYLKO dla unit.embarked.
+ */
+function attachEmbarkBoat(group: THREE.Group): void {
+  // Figurka do łódki: lekko mniejsza i uniesiona nad linię burt.
+  const riders = group.children.slice();
+  for (const child of riders) {
+    child.scale.multiplyScalar(0.78);
+    child.position.y += 0.10 * HEX_R;
+  }
+
+  const mats: THREE.Material[] = (group.userData['mats'] as THREE.Material[]) ?? [];
+  const geos: THREE.BufferGeometry[] = (group.userData['perTokenGeos'] as THREE.BufferGeometry[]) ?? [];
+  group.userData['mats'] = mats;
+  group.userData['perTokenGeos'] = geos;
+
+  const mkMat = (color: number): THREE.MeshStandardMaterial => {
+    const m = new THREE.MeshStandardMaterial({ color, metalness: 0.05, roughness: 0.85 });
+    mats.push(m);
+    return m;
+  };
+  const mkBox = (w: number, h: number, d: number): THREE.BoxGeometry => {
+    const g = new THREE.BoxGeometry(w * HEX_R, h * HEX_R, d * HEX_R);
+    geos.push(g);
+    return g;
+  };
+
+  const woodLight = mkMat(0xa87f4a);
+  const woodDark  = mkMat(0x7a5530);
+
+  const boat = new THREE.Group();
+  const Y = 0.06 * HEX_R; // kadłub nisko na kafelku wody (jak galera: HULL_Y)
+
+  // Dno.
+  const bottom = new THREE.Mesh(mkBox(0.34, 0.05, 0.62), woodDark);
+  bottom.position.set(0, Y, 0);
+  boat.add(bottom);
+  // Burty (lewa/prawa).
+  const sideL = new THREE.Mesh(mkBox(0.06, 0.12, 0.62), woodLight);
+  sideL.position.set(-0.17 * HEX_R, Y + 0.06 * HEX_R, 0);
+  boat.add(sideL);
+  const sideR = new THREE.Mesh(mkBox(0.06, 0.12, 0.62), woodLight);
+  sideR.position.set(0.17 * HEX_R, Y + 0.06 * HEX_R, 0);
+  boat.add(sideR);
+  // Dziób (−Z, jak galera) i rufa (+Z) — uniesione klocki.
+  const bow = new THREE.Mesh(mkBox(0.30, 0.14, 0.10), woodLight);
+  bow.position.set(0, Y + 0.05 * HEX_R, -0.33 * HEX_R);
+  bow.rotation.x = -0.35;
+  boat.add(bow);
+  const stern = new THREE.Mesh(mkBox(0.30, 0.12, 0.10), woodLight);
+  stern.position.set(0, Y + 0.04 * HEX_R, 0.33 * HEX_R);
+  stern.rotation.x = 0.3;
+  boat.add(stern);
+
+  group.add(boat);
+}
+
 export class UnitRenderer {
   private scene: THREE.Scene;
 
@@ -4558,6 +4623,8 @@ export class UnitRenderer {
       const cat = unit.category ?? 'domyslny';
       const typeId = unit.typeId ?? '';
       const ringStance = this.ringStanceForOwner(unit.ownerId);
+      // TEMAT #15: jednostka zaokrętowana — token z łódką (przebudowa przy zmianie).
+      const embarked = unit.embarked === true;
 
       if (this.tokens.has(unit.id)) {
         const obj = this.tokens.get(unit.id)!;
@@ -4566,7 +4633,8 @@ export class UnitRenderer {
           obj.userData['cat'] !== cat ||
           obj.userData['typeId'] !== typeId ||
           obj.userData['ringStance'] !== ringStance ||
-          obj.userData['ringOwnerId'] !== unit.ownerId
+          obj.userData['ringOwnerId'] !== unit.ownerId ||
+          (obj.userData['embarked'] === true) !== embarked
         ) {
           this.scene.remove(obj);
           this._disposeToken(unit.id, obj);
@@ -4576,11 +4644,13 @@ export class UnitRenderer {
 
           const color = this._resolveOwnerColor(unit.ownerId);
           const group = buildUnitModel(cat, color, typeId);
+          if (embarked) attachEmbarkBoat(group);
           group.position.set(x, yBase, z);
           this._applyCityTokenStyle(group, onCity);
           group.userData['unitId'] = unit.id;
           group.userData['cat']    = cat;
           group.userData['typeId'] = typeId;
+          group.userData['embarked'] = embarked;
 
           this._attachOwnerRing(group, unit.ownerId);
           this._registerToken(unit.id, group);
@@ -4592,12 +4662,14 @@ export class UnitRenderer {
       } else {
         const color = this._resolveOwnerColor(unit.ownerId);
         const group = buildUnitModel(cat, color, typeId);
+        if (embarked) attachEmbarkBoat(group);
 
         group.position.set(x, yBase, z);
         this._applyCityTokenStyle(group, onCity);
         group.userData['unitId'] = unit.id;
         group.userData['cat']    = cat;
         group.userData['typeId'] = typeId;
+        group.userData['embarked'] = embarked;
 
         this._attachOwnerRing(group, unit.ownerId);
         this._registerToken(unit.id, group);

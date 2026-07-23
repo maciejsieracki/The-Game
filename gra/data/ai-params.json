@@ -573,5 +573,30 @@
     "wartosc": 3,
     "sekcja": "§9 Cuda AI",
     "opis": "PRÓG DO AKCEPTACJI: poziom Trudny — AI rozważa kolejkowanie cudu co 3 tury (agresywnie, częściej niż inne poziomy)."
+  },
+  "ludy_morza_max_obozy": {
+    "wartosc": 3,
+    "sekcja": "§9 Ludy Morza",
+    "opis": "TEMAT #15: maksymalna liczba obozów nadmorskich Ludów Morza (epoka Brązu; osobny limit obok obozów lądowych)."
+  },
+  "ludy_morza_rajd_zasieg": {
+    "wartosc": 8,
+    "sekcja": "§9 Ludy Morza",
+    "opis": "TEMAT #15: zasięg (heksy) szukania celu rajdu — nadmorskie miasto lub ulepszenie terenu gracza/AI."
+  },
+  "ludy_morza_rajd_okres_latwy": {
+    "wartosc": 6,
+    "sekcja": "§9 Ludy Morza",
+    "opis": "TEMAT #15 (placeholder do strojenia): fala rajdów co N tur na poziomie Łatwym (rzadko)."
+  },
+  "ludy_morza_rajd_okres_normalny": {
+    "wartosc": 3,
+    "sekcja": "§9 Ludy Morza",
+    "opis": "TEMAT #15 (placeholder do strojenia): fala rajdów co N tur na poziomie Normalnym (średnio)."
+  },
+  "ludy_morza_rajd_okres_trudny": {
+    "wartosc": 1,
+    "sekcja": "§9 Ludy Morza",
+    "opis": "TEMAT #15 (placeholder do strojenia): fala rajdów co N tur na poziomie Trudnym (często — co turę)."
   }
 }

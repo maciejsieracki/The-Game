@@ -32,8 +32,9 @@ import type { GameData } from '../data/loader';
 import { TerenBazowy } from '../types/hex';
 import type { City } from './cities';
 import { addForeignCityBlocks } from './city-hex-movement';
+import type { Hex } from '../types/hex';
 import type { RuntimeUnit } from '../units/setup';
-import { hexDistance, computePath, keyOf } from '../units/setup';
+import { hexDistance, computePath, keyOf, isWaterTerrain, embarkMoveCost } from '../units/setup';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -71,6 +72,12 @@ export interface BarbCamp {
    * Decremented by tickCamps(); a spawn happens when it reaches 0.
    */
   spawnCooldown: number;
+  /**
+   * TEMAT #15 (Ludy Morza): obóz nadmorski (heks Wybrzeża / wysepka).
+   * Spawnuje jednostki ZAOKRĘTOWANE na sąsiednim heksie wody.
+   * Pole opcjonalne — stare save'y bez pola = obóz lądowy (kompatybilne).
+   */
+  naval?: boolean;
 }
 
 /**
@@ -89,6 +96,12 @@ export interface BarbUnit extends RuntimeUnit {
   healthFrac?: number;
   /** Id of the camp this unit was spawned from (informational; optional). */
   campId?: string;
+  /**
+   * TEMAT #15: jednostka Ludów Morza (spawn z obozu nadmorskiego) — prowadzona
+   * przez decideSeaPeoplesRaids (rajdy), a nie zwykłą logikę lądową.
+   * Utrwalane w save razem z units[] (pole opcjonalne, wstecznie kompatybilne).
+   */
+  seaRaider?: boolean;
 }
 
 /**
@@ -104,6 +117,9 @@ export interface BarbSpawn {
   r: number;
   /** units.json "Jednostka" key for the spawned barbarian. */
   typeId: string;
+  /** TEMAT #15: spawn z obozu nadmorskiego — jednostka startuje ZAOKRĘTOWANA
+   *  na heksie wody (silnik ustawia embarked=true i seaRaider=true). */
+  embarked?: boolean;
 }
 
 /** Move a barbarian unit one step toward (toQ, toR). */
@@ -121,8 +137,19 @@ export interface BarbCmdAttack {
   targetUnitId: string;
 }
 
+/**
+ * TEMAT #15: rajd Ludów Morza — wejście na heks (toQ,toR) z wrogim ulepszeniem
+ * terenu i ZNISZCZENIE go (silnik: hex.ulepszenie = Brak + przenosi jednostkę).
+ */
+export interface BarbCmdRaid {
+  type: 'raid';
+  unitId: string;
+  toQ: number;
+  toR: number;
+}
+
 /** Union of barbarian movement-phase commands. */
-export type BarbCommand = BarbCmdMove | BarbCmdAttack;
+export type BarbCommand = BarbCmdMove | BarbCmdAttack | BarbCmdRaid;
 
 // ---------------------------------------------------------------------------
 // Tunable parameters
@@ -193,6 +220,56 @@ export function loadBarbParams(data: GameData): BarbParams {
     aggroRadius:       readParam(data, 'barbarzyncy_zasieg_agresji',     FALLBACK_BARB_PARAMS.aggroRadius),
     retreatHpFrac:     readParam(data, 'barbarzyncy_prog_odwrotu_hp',    FALLBACK_BARB_PARAMS.retreatHpFrac),
     unitTypeId:        FALLBACK_BARB_PARAMS.unitTypeId,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// TEMAT #15 — Ludy Morza na morzu: parametry rajdów (wg trudności gry)
+// ---------------------------------------------------------------------------
+
+/** Klucz trudności silnika (main.ts `_menuDifficulty`). */
+export type SeaRaidDifficulty = 'easy' | 'normal' | 'hard';
+
+/** Parametry obozów nadmorskich i rajdów Ludów Morza. */
+export interface SeaBarbParams {
+  /** Maksymalna liczba obozów nadmorskich (osobny limit, obok maxCamps lądowych). */
+  maxSeaCamps: number;
+  /** Zasięg (heksy) szukania celu rajdu: nadmorskie miasto / ulepszenie terenu. */
+  raidRadius: number;
+  /**
+   * Co ile tur rusza „fala rajdów" (1 = co turę). Wg trudności:
+   * easy rzadko (6) / normal średnio (3) / hard często (1) — placeholdery
+   * w data/ai-params.json (ludy_morza_rajd_okres_*).
+   */
+  raidPeriod: number;
+}
+
+/** Wbudowane domyślne (trudność normal). */
+export const FALLBACK_SEA_BARB_PARAMS: SeaBarbParams = {
+  maxSeaCamps: 3,
+  raidRadius: 8,
+  raidPeriod: 3,
+};
+
+/**
+ * Czyta parametry Ludów Morza z data/ai-params.json (konwencja `wartosc`),
+ * z fallbackami. Klucze:
+ *   ludy_morza_max_obozy, ludy_morza_rajd_zasieg,
+ *   ludy_morza_rajd_okres_latwy / _normalny / _trudny (intensywność wg trudności).
+ */
+export function loadSeaBarbParams(
+  data: GameData,
+  difficulty: SeaRaidDifficulty = 'normal',
+): SeaBarbParams {
+  const periodKey =
+    difficulty === 'easy' ? 'ludy_morza_rajd_okres_latwy'
+    : difficulty === 'hard' ? 'ludy_morza_rajd_okres_trudny'
+    : 'ludy_morza_rajd_okres_normalny';
+  const periodFallback = difficulty === 'easy' ? 6 : difficulty === 'hard' ? 1 : 3;
+  return {
+    maxSeaCamps: readParam(data, 'ludy_morza_max_obozy',  FALLBACK_SEA_BARB_PARAMS.maxSeaCamps),
+    raidRadius:  readParam(data, 'ludy_morza_rajd_zasieg', FALLBACK_SEA_BARB_PARAMS.raidRadius),
+    raidPeriod:  Math.max(1, readParam(data, periodKey, periodFallback)),
   };
 }
 
@@ -308,8 +385,9 @@ function firstStep(
   destQ: number,
   destR: number,
   occupied: Set<string>,
+  costFn?: (hex: Hex) => number,
 ): { q: number; r: number } | null {
-  const path = computePath(unit, map, destQ, destR, occupied);
+  const path = computePath(unit, map, destQ, destR, occupied, costFn);
   if (path.length === 0) return null;
   return path[0] ?? null;
 }
@@ -392,6 +470,91 @@ export function spawnCamps(
   return result;
 }
 
+/**
+ * TEMAT #15 (część B): obozy Ludów Morza na WYBRZEŻU / wysepkach.
+ *
+ * Kandydat na obóz nadmorski: heks neutralny, który jest
+ *   (a) Wybrzeżem (płytka woda przy lądzie — plażowy obóz najeźdźców), albo
+ *   (b) przejezdnym lądem-wysepką: ≥ 4 z 6 sąsiadów to woda (Morze/Wybrzeże).
+ * Reszta reguł jak spawnCamps: dystans od miast (minDistFromCity), odstęp
+ * campSpacing od WSZYSTKICH istniejących obozów (lądowych i morskich) oraz
+ * między sobą; deterministyczny shuffle LCG z `seed`.
+ *
+ * Limit: seaParams.maxSeaCamps liczony TYLKO po obozach naval (osobno od
+ * lądowego params.maxCamps — obozy nadmorskie są „obok istniejących lądowych").
+ *
+ * @returns nowe obozy z naval=true (możliwie pusta tablica).
+ */
+export function spawnSeaCamps(
+  map: GameMap,
+  existing: BarbCamp[],
+  cities: CityLike[],
+  params: BarbParams,
+  seaParams: SeaBarbParams,
+  seed: number,
+): BarbCamp[] {
+  const existingSea = existing.filter(c => c.naval === true).length;
+  const slotsLeft = seaParams.maxSeaCamps - existingSea;
+  if (slotsLeft <= 0) return [];
+
+  const candidates: { q: number; r: number }[] = [];
+  for (const key of Object.keys(map.hexes)) {
+    const hex = map.hexes[key];
+    if (hex === undefined) continue;
+    if (hex.wlasciciel !== null) continue;
+
+    const { q, r } = hex.coords;
+    let ok = false;
+    if (hex.terenBazowy === TerenBazowy.Wybrzeze) {
+      ok = true; // (a) obóz plażowy na płytkiej wodzie
+    } else if (!isImpassableTerrain(hex.terenBazowy)) {
+      // (b) wysepka: większość sąsiadów to woda
+      let waterN = 0;
+      for (const [dq, dr] of HEX_NEIGHBORS) {
+        const nHex = map.hexes[keyOf(q + dq, r + dr)];
+        if (nHex !== undefined && isWaterTerrain(nHex.terenBazowy)) waterN++;
+      }
+      ok = waterN >= 4;
+    }
+    if (!ok) continue;
+
+    const tooCloseToCity = cities.some(c => hexDistance(q, r, c.q, c.r) < params.minDistFromCity);
+    if (tooCloseToCity) continue;
+
+    candidates.push({ q, r });
+  }
+
+  // Deterministyczny Fisher-Yates (LCG) — jak w spawnCamps.
+  let lcg = seed >>> 0;
+  for (let i = candidates.length - 1; i > 0; i--) {
+    let rnd: number;
+    [lcg, rnd] = lcgNext(lcg);
+    const j = Math.floor(rnd * (i + 1));
+    const tmp = candidates[i]!;
+    candidates[i] = candidates[j]!;
+    candidates[j] = tmp;
+  }
+
+  const placed: { q: number; r: number }[] = existing.map(c => ({ q: c.q, r: c.r }));
+  const result: BarbCamp[] = [];
+
+  for (const cand of candidates) {
+    if (result.length >= slotsLeft) break;
+    const tooClose = placed.some(p => hexDistance(cand.q, cand.r, p.q, p.r) < params.campSpacing);
+    if (tooClose) continue;
+    placed.push(cand);
+    result.push({
+      id: `bsc_${seed >>> 0}_${existingSea + result.length}`,
+      q: cand.q,
+      r: cand.r,
+      spawnCooldown: 0,
+      naval: true,
+    });
+  }
+
+  return result;
+}
+
 // ---------------------------------------------------------------------------
 // Camp ticking / unit spawning
 // ---------------------------------------------------------------------------
@@ -454,7 +617,15 @@ export function tickCamps(
       continue;
     }
 
-    const spot = freeAdjacentHex(camp.q, camp.r, map, occupied);
+    // TEMAT #15: obóz nadmorski spawnuje na sąsiedniej WODZIE (jednostka
+    // zaokrętowana). Gdy brak wolnej wody — fallback na ląd (niezaokrętowana).
+    let spot: { q: number; r: number } | null = null;
+    let embarked = false;
+    if (camp.naval === true) {
+      spot = freeAdjacentWaterHex(camp.q, camp.r, map, occupied);
+      if (spot !== null) embarked = true;
+    }
+    if (spot === null) spot = freeAdjacentHex(camp.q, camp.r, map, occupied);
     if (spot === null) {
       outCamps.push({ ...camp, spawnCooldown: 0 });
       continue;
@@ -462,7 +633,13 @@ export function tickCamps(
 
     // Spawn one unit and reserve its hex so two camps cannot share it.
     occupied.add(keyOf(spot.q, spot.r));
-    spawns.push({ campId: camp.id, q: spot.q, r: spot.r, typeId: params.unitTypeId });
+    spawns.push({
+      campId: camp.id,
+      q: spot.q,
+      r: spot.r,
+      typeId: params.unitTypeId,
+      ...(embarked ? { embarked: true } : {}),
+    });
     outCamps.push({ ...camp, spawnCooldown: params.spawnInterval });
   }
 
@@ -496,6 +673,39 @@ function freeAdjacentHex(
       seen.add(k);
       if (nq === q && nr === r) continue;
       if (isFreeLand(nq, nr, map, occupied)) ring2.push({ q: nq, r: nr });
+    }
+  }
+  ring2.sort((a, b) => hexDistance(a.q, a.r, q, r) - hexDistance(b.q, b.r, q, r));
+  return ring2[0] ?? null;
+}
+
+/** TEMAT #15: najbliższy wolny heks WODY przy (q,r): ring-1, potem ring-2, lub null. */
+function freeAdjacentWaterHex(
+  q: number,
+  r: number,
+  map: GameMap,
+  occupied: Set<string>,
+): { q: number; r: number } | null {
+  const isFreeWater = (nq: number, nr: number): boolean => {
+    const k = keyOf(nq, nr);
+    const hex = map.hexes[k];
+    if (hex === undefined || occupied.has(k)) return false;
+    return isWaterTerrain(hex.terenBazowy);
+  };
+  for (const [dq, dr] of HEX_NEIGHBORS) {
+    if (isFreeWater(q + dq, r + dr)) return { q: q + dq, r: r + dr };
+  }
+  const seen = new Set<string>();
+  const ring2: { q: number; r: number }[] = [];
+  for (const [dq, dr] of HEX_NEIGHBORS) {
+    for (const [dq2, dr2] of HEX_NEIGHBORS) {
+      const nq = q + dq + dq2;
+      const nr = r + dr + dr2;
+      const k = keyOf(nq, nr);
+      if (seen.has(k)) continue;
+      seen.add(k);
+      if (nq === q && nr === r) continue;
+      if (isFreeWater(nq, nr)) ring2.push({ q: nq, r: nr });
     }
   }
   ring2.sort((a, b) => hexDistance(a.q, a.r, q, r) - hexDistance(b.q, b.r, q, r));
@@ -555,6 +765,9 @@ export function decideBarbarianMoves(
 
   for (const unit of barbUnits) {
     if (unit.ruchLeft <= 0) continue;
+    // TEMAT #15: jednostki Ludów Morza (rajderzy / zaokrętowane) prowadzi
+    // decideSeaPeoplesRaids — logika lądowa ich nie rusza.
+    if (unit.embarked === true || unit.seaRaider === true) continue;
 
     const occ = addForeignCityBlocks(
       occupiedExcluding(allUnits, unit.id),
@@ -605,6 +818,175 @@ export function decideBarbarianMoves(
     const homeCamp = nearest(unit.q, unit.r, camps);
     if (homeCamp !== undefined && hexDistance(unit.q, unit.r, homeCamp.q, homeCamp.r) > 1) {
       const step = firstStep(unit, map, homeCamp.q, homeCamp.r, occ);
+      if (step !== null) {
+        commands.push({ type: 'move', unitId: unit.id, toQ: step.q, toR: step.r });
+      }
+    }
+  }
+
+  return commands;
+}
+
+// ---------------------------------------------------------------------------
+// TEMAT #15 (część C) — rajdy Ludów Morza
+// ---------------------------------------------------------------------------
+
+/** Cel rajdu: heks z wrogim (posiadanym) ulepszeniem terenu. */
+export interface SeaRaidTarget {
+  q: number;
+  r: number;
+}
+
+/**
+ * Zbiera cele rajdów: heksy z ulepszeniem terenu innym niż 'brak'.
+ * Ulepszenia budują wyłącznie gracz/AI (barbarzyńcy nie budują), więc każde
+ * zbudowane ulepszenie jest prawomocnym celem — bez potrzeby śledzenia
+ * właściciela heksa. Kolejność deterministyczna (iteracja po kluczach mapy).
+ */
+export function collectSeaRaidTargets(map: GameMap): SeaRaidTarget[] {
+  const out: SeaRaidTarget[] = [];
+  for (const key of Object.keys(map.hexes)) {
+    const hex = map.hexes[key];
+    if (hex === undefined) continue;
+    const ul = (hex as { ulepszenie?: unknown }).ulepszenie;
+    if (typeof ul === 'string' && ul !== 'brak') {
+      out.push({ q: hex.coords.q, r: hex.coords.r });
+    }
+  }
+  return out;
+}
+
+/** Miasto nadmorskie = heks miasta ma ≥1 sąsiada-wodę (cel podejścia rajdu). */
+export function isCoastalCity(map: GameMap, city: HasQR): boolean {
+  for (const [dq, dr] of HEX_NEIGHBORS) {
+    const hex = map.hexes[keyOf(city.q + dq, city.r + dr)];
+    if (hex !== undefined && isWaterTerrain(hex.terenBazowy)) return true;
+  }
+  return false;
+}
+
+/** Najbliższy heks wody na mapie względem (q,r) — powrót rajdera w morze. */
+function nearestWaterHexOnMap(map: GameMap, q: number, r: number): { q: number; r: number } | undefined {
+  let best: { q: number; r: number } | undefined;
+  let bestDist = Infinity;
+  for (const key of Object.keys(map.hexes)) {
+    const hex = map.hexes[key];
+    if (hex === undefined || !isWaterTerrain(hex.terenBazowy)) continue;
+    const d = hexDistance(q, r, hex.coords.q, hex.coords.r);
+    if (d < bestDist) { bestDist = d; best = { q: hex.coords.q, r: hex.coords.r }; }
+  }
+  return best;
+}
+
+/**
+ * Decyzje rajdowe Ludów Morza — jedna komenda na jednostkę seaRaider.
+ * Deterministyczne (żadnego Math.random; wybory przez nearest / kolejność wejścia).
+ *
+ * Stan wynika z terenu (embarked utrzymuje silnik — applyEmbarkStateAfterMove):
+ *
+ * NA WODZIE (embarked):
+ *   1. „Fala rajdów" tylko co seaParams.raidPeriod tur (intensywność wg
+ *      trudności; 1 = co turę). Poza falą — jednostka dryfuje (brak komendy).
+ *   2. Cel = najbliższe wrogie ulepszenie terenu LUB nadmorskie miasto w
+ *      promieniu raidRadius. Ulepszenie sąsiednie → komenda 'raid' (wejście
+ *      + zniszczenie + auto-zejście na ląd). Inaczej krok ku celowi po wodzie
+ *      (koszt embarkMoveCost); wejście na ląd = automatyczny desant.
+ *   3. Brak celu → brak komendy (czeka na morzu).
+ *
+ * NA LĄDZIE (desant po rajdzie):
+ *   1. Wróg obok → atak (jak barbarzyńcy).
+ *   2. Wrogie ulepszenie w zasięgu → 'raid' (sąsiednie) albo krok ku niemu.
+ *   3. Nic do złupienia („po zniszczeniu ulepszenia / nieudanym szturmie") →
+ *      krok z powrotem ku najbliższej wodzie (auto-zaokrętowanie na wodzie).
+ */
+export function decideSeaPeoplesRaids(
+  seaUnits: BarbUnit[],
+  playerUnits: RuntimeUnit[],
+  cities: CityLike[],
+  raidTargets: SeaRaidTarget[],
+  map: GameMap,
+  seaParams: SeaBarbParams,
+  turn: number,
+): BarbCommand[] {
+  const commands: BarbCommand[] = [];
+  const enemies = playerUnits.filter(u => !isBarbarian(u.ownerId));
+  const allUnits: RuntimeUnit[] = [...seaUnits, ...enemies];
+  const raidWave = seaParams.raidPeriod <= 1 || turn % seaParams.raidPeriod === 0;
+  const coastalCities = cities.filter(c => isCoastalCity(map, c));
+
+  for (const unit of seaUnits) {
+    if (unit.ruchLeft <= 0) continue;
+
+    const occ = addForeignCityBlocks(
+      occupiedExcluding(allUnits, unit.id),
+      unit.ownerId,
+      cities as Pick<City, 'q' | 'r' | 'ownerId'>[],
+    );
+
+    const nearestImpr = nearest(unit.q, unit.r, raidTargets);
+    const imprDist = nearestImpr !== undefined
+      ? hexDistance(unit.q, unit.r, nearestImpr.q, nearestImpr.r)
+      : Infinity;
+
+    if (unit.embarked === true) {
+      // --- NA WODZIE ---
+      if (!raidWave) continue;
+
+      const nearestCity = nearest(unit.q, unit.r, coastalCities);
+      const cityDist = nearestCity !== undefined
+        ? hexDistance(unit.q, unit.r, nearestCity.q, nearestCity.r)
+        : Infinity;
+
+      // Sąsiednie ulepszenie → rajd (desant + zniszczenie).
+      if (nearestImpr !== undefined && imprDist === 1 && !occ.has(keyOf(nearestImpr.q, nearestImpr.r))) {
+        commands.push({ type: 'raid', unitId: unit.id, toQ: nearestImpr.q, toR: nearestImpr.r });
+        continue;
+      }
+
+      // Najbliższy cel w zasięgu rajdu → krok (po wodzie; ląd = desant).
+      const targets: { q: number; r: number; d: number }[] = [];
+      if (nearestImpr !== undefined && imprDist <= seaParams.raidRadius) {
+        targets.push({ q: nearestImpr.q, r: nearestImpr.r, d: imprDist });
+      }
+      if (nearestCity !== undefined && cityDist <= seaParams.raidRadius) {
+        targets.push({ q: nearestCity.q, r: nearestCity.r, d: cityDist });
+      }
+      targets.sort((a, b) => a.d - b.d);
+      const target = targets[0];
+      if (target !== undefined) {
+        const step = firstStep(unit, map, target.q, target.r, occ, embarkMoveCost);
+        if (step !== null) {
+          commands.push({ type: 'move', unitId: unit.id, toQ: step.q, toR: step.r });
+        }
+      }
+      continue;
+    }
+
+    // --- NA LĄDZIE (desant) ---
+    // 1. Atak na wroga obok (jak barbarzyńcy lądowi).
+    const adjacentEnemy = enemies.find(e => hexDistance(unit.q, unit.r, e.q, e.r) === 1);
+    if (adjacentEnemy !== undefined) {
+      commands.push({ type: 'attack', unitId: unit.id, targetUnitId: adjacentEnemy.id });
+      continue;
+    }
+
+    // 2. Wrogie ulepszenie w zasięgu → rajd lub krok ku niemu.
+    if (nearestImpr !== undefined && imprDist <= seaParams.raidRadius) {
+      if (imprDist === 1 && !occ.has(keyOf(nearestImpr.q, nearestImpr.r))) {
+        commands.push({ type: 'raid', unitId: unit.id, toQ: nearestImpr.q, toR: nearestImpr.r });
+        continue;
+      }
+      const step = firstStep(unit, map, nearestImpr.q, nearestImpr.r, occ, embarkMoveCost);
+      if (step !== null) {
+        commands.push({ type: 'move', unitId: unit.id, toQ: step.q, toR: step.r });
+        continue;
+      }
+    }
+
+    // 3. Powrót w morze (auto-zaokrętowanie po wejściu na wodę).
+    const water = nearestWaterHexOnMap(map, unit.q, unit.r);
+    if (water !== undefined) {
+      const step = firstStep(unit, map, water.q, water.r, occ, embarkMoveCost);
       if (step !== null) {
         commands.push({ type: 'move', unitId: unit.id, toQ: step.q, toR: step.r });
       }
