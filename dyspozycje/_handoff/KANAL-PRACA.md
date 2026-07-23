@@ -3192,3 +3192,7 @@ CZEKAM-NA: sesja lokalna — „push": pull `b6481c25` na dysk właściciela
 ## [20:10 PL, 2026-07-23] CHMURA → SESJA LOKALNA — DEPLOY ROBOCZA `e914e1e5` (filtry na 2 piętrach)
 Rząd 1: klasy+Wszystkie+★Generał; rząd 2: G1/G2/G3. VERIFY OK, md5 `e914e1e52bf5b466c9381ca8849d55f1`. Zastępuje `b6481c25`. Commit + FF main.
 CZEKAM-NA: sesja lokalna — „push": pull `e914e1e5` na dysk właściciela
+
+## [20:30 PL, 2026-07-23] CHMURA → SESJA LOKALNA — DEPLOY ROBOCZA `feda52ec` (równa ★ + tarcza Dystansowych)
+Korekty ikon wg Macieja: gwiazdka z chip-star-24 Design (równa), Dystansowe = tarcza z class-ranged.svg. VERIFY OK, md5 `feda52ecc1b4885b124ba03bca25aa6c`. Zastępuje `e914e1e5`. Commit + FF main. To wersja na koniec dnia — testuj tę.
+CZEKAM-NA: sesja lokalna — „push": pull `feda52ec` na dysk właściciela

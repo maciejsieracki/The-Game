@@ -9,7 +9,13 @@ UWAGA: KANON i FINALNA promują się teraz OSOBNYMI skryptami (`gra/tools/publis
 wyraźne polecenie właściciela) — dlatego są logowane NIEZALEŻNIE, każdy w swojej sekcji, ze
 swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drugiego.
 
-## ROBOCZA `e914e1e5` — 2026-07-23 · FILTRY NA DWÓCH PIĘTRACH (★ obok Wszystkie, grupy niżej) — **AKTUALNA**
+## ROBOCZA `feda52ec` — 2026-07-23 · Równa gwiazdka Generała + Dystansowe = tarcza (zasoby Design) — **AKTUALNA**
+
+- **Zawartość (commit `e5e1c26`):** ★ Generała podmieniona na RÓWNĄ gwiazdkę z eksportu Design (`chip-star-24.svg` — poprzednia z makiety była asymetryczna); filtr Dystansowych = TARCZA STRZELNICZA z torem lotu (`class-ranged.svg` z battle-class-map — decyzja Macieja, przywrócona zamiast łuku).
+- **Bramki:** tsc=0 · zrzut potwierdzony · VERIFY OK.
+- **md5:** `feda52ecc1b4885b124ba03bca25aa6c` · stamp `feda52ec`. Publikowała sesja chmurowa.
+
+## ROBOCZA `e914e1e5` — 2026-07-23 · FILTRY NA DWÓCH PIĘTRACH (★ obok Wszystkie, grupy niżej) — **ZASTĄPIONA** (→ `feda52ec`)
 
 - **Zawartość (commit `216a3d5`):** układ filtrów wg uwagi Macieja: rząd 1 = ikony klas + Wszystkie + ★ Generał (obok siebie); rząd 2 (piętro niżej) = grupy G1/G2/G3. Oba buildery (deploy + walka/ręczna).
 - **Bramki:** tsc=0 · zrzut potwierdzony · VERIFY OK.
