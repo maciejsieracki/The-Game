@@ -543,5 +543,35 @@
     "wartosc": 0,
     "sekcja": "§8 Archetypy",
     "opis": "Fenicjanie: delta priorytetu obrona."
+  },
+  "cuda_poziom1_prog_koszt_x": {
+    "wartosc": 25,
+    "sekcja": "§9 Cuda AI",
+    "opis": "PRÓG DO AKCEPTACJI: poziom Prosty — AI kolejkuje cud gdy koszt <= 25× Praca/turę miasta (rzadko/późno — tylko gdy miasto ma dużą nadwyżkę)."
+  },
+  "cuda_poziom1_throttle_tur": {
+    "wartosc": 8,
+    "sekcja": "§9 Cuda AI",
+    "opis": "PRÓG DO AKCEPTACJI: poziom Prosty — AI rozważa kolejkowanie cudu tylko co 8 tur (throttle, nie każda tura)."
+  },
+  "cuda_poziom2_prog_koszt_x": {
+    "wartosc": 45,
+    "sekcja": "§9 Cuda AI",
+    "opis": "PRÓG DO AKCEPTACJI: poziom Normalny — AI kolejkuje cud gdy koszt <= 45× Praca/turę miasta."
+  },
+  "cuda_poziom2_throttle_tur": {
+    "wartosc": 5,
+    "sekcja": "§9 Cuda AI",
+    "opis": "PRÓG DO AKCEPTACJI: poziom Normalny — AI rozważa kolejkowanie cudu co 5 tur."
+  },
+  "cuda_poziom3_prog_koszt_x": {
+    "wartosc": 70,
+    "sekcja": "§9 Cuda AI",
+    "opis": "PRÓG DO AKCEPTACJI: poziom Trudny — AI kolejkuje cud agresywnie, nawet przy koszcie <= 70× Praca/turę miasta."
+  },
+  "cuda_poziom3_throttle_tur": {
+    "wartosc": 3,
+    "sekcja": "§9 Cuda AI",
+    "opis": "PRÓG DO AKCEPTACJI: poziom Trudny — AI rozważa kolejkowanie cudu co 3 tury (agresywnie, częściej niż inne poziomy)."
   }
 }

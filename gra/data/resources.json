@@ -36,24 +36,6 @@
     "Uwagi": "wejscie Odlewni żelaza (klucz stock: ruda_zelaza)"
   },
   {
-    "Surowiec": "Bydło (krowa/wół)",
-    "Typ": "hodowla",
-    "Źródło / budynek": "złoże/handel (zarodek) + Bydło",
-    "Uwagi": "pierwsze pastwisko na złożu odblokowuje hodowle imperium; bonus pola +2 żywności / +3 produkcji (kanon); Rydwan; Inkowie od epoki 3"
-  },
-  {
-    "Surowiec": "Owce",
-    "Typ": "hodowla",
-    "Źródło / budynek": "złoże/handel (zarodek) + Owce",
-    "Uwagi": "solo wzgórze; +1 żywności / +2 produkcji; pierwsze na złożu odblokowuje imperium; Inkowie od epoki 3"
-  },
-  {
-    "Surowiec": "Lama",
-    "Typ": "hodowla",
-    "Źródło / budynek": "złoże/handel (zarodek) + Lama",
-    "Uwagi": "TYLKO Inkowie; solo; +1 żywności / +3 produkcji; pierwsze na złożu lamy odblokowuje imperium; brak Rydwanu"
-  },
-  {
     "Surowiec": "Koń",
     "Typ": "hodowla",
     "Źródło / budynek": "złoże Konie / Stajnia (później)",

@@ -47,9 +47,8 @@ const LABEL_TO_ASCII_KEY: Readonly<Record<string, string>> = {
   'Ruda żelaza': 'ruda',
   'Sól': 'sol',
   'Koń': 'kon',
-  'Trzoda (krowa/świnia)': 'bydlo',
-  'Owce': 'owce',
-  'Lama': 'lama',
+  // Bydło/Owce/Lama celowo POMINIĘTE — nie są surowcami (decyzja Macieja 2026-07-23);
+  // pastwiska dają tylko bonus żywności/produkcji, nie są dobrem handlowym. Koń zostaje.
   'Brąz': 'braz',
   'Żelazo': 'zelazo',
   'Cegła': 'cegla',

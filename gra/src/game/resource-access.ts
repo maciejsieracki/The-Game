@@ -162,6 +162,16 @@ const DEPOSIT_LINKED_IMPROVEMENTS = new Set<string>([
 /** Hodowla Model B — aktywny dostęp bez złoża (2026-07-09). */
 const LIVESTOCK_NO_DEPOSIT = new Set<string>(['bydlo', 'owce', 'lama']);
 
+/**
+ * Bydło / owce / lama NIE są surowcami (decyzja Macieja, wielokrotnie powtarzana —
+ * potwierdzona 2026-07-23): to wyłącznie ulepszenia terenu dające bonus żywności /
+ * produkcji (tileYield z terrain-improvements.json), a NIE dobra magazynowane ani
+ * handlowe. Surowcem „zwierzęcym" jest tylko Koń. Dlatego pastwiska nie emitują
+ * etykiety aktywnego dostępu do surowca (nie trafiają do dyplomacji / panelu surowców).
+ * Bonus żywności/pracy zostaje nietknięty — liczy się osobną ścieżką (economy.ts).
+ */
+const LIVESTOCK_NOT_RESOURCE = new Set<string>(['bydlo', 'owce', 'lama']);
+
 /** Ulepszenia bez wymogu złoża — tartak (drewno), kamieniołom (kamień). */
 const NO_DEPOSIT_IMPROVEMENTS = new Set<string>(['tartak', 'kamieniolom']);
 
@@ -209,6 +219,7 @@ function activeLabelsForImprovementOnHex(
 ): string[] {
   const norm = normalizeImprovementKey(improvementKey);
   if (!norm) return [];
+  if (LIVESTOCK_NOT_RESOURCE.has(norm)) return [];  // pastwiska nie są surowcem
   if (norm === 'kopalnia') return labelsForKopalniaOnHex(hex);
   return labelsForImprovementUnlock(norm);
 }

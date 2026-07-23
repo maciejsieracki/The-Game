@@ -360,7 +360,7 @@ import {
   refreshEmpireDetailPanel,
   isEmpireDetailPanelOpen,
 } from './ui/empireDetailPanel';
-import type { EmpireDetailSnap } from './ui/empireDetailTypes';
+import type { EmpireDetailSnap, EmpireResourceRow } from './ui/empireDetailTypes';
 import {
   collectCultureRangeHexKeys,
   collectReligionRangeHexKeys,
@@ -587,6 +587,7 @@ import {
 import { showWonderCompletedNotice } from './ui/wonderCompletedNotice';
 import { decideAITurn, chooseAIResearch, decideAIDiplomacy, loadDifficultyParams, RESUP_TIERS, type AICommand } from './game/ai';
 import type { AITurnOpts, RelacjaWejscie, DiplomacjaInputs, AIDiplomacyCommand } from './game/ai';
+import { decideAiWonderBuild, loadAiWonderParams, type AiWonderCityCandidate, type AiWonderOption } from './game/ai';
 import { checkVictory, techIdsInGameScope, allTechInScopeResearched, OSTATNIA_EPOKA_GRY_V1, powerShare } from './game/victory';
 import type { VictoryPlayer, VictoryInput } from './game/victory';
 import {
@@ -1620,6 +1621,48 @@ async function boot(): Promise<void> {
     }
 
     /**
+     * Licznik surowców imperium (BRAZ-ILOSC=B, decyzja Macieja 2026-07-23) — zbiorczy
+     * WOLUMEN wszystkich jednostek surowców zgromadzonych w magazynach miast ownera
+     * (suma City.surowce). Cel: zobaczyć, ile surowców realnie leży w magazynach, zanim
+     * dostroimy stawki produkcji. Reguły składowania (decyzja Macieja):
+     *   • Żywność — pominięta (osobny system spichlerza).
+     *   • Sól / Koń — czysty DOSTĘP (nie kumulują sztuk) → stock 0, kolumna „dostęp".
+     *   • Ceramika — docelowo dostęp; dziś przejściowo jeszcze kumuluje (garncarnia) →
+     *     pokazujemy realny zapas do czasu zmiany mechaniki (osobna decyzja).
+     *   • Bydło / Owce / Lama — NIE są surowcami (pominięte całkowicie).
+     *   • Reszta (drewno/kamień/glina/ruda/ruda żelaza/paliwo/cegła/brąz/żelazo/stal) — zliczana.
+     * Tempo/turę = TODO (dorobić razem ze stawkami produkcji) — na razie „—".
+     */
+    function buildEmpireResourceRows(ownerId: number): EmpireResourceRow[] {
+      const warehouse = citySurowceSumForOwner(ownerId);
+      const accessLabels = new Set(diplomacyActiveResourceLabelsForOwner(ownerId));
+      type Cat = { id: string; label: string; icon: string; typ: EmpireResourceRow['typ']; access?: boolean };
+      const CATALOG: Cat[] = [
+        { id: 'drewno',      label: 'Drewno',      icon: '🪵', typ: 'surowy' },
+        { id: 'kamien',      label: 'Kamień',      icon: '🪨', typ: 'surowy' },
+        { id: 'glina',       label: 'Glina',       icon: '🟫', typ: 'surowy' },
+        { id: 'ruda',        label: 'Ruda miedzi', icon: '🔶', typ: 'surowy' },
+        { id: 'ruda_zelaza', label: 'Ruda żelaza', icon: '⛏️', typ: 'surowy' },
+        { id: 'paliwo',      label: 'Paliwo',      icon: '🔥', typ: 'przetworzony' },
+        { id: 'cegla',       label: 'Cegła',       icon: '🧱', typ: 'przetworzony' },
+        { id: 'ceramika',    label: 'Ceramika',    icon: '🏺', typ: 'przetworzony', access: true },
+        { id: 'braz',        label: 'Brąz',        icon: '🥉', typ: 'przetworzony' },
+        { id: 'zelazo',      label: 'Żelazo',      icon: '⚙️', typ: 'przetworzony' },
+        { id: 'stal',        label: 'Stal',        icon: '🔩', typ: 'przetworzony' },
+        { id: 'sol',         label: 'Sól',         icon: '🧂', typ: 'surowy',  access: true },
+        { id: 'kon',         label: 'Koń',         icon: '🐎', typ: 'hodowla', access: true },
+      ];
+      const rows: EmpireResourceRow[] = [];
+      for (const c of CATALOG) {
+        const stock = Math.floor(warehouse[c.id] ?? 0);
+        const dostep = accessLabels.has(c.label) || stock > 0;
+        if (stock <= 0 && !dostep) continue;  // pomiń surowce, których owner w ogóle nie ma
+        rows.push({ id: c.id, label: c.label, icon: c.icon, stock, ratePerTurn: 0, typ: c.typ, dostep });
+      }
+      return rows;
+    }
+
+    /**
      * Union kluczy ulepszeń terenu imperium — bramka „wymagane ulepszenie" (np. Żegluga→Tartak).
      * placedImprovements nie jest per-owner (jak w braz-access.empireHasKopalniaMiedzi);
      * dla bramki badań (owner 0 = gracz) zbieramy wszystkie klucze ulepszeń na mapie.
@@ -2488,6 +2531,13 @@ async function boot(): Promise<void> {
     const empireFoodStates = new Map<number, EmpireFoodState>();
     let playerArmyFoodHintShown = false;
     const lastCityKulturaTick = new Map<string, number>();
+    /** CUDA-AI: Praca/turę kierowana do budynków per miasto (econTick.doBudynkow),
+     * migawka z ostatniego przelicznika ekonomii -- populowana razem z
+     * lastCityKulturaTick (patrz advanceCityEconomy). Używane przez decyzję AI
+     * "stać mnie na cud" (decideAiWonderBuild) w fazie AI TURN LOOP, poza
+     * zasięgiem leksykalnym lokalnej stałej `econ` (zadeklarowanej w innym
+     * bloku try/catch) -- stąd osobna, trwała mapa zamiast domknięcia. */
+    const aiWonderPracaTickByCity = new Map<string, number>();
     let powerSnapshotsForTurn: PowerOwnerSnapshot[] = [];
 
     function territoryOwnerAtLive(q: number, r: number): number | null {
@@ -7315,7 +7365,7 @@ async function boot(): Promise<void> {
         },
         cityEcon,
         cityPobor,
-        resources: [],
+        resources: buildEmpireResourceRows(0),
       };
     }
 
@@ -13092,7 +13142,11 @@ async function boot(): Promise<void> {
           powerSnapshotsForTurn = buildPowerSnapshotsForTurn(econ);
           refreshObjectivePowerCache();
           lastCityKulturaTick.clear();
-          for (const tk of econ.perCity) lastCityKulturaTick.set(tk.cityId, tk.kultura);
+          aiWonderPracaTickByCity.clear();
+          for (const tk of econ.perCity) {
+            lastCityKulturaTick.set(tk.cityId, tk.kultura);
+            aiWonderPracaTickByCity.set(tk.cityId, tk.doBudynkow);
+          }
           try {
             const upkeepParams = loadUpkeepParams(data.econParams, _menuDifficulty);
             const efParams = buildEmpireFoodParams(data.econParams, _menuDifficulty);
@@ -13933,6 +13987,48 @@ async function boot(): Promise<void> {
             } catch (eAI) {
               console.error(`[AI] decideAITurn owner=${ownerId} error:`, eAI);
               continue;
+            }
+
+            // CUDA-AI (Maciej C-CUDA-AI=A, 2026-07-23): AI pełnych cywilizacji rozważa
+            // budowę cudu -- miasta-państwa/kopie (opts.defensiveCopy) WYKLUCZONE (nigdy
+            // nie zakładają miast/rozbudowy poza obroną, patrz decideDefensiveCopyTurn).
+            // Kolejkuje TYLKO gdy: (a) evaluateWonderBuildGate przechodzi (poprzez
+            // listBuildableWondersForOwner -- techy AI z aiResearchDone, epoka, ekskluzywność
+            // E, brak innego egzemplarza na świecie); (b) miasto ma wolną kolejkę; (c) stać
+            // AI na koszt wg progu trudności (ai-params.json cuda_poziom{1,2,3}_*, patrz
+            // decideAiWonderBuild w ai.ts -- throttle + priorytet E przed R + max 1 cud w
+            // budowie na cywilizację naraz, wszystko deterministyczne).
+            if (!opts.defensiveCopy) {
+              try {
+                const myCitiesForWonder = cities.filter(c => c.ownerId === ownerId);
+                const hasWonderInProgress = myCitiesForWonder.some(c =>
+                  (cityProd.get(c.id)?.kolejka ?? []).some(it => parseWonderProdId(it.id) !== null),
+                );
+                const buildableForAi: AiWonderOption[] = listBuildableWondersForOwner(ownerId)
+                  .map(w => ({ id: w.id, kosztBudowy: w.kosztBudowy, dostep: w.dostep }));
+                const wonderCandidates: AiWonderCityCandidate[] = myCitiesForWonder.map(c => ({
+                  cityId: c.id,
+                  queueEmpty: frontItem(cityProd.get(c.id) ?? { kolejka: [], postep: 0 }) === null,
+                  pracaPerTurn: aiWonderPracaTickByCity.get(c.id) ?? 0,
+                }));
+                const wonderDiffParams = loadAiWonderParams(data, aiDiffLevel);
+                const wonderDecision = decideAiWonderBuild(
+                  turn, ownerId, hasWonderInProgress, wonderCandidates, buildableForAi, wonderDiffParams,
+                );
+                if (wonderDecision) {
+                  const wDef = getWonderById(wonderDecision.wonderId);
+                  if (wDef) {
+                    const wProd0 = cityProd.get(wonderDecision.cityId) ?? { kolejka: [], postep: 0 };
+                    cityProd.set(wonderDecision.cityId, enqueue(wProd0, wonderProductionItem(wDef)));
+                    const wCity = myCitiesForWonder.find(c => c.id === wonderDecision.cityId);
+                    console.log(
+                      `[Cuda][AI] Tura ${turn} ${wCity?.name ?? wonderDecision.cityId} (owner ${ownerId}): kolejka ${wDef.nazwa} (${wDef.kosztBudowy} Pracy)`,
+                    );
+                  }
+                }
+              } catch (eAiWonder) {
+                console.error(`[AI] Cuda -- blad decyzji owner=${ownerId}:`, eAiWonder);
+              }
             }
 
             // --- Diplomacy stance + computeRespekt + decideAIDiplomacy ---
@@ -15265,6 +15361,7 @@ async function boot(): Promise<void> {
       orderValueMap.clear();
       growthMultMap.clear();
       lastCityKulturaTick.clear();
+      aiWonderPracaTickByCity.clear();
       aiResearchDone.clear();
       ownerEraByOwner.clear();
       ownerStartEraByOwner.clear();

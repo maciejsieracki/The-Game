@@ -850,6 +850,102 @@ function chooseCityProduction(
 }
 
 // ---------------------------------------------------------------------------
+// Cuda świata (CUDA-AI, Maciej C-CUDA-AI=A 2026-07-23): AI (pełne cywilizacje,
+// NIE miasta-państwa/kopie -- silnik nigdy nie woła to dla opts.defensiveCopy)
+// też buduje cuda. Ta funkcja jest CZYSTA -- nie zna wonders.json/wonder-availability
+// (żyją w main.ts, tam gdzie evaluateWonderBuildGate/completedWorldWonders/cityProd);
+// silnik dostarcza już przefiltrowaną (bramka tech/epoka/ekskluzywność/wyścig) listę
+// `buildableWonders` i stan kolejek miast (`cityCandidates`). Zero Math.random --
+// deterministyczne przy tym samym stanie wejściowym (A=B).
+// ---------------------------------------------------------------------------
+
+/** Miasto-kandydat do rozważenia cudu (silnik dostarcza stan kolejki + tempo Pracy). */
+export interface AiWonderCityCandidate {
+  cityId: string;
+  /** Kolejka produkcji miasta jest pusta (frontItem === null) -- zadanie: "wolna kolejka". */
+  queueEmpty: boolean;
+  /** Produkcja Pracy miasta/turę (econTick.doBudynkow w main.ts) -- miara "stać AI na cud". */
+  pracaPerTurn: number;
+}
+
+/** Cud, który przeszedł evaluateWonderBuildGate dla tego AI (main.ts filtruje). */
+export interface AiWonderOption {
+  id: string;
+  kosztBudowy: number;
+  dostep: 'E' | 'R';
+}
+
+export interface AiWonderDecision {
+  cityId: string;
+  wonderId: string;
+}
+
+/**
+ * Próg (koszt cudu <= progKosztX * Praca/turę miasta) i throttle (co ile tur AI
+ * w ogóle rozważa cud -- "nie każda tura") per trudność. PRÓG DO AKCEPTACJI
+ * WŁAŚCICIELA -- placeholdery w ai-params.json (cuda_poziom{1,2,3}_*), wzorzec
+ * jak loadDifficultyParams. easy = rzadko/późno (wysoki próg X, rzadki throttle),
+ * hard = agresywnie (niski próg X, częsty throttle).
+ */
+export interface AiWonderDifficultyParams {
+  /** Cud kwalifikuje się gdy kosztBudowy <= progKosztX * pracaPerTurn miasta. */
+  progKosztX: number;
+  /** AI rozważa cud tylko co tyle tur (throttle). */
+  throttleTur: number;
+}
+
+/** Wczytuje progi cudów AI z ai-params.json dla danego poziomu trudności. */
+export function loadAiWonderParams(data: GameData, poziom: 1 | 2 | 3 = 2): AiWonderDifficultyParams {
+  const n = poziom;
+  return {
+    progKosztX: getAiParam(data, `cuda_poziom${n}_prog_koszt_x`, n === 1 ? 25 : n === 2 ? 45 : 70),
+    throttleTur: getAiParam(data, `cuda_poziom${n}_throttle_tur`, n === 1 ? 8 : n === 2 ? 5 : 3),
+  };
+}
+
+/**
+ * Decyduje czy i w którym mieście AI (ownerId) powinno zakolejkować cud tej
+ * tury. Priorytety (zadanie): (1) cuda E (wyłączne) własnej cywilizacji przed
+ * R (wyścig); (2) max 1 cud w budowie na cywilizację naraz (hasWonderInProgress);
+ * (3) throttle -- nie każda tura; (4) miasto musi mieć wolną kolejkę I stać je
+ * na cud wg progu trudności. Pierwsze pasujące miasto/cud (w kolejności wejścia)
+ * wygrywa -- deterministyczne.
+ */
+export function decideAiWonderBuild(
+  turn: number,
+  ownerId: number,
+  hasWonderInProgress: boolean,
+  cityCandidates: readonly AiWonderCityCandidate[],
+  buildableWonders: readonly AiWonderOption[],
+  difficulty: AiWonderDifficultyParams,
+): AiWonderDecision | null {
+  if (hasWonderInProgress) return null;
+  if (buildableWonders.length === 0) return null;
+  if (difficulty.throttleTur <= 0) return null;
+  // Throttle -- nie każda tura; +ownerId rozprasza AI na różne tury (deterministyczne).
+  if ((turn + ownerId) % difficulty.throttleTur !== 0) return null;
+
+  // E (wyłączne) przed R (wyścig) -- sort stabilny zachowuje kolejność wejściową
+  // (main.ts podaje wg `kolejnosc` z indeksu państwa, patrz getWondersForCiv).
+  const ordered = [...buildableWonders].sort((a, b) => {
+    const ea = a.dostep === 'E' ? 0 : 1;
+    const eb = b.dostep === 'E' ? 0 : 1;
+    return ea - eb;
+  });
+
+  for (const city of cityCandidates) {
+    if (!city.queueEmpty) continue;
+    const budget = difficulty.progKosztX * Math.max(city.pracaPerTurn, 0);
+    for (const w of ordered) {
+      if (w.kosztBudowy <= budget) {
+        return { cityId: city.cityId, wonderId: w.id };
+      }
+    }
+  }
+  return null;
+}
+
+// ---------------------------------------------------------------------------
 // Terrain improvements (D-IMPROVEMENTS): AI buduje ulepszenia terenu
 // ---------------------------------------------------------------------------
 
