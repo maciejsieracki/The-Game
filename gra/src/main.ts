@@ -763,6 +763,15 @@ async function boot(): Promise<void> {
      *  RESUP_TIERS) dla WSZYSTKICH AI defensywnych kopii typu oraz próg sojuszu sióstr
      *  (sisterAllianceDiplomacyParams, diplomacy.ts). */
     let _menuCitySupport: 'low' | 'normal' | 'strong' = 'normal';
+    /** R-TRUDNOSC-1 (Maciej 2026-07-24): trudność miast-państw, OSOBNY suwak kreatora,
+     *  niezależny od głównej trudności gry (_menuDifficulty). Steruje WYŁĄCZNIE zachowaniem
+     *  AI miast-państw (kopii obronnych): startowe zaufanie (applyCityStateDifficultyTrust),
+     *  próg sojuszu sióstr + posiłki (_menuCitySupport -- teraz pochodna TEGO pola, NIE
+     *  _menuDifficulty) oraz DifficultyParams (bonusProdukcja/bonusWalka/agresjaMnoznik)
+     *  dla ich decyzji AI (patrz aiDiffLevelForOwner niżej). Domyślnie = _menuDifficulty
+     *  (fallback dla starych sejwów bez pola -- zero regresji), patrz applyMenuParams().
+     *  Główna _menuDifficulty NADAL steruje ekonomią/kosztami/mapą/aiDiffLevel zwykłych AI. */
+    let _menuCityStateDifficulty: 'easy' | 'normal' | 'hard' = 'normal';
     let _menuCivId: string = 'rzymianie'; // E1 default: Rzymianie
     let _menuMapSize: string = 'Standardowy'; // E1 default map size
     let _menuRivals: number = 6; // default rival count (skalowane w kreatorze)
@@ -3981,6 +3990,24 @@ async function boot(): Promise<void> {
     const foreignTypeOwners = new Set<number>();
     /** Wszystkie miasta AI z klastra — profil kopia_typu_obronna (P0-05). */
     const typCityCopyOwners = new Set<number>();
+
+    /**
+     * R-TRUDNOSC-1 (Maciej 2026-07-24, rozszerzenie): poziom trudności AI (1/2/3) DLA
+     * KONKRETNEGO OWNERA -- miasta-państwa (typCityCopyOwners, kopie obronne) dostają
+     * poziom z NOWEGO suwaka (_menuCityStateDifficulty), zwykłe AI nadal z głównej
+     * trudności gry (_menuDifficulty). Zasila loadDifficultyParams(data, poziom) ->
+     * DifficultyParams (bonusProdukcja/bonusWalka/agresjaMnoznik/celObranie) przekazywane
+     * do decideAITurn/decideDefensiveCopyTurn (opts.poziomTrudnosci) -- w tym bonusProdukcja
+     * realnie używane w chooseCityProduction (ai.ts) DLA OBU ścieżek (zwykłe AI i
+     * defensiveCopy), więc bez tego globalny "Trudny" podbijał priorytet ekonomii
+     * miast-państw niezależnie od ich własnego suwaka. bonusWalka aktualnie NIE jest
+     * konsumowane nigdzie w combat.ts/ai.ts (martwe pole w DifficultyParams) -- ta funkcja
+     * i tak przekazuje dla niego poprawną wartość na przyszłość (zero dodatkowego ryzyka).
+     */
+    function aiDiffLevelForOwner(ownerId: number): 1 | 2 | 3 {
+      const src = typCityCopyOwners.has(ownerId) ? _menuCityStateDifficulty : _menuDifficulty;
+      return src === 'hard' ? 3 : src === 'easy' ? 1 : 2;
+    }
     /** N-1A: nazwa pierwszego miasta gracza z miasta_panstwa[0]. */
     let clusterPlayerStartCityName = playerStartCityName(data.civs, _menuCivId, data.cityNamesPools);
     /** Miasta-państwa tego samego typu — spawn po założeniu pierwszego miasta gracza. */
@@ -4492,7 +4519,9 @@ async function boot(): Promise<void> {
         // cluster-start.ts / main.ts linia ~3223).
         setDiploRelation(
           0, ownerId,
-          applyCityStateDifficultyTrust(startRelationForPair(true), _menuDifficulty),
+          // R-TRUDNOSC-1 (Maciej 2026-07-24): trudność MIAST-PAŃSTW (suwak osobny), nie
+          // głównej gry -- patrz _menuCityStateDifficulty (applyMenuParams).
+          applyCityStateDifficultyTrust(startRelationForPair(true), _menuCityStateDifficulty),
         );
 
         const c = foundCityAt(pos.q, pos.r, ownerId, cities, map, nazwa, true);
@@ -14294,7 +14323,11 @@ async function boot(): Promise<void> {
               await yieldTurnTransitionUi();
               const isCommandResume = oi === startOi && !!resumeCommands && resumeCmdIdx > 0;
               ensureAiOwnerStartEra(ownerId);
-            const aiDiffLevel = (_menuDifficulty === 'hard' ? 3 : _menuDifficulty === 'easy' ? 1 : 2) as 1 | 2 | 3;
+            // R-TRUDNOSC-1 (Maciej 2026-07-24 rozszerzenie): PER-OWNER, nie globalne --
+            // miasta-państwa (defensiveCopy) dostają poziom z suwaka miast-państw, zwykłe AI
+            // z głównej trudności (patrz aiDiffLevelForOwner). Zasila opts.poziomTrudnosci
+            // (DifficultyParams: bonusProdukcja/bonusWalka/agresjaMnoznik/celObranie) niżej.
+            const aiDiffLevel = aiDiffLevelForOwner(ownerId);
             const contactedOwners = getDiplomaticContacts();
             const opts: AITurnOpts = {
               civType: aiOwnerCivMap.get(ownerId), // nacja AI z rostera civs.json
@@ -15402,16 +15435,27 @@ async function boot(): Promise<void> {
       _menuDifficulty = diff;
       startRevealRadius = startRevealRadiusForDifficulty(diff);
 
-      // D-START posiłki v2 (Maciej 2026-07-21 przeróbka ZMIANA 1): osobna opcja setupu
-      // usunięta -- „Wsparcie miast-państw" wynika teraz z TRUDNOŚCI gry (wyższa
-      // trudność = twardsze miasta-państwa = łatwiej sojusz + mocniejsze posiłki).
-      // Fallback 'normal' dla starych save bez pola trudności (zero regresji domyślnej).
+      // R-TRUDNOSC-1 (Maciej 2026-07-24): trudność miast-państw -- suwak OSOBNY od głównej
+      // trudności gry, w „Zaawansowane opcje" kreatora (params.advanced.cityStateDifficultyOverride).
+      // Brak override (null/nieprawidłowa wartość -- w tym stare sejwy sprzed tego pola) ->
+      // fallback = główna trudność `diff` (zero regresji domyślnej).
+      const csOverrideRaw = params.advanced?.cityStateDifficultyOverride;
+      _menuCityStateDifficulty =
+        csOverrideRaw === 'easy' || csOverrideRaw === 'normal' || csOverrideRaw === 'hard'
+          ? csOverrideRaw
+          : diff;
+
+      // D-START posiłki v2 (Maciej 2026-07-21 przeróbka ZMIANA 1, R-TRUDNOSC-1 2026-07-24
+      // odpięcie od globalnej): „Wsparcie miast-państw" wynika z TRUDNOŚCI MIAST-PAŃSTW
+      // (_menuCityStateDifficulty), NIE z głównej trudności gry (wyższa trudność miast-państw
+      // = twardsze miasta-państwa = łatwiej sojusz + mocniejsze posiłki). Fallback 'normal'
+      // gdyby _menuCityStateDifficulty miało nieoczekiwaną wartość (nie powinno się zdarzyć).
       const citySupportByDifficulty: Record<'easy' | 'normal' | 'hard', 'low' | 'normal' | 'strong'> = {
         easy:   'low',
         normal: 'normal',
         hard:   'strong',
       };
-      _menuCitySupport = citySupportByDifficulty[diff] ?? 'normal';
+      _menuCitySupport = citySupportByDifficulty[_menuCityStateDifficulty] ?? 'normal';
       _menuCivId = params.civId || 'rzymianie';
       _menuMapSize = params.mapSize || 'Standardowy';
       _menuCivTypesCount = params.civTypesCount || defaultCivTypesFromMapLabel(_menuMapSize);

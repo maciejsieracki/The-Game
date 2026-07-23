@@ -136,6 +136,15 @@ export interface NewGameAdvancedOptions {
   landFractionPercent: LandFractionPercent;
   /** Gdy false — przy zmianie typu świata ustaw domyślny udział lądu. */
   landFractionCustom: boolean;
+  /**
+   * Trudność miast-państw (R-TRUDNOSC-1, Maciej 2026-07-24) — niezależna od głównej
+   * trudności gry. Steruje: startowym zaufaniem miast-państw do gracza
+   * (applyCityStateDifficultyTrust), progiem sojuszu sióstr (sisterAllianceDiplomacyParams)
+   * i siłą posiłków obronnych (RESUP_TIERS) w main.ts.
+   * `null` = brak override — śledzi na bieżąco główną trudność (`difficulty` powyżej),
+   * dopóki gracz nie ustawi jej wprost w „Zaawansowane opcje". Zero regresji domyślnej.
+   */
+  cityStateDifficultyOverride: 'easy' | 'normal' | 'hard' | null;
 }
 
 const DEFAULT_ADVANCED: NewGameAdvancedOptions = {
@@ -147,6 +156,7 @@ const DEFAULT_ADVANCED: NewGameAdvancedOptions = {
   wzrostLudnosciPace: 'wysoki',
   landFractionPercent: 30,
   landFractionCustom: false,
+  cityStateDifficultyOverride: null,
 };
 
 /** Kanon v1 (2026-07-07) — stabilny klucz localStorage kreatora. */
@@ -250,6 +260,13 @@ function migrateAdvanced(raw: Record<string, unknown>): NewGameAdvancedOptions {
   }
   if (raw.wzrostLudnosciPace === 'wysoki' || raw.wzrostLudnosciPace === 'normalny' || raw.wzrostLudnosciPace === 'wolny') {
     base.wzrostLudnosciPace = raw.wzrostLudnosciPace;
+  }
+  if (
+    raw.cityStateDifficultyOverride === 'easy'
+    || raw.cityStateDifficultyOverride === 'normal'
+    || raw.cityStateDifficultyOverride === 'hard'
+  ) {
+    base.cityStateDifficultyOverride = raw.cityStateDifficultyOverride;
   }
   return base;
 }
@@ -1011,6 +1028,23 @@ function advancedSettingRows(): AdvSettingRow[] {
       },
     },
     {
+      key: 'cityStateDifficulty',
+      lbl: 'Trudność miast-państw',
+      hint: 'Zaufanie startowe, próg sojuszu sióstr i posiłki obronne miast-państw — niezależnie od głównej trudności gry. Domyślnie = główna trudność.',
+      opts: ['Łatwy', 'Normalny', 'Trudny'],
+      getIdx: () => {
+        if (advOpts.cityStateDifficultyOverride === 'easy') return 0;
+        if (advOpts.cityStateDifficultyOverride === 'hard') return 2;
+        if (advOpts.cityStateDifficultyOverride === 'normal') return 1;
+        // Brak override -- pokaz biezaca glowna trudnosc (SETT difficulty).
+        const diffRow = SETT.find(x => x.key === 'difficulty');
+        return diffRow ? diffRow.idx : 1;
+      },
+      setIdx: (i) => {
+        advOpts.cityStateDifficultyOverride = i === 0 ? 'easy' : i === 2 ? 'hard' : 'normal';
+      },
+    },
+    {
       key: 'barbariansLevel',
       lbl: 'Barbarzyńcy',
       hint: 'Gęstość frakcji barbarzyńskich na mapie.',
@@ -1304,6 +1338,14 @@ function renderGenStep(host: HTMLElement): void {
       : p.advanced.wzrostLudnosciPace === 'wolny'
         ? 'Wolny (x4 prog)'
         : 'Wysoki (x1 prog)';
+    const csOverride = p.advanced.cityStateDifficultyOverride;
+    const csLabel = csOverride === 'easy'
+      ? 'Łatwy'
+      : csOverride === 'hard'
+        ? 'Trudny'
+        : csOverride === 'normal'
+          ? 'Normalny'
+          : p.difficulty + ' (jak glowna)';
     rows.push(
       ['Barbarzyncy', bLabel],
       ['Bitwy', p.advanced.battleAlwaysManual ? 'Zawsze reczna' : 'Automatyczne'],
@@ -1311,6 +1353,7 @@ function renderGenStep(host: HTMLElement): void {
       ['Koszty budynkow', costLabel],
       ['Koszty jednostek', unitCostLabel],
       ['Wzrost ludnosci', growthPaceLabel],
+      ['Trudnosc miast-panstw', csLabel],
     );
   }
   if (p.startPreview) {
