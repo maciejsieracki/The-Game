@@ -185,7 +185,7 @@ import {
   createSettingsActionRow1E,
 } from './battleHudTheme';
 import { civIconSvg } from '../ui/icons/brandAssets';
-import { leaderPortraitUrl } from '../ui/leaderPortraits';
+import { leaderPortraitUrl, leaderName } from '../ui/leaderPortraits';
 import { showEndScreen1E } from './endScreen1E';
 import {
   showEndDetails1E,
@@ -2553,6 +2553,13 @@ export class BattleScene {
       });
       nameLbl.textContent = civLabel;
       textCol.appendChild(nameLbl);
+      const leader = leaderName(civIconId, era);
+      if (leader) {
+        const leaderLbl = document.createElement('div');
+        Object.assign(leaderLbl.style, { fontSize: '10px', fontStyle: 'italic', color: BATTLE_TEXT_DIM, whiteSpace: 'nowrap' });
+        leaderLbl.textContent = leader;
+        textCol.appendChild(leaderLbl);
+      }
       const roleLbl = document.createElement('div');
       Object.assign(roleLbl.style, { fontSize: '10px', color: BATTLE_TEXT_DIM, marginBottom: '4px', whiteSpace: 'nowrap' });
       roleLbl.textContent = roleLabel;
@@ -2930,8 +2937,6 @@ export class BattleScene {
     this.canvas.addEventListener('pointermove', this._onCanvasHoverMove);
     this.canvas.addEventListener('pointerleave', this._onCanvasHoverLeave);
     this._startLoop();
-    // TEMP QA HOOK (zadanie #8 weryfikacja wzrokowa gruzu w wyłomie) — do usunięcia po review.
-    if (typeof window !== 'undefined') (window as any).__civBattleSceneQA = this;
   }
 
   // -------------------------------------------------------------------------
