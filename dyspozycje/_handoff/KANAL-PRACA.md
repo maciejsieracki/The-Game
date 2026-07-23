@@ -3138,3 +3138,13 @@ CZEKAM-NA: **sesja lokalna** — „push": pull `8aff7266`. **Właściciel** —
 - BACKLOG: większe plansze (ląd zamiast czerni) — „kiedyś", zapisane.
 
 CZEKAM-NA: **sesja lokalna** — „push": pull `2c67014c`. **Właściciel** — playtest czystego pola.
+
+---
+
+## [2026-07-23] SESJA CHMUROWA → LOKALNA / MASTER — DEPLOY ROBOCZA `2c19fcb3` (HUD bitwy TW-v5, fazy 1-2)
+
+- **ROBOCZA = `2c19fcb3`** (md5 `2c19fcb34433c8d14ddc16f62b6e8c14`), VERIFY OK. Na `2c67014c`.
+- HUD TW-v5 F1-F2: karty dowódców+zegar+przewaga, tempo przy minimapie, stany kart rosteru (fix: nigdy się nie renderowały), bogaty tooltip, rail zlikwidowany (zębatka ⚙). Build z czystego commita F2 (F3 w toku).
+- F3 (C-12/C-23 + ikonowy toolbar + medalionowe karty + panele blur) — deploy osobno po bramkach.
+
+CZEKAM-NA: **sesja lokalna** — „push": pull `2c19fcb3`. **Właściciel** — playtest HUD bitwy (dowódcy/zegar/tempo/tooltip/zębatka).

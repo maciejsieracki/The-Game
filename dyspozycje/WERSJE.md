@@ -9,7 +9,13 @@ UWAGA: KANON i FINALNA promują się teraz OSOBNYMI skryptami (`gra/tools/publis
 wyraźne polecenie właściciela) — dlatego są logowane NIEZALEŻNIE, każdy w swojej sekcji, ze
 swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drugiego.
 
-## ROBOCZA `2c67014c` — 2026-07-23 · BITWA: czyste pole na czarnym tle (bez obramówek) — **AKTUALNA**
+## ROBOCZA `2c19fcb3` — 2026-07-23 · HUD BITWY TW-v5 fazy 1-2 (dowódcy/zegar/przewaga + tempo + stany kart + tooltip + bez raila) — **AKTUALNA**
+
+- **Zawartość (na `2c67014c`, commity `0f1455e`+`4726e97`):** wdrożenie makiety POLE-BITWY-TW-v5 fazy 1-2: **F1** — karty dowódców obu stron (medalion z pierścieniem HP, liczniki typów) + ZEGAR bitwy + pasek PRZEWAGI ze złotym markerem (górny środek); panel TEMPO (pauza + x1/x2/x4 + AUTO) przy minimapie. **F2** — stany kart rosteru C-09 v5 (puste sloty +, MARTWA ✕/„Padła", ROZBITA „Rout"; FIX: stany były odfiltrowywane i nigdy się nie renderowały), bogaty tooltip jednostki (Postawa z realnych rozkazów/doktryn, Grupa N, Zdrowie/Morale/Amunicja), **prawy rail 56px ZLIKWIDOWANY** (M/MUZ/H/I+Pomoc → popup zębatki ⚙ przy „Wycofaj się"; ›› i WYCOFAJ w prawym-górnym klastrze; skróty klawiszowe bez zmian). Build z czystego commita F2 (worktree — F3 w toku w drzewie roboczym).
+- **Bramki:** tsc=0 · tech-tree 19/19 · research 33/33 · unit-replace 10/10 · map-gen determinizm PASS · E2E deploy→walka→koniec + tooltip + popup zębatki bez błędów konsoli · VERIFY OK.
+- **md5:** `2c19fcb34433c8d14ddc16f62b6e8c14` · stamp `2c19fcb3`. Publikowała sesja chmurowa. **F3 w toku** (C-12/C-23 + panele blur + ikonowy toolbar + medalionowe karty) — osobny deploy po bramkach.
+
+## ROBOCZA `2c67014c` — 2026-07-23 · BITWA: czyste pole na czarnym tle (bez obramówek) — **ZASTĄPIONA** (→ `2c19fcb3`)
 
 - **Zawartość (na `8aff7266`):** usunięte niebieskie/czerwone pasy boczne wokół pola bitwy (decyzja Macieja); tło/mgła/grunt/marginesy → czerń; domyślny kadr ciaśniejszy (pole wypełnia ekran); złota ramka strefy gry zostaje. FIX: przeciek niebieskiego (kolor rzeki w marginesie) przez szparę na krawędziach kafli — marginesy po krawędziach + zakładki, weryfikacja pixel-exact. BACKLOG (decyzja Macieja „kiedyś"): większe plansze — czarne tło zastąpić graficznie ułożonym lądem, strefa walki wydzielona ramką jak obecnie.
 - **Bramki:** tsc=0 · tech-tree 19/19 · research 33/33 · unit-replace 10/10 · map-gen determinizm+rzeki PASS · zrzuty (rzeka/wzgórza/pustynia/legacy) czyste, 0 błędów konsoli · VERIFY OK.
