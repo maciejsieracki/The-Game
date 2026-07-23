@@ -5116,6 +5116,11 @@ async function boot(): Promise<void> {
     /** Pula Pracy gracza (suma doPuli z miast — plaster D2=A). */
     let playerPracaPool: number = 0;
     let _lastPraca: number = 0;
+    /** ZADANIE 1 (Maciej 2026-07-23): Praca/turę odjęta z playerPracaPool za utrzymanie
+     *  ulepszeń surowcowych (civ-wide) w ostatniej turze -- wyłącznie do wyświetlenia
+     *  w UI (panel Bilans/ZASOBY IMPERIUM); odjęcie samo dzieje się raz, w bloku
+     *  po pętli per-miasto (patrz econ.pracaUpkeepByOwner). */
+    let _lastPracaUpkeep: number = 0;
     let _lastKultura: number = 0;
     let _lastPracaRate: number = 0;
     let _lastKulturaRate: number = 0;
@@ -7836,6 +7841,7 @@ async function boot(): Promise<void> {
         // wielu miast (np. 1.9999999998 nie powinno spasc do 1).
         praca: Math.round(_lastPraca),
         pracaRate: Math.round(_lastPracaRate),
+        pracaUpkeep: Math.round(_lastPracaUpkeep),
         nauka: Math.floor(player.nauka),
         naukaRate: Math.floor(_lastNaukaRate),
         kultura: Math.floor(_lastKultura),
@@ -14041,6 +14047,25 @@ async function boot(): Promise<void> {
                 }
                 console.log(`[Rekrutacja] Tura ${turn} ${city.name}: ${rec.id} gotowa @ (${city.q},${city.r})`);
               }
+            }
+            // ZADANIE 1 (Maciej 2026-07-23): upkeep Pracy civ-wide za ulepszenia surowcowe --
+            // odjęcie RAZ na turę (nie per-miasto) z globalnej puli produkcji, PO tym jak
+            // pętla per-miasto powyżej dodała tegoroczne doPuli/overflow (playerPracaPool /
+            // aiPracaPoolByOwner). Praca nie schodzi < 0 (Math.max poniżej).
+            try {
+              const playerUpkeep = econ.pracaUpkeepByOwner.get(0) ?? 0;
+              if (playerUpkeep > 0) {
+                playerPracaPool = Math.max(0, playerPracaPool - playerUpkeep);
+                _lastPraca = playerPracaPool;
+              }
+              _lastPracaUpkeep = playerUpkeep;
+              for (const [oid, up] of econ.pracaUpkeepByOwner) {
+                if (oid === 0 || up <= 0) continue;
+                const cur = aiPracaPoolByOwner.get(oid) ?? 0;
+                aiPracaPoolByOwner.set(oid, Math.max(0, cur - up));
+              }
+            } catch (errUpkeepPraca) {
+              console.error('[Ekonomia] Błąd upkeep Pracy (ulepszenia surowcowe):', errUpkeepPraca);
             }
             _lastKultura = cities
               .filter(c => c.ownerId === 0)

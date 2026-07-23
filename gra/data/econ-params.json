@@ -198,6 +198,13 @@
       "jednostka": "%",
       "opis": "Zadanie 2 (2026-07-23): Garncarnia +10% Zywnosci LOKALNIE (tylko w miescie, gdzie stoi; NIE civ-wide), stackuje addytywnie: ×(1+0.10×garncarnie_w_miescie). Wpiete w economy.ts cityYieldPerTurn (zywnoscBrutto, przed konsumpcja). PLACEHOLDER do strojenia."
     },
+    "ulepszenie_surowcowe_upkeep_praca": {
+      "easy": 1,
+      "normal": 1,
+      "hard": 1,
+      "jednostka": "Praca/turę/ulepszenie",
+      "opis": "ZADANIE 1 (Maciej 2026-07-23, decyzja B): KAZDE zbudowane ulepszenie surowcowe (tartak/kamieniolom/glinianka/kopalnia/kopalnia_miedzi + DOSTEPOWE warzelnia_soli/stadnina) zuzywa 1 Praca/ture z globalnej puli produkcji cywilizacji (playerPracaPool / aiPracaPoolByOwner w main.ts) -- ciagly upkeep, niezaleznie od obsadzenia ludnoscia. Zwolnione: zywnosciowe (farma/irygacja/tarasy/bydlo/owce/lama/oboz_lowiecki/lodzie_rybackie) + infrastruktura (droga/droga_brukowana/fort/posterunek/wyrab). Wpiete w turn-economy.ts computePracaUpkeepByOwner. PLACEHOLDER do strojenia (koszt=1)."
+    },
     "budynek_mennica_mnoznik": {
       "easy": 2,
       "normal": 1,

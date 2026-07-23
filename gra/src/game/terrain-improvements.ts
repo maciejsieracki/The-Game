@@ -181,3 +181,17 @@ export function improvementKeysForHex(
 export function improvementDisplayName(key: string): string {
   return IMPROVEMENTS[key]?.nazwa ?? key;
 }
+
+// ---------------------------------------------------------------------------
+// ZADANIE 1 (Maciej 2026-07-23): upkeep Pracy civ-wide za ulepszenia surowcowe.
+// Wariant B (decyzja właściciela) -- płacą TAKŻE ulepszenia czysto dostępowe
+// (warzelnia_soli, stadnina), nie tylko te produkujące surowiec logistyczny
+// (TERRITORY_YIELD_IMPROVEMENTS powyżej). Zwolnione: żywnościowe + infrastruktura.
+// Patrz turn-economy.ts computePracaUpkeepByOwner / countResourceUpkeepImprovementsByOwner.
+// ---------------------------------------------------------------------------
+
+/** Ulepszenia płacące −1 Praca/turę (civ-wide) z econ-params.json `ulepszenie_surowcowe_upkeep_praca`. */
+export const RESOURCE_UPKEEP_IMPROVEMENT_KEYS: ReadonlySet<string> = new Set([
+  'tartak', 'kamieniolom', 'glinianka', 'kopalnia', 'kopalnia_miedzi',
+  'warzelnia_soli', 'stadnina',
+]);

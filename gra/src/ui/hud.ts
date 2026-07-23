@@ -64,6 +64,9 @@ export interface HudState {
   zlotoRate: number;
   praca: number;
   pracaRate: number;
+  /** ZADANIE 1 (Maciej 2026-07-23): Praca/turę odjęta z puli za utrzymanie ulepszeń
+   *  surowcowych (civ-wide) w ostatniej turze — do rozbicia w panelu Bilans/ZASOBY IMPERIUM. */
+  pracaUpkeep?: number;
   /** B5 — zapasy państwa (wojsko), nie magazyn miasta. */
   zywnoscLabel: string;
   /** B5-SP — max zapasów (100 × Spichlerze); 0 = brak magazynu armii. */

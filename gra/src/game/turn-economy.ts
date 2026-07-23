@@ -63,6 +63,7 @@ import {
 import {
   improvementKeysForHex,
   territoryResourceYieldForImprovement,
+  RESOURCE_UPKEEP_IMPROVEMENT_KEYS,
   type TerritoryResourceKey,
 } from './terrain-improvements';
 import { cityManpowerMax, refreshManpowerAfterPopChange, tickManpowerRegen, civManpowerMults, loadManpowerRegenParams } from './manpower';
@@ -699,6 +700,67 @@ export function computeTerritoryResourceYieldByCity(
 }
 
 // ---------------------------------------------------------------------------
+// ZADANIE 1 (Maciej 2026-07-23): upkeep Pracy civ-wide za ulepszenia surowcowe.
+// Wariant B: −1 Praca/turę PER OWNER (nie per-city -- płynie z globalnej puli
+// produkcji cywilizacji, patrz playerPracaPool/aiPracaPoolByOwner w main.ts) za
+// KAŻDE zbudowane ulepszenie z RESOURCE_UPKEEP_IMPROVEMENT_KEYS w terytorium
+// właściciela. Ciągły koszt niezależny od obsadzenia pola ludnością (jak
+// computeTerritoryResourceYieldByCity powyżej) — "ktoś musi obsłużyć nawet bez ludka".
+// ---------------------------------------------------------------------------
+
+/** Liczba ulepszeń płacących upkeep Pracy, per ownerId (civ-wide, nie per-city). */
+export function countResourceUpkeepImprovementsByOwner(
+  map: GameMap,
+  territoryNodes: readonly TerritoryNode[],
+): ReadonlyMap<number, number> {
+  const out = new Map<number, number>();
+  for (const hexKey of Object.keys(map.hexes)) {
+    const hex = map.hexes[hexKey];
+    if (!hex) continue;
+    const impKeys = improvementKeysForHex(hex);
+    if (!impKeys.length) continue;
+    let n = 0;
+    for (const key of impKeys) {
+      if (RESOURCE_UPKEEP_IMPROVEMENT_KEYS.has(key)) n += 1;
+    }
+    if (n === 0) continue;
+    const { q, r } = hex.coords;
+    const owner = territoryOwnerAt(q, r, territoryNodes);
+    if (owner == null) continue;
+    out.set(owner, (out.get(owner) ?? 0) + n);
+  }
+  return out;
+}
+
+/** Koszt Pracy/turę/ulepszenie -- econ-params.json budynki.ulepszenie_surowcowe_upkeep_praca (placeholder=1). */
+export function loadResourceImprovementUpkeepCost(
+  data: GameData,
+  difficulty: Difficulty,
+): number {
+  const raw = data.econParams as unknown as RawConverterParamsJson;
+  return loadThroughput(raw, 'ulepszenie_surowcowe_upkeep_praca', difficulty, 1);
+}
+
+/**
+ * Praca/turę do odjęcia z globalnej puli produkcji cywilizacji (civ-wide), per
+ * ownerId, za utrzymanie ulepszeń surowcowych tej tury. Brak wpisu / 0 = brak
+ * ulepszeń płatnych u tego ownera. Odejmowanie i clamp do 0 -- odpowiedzialność
+ * wołającego (main.ts: playerPracaPool / aiPracaPoolByOwner), nie tego modułu.
+ */
+export function computePracaUpkeepByOwner(
+  map: GameMap,
+  territoryNodes: readonly TerritoryNode[],
+  data: GameData,
+  difficulty: Difficulty,
+): ReadonlyMap<number, number> {
+  const counts = countResourceUpkeepImprovementsByOwner(map, territoryNodes);
+  const cost = loadResourceImprovementUpkeepCost(data, difficulty);
+  const out = new Map<number, number>();
+  for (const [owner, n] of counts) out.set(owner, n * cost);
+  return out;
+}
+
+// ---------------------------------------------------------------------------
 // Runtime City -> EconomyCity adapter
 // ---------------------------------------------------------------------------
 
@@ -847,6 +909,14 @@ export interface EconomyTickResult {
   starved:        number;   // cities that lost population this turn
   /** Per-owner upkeep balance (buildings + units). Keyed by ownerId. */
   upkeepByOwner:  Map<number, UpkeepBalance>;
+  /**
+   * ZADANIE 1 (Maciej 2026-07-23): Praca/turę do odjęcia z globalnej puli
+   * produkcji cywilizacji (civ-wide -- playerPracaPool/aiPracaPoolByOwner w
+   * main.ts) za utrzymanie ulepszeń surowcowych. Keyed by ownerId; brak wpisu = 0.
+   * Silnik (turn-economy.ts) tylko OBLICZA -- odjęcie + clamp do 0 robi main.ts,
+   * bo tylko tam istnieje realna pula Pracy (nie ma jej na City/EconomyTickResult).
+   */
+  pracaUpkeepByOwner: ReadonlyMap<number, number>;
 }
 
 export interface OwnerEconomySum {
@@ -1173,6 +1243,11 @@ export function advanceCityEconomy(
   // terytorium, niezaleznie od workedTiles -- liczone RAZ dla calej tury (nie per-city).
   const territoryResourceByCity = computeTerritoryResourceYieldByCity(cities, map, territoryNodes);
 
+  // ZADANIE 1 (Maciej 2026-07-23): upkeep Pracy civ-wide za ulepszenia surowcowe
+  // -- liczone RAZ dla calej tury (per owner, nie per-city, patrz komentarz przy
+  // computePracaUpkeepByOwner powyzej).
+  const pracaUpkeepByOwner = computePracaUpkeepByOwner(map, territoryNodes, data, difficulty);
+
   // Load upkeep + storage params from the same econ-params.json blob.
   const rawEconParams = data.econParams as unknown as Parameters<typeof loadUpkeepParams>[0];
   const upkeepParams  = loadUpkeepParams(rawEconParams, difficulty);
@@ -1243,6 +1318,7 @@ export function advanceCityEconomy(
     growth:         0,
     starved:        0,
     upkeepByOwner:  new Map(),
+    pracaUpkeepByOwner,
   };
 
   // --- Per-owner income accumulators (for upkeep balance after city loop) ---

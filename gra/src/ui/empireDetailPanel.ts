@@ -154,12 +154,15 @@ function cityEconMiniSkarbiec(rows: EmpireDetailSnap['cityEcon']): string {
   return h;
 }
 
-function cityEconMiniPraca(rows: EmpireDetailSnap['cityEcon']): string {
+function cityEconMiniPraca(rows: EmpireDetailSnap['cityEcon'], upkeep?: number): string {
   if (rows.length === 0) return '<div class="civ-emp-empty">Brak miast.</div>';
   const grid = '1fr 1fr 1fr';
   let h = `<div class="civ-emp-mini">${miniHeader(['MIASTO', 'DO PULI', 'DO BUDYNKÓW'], grid)}`;
   for (const c of rows) h += miniRow([esc(c.name), signedTxt(c.pracaPula), signedTxt(c.pracaBudynki)], grid);
   h += '</div><div class="civ-emp-foot">„Do puli" trafia do globalnej puli Pracy (górny pasek). „Do budynków" zasila kolejkę w mieście.</div>';
+  if (upkeep && upkeep > 0) {
+    h += `<div class="civ-emp-foot">Ulepszenia (utrzymanie): −${Math.round(upkeep)} Praca/turę z puli — imperium płaci za każde zbudowane ulepszenie surowcowe.</div>`;
+  }
   return h;
 }
 
@@ -297,7 +300,7 @@ function render(): void {
   ];
   const detailFor: Record<string, string> = {
     skarbiec: cityEconMiniSkarbiec(ce),
-    praca: cityEconMiniPraca(ce),
+    praca: cityEconMiniPraca(ce, e.pracaUpkeep),
     nauka: cityEconMiniNauka(ce),
     ludnosc: cityPoborMiniLudnosc(cp),
     rekruci: cityPoborMiniRekruci(cp, p),

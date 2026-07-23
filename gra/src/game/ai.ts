@@ -32,6 +32,7 @@ import {
 import { buildImprovementQualifier, type ImprovementBuildState } from '../map/improvement-build';
 import { hexKeysWithinRadius } from './okolica';
 import { getImprovementMeta, isImprovementTechUnlocked } from './improvement-tech';
+import { buildingStockCost } from './building-stock-cost';
 
 // ---------------------------------------------------------------------------
 // AICommand discriminated union
@@ -798,6 +799,51 @@ function chooseCityProduction(
       }
     }
     if (!opts.defensiveCopy) candidates.push({ id: 'Osadnik', score: 100 });
+  }
+
+  // ZADANIE 2 (Maciej 2026-07-23, correctness): priorytet konwertery-przed-konsumentami.
+  // Cegła/Brąz/Żelazo powstają WYŁĄCZNIE w swoim konwerterze (Cegielnia/Odlewnia brązu/
+  // Odlewnia żelaza -- glina+drewno→cegła, ruda+drewno→brąz, ruda_zelaza+drewno→żelazo).
+  // Jeśli AI rozważa w tej samej turze budynek kosztujący jeden z tych surowców
+  // (koszt_surowce.cegla/braz/zelazo > 0 -- np. Mury/Akwedukt/Odlewnia brązu/Odlewnia
+  // żelaza/Koszary/Mennica), a NIE MA konwertera zbudowanego ANI zapasu tego surowca
+  // (opts.canAfford odmawia -- ten sam sygnał co bramka main.ts, patrz building-stock-cost.ts),
+  // podbijamy priorytet konwertera PONAD tego konsumenta (dopisując go do kandydatów,
+  // jeśli jeszcze nie był rozważany w tej gałęzi) i lekko odkładamy konsumenta -- inaczej AI
+  // wybierałoby wciąż ten sam nieopłacalny budynek turę po turze i nigdy nie postawiłoby
+  // konwertera, którego samo nie rozważa w danej fazie/gałęzi. TYLKO priorytet -- gracza i tak
+  // chroni osobna bramka kosztu (canAffordBuildingStock w main.ts), tu nic nie jest blokowane
+  // na twardo, więc istniejące testy AI (affordability/fallback) nie powinny się zmienić.
+  //
+  // Bez opts.canAfford (nie podane) nie mamy żadnego sygnału o zapasie -- fix wyłączony
+  // całkowicie (zero regresji), dokładnie jak reszta bramki budżetowej niżej w tej funkcji
+  // ("canAfford absent -> no filtering, zero regression").
+  if (opts.canAfford) {
+    const canAfford = opts.canAfford;
+    const CONVERTER_FOR_RESOURCE: ReadonlyArray<readonly [string, string]> = [
+      ['cegla', 'cegielnia'],
+      ['braz', 'odlewnia_brazu'],
+      ['zelazo', 'odlewnia_zelaza'],
+    ];
+    for (const [resource, converterId] of CONVERTER_FOR_RESOURCE) {
+      if (built.includes(converterId)) continue; // konwerter już stoi -- surowiec płynie, nic do zrobienia
+      const consumerIdx = candidates.findIndex(
+        c => c.id !== converterId && (buildingStockCost(data.buildings.find(b => b.id === c.id))[resource] ?? 0) > 0,
+      );
+      if (consumerIdx === -1) continue; // żaden kandydat tej tury nie konsumuje `resource`
+      const consumer = candidates[consumerIdx]!;
+      // "ani zapasu X" -- konsument już affordable (zapas/magazyn wystarcza) => brak ryzyka
+      // deadlocku, priorytet zostaje bez zmian.
+      if (canAfford(cityId, consumer.id)) continue;
+
+      const converterIdx = candidates.findIndex(c => c.id === converterId);
+      if (converterIdx >= 0) {
+        candidates[converterIdx]!.score = Math.max(candidates[converterIdx]!.score, consumer.score + 1);
+      } else {
+        candidates.push({ id: converterId, score: consumer.score + 1 });
+      }
+      candidates[consumerIdx]!.score = consumer.score - 1;
+    }
   }
 
   // §4.4 Filter out buildings already built (units can be built multiple times)
