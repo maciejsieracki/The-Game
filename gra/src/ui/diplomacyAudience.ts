@@ -184,9 +184,12 @@ ${DIPLO_1E_SHARED_CSS}
 .civ-diplo-aud{position:fixed;inset:0;z-index:400;background:rgba(5,6,10,.88);
   display:flex;align-items:center;justify-content:center;padding:14px;
   font:14px 'Segoe UI',Tahoma,sans-serif;color:#e8e0c8;}
-.civ-diplo-aud-box{width:min(1720px,98vw);max-height:94vh;overflow:auto;
-  background:var(--tg-panel-grad,linear-gradient(180deg,rgba(18,24,32,.98),rgba(8,10,16,.98)));
-  border:var(--tg-border-gold,2px solid rgba(232,216,138,.4));border-radius:var(--tg-radius-panel,14px);
+.civ-diplo-aud-box{width:min(1720px,98vw);max-height:94vh;overflow:auto;position:relative;
+  /* FAZA 3 pkt 9 — tło granat 1E dokładnie wg makiety (NIE brąz), nie tokeny wspólne (przybliżenie). */
+  background:
+    radial-gradient(140% 100% at 50% -10%, rgba(55,50,32,.45) 0%, transparent 40%),
+    linear-gradient(180deg,#111722 0%,#0b0f16 40%,#070a0f 100%);
+  border:2px solid rgba(232,216,138,.4);border-radius:14px;
   padding:14px 16px 16px;box-shadow:0 16px 44px rgba(0,0,0,.75);
   display:flex;flex-direction:column;gap:11px;}
 .civ-diplo-aud-head{display:flex;justify-content:space-between;align-items:center;gap:0.75em;}
@@ -264,7 +267,9 @@ ${DIPLO_1E_SHARED_CSS}
 .da-tab{font-size:0.68em;padding:5px 14px;border-radius:999px;border:1px solid rgba(232,216,138,.22);
   color:#8a8070;background:rgba(0,0,0,.2);cursor:pointer;display:flex;align-items:center;gap:6px;
   font-weight:600;letter-spacing:.02em;font-family:inherit;}
-.da-tab.on{color:#1a1206;background:linear-gradient(180deg,#e8d88a,#cdb45f);border-color:#e8d88a;font-weight:700;cursor:default;}
+/* FAZA 3 pkt 9 — złoty primary dokładnie wg makiety v1.1 (nie przybliżenie #e8d88a→#cdb45f). */
+.da-tab.on{color:#2e2708;background:linear-gradient(180deg,#f0dc88,#b99a28);
+  border:1px solid #6a5212;border-top-color:#f8eea8;font-weight:700;cursor:default;}
 .da-tab:not(.on):hover{border-color:rgba(232,216,138,.5);color:#e8d88a;}
 .da-tab svg{width:12px;height:12px;}
 
@@ -298,9 +303,13 @@ ${DIPLO_1E_SHARED_CSS}
 .da-treaty .da-nm{font-size:0.72em;font-weight:600;color:#e8e0c8;}
 .da-treaty .da-meta{font-size:0.62em;color:#8a8070;margin-top:2px;}
 .da-treaty .da-pen{font-size:0.62em;color:#e08a8a;margin-top:3px;}
-.da-treaty .da-brk{margin-left:auto;font-size:0.6em;color:#8a8070;border:1px solid rgba(140,150,165,.3);
-  border-radius:6px;padding:3px 8px;white-space:nowrap;align-self:center;background:none;font-family:inherit;
-  cursor:not-allowed;opacity:.6;}
+/* FAZA 3 pkt 8 — „Zerwij" = SAMA IKONA rozerwanego ogniwa (SVG z makiety) + podpis na hover
+   (.da-ttip); pozostaje disabled dopóki silnik nie ma mechanizmu zrywania (jak w fazie 2). */
+.da-treaty .da-ttip{margin-left:auto;align-self:center;}
+.da-treaty .da-brk{font-size:0;color:#8a8070;border:1px solid rgba(140,150,165,.3);
+  border-radius:6px;padding:5px 6px;white-space:nowrap;align-self:center;background:none;font-family:inherit;
+  cursor:not-allowed;opacity:.6;display:inline-flex;align-items:center;line-height:0;}
+.da-treaty .da-brk svg{width:14px;height:14px;}
 .da-empty{font-size:0.68em;color:#6a7280;padding:6px 2px;}
 
 .da-offer-hint{font-size:0.66em;color:#8a8070;line-height:1.5;padding:2px 2px 4px;}
@@ -331,6 +340,37 @@ ${DIPLO_1E_SHARED_CSS}
 @media (max-width:1200px){.da-table{grid-template-columns:1fr;}.da-card{flex:0 0 200px;width:200px;}}
 @media (max-width:920px){.da-relbreak{grid-template-columns:1fr;}.da-relcol.pos{border-right:none;border-bottom:1px solid rgba(232,216,138,.18);}}
 @media (max-width:760px){.da-mainrow{flex-wrap:wrap;}.da-card{width:100%;flex:1 1 auto;}}
+
+/* ===== FAZA 3 pkt 8 — pasek szybkich akcji (SAME IKONY, 46×46) + „Szybka Umowa" ===== */
+.da-actionbar{display:flex;align-items:center;gap:9px;justify-content:center;flex-wrap:wrap;padding-top:2px;}
+.da-ttip{position:relative;display:inline-flex;}
+.da-ttip>.da-ttip-lbl{position:absolute;bottom:54px;left:50%;transform:translateX(-50%);opacity:0;
+  pointer-events:none;transition:opacity .12s;white-space:nowrap;background:rgba(8,10,16,.96);
+  border:1px solid rgba(232,216,138,.4);color:#e8d88a;padding:3px 9px;border-radius:6px;font-size:9.5px;
+  font-weight:700;letter-spacing:.06em;text-transform:uppercase;box-shadow:0 4px 12px rgba(0,0,0,.55);z-index:9;}
+.da-ttip:hover>.da-ttip-lbl{opacity:1;}
+.da-abtn{width:46px;height:46px;border-radius:10px;border:1px solid rgba(232,216,138,.3);
+  background:linear-gradient(180deg,#161c28,#0a0d14);color:#e8d88a;display:flex;align-items:center;
+  justify-content:center;cursor:pointer;box-shadow:0 1px 6px rgba(0,0,0,.4);}
+.da-abtn svg{width:19px;height:19px;}
+.da-abtn:hover{border-color:#e8d88a;color:#f4e6a8;box-shadow:0 0 10px rgba(232,216,138,.3);}
+.da-abtn:disabled{opacity:.42;cursor:not-allowed;box-shadow:none;}
+.da-abtn:disabled:hover{border-color:rgba(232,216,138,.3);color:#e8d88a;box-shadow:0 1px 6px rgba(0,0,0,.4);}
+.da-abtn.warbtn{border-color:rgba(200,64,64,.5);color:#e08a8a;}
+.da-abtn.warbtn:hover{border-color:#c84040;color:#f0a0a0;box-shadow:0 0 10px rgba(200,64,64,.35);}
+.da-abtn.warbtn:disabled:hover{border-color:rgba(200,64,64,.5);color:#e08a8a;box-shadow:none;}
+.da-abtn.peacebtn{border-color:rgba(90,208,122,.45);color:#7ad0a0;}
+.da-abtn.peacebtn:hover{border-color:#5ad07a;color:#8ee0ae;box-shadow:0 0 10px rgba(90,208,122,.3);}
+.da-abtn.peacebtn:disabled:hover{border-color:rgba(90,208,122,.45);color:#7ad0a0;box-shadow:none;}
+.da-quickdeal{height:52px;padding:0 20px;border-radius:10px;border:1px solid #6a5212;border-top-color:#f8eea8;
+  background:linear-gradient(180deg,#f0dc88,#b99a28);color:#2e2708;display:flex;align-items:center;gap:8px;
+  font-family:var(--tg-font-title,Georgia,serif);font-size:0.92em;font-weight:700;letter-spacing:.02em;
+  cursor:pointer;box-shadow:0 3px 12px rgba(232,216,138,.3);margin-left:6px;}
+.da-quickdeal svg{width:18px;height:18px;}
+.da-quickdeal small{display:block;font-family:var(--tg-font-ui,'Segoe UI',Tahoma,sans-serif);font-size:0.6em;
+  font-weight:400;color:#3a2e0c;letter-spacing:0;}
+.da-quickdeal:hover{filter:brightness(1.07);}
+.da-quickdeal:disabled{opacity:.5;cursor:not-allowed;filter:none;}
 
 .civ-diplo-modal-overlay{position:fixed;inset:0;z-index:500;background:rgba(0,0,0,0.55);
   display:flex;align-items:center;justify-content:center;}
@@ -554,6 +594,69 @@ function treatyIconId(label: string): string {
   return 'dip-pact';
 }
 
+/**
+ * FAZA 3 pkt 8 — pasek szybkich akcji: inline SVG 1:1 z Makieta DYPLOMACJA v1.1
+ * (KROK 3 pkt 8, linie 483-490 + 369 dla „Zerwij"). Brand-icon-manifest nie ma
+ * odpowiedników (dar/rozerwane ogniwo), więc — jak w makiecie — SVG jest wpisane
+ * wprost, nie przez dipBrandIconHtml/manifest.
+ */
+const ACTION_BAR_SVG: Record<string, string> = {
+  war: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 5l-7 7 7 7M20 5l-7 7 7 7"/></svg>',
+  peace: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 16c3 0 4-6 8-6s4 4 8 4"/><path d="M4 16l1 3h14l1-3"/><path d="M12 8V3"/></svg>',
+  alliance: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M7 12l3 3 7-7"/><path d="M4 20V6l8-3 8 3v14"/></svg>',
+  pact: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M5 4h14v3a7 7 0 01-7 7 7 7 0 01-7-7z"/></svg>',
+  trade: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></svg>',
+  gift: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="4" y="9" width="16" height="11" rx="1.5"/><path d="M4 9l8-5 8 5"/><path d="M12 4v5"/></svg>',
+  vassal: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 18l2-9 4 4 2-6 2 6 4-4 2 9z"/><path d="M4 18h16v2H4z"/></svg>',
+  quickdeal: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3 7 7 .5-5.5 4.5 2 7L12 17l-6.5 4 2-7L2 9.5 9 9z"/></svg>',
+  brk: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M9 6.5 7.5 5A3.2 3.2 0 003 9.5L5.5 12"/><path d="M15 17.5l1.5 1.5a3.2 3.2 0 004.5-4.5L18.5 12"/><path d="M9.5 14.5 7 19M14.5 9.5 17 5"/></svg>',
+};
+
+/** Mapowanie przycisk paska → id akcji z siatki (data/diplomacy.json akcje_dyplomatyczne). */
+const ACTION_BAR_SPECS: ReadonlyArray<{ svg: keyof typeof ACTION_BAR_SVG; aid: string; label: string; extraCls?: string }> = [
+  { svg: 'war', aid: '11', label: 'Wypowiedz wojnę', extraCls: 'warbtn' },
+  { svg: 'peace', aid: '10', label: 'Zaproponuj pokój', extraCls: 'peacebtn' },
+  { svg: 'alliance', aid: '3', label: 'Sojusz' },
+  { svg: 'pact', aid: '2', label: 'Pakt o nieagresji' },
+  { svg: 'trade', aid: '5', label: 'Umowa handlowa' },
+  { svg: 'gift', aid: '13', label: 'Przekaż dar' },
+  { svg: 'vassal', aid: '12', label: 'Wasalizacja' },
+];
+
+/**
+ * FAZA 3 pkt 8 — pasek szybkich akcji. SAME IKONY (46×46, bez podpisów), pełna nazwa
+ * tylko na hover (pigułka .da-ttip). Każdy przycisk używa TEGO SAMEGO id/action co
+ * kafelek w kolumnie „Możliwe umowy" — data-aid trafia w istniejący listener (render()),
+ * więc onAction/blokady/negocjacje są dokładnie te same, disabled gdy `locked`.
+ * „Szybka Umowa" (jedyny tekstowy CTA) mapuje na tę samą akcję co Handel (id 5) —
+ * dziś otwiera koszyk PN w trybie handel (istniejący flow, showTradeBasketModal).
+ */
+function actionBarHtml(st: DiplomacyAudienceState): string {
+  const byId = new Map(st.actions.map(a => [a.id, a] as const));
+  const btns = ACTION_BAR_SPECS.map(spec => {
+    const action = byId.get(spec.aid);
+    const enabled = action ? action.enabled : false;
+    const tip = enabled ? spec.label : (action?.lockNote || action?.tooltip || spec.label);
+    const cls = 'da-abtn' + (spec.extraCls ? ' ' + spec.extraCls : '');
+    return (
+      '<span class="da-ttip"><span class="da-ttip-lbl">' + esc(spec.label) + '</span>' +
+      '<button type="button" class="' + cls + '" data-aid="' + esc(spec.aid) + '"' +
+      (enabled ? '' : ' disabled') + ' title="' + esc(tip) + '">' + ACTION_BAR_SVG[spec.svg] + '</button>' +
+      '</span>'
+    );
+  }).join('');
+
+  const handel = byId.get('5');
+  const handelEnabled = handel ? handel.enabled : false;
+  const qdTitle = handelEnabled ? 'auto-uczciwa oferta' : (handel?.lockNote || handel?.tooltip || 'Handel niedostępny');
+  const quickdeal =
+    '<button type="button" class="da-quickdeal" data-aid="5"' + (handelEnabled ? '' : ' disabled') +
+    ' title="' + esc(qdTitle) + '">' + ACTION_BAR_SVG.quickdeal +
+    '<span>SZYBKA UMOWA<small>auto-uczciwa oferta</small></span></button>';
+
+  return '<div class="da-actionbar">' + btns + quickdeal + '</div>';
+}
+
 /** FAZA 2 pkt 3 kol.1 — „Możliwe umowy" (12 akcji; bez „Nawiązanie kontaktu" gdy kontakt jest). */
 function dealsColumnHtml(st: DiplomacyAudienceState): string {
   const visible = st.actions.filter(a => !(a.id === '1' && st.contactEstablished));
@@ -596,7 +699,9 @@ function treatiesColumnHtml(st: DiplomacyAudienceState): string {
     return (
       '<div class="da-treaty">' + icon +
         '<div><div class="da-nm">' + esc(t.label) + '</div>' + meta + pen + '</div>' +
-        '<button type="button" class="da-brk" disabled title="Zerwij traktat — wkrótce">Zerwij</button>' +
+        /* FAZA 3 pkt 8 — ikona rozerwanego ogniwa + podpis „Zerwij traktat" TYLKO na hover. */
+        '<span class="da-ttip"><span class="da-ttip-lbl" style="bottom:34px">Zerwij traktat</span>' +
+        '<button type="button" class="da-brk" disabled title="Zerwij traktat — wkrótce">' + ACTION_BAR_SVG.brk + '</button></span>' +
       '</div>'
     );
   }).join('');
@@ -696,6 +801,7 @@ function render(): void {
         '</div>' +
         otherCardHtml(st, otherBon) +
       '</div>' +
+      actionBarHtml(st) +
     '</div>';
 
   rootEl.querySelector('.civ-diplo-aud-back')?.addEventListener('click', () => cfg!.onBack());
