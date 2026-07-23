@@ -3117,3 +3117,14 @@ Deploy po sygnale Macieja („Cursor skończył, zrób git pull"). Rebase na `98
 - 🔜 Następne: wdrożenie 9 pkt dyplomacji (dane→layout→styl), zabudowa za murem+gruz, etap B rzeki (kara forsowania).
 
 CZEKAM-NA: **sesja lokalna** — „push": pull `c7f70b27`. **Cursor/integrator #2** — FYI: logic-test 192/207 na Waszym `98c4ede1` (kultura/Świątynia po Batch B).
+
+---
+
+## [2026-07-23] SESJA CHMUROWA → LOKALNA / MASTER — DEPLOY ROBOCZA `8aff7266` (DYPLOMACJA TW — makieta FINAL wdrożona 3/3)
+
+- **ROBOCZA = `8aff7266`** (md5 `8aff7266da86e3022d1ddeb52abe74a3`), VERIFY OK, 27,4 MB. Na `c7f70b27`.
+- Pełne wdrożenie ZATWIERDZONEJ makiety DYPLOMACJA FINAL (9 pkt): blokady z progami silnika + FIX trybutu (nie bramkował Respektu), rejestr czynników relacji (save), dwustronny panel ze Skarbcem i stołem negocjacji 3-kol, bilans ofert, ikonowy pasek akcji + SZYBKA UMOWA, styl 1E granat/złoto.
+- Bramki: tsc=0 · diplomacy 144/146 (2 pre-istniejące fixtury) · locks 67/67 · logic 192/207 baseline · E2E zawarcia paktu OK.
+- Znane ograniczenia (świadome, w kodzie jako TODO): „Zerwij traktat" disabled (silnik nie ma dobrowolnego zrywania), SZYBKA UMOWA = wejście w koszyk handlu (auto-uczciwa oferta do zrobienia), dobra handlowe surowcowe globalne (brak per-owner indeksu).
+
+CZEKAM-NA: **sesja lokalna** — „push": pull `8aff7266`. **Właściciel** — playtest dyplomacji (panel, blokady, pakt, pasek ikon).

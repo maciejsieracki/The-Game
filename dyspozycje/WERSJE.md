@@ -9,7 +9,14 @@ UWAGA: KANON i FINALNA promują się teraz OSOBNYMI skryptami (`gra/tools/publis
 wyraźne polecenie właściciela) — dlatego są logowane NIEZALEŻNIE, każdy w swojej sekcji, ze
 swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drugiego.
 
-## ROBOCZA `c7f70b27` — 2026-07-23 · BITWA: wizualia sceny + presety terenu wg hexa + rzeka S — **AKTUALNA**
+## ROBOCZA `8aff7266` — 2026-07-23 · DYPLOMACJA TW: dwustronny panel + stół negocjacji + blokady (makieta FINAL 3/3) — **AKTUALNA**
+
+- **Zawartość (na `c7f70b27`):** pełne wdrożenie ZATWIERDZONEJ makiety DYPLOMACJA FINAL (9 pkt integratora, 3 fazy): **F1 dane** — spójne blokady 13 akcji z progami silnika (notki „zablokowana — wymaga Zaufania 91 (masz X)"), FIX: Żądanie trybutu wcześniej NIE bramkowało Respektu; rejestr czynników relacji per-para (save round-trip) → rozbicie „Za co Cię lubią/nie lubią" z realnych delt. **F2 layout** — dwustronny (karta gracza: medalion/Moc/potencjał sojuszniczy/SKARBIEC/dobra ↔ karta rozmówcy: relacje TYLKO tu + nastawienie), baner statusu formalnego (nazwa+od X tur+kara zerwania), stół negocjacji 3 kolumny (Możliwe/Aktywne/Żądania-Oferty), koszyk PN z bilansem jednorazowo vs /turę + werdykt. **F3 styl** — ikonowy pasek akcji 46px (WOJNA/POKÓJ/SOJUSZ/PAKT/HANDEL/DAR/WASAL, hover-pigułki, disabled wg blokad) + SZYBKA UMOWA, ikonowe „Zerwij", granat 1E + złoty primary z makiety.
+- **Bramki:** tsc=0 · diplomacy 144/146 (2 pre-istniejące fixtury progów) · diplomacy-locks 67/67 (nowy) · tech/research/unit-replace/map-gen zielone · logic 192/207 baseline · E2E pokój→pakt→baner→active zweryfikowane · VERIFY OK.
+- **md5:** `8aff7266da86e3022d1ddeb52abe74a3` · stamp `8aff7266`. Bundel 27,4 MB. Publikowała sesja chmurowa.
+- **Test:** otwórz dyplomację → audiencja = dwustronny panel; zablokowane akcje z notkami progów; zawrzyj pakt → baner + „już zawarta" + Aktywne traktaty; pasek ikon na dole (hover = nazwa); rozbicie relacji nad stopką.
+
+## ROBOCZA `c7f70b27` — 2026-07-23 · BITWA: wizualia sceny + presety terenu wg hexa + rzeka S — **ZASTĄPIONA** (→ `8aff7266`)
 
 - **Zawartość (na `98c4ede1` Cursora, rebase czysty):** uatrakcyjnienie sceny 3D bitwy (ACES tone mapping, HemisphereLight, cieplejsza mgła/tło, MeshStandard kafli + wariacja, wyciszona siatka, banery stron nad oddziałami, kępy trawy 7944 + drobny dekor, gęstszy las, mur oblężniczy: materiały+wieżyczki+wariacja segmentów); **PRESETY plansz bitwy wg terenu hexa świata** (łąka/równina/wzgórza/góry/las/pustynia/wybrzeże/rzeka; wpięte w 4 ścieżki startu bitwy; debug `?bt=`); **rzeka = ciągłe koryto S** przez całe pole z brodami (carve zamienia wodę pod formacjami na Ford — koryto nieprzerwane), jeziorka na łące/równinie; fix czarnych drzew (instanceColor). Legacy bez presetu bit-for-bit. + dostawy Design: POLE-BITWY-TW-v5, DYPLOMACJA v1.1→FINAL (ZATWIERDZONA).
 - **Bramki:** tsc=0 · tech-tree 19/19 · research 33/33 · unit-replace 10/10 · manpower 36/36 · map-gen determinizm+rzeki PASS · logic 192/207 — **identycznie jak czysty origin/main** (porażki kultura/Świątynia + koszty badań pre-istnieją z Batch B, nie z tej paczki) · VERIFY OK.
