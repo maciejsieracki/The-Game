@@ -297,6 +297,148 @@ export function onCityConquered(
 }
 
 // ===========================================================================
+// A2. CIV-WIDE RESOURCE STORAGE (SUROW-CIV-01, decyzja Macieja 2026-07-24)
+//
+// Zmiana modelu: pojemnosc magazynu surowcow PRZETWORZONYCH/logistycznych
+// (drewno/kamien/glina/ruda/ruda_zelaza/cegla/braz/zelazo/stal -- NIE Zywnosc,
+// ktora zostaje przy modelu per-miasto powyzej, Spichlerz bez zmian) jest teraz
+// PULA PANSTWA (civ-wide, per ownerId), nie per-miasto:
+//   cap(typ) = bazaSurowcePanstwo + bonusSurowceNaBudynek * (liczba budynkow
+//   "Magazyn" ZBUDOWANYCH GDZIEKOLWIEK w imperium ownera) -- model ADDYTYWNY
+//   (nie mnoznik, w odroznieniu od foodStorageCapacity/Spichlerz powyzej).
+//
+// OWNERID-AGNOSTIC (twarda zasada Macieja 2026-07-24): dotyczy KAZDEGO ownera
+// identycznie -- gracz (ownerId=0) i kazda cywilizacja AI licza cap z TYCH SAMYCH
+// parametrow, licza wlasne Magazyny, tracone nadwyzki tak samo. Zero galezi
+// "tylko gracz" w tym module -- kazda funkcja ponizej przyjmuje ownerId jako
+// zwykly parametr, bez domyslnego uprzywilejowania 0.
+//
+// Produkcja + konwertery ZOSTAJA lokalne (per-miasto, city.surowce) -- patrz
+// turn-economy.ts advanceCityEconomy; ten blok tylko dostarcza (a) funkcje capu
+// i (b) klamrowanie SUMY po miastach ownera RAZ na ture, PO produkcji+konwersji.
+// ===========================================================================
+
+/**
+ * Parametry pojemnosci PANSTWA dla surowcow (odrebne od StorageParams/Zywnosci
+ * powyzej -- addytywny model, nie mnoznikowy).
+ *   - bazaSurowcePanstwo    : cap per typ surowca gdy owner ma 0 Magazynow
+ *                             (globalne.magazyn_baza_surowce -- NOWA SEMANTYKA:
+ *                             PANSTWO, nie per-miasto; placeholder 100).
+ *   - bonusSurowceNaBudynek : dodatkowy cap za KAZDY Magazyn w imperium ownera
+ *                             (globalne.magazyn_bonus_surowce_na_budynek,
+ *                             placeholder 100; addytywnie, nie mnoznik).
+ */
+export interface OwnerStorageParams {
+  bazaSurowcePanstwo:    number;
+  bonusSurowceNaBudynek: number;
+}
+
+/** Placeholder do strojenia (Maciej 2026-07-24): 100 baza + 100/Magazyn. */
+export const DEFAULT_OWNER_STORAGE_PARAMS: OwnerStorageParams = {
+  bazaSurowcePanstwo:    100,
+  bonusSurowceNaBudynek: 100,
+};
+
+/**
+ * Read OwnerStorageParams from the raw econ-params.json blob (globalne.magazyn_*).
+ * Robust: brak/nieliczbowa wartosc -> fallback DEFAULT_OWNER_STORAGE_PARAMS.
+ */
+export function loadOwnerStorageParams(
+  raw: RawEconParamsForUpkeep,
+  difficulty: Difficulty = 'normal',
+): OwnerStorageParams {
+  const g = raw.globalne;
+  return {
+    bazaSurowcePanstwo:    readNum(g, 'magazyn_baza_surowce',              difficulty, DEFAULT_OWNER_STORAGE_PARAMS.bazaSurowcePanstwo),
+    bonusSurowceNaBudynek: readNum(g, 'magazyn_bonus_surowce_na_budynek',  difficulty, DEFAULT_OWNER_STORAGE_PARAMS.bonusSurowceNaBudynek),
+  };
+}
+
+/**
+ * Civ-wide cap per resource type (SUROW-CIV-01): bazaSurowcePanstwo + bonus x
+ * liczba Magazynow ownera. Addytywny, NIE mnoznikowy. `magazynCount` ujemny /
+ * niefinite -> traktowany jako 0 (bez Magazynow, tylko baza panstwa).
+ */
+export function ownerResourceCapacityPerType(
+  magazynCount: number,
+  p: OwnerStorageParams = DEFAULT_OWNER_STORAGE_PARAMS,
+): number {
+  const cnt = Number.isFinite(magazynCount) && magazynCount > 0 ? Math.floor(magazynCount) : 0;
+  return p.bazaSurowcePanstwo + p.bonusSurowceNaBudynek * cnt;
+}
+
+/** Minimalny ksztalt miasta potrzebny do rekoncyliacji puli panstwa (bez importu City/GameMap). */
+export interface CityResourceHolder {
+  id:       string;
+  ownerId:  number;
+  surowce?: Record<string, number>;
+}
+
+/**
+ * Rekoncyliacja puli panstwa (SUROW-CIV-01) -- wolaj RAZ na ture, PO tym jak
+ * kazde miasto juz wyprodukowalo/skonwertowalo lokalnie (turn-economy.ts nie
+ * zmienia tej mechaniki). Dla kazdego ownera i kazdego typu surowca obecnego w
+ * jego miastach: sumuje city.surowce[typ], porownuje z capForOwner(ownerId); gdy
+ * suma > cap, usuwa nadwyzke Z MIAST O NAJWIEKSZYM ZAPASIE NAJPIERW (deterministycznie:
+ * sortowanie malejaco po ilosci, remis rozstrzyga id miasta rosnaco), az suma <= cap.
+ * Nadwyzka PRZEPADA (jak dotychczas przy per-miasto clampStore) -- nie jest
+ * przenoszona do innych miast.
+ *
+ * OWNERID-AGNOSTIC: capForOwner jest zwyklym parametrem (callback) liczonym przez
+ * wywolujacego IDENTYCZNIE dla kazdego ownera (patrz turn-economy.ts) -- brak tu
+ * jakiejkolwiek galezi "gracz vs AI".
+ *
+ * Mutuje city.surowce na przekazanych obiektach (ten sam kontrakt jak clampStore/
+ * applyResourceIntake -- in-place na wejsciowych referencjach City, bo advanceCityEconomy
+ * i tak mutuje City w miejscu). Brak city.surowce -> pomijane (nic do zrobienia).
+ */
+export function reconcileOwnerResourceCaps(
+  cities: ReadonlyArray<CityResourceHolder>,
+  capForOwner: (ownerId: number) => number,
+): void {
+  const byOwner = new Map<number, CityResourceHolder[]>();
+  for (const c of cities) {
+    if (!c.surowce) continue;
+    const list = byOwner.get(c.ownerId) ?? [];
+    list.push(c);
+    byOwner.set(c.ownerId, list);
+  }
+
+  for (const [ownerId, ownerCities] of byOwner) {
+    const cap = capForOwner(ownerId);
+    if (!Number.isFinite(cap) || cap < 0) continue;
+
+    const keys = new Set<string>();
+    for (const c of ownerCities) {
+      for (const k of Object.keys(c.surowce ?? {})) keys.add(k);
+    }
+
+    for (const key of keys) {
+      let total = 0;
+      for (const c of ownerCities) total += c.surowce?.[key] ?? 0;
+      let excess = total - cap;
+      if (excess <= 0) continue;
+
+      const holders = ownerCities
+        .filter(c => (c.surowce?.[key] ?? 0) > 0)
+        .sort((a, b) => {
+          const diff = (b.surowce?.[key] ?? 0) - (a.surowce?.[key] ?? 0);
+          if (diff !== 0) return diff;
+          return a.id < b.id ? -1 : a.id > b.id ? 1 : 0;
+        });
+
+      for (const c of holders) {
+        if (excess <= 0) break;
+        const have = c.surowce?.[key] ?? 0;
+        const take = Math.min(have, excess);
+        c.surowce![key] = have - take;
+        excess -= take;
+      }
+    }
+  }
+}
+
+// ===========================================================================
 // B. MAINTENANCE  (Spec-ekonomia.md s.6)
 // ===========================================================================
 

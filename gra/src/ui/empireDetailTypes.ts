@@ -22,6 +22,12 @@ export interface EmpireResourceRow {
   assigned?: string;
   typ: 'podstawowy' | 'surowy' | 'przetworzony' | 'hodowla';
   dostep: boolean;
+  /**
+   * SUROW-CIV-01 (Maciej 2026-07-24): cap CAŁEGO PAŃSTWA (civ-wide) dla tego typu
+   * surowca — 100 + 100×liczba Magazynów ownera. Brak (undefined) dla wierszy
+   * czystego dostępu (Sól/Koń/Ceramika — `access`, stock zawsze 0/—).
+   */
+  cap?: number;
 }
 
 export interface EmpireKulturaSnap {

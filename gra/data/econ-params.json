@@ -457,18 +457,25 @@
       "opis": "Bazowa pojemność Magazynu Żywności (bez Spichlerza). [PT]"
     },
     "magazyn_baza_surowce": {
-      "easy": 12,
-      "normal": 10,
-      "hard": 8,
-      "jednostka": "szt/typ surowca",
-      "opis": "Bazowa pojemność per typ surowca (bez Magazynu Surowców). [PT]"
+      "easy": 120,
+      "normal": 100,
+      "hard": 80,
+      "jednostka": "szt/typ surowca (PAŃSTWO)",
+      "opis": "SUROW-CIV-01 (decyzja Macieja 2026-07-24): ZMIANA SEMANTYKI — od teraz to baza pojemności CAŁEGO PAŃSTWA (civ-wide, suma po wszystkich miastach ownera) per typ surowca, przy 0 zbudowanych budynków „Magazyn” w imperium — NIE per-miasto jak dawniej. Model ADDYTYWNY razem z magazyn_bonus_surowce_na_budynek (nie mnożnikowy). Placeholder do strojenia; wartości easy/normal/hard zachowują dawną proporcję 1,2/1/0,8. Dotyczy WYŁĄCZNIE surowców (drewno/kamień/glina/ruda/ruda_zelaza/cegła/brąz/żelazo/stal) — Żywność/Spichlerz nadal używa modelu mnożnikowego per-miasto (bez zmian, patrz magazyn_baza_zywnosc)."
+    },
+    "magazyn_bonus_surowce_na_budynek": {
+      "easy": 120,
+      "normal": 100,
+      "hard": 80,
+      "jednostka": "szt/typ surowca (PAŃSTWO) / Magazyn",
+      "opis": "SUROW-CIV-01 (decyzja Macieja 2026-07-24, NOWY PARAMETR): dodatkowa pojemność CAŁEGO PAŃSTWA per typ surowca za KAŻDY budynek „Magazyn” zbudowany GDZIEKOLWIEK w imperium ownera (addytywnie, nie mnożnik — 2 Magazyny = +200, nie ×2). Cap per typ = magazyn_baza_surowce + magazyn_bonus_surowce_na_budynek × liczba_magazynow. Placeholder do strojenia."
     },
     "magazyn_mnoznik_spichlerz": {
       "easy": 6,
       "normal": 5,
       "hard": 4,
       "jednostka": "×",
-      "opis": "Mnożnik pojemności przy wybudowanym Spichlerzu / Magazynie Surowców. [PT]"
+      "opis": "Mnożnik pojemności ŻYWNOŚCI przy wybudowanym Spichlerzu (magazyn_baza_zywnosc × ten mnożnik). SUROW-CIV-01 2026-07-24: surowce (drewno/kamień/…) NIE używają już tego mnożnika — patrz magazyn_baza_surowce/magazyn_bonus_surowce_na_budynek (model addytywny, civ-wide). [PT]"
     },
     "utrzymanie_jednostka_standard": {
       "easy": 1,

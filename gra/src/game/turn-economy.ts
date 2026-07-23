@@ -71,15 +71,18 @@ import {
   loadStorageParams,
   foodStorageCapacity,
   readCityFoodBuffer,
-  resourceStorageCapacityPerType,
   loadUpkeepParams,
   buildUnitUpkeepTable,
   upkeepBalance,
+  loadOwnerStorageParams,
+  ownerResourceCapacityPerType,
+  reconcileOwnerResourceCaps,
   type UpkeepParams,
   type UnitFoodLike,
   type UnitUpkeepLike,
   type UpkeepBalance,
   type StorageParams,
+  type OwnerStorageParams,
   type BuildingInstanceLike,
 } from './economy-upkeep';
 import {
@@ -982,6 +985,35 @@ export function sumEconomyForPlayerCities(
 }
 
 /**
+ * SUROW-CIV-01 (Maciej 2026-07-24) -- czysty getter civ-wide capu surowca dla JEDNEGO
+ * ownera, przeznaczony dla wywolujacych spoza advanceCityEconomy (UI licznik imperium,
+ * przyszly handel/dyplomacja -- patrz komentarz w building-stock-cost.ts). Liczy Magazyny
+ * ownera z builtByCity, wczytuje te same parametry co advanceCityEconomy.
+ *
+ * OWNERID-AGNOSTIC: formula identyczna dla gracza (ownerId=0) i kazdej cywilizacji AI --
+ * jedyna zmienna to FAKTYCZNA liczba Magazynow tego konkretnego ownera.
+ *
+ * Zapas (stock) per typ: patrz ownerResourceStock / ownerResourceStockAll w
+ * game/building-stock-cost.ts (dziala na tym samym `cities`, bez potrzeby builtByCity).
+ */
+export function ownerResourceCap(
+  cities: ReadonlyArray<{ id: string; ownerId: number }>,
+  builtByCity: ReadonlyMap<string, readonly string[]>,
+  ownerId: number,
+  data: GameData,
+  difficulty: Difficulty = 'normal',
+): number {
+  let magazynCount = 0;
+  for (const c of cities) {
+    if (c.ownerId !== ownerId) continue;
+    if ((builtByCity.get(c.id) ?? []).includes('magazyn')) magazynCount++;
+  }
+  const rawEconParams = data.econParams as unknown as Parameters<typeof loadOwnerStorageParams>[0];
+  const params = loadOwnerStorageParams(rawEconParams, difficulty);
+  return ownerResourceCapacityPerType(magazynCount, params);
+}
+
+/**
  * Advance the economy for every city by one turn.
  *
  * For each city this:
@@ -1280,6 +1312,10 @@ export function advanceCityEconomy(
   // stad "civ-wide"), policzona RAZ przed petla po miastach.
   const stolarniaCountByOwner = new Map<number, number>();
   const kamieniarskiCountByOwner = new Map<number, number>();
+  // SUROW-CIV-01 (Maciej 2026-07-24): liczba Magazynow PER OWNER (civ-wide) -- wejscie
+  // do capu panstwa surowcow (ownerResourceCapacityPerType). OWNERID-AGNOSTIC: liczone
+  // identycznie dla gracza (ownerId=0) i kazdej cywilizacji AI, zero specjalnej sciezki.
+  const magazynCountByOwner = new Map<number, number>();
   for (const c of cities) {
     const bIds = builtByCity.get(c.id) ?? [];
     if (bIds.includes('stolarnia')) {
@@ -1288,6 +1324,23 @@ export function advanceCityEconomy(
     if (bIds.includes('kamieniarski')) {
       kamieniarskiCountByOwner.set(c.ownerId, (kamieniarskiCountByOwner.get(c.ownerId) ?? 0) + 1);
     }
+    if (bIds.includes('magazyn')) {
+      magazynCountByOwner.set(c.ownerId, (magazynCountByOwner.get(c.ownerId) ?? 0) + 1);
+    }
+  }
+
+  // SUROW-CIV-01: parametry + cap panstwa per owner (jeden raz, czysty getter z cache).
+  // ownerStorageParams jest wspolny dla WSZYSTKICH ownerow (gracz + AI) -- sam cap
+  // rozni sie tylko przez magazynCountByOwner (rzeczywiscie zbudowane Magazyny tego
+  // ownera), nigdy przez ownerId samo w sobie.
+  const ownerStorageParams: OwnerStorageParams = loadOwnerStorageParams(rawEconParams, difficulty);
+  const ownerResCapByOwner = new Map<number, number>();
+  function ownerResourceCapFor(ownerId: number): number {
+    const cached = ownerResCapByOwner.get(ownerId);
+    if (cached !== undefined) return cached;
+    const cap = ownerResourceCapacityPerType(magazynCountByOwner.get(ownerId) ?? 0, ownerStorageParams);
+    ownerResCapByOwner.set(ownerId, cap);
+    return cap;
   }
 
   // WIRE 1: parametry zdrowia z society-params.json
@@ -1559,8 +1612,13 @@ export function advanceCityEconomy(
     // wlasciciela produkuje stala stawke/ture, niezaleznie od obsadzenia -- patrz
     // computeTerritoryResourceYieldByCity (liczone raz dla calej tury, powyzej petli).
     // Zywnosc i Praca ZOSTAJA przy modelu workedTiles (yld.zywnosc/yld.praca -- bez zmian).
-    const maMagazyn = builtIds.includes('magazyn');
-    const resCap = resourceStorageCapacityPerType(maMagazyn, storageParams);
+    // SUROW-CIV-01 (Maciej 2026-07-24): resCap uzywany jako sufit PODCZAS produkcji/
+    // konwersji w TYM miescie jest teraz capem CALEGO PANSTWA (nie per-miasto x5 jak
+    // dawniej) -- prawdziwe ograniczenie to SUMA po miastach ownera, egzekwowana RAZ
+    // na ture PO petli (reconcileOwnerResourceCaps, patrz nizej). Uzycie capu panstwa
+    // tutaj tylko zapobiega patologicznemu wzrostowi w jednej turze; nie blokuje
+    // pojedynczego miasta ponizej realnej pojemnosci panstwa.
+    const resCap = ownerResourceCapFor(city.ownerId);
     if (!city.surowce) city.surowce = {};
     const citySurowce: Record<string, number> = city.surowce;
     // Produkcja per-ulepszenie (SUROW-TERYT-01, f136c09) × mnoznik civ-wide bonusow
@@ -1636,6 +1694,14 @@ export function advanceCityEconomy(
     if (grow.wzrost) result.growth  += 1;
     if (grow.ubytek) result.starved += 1;
   }
+
+  // SUROW-CIV-01 (Maciej 2026-07-24): RAZ na ture, PO ze produkcja+konwersja lokalna
+  // (petla powyzej) sie zakonczyla -- klamruj SUME city.surowce po miastach KAZDEGO
+  // ownera do capu panstwa (ownerResourceCapFor). OWNERID-AGNOSTIC: reconcileOwnerResourceCaps
+  // iteruje po WSZYSTKICH ownerId obecnych w `cities` (gracz i kazda cywilizacja AI
+  // identycznie) -- zero galezi "tylko gracz". Nadwyzka ginie z miast o najwiekszym
+  // zapasie danego typu najpierw (deterministycznie, patrz komentarz w economy-upkeep.ts).
+  reconcileOwnerResourceCaps(cities, ownerResourceCapFor);
 
   // --- Compute upkeep balance per owner (s.6.4 / s.8.4) ---
   // Collect all unique owner IDs across cities + units.

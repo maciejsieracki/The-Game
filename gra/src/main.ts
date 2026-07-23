@@ -235,6 +235,7 @@ import {
   sumEconomyForPlayerCities,
   previewCityEconomy,
   computeTerritoryResourceYieldByCity,
+  ownerResourceCap,
 } from './game/turn-economy';
 import {
   refreshTradeRoutes,
@@ -441,7 +442,10 @@ import { advanceProduction, rushProduction, rushCost, populationCostOf, UNIT_POP
   enqueue, buildingProductionItem, splitPraca, cityPracaInteger, pracaImperialPoolGain, availableProduction, availableReplacementsFor,
   buildingLevelForEpoch, buildingEffectAtLevel, frontItem, unitNacjaForCivKey, applyCompletedBuildingIds,
   type CityProduction, type AvailabilityContext } from './game/production';
-import { buildingStockCost, canAffordBuildingStock, deductBuildingStockCost } from './game/building-stock-cost';
+import {
+  buildingStockCost, canAffordBuildingStock,
+  ownerResourceStockAll, deductBuildingStockCostAcrossCities,
+} from './game/building-stock-cost';
 import { empireHasKopalniaNaZlozuZelaza, hasZelazoAccess } from './game/zelazo-access';
 import {
   tradableGoodsForOwner as tradableGoodsIndexForOwnerPure, sumCitySurowce,
@@ -1701,6 +1705,10 @@ async function boot(): Promise<void> {
       const accessLabels = new Set(diplomacyActiveResourceLabelsForOwner(ownerId));
       const territoryRates = empireTerritoryResourceRatesForOwner(ownerId);
       const converterRates = empireConverterResourceRatesForOwner(ownerId);
+      // SUROW-CIV-01 (Maciej 2026-07-24): cap PAŃSTWA (civ-wide) — 100 + 100×Magazyny
+      // ownera; `warehouse` powyżej JEST już sumą civ-wide (citySurowceSumForOwner),
+      // wystarczy dołożyć cap, żeby licznik pokazał „stock / cap" (np. „140 / 200").
+      const empireCap = ownerResourceCap(cities, cityBuilt, ownerId, data, _menuDifficulty);
       type Cat = { id: string; label: string; icon: string; typ: EmpireResourceRow['typ']; access?: boolean };
       const CATALOG: Cat[] = [
         { id: 'drewno',      label: 'Drewno',      icon: '🪵', typ: 'surowy' },
@@ -1725,7 +1733,8 @@ async function boot(): Promise<void> {
         const dostep = accessLabels.has(c.label) || stock > 0;
         if (stock <= 0 && !dostep) continue;  // pomiń surowce, których owner w ogóle nie ma
         const ratePerTurn = c.access ? 0 : Math.floor((territoryRates[c.id] ?? 0) + (converterRates[c.id] ?? 0));
-        rows.push({ id: c.id, label: c.label, icon: c.icon, stock, ratePerTurn, typ: c.typ, dostep });
+        const cap = c.access ? undefined : empireCap;
+        rows.push({ id: c.id, label: c.label, icon: c.icon, stock, ratePerTurn, typ: c.typ, dostep, cap });
       }
       return rows;
     }
@@ -4136,6 +4145,22 @@ async function boot(): Promise<void> {
         : Array.from(aiResearchDone.get(ownerId) ?? new Set<string>());
     }
 
+    /**
+     * SUROW-CIV-01 (Maciej 2026-07-24): magazyn surowcow = pula PANSTWA (civ-wide,
+     * suma po WSZYSTKICH miastach ownera), nie tylko lokalne City.surowce -- patrz
+     * game/building-stock-cost.ts. OWNERID-AGNOSTIC: dziala identycznie dla gracza
+     * (ownerId=0) i kazdej cywilizacji AI (ownerId jest zwyklym parametrem).
+     */
+    function ownerSurowcePoolFor(ownerId: number): Record<string, number> {
+      return ownerResourceStockAll(cities, ownerId);
+    }
+
+    /** Pobiera koszt surowcowy budynku Z PULI PANSTWA (rozproszone po miastach ownera). */
+    function deductOwnerStockCost(ownerId: number, cost: Record<string, number>): void {
+      if (Object.keys(cost).length === 0) return;
+      deductBuildingStockCostAcrossCities(cities, ownerId, cost);
+    }
+
     /** Auto-budowa: dodaj następny budynek gdy kolejka pusta i tryb auto. */
     function tryAutoEnqueueBuild(cityId: string) {
       const city = cities.find(c => c.id === cityId);
@@ -4145,6 +4170,7 @@ async function boot(): Promise<void> {
       const ownImprovements = placedImprovementsForOwner(city.ownerId);
       const item = pickAutoBuildItem(city, prod0, data, {
         unlockedTechs: unlockedTechsForOwner(city.ownerId),
+        ownerSurowcePool: ownerSurowcePoolFor(city.ownerId),
         ctx: {
           builtBuildingIds: cityBuilt.get(cityId) ?? [],
           productionQueue: prod0.kolejka,
@@ -4156,13 +4182,15 @@ async function boot(): Promise<void> {
         },
       });
       if (!item) return null;
-      // TEMAT #6: pickAutoBuildItem juz odfiltrowal budynki bez pokrycia w magazynie —
+      // TEMAT #6: pickAutoBuildItem juz odfiltrowal budynki bez pokrycia w puli PANSTWA —
       // tu tylko pobieramy koszt (start budowy), symetrycznie z addItem (ui/cityPanel.ts).
+      // SUROW-CIV-01: pobor rozlozony po miastach ownera (deductOwnerStockCost), nie tylko
+      // z lokalnego City.surowce tego miasta.
       if (item.kind === 'budynek') {
         const def = data.buildings.find(b => b.id === item.id);
         const cost = buildingStockCost(def);
         if (Object.keys(cost).length > 0) {
-          city.surowce = deductBuildingStockCost(city.surowce, cost);
+          deductOwnerStockCost(city.ownerId, cost);
         }
       }
       cityProd.set(cityId, enqueue(prod0, item));
@@ -13929,6 +13957,7 @@ async function boot(): Promise<void> {
                       unlockedTechs,
                       territoryNodes: buildAllTerritoryNodes(),
                       isWorkable: okolicaHexWorkable,
+                      ownerSurowcePool: ownerSurowcePoolFor(city.ownerId),
                       ctx: {
                         builtBuildingIds: builtForCity,
                         productionQueue: prod0.kolejka,
@@ -13942,13 +13971,14 @@ async function boot(): Promise<void> {
                   );
                   // Apply auto-enqueue suggestion (only when queue is empty)
                   if (amDecision.enqueue !== null) {
-                    // TEMAT #6: pickAutoBuildItem (wewnatrz autoManageCity) juz odfiltrowal
-                    // budynki bez pokrycia w magazynie — tu tylko pobieramy koszt (start budowy).
+                    // TEMAT #6 / SUROW-CIV-01: pickAutoBuildItem (wewnatrz autoManageCity)
+                    // juz odfiltrowal budynki bez pokrycia w puli PANSTWA — tu tylko pobieramy
+                    // koszt (start budowy), rozlozony po miastach ownera.
                     if (amDecision.enqueue.kind === 'budynek') {
                       const def = data.buildings.find(b => b.id === amDecision.enqueue!.id);
                       const cost = buildingStockCost(def);
                       if (Object.keys(cost).length > 0) {
-                        city.surowce = deductBuildingStockCost(city.surowce, cost);
+                        deductOwnerStockCost(city.ownerId, cost);
                       }
                     }
                     prod0 = enqueue(prod0, amDecision.enqueue);
@@ -14134,16 +14164,19 @@ async function boot(): Promise<void> {
               civEra: empireEpochForOwner(ownerId),
               // D-START posiłki v2: setup „Wsparcie miast-państw" -> RESUP_TIERS (ai.ts).
               citySupportLevel: _menuCitySupport,
-              // TEMAT #6 (2026-07-23): AI pomija budynek (skips, nie zawiesza się) gdy magazyn
-              // miasta (City.surowce) nie starcza na koszt_surowce (cegła/ceramika). Jednostki
-              // i budynki bez koszt_surowce zawsze "affordable" (zero regresji na resztę AI).
+              // TEMAT #6 (2026-07-23) / SUROW-CIV-01 (2026-07-24): AI pomija budynek (skips,
+              // nie zawiesza się) gdy pula PAŃSTWA ownera (suma City.surowce po wszystkich
+              // miastach — nie tylko to jedno) nie starcza na koszt_surowce (cegła/ceramika).
+              // OWNERID-AGNOSTIC: dokladnie ta sama funkcja jak dla gracza (buildingStockCost
+              // w main.ts cmd.type==='build' i ui/cityPanel.ts addItem) -- zero specjalnej
+              // sciezki AI. Jednostki i budynki bez koszt_surowce zawsze "affordable".
               canAfford: (cityId: string, buildingId: string) => {
                 const c = cities.find(x => x.id === cityId);
                 if (!c) return true;
                 const def = data.buildings.find(b => b.id === buildingId);
                 const cost = buildingStockCost(def);
                 if (Object.keys(cost).length === 0) return true;
-                return canAffordBuildingStock(c.surowce, cost);
+                return canAffordBuildingStock(ownerSurowcePoolFor(c.ownerId), cost);
               },
             };
             const myCivTyp = aiOwnerCivMap.get(ownerId);
@@ -14579,21 +14612,24 @@ async function boot(): Promise<void> {
                         _menuDifficulty,
                       );
                     if (item !== null) {
-                      // TEMAT #6 (2026-07-23): siatka bezpieczeństwa — AI zwykle nie wybiera
-                      // budynku bez pokrycia (opts.canAfford w decideAITurn, patrz wyżej), ale
-                      // sprawdzamy ponownie tu (jedyne miejsce, ktore faktycznie enqueue'uje i
-                      // pobiera surowiec) — AI POMIJA budynek (continue), nie zawiesza tury.
+                      // TEMAT #6 (2026-07-23) / SUROW-CIV-01 (2026-07-24): siatka bezpieczeństwa
+                      // — AI zwykle nie wybiera budynku bez pokrycia (opts.canAfford w
+                      // decideAITurn, patrz wyżej), ale sprawdzamy ponownie tu (jedyne miejsce,
+                      // ktore faktycznie enqueue'uje i pobiera surowiec) — AI POMIJA budynek
+                      // (continue), nie zawiesza tury. Afordancja/pobor liczone Z PULI PAŃSTWA
+                      // ownera (nie tylko lokalne City.surowce tego miasta) — identycznie jak
+                      // dla gracza, zero specjalnej ścieżki AI.
                       if (item.kind === 'budynek') {
                         const def = data.buildings.find(b => b.id === item.id);
                         const cost = buildingStockCost(def);
                         if (Object.keys(cost).length > 0) {
-                          if (!canAffordBuildingStock(city.surowce, cost)) {
+                          if (!canAffordBuildingStock(ownerSurowcePoolFor(ownerId), cost)) {
                             console.warn(
-                              `[AI ${ownerId}] Build skipped (brak surowca w magazynie): ${cmd.buildingId}`,
+                              `[AI ${ownerId}] Build skipped (brak surowca w magazynie panstwa): ${cmd.buildingId}`,
                             );
                             continue;
                           }
-                          city.surowce = deductBuildingStockCost(city.surowce, cost);
+                          deductOwnerStockCost(ownerId, cost);
                         }
                       }
                       cityProd.set(cmd.cityId, enqueue(prod0, item));

@@ -80,8 +80,9 @@ import {
   buildingStockCost,
   canAffordBuildingStock,
   missingStockFor,
-  deductBuildingStockCost,
   stockResourceLabel,
+  ownerResourceStockAll,
+  deductBuildingStockCostAcrossCities,
 } from '../game/building-stock-cost';
 import {
   upgradeChainSteps,
@@ -4280,6 +4281,18 @@ function buildingStockCostForItem(item: ProductionItem): Record<string, number> 
   return buildingStockCost(def);
 }
 
+/**
+ * SUROW-CIV-01 (Maciej 2026-07-24): magazyn surowcow = pula PANSTWA (civ-wide, suma po
+ * WSZYSTKICH miastach ownera), nie tylko lokalne City.surowce. Brak cfg.getCities (np.
+ * testy panelu bez pelnego silnika) -> fallback na [city] (zachowanie sprzed SUROW-CIV-01).
+ * OWNERID-AGNOSTIC: dziala identycznie dla gracza i kazdej cywilizacji AI (ownerId zwykly
+ * parametr, panel miasta nie ma pojecia "gracz vs AI").
+ */
+function ownerSurowcePoolFor(city: City): Record<string, number> {
+  const allCities = cfg.getCities?.() ?? [city];
+  return ownerResourceStockAll(allCities, city.ownerId);
+}
+
 function addItem(city: City, item: ProductionItem, opts?: { upgrade?: boolean }): void {
   if (item.kind === 'budynek') {
     const prod = getProd(city.id);
@@ -4290,8 +4303,9 @@ function addItem(city: City, item: ProductionItem, opts?: { upgrade?: boolean })
     }
     const cost = buildingStockCostForItem(item);
     if (Object.keys(cost).length > 0) {
-      if (!canAffordBuildingStock(city.surowce, cost)) return; // blokada: magazyn nie starcza
-      city.surowce = deductBuildingStockCost(city.surowce, cost); // pobór RAZ, przy starcie budowy
+      if (!canAffordBuildingStock(ownerSurowcePoolFor(city), cost)) return; // blokada: pula panstwa nie starcza
+      // pobór RAZ, przy starcie budowy — rozłożony po miastach ownera (pula PAŃSTWA).
+      deductBuildingStockCostAcrossCities(cfg.getCities?.() ?? [city], city.ownerId, cost);
     }
   }
   setProd(city.id, enqueue(getProd(city.id), item));
@@ -4322,7 +4336,7 @@ function appendBuildActionButtons(
   btnWrap.appendChild(bBuy);
 
   const stockCost = buildingStockCostForItem(item);
-  const missing = missingStockFor(city.surowce, stockCost);
+  const missing = missingStockFor(ownerSurowcePoolFor(city), stockCost); // SUROW-CIV-01: pula PAŃSTWA
   const stockOk = Object.keys(missing).length === 0;
 
   const bBuild = el('button', 'btn btn-sm btn-b', buildLabel);
@@ -4484,19 +4498,21 @@ function buildingBonusChipsHtml(def: BuildingDef, max = 3): string {
 }
 
 /**
- * TEMAT #6: chip(y) kosztu surowcowego budynku (koszt_surowce w buildings.json,
- * np. cegła/ceramika) obok kosztów Pracy/Pieniądza — czerwony gdy magazyn miasta
- * (City.surowce) nie starcza. Pusty string gdy budynek nie ma kosztu surowcowego.
+ * TEMAT #6 / SUROW-CIV-01: chip(y) kosztu surowcowego budynku (koszt_surowce w
+ * buildings.json, np. cegła/ceramika) obok kosztów Pracy/Pieniądza — czerwony gdy
+ * pula PAŃSTWA ownera (suma City.surowce po wszystkich miastach) nie starcza.
+ * Pusty string gdy budynek nie ma kosztu surowcowego.
  */
 function buildingStockCostChipsHtml(def: BuildingDef, city: City | undefined): string {
   const cost = buildingStockCost(def);
   const keys = Object.keys(cost);
   if (keys.length === 0) return '';
   // Brak `city` (katalog/podgląd epoki bez kontekstu miasta) -- pokaż koszt neutralnie,
-  // bez czerwieni (nie wiemy, czy magazyn TEGO miasta starcza).
+  // bez czerwieni (nie wiemy, czy pula PAŃSTWA tego ownera starcza).
+  const pool = city !== undefined ? ownerSurowcePoolFor(city) : undefined;
   const chips = keys.map(k => {
     const need = cost[k]!;
-    const missing = city !== undefined && need > (city.surowce?.[k] ?? 0);
+    const missing = pool !== undefined && need > (pool[k] ?? 0);
     const cls = missing ? 'bld-infocard-chip stock-missing' : 'bld-infocard-chip';
     return `<span class="${cls}">${need} ${stockResourceLabel(k)}</span>`;
   });

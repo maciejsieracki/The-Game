@@ -348,7 +348,8 @@ function render(): void {
       const rt = r.ratePerTurn === 0 ? '—' : signedTxt(r.ratePerTurn);
       // Wiersze czystego dostępu (Sól/Koń/Ceramika) mają stock zawsze 0 — pokazujemy
       // „—" zamiast myslacej liczby (Maciej 2026-07-23: "stock 0/—").
-      const stockTxt = r.stock === 0 ? '—' : String(r.stock);
+      // SUROW-CIV-01 (2026-07-24): r.cap = cap PAŃSTWA (civ-wide) — pokaż „stock / cap".
+      const stockTxt = r.stock === 0 ? '—' : (r.cap != null ? `${r.stock} / ${r.cap}` : String(r.stock));
       sur += miniRow([
         esc(r.icon),
         `<div style="color:${r.dostep ? '#e2e6ec' : '#6f7889'}">${esc(r.label)}</div>`

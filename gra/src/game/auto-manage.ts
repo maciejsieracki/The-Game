@@ -140,6 +140,14 @@ export interface AutoManageInput {
   isWorkable?: (q: number, r: number) => boolean;
   /** Węzły terytorium — filtr własności heksów (overlap → najbliższe miasto). */
   territoryNodes?: readonly TerritoryNode[];
+  /**
+   * SUROW-CIV-01 (Maciej 2026-07-24): pula surowcowa CAŁEGO PAŃSTWA ownera (suma
+   * City.surowce po wszystkich miastach — game/building-stock-cost.ts ownerResourceStockAll),
+   * NIE tylko lokalne City.surowce. Brak hooka → fallback na city.surowce (miasto,
+   * zachowanie sprzed SUROW-CIV-01 — testowalność pickAutoBuildItem bez pełnego stanu gry).
+   * OWNERID-AGNOSTIC: wywołujący (main.ts) liczy tę samą pulę identycznie dla gracza i AI.
+   */
+  ownerSurowcePool?: Record<string, number>;
 }
 
 /**
@@ -167,7 +175,7 @@ export function pickAutoBuildItem(
   city: Readonly<City>,
   prod: Readonly<CityProduction>,
   data: ProductionData,
-  input: Pick<AutoManageInput, 'unlockedTechs' | 'ctx'>,
+  input: Pick<AutoManageInput, 'unlockedTechs' | 'ctx' | 'ownerSurowcePool'>,
 ): ProductionItem | null {
   if (frontItem(prod) !== null) return null;
   if ((city.budowaTryb ?? DEFAULT_BUDOWA_TRYB) !== 'auto') return null;
@@ -176,13 +184,17 @@ export function pickAutoBuildItem(
   const unlockedTechs = input.unlockedTechs ?? [];
   const ctx = input.ctx ?? {};
   const allCandidates = buildableProduction(city, data, unlockedTechs, ctx);
-  // TEMAT #6 (2026-07-23): auto-kolejka nigdy nie proponuje budynek, na ktorego koszt
-  // surowcowy (cegla/ceramika — koszt_surowce) nie starcza magazyn miasta (City.surowce).
-  // Jednostki i budynki bez koszt_surowce przechodza bez zmian (zero regresji).
+  // TEMAT #6 (2026-07-23) / SUROW-CIV-01 (2026-07-24): auto-kolejka nigdy nie proponuje
+  // budynek, na ktorego koszt surowcowy (cegla/ceramika — koszt_surowce) nie starcza
+  // magazyn PANSTWA ownera (suma City.surowce po wszystkich miastach — pula, nie tylko to
+  // miasto). Brak `input.ownerSurowcePool` -> fallback na city.surowce lokalnie (zachowanie
+  // sprzed SUROW-CIV-01, testowalnosc bez pelnego stanu gry). Jednostki i budynki bez
+  // koszt_surowce przechodza bez zmian (zero regresji).
+  const surowcePool = input.ownerSurowcePool ?? city.surowce;
   const candidates = allCandidates.filter(item => {
     const def = data.buildings.find(b => b.id === item.id);
     const cost = buildingStockCost(def);
-    return Object.keys(cost).length === 0 || canAffordBuildingStock(city.surowce, cost);
+    return Object.keys(cost).length === 0 || canAffordBuildingStock(surowcePool, cost);
   });
 
   if (candidates.length === 0) return null;
