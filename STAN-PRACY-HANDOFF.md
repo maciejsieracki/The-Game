@@ -210,7 +210,7 @@ node tools/trade-routes-income-test.cjs  # 49/49
 - **#7 Rzeka w bitwie — kara za brodzenie** (etap B mechaniki: jednostka w brodzie wolniejsza/podatna) — do ABC z właścicielem.
 - **#8 Oblężenie — dopracowanie planszy**: budynki miasta za murem + gruz w wyłomie.
 - **#10 Długi silnika dyplomacji**: SZYBKA UMOWA = realna auto-uczciwa oferta; dobrowolne zrywanie traktatów („Zerwij"); indeks dóbr handlowych per właściciel; opcjonalnie Konfederacja/aneksja/handel mapami (ABC).
-- **#11 Stary dług UI (audyt 2026-07-05 §3)**: karty budynków Poziom B, W4 7 zakładek, chipy 6C w raportach — NAJPIERW zweryfikować, czy Cursor już nie zrobił.
+- **#11 Stary dług UI (audyt 2026-07-05 §3)** — ✅ ZAMKNIĘTE (recon 2026-07-23): wszystkie 4 pozycje JUŻ WDROŻONE przez lane UI/Cursor — karty budynków (`cityPanel.ts` `buildBuildingInfocard`), W4 7 zakładek (`withW4TabCard`), chipy 6C (`hudChip6c.ts` + raporty per miasto w `empireDetailPanel.ts`), popupy v5 (SVG GAP-03/04 w `battleHudTheme.ts`).
 - **#13 preBattle jako nakładka na mapie** — ⏸ CZEKA na kanon Claude Design (zlecenie wysłane w paczce `DO-DESIGN-2026-07-23`); NIE implementować przed kanonem.
 - **#14 Porządek mockupów**: konsolidacja ~20 do `KANON/mockupy` (martwe linki hubu); ~18 brakujących zgłoszone Design.
 - **#12 Brand-book KANON zainstalowany** — ✅ ZROBIONE (commit `9a533e5`, live w `01-propozycje-z-design/brand-book/KANON/`).
