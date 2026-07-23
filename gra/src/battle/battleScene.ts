@@ -185,6 +185,7 @@ import {
   createSettingsActionRow1E,
 } from './battleHudTheme';
 import { civIconSvg } from '../ui/icons/brandAssets';
+import { leaderPortraitUrl } from '../ui/leaderPortraits';
 import { showEndScreen1E } from './endScreen1E';
 import {
   showEndDetails1E,
@@ -371,6 +372,10 @@ export interface BattleOpts {
   attackerCivIconId?: string;
   /** ikonaId cywilizacji broniacego (emblemat UI). */
   defenderCivIconId?: string;
+  /** Epoka atakujacego (1=kamien,2=braz,3=zelazo) -- dobor portretu wladcy w medalionie. Brak = 1. */
+  attackerEra?: number;
+  /** Epoka broniacego (1=kamien,2=braz,3=zelazo) -- dobor portretu wladcy w medalionie. Brak = 1. */
+  defenderEra?: number;
   /** Etykieta składu atakującego (np. Skład (2) / Wojownik). */
   attackerSideLabel?: string;
   /** Etykieta składu broniącego. */
@@ -652,6 +657,12 @@ function civIconIdFromLabel(civRows: readonly { Cywilizacja?: string; ikonaId?: 
   if (key.includes('rzym')) return 'rzymianie';
   if (key.includes('grec')) return 'grecy';
   return 'grecy';
+}
+
+/** Normalizuje era (attackerEra/defenderEra z BattleOpts) do 1..3, brak/nieprawidlowe -> 1 (kamien). */
+function clampEra(era: number | undefined): number {
+  if (era === undefined || !Number.isFinite(era)) return 1;
+  return Math.max(1, Math.min(3, Math.round(era)));
 }
 
 /** Kotwica centrum formacji deploy — front (dc=-2) laduje przy prawej krawedzi z marginesem. */
@@ -2088,6 +2099,9 @@ export class BattleScene {
   private _defenderSideLabel = '';
   private _attackerCivIconId = 'grecy';
   private _defenderCivIconId = 'grecy';
+  /** Epoka per strona (1/2/3) -- portret wladcy w medalionie (leaderPortraits.ts). */
+  private _attackerEra = 1;
+  private _defenderEra = 1;
   /** Scroll kontener kart w lewym panelu deploy. */
   private _deployRosterScroll: HTMLDivElement | null = null;
 
@@ -2168,6 +2182,8 @@ export class BattleScene {
       ?? civIconIdFromLabel(civRows, this._attackerCivLabel);
     this._defenderCivIconId = opts.defenderCivIconId
       ?? civIconIdFromLabel(civRows, this._defenderCivLabel);
+    this._attackerEra = clampEra(opts.attackerEra);
+    this._defenderEra = clampEra(opts.defenderEra);
 
     // World-hex-derived terrain preset (forest/hills/river density + palette).
     // ?bt=... (debug/screenshot only) wins over opts.worldTerrain; both are
@@ -2466,9 +2482,26 @@ export class BattleScene {
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         color: isAtk ? FACTION_ATK_TEXT : FACTION_DEF_TEXT, lineHeight: '0',
       });
-      medallion.innerHTML = PB_SVG.commander;
-      const medallionSvg = medallion.querySelector('svg');
-      if (medallionSvg) { medallionSvg.setAttribute('width', '22'); medallionSvg.setAttribute('height', '22'); }
+      const civIconId = isAtk ? this._attackerCivIconId : this._defenderCivIconId;
+      const era = isAtk ? this._attackerEra : this._defenderEra;
+      const portraitUrl = leaderPortraitUrl(civIconId, era);
+      if (portraitUrl) {
+        // Portret wladcy (docs/.../PORTRETY-WLADCOW-2026-07-23) -- obwodka/tlo medalionu
+        // (border + gradient ustawione powyzej) zostaja, tylko srodek to zdjecie zamiast ikony.
+        const img = document.createElement('img');
+        img.src = portraitUrl;
+        img.alt = '';
+        Object.assign(img.style, {
+          width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%', display: 'block',
+        });
+        medallion.appendChild(img);
+      } else {
+        // Fallback obowiazkowy: brak portretu (np. epoka bez pliku i bez wczesniejszej) ->
+        // dotychczasowa ikona SVG dowodcy, bez zmian.
+        medallion.innerHTML = PB_SVG.commander;
+        const medallionSvg = medallion.querySelector('svg');
+        if (medallionSvg) { medallionSvg.setAttribute('width', '22'); medallionSvg.setAttribute('height', '22'); }
+      }
       portraitWrap.appendChild(medallion);
       card.appendChild(portraitWrap);
 

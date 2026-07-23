@@ -12,6 +12,7 @@ import type { CivBonusLite } from '../game/production';
 import { isCombatModifierBonus } from '../game/civ-bonuses';
 import { terrainIconSvg } from './icons/brandAssets';
 import { PB_SVG } from '../battle/battleHudTheme';
+import { leaderPortraitUrl } from './leaderPortraits';
 
 export interface PreBattleUnit {
   nazwa: string;
@@ -37,6 +38,10 @@ export interface PreBattleSide {
   portretEmoji?: string;
   /** D4-Q3 / P0-D4: lookup bonusów przez configurePreBattle.getCivBonusy */
   ownerId?: number;
+  /** ikonaId cywilizacji (civs.json) -- portret wladcy w medalionie (leaderPortraits.ts). */
+  civId?: string;
+  /** Epoka tej strony (1=kamien,2=braz,3=zelazo) -- dobor portretu wladcy. Brak = 1. */
+  era?: number;
   units: PreBattleUnit[];
 }
 
@@ -173,6 +178,7 @@ function ensureStyles(): void {
 .pb-cmd.pb-foe .pb-por{border:2px solid var(--pb-foe-txt);color:var(--pb-foe-txt);
   background:radial-gradient(circle at 40% 30%,#3a1c1c,#0a0d14);box-shadow:0 0 16px rgba(200,64,64,.3)}
 .pb-cmd .pb-por svg{width:27px;height:27px}
+.pb-cmd .pb-por img{width:100%;height:100%;object-fit:cover;border-radius:50%;display:block}
 .pb-cmd .pb-role{font-size:9.5px;color:var(--pb-dim);text-transform:uppercase;letter-spacing:.09em;white-space:nowrap}
 .pb-cmd.pb-you .pb-role b{color:var(--pb-you-txt)}
 .pb-cmd.pb-foe .pb-role b{color:var(--pb-foe-txt)}
@@ -448,9 +454,15 @@ function commanderHtml(
     : '';
   // NOTE: kontrakt PreBattleSide nie ma pola "liczba ludzi" (tylko jednostki/ilosc) --
   // pokazujemy liczbe oddzialow (unitCount); TODO: dodac headcount, jesli silnik zacznie go liczyc.
+  // Portret wladcy (docs/.../PORTRETY-WLADCOW-2026-07-23) -- fallback obowiazkowy: brak
+  // civId/pliku -> dotychczasowa ikona PB_SVG.commander, bez zmian.
+  const portraitUrl = leaderPortraitUrl(side.civId, side.era ?? 1);
+  const porInner = portraitUrl
+    ? '<img src="' + esc(portraitUrl) + '" alt="">'
+    : PB_SVG.commander;
   return (
     '<div class="pb-cmd ' + sideCls + ' ' + posCls + '">' +
-    '<span class="pb-por">' + PB_SVG.commander + '</span>' +
+    '<span class="pb-por">' + porInner + '</span>' +
     '<div>' +
     '<div class="pb-role">' + civ + ' · <b>' + roleLabel(role, isYou) + '</b></div>' +
     '<div class="pb-who">' + who + '</div>' +

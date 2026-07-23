@@ -57,6 +57,11 @@ export interface MapFieldBattleLaunchDeps {
   unitAtak: (def: UnitPowerInput) => number;
   civLabelForOwner: (ownerId: number) => string;
   civBonusyForOwnerId: (ownerId: number) => readonly CivBonusEntry[];
+  /** Portrety wladcow (leaderPortraits.ts) w medalionach BattleScene/preBattle -- opcjonalne,
+   *  brak = BattleScene domyslnie era=1 (kamien), zero regresji dla starych wywolan. */
+  eraForOwnerId?: (ownerId: number) => number;
+  /** ikonaId cywilizacji (civs.json) dla ownerId -- portret wladcy w medalionie preBattle. */
+  civIdForOwner?: (ownerId: number) => string;
   lookupUnitDef: (typeId: string) => unknown;
   runtimeToBattleUnit: (u: RuntimeUnit, def: unknown, color: number) => BattleUnit;
   terrainCombatData: readonly TerrainEntry[];
@@ -129,11 +134,16 @@ function preBattleSideFromRoster(
   unitDefFor: MapFieldBattleLaunchDeps['unitDefFor'],
   unitHealth: MapFieldBattleLaunchDeps['unitHealth'],
   unitAtak: MapFieldBattleLaunchDeps['unitAtak'],
+  civIdForOwner?: MapFieldBattleLaunchDeps['civIdForOwner'],
+  eraForOwnerId?: MapFieldBattleLaunchDeps['eraForOwnerId'],
 ): PreBattleInfo['atakujacy'] {
+  const ownerId = roster[0]?.ownerId;
   return {
     nazwa: title,
     cywilizacja: civLabel,
-    ownerId: roster[0]?.ownerId,
+    ownerId,
+    civId: ownerId !== undefined ? civIdForOwner?.(ownerId) : undefined,
+    era: ownerId !== undefined ? eraForOwnerId?.(ownerId) : undefined,
     units: roster.map(u => preBattleUnitFromRuntime(u, unitDefFor, unitHealth, unitAtak)),
   };
 }
@@ -208,6 +218,8 @@ export function planOpenCityFieldBattle(
     | 'civLabelForOwner'
     | 'terrainCombatData'
     | 'registerMilitiaDef'
+    | 'eraForOwnerId'
+    | 'civIdForOwner'
   >,
 ): OpenCityFieldBattlePlan | null {
   if (city.maMur) return null;
@@ -249,6 +261,8 @@ export function planOpenCityFieldBattle(
       deps.unitDefFor,
       deps.unitHealth,
       deps.unitAtak,
+      deps.civIdForOwner,
+      deps.eraForOwnerId,
     ),
     obronca: preBattleSideFromRoster(
       defRoster,
@@ -257,6 +271,8 @@ export function planOpenCityFieldBattle(
       deps.unitDefFor,
       deps.unitHealth,
       deps.unitAtak,
+      deps.civIdForOwner,
+      deps.eraForOwnerId,
     ),
     teren: terrain,
     szanseAtkPct: szanse,
@@ -394,6 +410,8 @@ export function launchFieldBattleFromMap(
         defenderCivLabel: pbInfo.obronca.cywilizacja,
         attackerSideLabel: pbInfo.atakujacy.nazwa,
         defenderSideLabel: pbInfo.obronca.nazwa,
+        attackerEra: deps.eraForOwnerId?.(atkLead.ownerId),
+        defenderEra: deps.eraForOwnerId?.(defLead.ownerId),
         onCancel: () => setMood('mapa'),
       });
       bs.play((res) => {

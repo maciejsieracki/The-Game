@@ -9957,10 +9957,13 @@ async function boot(): Promise<void> {
     }
 
     function preBattleSideFromRoster(roster: RuntimeUnit[], title: string, civLabel: string): PreBattleInfo['atakujacy'] {
+      const ownerId = roster[0]?.ownerId ?? 0;
       return {
         nazwa: title,
         cywilizacja: civLabel,
-        ownerId: roster[0]?.ownerId,
+        ownerId,
+        civId: civTypeForOwner(ownerId),
+        era: empireEpochForOwner(ownerId),
         units: roster.map(preBattleUnitFromRuntime),
       };
     }
@@ -10110,6 +10113,8 @@ async function boot(): Promise<void> {
             defenderCivLabel: pbInfo4.obronca.cywilizacja,
             attackerSideLabel: pbInfo4.atakujacy.nazwa,
             defenderSideLabel: pbInfo4.obronca.nazwa,
+            attackerEra: empireEpochForOwner(atkLead.ownerId),
+            defenderEra: empireEpochForOwner(defLead.ownerId),
             onCancel: () => setMood('mapa'),
           });
           bs.play((res) => {
@@ -10413,6 +10418,8 @@ async function boot(): Promise<void> {
             defenderCivLabel: pbInfo.obronca.cywilizacja,
             attackerSideLabel: pbInfo.atakujacy.nazwa,
             defenderSideLabel: pbInfo.obronca.nazwa,
+            attackerEra: empireEpochForOwner(atkLead.ownerId),
+            defenderEra: empireEpochForOwner(defLead.ownerId),
             onCancel: () => setMood('mapa'),
           });
           bs.play((res) => {
@@ -11023,6 +11030,8 @@ async function boot(): Promise<void> {
       unitAtak,
       civLabelForOwner,
       civBonusyForOwnerId,
+      eraForOwnerId: empireEpochForOwner,
+      civIdForOwner: civTypeForOwner,
       lookupUnitDef,
       runtimeToBattleUnit,
       terrainCombatData: terrainCombatData as unknown as readonly TerrainEntry[],
@@ -11349,6 +11358,8 @@ async function boot(): Promise<void> {
             siege: { defCiv: ikonaIdToBronzeCiv(defCivId) },
             attackerCivBonusy: civBonusyForOwnerId(atkRosterRef[0]?.ownerId ?? 0),
             defenderCivBonusy: civBonusyForOwnerId(defRosterRef[0]?.ownerId ?? 0),
+            attackerEra: empireEpochForOwner(atkRosterRef[0]?.ownerId ?? 0),
+            defenderEra: empireEpochForOwner(defRosterRef[0]?.ownerId ?? 0),
             onCancel: () => setMood('mapa'),
           });
           bs.play((res) => {
@@ -11434,6 +11445,8 @@ async function boot(): Promise<void> {
         defenderCivLabel: 'Grecja',
         attackerCivBonusy: civBonusyForOwnerId(0),
         defenderCivBonusy: civBonusyForOwnerId(1),
+        attackerEra: player.era,
+        defenderEra: player.era,
         onCancel: () => setMood('mapa'),
       };
       if (siege) bOpts.siege = { defCiv: 'grecja' };
@@ -11576,6 +11589,8 @@ async function boot(): Promise<void> {
         atakujacy: {
           nazwa: 'Rzym (Legion)',
           cywilizacja: 'Rzym',
+          civId: 'rzymianie',
+          era: player.era,
           units: attackerUnits.map((bu): PreBattleUnit => ({
             nazwa:     bu.nazwa,
             kategoria: bu.kategoria,
@@ -11588,6 +11603,8 @@ async function boot(): Promise<void> {
         obronca: {
           nazwa: 'Grecja (Falanga)',
           cywilizacja: 'Grecja',
+          civId: 'grecy',
+          era: player.era,
           units: defenderUnits.map((bu): PreBattleUnit => ({
             nazwa:     bu.nazwa,
             kategoria: bu.kategoria,
