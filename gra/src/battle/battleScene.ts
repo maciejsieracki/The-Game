@@ -2930,6 +2930,8 @@ export class BattleScene {
     this.canvas.addEventListener('pointermove', this._onCanvasHoverMove);
     this.canvas.addEventListener('pointerleave', this._onCanvasHoverLeave);
     this._startLoop();
+    // TEMP QA HOOK (zadanie #8 weryfikacja wzrokowa gruzu w wyłomie) — do usunięcia po review.
+    if (typeof window !== 'undefined') (window as any).__civBattleSceneQA = this;
   }
 
   // -------------------------------------------------------------------------
