@@ -72,7 +72,7 @@ for (const u of unitsJson) {
   const role  = u['Rola (linia)'] ?? '';
   const typ   = u['Typ'] ?? '';
   const isSuper = u['Super-jednostka'] === 'TAK';
-  const cat = categoryOf(name, role, isSuper);
+  const cat = categoryOf(name, role, isSuper, typ);
   rows.push({ name, typ, role, isSuper, cat });
   if (cat === 'domyslny' && !ACKNOWLEDGED_DOMYSLNY.has(name)) {
     domyslni.push(name);

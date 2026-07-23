@@ -34,6 +34,8 @@ export interface ScienceHubHudConfig {
   onSelectTech: (techId: string) => void;
   onOpenFullTree: () => void;
   onShowInTree: (techId: string) => void;
+  /** Pełnoekranowy graf drzewa (siatka bez krawędzi — techTreeView). */
+  onOpenTreeView?: () => void;
   onClose?: () => void;
   /** Gdy drzewko otwarte — Esc obsługuje drzewko, nie hub. */
   isTreeOpen?: () => boolean;
@@ -113,6 +115,8 @@ function ensureStyles(): void {
   border:1px solid rgba(107,196,232,0.45);background:rgba(107,196,232,0.12);color:#d4ecff;
   font-size:0.82em;font-weight:600;font-family:inherit;transition:background .15s,border-color .15s;}
 .civ-science-hub-hud .sh-tree-btn:hover{background:rgba(107,196,232,0.22);border-color:rgba(107,196,232,0.65);}
+.civ-science-hub-hud .sh-tree-btn.gold{border-color:rgba(232,216,138,0.5);background:rgba(232,216,138,0.1);color:#e8d88a;}
+.civ-science-hub-hud .sh-tree-btn.gold:hover{background:rgba(232,216,138,0.2);border-color:rgba(232,216,138,0.75);}
 .civ-science-hub-hud .sh-hint{font-size:0.7em;color:var(--muted);font-style:italic;margin-top:0.4em;line-height:1.4;}
 `;
   const s = document.createElement('style');
@@ -202,6 +206,15 @@ export function createScienceHubHud(config: ScienceHubHudConfig): ScienceHubHudA
     treeBtn.innerHTML = '<span class="sh-tree-ic">' + brandIconSvg('chip-map', 20) + '</span>Pełne drzewko technologii';
     treeBtn.addEventListener('click', () => config.onOpenFullTree());
     head.appendChild(treeBtn);
+
+    if (config.onOpenTreeView) {
+      const gridBtn = document.createElement('button');
+      gridBtn.type = 'button';
+      gridBtn.className = 'sh-tree-btn gold';
+      gridBtn.innerHTML = '<span class="sh-tree-ic">' + brandIconSvg('res-science', 20) + '</span>Drzewko — graf epok (pełny ekran)';
+      gridBtn.addEventListener('click', () => config.onOpenTreeView?.());
+      head.appendChild(gridBtn);
+    }
 
     scroll.appendChild(head);
 
@@ -303,7 +316,7 @@ export function createScienceHubHud(config: ScienceHubHudConfig): ScienceHubHudA
       el,
       () => open,
       closeHub,
-      '[data-act="science"]',
+      '[data-act="science"], .civ-ttv-overlay, .civ-ttv-confirm-back',
     );
   }
 

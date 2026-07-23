@@ -77,6 +77,13 @@ import {
   type AvailabilityContext,
 } from '../game/production';
 import {
+  buildingStockCost,
+  canAffordBuildingStock,
+  missingStockFor,
+  deductBuildingStockCost,
+  stockResourceLabel,
+} from '../game/building-stock-cost';
+import {
   upgradeChainSteps,
   upgradeCompositionLines,
   buildingStatSummaryLines,
@@ -1774,6 +1781,7 @@ function ensureStyles(): void {
 .civ-cs .bld-infocard-bd{padding:0.62em 0.85em 0.72em;display:flex;flex-direction:column;gap:0.45em;}
 .civ-cs .bld-infocard-chips{display:flex;flex-wrap:wrap;gap:0.35em;}
 .civ-cs .bld-infocard-chip{display:inline-flex;align-items:center;gap:0.28em;font-size:0.68em;color:#c8b898;border:1px solid rgba(232,216,138,.25);border-radius:20px;padding:0.22em 0.52em;}
+.civ-cs .bld-infocard-chip.stock-missing{color:#e88a7a;border-color:rgba(232,110,90,.45);background:rgba(232,90,70,.08);}
 .civ-cs .bld-infocard-upg{display:flex;align-items:center;gap:0.42em;padding:0.42em 0.52em;background:rgba(232,216,138,.07);border:1px solid rgba(232,216,138,.22);border-radius:9px;font-size:0.68em;color:#d8cca8;}
 .civ-cs .bld-infocard-ft{display:flex;align-items:center;justify-content:space-between;padding-top:0.42em;border-top:1px solid rgba(232,216,138,.12);font-size:0.62em;color:#8a8478;}
 .civ-cs .bld-infocard-era{display:inline-flex;align-items:center;gap:0.35em;letter-spacing:.06em;text-transform:uppercase;color:#b7a06a;}
@@ -4226,6 +4234,18 @@ function wireTopBarStatDetails(
   }
 }
 
+/**
+ * TEMAT #6 (2026-07-23): koszt surowcowy budynku (cegła/ceramika — buildings.json
+ * `koszt_surowce`) pobierany z magazynu MIASTA (City.surowce) RAZ, przy starcie
+ * budowy (enqueue) — nie przy ukończeniu. Pusty obiekt = budynek bez kosztu
+ * surowcowego (zachowanie sprzed TEMAT #6). Patrz game/building-stock-cost.ts.
+ */
+function buildingStockCostForItem(item: ProductionItem): Record<string, number> {
+  if (item.kind !== 'budynek') return {};
+  const def = gameData()?.buildings.find(b => b.id === item.id);
+  return buildingStockCost(def);
+}
+
 function addItem(city: City, item: ProductionItem, opts?: { upgrade?: boolean }): void {
   if (item.kind === 'budynek') {
     const prod = getProd(city.id);
@@ -4233,6 +4253,11 @@ function addItem(city: City, item: ProductionItem, opts?: { upgrade?: boolean })
     if (!opts?.upgrade) {
       const built = cfg.getBuiltBuildingIds?.(city.id) ?? [];
       if (built.includes(item.id)) return;
+    }
+    const cost = buildingStockCostForItem(item);
+    if (Object.keys(cost).length > 0) {
+      if (!canAffordBuildingStock(city.surowce, cost)) return; // blokada: magazyn nie starcza
+      city.surowce = deductBuildingStockCost(city.surowce, cost); // pobór RAZ, przy starcie budowy
     }
   }
   setProd(city.id, enqueue(getProd(city.id), item));
@@ -4262,8 +4287,17 @@ function appendBuildActionButtons(
   });
   btnWrap.appendChild(bBuy);
 
+  const stockCost = buildingStockCostForItem(item);
+  const missing = missingStockFor(city.surowce, stockCost);
+  const stockOk = Object.keys(missing).length === 0;
+
   const bBuild = el('button', 'btn btn-sm btn-b', buildLabel);
-  bBuild.title = `Dodaj do kolejki · ${item.koszt} pracy`;
+  (bBuild as HTMLButtonElement).disabled = !stockOk;
+  bBuild.title = stockOk
+    ? `Dodaj do kolejki · ${item.koszt} pracy`
+    : 'Brakuje w magazynie: ' + Object.entries(missing)
+      .map(([k, v]) => `${v} ${stockResourceLabel(k)}`)
+      .join(', ');
   bBuild.addEventListener('click', () => addItem(city, item, upgrade ? { upgrade: true } : undefined));
   btnWrap.appendChild(bBuild);
 }
@@ -4415,6 +4449,26 @@ function buildingBonusChipsHtml(def: BuildingDef, max = 3): string {
   return chips.join('');
 }
 
+/**
+ * TEMAT #6: chip(y) kosztu surowcowego budynku (koszt_surowce w buildings.json,
+ * np. cegła/ceramika) obok kosztów Pracy/Pieniądza — czerwony gdy magazyn miasta
+ * (City.surowce) nie starcza. Pusty string gdy budynek nie ma kosztu surowcowego.
+ */
+function buildingStockCostChipsHtml(def: BuildingDef, city: City | undefined): string {
+  const cost = buildingStockCost(def);
+  const keys = Object.keys(cost);
+  if (keys.length === 0) return '';
+  // Brak `city` (katalog/podgląd epoki bez kontekstu miasta) -- pokaż koszt neutralnie,
+  // bez czerwieni (nie wiemy, czy magazyn TEGO miasta starcza).
+  const chips = keys.map(k => {
+    const need = cost[k]!;
+    const missing = city !== undefined && need > (city.surowce?.[k] ?? 0);
+    const cls = missing ? 'bld-infocard-chip stock-missing' : 'bld-infocard-chip';
+    return `<span class="${cls}">${need} ${stockResourceLabel(k)}</span>`;
+  });
+  return chips.join('');
+}
+
 function parentBuildingName(data: GameData, upgradeFromId: string | undefined): string | null {
   const id = upgradeFromId?.trim();
   if (!id) return null;
@@ -4461,6 +4515,13 @@ function buildBuildingInfocard(
     const chips = el('div', 'bld-infocard-chips');
     chips.innerHTML = chipsHtml;
     bd.appendChild(chips);
+  }
+  // TEMAT #6: koszt surowcowy (cegła/ceramika) — chip osobno, czerwony gdy magazyn braku.
+  const stockChipsHtml = buildingStockCostChipsHtml(def, opts?.city);
+  if (stockChipsHtml) {
+    const stockChips = el('div', 'bld-infocard-chips');
+    stockChips.innerHTML = stockChipsHtml;
+    bd.appendChild(stockChips);
   }
 
   const parentName = parentBuildingName(data, def.upgradeFrom);
@@ -4660,6 +4721,15 @@ function buildBuildingDetailCard(def: BuildingDef, data: GameData): HTMLDivEleme
   if (def.przyrostKosztu) gridDetailRow(gCost, 'Przyrost kosztu', `+${def.przyrostKosztu} ${cityPanelChipIconWrap('res-work', 14)} / poziom`);
   gridDetailRow(gCost, 'Utrzymanie', `${def.utrzymanie} ${cityPanelChipIconWrap('res-treasury', 14)}`);
   if (def.przyrostUtrzymania) gridDetailRow(gCost, 'Przyrost utrzym.', `+${def.przyrostUtrzymania} ${cityPanelChipIconWrap('res-treasury', 14)} / poziom`);
+  const stockCostDetail = buildingStockCost(def);
+  if (Object.keys(stockCostDetail).length > 0) {
+    gridDetailRow(
+      gCost,
+      'Koszt surowcowy',
+      Object.entries(stockCostDetail).map(([k, v]) => `${v} ${stockResourceLabel(k)}`).join(' + ')
+        + ' (z magazynu miasta)',
+    );
+  }
 
   if (def.maksPoziom > 1) {
     appendDetailSection(card, 'Poziomy');

@@ -371,7 +371,8 @@
     "przyrostUtrzymania": 1,
     "wymagania": "",
     "uwagi": "Mnoznik % dotyczy handlu ladowego (szlaki miedzy miastami)",
-    "techUnlock": "Handel"
+    "techUnlock": "Handel",
+    "koszt_surowce": { "ceramika": 4 }
   },
   {
     "id": "spichlerz",
@@ -442,7 +443,8 @@
     "przyrostUtrzymania": 0,
     "wymagania": "upgrade ze Spichlerza I",
     "uwagi": "B-SPIC: bramka Sól; cap armii 150; bufor 70% po wzroście",
-    "techUnlock": "Warzelnia soli"
+    "techUnlock": "Warzelnia soli",
+    "koszt_surowce": { "cegla": 10 }
   },
   {
     "id": "garncarnia",
@@ -583,7 +585,8 @@
     "wymagania": "upgrade Kamiennych kręgów",
     "uwagi": "B-KULT-REL + KULT-BUD-02: budynek RELIGIJNY — konwersja religii +4%/t (religia_konwersja_swiatynia, additive do bazy); plon kultury OK, bez bonusu konwersji kultury.",
     "techUnlock": "Religia",
-    "upgradeFrom": "kamienne_kregi"
+    "upgradeFrom": "kamienne_kregi",
+    "koszt_surowce": { "ceramika": 6 }
   },
   {
     "id": "biblioteka",
@@ -632,7 +635,8 @@
     "techUnlock": "Pismo",
     "poziomTechGate": {
       "6": "Astronomia"
-    }
+    },
+    "koszt_surowce": { "ceramika": 5 }
   },
   {
     "id": "studnia",
@@ -702,7 +706,8 @@
     "przyrostUtrzymania": 1,
     "wymagania": "",
     "uwagi": "T-TECH-6: zdrowie++ i cap ludności (turn-economy)",
-    "techUnlock": "Budownictwo"
+    "techUnlock": "Budownictwo",
+    "koszt_surowce": { "cegla": 12 }
   },
   {
     "id": "mennica",
@@ -773,7 +778,8 @@
     "wymagania": "",
     "uwagi": "",
     "techUnlock": "Budownictwo",
-    "odblokowuje": "maMur"
+    "odblokowuje": "maMur",
+    "koszt_surowce": { "cegla": 15 }
   },
   {
     "id": "koszary",
@@ -1034,7 +1040,8 @@
     "uwagi": "ABC-22 C: Cytadela = upgrade Murów (1 slot). Mapa = osobny Fort terenowy. Suma Mury+Cytadela w JSON.",
     "techUnlock": "Inżynieria",
     "odblokowuje": "maFort",
-    "upgradeFrom": "mury"
+    "upgradeFrom": "mury",
+    "koszt_surowce": { "cegla": 18 }
   },
   {
     "id": "warsztat_oblezniczy",
@@ -1106,7 +1113,8 @@
     "wymagania": "upgrade Biblioteki (merge Teatr)",
     "uwagi": "ABC-21 B: merge Biblioteka+Akademia+Teatr — suma w JSON; Teatr ukryty z produkcji",
     "techUnlock": "Filozofia",
-    "upgradeFrom": "biblioteka"
+    "upgradeFrom": "biblioteka",
+    "koszt_surowce": { "cegla": 14 }
   },
   {
     "id": "teatr",
@@ -1212,7 +1220,8 @@
     "przyrostUtrzymania": 1,
     "wymagania": "",
     "uwagi": "Centrum administracji prowincji; bonus do utrzymania porzadku (garnizon); mnoznik % do przychodu podatkowego",
-    "techUnlock": "Prawo"
+    "techUnlock": "Prawo",
+    "koszt_surowce": { "cegla": 9 }
   },
   {
     "id": "trybunal",
@@ -1282,7 +1291,8 @@
     "przyrostUtrzymania": 1,
     "wymagania": "wymaga Studnia",
     "uwagi": "KULT-BUD-01: +3 kultura baza, +1% konwersji; termy — zadowolenie, zdrowie; wymaga Studni i tech Medycyna.",
-    "techUnlock": "Medycyna"
+    "techUnlock": "Medycyna",
+    "koszt_surowce": { "cegla": 10 }
   },
   {
     "id": "lazaret",

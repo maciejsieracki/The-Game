@@ -349,7 +349,7 @@ function normalizeForMatch(s) {
   const nfd = s.normalize("NFD").replace(/[̀-ͯ]/g, "");
   return nfd.replace(/[Łł]/g, "l").toLowerCase();
 }
-function categoryOf(name, role, isSuper) {
+function categoryOf(name, role, isSuper, typ) {
   if (isSuper) return "super";
   const n = normalizeForMatch(name ?? "");
   const r = normalizeForMatch(role ?? "");
@@ -372,12 +372,24 @@ function categoryOf(name, role, isSuper) {
   if (procarKw.some((kw) => n.includes(kw) || r.includes(kw))) return "procarz";
   const oszczepKw = ["oszczep", "javelin", "atlatl", "estolic"];
   if (oszczepKw.some((kw) => n.includes(kw) || r.includes(kw))) return "oszczepnik";
-  const maczugKw = ["maczug", "chaska", "club", "mace"];
+  const maczugKw = ["maczug", "chaska", "club", "mace", "champi"];
   if (maczugKw.some((kw) => n.includes(kw) || r.includes(kw))) return "maczuga";
   const toporKw = ["topor", "axe"];
   if (toporKw.some((kw) => n.includes(kw) || r.includes(kw))) return "topor";
   const oblezKw = ["taran", "katapult", "oblezn", "siege", "battering", "trebuchet"];
   if (oblezKw.some((kw) => n.includes(kw) || r.includes(kw))) return "obleznicza";
+  if (n.includes("tyrren")) return "topor";
+  if (typ) {
+    const t = normalizeForMatch(typ);
+    if (t === "swordsman") return "miecznik";
+    if (t === "spearman") return "wlocznik";
+    if (t === "falangite") return "falanga";
+    if (t === "mount") return "konnica";
+    if (t === "distance") return "lucznik";
+    if (t === "slinger") return "procarz";
+    if (t === "naval") return "galera";
+    if (t === "siege") return "obleznicza";
+  }
   return "domyslny";
 }
 var DEFAULT_TERRAIN_COSTS = {

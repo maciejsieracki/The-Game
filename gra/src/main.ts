@@ -409,6 +409,7 @@ import { advanceProduction, rushProduction, rushCost, populationCostOf, UNIT_POP
   enqueue, buildingProductionItem, splitPraca, cityPracaInteger, pracaImperialPoolGain, availableProduction, availableReplacementsFor,
   buildingLevelForEpoch, buildingEffectAtLevel, frontItem, unitNacjaForCivKey, applyCompletedBuildingIds,
   type CityProduction, type AvailabilityContext } from './game/production';
+import { buildingStockCost, canAffordBuildingStock, deductBuildingStockCost } from './game/building-stock-cost';
 import { empireHasKopalniaNaZlozuZelaza, hasZelazoAccess } from './game/zelazo-access';
 import {
   tradableGoodsForOwner as tradableGoodsIndexForOwnerPure, sumCitySurowce,
@@ -530,6 +531,14 @@ import {
   showScienceHubHud,
   toggleScienceHubHud,
 } from './ui/scienceHubHud';
+import {
+  configureTechTreeView,
+  showTechTreeView,
+  hideTechTreeView,
+  isTechTreeViewOpen,
+  refreshTechTreeViewIfOpen,
+} from './ui/techTreeView';
+import { buildingGateMet, improvementGateMet } from './game/research';
 import {
   createWikiHubHud,
   hideWikiHubHud,
@@ -2926,6 +2935,7 @@ async function boot(): Promise<void> {
       hideScienceHubHud();
       hideWikiHubHud();
       hideSciencePicker();
+      hideTechTreeView();
       hideEmpireDetailPanel();
       if (isDiplomacyAudienceOpen()) {
         hideDiplomacyAudience();
@@ -3002,6 +3012,7 @@ async function boot(): Promise<void> {
         updateHud();
         refreshScienceHubIfOpen();
         refreshSciencePickerIfOpen();
+        refreshTechTreeViewIfOpen();
       } else {
         console.warn('[Nauka] Nie można ustawić celu:', techSlug);
       }
@@ -8245,11 +8256,12 @@ async function boot(): Promise<void> {
         },
         onOpenFullTree: () => openScienceTreeDocked(),
         onShowInTree: (techId) => openScienceTreeDocked(techId),
+        onOpenTreeView: () => showTechTreeView(0),
         onClose: () => {
           hideSciencePicker();
           refreshD1bHud();
         },
-        isTreeOpen: () => isSciencePickerOpen(),
+        isTreeOpen: () => isSciencePickerOpen() || isTechTreeViewOpen(),
       });
       createWikiHubHud({
         onClose: () => refreshD1bHud(),
@@ -8606,6 +8618,43 @@ async function boot(): Promise<void> {
       getPlayerEra: (_ownerId: number) => player.era,
       getTempoGry: (_ownerId: number) => player.tempoGry ?? 'standardowa',
       getDifficulty: (_ownerId: number) => _menuDifficulty,
+    });
+
+    // --- Konfiguracja grafu drzewa technologii (siatka 1E — techTreeView) ---
+    // Read-only: te same haki co picker + bramki budynku/ulepszenia (powody blokad).
+    configureTechTreeView({
+      getResearchState: (_ownerId: number) => {
+        const st = getResearchState(player, data.tech, 0, _menuDifficulty);
+        return {
+          pula:           st.pula,
+          targetId:       st.targetId ? techToSlug(st.targetId) : null,
+          kosztCelu:      st.kosztCelu,
+          postepFraction: st.postepFraction,
+          turnsLeft:      st.turnsLeft ?? 0,
+        };
+      },
+      getResearchedTechs: (_ownerId: number) => Array.from(player.zbadane).map(techToSlug),
+      getAvailableTechs: (_ownerId: number) =>
+        availableTechs(data.tech, player.zbadane, researchGateForOwner(0)).map(t =>
+          techToSlug((t.Technologia ?? '').trim()),
+        ),
+      getNaukaRate: (_ownerId: number) => buildHudState().naukaRate ?? 0,
+      getTempoGry: (_ownerId: number) => player.tempoGry ?? 'standardowa',
+      getDifficulty: (_ownerId: number) => _menuDifficulty,
+      isBuildingGateMet: (ownerId: number, techName: string) => {
+        const def = data.tech.find(t => (t.Technologia ?? '').trim() === techName);
+        if (!def) return true;
+        return buildingGateMet(def, researchGateForOwner(ownerId));
+      },
+      isImprovementGateMet: (ownerId: number, techName: string) => {
+        const def = data.tech.find(t => (t.Technologia ?? '').trim() === techName);
+        if (!def) return true;
+        return improvementGateMet(def, researchGateForOwner(ownerId));
+      },
+      onStartResearch: (techSlug: string) => {
+        selectPlayerResearchSlug(techSlug);
+        refreshTechTreeViewIfOpen();
+      },
     });
 
     // Initial HUD (D1B — moduł hud.ts)
@@ -12462,6 +12511,7 @@ async function boot(): Promise<void> {
                 ' Zbadane=' + player.zbadane.size,
               );
               refreshSciencePickerIfOpen();
+              refreshTechTreeViewIfOpen();
             }
           } catch (errBank) {
             console.warn('[Nauka] B\u0142\u0105d bankowania/badania:', errBank);

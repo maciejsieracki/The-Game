@@ -84,7 +84,7 @@ function renderUnitThumbCanvas(u: UnitDef, ownerColor: number): HTMLCanvasElemen
   if (!bundle) return null;
 
   const isSuper = u['Super-jednostka'] === 'TAK';
-  const cat = categoryOf(name, u['Rola (linia)'] ?? '', isSuper);
+  const cat = categoryOf(name, u['Rola (linia)'] ?? '', isSuper, u['Typ']);
   let group: THREE.Group;
   try {
     group = buildUnitModel(cat, ownerColor, name);

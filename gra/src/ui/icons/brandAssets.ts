@@ -172,7 +172,7 @@ export function buildingIconSvg(def: BuildingDef | undefined, buildingId?: strin
 
 function unitCategoryKey(u: UnitDef | undefined, id?: string, isSuper?: boolean): string {
   if (isSuper) return 'super-jednostka';
-  const cat = categoryOf(u?.Jednostka ?? id ?? '', u?.['Rola (linia)'] ?? '', !!isSuper);
+  const cat = categoryOf(u?.Jednostka ?? id ?? '', u?.['Rola (linia)'] ?? '', !!isSuper, u?.['Typ']);
   return cat;
 }
 
