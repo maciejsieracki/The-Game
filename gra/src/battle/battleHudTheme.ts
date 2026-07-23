@@ -554,10 +554,10 @@ export const FILTER_ALL_SVG =
   '<circle cx="7" cy="7" r="2.1"/><circle cx="17" cy="7" r="2.1"/>' +
   '<circle cx="7" cy="17" r="2.1"/><circle cx="17" cy="17" r="2.1"/></svg>';
 
-/** „Generał" — gwiazdka, 1:1 z makiety C06 Pole bitwy odswiezenie (1E). */
+/** „Generał" — równa gwiazdka z eksportu Design (eksport/icons/tier4/chip-star-24.svg). */
 export const FILTER_GENERAL_SVG =
-  '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" aria-hidden="true">' +
-  '<path d="M12 3.5 14.1 9h5.6l-4.5 3.4 1.7 5.6L12 15.7 7.1 21l1.7-5.6L4.3 9h5.6Z"/></svg>';
+  '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+  '<path d="M12 3 14.6 9.3 21 9.8 16.1 14 17.6 21 12 17.3 6.4 21 7.9 14 3 9.8 9.4 9.3Z"/></svg>';
 
 /** Ikony filtrów klas — 1:1 z rzędu filtrów makiety C06 Pole bitwy odswiezenie (1E). */
 export const FILTER_KIND_SVG: Record<'mounted' | 'melee' | 'ranged', string> = {
@@ -568,9 +568,12 @@ export const FILTER_KIND_SVG: Record<'mounted' | 'melee' | 'ranged', string> = {
   melee:
     '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">' +
     '<path d="M4.5 5 14 14.5M14.5 15 17.5 18M15.6 14 13.6 16M19.5 5 10 14.5M9.5 15 6.5 18M8.4 14 10.4 16"/></svg>',
+  // Dystansowe: tarcza strzelnicza z eksportu Design (eksport/icons/units/class-ranged.svg) — decyzja Macieja.
   ranged:
-    '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">' +
-    '<path d="M5 5c8 1 13 6 14 14M5 5v4M5 5h4M6 18 18 6"/></svg>',
+    '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+    '<circle cx="16" cy="15" r="6"/><circle cx="16" cy="15" r="2.3"/>' +
+    '<path d="M-1 2 Q13 5 16 15" stroke-dasharray="0.1 3"/>' +
+    '<circle cx="16" cy="15" r="0.9" fill="currentColor" stroke="none"/></svg>',
 };
 
 /** Palety obwódek/kolorów filtrów — 1:1 z makiety C06. */
