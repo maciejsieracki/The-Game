@@ -146,6 +146,13 @@ import {
   rosterTypeCountsHtml,
   topBarRosterCountsHtml,
   applyDeployPopupItem1E,
+  applyCommanderPanel1E,
+  commanderPortraitRingSvg,
+  applyTempoMinimapOuterPanel1E,
+  applyTempoRow1E,
+  applyTempoBtn1E,
+  TEMPO_SVG,
+  PB_SVG,
   type RosterGridMetrics,
   ROSTER_CARD_W,
   ROSTER_CARD_GAP,
@@ -155,9 +162,7 @@ import {
   ROSTER_MOUNTED,
   ROSTER_RANGED,
   CMD_SVG,
-  DEPLOY_SIDE_SVG,
   ROSTER_TYPE_SVG,
-  battleSideRoleSvg,
   createBattlePrioritySelect1E,
   createBattleClassTypeRow,
   applyBattleStrategyOutlineBtn,
@@ -616,6 +621,9 @@ const DEPLOY_ROSTER_CARD_H = 56;
 const BATTLE_ROSTER_CARD_H = 56;
 /** Wersja UI bitwy polowej — widoczna w panelu (weryfikacja buildu). */
 const BATTLE_UI_BUILD      = 'POLE-BITWY-20260705-end-replay';
+/** TW v5 §3: szerokosc panelu "Tempo + minimapa" (mockup 236px; minimapa
+ * canvas 180×MINIMAP_H rozciaga sie na cala szerokosc — patrz _buildMinimapOverlay). */
+const TEMPO_PANEL_W = 236;
 
 /** ikonaId z civs.json po nazwie wyswietlanej lub ikonaId. */
 function civIconIdFromLabel(civRows: readonly { Cywilizacja?: string; ikonaId?: string }[], label: string): string {
@@ -1882,6 +1890,22 @@ export class BattleScene {
   private _topCasDTxt: HTMLSpanElement | null = null;
   /** Q4: badge pauzy w gornym pasku. */
   private _topPauseBadge: HTMLSpanElement | null = null;
+  /** TW v5 §2: panel dowódców (portrety + zegar + przewaga), zastępuje stary topCenter. */
+  private _commanderPanel: HTMLDivElement | null = null;
+  private _cmdRingA: HTMLDivElement | null = null;
+  private _cmdRingD: HTMLDivElement | null = null;
+  private _battleClockEl: HTMLDivElement | null = null;
+  private _battleClockCaptionEl: HTMLDivElement | null = null;
+  private _momentumFillA: HTMLDivElement | null = null;
+  private _momentumFillD: HTMLDivElement | null = null;
+  private _momentumMarker: HTMLDivElement | null = null;
+  private _momentumCaptionEl: HTMLDivElement | null = null;
+  /** vNow (zegar wirtualny) w chwili START WALKI — bazowa dla zegara bitwy MM:SS. */
+  private _battleStartVNow: number | null = null;
+  /** TW v5 §3: przyciski Tempo (pauza/×1/×2/×3) + AUTO przy minimapie. */
+  private _tempoPauseBtn: HTMLButtonElement | null = null;
+  private _tempoSpeedBtns: HTMLButtonElement[] = [];
+  private _tempoAutoBtn: HTMLButtonElement | null = null;
   /** Q2: minimap canvas (lewy-dolny rog). */
   private _minimapCanvas: HTMLCanvasElement | null = null;
   private _minimapWrap: HTMLDivElement | null = null;
@@ -2373,80 +2397,154 @@ export class BattleScene {
     topLeft.appendChild(pauseBadge);
     this._topPauseBadge = pauseBadge;
 
-    // Srodek: Ty + sklad | skrzyzowane miecze | sklad + Wróg — symetria wokół VS (= oś paska mocy)
-    const topCenter = document.createElement('div');
-    Object.assign(topCenter.style, {
-      position: 'absolute',
-      left: '50%',
-      transform: 'translateX(-50%)',
-      display: 'grid',
-      gridTemplateColumns: '1fr auto 1fr',
-      alignItems: 'center',
-      columnGap: '14px',
-      minWidth: '420px',
-      maxWidth: 'min(720px, calc(100% - 360px))',
-      pointerEvents: 'none',
-    });
-    topBar.appendChild(topCenter);
-
-    const leftCol = document.createElement('div');
-    Object.assign(leftCol.style, {
-      display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '8px',
-      whiteSpace: 'nowrap',
-    });
-    const atkIcon = document.createElement('span');
-    Object.assign(atkIcon.style, {
-      display: 'inline-flex', lineHeight: '0', color: FACTION_ATK_TEXT, flexShrink: '0',
-    });
-    atkIcon.title = 'Atakuj\u0105cy';
-    atkIcon.innerHTML = battleSideRoleSvg('atk');
-    leftCol.appendChild(atkIcon);
-    const atkLbl = document.createElement('span');
-    Object.assign(atkLbl.style, {
-      color: FACTION_ATK_TEXT, fontFamily: HUD_FONT, fontSize: '13px', fontWeight: '700',
-      letterSpacing: '0.06em', flexShrink: '0',
-    });
-    atkLbl.textContent = 'Ty';
-    leftCol.appendChild(atkLbl);
-    this._topCasATxt = document.createElement('span');
-    leftCol.appendChild(this._topCasATxt);
-
-    const vsLbl = document.createElement('span');
-    Object.assign(vsLbl.style, {
-      color: BATTLE_GOLD, justifySelf: 'center',
-      display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-      lineHeight: '0', flexShrink: '0',
-    });
-    vsLbl.innerHTML = DEPLOY_SIDE_SVG.crossedSwords;
-    vsLbl.title = 'Starcie';
-
-    const rightCol = document.createElement('div');
-    Object.assign(rightCol.style, {
-      display: 'flex', alignItems: 'center', justifyContent: 'flex-start', gap: '8px',
-      whiteSpace: 'nowrap',
-    });
-    this._topCasDTxt = document.createElement('span');
-    rightCol.appendChild(this._topCasDTxt);
-    const defLbl = document.createElement('span');
-    Object.assign(defLbl.style, {
-      color: FACTION_DEF_TEXT, fontFamily: HUD_FONT, fontSize: '13px', fontWeight: '700',
-      letterSpacing: '0.06em', flexShrink: '0',
-    });
-    defLbl.textContent = 'Wr\u00F3g';
-    rightCol.appendChild(defLbl);
-    const defIcon = document.createElement('span');
-    Object.assign(defIcon.style, {
-      display: 'inline-flex', lineHeight: '0', color: FACTION_DEF_TEXT, flexShrink: '0',
-    });
-    defIcon.title = 'Broni\u0105cy';
-    defIcon.innerHTML = battleSideRoleSvg('def');
-    rightCol.appendChild(defIcon);
-
-    topCenter.appendChild(leftCol);
-    topCenter.appendChild(vsLbl);
-    topCenter.appendChild(rightCol);
     this._topMoraleA = null;
     this._topMoraleD = null;
+
+    // ================= TW v5 SS2: PANEL DOWODCOW (portrety + zegar + przewaga) =================
+    // Zastepuje stary topCenter (Ty/skrzyzowane miecze/Wrog) - panel niezalezny,
+    // wysrodkowany nad polem, ~70%+blur wg makiety (nie zyje wewnatrz topBar,
+    // zeby miec wlasna wysokosc niezalezna od BATTLE_TOP_BAR_H).
+    const commanderPanel = document.createElement('div');
+    Object.assign(commanderPanel.style, {
+      position: 'fixed',
+      top: '12px',
+      left: '50%',
+      transform: 'translateX(-50%)',
+      zIndex: '10012',
+      display: 'flex',
+      alignItems: 'stretch',
+      pointerEvents: 'none',
+      maxWidth: 'min(760px, calc(100% - 360px))',
+    });
+    applyCommanderPanel1E(commanderPanel);
+    this.overlay.appendChild(commanderPanel);
+    this._commanderPanel = commanderPanel;
+
+    const mkCommanderCard = (side: 'atk' | 'def'): void => {
+      const isAtk = side === 'atk';
+      const civLabel = isAtk ? this._attackerCivLabel : this._defenderCivLabel;
+      const roleLabel = isAtk ? 'atakujacy' : 'obronca';
+      const sideColor = isAtk ? FACTION_ATK : FACTION_DEF;
+      const card = document.createElement('div');
+      Object.assign(card.style, {
+        display: 'flex', alignItems: 'center', gap: '11px', padding: '10px 16px',
+        flexDirection: isAtk ? 'row' : 'row-reverse',
+      });
+      const portraitWrap = document.createElement('div');
+      Object.assign(portraitWrap.style, { position: 'relative', width: '52px', height: '52px', flexShrink: '0' });
+      const ring = document.createElement('div');
+      Object.assign(ring.style, { position: 'absolute', inset: '0', lineHeight: '0' });
+      ring.innerHTML = commanderPortraitRingSvg(1);
+      portraitWrap.appendChild(ring);
+      const medallion = document.createElement('span');
+      Object.assign(medallion.style, {
+        position: 'absolute', inset: '5px', borderRadius: '50%',
+        background: isAtk
+          ? 'radial-gradient(circle at 38% 30%,#22314c,#0c1626)'
+          : 'radial-gradient(circle at 38% 30%,#3a1c1c,#160a0a)',
+        border: `2px solid ${sideColor}`,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        color: isAtk ? FACTION_ATK_TEXT : FACTION_DEF_TEXT, lineHeight: '0',
+      });
+      medallion.innerHTML = PB_SVG.commander;
+      const medallionSvg = medallion.querySelector('svg');
+      if (medallionSvg) { medallionSvg.setAttribute('width', '22'); medallionSvg.setAttribute('height', '22'); }
+      portraitWrap.appendChild(medallion);
+      card.appendChild(portraitWrap);
+
+      const textCol = document.createElement('div');
+      Object.assign(textCol.style, { textAlign: isAtk ? 'left' : 'right', minWidth: '0' });
+      const nameLbl = document.createElement('div');
+      Object.assign(nameLbl.style, {
+        fontFamily: BATTLE_FONT_TITLE, fontSize: '14px',
+        color: isAtk ? '#cfe0f4' : '#f0c8c8', lineHeight: '1.15', whiteSpace: 'nowrap',
+      });
+      nameLbl.textContent = civLabel;
+      textCol.appendChild(nameLbl);
+      const roleLbl = document.createElement('div');
+      Object.assign(roleLbl.style, { fontSize: '10px', color: BATTLE_TEXT_DIM, marginBottom: '4px', whiteSpace: 'nowrap' });
+      roleLbl.textContent = roleLabel;
+      textCol.appendChild(roleLbl);
+      const countsEl = document.createElement('div');
+      Object.assign(countsEl.style, { whiteSpace: 'nowrap' });
+      textCol.appendChild(countsEl);
+      card.appendChild(textCol);
+
+      commanderPanel.appendChild(card);
+      if (isAtk) {
+        this._cmdRingA = ring;
+        this._topCasATxt = countsEl as unknown as HTMLSpanElement;
+      } else {
+        this._cmdRingD = ring;
+        this._topCasDTxt = countsEl as unknown as HTMLSpanElement;
+      }
+    };
+    mkCommanderCard('atk');
+
+    // Centrum: zegar bitwy + pasek przewagi (SS2 - podlaczony do istniejacego
+    // zrodla paska mocy, TYLKO nowy widok; stary pelnoszerokosciowy pasek
+    // "Ostatnie starcia" znika, dane (army-morale ratio) sa te same).
+    const clockCell = document.createElement('div');
+    Object.assign(clockCell.style, {
+      display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+      padding: '10px 22px',
+      borderLeft: '1px solid rgba(232,216,138,0.18)',
+      borderRight: '1px solid rgba(232,216,138,0.18)',
+      background: 'linear-gradient(180deg,rgba(232,216,138,0.06),transparent)',
+      minWidth: '272px',
+    });
+    const clockEl = document.createElement('div');
+    Object.assign(clockEl.style, {
+      fontFamily: BATTLE_FONT_TITLE, fontSize: '26px', color: '#f4e6a8',
+      letterSpacing: '0.04em', lineHeight: '1', textShadow: '0 0 14px rgba(232,216,138,0.35)',
+      fontVariantNumeric: 'tabular-nums',
+    });
+    clockEl.textContent = '00:00';
+    clockCell.appendChild(clockEl);
+    this._battleClockEl = clockEl;
+    const clockCaption = document.createElement('div');
+    Object.assign(clockCaption.style, {
+      fontSize: '9px', letterSpacing: '0.22em', textTransform: 'uppercase',
+      color: BATTLE_TEXT_DIM, margin: '3px 0 7px', whiteSpace: 'nowrap',
+    });
+    clockCaption.textContent = 'Start po rozstawieniu';
+    clockCell.appendChild(clockCaption);
+    this._battleClockCaptionEl = clockCaption;
+
+    const momentumTrack = document.createElement('div');
+    Object.assign(momentumTrack.style, {
+      position: 'relative', width: '210px', height: '12px', borderRadius: '7px',
+      overflow: 'hidden', display: 'flex',
+      border: '1px solid rgba(232,216,138,0.4)', boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.5)',
+    });
+    const momentumFillA = document.createElement('div');
+    Object.assign(momentumFillA.style, { width: '50%', background: 'linear-gradient(90deg,#2f5aa8,#5a9bd4)' });
+    const momentumFillD = document.createElement('div');
+    Object.assign(momentumFillD.style, { flex: '1', background: 'linear-gradient(90deg,#8a3232,#c84040)' });
+    const momentumMarker = document.createElement('div');
+    Object.assign(momentumMarker.style, {
+      position: 'absolute', left: '50%', top: '-2px', bottom: '-2px', width: '3px',
+      background: '#f4e6a8', boxShadow: '0 0 8px rgba(232,216,138,0.9)', transform: 'translateX(-50%)',
+    });
+    momentumTrack.appendChild(momentumFillA);
+    momentumTrack.appendChild(momentumFillD);
+    momentumTrack.appendChild(momentumMarker);
+    clockCell.appendChild(momentumTrack);
+    this._momentumFillA = momentumFillA;
+    this._momentumFillD = momentumFillD;
+    this._momentumMarker = momentumMarker;
+
+    const momentumCaption = document.createElement('div');
+    Object.assign(momentumCaption.style, {
+      fontSize: '10px', color: '#c8b898', marginTop: '6px', letterSpacing: '0.02em',
+      whiteSpace: 'nowrap', fontVariantNumeric: 'tabular-nums',
+    });
+    momentumCaption.innerHTML = 'Szacunkowa przewaga: <b style="color:' + FACTION_ATK_TEXT + '">50% Ty</b> \u00B7 <b style="color:' + FACTION_DEF_TEXT + '">50% wr\u00F3g</b>';
+    clockCell.appendChild(momentumCaption);
+    this._momentumCaptionEl = momentumCaption;
+
+    commanderPanel.appendChild(clockCell);
+    mkCommanderCard('def');
 
     // Prawa czesc: Wycofaj sie (Pomin jest na prawym pasku)
     const topRight = document.createElement('div');
@@ -2478,118 +2576,13 @@ export class BattleScene {
     topRight.appendChild(btnTopExit);
     topBar.appendChild(topRight);
 
-    // PASEK MOCY v4: cienki zielony/czerwony + etykieta „Ostatnie starcia".
-    const powerWrap = document.createElement('div');
-    powerWrap.id = 'battle-power-wrap';
-    Object.assign(powerWrap.style, {
-      position: 'fixed',
-      top: (BATTLE_TOP_BAR_H + 8) + 'px',
-      left: '50%',
-      transform: 'translateX(-50%)',
-      width: '520px',
-      maxWidth: BATTLE_POWER_BAR_MAX_W,
-      zIndex: '10009',
-      pointerEvents: 'none',
-      fontFamily: HUD_FONT,
-    });
-
-    const powerBar = document.createElement('div');
-    powerBar.id = 'battle-power-bar';
-    Object.assign(powerBar.style, {
-      height: '24px',
-      display: 'flex',
-      borderRadius: '6px',
-      overflow: 'hidden',
-      border: '1px solid rgba(232,216,138,0.3)',
-      boxShadow: '0 2px 10px rgba(0,0,0,0.45)',
-    });
-    const mkHalf = (side: 'atk' | 'def'): { fill: HTMLDivElement; lbl: HTMLSpanElement } => {
-      const half = document.createElement('div');
-      Object.assign(half.style, {
-        flex: '1', position: 'relative', overflow: 'hidden',
-        background: side === 'atk' ? 'rgba(10,30,14,0.85)' : 'rgba(30,10,10,0.85)',
-        borderRight: side === 'atk' ? '1px solid rgba(255,255,255,0.12)' : 'none',
-      });
-      const fill = document.createElement('div');
-      Object.assign(fill.style, {
-        position: 'absolute', top: '0', bottom: '0',
-        width: '100%',
-        [side === 'atk' ? 'left' : 'right']: '0',
-        background: side === 'atk'
-          ? 'linear-gradient(90deg,#3a8a5a,#7ad0a0)'
-          : 'linear-gradient(90deg,#c05050,#8a3a3a)',
-        transition: 'width 180ms linear',
-      });
-      half.appendChild(fill);
-
-      const badge = document.createElement('div');
-      Object.assign(badge.style, {
-        position: 'absolute', top: '50%',
-        transform: 'translateY(-50%)',
-        [side === 'atk' ? 'left' : 'right']: '8px',
-        display: 'flex', alignItems: 'center', gap: '5px',
-        flexDirection: side === 'atk' ? 'row' : 'row-reverse',
-        zIndex: '3', pointerEvents: 'none',
-      });
-      const icon = document.createElement('div');
-      Object.assign(icon.style, {
-        lineHeight: '0', flexShrink: '0', display: 'flex',
-        color: side === 'atk' ? FACTION_ATK_TEXT : FACTION_DEF_TEXT,
-        filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.85))',
-      });
-      icon.innerHTML = battleSideRoleSvg(side);
-      const iconSvg = icon.querySelector('svg');
-      if (iconSvg) {
-        iconSvg.setAttribute('width', '16');
-        iconSvg.setAttribute('height', '16');
-      }
-      const name = document.createElement('span');
-      name.textContent = side === 'atk' ? this._attackerCivLabel : this._defenderCivLabel;
-      Object.assign(name.style, {
-        fontSize: '11px', fontWeight: 'bold', letterSpacing: '0.05em',
-        color: side === 'atk' ? FACTION_ATK_TEXT : FACTION_DEF_TEXT,
-        textShadow: '0 1px 2px #000', whiteSpace: 'nowrap', maxWidth: '88px',
-        overflow: 'hidden', textOverflow: 'ellipsis',
-      });
-      badge.appendChild(icon);
-      badge.appendChild(name);
-      half.appendChild(badge);
-
-      const lbl = document.createElement('span');
-      Object.assign(lbl.style, {
-        position: 'absolute', top: '50%',
-        transform: 'translateY(-50%)',
-        [side === 'atk' ? 'right' : 'left']: '8px',
-        fontSize: '11px', fontWeight: 'bold', letterSpacing: '0.06em',
-        color: '#fff', textShadow: '0 1px 2px #000', zIndex: '2',
-      });
-      lbl.textContent = '100%';
-      half.appendChild(lbl);
-      powerBar.appendChild(half);
-      return { fill, lbl };
-    };
-    const pA = mkHalf('atk');
-    const pD = mkHalf('def');
-    powerWrap.appendChild(powerBar);
-
-    const powerCaption = document.createElement('div');
-    Object.assign(powerCaption.style, {
-      textAlign: 'center',
-      fontSize: '10px',
-      letterSpacing: '0.2em',
-      textTransform: 'uppercase',
-      color: BATTLE_TEXT_DIM,
-      marginTop: '5px',
-    });
-    powerCaption.textContent = 'Ostatnie starcia';
-    powerWrap.appendChild(powerCaption);
-
-    this.overlay.appendChild(powerWrap);
-    this._bottomPowerBar = powerWrap;
-    this._bottomPowerFillA = pA.fill;
-    this._bottomPowerFillD = pD.fill;
-    this._bottomPowerLblA = pA.lbl;
-    this._bottomPowerLblD = pD.lbl;
+    // TW v5 SS2: stary pelnoszerokosciowy pasek "Ostatnie starcia" (PASEK MOCY v4)
+    // zastapiony paskiem przewagi wewnatrz commanderPanel (ta sama dana zrodlowa:
+    // army-morale ratio z _armyMoraleRatio, patrz _updateArmyMoraleBars).
+    // _bottomPowerBar/_bottomPowerFillA/D/_bottomPowerLblA/D zostaja `null` (typy
+    // zachowane) - _battlePowerStackBottomPx() i _syncRosterColumnLayout() maja
+    // juz bezpieczny fallback dla `null`, wiec siege HUD i layout rosteru
+    // dzialaja bez zmian.
     requestAnimationFrame(() => this._syncRosterColumnLayout());
     // Legacy side-bar refs (nie renderujemy pionowych paskow).
     this.armyMoraleFillA = null;
@@ -2655,18 +2648,9 @@ export class BattleScene {
     document.body.appendChild(rail);
     this._rightSettingsRail = rail;
 
-    const btnPause = makeRailBtn(CMD_SVG.pause, 'P', 'Pauza / Wznow (P)', () => { this._togglePause(); });
-    rail.appendChild(btnPause);
-
-    const btnSpeed = makeRailBtn(CMD_SVG.speed, 'V', 'Predkosc symulacji (V)', () => {
-      this._cycleSpeed(); this._flashSpeedHud();
-    });
-    const speedKeyEl = btnSpeed.children[1] as HTMLDivElement;
-    speedKeyEl.textContent = 'x1';
-    this._rightSpeedLbl = speedKeyEl;
-    rail.appendChild(btnSpeed);
-    this.speedBtn = btnSpeed;
-
+    // TW v5 §3: Pauza (P) i Predkosc (V) PRZENIESIONE do panelu Tempo przy
+    // minimapie (patrz _buildMinimapOverlay/mkTempoBtn) — usuniete z prawego
+    // raila, ktory jest teraz krotszy. Klawiature (P/V) dziala jak dotychczas.
     const btnManual = makeRailBtn(CMD_SVG.manual, 'R', 'AUTO / Reczne sterowanie (R)', () => { this._toggleManualMode(); });
     rail.appendChild(btnManual);
     this._manualBtn = btnManual;
@@ -2903,6 +2887,9 @@ export class BattleScene {
     this.started    = true;
     this.roundNo    = 0;
     this.activeSide = 'atk';
+    // TW v5 §2: zegar bitwy MM:SS startuje TERAZ — bazowa = zegar wirtualny w
+    // chwili START WALKI (patrz _updateArmyMoraleBars / _fmtBattleClock).
+    this._battleStartVNow = this.vNow;
     this._manualMode = true;
     this._battleAwaitingOrders = true;
     this._queuedOrderUnitIds.clear();
@@ -2994,10 +2981,10 @@ export class BattleScene {
     this._modeBanner.style.bottom = (toolbarUp ? 96 : 18) + 'px';
   }
 
-  /** Podświetlenie rail R gdy tryb ręczny (C06 v4). */
+  /** Podświetlenie rail R gdy tryb ręczny (C06 v4) + AUTO-rozegranie przy minimapie (TW v5 §3). */
   private _syncManualRailHighlight(): void {
-    if (!this._manualBtn) return;
-    applyRailBtn1E(this._manualBtn, { active: this._manualMode });
+    if (this._manualBtn) applyRailBtn1E(this._manualBtn, { active: this._manualMode });
+    this._syncTempoPanelHighlight();
   }
 
   skip(): void {
@@ -7080,6 +7067,7 @@ export class BattleScene {
     if (this.speedHud) this.speedHud.textContent = label;
     if (this._topSpeedLbl) this._topSpeedLbl.textContent = 'x' + this.speedMul;
     if (this._rightSpeedLbl) this._rightSpeedLbl.textContent = 'x' + this.speedMul;
+    this._syncTempoPanelHighlight();
   }
 
   /** Cycle to the next speed step (1 -> 2 -> 4 -> 8 -> 16 -> 32 -> 64 -> 128 -> 1). Safe to call mid-battle. */
@@ -7529,6 +7517,24 @@ export class BattleScene {
     return cur / start;
   }
 
+  /**
+   * ARMY HP ratio for a side (TW v5 SS2 — pierscien HP na medalionie dowodcy):
+   * suma aktualnego HP / suma maxHP calego rosteru strony (ten sam wzorzec co
+   * _armyMoraleRatio i _sideEndStats — dead/routed licza sie jako 0 w liczniku).
+   */
+  private _armyHpRatio(side: 'atk' | 'def'): number {
+    const arr = side === 'atk' ? this.atk : this.def;
+    let cur = 0;
+    let max = 0;
+    for (const u of arr) {
+      max += Math.max(0, u.bu.maxHp);
+      if (u.dead || u.fadingOut || u.routed) continue;
+      cur += Math.max(0, u.bu.hp);
+    }
+    if (max <= 0) return 1.0;
+    return Math.max(0, Math.min(1, cur / max));
+  }
+
   /** Konnica / piechota / lucznictwo — opcjonalnie tylko aktywne (w trakcie walki). */
   private _sideTypeCounts(
     arr: RuntimeBattleUnit[],
@@ -7546,42 +7552,75 @@ export class BattleScene {
     return { k, p, l };
   }
 
-  /** HTML skladu armii w górnym pasku (cluster scalony z Ty/Wróg). */
+  /**
+   * HTML skladu armii w karcie dowodcy (TW v5 SS2). Kolejnosc konnica/piechota/
+   * dystansowe/suma NIE jest lustrzana miedzy stronami (decyzja Design
+   * 2026-07-23, DESIGN-do-UI_POLE-BITWY-TW-v5.md SS2) — obie karty czytaja sie
+   * w tym samym porzadku, tylko caly blok karty jest wizualnie mirror (prawa
+   * karta ma flexDirection: row-reverse, patrz mkCommanderCard).
+   */
   private _renderSideRoster(
     el: HTMLSpanElement,
-    side: 'atk' | 'def',
+    _side: 'atk' | 'def',
     counts: { k: number; p: number; l: number },
     _live: boolean,
   ): void {
-    el.innerHTML = topBarRosterCountsHtml(
-      { mounted: counts.k, melee: counts.p, ranged: counts.l },
-      side === 'def' ? { mirror: true } : undefined,
-    );
+    el.innerHTML = topBarRosterCountsHtml({ mounted: counts.k, melee: counts.p, ranged: counts.l });
+  }
+
+  /** MM:SS (Georgia, tabular-nums) z milisekund; mm capped na 2 cyfry (99:59 max wyswietlane). */
+  private _fmtBattleClock(ms: number): string {
+    const totalSec = Math.max(0, Math.floor(ms / 1000));
+    const mm = Math.min(99, Math.floor(totalSec / 60));
+    const ss = totalSec % 60;
+    return String(mm).padStart(2, '0') + ':' + String(ss).padStart(2, '0');
   }
 
   /**
-   * Live refresh of the two screen-edge ARMY-MORALE bars (TASK 5). Each side's
-   * fill height = its army-morale ratio (clamped 0..1) and the fill colour runs
-   * GREEN (high) -> YELLOW -> RED (low); the percentage cap is updated too.
-   * Cheap enough to call every frame.
+   * Live refresh of the top-bar commander panel (TW v5 SS2): HP-pierscienie na
+   * medalionach (zrodlo: _armyHpRatio), zegar bitwy MM:SS (od START WALKI,
+   * na bazie zegara wirtualnego vNow — zamrozony na pauzie/w deployu, jak
+   * reszta pacingu), pasek przewagi (zrodlo: _armyMoraleRatio — TA SAMA dana,
+   * co dawny pelnoszerokosciowy pasek "Ostatnie starcia" v4) oraz sklad armii
+   * w kartach dowodcow. Wywolywane co klatke (tanie).
    */
   private _updateArmyMoraleBars(): void {
     const ratioA = this._armyMoraleRatio('atk');
     const ratioD = this._armyMoraleRatio('def');
     const rA = Math.max(0, Math.min(1, ratioA));
     const rD = Math.max(0, Math.min(1, ratioD));
-    if (this._bottomPowerFillA) {
-      this._bottomPowerFillA.style.width = (rA * 100).toFixed(1) + '%';
+
+    // Pierscienie HP na medalionach dowodcow.
+    if (this._cmdRingA) this._cmdRingA.innerHTML = commanderPortraitRingSvg(this._armyHpRatio('atk'));
+    if (this._cmdRingD) this._cmdRingD.innerHTML = commanderPortraitRingSvg(this._armyHpRatio('def'));
+
+    // Zegar bitwy: 00:00 przed startem / w deployu; liczy od START WALKI na
+    // bazie vNow (ten sam zegar co reszta pacingu -- honoruje pauze/predkosc).
+    if (this._battleClockEl) {
+      const elapsedMs = (this.started && this._battleStartVNow !== null)
+        ? Math.max(0, this.vNow - this._battleStartVNow)
+        : 0;
+      this._battleClockEl.textContent = this._fmtBattleClock(elapsedMs);
     }
-    if (this._bottomPowerFillD) {
-      this._bottomPowerFillD.style.width = (rD * 100).toFixed(1) + '%';
+    if (this._battleClockCaptionEl) {
+      this._battleClockCaptionEl.textContent = this.started ? 'Czas bitwy' : 'Start po rozstawieniu';
     }
-    if (this._bottomPowerLblA) {
-      this._bottomPowerLblA.textContent = Math.round(rA * 100) + '%';
+
+    // Pasek przewagi: udzial sily Ty/wrog znormalizowany do 100% (ta sama
+    // zrodlowa dana co stary pasek mocy — army-morale ratio), zloty znacznik
+    // na styku (mockup TW v5 SS2).
+    const sum = rA + rD;
+    const tyShare = sum > 0 ? rA / sum : 0.5;
+    const tyPct = Math.round(tyShare * 100);
+    const foePct = 100 - tyPct;
+    if (this._momentumFillA) this._momentumFillA.style.width = tyPct + '%';
+    if (this._momentumMarker) this._momentumMarker.style.left = tyPct + '%';
+    if (this._momentumCaptionEl) {
+      const label = this.started ? 'Przewaga na polu' : 'Szacunkowa przewaga';
+      this._momentumCaptionEl.innerHTML = label + ': <b style="color:' + FACTION_ATK_TEXT + '">'
+        + tyPct + '% Ty</b> · <b style="color:' + FACTION_DEF_TEXT + '">' + foePct + '% wróg</b>';
     }
-    if (this._bottomPowerLblD) {
-      this._bottomPowerLblD.textContent = Math.round(rD * 100) + '%';
-    }
+
     // Gorny pasek: sklad armii (przed walka = startowy; w walce = pozostali)
     const live = this.started && !this.deployPhase;
     const cA = this._sideTypeCounts(this.atk, live);
@@ -8206,6 +8245,7 @@ export class BattleScene {
     this.paused = !this.paused;
     if (this.pauseHud) this.pauseHud.style.display = this.paused ? 'block' : 'none';
     if (this._topPauseBadge) this._topPauseBadge.style.display = this.paused ? 'inline' : 'none';
+    this._syncTempoPanelHighlight();
   }
 
   // =========================================================================
@@ -9039,25 +9079,81 @@ export class BattleScene {
   // -------------------------------------------------------------------------
 
   /** Q2: build minimap canvas overlay (bottom-left, above roster). */
+  /**
+   * TW v5 §3: panel "Tempo + minimapa" (jeden panel, prawy dół wg makiety —
+   * u nas obok rosteru, patrz _syncMinimapPosition). Rząd Tempo (pauza/×1/×2/×3
+   * + AUTO-rozegranie) NAD minimapą, w tym samym panelu ~70%+blur. Podłączony
+   * do ISTNIEJĄCYCH handlerów pauzy/prędkości/AUTO (_togglePause/_setSpeedIdx/
+   * _toggleManualMode) — usunięte z prawego raila (patrz makeRailBtn), rail
+   * zostaje krótszy (R/M/MUZ/H/Statystyki/Pomiń/Wycofaj — F2/F3 przeniosą resztę).
+   */
   private _buildMinimapOverlay(): void {
+    const TEMPO_ROW_H = 42;
     const wrap = document.createElement('div');
     Object.assign(wrap.style, {
       position: 'absolute', left: '12px', bottom: '156px',
-      width: MINIMAP_W + 'px', height: MINIMAP_H + 'px',
-      zIndex: '10008', cursor: 'crosshair',
+      width: TEMPO_PANEL_W + 'px', height: (TEMPO_ROW_H + MINIMAP_H) + 'px',
+      zIndex: '10008', display: 'flex', flexDirection: 'column',
     });
-    applyMinimap1E(wrap);
+    applyTempoMinimapOuterPanel1E(wrap);
+    this.overlay.appendChild(wrap);
+    this._minimapWrap = wrap;
+
+    // --- Rząd Tempo: pauza + ×1/×2/×3 + AUTO-rozegranie ---
+    const tempoRow = document.createElement('div');
+    applyTempoRow1E(tempoRow);
+    const tempoLbl = document.createElement('span');
+    Object.assign(tempoLbl.style, {
+      font: '700 9px ' + BATTLE_FONT, letterSpacing: '0.1em', textTransform: 'uppercase',
+      color: BATTLE_TEXT_DIM, marginRight: '2px', flexShrink: '0',
+    });
+    tempoLbl.textContent = 'Tempo';
+    tempoRow.appendChild(tempoLbl);
+
+    const mkTempoBtn = (svg: string, title: string, onClick: () => void): HTMLButtonElement => {
+      const b = document.createElement('button');
+      applyTempoBtn1E(b);
+      b.title = title;
+      b.innerHTML = svg;
+      b.onclick = onClick;
+      tempoRow.appendChild(b);
+      return b;
+    };
+    this._tempoPauseBtn = mkTempoBtn(TEMPO_SVG.pause, 'Pauza / Wznów (P)', () => { this._togglePause(); this._syncTempoPanelHighlight(); });
+    // 3 dyskretne poziomy predkosci (1x/2x/4x z SPEED_STEPS) — reszta (8x..512x)
+    // zostaje dostepna z klawiatury (V) jak dotychczas, patrz _cycleSpeed.
+    const speedTargets: Array<{ svg: string; idx: number; title: string }> = [
+      { svg: TEMPO_SVG.play1, idx: 0, title: '×1' },
+      { svg: TEMPO_SVG.play2, idx: 1, title: '×2' },
+      { svg: TEMPO_SVG.play3, idx: 2, title: '×4' },
+    ];
+    this._tempoSpeedBtns = speedTargets.map(t =>
+      mkTempoBtn(t.svg, 'Prędkość ' + t.title, () => { this._setSpeedIdx(t.idx); this._syncTempoPanelHighlight(); }),
+    );
+    const tempoSpacer = document.createElement('span');
+    tempoSpacer.style.flex = '1';
+    tempoRow.appendChild(tempoSpacer);
+    this._tempoAutoBtn = mkTempoBtn(TEMPO_SVG.auto, 'AUTO-rozegranie bitwy (R)', () => { this._toggleManualMode(); });
+    wrap.appendChild(tempoRow);
+    this._syncTempoPanelHighlight();
+
+    // --- Minimapa (canvasBox — ramka #6a5212 wg tokenow, bez zmian wobec v4) ---
+    const canvasBox = document.createElement('div');
+    Object.assign(canvasBox.style, {
+      position: 'relative', flex: '1', cursor: 'crosshair', borderTop: 'none',
+    });
+    applyMinimap1E(canvasBox);
+    canvasBox.style.borderTop = 'none';
+    canvasBox.style.borderRadius = '0';
     const canvas = document.createElement('canvas');
     canvas.width = MINIMAP_W;
     canvas.height = MINIMAP_H;
     Object.assign(canvas.style, { display: 'block', width: '100%', height: '100%' });
-    wrap.appendChild(canvas);
-    applyMinimap1E(wrap);
-    this.overlay.appendChild(wrap);
-    this._minimapWrap = wrap;
+    canvasBox.appendChild(canvas);
+    wrap.appendChild(canvasBox);
     this._minimapCanvas = canvas;
 
-    wrap.addEventListener('pointerdown', (e: PointerEvent) => {
+    canvasBox.addEventListener('pointerdown', (e: PointerEvent) => {
       e.preventDefault();
       e.stopPropagation();
       this._minimapDragging = true;
@@ -9065,19 +9161,21 @@ export class BattleScene {
         x: e.clientX, y: e.clientY,
         camX: this.camTarget.x, camZ: this.camTarget.z,
       };
-      wrap.setPointerCapture(e.pointerId);
+      canvasBox.setPointerCapture(e.pointerId);
     });
-    wrap.addEventListener('pointermove', (e: PointerEvent) => {
+    canvasBox.addEventListener('pointermove', (e: PointerEvent) => {
       if (!this._minimapDragging || !this._minimapDragStart) return;
       const dx = e.clientX - this._minimapDragStart.x;
       const dy = e.clientY - this._minimapDragStart.y;
       const worldW = BF_COLS * TILE_S;
       const worldH = BF_ROWS * TILE_S;
-      this.camTarget.x = this._minimapDragStart.camX - (dx / MINIMAP_W) * worldW;
-      this.camTarget.z = this._minimapDragStart.camZ - (dy / MINIMAP_H) * worldH;
+      const rectW = canvas.clientWidth || MINIMAP_W;
+      const rectH = canvas.clientHeight || MINIMAP_H;
+      this.camTarget.x = this._minimapDragStart.camX - (dx / rectW) * worldW;
+      this.camTarget.z = this._minimapDragStart.camZ - (dy / rectH) * worldH;
       this._applyCamera();
     });
-    wrap.addEventListener('pointerup', (e: PointerEvent) => {
+    canvasBox.addEventListener('pointerup', (e: PointerEvent) => {
       if (!this._minimapDragStart) return;
       const dx = e.clientX - this._minimapDragStart.x;
       const dy = e.clientY - this._minimapDragStart.y;
@@ -9086,7 +9184,7 @@ export class BattleScene {
         const px = e.clientX - rect.left;
         const py = e.clientY - rect.top;
         const data = this._collectMinimapData();
-        const tile = minimapPixelToTile(px, py, data);
+        const tile = minimapPixelToTile(px, py, data, canvas.clientWidth || MINIMAP_W, canvas.clientHeight || MINIMAP_H);
         if (tile) {
           const w = cellToWorld(tile.col, tile.row);
           this.camTarget.x = w.x;
@@ -9096,10 +9194,19 @@ export class BattleScene {
       }
       this._minimapDragging = false;
       this._minimapDragStart = null;
-      try { wrap.releasePointerCapture(e.pointerId); } catch { /* no-op */ }
+      try { canvasBox.releasePointerCapture(e.pointerId); } catch { /* no-op */ }
     });
     this._drawMinimap();
     this._syncMinimapPosition();
+  }
+
+  /** Podswietla aktywna predkosc/pauze/AUTO w panelu Tempo (przy minimapie). */
+  private _syncTempoPanelHighlight(): void {
+    if (this._tempoPauseBtn) applyTempoBtn1E(this._tempoPauseBtn, { active: this.paused });
+    this._tempoSpeedBtns.forEach((btn, i) => {
+      applyTempoBtn1E(btn, { active: !this.paused && this.speedIdx === i });
+    });
+    if (this._tempoAutoBtn) applyTempoBtn1E(this._tempoAutoBtn, { active: !this._manualMode, auto: true });
   }
 
   private _collectMinimapData(): BattleMinimapData {
@@ -11430,7 +11537,16 @@ export class BattleScene {
     const toolbarUp = this._deployToolbar
       && this._deployToolbar.style.display !== 'none'
       && (this.deployPhase || (this.started && !this.finished && this._manualMode));
-    const bottomOff = toolbarUp ? DEPLOY_TOOLBAR_RESERVE + 10 : 156;
+    let bottomOff = toolbarUp ? DEPLOY_TOOLBAR_RESERVE + 10 : 156;
+    // TW v5 §3: panel Tempo+minimapa urosl (rzad Tempo nad canvasem) — zamiast
+    // stalej rezerwy (moze byc nieaktualna gdy toolbar deploy ma wiecej wierszy,
+    // np. widoczny pasek grup), zmierz realny gorny brzeg toolbara i ustaw
+    // odstep od niego, zeby NIGDY nie zachodzil na minimape/tempo.
+    if (toolbarUp && this._deployToolbar!.isConnected) {
+      const toolbarTop = this._deployToolbar!.getBoundingClientRect().top;
+      const measured = Math.round(window.innerHeight - toolbarTop) + 10;
+      if (measured > bottomOff) bottomOff = measured;
+    }
     Object.assign(this._minimapWrap.style, {
       left: leftOff + 'px',
       bottom: bottomOff + 'px',

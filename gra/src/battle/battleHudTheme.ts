@@ -155,6 +155,96 @@ export function applyTopBar1E(el: HTMLElement): void {
   });
 }
 
+/**
+ * Panel dowódców górnego paska v5 (DESIGN-do-UI_POLE-BITWY-TW-v5 §2): portrety
+ * Ty/Wróg + zegar bitwy + pasek przewagi. Tło ~70% + blur (panele nowych
+ * elementów wg makiety, §1/§3 zlecenia).
+ */
+export function applyCommanderPanel1E(el: HTMLElement): void {
+  Object.assign(el.style, {
+    borderRadius: '16px',
+    background: 'linear-gradient(180deg,rgba(24,30,42,0.76),rgba(8,10,16,0.82))',
+    backdropFilter: 'blur(8px)',
+    border: '1px solid rgba(232,216,138,0.4)',
+    boxShadow: '0 10px 30px rgba(0,0,0,0.6),inset 0 1px 0 rgba(232,216,138,0.14)',
+    fontFamily: BATTLE_FONT,
+  });
+}
+
+/** Pierścień HP wokół medalionu dowódcy (SVG stroke, dashoffset = ubytek). */
+export function commanderPortraitRingSvg(ringPct: number): string {
+  const r = 24;
+  const c = 2 * Math.PI * r;
+  const pct = Math.max(0, Math.min(1, ringPct));
+  const dashOffset = (c * (1 - pct)).toFixed(1);
+  const color = pct < 0.35 ? BATTLE_ENEMY : '#4caf50';
+  return (
+    '<svg width="52" height="52" viewBox="0 0 52 52" style="position:absolute;inset:0">' +
+    '<circle cx="26" cy="26" r="' + r + '" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="3"/>' +
+    '<circle cx="26" cy="26" r="' + r + '" fill="none" stroke="' + color + '" stroke-width="3" ' +
+    'stroke-linecap="round" stroke-dasharray="' + c.toFixed(1) + '" stroke-dashoffset="' + dashOffset + '" ' +
+    'transform="rotate(-90 26 26)"/></svg>'
+  );
+}
+
+/**
+ * Outer panel „Tempo + minimapa" (prawy dół, jeden panel — §3 zlecenia).
+ * Zawiera rząd Tempo (pauza/prędkość/AUTO) NAD samą minimapą.
+ */
+export function applyTempoMinimapOuterPanel1E(el: HTMLElement): void {
+  Object.assign(el.style, {
+    borderRadius: '14px',
+    overflow: 'hidden',
+    border: '2px solid rgba(232,216,138,0.4)',
+    background: 'linear-gradient(180deg,rgba(20,26,38,0.72),rgba(8,10,16,0.75))',
+    backdropFilter: 'blur(7px)',
+    boxShadow: '0 12px 30px rgba(0,0,0,0.6)',
+    fontFamily: BATTLE_FONT,
+  });
+}
+
+/** Rząd „Tempo" nad minimapą — separator dolny. */
+export function applyTempoRow1E(el: HTMLElement): void {
+  Object.assign(el.style, {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '6px',
+    padding: '8px 10px',
+    borderBottom: '1px solid rgba(232,216,138,0.2)',
+  });
+}
+
+/** Mały przycisk tempa (pauza / ×1 / ×2 / ×3 / AUTO) — 26×26 (§3). */
+export function applyTempoBtn1E(el: HTMLButtonElement, opts?: { active?: boolean; auto?: boolean }): void {
+  const active = opts?.active ?? false;
+  const auto = opts?.auto ?? false;
+  Object.assign(el.style, {
+    width: '26px',
+    height: '26px',
+    borderRadius: '6px',
+    border: active ? '1px solid #e8d88a' : '1px solid rgba(232,216,138,0.3)',
+    background: active
+      ? (auto ? 'linear-gradient(180deg,#f0dc88,#b99a28)' : 'linear-gradient(180deg,#2a2410,#161206)')
+      : 'linear-gradient(180deg,#161c28,#0a0d14)',
+    color: active ? (auto ? '#2e2708' : '#f4e6a8') : BATTLE_GOLD,
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: '0',
+    boxShadow: active ? (auto ? '0 0 10px rgba(232,216,138,0.5)' : '0 0 8px rgba(232,216,138,0.35)') : 'none',
+  });
+}
+
+/** Ikony 13px dla rzędu Tempo (pauza / odtwórz ×1/×2/×3 / auto-rozegranie). */
+export const TEMPO_SVG = {
+  pause: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 5v14M16 5v14"/></svg>',
+  play1: '<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7Z"/></svg>',
+  play2: '<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M4 5v14l7-7ZM13 5v14l7-7Z"/></svg>',
+  play3: '<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M2 5v14l6-7ZM9 5v14l6-7ZM16 5v14l6-7Z"/></svg>',
+  auto: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4.5 5 14 14.5M19.5 5 10 14.5M9.5 15 6.5 18M14.5 15 17.5 18"/></svg>',
+} as const;
+
 /** Okrągła ikona typu na karcie rosteru (C09 v4). */
 export function applyUnitCardIconCircle(
   el: HTMLElement,
