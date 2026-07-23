@@ -22,6 +22,12 @@
       ],
       "mnoznikHandelPieniadz": 2.3,
       "ikonaId": "grecy",
+      "wodzowie": {
+        "kamien": "Minos",
+        "braz": "Agamemnon",
+        "zelazo": "Leonidas",
+        "antyk": "Aleksander Wielki"
+      },
       "kolorHex": "#1E5AA8",
       "bonusy": [
         {
@@ -189,6 +195,12 @@
       ],
       "mnoznikHandelPieniadz": 2.0,
       "ikonaId": "rzymianie",
+      "wodzowie": {
+        "kamien": "Romulus",
+        "braz": "Numa Pompiliusz",
+        "zelazo": "Scypion Afrykański",
+        "antyk": "Juliusz Cezar"
+      },
       "kolorHex": "#8B1A1A",
       "bonusy": [
         {
@@ -361,6 +373,12 @@
       ],
       "mnoznikHandelPieniadz": 2.4,
       "ikonaId": "chinczycy",
+      "wodzowie": {
+        "kamien": "Huang Di",
+        "braz": "Yu Wielki",
+        "zelazo": "Qin Shi Huang",
+        "antyk": "Han Wudi"
+      },
       "kolorHex": "#C41E3A",
       "bonusy": [
         {
@@ -520,6 +538,12 @@
       ],
       "mnoznikHandelPieniadz": 1.9,
       "ikonaId": "inkowie",
+      "wodzowie": {
+        "kamien": "Manco Cápac",
+        "braz": "Wirakocza Inka",
+        "zelazo": "Pachacuti",
+        "antyk": "Túpac Inca Yupanqui"
+      },
       "kolorHex": "#D4A017",
       "bonusy": [
         {
@@ -681,6 +705,12 @@
       ],
       "mnoznikHandelPieniadz": 1.8,
       "ikonaId": "zulusi",
+      "wodzowie": {
+        "kamien": "Zulu kaMalandela",
+        "braz": "Senzangakhona",
+        "zelazo": "Czaka",
+        "antyk": "Cetshwayo"
+      },
       "kolorHex": "#2E7D32",
       "bonusy": [
         {
@@ -840,6 +870,12 @@
       ],
       "mnoznikHandelPieniadz": 2.1,
       "ikonaId": "egipt",
+      "wodzowie": {
+        "kamien": "Narmer",
+        "braz": "Chufu",
+        "zelazo": "Ramzes II",
+        "antyk": "Kleopatra VII"
+      },
       "kolorHex": "#E8C547",
       "bonusy": [
         {
@@ -1000,6 +1036,12 @@
       ],
       "mnoznikHandelPieniadz": 2.2,
       "ikonaId": "sumer",
+      "wodzowie": {
+        "kamien": "Alulim",
+        "braz": "Gilgamesz",
+        "zelazo": "Ur-Nammu",
+        "antyk": "Szulgi"
+      },
       "kolorHex": "#6B4226",
       "bonusy": [
         {
@@ -1161,6 +1203,12 @@
       ],
       "mnoznikHandelPieniadz": 1.9,
       "ikonaId": "celtowie",
+      "wodzowie": {
+        "kamien": "Ambigatos",
+        "braz": "Brennus",
+        "zelazo": "Wercyngetoryks",
+        "antyk": "Boudika"
+      },
       "kolorHex": "#3D6B35",
       "bonusy": [
         {
@@ -1320,6 +1368,12 @@
       ],
       "mnoznikHandelPieniadz": 1.7,
       "ikonaId": "germanie",
+      "wodzowie": {
+        "kamien": "Mannus",
+        "braz": "Ariowist",
+        "zelazo": "Arminiusz",
+        "antyk": "Alaryk I"
+      },
       "kolorHex": "#4A5568",
       "bonusy": [
         {
@@ -1477,6 +1531,12 @@
       ],
       "mnoznikHandelPieniadz": 2.4,
       "ikonaId": "harappa",
+      "wodzowie": {
+        "kamien": "Starszy z Mehrgarh",
+        "braz": "Kapłan-Król z Mohendżo-Daro",
+        "zelazo": "Radża Dholaviry",
+        "antyk": "Aśoka"
+      },
       "kolorHex": "#C67B4E",
       "bonusy": [
         {
@@ -1636,6 +1696,12 @@
       ],
       "mnoznikHandelPieniadz": 2.0,
       "ikonaId": "hetyci",
+      "wodzowie": {
+        "kamien": "Labarna I",
+        "braz": "Hattusili I",
+        "zelazo": "Suppiluliuma I",
+        "antyk": "Suppiluliuma II"
+      },
       "kolorHex": "#7B4B8A",
       "bonusy": [
         {
@@ -1795,6 +1861,12 @@
       ],
       "mnoznikHandelPieniadz": 1.8,
       "ikonaId": "slowianie",
+      "wodzowie": {
+        "kamien": "Lech",
+        "braz": "Krak",
+        "zelazo": "Samo",
+        "antyk": "Mieszko I"
+      },
       "kolorHex": "#B83232",
       "bonusy": [
         {
@@ -1953,6 +2025,12 @@
       ],
       "mnoznikHandelPieniadz": 2.3,
       "ikonaId": "babilonia",
+      "wodzowie": {
+        "kamien": "Sumu-abum",
+        "braz": "Hammurabi",
+        "zelazo": "Nabuchodonozor II",
+        "antyk": "Nabonid"
+      },
       "kolorHex": "#2B5F8A",
       "bonusy": [
         {
@@ -2112,6 +2190,12 @@
       ],
       "mnoznikHandelPieniadz": 1.7,
       "ikonaId": "asyria",
+      "wodzowie": {
+        "kamien": "Puzur-Aszur I",
+        "braz": "Tiglat-Pileser I",
+        "zelazo": "Aszurbanipal",
+        "antyk": "Sennacheryb"
+      },
       "kolorHex": "#5C4033",
       "bonusy": [
         {
@@ -2271,6 +2355,12 @@
       ],
       "mnoznikHandelPieniadz": 2.6,
       "ikonaId": "fenicjanie",
+      "wodzowie": {
+        "kamien": "Agenor",
+        "braz": "Hiram I",
+        "zelazo": "Dydona-Elissa",
+        "antyk": "Hannibal Barkas"
+      },
       "kolorHex": "#9B2335",
       "bonusy": [
         {

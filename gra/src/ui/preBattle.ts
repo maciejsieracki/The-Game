@@ -12,7 +12,7 @@ import type { CivBonusLite } from '../game/production';
 import { isCombatModifierBonus } from '../game/civ-bonuses';
 import { terrainIconSvg } from './icons/brandAssets';
 import { PB_SVG } from '../battle/battleHudTheme';
-import { leaderPortraitUrl } from './leaderPortraits';
+import { leaderPortraitUrl, leaderName } from './leaderPortraits';
 
 export interface PreBattleUnit {
   nazwa: string;
@@ -182,6 +182,7 @@ function ensureStyles(): void {
 .pb-cmd .pb-role{font-size:9.5px;color:var(--pb-dim);text-transform:uppercase;letter-spacing:.09em;white-space:nowrap}
 .pb-cmd.pb-you .pb-role b{color:var(--pb-you-txt)}
 .pb-cmd.pb-foe .pb-role b{color:var(--pb-foe-txt)}
+.pb-cmd .pb-leader{font-size:10.5px;color:var(--pb-gold-dim);font-style:italic;line-height:1.2;white-space:nowrap}
 .pb-cmd .pb-who{font-family:var(--pb-font-main);font-size:16px;color:var(--pb-gold);line-height:1.25}
 .pb-cmd .pb-cnt{font-size:11.5px;font-weight:700;font-variant-numeric:tabular-nums;margin-top:1px;white-space:nowrap}
 .pb-cmd.pb-you .pb-cnt{color:var(--pb-you-txt)}
@@ -460,11 +461,14 @@ function commanderHtml(
   const porInner = portraitUrl
     ? '<img src="' + esc(portraitUrl) + '" alt="">'
     : PB_SVG.commander;
+  const leader = leaderName(side.civId, side.era ?? 1);
+  const leaderHtml = leader ? '<div class="pb-leader">' + esc(leader) + '</div>' : '';
   return (
     '<div class="pb-cmd ' + sideCls + ' ' + posCls + '">' +
     '<span class="pb-por">' + porInner + '</span>' +
     '<div>' +
     '<div class="pb-role">' + civ + ' · <b>' + roleLabel(role, isYou) + '</b></div>' +
+    leaderHtml +
     '<div class="pb-who">' + who + '</div>' +
     '<div class="pb-cnt">' + String(total) + ' oddziałów</div>' +
     chipsHtml +

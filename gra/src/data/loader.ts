@@ -191,6 +191,8 @@ export interface CivDef {
   epokiStartowe?: string[];
   /** Religia państwowa (eksport cywilizacji). */
   Religia?: string | null;
+  /** Imiona władców per epoka (kamien/braz/zelazo/antyk) — karta dowódcy, dyplomacja. */
+  wodzowie?: Partial<Record<'kamien' | 'braz' | 'zelazo' | 'antyk', string>>;
 }
 export interface StartGryDef {
   [key: string]: string | number | null;

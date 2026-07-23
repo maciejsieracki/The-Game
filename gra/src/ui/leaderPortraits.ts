@@ -12,10 +12,21 @@
  * nazw nie trzeba (nie ma np. "sumer" vs "sumerowie" — civs.json ma "sumer").
  */
 
+import civsRaw from '../../data/civs.json';
+import type { CivsData } from '../data/loader';
+
 type EpochKey = 'kamien' | 'braz' | 'zelazo';
 
 /** Kolejność epok gry: 1=kamien, 2=braz, 3=zelazo (patrz main.ts ERA_ID_TO_NUM). */
 const EPOCH_BY_ERA: readonly EpochKey[] = ['kamien', 'braz', 'zelazo'];
+
+/** civId (ikonaId) -> wodzowie{kamien/braz/zelazo}, zbudowane raz z civs.json (loader.ts wczytuje ten sam plik). */
+const LEADER_MAP: Record<string, Partial<Record<EpochKey, string>>> = {};
+for (const civ of (civsRaw as CivsData).cywilizacje) {
+  if (civ.ikonaId && civ.wodzowie) {
+    LEADER_MAP[civ.ikonaId.toLowerCase()] = civ.wodzowie;
+  }
+}
 
 // eager: true -> moduł od razu ma { default: <data-URI string> } (nie Promise) dla każdego pliku.
 const PORTRAIT_MODULES = import.meta.glob('../assets/portrety/*.jpg', { eager: true, import: 'default' }) as Record<string, string>;
@@ -51,6 +62,24 @@ export function leaderPortraitUrl(civId: string | null | undefined, era: number)
   for (let i = startIdx; i >= 0; i--) {
     const url = byEpoch[EPOCH_BY_ERA[i]!];
     if (url) return url;
+  }
+  return null;
+}
+
+/**
+ * Imię władcy danej cywilizacji w danej epoce, albo `null` gdy civId nieznany lub brak
+ * wpisu `wodzowie` w civs.json. Fallback epoki jak przy portretach (zelazo→braz→kamien).
+ */
+export function leaderName(civId: string | null | undefined, era: number): string | null {
+  const key = String(civId ?? '').trim().toLowerCase();
+  if (!key) return null;
+  const byEpoch = LEADER_MAP[key];
+  if (!byEpoch) return null;
+
+  const startIdx = Math.max(0, Math.min(EPOCH_BY_ERA.length - 1, Math.round(era) - 1));
+  for (let i = startIdx; i >= 0; i--) {
+    const name = byEpoch[EPOCH_BY_ERA[i]!];
+    if (name) return name;
   }
   return null;
 }
