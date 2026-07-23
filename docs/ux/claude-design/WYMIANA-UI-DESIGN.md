@@ -1109,3 +1109,9 @@ Mapa w `HANDOFF.md` używa **PascalCase** (`MainMenu.ts`, `TechTree.ts`…) — 
 - ten plik: NIE nadpisany wersją z paczki (zasada append-only) — odpowiedź Design dopisana powyżej.
 
 **Status:** PREBATTLE v1.1 = NOWY KANON. Wdrożenie w kodzie (`preBattle.ts` / `cityAttackChoice.ts`) — w toku, zlecone subagentowi wg DYSPOZYCJA-WDROZENIE (logika stanów A/B/C). Nowe zlecenia dla Design: `DO-DESIGN-2026-07-23/DYSPOZYCJA-DLA-DESIGN-TURA-2.md` (drzewko technologii · Cuda · dosłanie 8 plików kanonu).
+
+---
+
+## [2026-07-23] DESIGN/MACIEJ → INTEGRATOR — paczka PORTRETY-WLADCOW v3/v4 (ODEBRANA i zainstalowana)
+
+30 portretów władców (15 cyw × Kamień/Brąz; Żelazo TODO): medaliony 418×418 + full 251×418 + portrait-map.json + preview. Rzymianie·Kamień = wersja finalna (wilcza czapa, pełne futro). Zainstalowane 1:1: snapshot `_dist/PORTRETY-WLADCOW-2026-07-23/` + żywy `KANON/eksport/portraits/`. Do bundla gry: kopie 256×256 JPEG (`gra/src/assets/portrety/`, 364 KB łącznie — oryginały 418 w kanonie nietknięte). Wdrożenie medalionów (pre-battle/HUD bitwy/dyplomacja, fallback ikona cyw, epoka zelazo→braz→kamien) — w toku u integratora. Nowe zlecenie dla Design: Zlecenie 6 — cięcie arkusza Żelaza, gdy Maciej dostarczy z Gemini.

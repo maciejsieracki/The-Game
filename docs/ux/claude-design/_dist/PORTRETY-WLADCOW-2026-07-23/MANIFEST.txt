@@ -1,0 +1,14 @@
+PACZKA: PORTRETY-WLADCOW · 2026-07-23
+30 portretów władców (15 cywilizacji × Kamień/Brąz) · źródło: arkusze MJ od Macieja · styl 1E
+
+ZAWARTOŚĆ:
+1. DYSPOZYCJA-WDROZENIE.md ............................. gdzie wgrać + zlecenie integratora (medaliony, fallback, epoki)
+2. MANIFEST.txt ........................................ ten plik
+3. brand-book/KANON/eksport/portraits/ ................. 30× kwadrat 418px pod medalion (twarz+tors, boki wtopione)
+4. brand-book/KANON/eksport/portraits/full/ ............ 30× pełna komórka 251×418 (pion)
+5. brand-book/KANON/eksport/portrait-map.json .......... mapa civ × epoka → plik (zelazo: TODO, fallback: civ-icon)
+6. brand-book/KANON/eksport/portraits-preview.html ..... podgląd: medaliony 1E, obwódki Ty/wróg/neutral
+7. WYMIANA-UI-DESIGN.md ................................ NADPISZ (log 2026-07-23)
+
+EPOKA ŻELAZA: TODO — dojdzie osobną paczką (prompty gotowe w brand-book/SPEC-PORTRETY-WLADCOW-MJ.md).
+CEL W REPO: docs/ux/claude-design/01-propozycje-z-design/brand-book/
