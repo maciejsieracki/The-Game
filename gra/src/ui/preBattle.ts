@@ -547,14 +547,14 @@ function buildDeployPanel(info: PreBattleInfo, canRetreat: boolean, defaultManua
 
   const allMods: PreBattleModifier[] = [...(info.modyfikatory ?? []), ...(info.warunki ?? [])];
 
-  const deployLabel = canRetreat ? 'Do rozstawienia' : 'Broń się — rozstawienie';
+  const deployLabel = canRetreat ? 'Bitwa' : 'Broń się — rozstawienie';
   const deployIcon = canRetreat ? PB_ICON_DEPLOY : PB_ICON_SHIELD;
 
   const btns: string[] = [];
   if (canRetreat) {
     btns.push('<button type="button" class="pb-btn pb-danger" data-act="cancel">' + PB_SVG.retreat + 'Wycofaj</button>');
   }
-  btns.push('<button type="button" class="pb-btn" data-act="auto">' + PB_SVG.auto + 'Auto-rozstrzygnij</button>');
+  btns.push('<button type="button" class="pb-btn" data-act="auto">' + PB_SVG.auto + 'Auto</button>');
   btns.push('<button type="button" class="pb-btn pb-primary" data-act="deploy">' + deployIcon + esc(deployLabel) + '</button>');
   if (hasSave) {
     btns.push('<button type="button" class="pb-btn" data-act="save">Zapisz</button>');
@@ -565,7 +565,7 @@ function buildDeployPanel(info: PreBattleInfo, canRetreat: boolean, defaultManua
     : '<div class="pb-noretreat">' + PB_ICON_NO_RETREAT +
       'Wycofanie niedostępne — to wróg wybrał bitwę (obrońca nie może uciec)</div>';
 
-  const enterLabel = defaultManual ? deployLabel : 'Auto-rozstrzygnij';
+  const enterLabel = defaultManual ? deployLabel : 'Auto';
   const keysParts: string[] = ['<b>Enter</b> = ' + esc(enterLabel)];
   if (canRetreat) keysParts.push('<b>Esc</b> = Wycofaj');
   if (hasSave) keysParts.push('<b>Zapisz</b> dostępny przed bitwą');
