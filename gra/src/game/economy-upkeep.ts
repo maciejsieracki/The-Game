@@ -333,9 +333,9 @@ export interface OwnerStorageParams {
   bonusSurowceNaBudynek: number;
 }
 
-/** Placeholder do strojenia (Maciej 2026-07-24): 100 baza + 100/Magazyn. */
+/** Placeholder do strojenia (Maciej 2026-07-24): 500 baza + 100/Magazyn (baza podniesiona 100→500). */
 export const DEFAULT_OWNER_STORAGE_PARAMS: OwnerStorageParams = {
-  bazaSurowcePanstwo:    100,
+  bazaSurowcePanstwo:    500,
   bonusSurowceNaBudynek: 100,
 };
 

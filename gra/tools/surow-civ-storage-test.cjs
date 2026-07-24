@@ -83,29 +83,29 @@ function eq(a, b, msg) { assert(a === b, `${msg} (got ${JSON.stringify(a)}, want
 // ===========================================================================
 // A. Cap panstwa: baza + bonus x liczba Magazynow (addytywnie)
 // ===========================================================================
-console.log('\n-- A. ownerResourceCapacityPerType: 100 + 100/Magazyn (addytywnie) --');
+console.log('\n-- A. ownerResourceCapacityPerType: 500 + 100/Magazyn (addytywnie) --');
 const SP = M.DEFAULT_OWNER_STORAGE_PARAMS;
-eq(SP.bazaSurowcePanstwo, 100, 'default: baza panstwa = 100');
+eq(SP.bazaSurowcePanstwo, 500, 'default: baza panstwa = 500 (podniesiona 100->500, Maciej 2026-07-24)');
 eq(SP.bonusSurowceNaBudynek, 100, 'default: bonus/Magazyn = 100');
-eq(M.ownerResourceCapacityPerType(0, SP), 100, '0 Magazynow -> cap 100');
-eq(M.ownerResourceCapacityPerType(1, SP), 200, '1 Magazyn -> cap 200');
-eq(M.ownerResourceCapacityPerType(2, SP), 300, '2 Magazyny -> cap 300 (addytywnie, NIE x2)');
-eq(M.ownerResourceCapacityPerType(5, SP), 600, '5 Magazynow -> cap 600');
+eq(M.ownerResourceCapacityPerType(0, SP), 500, '0 Magazynow -> cap 500');
+eq(M.ownerResourceCapacityPerType(1, SP), 600, '1 Magazyn -> cap 600');
+eq(M.ownerResourceCapacityPerType(2, SP), 700, '2 Magazyny -> cap 700 (addytywnie, NIE x2)');
+eq(M.ownerResourceCapacityPerType(5, SP), 1000, '5 Magazynow -> cap 1000');
 // nie mnoznik: 2 Magazyny musi byc 300, NIE 100*100*2=20000 ani 100*(1+2)=300 przypadkiem
 // rownych -- kontrola jawna roznicujaca addytywny od hipotetycznego mnoznikowego x3:
 assert(M.ownerResourceCapacityPerType(2, SP) !== SP.bazaSurowcePanstwo * 3 - 1, 'sanity addytywny (nie zbieg okolicznosci)');
 
 // loadOwnerStorageParams: real econ-params.json (SUROW-CIV-01 wartosci wlasciciela)
 const paramsNormal = M.loadOwnerStorageParams(econParamsRaw, 'normal');
-eq(paramsNormal.bazaSurowcePanstwo, 100, 'econ-params.json normal: magazyn_baza_surowce = 100 (nowa semantyka PANSTWO)');
+eq(paramsNormal.bazaSurowcePanstwo, 500, 'econ-params.json normal: magazyn_baza_surowce = 500 (baza 100->500)');
 eq(paramsNormal.bonusSurowceNaBudynek, 100, 'econ-params.json normal: magazyn_bonus_surowce_na_budynek = 100');
 const paramsEasy = M.loadOwnerStorageParams(econParamsRaw, 'easy');
-eq(paramsEasy.bazaSurowcePanstwo, 100, 'econ-params.json easy: 100 (płaskie, decyzja Macieja 2026-07-24)');
+eq(paramsEasy.bazaSurowcePanstwo, 500, 'econ-params.json easy: 500 (płaskie, decyzja Macieja 2026-07-24)');
 const paramsHard = M.loadOwnerStorageParams(econParamsRaw, 'hard');
-eq(paramsHard.bazaSurowcePanstwo, 100, 'econ-params.json hard: 100 (płaskie, decyzja Macieja 2026-07-24)');
+eq(paramsHard.bazaSurowcePanstwo, 500, 'econ-params.json hard: 500 (płaskie, decyzja Macieja 2026-07-24)');
 
 // fallback gdy brak w JSON
-eq(M.loadOwnerStorageParams({}, 'normal').bazaSurowcePanstwo, 100, 'load: brak JSON -> fallback 100');
+eq(M.loadOwnerStorageParams({}, 'normal').bazaSurowcePanstwo, 500, 'load: brak JSON -> fallback 500');
 
 // ===========================================================================
 // B. reconcileOwnerResourceCaps: nadwyzka ginie z NAJWIEKSZEGO zapasu najpierw
@@ -161,30 +161,30 @@ function makeCities(spec) {
 // ===========================================================================
 console.log('\n-- D. OWNERID-AGNOSTIC: gracz (ownerId=0) i AI (ownerId=2) traktowani identycznie --');
 {
-  // Dwa identyczne scenariusze (2 miasta, suma 140, cap 100) -- jeden dla gracza
+  // Dwa identyczne scenariusze (2 miasta, suma 700, cap 500) -- jeden dla gracza
   // (ownerId=0), jeden dla AI (ownerId=2) -- w JEDNYM wywolaniu reconcile.
   const cities = makeCities([
-    { id: 'p1', ownerId: 0, surowce: { drewno: 80 } },
-    { id: 'p2', ownerId: 0, surowce: { drewno: 60 } },
-    { id: 'ai1', ownerId: 2, surowce: { drewno: 80 } },
-    { id: 'ai2', ownerId: 2, surowce: { drewno: 60 } },
+    { id: 'p1', ownerId: 0, surowce: { drewno: 400 } },
+    { id: 'p2', ownerId: 0, surowce: { drewno: 300 } },
+    { id: 'ai1', ownerId: 2, surowce: { drewno: 400 } },
+    { id: 'ai2', ownerId: 2, surowce: { drewno: 300 } },
   ]);
-  // capForOwner zwraca TA SAMA formule dla obu ownerow (0 Magazynow -> 100) --
+  // capForOwner zwraca TA SAMA formule dla obu ownerow (0 Magazynow -> 500) --
   // brak jakiejkolwiek galezi "if (ownerId === 0)".
   M.reconcileOwnerResourceCaps(cities, (ownerId) => M.ownerResourceCapacityPerType(0, M.DEFAULT_OWNER_STORAGE_PARAMS));
 
   const playerTotal = cities.filter(c => c.ownerId === 0).reduce((s, c) => s + (c.surowce.drewno ?? 0), 0);
   const aiTotal = cities.filter(c => c.ownerId === 2).reduce((s, c) => s + (c.surowce.drewno ?? 0), 0);
-  eq(playerTotal, 100, 'OWNERID-AGNOSTIC: gracz (ownerId=0) klamrowany do cap 100');
-  eq(aiTotal, 100, 'OWNERID-AGNOSTIC: AI (ownerId=2, ownerId!=0) klamrowany do cap 100 TAK SAMO jak gracz');
+  eq(playerTotal, 500, 'OWNERID-AGNOSTIC: gracz (ownerId=0) klamrowany do cap 500');
+  eq(aiTotal, 500, 'OWNERID-AGNOSTIC: AI (ownerId=2, ownerId!=0) klamrowany do cap 500 TAK SAMO jak gracz');
 
   const ai1 = cities.find(c => c.id === 'ai1');
   const ai2 = cities.find(c => c.id === 'ai2');
   const p1 = cities.find(c => c.id === 'p1');
   const p2 = cities.find(c => c.id === 'p2');
-  eq(ai1.surowce.drewno, p1.surowce.drewno, 'AI miasto o najwiekszym zapasie traci nadwyzke IDENTYCZNIE jak gracz (40 == 40)');
-  eq(ai2.surowce.drewno, p2.surowce.drewno, 'AI drugie miasto niezmienione IDENTYCZNIE jak u gracza (60 == 60)');
-  eq(ai1.surowce.drewno, 40, 'AI (ownerId!=0): miasto z 80 -> 40 po odjeciu nadwyzki');
+  eq(ai1.surowce.drewno, p1.surowce.drewno, 'AI miasto o najwiekszym zapasie traci nadwyzke IDENTYCZNIE jak gracz (200 == 200)');
+  eq(ai2.surowce.drewno, p2.surowce.drewno, 'AI drugie miasto niezmienione IDENTYCZNIE jak u gracza (300 == 300)');
+  eq(ai1.surowce.drewno, 200, 'AI (ownerId!=0): miasto z 400 -> 200 po odjeciu nadwyzki (700-500=200)');
 }
 
 // ===========================================================================
@@ -266,11 +266,11 @@ console.log('\n-- E. advanceCityEconomy: cap panstwa + reconcile per owner (grac
   const ai1 = M.foundCityAt(spots[2].q, spots[2].r, 2, cities, map, 'AI1'); cities.push(ai1);
   const ai2 = M.foundCityAt(spots[3].q, spots[3].r, 2, cities, map, 'AI2'); cities.push(ai2);
 
-  // Zasilamy magazyny recznie PRZED tura, ponad cap (100 + 100x1 magazyn = 200),
+  // Zasilamy magazyny recznie PRZED tura, ponad cap (500 + 100x1 magazyn = 600),
   // zeby sprawdzic reconcile bez zaleznosci od tempa produkcji terenu.
-  p1.surowce = { drewno: 260 };
+  p1.surowce = { drewno: 760 };
   p2.surowce = { drewno: 0 };
-  ai1.surowce = { drewno: 260 };
+  ai1.surowce = { drewno: 760 };
   ai2.surowce = { drewno: 0 };
 
   const builtByCity = new Map([
@@ -288,9 +288,9 @@ console.log('\n-- E. advanceCityEconomy: cap panstwa + reconcile per owner (grac
   const playerTotal = cities.filter(c => c.ownerId === 0).reduce((s, c) => s + (c.surowce.drewno ?? 0), 0);
   const aiTotal = cities.filter(c => c.ownerId === 2).reduce((s, c) => s + (c.surowce.drewno ?? 0), 0);
   const expectedCap = M.ownerResourceCap(cities, builtByCity, 0, data, 'normal');
-  eq(expectedCap, 200, 'cap panstwa (1 Magazyn, normal): 100 + 100x1 = 200');
+  eq(expectedCap, 600, 'cap panstwa (1 Magazyn, normal): 500 + 100x1 = 600');
   const expectedCapAi = M.ownerResourceCap(cities, builtByCity, 2, data, 'normal');
-  eq(expectedCapAi, 200, 'OWNERID-AGNOSTIC: cap panstwa AI (ownerId=2, 1 Magazyn) TAKI SAM jak gracza = 200');
+  eq(expectedCapAi, 600, 'OWNERID-AGNOSTIC: cap panstwa AI (ownerId=2, 1 Magazyn) TAKI SAM jak gracza = 600');
   assert(playerTotal <= expectedCap, `gracz: suma drewna (${playerTotal}) <= cap panstwa (${expectedCap}) po turze`);
   assert(aiTotal <= expectedCapAi, `AI (ownerId=2): suma drewna (${aiTotal}) <= cap panstwa (${expectedCapAi}) po turze -- MAGAZYNY DZIALAJA DLA AI`);
   assert(aiTotal > 0, 'AI zachowuje surowiec do capu (nie zeruje wszystkiego -- reconcile tylko tnie nadwyzke)');
