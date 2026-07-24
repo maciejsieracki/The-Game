@@ -9,7 +9,14 @@ UWAGA: KANON i FINALNA promują się teraz OSOBNYMI skryptami (`gra/tools/publis
 wyraźne polecenie właściciela) — dlatego są logowane NIEZALEŻNIE, każdy w swojej sekcji, ze
 swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drugiego.
 
-## ROBOCZA `85f0ca70` — 2026-07-24 · menu: O grze → poradnik + cleanup Więcej — **AKTUALNA**
+## ROBOCZA `160f0402` — 2026-07-24 · mapa Ziemia: bufor arktyczny + bez Antarktydy (A-MAP-ZIEMIA-1 B) — **AKTUALNA**
+
+- **Zawartość:** tylko typ świata **Ziemia** (`ziemia`): ~30 rzędów oceanu arktycznego u góry (skalowane z rozmiarem mapy), wycięcie Antarktydy z mapowania szablonu, końcowy enforce szablonu w generatorze. Proceduralne Kontynenty / Pangea / Wyspy — bez zmian.
+- **Pliki:** `earth-land-mask.ts`, `generator.ts`, `earth-template-test.cjs`, `docs/decyzje/A-MAP-ZIEMIA-1.md`.
+- **Bramki:** tsc 0 · earth-template-test 0 fail · map-gen-regression PASS · VERIFY OK.
+- **md5:** `160f0402c674d448e0d8ae529c765c86` · pieczątka `160f0402`. Bundel 34 MB. Zastępuje `85f0ca70`.
+
+## ROBOCZA `85f0ca70` — 2026-07-24 · menu: O grze → poradnik + cleanup Więcej — ZASTĄPIONA
 
 - **Zawartość:** (1) **O grze** w menu głównym otwiera **Poradnik gracza** (ten sam hub Wikipedia co na mapie, tryb overlay nad menu). (2) Usunięte z menu Więcej: **Playtest mapy** (walka/miasto już wcześniej). (3) Ustawienia menu: tylko Muzyka / Efekty / Język (`ui-params.json` — bez Grafika/Skala/Mgła).
 - **Pliki:** `wikiHubHud.ts` (layout overlay), `mainMenu.ts`, `main.ts`, `ui-params.json`.

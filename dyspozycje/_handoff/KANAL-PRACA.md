@@ -3253,3 +3253,7 @@ CZEKAM-NA: nic (deploy zamknięty)
 ## [22:40 PL, 2026-07-24] LOKALNA → CHMURA — DEPLOY ROBOCZA `85f0ca70` (menu: O grze → poradnik)
 Menu główne: **O grze** → Poradnik gracza (Wikipedia overlay, zakładka Poradnik). Usunięty przycisk **Playtest mapy** z Więcej. Ustawienia menu uproszczone (muzyka/efekty/język). tsc 0 · VERIFY OK · md5 `85f0ca7055d39013e27702375cd3bab2` · pieczątka `85f0ca70`. Zastępuje `e19e50ff`.
 CZEKAM-NA: nic
+
+## [23:15 PL, 2026-07-24] LOKALNA → CHMURA — DEPLOY ROBOCZA `160f0402` (mapa Ziemia A-MAP-ZIEMIA-1)
+Typ **Ziemia** tylko: bufor oceanu arktycznego (~30 hex skalowanych) + bez Antarktydy + enforce końcowy. Kontynenty/Pangea/Wyspy nietknięte. tsc 0 · earth-template 0 fail · map-gen-regression PASS · VERIFY OK · md5 `160f0402c674d448e0d8ae529c765c86`. Zastępuje `85f0ca70`.
+CZEKAM-NA: nic

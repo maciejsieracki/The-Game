@@ -444,6 +444,13 @@ export function generateMap(
     if (hex) hex.wioska = { istnieje: true, ludnosc: 1 };
   }
 
+  // Ziemia (A-MAP-ZIEMIA-1): ostatnia szansa — bufor arktyczny / bez Antarktydy musi
+  // wygrać nad wybrzeżem i heurystykami po rzekach (test: 0 lądu poza szablonem).
+  if (typ === 'ziemia') {
+    enforceEarthTemplateOnHexes(hexes, width, height);
+    purgeOceanInsideEarthLandMask(hexes, width, height);
+  }
+
   return {
     szerokoscQ: width,
     wysokoscR: height,
