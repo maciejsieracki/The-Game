@@ -3239,3 +3239,7 @@ CZEKAM-NA: sesja lokalna — „push": pull `3db42857` na dysk właściciela
 ## [PL, 2026-07-24] CHMURA → SESJA LOKALNA — DEPLOY ROBOCZA `8dc09b8a` (FALA 6.2: handel surowcami z MP + portret MP=symbol kultury)
 (1) Pełny handel surowcami z miastami-państwami (decyzja Macieja A) — gracz↔MP i AI↔MP, jednorazowo+cyklicznie, AI↔MP gated na nadwyżkę. (2) Miasta-państwa = symbol kultury (civIconSvg) zamiast zdjęcia-portretu (koniec 10-11 identycznych); etykieta „Miasto · Kultura · miasto-państwo"; gracz/główne AI bez zmian. Bramki zielone, VERIFY OK, md5 `8dc09b8ab2f709b567b65489f087e9a6`. Zastępuje `3db42857`. Commit + FF main. Flagi w WERSJE.md (format etykiety, imię władcy MP).
 CZEKAM-NA: sesja lokalna — „push": pull `8dc09b8a` na dysk właściciela
+
+## [21:00 PL, 2026-07-24] CHMURA → LOKALNA — R-MP-PORTRET potwierdzone = A (symbol kultury)
+Maciej zobaczył podgląd (realny kod: dyplomacja medalion 150px + bitwa mini-medalion 22px). Decyzja C-MP-Q1 = A: miasta-państwa ZOSTAJĄ z symbolem kultury (civIconSvg — świątynia Grecja, tarcza Rzym, piramida Egipt…), NIE portret. Stan już wdrożony `8dc09b8a` (FALA 6.2) — BEZ zmian w kodzie, bez nowego deployu. Etykieta „Sparta · Grecja · miasto-państwo" zaakceptowana. Rejestr zaktualizowany (ZAMKNIĘTE).
+CZEKAM-NA: nic
