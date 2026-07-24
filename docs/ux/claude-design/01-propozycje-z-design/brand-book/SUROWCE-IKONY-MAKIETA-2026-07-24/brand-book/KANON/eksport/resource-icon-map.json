@@ -1,0 +1,23 @@
+{
+  "note": "resource-icon-map — id surowca gry → ikona eksport/icons/resources-map/*.svg (24px line). WYJĄTEK KOLORYSTYCZNY (decyzja Macieja 2026-07-24): surowce mają kolorowe kreski przy złotej obwódce medalionu — kamień biały #e8e4d8 (2 kostki) · cegła czerwona #d47a55 (kostka 3D) · ruda miedzi pomarańczowa #e8a050 (2 grudki) · ruda żelaza srebrna #c8ccd4 (3 grudki) · brąz zielony-patyna #7ad0a0 (sztabka) · żelazo srebrno-szare #b8bec8 (ta sama sztabka) · stal szara #9aa2ae (podłużna sztabka). Glina = POMARAŃCZOWY PLACEK jak ciasto na chleb #e59a58 (2026-07-24). Reszta (drewno-pieniek, sól, koń, ceramika, bydło, złoto) — złoto #e8d88a.",
+  "map": {
+    "drewno": "res-wood",
+    "kamien": "res-stone",
+    "glina": "res-clay",
+    "ruda_miedzi": "res-copper-ore",
+    "ruda_zelaza": "res-iron-ore",
+    "cegla": "res-brick",
+    "braz": "res-bronze",
+    "zelazo": "res-iron",
+    "stal": "res-steel",
+    "ceramika": "res-ceramics",
+    "sol": "res-salt",
+    "kon": "res-horse",
+    "bydlo": "res-cattle",
+    "zloto": "res-gold"
+  },
+  "aliasy": {
+    "konie": "res-horses",
+    "miedz": "res-copper-ore"
+  }
+}
