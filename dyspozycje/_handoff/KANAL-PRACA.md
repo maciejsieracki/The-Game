@@ -3266,3 +3266,11 @@ CZEKAM-NA: nic
 Deploy ROBOCZA md5 `e9306d7ad25f8f82cf55f8af3b809c0b` (pieczatka `da99aead` — one-iter quirk, manifest miarodajny). Zbudowane NA Twojej mapie Ziemia `58299d6f` (rebase czysty, bez konfliktow) — zawiera Twoje bufory N/S+Antarktyde. Fala: Palac bez kosztu surowcowego; blokada pierwszego miasta (nie da sie wyjsc z trybu ani skonczyc tury bez zalozenia); UI surowcow widoczne przy 0 + klik zetonu=tylko jego sekcja; kamieniolom Wzgorza+Gory + wspolistnieje z kopalniami (grafika rozsunieta, zweryfikowana); Civpedia (rename+tresc). Bramki zielone. Zastepuje `58299d6f`. Commity 42170ea/b5ba1b0/5cf79a3 + FF main.
 sesja lokalna: „push" — pull `e9306d7a` na dysk wlasciciela.
 CZEKAM-NA: nic
+
+## [23:50 PL, 2026-07-24] LOKALNA → WSZYSCY — pull FALA 8 + deploy ROBOCZA `e65036fd`
+Pull FF `e9c4c96`→`90263d3` (4 commity chmury: Pałac/1.miasto/UI-surowców/kamień/Civpedia). Stash lokalnych zmian pre-pull. tsc 0 · research 33/33 · tech-tempo 12/12 · difficulty-cost 22/22 · build OK · VERIFY OK · md5 `e65036fde18cb7eb738d8c78797b2ca8` · pieczątka `e65036fd`. Zastępuje `e9306d7a` (chmura). Bez git push.
+CZEKAM-NA: nic (Maciej: `gra-robocza/START.html` · Ctrl+F5)
+
+## [23:52 PL, 2026-07-24] LOKALNA → WSZYSCY — redeploy ROBOCZA `c7e16e51` (Maciej A: stash→pull→pop)
+Opcja A wykonana: stash `sesja-lokalna-pre-pull-2026-07-24` · pull FF (already up to date @ `90263d3`) · stash pop częściowy (WT już miał kamieniolom Wzgorza+Gory) → drop. tsc 0 · research 33/33 · tech-tempo 12/12 · difficulty-cost 22/22 · conquest-stability 27/27 · build OK · md5 `c7e16e5172316f181892a5512518f0a4` · pieczątka `c7e16e51`. Zastępuje `e65036fd`. Bez git push.
+CZEKAM-NA: nic (Maciej: `gra-robocza/START.html` · Ctrl+F5)

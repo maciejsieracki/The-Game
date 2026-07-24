@@ -9,7 +9,21 @@ UWAGA: KANON i FINALNA promują się teraz OSOBNYMI skryptami (`gra/tools/publis
 wyraźne polecenie właściciela) — dlatego są logowane NIEZALEŻNIE, każdy w swojej sekcji, ze
 swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drugiego.
 
-## ROBOCZA `e9306d7a` — 2026-07-24 · FALA 8: Pałac bez surowców + blokada 1. miasta + UI surowców (widoczność+panel) + kamień współistnienie + Civpedia — **AKTUALNA**
+## ROBOCZA `c7e16e51` — 2026-07-24 · SESJA LOKALNA: stash→pull→pop + FALA 8 rebuild — **AKTUALNA**
+
+- **Zawartość:** FALA 8 (`90263d3`) — Pałac bez surowców · blokada 1. miasta · UI surowców · kamień współistnieje · Civpedia. Lokalny rebuild po bramkach (bez git push).
+- **Sync:** main już na `90263d3` (pull FF: already up to date); stash `sesja-lokalna-pre-pull-2026-07-24` → pop częściowy (zmiany już w WT) → drop.
+- **Bramki:** tsc 0 · research 33/33 · tech-tempo 12/12 · difficulty-cost 22/22 · conquest-stability 27/27 · build OK.
+- **md5:** `c7e16e5172316f181892a5512518f0a4` · pieczątka `c7e16e51`. Zastępuje `e65036fd`.
+
+## ROBOCZA `e65036fd` — 2026-07-24 · SESJA LOKALNA: pull FALA 8 + rebuild weryfikacyjny — ZASTĄPIONA
+
+- **Zawartość:** identyczna jak FALA 8 chmury (`90263d3` / `e9306d7a` przed pieczęcią) — pull 4 commitów FF + lokalny build/publish po bramkach.
+- **Sync:** `e9c4c96` → `90263d3` (stash lokalnych zmian pre-pull: `sesja-lokalna-pre-pull-2026-07-24`).
+- **Bramki:** tsc 0 · research 33/33 · tech-tempo 12/12 · difficulty-cost 22/22 · build OK.
+- **md5:** `e65036fde18cb7eb738d8c78797b2ca8` · pieczątka `e65036fd`. Zastępuje `e9306d7a` (chmura, manifest przed stamp lokalnym).
+
+## ROBOCZA `e9306d7a` — 2026-07-24 · FALA 8: Pałac bez surowców + blokada 1. miasta + UI surowców (widoczność+panel) + kamień współistnienie + Civpedia — ZASTĄPIONA
 
 - **Zawartość:** (commity `42170ea`, `b5ba1b0`, `5cf79a3`) — zbudowana NA mapie Ziemia `58299d6f` (rebase, zawiera ich zmiany):
   1. **Pałac** — usunięty koszt surowcowy (8 drewno+8 kamień); zostaje 40 Pracy (budynek startowy, na starcie pula surowców = 0).

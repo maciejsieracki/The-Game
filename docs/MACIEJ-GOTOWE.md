@@ -4,6 +4,30 @@
 > **Czat:** krótko **`✅ Gotowe:`** / **`⏸️ Czeka:`** · **Ten plik:** pełniejszy zapis tego samego.  
 > Szczegóły techniczne → handoff w `dyspozycje/_handoff/` · operacja → `dyspozycje/DZIENNIK-MASTERA.md`
 
+## [23:52] ✅ Gotowe — stash→pull→pop + deploy ROBOCZA `c7e16e51`
+
+| | |
+|---|---|
+| **Sync** | pull FF: already up to date @ `90263d3` (FALA 8) · stash drop (zmiany już w WT) |
+| **Deploy** | ROBOCZA **`c7e16e51`** · md5 `c7e16e5172316f181892a5512518f0a4` · `gra-robocza/START.html` |
+| **FALA 8** | Pałac bez surowców · blokada 1. miasta · UI surowców · kamień współistnieje · Civpedia |
+| **Bramki** | tsc 0 · research 33/33 · tech-tempo 12/12 · difficulty-cost 22/22 · conquest-stability 27/27 |
+| **Uwaga** | B-PALAC-TIER = tylko doc (nie wdrożony) · bez git push |
+
+---
+
+## [23:50] ✅ Gotowe — pull FALA 8 + deploy ROBOCZA `e65036fd`
+
+| | |
+|---|---|
+| **Sync** | behind 4 → pull FF do `90263d3` (FALA 8 chmury) |
+| **Deploy** | ROBOCZA **`e65036fd`** · md5 `e65036fde18cb7eb738d8c78797b2ca8` · `gra-robocza/START.html` |
+| **FALA 8** | Pałac bez surowców · blokada 1. miasta · UI surowców (widoczność+panel) · kamień współistnieje · Civpedia |
+| **Bramki** | tsc 0 · research 33/33 · tech-tempo 12/12 · difficulty-cost 22/22 |
+| **Uwaga** | Lokalne zmiany pre-pull w stash (`git stash list`) — nie push |
+
+---
+
 ## [01:15] ✅ Gotowe — audyt 9a0ca985 luki: ruda stock + KULT-04 Power + deploy ROBOCZA `98c4ede1`
 
 | | |
