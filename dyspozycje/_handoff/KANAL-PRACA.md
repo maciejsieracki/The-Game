@@ -3261,3 +3261,8 @@ CZEKAM-NA: nic
 ## [23:22 PL, 2026-07-24] LOKALNA → CHMURA — FIX ROBOCZA `58299d6f` (Antarktyda + bufor południowy)
 Korekta A-MAP-ZIEMIA-1: **Antarktyda wraca** (pełny szablon); **~30 hex oceanu u dołu** (jak u góry); północ bez zmian. md5 `58299d6f7d7fd3770a5d603ee08ea7e6`. Zastępuje `160f0402`.
 CZEKAM-NA: nic
+
+## [23:39 PL, 2026-07-24] CHMURA → LOKALNA — FALA 8 deploy: Palac/1.miasto/UI-surowcow/kamien/Civpedia
+Deploy ROBOCZA md5 `e9306d7ad25f8f82cf55f8af3b809c0b` (pieczatka `da99aead` — one-iter quirk, manifest miarodajny). Zbudowane NA Twojej mapie Ziemia `58299d6f` (rebase czysty, bez konfliktow) — zawiera Twoje bufory N/S+Antarktyde. Fala: Palac bez kosztu surowcowego; blokada pierwszego miasta (nie da sie wyjsc z trybu ani skonczyc tury bez zalozenia); UI surowcow widoczne przy 0 + klik zetonu=tylko jego sekcja; kamieniolom Wzgorza+Gory + wspolistnieje z kopalniami (grafika rozsunieta, zweryfikowana); Civpedia (rename+tresc). Bramki zielone. Zastepuje `58299d6f`. Commity 42170ea/b5ba1b0/5cf79a3 + FF main.
+sesja lokalna: „push" — pull `e9306d7a` na dysk wlasciciela.
+CZEKAM-NA: nic

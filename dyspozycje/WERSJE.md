@@ -9,7 +9,20 @@ UWAGA: KANON i FINALNA promują się teraz OSOBNYMI skryptami (`gra/tools/publis
 wyraźne polecenie właściciela) — dlatego są logowane NIEZALEŻNIE, każdy w swojej sekcji, ze
 swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drugiego.
 
-## ROBOCZA `58299d6f` — 2026-07-24 · mapa Ziemia: bufor N+S + Antarktyda wraca (A-MAP-ZIEMIA-1 fix) — **AKTUALNA**
+## ROBOCZA `e9306d7a` — 2026-07-24 · FALA 8: Pałac bez surowców + blokada 1. miasta + UI surowców (widoczność+panel) + kamień współistnienie + Civpedia — **AKTUALNA**
+
+- **Zawartość:** (commity `42170ea`, `b5ba1b0`, `5cf79a3`) — zbudowana NA mapie Ziemia `58299d6f` (rebase, zawiera ich zmiany):
+  1. **Pałac** — usunięty koszt surowcowy (8 drewno+8 kamień); zostaje 40 Pracy (budynek startowy, na starcie pula surowców = 0).
+  2. **Blokada pierwszego miasta** — `exitBuildMode` guard (jeden choke-point: Escape/PPM/🔨/dismiss) + blokada „koniec tury" (canEndTurn + klawisz N z podpowiedzią), dopóki gracz nie założy 1. miasta. Parytet: AI nie używa tego UI.
+  3. **C-SURUI=A** — UI surowców widoczne od tury 1: pasek miasta pokazuje rdzeń (drewno+kamień) zawsze; magazyn imperium bez placeholdera przy 0 (skip tylko czysty dostęp Sól/Koń/Ceramika).
+  4. **C-PANEL=B** — klik żetonu HUD otwiera panel z TYLKO jego blokiem (Surowce=magazyn, nie cała ekonomia).
+  5. **Kamień=b** — Kamieniołom na Wzgórza+Góry; własny sektor niewykluczający (współistnieje z kopalniami rudy/glinianką/stadniną — nie blokuje wydobycia ukrytej rudy); grafika rozsunięta (300° vs 0°, zweryfikowane wizualnie — nie nachodzą).
+  6. **Civpedia** — rename „Wiki→Civpedia" (toolbar+panel) + aktualizacja treści (magazyn 500+100/Magazyn, konsumpcja surowca przez jednostki, handel z MP, Cuda w liście budowy, suwak trudności MP, Pałac bez kosztu) + regen wikiBundle.json (generated 2026-07-24).
+  - Bez zmian kodu: trudność MP=A, ujawnianie żelaza=A (potwierdzone).
+- **Bramki:** tsc 0 · tech-tree 19/19 · research 33/33 · unit-replace 10/10 · map-gen OK · VERIFY OK.
+- **md5:** `e9306d7ad25f8f82cf55f8af3b809c0b` · manifest. Pieczątka w grze `da99aead` (one-iter quirk — manifest miarodajny). Bundel 34 MB. Zastępuje `58299d6f`.
+
+## ROBOCZA `58299d6f` — 2026-07-24 · mapa Ziemia: bufor N+S + Antarktyda wraca (A-MAP-ZIEMIA-1 fix) — ZASTĄPIONA
 
 - **Zawartość:** typ **Ziemia** tylko: ~30 rzędów oceanu u góry **i** u dołu (skalowane); pełny szablon lądu z Antarktydą (bez wycinania); północ bez zmian względem poprzedniego bufora.
 - **Fix:** cofnięte błędne wycięcie Antarktydy (`NR_LAND_MAX`); dodany symetryczny bufor południowy.
