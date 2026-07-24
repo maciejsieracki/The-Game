@@ -210,15 +210,20 @@ Heks ze **złożem** (miedź, żelazo, glina, sól…) **nie przyjmuje** farmy a
 
 Złoża metali **tylko na górskim** terenie — nie na równinach. Przed epoką złoże może być niewidoczne; po wejściu w epokę „odkrywasz" je na mapie.
 
-### 11.3. Model dostępu v1.0
+**Kamień to inny przypadek — bez złoża.** W odróżnieniu od miedzi/żelaza, **kamień nie wymaga złoża widocznego na mapie** — to zwykły zasób terenowy: stawiasz **Kamieniołom** wprost na **Wzgórzach** lub **Górach** i tyle (tak samo jak Tartak na lesie nie wymaga złoża drewna). Ruda miedzi i ruda żelaza za to **wymagają** złoża + Kopalni na tym złożu (§11.1–11.2 wyżej) — to one, nie kamień, ujawniają się dopiero z wejściem w odpowiednią epokę.
 
-W wersji 1.0: odblokowanie **technologią** LUB **ulepszeniem** = dostęp **tak/nie** (flaga boolean). **Brak** magazynów surowców i zużycia w produkcji — pełny model planowany na v2.0 (Część VIII §53).
+### 11.3. Model dostępu — i osobno: magazyn z realnym zużyciem (aktualizacja 2026-07-24)
 
-**Wskazówka:** Zobaczysz ikonę „masz miedź" — to nie znaczy, że magazyn się zapełnia. To znaczy: możesz budować i rekrutować, co wymaga tego surowca w danych.
+Dwie osobne warstwy działają razem — nie myl ich:
 
-### 11.4. v2.0 (plan)
+- **Dostęp** (tak/nie) — odblokowanie **technologią** LUB **ulepszeniem/złożem** (kopalnia na miedzi, tartak na lesie…). To wciąż prosta flaga: masz dostęp albo nie.
+- **Magazyn i zużycie** (realne ilości) — dla surowców logistycznych (drewno, kamień, glina, ruda, ruda żelaza, cegła, ceramika, brąz, żelazo, stal) gra **naprawdę liczy sztuki** i **odejmuje je** przy budowie budynków z kosztem materiałowym (Część VIII §53.2) i przy rekrutacji jednostek wymagających Brązu/Żelaza (Część VII §47.2a). To **już nie jest** plan na przyszłość — działa dziś, jako **wspólna pula całego imperium** (cap 500 na typ + 100 za każdy zbudowany Magazyn, Część III §21.5b).
 
-Przyszłość: zbieranie, magazyn, koszty w budowie i rekrutacji. W poradniku v1.0 **nie planuj** gospodarki wokół magazynów drewna — ich jeszcze nie ma.
+**Wskazówka:** Ikona „masz miedź" w panelu wciąż oznacza tylko **dostęp** — ale jeśli budujesz coś z kosztem materiałowym (np. Mury = 15 cegły) albo rekrutujesz jednostkę wymagającą Brązu/Żelaza, sprawdź też **stan puli państwa** — pusty magazyn zablokuje kolejkę mimo posiadanego dostępu.
+
+### 11.4. Czego nadal nie ma
+
+Żywność **nie** jest objęta tym modelem puli państwa — działa osobno, per miasto + mnożnik Spichlerza (Część III §21). Nie ma też jeszcze „zbierania" surowców ręcznie przez jednostki cywilne — produkcja i konwersja są automatyczne z pól/budynków miasta.
 
 
 ### Przykład liczbowy
@@ -349,4 +354,4 @@ Czytaj **rozpiskę plusów i minusów** w panelu — naprawiaj największy minus
 
 ---
 
-*Poradnik‑L · Część II · rev. E · 2026-07-03 · decyzje: E1, E3 · dane: generator mapy, `ui-params.json` · spis §9–13*
+*Poradnik‑L · Część II · rev. F · 2026-07-24 (§11.3–11.4: magazyn surowców z realnym zużyciem — już nie plan v2.0, patrz Część III §21.5b i Część VIII §53.2) · pierwotnie rev. E 2026-07-03 · decyzje: E1, E3, SUROW-CIV-01 · dane: generator mapy, `ui-params.json` · spis §9–13*

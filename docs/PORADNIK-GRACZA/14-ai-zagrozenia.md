@@ -87,7 +87,7 @@ Czytaj **rozpiskę plusów i minusów** w panelu — naprawiaj największy minus
 - **Nie zakładają** nowych miast — brak ekspansji osadniczej (jedyne wyłączenie).
 - W pełni **rozwijają się**: budują budynki gospodarcze, jednostki i **ulepszenia terenu** (w tym wyrąb lasu — §88.5) jak każde AI.
 - **Zero bonusów, zero darmowych jednostek** — dokładnie te same zasady kosztów co gracz.
-- Mogą otrzymać **posiłki** od „sióstr" (miast tego samego klastra), ale **tylko w sojuszu** — siła posiłków skaluje się z trudnością gry.
+- Mogą otrzymać **posiłki** od „sióstr" (miast tego samego klastra), ale **tylko w sojuszu** — siła posiłków skaluje się z **osobnym suwakiem „Trudność miast-państw"** z kreatora (domyślnie = główna trudność, ale niezależny od niej — Część XII §76.5a), nie wprost z głównej trudności gry.
 - Są **celem podboju** — dla ciebie i dla głównego AI tego typu.
 
 ### 88.2. Rywale tego samego typu
@@ -246,4 +246,4 @@ Czytaj **rozpiskę plusów i minusów** w panelu — naprawiaj największy minus
 
 ---
 
-*Poradnik gracza rev. F · 2026-07-23 (miasta-państwa aktywne od 2026-07-21, AI buduje ulepszenia terenu w tym wyrąb z ochroną lasu) · pierwotnie rev. E 2026-07-03 · źródło: `ai-params.json`, `ai.ts`, `barbarians.ts`*
+*Poradnik gracza rev. G · 2026-07-24 (§88.1: siła posiłków „sióstr" idzie dziś z osobnego suwaka „Trudność miast-państw", nie wprost z głównej trudności — patrz Część XII §76.5a) · rev. F 2026-07-23 (miasta-państwa aktywne od 2026-07-21, AI buduje ulepszenia terenu w tym wyrąb z ochroną lasu) · pierwotnie rev. E 2026-07-03 · źródło: `ai-params.json`, `ai.ts`, `barbarians.ts`, `main.ts`*

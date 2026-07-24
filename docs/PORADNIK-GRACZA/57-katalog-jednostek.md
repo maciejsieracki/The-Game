@@ -7,6 +7,8 @@
 
 W grze jest **73** jednostki — standardowe (dla wielu cywilizacji), specjalne kulturowe i super-jednostki stolicy. Rekrutacja kosztuje **złoto** (super-jednostki: część nadal **0 ¤**, ale np. **Triari** i **Wojownik germański** mają dziś realny koszt złota — sprawdź kartę [H] przed zakładaniem, że super = darmowe) oraz **Manpower** z puli miasta (Część VII §47.2) — **nie** ludność wprost. Utrzymanie — złoto i żywność co turę.
 
+**Surowiec przy rekrutacji (2026-07-24):** w `units.json` wiele jednostek epoki Brązu (**34** pozycje) i Żelaza (**25** pozycji) ma pole `Surowiec` = **Brąz** lub **Żelazo** + `Surowiec (ilość)` (zwykle **2–3** szt.). Ta ilość jest **realnie odejmowana** z magazynu surowców całego imperium przy rekrutacji — blokada, gdy pula nie starcza, dokładnie ten sam mechanizm dla gracza i AI. Tabela zbiorcza niżej **nie ma** osobnej kolumny „Surowiec" (patrz `units.json` dla wartości per jednostka) — pełny opis mechaniki: Część VII §47.2a.
+
 ## Skrót ról bojowych
 
 | Rola | Co robi |
@@ -743,4 +745,4 @@ Utrzymanie **2** ¤/t × **10** tur = **20** ¤ — uwzględnij w bilansie skarb
 
 ---
 
-*Wygenerowano z `units.json` · zweryfikowano ręcznie 2026-07-23 (73 jednostki, Bonus vs Mount, Miecznik galijski) · pierwotnie rev. E · 2026-07-03*
+*Wygenerowano z `units.json` · zweryfikowano ręcznie 2026-07-23 (73 jednostki, Bonus vs Mount, Miecznik galijski) · dopisano 2026-07-24: wzmianka o realnym poborze Surowca (Brąz/Żelazo) z magazynu państwa przy rekrutacji, patrz Część VII §47.2a · pierwotnie rev. E · 2026-07-03*

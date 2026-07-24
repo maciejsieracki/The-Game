@@ -120,22 +120,13 @@ Czytaj **rozpiskę plusów i minusów** w panelu — naprawiaj największy minus
 
 ## 94. Cuda świata — podstawy
 
-### 94.0. Ekran Cudów świata — galeria pełnoekranowa (2026-07-23)
+### 94.0. Gdzie budujesz cuda (2026-07-24: usunięty osobny katalog)
 
-Nowy ekran **Cuda świata** — wejście przez **medalion na toolbarze mapy** (kolumna okrągłych ikon po lewej krawędzi ekranu, pod paskiem zasobów — ten sam pasek co Nauka/Handel/inne tryby, świątynia/kolumny jako emblemat). Otwiera **galerię wszystkich 19 cudów Antyku** wg makiety CUDA-v1, każdy jako karta z bieżącym stanem gry:
+**Nie ma** już osobnego ekranu/galerii Cudów uruchamianego medalionem na toolbarze mapy — ten UI został wycofany. Cuda buduje się **z listy budowy miasta** (panel Miasto → Produkcja), w sekcji **„Cuda świata"** pod pozycjami budynków i ulepszeń. Sekcja pokazuje tylko cuda, na które to konkretne miasto/cywilizacja ma dziś prawo (tech + teren + — dla typu E — właściwa cywilizacja); silnik filtruje listę, zanim trafi do panelu, więc nie zobaczysz tam pozycji zarezerwowanych dla innej cywilizacji ani już ukończonych/przegranych.
 
-| Stan karty | Znaczenie |
-|------------|-----------|
-| **Dostępny** | Możesz zacząć budowę (masz tech + teren + cywilizację uprawnioną, jeśli typ E) |
-| **Zablokowany** | Brakuje tech, terenu lub epoki wejścia — karta mówi czego |
-| **W budowie** | Ty lub inne państwo już wznosi ten cud |
-| **Nasz ✓** | Masz go zbudowanego — bonusy aktywne |
-| **Ekskluzywny / cudzy** | Cud typu **E** zarezerwowany dla innej cywilizacji — nie zobaczysz go jako budowalnego |
-| **Przepadł** | Przegrałeś wyścig (typ R) — ktoś inny ukończył pierwszy |
+Karta cudu w tej sekcji pokazuje koszt pracy, wymaganą technologię/teren i (jeśli dotyczy) informację o wyścigu (typ R) lub wyłączności (typ E). Rozpoczęcie budowy działa jak każda inna pozycja produkcji miasta — trafia do kolejki i zużywa pracę co turę.
 
-Karta ma CTA (przycisk akcji zależny od stanu) i **powiadomienia** — toast, gdy Ty lub rywal ukończy cud. **Znany błąd zamknięty tego samego dnia:** cud stojący w kolejce budowy raportował się błędnie jako „Dostępny" zamiast „W budowie" — poprawione.
-
-**Obserwacja z 2026-07-23:** AI **dziś nie buduje cudów** samodzielnie — decyzja właściciela (**CUDA-AI=A**, „AI ma zacząć budować cuda") zapadła wieczorem tego samego dnia, ale **nie jest jeszcze wdrożona w kodzie** — traktuj to jako zapowiedź na kolejną sesję, nie stan bieżący.
+**Obserwacja z 2026-07-23/24:** AI **nadal nie buduje cudów** samodzielnie — decyzja właściciela (**CUDA-AI=A**, „AI ma zacząć budować cuda") zapadła, ale **nie jest jeszcze wdrożona w kodzie** — traktuj to jako zapowiedź na kolejną sesję, nie stan bieżący.
 
 ### 94.1. Typ E vs R
 
@@ -144,7 +135,7 @@ Karta ma CTA (przycisk akcji zależny od stanu) i **powiadomienia** — toast, g
 | **E (wyłączny)** | Max **1 na świat**; tylko wskazane cywilizacje widzą cud w panelu |
 | **R (wyścig)** | Wszyscy gracze mogą budować; wygrywa pierwszy ukończony |
 
-Ikona **Cuda** — 6. medalion na toolbarze mapy (§94.0), nie osobny panel boczny.
+Budowa obu typów rusza z sekcji **„Cuda świata"** w liście produkcji miasta (§94.0), nie z osobnego panelu bocznego ani toolbara.
 
 ### 94.2. Wyścigowe Antyk
 
@@ -265,4 +256,4 @@ Czytaj **rozpiskę plusów i minusów** w panelu — naprawiaj największy minus
 
 ---
 
-*Poradnik‑L · Część XV · rev. F · 2026-07-23 (nowy ekran Cudów świata — galeria 19 kart, stany, medalion toolbara; AI nie buduje cudów jeszcze mimo decyzji CUDA-AI=A) · pierwotnie rev. E 2026-07-03 · dane: `wonders.json`, `culture-religion.ts`, `wondersView.ts` · katalog: [`91-katalog-cudow-antyk.md`](91-katalog-cudow-antyk.md)*
+*Poradnik‑L · Część XV · rev. G · 2026-07-24 (§94.0: usunięty osobny ekran/galeria Cudów przez medalion toolbara — cuda buduje się z listy produkcji miasta, sekcja „Cuda świata", filtrowane per cywilizacja; AI nie buduje cudów jeszcze mimo decyzji CUDA-AI=A) · pierwotnie rev. F 2026-07-23, rev. E 2026-07-03 · dane: `wonders.json`, `culture-religion.ts`, `cityPanel.ts` · katalog: [`91-katalog-cudow-antyk.md`](91-katalog-cudow-antyk.md)*

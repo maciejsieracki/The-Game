@@ -524,9 +524,9 @@ function renderBarD1B(s: HudState): string {
   const menuIc = brandIconSvg('ui-menu', 24);
   const wikiOn = cfg?.isWikiActive?.() ?? false;
   const wikiBtn = cfg?.onOpenWiki
-    ? '<button type="button" class="b-wiki' + (wikiOn ? ' on' : '') + '" data-act="wiki" title="Wikipedia — poradnik i encyklopedia">'
+    ? '<button type="button" class="b-wiki' + (wikiOn ? ' on' : '') + '" data-act="wiki" title="Civpedia — poradnik i encyklopedia">'
       + wikiBookIcon(16)
-      + '<span>Wiki</span></button>'
+      + '<span>Civpedia</span></button>'
     : '';
   html += '<div class="hud-right-cluster">'
     + '<div class="civ-hud-banner-shell civ-hud-banner-right"><div class="hud-chip-row">'

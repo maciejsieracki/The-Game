@@ -1,5 +1,5 @@
 /**
- * wikiHubHud.ts — Wikipedia in-game: Poradnik + Encyklopedia (rev. E bundle).
+ * wikiHubHud.ts — Civpedia in-game: Poradnik + Encyklopedia (rev. E bundle).
  */
 
 import wikiBundle from '../data/wikiBundle.json';
@@ -397,7 +397,7 @@ export function createWikiHubHud(config: WikiHubHudConfig): WikiHubHudApi {
     const titleMain = document.createElement('span');
     titleMain.className = 'wh-title-main';
     titleMain.innerHTML = wikiBookIcon(16)
-      + '<span>Wikipedia</span>';
+      + '<span>Civpedia</span>';
     titleRow.appendChild(titleMain);
     const closeBtn = document.createElement('button');
     closeBtn.type = 'button';

@@ -263,11 +263,18 @@ Model zmienił się z prostego „masz tech = masz surowiec" na **dwuwarunkowy**
 
 **Złoże rezerwuje heks** — nie postawisz farmy na miedzi. **Ukryte złoża** — miedź/ruda od Brązu, żelazo od Żelaza, tylko w **Górach**.
 
-### 53.2. Magazyn per miasto i koszty materiałowe budynków (2026-07-23)
+### 53.2. Magazyn surowców = pula CAŁEGO PAŃSTWA, nie per miasto (aktualizacja 2026-07-24, SUROW-CIV-01)
 
-Surowce **logistyczne** (drewno, kamień, glina, ruda, **cegła**, **ceramika**) kumulują się teraz w **magazynie miasta** (`city.surowce`) — nie tylko flaga dostępu. Konwertery zamieniają surowiec bazowy na przetworzony: **Garncarnia** (glina→ceramika), **Cegielnia** (glina→cegła), **Odlewnia żelaza**, **Wielka kuźnia** itd. Brąz, żelazo i hodowla (bydło/owce/lama) **zostają na razie civ-wide** (dostęp tak/nie dla całego imperium, nie per-miasto magazyn) — to świadomie odłożone (patrz §10 poniżej).
+Surowce **logistyczne** (drewno, kamień, glina, ruda, ruda żelaza, **cegła**, **ceramika**, brąz, żelazo, stal) **produkują się nadal lokalnie** w każdym mieście (konwertery — **Garncarnia** glina→ceramika, **Cegielnia** glina→cegła, **Odlewnia żelaza**, **Wielka kuźnia** itd. — działają jak wcześniej, per miasto), ale **limit zapasu (cap) liczy się dziś dla całego imperium naraz**, nie per miasto:
 
-Od 2026-07-23 **10 budynków epoki Brązu/Żelaza** mają realny **koszt materiałowy** pobierany z tego magazynu przy zapisaniu do kolejki (placeholdery cenowe, do strojenia w panelu):
+- **Baza:** **500** sztuk na typ surowca dla całego imperium, gdy owner (gracz lub dowolna cywilizacja AI) nie ma **żadnego** wybudowanego Magazynu.
+- **+100 na typ surowca za KAŻDY** budynek **Magazyn** zbudowany **gdziekolwiek** w imperium tego ownera — addytywnie (2 Magazyny w dwóch różnych miastach = +200, nie ×2), nie ma znaczenia, w którym mieście stoi Magazyn ani jego poziom.
+- Po produkcji i konwersji w danej turze silnik sumuje zapasy tego typu surowca **ze wszystkich miast ownera** i **przycina** sumę do capu — nadwyżka ponad cap **przepada** (tak samo dla gracza i każdej cywilizacji AI, brak uprzywilejowania — decyzja „OWNERID-AGNOSTIC" Macieja 2026-07-24).
+- **Żywność nie jest objęta** tą zmianą — nadal działa model per-miasto + mnożnik Spichlerza (§21 w Części III, bez zmian).
+
+Zanim ta zmiana weszła (do 2026-07-23), baza wynosiła **100** i traktowano ją per miasto (`city.surowce`); brąz/żelazo/hodowla były wtedy tylko flagą dostępu civ-wide. Dziś **wszystkie** wymienione surowce logistyczne dzielą jeden wspólny model: produkcja lokalna, cap i realne zużycie (koszty budynków §53.2 niżej, koszty jednostek Część VII §47.2a) — **wspólne dla całego imperium**.
+
+Od 2026-07-23 **10 budynków epoki Brązu/Żelaza** mają realny **koszt materiałowy** pobierany z tej puli państwa przy zapisaniu do kolejki (placeholdery cenowe, do strojenia w panelu):
 
 | Budynek | Koszt surowca |
 |---------|----------------|
@@ -282,7 +289,7 @@ Od 2026-07-23 **10 budynków epoki Brązu/Żelaza** mają realny **koszt materia
 | Mury | 15 cegły |
 | Cytadela | 18 cegły |
 
-Brak materiału w magazynie **blokuje** wejście do kolejki (karta budynku pokazuje brakujący chip surowca), AI omija budynek, jeśli mu brakuje. **To dlatego Cegielnia i Garncarnia w końcu mają sens** — bez nich nie zbudujesz nic z tabeli powyżej, niezależnie od zapasu Pracy.
+Brak materiału w **puli państwa** **blokuje** wejście do kolejki (karta budynku pokazuje brakujący chip surowca), AI omija budynek, jeśli mu brakuje — dokładnie ten sam mechanizm co przy rekrutacji jednostek wymagających Brązu/Żelaza (Część VII §47.2a). **To dlatego Cegielnia i Garncarnia w końcu mają sens** — bez nich nie zbudujesz nic z tabeli powyżej, niezależnie od zapasu Pracy.
 
 ### 53.3. Szlaki handlowe — dochód, dostęp, powiadomienia
 
@@ -356,7 +363,7 @@ Czytaj **rozpiskę plusów i minusów** w panelu — naprawiaj największy minus
 | **Praca** | Pasek | Tartaki, profil Produkcja w okolicy |
 | **Nauka** | Pasek Badania | Biblioteki, % nauki w suwaku |
 | **Siła państwa** | Minimapa / panel | Armia + wygrane bitwy + ludność |
-| **Surowce** | Ikony dostępu + magazyn miasta | Złoże **+** ulepszenie na heksie; cegła/ceramika z Cegielni/Garncarni; brąz/żelazo/koń przez szlak handlowy (§53) |
+| **Surowce** | Ikony dostępu + pula **całego imperium** (cap 500+100/Magazyn) | Złoże **+** ulepszenie na heksie; cegła/ceramika z Cegielni/Garncarni; brąz/żelazo/koń przez szlak handlowy (§53); Magazyny podnoszą wspólny cap |
 
 
 ### Przykład liczbowy
@@ -376,4 +383,4 @@ Czytaj **rozpiskę plusów i minusów** w panelu — naprawiaj największy minus
 
 ---
 
-*Poradnik‑L · Część VIII · rev. F · 2026-07-23 (§51.2 wzór kosztu tech poprawiony, §53 surowce przepisane: dostęp złoże+ulepszenie, magazyn miasta, koszty materiałowe budynków, dostęp przez szlak, handel pakietami) · pierwotnie rev. E 2026-07-03 · decyzje: B5, E2, E3, B-SUROW-BUD, C-DYP-SUROWCE · dane: `econ-params.json`, `buildings.json`, `resource-access.ts` · spis §49–53*
+*Poradnik‑L · Część VIII · rev. G · 2026-07-24 (§53.2: magazyn surowców przepisany z modelu per-miasto na pulę CAŁEGO PAŃSTWA, baza 100→500 + 100/Magazyn addytywnie, SUROW-CIV-01) · rev. F 2026-07-23 (§51.2 wzór kosztu tech poprawiony, §53 surowce przepisane: dostęp złoże+ulepszenie, magazyn miasta, koszty materiałowe budynków, dostęp przez szlak, handel pakietami) · pierwotnie rev. E 2026-07-03 · decyzje: B5, E2, E3, B-SUROW-BUD, C-DYP-SUROWCE, SUROW-CIV-01 · dane: `econ-params.json`, `buildings.json`, `resource-access.ts`, `economy-upkeep.ts` · spis §49–53*

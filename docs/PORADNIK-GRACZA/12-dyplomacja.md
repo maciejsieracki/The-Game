@@ -103,7 +103,19 @@ Aktywny traktat (pakt, sojusz, granice, NAP) ma teraz ikonę **„Zerwij"** — 
 
 ### 76.5. Władcy główni vs miasta-państwa
 
-**Miasta-państwa** — ten sam panel i ten sam zestaw akcji, ale progi **−20 pkt** relacji (trudniejszy handel, łatwiejsze ultimatum wojskowe) — patrz też start-zaufanie wg trudności gry (Część XIV §88).
+**Miasta-państwa** — ten sam panel i ten sam zestaw akcji, ale progi **−20 pkt** relacji (trudniejszy handel, łatwiejsze ultimatum wojskowe). Zaufanie startowe, sojusze „sióstr" i siła posiłków **nie zależą** już od głównej trudności gry — patrz osobny suwak §76.5a niżej (od 2026-07-24; Część XIV §88 opisuje zachowanie AI miast-kopii ogólnie, ale poziom trudności bierze dziś z tego suwaka, nie z głównej trudności).
+
+### 76.5a. Suwak „Trudność miast-państw" — niezależny od głównej trudności (2026-07-24, R-TRUDNOSC-1)
+
+W kreatorze nowej gry, w **zaawansowanych opcjach**, jest osobna pozycja **„Trudność miast-państw"** (Łatwy / Normalny / Trudny) — **domyślnie = główna trudność gry**, ale możesz ją ustawić inaczej niż resztę partii.
+
+| Co steruje ten suwak | Nie zmienia |
+|------------------------|-------------|
+| **Startowe zaufanie** wobec każdego miasta-państwa (`applyCityStateDifficultyTrust`) | Startowe zaufanie wobec pełnoprawnych cywilizacji AI (zależy nadal od głównej trudności) |
+| **Próg sojuszu „sióstr"** i **siła posiłków** obronnych między miastami-państwami tego samego klastra (§88.1 w Części XIV) | Ekonomię, koszty, mapę i poziom trudności AI **głównych** cywilizacji |
+| **Parametry trudności AI** (bonus produkcji, bonus walki, mnożnik agresji) używane przy decyzjach AI miast-państw (kopii obronnych) | Te same parametry dla zwykłego AI — nadal z głównej trudności |
+
+**Przykład zastosowania:** chcesz łatwą główną rozgrywkę (mniej agresywne wielkie cywilizacje), ale trudniejsze, lepiej bronione miasta-państwa do zdobycia — ustaw główną trudność **Łatwy**, a „Trudność miast-państw" osobno na **Trudny**. Stare zapisy bez tego pola dziedziczą wartość głównej trudności (brak regresji).
 
 ### 76.6. Audiencja a Wykonaj
 
@@ -346,4 +358,4 @@ Wysyłaj **prezenty** przed prośbą o pakt — relacja **+20** taniej niż wojn
 
 ---
 
-*Poradnik‑L · Część XII · rev. F · 2026-07-23 (panel dwustronny, portrety/imiona władców, SZYBKA UMOWA, Zerwij −15 Zaufania, progi poprawione: Handel 40/NAP 50+40, surowce w koszyku po 10, Umowa Handlowa jako fundament szlaków, roadmap T1A/T2 oznaczony jako wdrożony) · pierwotnie rev. E 2026-07-03 · dane: `diplomacy.json`, `diplomacy.ts`, `diplomacy-locks.ts`, `diplomacy-proposals.ts`, `econ-params.json`*
+*Poradnik‑L · Część XII · rev. G · 2026-07-24 (§76.5a: nowy niezależny suwak „Trudność miast-państw" w zaawansowanych opcjach kreatora — R-TRUDNOSC-1; handel surowcami z miastami-państwami rozpisany w `docs/encyklopedia/pojecia/handel-surowcami-dyplomacja.md`) · rev. F 2026-07-23 (panel dwustronny, portrety/imiona władców, SZYBKA UMOWA, Zerwij −15 Zaufania, progi poprawione: Handel 40/NAP 50+40, surowce w koszyku po 10, Umowa Handlowa jako fundament szlaków, roadmap T1A/T2 oznaczony jako wdrożony) · pierwotnie rev. E 2026-07-03 · dane: `diplomacy.json`, `diplomacy.ts`, `diplomacy-locks.ts`, `diplomacy-proposals.ts`, `econ-params.json`, `newGameFlow.ts`, `main.ts`*

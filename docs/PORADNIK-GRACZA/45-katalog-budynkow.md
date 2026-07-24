@@ -278,7 +278,7 @@ Utrzymanie **0** ¤/t × **10** tur = **0** ¤ — uwzględnij w bilansie skarbc
 **Palac** (Kultura/Administracja) odblokowuje się w epoce **Kamień**. Pierwsze wzniesienie kosztuje **40** pracy; każdy kolejny poziom +**12**. Utrzymanie: **2** ¤ na turę (rosnie o **1** per poziom).
 
 Na poziomie 1 daje: **+3 kultura, +1 szczęście**. Każdy kolejny poziom dodaje: **+2 kultura, +1 szczęście**.
-**Uwaga:** 1 na miasto (siedziba zarzadcy); glowne zrodlo kultury miasta
+**Uwaga:** 1 na miasto (siedziba zarzadcy); glowne zrodlo kultury miasta. **Budynek startowy** — każde nowo założone miasto ma go już postawionego, poza kolejką produkcji; w praktyce nie płacisz zań surowca (kosztujesz tylko Pracę na kolejne poziomy) — dane formalnie mają wpisany koszt materiałowy (drewno/kamień), ale dotyczy tylko hipotetycznej odbudowy, nie normalnego zakładania miasta.
 
 
 ### Przykład liczbowy

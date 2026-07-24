@@ -189,9 +189,9 @@ Czytaj **rozpiskę plusów i minusów** w panelu — naprawiaj największy minus
 
 ## 17. Lewy panel (toolbar mapy) — Cuda i Budowa
 
-### 17.1. Cuda świata — galeria pełnoekranowa (2026-07-23)
+### 17.1. Cuda świata — z listy budowy miasta (2026-07-24: usunięty osobny katalog)
 
-Medalion (kolumna okrągłych ikon po lewej krawędzi, pod paskiem zasobów) otwiera dziś **pełnoekranową galerię 19 cudów** Antyku ze stanem każdej karty (Dostępny/Zablokowany/W budowie/Nasz/Ekskluzywny-cudzy/Przepadł) — nie prostą listę jak wcześniej. Warunki budowy: technologia, teren, koszt pracy, często **jeden na świat** (typ E wyłączny lub R wyścigowy). Szczegóły — Część XV §94.
+**Nie ma** już osobnego ekranu/galerii Cudów otwieranego medalionem na toolbarze — Cuda buduje się **z listy budowy miasta** (sekcja „Cuda świata" w panelu Produkcja), a lista jest już **filtrowana per cywilizacja** (nie zobaczysz cudów zarezerwowanych dla innej cywilizacji ani niedostępnych w tym miejscu/epoce). Warunki budowy: technologia, teren, koszt pracy, często **jeden na świat** (typ E wyłączny lub R wyścigowy). Szczegóły — Część XV §94.
 
 ### 17.2. Budowa (ulepszenia terenu)
 
@@ -350,6 +350,24 @@ Suwak żywności **30% na wojsko** (domyślnie przy 70% rozwój) karmi magazyn p
 
 Hasła encyklopedii: **Spichlerz** · **Zapasy państwa** · **Żywność wojska** — karty w `docs/encyklopedia/pojecia/`.
 
+### 21.5a. Osobna sprawa: magazyn żywności vs magazyn surowców
+
+To, co opisuje §21, dotyczy **wyłącznie żywności** (model per miasto + mnożnik Spichlerza). **Surowce** logistyczne (drewno, kamień, glina, ruda, ruda żelaza, cegła, ceramika, brąz, żelazo, stal) mają **osobny, prostszy model** — patrz §21.5b niżej. Nie myl obu magazynów: różne zasoby, różne wzory pojemności.
+
+### 21.5b. Magazyn surowców = pula CAŁEGO PAŃSTWA (2026-07-24, SUROW-CIV-01)
+
+Dla surowców logistycznych (drewno, kamień, glina, ruda, ruda żelaza, cegła, ceramika, brąz, żelazo, stal) obowiązuje **jeden wspólny magazyn imperium**, nie osobny per miasto:
+
+| Element | Wartość |
+|---------|---------|
+| **Baza** (bez Magazynów) | **500** sztuk na typ surowca, dla całego imperium |
+| **Bonus za budynek Magazyn** | **+100** na typ surowca za **każdy** zbudowany Magazyn — w dowolnym mieście imperium |
+| **Model** | **Addytywny** — 2 Magazyny w 2 różnych miastach = +200, nie ×2; poziom Magazynu nie ma znaczenia, liczy się sama obecność budynku w mieście |
+| **Zasięg** | Civ-wide — pula wspólna dla wszystkich miast jednego ownera (gracza **lub** dowolnej cywilizacji AI, ta sama zasada dla obu) |
+| **Nadwyżka** | Ponad cap **przepada** po produkcji i konwersji w danej turze (klamrowanie raz na turę) |
+
+Ten magazyn **zużywają realnie**: koszt materiałowy budynków (cegła/ceramika i inne — Część VIII §53.2) oraz koszt surowcowy jednostek wymagających Brązu/Żelaza przy rekrutacji (Część VII §47.2a) — w obu przypadkach niedobór **blokuje** kolejkę, dla gracza i dla AI jednakowo.
+
 
 ### Przykład liczbowy
 
@@ -368,4 +386,4 @@ Postaw **pierwszy Spichlerz** przed masową rekrutacją — jeden budynek w impe
 
 ---
 
-*Poradnik‑L · Część III · rev. F · 2026-07-23 (§17.1: Cuda świata = galeria pełnoekranowa, nie lista; fix cross-referencji do Część XV) · pierwotnie rev. E 2026-07-03 · źródła: `buildings.json`, `econ-params.json`, decyzja B5 (Spichlerz)*
+*Poradnik‑L · Część III · rev. G · 2026-07-24 (§14.2 magazyn surowców = pula 500 państwa + Magazyn; §17.1: Cuda świata = z listy budowy miasta, nie osobna galeria) · pierwotnie rev. F 2026-07-23, rev. E 2026-07-03 · źródła: `buildings.json`, `econ-params.json`, decyzja B5 (Spichlerz)*

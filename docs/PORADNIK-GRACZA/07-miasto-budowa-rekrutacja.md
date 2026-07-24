@@ -266,9 +266,22 @@ Sekcja wojska w **Produkcji** — lista jednostek dostępnych po technologii i b
 | **Manpower** | Pula rekrutów **per miasto** — patrz §47.2b niżej. **Prawdziwy** koszt „ludzki" werbu |
 | **Ludność miasta** | **0** — rekrutacja **nie** zabiera mieszkańców (zmiana 2026-07-21); populacja rośnie niezależnie od tego, ile werbujesz |
 | **Technologia** | Brązownictwo, Łucznictwo (wymaga Łowiectwa — Część IX §56.2), Jeździectwo… |
-| **Surowiec** (w danych) | Referencja v1 — dostęp po tartaku/złożu (Część VIII §53); pełne odejmowanie surowca przy rekrutacji jednostek — 🔮 v2.0 |
+| **Surowiec** (`units.json`: `Surowiec` / `Surowiec (ilość)`) | **Odejmowane naprawdę** z magazynu państwa przy rekrutacji — patrz §47.2a niżej (wdrożone 2026-07-24, JEDNOSTKI-SUROWIEC-01) |
 
 **Super-jednostki** stolicy — **większość** kosztuje **0 ¤** (Hieros Lochos, Hu Ben Wei, uThulwana, Królewska Gwardia, Medżaj, Gwardia Królewska Sumeru, Evocati), ale **Triari** (18 ¤) i **Wojownik germański** (16 ¤) mają dziś realny koszt złota — sprawdź kartę **[H]**, nie zakładaj automatycznie „super = darmowe". Wszystkie: max 1 na raz, odradzają się po stracie stolicy.
+
+### 47.2a. Koszt surowcowy jednostek — z magazynu państwa (2026-07-24)
+
+Część jednostek epoki Brązu i Żelaza ma w `units.json` pole `Surowiec` (**Brąz** lub **Żelazo**) + `Surowiec (ilość)` (zwykle **2–3** sztuki). Przy **rekrutacji** ta ilość jest **naprawdę odejmowana** z tej samej **puli surowców całego imperium** co koszt materiałowy budynków (§45.5, cegła/ceramika) — nie z konkretnego miasta, tylko ze wspólnego magazynu państwa (Część III §21.5, limit **500 + 100/Magazyn**).
+
+| Sytuacja | Co się dzieje |
+|----------|---------------|
+| Pula ma wystarczająco Brązu/Żelaza | Rekrutacja rusza normalnie, ilość znika z magazynu państwa |
+| Pula **za mała** | Przycisk rekrutacji **blokuje się** — komunikat „Za mało surowca w magazynie państwa"; nie da się złożyć zamówienia nawet mając złoto i Manpower |
+| Anulowanie rekrutacji w kolejce | Surowiec wraca do puli państwa (zwrot symetryczny do poboru) |
+| AI (każda cywilizacja) | **Ta sama zasada** — AI pomija budynek/jednostkę, której nie stać w surowcu, zamiast się „zawieszać"; brak uprzywilejowania gracza |
+
+Sprawdź kolumnę **Surowiec** w [`57-katalog-jednostek.md`](57-katalog-jednostek.md) (dane surowe w `units.json`), zanim rzucisz się w masową rekrutację włóczników czy falang — pusty magazyn Brązu/Żelaza zatrzyma kolejkę tak samo jak pusty skarbiec.
 
 ### 47.2b. Pula Manpower (per miasto)
 
@@ -386,4 +399,4 @@ Czytaj **rozpiskę plusów i minusów** w panelu — naprawiaj największy minus
 
 ---
 
-*Poradnik‑L · Część VII · rev. F · 2026-07-23 (rekrutacja: pula Manpower zamiast ludności, zwiadowca bez kosztu/bez zdobywania miast, koszty materiałowe budynków) · pierwotnie rev. E 2026-07-03 · dane: `buildings.json`, `units.json`, `terrain-improvements.json`, `manpower.ts`*
+*Poradnik‑L · Część VII · rev. G · 2026-07-24 (§47.2a: rekrutacja jednostek Brązu/Żelaza naprawdę odejmuje Surowiec z magazynu państwa, blokada przy niedoborze, parytet AI — JEDNOSTKI-SUROWIEC-01) · pierwotnie rev. F 2026-07-23 (rekrutacja: pula Manpower zamiast ludności, zwiadowca bez kosztu/bez zdobywania miast, koszty materiałowe budynków), rev. E 2026-07-03 · dane: `buildings.json`, `units.json`, `terrain-improvements.json`, `manpower.ts`, `main.ts`*
