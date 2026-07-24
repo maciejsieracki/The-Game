@@ -9,7 +9,16 @@ UWAGA: KANON i FINALNA promują się teraz OSOBNYMI skryptami (`gra/tools/publis
 wyraźne polecenie właściciela) — dlatego są logowane NIEZALEŻNIE, każdy w swojej sekcji, ze
 swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drugiego.
 
-## ROBOCZA `3db42857` — 2026-07-24 · FALA 6.1: cała dyplomacja miast-państw pod suwak trudności MP (dokończenie) — **AKTUALNA**
+## ROBOCZA `8dc09b8a` — 2026-07-24 · FALA 6.2: pełny handel surowcami z miastami-państwami + portret miast-państw = symbol kultury — **AKTUALNA**
+
+- **Zawartość:** (commity `8aacfd3`, `8363a4b`)
+  1. **HANDEL SUROWCAMI Z MIASTAMI-PAŃSTWAMI** (decyzja Macieja A, parytet): `zaproponuj_handel_surowiec` w warstwie MP; gracz↔MP i AI↔MP, jednorazowo + cyklicznie, obie strony (AI↔MP bramkowane realną nadwyżką surowca). Inne ograniczenia MP nietknięte.
+  2. **PORTRET MIAST-PAŃSTW = SYMBOL KULTURY** (nie zdjęcie władcy): miasta-państwa renderują `civIconSvg` kultury zamiast `portrait-{civ}-{epoka}.jpg` (dyplomacja, audiencja, preBattle, bitwa) — koniec 10-11 identycznych portretów. Gracz/główne AI bez zmian. Etykieta MP: „Miasto · Kultura · miasto-państwo" (np. „Sparta · Grecja · miasto-państwo").
+- **Bramki:** tsc 0 · display-names 12/12 · diplomacy-layers 8/8 · cyclic-trade 42/42 · ai-test 233/7 (baseline) · diplomacy 144/2 (baseline) · city-state-alliance 59/59 · tech-tree 19/19 · VERIFY OK.
+- **md5:** `8dc09b8ab2f709b567b65489f087e9a6` · manifest. Pieczątka `8dc09b8a`. Bundel 28,2 MB. Zastępuje `3db42857`.
+- **FLAGI do decyzji Macieja:** (a) format etykiety MP „Miasto · Kultura · miasto-państwo" — potwierdzić; (b) IMIĘ władcy pod medalionem MP nadal to samo co główna cywilizacja (możliwy follow-up); (c) etykiety miast na heksach mapy niezmienione (tylko dyplomacja/HUD dostały kulturę).
+
+## ROBOCZA `3db42857` — 2026-07-24 · FALA 6.1: cała dyplomacja miast-państw pod suwak trudności MP (dokończenie) — ZASTĄPIONA
 
 - **Zawartość:** nadbudowa FALI 6 (commit `6797402`). `effectiveGameDifficultyForOwner(ownerId)` — dla miast-państw **cała** dyplomacja (progi wojna/handel + dary jednorazowe + agresja/aktywność + posiłki) idzie z suwaka „Trudność miast-państw"; pełne cywilizacje AI bez zmian (globalna trudność). Decyzja Macieja: „przenieś wszystkie ustawienia poza główną trudność".
 - **Bramki:** tsc 0 · ai-test 233/7 (baseline) · diplomacy 144/2 (baseline) · city-state-alliance 59/59 · VERIFY OK.
