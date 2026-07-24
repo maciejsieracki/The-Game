@@ -1,6 +1,6 @@
 # STAN PRACY — HANDOFF
 
-**Ostatnia aktualizacja: 2026-07-23** · Projekt: Civ „The Game"
+**Ostatnia aktualizacja: 2026-07-24** · Projekt: Civ „The Game"
 
 > **Ten plik jest punktem wejścia dla KAŻDEJ nowej sesji** — lokalnej, chmurowej, telefonicznej.
 > Mówi: co jest zrobione, co w toku, czego NIE wolno ruszać i czy można pracować.
@@ -22,7 +22,9 @@ git status --short
 - Jeśli w `gra/src` lub `gra/data` są **niezacommitowane zmiany** — ktoś jest w połowie pracy. NIE nadpisuj ich, NIE rób `git checkout`/`git stash` na tych plikach. Najpierw ustal z właścicielem, co to jest.
 - **Zawsze przed pracą uruchom bramki** (sekcja 7), żeby wiedzieć, co jest sprawne, a co było zepsute PRZED Tobą.
 
-**Stan na 2026-07-23 (NAJNOWSZY — wieczór, przebudowa surowców):** deploy ROBOCZA **`aa3c9b06`** (fala 3) — bydło/owce/lama NIE surowce + licznik magazynów w panelu imperium + CUDA-AI (AI buduje cuda) + #15 Ludy Morza (embarkacja+rajdy) + UMOWA-B (trasy wymagają traktatu). Branch na `f136c09`: model surowców (ceramika=dostęp, produkcja bez pracowników, licznik+tempo, stawki Tartak/Kamieniołom/Glinianka 4 · Kopalnie 2) + docs (`07bc172`: Civpedia+Poradnik+wikiBundle) — NIE w bundlu jeszcze, wejdą **falą 4**. **W TOKU (2 subagenty):** usunięcie Paliwa/Mielerza + bonusy Stolarni(+10% drewno civ)/Warsztatu(+10% kamień civ)/Garncarni(+10% żywność lok.) + koszty budynków; oraz symulacja bilansu surowców. **Wszystkie decyzje surowce/ekonomia + stan prac: [`dyspozycje/DECYZJE-SUROWCE-EKONOMIA-2026-07-23.md`](dyspozycje/DECYZJE-SUROWCE-EKONOMIA-2026-07-23.md).** ⛔ **ZASADA NADRZĘDNA (2026-07-24): PARYTET AI** — każda zmiana dla gracza obowiązuje tak samo dla AI, kod ownerId-agnostic (szczegóły w rejestrze decyzji, sekcja „ZASADA NADRZĘDNA"). Fala 4 zdeployowana `cd42837f` (przebudowa ekonomii surowców). W TOKU: magazyny=pula państwa (100+100/Magazyn) + handel surowcami w dyplomacji (za pieniądz/Pracę, jednorazowo lub przez X tur). OTWARTE (nie istnieje w kodzie, do decyzji): osobny poziom trudności per państwo/miasto vs globalny — dziś trudność jest jedna globalna.
+**Stan na 2026-07-24 (NAJNOWSZY — sesja surowce/UI/miasta-państwa):** deploy ROBOCZA **`8dc09b8a`** (FALA 6.2, bundel md5 `8dc09b8ab2f709b567b65489f087e9a6`). `main` = `5a01ca6`, drzewo CZYSTE, **NIC nie jest w toku**. Cała praca sesji opisana w **sekcji 3a-3** poniżej. Skrót łańcucha deployów 2026-07-24: FALA 5 `c676b681` (surowiec jednostek + AI kupuje za złoto + fix bramki) → FALA 6 `666b2b75` (ikony surowców v4 + magazyn 500 + UI surowców + Cuda w mieście + proaktywność MP + AI-rush strojalny) → FALA 6.1 `3db42857` (cała dyplomacja MP pod suwak trudności) → FALA 6.2 `8dc09b8a` (handel surowcami z MP + portret MP=symbol kultury). Ostatnia decyzja: **R-MP-PORTRET = A** (miasta-państwa zostają z symbolem kultury — potwierdzone podglądem, bez zmian w kodzie). **Rejestr wszystkich próśb sesji: [`dyspozycje/REJESTR-PROSB-I-ZADAN.md`](dyspozycje/REJESTR-PROSB-I-ZADAN.md).**
+
+**Poprzedni stan (2026-07-23, wieczór, przebudowa surowców):** deploy ROBOCZA **`aa3c9b06`** (fala 3) — bydło/owce/lama NIE surowce + licznik magazynów w panelu imperium + CUDA-AI (AI buduje cuda) + #15 Ludy Morza (embarkacja+rajdy) + UMOWA-B (trasy wymagają traktatu). Branch na `f136c09`: model surowców (ceramika=dostęp, produkcja bez pracowników, licznik+tempo, stawki Tartak/Kamieniołom/Glinianka 4 · Kopalnie 2) + docs (`07bc172`: Civpedia+Poradnik+wikiBundle) — NIE w bundlu jeszcze, wejdą **falą 4**. **W TOKU (2 subagenty):** usunięcie Paliwa/Mielerza + bonusy Stolarni(+10% drewno civ)/Warsztatu(+10% kamień civ)/Garncarni(+10% żywność lok.) + koszty budynków; oraz symulacja bilansu surowców. **Wszystkie decyzje surowce/ekonomia + stan prac: [`dyspozycje/DECYZJE-SUROWCE-EKONOMIA-2026-07-23.md`](dyspozycje/DECYZJE-SUROWCE-EKONOMIA-2026-07-23.md).** ⛔ **ZASADA NADRZĘDNA (2026-07-24): PARYTET AI** — każda zmiana dla gracza obowiązuje tak samo dla AI, kod ownerId-agnostic (szczegóły w rejestrze decyzji, sekcja „ZASADA NADRZĘDNA"). Fala 4 zdeployowana `cd42837f` (przebudowa ekonomii surowców). W TOKU: magazyny=pula państwa (100+100/Magazyn) + handel surowcami w dyplomacji (za pieniądz/Pracę, jednorazowo lub przez X tur). OTWARTE (nie istnieje w kodzie, do decyzji): osobny poziom trudności per państwo/miasto vs globalny — dziś trudność jest jedna globalna.
 
 **Poprzedni stan:** deploy ROBOCZA **`9f9ced35`** — WIELKI BATCH 12 tematów (drzewko technologii w grze, ekran Cudów, handel E6+E3b, koszty surowcowe budynków, powiadomienia tras, wyrąb AI, fix rzeki pod miastem, pozycyjny szum wody, natura, kontry/kategorie, logic 208/208). Wcześniej: **`feda52ec`**. Wcześniej: **`e914e1e5`** — filtry na 2 piętrach. Wcześniej: **`b6481c25`** — rząd filtrów 1:1 z makiety C06. Wcześniej: **`0500eddf`**. Wcześniej: **`8c774bdd`** — WSZYSTKIE = 4 kropki. Wcześniej: **`1d2f86fc`** — ikonowe filtry rosteru bitwy. Wcześniej: **`49563095`** — bród (wariant C) + handel ilościowy surowcami (wariant B) + HUD: ikony na rosterze, minimapa prawy-dół. Wcześniej: **`f736ca21`** — oblężenie (zabudowa za murem + gruz wyłomu) + imiona władców 60 (z Antykiem w danych). Wcześniej: **`48249d90`** — PORTRETY WŁADCÓW w medalionach (bitwa/preBattle/dyplomacja). Wcześniej: **`6bb7fedc`** — PAKIET: HUD TW-v5 KOMPLET 3/3 + preBattle nakładka v1.1 (kanon Design) + dyplomacja zaległości (SZYBKA UMOWA/Zerwij/dobra per-owner). Drzewo CZYSTE, nic w toku. Wcześniej: deploy ROBOCZA **`2c19fcb3`** — HUD bitwy TW-v5 fazy 1–2 (karty dowódców + zegar + przewaga, tempo przy minimapie, stany kart rosteru, bogaty tooltip, likwidacja raila → zębatka). Łańcuch 2026-07-23: `c7f70b27` (pakiet bitewny: plansze wg terenu + rzeka S + upiększenie pola) → `8aff7266` (dyplomacja dwustronna FINAL 3/3) → `2c67014c` (usunięte obramówki, czarne tło pola) → **`2c19fcb3`**. *(historyczne: faza 3 HUD TW-v5 była wtedy w toku — DZIŚ UKOŃCZONA i zdeployowana w `6bb7fedc`)*
 
@@ -111,6 +113,36 @@ Skrót całości live (szczegóły sesji 2026-07-20 w §4):
 
 ---
 
+### 3a-3. CO WESZŁO 2026-07-24 (sesja surowce / UI / miasta-państwa — NAJNOWSZE)
+
+Sesja chmurowa, w większości autonomiczna (zgoda `AUTONOMIA=A`). Wykonanie delegowane subagentom Sonnet 5, integracja + deploy w głównej pętli. **Nadrzędna zasada całej sesji: PARYTET AI** — każda zmiana dla gracza obowiązuje identycznie dla AI i miast-państw (kod ownerId-agnostic). Cztery deploye (FALA 5→6.2), wszystkie bramki zielone, każdy log w `WERSJE.md` + `KANAL-PRACA.md` + `REJESTR-PROSB-I-ZADAN.md`.
+
+**FALA 5 (`c676b681`, deploy commit `8a15538`):**
+1. **Jednostki konsumują surowiec z puli państwa** (`R-JEDN-SUROWIEC`, decyzja **A = pełna konsumpcja**). Dotąd koszt `Surowiec (ilość)` przy rekrutacji był tylko wyświetlany; teraz realnie odejmowany z magazynu cywilizacji, jak przy budynkach. Blokada rekrutacji przy niedoborze. Parytet: AI też płaci. Nowy moduł `gra/src/game/building-stock-cost.ts` → `unitStockCost(unit)` (mapuje `Surowiec`/`Surowiec (ilość)` na klucz ASCII przez NFD strip: „Brąz"→`braz`, „Żelazo"→`zelazo`), reużywa `canAffordBuildingStock`/`deductBuildingStockCostAcrossCities`/`ownerResourceStockAll`/`creditOwnerResourceStock`. Test: `unit-stock-cost-test.cjs`.
+2. **AI kupuje jednostki za złoto** (`R-AI-KUP-JEDN`, parytet). Dotąd tylko gracz mógł `purchaseRecruitmentUnit`. Uogólnione na dowolnego ownera (`ownerTreasury`, magazyn per-owner; UI tylko dla `ownerId===0`). Progi zakupu przez AI → `econ-params.json` (`ai_rush_jednostka_rezerwa_zlota=100`, `ai_rush_jednostka_max_na_ture=1`), predykat `shouldAIRushBuyUnit(inp)` + `loadAiRushParams`. Test: `ai-unit-rush-test.cjs`.
+3. **Fix martwej bramki dostępu braz/żelazo** (`R-JEDN-DOSTEP-BUG`). `production.ts:751,846` porównywał surowiec przez `.toLowerCase()` zamiast strip-diakrytyków → bramka nigdy nie działała. Poprawione na `stripDiacritics(...)`.
+
+**FALA 6 (`666b2b75`, deploy commit `b015764`):**
+4. **Ikony surowców v4 od Design** (`R-IKONY-SUROWCE`). 12 ikon (metale/cegła/rudy odrębne, kolory) → `gra/src/ui/icons/brand/resources-map/*.svg` + `resources-map-icon-map.json` (cegła→brick, brąz→bronze, stal→steel, ruda→copper-ore, ruda_zelaza→iron-ore, ceramika→ceramics). Resolver `mapResourceIconSvg(label,size)` w `brandAssets.ts`. Kopia paczki do docs. *(Ikona konia — do wymiany, czeka na Design; SVG nie dało się załączyć w czacie.)*
+5. **Bazowy magazyn 100→500** (`R-MAGAZYN-500`). `econ-params.json` `magazyn_baza_surowce` 100→500 (wszystkie trudności) + `economy-upkeep.ts` `DEFAULT_OWNER_STORAGE_PARAMS.bazaSurowcePanstwo`. Cap = **500 + 100×(liczba Magazynów)** — każdy Magazyn w każdym mieście dodaje +100 (addytywnie, nie jednorazowo). Test `surow-civ-storage-test.cjs` zaktualizowany (sekcje D/E na cap 500/600/700/1000).
+6. **Surowce w HUD + zakładka magazynu** (`R-HUD-SUROWCE`). Chip „Surowce" obok Skarbiec/Praca (lewa grupa), Nauka przesunięta do prawej grupy (Zaopatrzenie/Ludność). Osobna zakładka magazynu w panelu imperium (`empireDetailPanel.ts`) na brand-ikonach: kolumny grafika+ilość+produkcja/turę (bez „/t"), nagłówek capu data-driven z `capBase`/`capBonusPerMagazyn`, tooltip na hover, chipy dostępu z ikonami. **Paski surowców w mieście:** B1 = pasek przy budowie (`appendCityResourceStockStrip`, ikona+ilość); B2 = pasek przy rekrutacji (`appendRecruitMilitaryResourceStrip`, pokazuje TYLKO Brąz w epoce 2 / Żelazo w epoce 3, zgodnie z epokami). Styl à la Total War (ikonografika+liczba, bez rozpisek). Zatwierdzone mockupy w scratchpadzie.
+7. **Cuda tylko w liście budowy miasta** (`R-CUDA-TAB`, decyzja **A**). Usunięty samodzielny katalog „Cuda" z lewego menu (`wondersView`); cuda pojawiają się jako sekcja „Cuda świata" w liście budowy miasta, filtrowane per cywilizacja (`getBuildableWonders`/`onBuildWonder` w `cityPanel.ts`).
+8. **Proaktywność MP pod suwak trudności miast-państw** (`R-MP-DYPL-PROAKT`, część 1). Ustawienia dyplomacji miast-państw (poza główną trudnością) przeniesione pod osobny suwak „trudność miast-państw". Helper `effectiveGameDifficultyForOwner(ownerId)` w `main.ts` (~3749); `decideAIDiplomacy` bierze go jako trudność dla MP.
+9. **Panele Excel B/C** (`R-PANEL-SYNC`). Generatory `gen-panel-b.py`/`gen-panel-c.py` eksportują koszty surowcowe (jednostki: Surowiec+ilość; budynki: koszt_surowce) + regen Panel-B/C.xlsx. Kierunek JSON→Excel (bez odwrotnego eksportu).
+11. **AI-rush progi strojalne** — patrz pkt 2 (progi wyprowadzone z hardkodów do `econ-params.json`).
+
+**FALA 6.1 (`3db42857`, deploy commit `72bcb8a`):** dokończenie `R-MP-DYPL-PROAKT` — **CAŁA** dyplomacja miast-państw (nie tylko proaktywność) pod suwak trudności MP: `formAiAiTradeAgreementsIfEligible` obejmuje teraz MP; wszystkie decyzje dyplomatyczne MP używają `effectiveGameDifficultyForOwner`.
+
+**FALA 6.2 (`8dc09b8a`, deploy commit `94c53a4`):**
+12. **Pełny handel surowcami z miastami-państwami** (`R-MP-HANDEL-SUROWCE`, decyzja **A = pełny parytet**). Gracz↔MP i AI↔MP, jednorazowo + cyklicznie, w obie strony; AI↔MP gated na nadwyżkę (`bestOffer`). `diplomacy-layers.ts` `SIMPLIFIED_CMD += 'zaproponuj_handel_surowiec'`.
+13. **Miasta-państwa = symbol kultury zamiast portretu władcy** (`R-MP-PORTRET`, potwierdzone decyzją **C-MP-Q1 = A**). Nowy portret-zdjęcie władcy zostaje dla gracza/głównego AI; miasta-państwa wracają do `civIconSvg` (symbol kultury — świątynia Grecja, tarcza Rzym, piramida Egipt…), żeby 10-11 MP tej samej kultury nie wyglądało identycznie jak główna cywilizacja. Param `forceCultureIcon` w `civLeaderMedallionHtmlById` (`diploUiSkin.ts:86`) + `isCityState` w `battleScene.ts`/`preBattle.ts`/`mapFieldBattle.ts`/`diplomacyAudience.ts`. Etykieta MP: `resolveOwnerBaseName` (`display-names.ts`) → „Sparta · Grecja · miasto-państwo". **2026-07-24 właściciel obejrzał podgląd (realny kod: dyplomacja 150px + bitwa 22px) i potwierdził A — bez dalszych zmian.**
+
+**Analizy/dokumenty sesji:** `dyspozycje/BILANS-SUROWCE-100T-2026-07-25.md` (bilans surowców na 100 tur, założenie: każde miasto ma wszystkie budynki Kamień+Brąz), `dyspozycje/AUDYT-PARYTET-AI-2026-07-24.md` (7 obszarów parytetu OK + wykryta luka AI-kup-jednostek), `dyspozycje/POLECENIE-DESIGN-IKONY-SUROWCE-MIEJSKIE.md` (polecenie dla Design: 4 brakujące ikony surowców miejskich).
+
+**Odłożone w tej sesji (na sygnał/playtest):** MVP dotyk/tablet (`R-DOTYK-MVP` — właściciel: „zajmiemy się później"); strojenie stawek AI-rush i dystansu drewna (playtest); wymiana ikony konia + portrety ANTYK (zewnętrzne — Design/właściciel).
+
+---
+
 ## 4. ✅ CO WESZŁO W SESJI 2026-07-20 (szczegóły + decyzje)
 
 Wszystko poniżej jest **zdeployowane i na GitHubie**. ID decyzji w nawiasach — NIE pytaj o nie ponownie (§9).
@@ -132,7 +164,9 @@ Wszystko poniżej jest **zdeployowane i na GitHubie**. ID decyzji w nawiasach �
 
 ## 5. ⏳ W TRAKCIE
 
-**2026-07-23 — NIC NIE JEST W TOKU po deployu `6bb7fedc`** (faza 3 HUD, preBattle i dyplomacja ZDEPLOYOWANE; poniższy wpis historyczny) — HUD bitwy TW-v5 FAZA 3 w toku (sesja chmurowa, subagent): C-12 „Koniec bitwy" + C-23 „Szczegóły" wg makiety Design `POLE-BITWY-TW-v5` (klatki 4–5), unifikacja paneli 70%+blur, ikonowy dolny toolbar 46×46 z podpisem na hover, karty rosteru z medalionem typu. Dotyka: `gra/src/battle/battleScene.ts`, `battleHudTheme.ts`, `endDetails1E.ts`, `endScreen1E.ts`. Fazy 1–2 są zacommitowane (`0f1455e`, `4726e97`) i ZDEPLOYOWANE (`2c19fcb3`). Jeśli widzisz niezacommitowane zmiany w tych plikach — to faza 3, nie nadpisuj.
+**2026-07-24 — NIC NIE JEST W TOKU** po deployu FALA 6.2 `8dc09b8a` i commicie dokumentacyjnym `5a01ca6`. Drzewo czyste, wszystkie tematy sesji zamknięte. Otwarte pozycje to wyłącznie strojenie po playteście (stawki AI-rush, dystans drewna) i rzeczy zewnętrzne (ikona konia + portrety ANTYK od Design/właściciela) — nic nie blokuje nowej pracy.
+
+**(historyczny) 2026-07-23 — NIC NIE JEST W TOKU po deployu `6bb7fedc`** (faza 3 HUD, preBattle i dyplomacja ZDEPLOYOWANE; poniższy wpis historyczny) — HUD bitwy TW-v5 FAZA 3 w toku (sesja chmurowa, subagent): C-12 „Koniec bitwy" + C-23 „Szczegóły" wg makiety Design `POLE-BITWY-TW-v5` (klatki 4–5), unifikacja paneli 70%+blur, ikonowy dolny toolbar 46×46 z podpisem na hover, karty rosteru z medalionem typu. Dotyka: `gra/src/battle/battleScene.ts`, `battleHudTheme.ts`, `endDetails1E.ts`, `endScreen1E.ts`. Fazy 1–2 są zacommitowane (`0f1455e`, `4726e97`) i ZDEPLOYOWANE (`2c19fcb3`). Jeśli widzisz niezacommitowane zmiany w tych plikach — to faza 3, nie nadpisuj.
 
 ---
 
@@ -188,6 +222,10 @@ node tools/converters-test.cjs       # 31/31
 node tools/mennica-magazyn-test.cjs  # 38/38
 node tools/trade-routes-test.cjs     # 35/35
 node tools/trade-routes-income-test.cjs  # 49/49
+node tools/unit-stock-cost-test.cjs      # konsumpcja surowca przez jednostki (2026-07-24)
+node tools/ai-unit-rush-test.cjs         # AI kupuje jednostki za złoto — progi (2026-07-24)
+node tools/surow-civ-storage-test.cjs    # magazyn=pula państwa, cap 500+100/Magazyn (2026-07-24)
+node tools/display-names-test.cjs        # etykieta MP „Miasto · Kultura · miasto-państwo" (2026-07-24)
 ```
 
 **⚠️ KOREKTA starego handoffu:** notatka o „21 porażkach `logic-test`" i „`combat-test` rzuca wyjątek" jest **NIEAKTUALNA** — oba **naprawione 2026-07-20** i zielone (203/203, 6/6). Zweryfikowane na baseline.
@@ -264,6 +302,18 @@ node tools/trade-routes-income-test.cjs  # 49/49
 - **Dyplomacja miast-państw wg trudności:** `C-MP-DYPL-Q1=B` — start-zaufanie do gracza wg trudności (wariant B: easy+10/normal+5/hard0) + ożywiony `dyplomacjaAktywnosc`.
 - **Deploy autonomiczny:** `C-ORG-Q17=A` — pod nieobecność właściciela deploy do ROBOCZA gdy VERIFY OK + „push" w kanale.
 - **Hasła właściciela:** „sprawdź" = pull+czytaj kanał/handoff (bez dysku); „push" (do sesji lokalnej) = pull+sync na dysk właściciela. (CLAUDE.md §6.)
+
+**Sesja 2026-07-24 (surowce/UI/miasta-państwa):**
+- **Jednostki–surowiec (`R-JEDN-SUROWIEC`): A** — pełna konsumpcja `Surowiec (ilość)` z puli państwa, blokada przy niedoborze, parytet AI (jak budynki).
+- **AI kupuje jednostki (`R-AI-KUP-JEDN`, AIRUSH): A** — parytet; progi w `econ-params.json`, strojalne (nie hardkod).
+- **Cuda (`R-CUDA-TAB`): A** — usunąć samodzielny katalog Cuda; cuda tylko w liście budowy miasta, filtrowane per cywilizacja.
+- **Autonomia (`AUTONOMIA`): A** — praca autonomiczna pod nieobecność właściciela, subagenci Sonnet 5 per temat, deploy do ROBOCZA po zielonych bramkach.
+- **Magazyn (`R-MAGAZYN-500`):** baza 100→**500**; każdy Magazyn +100 addytywnie (cap = 500 + 100×liczba Magazynów).
+- **HUD surowców (`R-HUD-SUROWCE`):** jeden chip „Surowce" w HUD (NIE lista wszystkich — z czasem będzie więcej surowców); pełny magazyn w osobnej zakładce; paski w mieście = ikonografika+liczba (przy rekrutacji tylko Brąz/Żelazo wg epoki).
+- **Proaktywność/dyplomacja MP (`R-MP-DYPL-PROAKT`, flaga 3):** WSZYSTKIE ustawienia dyplomacji miast-państw (poza główną trudnością gry) pod osobny suwak „trudność miast-państw".
+- **Handel surowcami z MP (`R-MP-HANDEL-SUROWCE`): A** — pełny parytet: gracz↔MP i AI↔MP, jednorazowo + cyklicznie, obie strony (AI↔MP gated na nadwyżkę).
+- **Portret miast-państw (`R-MP-PORTRET`, `C-MP-Q1`): A** — miasta-państwa pokazują **symbol kultury** (civIconSvg), nie zdjęcie-portret władcy; gracz/główne AI bez zmian; etykieta „Miasto · Kultura · miasto-państwo". Potwierdzone podglądem (dyplomacja + bitwa).
+- **MVP dotyk (`R-DOTYK-MVP`):** ODŁOŻONE („zajmiemy się później").
 
 **Wcześniejsze (nadal obowiązują):**
 - Wybrzeże jako pas — było 2 heksy (teraz jako WODA, §4 pkt 4). Kategoria kontr konnicy = „Mount". Kontra Procarz = podtyp „Slinger". Unikat Chin = „Jeździec chiński". „Zastąp" = całe terytorium, koszt tylko Pieniądz. Triari/Evocati = wymóg techu żelaza. Łańcuch żelaza = ogólna kopalnia na złożu + odlewnia żelaza.
