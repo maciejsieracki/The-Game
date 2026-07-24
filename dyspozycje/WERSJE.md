@@ -9,7 +9,13 @@ UWAGA: KANON i FINALNA promują się teraz OSOBNYMI skryptami (`gra/tools/publis
 wyraźne polecenie właściciela) — dlatego są logowane NIEZALEŻNIE, każdy w swojej sekcji, ze
 swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drugiego.
 
-## ROBOCZA `666b2b75` — 2026-07-24 · FALA 6: ikony surowców v4 + magazyn 500 + UI surowców + Cuda w mieście + proaktywność MP + AI-rush strojalny — **AKTUALNA**
+## ROBOCZA `3db42857` — 2026-07-24 · FALA 6.1: cała dyplomacja miast-państw pod suwak trudności MP (dokończenie) — **AKTUALNA**
+
+- **Zawartość:** nadbudowa FALI 6 (commit `6797402`). `effectiveGameDifficultyForOwner(ownerId)` — dla miast-państw **cała** dyplomacja (progi wojna/handel + dary jednorazowe + agresja/aktywność + posiłki) idzie z suwaka „Trudność miast-państw"; pełne cywilizacje AI bez zmian (globalna trudność). Decyzja Macieja: „przenieś wszystkie ustawienia poza główną trudność".
+- **Bramki:** tsc 0 · ai-test 233/7 (baseline) · diplomacy 144/2 (baseline) · city-state-alliance 59/59 · VERIFY OK.
+- **md5:** `3db4285743c1e83fac92b879765488a0` · manifest. Pieczątka `3db42857`. Bundel 28,2 MB. Zastępuje `666b2b75`.
+
+## ROBOCZA `666b2b75` — 2026-07-24 · FALA 6: ikony surowców v4 + magazyn 500 + UI surowców + Cuda w mieście + proaktywność MP + AI-rush strojalny — ZASTĄPIONA
 
 - **Zawartość (sesja autonomiczna, commity `1e80e6d`…`ca00246`; branch `claude/sprawdzenie-funkcjonalnosci-ek4ra0`):**
   1. **IKONY SUROWCÓW v4 (Design):** 12 odrębnych ikon — koniec interimowego kolorowania. Metale/cegła/rudy rozdzielone (res-bronze zielony, res-iron srebrno-szary, res-brick czerwony, res-copper-ore/res-iron-ore, res-steel, res-ceramics; glina=pomarańczowy placek). Wchodzą wszędzie przez `mapResourceIconSvg` (zakładka + chipy miasta + tooltip heksa).
