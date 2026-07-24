@@ -6,7 +6,7 @@
 import type { EmpireDetailSnap, EmpireResourceRow } from './empireDetailTypes';
 import { formatObywateleLabel } from '../game/manpower';
 import { mocLabel, mocWithValue } from './power-labels';
-import { brandIconSvg } from './icons/brandAssets';
+import { brandIconSvg, mapResourceIconSvg } from './icons/brandAssets';
 export type { EmpireDetailSnap } from './empireDetailTypes';
 
 const STYLE_ID = 'civ-empire-panel-css';
@@ -112,7 +112,7 @@ function ensureStyles(): void {
   opacity:0;pointer-events:none;transition:opacity .2s;}
 .civ-emp-backdrop.open{opacity:1;pointer-events:auto;}
 
-/* — MAGAZYN PAŃSTWA (surowce) — SUROW-HUD-01 (Maciej 2026-07-24) — */
+/* — MAGAZYN PAŃSTWA (surowce) — SUROW-UI-A1 (Maciej 2026-07-24) — */
 .civ-emp-res-eyebrow-row{display:flex;justify-content:space-between;align-items:baseline;
   flex-wrap:wrap;gap:6px;margin-bottom:10px;}
 .civ-emp-res-cap-sub{font-size:11px;color:#7d8798;}
@@ -120,15 +120,15 @@ function ensureStyles(): void {
   font-weight:600;margin:14px 0 8px;padding-bottom:6px;border-bottom:1px solid #242c3a;}
 .civ-emp-res-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:8px;}
 .civ-emp-res-card{border:1px solid #2b3543;border-radius:8px;padding:10px 11px;background:#171e2a;
-  display:flex;flex-direction:column;gap:8px;}
+  display:flex;flex-direction:column;gap:8px;cursor:default;}
 .civ-emp-res-card.bad{border-color:#4a2a2a;}
 .civ-emp-res-card.warn{border-color:#4a3a1a;}
 .civ-emp-res-top{display:flex;align-items:center;gap:8px;}
-.civ-emp-res-ic{font-size:16px;flex:none;line-height:1;}
+.civ-emp-res-ic{flex:none;line-height:1;width:18px;height:18px;display:flex;
+  align-items:center;justify-content:center;color:#cfd5de;}
+.civ-emp-res-ic svg{width:100%;height:100%;display:block;}
 .civ-emp-res-nm{flex:1;min-width:0;}
 .civ-emp-res-nm .nm{font-size:12.5px;font-weight:600;color:#e2e6ec;}
-.civ-emp-res-nm .ty{font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;color:#7d8798;
-  margin-top:1px;}
 .civ-emp-res-rate{font-size:10.5px;font-weight:700;font-variant-numeric:tabular-nums;
   padding:2px 6px;border-radius:999px;white-space:nowrap;flex:none;}
 .civ-emp-res-rate.good{color:#78c95a;background:rgba(120,201,90,.14);}
@@ -149,6 +149,9 @@ function ensureStyles(): void {
 .civ-emp-res-access-row{display:flex;gap:8px;flex-wrap:wrap;}
 .civ-emp-res-acc{display:flex;align-items:center;gap:8px;padding:8px 11px;border-radius:8px;
   border:1px solid #2b3543;background:#171e2a;min-width:120px;flex:1 1 auto;}
+.civ-emp-res-acc .ic{flex:none;width:16px;height:16px;display:flex;align-items:center;
+  justify-content:center;color:#cfd5de;}
+.civ-emp-res-acc .ic svg{width:100%;height:100%;display:block;}
 .civ-emp-res-acc .dot{width:8px;height:8px;border-radius:50%;flex:none;}
 .civ-emp-res-acc.on .dot{background:#78c95a;box-shadow:0 0 6px #78c95a;}
 .civ-emp-res-acc.off .dot{background:#e07a7a;}
@@ -271,6 +274,17 @@ function signedTxt(n: number): string {
   return (n > 0 ? '+' : '') + String(n);
 }
 
+/**
+ * Ikona surowca — PRAWDZIWA ikona brand SVG (resources-map/) rozwiązana z etykiety,
+ * a nie emoji EmpireResourceRow.icon (dane historyczne main.ts CATALOG). mapResourceIconSvg
+ * dopasowuje case-insensitive + substring, więc etykiety PL (np. „Ruda miedzi", „Brąz")
+ * trafiają we właściwy plik res-*.svg (design v4 2026-07-24).
+ */
+function resIconHtml(label: string, size: 16 | 18 = 18): string {
+  const svg = mapResourceIconSvg(label, size);
+  return svg || '';
+}
+
 /** Stan wiersza magazynowanego: niedobór (spada) / na cap (nadmiar przepada) / nadwyżka. */
 function resStateOf(r: EmpireResourceRow): 'bad' | 'warn' | 'good' {
   if (r.ratePerTurn < 0) return 'bad';
@@ -278,16 +292,31 @@ function resStateOf(r: EmpireResourceRow): 'bad' | 'warn' | 'good' {
   return 'good';
 }
 
+/**
+ * Tooltip (title, na hover) z typem/regułą magazynu — SUROW-UI-A1 (Maciej 2026-07-24):
+ * „Szczegóły na hover, nie w kafelku". Budowany WYŁĄCZNIE z danych, którymi panel realnie
+ * dysponuje (EmpireResourceRow) — bez zmyślania nieudokumentowanego źródła/konsumenta per
+ * surowiec (to wymagałoby nowego mapowania budynek→surowiec, poza zakresem tego zadania).
+ */
+function resTooltipHtml(r: EmpireResourceRow): string {
+  const parts = [`Typ: ${r.typ}`];
+  if (r.cap != null) {
+    parts.push(`Magazyn: wspólna pula państwa, limit ${r.cap}/typ — nadmiar przepada`);
+  }
+  parts.push(r.ratePerTurn === 0 ? 'Produkcja: brak zmiany w tej turze' : `Produkcja: ${signedTxt(r.ratePerTurn)} / turę`);
+  return esc(parts.join(' · '));
+}
+
 /** Karta pojedynczego surowca magazynowanego (pasek zapełnienia stock/cap). */
 function resCardHtml(r: EmpireResourceRow): string {
   const cap = r.cap ?? 0;
   const pct = cap > 0 ? Math.max(0, Math.min(100, Math.round((r.stock / cap) * 100))) : 0;
   const state = resStateOf(r);
-  const rateTxt = r.ratePerTurn === 0 ? '—' : `${signedTxt(r.ratePerTurn)} / t`;
-  const flag = state === 'bad' ? 'spada' : (state === 'warn' ? 'pełny · nadmiar przepada' : '');
-  return `<div class="civ-emp-res-card ${state}" data-section="econ-surowiec-${esc(r.id)}">`
-    + `<div class="civ-emp-res-top"><span class="civ-emp-res-ic">${esc(r.icon)}</span>`
-    + `<div class="civ-emp-res-nm"><div class="nm">${esc(r.label)}</div><div class="ty">${esc(r.typ)}</div></div>`
+  const rateTxt = r.ratePerTurn === 0 ? '—' : signedTxt(r.ratePerTurn);
+  const flag = state === 'bad' ? 'spada' : (state === 'warn' ? 'pełny' : '');
+  return `<div class="civ-emp-res-card ${state}" data-section="econ-surowiec-${esc(r.id)}" title="${resTooltipHtml(r)}">`
+    + `<div class="civ-emp-res-top"><span class="civ-emp-res-ic">${resIconHtml(r.label)}</span>`
+    + `<div class="civ-emp-res-nm"><div class="nm">${esc(r.label)}</div></div>`
     + `<span class="civ-emp-res-rate ${state}">${esc(rateTxt)}</span></div>`
     + `<div class="civ-emp-res-amt"><span class="cur">${r.stock}</span><span class="cap">/ ${cap}</span>`
     + (flag ? `<span class="flag ${state}">${esc(flag)}</span>` : '')
@@ -299,8 +328,9 @@ function resCardHtml(r: EmpireResourceRow): string {
 /** Wiersz dostępu (boolean) — Ceramika/Sól/Koń — nie magazynowane, tylko odblokowują budowę. */
 function resAccessHtml(r: EmpireResourceRow): string {
   const cls = r.dostep ? 'on' : 'off';
-  return `<div class="civ-emp-res-acc ${cls}" data-section="econ-surowiec-${esc(r.id)}">`
-    + `<span class="dot"></span><span class="nm">${esc(r.label)}</span>`
+  return `<div class="civ-emp-res-acc ${cls}" data-section="econ-surowiec-${esc(r.id)}" title="${resTooltipHtml(r)}">`
+    + `<span class="dot"></span><span class="ic">${resIconHtml(r.label, 16)}</span>`
+    + `<span class="nm">${esc(r.label)}</span>`
     + `<span class="st">${r.dostep ? 'jest' : 'brak'}</span></div>`;
 }
 
@@ -317,13 +347,19 @@ function renderSurowceSection(rows: EmpireResourceRow[]): string {
   const stored = rows.filter(r => r.cap != null);
   const access = rows.filter(r => r.cap == null);
   const cap = stored[0]?.cap ?? 0;
-  const magazyny = cap > 100 ? Math.round((cap - 100) / 100) : 0;
+  const capBase = stored[0]?.capBase;
+  const capBonus = stored[0]?.capBonusPerMagazyn;
+  // SUROW-UI-A1: liczba Magazynów wyliczona z REALNEJ bazy/bonusu (econ-params.json),
+  // nie z zaszytej na sztywno starej wartości 100 — baza dziś to 500 (Maciej 2026-07-24).
+  const magazyny = (capBase != null && capBonus != null && capBonus > 0 && cap > capBase)
+    ? Math.round((cap - capBase) / capBonus)
+    : 0;
   const magSlowo = magazyny === 1 ? 'Magazyn' : (magazyny >= 2 && magazyny <= 4 ? 'Magazyny' : 'Magazynów');
 
   sur += `<div class="civ-emp-res-eyebrow-row">`
     + `<span class="civ-emp-eyebrow">MAGAZYN PAŃSTWA${cap > 0 ? ` · pojemność ${cap}/typ` : ''}</span>`
-    + (cap > 0
-      ? `<span class="civ-emp-res-cap-sub">100 baza + 100 × ${magazyny} ${magSlowo} · nadmiar przepada</span>`
+    + (cap > 0 && capBase != null && capBonus != null
+      ? `<span class="civ-emp-res-cap-sub">${capBase} baza + ${capBonus} × ${magazyny} ${magSlowo} · nadmiar przepada</span>`
       : '')
     + `</div>`;
 
@@ -576,8 +612,8 @@ export function empireSectionFromHudAct(act: string): string | undefined {
     case 'nauka': return 'econ-nauka';
     case 'zywnosc': return 'econ-zywnosc';
     case 'religia': return 'econ-religia';
-    case 'surowce': return 'surowce';
     case 'empire': return 'ekonomia';
+    case 'surowce': return 'surowce';
     default: return undefined;
   }
 }

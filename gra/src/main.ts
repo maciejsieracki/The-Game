@@ -474,7 +474,7 @@ import {
   computeEmpireFoodNetDelta, computeEmpireFoodNetDeltaFromCityFoods, getCityFoodSplit, clearLastEmpireFoodTicks, computeEmpireFoodMaxCap,
   type EmpireFoodState,
 } from './game/empire-food';
-import { loadUpkeepParams, buildUnitFoodTable, militaryFoodConsumption } from './game/economy-upkeep';
+import { loadUpkeepParams, buildUnitFoodTable, militaryFoodConsumption, loadOwnerStorageParams } from './game/economy-upkeep';
 import { computePowerContributionsCityEconomy, buildPowerSnapshots, type PowerOwnerSnapshot } from './game/power';
 import { citySightRadius, toggleTileWorker, cityRangeForPopulation, yieldOfMapHex, resolveWorkedTiles, seedReczneFromAuto, collectWorkedHexKeysForOwner, hexKeysWithinRadius, reconcileAllWorkedTiles } from './game/okolica';
 import { getCityResourceAccessForCity } from './game/resource-access';
@@ -1708,6 +1708,12 @@ async function boot(): Promise<void> {
       // ownera; `warehouse` powyżej JEST już sumą civ-wide (citySurowceSumForOwner),
       // wystarczy dołożyć cap, żeby licznik pokazał „stock / cap" (np. „140 / 200").
       const empireCap = ownerResourceCap(cities, cityBuilt, ownerId, data, _menuDifficulty);
+      // SUROW-UI-A1: parametry bazy/bonusu wprost z econ-params.json — UI dostaje realne
+      // wartości (dziś 500 + 100×Magazyny) zamiast zaszywać starą "100" na sztywno.
+      const storageParams = loadOwnerStorageParams(
+        data.econParams as unknown as Parameters<typeof loadOwnerStorageParams>[0],
+        _menuDifficulty,
+      );
       type Cat = { id: string; label: string; icon: string; typ: EmpireResourceRow['typ']; access?: boolean };
       const CATALOG: Cat[] = [
         { id: 'drewno',      label: 'Drewno',      icon: '🪵', typ: 'surowy' },
@@ -1733,7 +1739,12 @@ async function boot(): Promise<void> {
         if (stock <= 0 && !dostep) continue;  // pomiń surowce, których owner w ogóle nie ma
         const ratePerTurn = c.access ? 0 : Math.floor((territoryRates[c.id] ?? 0) + (converterRates[c.id] ?? 0));
         const cap = c.access ? undefined : empireCap;
-        rows.push({ id: c.id, label: c.label, icon: c.icon, stock, ratePerTurn, typ: c.typ, dostep, cap });
+        const capBase = c.access ? undefined : storageParams.bazaSurowcePanstwo;
+        const capBonusPerMagazyn = c.access ? undefined : storageParams.bonusSurowceNaBudynek;
+        rows.push({
+          id: c.id, label: c.label, icon: c.icon, stock, ratePerTurn, typ: c.typ, dostep,
+          cap, capBase, capBonusPerMagazyn,
+        });
       }
       return rows;
     }

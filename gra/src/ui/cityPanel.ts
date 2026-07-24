@@ -1812,6 +1812,13 @@ function ensureStyles(): void {
 .civ-cs .bld-infocard-chips{display:flex;flex-wrap:wrap;gap:0.35em;}
 .civ-cs .bld-infocard-chip{display:inline-flex;align-items:center;gap:0.28em;font-size:0.68em;color:#c8b898;border:1px solid rgba(232,216,138,.25);border-radius:20px;padding:0.22em 0.52em;}
 .civ-cs .bld-infocard-chip.stock-missing{color:#e88a7a;border-color:rgba(232,110,90,.45);background:rgba(232,90,70,.08);}
+/* SUROW-UI-B1/B2 (Maciej 2026-07-24): pasek surowców uproszczony (budowa/rekrutacja) — Total War-style. */
+.civ-cs .civ-cs-res-strip{display:flex;flex-wrap:wrap;align-items:center;gap:0.5em;margin:0 0 0.5em;padding:0.3em 0;}
+.civ-cs .civ-cs-res-chip{display:inline-flex;align-items:center;gap:0.3em;font-size:0.78em;color:#e8e0c8;font-weight:600;font-variant-numeric:tabular-nums;}
+.civ-cs .civ-cs-res-chip-ic{display:flex;align-items:center;justify-content:center;width:1.05em;height:1.05em;flex:none;color:#c8b070;}
+.civ-cs .civ-cs-res-chip-ic svg{width:100%;height:100%;display:block;}
+.civ-cs .civ-cs-mil-strip{gap:0.6em;padding:0.35em 0.6em;border:1px solid rgba(232,216,138,.22);border-radius:8px;background:rgba(232,216,138,.05);}
+.civ-cs .civ-cs-mil-era{font-size:0.62em;letter-spacing:.08em;text-transform:uppercase;color:#8a8070;}
 .civ-cs .bld-infocard-upg{display:flex;align-items:center;gap:0.42em;padding:0.42em 0.52em;background:rgba(232,216,138,.07);border:1px solid rgba(232,216,138,.22);border-radius:9px;font-size:0.68em;color:#d8cca8;}
 .civ-cs .bld-infocard-ft{display:flex;align-items:center;justify-content:space-between;padding-top:0.42em;border-top:1px solid rgba(232,216,138,.12);font-size:0.62em;color:#8a8478;}
 .civ-cs .bld-infocard-era{display:inline-flex;align-items:center;gap:0.35em;letter-spacing:.06em;text-transform:uppercase;color:#b7a06a;}
@@ -4315,6 +4322,72 @@ function ownerSurowcePoolFor(city: City): Record<string, number> {
   return ownerResourceStockAll(allCities, city.ownerId);
 }
 
+/**
+ * SUROW-UI-B1 (Maciej 2026-07-24): kolejność surowców magazynowanych (pula PAŃSTWA,
+ * civ-wide) w paskach uproszczonych — Ceramika CELOWO pominięta (dostęp, nie stock —
+ * patrz main.ts buildEmpireResourceRows). Klucze ASCII zgodne z City.surowce /
+ * STOCK_RESOURCE_LABEL (game/building-stock-cost.ts).
+ */
+const CS_RES_STRIP_ORDER: readonly string[] = [
+  'drewno', 'kamien', 'glina', 'ruda', 'ruda_zelaza', 'cegla', 'braz', 'zelazo', 'stal',
+];
+
+/**
+ * SUROW-UI-B1: pasek „ikona + ilość" surowców magazynowanych (pula PAŃSTWA ownera) —
+ * forma uproszczona wg mockupu (Total War-style, bez przyrostu/turę — w mieście liczy
+ * się tylko „ile mam"). Renderuje TYLKO surowce, których owner faktycznie ma > 0 sztuk.
+ */
+function appendCityResourceStockStrip(mount: HTMLElement, city: City): void {
+  const pool = ownerSurowcePoolFor(city);
+  const entries = CS_RES_STRIP_ORDER
+    .map(k => ({ k, v: Math.floor(pool[k] ?? 0) }))
+    .filter(e => e.v > 0);
+  if (entries.length === 0) return;
+  const strip = el('div', 'civ-cs-res-strip');
+  for (const e of entries) {
+    const label = stockResourceLabel(e.k);
+    const chip = el('span', 'civ-cs-res-chip');
+    chip.title = label;
+    const ic = el('span', 'civ-cs-res-chip-ic');
+    ic.innerHTML = mapResourceIconSvg(label, 16);
+    chip.appendChild(ic);
+    const val = el('b');
+    val.textContent = String(e.v);
+    chip.appendChild(val);
+    strip.appendChild(chip);
+  }
+  mount.appendChild(strip);
+}
+
+/**
+ * SUROW-UI-B2 (Maciej 2026-07-24): pasek rekrutacji — TYLKO surowiec militarny epoki
+ * (Brąz w epoce 2, Żelazo w epoce 3) — jedyny, którym płaci się za jednostki. Epoka
+ * Kamienia (1) nie ma surowca militarnego jeszcze -> pasek pusty (nic nie renderuje).
+ */
+function appendRecruitMilitaryResourceStrip(mount: HTMLElement, city: City): void {
+  const epoch = cfg.getEpoch?.(city.ownerId) ?? 1;
+  const key = epoch === 2 ? 'braz' : (epoch === 3 ? 'zelazo' : null);
+  if (!key) return;
+  const pool = ownerSurowcePoolFor(city);
+  const qty = Math.floor(pool[key] ?? 0);
+  const label = stockResourceLabel(key);
+  const eraName = EPOCH_NUMBER_TO_NAME[epoch] ?? `Epoka ${epoch}`;
+  const strip = el('div', 'civ-cs-res-strip civ-cs-mil-strip');
+  const eraTag = el('span', 'civ-cs-mil-era');
+  eraTag.textContent = `Epoka ${eraName}`;
+  strip.appendChild(eraTag);
+  const chip = el('span', 'civ-cs-res-chip');
+  chip.title = `${label} — pula państwa`;
+  const ic = el('span', 'civ-cs-res-chip-ic');
+  ic.innerHTML = mapResourceIconSvg(label, 16);
+  chip.appendChild(ic);
+  const val = el('b');
+  val.textContent = String(qty);
+  chip.appendChild(val);
+  strip.appendChild(chip);
+  mount.appendChild(strip);
+}
+
 function addItem(city: City, item: ProductionItem, opts?: { upgrade?: boolean }): void {
   if (item.kind === 'budynek') {
     const prod = getProd(city.id);
@@ -5551,6 +5624,9 @@ function renderBuildList(
   mount.appendChild(titleRow);
   if (!data) { mount.appendChild(el('div', 'muted', 'Brak danych gry')); return; }
   if (city.ownerId !== 0) { mount.appendChild(el('div', 'muted', 'Miasto rywala — budowa niedostępna (podgląd).')); return; }
+  // SUROW-UI-B1: pasek „ikona + ilość" surowców magazynowanych (Total War-style),
+  // nad listą budowy — patrz mockup „Surowce magazyn i formy v1" KLATKA B kontekst 2.
+  appendCityResourceStockStrip(mount, city);
   const praca = view ? view.praca : 0;
   const epoch = cfg.getEpoch?.(city.ownerId) ?? 1;
   const techs = cfg.getUnlockedTechs?.(city.ownerId) ?? [];
@@ -5703,6 +5779,9 @@ function renderPurchasableUnits(
     mount.appendChild(el('div', 'muted', 'Miasto rywala — zakup niedostępny (podgląd).'));
     return;
   }
+  // SUROW-UI-B2: pasek TYLKO surowca militarnego epoki (Brąz/Żelazo) — patrz mockup
+  // „Surowce magazyn i formy v1" KLATKA B kontekst 3.
+  appendRecruitMilitaryResourceStrip(mount, city);
   const techs = cfg.getUnlockedTechs?.(city.ownerId) ?? [];
   const units = purchasableUnits(city, data, techs, productionCtxForCity(city));
   const skarb = cfg.getTreasury?.(city.ownerId);
