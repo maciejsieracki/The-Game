@@ -2516,3 +2516,31 @@ export function decideAIDiplomacy(
 
   return komendy;
 }
+
+/**
+ * R-AI-KUP-JEDN (Maciej 2026-07-24, parytet AI): decyzja CZY AI powinno kupić
+ * właśnie kolejkowaną jednostkę za złoto (rush), zamiast czekać na dokończenie
+ * Pracą. CELOWO zachowawcza -- AI nie roztrwania skarbca:
+ *   - tylko gdy jest w stanie wojny z kimkolwiek (presja bojowa uzasadnia rush),
+ *   - tylko gdy zostaje bufor >= reserve PO zapłaceniu koszt,
+ *   - tylko gdy miasto ma pokrycie Manpower (inaczej zakup i tak by się nie udał),
+ *   - tylko raz (maxPerTurn) na turę na ownera -- twardy cap, nie farma złota.
+ * Funkcja jest CZYSTA (bez dostępu do main.ts/stanu gry) -- testowalna w izolacji,
+ * patrz tools/ai-unit-rush-test.cjs. main.ts wywołuje ją zamiast duplikować logikę.
+ */
+export function shouldAIRushBuyUnit(inp: {
+  atWar: boolean;
+  treasury: number;
+  reserve: number;
+  goldCost: number;
+  hasManpower: boolean;
+  boughtThisTurn: number;
+  maxPerTurn: number;
+}): boolean {
+  return (
+    inp.atWar
+    && inp.hasManpower
+    && inp.treasury >= inp.reserve + inp.goldCost
+    && inp.boughtThisTurn < inp.maxPerTurn
+  );
+}

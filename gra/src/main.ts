@@ -594,7 +594,7 @@ import {
   type WonderDetailVM,
 } from './ui/wondersView';
 import { showWonderCompletedNotice } from './ui/wonderCompletedNotice';
-import { decideAITurn, chooseAIResearch, decideAIDiplomacy, loadDifficultyParams, RESUP_TIERS, type AICommand } from './game/ai';
+import { decideAITurn, chooseAIResearch, decideAIDiplomacy, loadDifficultyParams, RESUP_TIERS, shouldAIRushBuyUnit, type AICommand } from './game/ai';
 import type { AITurnOpts, RelacjaWejscie, DiplomacjaInputs, AIDiplomacyCommand } from './game/ai';
 import { decideAiWonderBuild, loadAiWonderParams, type AiWonderCityCandidate, type AiWonderOption } from './game/ai';
 import { checkVictory, techIdsInGameScope, allTechInScopeResearched, OSTATNIA_EPOKA_GRY_V1, powerShare } from './game/victory';
@@ -2050,84 +2050,93 @@ async function boot(): Promise<void> {
       return { prod: prodAfterAdvance };
     }
 
-    /** Opłacenie rekrutacji za złoto — pobiera Manpower od razu (kolejka rekrutacji). */
-    function purchaseRecruitmentUnit(cityId: string, itemId: string, koszt: number): boolean {
-      if (player.skarbiec < koszt) return false;
+    /** Opłacenie rekrutacji za złoto — pobiera Manpower od razu (kolejka rekrutacji).
+     *  R-AI-KUP-JEDN (Maciej 2026-07-24, parytet AI): ownerId-agnostyczna — gracz
+     *  (ownerId=0, domyślny) i AI (ownerId>0, wywołanie z runAiPhase) dzielą DOKŁADNIE
+     *  tę samą ścieżkę; jedyna różnica to UI (showHintMessage/updateHud/refreshCityPanelIfOpen
+     *  wyłącznie dla gracza — AI nie ma panelu). */
+    function purchaseRecruitmentUnit(cityId: string, itemId: string, koszt: number, ownerId = 0): boolean {
+      if (ownerTreasury(ownerId) < koszt) return false;
       const city = cities.find(ct => ct.id === cityId);
-      if (!city || city.ownerId !== 0) return false;
-      const ep = empireEpochForOwner(0);
-      const mpMults = civManpowerMultsForOwner(0);
+      if (!city || city.ownerId !== ownerId) return false;
+      const ep = empireEpochForOwner(ownerId);
+      const mpMults = civManpowerMultsForOwner(ownerId);
       if (!canAffordUnitManpower(city, ep, mpMults.maxMult, itemId)) {
-        showHintMessage('Za mało rekrutów (Manpower) w tym mieście', 2800);
+        if (ownerId === 0) showHintMessage('Za mało rekrutów (Manpower) w tym mieście', 2800);
         return false;
       }
       const item = unitProductionItem(
         itemId,
         data,
-        civBonusyForOwnerId(0),
+        civBonusyForOwnerId(ownerId),
         player.kosztJednostekPace ?? 'niski',
-        0,
+        ownerId,
         _menuDifficulty,
       );
       if (!item) return false;
       // JEDNOSTKI-SUROWIEC-01 (Maciej 2026-07-24): jednostka konsumuje Surowiec/Surowiec (ilość)
-      // z units.json Z PULI PAŃSTWA (civ-wide, suma po wszystkich miastach gracza) — dokładnie
+      // z units.json Z PULI PAŃSTWA (civ-wide, suma po wszystkich miastach ownera) — dokładnie
       // tak samo jak koszt_surowce budynku (game/building-stock-cost.ts). Sprawdzane PRZED
       // pobraniem Manpower/złota, żeby nie zdarzyło się częściowe pobranie przy odmowie.
       const unitDef = data.units.find(u => u.Jednostka === itemId);
       const stockCost = unitStockCost(unitDef);
       if (Object.keys(stockCost).length > 0
-        && !canAffordBuildingStock(ownerResourceStockAll(cities, 0), stockCost)) {
-        showHintMessage('Za mało surowca w magazynie państwa', 2800);
+        && !canAffordBuildingStock(ownerResourceStockAll(cities, ownerId), stockCost)) {
+        if (ownerId === 0) showHintMessage('Za mało surowca w magazynie państwa', 2800);
         return false;
       }
       const d = tryDeductUnitSpawnCosts(
         city, ep, UNIT_POPULATION_COST, mpMults.maxMult, itemId,
       );
       if (!d.ok) {
-        showHintMessage('Za mało rekrutów (Manpower) w tym mieście', 2800);
+        if (ownerId === 0) showHintMessage('Za mało rekrutów (Manpower) w tym mieście', 2800);
         return false;
       }
-      player.skarbiec -= koszt;
+      setOwnerTreasury(ownerId, ownerTreasury(ownerId) - koszt);
       city.population = d.population;
       city.manpower = d.manpower;
       if (Object.keys(stockCost).length > 0) {
-        deductBuildingStockCostAcrossCities(cities, 0, stockCost);
+        deductBuildingStockCostAcrossCities(cities, ownerId, stockCost);
       }
       markCityStateDirty();
       const prod0 = cityProd.get(cityId) ?? { kolejka: [], postep: 0 };
       cityProd.set(cityId, enqueueRecruitment(prod0, { ...item, koszt }));
-      updateHud();
-      refreshCityPanelIfOpen();
+      if (ownerId === 0) {
+        updateHud();
+        refreshCityPanelIfOpen();
+      }
       console.log(
         `[Rekrutacja] ${city.name}: ${itemId} oplacone ${koszt} — kolejka (−${d.kosztManpower} MP)`,
       );
       return true;
     }
 
-    /** Anulowanie opłaconej rekrutacji — zwrot złota i Manpower. */
-    function cancelRecruitmentPurchase(cityId: string, itemId: string, koszt: number): void {
+    /** Anulowanie opłaconej rekrutacji — zwrot złota i Manpower (ownerId-agnostyczne,
+     *  patrz komentarz przy purchaseRecruitmentUnit). */
+    function cancelRecruitmentPurchase(cityId: string, itemId: string, koszt: number, ownerId = 0): void {
       const city = cities.find(ct => ct.id === cityId);
-      if (!city || city.ownerId !== 0) return;
-      const ep = empireEpochForOwner(0);
-      const mpMults = civManpowerMultsForOwner(0);
+      if (!city || city.ownerId !== ownerId) return;
+      const ep = empireEpochForOwner(ownerId);
+      const mpMults = civManpowerMultsForOwner(ownerId);
       const refunded = refundUnitSpawnToCity(
         city, ep, UNIT_POPULATION_COST, undefined, mpMults.maxMult, itemId,
       );
       city.population = refunded.population;
       city.manpower = refunded.manpower;
-      player.skarbiec += koszt;
+      setOwnerTreasury(ownerId, ownerTreasury(ownerId) + koszt);
       // JEDNOSTKI-SUROWIEC-01: zwrot surowca do puli PAŃSTWA (civ-wide) — symetrycznie
       // z poborem w purchaseRecruitmentUnit. BEZ capPerType: to zwrot, nie nowa produkcja
       // (nie powinien ginąć nawet gdyby pula była tuż pod capem magazynu).
       const unitDef = data.units.find(u => u.Jednostka === itemId);
       const stockCost = unitStockCost(unitDef);
       for (const [key, amt] of Object.entries(stockCost)) {
-        creditOwnerResourceStock(cities, 0, key, amt);
+        creditOwnerResourceStock(cities, ownerId, key, amt);
       }
       markCityStateDirty();
-      updateHud();
-      refreshCityPanelIfOpen();
+      if (ownerId === 0) {
+        updateHud();
+        refreshCityPanelIfOpen();
+      }
       console.log(`[Rekrutacja] ${city.name}: anulowano — zwrot ${koszt} ¤ + MP`);
     }
 
@@ -4277,6 +4286,14 @@ async function boot(): Promise<void> {
     let activeDeals: ActiveDeal[] = [];
     /** v1.1: skarbiec AI do ticka trybutu (T1A). */
     const aiSkarbiecByOwner = new Map<number, number>();
+    /** R-AI-KUP-JEDN (Maciej 2026-07-24, parytet AI): licznik zakupów jednostek za złoto
+     *  (rush) TEGO ownera W TEJ turze -- zerowany na wejściu w sekcję ownera w runAiPhase
+     *  (ownerLoop), zasilany w cmd.type==='build' po udanym purchaseRecruitmentUnit. */
+    const aiUnitGoldRushBoughtByOwner = new Map<number, number>();
+    // PLACEHOLDER do strojenia (R-STAWKI-STROJENIE)
+    const AI_UNIT_GOLD_RUSH_RESERVE = 100;
+    // PLACEHOLDER do strojenia (R-STAWKI-STROJENIE)
+    const AI_UNIT_GOLD_RUSH_MAX_PER_TURN = 1;
     /** D-IMPROVEMENTS: pula Pracy AI (symetryczna do aiSkarbiecByOwner) -- zasilana z
      *  aiEcon.doPuli w bloku bankowania AI (patrz sumEconomyForOwner), zużywana przy
      *  budowie ulepszeń terenu (planCityImprovements w game/ai.ts). Podpięta pod
@@ -14345,6 +14362,11 @@ async function boot(): Promise<void> {
               await yieldTurnTransitionUi();
               const isCommandResume = oi === startOi && !!resumeCommands && resumeCmdIdx > 0;
               ensureAiOwnerStartEra(ownerId);
+              // R-AI-KUP-JEDN: zeruj licznik zakupów-za-złoto TEGO ownera na starcie jego
+              // tury -- NIE przy wznowieniu (isCommandResume) tej samej listy komend po
+              // przerwie async (np. animacja bitwy), żeby nie odblokować drugiego zakupu
+              // w tej samej turze.
+              if (!isCommandResume) aiUnitGoldRushBoughtByOwner.set(ownerId, 0);
             // R-TRUDNOSC-1 (Maciej 2026-07-24 rozszerzenie): PER-OWNER, nie globalne --
             // miasta-państwa (defensiveCopy) dostają poziom z suwaka miast-państw, zwykłe AI
             // z głównej trudności (patrz aiDiffLevelForOwner). Zasila opts.poziomTrudnosci
@@ -14873,6 +14895,36 @@ async function boot(): Promise<void> {
                           deductOwnerStockCost(ownerId, cost);
                         }
                       } else if (item.kind === 'jednostka') {
+                        // R-AI-KUP-JEDN (Maciej 2026-07-24, parytet AI): przed zwykłym
+                        // kolejkowaniem Pracą, spróbuj ZACHOWAWCZEGO rush-zakupu za złoto --
+                        // sama decyzja to CZYSTY predykat shouldAIRushBuyUnit (game/ai.ts,
+                        // testy w tools/ai-unit-rush-test.cjs). AI kupuje tylko gdy jest w
+                        // stanie wojny z kimkolwiek, zostaje bufor >= reserve po zapłacie,
+                        // miasto ma pokrycie Manpower i owner nie kupił jeszcze w tej turze
+                        // (cap AI_UNIT_GOLD_RUSH_MAX_PER_TURN). purchaseRecruitmentUnit
+                        // (ownerId-agnostyczne, patrz definicja) sam pobiera złoto+surowiec+
+                        // Manpower i kolejkuje -- NIE pobieramy nic drugi raz tutaj.
+                        const atWarWithAnyone = getDiploRelation(ownerId, 0).status === 'wojna'
+                          || aiOwnerList.some(
+                            (other) => other !== ownerId && getDiploRelation(ownerId, other).status === 'wojna',
+                          );
+                        const boughtThisTurn = aiUnitGoldRushBoughtByOwner.get(ownerId) ?? 0;
+                        const wantsRush = shouldAIRushBuyUnit({
+                          atWar: atWarWithAnyone,
+                          treasury: ownerTreasury(ownerId),
+                          reserve: AI_UNIT_GOLD_RUSH_RESERVE,
+                          goldCost: item.koszt,
+                          hasManpower: canAffordUnitManpower(
+                            city, empireEpochForOwner(ownerId), civManpowerMultsForOwner(ownerId).maxMult, cmd.buildingId,
+                          ),
+                          boughtThisTurn,
+                          maxPerTurn: AI_UNIT_GOLD_RUSH_MAX_PER_TURN,
+                        });
+                        if (wantsRush && purchaseRecruitmentUnit(cmd.cityId, cmd.buildingId, item.koszt, ownerId)) {
+                          aiUnitGoldRushBoughtByOwner.set(ownerId, boughtThisTurn + 1);
+                          console.log(`[AI ${ownerId}] Rush jednostki za zloto: ${cmd.buildingId}`);
+                          continue;
+                        }
                         const unitDef = data.units.find(u => u.Jednostka === item.id);
                         const cost = unitStockCost(unitDef);
                         if (Object.keys(cost).length > 0) {
