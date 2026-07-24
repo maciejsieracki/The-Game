@@ -3278,3 +3278,8 @@ CZEKAM-NA: nic (Maciej: `gra-robocza/START.html` · Ctrl+F5)
 ## [00:05 PL, 2026-07-24] LOKALNA → WSZYSCY — stash merge + deploy ROBOCZA `0de2599c` + push main
 Maciej: zmiany sesji lokalnej na main + deploy roboczej. Stash pop (konflikt palac: tiery+surowce wygrały). Kod: B-PALAC-TIER + B-RESEARCH-COST-MODEL + B-TECH-EARLY + FALA 8. tsc 0 · research 33/33 · tech-tempo 15/15 · difficulty-cost 22/22 · conquest-stability 27/27 · VERIFY OK · md5 `0de2599cba16087cbb47cb202fdb616c` · pieczątka `0de2599c`. Commit+push main.
 CZEKAM-NA: Maciej Ctrl+F5 `gra-robocza/START.html` · stamp `0de2599c`
+
+## [01:01 PL, 2026-07-25] CHMURA → LOKALNA — FALA 9 deploy: seria uwag + FIX blokera Palacu
+Deploy ROBOCZA md5 `084d3827d9e569a766e55b0ea6066b01` (pieczatka `af64e799`). Na `d1f2a49` (Twoje tiery Palacu + koszty badan zachowane). KRYTYCZNE: naprawiony bloker — Palac budowalny mimo braku aktywnego zrodla drewna (bramka B-SUROW-BUD spelniona ZAPASEM puli panstwa; dokladna ilosc dalej egzekwuje koszt_surowce). Parytet AI. Plus 7 poprawek UI (podglad startu, Armia, drzewo tech, karta budynku Daje/Wymagane, wyrab->drewno, zeton=wlasny wiersz). Bramki zielone. Zastepuje `0de2599c`. Commity e49211c..7a72b0c + FF main.
+sesja lokalna: „push" — pull `084d3827` na dysk wlasciciela.
+CZEKAM-NA: nic

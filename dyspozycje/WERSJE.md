@@ -9,7 +9,20 @@ UWAGA: KANON i FINALNA promują się teraz OSOBNYMI skryptami (`gra/tools/publis
 wyraźne polecenie właściciela) — dlatego są logowane NIEZALEŻNIE, każdy w swojej sekcji, ze
 swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drugiego.
 
-## ROBOCZA `0de2599c` — 2026-07-24 · stash merge + FALA 8 + B-PALAC-TIER + B-RESEARCH-COST — **AKTUALNA**
+## ROBOCZA `084d3827` — 2026-07-24 · FALA 9: seria uwag przeglądowych + FIX blokera Pałacu — **AKTUALNA**
+
+- **Zawartość:** (commity `e49211c`..`7a72b0c`, na `d1f2a49`) — 8 poprawek z playtestu Macieja:
+  1. **FIX blokera Pałacu** — bramka B-SUROW-BUD spełniona też ZAPASEM puli państwa (nie tylko aktywnym źródłem); Pałac (i inne budynki epoki) budowalne mimo braku źródła, gdy masz surowiec w puli. Dokładną ilość egzekwuje `koszt_surowce`. Parytet AI (auto-build ctx).
+  2. Podgląd startu (kreator) = tylko parametry, bez prozy.
+  3. Klik żetonu dochodu (Nauka/Skarbiec/Praca/Religia/Żywność) = tylko jego wiersz.
+  4. „Zaopatrzenie" → „Armia" (żywność armii + ludność + rekruci).
+  5. Drzewka tech: usunięte stare (niebieskie), „graf epok" → „Drzewo technologii".
+  6. Karta budynku: sekcje „Daje" (bonusy) vs „Wymagane" (surowce + dostęp).
+  7. Wyrąb: plon 5 Drewna do puli państwa (koszt 5 Pracy zostaje).
+- **Bramki:** tsc 0 · tech-tree 19/19 · research 33/33 · unit-replace 10/10 · VERIFY OK.
+- **md5:** `084d3827d9e569a766e55b0ea6066b01` · manifest. Pieczątka `af64e799` (one-iter quirk). Bundel 34 MB. Zastępuje `0de2599c`.
+
+## ROBOCZA `0de2599c` — 2026-07-24 · stash merge + FALA 8 + B-PALAC-TIER + B-RESEARCH-COST — ZASTĄPIONA
 
 - **Zawartość:** FALA 8 zachowana (blokada 1. miasta · UI surowców · kamień współistnieje · Civpedia · mapa Ziemia) **+** sesja lokalna ze stash: (1) **B-PALAC-TIER** — `palac`→`palac_ii`→`palac_iii`, bramki drewno / drewno+kamień / drewno+kamień+cegła, bonus +50%/tier, `cityHasPalacLine()`; (2) **B-RESEARCH-COST-MODEL** — `GLOBAL_RESEARCH_COST_MULT=1`, koszty ×2 w `tech.json`, Obróbka drewna + Murarstwo JSON=**5** → 5/10/20 PN; (3) **B-TECH-EARLY-COST** wchłonięty w model powyżej.
 - **Sync:** stash `sesja-lokalna-pre-pull-2026-07-24` → pop + konflikt `buildings.json` (tiery pałacu wygrały nad FALA-8 „bez surowców") · commit + push main.
