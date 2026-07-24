@@ -3,7 +3,7 @@
  * Wygląd: mockup „Panel Moc imperium v3" (1E, 2026-07-06) — RESKIN, nic nie usunięte.
  * Dane: EmpireDetailSnap.
  */
-import type { EmpireDetailSnap } from './empireDetailTypes';
+import type { EmpireDetailSnap, EmpireResourceRow } from './empireDetailTypes';
 import { formatObywateleLabel } from '../game/manpower';
 import { mocLabel, mocWithValue } from './power-labels';
 import { brandIconSvg } from './icons/brandAssets';
@@ -111,6 +111,64 @@ function ensureStyles(): void {
 .civ-emp-backdrop{position:fixed;inset:0;z-index:449;background:rgba(0,0,0,0.35);
   opacity:0;pointer-events:none;transition:opacity .2s;}
 .civ-emp-backdrop.open{opacity:1;pointer-events:auto;}
+
+/* — MAGAZYN PAŃSTWA (surowce) — SUROW-HUD-01 (Maciej 2026-07-24) — */
+.civ-emp-res-eyebrow-row{display:flex;justify-content:space-between;align-items:baseline;
+  flex-wrap:wrap;gap:6px;margin-bottom:10px;}
+.civ-emp-res-cap-sub{font-size:11px;color:#7d8798;}
+.civ-emp-res-lbl{font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:#7d8798;
+  font-weight:600;margin:14px 0 8px;padding-bottom:6px;border-bottom:1px solid #242c3a;}
+.civ-emp-res-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:8px;}
+.civ-emp-res-card{border:1px solid #2b3543;border-radius:8px;padding:10px 11px;background:#171e2a;
+  display:flex;flex-direction:column;gap:8px;}
+.civ-emp-res-card.bad{border-color:#4a2a2a;}
+.civ-emp-res-card.warn{border-color:#4a3a1a;}
+.civ-emp-res-top{display:flex;align-items:center;gap:8px;}
+.civ-emp-res-ic{font-size:16px;flex:none;line-height:1;}
+.civ-emp-res-nm{flex:1;min-width:0;}
+.civ-emp-res-nm .nm{font-size:12.5px;font-weight:600;color:#e2e6ec;}
+.civ-emp-res-nm .ty{font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;color:#7d8798;
+  margin-top:1px;}
+.civ-emp-res-rate{font-size:10.5px;font-weight:700;font-variant-numeric:tabular-nums;
+  padding:2px 6px;border-radius:999px;white-space:nowrap;flex:none;}
+.civ-emp-res-rate.good{color:#78c95a;background:rgba(120,201,90,.14);}
+.civ-emp-res-rate.warn{color:#d9a441;background:rgba(217,164,65,.14);}
+.civ-emp-res-rate.bad{color:#e07a7a;background:rgba(224,122,122,.14);}
+.civ-emp-res-amt{display:flex;align-items:baseline;gap:5px;font-variant-numeric:tabular-nums;}
+.civ-emp-res-amt .cur{font-size:15px;font-weight:700;color:#e8ebf0;}
+.civ-emp-res-amt .cap{font-size:11px;color:#7d8798;}
+.civ-emp-res-amt .flag{margin-left:auto;font-size:9.5px;letter-spacing:.03em;text-transform:uppercase;
+  font-weight:700;}
+.civ-emp-res-amt .flag.warn{color:#d9a441;}
+.civ-emp-res-amt .flag.bad{color:#e07a7a;}
+.civ-emp-res-bar{height:6px;border-radius:999px;background:#1f2733;overflow:hidden;}
+.civ-emp-res-bar>span{display:block;height:100%;border-radius:999px;}
+.civ-emp-res-bar.good>span{background:linear-gradient(90deg,#4e9a3f,#78c95a);}
+.civ-emp-res-bar.warn>span{background:linear-gradient(90deg,#6a4010,#d9a441);}
+.civ-emp-res-bar.bad>span{background:linear-gradient(90deg,#5a2020,#e07a7a);}
+.civ-emp-res-access-row{display:flex;gap:8px;flex-wrap:wrap;}
+.civ-emp-res-acc{display:flex;align-items:center;gap:8px;padding:8px 11px;border-radius:8px;
+  border:1px solid #2b3543;background:#171e2a;min-width:120px;flex:1 1 auto;}
+.civ-emp-res-acc .dot{width:8px;height:8px;border-radius:50%;flex:none;}
+.civ-emp-res-acc.on .dot{background:#78c95a;box-shadow:0 0 6px #78c95a;}
+.civ-emp-res-acc.off .dot{background:#e07a7a;}
+.civ-emp-res-acc .nm{font-size:12.5px;font-weight:600;color:#e2e6ec;}
+.civ-emp-res-acc .st{margin-left:auto;font-size:10px;letter-spacing:.03em;text-transform:uppercase;
+  font-weight:700;}
+.civ-emp-res-acc.on .st{color:#78c95a;}
+.civ-emp-res-acc.off .st{color:#e07a7a;}
+.civ-emp-res-foodnote{margin:14px 0 4px;padding:10px 12px;border-radius:8px;border:1px dashed #2b3543;
+  background:rgba(142,197,255,.05);font-size:12px;color:#b8c4d8;display:flex;gap:9px;
+  align-items:flex-start;}
+.civ-emp-res-foodnote .k{color:#8ec5ff;font-weight:700;flex:none;}
+.civ-emp-res-foodnote b{color:#cfd5de;}
+.civ-emp-res-legend{display:flex;gap:14px;flex-wrap:wrap;padding-top:10px;margin-top:10px;
+  border-top:1px solid #242c3a;font-size:11px;color:#7d8798;}
+.civ-emp-res-legend span{display:flex;align-items:center;gap:6px;}
+.civ-emp-res-legend i{width:18px;height:6px;border-radius:999px;display:inline-block;}
+.civ-emp-res-legend i.good{background:linear-gradient(90deg,#4e9a3f,#78c95a);}
+.civ-emp-res-legend i.warn{background:linear-gradient(90deg,#6a4010,#d9a441);}
+.civ-emp-res-legend i.bad{background:linear-gradient(90deg,#5a2020,#e07a7a);}
 `;
   const s = document.createElement('style');
   s.id = STYLE_ID;
@@ -211,6 +269,86 @@ function cityPoborMiniRekruci(
 function signedTxt(n: number): string {
   if (!Number.isFinite(n) || n === 0) return '—';
   return (n > 0 ? '+' : '') + String(n);
+}
+
+/** Stan wiersza magazynowanego: niedobór (spada) / na cap (nadmiar przepada) / nadwyżka. */
+function resStateOf(r: EmpireResourceRow): 'bad' | 'warn' | 'good' {
+  if (r.ratePerTurn < 0) return 'bad';
+  if (r.cap != null && r.stock >= r.cap) return 'warn';
+  return 'good';
+}
+
+/** Karta pojedynczego surowca magazynowanego (pasek zapełnienia stock/cap). */
+function resCardHtml(r: EmpireResourceRow): string {
+  const cap = r.cap ?? 0;
+  const pct = cap > 0 ? Math.max(0, Math.min(100, Math.round((r.stock / cap) * 100))) : 0;
+  const state = resStateOf(r);
+  const rateTxt = r.ratePerTurn === 0 ? '—' : `${signedTxt(r.ratePerTurn)} / t`;
+  const flag = state === 'bad' ? 'spada' : (state === 'warn' ? 'pełny · nadmiar przepada' : '');
+  return `<div class="civ-emp-res-card ${state}" data-section="econ-surowiec-${esc(r.id)}">`
+    + `<div class="civ-emp-res-top"><span class="civ-emp-res-ic">${esc(r.icon)}</span>`
+    + `<div class="civ-emp-res-nm"><div class="nm">${esc(r.label)}</div><div class="ty">${esc(r.typ)}</div></div>`
+    + `<span class="civ-emp-res-rate ${state}">${esc(rateTxt)}</span></div>`
+    + `<div class="civ-emp-res-amt"><span class="cur">${r.stock}</span><span class="cap">/ ${cap}</span>`
+    + (flag ? `<span class="flag ${state}">${esc(flag)}</span>` : '')
+    + `</div>`
+    + `<div class="civ-emp-res-bar ${state}"><span style="width:${pct}%"></span></div>`
+    + `</div>`;
+}
+
+/** Wiersz dostępu (boolean) — Ceramika/Sól/Koń — nie magazynowane, tylko odblokowują budowę. */
+function resAccessHtml(r: EmpireResourceRow): string {
+  const cls = r.dostep ? 'on' : 'off';
+  return `<div class="civ-emp-res-acc ${cls}" data-section="econ-surowiec-${esc(r.id)}">`
+    + `<span class="dot"></span><span class="nm">${esc(r.label)}</span>`
+    + `<span class="st">${r.dostep ? 'jest' : 'brak'}</span></div>`;
+}
+
+/** Sekcja SUROWCE (magazyn państwa) — mockup „Magazyn surowców" (Maciej 2026-07-24). */
+function renderSurowceSection(rows: EmpireResourceRow[]): string {
+  let sur = `<div class="civ-emp-sect sep" data-section="surowce">`;
+  if (rows.length === 0) {
+    sur += `<div class="civ-emp-eyebrow" style="margin-bottom:10px">MAGAZYN PAŃSTWA</div>`
+      + `<div class="civ-emp-note" style="font-style:italic">Magazyny surowców per miasto — w panelu miasta (stopka). `
+      + `Tu pojawi się zbiorczy widok po podpięciu magazynów imperium.</div></div>`;
+    return sur;
+  }
+
+  const stored = rows.filter(r => r.cap != null);
+  const access = rows.filter(r => r.cap == null);
+  const cap = stored[0]?.cap ?? 0;
+  const magazyny = cap > 100 ? Math.round((cap - 100) / 100) : 0;
+  const magSlowo = magazyny === 1 ? 'Magazyn' : (magazyny >= 2 && magazyny <= 4 ? 'Magazyny' : 'Magazynów');
+
+  sur += `<div class="civ-emp-res-eyebrow-row">`
+    + `<span class="civ-emp-eyebrow">MAGAZYN PAŃSTWA${cap > 0 ? ` · pojemność ${cap}/typ` : ''}</span>`
+    + (cap > 0
+      ? `<span class="civ-emp-res-cap-sub">100 baza + 100 × ${magazyny} ${magSlowo} · nadmiar przepada</span>`
+      : '')
+    + `</div>`;
+
+  if (stored.length > 0) {
+    sur += `<div class="civ-emp-res-lbl">Magazynowane — wspólne dla całego imperium</div>`
+      + `<div class="civ-emp-res-grid">${stored.map(resCardHtml).join('')}</div>`;
+  }
+
+  if (access.length > 0) {
+    sur += `<div class="civ-emp-res-lbl">Dostęp — odblokowują budowę, nie zliczają się</div>`
+      + `<div class="civ-emp-res-access-row">${access.map(resAccessHtml).join('')}</div>`;
+  }
+
+  sur += `<div class="civ-emp-res-foodnote"><span class="k">Żywność</span>`
+    + `<span>ma osobny model — <b>Spichlerz</b> per miasto (mnożnik pojemności), nie wchodzi do wspólnej `
+    + `puli państwa. Pokazywana w chipie HUD „Zaopatrzenie", nie tutaj.</span></div>`;
+
+  sur += `<div class="civ-emp-res-legend">`
+    + `<span><i class="good"></i> nadwyżka / rośnie</span>`
+    + `<span><i class="warn"></i> na cap — nadmiar przepada</span>`
+    + `<span><i class="bad"></i> niedobór / spada</span>`
+    + `</div>`;
+
+  sur += `</div>`;
+  return sur;
 }
 
 function scrollToSection(section: string | null | undefined): void {
@@ -337,33 +475,8 @@ function render(): void {
   }
   kult += `<div class="civ-emp-foot">Szczegóły per miasto (źródła, progi) — panel miasta → zakładka Kultura. Przycisk Kultura na toolbarze = zasięg na mapie.</div></div>`;
 
-  // — SUROWCE STRATEGICZNE —
-  let sur = `<div class="civ-emp-sect sep" data-section="surowce">`
-    + `<div class="civ-emp-eyebrow" style="margin-bottom:10px">SUROWCE STRATEGICZNE</div>`;
-  if (snap.resources.length > 0) {
-    const grid = '22px 1fr auto auto';
-    sur += `<div class="civ-emp-mini">`;
-    for (const r of snap.resources) {
-      const sub = [r.typ, r.assigned, r.dostep ? '' : 'brak dostępu'].filter(Boolean).join(' · ');
-      const rt = r.ratePerTurn === 0 ? '—' : signedTxt(r.ratePerTurn);
-      // Wiersze czystego dostępu (Sól/Koń/Ceramika) mają stock zawsze 0 — pokazujemy
-      // „—" zamiast myslacej liczby (Maciej 2026-07-23: "stock 0/—").
-      // SUROW-CIV-01 (2026-07-24): r.cap = cap PAŃSTWA (civ-wide) — pokaż „stock / cap".
-      const stockTxt = r.stock === 0 ? '—' : (r.cap != null ? `${r.stock} / ${r.cap}` : String(r.stock));
-      sur += miniRow([
-        esc(r.icon),
-        `<div style="color:${r.dostep ? '#e2e6ec' : '#6f7889'}">${esc(r.label)}</div>`
-          + `<div style="font-size:10px;color:#6f7889">${esc(sub)}</div>`,
-        `<span style="text-align:right;font-weight:700">${stockTxt}</span>`,
-        `<span style="text-align:right;color:#78c95a">${rt}</span>`,
-      ], grid);
-    }
-    sur += `</div>`;
-  } else {
-    sur += `<div class="civ-emp-note" style="font-style:italic">Magazyny surowców per miasto — w panelu miasta (stopka). `
-      + `Tu pojawi się zbiorczy widok po podpięciu magazynów imperium.</div>`;
-  }
-  sur += `</div>`;
+  // — MAGAZYN PAŃSTWA (surowce, mockup „Magazyn surowców" — Maciej 2026-07-24) —
+  const sur = renderSurowceSection(snap.resources);
 
   bodyEl.innerHTML = params + moc + zasoby + kult + sur;
 
@@ -463,6 +576,7 @@ export function empireSectionFromHudAct(act: string): string | undefined {
     case 'nauka': return 'econ-nauka';
     case 'zywnosc': return 'econ-zywnosc';
     case 'religia': return 'econ-religia';
+    case 'surowce': return 'surowce';
     case 'empire': return 'ekonomia';
     default: return undefined;
   }

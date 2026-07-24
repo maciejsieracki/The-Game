@@ -25,11 +25,17 @@ export interface Chip6cOpts {
   researchProgress?: number;
 }
 
+/** IconId → id realnego assetu brand-book, gdy różny od klucza chipa (patrz iconRegistry.ts). */
+const CHIP_ICON_ASSET_ALIAS: Partial<Record<IconId, string>> = {
+  'res-resources': 'chip-crate',
+};
+
 function chipIconHtml(id: IconId, _medVariant: ChipMedVariant): string {
   if (id === 'res-science' || id === 'tb-science') {
     return scienceOwlIconSized(17);
   }
-  const svg = brandIconSvg(id, 24);
+  const assetId = CHIP_ICON_ASSET_ALIAS[id] ?? id;
+  const svg = brandIconSvg(assetId, 24);
   if (!svg) return iconHtml(id, 24);
   return svg.replace('<svg ', '<svg class="civ-ic" ');
 }

@@ -16,11 +16,18 @@ export type IconId =
   | 'res-population'
   | 'res-influence'
   | 'res-settlements'
+  /** Chip HUD „Surowce" (magazyn państwa) — mapuje na brand-icon 'chip-crate'. */
+  | 'res-resources'
   | 'tb-cities'
   | 'tb-science'
   | 'tb-diplomacy'
   | 'tb-army'
   | 'tb-build';
+
+/** IconId → id realnego assetu w manifeście brand-book (gdy różne od klucza IconId). */
+const ICON_ID_ALIAS: Partial<Record<IconId, string>> = {
+  'res-resources': 'chip-crate',
+};
 
 /**
  * HTML ikony do wstawienia w chip / toolbar.
@@ -30,7 +37,8 @@ export function iconHtml(id: IconId, size: BrandIconSize = 24): string {
   if (id === 'res-science' || id === 'tb-science') {
     return scienceOwlIconSized(size);
   }
-  const svg = brandIconSvg(id, size);
+  const assetId = ICON_ID_ALIAS[id] ?? id;
+  const svg = brandIconSvg(assetId, size);
   if (svg) {
     return svg.replace('<svg ', `<svg class="civ-ic civ-ic-${id}" `);
   }
@@ -48,4 +56,5 @@ export const ICON_LABELS_PL: Partial<Record<IconId, string>> = {
   'res-population': 'Ludność',
   'res-influence': 'Wpływ',
   'res-settlements': 'Osiedla',
+  'res-resources': 'Surowce',
 };

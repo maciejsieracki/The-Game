@@ -113,6 +113,10 @@ export interface HudState {
   civIconId?: string;
   /** kolorHex cywilizacji gracza (ramka medalionu). */
   civKolorHex?: string;
+  /** SUROW-HUD-01 (Maciej 2026-07-24) — wartość chipa „Surowce" (np. „7/9" dobrze/wszystkie). */
+  surowceSummary?: string;
+  /** true → czerwony/bursztynowy alert: co najmniej jeden surowiec na capie lub w niedoborze. */
+  surowceAlert?: boolean;
 }
 
 export interface HudConfig {
@@ -435,6 +439,17 @@ function renderBarD1B(s: HudState): string {
     }),
     chip6cSep(),
     chip6cHtml({
+      iconId: 'res-resources',
+      label: 'Surowce',
+      value: s.surowceSummary ?? '—',
+      rate: s.surowceAlert ? '⚠' : undefined,
+      rateWarn: !!s.surowceAlert,
+      act: 'surowce',
+      title: 'Surowce — magazyn państwa, klik po szczegóły',
+    }),
+  ];
+  const rightChips: string[] = [
+    chip6cHtml({
       iconId: 'res-science',
       label: 'Nauka',
       value: String(Math.floor(s.nauka)),
@@ -445,8 +460,7 @@ function renderBarD1B(s: HudState): string {
       title: 'Nauka — kliknij po podsumowanie imperium',
       researchProgress: resolveResearchProgress(s),
     }),
-  ];
-  const rightChips: string[] = [
+    chip6cSep(),
     chip6cHtml({
       iconId: 'res-food',
       label: 'Zaopatrzenie',
@@ -568,7 +582,7 @@ function handleHudBarAction(act: string): void {
       }
     }
   } else if (act === 'religia' || act === 'kultura' || act === 'skarbiec' || act === 'praca' || act === 'nauka'
-    || act === 'ludnosc' || act === 'rekruci' || act === 'zywnosc') {
+    || act === 'ludnosc' || act === 'rekruci' || act === 'zywnosc' || act === 'surowce') {
     hideEmpireOverlay();
     const section = empireSectionFromHudAct(act);
     if (cfg.onOpenEmpireDetail) cfg.onOpenEmpireDetail(section);

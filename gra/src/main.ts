@@ -7959,6 +7959,17 @@ async function boot(): Promise<void> {
         })),
         stateRel,
       );
+      // SUROW-HUD-01 (Maciej 2026-07-24): chip „Surowce" w HUD — podsumowanie stanu
+      // magazynów imperium (tylko wiersze magazynowane, cap != null; wiersze czystego
+      // dostępu jak Sól/Koń/Ceramika nie wchodzą do tego zliczenia). „OK/total": OK =
+      // surowce ani w niedoborze (ratePerTurn<0), ani na capie (stock>=cap).
+      const resourceRows = buildEmpireResourceRows(0);
+      const storedResourceRows = resourceRows.filter(r => r.cap != null);
+      const resourceAlertCount = storedResourceRows.filter(
+        r => r.ratePerTurn < 0 || r.stock >= (r.cap ?? Infinity),
+      ).length;
+      const surowceTotal = storedResourceRows.length;
+      const surowceOk = surowceTotal - resourceAlertCount;
       return {
         zywnoscLabel: String(foodReserve),
         zywnoscMax: foodMaxCap,
@@ -8001,6 +8012,8 @@ async function boot(): Promise<void> {
         wojny: chips.wojny,
         civIconId: String(player.civType || _menuCivId || 'grecy'),
         civKolorHex: civKolorHexFn(0),
+        surowceSummary: surowceTotal > 0 ? `${surowceOk}/${surowceTotal}` : '—',
+        surowceAlert: resourceAlertCount > 0,
       };
     }
 
