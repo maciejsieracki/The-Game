@@ -1813,6 +1813,9 @@ function ensureStyles(): void {
 .civ-cs .bld-infocard-chips{display:flex;flex-wrap:wrap;gap:0.35em;}
 .civ-cs .bld-infocard-chip{display:inline-flex;align-items:center;gap:0.28em;font-size:0.68em;color:#c8b898;border:1px solid rgba(232,216,138,.25);border-radius:20px;padding:0.22em 0.52em;}
 .civ-cs .bld-infocard-chip.stock-missing{color:#e88a7a;border-color:rgba(232,110,90,.45);background:rgba(232,90,70,.08);}
+.civ-cs .bld-infocard-eyebrow{font-size:0.54em;letter-spacing:.14em;text-transform:uppercase;color:#8a8478;margin-top:0.15em;}
+.civ-cs .bld-infocard-eyebrow.req{color:#c9a35a;}
+.civ-cs .bld-infocard-req-access{font-size:0.68em;color:#c8b898;display:flex;align-items:center;gap:0.3em;}
 /* SUROW-UI-B1/B2 (Maciej 2026-07-24): pasek surowców uproszczony (budowa/rekrutacja) — Total War-style. */
 .civ-cs .civ-cs-res-strip{display:flex;flex-wrap:wrap;align-items:center;gap:0.5em;margin:0 0 0.5em;padding:0.3em 0;}
 .civ-cs .civ-cs-res-chip{display:inline-flex;align-items:center;gap:0.3em;font-size:0.78em;color:#e8e0c8;font-weight:600;font-variant-numeric:tabular-nums;}
@@ -4671,18 +4674,30 @@ function buildBuildingInfocard(
   card.appendChild(hd);
 
   const bd = el('div', 'bld-infocard-bd');
+  // DAJE (efekty) — bonusy budynku, wyraźnie oddzielone od tego, co jest WYMAGANE do budowy
+  // (Maciej 2026-07-24: gracz musi wiedzieć, czego mu brakuje i dlaczego nie może budować).
   const chipsHtml = buildingBonusChipsHtml(def);
   if (chipsHtml) {
+    bd.appendChild(el('div', 'bld-infocard-eyebrow', 'Daje'));
     const chips = el('div', 'bld-infocard-chips');
     chips.innerHTML = chipsHtml;
     bd.appendChild(chips);
   }
-  // TEMAT #6: koszt surowcowy (cegła/ceramika) — chip osobno, czerwony gdy magazyn braku.
+  // WYMAGANE — surowce z magazynu (czerwone gdy brak) + dostęp „w zasięgu" (las/ruda/kamień…).
   const stockChipsHtml = buildingStockCostChipsHtml(def, opts?.city);
-  if (stockChipsHtml) {
-    const stockChips = el('div', 'bld-infocard-chips');
-    stockChips.innerHTML = stockChipsHtml;
-    bd.appendChild(stockChips);
+  const accessReq = (def.wymagania && !isEmptyDataVal(def.wymagania)) ? String(def.wymagania) : '';
+  if (stockChipsHtml || accessReq) {
+    bd.appendChild(el('div', 'bld-infocard-eyebrow req', 'Wymagane'));
+    if (stockChipsHtml) {
+      const stockChips = el('div', 'bld-infocard-chips');
+      stockChips.innerHTML = stockChipsHtml;
+      bd.appendChild(stockChips);
+    }
+    if (accessReq) {
+      const acc = el('div', 'bld-infocard-req-access');
+      acc.textContent = '⛰️ ' + accessReq;   // dane z buildings.json (zaufane) — textContent, bez innerHTML
+      bd.appendChild(acc);
+    }
   }
 
   const parentName = parentBuildingName(data, def.upgradeFrom);
