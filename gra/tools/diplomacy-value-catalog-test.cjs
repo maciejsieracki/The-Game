@@ -59,7 +59,7 @@ ok(D.diplomacyPnZloze('bydlo') === null, 'bydlo nie w cenniku zloza');
 ok(D.diplomacyPnSurowiecBoolean('bydlo') === 20, 'bydlo boolean=ulepszenie 20');
 
 const techPn = D.diplomacyPnTech('Obróbka drewna', 'standardowa');
-eq(techPn, 12, 'tech Obróbka drewna');
+eq(techPn, 10, 'tech Obróbka drewna JSON=5 @ standardowa');
 
 const sum = D.diplomacySumPn([
   { typ: 'zloto', id: '', ilosc: 50 },

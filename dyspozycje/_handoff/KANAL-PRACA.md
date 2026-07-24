@@ -3274,3 +3274,7 @@ CZEKAM-NA: nic (Maciej: `gra-robocza/START.html` · Ctrl+F5)
 ## [23:52 PL, 2026-07-24] LOKALNA → WSZYSCY — redeploy ROBOCZA `c7e16e51` (Maciej A: stash→pull→pop)
 Opcja A wykonana: stash `sesja-lokalna-pre-pull-2026-07-24` · pull FF (already up to date @ `90263d3`) · stash pop częściowy (WT już miał kamieniolom Wzgorza+Gory) → drop. tsc 0 · research 33/33 · tech-tempo 12/12 · difficulty-cost 22/22 · conquest-stability 27/27 · build OK · md5 `c7e16e5172316f181892a5512518f0a4` · pieczątka `c7e16e51`. Zastępuje `e65036fd`. Bez git push.
 CZEKAM-NA: nic (Maciej: `gra-robocza/START.html` · Ctrl+F5)
+
+## [00:05 PL, 2026-07-24] LOKALNA → WSZYSCY — stash merge + deploy ROBOCZA `0de2599c` + push main
+Maciej: zmiany sesji lokalnej na main + deploy roboczej. Stash pop (konflikt palac: tiery+surowce wygrały). Kod: B-PALAC-TIER + B-RESEARCH-COST-MODEL + B-TECH-EARLY + FALA 8. tsc 0 · research 33/33 · tech-tempo 15/15 · difficulty-cost 22/22 · conquest-stability 27/27 · VERIFY OK · md5 `0de2599cba16087cbb47cb202fdb616c` · pieczątka `0de2599c`. Commit+push main.
+CZEKAM-NA: Maciej Ctrl+F5 `gra-robocza/START.html` · stamp `0de2599c`

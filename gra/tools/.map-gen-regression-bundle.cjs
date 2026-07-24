@@ -959,6 +959,21 @@ var EARTH_MASK_ROWS = [
 
 // src/map/earth-land-mask.ts
 var EARTH_PLAYABLE_BORDER = 2;
+var EARTH_NORTH_OCEAN_REF_ROWS = 30;
+var EARTH_NORTH_OCEAN_REF_INNER_H = 115;
+var EARTH_TEMPLATE_NR_LAND_MAX = 0.74;
+function earthNorthOceanRows(height) {
+  const innerH = earthPlayableInnerHeight(height);
+  return Math.max(2, Math.round(EARTH_NORTH_OCEAN_REF_ROWS * innerH / EARTH_NORTH_OCEAN_REF_INNER_H));
+}
+function earthPlayableInnerHeight(height) {
+  const b = EARTH_PLAYABLE_BORDER;
+  return Math.max(1, height - 1 - 2 * b);
+}
+function earthPlayableInnerWidth(width) {
+  const b = EARTH_PLAYABLE_BORDER;
+  return Math.max(1, width - 1 - 2 * b);
+}
 function bitAt(x, y) {
   const xi = Math.min(EARTH_MASK_W - 1, Math.max(0, x));
   const yi = Math.min(EARTH_MASK_H - 1, Math.max(0, y));
@@ -982,14 +997,19 @@ function sampleEarthTemplateLand(nq, nr) {
 function earthHexToTemplateNorm(q, r, width, height) {
   const b = EARTH_PLAYABLE_BORDER;
   if (q < b || r < b || q >= width - b || r >= height - b) return null;
-  const innerW = Math.max(1, width - 1 - 2 * b);
-  const innerH = Math.max(1, height - 1 - 2 * b);
+  const innerW = earthPlayableInnerWidth(width);
+  const innerH = earthPlayableInnerHeight(height);
+  const north = earthNorthOceanRows(height);
+  if (r - b < north) return null;
+  const landSpan = Math.max(1, innerH - north);
+  const pr = (r - b - north) / landSpan;
   const pq = (q - b) / innerW;
-  const pr = (r - b) / innerH;
-  const { minX, minY, maxX, maxY } = EARTH_MASK_BBOX;
+  const { minX, minY, maxX } = EARTH_MASK_BBOX;
+  const templateMaxY = Math.min(EARTH_MASK_BBOX.maxY, EARTH_TEMPLATE_NR_LAND_MAX);
+  const templateMinY = minY;
   return {
     nq: minX + pq * (maxX - minX),
-    nr: minY + pr * (maxY - minY)
+    nr: templateMinY + pr * (templateMaxY - templateMinY)
   };
 }
 function earthSubsampleGrid(width, height) {
@@ -1010,11 +1030,12 @@ function earthTemplateLandAt(q, r, width, height) {
   const t = earthHexToTemplateNorm(q, r, width, height);
   if (!t) return 0;
   const b = EARTH_PLAYABLE_BORDER;
-  const innerW = Math.max(1, width - 1 - 2 * b);
-  const innerH = Math.max(1, height - 1 - 2 * b);
-  const { minX, minY, maxX, maxY } = EARTH_MASK_BBOX;
+  const innerW = earthPlayableInnerWidth(width);
+  const innerH = earthPlayableInnerHeight(height);
+  const { minX, minY, maxX } = EARTH_MASK_BBOX;
+  const templateMaxY = Math.min(EARTH_MASK_BBOX.maxY, EARTH_TEMPLATE_NR_LAND_MAX);
   const cellW = (maxX - minX) / innerW;
-  const cellH = (maxY - minY) / innerH;
+  const cellH = (templateMaxY - minY) / Math.max(1, innerH - earthNorthOceanRows(height));
   const steps = earthSubsampleGrid(width, height);
   if (steps <= 1) return sampleEarthTemplateLand(t.nq, t.nr);
   let landHits = 0;
@@ -4924,7 +4945,8 @@ var terrain_improvements_default = {
     decyzje_MIASTO: "lodzie_rybackie = TAK teraz; kamieniolom OSOBNO od kopalni (rozne surowce); teren NIE daje +Nauka/+Kultura (te z budynkow/specjalistow/suwaka). Tarasy = +zywnosc (nie kultura).",
     kanon_zywnosc_hodowla: "docs/decyzje/KANON-ULEPSZENIA-ZYWNOSC-HODOWLA.md (2026-06-29 Maciej) \u2014 obowiazuje nad tym plikiem do wdrozenia",
     decyzje_EKONOMIA: "surowiecOdblokowany = klucz ASCII surowca (lub null) wg modelu dostepu boolean v0.1; zasieg_terytorium: posterunek=5 (epoka 2), fort=10 (epoka 3), miasto=10 (stale); zakladanie kolejnego miasta wymaga Straznica LUB zasiegu obecnego miasta. Rozbieznosci kluczy z resources.json (brak pola id) zapisane w EKONOMIA-ulepszenia-terenu-v01.md.",
-    klucze_surowcow_ASCII: "drewno | kamien | glina | ruda | zelazo | stal | bydlo | owce | lama | kon | sol"
+    klucze_surowcow_ASCII: "drewno | kamien | glina | ruda | zelazo | stal | bydlo | owce | lama | kon | sol",
+    pole_surowiec_ilosc_tura: "SUROW-TERYT-01 (Maciej 2026-07-23): produkcja PER ZBUDOWANE ULEPSZENIE w terytorium wlasciciela, niezaleznie od obsadzenia pola populacja (workedTiles). Wartosc = surowiec/ture. Stawki REALNE (Maciej 2026-07-23, korekta po ECHO placeholdera): Tartak->drewno 4, Kamieniolom->kamien 4, Glinianka->glina 4, Kopalnia miedzi->ruda 2, Kopalnia (zloze zelaza)->ruda_zelaza 2. Brak pola w JSON -> domyslnie 2/ture (terrain-improvements.ts TERRITORY_YIELD_DEFAULT_AMOUNT, fallback bezpieczenstwa)."
   },
   farma: {
     nazwa: "Farma",
@@ -5018,7 +5040,8 @@ var terrain_improvements_default = {
       praca: 2
     },
     surowiecOdblokowany: "ruda",
-    surowiecOdblokowany_uwaga: "ruda miedzi lub ruda_zelaza (zale\u017Cnie od z\u0142o\u017Ca); plon 2/t z kopalni",
+    surowiecOdblokowany_uwaga: "ruda miedzi lub ruda_zelaza (zale\u017Cnie od z\u0142o\u017Ca); plon 2/t z kopalni. SUROW-TERYT-01 (Maciej 2026-07-23): stawka REALNA (nie placeholder) = 2/ture dla ruda_zelaza (kopalnia na z\u0142o\u017Cu \u017Celaza).",
+    surowiec_ilosc_tura: 2,
     teren: "Wzg\xF3rza, G\xF3ry, z\u0142o\u017Ce rudy miedzi lub \u017Celaza",
     warunek: "wydobycie rudy do magazynu miasta (ruda / ruda_zelaza)",
     koszt_praca: 25,
@@ -5033,7 +5056,8 @@ var terrain_improvements_default = {
       glina: 2
     },
     surowiecOdblokowany: "glina",
-    surowiecOdblokowany_uwaga: "GLINA-Q1=A (Maciej 2026-07-20): stala ilosc 2 glina/ture z ulepszenia (bonus.glina), analogicznie do drewna/kamienia. Klucz 'glina' wg Surowiec='Glina' w resources.json.",
+    surowiecOdblokowany_uwaga: "GLINA-Q1=A (Maciej 2026-07-20): stala ilosc glina/ture z ulepszenia. Stawka SUROW-TERYT-01: 4/ture, podniesiona do 5 przy C-SUROW-CEGLA=A (Maciej 2026-07-24, odciazenie cegly wg symulacji -- glina musi nadazyc za Cegielnia 3/ture). NIE bonus.glina (2) -- osobne pola.",
+    surowiec_ilosc_tura: 5,
     teren: "z\u0142o\u017Ce Gliny",
     warunek: "glina \u2192 ceg\u0142a (wa\u017Cne w br\u0105zie)",
     koszt_praca: 20,
@@ -5048,7 +5072,8 @@ var terrain_improvements_default = {
       kamien: 1
     },
     surowiecOdblokowany: "kamien",
-    surowiecOdblokowany_uwaga: "klucz 'kamien' wg Surowiec='Kamie\u0144' w resources.json; brak pola id \u2014 propozycja EKONOMIA; UWAGA: 'kamien' pojawia sie rowniez w bonus{} jako efekt plonu \u2014 DANE musi zdecydowac czy bonus.kamien = dostep czy liczba",
+    surowiecOdblokowany_uwaga: "klucz 'kamien' wg Surowiec='Kamie\u0144' w resources.json; brak pola id \u2014 propozycja EKONOMIA; UWAGA: 'kamien' pojawia sie rowniez w bonus{} jako efekt plonu \u2014 DANE musi zdecydowac czy bonus.kamien = dostep czy liczba. Stawka SUROW-TERYT-01 (Maciej 2026-07-23, REALNA) = 4/ture.",
+    surowiec_ilosc_tura: 4,
     teren: "Wzg\xF3rza, G\xF3ry (kamie\u0144)",
     warunek: "budulec \u2014 mury, budynki",
     koszt_praca: 22,
@@ -5095,7 +5120,8 @@ var terrain_improvements_default = {
       praca: 3
     },
     surowiecOdblokowany: "drewno",
-    surowiecOdblokowany_uwaga: "v0.1: tylko dost\u0119p boolean (panel Surowce) \u2014 bez liczenia ilo\u015Bci w magazynie",
+    surowiecOdblokowany_uwaga: "SUROW-TERYT-01 (Maciej 2026-07-23): produkcja per ulepszenie w terytorium, niezaleznie od obsadzenia populacja -- patrz surowiec_ilosc_tura (REALNA stawka 4/ture, nie placeholder).",
+    surowiec_ilosc_tura: 4,
     teren: "L\u0105d w terytorium (\u0142\u0105ka, lasy, wzg\xF3rza\u2026)",
     warunek: "sta\u0142e ulepszenie; MO\u017BE na lesie \u2014 las NIE znika; odblokowuje dost\u0119p do drewna (v0.1 bez ilo\u015Bci)",
     koszt_praca: 25,
@@ -5198,7 +5224,8 @@ var terrain_improvements_default = {
       praca: 2
     },
     surowiecOdblokowany: "ruda",
-    surowiecOdblokowany_uwaga: "ruda miedzi (Odlewnia br\u0105zu); plon 2/t z kopalni_miedzi",
+    surowiecOdblokowany_uwaga: "ruda miedzi (Odlewnia br\u0105zu); plon 2/t z kopalni_miedzi. SUROW-TERYT-01 (Maciej 2026-07-23): stawka REALNA (nie placeholder) = 2/ture.",
+    surowiec_ilosc_tura: 2,
     teren: "Wzg\xF3rza, G\xF3ry, z\u0142o\u017Ce miedzi (hex.zloze=miedz)",
     warunek: "ruda miedzi \u2192 magazyn (Odlewnia br\u0105zu)",
     koszt_praca: 22,
@@ -5490,6 +5517,10 @@ function generateMap(width = DEFAULT_WIDTH, height = DEFAULT_HEIGHT, seed = 42, 
   for (const site of villageSites) {
     const hex = hexes[`${site.q},${site.r}`];
     if (hex) hex.wioska = { istnieje: true, ludnosc: 1 };
+  }
+  if (typ === "ziemia") {
+    enforceEarthTemplateOnHexes(hexes, width, height);
+    purgeOceanInsideEarthLandMask(hexes, width, height);
   }
   return {
     szerokoscQ: width,

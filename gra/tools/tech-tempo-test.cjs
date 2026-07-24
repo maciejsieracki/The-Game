@@ -65,10 +65,15 @@ function eq(a, b, msg) {
 // --- tests -----------------------------------------------------------------
 console.log('\n[tech-tempo-test] Uruchamiam testy...\n');
 
-// Obróbka drewna — bazowy koszt 12 PN (Maciej 2026-07-07)
-eq(applyTempoKoszt(12, 'szybka'), 12, 'szybka x1: 12 -> 12');
-eq(applyTempoKoszt(12, 'standardowa'), 24, 'standardowa x2: 12 -> 24');
-eq(applyTempoKoszt(12, 'dluga'), 48, 'dluga x4: 12 -> 48');
+// Przyklad tech JSON=24 (B-RESEARCH-COST-MODEL: global x2 w JSON, GLOBAL_MULT=1)
+eq(applyTempoKoszt(24, 'szybka'), 24, 'szybka x1: 24 -> 24');
+eq(applyTempoKoszt(24, 'standardowa'), 48, 'standardowa x2: 24 -> 48');
+eq(applyTempoKoszt(24, 'dluga'), 96, 'dluga x4: 24 -> 96');
+
+// Obróbka drewna / Murarstwo — JSON=5 PN (Maciej 2026-07-24)
+eq(applyTempoKoszt(5, 'szybka'), 5, 'early tech szybka: 5 -> 5');
+eq(applyTempoKoszt(5, 'standardowa'), 10, 'early tech standardowa: 5 -> 10');
+eq(applyTempoKoszt(5, 'dluga'), 20, 'early tech dluga: 5 -> 20');
 
 // Ogolne progi
 eq(applyTempoKoszt(100, 'szybka'), 100, 'szybka x1: 100 -> 100');

@@ -928,21 +928,14 @@
   },
   {
     "id": "palac",
-    "nazwa": "Palac",
+    "nazwa": "Pałac",
     "kategoria": "Kultura/Administracja",
     "epokaWejscia": 1,
     "maksPoziom": 10,
     "nazwyPoziomow": [
       "Dom wodza",
       "Dwor",
-      "Palac zarzadcy",
-      "Palac",
-      "Rezydencja",
-      "Dworzec",
-      "Palac regionu",
-      "Stolica prowincji",
-      "Palac krolewski",
-      "Palac cesarski"
+      "Pałac zarządcy"
     ],
     "baza": {
       "praca": 0,
@@ -969,8 +962,92 @@
     "utrzymanie": 2,
     "przyrostUtrzymania": 1,
     "wymagania": "-",
-    "uwagi": "1 na miasto; główne źródło kultury + Prawo (society-params prawo_palac); budynek startowy — bez bramki tech; BEZ kosztu surowcowego (Maciej 2026-07-24: na starcie pula surowców = 0, więc Pałac nie może wymagać drewna/kamienia; zostaje tylko koszt Pracy)",
-    "techUnlock": "-"
+    "uwagi": "B-PALAC-TIER I (Kamień): 1/miasto; bramka drewno; bonus bazowy ×1; upgrade→Pałac II",
+    "techUnlock": "-",
+    "koszt_surowce": {
+      "drewno": 8
+    }
+  },
+  {
+    "id": "palac_ii",
+    "nazwa": "Pałac II",
+    "kategoria": "Kultura/Administracja",
+    "epokaWejscia": 2,
+    "maksPoziom": 10,
+    "upgradeFrom": "palac",
+    "nazwyPoziomow": [],
+    "baza": {
+      "praca": 0,
+      "pieniadz": 0,
+      "zywnosc": 0,
+      "nauka": 0,
+      "kultura": 8,
+      "zadowolenie": 3,
+      "obrona": 0,
+      "mnoznik": 8
+    },
+    "przyrost": {
+      "praca": 0,
+      "pieniadz": 0,
+      "zywnosc": 0,
+      "nauka": 0,
+      "kultura": 5,
+      "zadowolenie": 2,
+      "obrona": 0,
+      "mnoznik": 0
+    },
+    "kosztBudowy": 60,
+    "przyrostKosztu": 18,
+    "utrzymanie": 3,
+    "przyrostUtrzymania": 1,
+    "wymagania": "upgrade Pałac I",
+    "uwagi": "B-PALAC-TIER II (Brąz): bramka drewno+kamień; bonus ×1,5 względem I; upgrade→Pałac III",
+    "techUnlock": "-",
+    "koszt_surowce": {
+      "drewno": 8,
+      "kamien": 8
+    }
+  },
+  {
+    "id": "palac_iii",
+    "nazwa": "Pałac III",
+    "kategoria": "Kultura/Administracja",
+    "epokaWejscia": 3,
+    "maksPoziom": 10,
+    "upgradeFrom": "palac_ii",
+    "nazwyPoziomow": [],
+    "baza": {
+      "praca": 0,
+      "pieniadz": 0,
+      "zywnosc": 0,
+      "nauka": 0,
+      "kultura": 11,
+      "zadowolenie": 5,
+      "obrona": 0,
+      "mnoznik": 11
+    },
+    "przyrost": {
+      "praca": 0,
+      "pieniadz": 0,
+      "zywnosc": 0,
+      "nauka": 0,
+      "kultura": 7,
+      "zadowolenie": 2,
+      "obrona": 0,
+      "mnoznik": 0
+    },
+    "kosztBudowy": 90,
+    "przyrostKosztu": 27,
+    "utrzymanie": 5,
+    "przyrostUtrzymania": 2,
+    "wymagania": "upgrade Pałac II",
+    "uwagi": "B-PALAC-TIER III (Żelazo): bramka drewno+kamień+cegła; bonus ×2,25 względem I (×1,5²)",
+    "techUnlock": "-",
+    "koszt_surowce": {
+      "drewno": 8,
+      "kamien": 8,
+      "cegla": 6
+    }
   },
   {
     "id": "kuznia_zelaza",

@@ -92,6 +92,7 @@ import {
   buildingStatSummaryLines,
   cityHasBibliotekaLine,
   cityHasAmfiteatrLine,
+  cityHasPalacLine,
 } from '../game/building-upgrades';
 import { getCityFoodSplit, getEmpireFoodMaxCap } from '../game/empire-food';
 import type { CityManpowerSnapshot } from '../game/manpower';
@@ -2116,7 +2117,7 @@ function computeOrderStateLocal(city: City, data: GameData): { state: OrderState
       hasRatusz: builtIds.includes('ratusz'),
       hasPretorium: builtIds.includes('pretorium'),
       hasSad: builtIds.includes('sad'),
-      hasPalac: builtIds.includes('palac'),
+      hasPalac: cityHasPalacLine(builtIds),
       brakGarnizonuKara: !playtestSandbox && city.population >= 6 && gCount === 0,
       stolicaEasyBonus: stolicaBonus,
     },

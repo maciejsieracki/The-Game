@@ -29,10 +29,10 @@ import {
 export type GameDifficulty = 'easy' | 'normal' | 'hard';
 
 /**
- * Maciej 2026-07-22: globalna korekta balansu — koszt badan x2 (flat, przed asymetria trudnosci).
- * Baza = tech.json + tempo kreatora; NIE dotyka JSON ani progu trudnosci.
+ * Maciej 2026-07-24 (B-RESEARCH-COST-MODEL): dawniej x2 w kodzie — teraz wchloniete do tech.json.
+ * GLOBAL=1; efektywny koszt = JSON (tempo Szybka) × tempo kreatora × asymetria trudnosci.
  */
-export const GLOBAL_RESEARCH_COST_MULT = 2;
+export const GLOBAL_RESEARCH_COST_MULT = 1;
 
 /** Gracz ludzki — ownerId 0. Wszystko inne (AI, miasta-panstwa) = strona AI. */
 export function isPlayerOwner(ownerId: number): boolean {

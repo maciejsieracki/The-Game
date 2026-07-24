@@ -181,7 +181,7 @@ function cultureBuildingsFromIds(builtIds) {
   return {
     hasAmfiteatr: builtIds.includes("teatr") || builtIds.includes("akademia"),
     hasBiblioteka: builtIds.includes("biblioteka"),
-    hasPalac: builtIds.includes("palac"),
+    hasPalac: builtIds.includes("palac") || builtIds.includes("palac_ii") || builtIds.includes("palac_iii"),
     hasStela: builtIds.includes("stela"),
     hasSad: builtIds.includes("sad"),
     hasLaznia: builtIds.includes("laznia_publiczna")

@@ -82918,3 +82918,118 @@ Każdy budynek z `buildings.json` dostanie weryfikację: epoka, koszt Pracy, wym
 Wrócę z pełnym raportem i ewentualnym wdrożeniem do roboczej.
 
 [REDACTED]
+
+
+---
+
+## Dopisek synchronizacji — 2026-07-24 20:29 UTC (linie 10091–10111)
+
+
+### Linia 10091 — MACIEJ
+
+<timestamp>Thursday, Jul 23, 2026, 1:00 AM (UTC+2)</timestamp>
+
+działaj
+
+### Linia 10092 — AGENT
+
+[REDACTED]
+
+### Linia 10093 — AGENT
+
+Przyjąłem **`działaj`**.
+
+Wdrażam otwarte luki z audytu:
+1. **Stock rudy** (miedź/żelazo z terenu → magazyn)
+2. **KULT-04** (kultura + religia w Power)
+3. **Warzelnia soli** (tylko wybrzeże)
+
+Koszt materiałowy budynków (faza 3) — tylko jeśli jest jasno w decyzjach; inaczej odkładam.
+
+Po bramce → nowa **ROBOCZA** + wpis w WERSJE. Dam znać z md5.
+
+[REDACTED]
+
+### Linia 10095 — MACIEJ
+
+<timestamp>Thursday, Jul 23, 2026, 1:10 AM (UTC+2)</timestamp>
+
+Okej, to zrób git pUsz.
+
+### Linia 10096 — AGENT
+
+[REDACTED]
+
+### Linia 10097 — AGENT
+
+[REDACTED]
+
+### Linia 10098 — AGENT
+
+`git pull` → commit (jeśli trzeba) → `git push origin main`. Dam znać z hashem, gdy skończy.
+
+[REDACTED]
+
+### Linia 10100 — MACIEJ
+
+<timestamp>Friday, Jul 24, 2026, 10:00 PM (UTC+2)</timestamp>
+
+Zrób sobie git pull
+
+### Linia 10101 — AGENT
+
+[REDACTED]
+
+### Linia 10102 — AGENT
+
+[REDACTED]
+
+### Linia 10103 — AGENT
+
+Robię `git pull --ff-only origin main` — dam znać z wynikiem.
+
+[REDACTED]
+
+### Linia 10105 — MACIEJ
+
+<timestamp>Friday, Jul 24, 2026, 10:02 PM (UTC+2)</timestamp>
+
+Jaki commit masz nie zdeployowany?
+
+### Linia 10106 — AGENT
+
+[REDACTED]
+
+### Linia 10107 — AGENT
+
+Sprawdzam stan — z poprzedniego pulla wiem już o jednym commicie do przodu względem remote; weryfikuję szczegóły.
+
+[REDACTED]
+
+### Linia 10109 — MACIEJ
+
+<timestamp>Friday, Jul 24, 2026, 10:05 PM (UTC+2)</timestamp>
+
+Jednym słowem, masz dobrą wersję i możesz ściągnąć z githuba najnowszą. ?
+
+### Linia 10110 — AGENT
+
+Tak — lokalnie masz dobrą ROBOCZA (`e19e50ff`), `git pull` nic nowego nie przyniesie (origin jest o 1 commit docs za Tobą).
+
+[REDACTED]
+
+
+---
+
+## Dopisek synchronizacji — 2026-07-24 21:21 UTC (linie 10112–10113)
+
+
+### Linia 10112 — MACIEJ
+
+<timestamp>Friday, Jul 24, 2026, 11:21 PM (UTC+2)</timestamp>
+
+Pamiętasz może jakie odkrycia pozwalały na budowę Tartaku na mapie świata? Czy jak to tam się nazywało wyrąb drzewa?  Chodzi o usprawnienie terenu.  A jakie pozwalało budować kamieniołom?
+
+### Linia 10113 — AGENT
+
+[REDACTED]

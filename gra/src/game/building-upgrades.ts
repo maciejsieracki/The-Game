@@ -100,3 +100,10 @@ export function cityHasAmfiteatrLine(builtIds: readonly string[]): boolean {
 export function cityHasMurLine(builtIds: readonly string[]): boolean {
   return builtIds.includes('mury') || builtIds.includes('fort');
 }
+
+/** Pałac I / II / III (łańcuch upgrade B-PALAC-TIER). */
+export function cityHasPalacLine(builtIds: readonly string[]): boolean {
+  return builtIds.includes('palac')
+    || builtIds.includes('palac_ii')
+    || builtIds.includes('palac_iii');
+}

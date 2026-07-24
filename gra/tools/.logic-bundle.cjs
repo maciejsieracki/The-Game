@@ -1059,6 +1059,31 @@ var EARTH_MASK_ROWS = [
 
 // src/map/earth-land-mask.ts
 var EARTH_PLAYABLE_BORDER = 2;
+var EARTH_POLAR_OCEAN_REF_ROWS = 30;
+var EARTH_POLAR_OCEAN_REF_INNER_H = 115;
+function earthNorthOceanRows(height) {
+  return earthPolarOceanRows(height);
+}
+function earthSouthOceanRows(height) {
+  return earthPolarOceanRows(height);
+}
+function earthPolarOceanRows(height) {
+  const innerH = earthPlayableInnerHeight(height);
+  return Math.max(2, Math.round(EARTH_POLAR_OCEAN_REF_ROWS * innerH / EARTH_POLAR_OCEAN_REF_INNER_H));
+}
+function earthPlayableInnerHeight(height) {
+  const b = EARTH_PLAYABLE_BORDER;
+  return Math.max(1, height - 1 - 2 * b);
+}
+function earthPlayableInnerWidth(width) {
+  const b = EARTH_PLAYABLE_BORDER;
+  return Math.max(1, width - 1 - 2 * b);
+}
+function earthLandMapRows(height) {
+  const innerH = earthPlayableInnerHeight(height);
+  const polar = earthPolarOceanRows(height);
+  return Math.max(1, innerH - polar * 2);
+}
 function bitAt(x, y) {
   const xi = Math.min(EARTH_MASK_W - 1, Math.max(0, x));
   const yi = Math.min(EARTH_MASK_H - 1, Math.max(0, y));
@@ -1082,10 +1107,16 @@ function sampleEarthTemplateLand(nq, nr) {
 function earthHexToTemplateNorm(q, r, width, height) {
   const b = EARTH_PLAYABLE_BORDER;
   if (q < b || r < b || q >= width - b || r >= height - b) return null;
-  const innerW = Math.max(1, width - 1 - 2 * b);
-  const innerH = Math.max(1, height - 1 - 2 * b);
+  const innerW = earthPlayableInnerWidth(width);
+  const innerH = earthPlayableInnerHeight(height);
+  const north = earthNorthOceanRows(height);
+  const south = earthSouthOceanRows(height);
+  const relR = r - b;
+  if (relR < north) return null;
+  if (relR >= innerH - south) return null;
+  const landRows = earthLandMapRows(height);
+  const pr = (relR - north) / Math.max(1, landRows - 1);
   const pq = (q - b) / innerW;
-  const pr = (r - b) / innerH;
   const { minX, minY, maxX, maxY } = EARTH_MASK_BBOX;
   return {
     nq: minX + pq * (maxX - minX),
@@ -1109,12 +1140,10 @@ function earthLandFractionThreshold(width, height) {
 function earthTemplateLandAt(q, r, width, height) {
   const t = earthHexToTemplateNorm(q, r, width, height);
   if (!t) return 0;
-  const b = EARTH_PLAYABLE_BORDER;
-  const innerW = Math.max(1, width - 1 - 2 * b);
-  const innerH = Math.max(1, height - 1 - 2 * b);
+  const innerW = earthPlayableInnerWidth(width);
   const { minX, minY, maxX, maxY } = EARTH_MASK_BBOX;
   const cellW = (maxX - minX) / innerW;
-  const cellH = (maxY - minY) / innerH;
+  const cellH = (maxY - minY) / Math.max(1, earthLandMapRows(height));
   const steps = earthSubsampleGrid(width, height);
   if (steps <= 1) return sampleEarthTemplateLand(t.nq, t.nr);
   let landHits = 0;
@@ -5492,6 +5521,15 @@ function improvementKeysForHex(hex) {
   const single = normalizeImprovementKey(String(hex.ulepszenie ?? "brak"));
   return single ? [single] : [];
 }
+var RESOURCE_UPKEEP_IMPROVEMENT_KEYS = /* @__PURE__ */ new Set([
+  "tartak",
+  "kamieniolom",
+  "glinianka",
+  "kopalnia",
+  "kopalnia_miedzi",
+  "warzelnia_soli",
+  "stadnina"
+]);
 
 // src/map/road-movement.ts
 var ROAD_MOVE_SPEED_MULT = 3;
@@ -6160,6 +6198,10 @@ function generateMap(width = DEFAULT_WIDTH, height = DEFAULT_HEIGHT, seed = 42, 
     const hex = hexes[`${site.q},${site.r}`];
     if (hex) hex.wioska = { istnieje: true, ludnosc: 1 };
   }
+  if (typ === "ziemia") {
+    enforceEarthTemplateOnHexes(hexes, width, height);
+    purgeOceanInsideEarthLandMask(hexes, width, height);
+  }
   return {
     szerokoscQ: width,
     wysokoscR: height,
@@ -6309,7 +6351,7 @@ var WZROST_LUDNOSCI_PACE = {
 };
 
 // src/game/difficulty-cost.ts
-var GLOBAL_RESEARCH_COST_MULT = 2;
+var GLOBAL_RESEARCH_COST_MULT = 1;
 function isPlayerOwner(ownerId) {
   return ownerId === 0;
 }
@@ -7415,8 +7457,60 @@ function readCityFoodBuffer(magazynZywnosci) {
   }
   return 0;
 }
-function resourceStorageCapacityPerType(maMagazyn, p) {
-  return maMagazyn ? p.bazaSurowce * p.mnoznikMagazynu : p.bazaSurowce;
+var DEFAULT_OWNER_STORAGE_PARAMS = {
+  bazaSurowcePanstwo: 500,
+  bonusSurowceNaBudynek: 100
+};
+function loadOwnerStorageParams(raw, difficulty = "normal") {
+  const g = raw.globalne;
+  return {
+    bazaSurowcePanstwo: readNum(g, "magazyn_baza_surowce", difficulty, DEFAULT_OWNER_STORAGE_PARAMS.bazaSurowcePanstwo),
+    bonusSurowceNaBudynek: readNum(g, "magazyn_bonus_surowce_na_budynek", difficulty, DEFAULT_OWNER_STORAGE_PARAMS.bonusSurowceNaBudynek)
+  };
+}
+function ownerResourceCapacityPerType(magazynCount, p = DEFAULT_OWNER_STORAGE_PARAMS) {
+  const cnt = Number.isFinite(magazynCount) && magazynCount > 0 ? Math.floor(magazynCount) : 0;
+  return p.bazaSurowcePanstwo + p.bonusSurowceNaBudynek * cnt;
+}
+function reconcileOwnerResourceCaps(cities, capForOwner) {
+  var _a10, _b3;
+  const byOwner = /* @__PURE__ */ new Map();
+  for (const c of cities) {
+    if (!c.surowce) continue;
+    const list = byOwner.get(c.ownerId) ?? [];
+    list.push(c);
+    byOwner.set(c.ownerId, list);
+  }
+  for (const [ownerId, ownerCities] of byOwner) {
+    const cap = capForOwner(ownerId);
+    if (!Number.isFinite(cap) || cap < 0) continue;
+    const keys = /* @__PURE__ */ new Set();
+    for (const c of ownerCities) {
+      for (const k of Object.keys(c.surowce ?? {})) keys.add(k);
+    }
+    for (const key of keys) {
+      let total = 0;
+      for (const c of ownerCities) total += ((_a10 = c.surowce) == null ? void 0 : _a10[key]) ?? 0;
+      let excess = total - cap;
+      if (excess <= 0) continue;
+      const holders = ownerCities.filter((c) => {
+        var _a11;
+        return (((_a11 = c.surowce) == null ? void 0 : _a11[key]) ?? 0) > 0;
+      }).sort((a, b) => {
+        var _a11, _b4;
+        const diff = (((_a11 = b.surowce) == null ? void 0 : _a11[key]) ?? 0) - (((_b4 = a.surowce) == null ? void 0 : _b4[key]) ?? 0);
+        if (diff !== 0) return diff;
+        return a.id < b.id ? -1 : a.id > b.id ? 1 : 0;
+      });
+      for (const c of holders) {
+        if (excess <= 0) break;
+        const have = ((_b3 = c.surowce) == null ? void 0 : _b3[key]) ?? 0;
+        const take = Math.min(have, excess);
+        c.surowce[key] = have - take;
+        excess -= take;
+      }
+    }
+  }
 }
 function loadUpkeepParams(raw, difficulty = "normal") {
   const em = raw.ekonomia_miasta;
@@ -8182,8 +8276,8 @@ var units_default = [
     Tech: "\u0141ucznictwo",
     "Pieni\u0105dz (koszt)": 6,
     Ludno\u015B\u0107: 1,
-    Surowiec: "drewno",
-    "Surowiec (ilo\u015B\u0107)": 4,
+    Surowiec: "-",
+    "Surowiec (ilo\u015B\u0107)": 0,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 1,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 4,
@@ -8294,8 +8388,8 @@ var units_default = [
     Tech: "Br\u0105zownictwo",
     "Pieni\u0105dz (koszt)": 16,
     Ludno\u015B\u0107: 1,
-    Surowiec: "braz",
-    "Surowiec (ilo\u015B\u0107)": 4,
+    Surowiec: "Br\u0105z",
+    "Surowiec (ilo\u015B\u0107)": 2,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 6,
@@ -8350,8 +8444,8 @@ var units_default = [
     Tech: "Br\u0105zownictwo",
     "Pieni\u0105dz (koszt)": 16,
     Ludno\u015B\u0107: 1,
-    Surowiec: "braz",
-    "Surowiec (ilo\u015B\u0107)": 5,
+    Surowiec: "Br\u0105z",
+    "Surowiec (ilo\u015B\u0107)": 2,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 6,
@@ -8406,8 +8500,8 @@ var units_default = [
     Tech: "Ko\u0142o",
     "Pieni\u0105dz (koszt)": 30,
     Ludno\u015B\u0107: 1,
-    Surowiec: "bydlo",
-    "Surowiec (ilo\u015B\u0107)": 1,
+    Surowiec: "Br\u0105z",
+    "Surowiec (ilo\u015B\u0107)": 2,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 3,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 6,
@@ -8462,8 +8556,8 @@ var units_default = [
     Tech: "Je\u017Adziectwo",
     "Pieni\u0105dz (koszt)": 22,
     Ludno\u015B\u0107: 1,
-    Surowiec: "Ko\u0144",
-    "Surowiec (ilo\u015B\u0107)": 1,
+    Surowiec: "Br\u0105z",
+    "Surowiec (ilo\u015B\u0107)": 2,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 3,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 6,
@@ -8518,8 +8612,8 @@ var units_default = [
     Tech: "\u017Begluga",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
-    Surowiec: "Drewno",
-    "Surowiec (ilo\u015B\u0107)": 4,
+    Surowiec: "Br\u0105z",
+    "Surowiec (ilo\u015B\u0107)": 2,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 3,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 4,
@@ -8574,8 +8668,8 @@ var units_default = [
     Tech: "Hutnictwo \u017Celaza",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
-    Surowiec: "zelazo",
-    "Surowiec (ilo\u015B\u0107)": 5,
+    Surowiec: "\u017Belazo",
+    "Surowiec (ilo\u015B\u0107)": 2,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 6,
@@ -8630,8 +8724,8 @@ var units_default = [
     Tech: "\u2014",
     "Pieni\u0105dz (koszt)": 0,
     Ludno\u015B\u0107: 1,
-    Surowiec: "zelazo",
-    "Surowiec (ilo\u015B\u0107)": 0,
+    Surowiec: "\u017Belazo",
+    "Surowiec (ilo\u015B\u0107)": 3,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 0,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 8,
@@ -8686,8 +8780,8 @@ var units_default = [
     Tech: "Hutnictwo \u017Celaza",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
-    Surowiec: "zelazo",
-    "Surowiec (ilo\u015B\u0107)": 5,
+    Surowiec: "\u017Belazo",
+    "Surowiec (ilo\u015B\u0107)": 2,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 6,
@@ -8740,10 +8834,10 @@ var units_default = [
     Epoka: "\u017Belazo",
     Kultura: "Rzymska",
     Tech: "Hutnictwo \u017Celaza",
-    "Pieni\u0105dz (koszt)": 18,
+    "Pieni\u0105dz (koszt)": 0,
     Ludno\u015B\u0107: 1,
-    Surowiec: "zelazo",
-    "Surowiec (ilo\u015B\u0107)": 0,
+    Surowiec: "\u017Belazo",
+    "Surowiec (ilo\u015B\u0107)": 3,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 0,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 8,
@@ -8798,8 +8892,8 @@ var units_default = [
     Tech: "Je\u017Adziectwo",
     "Pieni\u0105dz (koszt)": 28,
     Ludno\u015B\u0107: 1,
-    Surowiec: "Ko\u0144",
-    "Surowiec (ilo\u015B\u0107)": 1,
+    Surowiec: "Br\u0105z",
+    "Surowiec (ilo\u015B\u0107)": 2,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 3,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 8,
@@ -8854,8 +8948,8 @@ var units_default = [
     Tech: "\u2014",
     "Pieni\u0105dz (koszt)": 0,
     Ludno\u015B\u0107: 1,
-    Surowiec: "\u2014",
-    "Surowiec (ilo\u015B\u0107)": 0,
+    Surowiec: "Br\u0105z",
+    "Surowiec (ilo\u015B\u0107)": 3,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 0,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 10,
@@ -8910,8 +9004,8 @@ var units_default = [
     Tech: "Br\u0105zownictwo",
     "Pieni\u0105dz (koszt)": 16,
     Ludno\u015B\u0107: 1,
-    Surowiec: "braz",
-    "Surowiec (ilo\u015B\u0107)": 4,
+    Surowiec: "Br\u0105z",
+    "Surowiec (ilo\u015B\u0107)": 2,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 3,
@@ -9022,8 +9116,8 @@ var units_default = [
     Tech: "\u2014",
     "Pieni\u0105dz (koszt)": 0,
     Ludno\u015B\u0107: 1,
-    Surowiec: "\u2014",
-    "Surowiec (ilo\u015B\u0107)": 0,
+    Surowiec: "Br\u0105z",
+    "Surowiec (ilo\u015B\u0107)": 3,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 0,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 8,
@@ -9134,8 +9228,8 @@ var units_default = [
     Tech: "Br\u0105zownictwo",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
-    Surowiec: "braz",
-    "Surowiec (ilo\u015B\u0107)": 4,
+    Surowiec: "Br\u0105z",
+    "Surowiec (ilo\u015B\u0107)": 2,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 8,
@@ -9302,7 +9396,7 @@ var units_default = [
     Tech: "-",
     "Pieni\u0105dz (koszt)": 0,
     Ludno\u015B\u0107: 1,
-    Surowiec: "braz",
+    Surowiec: "Br\u0105z",
     "Surowiec (ilo\u015B\u0107)": 3,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 0,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
@@ -9358,8 +9452,8 @@ var units_default = [
     Tech: "Je\u017Adziectwo",
     "Pieni\u0105dz (koszt)": 28,
     Ludno\u015B\u0107: 1,
-    Surowiec: "Ko\u0144",
-    "Surowiec (ilo\u015B\u0107)": 1,
+    Surowiec: "Br\u0105z",
+    "Surowiec (ilo\u015B\u0107)": 2,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 3,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 6,
@@ -9414,8 +9508,8 @@ var units_default = [
     Tech: "\u0141ucznictwo",
     "Pieni\u0105dz (koszt)": 14,
     Ludno\u015B\u0107: 1,
-    Surowiec: "drewno",
-    "Surowiec (ilo\u015B\u0107)": 4,
+    Surowiec: "-",
+    "Surowiec (ilo\u015B\u0107)": 0,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 1,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 4,
@@ -9470,8 +9564,8 @@ var units_default = [
     Tech: "Je\u017Adziectwo",
     "Pieni\u0105dz (koszt)": 32,
     Ludno\u015B\u0107: 1,
-    Surowiec: "Ko\u0144",
-    "Surowiec (ilo\u015B\u0107)": 1,
+    Surowiec: "Br\u0105z",
+    "Surowiec (ilo\u015B\u0107)": 2,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 3,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 4,
@@ -9526,8 +9620,8 @@ var units_default = [
     Tech: "Br\u0105zownictwo",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
-    Surowiec: "braz",
-    "Surowiec (ilo\u015B\u0107)": 5,
+    Surowiec: "Br\u0105z",
+    "Surowiec (ilo\u015B\u0107)": 2,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 6,
@@ -9582,8 +9676,8 @@ var units_default = [
     Tech: "\u2014",
     "Pieni\u0105dz (koszt)": 0,
     Ludno\u015B\u0107: 1,
-    Surowiec: "\u2014",
-    "Surowiec (ilo\u015B\u0107)": 0,
+    Surowiec: "Br\u0105z",
+    "Surowiec (ilo\u015B\u0107)": 3,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 0,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 10,
@@ -9638,8 +9732,8 @@ var units_default = [
     Tech: "\u0141ucznictwo",
     "Pieni\u0105dz (koszt)": 9,
     Ludno\u015B\u0107: 1,
-    Surowiec: "drewno",
-    "Surowiec (ilo\u015B\u0107)": 4,
+    Surowiec: "-",
+    "Surowiec (ilo\u015B\u0107)": 0,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 1,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 4,
@@ -9694,8 +9788,8 @@ var units_default = [
     Tech: "Je\u017Adziectwo",
     "Pieni\u0105dz (koszt)": 38,
     Ludno\u015B\u0107: 1,
-    Surowiec: "Ko\u0144",
-    "Surowiec (ilo\u015B\u0107)": 1,
+    Surowiec: "Br\u0105z",
+    "Surowiec (ilo\u015B\u0107)": 2,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 3,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 8,
@@ -9750,8 +9844,8 @@ var units_default = [
     Tech: "Br\u0105zownictwo",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
-    Surowiec: "braz",
-    "Surowiec (ilo\u015B\u0107)": 5,
+    Surowiec: "Br\u0105z",
+    "Surowiec (ilo\u015B\u0107)": 2,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 4,
@@ -9806,8 +9900,8 @@ var units_default = [
     Tech: "\u2014",
     "Pieni\u0105dz (koszt)": 0,
     Ludno\u015B\u0107: 1,
-    Surowiec: "\u2014",
-    "Surowiec (ilo\u015B\u0107)": 0,
+    Surowiec: "Br\u0105z",
+    "Surowiec (ilo\u015B\u0107)": 3,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 0,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 10,
@@ -9862,8 +9956,8 @@ var units_default = [
     Tech: "Br\u0105zownictwo",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
-    Surowiec: "braz",
-    "Surowiec (ilo\u015B\u0107)": 5,
+    Surowiec: "Br\u0105z",
+    "Surowiec (ilo\u015B\u0107)": 2,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 6,
@@ -9918,8 +10012,8 @@ var units_default = [
     Tech: "Je\u017Adziectwo",
     "Pieni\u0105dz (koszt)": 30,
     Ludno\u015B\u0107: 1,
-    Surowiec: "Ko\u0144",
-    "Surowiec (ilo\u015B\u0107)": 1,
+    Surowiec: "Br\u0105z",
+    "Surowiec (ilo\u015B\u0107)": 2,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 3,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 6,
@@ -9974,8 +10068,8 @@ var units_default = [
     Tech: "Br\u0105zownictwo",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
-    Surowiec: "braz",
-    "Surowiec (ilo\u015B\u0107)": 5,
+    Surowiec: "Br\u0105z",
+    "Surowiec (ilo\u015B\u0107)": 2,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 7,
@@ -10030,8 +10124,8 @@ var units_default = [
     Tech: "Br\u0105zownictwo",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
-    Surowiec: "braz",
-    "Surowiec (ilo\u015B\u0107)": 5,
+    Surowiec: "Br\u0105z",
+    "Surowiec (ilo\u015B\u0107)": 2,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 7,
@@ -10086,8 +10180,8 @@ var units_default = [
     Tech: "Je\u017Adziectwo",
     "Pieni\u0105dz (koszt)": 32,
     Ludno\u015B\u0107: 1,
-    Surowiec: "Ko\u0144",
-    "Surowiec (ilo\u015B\u0107)": 1,
+    Surowiec: "Br\u0105z",
+    "Surowiec (ilo\u015B\u0107)": 2,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 3,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 6,
@@ -10142,8 +10236,8 @@ var units_default = [
     Tech: "\u0141ucznictwo",
     "Pieni\u0105dz (koszt)": 16,
     Ludno\u015B\u0107: 1,
-    Surowiec: "drewno",
-    "Surowiec (ilo\u015B\u0107)": 5,
+    Surowiec: "-",
+    "Surowiec (ilo\u015B\u0107)": 0,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 4,
@@ -10198,8 +10292,8 @@ var units_default = [
     Tech: "Obr\xF3bka \u017Celaza",
     "Pieni\u0105dz (koszt)": 14,
     Ludno\u015B\u0107: 1,
-    Surowiec: "stal",
-    "Surowiec (ilo\u015B\u0107)": 3,
+    Surowiec: "\u017Belazo",
+    "Surowiec (ilo\u015B\u0107)": 2,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 1,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 8,
@@ -10251,8 +10345,8 @@ var units_default = [
     Epoka: "\u017Belazo",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
-    Surowiec: "stal",
-    "Surowiec (ilo\u015B\u0107)": 5,
+    Surowiec: "\u017Belazo",
+    "Surowiec (ilo\u015B\u0107)": 2,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 8,
@@ -10307,8 +10401,8 @@ var units_default = [
     Tech: "Hutnictwo \u017Celaza",
     "Pieni\u0105dz (koszt)": 28,
     Ludno\u015B\u0107: 1,
-    Surowiec: "zelazo",
-    "Surowiec (ilo\u015B\u0107)": 1,
+    Surowiec: "\u017Belazo",
+    "Surowiec (ilo\u015B\u0107)": 2,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 3,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 7,
@@ -10361,10 +10455,10 @@ var units_default = [
     Epoka: "\u017Belazo",
     Kultura: "Germanie",
     Tech: "Obr\xF3bka \u017Celaza",
-    "Pieni\u0105dz (koszt)": 16,
+    "Pieni\u0105dz (koszt)": 0,
     Ludno\u015B\u0107: 1,
-    Surowiec: "stal",
-    "Surowiec (ilo\u015B\u0107)": 0,
+    Surowiec: "\u017Belazo",
+    "Surowiec (ilo\u015B\u0107)": 3,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 6,
@@ -10419,8 +10513,8 @@ var units_default = [
     Tech: "Obr\xF3bka \u017Celaza",
     "Pieni\u0105dz (koszt)": 16,
     Ludno\u015B\u0107: 1,
-    Surowiec: "stal",
-    "Surowiec (ilo\u015B\u0107)": 3,
+    Surowiec: "\u017Belazo",
+    "Surowiec (ilo\u015B\u0107)": 2,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 10,
@@ -10533,8 +10627,8 @@ var units_default = [
     Tech: "Obl\u0119\u017Cnictwo",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
-    Surowiec: "zelazo",
-    "Surowiec (ilo\u015B\u0107)": 0,
+    Surowiec: "\u017Belazo",
+    "Surowiec (ilo\u015B\u0107)": 3,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 1,
@@ -10591,8 +10685,8 @@ var units_default = [
     Tech: "Br\u0105zownictwo",
     "Pieni\u0105dz (koszt)": 20,
     Ludno\u015B\u0107: 1,
-    Surowiec: "-",
-    "Surowiec (ilo\u015B\u0107)": 0,
+    Surowiec: "Br\u0105z",
+    "Surowiec (ilo\u015B\u0107)": 3,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 0,
@@ -10649,8 +10743,8 @@ var units_default = [
     Tech: "Br\u0105zownictwo",
     "Pieni\u0105dz (koszt)": 15,
     Ludno\u015B\u0107: 1,
-    Surowiec: "braz",
-    "Surowiec (ilo\u015B\u0107)": 4,
+    Surowiec: "Br\u0105z",
+    "Surowiec (ilo\u015B\u0107)": 2,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 8,
@@ -10705,8 +10799,8 @@ var units_default = [
     Tech: "Br\u0105zownictwo",
     "Pieni\u0105dz (koszt)": 14,
     Ludno\u015B\u0107: 1,
-    Surowiec: "braz",
-    "Surowiec (ilo\u015B\u0107)": 3,
+    Surowiec: "Br\u0105z",
+    "Surowiec (ilo\u015B\u0107)": 2,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 5,
@@ -10758,8 +10852,8 @@ var units_default = [
     Epoka: "\u017Belazo",
     "Pieni\u0105dz (koszt)": 32,
     Ludno\u015B\u0107: 1,
-    Surowiec: "zelazo",
-    "Surowiec (ilo\u015B\u0107)": 1,
+    Surowiec: "\u017Belazo",
+    "Surowiec (ilo\u015B\u0107)": 2,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 3,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 10,
@@ -10811,8 +10905,8 @@ var units_default = [
     Epoka: "\u017Belazo",
     "Pieni\u0105dz (koszt)": 30,
     Ludno\u015B\u0107: 1,
-    Surowiec: "zelazo",
-    "Surowiec (ilo\u015B\u0107)": 1,
+    Surowiec: "\u017Belazo",
+    "Surowiec (ilo\u015B\u0107)": 2,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 3,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 7,
@@ -10864,8 +10958,8 @@ var units_default = [
     Epoka: "Br\u0105z",
     "Pieni\u0105dz (koszt)": 14,
     Ludno\u015B\u0107: 1,
-    Surowiec: "drewno",
-    "Surowiec (ilo\u015B\u0107)": 4,
+    Surowiec: "-",
+    "Surowiec (ilo\u015B\u0107)": 0,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 5,
@@ -10917,8 +11011,8 @@ var units_default = [
     Epoka: "\u017Belazo",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
-    Surowiec: "zelazo",
-    "Surowiec (ilo\u015B\u0107)": 5,
+    Surowiec: "\u017Belazo",
+    "Surowiec (ilo\u015B\u0107)": 2,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 8,
@@ -10970,8 +11064,8 @@ var units_default = [
     Epoka: "\u017Belazo",
     "Pieni\u0105dz (koszt)": 26,
     Ludno\u015B\u0107: 1,
-    Surowiec: "zelazo",
-    "Surowiec (ilo\u015B\u0107)": 1,
+    Surowiec: "\u017Belazo",
+    "Surowiec (ilo\u015B\u0107)": 2,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 3,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 7,
@@ -11023,8 +11117,8 @@ var units_default = [
     Epoka: "Br\u0105z",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
-    Surowiec: "braz",
-    "Surowiec (ilo\u015B\u0107)": 5,
+    Surowiec: "Br\u0105z",
+    "Surowiec (ilo\u015B\u0107)": 2,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 6,
@@ -11076,8 +11170,8 @@ var units_default = [
     Epoka: "Br\u0105z",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
-    Surowiec: "braz",
-    "Surowiec (ilo\u015B\u0107)": 5,
+    Surowiec: "Br\u0105z",
+    "Surowiec (ilo\u015B\u0107)": 2,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 7,
@@ -11129,8 +11223,8 @@ var units_default = [
     Epoka: "\u017Belazo",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
-    Surowiec: "zelazo",
-    "Surowiec (ilo\u015B\u0107)": 5,
+    Surowiec: "\u017Belazo",
+    "Surowiec (ilo\u015B\u0107)": 2,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 8,
@@ -11182,8 +11276,8 @@ var units_default = [
     Epoka: "Br\u0105z",
     "Pieni\u0105dz (koszt)": 34,
     Ludno\u015B\u0107: 1,
-    Surowiec: "Ko\u0144",
-    "Surowiec (ilo\u015B\u0107)": 1,
+    Surowiec: "Br\u0105z",
+    "Surowiec (ilo\u015B\u0107)": 2,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 3,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 8,
@@ -11235,8 +11329,8 @@ var units_default = [
     Epoka: "Br\u0105z",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
-    Surowiec: "braz",
-    "Surowiec (ilo\u015B\u0107)": 5,
+    Surowiec: "Br\u0105z",
+    "Surowiec (ilo\u015B\u0107)": 2,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 7,
@@ -11288,8 +11382,8 @@ var units_default = [
     Epoka: "\u017Belazo",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
-    Surowiec: "zelazo",
-    "Surowiec (ilo\u015B\u0107)": 5,
+    Surowiec: "\u017Belazo",
+    "Surowiec (ilo\u015B\u0107)": 2,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 9,
@@ -11341,8 +11435,8 @@ var units_default = [
     Epoka: "Br\u0105z",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
-    Surowiec: "braz",
-    "Surowiec (ilo\u015B\u0107)": 5,
+    Surowiec: "Br\u0105z",
+    "Surowiec (ilo\u015B\u0107)": 2,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 9,
@@ -11394,8 +11488,8 @@ var units_default = [
     Epoka: "Br\u0105z",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
-    Surowiec: "braz",
-    "Surowiec (ilo\u015B\u0107)": 5,
+    Surowiec: "Br\u0105z",
+    "Surowiec (ilo\u015B\u0107)": 2,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 7,
@@ -11447,8 +11541,8 @@ var units_default = [
     Epoka: "\u017Belazo",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
-    Surowiec: "zelazo",
-    "Surowiec (ilo\u015B\u0107)": 5,
+    Surowiec: "\u017Belazo",
+    "Surowiec (ilo\u015B\u0107)": 2,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 8,
@@ -11500,8 +11594,8 @@ var units_default = [
     Epoka: "\u017Belazo",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
-    Surowiec: "zelazo",
-    "Surowiec (ilo\u015B\u0107)": 5,
+    Surowiec: "\u017Belazo",
+    "Surowiec (ilo\u015B\u0107)": 2,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 8,
@@ -11553,8 +11647,8 @@ var units_default = [
     Epoka: "Br\u0105z",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
-    Surowiec: "braz",
-    "Surowiec (ilo\u015B\u0107)": 5,
+    Surowiec: "Br\u0105z",
+    "Surowiec (ilo\u015B\u0107)": 2,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 6,
@@ -11606,8 +11700,8 @@ var units_default = [
     Epoka: "\u017Belazo",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
-    Surowiec: "zelazo",
-    "Surowiec (ilo\u015B\u0107)": 5,
+    Surowiec: "\u017Belazo",
+    "Surowiec (ilo\u015B\u0107)": 2,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 8,
@@ -11662,8 +11756,8 @@ var units_default = [
     Tech: "Hutnictwo \u017Celaza",
     "Pieni\u0105dz (koszt)": 16,
     Ludno\u015B\u0107: 1,
-    Surowiec: "zelazo",
-    "Surowiec (ilo\u015B\u0107)": 5,
+    Surowiec: "\u017Belazo",
+    "Surowiec (ilo\u015B\u0107)": 2,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 7,
@@ -11715,8 +11809,8 @@ var units_default = [
     Tech: "Hutnictwo \u017Celaza",
     "Pieni\u0105dz (koszt)": 0,
     Ludno\u015B\u0107: 1,
-    Surowiec: "zelazo",
-    "Surowiec (ilo\u015B\u0107)": 0,
+    Surowiec: "\u017Belazo",
+    "Surowiec (ilo\u015B\u0107)": 3,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 0,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 9,
@@ -11768,8 +11862,8 @@ var units_default = [
     Tech: "Hutnictwo \u017Celaza",
     "Pieni\u0105dz (koszt)": 16,
     Ludno\u015B\u0107: 1,
-    Surowiec: "zelazo",
-    "Surowiec (ilo\u015B\u0107)": 4,
+    Surowiec: "\u017Belazo",
+    "Surowiec (ilo\u015B\u0107)": 2,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 5,
@@ -11821,8 +11915,8 @@ var units_default = [
     Tech: "Br\u0105zownictwo",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
-    Surowiec: "braz",
-    "Surowiec (ilo\u015B\u0107)": 4,
+    Surowiec: "Br\u0105z",
+    "Surowiec (ilo\u015B\u0107)": 2,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 8,
@@ -11874,8 +11968,8 @@ var units_default = [
     Tech: "Hutnictwo \u017Celaza",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
-    Surowiec: "zelazo",
-    "Surowiec (ilo\u015B\u0107)": 5,
+    Surowiec: "\u017Belazo",
+    "Surowiec (ilo\u015B\u0107)": 2,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 8,
@@ -11927,8 +12021,8 @@ var units_default = [
     Tech: "Hutnictwo \u017Celaza",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
-    Surowiec: "zelazo",
-    "Surowiec (ilo\u015B\u0107)": 5,
+    Surowiec: "\u017Belazo",
+    "Surowiec (ilo\u015B\u0107)": 2,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 6,
@@ -11980,8 +12074,8 @@ var units_default = [
     Tech: "Hutnictwo \u017Celaza",
     "Pieni\u0105dz (koszt)": 14,
     Ludno\u015B\u0107: 1,
-    Surowiec: "zelazo",
-    "Surowiec (ilo\u015B\u0107)": 3,
+    Surowiec: "\u017Belazo",
+    "Surowiec (ilo\u015B\u0107)": 2,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 1,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 9,
@@ -12959,21 +13053,14 @@ var buildings_default = [
   },
   {
     id: "palac",
-    nazwa: "Palac",
+    nazwa: "Pa\u0142ac",
     kategoria: "Kultura/Administracja",
     epokaWejscia: 1,
     maksPoziom: 10,
     nazwyPoziomow: [
       "Dom wodza",
       "Dwor",
-      "Palac zarzadcy",
-      "Palac",
-      "Rezydencja",
-      "Dworzec",
-      "Palac regionu",
-      "Stolica prowincji",
-      "Palac krolewski",
-      "Palac cesarski"
+      "Pa\u0142ac zarz\u0105dcy"
     ],
     baza: {
       praca: 0,
@@ -13000,11 +13087,91 @@ var buildings_default = [
     utrzymanie: 2,
     przyrostUtrzymania: 1,
     wymagania: "-",
-    uwagi: "1 na miasto; g\u0142\xF3wne \u017Ar\xF3d\u0142o kultury + Prawo (society-params prawo_palac); budynek startowy \u2014 bez bramki tech",
+    uwagi: "B-PALAC-TIER I (Kamie\u0144): 1/miasto; bramka drewno; bonus bazowy \xD71; upgrade\u2192Pa\u0142ac II",
+    techUnlock: "-",
+    koszt_surowce: {
+      drewno: 8
+    }
+  },
+  {
+    id: "palac_ii",
+    nazwa: "Pa\u0142ac II",
+    kategoria: "Kultura/Administracja",
+    epokaWejscia: 2,
+    maksPoziom: 10,
+    upgradeFrom: "palac",
+    nazwyPoziomow: [],
+    baza: {
+      praca: 0,
+      pieniadz: 0,
+      zywnosc: 0,
+      nauka: 0,
+      kultura: 8,
+      zadowolenie: 3,
+      obrona: 0,
+      mnoznik: 8
+    },
+    przyrost: {
+      praca: 0,
+      pieniadz: 0,
+      zywnosc: 0,
+      nauka: 0,
+      kultura: 5,
+      zadowolenie: 2,
+      obrona: 0,
+      mnoznik: 0
+    },
+    kosztBudowy: 60,
+    przyrostKosztu: 18,
+    utrzymanie: 3,
+    przyrostUtrzymania: 1,
+    wymagania: "upgrade Pa\u0142ac I",
+    uwagi: "B-PALAC-TIER II (Br\u0105z): bramka drewno+kamie\u0144; bonus \xD71,5 wzgl\u0119dem I; upgrade\u2192Pa\u0142ac III",
     techUnlock: "-",
     koszt_surowce: {
       drewno: 8,
       kamien: 8
+    }
+  },
+  {
+    id: "palac_iii",
+    nazwa: "Pa\u0142ac III",
+    kategoria: "Kultura/Administracja",
+    epokaWejscia: 3,
+    maksPoziom: 10,
+    upgradeFrom: "palac_ii",
+    nazwyPoziomow: [],
+    baza: {
+      praca: 0,
+      pieniadz: 0,
+      zywnosc: 0,
+      nauka: 0,
+      kultura: 11,
+      zadowolenie: 5,
+      obrona: 0,
+      mnoznik: 11
+    },
+    przyrost: {
+      praca: 0,
+      pieniadz: 0,
+      zywnosc: 0,
+      nauka: 0,
+      kultura: 7,
+      zadowolenie: 2,
+      obrona: 0,
+      mnoznik: 0
+    },
+    kosztBudowy: 90,
+    przyrostKosztu: 27,
+    utrzymanie: 5,
+    przyrostUtrzymania: 2,
+    wymagania: "upgrade Pa\u0142ac II",
+    uwagi: "B-PALAC-TIER III (\u017Belazo): bramka drewno+kamie\u0144+ceg\u0142a; bonus \xD72,25 wzgl\u0119dem I (\xD71,5\xB2)",
+    techUnlock: "-",
+    koszt_surowce: {
+      drewno: 8,
+      kamien: 8,
+      cegla: 6
     }
   },
   {
@@ -13562,7 +13729,7 @@ var tech_default = {
     szybka: 1,
     standardowa: 2,
     dluga: 4,
-    _opis: "Globalny mnoznik kosztu badan wybierany przy starcie gry. Bazowe 'Koszt nauki' = tryb szybki (x1). applyTempoKoszt() z gra/src/game/tech-tempo.ts. Przyklad: tech koszt=12, szybka -> 12 PN; standardowa -> 24 PN; dluga -> 48 PN. Maciej 2026-07-07."
+    _opis: "Globalny mnoznik kosztu badan wybierany przy starcie gry. Bazowe 'Koszt nauki' w JSON = koszt przy tempie Szybka (x1); dawniejszy globalny x2 jest juz w JSON (B-RESEARCH-COST-MODEL 2026-07-24). applyTempoKoszt() z gra/src/game/tech-tempo.ts. Przyklad: tech koszt=24, szybka -> 24 PN; standardowa -> 48 PN; dluga -> 96 PN. Obr\xF3bka drewna/Murarstwo: 5/10/20 PN."
   },
   technologie: [
     {
@@ -13574,7 +13741,7 @@ var tech_default = {
       "Wymaga (prereq)": "\u2014",
       "Odblokowuje surowiec.": "drewno",
       "Odblokowuje budynek": "Stolarnia",
-      "Koszt nauki": 12,
+      "Koszt nauki": 5,
       Uwagi: null,
       "Odblokowuje ulepszenie terenu": "Tartak, Posterunek (Stra\u017Cnica)"
     },
@@ -13587,7 +13754,7 @@ var tech_default = {
       "Wymaga (prereq)": "\u2014",
       "Odblokowuje surowiec.": "ceg\u0142a, glina, sol",
       "Odblokowuje budynek": "Spichlerz; Garncarnia; Cegielnia",
-      "Koszt nauki": 10,
+      "Koszt nauki": 20,
       Uwagi: null,
       "Odblokowuje ulepszenie terenu": "Glinianka, Warzelnia soli"
     },
@@ -13600,7 +13767,7 @@ var tech_default = {
       "Wymaga (prereq)": "\u2014",
       "Odblokowuje surowiec.": "kamien, ruda",
       "Odblokowuje budynek": "Warsztat kamieniarski; Stela / Pomnik",
-      "Koszt nauki": 14,
+      "Koszt nauki": 5,
       Uwagi: null,
       "Odblokowuje ulepszenie terenu": "Kopalnia, Kamienio\u0142om, Posterunek (Stra\u017Cnica)"
     },
@@ -13614,7 +13781,7 @@ var tech_default = {
       "Odblokowuje surowiec.": null,
       "Odblokowuje budynek": null,
       "Odblokowuje ulepszenie terenu": "Farma, Tarasy uprawne",
-      "Koszt nauki": 8,
+      "Koszt nauki": 16,
       Uwagi: "B1-Q2A Maciej 2026-06-29; T-TECH-4: Tarasy po Rolnictwie"
     },
     {
@@ -13627,7 +13794,7 @@ var tech_default = {
       "Odblokowuje surowiec.": null,
       "Odblokowuje budynek": null,
       "Odblokowuje ulepszenie terenu": "Ob\xF3z \u0142owiecki",
-      "Koszt nauki": 10,
+      "Koszt nauki": 20,
       Uwagi: "B1-Q2A Maciej 2026-06-29"
     },
     {
@@ -13639,7 +13806,7 @@ var tech_default = {
       "Wymaga (prereq)": "\u0141owiectwo",
       "Odblokowuje surowiec.": null,
       "Odblokowuje budynek": "Jednostki: \u0141ucznik, \u0141ucznik egipski, \u0141ucznik sumeryjski, \u0141ucznik akadyjski",
-      "Koszt nauki": 14,
+      "Koszt nauki": 28,
       Uwagi: null,
       "Odblokowuje ulepszenie terenu": null
     },
@@ -13652,7 +13819,7 @@ var tech_default = {
       "Wymaga (prereq)": "\u2014",
       "Odblokowuje surowiec.": "krowa/byk, owce, bydlo, lama",
       "Odblokowuje budynek": null,
-      "Koszt nauki": 12,
+      "Koszt nauki": 24,
       Uwagi: null,
       "Odblokowuje ulepszenie terenu": "Byd\u0142o, Owce, Lama"
     },
@@ -13665,7 +13832,7 @@ var tech_default = {
       "Wymaga (prereq)": "\u2014",
       "Odblokowuje surowiec.": null,
       "Odblokowuje budynek": "Kamienne kr\u0119gi",
-      "Koszt nauki": 10,
+      "Koszt nauki": 20,
       Uwagi: "T-TECH-8: pierwszy poziom kultu \u2014 upgrade do \u015Awi\u0105tyni po Religii",
       "Odblokowuje ulepszenie terenu": null
     },
@@ -13678,7 +13845,7 @@ var tech_default = {
       "Wymaga (prereq)": "Garncarstwo + Rolnictwo + Oswojenie zwierz\u0105t",
       "Odblokowuje surowiec.": null,
       "Odblokowuje budynek": "Targowisko (Rynek)",
-      "Koszt nauki": 16,
+      "Koszt nauki": 32,
       Uwagi: null,
       "Odblokowuje ulepszenie terenu": null
     },
@@ -13691,7 +13858,7 @@ var tech_default = {
       "Wymaga (prereq)": "Rolnictwo",
       "Odblokowuje surowiec.": null,
       "Odblokowuje budynek": "Studnia",
-      "Koszt nauki": 18,
+      "Koszt nauki": 36,
       Uwagi: null,
       "Odblokowuje ulepszenie terenu": "Irygacja"
     },
@@ -13704,7 +13871,7 @@ var tech_default = {
       "Wymaga (prereq)": "Oswojenie zwierz\u0105t",
       "Odblokowuje surowiec.": "krowa/byk",
       "Odblokowuje budynek": "Jednostki: Rydwan (wo\u0142y)",
-      "Koszt nauki": 22,
+      "Koszt nauki": 44,
       Uwagi: null,
       "Odblokowuje ulepszenie terenu": "Droga"
     },
@@ -13717,7 +13884,7 @@ var tech_default = {
       "Wymaga (prereq)": "Garncarstwo + Murarstwo + Obr\xF3bka drewna",
       "Odblokowuje surowiec.": null,
       "Odblokowuje budynek": "Odlewnia br\u0105zu; Kuznia; Jednostki: W\u0142\xF3cznik, Wojownik z mieczem i tarcz\u0105, Impi, Wojownik z toporem, Wojownik z khopesh, W\u0142\xF3cznik sumeryjski, Wojownik myke\u0144ski, Wojownik Sherden, Halabardnik Shang, Wie\u017Ca obl\u0119\u017Cnicza, Wojownik tyrre\u0144ski, Wojownik szekelesz",
-      "Koszt nauki": 45,
+      "Koszt nauki": 90,
       Uwagi: "ko\u0144czy Epok\u0119 1; ABC-7: Popalnia br\u0105zu na mapie",
       "Odblokowuje ulepszenie terenu": "Popalnia br\u0105zu",
       awansDoEpoki: 2
@@ -13731,7 +13898,7 @@ var tech_default = {
       "Wymaga (prereq)": "Obr\xF3bka drewna",
       "Odblokowuje surowiec.": null,
       "Odblokowuje budynek": "Port handlowy; Jednostki: Galera",
-      "Koszt nauki": 40,
+      "Koszt nauki": 80,
       Uwagi: null,
       "Odblokowuje ulepszenie terenu": "\u0141odzie rybackie",
       "wymagane ulepszenie": "Tartak"
@@ -13745,7 +13912,7 @@ var tech_default = {
       "Wymaga (prereq)": "Garncarstwo + Wymiana",
       "Odblokowuje surowiec.": null,
       "Odblokowuje budynek": "Biblioteka",
-      "Koszt nauki": 45,
+      "Koszt nauki": 90,
       Uwagi: null,
       "Odblokowuje ulepszenie terenu": null
     },
@@ -13758,7 +13925,7 @@ var tech_default = {
       "Wymaga (prereq)": "Garncarstwo + Mistycyzm",
       "Odblokowuje surowiec.": null,
       "Odblokowuje budynek": "\u015Awi\u0105tynia (upgrade kr\u0119g\xF3w)",
-      "Koszt nauki": 48,
+      "Koszt nauki": 96,
       Uwagi: "T-TECH-8: upgrade kamienne_kregi \u2192 swiatynia (suma bonus\xF3w w JSON)",
       "Odblokowuje ulepszenie terenu": null
     },
@@ -13771,7 +13938,7 @@ var tech_default = {
       "Wymaga (prereq)": "Ko\u0142o + Br\u0105zownictwo",
       "Odblokowuje surowiec.": null,
       "Odblokowuje budynek": "Jednostki: Konnica, Je\u017Adziec chi\u0144ski, Rydwan konny, Rydwan egipski, Rydwan sumeryjski, Rydwan myke\u0144ski, Rydwan Shang",
-      "Koszt nauki": 56,
+      "Koszt nauki": 112,
       Uwagi: null,
       "Odblokowuje ulepszenie terenu": null
     },
@@ -13784,7 +13951,7 @@ var tech_default = {
       "Wymaga (prereq)": "Br\u0105zownictwo",
       "Odblokowuje surowiec.": null,
       "Odblokowuje budynek": "Koszary",
-      "Koszt nauki": 52,
+      "Koszt nauki": 104,
       Uwagi: null,
       "Odblokowuje ulepszenie terenu": "Fort / umocnienia"
     },
@@ -13797,7 +13964,7 @@ var tech_default = {
       "Wymaga (prereq)": "Pismo + Wymiana",
       "Odblokowuje surowiec.": null,
       "Odblokowuje budynek": null,
-      "Koszt nauki": 68,
+      "Koszt nauki": 136,
       Uwagi: "Maciej 2026-06-30: usuni\u0119to luksus/plantacj\u0119 z gry",
       "Odblokowuje ulepszenie terenu": "\u2014"
     },
@@ -13810,7 +13977,7 @@ var tech_default = {
       "Wymaga (prereq)": "Pismo + \u017Begluga",
       "Odblokowuje surowiec.": null,
       "Odblokowuje budynek": "Karawanseraj; Magazyn",
-      "Koszt nauki": 74,
+      "Koszt nauki": 148,
       Uwagi: null,
       "Odblokowuje ulepszenie terenu": null
     },
@@ -13823,7 +13990,7 @@ var tech_default = {
       "Wymaga (prereq)": "Pismo + Religia",
       "Odblokowuje surowiec.": null,
       "Odblokowuje budynek": "Trybuna\u0142",
-      "Koszt nauki": 62,
+      "Koszt nauki": 124,
       Uwagi: null,
       "Odblokowuje ulepszenie terenu": null
     },
@@ -13836,7 +14003,7 @@ var tech_default = {
       "Wymaga (prereq)": "Matematyka + Murarstwo",
       "Odblokowuje surowiec.": null,
       "Odblokowuje budynek": "Mury; Akwedukt",
-      "Koszt nauki": 85,
+      "Koszt nauki": 170,
       Uwagi: "T-TECH-6: Akwedukt v1.0",
       "Odblokowuje ulepszenie terenu": null
     },
@@ -13849,7 +14016,7 @@ var tech_default = {
       "Wymaga (prereq)": "Handel + Matematyka",
       "Odblokowuje surowiec.": null,
       "Odblokowuje budynek": "Mennica",
-      "Koszt nauki": 100,
+      "Koszt nauki": 200,
       Uwagi: "ko\u0144czy Epok\u0119 2 (Pieni\u0105dz); T-TECH-6: Mennica v1.0",
       "Odblokowuje ulepszenie terenu": null
     },
@@ -13862,7 +14029,7 @@ var tech_default = {
       "Wymaga (prereq)": "Matematyka + Religia",
       "Odblokowuje surowiec.": null,
       "Odblokowuje budynek": "Biblioteka: poziom Obserwatorium+ (poz. 6)",
-      "Koszt nauki": 110,
+      "Koszt nauki": 220,
       Uwagi: "3a: Astronomia = bramka rozwoju Biblioteki do poziomu 6 (Obserwatorium) i wyzej; nie osobny budynek. prereq Matematyka+Mistycyzm",
       "Odblokowuje ulepszenie terenu": null
     },
@@ -13875,7 +14042,7 @@ var tech_default = {
       "Wymaga (prereq)": "Br\u0105zownictwo",
       "Odblokowuje surowiec.": "\u017Celazo",
       "Odblokowuje budynek": "Ku\u017Ania \u017Celaza; Jednostki: Hastati, Falanga, Dru\u017Cynnik, Garnizon Harappy, Gwardia hetycka, Piechota neobabilo\u0144ska, Tyrski miecznik, Gwardia Tyre\u0144ska, Thorakites, iButho z iklwa, Wojownik z \u017Celaznym khopesh, Mur tarcz (Sargonid), Miecznik galijski, Rydwan celtycki, Konnica lancowa asyryjska, Konnica \u0142ucznicza asyryjska, Je\u017Adziec z oszczepami",
-      "Koszt nauki": 120,
+      "Koszt nauki": 240,
       Uwagi: "ko\u0144czy Epok\u0119 2 / otwiera Epok\u0119 3; jednostki \u017Celazne (Gaesatae, Soldurii, Wojownik germa\u0144ski itp.) \u2014 do zdefiniowania przez UNITS; Ku\u017Ania \u017Celaza = NOWY budynek dla EKONOMIA",
       "Odblokowuje ulepszenie terenu": null,
       awansDoEpoki: 3
@@ -13889,7 +14056,7 @@ var tech_default = {
       "Wymaga (prereq)": "Budownictwo",
       "Odblokowuje surowiec.": null,
       "Odblokowuje budynek": "Fort",
-      "Koszt nauki": 130,
+      "Koszt nauki": 260,
       Uwagi: "Fort = NOWY budynek (obrona terenu, zasi\u0119g 10, +100% obrona przy obozowaniu \u2014 zob. civ-bonusy-obronne-mapa.md); Akwedukt ulepszony = rozszerzenie istniej\u0105cego Akweduktu",
       "Odblokowuje ulepszenie terenu": null
     },
@@ -13902,7 +14069,7 @@ var tech_default = {
       "Wymaga (prereq)": "Matematyka + Wojskowo\u015B\u0107",
       "Odblokowuje surowiec.": null,
       "Odblokowuje budynek": "Warsztat obl\u0119\u017Cniczy; Jednostki: Katapulta",
-      "Koszt nauki": 140,
+      "Koszt nauki": 280,
       Uwagi: "jednostki: Katapulta, Taran, Wie\u017Ca obl\u0119\u017Cnicza (cz\u0119\u015B\u0107 ju\u017C w UNITS \u2014 weryfikacja przez UNITS); Warsztat obl\u0119\u017Cniczy = NOWY budynek dla EKONOMIA; Katapulta wymaga tego tech (aktualizacja Tech w units.json przez UNITS)",
       "Odblokowuje ulepszenie terenu": null
     },
@@ -13915,7 +14082,7 @@ var tech_default = {
       "Wymaga (prereq)": "Pismo + Religia",
       "Odblokowuje surowiec.": null,
       "Odblokowuje budynek": "Akademia; Teatr",
-      "Koszt nauki": 150,
+      "Koszt nauki": 300,
       Uwagi: "Akademia = NOWY budynek (nauka++); Teatr = NOWY budynek (kultura++, zadowolenie++); oba dla EKONOMIA",
       "Odblokowuje ulepszenie terenu": null
     },
@@ -13928,7 +14095,7 @@ var tech_default = {
       "Wymaga (prereq)": "Kodeks + Filozofia",
       "Odblokowuje surowiec.": null,
       "Odblokowuje budynek": "S\u0105d; Pretorium",
-      "Koszt nauki": 155,
+      "Koszt nauki": 310,
       Uwagi: "S\u0105d = NOWY budynek (administracja, zadowolenie+, korupcja-); Pretorium = NOWY budynek (administracja, bonus do utrzymania porz\u0105dku); oba dla EKONOMIA",
       "Odblokowuje ulepszenie terenu": null
     },
@@ -13941,7 +14108,7 @@ var tech_default = {
       "Wymaga (prereq)": "In\u017Cynieria + Budownictwo",
       "Odblokowuje surowiec.": null,
       "Odblokowuje budynek": null,
-      "Koszt nauki": 170,
+      "Koszt nauki": 340,
       Uwagi: "T-TECH-9: ulepszenie Droga brukowana (+2 ruch, upgrade z Drogi)",
       "Odblokowuje ulepszenie terenu": "Droga brukowana"
     },
@@ -13954,7 +14121,7 @@ var tech_default = {
       "Wymaga (prereq)": "Filozofia",
       "Odblokowuje surowiec.": null,
       "Odblokowuje budynek": "\u0141a\u017Ania publiczna; Lazaret",
-      "Koszt nauki": 162,
+      "Koszt nauki": 324,
       Uwagi: "\u0141a\u017Ania publiczna = NOWY budynek (zadowolenie++, zdrowie++); Lazaret = NOWY budynek (odnawianie HP jednostek w mie\u015Bcie); oba dla EKONOMIA; styk z UNITS (regeneracja)",
       "Odblokowuje ulepszenie terenu": null
     },
@@ -13967,7 +14134,7 @@ var tech_default = {
       "Wymaga (prereq)": "Hutnictwo \u017Celaza + Drogi brukowane",
       "Odblokowuje surowiec.": "stal (prereq)",
       "Odblokowuje budynek": "Wielka Ku\u017Ania; Jednostki: Gaesatae, Soldurii, Wojownik germa\u0144ski, Berserker germa\u0144ski",
-      "Koszt nauki": 185,
+      "Koszt nauki": 370,
       Uwagi: "Wielka Ku\u017Ania = NOWY budynek (produkcja++, mnoznik jednostek++); stal = NOWY surowiec dla DANE (prereq dalszych epok); EKONOMIA dodaje surowiec; UNITS aktualizuje jednostki \u017Celazne wy\u017Cszego poziomu",
       "Odblokowuje ulepszenie terenu": null
     },
@@ -13980,7 +14147,7 @@ var tech_default = {
       "Wymaga (prereq)": "Obl\u0119\u017Cnictwo + Obr\xF3bka \u017Celaza",
       "Odblokowuje surowiec.": null,
       "Odblokowuje budynek": "Akademia wojskowa",
-      "Koszt nauki": 200,
+      "Koszt nauki": 400,
       Uwagi: "ko\u0144czy Epok\u0119 3 (cap v0.1); Akademia wojskowa = NOWY budynek (mnoznik sily i exp jednostek ++, prereq elitarnych jednostek \u017Celaznych); UNITS definiuje jednostki top-tier \u017Belaza; EKONOMIA dodaje budynek",
       "Odblokowuje ulepszenie terenu": null
     }
@@ -19502,6 +19669,13 @@ var econ_params_default = {
       jednostka: "%",
       opis: "Zadanie 2 (2026-07-23): Garncarnia +10% Zywnosci LOKALNIE (tylko w miescie, gdzie stoi; NIE civ-wide), stackuje addytywnie: \xD7(1+0.10\xD7garncarnie_w_miescie). Wpiete w economy.ts cityYieldPerTurn (zywnoscBrutto, przed konsumpcja). PLACEHOLDER do strojenia."
     },
+    ulepszenie_surowcowe_upkeep_praca: {
+      easy: 1,
+      normal: 1,
+      hard: 1,
+      jednostka: "Praca/tur\u0119/ulepszenie",
+      opis: "ZADANIE 1 (Maciej 2026-07-23, decyzja B): KAZDE zbudowane ulepszenie surowcowe (tartak/kamieniolom/glinianka/kopalnia/kopalnia_miedzi + DOSTEPOWE warzelnia_soli/stadnina) zuzywa 1 Praca/ture z globalnej puli produkcji cywilizacji (playerPracaPool / aiPracaPoolByOwner w main.ts) -- ciagly upkeep, niezaleznie od obsadzenia ludnoscia. Zwolnione: zywnosciowe (farma/irygacja/tarasy/bydlo/owce/lama/oboz_lowiecki/lodzie_rybackie) + infrastruktura (droga/droga_brukowana/fort/posterunek/wyrab). Wpiete w turn-economy.ts computePracaUpkeepByOwner. PLACEHOLDER do strojenia (koszt=1)."
+    },
     budynek_mennica_mnoznik: {
       easy: 2,
       normal: 1,
@@ -19754,18 +19928,25 @@ var econ_params_default = {
       opis: "Bazowa pojemno\u015B\u0107 Magazynu \u017Bywno\u015Bci (bez Spichlerza). [PT]"
     },
     magazyn_baza_surowce: {
-      easy: 12,
-      normal: 10,
-      hard: 8,
-      jednostka: "szt/typ surowca",
-      opis: "Bazowa pojemno\u015B\u0107 per typ surowca (bez Magazynu Surowc\xF3w). [PT]"
+      easy: 500,
+      normal: 500,
+      hard: 500,
+      jednostka: "szt/typ surowca (PA\u0143STWO)",
+      opis: "SUROW-CIV-01 (decyzja Macieja 2026-07-24): ZMIANA SEMANTYKI \u2014 od teraz to baza pojemno\u015Bci CA\u0141EGO PA\u0143STWA (civ-wide, suma po wszystkich miastach ownera) per typ surowca, przy 0 zbudowanych budynk\xF3w \u201EMagazyn\u201D w imperium \u2014 NIE per-miasto jak dawniej. Model ADDYTYWNY razem z magazyn_bonus_surowce_na_budynek (nie mno\u017Cnikowy). BAZA PODNIESIONA 100\u2192500 (Maciej 2026-07-24). Cap per typ = 500 + 100 \xD7 liczba Magazyn\xF3w (ka\u017Cdy Magazyn w dowolnym mie\u015Bcie dok\u0142ada +100, nie jednorazowo). P\u0142askie na easy/normal/hard. Dotyczy WY\u0141\u0104CZNIE surowc\xF3w (drewno/kamie\u0144/glina/ruda/ruda_zelaza/ceg\u0142a/br\u0105z/\u017Celazo/stal) \u2014 \u017Bywno\u015B\u0107/Spichlerz nadal u\u017Cywa modelu mno\u017Cnikowego per-miasto (bez zmian, patrz magazyn_baza_zywnosc)."
+    },
+    magazyn_bonus_surowce_na_budynek: {
+      easy: 100,
+      normal: 100,
+      hard: 100,
+      jednostka: "szt/typ surowca (PA\u0143STWO) / Magazyn",
+      opis: "SUROW-CIV-01 (decyzja Macieja 2026-07-24, NOWY PARAMETR): dodatkowa pojemno\u015B\u0107 CA\u0141EGO PA\u0143STWA per typ surowca za KA\u017BDY budynek \u201EMagazyn\u201D zbudowany GDZIEKOLWIEK w imperium ownera (addytywnie, nie mno\u017Cnik \u2014 2 Magazyny = +200, nie \xD72). Cap per typ = magazyn_baza_surowce + magazyn_bonus_surowce_na_budynek \xD7 liczba_magazynow. Placeholder do strojenia."
     },
     magazyn_mnoznik_spichlerz: {
       easy: 6,
       normal: 5,
       hard: 4,
       jednostka: "\xD7",
-      opis: "Mno\u017Cnik pojemno\u015Bci przy wybudowanym Spichlerzu / Magazynie Surowc\xF3w. [PT]"
+      opis: "Mno\u017Cnik pojemno\u015Bci \u017BYWNO\u015ACI przy wybudowanym Spichlerzu (magazyn_baza_zywnosc \xD7 ten mno\u017Cnik). SUROW-CIV-01 2026-07-24: surowce (drewno/kamie\u0144/\u2026) NIE u\u017Cywaj\u0105 ju\u017C tego mno\u017Cnika \u2014 patrz magazyn_baza_surowce/magazyn_bonus_surowce_na_budynek (model addytywny, civ-wide). [PT]"
     },
     utrzymanie_jednostka_standard: {
       easy: 1,
@@ -19773,6 +19954,20 @@ var econ_params_default = {
       hard: 2,
       jednostka: "Pieni\u0105dz/tur\u0119",
       opis: "Koszt utrzymania standardowej jednostki wojskowej. [PT]"
+    },
+    ai_rush_jednostka_rezerwa_zlota: {
+      easy: 100,
+      normal: 100,
+      hard: 100,
+      jednostka: "Z\u0142oto",
+      opis: "R-AI-KUP-JEDN (Maciej 2026-07-24, parytet AI): bufor skarbca AI, ktory musi zostac PO zaplaceniu za rush-zakup jednostki za zloto (shouldAIRushBuyUnit, game/ai.ts) -- AI kupuje tylko gdy treasury >= wartosc + koszt jednostki. Ta sama wartosc na wszystkich trudnosciach. PLACEHOLDER do strojenia (przeniesione z main.ts AI_UNIT_GOLD_RUSH_RESERVE, wartosc bez zmian)."
+    },
+    ai_rush_jednostka_max_na_ture: {
+      easy: 1,
+      normal: 1,
+      hard: 1,
+      jednostka: "szt./ownera/tur\u0119",
+      opis: "R-AI-KUP-JEDN (Maciej 2026-07-24, parytet AI): twardy cap liczby rush-zakupow jednostek za zloto na jednego AI-ownera w jednej turze (shouldAIRushBuyUnit, game/ai.ts) -- zapobiega farmieniu skarbca. Ta sama wartosc na wszystkich trudnosciach. PLACEHOLDER do strojenia (przeniesione z main.ts AI_UNIT_GOLD_RUSH_MAX_PER_TURN, wartosc bez zmian)."
     },
     skarbiec_centralny_lokalizacja: {
       easy: "stolica",
@@ -22998,6 +23193,36 @@ function computeTerritoryResourceYieldByCity(cities, map, territoryNodes) {
   }
   return out;
 }
+function countResourceUpkeepImprovementsByOwner(map, territoryNodes) {
+  const out = /* @__PURE__ */ new Map();
+  for (const hexKey2 of Object.keys(map.hexes)) {
+    const hex = map.hexes[hexKey2];
+    if (!hex) continue;
+    const impKeys = improvementKeysForHex(hex);
+    if (!impKeys.length) continue;
+    let n = 0;
+    for (const key of impKeys) {
+      if (RESOURCE_UPKEEP_IMPROVEMENT_KEYS.has(key)) n += 1;
+    }
+    if (n === 0) continue;
+    const { q, r } = hex.coords;
+    const owner = territoryOwnerAt(q, r, territoryNodes);
+    if (owner == null) continue;
+    out.set(owner, (out.get(owner) ?? 0) + n);
+  }
+  return out;
+}
+function loadResourceImprovementUpkeepCost(data2, difficulty) {
+  const raw = data2.econParams;
+  return loadThroughput(raw, "ulepszenie_surowcowe_upkeep_praca", difficulty, 1);
+}
+function computePracaUpkeepByOwner(map, territoryNodes, data2, difficulty) {
+  const counts = countResourceUpkeepImprovementsByOwner(map, territoryNodes);
+  const cost = loadResourceImprovementUpkeepCost(data2, difficulty);
+  const out = /* @__PURE__ */ new Map();
+  for (const [owner, n] of counts) out.set(owner, n * cost);
+  return out;
+}
 function toEconomyCity(city, params, isCapital, zdrowie = 0, buildings = {}) {
   return {
     id: city.id,
@@ -23042,6 +23267,7 @@ function advanceCityEconomy(cities, map, data2, difficulty = "normal", econUnits
   const territoryNodes = buildTerritoryNodesFromCities(cities);
   reconcileAllWorkedTiles(cities, territoryNodes);
   const territoryResourceByCity = computeTerritoryResourceYieldByCity(cities, map, territoryNodes);
+  const pracaUpkeepByOwner = computePracaUpkeepByOwner(map, territoryNodes, data2, difficulty);
   const rawEconParams = data2.econParams;
   const upkeepParams = loadUpkeepParams(rawEconParams, difficulty);
   const storageParams = loadStorageParams(rawEconParams, difficulty);
@@ -23070,6 +23296,7 @@ function advanceCityEconomy(cities, map, data2, difficulty = "normal", econUnits
   );
   const stolarniaCountByOwner = /* @__PURE__ */ new Map();
   const kamieniarskiCountByOwner = /* @__PURE__ */ new Map();
+  const magazynCountByOwner = /* @__PURE__ */ new Map();
   for (const c of cities) {
     const bIds = builtByCity.get(c.id) ?? [];
     if (bIds.includes("stolarnia")) {
@@ -23078,6 +23305,18 @@ function advanceCityEconomy(cities, map, data2, difficulty = "normal", econUnits
     if (bIds.includes("kamieniarski")) {
       kamieniarskiCountByOwner.set(c.ownerId, (kamieniarskiCountByOwner.get(c.ownerId) ?? 0) + 1);
     }
+    if (bIds.includes("magazyn")) {
+      magazynCountByOwner.set(c.ownerId, (magazynCountByOwner.get(c.ownerId) ?? 0) + 1);
+    }
+  }
+  const ownerStorageParams = loadOwnerStorageParams(rawEconParams, difficulty);
+  const ownerResCapByOwner = /* @__PURE__ */ new Map();
+  function ownerResourceCapFor(ownerId) {
+    const cached = ownerResCapByOwner.get(ownerId);
+    if (cached !== void 0) return cached;
+    const cap = ownerResourceCapacityPerType(magazynCountByOwner.get(ownerId) ?? 0, ownerStorageParams);
+    ownerResCapByOwner.set(ownerId, cap);
+    return cap;
   }
   const healthParams = loadHealthParams(
     data2.societyParams,
@@ -23100,7 +23339,8 @@ function advanceCityEconomy(cities, map, data2, difficulty = "normal", econUnits
     totalPracaPula: 0,
     growth: 0,
     starved: 0,
-    upkeepByOwner: /* @__PURE__ */ new Map()
+    upkeepByOwner: /* @__PURE__ */ new Map(),
+    pracaUpkeepByOwner
   };
   const incomeByOwner = /* @__PURE__ */ new Map();
   for (const city of cities) {
@@ -23282,8 +23522,7 @@ function advanceCityEconomy(cities, map, data2, difficulty = "normal", econUnits
     city.magazynZywnosci = Math.min(grow.nowyMagazynZywnosci, foodCap);
     magazynPoTurze = city.magazynZywnosci;
     incomeByOwner.set(city.ownerId, (incomeByOwner.get(city.ownerId) ?? 0) + pieniadzPoWealth + pieniadzZTras);
-    const maMagazyn = builtIds.includes("magazyn");
-    const resCap = resourceStorageCapacityPerType(maMagazyn, storageParams);
+    const resCap = ownerResourceCapFor(city.ownerId);
     if (!city.surowce) city.surowce = {};
     const citySurowce = city.surowce;
     const terrYield = territoryResourceByCity.get(city.id);
@@ -23344,6 +23583,7 @@ function advanceCityEconomy(cities, map, data2, difficulty = "normal", econUnits
     if (grow.wzrost) result.growth += 1;
     if (grow.ubytek) result.starved += 1;
   }
+  reconcileOwnerResourceCaps(cities, ownerResourceCapFor);
   const ownerIds = /* @__PURE__ */ new Set([
     ...cities.map((c) => c.ownerId),
     ...econUnits.map((u) => u.ownerId)

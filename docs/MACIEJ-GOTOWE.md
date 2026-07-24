@@ -4,6 +4,20 @@
 > **Czat:** krótko **`✅ Gotowe:`** / **`⏸️ Czeka:`** · **Ten plik:** pełniejszy zapis tego samego.  
 > Szczegóły techniczne → handoff w `dyspozycje/_handoff/` · operacja → `dyspozycje/DZIENNIK-MASTERA.md`
 
+## [00:05] ✅ Gotowe — stash merge + deploy ROBOCZA `0de2599c` (main push)
+
+| | |
+|---|---|
+| **Prośba** | Maciej: „czemu te nowe rzeczy nie są w main?" + „zrób deploy do roboczej" |
+| **Ze stash** | B-PALAC-TIER (palac/palac_ii/palac_iii + koszty surowców + bonus ×1,5) · B-RESEARCH-COST (GLOBAL=1, tech.json ×2) · B-TECH-EARLY (Obróbka/Murarstwo=5) · building-upgrades/conquest-stability/cityPanel |
+| **Konflikt** | `buildings.json`: tiery pałacu ze stash wygrały nad FALA-8 „Pałac bez surowców" |
+| **FALA 8 zachowana** | blokada 1. miasta · UI surowców · kamień współistnieje · Civpedia · mapa Ziemia |
+| **Deploy** | ROBOCZA **`0de2599c`** · md5 `0de2599cba16087cbb47cb202fdb616c` · `gra-robocza/START.html` |
+| **Bramki** | tsc 0 · research 33/33 · tech-tempo 15/15 · difficulty-cost 22/22 · conquest-stability 27/27 · VERIFY OK |
+| **Git** | commit + push origin main |
+
+---
+
 ## [23:52] ✅ Gotowe — stash→pull→pop + deploy ROBOCZA `c7e16e51`
 
 | | |

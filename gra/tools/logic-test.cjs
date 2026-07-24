@@ -507,14 +507,12 @@ assert('research: after all Kamień tier 1-2 techs, Brązownictwo becomes availa
 // Completing a tech: enough science -> moves to zbadane and deducts cost.
 // tempoGry='szybka' pins the tempo-kreatora multiplier to x1 so this test exercises
 // researchStep's own logic, not the separate tech-tempo x2/x4 multiplier (that has
-// its own dedicated bramka: tech-tempo-test.cjs). The effective cost researchStep
-// actually charges also includes GLOBAL_RESEARCH_COST_MULT (Maciej 2026-07-22,
-// "Balans: badania x2") + difficulty asymmetry, applied by scaledResearchCost() —
-// compute the same way here so the fixture tracks the real balance knob.
+// its own dedicated bramka: tech-tempo-test.cjs). GLOBAL_RESEARCH_COST_MULT=1 since
+// B-RESEARCH-COST-MODEL (2026-07-24) — former x2 absorbed into tech.json.
 const psA = createPlayerState();
 psA.tempoGry = 'szybka';
-const obrobka = techData.find(t => t.Technologia === 'Obróbka drewna'); // raw cost 12 (tech.json), no prereq
-assert('research: found Obróbka drewna (cost 12)', !!obrobka && techCost(obrobka) === 12,
+const obrobka = techData.find(t => t.Technologia === 'Obróbka drewna'); // raw cost 5 (tech.json), no prereq
+assert('research: found Obróbka drewna (cost 5)', !!obrobka && techCost(obrobka) === 5,
   `cost=${obrobka ? techCost(obrobka) : 'N/A'}`);
 const obrobkaEffCost = scaledResearchCost(techCost(obrobka), 'szybka', 0, 'normal');
 psA.badana = 'Obróbka drewna';
@@ -523,7 +521,7 @@ const resA = researchStep(psA, techData);
 assert('research: completing a tech moves it into zbadane',
   psA.zbadane.has('Obróbka drewna'), `zbadane=${[...psA.zbadane].join(',')}`);
 assert('research: completing a tech deducts its cost from science',
-  psA.nauka === 0, `nauka=${psA.nauka}`); // 12 - 12 = 0
+  psA.nauka === 0, `nauka=${psA.nauka}`); // 5 - 5 = 0
 assert('research: researchStep reports the completed tech',
   resA.completed.length >= 1 && resA.completed.some(c => c.id === 'Obróbka drewna'));
 assert('research: after spending all science, a new (different) tech is selected',
@@ -532,11 +530,11 @@ assert('research: after spending all science, a new (different) tech is selected
 // Not enough science -> nothing completes, science untouched.
 const psB = createPlayerState();
 psB.badana = 'Obróbka drewna';
-psB.nauka = 5; // < 12 (cost of Obróbka drewna)
+psB.nauka = 4; // < 5 (cost of Obróbka drewna)
 const resB = researchStep(psB, techData);
 assert('research: insufficient science completes nothing',
   resB.completed.length === 0 && !psB.zbadane.has('Obróbka drewna'));
-assert('research: insufficient science leaves the pool untouched', psB.nauka === 5,
+assert('research: insufficient science leaves the pool untouched', psB.nauka === 4,
   `nauka=${psB.nauka}`);
 
 // Era tech: completing "Brązownictwo" (prereq Garncarstwo + Murarstwo + Obróbka
@@ -547,7 +545,7 @@ psC.zbadane = new Set(kamienBeforeBraz);
 psC.badana = 'Brązownictwo';
 psC.nauka = scaledResearchCost(
   techCost(techData.find(t => t.Technologia === 'Brązownictwo')), 'szybka', 0, 'normal',
-); // exact effective cost (tempo='szybka' + GLOBAL_RESEARCH_COST_MULT)
+); // exact effective cost (tempo='szybka', GLOBAL_MULT=1)
 const eraBefore = psC.era;
 const resC = researchStep(psC, techData);
 assert('research: era tech (Brązownictwo) marks the era-advance flag',
@@ -572,7 +570,7 @@ const allKamien = techData.filter(t => t.Epoka === 'Kamień').map(t => t.Technol
 const brazBeforeWaluta = sameEpochLowerTierIds('Waluta'); // Brąz tiers 4-5
 psD.zbadane = new Set([...allKamien, ...brazBeforeWaluta]);
 psD.badana = 'Waluta';
-psD.nauka = scaledResearchCost(techCost(walutaDef), 'szybka', 0, 'normal'); // exact effective cost (tempo='szybka' + GLOBAL_RESEARCH_COST_MULT)
+psD.nauka = scaledResearchCost(techCost(walutaDef), 'szybka', 0, 'normal'); // exact effective cost (tempo='szybka', GLOBAL_MULT=1)
 const resD = researchStep(psD, techData);
 assert('research: money tech (Waluta) sets the money flag in completion',
   resD.completed.some(c => c.id === 'Waluta' && c.pieniadz === true));
@@ -595,7 +593,7 @@ assert('research: cascade leaves no available tech behind when fully funded',
 // 4b-player. Player research API: setPlayerResearchTarget + getResearchState
 // ---------------------------------------------------------------------------
 // Note: uses real tech data (data/tech.json) with Polish diacritics.
-// Brązownictwo (cost=45) requires Garncarstwo + Murarstwo + Obróbka drewna
+// Brązownictwo (cost=90 in tech.json after B-RESEARCH-COST-MODEL) requires Garncarstwo + Murarstwo + Obróbka drewna
 // (direct prereq), PLUS the hard Kamień tier-1/2 gate (kamienBeforeBraz, above).
 
 // P1: setPlayerResearchTarget validates prereqs and sets target
@@ -670,7 +668,7 @@ assert('research: cascade leaves no available tech behind when fully funded',
   ps6.zbadane = new Set(kamienBeforeBraz);
   const brazDef6 = techData.find(t => t.Technologia === 'Brązownictwo');
   const brazCostRaw6 = brazDef6 ? (typeof brazDef6['Koszt nauki'] === 'number' ? brazDef6['Koszt nauki'] : 0) : 0;
-  // Effective cost includes GLOBAL_RESEARCH_COST_MULT + difficulty asymmetry (scaledResearchCost),
+  // Effective cost: scaledResearchCost (GLOBAL_MULT=1 since B-RESEARCH-COST-MODEL),
   // same as getResearchState computes internally for kosztCelu.
   const brazCost6 = scaledResearchCost(brazCostRaw6, 'szybka', 0, 'normal');
   ps6.nauka = brazCost6 / 2; // half the effective cost

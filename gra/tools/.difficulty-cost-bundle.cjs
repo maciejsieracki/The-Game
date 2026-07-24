@@ -54,7 +54,7 @@ function applyGrowthThresholdPace(bazowyProg, pace) {
 }
 
 // src/game/difficulty-cost.ts
-var GLOBAL_RESEARCH_COST_MULT = 2;
+var GLOBAL_RESEARCH_COST_MULT = 1;
 function isPlayerOwner(ownerId) {
   return ownerId === 0;
 }

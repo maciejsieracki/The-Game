@@ -9,7 +9,14 @@ UWAGA: KANON i FINALNA promują się teraz OSOBNYMI skryptami (`gra/tools/publis
 wyraźne polecenie właściciela) — dlatego są logowane NIEZALEŻNIE, każdy w swojej sekcji, ze
 swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drugiego.
 
-## ROBOCZA `c7e16e51` — 2026-07-24 · SESJA LOKALNA: stash→pull→pop + FALA 8 rebuild — **AKTUALNA**
+## ROBOCZA `0de2599c` — 2026-07-24 · stash merge + FALA 8 + B-PALAC-TIER + B-RESEARCH-COST — **AKTUALNA**
+
+- **Zawartość:** FALA 8 zachowana (blokada 1. miasta · UI surowców · kamień współistnieje · Civpedia · mapa Ziemia) **+** sesja lokalna ze stash: (1) **B-PALAC-TIER** — `palac`→`palac_ii`→`palac_iii`, bramki drewno / drewno+kamień / drewno+kamień+cegła, bonus +50%/tier, `cityHasPalacLine()`; (2) **B-RESEARCH-COST-MODEL** — `GLOBAL_RESEARCH_COST_MULT=1`, koszty ×2 w `tech.json`, Obróbka drewna + Murarstwo JSON=**5** → 5/10/20 PN; (3) **B-TECH-EARLY-COST** wchłonięty w model powyżej.
+- **Sync:** stash `sesja-lokalna-pre-pull-2026-07-24` → pop + konflikt `buildings.json` (tiery pałacu wygrały nad FALA-8 „bez surowców") · commit + push main.
+- **Bramki:** tsc 0 · research 33/33 · tech-tempo 15/15 · difficulty-cost 22/22 · conquest-stability 27/27 · VERIFY OK.
+- **md5:** `0de2599cba16087cbb47cb202fdb616c` · pieczątka `0de2599c`. Bundel 34 MB. Zastępuje `c7e16e51`.
+
+## ROBOCZA `c7e16e51` — 2026-07-24 · SESJA LOKALNA: stash→pull→pop + FALA 8 rebuild — ZASTĄPIONA
 
 - **Zawartość:** FALA 8 (`90263d3`) — Pałac bez surowców · blokada 1. miasta · UI surowców · kamień współistnieje · Civpedia. Lokalny rebuild po bramkach (bez git push).
 - **Sync:** main już na `90263d3` (pull FF: already up to date); stash `sesja-lokalna-pre-pull-2026-07-24` → pop częściowy (zmiany już w WT) → drop.
