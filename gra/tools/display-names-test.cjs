@@ -81,6 +81,9 @@ assert(M.isClusterCityStateSlot({ isClusterCapital: true, isSameTypeRival: false
 assert(M.isTechnicalOwnerLabel('Rywal 10') === true, 'Rywal N = placeholder techniczny');
 assert(M.isTechnicalOwnerLabel('Mykeny') === false, 'Mykeny = prawdziwa nazwa');
 
+// R-MP-PORTRET (Maciej 2026-07-24): miasto-panstwo -> "[miasto] · [kultura]" (nie sama
+// nazwa miasta) -- zeby 10-11 MP tej samej kultury bylo widac ktorej kultury sa, nie tylko
+// ktorym miastem. formatOwnerDiploLabel dokleja jeszcze "· miasto-panstwo" (patrz test nizej).
 assert(
   M.resolveOwnerBaseName({
     ownerId: 10,
@@ -88,8 +91,19 @@ assert(
     cityName: 'Mykeny',
     civDisplayName: 'Grecy',
     isCityState: true,
-  }) === 'Mykeny',
-  'miasto-państwo: miasto z mapy > cache Rywal N',
+  }) === 'Mykeny · Grecy',
+  'miasto-państwo: miasto z mapy + kultura (nie tylko cache Rywal N)',
+);
+
+// Brak nazwy miasta z mapy -> sama kultura (nie placeholder techniczny).
+assert(
+  M.resolveOwnerBaseName({
+    ownerId: 11,
+    cityName: 'Rywal 11',
+    civDisplayName: 'Grecy',
+    isCityState: true,
+  }) === 'Grecy',
+  'miasto-państwo bez nazwy miasta → sama kultura',
 );
 
 assert(

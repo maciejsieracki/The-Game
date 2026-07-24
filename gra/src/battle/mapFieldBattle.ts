@@ -62,6 +62,12 @@ export interface MapFieldBattleLaunchDeps {
   eraForOwnerId?: (ownerId: number) => number;
   /** ikonaId cywilizacji (civs.json) dla ownerId -- portret wladcy w medalionie preBattle. */
   civIdForOwner?: (ownerId: number) => string;
+  /**
+   * R-MP-PORTRET (2026-07-24): ownerId to miasto-panstwo klastra (isOwnerClusterCityState)?
+   * Opcjonalne -- brak = false dla wszystkich (zero regresji dla starych wywolan), medalion
+   * dowodcy MP wraca wtedy do ikony-symbolu kultury zamiast portretu-zdjecia glownej cyw.
+   */
+  isCityStateForOwner?: (ownerId: number) => boolean;
   lookupUnitDef: (typeId: string) => unknown;
   runtimeToBattleUnit: (u: RuntimeUnit, def: unknown, color: number) => BattleUnit;
   terrainCombatData: readonly TerrainEntry[];
@@ -136,6 +142,7 @@ function preBattleSideFromRoster(
   unitAtak: MapFieldBattleLaunchDeps['unitAtak'],
   civIdForOwner?: MapFieldBattleLaunchDeps['civIdForOwner'],
   eraForOwnerId?: MapFieldBattleLaunchDeps['eraForOwnerId'],
+  isCityStateForOwner?: MapFieldBattleLaunchDeps['isCityStateForOwner'],
 ): PreBattleInfo['atakujacy'] {
   const ownerId = roster[0]?.ownerId;
   return {
@@ -144,6 +151,7 @@ function preBattleSideFromRoster(
     ownerId,
     civId: ownerId !== undefined ? civIdForOwner?.(ownerId) : undefined,
     era: ownerId !== undefined ? eraForOwnerId?.(ownerId) : undefined,
+    isCityState: ownerId !== undefined ? isCityStateForOwner?.(ownerId) : undefined,
     units: roster.map(u => preBattleUnitFromRuntime(u, unitDefFor, unitHealth, unitAtak)),
   };
 }
@@ -220,6 +228,7 @@ export function planOpenCityFieldBattle(
     | 'registerMilitiaDef'
     | 'eraForOwnerId'
     | 'civIdForOwner'
+    | 'isCityStateForOwner'
   >,
 ): OpenCityFieldBattlePlan | null {
   if (city.maMur) return null;
@@ -263,6 +272,7 @@ export function planOpenCityFieldBattle(
       deps.unitAtak,
       deps.civIdForOwner,
       deps.eraForOwnerId,
+      deps.isCityStateForOwner,
     ),
     obronca: preBattleSideFromRoster(
       defRoster,
@@ -273,6 +283,7 @@ export function planOpenCityFieldBattle(
       deps.unitAtak,
       deps.civIdForOwner,
       deps.eraForOwnerId,
+      deps.isCityStateForOwner,
     ),
     teren: terrain,
     szanseAtkPct: szanse,
@@ -412,6 +423,8 @@ export function launchFieldBattleFromMap(
         defenderSideLabel: pbInfo.obronca.nazwa,
         attackerEra: deps.eraForOwnerId?.(atkLead.ownerId),
         defenderEra: deps.eraForOwnerId?.(defLead.ownerId),
+        attackerIsCityState: pbInfo.atakujacy.isCityState,
+        defenderIsCityState: pbInfo.obronca.isCityState,
         onCancel: () => setMood('mapa'),
       });
       bs.play((res) => {

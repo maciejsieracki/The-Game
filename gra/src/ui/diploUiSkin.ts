@@ -82,9 +82,20 @@ export function civLeaderMedallionHtml(civName: string): string {
  * dyspozycja PORTRETY-WLADCOW-2026-07-23 KROK 2 pkt 2c) -- gdy podane i leaderPortraits.ts
  * ma plik dla tej civ/epoki, w środku medalionu ląduje portret zamiast ikony SVG. Fallback
  * obowiązkowy: brak portretu -> dotychczasowa ikona civIconSvg, bez zmian.
+ *
+ * `forceCultureIcon` (R-MP-PORTRET, Maciej 2026-07-24) — gdy `true`, POMIŃ portret niezależnie
+ * od `era` i pokaż ikonę-symbol kultury (civIconSvg). Miasta-państwa klastra NIE mogą dostać
+ * nowego portretu-zdjęcia władcy głównej cywilizacji (10-11 MP tej samej kultury wyglądałoby
+ * identycznie jak gracz/główne AI) — wołający ustawia to dla ownerów rozpoznanych jako
+ * miasto-państwo (isOwnerClusterCityState). Gracz/główne AI: bez zmian (forceCultureIcon=false/undefined).
  */
-export function civLeaderMedallionHtmlById(iconId: string, kolorHex: string | undefined, era?: number): string {
-  const portraitUrl = era !== undefined ? leaderPortraitUrl(iconId, era) : null;
+export function civLeaderMedallionHtmlById(
+  iconId: string,
+  kolorHex: string | undefined,
+  era?: number,
+  forceCultureIcon?: boolean,
+): string {
+  const portraitUrl = (!forceCultureIcon && era !== undefined) ? leaderPortraitUrl(iconId, era) : null;
   let ic: string;
   if (portraitUrl) {
     ic = `<img class="dip-leader-ic" src="${portraitUrl}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%;display:block;">`;

@@ -10,7 +10,7 @@
 
 import type { CivBonusLite } from '../game/production';
 import { isCombatModifierBonus } from '../game/civ-bonuses';
-import { terrainIconSvg } from './icons/brandAssets';
+import { terrainIconSvg, civIconSvg } from './icons/brandAssets';
 import { PB_SVG } from '../battle/battleHudTheme';
 import { leaderPortraitUrl, leaderName } from './leaderPortraits';
 
@@ -42,6 +42,13 @@ export interface PreBattleSide {
   civId?: string;
   /** Epoka tej strony (1=kamien,2=braz,3=zelazo) -- dobor portretu wladcy. Brak = 1. */
   era?: number;
+  /**
+   * R-MP-PORTRET (Maciej 2026-07-24) -- ta strona to miasto-panstwo klastra
+   * (isOwnerClusterCityState). Gdy true, medalion dowodcy NIE pokazuje portretu-zdjecia
+   * wladcy glownej cywilizacji -- wraca do ikony-symbolu kultury (civIconSvg), zeby MP nie
+   * wygladalo identycznie jak gracz/glowne AI tej samej kultury.
+   */
+  isCityState?: boolean;
   units: PreBattleUnit[];
 }
 
@@ -457,10 +464,15 @@ function commanderHtml(
   // pokazujemy liczbe oddzialow (unitCount); TODO: dodac headcount, jesli silnik zacznie go liczyc.
   // Portret wladcy (docs/.../PORTRETY-WLADCOW-2026-07-23) -- fallback obowiazkowy: brak
   // civId/pliku -> dotychczasowa ikona PB_SVG.commander, bez zmian.
-  const portraitUrl = leaderPortraitUrl(side.civId, side.era ?? 1);
+  // R-MP-PORTRET: miasto-panstwo (side.isCityState) NIGDY nie dostaje portretu-zdjecia
+  // wladcy glownej cywilizacji -- wraca do ikony-symbolu kultury (civIconSvg), nie do
+  // generycznej ikony dowodcy, zeby bylo widac KTOREJ kultury to MP.
+  const portraitUrl = side.isCityState ? null : leaderPortraitUrl(side.civId, side.era ?? 1);
   const porInner = portraitUrl
     ? '<img src="' + esc(portraitUrl) + '" alt="">'
-    : PB_SVG.commander;
+    : side.isCityState
+      ? civIconSvg(side.civId ?? '', 27)
+      : PB_SVG.commander;
   const leader = leaderName(side.civId, side.era ?? 1);
   const leaderHtml = leader ? '<div class="pb-leader">' + esc(leader) + '</div>' : '';
   return (

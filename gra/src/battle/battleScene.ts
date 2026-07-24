@@ -381,6 +381,14 @@ export interface BattleOpts {
   attackerEra?: number;
   /** Epoka broniacego (1=kamien,2=braz,3=zelazo) -- dobor portretu wladcy w medalionie. Brak = 1. */
   defenderEra?: number;
+  /**
+   * R-MP-PORTRET (Maciej 2026-07-24) -- atakujacy to miasto-panstwo klastra
+   * (isOwnerClusterCityState). Gdy true, medalion dowodcy NIE pokazuje portretu-zdjecia
+   * wladcy glownej cywilizacji -- wraca do ikony-symbolu kultury (civIconSvg).
+   */
+  attackerIsCityState?: boolean;
+  /** Jw. dla broniacego. */
+  defenderIsCityState?: boolean;
   /** Etykieta składu atakującego (np. Skład (2) / Wojownik). */
   attackerSideLabel?: string;
   /** Etykieta składu broniącego. */
@@ -2186,6 +2194,10 @@ export class BattleScene {
   /** Epoka per strona (1/2/3) -- portret wladcy w medalionie (leaderPortraits.ts). */
   private _attackerEra = 1;
   private _defenderEra = 1;
+
+  // R-MP-PORTRET (2026-07-24) -- miasto-panstwo klastra: medalion wraca do symbolu kultury.
+  private _attackerIsCityState = false;
+  private _defenderIsCityState = false;
   /** Scroll kontener kart w lewym panelu deploy. */
   private _deployRosterScroll: HTMLDivElement | null = null;
 
@@ -2268,6 +2280,8 @@ export class BattleScene {
       ?? civIconIdFromLabel(civRows, this._defenderCivLabel);
     this._attackerEra = clampEra(opts.attackerEra);
     this._defenderEra = clampEra(opts.defenderEra);
+    this._attackerIsCityState = opts.attackerIsCityState === true;
+    this._defenderIsCityState = opts.defenderIsCityState === true;
 
     // World-hex-derived terrain preset (forest/hills/river density + palette).
     // ?bt=... (debug/screenshot only) wins over opts.worldTerrain; both are
@@ -2568,7 +2582,11 @@ export class BattleScene {
       });
       const civIconId = isAtk ? this._attackerCivIconId : this._defenderCivIconId;
       const era = isAtk ? this._attackerEra : this._defenderEra;
-      const portraitUrl = leaderPortraitUrl(civIconId, era);
+      const isCityState = isAtk ? this._attackerIsCityState : this._defenderIsCityState;
+      // R-MP-PORTRET: miasto-panstwo NIGDY nie dostaje portretu-zdjecia wladcy glownej
+      // cywilizacji -- wraca do ikony-symbolu kultury (civIconSvg), nie do generycznej
+      // ikony PB_SVG.commander, zeby bylo widac KTOREJ kultury to MP.
+      const portraitUrl = isCityState ? null : leaderPortraitUrl(civIconId, era);
       if (portraitUrl) {
         // Portret wladcy (docs/.../PORTRETY-WLADCOW-2026-07-23) -- obwodka/tlo medalionu
         // (border + gradient ustawione powyzej) zostaja, tylko srodek to zdjecie zamiast ikony.
@@ -2579,6 +2597,10 @@ export class BattleScene {
           width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%', display: 'block',
         });
         medallion.appendChild(img);
+      } else if (isCityState) {
+        medallion.innerHTML = civIconSvg(civIconId, 22);
+        const medallionSvg = medallion.querySelector('svg');
+        if (medallionSvg) { medallionSvg.setAttribute('width', '22'); medallionSvg.setAttribute('height', '22'); }
       } else {
         // Fallback obowiazkowy: brak portretu (np. epoka bez pliku i bez wczesniejszej) ->
         // dotychczasowa ikona SVG dowodcy, bez zmian.

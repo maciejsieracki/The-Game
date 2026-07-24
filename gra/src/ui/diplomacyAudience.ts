@@ -91,6 +91,13 @@ export interface DiplomacyAudienceState {
   otherEra?: number;
   /** kolorHex rozmówcy (#RRGGBB). */
   otherKolorHex?: string;
+  /**
+   * R-MP-PORTRET (Maciej 2026-07-24) — rozmówca to miasto-państwo klastra
+   * (isOwnerClusterCityState). Gdy true, medalion NIE pokazuje portretu-zdjęcia władcy
+   * głównej cywilizacji (forceCultureIcon w civLeaderMedallionHtmlById) — MP wraca do
+   * symbolu kultury, żeby 10-11 MP tej samej kultury nie wyglądało jak główna AI/gracz.
+   */
+  otherIsCityState?: boolean;
   /** Etykieta okręgu kulturowego rozmówcy (np. „Grecka", „Chetycka"). */
   otherCultureLabel?: string;
   /** true = ten sam typ/okręg co gracz (silnik: typCywilizacji). */
@@ -589,7 +596,7 @@ function otherCardHtml(st: DiplomacyAudienceState, otherBon: readonly CivBonusLi
   return (
     '<div class="da-card them">' +
       '<div class="da-portrait">' +
-        civLeaderMedallionHtmlById(st.otherIkonaId ?? 'grecy', st.otherKolorHex, st.otherEra) +
+        civLeaderMedallionHtmlById(st.otherIkonaId ?? 'grecy', st.otherKolorHex, st.otherEra, st.otherIsCityState) +
         '<div class="da-civname">' + esc(st.otherCivName) + '</div>' +
         otherLeaderHtml(st) +
         '<div class="da-civtitle">' + esc(st.otherTitle) + (st.otherEpochLabel ? ' · ' + esc(st.otherEpochLabel) : '') + '</div>' +

@@ -101,7 +101,11 @@ export interface ResolveOwnerBaseNameInput {
 
 /**
  * Bazowa nazwa państwa przed dopiskiem „· miasto-państwo”.
- * Miasta-państwa → nazwa miasta z mapy; stolice obcych klastrów → nazwa nacji; reszta → cache/miasto.
+ * Miasta-państwa → „[miasto] · [kultura]” (R-MP-PORTRET, Maciej 2026-07-24 — samo miasto nie
+ * odróżniało 10-11 MP tej samej kultury; formatEntityDisplayName dokleja „· miasto-państwo”,
+ * więc pełna etykieta wychodzi „Sparta · Grecja · miasto-państwo”). Brak nazwy miasta → sama
+ * kultura („Grecja · miasto-państwo”); brak kultury → sama nazwa miasta (stare zachowanie).
+ * Stolice obcych klastrów → nazwa nacji; reszta → cache/miasto.
  */
 export function resolveOwnerBaseName(input: ResolveOwnerBaseNameInput): string {
   const {
@@ -124,6 +128,10 @@ export function resolveOwnerBaseName(input: ResolveOwnerBaseNameInput): string {
     : undefined;
 
   if (isClusterCapital && cleanCiv) return cleanCiv;
+  if (isCityState && cleanCity && cleanCiv && cleanCity !== cleanCiv) {
+    return `${cleanCity}${CITY_STATE_SEPARATOR}${cleanCiv}`;
+  }
+  if (isCityState && cleanCiv) return cleanCiv;
   if (isCityState && cleanCity) return cleanCity;
   if (!isCityState && cleanCiv) return cleanCiv;
   if (cleanCached) return cleanCached;

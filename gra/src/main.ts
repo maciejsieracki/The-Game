@@ -8877,6 +8877,7 @@ async function boot(): Promise<void> {
             otherIkonaId: civTypeForOwner(ownerId),
             otherEra: empireEpochForOwner(ownerId),
             otherKolorHex: civKolorHexFn(ownerId),
+            otherIsCityState: isOwnerClusterCityState(ownerId, ownerCityStateOpts()),
             otherCultureLabel: civCultureLabelForKey(civKeyForOwner(ownerId)),
             cultureCircleSame: sameCultureCircle(civKeyForOwner(0), civKeyForOwner(ownerId)),
             thresholds: {
@@ -11086,6 +11087,7 @@ async function boot(): Promise<void> {
         ownerId,
         civId: civTypeForOwner(ownerId),
         era: empireEpochForOwner(ownerId),
+        isCityState: isOwnerClusterCityState(ownerId, ownerCityStateOpts()),
         units: roster.map(preBattleUnitFromRuntime),
       };
     }
@@ -11242,6 +11244,8 @@ async function boot(): Promise<void> {
             defenderSideLabel: pbInfo4.obronca.nazwa,
             attackerEra: empireEpochForOwner(atkLead.ownerId),
             defenderEra: empireEpochForOwner(defLead.ownerId),
+            attackerIsCityState: pbInfo4.atakujacy.isCityState,
+            defenderIsCityState: pbInfo4.obronca.isCityState,
             onCancel: () => setMood('mapa'),
           });
           bs.play((res) => {
@@ -11549,6 +11553,8 @@ async function boot(): Promise<void> {
             defenderSideLabel: pbInfo.obronca.nazwa,
             attackerEra: empireEpochForOwner(atkLead.ownerId),
             defenderEra: empireEpochForOwner(defLead.ownerId),
+            attackerIsCityState: pbInfo.atakujacy.isCityState,
+            defenderIsCityState: pbInfo.obronca.isCityState,
             onCancel: () => setMood('mapa'),
           });
           bs.play((res) => {
@@ -12161,6 +12167,7 @@ async function boot(): Promise<void> {
       civBonusyForOwnerId,
       eraForOwnerId: empireEpochForOwner,
       civIdForOwner: civTypeForOwner,
+      isCityStateForOwner: (ownerId: number) => isOwnerClusterCityState(ownerId, ownerCityStateOpts()),
       lookupUnitDef,
       runtimeToBattleUnit,
       terrainCombatData: terrainCombatData as unknown as readonly TerrainEntry[],
@@ -12489,6 +12496,8 @@ async function boot(): Promise<void> {
             defenderCivBonusy: civBonusyForOwnerId(defRosterRef[0]?.ownerId ?? 0),
             attackerEra: empireEpochForOwner(atkRosterRef[0]?.ownerId ?? 0),
             defenderEra: empireEpochForOwner(defRosterRef[0]?.ownerId ?? 0),
+            attackerIsCityState: pbInfo.atakujacy.isCityState,
+            defenderIsCityState: pbInfo.obronca.isCityState,
             onCancel: () => setMood('mapa'),
           });
           bs.play((res) => {
