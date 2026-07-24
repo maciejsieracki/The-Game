@@ -969,12 +969,8 @@
     "utrzymanie": 2,
     "przyrostUtrzymania": 1,
     "wymagania": "-",
-    "uwagi": "1 na miasto; główne źródło kultury + Prawo (society-params prawo_palac); budynek startowy — bez bramki tech",
-    "techUnlock": "-",
-    "koszt_surowce": {
-      "drewno": 8,
-      "kamien": 8
-    }
+    "uwagi": "1 na miasto; główne źródło kultury + Prawo (society-params prawo_palac); budynek startowy — bez bramki tech; BEZ kosztu surowcowego (Maciej 2026-07-24: na starcie pula surowców = 0, więc Pałac nie może wymagać drewna/kamienia; zostaje tylko koszt Pracy)",
+    "techUnlock": "-"
   },
   {
     "id": "kuznia_zelaza",
