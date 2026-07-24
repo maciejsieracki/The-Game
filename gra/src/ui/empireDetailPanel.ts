@@ -21,14 +21,15 @@ let pendingScrollSection: string | null = null;
 let activeSection: string | null = null;
 
 /** Sekcja/żeton → który TOP-LEVEL blok panelu pokazać. 'all' = cały panel. */
-function blockForSection(section: string | null): 'all' | 'parametry' | 'moc' | 'ekonomia' | 'kultura' | 'surowce' {
+function blockForSection(section: string | null): 'all' | 'parametry' | 'moc' | 'ekonomia' | 'kultura' | 'surowce' | 'armia' {
   if (!section) return 'all';
   if (section === 'ekonomia') return 'all';                         // ogólny przycisk „Imperium" = pełny widok
+  if (section === 'armia') return 'armia';                          // Armia = żywność armii + ludność + rekruci (Maciej 2026-07-24)
   if (section === 'surowce' || section.startsWith('econ-surowiec-')) return 'surowce';
   if (section === 'kultura') return 'kultura';
-  if (section === 'moc' || section === 'econ-ludnosc' || section === 'econ-rekruci') return 'moc';
+  if (section === 'moc') return 'moc';
   if (section === 'parametry') return 'parametry';
-  return 'ekonomia';                                                // skarbiec/praca/nauka/zywnosc/religia/econ-*
+  return 'ekonomia';                                                // skarbiec/praca/nauka/zywnosc/religia/ludnosc/rekruci → filtr do własnego wiersza
 }
 
 function ensureStyles(): void {
@@ -512,6 +513,22 @@ function render(): void {
   }
   zasoby += `<div class="civ-emp-foot">Klik w górnym pasku zasobów przewija do tabeli per miasto. Duża liczba = stan · zielone = netto.</div></div>`;
 
+  // — ARMIA (Maciej 2026-07-24: dawne „Zaopatrzenie" → „Armia") — żywność armii + ludność + rekruci.
+  const ARMIA_IDS = new Set(['zywnosc', 'ludnosc', 'rekruci']);
+  let armia = `<div class="civ-emp-sect sep" data-section="armia">`
+    + `<div class="civ-emp-eyebrow" style="margin-bottom:8px">ARMIA</div>`;
+  for (const r of econRows) {
+    if (!ARMIA_IDS.has(r.id)) continue;
+    const detail = detailFor[r.id];
+    const val = r.noRate
+      ? `<b${r.gold ? ' class="gold"' : ''}>${esc(r.stock)}</b>`
+      : `<b>${esc(r.stock)}</b> ${deltaHtml(r.rate)}`;
+    armia += `<div class="civ-emp-zrow${detail ? '' : ' brd'}" data-section="econ-${r.id}">`
+      + `<span class="lbl">${r.lbl}</span><span class="val">${val}</span></div>`;
+    if (detail) armia += `<div data-section="econ-${r.id}">${detail}</div>`;
+  }
+  armia += `<div class="civ-emp-foot">Zaopatrzenie (żywność armii) · ludność (baza rekrutacji) · rekruci — wojsko w jednym miejscu.</div></div>`;
+
   // — KULTURA IMPERIUM —
   let kult = `<div class="civ-emp-sect sep" data-section="kultura">`
     + `<div class="civ-emp-title">Kultura imperium</div>`
@@ -540,6 +557,7 @@ function render(): void {
   if (block === 'all' || block === 'parametry') body += params;
   if (block === 'all' || block === 'moc') body += moc;
   if (block === 'all' || block === 'ekonomia') body += zasoby;
+  if (block === 'armia') body += armia;   // tylko po kliknięciu żetonu Armia (na 'all' żywność/ludność/rekruci są już w zasoby)
   if (block === 'all' || block === 'kultura') body += kult;
   if (block === 'all' || block === 'surowce') body += sur;
   bodyEl.innerHTML = body;
@@ -640,7 +658,8 @@ export function empireSectionFromHudAct(act: string): string | undefined {
     case 'power':
     case 'moc': return 'moc';
     case 'nauka': return 'econ-nauka';
-    case 'zywnosc': return 'econ-zywnosc';
+    case 'zywnosc':
+    case 'armia': return 'armia';
     case 'religia': return 'econ-religia';
     case 'empire': return 'ekonomia';
     case 'surowce': return 'surowce';

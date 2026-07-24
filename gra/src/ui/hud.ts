@@ -463,12 +463,12 @@ function renderBarD1B(s: HudState): string {
     chip6cSep(),
     chip6cHtml({
       iconId: 'res-food',
-      label: 'Zaopatrzenie',
+      label: 'Armia',
       value: formatFoodHudLabel(s),
       rate: signed(s.zywnoscRate ?? 0),
       rateWarn: !!(s.glodWojska || (s.zywnoscRate ?? 0) < 0),
       act: 'zywnosc',
-      title: 'Zaopatrzenie armii (Supply) — całe państwo — klik po szczegóły',
+      title: 'Armia — zaopatrzenie (żywność), ludność i rekruci — klik po szczegóły',
     }),
     chip6cSep(),
     chip6cHtml({
