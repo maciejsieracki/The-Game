@@ -23,11 +23,16 @@ SEC_FILL = PatternFill("solid", fgColor="D6E4F0")
 SEC_FONT = Font(bold=True, size=11)
 
 BAZA_KEYS = ["praca", "pieniadz", "zywnosc", "nauka", "kultura", "zadowolenie", "obrona", "mnoznik"]
+# koszt_surowce w buildings.json = dict {surowiec: ilość} (np. {"drewno":4,"kamien":4}).
+# Rozbite na osobne kolumny koszt_surowce.<surowiec> (spójne z konwencją baza.*/przyrost.* poniżej)
+# — czytelniejsze do edycji w Excelu niż jedna kolumna tekstowa, i łatwe do re-złożenia w export-b.py.
+KOSZT_SUROWCE_KEYS = ["drewno", "kamien", "cegla", "braz", "zelazo"]
 BUILDINGS_COLS = (
     ["id", "nazwa", "kosztBudowy", "przyrostKosztu", "utrzymanie"]
     + [f"baza.{k}" for k in BAZA_KEYS]
     + [f"przyrost.{k}" for k in BAZA_KEYS]
     + ["techUnlock"]
+    + [f"koszt_surowce.{k}" for k in KOSZT_SUROWCE_KEYS]
 )
 RESOURCES_COLS = ["Surowiec", "Typ", "Źródło / budynek", "Uwagi"]
 TECH_COLS = [
@@ -159,6 +164,9 @@ def flatten_building(b):
     for k in BAZA_KEYS:
         row[f"baza.{k}"] = b.get("baza", {}).get(k)
         row[f"przyrost.{k}"] = b.get("przyrost", {}).get(k)
+    koszt_surowce = b.get("koszt_surowce") or {}
+    for k in KOSZT_SUROWCE_KEYS:
+        row[f"koszt_surowce.{k}"] = koszt_surowce.get(k)
     return row
 
 

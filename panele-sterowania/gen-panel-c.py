@@ -36,6 +36,8 @@ COST_FIELDS = [
     ("Ludność", "os.", "Populacja miasta na jednostkę"),
     ("Utrzymanie (Pieniądz/turę)", "zł/t", "Utrzymanie co turę"),
     ("żywność/turę", "🌾/t", "Koszt żywności co turę"),
+    ("Surowiec", "—", "Surowiec strategiczny wymagany do produkcji (Brąz/Żelazo/-)"),
+    ("Surowiec (ilość)", "szt.", "Ilość surowca strategicznego na sztukę"),
 ]
 # Macierz-jednostek — wszystkie jednostki (pełna lista z units.json / dawne Jednostki.xlsx)
 MACIERZ_FIELDS = [
