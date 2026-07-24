@@ -41,6 +41,7 @@ import {
   isCityUxFrameOpen,
 } from './cityUxFrame';
 import { setMapHudChromeSuppressed } from './hud';
+import type { WonderBuildTypeInfo } from './buildModeHud';
 import type { City } from '../game/cities';
 import { formatCityMapLabel } from '../game/display-names';
 import type { OkolicaFocus, OkolicaTryb, BudowaFocus, BudowaTryb } from '../game/cities';
@@ -359,6 +360,14 @@ export interface CityPanelConfig {
    * stolica, obecna stolica NIE oblegana) i wykonuje transfer; za darmo (Q1=A).
    */
   onSetCapital?: (cityId: string) => void;
+  /**
+   * R-CUDA-TAB (2026-07-24): cuda dostępne do zakolejkowania w PRODUKCJI tego miasta —
+   * już przefiltrowane przez silnik do cywilizacji gracza (main.ts listBuildableWondersForOwner(0)).
+   * Cuda NIE mają już osobnego katalogu w lewym menu — budowane wyłącznie stąd, jak budynki.
+   */
+  getBuildableWonders?: (cityId: string) => WonderBuildTypeInfo[];
+  /** Dodaj cud do kolejki produkcji (Praca) tego miasta — silnik: main.ts enqueueWonderForPlayer. */
+  onBuildWonder?: (cityId: string, wonderId: string) => void;
 }
 
 let cfg: CityPanelConfig = {};
@@ -4649,6 +4658,72 @@ function epochLabelNum(n: number): string {
   return EPOCH_LABEL[n] ?? `Epoka ${n}`;
 }
 
+/** Świątynia/kolumny — emblemat „Cuda świata” (KANON 1E, ten sam glif co dawny toolbar). */
+function wonderCardIconSvg(): string {
+  return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4">'
+    + '<path d="M12 3 4 9h16Z"></path><path d="M5 9v8M9.5 9v8M14.5 9v8M19 9v8"></path>'
+    + '<path d="M3 17h18v3H3Z"></path></svg>';
+}
+
+/**
+ * R-CUDA-TAB (2026-07-24): karta cudu w liście „Dostępne do budowy” miasta —
+ * ten sam wizualny język co bld-infocard (budynki), ale zasilana z osobnej listy
+ * (main.ts wonderHudEntries / listBuildableWondersForOwner) bo cuda żyją w
+ * gra/data/wonders.json, nie w data.buildings. Wpis pojawia się TYLKO gdy silnik
+ * uzna cud za dostępny tej cywilizacji teraz (bez stanów locked/exclusive_other/built —
+ * to filtruje już main.ts) — jedyny wybór gracza to Buduj / już w kolejce.
+ */
+function buildWonderInfocard(w: WonderBuildTypeInfo, city: City): HTMLDivElement {
+  const card = el('div', 'bld-infocard');
+  const hd = el('div', 'bld-infocard-hd');
+  const ic = el('div', 'bld-infocard-ic');
+  fillIconElement(ic, wonderCardIconSvg());
+  hd.appendChild(ic);
+  const titWrap = el('div');
+  titWrap.style.cssText = 'flex:1;min-width:0;';
+  titWrap.innerHTML = `<div class="bld-infocard-title">${w.label}</div>`;
+  const cat = el('span', 'bld-infocard-cat');
+  cat.textContent = w.dostep === 'R' ? 'Cud — wyścig' : 'Cud — ekskluzywny';
+  titWrap.appendChild(cat);
+  hd.appendChild(titWrap);
+  card.appendChild(hd);
+
+  const bd = el('div', 'bld-infocard-bd');
+  const ft = el('div', 'bld-infocard-ft');
+  const era = el('span', 'bld-infocard-era');
+  era.innerHTML = `<span class="bld-infocard-era-dot"></span>Epoka ${epochLabelNum(w.epokaWejscia).toLowerCase()}`;
+  ft.appendChild(era);
+  const ftR = el('span');
+  ftR.textContent = 'max 1 na świecie';
+  ft.appendChild(ftR);
+  bd.appendChild(ft);
+
+  if (w.queued) {
+    const tag = el('div', 'bld-catalog-ready-tag');
+    tag.textContent = w.lockHint ?? 'Już w kolejce tego miasta';
+    bd.appendChild(tag);
+  } else {
+    const act = el('div', 'bld-infocard-actions');
+    const workIc = cityPanelChipIconWrap('res-work', 12);
+    const cost = el('div', 'bld-infocard-cost');
+    cost.innerHTML = `${w.kosztPraca}${workIc}`;
+    act.appendChild(cost);
+    const btnWrap = el('div', 'civ-v-bld-btns');
+    const bBuild = el('button', 'btn btn-sm btn-b', 'Buduj');
+    bBuild.title = `Dodaj do kolejki produkcji · ${w.kosztPraca} pracy`;
+    bBuild.addEventListener('click', () => {
+      cfg.onBuildWonder?.(city.id, w.id);
+      rerender();
+    });
+    btnWrap.appendChild(bBuild);
+    act.appendChild(btnWrap);
+    bd.appendChild(act);
+  }
+
+  card.appendChild(bd);
+  return card;
+}
+
 function isEmptyDataVal(v: unknown): boolean {
   return v == null || v === '' || v === '—' || v === '-';
 }
@@ -5484,6 +5559,10 @@ function renderBuildList(
   const prodState = getProd(city.id);
   const prodCtx = productionCtxForCity(city);
   const items = buildableProduction(city, data, techs, prodCtx);
+  // R-CUDA-TAB: cuda dostępne DZIŚ tej cywilizacji (już przefiltrowane w silniku —
+  // main.ts listBuildableWondersForOwner(0)/wonderHudEntries) — jedyne miejsce budowy
+  // cudów, zastępuje dawny osobny katalog „Cuda świata” w lewym menu.
+  const wonders = cfg.getBuildableWonders?.(city.id) ?? [];
 
   const skarb = cfg.getTreasury?.(city.ownerId);
 
@@ -5520,7 +5599,7 @@ function renderBuildList(
   const fullEraPreview = showEraBuildingPreview;
   const previewEntries = collectEraPreviewEntries(data, techs, prodCtx, fullEraPreview);
 
-  if (items.length === 0 && ups.length === 0 && previewEntries.length === 0) {
+  if (items.length === 0 && ups.length === 0 && wonders.length === 0 && previewEntries.length === 0) {
     mount.appendChild(el('div', 'muted', '(brak budynków — zbadaj technologie)'));
     return;
   }
@@ -5539,6 +5618,15 @@ function renderBuildList(
     scroll.appendChild(h);
     for (const u of ups) {
       appendBuildableItemRow(scroll, city, u, data, { praca, skarb, buildLabel: 'Ulepsz', upgrade: true });
+    }
+  }
+  if (wonders.length > 0) {
+    const h = el('div', 'muted');
+    h.style.cssText = 'font-size:0.72em;margin:0.35em 0 0.2em;padding-top:0.25em;border-top:1px solid var(--border);';
+    h.textContent = 'Cuda świata';
+    scroll.appendChild(h);
+    for (const w of wonders) {
+      scroll.appendChild(buildWonderInfocard(w, city));
     }
   }
   if (previewEntries.length > 0) {
