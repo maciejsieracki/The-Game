@@ -13396,10 +13396,11 @@ async function boot(): Promise<void> {
             if (st.ownerId !== 0) continue;
             const { pracaGrant, expired } = tickHexClearing(st);
             if (pracaGrant > 0) {
-              playerPracaPool += pracaGrant;
-              _lastPraca = playerPracaPool;
+              // Maciej 2026-07-24: wyrąb daje DREWNO (surowiec do puli państwa), nie Pracę —
+              // koszt 5 Pracy na start (pobrany osobno), a plon to 5 drewna z wyciętego lasu.
+              creditOwnerResourceStock(cities, 0, 'drewno', pracaGrant);
               showHintMessage(
-                'Wyrąb: +' + pracaGrant + ' Pracy (pozostało ' + st.turnsLeft + ' tury)',
+                'Wyrąb: +' + pracaGrant + ' Drewna (pozostało ' + st.turnsLeft + ' tury)',
                 2000,
               );
             }

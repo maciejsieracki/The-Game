@@ -163,7 +163,7 @@
     "bonus": {},
     "surowiecOdblokowany": null,
     "teren": "Las",
-    "warunek": "koszt 5 Pracy na start; +5 Pracy × 1 tura (=5, netto zero); potem teren bazowy bez lasu",
+    "warunek": "koszt 5 Pracy na start; plon +5 Drewna × 1 tura (surowiec do puli państwa, Maciej 2026-07-24); potem teren bazowy bez lasu",
     "koszt_praca": 5,
     "tech": null,
     "wycinka": {

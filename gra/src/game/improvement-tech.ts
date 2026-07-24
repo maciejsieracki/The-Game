@@ -76,7 +76,7 @@ export function getImprovementLockHint(
     if (meta.kosztPraca > 0) {
       parts.push('Koszt startu: ' + meta.kosztPraca + ' Pracy');
     }
-    parts.push('Wycinka ' + (meta.clearing?.tury ?? 3) + ' tury (+' + (meta.clearing?.pracaPerTura ?? 20) + ' Pracy/turę)');
+    parts.push('Wycinka ' + (meta.clearing?.tury ?? 3) + ' tury (+' + (meta.clearing?.pracaPerTura ?? 20) + ' Drewna/turę)');
   }
   return parts.length > 0 ? parts.join(' · ') : 'Wymagania nieznane';
 }
