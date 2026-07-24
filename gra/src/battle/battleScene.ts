@@ -192,6 +192,7 @@ import {
 import { civIconSvg } from '../ui/icons/brandAssets';
 import { leaderPortraitUrl, leaderName } from '../ui/leaderPortraits';
 import { showEndScreen1E } from './endScreen1E';
+import { startVictoryMusic, startDefeatMusic, startBattleMusic } from '../audio/muzyka-antyczna';
 import {
   showEndDetails1E,
   type EndDetails1EParams,
@@ -8321,6 +8322,7 @@ export class BattleScene {
       return;
     }
     this._hideEndScreen();
+    startBattleMusic(); // powtórka -> z ekranu zwycięstwa/porażki wróć na muzykę bitwy (czysta wymiana)
     this._resetBattleRuntimeState();
     this._removeAllUnitsFromField();
     this._resetSiegeForReplay();
@@ -8413,6 +8415,11 @@ export class BattleScene {
     const sA = this._sideEndStats('atk');
     const sD = this._sideEndStats('def');
     const playerWon = winner === 'atakujacy';
+    // Muzyka ekranu końca bitwy (wg tej samej flagi playerWon, co wizualia):
+    // wygrana -> utwór zwycięstwa, przegrana -> utwór porażki. Overlay bitwy jest
+    // aktywny, więc to czysta wymiana utworu; muzykę mapy wznawia setMood('mapa')
+    // wołane z callbacku onFinish/onCancel bitwy (patrz main.ts).
+    if (playerWon) startVictoryMusic(); else startDefeatMusic();
     const winSub = winner === 'atakujacy' ? 'Zwyci\u0119stwo atakuj\u0105cego!' : 'Zwyci\u0119stwo obro\u0144cy!';
     const loot = playerWon ? Math.max(0, sD.lost * 20) : 0;
     let heroLabel = '—';

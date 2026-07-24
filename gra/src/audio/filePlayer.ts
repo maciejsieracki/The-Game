@@ -456,6 +456,7 @@ const introModules = import.meta.glob('./utwory/intro/*.mp3', {
 // spokojne otwarcie, energiczne zamknięcie. Nowy utwór dorzucony do katalogu
 // NIE wskoczy sam we właściwe miejsce — dopisz go tutaj.
 const INTRO_KOLEJNOSC: readonly string[] = [
+  'Prayer_of_the_Sun_Stone',
   'Dawn_of_the_Architect',
   'Seven_Hills_Rising',
   'Ascent_to_Zenith',
@@ -465,9 +466,64 @@ const INTRO_URLS: readonly string[] = INTRO_KOLEJNOSC
   .filter((k): k is string => Boolean(k))
   .map((k) => introModules[k] as string);
 
+// OVERLAY kontekstowy — muzyka paneli na czas ich otwarcia (dyplomacja / pre-battle).
+// Pojedynczy utwór na katalog, pętla (createPlaylist zawija kolejkę), 'stala'
+// kolejność. Nazwy plików dowolne — czytamy katalog (jak kamień). Docelowo (życzenie
+// właściciela) osobny utwór per cywilizacja w dyplomacji — wtedy wybór po civId, a nie
+// całą playlistą; na razie jeden wspólny.
+const dyplomacjaModules = import.meta.glob('./utwory/dyplomacja/*.mp3', {
+  eager: true,
+  import: 'default',
+}) as Record<string, string>;
+const DYPLOMACJA_URLS: readonly string[] = Object.keys(dyplomacjaModules).sort()
+  .map((k) => dyplomacjaModules[k] as string);
+
+const preBattleModules = import.meta.glob('./utwory/prebattle/*.mp3', {
+  eager: true,
+  import: 'default',
+}) as Record<string, string>;
+const PREBATTLE_URLS: readonly string[] = Object.keys(preBattleModules).sort()
+  .map((k) => preBattleModules[k] as string);
+
+const bitwaModules = import.meta.glob('./utwory/bitwa/*.mp3', {
+  eager: true,
+  import: 'default',
+}) as Record<string, string>;
+const BITWA_URLS: readonly string[] = Object.keys(bitwaModules).sort()
+  .map((k) => bitwaModules[k] as string);
+
+const zwyciestwoModules = import.meta.glob('./utwory/zwyciestwo/*.mp3', {
+  eager: true,
+  import: 'default',
+}) as Record<string, string>;
+const ZWYCIESTWO_URLS: readonly string[] = Object.keys(zwyciestwoModules).sort()
+  .map((k) => zwyciestwoModules[k] as string);
+
+const porazkaModules = import.meta.glob('./utwory/porazka/*.mp3', {
+  eager: true,
+  import: 'default',
+}) as Record<string, string>;
+const PORAZKA_URLS: readonly string[] = Object.keys(porazkaModules).sort()
+  .map((k) => porazkaModules[k] as string);
+
 /** Kamień: shuffle + 3x pod rząd (~90 s/utwór), z crossfade 1,5 s na każdym
  *  przejściu (także między powtórzeniami). */
 export const kamienPlaylist: FilePlaylist = createPlaylist(KAMIEN_URLS, 3);
 
 /** Intro (ekrany przed rozgrywką): shuffle + 1x, z crossfade 1,5 s. */
 export const introPlaylist: FilePlaylist = createPlaylist(INTRO_URLS, 1, 'stala');
+
+/** Dyplomacja: 1 utwór, pętla póki panel audiencji otwarty. */
+export const dyplomacjaPlaylist: FilePlaylist = createPlaylist(DYPLOMACJA_URLS, 1, 'stala');
+
+/** Pre-battle: 1 utwór, pętla póki nakładka przedbitewna otwarta. */
+export const preBattlePlaylist: FilePlaylist = createPlaylist(PREBATTLE_URLS, 1, 'stala');
+
+/** Bitwa właściwa: 1 utwór, pętla póki trwa scena bitwy. */
+export const bitwaPlaylist: FilePlaylist = createPlaylist(BITWA_URLS, 1, 'stala');
+
+/** Ekran zwycięstwa (bitwa wygrana przez gracza): 1 utwór, pętla póki ekran otwarty. */
+export const zwyciestwoPlaylist: FilePlaylist = createPlaylist(ZWYCIESTWO_URLS, 1, 'stala');
+
+/** Ekran porażki (bitwa przegrana przez gracza): 1 utwór, pętla póki ekran otwarty. */
+export const porazkaPlaylist: FilePlaylist = createPlaylist(PORAZKA_URLS, 1, 'stala');

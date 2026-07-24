@@ -3,6 +3,7 @@
  * DECOUPLED: zero importów game/*; callbacki z SILNIK.
  */
 import type { CivBonusLite } from '../game/production';
+import { startDiplomacyMusic, stopDiplomacyMusic } from '../audio/muzyka-antyczna';
 import {
   nastawienieHintPl,
   nastawienieLabelFromScore,
@@ -968,6 +969,7 @@ export function showDiplomacyAudience(config: DiplomacyAudienceConfig): void {
   render();
   rootEl.style.display = 'flex';
   document.addEventListener('keydown', onAudienceEsc);
+  startDiplomacyMusic();
 }
 
 export function updateDiplomacyAudience(): void {
@@ -977,6 +979,7 @@ export function updateDiplomacyAudience(): void {
 export function hideDiplomacyAudience(): void {
   document.removeEventListener('keydown', onAudienceEsc);
   if (rootEl !== null) rootEl.style.display = 'none';
+  stopDiplomacyMusic();
 }
 
 export function isDiplomacyAudienceOpen(): boolean {

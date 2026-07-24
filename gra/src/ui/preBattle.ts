@@ -13,6 +13,7 @@ import { isCombatModifierBonus } from '../game/civ-bonuses';
 import { terrainIconSvg, civIconSvg } from './icons/brandAssets';
 import { PB_SVG } from '../battle/battleHudTheme';
 import { leaderPortraitUrl, leaderName } from './leaderPortraits';
+import { startPreBattleMusic, stopPreBattleMusic } from '../audio/muzyka-antyczna';
 
 export interface PreBattleUnit {
   nazwa: string;
@@ -109,6 +110,7 @@ export function showPreBattle(
   overlayEl = buildOverlay(info, cb, opts);
   document.body.appendChild(overlayEl);
   attachKeyboard(cb, info, opts);
+  startPreBattleMusic();
 }
 
 export function hidePreBattle(): void {
@@ -118,6 +120,7 @@ export function hidePreBattle(): void {
     overlayEl.remove();
     overlayEl = null;
   }
+  stopPreBattleMusic();
 }
 
 function clearPreBattleSaveToast(): void {

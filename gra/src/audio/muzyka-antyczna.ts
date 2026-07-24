@@ -75,7 +75,11 @@
 // Render offline (Node) jest lustrzany: te same funkcje przez export _silnik.
 // ============================================================================
 
-import { kamienPlaylist, introPlaylist } from './filePlayer';
+import {
+  kamienPlaylist, introPlaylist, dyplomacjaPlaylist, preBattlePlaylist,
+  bitwaPlaylist, zwyciestwoPlaylist, porazkaPlaylist,
+} from './filePlayer';
+import type { FilePlaylist } from './filePlayer';
 
 export type Mood = 'mapa' | 'bitwa';
 export type Era = 1 | 2;
@@ -1596,6 +1600,22 @@ function respawn(fade: number): void {
  *  bez żadnych zmian po ich stronie. */
 export function setMood(mood: Mood): void {
   ambApplyBattleMute(mood);
+  // Overlay BITWY (utwór z utwory/bitwa/) — 'bitwa' przejmuje muzykę na czas
+  // sceny bitwy, wyjście z bitwy zdejmuje overlay i wraca muzyka mapy. Ustawiamy
+  // moodNow PRZED zdjęciem overlayu, żeby stopOverlay->startMusic wznowił 'mapa',
+  // nie 'bitwa'. Gdy muzyka wyłączona (playing=false) startOverlay jest no-opem.
+  if (mood === 'bitwa') {
+    moodNow = mood;
+    startOverlay(bitwaPlaylist);
+    return;
+  }
+  // Wyjście z bitwy (setMood('mapa')) — zdejmij DOWOLNY overlay rodziny bitewnej
+  // (bitwa / ekran zwycięstwa / ekran porażki) i wróć do muzyki mapy.
+  if (overlayActive !== null && isBattleFamilyOverlay(overlayActive)) {
+    moodNow = mood;
+    stopOverlay(overlayActive);
+    return;
+  }
   if (mood === moodNow && playing) return;
   moodNow = mood;
   if (!playing) return;
@@ -1657,6 +1677,11 @@ export function setMusicVolume(v: number): void {
   }
   kamienPlaylist.setVolume(volume);
   introPlaylist.setVolume(volume);
+  dyplomacjaPlaylist.setVolume(volume);
+  preBattlePlaylist.setVolume(volume);
+  bitwaPlaylist.setVolume(volume);
+  zwyciestwoPlaylist.setVolume(volume);
+  porazkaPlaylist.setVolume(volume);
 }
 
 /** Zatrzymuje muzykę gry (fade ~1 s w syntezie / natychmiast w playliście
@@ -1696,6 +1721,71 @@ export function stopIntroMusic(): void {
 }
 
 export function isIntroMusicPlaying(): boolean { return introPlaylist.isPlaying(); }
+
+// ---------------------------------------------------------------------------
+// OVERLAY kontekstowy — muzyka paneli DYPLOMACJI / PRE-BATTLE na czas ich
+// otwarcia. Idea: panel „przejmuje ton" — muzyka gry milknie, gra utwór panelu
+// (w pętli), a po zamknięciu muzyka gry wraca (bieżący mood/era). Sterowane
+// wprost z UI (showDiplomacyAudience/hideDiplomacyAudience, showPreBattle/
+// hidePreBattle) — jedno wejście/wyjście pokrywa wszystkie miejsca wołające.
+//
+// Szanuje wyłączoną muzykę: overlay startuje TYLKO gdy muzyka gry aktualnie gra
+// (`playing` pokrywa oba tory: kamień-pliki i brąz+-synteza). Gdy muzyka
+// wyłączona (playing=false), start jest cichym no-opem i nic nie wznawiamy.
+// Tylko JEDEN overlay naraz (dyplomacja i pre-battle nie nakładają się).
+// ---------------------------------------------------------------------------
+
+let overlayActive: FilePlaylist | null = null;
+
+/** Overlaye „rodziny bitewnej": sama bitwa + ekrany zwycięstwa/porażki. Podczas
+ *  sceny bitwy przełączają się między sobą CZYSTĄ WYMIANĄ (bez powrotu muzyki
+ *  mapy), a dopiero setMood('mapa') na wyjściu je zdejmuje. */
+function isBattleFamilyOverlay(pl: FilePlaylist): boolean {
+  return pl === bitwaPlaylist || pl === zwyciestwoPlaylist || pl === porazkaPlaylist;
+}
+
+function startOverlay(pl: FilePlaylist): void {
+  if (overlayActive === pl) return;                 // ten overlay już gra
+  const gameWasOn = playing || overlayActive !== null; // muzyka gry gra albo już ją overlay wyciszył
+  if (!gameWasOn) return;                            // muzyka wyłączona -> overlay cichy
+  if (overlayActive) overlayActive.stop();          // wymiana overlayu (rzadkie)
+  else stopMusic();                                 // pierwsza aktywacja: wycisz muzykę gry
+  pl.setVolume(volume);
+  pl.start();
+  overlayActive = pl;
+}
+
+function stopOverlay(pl: FilePlaylist): void {
+  if (overlayActive !== pl) return;                 // ten overlay nie jest aktywny (np. muzyka była wyłączona)
+  pl.stop();
+  overlayActive = null;
+  startMusic(moodNow);                              // wznów muzykę gry (bieżący mood/era)
+}
+
+/** Muzyka panelu dyplomacji — start przy otwarciu audiencji z inną cywilizacją. */
+export function startDiplomacyMusic(): void { startOverlay(dyplomacjaPlaylist); }
+/** Koniec muzyki dyplomacji — powrót do muzyki gry. */
+export function stopDiplomacyMusic(): void { stopOverlay(dyplomacjaPlaylist); }
+
+/** Muzyka nakładki pre-battle — start przy pokazaniu ekranu przedbitewnego. */
+export function startPreBattleMusic(): void { startOverlay(preBattlePlaylist); }
+/** Koniec muzyki pre-battle — powrót do muzyki gry (albo przejmuje ją bitwa). */
+export function stopPreBattleMusic(): void { stopOverlay(preBattlePlaylist); }
+
+/** Muzyka bitwy właściwej — start przy wejściu w scenę bitwy. Bezpośrednie
+ *  przejście z pre-battle (overlay już aktywny) to CZYSTA WYMIANA utworu bez
+ *  wznawiania muzyki mapy — startOverlay zamienia playlisty gdy overlay już gra. */
+export function startBattleMusic(): void { startOverlay(bitwaPlaylist); }
+/** Koniec muzyki bitwy — powrót do muzyki gry (mapa). */
+export function stopBattleMusic(): void { stopOverlay(bitwaPlaylist); }
+
+/** Muzyka ekranu ZWYCIĘSTWA — wołać przy pokazaniu ekranu końca WYGRANEJ bitwy.
+ *  Overlay bitwy jest aktywny, więc to czysta wymiana utworu (bitwa→zwycięstwo);
+ *  muzykę mapy wznowi dopiero setMood('mapa') na zamknięciu ekranu. */
+export function startVictoryMusic(): void { startOverlay(zwyciestwoPlaylist); }
+
+/** Muzyka ekranu PORAŻKI — wołać przy pokazaniu ekranu końca PRZEGRANEJ bitwy. */
+export function startDefeatMusic(): void { startOverlay(porazkaPlaylist); }
 
 // ---------------------------------------------------------------------------
 // AMBIENCE — TRZECI, NIEZALEŻNY kanał audio: odgłosy natury (wiatr/ptaki/
