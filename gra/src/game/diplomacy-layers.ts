@@ -13,6 +13,12 @@ const SIMPLIFIED_CMD = new Set<string>([
   'wypowiedz_wojne',
   'zaproponuj_pokoj',
   'zaproponuj_handel',
+  // R-MP-HANDEL-SUROWCE (Maciej, wariant A — pełny handel): miasta-państwa mogą
+  // proponować graczowi cykliczny handel surowcem (Priorytet 5c decideAIDiplomacy),
+  // tak jak pełne cywilizacje AI. Bez tego wpisu filterDiplomacyCommandsForLayer
+  // ucinał komendę dla warstwy 'simplified' mimo że decideAIDiplomacy ją generował
+  // (main.ts pickResourceSurplusForOwnerPair jest już ownerId-agnostyczne).
+  'zaproponuj_handel_surowiec',
 ]);
 
 function clamp(n: number, lo: number, hi: number): number {

@@ -8138,9 +8138,20 @@ async function boot(): Promise<void> {
      * E6 (2026-07-23): AI↔AI proaktywnie zawiera STAŁĄ Umowę Handlową
      * (RodzajTraktatu.UmowaHandlowa) — analogicznie do formSisterAlliancesIfThreatened
      * (dyplomacja AI↔AI poza gracz↔AI dziś NIE ISTNIEJE inaczej), ale bez ograniczenia
-     * do sióstr tego samego klastra — dowolna para "pełnych" AI (pomija miasta-państwa,
-     * simplifiedDiplomacyOwners — ich handel to uproszczona ścieżka gracz↔AI, patrz
-     * diplomacy-layers.ts SIMPLIFIED_CMD).
+     * do sióstr tego samego klastra — dowolna para "pełnych" AI.
+     *
+     * R-MP-HANDEL-SUROWCE (Maciej, wariant A — pełny handel, 2026-07-24): miasta-
+     * -państwa (simplifiedDiplomacyOwners) BYŁY tu jawnie pomijane ("ich handel to
+     * uproszczona ścieżka gracz↔AI") — to blokowało AI↔MP (pełna cywilizacja
+     * proponująca handel surowcem miastu-państwu i odwrotnie). Teraz miasta-państwa
+     * WCHODZĄ do puli par, ale TYLKO handel surowcem jest dla nich odblokowany: gdy
+     * para obejmuje miasto-państwo (eitherIsCityState), deal powstaje WYŁĄCZNIE gdy
+     * istnieje realna oferta nadwyżki surowca (bestOffer) — miasto-państwo nadal NIE
+     * dostaje "pustej" Umowy Handlowej (samo otwarcie szlaków bez towaru), bo to
+     * wykracza poza zakres zadania (inne ograniczenia warstwy uproszczonej — wojna/
+     * pokój/sojusze sióstr — zostają nietknięte). Pełne AI↔AI bez miasta-państwa:
+     * zachowanie identyczne jak dotąd (Umowa Handlowa zawierana niezależnie od
+     * nadwyżki surowca).
      *
      * Warunki per para: !wojna, brak już aktywnej Umowy Handlowej, Relacja >=
      * progHandelRelacja, geometrycznie możliwe połączenie tras (citiesHaveTradeConnection),
@@ -8152,17 +8163,18 @@ async function boot(): Promise<void> {
      * Determinizm: pary iterowane w stałej kolejności, brak Math.random().
      */
     function formAiAiTradeAgreementsIfEligible(): void {
-      const fullAiOwners = Array.from(aiOwnerCivMap.keys())
-        .filter(oid => oid !== 0 && !simplifiedDiplomacyOwners.has(oid))
+      const allAiOwners = Array.from(aiOwnerCivMap.keys())
+        .filter(oid => oid !== 0)
         .sort((a, b) => a - b); // determinizm: kolejność par po id
-      if (fullAiOwners.length < 2) return;
+      if (allAiOwners.length < 2) return;
 
       const dip = _diplomacyParams();
 
-      for (let i = 0; i < fullAiOwners.length; i++) {
-        for (let j = i + 1; j < fullAiOwners.length; j++) {
-          const a = fullAiOwners[i]!;
-          const b = fullAiOwners[j]!;
+      for (let i = 0; i < allAiOwners.length; i++) {
+        for (let j = i + 1; j < allAiOwners.length; j++) {
+          const a = allAiOwners[i]!;
+          const b = allAiOwners[j]!;
+          const eitherIsCityState = simplifiedDiplomacyOwners.has(a) || simplifiedDiplomacyOwners.has(b);
 
           const rel = getDiploRelation(a, b);
           if (rel.status === 'wojna') continue;
@@ -8199,6 +8211,9 @@ async function boot(): Promise<void> {
               : offerBtoA
                 ? { seller: b, buyer: a, offer: offerBtoA }
                 : null;
+          // R-MP-HANDEL-SUROWCE: para z miastem-państwem — deal WYŁĄCZNIE gdy jest
+          // realna oferta surowca (patrz komentarz nad funkcją). Pełne AI↔AI: bez zmian.
+          if (eitherIsCityState && !bestOffer) continue;
           const handelSurowiecCykliczny = bestOffer
             ? [{
                 surowiecKey: bestOffer.offer.surowiecKey,
