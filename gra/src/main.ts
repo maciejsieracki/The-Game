@@ -3746,6 +3746,19 @@ async function boot(): Promise<void> {
       const src = typCityCopyOwners.has(ownerId) ? _menuCityStateDifficulty : _menuDifficulty;
       return src === 'hard' ? 3 : src === 'easy' ? 1 : 2;
     }
+    /**
+     * R-MP-DYPL-PROAKT dokończenie (Maciej 2026-07-24): odpowiednik aiDiffLevelForOwner,
+     * ale zwraca string GameDifficulty ('easy'/'normal'/'hard') zamiast poziomu 1|2|3 --
+     * karmi ostatni argument decideAIDiplomacy (loadDefaultAIDiplomacyProgs -> progWojnaSila/
+     * progHandel, oraz canAiProposeOneShotGoldGift/aiOneShotGiftGoldMultiplier dla darów
+     * jednorazowych). Ta sama gałąź co aiDiffLevelForOwner: miasta-państwa (typCityCopyOwners)
+     * dostają _menuCityStateDifficulty, pełne AI nadal _menuDifficulty bez zmian.
+     * _menuCityStateDifficulty zawsze ma wartość (fallback na `diff` w applyMenuParams,
+     * nigdy null) -- brak dodatkowej konwersji/fallbacku potrzebny tutaj.
+     */
+    function effectiveGameDifficultyForOwner(ownerId: number): GameDifficulty {
+      return typCityCopyOwners.has(ownerId) ? _menuCityStateDifficulty : _menuDifficulty;
+    }
     /** N-1A: nazwa pierwszego miasta gracza z miasta_panstwa[0]. */
     let clusterPlayerStartCityName = playerStartCityName(data.civs, _menuCivId, data.cityNamesPools);
     /** Miasta-państwa tego samego typu — spawn po założeniu pierwszego miasta gracza. */
@@ -14272,15 +14285,18 @@ async function boot(): Promise<void> {
               setDiploRelation(0, ownerId, relTicked as unknown as Relation);
 
               // --- decideAIDiplomacy: AI dyplomacja (war/peace/trybut) ---
-              // R-MP-DYPL-PROAKT (Maciej 2026-07-24): proaktywnosc dyplomatyczna
-              // (agresjaMnoznik/dyplomacjaAktywnosc -- P3/P4 wojna/trybut, P5/P6
-              // sojusz/handel w decideAIDiplomacy) miast-panstw ma isc z trudnosci MP
-              // (_menuCityStateDifficulty), NIE z globalnej _menuDifficulty --
-              // dokladnie ten sam punkt rozgalezienia co aiDiffLevelForOwner (patrz
-              // wyzej: aiDiffLevel juz per-owner, uzywany rowniez dla cudow/
-              // opts.poziomTrudnosci). Pelne cywilizacje AI (nie miasta-panstwa) --
-              // bez zmian, nadal globalna trudnosc (typCityCopyOwners.has(ownerId)
-              // decyduje w aiDiffLevelForOwner).
+              // R-MP-DYPL-PROAKT (Maciej 2026-07-24, dokończenie): CAŁA dyplomacja
+              // miast-panstw ma isc z trudnosci MP (_menuCityStateDifficulty), NIE z
+              // globalnej _menuDifficulty -- (a) agresjaMnoznik/dyplomacjaAktywnosc
+              // (P3/P4 wojna/trybut, P5/P6 sojusz/handel) juz per-owner przez diffParams
+              // nizej (loadDifficultyParams(data, aiDiffLevel)); (b) ostatni argument
+              // decideAIDiplomacy (GameDifficulty string -- progWojnaSila/progHandel przez
+              // loadDefaultAIDiplomacyProgs ORAZ dary jednorazowe canAiProposeOneShotGoldGift/
+              // aiOneShotGiftGoldMultiplier) teraz TEZ per-owner przez
+              // effectiveGameDifficultyForOwner -- dokladnie ta sama galaz co
+              // aiDiffLevelForOwner. Pelne cywilizacje AI (nie miasta-panstwa) -- bez zmian,
+              // nadal globalna _menuDifficulty (typCityCopyOwners.has(ownerId) decyduje
+              // w obu helperach identycznie).
               const diffParams = loadDifficultyParams(data, aiDiffLevel);
               const respektWzgledny = (potAI + potPlr) > 0
                 ? potAI / (potAI + potPlr)
@@ -14338,7 +14354,7 @@ async function boot(): Promise<void> {
               );
               const dipCmdsRaw = decideAIDiplomacy(
                 diploInp, undefined, diffParams.agresjaMnoznik, diffParams.dyplomacjaAktywnosc,
-                _menuDifficulty,
+                effectiveGameDifficultyForOwner(ownerId),
               );
               const dipCmds: AIDiplomacyCommand[] = filterDiplomacyCommandsForEstablishedContact(
                 filterDiplomacyCommandsForLayer(
