@@ -484,6 +484,20 @@
       "jednostka": "Pieniądz/turę",
       "opis": "Koszt utrzymania standardowej jednostki wojskowej. [PT]"
     },
+    "ai_rush_jednostka_rezerwa_zlota": {
+      "easy": 100,
+      "normal": 100,
+      "hard": 100,
+      "jednostka": "Złoto",
+      "opis": "R-AI-KUP-JEDN (Maciej 2026-07-24, parytet AI): bufor skarbca AI, ktory musi zostac PO zaplaceniu za rush-zakup jednostki za zloto (shouldAIRushBuyUnit, game/ai.ts) -- AI kupuje tylko gdy treasury >= wartosc + koszt jednostki. Ta sama wartosc na wszystkich trudnosciach. PLACEHOLDER do strojenia (przeniesione z main.ts AI_UNIT_GOLD_RUSH_RESERVE, wartosc bez zmian)."
+    },
+    "ai_rush_jednostka_max_na_ture": {
+      "easy": 1,
+      "normal": 1,
+      "hard": 1,
+      "jednostka": "szt./ownera/turę",
+      "opis": "R-AI-KUP-JEDN (Maciej 2026-07-24, parytet AI): twardy cap liczby rush-zakupow jednostek za zloto na jednego AI-ownera w jednej turze (shouldAIRushBuyUnit, game/ai.ts) -- zapobiega farmieniu skarbca. Ta sama wartosc na wszystkich trudnosciach. PLACEHOLDER do strojenia (przeniesione z main.ts AI_UNIT_GOLD_RUSH_MAX_PER_TURN, wartosc bez zmian)."
+    },
     "skarbiec_centralny_lokalizacja": {
       "easy": "stolica",
       "normal": "stolica",

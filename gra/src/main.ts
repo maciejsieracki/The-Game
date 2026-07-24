@@ -594,7 +594,7 @@ import {
   type WonderDetailVM,
 } from './ui/wondersView';
 import { showWonderCompletedNotice } from './ui/wonderCompletedNotice';
-import { decideAITurn, chooseAIResearch, decideAIDiplomacy, loadDifficultyParams, RESUP_TIERS, shouldAIRushBuyUnit, type AICommand } from './game/ai';
+import { decideAITurn, chooseAIResearch, decideAIDiplomacy, loadDifficultyParams, RESUP_TIERS, shouldAIRushBuyUnit, loadAiRushParams, type AICommand } from './game/ai';
 import type { AITurnOpts, RelacjaWejscie, DiplomacjaInputs, AIDiplomacyCommand } from './game/ai';
 import { decideAiWonderBuild, loadAiWonderParams, type AiWonderCityCandidate, type AiWonderOption } from './game/ai';
 import { checkVictory, techIdsInGameScope, allTechInScopeResearched, OSTATNIA_EPOKA_GRY_V1, powerShare } from './game/victory';
@@ -4290,10 +4290,11 @@ async function boot(): Promise<void> {
      *  (rush) TEGO ownera W TEJ turze -- zerowany na wejściu w sekcję ownera w runAiPhase
      *  (ownerLoop), zasilany w cmd.type==='build' po udanym purchaseRecruitmentUnit. */
     const aiUnitGoldRushBoughtByOwner = new Map<number, number>();
-    // PLACEHOLDER do strojenia (R-STAWKI-STROJENIE)
-    const AI_UNIT_GOLD_RUSH_RESERVE = 100;
-    // PLACEHOLDER do strojenia (R-STAWKI-STROJENIE)
-    const AI_UNIT_GOLD_RUSH_MAX_PER_TURN = 1;
+    /** R-STAWKI-STROJENIE (2026-07-24): progi rush-zakupu jednostek za zloto,
+     *  przeniesione z zakodowanych stalych do econ-params.json (globalne.
+     *  ai_rush_jednostka_rezerwa_zlota / ai_rush_jednostka_max_na_ture) --
+     *  patrz loadAiRushParams (game/ai.ts). Wartosci bez zmian (100 / 1). */
+    const aiRushParams = loadAiRushParams(data.econParams, _menuDifficulty);
     /** D-IMPROVEMENTS: pula Pracy AI (symetryczna do aiSkarbiecByOwner) -- zasilana z
      *  aiEcon.doPuli w bloku bankowania AI (patrz sumEconomyForOwner), zużywana przy
      *  budowie ulepszeń terenu (planCityImprovements w game/ai.ts). Podpięta pod
@@ -14597,8 +14598,16 @@ async function boot(): Promise<void> {
               setDiploRelation(0, ownerId, relTicked as unknown as Relation);
 
               // --- decideAIDiplomacy: AI dyplomacja (war/peace/trybut) ---
-              const diffLevel = (_menuDifficulty === 'hard' ? 3 : _menuDifficulty === 'easy' ? 1 : 2) as 1|2|3;
-              const diffParams = loadDifficultyParams(data, diffLevel);
+              // R-MP-DYPL-PROAKT (Maciej 2026-07-24): proaktywnosc dyplomatyczna
+              // (agresjaMnoznik/dyplomacjaAktywnosc -- P3/P4 wojna/trybut, P5/P6
+              // sojusz/handel w decideAIDiplomacy) miast-panstw ma isc z trudnosci MP
+              // (_menuCityStateDifficulty), NIE z globalnej _menuDifficulty --
+              // dokladnie ten sam punkt rozgalezienia co aiDiffLevelForOwner (patrz
+              // wyzej: aiDiffLevel juz per-owner, uzywany rowniez dla cudow/
+              // opts.poziomTrudnosci). Pelne cywilizacje AI (nie miasta-panstwa) --
+              // bez zmian, nadal globalna trudnosc (typCityCopyOwners.has(ownerId)
+              // decyduje w aiDiffLevelForOwner).
+              const diffParams = loadDifficultyParams(data, aiDiffLevel);
               const respektWzgledny = (potAI + potPlr) > 0
                 ? potAI / (potAI + potPlr)
                 : 0.5;
@@ -14914,7 +14923,8 @@ async function boot(): Promise<void> {
                         // testy w tools/ai-unit-rush-test.cjs). AI kupuje tylko gdy jest w
                         // stanie wojny z kimkolwiek, zostaje bufor >= reserve po zapłacie,
                         // miasto ma pokrycie Manpower i owner nie kupił jeszcze w tej turze
-                        // (cap AI_UNIT_GOLD_RUSH_MAX_PER_TURN). purchaseRecruitmentUnit
+                        // (cap aiRushParams.maxPerTurn, R-STAWKI-STROJENIE: econ-params.json
+                        // globalne.ai_rush_jednostka_max_na_ture). purchaseRecruitmentUnit
                         // (ownerId-agnostyczne, patrz definicja) sam pobiera złoto+surowiec+
                         // Manpower i kolejkuje -- NIE pobieramy nic drugi raz tutaj.
                         const atWarWithAnyone = getDiploRelation(ownerId, 0).status === 'wojna'
@@ -14925,13 +14935,13 @@ async function boot(): Promise<void> {
                         const wantsRush = shouldAIRushBuyUnit({
                           atWar: atWarWithAnyone,
                           treasury: ownerTreasury(ownerId),
-                          reserve: AI_UNIT_GOLD_RUSH_RESERVE,
+                          reserve: aiRushParams.reserve,
                           goldCost: item.koszt,
                           hasManpower: canAffordUnitManpower(
                             city, empireEpochForOwner(ownerId), civManpowerMultsForOwner(ownerId).maxMult, cmd.buildingId,
                           ),
                           boughtThisTurn,
-                          maxPerTurn: AI_UNIT_GOLD_RUSH_MAX_PER_TURN,
+                          maxPerTurn: aiRushParams.maxPerTurn,
                         });
                         if (wantsRush && purchaseRecruitmentUnit(cmd.cityId, cmd.buildingId, item.koszt, ownerId)) {
                           aiUnitGoldRushBoughtByOwner.set(ownerId, boughtThisTurn + 1);
