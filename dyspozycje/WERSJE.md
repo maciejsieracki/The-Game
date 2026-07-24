@@ -9,7 +9,22 @@ UWAGA: KANON i FINALNA promują się teraz OSOBNYMI skryptami (`gra/tools/publis
 wyraźne polecenie właściciela) — dlatego są logowane NIEZALEŻNIE, każdy w swojej sekcji, ze
 swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drugiego.
 
-## ROBOCZA `c676b681` — 2026-07-24 · FALA 5: konsumpcja surowca przez jednostki + AI kupuje za złoto + fix bramki dostępu — **AKTUALNA**
+## ROBOCZA `666b2b75` — 2026-07-24 · FALA 6: ikony surowców v4 + magazyn 500 + UI surowców + Cuda w mieście + proaktywność MP + AI-rush strojalny — **AKTUALNA**
+
+- **Zawartość (sesja autonomiczna, commity `1e80e6d`…`ca00246`; branch `claude/sprawdzenie-funkcjonalnosci-ek4ra0`):**
+  1. **IKONY SUROWCÓW v4 (Design):** 12 odrębnych ikon — koniec interimowego kolorowania. Metale/cegła/rudy rozdzielone (res-bronze zielony, res-iron srebrno-szary, res-brick czerwony, res-copper-ore/res-iron-ore, res-steel, res-ceramics; glina=pomarańczowy placek). Wchodzą wszędzie przez `mapResourceIconSvg` (zakładka + chipy miasta + tooltip heksa).
+  2. **BAZA MAGAZYNU 100→500** (`magazyn_baza_surowce`); cap = **500 + 100×Magazyn** (każdy Magazyn w dowolnym mieście addytywnie). Fixtury 44/44.
+  3. **UI SUROWCÓW:** zakładka „Magazyn Państwa" na brand-ikonach (karty: ikona·nazwa·pasek·sztuki·produkcja bez „/t", szczegóły na hover; cap data-driven 500); chip „Surowce" w HUD (Nauka przeniesiona w prawo); **pasek surowców przy budowie** i **pasek Brąz/Żelazo wg epoki przy rekrutacji** w panelu miasta.
+  4. **CUDA:** usunięty osobny katalog z lewego menu; cuda w **liście budowy miasta**, filtrowane per cywilizacja (AI bez zmian).
+  5. **PROAKTYWNOŚĆ MIAST-PAŃSTW** (agresja/aktywność dyplomacji) pod suwak „Trudność miast-państw", nie globalną (pełne AI bez zmian).
+  6. **PROGI AI-RUSH** (rezerwa 100/limit 1) przeniesione do `econ-params.json` (strojalne, wartości bez zmian).
+  7. **Poza grą:** generatory paneli Excel eksportują koszty surowcowe jednostek/budynków (Panel-B/C).
+- **Bramki:** tsc 0 · surow-civ-storage 44/44 · unit-stock-cost 31/31 · ai-unit-rush 8/8 · ai-test 233/7 (baseline) · tech-tree 19/19 · research 33/33 · unit-replace 10/10 · wonder-yields 11/11 · zelazo-gate 23/23 · map-gen determinizm PASS · VERIFY OK.
+- **md5:** `666b2b75e42d8375706ecf993a3385c4` · manifest. Pieczątka `86c44282` (one-iter quirk). Bundel 28,2 MB.
+- **Test:** panel imperium → Surowce (kolorowe ikony, cap 500, karty) · miasto → budowa (pasek surowców) i rekrutacja (Brąz/Żelazo wg epoki) · budowa cudów z listy miasta (bez zakładki Cuda) · kreator → Trudność miast-państw wpływa też na proaktywność dyplomacji MP.
+- **FLAGI do decyzji Macieja:** (a) ikona **konia** do wymiany (Design dośle; SVG nie dało się załączyć); (b) HUD pokazuje pojedynczy chip „Surowce" (nie pełny pasek 9 ikon — świadomie zachowawczo); (c) zakres proaktywności MP — progi/dary jednorazowe nadal globalne (osobny temat); (d) `R-MP-HANDEL-SUROWCE`, `R-STAWKI-STROJENIE` otwarte.
+
+## ROBOCZA `c676b681` — 2026-07-24 · FALA 5: konsumpcja surowca przez jednostki + AI kupuje za złoto + fix bramki dostępu — ZASTĄPIONA
 
 - **Zawartość (commity `3161c79`, `b194539`, `af9fae2`; branch `claude/sprawdzenie-funkcjonalnosci-ek4ra0`):**
   1. **JEDNOSTKI KONSUMUJĄ SUROWIEC z puli PAŃSTWA** (decyzja Macieja C-JEDN-SUROWIEC-Q1=A): `Surowiec (ilość)` z units.json pobierane przy budowie/zakupie — gracz (zakup za złoto + zwrot przy anulowaniu) i AI (handler build) — blokada gdy pula nie starcza; UI ma chip kosztu i wyłącza „Rekrutuj". Mapowanie odporne na diakrytyki (Brąz→braz). Parytet AI (test 31/31, ownerId≠0).
