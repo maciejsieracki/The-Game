@@ -9,7 +9,20 @@ UWAGA: KANON i FINALNA promują się teraz OSOBNYMI skryptami (`gra/tools/publis
 wyraźne polecenie właściciela) — dlatego są logowane NIEZALEŻNIE, każdy w swojej sekcji, ze
 swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drugiego.
 
-## ROBOCZA `8dc09b8a` — 2026-07-24 · FALA 6.2: pełny handel surowcami z miastami-państwami + portret miast-państw = symbol kultury — **AKTUALNA**
+## ROBOCZA `e19e50ff` — 2026-07-24 · FALA 7: 6 utworów muzyki kontekstowej (intro/dyplomacja/pre-battle/bitwa/zwycięstwo/porażka) — **AKTUALNA**
+
+- **Zawartość:** (commit `af3b293`) 6 nowych utworów mp3 kontekstowych + mechanizm OVERLAY muzyki paneli (`muzyka-antyczna.ts`):
+  1. **Intro** — `Prayer_of_the_Sun_Stone` jako PIERWSZY (pozostałe 3 o jedno dalej; `INTRO_KOLEJNOSC` w filePlayer.ts).
+  2. **Panel dyplomacji** z inną cyw. — `Gilded_Porticos` (hak w show/hideDiplomacyAudience).
+  3. **Nakładka pre-battle** — `Song_of_the_Ancient_Hearth` (hak w show/hidePreBattle).
+  4. **Sama bitwa** — `Before_the_Bronze_Gate` (hak w setMood('bitwa'/'mapa') — mapa/oblężenie/najazd).
+  5. **Po WYGRANEJ** — `Where_the_Reed_Bends` · 6. **Po PRZEGRANEJ** — `Sun_on_the_Copper_Ridge` (hak w battleScene `_showEndScreen`, flaga playerWon; czysta wymiana utworu; Replay wraca na muzykę bitwy).
+  - Overlay: muzyka gry milknie na czas panelu, wraca (mapa) po zamknięciu. Respektuje wyłączoną muzykę (start tylko gdy muzyka gry gra) + suwak głośności obejmuje wszystkie 6 torów.
+- **Bramki:** tsc 0 · build OK (699 modułów) · VERIFY OK.
+- **md5:** `e19e50ff25cba5bf722b353e9d3aaa02` · manifest. Pieczątka w grze `6e4c23d8` (one-iter quirk — manifest miarodajny). Bundel 34 MB (6 mp3 inline base64). Zastępuje `8dc09b8a`.
+- **TODO przyszłość (życzenie właściciela):** osobny utwór dyplomacji per cywilizacja (dziś 1 wspólny; katalog `dyplomacja/` czytany automatycznie).
+
+## ROBOCZA `8dc09b8a` — 2026-07-24 · FALA 6.2: pełny handel surowcami z miastami-państwami + portret miast-państw = symbol kultury — ZASTĄPIONA
 
 - **Zawartość:** (commity `8aacfd3`, `8363a4b`)
   1. **HANDEL SUROWCAMI Z MIASTAMI-PAŃSTWAMI** (decyzja Macieja A, parytet): `zaproponuj_handel_surowiec` w warstwie MP; gracz↔MP i AI↔MP, jednorazowo + cyklicznie, obie strony (AI↔MP bramkowane realną nadwyżką surowca). Inne ograniczenia MP nietknięte.

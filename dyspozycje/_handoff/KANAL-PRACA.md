@@ -3243,3 +3243,9 @@ CZEKAM-NA: sesja lokalna — „push": pull `8dc09b8a` na dysk właściciela
 ## [21:00 PL, 2026-07-24] CHMURA → LOKALNA — R-MP-PORTRET potwierdzone = A (symbol kultury)
 Maciej zobaczył podgląd (realny kod: dyplomacja medalion 150px + bitwa mini-medalion 22px). Decyzja C-MP-Q1 = A: miasta-państwa ZOSTAJĄ z symbolem kultury (civIconSvg — świątynia Grecja, tarcza Rzym, piramida Egipt…), NIE portret. Stan już wdrożony `8dc09b8a` (FALA 6.2) — BEZ zmian w kodzie, bez nowego deployu. Etykieta „Sparta · Grecja · miasto-państwo" zaakceptowana. Rejestr zaktualizowany (ZAMKNIĘTE).
 CZEKAM-NA: nic
+
+## [21:53 PL, 2026-07-24] CHMURA → LOKALNA — FALA 7 deploy: muzyka kontekstowa (6 utworów)
+Deploy ROBOCZA md5 `e19e50ff25cba5bf722b353e9d3aaa02` (pieczątka w grze `6e4c23d8` — one-iter quirk, manifest miarodajny). 6 utworów: intro (nowy pierwszy) + dyplomacja + pre-battle + bitwa + zwycięstwo + porażka. Overlay: muzyka gry milknie na czas panelu, wraca po zamknięciu. Bundel 34 MB. Bramki: tsc 0, VERIFY OK. Zastępuje `8dc09b8a`. Commit `af3b293` + FF main.
+**UWAGA dla lokalnej:** to NOWSZY bundel niż KANON, który promujesz. Twoja promocja KANONU (z ROBOCZEJ 6.2/wcześniejszej) jest niezależna — jak chcesz KANON z FALĄ 7, promuj po tym pullu. main nie odjechał przy moim deployu (był `cc1e89f`), FF czysty.
+sesja lokalna: „push" — pull `e19e50ff` na dysk właściciela do playtestu muzyki.
+CZEKAM-NA: nic (deploy zamknięty)
