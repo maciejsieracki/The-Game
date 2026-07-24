@@ -411,6 +411,9 @@ export interface AvailabilityContext {
   empireActiveResourceLabels?: readonly string[];
   /** Wszystkie id budynków w imperium (union) — bramka cegła/ceramika. */
   empireBuiltIds?: readonly string[];
+  /** Zapas surowców puli państwa (Maciej 2026-07-24) — bramka B-SUROW-BUD spełniona też ZAPASEM,
+   *  nie tylko aktywnym źródłem (fix: budynek blokowany mimo posiadanego surowca w puli). */
+  empireResourceStock?: Readonly<Record<string, number>>;
 }
 
 /**
@@ -697,7 +700,7 @@ export function availableProduction(
     const gateLabels = ctx.empireActiveResourceLabels?.length
       ? ctx.empireActiveResourceLabels
       : ctx.activeResourceLabels;
-    if (!buildingResourceGateMet(b, gateLabels, ctx.empireBuiltIds)) {
+    if (!buildingResourceGateMet(b, gateLabels, ctx.empireBuiltIds, ctx.empireResourceStock)) {
       continue;
     }
     items.push({

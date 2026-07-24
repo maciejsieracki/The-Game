@@ -3475,6 +3475,7 @@ async function boot(): Promise<void> {
         },
         getEmpireResourceAccess: (ownerId: number) => empireActiveResourceLabelsForOwner(ownerId),
         getEmpireBuiltIds: (ownerId: number) => [...empireBuiltIdsForOwner(ownerId)],
+        getEmpireStock: (ownerId: number) => citySurowceSumForOwner(ownerId),
         getHasKopalniaNaZlozuZelaza: () => hasKopalniaNaZlozuZelazaOrTradeGrant(0, placedImprovementsForOwner(0)),
         // audyt #11: limit 1 żywej Super-jednostka na cywilizację -- nazwy (typeId)
         // jednostek TEGO ownera aktualnie żywych na mapie (respawn po śmierci działa
@@ -3964,6 +3965,11 @@ async function boot(): Promise<void> {
           civUnitNacja: unitNacjaForCivKey(civKeyForOwnerId(city.ownerId)),
           placedImprovements: placedImprovementsWithBrazTradeGrant(city.ownerId, ownImprovements),
           hasKopalniaNaZlozuZelaza: hasKopalniaNaZlozuZelazaOrTradeGrant(city.ownerId, ownImprovements),
+          // Parytet z ręczną budową gracza (Maciej 2026-07-24): bramka B-SUROW-BUD dostaje te same
+          // wejścia — aktywne źródła + budynki imperium + ZAPAS puli państwa (bramka spełniona zapasem).
+          empireActiveResourceLabels: empireActiveResourceLabelsForOwner(city.ownerId),
+          empireBuiltIds: [...empireBuiltIdsForOwner(city.ownerId)],
+          empireResourceStock: citySurowceSumForOwner(city.ownerId),
         },
       });
       if (!item) return null;

@@ -33,15 +33,29 @@ const DEPOSIT_LINKED_BUILDING_LABELS: Readonly<Record<string, readonly string[]>
   spichlerz_ii: ['Sól'],
 };
 
-/** Cegła = Cegielnia w imperium; Sól = warzelnia aktywna (etykieta Sól). */
+/** Label → klucz ASCII w City.surowce / puli państwa (odwrotność LABEL_BY_ASCII). */
+const ASCII_BY_LABEL: Record<string, string> = Object.fromEntries(
+  Object.entries(LABEL_BY_ASCII).map(([ascii, label]) => [label, ascii]),
+);
+
+/**
+ * Bramka spełniona etykietą, gdy: aktywne ŹRÓDŁO surowca (activeLabels), LUB budynek-konwerter
+ * (Cegielnia/Garncarnia), LUB — Maciej 2026-07-24 — surowiec jest w ZAPASIE puli państwa
+ * (`empireStock` > 0). Poprawka realnego buga: gracz miał 8 drewna w puli (i las/Tartak w zasięgu),
+ * a bramka „dostępu" i tak blokowała Pałac, bo sprawdzała tylko aktywne źródło. Dokładną ILOŚĆ
+ * i tak egzekwuje osobno `koszt_surowce` przy kliknięciu „Buduj".
+ */
 function empireLabelSatisfied(
   label: string,
   activeLabels: readonly string[],
   empireBuiltIds: readonly string[] | undefined,
+  empireStock: Readonly<Record<string, number>> | undefined,
 ): boolean {
   if (activeLabels.includes(label)) return true;
   if (label === 'Cegła' && empireBuiltIds?.includes('cegielnia')) return true;
   if (label === 'Ceramika' && empireBuiltIds?.includes('garncarnia')) return true;
+  const asciiKey = ASCII_BY_LABEL[label];
+  if (asciiKey && empireStock && (empireStock[asciiKey] ?? 0) > 0) return true;
   return false;
 }
 
@@ -66,9 +80,10 @@ export function buildingResourceGateMet(
   building: Pick<BuildingDef, 'id' | 'epokaWejscia'> & { wymaganySurowiec?: string | null },
   activeLabels: readonly string[] | undefined,
   empireBuiltIds?: readonly string[],
+  empireStock?: Readonly<Record<string, number>>,
 ): boolean {
   const required = buildingRequiredActiveLabels(building);
   if (required.length === 0) return true;
   const active = activeLabels ?? [];
-  return required.every(label => empireLabelSatisfied(label, active, empireBuiltIds));
+  return required.every(label => empireLabelSatisfied(label, active, empireBuiltIds, empireStock));
 }

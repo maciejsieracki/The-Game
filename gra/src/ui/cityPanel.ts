@@ -286,6 +286,8 @@ export interface CityPanelConfig {
   getEmpireResourceAccess?: (ownerId: number) => string[];
   /** Union id budynków imperium (bramka cegła/ceramika). */
   getEmpireBuiltIds?: (ownerId: number) => string[];
+  /** Zapas surowców puli państwa ownera (bramka B-SUROW-BUD spełniona też zapasem — Maciej 2026-07-24). */
+  getEmpireStock?: (ownerId: number) => Record<string, number>;
   /**
    * Promień okolicy roboczej (pól obrabianych) wg EKONOMII:
    * cityRangeForPopulation(pop): pop<5 -> 5, pop>=5 -> 10, pop>=10 -> 15.
@@ -5565,6 +5567,7 @@ function productionCtxForCity(city: City): AvailabilityContext {
     activeResourceLabels,
     empireActiveResourceLabels,
     empireBuiltIds,
+    empireResourceStock: cfg.getEmpireStock?.(city.ownerId),
   };
 }
 
