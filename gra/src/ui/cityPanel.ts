@@ -78,6 +78,7 @@ import {
 } from '../game/production';
 import {
   buildingStockCost,
+  unitStockCost,
   canAffordBuildingStock,
   missingStockFor,
   stockResourceLabel,
@@ -4282,6 +4283,18 @@ function buildingStockCostForItem(item: ProductionItem): Record<string, number> 
 }
 
 /**
+ * JEDNOSTKI-SUROWIEC-01 (Maciej 2026-07-24): koszt surowcowy jednostki (units.json
+ * `Surowiec` / `Surowiec (ilość)`) pobierany z puli PAŃSTWA RAZ, przy starcie budowy
+ * (enqueue) -- symetrycznie z buildingStockCostForItem powyżej. Puste dla jednostek
+ * bez surowca (Surowiec='-' lub ilość<=0). Patrz game/building-stock-cost.ts unitStockCost.
+ */
+function unitStockCostForItem(item: ProductionItem): Record<string, number> {
+  if (item.kind !== 'jednostka') return {};
+  const def = gameData()?.units.find(u => u.Jednostka === item.id);
+  return unitStockCost(def);
+}
+
+/**
  * SUROW-CIV-01 (Maciej 2026-07-24): magazyn surowcow = pula PANSTWA (civ-wide, suma po
  * WSZYSTKICH miastach ownera), nie tylko lokalne City.surowce. Brak cfg.getCities (np.
  * testy panelu bez pelnego silnika) -> fallback na [city] (zachowanie sprzed SUROW-CIV-01).
@@ -4305,6 +4318,15 @@ function addItem(city: City, item: ProductionItem, opts?: { upgrade?: boolean })
     if (Object.keys(cost).length > 0) {
       if (!canAffordBuildingStock(ownerSurowcePoolFor(city), cost)) return; // blokada: pula panstwa nie starcza
       // pobór RAZ, przy starcie budowy — rozłożony po miastach ownera (pula PAŃSTWA).
+      deductBuildingStockCostAcrossCities(cfg.getCities?.() ?? [city], city.ownerId, cost);
+    }
+  } else if (item.kind === 'jednostka') {
+    // JEDNOSTKI-SUROWIEC-01: identyczny wzorzec jak budynki powyżej -- pobór RAZ przy
+    // enqueue do kolejki Pracy, rozłożony po miastach ownera (pula PAŃSTWA); dequeue
+    // (anulowanie z kolejki Pracy) NIE zwraca surowca -- matchuje zachowanie budynków.
+    const cost = unitStockCostForItem(item);
+    if (Object.keys(cost).length > 0) {
+      if (!canAffordBuildingStock(ownerSurowcePoolFor(city), cost)) return; // blokada: pula panstwa nie starcza
       deductBuildingStockCostAcrossCities(cfg.getCities?.() ?? [city], city.ownerId, cost);
     }
   }
@@ -4948,6 +4970,26 @@ function recruitManpowerCost(city: City, typeId: string): number {
   return unitManpowerCostForType(typeId, ep, maxMult);
 }
 
+/**
+ * JEDNOSTKI-SUROWIEC-01 (Maciej 2026-07-24): chip(y) kosztu surowcowego jednostki
+ * (units.json Surowiec/Surowiec (ilość)) na karcie rekrutacji — czerwony gdy pula
+ * PAŃSTWA ownera (suma City.surowce po wszystkich miastach) nie starcza. Pusty string
+ * gdy jednostka nie ma kosztu surowcowego. Wzorzec: buildingStockCostChipsHtml powyżej.
+ */
+function unitStockCostChipsHtml(u: UnitDef, city: City): string {
+  const cost = unitStockCost(u);
+  const keys = Object.keys(cost);
+  if (keys.length === 0) return '';
+  const pool = ownerSurowcePoolFor(city);
+  const chips = keys.map(k => {
+    const need = cost[k]!;
+    const missing = need > (pool[k] ?? 0);
+    const cls = missing ? 'bld-infocard-chip stock-missing' : 'bld-infocard-chip';
+    return `<span class="${cls}">${need} ${stockResourceLabel(k)}</span>`;
+  });
+  return chips.join('');
+}
+
 function appendUnitRecruitCard(
   grid: HTMLElement,
   city: City,
@@ -4960,15 +5002,24 @@ function appendUnitRecruitCard(
   const mpCost = recruitManpowerCost(city, item.id);
   const mpSnap = cfg.getManpowerSnapshot?.(city.id);
   const canMp = mpCost <= 0 || !mpSnap || mpSnap.manpowerBiezacy >= mpCost;
+  // JEDNOSTKI-SUROWIEC-01: blokada rekrutacji gdy pula PAŃSTWA ownera nie pokrywa
+  // Surowiec/Surowiec (ilość) tej jednostki — identyczny wzorzec jak canMp powyżej.
+  const stockCost = unitStockCost(udef);
+  const stockMissing = missingStockFor(ownerSurowcePoolFor(city), stockCost);
+  const stockOk = Object.keys(stockMissing).length === 0;
   const cardWrap = buildUnitRecruitCard({
     udef,
     item,
     data,
     skarb,
-    canPurchase: !!cfg.onPurchaseUnit && canMp,
+    canPurchase: !!cfg.onPurchaseUnit && canMp && stockOk,
     treasuryIconHtml: cityPanelChipIconWrap('res-treasury', 14),
     mpCost,
     mpCostLabel: formatManpower(mpCost),
+    stockChipsHtml: unitStockCostChipsHtml(udef, city),
+    stockMissingLabel: stockOk ? undefined : 'Brakuje w magazynie: ' + Object.entries(stockMissing)
+      .map(([k, v]) => `${v} ${stockResourceLabel(k)}`)
+      .join(', '),
     onRecruit: () => recruitUnit(city, item),
   });
   const card = cardWrap.querySelector('.unit-recruit-card');

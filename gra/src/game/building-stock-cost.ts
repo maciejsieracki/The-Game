@@ -219,3 +219,44 @@ export function creditOwnerResourceStock<T extends StockCitySource>(
   target.surowce[key] = (target.surowce[key] ?? 0) + toAdd;
   return toAdd;
 }
+
+// ---------------------------------------------------------------------------
+// JEDNOSTKI-SUROWIEC-01 (decyzja Macieja 2026-07-24): jednostki z units.json
+// (pola `Surowiec` / `Surowiec (ilość)`) konsumuja PULE PANSTWA identycznie jak
+// koszt_surowce budynkow powyzej -- ta sama afordancja (canAffordBuildingStock)
+// i ten sam pobor rozproszony po miastach ownera (deductBuildingStockCostAcrossCities),
+// tylko liczony z innego pola zrodlowego danych (units.json zamiast buildings.json).
+//
+// PULAPKA DIAKRYTYKOW: `Surowiec` w units.json to nazwa PL z diakrytykami ('Brąz',
+// 'Żelazo') -- City.surowce uzywa kluczy ASCII ('braz', 'zelazo'). Trzeba je zmapowac
+// przez usuniecie znakow diakrytycznych (NFD + wyciecie combining marks), NIE samym
+// .toLowerCase() (production.ts:751 robi tak i to jest OSOBNY pre-istniejacy bug
+// bramki dostepu do Brazu/Zelaza -- NIE powielac go tutaj).
+// ---------------------------------------------------------------------------
+
+/** Usuwa znaki diakrytyczne (NFD + wyciecie combining marks) i normalizuje do lowercase. */
+function stripDiacriticsLower(s: string): string {
+  return s.normalize('NFD').replace(/[̀-ͯ]/g, '').trim().toLowerCase();
+}
+
+/**
+ * Koszt surowcowy jednostki (units.json `Surowiec` / `Surowiec (ilość)`), zmapowany
+ * na klucz ASCII zgodny z City.surowce (np. 'Brąz' -> 'braz', 'Żelazo' -> 'zelazo').
+ * Zwraca {} gdy Surowiec pusty/'-'/null lub ilość <= 0 (brak kosztu -- zachowanie
+ * zero-regresji dla jednostek bez surowca, np. Osadnik/Robotnik).
+ * Pure -- bez DOM.
+ */
+export function unitStockCost(
+  unit: { Surowiec?: string | null; 'Surowiec (ilość)'?: number | null } | null | undefined,
+): Record<string, number> {
+  const out: Record<string, number> = {};
+  if (!unit) return out;
+  const rawName = (unit.Surowiec ?? '').toString().trim();
+  if (!rawName || rawName === '-') return out;
+  const ilosc = unit['Surowiec (ilość)'];
+  if (typeof ilosc !== 'number' || !Number.isFinite(ilosc) || ilosc <= 0) return out;
+  const key = stripDiacriticsLower(rawName);
+  if (!key) return out;
+  out[key] = ilosc;
+  return out;
+}

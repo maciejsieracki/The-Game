@@ -142,12 +142,27 @@ export interface UnitRecruitCardOpts {
   /** Koszt Manpower (0 = Zwiadowca). */
   mpCost?: number;
   mpCostLabel?: string;
+  /**
+   * JEDNOSTKI-SUROWIEC-01 (Maciej 2026-07-24): chip(y) kosztu surowcowego jednostki
+   * (units.json Surowiec/Surowiec (ilość)), już wyrenderowany HTML (patrz
+   * cityPanel.ts unitStockCostChipsHtml) — pusty/undefined gdy jednostka bez kosztu.
+   */
+  stockChipsHtml?: string;
+  /**
+   * Gdy podane (pula PAŃSTWA ownera nie starcza na koszt surowcowy), przycisk
+   * "Rekrutuj" jest zablokowany niezależnie od canPurchase/skarb/Manpower, a tooltip
+   * pokazuje ten komunikat (wzorzec: missingStockFor + "Brakuje w magazynie" — budynki).
+   */
+  stockMissingLabel?: string;
   onRecruit: () => void;
 }
 
 /** Karta jednostki C09 v2 do katalogu rekrutacji. */
 export function buildUnitRecruitCard(opts: UnitRecruitCardOpts): HTMLDivElement {
-  const { udef, item, skarb, canPurchase, treasuryIconHtml, mpCost, mpCostLabel, onRecruit } = opts;
+  const {
+    udef, item, skarb, canPurchase, treasuryIconHtml, mpCost, mpCostLabel,
+    stockChipsHtml, stockMissingLabel, onRecruit,
+  } = opts;
   const cat = unitCategory(udef);
   const theme = themeForCategory(cat);
   const canBuy = canPurchase && (skarb === undefined || skarb >= item.koszt);
@@ -192,6 +207,14 @@ export function buildUnitRecruitCard(opts: UnitRecruitCardOpts): HTMLDivElement 
   statRow(stats, 'Atak dystansowy', udef['Atak dystansowy']);
   if (stats.childElementCount > 0) bd.appendChild(stats);
 
+  // JEDNOSTKI-SUROWIEC-01: chip kosztu surowcowego (Brąz/Żelazo) obok statystyk,
+  // czerwony gdy pula PAŃSTWA (cityPanel.ts unitStockCostChipsHtml) nie starcza.
+  if (stockChipsHtml) {
+    const stockChips = el('div', 'bld-infocard-chips');
+    stockChips.innerHTML = stockChipsHtml;
+    bd.appendChild(stockChips);
+  }
+
   const ft = el('div', 'unit-recruit-ft');
   const cost = el('div', 'unit-recruit-cost');
   const mpPart = mpCostLabel != null
@@ -202,7 +225,8 @@ export function buildUnitRecruitCard(opts: UnitRecruitCardOpts): HTMLDivElement 
   const btn = el('button', 'btn btn-sm btn-g') as HTMLButtonElement;
   btn.textContent = 'Rekrutuj';
   btn.disabled = !canBuy;
-  if (!canPurchase) btn.title = 'Wymaga wpiecia onPurchaseUnit przez silnik';
+  if (!canPurchase && stockMissingLabel) btn.title = stockMissingLabel;
+  else if (!canPurchase) btn.title = 'Wymaga wpiecia onPurchaseUnit przez silnik';
   else if (!canBuy && skarb !== undefined) btn.title = `Za mało złota (${skarb}/${item.koszt})`;
   else btn.title = `Rekrutuj za ${item.koszt} ze skarbca`;
   btn.addEventListener('click', (ev) => {

@@ -443,8 +443,8 @@ import { advanceProduction, rushProduction, rushCost, populationCostOf, UNIT_POP
   buildingLevelForEpoch, buildingEffectAtLevel, frontItem, unitNacjaForCivKey, applyCompletedBuildingIds,
   type CityProduction, type AvailabilityContext } from './game/production';
 import {
-  buildingStockCost, canAffordBuildingStock,
-  ownerResourceStockAll, deductBuildingStockCostAcrossCities,
+  buildingStockCost, unitStockCost, canAffordBuildingStock,
+  ownerResourceStockAll, deductBuildingStockCostAcrossCities, creditOwnerResourceStock,
 } from './game/building-stock-cost';
 import { empireHasKopalniaNaZlozuZelaza, hasZelazoAccess } from './game/zelazo-access';
 import {
@@ -2070,6 +2070,17 @@ async function boot(): Promise<void> {
         _menuDifficulty,
       );
       if (!item) return false;
+      // JEDNOSTKI-SUROWIEC-01 (Maciej 2026-07-24): jednostka konsumuje Surowiec/Surowiec (ilość)
+      // z units.json Z PULI PAŃSTWA (civ-wide, suma po wszystkich miastach gracza) — dokładnie
+      // tak samo jak koszt_surowce budynku (game/building-stock-cost.ts). Sprawdzane PRZED
+      // pobraniem Manpower/złota, żeby nie zdarzyło się częściowe pobranie przy odmowie.
+      const unitDef = data.units.find(u => u.Jednostka === itemId);
+      const stockCost = unitStockCost(unitDef);
+      if (Object.keys(stockCost).length > 0
+        && !canAffordBuildingStock(ownerResourceStockAll(cities, 0), stockCost)) {
+        showHintMessage('Za mało surowca w magazynie państwa', 2800);
+        return false;
+      }
       const d = tryDeductUnitSpawnCosts(
         city, ep, UNIT_POPULATION_COST, mpMults.maxMult, itemId,
       );
@@ -2080,6 +2091,9 @@ async function boot(): Promise<void> {
       player.skarbiec -= koszt;
       city.population = d.population;
       city.manpower = d.manpower;
+      if (Object.keys(stockCost).length > 0) {
+        deductBuildingStockCostAcrossCities(cities, 0, stockCost);
+      }
       markCityStateDirty();
       const prod0 = cityProd.get(cityId) ?? { kolejka: [], postep: 0 };
       cityProd.set(cityId, enqueueRecruitment(prod0, { ...item, koszt }));
@@ -2103,6 +2117,14 @@ async function boot(): Promise<void> {
       city.population = refunded.population;
       city.manpower = refunded.manpower;
       player.skarbiec += koszt;
+      // JEDNOSTKI-SUROWIEC-01: zwrot surowca do puli PAŃSTWA (civ-wide) — symetrycznie
+      // z poborem w purchaseRecruitmentUnit. BEZ capPerType: to zwrot, nie nowa produkcja
+      // (nie powinien ginąć nawet gdyby pula była tuż pod capem magazynu).
+      const unitDef = data.units.find(u => u.Jednostka === itemId);
+      const stockCost = unitStockCost(unitDef);
+      for (const [key, amt] of Object.entries(stockCost)) {
+        creditOwnerResourceStock(cities, 0, key, amt);
+      }
       markCityStateDirty();
       updateHud();
       refreshCityPanelIfOpen();
@@ -14352,19 +14374,29 @@ async function boot(): Promise<void> {
               civEra: empireEpochForOwner(ownerId),
               // D-START posiłki v2: setup „Wsparcie miast-państw" -> RESUP_TIERS (ai.ts).
               citySupportLevel: _menuCitySupport,
-              // TEMAT #6 (2026-07-23) / SUROW-CIV-01 (2026-07-24): AI pomija budynek (skips,
-              // nie zawiesza się) gdy pula PAŃSTWA ownera (suma City.surowce po wszystkich
-              // miastach — nie tylko to jedno) nie starcza na koszt_surowce (cegła/ceramika).
-              // OWNERID-AGNOSTIC: dokladnie ta sama funkcja jak dla gracza (buildingStockCost
-              // w main.ts cmd.type==='build' i ui/cityPanel.ts addItem) -- zero specjalnej
-              // sciezki AI. Jednostki i budynki bez koszt_surowce zawsze "affordable".
+              // TEMAT #6 (2026-07-23) / SUROW-CIV-01 (2026-07-24) / JEDNOSTKI-SUROWIEC-01
+              // (2026-07-24): AI pomija budynek LUB jednostkę (skips, nie zawiesza się) gdy
+              // pula PAŃSTWA ownera (suma City.surowce po wszystkich miastach — nie tylko to
+              // jedno) nie starcza na koszt_surowce budynku (cegła/ceramika) LUB Surowiec/
+              // Surowiec (ilość) jednostki (units.json). OWNERID-AGNOSTIC: dokladnie ta sama
+              // funkcja jak dla gracza (buildingStockCost/unitStockCost w main.ts
+              // cmd.type==='build' i ui/cityPanel.ts addItem) -- zero specjalnej sciezki AI.
+              // Budynki/jednostki bez kosztu surowcowego zawsze "affordable". `buildingId` tu
+              // to id kandydata z chooseCityProduction (ai.ts) -- moze byc id budynku (katalog
+              // buildings.json) LUB nazwa jednostki (Jednostka w units.json, np. "Wojownik").
               canAfford: (cityId: string, buildingId: string) => {
                 const c = cities.find(x => x.id === cityId);
                 if (!c) return true;
                 const def = data.buildings.find(b => b.id === buildingId);
-                const cost = buildingStockCost(def);
-                if (Object.keys(cost).length === 0) return true;
-                return canAffordBuildingStock(ownerSurowcePoolFor(c.ownerId), cost);
+                if (def) {
+                  const cost = buildingStockCost(def);
+                  if (Object.keys(cost).length === 0) return true;
+                  return canAffordBuildingStock(ownerSurowcePoolFor(c.ownerId), cost);
+                }
+                const unitDef = data.units.find(u => u.Jednostka === buildingId);
+                const unitCost = unitStockCost(unitDef);
+                if (Object.keys(unitCost).length === 0) return true;
+                return canAffordBuildingStock(ownerSurowcePoolFor(c.ownerId), unitCost);
               },
             };
             const myCivTyp = aiOwnerCivMap.get(ownerId);
@@ -14819,16 +14851,30 @@ async function boot(): Promise<void> {
                         _menuDifficulty,
                       );
                     if (item !== null) {
-                      // TEMAT #6 (2026-07-23) / SUROW-CIV-01 (2026-07-24): siatka bezpieczeństwa
-                      // — AI zwykle nie wybiera budynku bez pokrycia (opts.canAfford w
-                      // decideAITurn, patrz wyżej), ale sprawdzamy ponownie tu (jedyne miejsce,
-                      // ktore faktycznie enqueue'uje i pobiera surowiec) — AI POMIJA budynek
-                      // (continue), nie zawiesza tury. Afordancja/pobor liczone Z PULI PAŃSTWA
-                      // ownera (nie tylko lokalne City.surowce tego miasta) — identycznie jak
-                      // dla gracza, zero specjalnej ścieżki AI.
+                      // TEMAT #6 (2026-07-23) / SUROW-CIV-01 (2026-07-24) / JEDNOSTKI-SUROWIEC-01
+                      // (2026-07-24): siatka bezpieczeństwa — AI zwykle nie wybiera budynku/
+                      // jednostki bez pokrycia (opts.canAfford w decideAITurn, patrz wyżej), ale
+                      // sprawdzamy ponownie tu (jedyne miejsce, ktore faktycznie enqueue'uje i
+                      // pobiera surowiec) — AI POMIJA element (continue), nie zawiesza tury.
+                      // Afordancja/pobor liczone Z PULI PAŃSTWA ownera (nie tylko lokalne
+                      // City.surowce tego miasta) — identycznie jak dla gracza, zero specjalnej
+                      // ścieżki AI (parytet: buildingStockCost/unitStockCost, ta sama funkcja
+                      // deductOwnerStockCost dla obu rodzajow kosztu).
                       if (item.kind === 'budynek') {
                         const def = data.buildings.find(b => b.id === item.id);
                         const cost = buildingStockCost(def);
+                        if (Object.keys(cost).length > 0) {
+                          if (!canAffordBuildingStock(ownerSurowcePoolFor(ownerId), cost)) {
+                            console.warn(
+                              `[AI ${ownerId}] Build skipped (brak surowca w magazynie panstwa): ${cmd.buildingId}`,
+                            );
+                            continue;
+                          }
+                          deductOwnerStockCost(ownerId, cost);
+                        }
+                      } else if (item.kind === 'jednostka') {
+                        const unitDef = data.units.find(u => u.Jednostka === item.id);
+                        const cost = unitStockCost(unitDef);
                         if (Object.keys(cost).length > 0) {
                           if (!canAffordBuildingStock(ownerSurowcePoolFor(ownerId), cost)) {
                             console.warn(
