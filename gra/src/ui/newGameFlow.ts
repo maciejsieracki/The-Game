@@ -843,7 +843,7 @@ function appendKlasterBlock(parent: HTMLElement, preview: StartPreview): void {
   if (preview.foreignTypesCount > 0) {
     block.appendChild(el('div', 'kv', 'Obce typy na mapie: ' + preview.foreignTypesCount));
   }
-  block.appendChild(el('div', 'km', preview.modelDetail));
+  // Maciej 2026-07-24: podgląd startu = TYLKO parametry, bez prozy (modelDetail usunięty z UI).
   parent.appendChild(block);
 }
 
@@ -1184,7 +1184,7 @@ function renderSettStep(host: HTMLElement): void {
     const box = el('div', 'start-preview');
     box.appendChild(el('div', 'kh', 'Twój start (podgląd)'));
     box.appendChild(el('div', 'kv', preview.modelLine));
-    box.appendChild(el('div', 'km', preview.modelDetail));
+    // Maciej 2026-07-24: bez prozy (modelDetail) — tylko zwięzła linia parametrów.
     host.appendChild(box);
   }
 
