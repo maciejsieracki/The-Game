@@ -10,7 +10,7 @@ const BUNDLE = path.resolve(__dirname, '.earth-template-bundle.cjs');
 fs.writeFileSync(ENTRY, `
 export { generujSwiat } from '../src/map/generator';
 export { countLandSeaHexes, findInlandWaterHexes, repairRiverPathAdjacency } from '../src/map/gen-helpers';
-export { earthTemplateLandAt, earthNorthOceanRows, EARTH_TEMPLATE_NR_LAND_MAX } from '../src/map/earth-land-mask';
+export { earthTemplateLandAt, earthNorthOceanRows, earthSouthOceanRows } from '../src/map/earth-land-mask';
 export { generateMap } from '../src/map/generator';
 `, 'utf8');
 
@@ -62,14 +62,23 @@ for (let r = b; r < b + north; r++) {
 ok(northLand === 0, `ziemia: 0 lądu w buforze arktycznym (${north} rzędów, found ${northLand})`);
 ok(north >= 28 && north <= 32, `ziemia standard: bufor arktyczny ≈30 rzędów (got ${north})`);
 
-let antLand = 0;
-const southScan = 8;
-for (let r = H - b - southScan; r < H - b; r++) {
-  for (let q = Math.floor(W * 0.35); q < Math.floor(W * 0.65); q++) {
-    if (M.earthTemplateLandAt(q, r, W, H) > 0) antLand++;
+const south = M.earthSouthOceanRows(H);
+let southLand = 0;
+for (let r = H - b - south; r < H - b; r++) {
+  for (let q = b; q < W - b; q++) {
+    if (M.earthTemplateLandAt(q, r, W, H) > 0) southLand++;
   }
 }
-ok(antLand === 0, `ziemia: brak pasa Antarktydy na dole (środek mapy, found ${antLand} heksów szablonu)`);
+ok(southLand === 0, `ziemia: 0 lądu w buforze południowym (${south} rzędów, found ${southLand})`);
+ok(south >= 28 && south <= 32, `ziemia standard: bufor południowy ≈30 rzędów (got ${south})`);
+
+let antLand = 0;
+const landRows = H - 2 * b - north - south;
+const antRow = b + north + landRows - 3;
+for (let q = Math.floor(W * 0.35); q < Math.floor(W * 0.65); q++) {
+  if (M.earthTemplateLandAt(q, antRow, W, H) > 0) antLand++;
+}
+ok(antLand > 0, `ziemia: Antarktyda w szablonie nad buforem południowym (found ${antLand} heksów przy r=${antRow})`);
 
 const big = M.generujSwiat(4242, 'duzy', 'ziemia', genOpts);
 let morseInMask = 0;

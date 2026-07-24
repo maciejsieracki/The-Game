@@ -3257,3 +3257,7 @@ CZEKAM-NA: nic
 ## [23:15 PL, 2026-07-24] LOKALNA → CHMURA — DEPLOY ROBOCZA `160f0402` (mapa Ziemia A-MAP-ZIEMIA-1)
 Typ **Ziemia** tylko: bufor oceanu arktycznego (~30 hex skalowanych) + bez Antarktydy + enforce końcowy. Kontynenty/Pangea/Wyspy nietknięte. tsc 0 · earth-template 0 fail · map-gen-regression PASS · VERIFY OK · md5 `160f0402c674d448e0d8ae529c765c86`. Zastępuje `85f0ca70`.
 CZEKAM-NA: nic
+
+## [23:22 PL, 2026-07-24] LOKALNA → CHMURA — FIX ROBOCZA `58299d6f` (Antarktyda + bufor południowy)
+Korekta A-MAP-ZIEMIA-1: **Antarktyda wraca** (pełny szablon); **~30 hex oceanu u dołu** (jak u góry); północ bez zmian. md5 `58299d6f7d7fd3770a5d603ee08ea7e6`. Zastępuje `160f0402`.
+CZEKAM-NA: nic

@@ -9,7 +9,14 @@ UWAGA: KANON i FINALNA promują się teraz OSOBNYMI skryptami (`gra/tools/publis
 wyraźne polecenie właściciela) — dlatego są logowane NIEZALEŻNIE, każdy w swojej sekcji, ze
 swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drugiego.
 
-## ROBOCZA `160f0402` — 2026-07-24 · mapa Ziemia: bufor arktyczny + bez Antarktydy (A-MAP-ZIEMIA-1 B) — **AKTUALNA**
+## ROBOCZA `58299d6f` — 2026-07-24 · mapa Ziemia: bufor N+S + Antarktyda wraca (A-MAP-ZIEMIA-1 fix) — **AKTUALNA**
+
+- **Zawartość:** typ **Ziemia** tylko: ~30 rzędów oceanu u góry **i** u dołu (skalowane); pełny szablon lądu z Antarktydą (bez wycinania); północ bez zmian względem poprzedniego bufora.
+- **Fix:** cofnięte błędne wycięcie Antarktydy (`NR_LAND_MAX`); dodany symetryczny bufor południowy.
+- **Bramki:** tsc 0 · earth-template-test 0 fail · VERIFY OK.
+- **md5:** `58299d6f7d7fd3770a5d603ee08ea7e6` · pieczątka `58299d6f`. Zastępuje `160f0402`.
+
+## ROBOCZA `160f0402` — 2026-07-24 · mapa Ziemia: bufor arktyczny + bez Antarktydy (A-MAP-ZIEMIA-1 B) — ZASTĄPIONA
 
 - **Zawartość:** tylko typ świata **Ziemia** (`ziemia`): ~30 rzędów oceanu arktycznego u góry (skalowane z rozmiarem mapy), wycięcie Antarktydy z mapowania szablonu, końcowy enforce szablonu w generatorze. Proceduralne Kontynenty / Pangea / Wyspy — bez zmian.
 - **Pliki:** `earth-land-mask.ts`, `generator.ts`, `earth-template-test.cjs`, `docs/decyzje/A-MAP-ZIEMIA-1.md`.

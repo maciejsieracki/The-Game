@@ -8,11 +8,11 @@
 
 Korekta szablonu Ziemi: północ za wysoko (Europa w złym pasie pod klimat), Antarktyda na dole do usunięcia.
 
-## Opcja wybrana — B
+## Opcja wybrana — B (korekta 2026-07-24 wieczór)
 
-- **Ocean arktyczny** u góry playable area: ~30 heksów na mapie standardowej, skalowane `round(30 × innerH / 115)`.
-- **Antarktyda:** wycięta z mapowania (`EARTH_TEMPLATE_NR_LAND_MAX = 0.74` w `earth-land-mask.ts`).
-- Bez zmiany wymiarów heksów mapy z kreatora.
+- **Ocean arktyczny** u góry playable area: ~30 heksów na mapie standardowej, skalowane.
+- **Ocean południowy** u dołu: **ten sam** bufor (~30 heksów skalowanych) — oddech przed krawędzią mapy.
+- **Antarktyda:** **ZOSTAJE** — pełny szablon maski (bez `NR_LAND_MAX`); Antarktyda siedzi tuż nad południowym buforem oceanu.
 
 ## Zakres (ważne)
 
