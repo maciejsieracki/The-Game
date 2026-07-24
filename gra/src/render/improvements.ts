@@ -377,15 +377,19 @@ export function buildImprovement(
 const SECTOR_R = 0.72;      // dosunięcie do ścianki (HEX_R=1)
 const SECTOR_SCALE = 0.30;  // znacząco mniejsze
 const CAT_ANGLE_DEG: Record<string, number> = {
-  surowiec: 0, farma: 60, pastwisko: 120, fort: 180, inne: 240,
+  surowiec: 0, farma: 60, pastwisko: 120, fort: 180, inne: 240, kamien: 300,
 };
-const SUROWIEC_KEYS = new Set(['kopalnia', 'kamieniolom', 'glinianka', 'warzelnia_soli', 'stadnina', 'kopalnia_miedzi']);
+// Kamieniołom ma WŁASNY bok (kamien=300°), NIE w 'surowiec' — bo od 2026-07-24 współistnieje
+// z kopalnią rudy na tym samym heksie (C-SUR kamień=b); w jednym sektorze modele rysują się w
+// tym samym punkcie, więc rozdzielenie kątów zapobiega nachodzeniu grafik kamieniołom↔kopalnia.
+const SUROWIEC_KEYS = new Set(['kopalnia', 'glinianka', 'warzelnia_soli', 'stadnina', 'kopalnia_miedzi']);
 const PASTWISKO_KEYS = new Set(['bydlo', 'owce', 'lama', 'pastwisko']);
 const FORT_KEYS = new Set(['fort', 'posterunek']);
 const DROGA_KEYS = new Set(['droga', 'droga_brukowana']);
 const OVERLAY_KEYS = new Set(['irygacja', 'pole_irygowane', 'tarasy']); // nakładki → przy farmie
 
 function improvementSectorAngle(key: string): number {
+  if (key === 'kamieniolom') return CAT_ANGLE_DEG.kamien!;   // własny bok, obok kopalni bez nachodzenia
   if (SUROWIEC_KEYS.has(key)) return CAT_ANGLE_DEG.surowiec!;
   if (key === 'farma' || OVERLAY_KEYS.has(key)) return CAT_ANGLE_DEG.farma!;
   if (PASTWISKO_KEYS.has(key)) return CAT_ANGLE_DEG.pastwisko!;

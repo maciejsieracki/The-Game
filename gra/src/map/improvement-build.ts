@@ -163,8 +163,13 @@ const SOLO_FOOD_KEYS = new Set<string>(['tarasy', 'owce', 'lama']);
 // nakładka (współistnieje z food). Uwaga: teren i tak wyklucza większość par (płaski≠wzgórza).
 const SEKTOR_OF: Record<string, string> = {
   // bok 1 — surowce + ich ulepszenia
-  kopalnia: 'surowiec', kamieniolom: 'surowiec', glinianka: 'surowiec',
+  kopalnia: 'surowiec', glinianka: 'surowiec',
   stadnina: 'surowiec', kopalnia_miedzi: 'surowiec',
+  // Kamieniołom = WŁASNY sektor NIE-wykluczający (Maciej 2026-07-24, C-SUR kamień=b): kamień to
+  // zasób terenowy i ma współistnieć z kopalniami rudy / glinianką / stadniną na tym samym heksie
+  // — żeby budowa kamieniołomu nie zablokowała późniejszego wydobycia rudy (zwłaszcza żelaza,
+  // ukrytego do epoki 3). Zostaje unikalny wobec samego siebie (existing.includes w qualifies).
+  kamieniolom: 'kamien',
   // las (bok 1 — surowiec leśny)
   wyrab: 'las', tartak: 'las', oboz_lowiecki: 'las',
   // bok 2 — pole (food-teren)
@@ -195,7 +200,7 @@ const TERRAIN_ALLOW: Partial<Record<ImprovementKey, TerenSet | null>> = {
   stadnina: new Set([TerenBazowy.Laka, TerenBazowy.Rownina]),
   kopalnia: new Set([TerenBazowy.Wzgorza, TerenBazowy.Gory]),
   glinianka: null,
-  kamieniolom: new Set([TerenBazowy.Gory]), // Maciej 2026-07-09: kamieniołom TYLKO góry (bez złoża)
+  kamieniolom: new Set([TerenBazowy.Wzgorza, TerenBazowy.Gory]), // Maciej 2026-07-24: Wzgórza+Góry (nie zawsze mamy dostęp do gór); teren, bez złoża
   oboz_lowiecki: null,
   wyrab: null,
   lodzie_rybackie: new Set([TerenBazowy.Wybrzeze, TerenBazowy.Morze]),

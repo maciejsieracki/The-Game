@@ -15,6 +15,21 @@ let bodyEl: HTMLDivElement | null = null;
 let getSnap: (() => EmpireDetailSnap) | null = null;
 let open = false;
 let pendingScrollSection: string | null = null;
+/** C-PANEL=B (Maciej 2026-07-24): klik żetonu HUD otwiera panel z TYLKO jednym blokiem
+ *  (żeby klik „Surowce" pokazywał magazyn, a nie całą ekonomię z Nauką). Trzymane między
+ *  renderami (refresh nie resetuje widoku). null = pełny panel (wszystkie bloki). */
+let activeSection: string | null = null;
+
+/** Sekcja/żeton → który TOP-LEVEL blok panelu pokazać. 'all' = cały panel. */
+function blockForSection(section: string | null): 'all' | 'parametry' | 'moc' | 'ekonomia' | 'kultura' | 'surowce' {
+  if (!section) return 'all';
+  if (section === 'ekonomia') return 'all';                         // ogólny przycisk „Imperium" = pełny widok
+  if (section === 'surowce' || section.startsWith('econ-surowiec-')) return 'surowce';
+  if (section === 'kultura') return 'kultura';
+  if (section === 'moc' || section === 'econ-ludnosc' || section === 'econ-rekruci') return 'moc';
+  if (section === 'parametry') return 'parametry';
+  return 'ekonomia';                                                // skarbiec/praca/nauka/zywnosc/religia/econ-*
+}
 
 function ensureStyles(): void {
   if (document.getElementById(STYLE_ID)) return;
@@ -514,9 +529,18 @@ function render(): void {
   // — MAGAZYN PAŃSTWA (surowce, mockup „Magazyn surowców" — Maciej 2026-07-24) —
   const sur = renderSurowceSection(snap.resources);
 
-  bodyEl.innerHTML = params + moc + zasoby + kult + sur;
+  // C-PANEL=B: pokaż tylko blok odpowiadający klikniętemu żetonowi (albo cały panel, gdy 'all').
+  const block = blockForSection(activeSection);
+  let body = '';
+  if (block === 'all' || block === 'parametry') body += params;
+  if (block === 'all' || block === 'moc') body += moc;
+  if (block === 'all' || block === 'ekonomia') body += zasoby;
+  if (block === 'all' || block === 'kultura') body += kult;
+  if (block === 'all' || block === 'surowce') body += sur;
+  bodyEl.innerHTML = body;
 
-  const scrollTarget = pendingScrollSection;
+  // Scroll do podsekcji ma sens tylko w pełnym widoku; przy pojedynczym bloku i tak widać całość.
+  const scrollTarget = block === 'all' ? pendingScrollSection : null;
   pendingScrollSection = null;
   if (scrollTarget) {
     requestAnimationFrame(() => scrollToSection(scrollTarget));
@@ -569,6 +593,7 @@ export function mountEmpireDetailPanel(snapFn: () => EmpireDetailSnap): void {
 export function showEmpireDetailPanel(section?: string): void {
   ensureDom();
   pendingScrollSection = section ?? null;
+  activeSection = section ?? null;   // C-PANEL=B: zapamiętaj wybrany blok (pełny panel gdy brak)
   open = true;
   renderHeader();
   render();

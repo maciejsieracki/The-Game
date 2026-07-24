@@ -1736,7 +1736,11 @@ async function boot(): Promise<void> {
         // konsumenta) świadomie go tu ukrywamy (Maciej 2026-07-23: "stock 0/—").
         const stock = c.access ? 0 : Math.floor(warehouse[c.id] ?? 0);
         const dostep = accessLabels.has(c.label) || stock > 0;
-        if (stock <= 0 && !dostep) continue;  // pomiń surowce, których owner w ogóle nie ma
+        // C-SURUI=A (Maciej 2026-07-24): surowce MAGAZYNOWANE pokazuj ZAWSZE (nawet 0) — panel
+        // imperium to dedykowany magazyn państwa, ma być widoczny od tury 1 (koniec placeholdera
+        // „mockupów nie ma w grze"). Pomiń tylko wiersze czystego DOSTĘPU (Sól/Koń/Ceramika),
+        // których owner jeszcze nie odblokował.
+        if (c.access && !dostep) continue;
         const ratePerTurn = c.access ? 0 : Math.floor((territoryRates[c.id] ?? 0) + (converterRates[c.id] ?? 0));
         const cap = c.access ? undefined : empireCap;
         const capBase = c.access ? undefined : storageParams.bazaSurowcePanstwo;
@@ -5912,6 +5916,12 @@ async function boot(): Promise<void> {
     }
 
     function exitBuildMode(): void {
+      // R-PIERWSZE-MIASTO (Maciej 2026-07-24): dopóki gracz nie ma pierwszego miasta,
+      // tryb zakładania miasta jest NIEWYJŚCIOWY — jeden choke-point zamyka wszystkie
+      // furtki (Escape, PPM, toggle 🔨, dismissMapOverlayModes). Udane założenie ustawia
+      // playerEverOwnedCity=true PRZED wywołaniem exitBuildMode, więc poprawne zamknięcie
+      // po założeniu działa (isAwaitingFirstPlayerCity() już false).
+      if (isAwaitingFirstPlayerCity()) return;
       buildModeOpen = false;
       foundCityMode = false;
       activeImprovementKey = null;
@@ -9247,7 +9257,7 @@ async function boot(): Promise<void> {
         getReligionOverlay: buildReligionOverlayData,
         getYearLabel: () => Math.max(0, 4000 - turn * 50) + ' p.n.e.',
         onExecutePending: () => executeFirstBlockingEvent(),
-        canEndTurn: () => !playtestWalkaActive,
+        canEndTurn: () => !playtestWalkaActive && !isAwaitingFirstPlayerCity(),
         hideEndTurn: () => playtestWalkaActive,
         getBlockingCount: () => countBlockingEvents(),
         onEndTurn: () => {
@@ -13137,6 +13147,12 @@ async function boot(): Promise<void> {
       // --- N: End turn ---
       if (e.key.toLowerCase() === 'n') {
         if (playtestWalkaActive) return;
+        // R-PIERWSZE-MIASTO: nie można kończyć tury dopóki brak pierwszego miasta
+        // (inaczej gracz „przeklikuje" tury bez miasta — wariant tego samego problemu).
+        if (isAwaitingFirstPlayerCity()) {
+          showHintMessage('Najpierw załóż pierwsze miasto (🔨 → Załóż miasto · B), potem zakończ turę.', 3500);
+          return;
+        }
         // #12 fix: trwa modalna bitwa / zawieszona faza AI (preBattle) — nie startuj drugiej tury.
         if (isPreBattleOpen() || aiTurnAwaitingBattle || aiCmdResume) return;
         // Gallery mode: ignore end-turn key.

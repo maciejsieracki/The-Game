@@ -4332,16 +4332,22 @@ const CS_RES_STRIP_ORDER: readonly string[] = [
   'drewno', 'kamien', 'glina', 'ruda', 'ruda_zelaza', 'cegla', 'braz', 'zelazo', 'stal',
 ];
 
+/** Rdzeń paska budowy — ZAWSZE widoczny, także przy 0 (podstawowe materiały budowlane),
+ *  żeby UI surowców był obecny od tury 1 (C-SURUI=A, Maciej 2026-07-24). */
+const CS_RES_STRIP_CORE: ReadonlySet<string> = new Set(['drewno', 'kamien']);
+
 /**
  * SUROW-UI-B1: pasek „ikona + ilość" surowców magazynowanych (pula PAŃSTWA ownera) —
  * forma uproszczona wg mockupu (Total War-style, bez przyrostu/turę — w mieście liczy
- * się tylko „ile mam"). Renderuje TYLKO surowce, których owner faktycznie ma > 0 sztuk.
+ * się tylko „ile mam"). C-SURUI=A: rdzeń (drewno+kamień) pokazywany ZAWSZE, także przy 0;
+ * pozostałe surowce tylko gdy owner ma > 0 (żeby nie zaśmiecać zerami metali/rud epok, których
+ * jeszcze nie ma). Dzięki temu pasek jest widoczny od startu gry, a nie chowa się przy pustej puli.
  */
 function appendCityResourceStockStrip(mount: HTMLElement, city: City): void {
   const pool = ownerSurowcePoolFor(city);
   const entries = CS_RES_STRIP_ORDER
     .map(k => ({ k, v: Math.floor(pool[k] ?? 0) }))
-    .filter(e => e.v > 0);
+    .filter(e => e.v > 0 || CS_RES_STRIP_CORE.has(e.k));
   if (entries.length === 0) return;
   const strip = el('div', 'civ-cs-res-strip');
   for (const e of entries) {
