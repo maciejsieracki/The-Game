@@ -748,7 +748,11 @@ export function availableProduction(
     // zelazo-access.ts dla odlewni), inaczej ulepszenie odbiera miastu Braz.
     if (epochNumber(u.Epoka) === 2 && !built.has('koszary')
       && !isBuildingSupersededByUpgrade('koszary', builtList, data.buildings)) continue;
-    const surowiec = (u.Surowiec ?? '').toString().trim().toLowerCase();
+    // R-JEDN-DOSTEP-BUG (fix 2026-07-24): units.json Surowiec = 'Brąz'/'Żelazo' (z diakrytykami);
+    // porównania niżej są ASCII ('braz'/'zelazo'). Samo .toLowerCase() dawało 'brąz' !== 'braz'
+    // -> bramka dostępu była MARTWA (jednostki brązowe/żelazne budowały się bez dostępu do surowca).
+    // stripDiacritics() (NFD + lowercase) naprawia dopasowanie.
+    const surowiec = stripDiacritics((u.Surowiec ?? '').toString().trim());
     if (surowiec === 'braz'
       && !hasBrazAccess(ctx.placedImprovements, builtList)) {
       continue;
@@ -843,7 +847,11 @@ export function availableReplacementsFor(
     // Ulepszenie do Akademii wojskowej tez sie liczy (fix #32) — patrz uwaga w availableProduction.
     if (epochNumber(u.Epoka) === 2 && !built.has('koszary')
       && !isBuildingSupersededByUpgrade('koszary', builtList, data.buildings)) return false;
-    const surowiec = (u.Surowiec ?? '').toString().trim().toLowerCase();
+    // R-JEDN-DOSTEP-BUG (fix 2026-07-24): units.json Surowiec = 'Brąz'/'Żelazo' (z diakrytykami);
+    // porównania niżej są ASCII ('braz'/'zelazo'). Samo .toLowerCase() dawało 'brąz' !== 'braz'
+    // -> bramka dostępu była MARTWA (jednostki brązowe/żelazne budowały się bez dostępu do surowca).
+    // stripDiacritics() (NFD + lowercase) naprawia dopasowanie.
+    const surowiec = stripDiacritics((u.Surowiec ?? '').toString().trim());
     if (surowiec === 'braz' && !hasBrazAccess(ctx.placedImprovements, builtList)) return false;
     if (surowiec === 'zelazo'
       && !hasZelazoAccess(ctx.hasKopalniaNaZlozuZelaza, builtList)) return false;
