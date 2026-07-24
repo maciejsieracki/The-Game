@@ -9,7 +9,19 @@ UWAGA: KANON i FINALNA promują się teraz OSOBNYMI skryptami (`gra/tools/publis
 wyraźne polecenie właściciela) — dlatego są logowane NIEZALEŻNIE, każdy w swojej sekcji, ze
 swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drugiego.
 
-## ROBOCZA `ea75f5ba` — 2026-07-24 · FALA 4.1: magazyny=pula państwa + handel surowcami + trudność miast-państw + super-jednostki — **AKTUALNA**
+## ROBOCZA `c676b681` — 2026-07-24 · FALA 5: konsumpcja surowca przez jednostki + AI kupuje za złoto + fix bramki dostępu — **AKTUALNA**
+
+- **Zawartość (commity `3161c79`, `b194539`, `af9fae2`; branch `claude/sprawdzenie-funkcjonalnosci-ek4ra0`):**
+  1. **JEDNOSTKI KONSUMUJĄ SUROWIEC z puli PAŃSTWA** (decyzja Macieja C-JEDN-SUROWIEC-Q1=A): `Surowiec (ilość)` z units.json pobierane przy budowie/zakupie — gracz (zakup za złoto + zwrot przy anulowaniu) i AI (handler build) — blokada gdy pula nie starcza; UI ma chip kosztu i wyłącza „Rekrutuj". Mapowanie odporne na diakrytyki (Brąz→braz). Parytet AI (test 31/31, ownerId≠0).
+  2. **AI KUPUJE JEDNOSTKI ZA ZŁOTO** (parytet R-AI-KUP-JEDN): `purchaseRecruitmentUnit` uogólnione na dowolnego ownera (ta sama ścieżka co gracz → też konsumuje surowiec). AI rush-uje ZACHOWAWCZO: tylko na wojnie, gdy ma Manpower + złoto ≥ rezerwa 100 + koszt, max 1/turę (`shouldAIRushBuyUnit`, stałe PLACEHOLDER do strojenia). Test ai-unit-rush 8/8.
+  3. **FIX martwej bramki dostępu brąz/żelazo** (R-JEDN-DOSTEP-BUG): `stripDiacritics` w production.ts (2 miejsca) — jednostki brązowe/żelazne znów WYMAGAJĄ dostępu do surowca (wcześniej `'brąz'!=='braz'` czyniło bramkę martwą). zelazo-gate 23/23.
+- **Bramki:** tsc 0 · unit-stock-cost 31/31 · ai-unit-rush 8/8 · surow-civ-storage 44/44 · unit-replace 10/10 · zelazo-gate 23/23 · tech-tree 19/19 · research 33/33 · ai 233/7 (baseline) · VERIFY OK.
+- **md5:** `c676b6815625f28b25a0a9926dbaa6c6` · manifest. Pieczątka w grze `271f572b` (one-iter quirk). Bundel 28,3 MB.
+- **Test:** miasto → produkcja jednostki brązowej/żelaznej pobiera surowiec z puli (chip kosztu, blokada gdy brak) · jednostka bez dostępu do brązu/żelaza niebudowalna · AI na wojnie kupuje jednostkę za złoto.
+- **Poza grą (dokumentacja tej sesji):** analiza bilansu 100 tur (`BILANS-SUROWCE-100T-2026-07-25.md` — wynik: NADMIAR, kamień bez odbiorcy, cap civ-wide nie skaluje się z imperium), audyt parytetu AI (`AUDYT-PARYTET-AI-2026-07-24.md`), sync paneli Excel A/B/C.
+- **FLAGI do decyzji Macieja:** (a) próg AI-rush (rezerwa 100 / limit 1) do strojenia po playteście; (b) generatory paneli Excel nie eksportują pól kosztów surowcowych jednostek/budynków (`R-PANEL-SYNC`); (c) strojenie bilansu (sink kamienia / cap per-miasto — `R-STAWKI-STROJENIE`).
+
+## ROBOCZA `ea75f5ba` — 2026-07-24 · FALA 4.1: magazyny=pula państwa + handel surowcami + trudność miast-państw + super-jednostki — ZASTĄPIONA
 
 - **Zawartość (commity `f136c09`…`0d0db35`; nadbudowa fali 4):**
   1. **MAGAZYNY = pula PAŃSTWA** (civ-wide): cap per typ = **100 + 100×Magazyn** (płaskie na easy/normal/hard, addytywnie), nadmiar przepada; surowce wspólne dla imperium (budowa płaci z puli). Parytet AI (test 44/44 z asercją na AI).
