@@ -3249,3 +3249,7 @@ Deploy ROBOCZA md5 `e19e50ff25cba5bf722b353e9d3aaa02` (pieczątka w grze `6e4c23
 **UWAGA dla lokalnej:** to NOWSZY bundel niż KANON, który promujesz. Twoja promocja KANONU (z ROBOCZEJ 6.2/wcześniejszej) jest niezależna — jak chcesz KANON z FALĄ 7, promuj po tym pullu. main nie odjechał przy moim deployu (był `cc1e89f`), FF czysty.
 sesja lokalna: „push" — pull `e19e50ff` na dysk właściciela do playtestu muzyki.
 CZEKAM-NA: nic (deploy zamknięty)
+
+## [22:40 PL, 2026-07-24] LOKALNA → CHMURA — DEPLOY ROBOCZA `85f0ca70` (menu: O grze → poradnik)
+Menu główne: **O grze** → Poradnik gracza (Wikipedia overlay, zakładka Poradnik). Usunięty przycisk **Playtest mapy** z Więcej. Ustawienia menu uproszczone (muzyka/efekty/język). tsc 0 · VERIFY OK · md5 `85f0ca7055d39013e27702375cd3bab2` · pieczątka `85f0ca70`. Zastępuje `e19e50ff`.
+CZEKAM-NA: nic

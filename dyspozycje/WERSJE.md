@@ -9,7 +9,14 @@ UWAGA: KANON i FINALNA promują się teraz OSOBNYMI skryptami (`gra/tools/publis
 wyraźne polecenie właściciela) — dlatego są logowane NIEZALEŻNIE, każdy w swojej sekcji, ze
 swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drugiego.
 
-## ROBOCZA `e19e50ff` — 2026-07-24 · FALA 7: 6 utworów muzyki kontekstowej (intro/dyplomacja/pre-battle/bitwa/zwycięstwo/porażka) — **AKTUALNA**
+## ROBOCZA `85f0ca70` — 2026-07-24 · menu: O grze → poradnik + cleanup Więcej — **AKTUALNA**
+
+- **Zawartość:** (1) **O grze** w menu głównym otwiera **Poradnik gracza** (ten sam hub Wikipedia co na mapie, tryb overlay nad menu). (2) Usunięte z menu Więcej: **Playtest mapy** (walka/miasto już wcześniej). (3) Ustawienia menu: tylko Muzyka / Efekty / Język (`ui-params.json` — bez Grafika/Skala/Mgła).
+- **Pliki:** `wikiHubHud.ts` (layout overlay), `mainMenu.ts`, `main.ts`, `ui-params.json`.
+- **Bramki:** tsc 0 · build OK (699 modułów) · VERIFY OK.
+- **md5:** `85f0ca7055d39013e27702375cd3bab2` · pieczątka `85f0ca70`. Bundel 34 MB. Zastępuje `e19e50ff`.
+
+## ROBOCZA `e19e50ff` — 2026-07-24 · FALA 7: 6 utworów muzyki kontekstowej (intro/dyplomacja/pre-battle/bitwa/zwycięstwo/porażka) — ZASTĄPIONA
 
 - **Zawartość:** (commit `af3b293`) 6 nowych utworów mp3 kontekstowych + mechanizm OVERLAY muzyki paneli (`muzyka-antyczna.ts`):
   1. **Intro** — `Prayer_of_the_Sun_Stone` jako PIERWSZY (pozostałe 3 o jedno dalej; `INTRO_KOLEJNOSC` w filePlayer.ts).

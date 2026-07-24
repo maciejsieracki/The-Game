@@ -12,11 +12,20 @@ export interface WikiHubHudConfig {
   onClose?: () => void;
 }
 
+/** Opcje przy otwarciu (np. z menu głównego „O grze”). */
+export interface WikiHubShowOptions {
+  tab?: Tab;
+  /** `overlay` — modal nad menu (z-index > 500); domyślnie panel boczny na mapie. */
+  layout?: 'dock' | 'overlay';
+  /** Otwórz od razu rozdział poradnika (id z bundle, np. `01-pierwsze-kroki`). */
+  openPoradnikId?: string;
+}
+
 export interface WikiHubHudApi {
   el: HTMLDivElement;
   isOpen: () => boolean;
   toggle: () => void;
-  show: () => void;
+  show: (opts?: WikiHubShowOptions) => void;
   hide: () => void;
   destroy: () => void;
 }
@@ -133,6 +142,13 @@ function ensureStyles(): void {
 .civ-wiki-hub .wh-content a{color:#8ec4e8;text-decoration:underline;cursor:pointer;}
 .civ-wiki-hub .wh-content hr{border:none;border-top:1px solid var(--border);margin:0.6em 0;}
 .civ-wiki-hub .wh-meta{font-size:0.68em;color:var(--muted);padding:0 0.45rem 0.35rem;}
+.civ-wiki-hub-backdrop{position:fixed;inset:0;z-index:519;background:rgba(4,8,16,0.72);backdrop-filter:blur(2px);}
+.civ-wiki-hub.overlay-mode{
+  top:50%;left:50%;right:auto;bottom:auto;transform:translate(-50%,-50%);
+  width:min(92vw,720px);min-width:min(92vw,300px);max-width:720px;
+  height:min(85vh,820px);max-height:85vh;z-index:520;
+  border-right:none;border:1px solid rgba(212,175,90,0.32);border-radius:10px;
+  box-shadow:0 16px 56px rgba(0,0,0,0.55);}
 `;
   const s = document.createElement('style');
   s.id = STYLE_ID;
@@ -162,6 +178,8 @@ export function createWikiHubHud(config: WikiHubHudConfig): WikiHubHudApi {
   let encyDepthVisible = false;
   let currentEncyId: string | null = null;
   let unbindOutside: (() => void) | null = null;
+  let layoutMode: 'dock' | 'overlay' = 'dock';
+  let backdropEl: HTMLDivElement | null = null;
 
   const head = document.createElement('div');
   head.className = 'wh-head';
@@ -186,11 +204,31 @@ export function createWikiHubHud(config: WikiHubHudConfig): WikiHubHudApi {
   el.appendChild(head);
   el.appendChild(body);
 
+  function setLayout(mode: 'dock' | 'overlay'): void {
+    layoutMode = mode;
+    if (mode === 'overlay') {
+      el.classList.add('overlay-mode');
+      if (backdropEl === null) {
+        backdropEl = document.createElement('div');
+        backdropEl.className = 'civ-wiki-hub-backdrop';
+        backdropEl.addEventListener('click', () => closeHub());
+        document.body.appendChild(backdropEl);
+      }
+      backdropEl.style.display = 'block';
+      return;
+    }
+    el.classList.remove('overlay-mode');
+    if (backdropEl !== null) {
+      backdropEl.style.display = 'none';
+    }
+  }
+
   function closeHub(): void {
     if (!open) return;
     open = false;
     detailMode = false;
     el.classList.remove('open');
+    setLayout('dock');
     document.removeEventListener('keydown', onEsc);
     unbindOutside?.();
     unbindOutside = null;
@@ -415,18 +453,38 @@ export function createWikiHubHud(config: WikiHubHudConfig): WikiHubHudApi {
     else renderList();
   }
 
-  function show(): void {
+  function show(opts?: WikiHubShowOptions): void {
+    if (opts?.tab) {
+      tab = opts.tab;
+      detailMode = false;
+      filter = '';
+    }
+    setLayout(opts?.layout ?? 'dock');
+    if (opts?.openPoradnikId) {
+      const ch = PORADNIK.find(c => c.id === opts.openPoradnikId);
+      if (ch) {
+        renderHead();
+        openPoradnik(ch);
+      } else {
+        render();
+      }
+    } else if (!detailMode) {
+      render();
+    } else {
+      renderDetail();
+    }
     open = true;
-    render();
     el.classList.add('open');
     document.addEventListener('keydown', onEsc);
     unbindOutside?.();
-    unbindOutside = bindHudPanelOutsideDismiss(
-      el,
-      () => open,
-      closeHub,
-      '.b-wiki, [data-act="wiki"]',
-    );
+    if (layoutMode === 'dock') {
+      unbindOutside = bindHudPanelOutsideDismiss(
+        el,
+        () => open,
+        closeHub,
+        '.b-wiki, [data-act="wiki"]',
+      );
+    }
   }
 
   function hide(): void { closeHub(); }
@@ -436,6 +494,8 @@ export function createWikiHubHud(config: WikiHubHudConfig): WikiHubHudApi {
     document.removeEventListener('keydown', onEsc);
     unbindOutside?.();
     unbindOutside = null;
+    backdropEl?.remove();
+    backdropEl = null;
     el.remove();
     if (api?.el === el) api = null;
     configRef = null;
@@ -450,6 +510,6 @@ export function isWikiHubHudOpen(): boolean {
 }
 
 export function toggleWikiHubHud(): void { api?.toggle(); }
-export function showWikiHubHud(): void { api?.show(); }
+export function showWikiHubHud(opts?: WikiHubShowOptions): void { api?.show(opts); }
 export function hideWikiHubHud(): void { api?.hide(); }
 export function destroyWikiHubHud(): void { api?.destroy(); api = null; }

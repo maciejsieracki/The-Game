@@ -46,12 +46,6 @@ export interface MainMenuConfig {
   onQuit?: () => void;
   /** Called whenever a setting changes, with the current values keyed by setting key. */
   onSettingsChange?: (values: Record<string, string>) => void;
-  /** Dev/playtest: start map scenario for C1+C2 from world map. */
-  onPlaytestWalka?: () => void;
-  /** Dev/playtest: sandbox one city — panel ekonomii / okolica. */
-  onPlaytestMiasto?: () => void;
-  /** Sandbox mapy świata — HUD + budowa bez kreatora. */
-  onPlaytestMapa?: () => void;
   /** Dev: panel testu wydajności (CPU/GPU). */
   onPerfTest?: () => void;
 }
@@ -373,33 +367,6 @@ function build(): void {
   morePanelEl.appendChild(btn('O grze', '', false, true, () => { closeMore(); cfg.onAbout?.(); }, '', 'menu-info'));
   morePanelEl.appendChild(btn('Wyjdź', '', false, true, () => { closeMore(); cfg.onQuit?.(); }, '', 'menu-exit'));
 
-  if (cfg.onPlaytestWalka) {
-    morePanelEl.appendChild(btn(
-      '&#9876;&nbsp; Playtest walki',
-      'dev',
-      false,
-      true,
-      () => { closeMore(); cfg.onPlaytestWalka?.(); },
-    ));
-  }
-  if (cfg.onPlaytestMiasto) {
-    morePanelEl.appendChild(btn(
-      '&#127963;&nbsp; Playtest miasta',
-      'dev',
-      false,
-      true,
-      () => { closeMore(); cfg.onPlaytestMiasto?.(); },
-    ));
-  }
-  if (cfg.onPlaytestMapa) {
-    morePanelEl.appendChild(btn(
-      '&#127758;&nbsp; Playtest mapy',
-      'dev',
-      false,
-      true,
-      () => { closeMore(); cfg.onPlaytestMapa?.(); },
-    ));
-  }
   if (cfg.onPerfTest) {
     morePanelEl.appendChild(btn(
       '&#9881;&nbsp; Test wydajności',

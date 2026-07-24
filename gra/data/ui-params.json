@@ -62,21 +62,6 @@
         "domyslny": 2
       },
       {
-        "key": "grafika",
-        "label": "Jakość grafiki",
-        "opts": [
-          "Niska",
-          "Średnia",
-          "Wysoka"
-        ],
-        "descs": [
-          "Dla słabszych maszyn",
-          "Zbalansowana",
-          "Pełne detale"
-        ],
-        "domyslny": 1
-      },
-      {
         "key": "jezyk",
         "label": "Język",
         "opts": [
@@ -86,36 +71,6 @@
         "descs": [
           "Język polski",
           "English (planowane)"
-        ],
-        "domyslny": 0
-      },
-      {
-        "key": "skala",
-        "label": "Skala interfejsu",
-        "opts": [
-          "Mała",
-          "Średnia",
-          "Duża",
-          "B. duża"
-        ],
-        "descs": [
-          "Więcej treści",
-          "Domyślna",
-          "Czytelniejsza",
-          "4K"
-        ],
-        "domyslny": 2
-      },
-      {
-        "key": "mgla",
-        "label": "Mgła wojny (domyślnie)",
-        "opts": [
-          "Włączona",
-          "Wyłączona"
-        ],
-        "descs": [
-          "Klasyczna eksploracja",
-          "Cała mapa odkryta"
         ],
         "domyslny": 0
       }

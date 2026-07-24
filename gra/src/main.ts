@@ -9110,9 +9110,6 @@ async function boot(): Promise<void> {
             onCancel: () => { hideNewGameFlow(); showMainMenu(); },
           });
         },
-        onPlaytestWalka: () => doStartPlaytestWalkaMapy(),
-        onPlaytestMiasto: () => doStartPlaytestMiastoEkonomia(),
-        onPlaytestMapa: () => doStartPlaytestMapaSwiata(),
         onContinue: () => {
           hideMainMenu();
           const slot = continueSaveSlotId();
@@ -9123,7 +9120,9 @@ async function boot(): Promise<void> {
           }
         },
         onLoad: () => openLoadGameDialog(false),
-        onAbout: () => { /* future */ },
+        onAbout: () => {
+          showWikiHubHud({ tab: 'poradnik', layout: 'overlay' });
+        },
         onPerfTest: () => showPerfTestPanel(),
         onQuit: () => { /* future - na stronie nie ma gdzie wyjść */ },
       });
