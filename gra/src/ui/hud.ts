@@ -441,7 +441,7 @@ function renderBarD1B(s: HudState): string {
     chip6cHtml({
       iconId: 'res-resources',
       label: 'Surowce',
-      value: s.surowceSummary ?? '—',
+      value: '',   // Maciej 2026-07-24: bez liczby na chipie (był „9/9") — sam żeton + klik po magazyn
       rate: s.surowceAlert ? '⚠' : undefined,
       rateWarn: !!s.surowceAlert,
       act: 'surowce',
