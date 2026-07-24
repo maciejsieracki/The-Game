@@ -202,18 +202,13 @@ export function createScienceHubHud(config: ScienceHubHudConfig): ScienceHubHudA
     head.appendChild(titleRow);
     head.appendChild(renderProgressBlock(prog));
 
-    const treeBtn = document.createElement('button');
-    treeBtn.type = 'button';
-    treeBtn.className = 'sh-tree-btn';
-    treeBtn.innerHTML = '<span class="sh-tree-ic">' + brandIconSvg('chip-map', 20) + '</span>Pełne drzewko technologii';
-    treeBtn.addEventListener('click', () => config.onOpenFullTree());
-    head.appendChild(treeBtn);
-
+    // Maciej 2026-07-24: usunięto stare (niebieskie) „Pełne drzewko technologii" (onOpenFullTree).
+    // Zostaje jedno drzewo — dawny „graf epok", przemianowany na „Drzewo technologii".
     if (config.onOpenTreeView) {
       const gridBtn = document.createElement('button');
       gridBtn.type = 'button';
       gridBtn.className = 'sh-tree-btn gold';
-      gridBtn.innerHTML = '<span class="sh-tree-ic">' + brandIconSvg('res-science', 20) + '</span>Drzewko — graf epok (pełny ekran)';
+      gridBtn.innerHTML = '<span class="sh-tree-ic">' + brandIconSvg('res-science', 20) + '</span>Drzewo technologii';
       gridBtn.addEventListener('click', () => config.onOpenTreeView?.());
       head.appendChild(gridBtn);
     }
