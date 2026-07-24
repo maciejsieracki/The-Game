@@ -496,7 +496,12 @@ function render(): void {
   };
   let zasoby = `<div class="civ-emp-sect sep" data-section="ekonomia">`
     + `<div class="civ-emp-eyebrow" style="margin-bottom:8px">ZASOBY IMPERIUM (STAN + PRZYROST)</div>`;
+  // C-PANEL=B (Maciej 2026-07-24): klik konkretnego żetonu dochodu (np. Nauka) pokazuje TYLKO
+  // jego wiersz, nie cały blok „ZASOBY IMPERIUM" (żeby Nauka nie ciągnęła praca/żywność/skarbiec).
+  // activeSection 'econ-nauka' -> tylko wiersz id 'nauka'. 'ekonomia' (ogólny) -> wszystkie.
+  const onlyEconId = (activeSection && activeSection.startsWith('econ-')) ? activeSection.slice(5) : null;
   for (const r of econRows) {
+    if (onlyEconId && r.id !== onlyEconId) continue;
     const detail = detailFor[r.id];
     const val = r.noRate
       ? `<b${r.gold ? ' class="gold"' : ''}>${esc(r.stock)}</b>`
