@@ -96,7 +96,8 @@
     "glina": { "rarity": 0.10 },
     "konie": { "rarity": 0.025 },
     "wegiel": { "rarity": 0.10 },
-    "sol": { "rarity": 0.12 }
+    "sol": { "rarity": 0.12 },
+    "zloto": { "rarity": 0.03 }
   },
   "metal_deposit_min_era": {
     "miedz": 2,

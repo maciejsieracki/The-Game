@@ -6250,11 +6250,15 @@ export type HexWithZloze = Hex & { zloze?: string; zlozeMinEra?: number };
  * - bydlo -> Nakladka.ZlozeBydla na Łąka/Równina (złoże = ulepszenie bydło)
  * - wegiel-> hex.zloze='wegiel' na Gory
  * - sol   -> hex.zloze='sol' na Pustynia/Rownina (NIE wybrzeże — woda bez surowców)
+ * - zloto -> hex.zloze='zloto' na Wzgórza/Góry (złoto żyłowe, jak historyczne złoża
+ *   Nubii/Anatolii/Iberii — Maciej 2026-07-25: „mennica potrzebuje złota w terenie”).
+ *   CELOWO NIE w FAIR_PLAY_DEPOSIT_IDS — złoto ma być RZADKIE, o które się rywalizuje,
+ *   nie gwarantowany zasób każdego imperium (patrz rarity niżej — niższa niż miedź/żelazo).
  * Bydło / owce — złoże na mapie = implicit ulepszenie hodowli (render + plony).
  * Morze/wybrzeże: brak złóż; ryby = przyszłe ulepszenie „łodzie rybackie”, nie nakładka.
  */
 export interface DepositRule {
-  id: 'miedz' | 'zelazo' | 'glina' | 'konie' | 'wegiel' | 'owce' | 'bydlo' | 'sol';
+  id: 'miedz' | 'zelazo' | 'glina' | 'konie' | 'wegiel' | 'owce' | 'bydlo' | 'sol' | 'zloto';
   /** Wartosc Nakladka do ustawienia (lub null gdy uzywamy pola `zloze`). */
   nakladka: Nakladka | null;
   /** Predykat: czy ten heks moze przyjac to zloze. */
@@ -6319,6 +6323,19 @@ const BASE_DEPOSIT_RULES: DepositRule[] = [
     requiresCoastalLand: true,
     rarity: 0.12,
   },
+  {
+    // Maciej 2026-07-25: złoto jako surowiec DOSTĘPOWY dla Mennicy — „wystarczy tylko
+    // dostęp, nie trzeba budować wielu kopalni". Reguła terenowa: żyłowe w Górach/Wzgórzach
+    // (Nubia, Anatolia, Iberia) — forma okruchowa (rzeki) świadomie pominięta (uproszczenie,
+    // patrz RAPORT KOŃCOWY zloto-test.cjs). Rzadkość dużo niższa niż miedź (0.10) / żelazo
+    // (0.08) — dobrana empirycznie w map-gen-params.json tak, by przy tym samym typie/rozmiarze
+    // mapy złoto liczebnie wypadało rzadsze niż miedź (patrz zloto-test.cjs).
+    id: 'zloto',
+    nakladka: null,
+    allowedOn: (h) => isDryLandTerrain(h.terenBazowy)
+      && (h.terenBazowy === TerenBazowy.Wzgorza || h.terenBazowy === TerenBazowy.Gory),
+    rarity: 0.03,
+  },
 ];
 
 const _depositRarities = mapGenAllDepositRarities();
@@ -6361,7 +6378,7 @@ export function placeDeposits(
 
   const counts: Record<string, number> = {
     miedz: 0, zelazo: 0, glina: 0, konie: 0, wegiel: 0,
-    owce: 0, bydlo: 0, sol: 0,
+    owce: 0, bydlo: 0, sol: 0, zloto: 0,
   };
 
   for (const key of keys) {
