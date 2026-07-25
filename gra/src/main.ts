@@ -6101,10 +6101,11 @@ async function boot(): Promise<void> {
      * wzgórze/górę, a nie je spłaszczać — model już siada na wysokości szczytu/plateau
      * przez improvementMeshPlacement/galleryDecorSurfaceY poniżej; brakowało tylko
      * pozostawienia widocznej bryły reliefu pod nim).
-     * UWAGA: kopalnia/kopalnia_miedzi mają identyczny mechanizm spłaszczania (ten sam
-     * kod), ale świadomie zostają POZA zakresem tej poprawki — zob. raport zadania.
+     * Decyzja właściciela (2026-07-25, autonomiczna do rewizji ABC): kopalnia/kopalnia_miedzi
+     * mają identyczny mechanizm spłaszczania — rozszerzone o nie, bo kopalnia wkomponowana
+     * w zbocze wzgórza jest logiczniejsza niż płaski heks (spójne z kamieniołomem).
      */
-    const PRESERVES_HILL_RELIEF_KEYS = new Set(['bydlo', 'owce', 'lama', 'kamieniolom']);
+    const PRESERVES_HILL_RELIEF_KEYS = new Set(['bydlo', 'owce', 'lama', 'kamieniolom', 'kopalnia', 'kopalnia_miedzi']);
 
     function preservesHillRelief(layers: readonly string[]): boolean {
       return layers.length > 0 && layers.every(k => PRESERVES_HILL_RELIEF_KEYS.has(k));
