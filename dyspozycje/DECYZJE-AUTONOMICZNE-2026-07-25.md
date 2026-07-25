@@ -52,9 +52,7 @@ Poniżej KAŻDA decyzja, którą podjąłem sam, w formie ABC z **zaznaczonym wy
 - **B — Odrębne imię per gracz/właściciel** ✅ WYBRANE PRZEZ MACIEJA (2026-07-25, zmiana z mojego A). WYMAGANIE Macieja: każda z 15 cywilizacji dostaje PULĘ ≥9–10 imion władców (= max graczy/miast-państw tej samej kultury na mapie); każdy właściciel (państwo LUB miasto-państwo) dostaje OSOBNE imię z puli; imiona mogą być jednakowego rodzaju dla WSZYSTKICH epok (nie muszą różnić się per epoka — uproszczenie). Zadanie treść+kod: ~150 imion (10×15, kulturowo pasujących) + logika przydziału per właściciel (deterministycznie wg indeksu). Domyślnie: zachować istniejące 15×3 + dopełnić do ~10. DO ZBUDOWANIA.
 
 ## C-BITWA-FORMACJA — zakres przycisku „Formacja/szyk"
-**Sytuacja:** Bug: „szyk piechota/dystans" działał tylko na zaznaczenie (mylące). Naprawione.
-- **A — Formacja zawsze na CAŁĄ armię** ✅ WYBRANE. *Za:* intuicyjne, znika „nie działa". *Przeciw:* brak szybkiego ustawiania szyku pojedynczej grupy tym przyciskiem (osobny mechanizm postawy grupy zostaje).
-- **B — Formacja na zaznaczenie gdy coś zaznaczone** (z jawnym komunikatem zakresu). *Przeciw:* wraca dwuznaczność.
+- **B — Formacja na aktualnie ZAZNACZONY zakres** ✅ WYBRANE PRZEZ MACIEJA (2026-07-25, zmiana z mojego A). Doprecyzowanie Macieja: „niezależnie czy wybierzemy jedną jednostkę, formację czy całą armię — zasady obowiązują wszystkich [zaznaczonych]". Czyli szyk stosuje się dokładnie do zaznaczonego zbioru, SPÓJNIE na każdym poziomie (1 jednostka / grupa / cała armia), z jasnym wskazaniem zakresu. Obecnie wdrożone A (zawsze cała armia) — PRZEROBIĆ na respektowanie zaznaczenia na każdym poziomie.
 
 ---
 
