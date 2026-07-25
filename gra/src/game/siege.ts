@@ -77,7 +77,7 @@
  * still used e.g. by siegeAi.ts strength estimation) keep working unchanged.
  */
 // ---------------------------------------------------------------------------
-// Compound building level scaling (shared with economy.ts)
+// Building level scaling (shared with economy.ts)
 // ---------------------------------------------------------------------------
 import { buildingEffectAtLevel } from './production';
 import combatParamsRaw from '../../data/combat-params.json';
@@ -375,10 +375,10 @@ export function cityDefenseBonus(
   const hasWalls = city.hasWalls ?? city.wallLevel > 0;
   const level = hasWalls ? Math.max(1, Math.min(WALL_MAX_LEVEL, city.wallLevel || 1)) : 0;
 
-  // Wall flat Obrona bonus.
-  // Compound scaling: wallBase * 1.10^(level-1), matching buildingEffectAtLevel pattern.
-  // wallPer (legacy linear field) no longer used for scaling.
-  const wallObrona = hasWalls ? Math.round(buildingEffectAtLevel(wallBase, level)) : 0;
+  // Wall flat Obrona bonus (linear): wallBase + wallPer * (level-1), matching
+  // buildingEffectAtLevel pattern. Both are 0 by data (see KANON note above),
+  // so this term stays 0 in the real game.
+  const wallObrona = hasWalls ? Math.round(buildingEffectAtLevel(wallBase, wallPer, level)) : 0;
   // Part of the wall bonus hardens Pancerz (cover).
   const wallPancerz = Math.round(wallObrona * wallPancFrac);
 

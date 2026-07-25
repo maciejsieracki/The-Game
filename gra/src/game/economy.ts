@@ -40,7 +40,7 @@ export type { HexCoords } from '../types/hex';
 import { TerenBazowy, Nakladka } from '../types/hex';
 import terrainYieldsData from '../../data/terrain-yields.json';
 import type { TerrainModifierDef, TerrainTypeDef } from '../data/loader';
-import { buildingEffectAtLevel, BUILDING_LEVEL_FACTOR, cityPracaInteger, splitPraca } from './production';
+import { buildingEffectAtLevel, cityPracaInteger, splitPraca } from './production';
 import { applyImprovementBonuses, oreYieldFromImprovements } from './terrain-improvements';
 
 // ---------------------------------------------------------------------------
@@ -438,10 +438,7 @@ export function buildingValue(
   level: number,
   key: BuildingYieldKey,
 ): number {
-  // Compound scaling per spec/decyzja Naster: baza * 1.10^(level-1)
-  // Uses buildingEffectAtLevel from production.ts (single source of BUILDING_LEVEL_FACTOR).
-  // The legacy `przyrost` field is no longer used for yield scaling.
-  return Math.floor(buildingEffectAtLevel(b.baza[key], level));
+  return Math.floor(buildingEffectAtLevel(b.baza[key], b.przyrost[key], level));
 }
 
 /** Każdy zbudowany budynek daje +1 szczęścia (decyzja Macieja 2026-07-22). */

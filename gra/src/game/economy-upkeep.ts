@@ -497,11 +497,10 @@ export interface BuildingInstanceLike {
 }
 
 /**
- * Gold upkeep for one building at a level (Spec s.6.1 + decyzja Naster compound +10%).
+ * Gold upkeep for one building at a level (Spec s.6.1).
  *   flat override set  -> flatOverride (v0.1 "niezroznicowany")
- *   otherwise          -> floor(utrzymanie * 1.10^(level-1))  [compound, mirrors buildingValue]
- * Level clamped to >= 1.  The legacy `przyrostUtrzymania` field is no longer
- * used for upkeep scaling -- compound replaces it.
+ *   otherwise          -> floor(utrzymanie + przyrostUtrzymania * (level-1))  [liniowy, mirrors buildingValue]
+ * Level clamped to >= 1.
  */
 export function buildingUpkeep(
   building: BuildingRecord,
@@ -511,9 +510,10 @@ export function buildingUpkeep(
   if (typeof flatOverride === 'number' && Number.isFinite(flatOverride)) {
     return flatOverride;
   }
-  const lvl  = level >= 1 ? level : 1;
-  const base = Number.isFinite(building.utrzymanie) ? building.utrzymanie : 0;
-  return Math.floor(buildingEffectAtLevel(base, lvl));
+  const lvl   = level >= 1 ? level : 1;
+  const base  = Number.isFinite(building.utrzymanie) ? building.utrzymanie : 0;
+  const wzrost = Number.isFinite(building.przyrostUtrzymania) ? building.przyrostUtrzymania : 0;
+  return Math.floor(buildingEffectAtLevel(base, wzrost, lvl));
 }
 
 /** Total gold building upkeep for a set of building instances (Spec s.6.1). */

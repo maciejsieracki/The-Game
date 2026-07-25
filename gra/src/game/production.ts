@@ -13,7 +13,7 @@
  * unit-testable (see tools/logic-test.cjs).
  *
  * Design (PROJEKT-GRY-master.md sec.8, sec.8e):
- *   - Building cost          : kosztBudowy * 1.10^(level-1)  (compound, decyzja Naster; przyrostKosztu legacy)
+ *   - Building cost          : kosztBudowy + przyrostKosztu * (level-1)  (liniowy, decyzja Naster 2026-07-25)
  *   - Building availability   : kategoria belongs to current epoch (epokaWejscia
  *                               <= city epoch), its techUnlock is researched (or
  *                               empty). Max 1 szt. na typ w miescie — znika gdy
@@ -161,15 +161,8 @@ export function epochNumber(epoka: string | null | undefined): number {
 }
 
 // ---------------------------------------------------------------------------
-// Building level + compound scaling
+// Building level + linear scaling
 // ---------------------------------------------------------------------------
-
-/**
- * Compound growth factor per building level (decyzja Naster): a building gains
- * one level per epoch and every stat -- and its build cost -- grows +10% each
- * level, compounded.  Replaces the legacy linear `przyrost` / `przyrostKosztu`.
- */
-export const BUILDING_LEVEL_FACTOR = (miastoParams.budynek_mnoznik_poziomu?.wartosc as number) ?? 1.10;
 
 /**
  * Building level derived from a city's epoch: 1 at the building's entry epoch,
@@ -205,10 +198,13 @@ export function buildingLevelForEpoch(
   return level;
 }
 
-/** Compound-scaled value of a building base stat at `level`: baza * 1.10^(level-1). */
-export function buildingEffectAtLevel(baza: number, level: number): number {
+/**
+ * Linear value of a building base stat at `level`: baza + przyrost * (level-1).
+ * Level 1 returns `baza` unchanged (no growth bonus yet).
+ */
+export function buildingEffectAtLevel(baza: number, przyrost: number, level: number): number {
   const n = Math.max(1, Math.floor(level));
-  return baza * Math.pow(BUILDING_LEVEL_FACTOR, n - 1);
+  return baza + przyrost * (n - 1);
 }
 
 // ---------------------------------------------------------------------------
@@ -270,7 +266,7 @@ function findUnit(data: ProductionData, id: string): UnitDef | undefined {
 /**
  * Total Praca cost of one item.
  *
- *   building : kosztBudowy * 1.10^(level - 1)  (compound; przyrostKosztu legacy)
+ *   building : kosztBudowy + przyrostKosztu * (level - 1)  (liniowy, decyzja Naster 2026-07-25)
  *              `cityLevelOrEpoch` is interpreted as the level the building would
  *              be built at (1-based).  Level <= 1 yields the flat kosztBudowy.
  *   unit     : its "Pieniadz (koszt)" (or a per-role default).  `cityLevelOrEpoch`
@@ -289,7 +285,8 @@ export function itemCost(
     const b = findBuilding(data, id);
     if (!b) return 0;
     const level = Number.isFinite(cityLevelOrEpoch) ? Math.max(1, Math.floor(cityLevelOrEpoch)) : 1;
-    return Math.round(b.kosztBudowy * Math.pow(BUILDING_LEVEL_FACTOR, level - 1));
+    const przyrostKosztu = Number.isFinite(b.przyrostKosztu) ? b.przyrostKosztu : 0;
+    return Math.round(b.kosztBudowy + przyrostKosztu * (level - 1));
   }
   const u = findUnit(data, id);
   if (!u) return 0;
