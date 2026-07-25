@@ -43,6 +43,13 @@
  *     Wiązka jest też zgodna ze statystykami z units.json: „Ilość pocisków:
  *     10", „Zasięg 2", „MOCNY DYSTANS — fundament siły Zulusów". Obecny
  *     model niesie JEDEN oszczep — sylwetka kłóci się z rolą jednostki.
+ *     UKŁAD WIĄZKI (poprawka po playteście): drzewca RÓWNOLEGŁE i stykające
+ *     się (trójkątny przekrój wokół wspólnej osi o promieniu = promieniowi
+ *     drzewca, więc pęk nie ma szczelin), groty w JEDNEJ LINII na tej samej
+ *     odległości, DWA oploty spinające w kolorze gracza, całość wysunięta
+ *     poza zewnętrzną krawędź tarczy i wychodząca zza niej. Pierwsza wersja
+ *     miała drzewca rozstrzelone w trzech kierunkach — czytało się to jako
+ *     „groty i drzewca trzymane osobno", nie jako jeden pęk.
  *
  * A3. TARCZA ISIHLANGU/IHAWU — najmocniejszy znak rozpoznawczy.
  *     Owalna (soczewkowata, zaostrzona u góry i dołu), z surowej skóry
@@ -54,6 +61,18 @@
  *     z łatami) jest cechą, po której tarczę Nguni rozpoznaje się natychmiast.
  *     Powiększam też tarczę: obecna zasłania sam tors, isihlangu/ihawu kryje
  *     korpus od barku po kolano.
+ *
+ * A3a. UMGOBO — ŚWIADOME ODSTĘPSTWO OD IKONOGRAFII (decyzja właściciela po
+ *     playteście podglądu). Historyczny umgobo wystaje ponad górną krawędź
+ *     tarczy i bywa zwieńczony kitką futra. Pierwsza wersja tego modelu tak
+ *     go odwzorowała — i z ujęcia gry (52°) pionowy pręt z gałką na szczycie
+ *     czytał się jako OSOBNY PRZEDMIOT sterczący z tarczy („spłuczka"),
+ *     przyciągając wzrok bardziej niż sama tarcza. Ponieważ priorytetem jest,
+ *     by tarcza czytała się JAKO TARCZA: kij skrócony do wysokości tarczy
+ *     (górny koniec schowany pod jej wierzchołkiem), KITKA USUNIĘTA, został
+ *     krótki czop u dołu (też autentyczny — służył do wbijania tarczy
+ *     w ziemię) i dwa węzły rzemienne mocujące kij do plecionki. Od tyłu
+ *     i z boku kij nadal widać — funkcja konstrukcyjna zachowana.
  *
  * A4. UMBO = BŁĄD, USUNIĘTE. Obecny model ma na tarczy „umbo" (wypukły
  *     przetłok w kolorze gracza). Tarcze Nguni NIE MAJĄ umba — to element
@@ -115,14 +134,15 @@
  *
  * ===========================================================================
  * BUDŻET (policzony traversem, STARY -> OPUS 5):
- *   Zulu   36 mesh /  454 tri / 10 mat  ->  84 mesh / 1302 tri / 16 mat
+ *   Zulu   36 mesh /  454 tri / 10 mat  ->  86 mesh / 1342 tri / 16 mat
  *   Taran  40 mesh /  596 tri /  9 mat  ->  85 mesh / 1244 tri / 14 mat
  *   Wzorzec: hastati-opus5.ts — 92 mesh / 1378 tri.
  *
  * GABARYTY (bbox X x Y x Z, w HEX_R; token nieskalowany w dispatchu):
- *   Zulu   0.483 x 0.715 x 0.495  ->  0.499 x 0.738 x 0.426
+ *   Zulu   0.483 x 0.715 x 0.495  ->  0.524 x 0.738 x 0.426
  *          (wyższy o 3% przez pióropusz i wyżej wzniesiony oszczep;
- *           płytszy, bo wiązka zapasowych idzie w GÓRĘ-w tył, nie w bok)
+ *           szerszy o 8%, bo wiązka zapasowych wychodzi zza zewnętrznej
+ *           krawędzi tarczy; płytszy, bo idzie w GÓRĘ, nie w bok)
  *   Taran  0.358 x 0.558 x 0.454  ->  0.349 x 0.610 x 0.564
  *          (Z +24%: płozy z zadartymi dziobami + drągi do pchania zajmują
  *           miejsce, którego koła nie zajmowały; X i tak zmalał)
@@ -287,7 +307,7 @@ let gKZShell:   THREE.BufferGeometry | null = null;
 let gKZFace:    THREE.BufferGeometry | null = null;
 let gKZPatch:   THREE.CircleGeometry | null = null;
 let gKZUmgobo:  THREE.CylinderGeometry | null = null;
-let gKZUmgTuft: THREE.CylinderGeometry | null = null;
+let gKZUmgKnot: THREE.CylinderGeometry | null = null;
 let gKZLace:    THREE.BoxGeometry | null = null;
 let gKZLaceCol: THREE.BoxGeometry | null = null;
 let gKZGripBar: THREE.BoxGeometry | null = null;
@@ -326,14 +346,14 @@ function getKZJavButt():  THREE.CylinderGeometry { return (gKZJavButt  ||= new T
 function getKZJavLash():  THREE.CylinderGeometry { return (gKZJavLash  ||= new THREE.CylinderGeometry(0.0135 * HEX_R, 0.0135 * HEX_R, 0.016 * HEX_R, 6, 1)); }
 function getKZJavBlade(): THREE.BoxGeometry { return (gKZJavBlade ||= new THREE.BoxGeometry(0.030 * HEX_R, 0.052 * HEX_R, 0.010 * HEX_R)); }
 function getKZJavTip():   THREE.ConeGeometry { return (gKZJavTip   ||= new THREE.ConeGeometry(0.016 * HEX_R, 0.040 * HEX_R, 4)); }
-function getKZSpShaft():  THREE.CylinderGeometry { return (gKZSpShaft  ||= new THREE.CylinderGeometry(0.0075 * HEX_R, 0.0095 * HEX_R, 0.270 * HEX_R, 5, 1)); }
-function getKZSpTip():    THREE.ConeGeometry { return (gKZSpTip    ||= new THREE.ConeGeometry(0.014 * HEX_R, 0.048 * HEX_R, 4)); }
-function getKZSpWrap():   THREE.CylinderGeometry { return (gKZSpWrap   ||= new THREE.CylinderGeometry(0.026 * HEX_R, 0.026 * HEX_R, 0.018 * HEX_R, 6, 1)); }
+function getKZSpShaft():  THREE.CylinderGeometry { return (gKZSpShaft  ||= new THREE.CylinderGeometry(0.0080 * HEX_R, 0.0092 * HEX_R, 0.292 * HEX_R, 5, 1)); }
+function getKZSpTip():    THREE.ConeGeometry { return (gKZSpTip    ||= new THREE.ConeGeometry(0.0115 * HEX_R, 0.040 * HEX_R, 4)); }
+function getKZSpWrap():   THREE.CylinderGeometry { return (gKZSpWrap   ||= new THREE.CylinderGeometry(0.0215 * HEX_R, 0.0215 * HEX_R, 0.016 * HEX_R, 8, 1)); }
 function getKZShell():   THREE.BufferGeometry { return (gKZShell   ||= kzShellGeo(KZ_SH_A, KZ_SH_B, KZ_SH_C, KZ_SH_T, KZ_SH_N)); }
 function getKZFace():    THREE.BufferGeometry { return (gKZFace    ||= kzFaceGeo(KZ_SH_A * 0.94, KZ_SH_B * 0.94, KZ_SH_C * 0.82, KZ_SH_N)); }
 function getKZPatch():   THREE.CircleGeometry { return (gKZPatch   ||= new THREE.CircleGeometry(0.040 * HEX_R, 7)); }
-function getKZUmgobo():  THREE.CylinderGeometry { return (gKZUmgobo  ||= new THREE.CylinderGeometry(0.0105 * HEX_R, 0.0125 * HEX_R, 0.520 * HEX_R, 6, 1)); }
-function getKZUmgTuft(): THREE.CylinderGeometry { return (gKZUmgTuft ||= new THREE.CylinderGeometry(0.024 * HEX_R, 0.008 * HEX_R, 0.046 * HEX_R, 6, 1)); }
+function getKZUmgobo():  THREE.CylinderGeometry { return (gKZUmgobo  ||= new THREE.CylinderGeometry(0.0105 * HEX_R, 0.0125 * HEX_R, 0.428 * HEX_R, 6, 1)); }
+function getKZUmgKnot(): THREE.CylinderGeometry { return (gKZUmgKnot ||= new THREE.CylinderGeometry(0.016 * HEX_R, 0.016 * HEX_R, 0.014 * HEX_R, 6, 1, true)); }
 function getKZLace():    THREE.BoxGeometry { return (gKZLace    ||= new THREE.BoxGeometry(0.052 * HEX_R, 0.011 * HEX_R, 0.009 * HEX_R)); }
 function getKZLaceCol(): THREE.BoxGeometry { return (gKZLaceCol ||= new THREE.BoxGeometry(0.034 * HEX_R, 0.300 * HEX_R, 0.008 * HEX_R)); }
 function getKZGripBar(): THREE.BoxGeometry { return (gKZGripBar ||= new THREE.BoxGeometry(0.014 * HEX_R, 0.070 * HEX_R, 0.016 * HEX_R)); }
@@ -654,13 +674,23 @@ export function buildZuluJavelineerOpus5(ownerColor_: number): THREE.Group {
     sh.add(l);
   }
 
-  // UMGOBO — pionowy kij z tyłu, wystaje nad i pod tarczę, kitka na szczycie
-  const umgobo = new THREE.Mesh(getKZUmgobo(), mWoodLt);
-  umgobo.position.set(0, 0.014 * HEX_R, -0.020 * HEX_R);
+  // UMGOBO — pionowy kij USZTYWNIAJĄCY, wsunięty Z TYŁU pod plecionkę.
+  // ŚWIADOME ODSTĘPSTWO OD IKONOGRAFII (patrz nagłówek, pkt A3a): historyczny
+  // umgobo wystaje ponad tarczę i bywa zwieńczony kitką — ale z ujęcia gry
+  // (52°) pionowy pręt z gałką na szczycie czyta się jako OSOBNY PRZEDMIOT
+  // sterczący z tarczy, a nie jako jej wzmocnienie. Dlatego: kij skrócony do
+  // wysokości tarczy (góra SCHOWANA pod górnym wierzchołkiem), kitka
+  // USUNIĘTA, na dole zostaje krótki czop (autentyczny — służył do wbijania
+  // tarczy w ziemię) i dwa węzły rzemienne mocujące kij do plecionki.
+  const umgobo = new THREE.Mesh(getKZUmgobo(), mWood);
+  umgobo.position.set(0, -0.016 * HEX_R, -0.022 * HEX_R);
   sh.add(umgobo);
-  const umgTuft = new THREE.Mesh(getKZUmgTuft(), mFur);
-  umgTuft.position.set(0, 0.290 * HEX_R, -0.020 * HEX_R);
-  sh.add(umgTuft);
+  for (const ky of [0.120, -0.120]) {                 // węzły mocujące kij
+    const kn = new THREE.Mesh(getKZUmgKnot(), mFurLt);
+    kn.rotation.x = Math.PI / 2;
+    kn.position.set(0, ky * HEX_R, -0.022 * HEX_R);
+    sh.add(kn);
+  }
 
   // chwyt: porpax skórzany + poprzeczka za licem (ręka ma czego trzymać)
   const porpax = new THREE.Mesh(getKZPorpax(), mFurLt);
@@ -672,30 +702,42 @@ export function buildZuluJavelineerOpus5(ownerColor_: number): THREE.Group {
   group.add(sh);
 
   // ═══ WIĄZKA 3 ZAPASOWYCH OSZCZEPÓW (pkt A2 — „Ilość pocisków: 10") ═══════
-  // Trzymana razem z tarczą w lewej dłoni, drzewca skośnie w tył-górę.
-  const SP_D = new THREE.Vector3(-0.10, 0.62, -0.78).normalize();
+  // Trzymana razem z tarczą w lewej dłoni, PRZY ZEWNĘTRZNEJ krawędzi tarczy.
+  // Drzewca RÓWNOLEGŁE i stykające się (trójkątny przekrój wokół wspólnej
+  // osi, promień = promień drzewca => pęk bez szczelin), groty w JEDNEJ
+  // LINII na tej samej odległości, dwa oploty spinające (kolor gracza).
+  // Groty celowo krótsze i ciemniejsze niż grot bojowy — mają nie
+  // konkurować z bronią w prawej dłoni.
+  const SP_D = new THREE.Vector3(0.20, 0.94, -0.28).normalize();
   const qSp = new THREE.Quaternion().setFromUnitVectors(KZ_Y_UP, SP_D);
+  const SP_P1 = new THREE.Vector3().crossVectors(SP_D, KZ_Y_UP).normalize();
+  const SP_P2 = new THREE.Vector3().crossVectors(SP_D, SP_P1).normalize();
   const spBase = new THREE.Vector3(
-    armL.hand.x + 0.030 * HEX_R,
+    armL.hand.x + 0.090 * HEX_R,
     armL.hand.y - 0.010 * HEX_R,
-    armL.hand.z - 0.014 * HEX_R,
+    armL.hand.z - 0.050 * HEX_R,
   );
-  for (const [dx, dy] of [[-0.012, 0.0], [0.012, 0.008], [0.0, -0.012]] as [number, number][]) {
-    const o = spBase.clone().add(new THREE.Vector3(dx * HEX_R, dy * HEX_R, dx * 0.5 * HEX_R));
-    const s = new THREE.Mesh(getKZSpShaft(), mWood);
-    s.quaternion.copy(qSp);
-    s.position.copy(o.clone().addScaledVector(SP_D, 0.058 * HEX_R));
-    group.add(s);
-    const t = new THREE.Mesh(getKZSpTip(), mBoneDk);
-    t.quaternion.copy(qSp);
-    t.rotation.y += Math.PI / 4;
-    t.position.copy(o.clone().addScaledVector(SP_D, 0.215 * HEX_R));
-    group.add(t);
+  const SP_R = 0.0092 * HEX_R;                     // promień pęku = promień drzewca
+  for (const ang of [Math.PI / 2, Math.PI * 7 / 6, Math.PI * 11 / 6]) {
+    const off = SP_P1.clone().multiplyScalar(Math.cos(ang) * SP_R)
+      .addScaledVector(SP_P2, Math.sin(ang) * SP_R);
+    const o = spBase.clone().add(off);
+    const sft = new THREE.Mesh(getKZSpShaft(), mWood);
+    sft.quaternion.copy(qSp);
+    sft.position.copy(o.clone().addScaledVector(SP_D, 0.082 * HEX_R));
+    group.add(sft);
+    const tp = new THREE.Mesh(getKZSpTip(), mBoneDk);
+    tp.quaternion.copy(qSp);
+    tp.rotation.y += Math.PI / 4;
+    tp.position.copy(o.clone().addScaledVector(SP_D, 0.248 * HEX_R));
+    group.add(tp);
   }
-  const spWrap = new THREE.Mesh(getKZSpWrap(), mOwner);     // oplot = KOLOR GRACZA
-  spWrap.quaternion.copy(qSp);
-  spWrap.position.copy(spBase.clone().addScaledVector(SP_D, 0.100 * HEX_R));
-  group.add(spWrap);
+  for (const d of [0.048, 0.186]) {                // 2 oploty = KOLOR GRACZA
+    const wrap = new THREE.Mesh(getKZSpWrap(), mOwner);
+    wrap.quaternion.copy(qSp);
+    wrap.position.copy(spBase.clone().addScaledVector(SP_D, d * HEX_R));
+    group.add(wrap);
+  }
 
   group.userData['mats'] = mats;
   group.userData['perTokenGeos'] = [];
@@ -1039,7 +1081,7 @@ export function disposeKamienZuluTaranOpus5Geometries(): void {
     gKZBelt, gKZIsinene, gKZBheshu, gKZTuft, gKZTuftEnd, gKZArmBand,
     gKZJavShaft, gKZJavButt, gKZJavLash, gKZJavBlade, gKZJavTip,
     gKZSpShaft, gKZSpTip, gKZSpWrap,
-    gKZShell, gKZFace, gKZPatch, gKZUmgobo, gKZUmgTuft, gKZLace, gKZLaceCol,
+    gKZShell, gKZFace, gKZPatch, gKZUmgobo, gKZUmgKnot, gKZLace, gKZLaceCol,
     gKZGripBar, gKZPorpax,
     gKTRunner, gKTNose, gKTCross, gKTLash, gKTLashSm, gKTLeg, gKTBrace, gKTRidge,
     gKTLogA, gKTLogB, gKTBark, gKTStub, gKTChar, gKTWedge, gKTChip, gKTThong,
@@ -1055,7 +1097,7 @@ export function disposeKamienZuluTaranOpus5Geometries(): void {
   gKZGripBar = gKZPorpax = gKZJavBlade = null;
   gKZHair = gKZRing = gKZBand = gKZTuft = gKZTuftEnd = gKZArmBand = null;
   gKZJavShaft = gKZJavButt = gKZJavLash = gKZSpShaft = gKZSpWrap = null;
-  gKZUmgobo = gKZUmgTuft = null;
+  gKZUmgobo = gKZUmgKnot = null;
   gKZJavTip = gKZSpTip = null;
   gKZShell = gKZFace = null;
   gKZPatch = null;

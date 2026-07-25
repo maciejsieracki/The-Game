@@ -105,7 +105,12 @@
  *    grotami poprzecznymi — dwie kultury poznaje sie nawet po strzale).
  * 14. NARZUTA Z RUNA przez lewe ramie (kaunakes-szal) — element stroju z
  *    ikonografii ED; laczy sylwetke gory z dolem, zeby postac nie byla
- *    "naga do pasa + kudlaty dol".
+ *    "naga do pasa + kudlaty dol". WELNA BARWIONA NA TERAKOTE (decyzja
+ *    wlasciciela 2026-07-25, wariant B): barwienie tkanin jest w Mezopotamii
+ *    poswiadczone — czerwienie z marzanny i brazy z barwnikow roslinnych —
+ *    wiec zmienia sie WYLACZNIE BARWA, nie kroj i nie material. Powod
+ *    praktyczny: caly Sumeryjczyk siedzial w gamie bezowo-kremowej i gubil
+ *    sie z dystansu. Sam KAUNAKES zostaje w welnie NATURALNEJ.
  * 15. BOSE STOPY — piechota ED przedstawiana jest boso.
  *
  * -- ROZROZNIALNOSC (sens jednostek cywilizacyjnych):
@@ -151,6 +156,15 @@ const KL_LINEN_DK   = 0xd2c7ac;   // faldy/cien lnu
 const KL_FLEECE     = 0xe6dcc0;   // runo kaunakes (jasne, kontrast z karnacja)
 const KL_FLEECE_DK  = 0x8f7448;   // co drugi poziom kosmykow (glebia)
 const KL_WOOL_BAND  = 0x8a6a48;   // welniana przepaska na czole (Sumer)
+// Narzuta z runa Sumeru — WELNA BARWIONA (decyzja wlasciciela 2026-07-25,
+// wariant B). Barwienie tkanin jest w Mezopotamii ED poswiadczone (czerwien
+// z marzanny, brazy z barwnikow roslinnych), wiec zmienia sie WYLACZNIE BARWA
+// — kroj (narzuta przez lewe ramie) i material (runo) bez zmian. Odcien
+// terakoty, nie czystej czerwieni: ma dac akcent czytelny z 52 st., ale NIE
+// wchodzic w konflikt ze slotem koloru gracza (pas + lotki), ktory bywa
+// czerwony. Kaunakes zostaje w welnie naturalnej.
+const KL_WOOL_DYED  = 0x8f4a2e;   // terakota/marzanna (narzuta Sumeru)
+const KL_WOOL_DYED_D= 0x6e3722;   // ciemniejszy kosmyk barwionej narzuty
 const KL_WOOD_BOW   = 0x8a6238;   // luczisko
 const KL_WOOD_SHAFT = 0x9c7748;   // drzewce strzal (jasniejsze — czytelne)
 const KL_LEATHER    = 0x6b4a28;
@@ -819,6 +833,8 @@ export function buildSumerianArcherOpus5(ownerColor_: number): THREE.Group {
   const mFleece  = mat(KL_FLEECE,     0.03, 0.96);
   const mFleecD  = mat(KL_FLEECE_DK,  0.03, 0.97);
   const mWoolBd  = mat(KL_WOOL_BAND,  0.03, 0.94);
+  const mDyed    = mat(KL_WOOL_DYED,  0.04, 0.90);
+  const mDyedDk  = mat(KL_WOOL_DYED_D,0.04, 0.92);
   const mOwner   = mat(ownerColor_,   0.10, 0.70);
   const mWood    = mat(KL_WOOD_BOW,   0.05, 0.82);
   const mShaft   = mat(KL_WOOD_SHAFT, 0.05, 0.84);
@@ -889,13 +905,13 @@ export function buildSumerianArcherOpus5(ownerColor_: number): THREE.Group {
   knot.position.set(-0.028 * HEX_R, KL_TORSO_BOT + 0.018 * HEX_R, KL_TORSO_D * 0.5 + 0.012 * HEX_R);
   group.add(knot);
 
-  // ═══ NARZUTA Z RUNA przez LEWE (+X) ramie ════════════════════════════════
-  const shawl = new THREE.Mesh(getKLShawl(), mFleecD);
+  // ═══ NARZUTA Z RUNA BARWIONEGO przez LEWE (+X) ramie ═════════════════════
+  const shawl = new THREE.Mesh(getKLShawl(), mDyed);
   shawl.rotation.z = -0.18;
   shawl.position.set(KL_TORSO_W * 0.5 - 0.002 * HEX_R, KL_TORSO_CTR + 0.026 * HEX_R, 0.002 * HEX_R);
   group.add(shawl);
   for (let j = 0; j < 3; j++) {
-    const tuft = new THREE.Mesh(getKLTuft(), mFleece);
+    const tuft = new THREE.Mesh(getKLTuft(), j % 2 === 0 ? mDyed : mDyedDk);
     tuft.scale.set(0.72, 0.62, 0.72);
     tuft.position.set((KL_TORSO_W * 0.5 + 0.008) * HEX_R,
                       (KL_TORSO_CTR - 0.036 + j * 0.032) * HEX_R,
