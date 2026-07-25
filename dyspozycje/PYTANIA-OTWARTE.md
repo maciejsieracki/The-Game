@@ -105,6 +105,50 @@ Mnożniki z budynków gospodarczych i tak usuwamy decyzją właściciela.
 
 ---
 
+## PYTANIE 24 — ulepszenia jednostek: co się dzieje przy awansie budynku · STATUS: OTWARTE
+
+**Sytuacja.** Dwie ścieżki ulepszeń są wdrożone i działają. Ale awans budynku w tej grze to **podmiana `id`**, nie dodanie
+drugiego budynku: Wielka Kuźnia **zastępuje** Kuźnię żelaza, Akademia wojskowa **zastępuje** Koszary. Silnik liczy bonus
+tylko z budynków realnie obecnych na liście miasta. Skutek liczbowy:
+
+| Ścieżka | Zakładałeś | Realnie osiągalne |
+|---|---|---|
+| A — Pancerz (Kuźnia 15 + Kuźnia żelaza 15 + Wielka Kuźnia 15) | +45% | **+30%** (Kuźnia + Wielka Kuźnia; Kuźnia żelaza już nie istnieje) |
+| B — Parametry (Koszary 20 + Akademia wojskowa 20 + Warsztat oblężniczy 10) | +50% | **+30%** (Akademia + Warsztat; Koszary już nie istnieją) |
+
+Wdrożyłem wariant zachowawczy (liczy się tylko to, co miasto ma), bo zgadywanie w drugą stronę byłoby zmianą Twojej decyzji.
+
+**Cel pytania.** Ustalić, czy budynek-następca ma przejmować bonus poprzednika, czy sumy mają zostać niższe niż zakładałeś.
+
+**Dlaczego teraz.** Mechanika jest w kodzie i działa; to jedna liczba do zmiany, ale zmienia siłę każdej jednostki w grze.
+
+**A. Następca kumuluje bonus poprzednika** — Wielka Kuźnia daje 30% (15 własne + 15 za zastąpioną Kuźnię żelaza),
+Akademia wojskowa daje 40% (20 + 20 za Koszary). Sumy wracają do Twoich +45% i +50%.
+- Za: wychodzi dokładnie ta liczba, którą podałeś — +45% pancerza i +50% parametrów.
+- Za: spójne z tym, jak awanse działają po stronie ekonomii (budynek wyższego tieru ma wyższe wartości bazowe, nie traci dorobku poprzednika).
+- Przeciw: gracz płaci za Akademię wojskową raz, a dostaje bonus za dwa budynki — trudniej to wytłumaczyć w interfejsie.
+- Przeciw: zachęca do jak najszybszego awansu, bo poprzednik nigdy nie jest „stracony".
+
+**B. Zostawić wariant zachowawczy** — maksimum +30% na każdej ścieżce.
+- Za: prosta, uczciwa zasada: bonus daje budynek, który stoi w mieście.
+- Za: awans jest realną decyzją, a nie automatycznym zyskiem.
+- Przeciw: sumy są niższe niż zakładałeś — jednostki będą wyraźnie słabsze niż planowałeś.
+- Przeciw: awans Koszar na Akademię wojskową daje netto tylko +0% (20 → 20), więc gracz nie widzi zysku z ulepszenia.
+
+**C. Podnieść wartości budynków-następców** — Wielka Kuźnia 30% zamiast 15%, Akademia wojskowa 40% zamiast 20%,
+wpisane wprost do danych.
+- Za: efekt jak w A, ale widoczny wprost w danych i w interfejsie — bez ukrytej logiki „za zastąpiony budynek".
+- Za: łatwiej balansować, bo wartość budynku to jedna liczba w pliku.
+- Przeciw: rozjeżdża się z zasadą „każdy budynek kuźniczy daje +15%", którą podałeś.
+- Przeciw: przy kolejnych awansach w przyszłych epokach trzeba będzie pamiętać o ręcznym sumowaniu.
+
+**REKOMENDACJA: C** — daje Twoje docelowe sumy, a jednocześnie wartość jest widoczna wprost w danych, bez ukrytej reguły.
+
+**Uwaga dodatkowa.** Ścieżka B nie skaluje `Obrażeń broni` ani `Przebicia` — bo istniejące bonusy cywilizacji też ich nie
+skalują. Nie wprowadzałem tu nowej asymetrii. Jeśli chcesz, żeby skalowała, to osobna decyzja.
+
+---
+
 # PACZKA 2 — pytania przygotowane, jeszcze nie zadane
 
 ## PYTANIE 21 (szkic) — martwe pole `odblokowuje`
