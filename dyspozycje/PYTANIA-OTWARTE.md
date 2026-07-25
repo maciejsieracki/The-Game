@@ -430,3 +430,23 @@ Usunięcie `upgradeFrom` z czterech par („likwidacja awansu bocznego") skasowa
 i to trzeba stosować dla wszystkich budynków, które miały awans boczny."
 → Do `CITY_BUILDING_PREREQ` dopisywane: `akademia`←`biblioteka` · `fort`←`mury` ·
 `akademia_wojskowa`←`koszary` · `swiatynia`←`kamienne_kregi`.
+
+---
+
+# ODPOWIEDZI MACIEJA 2026-07-25 (pytania 51-62)
+
+**51 = A** — Targowisko: Pieniądz 3 → **5 pkt/turę**, przyrost 2 → 3.
+**52 = A** — Targowisko zachowuje **+50% do Handlu brutto** bez zmian.
+**53 = B** — szlaki handlowe mają przesyłać **ilość** surowca, nie sam dostęp. WDRAŻANE.
+**54a = A** — Baszta wymaga Murów w tym samym mieście.
+**54b = A** — Akwedukt wymaga Studni w tym samym mieście.
+**54c = A** — Mennica wymaga Targowiska w tym samym mieście.
+**55 = B** — pole `odblokowuje` **ożywić**: kod ma czytać flagi z danych zamiast z hardkodu `id === 'mury'`.
+**56 = B** — Wielka Kuźnia: kategoria i adnotacja o parkowaniu zostają do czasu budowy epoki klasycznej.
+**57 = A + B** — odznaki ulepszeń jednostek: **kropki przy żetonie ORAZ kolorowa obwódka**.
+**58 = A** — Biblioteka (i Akademia) mnożą własny plon Nauki; zostaje bez zmian.
+**59 = B + Pałac** — Sąd, Pretorium **i Pałac** redukują korupcję, **każdy o 30%**.
+  DO POTWIERDZENIA: kumulacja mnożna (3 budynki → ok. 34% korupcji zostaje) czy odejmowanie (30+30+30 = 90%).
+**60 = A** — bufor 70% żywności Spichlerza II: sprawdzić i naprawić, jeśli nie działa.
+**61 = A** — cały martwy kod usunięty jednym przejściem.
+**62 = C, potem A** — najpierw audyt klasyfikujący porażki testów, potem naprawa wszystkich.
