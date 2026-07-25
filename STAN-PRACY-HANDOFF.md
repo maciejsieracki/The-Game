@@ -282,6 +282,22 @@ node tools/display-names-test.cjs        # etykieta MP „Miasto · Kultura · m
 
 ## 9. ✔️ DECYZJE JUŻ PODJĘTE (NIE pytaj o nie ponownie)
 
+### 🅿️ ZAPARKOWANE DO CZASU KOLEJNYCH EPOK (Maciej 2026-07-25) — NIE RUSZAĆ
+**Zasada: 1 poziom budynku = 1 epoka**, każdy poziom z INNYMI surowcami.
+Przykład wzorcowy — Pałac: `palac` (Kamień, drewno) → `palac_ii` (Brąz, drewno+kamień) → `palac_iii` (Żelazo, drewno+kamień+cegła). To jest model docelowy i **działa poprawnie**.
+
+**⛔ NIE projektujemy poziomów budynków „na zapas".** Kolejny poziom/tier budynku powstaje **dopiero wtedy, gdy realnie dochodzi kolejna epoka** — nie wcześniej.
+Maciej (dosłownie): „Każdy poziom jest dla następnej epoki… Jak będziemy rozwijać kolejne epoki, to robimy kolejny poziom pałacu. Po co teraz to robić?"
+
+**DO PRZEMYŚLENIA PRZY DODAWANIU KOLEJNYCH EPOK** (i tylko wtedy):
+- Dla KAŻDEGO budynku osobno rozstrzygnąć: **czy on w ogóle awansuje w kolejnej epoce?** (nie każdy musi — część budynków może się kończyć na swojej epoce).
+- Jeśli awansuje: jaki nowy tier, jakie surowce (muszą się RÓŻNIĆ od poprzedniego poziomu), jakie bonusy, jaka nazwa.
+- Dotyczy to Pałacu ORAZ 8 pozostałych łańcuchów: Odlewnia brązu→żelaza · Port→Port wielki · Kamienne kręgi→Świątynia · Spichlerz→Spichlerz II · Biblioteka→Akademia · Mury→Fort/Cytadela · Koszary→Akademia wojskowa · Kuźnia żelaza→Wielka kuźnia.
+
+**Kiedy ruszać:** WYŁĄCZNIE gdy Maciej powie, że wchodzimy w kolejne epoki. Do tego czasu temat jest zamknięty — nie proponować, nie „poprawiać przy okazji".
+(Drobiazg kosmetyczny na potem: każdy tier deklaruje `maksPoziom: 10`, co UI pokazuje jako „Maks. poziom: 10" mimo że nieosiągalne. Niski priorytet, do sprzątnięcia przy okazji tamtej pracy.)
+
+
 **Sesja 2026-07-20:**
 - **Ludy Morza (SEA):** Q1=A pełne zastąpienie w Brązie · Q2=A oba typy naprzemiennie · Q3=A staty bez zmian · Q4=A wszystkie poziomy · Q5=C (Kultura=etykieta, poprawiona).
 - **Wioski (WIO):** Q1=B rzadko (goodie-hut) · Q2=B nagroda przy wejściu · Q3=B proporcjonalnie do mapy · Q4=A pełne wykluczenia · Q5=B nagroda złoto/tech/jednostka · Q6=A fallback złoto w Żelazie.
