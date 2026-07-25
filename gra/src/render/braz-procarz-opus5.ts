@@ -399,19 +399,26 @@ function pzBuildCore(
  *  llautu). */
 function pzHair(group: THREE.Group, mHair: THREE.MeshStandardMaterial,
                 mCord: THREE.MeshStandardMaterial): void {
-  // potargane kepki wlosow — NIE jedna plaska plyta (z bliska/z gory/z tylu
-  // plaski box wygladal jak czarna dziura w modelu); kilka malych,
-  // nieregularnie ustawionych kepek czyta sie jako rozczochrane wlosy
-  // pasterza, zarowno z gory jak i z tylu glowy.
-  for (const [dx, dz, sy, rz] of ([
-    [-0.030, -0.010, 1.00, -0.22], [0.000, -0.024, 1.15, 0.05],
-    [0.030, -0.008, 0.95, 0.24], [-0.014, 0.020, 0.85, -0.10],
-    [0.016, 0.018, 0.90, 0.12],
-  ] as [number, number, number, number][])) {
+  // potargane kepki wlosow — OKTAEDRY (spiczaste), NIE plaskie boxy: z gory
+  // plaski, ciemny box czytal sie jak dziura/doklejona czapka (uwaga
+  // koordynatora 2026-07-25). Oktaedr ma spiczasty wierzcholek zamiast
+  // plaskiego "stolu", a rozna WYSOKOSC kazdej kepki (dy) niszczy plaski
+  // plateau — sylwetka z gory jest nieregularna, czytelnie "wlosiasta".
+  // Kolor PZ_HAIR tez zlagodzony (patrz definicja stalej) — mniejszy
+  // kontrast ze skora = mniej "dziura", wiecej "wlosy".
+  for (const [dx, dz, dy, sy, rz] of ([
+    [-0.032, -0.006,  0.000, 1.00, -0.24],
+    [-0.010, -0.026,  0.010, 1.20,  0.08],
+    [ 0.014, -0.016, -0.006, 0.95,  0.20],
+    [ 0.032,  0.004,  0.004, 0.85, -0.14],
+    [-0.020,  0.022, -0.010, 0.80, -0.05],
+    [ 0.006,  0.026,  0.008, 0.90,  0.16],
+    [ 0.000, -0.002,  0.016, 1.05,  0.02],
+  ] as [number, number, number, number, number][])) {
     const tuft = new THREE.Mesh(getPZTuft(), mHair);
     tuft.rotation.z = rz;
-    tuft.scale.set(0.9, sy, 0.9);
-    tuft.position.set(dx * HEX_R, PZ_HEAD_TOP - 0.010 * HEX_R, dz * HEX_R);
+    tuft.scale.set(0.85, sy, 0.85);
+    tuft.position.set(dx * HEX_R, PZ_HEAD_TOP - 0.016 * HEX_R + dy * HEX_R, dz * HEX_R);
     group.add(tuft);
   }
   for (const [dx, dy, rz] of ([
@@ -419,8 +426,14 @@ function pzHair(group: THREE.Group, mHair: THREE.MeshStandardMaterial,
   ] as [number, number, number][])) {
     const tuft = new THREE.Mesh(getPZTuft(), mHair);      // kepki na karku (nie plaska plyta)
     tuft.rotation.set(0.1, rz, rz * 0.5);
-    tuft.scale.set(0.85, 0.75, 0.7);
-    tuft.position.set(dx * HEX_R, PZ_HEAD_CTR + dy * HEX_R, -(PZ_HEAD_S * 0.5 + 0.006 * HEX_R));
+    tuft.scale.set(0.80, 0.70, 0.65);
+    tuft.position.set(dx * HEX_R, PZ_HEAD_CTR + dy * HEX_R, -(PZ_HEAD_S * 0.5 + 0.004 * HEX_R));
+    group.add(tuft);
+  }
+  for (const sx of [-1, 1]) {                             // drobne kepki nad skroniami —
+    const tuft = new THREE.Mesh(getPZTuft(), mHair);      // laczy czubek z karkiem, bez
+    tuft.scale.set(0.55, 0.60, 0.55);                     // "krawedzi helmu"
+    tuft.position.set(sx * (PZ_HEAD_S * 0.5 - 0.006 * HEX_R), PZ_HEAD_CTR + 0.032 * HEX_R, -0.014 * HEX_R);
     group.add(tuft);
   }
   // prosty rzemyk przewiazujacy wlosy z tylu — praktyczny (nie spada na oczy
@@ -566,11 +579,30 @@ function pzWhistle(group: THREE.Group, mWood: THREE.MeshStandardMaterial,
 }
 
 /**
- * PROCA W ZAMACHU NAD GŁOWĄ — pętla PIONOWA wprost nad podniesioną pięścią
- * (patrz uzasadnienie P7 w nagłówku pliku: rozróżnienie od Huaracoc, który
- * kręci procą W POZIOMIE, w bok od ciała). Dwa rzemienie wychodzą z pięści,
- * zbiegają się w kieszonce na szczycie pętli, lekko DO PRZODU (moment tuż
- * przed wypuszczeniem pocisku w stronę celu) + pętla zaciskowa na nadgarstku.
+ * PROCA W ZAMACHU — PĘTLA-SOCZEWKA, ukośnie NAD podniesioną pięścią.
+ * ───────────────────────────────────────────────────────────────────────
+ * POPRAWKA 2026-07-25 (uwaga koordynatora, zrzut 52°): pierwsza wersja miała
+ * dwa CIENKIE (0.009×HEX_R), niemal PROSTE rzemienie idące w osi przedramienia
+ * — z kamery gry czytało się to jako krótki patyk przy pięści (pochodnia/
+ * maczuga), nie jako proca. Poprawki:
+ *   1) rzemienie GRUBSZE (0.020×HEX_R, ponad DWA razy grubsze) — nie znikają
+ *      w skali żetonu;
+ *   2) PĘTLA WYRAŹNIE WIĘKSZA (fist→kieszonka ~0.22×HEX_R, dawniej ~0.10) —
+ *      naprawdę widoczny obiekt, nie kropka przy dłoni;
+ *   3) oś pętli D celowo ODCHYLONA od osi przedramienia (D przechyla się
+ *      w LEWO/do przodu, ku środkowi sylwetki) — pętla WIDOCZNIE odgałęzia
+ *      się od linii ramienia zamiast być jego przedłużeniem;
+ *   4) każdy rzemień łamie się w PUNKCIE POŚREDNIM wygiętym na BOK (± wektor
+ *      prostopadły P) — dwa rzemienie tworzą SOCZEWKĘ/ROMB z widoczną,
+ *      otwartą powierzchnią, płaszczyzna soczewki leży w przybliżeniu
+ *      NAPRZECIW kamery gry (52°), więc pokazuje pole, nie krawędź —
+ *      dokładnie efekt „ukośnego zamachu", o którym pisał koordynator;
+ *   5) kieszonka i pocisk WIĘKSZE i wysunięte na czubku pętli — wyraźnie
+ *      oddzielny element, nie zlewa się z dłonią.
+ * Rozróżnienie od Huaracoc (kamien-inka-opus5.ts/jednostki-p2-inka.ts) wciąż
+ * aktualne: Huaracoc kręci procą W POZIOMIE, nisko przy barku, sylwetka
+ * niska i szeroka (bbox Y=0.674×HEX_R, Z=0.342×HEX_R); mój Procarz ma pętlę
+ * WYSOKO NAD GŁOWĄ, sylwetka wysoka i wąska (Y=0.750×HEX_R, Z=0.267×HEX_R).
  */
 function pzSling(
   group: THREE.Group, wrist: THREE.Vector3, axis: THREE.Vector3,
@@ -589,21 +621,39 @@ function pzSling(
   loop2.position.copy(wrist.clone().addScaledVector(axis, 0.006 * HEX_R));
   group.add(loop2);
 
-  const grA = fist.clone().add(new THREE.Vector3(-0.011 * HEX_R, 0.004 * HEX_R, 0));
-  const grB = fist.clone().add(new THREE.Vector3(0.011 * HEX_R, 0.004 * HEX_R, 0));
-  const pouchP = fist.clone().add(new THREE.Vector3(0, 0.098 * HEX_R, 0.034 * HEX_R));
-  pzStretch(group, mCord, grA, pouchP, 0.009 * HEX_R);
-  pzStretch(group, mCord, grB, pouchP, 0.009 * HEX_R);
+  // oś pętli D: glownie w gore, ale WYRAZNIE odchylona od osi przedramienia
+  // (ku srodkowi sylwetki +X i lekko do przodu +Z) — patrz uzasadnienie (3).
+  const D = new THREE.Vector3(0.50, 0.80, 0.33).normalize();
+  // wektor prostopadly do D w plaszczyznie XY (bulges pokazywane kamerze) —
+  // patrz uzasadnienie (4).
+  const P = new THREE.Vector3(D.y, -D.x, 0).normalize();
 
-  const pouch = new THREE.Mesh(getPZPouch(), mLeathDk);
-  const yaw = Math.atan2(axis.x, axis.z);
-  pouch.rotation.set(-0.45, yaw, 0);
-  pouch.position.copy(pouchP);
+  const LOOP_LEN = 0.220 * HEX_R;
+  const HALF_W = 0.078 * HEX_R;
+  const CORD_W = 0.020 * HEX_R;               // GRUBY rzemien (dawniej 0.009)
+
+  const apex = fist.clone().addScaledVector(D, LOOP_LEN);
+  const mid = fist.clone().addScaledVector(D, LOOP_LEN * 0.52);
+  const midL = mid.clone().addScaledVector(P, HALF_W);
+  const midR = mid.clone().addScaledVector(P, -HALF_W);
+
+  // DWA rzemienie, kazdy zlamany na boku (fist->mid->apex) — razem tworza
+  // otwarta soczewke/romb, widoczna z kamery gry jako POLE, nie linia.
+  pzStretch(group, mCord, fist, midL, CORD_W);
+  pzStretch(group, mCord, midL, apex, CORD_W);
+  pzStretch(group, mCord, fist, midR, CORD_W);
+  pzStretch(group, mCord, midR, apex, CORD_W);
+
+  const pouch = new THREE.Mesh(getPZPouch(), mLeathDk);       // kieszonka NA SZCZYCIE petli
+  pouch.scale.set(1.25, 1.15, 1.2);
+  const yaw = Math.atan2(D.x, D.z);
+  pouch.rotation.set(-0.50, yaw, 0);
+  pouch.position.copy(apex);
   group.add(pouch);
-  const pellet = new THREE.Mesh(getPZPellet(), mClay);        // pocisk gliniany migdałowy
-  pellet.scale.set(1.0, 0.62, 1.0);
-  pellet.rotation.set(-0.45, yaw, 0.3);
-  pellet.position.copy(pouchP.clone().add(new THREE.Vector3(0, 0.004 * HEX_R, -0.006 * HEX_R)));
+  const pellet = new THREE.Mesh(getPZPellet(), mClay);        // pocisk gliniany migdałowy,
+  pellet.scale.set(1.3, 0.80, 1.3);                           // WIEKSZY — wyraznie widoczny
+  pellet.rotation.set(-0.50, yaw, 0.3);
+  pellet.position.copy(apex.clone().add(new THREE.Vector3(0, 0.008 * HEX_R, -0.010 * HEX_R)));
   group.add(pellet);
 }
 
