@@ -28,20 +28,20 @@ __export(danina_podatek_nazwa_entry_exports, {
 module.exports = __toCommonJS(danina_podatek_nazwa_entry_exports);
 
 // src/game/danina-nazwa.ts
-function isPodatekActive(walutaOdkryta, mennicaWStolicy2) {
-  return walutaOdkryta === true && mennicaWStolicy2 === true;
+function isPodatekActive(walutaOdkryta, mennicaWStolicy2, maDostepDoZlota = true) {
+  return walutaOdkryta === true && mennicaWStolicy2 === true && maDostepDoZlota === true;
 }
-function daninaLabel(walutaOdkryta, mennicaWStolicy2) {
-  return isPodatekActive(walutaOdkryta, mennicaWStolicy2) ? "Podatek" : "Danina";
+function daninaLabel(walutaOdkryta, mennicaWStolicy2, maDostepDoZlota = true) {
+  return isPodatekActive(walutaOdkryta, mennicaWStolicy2, maDostepDoZlota) ? "Podatek" : "Danina";
 }
 function mennicaWStolicy(capitalCityId, builtBuildingIdsForCapital) {
   if (!capitalCityId) return false;
   return (builtBuildingIdsForCapital ?? []).includes("mennica");
 }
-function daninaLabelForOwnerByCityList(ownerId, walutaOdkryta, cities, builtByCity, capitalCityId) {
+function daninaLabelForOwnerByCityList(ownerId, walutaOdkryta, cities, builtByCity, capitalCityId, maDostepDoZlota = true) {
   const capId = capitalCityId ?? cities.find((c) => c.ownerId === ownerId)?.id ?? null;
   const hasMennicaWStolicy = mennicaWStolicy(capId, capId ? builtByCity.get(capId) : void 0);
-  return daninaLabel(walutaOdkryta, hasMennicaWStolicy);
+  return daninaLabel(walutaOdkryta, hasMennicaWStolicy, maDostepDoZlota);
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {

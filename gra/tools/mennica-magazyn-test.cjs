@@ -158,13 +158,23 @@ const both       = runTick(['mennica'], true).tick;               // Mennica + W
 
 eq(walutaOnly.pieniadzBrutto, base.pieniadzBrutto,
   'Waluta BEZ Mennicy: BRAK zmiany wzgledem baseline (sedno decyzji 2026-07-25 -- sam tech juz nie wystarcza)');
-// Mennica BEZ Waluty: bramka AND Efektu 1 (multiplikator Handlu netto) jest NIEaktywna,
+// Mennica BEZ Waluty: bramka AND Efektu 1 (multiplikator Daniny netto) jest NIEaktywna,
 // ale Mennica jako budynek nadal daje wlasny bazowy plon Pieniadza (baza.pieniadz=3 w
-// buildings.json, wpiety do silnika naprawa "plony budynkow" FALA 11 2026-07-25 --
-// niezalezna od tego zadania). Delta wzgledem baseline = WYLACZNIE ten plon budynku,
-// zero z multiplikatora -- to jest precyzyjny dowod ze bramka nie przecieka.
-eq(mennicaOnly.pieniadzBrutto - base.pieniadzBrutto, 3,
-  'Mennica BEZ Waluty: delta = tylko wlasny plon budynku (+3 Pieniadz bazowy), multiplikator Efektu 1 NIEaktywny (bramka AND)');
+// buildings.json, wpiety do silnika naprawa "plony budynkow" FALA 11 2026-07-25).
+//
+// AKTUALIZACJA 2026-07-25 (noc), decyzja wlasciciela 67B: 3 -> 2.
+// Wczesniej ten test zakladal, ze Pieniadz z budynku trafia 1:1 do skarbca, wiec delta
+// rownala sie pelnym 3 pkt Pieniadza/ture. Po decyzji 67B ("budynki powinny dawac handel
+// nie bezposrednio do skarbca, tylko do puli, do podzialu") plon Pieniadza budynku wchodzi
+// do Daniny BAZOWEJ i dzieli sie suwakiem miasta na Nauke/Skarbiec/Zamoznosc. Przy
+// domyslnym podziale 20/60/20 (decyzja 74A) do strumienia Pieniadza trafia 60% tego plonu,
+// a wynik jest zaokraglany w dol na ZSUMOWANEJ puli (nie na samym wkladzie budynku) --
+// stad calkowita delta 2, a nie 1,8 czy 3.
+//
+// Test nadal dowodzi dokladnie tego, co mial dowodzic: multiplikator Efektu 1 NIE przecieka
+// przy samej Mennicy bez Waluty. Gdyby przeciekal, delta bylaby wielokrotnie wyzsza.
+eq(mennicaOnly.pieniadzBrutto - base.pieniadzBrutto, 2,
+  'Mennica BEZ Waluty: delta = tylko wlasny plon budynku po podziale suwakiem (67B), multiplikator Efektu 1 NIEaktywny (bramka AND)');
 assert(both.pieniadzBrutto > walutaOnly.pieniadzBrutto,
   `Mennica + Waluta: dochod wyzszy niz sama Waluta (${both.pieniadzBrutto} > ${walutaOnly.pieniadzBrutto})`);
 
