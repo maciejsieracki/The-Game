@@ -15,6 +15,7 @@ import type { ImprovementKey } from '../render/improvements';
 import { hexDistance } from '../units/setup';
 import { citySightRadius, hexKeysWithinRadius } from './okolica';
 import { hasBrazAccess } from './braz-access';
+import { empireHasKopalniaZlota } from './zloto-access';
 import {
   computeEmpireLivestockUnlocks,
   type LivestockKey,
@@ -55,6 +56,7 @@ const ZLOZE_LABEL: Record<string, string> = {
   miedz:    'Ruda miedzi',
   zelazo:   'Ruda żelaza',
   stal:     'Stal',
+  zloto:    'Złoto',
 };
 
 /** Klucze ASCII z terrain-improvements.json → etykieta panelu (resources.json Surowiec). */
@@ -72,6 +74,7 @@ const SUROWIEC_KEY_LABEL: Record<string, string> = {
   kon:    'Koń',
   sol:    'Sól',
   braz:   'Brąz',
+  zloto:  'Złoto',
 };
 
 function labelForHex(hex: HexZloze, currentEra = 99): string | null {
@@ -293,6 +296,13 @@ function collectActiveAccess(
 
   if (options.builtIds && hasBrazAccess(placedImprovements, options.builtIds)) {
     found.add(SUROWIEC_KEY_LABEL.braz!);
+  }
+
+  // Maciej 2026-07-25: Złoto — empire-wide, jak brąz wyżej, ale BEZ drugiego budynku
+  // "hutniczego" (kopalnia_zlota gdziekolwiek w imperium wystarcza — "wystarczy tylko
+  // dostęp"). Patrz game/zloto-access.ts.
+  if (empireHasKopalniaZlota(placedImprovements)) {
+    found.add(SUROWIEC_KEY_LABEL.zloto!);
   }
 
   return found;

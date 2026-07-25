@@ -83,7 +83,9 @@ function mapWith(...hexes) {
   const hexZ = { coords: { q: 2, r: 0 }, terenBazowy: TB.Gory, zloze: 'zelazo', wlasciciel: '0' };
   const mapZ = mapWith(hexZ);
   const placedZ = new Map([['2,0', 'kopalnia']]);
-  ok(M.getCityResourceAccessForCity(city, mapZ, placedZ, 99).active.includes('Żelazo'), 'kopalnia na zelazo → Żelazo');
+  // kopalnia na złożu żelaza daje surowiec 'Ruda żelaza' (metal Żelazo powstaje dopiero
+  // w hucie, nie w kopalni) -- przebudowa modelu brązu/żelaza.
+  ok(M.getCityResourceAccessForCity(city, mapZ, placedZ, 99).active.includes('Ruda żelaza'), 'kopalnia na zelazo → Ruda żelaza');
   ok(!M.improvementUnlockActiveOnHex('kopalnia', { zloze: 'miedz' }), 'kopalnia false na miedz');
 }
 {
@@ -134,8 +136,11 @@ function mapWith(...hexes) {
   const hex = { coords: { q: 1, r: 0 }, terenBazowy: TB.Laka, nakladka: NK.Brak, wlasciciel: '0' };
   const map = mapWith(hex);
   const placed = new Map([['1,0', 'bydlo']]);
+  // Bydło/owce/lama NIE są surowcami (decyzja Maciej, wielokrotnie powtarzana --
+  // resource-access.ts LIVESTOCK_NOT_RESOURCE) -- pastwiska nie emitują etykiety
+  // do active, mimo wybudowanej hodowli.
   const split = M.getCityResourceAccessForCity(city, map, placed, 99);
-  ok(split.active.includes('Trzoda (krowa/świnia)'), 'bydlo Model B → active bez złoża');
+  ok(!split.active.includes('Trzoda (krowa/świnia)'), 'bydlo NIE jest surowcem -> brak w active mimo hodowli');
   ok(M.improvementUnlockActiveOnHex('bydlo', { nakladka: NK.Brak }), 'bydlo active bez złoża');
 }
 

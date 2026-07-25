@@ -55,6 +55,12 @@ const DEPOSIT_LINKED_BUILDING_LABELS: Readonly<Record<string, readonly string[]>
   stolarnia: ['Drewno'],
   kamieniarski: ['Kamień'],
   kuznia: ['Ruda'],
+  // ZLOTO (Maciej 2026-07-25): Mennica wymaga dostępu do Złota (empire-wide, Kopalnia złota
+  // gdziekolwiek w imperium — game/zloto-access.ts empireHasKopalniaZlota, dolane do
+  // aktywnych etykiet w resource-access.ts collectActiveAccess). Złoto NIE jest magazynowane
+  // (brak wpisu w LABEL_BY_ASCII/ASCII_BY_LABEL niżej) — więc ta bramka NIGDY nie jest
+  // spełniona zapasem puli państwa (empireLabelSatisfied), tylko realnym aktywnym dostępem.
+  mennica: ['Złoto'],
 };
 
 /**
@@ -86,6 +92,9 @@ export const CITY_BUILDING_PREREQ: Readonly<Record<string, string | readonly str
   fort: 'mury',
   akademia_wojskowa: 'koszary',
   swiatynia: 'kamienne_kregi',
+  // ZLOTO (Maciej 2026-07-25, decyzja 54c=A): Mennica wymaga Targowiska W TYM SAMYM MIEŚCIE
+  // (obok bramki surowcowej Złota powyżej — DEPOSIT_LINKED_BUILDING_LABELS).
+  mennica: 'targowisko',
 };
 
 /**

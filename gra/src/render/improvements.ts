@@ -9,9 +9,16 @@ import { GAME_MAP_RENDER_STYLE, type MapRenderStyle, buildStyleTarasyTerrace } f
 import { buildRobloxImprovement, buildRobloxFoodStack } from './robloxImprovements';
 import { placeLivestockPair } from './styleResources';
 
+// ZLOTO-Q1 (Maciej 2026-07-25, wprowadzenie złota): 'kopalnia_zlota' dopisane MINIMALNIE —
+// typ + metadane + jeden dispatch reużywający ISTNIEJĄCY model kopalniaMiedzi() (BEZ nowej
+// geometrii). To świadomy, wąski wyjątek od zakazu dotykania render/** (modele jednostek są
+// zastrzeżone dla innych subagentów) — bez tego wpisu TypeScript nie skompilowałby żadnego
+// kodu logiki (map/improvement-build.ts) odwołującego się do 'kopalnia_zlota' jako
+// ImprovementKey. Docelowy model 3D (Opus 5, jak wszystkie modele render/**) — patrz RAPORT.
 export type ImprovementKey =
   | 'farma' | 'bydlo' | 'owce' | 'lama' | 'kopalnia' | 'kamieniolom' | 'oboz_lowiecki' | 'wyrab' | 'tartak'
   | 'lodzie_rybackie' | 'droga' | 'droga_brukowana' | 'posterunek' | 'stadnina' | 'pastwisko' | 'kopalnia_miedzi'
+  | 'kopalnia_zlota'
   | 'irygacja' | 'pole_irygowane' | 'glinianka' | 'warzelnia_soli' | 'tarasy' | 'fort';
 
 export const IMPROVEMENTS: { key: ImprovementKey; label: string; epoka: number }[] = [
@@ -24,6 +31,7 @@ export const IMPROVEMENTS: { key: ImprovementKey; label: string; epoka: number }
   { key: 'stadnina', label: 'Stadnina', epoka: 2 },
   { key: 'kopalnia', label: 'Kopalnia żelaza', epoka: 1 }, { key: 'kamieniolom', label: 'Kamieniołom', epoka: 1 },
   { key: 'kopalnia_miedzi', label: 'Kopalnia miedzi', epoka: 2 },
+  { key: 'kopalnia_zlota', label: 'Kopalnia złota', epoka: 2 },
   { key: 'oboz_lowiecki', label: 'Obóz łowiecki', epoka: 1 }, { key: 'wyrab', label: 'Wyrąb', epoka: 1 },
   { key: 'tartak', label: 'Tartak', epoka: 1 },
   { key: 'lodzie_rybackie', label: 'Łodzie rybackie', epoka: 1 }, { key: 'droga', label: 'Droga', epoka: 1 },
@@ -365,6 +373,9 @@ export function buildImprovement(
     case 'posterunek': return straznica(ownerCol);
     case 'pastwisko': return bydlo();
     case 'kopalnia_miedzi': return kopalniaMiedzi();
+    // TYMCZASOWO: reużyty model Kopalni miedzi (bez nowej geometrii) — patrz komentarz przy
+    // ImprovementKey wyżej. Docelowy model 3D złota do zrobienia przez subagenta Opus 5.
+    case 'kopalnia_zlota': return kopalniaMiedzi();
   }
 }
 
@@ -382,7 +393,7 @@ const CAT_ANGLE_DEG: Record<string, number> = {
 // Kamieniołom ma WŁASNY bok (kamien=300°), NIE w 'surowiec' — bo od 2026-07-24 współistnieje
 // z kopalnią rudy na tym samym heksie (C-SUR kamień=b); w jednym sektorze modele rysują się w
 // tym samym punkcie, więc rozdzielenie kątów zapobiega nachodzeniu grafik kamieniołom↔kopalnia.
-const SUROWIEC_KEYS = new Set(['kopalnia', 'glinianka', 'warzelnia_soli', 'stadnina', 'kopalnia_miedzi']);
+const SUROWIEC_KEYS = new Set(['kopalnia', 'glinianka', 'warzelnia_soli', 'stadnina', 'kopalnia_miedzi', 'kopalnia_zlota']);
 const PASTWISKO_KEYS = new Set(['bydlo', 'owce', 'lama', 'pastwisko']);
 const FORT_KEYS = new Set(['fort', 'posterunek']);
 const DROGA_KEYS = new Set(['droga', 'droga_brukowana']);

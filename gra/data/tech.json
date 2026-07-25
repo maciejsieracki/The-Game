@@ -293,8 +293,8 @@
       "Odblokowuje surowiec.": null,
       "Odblokowuje budynek": "Mennica",
       "Koszt nauki": 200,
-      "Uwagi": "kończy Epokę 2 (Pieniądz); T-TECH-6: Mennica v1.0",
-      "Odblokowuje ulepszenie terenu": null
+      "Uwagi": "kończy Epokę 2 (Pieniądz); T-TECH-6: Mennica v1.0; ZLOTO 2026-07-25: Mennica dodatkowo wymaga dostępu do Złota (Kopalnia złota) + Targowiska w mieście",
+      "Odblokowuje ulepszenie terenu": "Kopalnia złota"
     },
     {
       "Technologia": "Astronomia",

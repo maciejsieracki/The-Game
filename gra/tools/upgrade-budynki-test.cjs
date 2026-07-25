@@ -62,8 +62,10 @@ function ok(c, m) {
   ok(pw && pw.upgradeFrom === 'port', 'port_wielki upgradeFrom port');
   const label = M.upgradeProductionDisplayName(pw, buildings);
   ok(label.includes('Rozbuduj') && label.includes('Port'), 'Rozbuduj label port');
+  // TEMAT 8 Q2 (2026-07-24): Port/Port wielki wymagaja ctx.cityHasCoastOrRiver (dostep do
+  // wody per miasto, production.ts WATER_ACCESS_BUILDING_IDS) -- bez tego bramka blokuje.
   const items = M.availableProduction(city, prodData, ['Inżynieria'], {
-    epoch: 3, builtBuildingIds: ['port'],
+    epoch: 3, builtBuildingIds: ['port'], cityHasCoastOrRiver: true,
   });
   ok(items.some(i => i.id === 'port_wielki'), 'port_wielki available with port built');
   ok(!items.some(i => i.id === 'port'), 'port hidden when not superseded but built — still in built');

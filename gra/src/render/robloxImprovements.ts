@@ -409,6 +409,9 @@ const BUILDERS: Record<ImprovementKey, (g: THREE.Group, owner: number) => void> 
     g.add(f, buildTrzoda(), buildZagrodaDodatki()); // wycofano buildPastwiskoZwierzeta (model pokazowy) → trzoda N-NE
   },
   kopalnia_miedzi: g => { const m = buildKopalnia(); m.rotation.y = ULEPSZENIA_P2_LAYOUT.kopalnia.budynek.rotY; g.add(m); },
+  // TYMCZASOWO (Maciej 2026-07-25, wprowadzenie złota): reużyty model buildKopalnia() —
+  // patrz komentarz przy ImprovementKey w render/improvements.ts. Docelowy model 3D — Opus 5.
+  kopalnia_zlota: g => { const m = buildKopalnia(); m.rotation.y = ULEPSZENIA_P2_LAYOUT.kopalnia.budynek.rotY; g.add(m); },
 };
 
 export function buildRobloxImprovement(key: ImprovementKey, ownerCol = 0xffd54a): THREE.Group {

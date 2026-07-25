@@ -165,6 +165,11 @@ const SEKTOR_OF: Record<string, string> = {
   // bok 1 — surowce + ich ulepszenia
   kopalnia: 'surowiec', glinianka: 'surowiec',
   stadnina: 'surowiec', kopalnia_miedzi: 'surowiec',
+  // Maciej 2026-07-25: Kopalnia złota — dedykowane ulepszenie jak kopalnia_miedzi (tylko na
+  // hex.zloze==='zloto'); sektor 'surowiec' jest tu bezpieczny bo tylko JEDNO złoże może
+  // istnieć na heksie (placeDeposits — break po pierwszym trafieniu), więc nigdy nie koliduje
+  // z kopalnią miedzi/węgla/żelaza na tym samym polu.
+  kopalnia_zlota: 'surowiec',
   // Kamieniołom = WŁASNY sektor NIE-wykluczający (Maciej 2026-07-24, C-SUR kamień=b): kamień to
   // zasób terenowy i ma współistnieć z kopalniami rudy / glinianką / stadniną na tym samym heksie
   // — żeby budowa kamieniołomu nie zablokowała późniejszego wydobycia rudy (zwłaszcza żelaza,
@@ -210,6 +215,9 @@ const TERRAIN_ALLOW: Partial<Record<ImprovementKey, TerenSet | null>> = {
   droga_brukowana: null,
   posterunek: null,
   kopalnia_miedzi: new Set([TerenBazowy.Wzgorza, TerenBazowy.Gory]),
+  // Maciej 2026-07-25: złoto żyłowe — Wzgórza/Góry, jak kopalnia_miedzi (patrz DEPOSIT_RULES
+  // gen-helpers.ts id='zloto').
+  kopalnia_zlota: new Set([TerenBazowy.Wzgorza, TerenBazowy.Gory]),
 };
 
 /**
@@ -275,6 +283,8 @@ export function depositAllowsPlayerImprovement(
       return zloze === 'sol';
     case 'kopalnia_miedzi': // kopalnia miedzi — TYLKO ruda miedzi
       return zloze === 'miedz';
+    case 'kopalnia_zlota': // kopalnia złota — TYLKO złoże złota (Maciej 2026-07-25)
+      return zloze === 'zloto';
     case 'bydlo':
       return nakladka === Nakladka.ZlozeBydla;
     case 'owce':
@@ -554,6 +564,10 @@ function createQualifier(state: ImprovementBuildState) {
         if (!inPlayerTerritory(q, r)) return false;
         if (teren !== TerenBazowy.Wzgorza && teren !== TerenBazowy.Gory) return false;
         return zloze === 'miedz';
+      case 'kopalnia_zlota': // Maciej 2026-07-25: kopalnia złota — TYLKO złoże złota
+        if (!inPlayerTerritory(q, r)) return false;
+        if (teren !== TerenBazowy.Wzgorza && teren !== TerenBazowy.Gory) return false;
+        return zloze === 'zloto';
       case 'tarasy': {
         if (!inPlayerTerritory(q, r)) return false;
         if (hasBlockingDepositForFarm(hex)) return false;
@@ -607,6 +621,7 @@ export function galleryTerrainEligible(key: ImprovementKey, teren: TerenBazowy):
     case 'kopalnia':
     case 'kamieniolom':
     case 'kopalnia_miedzi':
+    case 'kopalnia_zlota':
       return teren === TerenBazowy.Wzgorza || teren === TerenBazowy.Gory;
     case 'wyrab':
       return teren === TerenBazowy.Laka || teren === TerenBazowy.Rownina

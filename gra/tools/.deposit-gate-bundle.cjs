@@ -326,6 +326,21 @@ var terrain_improvements_default = {
     odblokowuje: "Odlewnia br\u0105zu (budynek miejski)",
     uwagi: "ABC-7 + ABC-14 Maciej 2026-07-04: tylko heks ze z\u0142o\u017Cem rudy"
   },
+  kopalnia_zlota: {
+    nazwa: "Kopalnia z\u0142ota",
+    epoka: 2,
+    bonus: {
+      praca: 2
+    },
+    surowiecOdblokowany: null,
+    surowiecOdblokowany_uwaga: "Maciej 2026-07-25: z\u0142oto jest surowcem DOST\u0118POWYM \u2014 bez magazynowania, bez ilo\u015Bci/tur\u0119. W przeciwie\u0144stwie do Kopalni miedzi/kopalni na z\u0142o\u017Cu \u017Celaza, ta Kopalnia NIE zasila \u017Cadnej puli (celowo brak surowiecOdblokowany i surowiec_ilosc_tura) \u2014 liczy si\u0119 wy\u0142\u0105cznie fakt jej istnienia gdziekolwiek w imperium (empireHasKopalniaZlota, game/zloto-access.ts).",
+    teren: "Wzg\xF3rza, G\xF3ry, z\u0142o\u017Ce z\u0142ota (hex.zloze=zloto)",
+    warunek: "dost\u0119p imperium do Z\u0142ota (bramka Mennicy) \u2014 bez wydobycia ilo\u015Bciowego",
+    koszt_praca: 22,
+    tech: "Waluta",
+    odblokowuje: "Mennica (dost\u0119p do Z\u0142ota, obok Targowiska w tym mie\u015Bcie)",
+    uwagi: "Maciej 2026-07-25: \u201Ez\u0142oto potraktujemy jako surowiec, do kt\xF3rego wystarczy tylko dost\u0119p \u2014 nie trzeba budowa\u0107 wielu kopalni\u201D. Wzorowana na Kopalni miedzi (kopalnia_miedzi) \u2014 dedykowane ulepszenie, tylko na hex.zloze=zloto."
+  },
   posterunek: {
     nazwa: "Posterunek (Stra\u017Cnica)",
     epoka: 2,
@@ -7338,7 +7353,13 @@ var DEPOSIT_LINKED_BUILDING_LABELS = {
   spichlerz_ii: ["S\xF3l"],
   stolarnia: ["Drewno"],
   kamieniarski: ["Kamie\u0144"],
-  kuznia: ["Ruda"]
+  kuznia: ["Ruda"],
+  // ZLOTO (Maciej 2026-07-25): Mennica wymaga dostępu do Złota (empire-wide, Kopalnia złota
+  // gdziekolwiek w imperium — game/zloto-access.ts empireHasKopalniaZlota, dolane do
+  // aktywnych etykiet w resource-access.ts collectActiveAccess). Złoto NIE jest magazynowane
+  // (brak wpisu w LABEL_BY_ASCII/ASCII_BY_LABEL niżej) — więc ta bramka NIGDY nie jest
+  // spełniona zapasem puli państwa (empireLabelSatisfied), tylko realnym aktywnym dostępem.
+  mennica: ["Z\u0142oto"]
 };
 var CITY_BUILDING_PREREQ = {
   warsztat_oblezniczy: ["koszary", "akademia_wojskowa"],
@@ -7346,7 +7367,10 @@ var CITY_BUILDING_PREREQ = {
   akademia: "biblioteka",
   fort: "mury",
   akademia_wojskowa: "koszary",
-  swiatynia: "kamienne_kregi"
+  swiatynia: "kamienne_kregi",
+  // ZLOTO (Maciej 2026-07-25, decyzja 54c=A): Mennica wymaga Targowiska W TYM SAMYM MIEŚCIE
+  // (obok bramki surowcowej Złota powyżej — DEPOSIT_LINKED_BUILDING_LABELS).
+  mennica: "targowisko"
 };
 function cityBuildingPrereqMet(prereq, builtList, buildings, isSuperseded) {
   if (!prereq) return true;
@@ -7854,7 +7878,10 @@ var TERRAIN_ALLOW = {
   droga: null,
   droga_brukowana: null,
   posterunek: null,
-  kopalnia_miedzi: /* @__PURE__ */ new Set(["wzgorza" /* Wzgorza */, "gory" /* Gory */])
+  kopalnia_miedzi: /* @__PURE__ */ new Set(["wzgorza" /* Wzgorza */, "gory" /* Gory */]),
+  // Maciej 2026-07-25: złoto żyłowe — Wzgórza/Góry, jak kopalnia_miedzi (patrz DEPOSIT_RULES
+  // gen-helpers.ts id='zloto').
+  kopalnia_zlota: /* @__PURE__ */ new Set(["wzgorza" /* Wzgorza */, "gory" /* Gory */])
 };
 function depositAllowsPlayerImprovement(key, hex) {
   const nakladka = hex.nakladka;
@@ -7872,6 +7899,8 @@ function depositAllowsPlayerImprovement(key, hex) {
       return zloze === "sol";
     case "kopalnia_miedzi":
       return zloze === "miedz";
+    case "kopalnia_zlota":
+      return zloze === "zloto";
     case "bydlo":
       return nakladka === "zloze_bydla" /* ZlozeBydla */;
     case "owce":
@@ -7894,6 +7923,25 @@ var NAKLADKI_ZWIERZECZE = /* @__PURE__ */ new Set([
 ]);
 function hasAnimalDeposit(nakladka) {
   return NAKLADKI_ZWIERZECZE.has(nakladka);
+}
+
+// src/game/zloto-access.ts
+var KOPALNIA_ZLOTA_KEY = "kopalnia_zlota";
+function improvementKeysOnPlaced2(imp) {
+  if (typeof imp === "string") {
+    const k = normalizeImprovementKey(imp);
+    return k ? [k] : [];
+  }
+  return imp.map((k) => normalizeImprovementKey(String(k))).filter((k) => !!k);
+}
+function empireHasKopalniaZlota(placedImprovements) {
+  if (!placedImprovements?.size) return false;
+  for (const imp of placedImprovements.values()) {
+    for (const key of improvementKeysOnPlaced2(imp)) {
+      if (key === KOPALNIA_ZLOTA_KEY) return true;
+    }
+  }
+  return false;
 }
 
 // src/game/resource-access.ts
@@ -7922,7 +7970,8 @@ var ZLOZE_LABEL = {
   sol: "S\xF3l",
   miedz: "Ruda miedzi",
   zelazo: "Ruda \u017Celaza",
-  stal: "Stal"
+  stal: "Stal",
+  zloto: "Z\u0142oto"
 };
 var SUROWIEC_KEY_LABEL = {
   drewno: "Drewno",
@@ -7937,7 +7986,8 @@ var SUROWIEC_KEY_LABEL = {
   lama: "Lama",
   kon: "Ko\u0144",
   sol: "S\xF3l",
-  braz: "Br\u0105z"
+  braz: "Br\u0105z",
+  zloto: "Z\u0142oto"
 };
 function labelForHex(hex, currentEra = 99) {
   const z = hex.zloze?.trim().toLowerCase();
@@ -8052,6 +8102,9 @@ function collectActiveAccess(city, map, placedImprovements, options) {
   }
   if (options.builtIds && hasBrazAccess(placedImprovements, options.builtIds)) {
     found.add(SUROWIEC_KEY_LABEL.braz);
+  }
+  if (empireHasKopalniaZlota(placedImprovements)) {
+    found.add(SUROWIEC_KEY_LABEL.zloto);
   }
   return found;
 }
