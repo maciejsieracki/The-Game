@@ -9,8 +9,8 @@
  * kończy (patrz komentarze przy wpięciach).
  *
  * KONWENCJE (jak modele jednostek *-opus5.ts i ulepszenia-modele-p2.ts):
- *   - HEX_R = 1.0; CAŁY model mieści się w obrysie heksa (max promień ≈ 0,72
- *     przy wpisanym promieniu heksa 0,866) — nic nie wychodzi na sąsiada,
+ *   - HEX_R = 1.0; CAŁY model mieści się w obrysie heksa (najdalszy wierzchołek
+ *     0,683 przy wpisanym promieniu heksa 0,866) — nic nie wychodzi na sąsiada,
  *   - spód modelu na y = 0 (powierzchnia heksa); nic nie lewituje poza koszem,
  *     który WISI na linie (i tak ma wisieć),
  *   - PRZÓD = +Z, bo kamera gry stoi w azymucie 0 i patrzy pod 52°
@@ -153,9 +153,9 @@ function B(
 function C(
   g: THREE.Object3D, rt: number, rb: number, h: number,
   x: number, y: number, z: number, color: number,
-  seg = 6, rx = 0, ry = 0, rz = 0,
+  seg = 6, rx = 0, ry = 0, rz = 0, open = false,
 ): THREE.Mesh {
-  const m = new THREE.Mesh(cylGeo(rt, rb, h, seg), mat(color));
+  const m = new THREE.Mesh(cylGeo(rt, rb, h, seg, open), mat(color));
   m.position.set(x * R, y * R, z * R);
   if (rx || ry || rz) m.rotation.set(rx, ry, rz);
   m.castShadow = true;
@@ -240,7 +240,10 @@ export function buildKopalniaZlota(): THREE.Group {
   //      licu zwróconym do kamery (+Z), inaczej z 52° w ogóle jej nie widać ─
   B(g, 0.44, 0.22, 0.16, -0.20, 0.110, -0.415, KZ.kwarc, 0, -0.14, 0);
   B(g, 0.20, 0.13, 0.13, 0.05, 0.065, -0.430, KZ.kwarc, 0, 0.30, 0);
-  B(g, 0.30, 0.030, 0.030, -0.20, 0.150, -0.336, KZ.zloto, 0, -0.14, 0.16);  // żyła na licu
+  // KOR-1: żyła pogrubiona i rozgałęziona — w skali mapy cienka kreska ginęła
+  B(g, 0.34, 0.055, 0.040, -0.20, 0.150, -0.333, KZ.zloto, 0, -0.14, 0.16);
+  B(g, 0.13, 0.040, 0.036, -0.30, 0.085, -0.331, KZ.zlotoDk, 0, -0.14, -0.40);
+  B(g, 0.10, 0.036, 0.034, 0.04, 0.108, -0.362, KZ.zloto, 0, 0.30, 0.30);
 
   // ── 3. SZYB: czarna gardziel + drewniana cembrowina (Z1) ────────────────
   B(g, 0.24, 0.10, 0.20, -0.20, 0.070, -0.16, KZ.czern);
@@ -265,9 +268,11 @@ export function buildKopalniaZlota(): THREE.Group {
   strut(g, KZ.lina, 0.008, AX, 0.395, AZ + 0.03, AX, 0.250, AZ + 0.03);      // lina
   C(g, 0.082, 0.062, 0.10, AX, 0.195, AZ + 0.03, KZ.wiklina, 8);            // kosz
   C(g, 0.090, 0.090, 0.020, AX, 0.250, AZ + 0.03, KZ.drewnoDk, 8);          // obręcz kosza
-  B(g, 0.058, 0.048, 0.052, AX - 0.028, 0.256, AZ + 0.020, KZ.kwarc, 0, 0.4, 0);
-  B(g, 0.048, 0.042, 0.048, AX + 0.030, 0.254, AZ + 0.050, KZ.kwarc, 0, -0.3, 0);
-  B(g, 0.040, 0.034, 0.040, AX + 0.002, 0.266, AZ - 0.020, KZ.zloto, 0, 0.6, 0);
+  // urobek w koszu — KOR-1: kruszec złotonośny wysunięty na wierzch, kwarc schodzi
+  // do roli tła (wcześniej z odległości kosz czytał się jako biały)
+  B(g, 0.050, 0.042, 0.046, AX - 0.034, 0.252, AZ + 0.040, KZ.kwarc, 0, 0.4, 0);
+  B(g, 0.062, 0.052, 0.058, AX + 0.014, 0.264, AZ + 0.014, KZ.zloto, 0, 0.6, 0);
+  B(g, 0.046, 0.040, 0.044, AX - 0.022, 0.268, AZ - 0.026, KZ.zlotoDk, 0, -0.4, 0);
 
   // ── 5. RYNNA PŁUCZKOWA Z RUNEM (Z3) — ukośna dominanta sylwetki ─────────
   BSL(g, 0.150, 0.035, SL_LEN, 0, 0, 0, KZ.drewno);                          // dno
@@ -276,9 +281,14 @@ export function buildKopalniaZlota(): THREE.Group {
   }
   BSL(g, 0.150, 0.085, 0.028, 0, 0.035, -SL_LEN / 2, KZ.drewnoDk);           // zastawka u góry
   BSL(g, 0.122, 0.014, 0.42, 0, 0.016, 0.03, KZ.runo);                       // runo owcze
-  BSL(g, 0.120, 0.018, 0.19, 0, 0.030, -0.150, KZ.woda);                     // strużka wody
-  for (const [lx, lz] of [[-0.032, 0.040], [0.028, 0.120], [-0.018, 0.190]] as const) {
-    BSL(g, 0.030, 0.016, 0.032, lx, 0.030, lz, KZ.zloto);                    // drobiny złota
+  BSL(g, 0.120, 0.018, 0.15, 0, 0.030, -0.168, KZ.woda);                     // strużka wody (KOR-1: krótsza)
+  // KOR-1: drobiny na runie powiększone i doliczone (3 → 6) — to one mają
+  // nieść komunikat „złoto" na całej długości rynny, także w skali mapy
+  for (const [lx, lz] of [
+    [-0.034, 0.010], [0.030, 0.062], [-0.024, 0.108],
+    [0.032, 0.152], [-0.030, 0.196], [0.014, 0.226],
+  ] as const) {
+    BSL(g, 0.044, 0.020, 0.046, lx, 0.030, lz, KZ.zloto);
   }
   // kozły podpierające rynnę — nogi rozstawione POPRZECZNIE, żeby pochylenie
   // koryta było widoczne (bez nich rynna czyta się jak deska na ziemi)
@@ -290,26 +300,40 @@ export function buildKopalniaZlota(): THREE.Group {
     strut(g, KZ.drewnoDk, 0.017, rxw, 0.040, rzw, ux, uy, uz);
   }
 
-  // ── 6. SADZAWKA POD SPŁYWEM RYNNY (Z3) ──────────────────────────────────
-  C(g, 0.155, 0.170, 0.06, 0.350, 0.030, 0.400, KZ.skalaDk, 8);
-  C(g, 0.128, 0.128, 0.025, 0.350, 0.062, 0.400, KZ.woda, 8);
+  // ── 6. SADZAWKA POD SPŁYWEM RYNNY (Z3) — KOR-1: mniejsza i przygaszona,
+  //      bo jaskrawy cyjanowy ośmiokąt przejmował całą uwagę w skali mapy ──
+  C(g, 0.140, 0.155, 0.06, 0.350, 0.030, 0.395, KZ.skalaDk, 8);
+  C(g, 0.114, 0.114, 0.025, 0.350, 0.062, 0.395, KZ.wodaDk, 8);
 
-  // ── 7. MISA (BATEA) ZE ZŁOTYM PYŁEM (Z4) — jedyny element czytający
-  //      „ZŁOTO" jednoznacznie z 52°; złoty krążek WYSTAJE ponad rant ──────
-  C(g, 0.112, 0.088, 0.055, -0.310, 0.077, 0.320, KZ.drewno, 8);
-  C(g, 0.084, 0.084, 0.022, -0.310, 0.113, 0.320, KZ.zloto, 8);
+  // ── 7. MISA (BATEA) ZE ZŁOTYM PYŁEM (Z4) — nośnik komunikatu „ZŁOTO".
+  //      KOR-1: misa POCHYLONA ku kamerze (wcześniej płaski krążek czytał się
+  //      jak terakotowy talerz) + usypany kopczyk złotego pyłu w środku ─────
+  {
+    const misa = new THREE.Group();
+    C(misa, 0.128, 0.098, 0.055, 0, 0.028, 0, KZ.drewnoDk, 8);   // czerep naczynia
+    C(misa, 0.118, 0.118, 0.016, 0, 0.062, 0, KZ.drewno, 8);     // rant
+    C(misa, 0.104, 0.104, 0.026, 0, 0.076, 0, KZ.zloto, 8);      // złoty pył
+    C(misa, 0.030, 0.070, 0.036, 0, 0.100, 0, KZ.zloto, 6);      // kopczyk urobku
+    misa.rotation.x = 0.42;
+    misa.position.set(-0.315 * R, 0.052 * R, 0.315 * R);
+    g.add(misa);
+  }
 
   // ── 8. KAMIEŃ DO KRUSZENIA KWARCU (Z5) ──────────────────────────────────
   B(g, 0.230, 0.070, 0.190, 0.335, 0.085, -0.290, KZ.skalaDk, 0, 0.22, 0);
   C(g, 0.058, 0.070, 0.060, 0.335, 0.150, -0.290, KZ.skala, 6);
   B(g, 0.055, 0.038, 0.052, 0.215, 0.069, -0.200, KZ.kwarc, 0, 0.5, 0);
   B(g, 0.048, 0.034, 0.046, 0.440, 0.067, -0.235, KZ.kwarc, 0, -0.4, 0);
+  // roztarty kruszec na płycie — KOR-1: urobek spod rozcieracza jest złoty,
+  // to on jest powodem, dla którego kwarc w ogóle się tłucze
+  B(g, 0.090, 0.024, 0.070, 0.335, 0.128, -0.290, KZ.zloto, 0, 0.22, 0);
 
-  // ── 9. HAŁDA UROBKU (płonny kwarc) + jedna bryłka złotonośna ────────────
+  // ── 9. HAŁDA UROBKU (płonny kwarc) + bryłki złotonośne ──────────────────
   B(g, 0.200, 0.110, 0.190, -0.430, 0.095, 0.115, KZ.kwarc, 0, 0.28, 0);
   B(g, 0.140, 0.085, 0.130, -0.395, 0.185, 0.150, KZ.kwarc, 0, -0.35, 0);
   B(g, 0.100, 0.060, 0.090, -0.465, 0.170, 0.040, KZ.skala, 0, 0.50, 0);
-  B(g, 0.050, 0.042, 0.046, -0.395, 0.245, 0.150, KZ.zlotoDk, 0, 0.35, 0);
+  B(g, 0.072, 0.058, 0.066, -0.393, 0.252, 0.150, KZ.zloto, 0, 0.35, 0);
+  B(g, 0.050, 0.040, 0.048, -0.462, 0.218, 0.038, KZ.zlotoDk, 0, -0.30, 0);
 
   // Materiały i geometrie są WSPÓŁDZIELONE — nie wolno ich zwalniać per żeton.
   g.userData['mats'] = [];
