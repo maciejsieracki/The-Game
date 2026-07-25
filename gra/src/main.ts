@@ -10099,7 +10099,7 @@ async function boot(): Promise<void> {
       getBuiltBuildingIds: (cityId: string) => cityBuilt.get(cityId) ?? [],
       // audyt #33: panel miasta jest tylko dla gracza (openCityPanelForPlayer) -- ulepszenia
       // WYŁĄCZNIE z terytorium gracza (owner 0), inaczej kopalnia AI odblokowywała Brąz/Żelazo.
-      getPlacedImprovements: () => placedImprovementsWithBrazTradeGrant(0, placedImprovementsForOwner(0)),
+      getPlacedImprovements: () => placedImprovementsWithTradeGrants(0, placedImprovementsForOwner(0)),
       getProduction: (cityId: string) => {
         const p = cityProd.get(cityId);
         return p ? { ...p, kolejka: [...p.kolejka] } : null;
@@ -15772,7 +15772,7 @@ async function boot(): Promise<void> {
         getBuiltBuildingIds: (cityId: string) => cityBuilt.get(cityId) ?? [],
         // audyt #33: panel miasta jest tylko dla gracza (openCityPanelForPlayer) -- ulepszenia
         // WYŁĄCZNIE z terytorium gracza (owner 0), inaczej kopalnia AI odblokowywała Brąz/Żelazo.
-        getPlacedImprovements: () => placedImprovementsWithBrazTradeGrant(0, placedImprovementsForOwner(0)),
+        getPlacedImprovements: () => placedImprovementsWithTradeGrants(0, placedImprovementsForOwner(0)),
         getProduction: (cityId: string) => {
           const p = cityProd.get(cityId);
           return p ? { ...p, kolejka: [...p.kolejka] } : null;
