@@ -300,3 +300,41 @@ identyczne 35. Skoro zadowolenie (2/3/5) znika z Pałacu, jego progresja przesta
 - Przeciw: trzeba przetestować, czy nie znika presja na trzymanie wojska w mieście.
 
 **REKOMENDACJA: C** — spełnia Twój warunek na każdym poziomie i nie łamie konwencji pliku.
+
+
+---
+
+# ODPOWIEDZI MACIEJA 2026-07-25 (pytania 38-41)
+
+## PYTANIE 38 = **A** — Kamienne kręgi i Stela zostają na kamieniu
+Wyjątek od zasady „epoka Kamienia = wyłącznie drewno". Kamienne kręgi 8 szt. kamienia, Stela/Pomnik 6 szt. kamienia.
+Powód: nazwa i sens obu budowli to dosłownie kamień — warunek zgodności historycznej.
+**Stan: już tak zapisane w `SPEC-KOSZTY-SUROWCOWE-BUDYNKOW.md`, nic nie trzeba zmieniać.**
+
+## PYTANIE 39 = **A** — parametry Domu Starszyzny i Dworu Zarządcy zatwierdzone
+| Parametr | Dom Starszyzny | Dwór Zarządcy |
+|---|---|---|
+| Kultura | 2 pkt/turę | 3 pkt/turę |
+| Praca | 1 pkt/turę | 1 pkt/turę |
+| Pieniądz | 1 pkt/turę | 2 pkt/turę |
+| Koszt budowy | 25 pkt Pracy | 45 pkt Pracy |
+| Utrzymanie | 1 pieniądz/turę | 2 pieniądze/turę |
+| Prawo (łatwy/normalny/trudny) | 36 / 28 / 22 | 43 / 33 / 26 |
+**Stan: już wdrożone, nic nie trzeba zmieniać.**
+
+## PYTANIE 40 = **B** — cegła wchodzi do wymiany na szlakach handlowych
+Maciej: „warto już glinę wcześniej produkować przed wejściem do żelaza i być gotowym".
+Cegła dołącza do `TRADE_ROUTE_RESOURCE_KEYS` obok brązu, żelaza i koni (`gra/src/game/trade-routes.ts:836`).
+Miasto bez złoża gliny przestaje być odcięte od budynków epoki Żelaza — brak gliny staje się problemem
+do rozwiązania dyplomacją i handlem, a nie wyrokiem przy losowaniu mapy.
+Cegielnia jest budynkiem epoki Brązu, więc gracz może produkować cegłę z wyprzedzeniem, zanim wejdzie w Żelazo.
+**DO WDROŻENIA.**
+
+## PYTANIE 41 = **B, bonus +100% Obrony** — trzeci budynek obronny w epoce Żelaza
+Trzeci budynek obronny miasta, **dokładany** obok Murów i Cytadeli (nie zastępuje ich).
+Obrona miasta narasta: Mury +200% → Cytadela +100% → nowy budynek +100% = **łącznie +400%**.
+Propozycja nazwy: **Baszty** (wieże obronne) — w epoce Żelaza mury najeżone wieżami to standard
+hellenistyczny i rzymski (`turres`), więc nazwa jest historycznie trafna i nie myli się z Fortem terenowym.
+Uwaga: identyfikator Cytadeli w danych to `fort`, a osobny **Fort terenowy** to ulepszenie mapy stawiane
+robotnikiem — te trzy rzeczy trzeba trzymać rozdzielnie.
+**DO WDROŻENIA.**
