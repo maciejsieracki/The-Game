@@ -40,7 +40,7 @@ export type { HexCoords } from '../types/hex';
 import { TerenBazowy, Nakladka } from '../types/hex';
 import terrainYieldsData from '../../data/terrain-yields.json';
 import type { TerrainModifierDef, TerrainTypeDef } from '../data/loader';
-import { buildingEffectAtLevel, cityPracaInteger, splitPraca } from './production';
+import { buildingEffectAtLevel, cityPracaInteger, splitPraca, buildingLevelForEpoch } from './production';
 import { applyImprovementBonuses, oreYieldFromImprovements } from './terrain-improvements';
 
 // ---------------------------------------------------------------------------
@@ -498,6 +498,39 @@ export function sumBuildingHappiness(cityBuildings: readonly CityBuildingEntry[]
 export interface CityBuildingEntry {
   record: BuildingRecord;
   level:  number;
+}
+
+/**
+ * Zbuduj CityBuildingEntry[] (record+level) z listy zbudowanych id budynkow miasta.
+ * JEDYNE zrodlo prawdy uzywane przez wszystkie wywolania cityYieldPerTurn (silnik
+ * advanceCityEconomy, podglad previewCityEconomy, panel "Bilans plonow" cityPanel.ts)
+ * -- zeby plony budynkow (Praca/Pieniadz/Zywnosc/Nauka/Kultura/Zadowolenie) liczyly
+ * sie identycznie wszedzie (2026-07-25, naprawa "budynki nie licza sie w silniku").
+ *
+ * Poziom liczony przez buildingLevelForEpoch() (production.ts) -- NIE wlasny wzor:
+ * uwzglednia epokaWejscia, maksPoziom i opcjonalny poziomTechGate. Nieznane id
+ * (brak w katalogu) sa pomijane, tak samo jak w sumBuildingHappinessFromBuiltIds.
+ */
+export function cityBuildingEntriesFromBuiltIds(
+  builtIds: readonly string[],
+  catalog: readonly BuildingRecord[],
+  cityEpoch: number,
+  unlockedTechs?: ReadonlySet<string> | readonly string[] | null,
+): CityBuildingEntry[] {
+  const entries: CityBuildingEntry[] = [];
+  for (const bid of builtIds) {
+    const record = catalog.find(b => b.id === bid);
+    if (!record) continue;
+    const level = buildingLevelForEpoch(
+      record.epokaWejscia,
+      cityEpoch,
+      record.maksPoziom,
+      record.poziomTechGate as Record<string, string> | null | undefined,
+      unlockedTechs,
+    );
+    entries.push({ record, level });
+  }
+  return entries;
 }
 
 export interface CityYieldContext {

@@ -343,3 +343,32 @@ robotnikiem — te trzy rzeczy trzeba trzymać rozdzielnie.
 ## NAZWA ZATWIERDZONA (Maciej 2026-07-25)
 Łańcuch obronny miasta: **Mury → Cytadela → Baszta**, wszystkie trzy stoją obok siebie (dokładane, nie zastępowane).
 Obrona miasta: Mury +200% → Cytadela +100% → Baszta +100% = **łącznie +400%**.
+
+---
+
+# ODPOWIEDZI MACIEJA 2026-07-25 (pytania 42-49)
+
+**42 = A** — Odlewnia żelaza: Praca 8 → **12 pkt/turę**. Awans ma się opłacać sam z siebie, nie tylko przez dostęp do żelaza.
+
+**43 = bez zmian w plonach.** Maciej: „najważniejszym parametrem Spichlerza II jest obniżenie progu awansu na kolejny
+poziom z 50% na 30%, czyli 70% żywności nadal zostaje — więc te parametry mogą zostać tak jak są".
+→ Żywność 4 i Zadowolenie 2 zostają. **DO SPRAWDZENIA:** czy bufor 70% po wzroście populacji faktycznie działa
+(`uwagi` Spichlerza II mówią „bufor 70% po wzroście" — trzeba potwierdzić w kodzie, że nie jest to kolejna martwa obietnica).
+
+**44 = usunąć Ratusz całkowicie.** Maciej: „Ratusz będzie kolejnym etapem rozwoju budynków po Pretorium, ale dopiero
+w średniowieczu, także możemy stąd usunąć całkowicie o nim wzmianki".
+→ Usunąć `prawo_ratusz` z `society-params.json`, flagę `hasRatusz` z `society-breakdown.ts`, wzmianki w `cityPanel.ts`
+(podpowiedzi „Ratusz, Pretorium, Sąd → trwały plus do Prawa") i w dokumentacji. Zapisać na przyszłość: Ratusz = szczebel
+po Pretorium w epoce średniowiecza.
+
+**45 = B** — Stela / Pomnik zostaje z utrzymaniem **0**. Pomnik nie wymaga obsługi.
+
+**46 = A** — statystyki Łucznika nubijskiego zatwierdzone (koszt 20 pieniądza, utrzymanie 2, atak 4, uderzenie 2,
+obrona 6, pancerz 2, przebicie 2, morale 85, plus podane przez właściciela: zasięg 5, atak dystansowy 7, 16 pocisków,
+50 zdrowia, ruch 3).
+
+**47 = B** — pre-istniejące porażki testów sprzątamy jednym przejściem PO domknięciu budynków.
+
+**48 = A** — deploy do wersji roboczej dopiero po naprawie plonów budynków i po grupowaniu, w komplecie.
+
+**49 = A** — dedykowany model 3D Łucznika nubijskiego **do zrobienia teraz**.

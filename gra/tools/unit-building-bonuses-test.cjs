@@ -26,8 +26,11 @@
  *      zero galezi "tylko gracz" w bestBuildingProgressAfterCityVisit.
  *   F. Awans budynku (upgradeFrom) -- decyzja wlasciciela 2026-07-25 (druga
  *      tura): budynek-nastepca WNOSI SUME wlasnego % i % calego lancucha
- *      poprzednikow (Kuznia+Kuznia zelaza+Wielka Kuznia = 45%, Koszary+
- *      Akademia wojskowa+Warsztat oblezniczy = 50%), NIE tylko wlasny procent.
+ *      poprzednikow (Kuznia+Kuznia zelaza+Wielka Kuznia = 45%). GRUPY-BUDYNKOW
+ *      (Maciej 2026-07-25, likwidacja "awansu bocznego", TA SAMA data): Koszary
+ *      i Akademia wojskowa NIE sa juz w relacji upgradeFrom -- stoja w miescie
+ *      OSOBNO i licza sie WPROST (oba id na builtBuildingIds), z Warsztatem
+ *      oblezniczym nadal 40%/50% co do liczby, ale bez udzialu lancucha.
  *   G. Kompatybilnosc wsteczna -- jednostka bez pol (stary zapis) = 0% na
  *      obu sciezkach, bez wyjatku.
  *   I. Cykl w danych `upgradeFrom` nie zawiesza funkcji (twardy limit
@@ -222,7 +225,9 @@ console.log('\n-- F. Awans budynku (upgradeFrom) -- suma lancucha --');
   const wielkaKuzniaDef = BUILDINGS.find(b => b.id === 'wielka_kuznia');
   const akademiaDef     = BUILDINGS.find(b => b.id === 'akademia_wojskowa');
   eq(wielkaKuzniaDef.upgradeFrom, 'kuznia_zelaza', 'sanity: Wielka Kuznia zastepuje Kuznia zelaza (upgradeFrom)');
-  eq(akademiaDef.upgradeFrom, 'koszary', 'sanity: Akademia wojskowa zastepuje Koszary (upgradeFrom)');
+  // GRUPY-BUDYNKOW (Maciej 2026-07-25, likwidacja "awansu bocznego"): Akademia wojskowa
+  // NIE zastepuje juz Koszar -- upgradeFrom usuniety, oba stoja w miescie osobno.
+  eq(akademiaDef.upgradeFrom, undefined, 'sanity: Akademia wojskowa NIE zastepuje juz Koszar (upgradeFrom usuniety)');
 
   // Miasto z Kuznia + Kuznia zelaza (bez awansu) -> 30% Pancerza.
   eq(
@@ -238,21 +243,30 @@ console.log('\n-- F. Awans budynku (upgradeFrom) -- suma lancucha --');
   eq(afterUpgrade, 45, 'po awansie do Wielkiej Kuzni (kuznia+wielka_kuznia): suma lancucha = 45%');
   eq(afterUpgrade, KUZNIA + KUZNIA_ZELAZA + WIELKA_KUZNIA, 'sanity: 45% = suma wszystkich trzech mnoznikow z danych');
 
-  // Miasto z Koszarami + Warsztatem (bez awansu) -> 30% parametrow.
+  // Miasto z Koszarami + Warsztatem (bez Akademii wojskowej) -> 30% parametrow.
   eq(
     M.citySoftStatBonusPercent(['koszary', 'warsztat_oblezniczy'], BUILDINGS),
     30,
     'Koszary + Warsztat oblezniczy -> 30% parametrow',
   );
 
-  // Analogicznie Sciezka B: Akademia wojskowa zastepuje Koszary -- wnosi
-  // wlasny % (20) + lancuch (koszary=20) = 40, plus warsztat osobno (10) = 50.
-  const afterAkademia = M.citySoftStatBonusPercent(['akademia_wojskowa', 'warsztat_oblezniczy'], BUILDINGS);
-  eq(afterAkademia, 50, 'po awansie do Akademii wojskowej (akademia+warsztat): suma lancucha = 50%');
+  // GRUPY-BUDYNKOW: Koszary i Akademia wojskowa TERAZ stoja w miescie OSOBNO (oba id
+  // realnie obecne w builtBuildingIds, zaden lancuch upgradeFrom) -- kazdy wnosi WPROST
+  // swoj wlasny % (20+20=40), plus Warsztat oblezniczy osobno (10) = 50. Dokladnie taki
+  // sam wynik liczbowy jak przed zmiana (Maciej: "zweryfikuj testem, ze nadal wychodzi
+  // 40%, a razem z Warsztatem oblezniczym 50%"), ale scenariusz musi teraz zawierac
+  // OBA id jednoczesnie, bo przeplyw juz nie idzie przez lancuch.
+  const afterAkademia = M.citySoftStatBonusPercent(['koszary', 'akademia_wojskowa', 'warsztat_oblezniczy'], BUILDINGS);
+  eq(afterAkademia, 50, 'Koszary+Akademia wojskowa+Warsztat oblezniczy (oba osobno w miescie) = 50%');
   eq(afterAkademia, AKADEMIA_WOJSK + KOSZARY + WARSZTAT_OBLEZ, 'sanity: 50% = suma wszystkich trzech mnoznikow z danych');
 
-  // Sama Akademia wojskowa (bez Warsztatu) -> tylko jej wlasny lancuch = 40%.
-  eq(M.citySoftStatBonusPercent(['akademia_wojskowa'], BUILDINGS), 40, 'sama Akademia wojskowa (bez Warsztatu) -> 40% (wlasny+koszary)');
+  // Koszary + Akademia wojskowa (bez Warsztatu), oba osobno w miescie -> 40%.
+  const koszaryPlusAkademia = M.citySoftStatBonusPercent(['koszary', 'akademia_wojskowa'], BUILDINGS);
+  eq(koszaryPlusAkademia, 40, 'Koszary + Akademia wojskowa (oba osobno w miescie, bez Warsztatu) -> 40%');
+
+  // Sama Akademia wojskowa (bez Koszar, bez Warsztatu) -> TYLKO jej wlasny % = 20%
+  // (nie 40 -- lancuch do Koszar juz nie istnieje, upgradeFrom usuniety).
+  eq(M.citySoftStatBonusPercent(['akademia_wojskowa'], BUILDINGS), AKADEMIA_WOJSK, 'sama Akademia wojskowa (bez Koszar) -> tylko wlasny % (20%)');
 
   // cumulativeMnoznikForBuildingId -- ta sama funkcja uzywana przez UI (karta budynku,
   // panel "Statystyki (silnik)"): pyta o SAM budynek, niezaleznie od stanu miasta.
@@ -260,7 +274,10 @@ console.log('\n-- F. Awans budynku (upgradeFrom) -- suma lancucha --');
   eq(M.cumulativeMnoznikForBuildingId('kuznia_zelaza', BUILDINGS), KUZNIA_ZELAZA, 'UI: Kuznia zelaza (bez poprzednikow) = 15%');
   eq(M.cumulativeMnoznikForBuildingId('wielka_kuznia', BUILDINGS), 30, 'UI: Wielka Kuznia = 30% (wlasny+kuznia_zelaza)');
   eq(M.cumulativeMnoznikForBuildingId('koszary', BUILDINGS), KOSZARY, 'UI: Koszary (bez poprzednikow) = 20%');
-  eq(M.cumulativeMnoznikForBuildingId('akademia_wojskowa', BUILDINGS), 40, 'UI: Akademia wojskowa = 40% (wlasny+koszary)');
+  // GRUPY-BUDYNKOW: Akademia wojskowa juz NIE jest nastepca Koszar w upgradeFrom, wiec jej
+  // karta w UI pokazuje TYLKO wlasny % (20), nie skumulowane 40 -- Koszary maja swoja
+  // WLASNA karte z wlasnym 20%, oba budynki stoja obok siebie w panelu miasta.
+  eq(M.cumulativeMnoznikForBuildingId('akademia_wojskowa', BUILDINGS), AKADEMIA_WOJSK, 'UI: Akademia wojskowa = tylko wlasny % (20%), Koszary NIE doliczane (niezalezny budynek)');
   eq(M.cumulativeMnoznikForBuildingId('warsztat_oblezniczy', BUILDINGS), WARSZTAT_OBLEZ, 'UI: Warsztat oblezniczy (bez poprzednikow) = 10%');
   eq(M.cumulativeMnoznikForBuildingId('ratusz', BUILDINGS), 0, 'UI: budynek spoza obu list -> 0');
   eq(M.cumulativeMnoznikForBuildingId('nieznany_id_xyz', BUILDINGS), 0, 'UI: nieznany id -> 0, bez wyjatku');
@@ -305,8 +322,13 @@ console.log('\n-- J. Podwojne liczenie -- kazdy budynek policzony najwyzej raz -
   const pathological = M.cityArmorBonusPercent(['kuznia_zelaza', 'wielka_kuznia'], BUILDINGS);
   eq(pathological, 30, 'kuznia_zelaza obecny jednoczesnie z wielka_kuznia: liczony tylko raz (30%, nie 45%)');
 
-  const pathologicalSoft = M.citySoftStatBonusPercent(['koszary', 'akademia_wojskowa'], BUILDINGS);
-  eq(pathologicalSoft, 40, 'koszary obecne jednoczesnie z akademia_wojskowa: liczone tylko raz (40%, nie 60%)');
+  // GRUPY-BUDYNKOW (Maciej 2026-07-25): 'koszary' + 'akademia_wojskowa' razem w miescie
+  // to juz NIE stan patologiczny -- to teraz NORMALNY stan gry (upgradeFrom usuniety,
+  // oba budynki niezalezne). Zostaje tu jako regresja: dedup po `countedGlobal` w
+  // sumMnoznikForPresentBuildings nadal chroni przed podwojnym liczeniem, gdyby kiedys
+  // wrocil lancuch (np. inna para budynkow) -- prosta suma dwoch ODREBNYCH id = 40%.
+  const koszaryAkademiaTogether = M.citySoftStatBonusPercent(['koszary', 'akademia_wojskowa'], BUILDINGS);
+  eq(koszaryAkademiaTogether, 40, 'koszary + akademia_wojskowa razem w miescie (stan normalny): 40%, nie 60%');
 }
 
 // ===========================================================================

@@ -159,9 +159,11 @@ import {
   cityYieldPerTurn,
   cityPopulationCap,
   sumBuildingHappinessFromBuiltIds,
+  cityBuildingEntriesFromBuiltIds,
   mnoznikHandelPieniadzForCiv,
   civEconomyYieldMultipliers,
   type CityYieldContext,
+  type BuildingRecord,
 } from '../game/economy';
 import { UI_PARAMS } from './uiParams';
 import type { EmpireFoodState, EmpireFoodTick } from '../game/empire-food';
@@ -795,7 +797,11 @@ function computeView(city: City, map: GameMap, data: GameData): CityView | null 
       liczbaGarncarni: built.filter(id => id === 'garncarnia').length,
     };
     const ctx: CityYieldContext = { ...base, ...(cfg.getCityBuildingFlags?.(city.id) ?? {}) };
-    const y = cityYieldPerTurn(econCity, worked, [], params, ctx);
+    // Naprawa 2026-07-25: plony budynkow (Praca/Pieniadz/Zywnosc/Nauka/Kultura) -- ta sama
+    // funkcja co silnik (turn-economy.ts), zeby "Bilans plonow" nie pokazywal 0 z budynkow.
+    const era = cfg.getEpoch?.(city.ownerId) ?? 1;
+    const cityBuildings = cityBuildingEntriesFromBuiltIds(built, data.buildings as unknown as BuildingRecord[], era, techs);
+    const y = cityYieldPerTurn(econCity, worked, cityBuildings, params, ctx);
     // Porządek (B2-Q6): silnik mnoży plony PO cityYieldPerTurn, PRZED Wealth/splitPraca
     // (turn-economy.ts applyOrderYieldMults) — panel musi odtworzyć to samo, inaczej
     // Bilans plonów rozjeżdża się z silnikiem gdy miasto ma karę/bonus Porządku.

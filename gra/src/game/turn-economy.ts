@@ -56,9 +56,9 @@ import {
   type EconParams,
   type EconomyCity,
   type WorkedTile,
-  type CityBuildingEntry,
   type CityYieldContext,
   type BuildingRecord,
+  cityBuildingEntriesFromBuiltIds,
 } from './economy';
 import {
   improvementKeysForHex,
@@ -1076,7 +1076,7 @@ export function previewCityEconomy(
   wonderCityYieldsByOwner: ReadonlyMap<number, WonderYieldBonus> = new Map(),
 ): Pick<EconomyTickResult, 'perCity'> {
   const params = buildEconParams(data, difficulty);
-  const noBuildings: CityBuildingEntry[] = [];
+  const buildingCatalog = data.buildings as unknown as BuildingRecord[];
   const rawEconParams = data.econParams as unknown as Parameters<typeof loadUpkeepParams>[0];
   const wealthParams = loadWealthParams(
     data.econParams as unknown as import('./wealth').RawWealthParamsJson,
@@ -1150,7 +1150,12 @@ export function previewCityEconomy(
       liczbaGarncarni: builtIds.filter(id => id === 'garncarnia').length,
     };
 
-    const yld = cityYieldPerTurn(econCity, worked, noBuildings, params, ctx);
+    // Naprawa 2026-07-25: budynki miasta -> plony flat (Praca/Pieniadz/Zywnosc/Nauka/
+    // Kultura) przez cityBuildingEntriesFromBuiltIds (economy.ts) -- ta sama funkcja
+    // uzywana w advanceCityEconomy i cityPanel "Bilans plonow", zeby podglad HUD
+    // pokazywal identyczne liczby co realny silnik tury.
+    const cityBuildings = cityBuildingEntriesFromBuiltIds(builtIds, buildingCatalog, ownerEra, ownerTech);
+    const yld = cityYieldPerTurn(econCity, worked, cityBuildings, params, ctx);
     const orderMult = orderMultByCity.get(city.id);
     if (orderMult) applyOrderYieldMults(yld, orderMult);
     yld.praca = cityPracaInteger(yld.praca);
@@ -1266,7 +1271,7 @@ export function advanceCityEconomy(
 ): EconomyTickResult {
   const gameDifficulty = difficulty as GameDifficulty;
   const params = buildEconParams(data, difficulty);
-  const noBuildings: CityBuildingEntry[] = [];
+  const buildingCatalog = data.buildings as unknown as BuildingRecord[];
 
   const territoryNodes = buildTerritoryNodesFromCities(cities);
   reconcileAllWorkedTiles(cities, territoryNodes);
@@ -1439,7 +1444,11 @@ export function advanceCityEconomy(
       liczbaGarncarni:       builtIds.filter(id => id === 'garncarnia').length,
     };
 
-    const yld = cityYieldPerTurn(econCity, worked, noBuildings, params, ctx);
+    // Naprawa 2026-07-25: budynki miasta -> plony flat (Praca/Pieniadz/Zywnosc/Nauka/
+    // Kultura) przez cityBuildingEntriesFromBuiltIds (economy.ts) -- jedyne zrodlo,
+    // wspoldzielone z previewCityEconomy i cityPanel "Bilans plonow".
+    const cityBuildings = cityBuildingEntriesFromBuiltIds(builtIds, buildingCatalog, ownerEra, ownerTech);
+    const yld = cityYieldPerTurn(econCity, worked, cityBuildings, params, ctx);
 
     const orderMult = orderMultByCity.get(city.id);
     if (orderMult) applyOrderYieldMults(yld, orderMult);

@@ -6843,6 +6843,22 @@ function buildingHappinessAtLevel(b, level) {
   const extra = typeof b.baza.zadowolenie === "number" && b.baza.zadowolenie !== 0 ? buildingValue(b, level, "zadowolenie") : 0;
   return BUILDING_HAPPINESS_BASE_PER_BUILDING + extra;
 }
+function cityBuildingEntriesFromBuiltIds(builtIds, catalog, cityEpoch, unlockedTechs) {
+  const entries = [];
+  for (const bid of builtIds) {
+    const record = catalog.find((b) => b.id === bid);
+    if (!record) continue;
+    const level = buildingLevelForEpoch(
+      record.epokaWejscia,
+      cityEpoch,
+      record.maksPoziom,
+      record.poziomTechGate,
+      unlockedTechs
+    );
+    entries.push({ record, level });
+  }
+  return entries;
+}
 function civBonusyForCivKey(civKey, civs) {
   var _a9;
   if (!civKey || !((_a9 = civs == null ? void 0 : civs.cywilizacje) == null ? void 0 : _a9.length)) return [];
@@ -12252,6 +12268,7 @@ var buildings_default = [
     id: "stolarnia",
     nazwa: "Stolarnia",
     kategoria: "Produkcja",
+    grupa: "Produkcja surowc\xF3w",
     epokaWejscia: 1,
     maksPoziom: 3,
     nazwyPoziomow: [
@@ -12301,6 +12318,7 @@ var buildings_default = [
     id: "kamieniarski",
     nazwa: "Warsztat kamieniarski",
     kategoria: "Produkcja",
+    grupa: "Produkcja surowc\xF3w",
     epokaWejscia: 1,
     maksPoziom: 3,
     nazwyPoziomow: [],
@@ -12340,6 +12358,7 @@ var buildings_default = [
     id: "kuznia",
     nazwa: "Kuznia",
     kategoria: "Produkcja+Wojsko",
+    grupa: "Produkcja surowc\xF3w",
     epokaWejscia: 2,
     maksPoziom: 2,
     nazwyPoziomow: [],
@@ -12379,6 +12398,7 @@ var buildings_default = [
     id: "odlewnia_brazu",
     nazwa: "Piec hutniczy",
     kategoria: "Produkcja",
+    grupa: "Produkcja surowc\xF3w",
     epokaWejscia: 2,
     maksPoziom: 2,
     nazwyPoziomow: [],
@@ -12418,6 +12438,7 @@ var buildings_default = [
     id: "odlewnia_zelaza",
     nazwa: "Odlewnia \u017Celaza",
     kategoria: "Produkcja",
+    grupa: "Produkcja surowc\xF3w",
     epokaWejscia: 3,
     maksPoziom: 1,
     nazwyPoziomow: [],
@@ -12458,6 +12479,7 @@ var buildings_default = [
     id: "targowisko",
     nazwa: "Targowisko (Rynek)",
     kategoria: "Pieniadz",
+    grupa: "Handel i pieni\u0105dz",
     epokaWejscia: 1,
     maksPoziom: 3,
     nazwyPoziomow: [
@@ -12507,6 +12529,7 @@ var buildings_default = [
     id: "port",
     nazwa: "Port handlowy",
     kategoria: "Pieniadz",
+    grupa: "Handel i pieni\u0105dz",
     epokaWejscia: 2,
     maksPoziom: 2,
     nazwyPoziomow: [],
@@ -12545,6 +12568,7 @@ var buildings_default = [
     id: "port_wielki",
     nazwa: "Port wielki",
     kategoria: "Pieniadz",
+    grupa: "Handel i pieni\u0105dz",
     epokaWejscia: 3,
     maksPoziom: 1,
     nazwyPoziomow: [],
@@ -12585,6 +12609,7 @@ var buildings_default = [
     id: "spichlerz",
     nazwa: "Spichlerz",
     kategoria: "Zywnosc",
+    grupa: "\u017Bywno\u015B\u0107",
     epokaWejscia: 1,
     maksPoziom: 3,
     nazwyPoziomow: [],
@@ -12624,6 +12649,7 @@ var buildings_default = [
     id: "spichlerz_ii",
     nazwa: "Spichlerz II",
     kategoria: "Zywnosc",
+    grupa: "\u017Bywno\u015B\u0107",
     epokaWejscia: 2,
     maksPoziom: 2,
     upgradeFrom: "spichlerz",
@@ -12663,6 +12689,7 @@ var buildings_default = [
     id: "garncarnia",
     nazwa: "Garncarnia",
     kategoria: "Produkcja",
+    grupa: "Produkcja surowc\xF3w",
     epokaWejscia: 1,
     maksPoziom: 3,
     nazwyPoziomow: [],
@@ -12702,6 +12729,7 @@ var buildings_default = [
     id: "cegielnia",
     nazwa: "Cegielnia",
     kategoria: "Produkcja",
+    grupa: "Produkcja surowc\xF3w",
     epokaWejscia: 2,
     maksPoziom: 2,
     nazwyPoziomow: [],
@@ -12741,6 +12769,7 @@ var buildings_default = [
     id: "kamienne_kregi",
     nazwa: "Kamienne kr\u0119gi",
     kategoria: "Religia",
+    grupa: "Wiara",
     epokaWejscia: 1,
     maksPoziom: 3,
     nazwyPoziomow: [],
@@ -12769,7 +12798,7 @@ var buildings_default = [
     utrzymanie: 1,
     przyrostUtrzymania: 0,
     wymagania: "",
-    uwagi: "B-KULT-REL + KULT-BUD-02: budynek RELIGIJNY \u2014 konwersja religii +2%/t (religia_konwersja_kregi, additive do bazy); plon kultury OK, bez bonusu konwersji kultury. Upgrade \u2192 \u015Awi\u0105tynia.",
+    uwagi: "B-KULT-REL + KULT-BUD-02: budynek RELIGIJNY \u2014 konwersja religii +2%/t (religia_konwersja_kregi, additive do bazy); plon kultury OK, bez bonusu konwersji kultury. \u015Awi\u0105tynia stoi teraz obok jako niezale\u017Cny budynek (GRUPY-BUDYNKOW, Maciej 2026-07-25) -- nie nast\u0119pca w upgradeFrom.",
     techUnlock: "Mistycyzm",
     koszt_surowce: {
       kamien: 8
@@ -12779,20 +12808,11 @@ var buildings_default = [
     id: "swiatynia",
     nazwa: "\u015Awi\u0105tynia",
     kategoria: "Religia",
+    grupa: "Wiara",
     epokaWejscia: 2,
     maksPoziom: 2,
     nazwyPoziomow: [],
     baza: {
-      praca: 0,
-      pieniadz: 0,
-      zywnosc: 0,
-      nauka: 0,
-      kultura: 3,
-      zadowolenie: 3,
-      obrona: 0,
-      mnoznik: 0
-    },
-    przyrost: {
       praca: 0,
       pieniadz: 0,
       zywnosc: 0,
@@ -12802,14 +12822,23 @@ var buildings_default = [
       obrona: 0,
       mnoznik: 0
     },
+    przyrost: {
+      praca: 0,
+      pieniadz: 0,
+      zywnosc: 0,
+      nauka: 0,
+      kultura: 1,
+      zadowolenie: 1,
+      obrona: 0,
+      mnoznik: 0
+    },
     kosztBudowy: 25,
     przyrostKosztu: 10,
     utrzymanie: 1,
     przyrostUtrzymania: 1,
-    wymagania: "upgrade Kamiennych kr\u0119g\xF3w",
-    uwagi: "B-KULT-REL + KULT-BUD-02: budynek RELIGIJNY \u2014 konwersja religii +4%/t (religia_konwersja_swiatynia, additive do bazy); plon kultury OK, bez bonusu konwersji kultury.",
+    wymagania: "",
+    uwagi: "B-KULT-REL + KULT-BUD-02: budynek RELIGIJNY -- konwersja religii +4%/t (religia_konwersja_swiatynia, additive do bazy); plon kultury OK, bez bonusu konwersji kultury. GRUPY-BUDYNKOW (Maciej 2026-07-25): \u015Awi\u0105tynia to NIEZALEZNY budynek obok Kamiennych kregow (nie zastepuje ich, upgradeFrom usuniety) -- oba stoja w miescie osobno. Kultura/Zadowolenie rozdzielone (3=1+2 wzgledem Kamiennych kregow, oba pola), zeby wklad Kamiennych kregow nie liczyl sie dwa razy.",
     techUnlock: "Religia",
-    upgradeFrom: "kamienne_kregi",
     koszt_surowce: {
       cegla: 6
     }
@@ -12818,6 +12847,7 @@ var buildings_default = [
     id: "biblioteka",
     nazwa: "Biblioteka",
     kategoria: "Nauka",
+    grupa: "Nauka i kultura",
     epokaWejscia: 2,
     maksPoziom: 2,
     nazwyPoziomow: [
@@ -12857,7 +12887,7 @@ var buildings_default = [
     utrzymanie: 1,
     przyrostUtrzymania: 1,
     wymagania: "",
-    uwagi: "3a: poziom 6 (Obserwatorium) i wyzej wymaga odkrycia technologii Astronomia \u2014 patrz poziomTechGate.",
+    uwagi: "3a: poziom 6 (Obserwatorium) i wyzej wymaga odkrycia technologii Astronomia \u2014 patrz poziomTechGate. Akademia stoi obok jako niezale\u017Cny budynek (GRUPY-BUDYNKOW, Maciej 2026-07-25) -- jej Nauka/Kultura rozdzielone, by nie liczy\u0107 wk\u0142adu Biblioteki dwa razy.",
     techUnlock: "Pismo",
     poziomTechGate: {
       "6": "Astronomia"
@@ -12870,6 +12900,7 @@ var buildings_default = [
     id: "studnia",
     nazwa: "Studnia",
     kategoria: "Zdrowie",
+    grupa: "Zdrowie",
     epokaWejscia: 1,
     maksPoziom: 3,
     nazwyPoziomow: [],
@@ -12908,6 +12939,7 @@ var buildings_default = [
     id: "akwedukt",
     nazwa: "Akwedukt",
     kategoria: "Zdrowie",
+    grupa: "Zdrowie",
     epokaWejscia: 2,
     maksPoziom: 2,
     nazwyPoziomow: [],
@@ -12946,6 +12978,7 @@ var buildings_default = [
     id: "mennica",
     nazwa: "Mennica",
     kategoria: "Pieniadz",
+    grupa: "Handel i pieni\u0105dz",
     epokaWejscia: 2,
     maksPoziom: 2,
     nazwyPoziomow: [],
@@ -12985,6 +13018,7 @@ var buildings_default = [
     id: "mury",
     nazwa: "Mury",
     kategoria: "Obrona",
+    grupa: "Wojsko i obrona",
     epokaWejscia: 2,
     maksPoziom: 2,
     nazwyPoziomow: [],
@@ -13013,7 +13047,7 @@ var buildings_default = [
     utrzymanie: 2,
     przyrostUtrzymania: 1,
     wymagania: "",
-    uwagi: "Obrona miasta WYLACZNIE procentowa (Maciej 2026-07-25): Mury +200% Obrony broniacym sie jednostkom -- patrz miasto-params.json bonus_obrona_mur_proc + main.ts structureDefenseBonusFor. Ten wpis nie niesie juz platowego bonusu Obrony.",
+    uwagi: "Obrona miasta WYLACZNIE procentowa (Maciej 2026-07-25): Mury +200% Obrony broniacym sie jednostkom -- patrz miasto-params.json bonus_obrona_mur_proc + main.ts structureDefenseBonusFor. Ten wpis nie niesie juz platowego bonusu Obrony. Cytadela stoi teraz obok jako niezale\u017Cny budynek (GRUPY-BUDYNKOW, Maciej 2026-07-25) -- nie nast\u0119pca w upgradeFrom.",
     techUnlock: "Budownictwo",
     odblokowuje: "maMur",
     koszt_surowce: {
@@ -13024,6 +13058,7 @@ var buildings_default = [
     id: "koszary",
     nazwa: "Koszary",
     kategoria: "Wojsko",
+    grupa: "Wojsko i obrona",
     epokaWejscia: 2,
     maksPoziom: 2,
     nazwyPoziomow: [],
@@ -13052,7 +13087,7 @@ var buildings_default = [
     utrzymanie: 2,
     przyrostUtrzymania: 1,
     wymagania: "",
-    uwagi: "Mnoznik = +20% parametry miekkie (Sciezka B, wszystko poza Pancerzem) dla jednostek, ktore odwiedzily to miasto (kumuluje sie z Akademia wojskowa/Warsztat oblezniczy, max +50%)",
+    uwagi: "Mnoznik = +20% parametry miekkie (Sciezka B, wszystko poza Pancerzem) dla jednostek, ktore odwiedzily to miasto (kumuluje sie z Akademia wojskowa/Warsztat oblezniczy, max +50%). Akademia wojskowa stoi obok jako niezale\u017Cny budynek (GRUPY-BUDYNKOW, Maciej 2026-07-25) -- jej Praca rozdzielona, by nie liczy\u0107 wk\u0142adu Koszar dwa razy.",
     techUnlock: "Wojskowo\u015B\u0107",
     koszt_surowce: {
       drewno: 6,
@@ -13064,6 +13099,7 @@ var buildings_default = [
     id: "magazyn",
     nazwa: "Magazyn",
     kategoria: "Produkcja+Pieniadz",
+    grupa: "Handel i pieni\u0105dz",
     epokaWejscia: 2,
     maksPoziom: 2,
     nazwyPoziomow: [],
@@ -13103,6 +13139,7 @@ var buildings_default = [
     id: "stela",
     nazwa: "Stela / Pomnik",
     kategoria: "Kultura",
+    grupa: "Nauka i kultura",
     epokaWejscia: 1,
     maksPoziom: 3,
     nazwyPoziomow: [],
@@ -13141,6 +13178,7 @@ var buildings_default = [
     id: "palac",
     nazwa: "Pa\u0142ac",
     kategoria: "Kultura/Administracja",
+    grupa: "Prawo i administracja",
     epokaWejscia: 1,
     maksPoziom: 3,
     nazwyPoziomow: [
@@ -13184,6 +13222,7 @@ var buildings_default = [
     id: "palac_ii",
     nazwa: "Pa\u0142ac II",
     kategoria: "Kultura/Administracja",
+    grupa: "Prawo i administracja",
     epokaWejscia: 2,
     maksPoziom: 2,
     upgradeFrom: "palac",
@@ -13225,6 +13264,7 @@ var buildings_default = [
     id: "palac_iii",
     nazwa: "Pa\u0142ac III",
     kategoria: "Kultura/Administracja",
+    grupa: "Prawo i administracja",
     epokaWejscia: 3,
     maksPoziom: 1,
     upgradeFrom: "palac_ii",
@@ -13267,6 +13307,7 @@ var buildings_default = [
     id: "kuznia_zelaza",
     nazwa: "Ku\u017Ania \u017Celaza",
     kategoria: "Produkcja+Wojsko",
+    grupa: "Produkcja surowc\xF3w",
     epokaWejscia: 3,
     maksPoziom: 1,
     nazwyPoziomow: [],
@@ -13307,6 +13348,7 @@ var buildings_default = [
     id: "wielka_kuznia",
     nazwa: "Wielka Ku\u017Ania",
     kategoria: "Produkcja",
+    grupa: "Produkcja surowc\xF3w",
     epokaWejscia: 4,
     maksPoziom: 1,
     nazwyPoziomow: [],
@@ -13344,6 +13386,7 @@ var buildings_default = [
     id: "fort",
     nazwa: "Cytadela",
     kategoria: "Obrona",
+    grupa: "Wojsko i obrona",
     epokaWejscia: 3,
     maksPoziom: 1,
     nazwyPoziomow: [],
@@ -13371,11 +13414,10 @@ var buildings_default = [
     przyrostKosztu: 15,
     utrzymanie: 3,
     przyrostUtrzymania: 1,
-    wymagania: "upgrade Mur\xF3w",
-    uwagi: "ABC-22 C: Cytadela = upgrade Mur\xF3w (1 slot). Mapa = osobny Fort terenowy. Obrona miasta WYLACZNIE procentowa (Maciej 2026-07-25): Mury +200%, Cytadela +300% lacznie -- patrz miasto-params.json bonus_obrona_mur_proc / bonus_obrona_cytadela_proc + main.ts structureDefenseBonusFor. Ten wpis nie niesie juz platowego bonusu Obrony.",
+    wymagania: "",
+    uwagi: "GRUPY-BUDYNKOW (Maciej 2026-07-25): Cytadela to NIEZALEZNY budynek obok Murow (nie zastepuje ich, upgradeFrom usuniety) -- oba stoja w miescie osobno, bez wymogu kolejnosci budowy. Mapa = osobny Fort terenowy (inny byt). Obrona miasta WYLACZNIE procentowa: Mury +200%, Cytadela +100% dodatkowo (razem +300% gdy oba w miescie) -- patrz miasto-params.json bonus_obrona_mur_proc / bonus_obrona_cytadela_proc + main.ts structureDefenseBonusFor (juz odporne na wspolobecnosc obu id w cityBuilt). Ten wpis nie niesie juz platowego bonusu Obrony.",
     techUnlock: "In\u017Cynieria",
     odblokowuje: "maFort",
-    upgradeFrom: "mury",
     koszt_surowce: {
       cegla: 18,
       zelazo: 6
@@ -13385,6 +13427,7 @@ var buildings_default = [
     id: "warsztat_oblezniczy",
     nazwa: "Warsztat obl\u0119\u017Cniczy",
     kategoria: "Wojsko",
+    grupa: "Wojsko i obrona",
     epokaWejscia: 3,
     maksPoziom: 1,
     nazwyPoziomow: [],
@@ -13425,6 +13468,7 @@ var buildings_default = [
     id: "akademia",
     nazwa: "Akademia",
     kategoria: "Nauka",
+    grupa: "Nauka i kultura",
     epokaWejscia: 3,
     maksPoziom: 1,
     nazwyPoziomow: [],
@@ -13432,8 +13476,8 @@ var buildings_default = [
       praca: 0,
       pieniadz: 0,
       zywnosc: 0,
-      nauka: 9,
-      kultura: 7,
+      nauka: 6,
+      kultura: 5,
       zadowolenie: 3,
       obrona: 0,
       mnoznik: 10
@@ -13452,10 +13496,9 @@ var buildings_default = [
     przyrostKosztu: 15,
     utrzymanie: 3,
     przyrostUtrzymania: 1,
-    wymagania: "upgrade Biblioteki (merge Teatr)",
-    uwagi: "ABC-21 B: merge Biblioteka+Akademia+Teatr \u2014 suma w JSON; Teatr ukryty z produkcji",
+    wymagania: "",
+    uwagi: "GRUPY-BUDYNKOW (Maciej 2026-07-25): Akademia to NIEZALEZNY budynek obok Biblioteki (nie zastepuje jej, upgradeFrom usuniety) -- oba stoja w miescie osobno. Nauka/Kultura rozdzielone (9=3+6, 7=2+5 wzgledem Biblioteki), zeby wklad Biblioteki nie liczyl sie dwa razy. Teatr nadal ukryty z produkcji i wliczony w Akademie (merge bez zmian, ABC-21 B).",
     techUnlock: "Filozofia",
-    upgradeFrom: "biblioteka",
     koszt_surowce: {
       cegla: 14
     }
@@ -13464,6 +13507,7 @@ var buildings_default = [
     id: "teatr",
     nazwa: "Teatr",
     kategoria: "Kultura",
+    grupa: "Nauka i kultura",
     epokaWejscia: 3,
     maksPoziom: 1,
     nazwyPoziomow: [],
@@ -13503,6 +13547,7 @@ var buildings_default = [
     id: "sad",
     nazwa: "S\u0105d",
     kategoria: "Administracja",
+    grupa: "Prawo i administracja",
     epokaWejscia: 3,
     maksPoziom: 1,
     nazwyPoziomow: [],
@@ -13541,6 +13586,7 @@ var buildings_default = [
     id: "dom_starszyzny",
     nazwa: "Dom Starszyzny",
     kategoria: "Administracja",
+    grupa: "Prawo i administracja",
     epokaWejscia: 1,
     maksPoziom: 1,
     nazwyPoziomow: [],
@@ -13580,6 +13626,7 @@ var buildings_default = [
     id: "dwor_zarzadcy",
     nazwa: "Dw\xF3r Zarz\u0105dcy",
     kategoria: "Administracja",
+    grupa: "Prawo i administracja",
     epokaWejscia: 2,
     maksPoziom: 1,
     upgradeFrom: "dom_starszyzny",
@@ -13621,6 +13668,7 @@ var buildings_default = [
     id: "pretorium",
     nazwa: "Pretorium",
     kategoria: "Administracja",
+    grupa: "Prawo i administracja",
     epokaWejscia: 3,
     maksPoziom: 1,
     upgradeFrom: "dwor_zarzadcy",
@@ -13661,6 +13709,7 @@ var buildings_default = [
     id: "trybunal",
     nazwa: "Trybuna\u0142",
     kategoria: "Administracja",
+    grupa: "Prawo i administracja",
     epokaWejscia: 2,
     maksPoziom: 2,
     nazwyPoziomow: [],
@@ -13699,6 +13748,7 @@ var buildings_default = [
     id: "laznia_publiczna",
     nazwa: "\u0141a\u017Ania publiczna",
     kategoria: "Zdrowie",
+    grupa: "Zdrowie",
     epokaWejscia: 3,
     maksPoziom: 1,
     nazwyPoziomow: [],
@@ -13737,11 +13787,12 @@ var buildings_default = [
     id: "akademia_wojskowa",
     nazwa: "Akademia wojskowa",
     kategoria: "Wojsko",
+    grupa: "Wojsko i obrona",
     epokaWejscia: 3,
     maksPoziom: 1,
     nazwyPoziomow: [],
     baza: {
-      praca: 5,
+      praca: 3,
       pieniadz: 2,
       zywnosc: 0,
       nauka: 0,
@@ -13764,10 +13815,9 @@ var buildings_default = [
     przyrostKosztu: 18,
     utrzymanie: 4,
     przyrostUtrzymania: 2,
-    wymagania: "upgrade Koszar",
-    uwagi: "Upgrade Koszary \u2192 Akademia wojskowa. Mnoznik = +20% parametry miekkie (Sciezka B), NIE kumuluje sie z Koszary bo je zastepuje (upgradeFrom) -- jednostka dostaje bonus tylko za budynek realnie obecny w miescie; bramka elit UNITS",
+    wymagania: "",
+    uwagi: "GRUPY-BUDYNKOW (Maciej 2026-07-25): Akademia wojskowa to NIEZALEZNY budynek obok Koszar (nie zastepuje ich, upgradeFrom usuniety) -- oba stoja w miescie osobno. Praca rozdzielona (5=2+3 wzgledem Koszar), zeby wklad Koszar nie liczyl sie dwa razy. Mnoznik = +20% parametry miekkie (Sciezka B) -- TERAZ kumuluje sie z Koszarami wprost (oba obecne w miescie = +40%, razem z Warsztatem oblezniczym +50%); bramka elit UNITS.",
     techUnlock: "Sztuka wojenna",
-    upgradeFrom: "koszary",
     koszt_surowce: {
       cegla: 12,
       zelazo: 6
@@ -23450,7 +23500,7 @@ function advanceCityEconomy(cities, map, data2, difficulty = "normal", econUnits
   var _a9;
   const gameDifficulty = difficulty;
   const params = buildEconParams(data2, difficulty);
-  const noBuildings = [];
+  const buildingCatalog = data2.buildings;
   const territoryNodes = buildTerritoryNodesFromCities(cities);
   reconcileAllWorkedTiles(cities, territoryNodes);
   const territoryResourceByCity = computeTerritoryResourceYieldByCity(cities, map, territoryNodes);
@@ -23585,7 +23635,8 @@ function advanceCityEconomy(cities, map, data2, difficulty = "normal", econUnits
       // Zadanie 2 (2026-07-23): Garncarnia +Zywnosc% LOKALNIE -- liczba sztuk w TYM miescie.
       liczbaGarncarni: builtIds.filter((id) => id === "garncarnia").length
     };
-    const yld = cityYieldPerTurn(econCity, worked, noBuildings, params, ctx);
+    const cityBuildings = cityBuildingEntriesFromBuiltIds(builtIds, buildingCatalog, ownerEra, ownerTech);
+    const yld = cityYieldPerTurn(econCity, worked, cityBuildings, params, ctx);
     const orderMult = orderMultByCity.get(city.id);
     if (orderMult) applyOrderYieldMults(yld, orderMult);
     yld.praca = cityPracaInteger(yld.praca);
