@@ -9,7 +9,17 @@ UWAGA: KANON i FINALNA promują się teraz OSOBNYMI skryptami (`gra/tools/publis
 wyraźne polecenie właściciela) — dlatego są logowane NIEZALEŻNIE, każdy w swojej sekcji, ze
 swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drugiego.
 
-## ROBOCZA `084d3827` — 2026-07-24 · FALA 9: seria uwag przeglądowych + FIX blokera Pałacu — **AKTUALNA**
+## ROBOCZA `99837b91` — 2026-07-25 · FALA 10: bugi bitwy + picking + 7 decyzji ABC Macieja — **AKTUALNA**
+
+- **Zawartość:** (commity `426e587`..`b172d9c`, na `546b0c8`) — dwie duże części:
+  **(A) Playtest + audyt sterowania bitwą (12 poprawek):** ROOT-CAUSE **pickingu** — klik trafiał tylko płaski pryzm heksu / model sąsiada, stąd „raz działa raz nie", „zaznacza się inna jednostka", „nie da się ruszyć pojedynczej z grupy", „łucznik nie wchodzi za linię" (mapa: bryły wzgórz w `terrainPickMeshes`; bitwa: `_pickGroundTile` dopasowuje realną wysokość kafla, raycast honoruje trafienie tylko zgodne z kaflem) · liczniki typów jednostek · imiona/portrety władców (było zawsze „Minos/grecy") · usunięty chrome górnych pasków deploy · „START WALKI" nie zostaje osierocony po bitwie · szyk piechota/dystans · karty rosteru (ikona klasy + nazwa spod pasków) · numeracja grup = najniższy wolny (G1→G1, nie G3) · powtórka bitwy nie gubi rozgrupowania · panel armii znika pod dialogiem bitwy · paski strat po walce · barbarzyńcy z własnym sygnetem.
+  **(B) Decyzje ABC Macieja (7 zadań):** edge-pan zawsze aktywny · „Formacja" na zaznaczony zakres (jednostka/grupa/armia) · **nowa pula 10 imion władców per cywilizacja** (150 imion, osobne imię per właściciel — koniec dwóch „Minosów") · **UI kolejki badań do 3 tech** (panel „Plan badań", drag&drop, numerki w hubie i drzewku) · **Sentry z auto-budzeniem** na wroga w polu widzenia · **C-FLANK: kierunek natarcia front/bok/tył** w auto-odgrywaniu (jednostki obchodzą wroga BFS-em) · **koszyk-traktat**: słodziki (złoto/surowce) doliczane do decyzji AI przy traktatach + transfer przy akceptacji.
+  **Plus wcześniej tej doby:** sól na lądzie przy wybrzeżu (działa na mapie Ziemia) · glina tylko przy rzece · realne bramki 7 budynków + czysta bramka epoki (naprawiony bug blokady budynków) · kamieniołom i kopalnie nie spłaszczają wzgórza · ranking Mocy z pozycją absolutną („jesteś X. z N") + fix niespójności Mocy · żeton Handel · dwuetapowa dyplomacja.
+- **Bramki:** tsc 0 · tech-tree 19/19 · research 33/33 · unit-replace 10/10 · post-battle-HP 25/25 · battle-roster 7/7 · deposit-coast 20/20 · determinizm mapy PASS (hash `66949c60`) · VERIFY OK.
+- **md5:** `99837b91d987752cc19c3311115a0320` · pieczątka `99837b91`. Bundel 34 MB. Zastępuje `084d3827`.
+- **Do strojenia w playteście:** przelicznik słodzika dyplomatycznego (25 PN = 1 pkt ease, sufit 20) — PLACEHOLDER.
+
+## ROBOCZA `084d3827` — 2026-07-24 · FALA 9: seria uwag przeglądowych + FIX blokera Pałacu — ZASTĄPIONA
 
 - **Zawartość:** (commity `e49211c`..`7a72b0c`, na `d1f2a49`) — 8 poprawek z playtestu Macieja:
   1. **FIX blokera Pałacu** — bramka B-SUROW-BUD spełniona też ZAPASEM puli państwa (nie tylko aktywnym źródłem); Pałac (i inne budynki epoki) budowalne mimo braku źródła, gdy masz surowiec w puli. Dokładną ilość egzekwuje `koszt_surowce`. Parytet AI (auto-build ctx).
