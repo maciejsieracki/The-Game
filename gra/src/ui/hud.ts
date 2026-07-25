@@ -235,6 +235,10 @@ let leaderBannersApi: LeaderBannersHudApi | null = null;
 let contextPanelApi: ContextPanelHudApi | null = null;
 /** Ukryj dolny/prawy chrome mapy gdy otwarty panel miasta (nie przebija przez dim). */
 let mapChromeSuppressed = false;
+/** Ukryj panel rosteru armii (dolny stos „Armia · (x,y)") gdy otwarty overlay pre-battle
+ * (T-BITWA-ROSTER, 2026-07-24) — niezalezne od mapChromeSuppressed, bo przy pre-battle
+ * stos armii zostaje zaznaczony (nie jest czyszczony jak przy otwarciu panelu miasta). */
+let armyStackSuppressed = false;
 /** HUD zamontowany przez showHud (nie mylić z chwilowym ukryciem w panelu miasta). */
 let hudSessionActive = false;
 let barActionsBound = false;
@@ -878,6 +882,7 @@ function mountBuildMode(): void {
 function mountArmyStack(): void {
   if (cfg === null || armyStackApi !== null || cfg.armyStack === undefined) return;
   armyStackApi = createArmyStackHud(cfg.armyStack);
+  if (armyStackSuppressed) armyStackApi.el.style.display = 'none';
 }
 
 function refreshD1BModules(): void {
@@ -939,6 +944,25 @@ export function setMapHudChromeSuppressed(suppressed: boolean): void {
   if (mapChromeSuppressed === suppressed) return;
   mapChromeSuppressed = suppressed;
   applyMapChromeVisibility();
+}
+
+/**
+ * Ukryj/przywroc panel rosteru armii (dolny stos „Armia · (x,y)" z LISTA/ROZDZIEL/POLACZ)
+ * — uzywane przez overlay pre-battle (T-BITWA-ROSTER, 2026-07-24), zeby nie zaslaniac
+ * dialogu "ROZSTAWIENIE BITWY". Widocznosc po przywroceniu jest odtwarzana z biezacego
+ * stanu gry (armyStackApi.update() ponownie odpytuje getStack()), wiec panel wraca do
+ * dokladnie takiego stanu w jakim byl przed ukryciem (otwarty/zamkniety) bez osobnej flagi.
+ */
+export function setArmyStackHudSuppressed(suppressed: boolean): void {
+  if (armyStackSuppressed === suppressed) return;
+  armyStackSuppressed = suppressed;
+  if (armyStackApi === null) return;
+  if (suppressed) {
+    armyStackApi.el.style.display = 'none';
+  } else {
+    armyStackApi.el.style.display = '';
+    armyStackApi.update();
+  }
 }
 
 // ---------------------------------------------------------------------------

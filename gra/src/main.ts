@@ -9088,7 +9088,7 @@ async function boot(): Promise<void> {
         });
       }
       if (!siegeCity) {
-        actions.push({ id: 'fortify', label: 'Ufort.', disabled: stackRuch <= 0 });
+        actions.push({ id: 'fortify', label: 'Ufortyfikuj', disabled: stackRuch <= 0 });
         // Mechanizm "Zast\u0105p" (ZASTAP-JEDNOSTKI-PLAN.md): dost\u0119pne w ca\u0142ym
         // terytorium gracza (decyzja w\u0142a\u015bciciela, nie tylko garnizon miasta),
         // jednostka jeszcze nie u\u017cy\u0142a akcji w tej turze, i istnieje >=1 zamiennik.
@@ -9096,6 +9096,16 @@ async function boot(): Promise<void> {
           || active.replaceUsedThisTurn === true
           || computeUnitReplacements(active).length === 0;
         actions.push({ id: 'replace', label: 'Zast\u0105p', disabled: replaceDisabled });
+        // C-SENTRY-Q1 wariant B (Maciej 2026-07-24): "Czuwaj" -- jak Pomi\u0144/Ufort.
+        // (zu\u017cywa ruch na wej\u015bciu), ale trwa mi\u0119dzy turami do r\u0119cznego
+        // odwo\u0142ania (ponowny klik budzi -- bez zu\u017cycia ruchu). BEZ auto-budzenia
+        // na widok wroga w tej wersji (poza zakresem -- patrz ABC C-SENTRY-Q1 w raporcie).
+        const enteringSentry = active.sentry !== true;
+        actions.push({
+          id: 'sentry',
+          label: enteringSentry ? 'Czuwaj' : 'Obud\u017a',
+          disabled: enteringSentry && stackRuch <= 0,
+        });
       }
       actions.push({ id: 'skip', label: 'Pomi\u0144', disabled: siegeCity !== null });
       actions.push({ id: 'disband', label: 'Rozwi\u0105\u017c', danger: true });
@@ -9521,6 +9531,24 @@ async function boot(): Promise<void> {
               disbandPlayerUnit(u.id);
             } else if (actionId === 'replace') {
               openUnitReplacePicker(u);
+            } else if (actionId === 'sentry') {
+              // C-SENTRY-Q1 wariant B: toggle -- wejście zużywa ruch całego stosu
+              // (jak Ufort./Pomiń), obudzenie NIE zużywa ruchu (gracz odzyskuje
+              // kontrolę od razu). Bez auto-budzenia na widok wroga (poza zakresem).
+              const enteringSentry = u.sentry !== true;
+              if (enteringSentry) {
+                clearPlannedMarch(u.id);
+                syncStackRuchLeft(stack, 0);
+                reachable = new Set<string>();
+                unitRenderer.clearHighlight();
+                unitRenderer.clearPathRoute();
+                for (const su of stack) su.sentry = true;
+                showHintMessage(u.typeId + ' czuwa (obudź ręcznie)', 2500);
+              } else {
+                for (const su of stack) su.sentry = false;
+                showHintMessage('Obudzono: ' + u.typeId, 2000);
+              }
+              refreshD1bHud();
             }
           },
           onClose: () => {

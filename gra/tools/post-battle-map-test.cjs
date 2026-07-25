@@ -165,6 +165,44 @@ const e0 = stackedAtk.find(u => u.id === 'e0');
 assert(a0?.q === 95 && a0?.r === 53, 'stack win: spearman on battle hex');
 assert(a1?.q === 95 && a1?.r === 53, 'stack win: warrior stacked on battle hex');
 assert(!e0, 'stack win: enemy removed');
+// T-BITWA-ROSTER dodatek (Maciej 2026-07-24): panel rosteru armii (armyStackHud) czyta
+// u.hp na żywo — sprawdź, że manualSurvivors NAPRAWDĘ zapisuje HP ocalałych (nie tylko
+// pozycję), bo to pole zasila pasek HP pod kartą jednostki w bottom-barze.
+assert(a0?.hp === 80, 'stack win: spearman hp=80 z manualSurvivors, got ' + a0?.hp);
+assert(a1?.hp === 60, 'stack win: warrior hp=60 z manualSurvivors, got ' + a1?.hp);
+
+// AUTO (lossAtkPct>0 dla ZWYCIĘZCY) — dotąd żaden test w tym pliku nie sprawdzał, że
+// wygrywająca strona TEŻ traci HP (wszystkie istniejące fixture'y miały lossAtkPct: 0).
+// To dokładnie ten sam kształt stosu (Oszczepnik+Wojownik na 1 heksie) co w zgłoszeniu
+// właściciela (panel "Armia · (q,r)" z pełnymi zielonymi paskami mimo strat zwycięzcy).
+const autoWinnerLossUnits = [
+  { id: 'w0', ownerId: 0, typeId: 'Oszczepnik', q: 130, r: 39, ruchLeft: 1 },
+  { id: 'w1', ownerId: 0, typeId: 'Wojownik', q: 130, r: 39, ruchLeft: 1 },
+  { id: 'we0', ownerId: 1, typeId: 'Wojownik', q: 131, r: 39, ruchLeft: 1 },
+];
+applyPostBattleMap({
+  units: autoWinnerLossUnits,
+  map: { hexes: {} },
+  cities: [],
+  battleQ: 131,
+  battleR: 39,
+  atkAnchor: autoWinnerLossUnits[0],
+  atkRoster: [autoWinnerLossUnits[0], autoWinnerLossUnits[1]],
+  defRoster: [autoWinnerLossUnits[2]],
+  atkStart: new Map([['w0', { q: 130, r: 39 }], ['w1', { q: 130, r: 39 }]]),
+  winner: 'atakujacy',
+  lossAtkPct: 0.2624, // realistyczny wynik resolveAutoBattleByPower dla ratio~2.25
+  lossDefPct: 0.7376,
+  getDef: () => ({ 'Rola (linia)': 'Wręcz' }),
+  maxHpOf: () => 10,
+  isPassableHex: () => true,
+  isUnitAt: (q, r, exceptId) =>
+    autoWinnerLossUnits.some(u => u.id !== exceptId && u.q === q && u.r === r),
+});
+const w0 = autoWinnerLossUnits.find(u => u.id === 'w0');
+const w1 = autoWinnerLossUnits.find(u => u.id === 'w1');
+assert(w0 !== undefined && w0.hp !== undefined && w0.hp < 10, 'auto win: winner spearman must lose HP too (armyStackHud bar), got ' + w0?.hp);
+assert(w1 !== undefined && w1.hp !== undefined && w1.hp < 10, 'auto win: winner warrior must lose HP too (armyStackHud bar), got ' + w1?.hp);
 
 // Miasto M×W+ (Maciej B 2026-06-26): pierścień odskakuje −1 heks jak na polu
 const widePassable = (q, r) => q >= 9 && q <= 14 && r >= 20 && r <= 24;
