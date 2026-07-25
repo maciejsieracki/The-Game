@@ -6926,15 +6926,7 @@ function cityYieldPerTurn(city, workedTiles, cityBuildings, params, ctx) {
     kulturaBudynkow += buildingValue(record, level, "kultura");
     zadBudynkow += buildingHappinessAtLevel(record, level);
   }
-  let totalMnoznikProc = 0;
-  for (const { record, level } of cityBuildings) {
-    const kat = record.kategoria;
-    if (!kat.includes("Wojsko") && !kat.includes("Obrona")) {
-      totalMnoznikProc += buildingValue(record, level, "mnoznik");
-    }
-  }
-  const mnoznikFactor = 1 + totalMnoznikProc / 100;
-  const pracaBruttoLacznie = (pracaBruttoTerenu + pracaBudynkow) * mnoznikFactor;
+  const pracaBruttoLacznie = pracaBruttoTerenu + pracaBudynkow;
   const strata = Math.min(ctx.strataFraction, params.korupcjaCap);
   const pracaNetto = pracaBruttoLacznie * (1 - strata);
   const handelNettoRaw = handelBrutto * (1 - strata);
@@ -9744,6 +9736,62 @@ var units_default = [
     fieldPower: 64.5
   },
   {
+    Jednostka: "\u0141ucznik nubijski",
+    Epoka: "Br\u0105z",
+    Kultura: "Egipt",
+    Tech: "\u0141ucznictwo",
+    "Pieni\u0105dz (koszt)": 20,
+    Ludno\u015B\u0107: 1,
+    Surowiec: "-",
+    "Surowiec (ilo\u015B\u0107)": 0,
+    "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
+    "\u017Cywno\u015B\u0107/tur\u0119": 1,
+    Atak: 4,
+    Uderzenie: 2,
+    Obrona: 6,
+    Ruch: 3,
+    "Ruch w bitwie (heksy)": 4,
+    Health: 50,
+    "Pr\xF3g dezercji (% health)": 0.4,
+    "Widok pola": 2,
+    "Atak dystansowy": 7,
+    "Zasi\u0119g ataku (hex)": 5,
+    "Ilo\u015B\u0107 pocisk\xF3w": 16,
+    "W zamian za": "\u0141ucznik",
+    "Super-jednostka": "\u2014",
+    Uwagi: 'propozycja; jednostka specjalna Egiptu (Br\u0105z); \u0142ucznik nubijski z Ta-Seti ("Kraina \u0141uku", Nubia) \u2014 nie myli\u0107 z Numidami (jazda, \u017Belazo, inny region); zast\u0119puje \u0141ucznika; najwi\u0119kszy zasi\u0119g i najliczniejszy ko\u0142czan w\u015Br\xF3d \u0142ucznik\xF3w Br\u0105zu, szybszy marsz (Ruch 3) | UWAGA KOORDYNATORA: Koszt 20, Utrzymanie 2, Pancerz/Przebicie/Obrona/Ruch-w-bitwie i staty TW v3 (meleeAttack/meleeDefence/weaponDamage/piercing/armor/chargeBonus/health/missileAttack) dobrane przez subagenta wzorem \u0141ucznika akadyjskiego \u2014 do zatwierdzenia przez w\u0142a\u015Bciciela. Model 3D tymczasowo = buildEgyptianArcherOpus5 (dedykowany model nubijski do zrobienia p\xF3\u017Aniej).',
+    "Rola (linia)": "Dystans",
+    Pancerz: 2,
+    Przebicie: 2,
+    "Kara obrony z flanki (%)": 50,
+    "Kara obrony z ty\u0142u (%)": 80,
+    "Morale bazowe": 85,
+    "Morale ucieczki": 25,
+    "Nazwa EN": "Nubian Archer",
+    Typ: "Distance",
+    Klasa: "Specjalna",
+    Nacja: "Egipt",
+    "Bonus vs Swordsman %": 0,
+    "Bonus vs Spearman %": 0,
+    "Bonus vs Falangite %": 0,
+    "Bonus vs Offensive %": 0,
+    "Bonus vs Distance %": 0,
+    "Bonus vs Mount %": 0,
+    "Bonus vs Slinger %": 0,
+    "Zmiana na": "\u2014",
+    "Zast\u0105p specjalnie": "\u2014",
+    "Dost\u0119pna w epokach": "Br\u0105z;\u017Belazo",
+    meleeAttack: 1,
+    meleeDefence: 2,
+    weaponDamage: 0,
+    piercing: 0,
+    armor: 1,
+    chargeBonus: 0,
+    health: 18,
+    missileAttack: 6,
+    fieldPower: 16
+  },
+  {
     Jednostka: "\u0141ucznik sumeryjski",
     Epoka: "Kamie\u0144",
     Kultura: "Sumerowie",
@@ -12303,7 +12351,7 @@ var buildings_default = [
       kultura: 0,
       zadowolenie: 0,
       obrona: 0,
-      mnoznik: 5
+      mnoznik: 15
     },
     przyrost: {
       praca: 3,
@@ -12313,14 +12361,14 @@ var buildings_default = [
       kultura: 0,
       zadowolenie: 0,
       obrona: 0,
-      mnoznik: 2
+      mnoznik: 0
     },
     kosztBudowy: 30,
     przyrostKosztu: 10,
     utrzymanie: 2,
     przyrostUtrzymania: 1,
     wymagania: "Ruda (mied\u017A) w zasi\u0119gu imperium (aktywne \u017Ar\xF3d\u0142o lub zapas w puli pa\u0144stwa)",
-    uwagi: "Mnoznik % dotyczy sily jednostek produkowanych w miescie",
+    uwagi: "Mnoznik = +15% Pancerz (Sciezka A) dla jednostek, ktore odwiedzily to miasto (kumuluje sie z Kuznia zelaza/Wielka Kuznia, max +45%)",
     techUnlock: "Br\u0105zownictwo",
     koszt_surowce: {
       drewno: 4,
@@ -13025,7 +13073,7 @@ var buildings_default = [
       kultura: 0,
       zadowolenie: 0,
       obrona: 0,
-      mnoznik: 5
+      mnoznik: 20
     },
     przyrost: {
       praca: 1,
@@ -13035,14 +13083,14 @@ var buildings_default = [
       kultura: 0,
       zadowolenie: 0,
       obrona: 0,
-      mnoznik: 2
+      mnoznik: 0
     },
     kosztBudowy: 25,
     przyrostKosztu: 10,
     utrzymanie: 2,
     przyrostUtrzymania: 1,
     wymagania: "",
-    uwagi: "Mnoznik % dotyczy sily i exp jednostek szkolonych w miescie",
+    uwagi: "Mnoznik = +20% parametry miekkie (Sciezka B, wszystko poza Pancerzem) dla jednostek, ktore odwiedzily to miasto (kumuluje sie z Akademia wojskowa/Warsztat oblezniczy, max +50%)",
     techUnlock: "Wojskowo\u015B\u0107",
     koszt_surowce: {
       drewno: 6,
@@ -13265,7 +13313,7 @@ var buildings_default = [
       kultura: 0,
       zadowolenie: 0,
       obrona: 0,
-      mnoznik: 8
+      mnoznik: 15
     },
     przyrost: {
       praca: 4,
@@ -13275,7 +13323,7 @@ var buildings_default = [
       kultura: 0,
       zadowolenie: 0,
       obrona: 0,
-      mnoznik: 3
+      mnoznik: 0
     },
     kosztBudowy: 60,
     przyrostKosztu: 15,
@@ -13283,7 +13331,7 @@ var buildings_default = [
     przyrostUtrzymania: 1,
     wymagania: "zelazo w zasiegu",
     wymaganySurowiec: "zelazo",
-    uwagi: "Mnoznik % dotyczy sily jednostek zelaznych produkowanych w miescie; wymaga dostepu do zelaza",
+    uwagi: "Mnoznik = +15% Pancerz (Sciezka A) dla jednostek, ktore odwiedzily to miasto (kumuluje sie z Kuznia/Wielka Kuznia, max +45%); wymaga dostepu do zelaza",
     techUnlock: "Hutnictwo \u017Celaza",
     koszt_surowce: {
       cegla: 6,
@@ -13305,7 +13353,7 @@ var buildings_default = [
       kultura: 0,
       zadowolenie: 0,
       obrona: 0,
-      mnoznik: 23
+      mnoznik: 15
     },
     przyrost: {
       praca: 9,
@@ -13315,7 +13363,7 @@ var buildings_default = [
       kultura: 0,
       zadowolenie: 0,
       obrona: 0,
-      mnoznik: 7
+      mnoznik: 0
     },
     kosztBudowy: 90,
     przyrostKosztu: 18,
@@ -13323,7 +13371,7 @@ var buildings_default = [
     przyrostUtrzymania: 2,
     wymagania: "upgrade Ku\u017Ani \u017Celaza; stal w zasi\u0119gu",
     wymaganySurowiec: "stal",
-    uwagi: "Upgrade Ku\u017Ania \u017Celaza \u2192 Wielka Ku\u017Ania; suma bonus\xF3w w JSON",
+    uwagi: "Upgrade Ku\u017Ania \u017Celaza \u2192 Wielka Ku\u017Ania. Mnoznik = +15% Pancerz (Sciezka A), NIE kumuluje sie z Kuznia zelaza bo ja zastepuje (upgradeFrom) -- jednostka dostaje bonus tylko za budynek realnie obecny w miescie. PARKOWANE: epokaWejscia=4, dzis nieosiagalne (3 epoki) -- mechanika gotowa, nie testowac w grze.",
     techUnlock: "Obr\xF3bka \u017Celaza",
     upgradeFrom: "kuznia_zelaza"
   },
@@ -13393,14 +13441,14 @@ var buildings_default = [
       kultura: 0,
       zadowolenie: 0,
       obrona: 0,
-      mnoznik: 3
+      mnoznik: 0
     },
     kosztBudowy: 65,
     przyrostKosztu: 15,
     utrzymanie: 3,
     przyrostUtrzymania: 1,
     wymagania: "Wybudowane Koszary (lub ich upgrade \u2014 Akademia wojskowa) w tym mie\u015Bcie",
-    uwagi: "Odblokowuje budow\u0119 Katapulty w mie\u015Bcie (maWarsztatOblezniczy). Taran i Wie\u017Ca = in-siege przy obl\u0119\u017Ceniu \u2014 styk UNITS",
+    uwagi: "Mnoznik = +10% parametry miekkie (Sciezka B) dla jednostek, ktore odwiedzily to miasto (kumuluje sie z Koszary/Akademia wojskowa). Odblokowuje budow\u0119 Katapulty w mie\u015Bcie (maWarsztatOblezniczy). Taran i Wie\u017Ca = in-siege przy obl\u0119\u017Ceniu \u2014 styk UNITS",
     techUnlock: "Obl\u0119\u017Cnictwo",
     odblokowuje: "maWarsztatOblezniczy",
     koszt_surowce: {
@@ -13663,14 +13711,14 @@ var buildings_default = [
       kultura: 0,
       zadowolenie: 0,
       obrona: 0,
-      mnoznik: 6
+      mnoznik: 0
     },
     kosztBudowy: 80,
     przyrostKosztu: 18,
     utrzymanie: 4,
     przyrostUtrzymania: 2,
     wymagania: "upgrade Koszar",
-    uwagi: "Upgrade Koszary \u2192 Akademia wojskowa; suma bonus\xF3w w JSON; bramka elit UNITS",
+    uwagi: "Upgrade Koszary \u2192 Akademia wojskowa. Mnoznik = +20% parametry miekkie (Sciezka B), NIE kumuluje sie z Koszary bo je zastepuje (upgradeFrom) -- jednostka dostaje bonus tylko za budynek realnie obecny w miescie; bramka elit UNITS",
     techUnlock: "Sztuka wojenna",
     upgradeFrom: "koszary",
     koszt_surowce: {
@@ -15101,6 +15149,7 @@ var civs_default = {
           cel: "piechota",
           wartosc: [
             "\u0141ucznik egipski",
+            "\u0141ucznik nubijski",
             "Rydwan egipski",
             "Wojownik z khopesh",
             "Wojownik z \u017Celaznym khopesh"
