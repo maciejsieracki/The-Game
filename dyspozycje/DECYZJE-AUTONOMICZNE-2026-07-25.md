@@ -49,9 +49,7 @@ Poniżej KAŻDA decyzja, którą podjąłem sam, w formie ABC z **zaznaczonym wy
 - **A — Pełne auto-budzenie na wroga** ✅ WYBRANE PRZEZ MACIEJA (2026-07-25, zmiana z mojego B). Jednostka śpi/pomija tury i BUDZI SIĘ automatycznie, gdy wróg wejdzie w pole widzenia. DO ZBUDOWANIA: nowa logika w silniku tur (wykrywanie wroga w zasięgu wzroku jednostki + wybudzenie) + parytet AI. Obecnie wdrożone B (ręczne) — trzeba dobudować auto-wake. B — proste uśpij/obudź · C — tylko znacznik. **Ikona = półksiężyc.**
 
 ## C-BITWA-WLADCA — imię władcy gdy obie strony to ta sama cywilizacja
-**Sytuacja:** Portret/ikona władcy naprawione (było zawsze „Minos/grecy" — teraz poprawnie per cywilizacja). ALE gdy dwaj gracze to ta sama kultura (np. dwóch Greków / Grek vs greckie miasto-państwo), dzielą jedno imię władcy per cywilizacja+epoka („Minos" po obu stronach).
-- **A — Zostaw per-cywilizacja** ✅ WYBRANE (imiona 15×3 są z definicji per-civ). *Za:* zgodne z Twoją decyzją o 15×3; proste. *Przeciw:* dwaj Grecy = dwa „Minosy".
-- **B — Odrębne imię per gracz/właściciel** (pula imion, miasta-państwa dostają wariant). *Przeciw:* nowa mechanika przydziału imion; wykracza poza 15×3.
+- **B — Odrębne imię per gracz/właściciel** ✅ WYBRANE PRZEZ MACIEJA (2026-07-25, zmiana z mojego A). WYMAGANIE Macieja: każda z 15 cywilizacji dostaje PULĘ ≥9–10 imion władców (= max graczy/miast-państw tej samej kultury na mapie); każdy właściciel (państwo LUB miasto-państwo) dostaje OSOBNE imię z puli; imiona mogą być jednakowego rodzaju dla WSZYSTKICH epok (nie muszą różnić się per epoka — uproszczenie). Zadanie treść+kod: ~150 imion (10×15, kulturowo pasujących) + logika przydziału per właściciel (deterministycznie wg indeksu). Domyślnie: zachować istniejące 15×3 + dopełnić do ~10. DO ZBUDOWANIA.
 
 ## C-BITWA-FORMACJA — zakres przycisku „Formacja/szyk"
 **Sytuacja:** Bug: „szyk piechota/dystans" działał tylko na zaznaczenie (mylące). Naprawione.
