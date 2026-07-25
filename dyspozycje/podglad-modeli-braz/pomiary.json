@@ -1,0 +1,79 @@
+[
+  {
+    "id": "wlocznik",
+    "label": "Włócznik (Brąz)",
+    "tag": "NOWY",
+    "mesh": 77,
+    "tri": 1228,
+    "heightRatio": 0.9990170024262071,
+    "maxRadiusRatio": 0.32074217122071325,
+    "minY": -4.332512577864822e-10,
+    "maxY": 0.9990170024262071
+  },
+  {
+    "id": "miecznik",
+    "label": "Miecznik (Brąz)",
+    "tag": "NOWY",
+    "mesh": 81,
+    "tri": 1204,
+    "heightRatio": 0.7590659997915027,
+    "maxRadiusRatio": 0.32855426730471,
+    "minY": -4.4305622538820533e-10,
+    "maxY": 0.7590659997915027
+  },
+  {
+    "id": "procarz",
+    "label": "Procarz (Brąz)",
+    "tag": "NOWY",
+    "mesh": 100,
+    "tri": 1120,
+    "heightRatio": 0.8339115941150365,
+    "maxRadiusRatio": 0.2275435271581398,
+    "minY": -2.1606683716507424e-10,
+    "maxY": 0.8339115941150365
+  },
+  {
+    "id": "rydwan",
+    "label": "Rydwan (woły, Brąz)",
+    "tag": "NOWY",
+    "mesh": 108,
+    "tri": 1496,
+    "heightRatio": 0.782068658710229,
+    "maxRadiusRatio": 0.4816900168271095,
+    "minY": -4.321336743301485e-10,
+    "maxY": 0.782068658710229
+  },
+  {
+    "id": "hastati",
+    "label": "Hastati (ŻELAZO — poza zakresem)",
+    "tag": "NOWY",
+    "mesh": 92,
+    "tri": 1378,
+    "heightRatio": 0.7869999992251395,
+    "maxRadiusRatio": 0.41144561183389594,
+    "minY": -2.1606683716507424e-10,
+    "maxY": 0.7869999992251395
+  },
+  {
+    "id": "lucznik-nubijski",
+    "label": "Łucznik nubijski",
+    "tag": "ODNIESIENIE (wpięty)",
+    "mesh": 84,
+    "tri": 1052,
+    "heightRatio": 0.8714999996945262,
+    "maxRadiusRatio": 0.3091944241813983,
+    "minY": -2.1606683716507424e-10,
+    "maxY": 0.8714999996945262
+  },
+  {
+    "id": "taran",
+    "label": "Taran okuty",
+    "tag": "ODNIESIENIE (wpięty)",
+    "mesh": 102,
+    "tri": 1600,
+    "heightRatio": 0.6409999998882413,
+    "maxRadiusRatio": 0.3314362681278247,
+    "minY": 9.198041286961889e-10,
+    "maxY": 0.6409999998882413
+  }
+]
