@@ -17,7 +17,7 @@ var __copyProps = (to, from, except, desc) => {
 };
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
-// tools/.logic-entry.ts
+// gra/tools/.logic-entry.ts
 var logic_entry_exports = {};
 __export(logic_entry_exports, {
   DEFAULT_HEIGHT: () => DEFAULT_HEIGHT,
@@ -109,7 +109,7 @@ __export(logic_entry_exports, {
 });
 module.exports = __toCommonJS(logic_entry_exports);
 
-// data/map-gen-params.json
+// gra/data/map-gen-params.json
 var map_gen_params_default = {
   _meta: {
     opis: "Panel-A export \u2014 generator E2 + mg\u0142a. Kod czyta po P3 / handoff Integratora.",
@@ -169,7 +169,7 @@ var map_gen_params_default = {
     pasma_gorskie: {
       _opis: "Zadanie HILLS Q1/Q2 (2026-07-20): skupiska g\xF3r/wzg\xF3rz (seed-and-grow), spi\u0119te z tierem suwaka Relief (mountain_noise_threshold/highland_noise_threshold). Bez nowego suwaka UI. ZADANIE 3 (2026-07-20): d\u0142u\u017Csze/w\u0119\u017Csze \u0142a\u0144cuchy (kordyliery) zamiast okr\u0105g\u0142ych plam \u2014 dlugosc_min/max w g\xF3r\u0119, max_pasm_na_mase w d\xF3\u0142 (mniej ale d\u0142u\u017Cszych pasm), nowy obrzeze_szansa < 1 zmniejsza rozlewanie foothills na boki.",
       low: { hexy_na_pasmo: 320, max_pasm_na_mase: 2, dlugosc_min: 9, dlugosc_max: 11, min_masa_hexow: 40, obrzeze_szansa: 0.3 },
-      medium: { hexy_na_pasmo: 150, max_pasm_na_mase: 6, dlugosc_min: 11, dlugosc_max: 14, min_masa_hexow: 30, obrzeze_szansa: 0.35 },
+      medium: { hexy_na_pasmo: 240, max_pasm_na_mase: 3, dlugosc_min: 11, dlugosc_max: 14, min_masa_hexow: 30, obrzeze_szansa: 0.35 },
       high: { hexy_na_pasmo: 170, max_pasm_na_mase: 5, dlugosc_min: 13, dlugosc_max: 17, min_masa_hexow: 24, obrzeze_szansa: 0.4 }
     }
   },
@@ -218,7 +218,7 @@ var map_gen_params_default = {
   }
 };
 
-// src/data/map-gen-params-loader.ts
+// gra/src/data/map-gen-params-loader.ts
 var FALLBACK_ROZMIAR = {
   malenki: [76, 52],
   maly: [108, 74],
@@ -366,7 +366,7 @@ function mapGenAllDepositRarities() {
   return out;
 }
 
-// data/e-start-params.json
+// gra/data/e-start-params.json
 var e_start_params_default = {
   _opis: "Panel-E (Grupa E): start, meta, generator E2, zwyci\u0119stwo, tempo. \u0179r\xF3d\u0142o: panele-sterowania/Panel-E.xlsx \u2192 export-e.py. ui-params.json = etykiety kreatora; ten plik = liczby i regu\u0142y silnika (docelowo odczyt w TS \u2014 dzi\u015B sync z kodem).",
   defaulty: {
@@ -442,12 +442,12 @@ var e_start_params_default = {
   }
 };
 
-// src/util/norm-pl-label.ts
+// gra/src/util/norm-pl-label.ts
 function normPlMenuLabel(label) {
   return label.toLowerCase().replace(/ł/g, "l").replace(/[ó]/g, "o").replace(/[ąà]/g, "a").replace(/[ę]/g, "e").replace(/[żź]/g, "z").replace(/[^a-z0-9]/g, "");
 }
 
-// src/data/e-start-params-loader.ts
+// gra/src/data/e-start-params-loader.ts
 var R = e_start_params_default;
 var MENU_KEYS = ["Malenki", "Ma\u0142y", "Standardowy", "Du\u017Cy", "Ogromny", "Super Huge"];
 function normMenuLabel(label) {
@@ -488,7 +488,7 @@ function eStartMiastaPanstwa(menuLabel) {
   return (_a9 = skalaRow(menuLabel)) == null ? void 0 : _a9.miasta_panstwa;
 }
 
-// src/map/newGameMapDefaults.ts
+// gra/src/map/newGameMapDefaults.ts
 function mapSizeLabelFromDims(w, h) {
   const area = w * h;
   if (area < 4800) return "mala";
@@ -649,7 +649,7 @@ function defaultCivTypesFromMapLabel(menuLabel) {
   return typyCywilizacjiTriple(menuLabel).default;
 }
 
-// src/map/earth-land-mask.generated.ts
+// gra/src/map/earth-land-mask.generated.ts
 var EARTH_MASK_W = 720;
 var EARTH_MASK_H = 400;
 var EARTH_MASK_BBOX = {
@@ -1061,7 +1061,7 @@ var EARTH_MASK_ROWS = [
   "000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
 ];
 
-// src/map/earth-land-mask.ts
+// gra/src/map/earth-land-mask.ts
 var EARTH_PLAYABLE_BORDER = 2;
 var EARTH_POLAR_OCEAN_REF_ROWS = 30;
 var EARTH_POLAR_OCEAN_REF_INNER_H = 115;
@@ -1162,7 +1162,7 @@ function earthTemplateLandAt(q, r, width, height) {
   return landHits / total >= earthLandFractionThreshold(width, height) ? 1 : 0;
 }
 
-// src/map/gen-helpers.ts
+// gra/src/map/gen-helpers.ts
 function mulberry32(seed) {
   let s = seed >>> 0;
   return () => {
@@ -2237,7 +2237,10 @@ function ensureReliefGridCoverage(hexes, scratch, tier, width, height, _typ, _co
 }
 var MOUNTAIN_RANGE_LAND_SHARE_CAP = 0.4;
 var MAX_MOUNTAIN_RANGE_CLUSTER_SIZE = 10;
-var MOUNTAIN_RANGE_SEED_MIN_DIST = 12;
+var MOUNTAIN_RANGE_REGROW_MIN_GAP = 1;
+var MOUNTAIN_RANGE_REGROW_TARGET_MULT = 1;
+var MOUNTAIN_RANGE_REGROW_LEN_MIN = 4;
+var MOUNTAIN_RANGE_REGROW_LEN_MAX = 8;
 function findSameTerrainClusters(hexes, terrain) {
   const visited = /* @__PURE__ */ new Set();
   const clusters = [];
@@ -2354,6 +2357,147 @@ function walkMountainRange(hexes, scratch, width, height, rand, start, steps) {
   }
   return path;
 }
+function bfsExpandExclusion(hexes, excluded, sources, minDist) {
+  const queue = [];
+  for (const k of sources) {
+    if (!excluded.has(k)) excluded.add(k);
+    queue.push({ k, d: 0 });
+  }
+  let head = 0;
+  while (head < queue.length) {
+    const { k, d } = queue[head++];
+    if (d >= minDist) continue;
+    const { q, r } = parseHexKey(k);
+    for (const [dq, dr] of HEX_DIRECTIONS) {
+      const nk = hexKey(q + dq, r + dr);
+      if (excluded.has(nk)) continue;
+      if (!hexes[nk]) continue;
+      excluded.add(nk);
+      queue.push({ k: nk, d: d + 1 });
+    }
+  }
+}
+function isExcludedForRegrow(k, n, mtnTh, hiTh, excludedGory, excludedWzgorza) {
+  if (n > mtnTh) return excludedGory.has(k);
+  if (n > hiTh) return excludedWzgorza.has(k);
+  return false;
+}
+function walkMountainRangeAvoiding(hexes, scratch, width, height, rand, start, steps, mtnTh, hiTh, excludedGory, excludedWzgorza) {
+  const path = [];
+  const visited = /* @__PURE__ */ new Set([start]);
+  let cur = start;
+  for (let i = 0; i < steps; i++) {
+    const { q, r } = parseHexKey(cur);
+    const candidates = HEX_DIRECTIONS.map(([dq, dr]) => hexKey(q + dq, r + dr)).filter((k) => {
+      var _a9;
+      if (visited.has(k)) return false;
+      const hex = hexes[k];
+      if (!hex) return false;
+      const { q: nq, r: nr } = parseHexKey(k);
+      if (!isReliefCandidateHex(hex, nq, nr, width, height)) return false;
+      const n = ((_a9 = scratch.get(k)) == null ? void 0 : _a9.mtnNoise) ?? 0;
+      return !isExcludedForRegrow(k, n, mtnTh, hiTh, excludedGory, excludedWzgorza);
+    }).map((k) => {
+      var _a9;
+      return { k, n: (((_a9 = scratch.get(k)) == null ? void 0 : _a9.mtnNoise) ?? 0) + rand() * 0.3 };
+    }).sort((a, b) => b.n - a.n);
+    if (candidates.length === 0) break;
+    cur = candidates[0].k;
+    visited.add(cur);
+    path.push(cur);
+  }
+  return path;
+}
+function regrowLostMountainClusters(hexes, scratch, width, height, rand, masses, mtnTh, hiTh, deficit) {
+  var _a9;
+  if (deficit <= 0 || masses.length === 0) return 0;
+  const excludedGory = /* @__PURE__ */ new Set();
+  const excludedWzgorza = /* @__PURE__ */ new Set();
+  const initialGory = [];
+  const initialWzgorza = [];
+  for (const key of Object.keys(hexes).sort()) {
+    const hex = hexes[key];
+    if (hex.terenBazowy === "gory" /* Gory */) initialGory.push(key);
+    else if (hex.terenBazowy === "wzgorza" /* Wzgorza */) initialWzgorza.push(key);
+  }
+  bfsExpandExclusion(hexes, excludedGory, initialGory, MOUNTAIN_RANGE_REGROW_MIN_GAP);
+  bfsExpandExclusion(hexes, excludedWzgorza, initialWzgorza, MOUNTAIN_RANGE_REGROW_MIN_GAP);
+  let recovered = 0;
+  let massIdx = 0;
+  let attemptsSinceProgress = 0;
+  const maxAttemptsSinceProgress = masses.length * 40 + 200;
+  while (recovered < deficit && attemptsSinceProgress < maxAttemptsSinceProgress) {
+    const mass = masses[massIdx % masses.length];
+    massIdx++;
+    const seedCandidates = mass.filter((k) => {
+      var _a10;
+      const hex = hexes[k];
+      if (!hex) return false;
+      if (hex.terenBazowy !== "laka" /* Laka */ && hex.terenBazowy !== "rownina" /* Rownina */ && hex.terenBazowy !== "pustynia" /* Pustynia */) return false;
+      const { q, r } = parseHexKey(k);
+      if (!isReliefCandidateHex(hex, q, r, width, height)) return false;
+      const n = ((_a10 = scratch.get(k)) == null ? void 0 : _a10.mtnNoise) ?? 0;
+      return !isExcludedForRegrow(k, n, mtnTh, hiTh, excludedGory, excludedWzgorza);
+    }).map((k) => {
+      var _a10;
+      return { k, n: (((_a10 = scratch.get(k)) == null ? void 0 : _a10.mtnNoise) ?? 0) + rand() * 0.15 };
+    }).sort((a, b) => b.n - a.n);
+    if (seedCandidates.length === 0) {
+      attemptsSinceProgress++;
+      continue;
+    }
+    const seedKey = seedCandidates[0].k;
+    const len = MOUNTAIN_RANGE_REGROW_LEN_MIN + Math.floor(rand() * (MOUNTAIN_RANGE_REGROW_LEN_MAX - MOUNTAIN_RANGE_REGROW_LEN_MIN + 1));
+    const path = [seedKey, ...walkMountainRangeAvoiding(
+      hexes,
+      scratch,
+      width,
+      height,
+      rand,
+      seedKey,
+      len,
+      mtnTh,
+      hiTh,
+      excludedGory,
+      excludedWzgorza
+    )];
+    const placedGory = [];
+    const placedWzgorza = [];
+    for (const k of path) {
+      const hex = hexes[k];
+      if (!hex) continue;
+      if (hex.terenBazowy !== "laka" /* Laka */ && hex.terenBazowy !== "rownina" /* Rownina */ && hex.terenBazowy !== "pustynia" /* Pustynia */) continue;
+      const n = ((_a9 = scratch.get(k)) == null ? void 0 : _a9.mtnNoise) ?? 0;
+      if (isExcludedForRegrow(k, n, mtnTh, hiTh, excludedGory, excludedWzgorza)) continue;
+      if (n > mtnTh) {
+        hex.terenBazowy = "gory" /* Gory */;
+        hex.nakladka = "brak" /* Brak */;
+        delete hex.zloze;
+        placedGory.push(k);
+        recovered++;
+      } else if (n > hiTh) {
+        hex.terenBazowy = "wzgorza" /* Wzgorza */;
+        hex.nakladka = "brak" /* Brak */;
+        delete hex.zloze;
+        placedWzgorza.push(k);
+        recovered++;
+      }
+    }
+    if (placedGory.length === 0 && placedWzgorza.length === 0) {
+      attemptsSinceProgress++;
+      continue;
+    }
+    attemptsSinceProgress = 0;
+    if (placedGory.length > 0) {
+      bfsExpandExclusion(hexes, excludedGory, placedGory, MOUNTAIN_RANGE_REGROW_MIN_GAP);
+    }
+    if (placedWzgorza.length > 0) {
+      bfsExpandExclusion(hexes, excludedWzgorza, placedWzgorza, MOUNTAIN_RANGE_REGROW_MIN_GAP);
+    }
+    if (recovered >= deficit) break;
+  }
+  return recovered;
+}
 function growMountainRanges(hexes, scratch, tier, width, height, rand) {
   var _a9, _b3, _c3;
   const params = mapGenMountainRangeParams(tier);
@@ -2368,7 +2512,7 @@ function growMountainRanges(hexes, scratch, tier, width, height, rand) {
     );
     const seedCandidates = mountainRangeSeedCandidates(mass, hexes, scratch, width, height, rand);
     if (seedCandidates.length === 0) continue;
-    const seeds = pickSpreadReliefKeys(seedCandidates, nRanges, MOUNTAIN_RANGE_SEED_MIN_DIST);
+    const seeds = pickSpreadReliefKeys(seedCandidates, nRanges, 5);
     for (const seedKey of seeds) {
       const len = params.dlugoscMin + Math.floor(rand() * (params.dlugoscMax - params.dlugoscMin + 1));
       const path = [seedKey, ...walkMountainRange(hexes, scratch, width, height, rand, seedKey, len)];
@@ -2487,6 +2631,31 @@ function growMountainRanges(hexes, scratch, tier, width, height, rand) {
       mountainous--;
     }
   }
+  const mtnReverted = capMountainRangeClusterSize(
+    hexes,
+    scratch,
+    "gory" /* Gory */,
+    "rownina" /* Rownina */,
+    MAX_MOUNTAIN_RANGE_CLUSTER_SIZE
+  );
+  const hiReverted = capMountainRangeClusterSize(
+    hexes,
+    scratch,
+    "wzgorza" /* Wzgorza */,
+    "rownina" /* Rownina */,
+    MAX_MOUNTAIN_RANGE_CLUSTER_SIZE
+  );
+  regrowLostMountainClusters(
+    hexes,
+    scratch,
+    width,
+    height,
+    rand,
+    masses,
+    mtnTh,
+    hiTh,
+    Math.round((mtnReverted + hiReverted) * MOUNTAIN_RANGE_REGROW_TARGET_MULT)
+  );
   capMountainRangeClusterSize(
     hexes,
     scratch,
@@ -5171,7 +5340,7 @@ function computeStartPositions(hexes, seed, opts = {}) {
   return result;
 }
 
-// src/map/villages.ts
+// gra/src/map/villages.ts
 var VILLAGE_HUTS_PER_CITY = {
   hard: 1,
   normal: 2,
@@ -5243,7 +5412,7 @@ function placeVillages(hexes, cities, existingCamps, seed, opts) {
   return result;
 }
 
-// data/terrain-improvements.json
+// gra/data/terrain-improvements.json
 var terrain_improvements_default = {
   _meta: {
     opis: "Ulepszenia terenu (lane MIASTO: liczby bonusow + koszt + epoka). Gdzie wolno (placement) + render = MAPA. Przeplyw w turze = SILNIK. Koszt w PRACY (z puli Pracy w skarbcu, Q4). Lista uzgodniona z MAPA + uzupelniona na przyszlosc wczesnych epok (2026-06-24). EKONOMIA: dodano surowiecOdblokowany (ASCII) + zasieg_terytorium (2026-06-25).",
@@ -5577,7 +5746,7 @@ var terrain_improvements_default = {
   }
 };
 
-// src/game/terrain-improvements.ts
+// gra/src/game/terrain-improvements.ts
 var IMPROVEMENTS = terrain_improvements_default;
 var LEGACY_KEY_ALIASES = {
   pastwisko: "bydlo"
@@ -5685,7 +5854,7 @@ var RESOURCE_UPKEEP_IMPROVEMENT_KEYS = /* @__PURE__ */ new Set([
   "kopalnia_zlota"
 ]);
 
-// src/map/road-movement.ts
+// gra/src/map/road-movement.ts
 var ROAD_MOVE_SPEED_MULT = 3;
 var ROAD_MIN_MOVE_COST = 1 / 3;
 var RAW = terrain_improvements_default;
@@ -5706,7 +5875,7 @@ function applyRoadMovementModifier(cost, hex) {
   return cost;
 }
 
-// src/units/setup.ts
+// gra/src/units/setup.ts
 var RIVER_MOVE_BONUS = 4;
 function keyOf(q, r) {
   return `${q},${r}`;
@@ -6026,7 +6195,7 @@ function computePath(unit, map, destQ, destR, occupied, costFn = terrainMoveCost
   return path;
 }
 
-// src/map/startScoring.ts
+// gra/src/map/startScoring.ts
 var NEIGHBORS = [
   [1, 0],
   [-1, 0],
@@ -6107,7 +6276,7 @@ function findBestPlayerStartHex(map) {
   return best;
 }
 
-// src/map/generator.ts
+// gra/src/map/generator.ts
 var DEFAULT_WIDTH = 36;
 var DEFAULT_HEIGHT = 28;
 function generateMap(width = DEFAULT_WIDTH, height = DEFAULT_HEIGHT, seed = 42, typ = "kontynenty", genOpts) {
@@ -6386,7 +6555,7 @@ function menuLabelToDims(label) {
   return rozmiarToDims(rozmiarFromMenuLabel(label));
 }
 
-// data/terrain-yields.json
+// gra/data/terrain-yields.json
 var terrain_yields_default = {
   terrain_types: [
     {
@@ -6484,7 +6653,7 @@ var terrain_yields_default = {
   ]
 };
 
-// src/game/tech-tempo.ts
+// gra/src/game/tech-tempo.ts
 var TEMPO_GRY = {
   szybka: 1,
   standardowa: 2,
@@ -6495,14 +6664,14 @@ function applyTempoKoszt(bazowyKoszt, tempo) {
   return Math.max(1, Math.round(bazowyKoszt * mnoznik));
 }
 
-// src/game/population-growth-tempo.ts
+// gra/src/game/population-growth-tempo.ts
 var WZROST_LUDNOSCI_PACE = {
   wysoki: 1,
   normalny: 2,
   wolny: 4
 };
 
-// src/game/difficulty-cost.ts
+// gra/src/game/difficulty-cost.ts
 var GLOBAL_RESEARCH_COST_MULT = 1;
 function isPlayerOwner(ownerId) {
   return ownerId === 0;
@@ -6535,7 +6704,7 @@ function applyPopulationGrowthThreshold(baseThreshold, ownerId, pace, difficulty
   return Math.max(1, Math.round(baseThreshold * mult));
 }
 
-// data/epoka-ludnosc-manpower.json
+// gra/data/epoka-ludnosc-manpower.json
 var epoka_ludnosc_manpower_default = {
   _opis: "Skala ludno\u015Bci i Manpower per epoka imperium (wiersze 1\u201310). 1 ludek = ludno\u015B\u0107 absolutna na slot population (1\u201310). manpowerNaLudka = 10% ludekNaLudka. manpowerNaJednostke = manpowerNaLudka (koszt rekrutacji 1 jednostki = pe\u0142ny slot manpower; 1 ludek = 1 jednostka przy pe\u0142nej puli).",
   _formuly: {
@@ -6557,7 +6726,7 @@ var epoka_ludnosc_manpower_default = {
   ]
 };
 
-// data/miasto-params.json
+// gra/data/miasto-params.json
 var miasto_params_default = {
   min_dystans_miast: {
     wartosc: 5,
@@ -6681,7 +6850,7 @@ var miasto_params_default = {
   }
 };
 
-// src/game/manpower.ts
+// gra/src/game/manpower.ts
 var ROWS = epoka_ludnosc_manpower_default.epoki;
 var MAX_EPOKA = 10;
 var DEFAULT_REGEN = {
@@ -6774,7 +6943,7 @@ function refreshManpowerAfterPopChange(city, epoka, previousPop, maxMult = 1) {
   return max;
 }
 
-// src/game/building-resource-gate.ts
+// gra/src/game/building-resource-gate.ts
 var LABEL_BY_ASCII = {
   drewno: "Drewno",
   kamien: "Kamie\u0144",
@@ -6791,7 +6960,7 @@ var ASCII_BY_LABEL = Object.fromEntries(
   Object.entries(LABEL_BY_ASCII).map(([ascii, label]) => [label, ascii])
 );
 
-// src/game/production.ts
+// gra/src/game/production.ts
 function buildingLevelForEpoch(epokaWejscia, cityEpoch, maksPoziom, poziomTechGate, unlockedTechs) {
   const lvl = Math.floor(cityEpoch) - Math.floor(epokaWejscia) + 1;
   const cap = Number.isFinite(maksPoziom) && maksPoziom > 0 ? Math.floor(maksPoziom) : 1;
@@ -6841,7 +7010,7 @@ var DEFAULT_OUTPUT_SHARES = Object.freeze({
   rozwoj: ((_d2 = miasto_params_default.udzial_output_rozwoj) == null ? void 0 : _d2.wartosc) ?? 0.1
 });
 
-// src/game/research.ts
+// gra/src/game/research.ts
 var BRAK_PREREQ = /* @__PURE__ */ new Set(["", "-", "\u2014", "\u2013", "brak", "none"]);
 function empireBuiltSet(gate) {
   return gate.empireBuiltIds instanceof Set ? gate.empireBuiltIds : new Set(gate.empireBuiltIds);
@@ -6903,7 +7072,7 @@ function researchGatesMet(tech, gate) {
   return buildingGateMet(tech, gate) && improvementGateMet(tech, gate);
 }
 
-// src/game/economy.ts
+// gra/src/game/economy.ts
 var ZERO_YIELD = { zywnosc: 0, praca: 0, handel: 0, drewno: 0, kamien: 0, glina: 0, ruda: 0, ruda_zelaza: 0 };
 var TERRAIN_NAME_TO_ENUM = {
   "\u0141\u0105ka": "laka" /* Laka */,
@@ -7224,7 +7393,7 @@ function corruptionBuildingReduction(builtIds) {
   return Math.min(KORUPCJA_REDUKCJA_SUFIT, suma);
 }
 
-// src/game/culture-religion.ts
+// gra/src/game/culture-religion.ts
 function pick(row, difficulty, fallback) {
   if (row === void 0) return fallback;
   const v = row[difficulty];
@@ -7552,7 +7721,7 @@ function cityTradeMultiplier(cityReligion, ownerCivName, civs, religionParams = 
   return { multiplier, civBaseMultiplier, dominantReligion: domReligion, applied };
 }
 
-// src/game/wealth.ts
+// gra/src/game/wealth.ts
 var FALLBACK_WEALTH_PARAMS = {
   capNaEpoke: 10,
   progNaPoziom: 4.5,
@@ -7644,7 +7813,7 @@ function freshWealthState() {
   return { poziom: 1, pula: 0 };
 }
 
-// src/game/economy-upkeep.ts
+// gra/src/game/economy-upkeep.ts
 function readNum(group, key, difficulty, fallback) {
   const row = group ? group[key] : void 0;
   const v = row ? row[difficulty] : void 0;
@@ -7831,7 +8000,7 @@ function upkeepBalance(income, buildings, units, unitUpkeepTbl, p) {
   };
 }
 
-// src/game/cities.ts
+// gra/src/game/cities.ts
 var DEFAULT_OKOLICA_FOCUS = "zrownowazone";
 var DEFAULT_OKOLICA_TRYB = "auto";
 var DEFAULT_PODZIAL_HANDLU = {
@@ -7956,7 +8125,7 @@ function cityName(index) {
   return "Miasto " + (index + 1);
 }
 
-// src/map/territory.ts
+// gra/src/map/territory.ts
 function axialDistance(aq, ar, bq, br) {
   const as_ = -aq - ar;
   const bs = -bq - br;
@@ -7988,7 +8157,7 @@ function territoryOwnerAt(q, r, nodes) {
   return bestOwner;
 }
 
-// src/map/territory-work.ts
+// gra/src/map/territory-work.ts
 function buildTerritoryNodesFromCities(cities) {
   return cities.map((c) => ({
     q: c.q,
@@ -8039,7 +8208,7 @@ function reconcileAllWorkedTiles(cities, territoryNodes) {
   }
 }
 
-// src/game/okolica.ts
+// gra/src/game/okolica.ts
 var _a6;
 var OKOLICA_RADIUS = ((_a6 = miasto_params_default.zasieg_okolicy_miasta) == null ? void 0 : _a6.wartosc) ?? 5;
 var _a7;
@@ -8243,7 +8412,7 @@ function rebalanceWorkersAfterPopulationChange(city, map, popBefore, popAfter, t
   }
 }
 
-// src/game/visibility.ts
+// gra/src/game/visibility.ts
 var DEFAULT_SIGHT = mapGenDefaultSight();
 function buildUnitSightResolver(unitDefs, citySight = DEFAULT_SIGHT) {
   const byName = /* @__PURE__ */ new Map();
@@ -8319,7 +8488,7 @@ function unitsVisibleOnMap(units, visibleHexes, playerOwnerId = 0) {
   });
 }
 
-// data/units.json
+// gra/data/units.json
 var units_default = [
   {
     Jednostka: "Wojownik",
@@ -12456,7 +12625,7 @@ var units_default = [
   }
 ];
 
-// data/buildings.json
+// gra/data/buildings.json
 var buildings_default = [
   {
     id: "stolarnia",
@@ -14073,7 +14242,7 @@ var buildings_default = [
   }
 ];
 
-// data/resources.json
+// gra/data/resources.json
 var resources_default = [
   {
     Surowiec: "\u017Bywno\u015B\u0107",
@@ -14155,7 +14324,7 @@ var resources_default = [
   }
 ];
 
-// data/tech.json
+// gra/data/tech.json
 var tech_default = {
   drzewko_model: "liniowe",
   _drzewko_model_opis: "B1-Q3 Maciej 2026-06-28 opcja B \u2014 o\u015B w epoce wg Poziom + kolejno\u015B\u0107 w tablicy; bramki AND bez zmian (research.ts).",
@@ -14588,7 +14757,7 @@ var tech_default = {
   ]
 };
 
-// data/civs.json
+// gra/data/civs.json
 var civs_default = {
   cywilizacje: [
     {
@@ -17165,7 +17334,7 @@ var civs_default = {
   ]
 };
 
-// data/city-names-pools.json
+// gra/data/city-names-pools.json
 var city_names_pools_default = {
   grecy: {
     nazwa_pl: "Grecy",
@@ -18924,7 +19093,7 @@ var city_names_pools_default = {
   }
 };
 
-// data/terrain-combat.json
+// gra/data/terrain-combat.json
 var terrain_combat_default = [
   {
     Teren: "P\u0142askie (r\xF3wnina/\u0142\u0105ka)",
@@ -18984,7 +19153,7 @@ var terrain_combat_default = [
   }
 ];
 
-// data/counters.json
+// gra/data/counters.json
 var counters_default = [
   {
     "Typ atakuj\u0105cy": "Spearman",
@@ -19030,7 +19199,7 @@ var counters_default = [
   }
 ];
 
-// data/diplomacy.json
+// gra/data/diplomacy.json
 var diplomacy_default = {
   params: {
     handelZawarcie_zaufanie: 2,
@@ -19918,7 +20087,7 @@ var diplomacy_default = {
   ]
 };
 
-// data/econ-params.json
+// gra/data/econ-params.json
 var econ_params_default = {
   ekonomia_miasta: {
     pr\u00F3g_wzrostu_wspolczynnik: {
@@ -20517,7 +20686,7 @@ var econ_params_default = {
   }
 };
 
-// data/ai-params.json
+// gra/data/ai-params.json
 var ai_params_default = {
   trudnosc_poziom1_bonus_produkcja: {
     wartosc: 0,
@@ -21121,7 +21290,7 @@ var ai_params_default = {
   }
 };
 
-// data/civ-ai.json
+// gra/data/civ-ai.json
 var civ_ai_default = {
   cywilizacje: [
     {
@@ -21310,7 +21479,7 @@ var civ_ai_default = {
   }
 };
 
-// data/civ-params.json
+// gra/data/civ-params.json
 var civ_params_default = {
   cywilizacje: [
     {
@@ -21439,7 +21608,7 @@ var civ_params_default = {
   }
 };
 
-// data/society-params.json
+// gra/data/society-params.json
 var society_params_default = {
   zdrowie: {
     zdrowie_rzeka: {
@@ -22340,7 +22509,7 @@ var society_params_default = {
   }
 };
 
-// data/terrain-movement.json
+// gra/data/terrain-movement.json
 var terrain_movement_default = {
   costs: {
     Laka: 1,
@@ -22354,7 +22523,7 @@ var terrain_movement_default = {
   forestExtra: 1
 };
 
-// data/wonders.json
+// gra/data/wonders.json
 var wonders_default = {
   _meta: {
     opis: "Cuda \u015Bwiata \u2014 epoka Antyk (v0.1). Kanon Maciej 2026-06-26.",
@@ -23132,7 +23301,7 @@ var wonders_default = {
   ]
 };
 
-// src/data/loader.ts
+// gra/src/data/loader.ts
 function loadGameData() {
   return {
     units: units_default,
@@ -23155,7 +23324,7 @@ function loadGameData() {
   };
 }
 
-// src/game/converters.ts
+// gra/src/game/converters.ts
 function loadThroughput(raw, paramKey, difficulty, fallback) {
   const bu = raw.budynki ?? {};
   const row = bu[paramKey];
@@ -23219,7 +23388,7 @@ function runConverters(recipes, stores, throughputs, capacityOf) {
   return { stores: cur, perBuilding };
 }
 
-// src/game/empire-food.ts
+// gra/src/game/empire-food.ts
 function clampFoodSplitPct(n) {
   return Math.min(100, Math.max(0, n));
 }
@@ -23227,7 +23396,7 @@ function getCityFoodSplit(city, defaultPct = 100) {
   return clampFoodSplitPct(city.procentRozwoj ?? defaultPct);
 }
 
-// src/game/order.ts
+// gra/src/game/order.ts
 var FALLBACK_ORDER_PARAMS = Object.freeze({
   wagaSzczescie: 0.5,
   wagaPrawo: 0.5,
@@ -23354,7 +23523,7 @@ function clamp01(x) {
   return x;
 }
 
-// src/game/society-breakdown.ts
+// gra/src/game/society-breakdown.ts
 function pickOsiedlePopBonus(block, key, pop, difficulty, legacyFlatFallback = 0) {
   const p = Math.floor(pop);
   if (p < 1 || p > 4) return 0;
@@ -23369,11 +23538,11 @@ function pickOsiedlePopBonus(block, key, pop, difficulty, legacyFlatFallback = 0
   return legacyFlatFallback;
 }
 
-// src/game/wonders-data.ts
+// gra/src/game/wonders-data.ts
 var data = wonders_default;
 var wonderById = new Map(data.cuda.map((w) => [w.id, w]));
 
-// src/game/turn-economy.ts
+// gra/src/game/turn-economy.ts
 function applyOrderYieldMults(yld, mults) {
   if (mults.productionMult !== 1) yld.praca *= mults.productionMult;
   if (mults.pieniadzMult !== 1) yld.pieniadz *= mults.pieniadzMult;
@@ -24114,7 +24283,7 @@ function advanceCityEconomy(cities, map, data2, difficulty = "normal", econUnits
   return result;
 }
 
-// src/game/playerState.ts
+// gra/src/game/playerState.ts
 function asResearchGate(g) {
   return {
     empireBuiltIds: g.empireBuiltIds,
@@ -24345,7 +24514,7 @@ function getResearchState(state, techs, naukaPerTurn, difficulty = "normal") {
   return { pula, targetId, kosztCelu, postepFraction, turnsLeft };
 }
 
-// data/combat-params.json
+// gra/data/combat-params.json
 var combat_params_default = {
   _opis: "Panel-C \u017Ar\xF3d\u0142o prawdy \xB7 panele-sterowania/export-c.py \xB7 Macierz v2 + SS5l + obl\u0119zenie + AI obl\u0119\u017Cenia",
   macierz_v2: {
@@ -24407,7 +24576,7 @@ var combat_params_default = {
   }
 };
 
-// src/game/combat.ts
+// gra/src/game/combat.ts
 var TW = combat_params_default.tw_v3;
 var COUNTER_MULT = combat_params_default.counter_multiplier;
 function hitChanceTw(meleeAttack, meleeDefence, hitBonus = 0) {
@@ -24419,7 +24588,7 @@ function damageTw(weaponDamage, armor, piercing, chargeBonus, isChargeRound) {
   return base + (isChargeRound ? chargeBonus : 0);
 }
 
-// src/game/siege.ts
+// gra/src/game/siege.ts
 var OBL = combat_params_default["obl\u0119\u017Cenie"];
 var WALL_BASE_OBRONA = OBL.wall_base_obrona;
 var WALL_PER_LEVEL_OBRONA = OBL.wall_per_level_obrona;

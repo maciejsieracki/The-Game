@@ -143,8 +143,36 @@ export interface City {
    * bez zmian, to osobny mechanizm (boolean dostep, nie ilosc).
    */
   surowce?: Record<string, number>;
-  /** Ustawiane po zbudowaniu budynku 'mury'; +200% obrony liczy UNITS/silnik. */
+  /**
+   * Ustawiane po zbudowaniu budynku 'mury' (odblokowuje='maMur' w buildings.json).
+   * Bramkuje TRYB oblezenia na mapie swiata (game/mapSiegeDetect.ts
+   * classifyCityAttack/canInitiateSiege/detectAutoSiegeOnCity) oraz tag "Mur
+   * miejski" w UI (siegeMapPanel.ts, cityAttackChoice.ts). NIE steruje bonusem
+   * procentowym Obrony -- ten liczy sie osobno z cityBuilt (game/city-defense.ts
+   * cityWallDefenseBonusPercent), niezaleznie od tej flagi.
+   */
   maMur?: boolean;
+  /**
+   * Ustawiane po zbudowaniu budynku 'fort'/Cytadela (odblokowuje='maFort').
+   * DEAD FLAG (audyt 2026-07-25, Zadanie 1 "odblokowuje ozywic"): nigdzie w
+   * gra/src nie jest odczytywane. Bonus Cytadeli liczy sie z cityBuilt
+   * (game/city-defense.ts), nie z tej flagi. Ustawiana wylacznie dla parytetu
+   * z polem `odblokowuje` w danych -- nie wymyslaj jej nowego zastosowania bez
+   * decyzji wlasciciela.
+   */
+  maFort?: boolean;
+  /**
+   * Ustawiane po zbudowaniu budynku 'baszta' (odblokowuje='maBaszta').
+   * DEAD FLAG (audyt 2026-07-25) -- jak wyzej, nigdzie odczytywane.
+   */
+  maBaszta?: boolean;
+  /**
+   * Ustawiane po zbudowaniu budynku 'warsztat_oblezniczy'
+   * (odblokowuje='maWarsztatOblezniczy'). DEAD FLAG (audyt 2026-07-25) -- jak
+   * wyzej, nigdzie odczytywane; odblokowanie Katapulty w produkcji sprawdza
+   * bezposrednio cityBuilt/CITY_BUILDING_PREREQ, nie te flage.
+   */
+  maWarsztatOblezniczy?: boolean;
   /**
    * Czy miasto jest aktualnie oblegane (flaga ustawiana przez UNITS/SILNIK).
    * Gdy true: turn-economy nie nalicza dochodu zywnosci z pol;

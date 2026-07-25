@@ -611,6 +611,29 @@ export function applyCompletedBuildingIds(
   return next;
 }
 
+/**
+ * Decyzja 55B (Maciej 2026-07-25, "odblokowuje ozywic"): po ukonczeniu budynku
+ * zwraca nazwe flagi City do ustawienia na true (np. 'maMur' dla Murow), odczytana
+ * z buildings.json pola `odblokowuje` -- zamiast hardkodu `id === 'mury'`.
+ * null = budynek nie odblokowuje zadnej flagi City.
+ *
+ * UWAGA (regresja 'fort'): przed ta zmiana ukonczenie 'fort' (Cytadela) ustawialo
+ * TAKZE maMur=true obok wlasnego odblokowuje='maFort'. To bylo nadmiarowe: 'fort'
+ * ma twardy prerekwyzyt 'mury' w TYM SAMYM miescie (CITY_BUILDING_PREREQ w
+ * building-resource-gate.ts, sprawdzany przy KOLEJKOWANIU produkcji) -- Mury
+ * musza wiec byc juz ukonczone (i maMur juz ustawione) zanim Fort w ogole moze
+ * zostac ukonczony w tym miescie. Usuniecie dodatkowego `|| id==='fort'` nie
+ * zmienia wiec zadnego realnego przebiegu gry, tylko usuwa martwa nadmiarowosc.
+ */
+export function buildingUnlockFlagFor(
+  completedBuildingId: string,
+  buildings: readonly { id: string; odblokowuje?: string }[],
+): string | null {
+  const def = buildings.find(b => b.id === completedBuildingId);
+  const flag = def?.odblokowuje?.trim();
+  return flag ? flag : null;
+}
+
 /** Czy typ budynku jest juz w kolejce (ulepszenie — zbudowany moze byc). */
 export function buildingTypeQueued(
   buildingId: string,

@@ -454,6 +454,7 @@ import { advanceProduction, rushProduction, rushCost, populationCostOf, UNIT_POP
   enqueueRecruitment, advanceRecruitment, advanceRecruitmentGated, unitProductionItem,
   enqueue, buildingProductionItem, splitPraca, cityPracaInteger, pracaImperialPoolGain, availableProduction, availableReplacementsFor,
   buildingLevelForEpoch, buildingEffectAtLevel, frontItem, unitNacjaForCivKey, applyCompletedBuildingIds,
+  buildingUnlockFlagFor,
   type CityProduction, type AvailabilityContext } from './game/production';
 import {
   buildingStockCost, unitStockCost, canAffordBuildingStock,
@@ -2026,7 +2027,11 @@ async function boot(): Promise<void> {
       if (completed.kind === 'budynek') {
         const blt = cityBuilt.get(cityId) ?? [];
         cityBuilt.set(cityId, applyCompletedBuildingIds(blt, completed.id, data.buildings));
-        if (completed.id === 'mury' || completed.id === 'fort') city.maMur = true;
+        // Decyzja 55B ("odblokowuje ozywic"): flaga City czytana z danych
+        // (buildings.json pole `odblokowuje`), nie z hardkodu id. Patrz
+        // buildingUnlockFlagFor (game/production.ts) po analize regresji 'fort'.
+        const unlockFlag = buildingUnlockFlagFor(completed.id, data.buildings);
+        if (unlockFlag) (city as unknown as Record<string, boolean>)[unlockFlag] = true;
         if (completed.id === 'spichlerz' && city.ownerId === 0) updateHud();
         console.log(`[Produkcja] Tura ${turn} ${city.name}: budynek ${completed.id}`);
         return { prod: prodAfterAdvance };

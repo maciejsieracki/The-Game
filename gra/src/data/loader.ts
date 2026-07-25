@@ -155,6 +155,16 @@ export interface BuildingDef {
    * tego pola nie psują kompilacji), ale w danych gry brak = błąd danych.
    */
   grupa?: string;
+  /**
+   * Decyzja 55B (Maciej 2026-07-25, "odblokowuje ozywic"): nazwa flagi City
+   * ustawianej na true po ukonczeniu tego budynku (np. 'maMur' dla Murow,
+   * 'maFort' dla Cytadeli). Odczytywane przez
+   * game/production.ts buildingUnlockFlagFor() i stosowane w main.ts w miejscu
+   * ukonczenia produkcji budynku -- zamienia dawny hardkod
+   * `id === 'mury' || id === 'fort'`. Opcjonalne — brak = budynek nie
+   * odblokowuje zadnej flagi City.
+   */
+  odblokowuje?: string;
 }
 
 /** Wiersz z arkusza Surowce.xlsx. */

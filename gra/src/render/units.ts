@@ -33,6 +33,10 @@ import { buildHorse } from './kon-nowy-model';
 import { GAME_MAP_RENDER_STYLE, terrainVisualForStyle } from './mapRenderStyle';
 import type { RuntimeUnit } from '../units/setup';
 import type { StackDisplayInfo } from '../game/armyMerge';
+// Odznaki ulepszeń budynkowych na żetonie (Maciej 2026-07-25, pytanie 57 = A+B:
+// kropki przy żetonie ORAZ kolorowa obwódka). Zasoby to singletony modułu —
+// NIE trafiają do userData['mats'], patrz nagłówek unitUpgradeBadges.ts.
+import { syncUnitUpgradeBadges } from './unitUpgradeBadges';
 import { buildHastati as newBuildHastati, buildFalangita as newBuildFalangita } from './hastati-falangita';
 // KAMIEŃ OPUS 5 (Maciej 2026-07-25, decyzja C-HASTATI-Q1=B): jednostki epoki Kamienia
 // przebudowane na wyższy standard szczegółowości + zgodność historyczna (warunek strategiczny).
@@ -4693,6 +4697,14 @@ export class UnitRenderer {
         this._registerToken(unit.id, group);
         this.scene.add(group);
       }
+
+      // Odznaki ulepszeń budynkowych (Pancerz + Parametry) — kropki + kolorowa
+      // obwódka. Wołane PO ewentualnej przebudowie żetonu, dla KAŻDEJ jednostki
+      // (gracz i AI identycznie — PARYTET AI, zero warunków na ownerId).
+      // Funkcja jest idempotentna: przy niezmienionym poziomie kończy się
+      // porównaniem jednej liczby, więc bezpiecznie stoi w pętli sync().
+      const tokenObj = this.tokens.get(unit.id);
+      if (tokenObj) syncUnitUpgradeBadges(tokenObj, unit);
     }
 
     // Remove tokens whose units are gone
