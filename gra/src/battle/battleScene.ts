@@ -14531,23 +14531,15 @@ export class BattleScene {
     const live = this.atk.filter(u => !u.dead && !u.removed);
     if (live.length === 0) return;
 
-    // BŁĄD G (właściciel, 2026-07-24): "Piechota z przodu" (F2) bywał ignorowany
-    // — armia zostawała ułożona jak poprzednio (dystans z przodu). Przyczyna:
-    // ten handler (JEDYNY aktywny wywołujący — przycisk "Formacja" w górnym
-    // rzędzie ikon, _makeDeployToolbarDropdown, linia ~10435) zawężał cel przez
-    // _resolveDeployFormationTargets(): jeśli w momencie kliknięcia jakaś grupa
-    // była zaznaczona/zarządzana (np. z automatycznego grupowania po typie,
-    // _autoGroupDeployByKind — GRUPA melee/GRUPA dystans), formacja przestawiała
-    // TYLKO tę jedną grupę (samą wśród siebie — bez widocznej zmiany, skoro
-    // wszyscy w niej mają tę samą rolę), a reszta armii (inna grupa/rola)
-    // zostawała nietknięta. Guzik "Formacja" żyje w GŁÓWNYM pasku narzędzi
-    // (nie w menu kontekstowym konkretnej grupy), więc gracz oczekuje efektu
-    // na CAŁĄ armię niezależnie od tego, co akurat jest zaznaczone — stąd
-    // zawsze `live` (cała armia), bez zawężania przez zaznaczenie. Osobny
-    // mechanizm "postawa grupy" (_setGroupDoctrine → _applyGroupFormation,
-    // linia ~15202) nadal ustawia formację per-grupa tam, gdzie to naprawdę
-    // per-grupowa decyzja (auto-gra w walce), więc ta zdolność nie ginie.
-    const targets = live;
+    // C-BITWA-FORMACJA=B (Maciej 2026-07-25): szyk stosuje się do AKTUALNIE ZAZNACZONEGO
+    // zakresu — pojedyncza jednostka / grupa / cała armia (gdy nic nie zaznaczone).
+    // „Niezależnie czy wybierzemy jedną jednostkę, formację czy całą armię — zasady
+    // obowiązują zaznaczonych" (Maciej). _resolveDeployFormationTargets zwraca dokładnie
+    // ten zakres (zaznaczenie → grupa → armia), spójnie na każdym poziomie. Komunikat
+    // niżej jasno wskazuje, do czego zastosowano (usuwa dawną dwuznaczność błędu G).
+    // Osobny mechanizm „postawa grupy" (_setGroupDoctrine → _applyGroupFormation) nadal
+    // ustawia formację per-grupa w auto-grze walki.
+    const targets = this._resolveDeployFormationTargets(live);
     if (targets.length === 0) return;
 
     const groupIds = [...new Set(targets.map(u => u.groupId).filter(Boolean))] as string[];
@@ -14563,7 +14555,10 @@ export class BattleScene {
     this._setDeployActiveFormation(formation);
     this._refreshDeploySelectionVisuals();
     this._updateRosterBar();
-    this._showOrderFeedback('Formacja ' + formation + ' zastosowana');
+    const scopeLabel = targets.length >= live.length
+      ? 'cała armia'
+      : 'zaznaczenie (' + targets.length + ')';
+    this._showOrderFeedback('Formacja ' + formation + ' — ' + scopeLabel);
   }
 
   /**
