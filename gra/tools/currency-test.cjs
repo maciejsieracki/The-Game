@@ -187,30 +187,43 @@ assert(yldWaluta.pieniadz > yldWalutaNoMennica.pieniadz,
 const ctxBoth = makeCtx({ walutaOdkryta: true, maTargowisko: true, maMennica: true });
 const yldBoth = E.cityYieldPerTurn(city, workedTiles, noBuildings, params, ctxBoth);
 
-// handelBrutto = 3 * (1 + 0.5) = 4.5  (Targowisko +50%)
-// handelNetto  = 4.5 * mennicaMnoznikPoWalucie(1.5, normal) = 6.75
-// pieniadzZHandlu = floor(6.75 * 0.70) = floor(4.725) = 4
 // Praca Rownina = 2 (data/terrain-yields.json) -> pracaNetto = 3*2 = 6 (no mlyn/cegielnia, no buildings, no corruption)
 // splitPraca(6, 0.70): doBudynkow=round(6*0.70)=round(4.2)=4, doPuli=6-4=2
 // pieniadzZPracy = floor(2 * 2) = 4  (targowiskoPracaMnoznik niezmieniony przez decyzje 2026-07-25)
-// pieniadz total = 4 + 0 (buildings) + 4 (pieniadzZPracy) = 8
+// D5 (decyzja 76=B, POPRAWKA tego samego dnia -- cytat wlasciciela w economy.ts):
+// pieniadzZPracy NIE jest doliczany do gotowej puli PO Targowisku -- to Praca
+// wystawiona na handel U ZRODLA, wiec wchodzi do handelBazowy PRZED Step 3
+// (Targowisko), i przechodzi przez WSZYSTKIE mnozniki Handlu (Targowisko,
+// civHandelMult, trasy, korupcja, Waluta+Mennica), tak jak reszta Daniny.
+// handelBazowy = handelTerenu(3) + pieniadzZPracy(4) = 7
+// handelBrutto  = 7 * (1 + 0.5) = 10.5  (Targowisko +50%, teraz dziala TEZ na pieniadzZPracy)
+// handelNetto   = 10.5 * mennicaMnoznikPoWalucie(1.5, normal) = 15.75
+// pieniadzZHandlu = floor(15.75 * 0.70) = floor(11.025) = 11
+// pieniadz total = 11 (0 buildings) -- POPRAWIONE 2026-07-25: stare 8 (i posrednie 7)
+// zakladaly, ze pieniadzZPracy omija Targowisko/Mennice (formule sprzed ostatniej
+// poprawki D5 w economy.ts).
 eq(yldBoth.pieniadzZPracy, 4,   'efekt2 (praca rownina=2): pieniadzZPracy = 4 (doPuli=round(6)-round(6*0.70)=2, x2) -- niezmieniony przez Mennica-gate');
-eq(yldBoth.pieniadz, 8,         'efekt1(x1.5 scalony)+efekt2: pieniadz = 8 (floor(6.75*0.70)+4)');
+eq(yldBoth.pieniadz, 11,        'efekt1(x1.5 scalony)+efekt2: pieniadz = 11 (D5 poprawka: floor(((3+4)*1.5)*1.5*0.70), pieniadzZPracy przechodzi przez Targowisko+Waluta+Mennica jak Danina)');
 
 // Now test with more worked tiles so doPuli > 0
 // 6 rownina tiles -> praca=6*2=12 (Praca Rownina=2), handel=6
 const workedTiles6 = Array(6).fill(ROWNINA_TILE);
 const yldBoth6 = E.cityYieldPerTurn(city, workedTiles6, noBuildings, params, ctxBoth);
 
-// handelBrutto = 6 * 1.5 = 9
-// handelNetto  = 9 * mennicaMnoznikPoWalucie(1.5, normal) = 13.5
-// pieniadzZHandlu = floor(13.5 * 0.70) = floor(9.45) = 9
 // pracaNetto = 6*2 = 12  (Praca Rownina=2, no multipliers)
 // splitPraca(12, 0.70): doBudynkow=round(12*0.70)=round(8.4)=8, doPuli=12-8=4
 // pieniadzZPracy = floor(4 * 2) = 8
-// pieniadz total = 9 + 0 + 8 = 17
+// D5 (decyzja 76=B, POPRAWKA tego samego dnia -- patrz uzasadnienie w bloku wyzej):
+// pieniadzZPracy wchodzi do handelBazowy PRZED Targowisko, wiec przechodzi tez
+// przez Targowisko +50% i Waluta+Mennica x1.5.
+// handelBazowy = handelTerenu(6) + pieniadzZPracy(8) = 14
+// handelBrutto  = 14 * 1.5 = 21  (Targowisko +50%)
+// handelNetto   = 21 * mennicaMnoznikPoWalucie(1.5, normal) = 31.5
+// pieniadzZHandlu = floor(31.5 * 0.70) = floor(22.05) = 22
+// pieniadz total = 22 -- POPRAWIONE 2026-07-25: stare 17 (i posrednie 15) zakladaly,
+// ze pieniadzZPracy omija Targowisko/Mennice (formule sprzed ostatniej poprawki D5).
 eq(yldBoth6.pieniadzZPracy, 8,  'efekt2: pieniadzZPracy = 8 (doPuli=4, x2) -- niezmieniony przez Mennica-gate');
-eq(yldBoth6.pieniadz, 17,       'efekt1(x1.5 scalony)+efekt2: pieniadz = 17');
+eq(yldBoth6.pieniadz, 22,       'efekt1(x1.5 scalony)+efekt2: pieniadz = 22 (D5 poprawka: floor(((6+8)*1.5)*1.5*0.70), pieniadzZPracy przechodzi przez Targowisko+Waluta+Mennica jak Danina)');
 
 // ---------------------------------------------------------------------------
 // D. EFEKT 2 gate: Targowisko BEZ Waluty -> pieniadzZPracy = 0

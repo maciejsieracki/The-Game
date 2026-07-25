@@ -636,6 +636,11 @@ var DEPOSIT_LINKED_BUILDING_LABELS = {
   // aktywnych etykiet w resource-access.ts collectActiveAccess). Złoto NIE jest magazynowane
   // (brak wpisu w LABEL_BY_ASCII/ASCII_BY_LABEL niżej) — więc ta bramka NIGDY nie jest
   // spełniona zapasem puli państwa (empireLabelSatisfied), tylko realnym aktywnym dostępem.
+  // PYTANIE 77=A (Maciej 2026-07-25): dostęp = własna Kopalnia złota ALBO aktywny szlak
+  // handlowy z cywilizacją, która ma złoto (jak koń) — bramka TU jest bez zmian (nadal
+  // sam sprawdza tylko obecność etykiety 'Złoto' w `activeLabels`); rozszerzenie jest
+  // WYŻEJ w łańcuchu, w zloto-access.ts (placedImprovementsWithZlotoTradeGrant) — patrz
+  // ten plik dla stanu wdrożenia (wiring w main.ts jeszcze NIE dopięty, plik zablokowany).
   mennica: ["Z\u0142oto"]
 };
 var CITY_BUILDING_PREREQ = {
@@ -682,9 +687,8 @@ function buildingResourceGateMet(building, activeLabels, empireBuiltIds, empireS
 }
 
 // src/game/building-upgrades.ts
-var SUPPRESSED_FROM_PRODUCTION = /* @__PURE__ */ new Set(["teatr"]);
 function isBuildingSuppressedFromProduction(building) {
-  return SUPPRESSED_FROM_PRODUCTION.has(building.id) || building.suppressed === true;
+  return building.suppressed === true;
 }
 function upgradeProductionDisplayName(target, buildings) {
   const from = (target.upgradeFrom ?? "").trim();

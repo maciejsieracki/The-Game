@@ -237,8 +237,13 @@ console.log('\n-- G. Zadowolenie z budynkow liczone dokladnie raz --');
 //    Uzywa PRAWDZIWYCH budynkow (nauka wylacznie z terenu ROWNINA jest tu 0 --
 //    yldNone.nauka=0 -- wiec caly efekt idzie przez naukaBudynkow, po
 //    zsumowaniu plonow, DOKLADNIE jak opisuje formula w economy.ts).
+//
+// POPRAWKA 2026-07-25 (PYTANIE 75 = C, wieczor -- pozniejsza niz ZADANIE 2 powyzej):
+// Biblioteka +50% -> +30% (normal), Akademia +10% -> +20% (normal); nadal stackuja
+// ADDYTYWNIE: 1 + 0.30 + 0.20 = 1.50. Wspolczynniki w data/econ-params.json:
+// budynek_biblioteka_bonus_nauki.normal=0.30, budynek_akademia_bonus_nauki.normal=0.20.
 // ---------------------------------------------------------------------------
-console.log('\n-- H0. Akademia +10% / Biblioteka +50% do Nauki (ZADANIE 2) --');
+console.log('\n-- H0. Akademia +20% / Biblioteka +30% do Nauki (PYTANIE 75=C) --');
 {
   const bibRec = rec('biblioteka');
   const akaRec = rec('akademia');
@@ -249,20 +254,20 @@ console.log('\n-- H0. Akademia +10% / Biblioteka +50% do Nauki (ZADANIE 2) --');
 
   const cbsBib = M.cityBuildingEntriesFromBuiltIds(['biblioteka'], buildings, bibRec.epokaWejscia, []);
   const yldBib = M.cityYieldPerTurn(city, worked4, cbsBib, params, makeCtx({ maBiblioteka: true }));
-  eq(yldBib.nauka, Math.floor(bibNauka * 1.5), `Biblioteka: +50% do Nauki -- floor(${bibNauka}*1.5)=${Math.floor(bibNauka * 1.5)} (bez zmian, kontrolne)`);
+  eq(yldBib.nauka, Math.floor(bibNauka * 1.3), `Biblioteka: +30% do Nauki -- floor(${bibNauka}*1.3)=${Math.floor(bibNauka * 1.3)} (PYTANIE 75=C, bylo +50%/floor(3*1.5)=4)`);
 
   const cbsAka = M.cityBuildingEntriesFromBuiltIds(['akademia'], buildings, akaRec.epokaWejscia, []);
   const yldAka = M.cityYieldPerTurn(city, worked4, cbsAka, params, makeCtx({ maAkademia: true }));
-  const expectedAka = Math.floor(akaNauka * 1.10);
+  const expectedAka = Math.floor(akaNauka * 1.20);
   eq(yldAka.nauka, expectedAka,
-    `Akademia: +10% do Nauki -- floor(${akaNauka}*1.10)=${expectedAka} (mnozy TAKZE wlasne 6 pkt Nauki -- ten sam efekt co Biblioteka ma dzis z +50%)`);
-  console.log(`   Akademia realnie daje ${yldAka.nauka} Nauki/ture (6 wlasnej produkcji + ${yldAka.nauka - akaNauka} z premii +10% na cala pule -- w tym mieście, bez innych zrodel Nauki).`);
+    `Akademia: +20% do Nauki -- floor(${akaNauka}*1.20)=${expectedAka} (PYTANIE 75=C, bylo +10%/floor(6*1.10)=6; mnozy TAKZE wlasne 6 pkt Nauki)`);
+  console.log(`   Akademia realnie daje ${yldAka.nauka} Nauki/ture (6 wlasnej produkcji + ${yldAka.nauka - akaNauka} z premii +20% na cala pule -- w tym mieście, bez innych zrodel Nauki).`);
 
   const cbsOba = M.cityBuildingEntriesFromBuiltIds(['biblioteka', 'akademia'], buildings, 1, []);
   const yldOba = M.cityYieldPerTurn(city, worked4, cbsOba, params, makeCtx({ maBiblioteka: true, maAkademia: true }));
-  const expectedOba = Math.floor((bibNauka + akaNauka) * 1.60);
+  const expectedOba = Math.floor((bibNauka + akaNauka) * 1.50);
   eq(yldOba.nauka, expectedOba,
-    `Biblioteka + Akademia razem: +60% do Nauki (addytywnie 50%+10%) -- floor((${bibNauka}+${akaNauka})*1.60)=${expectedOba}`);
+    `Biblioteka + Akademia razem: +50% do Nauki (addytywnie 30%+20%) -- floor((${bibNauka}+${akaNauka})*1.50)=${expectedOba} (PYTANIE 75=C, bylo +60%/floor(9*1.60)=14)`);
 }
 
 // ---------------------------------------------------------------------------

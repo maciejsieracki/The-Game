@@ -13,14 +13,17 @@ export type BuildingUpgradeLite = {
   przyrost?: Record<string, number>;
 };
 
-/** ABC-21 B: Teatr wchodzi w merge Akademia — nie pokazuj w produkcji. */
-export const SUPPRESSED_FROM_PRODUCTION = new Set(['teatr']);
-
+/**
+ * Jedno źródło prawdy: flaga `suppressed` w danych (`gra/data/buildings.json`).
+ * ABC-21 B: Teatr ma `suppressed: true` (wchodzi w merge Akademia — nie
+ * pokazuj w produkcji). Wcześniej był tu zdublowany hardkodowany
+ * `Set(['teatr'])` obok tej samej flagi w danych — usunięty (2026-07-25).
+ */
 export function isBuildingSuppressedFromProduction(building: {
   id: string;
   suppressed?: boolean;
 }): boolean {
-  return SUPPRESSED_FROM_PRODUCTION.has(building.id) || building.suppressed === true;
+  return building.suppressed === true;
 }
 
 /** Łańcuch upgrade: [najstarszy … aktualny]. */

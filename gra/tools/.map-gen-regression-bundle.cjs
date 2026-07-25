@@ -4891,6 +4891,20 @@ function ensureDepositGridCoverage(hexes, tier, typ, continentOf, nContinents, r
       if (passFixed === 0) break;
     }
   }
+  capMountainRangeClusterSize(
+    hexes,
+    /* @__PURE__ */ new Map(),
+    "gory" /* Gory */,
+    "rownina" /* Rownina */,
+    MAX_MOUNTAIN_RANGE_CLUSTER_SIZE
+  );
+  capMountainRangeClusterSize(
+    hexes,
+    /* @__PURE__ */ new Map(),
+    "wzgorza" /* Wzgorza */,
+    "rownina" /* Rownina */,
+    MAX_MOUNTAIN_RANGE_CLUSTER_SIZE
+  );
   return fixed;
 }
 function ensureForestGridCoverage(hexes, scratch, forestTier, _typ, _continentOf, _nContinents, rand) {

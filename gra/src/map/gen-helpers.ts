@@ -6776,6 +6776,24 @@ export function ensureDepositGridCoverage(
       if (passFixed === 0) break;
     }
   }
+
+  // Bezpiecznik dla twardego limitu skupiska (Maciej 2026-07-25, PYTANIE 63): bootstrap
+  // powyżej (pickDepositBootstrapHex → prepareTerrainForDeposit) w RZADKICH przypadkach
+  // (komórka bez ŻADNEGO istniejącego heksu Gór/Wzgórz na 'zelazo'/'miedz') wymusza NOWY
+  // heks Gór/Wzgórz PO tym, jak growMountainRanges już przyciął skupiska do
+  // MAX_MOUNTAIN_RANGE_CLUSTER_SIZE — może więc doszyć jeden heks do już przyciętego
+  // skupiska i przebić limit o 1. To JEDYNE miejsce w pipeline (poza growMountainRanges),
+  // gdzie teren bywa wymuszany na Gory/Wzgorza (patrz prepareTerrainForDeposit), więc
+  // powtórzenie cappingu tutaj domyka regułę właściciela na całej mapie. Brak `scratch` w
+  // sygnaturze tej funkcji (nie zmieniamy generator.ts) — pusta mapa oznacza remis rozstrzyga
+  // wyłącznie klucz heksu (nadal w pełni deterministyczne, zero Math.random).
+  capMountainRangeClusterSize(
+    hexes, new Map(), TerenBazowy.Gory, TerenBazowy.Rownina, MAX_MOUNTAIN_RANGE_CLUSTER_SIZE,
+  );
+  capMountainRangeClusterSize(
+    hexes, new Map(), TerenBazowy.Wzgorza, TerenBazowy.Rownina, MAX_MOUNTAIN_RANGE_CLUSTER_SIZE,
+  );
+
   return fixed;
 }
 

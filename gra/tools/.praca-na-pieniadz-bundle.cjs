@@ -893,20 +893,6 @@ function cityYieldPerTurn(city, workedTiles, cityBuildings, params, ctx) {
   if (ctx.maCegielnia) {
     pracaBruttoTerenu = pracaBruttoTerenu * (1 + params.budynekCegielniBonusPracy);
   }
-  let handelBrutto;
-  if (ctx.maTargowisko) {
-    handelBrutto = handelTerenu * (1 + params.budynekTargowiskoBonusHandlu);
-  } else {
-    handelBrutto = handelTerenu;
-  }
-  const civHandelMult = ctx.civHandelMult ?? 1;
-  if (civHandelMult !== 1) {
-    handelBrutto *= civHandelMult;
-  }
-  const liczbaTrasHandlowych = ctx.liczbaAktywnychTrasHandlowych ?? 0;
-  if (liczbaTrasHandlowych > 0) {
-    handelBrutto *= 1 + 0.05 * liczbaTrasHandlowych;
-  }
   let pracaBudynkow = 0;
   let pieniadzBudynkow = 0;
   let zywnoscBudynkow = 0;
@@ -922,25 +908,39 @@ function cityYieldPerTurn(city, workedTiles, cityBuildings, params, ctx) {
     zadBudynkow += buildingHappinessAtLevel(record, level);
   }
   const pracaBruttoLacznie = pracaBruttoTerenu + pracaBudynkow;
-  const strata = Math.min(ctx.strataFraction, params.korupcjaCap);
   const pracaNetto = pracaBruttoLacznie;
-  const handelNettoRaw = handelBrutto * (1 - strata);
   const walutaOdkrytaOnly = ctx.walutaOdkryta === true;
-  const walutaActive = walutaOdkrytaOnly && ctx.maMennica === true;
-  const walutaMnoznikBase = ctx.walutaMnoznikOverride ?? params.mennicaMnoznikPoWalucie;
-  const walutaMnoznikAktywny = walutaActive ? walutaMnoznikBase : 1;
-  const handelNetto = handelNettoRaw * walutaMnoznikAktywny;
   const pctPracaBudynki = city.podzia\u0142Pracy.procentBudynki / 100;
   const pracaInt = cityPracaInteger(pracaNetto);
   const { doPuli } = splitPraca(pracaInt, pctPracaBudynki);
   const pieniadzZPracy = ctx.maTargowisko && walutaOdkrytaOnly ? Math.floor(doPuli * params.targowiskoPracaMnoznik) : 0;
-  const handelNettoPula = handelNetto + pieniadzZPracy;
+  const handelBazowy = handelTerenu + pieniadzZPracy;
+  let handelBrutto;
+  if (ctx.maTargowisko) {
+    handelBrutto = handelBazowy * (1 + params.budynekTargowiskoBonusHandlu);
+  } else {
+    handelBrutto = handelBazowy;
+  }
+  const civHandelMult = ctx.civHandelMult ?? 1;
+  if (civHandelMult !== 1) {
+    handelBrutto *= civHandelMult;
+  }
+  const liczbaTrasHandlowych = ctx.liczbaAktywnychTrasHandlowych ?? 0;
+  if (liczbaTrasHandlowych > 0) {
+    handelBrutto *= 1 + 0.05 * liczbaTrasHandlowych;
+  }
+  const strata = Math.min(ctx.strataFraction, params.korupcjaCap);
+  const handelNettoRaw = handelBrutto * (1 - strata);
+  const walutaActive = walutaOdkrytaOnly && ctx.maMennica === true;
+  const walutaMnoznikBase = ctx.walutaMnoznikOverride ?? params.mennicaMnoznikPoWalucie;
+  const walutaMnoznikAktywny = walutaActive ? walutaMnoznikBase : 1;
+  const handelNetto = handelNettoRaw * walutaMnoznikAktywny;
   const pctNauka = city.podzia\u0142Handlu.procentNauka / 100;
   const pctPieniadz = city.podzia\u0142Handlu.procentPieniadz / 100;
   const pctLuksus = city.podzia\u0142Handlu.procentLuksus / 100;
-  const naukaZHandlu = Math.floor(handelNettoPula * pctNauka);
-  const pieniadzZHandlu = Math.floor(handelNettoPula * pctPieniadz);
-  const luksusZHandlu = Math.floor(handelNettoPula * pctLuksus);
+  const naukaZHandlu = Math.floor(handelNetto * pctNauka);
+  const pieniadzZHandlu = Math.floor(handelNetto * pctPieniadz);
+  const luksusZHandlu = Math.floor(handelNetto * pctLuksus);
   const naukaBonusFactor = 1 + (ctx.maBiblioteka ? params.budynekBibliotekaBonusNauki : 0) + (ctx.maAkademia ? params.budynekAkademiaBonusNauki : 0);
   const naukaLokalnaRaw = Math.floor((naukaZHandlu + naukaBudynkow) * naukaBonusFactor);
   const civNaukaMult = ctx.civNaukaMult ?? 1;

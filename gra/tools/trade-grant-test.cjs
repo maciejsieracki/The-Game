@@ -218,8 +218,12 @@ eq(TR.hasTradeRouteResourceAccess(grantsI_broken, 0, 'braz'), false, 'I: gracz t
 // obok braz/zelazo/kon -- ten sam boolean-grant mechanizm, żadnej osobnej ścieżki.
 // ---------------------------------------------------------------------------
 console.log('\n-- J. Cegła w TRADE_ROUTE_RESOURCE_KEYS -- ten sam mechanizm co braz/zelazo/kon --');
-eq(TR.TRADE_ROUTE_RESOURCE_KEYS.length, 4, 'J: cztery klucze (braz/zelazo/kon/cegla)');
+// PYTANIE 77=A (Maciej 2026-07-25, zloto-szlak-test.cjs ma pokrycie dedykowane):
+// 'zloto' dołączył jako piąty klucz -- licznik podniesiony 4->5, reszta sekcji J
+// bez zmian (żadna z funkcji generycznych nie zakłada stałej liczby kluczy).
+eq(TR.TRADE_ROUTE_RESOURCE_KEYS.length, 5, 'J: pięć kluczy (braz/zelazo/kon/cegla/zloto)');
 assert(TR.TRADE_ROUTE_RESOURCE_KEYS.includes('cegla'), 'J: TRADE_ROUTE_RESOURCE_KEYS zawiera "cegla"');
+assert(TR.TRADE_ROUTE_RESOURCE_KEYS.includes('zloto'), 'J: TRADE_ROUTE_RESOURCE_KEYS zawiera "zloto" (PYTANIE 77=A)');
 assert(TR.TRADE_ROUTE_RESOURCE_KEYS.includes('braz'), 'J: nadal zawiera "braz" (regresja)');
 assert(TR.TRADE_ROUTE_RESOURCE_KEYS.includes('zelazo'), 'J: nadal zawiera "zelazo" (regresja)');
 assert(TR.TRADE_ROUTE_RESOURCE_KEYS.includes('kon'), 'J: nadal zawiera "kon" (regresja)');
