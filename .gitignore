@@ -48,3 +48,8 @@ desktop.ini
 *.swp
 *~
 .claude/worktrees/
+
+# tymczasowe artefakty narzedziowe
+gra/tmp-*.ts
+gra/tools/.*-bundle.cjs
+gra/tools/.*-entry.ts
