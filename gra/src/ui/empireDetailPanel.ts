@@ -7,6 +7,7 @@ import type { EmpireDetailSnap, EmpireResourceRow } from './empireDetailTypes';
 import { formatObywateleLabel } from '../game/manpower';
 import { mocLabel, mocWithValue } from './power-labels';
 import { brandIconSvg, mapResourceIconSvg } from './icons/brandAssets';
+import { daninaLabelGenitive } from '../game/danina-nazwa';
 export type { EmpireDetailSnap } from './empireDetailTypes';
 
 const STYLE_ID = 'civ-empire-panel-css';
@@ -435,7 +436,7 @@ function renderHandelSection(t: EmpireDetailSnap['trade']): string {
   }
 
   h += `<div class="civ-emp-foot">Dochód trasy = max(podłoga, bazowy − dystans×współczynnik), kredytowany w pełnej kwocie `
-    + `OBU miastom trasy. Każda aktywna trasa dodaje też +5% ${t.daninaLabel} z pól tego miasta (osobno od Targowiska, nie w tej sumie). `
+    + `OBU miastom trasy. Każda aktywna trasa dodaje też +5% ${daninaLabelGenitive(t.daninaLabel)} z pól tego miasta (osobno od Targowiska, nie w tej sumie). `
     + `Szczegóły i warunki per miasto — panel miasta → Plony i ${t.daninaLabel.toLowerCase()} → Szlaki handlowe.</div>`;
   h += `</div>`;
   return h;

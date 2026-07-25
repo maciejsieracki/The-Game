@@ -37,6 +37,22 @@
 export type DaninaLabel = 'Danina' | 'Podatek';
 
 /**
+ * Odmiana etykiety -- "Danina" i "Podatek" maja rozny rodzaj gramatyczny
+ * (danina = zenski, podatek = meski), wiec proste ".toLowerCase()" psuje
+ * zdania wymagajace dopelniacza/biernika ("Podzial X", "% X", "mnozy X z pol").
+ * Te dwie funkcje daja poprawna forme do wstawienia w zdanie -- UZYWAJ ICH
+ * zamiast recznego sklejania, zeby nie powtarzac tej samej pulapki w kazdym
+ * miejscu UI.
+ */
+export function daninaLabelGenitive(label: DaninaLabel): 'daniny' | 'podatku' {
+  return label === 'Podatek' ? 'podatku' : 'daniny';
+}
+
+export function daninaLabelAccusative(label: DaninaLabel): 'daninę' | 'podatek' {
+  return label === 'Podatek' ? 'podatek' : 'daninę';
+}
+
+/**
  * Czy strumien nazywa sie "Podatek" (true) czy pozostaje "Danina" (false) dla
  * danej cywilizacji. Oba argumenty juz gotowe (policzone przez wolajacego) --
  * ta funkcja tylko laczy warunki AND, zeby nie bylo dwoch miejsc z ta sama

@@ -95,7 +95,7 @@ import {
   groupBuiltBuildingIds,
 } from '../game/building-upgrades';
 import { getCityFoodSplit, getEmpireFoodMaxCap } from '../game/empire-food';
-import { daninaLabel, mennicaWStolicy, type DaninaLabel } from '../game/danina-nazwa';
+import { daninaLabel, mennicaWStolicy, daninaLabelGenitive, daninaLabelAccusative, type DaninaLabel } from '../game/danina-nazwa';
 import type { CityManpowerSnapshot } from '../game/manpower';
 import { civManpowerMaxMult, formatManpower, unitManpowerCostForType } from '../game/manpower';
 import { defaultOwnerColor, mountUnitMiniPreview } from './unitMiniPreview';
@@ -3230,7 +3230,7 @@ function appendPodzialHandlu(
 ): void {
   if (!opts?.skipSubhd) {
     const sub = el('div', 'subhd');
-    sub.textContent = `Podział ${daninaLabelForCity(city).toLowerCase()}`;
+    sub.textContent = `Podział ${daninaLabelGenitive(daninaLabelForCity(city))}`;
     mount.appendChild(sub);
   }
 
@@ -3369,7 +3369,7 @@ function buildWealthDetailCard(
   const mnoz = wealthMnoznik(ws.poziom, p);
   const szcz = wealthZadowolenie(ws.poziom, p);
   const daninaLbl = daninaLabelForCity(city);
-  const daninaLblLow = daninaLbl.toLowerCase();
+  const daninaLblGen = daninaLabelGenitive(daninaLbl);
   const rown = wealthRownowaga(ws.poziom, epoch, p);
   const podzial = readPodzialHandlu(city, gameData());
   const pctSpol = podzial.procentLuksus;
@@ -3393,7 +3393,7 @@ function buildWealthDetailCard(
   intro.style.fontStyle = 'normal';
   intro.textContent =
     'Pasek w panelu pokazuje tylko postęp puli do następnego poziomu W — jak spichlerz dla wzrostu ludności. ' +
-    `Część ${daninaLblLow} (suwak Zamożność) trafia do puli; wyższy W mnoży pieniądze do skarbca, ale utrzymanie W też kosztuje.`;
+    `Część ${daninaLblGen} (suwak Zamożność) trafia do puli; wyższy W mnoży pieniądze do skarbca, ale utrzymanie W też kosztuje.`;
   card.appendChild(intro);
 
   appendDetailSection(card, 'Co oznaczają liczby');
@@ -3425,7 +3425,7 @@ function buildWealthDetailCard(
 
   appendDetailSection(card, 'Skąd bierze się pula');
   const g2 = appendDetailGrid(card);
-  gridDetailRow(g2, `Suwak ${HANDEL_ZAMOZNOSC_LABEL}`, `${pctSpol}% udziału ${daninaLblLow}`);
+  gridDetailRow(g2, `Suwak ${HANDEL_ZAMOZNOSC_LABEL}`, `${pctSpol}% udziału ${daninaLblGen}`);
   if (miastoMoney !== null) {
     gridDetailRow(g2, 'Pieniądz miasta', `${signed(miastoMoney)} 💰`);
     if (spolEst !== null) gridDetailRow(g2, '→ do puli zamożności', `~${signed(spolEst)}`);
@@ -3446,16 +3446,16 @@ function buildWealthDetailCard(
   gridDetailRow(g3, 'Szczęście', `W=0: ${p.karaZero}; co 10 poziomów W: +${p.zadowolenieNa10pkt}`);
 
   appendDetailAlgo(card, 'Kolejność ticku zamożności', [
-    `Wejście: strumień z ${daninaLblLow} = floor(handelNetto × %${HANDEL_ZAMOZNOSC_LABEL}) — nie trafia do skarbca.`,
+    `Wejście: strumień z ${daninaLblGen} = floor(handelNetto × %${HANDEL_ZAMOZNOSC_LABEL}) — nie trafia do skarbca.`,
     'Koszt utrzymania = rownowaga(W) × pieniądz brutto miasta tej tury.',
-    `Pula += wpływ z ${daninaLblLow} − utrzymanie. Gdy pula < 0 → pula=0 i W−1.`,
+    `Pula += wpływ z ${daninaLblGen} − utrzymanie. Gdy pula < 0 → pula=0 i W−1.`,
     'Dopóki pula ≥ próg awansu i W < cap: W+1, pula −= próg, pula ×= zachowanie po awansie.',
     'Mnożnik skarbca rośnie z poziomem W — stosowany do pieniędzy miasta (nie do nauki).',
   ]);
 
   appendDetailAlgo(card, 'Skąd bierze się wpływ do puli', [
     `${daninaLbl} brutto z pól + bonus Targowiska → handelNetto (po korupcji, opcjonalnie ×Waluta).`,
-    `Podział ${daninaLblLow}: %${HANDEL_ZAMOZNOSC_LABEL} × handelNetto → wpływ do puli zamożności.`,
+    `Podział ${daninaLblGen}: %${HANDEL_ZAMOZNOSC_LABEL} × handelNetto → wpływ do puli zamożności.`,
     `Więcej % na Skarb = mniej ${HANDEL_ZAMOZNOSC_LABEL} = wolniejszy W, ale więcej 💰 od razu.`,
     `Więcej % na ${HANDEL_ZAMOZNOSC_LABEL} = szybszy W, ale mniej gotówki — ×Skarb rośnie z opóźnieniem.`,
   ]);
@@ -4156,7 +4156,7 @@ function buildTopBarZlotoDetailCard(
   const est = estimateHandelChips(view, split);
   const ws = city.wealthState ?? freshWealthState();
   const daninaLbl = daninaLabelForCity(city);
-  const daninaLblLow = daninaLbl.toLowerCase();
+  const daninaLblGen = daninaLabelGenitive(daninaLbl);
 
   const card = el('div', 'detail-card');
   card.appendChild(el('div', 'dc-h', '<span>💰 Pieniądz — co to znaczy</span>'));
@@ -4174,17 +4174,17 @@ function buildTopBarZlotoDetailCard(
   appendDetailSection(card, 'Skąd bierze się pieniądz (to miasto)');
   const g1 = appendDetailGrid(card);
   gridDetailRow(g1, 'Plony + budynki', 'Targowisko, Mennica, podatki z pól — patrz okolica.');
-  gridDetailRow(g1, `Podział ${daninaLblLow}`, `${split.procentPieniadz}% Skarb · ${split.procentNauka}% Nauka · ${split.procentLuksus}% Zamożność`);
+  gridDetailRow(g1, `Podział ${daninaLblGen}`, `${split.procentPieniadz}% Skarb · ${split.procentNauka}% Nauka · ${split.procentLuksus}% Zamożność`);
   if (est.netto) {
     gridDetailRow(g1, `${daninaLbl} netto (szac.)`, `~${est.netto} → split suwaków`);
     gridDetailRow(g1, '→ do Skarbu', est.skarb ? `~+${est.skarb}` : '—');
   }
-  gridDetailRow(g1, 'Zamożność W', `W${ws.poziom} — część ${daninaLblLow} karmi pulę W (mnożnik podatków)`);
+  gridDetailRow(g1, 'Zamożność W', `W${ws.poziom} — część ${daninaLblGen} karmi pulę W (mnożnik podatków)`);
 
   appendDetailFormula(card, 'pieniadzNetto = podatki + handel_netto + budynki − utrzymanie');
   appendDetailFormula(card, 'Skarbiec += Σ pieniadzNetto_miast − wydatki');
   appendDetailAlgo(card, 'Gdzie zarządzać', [
-    `Prawa kolumna → „Podział ${daninaLblLow}”: Skarb vs Nauka vs Zamożność.`,
+    `Prawa kolumna → „Podział ${daninaLblGen}”: Skarb vs Nauka vs Zamożność.`,
     'Prawa kolumna → „Zamożność”: pasek puli W.',
     'Lewa kolumna → Wykup / Rekrutuj za złoto ze skarbca.',
   ]);
@@ -7220,7 +7220,7 @@ function renderCityIconRightRail(mount: HTMLElement, city: City): void {
   // dynamiczny tekst w stalej.
   const daninaLbl = daninaLabelForCity(city);
   const items = CITY_PANEL_ICONS_RIGHT.map(item => item.id === 'handel'
-    ? { ...item, title: `Podział ${daninaLbl.toLowerCase()} i zamożność — suwaki Skarb / Nauka / Zamożność` }
+    ? { ...item, title: `Podział ${daninaLabelGenitive(daninaLbl)} i zamożność — suwaki Skarb / Nauka / Zamożność` }
     : item);
   renderCityIconRail(iconMount, items, true, true);
 }
@@ -7276,11 +7276,12 @@ function buildHandelDetailCard(
   // opisuje REALNY mnoznik ekonomiczny (gdziekolwiek w imperium, patrz komentarz
   // przy `maMennica`) i NIE jest tu zmieniane.
   const daninaLbl = daninaLabelForCity(city);
-  const daninaLblLow = daninaLbl.toLowerCase();
+  const daninaLblGen = daninaLabelGenitive(daninaLbl);
+  const daninaLblAcc = daninaLabelAccusative(daninaLbl);
 
   const card = el('div', 'detail-card');
   const head = el('div', 'dc-h');
-  head.innerHTML = `<span>Podział ${daninaLblLow} — szczegóły</span>`;
+  head.innerHTML = `<span>Podział ${daninaLblGen} — szczegóły</span>`;
   card.appendChild(head);
 
   const intro = el('div', 'dc-note');
@@ -7294,7 +7295,7 @@ function buildHandelDetailCard(
   todo.innerHTML =
     '<b class="gold">Do rozkminienia (v2):</b> skąd bierze się korupcja (dystans od stolicy, liczba miast, epoka, porządek, tech?), ' +
     'czy gracz może ją obniżać, czy pokazujemy ją per miasto czy imperium. ' +
-    `Na razie w UI: stałe <b>${HANDEL_KORUPCJA_PCT_PLACEHOLDER}%</b> ${daninaLblLow} brutto — placeholder, nie wpływa jeszcze na silnik w prototypie.`;
+    `Na razie w UI: stałe <b>${HANDEL_KORUPCJA_PCT_PLACEHOLDER}%</b> ${daninaLblGen} brutto — placeholder, nie wpływa jeszcze na silnik w prototypie.`;
   card.appendChild(todo);
 
   appendDetailSection(card, 'Korupcja (placeholder)');
@@ -7308,22 +7309,22 @@ function buildHandelDetailCard(
 
   appendDetailSection(card, 'Aktualny podział');
   const g1 = appendDetailGrid(card);
-  gridDetailRow(g1, 'Skarb', `${split.procentPieniadz}%${est.skarb ? ` · ~+${est.skarb} z ${daninaLblLow}` : ''}`);
-  gridDetailRow(g1, 'Nauka', `${split.procentNauka}%${est.nauka ? ` · ~+${est.nauka} z ${daninaLblLow}` : ''}`);
+  gridDetailRow(g1, 'Skarb', `${split.procentPieniadz}%${est.skarb ? ` · ~+${est.skarb} z ${daninaLblGen}` : ''}`);
+  gridDetailRow(g1, 'Nauka', `${split.procentNauka}%${est.nauka ? ` · ~+${est.nauka} z ${daninaLblGen}` : ''}`);
   gridDetailRow(g1, HANDEL_ZAMOZNOSC_LABEL, `${split.procentLuksus}%${est.zam ? ` · ~+${est.zam} → pula` : ' → pula'}`);
   if (view) {
-    gridDetailRow(g1, 'Uwaga', `* Pieniądz i Nauka zawierają też budynki (chipy = tylko udział z ${daninaLblLow} netto)`);
+    gridDetailRow(g1, 'Uwaga', `* Pieniądz i Nauka zawierają też budynki (chipy = tylko udział z ${daninaLblGen} netto)`);
   }
 
-  appendDetailFormula(card, `handelBrutto = Σ ${daninaLblLow} pól` + (maTargowisko ? ' × (1 + bonus Targowiska)' : ''));
+  appendDetailFormula(card, `handelBrutto = Σ ${daninaLblGen} pól` + (maTargowisko ? ' × (1 + bonus Targowiska)' : ''));
   appendDetailFormula(card, `strataKorupcji = handelBrutto × ${HANDEL_KORUPCJA_PCT_PLACEHOLDER}% (placeholder UI)`);
   appendDetailFormula(card, 'handelNetto = handelBrutto − strataKorupcji' + (mennicaAktywna ? ` × Waluta+Mennica (${mennicaMnoznikTxt})` : ' × ×1 (brak Waluty lub Mennicy)'));
   appendDetailFormula(card, 'nauka = floor(handelNetto × %Nauka) + budynki  ← już zawiera mnożnik Waluty+Mennicy powyżej');
   appendDetailFormula(card, 'skarb_z_handlu = floor(handelNetto × %Skarb)  ← już zawiera mnożnik Waluty+Mennicy powyżej');
   appendDetailFormula(card, `${HANDEL_ZAMOZNOSC_LABEL} = floor(handelNetto × %${HANDEL_ZAMOZNOSC_LABEL}) → pula zamożności  ← też już zawiera mnożnik`);
 
-  appendDetailAlgo(card, `Algorytm podziału ${daninaLblLow} (cityYieldPerTurn)`, [
-    `Zbierz ${daninaLblLow} ze wszystkich obrabianych pól + centrum miasta.`,
+  appendDetailAlgo(card, `Algorytm podziału ${daninaLblGen} (cityYieldPerTurn)`, [
+    `Zbierz ${daninaLblAcc} ze wszystkich obrabianych pól + centrum miasta.`,
     maTargowisko ? 'Targowisko zwiększa handelBrutto o bonus procentowy.' : 'Bez Targowiska — tylko plony z terenu.',
     `Odejmij korupcję (placeholder ${HANDEL_KORUPCJA_PCT_PLACEHOLDER}% brutto; docelowo: dystans, miasta, cap) → handelNetto.`,
     'Waluta + Mennica RAZEM (decyzja 2026-07-25) mnożą całe handelNetto — Skarb, Naukę i ' + HANDEL_ZAMOZNOSC_LABEL + ' równocześnie. Sam tech Waluty już NIE wystarcza.',
@@ -7333,7 +7334,7 @@ function buildHandelDetailCard(
       : maMennica
         ? 'Mennica zbudowana, ale bez Waluty jeszcze nic nie mnoży (bramka: budynek + technologia, obie wymagane).'
         : `Bez Mennicy — ${daninaLbl} netto bez mnożnika, niezależnie od tego czy Waluta jest odkryta.`,
-    maBiblioteka ? `Biblioteka dodaje % bonusu do Nauki (łącznie z Nauką z ${daninaLblLow}).` : `Nauka = wyłącznie udział z ${daninaLblLow} + budynki.`,
+    maBiblioteka ? `Biblioteka dodaje % bonusu do Nauki (łącznie z Nauką z ${daninaLblGen}).` : `Nauka = wyłącznie udział z ${daninaLblGen} + budynki.`,
     `${HANDEL_ZAMOZNOSC_LABEL} nie trafia do skarbca — idzie do puli zamożności miasta.`,
     'Na końcu: mnożnik W mnoży cały pieniądz miasta (Skarb + budynki + Targowisko).',
   ]);
@@ -7350,7 +7351,7 @@ function buildHandelDetailCard(
   note.style.fontStyle = 'normal';
   note.textContent =
     `${daninaLbl}, zamożność, Spichlerz/wzrost i porządek — ustawienia w tej kolumnie wpływają na każdą turę. ` +
-    `Podział ${daninaLblLow} jest per miasto; suwak żywności armii — globalny dla całego państwa.`;
+    `Podział ${daninaLblGen} jest per miasto; suwak żywności armii — globalny dla całego państwa.`;
   card.appendChild(note);
   return card;
 }
@@ -7358,7 +7359,7 @@ function buildHandelDetailCard(
 function renderHandelSlidersPanel(mount: HTMLElement, city: City, view: CityView | null, data: GameData | null): void {
   mount.innerHTML = '';
   const daninaLbl = daninaLabelForCity(city);
-  appendSectionTitleWithDetails(mount, `<span>Podział ${daninaLbl.toLowerCase()}</span>`, () => buildHandelDetailCard(city, view, data));
+  appendSectionTitleWithDetails(mount, `<span>Podział ${daninaLabelGenitive(daninaLbl)}</span>`, () => buildHandelDetailCard(city, view, data));
   const split = readPodzialHandlu(city, data);
   const est = estimateHandelChips(view, split);
   if (view) {
@@ -7448,7 +7449,7 @@ function buildTradeRoutesDetailCard(city: City, rows: TradeRouteRowInfo[], data:
   setNoteHtml(intro,
     'Szlak handlowy łączy to miasto z obcym miastem (cywilizacja spoza tej, nie w wojnie, ' +
     'z zawartą Umową Handlową). Każda aktywna trasa daje osobny dochód (zależny od dystansu) ' +
-    `ORAZ mnoży ${daninaLabelForCity(city)} z pól o +${TRADE_ROUTE_HANDEL_BONUS_PCT_PER_ROUTE}%.`,
+    `ORAZ mnoży ${daninaLabelAccusative(daninaLabelForCity(city))} z pól o +${TRADE_ROUTE_HANDEL_BONUS_PCT_PER_ROUTE}%.`,
   );
   card.appendChild(intro);
 
@@ -7868,7 +7869,7 @@ function renderRightPanelTab(
     case 'handel':
       withW4TabCard(mount, undefined, city, body => {
         const hint = el('div', 'civ-handel-tab-hint');
-        hint.textContent = `Suwaki podziału ${daninaLabelForCity(city).toLowerCase()} (Skarb · Nauka · Zamożność) i poziom zamożności — przewiń, jeśli nie mieści się na ekranie.`;
+        hint.textContent = `Suwaki podziału ${daninaLabelGenitive(daninaLabelForCity(city))} (Skarb · Nauka · Zamożność) i poziom zamożności — przewiń, jeśli nie mieści się na ekranie.`;
         body.appendChild(hint);
         const slidersHost = el('div', 'civ-handel-sliders-host');
         const wealthHost = el('div', 'civ-handel-wealth-host');
