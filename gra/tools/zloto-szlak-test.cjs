@@ -16,12 +16,35 @@
  * Sekcja F (bonus) pokrywa punkt 4 zadania "Co dokładnie zrobić": zerwanie szlaku
  * blokuje budowę NOWEJ Mennicy, ale nie burzy/wyłącza już istniejącej.
  *
- * WAŻNE (patrz raport zadania): pełne wpięcie (main.ts) NIE jest dokonane -- main.ts
- * jest zablokowany dla tej zmiany (równoległy agent). Ten test woła bezpośrednio
- * moduły w zakresie zmiany (trade-routes.ts, zloto-access.ts, resource-access.ts,
- * building-resource-gate.ts/production.ts) tym samym wzorcem, jakim main.ts WOŁAŁBY
- * je, gdyby był odblokowany -- patrz zloto-access.ts (placedImprovementsWithZlotoTradeGrant,
- * komentarz "WIRING WYMAGANY W main.ts") dla dokładnych miejsc do dopisania.
+ * Sekcje 1-5 i F wołają bezpośrednio moduły w zakresie zmiany (trade-routes.ts,
+ * zloto-access.ts, resource-access.ts, building-resource-gate.ts/production.ts) --
+ * DOKŁADNIE te same funkcje, jakich main.ts używa po domknięciu wpięcia (2026-07-25
+ * wieczór: main.ts woła teraz `placedImprovementsWithTradeGrants` w 8 miejscach,
+ * `ownerHasNativeResourceAccess` ma gałąź 'zloto' -- patrz main.ts i zloto-access.ts
+ * nagłówek "WIRING W main.ts -- DOPIĘTY").
+ *
+ * Sekcja G (NOWA, domknięcie wpięcia) testuje dodatkowo samą KOMPOZYCJĘ, jakiej
+ * main.ts używa (`placedImprovementsWithTradeGrants` = brąz+złoto naraz, jeden punkt
+ * zamiast ośmiu wywołań) -- że oba syntetyczne granty współistnieją bez kolizji kluczy.
+ *
+ * OGRANICZENIE UCZCIWIE PRZYZNANE (patrz raport zadania): main.ts SAM (17+ tys.
+ * linii, jeden monolityczny bootstrap zależny od `document`/`window`/canvas/three.js,
+ * bez ANI JEDNEJ wyeksportowanej funkcji testowej ani test-hooka) nie da się
+ * zbundlować/zaimportować do tego node'owego harnessu esbuild -- i żaden inny test
+ * w tym repo (zloto-test.cjs, trade-grant-test.cjs, deposit-building-gate-test.cjs,
+ * logic-test.cjs) tego nie robi, wszystkie bundlują wyłącznie pure-logic moduły z
+ * game//map/, nigdy main.ts. Napisanie takiego testu wymagałoby albo (a) uruchomienia
+ * całego bootstrapu gry pod jsdom+mock canvas/three.js (osobne, ciężkie zadanie, poza
+ * zakresem tego zlecenia), albo (b) wyekstrahowania `placedImprovementsWithTradeGrants`/
+ * `ownerHasNativeResourceAccess` z main.ts do osobnego, eksportowalnego modułu -- co
+ * NIE było częścią zlecenia (main.ts miał zostać tylko wpięty, nie refaktoryzowany).
+ * Dlatego "koniec do końca przez main.ts" pozostaje NIEPOKRYTY testem automatycznym;
+ * zamiast tego potwierdzeniem wpięcia jest: (1) statyczny dowód -- grep pokazuje
+ * WSZYSTKIE 8 miejsc w main.ts woła teraz `placedImprovementsWithTradeGrants`, zero
+ * pozostałych wywołań starej `placedImprovementsWithBrazTradeGrant` poza jej własną
+ * definicją i jednym wewnętrznym wywołaniem w nowej funkcji kompozytowej; (2) `npx tsc
+ * --noEmit` niezmiennie 0 błędów po podmianie (nowa funkcja typuje się identycznie w
+ * każdym z 8 miejsc, w tym w polu `placedImprovements` interfejsu AvailabilityContext).
  */
 
 const fs   = require('fs');
@@ -47,6 +70,7 @@ export {
   empireHasKopalniaZlota, KOPALNIA_ZLOTA_KEY,
   placedImprovementsWithZlotoTradeGrant, TRADE_GRANT_ZLOTO_SYNTHETIC_KEY,
 } from '../src/game/zloto-access';
+export { empireHasKopalniaMiedzi, KOPALNIA_MIEDZI_KEY } from '../src/game/braz-access';
 export { getCityResourceAccessForCity, getResourceAccessForCity } from '../src/game/resource-access';
 export { buildableProduction, eraBuildingCatalog } from '../src/game/production';
 export { CITY_BUILDING_PREREQ } from '../src/game/building-resource-gate';
@@ -271,6 +295,52 @@ console.log('-- F. zerwanie szlaku: Mennica JUŻ ZBUDOWANA zostaje (nie znika) -
   const mennicaEntry = catalog.find(e => e.id === 'mennica');
   ok(!!mennicaEntry && mennicaEntry.status === 'built',
     `F: Mennica już zbudowana PRZED zerwaniem szlaku -- status='built' zostaje, nie znika (ma: ${mennicaEntry && mennicaEntry.status})`);
+}
+
+// ===========================================================================
+// G. Kompozycja main.ts `placedImprovementsWithTradeGrants` (brąz + złoto RAZEM,
+//    domknięcie wpięcia 2026-07-25 wieczór) -- oba syntetyczne granty muszą
+//    współistnieć na TEJ SAMEJ mapie placedImprovements bez kolizji kluczy ani
+//    wzajemnego "zjadania się" (main.ts doklejа złoto NA WYNIKU brązu, dokładnie
+//    tak jak niżej). Patrz nagłówek pliku -- to NIE jest test main.ts samego w
+//    sobie (niewykonalne w tym harnessie), tylko dowód, że KOMPOZYCJA dwóch
+//    augmentacji, jakiej main.ts używa, jest bezpieczna.
+// ===========================================================================
+console.log('-- G. main.ts placedImprovementsWithTradeGrants: brąz + złoto RAZEM, bez kolizji --');
+{
+  // Symuluje DOKŁADNIE main.ts placedImprovementsWithTradeGrants(ownerId, ownImprovements):
+  //   withBraz = placedImprovementsWithBrazTradeGrant(ownerId, ownImprovements)  [main.ts, lokalna]
+  //   return placedImprovementsWithZlotoTradeGrant(withBraz, hasZlotoGrant)
+  // placedImprovementsWithBrazTradeGrant nie jest eksportowana z braz-access.ts (żyje
+  // wyłącznie w main.ts) -- odtwarzamy tu jej jedyny obserwowalny efekt (doklejenie
+  // 'kopalnia_miedzi' pod własnym syntetycznym kluczem), żeby przetestować kompozycję.
+  const TRADE_GRANT_BRAZ_SYNTHETIC_KEY = '__trasa_braz__';
+  const ownImprovements = new Map(); // gracz -- BEZ własnej kopalni miedzi ani złota
+  const withBraz = new Map(ownImprovements);
+  withBraz.set(TRADE_GRANT_BRAZ_SYNTHETIC_KEY, ['kopalnia_miedzi']);
+  const withBrazAndZloto = M.placedImprovementsWithZlotoTradeGrant(withBraz, true);
+
+  ok(M.empireHasKopalniaMiedzi(withBrazAndZloto) === true,
+    'G: kompozycja -- grant brązu PRZETRWAŁ po doklejeniu grantu złota na wierzchu');
+  ok(M.empireHasKopalniaZlota(withBrazAndZloto) === true,
+    'G: kompozycja -- grant złota aktywny RAZEM z grantem brązu, bez wzajemnego wypierania');
+  eq(withBrazAndZloto.size, 2, 'G: kompozycja -- dokładnie 2 wpisy (jeden brąz, jeden złoto), zero kolizji kluczy');
+  ok(withBrazAndZloto.has(TRADE_GRANT_BRAZ_SYNTHETIC_KEY) && withBrazAndZloto.has(M.TRADE_GRANT_ZLOTO_SYNTHETIC_KEY),
+    'G: oba syntetyczne klucze obecne pod własnymi, różnymi nazwami');
+
+  const labelsG = activeLabelsFor(0, withBrazAndZloto);
+  ok(labelsG.includes('Złoto'), 'G: etykieta "Złoto" aktywna w wyniku kompozycji');
+  ok(mennicaBuildable(0, labelsG) === true,
+    'G: Mennica BUDOWALNA po kompozycji (dostęp do złota "z trasy" przetrwał doklejenie grantu brązu)');
+
+  // Kontrola: kolejność odwrotna (gdyby main.ts kiedyś zamienił kolejność wywołań)
+  // -- wynik musi być identyczny, kompozycja jest przemienna (różne klucze, różne
+  // wartości, żadna funkcja nie czyta klucza drugiej).
+  const zlotoOnly = M.placedImprovementsWithZlotoTradeGrant(new Map(ownImprovements), true);
+  const brazThenZloto = new Map(zlotoOnly);
+  brazThenZloto.set(TRADE_GRANT_BRAZ_SYNTHETIC_KEY, ['kopalnia_miedzi']);
+  ok(M.empireHasKopalniaMiedzi(brazThenZloto) === true && M.empireHasKopalniaZlota(brazThenZloto) === true,
+    'G: kompozycja jest przemienna -- ten sam wynik niezależnie od kolejności doklejania grantów');
 }
 
 console.log(`\nzloto-szlak-test: ${passed} passed, ${failed} failed`);

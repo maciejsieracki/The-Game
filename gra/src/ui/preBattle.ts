@@ -25,6 +25,15 @@ export interface PreBattleUnit {
   /** M jednostki (pole) — Łączna siła sumuje moc, nie meleeAttack. */
   moc?: number;
   ilosc?: number;
+  /**
+   * TRZECI SYSTEM -- doświadczenie bojowe / weterani (2026-07-25,
+   * game/veteran.ts). Etykieta gotowa z veteranBadgeLabel(), np. "★★ +10%" /
+   * "★★★ Weteran +20%"; undefined/pusty string na poziomie 1 (brak odznaki).
+   * Renderowana OSOBNĄ, złotą linią (klasa .pb-vet) — wizualnie odróżnialna
+   * od reszty karty jednostki (HP/atak), zero konfliktu z odznakami budynków
+   * (ten kontrakt nie ma odznak budynkowych — patrz unit-building-bonuses.ts).
+   */
+  veteranBadge?: string;
 }
 
 export interface PreBattleModifier {
@@ -248,6 +257,8 @@ function ensureStyles(): void {
 .pb-uc .pb-sub{display:block;font-size:9px;color:var(--pb-dim);font-variant-numeric:tabular-nums;margin-top:1px;white-space:nowrap}
 .pb-uc .pb-hpb{display:block;height:3px;border-radius:2px;background:rgba(0,0,0,.5);overflow:hidden;margin-top:3px}
 .pb-uc .pb-hpb i{display:block;height:100%}
+.pb-uc .pb-vet{display:block;font-size:8.5px;font-weight:700;letter-spacing:.03em;color:#f4d35e;
+  text-shadow:0 0 5px rgba(244,211,94,.4);margin-top:1px;white-space:nowrap}
 .pb-more{flex:none;font-size:10px;color:var(--pb-gold);border:1px dashed var(--pb-gold-dim);border-radius:999px;
   padding:3px 10px;background:rgba(8,11,17,.82);align-self:flex-start;font-variant-numeric:tabular-nums;white-space:nowrap}
 .pb-roster.pb-r .pb-more{align-self:flex-end}
@@ -427,6 +438,9 @@ function unitRowHtml(unit: PreBattleUnit): string {
   const hpPct = unit.maxHp > 0 ? Math.max(0, Math.min(100, Math.round((unit.hp / unit.maxHp) * 100))) : 100;
   const hpColor = hpPct > 50 ? '#4caf50' : hpPct > 20 ? '#d0a030' : '#c84040';
   const name = esc(unit.nazwa) + (qty > 1 ? ' ×' + String(qty) : '');
+  const vetHtml = unit.veteranBadge
+    ? '<span class="pb-vet">' + esc(unit.veteranBadge) + '</span>'
+    : '';
   return (
     '<div class="pb-uc">' +
     '<span class="pb-ic">' + unitSvgHtml(kind) + '</span>' +
@@ -434,6 +448,7 @@ function unitRowHtml(unit: PreBattleUnit): string {
     '<span class="pb-nm">' + name + '</span>' +
     '<span class="pb-sub">' + esc(unitSubtitle(unit)) + '</span>' +
     '<span class="pb-hpb"><i style="width:' + String(hpPct) + '%;background:' + hpColor + '"></i></span>' +
+    vetHtml +
     '</span>' +
     '</div>'
   );

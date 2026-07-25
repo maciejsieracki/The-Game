@@ -65,6 +65,11 @@ import { combatUnitFromDef, unitRowStat } from '../game/combat';
 import type { CivBonusEntry } from '../game/civ-bonuses';
 import { applyMultiplier, civCombatStatMultipliers } from '../game/civ-bonuses';
 import { mergeBuildingBonusIntoStatMultipliers } from '../game/unit-building-bonuses';
+import {
+  applyVeteranFracToCombatUnit,
+  veteranMoraleBazoweUp,
+  veteranMoraleUcieczkiDown,
+} from '../game/veteran';
 import { cityWallDefenseBonusPercent } from '../game/city-defense';
 import { buildUnitModel } from '../render/units';
 import {
@@ -343,6 +348,17 @@ export interface BattleUnit {
   pancerzBonusFrac?: number;
   /** Jak wyzej, Sciezka B (parametry miekkie: wszystko poza Pancerzem). */
   parametryBonusFrac?: number;
+  /**
+   * TRZECI SYSTEM -- doswiadczenie bojowe / weterani (2026-07-25, game/veteran.ts).
+   * Ulamek premii (0 / 0.10 / 0.20) wg poziomu (Rekrut/Doswiadczony/Weteran).
+   * Wypelniane przez main.ts runtimeToBattleUnit() z RuntimeUnit.battlesSurvived
+   * (via veteranCombatBonusFrac()) -- ANALOGICZNIE do pancerzBonusFrac/
+   * parametryBonusFrac powyzej, ale NIEZALEZNY, trzeci system (nie miesza sie
+   * z tamtymi -- patrz naglowek game/veteran.ts). Domyslnie undefined/0 --
+   * bezpieczne dla wszystkich istniejacych wywolan (synthetic/test BattleUnit
+   * literals bez tego pola zachowuja dokladnie dawne zachowanie).
+   */
+  veteranBonusFrac?: number;
 }
 
 /** Siege-mode options: add a wall across the defender's end of the field. */
@@ -1181,10 +1197,14 @@ function normCounters(raw: any[]): any[] {
 
 function toCombatUnit(bu: BattleUnit): CombatUnit {
   const s: Record<string, unknown> = (bu.stats as Record<string, unknown>) ?? {};
-  return combatUnitFromDef(s, {
+  const cu = combatUnitFromDef(s, {
     typNazwa: (s['Jednostka'] as string) ?? bu.kategoria,
     hp: bu.hp,
   });
+  // TRZECI SYSTEM (weterani): jedyny wspolny punkt budowy CombatUnit w tym
+  // pliku (animowana bitwa PLUS "pomin animacje" -- oba wolaja toCombatUnit),
+  // wiec przeskalowanie tutaj pokrywa obie sciezki na raz. Patrz game/veteran.ts.
+  return applyVeteranFracToCombatUnit(cu, bu.veteranBonusFrac ?? 0);
 }
 
 /** Battle movement points (tiles / turn). Default DEFAULT_BATTLE_MOVE, min 1. */
@@ -1434,7 +1454,11 @@ function moraleBaseFor(bu: BattleUnit): number {
   const raw = statField(s, 'Morale bazowe', 'Morale bazowe');
   const v = typeof raw === 'number' ? raw : parseFloat(String(raw));
   if (!Number.isFinite(v)) return MORALE_START;
-  return Math.max(10, Math.min(300, v));
+  const base = Math.max(10, Math.min(300, v));
+  // TRZECI SYSTEM (weterani, 2026-07-25 -- korekta wlasciciela wieczorem):
+  // "Morale bazowe" idzie W GORE (wyzej = lepiej) -- +10%/+20%, Math.ceil
+  // gwarantuje widoczny efekt nawet dla malych wartosci. Patrz game/veteran.ts.
+  return veteranMoraleBazoweUp(base, bu.veteranBonusFrac ?? 0);
 }
 
 /** Per-unit ABSOLUTE morale level at which the unit breaks + flees ('Morale ucieczki'). */
@@ -1443,7 +1467,12 @@ function fleeMoraleFor(bu: BattleUnit): number {
   const raw = statField(s, 'Morale ucieczki', 'Morale ucieczki');
   const v = typeof raw === 'number' ? raw : parseFloat(String(raw));
   if (!Number.isFinite(v)) return 25;
-  return Math.max(0, Math.min(295, v));
+  const base = Math.max(0, Math.min(295, v));
+  // TRZECI SYSTEM (weterani): "Morale ucieczki" jest polem ODWROCONYM (nizej
+  // = trudniej uciec) -- idzie W DOL -- x0.90/x0.80, Math.floor + podloga
+  // bezpieczenstwa gwarantuja widoczny efekt bez zejscia do zera/ujemnych.
+  // Patrz game/veteran.ts (korekta wlasciciela 2026-07-25 wieczorem).
+  return veteranMoraleUcieczkiDown(base, bu.veteranBonusFrac ?? 0);
 }
 
 // ---------------------------------------------------------------------------
