@@ -34,18 +34,23 @@ import { GAME_MAP_RENDER_STYLE, terrainVisualForStyle } from './mapRenderStyle';
 import type { RuntimeUnit } from '../units/setup';
 import type { StackDisplayInfo } from '../game/armyMerge';
 import { buildHastati as newBuildHastati, buildFalangita as newBuildFalangita } from './hastati-falangita';
+// KAMIEŃ OPUS 5 (Maciej 2026-07-25, decyzja C-HASTATI-Q1=B): jednostki epoki Kamienia
+// przebudowane na wyższy standard szczegółowości + zgodność historyczna (warunek strategiczny).
+// Zulu i łucznicy Egipt/Sumer NIE są jeszcze wpięci — czekają na decyzje właściciela.
 import {
-  buildWojownikKamien as newBuildWojownikKamien,
-  buildOszczepnik as newBuildOszczepnik,
-  buildLucznik as newBuildLucznik,
-  buildZwiadowca as newBuildZwiadowca,
+  buildWojownikOpus5,
+  buildOszczepnikOpus5,
+  buildLucznikOpus5,
+  buildZwiadowcaOpus5,
+} from './kamien-bazowe-opus5';
+import { buildMaceWarriorOpus5, buildInkaJavelineerOpus5 } from './kamien-inka-opus5';
+import { buildBatteringRamOpus5 } from './kamien-zulu-taran-opus5';
+import {
   buildProcarz as newBuildProcarz,
   buildWlocznik as newBuildWlocznik,
   buildMiecznik as newBuildMiecznik,
 } from './jednostki-p1-rdzen';
 import {
-  buildMaceWarrior as newBuildMaceWarrior,
-  buildInkaJavelineer as newBuildInkaJavelineer,
   buildAxeWarriorInka as newBuildAxeWarriorInka,
   buildInkaSlinger as newBuildInkaSlinger,
   buildSuperInca as newBuildSuperInca,
@@ -68,7 +73,6 @@ import {
 import {
   buildImpi as newBuildImpi,
   buildSumerianSpearman as newBuildSumerianSpearman,
-  buildBatteringRam as newBuildBatteringRam,
   buildSiegeTower as newBuildSiegeTower,
 } from './jednostki-p57-wlocznie-machiny';
 import {
@@ -1226,7 +1230,7 @@ function buildNamedUnit(n: string, ownerColor_: number): THREE.Group | null {
  */
 function buildMaceWarrior(ownerColor_: number): THREE.Group {
   // GRAFIKA-JEDNOSTKI: deleguje do bespoke modelu (jednostki-p2-inka.ts).
-  return newBuildMaceWarrior(ownerColor_);
+  return buildMaceWarriorOpus5(ownerColor_);
 }
 
 // --- Inka: WOJOWNIK Z TOPOREM (Axe Warrior) ----------------------------------
@@ -1859,7 +1863,7 @@ function buildEgyptianChariot(ownerColor_: number): THREE.Group {
  */
 function buildInkaJavelineer(ownerColor_: number): THREE.Group {
   // GRAFIKA-JEDNOSTKI: deleguje do bespoke modelu (jednostki-p2-inka.ts).
-  return newBuildInkaJavelineer(ownerColor_);
+  return buildInkaJavelineerOpus5(ownerColor_);
 }
 
 /**
@@ -2389,7 +2393,7 @@ function buildAkkadianArcher(ownerColor_: number): THREE.Group {
  */
 function buildBatteringRam(ownerColor_: number): THREE.Group {
   // GRAFIKA-JEDNOSTKI: deleguje do bespoke modelu (jednostki-p57-wlocznie-machiny.ts).
-  return newBuildBatteringRam(ownerColor_);
+  return buildBatteringRamOpus5(ownerColor_);
 }
 
 /**
@@ -2748,7 +2752,7 @@ function buildCategoryModel(category: string, ownerColor_: number): THREE.Group 
     // -----------------------------------------------------------------------
     case 'lucznik': {
       // GRAFIKA-JEDNOSTKI: deleguje do bespoke modelu (jednostki-p1-rdzen.ts).
-      return newBuildLucznik(ownerColor_);
+      return buildLucznikOpus5(ownerColor_);
     }
 
     // -----------------------------------------------------------------------
@@ -2760,7 +2764,7 @@ function buildCategoryModel(category: string, ownerColor_: number): THREE.Group 
     // -----------------------------------------------------------------------
     case 'oszczepnik': {
       // GRAFIKA-JEDNOSTKI: deleguje do bespoke modelu (jednostki-p1-rdzen.ts).
-      return newBuildOszczepnik(ownerColor_);
+      return buildOszczepnikOpus5(ownerColor_);
     }
 
     // -----------------------------------------------------------------------
@@ -3502,7 +3506,7 @@ function buildCategoryModel(category: string, ownerColor_: number): THREE.Group 
     // -----------------------------------------------------------------------
     case 'zwiadowca': {
       // GRAFIKA-JEDNOSTKI: deleguje do bespoke modelu (jednostki-p1-rdzen.ts).
-      return newBuildZwiadowca(ownerColor_);
+      return buildZwiadowcaOpus5(ownerColor_);
     }
 
     // -----------------------------------------------------------------------
@@ -3580,7 +3584,7 @@ function buildCategoryModel(category: string, ownerColor_: number): THREE.Group 
     case 'domyslny':
     default: {
       // GRAFIKA-JEDNOSTKI: deleguje do bespoke modelu (jednostki-p1-rdzen.ts).
-      return newBuildWojownikKamien(ownerColor_);
+      return buildWojownikOpus5(ownerColor_);
     }
   }
 }
