@@ -177,3 +177,126 @@ Wstępna rekomendacja: **A**.
 Decyzja 11A: jednostki mają nosić odznakę pokazującą poziom ulepszenia. Do rozstrzygnięcia szczegóły prezentacji:
 ile poziomów widocznych, czy dwie ścieżki (pancerz 1–3 i parametry 1–3) mają osobne oznaczenia, czy odznaka ma być
 na żetonie na mapie świata, na modelu w bitwie, czy w obu miejscach.
+
+---
+
+## PYTANIE 25 — awans budynku: zastąpienie czy rozbudowa · STATUS: OTWARTE
+
+**Sytuacja.** Maciej (2026-07-25): „chciałbym widzieć w grze wybudowanych zarówno nowy upgrade jak i stary budynek…
+Przecież nie usuwamy murów, zastępując je basztą, tylko po prostu mamy zarówno mur, jak i basztę."
+Dziś awans **podmienia `id`** (`applyCompletedBuildingIds`, `production.ts:575`): miasto z Cytadelą ma wpis `fort`,
+a wpisu `mury` już nie ma. Sześć łańcuchów: Mury→Cytadela, Pałac I→II→III, Biblioteka→Akademia,
+Koszary→Akademia wojskowa, Kuźnia żelaza→Wielka Kuźnia, Spichlerz→kolejny tier.
+**Pułapka:** samo zostawienie obu wpisów spowoduje podwójne liczenie wszędzie — mur 200% + Cytadela 300% = 500% obrony.
+
+**A. Poprzednik zostaje w mieście naprawdę** — lista zawiera i `mury`, i `fort`; silnik wszędzie liczy tylko najwyższy szczebel.
+- Za: model szczery — to, co widać na liście, miasto faktycznie ma.
+- Za: otwiera osobne burzenie/uszkodzenie muru przy zachowaniu baszty.
+- Przeciw: KAŻDE miejsce czytające listę budynków musi znać łańcuchy; przeoczenie = ciche podwójne liczenie.
+- Przeciw: istniejące zapisy mają tylko następcę — trzeba migracji.
+
+**B. Poprzednik pokazywany jako zawartość następcy** — silnik trzyma sam `fort`, UI po kliknięciu rozwija listę z łańcucha `upgradeFrom`.
+- Za: ten sam efekt wizualny przy zerowym ryzyku podwójnego liczenia.
+- Za: działa od razu dla wszystkich zapisów, bez migracji.
+- Przeciw: to prezentacja, nie model — muru nie da się osobno zburzyć.
+- Przeciw: lista pokaże budynki, których miasto formalnie nie ma.
+
+**C. Budynek jako struktura złożona z części** — mur, baszta, brama jako osobne elementy jednego obiektu obronnego.
+- Za: najbogatsze gameplayowo, otwiera wyłom w konkretnym elemencie.
+- Za: najbliższe realiom fortyfikacji.
+- Przeciw: przebudowa całego systemu budynków, produkcji, obrony i UI.
+- Przeciw: mnoży decyzje gracza, zanim ogramy obecne oblężenia.
+
+**REKOMENDACJA: B** — daje żądany efekt natychmiast i bez ryzyka; przejście B→A później jest łatwe, odwrotne już nie.
+
+---
+
+## PYTANIE 26 — Pałac III jest SŁABSZY od Pałacu II (realny błąd) · STATUS: OTWARTE
+
+**Sytuacja.** Po przejściu na model liniowy (`baza + przyrost × (poziom−1)`) kultura Pałacu wychodzi tak:
+
+| Tier | baza | przyrost | maks. poziom | Kultura wg epoki miasta |
+|---|---|---|---|---|
+| Pałac I | 5 | 3 | 3 | Kamień **5** · Brąz **8** · Żelazo **11** |
+| Pałac II | 8 | 5 | 2 | Brąz **8** · Żelazo **13** |
+| Pałac III | 11 | 7 | 1 | Żelazo **11** |
+
+W epoce Żelaza: Pałac II daje **13**, a Pałac III — na który trzeba wydać 90 pracy, drewno, kamień i cegłę — daje **11**.
+**Awans na najwyższy tier obniża kulturę.** To jest właśnie źródło niejasności „+3, +5, +7" — te liczby to przyrost
+NA POZIOM wewnątrz tieru, a poziom rośnie sam z epoką miasta, więc tiery nachodzą na siebie.
+
+**A. Wyzerować `przyrost` we wszystkich tierach Pałacu** — każdy tier ma jedną wartość: I=5, II=8, III=11.
+- Za: „1 poziom = 1 epoka" staje się prawdą dosłowną — jeden tier, jedna liczba, zero nakładania.
+- Za: awans zawsze opłacalny i czytelny: 5 → 8 → 11.
+- Przeciw: Pałac I w epoce Żelaza (gdyby gracz nie awansował) daje tylko 5 zamiast 11 — kara za brak awansu.
+- Przeciw: trzeba to zrobić dla wszystkich łańcuchów, nie tylko Pałacu.
+
+**B. Podnieść bazę wyższych tierów tak, by zawsze wygrywały** — np. Pałac III baza 16 zamiast 11.
+- Za: zachowuje wzrost wewnątrz tieru (budynek rośnie z epoką nawet bez awansu).
+- Za: minimalna zmiana — trzy liczby.
+- Przeciw: nakładanie tierów zostaje, tylko przesunięte — przy dokładaniu epok wróci ten sam problem.
+- Przeciw: wartości trzeba przeliczać ręcznie przy każdej nowej epoce.
+
+**C. Ograniczyć `maksPoziom` każdego tieru do 1** — tier nie rośnie sam, rośnie wyłącznie przez awans.
+- Za: całkowicie usuwa nakładanie; jedna epoka = jeden tier = jedna wartość.
+- Za: spójne z decyzją „nie projektujemy poziomów na zapas".
+- Przeciw: budynek nie zyskuje nic z rozwoju miasta, dopóki gracz nie zapłaci za awans.
+- Przeciw: pole `przyrost` staje się martwe dla całych łańcuchów — znów parametr bez efektu.
+
+**REKOMENDACJA: C** — najczystsze i zgodne z zasadą „1 poziom = 1 epoka", którą sam ustaliłeś.
+
+---
+
+## PYTANIE 27 — czy Prawo z Pałacu ma rosnąć z tierem · STATUS: OTWARTE
+
+**Sytuacja.** Prawo **już istnieje** jako pełny system (`society-breakdown.ts`: Szczęście + Prawo → Porządek; przy zbyt
+niskim Porządku wybucha bunt). Pałac już jest jego głównym źródłem: **35 pkt** (łatwy 45 / trudny 28) — dla porównania
+jedna jednostka garnizonu daje 20, a pięć jednostek to pełne 100%. Ale wartość jest **płaska**: Pałac I, II i III dają
+identyczne 35. Skoro zadowolenie (2/3/5) znika z Pałacu, jego progresja przestaje być czymkolwiek odzwierciedlona.
+
+**A. Prawo rośnie z tierem** — Pałac I 35, Pałac II 45, Pałac III 55 (proporcjonalnie do dawnej progresji 2/3/5).
+- Za: awans Pałacu wreszcie coś daje poza kulturą.
+- Za: odzwierciedla to, co robi prawdziwy pałac — rozbudowana administracja lepiej trzyma porządek.
+- Przeciw: Pałac już dziś daje 1,75× garnizonu; 55 pkt to prawie trzy jednostki wojska za darmo.
+- Przeciw: może wyłączyć potrzebę trzymania garnizonu w stolicy.
+
+**B. Zostawić płaskie 35** — Pałac daje Prawo niezależnie od tieru, progresja idzie tylko przez kulturę.
+- Za: zero ryzyka rozregulowania Porządku, który jest już zbalansowany.
+- Za: prostsze — jedna liczba, jedna reguła.
+- Przeciw: awans Pałacu daje wtedy tylko kulturę; przy 90 pracy to chuda oferta.
+- Przeciw: Twoja intencja („Pałac ma zwiększać Prawo") realizuje się tylko połowicznie.
+
+**C. Prawo rośnie z tierem, ale łagodnie** — 35 / 40 / 45.
+- Za: awans widocznie się opłaca, a garnizon dalej ma sens.
+- Za: mieści się w istniejącej skali (100% = 5 jednostek).
+- Przeciw: różnica 5 pkt może być dla gracza niezauważalna.
+- Przeciw: dalej trzeba przetestować wpływ na bunty w stolicy.
+
+**REKOMENDACJA: C** — awans coś daje, a zbalansowany system Porządku nie wywraca się.
+
+---
+
+## PYTANIE 28 — Prawo z Pretorium na poziomie trudnym · STATUS: OTWARTE
+
+**Sytuacja.** Prosiłeś, żeby bonus Prawa z Pretorium był „co najmniej pięć". W danych już jest:
+**łatwy 6 · normalny 5 · trudny 3**. Czyli na normalnym poziomie warunek jest spełniony, ale na trudnym wynosi 3.
+
+**A. Podnieść trudny do 5** — wartości 6 / 5 / 5.
+- Za: warunek „co najmniej pięć" spełniony na każdym poziomie trudności.
+- Za: Pretorium staje się realną alternatywą dla garnizonu tam, gdzie jest najtrudniej.
+- Przeciw: łamie konwencję całego pliku — na trudnym wszystkie bonusy są niższe.
+- Przeciw: osłabia poziom trudny w miejscu, które ma być trudne.
+
+**B. Zostawić 6 / 5 / 3** — „co najmniej pięć" rozumiane jako wartość na poziomie normalnym.
+- Za: spójne z całym `society-params.json`, gdzie trudny zawsze daje mniej.
+- Za: zero ryzyka dla balansu poziomu trudnego.
+- Przeciw: na trudnym Pretorium daje mniej, niż prosiłeś.
+- Przeciw: różnica 5 → 3 to spadek o 40%, więc na trudnym budynek robi się mało atrakcyjny.
+
+**C. Podnieść całą skalę** — 8 / 6 / 5.
+- Za: warunek spełniony wszędzie, konwencja „trudny daje mniej" zachowana.
+- Za: Pretorium zyskuje wyraźną tożsamość jako budynek porządku.
+- Przeciw: na łatwym 8 pkt to już blisko połowy jednostki garnizonu za darmo.
+- Przeciw: trzeba przetestować, czy nie znika presja na trzymanie wojska w mieście.
+
+**REKOMENDACJA: C** — spełnia Twój warunek na każdym poziomie i nie łamie konwencji pliku.
