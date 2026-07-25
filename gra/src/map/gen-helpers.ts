@@ -6280,10 +6280,10 @@ const BASE_DEPOSIT_RULES: DepositRule[] = [
   {
     id: 'glina',
     nakladka: Nakladka.ZlozeGliny,
-    allowedOn: (h) =>
-      isDryLandTerrain(h.terenBazowy) &&
-      (h.terenBazowy === TerenBazowy.Laka ||
-        (isLandTerrain(h.terenBazowy) && h.rzeka?.obecna === true)),
+    // TEMAT 12 (2026-07-24, Maciej): glina TYLKO przy rzece — gałąź "Łąka bez rzeki" usunięta.
+    // placeDeposits() jest teraz wołane PO generateRivers (generator.ts), więc h.rzeka.obecna
+    // odzwierciedla finalny stan rzek, nie "zawsze false" jak dawniej.
+    allowedOn: (h) => isDryLandTerrain(h.terenBazowy) && h.rzeka?.obecna === true,
     rarity: 0.10,
   },
   {
@@ -6304,9 +6304,10 @@ const BASE_DEPOSIT_RULES: DepositRule[] = [
   {
     id: 'sol',
     nakladka: null,
-    allowedOn: (h) =>
-      isDryLandTerrain(h.terenBazowy) &&
-      (h.terenBazowy === TerenBazowy.Pustynia || h.terenBazowy === TerenBazowy.Rownina),
+    // TEMAT 12 (2026-07-24, Maciej): sól TYLKO na Wybrzeżu (dawniej Pustynia/Równina).
+    // Wybrzeże jest normalnie wykluczone z reguł złóż (isDryLandTerrain === false) — sól jest
+    // JEDYNYM wyjątkiem, patrz bramki w placeDeposits()/hexCanAcceptDeposit() poniżej.
+    allowedOn: (h) => h.terenBazowy === TerenBazowy.Wybrzeze,
     rarity: 0.12,
   },
 ];
@@ -6360,7 +6361,10 @@ export function placeDeposits(
     // Nie nadpisuj lasu ani istniejacych nakladek; jedno zloze na heks.
     if (hex.nakladka !== Nakladka.Brak) continue;
     if (hex.zloze) continue;
-    if (hex.terenBazowy === TerenBazowy.Morze || hex.terenBazowy === TerenBazowy.Wybrzeze) continue;
+    // Morze nigdy nie dostaje złoża. Wybrzeże NIE jest tu wykluczane globalnie — sól (TEMAT 12,
+    // jedyny surowiec dopuszczony na Wybrzeżu) filtruje się przez własny allowedOn; pozostałe
+    // reguły i tak odrzucą Wybrzeże przez isDryLandTerrain (Wybrzeże => false).
+    if (hex.terenBazowy === TerenBazowy.Morze) continue;
 
     for (const rule of rules) {
       if (!rule.allowedOn(hex)) continue;
@@ -6422,9 +6426,11 @@ function hexCanAcceptDeposit(
   rule: DepositRule,
   allowForestClear: boolean,
 ): boolean {
-  if (hex.terenBazowy === TerenBazowy.Morze || hex.terenBazowy === TerenBazowy.Wybrzeze) {
-    return false;
-  }
+  if (hex.terenBazowy === TerenBazowy.Morze) return false;
+  // TEMAT 12: Wybrzeże wykluczone dla wszystkich złóż OPRÓCZ soli (jedyny surowiec dopuszczony
+  // na Wybrzeżu). Dziś sól nie jest w FAIR_PLAY_DEPOSIT_IDS (więc ta funkcja i tak nigdy nie
+  // dostaje rule.id==='sol'), ale bramka zostaje spójna z placeDeposits() na wypadek zmiany.
+  if (hex.terenBazowy === TerenBazowy.Wybrzeze && rule.id !== 'sol') return false;
   if (hex.zloze) return false;
   if (hex.nakladka !== Nakladka.Brak) {
     if (!allowForestClear || hex.nakladka !== Nakladka.Las) return false;
@@ -6455,9 +6461,10 @@ function prepareTerrainForDeposit(hex: Hex, rule: DepositRule): void {
     case 'owce':
       hex.terenBazowy = TerenBazowy.Wzgorza;
       break;
-    case 'glina':
-      hex.terenBazowy = TerenBazowy.Laka;
-      break;
+    // TEMAT 12: 'glina' NIE wymusza już terenu — reguła glina.allowedOn nie zależy od typu
+    // terenu (tylko od isDryLandTerrain + rzeka.obecna), więc wymuszanie Łąki tutaj było
+    // bez sensu (i tak nie gwarantowało rzeki). Bootstrap (pickDepositBootstrapHex) po prostu
+    // zostawia teren hexa bez zmian.
     case 'konie':
       hex.terenBazowy = TerenBazowy.Rownina;
       break;
@@ -6465,7 +6472,8 @@ function prepareTerrainForDeposit(hex: Hex, rule: DepositRule): void {
       hex.terenBazowy = TerenBazowy.Laka;
       break;
     case 'sol':
-      hex.terenBazowy = TerenBazowy.Pustynia;
+      // TEMAT 12: sól TYLKO na Wybrzeżu.
+      hex.terenBazowy = TerenBazowy.Wybrzeze;
       break;
     default:
       break;
@@ -6488,9 +6496,10 @@ function pickDepositBootstrapHex(
   if (ranked.length === 0) return null;
   const spot = ranked[0]!;
   prepareTerrainForDeposit(hexes[hexKey(spot.q, spot.r)]!, rule);
-  if (rule.id === 'glina') {
-    hexes[hexKey(spot.q, spot.r)]!.rzeka = { ...(hexes[hexKey(spot.q, spot.r)]!.rzeka ?? {}), obecna: true };
-  }
+  // TEMAT 12 (2026-07-24): USUNIĘTA fabrykacja fałszywej rzeka.obecna=true na hexie bez
+  // prawdziwej geometrii rzeki (brak krawedzie) — psuło render/logikę (hex „z rzeką" bez
+  // koryta). Bootstrap gliny może więc wylądować na hexie bez rzeki (rzadki fallback fair-play,
+  // gdy cała komórka nie ma ani jednego hexa z prawdziwą rzeką) — akceptowalny wyjątek.
   return [spot.q, spot.r];
 }
 
@@ -6663,25 +6672,31 @@ export function ensureForestGridCoverage(
   return fixed;
 }
 
-/** Usuwa nakładki/złoża z morza i wybrzeża (bezpiecznik po generacji). */
+/**
+ * Usuwa nakładki/złoża z morza i wybrzeża (bezpiecznik po generacji).
+ * TEMAT 12 (2026-07-24): WYJĄTEK — sól na Wybrzeżu to zamierzone złoże (jedyny surowiec
+ * dopuszczony tam), więc NIE jest usuwana. Morze nigdy nie dostaje żadnego złoża (w tym soli).
+ */
 export function stripDepositsFromWater(hexes: Record<string, Hex>): number {
   let n = 0;
-  for (const hex of Object.values(hexes)) {
+  for (const hex of Object.values(hexes) as HexWithZloze[]) {
     if (hex.terenBazowy !== TerenBazowy.Morze && hex.terenBazowy !== TerenBazowy.Wybrzeze) continue;
-    const had = hex.nakladka !== Nakladka.Brak || !!(hex as HexWithZloze).zloze;
+    if (hex.terenBazowy === TerenBazowy.Wybrzeze && hex.zloze === 'sol') continue;
+    const had = hex.nakladka !== Nakladka.Brak || !!hex.zloze;
     hex.nakladka = Nakladka.Brak;
-    delete (hex as HexWithZloze).zloze;
+    delete hex.zloze;
     if (had) n++;
   }
   return n;
 }
 
-/** Liczy złoża/nakładki surowcowe na morzu lub wybrzeżu (0 = OK). */
+/** Liczy złoża/nakładki surowcowe na morzu lub wybrzeżu (0 = OK). Sól na Wybrzeżu — patrz wyżej. */
 export function countDepositsOnWater(hexes: Record<string, Hex>): number {
   let n = 0;
-  for (const hex of Object.values(hexes)) {
+  for (const hex of Object.values(hexes) as HexWithZloze[]) {
     if (hex.terenBazowy !== TerenBazowy.Morze && hex.terenBazowy !== TerenBazowy.Wybrzeze) continue;
-    if (hex.nakladka !== Nakladka.Brak || (hex as HexWithZloze).zloze) n++;
+    if (hex.terenBazowy === TerenBazowy.Wybrzeze && hex.zloze === 'sol') continue;
+    if (hex.nakladka !== Nakladka.Brak || hex.zloze) n++;
   }
   return n;
 }
