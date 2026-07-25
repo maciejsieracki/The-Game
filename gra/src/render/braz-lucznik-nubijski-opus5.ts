@@ -148,6 +148,7 @@ const NB_SHIELD         = 0x8a3a26; // skóra wołowa tarczy (czerwonawa wyprawa
 const NB_SHIELD_DK       = 0x5a2416;
 
 const NB_EYE            = 0x14100c;
+const NB_BEAD           = 0xdccfa6;  // koralik z kości/muszli (naszyjnik — skromny, bez metalu)
 
 // ── wymiary sylwetki: TE SAME co rodzina KL_*/PD_* (spójność z resztą serii) ─
 const NB_HIP_Y     = 0.208 * HEX_R;
@@ -215,6 +216,10 @@ let gNBQArrow:   THREE.BoxGeometry | null = null;
 let gNBShield:      THREE.CylinderGeometry | null = null;
 let gNBShieldRim:   THREE.CylinderGeometry | null = null;
 let gNBShieldStrap: THREE.BoxGeometry | null = null;
+// biżuteria / detale drugorzędne
+let gNBCord:     THREE.BoxGeometry | null = null;
+let gNBBead:     THREE.BoxGeometry | null = null;
+let gNBAnklet:   THREE.BoxGeometry | null = null;
 
 function getNBTorso():    THREE.BoxGeometry { return (gNBTorso    ||= new THREE.BoxGeometry(NB_TORSO_W, NB_TORSO_H, NB_TORSO_D)); }
 function getNBChest():    THREE.BoxGeometry { return (gNBChest    ||= new THREE.BoxGeometry(NB_TORSO_W * 1.05, 0.072 * HEX_R, NB_TORSO_D * 1.06)); }
@@ -257,6 +262,9 @@ function getNBQArrow():   THREE.BoxGeometry { return (gNBQArrow   ||= new THREE.
 function getNBShield():     THREE.CylinderGeometry { return (gNBShield     ||= new THREE.CylinderGeometry(0.076 * HEX_R, 0.076 * HEX_R, 0.014 * HEX_R, 10, 1)); }
 function getNBShieldRim():  THREE.CylinderGeometry { return (gNBShieldRim  ||= new THREE.CylinderGeometry(0.020 * HEX_R, 0.020 * HEX_R, 0.020 * HEX_R, 8, 1)); }
 function getNBShieldStrap():THREE.BoxGeometry      { return (gNBShieldStrap||= new THREE.BoxGeometry(0.020 * HEX_R, 0.170 * HEX_R, 0.009 * HEX_R)); }
+function getNBCord():     THREE.BoxGeometry { return (gNBCord     ||= new THREE.BoxGeometry(0.150 * HEX_R, 0.010 * HEX_R, 0.092 * HEX_R)); }
+function getNBBead():     THREE.BoxGeometry { return (gNBBead     ||= new THREE.BoxGeometry(0.016 * HEX_R, 0.016 * HEX_R, 0.012 * HEX_R)); }
+function getNBAnklet():   THREE.BoxGeometry { return (gNBAnklet   ||= new THREE.BoxGeometry(0.040 * HEX_R, 0.011 * HEX_R, 0.044 * HEX_R)); }
 
 // ---------------------------------------------------------------------------
 // Kinematyka — konwencja identyczna z kamien-lucznicy-opus5.ts / hastati:
@@ -707,6 +715,7 @@ export function disposeBrazLucznikNubijskiOpus5Geometries(): void {
     gNBGrip, gNBGripWrap, gNBNock, gNBArrowTip, gNBBinding, gNBFletch,
     gNBQuiver, gNBQRim, gNBQStrap, gNBQArrow,
     gNBShield, gNBShieldRim, gNBShieldStrap,
+    gNBCord, gNBBead, gNBAnklet,
   ];
   for (const g of all) { g?.dispose(); }
   gNBTorso = gNBChest = gNBNeck = gNBHead = gNBJaw = gNBNose = gNBEar = gNBEye = null;
@@ -716,4 +725,5 @@ export function disposeBrazLucznikNubijskiOpus5Geometries(): void {
   gNBGrip = gNBGripWrap = gNBNock = gNBArrowTip = gNBBinding = gNBFletch = null;
   gNBQuiver = gNBQRim = gNBQStrap = gNBQArrow = null;
   gNBShield = gNBShieldRim = gNBShieldStrap = null;
+  gNBCord = gNBBead = gNBAnklet = null;
 }

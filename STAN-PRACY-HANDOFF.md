@@ -5,6 +5,10 @@
 > **Ten plik jest punktem wejścia dla KAŻDEJ nowej sesji** — lokalnej, chmurowej, telefonicznej.
 > Mówi: co jest zrobione, co w toku, czego NIE wolno ruszać i czy można pracować.
 > ⛔ **ZASADA PROCESU (2026-07-24):** KAŻDA prośba Macieja, która ma skończyć się zmianą, MUSI trafić do [`dyspozycje/REJESTR-PROSB-I-ZADAN.md`](dyspozycje/REJESTR-PROSB-I-ZADAN.md) — jedynego rejestru statusu próśb (żeby nic z czatu nie ginęło; zdarzyło się realnie). Sprawdzaj i aktualizuj go przy każdej prośbie.
+> ⛔ **TRZY ZASADY PROCESU (2026-07-25):** (1) zakaz otwierania nowych wątków pytaniami — tylko doprecyzowanie
+> bieżącego wątku, reszta cicho do `dyspozycje/PYTANIA-OTWARTE.md`; (2) każda liczba ma nazwany parametr +
+> jednostkę + kontekst (zakaz gołego „baza 16"); (3) Opus 5/Fable 5 wyłącznie za wyraźną zgodą Macieja, domyślnie
+> Sonnet 5. Pełny zapis: `CLAUDE.md` §„Jak pracować z właścicielem" pkt 2–4, `dyspozycje/PAMIEC-ROBOCZA-CIV.md` §1a.
 > Powstał, bo notatki robocze asystenta żyją lokalnie na maszynie właściciela i **nie są widoczne z chmury** — tylko ten plik jedzie z repozytorium.
 
 ---

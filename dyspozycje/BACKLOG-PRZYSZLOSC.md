@@ -1,6 +1,13 @@
 # BACKLOG — rzeczy czekające na przyszłość
 Aktualizacja: 2026-07-25. Nic z tej listy nie jest w toku. Wracamy do tematu **dopiero na sygnał Macieja**.
 
+**Do wdrożenia z dzisiejszej rundy decyzji budynkowych** (decyzje zapisane, kod jeszcze nie dotknięty —
+pełny opis i kolejność w `DECYZJE-BUDYNKI-2026-07-25.md` §„Skrót statusu wdrożenia"): nowy budynek Baszta
+(+100% obrony) · siatka Prawa (Pałac/Dom Starszyzny/Dwór Zarządcy/Pretorium/Trybunał/Sąd) · reguła
+stała-wartość-per-tier dla łańcuchów „w górę" · lokalizacja Pałac=tylko stolica /
+Dom Starszyzny+Dwór Zarządcy+Pretorium=tylko regiony · osiem grup dziedzinowych w panelu miasta ·
+usunięcie Ratusza i Karawanseraju · utrzymanie zróżnicowane (Pytanie 19).
+
 ## A. Zaparkowane świadomą decyzją właściciela
 
 | Temat | Decyzja | Warunek powrotu |
@@ -29,9 +36,11 @@ Aktualizacja: 2026-07-25. Nic z tej listy nie jest w toku. Wracamy do tematu **d
 
 ## C. Zadania gameplayowe czekające na decyzję
 Pełne pytania ABC: **`dyspozycje/PYTANIA-OTWARTE.md`**
-- **PYTANIE 18** — profil Pretorium po sprzątnięciu (rekomendacja A)
-- **PYTANIE 19** — utrzymanie budynków: zróżnicowane czy płaskie (rekomendacja A)
-- **PYTANIE 20** — Targowisko: co z zamierzonym bonusem handlowym (rekomendacja A)
+- ~~**PYTANIE 18** — profil Pretorium po sprzątnięciu~~ — **ODPOWIEDZIANE 2026-07-25** (Kultura 5 pkt/turę,
+  obrona+mnożnik do zera; szczegóły `DECYZJE-BUDYNKI-2026-07-25.md` §8)
+- ~~**PYTANIE 19** — utrzymanie budynków: zróżnicowane czy płaskie~~ — **ODPOWIEDZIANE 2026-07-25 = A**
+  (zróżnicowane z danych; szczegóły `DECYZJE-BUDYNKI-2026-07-25.md` §8)
+- **PYTANIE 20** — Targowisko: co z zamierzonym bonusem handlowym (rekomendacja A, wciąż OTWARTE)
 - **PYTANIE 21** — martwe pole `odblokowuje` (szkic)
 - **PYTANIE 22** — Wielka Kuźnia: kategoria + parkowanie (szkic)
 - **PYTANIE 23** — odznaki ulepszeń na żetonach jednostek: szczegóły prezentacji (szkic)
@@ -49,3 +58,8 @@ Pełne pytania ABC: **`dyspozycje/PYTANIA-OTWARTE.md`**
 - **Nie projektujemy na zapas.**
 - **Modele:** wszystkie prace zlecane subagentom **Sonnet 5**; Opus 5 / Fable 5 tylko za wyraźną zgodą właściciela.
 - **Każda prośba właściciela trafia do `REJESTR-PROSB-I-ZADAN.md`** — narracja w czacie nie jest śledzeniem.
+- **Zakaz otwierania nowych wątków pytaniami (Maciej, 2026-07-25).** Wolno dopytywać tylko o wątek AKTUALNIE
+  prowadzony; problemy znalezione przy okazji trafiają cicho do `PYTANIA-OTWARTE.md`, bez wzmianki w czacie.
+  Pełny zapis: `CLAUDE.md` §„Jak pracować z właścicielem" pkt 2, `PAMIEC-ROBOCZA-CIV.md` §1a.
+- **Każda liczba ma nazwany parametr, jednostkę i kontekst (Maciej, 2026-07-25).** Zakaz „baza 16"/„daje 35" bez
+  powiedzenia czego dotyczy. Pełny zapis: `CLAUDE.md` §„Jak pracować z właścicielem" pkt 3, `PAMIEC-ROBOCZA-CIV.md` §1a.
