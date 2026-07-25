@@ -166,6 +166,10 @@ export const DEPLOY_TOOLBAR_MAIN_SVG = {
   tactics:
     '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">' +
     '<circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></svg>',
+  /** Kierunek natarcia (C-FLANK) -- roza wiatrow, spojna z pozostalymi ikonami paska. */
+  direction:
+    '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">' +
+    '<circle cx="12" cy="12" r="8"/><path d="M12 4v4M12 16v4M4 12h4M16 12h4"/></svg>',
 } as const;
 
 /** Prawy rail 56px — klasa .rail-b z C06 v4. */
@@ -875,6 +879,11 @@ export const FMT_SVG = {
     'stroke-linecap="round" stroke-linejoin="round">' +
     '<circle cx="12" cy="13" r="2.2" fill="currentColor" stroke="none"/>' +
     '<path d="M12 4a9 9 0 1 0 8.5 6.2"/><path d="M12 4 8.6 5.4M12 4l1.3 3.4"/></svg>',
+  /** Kierunek natarcia FRONT — uderzenie czolowe (C-FLANK, styl spojny z cavFlanks/cavRear). */
+  dirFront:
+    '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" ' +
+    'stroke-linecap="round" stroke-linejoin="round">' +
+    '<path d="M4 12h13M12 6l5 6-5 6"/></svg>',
   reset: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 12a8 8 0 1 1 2.3 5.6"/><path d="M4 12V8M4 12h4"/></svg>',
   group: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="7" cy="8" r="2.4"/><circle cx="15" cy="8" r="2.4"/><path d="M3 17c0-2.5 1.8-4 4-4M9 17c0-2.5 1.8-4 4-4s4 1.5 4 4"/></svg>',
   start: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4.5 5 14 14.5M14.5 15 17.5 18M15.6 14 13.6 16M19.5 5 10 14.5M9.5 15 6.5 18M8.4 14 10.4 16"/></svg>',

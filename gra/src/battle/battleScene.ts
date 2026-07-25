@@ -1640,6 +1640,27 @@ function dirYaw(d: Dir): number {
 type GroupDoctrine = 'defensive' | 'steady' | 'aggressive' | 'skirmish' | 'manual';
 type BattleUnitClass = 'mounted' | 'ranged' | 'melee';
 
+/**
+ * C-FLANK (Maciej 2026-07-25): KIERUNEK NATARCIA dla auto-odgrywania bitwy --
+ * per-jednostka (i domyslnie per-grupa/armia przez UI deploy), WYLACZNIE dla
+ * auto-play (recznej gry nie zmienia). 'front' = zachowanie dokladnie jak
+ * dotychczas (domyslne -- zero regresji, gdy gracz nic nie ustawi). 'bok' /
+ * 'tyl' every unit type manewruje w _advanceStep / _cavalryAction, by
+ * dotrzec na hex, z ktorego cios zostanie sklasyfikowany przez relativeHit()
+ * jako 'flank' / 'rear' wzgledem facingu celu (istniejacy bonus/kara SS5l);
+ * gdy manewr niemozliwy (brak miejsca/sciezki) -- graceful fallback na atak
+ * czolowy (front), bez zawieszen.
+ */
+type AttackDirection = 'front' | 'bok' | 'tyl';
+
+/** Docelowa klasyfikacja ciosu (relativeHit) dla danego kierunku natarcia, lub
+ * null gdy 'front' (brak wymuszonego manewru -- istniejace zachowanie). */
+function desiredHitForDirection(dir: AttackDirection): FacingHit | null {
+  if (dir === 'bok') return 'flank';
+  if (dir === 'tyl') return 'rear';
+  return null;
+}
+
 interface RuntimeBattleUnit {
   bu:           BattleUnit;
   group:        THREE.Group;
@@ -1710,6 +1731,8 @@ interface RuntimeBattleUnit {
   formationOffset: { dc: number; dr: number } | null;
   /** Wlasna doktryna (null = dziedzicz z grupy, potem domyslnie Atak). */
   unitDoctrine: GroupDoctrine | null;
+  /** C-FLANK: kierunek natarcia w auto-play (front/bok/tyl); domyslnie 'front'. */
+  attackDirection: AttackDirection;
   /** Wlasne priorytety celow (gdy useUnitPriorities). */
   unitTargetPriorities?: Partial<Record<BattleUnitClass, BattleUnitClass[]>>;
   /** Gdy true — jednostka uzywa unitTargetPriorities zamiast armii/grupy. */
@@ -1733,6 +1756,8 @@ interface GroupMeta {
   formation?: 'F1' | 'F2' | 'F3';
   /** Konnica: boki (domyslnie) lub za liniami piechoty/lucznikow. */
   cavalryMode?: CavalryDeployMode;
+  /** C-FLANK: kierunek natarcia domyslny dla grupy (brak = 'front'). */
+  attackDirection?: AttackDirection;
   /** Linie glebokosci piechoty (1–3) w deploy. */
   meleeLines?: DeployLineCount;
   /** Linie glebokosci lucznikow (1–3) w deploy. */
@@ -1947,6 +1972,8 @@ export class BattleScene {
   private _deployActiveFormation: 'F1' | 'F2' | 'F3' = 'F1';
   /** Ustawienie konnicy w formacji deploy (osobny od F1/F2/F3). */
   private _deployCavalryMode: CavalryDeployMode = 'flanks';
+  /** C-FLANK: kierunek natarcia aktywny w toolbarze deploy (osobny od formacji/konnicy). */
+  private _deployAttackDirection: AttackDirection = 'front';
   /** Linie glebokosci piechoty / lucznikow (1–3) — osobno od formacji F1/F2/F3. */
   private _deployMeleeLines: DeployLineCount = 1;
   private _deployArcherLines: DeployLineCount = 3;
@@ -1954,14 +1981,16 @@ export class BattleScene {
   private _deployFmtRow: HTMLDivElement | null = null;
   /** Przyciski ustawienia konnicy (boki / z tylu). */
   private _deployCavRow: HTMLDivElement | null = null;
+  /** C-FLANK: przyciski kierunku natarcia (front / bok / tyl). */
+  private _deployDirRow: HTMLDivElement | null = null;
   /** Lewy blok: wybrane formacja + konnica. */
   private _deployToolbarStatus: HTMLDivElement | null = null;
   /** Srodek paska: Formacja / Konnica / Strategia. */
   private _deployToolbarCenter: HTMLDivElement | null = null;
   /** Otwarty dropdown toolbara deploy. */
-  private _deployOpenDropdown: 'formation' | 'cavalry' | 'lines' | 'tactics' | 'strategy' | null = null;
+  private _deployOpenDropdown: 'formation' | 'cavalry' | 'direction' | 'lines' | 'tactics' | 'strategy' | null = null;
   /** Popupy dropdownow toolbara — position:fixed, dzieci document.body (jak popup zebatki). */
-  private _deployDropdownPopups: Partial<Record<'formation' | 'cavalry' | 'lines' | 'tactics' | 'strategy', HTMLDivElement>> = {};
+  private _deployDropdownPopups: Partial<Record<'formation' | 'cavalry' | 'direction' | 'lines' | 'tactics' | 'strategy', HTMLDivElement>> = {};
   private _deployToolbarDocClick: ((e: MouseEvent) => void) | null = null;
   /** Zadanie #17: pływający klaster Reset + Start walki (prawy dół, WYŁĄCZNIE deploy) — dawny pełnoszerokościowy pasek zlikwidowany. */
   private _deployToolbar: HTMLDivElement | null = null;
@@ -3920,6 +3949,7 @@ export class BattleScene {
         groupId:      null,
         formationOffset: null,
         unitDoctrine: null,
+        attackDirection: 'front',
         mats,
         perTokenGeos,
       };
@@ -4061,6 +4091,7 @@ export class BattleScene {
         rangedKite: true, shootingEnabled: true,
         groupId: null, formationOffset: null,
         unitDoctrine: null,
+        attackDirection: 'front',
         mats, perTokenGeos,
       };
       this._updateMoraleBar(ru);
@@ -4806,6 +4837,7 @@ export class BattleScene {
           groupId:      null,
           formationOffset: null,
           unitDoctrine: null,
+          attackDirection: 'front',
           mats,
           perTokenGeos,
         };
@@ -5313,17 +5345,30 @@ export class BattleScene {
    * Among enemies ADJACENT to this cavalry unit, return the best NON-spear target
    * (so the rider strikes horse/skirmisher/plain-melee in preference to a spear),
    * or null if no adjacent non-spear enemy exists.
+   *
+   * C-FLANK (Maciej 2026-07-25): when attackDirection is 'bok'/'tyl', prefer an
+   * adjacent non-spear enemy the blow would land on as flank/rear -- falls back
+   * to the original cavalry-priority pick when none matches (or 'front').
    */
   private _cavAdjacentNonSpear(ru: RuntimeBattleUnit): RuntimeBattleUnit | null {
-    let best: RuntimeBattleUnit | null = null;
-    let bestP = Infinity;
-    for (const e of this._enemiesOf(ru)) {
-      if (manhattan(ru.q, ru.r, e.q, e.r) !== 1) continue;
-      if (e.antiCavSpear) continue;
-      const p = this._cavPriority(e);
-      if (p < bestP || (p === bestP && best && e.bu.hp < best.bu.hp)) { bestP = p; best = e; }
+    const bestOf = (predicate: (e: RuntimeBattleUnit) => boolean): RuntimeBattleUnit | null => {
+      let best: RuntimeBattleUnit | null = null;
+      let bestP = Infinity;
+      for (const e of this._enemiesOf(ru)) {
+        if (manhattan(ru.q, ru.r, e.q, e.r) !== 1) continue;
+        if (e.antiCavSpear) continue;
+        if (!predicate(e)) continue;
+        const p = this._cavPriority(e);
+        if (p < bestP || (p === bestP && best && e.bu.hp < best.bu.hp)) { bestP = p; best = e; }
+      }
+      return best;
+    };
+    const desired = desiredHitForDirection(ru.attackDirection);
+    if (desired) {
+      const m = bestOf(e => relativeHit(e.facing, ru.q, ru.r, e.q, e.r) === desired);
+      if (m) return m;
     }
-    return best;
+    return bestOf(() => true);
   }
 
   private _cavalryAction(ru: RuntimeBattleUnit, done: () => void): void {
@@ -5338,6 +5383,14 @@ export class BattleScene {
     // the spear wall. If a maneuver step exists, take it (pure move).
     const tgt = this._cavalryTarget(ru);
     if (!tgt) { done(); return; }
+
+    // C-FLANK (Maciej 2026-07-25): kierunek natarcia 'bok'/'tyl' -- kawaleria
+    // probuje najpierw manewr na flanke/tyl tego samego priorytetowego celu
+    // (BFS, omija zajete pola). 'front' (domyslne) pomija ten blok -- zero
+    // regresji istniejacego zachowania szarzy/unikania wlocznikow ponizej.
+    const desiredDir = desiredHitForDirection(ru.attackDirection);
+    if (desiredDir && this._cavDirectedManeuverStep(ru, done, tgt, desiredDir)) return;
+
     if (this._cavManeuverStep(ru, done, tgt)) return;
 
     // 3) No spear-clear step improved the approach. If FORCED -- an enemy spear
@@ -5358,6 +5411,40 @@ export class BattleScene {
       return;
     }
     done();
+  }
+
+  /**
+   * C-FLANK (Maciej 2026-07-25): manewr kierunku natarcia dla kawalerii --
+   * probuje BFS-em (_firstStepTowardDirectedAttack) dotrzec na hex, z ktorego
+   * cios trafi w `desired` ('flank'/'rear') wzgledem facingu `tgt`. Jesli krok
+   * istnieje, wykonuje go i (dopoki zostal ruch i cel wciaz nie jest dobrym
+   * sasiadem) probuje kontynuowac manewr w tym samym wywolaniu tury -- mirror
+   * rekursji _cavManeuverStep, zeby jednostka realnie wykorzystywala caly swoj
+   * ruch na obejscie, a nie tylko jeden hex na tur. Zwraca FALSE gdy manewr
+   * jest juz osiagniety (cel adjGood zlapie to wyzej) lub niemozliwy w tym
+   * kroku -- wtedy wywolujacy spada do istniejacej logiki (_cavManeuverStep,
+   * unikanie wlocznikow / atak czolowy w ostatecznosci).
+   */
+  private _cavDirectedManeuverStep(
+    ru: RuntimeBattleUnit, done: () => void, tgt: RuntimeBattleUnit, desired: FacingHit,
+  ): boolean {
+    if (ru.moveLeft <= 0) return false;
+    const stepKey = this._firstStepTowardDirectedAttack(ru, tgt, desired);
+    if (!stepKey) return false;
+
+    const comma = stepKey.indexOf(',');
+    const nc = parseInt(stepKey.slice(0, comma), 10);
+    const nr = parseInt(stepKey.slice(comma + 1), 10);
+    this._doMove(ru, nc, nr, () => {
+      if (this.finished) { done(); return; }
+      if (this._cavAdjacentNonSpear(ru)) { done(); return; }
+      if (ru.moveLeft > 0) {
+        const t2 = this._cavalryTarget(ru) ?? tgt;
+        if (this._cavDirectedManeuverStep(ru, done, t2, desired)) return;
+      }
+      done();
+    });
+    return true;
   }
 
   /**
@@ -6669,6 +6756,39 @@ export class BattleScene {
 
     if (ru.moveLeft <= 0) { done(); return; }
 
+    // C-FLANK (Maciej 2026-07-25): kierunek natarcia 'bok'/'tyl' -- probuj
+    // manewrowac na hex, z ktorego cios trafi we flanke/tyl priorytetowego
+    // celu (relativeHit), zamiast marszu prosto na front. 'front' (domyslne)
+    // pomija ten blok calkowicie -- zero regresji istniejacego zachowania.
+    const desiredDir = desiredHitForDirection(ru.attackDirection);
+    if (desiredDir) {
+      const dirTarget = this._pickTargetByPriority(ru) ?? this._nearestEnemy(ru);
+      if (dirTarget) {
+        const already = this._canStrikeTargetFrom(ru, ru.q, ru.r, dirTarget)
+          && relativeHit(dirTarget.facing, ru.q, ru.r, dirTarget.q, dirTarget.r) === desiredDir;
+        if (already) { done(); return; }
+
+        const dirStepKey = this._firstStepTowardDirectedAttack(ru, dirTarget, desiredDir);
+        if (dirStepKey) {
+          const comma = dirStepKey.indexOf(',');
+          const dnc = parseInt(dirStepKey.slice(0, comma), 10);
+          const dnr = parseInt(dirStepKey.slice(comma + 1), 10);
+          this._doMove(ru, dnc, dnr, () => {
+            if (this.finished) { done(); return; }
+            if (this._canAttackFrom(ru, ru.q, ru.r)) { done(); return; }
+            if (ru.moveLeft > 0) {
+              this._schedule(STEP_GAP_MS, () => this._advanceStep(ru, done));
+            } else {
+              done();
+            }
+          });
+          return;
+        }
+        // Brak osiagalnego manewru na flanke/tyl w tym kroku -- graceful
+        // fallback: ponizej zwykly (czolowy) marsz, jak dotychczas.
+      }
+    }
+
     // Already standing where it could attack -> stop moving (it will strike
     // next turn).
     if (this._canAttackFrom(ru, ru.q, ru.r)) { done(); return; }
@@ -6764,35 +6884,50 @@ export class BattleScene {
    * Return an enemy this unit may legally attack from its CURRENT tile, or null.
    *   - melee (range 0): only an ADJACENT enemy (Manhattan distance == 1).
    *   - ranged (range >= 2): any enemy within `range` tiles; prefers lowest HP.
+   *
+   * C-FLANK (Maciej 2026-07-25): when this unit's kierunek natarcia is 'bok'/
+   * 'tyl', among the in-reach candidates it prefers one that the blow would
+   * actually land on as flank/rear (relativeHit) against THAT enemy's facing --
+   * ties (or 'front' / no match at all) fall back to the original lowest-HP
+   * pick, so behaviour is bit-for-bit unchanged when attackDirection is
+   * 'front' (default).
    */
   private _targetInRange(ru: RuntimeBattleUnit): RuntimeBattleUnit | null {
     const enemies = this._enemiesOf(ru);
+    const inReach: RuntimeBattleUnit[] = [];
     if (canShoot(ru)) {
-      let best: RuntimeBattleUnit | null = null;
       for (const e of enemies) {
         const dd = manhattan(ru.q, ru.r, e.q, e.r);
-        if (dd >= 1 && dd <= ru.range) {
-          if (!best || e.bu.hp < best.bu.hp) best = e;
-        }
+        if (dd >= 1 && dd <= ru.range) inReach.push(e);
       }
+    } else {
+      // SIEGE v2 -- MELEE: adjacency includes vertical wall combat.
+      // An attacker at (wallCol-1, r) can strike a defender at (wallCol, r) and vice versa.
+      // Both units at Manhattan==1 in grid coords: standard adjacency already covers this.
+      // Extra case: if ONE unit is onWallWalkway at wallCol and the other is at wallCol-1,
+      // they are "adjacent in the vertical sense" even though the tile is BTerrain.Wall.
+      // dd === 0: same tile (walkway combat between two units who both climbed) -- treat as melee.
+      for (const e of enemies) {
+        const dd = manhattan(ru.q, ru.r, e.q, e.r);
+        if (dd === 1 || dd === 0) inReach.push(e);
+      }
+    }
+    if (inReach.length === 0) return null;
+
+    const lowestHp = (list: RuntimeBattleUnit[]): RuntimeBattleUnit => {
+      let best = list[0]!;
+      for (const e of list) if (e.bu.hp < best.bu.hp) best = e;
       return best;
+    };
+
+    const desired = desiredHitForDirection(ru.attackDirection);
+    if (desired) {
+      const matching = inReach.filter(
+        e => relativeHit(e.facing, ru.q, ru.r, e.q, e.r) === desired,
+      );
+      if (matching.length > 0) return lowestHp(matching);
     }
-    // SIEGE v2 -- MELEE: adjacency includes vertical wall combat.
-    // An attacker at (wallCol-1, r) can strike a defender at (wallCol, r) and vice versa.
-    // Both units at Manhattan==1 in grid coords: standard adjacency already covers this.
-    // Extra case: if ONE unit is onWallWalkway at wallCol and the other is at wallCol-1,
-    // they are "adjacent in the vertical sense" even though the tile is BTerrain.Wall.
-    let best: RuntimeBattleUnit | null = null;
-    for (const e of enemies) {
-      const dd = manhattan(ru.q, ru.r, e.q, e.r);
-      if (dd === 1) {
-        if (!best || e.bu.hp < best.bu.hp) best = e;
-      } else if (dd === 0) {
-        // Same tile (walkway combat between two units who both climbed) -- treat as melee.
-        if (!best || e.bu.hp < best.bu.hp) best = e;
-      }
-    }
-    return best;
+    return lowestHp(inReach);
   }
 
   /** Nearest free neighbour tile that reduces distance to `target` (greedy fallback step). */
@@ -6826,6 +6961,76 @@ export class BattleScene {
       if (dd >= 1 && dd <= reach) return true;
     }
     return false;
+  }
+
+  /**
+   * True if, standing on (col, row), `ru` could legally strike this SPECIFIC
+   * `target` (melee adjacency or within ranged reach) -- unlike _canAttackFrom
+   * (any enemy), used by the C-FLANK directed-attack maneuver which must
+   * evaluate the incoming angle against one particular defender's facing.
+   */
+  private _canStrikeTargetFrom(
+    ru: RuntimeBattleUnit, col: number, row: number, target: RuntimeBattleUnit,
+  ): boolean {
+    const reach = canShoot(ru) ? ru.range : 1;
+    const dd = manhattan(col, row, target.q, target.r);
+    return dd >= 1 && dd <= reach;
+  }
+
+  /**
+   * C-FLANK (Maciej 2026-07-25): BFS the battlefield grid for the shortest
+   * walkable path from this unit's tile to a tile from which it could strike
+   * `target` AND the blow would land as `desired` ('flank' or 'rear') against
+   * the target's CURRENT facing -- i.e. the unit manewruje na bok/tyl instead
+   * of marching straight at the front. Returns the FIRST step ("col,row") along
+   * that path, or null if the unit is ALREADY in such a position, or if no such
+   * tile is reachable this turn (caller falls back to the normal frontal
+   * approach -- graceful degradation, never a hang).
+   *
+   * Mirrors _firstStepAlongPathToAttack exactly (same BFS shape, same
+   * occupied/impassable rules) with a target- and facing-aware goal test.
+   */
+  private _firstStepTowardDirectedAttack(
+    ru: RuntimeBattleUnit, target: RuntimeBattleUnit, desired: FacingHit,
+  ): string | null {
+    const startKey = cellKey(ru.q, ru.r);
+
+    const isGoal = (c: number, r: number): boolean =>
+      this._canStrikeTargetFrom(ru, c, r, target)
+      && relativeHit(target.facing, c, r, target.q, target.r) === desired;
+
+    if (isGoal(ru.q, ru.r)) return null; // juz w pozycji do ciosu z zadanego kierunku
+
+    const parent = new Map<string, string | null>();
+    parent.set(startKey, null);
+    const frontier: Array<{ c: number; r: number }> = [{ c: ru.q, r: ru.r }];
+    let goalKey: string | null = null;
+
+    while (frontier.length > 0) {
+      const cur = frontier.shift()!;
+      for (const [dc, dr] of DIRS4) {
+        const nc = cur.c + dc;
+        const nr = cur.r + dr;
+        if (nc < 0 || nc >= BF_COLS || nr < 0 || nr >= BF_ROWS) continue;
+        const nk = cellKey(nc, nr);
+        if (parent.has(nk)) continue;          // already seen
+        if (this.occByKey.has(nk)) continue;   // occupied -> wall (cannot stand here)
+        if (!this.terrainMap.passable(nc, nr)) continue; // river / wall body -> cannot stand
+        parent.set(nk, cellKey(cur.c, cur.r));
+        if (isGoal(nc, nr)) { goalKey = nk; frontier.length = 0; break; }
+        frontier.push({ c: nc, r: nr });
+      }
+    }
+
+    if (!goalKey) return null; // brak osiagalnego manewru -- graceful fallback (front)
+
+    let node: string | null = goalKey;
+    let prev: string | null = parent.get(node) ?? null;
+    while (prev !== null && prev !== startKey) {
+      node = prev;
+      prev = parent.get(node) ?? null;
+    }
+    return prev === startKey ? node : null;
   }
 
   /**
@@ -10560,6 +10765,41 @@ export class BattleScene {
     ));
     this._deployCavRow = center;
 
+    // C-FLANK (Maciej 2026-07-25): kierunek natarcia w auto-odgrywaniu --
+    // FRONT/BOK/TYL, dla WSZYSTKICH typow jednostek (nie tylko konnicy),
+    // zastosowany do aktualnie zaznaczonego zakresu (jednostka/grupa/armia),
+    // dokladnie jak Formacja/Konnica powyzej (_resolveDeployFormationTargets).
+    const dirDefs: Array<{ dir: AttackDirection; label: string; subtitle: string; icon: string; msg: string }> = [
+      { dir: 'front', label: 'Front', subtitle: 'Uderzenie czolowe (domyslnie)', icon: FMT_SVG.dirFront, msg: 'Kierunek natarcia: front' },
+      { dir: 'bok', label: 'Bok', subtitle: 'Manewr na flanke przeciwnika', icon: FMT_SVG.cavFlanks, msg: 'Kierunek natarcia: bok' },
+      { dir: 'tyl', label: 'Tył', subtitle: 'Manewr na tyły przeciwnika', icon: FMT_SVG.cavRear, msg: 'Kierunek natarcia: tył' },
+    ];
+    const dirPopup = document.createElement('div');
+    Object.assign(dirPopup.style, { minWidth: '220px' });
+    for (const dd of dirDefs) {
+      const ob = document.createElement('button');
+      ob.type = 'button';
+      ob.dataset.deployDirOption = dd.dir;
+      ob.innerHTML = buildDeployPopupRowHtml(dd.icon, dd.label, dd.subtitle);
+      Object.assign(ob.style, {
+        padding: '11px 13px', borderRadius: '9px', cursor: 'pointer', fontFamily: HUD_FONT,
+        width: '100%', textAlign: 'left',
+        border: `1px solid rgba(232,216,138,0.2)`, background: DEPLOY_POPUP_INACTIVE_BG,
+      });
+      applyDeployPopupItem1E(ob);
+      ob.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this._applyDeployAttackDirection(dd.dir);
+        this._closeDeployDropdowns();
+        if (this._deployRosterFeedback) this._showDeployFeedback(dd.msg);
+      });
+      dirPopup.appendChild(ob);
+    }
+    center.appendChild(this._makeDeployToolbarDropdown(
+      'Kierunek natarcia', 'direction', dirPopup, DEPLOY_TOOLBAR_MAIN_SVG.direction,
+    ));
+    this._deployDirRow = center;
+
     const linesPopup = document.createElement('div');
     linesPopup.id = 'deploy-lines-popup';
     Object.assign(linesPopup.style, { minWidth: '240px' });
@@ -10638,6 +10878,7 @@ export class BattleScene {
 
     this._syncDeployFormationButtons();
     this._syncDeployCavalryButtons();
+    this._syncDeployAttackDirectionButtons();
     const linesPop = this._deployDropdownPopups.lines;
     if (linesPop) this._renderDeployLinesPopup(linesPop);
     this._updateDeployToolbarStatus();
@@ -10656,7 +10897,7 @@ export class BattleScene {
   /** Dropdown w rzadku ikon nad rosterem (Formacja / Konnica / Linie / Taktyka / Strategia). */
   private _makeDeployToolbarDropdown(
     label: string,
-    key: 'formation' | 'cavalry' | 'lines' | 'tactics' | 'strategy',
+    key: 'formation' | 'cavalry' | 'direction' | 'lines' | 'tactics' | 'strategy',
     popupBody: HTMLDivElement,
     toolbarIcon?: string,
   ): HTMLDivElement {
@@ -10717,7 +10958,7 @@ export class BattleScene {
   }
 
   private _toggleDeployDropdown(
-    key: 'formation' | 'cavalry' | 'lines' | 'tactics' | 'strategy',
+    key: 'formation' | 'cavalry' | 'direction' | 'lines' | 'tactics' | 'strategy',
     btn?: HTMLButtonElement,
   ): void {
     if (this._deployOpenDropdown === key) {
@@ -10755,6 +10996,7 @@ export class BattleScene {
     };
     paint('formation', this._deployOpenDropdown === 'formation');
     paint('cavalry', this._deployOpenDropdown === 'cavalry');
+    paint('direction', this._deployOpenDropdown === 'direction');
     paint('lines', this._deployOpenDropdown === 'lines');
     paint('tactics', this._deployOpenDropdown === 'tactics');
     paint('strategy', this._deployOpenDropdown === 'strategy');
@@ -10768,6 +11010,13 @@ export class BattleScene {
 
   private _deployCavalryShortLabel(mode: CavalryDeployMode): string {
     return mode === 'flanks' ? 'Konnica z boku' : 'Konnica z ty\u0142u';
+  }
+
+  /** C-FLANK: etykieta chipu kierunku natarcia (front/bok/tyl). */
+  private _deployAttackDirShortLabel(dir: AttackDirection): string {
+    if (dir === 'bok') return 'Natarcie: bok';
+    if (dir === 'tyl') return 'Natarcie: ty\u0142';
+    return 'Natarcie: front';
   }
 
   /** Dolny pasek: chipy aktywnej formacji, linii i konnicy (jedna linia). */
@@ -10819,6 +11068,7 @@ export class BattleScene {
     el.appendChild(mkChip('P: ' + this._deployMeleeLines + ' lin.'));
     el.appendChild(mkChip('D: ' + this._deployArcherLines + ' lin.'));
     el.appendChild(mkChip(this._deployCavalryShortLabel(this._deployCavalryMode)));
+    el.appendChild(mkChip(this._deployAttackDirShortLabel(this._deployAttackDirection)));
 
     if (groups.length > 0 && gid) {
       el.insertBefore(mkChip(this._groupDisplayLabel(gid)), el.firstChild);
@@ -12638,6 +12888,13 @@ export class BattleScene {
     this._updateDeployToolbarStatus();
   }
 
+  /** C-FLANK: ustawia aktywny kierunek natarcia (toolbar) i odswieza przyciski. */
+  private _setDeployAttackDirection(dir: AttackDirection): void {
+    this._deployAttackDirection = dir;
+    this._syncDeployAttackDirectionButtons();
+    this._updateDeployToolbarStatus();
+  }
+
   private _setDeployMeleeLines(n: DeployLineCount): void {
     this._deployMeleeLines = n;
     this._syncDeployLinesButtons();
@@ -12712,6 +12969,17 @@ export class BattleScene {
       paintDeployPopupOption(
         el as HTMLButtonElement,
         (el as HTMLElement).dataset.deployCavOption === active,
+      );
+    });
+  }
+
+  /** C-FLANK: podswietla aktywna opcje w popupie kierunku natarcia. */
+  private _syncDeployAttackDirectionButtons(): void {
+    const active = this._deployAttackDirection;
+    document.querySelectorAll('button[data-deploy-dir-option]').forEach(el => {
+      paintDeployPopupOption(
+        el as HTMLButtonElement,
+        (el as HTMLElement).dataset.deployDirOption === active,
       );
     });
   }
@@ -13657,6 +13925,7 @@ export class BattleScene {
     this._deployGroupBlocks.clear();
     this._deployFmtRow = null;
     this._deployCavRow = null;
+    this._deployDirRow = null;
     // Zachowaj dolny toolbar (Taktyka/Strategia) — tylko rebind referencji po usunieciu paneli deploy.
     this._rebindDeployToolbarRefs();
     this._deployOpenDropdown = null;
@@ -14599,6 +14868,40 @@ export class BattleScene {
     this._showOrderFeedback(mode === 'flanks' ? 'Konnica: boki' : 'Konnica: z ty\u0142u');
   }
 
+  /**
+   * C-FLANK (Maciej 2026-07-25): ustawia KIERUNEK NATARCIA (front/bok/tyl) dla
+   * auto-odgrywania bitwy -- stosuje sie do aktualnie zaznaczonego zakresu
+   * (jednostka/grupa/armia), dokladnie jak Formacja/Konnica powyzej
+   * (_resolveDeployFormationTargets zwraca ten sam zakres, spojnie z
+   * C-BITWA-FORMACJA=B). W przeciwienstwie do Formacji/Konnicy NIE przestawia
+   * fizycznie jednostek w strefie -- to ustawienie ZACHOWANIA w auto-play
+   * (manewr na flanke/tyl w _advanceStep / _cavalryAction), nie ukladu
+   * poczatkowego deploy.
+   */
+  private _applyDeployAttackDirection(dir: AttackDirection): void {
+    const live = this.atk.filter(u => !u.dead && !u.removed);
+    if (live.length === 0) return;
+
+    const targets = this._resolveDeployFormationTargets(live);
+    if (targets.length === 0) return;
+
+    for (const u of targets) u.attackDirection = dir;
+
+    const groupIds = [...new Set(targets.map(u => u.groupId).filter(Boolean))] as string[];
+    for (const g of groupIds) {
+      this._ensureGroupMeta(g).attackDirection = dir;
+    }
+
+    this._setDeployAttackDirection(dir);
+    this._refreshDeploySelectionVisuals();
+    this._updateRosterBar();
+    const dirLabel = dir === 'bok' ? 'bok' : dir === 'tyl' ? 'ty\u0142' : 'front';
+    const scopeLabel = targets.length >= live.length
+      ? 'ca\u0142a armia'
+      : 'zaznaczenie (' + targets.length + ')';
+    this._showOrderFeedback('Kierunek natarcia: ' + dirLabel + ' \u2014 ' + scopeLabel);
+  }
+
   /** Jednostki objete formacja: zaznaczenie / cala grupa / cala armia. */
   private _resolveDeployFormationTargets(live: RuntimeBattleUnit[]): RuntimeBattleUnit[] {
     const selLive = [...this._selectedUnits]
@@ -14859,6 +15162,7 @@ export class BattleScene {
         groupId:      null,
         formationOffset: null,
         unitDoctrine: null,
+        attackDirection: 'front',
         mats,
         perTokenGeos,
       };
@@ -15087,17 +15391,36 @@ export class BattleScene {
     return best;
   }
 
+  /**
+   * C-FLANK (Maciej 2026-07-25): among enemies adjacent to `ru`, when this
+   * unit's kierunek natarcia is 'bok'/'tyl' prefer one the blow would land on
+   * as flank/rear (relativeHit) -- falling back to the original priority-score
+   * pick over ALL adjacent enemies when no adjacent enemy matches (or
+   * attackDirection is 'front'), so behaviour is unchanged by default.
+   */
   private _pickAdjacentTargetByPriority(ru: RuntimeBattleUnit): RuntimeBattleUnit | null {
-    const ac = this._unitBattleClass(ru);
-    let best: RuntimeBattleUnit | null = null;
-    let bestP = Infinity;
-    for (const e of this._enemiesOf(ru)) {
-      if (manhattan(ru.q, ru.r, e.q, e.r) !== 1) continue;
-      const p = this._priorityScore(ru, e);
-      if (p < bestP || (p === bestP && best && e.bu.hp < best.bu.hp)) {
-        bestP = p; best = e;
+    const adj = this._enemiesOf(ru).filter(e => manhattan(ru.q, ru.r, e.q, e.r) === 1);
+    if (adj.length === 0) return null;
+
+    const bestByPriority = (list: RuntimeBattleUnit[]): RuntimeBattleUnit | null => {
+      let best: RuntimeBattleUnit | null = null;
+      let bestP = Infinity;
+      for (const e of list) {
+        const p = this._priorityScore(ru, e);
+        if (p < bestP || (p === bestP && best && e.bu.hp < best.bu.hp)) {
+          bestP = p; best = e;
+        }
       }
+      return best;
+    };
+
+    const desired = desiredHitForDirection(ru.attackDirection);
+    if (desired) {
+      const matching = adj.filter(e => relativeHit(e.facing, ru.q, ru.r, e.q, e.r) === desired);
+      const m = bestByPriority(matching);
+      if (m) return m;
     }
+    const best = bestByPriority(adj);
     return best;
   }
 
