@@ -9,7 +9,50 @@ UWAGA: KANON i FINALNA promują się teraz OSOBNYMI skryptami (`gra/tools/publis
 wyraźne polecenie właściciela) — dlatego są logowane NIEZALEŻNIE, każdy w swojej sekcji, ze
 swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drugiego.
 
-## ROBOCZA `98b1403a` — 2026-07-25 · FALA 11.1: przywrócony wymóg kolejności budowania — **AKTUALNA**
+## ROBOCZA `0f9ce758` — 2026-07-25 22:33 · FALA 12: domknięcie ekonomii (Danina/korupcja/Mennica), złoto na szlakach, weterani, limit skupisk górskich — **AKTUALNA**
+- md5 (pełne): `0f9ce758973fb53490fb79fdecda7bc7` · stempel z menu: `ROBOCZA · 9600d931 · 2026-07-25 22:33`
+  (stempel nosi md5 pliku SPRZED wstrzyknięcia stempla — tak jak poprzednie wydania; manifest i VERIFY
+  operują na md5 pliku finalnego `0f9ce758`)
+- Odświeżone: `Gra-ROBOCZA.html` + 6 bundli PLAYTEST (MAPA, MIASTO, OBLEZENIE-3v3, ODSKOK-OBLEZENIE,
+  ODSKOK, WALKA) + `ROBOCZA-MANIFEST.json`. **VERIFY OK.** Rozmiar 34 240 798 B.
+- **Co weszło (decyzje właściciela 63, 67B, 73–80):**
+  - **Korupcja ożywiona** — dotąd zahardkodowana na 0% w obu miejscach liczących ekonomię tury. Obciąża
+    **wyłącznie Daninę/Podatek, NIE Pracę**. Współczynniki obniżone o 50%: dystans 0,5/1/1,5 pkt proc. straty
+    na pole od stolicy, liczba miast 0,5/0,5/1 pkt proc. na miasto (easy/normal/hard). Sufit 38/50/62% bez zmian.
+    Sąd, Pretorium i Pałac redukują po 30 pkt proc., addytywnie (realne maksimum 60 pkt proc.).
+  - **67B — Pieniądz z budynków wchodzi do puli Daniny**, nie wprost do skarbca (budynek 60 pkt Pieniądza/turę:
+    było Skarbiec 60/Nauka 0/Zamożność 0, jest 36/12/12 przy suwaku 20/60/20).
+  - **76B + korekta właściciela — konwersja Pracy na Pieniądz** (Targowisko + Waluta) wchodzi do Daniny
+    **u źródła** i przechodzi przez wszystkie mnożniki handlu, łącznie z Walutą i Mennicą.
+  - **74A — domyślny podział Daniny nowego miasta 20% Nauka / 60% Skarbiec / 20% Zamożność** (było 20/70/10);
+    poprawione TRZY źródła tej wartości (econ-params.json, game/cities.ts, ui/cityPanel.ts).
+  - **Nowa siatka Szczęścia od udziału Zamożności** — 10 przedziałów po 10 pkt proc., z KARĄ poniżej 10%
+    (easy +1…+10, normal −1…+8, hard −2…+7 pkt Szczęścia/turę). Usunięty stary mechanizm „wysokie podatki",
+    który dublował karę.
+  - **75C — premia Biblioteki do Nauki miasta 0,37/0,30/0,23**, premia Akademii **0,25/0,20/0,15** (łącznie ×1,50
+    na normalnym; było ×1,60 przy odwróconej logice, gdzie tańsza Biblioteka dawała 5× więcej niż Akademia).
+  - **66B/71A — Mennica tylko w stolicy**, mnożnik działa na całe imperium; mnożnik cywilizacji z `civs.json`
+    = poziom normal, easy +0,5 / hard −0,5. **Naprawiony rozjazd panel/silnik** (Fenicjanie: panel ×2,6,
+    silnik ×1,5 — silnik w ogóle nie czytał mnożnika cywilizacji).
+  - **77A — złoto na szlakach handlowych jako surowiec typu „dostęp"** (jak koń, bez przepływu sztuk do
+    magazynu). Bez tego cywilizacja bez złoża złota nigdy nie zbudowałaby Mennicy.
+  - **78 — system weteranów** (trzeci system rozwoju jednostek): poziom 1 = statystyki z JSON, poziom 2 po
+    1. przeżytej bitwie +10%, weteran po 2. bitwie +20%; pancerz wyłączony; Morale ucieczki i Próg dezercji
+    **obniżane** ×0,90 / ×0,80.
+  - **63 + 80A — limit 10 heksów Gór i 10 heksów Wzgórz w spójnym skupisku** przy przywróconej górzystości
+    lądu 19,3% (największe skupisko: 218 → 10 heksów; pokrycie złóż mapa Ziemia z powrotem 75%).
+  - **61A/64A — usunięty martwy kod** testowej bitwy (ok. 260 linii, `battle-smoke.cjs`, `facing.ts`,
+    `launchTestBattle`).
+- **Bramki:** tsc 0 błędów · logic 208/208 · combat 6/6 · currency 32/32 · plony-budynkow 68/68 ·
+  korupcja 18/18 · praca-na-pieniadz 23/23 · zloto-szlak 45/45 · weterani 47/47 · szczescie-zamoznosc 60/60 ·
+  society-breakdown 40/40 · determinizm generatora PASS (hash A=B), 775/775 rzek z ujściem do realnego morza.
+- **Co NIE weszło:** zmiana nazwy Handel→Danina→Podatek (65B/66B, 204 wystąpienia w UI), ożywienie pola
+  `odblokowuje` (55B), odznaki ulepszeń na żetonach (57 A+B), 5 modeli jednostek Brązu (istnieją, niewpięte),
+  własny model 3D Kopalni złota.
+- **DO OGLĘDZIN:** rozkład skupisk Gór (5 map): 953 skupiska 1–2 heksowe, 111 po 3–5, 38 po 6–8, 70 po 9–10.
+  Mapa może wyglądać „cętkowanie" — rozsypane pojedyncze szczyty pochodzą z szumu reliefu, nie z limitu.
+
+## ROBOCZA `98b1403a` — 2026-07-25 · FALA 11.1: przywrócony wymóg kolejności budowania — **ZASTĄPIONA** (→ `0f9ce758`)
 
 - **Wymóg „najpierw poprzednik" wrócił.** Likwidacja „awansu bocznego" (FALA 11) usunęła pole `upgradeFrom`
   z czterech par budynków, a **razem z nim zniknął wymóg kolejności budowania** — dało się postawić Akademię

@@ -3321,3 +3321,16 @@ luki, przez którą budynek zablokowany brakiem poprzednika znikał z panelu bez
 serię Sonnetową jako uwstecznienie; praca przeniesiona na Opus 5, przerwana na jego prośbę).
 **Sesja lokalna: pull na dysk właściciela, testuj `98b1403a`.**
 CZEKAM-NA: sesja lokalna — synchronizacja dysku Macieja.
+
+## [22:33 PL, 2026-07-25] CHMURA → LOKALNA — deploy ROBOCZA `0f9ce758` (FALA 12)
+Wdeployowana ROBOCZA **md5 `0f9ce758973fb53490fb79fdecda7bc7`**, pieczątka w menu `ROBOCZA · 9600d931 · 2026-07-25 22:33`
+(pieczątka nosi md5 sprzed wstrzyknięcia stempla — tak jak poprzednie wydania). Zastępuje `98b1403a`.
+Odświeżone: `Gra-ROBOCZA.html` + 6 bundli PLAYTEST + `ROBOCZA-MANIFEST.json`. **VERIFY OK.**
+**Co weszło:** domknięcie ekonomii — korupcja ożywiona (tylko Danina, współczynniki −50%), Pieniądz z budynków
+i z konwersji Pracy wchodzi do puli Daniny przed mnożnikami (67B + 76B), domyślny podział 20/60/20, nowa siatka
+Szczęścia z karą poniżej 10% udziału Zamożności, Biblioteka +30%/Akademia +20% do Nauki, Mennica tylko w stolicy
+z naprawionym rozjazdem panel/silnik, złoto na szlakach jako dostęp, **system weteranów** (+10%/+20%, morale
+ucieczki i próg dezercji w dół), limit 10 heksów na skupisko górskie przy górzystości 19,3%.
+**Co NIE weszło:** rename Handel→Danina→Podatek, `odblokowuje`, odznaki na żetonach, 5 modeli jednostek Brązu.
+**Sesja lokalna: pull na dysk właściciela, testuj `0f9ce758`.**
+CZEKAM-NA: sesja lokalna — synchronizacja dysku Macieja.
