@@ -65,6 +65,7 @@ import { hasZelazoAccess } from './zelazo-access';
 import {
   buildingResourceGateMet,
   CITY_BUILDING_PREREQ,
+  cityBuildingPrereqMet,
   WATER_ACCESS_BUILDING_IDS,
 } from './building-resource-gate';
 import {
@@ -745,12 +746,13 @@ export function availableProduction(
       continue;
     }
     // TEMAT 8 Q2 (2026-07-24): budynek wymaga innego budynku W TYM MIEŚCIE (np. Warsztat
-    // oblężniczy → Koszary, Łaźnia publiczna → Studnia). Akceptuje też upgrade prerekwizytu
-    // (np. Koszary→Akademia wojskowa), ten sam wzorzec co bramka Koszar dla jednostek epoki
-    // Brązu niżej — inaczej upgrade odbierałby miastu już zdobyte prawo budowy.
-    const cityPrereq = CITY_BUILDING_PREREQ[b.id];
-    if (cityPrereq && !builtList.includes(cityPrereq)
-      && !isBuildingSupersededByUpgrade(cityPrereq, builtList, data.buildings)) {
+    // oblężniczy → Koszary LUB Akademia wojskowa, Łaźnia publiczna → Studnia). Od
+    // GRUPY-BUDYNKOW (2026-07-25) Koszary/Akademia wojskowa stoją w mieście niezależnie
+    // (nie w relacji upgradeFrom) — `cityBuildingPrereqMet` akceptuje KTÓRYKOLWIEK z
+    // dozwolonych id-ów (CITY_BUILDING_PREREQ może być tablicą), plus dawny fallback
+    // "upgrade prerekwizytu" (`isBuildingSupersededByUpgrade`) dla par, które nadal są
+    // w łańcuchu — inaczej upgrade/rozdzielenie odbierałoby miastu już zdobyte prawo budowy.
+    if (!cityBuildingPrereqMet(CITY_BUILDING_PREREQ[b.id], builtList, data.buildings, isBuildingSupersededByUpgrade)) {
       continue;
     }
     // TEMAT 8 Q2: Port/Port wielki wymagają wybrzeża LUB rzeki w zasięgu TEGO miasta.

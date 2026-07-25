@@ -123,6 +123,23 @@ function ok(c, m) {
   ok(items.some(i => i.id === 'akademia_wojskowa'), 'Akademia wojskowa dostepna bez Koszar (niezalezny budynek)');
   const afterAw = M.applyCompletedBuildingIds(['koszary'], 'akademia_wojskowa', buildings);
   ok(afterAw.includes('koszary') && afterAw.includes('akademia_wojskowa'), 'po ukonczeniu akademia_wojskowa: Koszary ZOSTAJA na builtIds');
+
+  // TEMAT 8 Q2 fix (GRUPY-BUDYNKOW): Warsztat oblezniczy wymaga Koszar LUB Akademii
+  // wojskowej w miescie (CITY_BUILDING_PREREQ, building-resource-gate.ts) -- musi dzialac
+  // TEZ gdy miasto ma WYLACZNIE Akademie wojskowa (mozliwe od 2026-07-25, bo Akademia
+  // wojskowa juz nie wymaga Koszar zbudowanych wczesniej).
+  const withOnlyAw = M.availableProduction(city, prodData, ['Oblężnictwo'], {
+    epoch: 3, builtBuildingIds: ['akademia_wojskowa'],
+  });
+  ok(withOnlyAw.some(i => i.id === 'warsztat_oblezniczy'), 'Warsztat oblezniczy dostepny z SAMA Akademia wojskowa (bez Koszar)');
+  const withOnlyKoszary = M.availableProduction(city, prodData, ['Oblężnictwo'], {
+    epoch: 3, builtBuildingIds: ['koszary'],
+  });
+  ok(withOnlyKoszary.some(i => i.id === 'warsztat_oblezniczy'), 'Warsztat oblezniczy dostepny z SAMYMI Koszarami');
+  const withNeither = M.availableProduction(city, prodData, ['Oblężnictwo'], {
+    epoch: 3, builtBuildingIds: [],
+  });
+  ok(!withNeither.some(i => i.id === 'warsztat_oblezniczy'), 'Warsztat oblezniczy NIEDOSTEPNY bez Koszar ani Akademii wojskowej');
 }
 
 // GRUPY-BUDYNKOW: Kamienne kręgi + Świątynia TERAZ niezalezne (upgradeFrom usuniety).

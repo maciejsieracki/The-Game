@@ -1647,7 +1647,7 @@
     "Ilość pocisków": 16,
     "W zamian za": "Łucznik",
     "Super-jednostka": "—",
-    "Uwagi": "propozycja; jednostka specjalna Egiptu (Brąz); łucznik nubijski z Ta-Seti (\"Kraina Łuku\", Nubia) — nie mylić z Numidami (jazda, Żelazo, inny region); zastępuje Łucznika; największy zasięg i najliczniejszy kołczan wśród łuczników Brązu, szybszy marsz (Ruch 3) | UWAGA KOORDYNATORA: Koszt 20, Utrzymanie 2, Pancerz/Przebicie/Obrona/Ruch-w-bitwie i staty TW v3 (meleeAttack/meleeDefence/weaponDamage/piercing/armor/chargeBonus/health/missileAttack) dobrane przez subagenta wzorem Łucznika akadyjskiego — do zatwierdzenia przez właściciela. Model 3D tymczasowo = buildEgyptianArcherOpus5 (dedykowany model nubijski do zrobienia później).",
+    "Uwagi": "propozycja; jednostka specjalna Egiptu (Brąz); łucznik nubijski z Ta-Seti (\"Kraina Łuku\", Nubia) — nie mylić z Numidami (jazda, Żelazo, inny region); zastępuje Łucznika; największy zasięg i najliczniejszy kołczan wśród łuczników Brązu, szybszy marsz (Ruch 3) | UWAGA KOORDYNATORA: Koszt 20, Utrzymanie 2, Pancerz/Przebicie/Obrona/Ruch-w-bitwie i staty TW v3 (meleeAttack/meleeDefence/weaponDamage/piercing/armor/chargeBonus/health/missileAttack) dobrane przez subagenta wzorem Łucznika akadyjskiego — do zatwierdzenia przez właściciela. Model 3D: buildNubianArcherOpus5 (braz-lucznik-nubijski-opus5.ts) — dedykowany model, luk dlugi self-bow, karnacja ciemniejsza niz Egipt, przepaska skorzana.",
     "Rola (linia)": "Dystans",
     "Pancerz": 2,
     "Przebicie": 2,

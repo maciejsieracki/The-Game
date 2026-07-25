@@ -59,15 +59,40 @@ const DEPOSIT_LINKED_BUILDING_LABELS: Readonly<Record<string, readonly string[]>
 
 /**
  * TEMAT 8 Q2: budynek wymaga innego budynku wybudowanego W TYM SAMYM MIEŚCIE (nie imperium).
- * Wartość = id budynku-prerekwizytu w buildings.json. Sprawdzane w `production.ts` (tam jest
- * per-city `builtList` + `isBuildingSupersededByUpgrade`, żeby np. upgrade Koszary→Akademia
- * wojskowa nie odbierał miastu prawa do Warsztatu oblężniczego — ten sam wzorzec co bramka
- * Koszar dla jednostek epoki Brązu, `production.ts` ok. linii 752).
+ * Wartość = id budynku-prerekwizytu w buildings.json, LUB tablica id-ów gdy więcej niż jeden
+ * budynek spełnia ten sam wymóg tematyczny (np. Warsztat oblężniczy ↔ Koszary/Akademia
+ * wojskowa). Sprawdzane w `production.ts` przez `cityBuildingPrereqMet` niżej.
+ *
+ * GRUPY-BUDYNKOW (Maciej 2026-07-25, likwidacja "awansu bocznego"): Koszary i Akademia
+ * wojskowa NIE są już w relacji upgradeFrom (oba stoją w mieście osobno) — dawny mechanizm
+ * "akceptuje też upgrade prerekwizytu" przez `isBuildingSupersededByUpgrade('koszary', ...)`
+ * przestał działać dla tej pary (nic już nie ma upgradeFrom='koszary'), a miasto MOŻE dziś
+ * mieć Akademię wojskową bez nigdy niezbudowanych Koszar. Warsztat oblężniczy musi więc nadal
+ * być dostępny, gdy w mieście stoi KTÓRYKOLWIEK z dwóch budynków treningowych — stąd tablica
+ * zamiast pojedynczego id.
  */
-export const CITY_BUILDING_PREREQ: Readonly<Record<string, string>> = {
-  warsztat_oblezniczy: 'koszary',
+export const CITY_BUILDING_PREREQ: Readonly<Record<string, string | readonly string[]>> = {
+  warsztat_oblezniczy: ['koszary', 'akademia_wojskowa'],
   laznia_publiczna: 'studnia',
 };
+
+/**
+ * Czy `builtList` (budynki TEGO miasta) spełnia prerekwizyt `prereq` — dowolny z jego id-ów
+ * jest wystarczający (semantyka OR), z akceptacją dawnego mechanizmu "upgrade prerekwizytu"
+ * (`isBuildingSupersededByUpgrade`) dla id-ów, które nadal są w relacji upgradeFrom (np. gdyby
+ * kiedyś wróciła para z awansem bocznym) — funkcja jest neutralna względem tego, które id-y są
+ * dziś niezależne, a które w łańcuchu.
+ */
+export function cityBuildingPrereqMet(
+  prereq: string | readonly string[] | undefined,
+  builtList: readonly string[],
+  buildings: readonly { id: string; upgradeFrom?: string }[],
+  isSuperseded: (id: string, builtList: readonly string[], buildings: readonly { id: string; upgradeFrom?: string }[]) => boolean,
+): boolean {
+  if (!prereq) return true;
+  const ids = typeof prereq === 'string' ? [prereq] : prereq;
+  return ids.some(id => builtList.includes(id) || isSuperseded(id, builtList, buildings));
+}
 
 /**
  * TEMAT 8 Q2: budynek wymaga wybrzeża morskiego LUB rzeki w zasięgu TEGO miasta (teren, nie

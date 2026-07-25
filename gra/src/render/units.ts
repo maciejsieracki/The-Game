@@ -45,6 +45,7 @@ import {
 import { buildMaceWarriorOpus5, buildInkaJavelineerOpus5 } from './kamien-inka-opus5';
 import { buildBatteringRamOpus5, buildZuluJavelineerOpus5 } from './kamien-zulu-taran-opus5';
 import { buildEgyptianArcherOpus5, buildSumerianArcherOpus5 } from './kamien-lucznicy-opus5';
+import { buildNubianArcherOpus5 } from './braz-lucznik-nubijski-opus5';
 // BRĄZ OPUS 5 (Maciej 2026-07-25): taran epoki Brązu na KOŁACH — nie może być
 // tym samym modelem co płozowy taran Kamienia (koło ~3500 p.n.e.).
 import { buildTaranOkutyOpus5 } from './braz-taran-opus5';
@@ -1141,9 +1142,10 @@ function buildNamedUnit(n: string, ownerColor_: number): THREE.Group | null {
   if (n.includes('rydwan sumeryjski') || n.includes('sumerian chariot')) return buildSumerianChariot(ownerColor_);
   // EGIPT ------------------------------------------------------------------
   if (n.includes('lucznik egipski') || n.includes('egyptian archer')) return buildEgyptianArcher(ownerColor_);
-  // Łucznik nubijski (Brąz, zastępuje Łucznika): model docelowy nie istnieje jeszcze
-  // (decyzja właściciela 2026-07-25) — TYMCZASOWO reużywa buildera łucznika egipskiego.
-  if (n.includes('lucznik nubijski') || n.includes('nubian archer')) return buildEgyptianArcher(ownerColor_);
+  // Łucznik nubijski (Brąz, Egipt, zastępuje Łucznika): dedykowany model
+  // (braz-lucznik-nubijski-opus5.ts) — Ta-Seti "Kraina Łuku", ciemna karnacja,
+  // długi prosty łuk self-bow wyraźnie dłuższy niż egipski, skórzana przepaska.
+  if (n.includes('lucznik nubijski') || n.includes('nubian archer')) return buildNubianArcherOpus5(ownerColor_);
   if (n.includes('wojownik z khopesh') || n.includes('khopesh warrior')) return buildKhopeshWarrior(ownerColor_);
   if (n.includes('rydwan egipski') || n.includes('egyptian chariot')) return buildEgyptianChariot(ownerColor_);
   // INKA -------------------------------------------------------------------
