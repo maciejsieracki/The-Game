@@ -266,6 +266,10 @@ import {
   cityHasPiecHutniczy,
   KOPALNIA_MIEDZI_KEY,
 } from './game/braz-access';
+import {
+  empireHasKopalniaZlota,
+  placedImprovementsWithZlotoTradeGrant,
+} from './game/zloto-access';
 import { computeEmpireLivestockUnlocks } from './game/livestock-unlock';
 import {
   createPlayerState,
@@ -2519,6 +2523,12 @@ async function boot(): Promise<void> {
         }
         return false;
       }
+      if (key === 'zloto') {
+        // Złoto (PYTANIE 77=A): sama Kopalnia złota gdziekolwiek w imperium wystarcza —
+        // bez dodatkowego budynku "hutniczego", inaczej niż braz/zelazo/cegla wyżej
+        // (patrz nagłówek zloto-access.ts: "wystarczy tylko dostęp").
+        return empireHasKopalniaZlota(ownImprovements);
+      }
       // 'kon'
       return computeEmpireLivestockUnlocks(ownImprovements, map, String(ownerId)).has('kon');
     }
@@ -2549,6 +2559,25 @@ async function boot(): Promise<void> {
       const augmented = new Map(ownImprovements);
       augmented.set(TRADE_GRANT_BRAZ_SYNTHETIC_KEY, [KOPALNIA_MIEDZI_KEY]);
       return augmented;
+    }
+
+    /**
+     * Doklejа OBA syntetyczne granty "z trasy" naraz — brąz (placedImprovementsWithBrazTradeGrant
+     * wyżej) i złoto (placedImprovementsWithZlotoTradeGrant, zloto-access.ts) — w JEDNYM miejscu
+     * zamiast wołać dwie funkcje osobno w każdym z 8 miejsc budujących AvailabilityContext /
+     * placedImprovements (audyt PYTANIE 77=A, domknięcie wpięcia 2026-07-25). Bezpieczne przez
+     * prostą kompozycję: obie funkcje augmentujące pracują na KOPII mapy pod własnym, różnym
+     * syntetycznym kluczem (TRADE_GRANT_BRAZ_SYNTHETIC_KEY vs TRADE_GRANT_ZLOTO_SYNTHETIC_KEY) —
+     * żadnej kolizji, żadnej wiedzy jednej funkcji o drugiej. Gdy żaden grant nie jest aktywny,
+     * zwraca DOKŁADNIE `ownImprovements` bez żadnej kopii (obie funkcje mają ten sam early-return).
+     */
+    function placedImprovementsWithTradeGrants(
+      ownerId: number,
+      ownImprovements: Map<string, PlacedLayers>,
+    ): ReadonlyMap<string, string | readonly string[]> {
+      const withBraz = placedImprovementsWithBrazTradeGrant(ownerId, ownImprovements);
+      const hasZlotoGrant = hasTradeRouteResourceAccess(tradeRouteResourceGrants, ownerId, 'zloto');
+      return placedImprovementsWithZlotoTradeGrant(withBraz, hasZlotoGrant);
     }
 
     /** empireHasKopalniaNaZlozuZelaza własne LUB grant "z trasy" na zelazo. */
@@ -3179,7 +3208,7 @@ async function boot(): Promise<void> {
         // Temat #4: grant "z trasy" dolicza się AND-owo (braz syntetycznie,
         // zelazo OR-em) — patrz placedImprovementsWithBrazTradeGrant/
         // hasKopalniaNaZlozuZelazaOrTradeGrant.
-        placedImprovements: placedImprovementsWithBrazTradeGrant(city.ownerId, ownImprovements),
+        placedImprovements: placedImprovementsWithTradeGrants(city.ownerId, ownImprovements),
         hasKopalniaNaZlozuZelaza: hasKopalniaNaZlozuZelazaOrTradeGrant(city.ownerId, ownImprovements),
         // audyt #11: "Zastąp" nie może dać drugiej żywej Super-jednostka -- ta sama
         // bramka co productionCtxForCity (cityPanel.ts).
@@ -3207,7 +3236,7 @@ async function boot(): Promise<void> {
         builtBuildingIds: Array.from(builtUnion),
         civBonusy: civBonusyForOwnerId(0),
         civUnitNacja: unitNacjaForCivKey(civKeyForOwnerId(0)),
-        placedImprovements: placedImprovementsWithBrazTradeGrant(0, ownImprovements),
+        placedImprovements: placedImprovementsWithTradeGrants(0, ownImprovements),
         hasKopalniaNaZlozuZelaza: hasKopalniaNaZlozuZelazaOrTradeGrant(0, ownImprovements),
         // audyt #11: jak wyżej (replaceAvailabilityCtxForCity) — całe terytorium gracza.
         aliveUnitTypeNames: new Set(units.filter(x => x.ownerId === 0).map(x => x.typeId)),
@@ -3616,7 +3645,7 @@ async function boot(): Promise<void> {
               kulturaSkumulowana: (c as { kultura?: number }).kultura ?? 0,
             },
             map,
-            placedImprovementsWithBrazTradeGrant(oid, ownImprovements),
+            placedImprovementsWithTradeGrants(oid, ownImprovements),
             empireEpochForOwner(oid),
             { builtIds, ownerId: String(oid), empireLivestockUnlocks },
           );
@@ -3628,6 +3657,9 @@ async function boot(): Promise<void> {
           if (brazSrc && access.active.includes('Brąz')) tradeSources['Brąz'] = brazSrc;
           const konSrc = tradeRouteResourceSourceLabel(oid, 'kon');
           if (konSrc && access.active.includes('Koń')) tradeSources['Koń'] = konSrc;
+          // PYTANIE 77=A: Złoto "z trasy" — identyczny wzorzec jak Brąz/Koń wyżej.
+          const zlotoSrc = tradeRouteResourceSourceLabel(oid, 'zloto');
+          if (zlotoSrc && access.active.includes('Złoto')) tradeSources['Złoto'] = zlotoSrc;
           return Object.keys(tradeSources).length ? { ...access, tradeSources } : access;
         },
         getEmpireResourceAccess: (ownerId: number) => empireActiveResourceLabelsForOwner(ownerId),
@@ -4124,7 +4156,7 @@ async function boot(): Promise<void> {
           epoch: empireEpochForOwner(city.ownerId),
           civBonusy: civBonusyForOwnerId(city.ownerId),
           civUnitNacja: unitNacjaForCivKey(civKeyForOwnerId(city.ownerId)),
-          placedImprovements: placedImprovementsWithBrazTradeGrant(city.ownerId, ownImprovements),
+          placedImprovements: placedImprovementsWithTradeGrants(city.ownerId, ownImprovements),
           hasKopalniaNaZlozuZelaza: hasKopalniaNaZlozuZelazaOrTradeGrant(city.ownerId, ownImprovements),
           // Parytet z ręczną budową gracza (Maciej 2026-07-24): bramka B-SUROW-BUD dostaje te same
           // wejścia — aktywne źródła + budynki imperium + ZAPAS puli państwa (bramka spełniona zapasem).
@@ -14240,7 +14272,7 @@ async function boot(): Promise<void> {
                         epoch: empireEpochForOwner(city.ownerId),
                         civBonusy: civBonusyForOwnerId(city.ownerId),
                         civUnitNacja: unitNacjaForCivKey(civKeyForOwnerId(city.ownerId)),
-                        placedImprovements: placedImprovementsWithBrazTradeGrant(city.ownerId, ownImprovements),
+                        placedImprovements: placedImprovementsWithTradeGrants(city.ownerId, ownImprovements),
                         hasKopalniaNaZlozuZelaza: hasKopalniaNaZlozuZelazaOrTradeGrant(city.ownerId, ownImprovements),
                         // TEMAT 8 Q2 (2026-07-24, parytet AI/Zarządca z tryAutoEnqueueBuild):
                         // bez tych 4 pól bramki surowcowe/terenowe (Glina/Ceramika/Sól/Drewno/
@@ -14913,7 +14945,7 @@ async function boot(): Promise<void> {
                         productionQueue: prod0.kolejka,
                         civBonusy: civBonusyForOwnerId(ownerId),
                         civUnitNacja: unitNacjaForCivKey(civKeyForOwnerId(ownerId)),
-                        placedImprovements: placedImprovementsWithBrazTradeGrant(ownerId, ownImprovements),
+                        placedImprovements: placedImprovementsWithTradeGrants(ownerId, ownImprovements),
                         hasKopalniaNaZlozuZelaza: hasKopalniaNaZlozuZelazaOrTradeGrant(ownerId, ownImprovements),
                         // audyt #11: AI też podlega limitowi 1 żywej Super-jednostka.
                         aliveUnitTypeNames: new Set(
