@@ -636,7 +636,13 @@ var DEPOSIT_LINKED_BUILDING_LABELS = {
   spichlerz_ii: ["S\xF3l"],
   stolarnia: ["Drewno"],
   kamieniarski: ["Kamie\u0144"],
-  kuznia: ["Ruda"]
+  kuznia: ["Ruda"],
+  // ZLOTO (Maciej 2026-07-25): Mennica wymaga dostępu do Złota (empire-wide, Kopalnia złota
+  // gdziekolwiek w imperium — game/zloto-access.ts empireHasKopalniaZlota, dolane do
+  // aktywnych etykiet w resource-access.ts collectActiveAccess). Złoto NIE jest magazynowane
+  // (brak wpisu w LABEL_BY_ASCII/ASCII_BY_LABEL niżej) — więc ta bramka NIGDY nie jest
+  // spełniona zapasem puli państwa (empireLabelSatisfied), tylko realnym aktywnym dostępem.
+  mennica: ["Z\u0142oto"]
 };
 var CITY_BUILDING_PREREQ = {
   warsztat_oblezniczy: ["koszary", "akademia_wojskowa"],
@@ -644,7 +650,10 @@ var CITY_BUILDING_PREREQ = {
   akademia: "biblioteka",
   fort: "mury",
   akademia_wojskowa: "koszary",
-  swiatynia: "kamienne_kregi"
+  swiatynia: "kamienne_kregi",
+  // ZLOTO (Maciej 2026-07-25, decyzja 54c=A): Mennica wymaga Targowiska W TYM SAMYM MIEŚCIE
+  // (obok bramki surowcowej Złota powyżej — DEPOSIT_LINKED_BUILDING_LABELS).
+  mennica: "targowisko"
 };
 function cityBuildingPrereqMet(prereq, builtList, buildings, isSuperseded) {
   if (!prereq) return true;
