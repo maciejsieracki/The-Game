@@ -725,7 +725,14 @@ export function availableProduction(
     }
 
     const tech = (b.techUnlock ?? '').trim();
-    if (tech.length > 0 && !techs.has(tech)) continue;
+    // BUGFIX (ADMIN-STOLICA 2026-07-25): blank-tech marker w buildings.json bywa zapisany
+    // jako '-' (Pałac I/II/III, Dom Starszyzny — "dostępny od startu, bez badań"), tak samo
+    // jak dla jednostek (patrz uwaga niżej przy units.json Tech). BEZ tej drugiej formy
+    // techUnlock='-' byłby czytany jako WYMAGANA technologia o nazwie "-", której żaden gracz
+    // nigdy nie odkryje (nie istnieje w tech.json) — Pałac (i teraz Dom Starszyzny) nigdy nie
+    // pojawiałby się w produkcji, niezależnie od bramki stolica/region niżej. Pre-istniejący
+    // bug w tym module (jednostki już miały tę samą poprawkę, budynki — nie).
+    if (tech.length > 0 && tech !== '-' && tech !== '—' && !techs.has(tech)) continue;
     if (!buildingLocationAllowed(b.lokalizacja, ctx.isCapital)) continue;
     if (b.id === PIEC_HUTNICZY_BUILDING_ID
       && !empireHasKopalniaMiedzi(ctx.placedImprovements)) {
@@ -1421,7 +1428,9 @@ export function eraBuildingCatalog(
       difficulty,
     );
     const tech = (b.techUnlock ?? '').trim();
-    const techOk = tech.length === 0 || techs.has(tech);
+    // BUGFIX (ADMIN-STOLICA 2026-07-25): patrz uwaga w availableProduction — '-'/'—' są
+    // blank-tech markery (Pałac I/II/III, Dom Starszyzny), nie nazwy realnej technologii.
+    const techOk = tech.length === 0 || tech === '-' || tech === '—' || techs.has(tech);
 
     const locationOk = buildingLocationAllowed(b.lokalizacja, ctx.isCapital);
 

@@ -23,6 +23,8 @@
     "palac": "bld-palac",
     "palac_ii": "bld-palac",
     "palac_iii": "bld-palac",
+    "dom_starszyzny": "bld-palac",
+    "dwor_zarzadcy": "bld-palac",
     "biblioteka": "bld-biblioteka",
     "akademia": "bld-akademia",
     "studnia": "bld-studnia",
@@ -34,7 +36,7 @@
     "warsztat_oblezniczy": "bld-warsztat_oblezniczy",
     "akademia_wojskowa": "bld-akademia_wojskowa",
     "sad": "bld-sad",
-    "pretorium": "bld-pretorium",
+    "pretorium": "bld-palac",
     "_default": "bld-default"
   }
 }
