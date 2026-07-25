@@ -822,12 +822,17 @@ export function cityYieldPerTurn(
   const strata = Math.min(ctx.strataFraction, params.korupcjaCap);
   const pracaNetto        = pracaBruttoLacznie * (1 - strata);
   const handelNettoRaw    = handelBrutto       * (1 - strata);
+  // Waluta odkryta (sam tech, BEZ wymogu Mennicy) -- uzywane WYLACZNIE przez Efekt 2
+  // (Targowisko) ponizej. Efekt 2 NIE zostal ruszony przez decyzje 2026-07-25 (Maciej:
+  // "nie ruszaj Targowiska, to inny strumien") -- musi zostac osobna zmienna, inaczej
+  // scalona bramka Efektu 1 (ponizej) przecieklaby i wylaczyla Efekt 2 gdy brak Mennicy.
+  const walutaOdkrytaOnly = ctx.walutaOdkryta === true;
   // Efekt 1 SCALONY (Waluta + Mennica, decyzja Maciej 2026-07-25): caly handelNetto
   // jest mnozony x mennicaMnoznikPoWalucie (easy x2,0 / normal x1,5 / hard x1,0) TYLKO
   // gdy walutaOdkryta ORAZ maMennica sa oba prawdziwe -- sam tech Waluty juz NIE
   // wystarcza. Dziala na cala pule PRZED podzialem na Nauka/Pieniadz/Luksus, wiec
   // nauka i zamoznosc z handlu tez rosna razem ze Skarbem (decyzja: wariant A).
-  const walutaActive = ctx.walutaOdkryta === true && ctx.maMennica === true;
+  const walutaActive = walutaOdkrytaOnly && ctx.maMennica === true;
   const walutaMnoznikBase = ctx.walutaMnoznikOverride ?? params.mennicaMnoznikPoWalucie;
   const walutaMnoznikAktywny = walutaActive ? walutaMnoznikBase : 1;
   const handelNetto   = handelNettoRaw * walutaMnoznikAktywny;
@@ -867,7 +872,7 @@ export function cityYieldPerTurn(
   const pctPracaBudynki = city.podziałPracy.procentBudynki / 100;
   const pracaInt = cityPracaInteger(pracaNetto);
   const { doPuli } = splitPraca(pracaInt, pctPracaBudynki);
-  const pieniadzZPracy = (ctx.maTargowisko && walutaActive)
+  const pieniadzZPracy = (ctx.maTargowisko && walutaOdkrytaOnly)
     ? Math.floor(doPuli * params.targowiskoPracaMnoznik)
     : 0;
 

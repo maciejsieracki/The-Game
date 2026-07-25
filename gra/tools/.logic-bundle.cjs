@@ -6989,7 +6989,8 @@ function cityYieldPerTurn(city, workedTiles, cityBuildings, params, ctx) {
   const strata = Math.min(ctx.strataFraction, params.korupcjaCap);
   const pracaNetto = pracaBruttoLacznie * (1 - strata);
   const handelNettoRaw = handelBrutto * (1 - strata);
-  const walutaActive = ctx.walutaOdkryta === true && ctx.maMennica === true;
+  const walutaOdkrytaOnly = ctx.walutaOdkryta === true;
+  const walutaActive = walutaOdkrytaOnly && ctx.maMennica === true;
   const walutaMnoznikBase = ctx.walutaMnoznikOverride ?? params.mennicaMnoznikPoWalucie;
   const walutaMnoznikAktywny = walutaActive ? walutaMnoznikBase : 1;
   const handelNetto = handelNettoRaw * walutaMnoznikAktywny;
@@ -7006,7 +7007,7 @@ function cityYieldPerTurn(city, workedTiles, cityBuildings, params, ctx) {
   const pctPracaBudynki = city.podzia\u0142Pracy.procentBudynki / 100;
   const pracaInt = cityPracaInteger(pracaNetto);
   const { doPuli } = splitPraca(pracaInt, pctPracaBudynki);
-  const pieniadzZPracy = ctx.maTargowisko && walutaActive ? Math.floor(doPuli * params.targowiskoPracaMnoznik) : 0;
+  const pieniadzZPracy = ctx.maTargowisko && walutaOdkrytaOnly ? Math.floor(doPuli * params.targowiskoPracaMnoznik) : 0;
   let pieniadzTotal = pieniadzZHandlu + pieniadzBudynkow + pieniadzZPracy;
   for (const spec of city.specjalisci) {
     if (spec === "poborca") {
