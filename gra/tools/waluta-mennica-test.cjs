@@ -33,10 +33,11 @@ const ENTRY_FILE  = path.resolve(__dirname, '.waluta-mennica-entry.ts');
 const BUNDLE_FILE = path.resolve(__dirname, '.waluta-mennica-bundle.cjs');
 
 fs.writeFileSync(ENTRY_FILE, `
-export { cityYieldPerTurn, loadEconParams, mnoznikHandelPieniadzForCiv } from '../src/game/economy';
+export { cityYieldPerTurn, loadEconParams, mnoznikHandelPieniadzForCiv, mnoznikHandelPieniadzForCivByDifficulty } from '../src/game/economy';
 export { buildEconParams, advanceCityEconomy } from '../src/game/turn-economy';
 export { generateMap } from '../src/map/generator';
 export { foundCityAt, canFoundCity } from '../src/game/cities';
+export { eraBuildingCatalog } from '../src/game/production';
 `, 'utf8');
 
 try {
@@ -252,6 +253,227 @@ eq(yldTargZMennica.pieniadzZPracy, yldTargNoMennica.pieniadzZPracy,
 // oba efekty dzialaja na ROZNYCH strumieniach jednoczesnie, bez interferencji.
 assert(yldTargZMennica.pieniadz > yldTargNoMennica.pieniadz,
   'Targowisko+Mennica: pieniadz total wyzszy niz bez Mennicy (Efekt1 dziala na strumieniu Handlu, Efekt2 na strumieniu Pracy, oba naraz)');
+
+// ---------------------------------------------------------------------------
+// 9. PYTANIE 69 (Maciej 2026-07-25): mnoznik cywilizacyjny SKALOWANY TRUDNOSCIA.
+//    civs.json niesie wartosc NORMAL; easy = wartosc+0.5; hard = wartosc-0.5.
+//    Fenicjanie (najwyzszy, 2.6) i Germanie (najnizszy, 1.7) -- liczby z raportu.
+// ---------------------------------------------------------------------------
+console.log('\n-- 9. Mnoznik cywilizacyjny skalowany trudnoscia (pytanie 69) --');
+function closeTo(a, b, msg, eps) {
+  eps = eps === undefined ? 1e-9 : eps;
+  assert(Math.abs(a - b) < eps, `${msg} (got ${a}, want ~${b})`);
+}
+closeTo(M.mnoznikHandelPieniadzForCivByDifficulty('fenicjanie', civs, 'easy',   pEasy.mennicaMnoznikPoWalucie),   3.1, 'Fenicjanie easy = 3,1 (2,6+0,5)');
+closeTo(M.mnoznikHandelPieniadzForCivByDifficulty('fenicjanie', civs, 'normal', pNormal.mennicaMnoznikPoWalucie), 2.6, 'Fenicjanie normal = 2,6 (wartosc civs.json, bez zmian)');
+closeTo(M.mnoznikHandelPieniadzForCivByDifficulty('fenicjanie', civs, 'hard',   pHard.mennicaMnoznikPoWalucie),   2.1, 'Fenicjanie hard = 2,1 (2,6-0,5)');
+closeTo(M.mnoznikHandelPieniadzForCivByDifficulty('germanie',   civs, 'easy',   pEasy.mennicaMnoznikPoWalucie),   2.2, 'Germanie easy = 2,2 (1,7+0,5)');
+closeTo(M.mnoznikHandelPieniadzForCivByDifficulty('germanie',   civs, 'normal', pNormal.mennicaMnoznikPoWalucie), 1.7, 'Germanie normal = 1,7 (wartosc civs.json, bez zmian)');
+closeTo(M.mnoznikHandelPieniadzForCivByDifficulty('germanie',   civs, 'hard',   pHard.mennicaMnoznikPoWalucie),   1.2, 'Germanie hard = 1,2 (1,7-0,5)');
+// civs.json NIE zmieniony przez tę deceyzję -- sanity, wartości normal muszą pochodzić z pliku.
+eq(civs.cywilizacje.find(c => c.ikonaId === 'fenicjanie').mnoznikHandelPieniadz, 2.6, 'civs.json Fenicjanie mnoznikHandelPieniadz NIETKNIETY = 2,6');
+eq(civs.cywilizacje.find(c => c.ikonaId === 'germanie').mnoznikHandelPieniadz,   1.7, 'civs.json Germanie mnoznikHandelPieniadz NIETKNIETY = 1,7');
+
+// ---------------------------------------------------------------------------
+// 10. Cywilizacja BEZ wpisu w civs.json -> wartosc zapasowa, TEZ skalowana
+//     trudnoscia. Fallback = params.mennicaMnoznikPoWalucie (juz per-trudnosc
+//     w econ-params.json: easy 2,0 / normal 1,5 / hard 1,0) -- NIE dostaje
+//     DRUGIEJ warstwy delty (bez tego easy wyszloby 2,5 zamiast 2,0 -- podwojne
+//     skalowanie, zakazane).
+// ---------------------------------------------------------------------------
+console.log('\n-- 10. Cywilizacja bez wpisu w civs.json -> fallback skalowany trudnoscia --');
+eq(M.mnoznikHandelPieniadzForCivByDifficulty('nieznana-cywilizacja-xyz', civs, 'easy',   pEasy.mennicaMnoznikPoWalucie),   2,   'Brak wpisu, easy: fallback = 2,0 (bez podwojnej delty)');
+eq(M.mnoznikHandelPieniadzForCivByDifficulty('nieznana-cywilizacja-xyz', civs, 'normal', pNormal.mennicaMnoznikPoWalucie), 1.5, 'Brak wpisu, normal: fallback = 1,5');
+eq(M.mnoznikHandelPieniadzForCivByDifficulty('nieznana-cywilizacja-xyz', civs, 'hard',   pHard.mennicaMnoznikPoWalucie),   1,   'Brak wpisu, hard: fallback = 1,0');
+eq(M.mnoznikHandelPieniadzForCivByDifficulty(undefined, civs, 'normal', pNormal.mennicaMnoznikPoWalucie), 1.5, 'civKey undefined: fallback = 1,5 (parytet z brakiem wpisu)');
+
+// ---------------------------------------------------------------------------
+// 11. PYTANIE 70/B: Mennica WYLACZNIE w stolicy -- bramka lokalizacji w
+//     buildings.json ('lokalizacja':'stolica'), egzekwowana przez
+//     eraBuildingCatalog/buildingLocationAllowed (production.ts) -- ten sam
+//     mechanizm co Palac (jedyne zrodlo prawdy ADMIN-STOLICA, wspoldzielone
+//     przez UI gracza / auto-kolejke / auto-zarzadce / walidacje AI 'build').
+// ---------------------------------------------------------------------------
+console.log('\n-- 11. Mennica tylko w stolicy (pytanie 70/B) --');
+eq(buildings.find(b => b.id === 'mennica').lokalizacja, 'stolica', "buildings.json: Mennica ma lokalizacja='stolica'");
+const dataForCatalog = { buildings, units };
+const catalogRegional = M.eraBuildingCatalog(dataForCatalog, ['Waluta'], {
+  epoch: 2, builtBuildingIds: [], isCapital: false,
+});
+const mennicaRegional = catalogRegional.find(e => e.id === 'mennica');
+assert(!!mennicaRegional, 'eraBuildingCatalog: wpis Mennica istnieje w katalogu epoki 2 (miasto regionalne)');
+eq(mennicaRegional.status, 'locked', 'Miasto REGIONALNE (isCapital=false): Mennica zablokowana');
+eq(mennicaRegional.locationBlocked, 'stolica', "Miasto REGIONALNE: locationBlocked='stolica' (powod blokady = lokalizacja)");
+const catalogCapital = M.eraBuildingCatalog(dataForCatalog, ['Waluta'], {
+  epoch: 2, builtBuildingIds: [], isCapital: true,
+});
+const mennicaCapital = catalogCapital.find(e => e.id === 'mennica');
+assert(!!mennicaCapital, 'eraBuildingCatalog: wpis Mennica istnieje w katalogu epoki 2 (stolica)');
+assert(mennicaCapital.locationBlocked === undefined, 'STOLICA (isCapital=true): locationBlocked=undefined (lokalizacja NIE jest powodem blokady)');
+assert(mennicaCapital.status !== 'locked' || mennicaCapital.locationBlocked === undefined,
+  'STOLICA: jesli cokolwiek blokuje Mennice, to NIE lokalizacja (np. inny prereq niezaleznie sprawdzany gdzie indziej)');
+
+// ---------------------------------------------------------------------------
+// 12. PYTANIE 71/C (sedno zmiany): Mennica w STOLICY + Waluta odkryta ->
+//     mnoznik dziala WE WSZYSTKICH miastach tego wlasciciela, takze
+//     REGIONALNYCH bez wlasnej Mennicy. Bez Mennicy NIGDZIE w imperium ->
+//     mnoznik 1 wszedzie. Test przez PELNY silnik advanceCityEconomy (2
+//     miasta tego samego wlasciciela).
+// ---------------------------------------------------------------------------
+console.log('\n-- 12. Mennica w stolicy -> mnoznik obejmuje CALA cywilizacje (pytanie 71/C) --');
+function findTwoCitySites(map) {
+  const sites = [];
+  const tmpCities = [];
+  for (const h of Object.values(map.hexes)) {
+    const c = { q: h.coords.q, r: h.coords.r };
+    if (M.canFoundCity(c.q, c.r, tmpCities, map).ok) {
+      const city = M.foundCityAt(c.q, c.r, 0, tmpCities, map, `Test${sites.length}`);
+      if (city) { sites.push(city); tmpCities.push(city); }
+    }
+    if (sites.length >= 2) break;
+  }
+  return sites;
+}
+const mapC = M.generateMap(40, 40, 9191, 'kontynenty');
+const twoCities = findTwoCitySites(mapC);
+if (twoCities.length < 2) {
+  console.error('FAIL: brak dwoch pol ladu odleglych od siebie do zalozenia miast testu C');
+  failed++;
+} else {
+  const [capitalCity, regionalCity] = twoCities;
+  const gameDataC = { civs, econParams: econParamsRaw, societyParams, buildings, units, tech };
+  const zbadaneWaluta = new Set(['Waluta']);
+  // (a) Mennica TYLKO w stolicy -- miasto regionalne bez wlasnej Mennicy.
+  const builtWithCapitalMennica = new Map([
+    [capitalCity.id, ['mennica']],
+    [regionalCity.id, []],
+  ]);
+  function tick(builtByCity, ownerId) {
+    const cities = [
+      { ...capitalCity, ownerId },
+      { ...regionalCity, ownerId },
+    ];
+    const econ = M.advanceCityEconomy(
+      cities, mapC, gameDataC, 'normal', [], new Map(), builtByCity, 1, zbadaneWaluta, new Map(), new Map(),
+    );
+    return {
+      capital:  econ.perCity.find(t => t.cityId === capitalCity.id),
+      regional: econ.perCity.find(t => t.cityId === regionalCity.id),
+    };
+  }
+  const withMennica = tick(builtWithCapitalMennica, 0);
+  const noMennicaAnywhere = tick(new Map([[capitalCity.id, []], [regionalCity.id, []]]), 0);
+  assert(!!withMennica.regional && !!noMennicaAnywhere.regional, 'sanity: oba przebiegi zwracaja wpis dla miasta regionalnego');
+  if (withMennica.regional && noMennicaAnywhere.regional) {
+    assert(withMennica.regional.pieniadzBrutto > noMennicaAnywhere.regional.pieniadzBrutto,
+      `Miasto REGIONALNE (bez wlasnej Mennicy) dostaje mnoznik gdy STOLICA ma Mennice + Waluta odkryta ` +
+      `(z Mennica ${withMennica.regional.pieniadzBrutto} > bez ${noMennicaAnywhere.regional.pieniadzBrutto})`);
+  }
+  // (b) Brak Mennicy W CALYM IMPERIUM -> mnoznik 1 wszedzie (regionalne i "stolica" identyczne
+  //     z runem bez Waluty -- dowod ze bramka jest realnie zamknieta, nie tylko nizsza).
+  const noMennicaNoWaluta = (() => {
+    const cities = [{ ...capitalCity, ownerId: 0 }, { ...regionalCity, ownerId: 0 }];
+    const econ = M.advanceCityEconomy(
+      cities, mapC, gameDataC, 'normal', [], new Map(), new Map([[capitalCity.id, []], [regionalCity.id, []]]),
+      1, new Set(), new Map(), new Map(),
+    );
+    return {
+      capital:  econ.perCity.find(t => t.cityId === capitalCity.id),
+      regional: econ.perCity.find(t => t.cityId === regionalCity.id),
+    };
+  })();
+  if (noMennicaAnywhere.capital && noMennicaNoWaluta.capital) {
+    eq(noMennicaAnywhere.capital.pieniadzBrutto, noMennicaNoWaluta.capital.pieniadzBrutto,
+      'Brak Mennicy w calym imperium: pieniadzBrutto (stolica) identyczny z/bez Waluty odkrytej (mnoznik=1)');
+  }
+  if (noMennicaAnywhere.regional && noMennicaNoWaluta.regional) {
+    eq(noMennicaAnywhere.regional.pieniadzBrutto, noMennicaNoWaluta.regional.pieniadzBrutto,
+      'Brak Mennicy w calym imperium: pieniadzBrutto (regionalne) identyczny z/bez Waluty odkrytej (mnoznik=1)');
+  }
+
+  // -------------------------------------------------------------------------
+  // 13. STARY ZAPIS: Mennica stojaca w miescie REGIONALNYM (sprzed zmiany 70/B)
+  //     NIE wywala silnika -- budynek zostaje, nadal aktywuje mnoznik imperium.
+  //     Bramka lokalizacji (sekcja 11) dotyczy WYLACZNIE budowania NOWYCH,
+  //     silnik ekonomii (advanceCityEconomy) nigdy nie sprawdza `lokalizacja`.
+  // -------------------------------------------------------------------------
+  console.log('\n-- 13. Stary zapis: Mennica w miescie REGIONALNYM nie wywala silnika --');
+  let legacyOk = true;
+  let legacyResult = null;
+  try {
+    const builtLegacy = new Map([
+      [capitalCity.id, []],           // stolica BEZ Mennicy
+      [regionalCity.id, ['mennica']], // regionalne miasto ZE starym zapisem Mennicy
+    ]);
+    legacyResult = tick(builtLegacy, 0);
+  } catch (e) {
+    legacyOk = false;
+    console.error('  wyjatek:', e && e.message);
+  }
+  assert(legacyOk, 'Stary zapis (Mennica w miescie regionalnym): advanceCityEconomy NIE rzuca wyjatku');
+  if (legacyOk && legacyResult && legacyResult.capital && withMennica.capital) {
+    assert(legacyResult.capital.pieniadzBrutto > noMennicaAnywhere.capital.pieniadzBrutto,
+      'Stary zapis: Mennica w regionalnym miescie WCIAZ aktywuje mnoznik dla CALEGO imperium (w tym stolicy)');
+  }
+
+  // -------------------------------------------------------------------------
+  // 14. PARYTET AI (rozszerzony, mnoznik cywilizacyjny): ownerId=0 vs ownerId=9,
+  //     TA SAMA cywilizacja (fenicjanie) -> identyczny wynik. Dowod ze
+  //     resolveWalutaMnoznikOverride/ownersWithMennica nie maja galezi po ownerId.
+  // -------------------------------------------------------------------------
+  console.log('\n-- 14. Parytet AI: mnoznik cywilizacyjny identyczny dla gracza i AI (ta sama cyw.) --');
+  function tickWithCiv(ownerId) {
+    const cities = [{ ...capitalCity, ownerId }, { ...regionalCity, ownerId }];
+    const builtByCity = new Map([[capitalCity.id, ['mennica']], [regionalCity.id, []]]);
+    const ownerCivMap = new Map([[ownerId, 'fenicjanie']]);
+    const econ = M.advanceCityEconomy(
+      cities, mapC, gameDataC, 'normal', [], new Map(), builtByCity, 1, zbadaneWaluta, ownerCivMap, new Map(),
+    );
+    return econ.perCity.find(t => t.cityId === regionalCity.id);
+  }
+  const parityPlayer = tickWithCiv(0);
+  const parityAI = tickWithCiv(9);
+  assert(!!parityPlayer && !!parityAI, 'parytet AI (cyw.): oba przebiegi zwracaja wpis dla miasta regionalnego');
+  if (parityPlayer && parityAI) {
+    eq(parityAI.pieniadzBrutto, parityPlayer.pieniadzBrutto,
+      `parytet AI (Fenicjanie, mnoznik 2,6 normal): pieniadzBrutto identyczny dla ownerId=0 i ownerId=9 (${parityPlayer.pieniadzBrutto})`);
+  }
+
+  // -------------------------------------------------------------------------
+  // 15. Override z religii NADAL dziala spojnie po zmianie bramki na
+  //     imperium-wide (Maciej 2026-07-25): gdy stolica ma Mennice + Waluta
+  //     odkryta ORAZ dominujaca religia miasta = religia wlasnej cywilizacji,
+  //     mnoznik z religii (civBaseMultiplier z civs.json, NIEskalowany
+  //     trudnoscia -- zachowanie SPRZED dzisiejszej decyzji 69, nietkniete)
+  //     ma pierwszenstwo przed civ+trudnosc. Bez dominujacej religii ->
+  //     spada z powrotem na civ+trudnosc (bez zmian vs sekcja 12/14).
+  // -------------------------------------------------------------------------
+  console.log('\n-- 15. Override z religii dziala spojnie (bramka Mennica -> imperium-wide) --');
+  function tickWithReligion(cityReligionByCityId) {
+    const cities = [{ ...capitalCity, ownerId: 0 }, { ...regionalCity, ownerId: 0 }];
+    const builtByCity = new Map([[capitalCity.id, ['mennica']], [regionalCity.id, []]]);
+    const ownerCivMap = new Map([[0, 'fenicjanie']]);
+    const econ = M.advanceCityEconomy(
+      cities, mapC, gameDataC, 'easy', [], new Map(), builtByCity, 1, zbadaneWaluta, ownerCivMap,
+      new Map(), undefined, undefined, 'wysoki', new Map(), new Map(), cityReligionByCityId,
+    );
+    return econ.perCity.find(t => t.cityId === regionalCity.id);
+  }
+  // (a) BEZ religii dominujacej -> civ+trudnosc (Fenicjanie easy = 3,1), jak w sekcji 12/14.
+  const noReligion = tickWithReligion(new Map());
+  // (b) Religia miasta W CALOSCI "Religia fenicka (Ba'al)" (Fenicjanie) -> dominuje,
+  //     override z religii uzywa civBaseMultiplier SUROWY z civs.json (2,6, BEZ +0,5 easy).
+  const dominantReligionState = new Map([
+    [regionalCity.id, { counts: { "Religia fenicka (Ba'al)": 100 } }],
+  ]);
+  const withReligion = tickWithReligion(dominantReligionState);
+  assert(!!noReligion && !!withReligion, 'sanity: oba przebiegi (z/bez religii) zwracaja wpis');
+  if (noReligion && withReligion) {
+    assert(withReligion.pieniadzBrutto !== noReligion.pieniadzBrutto,
+      `Override z religii ZMIENIA wynik vs plaski civ+trudnosc (dominujaca religia: ${withReligion.pieniadzBrutto} vs civ+trudnosc easy 3,1: ${noReligion.pieniadzBrutto}) -- ` +
+      'dowod ze bramka imperium-wide (Mennica w stolicy + Waluta) nadal otwiera override religii dla miasta REGIONALNEGO bez wlasnej Mennicy');
+  }
+}
 
 // --- summary ---------------------------------------------------------------
 console.log(`\nwaluta-mennica-test: ${passed} passed, ${failed} failed`);

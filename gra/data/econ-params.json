@@ -60,22 +60,22 @@
       "easy": 20,
       "normal": 20,
       "hard": 20,
-      "jednostka": "%",
-      "opis": "Domyślny udział strumienia Nauka (= BADANIA) w podziale Handlu netto. Default 20% (Maciej 2026-06-25)."
+      "jednostka": "% Daniny netto miasta (po Walucie i Mennicy: Podatku netto)",
+      "opis": "Domyślny udział strumienia Nauka (= BADANIA) w podziale Daniny netto nowego miasta. 20% (Maciej 2026-06-25, potwierdzone przy decyzji 74 = A z 2026-07-25 — ten strumień zostaje bez zmian)."
     },
     "suwak_handel_pieniadz_domyslnie": {
-      "easy": 70,
-      "normal": 70,
-      "hard": 70,
-      "jednostka": "%",
-      "opis": "Domyślny udział strumienia Pieniądz (= SKARBIEC/podatek) w podziale Handlu netto. Default 70% (Maciej 2026-06-25)."
+      "easy": 60,
+      "normal": 60,
+      "hard": 60,
+      "jednostka": "% Daniny netto miasta (po Walucie i Mennicy: Podatku netto)",
+      "opis": "Domyślny udział strumienia Pieniądz (= SKARBIEC) w podziale Daniny netto nowego miasta. Obniżony 70% → 60% decyzją Maciej 2026-07-25 (PYTANIE 74 = A); te 10 punktów procentowych przeszło na Zamożność, żeby nowe miasto nie startowało z ujemnym Szczęściem na trudnym."
     },
     "suwak_handel_luksus_domyslnie": {
-      "easy": 10,
-      "normal": 10,
-      "hard": 10,
-      "jednostka": "%",
-      "opis": "Domyślny udział strumienia Zamożność (Wealth) w podziale Handlu netto. Default 10% (Maciej 2026-06-25). Luksus ≠ surowiec — osobna kategoria elitarna (poza grą v1)."
+      "easy": 20,
+      "normal": 20,
+      "hard": 20,
+      "jednostka": "% Daniny netto miasta (po Walucie i Mennicy: Podatku netto)",
+      "opis": "Domyślny udział strumienia Zamożność (Wealth) w podziale Daniny netto nowego miasta. Podniesiony 10% → 20% decyzją Maciej 2026-07-25 (PYTANIE 74 = A). Powód: 20% to dokładnie próg utrzymania poziomu Zamożności (20% pieniądza miasta przy poziomie 0), więc poziom Zamożności rusza z miejsca bez ręcznej interwencji; w nowej siatce Szczęścia przedział 20-29% daje +1 pkt Szczęścia na normalnym i 0 na trudnym (zamiast 0 / -1 przy dawnych 10%)."
     },
     "suwak_praca_budynki_domyslnie": {
       "easy": 70,
@@ -127,25 +127,25 @@
       "opis": "Ułamek netto żywności armii odkładany do zapasów państwa gdy w imperium jest ≥1 Spichlerz (100%). Limit pojemności = spichlerz_pojemnosc × liczba Spichlerzy."
     },
     "korupcja_wspolczynnik_dystansu": {
-      "easy": 1,
-      "normal": 2,
-      "hard": 3,
-      "jednostka": "per pole",
-      "opis": "Strata% += Dystans_od_Stolicy × wartość. Im większy, tym dotkliwsza korupcja. [PT]"
+      "easy": 0.5,
+      "normal": 1,
+      "hard": 1.5,
+      "jednostka": "punkty procentowe straty Daniny/Podatku na każde pole odległości od stolicy",
+      "opis": "Korupcja — współczynnik dystansu. Strata% Daniny (po wynalezieniu Waluty: Podatku) += Dystans_od_Stolicy [pola] × wartość. NIE dotyczy Pracy (decyzja Maciej 2026-07-25: korupcja obciąża wyłącznie Daninę/Podatek). Wartości obniżone o 50% wobec pierwotnych 1 / 2 / 3 (decyzja Maciej 2026-07-25: „zbyt rygorystyczne… mają mieć wpływ, ale nie być druzgocące\"). [PT]"
     },
     "korupcja_wspolczynnik_miast": {
-      "easy": 1,
-      "normal": 1,
-      "hard": 2,
-      "jednostka": "per miasto",
-      "opis": "Strata% += Liczba_Miast × wartość. Każde nowe miasto podnosi korupcję globalnie. [PT]"
+      "easy": 0.5,
+      "normal": 0.5,
+      "hard": 1,
+      "jednostka": "punkty procentowe straty Daniny/Podatku na każde miasto w imperium",
+      "opis": "Korupcja — współczynnik liczby miast. Strata% Daniny (po Walucie: Podatku) += Liczba_Miast × wartość; obciąża każde miasto, także stolicę. NIE dotyczy Pracy. Wartości obniżone o 50% wobec pierwotnych 1 / 1 / 2 (decyzja Maciej 2026-07-25). [PT]"
     },
     "korupcja_cap": {
       "easy": 38,
       "normal": 50,
       "hard": 62,
-      "jednostka": "%",
-      "opis": "Maksymalna strata z tytułu korupcji/marnotrawstwa (cap = 50%). [PT]"
+      "jednostka": "% — maksymalna strata Daniny/Podatku w jednym mieście",
+      "opis": "Korupcja — sufit straty. Górne ograniczenie łącznej straty z dystansu i liczby miast. BEZ ZMIAN 2026-07-25 — Maciej obniżył o 50% dwa WSPÓŁCZYNNIKI (dystansu i miast), sufitu nie wymieniał; po obniżce sufit i tak jest praktycznie nieosiągalny (normal wymaga Dystans + 0,5×Liczba_Miast ≥ 50). [PT]"
     }
   },
   "budynki": {
@@ -213,18 +213,18 @@
       "opis": "NIEUŻYWANE (decyzja Maciej 2026-07-25) — było już martwe wcześniej (żaden kod go nie konsumował). Efekt Mennicy jest teraz w całości opisany przez globalne.mennica_mnoznik_po_walucie (jeden mnożnik na cały Handel netto, aktywny gdy Waluta odkryta ORAZ Mennica zbudowana). Zostawione tylko dla zgodności starych zapisów/narzędzi — kod (economy.ts, turn-economy.ts) go już nie czyta."
     },
     "budynek_biblioteka_bonus_nauki": {
-      "easy": 0.62,
-      "normal": 0.5,
-      "hard": 0.38,
-      "jednostka": "%",
-      "opis": "Premia Biblioteki do Nauki lokalnie (+50%). [PT — do strojenia]"
+      "easy": 0.37,
+      "normal": 0.3,
+      "hard": 0.23,
+      "jednostka": "ułamek — premia do Nauki miasta (0,30 = +30% Nauki tego miasta na turę)",
+      "opis": "Premia Biblioteki do Nauki miasta. Obniżona +50% → +30% (normalny) decyzją Maciej 2026-07-25 (PYTANIE 75 = C). Powód: dotąd tańsza i wcześniejsza Biblioteka dawała PIĘCIOKROTNIE więcej niż droższa Akademia (+50% vs +10%) — logika była odwrócona. Skalowanie trudnością w konwencji pliku (łatwy ×1,24 / trudny ×0,76). Stackuje ADDYTYWNIE z premią Akademii: Nauka × (1 + premia Biblioteki + premia Akademii) = ×1,50 na normalnym przy obu budynkach (Biblioteka i Akademia to para „w bok\" — stoją obok siebie, żadna nie zastępuje drugiej)."
     },
     "budynek_akademia_bonus_nauki": {
-      "easy": 0.10,
-      "normal": 0.10,
-      "hard": 0.10,
-      "jednostka": "%",
-      "opis": "ZADANIE 2 (Maciej 2026-07-25, decyzja 4): premia Akademii do Nauki miasta, LOKALNIE, w tej samej konwencji co Biblioteka — stackuje ADDYTYWNIE z premią Biblioteki (obie razem: +60% normal), dotyczy też własnych 6 punktów Nauki Akademii (ta sama zasada co przy Bibliotece — premia liczy się PO zsumowaniu plonów budynków). Wartość +10% jednolita na wszystkich trzech poziomach trudności (decyzja właściciela nie różnicowała jej wg trudności, w przeciwieństwie do Biblioteki). Rozbieżność Biblioteka 50% vs Akademia 10% zgłoszona właścicielowi do ewentualnego ujednolicenia — NIE zmieniać bez decyzji. [PT]"
+      "easy": 0.25,
+      "normal": 0.2,
+      "hard": 0.15,
+      "jednostka": "ułamek — premia do Nauki miasta (0,20 = +20% Nauki tego miasta na turę)",
+      "opis": "Premia Akademii do Nauki miasta. Podniesiona +10% → +20% (normalny) decyzją Maciej 2026-07-25 (PYTANIE 75 = C) i objęta skalowaniem trudnością (łatwy ×1,24 / trudny ×0,76), którego wcześniej nie miała. Powód: Akademia jest droższa i późniejsza od Biblioteki, więc musi dawać wyraźnie mniej niż Biblioteka tylko dlatego, że jest drugim krokiem — a nie pięciokrotnie mniej. Stackuje ADDYTYWNIE z premią Biblioteki: Nauka × (1 + 0,30 + 0,20) = ×1,50 na normalnym."
     },
     "waluta_mnoznik": {
       "easy": 2,

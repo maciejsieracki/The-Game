@@ -6902,6 +6902,29 @@ function cityBuildingEntriesFromBuiltIds(builtIds, catalog, cityEpoch, unlockedT
   }
   return entries;
 }
+function mnoznikHandelPieniadzRawForCiv(civKey, civs) {
+  var _a9;
+  if (!civKey || !((_a9 = civs == null ? void 0 : civs.cywilizacje) == null ? void 0 : _a9.length)) return void 0;
+  const key = civKey.toLowerCase();
+  for (const row of civs.cywilizacje) {
+    if (!row) continue;
+    const ids = [row.ikonaId, row.typCywilizacji, row.Cywilizacja].filter((s) => typeof s === "string" && s.length > 0).map((s) => s.toLowerCase());
+    if (!ids.includes(key)) continue;
+    const v = row.mnoznikHandelPieniadz;
+    return typeof v === "number" && Number.isFinite(v) && v > 0 ? v : void 0;
+  }
+  return void 0;
+}
+var MNOZNIK_HANDEL_TRUDNOSC_DELTA = {
+  easy: 0.5,
+  normal: 0,
+  hard: -0.5
+};
+function mnoznikHandelPieniadzForCivByDifficulty(civKey, civs, difficulty, fallbackScaled) {
+  const raw = mnoznikHandelPieniadzRawForCiv(civKey, civs);
+  if (raw === void 0) return fallbackScaled;
+  return raw + (MNOZNIK_HANDEL_TRUDNOSC_DELTA[difficulty] ?? 0);
+}
 function civBonusyForCivKey(civKey, civs) {
   var _a9;
   if (!civKey || !((_a9 = civs == null ? void 0 : civs.cywilizacje) == null ? void 0 : _a9.length)) return [];
@@ -6987,7 +7010,7 @@ function cityYieldPerTurn(city, workedTiles, cityBuildings, params, ctx) {
   }
   const pracaBruttoLacznie = pracaBruttoTerenu + pracaBudynkow;
   const strata = Math.min(ctx.strataFraction, params.korupcjaCap);
-  const pracaNetto = pracaBruttoLacznie * (1 - strata);
+  const pracaNetto = pracaBruttoLacznie;
   const handelNettoRaw = handelBrutto * (1 - strata);
   const walutaOdkrytaOnly = ctx.walutaOdkryta === true;
   const walutaActive = walutaOdkrytaOnly && ctx.maMennica === true;
@@ -7070,6 +7093,21 @@ function populationGrowth(city, zywnoscNetto, params, wzrostThresholdMult = 1) {
     nowyMagazynZywnosci = maSpichlerz || maSpichlerzII ? Math.floor(nowyMagazynZywnosci * retainFrac) : 0;
   }
   return { nowaLudnosc, nowyMagazynZywnosci, wzrost, ubytek };
+}
+function corruptionRate(dystansOdStolicy, liczbaWszystkichMiast, params) {
+  const strataPct = dystansOdStolicy * params.korupcjaWspolczynnikDystansu + liczbaWszystkichMiast * params.korupcjaWspolczynnikMiast;
+  const capPct = params.korupcjaCap * 100;
+  return Math.min(capPct, strataPct) / 100;
+}
+var KORUPCJA_REDUKCJA_BUDYNKI = ["sad", "pretorium", "palac"];
+var KORUPCJA_REDUKCJA_NA_BUDYNEK = 0.3;
+var KORUPCJA_REDUKCJA_SUFIT = 0.6;
+function corruptionBuildingReduction(builtIds) {
+  let suma = 0;
+  for (const id of KORUPCJA_REDUKCJA_BUDYNKI) {
+    if (builtIds.includes(id)) suma += KORUPCJA_REDUKCJA_NA_BUDYNEK;
+  }
+  return Math.min(KORUPCJA_REDUKCJA_SUFIT, suma);
 }
 
 // src/game/culture-religion.ts
@@ -13050,9 +13088,10 @@ var buildings_default = [
     przyrostKosztu: 10,
     utrzymanie: 2,
     przyrostUtrzymania: 1,
-    wymagania: "Dost\u0119p do Z\u0142ota (Kopalnia z\u0142ota gdziekolwiek w imperium) + wybudowane Targowisko w tym mie\u015Bcie",
-    uwagi: "T-TECH-6: mnoznik handlu\u2192pieni\u0105dz (economy.ts). Maciej 2026-07-25: bramka z\u0142ota (DEPOSIT_LINKED_BUILDING_LABELS) + prerekwizyt Targowiska w tym samym mie\u015Bcie (CITY_BUILDING_PREREQ, decyzja 54c=A).",
+    wymagania: "Tylko w stolicy. Dost\u0119p do Z\u0142ota (Kopalnia z\u0142ota gdziekolwiek w imperium) + wybudowane Targowisko w stolicy",
+    uwagi: "T-TECH-6: mnoznik handlu\u2192pieni\u0105dz (economy.ts), imperium-wide gdy Waluta odkryta (pytanie 71/C). Maciej 2026-07-25: bramka z\u0142ota (DEPOSIT_LINKED_BUILDING_LABELS) + prerekwizyt Targowiska w tym samym mie\u015Bcie (CITY_BUILDING_PREREQ, decyzja 54c=A). Pytanie 70/B (2026-07-25): Mennica WY\u0141\u0104CZNIE w stolicy, jedna sztuka na cywilizacj\u0119 (wynika automatycznie z 'lokalizacja':'stolica' -- jedna stolica na cywilizacj\u0119). Stare zapisy z Mennic\u0105 w mie\u015Bcie regionalnym NIE s\u0105 cofane -- budynek zostaje, bramka dotyczy tylko budowania NOWYCH.",
     techUnlock: "Waluta",
+    lokalizacja: "stolica",
     koszt_surowce: {
       drewno: 6,
       kamien: 8
@@ -19828,22 +19867,22 @@ var econ_params_default = {
       easy: 20,
       normal: 20,
       hard: 20,
-      jednostka: "%",
-      opis: "Domy\u015Blny udzia\u0142 strumienia Nauka (= BADANIA) w podziale Handlu netto. Default 20% (Maciej 2026-06-25)."
+      jednostka: "% Daniny netto miasta (po Walucie i Mennicy: Podatku netto)",
+      opis: "Domy\u015Blny udzia\u0142 strumienia Nauka (= BADANIA) w podziale Daniny netto nowego miasta. 20% (Maciej 2026-06-25, potwierdzone przy decyzji 74 = A z 2026-07-25 \u2014 ten strumie\u0144 zostaje bez zmian)."
     },
     suwak_handel_pieniadz_domyslnie: {
-      easy: 70,
-      normal: 70,
-      hard: 70,
-      jednostka: "%",
-      opis: "Domy\u015Blny udzia\u0142 strumienia Pieni\u0105dz (= SKARBIEC/podatek) w podziale Handlu netto. Default 70% (Maciej 2026-06-25)."
+      easy: 60,
+      normal: 60,
+      hard: 60,
+      jednostka: "% Daniny netto miasta (po Walucie i Mennicy: Podatku netto)",
+      opis: "Domy\u015Blny udzia\u0142 strumienia Pieni\u0105dz (= SKARBIEC) w podziale Daniny netto nowego miasta. Obni\u017Cony 70% \u2192 60% decyzj\u0105 Maciej 2026-07-25 (PYTANIE 74 = A); te 10 punkt\xF3w procentowych przesz\u0142o na Zamo\u017Cno\u015B\u0107, \u017Ceby nowe miasto nie startowa\u0142o z ujemnym Szcz\u0119\u015Bciem na trudnym."
     },
     suwak_handel_luksus_domyslnie: {
-      easy: 10,
-      normal: 10,
-      hard: 10,
-      jednostka: "%",
-      opis: "Domy\u015Blny udzia\u0142 strumienia Zamo\u017Cno\u015B\u0107 (Wealth) w podziale Handlu netto. Default 10% (Maciej 2026-06-25). Luksus \u2260 surowiec \u2014 osobna kategoria elitarna (poza gr\u0105 v1)."
+      easy: 20,
+      normal: 20,
+      hard: 20,
+      jednostka: "% Daniny netto miasta (po Walucie i Mennicy: Podatku netto)",
+      opis: "Domy\u015Blny udzia\u0142 strumienia Zamo\u017Cno\u015B\u0107 (Wealth) w podziale Daniny netto nowego miasta. Podniesiony 10% \u2192 20% decyzj\u0105 Maciej 2026-07-25 (PYTANIE 74 = A). Pow\xF3d: 20% to dok\u0142adnie pr\xF3g utrzymania poziomu Zamo\u017Cno\u015Bci (20% pieni\u0105dza miasta przy poziomie 0), wi\u0119c poziom Zamo\u017Cno\u015Bci rusza z miejsca bez r\u0119cznej interwencji; w nowej siatce Szcz\u0119\u015Bcia przedzia\u0142 20-29% daje +1 pkt Szcz\u0119\u015Bcia na normalnym i 0 na trudnym (zamiast 0 / -1 przy dawnych 10%)."
     },
     suwak_praca_budynki_domyslnie: {
       easy: 70,
@@ -19895,25 +19934,25 @@ var econ_params_default = {
       opis: "U\u0142amek netto \u017Cywno\u015Bci armii odk\u0142adany do zapas\xF3w pa\u0144stwa gdy w imperium jest \u22651 Spichlerz (100%). Limit pojemno\u015Bci = spichlerz_pojemnosc \xD7 liczba Spichlerzy."
     },
     korupcja_wspolczynnik_dystansu: {
-      easy: 1,
-      normal: 2,
-      hard: 3,
-      jednostka: "per pole",
-      opis: "Strata% += Dystans_od_Stolicy \xD7 warto\u015B\u0107. Im wi\u0119kszy, tym dotkliwsza korupcja. [PT]"
+      easy: 0.5,
+      normal: 1,
+      hard: 1.5,
+      jednostka: "punkty procentowe straty Daniny/Podatku na ka\u017Cde pole odleg\u0142o\u015Bci od stolicy",
+      opis: 'Korupcja \u2014 wsp\xF3\u0142czynnik dystansu. Strata% Daniny (po wynalezieniu Waluty: Podatku) += Dystans_od_Stolicy [pola] \xD7 warto\u015B\u0107. NIE dotyczy Pracy (decyzja Maciej 2026-07-25: korupcja obci\u0105\u017Ca wy\u0142\u0105cznie Danin\u0119/Podatek). Warto\u015Bci obni\u017Cone o 50% wobec pierwotnych 1 / 2 / 3 (decyzja Maciej 2026-07-25: \u201Ezbyt rygorystyczne\u2026 maj\u0105 mie\u0107 wp\u0142yw, ale nie by\u0107 druzgoc\u0105ce"). [PT]'
     },
     korupcja_wspolczynnik_miast: {
-      easy: 1,
-      normal: 1,
-      hard: 2,
-      jednostka: "per miasto",
-      opis: "Strata% += Liczba_Miast \xD7 warto\u015B\u0107. Ka\u017Cde nowe miasto podnosi korupcj\u0119 globalnie. [PT]"
+      easy: 0.5,
+      normal: 0.5,
+      hard: 1,
+      jednostka: "punkty procentowe straty Daniny/Podatku na ka\u017Cde miasto w imperium",
+      opis: "Korupcja \u2014 wsp\xF3\u0142czynnik liczby miast. Strata% Daniny (po Walucie: Podatku) += Liczba_Miast \xD7 warto\u015B\u0107; obci\u0105\u017Ca ka\u017Cde miasto, tak\u017Ce stolic\u0119. NIE dotyczy Pracy. Warto\u015Bci obni\u017Cone o 50% wobec pierwotnych 1 / 1 / 2 (decyzja Maciej 2026-07-25). [PT]"
     },
     korupcja_cap: {
       easy: 38,
       normal: 50,
       hard: 62,
-      jednostka: "%",
-      opis: "Maksymalna strata z tytu\u0142u korupcji/marnotrawstwa (cap = 50%). [PT]"
+      jednostka: "% \u2014 maksymalna strata Daniny/Podatku w jednym mie\u015Bcie",
+      opis: "Korupcja \u2014 sufit straty. G\xF3rne ograniczenie \u0142\u0105cznej straty z dystansu i liczby miast. BEZ ZMIAN 2026-07-25 \u2014 Maciej obni\u017Cy\u0142 o 50% dwa WSP\xD3\u0141CZYNNIKI (dystansu i miast), sufitu nie wymienia\u0142; po obni\u017Cce sufit i tak jest praktycznie nieosi\u0105galny (normal wymaga Dystans + 0,5\xD7Liczba_Miast \u2265 50). [PT]"
     }
   },
   budynki: {
@@ -19981,18 +20020,18 @@ var econ_params_default = {
       opis: "NIEU\u017BYWANE (decyzja Maciej 2026-07-25) \u2014 by\u0142o ju\u017C martwe wcze\u015Bniej (\u017Caden kod go nie konsumowa\u0142). Efekt Mennicy jest teraz w ca\u0142o\u015Bci opisany przez globalne.mennica_mnoznik_po_walucie (jeden mno\u017Cnik na ca\u0142y Handel netto, aktywny gdy Waluta odkryta ORAZ Mennica zbudowana). Zostawione tylko dla zgodno\u015Bci starych zapis\xF3w/narz\u0119dzi \u2014 kod (economy.ts, turn-economy.ts) go ju\u017C nie czyta."
     },
     budynek_biblioteka_bonus_nauki: {
-      easy: 0.62,
-      normal: 0.5,
-      hard: 0.38,
-      jednostka: "%",
-      opis: "Premia Biblioteki do Nauki lokalnie (+50%). [PT \u2014 do strojenia]"
+      easy: 0.37,
+      normal: 0.3,
+      hard: 0.23,
+      jednostka: "u\u0142amek \u2014 premia do Nauki miasta (0,30 = +30% Nauki tego miasta na tur\u0119)",
+      opis: 'Premia Biblioteki do Nauki miasta. Obni\u017Cona +50% \u2192 +30% (normalny) decyzj\u0105 Maciej 2026-07-25 (PYTANIE 75 = C). Pow\xF3d: dot\u0105d ta\u0144sza i wcze\u015Bniejsza Biblioteka dawa\u0142a PI\u0118CIOKROTNIE wi\u0119cej ni\u017C dro\u017Csza Akademia (+50% vs +10%) \u2014 logika by\u0142a odwr\xF3cona. Skalowanie trudno\u015Bci\u0105 w konwencji pliku (\u0142atwy \xD71,24 / trudny \xD70,76). Stackuje ADDYTYWNIE z premi\u0105 Akademii: Nauka \xD7 (1 + premia Biblioteki + premia Akademii) = \xD71,50 na normalnym przy obu budynkach (Biblioteka i Akademia to para \u201Ew bok" \u2014 stoj\u0105 obok siebie, \u017Cadna nie zast\u0119puje drugiej).'
     },
     budynek_akademia_bonus_nauki: {
-      easy: 0.1,
-      normal: 0.1,
-      hard: 0.1,
-      jednostka: "%",
-      opis: "ZADANIE 2 (Maciej 2026-07-25, decyzja 4): premia Akademii do Nauki miasta, LOKALNIE, w tej samej konwencji co Biblioteka \u2014 stackuje ADDYTYWNIE z premi\u0105 Biblioteki (obie razem: +60% normal), dotyczy te\u017C w\u0142asnych 6 punkt\xF3w Nauki Akademii (ta sama zasada co przy Bibliotece \u2014 premia liczy si\u0119 PO zsumowaniu plon\xF3w budynk\xF3w). Warto\u015B\u0107 +10% jednolita na wszystkich trzech poziomach trudno\u015Bci (decyzja w\u0142a\u015Bciciela nie r\xF3\u017Cnicowa\u0142a jej wg trudno\u015Bci, w przeciwie\u0144stwie do Biblioteki). Rozbie\u017Cno\u015B\u0107 Biblioteka 50% vs Akademia 10% zg\u0142oszona w\u0142a\u015Bcicielowi do ewentualnego ujednolicenia \u2014 NIE zmienia\u0107 bez decyzji. [PT]"
+      easy: 0.25,
+      normal: 0.2,
+      hard: 0.15,
+      jednostka: "u\u0142amek \u2014 premia do Nauki miasta (0,20 = +20% Nauki tego miasta na tur\u0119)",
+      opis: "Premia Akademii do Nauki miasta. Podniesiona +10% \u2192 +20% (normalny) decyzj\u0105 Maciej 2026-07-25 (PYTANIE 75 = C) i obj\u0119ta skalowaniem trudno\u015Bci\u0105 (\u0142atwy \xD71,24 / trudny \xD70,76), kt\xF3rego wcze\u015Bniej nie mia\u0142a. Pow\xF3d: Akademia jest dro\u017Csza i p\xF3\u017Aniejsza od Biblioteki, wi\u0119c musi dawa\u0107 wyra\u017Anie mniej ni\u017C Biblioteka tylko dlatego, \u017Ce jest drugim krokiem \u2014 a nie pi\u0119ciokrotnie mniej. Stackuje ADDYTYWNIE z premi\u0105 Biblioteki: Nauka \xD7 (1 + 0,30 + 0,20) = \xD71,50 na normalnym."
     },
     waluta_mnoznik: {
       easy: 2,
@@ -23281,8 +23320,8 @@ function civDisplayNameForKey(civKey, civs) {
   }
   return null;
 }
-function religionTradeWalutaOverride(cityReligion, ownerCivKey, builtIds, walutaOdkryta, civs, societyParams, difficulty) {
-  if (!walutaOdkryta || !builtIds.includes("mennica") || !cityReligion) return void 0;
+function religionTradeWalutaOverride(cityReligion, ownerCivKey, maMennicaEmpireWide, walutaOdkryta, civs, societyParams, difficulty) {
+  if (!walutaOdkryta || !maMennicaEmpireWide || !cityReligion) return void 0;
   const civName = civDisplayNameForKey(ownerCivKey, civs);
   if (!civName) return void 0;
   const rp = loadReligionParams(societyParams, difficulty);
@@ -23294,6 +23333,26 @@ function religionTradeWalutaOverride(cityReligion, ownerCivKey, builtIds, waluta
     true
   );
   return trade.applied ? trade.multiplier : void 0;
+}
+function ownersWithMennica(cities, builtByCity) {
+  const owners = /* @__PURE__ */ new Set();
+  for (const c of cities) {
+    if ((builtByCity.get(c.id) ?? []).includes("mennica")) owners.add(c.ownerId);
+  }
+  return owners;
+}
+function resolveWalutaMnoznikOverride(cityReligion, ownerCivKey, maMennicaEmpireWide, walutaOdkryta, civs, societyParams, difficulty, fallbackScaled) {
+  const religionOverride = religionTradeWalutaOverride(
+    cityReligion,
+    ownerCivKey,
+    maMennicaEmpireWide,
+    walutaOdkryta,
+    civs,
+    societyParams,
+    difficulty
+  );
+  if (religionOverride !== void 0) return religionOverride;
+  return mnoznikHandelPieniadzForCivByDifficulty(ownerCivKey, civs, difficulty, fallbackScaled);
 }
 function buildEconParams(data2, difficulty = "normal") {
   const raw = data2.econParams;
@@ -23663,6 +23722,15 @@ function advanceCityEconomy(cities, map, data2, difficulty = "normal", econUnits
     difficulty
   );
   const capitalSeen = /* @__PURE__ */ new Set();
+  const mennicaOwners = ownersWithMennica(cities, builtByCity);
+  const capitalCoordsByOwner = /* @__PURE__ */ new Map();
+  const cityCountByOwner = /* @__PURE__ */ new Map();
+  for (const c of cities) {
+    if (!capitalCoordsByOwner.has(c.ownerId)) {
+      capitalCoordsByOwner.set(c.ownerId, { q: c.q, r: c.r });
+    }
+    cityCountByOwner.set(c.ownerId, (cityCountByOwner.get(c.ownerId) ?? 0) + 1);
+  }
   const result = {
     perCity: [],
     cities: 0,
@@ -23696,23 +23764,30 @@ function advanceCityEconomy(cities, map, data2, difficulty = "normal", econUnits
     const walutaOdkryta = ownerTech.has("Waluta") || ownerTech.has("waluta");
     const ownerCivKey = ownerCivByOwnerId.get(city.ownerId);
     const cityReligion = cityReligionByCityId.get(city.id);
-    const walutaMnoznikOverride = religionTradeWalutaOverride(
+    const maMennicaEmpireWide = mennicaOwners.has(city.ownerId);
+    const walutaMnoznikOverride = resolveWalutaMnoznikOverride(
       cityReligion,
       ownerCivKey,
-      builtIds,
+      maMennicaEmpireWide,
       walutaOdkryta,
       data2.civs,
       data2.societyParams,
-      difficulty
+      difficulty,
+      params.mennicaMnoznikPoWalucie
     );
     const ownerBonusy = ownerCivKey ? civBonusyForCivKey(ownerCivKey, data2.civs) : [];
     const { handel: civHandelMult, nauka: civNaukaMult } = civEconomyYieldMultipliers(ownerBonusy);
     const liczbaTrasHandlowych = tradeRouteCountByCity.get(city.id) ?? 0;
+    const capCoords = capitalCoordsByOwner.get(city.ownerId);
+    const dystansOdStolicy = isCapital || !capCoords ? 0 : hexDistance(city.q, city.r, capCoords.q, capCoords.r);
+    const liczbaWszystkichMiast = cityCountByOwner.get(city.ownerId) ?? 1;
+    const strataBazowa = corruptionRate(dystansOdStolicy, liczbaWszystkichMiast, params);
+    const redukcjaBudynkowKorupcji = corruptionBuildingReduction(builtIds);
+    const strataFraction = strataBazowa * (1 - redukcjaBudynkowKorupcji);
     const ctx = {
       wojskoZuzycieZywnosci: 0,
       // B5: wojsko → zapasy państwa (advanceEmpireFood)
-      strataFraction: 0,
-      // no distance-corruption tracking yet
+      strataFraction,
       maMlyn: builtIds.includes("mlyn"),
       maCegielnia: builtIds.includes("cegielnia"),
       maTargowisko: builtIds.includes("targowisko"),
@@ -23721,13 +23796,15 @@ function advanceCityEconomy(cities, map, data2, difficulty = "normal", econUnits
       // Efekt 1 SCALONY (decyzja Maciej 2026-07-25): Mennica jest jednym z dwoch
       // warunkow bramki w cityYieldPerTurn (ctx.maMennica && ctx.walutaOdkryta) --
       // gdy oba prawdziwe, CALY handelNetto (Skarb+Nauka+Zamoznosc) jest mnozony
-      // przez params.mennicaMnoznikPoWalucie. Dawne osobne pole `mennicaMnoznik`
-      // (mnoznik TYLKO na strumien Pieniadza) zostalo usuniete -- efekt jest jeden.
-      maMennica: builtIds.includes("mennica"),
+      // przez mnoznik cywilizacyjny skalowany trudnoscia (walutaMnoznikOverride,
+      // patrz resolveWalutaMnoznikOverride powyzej -- ZASTEPUJE plaska regule
+      // "2/1.5/1 dla wszystkich", pytanie 69). Mennica jest teraz IMPERIUM-WIDE
+      // (pytanie 71/C), bo stoi wylacznie w stolicy (pytanie 70/B).
+      maMennica: maMennicaEmpireWide,
       walutaOdkryta,
       // P1b: bramka Efektu 1 (razem z maMennica) w cityYieldPerTurn
       walutaMnoznikOverride,
-      // RDY-11: per-cyw 1.7-2.4 gdy ownerCivByOwnerId podane
+      // per-cyw skalowany trudnoscia (lub override religii)
       civHandelMult,
       // RDY-01: bonus_zloto handel (Grecy +15%)
       civNaukaMult,

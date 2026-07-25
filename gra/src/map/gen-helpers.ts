@@ -1938,6 +1938,128 @@ export function ensureReliefGridCoverage(
  */
 const MOUNTAIN_RANGE_LAND_SHARE_CAP = 0.40;
 
+/**
+ * Twardy limit rozmiaru SPÓJNEGO skupiska Gór (i osobno Wzgórz) — Maciej 2026-07-25,
+ * PYTANIE 63 (`dyspozycje/PYTANIE-OTWARTE.md`): wielkie pasma odcinały całym cywilizacjom
+ * dostęp do złóż (miedź/żelazo/złoto), bo złoto jest tylko w Górach/Wzgórzach i celowo NIE
+ * jest na liście FAIR_PLAY_DEPOSIT_IDS. Limit dotyczy skupiska (flood fill po sąsiedztwie
+ * heksowym, TEN SAM typ terenu), NIE komórki siatki fair-play (to inna metryka, patrz
+ * fair-play-grid-test.cjs — limit skupiska nie gwarantuje przejścia tego testu, bo kilka
+ * osobnych skupisk może wpaść do jednej komórki).
+ */
+const MAX_MOUNTAIN_RANGE_CLUSTER_SIZE = 10;
+
+/**
+ * Flood fill spójnego skupiska JEDNEGO typu terenu (Gory ALBO Wzgorza, nie razem) po całej
+ * mapie — używane przez capMountainRangeClusterSize. Deterministyczna kolejność (klucze
+ * posortowane) — nie zależy od kolejności iteracji Object.keys(hexes).
+ */
+function findSameTerrainClusters(hexes: Record<string, Hex>, terrain: TerenBazowy): string[][] {
+  const visited = new Set<string>();
+  const clusters: string[][] = [];
+  const keys = Object.keys(hexes).sort();
+  for (const key of keys) {
+    if (visited.has(key)) continue;
+    const hex = hexes[key];
+    if (!hex || hex.terenBazowy !== terrain) continue;
+    const cluster: string[] = [];
+    const stack = [key];
+    visited.add(key);
+    while (stack.length) {
+      const k = stack.pop()!;
+      cluster.push(k);
+      const { q, r } = parseHexKey(k);
+      for (const [dq, dr] of HEX_DIRECTIONS) {
+        const nk = hexKey(q + dq, r + dr);
+        if (visited.has(nk)) continue;
+        const nh = hexes[nk];
+        if (!nh || nh.terenBazowy !== terrain) continue;
+        visited.add(nk);
+        stack.push(nk);
+      }
+    }
+    clusters.push(cluster);
+  }
+  return clusters;
+}
+
+/** Składowe spójne WEWNĄTRZ zbioru `remaining` (podzbiór jednego skupiska w trakcie przycinania). */
+function connectedComponentsWithin(remaining: Set<string>): string[][] {
+  const visited = new Set<string>();
+  const comps: string[][] = [];
+  const keys = [...remaining].sort();
+  for (const key of keys) {
+    if (visited.has(key)) continue;
+    const comp: string[] = [];
+    const stack = [key];
+    visited.add(key);
+    while (stack.length) {
+      const k = stack.pop()!;
+      comp.push(k);
+      const { q, r } = parseHexKey(k);
+      for (const [dq, dr] of HEX_DIRECTIONS) {
+        const nk = hexKey(q + dq, r + dr);
+        if (visited.has(nk) || !remaining.has(nk)) continue;
+        visited.add(nk);
+        stack.push(nk);
+      }
+    }
+    comps.push(comp);
+  }
+  return comps;
+}
+
+/**
+ * Egzekwuje twardy limit `maxSize` na rozmiar spójnego skupiska terenu `terrain` — dla każdego
+ * skupiska większego niż limit, deterministycznie zdejmuje heksy (najsłabszy mtnNoise pierwszy,
+ * remis rozstrzyga klucz heksu) aż WSZYSTKIE pozostałe składowe (po ewentualnym rozpadzie
+ * skupiska) mieszczą się w limicie. Zdjęty heks wraca do `fallbackTerrain` (Równina) i traci
+ * nakładkę/złoże — tak samo jak istniejący sanity-cap ~40% wyżej w tym pliku.
+ *
+ * Działa na FINALNYM stanie `hexes` (wołane na końcu growMountainRanges, PO sanity-capie
+ * ~40%) — łapie więc też duże skupiska powstałe ze zrośnięcia się z floor-reliefem
+ * ensureReliefGridCoverage (ta funkcja jest wołana PRZED growMountainRanges w generator.ts),
+ * nie tylko z tego, co dołożyła sama growMountainRanges.
+ *
+ * Determinizm: zero Math.random/Date.now — wyłącznie scratch.mtnNoise (policzony wcześniej
+ * z zasianego szumu) i porównania kluczy stringowych.
+ */
+function capMountainRangeClusterSize(
+  hexes: Record<string, Hex>,
+  scratch: Map<string, TerrainScratch>,
+  terrain: TerenBazowy,
+  fallbackTerrain: TerenBazowy,
+  maxSize: number,
+): number {
+  let reverted = 0;
+  const clusters = findSameTerrainClusters(hexes, terrain);
+  for (const cluster of clusters) {
+    if (cluster.length <= maxSize) continue;
+    const remaining = new Set(cluster);
+    for (;;) {
+      const comps = connectedComponentsWithin(remaining).sort((a, b) => b.length - a.length);
+      const biggest = comps[0];
+      if (!biggest || biggest.length <= maxSize) break;
+      const sorted = [...biggest].sort((a, b) => {
+        const na = scratch.get(a)?.mtnNoise ?? 0;
+        const nb = scratch.get(b)?.mtnNoise ?? 0;
+        if (na !== nb) return na - nb; // najsłabszy szum najpierw
+        return a < b ? -1 : a > b ? 1 : 0; // remis: deterministyczny klucz
+      });
+      const victim = sorted[0]!;
+      remaining.delete(victim);
+      const hex = hexes[victim];
+      if (hex) {
+        hex.terenBazowy = fallbackTerrain;
+        hex.nakladka = Nakladka.Brak;
+        delete (hex as HexWithZloze).zloze;
+      }
+      reverted++;
+    }
+  }
+  return reverted;
+}
+
 /** Kandydaci na seed pasma w masie lądu: preferują wysoki mtnNoise + deterministyczna domieszka rand(). */
 function mountainRangeSeedCandidates(
   mass: string[],
@@ -2204,6 +2326,22 @@ export function growMountainRanges(
       mountainous--;
     }
   }
+
+  // Twardy limit rozmiaru spójnego skupiska (Maciej 2026-07-25, PYTANIE 63): max
+  // MAX_MOUNTAIN_RANGE_CLUSTER_SIZE (10) heksów Gór i osobno 10 heksów Wzgórz w jednym
+  // skupisku sąsiadujących heksów TEGO SAMEGO typu terenu — żeby komputer rozkładał pasma
+  // równomiernie i wszystkie cywilizacje miały dostęp do gór (złoża miedzi/żelaza/złota).
+  // Na samym końcu, na finalnym stanie reliefu (po sanity-capie ~40% wyżej) — to ostatnie
+  // miejsce w pipeline, w którym Gory/Wzgorza jeszcze się zmieniają (patrz generator.ts:
+  // "relief... jest już finalny" zaraz po tym wywołaniu), więc łapie też duże skupiska
+  // powstałe ze zrośnięcia z floor-reliefem ensureReliefGridCoverage (wołane PRZED tą
+  // funkcją), nie tylko z tego, co dołożyła sama growMountainRanges.
+  capMountainRangeClusterSize(
+    hexes, scratch, TerenBazowy.Gory, TerenBazowy.Rownina, MAX_MOUNTAIN_RANGE_CLUSTER_SIZE,
+  );
+  capMountainRangeClusterSize(
+    hexes, scratch, TerenBazowy.Wzgorza, TerenBazowy.Rownina, MAX_MOUNTAIN_RANGE_CLUSTER_SIZE,
+  );
 
   return addedByThisRun.length;
 }

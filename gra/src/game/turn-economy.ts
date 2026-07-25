@@ -60,6 +60,8 @@ import {
   type CityYieldContext,
   type BuildingRecord,
   cityBuildingEntriesFromBuiltIds,
+  corruptionRate,
+  corruptionBuildingReduction,
 } from './economy';
 import {
   improvementKeysForHex,
@@ -1144,6 +1146,20 @@ export function previewCityEconomy(
   // -> bramka Efektu 1 musi patrzeć na CAŁE imperium ownera, nie tylko to miasto.
   // Liczone RAZ na tick, nie per-city.
   const mennicaOwners = ownersWithMennica(cities, builtByCity);
+  // D2 (Maciej 2026-07-25): pre-pass dla korupcji -- wspolrzedne "stolicy" per owner wg
+  // TEJ SAMEJ heurystyki co isCapital nizej (pierwsze miasto ownera w tablicy `cities`;
+  // ten modul nie ma dostepu do autorytatywnego capitalCityIdForOwner z main.ts). Musi
+  // powstac PRZED glowna petla, bo miasto regionalne moze byc iterowane przed swoja
+  // stolica. Rownolegle: liczbaWszystkichMiast per owner (PARYTET AI -- ta sama liczba
+  // dla gracza i AI, zero galezi po ownerId).
+  const capitalCoordsByOwner = new Map<number, { q: number; r: number }>();
+  const cityCountByOwner = new Map<number, number>();
+  for (const c of cities) {
+    if (!capitalCoordsByOwner.has(c.ownerId)) {
+      capitalCoordsByOwner.set(c.ownerId, { q: c.q, r: c.r });
+    }
+    cityCountByOwner.set(c.ownerId, (cityCountByOwner.get(c.ownerId) ?? 0) + 1);
+  }
 
   for (const city of cities) {
     const isCapital = !capitalSeen.has(city.ownerId);
@@ -1185,9 +1201,22 @@ export function previewCityEconomy(
       : [];
     const { handel: civHandelMult, nauka: civNaukaMult } = civEconomyYieldMultipliers(ownerBonusy);
     const liczbaTrasHandlowych = tradeRouteCountByCity.get(city.id) ?? 0;
+    // D2 (Maciej 2026-07-25): korupcja wpięta -- dystansOdStolicy=0 dla stolicy (i gdy
+    // brak zarejestrowanej stolicy tego ownera, co w praktyce nie wystepuje bo kazdy
+    // wlasciciel rejestruje swoje pierwsze miasto w pre-passie powyzej). D4: redukcja
+    // Sad/Pretorium/Palac TYLKO w tym miescie, mnozona na strataBazowa. PARYTET AI --
+    // brak galezi po ownerId.
+    const capCoords = capitalCoordsByOwner.get(city.ownerId);
+    const dystansOdStolicy = (isCapital || !capCoords)
+      ? 0
+      : hexDistance(city.q, city.r, capCoords.q, capCoords.r);
+    const liczbaWszystkichMiast = cityCountByOwner.get(city.ownerId) ?? 1;
+    const strataBazowa = corruptionRate(dystansOdStolicy, liczbaWszystkichMiast, params);
+    const redukcjaBudynkowKorupcji = corruptionBuildingReduction(builtIds);
+    const strataFraction = strataBazowa * (1 - redukcjaBudynkowKorupcji);
     const ctx: CityYieldContext = {
       wojskoZuzycieZywnosci: 0,
-      strataFraction: 0,
+      strataFraction,
       maMlyn: builtIds.includes('mlyn'),
       maCegielnia: builtIds.includes('cegielnia'),
       maTargowisko: builtIds.includes('targowisko'),
@@ -1426,6 +1455,20 @@ export function advanceCityEconomy(
   // -> bramka Efektu 1 musi patrzeć na CAŁE imperium ownera, nie tylko to miasto.
   // Liczone RAZ na tick, nie per-city.
   const mennicaOwners = ownersWithMennica(cities, builtByCity);
+  // D2 (Maciej 2026-07-25): pre-pass dla korupcji -- wspolrzedne "stolicy" per owner wg
+  // TEJ SAMEJ heurystyki co isCapital nizej (pierwsze miasto ownera w tablicy `cities`;
+  // ten modul nie ma dostepu do autorytatywnego capitalCityIdForOwner z main.ts). Musi
+  // powstac PRZED glowna petla, bo miasto regionalne moze byc iterowane przed swoja
+  // stolica. Rownolegle: liczbaWszystkichMiast per owner (PARYTET AI -- ta sama liczba
+  // dla gracza i AI, zero galezi po ownerId).
+  const capitalCoordsByOwner = new Map<number, { q: number; r: number }>();
+  const cityCountByOwner = new Map<number, number>();
+  for (const c of cities) {
+    if (!capitalCoordsByOwner.has(c.ownerId)) {
+      capitalCoordsByOwner.set(c.ownerId, { q: c.q, r: c.r });
+    }
+    cityCountByOwner.set(c.ownerId, (cityCountByOwner.get(c.ownerId) ?? 0) + 1);
+  }
 
   const result: EconomyTickResult = {
     perCity:        [],
@@ -1488,9 +1531,22 @@ export function advanceCityEconomy(
       : [];
     const { handel: civHandelMult, nauka: civNaukaMult } = civEconomyYieldMultipliers(ownerBonusy);
     const liczbaTrasHandlowych = tradeRouteCountByCity.get(city.id) ?? 0;
+    // D2 (Maciej 2026-07-25): korupcja wpięta -- dystansOdStolicy=0 dla stolicy (i gdy
+    // brak zarejestrowanej stolicy tego ownera, co w praktyce nie wystepuje bo kazdy
+    // wlasciciel rejestruje swoje pierwsze miasto w pre-passie powyzej). D4: redukcja
+    // Sad/Pretorium/Palac TYLKO w tym miescie, mnozona na strataBazowa. PARYTET AI --
+    // brak galezi po ownerId.
+    const capCoords = capitalCoordsByOwner.get(city.ownerId);
+    const dystansOdStolicy = (isCapital || !capCoords)
+      ? 0
+      : hexDistance(city.q, city.r, capCoords.q, capCoords.r);
+    const liczbaWszystkichMiast = cityCountByOwner.get(city.ownerId) ?? 1;
+    const strataBazowa = corruptionRate(dystansOdStolicy, liczbaWszystkichMiast, params);
+    const redukcjaBudynkowKorupcji = corruptionBuildingReduction(builtIds);
+    const strataFraction = strataBazowa * (1 - redukcjaBudynkowKorupcji);
     const ctx: CityYieldContext = {
       wojskoZuzycieZywnosci: 0,   // B5: wojsko → zapasy państwa (advanceEmpireFood)
-      strataFraction:        0,   // no distance-corruption tracking yet
+      strataFraction,
       maMlyn:                builtIds.includes('mlyn'),
       maCegielnia:           builtIds.includes('cegielnia'),
       maTargowisko:          builtIds.includes('targowisko'),

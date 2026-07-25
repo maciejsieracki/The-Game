@@ -889,8 +889,13 @@ export function cityYieldPerTurn(
   const pracaBruttoLacznie = pracaBruttoTerenu + pracaBudynkow;
 
   // --- Step 5 (renumbered from 6): Apply corruption/waste ---
+  // D1 (Maciej 2026-07-25): "Korupcja ma dotykać tylko i wyłącznie daniny, a potem
+  // podatku, nie pracy." -- strata z korupcji obciąża WYŁĄCZNIE Danine/Podatek
+  // (handelNetto); Praca zostaje NIETKNIETA (pracaNetto = pracaBruttoLacznie, bez
+  // mnozenia przez (1 - strata)). ctx.strataFraction jest juz PO redukcji budynkow
+  // (Sad/Pretorium/Palac, D4) -- patrz turn-economy.ts, wywolanie corruptionRate().
   const strata = Math.min(ctx.strataFraction, params.korupcjaCap);
-  const pracaNetto        = pracaBruttoLacznie * (1 - strata);
+  const pracaNetto        = pracaBruttoLacznie;
   const handelNettoRaw    = handelBrutto       * (1 - strata);
   // Waluta odkryta (sam tech, BEZ wymogu Mennicy) -- uzywane WYLACZNIE przez Efekt 2
   // (Targowisko) ponizej. Efekt 2 NIE zostal ruszony przez decyzje 2026-07-25 (Maciej:
@@ -907,6 +912,28 @@ export function cityYieldPerTurn(
   const walutaMnoznikAktywny = walutaActive ? walutaMnoznikBase : 1;
   const handelNetto   = handelNettoRaw * walutaMnoznikAktywny;
 
+  // D5 (Maciej 2026-07-25, PYTANIE 76=B): Efekt 2 (Targowisko+Waluta: pula-Praca ->
+  // Pieniadz x targowiskoPracaMnoznik) PRZESTAJE isc wprost do skarbca z pominieciem
+  // suwaka -- wchodzi do PULI Daniny/Podatku, dzielonej suwakiem miasta tak samo jak
+  // Pieniadz z terenu/budynkow (ta sama zasada co decyzja 67B). Bez tego Targowisko
+  // otwieralo druga, niewidoczna dla gracza droge do skarbca, omijajac suwak.
+  // KOLEJNOSC KRYTYCZNA: doliczamy pieniadzZPracy do puli PO przemnozeniu handelNetto
+  // przez walutaMnoznikAktywny (Waluta+Mennica), a PRZED podzialem suwakiem -- mnoznik
+  // Mennicy dotyczy Daniny z terenu/budynkow, NIE konwersji Pracy; gdyby mnozyl tez
+  // ten strumien, Targowisko dostawaloby podwojna premie. pracaInt/doPuli przeniesione
+  // tu z dawnego "Step 8" (byly liczone PO podziale suwakiem) -- pieniadzZPracy jest
+  // teraz potrzebny PRZED podzialem. Pole pieniadzZPracy zostaje osobno w
+  // CityYieldResult (panel dalej pokazuje ile Pieniadza z konwersji Pracy) -- zmienia
+  // sie TYLKO dokad trafia wartosc (do puli, nie wprost do skarbca), nie czy jest
+  // raportowana.
+  const pctPracaBudynki = city.podziałPracy.procentBudynki / 100;
+  const pracaInt = cityPracaInteger(pracaNetto);
+  const { doPuli } = splitPraca(pracaInt, pctPracaBudynki);
+  const pieniadzZPracy = (ctx.maTargowisko && walutaOdkrytaOnly)
+    ? Math.floor(doPuli * params.targowiskoPracaMnoznik)
+    : 0;
+  const handelNettoPula = handelNetto + pieniadzZPracy;
+
   // --- Step 6+7: Trade slider -> Nauka / Pieniadz / Luksus ---
   // Dawny osobny mnoznik ctx.mennicaMnoznik (Handel->Pieniadz, TYLKO strumien
   // Pieniadza) zostal USUNIETY 2026-07-25 -- Mennica jest teraz jednym z dwoch
@@ -916,10 +943,11 @@ export function cityYieldPerTurn(
   const pctPieniadz = city.podziałHandlu.procentPieniadz / 100;
   const pctLuksus   = city.podziałHandlu.procentLuksus   / 100;
 
-  const naukaZHandlu    = Math.floor(handelNetto * pctNauka);
-  const pieniadzZHandlu = Math.floor(handelNetto * pctPieniadz);
+  // D5: dzielimy handelNettoPula (handelNetto + pieniadzZPracy), NIE golego handelNetto.
+  const naukaZHandlu    = Math.floor(handelNettoPula * pctNauka);
+  const pieniadzZHandlu = Math.floor(handelNettoPula * pctPieniadz);
   // Luksus stream (Spec ss.2.1/2.2): feeds Zadowolenie downstream (society lane).
-  const luksusZHandlu   = Math.floor(handelNetto * pctLuksus);
+  const luksusZHandlu   = Math.floor(handelNettoPula * pctLuksus);
 
   // Biblioteka: +Nauka% applied to the city's local science (master par.2a).
   // Akademia (ZADANIE 2, 2026-07-25, decyzja 4): +Nauka% osobny, stackuje ADDYTYWNIE
@@ -935,18 +963,10 @@ export function cityYieldPerTurn(
     ? Math.floor(naukaLokalnaRaw * civNaukaMult)
     : naukaLokalnaRaw;
 
-  // --- Step 8: Total Pieniadz = from trade + from buildings + specialists + Efekt 2 ---
-  // Efekt 2 (Targowisko + Waluta): pula-Praca (doPuli) -> Pieniadz x targowiskoPracaMnoznik.
-  // doPuli = pracaNetto * (1 - podziałPracy.procentBudynki/100) -- computed by caller (splitPraca).
-  // Tutaj obliczamy wewnetrznie z pracaNetto i suwaka, zeby wynik był w CityYieldResult.
-  const pctPracaBudynki = city.podziałPracy.procentBudynki / 100;
-  const pracaInt = cityPracaInteger(pracaNetto);
-  const { doPuli } = splitPraca(pracaInt, pctPracaBudynki);
-  const pieniadzZPracy = (ctx.maTargowisko && walutaOdkrytaOnly)
-    ? Math.floor(doPuli * params.targowiskoPracaMnoznik)
-    : 0;
-
-  let pieniadzTotal = pieniadzZHandlu + pieniadzBudynkow + pieniadzZPracy;
+  // --- Step 8: Total Pieniadz = from trade (pula juz zawiera pieniadzZPracy, D5
+  // powyzej) + from buildings + specialists. pieniadzZPracy NIE jest juz doliczany
+  // tu osobno -- trafil do handelNettoPula PRZED podzialem suwakiem (Step 6+7).
+  let pieniadzTotal = pieniadzZHandlu + pieniadzBudynkow;
   for (const spec of city.specjalisci) {
     if (spec === 'poborca') {
       pieniadzTotal += 2;
@@ -1121,6 +1141,36 @@ export function corruptionRate(
                   + liczbaWszystkichMiast * params.korupcjaWspolczynnikMiast;
   const capPct = params.korupcjaCap * 100;  // korupcjaCap is a fraction
   return Math.min(capPct, strataPct) / 100;
+}
+
+/** Building ids that reduce corruption when present IN THIS CITY (D4, Maciej 2026-07-25). */
+const KORUPCJA_REDUKCJA_BUDYNKI = ['sad', 'pretorium', 'palac'] as const;
+/** Reduction per building, as a fraction of the base corruption rate (30 punktow procentowych). */
+const KORUPCJA_REDUKCJA_NA_BUDYNEK = 0.30;
+/**
+ * Naturalny sufit sumy redukcji to 0.60 (Sad + Palac w stolicy, albo Sad + Pretorium
+ * w regionie -- Palac ma lokalizacja:"stolica", Pretorium lokalizacja:"region", wiec
+ * zaden budynek nie moze wystapic w obu miejscach naraz). Mimo to jawny Math.min
+ * ponizej zabezpiecza przed przyszla zmiana danych (D4, Maciej 2026-07-25).
+ */
+const KORUPCJA_REDUKCJA_SUFIT = 0.60;
+
+/**
+ * Decyzja 59 + Pałac (D4, Maciej 2026-07-25): Sąd, Pretorium i Pałac redukują korupcję,
+ * każdy o 30 punktów procentowych, ADDYTYWNIE, TYLKO w mieście w ktorym stoja (nie
+ * globalnie w imperium). Redukcja dziala jako mnoznik na strataBazowa z corruptionRate():
+ *   strataPoRedukcji = strataBazowa * (1 - sumaRedukcji).
+ * PARYTET AI: wywolujacy stosuje ta sama funkcje identycznie dla gracza i AI.
+ *
+ * @param builtIds - identyfikatory budynkow zbudowanych W TYM MIEScie (nie w imperium)
+ * @returns ulamek redukcji [0, 0.60]
+ */
+export function corruptionBuildingReduction(builtIds: readonly string[]): number {
+  let suma = 0;
+  for (const id of KORUPCJA_REDUKCJA_BUDYNKI) {
+    if (builtIds.includes(id)) suma += KORUPCJA_REDUKCJA_NA_BUDYNEK;
+  }
+  return Math.min(KORUPCJA_REDUKCJA_SUFIT, suma);
 }
 
 // ---------------------------------------------------------------------------
