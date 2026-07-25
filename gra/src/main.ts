@@ -457,6 +457,7 @@ import {
   bestBuildingProgressAfterCityVisit, buildingProgressWouldChange,
   unitPancerzBonusFrac, unitParametryBonusFrac, unitBuildingBonusLabel,
 } from './game/unit-building-bonuses';
+import { cityWallDefenseBonusPercent } from './game/city-defense';
 import {
   tradableGoodsForOwner as tradableGoodsIndexForOwnerPure, sumCitySurowce,
   type TradeGoodEntry,
@@ -11337,18 +11338,23 @@ async function boot(): Promise<void> {
 
     // Obrona miasta WYLACZNIE procentowa (Maciej 2026-07-25) -- data-driven z
     // miasto-params.json, nie hardkodowane. Mur = MUR_BONUS_PROC (200%); Cytadela
-    // (budynek 'fort', upgrade Murow) dodaje CYTADELA_BONUS_PROC (100%) PONAD mur,
-    // czyli miasto z Cytadela -> 300% lacznie. Zob. tez battleScene.ts (onWallWalkway).
+    // (budynek 'fort', upgrade Murow) dodaje CYTADELA_BONUS_PROC (100%) PONAD mur;
+    // Baszta (decyzja 41B, 2026-07-25 -- trzeci budynek obronny, "w bok") dodaje
+    // BASZTA_BONUS_PROC (100%) PONAD to wszystko -- miasto z Mury+Cytadela+Baszta
+    // -> 400% lacznie. Arytmetyka scalona w game/city-defense.ts (uzywana tu ORAZ
+    // w battleScene.ts onWallWalkway, zeby oba tryby liczyly to samo). Zob. tez
+    // battleScene.ts (onWallWalkway).
     const MUR_BONUS_PROC = (miastoParams.bonus_obrona_mur_proc?.wartosc as number) ?? 200;
     const CYTADELA_BONUS_PROC = (miastoParams.bonus_obrona_cytadela_proc?.wartosc as number) ?? 100;
+    const BASZTA_BONUS_PROC = (miastoParams.bonus_obrona_baszta_proc?.wartosc as number) ?? 100;
 
     /**
      * structureDefenseBonusFor (STEP E) -- bonusy obronne za mape/budowle.
      *
      * Zwraca najwyzszy bonus procentowy dla broniaceego sie (defender) na podanej
      * pozycji (q, r). Hierarchia (najwyzszy wygrywa, nie kumuluja sie):
-     *   miasto z murem + Cytadela (City.maMur + budynek 'fort' w cityBuilt) -> 300%
-     *   miasto z samym murem (City.maMur, brak budynku 'fort') -> 200%
+     *   miasto z budynkami obronnymi (Mury/Cytadela/Baszta w cityBuilt) -> patrz
+     *     cityWallDefenseBonusPercent (game/city-defense.ts) -- do 400% z komplet
      *   fort (ulepszenie TERENOWE 'fort' na mapie -- INNY byt niz budynek Cytadela
      *     o tym samym id! budynek miasta to buildings.json id='fort'/nazwa='Cytadela';
      *     to tutaj to hex.ulepszenie==='fort', stawiane poza miastem) -> 100%
@@ -11360,21 +11366,14 @@ async function boot(): Promise<void> {
      * terytorium jako obozujaca (zgodnie z ustaleniem w handoffie UNITS).
      */
     function structureDefenseBonusFor(q: number, r: number): number {
-      // Sprawdz czy bronicacy jest w miescie z murem
+      // Sprawdz czy bronicacy jest w miescie z budynkiem obronnym (Mury/Cytadela/Baszta)
       const cityOnHex = cities.find(c => c.q === q && c.r === r);
-      if (cityOnHex && (cityOnHex as any).maMur === true) {
-        // GRUPY-BUDYNKOW (Maciej 2026-07-25): Cytadela ('fort') juz NIE zastepuje
-        // 'mury' w cityBuilt (upgradeFrom usuniety z buildings.json) -- miasto z
-        // Cytadela ma OBA id na liscie budynkow naraz. maMur zostaje true przy
-        // ukonczeniu 'mury' LUB 'fort' (main.ts, patrz applyCompletedBuildingIds),
-        // wiec rozroznienie sam-mur / mur+Cytadela robimy tu, po obecnosci 'fort'
-        // w cityBuilt -- kod juz odporny na wspolobecnosc obu id (nie zaklada
-        // usuniecia 'mury'), zadna zmiana logiki tu nie byla potrzebna.
+      if (cityOnHex) {
         const builtIds = cityBuilt.get(cityOnHex.id) ?? [];
-        if (builtIds.includes('fort')) {
-          return MUR_BONUS_PROC + CYTADELA_BONUS_PROC; // mur+Cytadela = 200+100 = 300%
-        }
-        return MUR_BONUS_PROC; // sam mur +200%
+        const wallBonus = cityWallDefenseBonusPercent(builtIds, {
+          mur: MUR_BONUS_PROC, cytadela: CYTADELA_BONUS_PROC, baszta: BASZTA_BONUS_PROC,
+        });
+        if (wallBonus > 0) return wallBonus;
       }
 
       // Sprawdz ulepszenie terenu na tym heksie (Fort NA MAPIE -- ulepszenie
@@ -13089,7 +13088,10 @@ async function boot(): Promise<void> {
         defenderEra: player.era,
         onCancel: () => setMood('mapa'),
       };
-      if (siege) bOpts.siege = { defCiv: 'grecja' };
+      // builtBuildingIds: ['mury'] -- preset/playtest bez realnego miasta w
+      // cityBuilt; zachowuje dawne domyslne zachowanie (zawsze +200% mur w
+      // trybie oblezenia preset) sprzed refaktoru na cityWallDefenseBonusPercent.
+      if (siege) bOpts.siege = { defCiv: 'grecja', builtBuildingIds: ['mury'] };
       // Ten preset to jednocześnie pierwszy gest gracza w tym trybie playtest
       // (patrz doStartPlaytestWalkaMapy: gałąź bitwaDuza/oblezDuze returnuje
       // przed startGameMusic) — więc epoka + muzyka startują tu wprost w 'bitwa'.
