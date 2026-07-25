@@ -73,6 +73,13 @@ const BRAK_PREREQ = new Set(['', '-', '\u2014', '\u2013', 'brak', 'none']);
 /** Money multiplier granted by the Pieniadz (Waluta) tech — Praca->x10 economy. */
 export const PIENIADZ_MNOZNIK = 10;
 
+/**
+ * TEMAT 10 — pojemność kolejki badań LICZONA RAZEM z aktualnym celem
+ * (np. 1 aktywny + 2 w state.researchQueue = 3). Dziś (przed TEMAT 10) gracz
+ * mógł mieć tylko 1 aktywny cel — to odpowiada RESEARCH_QUEUE_MAX == 1.
+ */
+export const RESEARCH_QUEUE_MAX = 3;
+
 // ---------------------------------------------------------------------------
 // Player state
 // ---------------------------------------------------------------------------
@@ -89,6 +96,15 @@ export interface PlayerState {
   badana: string | null;
   /** Explicit player-chosen research target (Technologia name), or null. */
   playerResearchTargetId: string | null;
+  /**
+   * TEMAT 10 — kolejka badań: id-ki techów oczekujących ZA aktualnym celem
+   * (playerResearchTargetId), w kolejności FIFO. NIE zawiera aktualnego celu —
+   * ten zawsze żyje w playerResearchTargetId/badana. Razem z celem daje maks.
+   * RESEARCH_QUEUE_MAX techów "zaplanowanych" (patrz enqueueResearchTarget()).
+   * Puste gdy gracz nie zaplanował nic poza aktualnym celem (kompat. wsteczna:
+   * stary zapis bez tego pola -> [] po deserializacji).
+   */
+  researchQueue: string[];
   /** Current era number (1 = Kamien / Stone, 2 = Braz / Bronze, ...). */
   era: number;
   /** Money multiplier in effect (1 until "Waluta"/Pieniadz is researched). */
@@ -123,6 +139,7 @@ export function createPlayerState(): PlayerState {
     zbadane: new Set<string>(),
     badana: null,
     playerResearchTargetId: null,
+    researchQueue: [],
     era: 1,
     pieniadzMnoznik: 1,
     tempoGry: 'standardowa',
@@ -433,10 +450,27 @@ export function researchStep(
     // --- clear explicit player target (completed; player must pick next) ---
     state.playerResearchTargetId = null;
 
+    // TEMAT 10 — kolejka badań: promuj kolejny wpis z state.researchQueue (FIFO)
+    // zanim spadniemy na domyślne "pierwszy dostępny". Wpisy, które w
+    // międzyczasie przestały być poprawne (już zbadane skądinąd, albo prereq/
+    // bramka wciąż niespełniona — np. gracz dodał je w złej kolejności) są po
+    // cichu odrzucane; szukamy dalej w kolejce zamiast zatrzymać badania.
+    while (state.researchQueue.length > 0) {
+      const queuedId = state.researchQueue.shift()!;
+      if (state.zbadane.has(queuedId)) continue;
+      if (!targetAllowed(queuedId)) continue;
+      state.playerResearchTargetId = queuedId;
+      break;
+    }
+
     // --- pick the next target (default: first available, to prevent stalling) ---
     // If the player sets a new target before next turn it will take priority.
-    const nextAvail = availableTechs(techs, state.zbadane, gate);
-    state.badana = nextAvail.length > 0 ? techId(nextAvail[0]!) : null;
+    if (state.playerResearchTargetId !== null) {
+      state.badana = state.playerResearchTargetId;
+    } else {
+      const nextAvail = availableTechs(techs, state.zbadane, gate);
+      state.badana = nextAvail.length > 0 ? techId(nextAvail[0]!) : null;
+    }
   }
 
   return { completed, badana: state.badana };
@@ -525,4 +559,105 @@ export function getResearchState(
   }
 
   return { pula, targetId, kosztCelu, postepFraction, turnsLeft };
+}
+
+// ---------------------------------------------------------------------------
+// TEMAT 10 — kolejka badań (do RESEARCH_QUEUE_MAX techów, silnik only; UI TBD)
+// ---------------------------------------------------------------------------
+//
+// Warstwa silnika: stan (PlayerState.researchQueue) + auto-przejście po
+// ukończeniu (patrz researchStep() powyżej). Celowo BEZ warstwy UI — wybór
+// gdzie/jak gracz zaznacza kolejkę (hub vs drzewko vs oba, FIFO vs reorder,
+// ETA per pozycja) czeka na decyzję właściciela (patrz raport TEMAT 10).
+//
+// Niezmiennik: gdy researchQueue.length > 0, to playerResearchTargetId MUSI
+// być != null (kolejka to zawsze "to, co czeka ZA aktywnym celem"). Dlatego
+// enqueueResearchTarget natychmiast promuje pierwszy wpis na aktywny cel, gdy
+// nie ma jeszcze żadnego aktywnego celu.
+
+/**
+ * Liczba "zaplanowanych" techów (aktywny cel + kolejka), 0..RESEARCH_QUEUE_MAX.
+ */
+export function researchPlanLength(state: PlayerState): number {
+  return (state.playerResearchTargetId !== null ? 1 : 0) + state.researchQueue.length;
+}
+
+/**
+ * Dodaje tech na koniec kolejki badań (FIFO). Jeśli gracz nie ma jeszcze
+ * aktywnego celu, pierwszy dodany tech od razu staje się celem aktywnym
+ * (playerResearchTargetId) — kolejka trzyma tylko to, co idzie PO nim.
+ *
+ * Walidacja przy DODANIU jest celowo luźniejsza niż setPlayerResearchTarget:
+ * sprawdzamy istnienie w danych, brak duplikatu w planie i że tech nie jest
+ * już zbadany — ale NIE wymagamy spełnionych prereqów/bramek dla pozycji 2. i
+ * 3., bo typowy przypadek to zaplanowanie łańcucha zależnego (tech B wymaga
+ * tech A, oba w kolejce). Pełna walidacja (prereqy/bramki/epoka) następuje
+ * dopiero w researchStep() w momencie promocji na aktywny cel — pozycja,
+ * która wtedy okaże się niespełniona, jest po cichu pomijana (patrz tam).
+ *
+ * Zwraca false gdy: tech nie istnieje, już zbadany, już jest w planie
+ * (aktywny cel lub w kolejce), albo plan jest już pełny (RESEARCH_QUEUE_MAX).
+ */
+export function enqueueResearchTarget(
+  state: PlayerState,
+  techId: string,
+  techs: TechDef[],
+): boolean {
+  const def = techs.find(t => (t.Technologia ?? '').trim() === techId);
+  if (!def) return false;
+  if (state.zbadane.has(techId)) return false;
+  if (state.playerResearchTargetId === techId) return false;
+  if (state.researchQueue.includes(techId)) return false;
+  if (researchPlanLength(state) >= RESEARCH_QUEUE_MAX) return false;
+
+  if (state.playerResearchTargetId === null) {
+    // Brak aktywnego celu: promuj natychmiast (zachowanie zgodne z
+    // setPlayerResearchTarget — ale przez wspólną walidację luźniejszą dla
+    // kolejki nie ma to znaczenia, bo pierwszy wpis i tak musi być
+    // natychmiast grywalny, inaczej badania by stanęły).
+    state.playerResearchTargetId = techId;
+  } else {
+    state.researchQueue.push(techId);
+  }
+  return true;
+}
+
+/**
+ * Usuwa tech z planu badań (aktywny cel LUB pozycja w kolejce).
+ * - Jeśli usuwany jest aktywny cel: promuje pierwszy poprawny wpis z kolejki
+ *   na jego miejsce (jak przy naturalnym ukończeniu), inaczej zostaje null —
+ *   researchStep() i tak dobierze domyślny (pierwszy dostępny) w kolejnym kroku.
+ * - Jeśli usuwana jest pozycja w kolejce: zwykłe usunięcie ze środka, reszta
+ *   FIFO zachowuje kolejność.
+ * Zwraca false gdy id nie występuje w planie (no-op).
+ */
+export function dequeueResearchTarget(state: PlayerState, techId: string): boolean {
+  const qIdx = state.researchQueue.indexOf(techId);
+  if (qIdx >= 0) {
+    state.researchQueue.splice(qIdx, 1);
+    return true;
+  }
+  if (state.playerResearchTargetId === techId) {
+    state.playerResearchTargetId = state.researchQueue.length > 0
+      ? state.researchQueue.shift()!
+      : null;
+    return true;
+  }
+  return false;
+}
+
+/** Czyści całą kolejkę OCZEKUJĄCĄ (nie rusza aktywnego celu). */
+export function clearResearchQueue(state: PlayerState): void {
+  state.researchQueue.length = 0;
+}
+
+/**
+ * Pełny plan badań do wyświetlenia w UI: aktywny cel (jeśli jest) jako
+ * pierwszy element, potem kolejka FIFO. Długość 0..RESEARCH_QUEUE_MAX.
+ */
+export function getResearchPlanSnapshot(state: PlayerState): string[] {
+  const plan: string[] = [];
+  if (state.playerResearchTargetId !== null) plan.push(state.playerResearchTargetId);
+  plan.push(...state.researchQueue);
+  return plan;
 }
