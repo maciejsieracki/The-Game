@@ -83,7 +83,7 @@
  *   5. TARCZA WOJOWNIKA — statystyki uzasadniają (Obrona 6, Pancerz 4 —
  *      najwyższe w czwórce). Z neolitu Europy nie zachowała się ŻADNA tarcza
  *      (drewno/skóra/wiklina nie przetrwają), więc forma jest rekonstrukcją:
- *      rama drewniana wielobocznа (prostą ramę łatwiej zbić niż okrągłą),
+ *      rama drewniana wieloboczna (prostą ramę łatwiej zbić niż okrągłą),
  *      wyplot wikliny, lico obciągnięte skórą. ŚWIADOMIE ODRZUCONO okrągłą
  *      tarczę z metalowym UMBEM z modelu obecnego — umbo to konstrukcja
  *      epoki brązu/żelaza (wymaga blachy), w kamieniu nie ma z czego go zrobić.
