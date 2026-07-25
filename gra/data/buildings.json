@@ -4,7 +4,7 @@
     "nazwa": "Stolarnia",
     "kategoria": "Produkcja",
     "epokaWejscia": 1,
-    "maksPoziom": 10,
+    "maksPoziom": 3,
     "nazwyPoziomow": [
       "Warsztat drewna",
       "Stolarnia",
@@ -53,7 +53,7 @@
     "nazwa": "Warsztat kamieniarski",
     "kategoria": "Produkcja",
     "epokaWejscia": 1,
-    "maksPoziom": 10,
+    "maksPoziom": 3,
     "nazwyPoziomow": [],
     "baza": {
       "praca": 4,
@@ -92,7 +92,7 @@
     "nazwa": "Kuznia",
     "kategoria": "Produkcja+Wojsko",
     "epokaWejscia": 2,
-    "maksPoziom": 10,
+    "maksPoziom": 2,
     "nazwyPoziomow": [],
     "baza": {
       "praca": 6,
@@ -131,7 +131,7 @@
     "nazwa": "Piec hutniczy",
     "kategoria": "Produkcja",
     "epokaWejscia": 2,
-    "maksPoziom": 10,
+    "maksPoziom": 2,
     "nazwyPoziomow": [],
     "baza": {
       "praca": 5,
@@ -170,7 +170,7 @@
     "nazwa": "Odlewnia żelaza",
     "kategoria": "Produkcja",
     "epokaWejscia": 3,
-    "maksPoziom": 10,
+    "maksPoziom": 1,
     "nazwyPoziomow": [],
     "baza": {
       "praca": 8,
@@ -210,7 +210,7 @@
     "nazwa": "Targowisko (Rynek)",
     "kategoria": "Pieniadz",
     "epokaWejscia": 1,
-    "maksPoziom": 10,
+    "maksPoziom": 3,
     "nazwyPoziomow": [
       "Targowisko",
       "Rynek",
@@ -259,7 +259,7 @@
     "nazwa": "Port handlowy",
     "kategoria": "Pieniadz",
     "epokaWejscia": 2,
-    "maksPoziom": 10,
+    "maksPoziom": 2,
     "nazwyPoziomow": [],
     "baza": {
       "praca": 1,
@@ -297,7 +297,7 @@
     "nazwa": "Port wielki",
     "kategoria": "Pieniadz",
     "epokaWejscia": 3,
-    "maksPoziom": 10,
+    "maksPoziom": 1,
     "nazwyPoziomow": [],
     "baza": {
       "praca": 2,
@@ -337,7 +337,7 @@
     "nazwa": "Karawanseraj",
     "kategoria": "Pieniadz",
     "epokaWejscia": 2,
-    "maksPoziom": 10,
+    "maksPoziom": 2,
     "nazwyPoziomow": [],
     "baza": {
       "praca": 0,
@@ -375,7 +375,7 @@
     "nazwa": "Spichlerz",
     "kategoria": "Zywnosc",
     "epokaWejscia": 1,
-    "maksPoziom": 10,
+    "maksPoziom": 3,
     "nazwyPoziomow": [],
     "baza": {
       "praca": 0,
@@ -414,7 +414,7 @@
     "nazwa": "Spichlerz II",
     "kategoria": "Zywnosc",
     "epokaWejscia": 2,
-    "maksPoziom": 10,
+    "maksPoziom": 2,
     "upgradeFrom": "spichlerz",
     "nazwyPoziomow": [],
     "baza": {
@@ -453,7 +453,7 @@
     "nazwa": "Garncarnia",
     "kategoria": "Produkcja",
     "epokaWejscia": 1,
-    "maksPoziom": 10,
+    "maksPoziom": 3,
     "nazwyPoziomow": [],
     "baza": {
       "praca": 3,
@@ -492,7 +492,7 @@
     "nazwa": "Cegielnia",
     "kategoria": "Produkcja",
     "epokaWejscia": 2,
-    "maksPoziom": 10,
+    "maksPoziom": 2,
     "nazwyPoziomow": [],
     "baza": {
       "praca": 4,
@@ -531,7 +531,7 @@
     "nazwa": "Kamienne kręgi",
     "kategoria": "Religia",
     "epokaWejscia": 1,
-    "maksPoziom": 10,
+    "maksPoziom": 3,
     "nazwyPoziomow": [],
     "baza": {
       "praca": 0,
@@ -569,7 +569,7 @@
     "nazwa": "Świątynia",
     "kategoria": "Religia",
     "epokaWejscia": 2,
-    "maksPoziom": 10,
+    "maksPoziom": 2,
     "nazwyPoziomow": [],
     "baza": {
       "praca": 0,
@@ -608,7 +608,7 @@
     "nazwa": "Biblioteka",
     "kategoria": "Nauka",
     "epokaWejscia": 2,
-    "maksPoziom": 10,
+    "maksPoziom": 2,
     "nazwyPoziomow": [
       "Skryptorium",
       "Biblioteka",
@@ -660,7 +660,7 @@
     "nazwa": "Studnia",
     "kategoria": "Zdrowie",
     "epokaWejscia": 1,
-    "maksPoziom": 10,
+    "maksPoziom": 3,
     "nazwyPoziomow": [],
     "baza": {
       "praca": 0,
@@ -698,7 +698,7 @@
     "nazwa": "Akwedukt",
     "kategoria": "Zdrowie",
     "epokaWejscia": 2,
-    "maksPoziom": 10,
+    "maksPoziom": 2,
     "nazwyPoziomow": [],
     "baza": {
       "praca": 0,
@@ -736,7 +736,7 @@
     "nazwa": "Mennica",
     "kategoria": "Pieniadz",
     "epokaWejscia": 2,
-    "maksPoziom": 10,
+    "maksPoziom": 2,
     "nazwyPoziomow": [],
     "baza": {
       "praca": 0,
@@ -775,7 +775,7 @@
     "nazwa": "Mury",
     "kategoria": "Obrona",
     "epokaWejscia": 2,
-    "maksPoziom": 10,
+    "maksPoziom": 2,
     "nazwyPoziomow": [],
     "baza": {
       "praca": 0,
@@ -814,7 +814,7 @@
     "nazwa": "Koszary",
     "kategoria": "Wojsko",
     "epokaWejscia": 2,
-    "maksPoziom": 10,
+    "maksPoziom": 2,
     "nazwyPoziomow": [],
     "baza": {
       "praca": 2,
@@ -854,7 +854,7 @@
     "nazwa": "Magazyn",
     "kategoria": "Produkcja+Pieniadz",
     "epokaWejscia": 2,
-    "maksPoziom": 10,
+    "maksPoziom": 2,
     "nazwyPoziomow": [],
     "baza": {
       "praca": 1,
@@ -893,7 +893,7 @@
     "nazwa": "Stela / Pomnik",
     "kategoria": "Kultura",
     "epokaWejscia": 1,
-    "maksPoziom": 10,
+    "maksPoziom": 3,
     "nazwyPoziomow": [],
     "baza": {
       "praca": 0,
@@ -931,7 +931,7 @@
     "nazwa": "Pałac",
     "kategoria": "Kultura/Administracja",
     "epokaWejscia": 1,
-    "maksPoziom": 10,
+    "maksPoziom": 3,
     "nazwyPoziomow": [
       "Dom wodza",
       "Dwor",
@@ -973,7 +973,7 @@
     "nazwa": "Pałac II",
     "kategoria": "Kultura/Administracja",
     "epokaWejscia": 2,
-    "maksPoziom": 10,
+    "maksPoziom": 2,
     "upgradeFrom": "palac",
     "nazwyPoziomow": [],
     "baza": {
@@ -1013,7 +1013,7 @@
     "nazwa": "Pałac III",
     "kategoria": "Kultura/Administracja",
     "epokaWejscia": 3,
-    "maksPoziom": 10,
+    "maksPoziom": 1,
     "upgradeFrom": "palac_ii",
     "nazwyPoziomow": [],
     "baza": {
@@ -1054,7 +1054,7 @@
     "nazwa": "Kuźnia żelaza",
     "kategoria": "Produkcja+Wojsko",
     "epokaWejscia": 3,
-    "maksPoziom": 10,
+    "maksPoziom": 1,
     "nazwyPoziomow": [],
     "baza": {
       "praca": 8,
@@ -1094,7 +1094,7 @@
     "nazwa": "Wielka Kuźnia",
     "kategoria": "Produkcja",
     "epokaWejscia": 4,
-    "maksPoziom": 10,
+    "maksPoziom": 1,
     "nazwyPoziomow": [],
     "baza": {
       "praca": 20,
@@ -1131,7 +1131,7 @@
     "nazwa": "Cytadela",
     "kategoria": "Obrona",
     "epokaWejscia": 3,
-    "maksPoziom": 10,
+    "maksPoziom": 1,
     "nazwyPoziomow": [],
     "baza": {
       "praca": 0,
@@ -1172,7 +1172,7 @@
     "nazwa": "Warsztat oblężniczy",
     "kategoria": "Wojsko",
     "epokaWejscia": 3,
-    "maksPoziom": 10,
+    "maksPoziom": 1,
     "nazwyPoziomow": [],
     "baza": {
       "praca": 4,
@@ -1212,7 +1212,7 @@
     "nazwa": "Akademia",
     "kategoria": "Nauka",
     "epokaWejscia": 3,
-    "maksPoziom": 10,
+    "maksPoziom": 1,
     "nazwyPoziomow": [],
     "baza": {
       "praca": 0,
@@ -1251,7 +1251,7 @@
     "nazwa": "Teatr",
     "kategoria": "Kultura",
     "epokaWejscia": 3,
-    "maksPoziom": 10,
+    "maksPoziom": 1,
     "nazwyPoziomow": [],
     "baza": {
       "praca": 0,
@@ -1290,7 +1290,7 @@
     "nazwa": "Sąd",
     "kategoria": "Administracja",
     "epokaWejscia": 3,
-    "maksPoziom": 10,
+    "maksPoziom": 1,
     "nazwyPoziomow": [],
     "baza": {
       "praca": 0,
@@ -1328,7 +1328,7 @@
     "nazwa": "Pretorium",
     "kategoria": "Administracja",
     "epokaWejscia": 3,
-    "maksPoziom": 10,
+    "maksPoziom": 1,
     "nazwyPoziomow": [],
     "baza": {
       "praca": 2,
@@ -1366,7 +1366,7 @@
     "nazwa": "Trybunał",
     "kategoria": "Administracja",
     "epokaWejscia": 2,
-    "maksPoziom": 10,
+    "maksPoziom": 2,
     "nazwyPoziomow": [],
     "baza": {
       "praca": 0,
@@ -1404,7 +1404,7 @@
     "nazwa": "Łaźnia publiczna",
     "kategoria": "Zdrowie",
     "epokaWejscia": 3,
-    "maksPoziom": 10,
+    "maksPoziom": 1,
     "nazwyPoziomow": [],
     "baza": {
       "praca": 0,
@@ -1442,7 +1442,7 @@
     "nazwa": "Akademia wojskowa",
     "kategoria": "Wojsko",
     "epokaWejscia": 3,
-    "maksPoziom": 10,
+    "maksPoziom": 1,
     "nazwyPoziomow": [],
     "baza": {
       "praca": 5,

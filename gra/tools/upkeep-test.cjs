@@ -123,12 +123,12 @@ eq(UP.zywnoscJednostkaOboz, 0.5, 's6.3: default unit food camping 0.5');
 
 // s.6.1 building upkeep (flat override = v0.1 niezroznicowany)
 eq(U.buildingUpkeep({ utrzymanie: 1, przyrostUtrzymania: 0 }, 1, 1), 1, 's6.1: flat override 1');
-// without override: compound floor(utrzymanie * 1.10^(level-1)) [decyzja Naster, mirrors buildingValue]
-// level 1: floor(1 * 1.10^0) = 1; level 2: floor(1 * 1.10) = 1; level 3: floor(1 * 1.21) = 1
-eq(U.buildingUpkeep({ utrzymanie: 1, przyrostUtrzymania: 0.5 }, 1), 1, 's6.1: compound lvl1 = 1');
-eq(U.buildingUpkeep({ utrzymanie: 1, przyrostUtrzymania: 0.5 }, 3), 1, 's6.1: compound lvl3 = floor(1.21) = 1');
-// higher base: utrzymanie=10, level 3 -> floor(10 * 1.21) = 12
-eq(U.buildingUpkeep({ utrzymanie: 10, przyrostUtrzymania: 2 }, 3), 12, 's6.1: compound base10 lvl3 = floor(12.1) = 12');
+// without override: liniowy floor(utrzymanie + przyrostUtrzymania * (level-1)) [decyzja Naster 2026-07-25, mirrors buildingValue]
+// level 1: floor(1 + 0) = 1; level 3: floor(1 + 0.5*2) = floor(2) = 2
+eq(U.buildingUpkeep({ utrzymanie: 1, przyrostUtrzymania: 0.5 }, 1), 1, 's6.1: linear lvl1 = 1');
+eq(U.buildingUpkeep({ utrzymanie: 1, przyrostUtrzymania: 0.5 }, 3), 2, 's6.1: linear lvl3 = floor(2.0) = 2');
+// higher base: utrzymanie=10, przyrostUtrzymania=2, level 3 -> floor(10 + 2*2) = 14
+eq(U.buildingUpkeep({ utrzymanie: 10, przyrostUtrzymania: 2 }, 3), 14, 's6.1: linear base10 lvl3 = floor(14) = 14');
 // 12 buildings flat 1 = 12 (spec s.8.4 example)
 const blds = Array.from({ length: 12 }, () => ({ record: { utrzymanie: 1, przyrostUtrzymania: 0 }, level: 1 }));
 eq(U.totalBuildingUpkeep(blds, 1), 12, 's8.4: 12 buildings * 1 = 12');

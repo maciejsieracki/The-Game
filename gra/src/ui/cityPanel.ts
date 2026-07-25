@@ -4995,7 +4995,9 @@ function buildBuildingDetailCard(def: BuildingDef, data: GameData): HTMLDivEleme
     appendDetailSection(card, 'Poziomy');
     const gLvl = appendDetailGrid(card);
     gridDetailRow(gLvl, 'Maks. poziom', String(def.maksPoziom));
-    const names = def.nazwyPoziomow.filter(Boolean);
+    // Przytnij WYŚWIETLANIE do maksPoziom -- nazwyPoziomow bywa dłuższe w danych
+    // (zarezerwowane pod przyszłe epoki), ale pokazujemy tylko realnie osiągalne.
+    const names = def.nazwyPoziomow.slice(0, def.maksPoziom).filter(Boolean);
     if (names.length) gridDetailRow(gLvl, 'Nazwy', names.join(' → '));
   }
 
