@@ -142,8 +142,8 @@ export function upgradeBadgeDots(level: UpgradeBadgeLevel): number {
  *   3 — platyna     (bardzo jasna biel — czytelna nawet w odcieniach szarości)
  */
 export const UPGRADE_BADGE_COLOR: Readonly<Record<1 | 2 | 3, number>> = {
-  1: 0xa8642a,
-  2: 0x92a0ae,
+  1: 0xc9762c,
+  2: 0x9aa8b6,
   3: 0xf4f8fc,
 };
 
@@ -174,19 +174,24 @@ const UPG_RING_HEIGHT = 0.055 * HEX_R;
 /** Uniesienie nad kafelek (nad OWNER_RING_LIFT = 0.006, żeby nie migotało z płaskim pierścieniem). */
 const UPG_RING_LIFT   = 0.010 * HEX_R;
 
-/** Promień kropki. */
-const UPG_DOT_R       = 0.058 * HEX_R;
+/**
+ * Promień kropki. Wartość 0.072 dobrana PO OGLĘDZINACH ZRZUTU przy kącie 52°
+ * i dystansie odpowiadającym oddalonej kamerze mapy — przy 0.058 kropki
+ * gubiły się na trawie (pierwsza wersja podglądu), przy 0.072 są czytelne
+ * i nadal 3× mniejsze od głowy figurki (0.13·HEX_R), więc nie udają elementu modelu.
+ */
+const UPG_DOT_R       = 0.072 * HEX_R;
 /** Wysokość środka kropki — kule wiszą tuż nad kafelkiem, mają własną sylwetkę. */
-const UPG_DOT_Y       = 0.085 * HEX_R;
+const UPG_DOT_Y       = 0.100 * HEX_R;
 /**
  * Wysunięcie kropek do przodu (+Z = strona kamery przy pointy-top hex).
- * Skrajny punkt kropki: 0.615 + 0.058 = 0.673·HEX_R — z zapasem wewnątrz
- * obwódki właściciela (0.90) i obrysu heksu.
+ * Skrajny punkt kropki: 0.600 + 0.072 = 0.672·HEX_R — z zapasem wewnątrz
+ * otworu obwódki ulepszenia (0.775) i obrysu heksu.
  */
-const UPG_DOT_Z       = 0.615 * HEX_R;
-/** Rozstaw kropek w osi X. Skrajna kropka: |x| = 0.155 + 0.058 = 0.213·HEX_R,
- *  a półszerokość heksu na wysokości z = 0.615 wynosi 0.667·HEX_R — mieści się. */
-const UPG_DOT_SPACING = 0.155 * HEX_R;
+const UPG_DOT_Z       = 0.600 * HEX_R;
+/** Rozstaw kropek w osi X. Skrajna kropka: |x| = 0.175 + 0.072 = 0.247·HEX_R,
+ *  a półszerokość heksu na wysokości z = 0.600 wynosi 0.693·HEX_R — mieści się. */
+const UPG_DOT_SPACING = 0.175 * HEX_R;
 
 /**
  * ZAREZERWOWANE MIEJSCE NA GWIAZDKI WETERANA (game/veteran.ts, 1–3 gwiazdki).
@@ -195,9 +200,10 @@ const UPG_DOT_SPACING = 0.155 * HEX_R;
  * (~0.58·HEX_R) jest wolna. Kto będzie wdrażał render gwiazdek: wstaw je na tej
  * wysokości, wyśrodkowane w x, ZŁOTE i o gwiaździstym obrysie — wtedy oba
  * systemy pozostają rozróżnialne pozycją, kształtem i kolorem naraz.
- * (0.86 mieści się między czubkiem głowy ~0.58 a czaszką głodu na 0.78? —
- * czaszka głodu jest półprzezroczysta i pojawia się tylko przy głodzie, więc
- * gwiazdki idą WYŻEJ niż ona.)
+ * Wysokość 0.92·HEX_R jest WYŻEJ niż czaszka głodu (0.78·HEX_R, sprite
+ * półprzezroczysty, tylko przy głodzie) i wyżej niż badge stosu (0.55·HEX_R),
+ * więc gwiazdki nie wejdą w kolizję z żadnym istniejącym elementem żetonu.
+ * Zweryfikowane na zrzucie podglądu (mock gwiazdek w tools/.upgrade-badges-preview-entry.ts).
  */
 export const VETERAN_BADGE_RESERVED_Y = 0.92 * HEX_R;
 
@@ -252,8 +258,10 @@ function getMatForLevel(level: 1 | 2 | 3): THREE.MeshStandardMaterial {
   const color = UPGRADE_BADGE_COLOR[level];
   const mat = new THREE.MeshStandardMaterial({
     color,
-    emissive: new THREE.Color(color).multiplyScalar(0.30),
-    roughness: level === 1 ? 0.55 : 0.35,
+    // Poziom 1 (miedź) jest najciemniejszy i najłatwiej ginie na zielonym
+    // kafelku — dostaje mocniejszy `emissive` (0.45 vs 0.30), sprawdzone na zrzucie.
+    emissive: new THREE.Color(color).multiplyScalar(level === 1 ? 0.45 : 0.30),
+    roughness: level === 1 ? 0.50 : 0.35,
     metalness: level === 1 ? 0.65 : 0.80,
   });
   matByLevel.set(level, mat);
