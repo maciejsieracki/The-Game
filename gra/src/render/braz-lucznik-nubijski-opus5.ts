@@ -19,7 +19,7 @@
  *     kamien-lucznicy-opus5.ts / jednostki-p3-dystans.ts => cała rodzina
  *     łuczników w grze stoi w tej samej pozie (spójność czytania jednostek),
  *   - BROŃ NA OSI DŁONI (nic nie lewituje), kończyny domykane przez IK,
- *   - anatomia (proporcje torsu/kończyn) identyczna z rodziną KL_*/PD_* —
+ *   - anatomia (proporcje torsu/kończyn) identyczna z rodziną KL_.../PD_... —
  *     figurki wymienne 1:1 na mapie.
  *
  * KOLOR GRACZA (slot tintu — jak w Łuczniku egipskim/sumeryjskim): pas na
@@ -98,8 +98,8 @@
  *    lniana) przepaska z frędzlami, JEDNO pióro wyprostowane w skórzanej
  *    opasce, kołczan + mała tarcza na plecach, grot BRĄZOWY listkowy.
  *
- * Budżet (policzony traversem): patrz eksport countNubianArcherMeshes()
- * w narzędziu podglądu / raporcie końcowym zadania.
+ * Budżet (policzony traversem grupy w skrypcie pomocniczym): patrz raport
+ * końcowy zadania (liczba mesh / trójkątów / materiałów).
  */
 
 import * as THREE from 'three';

@@ -613,9 +613,14 @@ var DEPOSIT_LINKED_BUILDING_LABELS = {
   kuznia: ["Ruda"]
 };
 var CITY_BUILDING_PREREQ = {
-  warsztat_oblezniczy: "koszary",
+  warsztat_oblezniczy: ["koszary", "akademia_wojskowa"],
   laznia_publiczna: "studnia"
 };
+function cityBuildingPrereqMet(prereq, builtList, buildings, isSuperseded) {
+  if (!prereq) return true;
+  const ids = typeof prereq === "string" ? [prereq] : prereq;
+  return ids.some((id) => builtList.includes(id) || isSuperseded(id, builtList, buildings));
+}
 var WATER_ACCESS_BUILDING_IDS = /* @__PURE__ */ new Set(["port", "port_wielki"]);
 var ASCII_BY_LABEL = Object.fromEntries(
   Object.entries(LABEL_BY_ASCII).map(([ascii, label]) => [label, ascii])
@@ -833,8 +838,7 @@ function availableProduction(city, data, unlockedTechs, ctx = {}) {
     if (!buildingResourceGateMet(b, gateLabels, ctx.empireBuiltIds, ctx.empireResourceStock)) {
       continue;
     }
-    const cityPrereq = CITY_BUILDING_PREREQ[b.id];
-    if (cityPrereq && !builtList.includes(cityPrereq) && !isBuildingSupersededByUpgrade(cityPrereq, builtList, data.buildings)) {
+    if (!cityBuildingPrereqMet(CITY_BUILDING_PREREQ[b.id], builtList, data.buildings, isBuildingSupersededByUpgrade)) {
       continue;
     }
     if (WATER_ACCESS_BUILDING_IDS.has(b.id) && !ctx.cityHasCoastOrRiver) {

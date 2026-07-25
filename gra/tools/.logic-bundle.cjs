@@ -9775,7 +9775,7 @@ var units_default = [
     "Ilo\u015B\u0107 pocisk\xF3w": 16,
     "W zamian za": "\u0141ucznik",
     "Super-jednostka": "\u2014",
-    Uwagi: 'propozycja; jednostka specjalna Egiptu (Br\u0105z); \u0142ucznik nubijski z Ta-Seti ("Kraina \u0141uku", Nubia) \u2014 nie myli\u0107 z Numidami (jazda, \u017Belazo, inny region); zast\u0119puje \u0141ucznika; najwi\u0119kszy zasi\u0119g i najliczniejszy ko\u0142czan w\u015Br\xF3d \u0142ucznik\xF3w Br\u0105zu, szybszy marsz (Ruch 3) | UWAGA KOORDYNATORA: Koszt 20, Utrzymanie 2, Pancerz/Przebicie/Obrona/Ruch-w-bitwie i staty TW v3 (meleeAttack/meleeDefence/weaponDamage/piercing/armor/chargeBonus/health/missileAttack) dobrane przez subagenta wzorem \u0141ucznika akadyjskiego \u2014 do zatwierdzenia przez w\u0142a\u015Bciciela. Model 3D tymczasowo = buildEgyptianArcherOpus5 (dedykowany model nubijski do zrobienia p\xF3\u017Aniej).',
+    Uwagi: 'propozycja; jednostka specjalna Egiptu (Br\u0105z); \u0142ucznik nubijski z Ta-Seti ("Kraina \u0141uku", Nubia) \u2014 nie myli\u0107 z Numidami (jazda, \u017Belazo, inny region); zast\u0119puje \u0141ucznika; najwi\u0119kszy zasi\u0119g i najliczniejszy ko\u0142czan w\u015Br\xF3d \u0142ucznik\xF3w Br\u0105zu, szybszy marsz (Ruch 3) | UWAGA KOORDYNATORA: Koszt 20, Utrzymanie 2, Pancerz/Przebicie/Obrona/Ruch-w-bitwie i staty TW v3 (meleeAttack/meleeDefence/weaponDamage/piercing/armor/chargeBonus/health/missileAttack) dobrane przez subagenta wzorem \u0141ucznika akadyjskiego \u2014 do zatwierdzenia przez w\u0142a\u015Bciciela. Model 3D: buildNubianArcherOpus5 (braz-lucznik-nubijski-opus5.ts) \u2014 dedykowany model, luk dlugi self-bow, karnacja ciemniejsza niz Egipt, przepaska skorzana.',
     "Rola (linia)": "Dystans",
     Pancerz: 2,
     Przebicie: 2,
