@@ -4,7 +4,7 @@ Zasada: każde pytanie w pełnej formie ABC (opis + min. 2 za + min. 2 przeciw +
 
 ---
 
-## PYTANIE 18 — profil Pretorium po sprzątnięciu · STATUS: OTWARTE
+## PYTANIE 18 — profil Pretorium po sprzątnięciu · STATUS: **ODPOWIEDZIANE 2026-07-25**
 
 **Sytuacja.** Po wdrożeniu decyzji 16A (`obrona` → 0) i decyzji 6 (`mnoznik` → 0, jak przy Pałacu) Pretorium zostaje
 z bonusami **praca 2 / pieniądz 3 / zadowolenie 1** za cenę 75 pracy + 9 cegły + 3 utrzymania na turę.
@@ -36,9 +36,15 @@ bez mnożnika; opis przepisany na „administracja prowincji: pobór podatków i
 
 **REKOMENDACJA: A** — jedno przejście, bez nowej mechaniki, budynek przestaje być atrapą.
 
+**ODPOWIEDŹ MACIEJA (2026-07-25):** Pretorium dostaje **Kultura: 5 pkt/turę** (nowy bonus — budynek to „pałac
+zamiejscowy", ma dawać Kulturę jak Pałac); pola `obrona` i `mnoznik` wyzerowane (spójnie z decyzją 16A i decyzją
+6 o Pretorium-jak-Pałac). To inne rozwiązanie niż warianty A/B/C wyżej (żaden nie proponował Kultury) —
+pełny zapis i uwaga o niedoprecyzowanych `Praca`/`Pieniądz`/`Zadowolenie` w
+`dyspozycje/DECYZJE-BUDYNKI-2026-07-25.md` §8. **Status wdrożenia:** decyzja zapisana, NIE wdrożona w kodzie.
+
 ---
 
-## PYTANIE 19 — utrzymanie budynków: zróżnicowane czy płaskie? · STATUS: OTWARTE
+## PYTANIE 19 — utrzymanie budynków: zróżnicowane czy płaskie? · STATUS: **ODPOWIEDZIANE 2026-07-25 = A**
 
 **Sytuacja.** Każdy budynek ma w danych własne `utrzymanie` (0–5 na turę). **Silnik tego nie czyta** — `econ-params.json`
 ustawia płaską stawkę `utrzymanie_budynek` (łatwy 1 / normalny 1 / trudny 2), która **zawsze** wygrywa z wartością z danych
@@ -69,6 +75,11 @@ kolejnym przeglądzie, dokładnie tak jak mnożnik i `przyrost`.
 - Przeciw: gracz podejmuje decyzje budowlane na podstawie fałszywych liczb.
 
 **REKOMENDACJA: A** — ale jako osobne zadanie z testem ekonomii, nie doklejone do bieżącej paczki.
+
+**ODPOWIEDŹ MACIEJA (2026-07-25):** **A** — utrzymanie budynków ma być zróżnicowane per budynek (z danych),
+nie płaska stawka. Zapisane jako osobne zadanie ekonomiczne (z testem) w
+`dyspozycje/DECYZJE-BUDYNKI-2026-07-25.md` §8. **Status wdrożenia:** decyzja zapisana, NIE wdrożona w kodzie —
+silnik dziś nadal czyta wyłącznie płaską stawkę `utrzymanie_budynek` (`economy-upkeep.ts:511`).
 
 ---
 
@@ -180,7 +191,7 @@ na żetonie na mapie świata, na modelu w bitwie, czy w obu miejscach.
 
 ---
 
-## PYTANIE 25 — awans budynku: zastąpienie czy rozbudowa · STATUS: OTWARTE
+## PYTANIE 25 — awans budynku: zastąpienie czy rozbudowa · STATUS: **ODPOWIEDZIANE 2026-07-25 = B, per łańcuch**
 
 **Sytuacja.** Maciej (2026-07-25): „chciałbym widzieć w grze wybudowanych zarówno nowy upgrade jak i stary budynek…
 Przecież nie usuwamy murów, zastępując je basztą, tylko po prostu mamy zarówno mur, jak i basztę."
@@ -208,6 +219,15 @@ Koszary→Akademia wojskowa, Kuźnia żelaza→Wielka Kuźnia, Spichlerz→kolej
 - Przeciw: mnoży decyzje gracza, zanim ogramy obecne oblężenia.
 
 **REKOMENDACJA: B** — daje żądany efekt natychmiast i bez ryzyka; przejście B→A później jest łatwe, odwrotne już nie.
+
+**ODPOWIEDŹ MACIEJA (2026-07-25):** **wariant B, ale rozstrzygnięty per łańcuch, nie jedną regułą dla
+wszystkich budynków.** Łańcuchy „w górę" (następca kasuje poprzednika, wariant B — UI rozwija po kliknięciu):
+Pałac I→II→III · Dom Starszyzny→Dwór Zarządcy→Pretorium · Kuźnia brązu→Kuźnia żelaza→Wielka Kuźnia ·
+Spichlerz→Spichlerz II · Port handlowy→Port wielki · Piec hutniczy→Odlewnia żelaza. Łańcuchy „w bok" (oba
+budynki stoją obok siebie naprawdę — to bliżej wariantu A, ale bez ryzyka podwójnego liczenia, bo to inne
+budynki z innymi rolami, nie ten sam bonus liczony dwa razy): Mury+Cytadela+Baszta · Biblioteka+Akademia ·
+Koszary+Akademia wojskowa · Kamienne kręgi+Świątynia. Pełny zapis:
+`dyspozycje/DECYZJE-BUDYNKI-2026-07-25.md` §1. **Status wdrożenia:** decyzja zapisana, NIE wdrożona w kodzie.
 
 ---
 
@@ -244,6 +264,13 @@ NA POZIOM wewnątrz tieru, a poziom rośnie sam z epoką miasta, więc tiery nac
 - Przeciw: pole `przyrost` staje się martwe dla całych łańcuchów — znów parametr bez efektu.
 
 **REKOMENDACJA: C** — najczystsze i zgodne z zasadą „1 poziom = 1 epoka", którą sam ustaliłeś.
+
+**DOPRECYZOWANIE (2026-07-25, po decyzji Pytania 25):** odpowiedź B („podnieść bazy wyższych tierów") łączy się
+z regułą z Pytania 25 — budynek, który MA następcę w łańcuchu (np. Pałac I, mając Pałac II), ma **stałą wartość
+per tier** i nie rośnie sam z epoką; rośnie WYŁĄCZNIE budynek na końcu łańcucha (dziś: Pałac III, bo epoki 4+
+jeszcze nie ma). To jest mechanizm, który sprawia, że „podniesienie bazy wyższych tierów" faktycznie rozwiązuje
+problem nachodzenia — nie ma już efektu „Pałac I dogania Pałac III samym upływem epok". Pełny zapis:
+`dyspozycje/DECYZJE-BUDYNKI-2026-07-25.md` §1.
 
 ---
 

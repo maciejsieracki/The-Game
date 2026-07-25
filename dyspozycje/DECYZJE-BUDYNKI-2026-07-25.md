@@ -43,11 +43,13 @@ nie jedną regułą dla wszystkich budynków:
 - **Przy awansie „w bok"** wartości następcy muszą być **przyrostowe** (dokładają się do tego, co już daje
   poprzednik, nie liczą jego wkładu drugi raz) — dotyczy Pytania 24 (patrz §6, dwie ścieżki ulepszeń jednostek).
 
-**Do zrobienia w kodzie/danych (nie wykonane w tej sesji dokumentacyjnej):** ta reguła („stała wartość per tier
-dla budynków z następcą, żywy przyrost tylko dla ostatniego tieru łańcucha") jest **decyzją produktową**, jeszcze
-nie zweryfikowaną jako wdrożona 1:1 w kodzie dla WSZYSTKICH sześciu łańcuchów „w górę" — do potwierdzenia przy
-najbliższej pracy nad ekonomią budynków (dziś zweryfikowane w kodzie tylko dla Pałacu, patrz `R-LINEARYZACJA`
-i `R-PRAWO-ADMINISTRACJA` w `KANAL-PRACA.md`).
+**Status wdrożenia (zaktualizowano po fakcie — praca kodowa działa się równolegle z tą sesją dokumentacyjną):**
+podział na „w górę"/„w bok" i rozdzielenie wartości następcy (bez podwójnego liczenia) jest **WDROŻONY w kodzie**
+na gałęzi roboczej, commit `2354fb7` — usunięte `upgradeFrom` z `fort`/`akademia`/`akademia_wojskowa`/`swiatynia`
+(4 pary „w bok"), wartości rozdzielone (Akademia nauka 9→6/kultura 7→5, Akademia wojskowa praca 5→3, Świątynia
+kultura 3→2/zadowolenie 3→2). Reguła „stała wartość per tier, rośnie tylko przez awans" dla łańcuchów „w górę"
+zweryfikowana w kodzie na razie dla Pałacu (`R-LINEARYZACJA`, `R-PRAWO-ADMINISTRACJA` w `KANAL-PRACA.md`) —
+pozostałe 5 łańcuchów „w górę" do potwierdzenia. **Nic z tego nie jest jeszcze zdeployowane do ROBOCZA.**
 
 ---
 
@@ -66,8 +68,10 @@ Budynki grupowane w panelu miasta w **8 grup dziedzinowych**:
 Kliknięcie grupy rozwija listę budynków w niej. Budynek będący wynikiem awansu **„w górę"** rozwija (po kliknięciu)
 listę tego, co zastąpił — to samo zachowanie UI, co w §1 (wariant B Pytania 25).
 
-**Status wdrożenia:** decyzja produktowa, do przełożenia na UI panelu miasta — nie sprawdzone w tej sesji, czy
-istniejący podział na kategorie (`kategoria` w `buildings.json`) już odpowiada tym ośmiu grupom.
+**Status wdrożenia:** **WDROŻONE w kodzie** (gałąź robocza, commit `2354fb7`) — nowe pole `grupa` w
+`buildings.json` i `BuildingDef` (dane, nie hardkod UI), wszystkie 38 budynków pokryte, panel „Budynki w mieście"
+to teraz 8 zwijanych grup z licznikiem (grupa pusta widoczna, wyróżniona), test `grupy-budynkow` 74/74.
+**Nie zdeployowane do ROBOCZA.**
 
 ---
 
@@ -228,10 +232,16 @@ dochodzi tylko Kultura. Zapisane też cicho w `PYTANIA-OTWARTE.md` jako domknię
 
 ## Skrót statusu wdrożenia (dla przyszłej sesji kodowej)
 
-Ten plik jest **dokumentacją decyzji**, nie logiem zmian w kodzie — żadna z powyższych decyzji nie została dziś
-wdrożona w `gra/src` ani `gra/data` (ta sesja pracowała wyłącznie w `dyspozycje/`, `CLAUDE.md` i
-`STAN-PRACY-HANDOFF.md`, zgodnie z zakazem dotykania `gra/`). Do zrobienia w kolejnej sesji kodowej, w kolejności
-logicznej: (1) Baszta jako nowy budynek + siatka obrony 400%, (2) siatka Prawa z §4, (3) reguła stała-wartość-per-tier
-dla łańcuchów „w górę" z §1, (4) lokalizacja Pałac-tylko-stolica / Dom Starszyzny+Dwór Zarządcy+Pretorium-tylko-region
-z §3, (5) osiem grup dziedzinowych w panelu miasta z §2, (6) usunięcie Ratusza + Karawanseraju (jeśli jeszcze nie
-zrobione), (7) utrzymanie zróżnicowane (Pytanie 19).
+Ten plik jest **dokumentacją decyzji** — sesja, która go napisała, pracowała wyłącznie w `dyspozycje/`, `CLAUDE.md`
+i `STAN-PRACY-HANDOFF.md` (zakaz dotykania `gra/`). RÓWNOLEGLE, w tym samym czasie, inne sesje wdrażały część
+tych decyzji w kodzie na gałęzi roboczej — stąd status poniżej jest już zaktualizowany, nie „zero zrobione":
+
+- ✅ **WDROŻONE w kodzie** (commit `2354fb7`, NIE zdeployowane do ROBOCZA): §1 podział łańcuchów na „w górę"/„w bok"
+  + rozdzielenie wartości następcy (`upgradeFrom` usunięte z `fort`/`akademia`/`akademia_wojskowa`/`swiatynia`) ·
+  §2 osiem grup dziedzinowych w panelu miasta (pole `grupa` w danych, 38/38 budynków).
+- ⬜ **Nie sprawdzone / prawdopodobnie do zrobienia** (kolejność logiczna dla następnej sesji kodowej): (1) Baszta
+  jako nowy budynek + siatka obrony 400% z §5, (2) siatka Prawa z §4, (3) reguła stała-wartość-per-tier dla
+  POZOSTAŁYCH pięciu łańcuchów „w górę" (poza Pałacem, już zweryfikowanym) z §1, (4) lokalizacja
+  Pałac-tylko-stolica / Dom Starszyzny+Dwór Zarządcy+Pretorium-tylko-region z §3, (5) usunięcie Ratusza +
+  Karawanseraju (jeśli jeszcze nie zrobione — sprawdź `git log -- gra/data/buildings.json`), (6) utrzymanie
+  zróżnicowane (Pytanie 19).

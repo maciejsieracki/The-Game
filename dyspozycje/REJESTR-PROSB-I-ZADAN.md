@@ -342,3 +342,16 @@ staje się uzupełnieniem. Właściciel podtrzymał regułę 70% — wdrażamy.
 **Do rozstrzygnięcia osobno:** Ratusz nie istnieje jako budynek (parametr gotowy, `hasRatusz` nigdy nie jest true).
 Przy trzech szczeblach administracji lokalnej byłoby sześć budynków administracyjnych (Dom Starszyzny, Dwór Zarządcy,
 Ratusz, Trybunał, Sąd, Pretorium) w grze o trzech epokach — patrz pytania 29–31.
+
+## NOWE PROŚBY 2026-07-25 (popołudnie/wieczór) — model budynków, jeszcze bez R-ID w tabeli głównej
+
+Zapisane tu, żeby nie zgubić się (zasada procesu tego pliku) — pełny opis każdej w
+`dyspozycje/DECYZJE-BUDYNKI-2026-07-25.md`. Żadna nie jest wdrożona w kodzie.
+
+| ID | Data | Prośba | Status | Uwagi |
+|---|---|---|---|---|
+| R-BASZTA | 2026-07-25 | Nowy budynek obronny epoki Żelaza „Baszta" (+100% Obrony, stoi obok Murów+Cytadeli, nie zastępuje) — nazwa ZATWIERDZONA. | **DO WDROŻENIA** (decyzja gotowa, kod nietknięty) | Pytanie 41 = B. Wpis w `buildings.json` + ikona + Civpedia/poradnik + panel Excel. |
+| R-AWANS-MODEL | 2026-07-25 | Ogólna reguła: łańcuchy budynków dzielą się na „w górę" (następca kasuje poprzednika, stała wartość per tier, rośnie tylko przez awans) i „w bok" (oba stoją obok siebie, wartości przyrostowe). | **WDROŻONE (kod)** — commit `2354fb7` (usunięte `upgradeFrom` z `fort`/`akademia`/`akademia_wojskowa`/`swiatynia`, wartości następcy rozdzielone: Akademia nauka 9→6/kultura 7→5, Akademia wojskowa praca 5→3, Świątynia kultura 3→2/zadowolenie 3→2) | Pytanie 25 = B (per łańcuch). 6 łańcuchów „w górę" (Pałac, Dom Starszyzny→Dwór Zarządcy→Pretorium, Kuźnia, Spichlerz, Port, Piec hutniczy), 4 „w bok" — pełna lista `DECYZJE-BUDYNKI-2026-07-25.md` §1. **Nie zdeployowane do ROBOCZA** — tylko commit na gałęzi roboczej. |
+| R-PANEL-GRUPY | 2026-07-25 | Panel miasta: budynki grupowane w 8 grup dziedzinowych (Prawo i administracja / Wojsko i obrona / Handel i pieniądz / Nauka i kultura / Wiara / Zdrowie / Produkcja surowców / Żywność); klik grupy rozwija budynki; budynek-następca „w górę" rozwija listę zastąpionych. | **WDROŻONE (kod)** — commit `2354fb7`: pole `grupa` w `buildings.json`+`BuildingDef` (dane, nie hardkod UI), wszystkie 38 budynków pokryte, test `grupy-budynkow` 74/74 | Nie zdeployowane do ROBOCZA. |
+| R-STOLICA-REGION | 2026-07-25 | Pałac I/II/III wyłącznie w stolicy; Dom Starszyzny/Dwór Zarządcy/Pretorium wyłącznie poza stolicą; Trybunał i Sąd wszędzie. | **DO WDROŻENIA** (decyzja gotowa, kod nietknięty) | Dziś istnieje tylko warunek „Pałac=stolica"; brak mechanizmu odwrotnego („tylko poza stolicą"). |
+| R-PRAWO-SIATKA-V2 | 2026-07-25 | Siatka Prawa dla Dom Starszyzny/Dwór Zarządcy zmieniona z „70% swojego odpowiednika (Pałac I/II)" na „50%/60% Pałacu III" — patrz `R-PRAWO-ADMINISTRACJA` wyżej dla starych liczb. | **DO WDROŻENIA** (zmiana wartości, poprzednia wersja liczb ZASTĄPIONA) | Pełna tabela `DECYZJE-BUDYNKI-2026-07-25.md` §4. |

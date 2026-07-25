@@ -638,6 +638,7 @@ export function buildNubianArcherOpus5(ownerColor_: number): THREE.Group {
   const mShield   = mat(NB_SHIELD,      0.05, 0.84);
   const mShieldDk = mat(NB_SHIELD_DK,   0.05, 0.86);
   const mEye      = mat(NB_EYE,         0.05, 0.86);
+  const mBead     = mat(NB_BEAD,        0.05, 0.70);
 
   // ═══ KORPUS (naga pierś = bardzo ciemna karnacja) + NOGI ═════════════════
   nbBuildCore(group, mSkin, mSkin, mSkinDk);
@@ -670,6 +671,31 @@ export function buildNubianArcherOpus5(ownerColor_: number): THREE.Group {
   featTip.rotation.x = -0.06;
   featTip.position.set(-0.006 * HEX_R, NB_HEAD_TOP + 0.116 * HEX_R, -0.036 * HEX_R);
   group.add(featTip);
+  // drugie, krótsze piórko za pierwszym — pełniejszy pióropusz, wciąż
+  // wyprostowany (nie przechylony jak u Egipcjanina)
+  const feather2 = new THREE.Mesh(getNBFeather(), mFeath);
+  feather2.rotation.x = 0.10;
+  feather2.scale.set(0.8, 0.62, 0.8);
+  feather2.position.set(0.014 * HEX_R, NB_HEAD_TOP + 0.044 * HEX_R, -0.020 * HEX_R);
+  group.add(feather2);
+  const feather2Tip = new THREE.Mesh(getNBFeatTip(), mFeathDk);
+  feather2Tip.rotation.x = 0.10;
+  feather2Tip.scale.set(0.8, 0.62, 0.8);
+  feather2Tip.position.set(0.014 * HEX_R, NB_HEAD_TOP + 0.076 * HEX_R, -0.022 * HEX_R);
+  group.add(feather2Tip);
+
+  // ═══ SKROMNY NASZYJNIK — rzemyk + koraliki z kości/muszli (bez metalu) ═══
+  const cord = new THREE.Mesh(getNBCord(), mLeathDk);
+  cord.position.set(0, NB_TORSO_TOP - 0.012 * HEX_R, 0);
+  group.add(cord);
+  for (let i = 0; i < 3; i++) {
+    const t = (i - 1) / 1;                        // -1, 0, 1
+    const bd = new THREE.Mesh(getNBBead(), mBead);
+    bd.position.set(t * 0.052 * HEX_R,
+                    NB_TORSO_TOP - (0.012 + Math.abs(t) * 0.010) * HEX_R,
+                    NB_TORSO_D * 0.5 + 0.012 * HEX_R);
+    group.add(bd);
+  }
 
   // ═══ PRZEPASKA BIODROWA ZE SKÓRY + FRĘDZLE + PAS KOLORU GRACZA ═══════════
   const wrap = new THREE.Mesh(getNBHideWrap(), mHide);
@@ -679,7 +705,7 @@ export function buildNubianArcherOpus5(ownerColor_: number): THREE.Group {
   panel.rotation.x = -0.08;
   panel.position.set(0, NB_TORSO_BOT - 0.040 * HEX_R, NB_TORSO_D * 0.5 + 0.020 * HEX_R);
   group.add(panel);
-  for (const sx of [-0.066, -0.022, 0.022, 0.066]) {          // frędzle rzemienne
+  for (const sx of [-0.070, -0.038, -0.006, 0.026, 0.058, 0.084]) {   // frędzle rzemienne
     const fr = new THREE.Mesh(getNBFringe(), mFringe);
     fr.position.set(sx * HEX_R, NB_TORSO_BOT - 0.058 * HEX_R, NB_TORSO_D * 0.5 + 0.010 * HEX_R);
     group.add(fr);
@@ -691,12 +717,25 @@ export function buildNubianArcherOpus5(ownerColor_: number): THREE.Group {
   knot.position.set(0.030 * HEX_R, NB_TORSO_BOT + 0.008 * HEX_R, NB_TORSO_D * 0.5 + 0.012 * HEX_R);
   group.add(knot);
 
+  // ═══ KOSTKI: rzemienne obrączki na obu stopach (detal wojownika) ═════════
+  for (const sx of [-1, 1]) {
+    const an = new THREE.Mesh(getNBAnklet(), mLeathDk);
+    an.position.set(sx * NB_HIP_X, 0.024 * HEX_R, sx > 0 ? 0.028 * HEX_R : -0.022 * HEX_R);
+    group.add(an);
+  }
+
   // ═══ RAMIONA + SKÓRZANY BRACER na lewym (łukowym) przedramieniu ═════════
   const arms = nbArcherArms(group, mSkin, mSkin, mSkinDk);
   const bracer = new THREE.Mesh(getNBBracer(), mLeath);
   bracer.quaternion.setFromUnitVectors(NB_Y_UP, arms.left.axis);
   bracer.position.copy(arms.left.hand.clone().addScaledVector(arms.left.axis, -0.040 * HEX_R));
   group.add(bracer);
+  // skórzana opaska nad bicepsem (ramię łukowe) — drobny detal wojownika
+  const armBand = new THREE.Mesh(getNBBracer(), mLeathDk);
+  armBand.quaternion.setFromUnitVectors(NB_Y_UP, arms.left.axis);
+  armBand.position.copy(arms.left.elbow.clone().lerp(
+    new THREE.Vector3(NB_SHLD_X, NB_SHLD_Y, 0), 0.72));
+  group.add(armBand);
 
   // ═══ KOŁCZAN SKÓRZANY NA PLECACH + MAŁA TARCZA ZE SKÓRY WOŁOWEJ ═════════
   nbAddQuiver(group, mLeath, mLeathDk, mShaft, mOwner);
@@ -705,8 +744,7 @@ export function buildNubianArcherOpus5(ownerColor_: number): THREE.Group {
   // ═══ ŁUK DŁUGI PROSTY + CIĘCIWA + STRZAŁA Z GROTEM BRĄZOWYM ═════════════
   const bow = nbAddBowLimbs(group, mWood, mLeath);
   nbAddString(group, bow.tipTop, bow.tipBot, mString);
-  nbAddArrow(group, mShaft, mBronze, mSinew, mOwner);
-  void mBronzeLt; // rezerwa palety (spójność z rodziną — nieużyta krawędź grotu)
+  nbAddArrow(group, mShaft, mBronze, mBronzeLt, mSinew, mOwner);
 
   group.userData['mats'] = mats;
   group.userData['perTokenGeos'] = [];

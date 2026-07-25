@@ -79,7 +79,7 @@ Właściciel: **Maciej**, product owner w NASTER S.A. Rozmawia **po polsku — o
 ## BRAMKI (uruchamiaj z `gra/`)
 `npx tsc --noEmit` (0 błędów) · `node tools/tech-tree-test.cjs` · `node tools/research-test.cjs` · `node tools/unit-replace-test.cjs` · `node tools/map-gen-regression-test.cjs` (determinizm A=B + 0 rzek bez ujścia).
 
-**Znane PRE-ISTNIEJĄCE porażki (NIE regresja, nie „naprawiaj przy okazji") — stan 2026-07-25:** `logic-test.cjs` **207/208**, jedna porażka `mapgen: deposits obey terrain rules` (w naprawie); `akwedukt-popcap-test.cjs`, `auto-manage-test.cjs`, `growthmult-compound-test.cjs` — po jednej porażce progu populacji / dopasowania fixtury. **`combat-test.cjs` jest NAPRAWIONY i zielony (6/6)** — harness `counterTyp` naprawiono commitem `496dd53`; stary zapis o „~21 porażkach" i „rzuca wyjątkiem" był nieaktualny. Szczegóły: **handoff §7**.
+**Znane PRE-ISTNIEJĄCE porażki (NIE regresja, nie „naprawiaj przy okazji") — stan 2026-07-25 (wieczór):** `logic-test.cjs` **208/208** — porażka `mapgen: deposits obey terrain rules` NAPRAWIONA (generator, nie test; `R-MAPGEN-GLINA`). Nadal otwarte: `akwedukt-popcap-test.cjs`, `auto-manage-test.cjs`, `growthmult-compound-test.cjs` — po jednej porażce progu populacji / dopasowania fixtury; **nowe dziś:** `upgrade-budynki-test.cjs` **2 porażki**, `deposit-building-gate-test.cjs` **2 porażki**. **`combat-test.cjs` jest NAPRAWIONY i zielony (6/6)** — harness `counterTyp` naprawiono commitem `496dd53`; stary zapis o „~21 porażkach" i „rzuca wyjątkiem" był nieaktualny. Szczegóły: **handoff §7**.
 
 ## Login demo (do playtestu)
 Bundle z `gra-robocza/` (np. `START.html`) — otwiera hub playtestów.

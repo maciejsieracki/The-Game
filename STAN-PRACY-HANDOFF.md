@@ -147,6 +147,38 @@ Sesja chmurowa, w większości autonomiczna (zgoda `AUTONOMIA=A`). Wykonanie del
 
 ---
 
+### 3a-4. SESJA DOKUMENTACYJNA 2026-07-25 — decyzje budynkowe + rejestr problemów (bez zmian w kodzie)
+
+Ta sesja pracowała **wyłącznie w dokumentacji** (`CLAUDE.md`, `STAN-PRACY-HANDOFF.md`, `dyspozycje/**`) — zero
+zmian w `gra/`, na wyraźne polecenie (trzej inni subagenci pracowali równolegle na kodzie). Cel: zapisać
+decyzje o modelu budynków podjęte dziś w rozmowie z Maciejem + spisać napotkane problemy i ich naprawy, żeby
+nic nie umknęło przyszłym sesjom; oraz sprawdzić, czy trzy nowe zasady procesu (2026-07-25) są widoczne we
+wszystkich plikach, gdzie takie zasady żyją.
+
+- **[`dyspozycje/DECYZJE-BUDYNKI-2026-07-25.md`](dyspozycje/DECYZJE-BUDYNKI-2026-07-25.md)** — model rozwoju
+  budynków (awans „w górę" vs „w bok"), panel miasta (8 grup dziedzinowych), stolica-vs-regiony, siatka Prawa,
+  obrona miasta procentowa (Mury+Cytadela+Baszta=400%), dwie ścieżki ulepszeń jednostek, koszty surowcowe wg
+  epok, oraz zbiór pozostałych rozstrzygnięć (Karawanseraj/Lazaret/Ratusz/Stela/utrzymanie/Pretorium). Numeracja
+  pytań ciągła z `PYTANIA-OTWARTE.md`/`REJESTR-PROSB-I-ZADAN.md`. Ta sesja sama nie dotykała `gra/`, ale
+  RÓWNOLEGLE inne sesje wdrożyły część tych decyzji w kodzie na gałęzi roboczej (commit `2354fb7`: podział
+  łańcuchów „w górę"/„w bok" + osiem grup dziedzinowych w panelu miasta) — **NIE zdeployowane do ROBOCZA**;
+  reszta (Baszta, siatka Prawa, stolica/regiony, utrzymanie zróżnicowane) czeka na kolejną sesję kodową.
+  Aktualny status per punkt: koniec pliku decyzji, sekcja „Skrót statusu wdrożenia".
+- **[`dyspozycje/PROBLEMY-I-ROZWIAZANIA-2026-07-25.md`](dyspozycje/PROBLEMY-I-ROZWIAZANIA-2026-07-25.md)** —
+  10 problemów w formacie objaw→przyczyna→rozwiązanie→nauka (plony budynków nie docierały do silnika, Pałac
+  niewidoczny w produkcji, mnożnik budynków martwy/źle skierowany, obrona miasta liczona podwójnie, cegła
+  blokująca budowę bez rzeki, generator map łamiący własną regułę gliny, jednostka unikalna wymagająca wpisu
+  w dwóch plikach, proporcje tarczy Zulu, anachronizmy w danych, opisy `uwagi` niezgodne z kodem).
+- **Sprawdzone trzy nowe zasady procesu** (zakaz nowych wątków / liczba+parametr+jednostka+kontekst /
+  Opus-Fable za zgodą): uzupełnione w `dyspozycje/PAMIEC-ROBOCZA-CIV.md` §1a (brakowały) i
+  `dyspozycje/BACKLOG-PRZYSZLOSC.md` §E (brakowały dwie z trzech — model Sonnet 5 już tam był). Już były
+  w `CLAUDE.md`.
+- **Spójność:** poprawiony nieaktualny opis modelu budynków w §9 niżej (patrz adnotacja przy „ZAPARKOWANE DO
+  CZASU KOLEJNYCH EPOK") + oznaczone statusy Pytań 18/19 w `PYTANIA-OTWARTE.md` i `BACKLOG-PRZYSZLOSC.md` +
+  zaktualizowana lista pre-istniejących porażek testów w §7 niżej i w `CLAUDE.md` (208/208 + 2 nowe testy).
+
+---
+
 ## 4. ✅ CO WESZŁO W SESJI 2026-07-20 (szczegóły + decyzje)
 
 Wszystko poniżej jest **zdeployowane i na GitHubie**. ID decyzji w nawiasach — NIE pytaj o nie ponownie (§9).
