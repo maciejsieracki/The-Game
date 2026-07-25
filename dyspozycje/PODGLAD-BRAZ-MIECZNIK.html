@@ -3,11 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Miecznik brązowy — OPUS 5 vs Wojownik epoki Kamienia</title>
+<title>Miecznik brązowy — OPUS 5 vs dzisiejszy Miecznik (jednostki-p1-rdzen.ts)</title>
 <style>
   :root{
     --bg:#0e1216; --panel:#161c23; --line:#2a333d; --txt:#e6edf3;
-    --dim:#93a1b0; --acc:#d8b040; --st:#9a8563; --bz:#c98a4a;
+    --dim:#93a1b0; --acc:#d8b040; --old:#9a8563; --bz:#c98a4a;
   }
   *{box-sizing:border-box}
   html,body{margin:0;height:100%;background:var(--bg);color:var(--txt);
@@ -23,7 +23,7 @@
   .plabel{flex:0 0 auto;padding:5px 12px;font-size:11.5px;font-weight:700;letter-spacing:1.1px;
     border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}
   .plabel .tag{font-size:10px;font-weight:600;letter-spacing:.5px;color:var(--dim)}
-  .pane.st .plabel{color:var(--st)}
+  .pane.old .plabel{color:var(--old)}
   .pane.bz .plabel{color:var(--bz)}
   canvas{flex:1 1 auto;width:100%;height:100%;display:block;min-height:0}
   #orbit-overlay{position:absolute;inset:0;cursor:grab;z-index:5;touch-action:none}
@@ -48,14 +48,14 @@
 </head>
 <body>
 <header>
-  <h1>MIECZNIK BRĄZOWY — <span>OPUS 5, bazowa piechota uderzeniowa (wszystkie cywilizacje)</span> vs WOJOWNIK EPOKI KAMIENIA (kamien-bazowe-opus5.ts, dla porównania sylwetki)</h1>
-  <p class="sub">Miecznik: krótki miecz KŁUJĄCY (rapier) z brązu w gardzie, klinga rombowa zwężająca się stopniowo (bez liściastego wybrzuszenia), jelec brązowy, gałka kościana, oplot sznurkiem. Pochwa PUSTA na lewym biodrze. Tarcza OKRĄGŁA ze skóry wołowej z małym brązowym umbem. Tunika lniana + prosty skórzany napierśnik, sandały, krótka broda, prosta skórzana czapka BEZ brązu. Wojownik epoki Kamienia (po lewej): topór krzemienny w mufie z poroża wzniesiony do cięcia, futrzany kaftan, tarcza wieloboczna z wikliny — porównanie sylwetki broni (pionowa masa topora nad barkiem vs. pozioma wąska klinga na wysokości pasa).</p>
+  <h1>MIECZNIK BRĄZOWY — <span>OPUS 5, bazowa piechota uderzeniowa (wszystkie cywilizacje)</span> vs DZISIEJSZY MIECZNIK (jednostki-p1-rdzen.ts, model zastępowany w grze)</h1>
+  <p class="sub">Po poprawkach: figura przeskalowana do ok. 0,75×HEX_R (jeden współczynnik BM_FIGURE_SCALE wokół stóp). Miecz kłujący (rapier) wydłużony do 0,170×HEX_R klingi, trzymany po przekątnej (nie równolegle do osi kamery) żeby nie skracał się perspektywicznie. Tarcza okrągła powiększona i wysunięta wyraźnie przed obrys ciała, niemal prostopadle do kamery — pole = kolor gracza, małe brązowe umbo. Czapka skórzana zwężona do obrysu czaszki (bez ronda). Po lewej: dzisiejszy Miecznik — stożkowy hełm brązowy z poprzecznym grzebieniem, miecz liściasty w zamachu cięcia, tarcza z krzyżem listew.</p>
 </header>
 
 <div id="stage">
   <div id="grid">
-    <div class="pane st">
-      <div class="plabel">WOJOWNIK EPOKI KAMIENIA <span class="tag">kamien-bazowe-opus5.ts → buildWojownikOpus5()</span></div>
+    <div class="pane old">
+      <div class="plabel">DZISIEJSZY MIECZNIK (Brąz) <span class="tag">jednostki-p1-rdzen.ts → buildMiecznik()</span></div>
       <canvas id="cv-a"></canvas>
       <div class="stats">
         mesh <b id="stat-a-mesh">–</b> · trójkąty <b id="stat-a-tri">–</b><br>
@@ -89,7 +89,7 @@
 
 <script>
 (() => {
-  // node_modules/three/build/three.module.js
+  // gra/node_modules/three/build/three.module.js
   var REVISION = "169";
   var CullFaceNone = 0;
   var CullFaceBack = 1;
@@ -21205,11 +21205,11 @@ void main() {
     }
   }
 
-  // src/render/hexutil.ts
+  // gra/src/render/hexutil.ts
   var HEX_R = 1;
   var SQRT3 = Math.sqrt(3);
 
-  // src/render/kamien-bazowe-opus5.ts
+  // gra/src/render/jednostki-p1-rdzen.ts
   function makeMats() {
     const mats = [];
     const mat = (color, metalness = 0.1, roughness = 0.7, transparent = false, opacity = 1) => {
@@ -21219,407 +21219,227 @@ void main() {
     };
     return { mats, mat };
   }
-  var KB_SKIN = 14263396;
-  var KB_SKIN_DK = 12289352;
-  var KB_HAIR = 5061158;
-  var KB_FUR_DK = 6244912;
-  var KB_FUR_LT = 9072461;
-  var KB_LEATHER = 7031336;
-  var KB_LEATH_DK = 4928281;
-  var KB_WOOD = 8019002;
-  var KB_WOOD_DK = 6047020;
-  var KB_FLINT = 9278104;
-  var KB_FLINT_DK = 7172986;
-  var KB_ANTLER = 13350025;
-  var KB_BONE = 15130050;
-  var KB_SINEW = 14208948;
-  var KB_WICKER = 11044698;
-  var KB_HIP_Y = 0.208 * HEX_R;
-  var KB_TORSO_W = 0.18 * HEX_R;
-  var KB_TORSO_H = 0.205 * HEX_R;
-  var KB_TORSO_D = 0.1 * HEX_R;
-  var KB_TORSO_BOT = 0.24 * HEX_R;
-  var KB_TORSO_CTR = KB_TORSO_BOT + KB_TORSO_H * 0.5;
-  var KB_TORSO_TOP = KB_TORSO_BOT + KB_TORSO_H;
-  var KB_NECK_H = 0.028 * HEX_R;
-  var KB_HEAD_S = 0.128 * HEX_R;
-  var KB_HEAD_CTR = KB_TORSO_TOP + KB_NECK_H + KB_HEAD_S * 0.5;
-  var KB_HEAD_TOP = KB_TORSO_TOP + KB_NECK_H + KB_HEAD_S;
-  var KB_SHLD_X = KB_TORSO_W * 0.5 + 0.03 * HEX_R;
-  var KB_SHLD_Y = KB_TORSO_TOP - 0.024 * HEX_R;
-  var KB_HIP_X = 0.052 * HEX_R;
-  var KB_THIGH_L = 0.104 * HEX_R;
-  var KB_SHIN_L = 0.096 * HEX_R;
-  var KB_UPARM_L = 0.1 * HEX_R;
-  var KB_FOREARM_L = 0.092 * HEX_R;
-  var kbGeos = {};
+  var P1_SKIN = 14724201;
+  var P1_LEATHER = 7031336;
+  var P1_WOOD_DK = 6047020;
+  var P1_BRONZE = 13603380;
+  var P1_BRONZE_LT = 14199634;
+  var P1_RUST = 11880495;
+  var P1_HIP_Y = 0.208 * HEX_R;
+  var P1_TORSO_W = 0.18 * HEX_R;
+  var P1_TORSO_H = 0.205 * HEX_R;
+  var P1_TORSO_D = 0.1 * HEX_R;
+  var P1_TORSO_BOT = 0.24 * HEX_R;
+  var P1_TORSO_CTR = P1_TORSO_BOT + P1_TORSO_H * 0.5;
+  var P1_TORSO_TOP = P1_TORSO_BOT + P1_TORSO_H;
+  var P1_NECK_H = 0.028 * HEX_R;
+  var P1_HEAD_S = 0.128 * HEX_R;
+  var P1_HEAD_CTR = P1_TORSO_TOP + P1_NECK_H + P1_HEAD_S * 0.5;
+  var P1_HEAD_TOP = P1_TORSO_TOP + P1_NECK_H + P1_HEAD_S;
+  var P1_SHLD_X = P1_TORSO_W * 0.5 + 0.03 * HEX_R;
+  var P1_SHLD_Y = P1_TORSO_TOP - 0.024 * HEX_R;
+  var P1_HIP_X = 0.052 * HEX_R;
+  var P1_THIGH_L = 0.104 * HEX_R;
+  var P1_SHIN_L = 0.096 * HEX_R;
+  var P1_UPARM_L = 0.1 * HEX_R;
+  var P1_FOREARM_L = 0.092 * HEX_R;
+  var p1Geos = {};
   function getG(key, make) {
-    let g = kbGeos[key];
-    if (g === void 0) {
+    let g = p1Geos[key];
+    if (!g) {
       g = make();
-      kbGeos[key] = g;
+      p1Geos[key] = g;
     }
     return g;
   }
   var gBox = (k, w, h, d) => getG(k, () => new BoxGeometry(w * HEX_R, h * HEX_R, d * HEX_R));
-  var gCyl = (k, rt, rb, h, seg, open = false) => getG(k, () => new CylinderGeometry(rt * HEX_R, rb * HEX_R, h * HEX_R, seg, 1, open));
-  var gCone = (k, r, h, seg) => getG(k, () => new ConeGeometry(r * HEX_R, h * HEX_R, seg, 1));
-  function disposeKamienBazoweOpus5Geometries() {
-    for (const k of Object.keys(kbGeos)) {
-      kbGeos[k]?.dispose();
-      delete kbGeos[k];
-    }
-  }
-  function makeTaperGeo(sections) {
-    const pos = [];
-    const P = (x, y, z) => {
-      pos.push(x, y, z);
-    };
-    const quad = (a, b2, c, d) => {
-      P(...a);
-      P(...b2);
-      P(...c);
-      P(...a);
-      P(...c);
-      P(...d);
-    };
-    for (let i = 0; i < sections.length - 1; i++) {
-      const s0 = sections[i], s1 = sections[i + 1];
-      const [y0, w0, t0] = s0, [y1, w1, t1] = s1;
-      quad([-w0, y0, t0], [w0, y0, t0], [w1, y1, t1], [-w1, y1, t1]);
-      quad([w0, y0, -t0], [-w0, y0, -t0], [-w1, y1, -t1], [w1, y1, -t1]);
-      quad([w0, y0, t0], [w0, y0, -t0], [w1, y1, -t1], [w1, y1, t1]);
-      quad([-w0, y0, -t0], [-w0, y0, t0], [-w1, y1, t1], [-w1, y1, -t1]);
-    }
-    const b = sections[0];
-    quad([-b[1], b[0], -b[2]], [b[1], b[0], -b[2]], [b[1], b[0], b[2]], [-b[1], b[0], b[2]]);
-    const g = new BufferGeometry();
-    g.setAttribute("position", new Float32BufferAttribute(pos, 3));
-    g.computeVertexNormals();
-    return g;
-  }
-  function makeCeltGeo(len, wMax, tMax) {
-    return makeTaperGeo([
-      [0, 0.5, 0.82],
-      [0.34, 0.66, 1],
-      [0.76, 0.94, 0.7],
-      [1, 1, 0.1]
-    ].map(([y, w, t]) => [y * len, w * wMax * 0.5, t * tMax * 0.5]));
-  }
-  function kbDir(theta) {
+  var gTorso = () => gBox("torso", 0.18, 0.205, 0.1);
+  var gNeck = () => gBox("neck", 0.042, 0.045, 0.042);
+  var gHead = () => gBox("head", 0.128, 0.128, 0.128);
+  var gThigh = () => gBox("thigh", 0.056, 0.104, 0.06);
+  var gShin = () => gBox("shin", 0.038, 0.096, 0.042);
+  var gFoot = () => gBox("foot", 0.044, 0.026, 0.078);
+  var gUpArm = () => gBox("uparm", 0.054, 0.1, 0.054);
+  var gForearm = () => gBox("forearm", 0.04, 0.092, 0.04);
+  var gFist = () => gBox("fist", 0.046, 0.046, 0.048);
+  var gSkirt = () => gBox("skirt", 0.196, 0.07, 0.118);
+  var gBelt = () => gBox("belt", 0.19, 0.034, 0.112);
+  var gSash = () => gBox("sash", 0.186, 0.032, 0.106);
+  function p1Dir(theta) {
     return new Vector3(0, -Math.cos(theta), Math.sin(theta));
   }
-  function kbSeg(group, geo, mtl, P, theta, len) {
-    const dir = kbDir(theta);
+  function p1Seg(group, geo, mtl, P, theta, len) {
+    const dir = p1Dir(theta);
     const mesh = new Mesh(geo, mtl);
     mesh.rotation.x = Math.PI - theta;
     mesh.position.copy(P.clone().addScaledVector(dir, len * 0.5));
     group.add(mesh);
     return P.clone().addScaledVector(dir, len);
   }
-  function kbBoot(group, sx, footZ, mSole, mUpper, mBind) {
-    const sole = new Mesh(gBox("kbSole", 0.05, 0.014, 0.086), mSole);
-    sole.position.set(sx, 7e-3 * HEX_R, footZ);
-    group.add(sole);
-    const upper = new Mesh(gBox("kbBootUp", 0.046, 0.036, 0.062), mUpper);
-    upper.position.set(sx, 0.03 * HEX_R, footZ - 6e-3 * HEX_R);
-    group.add(upper);
-    const toe = new Mesh(gBox("kbBootToe", 0.042, 0.02, 0.028), mUpper);
-    toe.position.set(sx, 0.02 * HEX_R, footZ + 0.036 * HEX_R);
-    group.add(toe);
-    for (const dz of [-0.014, 0.012]) {
-      const bd = new Mesh(gBox("kbBootBind", 0.052, 8e-3, 0.03), mBind);
-      bd.position.set(sx, 0.04 * HEX_R, footZ + dz * HEX_R);
-      group.add(bd);
-    }
-  }
-  function kbBuildLeg(group, sx, thU, thL, mThigh, mShin, foot, hipY) {
+  function p1BuildLeg(group, sx, thU, thL, mThigh, mShin, mFoot, hipY = P1_HIP_Y) {
     let P = new Vector3(sx, hipY, 0);
-    P = kbSeg(group, gBox("kbThigh", 0.056, 0.104, 0.06), mThigh, P, thU, KB_THIGH_L);
+    P = p1Seg(group, gThigh(), mThigh, P, thU, P1_THIGH_L);
     P.z -= 4e-3 * HEX_R;
     P.y += 8e-3 * HEX_R;
-    const knee = new Mesh(gBox("kbKnee", 0.048, 0.026, 0.05), mThigh);
-    knee.position.copy(P.clone().add(new Vector3(0, 6e-3 * HEX_R, 4e-3 * HEX_R)));
-    group.add(knee);
-    P = kbSeg(group, gBox("kbShin", 0.038, 0.096, 0.042), mShin, P, thL, KB_SHIN_L);
-    foot(group, sx, P.z + 0.016 * HEX_R);
-    return P;
+    P = p1Seg(group, gShin(), mShin, P, thL, P1_SHIN_L);
+    const foot = new Mesh(gFoot(), mFoot);
+    foot.position.set(sx, 0.013 * HEX_R, P.z + 0.016 * HEX_R);
+    group.add(foot);
   }
-  function kbBuildArm(group, sx, thU, thF, mUp, mFore, mFist) {
-    let P = new Vector3(sx, KB_SHLD_Y, 0);
-    P = kbSeg(group, gBox("kbUpArm", 0.054, 0.1, 0.054), mUp, P, thU, KB_UPARM_L);
-    const elbow = P.clone();
+  function p1BuildArm(group, sx, thU, thF, mUp, mFore, mFist) {
+    let P = new Vector3(sx, P1_SHLD_Y, 0);
+    P = p1Seg(group, gUpArm(), mUp, P, thU, P1_UPARM_L);
     P.y += 0.01 * HEX_R;
-    const wrist = kbSeg(group, gBox("kbForearm", 0.04, 0.092, 0.04), mFore, P, thF, KB_FOREARM_L);
+    const wrist = p1Seg(group, gForearm(), mFore, P, thF, P1_FOREARM_L);
     if (mFist !== null) {
-      const fist = new Mesh(gBox("kbFist", 0.046, 0.046, 0.048), mFist);
+      const fist = new Mesh(gFist(), mFist);
       fist.rotation.x = Math.PI - thF;
-      fist.position.copy(wrist.clone().addScaledVector(kbDir(thF), 0.014 * HEX_R));
+      fist.position.copy(wrist.clone().addScaledVector(p1Dir(thF), 0.014 * HEX_R));
       group.add(fist);
     }
-    return { wrist, axis: kbDir(thF), elbow };
+    return { wrist, axis: p1Dir(thF) };
   }
-  function kbShoulder(group, sx, mtl) {
-    const d = new Mesh(gBox("kbDelt", 0.052, 0.052, 0.072), mtl);
-    d.position.set(sx * (KB_TORSO_W * 0.5 + 0.014 * HEX_R), KB_SHLD_Y + 0.014 * HEX_R, 0);
-    group.add(d);
-  }
-  function kbBuildTorso(group, mTorso) {
-    const torso = new Mesh(gBox("kbTorso", 0.18, 0.205, 0.1), mTorso);
-    torso.position.set(0, KB_TORSO_CTR, 0);
+  function p1BuildCore(group, mat, mTorso, skin = P1_SKIN) {
+    const torso = new Mesh(gTorso(), mTorso);
+    torso.position.set(0, P1_TORSO_CTR, 0);
     group.add(torso);
-    const chest = new Mesh(gBox("kbChest", 0.187, 0.072, 0.106), mTorso);
-    chest.position.set(0, KB_TORSO_TOP - 0.038 * HEX_R, 0);
-    group.add(chest);
-    kbShoulder(group, 1, mTorso);
-    kbShoulder(group, -1, mTorso);
-  }
-  function kbBuildHead(group, mSkin, mSkinDk, mHair, mDark, beard) {
-    const neck = new Mesh(gBox("kbNeck", 0.044, 0.046, 0.044), mSkin);
-    neck.position.set(0, KB_TORSO_TOP + KB_NECK_H * 0.5, 0);
+    const mSkin = mat(skin, 0.05, 0.8);
+    const neck = new Mesh(gNeck(), mSkin);
+    neck.position.set(0, P1_TORSO_TOP + P1_NECK_H * 0.5, 0);
     group.add(neck);
-    const head = new Mesh(gBox("kbHead", 0.128, 0.128, 0.128), mSkin);
-    head.position.set(0, KB_HEAD_CTR, 0);
+    const head = new Mesh(gHead(), mSkin);
+    head.position.set(0, P1_HEAD_CTR, 0);
     group.add(head);
-    const jaw = new Mesh(gBox("kbJaw", 0.086, 0.034, 0.04), mSkinDk);
-    jaw.position.set(0, KB_HEAD_CTR - KB_HEAD_S * 0.38, 0.01 * HEX_R);
-    group.add(jaw);
-    const nose = new Mesh(gBox("kbNose", 0.02, 0.028, 0.018), mSkin);
-    nose.position.set(0, KB_HEAD_CTR - 2e-3 * HEX_R, KB_HEAD_S * 0.5 + 7e-3 * HEX_R);
-    group.add(nose);
-    const brow = new Mesh(gBox("kbBrow", 0.104, 0.014, 0.016), mSkinDk);
-    brow.rotation.x = 0.12;
-    brow.position.set(0, KB_HEAD_CTR + 0.032 * HEX_R, KB_HEAD_S * 0.5 + 3e-3 * HEX_R);
-    group.add(brow);
-    for (const sx of [-1, 1]) {
-      const eye = new Mesh(gBox("kbEye", 0.018, 0.011, 8e-3), mDark);
-      eye.position.set(sx * 0.026 * HEX_R, KB_HEAD_CTR + 0.014 * HEX_R, KB_HEAD_S * 0.5 + 2e-3 * HEX_R);
-      group.add(eye);
-    }
-    const hairB = new Mesh(gBox("kbHairB", 0.126, 0.104, 0.026), mHair);
-    hairB.position.set(0, KB_HEAD_CTR - 6e-3 * HEX_R, -(KB_HEAD_S * 0.5 + 0.011 * HEX_R));
-    group.add(hairB);
-    for (const sx of [-1, 1]) {
-      const hs = new Mesh(gBox("kbHairS", 0.018, 0.082, 0.086), mHair);
-      hs.position.set(sx * (KB_HEAD_S * 0.5 + 6e-3 * HEX_R), KB_HEAD_CTR - 0.01 * HEX_R, -0.018 * HEX_R);
-      group.add(hs);
-    }
-    if (beard) {
-      const bd = new Mesh(gBox("kbBeard", 0.082, 0.05, 0.034), mHair);
-      bd.position.set(0, KB_HEAD_CTR - 0.07 * HEX_R, 0.022 * HEX_R);
-      group.add(bd);
-    }
+    return mSkin;
   }
-  function kbOwnerSash(group, mOwner) {
-    const s = new Mesh(gBox("kbSash", 0.186, 0.032, 0.106), mOwner);
-    s.position.set(0, KB_TORSO_CTR - 0.014 * HEX_R, 0);
+  function p1OwnerSash(group, mOwner) {
+    const s = new Mesh(gSash(), mOwner);
+    s.position.set(0, P1_TORSO_CTR - 0.012 * HEX_R, 0);
     group.add(s);
   }
-  function kbSkirtBelt(group, mSkirt, mBelt, mFringe) {
-    const skirt = new Mesh(gBox("kbSkirt", 0.196, 0.07, 0.118), mSkirt);
-    skirt.position.set(0, KB_TORSO_BOT - 0.018 * HEX_R, 0);
+  function p1SkirtBelt(group, mSkirt, mBelt) {
+    const skirt = new Mesh(gSkirt(), mSkirt);
+    skirt.position.set(0, P1_TORSO_BOT - 0.018 * HEX_R, 0);
     group.add(skirt);
-    const belt = new Mesh(gBox("kbBelt", 0.192, 0.03, 0.114), mBelt);
-    belt.position.set(0, 0.252 * HEX_R, 0);
-    group.add(belt);
-    const bone = new Mesh(gBox("kbBuckle", 0.03, 0.024, 0.014), mFringe ?? mBelt);
-    bone.position.set(0, 0.252 * HEX_R, KB_TORSO_D * 0.5 + 0.014 * HEX_R);
-    group.add(bone);
-    if (mFringe) {
-      for (const sx of [-2, -1, 0, 1, 2]) {
-        const fr = new Mesh(gBox("kbFringe", 0.022, 0.05, 0.01), mFringe);
-        fr.position.set(sx * 0.04 * HEX_R, 0.176 * HEX_R, KB_TORSO_D * 0.5 + 0.01 * HEX_R);
-        group.add(fr);
-      }
+    if (mBelt) {
+      const belt = new Mesh(gBelt(), mBelt);
+      belt.position.set(0, 0.252 * HEX_R, 0);
+      group.add(belt);
     }
   }
-  function kbFurCap(group, mFur, mRim, chinStrap) {
-    const cap = new Mesh(gCyl("kbCapBowl", 0.056, 0.086, 0.078, 10), mFur);
-    cap.position.set(0, KB_HEAD_CTR + 0.054 * HEX_R, 0);
-    group.add(cap);
-    const rim = new Mesh(gCyl("kbCapRim", 0.09, 0.092, 0.026, 10), mRim);
-    rim.position.set(0, KB_HEAD_CTR + 0.03 * HEX_R, 0);
+  function p1BronzeCone(group, mBronze, mKnob) {
+    const rim = new Mesh(
+      getG("bhelmrim", () => new CylinderGeometry(0.086 * HEX_R, 0.092 * HEX_R, 0.036 * HEX_R, 8, 1)),
+      mBronze
+    );
+    rim.position.set(0, P1_HEAD_CTR + 0.036 * HEX_R, 0);
     group.add(rim);
-    const top = new Mesh(gBox("kbCapTop", 0.052, 0.022, 0.052), mFur);
-    top.position.set(0, KB_HEAD_CTR + 0.1 * HEX_R, 0);
-    group.add(top);
-    if (chinStrap) {
-      for (const sx of [-1, 1]) {
-        const st = new Mesh(gBox("kbChin", 0.01, 0.086, 0.01), mRim);
-        st.rotation.z = sx * 0.16;
-        st.position.set(sx * (KB_HEAD_S * 0.5 + 6e-3 * HEX_R), KB_HEAD_CTR - 0.01 * HEX_R, 0.02 * HEX_R);
-        group.add(st);
-      }
+    const cone = new Mesh(
+      getG("bhelmcone", () => new ConeGeometry(0.086 * HEX_R, 0.108 * HEX_R, 8, 1)),
+      mBronze
+    );
+    cone.position.set(0, P1_HEAD_CTR + 0.108 * HEX_R, 0);
+    group.add(cone);
+    if (mKnob) {
+      const knob = new Mesh(gBox("bhelmknob", 0.026, 0.03, 0.026), mKnob);
+      knob.position.set(0, P1_HEAD_CTR + 0.17 * HEX_R, 0);
+      group.add(knob);
     }
   }
-  function kbLashing(group, key, w, h, d, mtl, at, rotX) {
-    const m = new Mesh(gBox(key, w, h, d), mtl);
-    m.rotation.x = rotX;
-    m.position.copy(at);
-    group.add(m);
+  function makeLeafBladeGeo(len, wMax) {
+    const prof = (
+      // [y, half-width]
+      [[0, 0.28], [0.16, 0.34], [0.42, 0.5], [0.62, 0.42], [0.84, 0.24], [1, 0]].map(([t, w]) => [t * len, w * wMax])
+    );
+    const pos = [];
+    const quad = (x1, y1, x2, y2, z, flip) => {
+      if (!flip) pos.push(-x1, y1, z, x1, y1, z, x2, y2, z, -x1, y1, z, x2, y2, z, -x2, y2, z);
+      else pos.push(-x1, y1, z, x2, y2, z, x1, y1, z, -x1, y1, z, -x2, y2, z, x2, y2, z);
+    };
+    for (let i = 0; i < prof.length - 1; i++) {
+      const [y1, w1] = prof[i], [y2, w2] = prof[i + 1];
+      quad(w1, y1, w2, y2, 6e-3, false);
+      quad(w1, y1, w2, y2, -6e-3, true);
+    }
+    const g = new BufferGeometry();
+    g.setAttribute("position", new Float32BufferAttribute(pos, 3));
+    g.computeVertexNormals();
+    return g;
   }
-  function buildWojownikOpus5(ownerColor_) {
+  function buildMiecznik(ownerColor_) {
     const group = new Group();
     const { mats, mat } = makeMats();
-    const mSkin = mat(KB_SKIN, 0.05, 0.8);
-    const mSkinDk = mat(KB_SKIN_DK, 0.05, 0.82);
-    const mHair = mat(KB_HAIR, 0.04, 0.9);
-    const mDark = mat(1315085, 0.04, 0.88);
-    const mFur = mat(KB_FUR_DK, 0.03, 0.94);
-    const mFurL = mat(KB_FUR_LT, 0.03, 0.92);
-    const mLeath = mat(KB_LEATHER, 0.05, 0.86);
-    const mLeathD = mat(KB_LEATH_DK, 0.05, 0.88);
-    const mWood = mat(KB_WOOD, 0.05, 0.85);
-    const mWoodD = mat(KB_WOOD_DK, 0.05, 0.87);
-    const mFlint = mat(KB_FLINT, 0.09, 0.38);
-    const mFlintD = mat(KB_FLINT_DK, 0.09, 0.44);
-    const mAntler = mat(KB_ANTLER, 0.05, 0.66);
-    const mBone = mat(KB_BONE, 0.05, 0.72);
-    const mSinew = mat(KB_SINEW, 0.02, 0.92);
-    const mWicker = mat(KB_WICKER, 0.04, 0.88);
-    const mOwner = mat(ownerColor_, 0.08, 0.72);
-    const HIP_Y = KB_HIP_Y - 0.012 * HEX_R;
-    kbBuildTorso(group, mFur);
-    kbBuildHead(group, mSkin, mSkinDk, mHair, mDark, true);
-    kbSkirtBelt(group, mLeath, mLeathD, mFurL);
-    kbOwnerSash(group, mOwner);
-    for (const sx of [-1, 1]) {
-      const lap = new Mesh(gBox("wojLap", 0.078, 0.176, 0.02), mFurL);
-      lap.rotation.z = sx * 0.05;
-      lap.position.set(sx * 0.046 * HEX_R, KB_TORSO_CTR + 6e-3 * HEX_R, KB_TORSO_D * 0.5 + 0.01 * HEX_R);
-      group.add(lap);
-    }
-    const collar = new Mesh(gBox("wojCollar", 0.15, 0.028, 0.118), mFurL);
-    collar.position.set(0, KB_TORSO_TOP - 4e-3 * HEX_R, 0);
-    group.add(collar);
-    const cord = new Mesh(gBox("wojCord", 0.108, 8e-3, 0.01), mLeathD);
-    cord.position.set(0, KB_TORSO_TOP - 0.014 * HEX_R, KB_TORSO_D * 0.5 + 0.018 * HEX_R);
-    group.add(cord);
-    for (const sx of [-1, 0, 1]) {
-      const fang = new Mesh(gCone("wojFang", 0.011, 0.04, 4), mBone);
-      fang.rotation.x = Math.PI;
-      fang.rotation.z = sx * 0.18;
-      fang.position.set(sx * 0.034 * HEX_R, KB_TORSO_TOP - 0.04 * HEX_R, KB_TORSO_D * 0.5 + 0.018 * HEX_R);
-      group.add(fang);
-    }
-    const boot = (g, sx, fz) => kbBoot(g, sx, fz, mLeathD, mLeath, mSinew);
-    kbBuildLeg(group, KB_HIP_X, 0.6, 0.36, mLeath, mLeath, boot, HIP_Y);
-    kbBuildLeg(group, -KB_HIP_X, -0.54, -0.22, mLeath, mLeath, boot, HIP_Y);
-    for (const sx of [-1, 1]) {
-      const gt = new Mesh(gBox("wojGarter", 0.012, 0.052, 0.012), mSinew);
-      gt.position.set(sx * (KB_HIP_X + 0.026 * HEX_R), 0.222 * HEX_R, 0.028 * HEX_R);
-      group.add(gt);
-    }
-    kbFurCap(group, mFur, mLeathD, true);
-    const band = new Mesh(gCyl("wojBand", 0.093, 0.093, 0.018, 10), mOwner);
-    band.position.set(0, KB_HEAD_CTR + 0.044 * HEX_R, 0);
-    group.add(band);
-    const armR = kbBuildArm(group, -KB_SHLD_X, -2.18, 2.62, mFurL, mSkin, mSkinDk);
+    const mTunic = mat(P1_RUST, 0.05, 0.82);
+    const mLeath = mat(P1_LEATHER, 0.05, 0.85);
+    const mBronz = mat(P1_BRONZE, 0.42, 0.42);
+    const mBronzL = mat(P1_BRONZE_LT, 0.55, 0.35);
+    const mWood = mat(P1_WOOD_DK, 0.05, 0.85);
+    const mCrest = mat(10493742, 0.08, 0.74);
+    const mOwner = mat(ownerColor_, 0.14, 0.64);
+    const HIP_Y = P1_HIP_Y - 0.012 * HEX_R;
+    const mSkin = p1BuildCore(group, mat, mTunic);
+    p1SkirtBelt(group, mLeath, mLeath);
+    p1OwnerSash(group, mOwner);
+    p1BuildLeg(group, P1_HIP_X, 0.58, 0.34, mTunic, mSkin, mLeath, HIP_Y);
+    p1BuildLeg(group, -P1_HIP_X, -0.52, -0.2, mTunic, mSkin, mLeath, HIP_Y);
+    p1BronzeCone(group, mBronz, null);
+    const crestB = new Mesh(gBox("miecrestb", 0.1, 0.02, 0.022), mBronzL);
+    crestB.position.set(0, P1_HEAD_CTR + 0.168 * HEX_R, 0);
+    group.add(crestB);
+    const crestH = new Mesh(gBox("miecresth", 0.124, 0.048, 0.02), mCrest);
+    crestH.position.set(0, P1_HEAD_CTR + 0.198 * HEX_R, 0);
+    group.add(crestH);
+    const armR = p1BuildArm(group, -P1_SHLD_X, -2.05, 2.62, mTunic, mSkin, mSkin);
     const ax = armR.axis;
-    const at = (d) => armR.wrist.clone().addScaledVector(ax, d * HEX_R);
-    const rotHaft = Math.PI - 2.62;
-    const haft = new Mesh(gCyl("wojHaft", 0.014, 0.017, 0.33, 6), mWood);
-    haft.rotation.x = rotHaft;
-    haft.position.copy(at(0.108));
-    group.add(haft);
-    const butt = new Mesh(gBox("wojHaftButt", 0.026, 0.026, 0.026), mWoodD);
-    butt.rotation.x = rotHaft;
-    butt.position.copy(at(-0.062));
-    group.add(butt);
-    const thong = new Mesh(gBox("wojThong", 0.024, 0.012, 0.024), mLeathD);
-    thong.rotation.x = rotHaft;
-    thong.position.copy(at(-0.042));
-    group.add(thong);
-    const socket = new Mesh(gCyl("wojSocket", 0.023, 0.026, 0.06, 8), mAntler);
-    socket.rotation.x = rotHaft;
-    socket.position.copy(at(0.256));
-    group.add(socket);
-    for (const d of [0.226, 0.288]) {
-      kbLashing(group, "wojLash", 0.036, 0.011, 0.036, mSinew, at(d), rotHaft);
-    }
-    const perp = new Vector3(0, -ax.z, ax.y).normalize();
-    const celt = new Mesh(
-      getG("wojCelt", () => makeCeltGeo(0.114 * HEX_R, 0.058 * HEX_R, 0.026 * HEX_R)),
-      mFlint
+    const hilt = new Mesh(gBox("miehilt", 0.02, 0.052, 0.02), mWood);
+    hilt.rotation.x = Math.PI - 2.62;
+    hilt.position.copy(armR.wrist.clone().addScaledVector(ax, 0.012 * HEX_R));
+    group.add(hilt);
+    const guard = new Mesh(gBox("mieguard", 0.058, 0.016, 0.024), mBronz);
+    guard.rotation.x = Math.PI - 2.62;
+    guard.position.copy(armR.wrist.clone().addScaledVector(ax, 0.042 * HEX_R));
+    group.add(guard);
+    const blade = new Mesh(
+      getG("mieblade", () => makeLeafBladeGeo(0.185 * HEX_R, 0.058 * HEX_R)),
+      mBronzL
     );
-    celt.quaternion.setFromUnitVectors(new Vector3(0, 1, 0), perp);
-    celt.position.copy(at(0.268).addScaledVector(perp, 0.014 * HEX_R));
-    group.add(celt);
-    const celtShade = new Mesh(gBox("wojCeltSh", 0.052, 0.01, 0.018), mFlintD);
-    celtShade.quaternion.copy(celt.quaternion);
-    celtShade.position.copy(at(0.268).addScaledVector(perp, 0.086 * HEX_R));
-    group.add(celtShade);
-    const wedge = new Mesh(gBox("wojWedge", 0.02, 0.03, 0.014), mWoodD);
-    wedge.quaternion.copy(celt.quaternion);
-    wedge.position.copy(at(0.268).addScaledVector(perp, -0.012 * HEX_R));
-    group.add(wedge);
-    const knX = -(KB_TORSO_W * 0.5 + 0.02 * HEX_R);
-    const sheath = new Mesh(gBox("wojSheath", 0.026, 0.084, 0.016), mWicker);
-    sheath.rotation.z = -0.14;
-    sheath.position.set(knX, 0.208 * HEX_R, 0.026 * HEX_R);
-    group.add(sheath);
-    const knHilt = new Mesh(gBox("wojKnHilt", 0.02, 0.034, 0.014), mWood);
-    knHilt.rotation.z = -0.14;
-    knHilt.position.set(knX - 8e-3 * HEX_R, 0.262 * HEX_R, 0.026 * HEX_R);
-    group.add(knHilt);
-    const armL = kbBuildArm(group, KB_SHLD_X, 0.48, 1.06, mFurL, mSkin, null);
+    blade.rotation.x = Math.PI - 2.62;
+    blade.position.copy(armR.wrist.clone().addScaledVector(ax, 0.05 * HEX_R));
+    group.add(blade);
+    const armL = p1BuildArm(group, P1_SHLD_X, 0.5, 1.08, mTunic, mSkin, null);
     const sh = new Group();
     sh.position.set(
-      armL.wrist.x - 0.026 * HEX_R,
-      armL.wrist.y + 0.04 * HEX_R,
+      armL.wrist.x - 0.036 * HEX_R,
+      armL.wrist.y + 0.05 * HEX_R,
       armL.wrist.z + 0.046 * HEX_R
     );
     sh.rotation.y = -0.22;
-    sh.rotation.z = 0.05;
-    const frame = new Mesh(gCyl("wojShFrame", 0.108, 0.108, 0.03, 8, true), mWood);
-    frame.rotation.x = Math.PI / 2;
-    frame.scale.set(1, 1, 1.34);
-    sh.add(frame);
-    const face = new Mesh(gCyl("wojShFace", 0.1, 0.094, 0.02, 8), mOwner);
+    const face = new Mesh(
+      getG("mieshface", () => new CylinderGeometry(0.112 * HEX_R, 0.096 * HEX_R, 0.026 * HEX_R, 12, 1)),
+      mOwner
+    );
     face.rotation.x = Math.PI / 2;
-    face.scale.set(1, 1, 1.34);
-    face.position.set(0, 0, 4e-3 * HEX_R);
     sh.add(face);
-    for (const [dy, w, key] of [
-      [0.108, 0.108, "wojShRodS"],
-      [0.04, 0.176, "wojShRodL"],
-      [-0.04, 0.176, "wojShRodL"],
-      [-0.108, 0.108, "wojShRodS"]
-    ]) {
-      const rod = new Mesh(gBox(key, w, 0.014, 0.01), mWicker);
-      rod.position.set(0, dy * HEX_R, 0.014 * HEX_R);
-      sh.add(rod);
-    }
-    for (const dx of [-0.044, 0.044]) {
-      const rod = new Mesh(gBox("wojShRodV", 0.013, 0.25, 9e-3), mWicker);
-      rod.position.set(dx * HEX_R, 0, 0.017 * HEX_R);
-      sh.add(rod);
-    }
-    const bossW = new Mesh(gBox("wojShBoss", 0.056, 0.056, 0.022), mWoodD);
-    bossW.position.set(0, 0, 0.022 * HEX_R);
-    sh.add(bossW);
-    const bossPeg = new Mesh(gCyl("wojShPeg", 0.01, 0.016, 0.024, 6), mAntler);
-    bossPeg.rotation.x = Math.PI / 2;
-    bossPeg.position.set(0, 0, 0.036 * HEX_R);
-    sh.add(bossPeg);
-    for (const [dx, dy] of [[0, 0.14], [0, -0.14], [0.102, 0], [-0.102, 0]]) {
-      const st = new Mesh(gBox("wojShStitch", 0.026, 0.016, 0.034), mLeathD);
-      st.position.set(dx * HEX_R, dy * HEX_R, 4e-3 * HEX_R);
-      sh.add(st);
-    }
-    const grip = new Mesh(gBox("wojShGrip", 0.056, 0.016, 0.016), mWood);
-    grip.position.set(0, -0.02 * HEX_R, -0.03 * HEX_R);
-    sh.add(grip);
-    const loop = new Mesh(gBox("wojShLoop", 0.072, 0.02, 0.012), mLeathD);
-    loop.position.set(0, 0.026 * HEX_R, -0.026 * HEX_R);
-    sh.add(loop);
+    const rim = new Mesh(
+      getG("mieshrim", () => new CylinderGeometry(0.122 * HEX_R, 0.122 * HEX_R, 0.018 * HEX_R, 12, 1, true)),
+      mBronz
+    );
+    rim.rotation.x = Math.PI / 2;
+    rim.position.set(0, 0, -4e-3 * HEX_R);
+    sh.add(rim);
+    const barV = new Mesh(gBox("miebarv", 0.02, 0.19, 0.012), mBronzL);
+    barV.position.set(0, 0, 0.016 * HEX_R);
+    sh.add(barV);
+    const barH = new Mesh(gBox("miebarh", 0.19, 0.02, 0.012), mBronzL);
+    barH.position.set(0, 0, 0.016 * HEX_R);
+    sh.add(barH);
     group.add(sh);
     group.userData["mats"] = mats;
     group.userData["perTokenGeos"] = [];
     return group;
   }
 
-  // src/render/braz-miecznik-opus5.ts
+  // gra/src/render/braz-miecznik-opus5.ts
   function makeMats2() {
     const mats = [];
     const mat = (color, metalness = 0.1, roughness = 0.7, transparent = false, opacity = 1) => {
@@ -21663,6 +21483,7 @@ void main() {
   var BM_SHIN_L = 0.096 * HEX_R;
   var BM_UPARM_L = 0.1 * HEX_R;
   var BM_FOREARM_L = 0.092 * HEX_R;
+  var BM_FIGURE_SCALE = 1.21;
   var gBMTorso = null;
   var gBMCuirass = null;
   var gBMStrap = null;
@@ -21755,7 +21576,7 @@ void main() {
     return gBMHairBack ||= new BoxGeometry(0.124 * HEX_R, 0.096 * HEX_R, 0.024 * HEX_R);
   }
   function getBMCap() {
-    return gBMCap ||= new CylinderGeometry(0.058 * HEX_R, 0.088 * HEX_R, 0.072 * HEX_R, 10, 1);
+    return gBMCap ||= new CylinderGeometry(0.046 * HEX_R, 0.068 * HEX_R, 0.066 * HEX_R, 10, 1);
   }
   function getBMThigh() {
     return gBMThigh ||= new BoxGeometry(0.056 * HEX_R, BM_THIGH_L, 0.06 * HEX_R);
@@ -21836,7 +21657,7 @@ void main() {
     return gBMFrog ||= new BoxGeometry(0.022 * HEX_R, 0.036 * HEX_R, 0.012 * HEX_R);
   }
   function getBMGrip() {
-    return gBMGrip ||= new CylinderGeometry(0.013 * HEX_R, 0.015 * HEX_R, 0.062 * HEX_R, 6, 1);
+    return gBMGrip ||= new CylinderGeometry(0.013 * HEX_R, 0.015 * HEX_R, 0.04 * HEX_R, 6, 1);
   }
   function getBMGripWrap() {
     return gBMGripWrap ||= new CylinderGeometry(0.016 * HEX_R, 0.016 * HEX_R, 0.01 * HEX_R, 6, 1);
@@ -21848,16 +21669,16 @@ void main() {
     return gBMGuard ||= new BoxGeometry(0.056 * HEX_R, 0.014 * HEX_R, 0.02 * HEX_R);
   }
   function getBMBladeEdge() {
-    return gBMBladeEdge ||= new BoxGeometry(6e-3 * HEX_R, 0.14 * HEX_R, 0.03 * HEX_R);
+    return gBMBladeEdge ||= new BoxGeometry(6e-3 * HEX_R, 0.094 * HEX_R, 0.03 * HEX_R);
   }
   function getBMShField() {
-    return gBMShField ||= new CylinderGeometry(0.106 * HEX_R, 0.106 * HEX_R, 0.018 * HEX_R, 12, 1);
+    return gBMShField ||= new CylinderGeometry(0.132 * HEX_R, 0.132 * HEX_R, 0.02 * HEX_R, 12, 1);
   }
   function getBMShRim() {
-    return gBMShRim ||= new CylinderGeometry(0.112 * HEX_R, 0.112 * HEX_R, 0.014 * HEX_R, 12, 1, true);
+    return gBMShRim ||= new CylinderGeometry(0.14 * HEX_R, 0.14 * HEX_R, 0.016 * HEX_R, 12, 1, true);
   }
   function getBMShBoss() {
-    return gBMShBoss ||= new ConeGeometry(0.026 * HEX_R, 0.03 * HEX_R, 8);
+    return gBMShBoss ||= new ConeGeometry(0.032 * HEX_R, 0.036 * HEX_R, 8);
   }
   function getBMShStitch() {
     return gBMShStitch ||= new BoxGeometry(0.024 * HEX_R, 0.015 * HEX_R, 0.032 * HEX_R);
@@ -21904,7 +21725,7 @@ void main() {
     return g;
   }
   function getBMBlade() {
-    return gBMBlade ||= makeRapierBladeGeo(0.135 * HEX_R, 0.034 * HEX_R, 0.02 * HEX_R);
+    return gBMBlade ||= makeRapierBladeGeo(0.17 * HEX_R, 0.034 * HEX_R, 0.02 * HEX_R);
   }
   var BM_Y_UP = new Vector3(0, 1, 0);
   function bmDirDown(theta) {
@@ -22072,41 +21893,41 @@ void main() {
     const cap = new Mesh(getBMCap(), mLeath);
     cap.position.set(0, BM_HEAD_CTR + 0.05 * HEX_R, 0);
     group.add(cap);
-    const armR = bmBuildArm(group, -BM_SHLD_X, 0.32, 1.4, mTunic, mSkin, mLeathDk);
+    const armR = bmBuildArm(group, -BM_SHLD_X, 0.22, 0.85, mTunic, mSkin, mLeathDk);
     const axR = armR.axis;
     const atR = (d) => armR.wrist.clone().addScaledVector(axR, d * HEX_R);
-    const rotR = Math.PI - 1.4;
+    const rotR = Math.PI - 0.85;
     const grip = new Mesh(getBMGrip(), mWood);
     grip.rotation.x = rotR;
-    grip.position.copy(atR(0.031));
+    grip.position.copy(atR(0.013));
     group.add(grip);
     const gripWrap = new Mesh(getBMGripWrap(), mSinew);
     gripWrap.rotation.x = rotR;
-    gripWrap.position.copy(atR(0.031));
+    gripWrap.position.copy(atR(3e-3));
     group.add(gripWrap);
     const gripWrap2 = new Mesh(getBMGripWrap(), mSinew);
     gripWrap2.rotation.x = rotR;
-    gripWrap2.position.copy(atR(0.017));
+    gripWrap2.position.copy(atR(0.023));
     group.add(gripWrap2);
     const bracer = new Mesh(getBMBracer(), mLeathLt);
     bracer.quaternion.setFromUnitVectors(BM_Y_UP, axR);
     bracer.position.copy(atR(-0.048));
     group.add(bracer);
     const pommel = new Mesh(getBMPommel(), mBone);
-    pommel.position.copy(atR(-0.012));
+    pommel.position.copy(atR(-0.017));
     group.add(pommel);
     const guard = new Mesh(getBMGuard(), mBronze);
     guard.rotation.x = rotR;
-    guard.position.copy(atR(0.064));
+    guard.position.copy(atR(0.04));
     group.add(guard);
     const blade = new Mesh(getBMBlade(), mBronze);
     blade.rotation.x = rotR;
-    blade.position.copy(atR(0.072));
+    blade.position.copy(atR(0.047));
     group.add(blade);
     const bladeEdge = new Mesh(getBMBladeEdge(), mBronzeLt);
     bladeEdge.scale.set(1, 1, 0.5);
     bladeEdge.rotation.x = rotR;
-    bladeEdge.position.copy(atR(0.072));
+    bladeEdge.position.copy(atR(0.1235));
     group.add(bladeEdge);
     const shX = 0.07 * HEX_R;
     const sheath = new Mesh(getBMSheath(), mLeath);
@@ -22133,40 +21954,41 @@ void main() {
     const armL = bmBuildArm(group, BM_SHLD_X, 0.42, 1, mTunic, mSkin, null);
     const sh = new Group();
     sh.position.set(
-      armL.wrist.x - 0.024 * HEX_R,
-      armL.wrist.y + 0.038 * HEX_R,
-      armL.wrist.z + 0.048 * HEX_R
+      armL.wrist.x + 0.058 * HEX_R,
+      armL.wrist.y + 0.034 * HEX_R,
+      armL.wrist.z + 0.078 * HEX_R
     );
-    sh.rotation.y = -0.22;
-    sh.rotation.z = 0.05;
+    sh.rotation.y = -0.1;
+    sh.rotation.z = 0.02;
     const field = new Mesh(getBMShField(), mOwner);
     field.rotation.x = Math.PI / 2;
     sh.add(field);
     const rim = new Mesh(getBMShRim(), mShieldHide);
     rim.rotation.x = Math.PI / 2;
-    rim.position.z = -5e-3 * HEX_R;
+    rim.position.z = -6e-3 * HEX_R;
     sh.add(rim);
     const boss = new Mesh(getBMShBoss(), mBronze);
     boss.rotation.x = -Math.PI / 2;
-    boss.position.z = 0.016 * HEX_R;
+    boss.position.z = 0.02 * HEX_R;
     sh.add(boss);
     for (const ang of [0, Math.PI / 2, Math.PI, Math.PI * 1.5]) {
       const st = new Mesh(getBMShStitch(), mLeathDk);
-      st.position.set(Math.sin(ang) * 0.1 * HEX_R, Math.cos(ang) * 0.1 * HEX_R, 6e-3 * HEX_R);
+      st.position.set(Math.sin(ang) * 0.125 * HEX_R, Math.cos(ang) * 0.125 * HEX_R, 7e-3 * HEX_R);
       sh.add(st);
     }
     const grip2 = new Mesh(getBMShGrip(), mWood);
-    grip2.position.set(0, -0.018 * HEX_R, -0.028 * HEX_R);
+    grip2.position.set(0, -0.018 * HEX_R, -0.035 * HEX_R);
     sh.add(grip2);
     const brace = new Mesh(getBMShGrip(), mWoodDk);
     brace.rotation.z = Math.PI / 2;
     brace.scale.set(0.68, 1, 1);
-    brace.position.set(0, 0, -0.022 * HEX_R);
+    brace.position.set(0, 0, -0.028 * HEX_R);
     sh.add(brace);
     const loop = new Mesh(getBMShLoop(), mLeathDk);
-    loop.position.set(0, 0.026 * HEX_R, -0.024 * HEX_R);
+    loop.position.set(0, 0.026 * HEX_R, -0.03 * HEX_R);
     sh.add(loop);
     group.add(sh);
+    group.scale.setScalar(BM_FIGURE_SCALE);
     group.userData["mats"] = mats;
     group.userData["perTokenGeos"] = [];
     return group;
@@ -22241,7 +22063,7 @@ void main() {
     gBMShField = gBMShRim = gBMShBoss = gBMShStitch = gBMShGrip = gBMShLoop = null;
   }
 
-  // ../../../../tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/bm-podglad-entry.ts
+  // ../../../tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/bm-podglad-entry.ts
   function measure(g) {
     let mesh = 0, tri = 0;
     const mats = /* @__PURE__ */ new Set();
@@ -22288,11 +22110,9 @@ void main() {
     hexPlate;
     build;
     dispose;
-    statPrefix;
-    constructor(canvas, build, dispose, statPrefix) {
+    constructor(canvas, build, dispose) {
       this.build = build;
       this.dispose = dispose;
-      this.statPrefix = statPrefix;
       this.renderer = new WebGLRenderer({ canvas, antialias: true });
       this.renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
       this.camera = new PerspectiveCamera(32, 1, 0.01, 20);
@@ -22325,12 +22145,12 @@ void main() {
       return measure(this.model);
     }
     setView(elevDeg) {
-      const dist = 1.55;
+      const dist = 2.05;
       const elev = elevDeg * Math.PI / 180;
       const y = Math.sin(elev) * dist;
       const flat = Math.cos(elev) * dist;
-      this.camera.position.set(0, 0.3 + y, flat);
-      this.camera.lookAt(0, 0.3, 0);
+      this.camera.position.set(0, 0.36 + y, flat);
+      this.camera.lookAt(0, 0.36, 0);
     }
     resize() {
       const c = this.renderer.domElement;
@@ -22346,8 +22166,9 @@ void main() {
   function main() {
     const cvA = document.getElementById("cv-a");
     const cvB = document.getElementById("cv-b");
-    const paneA = new Pane(cvA, buildWojownikOpus5, disposeKamienBazoweOpus5Geometries, "a");
-    const paneB = new Pane(cvB, buildMiecznikBrazOpus5, disposeBrazMiecznikOpus5Geometries, "b");
+    const paneA = new Pane(cvA, buildMiecznik, () => {
+    });
+    const paneB = new Pane(cvB, buildMiecznikBrazOpus5, disposeBrazMiecznikOpus5Geometries);
     let color = 3108816;
     function applyColor() {
       const sa = paneA.rebuild(color);

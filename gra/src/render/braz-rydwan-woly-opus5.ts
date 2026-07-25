@@ -336,14 +336,15 @@ function rwOx(
   torso.position.set(x, RW_OX_CTR_Y, RW_OX_Z);
   group.add(torso);
 
-  // nogi proste + kopyta (przednie i tylne pary)
+  // nogi proste + kopyta (przednie i tylne pary) — grubsze, masywniejsze
+  // (koordynator 2026-07-25: "mają wyglądać ciężko i masywnie")
   const legTopY = RW_OX_CTR_Y - RW_OX_TORSO_H * 0.5;
   for (const lz of [RW_OX_Z + RW_OX_HALF_LEN * 0.62, RW_OX_Z - RW_OX_HALF_LEN * 0.62]) {
-    for (const lx of [-0.026, 0.026]) {
+    for (const lx of [-0.036, 0.036]) {
       rwStretch(group, mBody, new THREE.Vector3(x + lx * HEX_R, legTopY, lz),
-        new THREE.Vector3(x + lx * HEX_R, 0.014 * HEX_R, lz), 0.026 * HEX_R, 0.030 * HEX_R);
+        new THREE.Vector3(x + lx * HEX_R, 0.015 * HEX_R, lz), 0.036 * HEX_R, 0.040 * HEX_R);
       const hoof = new THREE.Mesh(getRWOxHoof(), mDk);
-      hoof.position.set(x + lx * HEX_R, 0.011 * HEX_R, lz);
+      hoof.position.set(x + lx * HEX_R, 0.012 * HEX_R, lz);
       group.add(hoof);
     }
   }
@@ -351,38 +352,38 @@ function rwOx(
   // szyja: od przodu tułowia w górę-przód do punktu jarzma (opuszczona,
   // nie wygięta dumnie jak u konia — pkt R2)
   const neckA = new THREE.Vector3(x, RW_OX_CTR_Y + RW_OX_TORSO_H * 0.30, RW_OX_Z + RW_OX_HALF_LEN);
-  const neckB = new THREE.Vector3(x, RW_YOKE_Y - 0.006 * HEX_R, RW_YOKE_Z);
-  rwStretch(group, mBody, neckA, neckB, 0.046 * HEX_R);
+  const neckB = new THREE.Vector3(x, RW_YOKE_Y - 0.007 * HEX_R, RW_YOKE_Z);
+  rwStretch(group, mBody, neckA, neckB, 0.056 * HEX_R);
 
   // łeb: ciągnięty dalej do przodu i lekko w dół spod jarzma
-  const headC = neckB.clone().add(new THREE.Vector3(0, -0.018 * HEX_R, 0.052 * HEX_R));
+  const headC = neckB.clone().add(new THREE.Vector3(0, -0.021 * HEX_R, 0.060 * HEX_R));
   const skull = new THREE.Mesh(getRWOxSkull(), mBody);
   skull.position.copy(headC);
   group.add(skull);
   const muzzle = new THREE.Mesh(getRWOxMuzzle(), mMuzzle);
-  muzzle.position.copy(headC.clone().add(new THREE.Vector3(0, -0.010 * HEX_R, 0.046 * HEX_R)));
+  muzzle.position.copy(headC.clone().add(new THREE.Vector3(0, -0.012 * HEX_R, 0.054 * HEX_R)));
   group.add(muzzle);
   const ring = new THREE.Mesh(getRWNoseRing(), mBronze);   // pierścień nosowy — punkt lejców
   ring.rotation.x = Math.PI / 2;
-  const noseP = headC.clone().add(new THREE.Vector3(0, -0.016 * HEX_R, 0.064 * HEX_R));
+  const noseP = headC.clone().add(new THREE.Vector3(0, -0.019 * HEX_R, 0.074 * HEX_R));
   ring.position.copy(noseP);
   group.add(ring);
   for (const s of [-1, 1]) {
     const horn = new THREE.Mesh(getRWOxHorn(), mHorn);     // róg krótki, zakrzywiony na zewnątrz
     horn.rotation.z = s * 0.62;
     horn.rotation.x = -0.30;
-    horn.position.copy(headC.clone().add(new THREE.Vector3(s * 0.028 * HEX_R, 0.030 * HEX_R, -0.010 * HEX_R)));
+    horn.position.copy(headC.clone().add(new THREE.Vector3(s * 0.034 * HEX_R, 0.036 * HEX_R, -0.012 * HEX_R)));
     group.add(horn);
     const ear = new THREE.Mesh(getRWOxEar(), mDk);          // ucho zwisające na bok
     ear.rotation.z = s * 1.30;
-    ear.position.copy(headC.clone().add(new THREE.Vector3(s * 0.032 * HEX_R, 0.006 * HEX_R, -0.014 * HEX_R)));
+    ear.position.copy(headC.clone().add(new THREE.Vector3(s * 0.038 * HEX_R, 0.007 * HEX_R, -0.017 * HEX_R)));
     group.add(ear);
   }
 
   // ogon zwisający z tyłu tułowia
   const tailA = new THREE.Vector3(x, RW_OX_CTR_Y + RW_OX_TORSO_H * 0.30, RW_OX_Z - RW_OX_HALF_LEN);
-  const tailB = tailA.clone().add(new THREE.Vector3(0, -0.086 * HEX_R, -0.024 * HEX_R));
-  rwStretch(group, mDk, tailA, tailB, 0.016 * HEX_R);
+  const tailB = tailA.clone().add(new THREE.Vector3(0, -0.100 * HEX_R, -0.028 * HEX_R));
+  rwStretch(group, mDk, tailA, tailB, 0.019 * HEX_R);
 
   return noseP;
 }

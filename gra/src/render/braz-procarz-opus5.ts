@@ -140,7 +140,11 @@ const PZ_FRINGE       = 0x6b5a3c;   // postrzępione frędzle dolnej krawędzi (
 const PZ_LEATHER     = 0x6b4a28;   // sakwa / pasek / sznury procy (spójne z rodziną NB_/KI_/P1_)
 const PZ_LEATHER_DK  = 0x4a331b;
 
-const PZ_HAIR        = 0x241708;   // krótkie, potargane włosy pasterza (bez nakrycia głowy)
+const PZ_HAIR        = 0x40311e;   // krótkie, potargane włosy pasterza (bez nakrycia głowy) —
+                                  //  UMIARKOWANIE ciemny brąz (nie niemal-czerń): przy gołej
+                                  //  głowie (brak nakrycia, w odróżnieniu od reszty rodziny)
+                                  //  zbyt ciemny odcień czytał się jak ubytek geometrii/dziura
+                                  //  z ujęcia z góry — poprawka 2026-07-25 wg uwagi koordynatora
 
 const PZ_CLAY        = 0xb5643c;   // JEDYNY „obcy" materiał: wypalana glina — pociski migdałowe
 const PZ_CLAY_LT      = 0xc47a4e;   // jaśniejszy odblask gliny (nie metal — matowa ceramika)
@@ -186,7 +190,7 @@ let gPZNose:     THREE.BoxGeometry | null = null;
 let gPZEar:      THREE.BoxGeometry | null = null;
 let gPZEye:      THREE.BoxGeometry | null = null;
 let gPZBrow:     THREE.BoxGeometry | null = null;
-let gPZHairFrng: THREE.BoxGeometry | null = null;
+let gPZTuft: THREE.OctahedronGeometry | null = null;
 let gPZThigh:    THREE.BoxGeometry | null = null;
 let gPZShin:     THREE.BoxGeometry | null = null;
 let gPZSole:     THREE.BoxGeometry | null = null;
@@ -229,7 +233,7 @@ function getPZNose():     THREE.BoxGeometry { return (gPZNose     ||= new THREE.
 function getPZEar():      THREE.BoxGeometry { return (gPZEar      ||= new THREE.BoxGeometry(0.010 * HEX_R, 0.032 * HEX_R, 0.022 * HEX_R)); }
 function getPZEye():      THREE.BoxGeometry { return (gPZEye      ||= new THREE.BoxGeometry(0.019 * HEX_R, 0.011 * HEX_R, 0.008 * HEX_R)); }
 function getPZBrow():     THREE.BoxGeometry { return (gPZBrow     ||= new THREE.BoxGeometry(0.024 * HEX_R, 0.008 * HEX_R, 0.008 * HEX_R)); }
-function getPZHairFrng(): THREE.BoxGeometry { return (gPZHairFrng ||= new THREE.BoxGeometry(0.044 * HEX_R, 0.034 * HEX_R, 0.044 * HEX_R)); }
+function getPZTuft(): THREE.OctahedronGeometry { return (gPZTuft ||= new THREE.OctahedronGeometry(0.030 * HEX_R, 0)); }
 function getPZThigh():    THREE.BoxGeometry { return (gPZThigh    ||= new THREE.BoxGeometry(0.056 * HEX_R, PZ_THIGH_L, 0.060 * HEX_R)); }
 function getPZShin():     THREE.BoxGeometry { return (gPZShin     ||= new THREE.BoxGeometry(0.038 * HEX_R, PZ_SHIN_L, 0.042 * HEX_R)); }
 function getPZSole():     THREE.BoxGeometry { return (gPZSole     ||= new THREE.BoxGeometry(0.044 * HEX_R, 0.018 * HEX_R, 0.062 * HEX_R)); }
@@ -404,7 +408,7 @@ function pzHair(group: THREE.Group, mHair: THREE.MeshStandardMaterial,
     [0.030, -0.008, 0.95, 0.24], [-0.014, 0.020, 0.85, -0.10],
     [0.016, 0.018, 0.90, 0.12],
   ] as [number, number, number, number][])) {
-    const tuft = new THREE.Mesh(getPZHairFrng(), mHair);
+    const tuft = new THREE.Mesh(getPZTuft(), mHair);
     tuft.rotation.z = rz;
     tuft.scale.set(0.9, sy, 0.9);
     tuft.position.set(dx * HEX_R, PZ_HEAD_TOP - 0.010 * HEX_R, dz * HEX_R);
@@ -413,7 +417,7 @@ function pzHair(group: THREE.Group, mHair: THREE.MeshStandardMaterial,
   for (const [dx, dy, rz] of ([
     [-0.028, 0.006, 0.16], [0.024, 0.002, -0.20], [-0.002, -0.014, 0.05],
   ] as [number, number, number][])) {
-    const tuft = new THREE.Mesh(getPZHairFrng(), mHair);      // kepki na karku (nie plaska plyta)
+    const tuft = new THREE.Mesh(getPZTuft(), mHair);      // kepki na karku (nie plaska plyta)
     tuft.rotation.set(0.1, rz, rz * 0.5);
     tuft.scale.set(0.85, 0.75, 0.7);
     tuft.position.set(dx * HEX_R, PZ_HEAD_CTR + dy * HEX_R, -(PZ_HEAD_S * 0.5 + 0.006 * HEX_R));
@@ -687,7 +691,7 @@ export function buildProcarzBrazOpus5(ownerColor_: number): THREE.Group {
 export function disposeBrazProcarzOpus5Geometries(): void {
   const all: (THREE.BufferGeometry | null)[] = [
     gPZTorso, gPZChest, gPZCollar, gPZNeck, gPZHead, gPZJaw, gPZNose, gPZEar, gPZEye, gPZBrow,
-    gPZHairFrng, gPZThigh, gPZShin, gPZSole, gPZToes, gPZUpArm, gPZForearm, gPZFist, gPZUnit,
+    gPZTuft, gPZThigh, gPZShin, gPZSole, gPZToes, gPZUpArm, gPZForearm, gPZFist, gPZUnit,
     gPZWrap, gPZHem, gPZFringe, gPZBelt, gPZKnot,
     gPZBag, gPZBagFlap, gPZToggle, gPZPellet,
     gPZGourd, gPZGourdNk,
@@ -697,7 +701,7 @@ export function disposeBrazProcarzOpus5Geometries(): void {
   ];
   for (const g of all) { g?.dispose(); }
   gPZTorso = gPZChest = gPZCollar = gPZNeck = gPZHead = gPZJaw = gPZNose = gPZEar = gPZEye = gPZBrow = null;
-  gPZHairFrng = gPZThigh = gPZShin = gPZSole = gPZToes = gPZUpArm = gPZForearm = gPZFist = gPZUnit = null;
+  gPZTuft = gPZThigh = gPZShin = gPZSole = gPZToes = gPZUpArm = gPZForearm = gPZFist = gPZUnit = null;
   gPZWrap = gPZHem = gPZFringe = gPZBelt = gPZKnot = null;
   gPZBag = gPZBagFlap = null;
   gPZToggle = null;
