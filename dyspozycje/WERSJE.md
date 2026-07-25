@@ -9,7 +9,15 @@ UWAGA: KANON i FINALNA promują się teraz OSOBNYMI skryptami (`gra/tools/publis
 wyraźne polecenie właściciela) — dlatego są logowane NIEZALEŻNIE, każdy w swojej sekcji, ze
 swoim własnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drugiego.
 
-## ROBOCZA `99837b91` — 2026-07-25 · FALA 10: bugi bitwy + picking + 7 decyzji ABC Macieja — **AKTUALNA**
+## ROBOCZA `b1f16a59` — 2026-07-25 · FALA 10.1: fix błędnego „mnożnika" Pałacu — **AKTUALNA**
+
+- **Zawartość:** cała FALA 10 (patrz niżej) **+ poprawka danych**: trzy tiery Pałacu miały w `baza.mnoznik` wartość równą DOKŁADNIE swojej kulturze (5/5, 8/8, 11/11, przyrost 0) — pomyłka przy wpisywaniu danych, wykryta przy weryfikacji z Maciejem. Pole `mnoznik` NIE jest konsumowane przez silnik ekonomii (czytane tylko do wyświetlenia chipa „×5 mnożnik" w panelu miasta), więc karta Pałacu obiecywała bonus, którego gra nie stosuje. Wyzerowane dla `palac`/`palac_ii`/`palac_iii` — chip znika, realne bonusy (kultura + zadowolenie, które silnik faktycznie liczy) bez zmian.
+- **Potwierdzone przez Macieja koszty i bonusy Pałacu:** I (Kamień) 8 drewna / 40 pracy · kultura 5 (+3/poz.), zadowolenie 2 (+1/poz.) — II (Brąz) 8 drewna+8 kamienia / 60 pracy · kultura 8 (+5), zadow. 3 (+2) — III (Żelazo) 8 drewna+8 kamienia+6 cegły / 90 pracy · kultura 11 (+7), zadow. 5 (+2). Maks. poziom 10, ulepszane kolejno I→II→III.
+- **Bramki:** tsc 0 · tech-tree 19/19 · VERIFY OK.
+- **md5:** `b1f16a595b17a2cb37955cc8de4b2fc8` · pieczątka `b1f16a59`. Zastępuje `99837b91`.
+- **ZNANY DŁUG (do decyzji):** pozostałe 11 budynków też ma niezerowy `mnoznik` (kuźnia 5, karawanseraj 8, koszary 5, wielka kuźnia 23, akademia wojskowa 20, warsztat oblężniczy 10, akademia 10, pretorium 5, lazaret 5, kuźnia żelaza 8, targowisko +3/poz.) — tam wartości NIE są duplikatem kultury (wyglądają na zamierzoną, ale NIGDY NIEZAIMPLEMENTOWANĄ mechanikę). Silnik ich nie konsumuje. Do rozstrzygnięcia: zaimplementować mnożnik jako realną mechanikę czy usunąć z kart.
+
+## ROBOCZA `99837b91` — 2026-07-25 · FALA 10: bugi bitwy + picking + 7 decyzji ABC Macieja — ZASTĄPIONA
 
 - **Zawartość:** (commity `426e587`..`b172d9c`, na `546b0c8`) — dwie duże części:
   **(A) Playtest + audyt sterowania bitwą (12 poprawek):** ROOT-CAUSE **pickingu** — klik trafiał tylko płaski pryzm heksu / model sąsiada, stąd „raz działa raz nie", „zaznacza się inna jednostka", „nie da się ruszyć pojedynczej z grupy", „łucznik nie wchodzi za linię" (mapa: bryły wzgórz w `terrainPickMeshes`; bitwa: `_pickGroundTile` dopasowuje realną wysokość kafla, raycast honoruje trafienie tylko zgodne z kaflem) · liczniki typów jednostek · imiona/portrety władców (było zawsze „Minos/grecy") · usunięty chrome górnych pasków deploy · „START WALKI" nie zostaje osierocony po bitwie · szyk piechota/dystans · karty rosteru (ikona klasy + nazwa spod pasków) · numeracja grup = najniższy wolny (G1→G1, nie G3) · powtórka bitwy nie gubi rozgrupowania · panel armii znika pod dialogiem bitwy · paski strat po walce · barbarzyńcy z własnym sygnetem.

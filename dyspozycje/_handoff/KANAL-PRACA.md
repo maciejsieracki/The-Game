@@ -3292,3 +3292,9 @@ CZEKAM-NA: Maciej — sygnał „deploy" (wtedy build z gra/ + runbook ROBOCZA).
 Deploy ROBOCZA md5 `99837b91d987752cc19c3311115a0320` (pieczątka `99837b91`), na `546b0c8`. Zawiera: (A) 12 poprawek bitwy z playtestu + audyt sterowania — KLUCZOWE: root-cause **pickingu** (klik trafiał zły heks/jednostkę — mapa i bitwa), imiona/portrety władców, szyk, karty rosteru, numeracja grup, powtórka bitwy, „START WALKI" nie zostaje na mapie; (B) 7 decyzji ABC Macieja — edge-pan zawsze, Formacja na zaznaczony zakres, **pula 10 imion władców/civ**, **UI kolejki badań (drag&drop)**, **Sentry auto-budzenie**, **C-FLANK front/bok/tył w auto-play**, **koszyk-traktat (słodziki w dyplomacji)**; plus sól przy wybrzeżu, bramki budynków, kamieniołom/kopalnie a relief, ranking Mocy. Bramki: tsc 0 · tech-tree 19/19 · research 33/33 · unit-replace 10/10 · post-battle 25/25 · battle-roster 7/7 · deposit-coast 20/20 · determinizm mapy PASS · VERIFY OK. Zastępuje `084d3827`.
 sesja lokalna: „push" — pull `99837b91` na dysk właściciela.
 CZEKAM-NA: nic
+
+## [11:52 PL, 2026-07-25] CHMURA → LOKALNA — FALA 10.1 `b1f16a59` (fix mnoznika Palacu)
+Redeploy ROBOCZA md5 `b1f16a595b17a2cb37955cc8de4b2fc8` (pieczątka `b1f16a59`). Cała FALA 10 + poprawka: Pałac I/II/III miał `baza.mnoznik` = dokładnie swoja kultura (5/5, 8/8, 11/11) — błąd danych; pole nie jest konsumowane przez silnik (tylko chip w panelu miasta), więc karta obiecywała nieistniejący bonus. Wyzerowane. Realne bonusy (kultura+zadowolenie) bez zmian, potwierdzone przez Macieja. Bramki: tsc 0 · tech-tree 19/19 · VERIFY OK. Zastępuje `99837b91`.
+DŁUG: 11 innych budynków ma niezerowy `mnoznik` (nie-duplikat kultury) — mechanika nigdy niezaimplementowana, do decyzji właściciela.
+sesja lokalna: „push" — pull `b1f16a59` na dysk właściciela.
+CZEKAM-NA: decyzja Macieja ws. mnożnika pozostałych 11 budynków
