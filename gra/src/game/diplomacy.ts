@@ -860,7 +860,7 @@ export interface AIDiplomacyStance {
   willingnessTrade: number;
   /**
    * Willingness to form or accept a SojuszWojskowy.
-   * Requires Zaufanie >= progSojuszZaufanie (60) AND Relacja >= progSojuszRelacja (120).
+   * Requires Zaufanie >= progSojuszZaufanie (91) AND Relacja >= progSojuszRelacja (151).
    */
   willingnessAlly: number;
 }

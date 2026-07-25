@@ -69,8 +69,8 @@ function buildIds(techs, ctxOverrides) {
 }
 
 // ===========================================================================
-// 1. CITY_BUILDING_PREREQ ma dokładnie sześć wpisów: dwa istniejące (nietknięte)
-//    + cztery nowe (REGRESJA-KOLEJNOSC).
+// 1. CITY_BUILDING_PREREQ ma dokładnie siedem wpisów: dwa istniejące (nietknięte)
+//    + cztery z REGRESJA-KOLEJNOSC + jeden nowy (ZLOTO 2026-07-25: mennica -> targowisko).
 // ===========================================================================
 {
   const p = M.CITY_BUILDING_PREREQ;
@@ -82,7 +82,22 @@ function buildIds(techs, ctxOverrides) {
   ok(p.fort === 'mury', `fort: 'mury' (ma: ${JSON.stringify(p.fort)})`);
   ok(p.akademia_wojskowa === 'koszary', `akademia_wojskowa: 'koszary' (ma: ${JSON.stringify(p.akademia_wojskowa)})`);
   ok(p.swiatynia === 'kamienne_kregi', `swiatynia: 'kamienne_kregi' (ma: ${JSON.stringify(p.swiatynia)})`);
-  ok(Object.keys(p).length === 6, `CITY_BUILDING_PREREQ ma dokładnie 6 wpisów (ma: ${Object.keys(p).length})`);
+  ok(p.mennica === 'targowisko', `mennica: 'targowisko' (ma: ${JSON.stringify(p.mennica)})`);
+  ok(Object.keys(p).length === 7, `CITY_BUILDING_PREREQ ma dokładnie 7 wpisów (ma: ${Object.keys(p).length})`);
+}
+
+// ===========================================================================
+// 1b. ZLOTO (2026-07-25): Mennica niedostępna bez Targowiska w tym mieście, NAWET z
+//     aktywnym dostępem do Złota (activeResourceLabels) — obie bramki muszą być spełnione.
+// ===========================================================================
+{
+  const techs = ['Waluta'];
+  ok(!buildIds(techs, { epoch: 2, activeResourceLabels: ['Złoto'] }).includes('mennica'),
+    'Mennica NIEDOSTĘPNA bez Targowiska w mieście (mimo dostępu do Złota)');
+  ok(buildIds(techs, { epoch: 2, activeResourceLabels: ['Złoto'], builtBuildingIds: ['targowisko'] }).includes('mennica'),
+    'Mennica DOSTĘPNA z Targowiskiem w mieście + dostępem do Złota');
+  ok(!buildIds(techs, { epoch: 2, builtBuildingIds: ['targowisko'] }).includes('mennica'),
+    'Mennica NIEDOSTĘPNA z Targowiskiem, ale BEZ dostępu do Złota');
 }
 
 // ===========================================================================

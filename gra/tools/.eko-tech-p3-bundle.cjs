@@ -23,6 +23,7 @@ __export(eko_tech_p3_entry_exports, {
   PIEC_HUTNICZY_BUILDING_ID: () => PIEC_HUTNICZY_BUILDING_ID,
   availableProduction: () => availableProduction,
   cityHasPiecHutniczy: () => cityHasPiecHutniczy,
+  empireHasKopalniaMiedzi: () => empireHasKopalniaMiedzi,
   hasBrazAccess: () => hasBrazAccess
 });
 module.exports = __toCommonJS(eko_tech_p3_entry_exports);
@@ -324,6 +325,21 @@ var terrain_improvements_default = {
     odblokowuje: "Odlewnia br\u0105zu (budynek miejski)",
     uwagi: "ABC-7 + ABC-14 Maciej 2026-07-04: tylko heks ze z\u0142o\u017Cem rudy"
   },
+  kopalnia_zlota: {
+    nazwa: "Kopalnia z\u0142ota",
+    epoka: 2,
+    bonus: {
+      praca: 2
+    },
+    surowiecOdblokowany: null,
+    surowiecOdblokowany_uwaga: "Maciej 2026-07-25: z\u0142oto jest surowcem DOST\u0118POWYM \u2014 bez magazynowania, bez ilo\u015Bci/tur\u0119. W przeciwie\u0144stwie do Kopalni miedzi/kopalni na z\u0142o\u017Cu \u017Celaza, ta Kopalnia NIE zasila \u017Cadnej puli (celowo brak surowiecOdblokowany i surowiec_ilosc_tura) \u2014 liczy si\u0119 wy\u0142\u0105cznie fakt jej istnienia gdziekolwiek w imperium (empireHasKopalniaZlota, game/zloto-access.ts).",
+    teren: "Wzg\xF3rza, G\xF3ry, z\u0142o\u017Ce z\u0142ota (hex.zloze=zloto)",
+    warunek: "dost\u0119p imperium do Z\u0142ota (bramka Mennicy) \u2014 bez wydobycia ilo\u015Bciowego",
+    koszt_praca: 22,
+    tech: "Waluta",
+    odblokowuje: "Mennica (dost\u0119p do Z\u0142ota, obok Targowiska w tym mie\u015Bcie)",
+    uwagi: "Maciej 2026-07-25: \u201Ez\u0142oto potraktujemy jako surowiec, do kt\xF3rego wystarczy tylko dost\u0119p \u2014 nie trzeba budowa\u0107 wielu kopalni\u201D. Wzorowana na Kopalni miedzi (kopalnia_miedzi) \u2014 dedykowane ulepszenie, tylko na hex.zloze=zloto."
+  },
   posterunek: {
     nazwa: "Posterunek (Stra\u017Cnica)",
     epoka: 2,
@@ -616,7 +632,13 @@ var DEPOSIT_LINKED_BUILDING_LABELS = {
   spichlerz_ii: ["S\xF3l"],
   stolarnia: ["Drewno"],
   kamieniarski: ["Kamie\u0144"],
-  kuznia: ["Ruda"]
+  kuznia: ["Ruda"],
+  // ZLOTO (Maciej 2026-07-25): Mennica wymaga dostępu do Złota (empire-wide, Kopalnia złota
+  // gdziekolwiek w imperium — game/zloto-access.ts empireHasKopalniaZlota, dolane do
+  // aktywnych etykiet w resource-access.ts collectActiveAccess). Złoto NIE jest magazynowane
+  // (brak wpisu w LABEL_BY_ASCII/ASCII_BY_LABEL niżej) — więc ta bramka NIGDY nie jest
+  // spełniona zapasem puli państwa (empireLabelSatisfied), tylko realnym aktywnym dostępem.
+  mennica: ["Z\u0142oto"]
 };
 var CITY_BUILDING_PREREQ = {
   warsztat_oblezniczy: ["koszary", "akademia_wojskowa"],
@@ -624,7 +646,10 @@ var CITY_BUILDING_PREREQ = {
   akademia: "biblioteka",
   fort: "mury",
   akademia_wojskowa: "koszary",
-  swiatynia: "kamienne_kregi"
+  swiatynia: "kamienne_kregi",
+  // ZLOTO (Maciej 2026-07-25, decyzja 54c=A): Mennica wymaga Targowiska W TYM SAMYM MIEŚCIE
+  // (obok bramki surowcowej Złota powyżej — DEPOSIT_LINKED_BUILDING_LABELS).
+  mennica: "targowisko"
 };
 function cityBuildingPrereqMet(prereq, builtList, buildings, isSuperseded) {
   if (!prereq) return true;
@@ -928,5 +953,6 @@ var DEFAULT_OUTPUT_SHARES = Object.freeze({
   PIEC_HUTNICZY_BUILDING_ID,
   availableProduction,
   cityHasPiecHutniczy,
+  empireHasKopalniaMiedzi,
   hasBrazAccess
 });
