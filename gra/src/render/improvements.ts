@@ -8,13 +8,12 @@ import * as THREE from 'three';
 import { GAME_MAP_RENDER_STYLE, type MapRenderStyle, buildStyleTarasyTerrace } from './mapRenderStyle';
 import { buildRobloxImprovement, buildRobloxFoodStack } from './robloxImprovements';
 import { placeLivestockPair } from './styleResources';
+import { buildKopalniaZlota } from './kopalnia-zlota-opus5';
 
-// ZLOTO-Q1 (Maciej 2026-07-25, wprowadzenie złota): 'kopalnia_zlota' dopisane MINIMALNIE —
-// typ + metadane + jeden dispatch reużywający ISTNIEJĄCY model kopalniaMiedzi() (BEZ nowej
-// geometrii). To świadomy, wąski wyjątek od zakazu dotykania render/** (modele jednostek są
-// zastrzeżone dla innych subagentów) — bez tego wpisu TypeScript nie skompilowałby żadnego
-// kodu logiki (map/improvement-build.ts) odwołującego się do 'kopalnia_zlota' jako
-// ImprovementKey. Docelowy model 3D (Opus 5, jak wszystkie modele render/**) — patrz RAPORT.
+// ZLOTO-Q1 (Maciej 2026-07-25, wprowadzenie złota): 'kopalnia_zlota' dopisane jako typ +
+// metadane + dispatch. Model 3D ma od 2026-07-25 WŁASNĄ bryłę (render/kopalnia-zlota-opus5.ts,
+// Opus 5) — wcześniejsze tymczasowe reużycie kopalniaMiedzi() zostało wycofane w OBU rejestrach
+// (ten plik + robloxImprovements.ts).
 export type ImprovementKey =
   | 'farma' | 'bydlo' | 'owce' | 'lama' | 'kopalnia' | 'kamieniolom' | 'oboz_lowiecki' | 'wyrab' | 'tartak'
   | 'lodzie_rybackie' | 'droga' | 'droga_brukowana' | 'posterunek' | 'stadnina' | 'pastwisko' | 'kopalnia_miedzi'
@@ -373,9 +372,10 @@ export function buildImprovement(
     case 'posterunek': return straznica(ownerCol);
     case 'pastwisko': return bydlo();
     case 'kopalnia_miedzi': return kopalniaMiedzi();
-    // TYMCZASOWO: reużyty model Kopalni miedzi (bez nowej geometrii) — patrz komentarz przy
-    // ImprovementKey wyżej. Docelowy model 3D złota do zrobienia przez subagenta Opus 5.
-    case 'kopalnia_zlota': return kopalniaMiedzi();
+    // WŁASNY model 3D (Opus 5, 2026-07-25) — koniec reużycia Kopalni miedzi.
+    // Odkrywka z płytkim szybem: trójnóg z koszem, rynna płuczkowa z runem,
+    // sadzawka, misa ze złotym pyłem. Uzasadnienie historyczne w nagłówku pliku.
+    case 'kopalnia_zlota': return buildKopalniaZlota();
   }
 }
 
