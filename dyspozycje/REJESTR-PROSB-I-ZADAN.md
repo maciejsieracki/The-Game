@@ -235,3 +235,33 @@ Pełny zapis zasady → `STAN-PRACY-HANDOFF.md` §9 (sekcja „ZAPARKOWANE DO CZ
 - **13B** — „spłuczka" (kij umgobo) w Impi — poprawić **przy robieniu epoki Brązu**, nie teraz.
 - **14A** — **zmierzyć FPS** na dużej bitwie przed wejściem w kolejne epoki (modele ~3× cięższe, brak instancjonowania).
 - **OTWARTE:** 15 (Karawanseraj — epoka), 16 (martwa `obrona: 2` w Pretorium).
+
+## PYTANIE 15 — Karawanseraj (anachronizm epoki) — ODPOWIEDŹ: **B = USUNĄĆ Z GRY**
+Maciej 2026-07-25: „15b". Karawanseraj stoi w danych w epoce Brązu (`epokaWejscia: 2`), a historycznie to budynek
+średniowieczny (szlaki karawanowe, Persja/Anatolia, ~X-XV w.). Zamiast przenosić i parkować — **usuwamy całkowicie**,
+tak jak Lazaret (commit 3228fb1). Do usunięcia: wpis w `gra/data/buildings.json`, ikona, Civpedia/poradnik/encyklopedia,
+odwołania w panelach Excel i dokumentacji, powiązanie `techUnlock: "Handel"` (sprawdzić czy tech nie zostaje pusty).
+Efekt uboczny: znika 1 z 4 żywych wycieków `mnoznik` (8% → 19% na poz. 10).
+
+## PYTANIE 16 — Pretorium: martwe `obrona` — ODPOWIEDŹ: **A = USUNĄĆ** (+ audyt pozostałych bonusów)
+Maciej 2026-07-25: „16a ale sprawdźmy, jakie inne bonusy ma pretorium."
+`baza.obrona: 2` / `przyrost.obrona: 1` — silnik NIE czyta `obrona` z budynków (obrona miasta wyłącznie procentowa:
+mur 200%, Cytadela 300%) → wyzerować, spójnie z decyzją 2A dla murów i Cytadeli.
+**Pełny stan Pretorium (audyt na żądanie):**
+| pole | wartość | status |
+|---|---|---|
+| kategoria | Administracja | — |
+| epokaWejscia | 3 (Żelazo), techUnlock „Prawo" | ŻYWE |
+| baza.praca | 2 | ŻYWE (praca miasta) |
+| baza.pieniadz | 3 | ŻYWE (dochód) |
+| baza.zadowolenie | 1 | ŻYWE |
+| baza.obrona | 2 | **MARTWE → do zera (16A)** |
+| baza.mnoznik | 5 | **do zera** (decyzja 6: budynek rządowy jak Pałac) |
+| przyrost.* | praca 1 / pieniądz 2 / zadow. 1 / obrona 1 / mnoznik 2 | żywe po przejściu na model liniowy; obrona+mnoznik do zera |
+| kosztBudowy 75 (+15/poz.), utrzymanie 3 (+1) | — | ŻYWE |
+| koszt_surowce | cegła 9 | ŻYWE |
+| uwagi | „bonus do utrzymania porządku (garnizon); mnożnik % do przychodu podatkowego" | **OPIS NIEZGODNY Z KODEM** — garnizonu nie ma, mnożnik idzie na Pracę a nie na podatki; opis do przepisania po zmianie |
+
+## ZASADA MODELI (Maciej 2026-07-25)
+„Tylko wyjątkowo za moją zgodą możesz użyć Opus 5 albo Fable 5." → **wszystkie prace zlecane subagentom na Sonnet 5**;
+Opus/Fable wyłącznie po wyraźnej zgodzie właściciela.
