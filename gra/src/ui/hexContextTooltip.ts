@@ -326,6 +326,16 @@ export interface UnitContextTooltipInput {
    * bonusu budynkowego. Pokazuje graczowi SKAD wynikaja podniesione staty.
    */
   buildingBonusLabel?: string;
+  /**
+   * TRZECI SYSTEM -- doświadczenie bojowe / weterani (2026-07-25,
+   * game/veteran.ts). Etykieta gotowa z veteranBadgeLabel(), np.
+   * "★★ Doświadczony +10%" / "★★★ Weteran +20%"; undefined/pusty string na
+   * poziomie 1 (Rekrut, brak odznaki -- świadomie, patrz veteran.ts).
+   * Renderowana OSOBNĄ linią, złotym stylem inline -- WIZUALNIE ODRÓŻNIALNA
+   * od buildingBonusLabel (odznaki budynkowe: kropki + kolorowa obwódka na
+   * żetonie, tekst "Pancerz +X% · Parametry +Y%" bez specjalnego koloru tutaj).
+   */
+  veteranBadgeLabel?: string;
   esc: (raw: string) => string;
 }
 
@@ -341,6 +351,11 @@ export function buildUnitContextTooltipHtml(u: UnitContextTooltipInput): string 
   }
   if (u.category) {
     lines.push(subLine('Typ', u.esc(u.category)));
+  }
+  if (u.veteranBadgeLabel) {
+    lines.push(
+      `<div class="cp-sub cp-veteran" style="color:#f4d35e;font-weight:600;">${u.esc(u.veteranBadgeLabel)}</div>`,
+    );
   }
   if (u.buildingBonusLabel) {
     lines.push(subLine('Ulepszenia (budynki)', u.esc(u.buildingBonusLabel)));

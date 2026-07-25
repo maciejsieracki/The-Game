@@ -179,6 +179,17 @@ function round4(x: number): number {
 }
 
 /**
+ * Zaokragla do 6 miejsc PRZED Math.ceil/Math.floor w funkcjach ponizej --
+ * czysta ochrona przed szumem zmiennoprzecinkowym (np. 50*1.10 w IEEE754 to
+ * 55.00000000000001, a Math.ceil() na tym da 56 zamiast oczekiwanego 55).
+ * 6 miejsc to duzo wiecej precyzji niz jakikolwiek realny wynik w danych
+ * gry wymaga, wiec nie gubi zadnego zamierzonego efektu.
+ */
+function round6(x: number): number {
+  return Math.round(x * 1e6) / 1e6;
+}
+
+/**
  * Przeskalowuje statystyki bojowe jednostki wg ułamka premii weterana.
  * `frac` = 0 -> zwraca WEJŚCIOWY obiekt BEZ ZMIAN (poziom 1 -- twardy
  * wymóg "statystyki dokładnie jak w units.json, zero modyfikacji", bez
@@ -239,13 +250,13 @@ export const VETERAN_PROG_DEZERCJI_FLOOR = 0.02;
 /** "Morale bazowe" -- W GÓRĘ, Math.ceil gwarantuje wzrost o min. 1 gdy frac>0. */
 export function veteranMoraleBazoweUp(base: number, frac: number): number {
   if (!frac || !Number.isFinite(base)) return base;
-  return Math.ceil(base * (1 + frac));
+  return Math.ceil(round6(base * (1 + frac)));
 }
 
 /** "Morale ucieczki" -- W DÓŁ, Math.floor gwarantuje spadek o min. 1 gdy frac>0, z podłogą bezpieczeństwa. */
 export function veteranMoraleUcieczkiDown(base: number, frac: number): number {
   if (!frac || !Number.isFinite(base)) return base;
-  return Math.max(VETERAN_MORALE_UCIECZKI_FLOOR, Math.floor(base * (1 - frac)));
+  return Math.max(VETERAN_MORALE_UCIECZKI_FLOOR, Math.floor(round6(base * (1 - frac))));
 }
 
 /** "Prog dezercji (% health)" w kontekście warstwy mapy/UI (jw. combat.ts, ale z podłogą + wspólnym zaokrągleniem). */
